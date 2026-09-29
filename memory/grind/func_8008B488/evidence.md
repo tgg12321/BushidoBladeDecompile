@@ -163,6 +163,12 @@ jtbl addend, the old shared form 1).
   $a0 mask; the write is emitted as an extra insn; a pre-RR write goes loop-wide to $s5), the
   complete $a0 window list, and the definitional point that any FAKE write read by a
   chain-extender is a second value of the SL variable under Ruling 11's value definition.
+- Layer-2 round 3 (fresh reviewer): **PASS**, every Ruling 11 prong and the chassis verified.
+  **LANDED 2026-09-28: Match 0313b22b6, queue done 00118879a**; full-build SHA1 == oracle,
+  sandbox 0/387, parity 40/40, check_completion_integrity OK. Non-blocking correction from round
+  3: the $a0 window list in proof.md omits the pre-loop read of the incoming argument
+  (0x8008B490 `addu s0,a0,zero`); it is before the loop and changes nothing about $a0 being dead
+  at the loop top and through the SL block.
 - Permuter from the split body: see r11/proof.md (D)(4).
 
 ## Rejected bodies

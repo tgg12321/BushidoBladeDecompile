@@ -177,6 +177,8 @@ B7B0-B7B8, B824-B830 (AR), B878-B880 (DR), B92C-B938 (SR) and **B9B0-B9B8 (RR: `
 a0,v0,0xFFC0` then `or v0,a0,v0`), the last one**. Nothing references $a0 from 0x8008B9BC on —
 not the SL block, the loop step (`addiu s4,s4,1` / `slti` / `bnez`) or the wait loop — and every
 window starts with a write, so $a0 is dead at the loop top and throughout the SL block.
+(Also, before the loop, 0x8008B490 `addu s0,a0,zero` reads the incoming argument — outside the
+loop, so it does not bear on the argument; noted after layer-2 round 3.)
 (Correction after layer-2 round 2: the first text said $a0 does not appear after 0x8008B92C,
 which is false — the SR store reads it at B938 and the RR block sets and reads it at B9B0/B9B8.)
 So nothing holding $a0 is ever live at the same time as a per-value SL

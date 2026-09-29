@@ -1,6 +1,6 @@
 # func_8008B488 — hypotheses (manual s1-s4)
 
-## Status (s4, 2026-09-28)
+## Status (s4, 2026-09-28): LANDED COMPLETED-C (0313b22b6, queue 00118879a) after layer-2 round 3 PASS
 - Submitted under Ruling 11: candidate.c = r11/final.c, one loop-body `u16 temp` shared by the SR
   and SL values only; standalone 1 (the jtbl addend), engine sandbox 4 on the clean tree / 0 with
   the landing chassis. Proof package: r11/proof.md, r11/dumps.txt, r11/all.log.
