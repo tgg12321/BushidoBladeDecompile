@@ -78,3 +78,34 @@ final: the reader that gives the full preference (f.lreg):
   Register 139 used 2 times across 5 insns in block 6; GR_REGS or none.
   ;; Register 139 in 4.   (local-alloc seat)
   (139 local-allocated to hard reg 4 = $a0; 133-135, the lz/shift code inside temp2's range, to 3 = $v1)
+
+## temp, round 2: the segment-length seat (fr2.sh; FINDREG + ALLOCDBG, used_so_far/pass lines omitted)
+  == final pseudo 87
+  Register 87 used 15 times across 30 insns; dies in 4 places; GR_REGS or none.
+  FINDREGDBG func=func_8002A458 pseudo=87 alt=0 acc=0 retry=0
+  FINDREGDBG  conflicts: 2 3 4 12 13 14 15 29
+  FINDREGDBG  someone_prefers: 4
+  FINDREGDBG  own_copy_prefs: 5
+  FINDREGDBG  own_full_prefs: 5
+  FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+  ALLOCDBG func=func_8002A458 ord=0 pseudo=87 hardreg=5 nrefs=15 livelen=30 pri=15000
+  == temp_all_own pseudo 91
+  Register 91 used 8 times across 9 insns; GR_REGS or none.
+  FINDREGDBG func=func_8002A458 pseudo=91 alt=0 acc=0 retry=0
+  FINDREGDBG  conflicts: 2 29
+  FINDREGDBG  someone_prefers:
+  FINDREGDBG  own_copy_prefs:
+  FINDREGDBG  own_full_prefs: 3 4
+  FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+  ALLOCDBG func=func_8002A458 ord=0 pseudo=91 hardreg=3 nrefs=8 livelen=9 pri=26666
+  C1 site-2 small-arm root pseudo: 91
+  == temp_temp2_split pseudo 91
+  Register 91 used 8 times across 9 insns; GR_REGS or none.
+  FINDREGDBG func=func_8002A458 pseudo=91 alt=0 acc=0 retry=0
+  FINDREGDBG  conflicts: 2 29
+  FINDREGDBG  someone_prefers:
+  FINDREGDBG  own_copy_prefs:
+  FINDREGDBG  own_full_prefs: 3 4
+  FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+  ALLOCDBG func=func_8002A458 ord=0 pseudo=91 hardreg=3 nrefs=8 livelen=9 pri=26666
+  final insn 121: (set (reg:SI 5 a1) (reg/v:SI 87)) = printf argument move -> 87 own_copy_prefs 5.

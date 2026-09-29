@@ -132,16 +132,28 @@ allocates them (block_alloc), `;; Register 27x in 2.` = $v0: find_free_reg takes
 hard register in numeric order (config/mips defines no REG_ALLOC_ORDER), and a quantity that
 crosses no call may take a call-clobbered one. The target has `subu $s2/$s3/$s1` there.
 
-**temp — cse canonical register (cse.c make_regs_eqv :844-857).**
-When cse1 records `temp2 = temp`, the copy becomes the quantity's canonical register only if it
-lives beyond the cse block AND its last use is later than the current canonical register's
-(`uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]`). Final: `temp` (87) is
-last used at the site-2 divisions, so it stays canonical; the `< 0x400` test reads 87 before and
-after cse (f.rtl / f.cse), i.e. $a1, as in the target (`sltiu $v0,$a1,0x400`). One-var form
-(`temp_all_own`): the squared length `h_sq` (90) is last read at the shift index, BEFORE the
-copy's last read, so the copy (89) becomes canonical and cse1 rewrites the test operand from 90
-to 89 (f.rtl `(ltu (reg 90))`, f.cse `(ltu (reg 89))`): the test and the LUT index then read the
-copy's register ($a0), and the scored diff shows it (15).
+**temp — two decisions (global.c set_preference/find_reg copy preference; cse.c make_regs_eqv).**
+(i) *The segment length's register (primary).* Final: `temp` (87) is the operand of printf's
+argument move `(set (reg:SI 5 a1) (reg/v:SI 87))` (f.lreg insn 121), so set_preference
+(global.c:1671, copy=1) gives it a hard-reg COPY preference for $a1: FINDREG `own_copy_prefs: 5`,
+`own_full_prefs: 5`, conflicts `2 3 4 12 13 14 15 29`, ALLOCDBG ord 0 hardreg 5. Its later value,
+the segment length, therefore sits in $a1 (`srl $a1,$v0,3`, `srlv $a1,$a0,$v0`, the three
+`div $zero,$v0,$a1` / `bnez $a1` / `bne $a1,$at`), as in the target. One-var forms: the segment
+length in its own `len` (91 in temp_all_own and in the reviewer's temp_temp2_split): `own_copy_prefs`
+EMPTY, `own_full_prefs: 3 4`, conflicts `2 29`, ALLOCDBG ord 0 hardreg 3 = $v1 (dumps.txt, fr2.sh):
+the seat hunks 9-18 of both spellings' diffs.
+(ii) *The cse canonical register (only while `temp2` is shared).* When cse1 records
+`temp2 = temp`, the copy becomes the quantity's canonical register only if it lives beyond the
+cse block AND its last use is later than the current canonical register's
+(`uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]`, cse.c:844-857). Final:
+`temp` (87) is last used at the site-2 divisions, so it stays canonical; the `< 0x400` test reads
+87 before and after cse (f.rtl / f.cse), i.e. $a1, as in the target. temp_all_own: the squared
+length `h_sq` (90) is last read at the shift index, before `temp2 << 16`, so the copy (89) becomes
+canonical and cse1 rewrites the test operand from 90 to 89 (f.rtl `(ltu (reg 90))`, f.cse
+`(ltu (reg 89))`): hunks 2/4/5 of its diff. With `temp2` also split (temp_temp2_split, the
+reviewer's C1) the copy's last read is the island, before the squared length's last read, so the
+squared length stays canonical and (ii) does not arise; (i) still fails the spelling.
+temp_all_own = 15 = (i) + (ii); temp_temp2_split = 13 = (i) + temp2's own copy seat.
 
 **temp2 — conflict + preference in find_reg (global.c set_preference :1681, find_reg).**
 Final: FINDREG for the copy/table-byte pseudo 89: `conflicts: 2 3 5 12 13 14 15 29`,
@@ -155,6 +167,17 @@ hard or local-allocated destination gives the global source a full preference). 
 order, 3 = $v1 (ALLOCDBG ord 13). The target has `addu $a0,$a1,$zero`.
 
 ### (D)(3) Necessity, not effect
+Standard: Ruling 11 (D)(3) as amended by Q31 (owner 2026-09-28, eighteenth batch, "Mechanism +
+search", ee84164e3): (a) the mechanism for each variable is named by pass and source location
+from banked dumps of the reuse and one-variable-per-value spellings ((D)(2) above, dumps.txt);
+(b) every one-variable-per-value spelling proposed by the author or a reviewer is banked in
+variants/ with its sandbox score (scores*.txt), including the round-1 reviewer's C1 (13), c5 (2),
+c6 (4), c7 (37) and c8 (2); (c) no banked counting spelling reaches the target (all > 0; the
+FAKE-carrying ones M1-M3/M5 are measured too, and miss as well). The per-variable arguments
+below go further than Q31 requires and argue the property for every per-value spelling; where a
+sentence there is stronger than the banked measurements, the measurements are what this
+submission rests on.
+
 
 **dx/dy/dz — property of the reuse spelling:** the end-block delta is written into a pseudo that
 crosses calls (it also holds the segment delta, live across ratan2 / func_80032854 /
@@ -170,16 +193,26 @@ first pass of find_reg (no call crossed, so call-clobbered registers are allowed
 and the fixed statements copy it into no hard register, so no preference) would still start at
 $v0..$t7. It can never be seated in s2/s3/s1.
 
-**temp — property of the reuse spelling:** the squared-length pseudo's last use is AFTER the
-copy's last use (it also holds the segment length, read by the three divisions), so cse keeps it
-as the canonical register and the `< 0x400` test / LUT index / shift index read it ($a1).
-**Every one-variable-per-value spelling lacks it, because the squared length has its own
-variable:** its reads are the fixed statements printf / `< 0` / the copy / `< 0x400` / LUT index
-/ shift index. The shift index is an operand of the table-byte load whose result is the input
-of `temp2 << 16`, the copy variable's last read, so by data dependence the squared length's last
-read precedes the copy variable's last read in every statement order, and the copy (which lives
-beyond the cse block: it is set before the branch and read in the LZC arm) becomes the canonical
-register. The test/index then read the copy. Declaration scope and type do not move a last use.
+**temp — property of the reuse spelling:** the segment length is written into the pseudo that is
+also printf's argument, i.e. into the one pseudo that the argument move `(set $a1 temp)` gives an
+$a1 copy preference, so find_reg seats it in $a1.
+**Every one-variable-per-value spelling lacks it, because the segment length has its own
+variable:** by (C)(2) that variable is written only by the two site-2 arms (`LUT >> 3` and the
+LZC-arm shift) and read only by the three divisions `(d << 12) / len`. None of those insns moves
+it to or from a hard register or a local-allocated pseudo (the divisions read it as the divisor
+of `div`, the writes set it from shifts of temporaries), and the only insn in the function that
+relates any of these values to $a1 is printf's argument move, which reads the squared length, a
+different variable in every per-value spelling. So its copy-preference set never contains $a1,
+whatever the declaration scope, order or type. expand_preferences (:829-871) cannot import one: no
+statement copies the squared length into it or it into the squared length. Measured in both
+per-value shapes: `own_copy_prefs` empty, `own_full_prefs` {v1, a0}, conflicts {v0, sp}, and it is
+the highest-priority allocno (ord 0, pri 26666 against 17142 next), so it is allocated before any
+other pseudo can occupy a register and takes $v1. Were it allocated later instead, the only way to
+$a1 would still be a preference or $v1/$a0 being taken for its whole range, which the fixed
+statements do not produce (its range, the site-2 LUT sqrt and the divisions, holds only
+short-lived temporaries that local-alloc places around it). It is never seated in $a1.
+This holds with `temp2` shared or split, so it covers every per-value spelling of `temp` on its
+own; mechanism (ii) is an additional miss only while `temp2` is shared (hunks 2/4/5).
 
 **temp2 — property of the reuse spelling:** the island-input pseudo is also the table-byte
 pseudo, so its live range runs through the lz/shift code (a $v1 conflict) and it is the first
@@ -226,10 +259,16 @@ declaring it `u32` changes nothing (M4 = 2).
   - dx/dy/dz: W2 own (hx..hz), W3 still shared: **6**; W3 own (ox..oz), W2 shared: **6**; W2 and
     W3 own: **37**; one trio shared by W2 and W3 but not W1: **37**. Per variable (that
     variable's W2 and W3 both split, the other two reused): dx **26**, dy **34**, dz **40**.
-  - temp: squared length own (`h_sq`): **15**; segment length own (`len`): **15**; both: **15**.
+  - temp: squared length own (`h_sq`): **15**; segment length own (`len`): **15**; both: **15**
+    (hunks 9-18 = the segment-length $a1 seat, hunks 2/4/5 = the cse swap). Both split AND
+    `temp2` split (the 2026-09-28 reviewer's C1, variants/temp_temp2_split.c): **13** (the
+    segment-length seat + the copy seat; the cse swap does not arise).
     (The horizontal length also sharing `temp` scores 0 too: not needed, so it has its own
     `hlen`.)
-  - temp2: copy own (`n`) and table byte own (`tbl`): **2** (the $v1 seat alone).
+  - temp2: copy own (`n`) and table byte own (`tbl`): **2** (the $v1 seat alone). No copy at
+    all (the island reads `temp`; Q28 (e)), header-exact islands (variants/nocopy.c, the
+    reviewer's c8): **2** (the `move $a0,$a1` missing). Reviewer's c5 (`u8 tbl`) 2, c6 (copy
+    before the `< 0` test) 4.
 - Structural respellings: 320 single-role site-1 dataflow spellings (sum/copy direction, copy
   placement, every consumer on either variable, root into the sum's variable or a fresh one;
   s2/gen1.py, s2/gen1_scores.txt, measured on the dx/dy/dz-reuse chassis): floor **2**, none
@@ -259,6 +298,10 @@ declaring it `u32` changes nothing (M4 = 2).
 
 ## (E) Honest names
 - `temp`, `temp2`: form (i) generic scratch words.
+- Layer-2 round 1 (2026-09-28): FAIL on the `temp` (D)(2)/(D)(3) argument only (the cse
+  argument was presented as universal; it does not hold with `temp2` split, and the
+  segment-length seat was unproven). Fixed above; body unchanged. dx/dy/dz, temp2, the
+  islands, the do-while(0) and the rest were checked sound.
 - `dx`, `dy`, `dz`: form (ii), a name for the one kind all values share: every write is
   `point.c - base.c`, the offset of a point from the segment base on that axis (W1 the tip, W2
   the stage hit point, W3 obj+0xF4; W2/W3 through `p`, the base pointer `*(s32 **)(scr+0x60)`
