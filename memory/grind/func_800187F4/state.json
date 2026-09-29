@@ -1,7 +1,7 @@
 {
  "func": "func_800187F4",
  "file": "code6cac",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "manual",
  "floor_history": [
   {
@@ -15,23 +15,19 @@
    "floor": 2,
    "modality": "manual (slotQ)",
    "headline": "real-pipeline 2/662 copy-free (candidate_copyfree.c; sandbox 147 only because 41 non-PINNED header statements are stripped); byte-exact 0/662 with the banned LZC-input copy (candidate.c); owner question filed 2026-09-27"
+  },
+  {
+   "session": 3,
+   "floor": 0,
+   "modality": "manual",
+   "headline": "owner Q28/Q29 (206e77db8) + recognizer (21b9bbebd): landing body sandbox 0/644; Ruling 11 package r11/proof.md for idx/nforce/temp/work/delta/nbits/nbits2"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner ruling on the LZC-input copy (borderline 2026-09-27) closes the last 2 insns",
-   "mechanism": "GCC 2.7.2: two registers need two C variables; fresh copy seats in $v1 (find_reg lowest free); only a copy variable live across the shift's $v1 range (the table byte) gets $a0",
-   "next_probe": "if ruled (A): R11 (D) proof package for byte/j/n/d/dist1/dist2; else search a single-role spelling that keeps the copy live across $v1"
-  },
-  {
-   "hypothesis": "PIN ldlvl/stlvl/lddp/sqr0/gpf0/gpl12/rtv0tr in engine/gtemacro.py so the sandbox scores the verbatim body",
-   "mechanism": "owner scorer ruling 2026-09-25; sandbox currently strips 41 header statements",
-   "next_probe": "engine: commit with engine test positives/negatives + layer-2; DMPSX_WORDS for the 4 command words need independent sources"
-  },
-  {
-   "hypothesis": "Ruling 11 packages for j (3 loops), n, d, byte, dist1/dist2, pen",
-   "mechanism": "global.c priority / local-vs-global allocation (see evidence [s2 close])",
-   "next_probe": "BB2_ALLOC_DEBUG/FINDREG dumps per split value; chain-extender/pointer-alias/do-while/cross-jump variants per value"
+   "hypothesis": "Land: auth rows + region hashes + fresh layer-2 on the whole landing",
+   "mechanism": "inline-asm-policy.md \u00a7 Owner ruling 2026-09-26 + \u00a7 Per-function grant: func_800187F4",
+   "next_probe": "auth: commit, then Match: commit after layer-2 PASS"
   }
  ],
  "judge_constraints": [],

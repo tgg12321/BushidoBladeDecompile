@@ -121,3 +121,32 @@ placeholders (0x4A480012 rtv0tr, 0x4AA00428 sqr0, 0x4B90003D gpf0, 0x4BA8003E
 gpl12) -> class route excludes them; needs per-function owner row (func_8002DE20
 Q11 precedent) with independent word sources (nugget inline_n.h / PSn00bSDK).
 cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
+
+## [s3] manual 2026-09-28 — owner rulings Q28/Q29, recognizer, landing body 0/644
+
+- **Owner rulings** (record 206e77db8, layer-2 PASS round 2): Q28 — the LZC-input copy counts as a
+  Ruling 11 value under the new (C)(3) "GTE-macro input copies" clause (borderline 2026-09-27 option A);
+  Q29 — per-function grant for the four DMPSX command words (rtv0tr 0x4A480012, sqr0 0x4AA00428,
+  gpf0 0x4B90003D, gpl12 0x4BA8003E; sources nugget inline_n.h + PSn00bSDK inline_c.h).
+- **Recognizer** (engine 21b9bbebd, layer-2 PASS): PINNED gte_ldlvl/lddp/rtv0tr/sqr0/gpf0/gpl12/stlvl
+  + the four DMPSX_WORDS. Sandbox now scores the verbatim body as written: candidate 147 -> 0,
+  copy-free 147 -> 2 (recognizer_treewide.md: no src function moves).
+- **Declaration** (65f4f1730, oracle-green): `func_800187F4(s16 *arg0, s32 *arg1)`, the caller's type.
+- **Landing body** = candidate.c (template.c through gen.py): sandbox **0 (644/644)**; the spliced
+  code6cac.o is byte-identical to the INCLUDE_ASM build in .text/.rodata/relocations. Versus the s2 g2
+  template: `s16 *arg0` + sibling-style offset casts; `force[0][3]`; per-loop `f_add`/`f_sub` and
+  `bits`/`bits2`, `shift`/`shift2` split (all byte-identical); `dist2` split into `sq2` + `dist2`
+  (byte-identical); `d` reduced to `delta` = ground depth + Y delta to focus 0 (the 127-partition
+  ablation: 0 iff the ground depth shares with at least one sphere delta; the other five deltas are
+  own locals); every reused local renamed and scoped for Ruling 11 (idx, nforce, temp, work, delta,
+  nbits, nbits2), each annotated.
+- **Ruling 11 package**: r11/proof.md — per variable the dumps (r11/dumps_table.txt), the mechanism
+  (global.c allocno priority for idx/nforce; local-alloc single-block quantities for temp's table
+  bytes; cse.c make_regs_eqv class head for work and delta; local-alloc combine_regs tie for nbits),
+  the necessity argument, the measured alternatives (r11/measurements.md: per-value 67/21/40/26/4/2/2,
+  ablations, 14 structural respellings, 17 FAKE-family probes), two permuter campaigns (25,115
+  iterations, no find reaches 0; campaign 2's gains re-create reuses).
+- **Disclosed alternative**: per-value `dg` + FAKE dead store `dg = 0;` after the ellipsoid loop also
+  reaches 0 (cse counts the dead use before flow deletes it); not landed (adds a FAKE construct, the
+  reuse adds none; Ruling 1(4), func_8008B488 precedent).
+- **lz[6]**: lz[5]/[6] frame 0x78 (0), lz[2]-[4] 0x68 and lz[7]/[8] 0x80 (24) on the landing body.

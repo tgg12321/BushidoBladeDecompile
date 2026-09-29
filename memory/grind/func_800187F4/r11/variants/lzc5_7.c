@@ -58,7 +58,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
      * Measured: lz[2]..lz[4] give frame 0x68, lz[5]/lz[6] 0x78, lz[7]/lz[8] 0x80.
      * lever-exhaustion: memory/grind/func_800187F4/evidence.md [s2] item 7 and
      * r11/proof.md "Other constructs". */
-    s32 lz[6];
+    s32 lz[7];
 
     func_80018094((s32 *)arg0, arg1);
     count = *(s16 *)((u8 *)arg1 + 4);
