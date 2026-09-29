@@ -194,3 +194,11 @@ cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
   r11/manifest.md, one uniform sweep of every banked body (r11/tools/fast4.sh, r11/banked/sweep.log) plus
   every result-file set: 34 banked + 122 result-file bodies reach 0, each REUSE or SET ASIDE (Q30) with its
   reason; every other measured body misses (best 2).
+
+## LANDED 2026-09-29 — COMPLETED-INLINE-ASM-CANONICAL (manual lane)
+- Ninth fresh layer-2 PASS on the staged landing; its required text fixes and probes banked in be24cc6a1.
+- auth: 08efe0bf5 (canonical row + owner Q29 DMPSX-word row); Match: f1fd8d5b0 (body + 85 region hashes);
+  queue: cb3503852. Oracle SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa; check_completion_integrity OK.
+- Record: r11/proof.md v10, r11/manifest.md. Layer-2 history: rejected/*layer2-fail*.md (eight FAILs: two on
+  the code's per-value spellings (v1 work/delta, v2 nforce), which led to owner Q30; one on (D)(3) universals,
+  which led to Q31/Q32; five on record text only).
