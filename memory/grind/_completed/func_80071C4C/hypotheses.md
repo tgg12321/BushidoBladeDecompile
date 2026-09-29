@@ -96,3 +96,5 @@ Mechanisms (instrumented cc1 `tools/gcc-2.7.2/cc1`, dumps in cleanup-locals/):
   into $4. With `dst` computed before `ctx`, i*10 is first -> $a0, i*3 -> $a1 (target). Inlined, i*10 is
   computed inside the store after the `ctx` statement, so i*3 takes $a0 (loop 1: pseudo 335 = i*3 in $4,
   333 = i*10 in $5; loop 2: 331 = i*3 in $4, 329 = i*10 in $5): the 4-point operand-only swap.
+
+- [cleanup 2026-09-29, layer-2 record] The copy-loop cleanup (comment-only: FAKE annotations on the four per-site dst/ctx named intermediates) received a fresh layer-2 cheat-reviewer PASS on the exact staged diff (src/text1b.c +19/-4, comments only) before it was committed as 62a05bd26: every named-intermediate prong verified (once-written, real a0/a1 givs, byte-neutral 270/270, not Q22 dummies), mechanisms checked against explow.c:419/:447 and global.c:643 and the banked dumps in cleanup-locals/, `u8 *rec` alternative judged not simpler (Ruling 1(4)); no required fixes.

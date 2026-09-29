@@ -142,3 +142,5 @@
   preheader after `j = 0` (the target's `move s0,zero; sll s5,s1,1`). `row` reached the same by being one pseudo.
 - LANDING: row removed, `(i + i)` form spliced; sandbox 0/690, verify-oracle --rebuild --allow-dirty SHA1 ==
   oracle (2026-09-29).
+
+- [cleanup 2026-09-29, layer-2 record] The `row` cleanup (drop the single-use named intermediate for the ordinary `(i + i)` spelling) received a fresh layer-2 cheat-reviewer PASS on the exact staged diff (src/text1b.c +3/-5) before it was committed as 96926d836: `i + i` judged a truthful doubling (Ruling 1(3)), the `(s32 *)arg1 + (i + i)` grouping truthful, strictly simpler than an annotated `row` (Ruling 1(4)); sandbox re-run 0 (690/690); dump excerpts in cleanup-row/rtl_excerpts.txt verified; no required fixes.
