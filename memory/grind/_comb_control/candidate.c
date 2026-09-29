@@ -51,8 +51,10 @@ extern void ExitCriticalSection(void);
 extern s32 ResetGraph(s32);
 extern void DeliverEvent(u32, u32);
 extern void AddDrv(s32 *);
-extern s32 DelDrv();
-extern s32 FlushCache();
+extern void DelDrv(const char *);
+extern void FlushCache(void);
+/* Not declared by any PsyQ 4.0 header (KERNEL.H lists neither), so COMB
+   called them undeclared: int-returning calls with no prototype. */
 extern s32 SysEnqIntRP();
 extern s32 SysDeqIntRP();
 
