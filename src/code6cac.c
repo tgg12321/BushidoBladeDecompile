@@ -818,7 +818,7 @@ void func_80018300(s32 *arg0) {
         : : "r"(out) : "$12", "$13", "$14", "$15", "memory");
 }
 /* kengo:HIGH  |  nm_cpu/cpu_check_run_attack  |  322i  |  +5 near-exact */
-void func_800187F4(s32 arg0, s32 *arg1);
+void func_800187F4(s16 *arg0, s32 *arg1);
 void func_80019310(s16 *arg0, s32 *arg1);
 INCLUDE_ASM("asm/funcs", func_800187F4);
 /* kengo:HIGH  |  nm_single_game/single_game_setModeRequest  |  663i  |  +1 near-exact */
