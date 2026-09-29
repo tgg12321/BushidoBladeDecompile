@@ -128,3 +128,12 @@ table byte — Ruling 11 text (ordinary-c-judge-decidable.md:1340-1343) names
 func_8002A458 `lzc_in` as a (C)(3) bare-copy FAIL, and the 2026-09-25 layer-2 failed
 it under the staged-value rule (bound 2). This needs an owner ruling; asked 2026-09-28.
 dx/dy/dz and `len` are Ruling 11 candidates on their own (real computations).
+
+## LANDED 2026-09-28 — COMPLETED-INLINE-ASM-CANONICAL (manual session 2)
+auth: 6038c278f (inline_asm_canonical.txt row, inline_o.h class) -> Match: 9f53bf788
+(src/code6cac_b.c + region hashes) -> queue: 61b3b4331. Full-build SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa; sandbox --disable all 0 (416/416) from src;
+check_completion_integrity OK. Layer-2: round 1 FAIL (temp proof: cse argument presented as
+universal, segment-length $a1 seat unproven), fixed in r11/proof.md; round 2 PASS (18 more
+counter-spellings banked, none at 0). Closing constructs: dx/dy/dz, temp, temp2 under Ruling 11
+(temp2's copy under Q28), header-exact gte_Lzc islands, one do-while(0). Proof: r11/proof.md.
