@@ -21,7 +21,8 @@ out = Path('tmp/func_80070188/dumps'); out.mkdir(parents=True, exist_ok=True)
 work = Path('tmp/func_80070188/dwork'); work.mkdir(parents=True, exist_ok=True)
 base = Path('src/text1b.c').read_text(encoding='utf-8')
 txt = inlineasm.substitute_body(base, FUNC, Path(cand).read_text(encoding='utf-8'))
-for old, new in m.SRC_REPS:
+txt = m.apply(txt)
+for old, new in []:
     txt = txt.replace(old, new)
 src = work / 'text1b.c'
 src.write_bytes(txt.encode('utf-8'))

@@ -107,3 +107,19 @@ Landing-time config needed (tools/*.landing.diff), each a no-op for the current 
 - No-merge probes: a FAKE typed pointer view `Rec3560 *recs = (Rec3560 *)D_800A3560;`
   (pointer-alias family) = 96/688 — the base stays in a callee-saved register
   (`lui s8; addiu s8`), so no in-MEM `(plus idx sym+k)`.
+
+### No-merge search after the FAIL (2026-09-29, mini TU, per-byte symbols as on main)
+- Same body with u8-array spellings `D_800A3560[i * 3 + k]`, D_800A3561/D_800A3564
+  scalars: 76 (all remaining source-level hunks are the record-index address form).
+- Per-site index intermediates recover it piece by piece:
+  top `s32 rec = i * 3;` + a do-body `idx = i * 3;` just before each walk store: 41 -> 14
+  (walks then get `move a1,s1` / recompute exactly as the target);
+  confirm `D_800A3560[sel = i * 3]` in the && operand + cancel `k = i * 3` after the
+  sound call + L9B4 `k2 = i * 3`: frame stays vars=80.
+  Best: nomerge_best.c = 14/698 (8 GPREL artifacts + the cancel arm: the `D_800A3560[0]`
+  / `[3]` constant stores share a forced `lui/addiu v1` base with the
+  `[D_800A3554 * 3]` read; [3]/[3] 12 but 700 insns; h1/h2 reorders 14).
+- That form carries ~8 FAKE named intermediates (one per site) plus an assignment in a
+  condition; the record declaration (struct or union) needs none. Under the
+  fewest-no-purpose-constructs principle the union form is the landing candidate if the
+  owner allows it (borderline.md 2026-09-29).
