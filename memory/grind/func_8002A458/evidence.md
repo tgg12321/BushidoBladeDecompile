@@ -82,3 +82,49 @@ Frontier: a policy question to the owner on (1) reusing dx/dy/dz as the
 point-minus-base delta at three sites and (2) the in-place `len = sqrt(len)`
 plus the LZC-input copy. Alternatively, find a single-role structure whose
 end-block deltas are call-crossing or s-register-preferred. None is known.
+
+## Manual session 2 (2026-09-28) — current stock cc1 (PLUS->IOR patch removed)
+Re-measured (sandbox --disable all): candidate.c 30 (417); s2/dxyz-reuse-2.c = candidate
++ end block reusing dx/dy/dz only = **2** (416/416, one operand-only hunk: the site-1
+LZC-input copy seats $v1, target $a0). s2/closing-form-0.c (dx/dy/dz reuse + `len`
+holding the squared length then both roots + `lzc_in` copy that then stages the table
+byte) = **0** (416/416). Splits of that form: site-2 root in its own local 11
+(s2/site2-len-split-11.c); copy moved into the else arm 23; copy+table-byte reuse
+without the `len` reuse 4 (s2/copy-tbl-only-4.c: copy in $a0 but `lzc_in` becomes the
+CSE-canonical register, so the < 0x400 test and LUT index read $a0, target $a1).
+dx/dy/dz Ruling 11 ablations: full per-value 30; value 1 (segment delta) own, 2+3
+shared 30; value 2 own 8; value 3 own 8.
+
+### Why the copy seats $v1 (instrumented cc1, BB2_FINDREG_DEBUG=88 on dxyz-reuse-2)
+Copy pseudo 88: conflicts v0 a1 t4 s5 sp; someone_prefers / own_copy_prefs /
+own_full_prefs EMPTY -> first free in numeric order = v1 (ord 13). In closing-form-0
+the same pseudo (lzc_in) also holds the table byte, so it is live across the lz
+computation (hard conflict with v1, which local-alloc gives that code) and
+`(set X (ashift lzc_in 16))` with X local-allocated to a0 gives own_full_prefs = a0
+(global.c set_preference, first-operand rule, :1681). A copy dead at the island has
+neither. `len` reuse keeps the squared length canonical in cse (make_regs_eqv,
+cse.c:844-857: the copy becomes canonical only if its last use is later than the chain
+head's), which is what keeps the test/index on $a1.
+
+### Single-role site-1 spellings: floor 2 (s2/gen1.py, s2/gen1_scores.txt)
+320 spellings on the dxyz chassis: sum into h_sq or n (either copy direction), copy
+before/after the < 0 check, every consumer (printf, < 0, < 0x400, LUT, island,
+shift-index) reading either variable, root into `len` or back into the sum variable.
+Distribution: 96 x 2, 64 x 4, 88 x 13, 64 x 15, 8 x 21. None below 2.
+
+### Other routes killed this session
+- Inline helper `static inline s32 lut_sqrt(u32 x)` (the pattern in src/system.c):
+  15 (s2/inline-helper-15.c). GCC 2.7.2 allocates the inlined frame with
+  assign_stack_temp(keep=1) (integrate.c:2092) inside expand_assignment's temp level
+  (expr.c:2660-2664), so both calls share ONE LZCR slot (sp+280); the target has two
+  (0x118/0x11C). An unmodified parameter is substituted without a copy; a reassigned
+  one copies at BOTH sites (target: site 1 only). Dead.
+- Staging the site-1 LZC input through the existing `len_sq` (its real job is site 2):
+  cc1 coalesces the copy into h_sq's $a1 and site 2 moves to $a1 too. Dead.
+
+### Status
+The closing form needs a local that holds a bare copy (the LZC input) and then the
+table byte — Ruling 11 text (ordinary-c-judge-decidable.md:1340-1343) names
+func_8002A458 `lzc_in` as a (C)(3) bare-copy FAIL, and the 2026-09-25 layer-2 failed
+it under the staged-value rule (bound 2). This needs an owner ruling; asked 2026-09-28.
+dx/dy/dz and `len` are Ruling 11 candidates on their own (real computations).

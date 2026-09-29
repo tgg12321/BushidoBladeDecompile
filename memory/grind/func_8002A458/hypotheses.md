@@ -41,3 +41,18 @@ tmp/a458/fast.py; 0 == sandbox 0 in every case checked).
 Permuter: perm1 (v17 chassis, random mode) 8,098 iters, 0 finds; perm2
 (header-exact chassis) zero at iter 716 = do-while(0) around the final
 func_80032854 call (loop-depth ref weighting on id). Both harvested/stopped.
+
+## Session 2 (2026-09-28, stock cc1) — see evidence.md "Manual session 2"
+| id | spelling | score |
+|----|----------|-------|
+| S2-1 | candidate.c + dx/dy/dz reuse in the end block | 2 |
+| S2-2 | closing form (dx/dy/dz + len sq->roots + lzc_in copy->tbl) | 0 |
+| S2-3 | S2-2 with the site-2 root in its own local | 11 |
+| S2-4 | S2-2 with the copy inside the else arm | 23 |
+| S2-5 | S2-1 + lzc_in copy->tbl, no len reuse | 4 |
+| S2-6 | 320 single-role site-1 dataflow spellings (gen1) | floor 2 |
+| S2-7 | static inline lut_sqrt helper | 15 (one shared LZCR slot) |
+| S2-8 | site-1 copy staged through len_sq | copy coalesced into $a1 |
+| S2-9 | dx/dy/dz full per-value / v1 own / v2 own / v3 own | 30 / 30 / 8 / 8 |
+Frontier: owner ruling on the lzc_in copy value; then Ruling 11 packages for
+dx/dy/dz and len (name: generic, e.g. `temp`).
