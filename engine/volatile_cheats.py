@@ -794,6 +794,12 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # proven 2026-09-05 (tmp/grind/func_800480C0/s24) before the grant; same
     # general phantom-frame-slot family, no family extension.
     "func_800480C0": frozenset({("pre_pad", 8)}),
+    # 2026-09-29 owner ruling Q35 (no-new-park-categories.md, phantom-frame-slot
+    # pad family, trailing unused array with sibling evidence): func_8005E54C's
+    # 8 untouched bytes at sp+0x58 = descriptor + 0x30, the s16[3] digit slot of
+    # its COMPLETED siblings func_8005D814 / func_8005F1C8
+    # (memory/grind/func_8005E54C/frame_census.txt, evidence.md [s4]/[s5]).
+    "func_8005E54C": frozenset({("digit", 3)}),
 }
 
 

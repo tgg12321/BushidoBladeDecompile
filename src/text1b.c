@@ -3269,7 +3269,31 @@ extern s32 D_8009BC04;
 
 
 
-extern s32 D_8009BD38;
+/* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is the
+   character the round was fought with (func_8005E54C reads it at
+   j * 10 + i * 2 and picks UesrWorkDef / D_8009B58C by it; func_80060414 reads
+   player 0 round 0). 0x14 bytes, ending at the flag word below. */
+typedef struct {
+    u8 chr;
+    u8 unk1;
+} Unk8009BD24Record;
+extern Unk8009BD24Record D_8009BD24[2][5];
+/* 0x8009BD38: the match-settings flag word, bit fields named by bit offset.
+   Every reader in this file extracts it by field: unk0 (`& 0xF`), unk10 (the
+   round count - 3; also picks the results-screen layout), unk12 (`== 2`
+   tests), unk14 (1 bit), unk15 (one bit per player); func_80077894 stores
+   unk0. Byte 3 is not named here (text1b_b.c reads it as D_8009BD3B). */
+typedef struct {
+    u32 unk0 : 4;
+    u32 unk4 : 6;
+    u32 unk10 : 2;
+    u32 unk12 : 2;
+    u32 unk14 : 1;
+    u32 unk15 : 2;
+    u32 unk17 : 1;
+    u32 unk18 : 6;
+} Unk8009BD38Flags;
+extern Unk8009BD38Flags D_8009BD38;
 
 
 
@@ -4539,7 +4563,335 @@ s32 func_8005E098(s32, s32, s32, s32);
 s32 func_8005E51C(s32 a0, s32 a1, s32 a2) {
     return func_8005E098(-1, a0 - 1, a1, a2);
 }
-INCLUDE_ASM("asm/funcs", func_8005E54C);
+/* The 0x2C-byte draw descriptor func_8007352C (SPRT walker) and func_80073728
+   (POLY_FT4 walker) consume; same layout as S_6A880. */
+typedef struct {
+    Unk8009B398Record *header;
+    Unk8009B400Record *table;
+    s32 sprt_out;
+    s32 ft4_out;
+    s32 semi;
+    s32 ot_idx;
+    s32 x;
+    s32 y;
+    s32 scale_x;
+    s32 scale_y;
+    u8 has_color;
+    u8 col_r;
+    u8 col_g;
+    u8 col_b;
+} Env5E54C;
+extern Unk8009B398Record D_8009ADB4;
+extern Unk8009B400Record D_8009ADC0[3];
+extern Unk8009B400Record UesrWorkDef[][3];
+extern Unk8009B398Record D_8009B4B0;
+extern Unk8009B400Record D_8009B4BC[5];
+extern Unk8009B398Record D_8009B4E4;
+extern Unk8009B398Record D_8009B4F0;
+extern Unk8009B400Record D_8009B4FC;
+extern Unk8009B400Record D_8009B504;
+extern Unk8009B400Record D_8009B50C;
+extern Unk8009B400Record D_8009B514;
+extern Unk8009B400Record D_8009B51C;
+extern Unk8009B398Record D_8009B524;
+extern Unk8009B398Record D_8009B530;
+extern Unk8009B398Record D_8009B53C;
+extern Unk8009B398Record D_8009B548;
+extern Unk8009B400Record D_8009B554[3];
+extern Unk8009B400Record D_8009B56C[2];
+extern Unk8009B400Record D_8009B57C[2];
+extern u8 D_8009B58C[];
+extern u8 D_800A3270[];
+s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
+    /* The per-player points pair: each round's points in the round rows,
+       then the per-player totals under them. The target addresses both
+       through the one frame slot sp+0x18 (a separate totals array measured
+       13-204: memory/grind/func_8005E54C/evidence.md [s4 cont.]). */
+    s16 points[2];
+    s16 wins[2];
+    Env5E54C s;
+    /* FAKE: unused here. The frame keeps the 8 untouched bytes at
+       sp+0x58 = descriptor + 0x30 where the COMPLETED siblings keep a real
+       s16[3] digit array: func_8005D814 `s16 digit[3];` (src/text1b.c:4231,
+       copied here) and func_8005F1C8 `s16 d[3];` (src/text1b.c:4911).
+       Census and measurements: memory/grind/func_8005E54C/frame_census.txt,
+       evidence.md [s4]/[s5]. Owner ruling 2026-09-29 Q35
+       (no-new-park-categories.md, phantom-frame-slot pad family, trailing
+       unused array with sibling evidence). */
+    volatile s16 digit[3];
+    T5E098 *tile;
+    s32 cur;
+    s32 ft4;
+    s32 mode_off;
+    s32 end_off;
+    /* i counts the players (first loop) and then the rounds; j is the
+       player and k the mark; each phase restarts them as plain loop indices,
+       the counter reuse of func_8005E098 / func_8005F1C8. Separate counters
+       per phase measured 8-77 (memory/grind/func_8005E54C/evidence.md [s3]). */
+    s16 i;
+    s16 j;
+    s16 k;
+    s16 c;
+    s16 y;
+
+    tile = (T5E098 *)arg1;
+    s.has_color = 0;
+    s.semi = 0;
+    s.y = 0;
+    cur = arg1 + 0xA0;
+    ft4 = arg1 + 0x898;
+    mode_off = arg1 + 0xBB8;
+    end_off = arg1 + 0xBC4;
+    s.ot_idx = arg2;
+    for (i = 0; i < 2; i++) {
+        if (!(D_8009BD38.unk15 >> i & 1)) {
+            s.header = &D_8009B524;
+        } else {
+            s.header = &D_8009B53C;
+        }
+        s.x = i * 320;
+        s.table = D_8009B554;
+        s.sprt_out = cur;
+        cur = func_8007352C((s32)&s);
+        if (!(D_8009BD38.unk15 >> i & 1)) {
+            s.header = &D_8009B530;
+            s.table = D_8009B56C;
+        } else {
+            s.header = &D_8009B548;
+            s.table = D_8009B57C;
+        }
+        s.sprt_out = cur;
+        cur = func_8007352C((s32)&s);
+    }
+
+    s.semi = 0;
+    s.has_color = 0;
+    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
+        points[0] = (arg0 >> (i * 4)) & 3;
+        points[1] = (arg0 >> (i * 4 + 2)) & 3;
+        if (D_8009BD38.unk10 == 2) {
+            s.y = i * 24 + 0x44;
+        } else if (D_8009BD38.unk10 == 1) {
+            s.y = i * 24 + 0x4F;
+        } else {
+            s.y = i * 34 + 0x4F;
+        }
+        if (points[0] == 3 || points[1] == 3) {
+            s.header = &D_8009B4B0;
+            s.x = 0;
+            s.y += 2;
+            s.table = &D_8009B4BC[D_800A3270[i]];
+            s.sprt_out = cur;
+            cur = func_8007352C((s32)&s);
+        } else {
+            s.header = &D_8009B4E4;
+            s.x = 0;
+            s.table = &D_8009B514;
+            s.sprt_out = cur;
+            cur = func_8007352C((s32)&s);
+            for (j = 0; j < 2; j++) {
+                s.x = j * 70;
+                if (points[j] > *(j ? &points[0] : &points[1])) {
+                    s.table = &D_8009B4FC;
+                } else if (points[j] < *(j ? &points[0] : &points[1])) {
+                    s.table = &D_8009B504;
+                } else {
+                    s.table = &D_8009B50C;
+                }
+                s.sprt_out = cur;
+                cur = func_8007352C((s32)&s);
+            }
+            s.y += 5;
+            for (j = 0; j < 2; j++) {
+                s.header = &D_8009B4F0;
+                s.table = &D_8009B51C;
+                for (k = 0; k < points[j]; k++) {
+                    if (j) {
+                        s.x = k * 16 + 0x179;
+                    } else {
+                        s.x = (1 - k) * 16 + 0xE2;
+                    }
+                    s.sprt_out = cur;
+                    cur = func_8007352C((s32)&s);
+                }
+            }
+        }
+    }
+
+    s.header = &D_8009B4E4;
+    s.x = 0;
+    if (D_8009BD38.unk10 == 2) {
+        y = 0xC6;
+    } else if (D_8009BD38.unk10 == 1) {
+        y = 0xC2;
+    } else {
+        y = 0xBE;
+    }
+    s.y = y + 3;
+    s.table = &D_8009B514;
+    s.sprt_out = cur;
+    cur = func_8007352C((s32)&s);
+    /* One 32-bit store clears the whole pair (target 0x8005EA44
+       `sw $zero,0x18($sp)`); the union spelling measured 197
+       (memory/grind/func_8005E54C/evidence.md [s5]). Owner ruling
+       2026-09-29 Q36 (no-new-park-categories.md, one cast store on a
+       local array). */
+    *(s32 *)points = 0;
+    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
+        if (((arg0 >> (i * 4)) & 3) != 3) {
+            points[0] += (arg0 >> (i * 4)) & 3;
+        }
+        if (((arg0 >> (i * 4 + 2)) & 3) != 3) {
+            points[1] += (arg0 >> (i * 4 + 2)) & 3;
+        }
+    }
+    for (j = 0; j < 2; j++) {
+        s.header = &D_8009B4F0;
+        s.table = &D_8009B51C;
+        for (k = 0; k < points[j]; k++) {
+            if (j) {
+                s.x = (k >> 1) * 20 + 0x181;
+            } else {
+                s.x = 0xF2 - (k >> 1) * 20;
+            }
+            s.y = y + (k & 1) * 12;
+            s.sprt_out = cur;
+            cur = func_8007352C((s32)&s);
+        }
+    }
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B524, 0), 0);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
+    mode_off += 0xC;
+
+    s.ot_idx = arg2;
+    wins[0] = wins[1] = 0;
+    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
+        s.header = &D_8009ADB4;
+        s.semi = 0;
+        points[0] = (arg0 >> (i * 4)) & 3;
+        points[1] = (arg0 >> (i * 4 + 2)) & 3;
+        s.col_r = s.col_g = s.col_b = 0x40;
+        for (j = 0; j < 2; j++) {
+            if (points[j] <= *(j ? &points[0] : &points[1])) {
+                if (points[j] != 3) {
+                    s.has_color = 1;
+                } else {
+                    s.has_color = 0;
+                }
+            } else {
+                if (points[j] != 3) {
+                    wins[j]++;
+                }
+                s.has_color = 0;
+            }
+            c = D_8009BD24[j][i].chr;
+            if (c >= 12) {
+                c -= 2;
+            }
+            s.table = UesrWorkDef[c];
+            s.x = j * 320 + D_8009B58C[c];
+            if (D_8009BD38.unk10 == 2) {
+                s.y = i * 24 - 8;
+            } else if (D_8009BD38.unk10 == 1) {
+                s.y = i * 24 + 3;
+            } else {
+                s.y = i * 34 + 3;
+            }
+            s.sprt_out = cur;
+            cur = func_8007352C((s32)&s);
+            if (D_8009BD24[j][i].chr == 8) {
+                s.table = D_8009ADC0;
+                s.sprt_out = cur;
+                cur = func_8007352C((s32)&s);
+            }
+        }
+        s.has_color = 0;
+        if (points[0] == 3) {
+            s.y += 0x4C;
+            s.scale_x = 0x100;
+            s.x = 0;
+            s.semi = 0;
+            s.scale_y = 0x400;
+            s.y += 6;
+            for (j = 0; j < 2; j++) {
+                s.header = &D_8009B398[j + 2];
+                s.table = D_8009B490[j];
+                s.ft4_out = ft4;
+                ft4 = func_80073728((s32)&s, 0);
+                s.table = &D_8009B490[j][1];
+                s.ft4_out = ft4;
+                ft4 = func_80073728((s32)&s, 0);
+            }
+        }
+    }
+
+    s.header = &D_8009B398[0];
+    s.semi = 0;
+    if (D_8009BD38.unk10 == 2) {
+        s.y = 0xC9;
+    } else if (D_8009BD38.unk10 == 1) {
+        s.y = 0xC5;
+    } else {
+        s.y = 0xC1;
+    }
+    for (j = 0; j < 2; j++) {
+        s.x = j * 70 + 0x113;
+        if (wins[j] == 1) {
+            s.x += 3;
+        }
+        s.table = &D_8009B400[wins[j]];
+        s.table->unk0 = s.table->unk2 = 0;
+        s.sprt_out = cur;
+        cur = func_8007352C((s32)&s);
+    }
+
+    SetTile(tile);
+    tile->r0 = 0xFF;
+    tile->g0 = 0x10;
+    tile->b0 = 0x10;
+    tile->x0 = 8;
+    tile->y0 = 0x3A;
+    tile->w = 0xDC;
+    tile->h = 1;
+    SetSemiTrans(tile, 0);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, (s32)tile);
+    tile++;
+    SetTile(tile);
+    tile->r0 = 0xFF;
+    tile->g0 = 0x10;
+    tile->b0 = 0x10;
+    tile->x0 = 0x19D;
+    tile->y0 = 0x3A;
+    tile->w = 0xDC;
+    tile->h = 1;
+    SetSemiTrans(tile, 0);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, (s32)tile);
+    tile++;
+    SetTile(tile);
+    tile->r0 = 0xFF;
+    tile->g0 = 0x10;
+    tile->b0 = 0x10;
+    /* Each arm sets the whole (x0, y0) position: the target stores x0 once
+       per arm (0x8005F0E0, 0x8005F0F8, 0x8005F104); one x0 store above the
+       if/else measured 10 (memory/grind/func_8005E54C/probes/x0h.c). */
+    if (D_8009BD38.unk10 == 2) {
+        tile->x0 = 0x5E;
+        tile->y0 = 0xC1;
+    } else if (D_8009BD38.unk10 == 1) {
+        tile->x0 = 0x5E;
+        tile->y0 = 0xBD;
+    } else {
+        tile->x0 = 0x5E;
+        tile->y0 = 0xB9;
+    }
+    tile->w = 0x1C5;
+    tile->h = 1;
+    SetSemiTrans(tile, 0);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, (s32)tile);
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009ADB4, 0), 0);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
+    return end_off - arg1;
+}
 typedef struct {
     Unk8009B398Record *p0;
     Unk8009B400Record *p1;
@@ -4595,7 +4947,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
         if (i != 0) {
             count = 2;
         } else {
-            count = (((u32)D_8009BD38 >> 14) & 1) + 1;
+            count = D_8009BD38.unk14 + 1;
         }
         for (row = 0; row < 2; row++) {
             for (k = 0; k < count; k++) {
@@ -4672,11 +5024,11 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
         for (k = 0; k < 3; k++) {
             switch (j) {
             case 0:
-                if (k < 2 || (D_8009BD38 & 0x3000) == 0x2000) {
+                if (k < 2 || D_8009BD38.unk12 == 2) {
                     s.d[k] = arg0[2];
-                    if (k == 0 && (D_8009BD38 & 0x3000) == 0x2000) {
+                    if (k == 0 && D_8009BD38.unk12 == 2) {
                         s.d[k] = s.d[k] / 100;
-                    } else if (k == 0 || (k == 1 && (D_8009BD38 & 0x3000) == 0x2000)) {
+                    } else if (k == 0 || (k == 1 && D_8009BD38.unk12 == 2)) {
                         s.d[k] = s.d[k] / 10;
                     }
                     s.d[k] = s.d[k] % 10;
@@ -4698,7 +5050,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
 
                         s.d[k] = tens % 10;
                     }
-                    x = ((D_8009BD38 & 0x3000) == 0x2000) ? k * 20 + 0x48 : k * 20 + 0x34;
+                    x = (D_8009BD38.unk12 == 2) ? k * 20 + 0x48 : k * 20 + 0x34;
                     s.p1 = &D_8009B400[s.d[k]];
                     if (s.d[k] == 1) {
                         s.width = x + 3;
@@ -4708,7 +5060,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 }
                 break;
             }
-            if ((D_8009BD38 & 0x3000) == 0x2000) {
+            if (D_8009BD38.unk12 == 2) {
                 s.p1->unk0 = 0x109;
             } else {
                 s.p1->unk0 = 0x113;
@@ -4717,7 +5069,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
             cur = func_8007352C((s32)&s);
         }
         s.p1 = &D_8009B5E8;
-        if ((D_8009BD38 & 0x3000) == 0x2000) {
+        if (D_8009BD38.unk12 == 2) {
             s.width = j * 6 + 0x145;
         } else {
             s.width = j * 6 + 0x13B;
@@ -5055,7 +5407,6 @@ extern s32 D_8009B7AC;
 extern s32 D_8009B7B8;
 extern s32 D_8009B7C4;
 extern u16 D_8009B850;
-extern u8 D_8009BD24[];
 extern s32 D_800A328C;
 typedef struct {
     s32 *p_geom;
@@ -5085,7 +5436,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     s.height = ((*((&D_8009B850) + (arg0 & 0x7FFF))) & 0x7F) + 0x2A;
     if (arg0 & 0x8000) {
         s.p_geom = &D_8009B7AC;
-    } else if (D_8009BD24[0] < 0xC) {
+    } else if (D_8009BD24[0][0].chr < 0xC) {
         s.p_geom = &D_8009B7B8;
     } else {
         s.p_geom = &D_8009B7C4;
@@ -5551,7 +5902,7 @@ s32 func_80060CB8(s32 arg0, s32 arg1)
   s32 ret;
   new_var = arg0;
   game_FrameLoop();
-  v = D_8009BD38 & 0xF;
+  v = D_8009BD38.unk0;
   if (v == 0)
   {
     cdrom_StartRead(func_80036EA8(2, 0x3C), arg0);
@@ -15498,14 +15849,9 @@ s32 func_80077894(void) {
     ret = 0;
     result = ((s32 (*)())func_800693CC)();
     if (result >= 0) {
-        s32 *p = &D_8009BD38;
-        s32 cur;
         ret = 1;
-        cur = *p;
         D_800A35E4 = 0;
-        cur &= ~0xF;
-        cur |= result & 0xF;
-        *p = cur;
+        D_8009BD38.unk0 = result;
     } else if (result == -2) {
         ret = -1;
     }
@@ -15516,7 +15862,7 @@ s32 func_80077904(void) {
     s32 i;
 
     D_800A35E4 = 0;
-    i = (D_8009BD38 & 0xF) * 2;
+    i = D_8009BD38.unk0 * 2;
     D_800A35E0 = *((u8 *)&D_8009BD59 + i);
     return *((u8 *)&D_8009BD58 + i);
 }
@@ -15529,7 +15875,7 @@ extern s32 D_800A35E8;
 
 s32 func_8006E534(s32, s32, u8*, u32);
 s32 func_80077984(s32 a0) {
-    func_8006E534(a0, D_800A35E0, D_8009BD24, D_800A35E8);
+    func_8006E534(a0, D_800A35E0, &D_8009BD24[0][0].chr, D_800A35E8);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
