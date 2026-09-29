@@ -287,3 +287,17 @@ No FAKE-free one-variable-per-value spelling reached the target in either set.
 Question, verbatim: "Related wording fix: my filler rule (Q30) says a filler version is set aside only if it keeps the body's existing marked frame array 'unchanged'. A reviewer rewrote the filler versions with that array one size smaller (byte-identical output, same marked construct), which by the literal words would let them count and defeat the shared variables. Should a marked construct re-sized within its own byte-identical range count as the same construct?"
 Owner chose: **"Same construct (Recommended)"** — option text: "A FAKE-marked construct resized or respelled within what its own rule already allows (e.g. lz[5] vs lz[6], byte-identical) is the same construct; such filler versions stay set aside."
 Other option offered: "Different construct" — "Any change makes it a different construct; those filler versions count, and the shared variables they defeat must be replaced by filler."
+
+# Owner exchange 2026-09-29 (nineteenth batch, in conversation) — VERBATIM RECORD — GRANTED
+Context: the owner started an unattended manual-lane run. First message, verbatim: "I am stepping away but I
+want you to manually grind through as many remaining queue items as you can. We are nearing the bottom of the
+barrel so avoid rotations, as everything has to be decompiled eventually." Second message, verbatim, sent while
+the run was being set up:
+
+> "Delegate to subagents where you can to avoid context bloat. But keep it to one function at a time. Note, I
+> won't be available for approvals. But I authorize you to approve items that are reasonable, SOTN standard, or
+> logical C. Any constructs that are clearly fine, but just unprecedented is okay to allow through. The highest
+> priority is to avoid any kind of cheats or workarounds making it back into the codebase however"
+
+No question was put to the owner; these are the owner's own words, unprompted. The rule text is
+.claude/rules/ordinary-c-judge-decidable.md § Ruling 13.

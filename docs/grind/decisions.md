@@ -30130,3 +30130,16 @@ stays (a record showing only that the reuse scores better, with no named mechani
 and every other Ruling 11 prong are unchanged, and a fresh layer-2 on the exact body still applies. Rule text:
 § "Mechanism + search (Q31)", the Q30 clause's added sentence, and the amended "Relation to allocator effect"
 paragraph. First application: func_800187F4. Nothing is pre-decided.
+
+## 2026-09-29 — OWNER RULING — Ruling 13: unattended-run delegation, clearly-fine ordinary C without precedent (`.claude/rules/ordinary-c-judge-decidable.md` § Ruling 13)
+
+Nineteenth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 19; the owner's own words, no
+question put). For the unattended manual-lane run started 2026-09-29: (B) lack of SOTN or ruling precedent is
+not a FAIL ground for a construct that is clearly-fine ordinary C (truthful semantic reading, real consumed
+work, nothing dead or no-op); (C) the orchestrator may decide an owner-level question only when YES admits such
+C and lowers no standard, as its own layer-2-reviewed `rules:` commit (titled ORCHESTRATOR DECISION, run-scoped,
+logged to borderline.md for ratification, never reinterpreting Rulings 2 and 4-12, frozen-family entries or banned
+lists) before code spends it; where an existing ruling or clause governs a construct its own tests decide; (D) the cheat and
+workaround wall, the frozen family list for no-semantic-purpose constructs, Rulings 5-12 for reused locals,
+every still-banned list and the AUTO-REJECT class are unchanged; (E) no rotations during the run; (F) sandbox
+0, oracle SHA1 and a fresh default-FAIL layer-2 on every landing still apply. Nothing is pre-decided.

@@ -1517,6 +1517,56 @@ as a no-op copy. func_80027AD8's copies are judged fresh against this text;
 nothing here pre-decides them. Record: docs/grind/decisions.md 2026-09-26
 OWNER RULING — Ruling 12: local copies of a stack-passed parameter.
 
+## Ruling 13 (owner, 2026-09-29) — unattended-run delegation: clearly-fine ordinary C without precedent
+
+**The owner's words.** Recorded verbatim in docs/grind/owner-rulings-2026-09-26.md, batch 19. The operative
+sentences: "I authorize you to approve items that are reasonable, SOTN standard, or logical C. Any constructs
+that are clearly fine, but just unprecedented is okay to allow through. The highest priority is to avoid any
+kind of cheats or workarounds making it back into the codebase however". Also: "avoid rotations, as
+everything has to be decompiled eventually."
+
+**Rule text.** This is the author's narrowing, not the owner's words.
+
+- **(A) Scope.** The unattended manual-lane run the owner started on 2026-09-29, until the owner next speaks.
+  Functions that land during it stay landed afterwards. Nothing here changes the Grinder's frozen Judge policy.
+- **(B) No precedent is not a FAIL ground for clearly-fine ordinary C.** A construct that has a truthful
+  semantic reading as program logic under Ruling 1(3) (the rename test), that a programmer could have
+  written from the function's behaviour, and that does real, consumed work in the program (no dead store,
+  no no-op copy, no write or statement the compiler deletes, no pad or dummy object) may PASS layer-2 even
+  when no SOTN-master precedent, frozen-list entry or earlier ruling exhibits it. Examples of the kind:
+  a plain local holding a real value, a struct or array view shown by the code's own accesses, a loop form,
+  an inline helper, a type or signedness choice under which every access is ordinary C. The reviewer still
+  judges every such construct on its merits, and "in doubt, FAIL" still applies to whether it is clearly fine.
+  Where an existing ruling, family entry or clause governs the construct (including the aggregate-merge
+  prongs, member signedness, Ruling 2 deadness, and Ruling 9 and its amendments), that entry's own tests
+  decide and (B) adds nothing.
+- **(C) Owner-level questions during the run.** A question that would otherwise be filed to the owner may be
+  decided by the orchestrator ONLY when the YES answer admits clearly-fine ordinary C in the sense of (B)
+  and lowers no standard. Each such decision lands first as its own `rules:` commit (the question, the
+  decision, the reason, citing this ruling), reviewed by a fresh layer-2 `cheat-reviewer` told that the
+  decision's author is also the author of the code that will spend it; only then may code spend it, and
+  the landing gets its own fresh layer-2. A question whose YES would admit anything in (D) is not decided
+  under this ruling: it is logged to docs/grind/borderline.md as before and the function keeps grinding.
+  A decision under (C) may not reinterpret, relax or extend any prong of Rulings 2 and 4-12, any frozen-family
+  entry or clause of [[no-new-park-categories]], or any banned list; such a question goes to
+  docs/grind/borderline.md and the function keeps grinding. Such a commit is titled ORCHESTRATOR DECISION
+  under Ruling 13, never OWNER RULING. It is per-question, may be spent only during this run, and is logged to
+  docs/grind/borderline.md for owner ratification. Unratified, it is not precedent after the run; functions it
+  landed stay landed.
+- **(D) Unchanged: the cheat and workaround wall.** This ruling admits none of: register pins; hardcoded-`$N`
+  or any non-canonical `__asm__`; scheduling barriers; build, Makefile, linker, maspsx-gate or compiler
+  changes that alter a function's bytes; build-time assembly rewriting in any spelling; a construct with no
+  semantic purpose outside the frozen family list (still a FAIL(CONSTRUCT) under Ruling 1(2)); any construct
+  that fails the prongs of the ruling, family entry or clause governing it; a multi-write local outside Rulings 5-12 (those rulings keep
+  governing reused locals exclusively); anything on a still-banned list or refused by an earlier owner
+  ruling; the AUTO-REJECT class of [[escalation-not-parked]]. Canonical-asm stays the `canonical` gate's call.
+- **(E) No rotations during the run.** No `queue rotate` of any item during the run. An item that does not
+  close is banked in its ledger and stays active; it stays the run's target and changes modality
+  ([[no-deferral-work-to-completion]]); the run does not skip to another item by hand.
+- **(F) Review is unchanged.** Every completion still needs sandbox 0, full-build SHA1 == oracle and a fresh
+  default-FAIL layer-2 `cheat-reviewer` PASS on the exact staged body. Record: docs/grind/decisions.md
+  2026-09-29 OWNER RULING — Ruling 13.
+
 ## What this ruling does NOT change
 
 - The completion bar, the oracle, the cheat catalog for non-C mechanisms,
