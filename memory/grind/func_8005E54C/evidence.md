@@ -315,3 +315,13 @@ undone; tools/sbxp.py unstripped): both 0, record table only 14, flag word only 
 func_80077D00 (text1b_b.c) is NOT edited: the declarations stay TU-local in text1b.c (as on main), so no new
 `(s32 *)` return cast. The one call that passed the decayed u8 array now passes `&D_8009BD24[0][0].chr` (u8 *),
 with no cast. See consumers.md.
+
+## LANDED 2026-09-29 — COMPLETED-C (Match ceae2e3f0, queue aa75d15e1)
+
+- Fresh layer-2 cheat-reviewer: PASS with no required fixes. It walked every Q35/Q36 prong, re-ran sandbox 0 on
+  func_8005E54C and on the six respelled siblings, and ran engine test (862 passed). It judged `points` to be one
+  object needing no owner decision, and accepted the two retypes and the D_8009B490 merge.
+- The landed body equals final_probes/landed.c.
+- Full rebuild SHA1 == oracle; `queue done` OK (COMPLETED-C); check_completion_integrity OK.
+- Ledger closed. candidate.c is the pre-landing honest body under main's old declarations (88), kept for
+  history. The landed text lives in src/text1b.c.
