@@ -1,0 +1,111 @@
+# func_80070188 [s3] dump excerpts (2026-09-29). Built by tmp/func_80070188/dump.py (= memory/grind/func_80070188/tools/dump.py):
+# cc1 = tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -da, full text1b.c TU with the candidate substituted.
+
+## A. walk-1 store, INLINE index (fin_no_idx1.c == candidate with walk-1 idx inlined), .rtl insns 307-314:
+(insn 307 305 309 (set (reg:SI 199)
+        (const:SI (plus:SI (symbol_ref:SI ("D_800A3560"))
+                (const_int 1)))) -1 (nil)
+    (expr_list:REG_EQUAL (const:SI (plus:SI (symbol_ref:SI ("D_800A3560"))
+                (const_int 1)))
+        (nil)))
+
+(insn 309 307 310 (set (reg:SI 200)
+        (reg:SI 197)) -1 (nil)
+    (nil))
+
+(insn 310 309 312 (set (reg:SI 201)
+        (ashift:SI (reg:SI 200)
+            (const_int 1))) -1 (nil)
+    (expr_list:REG_EQUAL (mult:SI (reg:SI 197)
+            (const_int 2))
+        (nil)))
+
+(insn 312 310 314 (set (reg:SI 202)
+        (plus:SI (reg:SI 201)
+            (reg:SI 197))) -1 (nil)
+    (expr_list:REG_EQUAL (mult:SI (reg:SI 197)
+            (const_int 3))
+        (nil)))
+
+(insn 314 312 316 (set (reg:SI 203)
+        (plus:SI (reg:SI 202)
+            (reg:SI 199))) -1 (nil)
+    (nil))
+
+
+## B. walk-1 store, idx pseudo (candidate form, e1.c), .rtl insns 311 + 341:
+        (nil)))
+
+(insn 339 337 341 (set (reg:QI 218)
+        (mem/s:QI (plus:SI (symbol_ref:SI ("D_8009BC40"))
+                (reg:SI 215)))) -1 (nil)
+    (nil))
+
+(insn 341 339 343 (set (mem/s:QI (plus:SI (reg/v:SI 172)
+                (const:SI (plus:SI (symbol_ref:SI ("D_800A3560"))
+                        (const_int 1)))))
+        (reg:QI 218)) -1 (nil)
+    (nil))
+
+(note 343 341 344 "" NOTE_INSN_BLOCK_END)
+
+## C. cancel arm with constant subscripts D_800A3560[3]/[3]/[0] (d33.c), .cse insns 1491-1520: cse gives both stores the read's forced constant-address pseudo r701 (then lui/addiu base, 700 insns):
+(insn 1491 1489 1493 (set (reg:SI 701)
+        (const:SI (plus:SI (symbol_ref:SI ("D_800A3560"))
+                (const_int 3)))) 159 {movsi_internal2} (nil)
+    (expr_list:REG_EQUAL (const:SI (plus:SI (symbol_ref:SI ("D_800A3560"))
+                (const_int 3)))
+        (nil)))
+
+(insn 1493 1491 1494 (set (reg:QI 702)
+        (mem/s:QI (reg:SI 701))) 166 {movqi_internal2} (nil)
+    (nil))
+
+(insn 1494 1493 1496 (set (reg:SI 703)
+        (zero_extend:SI (reg:QI 702))) 118 {zero_extendqisi2} (nil)
+    (nil))
+
+(insn 1496 1494 1497 (set (reg:SI 704)
+        (const_int 255)) 159 {movsi_internal2} (nil)
+    (expr_list:REG_EQUAL (const_int 255)
+        (nil)))
+
+(jump_insn 1497 1496 1499 (set (pc)
+        (if_then_else (ne:SI (reg:SI 703)
+                (reg:SI 704))
+            (label_ref 1512)
+            (pc))) 223 {branch_equality} (nil)
+    (nil))
+
+(note 1499 1497 1501 "" NOTE_INSN_DELETED)
+
+(insn 1501 1499 1506 (set (mem:HI (symbol_ref:SI ("D_800A3554")))
+        (const_int 0)) 163 {movhi_internal2} (nil)
+    (nil))
+
+(insn 1506 1501 1508 (set (reg:QI 706)
+        (const_int 255)) 166 {movqi_internal2} (nil)
+    (expr_list:REG_EQUAL (const_int 255)
+        (nil)))
+
+(insn 1508 1506 1510 (set (mem/s:QI (plus:SI (reg:SI 701)
+                (const_int -3)))
+        (reg:QI 706)) 166 {movqi_internal2} (nil)
+    (nil))
+
+(jump_insn 1510 1508 1511 (set (pc)
+        (label_ref 1522)) -1 (nil)
+    (nil))
+
+(barrier 1511 1510 1512)
+
+(code_label 1512 1511 1514 2254 "")
+
+(note 1514 1512 1518 "" NOTE_INSN_DELETED)
+
+(insn 1518 1514 1520 (set (reg:QI 708)
+        (const_int 255)) 166 {movqi_internal2} (nil)
+    (expr_list:REG_EQUAL (const_int 255)
+        (nil)))
+
+(insn 1520 1518 1522 (set (mem/s:QI (reg:SI 701))

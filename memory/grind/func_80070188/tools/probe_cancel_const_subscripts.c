@@ -1,7 +1,5 @@
 extern s16 D_800A3530[];
 extern s16 D_800A3534[];
-extern u8 D_800A3563;
-extern u8 D_800A3565;
 void func_80070188(s32 arg0) {
     DescF97C s;
     s32 *sheets;
@@ -12,6 +10,7 @@ void func_80070188(s32 arg0) {
     s16 port;
     s16 port_ofs;
     s32 c;
+    s32 sel;
 
     s.semi = 0;
     s.scale_x = 0x100;
@@ -22,22 +21,6 @@ void func_80070188(s32 arg0) {
     AddPrim(g_gpu_ot_ptr + 0x20, ((s32 *)arg0)[6]);
     ((s32 *)arg0)[6] += 0xC;
     for (i = 0; i < 1 + D_800A35B0 + (port_ofs = D_800A3554); i++) {
-        /* FAKE: named intermediate for player i's 3-byte D_800A3560 record
-         * offset (named-intermediate entry, no-new-park-categories.md). This
-         * and the per-site offsets below (idx, sel, ofs) share one mechanism:
-         * an inline `D_800A3560[i * 3 + k]` is expanded as *(&D_800A3560 +
-         * (i * 3 + k)) (expr.c:4659); its EXPAND_SUM address (plus (mult i 3)
-         * sym+k) is not a legitimate address, so explow.c:447 memory_address
-         * -> force_operand -> expand_binop copies the symbol into its own
-         * pseudo, which cse shares across the block and loop.c hoists out of
-         * the walk loops (`lui/addiu` + `addu`, 0() addressing). With the
-         * offset already in a pseudo, (plus off sym+k) is a legitimate address
-         * as it stands (explow.c:419), giving the target's `lui $at; addu
-         * $at,$at,off; sb %lo(D_800A356k)($at)` and the target's reuse or
-         * recompute of the offset at each site. Measured (sandbox, full TU,
-         * this form 6 = GPREL-name artifacts only): inlining rec 28, all four
-         * walk idx 47 (each alone 12/12/16/16), sel 28, ofs 18; exhaustion
-         * and dumps: memory/grind/func_80070188/evidence.md [s3]. */
         s32 rec = i * 3;
 
         col = &D_800A3588[i];
@@ -51,7 +34,7 @@ void func_80070188(s32 arg0) {
                 func_8005C650(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
-                    s32 idx; /* FAKE: per-walk record offset, mechanism at `rec` */
+                    s32 idx;
 
                     (*row)++;
                     if (*row >= 5) {
@@ -66,7 +49,7 @@ void func_80070188(s32 arg0) {
                 func_8005C650(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
-                    s32 idx; /* FAKE: per-walk record offset, mechanism at `rec` */
+                    s32 idx;
 
                     (*row)--;
                     if (*row < 0) {
@@ -82,7 +65,7 @@ void func_80070188(s32 arg0) {
                 func_8005C650(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
-                    s32 idx; /* FAKE: per-walk record offset, mechanism at `rec` */
+                    s32 idx;
 
                     (*col)++;
                     if (*col > D_800A35B4) {
@@ -97,7 +80,7 @@ void func_80070188(s32 arg0) {
                 func_8005C650(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
-                    s32 idx; /* FAKE: per-walk record offset, mechanism at `rec` */
+                    s32 idx;
 
                     (*col)--;
                     if (*col < 0) {
@@ -129,10 +112,8 @@ void func_80070188(s32 arg0) {
             s.out = ((s32 *)arg0)[4];
             ((s32 *)arg0)[4] = func_8007352C((s32)&s);
         }
-        if ((D_800A354C & (0x40 << (port * 16))) && D_800A3560[i * 3] == 0xFF) {
+        if ((D_800A354C & (0x40 << (port * 16))) && D_800A3560[sel = i * 3] == 0xFF) {
             if (*flags & 1) {
-                s32 sel = i * 3; /* FAKE: record offset, mechanism at `rec` */
-
                 D_800A3560[sel + 2] = 0xFF;
                 D_800A3590[i] = 2;
                 D_800A3560[sel] = D_8009BC40[*row][*col].unk1;
@@ -157,22 +138,25 @@ void func_80070188(s32 arg0) {
             }
         } else if (D_800A354C & (0x10 << (port * 16))) {
             if (D_800A3578 == 0) {
+                s32 k;
+
                 func_8005C650(2, 0x7F, 0x7F);
-                if (D_800A3560[i * 3] == 0xFF && D_800A3554 == 0) {
+                k = i * 3;
+                if (D_800A3560[k] == 0xFF && D_800A3554 == 0) {
                     D_800A35A0 = -1;
                 } else if (D_800A3554 == 1) {
-                    if (D_800A3563 == 0xFF) {
+                    if (D_800A3560[3] == 0xFF) {
                         D_800A3554 = 0;
                         D_800A3560[0] = 0xFF;
                     } else {
-                        D_800A3563 = 0xFF;
+                        D_800A3560[3] = 0xFF;
                     }
                     *flags &= ~4;
                 } else {
-                    s32 ofs = i * 3; /* FAKE: record offset, mechanism at `rec` */
+                    s32 k2 = i * 3;
 
-                    if (D_800A3560[ofs] != 0xFF && (*flags & 1)) {
-                        D_800A3560[ofs] = 0xFF;
+                    if (D_800A3560[k2] != 0xFF && (*flags & 1)) {
+                        D_800A3560[k2] = 0xFF;
                     }
                 }
             }
@@ -202,11 +186,11 @@ void func_80070188(s32 arg0) {
         if (D_800A35BC == 2 && (*(s32 *)(D_800A3568 + 0x14) & 0x20000)) {
             D_800A3554 = 1;
         }
-        if ((D_800A3563 != 0xFF && ((s16 *)D_800A35C4)[1] == 0) || D_800A35B0 + D_800A3554 == 0) {
+        if ((D_800A3560[3] != 0xFF && ((s16 *)D_800A35C4)[1] == 0) || D_800A35B0 + D_800A3554 == 0) {
             D_800A3578 = 1;
             D_800A3558 = 0;
             if (D_800A35BC == 2) {
-                D_800A3565 = 0xFF;
+                D_800A3560[5] = 0xFF;
                 D_800A3590[1] = 2;
             }
             D_800A3584 = 1;

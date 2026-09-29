@@ -20,3 +20,9 @@
 - KILLED (2026-09-29): port_ofs in the cancel arm (72-77); all slot*3 product spellings
   (14); permuter campaigns A (region) and B (plain) — only Q22-class finds.
 - OPEN: cancel-arm restructure with a real (non-fixed) index variable; union (owner).
+
+## s3 (2026-09-29)
+- CONFIRMED: slot-1 constant-address bytes as their splat scalars (D_800A3563/D_800A3565) close the
+  cancel arm (14 -> 6 full TU, all GPREL-name); `k` no longer needed.
+- KILLED: idx initializer at do-body top (8); `sel` statement before the if (19).
+- KILLED (E534 side): no pun-free single-sw spelling under records/2-D (see evidence [s3]).

@@ -213,3 +213,51 @@ Landing-time config needed (tools/*.landing.diff), each a no-op for the current 
 - Frontier: an ordinary cancel-arm spelling whose index is a register at expansion
   without being a fixed-value dummy (e.g. a restructure where the arm is reached with the
   slot index in a real variable), or the owner's answer on the union.
+
+## Manual session 2026-09-29 (s3) — cancel arm closed without a record merge; floor 14 -> 6 (GPREL-name artifacts only)
+
+Mechanism (compiler source + dumps, memory/grind/func_80070188/s3_dump_excerpts.txt):
+- Constant-subscript element (`D_800A3560[3]`): expr.c:4589 ARRAY_REF with a constant index
+  falls through to the COMPONENT_REF path; change_address -> explow.c:385 memory_address, which
+  force_regs every constant address ("By passing constant addresses thru registers we get a
+  chance to cse them", explow.c:396). cse1 then gives both cancel-arm stores the read's pseudo
+  (excerpt C: insn 1508 `(plus r701 -3)`, insn 1520 `r701`), so the base survives as
+  `lui/addiu v1` (700 insns). A scalar VAR_DECL's DECL_RTL `(mem (symbol_ref))` never passes
+  through memory_address: no pseudo, nothing for cse to share, both accesses stay gp-direct.
+  (With -G8 small data the constant would win cse's find_best_addr tie, cse.c:2622 +
+  mips.h:2897 ADDRESS_COST(REG)=1 vs mips_address_cost SYMBOL_REF_FLAG ? 1 : 2; text1b is -G0,
+  so not a lever, recorded for completeness.)
+- Variable index (`D_800A3560[i * 3 + k]`): expr.c:4659 builds *(&arr + index); EXPAND_SUM gives
+  (plus (mult i 3) sym+k); not legitimate -> explow.c:447 force_operand -> expand_binop copies
+  the symbol into its own pseudo (excerpt A: r199 = sym+1, r203 = r202 + r199). With the index
+  already a pseudo, (plus reg sym+k) is legitimate at explow.c:419 and stays in the MEM
+  (excerpt B: insn 341). This is the per-site named-intermediate mechanism.
+
+Closing lever: the slot-1 state byte at a constant address is spelled with its own splat symbol,
+`extern u8 D_800A3563;` (and `D_800A3565` for the post-loop store), exactly as main already spells
+slot 0's / slot 1's cell bytes `D_800A3561` / `D_800A3564` next to `D_800A3560[i * 3 + 1]` (same
+function mixes both on main: func_8006F100, text1b.c:11790-11798, COMPLETED-C). Variable-index
+accesses keep `D_800A3560[...]`. No fixed-value index, no new type.
+- nomerge_best.c + scalar cancel arm (tmp d63): mini 14 -> 8; `k` then unnecessary (ablated 8).
+- + post-loop `D_800A3563 != 0xFF` / `D_800A3565 = 0xFF` for consistency: full TU 6/698, every
+  hunk operand-only GPREL-name (`%gp_rel(D_800A3588+2)` vs `D_800A358A` etc.).
+- `sel` moved into the `if (*flags & 1)` block as an initialized local (no assignment inside the
+  && condition): 6 (in the condition 6; a statement before the if 19).
+- `idx` initialized at the top of each do-body: 8 (a `move a1,s1` schedules one slot early);
+  kept assign-before-store.
+- Ablation on the final candidate (tools/ablate_s3.py, full TU): inline rec 28; all four idx 47
+  (each alone 12/12/16/16); sel 28; ofs (was k2) 18. Candidate = 6.
+- candidate.c (2026-09-29 s3) = this form with FAKE annotations; landing config = the reviewed
+  s2 config, minimal form: sdata_exclude func_80070188 row drops D_800A3588 / D_800A358C (keeps
+  D_800A3562, g_gpu_ot_ptr), sdata_syms + D_800A3590, SelectEntryE534 pad -> unk1.
+
+func_8006E534 side (task item 2), result: no pun-free spelling of its `sw -1` exists under a record
+or 2-D declaration. GCC 2.7.2 emits a single SImode store only for an SImode lvalue: it has no
+store merging; a BLKmode struct copy/constructor of 1-byte-aligned records goes through
+move_by_pieces / store_constructor per field (byte stores; MIPS STRICT_ALIGNMENT keeps a 4 x u8
+struct BLKmode); a struct copy from an initialized object loads (lw) instead of `li -1`. Every
+consumer of 0x800A3560..65 in asm/funcs is a byte access except that one sw (grep, s3), so there is
+no independent evidence of a word-sized member. The only cast-free word lvalue is the union
+(borderline.md 2026-09-29). A 2-D `u8 D_800A3560[][3]` reaches get_inner_reference like the struct
+(expr.c:4620 only takes the *(&arr+i) path for a variable OUTER index), so it would close the same
+way, but E534's pun stays a pun over it: not proposed.
