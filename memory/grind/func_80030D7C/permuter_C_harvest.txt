@@ -1,0 +1,275 @@
+{
+  "func": "func_80030D7C",
+  "dir": "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/func_80030D7C/permC",
+  "label": "onevar-PV",
+  "base_score": 735,
+  "elapsed_s": 1549.1,
+  "iterations": 15261,
+  "finds_total": 43,
+  "finds_new": 43,
+  "best_new_score": 75,
+  "pid_alive_at_harvest": true,
+  "stopped": true,
+  "procs_killed": 3,
+  "stop_reason": "fresh-seed window over; sub-base finds are reuses of ang or 64-bit types",
+  "finds": [
+    {
+      "name": "output-645-1",
+      "score": 645,
+      "seconds_since_launch": 16.7,
+      "new": true
+    },
+    {
+      "name": "output-735-1",
+      "score": 735,
+      "seconds_since_launch": 26.2,
+      "new": true
+    },
+    {
+      "name": "output-595-1",
+      "score": 595,
+      "seconds_since_launch": 86.8,
+      "new": true
+    },
+    {
+      "name": "output-225-1",
+      "score": 225,
+      "seconds_since_launch": 96.2,
+      "new": true
+    },
+    {
+      "name": "output-85-1",
+      "score": 85,
+      "seconds_since_launch": 98.5,
+      "new": true
+    },
+    {
+      "name": "output-110-1",
+      "score": 110,
+      "seconds_since_launch": 103.2,
+      "new": true
+    },
+    {
+      "name": "output-735-2",
+      "score": 735,
+      "seconds_since_launch": 124.5,
+      "new": true
+    },
+    {
+      "name": "output-663-1",
+      "score": 663,
+      "seconds_since_launch": 182.4,
+      "new": true
+    },
+    {
+      "name": "output-490-1",
+      "score": 490,
+      "seconds_since_launch": 209.0,
+      "new": true
+    },
+    {
+      "name": "output-735-3",
+      "score": 735,
+      "seconds_since_launch": 209.4,
+      "new": true
+    },
+    {
+      "name": "output-735-4",
+      "score": 735,
+      "seconds_since_launch": 211.6,
+      "new": true
+    },
+    {
+      "name": "output-460-1",
+      "score": 460,
+      "seconds_since_launch": 214.1,
+      "new": true
+    },
+    {
+      "name": "output-670-1",
+      "score": 670,
+      "seconds_since_launch": 221.3,
+      "new": true
+    },
+    {
+      "name": "output-710-1",
+      "score": 710,
+      "seconds_since_launch": 224.4,
+      "new": true
+    },
+    {
+      "name": "output-85-2",
+      "score": 85,
+      "seconds_since_launch": 243.3,
+      "new": true
+    },
+    {
+      "name": "output-663-2",
+      "score": 663,
+      "seconds_since_launch": 265.8,
+      "new": true
+    },
+    {
+      "name": "output-688-1",
+      "score": 688,
+      "seconds_since_launch": 312.5,
+      "new": true
+    },
+    {
+      "name": "output-700-1",
+      "score": 700,
+      "seconds_since_launch": 332.5,
+      "new": true
+    },
+    {
+      "name": "output-710-2",
+      "score": 710,
+      "seconds_since_launch": 334.7,
+      "new": true
+    },
+    {
+      "name": "output-75-1",
+      "score": 75,
+      "seconds_since_launch": 365.6,
+      "new": true
+    },
+    {
+      "name": "output-690-1",
+      "score": 690,
+      "seconds_since_launch": 387.0,
+      "new": true
+    },
+    {
+      "name": "output-725-1",
+      "score": 725,
+      "seconds_since_launch": 395.8,
+      "new": true
+    },
+    {
+      "name": "output-735-5",
+      "score": 735,
+      "seconds_since_launch": 456.6,
+      "new": true
+    },
+    {
+      "name": "output-500-1",
+      "score": 500,
+      "seconds_since_launch": 469.3,
+      "new": true
+    },
+    {
+      "name": "output-710-3",
+      "score": 710,
+      "seconds_since_launch": 486.9,
+      "new": true
+    },
+    {
+      "name": "output-110-2",
+      "score": 110,
+      "seconds_since_launch": 557.9,
+      "new": true
+    },
+    {
+      "name": "output-735-6",
+      "score": 735,
+      "seconds_since_launch": 594.2,
+      "new": true
+    },
+    {
+      "name": "output-170-1",
+      "score": 170,
+      "seconds_since_launch": 644.1,
+      "new": true
+    },
+    {
+      "name": "output-725-2",
+      "score": 725,
+      "seconds_since_launch": 749.0,
+      "new": true
+    },
+    {
+      "name": "output-720-1",
+      "score": 720,
+      "seconds_since_launch": 777.6,
+      "new": true
+    },
+    {
+      "name": "output-475-1",
+      "score": 475,
+      "seconds_since_launch": 804.3,
+      "new": true
+    },
+    {
+      "name": "output-290-1",
+      "score": 290,
+      "seconds_since_launch": 815.9,
+      "new": true
+    },
+    {
+      "name": "output-460-2",
+      "score": 460,
+      "seconds_since_launch": 1019.4,
+      "new": true
+    },
+    {
+      "name": "output-80-1",
+      "score": 80,
+      "seconds_since_launch": 1044.6,
+      "new": true
+    },
+    {
+      "name": "output-705-1",
+      "score": 705,
+      "seconds_since_launch": 1114.2,
+      "new": true
+    },
+    {
+      "name": "output-735-7",
+      "score": 735,
+      "seconds_since_launch": 1119.2,
+      "new": true
+    },
+    {
+      "name": "output-405-1",
+      "score": 405,
+      "seconds_since_launch": 1173.4,
+      "new": true
+    },
+    {
+      "name": "output-565-1",
+      "score": 565,
+      "seconds_since_launch": 1196.6,
+      "new": true
+    },
+    {
+      "name": "output-670-2",
+      "score": 670,
+      "seconds_since_launch": 1196.8,
+      "new": true
+    },
+    {
+      "name": "output-355-1",
+      "score": 355,
+      "seconds_since_launch": 1313.9,
+      "new": true
+    },
+    {
+      "name": "output-75-2",
+      "score": 75,
+      "seconds_since_launch": 1381.7,
+      "new": true
+    },
+    {
+      "name": "output-710-4",
+      "score": 710,
+      "seconds_since_launch": 1494.3,
+      "new": true
+    },
+    {
+      "name": "output-80-2",
+      "score": 80,
+      "seconds_since_launch": 1508.0,
+      "new": true
+    }
+  ]
+}

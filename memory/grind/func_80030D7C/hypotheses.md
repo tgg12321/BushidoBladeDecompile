@@ -14,3 +14,6 @@
   Submitted under Ruling 11 with the (D) record in evidence.md s2. nrm[0..2] in the reflection
   (N2) 0; nrm also in the ny tests (N1) 3.
 - KILLED one-variable-per-value spellings: see evidence.md s2 (D)(3)/(4) list.
+- s2 layer-2 FAIL #1 (record, not body): per-value probes/dumps did not match the landed body.
+  Re-measured on the exact body (onevar_PV 21, PVa 4, PVb 17, PV structural 21-53, campaign C best
+  75/no 0). Alias row D_8008E19E removed at landing (prong (c)).

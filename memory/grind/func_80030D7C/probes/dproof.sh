@@ -18,6 +18,6 @@ run() {  # $1 label, $2 candidate, $3.. pseudos
     grep "FINDREGDBG" $D/stderr.txt | grep -A11 "func=func_80030D7C pseudo=$p " | head -12 >> "$OUT"
   done
 }
-run perval tmp/func_80030D7C/F3.c 75 76 78 80
-run reuse tmp/func_80030D7C/X.c 76 78
+run perval tmp/func_80030D7C/PV.c 75 76 78 79
+run reuse tmp/func_80030D7C/L1.c 75 77
 echo done
