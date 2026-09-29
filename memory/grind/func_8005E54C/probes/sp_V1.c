@@ -49,10 +49,11 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s32 mode_off;
     s32 end_off;
     s16 i;
+    s16 i1;
     s16 j;
     s16 k;
     s16 c;
-    s16 y;
+    s32 y;
 
     tile = (T5E098 *)arg1;
     s.has_color = 0;
@@ -63,17 +64,17 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     mode_off = arg1 + 0xBB8;
     end_off = arg1 + 0xBC4;
     s.ot_idx = arg2;
-    for (i = 0; i < 2; i++) {
-        if (!(D_8009BD38.unk15 >> i & 1)) {
+    for (i1 = 0; i1 < 2; i1++) {
+        if (!(D_8009BD38.unk15 >> i1 & 1)) {
             s.header = &D_8009B524;
         } else {
             s.header = &D_8009B53C;
         }
-        s.x = i * 320;
+        s.x = i1 * 320;
         s.table = D_8009B554;
         s.sprt_out = cur;
         cur = func_8007352C((s32)&s);
-        if (!(D_8009BD38.unk15 >> i & 1)) {
+        if (!(D_8009BD38.unk15 >> i1 & 1)) {
             s.header = &D_8009B530;
             s.table = D_8009B56C;
         } else {
@@ -160,6 +161,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             vals[1] += (arg0 >> (i * 4 + 2)) & 3;
         }
     }
+    i = y;
     for (j = 0; j < 2; j++) {
         s.header = &D_8009B4F0;
         s.table = &D_8009B51C;
@@ -169,7 +171,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             } else {
                 s.x = 0xF2 - (k >> 1) * 20;
             }
-            s.y = y + (k & 1) * 12;
+            s.y = i + (k & 1) * 12;
             s.sprt_out = cur;
             cur = func_8007352C((s32)&s);
         }

@@ -52,7 +52,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s16 j;
     s16 k;
     s16 c;
-    s16 y;
+    s32 y;
 
     tile = (T5E098 *)arg1;
     s.has_color = 0;

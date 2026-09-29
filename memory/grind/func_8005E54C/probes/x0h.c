@@ -286,14 +286,12 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->r0 = 0xFF;
     tile->g0 = 0x10;
     tile->b0 = 0x10;
+    tile->x0 = 0x5E;
     if (D_8009BD38.unk10 == 2) {
-        tile->x0 = 0x5E;
         tile->y0 = 0xC1;
     } else if (D_8009BD38.unk10 == 1) {
-        tile->x0 = 0x5E;
         tile->y0 = 0xBD;
     } else {
-        tile->x0 = 0x5E;
         tile->y0 = 0xB9;
     }
     tile->w = 0x1C5;

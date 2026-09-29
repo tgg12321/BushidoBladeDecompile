@@ -49,10 +49,15 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s32 mode_off;
     s32 end_off;
     s16 i;
+    s16 i1;
+    s16 i2;
+    s16 i3;
+    s16 base;
+    s16 i5;
     s16 j;
     s16 k;
     s16 c;
-    s16 y;
+    s32 y;
 
     tile = (T5E098 *)arg1;
     s.has_color = 0;
@@ -63,17 +68,17 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     mode_off = arg1 + 0xBB8;
     end_off = arg1 + 0xBC4;
     s.ot_idx = arg2;
-    for (i = 0; i < 2; i++) {
-        if (!(D_8009BD38.unk15 >> i & 1)) {
+    for (i1 = 0; i1 < 2; i1++) {
+        if (!(D_8009BD38.unk15 >> i1 & 1)) {
             s.header = &D_8009B524;
         } else {
             s.header = &D_8009B53C;
         }
-        s.x = i * 320;
+        s.x = i1 * 320;
         s.table = D_8009B554;
         s.sprt_out = cur;
         cur = func_8007352C((s32)&s);
-        if (!(D_8009BD38.unk15 >> i & 1)) {
+        if (!(D_8009BD38.unk15 >> i1 & 1)) {
             s.header = &D_8009B530;
             s.table = D_8009B56C;
         } else {
@@ -86,21 +91,21 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
 
     s.semi = 0;
     s.has_color = 0;
-    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
-        vals[0] = (arg0 >> (i * 4)) & 3;
-        vals[1] = (arg0 >> (i * 4 + 2)) & 3;
+    for (i2 = 0; i2 < D_8009BD38.unk10 + 3; i2++) {
+        vals[0] = (arg0 >> (i2 * 4)) & 3;
+        vals[1] = (arg0 >> (i2 * 4 + 2)) & 3;
         if (D_8009BD38.unk10 == 2) {
-            s.y = i * 24 + 0x44;
+            s.y = i2 * 24 + 0x44;
         } else if (D_8009BD38.unk10 == 1) {
-            s.y = i * 24 + 0x4F;
+            s.y = i2 * 24 + 0x4F;
         } else {
-            s.y = i * 34 + 0x4F;
+            s.y = i2 * 34 + 0x4F;
         }
         if (vals[0] == 3 || vals[1] == 3) {
             s.header = &D_8009B4B0;
             s.x = 0;
             s.y += 2;
-            s.table = &D_8009B4BC[D_800A3270[i]];
+            s.table = &D_8009B4BC[D_800A3270[i2]];
             s.sprt_out = cur;
             cur = func_8007352C((s32)&s);
         } else {
@@ -152,14 +157,15 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s.sprt_out = cur;
     cur = func_8007352C((s32)&s);
     *(s32 *)vals = 0;
-    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
-        if (((arg0 >> (i * 4)) & 3) != 3) {
-            vals[0] += (arg0 >> (i * 4)) & 3;
+    for (i3 = 0; i3 < D_8009BD38.unk10 + 3; i3++) {
+        if (((arg0 >> (i3 * 4)) & 3) != 3) {
+            vals[0] += (arg0 >> (i3 * 4)) & 3;
         }
-        if (((arg0 >> (i * 4 + 2)) & 3) != 3) {
-            vals[1] += (arg0 >> (i * 4 + 2)) & 3;
+        if (((arg0 >> (i3 * 4 + 2)) & 3) != 3) {
+            vals[1] += (arg0 >> (i3 * 4 + 2)) & 3;
         }
     }
+    base = y;
     for (j = 0; j < 2; j++) {
         s.header = &D_8009B4F0;
         s.table = &D_8009B51C;
@@ -169,7 +175,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             } else {
                 s.x = 0xF2 - (k >> 1) * 20;
             }
-            s.y = y + (k & 1) * 12;
+            s.y = base + (k & 1) * 12;
             s.sprt_out = cur;
             cur = func_8007352C((s32)&s);
         }
@@ -180,11 +186,11 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
 
     s.ot_idx = arg2;
     wins[0] = wins[1] = 0;
-    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
+    for (i5 = 0; i5 < D_8009BD38.unk10 + 3; i5++) {
         s.header = &D_8009ADB4;
         s.semi = 0;
-        vals[0] = (arg0 >> (i * 4)) & 3;
-        vals[1] = (arg0 >> (i * 4 + 2)) & 3;
+        vals[0] = (arg0 >> (i5 * 4)) & 3;
+        vals[1] = (arg0 >> (i5 * 4 + 2)) & 3;
         s.col_r = s.col_g = s.col_b = 0x40;
         for (j = 0; j < 2; j++) {
             if (vals[j] <= *(j ? &vals[0] : &vals[1])) {
@@ -199,22 +205,22 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                 }
                 s.has_color = 0;
             }
-            c = D_8009BD24[j][i].chr;
+            c = D_8009BD24[j][i5].chr;
             if (c >= 12) {
                 c -= 2;
             }
             s.table = UesrWorkDef[c];
             s.x = j * 320 + D_8009B58C[c];
             if (D_8009BD38.unk10 == 2) {
-                s.y = i * 24 - 8;
+                s.y = i5 * 24 - 8;
             } else if (D_8009BD38.unk10 == 1) {
-                s.y = i * 24 + 3;
+                s.y = i5 * 24 + 3;
             } else {
-                s.y = i * 34 + 3;
+                s.y = i5 * 34 + 3;
             }
             s.sprt_out = cur;
             cur = func_8007352C((s32)&s);
-            if (D_8009BD24[j][i].chr == 8) {
+            if (D_8009BD24[j][i5].chr == 8) {
                 s.table = D_8009ADC0;
                 s.sprt_out = cur;
                 cur = func_8007352C((s32)&s);

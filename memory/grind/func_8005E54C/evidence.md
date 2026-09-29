@@ -124,3 +124,58 @@ Single-device ablations on match0 (each device removed alone; tools/sbxp.py + ma
   declarations). candidate.c (88) is the best body under main's current declarations.
 So the declaration model closes every source-level hunk; the three devices are each individually required and
 each needs an owner-level decision (see hypotheses [s2 OPEN]).
+
+## [s3] laneC 2026-09-29 — after owner batch 20 (Q33-Q36): the copy is gone; two granted devices remain
+
+Record of the owner answers: tmp/orch/owner_rulings_2026-09-29_b20.md (Q33 union, Q34 copy, Q35 trailing array,
+Q36 cast store). Measurements below: tools/sbxp.py + match0/tu_patch.py, `strip` = engine sandbox recipe,
+`nostrip` = the same build without cheat-asm stripping (the sandbox strips an unused local array unless
+engine/volatile_cheats.py `_SANCTIONED_UNWRITTEN_PADS` carries a row, so the trailing array reads 47 stripped).
+Probe bodies: probes/*.c.
+
+- **Q34 no longer needed.** Declaring the R3 y local `s16` (like every other small local here) and using it
+  directly in R4 (`s.y = y + (k & 1) * 12;`) scores 0 (match0/body.c). The `move s4,s0` is not a source copy:
+  it is the loop-invariant `(s32)y` of the s16 local hoisted out of the win-mark loops into its own pseudo.
+  With `s32 y` and no copy: 6 (probes/nocopy.c; greg: y's pseudo 84 then conflicts with k (82, $s0) and lands in
+  $s5). The `i = y;` copy form (probes/d1.c) also scores 0 but is now strictly worse (one more no-purpose
+  construct). Other probes, all with the other devices in place: every value of the shared `i` split into its
+  own local 77 (probes/sp_all.c); split alone: R1 counter 8, R2 24, R3 11, R6 61, R4 base as a fresh copy local
+  0 (probes/sp_V*.c); y held in i with the totals counted by k 14 (st_iy); totals counted by j 11 (st_jsum).
+  The loop counters `i`/`j`/`k` are reused across phases. Precedents: the owner ruled on func_8003800C's single
+  counter reused for two loops (docs/grind/decisions.md:11395-11406, 2026-08-25; admitted under the frozen
+  "Variable reuse for codegen control" family, FAKE-annotated at the declaration). func_8005F1C8 landed with k/j
+  reused across phases and an explanatory comment at the declarations (memory/grind/func_8005F1C8/evidence.md,
+  LANDED section: layer-2 accepted the counter reuse). Splitting the counters here measures 8-77 (above). The
+  landing should carry a declaration comment like func_8005F1C8's; whether the FAKE annotation is also required is
+  a question for review.
+- **Q33 union fails; Q36 cast store needed.** `union { s16 v[2]; s32 word; } vals;` + `vals.word = 0;` measures
+  197 (probes/u2.c, frame 216): a 4-byte, 4-aligned union is SImode (stor-layout.c), expand_decl keeps it in a
+  pseudo, and put_var_into_stack moves it to the stack only when `vals.v[j]` makes it addressable, after
+  wins and s have taken 0x18/0x20. `volatile union` 146 (u4); an 8-byte `s16 v[4]` union 0 (u3; fake size:
+  the target touches only 0x18..0x1B). The target's sp+0x18 object was stack-allocated at declaration (it
+  precedes wins and s), i.e. BLKmode, i.e. an s16 array. Q36 site: the only word access to 0x18..0x1B is
+  0x8005EA44 `sw $zero,0x18($sp)` (asm/funcs/func_8005E54C.s:347), covering exactly `s16 vals[2]`; all other
+  accesses to those bytes are halfword (sh/lh/lhu at 0x18/0x1A, or lh 0(base+j*2)).
+- **Q35 trailing array: frame forensics.** Every sp-relative operand in the target
+  (asm/funcs/func_8005E54C.s): 0x10 (5th arg), 0x18/0x1A (vals), 0x20/0x22 (wins), 0x28..0x53 (s, including
+  0x48/0x4C scale fields and 0x50..0x53 colour bytes), 0x60..0x88 (six spill slots), 0x90..0xB4 (saves). The
+  only address formations are sp+0x18 and sp+0x1A (vals, and wins via +8), and sp+0x28 (&s, passed to
+  func_8007352C/func_80073728, which read fields 0x00..0x2B = sp+0x28..0x53). Nothing reaches 0x54..0x5F.
+  cc1 `.frame`: with `s16 digit[3];` after s, vars=120 and the sp-offset census equals the target's exactly;
+  without it, vars=112 and every spill slot shifts by -8. The object cannot be a phantom pseudo: reload's
+  alter_reg assigns spill slots in regno order and the parameters' pseudos come first (arg0's slot is 0x60 in
+  both target and build), so any unallocated pseudo lands at or above 0x60, never at 0x58.
+  Siblings (COMPLETED-C, same file): func_8005D814 declares `Env5D814 s; s16 digit[3];` (src/text1b.c:4206-4207),
+  s at sp+0x18 and digit at sp+0x48 = s+0x30 (its target accesses 0x48/0x4A/0x4C). func_8005E098 (S5E098 `s16
+  d[2]` at +0x30, text1b.c:4409) and func_8005F1C8 (S5F1C8 `s16 d[3]` at +0x30, text1b.c:4559) keep their digit
+  arrays at the same s+0x30 (sp+0x48 in their frames), modelled as trailing struct members. Here s is at sp+0x28,
+  so s+0x30 = sp+0x58: an `s16 [3]` at exactly the untouched slot. match0/body.c declares `s16 digit[3];`
+  right after `Env5E54C s;` (plain; `volatile s16 digit[3]` also measures 0 unstripped). Name and qualifier to
+  follow the Q35 rule text.
+- The three per-arm `tile->x0 = 0x5E;` stores are required: hoisting one `tile->x0` store above the mode
+  if/else measures 10 (probes/x0h.c). Each arm sets the full (x0, y0) position; if review treats it as the
+  duplicated-store family, it needs that family's annotation.
+
+Current best (match0/body.c + match0/tu_patch.py): 0/799, whole-TU objdiff 456/457 identical (func_8005E54C
+differs only in link-equivalent relocation addends). No-purpose constructs: `*(s32 *)vals = 0;` (Q36) and
+`s16 digit[3];` (Q35).

@@ -52,7 +52,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s16 j;
     s16 k;
     s16 c;
-    s16 y;
+    s32 y;
 
     tile = (T5E098 *)arg1;
     s.has_color = 0;
@@ -160,6 +160,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             vals[1] += (arg0 >> (i * 4 + 2)) & 3;
         }
     }
+    i = y;
     for (j = 0; j < 2; j++) {
         s.header = &D_8009B4F0;
         s.table = &D_8009B51C;
@@ -169,7 +170,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             } else {
                 s.x = 0xF2 - (k >> 1) * 20;
             }
-            s.y = y + (k & 1) * 12;
+            s.y = i + (k & 1) * 12;
             s.sprt_out = cur;
             cur = func_8007352C((s32)&s);
         }
