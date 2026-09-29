@@ -56,6 +56,10 @@ s32 func_80029454(void) {
     LeafPos *ws = SPAD->unkA8[0];
     LeafPos saved[16];
     s32 count[2];
+    /* Loop counters, each used by several loops: i by the two record loops and
+     * the halving loop's outer loop, j by the halving loop's inner loop and both
+     * passes' outer loops, n by both passes' inner loops, k by the save,
+     * bounds and restore loops. */
     s32 i;
     s32 j;
     s32 n;
