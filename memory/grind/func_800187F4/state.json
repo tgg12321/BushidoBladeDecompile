@@ -25,9 +25,9 @@
  ],
  "frontier": [
   {
-   "hypothesis": "Land v2 (c6): auth rows + region hashes + fresh layer-2",
-   "mechanism": "see r11/proof.md v2",
-   "next_probe": "auth: then Match: after layer-2 PASS"
+   "hypothesis": "Land v3 (c7 = v1 code, seven Ruling 11 locals, Q30 set-aside)",
+   "mechanism": "r11/proof.md v3",
+   "next_probe": "auth: then Match: after fresh layer-2 PASS"
   }
  ],
  "judge_constraints": [],

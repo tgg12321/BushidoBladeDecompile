@@ -1,4 +1,4 @@
-# func_800187F4 — phantom-slot producer census for lz[6] (2026-09-28)
+# func_800187F4 â€” phantom-slot producer census for lz[6] (2026-09-28)
 
 Question (dead-vars-local-array.md OVERSIZED-LOCALS prerequisites 1 and 4; phantom-slot-frame-lever.md):
 can an ordinary-C spelling of the fully-written form (lz[2], the two LZC outputs only) reserve the 16

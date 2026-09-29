@@ -166,3 +166,9 @@ cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
   dead stores at six anchors (77 variants) and self-assigns + chain-extenders (132): none reaches 0.
 - lz[6]: phantom-slot producer census (r11/frame_census.md): 14 ordinary spellings of the lz[2] form,
   none gives frame 0x78 at zero cost.
+
+## [s3 cont. 2] 2026-09-28 — owner Q30 (45ecac2fc); v3 = v1 code (c7)
+- Owner ruled FAKE-construct spellings do not count against Ruling 11 necessity (set-aside test in
+  Ruling 11 (D)). v3 lands the v1 code (seven reused locals, no FAKE construct for them) with v2 text fixes
+  (Scr1F800000, header, lz[6] annotation + census): template.c = r11/variants_v3/c7.c, 0/662. proof.md v3
+  banks every set-aside closer (dead stores for work/delta, six do-while(0) wraps for nforce) and the sweeps.

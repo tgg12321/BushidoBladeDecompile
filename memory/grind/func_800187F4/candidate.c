@@ -167,14 +167,16 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         SCR->vel[1] = vy;
         SCR->vel[2] = vz;
         if (*(s32 *)((u8 *)arg0 + 0xC) != 0) {
-            s32 depth;
+            /* Ruling 11 (proof r11/proof.md): two values, both Y deltas -- the
+             * node's depth below the ground, then the Y delta to focus 0. */
+            s32 delta;
 
-            depth = SCR->pos[1] - SCR->ground;
-            if (depth > 0) {
-                if (depth > 0x3200) {
+            delta = SCR->pos[1] - SCR->ground;
+            if (delta > 0) {
+                if (delta > 0x3200) {
                     vy_new = vy - 0x400;
                 } else {
-                    vy_new = vy - depth / 8;
+                    vy_new = vy - delta / 8;
                 }
                 SCR->vel[1] = vy_new;
             }
@@ -182,21 +184,23 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
             SCR->cpos[1] = SCR->pos[1] >> 5;
             SCR->cpos[2] = SCR->pos[2] >> 5;
             for (idx = 0; idx < SCR->nsph; idx++) {
-                s32 dy0, dx0, dz0, dy1, dx1, dz1;
+                s32 dx0, dz0, dy1, dx1, dz1;
                 s32 sq2, dist2;
                 /* Ruling 11 (proof r11/proof.md): three values -- a copy of the
-                 * squared distance for the leading-zero-count macro (a value under
+                 * squared length for the leading-zero-count macro (a value under
                  * (C)(3)'s GTE-macro input copy clause, owner ruling 2026-09-28
                  * Q28), then the focus-0 table byte, then the focus-1 table byte. */
                 s32 temp;
-                s32 sq1, dist1;
+                /* Ruling 11 (proof r11/proof.md): two values -- the focus-0 squared
+                 * distance, then the distance (scaled to its push factor below). */
+                s32 work;
 
                 r = SCR->rad[idx];
-                dy0 = SCR->cpos[1] - SCR->sph[idx][1];
-                if (dy0 < -r || r < dy0) {
+                delta = SCR->cpos[1] - SCR->sph[idx][1];
+                if (delta < -r || r < delta) {
                     continue;
                 }
-                SCR->d0[1] = dy0;
+                SCR->d0[1] = delta;
                 dx0 = SCR->cpos[0] - SCR->sph[idx][0];
                 if (dx0 < -r || r < dx0) {
                     continue;
@@ -222,10 +226,10 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
-                sq1 = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
-                temp = sq1;
-                if (sq1 < 0x400) {
-                    dist1 = (&D_8008D118)[sq1] >> 3;
+                work = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
+                temp = work;
+                if (work < 0x400) {
+                    work = (&D_8008D118)[work] >> 3;
                 } else {
                     /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
                      * the leading-zero count, then the table shift. */
@@ -241,10 +245,10 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                     __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
                     nbits = lz[0];
                     nbits = 0x16 - (nbits & ~1);
-                    temp = (&D_8008D118)[sq1 >> nbits];
-                    dist1 = (temp << 16) >> (0x13 - (nbits >> 1));
+                    temp = (&D_8008D118)[work >> nbits];
+                    work = (temp << 16) >> (0x13 - (nbits >> 1));
                 }
-                if (dist1 >= r) {
+                if (work >= r) {
                     continue;
                 }
                 dy1 = SCR->cpos[1] - SCR->sph[idx][4];
@@ -298,17 +302,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                     temp = (&D_8008D118)[sq2 >> nbits2];
                     dist2 = (temp << 16) >> (0x13 - (nbits2 >> 1));
                 }
-                /* FAKE: dead store; mechanism: reg_scan records it as sq1's last
-                 * reference (regclass.c:1764 counts sets), later than temp's (the
-                 * focus-1 table byte above), so cse.c make_regs_eqv (:840-857)
-                 * keeps sq1 as the class head of `temp = sq1;`: the compare and the
-                 * table indexes read sq1 ($a1) and the copy stays its own move (the
-                 * target's `addu $a0,$a1,$zero` at 0x80018E18); otherwise temp
-                 * becomes the head and the copy is folded away (26 insns). flow
-                 * deletes the store (no bytes). Lever exhaustion:
-                 * memory/grind/func_800187F4/r11/proof.md (sq1). */
-                sq1 = 0;
-                tot = dist1 + dist2;
+                tot = work + dist2;
                 if (tot >= r) {
                     continue;
                 }
@@ -329,8 +323,8 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 if (pen > 0x400000) {
                     pen = 0x400000;
                 }
-                if (dist1 != 0) {
-                    dist1 = pen / dist1;
+                if (work != 0) {
+                    work = pen / work;
                 }
                 /* gte_ldlvl(r1) -- inline_o.h 4.3 :104-109 */
                 __asm__ volatile ("move  $12,%0": :"r"(SCR->d0):"$12","$13","$14","$15","memory");
@@ -338,7 +332,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 __asm__ volatile ("lwc2  $10,4($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("lwc2  $11,8($12)": : :"$12","$13","$14","$15","memory");
                 /* gte_lddp(r1) -- inline_o.h 4.3 :144-147 */
-                __asm__ volatile ("move  $12,%0": :"r"(dist1):"$12","$13","$14","$15","memory");
+                __asm__ volatile ("move  $12,%0": :"r"(work):"$12","$13","$14","$15","memory");
                 __asm__ volatile ("mtc2  $12,$8": : :"$12","$13","$14","$15","memory");
                 /* gte_gpl12() -- inline_o.h 4.3 :726-730; post-DMPSX word 0x4BA8003E
                  * for the header placeholder 0x0000133f (owner Q29) */
@@ -367,14 +361,6 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 __asm__ volatile ("swc2  $10,4($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("swc2  $11,8($12)": : :"$12","$13","$14","$15","memory");
             }
-            /* FAKE: dead store; mechanism: reg_scan records it as depth's last
-             * reference (regclass.c:1764 counts sets), so in cse the `depth / 8`
-             * expansion's copy does not outlive depth and cse.c make_regs_eqv
-             * (:840-857) keeps depth as the class head: the sign test reads depth
-             * (target `bgez $v1`, copy in the delay slot) instead of the copy
-             * (`bgez $v0`, 4 insns). flow deletes the store (no bytes). Lever
-             * exhaustion: memory/grind/func_800187F4/r11/proof.md (depth). */
-            depth = 0;
         }
         node[3] = (SCR->vel[0] * 7) >> 3;
         node[0] = SCR->pos[0] + SCR->dpos[0] + node[3];

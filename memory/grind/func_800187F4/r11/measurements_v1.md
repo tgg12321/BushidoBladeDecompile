@@ -1,4 +1,4 @@
-# func_800187F4 — measurements on the landing chassis (2026-09-28)
+# func_800187F4 â€” measurements on the landing chassis (2026-09-28)
 
 fast2 = differing objdump lines on the real per-file recipe (tools/fast2.sh + cmp.py);
 sandbox = `sandbox func_800187F4 --disable all --candidate <body>` (engine 21b9bbebd), insns built/644.
