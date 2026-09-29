@@ -12651,14 +12651,29 @@ void func_80071C4C(s32 arg0) {
             D_800A35A0 = 1;
         }
         for (i = 0; i < 1 + D_800A35B0 + D_800A3554; i++) {
-            s32 dst = i * 10;
-            s32 ctx = i * 3;
+            s32 dst = i * 10; /* FAKE: named intermediate for player i's 10-byte replay-record
+                               * offset (named-intermediate entry, no-new-park-categories.md);
+                               * mechanism: computed before ctx, its loop.c strength_reduce giv
+                               * gets the shorter live length and wins global.c allocno_compare
+                               * priority for $a0 (i*3 then takes $a1, as the target);
+                               * exhaustion: inlined form 4
+                               * (memory/grind/_completed/func_80071C4C/hypotheses.md, cleanup 2026-09-29) */
+            s32 ctx = i * 3; /* FAKE: named intermediate for player i's 3-byte D_800A3560 offset
+                              * (named-intermediate entry, no-new-park-categories.md); mechanism:
+                              * a register index keeps the read's address (plus reg sym) legitimate
+                              * in explow.c memory_address, so loop.c strength_reduce keeps the
+                              * target's sym+index form instead of reducing the whole address to a
+                              * pointer; exhaustion: inlined form 5 (same ledger) */
 
             *(u8 *)(D_800A3568 + dst) = D_800A3560[ctx];
         }
         for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
-            s32 dst = i * 10;
-            s32 ctx = i * 3;
+            s32 dst = i * 10; /* FAKE: named intermediate for player i's 10-byte replay-record
+                               * offset; same entry, mechanism and ledger as the first loop's
+                               * dst; exhaustion: inlined form 4 */
+            s32 ctx = i * 3; /* FAKE: named intermediate for player i's 3-byte D_800A3560 offset;
+                              * same entry, mechanism and ledger as the first loop's ctx;
+                              * exhaustion: inlined form 5 */
 
             *(u8 *)(D_800A3568 + dst + 1) = D_800A3560[ctx + 2];
         }
