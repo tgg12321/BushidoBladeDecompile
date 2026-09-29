@@ -48,13 +48,9 @@ extern void func_80057E84(u8 *, u8 *, s32, s32);
 #define kind t1
 #define x1 t1
 #define m445 t1
-#define tired t1
-#define flip t1
 #define w t1
 #define lo t1
-#define near t1
 #define n445 t2
-#define wtype t2
 #define pace t2
 #define y1 t2
 #define m449 t2
@@ -64,12 +60,7 @@ extern void func_80057E84(u8 *, u8 *, s32, s32);
 #define lvl t2
 #define i t4
 #define j t4
-#define cnt t4
 #define n t4
-#define ok4 t4
-#define far t5
-#define lim t5
-#define besti t5
 #define et t5
 s32 func_80058580(u8 *p) {
     s32 wx;
@@ -104,6 +95,14 @@ s32 func_80058580(u8 *p) {
     s16 pbest;
     u16 st;
     u16 st2;
+    s8 flip;
+    s32 near;
+    s32 wtype;
+    s32 cnt;
+    s32 ok4;
+    s32 far;
+    s32 lim;
+    s32 besti;
     s32 score;
 
     if (*(u16 *)(CPU_OPP + 0x6A) == 4 || *(u16 *)(CPU_OPP + 0x6A) == 0x14) {
@@ -603,9 +602,9 @@ s32 func_80058580(u8 *p) {
                 }
             }
         } else if (CPU_S16(0x398) == 0) {
-            tired = CPU_TBL(6);
+            flip = CPU_TBL(6);
             r = rand() & 0xFF;
-            if (p[0x440] == 4 ? r < (tired >> 2) : r < tired) {
+            if (p[0x440] == 4 ? r < (flip >> 2) : r < flip) {
                 best = -1;
                 besti = -1;
                 j = 0;
@@ -976,13 +975,9 @@ s32 func_80058580(u8 *p) {
 #undef kind
 #undef x1
 #undef m445
-#undef tired
-#undef flip
 #undef w
 #undef lo
-#undef near
 #undef n445
-#undef wtype
 #undef pace
 #undef y1
 #undef m449
@@ -992,10 +987,5 @@ s32 func_80058580(u8 *p) {
 #undef lvl
 #undef i
 #undef j
-#undef cnt
 #undef n
-#undef ok4
-#undef far
-#undef lim
-#undef besti
 #undef et
