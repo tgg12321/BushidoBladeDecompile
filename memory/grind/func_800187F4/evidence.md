@@ -189,3 +189,8 @@ cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
   uncommitted ledger. Their probes are banked (r11/reviewer_probes/rv5_*, rv6_*, rv7_*); none counting reaches 0.
 - An author-side audit then checked every figure against the banked files (proof v9 notes the corrections;
   r11/fake_scan.md; tmp-only evidence banked in r11/banked/).
+- 2026-09-29, eighth layer-2 FAIL (records only; rejected/r11-census-classification-v8-layer2-fail-0.md):
+  frame-census bodies misclassified; w1/w2 ablation chassis unbanked. proof v10 rebuilds §3A on
+  r11/manifest.md, one uniform sweep of every banked body (r11/tools/fast4.sh, r11/banked/sweep.log) plus
+  every result-file set: 34 banked + 122 result-file bodies reach 0, each REUSE or SET ASIDE (Q30) with its
+  reason; every other measured body misses (best 2).

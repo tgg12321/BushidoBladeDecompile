@@ -13,6 +13,8 @@ FAKE comment. `other` = count of FAKE / !FAKE annotations not on the lz declarat
 | r11/banked/rv3_nfdw_lz5.c | 5 | yes | 8 | FAKE@120 FAKE@121 FAKE@122 FAKE@123 FAKE@124 FAKE@139 |
 | r11/banked/rv3_rv_both_lz5.c | 5 | no | 2 | FAKE@216 FAKE@218 |
 | r11/banked/rv3_rv_wd_end_lz5.c | 5 | no | 1 | FAKE@215 |
+| r11/banked/w1.c | 6 | no | 0 |  |
+| r11/banked/w2.c | 6 | no | 0 |  |
 | r11/reviewer_probes/rv4_base.c | 6 | yes | 0 |  |
 | r11/reviewer_probes/rv4_dl_init.c | 6 | no | 0 |  |
 | r11/reviewer_probes/rv4_dl_inv.c | 6 | no | 0 |  |
@@ -69,6 +71,17 @@ FAKE comment. `other` = count of FAKE / !FAKE annotations not on the lz declarat
 | r11/reviewer_probes/rv7_tp_nobyte_copy.c | 6 | yes | 0 |  |
 | r11/reviewer_probes/rv7_wk_splitinit.c | 6 | yes | 0 |  |
 | r11/reviewer_probes/rv7_wkdl_splitinit.c | 6 | yes | 0 |  |
+| r11/reviewer_probes/rv8_abl_d_1111111.c | 6 | no | 0 |  |
+| r11/reviewer_probes/rv8_base.c | 6 | yes | 0 |  |
+| r11/reviewer_probes/rv8_dl_nodescope.c | 6 | yes | 0 |  |
+| r11/reviewer_probes/rv8_dl_rev.c | 6 | yes | 0 |  |
+| r11/reviewer_probes/rv8_dl_step.c | 6 | yes | 0 |  |
+| r11/reviewer_probes/rv8_fr_base_lz2.c | 2 | yes | 2 | FAKE@261 FAKE@309 |
+| r11/reviewer_probes/rv8_fr_scalars.c | scalars | yes | 2 | FAKE@261 FAKE@309 |
+| r11/reviewer_probes/rv8_nb_lowbit.c | 6 | yes | 0 |  |
+| r11/reviewer_probes/rv8_nb_r4split.c | 6 | yes | 0 |  |
+| r11/reviewer_probes/rv8_wk_distnode.c | 6 | yes | 0 |  |
+| r11/reviewer_probes/rv8_wk_inv.c | 6 | yes | 0 |  |
 | r11/reviewer_probes/rv_both.c | 6 | no | 2 | FAKE@216 FAKE@218 |
 | r11/reviewer_probes/rv_nf0.c | 6 | yes | 2 | FAKE@262 FAKE@310 |
 | r11/reviewer_probes/rv_nfA1.c | 6 | yes | 4 | FAKE@123 FAKE@138 FAKE@262 FAKE@310 |
@@ -206,16 +219,16 @@ FAKE comment. `other` = count of FAKE / !FAKE annotations not on the lz declarat
 Summary (top dir, lz size, has other FAKE): count
 - ('.', '6', False): 4
 - ('r11', '2', False): 3
-- ('r11', '2', True): 14
+- ('r11', '2', True): 15
 - ('r11', '3', False): 2
 - ('r11', '4', False): 2
 - ('r11', '5', False): 2
 - ('r11', '5', True): 3
-- ('r11', '6', False): 108
+- ('r11', '6', False): 119
 - ('r11', '6', True): 38
 - ('r11', '7', False): 2
 - ('r11', '8', False): 3
-- ('r11', 'scalars', True): 1
+- ('r11', 'scalars', True): 2
 - ('rejected', '5', True): 3
 - ('rejected', '6', False): 7
 - ('rejected', '6', True): 2

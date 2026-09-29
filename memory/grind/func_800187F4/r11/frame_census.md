@@ -4,8 +4,8 @@ Question (dead-vars-local-array.md OVERSIZED-LOCALS prerequisites 1 and 4; phant
 can an ordinary-C spelling of the fully-written form (lz[2], the two LZC outputs only) reserve the 16
 extra frame bytes of the target (0x78) at zero instruction cost? The lz[2] form already carries the
 count spill slot and the four 8-byte phantom slots of the combine orphan-USE loop-guard pseudos
-(evidence.md [s2] item 7); its frame is 0x68. Bodies: variants_v2/fr_*.c (r11/tools/mkframe.py), each c6
-with lz[2] (fr_scalars: two scalars lz0, lz1 instead). "insns" = the engine sandbox count (target 644).
+(evidence.md [s2] item 7); its frame is 0x68. Bodies: variants_v2/fr_*.c (r11/tools/mkframe.py), each c6 (the v2 chassis: work and delta split,
+two FAKE dead stores; the frame is unaffected by them) with lz[2] (fr_scalars: two scalars lz0, lz1 instead). "insns" = the engine sandbox count (target 644).
 
 | spelling | frame | lines | sandbox | insns |
 |---|---|---|---|---|
