@@ -1,4 +1,4 @@
-# func_800187F4 — Ruling 11 (D) proof and landing record, v3 (manual, 2026-09-28)
+# func_800187F4 — Ruling 11 (D) proof and landing record, v4 (manual, 2026-09-28)
 
 History. v1 (this text's base) FAILed a fresh layer-2 on `work`/`delta`
 (rejected/r11-work-delta-reuse-layer2-fail-0.md); v2 split them with two FAKE dead stores and FAILed a
@@ -8,6 +8,13 @@ Ruling 11 (D) § "FAKE-construct spellings are set aside") that one-variable-per
 FAKE-annotated construct do not count against (D)(3). v3 lands the v1 code (seven reused locals, no FAKE
 construct for any of them) with the v1 reviewer's other corrections (mechanism wording, lz[6] census,
 naming, header text). Every FAKE-construct spelling measured is banked in §5.
+
+v4 (same body): the third fresh layer-2 (rejected/r11-proof-args-v3-layer2-fail-0.md) found no FAKE-free
+per-value spelling reaching the target in ~3,000 probes but FAILed (D)(3)'s universal arguments. The owner
+then ruled Q31 (Mechanism + search, the Q25 standard, for Ruling 11 (D)(3)) (record commit ee84164e3) and Q32 (a FAKE construct resized
+within its own admitted range is the same construct). §3's "Necessity" paragraphs are therefore read as the
+named MECHANISM plus the measured record; §3A is the (D)(3) record under Q31 (every banked counting spelling,
+none reaching the target), and the universal sentences the v3 reviewer refuted are corrected in place.
 
 Rulings spent: .claude/rules/ordinary-c-judge-decidable.md § Ruling 11 (owner 2026-09-26) incl. its
 (C)(3) clause "GTE-macro input copies" (owner Q28, record commit 206e77db8); inline-asm-policy.md
@@ -103,20 +110,17 @@ each by find_reg into the lowest-numbered free register it does not conflict wit
 - Per-value (r11pv_idx): idx_add pseudo 89 nrefs 16 livelen 25 pri 25600 ord 21 -> **$a0**;
   idx_sub pseudo 90 nrefs 16 livelen 22 pri 29090 ord 20 -> **$a0**; idx_sph livelen 198 pri 1969 ->
   $t2. The force-loop counters are seated before `bits` and take $a0; bits, vx.. shift (67 lines).
-- Necessity (D)(3). Property: the counter allocno's priority is below `nforce`'s (10000) so it is
-  seated after every allocno live across the force loops. A force-loop counter's value lives only in
-  its own loop (its only writes are the loop's init and increment, its only reads the loop test,
-  `idx == 3` and the increment; the next write is the next loop's init). So in ANY spelling that
-  gives each loop its own variable, that variable's n_refs (16) and live length (22-25, the loop) are
-  fixed by the statement list and its loop nesting (flow.c weights each reference by loop depth,
-  reg_n_refs += loop_depth at :2081; the nesting is the program's own loops, which a FAKE-free spelling
-  cannot change), whatever its declaration order, scope, name or type (the RTL is SImode for every
-  32-bit integer type; narrower types add extensions): priority >= 25600 > 10000. Its
-  priority could drop below 10000 only if its live range exceeded ~64 insns (4*16/64), i.e. spanned
-  beyond its loop: only a variable that also carries another loop's value does. Two loops sharing
-  (the force loops only) give 32 refs over ~47 insns, 34042 (ledger [s2] item 4), still above 10000;
-  only all three (the ellipsoid loop's ~198 insns) give 9183. Declaration order only breaks exact
-  priority ties, and none of these is tied.
+- Mechanism and record ((D)(3) under Q31). The target needs the counter allocno seated after every
+  allocno live across the force loops (priority below nforce's 10000) AND each loop's zero init in its
+  for-init, where the guard `0 < count` folds into `blez` with the init in the delay slot. In the reuse
+  both hold: one pseudo spans three loops (priority 9183) while every init stays in its for-init. A
+  per-value counter with its init in the for-init lives only in its loop (16 refs over 22-25 insns,
+  weighted by the for-loop depth, flow.c:2081): priority >= 25600, seated first, $a0 (67 lines). The v3
+  reviewer showed the priority half alone is reachable FAKE-free by hoisting the init
+  (rv3I_1000000_ff_loop: pri 9552 < 9767, $t2), but then the guard is not folded and a phantom slot is
+  lost (27 lines; 3 with lz[8]). Two force loops sharing give 34042 (ledger [s2] item 4). Declaration
+  order only breaks exact ties, none here. Every counting spelling measured, the reviewers' included, is
+  in §3A; none reaches the target.
 
 ### nforce — the same priority order, the floor_log2 step
 - Reuse: pseudo 90 nrefs 14 livelen 42 -> 3*14/42 = pri **10000**, ord 34 -> **$t1**; `idx` (9183)
@@ -125,8 +129,8 @@ each by find_reg into the lowest-numbered free register it does not conflict wit
   each (ord 36/37) -> $t2; `idx` (9183) is seated first -> $t1. Counter and count swap: 21 lines.
 - Necessity: a force count's refs are its load and the loop test, weighted by loop depth (flow.c
   :2081): 7, over the loop (21 insns), in every one-variable-per-value spelling that is not set aside
-  (the statements and their loop nesting are fixed); floor_log2(7) = 2, so its priority is 6666 < 9183
-  whatever its declaration. Raising the weights of it or of competing allocnos needs added loop
+  (the statements and their for-loop nesting as written); floor_log2(7) = 2, so its priority is 6666 <
+  9183 whatever its declaration; loop-form respellings (goto / while / do-while) are measured in §3A. Raising the weights of it or of competing allocnos needs added loop
   nesting: six FAKE do-while(0) wraps reach 0 (the v2 layer-2's find), set aside under Q30, §5. One allocno holding both counts has 14
   refs over 42 insns and floor_log2(14) = 3: 10000 > 9183. The priority gain is the floor_log2 step,
   which only a variable holding both counts has.
@@ -178,8 +182,9 @@ counts reads AND sets: regclass.c:1763-1764) is later and beyond the block.
   `temp` whatever the declaration (function scope 26, chained `temp = sq1 = ...` 26). A later reference
   would be an extra statement: either a FAKE-annotated one (a dead store or self-assignment after
   temp's last use does reach 0: set aside under Q30, §5), or a real statement the reuse spelling lacks,
-  which fails (C)(2). Only a variable that itself carries a later value (here: the root/scale to the end
-  of the body) keeps the head, and with it the target's `$a1` compare and the copy.
+  which fails (C)(2). (Correction, v4: this assumes temp shared. With the Q28 copy its own local too,
+  sq1 does stay the head, yet the spelling misses through other seats — rv3x_0011000 27, rv3x_0041001 13.
+  Under Q31 the mechanism above plus the §3A record, not a universal claim.)
 
 ### delta — cse.c make_regs_eqv class head, with the division's copy (cse.c:840-857)
 `delta / 8` (signed) expands to `t = delta; if (t < 0) t += 7; t >>= 3` (dump insns 645-651).
@@ -213,6 +218,25 @@ counts reads AND sets: regclass.c:1763-1764) is later and beyond the block.
   `shift = 0x16 - (lz[0] & ~1)` has no count variable at all and ties the load the same way (2). Only
   a variable set twice (count, then shift) escapes local-alloc. (Ruling 4, compound splits, was not
   claimed: the second statement is not a compound assignment; compound spellings measure 4-49.)
+
+## 3A. (D)(3) under Q31 — the banked search (every counting one-variable-per-value spelling)
+
+Q31 (Ruling 11 (D) § "Mechanism + search"): (a) mechanisms named from dumps, §3; (b) every spelling
+proposed by the author or a reviewer banked and measured; (c) no counting spelling reaches the target.
+"Counting" = not set aside under the Q30 clause (§5). Lines = differing objdump lines, real per-file recipe.
+
+| source | spellings | reaching 0 | best nonzero | file |
+|---|---|---|---|---|
+| author, v1 chassis (per-value, ablations, structural, 127-partition delta ablation) | ~60 + 127 | 0 of the per-value ones (the delta partitions reach 0 only while the ground depth still shares, i.e. reuse) | 2 | measurements_v1.md, abl_d.log |
+| author, v2 chassis (per-value, ablations, structural for idx/nforce/temp/nbits) | 22 | 0 | 2 | measurements.md, sandbox_sweep_v2.txt |
+| v3 reviewer: every mix of the seven splits | 799 | 0 | 2 | rejected/v3_review/combo_res.txt |
+| v3 reviewer: loop forms (goto / while / do-while) over 11 bases | 814 | 0 per-value (the 6 zeros are `c7_*` bodies: the reuse spelling with a loop respelled) | 2 | loop_res.txt |
+| v3 reviewer: statement orders | 96 | 0 per-value (2 zeros are `c7_*` reuse bodies) | 2 | order_res.txt |
+| v3 reviewer: early inits | 60 + 401 | 0 | 27 / 29 | init_res.txt, init2_res.txt |
+| v2 reviewer: single do-while(0) wraps (FAKE, set aside, listed for completeness) | 500 | 0 | 2 | rejected/v2_review/ |
+| author v2: dead stores / self-assigns / chain-extenders (FAKE, set aside) | 209 | 0 | 2 | ds.log, ds2.log |
+
+No counting spelling reaches the target. The known closers all add FAKE constructs and are set aside (§5).
 
 ## 4. Prong walk (A)-(H), all seven
 
@@ -280,9 +304,13 @@ the reuse body does not carry, and it carries, unchanged, every FAKE- or !FAKE-a
 reuse body carries"): the landing body carries exactly one such construct, `s32 lz[6]` (OVERSIZED-LOCALS,
 FAKE-annotated). Checked mechanically (r11/tools/lzcheck.py over every banked body): all 89 per-value,
 ablation, structural, family-sweep and closing spellings in variants/, variants_v2/, variants_v3/ and
-rejected/ declare `s32 lz[6]` with the same annotation; each closing spelling above adds dead stores or
+rejected/ declare `s32 lz[6]` (the same declaration; the v1/v2 bodies carry the older comment text); each closing spelling above adds dead stores or
 do-while(0) wraps, so it is set aside. Spellings whose only FAKE construct is lz[6] count under (D)(3):
-the per-value spellings, ablations and structural respellings of §2, all nonzero. The frame-probe
+the per-value spellings, ablations and structural respellings of §2 and §3A, all nonzero. The v3
+reviewer's closers with `s32 lz[5]` in place of lz[6] (rejected/v3_review/bodies/rv3_rv_wd_end_lz5,
+rv3_rv_both_lz5, rv3_nfdw_lz5: 0) carry the same construct resized within the OVERSIZED-LOCALS range
+annotation, byte-identically, so it is "unchanged" (owner Q32) and they are set aside like their lz[6]
+twins. The frame-probe
 bodies (lzc5_*, fr_*: lz[2]-lz[8] or scalars) lack lz[6] and also count: none reaches 0 (§7).
 
 ## 6. Permuter campaigns (tools/permuter_campaign.py, `--stack-diffs`, standalone workspace)
