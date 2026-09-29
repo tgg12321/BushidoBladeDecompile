@@ -76,6 +76,26 @@ typedef struct {
 
 extern Unk800F0EC8Record D_800F0EC8[][10];
 
+/* Flare-slot position table at 0x800F0E38: 12 slots x one 3-word {x, y, z}
+ * record (12 bytes; 0x800F0E38 + 12 * 12 == 0x800F0EC8, the table above).
+ * Object model evidence (independent of and predating any byte-chasing): the
+ * original binary addresses all three words through ONE offset register per
+ * access site -- the spawner asm/funcs/func_80062FEC.s forms slot*12
+ * (`addu $v1,$a1,$a2; sll $v1,$v1,2` with $a1 = slot*2) and stores
+ * %lo(D_800F0E38/E3C/E40)($at) with that same $v1 added to each base; the
+ * drawer asm/funcs/func_80063084.s holds slot*12 in $s6 and reads
+ * %lo(D_800F0E38/E3C/E40)($at) with $s6 added to each base. The slot bitmask
+ * D_800A3448 and the age table D_800F0BEC[slot] index the same slot. Record
+ * stride and base+offset addressing, not symbol adjacency. Replaces the splat
+ * per-word scalars D_800F0E38 / D_800F0E3C / D_800F0E40. */
+typedef struct {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+} Unk800F0E38Record;
+
+extern Unk800F0E38Record D_800F0E38[12];
+
 /* 0x8009BCF8: 40-byte table of 20 two-byte records (0x8009BCF8..0x8009BD1F;
  * D_8009BD20 follows). Object model evidence, independent of and predating any
  * byte-chasing session, from the original binary: func_800759D0 takes the table

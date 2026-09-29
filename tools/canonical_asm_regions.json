@@ -524,6 +524,13 @@
         "615030abb4bc18954c598d5790f3ec6d0dd35afbdba151d8a4a74f642c026c9c",
         "12f2da10077321c0b7747ee0ec4ad8f04da7e9bd278c4b11c86361ce2bc0b4ef"
       ]
+    },
+    "func_80063084": {
+      "file": "text1b",
+      "sha256": [
+        "8961b0c8392d0778799f80983fd9e48f800a1fba3f1fa62fe0add30085c540d7",
+        "becf9944451287e00b9d4a4fd71f75cda8f24bfcb9e7eed53c3cc45be10f1847"
+      ]
     }
   }
 }
