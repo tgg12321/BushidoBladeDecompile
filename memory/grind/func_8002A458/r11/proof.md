@@ -302,6 +302,10 @@ declaring it `u32` changes nothing (M4 = 2).
   argument was presented as universal; it does not hold with `temp2` split, and the
   segment-length seat was unproven). Fixed above; body unchanged. dx/dy/dz, temp2, the
   islands, the do-while(0) and the rest were checked sound.
+- Layer-2 round 2 (2026-09-28): PASS. Its 18 counter-spellings (temp split x6 = 15, temp +
+  temp2 split x6 = 13, temp2 per-value x4 = 2, dx/dy/dz per-value x2 = 37) are banked in
+  variants/review2/ with variants/scores_review2.txt; none reaches 0. Header comment wording
+  fixed per its non-blocking notes (comment-only).
 - `dx`, `dy`, `dz`: form (ii), a name for the one kind all values share: every write is
   `point.c - base.c`, the offset of a point from the segment base on that axis (W1 the tip, W2
   the stage hit point, W3 obj+0xF4; W2/W3 through `p`, the base pointer `*(s32 **)(scr+0x60)`

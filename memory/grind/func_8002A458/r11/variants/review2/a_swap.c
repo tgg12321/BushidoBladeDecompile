@@ -1,39 +1,35 @@
+struct vec3w { s32 x, y, z; };
 /* Sweeps a character's weapon segment against its limb spheres. The scratch
  * record at 0x1F8002B8 (`scr`, the one func_8002E838 / func_8002EA24 /
  * func_8002CA8C use) gets its two segment-end pointers (+0x60 -> scr+0x0,
  * +0x64 -> scr+0xC) and a copy of the tip at +0xC8; d = tip - base. The yaw
- * difference to the partner (partner+0x1D8) is folded into 0..0x800.
- * sqrt(dx^2 + dz^2 - dy^2) (a negative square prints
+ * difference to the partner (partner+0x1D8) is folded into 0..0x800. The
+ * horizontal length sqrt(dx^2 + dz^2 - dy^2) (a negative square prints
  * "ILLEGAL GUN MOTION" and returns) gives the pitch at +0xF8 and ratan2(dx,
  * dz) the yaw at +0xFA; unless `quiet`, effect 0xB is played at +0xC8. The
- * unit direction is then q = (d << 12) / |d| (4096 = one unit); the base
- * takes the old tip and the tip is pushed out by q*4. If the yaw
+ * segment is then normalised to 1/4 length steps (q = (d << 12) / |d|) and
+ * the tip pushed out by q*4 after the base takes the old tip. If the yaw
  * difference is under 0x400, func_8002E838 sets up the segment frame and each
  * of the 22 hit records of character `id` (D_800F5F68, 0x14 bytes each; 6..9
  * skipped unless obj+0x26C) is tested against its scratch point 0x1F8000A8 +
- * id*0x108 + i*0xC with the record's +0xC/+0xE limits: a hit sets bit i in
- * *hit, and, when the record's first halfword is nonzero, a second test
- * with its +0x10/+0x12 limits also sets it in *deep.
+ * id*0x108 + i*0xC: a hit sets bit i in *hit, a second (inner) hit in *deep.
  * Finally the base is pulled back by q/4 into +0xA8, func_80053614 casts the
- * segment against the stage (hit point +0x100); on a stage hit for which
- * func_80054434() != 7: if *hit is set and the stage point is not nearer the
- * base than obj+0xF4, nothing more happens; otherwise the limb masks are
- * cleared (when *hit was set) and, unless `quiet`, effect 0xA plays at the
- * hit point.
+ * segment against the stage (hit point +0x100); on a stage hit that is not
+ * material 7, the limb masks are cleared when the stage point is nearer the
+ * base than obj+0xF4, and unless `quiet` effect 0xA plays at the hit point.
  * D_800A37E8.. receive -q.
  *
  * Both square roots are the D_8008D118 byte-LUT integer sqrt with the GTE
  * leading-zero count for inputs >= 0x400.
  *
- * GTE ISLANDS (inline-asm-policy.md, owner ruling 2026-09-26, inline_o.h
- * class): one PsyQ gtemac.h 4.3 gte_Lzc(r1,r2) :174-178 per square root,
- * written as its inline_o.h 4.3 expansion statement for statement and
- * character for character against engine/gtemacro.py PINNED: gte_ldlzc
- * :207-210, gte_nop :1095-1097 (x2), gte_stlzc :1074-1077. Operand seats are
- * cc1's (the target's `addu $t4,<reg>,$zero` is the header's `move $12,%0`,
- * and `addiu $v0,$sp,0x118/0x11C` is cc1 materializing &sp_tmp / &sp_tmp2).
- * Everything else is ordinary C, except the five Ruling 11 locals (dx, dy,
- * dz, temp, temp2) and the do-while(0), each annotated below. */
+ * GTE ISLANDS: census member of the 2026-08-17 owner cluster ruling
+ * (.claude/rules/cop2-addressing-preamble-cluster.md:69). One gte_Lzc
+ * (gtemac.h:230-236) per square root = gte_ldlzc (inline_o.h:645) + the two
+ * gte_nop (:3068) in one statement, gte_stlzc (:2999) in the other; nothing
+ * but macro text, every operand left to cc1 through %0 (the target's
+ * `addu $t4,<reg>,$zero` is the macros' `move $12,%0`, and `addiu $v0,$sp,N`
+ * is cc1 materializing &sp_tmp / &sp_tmp2). Same spelling and clobbers as the
+ * func_8002CD58 gte_Lzc islands (this file). Everything else is ordinary C. */
 extern char D_80010478[];
 extern void printf();
 extern u8 D_800F5F68[];
@@ -67,6 +63,8 @@ void func_8002A458(u8 *obj, s32 *hit, s32 *deep, s32 quiet) {
      * (C)(3) GTE-macro input copy clause (owner 2026-09-28, Q28), (E)(i)
      * generic name; (D) proof: memory/grind/func_8002A458/r11/proof.md. */
     s32 temp2;
+    s32 len;
+    s32 h_sq;
     s32 len_sq;
     s32 hit_sq;
     s32 qx;
@@ -78,7 +76,7 @@ void func_8002A458(u8 *obj, s32 *hit, s32 *deep, s32 quiet) {
 
     *(u8 **)(scr + 0x60) = scr;
     *(u8 **)(scr + 0x64) = scr + 0xC;
-    *(Vec3i *)(scr + 0xC8) = *(Vec3i *)(scr + 0xC);
+    *(struct vec3w *)(scr + 0xC8) = *(struct vec3w *)(scr + 0xC);
     dx = (*(s32 **)(scr + 0x64))[0] - (*(s32 **)(scr + 0x60))[0];
     dy = (*(s32 **)(scr + 0x64))[1] - (*(s32 **)(scr + 0x60))[1];
     dz = (*(s32 **)(scr + 0x64))[2] - (*(s32 **)(scr + 0x60))[2];
@@ -86,18 +84,18 @@ void func_8002A458(u8 *obj, s32 *hit, s32 *deep, s32 quiet) {
     if (diff >= 0x800) {
         diff = 0x1000 - diff;
     }
-    temp = dx * dx + dz * dz - dy * dy;
-    if (temp < 0) {
-        printf(D_80010478, temp);
+    h_sq = dx * dx + dz * dz - dy * dy;
+    if (h_sq < 0) {
+        printf(D_80010478, h_sq);
         return;
     }
-    temp2 = temp;
-    if ((u32)temp < 0x400) {
-        hlen = (u32)*(((u8 *)&D_8008D118) + temp) >> 3;
+    temp2 = h_sq;
+    if ((u32)h_sq < 0x400) {
+        hlen = (u32)*(((u8 *)&D_8008D118) + h_sq) >> 3;
     } else {
-        /* gte_Lzc(temp2, &sp_tmp) -- gtemac.h :174-178 = inline_o.h
-         * gte_ldlzc :207-210, gte_nop :1095-1097 (x2), gte_stlzc
-         * :1074-1077; LZCR slot sp+0x118 in the target. */
+        /* gte_Lzc(temp2, &sp_tmp) -- gtemac.h:230-236: gte_ldlzc
+         * (inline_o.h:645) + the two gte_nop (:3068), then gte_stlzc
+         * (:2999) into the LZCR slot (sp+0x118 in the target). */
         __asm__ volatile ("move  $12,%0": :"r"(temp2):"$12","$13","$14","$15","memory");
         __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -109,7 +107,7 @@ void func_8002A458(u8 *obj, s32 *hit, s32 *deep, s32 quiet) {
             s32 shift;
             lz &= sp_tmp;
             shift = 0x16 - lz;
-            temp2 = *(((u8 *)&D_8008D118) + ((u32)temp >> shift));
+            temp2 = *(((u8 *)&D_8008D118) + ((u32)h_sq >> shift));
             hlen = (u32)(temp2 << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
@@ -121,11 +119,10 @@ void func_8002A458(u8 *obj, s32 *hit, s32 *deep, s32 quiet) {
     }
     len_sq = dx * dx + dy * dy + dz * dz;
     if ((u32)len_sq < 0x400) {
-        temp = (u32)*(((u8 *)&D_8008D118) + len_sq) >> 3;
+        len = (u32)*(((u8 *)&D_8008D118) + len_sq) >> 3;
     } else {
-        /* gte_Lzc(len_sq, &sp_tmp2) -- gtemac.h :174-178 = inline_o.h
-         * gte_ldlzc :207-210, gte_nop :1095-1097 (x2), gte_stlzc
-         * :1074-1077; LZCR slot sp+0x11C in the target. */
+        /* gte_Lzc(len_sq, &sp_tmp2) -- gte_ldlzc (inline_o.h:645) +
+         * 2x gte_nop (:3068), gte_stlzc (:2999); slot sp+0x11C. */
         __asm__ volatile ("move  $12,%0": :"r"(len_sq):"$12","$13","$14","$15","memory");
         __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -139,13 +136,13 @@ void func_8002A458(u8 *obj, s32 *hit, s32 *deep, s32 quiet) {
             lz &= sp_tmp2;
             shift = 0x16 - lz;
             tbl = *(((u8 *)&D_8008D118) + ((u32)len_sq >> shift));
-            temp = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+            len = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
-    qx = (dx << 12) / temp;
-    qy = (dy << 12) / temp;
-    qz = (dz << 12) / temp;
-    **(Vec3i **)(scr + 0x60) = **(Vec3i **)(scr + 0x64);
+    qx = (dx << 12) / len;
+    qy = (dy << 12) / len;
+    qz = (dz << 12) / len;
+    **(struct vec3w **)(scr + 0x60) = **(struct vec3w **)(scr + 0x64);
     (*(s32 **)(scr + 0x64))[0] += qx * 4;
     (*(s32 **)(scr + 0x64))[1] += qy * 4;
     (*(s32 **)(scr + 0x64))[2] += qz * 4;
