@@ -1,0 +1,10 @@
+78,79c78,79
+< func_8006F97C: D_800A3560, D_800A3588, D_800A358C, g_gpu_ot_ptr
+< func_80070188: D_800A3562, D_800A3588, D_800A358C, g_gpu_ot_ptr
+---
+> func_8006F97C: D_800A3588, D_800A358C, g_gpu_ot_ptr
+> func_80070188: D_800A3562, g_gpu_ot_ptr
+82c82
+< func_80071C4C: D_800A3560, D_800A3562
+---
+> func_80071C4C: D_800A3562

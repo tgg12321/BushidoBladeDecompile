@@ -23,3 +23,68 @@
 - [s1] [fable-blitz 2026-07-07] The descriptor struct = the S60C8 family already typed and byte-matched in COMPLETED sibling func_800600C8 (src/text1b.c:12969, same TU): {p0,p1,in_tex,pad0C,zero10,arg2@0x14,width@0x18,zero1C,pad20,pad24,byte28,3 rgb bytes}. Here: sp+0x18=base, +0x10=0 (once, pre-loop), +0x14=7 (per draw), +0x18=x, +0x1C=y, +0x20/+0x24=0x100 (once, pre-loop), +0x28=flag byte, +0x29..0x2B=rgb. 25 func_8007352C call sites in text1b.c to crib arg idioms from.
 
 - [s1] [fable-blitz 2026-07-07] m2c reference generated: tmp/blitz/m2c_replay_camera_attack.c (372 lines, valid syntax, exit 0). No near-dup lead in tmp/duplicates_leads.txt. Callees all known symbols: saMotionSet, initTexPage, ot_Link, func_8005C650 (SE trigger), func_8007352C (prim emit), math_Sin, func_8005C6D0.
+
+## Manual session 2026-09-29 (s2) — from scratch, 698 -> 12 (all remaining hunks GPREL-name artifacts)
+
+Tooling (memory/grind/func_80070188/tools/, run from repo root under WSL):
+- sc.py = `sandbox --disable all --candidate` clone that applies the landing-time
+  overrides to the COPY only (sc_reps.py: SelectEntryE534 `pad`->`unk1`, the record
+  merge across all consumers from merge_reps.py; sdata_exclude/sdata_syms diffs in
+  tools/*.landing.diff). `--funcs=` scores several functions of the TU. `--mini` +
+  mkpre.py: text1b.c prefix with every other body stripped (1 s per compile; verified
+  equal to the full-TU score).
+- Old ledger names: this function was `replay_camera_attack` in s1; symbols unchanged.
+
+Measured path (scores are the sc.py full-TU/mini score for func_80070188):
+- First full body from the asm/m2c decode (tmp/func_80070188/m2c.c): 142 (sandbox).
+- s.x as `*col * 116 + 0x6E + (*col >> 1) * 20` and `s.y` before `s.ot_idx`:
+  126 -> the x chain matches (fold-const factors 4 out of `*col*116 + (*col>>1)*20 + K`
+  (20), `K + ...` orders 30-36; only `a*116 + K + b*20` / `K + a*116 + b*20` match).
+- LOOP BOUND: `for (i = 0; i < 1 + D_800A35B0 + (port_ofs = D_800A3554); i++)` +
+  `port = i - port_ofs;`: 118 -> 83. The target loads D_800A3554 TWICE in each copy of
+  the loop test (`lhu a3` for the body's `subu a0,s4,a3`, `lh v0` for the bound;
+  asm 37/40 and 659/662). An `lhu` in the test block whose value only the body uses
+  can only come from the loop condition itself (stmt.c expand_end_loop moves the exit
+  test, jump.c duplicates it; nothing else moves a load into it). Also fixes the frame:
+  vars 64 -> 80 (target 0x90 = 80 + 24 args + 40 regs); the assignment used as a value
+  in the duplicated test costs 8 phantom bytes per copy (phantom-frame-slots-gcc272).
+  Comma form `port_ofs = D_800A3554, i < ...` also 83 / vars 80 (reads the global twice).
+- RECORD MODEL (the big one): 83 -> 16 by declaring 0x800A3560 as an array of 3-byte
+  records `{u8 unk0, unk1, unk2}` and writing `D_800A3560[i].unk1` etc. With the u8
+  array every `D_800A3560[i * 3 + k]` expands (expr.c ARRAY_REF -> PLUS(&arr, MULT)
+  with EXPAND_SUM, then memory_address/force_operand) to `reg = sym+k; reg2 = idx + reg`,
+  so cse shares the ADDRESS (`sb v1,0(s1)`) and loop.c hoists `sym+k+idx` whole out of
+  the walk loops. The target shares the INDEX (s1 = i*3; `lui at; addu at,at,s1;
+  sb %lo(D_800A3561)(at)` / `lbu %lo(D_800A3560)(at)`; walks copy it `move a1,s1` or
+  recompute it after a join). A COMPONENT_REF of a variable-index record expands its
+  offset with expand_expr(offset) into a REG (get_inner_reference), giving exactly the
+  target's in-MEM `(plus idx sym+k)` form and index sharing. Every u8-array spelling
+  measured 118: `[i*3+1]`, `[1+i*3]`, `(&D_800A3560[1])[i*3]`, `*(D_800A3560+i*3+1)`,
+  `*(i*3+D_800A3560+1)`, `[i+i*2+1]`, `(D_800A3560+1)[i*3]`; a loop-body `rec = i*3`
+  named intermediate 139 (walks then use rec directly: no `move a1,s1`, no recompute).
+  The same record model removes func_8006F97C's FAKE `rec` and func_80070C70's FAKE
+  `ctx` named intermediates byte-identically (their FAKE comments describe exactly this
+  address-expansion effect).
+- Cancel arm: `D_800A3560[D_800A3554].unk0` (inside `D_800A3554 == 1`): 12 -> 10. With
+  `D_800A3560[1].unk0` read + store, the constant address is forced into a register
+  (explow.c memory_address force_reg; two uses -> cse keeps the register): `lui v1;
+  addiu v1,3; lbu 0(v1)` / `sb s6,0(v1)`. cse folds the index load to 1 (jump equivalence
+  `D_800A3554 == 1`) after expansion, so the MEM keeps a constant address -> both gp_rel.
+- Timers: plain `D_800A35C8[0] = 0xF; D_800A35C8[1] = 0x14;` matches here (10); the
+  func_800720FC pointer alias is NOT needed (reverse order 12).
+
+Current candidate.c (2026-09-29): full-TU sc.py 12/698 (698/698 insns), every hunk
+operand-only and every one a GPREL16 naming artifact: `%gp_rel(D_800A3588+2)` vs
+target `%gp_rel(D_800A358A)` (same address; engine/score.py resolves named HI16/LO16
+pairs but not GPREL16). Other consumers with the merge: E534 2, ECF4 0, F100 1,
+F97C 1, 70C70 0, 71C20 1, 71C4C 1, 720FC 0 — all GPREL artifacts only
+(`D_800A3560+1/+4` vs `D_800A3561/D_800A3564`).
+
+Landing-time config needed (tools/*.landing.diff), each a no-op for the current tree:
+- sdata_exclude.txt: func_80070188 drops D_800A3588/D_800A358C (target stores
+  D_800A358A/D_800A358E gp_rel; the only non-gp D_800A3588 use here is the `la` for
+  &D_800A3588[i], which maspsx never gp-converts); func_8006F97C and func_80071C4C drop
+  D_800A3560 (their only non-gp D_800A3560 uses are indexed; after the merge their
+  D_800A3564 / D_800A3561 reads are D_800A3560+4 / +1 and must stay gp as in target).
+- sdata_syms.txt: add D_800A3590 (target `sh %gp_rel(D_800A3592)` = D_800A3590[1];
+  every other D_800A3590 access in the tree is indexed or `la`).
