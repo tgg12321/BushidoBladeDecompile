@@ -266,3 +266,24 @@ array under the OVERSIZED-LOCALS carve-out (dead-vars-local-array.md); it is set
 reuse, and every compared one-variable-per-value spelling carries it unchanged. "Zero filler" in the option
 therefore means no dead store, do-while(0) wrap or other FAKE construct beyond the ones every compared spelling
 also carries.
+
+# Owner exchange 2026-09-28 (eighteenth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: the third fresh layer-2 of func_800187F4 (memory/grind/func_800187F4/rejected/
+r11-proof-args-v3-layer2-fail-0.md) passed the body, (A)-(C), (E), (F) and Q28 (a)-(d), found no FAKE-free one-variable-per-value spelling
+reaching the target in ~2,200 FAKE-free probes, and FAILed Ruling 11 (D)(3) on the
+universal arguments, plus a literal reading of the Q30 set-aside. Both questions were asked in one call.
+
+## Q31 — the Ruling 11 (D)(3) proof standard
+Question, verbatim: "func_800187F4's code has now passed three reviews on every point except one. Reviewers ran about 3,000 alternative rewrites (one variable per value, no filler) and none matched the original. It still FAILs because each reviewer finds a new kind of non-matching rewrite that my written 'no rewrite can ever match' argument didn't anticipate, and the shared-variable rule (Ruling 11) requires a universal argument. For per-file declarations you chose 'Mechanism + search' (Q25): show the compiler mechanism, measure every rewrite a reviewer proposes; a new rewrite that still misses is banked as evidence, and only an actual matching rewrite defeats. Apply the same standard to the shared-variable rule?"
+Owner chose: **"Mechanism + search (Recommended)"** — option text: "Same as Q25: dumps show the mechanism; every reviewer-proposed rewrite is measured and banked; only a rewrite that actually matches (without filler) defeats a shared variable. func_800187F4 re-submits its unchanged body with the reviewer's ~3,000 probes banked."
+Other option offered: "Keep universal proof" — "Each shared variable keeps needing an argument that covers every possible rewrite; func_800187F4 stays unfinished until one survives review."
+Author's note (2026-09-28; the transcript above is unchanged): the question's "about 3,000 alternative rewrites
+(one variable per value, no filler)" overstated the FAKE-free count. The third layer-2 ran ~2,200 FAKE-free
+probes (814 loop forms + 96 statement orders + 461 early inits + 799 split combinations); ~3,000 is the combined
+second and third layer-2 total, and most of the second's ~1,000 carried FAKE do-while(0) wraps or dead stores.
+No FAKE-free one-variable-per-value spelling reached the target in either set.
+
+## Q32 — a FAKE construct resized within its own admitted range
+Question, verbatim: "Related wording fix: my filler rule (Q30) says a filler version is set aside only if it keeps the body's existing marked frame array 'unchanged'. A reviewer rewrote the filler versions with that array one size smaller (byte-identical output, same marked construct), which by the literal words would let them count and defeat the shared variables. Should a marked construct re-sized within its own byte-identical range count as the same construct?"
+Owner chose: **"Same construct (Recommended)"** — option text: "A FAKE-marked construct resized or respelled within what its own rule already allows (e.g. lz[5] vs lz[6], byte-identical) is the same construct; such filler versions stay set aside."
+Other option offered: "Different construct" — "Any change makes it a different construct; those filler versions count, and the shared variables they defeat must be replaced by filler."

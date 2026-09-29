@@ -1346,9 +1346,33 @@ values.
   ledger with its score, and for each the ledger names the family and quotes the sentence of its entry (or
   linked rule) that requires the annotation. A construct whose entry does not expressly require a FAKE
   annotation, or that has a truthful semantic reading as ordinary C, is not set aside and counts; in doubt, it
-  counts. A spelling is set aside only if it needs at least one FAKE- or !FAKE-annotated construct that the reuse body does not carry, and it carries, unchanged, every FAKE- or !FAKE-annotated construct the reuse body carries. A spelling whose only FAKE- or !FAKE-annotated constructs are ones the reuse body also carries is not set aside and counts under (D)(3); so does a spelling that lacks any FAKE- or !FAKE-annotated construct the reuse body carries. (This implements the owner's premise that the form with the fewest no-purpose constructs lands: the reuse body then carries strictly fewer such constructs than every spelling set aside against it.) Everything else in (A)-(H), including (D)(3) against every spelling that is not
+  counts. A spelling is set aside only if it needs at least one FAKE- or !FAKE-annotated construct that the reuse body does not carry, and it carries, unchanged, every FAKE- or !FAKE-annotated construct the reuse body carries. "Unchanged" means the same construct at the same site; a construct resized or respelled within what its own rule already admits, compiling byte-identically, is the same construct (owner ruling 2026-09-28, eighteenth batch, Q32, whose question and answer are verbatim in docs/grind/owner-rulings-2026-09-26.md, batch 18: e.g. lz[5] for lz[6] under the OVERSIZED-LOCALS range annotation). A spelling whose only FAKE- or !FAKE-annotated constructs are ones the reuse body also carries is not set aside and counts under (D)(3); so does a spelling that lacks any FAKE- or !FAKE-annotated construct the reuse body carries. (This implements the owner's premise that the form with the fewest no-purpose constructs lands: the reuse body then carries strictly fewer such constructs than every spelling set aside against it.) Everything else in (A)-(H), including (D)(3) against every spelling that is not
   set aside and the (D)(4) record, is unchanged. Record: docs/grind/decisions.md 2026-09-28 OWNER RULING —
   FAKE-construct spellings do not count against Ruling 11 necessity.
+  **Mechanism + search (owner ruling 2026-09-28, eighteenth batch, Q31).** The question put to the owner,
+  verbatim: "func_800187F4's code has now passed three reviews on every point except one. Reviewers ran about 3,000 alternative rewrites (one variable per value, no filler) and none matched the original. It still FAILs because each reviewer finds a new kind of non-matching rewrite that my written 'no rewrite can ever match' argument didn't anticipate, and the shared-variable rule (Ruling 11) requires a universal argument. For per-file declarations you chose 'Mechanism + search' (Q25): show the compiler mechanism, measure every rewrite a reviewer proposes; a new rewrite that still misses is banked as evidence, and only an actual matching rewrite defeats. Apply the same standard to the shared-variable rule?" Owner (Trenton) chose, verbatim: **"Mechanism + search (Recommended)"**, whose text is:
+  "Same as Q25: dumps show the mechanism; every reviewer-proposed rewrite is measured and banked; only a rewrite that actually matches (without filler) defeats a shared variable. func_800187F4 re-submits its unchanged body with the reviewer's ~3,000 probes banked." (Record: docs/grind/owner-rulings-2026-09-26.md, batch 18.) The author's narrowing, modeled on the
+  thirteenth-batch Q25 standard for the per-file-declaration exception (no-new-park-categories.md): this
+  SUPERSEDES, for Ruling 11 only, the requirement in (3) that the ledger show that EVERY one-variable-per-value
+  spelling lacks the property, and the sentence "An argument that covers only the spellings that were measured
+  fails (D)". (3) is met when ALL of: (a) the allocator mechanism by which the target depends on the reuse is
+  named, by pass and source location in `tools/gcc-2.7.2`, from banked dumps of the reuse spelling and of the
+  one-variable-per-value spelling ((1)-(2) unchanged); (b) every one-variable-per-value spelling proposed by
+  the author or by any reviewer is banked in the ledger and measured with the build's per-file recipe (or the
+  sandbox), with its score; (c) no counting spelling reaches the target: a spelling counts unless it is set aside under the Q30 clause above, and a spelling reaches the target when the whole function is
+  byte-identical to the target under the build's cc1. A reviewer's new counting spelling that misses, once
+  banked, is evidence and not a FAIL ground under (3); a reviewer proposal not yet banked is a banking step
+  before landing, not a (3) failure; only a counting spelling that reaches the target defeats the reuse. The
+  ledger states only what the banked measurements show (the mechanism, and that no banked counting spelling
+  reaches the target), not an unproven universal. The allocator-effect bar stays: a record showing only that
+  the reuse scores better, with no mechanism under (a), fails (3). Everything else in (A)-(H), (D)(1)-(2) and
+  (D)(4) is unchanged. Q31 also governs the (D)(3) sentence of the Q28 GTE-macro input copy clause ((C)(3) (e)): a fresh local for
+  the copy, wherever it is declared or placed, is a spelling to bank and measure, and it defeats the reuse only by
+  reaching the target (the whole function byte-identical under the build's cc1), not by missing only in the copy's
+  register. Q25's cc1psx corroboration (the Q24 agreement test) is not imported: neither the question nor the
+  option text included it, and Ruling 11 (D) never required cc1psx. Q31 applies to Ruling 11 only; Ruling 12's
+  (D), which cites "Ruling 11 (D) standard", keeps its own text unchanged. Record: docs/grind/decisions.md 2026-09-28 OWNER RULING — Ruling 11
+  (D)(3) proof standard.
 - **(E) An honest generic name** (the owner's second condition). The name
   claims nothing false about any value the variable holds. It is either
   (i) a generic scratch word, `temp`, `tmp`, `work` or `scratch`, optionally
@@ -1381,8 +1405,10 @@ and 9 each close with a Known weakness: the only codegen effect of their
 reuse is one pseudo spanning several sites, and allocator effect alone is
 never sufficient. That sentence stands for those rulings and for every
 variable this ruling does not admit. Ruling 11 is the owner's one exception to
-it: it admits a variable on allocator NECESSITY, proven under (D) for every
-one-variable-per-value spelling, never on a measured effect.
+it: it admits a variable on allocator NECESSITY, proven under (D), never on a measured effect. Since the
+owner's 2026-09-28 Q31 ruling, (D)(3) is met by a named mechanism plus a banked search in which no
+counting one-variable-per-value spelling reaches the target (§ "Mechanism + search" in (D)); a record
+showing only that the reuse scores better still fails.
 
 **What stays banned, and what is not reopened.** A re-load of an unchanged
 value (func_80060A68 `src`/`idx`) fails (B)(2). Constants staged through a

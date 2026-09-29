@@ -30110,5 +30110,23 @@ Seventeenth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch
 "Filler doesn't count (Recommended)". Under Ruling 11 (D)(3) a one-variable-per-value spelling that needs any
 construct whose frozen-list entry (or the rule file it links) expressly requires a FAKE or !FAKE annotation is
 set aside, as the thirteenth-batch Q23 ruling does for the per-file-declaration exception: it neither defeats
-the reuse nor needs to be shown to miss. Such spellings that were measured are banked and named. A spelling is set aside only if it needs at least one FAKE- or !FAKE-annotated construct that the reuse body does not carry, and it carries, unchanged, every FAKE- or !FAKE-annotated construct the reuse body carries. A spelling whose only FAKE- or !FAKE-annotated constructs are ones the reuse body also carries is not set aside and counts under (D)(3); so does a spelling that lacks any FAKE- or !FAKE-annotated construct the reuse body carries. (This implements the owner's premise that the form with the fewest no-purpose constructs lands: the reuse body then carries strictly fewer such constructs than every spelling set aside against it.) Every other Ruling 11 prong, the (D)(1)-(4) record against every spelling that is not set aside (including spellings whose only FAKE- or !FAKE-annotated constructs are ones the reuse body also carries) and a fresh layer-2 still apply. First application:
+the reuse nor needs to be shown to miss. Such spellings that were measured are banked and named. A spelling is set aside only if it needs at least one FAKE- or !FAKE-annotated construct that the reuse body does not carry, and it carries, unchanged, every FAKE- or !FAKE-annotated construct the reuse body carries. "Unchanged" means the same construct at the same site; a construct resized or respelled within what its own rule already admits, compiling byte-identically, is the same construct (owner ruling 2026-09-28, eighteenth batch, Q32, whose question and answer are verbatim in docs/grind/owner-rulings-2026-09-26.md, batch 18: e.g. lz[5] for lz[6] under the OVERSIZED-LOCALS range annotation). A spelling whose only FAKE- or !FAKE-annotated constructs are ones the reuse body also carries is not set aside and counts under (D)(3); so does a spelling that lacks any FAKE- or !FAKE-annotated construct the reuse body carries. (This implements the owner's premise that the form with the fewest no-purpose constructs lands: the reuse body then carries strictly fewer such constructs than every spelling set aside against it.) Every other Ruling 11 prong, the (D)(1)-(4) record against every spelling that is not set aside (including spellings whose only FAKE- or !FAKE-annotated constructs are ones the reuse body also carries) and a fresh layer-2 still apply. First application:
 func_800187F4. Nothing else is pre-decided.
+
+## 2026-09-28 — OWNER RULING — Ruling 11 (D)(3) proof standard: mechanism + search; a resized FAKE construct is the same construct (`.claude/rules/ordinary-c-judge-decidable.md` § Ruling 11 (D))
+
+Eighteenth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 18, Q31/Q32). Q31: the owner
+chose "Mechanism + search (Recommended)": for Ruling 11 (D)(3), as for the per-file-declaration exception
+under Q25, the ledger names the allocator mechanism from dumps; every one-variable-per-value spelling proposed
+by the author or any reviewer is banked and measured; only a counting spelling (not set aside under Q30) that
+actually reaches the target defeats the reuse; a new counting spelling that misses is banked as evidence and is
+not a FAIL ground. This supersedes, for Ruling 11 only, (D)(3)'s requirement of an argument covering every
+spelling. Q32: the owner chose "Same construct (Recommended)": in the Q30 set-aside test, a FAKE- or
+!FAKE-annotated construct resized or respelled within what its own rule already admits, compiling
+byte-identically, counts as the same construct, "unchanged". Q31 also governs the (D)(3) sentence of the Q28
+GTE-macro input copy clause (a fresh copy local defeats only by reaching the target); Q25's cc1psx
+corroboration is not imported; Q31 applies to Ruling 11 only (Ruling 12 unchanged). The allocator-effect bar
+stays (a record showing only that the reuse scores better, with no named mechanism, fails); (D)(1)-(2), (D)(4)
+and every other Ruling 11 prong are unchanged, and a fresh layer-2 on the exact body still applies. Rule text:
+§ "Mechanism + search (Q31)", the Q30 clause's added sentence, and the amended "Relation to allocator effect"
+paragraph. First application: func_800187F4. Nothing is pre-decided.
