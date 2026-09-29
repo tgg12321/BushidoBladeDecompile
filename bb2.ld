@@ -76,6 +76,7 @@ SECTIONS
         build/src/gpu.o(.rodata);
         build/src/display.o(.rodata);
         build/src/ings2.o(.rodata);
+        build/src/comb.o(.rodata);
         main_RODATA_END = .;
         main_RODATA_SIZE = ABSOLUTE(main_RODATA_END - main_RODATA_START);
         main_TEXT_START = .;
@@ -111,6 +112,8 @@ SECTIONS
         build/src/system.o(.text);
         build/src/ings2.o(.text);
         build/src/main.o(.text);
+        build/src/comb.o(.text);
+        build/src/main_post.o(.text);
         main_TEXT_END = .;
         main_TEXT_SIZE = ABSOLUTE(main_TEXT_END - main_TEXT_START);
         main_DATA_START = .;
@@ -142,6 +145,8 @@ SECTIONS
         build/src/display.o(.data);
         build/src/ings2.o(.data);
         build/src/main.o(.data);
+        build/src/comb.o(.data);
+        build/src/main_post.o(.data);
         build/asm/data/7D920.data.o(.data);
         /* libcd bios.c: Intr (static volatile CD_intr, defined in src/system.c) at 0x800A1494 */
         build/src/system.o(.data);
@@ -178,6 +183,8 @@ SECTIONS
         build/src/system.o(.bss);
         build/src/ings2.o(.bss);
         build/src/main.o(.bss);
+        build/src/comb.o(.bss);
+        build/src/main_post.o(.bss);
         main_BSS_END = .;
         main_BSS_SIZE = ABSOLUTE(main_BSS_END - main_BSS_START);
     }

@@ -645,7 +645,6 @@ g_text1a_size_cursor            = 0x800A33A8;  /* upper-bound position cursor */
 /* Misc state */
 g_pad_press_countdown           = 0x800A3330;  /* 0x5A-frame countdown (pad press handler) */
 g_sleep_menu_cursor_y           = 0x800A3360;  /* row (paired with g_sleep_menu_cursor_x at D_800A335C) */
-sen_plus_0x8          = 0x800F1AF4;  /* volatile DMA-list address for SetPacketData */  /* data-wave 2026-09-25: was g_packet_data_dma_addr */
 g_pad_press_tick_counter        = 0x800A3924;  /* tick counter in pad-press code */
 
 /* === Data-symbol auto-classifier pass (2026-05-17) -- final scratchpad ptr === */
@@ -2055,8 +2054,6 @@ g_sys_init_substate                                     = 0x800A3690;  /* paired
 /* queue with callback, busy flag, saved args, and status snapshot. */
 CombWaitCallback                                     = 0x800F1AE8;  /* SPU transfer callback fn pointer */  /* data-wave 2026-09-25: was g_spu_xfer_callback */
 sen                                    = 0x800F1AEC;  /* != 0 = busy (caller returns -1); set to 1 when starting */  /* data-wave 2026-09-25: was g_spu_xfer_busy_flag */
-sen_plus_0x4                                   = 0x800F1AF0;  /* arg0 saved for callback */  /* data-wave 2026-09-25: was g_spu_xfer_arg0_saved */
-sen_plus_0xC                              = 0x800F1AF8;  /* SPU reg+4 bit 0x80 snapshot taken at transfer start */  /* data-wave 2026-09-25: was g_spu_xfer_status_snapshot */
 
 /* === Motion frame offset table + GTE vector template (2026-05-17) -- 6 highs === */
 g_motion_frame_offset_table                             = 0x800963EE;  /* s16 table at 4-byte stride; values * 2048 (<<11) = byte offset in motion data */
@@ -2429,7 +2426,6 @@ patch0_plus_0x4                               = 0x800F183C;  /* +4 from g_sys_in
 patch0_plus_0x8                               = 0x800F1840;  /* +8 from g_sys_int_rp_table (0x800F1838) */  /* data-wave 2026-09-25: was g_sys_int_rp_table_plus_8 */
 Result_plus_0x10                           = 0x800F19B0;  /* +8 from g_cdrom_callback_buf_b (0x800F19A8) */  /* data-wave 2026-09-25: was g_cdrom_callback_buf_b_plus_8 */
 D_800F1AFC                       = 0x800F1AFC;  /* +4 from g_spu_xfer_status_snapshot (0x800F1AF8) */  /* data-wave 2026-09-25: was g_spu_xfer_status_snapshot_plus_4 */
-D_800F1B00                       = 0x800F1B00;  /* +8 from g_spu_xfer_status_snapshot (0x800F1AF8) */  /* data-wave 2026-09-25: was g_spu_xfer_status_snapshot_plus_8 */
 _svm_voice_plus_0x1D                  = 0x800F4E35;  /* +7 from g_satan1_slot_state_field_at_14 (0x800F4E2E) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14_plus_7 */  /* alias of _svm_voice+0x1D (struct SpuVoice, include/sound.h); retire with _SsVmFlush */
 g_gte_color_matrix_data_plus_6                          = 0x800F631E;  /* +6 from g_gte_color_matrix_data (0x800F6318) */
 g_gte_color_matrix_data_b_plus_6                        = 0x800F637E;  /* +6 from g_gte_color_matrix_data_b (0x800F6378) */
@@ -2790,10 +2786,6 @@ D_800EF0C0                                        = 0x800EF0C0;  /* data-wave 20
 D_800EF0C4                                        = 0x800EF0C4;  /* data-wave 2026-09-25: was g_snd_voice_init_pitch_baseline */
 D_800EF0D8                                        = 0x800EF0D8;  /* data-wave 2026-09-25: was g_snd_voice_envelope_block_a */
 D_800EF168                                        = 0x800EF168;  /* data-wave 2026-09-25: was g_snd_voice_envelope_block_b */
-regs_plus_0x8                                         = 0x800F1AE0;  /* data-wave 2026-09-25: was g_main_addr_800F1AE0 */
-regs_plus_0xA                                         = 0x800F1AE2;  /* data-wave 2026-09-25: was g_main_addr_800F1AE2 */
-regs_plus_0xE                                         = 0x800F1AE6;  /* data-wave 2026-09-25: was g_spu_reg_init_F1AE6 */
-D_800F1B04                     = 0x800F1B04;  /* data-wave 2026-09-25: was g_spu_xfer_status_snapshot_plus_8_plus_4 */
 _svm_okon1                    = 0x800F1B10;  /* data-wave 2026-09-24: was g_spu_xfer_status_snapshot_plus_8_plus_16 */
 _svm_okon2                                         = 0x800F1B12;  /* data-wave 2026-09-24: was g_main_mask_reg_800F1B12 */
 g_seq_event_handler_90_NoteOn                                         = 0x800F3340;

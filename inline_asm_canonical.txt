@@ -136,9 +136,6 @@ _patch_gte          # BIOS jumptable installer (jalr $t2 with $t1=0x56) + $k0 ke
 func_800164F8          # break-instruction test: encoded as .word stream `0x2402270F (addiu); 0x0001000D (break code 0x10); 0x2442FFFF (addiu); 0x0441FFFD (bgez); 0x03E00008 (jr $ra)`. Tests the break-trap mechanism via raw word encoding because maspsx can't emit `break` with arbitrary code field.
 PCopen          # break instruction `.word 0x000040CD` (break with code 0x103) plus return-value handling. Same pattern as authorized md_gview_init/bios_FileReadRaw; Marionation-engine custom kernel call.
 
-# Data-as-code (function-pointer tables)
-jtbl_comb_control          # Pure .word function-pointer table (19 entries, 0x8008C49C..0x8008C6DC). Data block exposed under a function symbol because callers reference the offsets as if calling the function; no executable code.
-
 # BIOS jumptable installer (same pattern as authorized func_80078F88 / func_80079028)
 _ExitCard          # BIOS B(0x56) jumptable installer: EnterCriticalSection + `jalr $t2; $t1=0x56` + jumptable copy loop (D_8007A4C0..D_8007A4CC range) + ExitCriticalSection. Trailing 6x `.word 0` padding. Same canonical pattern as func_80078F88/func_80079028 already in this file.
 _remove_ChgclrPAD      # BIOS jumptable wrapper (Kengo: pad_SetActDirect): `addiu $t2,0xB0; jalr $t2; addiu $t1,0x57` (function-id in delay slot, GCC 2.7.2 cannot emit), manual $ra save/restore via global D_800A3638 (no stack frame), trapping `addi $v1,$v0,0x62C`. PSY-Q hand-coded convention, cluster pattern across display.c/gpu.c/text1b.c/ings2.c. User-authorized 2026-05-16.
