@@ -118,3 +118,10 @@
     dead-store-fake-exception.
   - `cells`: Ruling 11 package in r11/ (per-value split 124; each value split alone: V1 120, V5 120, V2/V3/V4/V6 4;
     no-variable respelling 131; allocation dumps; permuter campaign from the split body).
+
+## LANDED 2026-09-29 — COMPLETED-C
+- Match e637a239d (src/text1b.c body + D_800A3578 s16 retype, include/game.h D_8009BCC4[3][2] / D_8009BCD0[2]
+  merges, undefined_syms_auto.txt -D_8009BCC6/-D_8009BCD2); queue e6cd6102d. Layer-2 PASS on round 2 (round 1
+  FAILed documentation only: the q21/ citation, the session count, the split-TU note on timers/README.md).
+- The split route (split/, TU re-attribution at func_8006F97C + Q21 per-file declarations) is WITHDRAWN; its
+  tooling stays here as history only (split/tu_boundary.md "Superseded"). Ledger closed.
