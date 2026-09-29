@@ -63,7 +63,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
      * lz[7]/lz[8] 0x80.
      * lever-exhaustion: memory/grind/func_800187F4/evidence.md [s2] item 7 and
      * r11/proof.md section 7 (the phantom-slot producer census). */
-    s32 lz[6];
+    s32 lz[2];
 
     func_80018094((s32 *)arg0, arg1);
     count = *(s16 *)((u8 *)arg1 + 4);

@@ -57,13 +57,11 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
      * traffic is lz[0]/lz[1] at sp+0x10/0x14 and the count spill at sp+0x48.
      * Of the 0x40, 8 are the spill slot and 32 (0x28-0x47) are the four 8-byte
      * phantom slots of the combine orphan-USE loop-guard pseudos (the frame of the
-     * lz[2] form: 0x68); the 24 bytes left (sp+0x10-0x27) are this object's:
-     * lz[0]/lz[1] written by gte_stlzc, then a 16-byte unwritten tail.
-     * Measured: lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
-     * lz[7]/lz[8] 0x80.
+     * lz[2] form: 0x68); the 16 bytes left are this object's.
+     * Measured: lz[2]..lz[4] give frame 0x68, lz[5]/lz[6] 0x78, lz[7]/lz[8] 0x80.
      * lever-exhaustion: memory/grind/func_800187F4/evidence.md [s2] item 7 and
      * r11/proof.md section 7 (the phantom-slot producer census). */
-    s32 lz[6];
+    s32 lz[2];
 
     func_80018094((s32 *)arg0, arg1);
     count = *(s16 *)((u8 *)arg1 + 4);

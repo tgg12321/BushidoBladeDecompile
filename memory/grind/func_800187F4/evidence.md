@@ -86,7 +86,7 @@ Added to the 2-insn chassis:
 9. The copy adds 1 RTL insn in the particle loop, which pushes the hoisted `-2`
    (pri 140000/len) from 157 to 156 = tie with `3` -> s6/s7 swap. Fixed by
    ONE ground-collision store: `if (d > 0x3200) t = vy - 0x400; else t = vy -
-   d / 8; SCR->vel[1] = t;` (target's single `sw` at 0x80018CB8 is shared;
+   d / 8; SCR->vel[1] = t;` (target's single `sw` at 0x80018CBC, after the join label .L80018CB8, is shared;
    two stores = one extra RTL insn that jump2 cross-jumps away). A `?:` into
    the store keeps two stores (expand stores per arm).
 Policy exposure still to reduce before any landing: `byte` copy (banned
@@ -140,16 +140,18 @@ cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
   ablation: 0 iff the ground depth shares with at least one sphere delta; the other five deltas are
   own locals); every reused local renamed and scoped for Ruling 11 (idx, nforce, temp, work, delta,
   nbits, nbits2), each annotated.
-- **Ruling 11 package**: r11/proof.md — per variable the dumps (r11/dumps_table.txt), the mechanism
+- **Ruling 11 package**: r11/proof.md — per variable the dumps (then r11/dumps_table.txt; since v5 r11/dumps_table_landing.txt), the mechanism
   (global.c allocno priority for idx/nforce; local-alloc single-block quantities for temp's table
   bytes; cse.c make_regs_eqv class head for work and delta; local-alloc combine_regs tie for nbits),
-  the necessity argument, the measured alternatives (r11/measurements.md: per-value 67/21/40/26/4/2/2,
-  ablations, 14 structural respellings, 17 FAKE-family probes), two permuter campaigns (25,115
+  the necessity argument, the measured alternatives (r11/measurements_v1.md: per-value 67/21/40/26/4/2/2 sandbox,
+  ablations, 14 structural respellings, 17 FAKE-family probes), two permuter campaigns (25,116
   iterations, no find reaches 0; campaign 2's gains re-create reuses).
 - **Disclosed alternative**: per-value `dg` + FAKE dead store `dg = 0;` after the ellipsoid loop also
   reaches 0 (cse counts the dead use before flow deletes it); not landed (adds a FAKE construct, the
   reuse adds none; Ruling 1(4), func_8008B488 precedent).
-- **lz[6]**: lz[5]/[6] frame 0x78 (0), lz[2]-[4] 0x68 and lz[7]/[8] 0x80 (24) on the landing body.
+- **lz[6]**: lz[5]/[6] frame 0x78 (0), lz[2] 0x68, lz[3]/[4] 0x70 and lz[7]/[8] 0x80 (24 each) on the landing
+  body (corrected 2026-09-29 by the sixth layer-2: lz[3]/[4] had been recorded as 0x68; builds
+  r11/reviewer_probes/rv6_lz2..rv6_lz7, tmp/func_800187F4/fast_lzc5_*).
 
 ## [s3 cont.] 2026-09-28 — layer-2 FAIL of the first landing, v2 chassis c6
 
@@ -163,7 +165,8 @@ cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
   Scratchpad type renamed Scr1F800000; header text: the state -0xFF..-1 path pulls then integrates.
 - Five Ruling 11 locals remain (idx, nforce, temp incl. the Q28 copy, nbits, nbits2), re-measured on c6
   (r11/measurements.md: 67 / 21 / 40 (27, 33, 29 ablations) / 2 / 2; all 98) with systematic FAKE sweeps:
-  dead stores at six anchors (77 variants) and self-assigns + chain-extenders (132): none reaches 0.
+  dead stores at six anchors (72 variants + 5 per-value baselines) and self-assigns + chain-extenders (132):
+  none reaches 0.
 - lz[6]: phantom-slot producer census (r11/frame_census.md): 14 ordinary spellings of the lz[2] form,
   none gives frame 0x78 at zero cost.
 
@@ -176,4 +179,13 @@ cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
 ## [s3 cont. 3] 2026-09-28 — v4 layer-2 FAIL (ledger only) fixed
 - Banked the landing-chassis dumps (r11/dumps_table_landing.txt, r11/lreg_excerpts_landing.txt), rewrote proof §3
   as mechanism + record under Q31, banked all 29 tmp-only reviewer probes (r11/reviewer_probes/, none counting
-  reaches 0), corrected figures (2,071 FAKE-free per-value reviewer probes + 99 reuse bodies; 8 reuse zeros).
+  reaches 0), corrected figures (2,071 FAKE-free per-value reviewer probes + 99 reuse bodies; 10 reuse zeros: 8 loop, 2 order).
+
+## [s3 cont. 4] 2026-09-29 — layer-2 v5, v6, v7 FAILs (records only) fixed; author-side audit
+- Three more fresh layer-2 reviews passed the bytes, the islands and the seven Ruling 11 locals and FAILed
+  record text only (rejected/r11-lz6-frame-text-v5-layer2-fail-0.md, r11-lz6-measured-line-v6-layer2-fail-0.md,
+  r11-frame-probe-record-v7-layer2-fail-0.md): the lz[6] 0x40 sum (24 bytes of the object, not 16), the
+  "Measured:" line (lz[3]/lz[4] give 0x70), template.c stale, §5 frame-probe sentence, probes.md zero count,
+  uncommitted ledger. Their probes are banked (r11/reviewer_probes/rv5_*, rv6_*, rv7_*); none counting reaches 0.
+- An author-side audit then checked every figure against the banked files (proof v9 notes the corrections;
+  r11/fake_scan.md; tmp-only evidence banked in r11/banked/).

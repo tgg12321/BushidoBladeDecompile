@@ -76,7 +76,8 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         s32 idx;
         /* Ruling 11 (proof r11/proof.md): two values, both force counts -- node
          * word 7 (forces added) and node word 8 (forces subtracted). */
-        s32 nforce;
+        s32 nf_add;
+        s32 nf_sub;
 
         SCR->pos[0] = node[0];
         SCR->pos[1] = node[1];
@@ -121,9 +122,8 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         vx = node[3];
         vy = node[4];
         vz = node[5];
-        nforce = node[7];
         bits = node[9];
-        for (idx = 0; idx < nforce; idx++) {
+        for (idx = 0, nf_add = node[7]; idx < nf_add; idx++) {
             s32 *f_add;
 
             f_add = SCR->force[bits & 0xFF];
@@ -136,9 +136,8 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 bits >>= 8;
             }
         }
-        nforce = node[8];
         bits2 = node[11];
-        for (idx = 0; idx < nforce; idx++) {
+        for (idx = 0, nf_sub = node[8]; idx < nf_sub; idx++) {
             s32 *f_sub;
 
             f_sub = SCR->force[bits2 & 0xFF];

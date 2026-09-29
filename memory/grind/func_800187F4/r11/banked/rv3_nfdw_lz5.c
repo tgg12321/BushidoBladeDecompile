@@ -57,13 +57,11 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
      * traffic is lz[0]/lz[1] at sp+0x10/0x14 and the count spill at sp+0x48.
      * Of the 0x40, 8 are the spill slot and 32 (0x28-0x47) are the four 8-byte
      * phantom slots of the combine orphan-USE loop-guard pseudos (the frame of the
-     * lz[2] form: 0x68); the 24 bytes left (sp+0x10-0x27) are this object's:
-     * lz[0]/lz[1] written by gte_stlzc, then a 16-byte unwritten tail.
-     * Measured: lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
-     * lz[7]/lz[8] 0x80.
+     * lz[2] form: 0x68); the 16 bytes left are this object's.
+     * Measured: lz[2]..lz[4] give frame 0x68, lz[5]/lz[6] 0x78, lz[7]/lz[8] 0x80.
      * lever-exhaustion: memory/grind/func_800187F4/evidence.md [s2] item 7 and
      * r11/proof.md section 7 (the phantom-slot producer census). */
-    s32 lz[6];
+    s32 lz[5];
 
     func_80018094((s32 *)arg0, arg1);
     count = *(s16 *)((u8 *)arg1 + 4);
@@ -76,7 +74,8 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         s32 idx;
         /* Ruling 11 (proof r11/proof.md): two values, both force counts -- node
          * word 7 (forces added) and node word 8 (forces subtracted). */
-        s32 nforce;
+        s32 nforce_add;
+        s32 nforce_sub;
 
         SCR->pos[0] = node[0];
         SCR->pos[1] = node[1];
@@ -118,12 +117,12 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
             SCR->pos[1] -= (((SCR->vel[1] << 7) - SCR->pos[1]) * node[6]) >> 8;
             SCR->pos[2] -= (((SCR->vel[2] << 7) - SCR->pos[2]) * node[6]) >> 8;
         }
-        vx = node[3];
-        vy = node[4];
-        vz = node[5];
-        nforce = node[7];
-        bits = node[9];
-        for (idx = 0; idx < nforce; idx++) {
+        do { vx = node[3]; } while (0); /* FAKE */
+        do { vy = node[4]; } while (0); /* FAKE */
+        do { vz = node[5]; } while (0); /* FAKE */
+        do { nforce_add = node[7]; } while (0); /* FAKE */
+        do { bits = node[9]; } while (0); /* FAKE */
+        for (idx = 0; idx < nforce_add; idx++) {
             s32 *f_add;
 
             f_add = SCR->force[bits & 0xFF];
@@ -136,9 +135,9 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 bits >>= 8;
             }
         }
-        nforce = node[8];
-        bits2 = node[11];
-        for (idx = 0; idx < nforce; idx++) {
+        nforce_sub = node[8];
+        do { bits2 = node[11]; } while (0); /* FAKE */
+        for (idx = 0; idx < nforce_sub; idx++) {
             s32 *f_sub;
 
             f_sub = SCR->force[bits2 & 0xFF];
@@ -155,16 +154,14 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         SCR->vel[1] = vy;
         SCR->vel[2] = vz;
         if (*(s32 *)((u8 *)arg0 + 0xC) != 0) {
-            /* Ruling 11 (proof r11/proof.md): two values, both Y deltas -- the
-             * node's depth below the ground, then the Y delta to focus 0. */
-            s32 delta;
+            s32 depth;
 
-            delta = SCR->pos[1] - SCR->ground;
-            if (delta > 0) {
-                if (delta > 0x3200) {
+            depth = SCR->pos[1] - SCR->ground;
+            if (depth > 0) {
+                if (depth > 0x3200) {
                     vy_new = vy - 0x400;
                 } else {
-                    vy_new = vy - delta / 8;
+                    vy_new = vy - depth / 8;
                 }
                 SCR->vel[1] = vy_new;
             }
@@ -172,23 +169,21 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
             SCR->cpos[1] = SCR->pos[1] >> 5;
             SCR->cpos[2] = SCR->pos[2] >> 5;
             for (idx = 0; idx < SCR->nsph; idx++) {
-                s32 dx0, dz0, dy1, dx1, dz1;
+                s32 dy0, dx0, dz0, dy1, dx1, dz1;
                 s32 sq2, dist2;
                 /* Ruling 11 (proof r11/proof.md): three values -- a copy of the
-                 * squared length for the leading-zero-count macro (a value under
+                 * squared distance for the leading-zero-count macro (a value under
                  * (C)(3)'s GTE-macro input copy clause, owner ruling 2026-09-28
                  * Q28), then the focus-0 table byte, then the focus-1 table byte. */
                 s32 temp;
-                /* Ruling 11 (proof r11/proof.md): two values -- the focus-0 squared
-                 * distance, then the distance (scaled to its push factor below). */
-                s32 work;
+                s32 sq1, dist1;
 
                 r = SCR->rad[idx];
-                delta = SCR->cpos[1] - SCR->sph[idx][1];
-                if (delta < -r || r < delta) {
+                dy0 = SCR->cpos[1] - SCR->sph[idx][1];
+                if (dy0 < -r || r < dy0) {
                     continue;
                 }
-                SCR->d0[1] = delta;
+                SCR->d0[1] = dy0;
                 dx0 = SCR->cpos[0] - SCR->sph[idx][0];
                 if (dx0 < -r || r < dx0) {
                     continue;
@@ -206,10 +201,10 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 @gte_sqr0();
                 /* gte_stlvnl(r1) -- inline_o.h 4.3 :904-909 */
                 @gte_stlvnl(SCR->sq);
-                work = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
-                temp = work;
-                if (work < 0x400) {
-                    work = (&D_8008D118)[work] >> 3;
+                sq1 = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
+                temp = sq1;
+                if (sq1 < 0x400) {
+                    dist1 = (&D_8008D118)[sq1] >> 3;
                 } else {
                     /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
                      * the leading-zero count, then the table shift. */
@@ -220,10 +215,10 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                     @gte_Lzc(temp, &lz[0]);
                     nbits = lz[0];
                     nbits = 0x16 - (nbits & ~1);
-                    temp = (&D_8008D118)[work >> nbits];
-                    work = (temp << 16) >> (0x13 - (nbits >> 1));
+                    temp = (&D_8008D118)[sq1 >> nbits];
+                    dist1 = (temp << 16) >> (0x13 - (nbits >> 1));
                 }
-                if (work >= r) {
+                if (dist1 >= r) {
                     continue;
                 }
                 dy1 = SCR->cpos[1] - SCR->sph[idx][4];
@@ -264,7 +259,17 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                     temp = (&D_8008D118)[sq2 >> nbits2];
                     dist2 = (temp << 16) >> (0x13 - (nbits2 >> 1));
                 }
-                tot = work + dist2;
+                /* FAKE: dead store; mechanism: reg_scan records it as sq1's last
+                 * reference (regclass.c:1764 counts sets), later than temp's (the
+                 * focus-1 table byte above), so cse.c make_regs_eqv (:840-857)
+                 * keeps sq1 as the class head of `temp = sq1;`: the compare and the
+                 * table indexes read sq1 ($a1) and the copy stays its own move (the
+                 * target's `addu $a0,$a1,$zero` at 0x80018E18); otherwise temp
+                 * becomes the head and the copy is folded away (26 insns). flow
+                 * deletes the store (no bytes). Lever exhaustion:
+                 * memory/grind/func_800187F4/r11/proof.md (sq1). */
+                sq1 = 0;
+                tot = dist1 + dist2;
                 if (tot >= r) {
                     continue;
                 }
@@ -279,13 +284,13 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 if (pen > 0x400000) {
                     pen = 0x400000;
                 }
-                if (work != 0) {
-                    work = pen / work;
+                if (dist1 != 0) {
+                    dist1 = pen / dist1;
                 }
                 /* gte_ldlvl(r1) -- inline_o.h 4.3 :104-109 */
                 @gte_ldlvl(SCR->d0);
                 /* gte_lddp(r1) -- inline_o.h 4.3 :144-147 */
-                @gte_lddp(work);
+                @gte_lddp(dist1);
                 /* gte_gpl12() -- inline_o.h 4.3 :726-730; post-DMPSX word 0x4BA8003E
                  * for the header placeholder 0x0000133f (owner Q29) */
                 @gte_gpl12();
@@ -302,6 +307,14 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 /* gte_stlvl(r1) -- inline_o.h 4.3 :898-903 */
                 @gte_stlvl(SCR->vel);
             }
+            /* FAKE: dead store; mechanism: reg_scan records it as depth's last
+             * reference (regclass.c:1764 counts sets), so in cse the `depth / 8`
+             * expansion's copy does not outlive depth and cse.c make_regs_eqv
+             * (:840-857) keeps depth as the class head: the sign test reads depth
+             * (target `bgez $v1`, copy in the delay slot) instead of the copy
+             * (`bgez $v0`, 4 insns). flow deletes the store (no bytes). Lever
+             * exhaustion: memory/grind/func_800187F4/r11/proof.md (depth). */
+            depth = 0;
         }
         node[3] = (SCR->vel[0] * 7) >> 3;
         node[0] = SCR->pos[0] + SCR->dpos[0] + node[3];

@@ -39,6 +39,24 @@ typedef struct {
     s32 force[0][3]; /* 0xBC force table, indexed by the node's packed bytes */
 } Scr1F800000;
 #define SCR ((Scr1F800000 *)0x1F800000)
+static inline s32 lut_root(s32 sq, s32 *lzp) {
+    s32 root;
+
+    if (sq < 0x400) {
+        root = (&D_8008D118)[sq] >> 3;
+    } else {
+        s32 lzcount;
+        s32 shift;
+        s32 byte;
+
+        @gte_Lzc(sq, lzp);
+        lzcount = *lzp;
+        shift = 0x16 - (lzcount & ~1);
+        byte = (&D_8008D118)[sq >> shift];
+        root = (byte << 16) >> (0x13 - (shift >> 1));
+    }
+    return root;
+}
 void func_800187F4(s16 *arg0, s32 *arg1) {
     s32 *node;
     s32 i;
@@ -57,10 +75,8 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
      * traffic is lz[0]/lz[1] at sp+0x10/0x14 and the count spill at sp+0x48.
      * Of the 0x40, 8 are the spill slot and 32 (0x28-0x47) are the four 8-byte
      * phantom slots of the combine orphan-USE loop-guard pseudos (the frame of the
-     * lz[2] form: 0x68); the 24 bytes left (sp+0x10-0x27) are this object's:
-     * lz[0]/lz[1] written by gte_stlzc, then a 16-byte unwritten tail.
-     * Measured: lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
-     * lz[7]/lz[8] 0x80.
+     * lz[2] form: 0x68); the 16 bytes left are this object's.
+     * Measured: lz[2]..lz[4] give frame 0x68, lz[5]/lz[6] 0x78, lz[7]/lz[8] 0x80.
      * lever-exhaustion: memory/grind/func_800187F4/evidence.md [s2] item 7 and
      * r11/proof.md section 7 (the phantom-slot producer census). */
     s32 lz[6];
@@ -174,14 +190,10 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
             for (idx = 0; idx < SCR->nsph; idx++) {
                 s32 dx0, dz0, dy1, dx1, dz1;
                 s32 sq2, dist2;
-                /* Ruling 11 (proof r11/proof.md): three values -- a copy of the
-                 * squared length for the leading-zero-count macro (a value under
-                 * (C)(3)'s GTE-macro input copy clause, owner ruling 2026-09-28
-                 * Q28), then the focus-0 table byte, then the focus-1 table byte. */
-                s32 temp;
                 /* Ruling 11 (proof r11/proof.md): two values -- the focus-0 squared
                  * distance, then the distance (scaled to its push factor below). */
-                s32 work;
+                s32 sq1;
+                s32 dist1;
 
                 r = SCR->rad[idx];
                 delta = SCR->cpos[1] - SCR->sph[idx][1];
@@ -206,24 +218,9 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 @gte_sqr0();
                 /* gte_stlvnl(r1) -- inline_o.h 4.3 :904-909 */
                 @gte_stlvnl(SCR->sq);
-                work = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
-                temp = work;
-                if (work < 0x400) {
-                    work = (&D_8008D118)[work] >> 3;
-                } else {
-                    /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
-                     * the leading-zero count, then the table shift. */
-                    s32 nbits;
-
-                    /* gte_Lzc(r1,r2) -- gtemac.h 4.3 :174-178 = gte_ldlzc :207-210,
-                     * gte_nop :1095-1097 twice, gte_stlzc :1074-1077 */
-                    @gte_Lzc(temp, &lz[0]);
-                    nbits = lz[0];
-                    nbits = 0x16 - (nbits & ~1);
-                    temp = (&D_8008D118)[work >> nbits];
-                    work = (temp << 16) >> (0x13 - (nbits >> 1));
-                }
-                if (work >= r) {
+                sq1 = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
+                dist1 = lut_root(sq1, &lz[0]);
+                if (dist1 >= r) {
                     continue;
                 }
                 dy1 = SCR->cpos[1] - SCR->sph[idx][4];
@@ -249,22 +246,8 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 /* gte_stlvnl(r1) -- inline_o.h 4.3 :904-909 */
                 @gte_stlvnl(SCR->sq);
                 sq2 = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
-                if (sq2 < 0x400) {
-                    dist2 = (&D_8008D118)[sq2] >> 3;
-                } else {
-                    /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
-                     * the leading-zero count, then the table shift. */
-                    s32 nbits2;
-
-                    /* gte_Lzc(r1,r2) -- gtemac.h 4.3 :174-178 = gte_ldlzc :207-210,
-                     * gte_nop :1095-1097 twice, gte_stlzc :1074-1077 */
-                    @gte_Lzc(sq2, &lz[1]);
-                    nbits2 = lz[1];
-                    nbits2 = 0x16 - (nbits2 & ~1);
-                    temp = (&D_8008D118)[sq2 >> nbits2];
-                    dist2 = (temp << 16) >> (0x13 - (nbits2 >> 1));
-                }
-                tot = work + dist2;
+                dist2 = lut_root(sq2, &lz[1]);
+                tot = dist1 + dist2;
                 if (tot >= r) {
                     continue;
                 }
@@ -279,13 +262,13 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 if (pen > 0x400000) {
                     pen = 0x400000;
                 }
-                if (work != 0) {
-                    work = pen / work;
+                if (dist1 != 0) {
+                    dist1 = pen / dist1;
                 }
                 /* gte_ldlvl(r1) -- inline_o.h 4.3 :104-109 */
                 @gte_ldlvl(SCR->d0);
                 /* gte_lddp(r1) -- inline_o.h 4.3 :144-147 */
-                @gte_lddp(work);
+                @gte_lddp(dist1);
                 /* gte_gpl12() -- inline_o.h 4.3 :726-730; post-DMPSX word 0x4BA8003E
                  * for the header placeholder 0x0000133f (owner Q29) */
                 @gte_gpl12();

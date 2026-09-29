@@ -178,7 +178,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                  * squared length for the leading-zero-count macro (a value under
                  * (C)(3)'s GTE-macro input copy clause, owner ruling 2026-09-28
                  * Q28), then the focus-0 table byte, then the focus-1 table byte. */
-                s32 temp;
+                s32 lzc_in;
                 /* Ruling 11 (proof r11/proof.md): two values -- the focus-0 squared
                  * distance, then the distance (scaled to its push factor below). */
                 s32 work;
@@ -207,7 +207,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 /* gte_stlvnl(r1) -- inline_o.h 4.3 :904-909 */
                 @gte_stlvnl(SCR->sq);
                 work = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
-                temp = work;
+                lzc_in = work;
                 if (work < 0x400) {
                     work = (&D_8008D118)[work] >> 3;
                 } else {
@@ -217,11 +217,10 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
 
                     /* gte_Lzc(r1,r2) -- gtemac.h 4.3 :174-178 = gte_ldlzc :207-210,
                      * gte_nop :1095-1097 twice, gte_stlzc :1074-1077 */
-                    @gte_Lzc(temp, &lz[0]);
+                    @gte_Lzc(lzc_in, &lz[0]);
                     nbits = lz[0];
                     nbits = 0x16 - (nbits & ~1);
-                    temp = (&D_8008D118)[work >> nbits];
-                    work = (temp << 16) >> (0x13 - (nbits >> 1));
+                    work = ((&D_8008D118)[work >> nbits] << 16) >> (0x13 - (nbits >> 1));
                 }
                 if (work >= r) {
                     continue;
@@ -261,8 +260,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                     @gte_Lzc(sq2, &lz[1]);
                     nbits2 = lz[1];
                     nbits2 = 0x16 - (nbits2 & ~1);
-                    temp = (&D_8008D118)[sq2 >> nbits2];
-                    dist2 = (temp << 16) >> (0x13 - (nbits2 >> 1));
+                    dist2 = ((&D_8008D118)[sq2 >> nbits2] << 16) >> (0x13 - (nbits2 >> 1));
                 }
                 tot = work + dist2;
                 if (tot >= r) {

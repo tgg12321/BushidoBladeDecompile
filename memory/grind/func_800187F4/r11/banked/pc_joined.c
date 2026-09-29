@@ -1,13 +1,13 @@
 /* func_800187F4 -- COMPLETED-INLINE-ASM-CANONICAL (manual lane, 2026-09-28).
- * Node-chain integrator. func_8001924C calls it for each 16-byte record (arg0;
- * +0xC enables collision) whose flag bit 0 is clear, with the record's descriptor
- * (arg1: +0 table of 8-byte anchor vectors, +4 s16 node count, +0xC the 64-byte
- * nodes). func_80018094 first sets up the GTE rotation/translation. Per node
- * (words 0-2 position, 3-5 velocity, 6 state, 7/8 force counts, 9-12 packed
+ * Rope/cloth node integrator. func_8001924C calls it for each 16-byte rope record
+ * (arg0; +0xC enables collision) whose flag bit 0 is clear, with the record's
+ * descriptor (arg1: +0 table of 8-byte anchor vectors, +4 s16 node count, +0xC the
+ * 64-byte nodes). func_80018094 first sets up the GTE rotation/translation. Per
+ * node (words 0-2 position, 3-5 velocity, 6 state, 7/8 force counts, 9-12 packed
  * force-table indices): state >= 0 springs the node toward its GTE-transformed
- * anchor (or snaps to it at 0) and ends there; state -0xFF..-1 first pulls the
- * position toward the anchor and then integrates like state < -0xFF: the indexed
- * scratchpad forces are added / subtracted, the node is pushed out of the ground and out of each
+ * anchor (or snaps to it at 0); state -0xFF..-1 pulls the position back toward the
+ * anchor; otherwise the node is integrated freely: the indexed scratchpad forces
+ * are added / subtracted, the node is pushed out of the ground and out of each
  * collision ellipsoid (inside when its distances to the two foci sum below the
  * bound; lengths via the D_8008D118 byte-LUT integer sqrt, with the GTE
  * leading-zero count above 0x400; the push applied on the GTE with GPF/GPL), and
@@ -37,8 +37,8 @@ typedef struct {
     s32 rad[3];     /* 0xAC ellipsoid bounds (sum of the two focus distances) */
     s32 ground;     /* 0xB8 ground height */
     s32 force[0][3]; /* 0xBC force table, indexed by the node's packed bytes */
-} Scr1F800000;
-#define SCR ((Scr1F800000 *)0x1F800000)
+} RopeScratch;
+#define SCR ((RopeScratch *)0x1F800000)
 void func_800187F4(s16 *arg0, s32 *arg1) {
     s32 *node;
     s32 i;
@@ -55,14 +55,9 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
      * back. Frame from asm/funcs/func_800187F4.s alone: frame 0x78 = outgoing args
      * 0x10 + locals 0x40 + ten saves $s0-$s7/$fp/$ra at 0x50-0x74; the only locals
      * traffic is lz[0]/lz[1] at sp+0x10/0x14 and the count spill at sp+0x48.
-     * Of the 0x40, 8 are the spill slot and 32 (0x28-0x47) are the four 8-byte
-     * phantom slots of the combine orphan-USE loop-guard pseudos (the frame of the
-     * lz[2] form: 0x68); the 24 bytes left (sp+0x10-0x27) are this object's:
-     * lz[0]/lz[1] written by gte_stlzc, then a 16-byte unwritten tail.
-     * Measured: lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
-     * lz[7]/lz[8] 0x80.
+     * Measured: lz[2]..lz[4] give frame 0x68, lz[5]/lz[6] 0x78, lz[7]/lz[8] 0x80.
      * lever-exhaustion: memory/grind/func_800187F4/evidence.md [s2] item 7 and
-     * r11/proof.md section 7 (the phantom-slot producer census). */
+     * r11/proof.md "Other constructs". */
     s32 lz[6];
 
     func_80018094((s32 *)arg0, arg1);

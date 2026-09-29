@@ -57,10 +57,8 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
      * traffic is lz[0]/lz[1] at sp+0x10/0x14 and the count spill at sp+0x48.
      * Of the 0x40, 8 are the spill slot and 32 (0x28-0x47) are the four 8-byte
      * phantom slots of the combine orphan-USE loop-guard pseudos (the frame of the
-     * lz[2] form: 0x68); the 24 bytes left (sp+0x10-0x27) are this object's:
-     * lz[0]/lz[1] written by gte_stlzc, then a 16-byte unwritten tail.
-     * Measured: lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
-     * lz[7]/lz[8] 0x80.
+     * lz[2] form: 0x68); the 16 bytes left are this object's.
+     * Measured: lz[2]..lz[4] give frame 0x68, lz[5]/lz[6] 0x78, lz[7]/lz[8] 0x80.
      * lever-exhaustion: memory/grind/func_800187F4/evidence.md [s2] item 7 and
      * r11/proof.md section 7 (the phantom-slot producer census). */
     s32 lz[6];
@@ -157,14 +155,16 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         if (*(s32 *)((u8 *)arg0 + 0xC) != 0) {
             /* Ruling 11 (proof r11/proof.md): two values, both Y deltas -- the
              * node's depth below the ground, then the Y delta to focus 0. */
-            s32 delta;
+            s32 dg;
+            s32 dy0;
 
-            delta = SCR->pos[1] - SCR->ground;
-            if (delta > 0) {
-                if (delta > 0x3200) {
+            dg = SCR->pos[1];
+            dg -= SCR->ground;
+            if (dg > 0) {
+                if (dg > 0x3200) {
                     vy_new = vy - 0x400;
                 } else {
-                    vy_new = vy - delta / 8;
+                    vy_new = vy - dg / 8;
                 }
                 SCR->vel[1] = vy_new;
             }
@@ -184,11 +184,11 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 s32 work;
 
                 r = SCR->rad[idx];
-                delta = SCR->cpos[1] - SCR->sph[idx][1];
-                if (delta < -r || r < delta) {
+                dy0 = SCR->cpos[1] - SCR->sph[idx][1];
+                if (dy0 < -r || r < dy0) {
                     continue;
                 }
-                SCR->d0[1] = delta;
+                SCR->d0[1] = dy0;
                 dx0 = SCR->cpos[0] - SCR->sph[idx][0];
                 if (dx0 < -r || r < dx0) {
                     continue;

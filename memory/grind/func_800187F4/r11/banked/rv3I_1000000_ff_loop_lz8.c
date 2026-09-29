@@ -57,13 +57,11 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
      * traffic is lz[0]/lz[1] at sp+0x10/0x14 and the count spill at sp+0x48.
      * Of the 0x40, 8 are the spill slot and 32 (0x28-0x47) are the four 8-byte
      * phantom slots of the combine orphan-USE loop-guard pseudos (the frame of the
-     * lz[2] form: 0x68); the 24 bytes left (sp+0x10-0x27) are this object's:
-     * lz[0]/lz[1] written by gte_stlzc, then a 16-byte unwritten tail.
-     * Measured: lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
-     * lz[7]/lz[8] 0x80.
+     * lz[2] form: 0x68); the 16 bytes left are this object's.
+     * Measured: lz[2]..lz[4] give frame 0x68, lz[5]/lz[6] 0x78, lz[7]/lz[8] 0x80.
      * lever-exhaustion: memory/grind/func_800187F4/evidence.md [s2] item 7 and
      * r11/proof.md section 7 (the phantom-slot producer census). */
-    s32 lz[6];
+    s32 lz[8];
 
     func_80018094((s32 *)arg0, arg1);
     count = *(s16 *)((u8 *)arg1 + 4);
@@ -74,6 +72,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
          * three values, all loop indices -- the add-force loop's, the
          * subtract-force loop's and the ellipsoid loop's. */
         s32 idx;
+        s32 idx_add;
         /* Ruling 11 (proof r11/proof.md): two values, both force counts -- node
          * word 7 (forces added) and node word 8 (forces subtracted). */
         s32 nforce;
@@ -106,6 +105,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
             }
             continue;
         }
+        idx_add = 0;
         if (node[6] >= -0xFF) {
             /* gte_ldv0(r1) -- inline_o.h 4.3 :16-20 */
             @gte_ldv0(arg1[0] + i * 8);
@@ -123,14 +123,14 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         vz = node[5];
         nforce = node[7];
         bits = node[9];
-        for (idx = 0; idx < nforce; idx++) {
+        for (; idx_add < nforce; idx_add++) {
             s32 *f_add;
 
             f_add = SCR->force[bits & 0xFF];
             vx += f_add[0];
             vy += f_add[1];
             vz += f_add[2];
-            if (idx == 3) {
+            if (idx_add == 3) {
                 bits = node[10];
             } else {
                 bits >>= 8;

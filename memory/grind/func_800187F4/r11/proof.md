@@ -1,4 +1,4 @@
-# func_800187F4 — Ruling 11 (D) proof and landing record, v5 (manual, 2026-09-28)
+# func_800187F4 — Ruling 11 (D) proof and landing record, v9 (manual, 2026-09-29)
 
 History. v1 (this text's base) FAILed a fresh layer-2 on `work`/`delta`
 (rejected/r11-work-delta-reuse-layer2-fail-0.md); v2 split them with two FAKE dead stores and FAILed a
@@ -22,6 +22,32 @@ v5 banks the landing-chassis dumps (r11/dumps_table_landing.txt, r11/lreg_excerp
 §3 as mechanism + record only, banks every reviewer probe (r11/reviewer_probes/), and corrects the figures.
 r11/dumps_table.txt remains the v2 (c6) chassis table; the landing citations below use the landing files.
 
+v6 (same bytes): the fifth fresh layer-2 FAILed the text only: the lz[6] frame derivation said "16 bytes
+left" of the 0x40 (8 + 32 + 16 = 56); the correct figure is 24 (sp+0x10-0x27: lz[0]/lz[1] written, a
+16-byte unwritten tail), now fixed in the source comment, §7 and the Match message. It also required the
+(D)(1) and nbits citations to point at the landing-chassis dumps, "banked" in the §3A summary sentence, and
+its 14 new FAKE-free probes banked (r11/reviewer_probes/rv5_*, all missing, best 2).
+
+v7 (same bytes): the sixth fresh layer-2 FAILed the records only: the lz[6] comment's "Measured:" line
+and §7 gave frame 0x68 for lz[3]/lz[4] (measured 0x70: rv6_lz3, rv6_lz4, lzc5_4), and template.c still
+carried the v5 wording (so §0's "template.c (= r11/variants_v3/c7.c)" was false). Both fixed; template.c
+is now byte-identical to r11/variants_v3/c7.c. Its seven new FAKE-free probes (best 4) and six frame
+probes are banked (r11/reviewer_probes/rv6_*).
+
+v8 (same bytes): the seventh fresh layer-2 FAILed the records only: §5 said the frame-probe bodies
+"lack lz[6] ... none reaches 0", but lz[5] (lzc5_5, rv6_lz5, the Q32 twin) and lz[6] (rv6_lz6) reach 0;
+probes.md's closing line still counted "four zeros" (there are eight); and the v7 ledger the landing cites
+was uncommitted. §5 and probes.md are corrected, its probes banked (rv7_*), and the ledger is committed
+before the auth: / Match: commits.
+
+v9 (same bytes): before re-submitting, an author-side audit (not a layer-2) checked every figure and
+cross-reference against the banked files. Corrected: §3A now classifies every banked body under Q30 (the v2
+chassis c6 carries two FAKE dead stores the landing body lacks, so every c6-based body, the v2 reviewer's
+1,064 included, is set aside; 49 of those reach 0 and are listed in §5); the v3 reviewer's lz[8] early-init
+body (3 lines) is a counting spelling and is now in §3A; the lz-declaration claim in §5 rests on a scan of all
+banked bodies (r11/fake_scan.md); §0 dump pointer, §2 table pointer, §5 counts (72 + 5, not 77), §6
+iteration count, §7 address and idiom citations; tmp-only evidence banked in r11/banked/.
+
 Rulings spent: .claude/rules/ordinary-c-judge-decidable.md § Ruling 11 (owner 2026-09-26) incl. its
 (C)(3) clause "GTE-macro input copies" (owner Q28, record commit 206e77db8); inline-asm-policy.md
 § Owner ruling 2026-09-26 (inline_o.h class) and § Per-function grant: func_800187F4 (owner Q29,
@@ -42,7 +68,8 @@ update for the islands: engine commit 21b9bbebd. Declaration fix: 65f4f1730.
   65f4f1730, the declaration patched), objdump of func_800187F4 aligned with difflib against the
   function in build/src/code6cac.o (`r11/tools/cmp.py`): **"lines" = differing lines** (target 662
   objdump lines). Measurement 2: the engine sandbox, `sandbox --disable all --candidate`
-  (r11/sandbox_sweep.txt, engine 21b9bbebd). Where they differ, both are given.
+  (r11/sandbox_sweep.txt, engine 21b9bbebd). Figures are fast2 lines unless labelled "sandbox";
+  measurements_v1.md gives both for every v1 body.
 - **Whole object**: `r11/tools/objcmp.sh c5` — .text (60932 B), .rodata (964 B), .data, .bss and every
   relocation of the spliced code6cac.o are IDENTICAL to build/src/code6cac.o.
 - **Dumps (D)(1)**: `r11/tools/dump2.sh <tag> -dl -dg` (the build cc1, same flags, on the preprocessed TU:
@@ -50,7 +77,8 @@ update for the islands: engine commit 21b9bbebd. Declaration fix: 65f4f1730.
   `BB2_ALLOC_DEBUG=1`; it checks that its output equals the build cc1's output, "instrumented==build"
   for every tag). `r11/tools/r11table.py` names each variable's pseudo from its setting insns and prints
   allocator, hard register and the global.c ALLOCDBG line (ord = allocation order, nrefs, livelen,
-  pri). Output banked: `r11/dumps_table.txt`. Registers: v0 $2, v1 $3, a0 $4, a1 $5, t1 $9, t2 $10.
+  pri). Output banked: `r11/dumps_table_landing.txt` + `r11/lreg_excerpts_landing.txt` (landing chassis
+  c7), `r11/dumps_table.txt` (v2 chassis c6); the full landing ALLOCDBG list: r11/banked/alloc_c7_landing.txt. Registers: v0 $2, v1 $3, a0 $4, a1 $5, t1 $9, t2 $10.
 - Scripts: r11/tools/ (copies; run from the repo root, they read and write tmp/func_800187F4/ and
   tmp/f187/). Per-value spellings are generated, never hand-edited: `r11/tools/mkpv3.py` (R11BASE=c5a), `r11/tools/mkalt.py`
   (structural respellings + sanctioned-family probes). Files: `r11/variants/`.
@@ -69,8 +97,8 @@ update for the islands: engine commit 21b9bbebd. Declaration fix: 65f4f1730.
 | `nbits` | LZC-1 arm | V1 `lz[0]` (GTE leading-zero count), V2 `0x16 - (nbits & ~1)` (table shift) | bit count (E)(ii) |
 | `nbits2` | LZC-2 arm | the same for `lz[1]` | bit count (E)(ii) |
 
-No other local holds two values: `f` (force row) was split per loop (`f_add`/`f_sub`, byte-identical,
-r11pv_f 0); `dist2` holds root then `pen / dist2` as ONE value (both reach `gte_lddp(dist2)`); `vx/vy/vz`,
+No other local holds two values: `f` (force row) is one local per loop in the body (`f_add`/`f_sub`;
+r11pv_f, which moves both to node-loop scope, is byte-identical, 0); `dist2` holds root then `pen / dist2` as ONE value (both reach `gte_lddp(dist2)`); `vx/vy/vz`,
 `bits`, `bits2`, `pen`, `vy_new`, `i`, `node` are single values (every write reaches a common read).
 The five focus-1 / focus-0 X,Z axis deltas are their own locals (dx0, dz0, dy1, dx1, dz1): the
 ablation below shows sharing any of them with `delta` is byte-identical, so they are not shared.
@@ -78,7 +106,7 @@ ablation below shows sharing any of them with `delta` is byte-identical, so they
 ## 2. Measured one-variable-per-value spellings, per variable (fast2 lines; sandbox in r11/sandbox_sweep.txt)
 
 Full table with the engine sandbox score next to each (they agree on every zero and every
-nonzero; magnitudes differ slightly): r11/measurements.md. Sandbox: landing 0 (644/644); idx 67
+nonzero; magnitudes differ by up to 44 lines, e.g. idx_add alone 114 vs 70): r11/measurements_v1.md. Sandbox: landing 0 (644/644); idx 67
 (ablations 70/70/67), nforce 21, temp 40 (2/9/29), work 26, delta 4, nbits 2/2, all 102.
 
 | body | fast2 lines |
@@ -93,10 +121,10 @@ nonzero; magnitudes differ slightly): r11/measurements.md. Sandbox: landing 0 (6
 | r11pv_delta (dg, dy0) | 4 |
 | r11pv_nbits / r11pv_nbits2 | 2 / 2 |
 | r11pv_all (all seven split) | 106 |
-| delta ablation (sharing of the 7 deltas, 127 partitions, on w2): 0 whenever the ground depth shares with at least one sphere delta; 4 whenever it is alone | abl_d.log |
+| delta ablation (127 sharing subsets of the 7 deltas, on w2, a pre-c5 body held only in tmp/: `s32 arg0`, function-scope locals): 0 whenever the ground depth shares with at least one sphere delta; 4 whenever it is alone | abl_d.log |
 
 Structural respellings (each on that variable's per-value spelling): idx `while` loops 67,
-function-scope counters 67; nforce read in the loop test (`idx < node[7]`) 64 (664 insns),
+function-scope counters 67; counts read in the loop tests (`idx < node[7]` / `idx < node[8]`, no count local) 64 (664 insns),
 function-scope counts 21; temp: no copy and no byte local (bytes read inline) 42, function scope 42;
 work: `temp = sq1 = ...` chained 26, function scope 26; delta: ground depth written inline three
 times 4, function scope 4; nbits: one statement `shift = 0x16 - (lz[0] & ~1)` 2 (both 4), function
@@ -116,12 +144,12 @@ class head = the register whose last reference, reads and sets per regclass.c:17
 
 ### idx — global.c priority, with the guard fold
 - Landing (c7): pseudo 89 (all three counters) nrefs 45 livelen 245 pri 9183, ord 36 -> $t2, seated after
-  bits ($a0), vx/vy/vz, the node+8 giv and nforce (pseudo 90, pri 10000, ord 34, $t1); each init in its
+  (r11/banked/alloc_c7_landing.txt) bits ($a0), vx/vy/vz, the node+8 giv and nforce (pseudo 90, pri 10000, ord 34, $t1); each init in its
   for-init, so the guard `0 < count` folds into `blez` with the init in the delay slot. Target: `addiu
   $t2,$t2,1; slt $v0,$t2,$t1` / `... $v0,$t2,$v0`.
 - Per-value (v1pv_idx): the force counters nrefs 16, livelen 25 / 22, pri 25600 / 29090, ord 21 / 20 ->
   $a0; 67 lines. With the init hoisted (v3 reviewer, rv3I_1000000_ff_loop) the priority falls below the
-  count's (9552 < 9767, $t2) but the guard no longer folds and a phantom slot is lost (27; 3 with lz[8]).
+  count's (9552 < 9767, $t2) but the guard no longer folds and a phantom slot is lost (27; 3 with lz[8], r11/banked/rv3I_1000000_ff_loop_lz8.c, a counting spelling, §3A).
 - Record: every banked counting spelling for idx misses (§3A).
 
 ### nforce — global.c priority, the floor_log2 step
@@ -174,7 +202,8 @@ class head = the register whose last reference, reads and sets per regclass.c:17
 - Landing: pseudo 359 (lz[0], then the shift) is set twice, so not a local quantity (global, pri 64285,
   $v1); the `& ~1` result is a separate local temp that takes $v0: `and $v0,$v1,$s6; subu $v1,$t9,$v0`.
 - Per-value (v1pv_nbits): `lzcount = lz[0]` is written once and dies at the `& ~1` in one block: a local
-  quantity (v2 chassis dump: local-alloc $v1), and combine_regs ties the `&` result to it: `and
+  quantity (landing-chassis dumps dump_v1pv_nbits / dump_v1pv_nbits2 in r11/dumps_table_landing.txt:
+  local-alloc $v1), and combine_regs ties the `&` result to it: `and
   $v1,$v1,$s6; subu $v1,$t9,$v1`; 2 lines (4 for both).
 - Record: every banked counting spelling for nbits / nbits2 misses (§3A).
 
@@ -184,21 +213,43 @@ Q31 (Ruling 11 (D) § "Mechanism + search"): (a) mechanisms named from dumps, §
 proposed by the author or a reviewer banked and measured; (c) no counting spelling reaches the target.
 "Counting" = not set aside under the Q30 clause (§5). Lines = differing objdump lines, real per-file recipe.
 
+Q30 classification is by construct family (the rule sets aside a spelling that needs a construct whose rule
+requires a FAKE annotation, whether or not the body writes it). The v2 chassis c6 carries two FAKE dead stores
+(sq1, depth) that the landing body does not carry, so every body built on it is set aside. r11/fake_scan.md
+inventories every banked body's lz declaration and FAKE annotations (r11/tools/fakescan.py).
+
+Counting spellings (every one misses):
+
 | source | spellings | reaching 0 | best nonzero | file |
 |---|---|---|---|---|
-| author, v1 chassis (per-value, ablations, structural, 127-partition delta ablation) | ~60 + 127 | 0 of the per-value ones (the delta partitions reach 0 only while the ground depth still shares, i.e. reuse) | 2 | measurements_v1.md, abl_d.log |
-| author, v2 chassis (per-value, ablations, structural for idx/nforce/temp/nbits) | 22 | 0 | 2 | measurements.md, sandbox_sweep_v2.txt |
-| v3 reviewer: every mix of the seven splits | 799 | 0 | 2 | rejected/v3_review/combo_res.txt |
+| author, v1 chassis c5/c5a: per-value, ablations, structural, copy placements | 32 (r11pv 8, r11abl 6, st 14, tq 4) | 0 | 2 | measurements_v1.md, variants/ |
+| v3 reviewer (landing chassis c7): every mix of the seven splits | 799 | 0 | 2 | rejected/v3_review/combo_res.txt |
 | v3 reviewer: loop forms (goto / while / do-while) over 11 bases | 740 per-value (+ 74 `c7_*` reuse bodies, 8 of them 0) | 0 | 2 | loop_res.txt |
 | v3 reviewer: statement orders | 72 per-value (+ 24 `c7_*` reuse bodies, 2 of them 0) | 0 | 21 | order_res.txt |
 | v3 reviewer: early inits | 60 + 400 per-value (+ 1 reuse body) | 0 | 27 / 32 | init_res.txt, init2_res.txt |
-| v1/v2 reviewers' FAKE-free probes (temp bytes at loop scope; nforce split) | 2 | 0 | 21 | r11/reviewer_probes/ (rv_tp4 42, rv_nf0 21) |
+| v3 reviewer: early-init idx with lz[8] (outside the 17-24 range, so not "unchanged" under Q32) | 1 | 0 | 3 | r11/banked/rv3I_1000000_ff_loop_lz8.c, bankrun.log |
 | v4 reviewer: types / register / initializer / ternary / compound respellings | 16 | 0 | 2 | r11/reviewer_probes/ (rv4_*) |
-| v2 reviewer: single do-while(0) wraps (FAKE, set aside, for completeness) | 500 | 0 | 2 | rejected/v2_review/ |
-| author v2: dead stores / self-assigns / chain-extenders (FAKE, set aside) | 209 | 0 | 2 | ds.log, ds2.log |
+| v5 reviewer: work / nbits / delta / nforce scope, declaration and read-site respellings | 14 | 0 | 2 | r11/reviewer_probes/ (rv5_*) |
+| v6 reviewer: temp byte types / scopes, nforce single-valued loop tests, delta conditional assignment | 7 | 0 | 4 | r11/reviewer_probes/ (rv6_*) |
+| v7 reviewer: split-init, for-init comma, inline LUT-root helper, byte read inline | 7 | 0 | 4 | r11/reviewer_probes/ (rv7_*) |
+| v1 reviewer: temp table bytes at loop-body scope (FAKE-free) | 1 | 0 | 42 | r11/reviewer_probes/rv_tp4.c |
 
-The v3 reviewer's FAKE-free one-variable-per-value spellings total 2,071 (the other 99 of its 2,170 bodies
-are the reuse spelling with a loop or order respelled). No counting spelling reaches the target. The known closers all add FAKE constructs and are set aside (§5).
+Not counting: r11pv_f (0) re-scopes `f_add`/`f_sub`, not a Ruling 11 local; the frame probes (§5, §7).
+
+Set aside under Q30 (for the record; §5 lists families and quotes):
+
+| source | bodies | reaching 0 | file |
+|---|---|---|---|
+| author, v1 chassis: FAKE-family probes (dead store, self-assign, chain-extender) | 17 | 1 (fam_delta_deadstore_end) | measurements_v1.md fam_* |
+| v1 reviewer: closers and FAKE-family probes (dead stores, chain-extenders) | 6 | 3 (rv_wd_end, rv_wd_after2, rv_both) | r11/reviewer_probes/ |
+| author, v2 chassis c6 (carries two FAKE dead stores): per-value, ablations, structural | 22 | 0 | measurements.md, sandbox_sweep_v2.txt |
+| author, v2 chassis c6: dead stores (72 at six anchors + 5 per-value baselines) and self-assigns / chain-extenders (132) | 209 | 0 | ds.log, ds2.log |
+| v2 reviewer, all on c6: single do-while(0) wraps (res_a 500); further sweeps res_b–res_g (564: per-value respellings, dead stores, self-assigns, chain-extenders, !FAKE empty-if / `++--`, multi-level wraps) | 1,064 | 49 (res_g nf4_* multi-wrap nforce closers) | rejected/v2_review/res_*.txt; rv_nf0, rv_nfA* |
+| v3 reviewer: the set-aside closers with lz[5] (Q32 twins) | 3 | 3 | r11/banked/rv3_*_lz5.c, bankrun.log |
+
+The v3 reviewer's FAKE-free one-variable-per-value spellings total 2,071 (799 + 740 + 72 + 460; the other 99
+of its 2,170 bodies are the reuse spelling with a loop, order or early init respelled), plus the lz[8] body. No banked
+counting spelling reaches the target. Every banked closer carries a FAKE-family construct and is set aside (§5).
 
 ## 4. Prong walk (A)-(H), all seven
 
@@ -225,7 +276,8 @@ are the reuse spelling with a loop or order respelled). No counting spelling rea
   (`addiu $t2,$t2,1`), counts (`lw $t1,20($t0)`/`24`), table bytes (`lbu $a0`), sums (`addu $a1,...`),
   roots (`srl`/`srav`), deltas (`subu`), shift (`subu $v1,$t9,$v0`), lz loads (`lw $v1,0x10($sp)`); the
   copy V1 of temp under the Q28 clause (§3 temp).
-- **(D)(1)** dumps: r11/dumps_table.txt (+ commands §0); **(D)(2)** mechanisms named per variable (§3);
+- **(D)(1)** dumps: r11/dumps_table_landing.txt + r11/lreg_excerpts_landing.txt (the landing chassis;
+r11/dumps_table.txt is the v2 (c6) chassis only; commands in the files' headers and §0); **(D)(2)** mechanisms named per variable (§3);
   **(D)(3)** under Q31: mechanism per variable (§3) and the banked search (§3A); **(D)(4)** alternatives (§2), sanctioned families (§5),
   permuter (§6).
 - **(E)** names: `idx`, `nforce`, `delta`, `nbits`/`nbits2` under (E)(ii) (every value is a loop index /
@@ -245,6 +297,10 @@ Families and their annotation requirements, quoted:
   statement."
 - do-while(0) wrap — do-while-zero-exception.md, prerequisite 1: "**Inline `/* FAKE: ... */` or `// FAKE`
   annotation at the construct site** (not file-header prose), naming the observed effect".
+- every v2-chassis body (the author's and the v2 reviewer's 1,064, whatever else it adds) carries c6's two
+  dead stores, each `/* FAKE: dead store ... */`-annotated in the body (dead-store family, quoted above), which
+  the landing body does not carry; that alone sets it aside. The v2 reviewer's res_c also used !FAKE empty-if
+  and `++--` constructs; they are set aside on the same c6 ground without relying on their own families.
 
 Closing spellings (all one-variable-per-value for the variable named, each reaching 0):
 | variable | spelling | lines | where |
@@ -253,49 +309,55 @@ Closing spellings (all one-variable-per-value for the variable named, each reach
 | delta | per-value + `dg = 0;` / `depth = 0;` dead store after the ellipsoid loop | 0 | variants/fam_delta_deadstore_end.c; c6 |
 | work + delta | both | 0 | r11/reviewer_probes/rv_both.c; c6 |
 | nforce | per-value + six single-level do-while(0) wraps (loads of vx, vy, vz, nforce_add, bits, bits2) | 0 | rejected/nforce-split-six-dowhile-wraps-closes-0.template.c (v2 layer-2) |
+| nforce | per-value on the v2 chassis (two FAKE dead stores) + multi-level do-while(0) wrap combinations (49, the six-wrap template among them) | 0 | rejected/v2_review/res_g.txt (nf4_* rows at diff=0), mknf4.py |
+| work / work + delta / nforce | the three closers above with `s32 lz[5]` (Q32 twins) | 0 | r11/banked/rv3_rv_wd_end_lz5.c, rv3_rv_both_lz5.c, rv3_nfdw_lz5.c |
 
 Non-closing FAKE sweeps (for the record): v2 chassis, on idx / nforce / temp / nbits / nbits2 per-value
-spellings: 77 dead stores at six anchors (r11/ds.log, best 2) and 132 self-assigns / chain-extenders
+spellings: 72 dead stores at six anchors plus 5 per-value baselines (r11/ds.log, best 2) and 132 self-assigns / chain-extenders
 (r11/ds2.log, best 2); the v2 layer-2's 500 single do-while(0) wraps over the five bodies (bests idx 62,
-nforce 21, temp 42, nbits 2; rejected/v2_review/); v1 single probes (measurements_v1.md fam_* rows:
-delta self-assign 4, chain-extenders 99 / 6; temp 40; nforce 21 / 54; work chain 123, dead store placed
-before temp's last use 26; idx 67-103; nbits 2 / 9).
+nforce 21, temp 42, nbits 2; rejected/v2_review/); v1 single probes (measurements_v1.md fam_* rows, fast2 lines:
+delta self-assign 4, chain-extenders 117 / 6; temp 42; nforce 21 / 94; work chain 146, dead store placed
+before temp's last use 26; idx 67-127; nbits 2 / 9).
 
 Applying the Q30 test ("set aside only if it needs at least one FAKE- or !FAKE-annotated construct that
 the reuse body does not carry, and it carries, unchanged, every FAKE- or !FAKE-annotated construct the
 reuse body carries"): the landing body carries exactly one such construct, `s32 lz[6]` (OVERSIZED-LOCALS,
-FAKE-annotated). Checked mechanically (r11/tools/lzcheck.py over every banked body): all 89 per-value,
-ablation, structural, family-sweep and closing spellings in variants/, variants_v2/, variants_v3/ and
-rejected/ declare `s32 lz[6]` (the same declaration; the comment on it differs across versions, and the
-v1 variants carry none); each closing spelling above adds dead stores or
+FAKE-annotated). Checked mechanically over all banked bodies (r11/fake_scan.md, r11/tools/fakescan.py, 197
+bodies): every per-value, ablation, structural, family-sweep, reviewer and closing spelling declares `s32 lz[6]`
+at the same site, except the frame probes (lzc5_*, rv6_lz*, rv7_lz*, fr_*), the lz[5] Q32 twins of the three closers and
+rv3I_1000000_ff_loop_lz8 (lz[8]). The comment on the declaration differs across versions and many bodies
+carry none (the v1 variants, the reviewers' probes); the declaration, which is what compiles, is the same.
+Each closing spelling above adds dead stores or
 do-while(0) wraps, so it is set aside. Spellings whose only FAKE construct is lz[6] count under (D)(3):
 the per-value spellings, ablations and structural respellings of §2 and §3A, all nonzero. The v3
 reviewer's closers with `s32 lz[5]` in place of lz[6] (rejected/v3_review/bodies/rv3_rv_wd_end_lz5,
 rv3_rv_both_lz5, rv3_nfdw_lz5: 0) carry the same construct resized within the OVERSIZED-LOCALS range
 annotation, byte-identically, so it is "unchanged" (owner Q32) and they are set aside like their lz[6]
 twins. The frame-probe
-bodies (lzc5_*, fr_*: lz[2]-lz[8] or scalars) lack lz[6] and also count: none reaches 0 (§7).
+bodies (lzc5_*, rv6_lz*, rv7_lz*, fr_*) are the reuse body, or its lz[2] form, with the array resized or
+respelled; they are not one-variable-per-value spellings and bear on §7 only: lz[5] (lzc5_5, rv6_lz5, the
+Q32 twin) and lz[6] (rv6_lz6) reach 0; every other size (lz[2], lz[3], lz[4], lz[7], lz[8]) and every fr_*
+spelling misses (§7, r11/frame_census.md).
 
 ## 6. Permuter campaigns (tools/permuter_campaign.py, `--stack-diffs`, standalone workspace)
 Campaign 2 is the FAKE-free all-split body of this landing's code; campaign 3 (v2) ran from a body
-carrying the two FAKE dead stores (14,250 iterations, best 490 from 625; its best finds re-create
-reuses of `dist1`), recorded in rejected/ and the v2 ledger.
+carrying the two FAKE dead stores (14,250 iterations at harvest, r11/banked/camp3_final.json, the log's last line 14,255; best 490 from 625; its best finds re-create
+reuses of `dist1`), recorded in proof v2 (commit 05f9b8638, §6); log tail r11/banked/perm_c6pv_campaign_tail.log.
 Workspace: `r11/tools/mkperm.sh` (head.h + expanded body, preprocessed; GNU asm statements wrapped as
 `#pragma _permuter b64literal` by `r11/tools/b64asm.py`, the func_8002DE20 method; target.o from
 asm/funcs with include/gte_macros.inc). Standalone scores equal the in-TU ones (c2 0, pv_all 117,
-r11pv_all 106).
+r11pv_all 106; the campaigns' base scores are permuter scores, not lines).
 - Campaign 1 (tmp/f187/perm_pvall, from pv_all: idx/nforce/temp/work/delta split, nbits shared, -j4):
   7,459 iterations, 399 s, 18 finds, best 665 from base 830. The best find names two fresh
-  intermediates (`new_var = cpos[2]` before a sphere delta, `new_var2 = lz[1]`); no find re-shares a
-  split value and none approaches 0.
-- Campaign 2 (tmp/f187/perm_r11pv, from r11pv_all: all seven split, -j4, fresh seed): 17,656
-  iterations, 956 s, 37 finds, best 565 from base 755 (found at 94 s; nothing better in the remaining
+  intermediates (`new_var = cpos[2]` before a sphere delta, `new_var2 = lz[1]`); none approaches 0.
+- Campaign 2 (tmp/f187/perm_r11pv, from r11pv_all: all seven split, -j4, fresh seed): 17,657
+  iterations (r11/banked/perm_r11pv_campaign_tail.log), 956 s, 37 finds, best 565 from base 755 (found at 94 s; nothing better in the remaining
   860 s; stopped on the fresh-seed window). What the best finds do (their diff.txt): 565 writes
   `dg = r < dz0;` inside the ellipsoid loop, i.e. makes the ground-depth local carry a second value
   in a later block (the `delta` reuse property, §3 delta, in a FAKE-shaped spelling); 600 stages
   `lz[0]` through the unrelated `bits2` (`bits2 = lz[0]; lzcount = bits2;`), a variable set twice
   (the `nbits` property, §3). Neither keeps one value per variable, and neither approaches 0.
-- Across both campaigns (25,115 iterations) no find reaches the target. The finds that keep one value
+- Across both campaigns (25,116 iterations) no find reaches the target. The finds that keep one value
   per variable only add named intermediates (campaign 1's best, 665 from 830, still far off); the best
   gains of campaign 2 re-create a reuse.
 
@@ -306,8 +368,10 @@ r11pv_all 106).
   3); keep-mode strip 0; the seven command units carry the Q29 post-DMPSX words; `($12)` spelled as
   the header writes it. Each island has a comment naming the macro and its pinned line range.
 - **`lz[6]`**: OVERSIZED-LOCALS carve-out, frame proof in the declaration comment (0x40 locals = 8 spill
-  + 32 orphan-USE phantom slots + 16 of the object); measured on c5: lz[2]/lz[4] frame 0x68 (24 lines),
-  lz[5] 0x78 (0), lz[7]/lz[8] 0x80 (24). lz[0]/lz[1] are the live LZC outputs. Phantom-slot producer
+  + 32 orphan-USE phantom slots + 24 of the object: 8 written, a 16-byte unwritten tail); measured on c5: lz[2] frame 0x68, lz[4] 0x70 (24 lines each),
+  lz[5] 0x78 (0), lz[7]/lz[8] 0x80 (24); on the landing chassis (r11/reviewer_probes/rv6_lz*): lz[2] 0x68,
+  lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78 (0 lines), lz[7] 0x80 (24 lines each otherwise); rv7_lz2 / rv7_lz3 /
+  rv7_lz8 repeat lz[2] 0x68, lz[3] 0x70 and measure lz[8] 0x80 on the landing chassis (24 lines each). lz[0]/lz[1] are the live LZC outputs. Phantom-slot producer
   census: r11/frame_census.md (14 ordinary spellings of the lz[2] form, none gives 0x78 at zero cost;
   measured on the v2 chassis, whose frame is the same).
 - **Scr1F800000 at 0x1F800000** (`#define SCR`): the same constant-pointer scratchpad view as the
@@ -316,9 +380,10 @@ r11pv_all 106).
   earlier `force[1][3]` was indexed past its bound; byte-identical).
 - **`arg0` as `s16 *`**: the caller's type (65f4f1730); `*(s32 *)((u8 *)arg0 + 0xC)` and
   `*(s16 *)((u8 *)arg1 + 4)` are the file's existing offset-cast style (func_80018300).
-- **`(&D_8008D118)[i]`**: the same table idiom as landed func_80018300 / func_80018094 in this file.
+- **`(&D_8008D118)[i]`**: the same table idiom as landed func_80018300 in this file (func_80018094 writes
+  the equivalent `*(&D_8008D118 + x)`).
 - **`vy_new`**: one value (both arms reach the store); the single store reproduces the target's
-  shared `sw` at 0x80018CB8 (evidence [s2 cont.] 9).
+  shared `sw` at 0x80018CBC (the join label .L80018CB8 is its `lui $at`; evidence [s2 cont.] 9).
 - **`dist2`**: one value (root, then `pen / dist2`, both reaching `gte_lddp(dist2)`).
 - **Header comment**: the state -0xFF..-1 path pulls toward the anchor and then integrates like state
   < -0xFF (no `continue`); the unevidenced "rope/cloth" naming is dropped.

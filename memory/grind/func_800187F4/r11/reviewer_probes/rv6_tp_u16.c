@@ -57,10 +57,8 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
      * traffic is lz[0]/lz[1] at sp+0x10/0x14 and the count spill at sp+0x48.
      * Of the 0x40, 8 are the spill slot and 32 (0x28-0x47) are the four 8-byte
      * phantom slots of the combine orphan-USE loop-guard pseudos (the frame of the
-     * lz[2] form: 0x68); the 24 bytes left (sp+0x10-0x27) are this object's:
-     * lz[0]/lz[1] written by gte_stlzc, then a 16-byte unwritten tail.
-     * Measured: lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
-     * lz[7]/lz[8] 0x80.
+     * lz[2] form: 0x68); the 16 bytes left are this object's.
+     * Measured: lz[2]..lz[4] give frame 0x68, lz[5]/lz[6] 0x78, lz[7]/lz[8] 0x80.
      * lever-exhaustion: memory/grind/func_800187F4/evidence.md [s2] item 7 and
      * r11/proof.md section 7 (the phantom-slot producer census). */
     s32 lz[6];
@@ -178,7 +176,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                  * squared length for the leading-zero-count macro (a value under
                  * (C)(3)'s GTE-macro input copy clause, owner ruling 2026-09-28
                  * Q28), then the focus-0 table byte, then the focus-1 table byte. */
-                s32 temp;
+                s32 lzc_in;
                 /* Ruling 11 (proof r11/proof.md): two values -- the focus-0 squared
                  * distance, then the distance (scaled to its push factor below). */
                 s32 work;
@@ -207,21 +205,22 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 /* gte_stlvnl(r1) -- inline_o.h 4.3 :904-909 */
                 @gte_stlvnl(SCR->sq);
                 work = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
-                temp = work;
+                lzc_in = work;
                 if (work < 0x400) {
                     work = (&D_8008D118)[work] >> 3;
                 } else {
                     /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
                      * the leading-zero count, then the table shift. */
                     s32 nbits;
+                    u16 byte1;
 
                     /* gte_Lzc(r1,r2) -- gtemac.h 4.3 :174-178 = gte_ldlzc :207-210,
                      * gte_nop :1095-1097 twice, gte_stlzc :1074-1077 */
-                    @gte_Lzc(temp, &lz[0]);
+                    @gte_Lzc(lzc_in, &lz[0]);
                     nbits = lz[0];
                     nbits = 0x16 - (nbits & ~1);
-                    temp = (&D_8008D118)[work >> nbits];
-                    work = (temp << 16) >> (0x13 - (nbits >> 1));
+                    byte1 = (&D_8008D118)[work >> nbits];
+                    work = (byte1 << 16) >> (0x13 - (nbits >> 1));
                 }
                 if (work >= r) {
                     continue;
@@ -255,14 +254,15 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                     /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
                      * the leading-zero count, then the table shift. */
                     s32 nbits2;
+                    u16 byte2;
 
                     /* gte_Lzc(r1,r2) -- gtemac.h 4.3 :174-178 = gte_ldlzc :207-210,
                      * gte_nop :1095-1097 twice, gte_stlzc :1074-1077 */
                     @gte_Lzc(sq2, &lz[1]);
                     nbits2 = lz[1];
                     nbits2 = 0x16 - (nbits2 & ~1);
-                    temp = (&D_8008D118)[sq2 >> nbits2];
-                    dist2 = (temp << 16) >> (0x13 - (nbits2 >> 1));
+                    byte2 = (&D_8008D118)[sq2 >> nbits2];
+                    dist2 = (byte2 << 16) >> (0x13 - (nbits2 >> 1));
                 }
                 tot = work + dist2;
                 if (tot >= r) {
