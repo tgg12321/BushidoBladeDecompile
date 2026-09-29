@@ -12882,16 +12882,14 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     func_80069898(arg0, rect2, 1);
     s.ot_idx = 0xA;
     for (i = 0; i < 4; i++) {
-        s32 row;
-
-        for (j = 0, row = i * 2; j < 2; j++) {
+        for (j = 0; j < 2; j++) {
             if (i == D_800A359C && j == D_800A3598 && (D_800A3578 & 0xFF) == 0) {
                 s.has_color = 1;
             } else {
                 s.has_color = 0;
             }
-            if (row + j != 3 || D_800A35BC != 6 || mode != 2) {
-                s.header = ((s32 *)arg1 + i * 2)[j + 3];
+            if (i + i + j != 3 || D_800A35BC != 6 || mode != 2) {
+                s.header = ((s32 *)arg1 + (i + i))[j + 3];
             } else {
                 s.header = ((Sheets720FC *)arg1)->hdr30;
             }
