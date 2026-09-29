@@ -20,7 +20,7 @@
 | 0x800371AC | set_D_80101E64_if_valid | RESET (callee is RESET) | The name is purely mechanical and true regardless of what its callee is. |
 | 0x80052930 / 0x80052754 | robtest_helper / decbs0_helper | RESET | Kengo sole-caller "helper" names are not contradicted by the bodies; proposed as precision RENAMEs instead. |
 | 0x8006E440 | copy | RENAME (e.g. reloc_SelfOffsetTable) | Behaviour proven (0 mismatches) but a coined name was judged not worth the false-positive risk; RESET only. |
-| 0x80042FA0 | calc_rotated_enemy_pos | RENAME (matrix -> Euler angles) | Would need a round-trip proof (RotMatrix* -> this -> same matrix) and relies on math_RotMatrixXYZ (CORROBORATED); RESET only. |
+| 0x80042FA0 | calc_rotated_enemy_pos | RENAME (matrix -> Euler angles) | Would need a round-trip proof (RotMatrix* -> this -> same matrix) and relies on math_RotMatrixXYZ (CORROBORATED); RESET only. **2026-09-29:** re-derived and applied as `math_MatrixToAnglesYXZ` (docs/naming/sweep-2026-09-29/verify/api.csv). |
 | 0x8003D478 | memcard_access_section_list | RENAME (a string-draw name) | The glyph routine func_8003D39C is AUTO, so no admitted class; RESET only. |
 | 0x8005B58C | title_mv_exec2_wrapper | RENAME (wraps SsUtAllKeyOff) | func_800858D0 is only a PROBABLE SsUtAllKeyOff (near-tier-ruling 2026-09-07, not admitted); RESET only. |
 | 0x80041430 | vc_RelocLoadedBlock | UPGRADE | Mechanics accurate, but callee save_vc_ctrl is SUSPECT and "vc" is unsupported. |

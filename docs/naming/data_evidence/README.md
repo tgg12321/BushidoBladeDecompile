@@ -54,7 +54,7 @@ unnamed `D_*` pool:
 
 | File | Proposed name | Confidence | Why |
 |------|---------------|-----------:|-----|
-| [D_8008D118.md](D_8008D118.md) | `g_isqrt_lut` | high | byte LUT indexed by sum-of-squares; used in marionation_camera_Exec + cpu_check_run_attack distance computations |
+| [D_8008D118.md](D_8008D118.md) | `g_isqrt_lut` (superseded: applied as `g_sqrt_table_u8`, sweep 2026-09-29 - floor(8*sqrt(i)), not inverse sqrt) | high | byte LUT indexed by sum-of-squares; used in marionation_camera_Exec + cpu_check_run_attack distance computations |
 | [D_800A36AC.md](D_800A36AC.md) | `g_frame_parity` | high | `& 1` selector for alternating framebuffers/CLUTs in func_80016E60 + func_8003DBE4 |
 | [D_800A3708.md](D_800A3708.md) | `g_stage_data_ptr` | high | stage data pointer; +0x4C/+0x54 are collision centers in stage_InitCollision |
 | [D_80101EC8.md](D_80101EC8.md) | `g_practice_menu_table` | high | base of per-character records, stride 0x44C matches D_80101F00 char_state stride |

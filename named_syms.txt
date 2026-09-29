@@ -429,7 +429,7 @@ scratchpad_Restore_80017F5C     = 0x80017F5C;  /* opposite direction (g_scratchp
 
 /* === Data names landed by the ings.c cluster audit (3) === */
 g_rng_state                     = 0x800A38BC;  /* LCG state word; written by rng_SetSeed, read+written by rng_Next */
-g_scratchpad_save               = 0x800F5370;  /* 0x3E0-byte main-RAM backup of PSX scratchpad RAM (0x1F800000); used by IRQ context save/restore */
+g_scratchpad_save               = 0x800F5370;  /* 0x3E0-byte main-RAM backup of PSX scratchpad RAM (0x1F800000) */
 
 /* === Legacy renamer audit: ings2.c cluster (2026-05-17) === */
 /* 16 high-confidence cross-validated names from `tools/rename_funcs.py` */
@@ -938,7 +938,7 @@ g_char_vec3_b_delta_y                                   = 0x8010210C;  /* +0x244
 g_char_vec3_b_delta_z                                   = 0x80102110;  /* +0x248 -- vec3 B delta Z */
 g_char_vec3_b_w_or_alpha                                = 0x80102114;  /* +0x24C -- separately-accessed 7th word, likely W or alpha */
 
-/* World-position vec3 at +0xD8 -- delta'd between players for 2D distance via g_isqrt_lut */
+/* World-position vec3 at +0xD8 -- delta'd between players for 2D distance via g_sqrt_table_u8 */
 g_char_world_pos_x                                      = 0x80101FA0;  /* +0xD8 -- world position X (record 0) */
 g_char_world_pos_y                                      = 0x80101FA4;  /* +0xDC -- world position Y */
 g_char_world_pos_z                                      = 0x80101FA8;  /* +0xE0 -- world position Z (paired with X for 2D distance) */
@@ -1065,11 +1065,9 @@ g_menuctl_frame_counter                                 = 0x800A3514;  /* per-fr
 /* update.  Pad input is packed into a 32-bit word, hashed against a */
 /* seed, and dual-buffered (current/validated/prev) for replay sync. */
 /* */
-/* See also: D_800A3698 (already named g_memcard_file_write_buf -- */
-/* MISNOMER, see docs/naming/MISNOMERS.md; primary use is the pad-rec */
-/* "current packed" buffer.  Memcard write reuses the address as scratch */
-/* via bios_FileWrite_B.). */
-g_comb_send_buf_plus_0x4                                  = 0x800A369C;  /* current-frame hashed pad-record signature */  /* data-wave 2026-09-29: was g_pad_rec_current_hash */
+/* See also: g_comb_send_buf (0x800A3698), the 8-byte link-cable send buffer of */
+/* comb_Write8; 0x800A369C below is its bytes 4..7 (naming sweep 2026-09-29). */
+g_comb_send_buf_plus_0x4                                  = 0x800A369C;  /* +4 from g_comb_send_buf (0x800A3698) */  /* data-wave 2026-09-29: was g_pad_rec_current_hash */
 g_pad_rec_validated_packed                              = 0x800A36C0;  /* validated current-frame packed pad-record (set by comb_WaitRead8 on xor-checksum match; comb_Write8 is the sender) */
 g_pad_rec_validated_hash                                = 0x800A36C4;  /* matching hash for validated record */
 g_pad_rec_prev_packed                                   = 0x800A36D0;  /* previous-frame packed pad-record (copy of 3698 at end of update) */
@@ -1579,18 +1577,18 @@ g_replay_camera_mode                                    = 0x800A3740;  /* mode e
 g_text1b_glyph_buf_e                                    = 0x800F1168;  /* additional glyph buffer slot in the same family as g_text1b_slot_a/b/c_flags */
 Alarm_plus_0x4                                  = 0x800F19BC;  /* IRQ dispatch sequence counter (already noted as g_cdrom_init_counter elsewhere in IRQ subsystem) */  /* data-wave 2026-09-25: was g_irq_dispatch_counter */
 
-/* === Camera matrix individual elements (2026-05-17) -- 8 highs === */
-/* The camera matrix at g_camera_matrix_data (0x800EEDB0) is a 9 s16 */
-/* matrix laid out at offsets +0..+0x10 (stride 2).  Element [0] is */
-/* the existing g_cam_matrix (identity 0x1000); elements [1..8] are: */
-D_800EEDB2                                         = 0x800EEDB2;  /* cos-derived (Y-projection), camera_InitMatrix sets to -((s32)(g_cam_fov_x<<12)/g_cam_fov_div) */  /* data-wave 2026-09-29: was g_cam_matrix_m1 */
-D_800EEDB4                                         = 0x800EEDB4;  /* always 0 in init */  /* data-wave 2026-09-29: was g_cam_matrix_m2 */
-D_800EEDB6                                         = 0x800EEDB6;  /* always 0 */  /* data-wave 2026-09-29: was g_cam_matrix_m3 */
-D_800EEDB8                                         = 0x800EEDB8;  /* always 0 */  /* data-wave 2026-09-29: was g_cam_matrix_m4 */
-D_800EEDBA                                         = 0x800EEDBA;  /* always 0 */  /* data-wave 2026-09-29: was g_cam_matrix_m5 */
-D_800EEDBC                                         = 0x800EEDBC;  /* always 0 */  /* data-wave 2026-09-29: was g_cam_matrix_m6 */
-D_800EEDBE                                         = 0x800EEDBE;  /* sin-derived (Z-projection), -((s32)(g_cam_fov_z<<12)/g_cam_fov_div) */  /* data-wave 2026-09-29: was g_cam_matrix_m7 */
-D_800EEDC0                                         = 0x800EEDC0;  /* identity 0x1000 (bottom-right) */  /* data-wave 2026-09-29: was g_cam_matrix_m8 */
+/* === 0x800EEDB0 matrix elements (2026-05-17; camera names RESET 2026-09-29) === */
+/* 9 s16 at +0..+0x10 (stride 2), written by func_80046F24 and read by func_8004700C. */
+/* Not a camera matrix: row 1 is all zero (singular) and the inputs are light-direction */
+/* components (naming sweep 2026-09-29, docs/naming/sweep-2026-09-29/verify/data_cam.csv). */
+D_800EEDB2                                         = 0x800EEDB2;  /* data-wave 2026-09-29: was g_cam_matrix_m1 */
+D_800EEDB4                                         = 0x800EEDB4;  /* data-wave 2026-09-29: was g_cam_matrix_m2 */
+D_800EEDB6                                         = 0x800EEDB6;  /* data-wave 2026-09-29: was g_cam_matrix_m3 */
+D_800EEDB8                                         = 0x800EEDB8;  /* data-wave 2026-09-29: was g_cam_matrix_m4 */
+D_800EEDBA                                         = 0x800EEDBA;  /* data-wave 2026-09-29: was g_cam_matrix_m5 */
+D_800EEDBC                                         = 0x800EEDBC;  /* data-wave 2026-09-29: was g_cam_matrix_m6 */
+D_800EEDBE                                         = 0x800EEDBE;  /* data-wave 2026-09-29: was g_cam_matrix_m7 */
+D_800EEDC0                                         = 0x800EEDC0;  /* data-wave 2026-09-29: was g_cam_matrix_m8 */
 
 /* === Camera bone data init halves (2026-05-17) -- 3 highs === */
 /* From sound.c camera_InitBoneData (line 460): copies 32-byte */
@@ -1632,7 +1630,7 @@ _spu_rev_offsetaddr                                = 0x800A2884;  /* offset for 
 
 /* === Sound subsystem misc state (2026-05-17) -- 6 highs === */
 D_800A3248                                    = 0x800A3248;  /* memoization cache for snd_PlayBgm helper -- skip re-init if arg matches */  /* data-wave 2026-09-25: was g_snd_cached_bgm_arg */
-D_800EEE00                                      = 0x800EEE00;  /* sibling pair to g_sound_3d_angle_h/v but for the bone-data2 audio context */  /* data-wave 2026-09-25: was g_snd_3d_angle_h_b */
+D_800EEE00                                      = 0x800EEE00;  /* sibling pair to D_800A33C8/D_800A33CA but for the bone-data2 context */  /* data-wave 2026-09-25: was g_snd_3d_angle_h_b */
 D_800EEE02                                      = 0x800EEE02;  /* sibling pair */  /* data-wave 2026-09-25: was g_snd_3d_angle_v_b */
 D_800EEE1C                                          = 0x800EEE1C;  /* position triple X (from D_80101DF0.xf.mat.t[0], 0x80101E1C) */  /* data-wave 2026-09-25: was g_snd_3d_pos_x */
 D_800EEE20                                          = 0x800EEE20;  /* position triple Y (from D_80101DF0.xf.mat.t[1], 0x80101E20) */  /* data-wave 2026-09-25: was g_snd_3d_pos_y */
@@ -2008,10 +2006,10 @@ g_byte_lookup_table_256                                 = 0x8009AD18;  /* 256-by
 g_player_byte_flags_table                               = 0x8009BC7C;  /* per-player byte flags indexed by D_800A3561; bit & 2 test */
 
 /* === 3D sound data buffer cluster (2026-05-17) -- 6 highs === */
-D_80102C00                                  = 0x80102C00;  /* base of 3D-sound data buffer; cursor advances per primitive */  /* data-wave 2026-09-29: was g_sound_3d_data_buffer */
-g_sound_3d_cursor                                       = 0x800A3820;  /* current cursor into g_sound_3d_data_buffer */
+D_80102C00                                  = 0x80102C00;  /* data-wave 2026-09-29: was g_sound_3d_data_buffer */
+/* RETIRED 0x800A3820 (naming sweep 2026-09-29): alias 'g_sound_3d_cursor' removed - the render-list cursor walked by the GTE renderer, no sound consumer (docs/naming/sweep-2026-09-29/verify/data.csv); g_hira_packet_cursor is untouched (not covered by that verdict) */
 /* 2026-09-23: g_sound_3d_pos_x/y/z_src (3 of the 6) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
-D_800A3808                                 = 0x800A3808;  /* snapshot of g_dma_buf_base at start of 3D sound batch */  /* data-wave 2026-09-29: was g_sound_3d_dma_snapshot */
+D_800A3808                                 = 0x800A3808;  /* data-wave 2026-09-29: was g_sound_3d_dma_snapshot */
 
 /* === Memcard operation state (2026-05-17) -- 3 highs === */
 /* From code6cac_c_mid.c around line 489-509: memcard file open/read/write */
@@ -3055,7 +3053,7 @@ gte_nct_wrapper_80054440                     = 0x80054440;  /* GTE Normal-Color-
 /* RENAME 0x8007B9B0: retired name 'gpu_copy_draw_packet_8007B9B0' — preserved note: GPU: copies 0x50-byte primitive packet (forces white 0xFFFFFF), submits via ctx D_8009BE6C[8] */
 graph_add_edge_80017848                        = 0x80017848;  /* graph edge insertion: nodes at $s2[0xC] stride64 (flag 0x18, adj-counts 0x1C/0x20, adj-lists 0x24/0x2C), edges at $s2[0x */
 calc_fighter_separation_vec_8002BC68           = 0x8002BC68;  /* inter-fighter distance (sqrt LUT D_8008D118) between pts D_80101FA0/A8 & D_801023EC/F4 (0x44C apart=fighter stride); wri */
-/* RENAME 0x800526A0: retired name 'math_sqrt_800526A0' — preserved note: fixed-pt sqrt via GTE leading-zero-count: mtc2 $a0->r30(LZCS), mfc2 r31(LZCR) to normalize, index LUT D_80015620, halve */
+/* RENAME 0x800526A0: retired name 'math_sqrt_800526A0' — preserved note: fixed-pt sqrt via GTE leading-zero-count: mtc2 $a0->r30(LZCS), mfc2 r31(LZCR) to normalize, index LUT g_sqrt_table (0x80015620), halve */
 calc_line_seg_intersect_8005763C               = 0x8005763C;  /* 2D line-seg intersection: all coords sra>>3 (1/8 fixed-pt), dx/dy deltas of 2 segs, mult/div cross-products w/ div0(brea */
 coli_find_nearest_edge_hit_80057ACC            = 0x80057ACC;  /* loops polygons($s6: count+vert-array, 8B entries)->edges; intersects each edge vs actor move-seg via func_8005763C; trac */
 /* RENAME 0x8007E8DC: retired name 'matrix_scale_3x3_rows_8007E8DC' — preserved note: scales rows of a GTE 3x3 matrix (5-word/9-halfword packed layout m00,m01|m02,m10|m11,m12|m20,m21|m22) in place: row0*$a1 */

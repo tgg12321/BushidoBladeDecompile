@@ -50,8 +50,8 @@
 - 0x800420D0 replay_camera_helper — D_800A3382=0, D_800A3380=0, D_800A3238=-1; vacuous helper name
 - 0x800456F0 player_helper — zeroes word +0xC of the D_800EED10 table entry with id==a0; vacuous helper name
 - 0x80045878 player_helper — player setup chain (effect/sound table callees); vacuous helper name
-- 0x80046F24 camera_InitMatrix — src/sound.c:398 builds a MATRIX (0x1000 diagonal + fov-derived shear) into g_cam_matrix - "InitMatrix" fits
-- 0x8004700C camera_Transform — src/sound.c:417 applies g_cam_matrix via func_80052930 + shear - "Transform" fits
+- 0x80046F24 camera_InitMatrix — src/sound.c:398 builds a MATRIX (0x1000 diagonal + fov-derived shear) into g_cam_matrix - "InitMatrix" fits — **RESET 2026-09-29:** row 1 of the matrix is all zero (singular) and its inputs are light-direction components (docs/naming/sweep-2026-09-29/verify/inferred.csv)
+- 0x8004700C camera_Transform — src/sound.c:417 applies g_cam_matrix via func_80052930 + shear - "Transform" fits — **RESET 2026-09-29:** a planar projection through that singular matrix; the view step is the caller's (docs/naming/sweep-2026-09-29/verify/inferred.csv)
 - 0x80047210 camera_InitBoneData — src/sound.c:457 copies a matrix block into g_cam_bone_data and halves 3 halfwords - "Init" fits loosely
 - 0x800472B0 camera_GetBoneData — returns &g_cam_bone_data - "Get" fits
 - 0x800472C0 camera_InitRotation — src/sound.c:482 zero-inits a rotation record and calls the g_anim_func_table rotation builder - fits

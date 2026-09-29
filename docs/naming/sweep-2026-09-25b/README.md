@@ -62,7 +62,7 @@ per vein — read before re-mining.
   also covers `__text`…`__bsslen`), `_ramsize` (0x800A2690), `CD_cbread` (inside `CD_cbready`),
   `DS_active` (inside `CD_com`). The 2026-09-07 wave already landed one such over-wide name
   (`_spu_rev_offsetaddr` covers `_spu_rev_attr`) — a defect to fix with the same split.
-- 0x80042ED8 is an in-place 3×3 transpose — RESET applied; `math_TransposeMatrixInPlace` unverified.
+- 0x80042ED8 is an in-place 3×3 transpose — RESET applied; `math_TransposeMatrixInPlace` unverified. Verified and applied in sweep 2026-09-29 (docs/naming/sweep-2026-09-29/verify/compute.csv).
 - Next leads: `g_sound_3d_cursor` / `g_sound_3d_data_buffer` (0x800A3820 / 0x80102C00) are the GTE
   renderer's draw list; the six MEDIUM rows that stayed MEDIUM (`keep/medium_revisit.md`).
 

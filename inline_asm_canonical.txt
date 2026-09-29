@@ -126,7 +126,7 @@ func_800545F4         # Data-as-code fragment in text1b.c: 4 lui/ori instruction
 
 # BIOS trampolines with padding/data tables (extends the 39 already authorized)
 _96_remove          # BIOS A(0x72) trampoline + 3 trailing alignment-padding nops. Identical to authorized 39; only the trailing nops pushed line count past auditor's is_bios threshold (now fixed).
-DelDrv          # BIOS B(0x48) trampoline + module-table data block (g_data_start, g_module_func_tbl 34 entries, g_module_type_tbl). The tables are .word data exposed as globals; embedded under this symbol because the BIOS call patches their offsets at runtime.
+DelDrv          # BIOS B(0x48) trampoline + module-table data block (g_data_start, g_module_func_tbl 34 entries, g_sqrt_table_u8 = the u8 table floor(8*sqrt(i)) that begins at 0x8008D118, renamed from g_module_type_tbl in naming sweep 2026-09-29). The tables are .word data exposed as globals; embedded under this symbol because the BIOS call patches their offsets at runtime.
 
 # COP0 / kernel-register manipulation
 InitGeom          # COP0 Status register manipulation: `mfc0 $v0, $12; mtc0 $v0, $12` with bit-set. Sets the COP2 Usable bit in Status to enable GTE. GCC 2.7.2 has no C construct for mfc0/mtc0.
