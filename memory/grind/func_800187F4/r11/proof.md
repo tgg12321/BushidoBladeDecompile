@@ -1,4 +1,4 @@
-# func_800187F4 — Ruling 11 (D) proof and landing record, v4 (manual, 2026-09-28)
+# func_800187F4 — Ruling 11 (D) proof and landing record, v5 (manual, 2026-09-28)
 
 History. v1 (this text's base) FAILed a fresh layer-2 on `work`/`delta`
 (rejected/r11-work-delta-reuse-layer2-fail-0.md); v2 split them with two FAKE dead stores and FAILed a
@@ -10,11 +10,17 @@ construct for any of them) with the v1 reviewer's other corrections (mechanism w
 naming, header text). Every FAKE-construct spelling measured is banked in §5.
 
 v4 (same body): the third fresh layer-2 (rejected/r11-proof-args-v3-layer2-fail-0.md) found no FAKE-free
-per-value spelling reaching the target in ~3,000 probes but FAILed (D)(3)'s universal arguments. The owner
+per-value spelling reaching the target in its 2,071 FAKE-free per-value probes (2,170 bodies) but FAILed (D)(3)'s universal arguments. The owner
 then ruled Q31 (Mechanism + search, the Q25 standard, for Ruling 11 (D)(3)) (record commit ee84164e3) and Q32 (a FAKE construct resized
-within its own admitted range is the same construct). §3's "Necessity" paragraphs are therefore read as the
+within its own admitted range is the same construct). §3 (rewritten in v5) states the
 named MECHANISM plus the measured record; §3A is the (D)(3) record under Q31 (every banked counting spelling,
 none reaching the target), and the universal sentences the v3 reviewer refuted are corrected in place.
+
+v5 (same body): the fourth fresh layer-2 FAILed the ledger only (the landing spelling's dumps for work and
+delta were no longer banked at HEAD; §3 still stated universals; tmp-only reviewer probes; three figures).
+v5 banks the landing-chassis dumps (r11/dumps_table_landing.txt, r11/lreg_excerpts_landing.txt), rewrites
+§3 as mechanism + record only, banks every reviewer probe (r11/reviewer_probes/), and corrects the figures.
+r11/dumps_table.txt remains the v2 (c6) chassis table; the landing citations below use the landing files.
 
 Rulings spent: .claude/rules/ordinary-c-judge-decidable.md § Ruling 11 (owner 2026-09-26) incl. its
 (C)(3) clause "GTE-macro input copies" (owner Q28, record commit 206e77db8); inline-asm-policy.md
@@ -69,7 +75,7 @@ r11pv_f 0); `dist2` holds root then `pen / dist2` as ONE value (both reach `gte_
 The five focus-1 / focus-0 X,Z axis deltas are their own locals (dx0, dz0, dy1, dx1, dz1): the
 ablation below shows sharing any of them with `delta` is byte-identical, so they are not shared.
 
-## 2. Measured necessity, per variable (fast2 lines; sandbox in r11/sandbox_sweep.txt)
+## 2. Measured one-variable-per-value spellings, per variable (fast2 lines; sandbox in r11/sandbox_sweep.txt)
 
 Full table with the engine sandbox score next to each (they agree on every zero and every
 nonzero; magnitudes differ slightly): r11/measurements.md. Sandbox: landing 0 (644/644); idx 67
@@ -97,127 +103,80 @@ times 4, function scope 4; nbits: one statement `shift = 0x16 - (lz[0] & ~1)` 2 
 scope 2. Copy placements for temp's V1 (the Q28 copy): fresh local at function scope 2, in the LZC arm
 2, as the arm's `s32 lzc_in = work;` initializer 2, no copy at all 2.
 
-## 3. Mechanism and necessity, per variable
+## 3. Mechanism per Ruling 11 local (Q31 (a)), with the measured record (Q31 (b)-(c) in §3A)
 
-### idx — global.c allocno priority (global.c:635-656, `allocno_compare`)
-Priority = floor_log2(n_refs) * n_refs / live_length * 10000; allocnos are seated in that order,
-each by find_reg into the lowest-numbered free register it does not conflict with.
-- Reuse (dumps_table c5): `idx` pseudo 89, nrefs 45, livelen 245, pri **9183**, ord 36 -> **$t2**.
-  It is seated after bits (21000, $a0), vx/vy/vz (12698-13333, $a1/$a3/$a2), the node+8 giv and
-  `nforce` (10000, $t1), all live across the force loops -> $t2, the target's register for all three
-  loop counters (target: `addiu $t2,$t2,1; slt $v0,$t2,$t1` closing each force loop, and
-  `addiu $t2,$t2,1; slt $v0,$t2,$v0` closing the ellipsoid loop).
-- Per-value (r11pv_idx): idx_add pseudo 89 nrefs 16 livelen 25 pri 25600 ord 21 -> **$a0**;
-  idx_sub pseudo 90 nrefs 16 livelen 22 pri 29090 ord 20 -> **$a0**; idx_sph livelen 198 pri 1969 ->
-  $t2. The force-loop counters are seated before `bits` and take $a0; bits, vx.. shift (67 lines).
-- Mechanism and record ((D)(3) under Q31). The target needs the counter allocno seated after every
-  allocno live across the force loops (priority below nforce's 10000) AND each loop's zero init in its
-  for-init, where the guard `0 < count` folds into `blez` with the init in the delay slot. In the reuse
-  both hold: one pseudo spans three loops (priority 9183) while every init stays in its for-init. A
-  per-value counter with its init in the for-init lives only in its loop (16 refs over 22-25 insns,
-  weighted by the for-loop depth, flow.c:2081): priority >= 25600, seated first, $a0 (67 lines). The v3
-  reviewer showed the priority half alone is reachable FAKE-free by hoisting the init
-  (rv3I_1000000_ff_loop: pri 9552 < 9767, $t2), but then the guard is not folded and a phantom slot is
-  lost (27 lines; 3 with lz[8]). Two force loops sharing give 34042 (ledger [s2] item 4). Declaration
-  order only breaks exact ties, none here. Every counting spelling measured, the reviewers' included, is
-  in §3A; none reaches the target.
+Dumps of the LANDING spelling (c7 = v1 code) and of each one-variable-per-value spelling on that chassis:
+r11/dumps_table_landing.txt (r11table rows: pseudo, allocator, register, ALLOCDBG ord/nrefs/livelen/pri) and
+r11/lreg_excerpts_landing.txt (.lreg insns of the two cse decisions); commands in the files' headers.
+Mechanism sources: global.c:635-656 `allocno_compare` (priority = floor_log2(n_refs) * n_refs /
+live_length * 10000, seated in that order, find_reg taking the lowest free register); flow.c:2081
+(reg_n_refs += loop depth); local-alloc.c:472 (a pseudo in one block with one death is a local quantity,
+seated before global); local-alloc.c combine_regs (:1784, called :1295-1346); cse.c make_regs_eqv (:840-857,
+class head = the register whose last reference, reads and sets per regclass.c:1763-1764, is later).
 
-### nforce — the same priority order, the floor_log2 step
-- Reuse: pseudo 90 nrefs 14 livelen 42 -> 3*14/42 = pri **10000**, ord 34 -> **$t1**; `idx` (9183)
-  after it -> $t2. Target: $t1 is the count, $t2 the counter (`slt $v0,$t2,$t1`).
-- Per-value (r11pv_nforce): nforce_add / nforce_sub nrefs 7 livelen 21 -> 2*7/21 = pri **6666**
-  each (ord 36/37) -> $t2; `idx` (9183) is seated first -> $t1. Counter and count swap: 21 lines.
-- Necessity: a force count's refs are its load and the loop test, weighted by loop depth (flow.c
-  :2081): 7, over the loop (21 insns), in every one-variable-per-value spelling that is not set aside
-  (the statements and their for-loop nesting as written); floor_log2(7) = 2, so its priority is 6666 <
-  9183 whatever its declaration; loop-form respellings (goto / while / do-while) are measured in §3A. Raising the weights of it or of competing allocnos needs added loop
-  nesting: six FAKE do-while(0) wraps reach 0 (the v2 layer-2's find), set aside under Q30, §5. One allocno holding both counts has 14
-  refs over 42 insns and floor_log2(14) = 3: 10000 > 9183. The priority gain is the floor_log2 step,
-  which only a variable holding both counts has.
+### idx — global.c priority, with the guard fold
+- Landing (c7): pseudo 89 (all three counters) nrefs 45 livelen 245 pri 9183, ord 36 -> $t2, seated after
+  bits ($a0), vx/vy/vz, the node+8 giv and nforce (pseudo 90, pri 10000, ord 34, $t1); each init in its
+  for-init, so the guard `0 < count` folds into `blez` with the init in the delay slot. Target: `addiu
+  $t2,$t2,1; slt $v0,$t2,$t1` / `... $v0,$t2,$v0`.
+- Per-value (v1pv_idx): the force counters nrefs 16, livelen 25 / 22, pri 25600 / 29090, ord 21 / 20 ->
+  $a0; 67 lines. With the init hoisted (v3 reviewer, rv3I_1000000_ff_loop) the priority falls below the
+  count's (9552 < 9767, $t2) but the guard no longer folds and a phantom slot is lost (27; 3 with lz[8]).
+- Record: every banked counting spelling for idx misses (§3A).
 
-### temp — local-alloc before global (local-alloc.c:472), then global priority
-- Reuse: pseudo 300 (copy + both table bytes) nrefs 18 livelen 8 -> pri **90000**, ord 0 -> **$a0**;
-  the shift pseudos (nbits 359 / nbits2 423, pri 64285) come next and take **$v1**. Target: copy,
-  both bytes in $a0 (`addu $a0,$a1,$zero` at 0x80018E18, `lbu $a0` at 0x80018E6C / 0x80018FE4), shift
-  in $v1 (`subu $v1,$t9,$v0`).
-- Per-value (r11pv_temp): each table byte is written by `lutK = (&D_8008D118)[...]` and read only by
-  the next statement, both in its LZC arm: it lives in one basic block and dies once, so
-  local-alloc.c:472 (`reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1`) makes it a local quantity,
-  seated before global allocation into the first free register of its block: pseudos 360/425
-  **local-alloc $v1**. The shift pseudos then conflict with $v1 and take **$a0** (ord 4/5), and the copy
-  (lzc_in, nrefs 6 livelen 4 pri 30000, ord 19) takes $v1. 42 lines. Ablations: copy alone 2 (the
-  fresh copy's only conflicts are the compare's $v0 and the island's $t4-$t7, so find_reg seats it in
-  $v1: evidence [s2 cont.] 8); byte 1 alone 9; byte 2 alone 31.
-- Necessity: the property is that each table byte's variable is NOT a single-block quantity, so it
-  is seated by global.c (before the shift, pri 90000) instead of by local-alloc. In every
-  one-variable-per-value spelling, a table byte's variable has exactly one write and one read, both in
-  its LZC arm (fixed by the statement list), hence one block and one death: local-alloc takes it,
-  and at local-alloc time the shift pseudo (global: two sets) is not seated yet, so the byte cannot be
-  kept out of $v1 by it; it lands in $v0/$v1, never $a0. Declaration scope does not change the block
-  a pseudo lives in (function scope: 42, st_temp_fscope). The copy value alone cannot reach $a0 either
-  (the four placements above, all 2).
-- Q28 clause for V1 (the copy), (C)(3) "GTE-macro input copies": (a) one write `temp = work;`, whole
-  RHS the named local `work`, no cast; `work` is read again after it (`work < 0x400`, `[work]`,
-  `work >> nbits`). (b) its only read is `gte_Lzc(temp, &lz[0])`, i.e. the bare variable as the whole
-  `"r"(r1)` operand of gte_ldlzc's `move $12,%0` (a qualifying unit, admitted under the 2026-09-26
-  class). (c) later on the same path the variable is written with V2, the table byte (a load whose
-  `lbu` is in the target). (d) the copy is `addu $a0,$a1,$zero` at 0x80018E18 (beqz delay slot) in the
-  target, and the build emits it at the same position (0 lines). (e) every other prong below.
+### nforce — global.c priority, the floor_log2 step
+- Landing: pseudo 90 (both counts) nrefs 14 over 42 -> 3*14/42 = pri 10000, seated before idx (9183) ->
+  $t1; idx -> $t2.
+- Per-value (v1pv_nforce): each count nrefs 7 over 21 -> 2*7/21 = 6666, seated after idx; the seats swap
+  (21 lines). Loop-form respellings (goto/while/do-while, v3 reviewer) change the depth weighting and are
+  measured in §3A.
+- Record: every banked counting spelling for nforce misses (§3A).
 
-### work — cse.c make_regs_eqv class head (cse.c:840-857)
-`temp = work;` makes the two registers equivalent in cse; the class head (the register cse
-substitutes into every equivalent use) is the one whose LAST REFERENCE (reg_scan's regno_last_uid, which
-counts reads AND sets: regclass.c:1763-1764) is later and beyond the block.
-- Reuse: `work`'s last use is `gte_lddp(work)` / the scale at the end of the loop body, after
-  `temp`'s last use (the focus-1 table byte): `work` stays the head. The compare, the table index and
-  the LZC-arm index read `work` (**$a1**) and the copy survives as its own move (the Q28 copy). Target:
-  `addu $a1,$v0,$a0; slti $v0,$a1,0x400; beqz; addu $a0,$a1,$zero`.
-- Per-value (r11pv_work): `sq1`'s last use is the LZC-1 index `sq1 >> nbits`, before `temp`'s last
-  use: `temp` becomes the head, cse rewrites sq1's reads to `temp`, the sum is computed straight into
-  temp's register and the copy disappears (`addu $a0,$v0,$a0 ... nop` where the target has
-  `addu $a1,...; move $a0,$a1`); the root (dist1, nrefs 27 livelen 93) is seated in $a2. 26 lines.
-- Necessity: in every one-variable-per-value spelling that is not set aside, the squared distance's
-  variable is referenced only by its own statements — its sum write, the compare, the small-arm index,
-  the copy and the LZC-1 index (fixed by (C)(2)) — so its last reference precedes temp's; the head is
-  `temp` whatever the declaration (function scope 26, chained `temp = sq1 = ...` 26). A later reference
-  would be an extra statement: either a FAKE-annotated one (a dead store or self-assignment after
-  temp's last use does reach 0: set aside under Q30, §5), or a real statement the reuse spelling lacks,
-  which fails (C)(2). (Correction, v4: this assumes temp shared. With the Q28 copy its own local too,
-  sq1 does stay the head, yet the spelling misses through other seats — rv3x_0011000 27, rv3x_0041001 13.
-  Under Q31 the mechanism above plus the §3A record, not a universal claim.)
+### temp — local-alloc of single-block values vs global priority
+- Landing: pseudo 300 (copy + both table bytes) nrefs 18 livelen 8 -> pri 90000, ord 0 -> $a0; the shift
+  pseudos (359 / 423, pri 64285) take $v1. Target: `addu $a0,$a1,$zero` (0x80018E18), `lbu $a0`
+  (0x80018E6C / 0x80018FE4), shift in $v1.
+- Per-value (v1pv_temp): each table byte is one write and one read in its LZC arm, a local-alloc quantity
+  (local-alloc.c:472) seated before global into $v1; the shifts then take $a0 and the copy $v1 (42 lines).
+  Ablations: copy alone 2, byte 1 alone 9, byte 2 alone 31.
+- Q28 clause for V1 (the copy `temp = work;`): (a) one write, whole RHS the named local `work`, no cast;
+  `work` is read again (`work < 0x400`, `[work]`, `work >> nbits`). (b) its only read is
+  `gte_Lzc(temp, &lz[0])`, the bare variable as the whole `"r"(r1)` operand of gte_ldlzc's `move $12,%0`,
+  an admitted class unit. (c) later on that path the variable holds V2, the table byte (a load; `lbu` in the
+  target). (d) the copy is the target's `addu $a0,$a1,$zero` at 0x80018E18, emitted at the same position
+  (0 lines). (e) Q31 governs its (D)(3): fresh copy locals, every placement (function scope, in the arm, as
+  an initializer, u32, register, no copy at all) are banked: 2 each, none reaching the target.
+- Record: every banked counting spelling for temp misses (§3A).
 
-### delta — cse.c make_regs_eqv class head, with the division's copy (cse.c:840-857)
-`delta / 8` (signed) expands to `t = delta; if (t < 0) t += 7; t >>= 3` (dump insns 645-651).
-- Reuse (dump c5): insn 647 tests `(reg/v 269)` = delta and insn 649 adds 7 to it: delta's last use
-  (the Y delta to focus 0, in the ellipsoid loop) is later than t's, so delta stays the head. asm:
-  `bgez $v1` with `move $v0,$v1` in the delay slot = target.
-- Per-value (r11pv_delta): the ground depth `dg` is read only by `> 0`, `> 0x3200` and `/ 8`; its
-  last use is the copy (insn 645, REG_DEAD), t outlives it, t becomes the head and insns 647/649 read
-  `(reg 276)` = t: `move $v0,$v1; bgez $v0`. 4 lines.
-- Necessity: in every one-variable-per-value spelling that is not set aside, the ground depth's
-  variable is referenced only by its write and the three reads in the ground block (fixed statements),
-  so its last reference is the division and the division's temp always outlives it; declaration scope
-  does not change that (function scope 4, inline 4). A later reference would be a FAKE-annotated
-  statement (a dead store after the ellipsoid loop reaches 0: set aside under Q30, §5) or a real statement
-  the reuse spelling lacks ((C)(2)). Only a variable that carries a later value (here: a sphere delta)
-  stays the head. Which sphere delta
-  shares is free (each of the six alone reaches 0, abl_d.log); the body shares the first one computed,
-  the Y delta to focus 0, so both values are Y deltas.
-- Set aside (Q30): the per-value spelling plus a FAKE dead store `dg = 0;` after the ellipsoid loop
-  reaches 0 (reg_scan counts the dead set as dg's last reference before cse; flow deletes it). §5.
+### work — cse.c make_regs_eqv class head (lreg_excerpts_landing.txt)
+- Landing (c7): insn 883 sets pseudo 301 (work) to the sum, insn 886 copies it to 300 (temp), insn 889
+  compares 301 with 1024: work's last reference (the scale, the lddp) is later than temp's, so work stays
+  the class head and the copy stays its own move (target `addu $a1,$v0,$a0; slti $v0,$a1,0x400; beqz;
+  addu $a0,$a1,$zero`).
+- Per-value (v1pv_work): insn 883 sets pseudo 300 (temp's) to the sum directly, there is no copy insn, and
+  insn 889 compares 300: sq1's last reference (the LZC-1 index) is before temp's, temp became the head and
+  took sq1's reads (`addu $a0,$v0,$a0 ... nop`); 26 lines. With the Q28 copy also its own local, sq1 stays
+  the head but the spelling misses through other seats (v3 reviewer rv3x_0011000 27, rv3x_0041001 13).
+- Record: every banked counting spelling for work misses (§3A); the FAKE dead-store closers are set aside
+  (§5).
 
-### nbits / nbits2 — local-alloc combine_regs tie (local-alloc.c:1295-1346, combine_regs :1784)
-- Reuse: nbits pseudo 359 (sets lz[0], then the shift) is set twice, so it is not a local quantity
-  (global, pri 64285, $v1); the `& ~1` result is a separate local temp that cannot be tied to it and
-  takes $v0: `and $v0,$v1,$s6; subu $v1,$t9,$v0` = target.
-- Per-value (r11pv_nbits): the count `lzcount = lz[0]` is written once and dies at the `& ~1`, one
-  block: a local quantity (local-alloc $v1), and combine_regs ties the `&` result to the dying input:
-  `and $v1,$v1,$s6; subu $v1,$t9,$v1`. 2 lines (4 for both).
-- Necessity: in every one-variable-per-value spelling the count's only read is `(count & ~1)` in the
-  same block (fixed statements): one set, one death, one block, so the tie happens; one statement
-  `shift = 0x16 - (lz[0] & ~1)` has no count variable at all and ties the load the same way (2). Only
-  a variable set twice (count, then shift) escapes local-alloc. (Ruling 4, compound splits, was not
-  claimed: the second statement is not a compound assignment; compound spellings measure 4-49.)
+### delta — cse.c make_regs_eqv class head, with the `/ 8` copy (lreg_excerpts_landing.txt)
+- Landing (c7): insn 645 copies 269 (delta) into 276, jump 647 tests `(ge (reg/v:SI 269) 0)` and insn 649
+  adds 7 to `(reg/v:SI 269)`: delta's last reference (the focus-0 Y delta) is later than 276's, so delta
+  stays the head: `bgez $v1` with the copy in the delay slot = target.
+- Per-value (v1pv_delta): insn 645 carries REG_DEAD for 269 (the ground depth's last reference), 276
+  becomes the head, and 647 / 649 read `(reg:SI 276)`: `bgez $v0`; 4 lines.
+- Record: every banked counting spelling for delta misses (§3A); the FAKE dead-store closers are set aside
+  (§5). Which sphere delta shares is free (each of the six alone reaches 0 while the ground depth shares,
+  abl_d.log); the body shares the first one computed, the Y delta to focus 0.
+
+### nbits / nbits2 — local-alloc combine_regs tie
+- Landing: pseudo 359 (lz[0], then the shift) is set twice, so not a local quantity (global, pri 64285,
+  $v1); the `& ~1` result is a separate local temp that takes $v0: `and $v0,$v1,$s6; subu $v1,$t9,$v0`.
+- Per-value (v1pv_nbits): `lzcount = lz[0]` is written once and dies at the `& ~1` in one block: a local
+  quantity (v2 chassis dump: local-alloc $v1), and combine_regs ties the `&` result to it: `and
+  $v1,$v1,$s6; subu $v1,$t9,$v1`; 2 lines (4 for both).
+- Record: every banked counting spelling for nbits / nbits2 misses (§3A).
 
 ## 3A. (D)(3) under Q31 — the banked search (every counting one-variable-per-value spelling)
 
@@ -230,13 +189,16 @@ proposed by the author or a reviewer banked and measured; (c) no counting spelli
 | author, v1 chassis (per-value, ablations, structural, 127-partition delta ablation) | ~60 + 127 | 0 of the per-value ones (the delta partitions reach 0 only while the ground depth still shares, i.e. reuse) | 2 | measurements_v1.md, abl_d.log |
 | author, v2 chassis (per-value, ablations, structural for idx/nforce/temp/nbits) | 22 | 0 | 2 | measurements.md, sandbox_sweep_v2.txt |
 | v3 reviewer: every mix of the seven splits | 799 | 0 | 2 | rejected/v3_review/combo_res.txt |
-| v3 reviewer: loop forms (goto / while / do-while) over 11 bases | 814 | 0 per-value (the 6 zeros are `c7_*` bodies: the reuse spelling with a loop respelled) | 2 | loop_res.txt |
-| v3 reviewer: statement orders | 96 | 0 per-value (2 zeros are `c7_*` reuse bodies) | 2 | order_res.txt |
-| v3 reviewer: early inits | 60 + 401 | 0 | 27 / 29 | init_res.txt, init2_res.txt |
-| v2 reviewer: single do-while(0) wraps (FAKE, set aside, listed for completeness) | 500 | 0 | 2 | rejected/v2_review/ |
+| v3 reviewer: loop forms (goto / while / do-while) over 11 bases | 740 per-value (+ 74 `c7_*` reuse bodies, 8 of them 0) | 0 | 2 | loop_res.txt |
+| v3 reviewer: statement orders | 72 per-value (+ 24 `c7_*` reuse bodies, 2 of them 0) | 0 | 21 | order_res.txt |
+| v3 reviewer: early inits | 60 + 400 per-value (+ 1 reuse body) | 0 | 27 / 32 | init_res.txt, init2_res.txt |
+| v1/v2 reviewers' FAKE-free probes (temp bytes at loop scope; nforce split) | 2 | 0 | 21 | r11/reviewer_probes/ (rv_tp4 42, rv_nf0 21) |
+| v4 reviewer: types / register / initializer / ternary / compound respellings | 16 | 0 | 2 | r11/reviewer_probes/ (rv4_*) |
+| v2 reviewer: single do-while(0) wraps (FAKE, set aside, for completeness) | 500 | 0 | 2 | rejected/v2_review/ |
 | author v2: dead stores / self-assigns / chain-extenders (FAKE, set aside) | 209 | 0 | 2 | ds.log, ds2.log |
 
-No counting spelling reaches the target. The known closers all add FAKE constructs and are set aside (§5).
+The v3 reviewer's FAKE-free one-variable-per-value spellings total 2,071 (the other 99 of its 2,170 bodies
+are the reuse spelling with a loop or order respelled). No counting spelling reaches the target. The known closers all add FAKE constructs and are set aside (§5).
 
 ## 4. Prong walk (A)-(H), all seven
 
@@ -264,7 +226,7 @@ No counting spelling reaches the target. The known closers all add FAKE construc
   roots (`srl`/`srav`), deltas (`subu`), shift (`subu $v1,$t9,$v0`), lz loads (`lw $v1,0x10($sp)`); the
   copy V1 of temp under the Q28 clause (§3 temp).
 - **(D)(1)** dumps: r11/dumps_table.txt (+ commands §0); **(D)(2)** mechanisms named per variable (§3);
-  **(D)(3)** necessity per variable (§3); **(D)(4)** alternatives (§2), sanctioned families (§5),
+  **(D)(3)** under Q31: mechanism per variable (§3) and the banked search (§3A); **(D)(4)** alternatives (§2), sanctioned families (§5),
   permuter (§6).
 - **(E)** names: `idx`, `nforce`, `delta`, `nbits`/`nbits2` under (E)(ii) (every value is a loop index /
   a force count / a Y delta / a bit count); `temp`, `work` under (E)(i).
@@ -287,9 +249,9 @@ Families and their annotation requirements, quoted:
 Closing spellings (all one-variable-per-value for the variable named, each reaching 0):
 | variable | spelling | lines | where |
 |---|---|---|---|
-| work | per-value + `sq1 = 0;` dead store after temp's last use (end of the ellipsoid body / before `tot`) | 0 / 0 | tmp/func_800187F4/rv_wd_end.c, rv_wd_after2.c (v1 layer-2); v2 chassis c6 (variants_v2/c6.c) |
+| work | per-value + `sq1 = 0;` dead store after temp's last use (end of the ellipsoid body / before `tot`) | 0 / 0 | r11/reviewer_probes/rv_wd_end.c, rv_wd_after2.c (v1 layer-2); v2 chassis c6 (variants_v2/c6.c) |
 | delta | per-value + `dg = 0;` / `depth = 0;` dead store after the ellipsoid loop | 0 | variants/fam_delta_deadstore_end.c; c6 |
-| work + delta | both | 0 | rv_both.c; c6 |
+| work + delta | both | 0 | r11/reviewer_probes/rv_both.c; c6 |
 | nforce | per-value + six single-level do-while(0) wraps (loads of vx, vy, vz, nforce_add, bits, bits2) | 0 | rejected/nforce-split-six-dowhile-wraps-closes-0.template.c (v2 layer-2) |
 
 Non-closing FAKE sweeps (for the record): v2 chassis, on idx / nforce / temp / nbits / nbits2 per-value
@@ -304,7 +266,8 @@ the reuse body does not carry, and it carries, unchanged, every FAKE- or !FAKE-a
 reuse body carries"): the landing body carries exactly one such construct, `s32 lz[6]` (OVERSIZED-LOCALS,
 FAKE-annotated). Checked mechanically (r11/tools/lzcheck.py over every banked body): all 89 per-value,
 ablation, structural, family-sweep and closing spellings in variants/, variants_v2/, variants_v3/ and
-rejected/ declare `s32 lz[6]` (the same declaration; the v1/v2 bodies carry the older comment text); each closing spelling above adds dead stores or
+rejected/ declare `s32 lz[6]` (the same declaration; the comment on it differs across versions, and the
+v1 variants carry none); each closing spelling above adds dead stores or
 do-while(0) wraps, so it is set aside. Spellings whose only FAKE construct is lz[6] count under (D)(3):
 the per-value spellings, ablations and structural respellings of §2 and §3A, all nonzero. The v3
 reviewer's closers with `s32 lz[5]` in place of lz[6] (rejected/v3_review/bodies/rv3_rv_wd_end_lz5,

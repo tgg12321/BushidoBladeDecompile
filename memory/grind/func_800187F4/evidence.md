@@ -172,3 +172,8 @@ cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
   Ruling 11 (D)). v3 lands the v1 code (seven reused locals, no FAKE construct for them) with v2 text fixes
   (Scr1F800000, header, lz[6] annotation + census): template.c = r11/variants_v3/c7.c, 0/662. proof.md v3
   banks every set-aside closer (dead stores for work/delta, six do-while(0) wraps for nforce) and the sweeps.
+
+## [s3 cont. 3] 2026-09-28 — v4 layer-2 FAIL (ledger only) fixed
+- Banked the landing-chassis dumps (r11/dumps_table_landing.txt, r11/lreg_excerpts_landing.txt), rewrote proof §3
+  as mechanism + record under Q31, banked all 29 tmp-only reviewer probes (r11/reviewer_probes/, none counting
+  reaches 0), corrected figures (2,071 FAKE-free per-value reviewer probes + 99 reuse bodies; 8 reuse zeros).

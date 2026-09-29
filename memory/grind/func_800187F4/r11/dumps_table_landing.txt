@@ -1,0 +1,210 @@
+# r11table rows on the LANDING chassis (c7 = v1 code; commands: r11/tools/dump2.sh <tag> -dl -dg and alloc2.sh <tag>, build cc1 flags -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float; instrumented==build for every tag)
+== tmp/func_800187F4/dump_c7
+  pseudo   75 global s1        ord=44 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t2        ord=36 nrefs=45 livelen=245 pri=9183         sets@1433,508,1438,585,1445,1302: counter, counter, counter, counter, counter, counter
+  pseudo   90 global t1        ord=34 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  269 global v1        ord=4 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  293 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  294 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  295 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  296 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  297 global v1        ord=10 nrefs=12 livelen=6 pri=60000          sets@1059: minus
+  pseudo  300 global a0        ord=0 nrefs=18 livelen=8 pri=90000           sets@886,937,1173: copy, table byte, table byte
+  pseudo  301 global a1        ord=26 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  359 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 362) (reg:SI 360))) 16
+  pseudo  423 global v1        ord=6 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 362) (reg:SI 425))) 16
+== tmp/func_800187F4/dump_v1pv_idx
+  pseudo   75 global s1        ord=46 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global a0        ord=21 nrefs=16 livelen=25 pri=25600         sets@1433,508: counter, counter
+  pseudo   90 global a0        ord=20 nrefs=16 livelen=22 pri=29090         sets@1438,585: counter, counter
+  pseudo   91 global t2        ord=36 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  270 global v1        ord=4 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  271 global t2        ord=41 nrefs=13 livelen=198 pri=1969         sets@1445,1302: counter, counter
+  pseudo  295 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  296 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  297 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  298 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  299 global v1        ord=10 nrefs=12 livelen=6 pri=60000          sets@1059: minus
+  pseudo  302 global a0        ord=0 nrefs=18 livelen=8 pri=90000           sets@886,937,1173: copy, table byte, table byte
+  pseudo  303 global a1        ord=28 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  361 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 364) (reg:SI 362))) 16
+  pseudo  425 global v1        ord=6 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 364) (reg:SI 427))) 16
+== tmp/func_800187F4/dump_v1pv_nforce
+  pseudo   75 global s1        ord=45 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t1        ord=35 nrefs=45 livelen=245 pri=9183         sets@1433,508,1438,585,1445,1302: counter, counter, counter, counter, counter, counter
+  pseudo   90 global t2        ord=36 nrefs=7 livelen=21 pri=6666           sets@441: node[7]
+  pseudo   91 global t2        ord=37 nrefs=7 livelen=21 pri=6666           sets@518: node[8]
+  pseudo  270 global v1        ord=4 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  294 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  295 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  296 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  297 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  298 global v1        ord=10 nrefs=12 livelen=6 pri=60000          sets@1059: minus
+  pseudo  301 global a0        ord=0 nrefs=18 livelen=8 pri=90000           sets@886,937,1173: copy, table byte, table byte
+  pseudo  302 global a1        ord=26 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  360 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 363) (reg:SI 361))) 16
+  pseudo  424 global v1        ord=6 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 363) (reg:SI 426))) 16
+== tmp/func_800187F4/dump_v1pv_temp
+  pseudo   75 global s1        ord=44 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t2        ord=36 nrefs=45 livelen=245 pri=9183         sets@1433,508,1438,585,1445,1302: counter, counter, counter, counter, counter, counter
+  pseudo   90 global t1        ord=34 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  269 global v1        ord=3 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  293 global v1        ord=6 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  294 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  295 global v1        ord=10 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  296 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  297 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1059: minus
+  pseudo  300 global a1        ord=26 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  301 global v1        ord=19 nrefs=6 livelen=4 pri=30000           sets@886: copy
+  pseudo  359 global a0        ord=4 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 363) (reg:SI 361))) 16
+  pseudo  360 local-alloc v1                                                sets@937: table byte
+  pseudo  424 global a0        ord=5 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 363) (reg:SI 427))) 16
+  pseudo  425 local-alloc v1                                                sets@1173: table byte
+== tmp/func_800187F4/dump_v1pv_work
+  pseudo   75 global s1        ord=44 nrefs=8 livelen=452 pri=530           sets@1428,1411: counter, counter
+  pseudo   89 global t2        ord=36 nrefs=45 livelen=244 pri=9221         sets@1433,508,1438,585,1445,1302: counter, counter, counter, counter, counter, counter
+  pseudo   90 global t1        ord=34 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  269 global v1        ord=3 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  293 global v1        ord=6 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  294 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  295 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  296 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  297 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1059: minus
+  pseudo  300 global a0        ord=10 nrefs=27 livelen=19 pri=56842         sets@883,937,1173: (plus:SI (reg:SI 351) (reg:SI 353))) 3 {, table byte, table byte
+  pseudo  360 global v1        ord=4 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 363) (reg:SI 361))) 16
+  pseudo  424 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 363) (reg:SI 426))) 16
+== tmp/func_800187F4/dump_v1pv_delta
+  pseudo   75 global s1        ord=45 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t2        ord=37 nrefs=45 livelen=245 pri=9183         sets@1433,508,1438,585,1445,1302: counter, counter, counter, counter, counter, counter
+  pseudo   90 global t1        ord=35 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  269 global v1        ord=13 nrefs=8 livelen=5 pri=48000           sets@625: minus
+  pseudo  293 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  294 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  295 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  296 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  297 global v1        ord=10 nrefs=12 livelen=6 pri=60000          sets@1059: minus
+  pseudo  300 global a0        ord=0 nrefs=18 livelen=8 pri=90000           sets@886,937,1173: copy, table byte, table byte
+  pseudo  301 global a1        ord=27 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  302 global v1        ord=12 nrefs=12 livelen=7 pri=51428          sets@740: minus
+  pseudo  360 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 363) (reg:SI 361))) 16
+  pseudo  424 global v1        ord=6 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 363) (reg:SI 426))) 16
+== tmp/func_800187F4/dump_v1pv_nbits
+  pseudo   75 global s1        ord=43 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t2        ord=35 nrefs=45 livelen=245 pri=9183         sets@1433,508,1438,585,1445,1302: counter, counter, counter, counter, counter, counter
+  pseudo   90 global t1        ord=33 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  269 global v1        ord=4 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  293 global v1        ord=6 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  294 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  295 global v1        ord=10 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  296 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  297 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1059: minus
+  pseudo  300 global a0        ord=0 nrefs=18 livelen=8 pri=90000           sets@886,937,1173: copy, table byte, table byte
+  pseudo  301 global a1        ord=25 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  359 local-alloc v1                                                sets@922: lz[0]
+  pseudo  360 local-alloc v1                                                sets@930: minus
+  pseudo  424 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 363) (reg:SI 426))) 16
+== tmp/func_800187F4/dump_v1pv_nbits2
+  pseudo   75 global s1        ord=43 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t2        ord=35 nrefs=45 livelen=245 pri=9183         sets@1433,508,1438,585,1445,1302: counter, counter, counter, counter, counter, counter
+  pseudo   90 global t1        ord=33 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  269 global v1        ord=4 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  293 global v1        ord=6 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  294 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  295 global v1        ord=10 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  296 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  297 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1059: minus
+  pseudo  300 global a0        ord=0 nrefs=18 livelen=8 pri=90000           sets@886,937,1173: copy, table byte, table byte
+  pseudo  301 global a1        ord=25 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  359 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 362) (reg:SI 360))) 16
+  pseudo  423 local-alloc v1                                                sets@1158: lz[1]
+  pseudo  424 local-alloc v1                                                sets@1166: minus
+== tmp/func_800187F4/dump_v1abl_idx_idx_add
+  pseudo   75 global s1        ord=45 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t3        ord=38 nrefs=29 livelen=220 pri=5272         sets@1438,585,1445,1302: counter, counter, counter, counter
+  pseudo   90 global a0        ord=20 nrefs=16 livelen=25 pri=25600         sets@1433,508: counter, counter
+  pseudo   91 global t2        ord=35 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  270 global v1        ord=4 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  294 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  295 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  296 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  297 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  298 global v1        ord=10 nrefs=12 livelen=6 pri=60000          sets@1059: minus
+  pseudo  301 global a0        ord=0 nrefs=18 livelen=8 pri=90000           sets@886,937,1173: copy, table byte, table byte
+  pseudo  302 global a1        ord=27 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  360 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 363) (reg:SI 361))) 16
+  pseudo  424 global v1        ord=6 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 363) (reg:SI 426))) 16
+== tmp/func_800187F4/dump_v1abl_idx_idx_sub
+  pseudo   75 global s1        ord=45 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t3        ord=38 nrefs=29 livelen=223 pri=5201         sets@1433,508,1445,1302: counter, counter, counter, counter
+  pseudo   90 global a0        ord=20 nrefs=16 livelen=22 pri=29090         sets@1438,585: counter, counter
+  pseudo   91 global t2        ord=35 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  270 global v1        ord=4 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  294 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  295 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  296 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  297 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  298 global v1        ord=10 nrefs=12 livelen=6 pri=60000          sets@1059: minus
+  pseudo  301 global a0        ord=0 nrefs=18 livelen=8 pri=90000           sets@886,937,1173: copy, table byte, table byte
+  pseudo  302 global a1        ord=27 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  360 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 363) (reg:SI 361))) 16
+  pseudo  424 global v1        ord=6 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 363) (reg:SI 426))) 16
+== tmp/func_800187F4/dump_v1abl_idx_idx_sph
+  pseudo   75 global s1        ord=45 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global a0        ord=17 nrefs=32 livelen=47 pri=34042         sets@1433,508,1438,585: counter, counter, counter, counter
+  pseudo   90 global t2        ord=35 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  269 global v1        ord=4 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  270 global t2        ord=40 nrefs=13 livelen=198 pri=1969         sets@1445,1302: counter, counter
+  pseudo  294 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  295 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  296 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  297 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  298 global v1        ord=10 nrefs=12 livelen=6 pri=60000          sets@1059: minus
+  pseudo  301 global a0        ord=0 nrefs=18 livelen=8 pri=90000           sets@886,937,1173: copy, table byte, table byte
+  pseudo  302 global a1        ord=27 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  360 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 363) (reg:SI 361))) 16
+  pseudo  424 global v1        ord=6 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 363) (reg:SI 426))) 16
+== tmp/func_800187F4/dump_v1abl_temp_lzc_in
+  pseudo   75 global s1        ord=45 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t2        ord=37 nrefs=45 livelen=245 pri=9183         sets@1433,508,1438,585,1445,1302: counter, counter, counter, counter, counter, counter
+  pseudo   90 global t1        ord=35 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  269 global v1        ord=4 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  293 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  294 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  295 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  296 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  297 global v1        ord=10 nrefs=12 livelen=6 pri=60000          sets@1059: minus
+  pseudo  300 global a0        ord=0 nrefs=12 livelen=4 pri=90000           sets@937,1173: table byte, table byte
+  pseudo  301 global a1        ord=27 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  302 global v1        ord=20 nrefs=6 livelen=4 pri=30000           sets@886: copy
+  pseudo  360 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 363) (reg:SI 361))) 16
+  pseudo  424 global v1        ord=6 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 363) (reg:SI 426))) 16
+== tmp/func_800187F4/dump_v1abl_temp_lut1
+  pseudo   75 global s1        ord=44 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t2        ord=36 nrefs=45 livelen=245 pri=9183         sets@1433,508,1438,585,1445,1302: counter, counter, counter, counter, counter, counter
+  pseudo   90 global t1        ord=34 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  269 global v1        ord=3 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  293 global v1        ord=6 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  294 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  295 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  296 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  297 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1059: minus
+  pseudo  300 global a0        ord=10 nrefs=12 livelen=6 pri=60000          sets@886,1173: copy, table byte
+  pseudo  301 global a1        ord=26 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  359 global a0        ord=4 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 363) (reg:SI 361))) 16
+  pseudo  360 local-alloc v1                                                sets@937: table byte
+  pseudo  424 global v1        ord=5 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 363) (reg:SI 426))) 16
+== tmp/func_800187F4/dump_v1abl_temp_lut2
+  pseudo   75 global s1        ord=44 nrefs=8 livelen=453 pri=529           sets@1428,1411: counter, counter
+  pseudo   89 global t2        ord=36 nrefs=45 livelen=245 pri=9183         sets@1433,508,1438,585,1445,1302: counter, counter, counter, counter, counter, counter
+  pseudo   90 global t1        ord=34 nrefs=14 livelen=42 pri=10000         sets@441,518: node[7], node[8]
+  pseudo  269 global v1        ord=3 nrefs=24 livelen=14 pri=68571          sets@625,740: minus, minus
+  pseudo  293 global v1        ord=6 nrefs=12 livelen=6 pri=60000           sets@781: minus
+  pseudo  294 global v1        ord=7 nrefs=12 livelen=6 pri=60000           sets@822: minus
+  pseudo  295 global v1        ord=11 nrefs=12 livelen=7 pri=51428          sets@977: minus
+  pseudo  296 global v1        ord=8 nrefs=12 livelen=6 pri=60000           sets@1018: minus
+  pseudo  297 global v1        ord=9 nrefs=12 livelen=6 pri=60000           sets@1059: minus
+  pseudo  300 global a0        ord=10 nrefs=12 livelen=6 pri=60000          sets@886,937: copy, table byte
+  pseudo  301 global a1        ord=26 nrefs=42 livelen=109 pri=19266        sets@883,901,945,1239: sum, root...
+  pseudo  359 global v1        ord=4 nrefs=15 livelen=7 pri=64285           sets@922,930: lz[0], (minus:SI (reg:SI 362) (reg:SI 360))) 16
+  pseudo  423 global a0        ord=5 nrefs=15 livelen=7 pri=64285           sets@1158,1166: lz[1], (minus:SI (reg:SI 362) (reg:SI 426))) 16
+  pseudo  424 local-alloc v1                                                sets@1173: table byte
