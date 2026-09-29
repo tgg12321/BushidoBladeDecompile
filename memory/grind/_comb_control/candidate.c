@@ -1,23 +1,19 @@
-/* _comb_control ledger candidate — the WHOLE PsyQ 4.0 LIBCOMB COMB module as
- * one translation unit (proposed src/comb.c). This is not a body-only
- * candidate: the asm/funcs/_comb_control.s extent is _comb_control plus the
- * eight module-local statics that follow it (EvalpSio .. __nulldev, Sony OBJ
- * LOCAL symbols), and its switch tables are COMB's own .rdata. See
- * memory/grind/_comb_control/evidence.md [s2] for the landing plan and the
- * measurements (score with tmp/_comb_control/run.sh <name>). */
+/* PsyQ 4.0 LIBCOMB COMB (link-cable SIO driver) — verbatim-linked Sony object
+ * (census 2026-07-09). This file is that one object: its .text
+ * (0x8008BE04-0x8008D050: AddCOMB .. __nulldev, in Sony's order) and its
+ * .rdata (0x8001649C-0x800164F8: the two driver strings, then
+ * _comb_control's three switch tables), placed after main.o by bb2.ld.
+ * Boundaries and symbol offsets: the COMB module of PsyQ 4.0 LIBCOMB.LIB;
+ * evidence and measurements: memory/grind/_comb_control/evidence.md [s2].
+ * No published C reference (psyz decomp/src/libcomb/comb.c is INCLUDE_ASM). */
 #include "common.h"
-
-/* PsyQ 4.0 LIBCOMB COMB — verbatim-linked Sony object (census 2026-07-09);
- * module boundaries from tmp/libscan/psyq40/LIB/LIBCOMB.LIB (.rdata 0x5C,
- * .text 0x124C, .data 0x90, .bss 0x34). No published C reference (psyz
- * decomp/src/libcomb/comb.c is INCLUDE_ASM only). */
 
 /* SIO port registers (0x1F801050, hardware I/O: volatile is type-level). */
 typedef struct {
     u8 data;
-    u8 pad0[3];
+    u8 unk1[3];
     u16 stat;
-    u16 pad1;
+    u16 unk6;
     u16 mode;
     u16 ctrl;
     u16 misc;
@@ -85,7 +81,7 @@ void DelCOMB(void) {
 void ChangeClearSIO(s32 val) {
 }
 
-s32 SioAnsyncRead(u8 *buf, s32 len) {
+static s32 SioAnsyncRead(u8 *buf, s32 len) {
     if (D_800F1AFC.flag) {
         return -1;
     }
@@ -97,7 +93,7 @@ s32 SioAnsyncRead(u8 *buf, s32 len) {
     return 0;
 }
 
-s32 SioSyncroRead(u8 *buf, s32 len) {
+static s32 SioSyncroRead(u8 *buf, s32 len) {
     s32 i;
     s32 cnt = 0;
     s32 size;
@@ -143,7 +139,7 @@ s32 SioSyncroRead(u8 *buf, s32 len) {
     return len - D_800F1AFC.len;
 }
 
-s32 SioAnsyncWrite(u8 *buf, s32 len) {
+static s32 SioAnsyncWrite(u8 *buf, s32 len) {
     if (sen.flag) {
         return -1;
     }
@@ -155,7 +151,7 @@ s32 SioAnsyncWrite(u8 *buf, s32 len) {
     return 0;
 }
 
-s32 SioSyncroWrite(u8 *buf, s32 len) {
+static s32 SioSyncroWrite(u8 *buf, s32 len) {
     s32 i;
     s32 cnt = 0;
     s32 size;
@@ -195,7 +191,6 @@ s32 SioSyncroWrite(u8 *buf, s32 len) {
 
 s32 _comb_control(u32 cmd, u32 arg, u32 param) {
     s32 ret = 0;
-    s32 intr;
 
     switch (cmd) {
     case 0:
@@ -266,8 +261,9 @@ s32 _comb_control(u32 cmd, u32 arg, u32 param) {
         break;
     case 2:
         switch (arg) {
-        case 0:
-            intr = EnterCriticalSection();
+        case 0: {
+            s32 intr = EnterCriticalSection();
+
             D_800A3044->ctrl |= 0x50;
             D_800A3044->mode = regs.mode;
             D_800A3044->ctrl = regs.ctrl;
@@ -278,12 +274,14 @@ s32 _comb_control(u32 cmd, u32 arg, u32 param) {
                 ExitCriticalSection();
             }
             break;
+        }
         case 1:
             D_800A3044->ctrl |= 0x10;
             ret = 0;
             break;
-        case 2:
-            intr = EnterCriticalSection();
+        case 2: {
+            s32 intr = EnterCriticalSection();
+
             D_800A3044->ctrl &= ~0x400;
             sen.flag = 0;
             sen.len = 0;
@@ -291,8 +289,10 @@ s32 _comb_control(u32 cmd, u32 arg, u32 param) {
                 ExitCriticalSection();
             }
             break;
-        case 3:
-            intr = EnterCriticalSection();
+        }
+        case 3: {
+            s32 intr = EnterCriticalSection();
+
             D_800A3044->ctrl &= ~0x820;
             D_800F1AFC.flag = 0;
             D_800F1AFC.len = 0;
@@ -300,6 +300,7 @@ s32 _comb_control(u32 cmd, u32 arg, u32 param) {
                 ExitCriticalSection();
             }
             break;
+        }
         }
         break;
     case 3:
@@ -461,10 +462,10 @@ typedef struct {
 } Fcb;
 
 static s32 r_siostrategy(Fcb *fcb, s32 mode) {
-    s32 n;
-
     fcb->error = 0;
     if (mode == 1) {
+        s32 n;
+
         if (fcb->flags & 0x8000) {
             if (SioAnsyncRead(fcb->addr, fcb->count) != 0) {
                 fcb->error = 0x10;
@@ -479,6 +480,8 @@ static s32 r_siostrategy(Fcb *fcb, s32 mode) {
         return n;
     }
     if (mode == 2) {
+        s32 n;
+
         if (fcb->flags & 0x8000) {
             if (SioAnsyncWrite(fcb->addr, fcb->count) != 0) {
                 fcb->error = 0x10;
