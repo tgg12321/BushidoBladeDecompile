@@ -29,3 +29,37 @@
 - [s1] Move-id gate set identical to calc_loc_mat_fw's: {2, 0x1B, 0x28, 0x26} on u16 field 0x6A, phase field 0xE tested via (x-4)<2U and (x-6)>=2U unsigned-range idioms, frame window 0x40 in [0xA1..0xA3] / [0xA2..0xA4] u8 bounds — shared struct vocabulary across the code6cac_b contact cluster; drafting this and calc_loc_mat_fw together amortizes the struct work.
 
 - [s1] Ledger existed as empty skeleton (session_count=0, prior aborted blitz); no WIP checkpoint; regfix.txt has zero rules for this function.
+
+## s2 — manual laneC, 2026-09-29: from-scratch body, 1024 -> byte-identical
+
+- [s2] Callee names in the s1 entries are stale (pre-rename): the calls are func_800290B8 (grid
+  hit test, `(idx, flag, LeafPos *tbl)`), func_8002DAD0 (x2) and func_8002DE20 (x2); the m2c
+  output was regenerated at probes/m2c.c.
+- [s2] Stack frame: `saved[16]` (LeafPos) at sp+0x10, `count[2]` at sp+0xD0 (the target's
+  `sw v0,0xC0($a3)` with $a3 walking from sp+0x10 is GCC's combined giv for count[i]; separate
+  arrays reproduce it).
+- [s2] Scratchpad layout used (independent of this function's bytes): 0x1F800000 three points per
+  character and 0x1F800048 two per character (func_8002C61C copies them to the records' +0x210 /
+  +0x234 in its two copy loops); 0x1F8000A8 22 points per character at stride 0x108
+  (func_8002A458's `pos` computation). Declared as the local struct view `ScrPad` / `SPAD`.
+- [s2] Progress (harness structdiff, probes/q.py): first draft 339 (official sandbox 332) ->
+  struct view of 0x1F800000 260 -> 0x286 ternary + halving byte offset 239 -> bounds re-reads
+  24 -> overlap operand order 12 -> `u32 mask` 5 -> loop-counter sharing: raw 5.
+  Each lever and its ablation: hypotheses.md s2 H1-H9, probes/ablations/results.txt.
+- [s2] FINAL BODY (candidate.c): harness 1025/1025 insns, 5 differing lines with registers
+  compared (probes/final_harness_diff.txt). Official `sandbox --disable all --diff` on
+  candidate.c (probes/sandbox_candidate.txt): score 5, 1025/1025, 0 source-level hunks,
+  5 operand-only hunks — all 5 are the splat pseudo-relocation artifact below.
+- [s2] SCORER ARTIFACT (5): asm/funcs/func_80029454.s writes the loop-pointer inits and steps
+  as `lui $s4, %hi(D_1F800024)` (0x80029500), `addiu $s4, $s4, %lo(D_1F800024)` (0x80029854),
+  `lui $t1, %hi(D_1F800018)` (0x8002987C), `addiu $t1, $t1, %lo(D_1F800018)` (0x800299C4),
+  `addiu $t0, $t0, %lo(D_1F800024)` (0x800299CC): splat read `lui 0x1F80` + a later `addiu 0x24`
+  / `0x18` increment as symbol halves. Linked they are `lui 0x1f80` / `addiu 36` / `lui 0x1f80` /
+  `addiu 24` / `addiu 36`, exactly our literal immediates; engine/score.py:265-270 rewrites the
+  reference's named HI16/LO16 pair to `@hi(0x1f80)` / `@lo(0x0024)` tokens while our literal
+  immediates stay literal, so the lines compare unequal. The full-build SHA1 is the check.
+- [s2] No FAKE construct, no reused-local ruling (Rulings 5-12) is invoked; no asm. Constructs a
+  reviewer should look at: the `ScrPad`/`SPAD` struct view (H1), the `box_overlap` inline helper
+  used by both passes (H4), `u32 mask` (H5), the parenthesised halving offset (H2), loop counters
+  shared across loops (H7), the K&R `extern s32 func_8002DE20();` (its Unk8002DE20Obj parameter
+  type is declared later in the file).
