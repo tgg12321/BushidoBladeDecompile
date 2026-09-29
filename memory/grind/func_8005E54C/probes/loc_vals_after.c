@@ -39,10 +39,9 @@ extern Unk8009B400Record D_8009B57C[2];
 extern u8 D_8009B58C[];
 extern u8 D_800A3270[];
 s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
-    s16 vals[2];
     s16 wins[2];
     Env5E54C s;
-    volatile s16 digit[3];
+    s16 vals[2];
     T5E098 *tile;
     s32 cur;
     s32 ft4;

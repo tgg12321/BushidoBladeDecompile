@@ -39,7 +39,10 @@ extern Unk8009B400Record D_8009B57C[2];
 extern u8 D_8009B58C[];
 extern u8 D_800A3270[];
 s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
-    s16 vals[2];
+    union {
+        s16 v[2];
+        s32 word;
+    } vals;
     s16 wins[2];
     Env5E54C s;
     volatile s16 digit[3];
@@ -87,8 +90,8 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s.semi = 0;
     s.has_color = 0;
     for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
-        vals[0] = (arg0 >> (i * 4)) & 3;
-        vals[1] = (arg0 >> (i * 4 + 2)) & 3;
+        vals.v[0] = (arg0 >> (i * 4)) & 3;
+        vals.v[1] = (arg0 >> (i * 4 + 2)) & 3;
         if (D_8009BD38.unk10 == 2) {
             s.y = i * 24 + 0x44;
         } else if (D_8009BD38.unk10 == 1) {
@@ -96,7 +99,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         } else {
             s.y = i * 34 + 0x4F;
         }
-        if (vals[0] == 3 || vals[1] == 3) {
+        if (vals.v[0] == 3 || vals.v[1] == 3) {
             s.header = &D_8009B4B0;
             s.x = 0;
             s.y += 2;
@@ -111,9 +114,9 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             cur = func_8007352C((s32)&s);
             for (j = 0; j < 2; j++) {
                 s.x = j * 70;
-                if (vals[j] > *(j ? &vals[0] : &vals[1])) {
+                if (vals.v[j] > *(j ? &vals.v[0] : &vals.v[1])) {
                     s.table = &D_8009B4FC;
-                } else if (vals[j] < *(j ? &vals[0] : &vals[1])) {
+                } else if (vals.v[j] < *(j ? &vals.v[0] : &vals.v[1])) {
                     s.table = &D_8009B504;
                 } else {
                     s.table = &D_8009B50C;
@@ -125,7 +128,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             for (j = 0; j < 2; j++) {
                 s.header = &D_8009B4F0;
                 s.table = &D_8009B51C;
-                for (k = 0; k < vals[j]; k++) {
+                for (k = 0; k < vals.v[j]; k++) {
                     if (j) {
                         s.x = k * 16 + 0x179;
                     } else {
@@ -151,19 +154,19 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s.table = &D_8009B514;
     s.sprt_out = cur;
     cur = func_8007352C((s32)&s);
-    *(s32 *)vals = 0;
+    vals.word = 0;
     for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
         if (((arg0 >> (i * 4)) & 3) != 3) {
-            vals[0] += (arg0 >> (i * 4)) & 3;
+            vals.v[0] += (arg0 >> (i * 4)) & 3;
         }
         if (((arg0 >> (i * 4 + 2)) & 3) != 3) {
-            vals[1] += (arg0 >> (i * 4 + 2)) & 3;
+            vals.v[1] += (arg0 >> (i * 4 + 2)) & 3;
         }
     }
     for (j = 0; j < 2; j++) {
         s.header = &D_8009B4F0;
         s.table = &D_8009B51C;
-        for (k = 0; k < vals[j]; k++) {
+        for (k = 0; k < vals.v[j]; k++) {
             if (j) {
                 s.x = (k >> 1) * 20 + 0x181;
             } else {
@@ -183,18 +186,18 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
         s.header = &D_8009ADB4;
         s.semi = 0;
-        vals[0] = (arg0 >> (i * 4)) & 3;
-        vals[1] = (arg0 >> (i * 4 + 2)) & 3;
+        vals.v[0] = (arg0 >> (i * 4)) & 3;
+        vals.v[1] = (arg0 >> (i * 4 + 2)) & 3;
         s.col_r = s.col_g = s.col_b = 0x40;
         for (j = 0; j < 2; j++) {
-            if (vals[j] <= *(j ? &vals[0] : &vals[1])) {
-                if (vals[j] != 3) {
+            if (vals.v[j] <= *(j ? &vals.v[0] : &vals.v[1])) {
+                if (vals.v[j] != 3) {
                     s.has_color = 1;
                 } else {
                     s.has_color = 0;
                 }
             } else {
-                if (vals[j] != 3) {
+                if (vals.v[j] != 3) {
                     wins[j]++;
                 }
                 s.has_color = 0;
@@ -221,7 +224,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             }
         }
         s.has_color = 0;
-        if (vals[0] == 3) {
+        if (vals.v[0] == 3) {
             s.y += 0x4C;
             s.scale_x = 0x100;
             s.x = 0;

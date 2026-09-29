@@ -42,7 +42,6 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s16 vals[2];
     s16 wins[2];
     Env5E54C s;
-    volatile s16 digit[3];
     T5E098 *tile;
     s32 cur;
     s32 ft4;
@@ -204,7 +203,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                 c -= 2;
             }
             s.table = UesrWorkDef[c];
-            s.x = j * 320 + D_8009B58C[c];
+            s.x = j * 320 + D_8009B58C[(s16)c];
             if (D_8009BD38.unk10 == 2) {
                 s.y = i * 24 - 8;
             } else if (D_8009BD38.unk10 == 1) {

@@ -42,7 +42,6 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s16 vals[2];
     s16 wins[2];
     Env5E54C s;
-    volatile s16 digit[3];
     T5E098 *tile;
     s32 cur;
     s32 ft4;
@@ -250,11 +249,13 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         s.y = 0xC1;
     }
     for (j = 0; j < 2; j++) {
+        s16 w = wins[j];
+
         s.x = j * 70 + 0x113;
-        if (wins[j] == 1) {
+        if (w == 1) {
             s.x += 3;
         }
-        s.table = &D_8009B400[wins[j]];
+        s.table = &D_8009B400[w];
         s.table->unk0 = s.table->unk2 = 0;
         s.sprt_out = cur;
         cur = func_8007352C((s32)&s);

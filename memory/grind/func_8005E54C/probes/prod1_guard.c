@@ -42,7 +42,6 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s16 vals[2];
     s16 wins[2];
     Env5E54C s;
-    volatile s16 digit[3];
     T5E098 *tile;
     s32 cur;
     s32 ft4;
@@ -163,7 +162,8 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     for (j = 0; j < 2; j++) {
         s.header = &D_8009B4F0;
         s.table = &D_8009B51C;
-        for (k = 0; k < vals[j]; k++) {
+        k = 0;
+        if (k < vals[j]) do {
             if (j) {
                 s.x = (k >> 1) * 20 + 0x181;
             } else {
@@ -172,7 +172,8 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             s.y = y + (k & 1) * 12;
             s.sprt_out = cur;
             cur = func_8007352C((s32)&s);
-        }
+            k++;
+        } while (k < vals[j]);
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B524, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
