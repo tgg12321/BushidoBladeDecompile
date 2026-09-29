@@ -92,7 +92,8 @@ statement list as the reuse body (tmp/c21c9/mk_split9.py renames identifiers onl
   Permuter campaign from the one-variable-per-value body (tmp/c21c9/perm_w_spl_all,
   -j 2, --stack-diffs, --stop-on-zero), two windows on the same seed (harvest telemetry in
   metrics/events.jsonl): `r11-spl-all-q27`, launched 2026-09-28T23:47:27Z, harvested after 114.3 s,
-  677 iterations; `r11-spl-all-q27-long`, launched 23:50:51Z, harvested and stopped at 1126.6 s,
+  676 iterations (harvest telemetry; its stop_reason text "~20 min" is wrong, the window ran
+  114.3 s); `r11-spl-all-q27-long`, launched 23:50:51Z, harvested and stopped at 1126.6 s,
   1342 iterations. Base 4313; best 1695 (first window), best of the long window 1855. The reuse
   body scores 0 on the same scorer (workspace perm_w_reuse, base_score 0). What the finds reuse:
   the best (1695) reuses the phase-4 counter `sprite` as a phase-8 temp (`sprite = rec[row].x;`),
@@ -108,7 +109,8 @@ phase-2 inner `if`; phase-4 head; phase-4 `work` loop).
 - (a) one consumer, `s.table = cells;`, textually identical at every site.
 - (b) BASE `s.header` (`u8 *`, a member of the local descriptor), K = 0xC at every write, no cast.
   BASE is a sprite sheet (`table[k]` of the gauge sprite set); BASE + 0xC is its cell array.
-  Layout, independent of this function: `SprtHdrA` (text1b.c:12448-12456, 12 bytes: count +2,
+  Layout, independent of this function (line numbers below are at commit 022fa80c5, before this
+  function's body lands; they move by about +290 after): `SprtHdrA` (text1b.c:12448-12456, 12 bytes: count +2,
   cx/cy +4/+6, ubase +8, vbase +0xA) and `SprtEntA` (text1b.c:12458-12462, 8 bytes);
   func_8007352C (text1b.c:12464-12507, COMPLETED-C) reads `env->header` as `SprtHdrA` and walks
   `env->table` as `SprtEntA[]`; func_80073728's `Ft4Sheet`/`Ft4Cell` (text1b.c:12512-12527) has the
@@ -145,6 +147,16 @@ phase-2 inner `if`; phase-4 head; phase-4 `work` loop).
   (pseudo 86, refs 14) allocated by global.c to $a1, while per-site temps are local-alloc'd to the
   first free register. Earlier sessions: per-site expression 59 (s2), direct cells 57 (s7).
   Permuter campaign from nocells10 (tmp/c21c/perm_nocells10, label r9-cells-free): see "Campaigns".
+  **One-local-per-write spelling (s9, on the Q27 landing body):** `cells1..cells4`, one local per
+  write, same statement list as the landing body (identifiers and declarations only differ;
+  generator probes/s9/cells-per-write/mk_cells9.py). Sandbox `--disable all`: all four at
+  function scope **12/622** (cells-per-write-fn-12.c); cells2/cells4 declared in their innermost
+  compound statements (the phase-2 `if` body, the phase-4 `for` body) **12/622**
+  (cells-per-write-block-12.c); landing body 0/622. Residual: 8 source-level hunks, all at the
+  four write sites: each per-write local is born and dies in one block, so it takes the dying
+  header's register (`addiu v0,v0,12; sw v0,28(sp)`), where the target computes into `$a1`
+  (`addiu a1,v0,12; sw a1,28(sp)`), the seat the single cross-block `cells` pseudo gets from
+  global.c. Measured independently at 12/622 by the second layer-2 reviewer.
 
 ## `mode` — named-local-fake-exception (constant holder across calls)
 
