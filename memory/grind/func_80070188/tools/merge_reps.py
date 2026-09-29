@@ -78,3 +78,16 @@ OTHER_FORMS = {
     'o3': 'D_800A3560[!i].unk2 = 0xFF;\n',
     'o4': 'D_800A3560[i != 0 ? 0 : 1].unk2 = 0xFF;\n',
 }
+
+
+UNION_DECL = ('typedef struct {\n    u8 unk0;\n    u8 unk1;\n    u8 unk2;\n} Unk800A3560Record;\n'
+              'typedef union {\n    Unk800A3560Record rec[2];\n    s32 word;\n} Unk800A3560Slots;\n'
+              'extern Unk800A3560Slots D_800A3560;\n')
+
+
+def union_reps(decl_new):
+    out = []
+    for old, new, n in reps(decl_new):
+        out.append((old, new.replace('D_800A3560[', 'D_800A3560.rec['), n))
+    out.append(('    *(s32 *)D_800A3560 = -1;\n', '    D_800A3560.word = -1;\n', 1))
+    return out

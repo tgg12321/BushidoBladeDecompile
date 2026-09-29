@@ -88,3 +88,22 @@ Landing-time config needed (tools/*.landing.diff), each a no-op for the current 
   D_800A3564 / D_800A3561 reads are D_800A3560+4 / +1 and must stay gp as in target).
 - sdata_syms.txt: add D_800A3590 (target `sh %gp_rel(D_800A3592)` = D_800A3590[1];
   every other D_800A3590 access in the tree is indexed or `la`).
+
+### Layer-2 FAIL 2026-09-29 (landing attempt 1) — rejected/record-merge-e534-word-pun-0.c
+- Landed form: candidate.c + the record merge (tools/land.py, full diff in
+  rejected/record-merge-e534-word-pun-0.landing.diff): sandbox 0/698 and full-build
+  SHA1 == oracle. Reverted; oracle re-verified green.
+- Objection (only ground): func_8006E534's pre-existing `*(s32 *)D_800A3560 = -1;`
+  (target `sw -1,%gp_rel(D_800A3560)`, func_8006E534.s:85) is a per-use pointer pun over
+  the merged object — aggregate-merge prong (d) bans it for every consumer; pre-existing
+  is no exemption. Member stores give 4x sb. The message also quoted only half of (d).
+- PASSED on merits (keep): i*3 object-model evidence + record shape; alias rows for
+  func_80070F78; the sdata edits; the loop-bound assignment; `[D_800A3554].unk0`;
+  `flags` (one value, not a reused local); pad->unk1.
+- A union declaration `union { Unk800A3560Record rec[2]; s32 word; } D_800A3560;` with
+  `D_800A3560.word = -1;` in func_8006E534 matches every consumer (tools/sc.py with
+  MERGE=union; tools/union_candidate.c): same scores as the struct form (GPREL-name
+  artifacts only). Filed as policy-question in docs/grind/borderline.md 2026-09-29.
+- No-merge probes: a FAKE typed pointer view `Rec3560 *recs = (Rec3560 *)D_800A3560;`
+  (pointer-alias family) = 96/688 — the base stays in a callee-saved register
+  (`lui s8; addiu s8`), so no in-MEM `(plus idx sym+k)`.
