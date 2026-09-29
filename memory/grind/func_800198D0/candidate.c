@@ -1,46 +1,53 @@
 extern s32 D_800A30EC;
 
-#define GETBITSOR(dst, n, orv)                                  \
-    if (bits < (n)) {                                           \
-        u32 hi = cur >> (32 - bits);                            \
-        s32 need = (n) - bits;                                  \
-        s32 left = 32 - need;                                   \
-        cur = *ptr++;                                           \
-        dst = (orv) | ((hi << need) | (cur >> left));           \
-        cur <<= need;                                           \
-        bits = left;                                            \
-    } else {                                                    \
-        dst = (orv) | (cur >> (32 - (n)));                      \
-        cur <<= (n);                                            \
-        bits -= (n);                                            \
+/* Motion bitstream reader: `cur` holds the unread bits left-aligned, `bits`
+   how many of them are valid, `ptr` the next stream word. GETBITS reads `nb`
+   bits into `dst`; GETBITS_PRE ORs them onto `pre` (the implicit top bit of
+   an escape/VLC code). */
+#define GETBITS_PRE(dst, nb, pre)                               \
+    {                                                           \
+        u32 top = (pre);                                        \
+        if (bits < (nb)) {                                      \
+            s32 need = (nb) - bits;                             \
+            u32 hi = cur >> (32 - bits);                        \
+            s32 left = 32 - need;                               \
+            cur = *ptr++;                                       \
+            dst = top | ((hi << need) | (cur >> left));         \
+            cur <<= need;                                       \
+            bits = left;                                        \
+        } else {                                                \
+            dst = top | (cur >> (32 - (nb)));                   \
+            cur <<= (nb);                                       \
+            bits -= (nb);                                       \
+        }                                                       \
     }
 
-#define GETBITS(dst, n)                                         \
-    if (bits < (n)) {                                           \
+#define GETBITS(dst, nb)                                        \
+    if (bits < (nb)) {                                          \
+        s32 need = (nb) - bits;                                 \
         u32 hi = cur >> (32 - bits);                            \
-        s32 need = (n) - bits;                                  \
         s32 left = 32 - need;                                   \
         cur = *ptr++;                                           \
         dst = (hi << need) | (cur >> left);                     \
         cur <<= need;                                           \
         bits = left;                                            \
     } else {                                                    \
-        dst = cur >> (32 - (n));                                \
-        cur <<= (n);                                            \
-        bits -= (n);                                            \
+        dst = cur >> (32 - (nb));                               \
+        cur <<= (nb);                                           \
+        bits -= (nb);                                           \
     }
 
 #define COPY33(d, s)                                            \
     {                                                           \
-        u32 *sp = (u32 *)(s);                                   \
-        u32 *dp = (u32 *)(d);                                   \
+        u32 *from = (u32 *)(s);                                 \
+        u32 *to = (u32 *)(d);                                   \
         u32 k;                                                  \
         for (k = 0; k < 33; k++) {                              \
-            *dp++ = *sp++;                                      \
+            *to++ = *from++;                                    \
         }                                                       \
     }
 
-void func_800198D0(s32 idx, s32 frame, u32 *out, u16 *work) {
+void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
     u8 *rec;
     u8 *tbl;
     u8 *slot;
@@ -51,21 +58,19 @@ void func_800198D0(s32 idx, s32 frame, u32 *out, u16 *work) {
     s32 sub;
     s32 key;
     s32 ctr;
-    s32 start;
-    s32 i;
-    s32 j;
-    s32 n;
+    s32 idx;
+    s32 ch;
+    s32 idx2;
     s32 off;
+    s32 shift;
     u16 *p;
-    s16 delta;
     u16 code;
-    u32 v;
-    u32 top;
+    u32 field;
     s16 x;
 
     sub = frame & 7;
     key = frame >> 3;
-    rec = &D_800F1B18[idx * 0x570];
+    rec = &D_800F1B18[obj * 0x570];
     tbl = (u8 *)*(u32 **)rec + 0x70;
     if (D_800A30EC == 0) {
         COPY33(work + 0x84, rec + 0x88);
@@ -84,39 +89,40 @@ void func_800198D0(s32 idx, s32 frame, u32 *out, u16 *work) {
         *(s32 *)(rec + 0x10C) -= 1;
         return;
     }
-    if (*(s32 *)slot == frame - 1) {
-    } else if (*(s32 *)prev == frame - 1) {
-        slot = prev;
-    } else {
-        off = ((tbl[key * 3] << 16) | (tbl[key * 3 + 1] << 8) | tbl[key * 3 + 2]) + 0x380;
-        ptr = *(u32 **)rec + (off >> 5);
-        off &= 0x1F;
-        bits = 32 - off;
-        cur = *ptr++ << off;
-        COPY33(work, rec + 4);
-        GETBITS(v, 1);
-        if (v) {
-            GETBITS(v, 16);
-        }
-        work[0] = v;
-        GETBITS(v, 1);
-        if (v) {
-            GETBITS(v, 16);
-        }
-        work[1] = v;
-        GETBITS(v, 1);
-        if (v) {
-            GETBITS(v, 16);
-        }
-        work[2] = v;
-        for (i = 0; i < 63; i++) {
-            GETBITS(v, 1);
-            if (v) {
-                GETBITS(work[i + 3], 12);
+    if (*(s32 *)slot != frame - 1) {
+        if (*(s32 *)prev == frame - 1) {
+            slot = prev;
+        } else {
+            off = ((tbl[key * 3] << 16) | (tbl[key * 3 + 1] << 8) | tbl[key * 3 + 2]) + 0x380;
+            ptr = *(u32 **)rec + (off >> 5);
+            shift = off & 0x1F;
+            bits = 32 - shift;
+            cur = *ptr++ << shift;
+            COPY33(work, rec + 4);
+            GETBITS(field, 1);
+            if (field) {
+                GETBITS(field, 16);
             }
+            work[0] = field;
+            GETBITS(field, 1);
+            if (field) {
+                GETBITS(field, 16);
+            }
+            work[1] = field;
+            GETBITS(field, 1);
+            if (field) {
+                GETBITS(field, 16);
+            }
+            work[2] = field;
+            for (idx = 0; idx < 63; idx++) {
+                GETBITS(field, 1);
+                if (field) {
+                    GETBITS(work[idx + 3], 12);
+                }
+            }
+            idx2 = 0;
+            goto decode;
         }
-        start = 0;
-        goto decode;
     }
     ptr = *(u32 **)(slot + 0x10C);
     bits = *(s32 *)(slot + 0x110);
@@ -125,110 +131,119 @@ void func_800198D0(s32 idx, s32 frame, u32 *out, u16 *work) {
     if (sub >= 2) {
         COPY33(work + 0x42, slot + 0x88);
     }
-    start = sub - 1;
+    idx2 = sub - 1;
 decode:
-    for (; start < sub; start++) {
-        GETBITS(v, 1);
-        if (v) {
-            GETBITS(v, 16);
+    for (; idx2 < sub; idx2++) {
+        GETBITS(field, 1);
+        if (field) {
+            GETBITS(field, 16);
         }
-        work[0] = v;
-        GETBITS(v, 1);
-        if (v) {
-            GETBITS(v, 16);
+        work[0] = field;
+        GETBITS(field, 1);
+        if (field) {
+            GETBITS(field, 16);
         }
-        work[1] = v;
-        GETBITS(v, 1);
-        if (v) {
-            GETBITS(v, 16);
+        work[1] = field;
+        GETBITS(field, 1);
+        if (field) {
+            GETBITS(field, 16);
         }
-        work[2] = v;
-        for (i = 0; i < 63; i++) {
-            code = work[i + 0x87];
+        work[2] = field;
+        for (ch = 0; ch < 63; ch++) {
+            s16 temp;
+
+            code = work[ch + 0x87];
             if (code == 0) {
                 continue;
             }
             switch (code) {
-            case 1:
-                n = 0;
+            case 1: {
+                s32 nbits;
+
+                nbits = 0;
                 do {
+                    u32 bit;
+
                     if (bits == 0) {
                         cur = *ptr++;
                         bits = 32;
                     }
-                    j = cur >> 31;
+                    bit = cur >> 31;
                     cur <<= 1;
                     bits--;
-                    if (j) {
+                    if (bit) {
                         break;
                     }
-                    n++;
-                } while (n < 12);
-                if (n == 12) {
-                    GETBITSOR(delta, 11, 0x800);
-                } else if (n >= 2) {
-                    n--;
-                    top = 1 << n;
-                    GETBITSOR(delta, n, top);
+                    nbits++;
+                } while (nbits < 12);
+                if (nbits == 12) {
+                    GETBITS_PRE(temp, 11, 0x800);
+                } else if (nbits >= 2) {
+                    nbits = nbits - 1;
+                    GETBITS_PRE(temp, nbits, 1 << nbits);
                 } else {
-                    delta = n;
+                    temp = nbits;
                 }
-                delta = (delta & 1) ? -(delta / 2) - 1 : delta / 2;
+                temp = (temp & 1) ? -(temp / 2) - 1 : temp / 2;
                 break;
+            }
             case 2:
-                GETBITS(delta, 1);
-                if (delta) {
-                    delta = 0;
+                GETBITS(temp, 1);
+                if (temp) {
+                    temp = 0;
                 } else {
-                    GETBITS(delta, 12);
+                    GETBITS(temp, 12);
                 }
                 break;
             case 3:
-                GETBITS(delta, 1);
-                if (delta) {
-                    GETBITS(v, 4);
-                    n = 0;
+                GETBITS(temp, 1);
+                if (temp) {
+                    s32 nbits2;
+
+                    GETBITS(field, 4);
+                    nbits2 = 0;
                     do {
+                        u32 bit;
+
                         if (bits == 0) {
                             cur = *ptr++;
                             bits = 32;
                         }
-                        j = cur >> 31;
+                        bit = cur >> 31;
                         cur <<= 1;
                         bits--;
-                        if (j) {
+                        if (bit) {
                             break;
                         }
-                        n++;
-                    } while (n < 8);
-                    if (n == 8) {
-                        GETBITSOR(delta, 7, 0x80);
-                    } else if (n >= 2) {
-                        n--;
-                        top = 1 << n;
-                        GETBITSOR(delta, n, top);
+                        nbits2++;
+                    } while (nbits2 < 8);
+                    if (nbits2 == 8) {
+                        GETBITS_PRE(temp, 7, 0x80);
+                    } else if (nbits2 >= 2) {
+                        nbits2 = nbits2 - 1;
+                        GETBITS_PRE(temp, nbits2, 1 << nbits2);
                     } else {
-                        delta = n;
+                        temp = nbits2;
                     }
-                    delta = ((delta << 3) | (v & 7)) + 1;
-                    if (v & 8) {
-                        delta = -delta;
+                    temp = ((temp << 3) | (field & 7)) + 1;
+                    if (field & 8) {
+                        temp = -temp;
                     }
                 }
                 break;
             }
-            if (start == 0) {
-                work[i + 0x45] = delta;
-                work[i + 3] += delta;
+            if (idx2 == 0) {
+                work[ch + 0x45] = temp;
+                work[ch + 3] += temp;
             } else {
-                work[i + 3] += work[i + 0x45] + delta;
-                work[i + 0x45] += delta;
+                work[ch + 3] += work[ch + 0x45] + temp;
+                work[ch + 0x45] += temp;
             }
         }
     }
     p = &work[0x36];
-    for (i = 0; i < 2; i++) {
-        for (j = 0; j < 3; j++) {
+    for (idx2 = 0; idx2 < 2; idx2++) {
+        for (idx = 0; idx < 3; idx++) {
             x = *p;
             *p = (x & 0x800) ? (x | ~0xFFF) : (x & 0xFFF);
             p++;
