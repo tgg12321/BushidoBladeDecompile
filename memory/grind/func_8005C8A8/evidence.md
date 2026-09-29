@@ -6,22 +6,46 @@
 
 - [s1] Signature: s32 func_8005C8A8(s32 mode, u16 sel, void *primBuf, s32 otDepth). primBuf walks +0x10 per tile prim (var_s3 cursor); prim area at +0x4D8 gets the final texpage (sp68); text prim cursor var_s5 starts at primBuf+0xF0 and is threaded through every func_8007352C return.
 
-- [s1] THE CENTRAL PATTERN: a draw-request param block on the stack (sp+0x18..0x43: +0x18 image ptr, +0x1C position-pair ptr, +0x20 prim cursor, +0x28 highlight flag, +0x2C ot depth, +0x30 x-extra, +0x34 y offset, +0x40..0x43 rgb bytes 0x40/0x40/0x40 + flag 0) rewritten field-subset-wise before EACH of the 11 func_8007352C calls (m2c renders as locals + call `func_8007352C(&sp18)`). Whether these are true stack ARGS (args 5+ homed at sp+0x18.. of a many-arg call) or a by-reference struct must be settled FIRST in the structural session by reading func_8007352C's prologue (it also appears in motion_ShiftControl with a heap struct — same request layout).
+- [s1] THE CENTRAL PATTERN: a draw-request param block on the stack (sp+0x18..0x43) rewritten field-subset-wise before EACH of the 11 func_8007352C calls. (s2: settled — it is the 0x2C-byte EnvA descriptor passed by address, `func_8007352C((s32)&s)`, the same as every completed text1b.c caller, e.g. func_8005D814.)
 
-- [s1] Only fields that CHANGE are rewritten between consecutive calls (e.g. blocks at m2c 215-245: three consecutive calls rewrite sp18/sp1C/sp34/sp28/sp20/sp2C but sp30 once) — the original relied on the block persisting across calls; drafting must reproduce exactly which stores repeat (redundant stores like sp2C = sp50 EVERY call are in the asm).
+- [s1] Mode ladder, loops, layout tables: see the s1 recon notes in git history (commit of this file before 2026-09-29); superseded by the s2 draft below.
 
-- [s1] 8 loops, all tiny counted loops with s16 counters (the (var << 0x10) churn): 3 border-tile 2-iter do-whiles (identical bodies: initTile; rgb = i?0x3C:0x52 into 3 s8 fields at -0xA/-9/-8; y = base+i; x = (0x280-w)/2; h=1; w field; gpu_SetSemiTransp(prim,0); ot_Link(D_800A374C + depth*4, prim); prim += 0x10) — at m2c 186-208, 246-268; a 3x2 nested icon loop (loop_10: outer var_s6_2<3 over icon columns with bit test ((arg1 >> (16+col)) & 1) == row for highlight, inner var_s2<2); the closing double loop var_s6_3<2 each containing TWO 2-iter tile loops (horizontal then vertical border strips, loop_43 + loop_51 with u32-cast /2 midpoint math).
+## s2 (2026-09-29, manual lane laneB) — full-body draft, 752 -> 42
 
-- [s1] Mode ladder specifics: mode==1 -> single title draw (D_8009B11C/D_8009B1BC) then joins the shared column loop; mode==2 -> full setup (0x33 y-base, D_8009B184/18C centered from D_8009B2C4, two draws from D_8009B0F8 block, the 3x2 icon loop, 2 border tiles) then FALLS INTO block_20 (mode==0 entry point!) — i.e. case 0 is a label inside case 2's flow (goto/fallthrough in original source); mode>2 (non-2) -> just var_s6=2 join. Shared tail: column loop var_s6 2..3 (headers from D_8009B110+var_s6*0xC, positions from ptr table D_8009B2AC[var_s6]), then the centered pair D_8009B164/16C + D_8009B164+0x10/17C draws, closing borders, full-screen dim tile (rgb 0/0/0, size w x h from tables, SemiTransp mode 1), texpage via saMotionSet(&D_8009B0E0, 0).
+Candidate: memory/grind/func_8005C8A8/candidate.c. Measured with `pwsh tmp/orch/sbx.ps1` (sandbox --disable all).
+Floor trail: first full draft 319 -> 167 (arg1 addressable + split cell arrays) -> 119 (tile field order x0,y0,w,h; hdr split
+at 0x8009B14C) -> 90 (return value spelled `end_off = arg2 + 0x4F0; size = end_off - arg2;`) -> 77 (declaration order
+sel, y_base, mode_off, end_off, size) -> 75 (`top + 0x73 + i`) -> 59 (tail loop: `s.table = D_8009B2AC[j]` right after
+`s.header`) -> 42 (`top = ...` computed before the colour stores).
 
-- [s1] Layout tables: D_8009B2BC[mode*2]/D_8009B2BE[mode*2] (s16 w/h per mode, screen 0x280x0xF0 centered), D_8009B2C4 (mode-2 width), position pairs D_8009B164/16C/17C/184/18C/194/1AC/1BC/20C written before use (centered computes `(0x280 - w)/2` and `(w + 0x280)/2 - 0xC`), image blocks D_8009B0E0/0F8/110/11C/14C/158, icon position stride D_8009B14E * 8 * col + D_8009B23C, highlight pos table D_8009B29C[row*8].
+Settled facts (each measured):
+- Dispatch is `switch (mode)` with cases in source order 2 (falls through), 0 (break), 1 (break): GCC's 3-case
+  decision tree (beq 1; slti 2; beqz 0; bne 2) is exactly the target's ladder. The `li s6,2` in three delay slots is
+  reorg stealing the post-switch `for (j = 2; ...)` init.
+- arg1 is an `s32` whose address is taken: the prologue `sw a1,0xBC(sp); lhu t0,0xBC(sp)` and the in-loop
+  `lw v1,0xBC(sp)` (arg1 >> (j+16)) are reads of the parameter's own stack home. `sel = *(s16 *)&arg1;` reproduces
+  both (narrow-stack-param-subword-offset family; SOTN sub-word param read).
+- Return: the target keeps 0x4F0 in a spill slot (li t0,1264; sw t0,0x70). A literal `size = 0x4F0` is
+  REG_EQUIV-constant (cse adds REG_EQUAL) and local-alloc substitutes it at the return (li v0,1264 at the end).
+  `end_off = arg2 + 0x4F0; size = end_off - arg2;` folds in COMBINE (no REG_EQUAL -> no REG_EQUIV) and gives the
+  target's spilled pseudo. Dump: tmp/func_8005C8A8/dump (f.cse insn 35 carries REG_EQUAL for the literal form).
+- Spill-slot order = pseudo creation order: mode 0x48, ot 0x50, sel 0x58, y_base 0x60, mode_off 0x68, size 0x70 ->
+  locals declared `s16 sel; u16 y_base; s32 mode_off; s32 end_off; s32 size;`. y_base is u16 (lhu + addu, no sext).
+- Data: sprite headers 0x8009B0E0..0x8009B14B are ONE 12-byte-record array (target forms &D_8009B110 once and reaches
+  -0x30/-0x24/-0x18/-0xC; &D_8009B0F8 reaches +0x48). D_8009B14C and D_8009B158 are separate. Cell tables are separate
+  per sprite (D_8009B184 is NOT related to D_8009B20C: one big array made cse relate them, +136, which the target does
+  not); D_8009B164 is [2][2] (&D_8009B164[1] = +0x10 related in target). D_8009B2BC is {s16 w, h}[3] (D_8009B2C4 =
+  [2].w). D_8009B2AC is a 4-entry pointer table.
+- Tile loops: field stores in source order x0, y0, w, h (loop.c giv base = last field, +0xE, as target).
+- Tail loop: loop.c threshold T=19 in this function (bounded by the f.loop decisions: life 2 * 19 >= 38 moved, < 40
+  not). The target hoists &D_8009B2AC into s4; ours only does when `s.table = D_8009B2AC[j]` directly follows
+  `s.header` (life 3). That also restores `li s6,2` as the first insn after the switch, so reorg fills
+  `j tail` and does NOT invert the case-0 loop branch (reorg.c:3923 reversal only fires on an unfilled jump).
 
-- [s1] Highlight flag logic per call: sp28 = (sel == K) ? 0 : 1 with K varying (0, col+3, (arg1>>(16+col))&1 == row, var_s6-1) — note the asm computes `sel == ...` into the flag with INVERTED sense per site; and mode==1 path has the quirk `sp28 = sp58 ? sp48 : 0` (reuses mode value 1 as the flag — m2c line 276: sp28 = sp48).
-
-- [s1] Color constant pattern: selected rows get 0x52 gray, unselected 0x3C (or swapped by row XOR outer index in loop_51's diamond: `if (outer != 0) ? (i==0 ? 0x52 : 0x3C) : (i!=0 ? 0x52 : 0x3C)` — an XOR-shaped 2x2 condition, m2c blocks 56/57 with shared tails).
-
-- [s1] m2c decompiles CLEAN standalone (no jtbls): tmp/blitz/func_8005C8A8_m2c.c (429 lines, --valid-syntax).
-
-- [s1] No Kengo annotation on this function's stub. Related INCOMPLETE siblings: func_8007352C (the draw-request consumer, called 11x here and in motion_ShiftControl — reading its asm prologue settles the stack-args-vs-struct question for BOTH ledgers), motion_ShiftControl (same request-block family, recon'd this same blitz).
-
-- [s1] Ledger did not exist (this init); no WIP checkpoint; zero regfix rules.
+Open at 42 (frontier):
+1. Icon loop (case 2): ours hoists &D_8009B14C (pseudo 144) into fp and spills (s16)sel (138) to slot 0x78; target has
+   (s16)sel in fp and rematerializes D_8009B14C / D_8009B14E (REG_EQUIV-constant pseudo with no hard reg). Global
+   priorities are 144=490 vs 138=476 (BB2_ALLOC_DEBUG). Spelling the count read before the header (`s.table` first)
+   stops the hoist and gives 138 fp, but the frame shrinks to 0xB0 (target 0xB8 has an unreferenced slot at 0x78).
+2. Case-2 first block: header/table address loads order.
+3. Final block (hdr[0]/hdr[1] pair): header store placement and the first `D_8009B2BC[mode].h` load base (v0 vs s4).
