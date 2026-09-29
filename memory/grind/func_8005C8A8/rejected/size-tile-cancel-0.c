@@ -43,6 +43,18 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     s16 sel;
     u16 y_base;
     s32 mode_off;
+    /* FAKE: constant-holder (named-local-fake-exception) -- the 0x4F0 bytes
+       of the prim buffer this call fills, returned at the end. The target
+       sets it once at entry and keeps it in a frame slot across every call
+       (`li $t0,0x4F0; sw $t0,0x70($sp)`, `lw $v0,0x70($sp)` at the return).
+       Written as the literal, cse gives the set a REG_EQUAL constant and
+       local-alloc.c update_equiv_regs (1024-1032, 1078-1110) turns it into
+       REG_EQUIV and, the value being read once, rewrites the return to
+       `li $v0,0x4F0` and deletes the set (no slot). Spelled as the buffer's
+       end minus its start, the constant only appears when combine folds the
+       subtraction, without a REG_EQUAL note, so size stays an ordinary
+       spilled pseudo. Receipts:
+       memory/grind/func_8005C8A8/evidence.md s3b and probes/s3b/. */
     s32 size;
     s16 top;
     s16 i;
@@ -68,7 +80,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     xpos = 0;
     sel = *(s16 *)&arg1;
     mode_off = arg2 + 0x4D8;
-    size = 0x4F0;
+    size = (s32)tile + 0x4F0 - arg2;
     top = (0xF0 - D_8009B2BC[mode].h) / 2;
     s.col_b = 0x40;
     s.col_g = 0x40;

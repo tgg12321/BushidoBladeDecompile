@@ -192,3 +192,27 @@ Verification on the spliced src (lock held): `tmp/orch/lock.ps1 rebuild laneB` b
 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true; `sandbox func_8005C8A8 --disable all --diff` 0,
 0 source-level / 0 operand-only (39 not-scored); engine test 862 passed. probes/s3/landed_frame.txt and
 landed_orphan.txt are regenerated on this body.
+
+## s3c (2026-09-29, laneB) — layer-2 round 2 FAIL on `size`; BANKED (admissible floor 33 = literal size, with fix1 applied)
+
+Layer-2 round 2 PASSED Fix 1 (the five merges in include/game.h, the six retired undefined_syms_auto.txt rows). It
+FAILED `size = (s32)tile + 0x4F0 - arg2;`. The line comes right after `tile = (Tile5C8A8 *)arg2;`, so the value is
+always 0x4F0: it hides a constant by cancelling a value against a second name for it (the extra-handle device the
+named-intermediate entry forbids). The constant-holder family admits only the canonical `s32 size = 0x4F0;`
+(sandbox 33, probes/s3b/engine_sandbox_scores.txt). The body is kept as rejected/size-tile-cancel-0.c (sandbox 0,
+SHA1 == oracle with fix1 applied).
+
+Bounded (a) attempt, all the literal form in effect, frame vars 112, 3 changed lines each
+(tmp/func_8005C8A8/r8.py on the s3b body): `register s32 size`; `u32 size`; the set moved after `sel`/`top`.
+update_equiv_regs keys only on reg_n_sets == 1 plus a cse REG_EQUAL constant (local-alloc.c 1024-1032), so any
+once-set literal is rematerialized. No end-of-buffer value or 0x4F0 advance exists in the target to derive it from:
+the only +0x4D8/+0xF0 pointers are mode_off and cur, and `mode_off + 0x18 - arg2` / `cur + 0x400 - arg2` both cancel
+arg2 against itself and add a second orphan slot anyway (30).
+
+State banked:
+- candidate.c is the admissible literal-size body. It REQUIRES fix1-merges.patch (include/game.h + the
+  undefined_syms_auto.txt rows) applied, and scores 33 with it.
+- fix1-merges.patch is the layer-2-PASSED Fix 1, re-apply with `git apply`.
+- rejected/size-tile-cancel-0.c is the 0-scoring cancellation form.
+- Owner question: docs/grind/borderline.md 2026-09-29 func_8005C8A8 policy-question. Tree reverted; lock.ps1 rebuild
+  laneB == oracle.
