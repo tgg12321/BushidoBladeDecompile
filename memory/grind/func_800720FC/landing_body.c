@@ -259,7 +259,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
                                      * single remaining use of the local is substituted
                                      * by loop.c's large-loop single-usage rule, giving
                                      * the target's two direct gp_rel stores. Receipts:
-                                     * memory/grind/func_800720FC/q21/ + evidence.md. */
+                                     * memory/grind/func_800720FC/timers/README.md + evidence.md. */
                 timer[0] = 0xF;
                 timer[1] = 0x14;
                 ((s16 *)D_800A35C4)[3] = 0;

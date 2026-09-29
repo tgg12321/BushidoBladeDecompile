@@ -43,7 +43,12 @@ is withdrawn; see ../split/tu_boundary.md, "Superseded".
 
 ## Exhaustion — every spelling measured (timers/out/*.json + cc1 / cc1psx listings)
 
-Scores are engine distance for func_800720FC. The body is timers/landing_body_scalars.c
+Scores are engine distance for func_800720FC. The table was measured in the
+split-TU context: timers/variants.py builds each TU with split/tusplit.py, from
+the withdrawn split route. In-tree, in the single text1b.c TU, the direct-array
+form `D_800A35C8[1] = 0x14; D_800A35C8[0] = 0xF;` scored 6 (evidence.md s2,
+candidate at d9f89f28e). The final pointer form was verified in-tree: sandbox 0
+and SHA1 == oracle. The body is timers/landing_body_scalars.c
 with only the timer lines changed. The TU is the landing file as tusplit.py builds it,
 with D_800A3578 retyped s16. "la" means a base register was hoisted before the loop.
 
