@@ -2,6 +2,7 @@ extern s16 D_8009BCB4[][2];
 extern s16 D_8009BCC4[][2];
 extern s16 D_8009BCD0[2];
 extern s32 D_800A354C;
+extern s16 D_800A35CA;
 typedef struct {
     s32 header;
     s32 cells;
@@ -237,8 +238,8 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
                 } else {
                     D_800A3580 = 1;
                 }
-                D_800A35C8[1] = 0x14;
                 D_800A35C8[0] = 0xF;
+                D_800A35CA = 0x14;
                 ((s16 *)D_800A35C4)[3] = 0;
                 ((s16 *)D_800A35C4)[2] = 0;
                 goto end;

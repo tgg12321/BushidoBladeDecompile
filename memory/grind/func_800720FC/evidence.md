@@ -73,3 +73,31 @@
   s5,2 before the loop) — so the original TU did not see this array form: it saw two symbols (scalars) or a
   sized small-data array at -G8. func_8006F100 (completed) indexes D_800A35C8[i] with a lui/addiu base in its
   target (non-small array in ITS original TU) — evidence of different declarations in different original TUs.
+- [s2] D_800A3578: the target reads it with `lh` here (and in func_80070188 / func_80070F78), `lhu`+`srl` only in
+  func_8006EC0C (through its `u16 word` local). Retyping BOTH text1b.c declarations `extern u16 D_800A3578;` ->
+  `extern s16 D_800A3578;` is byte-neutral for the whole current text1b.o (tmp/func_800720FC/retype.py: objdump
+  -s -r identical, 20283 lines) and lets this body test `if (D_800A3578 == 0)` plainly (lh). Every access stays
+  ordinary C (EC0C's `u16 word = D_800A3578;` zero-extends). candidate.c: 7 with u16, 6 with the retype.
+  (`(s16)D_800A3578 == 0`, `!(s16)x`, `(s32)(s16)x`, `x << 16` all fold to lhu; only a separate s32 local or the
+  retype give lh.)
+- [s2] PROOF FORM (probes/qform_alias_CA_retype3578_oracle.c): candidate + `extern s16 D_800A35CA;` +
+  `D_800A35C8[0] = 0xF; D_800A35CA = 0x14;` + the s16 retype: sandbox 0/690 AND full-build verify-oracle
+  --rebuild --allow-dirty SHA1 62efab4f... == oracle (2026-09-29; src reverted and rebuilt green afterwards).
+- [s2] Access-form census (asm/funcs, address order): D_800A3578 — 8006E534 sh; 8006EC0C lbu/lhu/sh (u16);
+  8006F528 lbu; 80070188 lh/sh; 80070F78 lh x5 / sh x3; 80071C4C sh; 800720FC lbu x4 / lh / sh.
+  D_800A35C8/CA — 8006F100 `lui/addiu %hi/%lo(D_800A35C8)` array base (non-small array in its TU);
+  80070188, 80070F78, 800720FC direct gp_rel stores to D_800A35C8 AND D_800A35CA (two symbols / small data).
+  Both flips fall between 0x8006F100 and 0x80070188: evidence the original had a TU boundary there.
+- [s2] BLOCKER (policy): with the single `extern s16 D_800A35C8[]` no C spelling reaches the target (floor 6):
+  measured both store orders, pointer, comma/duplicated forms reasoned out (cse relation within one EBB; jump2
+  cross-jump cannot produce the target's `lw D_800A35C4` -> C8 -> CA order); cc1psx hoists the same way. A second
+  declaration of the same bytes is allowed only per FILE (no-new-park-categories aggregate-merge exception to
+  prongs (c)/(d), Q21). Filed as a QUESTION to the orchestrator 2026-09-29.
+- [s2] Same class, inside this function: D_8009BCB4 (4 pairs) is indexed [page], page 4..6, which reads the bytes
+  D_8009BCC4 names; the single-base form `(D_8009BCB4 + 4)[mode]` costs 9 (cse relates the scroll base), so the
+  two symbol bases are required too.
+- [s2] Still to settle before landing (independent of the blocker):
+  - `cells` (6 writes: s.header+0x18 once, s.header+0xC x5) -> Ruling 11 package (dumps, ablations, permuter
+    from the split body). Split measured: one-local-per-value (first block `tbl`, rest `cells`) = 119.
+  - the dead 0x100 scale stores before the 0x180/0x120 override (asm 356-367: both pairs are in the bytes;
+    GCC 2.7.2 keeps dead stores to the escaping stack struct) -> dead-store family FAKE annotation + receipts.
