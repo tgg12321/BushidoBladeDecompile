@@ -1333,6 +1333,22 @@ values.
   ablation); at least one structural respelling; and a permuter campaign from
   the one-variable-per-value body, with its best score and what its finds
   reuse ([[permuter-fresh-seed-discipline]]).
+  **FAKE-construct spellings are set aside (owner ruling 2026-09-28, seventeenth batch, Q30).**
+  The question put to the owner, verbatim: "Our 'shared variable' rule (Ruling 11) admits one local reused for several values only if compiler evidence shows no version with one variable per value can match. Reviewers now count versions that need our approved 'FAKE' filler tricks (a dead store, an empty do-while(0) wrapper). For func_800187F4 that means: a shared force-count variable loses to a version with six empty wrappers, and two other shared variables lose to dead stores. Every shared variable must also be proven against any combination of filler, an open-ended search. You ruled the same situation the other way for per-file declarations (Q23: 'per-file wins over FAKE', fewest no-purpose constructs). Should versions that need FAKE filler count against a shared variable?" Owner (Trenton) chose, verbatim: **"Filler doesn't count
+  (Recommended)"**, whose text is: "Like Q23: only versions with no FAKE construct can defeat a shared variable; the form with the fewest no-purpose constructs lands. func_800187F4 lands with its seven shared variables and zero filler, after a fresh review of that exact body." (Record: docs/grind/owner-rulings-2026-09-26.md, batch 17.) The
+  author's narrowing, modeled on the thirteenth-batch Q23 set-aside (no-new-park-categories.md, per-file
+  declarations): in (D)(3), a one-variable-per-value spelling that needs any construct whose frozen-list entry,
+  or the rule file that entry links, expressly requires a FAKE or !FAKE annotation (for example a dead store or
+  self-assignment, [[dead-store-fake-exception]]; a do-while(0) wrap, [[do-while-zero-exception]]; a
+  combine-foldable chain-extender; a constant-holder or dead scalar local, [[named-local-fake-exception]]; a
+  C-level pointer alias, [[pointer-alias-fake-exception]]) is set aside: it does not defeat the reuse, and the
+  necessity argument need not show that it misses. Every such spelling that was measured is banked in the
+  ledger with its score, and for each the ledger names the family and quotes the sentence of its entry (or
+  linked rule) that requires the annotation. A construct whose entry does not expressly require a FAKE
+  annotation, or that has a truthful semantic reading as ordinary C, is not set aside and counts; in doubt, it
+  counts. A spelling is set aside only if it needs at least one FAKE- or !FAKE-annotated construct that the reuse body does not carry, and it carries, unchanged, every FAKE- or !FAKE-annotated construct the reuse body carries. A spelling whose only FAKE- or !FAKE-annotated constructs are ones the reuse body also carries is not set aside and counts under (D)(3); so does a spelling that lacks any FAKE- or !FAKE-annotated construct the reuse body carries. (This implements the owner's premise that the form with the fewest no-purpose constructs lands: the reuse body then carries strictly fewer such constructs than every spelling set aside against it.) Everything else in (A)-(H), including (D)(3) against every spelling that is not
+  set aside and the (D)(4) record, is unchanged. Record: docs/grind/decisions.md 2026-09-28 OWNER RULING —
+  FAKE-construct spellings do not count against Ruling 11 necessity.
 - **(E) An honest generic name** (the owner's second condition). The name
   claims nothing false about any value the variable holds. It is either
   (i) a generic scratch word, `temp`, `tmp`, `work` or `scratch`, optionally

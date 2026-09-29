@@ -30103,3 +30103,12 @@ except the DMPSX placeholder word: gte_rtv0tr 0x0000027f -> 0x4A480012 (x2), gte
 (2026-09-24) (A)-(C) with two independent no-DMPSX sources (pcsx-redux/nugget@22037bd3 inline_n.h,
 Lameguy64/PSn00bSDK@5d9aa2d3 inline_c.h) and the word byte-identical at the target position. The class ruling's
 prong (C) is unchanged for every other function; no other function may cite this grant.
+
+## 2026-09-28 — OWNER RULING — FAKE-construct spellings do not count against Ruling 11 necessity (`.claude/rules/ordinary-c-judge-decidable.md` § Ruling 11 (D))
+
+Seventeenth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 17, Q30). The owner chose
+"Filler doesn't count (Recommended)". Under Ruling 11 (D)(3) a one-variable-per-value spelling that needs any
+construct whose frozen-list entry (or the rule file it links) expressly requires a FAKE or !FAKE annotation is
+set aside, as the thirteenth-batch Q23 ruling does for the per-file-declaration exception: it neither defeats
+the reuse nor needs to be shown to miss. Such spellings that were measured are banked and named. A spelling is set aside only if it needs at least one FAKE- or !FAKE-annotated construct that the reuse body does not carry, and it carries, unchanged, every FAKE- or !FAKE-annotated construct the reuse body carries. A spelling whose only FAKE- or !FAKE-annotated constructs are ones the reuse body also carries is not set aside and counts under (D)(3); so does a spelling that lacks any FAKE- or !FAKE-annotated construct the reuse body carries. (This implements the owner's premise that the form with the fewest no-purpose constructs lands: the reuse body then carries strictly fewer such constructs than every spelling set aside against it.) Every other Ruling 11 prong, the (D)(1)-(4) record against every spelling that is not set aside (including spellings whose only FAKE- or !FAKE-annotated constructs are ones the reuse body also carries) and a fresh layer-2 still apply. First application:
+func_800187F4. Nothing else is pre-decided.
