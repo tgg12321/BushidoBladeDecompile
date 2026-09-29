@@ -1,6 +1,10 @@
 # Hypothesis ledger - func_8005C8A8
 
-## Open (s2 frontier, floor 30 = only the 8-byte frame hole at sp+0x78)
+## s3 RESOLVED (floor 0): the hole is a combine-orphan `(use)` of the dead sign-extension temp of an always-zero
+s16 local read once after the case-0 label (Q27 (A)); see evidence.md s3. H1 (a)/(c) and H2 are moot; H1 (b)'s
+family (combine orphans) was right, via the known-zero fold rather than a stale reg_n_refs.
+
+## Was open (s2 frontier, floor 30 = only the 8-byte frame hole at sp+0x78)
 H1. The hole is a MEM pseudo X (created after `size`, before the final-loop temps) whose every reference vanishes in
     reload. Mechanisms in tools/gcc-2.7.2/reload1.c that leave allocated-but-unreferenced frame space:
     (a) delete_output_reload "forget we had a stack slot": X LOCAL (one block, one death), set and single use with

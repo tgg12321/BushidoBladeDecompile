@@ -1,0 +1,16 @@
+x sites [94, 103, 116, 129, 164, 172, 181, 217, 234, 244] y sites [104, 117]
+all x                                              vars=136 diff=127 slots=72,75,78,79,80,82,143,323,363,511,558
+all y                                              vars=112 diff=0 slots=72,75,78,79,80,82,495,542
+all x+y                                            vars=144 diff=130 slots=72,75,78,79,80,82,146,166,328,368,516,563
+x only L94                                         vars=112 diff=0 slots=72,75,78,79,80,82,493,540
+x only L103                                        vars=112 diff=0 slots=72,75,78,79,80,82,493,540
+x only L116                                        vars=112 diff=0 slots=72,75,78,79,80,82,493,540
+x only L129                                        vars=112 diff=0 slots=72,75,78,79,80,82,493,540
+x only L164                                        vars=120 diff=0 slots=72,75,78,79,80,82,226,493,540
+x only L172                                        vars=120 diff=0 slots=72,75,78,79,80,82,232,493,540
+x only L181                                        vars=120 diff=0 slots=72,75,78,79,80,82,237,493,540
+x only L217                                        vars=120 diff=0 slots=72,75,78,79,80,82,309,493,540
+x only L234                                        vars=112 diff=7 slots=72,75,78,79,80,82,493,540
+x only L244                                        vars=120 diff=2 slots=72,75,78,79,80,82,345,493,540
+y only L104                                        vars=112 diff=0 slots=72,75,78,79,80,82,493,540
+y only L117                                        vars=112 diff=0 slots=72,75,78,79,80,82,493,540

@@ -1,0 +1,19 @@
+363 variants
+comm_plus        n=27 same=18 vars!=112: 0
+comm_mul         n=9 same=8 vars!=112: 0
+arrow_amp        n=31 same=25 vars!=112: 0
+arrow_plus       n=31 same=25 vars!=112: 0
+amp_to_plus      n=12 same=12 vars!=112: 0
+tile_deref       n=53 same=53 vars!=112: 0
+s_ptr            n=86 same=86 vars!=112: 0
+cast_s32         n=27 same=27 vars!=112: 0
+ne0              n=8 same=8 vars!=112: 0
+eq0              n=2 same=2 vars!=112: 0
+tileinc          n=4 same=4 vars!=112: 0
+preinc           n=8 same=8 vars!=112: 0
+div2_s32         n=21 same=21 vars!=112: 0
+cur_cast         n=11 same=11 vars!=112: 0
+lt_le            n=8 same=8 vars!=112: 0
+addprim_cast     n=5 same=5 vars!=112: 0
+ot_idx           n=10 same=10 vars!=112: 0
+xzero            n=10 same=10 vars!=112: 0

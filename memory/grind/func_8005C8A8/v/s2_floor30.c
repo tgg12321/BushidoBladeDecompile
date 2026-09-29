@@ -71,23 +71,10 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     s16 j;
     s16 x;
     s16 y;
-    /* FAKE: always-zero narrow local (named-local-fake-exception, owner
-       ruling 2026-09-28 Q27 (A)) -- the descriptor x position, written 0
-       once and read as a plain value at case 0's first draw. The read sits
-       after the case-0 label, where cse no longer knows the value; combine
-       folds its sign extension (the pseudo is set once, to 0) and
-       distribute_notes leaves a `(use)` of the dead extension temp at the
-       label. The temp is never allocated and reload gives it the target's
-       one untouched frame slot (sp+0x78, frame 0xB8, zero insns). A single
-       read gives exactly that slot; reading it at every s.x write costs
-       insns and slots, so the other writes stay literal 0. Receipts:
-       memory/grind/func_8005C8A8/evidence.md s3 and probes/s3/. */
-    s16 xpos;
 
     tile = (Tile5C8A8 *)arg2;
     cur = arg2 + 0xF0;
     y_base = 0;
-    xpos = 0;
     sel = *(s16 *)&arg1;
     mode_off = arg2 + 0x4D8;
     end_off = arg2 + 0x4F0;
@@ -174,7 +161,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
         }
         s.table = D_8009B1AC;
         s.header = &D_8009B0E0[4];
-        s.x = xpos;
+        s.x = 0;
         s.out = cur;
         s.y = y_base + top;
         s.ot_idx = ot;

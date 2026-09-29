@@ -76,3 +76,70 @@ candidate (variants in tmp/func_8005C8A8/v/):
   Size5C8A8 *sz pointer (sz1-3, loses insns); param types s16/u16/u8 mode, s16 ot (pt1-4); extra `start` base
   variable for size (z1, z3), `size = end_off - (s32)tile` (z2), `size = arg2 + 0x4F0; size -= arg2` (z4);
   redundant k-diamond in the first border loop (hk1, +9 insns).
+
+## s3 (2026-09-29, manual lane laneB, modality: compiler mechanism) — 30 -> 0 (Q27 (A) always-zero narrow local)
+
+Base for every s3 probe: the s2 floor-30 body, kept as memory/grind/func_8005C8A8/v/s2_floor30.c. Probe tools
+(tmp/func_8005C8A8/): fpmod.py/fp.py (splice into src/text1b.c, instrumented cc1 tools/gcc-2.7.2/cc1 with the
+engine/buildconfig.py CC_FLAGS + BB2_FRAME_DEBUG, `.frame vars=` + FRAMEDBG slot list + asm diff with sp offsets
+masked), sweep.py / gen.py / gen2.py / gen3.py / gen4.py / pairs.py / subsets.py / place.py (variant generators),
+holes.py / holecause.py (in-file census). Receipts: probes/s3/ (regenerate with tmp/func_8005C8A8/receipts.sh).
+
+What the hole is (settled). The target's 0x78 slot is a reload `alter_reg` first-pass slot: first-pass slots are
+assigned in pseudo order, ours are p72 mode, p75 ot, p78 sel, p79 y_base, p80 mode_off, p82 size, p490, p537, and
+p490/p537 are EXPAND pseudos (f.rtl max pseudo 619, loop.c adds 620-653; p490 = ot*4 of the first AddPrim in the
+final double loop, p537 = the `(s16)j` extension tested by the second inner loop). So the target has one more
+never-allocated expand pseudo created between `size` and that AddPrim, with no instruction referencing it.
+Stack temps allocated at expand (assignment used as a value) are placed BEFORE the reload slots (FRAMEDBG
+ctx=stack_temp at frame_offset 48, then spill_new_p72 at 56), so they would move mode off 0x48: that family
+cannot give a hole at 0x78.
+
+In-file census (probes/s3/text1b_untouched_slot_census.txt, text1b_orphan_families.txt): 34 C functions in
+src/text1b.c list a frame slot no emitted instruction names (the census also counts address-taken struct temps,
+false positives); of the 49 untouched reload slots classified, 41 are distribute_notes `(use (reg))` orphans and 8
+are other. The orphans come in four kinds:
+(1) HI load + sll/sra extension whose loaded value is used again (func_80070188 p454/p484, func_800620B8 ...);
+(2) reg+reg address with the symbol in a register folded into the access (`(&Judge)[i]`, func_80048BA4 p91,
+func_800493E4 p98, func_80057CC8 p171); (3) loop entry test `i = 0; i < n` with a variable bound
+(compare-then-branch on a bound held in a register; e.g. func_80071C4C p315/p322, func_800720FC p577:
+combine folds `i = 0; i < n` to `n <= 0` and keeps i's set); (4) always-zero narrow locals whose extension
+combine folds (func_8006C21C p162/p164/p170/p172 = the Q27 (A) first application, dtd/xpos/ypos/tw).
+
+Ordinary forms and the other orphan families, measured negative on the s2 body (condition 2 of Q27):
+- 363 single-site semantics-preserving respellings (operand commutation, `&a[i]`/`a + i`/`(&a[i])->f`/`(a + i)->f`,
+  `(*tile).f`, `(&s)->f`, s32 casts on table reads, `!= 0`/truthiness, `tile += 1`, pre-increment, `(s32)(...) / 2`,
+  `<` vs `<=`, argument casts): frame stays vars=112 in every one (neg_respelling_catalog.txt).
+- 139 targeted rewrites (sweeps r1-r5: `j * 15` forms, compare forms, bit-test forms, header/table index forms,
+  ot*4 forms, colour chains, semi ternaries, size/mode_off/cur forms, size-table as s16[3][2] / s16[6] / incomplete
+  array / scalar with `(&D)[mode]` or `(&D + mode)->`, `s.table[k].unk0` writes, incomplete extern arrays,
+  assignment used as a value): no variant gives vars=120 with the target's code (neg_sweeps_r1-r5.txt; the only
+  vars=120 hit, s16[6] indexing, changes 167 lines).
+- Family (1): an s16/s32/u16 local for every D_8009B2BC[mode].w/.h read, centred x/y, and &D_8009B2BC[mode],
+  over every window of 1-6 statements (193 variants, neg_hi_extension_locals.txt): the only vars=120 hits are s16
+  w/h locals that keep the loaded value in a register where the target reloads it (8-38 changed lines; the final-
+  tile ones also put the new slot after the ot*4 pseudo).
+- Family (2): the size table spelled through pointer arithmetic (scalar `(&D)[mode]`, `(&D + mode)->`, per-site
+  `(D + mode)->f`, `(&D[mode])->f`) never yields the slot; the whole-table forms change 143 lines.
+- Family (3): every loop here has constant bounds, so cse folds the entry test; there is no variable-bound loop in
+  the target to spell.
+- s2 (above): named product intermediate, pointer/operand-order product forms, size pointer, inline helpers, param
+  types, `start` base variable, two permuter campaigns.
+
+Q27 (A) reproduces the hole exactly (condition 1). One `s16 xpos`, written `xpos = 0;` once at entry and read as
+`s.x = xpos;` at case 0's first draw (the site after the case-0 label): vars=120 (frame 0xB8), code identical
+(asm diff 0 with sp offsets masked), slot list p72,p75,p78,p79,p80,p82,p226,p493,p540 — the new p226 lands between
+size and the ot*4 pseudo, i.e. exactly the target's 0x78 (probes/s3/landed_frame.txt). Mechanism, dumped on the
+landed body (probes/s3/landed_orphan.txt): xpos is reg/v:HI 88; case 0's `s.x = xpos` expands to
+p226 = (ashift (subreg xpos) 16), p225 = (ashiftrt p226 16); combine folds the extension of the once-set-to-0
+pseudo and distribute_notes plants `(use (reg:SI 226))` + REG_DEAD at code_label 567 (the case-0 label); p226 is
+never allocated and reload gives it the first-pass slot. Sandbox (tmp/orch/sbx.ps1, --disable all): score 0,
+0 source-level, 0 operand-only hunks (58 not-scored relocation/branch-target artifacts).
+
+Site matrix (which reads give the slot): single reads (q27a_single_sites.txt, s16/u16/s8/u8 x 25 literal-0 sites of
+s.x/s.y/s.semi/s.has_color): with s16 or s8, seven writes after the case-0 label each give vars=120 with 0 changed
+lines (s.x at case 0 first draw, case 0 second draw, case 1, the tail loop; s.semi at case 0's `sel == 0` arm,
+case 0 second draw, case 1); u16/u8 never do (zero extension, no fold); the case-2 reads are folded by cse (no slot);
+the final-section s.x reads cost 2-7 lines. Reading xpos at every s.x write: vars=136, 127 changed lines; all s.x + s.y: vars=144
+(q27a_combos.txt). Pairs (q27a_pairs.txt) and subsets (q27a_subsets.txt): at most one read after the case-0 label
+can be taken; two such reads either add a second slot (vars=128) or cost 92-136 lines. The landed body takes the
+first such site. Declaration/initialisation placement is neutral (q27a_placement.txt, 24/24 placements identical).
