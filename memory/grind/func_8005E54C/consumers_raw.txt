@@ -1,0 +1,65 @@
+## asm/funcs references (symbol forms), status of the function
+func_8005E54C    INCLUDE_ASM (src\text1b.c)     D_8009BD24, D_8009BD38
+func_8005F1C8    C                              D_8009BD38
+func_80060414    C                              D_8009BD24
+func_80060CB8    C                              D_8009BD38
+func_80077820    C                              D_8009BD24
+func_80077894    C                              D_8009BD38
+func_80077904    C                              D_8009BD38
+func_80077984    C                              D_8009BD24
+func_80077A80    C                              D_8009BD24
+func_80077B30    C                              D_8009BD38 + 0x3, D_8009BD3C, D_8009BD3C + 0x1
+func_80077D00    C                              D_8009BD24
+
+## src C references (file:line: text)
+src\code6cac_b3_post.c:13: extern s32 *func_80077D00(void);
+src\code6cac_b3_post.c:64: p = func_80077D00();
+src\code6cac_b3_post.c:149: p = func_80077D00();
+src\code6cac_b3_post.c:248: p = func_80077D00();
+src\code6cac_c2.c:106: extern s32 *func_80077D00(void);
+src\code6cac_c2.c:673: s0 = func_80077D00();
+src\text1b.c:3272: extern s32 D_8009BD38;
+src\text1b.c:3916: extern s32 *func_80077D00(void);
+src\text1b.c:3935: if ((func_80077D00()[5] & 0xF) == 3 && vabid == 5) {
+src\text1b.c:4598: count = (((u32)D_8009BD38 >> 14) & 1) + 1;
+src\text1b.c:4675: if (k < 2 || (D_8009BD38 & 0x3000) == 0x2000) {
+src\text1b.c:4677: if (k == 0 && (D_8009BD38 & 0x3000) == 0x2000) {
+src\text1b.c:4679: } else if (k == 0 || (k == 1 && (D_8009BD38 & 0x3000) == 0x2000)) {
+src\text1b.c:4701: x = ((D_8009BD38 & 0x3000) == 0x2000) ? k * 20 + 0x48 : k * 20 + 0x34;
+src\text1b.c:4711: if ((D_8009BD38 & 0x3000) == 0x2000) {
+src\text1b.c:4720: if ((D_8009BD38 & 0x3000) == 0x2000) {
+src\text1b.c:5058: extern u8 D_8009BD24[];
+src\text1b.c:5088: } else if (D_8009BD24[0] < 0xC) {
+src\text1b.c:5554: v = D_8009BD38 & 0xF;
+src\text1b.c:8805: s32 *func_80077D00(void);
+src\text1b.c:8807: s32 *p = func_80077D00();
+src\text1b.c:8821: s32 *func_80077D00(void);
+src\text1b.c:8823: s32 *p = func_80077D00();
+src\text1b.c:11274: extern s32 D_800A3568;
+src\text1b.c:11308: D_800A35BC = *(s32 *)(arg2 + 0x14) & 0xF;
+src\text1b.c:11310: D_800A3568 = (s32)arg2;
+src\text1b.c:11328: if (*(s32 *)(D_800A3568 + 0x14) & 0x20000) {
+src\text1b.c:11402: s32* func_80077D00(void);
+src\text1b.c:11409: p = func_80077D00();
+src\text1b.c:11566: extern s32 D_800A3568;
+src\text1b.c:11666: if (*(s32 *)((s32)D_800A3568 + 0x14) & 0x20000) goto p1_idx;
+src\text1b.c:11792: if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
+src\text1b.c:11998: if (*(s32 *)(D_800A3568 + 0x20) & 1) {
+src\text1b.c:12365: if (D_800A35BC == 2 && (*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 0) {
+src\text1b.c:12425: if (D_800A35BC == 2 && (*(s32 *)(D_800A3568 + 0x14) & 0x20000)) {
+src\text1b.c:12601: if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
+src\text1b.c:12642: *(s32 *)(D_800A3568 + 0x14) =
+src\text1b.c:12643: (*(s32 *)(D_800A3568 + 0x14) & ~0x3F0) | ((mode & 0x3F) << 4);
+src\text1b.c:12668: *(u8 *)(D_800A3568 + dst) = D_800A3560[ctx];
+src\text1b.c:12678: *(u8 *)(D_800A3568 + dst + 1) = D_800A3560[ctx + 2];
+src\text1b.c:12964: ((Cfg720FC *)D_800A3568)->unk14_4 = action;
+src\text1b.c:12966: ((Cfg720FC *)D_800A3568)->unk14_4 = 0x25;
+src\text1b.c:15479: func_80068F70(a0, (s32 *)&D_8009BD24);
+src\text1b.c:15501: s32 *p = &D_8009BD38;
+src\text1b.c:15519: i = (D_8009BD38 & 0xF) * 2;
+src\text1b.c:15532: func_8006E534(a0, D_800A35E0, D_8009BD24, D_800A35E8);
+src\text1b.c:15568: func_800770B8(a0, (s32)&D_8009BD24, D_800A35E8);
+src\text1b_b.c:868: extern s32 D_8009BD24;
+src\text1b_b.c:869: s32* func_80077D00(void) {
+src\text1b_b.c:870: return &D_8009BD24;
+include\m2c_context.h:296: extern s32 D_8009BD38;     /* 47 refs */

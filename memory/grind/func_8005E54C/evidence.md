@@ -247,3 +247,71 @@ The target's R2, R3/R4 and R6 all address sp+0x18, which precedes wins (0x20) an
 belongs to the first function-scope local and is live across all three regions, and a second array can never
 be given it. Honest name for the pair, true of every write: points per player (round points, then total
 points). A landing could rename `vals` to `points`.
+
+## [s5] laneC 2026-09-29 — landing prepared under rules 5f69df611: prong records, measured on the landed body
+
+The landed body is func_8005E54C's definition as spliced into src/text1b.c by tools/land.py
+(final_probes/landed.c is a byte copy of it). All probes below differ from it only as named. They are generated
+by tools/mkfinal.py from the spliced src and scored with the ENGINE sandbox
+(`pwsh tools/sandbox_sweep.ps1 -Func func_8005E54C -Variants final_probes/<p>.c`, i.e.
+`sandbox --disable all --candidate`). cc1 `.frame` and listing hashes come from tools/frames.sh (it prints its cpp
+and cc1 command lines). Results are banked verbatim in final_probes/SCORES.txt.
+
+| probe | sandbox --disable all | .frame vars |
+|---|---|---|
+| landed | 0 (799/799) | 120 |
+| plain_digit (no `volatile`) | 0 | 120 |
+| no_digit | 47 | 112 |
+| union (Q33 spelling of `points`, same body) | 197 | 152 |
+| loc_wins_after_s | 147 | 112 |
+| loc_points_after_s | 211 | 112 |
+| prod1_loop_guard (phantom producer 1) | 64 | 112 |
+| prod2_himode_second_use (phantom producer 2) | 47 | 112 |
+| prod3_named_local (phantom producer 3) | 65 | 112 |
+
+Target: frame 0xB8, vars 120.
+
+- Listing hashes: the landed and plain_digit cc1 listings are identical (sha1 prefix 6fdf965a27f4). So
+  `volatile` does no codegen work (Q35 prong 4). prod2's listing equals no_digit's (f9bce23647e8), so the narrow
+  second use folds away and the producer is inert.
+- Full rebuild with the landing edits: build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+- `sandbox func_8005E54C --disable all --diff` on the spliced src: 0, 0 source-level / 0 operand-only /
+  63 not-scored hunks.
+- `engine test`: 862 passed.
+
+Q36 prongs (one cast store on a local array):
+1. `s16 points[2]` is a local array, 4 bytes, s16 elements, with consumed element reads elsewhere (e.g.
+   `points[0] == 3`, the `k < points[j]` loop bounds).
+2. The target has one `sw $zero,0x18($sp)` at 0x8005EA44 (asm/funcs/func_8005E54C.s:347). It sits at the frame
+   offset of `points` (sp+0x18, see frame_census.txt) and covers its 4 bytes. The build emits it (sandbox 0).
+3. The body has exactly one cast statement, a store. Every other access is `points[i]`; the ternary takes
+   `&points[0]` / `&points[1]` without a cast.
+4. The union spelling on the same body measures 197 (final_probes/union.c).
+5. The annotation is at the statement.
+
+Q35 prongs (trailing unused array):
+1. frame_census.txt: no memory operand reaches 0x54..0x5F. The region is 0x58..0x5F, 8 bytes. It is in the
+   locals area: spill slots start at 0x60 with arg0, and alter_reg assigns them in regno order.
+2. Siblings in src/text1b.c:
+   - func_8005D814, `Env5D814 s; s16 digit[3];` (4230-4231), a separate local right after the same 0x2C
+     descriptor. Real: `digit[i] = *arg0;` at 4285. This is the one copied.
+   - func_8005F1C8, S5F1C8 trailing member `s16 d[3];` (4911) at descriptor + 0x30. Real: `s.d[k] = arg0[2];`
+     at 5028. Its leading 0x2C members have the same layout and go to the same callee func_8007352C.
+   - Both siblings' arrays sit at sp+0x48 = descriptor + 0x30 in their frames (s at sp+0x18).
+   - Corroboration only: func_8005E098 `s16 d[2];` (4433, used at 4495).
+3. Copies `s16 digit[3]`, declared immediately after `Env5E54C s;`. 6 bytes rounds to the 8-byte slot, which is
+   exactly 0x58..0x5F. With it the frame and every `$sp` offset equal the target's (vars 120; sandbox 0).
+4. `volatile s16 digit[3];`: no initializer, never referenced. Byte-identity without volatile is shown above.
+5. The name `digit` is func_8005D814's identifier.
+6. FAKE annotation at the declaration.
+7. Measured above: no_digit, the three producers, and the two real locals that could move into the region
+   (wins, points). All stay at vars 112.
+8. engine/volatile_cheats.py `_SANCTIONED_UNWRITTEN_PADS` gets the row `"func_8005E54C": {("digit", 3)}`;
+   `engine test` is green.
+
+What each declaration correction is worth (tools/worth.py, the landing body with each correction's spelling
+undone; tools/sbxp.py unstripped): both 0, record table only 14, flag word only 24, neither 38. Both are needed.
+
+func_80077D00 (text1b_b.c) is NOT edited: the declarations stay TU-local in text1b.c (as on main), so no new
+`(s32 *)` return cast. The one call that passed the decayed u8 array now passes `&D_8009BD24[0][0].chr` (u8 *),
+with no cast. See consumers.md.
