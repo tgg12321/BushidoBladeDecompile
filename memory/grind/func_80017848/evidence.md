@@ -6731,3 +6731,33 @@ expression - forbidden family, not a candidate.
 - [s64] E-s64-6: exhaustion at disposition: 64 sessions, floor flat at 3 since s9, 10 modalities (recon 1, structural 13, permuter 4, forensics 13, rederive 10, synthesis 8, escalation 9, solver 4, object-model 1, enumerate 1), >= 180,472 permuter iterations, 1,420-spelling enumeration, RA-solver full-goal inverse (one vector, class-killed), 13 class + 48 instance kills, 362 rejected forms
 
 - [s64] E-s64-7: docs/grind/decisions.md:27195 '2026-09-15 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): ROTATED' filed with gate evidence, cc1psx result, exhaustion and re-activation triggers; src/ings.c restored to HEAD (INCLUDE_ASM anchor)
+
+## s65 (manual lane, 2026-09-29) — CLOSED: natural typed object model, 0 at 127/127
+
+- Context: a Codex session was reported mid-function; its transcripts show it only
+  READ this ledger (2026-09-29 00:06, "documented endgame lock") and moved on — no
+  Codex work on this function existed to recover.
+- The banked BASE candidate no longer compiled in the sandbox: func_80017A44
+  (COMPLETED-C 3e87db433, 2026-09-19) added `extern void func_80017848(Func80017A44Output
+  *, s32, s32, s32);` after the INCLUDE_ASM line, which conflicts with BASE's
+  `s32 func_80017848(u8 *, ...)`. With a sandbox-only `#define` renaming that later
+  extern, BASE re-measured 3 at 127/127 (same 3 hunks as s54-s64).
+- Change of modality: write the function against the object model instead of cast
+  arithmetic. The records are func_80017A44's `Func80017A44Record` (0x40 stride,
+  ctx+0xC); the 16-byte edges live at ctx+0x10, count s16 at ctx+6; the record's
+  0x24/0x2C bytes are two u8[8] edge-index lists counted by 0x1C/0x20. Plain
+  `for` loops over `out->edges[out->records[a].field_24[i]].node_b` etc.
+  - tmp/f17848/nat1.c (edge halves as u16/s16 fields, packed store through a
+    `*(s32 *)&edge->node_b` cast): **0 at 127/127, zero hunks, operands unmasked.**
+  - tmp/f17848/nat_union.c (same, packed word as a union member, no cast): **0 at
+    127/127.** This is the landed form.
+- What 64 sessions missed: every chassis since s1 spelled the loops over cached
+  `u8 *` locals (slots/q/p/base/lnk) with byte-offset casts. Array-of-struct
+  indexing through the parameter each time (no locals at all) lets cse/loop.c
+  produce the target's preheader copy and seats directly. The s57-s64 allocator
+  proofs were correct FOR THAT CHASSIS; the residual was the chassis.
+- Landing: the file's existing Func80017A44Record/Output typedefs moved above the
+  function (record's `s32 field_24[4]` split into `u8 field_24[8]; u8 field_2C[8];`,
+  Output gains `edge_count` at +6 and `edges` at +0x10); the wrong `void` extern
+  is dropped (the definition now precedes func_80017A44). func_80017A44 is
+  byte-neutral (full-build SHA1).
