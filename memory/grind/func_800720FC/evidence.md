@@ -52,3 +52,24 @@
   source-ordered before j=0; target has loop.c's hoist order); (4) D_800A35C8/CA: -G0 prices a symbol address 2
   insns, so cse relates `D_800A35C8+2` to the `D_800A35C8` register and loop.c hoists it (life 4, 29*1*4 >= 42);
   target has both stores direct gp_rel (the original's small-data pricing, cost 1, no relation). Open.
+- [s2] 25 -> 6 (one declaration of D_800A35C8) / 0 (probe with a second scalar handle `extern s16 D_800A35CA;`):
+  - rsin block: color stores before the scale stores (sched1 order puts 256 in v0 after the color math): 25 -> 19ish.
+  - scroll ABS as `(d >= 0 ? d : -d) > (cur >= 0 ? cur : -cur)` (fold -> ABS_EXPR, operand order d first).
+  - grid: `for (j = 0, row = i * 2; j < 2; j++)` gives the target's j=0 / sll / giv-init order (the target's i*2
+    sits after j=0, i.e. loop.c hoist order); `i + i` shared between address and condition does the same.
+  - scroll: ONE variable `d = to - from; d *= 30;` (Ruling 4 compound split) with `cur += d * 32 / 488` — the
+    target's `subu a0` + `move a0,v0` is one global pseudo; a separate `diff` local is tied to the `to` load's
+    dying register by local-alloc combine_regs (v1). Combine folds d*32 of d=(x*15)<<1 into (x*15)<<6.
+  - candidate.c = one-declaration form, sandbox 6 (only D_800A35C8/CA). probes/alias_D_800A35CA_sandbox0.c =
+    the same body with `D_800A35C8[0] = 0xF; D_800A35CA = 0x14;` + `extern s16 D_800A35CA;` -> sandbox 0/690.
+- [s2] D_800A35C8/CA mechanism (measured): array element stores force their constant address into a pseudo
+  (explow.c memory_address force_reg, via change_address for any ARRAY_REF/COMPONENT_REF; only a scalar VAR_DECL
+  keeps (mem (symbol_ref))). cse.c use_related_value then rewrites the second address as (plus reg 2) — same
+  symbol base, and -G0 prices a symbol 2 insns (mips.h CONST_COSTS, no SYMBOL_REF_FLAG) vs 1 for reg+off. The
+  pseudo is used twice, so loop.c's "large loop" single-usage substitution (loop.c:721-765, which would put the
+  symbol back into the MEM) does not apply and move_movables hoists it (life 4 * threshold 29 >= 42 insns).
+  Both store orders relate (bare sym second is related through the related_value chain insert() builds).
+  cc1psx (original compiler, -G0) on the same body ALSO hoists (tmp/cc1psx/func_800720FC/psx.o: lui s5/addiu
+  s5,2 before the loop) — so the original TU did not see this array form: it saw two symbols (scalars) or a
+  sized small-data array at -G8. func_8006F100 (completed) indexes D_800A35C8[i] with a lui/addiu base in its
+  target (non-small array in ITS original TU) — evidence of different declarations in different original TUs.
