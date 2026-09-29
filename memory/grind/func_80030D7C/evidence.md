@@ -137,3 +137,9 @@ crosses no call gets the lowest-numbered caller-saved register it does not confl
   a further value (state, a flag byte, rest, a velocity, a LerpAngle result, -1, ...) or turns it
   into `long long` (225). No counting one-variable-per-value spelling reaches the target.
   Harvest: permuter_C_harvest.txt.
+
+### LANDED 2026-09-29 (s2) — COMPLETED-C
+- Match commit c0f4dae1f (src/code6cac_b.c body; undefined_syms_auto.txt D_8008E19E alias row
+  retired); queue done 4991cafad. Layer-2: FAIL #1 (record measured other bodies), FAIL #2 (R11
+  prong (A): temp/work moved to loop-body scope), PASS on round 3 (sandbox 0/709, PV2 21,
+  ablations 4/17, dumps reproduced). check_completion_integrity OK.
