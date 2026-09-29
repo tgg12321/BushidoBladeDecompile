@@ -1,0 +1,29 @@
+2c2
+< build/src/code6cac_b.o:     file format elf32-tradlittlemips
+---
+> tmp/func_80029454/tu/code6cac_b.o:     file format elf32-tradlittlemips
+55,56c55
+<     275c:	3c140000 	lui	s4,0x0
+< 			275c: R_MIPS_HI16	D_1F800024
+---
+>     275c:	3c141f80 	lui	s4,0x1f80
+281,282c280
+<     2ab0:	26940000 	addiu	s4,s4,0
+< 			2ab0: R_MIPS_LO16	D_1F800024
+---
+>     2ab0:	26940024 	addiu	s4,s4,36
+292,293c290
+<     2ad8:	3c090000 	lui	t1,0x0
+< 			2ad8: R_MIPS_HI16	D_1F800018
+---
+>     2ad8:	3c091f80 	lui	t1,0x1f80
+377,378c374
+<     2c20:	25290000 	addiu	t1,t1,0
+< 			2c20: R_MIPS_LO16	D_1F800018
+---
+>     2c20:	25290018 	addiu	t1,t1,24
+380,381c376
+<     2c28:	25080000 	addiu	t0,t0,0
+< 			2c28: R_MIPS_LO16	D_1F800024
+---
+>     2c28:	25080024 	addiu	t0,t0,36

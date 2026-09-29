@@ -58,6 +58,13 @@
   `addiu 24` / `addiu 36`, exactly our literal immediates; engine/score.py:265-270 rewrites the
   reference's named HI16/LO16 pair to `@hi(0x1f80)` / `@lo(0x0024)` tokens while our literal
   immediates stay literal, so the lines compare unequal. The full-build SHA1 is the check.
+- [s2] Whole-TU object check (probes/tu_objdiff.py, candidate spliced into a tmp copy of
+  src/code6cac_b.c, Makefile recipe): 83 functions in both objects, the other 82 identical;
+  func_80029454's `objdump -dr` differs from build/src/code6cac_b.o ONLY in those five words
+  (probes/tu_objdiff_func.txt: reference `3c140000`+HI16 D_1F800024 vs ours `3c141f80`, etc.).
+  undefined_syms_auto.txt:1/:3 define D_1F800018 = 0x1F800018 and D_1F800024 = 0x1F800024, so
+  the linked words are equal; no out-of-line `box_overlap` is emitted. The two symbol rows stay:
+  asm/funcs/func_8001A820.s and asm/6CAC.s still reference them.
 - [s2] No FAKE construct, no reused-local ruling (Rulings 5-12) is invoked; no asm. Constructs a
   reviewer should look at: the `ScrPad`/`SPAD` struct view (H1), the `box_overlap` inline helper
   used by both passes (H4), `u32 mask` (H5), the parenthesised halving offset (H2), loop counters
