@@ -20,10 +20,11 @@ A QUALIFYING UNIT, and nothing else, is kept by the sandbox strip:
       is equal by owner amendment (2026-09-25, second batch): `0($REG)` and
       `($REG)` in a load/store's memory operand (maspsx cannot parse `($12)`);
       `4($12)`, `0x0($12)`, `00($12)`, `-0($12)`, `0($13)` stay edits. A
-      second is equal by owner ruling 2026-09-26 (func_8002DE20, Q11): a
-      header DMPSX placeholder `.word` and the post-DMPSX command word DMPSX
-      emits for it, for the placeholders in DMPSX_WORDS only (each with an
-      independent source);
+      second is equal by owner ruling 2026-09-26 (func_8002DE20, Q11; four
+      more words by owner ruling 2026-09-28, func_800187F4, Q29): a header
+      DMPSX placeholder `.word` and the post-DMPSX command word DMPSX emits for
+      it, for the placeholders in DMPSX_WORDS only (each with an independent
+      source);
   (B) the expansion contains at least one cop2 instruction (a DMPSX
       placeholder in DMPSX_WORDS counts: DMPSX turns it into one), so a
       standalone `gte_nop()` is never a unit;
@@ -50,7 +51,9 @@ Conservative choices (each strips as before when in doubt):
 
 PINNED holds only the macros needed today (the LZC family of func_800288C8,
 func_8002A458, func_8002CD58 and func_80018300; gte_ldv0 / gte_rtv0 /
-gte_stlvnl / gte_ApplyRotMatrix of func_8002DE20). Each excerpt is the header's
+gte_stlvnl / gte_ApplyRotMatrix of func_8002DE20; gte_ldlvl / gte_lddp /
+gte_rtv0tr / gte_sqr0 / gte_gpf0 / gte_gpl12 / gte_stlvl of func_800187F4,
+owner ruling 2026-09-28, Q29). Each excerpt is the header's
 own lines, byte for byte; `engine test` re-hashes them. Adding a macro means
 adding its verbatim lines with the same provenance fields.
 """
@@ -127,6 +130,63 @@ PINNED = (
   __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory"); \
 }
 '''),
+            ("gte_ldlvl", (104, 109),
+             "c55a4a83e31289451a2576ef9ced83eb485fb95c9555719e896c8a8b3c902039",
+             r'''#define gte_ldlvl(r1) { \
+  __asm__ volatile ("move  $12,%0": :"r"(r1):"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lwc2  $9,($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lwc2  $10,4($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lwc2  $11,8($12)": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
+            ("gte_lddp", (144, 147),
+             "d03aad9f9558785d758e3940222274120df736e32150515b9dc07f418a204bd5",
+             r'''#define gte_lddp(r1) { \
+  __asm__ volatile ("move  $12,%0": :"r"(r1):"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("mtc2  $12,$8": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
+            ("gte_rtv0tr", (451, 455),
+             "04d9cd65eea09c789e533b1e696b34c04c5f019e86063383f437023861e1865b",
+             r'''#define gte_rtv0tr() { \
+  __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000027f": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
+            ("gte_sqr0", (646, 650),
+             "dcb3bf9cfded3dfb6d9aa817c43cc3c08a015c712113eed294dcce7556fbd6f7",
+             r'''#define gte_sqr0() { \
+  __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000f3f": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
+            ("gte_gpf0", (721, 725),
+             "3e7ebfa85402b718a6f499db150427976a556f59477cb98268be84fa577510ff",
+             r'''#define gte_gpf0() { \
+  __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000012ff": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
+            ("gte_gpl12", (726, 730),
+             "ebcac8aa72cae4537f1c72d00544475026eff9aac7dd1c814e1e307a6e9834f6",
+             r'''#define gte_gpl12() { \
+  __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000133f": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
+            ("gte_stlvl", (898, 903),
+             "0cb3538315ec14573014d815f95772af94c982d2e1ecc215c71bd04242016067",
+             r'''#define gte_stlvl(r1) { \
+  __asm__ volatile ("move  $12,%0": :"r"(r1):"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("swc2  $9,($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("swc2  $10,4($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("swc2  $11,8($12)": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
         ),
     },
     {
@@ -165,8 +225,27 @@ PINNED = (
 #   lm=0: pcsx-redux/nugget@22037bd3 psyq/include/inline_n.h :516-520 and
 #   Lameguy64/PSn00bSDK@5d9aa2d3 libpsn00b/include/inline_c.h :1183-1186
 #   ("cop2 0x0486012" = 0x4A486012).
+# Owner ruling 2026-09-28 (func_800187F4, sixteenth batch, Q29; inline-asm-policy.md
+# § Per-function grant: func_800187F4). Each word is 0x4A000000 | the `cop2 IMM`
+# of both independent no-DMPSX sources, pcsx-redux/nugget@22037bd3
+# psyq/include/inline_n.h and Lameguy64/PSn00bSDK@5d9aa2d3
+# libpsn00b/include/inline_c.h (lines: nugget / PSn00bSDK):
+#   0x0000027f (gte_rtv0tr) -> 0x4A480012 = MVMVA sf=1 mx=rotation v=V0 cv=TR lm=0
+#     (:546-550 / :1208-1211, "cop2 0x0480012")
+#   0x00000f3f (gte_sqr0)   -> 0x4AA00428 = SQR sf=0 lm=1
+#     (:780-784 / :1404-1407, "cop2 0x0A00428")
+#   0x000012ff (gte_gpf0)   -> 0x4B90003D = GPF sf=0 lm=0
+#     (:870-874 / :1516-1519, "cop2 0x0190003D")
+#   0x0000133f (gte_gpl12)  -> 0x4BA8003E = GPL sf=1 lm=0
+#     (:876-880 / :1521-1524, "cop2 0x01A8003E")
+# Scoring only: admission of an island carrying a post-DMPSX word still needs its
+# own per-function owner grant (class prong (C) is unchanged).
 DMPSX_WORDS = {
     0x0000013F: 0x4A486012,
+    0x0000027F: 0x4A480012,
+    0x00000F3F: 0x4AA00428,
+    0x000012FF: 0x4B90003D,
+    0x0000133F: 0x4BA8003E,
 }
 
 

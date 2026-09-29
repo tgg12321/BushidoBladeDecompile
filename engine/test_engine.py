@@ -739,8 +739,10 @@ def test_gte_macro_units() -> None:
     # post-pass word equals the header placeholder (DMPSX_WORDS only).
     eq("gtemacro: gte_ApplyRotMatrix expands to ten statements",
        len(macros["gte_ApplyRotMatrix"][1]), 10)
-    eq("gtemacro: DMPSX_WORDS is exactly the evidenced rtv0 pair",
-       gtemacro.DMPSX_WORDS, {0x0000013F: 0x4A486012})
+    eq("gtemacro: DMPSX_WORDS is exactly the evidenced pairs (Q11 rtv0; Q29 rtv0tr/sqr0/gpf0/gpl12)",
+       gtemacro.DMPSX_WORDS, {0x0000013F: 0x4A486012, 0x0000027F: 0x4A480012,
+                              0x00000F3F: 0x4AA00428, 0x000012FF: 0x4B90003D,
+                              0x0000133F: 0x4BA8003E})
 
     def stmt(t, op=None):
         ins = f'"r"({op})' if op else ""
@@ -792,6 +794,66 @@ def test_gte_macro_units() -> None:
              vsrc(*ldv0, *rtv0, *stl[:3]))
     as_today("DMPSX word outside a placeholder position (appended to ldv0)",
              vsrc(*ldv0, stmt(".word 0x4A486012")))
+
+    # --- owner ruling 2026-09-28 (func_800187F4, Q29): gte_ldlvl / gte_lddp /
+    # gte_rtv0tr / gte_sqr0 / gte_gpf0 / gte_gpl12 / gte_stlvl pinned; four more
+    # post-DMPSX words equal their header placeholders.
+    for name, n in (("gte_ldlvl", 4), ("gte_lddp", 2), ("gte_rtv0tr", 3), ("gte_sqr0", 3),
+                    ("gte_gpf0", 3), ("gte_gpl12", 3), ("gte_stlvl", 4)):
+        eq(f"gtemacro: {name} expands to {n} statements", len(macros[name][1]), n)
+    ldlvl = [stmt("move  $12,%0", "&v"), stmt("lwc2  $9,($12)"),
+             stmt("lwc2  $10,4($12)"), stmt("lwc2  $11,8($12)")]
+    stlvl = [stmt("move  $12,%0", "&out"), stmt("swc2  $9,($12)"),
+             stmt("swc2  $10,4($12)"), stmt("swc2  $11,8($12)")]
+    lddp = [stmt("move  $12,%0", "n"), stmt("mtc2  $12,$8")]
+
+    def cmd(word):
+        return [stmt("nop   "), stmt("nop   "), stmt(f".word {word}")]
+    q29 = (("gte_rtv0tr", "0x0000027f", "0x4A480012"), ("gte_sqr0", "0x00000f3f", "0x4AA00428"),
+           ("gte_gpf0", "0x000012ff", "0x4B90003D"), ("gte_gpl12", "0x0000133f", "0x4BA8003E"))
+    eq("gte unit POSITIVE: gte_ldlvl recognized", kept(vsrc(*ldlvl)), ["gte_ldlvl"] * 4)
+    eq("gte unit POSITIVE: gte_stlvl recognized", kept(vsrc(*stlvl)), ["gte_stlvl"] * 4)
+    eq("gte unit POSITIVE: gte_lddp recognized", kept(vsrc(*lddp)), ["gte_lddp"] * 2)
+    eq("gte unit POSITIVE: gte_lddp with a constant operand recognized",
+       kept(vsrc(stmt("move  $12,%0", "1"), lddp[1])), ["gte_lddp"] * 2)
+    for name, ph, post in q29:
+        eq(f"gte unit POSITIVE: {name} with the header placeholder recognized",
+           kept(vsrc(*cmd(ph))), [name] * 3)
+        eq(f"gte unit POSITIVE: {name} with the post-DMPSX word recognized",
+           kept(vsrc(*cmd(post))), [name] * 3)
+        eq(f"dmpsx key: {name} post word == placeholder", ik(f".word {post}"), ik(f".word {ph}"))
+    sq = vsrc(*ldlvl, *cmd("0x4AA00428"), *stl)
+    eq("gte unit POSITIVE: ldlvl + sqr0 + stlvnl back to back -> three units",
+       kept(sq), ["gte_ldlvl"] * 4 + ["gte_sqr0"] * 3 + ["gte_stlvnl"] * 4)
+    eq("gte unit POSITIVE: ldlvl + sqr0 + stlvnl kept whole",
+       inlineasm.strip_cheat_asm_file(sq, keep_gte_macro_units=True), (sq, 0))
+    gp = vsrc(*lddp, *ldlvl, *cmd("0x4B90003D"), "out[1] = n;", *ldlvl, *lddp,
+              *cmd("0x4BA8003E"), *stlvl)
+    eq("gte unit POSITIVE: lddp+ldlvl+gpf0, C, ldlvl+lddp+gpl12+stlvl -> seven units",
+       kept(gp), ["gte_lddp"] * 2 + ["gte_ldlvl"] * 4 + ["gte_gpf0"] * 3
+       + ["gte_ldlvl"] * 4 + ["gte_lddp"] * 2 + ["gte_gpl12"] * 3 + ["gte_stlvl"] * 4)
+    eq("gte unit: scoring is not admission — gate still counts the GPR-only statements (Q29 set)",
+       inlineasm.func_cheat_asm_count(gp, "f"), 9)
+    rt = vsrc(*ldv0, *cmd("0x4A480012"), *stl)
+    eq("gte unit POSITIVE: ldv0 + rtv0tr + stlvnl is three units (not gte_ApplyRotMatrix)",
+       kept(rt), ["gte_ldv0"] * 3 + ["gte_rtv0tr"] * 3 + ["gte_stlvnl"] * 4)
+    check("dmpsx key: the rtv0tr word is not the rtv0 placeholder",
+          ik(".word 0x4A480012") != ik(".word 0x0000013f"))
+    check("dmpsx key: gte_gpl0's word (sf=0) is not gte_gpl12's placeholder",
+          ik(".word 0x4BA0003E") != ik(".word 0x0000133f"))
+
+    # NEGATIVES (Q29 additions) — each stripped exactly as today.
+    as_today("sqr0 with a word in no DMPSX pair", vsrc(*cmd("0x4AA00429")))
+    as_today("gpl12 spelled with gte_gpl0's word (sf=0)", vsrc(*cmd("0x4BA0003E")))
+    as_today("lddp with an edited transfer register", vsrc(lddp[0], stmt("mtc2  $12,$9")))
+    as_today("ldlvl missing its third lwc2", vsrc(*ldlvl[:3]))
+    as_today("stlvl with two stores reordered", vsrc(stlvl[0], stlvl[2], stlvl[1], stlvl[3]))
+    as_today("ldlvl with 4($12) for the header's ($12)",
+             vsrc(ldlvl[0], stmt("lwc2  $9,4($12)"), *ldlvl[2:]))
+    as_today("sqr0 missing a nop", vsrc(stmt("nop   "), stmt(".word 0x4AA00428")))
+    as_today("sqr0 with an extra nop", vsrc(stmt("nop   "), *cmd("0x4AA00428")))
+    as_today("gpf0 word appended to ldlvl", vsrc(*ldlvl, stmt(".word 0x4B90003D")))
+    as_today("rtv0tr word with a 9-digit spelling", vsrc(*cmd("0x04A480012")))
 
 
 # --------------------------------------------------------------------------
