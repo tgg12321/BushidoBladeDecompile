@@ -228,3 +228,22 @@ Q35 (trailing array):
   local immediately after `Env5E54C s;`, with `volatile` added. 6 bytes rounded to the 8-byte slot is exactly
   0x58..0x5F.
 - (7) Every honest producer and real local tried leaves vars at 112 (table above).
+
+### [s4 cont.] the `vals` pair holds both round points and totals: per-value spellings measured
+
+`s16 vals[2]` (sp+0x18) holds per-round points in R2 and R6 (two bits of arg0 per player per round) and
+the per-player totals in R3/R4 (zeroed by the Q36 store, then summed). Review may treat this as a reused
+local. Per-value spellings, with totals in their own `s16 total[2]` and everything else unchanged (probes/pv_*.c,
+tools/mkpv.py; strip / nostrip):
+- total declared after digit: 17 / 54.
+- total declared first: 165 / 204.
+- total declared between wins and s: 107 / 148.
+- total block-scoped around R3/R4: 13 / 54 (stripped, i.e. without digit, the block's total takes the free slot
+  at sp+0x58, so R3/R4 address 0x58 where the target uses 0x18).
+
+The mechanism is frame layout, not register allocation. Locals get stack slots from stmt.c expand_decl ->
+function.c assign_stack_temp(keep=1), in declaration order, and a slot is reused only after its block ends.
+The target's R2, R3/R4 and R6 all address sp+0x18, which precedes wins (0x20) and s (0x28). So that slot
+belongs to the first function-scope local and is live across all three regions, and a second array can never
+be given it. Honest name for the pair, true of every write: points per player (round points, then total
+points). A landing could rename `vals` to `points`.
