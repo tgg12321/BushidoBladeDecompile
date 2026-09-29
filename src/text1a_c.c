@@ -480,7 +480,7 @@ void func_80042E90(void) {
     D_800F66B0 = (s32)math_RotMatrixYXZ;
     D_800F66B4 = (s32)math_RotMatrixXYZ;
 }
-void func_80042ED8(u16 *a0) {
+void math_TransposeMatrixInPlace(u16 *a0) {
     /* FAKE: statement staging (2026-07-06 ALLOWED list) — saving one
        side of all three pairs up front seats x/y/z in $a1/$v1/$v0 for
        the whole body with the scratch reloads sharing $a2, and keeps
@@ -520,7 +520,7 @@ extern s16 ratan2(s32, s32);
 extern s32 rcos(s32);
 extern s32 rsin(s32);
 extern void MulMatrix(s32 *, s32 *);
-void func_80042FA0(s32 *a0, s16 *a1) {
+void math_MatrixToAnglesYXZ(s32 *a0, s16 *a1) {
     s16 rot[3];
     s32 result[4];
     s32 sp28[8];
@@ -662,8 +662,8 @@ extern void gpu_OffsetTexPolyFT3();
 extern void gpu_OffsetTexPolyFT4();
 extern void gpu_OffsetTexPolyGT3();
 extern void gpu_OffsetTexPolyGT4();
-void func_80043E98(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
-void func_80043F0C(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
+void gpu_OffsetTPageClutAt0And4(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
+void gpu_OffsetTPageClutAt6And2(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
 /* Read cursor into the primitive packet stream, kept in scratchpad word 0. */
 #define SCRATCH_PTR (*(u16 **)0x1F800000)
 /* Walk a packet stream of primitive groups (the cursor starts at the
@@ -743,7 +743,7 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     break;
                 case 1:
                     while (--count != -1) {
-                        func_80043E98((s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                        gpu_OffsetTPageClutAt0And4((s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
                         b = (u8 *)SCRATCH_PTR;
                         switch (kind) {
                         case 0:
@@ -780,7 +780,7 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     break;
                 case 2:
                     while (--count != -1) {
-                        func_80043F0C((s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                        gpu_OffsetTPageClutAt6And2((s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
                         b = (u8 *)SCRATCH_PTR;
                         switch (kind) {
                         case 0:
@@ -1009,7 +1009,7 @@ void gpu_OffsetTexPolyGT4(POLY_GT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     cy = (dcy + ((clut >> 6) & 0x1FF)) & 0x1FF;
     p->clut = cx | ((clut & 0x8000) | (cy << 6));
 }
-void func_80043E98(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
+void gpu_OffsetTPageClutAt0And4(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
     s16 r1;
     r1 = gpu_OffsetTPage(a0[0], a1, a2);
     a0[0] = r1;
@@ -1017,7 +1017,7 @@ void func_80043E98(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
 }
 extern s16 gpu_OffsetTPage(s16, s16, s16);
 extern s16 gpu_OffsetClut(s16, s16, s32);
-void func_80043F0C(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
+void gpu_OffsetTPageClutAt6And2(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
     s16 r1;
     r1 = gpu_OffsetTPage(a0[3], a1, a2);
     a0[3] = r1;
@@ -1323,7 +1323,7 @@ extern s32 D_80102C00;
 extern void MulMatrix(s32 *, s32 *);
 extern void MulMatrix2(s32 *, s32 *);
 extern void MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
-extern void camera_InitMatrix(void);
+extern void func_80046F24(void);
 extern s32 func_8003E2C8(void);
 extern s32 func_8003F268(void);
 extern s32 func_80046E7C(void);
@@ -1340,7 +1340,7 @@ void func_80044504(s32 a0) {
     } else {
         *(s32 *)0x1F800014 = 0;
     }
-    camera_InitMatrix();
+    func_80046F24();
     *(s32 *)0x1F80001C = (s32)&D_80095328;
     *(s32 *)0x1F80000C = a0;
     {

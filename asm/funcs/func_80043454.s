@@ -245,7 +245,7 @@ glabel func_80043454
     /* 33FC8 800437C8 2000A897 */  lhu        $t0, 0x20($sp)
     /* 33FCC 800437CC 1000B1AF */  sw         $s1, 0x10($sp)
     /* 33FD0 800437D0 003C0800 */  sll        $a3, $t0, 16
-    /* 33FD4 800437D4 A60F010C */  jal        func_80043E98
+    /* 33FD4 800437D4 A60F010C */  jal        gpu_OffsetTPageClutAt0And4
     /* 33FD8 800437D8 033C0700 */   sra       $a3, $a3, 16
     /* 33FDC 800437DC 01000824 */  addiu      $t0, $zero, 0x1
     /* 33FE0 800437E0 0000848E */  lw         $a0, (0x1F800000 & 0xFFFF)($s4)
@@ -357,7 +357,7 @@ glabel func_80043454
     /* 34160 80043960 2000A897 */  lhu        $t0, 0x20($sp)
     /* 34164 80043964 1000B1AF */  sw         $s1, 0x10($sp)
     /* 34168 80043968 003C0800 */  sll        $a3, $t0, 16
-    /* 3416C 8004396C C30F010C */  jal        func_80043F0C
+    /* 3416C 8004396C C30F010C */  jal        gpu_OffsetTPageClutAt6And2
     /* 34170 80043970 033C0700 */   sra       $a3, $a3, 16
     /* 34174 80043974 01000824 */  addiu      $t0, $zero, 0x1
     /* 34178 80043978 0000848E */  lw         $a0, (0x1F800000 & 0xFFFF)($s4)

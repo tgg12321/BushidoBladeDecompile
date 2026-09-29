@@ -268,7 +268,7 @@ void gpu_SetDispMaskOn(void) {
 void sys_StubEmpty(void) {
 }
 
-void func_800168F8(void) {
+void rcnt_StartCnt1Wrapper(void) {
     rcnt_StartCnt1();
 }
 
@@ -313,7 +313,7 @@ void sys_Init(void) {
     g_disp_fade = 0;
     cdrom_Init();
     memcard_Init();
-    func_800168F8();
+    rcnt_StartCnt1Wrapper();
 }
 void func_80016A8C(u8 *arg0, u8 *arg1, s32 arg2) {
     Rect rect;

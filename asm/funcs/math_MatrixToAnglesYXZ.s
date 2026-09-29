@@ -1,4 +1,4 @@
-glabel func_80042FA0
+glabel math_MatrixToAnglesYXZ
     /* 337A0 80042FA0 98FFBD27 */  addiu      $sp, $sp, -0x68
     /* 337A4 80042FA4 5C00B5AF */  sw         $s5, 0x5C($sp)
     /* 337A8 80042FA8 21A88000 */  addu       $s5, $a0, $zero
@@ -80,4 +80,4 @@ glabel func_80042FA0
     /* 338D8 800430D8 6800BD27 */  addiu      $sp, $sp, 0x68
     /* 338DC 800430DC 0800E003 */  jr         $ra
     /* 338E0 800430E0 00000000 */   nop
-endlabel func_80042FA0
+endlabel math_MatrixToAnglesYXZ

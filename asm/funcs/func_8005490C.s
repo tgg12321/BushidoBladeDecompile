@@ -193,9 +193,9 @@ glabel func_8005490C
     /* 453E8 80054BE8 17FB010C */  jal        MulMatrix2
     /* 453EC 80054BEC 21280002 */   addu      $a1, $s0, $zero
     /* 453F0 80054BF0 21200002 */  addu       $a0, $s0, $zero
-    /* 453F4 80054BF4 E80B010C */  jal        func_80042FA0
+    /* 453F4 80054BF4 E80B010C */  jal        math_MatrixToAnglesYXZ
     /* 453F8 80054BF8 2128A002 */   addu      $a1, $s5, $zero
-    /* 453FC 80054BFC B60B010C */  jal        func_80042ED8
+    /* 453FC 80054BFC B60B010C */  jal        math_TransposeMatrixInPlace
     /* 45400 80054C00 21200002 */   addu      $a0, $s0, $zero
     /* 45404 80054C04 1080053C */  lui        $a1, %hi(D_80101E08)
     /* 45408 80054C08 081EA524 */  addiu      $a1, $a1, %lo(D_80101E08)

@@ -41,7 +41,7 @@ glabel func_80044504
     /* 34D9C 8004459C 801F013C */  lui        $at, (0x1F800014 >> 16)
     /* 34DA0 800445A0 140020AC */  sw         $zero, (0x1F800014 & 0xFFFF)($at)
   .L800445A4:
-    /* 34DA4 800445A4 C91B010C */  jal        camera_InitMatrix
+    /* 34DA4 800445A4 C91B010C */  jal        func_80046F24
     /* 34DA8 800445A8 00000000 */   nop
     /* 34DAC 800445AC C406838F */  lw         $v1, %gp_rel(D_800A3790)($gp)
     /* 34DB0 800445B0 0980023C */  lui        $v0, %hi(D_80095328)

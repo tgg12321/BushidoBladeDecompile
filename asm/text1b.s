@@ -3372,7 +3372,7 @@ glabel func_8004A940
     /* 3B60C 8004AE0C 0C00448E */  lw         $a0, 0xC($s2)
     /* 3B610 8004AE10 28002526 */  addiu      $a1, $s1, 0x28
     /* 3B614 8004AE14 5800468E */  lw         $a2, 0x58($s2)
-    /* 3B618 8004AE18 031C010C */  jal        camera_Transform
+    /* 3B618 8004AE18 031C010C */  jal        func_8004700C
     /* 3B61C 8004AE1C 18008424 */   addiu     $a0, $a0, 0x18
     /* 3B620 8004AE20 0A80023C */  lui        $v0, %hi(D_800A3708)
     /* 3B624 8004AE24 0837428C */  lw         $v0, %lo(D_800A3708)($v0)
@@ -12069,9 +12069,9 @@ glabel func_80052C4C
 endlabel func_80052C4C
 
 /* Handwritten function */
-nonmatching func_80052CD4, 0x20
+nonmatching gte_ReadIR1IR2Sra2, 0x20
 
-glabel func_80052CD4
+glabel gte_ReadIR1IR2Sra2
     /* 434D4 80052CD4 00480848 */  mfc2       $t0, $9 /* handwritten instruction */
     /* 434D8 80052CD8 00500948 */  mfc2       $t1, $10 /* handwritten instruction */
     /* 434DC 80052CDC 83400800 */  sra        $t0, $t0, 2
@@ -12080,7 +12080,7 @@ glabel func_80052CD4
     /* 434E8 80052CE8 0000A9AC */  sw         $t1, 0x0($a1)
     /* 434EC 80052CEC 0800E003 */  jr         $ra
     /* 434F0 80052CF0 00000000 */   nop
-endlabel func_80052CD4
+endlabel gte_ReadIR1IR2Sra2
     /* 434F4 80052CF4 00000000 */  nop
     /* 434F8 80052CF8 00000000 */  nop
     /* 434FC 80052CFC 00000000 */  nop
@@ -13561,7 +13561,7 @@ glabel func_80053E9C
     /* 44A5C 8005425C 02003126 */  addiu      $s1, $s1, 0x2
     /* 44A60 80054260 01000224 */  addiu      $v0, $zero, 0x1
     /* 44A64 80054264 E00062AC */  sw         $v0, 0xE0($v1)
-    /* 44A68 80054268 354B010C */  jal        func_80052CD4
+    /* 44A68 80054268 354B010C */  jal        gte_ReadIR1IR2Sra2
     /* 44A6C 8005426C B80066AC */   sw        $a2, 0xB8($v1)
     /* 44A70 80054270 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 44A74 80054274 1D000212 */  beq        $s0, $v0, .L800542EC
@@ -14251,9 +14251,9 @@ glabel func_8005490C
     /* 453E8 80054BE8 17FB010C */  jal        MulMatrix2
     /* 453EC 80054BEC 21280002 */   addu      $a1, $s0, $zero
     /* 453F0 80054BF0 21200002 */  addu       $a0, $s0, $zero
-    /* 453F4 80054BF4 E80B010C */  jal        func_80042FA0
+    /* 453F4 80054BF4 E80B010C */  jal        math_MatrixToAnglesYXZ
     /* 453F8 80054BF8 2128A002 */   addu      $a1, $s5, $zero
-    /* 453FC 80054BFC B60B010C */  jal        func_80042ED8
+    /* 453FC 80054BFC B60B010C */  jal        math_TransposeMatrixInPlace
     /* 45400 80054C00 21200002 */   addu      $a0, $s0, $zero
     /* 45404 80054C04 1080053C */  lui        $a1, %hi(D_80101E08)
     /* 45408 80054C08 081EA524 */  addiu      $a1, $a1, %lo(D_80101E08)

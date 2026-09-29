@@ -1523,7 +1523,7 @@ INCLUDE_ASM("asm/funcs", func_80052C10);
 PAD_NOPS_1; /* padding after InitFadePanel */
 INCLUDE_ASM("asm/funcs", func_80052C28);
 INCLUDE_ASM("asm/funcs", func_80052C4C);
-INCLUDE_ASM("asm/funcs", func_80052CD4);
+INCLUDE_ASM("asm/funcs", gte_ReadIR1IR2Sra2);
 PAD_NOPS_3; /* padding after func_80052CD4 */
 extern s32 D_800A33F4;
 extern s32 func_80053694(s32 *, s16 *);
@@ -1836,7 +1836,7 @@ extern s32 D_800A33F0;
 extern s32 D_800A33F4;
 extern s32 gte_SumSquares3(s32, s32, s32);
 extern void func_80052C4C(s32, s32, s32, s32);
-extern void func_80052CD4(s32 *, s32 *);
+extern void gte_ReadIR1IR2Sra2(s32 *, s32 *);
 
 s32 func_80053754(s32 arg0, s32 arg1) {
     s32 n;
@@ -2031,7 +2031,7 @@ s32 func_80053E9C(s32 arg0, s32 arg1) {
             data += 2;
             W->unkE0 = 1;
             W->unkB8 = y;
-            func_80052CD4(&W->unkC4, &W->unkC8);
+            gte_ReadIR1IR2Sra2(&W->unkC4, &W->unkC8);
             while (--n != -1) {
                 W->unkBC = *(s16 *)data;
                 data += 2;

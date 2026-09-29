@@ -480,7 +480,7 @@ void _SsSeqPlay(s16 a0, s16 a1) {
     }
 }
 /* kengo:MED  |  sa_tan4/saTan4GaugeInit  |  66i */
-void func_80084A7C(s16 a0, s16 a1) {
+void _SsSeqGetEof(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&_ss_score;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
@@ -576,7 +576,7 @@ s32 func_80084CC0(s16 a0, s16 a1)
   {
     if (((s32) (ptr + 1)) == ((*((s32 *) (state + 0x10))) + 1))
     {
-      ((void (*)(s16, s16, u8, u8 *)) func_80084A7C)(a0, a1, ((u8 *) (*((s32 *) (state + 0x10))))[1], ptr);
+      ((void (*)(s16, s16, u8, u8 *)) _SsSeqGetEof)(a0, a1, ((u8 *) (*((s32 *) (state + 0x10))))[1], ptr);
       return -1;
     }
   }
@@ -628,7 +628,7 @@ s32 func_80084CC0(s16 a0, s16 a1)
         if (databyte == 0x2F)
       {
         ret = 1;
-        ((void (*)(s16, s16, u8, u8 *)) func_80084A7C)(a0, a1, 0x2F, ptr);
+        ((void (*)(s16, s16, u8, u8 *)) _SsSeqGetEof)(a0, a1, 0x2F, ptr);
         goto end;
       }
         D_800F334C(a0, a1, databyte);
@@ -672,7 +672,7 @@ s32 func_80084CC0(s16 a0, s16 a1)
         if (next == 0x2F)
       {
         ret = 1;
-        ((void (*)(s16, s16, u8, u8 *)) func_80084A7C)(a0, a1, 0x2F, ptr);
+        ((void (*)(s16, s16, u8, u8 *)) _SsSeqGetEof)(a0, a1, 0x2F, ptr);
         goto end;
       }
         D_800F334C(a0, a1, b);

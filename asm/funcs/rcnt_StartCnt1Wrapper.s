@@ -1,4 +1,4 @@
-glabel func_800168F8
+glabel rcnt_StartCnt1Wrapper
     /* 70F8 800168F8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 70FC 800168FC 1000BFAF */  sw         $ra, 0x10($sp)
     /* 7100 80016900 BA1A010C */  jal        rcnt_StartCnt1
@@ -7,4 +7,4 @@ glabel func_800168F8
     /* 710C 8001690C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7110 80016910 0800E003 */  jr         $ra
     /* 7114 80016914 00000000 */   nop
-endlabel func_800168F8
+endlabel rcnt_StartCnt1Wrapper

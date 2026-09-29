@@ -22,7 +22,7 @@ glabel func_80016A18
     /* 7268 80016A68 00000000 */   nop
     /* 726C 80016A6C 7BDD000C */  jal        memcard_Init
     /* 7270 80016A70 00000000 */   nop
-    /* 7274 80016A74 3E5A000C */  jal        func_800168F8
+    /* 7274 80016A74 3E5A000C */  jal        rcnt_StartCnt1Wrapper
     /* 7278 80016A78 00000000 */   nop
     /* 727C 80016A7C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 7280 80016A80 1800BD27 */  addiu      $sp, $sp, 0x18

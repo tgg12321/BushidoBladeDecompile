@@ -395,7 +395,7 @@ void *stage_GetDataPtr(void) {
     return &g_stage_data;
 }
 
-void camera_InitMatrix(void) {
+void func_80046F24(void) {
     s32 num = (s32)g_cam_fov_x << 12;
     s32 div = g_cam_fov_div;
     s32 v0 = num / div;
@@ -414,7 +414,7 @@ void camera_InitMatrix(void) {
     D_800EEDB2 = v0;
     D_800EEDBE = v1;
 }
-void camera_Transform(s32 *a0, s32 *a1, s32 a2) {
+void func_8004700C(s32 *a0, s32 *a1, s32 a2) {
     s32 new_var;
     s32 diff, prod;
     gte_MulMatrix0ClearTrans(&g_cam_matrix, a0, a1);

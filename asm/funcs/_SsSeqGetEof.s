@@ -1,4 +1,4 @@
-glabel func_80084A7C
+glabel _SsSeqGetEof
     /* 7527C 80084A7C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 75280 80084A80 00140400 */  sll        $v0, $a0, 16
     /* 75284 80084A84 1080033C */  lui        $v1, %hi(_ss_score)
@@ -153,4 +153,4 @@ glabel func_80084A7C
     /* 754B4 80084CB4 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 754B8 80084CB8 0800E003 */  jr         $ra
     /* 754BC 80084CBC 00000000 */   nop
-endlabel func_80084A7C
+endlabel _SsSeqGetEof

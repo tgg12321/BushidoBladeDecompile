@@ -1,4 +1,4 @@
-glabel func_80043E98
+glabel gpu_OffsetTPageClutAt0And4
     /* 34698 80043E98 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 3469C 80043E9C 1800B2AF */  sw         $s2, 0x18($sp)
     /* 346A0 80043EA0 21908000 */  addu       $s2, $a0, $zero
@@ -28,4 +28,4 @@ glabel func_80043E98
     /* 34700 80043F00 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 34704 80043F04 0800E003 */  jr         $ra
     /* 34708 80043F08 00000000 */   nop
-endlabel func_80043E98
+endlabel gpu_OffsetTPageClutAt0And4

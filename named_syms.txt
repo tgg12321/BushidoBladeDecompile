@@ -539,8 +539,8 @@ func_80046DA8         = 0x80046DA8;  /* 15-insn stage init calling game_InitStag
 /* RESET 0x80046EA0: retired name 'game_InitStageSound_80046EA0' — preserved note: 15-insn calling DispHira + stage_GetId + tslLineG5Init */
 game_StageCleanup_80046EDC      = 0x80046EDC;  /* 14-insn cleanup */
 /* Camera (4) */
-camera_InitMatrix_80046F24      = 0x80046F24;  /* 58-insn writing to D_800EEDB[4-C] matrix fields */
-camera_Transform_8004700C       = 0x8004700C;  /* 41-insn transform using D_800EEDB[0246] */
+func_80046F24      = 0x80046F24;  /* 58-insn writing to D_800EEDB[4-C] matrix fields */
+/* RESET 0x8004700C: retired name 'camera_Transform_8004700C' — preserved note: 41-insn transform using D_800EEDB[0246] */
 camera_InitRotation_800472C0    = 0x800472C0;  /* 49-insn rotation init referencing D_800F66A0 */
 camera_CalcAngles_80047384      = 0x80047384;  /* 58-insn angle calc using replay_camera_rob_back_loose3 + single_game_getEnemyCharId (previously proposed as camera_replay_compute_rot_80047384 in batch 6) */
 /* Position-distinct wrapper-grid duplicates (5; bodies identical to earlier-adopted siblings) */
@@ -3192,7 +3192,7 @@ motion_helper_80061C00                             = 0x80061C00;  /* first-pass 
 motion_helper_80061D74                             = 0x80061D74;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
 motion_helper_80061EC0                             = 0x80061EC0;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
 disphira_helper_80061FAC                           = 0x80061FAC;  /* first-pass subsystem tag (disphira); <-DispHira_helper_800620B8 */
-se_helper_80062020                                 = 0x80062020;  /* first-pass subsystem tag (se); <-se_CalcPitchShift_8005BA8C */
+/* RESET 0x80062020: retired name 'se_helper_80062020' — preserved note: first-pass subsystem tag (se); <-se_CalcPitchShift_8005BA8C */
 efc_helper_800676C8                                = 0x800676C8;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */
 efc_helper_80067704                                = 0x80067704;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */
 efc_helper_80067740                                = 0x80067740;  /* first-pass subsystem tag (efc); ->efc_init_phase1_setup_buffer_800678A8;->efc_init_phase2_randomize_80067D14 */

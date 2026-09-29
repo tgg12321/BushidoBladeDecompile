@@ -1,4 +1,4 @@
-glabel func_80052CD4
+glabel gte_ReadIR1IR2Sra2
     mfc2   $t0, $9
     mfc2   $t1, $10
     sra    $t0, $t0, 2

@@ -1,4 +1,4 @@
-glabel func_80043F0C
+glabel gpu_OffsetTPageClutAt6And2
     /* 3470C 80043F0C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 34710 80043F10 1800B2AF */  sw         $s2, 0x18($sp)
     /* 34714 80043F14 21908000 */  addu       $s2, $a0, $zero
@@ -28,4 +28,4 @@ glabel func_80043F0C
     /* 34774 80043F74 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 34778 80043F78 0800E003 */  jr         $ra
     /* 3477C 80043F7C 00000000 */   nop
-endlabel func_80043F0C
+endlabel gpu_OffsetTPageClutAt6And2

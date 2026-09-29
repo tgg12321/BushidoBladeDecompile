@@ -1379,7 +1379,6 @@ D_800A37F4 = 0x800A37F4;
 g_memcard_sw_event_timeout = 0x800A37FC;  /* data-wave 2026-09-24: was D_800A37FC */
 InfoPosYTbl1 = 0x80099D54;
 camera_GetBoneData = 0x800472B0;
-camera_InitMatrix = 0x80046F24;
 camera_InitRotation = 0x800472C0;
 chractar_use_pset_combo_id_table = 0x8009BA7C;
 file_GetFlag2 = 0x800167D4;

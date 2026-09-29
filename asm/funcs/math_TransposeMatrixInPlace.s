@@ -1,4 +1,4 @@
-glabel func_80042ED8
+glabel math_TransposeMatrixInPlace
     /* 336D8 80042ED8 0C008694 */  lhu        $a2, 0xC($a0)
     /* 336DC 80042EDC 04008594 */  lhu        $a1, 0x4($a0)
     /* 336E0 80042EE0 02008394 */  lhu        $v1, 0x2($a0)
@@ -13,4 +13,4 @@ glabel func_80042ED8
     /* 33704 80042F04 0E0082A4 */  sh         $v0, 0xE($a0)
     /* 33708 80042F08 0800E003 */  jr         $ra
     /* 3370C 80042F0C 0A0086A4 */   sh        $a2, 0xA($a0)
-endlabel func_80042ED8
+endlabel math_TransposeMatrixInPlace
