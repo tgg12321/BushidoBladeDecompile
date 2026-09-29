@@ -1,0 +1,18 @@
+
+tmp/func_8002A458/r11v/final.c           score    0   insns 416/416
+tmp/func_8002A458/r11v/onevar_full.c     score   50   insns 417/416
+tmp/func_8002A458/r11v/dxyz_hit_own.c    score    6   insns 416/416
+tmp/func_8002A458/r11v/dxyz_obj_own.c    score    6   insns 416/416
+tmp/func_8002A458/r11v/dxyz_hitobj_shared_trio.c score   37   insns 417/416
+tmp/func_8002A458/r11v/dxyz_all_own.c    score   37   insns 417/416
+tmp/func_8002A458/r11v/dx_only_split.c   score   26   insns 416/416
+tmp/func_8002A458/r11v/dy_only_split.c   score   34   insns 416/416
+tmp/func_8002A458/r11v/dz_only_split.c   score   40   insns 416/416
+tmp/func_8002A458/r11v/temp_sum_own.c    score   15   insns 417/416
+tmp/func_8002A458/r11v/temp_r1_own.c     score    0   insns 416/416
+tmp/func_8002A458/r11v/temp_r2_own.c     score   15   insns 417/416
+tmp/func_8002A458/r11v/temp_all_own.c    score   15   insns 417/416
+tmp/func_8002A458/r11v/temp2_split.c     score    2   insns 416/416
+tmp/func_8002A458/pc1_noisland.c         score   70   insns 402/416
+tmp/func_8002A458/pc3_inline_c.c         score    8   insns 412/416
+

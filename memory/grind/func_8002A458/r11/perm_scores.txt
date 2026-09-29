@@ -1,0 +1,26 @@
+
+tmp/func_8002A458/perm/output-395-1.c    score   33   insns 416/416
+tmp/func_8002A458/perm/output-545-1.c    score   38   insns 416/416
+tmp/func_8002A458/perm/output-548-1.c    score   36   insns 416/416
+tmp/func_8002A458/perm/output-550-1.c    score   48   insns 416/416
+tmp/func_8002A458/perm/output-580-1.c    score   45   insns 416/416
+tmp/func_8002A458/perm/output-586-1.c    score   52   insns 416/416
+tmp/func_8002A458/perm/output-590-1.c    score   47   insns 416/416
+tmp/func_8002A458/perm/output-595-1.c    score   34   insns 416/416
+tmp/func_8002A458/perm/output-600-1.c    score   47   insns 416/416
+tmp/func_8002A458/perm/output-600-2.c    score   47   insns 416/416
+tmp/func_8002A458/perm/output-603-1.c    score   36   insns 414/416
+tmp/func_8002A458/perm/output-610-1.c    score   50   insns 416/416
+tmp/func_8002A458/perm/output-610-2.c    score   50   insns 416/416
+tmp/func_8002A458/perm/output-646-1.c    score   41   insns 414/416
+tmp/func_8002A458/perm/output-655-1.c    score   50   insns 417/416
+tmp/func_8002A458/perm/output-660-1.c    score   50   insns 417/416
+tmp/func_8002A458/perm/output-660-2.c    score   50   insns 417/416
+tmp/func_8002A458/perm/output-690-1.c    score   47   insns 417/416
+tmp/func_8002A458/perm/output-690-2.c    score   60   insns 416/416
+tmp/func_8002A458/perm/output-690-3.c    score   47   insns 417/416
+tmp/func_8002A458/perm/output-690-4.c    score   47   insns 417/416
+tmp/func_8002A458/perm/output-702-1.c    score   62   insns 416/416
+tmp/func_8002A458/perm/output-710-1.c    score   48   insns 414/416
+tmp/func_8002A458/perm/output-710-2.c    score   51   insns 417/416
+

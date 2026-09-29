@@ -1,0 +1,7 @@
+
+tmp/func_8002A458/r11v/M1_dxyz_split_dowhile.c score   89   insns 417/416
+tmp/func_8002A458/r11v/M2_dxyz_split_selfassign.c score   37   insns 417/416
+tmp/func_8002A458/r11v/M3_temp_split_chainext.c score   15   insns 417/416
+tmp/func_8002A458/r11v/M4_temp2_split_u32.c score    2   insns 416/416
+tmp/func_8002A458/r11v/M5_temp2_split_rangeext.c score    2   insns 416/416
+
