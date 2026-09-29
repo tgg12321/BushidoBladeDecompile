@@ -31,8 +31,8 @@ glabel func_800525D8
   .L80052648:
     /* 42E48 80052648 C0FF8C21 */  addi       $t4, $t4, -0x40 /* handwritten instruction */
     /* 42E4C 8005264C 40600C00 */  sll        $t4, $t4, 1
-    /* 42E50 80052650 01800D3C */  lui        $t5, %hi(D_800154A0)
-    /* 42E54 80052654 A054AD25 */  addiu      $t5, $t5, %lo(D_800154A0)
+    /* 42E50 80052650 01800D3C */  lui        $t5, %hi(g_rsqrt_table)
+    /* 42E54 80052654 A054AD25 */  addiu      $t5, $t5, %lo(g_rsqrt_table)
     /* 42E58 80052658 2168AC01 */  addu       $t5, $t5, $t4
     /* 42E5C 8005265C 0000AD85 */  lh         $t5, 0x0($t5)
     /* 42E60 80052660 00000000 */  nop

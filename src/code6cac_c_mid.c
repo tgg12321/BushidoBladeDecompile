@@ -1794,7 +1794,7 @@ poll:
     goto overflow;
 success:
     a1 = g_comb_recv_buf;
-    a0 = D_800A368C;
+    a0 = g_comb_recv_buf_plus_0x4;
     v0 = a1 ^ (a1 >> 16);
     v0 = v0 ^ (a0 >> 16);
     v0 = v0 & 0xFFFF;
@@ -1824,7 +1824,7 @@ extern s16 D_800A36C2;
 extern s32 D_800A36D0;
 extern s16 D_800A36D2;
 extern s32 D_800A36D4;
-extern s32 D_800A369C;
+extern s32 g_comb_send_buf_plus_0x4;
 extern u16 D_800A37C4;
 extern u8 D_800A3916;
 extern s32 D_800A3908;
@@ -1883,7 +1883,7 @@ void func_8003A728(s32 a0) {
         packed = packed ^ (hi16 >> 16);
         packed = packed & 0xFFFF;
         hi16 = hi16 | packed;
-        D_800A369C = hi16;
+        g_comb_send_buf_plus_0x4 = hi16;
         flag = D_800A3916;
 
         if (flag != 0) {
@@ -1954,7 +1954,7 @@ void func_8003A728(s32 a0) {
         }
         D_800A3916 = 0;
         D_800A36D0 = g_comb_send_buf;
-        D_800A36D4 = D_800A369C;
+        D_800A36D4 = g_comb_send_buf_plus_0x4;
     } else {
         D_800A3870 = 0;
     }

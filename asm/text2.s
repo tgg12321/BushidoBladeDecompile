@@ -5583,9 +5583,9 @@ glabel ratan2
     /* 70610 8007FE10 00000000 */  nop
     /* 70614 8007FE14 40100400 */  sll        $v0, $a0, 1
   .L8007FE18:
-    /* 70618 8007FE18 0A80013C */  lui        $at, %hi(D_800A0928)
+    /* 70618 8007FE18 0A80013C */  lui        $at, %hi(ratan_tbl)
     /* 7061C 8007FE1C 21082200 */  addu       $at, $at, $v0
-    /* 70620 8007FE20 28092384 */  lh         $v1, %lo(D_800A0928)($at)
+    /* 70620 8007FE20 28092384 */  lh         $v1, %lo(ratan_tbl)($at)
     /* 70624 8007FE24 AEFF0108 */  j          .L8007FEB8
     /* 70628 8007FE28 00000000 */   nop
   .L8007FE2C:
@@ -5625,9 +5625,9 @@ glabel ratan2
     /* 7069C 8007FE9C 00000000 */  nop
     /* 706A0 8007FEA0 40100400 */  sll        $v0, $a0, 1
   .L8007FEA4:
-    /* 706A4 8007FEA4 0A80013C */  lui        $at, %hi(D_800A0928)
+    /* 706A4 8007FEA4 0A80013C */  lui        $at, %hi(ratan_tbl)
     /* 706A8 8007FEA8 21082200 */  addu       $at, $at, $v0
-    /* 706AC 8007FEAC 28092384 */  lh         $v1, %lo(D_800A0928)($at)
+    /* 706AC 8007FEAC 28092384 */  lh         $v1, %lo(ratan_tbl)($at)
     /* 706B0 8007FEB0 00040224 */  addiu      $v0, $zero, 0x400
     /* 706B4 8007FEB4 23184300 */  subu       $v1, $v0, $v1
   .L8007FEB8:

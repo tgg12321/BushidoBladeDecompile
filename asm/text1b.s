@@ -11558,8 +11558,8 @@ glabel func_800525D8
   .L80052648:
     /* 42E48 80052648 C0FF8C21 */  addi       $t4, $t4, -0x40 /* handwritten instruction */
     /* 42E4C 8005264C 40600C00 */  sll        $t4, $t4, 1
-    /* 42E50 80052650 01800D3C */  lui        $t5, %hi(D_800154A0)
-    /* 42E54 80052654 A054AD25 */  addiu      $t5, $t5, %lo(D_800154A0)
+    /* 42E50 80052650 01800D3C */  lui        $t5, %hi(g_rsqrt_table)
+    /* 42E54 80052654 A054AD25 */  addiu      $t5, $t5, %lo(g_rsqrt_table)
     /* 42E58 80052658 2168AC01 */  addu       $t5, $t5, $t4
     /* 42E5C 8005265C 0000AD85 */  lh         $t5, 0x0($t5)
     /* 42E60 80052660 00000000 */  nop
@@ -11588,8 +11588,8 @@ glabel math_SquareRoot0
     /* 42EA4 800526A4 1A008010 */  beqz       $a0, .L80052710
     /* 42EA8 800526A8 1F000824 */   addiu     $t0, $zero, 0x1F
     /* 42EAC 800526AC 00F80248 */  mfc2       $v0, $31 /* handwritten instruction */
-    /* 42EB0 800526B0 0180093C */  lui        $t1, %hi(D_80015620)
-    /* 42EB4 800526B4 20562925 */  addiu      $t1, $t1, %lo(D_80015620)
+    /* 42EB0 800526B0 0180093C */  lui        $t1, %hi(g_sqrt_table)
+    /* 42EB4 800526B4 20562925 */  addiu      $t1, $t1, %lo(g_sqrt_table)
     /* 42EB8 800526B8 1E004230 */  andi       $v0, $v0, 0x1E
     /* 42EBC 800526BC E8FF4820 */  addi       $t0, $v0, -0x18 /* handwritten instruction */
     /* 42EC0 800526C0 07000005 */  bltz       $t0, .L800526E0

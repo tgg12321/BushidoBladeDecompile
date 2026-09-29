@@ -33,7 +33,7 @@ extern s32 _spu_trans_mode;
 extern s32 EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
 extern void AddDrv(s32 *);
-extern s32 g_snd_callback;
+extern s32 D_800A307C;
 
 extern s32 TestEvent(s32);
 extern s32 _spu_init(s32);
@@ -50,7 +50,7 @@ extern s32 _spu_rev_attr_plus_0xC;
 extern s32 _spu_rev_attr_plus_0x10;
 extern volatile s32 _spu_RQvoice; /* _spu_RQvoice — Ruling-4 grant (volatile_extern_allowlist.txt:44) */
 extern volatile s32 _spu_RQmask;
-extern s16 D_800A28D2;
+extern s16 _spu_voice_centerNote_plus_0x2E;
 extern volatile s32 _spu_env;
 
 extern s32 _spu_AllocBlockNum;
@@ -67,8 +67,8 @@ extern s32 _spu_rev_startaddr[]; /* _spu_rev_startaddr */
 extern s32 _spu_zerobuf;
 extern s32 _spu_transMode;
 extern s32 _spu_mem_mode_plus;
-extern s32 D_800A2D00;
-extern s32 D_800A2D08;
+extern s32 _spu_mem_mode;
+extern s32 _spu_mem_mode_unit;
 extern s32 _spu_mem_mode_unitM;
 extern volatile u32 *D_800A2CEC;
 extern volatile s32 _spu_transferCallback;
@@ -83,7 +83,7 @@ typedef union {
     volatile u16 raw[0x100];
 } SpuUnion;
 extern SpuUnion D_800F7298;
-extern s32 D_800A2CFC;
+extern s32 _spu_addrMode;
 extern u16 _spu_tsa;
 extern s32 _spu_inTransfer;
 extern s32 _spu_IRQCallback;
@@ -2083,7 +2083,7 @@ void _SpuInit(s32 arg0) {
     val = 0xC000;
     if (arg0 == 0) {
         var_v1 = 0x17;
-        var_v0 = (u16 *)&D_800A28D2;
+        var_v0 = (u16 *)&_spu_voice_centerNote_plus_0x2E;
         do {
             *var_v0 = val;
             var_v1 -= 1;
@@ -2144,7 +2144,7 @@ s32 _spu_init(s32 a0) {
     *D_800A2CEC |= 0xB0000;
 
     _spu_transMode = 0;
-    D_800A2CFC = 0;
+    _spu_addrMode = 0;
     _spu_tsa = 0;
     *(volatile u16 *)(_spu_RXX + 0x180) = 0;
     *(volatile u16 *)(_spu_RXX + 0x182) = 0;
@@ -2165,9 +2165,9 @@ s32 _spu_init(s32 a0) {
     }
 
     channel = 0;
-    D_800A2D00 = 2;
+    _spu_mem_mode = 2;
     _spu_mem_mode_plus = 3;
-    D_800A2D08 = 8;
+    _spu_mem_mode_unit = 8;
     _spu_mem_mode_unitM = 7;
     *(volatile u16 *)(_spu_RXX + 0x1AC) = 4;
     *(volatile u16 *)(_spu_RXX + 0x184) = 0;
@@ -2470,8 +2470,8 @@ void _spu_FsetRXX(s32 arg0, u32 arg1, s32 arg2) {
 }
 s32 _spu_FsetRXXa(s32 mode, s32 val) {
     s32 aligned;
-    if (D_800A2D00 != 0) {
-        u32 step = D_800A2D08;
+    if (_spu_mem_mode != 0) {
+        u32 step = _spu_mem_mode_unit;
         if ((u32)val % step != 0) {
             val += step;
             val &= ~_spu_mem_mode_unitM;
@@ -3672,7 +3672,7 @@ typedef struct {
     /* 0x3C */ u16 adsr2;
 } SpuVoiceAttr;
 
-extern u16 D_800A28A4[];
+extern u16 _spu_voice_centerNote[];
 
 void func_8008B488(SpuVoiceAttr *attr) {
     volatile s32 i;
@@ -3698,13 +3698,13 @@ void func_8008B488(SpuVoiceAttr *attr) {
             *(volatile u16 *)(_spu_RXX + (pos + 2) * 2) = attr->pitch;
         }
         if (bSetAll || (mask & 0x40)) {
-            D_800A28A4[voice] = attr->sample_note;
+            _spu_voice_centerNote[voice] = attr->sample_note;
         }
         if (bSetAll || (mask & 0x20)) {
             u16 center;
             u16 note;
 
-            center = D_800A28A4[voice];
+            center = _spu_voice_centerNote[voice];
             note = attr->note;
             *(volatile u16 *)(_spu_RXX + (pos + 2) * 2) =
                 _spu_note2pitch(center >> 8, center & 0xFF, note >> 8, note & 0xFF);
@@ -4089,7 +4089,7 @@ void SpuGetVoiceEnvelope(s32 a0, u16 *a1) {
 void AddCOMB(void) {
     s32 v0;
     v0 = EnterCriticalSection();
-    AddDrv(&g_snd_callback);
+    AddDrv(&D_800A307C);
     if (v0 == 1) {
         ExitCriticalSection();
     }
@@ -4412,10 +4412,10 @@ __asm__(
     "    .word 0x8003C8B4\n"
     "    .word 0x8003CCCC\n"
     "    .word 0x8003CD10\n"
-    ".global g_module_type_tbl\n"
-    ".type g_module_type_tbl, @function\n"
-    "g_module_type_tbl:\n"
-    "    .aent g_module_type_tbl\n"
+    ".global g_sqrt_table_u8\n"
+    ".type g_sqrt_table_u8, @function\n"
+    "g_sqrt_table_u8:\n"
+    "    .aent g_sqrt_table_u8\n"
     "    .word 0x0D0B0800\n"
     "    .word 0x15131110\n"
     "endlabel DelDrv\n"

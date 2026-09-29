@@ -1,11 +1,11 @@
 glabel _spu_FsetRXXa
-    /* 798D4 800890D4 0A80023C */  lui        $v0, %hi(D_800A2D00)
-    /* 798D8 800890D8 002D428C */  lw         $v0, %lo(D_800A2D00)($v0)
+    /* 798D4 800890D4 0A80023C */  lui        $v0, %hi(_spu_mem_mode)
+    /* 798D8 800890D8 002D428C */  lw         $v0, %lo(_spu_mem_mode)($v0)
     /* 798DC 800890DC 00000000 */  nop
     /* 798E0 800890E0 11004010 */  beqz       $v0, .L80089128
     /* 798E4 800890E4 21308000 */   addu      $a2, $a0, $zero
-    /* 798E8 800890E8 0A80043C */  lui        $a0, %hi(D_800A2D08)
-    /* 798EC 800890EC 082D848C */  lw         $a0, %lo(D_800A2D08)($a0)
+    /* 798E8 800890E8 0A80043C */  lui        $a0, %hi(_spu_mem_mode_unit)
+    /* 798EC 800890EC 082D848C */  lw         $a0, %lo(_spu_mem_mode_unit)($a0)
     /* 798F0 800890F0 00000000 */  nop
     /* 798F4 800890F4 1B00A400 */  divu       $zero, $a1, $a0
     /* 798F8 800890F8 02008014 */  bnez       $a0, .L80089104

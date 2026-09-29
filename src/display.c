@@ -3438,7 +3438,7 @@ typedef struct GameObj {
     s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
     s16 field_FA; s32 field_FC;
 } GameObj;
-extern s16 D_800A0928[];
+extern s16 ratan_tbl[];
 
 /* PsyQ LIBGTE ratan: ratan2 â€” verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp psxsdk (table-lookup atan2) */
@@ -3471,14 +3471,14 @@ s32 ratan2(s32 arg0, s32 arg1) {
         } else {
             idx = (var_a0 << 0xA) / var_a1;
         }
-        var_v1 = D_800A0928[idx];
+        var_v1 = ratan_tbl[idx];
     } else {
         if (var_a1 & 0x7FE00000) {
             idx = var_a1 / (var_a0 >> 0xA);
         } else {
             idx = (var_a1 << 0xA) / var_a0;
         }
-        var_v1 = 0x400 - D_800A0928[idx];
+        var_v1 = 0x400 - ratan_tbl[idx];
     }
     if (var_a2 != 0) {
         var_v1 = 0x800 - var_v1;

@@ -62,8 +62,8 @@ glabel comb_WaitRead8
     /* 2AE84 8003A684 00F2043C */   lui       $a0, (0xF2000001 >> 16)
   .L8003A688:
     /* 2AE88 8003A688 BC05858F */  lw         $a1, %gp_rel(g_comb_recv_buf)($gp)
-    /* 2AE8C 8003A68C 0A80043C */  lui        $a0, %hi(D_800A368C)
-    /* 2AE90 8003A690 8C36848C */  lw         $a0, %lo(D_800A368C)($a0)
+    /* 2AE8C 8003A68C 0A80043C */  lui        $a0, %hi(g_comb_recv_buf_plus_0x4)
+    /* 2AE90 8003A690 8C36848C */  lw         $a0, %lo(g_comb_recv_buf_plus_0x4)($a0)
     /* 2AE94 8003A694 03140500 */  sra        $v0, $a1, 16
     /* 2AE98 8003A698 2610A200 */  xor        $v0, $a1, $v0
     /* 2AE9C 8003A69C 031C0400 */  sra        $v1, $a0, 16

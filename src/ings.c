@@ -40,7 +40,7 @@ extern u32 g_gpu_clear_rect;
 extern u8 g_file_data_buf[];
 extern u8 g_gpu_db;
 extern u8 g_gpu_db_plus_0x18;
-extern u32 D_800F5370;
+extern u32 g_scratchpad_save;
 extern u8 g_str_overflow;
 extern u8 g_str_eff_init;
 
@@ -982,14 +982,14 @@ void obj_AddValue(s32 a0, s32 a1) {
 }
 void scratchpad_Save(void) {
     vu32 *src = (vu32 *)0x1F800000;
-    u32 *dst = (u32 *)&D_800F5370;
+    u32 *dst = (u32 *)&g_scratchpad_save;
     u32 i;
     for (i = 0; i < 0xF8; i++) {
         *dst++ = *src++;
     }
 }
 void scratchpad_Restore(void) {
-    u32 *src = (u32 *)&D_800F5370;
+    u32 *src = (u32 *)&g_scratchpad_save;
     vu32 *dst = (vu32 *)0x1F800000;
     u32 i;
     for (i = 0; i < 0xF8; i++) {

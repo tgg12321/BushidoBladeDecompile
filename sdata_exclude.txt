@@ -17,7 +17,7 @@ func_8003993C: D_800A3834, D_800A38DC
 comb_ResetClose: D_800A3834
 comb_Write8: g_comb_send_buf
 comb_Read8: g_comb_recv_buf
-comb_WaitRead8: D_800A368C, D_800A36C4
+comb_WaitRead8: g_comb_recv_buf_plus_0x4, D_800A36C4
 func_8003CE18: D_800A3834
 func_8003CF84: D_800A3834, D_800A38DC
 func_8003D330: g_gpu_ot_ptr

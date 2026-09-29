@@ -47,7 +47,7 @@ glabel DelDrv
     /* 7D90C 8008D10C B4C80380 */  lb         $v1, -0x374C($zero)
     /* 7D910 8008D110 CCCC0380 */  lb         $v1, -0x3334($zero)
     /* 7D914 8008D114 10CD0380 */  lb         $v1, -0x32F0($zero)
-  alabel D_8008D118
+  alabel g_sqrt_table_u8
     /* 7D918 8008D118 00080B0D */  jal        func_842C2000
     /* 7D91C 8008D11C 10111315 */   bne       $t0, $s3, .L80091560
 endlabel DelDrv

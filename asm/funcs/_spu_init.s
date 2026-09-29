@@ -14,8 +14,8 @@ glabel _spu_init
     /* 78F70 80088770 DC2C428C */  lw         $v0, %lo(_spu_RXX)($v0)
     /* 78F74 80088774 0A80013C */  lui        $at, %hi(_spu_transMode)
     /* 78F78 80088778 F82C20AC */  sw         $zero, %lo(_spu_transMode)($at)
-    /* 78F7C 8008877C 0A80013C */  lui        $at, %hi(D_800A2CFC)
-    /* 78F80 80088780 FC2C20AC */  sw         $zero, %lo(D_800A2CFC)($at)
+    /* 78F7C 8008877C 0A80013C */  lui        $at, %hi(_spu_addrMode)
+    /* 78F80 80088780 FC2C20AC */  sw         $zero, %lo(_spu_addrMode)($at)
     /* 78F84 80088784 0A80013C */  lui        $at, %hi(_spu_tsa)
     /* 78F88 80088788 F42C20A4 */  sh         $zero, %lo(_spu_tsa)($at)
     /* 78F8C 8008878C 800140A4 */  sh         $zero, 0x180($v0)
@@ -61,14 +61,14 @@ glabel _spu_init
     /* 7901C 8008881C 0F80053C */  lui        $a1, %hi(_spu_RQ)
     /* 79020 80088820 2074A524 */  addiu      $a1, $a1, %lo(_spu_RQ)
     /* 79024 80088824 02000224 */  addiu      $v0, $zero, 0x2
-    /* 79028 80088828 0A80013C */  lui        $at, %hi(D_800A2D00)
-    /* 7902C 8008882C 002D22AC */  sw         $v0, %lo(D_800A2D00)($at)
+    /* 79028 80088828 0A80013C */  lui        $at, %hi(_spu_mem_mode)
+    /* 7902C 8008882C 002D22AC */  sw         $v0, %lo(_spu_mem_mode)($at)
     /* 79030 80088830 03000224 */  addiu      $v0, $zero, 0x3
     /* 79034 80088834 0A80013C */  lui        $at, %hi(_spu_mem_mode_plus)
     /* 79038 80088838 042D22AC */  sw         $v0, %lo(_spu_mem_mode_plus)($at)
     /* 7903C 8008883C 08000224 */  addiu      $v0, $zero, 0x8
-    /* 79040 80088840 0A80013C */  lui        $at, %hi(D_800A2D08)
-    /* 79044 80088844 082D22AC */  sw         $v0, %lo(D_800A2D08)($at)
+    /* 79040 80088840 0A80013C */  lui        $at, %hi(_spu_mem_mode_unit)
+    /* 79044 80088844 082D22AC */  sw         $v0, %lo(_spu_mem_mode_unit)($at)
     /* 79048 80088848 07000224 */  addiu      $v0, $zero, 0x7
     /* 7904C 8008884C 0A80013C */  lui        $at, %hi(_spu_mem_mode_unitM)
     /* 79050 80088850 0C2D22AC */  sw         $v0, %lo(_spu_mem_mode_unitM)($at)

@@ -1,7 +1,7 @@
 glabel func_80017F28
     /* 8728 80017F28 801F053C */  lui        $a1, (0x1F800000 >> 16)
-    /* 872C 80017F2C 0F80043C */  lui        $a0, %hi(D_800F5370)
-    /* 8730 80017F30 70538424 */  addiu      $a0, $a0, %lo(D_800F5370)
+    /* 872C 80017F2C 0F80043C */  lui        $a0, %hi(g_scratchpad_save)
+    /* 8730 80017F30 70538424 */  addiu      $a0, $a0, %lo(g_scratchpad_save)
     /* 8734 80017F34 21180000 */  addu       $v1, $zero, $zero
   .L80017F38:
     /* 8738 80017F38 0000A28C */  lw         $v0, (0x1F800000 & 0xFFFF)($a1)

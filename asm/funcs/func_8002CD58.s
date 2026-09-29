@@ -101,9 +101,9 @@ glabel func_8002CD58
     /* 1D6E4 8002CEE4 0004822C */  sltiu      $v0, $a0, 0x400
     /* 1D6E8 8002CEE8 06004010 */  beqz       $v0, .L8002CF04
     /* 1D6EC 8002CEEC 00000000 */   nop
-    /* 1D6F0 8002CEF0 0980013C */  lui        $at, %hi(D_8008D118)
+    /* 1D6F0 8002CEF0 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* 1D6F4 8002CEF4 21082400 */  addu       $at, $at, $a0
-    /* 1D6F8 8002CEF8 18D12290 */  lbu        $v0, %lo(D_8008D118)($at)
+    /* 1D6F8 8002CEF8 18D12290 */  lbu        $v0, %lo(g_sqrt_table_u8)($at)
     /* 1D6FC 8002CEFC D8B30008 */  j          .L8002CF60
     /* 1D700 8002CF00 C2280200 */   srl       $a1, $v0, 3
   .L8002CF04:
@@ -123,9 +123,9 @@ glabel func_8002CD58
     /* 1D734 8002CF34 16000324 */  addiu      $v1, $zero, 0x16
     /* 1D738 8002CF38 23186200 */  subu       $v1, $v1, $v0
     /* 1D73C 8002CF3C 06106400 */  srlv       $v0, $a0, $v1
-    /* 1D740 8002CF40 0980013C */  lui        $at, %hi(D_8008D118)
+    /* 1D740 8002CF40 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* 1D744 8002CF44 21082200 */  addu       $at, $at, $v0
-    /* 1D748 8002CF48 18D12490 */  lbu        $a0, %lo(D_8008D118)($at)
+    /* 1D748 8002CF48 18D12490 */  lbu        $a0, %lo(g_sqrt_table_u8)($at)
     /* 1D74C 8002CF4C 42180300 */  srl        $v1, $v1, 1
     /* 1D750 8002CF50 13000224 */  addiu      $v0, $zero, 0x13
     /* 1D754 8002CF54 23104300 */  subu       $v0, $v0, $v1
@@ -153,9 +153,9 @@ glabel func_8002CD58
     /* 1D7A8 8002CFA8 0004822C */  sltiu      $v0, $a0, 0x400
     /* 1D7AC 8002CFAC 06004010 */  beqz       $v0, .L8002CFC8
     /* 1D7B0 8002CFB0 FA0023A6 */   sh        $v1, 0xFA($s1)
-    /* 1D7B4 8002CFB4 0980013C */  lui        $at, %hi(D_8008D118)
+    /* 1D7B4 8002CFB4 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* 1D7B8 8002CFB8 21082400 */  addu       $at, $at, $a0
-    /* 1D7BC 8002CFBC 18D12290 */  lbu        $v0, %lo(D_8008D118)($at)
+    /* 1D7BC 8002CFBC 18D12290 */  lbu        $v0, %lo(g_sqrt_table_u8)($at)
     /* 1D7C0 8002CFC0 09B40008 */  j          .L8002D024
     /* 1D7C4 8002CFC4 C2280200 */   srl       $a1, $v0, 3
   .L8002CFC8:
@@ -175,9 +175,9 @@ glabel func_8002CD58
     /* 1D7F8 8002CFF8 16000324 */  addiu      $v1, $zero, 0x16
     /* 1D7FC 8002CFFC 23186200 */  subu       $v1, $v1, $v0
     /* 1D800 8002D000 06106400 */  srlv       $v0, $a0, $v1
-    /* 1D804 8002D004 0980013C */  lui        $at, %hi(D_8008D118)
+    /* 1D804 8002D004 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* 1D808 8002D008 21082200 */  addu       $at, $at, $v0
-    /* 1D80C 8002D00C 18D12490 */  lbu        $a0, %lo(D_8008D118)($at)
+    /* 1D80C 8002D00C 18D12490 */  lbu        $a0, %lo(g_sqrt_table_u8)($at)
     /* 1D810 8002D010 42180300 */  srl        $v1, $v1, 1
     /* 1D814 8002D014 13000224 */  addiu      $v0, $zero, 0x13
     /* 1D818 8002D018 23104300 */  subu       $v0, $v0, $v1
@@ -278,9 +278,9 @@ glabel func_8002CD58
     /* 1D98C 8002D18C 0004822C */  sltiu      $v0, $a0, 0x400
     /* 1D990 8002D190 06004010 */  beqz       $v0, .L8002D1AC
     /* 1D994 8002D194 FA0023A6 */   sh        $v1, 0xFA($s1)
-    /* 1D998 8002D198 0980013C */  lui        $at, %hi(D_8008D118)
+    /* 1D998 8002D198 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* 1D99C 8002D19C 21082400 */  addu       $at, $at, $a0
-    /* 1D9A0 8002D1A0 18D12290 */  lbu        $v0, %lo(D_8008D118)($at)
+    /* 1D9A0 8002D1A0 18D12290 */  lbu        $v0, %lo(g_sqrt_table_u8)($at)
     /* 1D9A4 8002D1A4 82B40008 */  j          .L8002D208
     /* 1D9A8 8002D1A8 C2280200 */   srl       $a1, $v0, 3
   .L8002D1AC:
@@ -300,9 +300,9 @@ glabel func_8002CD58
     /* 1D9DC 8002D1DC 16000324 */  addiu      $v1, $zero, 0x16
     /* 1D9E0 8002D1E0 23186200 */  subu       $v1, $v1, $v0
     /* 1D9E4 8002D1E4 06106400 */  srlv       $v0, $a0, $v1
-    /* 1D9E8 8002D1E8 0980013C */  lui        $at, %hi(D_8008D118)
+    /* 1D9E8 8002D1E8 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* 1D9EC 8002D1EC 21082200 */  addu       $at, $at, $v0
-    /* 1D9F0 8002D1F0 18D12490 */  lbu        $a0, %lo(D_8008D118)($at)
+    /* 1D9F0 8002D1F0 18D12490 */  lbu        $a0, %lo(g_sqrt_table_u8)($at)
     /* 1D9F4 8002D1F4 42180300 */  srl        $v1, $v1, 1
     /* 1D9F8 8002D1F8 13000224 */  addiu      $v0, $zero, 0x13
     /* 1D9FC 8002D1FC 23104300 */  subu       $v0, $v0, $v1

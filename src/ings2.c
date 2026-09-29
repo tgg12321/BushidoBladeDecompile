@@ -52,7 +52,7 @@ s32 CdReadMode(s32 a0) {
 
 extern volatile s32 *D_800A1510;
 extern volatile s32 *D_800A1514;
-extern s32 D_800A1518;
+extern s32 Hcount;
 extern s32 D_800A151C;
 void v_wait(s32 a0, s32 a1);
 
@@ -61,7 +61,7 @@ s32 VSync(s32 a0) {
     s32 s1_val;
 
     s0_val = *D_800A1510;
-    s1_val = (*D_800A1514 - D_800A1518) & 0xFFFF;
+    s1_val = (*D_800A1514 - Hcount) & 0xFFFF;
 
     if (a0 < 0) {
         return Vcount;
@@ -99,7 +99,7 @@ s32 VSync(s32 a0) {
     }
 
     D_800A151C = Vcount;
-    D_800A1518 = *D_800A1514;
+    Hcount = *D_800A1514;
 
     return s1_val;
 }

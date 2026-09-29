@@ -40,9 +40,9 @@ glabel func_8001A67C
     /* AF0C 8001A70C 0004822C */  sltiu      $v0, $a0, 0x400
     /* AF10 8001A710 06004010 */  beqz       $v0, .L8001A72C
     /* AF14 8001A714 00000000 */   nop
-    /* AF18 8001A718 0980013C */  lui        $at, %hi(D_8008D118)
+    /* AF18 8001A718 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* AF1C 8001A71C 21082400 */  addu       $at, $at, $a0
-    /* AF20 8001A720 18D12290 */  lbu        $v0, %lo(D_8008D118)($at)
+    /* AF20 8001A720 18D12290 */  lbu        $v0, %lo(g_sqrt_table_u8)($at)
     /* AF24 8001A724 E0690008 */  j          .L8001A780
     /* AF28 8001A728 C2800200 */   srl       $s0, $v0, 3
   .L8001A72C:
@@ -60,9 +60,9 @@ glabel func_8001A67C
     /* AF58 8001A758 23186200 */  subu       $v1, $v1, $v0
     /* AF5C 8001A75C 06106400 */  srlv       $v0, $a0, $v1
     /* AF60 8001A760 42180300 */  srl        $v1, $v1, 1
-    /* AF64 8001A764 0980013C */  lui        $at, %hi(D_8008D118)
+    /* AF64 8001A764 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* AF68 8001A768 21082200 */  addu       $at, $at, $v0
-    /* AF6C 8001A76C 18D12490 */  lbu        $a0, %lo(D_8008D118)($at)
+    /* AF6C 8001A76C 18D12490 */  lbu        $a0, %lo(g_sqrt_table_u8)($at)
     /* AF70 8001A770 13000224 */  addiu      $v0, $zero, 0x13
     /* AF74 8001A774 23104300 */  subu       $v0, $v0, $v1
     /* AF78 8001A778 00240400 */  sll        $a0, $a0, 16

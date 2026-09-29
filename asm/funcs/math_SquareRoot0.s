@@ -3,8 +3,8 @@ glabel math_SquareRoot0
     /* 42EA4 800526A4 1A008010 */  beqz       $a0, .L80052710
     /* 42EA8 800526A8 1F000824 */   addiu     $t0, $zero, 0x1F
     /* 42EAC 800526AC 00F80248 */  mfc2       $v0, $31 /* handwritten instruction */
-    /* 42EB0 800526B0 0180093C */  lui        $t1, %hi(D_80015620)
-    /* 42EB4 800526B4 20562925 */  addiu      $t1, $t1, %lo(D_80015620)
+    /* 42EB0 800526B0 0180093C */  lui        $t1, %hi(g_sqrt_table)
+    /* 42EB4 800526B4 20562925 */  addiu      $t1, $t1, %lo(g_sqrt_table)
     /* 42EB8 800526B8 1E004230 */  andi       $v0, $v0, 0x1E
     /* 42EBC 800526BC E8FF4820 */  addi       $t0, $v0, -0x18 /* handwritten instruction */
     /* 42EC0 800526C0 07000005 */  bltz       $t0, .L800526E0

@@ -49,7 +49,7 @@ extern void func_80044FA0(s32, s32 *);
 extern s16 D_800A324A;
 
 /* Externs for globals */
-extern s16 g_cam_matrix;
+extern s16 D_800EEDB0;
 extern s16 D_800EEDB2;
 extern s16 D_800EEDBE;
 extern s32 D_800A33C0;
@@ -63,9 +63,9 @@ extern u8 g_cam_bone_data;
 extern u8 g_cam_bone_data2;
 
 extern s16 g_cam_interp;
-extern s16 g_cam_fov_x;
-extern s16 g_cam_fov_div;
-extern s16 g_cam_fov_z;
+extern s16 D_800F62F8;
+extern s16 D_800F62FA;
+extern s16 D_800F62FC;
 extern s16 D_800EEDB4;
 extern s16 D_800EEDB6;
 extern s16 D_800EEDB8;
@@ -396,10 +396,10 @@ void *stage_GetDataPtr(void) {
 }
 
 void func_80046F24(void) {
-    s32 num = (s32)g_cam_fov_x << 12;
-    s32 div = g_cam_fov_div;
+    s32 num = (s32)D_800F62F8 << 12;
+    s32 div = D_800F62FA;
     s32 v0 = num / div;
-    s32 v1 = ((s32)g_cam_fov_z << 12) / div;
+    s32 v1 = ((s32)D_800F62FC << 12) / div;
     D_800EEDB4 = 0;
     div = 0;
     num = v0;
@@ -408,7 +408,7 @@ void func_80046F24(void) {
     D_800EEDB8 = 0;
     D_800EEDBA = 0;
     D_800EEDBC = div;
-    g_cam_matrix = 0x1000;
+    D_800EEDB0 = 0x1000;
     D_800EEDC0 = 0x1000;
     v0 = -(s16)num;
     D_800EEDB2 = v0;
@@ -417,7 +417,7 @@ void func_80046F24(void) {
 void func_8004700C(s32 *a0, s32 *a1, s32 a2) {
     s32 new_var;
     s32 diff, prod;
-    gte_MulMatrix0ClearTrans(&g_cam_matrix, a0, a1);
+    gte_MulMatrix0ClearTrans(&D_800EEDB0, a0, a1);
     new_var = a0[5];
     diff = a0[6] - a2;
     prod = diff * D_800EEDB2;
@@ -435,13 +435,13 @@ void func_800470B0(s32 arg0, s32 *arg1, s32 *arg2, s32 arg3) {
     var_s0 = arg1;
     temp_v1 = arg0 * 0x60;
     sp10.m[0][0] = 0x1000;
-    sp10.m[0][1] = (s16) -((s32)(*(s16 *)((s8 *)&g_cam_fov_x + temp_v1) << 12) / *(s16 *)((s8 *)&g_cam_fov_div + temp_v1));
+    sp10.m[0][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62F8 + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
     sp10.m[0][2] = 0;
     sp10.m[1][0] = 0;
     sp10.m[1][1] = 0;
     sp10.m[1][2] = 0;
     sp10.m[2][0] = 0;
-    sp10.m[2][1] = (s16) -((s32)(*(s16 *)((s8 *)&g_cam_fov_z + temp_v1) << 12) / *(s16 *)((s8 *)&g_cam_fov_div + temp_v1));
+    sp10.m[2][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62FC + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
     sp10.m[2][2] = 0x1000;
     gte_MulMatrix0ClearTrans(&sp10, var_s0, arg2);
     arg2[5] = var_s0[5] + (((var_s0[6] - arg3) * sp10.m[0][1]) >> 12);

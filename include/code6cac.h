@@ -8,7 +8,7 @@
 /* Named globals */
 extern s16 StatusUpBuf;
 extern u8 cpu_practice_honmokuroku_data_tbl[][4];
-extern u8 g_module_type_tbl;
+extern u8 g_sqrt_table_u8;
 extern s32 menuDat;
 
 /* Per-character record pointed to by D_800A3860[ch] (ch = rec+0x4A). f14 is
@@ -290,9 +290,9 @@ extern u8 D_800A3671;
 extern s16 D_800A367A;
 extern s16 D_800A367C;
 extern u8 D_800A3680;
-extern s32 D_800A368C;
+extern s32 g_comb_recv_buf_plus_0x4;
 extern u8 D_800A3690;
-extern s32 D_800A369C;
+extern s32 g_comb_send_buf_plus_0x4;
 extern s16 D_800A36A4;
 extern s32 D_800A36AC;
 extern s32 D_800A36B4;

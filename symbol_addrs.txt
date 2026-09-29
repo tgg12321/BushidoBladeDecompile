@@ -117,7 +117,7 @@ _spu_memList = 0x800A2D40; // SPU voice key C  // data-wave 2026-09-07: was g_sp
 _spu_isCalled = 0x800A2CD8; // sound system init flag  // data-wave 2026-09-07: was g_snd_init_flag
 _spu_EVdma = 0x800A2870; // sound IRQ handler handle  // data-wave 2026-09-07: was g_snd_irq_handle
 _spu_trans_mode = 0x800A2878; // sound reverb enable  // data-wave 2026-09-07: was g_snd_reverb_flag
-g_snd_callback = 0x800A307C; // sound completion callback
+D_800A307C = 0x800A307C; // sound completion callback  // data-wave 2026-09-29: was g_snd_callback
 
 // === Sound: Channels and Playback ===
 _svm_vab_used = 0x80102A68; // per-channel status array  // data-wave 2026-09-07: was g_snd_ch_status
@@ -138,13 +138,13 @@ g_player_ptrs = 0x800A9A10; // player struct pointers [3]
 g_player_char_ids = 0x80094B88; // character IDs [3]
 
 // === Camera ===
-g_cam_matrix = 0x800EEDB0; // camera rotation matrix base
+D_800EEDB0 = 0x800EEDB0; // camera rotation matrix base  // data-wave 2026-09-29: was g_cam_matrix
 g_cam_bone_data = 0x800EEDD0; // camera bone data
 g_cam_bone_data2 = 0x800EEDF0; // camera bone data 2
 g_cam_interp = 0x800EEDF8; // camera interpolation timer
-g_cam_fov_x = 0x800F62F8; // camera FOV X
-g_cam_fov_div = 0x800F62FA; // camera FOV divisor
-g_cam_fov_z = 0x800F62FC; // camera FOV Z
+D_800F62F8 = 0x800F62F8; // camera FOV X  // data-wave 2026-09-29: was g_cam_fov_x
+D_800F62FA = 0x800F62FA; // camera FOV divisor  // data-wave 2026-09-29: was g_cam_fov_div
+D_800F62FC = 0x800F62FC; // camera FOV Z  // data-wave 2026-09-29: was g_cam_fov_z
 
 // === Stage ===
 g_stage_id = 0x80099478; // current stage index
@@ -174,8 +174,8 @@ D_800A33D0 = 0x800A33D0; // master volume  // data-wave 2026-09-25: was g_snd_vo
 D_800A33D4 = 0x800A33D4; // fade position  // data-wave 2026-09-25: was g_snd_fade_pos
 D_800A33D8 = 0x800A33D8; // fade amount  // data-wave 2026-09-25: was g_snd_fade_amt
 D_800A33E4 = 0x800A33E4; // sound play counter  // data-wave 2026-09-25: was g_snd_play_count
-g_snd_se_bank = 0x80099C34; // SE bank param table
-g_snd_ch_data = 0x800EF848; // channel data blocks
+D_80099C34 = 0x80099C34; // SE bank param table  // data-wave 2026-09-29: was g_snd_se_bank
+D_800EF848 = 0x800EF848; // channel data blocks  // data-wave 2026-09-29: was g_snd_ch_data
 D_800EF800 = 0x800EF800; // volume fade curve  // data-wave 2026-09-25: was g_snd_fade_curve
 D_800EF7BC = 0x800EF7BC; // sound config table  // data-wave 2026-09-25: was g_snd_config_tbl
 
@@ -223,7 +223,7 @@ g_str_spu_timeout = 0x800163D8; // SPU timeout debug
 // === Data Section ===
 g_data_start = 0x8008D070; // .data section start
 g_module_func_tbl = 0x8008D090; // module init/cleanup pairs
-g_module_type_tbl = 0x8008D118; // module type indices
+// data-wave 2026-09-29: g_module_type_tbl = 0x8008D118 retired; g_sqrt_table_u8 is now object-defined
 
 // === BBM File Names (animation bundles) ===
 g_str_bbm_y123 = 0x8001036C; // Y123.BBM

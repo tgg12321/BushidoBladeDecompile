@@ -37,9 +37,9 @@ glabel func_8008B488
   .L8008B508:
     /* 7BD08 8008B508 18000396 */  lhu        $v1, 0x18($s0)
     /* 7BD0C 8008B50C 40101400 */  sll        $v0, $s4, 1
-    /* 7BD10 8008B510 0A80013C */  lui        $at, %hi(D_800A28A4)
+    /* 7BD10 8008B510 0A80013C */  lui        $at, %hi(_spu_voice_centerNote)
     /* 7BD14 8008B514 21082200 */  addu       $at, $at, $v0
-    /* 7BD18 8008B518 A42823A4 */  sh         $v1, %lo(D_800A28A4)($at)
+    /* 7BD18 8008B518 A42823A4 */  sh         $v1, %lo(_spu_voice_centerNote)($at)
   .L8008B51C:
     /* 7BD1C 8008B51C 04004016 */  bnez       $s2, .L8008B530
     /* 7BD20 8008B520 40101400 */   sll       $v0, $s4, 1
@@ -47,9 +47,9 @@ glabel func_8008B488
     /* 7BD28 8008B528 0F004010 */  beqz       $v0, .L8008B568
     /* 7BD2C 8008B52C 40101400 */   sll       $v0, $s4, 1
   .L8008B530:
-    /* 7BD30 8008B530 0A80013C */  lui        $at, %hi(D_800A28A4)
+    /* 7BD30 8008B530 0A80013C */  lui        $at, %hi(_spu_voice_centerNote)
     /* 7BD34 8008B534 21082200 */  addu       $at, $at, $v0
-    /* 7BD38 8008B538 A4282594 */  lhu        $a1, %lo(D_800A28A4)($at)
+    /* 7BD38 8008B538 A4282594 */  lhu        $a1, %lo(_spu_voice_centerNote)($at)
     /* 7BD3C 8008B53C 16000796 */  lhu        $a3, 0x16($s0)
     /* 7BD40 8008B540 02220500 */  srl        $a0, $a1, 8
     /* 7BD44 8008B544 FF00A530 */  andi       $a1, $a1, 0xFF

@@ -744,8 +744,8 @@ test_index:
     *(s32 *)D_800A378C = (g_gpu_ot256_ptr + 0x3FC) & 0xFFFFFF;
     *(s32 *)g_gpu_ot256_ptr = old;
 }
-extern u8 g_snd_ch_data[];
-extern u16 g_snd_se_bank[];
+extern u8 D_800EF848[];
+extern u16 D_80099C34[];
 extern void func_80052C10(void);
 void func_80048F58(s32 a0, s32 a1) {
     s32 i;
@@ -755,9 +755,9 @@ void func_80048F58(s32 a0, s32 a1) {
     if (a1 > 0) {
         func_80052C10();
     }
-    base = g_snd_ch_data + a1 * 308;
+    base = D_800EF848 + a1 * 308;
     *(u32 *)base = 0;
-    src = (u16 *)(g_snd_se_bank + a0 * 7);
+    src = (u16 *)(D_80099C34 + a0 * 7);
     dst = (u16 *)(base + 0x124);
     i = 0;
     do {

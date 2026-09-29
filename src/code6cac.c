@@ -17,7 +17,7 @@ typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
 typedef struct GameObj GameObj;
 
 /* Extern data declarations */
-extern u8 D_8008D118;
+extern u8 g_sqrt_table_u8;
 
 
 
@@ -456,7 +456,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                  * s6 H29-H32, s7 H31-H37, s8, s9 H42 (cse class kill), s9b H44-H46.
                  * Family: do-while-zero-exception (owner ruling 2026-07-06). */
                 do {
-                    sum_sq = (u8)(*(&D_8008D118 + sum_sq)) >> 3;
+                    sum_sq = (u8)(*(&g_sqrt_table_u8 + sum_sq)) >> 3;
                     goto lzc_done;
                 } while (0);
             }
@@ -515,7 +515,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                     shift_a = 0x16 - li_v0;
                 }
                 shift_b = shift_a >> 1;
-                lut = (u8)(*(&D_8008D118 + (sum_sq >> shift_a)));
+                lut = (u8)(*(&g_sqrt_table_u8 + (sum_sq >> shift_a)));
                 sum_sq = ((s32)(lut << 16)) >> (0x13 - shift_b);
                 } while (0);
             }
@@ -676,7 +676,7 @@ void func_80018300(s32 *arg0) {
             : : "r"((s32 *)0x1F80000C) : "$12", "$13", "$14", "$15", "memory");
         sum = *(s32 *)0x1F80000C + *(s32 *)0x1F800010 + *(s32 *)0x1F800014;
         if (sum < 0x400) {
-            len = (&D_8008D118)[sum];
+            len = (&g_sqrt_table_u8)[sum];
             p1 = (s32 *)(base + ((thresh >> 16) << 6));
             p2 = (s32 *)(base + ((thresh & 0xFFFF) << 6));
         } else {
@@ -707,7 +707,7 @@ void func_80018300(s32 *arg0) {
              * memory/grind/func_80018300/hypotheses.md. */
             len = lz[0];
             len = 0x16 - (len & ~1);
-            sum = (&D_8008D118)[sum >> len];
+            sum = (&g_sqrt_table_u8)[sum >> len];
             len = (u32)(sum << 16) >> (0x10 - ((s32)len >> 1));
         }
         /* gte_ldlvl(r1) -- inline_o.h:308 */
@@ -769,7 +769,7 @@ void func_80018300(s32 *arg0) {
         : : "r"((s32 *)0x1F80000C) : "$12", "$13", "$14", "$15", "memory");
     sum = *(s32 *)0x1F80000C + *(s32 *)0x1F800010 + *(s32 *)0x1F800014;
     if (sum < 0x400) {
-        len = (&D_8008D118)[sum];
+        len = (&g_sqrt_table_u8)[sum];
     } else {
         /* gte_ldlzc(r1) -- inline_o.h:645 */
         __asm__ volatile(
@@ -787,7 +787,7 @@ void func_80018300(s32 *arg0) {
         /* FAKE: same staged len/sum reuse as the loop's LZC arm above. */
         len = lz[0];
         len = 0x16 - (len & ~1);
-        sum = (&D_8008D118)[sum >> len];
+        sum = (&g_sqrt_table_u8)[sum >> len];
         len = (u32)(sum << 16) >> (0x10 - ((s32)len >> 1));
     }
     /* gte_ldlvl(r1) -- inline_o.h:308 */
@@ -1053,7 +1053,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 work = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
                 temp = work;
                 if (work < 0x400) {
-                    work = (&D_8008D118)[work] >> 3;
+                    work = (&g_sqrt_table_u8)[work] >> 3;
                 } else {
                     /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
                      * the leading-zero count, then the table shift. */
@@ -1069,7 +1069,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                     __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
                     nbits = lz[0];
                     nbits = 0x16 - (nbits & ~1);
-                    temp = (&D_8008D118)[work >> nbits];
+                    temp = (&g_sqrt_table_u8)[work >> nbits];
                     work = (temp << 16) >> (0x13 - (nbits >> 1));
                 }
                 if (work >= r) {
@@ -1107,7 +1107,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
                 sq2 = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
                 if (sq2 < 0x400) {
-                    dist2 = (&D_8008D118)[sq2] >> 3;
+                    dist2 = (&g_sqrt_table_u8)[sq2] >> 3;
                 } else {
                     /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
                      * the leading-zero count, then the table shift. */
@@ -1123,7 +1123,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                     __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
                     nbits2 = lz[1];
                     nbits2 = 0x16 - (nbits2 & ~1);
-                    temp = (&D_8008D118)[sq2 >> nbits2];
+                    temp = (&g_sqrt_table_u8)[sq2 >> nbits2];
                     dist2 = (temp << 16) >> (0x13 - (nbits2 >> 1));
                 }
                 tot = work + dist2;
@@ -1634,7 +1634,7 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
     }
     dist_sq = (dx * dx) + (dz * dz);
     if (dist_sq < 0x400U) {
-        log2_val = ((u32)((u8)(*((&D_8008D118) + dist_sq)))) >> 3;
+        log2_val = ((u32)((u8)(*((&g_sqrt_table_u8) + dist_sq)))) >> 3;
     } else {
         u32 shift_a;
         u32 shift_b;
@@ -1661,7 +1661,7 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
             shift_a = 0x16 - li_v0;
         }
         shift_b = shift_a >> 1;
-        log2_val = (((u32)((u8)(*((&D_8008D118) + (dist_sq >> shift_a))))) << 16) >> (0x13 - shift_b);
+        log2_val = (((u32)((u8)(*((&g_sqrt_table_u8) + (dist_sq >> shift_a))))) << 16) >> (0x13 - shift_b);
     }
     arg0[0] = (s16)math_FloorDiv2000(arg2[0] + ((dx << 10) / ((s32)log2_val)));
     arg0[2] = (s16)math_FloorDiv2000(arg2[2] + ((dz << 10) / ((s32)log2_val)));
@@ -1761,7 +1761,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     }
     dist_sq = x * x + z * z + y * y;
     if (dist_sq < 0x400) {
-        dist = (u32)*(&D_8008D118 + dist_sq) >> 3;
+        dist = (u32)*(&g_sqrt_table_u8 + dist_sq) >> 3;
     } else {
         s32 lzcr = 0;
         if ((s32)dist_sq >= 0) {
@@ -1777,7 +1777,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
         }
         {
             s32 sh = 0x16 - (lzcr & ~1);
-            s32 tbl = *(&D_8008D118 + (dist_sq >> sh));
+            s32 tbl = *(&g_sqrt_table_u8 + (dist_sq >> sh));
             dist = (u32)(tbl << 16) >> (0x13 - ((u32)sh >> 1));
         }
     }
@@ -3490,7 +3490,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
             dz = *(s32 *)(*(u8 **)obj + 0x188) - *(s32 *)(obj + 0x188);
             dist_sq = dx * dx + dz * dz;
             if ((u32)dist_sq < 0x400) {
-                dist = (u32)*(((u8 *)&D_8008D118) + dist_sq) >> 3;
+                dist = (u32)*(((u8 *)&g_sqrt_table_u8) + dist_sq) >> 3;
             } else {
                 s32 lzcr = 0;
                 if (dist_sq >= 0) {
@@ -3521,7 +3521,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
                 }
                 {
                     s32 shift = 0x16 - (lzcr & ~1);
-                    s32 tbl = *(((u8 *)&D_8008D118) + ((u32)dist_sq >> shift));
+                    s32 tbl = *(((u8 *)&g_sqrt_table_u8) + ((u32)dist_sq >> shift));
                     dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
                 }
             }
@@ -3587,7 +3587,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
         dz = *(s32 *)(*(u8 **)obj + 0xFC) - *(s32 *)(obj + 0x264);
         dist_sq = dx * dx + dz * dz;
         if ((u32)dist_sq < 0x400) {
-            dist = (u32)*(((u8 *)&D_8008D118) + dist_sq) >> 3;
+            dist = (u32)*(((u8 *)&g_sqrt_table_u8) + dist_sq) >> 3;
         } else {
             s32 lzcr = 0;
             if (dist_sq >= 0) {
@@ -3611,7 +3611,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
             }
             {
                 s32 shift = 0x16 - (lzcr & ~1);
-                s32 tbl = *(((u8 *)&D_8008D118) + ((u32)dist_sq >> shift));
+                s32 tbl = *(((u8 *)&g_sqrt_table_u8) + ((u32)dist_sq >> shift));
                 dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }

@@ -68,9 +68,9 @@ glabel func_8001F2E4
     /* FBD4 8001F3D4 0004822C */  sltiu      $v0, $a0, 0x400
     /* FBD8 8001F3D8 06004010 */  beqz       $v0, .L8001F3F4
     /* FBDC 8001F3DC 00000000 */   nop
-    /* FBE0 8001F3E0 0980013C */  lui        $at, %hi(D_8008D118)
+    /* FBE0 8001F3E0 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* FBE4 8001F3E4 21082400 */  addu       $at, $at, $a0
-    /* FBE8 8001F3E8 18D12290 */  lbu        $v0, %lo(D_8008D118)($at)
+    /* FBE8 8001F3E8 18D12290 */  lbu        $v0, %lo(g_sqrt_table_u8)($at)
     /* FBEC 8001F3EC 147D0008 */  j          .L8001F450
     /* FBF0 8001F3F0 C2200200 */   srl       $a0, $v0, 3
   .L8001F3F4:
@@ -90,9 +90,9 @@ glabel func_8001F2E4
     /* FC24 8001F424 16000324 */  addiu      $v1, $zero, 0x16
     /* FC28 8001F428 23186200 */  subu       $v1, $v1, $v0
     /* FC2C 8001F42C 06106400 */  srlv       $v0, $a0, $v1
-    /* FC30 8001F430 0980013C */  lui        $at, %hi(D_8008D118)
+    /* FC30 8001F430 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* FC34 8001F434 21082200 */  addu       $at, $at, $v0
-    /* FC38 8001F438 18D12490 */  lbu        $a0, %lo(D_8008D118)($at)
+    /* FC38 8001F438 18D12490 */  lbu        $a0, %lo(g_sqrt_table_u8)($at)
     /* FC3C 8001F43C 42180300 */  srl        $v1, $v1, 1
     /* FC40 8001F440 13000224 */  addiu      $v0, $zero, 0x13
     /* FC44 8001F444 23104300 */  subu       $v0, $v0, $v1
@@ -249,9 +249,9 @@ glabel func_8001F2E4
     /* FE60 8001F660 0004822C */  sltiu      $v0, $a0, 0x400
     /* FE64 8001F664 06004010 */  beqz       $v0, .L8001F680
     /* FE68 8001F668 00000000 */   nop
-    /* FE6C 8001F66C 0980013C */  lui        $at, %hi(D_8008D118)
+    /* FE6C 8001F66C 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* FE70 8001F670 21082400 */  addu       $at, $at, $a0
-    /* FE74 8001F674 18D12290 */  lbu        $v0, %lo(D_8008D118)($at)
+    /* FE74 8001F674 18D12290 */  lbu        $v0, %lo(g_sqrt_table_u8)($at)
     /* FE78 8001F678 B77D0008 */  j          .L8001F6DC
     /* FE7C 8001F67C C2200200 */   srl       $a0, $v0, 3
   .L8001F680:
@@ -271,9 +271,9 @@ glabel func_8001F2E4
     /* FEB0 8001F6B0 16000324 */  addiu      $v1, $zero, 0x16
     /* FEB4 8001F6B4 23186200 */  subu       $v1, $v1, $v0
     /* FEB8 8001F6B8 06106400 */  srlv       $v0, $a0, $v1
-    /* FEBC 8001F6BC 0980013C */  lui        $at, %hi(D_8008D118)
+    /* FEBC 8001F6BC 0980013C */  lui        $at, %hi(g_sqrt_table_u8)
     /* FEC0 8001F6C0 21082200 */  addu       $at, $at, $v0
-    /* FEC4 8001F6C4 18D12490 */  lbu        $a0, %lo(D_8008D118)($at)
+    /* FEC4 8001F6C4 18D12490 */  lbu        $a0, %lo(g_sqrt_table_u8)($at)
     /* FEC8 8001F6C8 42180300 */  srl        $v1, $v1, 1
     /* FECC 8001F6CC 13000224 */  addiu      $v0, $zero, 0x13
     /* FED0 8001F6D0 23104300 */  subu       $v0, $v0, $v1

@@ -9,8 +9,8 @@ glabel _SpuInit
     /* 78DE8 800885E8 08000016 */  bnez       $s0, .L8008860C
     /* 78DEC 800885EC 00C00434 */   ori       $a0, $zero, 0xC000
     /* 78DF0 800885F0 17000324 */  addiu      $v1, $zero, 0x17
-    /* 78DF4 800885F4 0A80023C */  lui        $v0, %hi(D_800A28D2)
-    /* 78DF8 800885F8 D2284224 */  addiu      $v0, $v0, %lo(D_800A28D2)
+    /* 78DF4 800885F4 0A80023C */  lui        $v0, %hi(_spu_voice_centerNote_plus_0x2E)
+    /* 78DF8 800885F8 D2284224 */  addiu      $v0, $v0, %lo(_spu_voice_centerNote_plus_0x2E)
   .L800885FC:
     /* 78DFC 800885FC 000044A4 */  sh         $a0, 0x0($v0)
     /* 78E00 80088600 FFFF6324 */  addiu      $v1, $v1, -0x1

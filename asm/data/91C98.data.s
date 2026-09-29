@@ -151,11 +151,11 @@ dlabel D_800A1514
     /* 91D14 800A1514 1011801F */ .word 0x1F801110
 enddlabel D_800A1514
 
-nonmatching D_800A1518
+nonmatching Hcount
 
-dlabel D_800A1518
+dlabel Hcount
     /* 91D18 800A1518 00000000 */ .word 0x00000000
-enddlabel D_800A1518
+enddlabel Hcount
 
 nonmatching D_800A151C
 
@@ -1771,9 +1771,9 @@ dlabel _spu_RQmask
     /* 930A0 800A28A0 00000000 */ .word 0x00000000
 enddlabel _spu_RQmask
 
-nonmatching D_800A28A4
+nonmatching _spu_voice_centerNote
 
-dlabel D_800A28A4
+dlabel _spu_voice_centerNote
     /* 930A4 800A28A4 00C000C0 */ .word 0xC000C000
     /* 930A8 800A28A8 00C000C0 */ .word 0xC000C000
     /* 930AC 800A28AC 00C000C0 */ .word 0xC000C000
@@ -1786,13 +1786,13 @@ dlabel D_800A28A4
     /* 930C8 800A28C8 00C000C0 */ .word 0xC000C000
     /* 930CC 800A28CC 00C000C0 */ .word 0xC000C000
     /* 930D0 800A28D0 */ .short 0xC000
-enddlabel D_800A28A4
+enddlabel _spu_voice_centerNote
 
-nonmatching D_800A28D2
+nonmatching _spu_voice_centerNote_plus_0x2E
 
-dlabel D_800A28D2
+dlabel _spu_voice_centerNote_plus_0x2E
     /* 930D2 800A28D2 */ .short 0xC000
-enddlabel D_800A28D2
+enddlabel _spu_voice_centerNote_plus_0x2E
 
 nonmatching _spu_zerobuf
 
@@ -2116,17 +2116,17 @@ dlabel _spu_transMode
     /* 934F8 800A2CF8 00000000 */ .word 0x00000000
 enddlabel _spu_transMode
 
-nonmatching D_800A2CFC
+nonmatching _spu_addrMode
 
-dlabel D_800A2CFC
+dlabel _spu_addrMode
     /* 934FC 800A2CFC 00000000 */ .word 0x00000000
-enddlabel D_800A2CFC
+enddlabel _spu_addrMode
 
-nonmatching D_800A2D00
+nonmatching _spu_mem_mode
 
-dlabel D_800A2D00
+dlabel _spu_mem_mode
     /* 93500 800A2D00 02000000 */ .word 0x00000002
-enddlabel D_800A2D00
+enddlabel _spu_mem_mode
 
 nonmatching _spu_mem_mode_plus
 
@@ -2134,11 +2134,11 @@ dlabel _spu_mem_mode_plus
     /* 93504 800A2D04 03000000 */ .word 0x00000003
 enddlabel _spu_mem_mode_plus
 
-nonmatching D_800A2D08
+nonmatching _spu_mem_mode_unit
 
-dlabel D_800A2D08
+dlabel _spu_mem_mode_unit
     /* 93508 800A2D08 08000000 */ .word 0x00000008
-enddlabel D_800A2D08
+enddlabel _spu_mem_mode_unit
 
 nonmatching _spu_mem_mode_unitM
 
@@ -4493,11 +4493,11 @@ dlabel g_comb_recv_buf
     /* 93E88 800A3688 00000000 */ .word 0x00000000
 enddlabel g_comb_recv_buf
 
-nonmatching D_800A368C
+nonmatching g_comb_recv_buf_plus_0x4
 
-dlabel D_800A368C
+dlabel g_comb_recv_buf_plus_0x4
     /* 93E8C 800A368C 00000000 */ .word 0x00000000
-enddlabel D_800A368C
+enddlabel g_comb_recv_buf_plus_0x4
 
 nonmatching D_800A3690
 
@@ -4518,11 +4518,11 @@ dlabel g_comb_send_buf
     /* 93E98 800A3698 00000000 */ .word 0x00000000
 enddlabel g_comb_send_buf
 
-nonmatching D_800A369C
+nonmatching g_comb_send_buf_plus_0x4
 
-dlabel D_800A369C
+dlabel g_comb_send_buf_plus_0x4
     /* 93E9C 800A369C 00000000 */ .word 0x00000000
-enddlabel D_800A369C
+enddlabel g_comb_send_buf_plus_0x4
 
 nonmatching D_800A36A0
 

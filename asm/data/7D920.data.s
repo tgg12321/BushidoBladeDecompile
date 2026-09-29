@@ -29664,9 +29664,9 @@ dlabel rcossin_tbl
     /* 91124 800A0924 00000010 */ .word 0x10000000
 enddlabel rcossin_tbl
 
-nonmatching D_800A0928
+nonmatching ratan_tbl
 
-dlabel D_800A0928
+dlabel ratan_tbl
     /* 91128 800A0928 */ .short 0x0000
     /* 9112A 800A092A */ .short 0x0001
     /* 9112C 800A092C */ .short 0x0002
@@ -30693,7 +30693,7 @@ dlabel D_800A0928
     /* 91926 800A1126 */ .short 0x0200
     /* 91928 800A1128 */ .short 0x0200
     /* 9192A 800A112A */ .short 0x0000
-enddlabel D_800A0928
+enddlabel ratan_tbl
 
 nonmatching D_800A112C
 
