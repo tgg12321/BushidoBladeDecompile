@@ -87,10 +87,10 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
 
     switch (mode) {
     case 2:
-        y_base = 0x33;
-        s.y = top + 0x73;
         s.header = &D_8009B0E0[2];
         s.table = D_8009B184;
+        y_base = 0x33;
+        s.y = top + 0x73;
         s.x = 0;
         s.semi = 0;
         s.out = cur;
@@ -112,7 +112,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
                 s.semi = 1;
             }
             s.header = &D_8009B14C;
-            s.table = &D_8009B23C[j * D_8009B14C.count];
+            s.table = &D_8009B23C[j * s.header->count];
             s.x = 0;
             s.y = 0;
             s.out = cur;
@@ -242,17 +242,17 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     s.header = &D_8009B0E0[0];
     s.table = D_8009B164[0];
     s.x = 0;
+    s.y = (0xF0 - D_8009B2BC[mode].h) / 2;
     s.semi = 0;
     s.out = cur;
     s.ot_idx = ot;
-    s.y = (0xF0 - D_8009B2BC[mode].h) / 2;
     D_8009B164[0][0].unk0 = (0x280 - D_8009B2BC[mode].w) / 2;
     D_8009B164[0][1].unk0 = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
     cur = func_8007352C((s32)&s);
     s.header = &D_8009B0E0[1];
     s.table = D_8009B164[1];
-    s.out = cur;
     s.y = (D_8009B2BC[mode].h + 0xF0) / 2;
+    s.out = cur;
     D_8009B164[1][0].unk0 = (0x280 - D_8009B2BC[mode].w) / 2;
     D_8009B164[1][1].unk0 = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
     func_8007352C((s32)&s);

@@ -42,10 +42,20 @@ Settled facts (each measured):
   `s.header` (life 3). That also restores `li s6,2` as the first insn after the switch, so reorg fills
   `j tail` and does NOT invert the case-0 loop branch (reorg.c:3923 reversal only fires on an unfilled jump).
 
-Open at 42 (frontier):
-1. Icon loop (case 2): ours hoists &D_8009B14C (pseudo 144) into fp and spills (s16)sel (138) to slot 0x78; target has
-   (s16)sel in fp and rematerializes D_8009B14C / D_8009B14E (REG_EQUIV-constant pseudo with no hard reg). Global
-   priorities are 144=490 vs 138=476 (BB2_ALLOC_DEBUG). Spelling the count read before the header (`s.table` first)
-   stops the hoist and gives 138 fp, but the frame shrinks to 0xB0 (target 0xB8 has an unreferenced slot at 0x78).
-2. Case-2 first block: header/table address loads order.
-3. Final block (hdr[0]/hdr[1] pair): header store placement and the first `D_8009B2BC[mode].h` load base (v0 vs s4).
+- (42 -> 30) Icon loop: `s.table = &D_8009B23C[j * s.header->count];` (count read THROUGH the descriptor field just
+  stored). cse folds (plus <reg known = sym> 2) to the constant address sym+2 without making a register for it, so the
+  header's symbol pseudo is used once (life 1, not hoisted) and (s16)sel keeps fp. `D_8009B14C.count` instead made cse
+  relate the two addresses (use_related_value: 154 = 146 - 2 in the i3 dump) and loop.c hoisted them.
+- Case-2 first draw: `s.header`/`s.table` assigned before `y_base = 0x33; s.y = ...` (c1). Final pair: `s.y` assigned
+  right after `s.x` (first draw) and right after `s.table` (second draw) (f1/cf2).
+
+## At 30 (2026-09-29): every remaining scored hunk is a frame offset
+target frame 0xB8, ours 0xB0: the target has one extra 8-byte spill slot at 0x78 that NO instruction references
+(between size@0x70 and the hoisted ot*4@0x80; (s16)k@0x88). Reload slots are allocated in pseudo order for the
+initially-unallocated pseudos (BB2_FRAME_DEBUG: p72,p75,p78,p79,p80,p82,p490,p537 in ours), so the target has one more
+MEM pseudo X with 82 < X < 490 whose every reference vanished. Known mechanism that leaves such a hole:
+reload1.c delete_output_reload "forget we had a stack slot" (a LOCAL pseudo, one death, completely replaced by
+inherited reload regs) — the slot's frame space stays allocated. The only t0-computed-and-consumed value in the target
+is `mflo t0; sll v0,t0,3` (the icon-loop product j*count), whose code is identical whether the product pseudo is in LO
+(ours: global gives pseudo 150 LO, pref LO_REG else GR_REGS) or MEM (target?). Not yet reproduced; ruled out so far:
+size spellings e1-e5 (tmp/func_8005C8A8/v), named product intermediate m1, pointer-arith m2, operand order m3.
