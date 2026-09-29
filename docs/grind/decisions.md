@@ -30143,3 +30143,73 @@ lists) before code spends it; where an existing ruling or clause governs a const
 workaround wall, the frozen family list for no-semantic-purpose constructs, Rulings 5-12 for reused locals,
 every still-banned list and the AUTO-REJECT class are unchanged; (E) no rotations during the run; (F) sandbox
 0, oracle SHA1 and a fresh default-FAIL layer-2 on every landing still apply. Nothing is pre-decided.
+
+## 2026-09-29 — OWNER RULING — a union word view over small fields (`.claude/rules/no-new-park-categories.md` § aggregate merge, amendment to prong (d))
+
+Twentieth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 20, Q33; it also answers
+docs/grind/borderline.md 2026-09-29 func_80070188 (with func_8006E534), option A). The owner chose "Allow, with
+evidence (Recommended)". Admitted (full text in the rule file, "Amendment to prong (d): a union word view over
+small fields"): an object, global or local, declared as a union of exactly the real object and one `s32`/`u32`
+word member at offset 0, ONLY when every site naming the word member is one `lw`/`sw` in the original bytes
+spanning exactly those four bytes (cited by address), every other access uses the real members, no pointer cast
+or cast-to-union constructor appears, a global's union is its one canonical shared-header declaration meeting
+prongs (a)-(e), and a fresh layer-2 reviews every commit that adds the union or a word-member site. Halfword,
+unaligned and wider views are outside it. This is not the F5 union-constructor CLOBBER (refused 2026-07-19),
+which stays refused with the dead union local, the single-member union and every USE/CLOBBER-manufacture
+spelling; the Q21 per-file exception's refusal of a union second view is unchanged. Nothing is pre-decided:
+func_8005E54C's local and a record declaration of 0x800A3560 (func_80070188 landed COMPLETED-C 9e69a87c7
+without it) are fresh submissions.
+
+## 2026-09-29 — OWNER RULING — a plain copy as one value of a Ruling 11 variable (`.claude/rules/ordinary-c-judge-decidable.md` § Ruling 11 (C)(3))
+
+Twentieth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 20, Q34). The owner chose "Allow
+narrowly (Recommended)". Admitted (full text in the rule file, Ruling 11 (C)(3) § "A plain copy as one value"),
+modeled on the 2026-09-28 GTE-macro input copy clause: a value whose only write is `var = src;` counts as a real
+value under (3) ONLY when `src` is a named local of this function (not a parameter, which stays under Ruling 12)
+with at least one other read, no cast is written, the register move implementing the copy is in the target's
+bytes at that position (cited by address) and the build emits it there, every other value of the variable meets
+(3) as a real computation (not a copy, not constants, not a per-branch constant), the variable carries at most one
+copy value, and (D) holds in full under the Q31 mechanism + search standard: a fresh local for the copy and the
+no-copy body are banked and measured, and defeat the reuse only by reaching the target. (A), (B), (C)(1)-(2),
+(E)-(H) and a fresh layer-2 apply unchanged. The F1 staging chain and the staged-value-reused-variable entry stay
+separate. Nothing is pre-decided: func_8005E54C's copy is a fresh submission.
+
+## 2026-09-29 — OWNER RULING — a trailing unused local array with sibling evidence (`.claude/rules/no-new-park-categories.md` § Phantom-frame-slot volatile pad local, Q35 extension)
+
+Twentieth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 20, Q35). The owner chose "Allow
+with sibling evidence (Recommended)". Admitted (full text and prongs (1)-(8) in the rule file; pointer in
+dead-vars-local-array.md): an unused local array in a non-leading position, ONLY when the ledger's frame
+forensics prove the region untouched by every instruction and in the locals area; at least two COMPLETED-C
+functions in the same source file each declare a real (read or written) array of the same element type and count
+at the same offset from a local object whose leading members have the layout and use of the object the region
+follows, cited by file:line, at least one of them a separate local immediately after that object (the array
+copied), the others separate locals or trailing members of the sibling's own struct (a same-offset array of a
+different size, or one that is unused, FAKE-annotated or admitted under this family, is corroboration only and
+does not count toward the two); the declaration is a separate local immediately after that object, copying that
+sibling array's element type, count and identifier with `volatile` added (e.g. `volatile s16 digit[3];`),
+with the build's frame equal to the target's; the family's FORM CONSTRAINT holds apart from position, name and
+element type
+(literal count, never referenced, no shims); `volatile` is the engine's sanctioned-pad marker (the sandbox strips
+an unused local array unless `_SANCTIONED_UNWRITTEN_PADS` has a row, which requires it), and the non-volatile
+spelling is banked byte-identical; no pad/dummy names; a FAKE annotation cites the siblings and the ledger;
+honest producers are measured inert first; each landing adds its own per-function `_SANCTIONED_UNWRITTEN_PADS`
+row (a detector-config change reviewed with the landing, no engine code change; this ruling adds none); and a
+fresh layer-2 reviews it. A struct member, a scalar or other filler is outside it. This supersedes,
+for arrays meeting all eight prongs only, the family's first-decl position (and the 2026-08-17/18 func_8003CF84
+"trailing does not generalize" line), its `pad` name and its `u32` element type. Nothing is pre-decided: func_8005E54C and func_8005C8A8 are fresh
+submissions.
+
+## 2026-09-29 — OWNER RULING — one cast store on a local array (`.claude/rules/no-new-park-categories.md` § aggregate merge, "Amendment: one cast store on a local array")
+
+Twentieth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 20, Q36, a follow-up to Q33). The
+owner chose "Allow narrowly (Recommended)". Admitted (full text and prongs (1)-(7) in the rule file): exactly one
+statement `*(s32 *)arr = value;` (or `u32`) per function, ONLY when `arr` is a four-byte local array declared with
+its real element type, narrower than 32 bits (s8, u8, s16, u16), and also accessed through its elements elsewhere
+in the function, at least one such access a read whose value the function consumes (an array with no element read
+is governed by dead-vars-local-array.md, not this ruling); the target shows at that position one `sw` at exactly the array's frame offset covering
+exactly its bytes (cited by address) and the build emits it there; it is a store, and the function has no other
+cast of that array (no cast load, no partial or other-width cast); the Q33 union spelling of the same local was
+measured on the same body and misses (score banked; a union that reaches the target wins); an inline annotation
+cites the address, the ledger and this ruling; and a fresh layer-2 reviews it. Locals only: globals, statics,
+struct members and pointed-to objects take the Q33 union form, and prong (d)'s pun ban stands for them. Nothing
+is pre-decided: func_8005E54C's `*(s32 *)vals = 0;` (0x8005EA44 `sw $zero,0x18($sp)`) is a fresh submission.

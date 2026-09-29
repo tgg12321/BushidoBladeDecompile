@@ -1305,6 +1305,45 @@ values.
   This is not a staged-value borrow ([[staged-value-reused-variable]] stays separate, and the variable may
   not claim it). Record: docs/grind/decisions.md 2026-09-28 OWNER RULING — a GTE-macro-input copy as a
   Ruling 11 value.
+  **A plain copy as one value (owner ruling 2026-09-29, twentieth batch, Q34).**
+  The question put to the owner, verbatim: "In func_8005E54C the shipped code copies one variable into another (`move s4,s0`: the round counter starts from the TOTAL row's y). That variable later holds other real values, and our shared-variable rule (Ruling 11) refuses any value that is just a copy. Without the copy the function is 6 instructions off. Allow a plain copy as one of a shared variable's values, when the copy instruction is in the shipped bytes?" Owner (Trenton) chose, verbatim: **"Allow narrowly (Recommended)"**, whose text is: "Only when the register copy is in the target's bytes at that spot, the variable's other values are real computations, and the full Ruling 11 proof and fresh layer-2 still apply. This is like the GTE-input copy exception you granted on 2026-09-28." (Record: docs/grind/owner-rulings-2026-09-26.md, batch 20.) The author's
+  narrowing, modeled on the GTE-macro input copy clause above: a value whose only write is a bare copy, and
+  which that clause does not admit, counts as a real value under (3) ONLY when ALL of (a)-(f) hold:
+  (a) **One bare copy of a named local.** The value has exactly one write, `var = src;`, whose whole
+      right-hand side is a named local variable of this function: not a parameter (a copy of a parameter
+      stays under Ruling 12), a global, a field, an array element, a constant or any other expression. No
+      cast is written; where `var` and `src` differ in type, the implicit conversion must add no instruction
+      ((b)). `src` has at least one read other than the copy, so that it is a variable used in its own right
+      and not a staging intermediate: the F1 constant→local→local staging chain stays refused, and
+      [[staged-value-reused-variable]] stays separate (the variable may not claim it).
+  (b) **The copy is in the target's bytes at that position.** The target contains the register copy that
+      implements it (`move rd,rs`, i.e. `addu rd,rs,$zero` or `or rd,rs,$zero`), cited in the ledger by
+      function and address, and the build emits it at the same position. No other instruction (an
+      extension, a truncation, arithmetic) implements the copy. A copy the compiler folds away, or that the
+      target implements otherwise, is not admitted.
+  (c) **The variable's other values are real computations.** The variable holds at least one other value,
+      in the sense defined above, and EVERY one of its other values meets (3) on its own: at least one of
+      its writes is a load, an arithmetic computation or a call result whose instructions appear in the
+      target's bytes. A variable any of whose other values is a bare copy (under this clause or the
+      GTE-macro input copy clause), holds only literal constants, or counts only through the
+      per-branch-constant clause, fails. A variable carries at most one value admitted under a copy clause.
+  (d) **Mechanism + search.** (D) applies in full, under § "Mechanism + search (Q31)" and the Q30 set-aside.
+      Two spellings are always banked and measured with the rest: a fresh local for the copy's value,
+      wherever it is declared and placed (the one-variable-per-value spelling), and the body with no copy at
+      all (`src` read directly where the copy's value is read). Each defeats the reuse only by reaching the
+      target (the whole function byte-identical under the build's cc1). (D)(4)'s measured alternatives
+      include the no-copy body.
+  (e) **Name and annotation.** (E) applies unchanged: the name is true of every value the variable holds,
+      the copy's value included. The (F) comment names the copy value as a copy of `src`, and cites this
+      clause and the ledger entry that holds the (b) address.
+  (f) **Everything else in Ruling 11 applies.** (A), (B), (C)(1)-(2) and (D)-(H) hold unchanged, including
+      a fresh layer-2 `cheat-reviewer` PASS on the exact body ((G)); on the Grinder path a Judge PASS is not
+      enough.
+  The GTE-macro input copy clause's closing list of refused copies is read subject to this clause: a copy
+  read by a C statement is admitted when it meets (a)-(f). A copy of a parameter, a copy into a variable whose
+  other values are copies or constants, a copy whose `src` has no other read, and a copy absent from the
+  target's bytes stay refused. Nothing is pre-decided: func_8005E54C's copy is a fresh submission. Record:
+  docs/grind/decisions.md 2026-09-29 OWNER RULING — a plain copy as one value of a Ruling 11 variable.
 - **(D) Allocator-dump proof of necessity** (the owner's first condition).
   The function's ledger (`memory/grind/<func>/`) banks all of:
   (1) **The dumps.** The compiler's allocation dumps for BOTH the reuse
@@ -1414,8 +1453,8 @@ showing only that the reuse scores better still fails.
 value (func_80060A68 `src`/`idx`) fails (B)(2). Constants staged through a
 local (func_8003FA24 `half`, the F1 chain) and bare copies (func_800288C8
 `tbl`, func_8002A458 `lzc_in`) fail (C)(3); those two may return only as fresh
-submissions meeting (C)(3)'s 2026-09-28 GTE-macro input copy clause and every
-other prong. A write whose value is never read
+submissions meeting (C)(3)'s 2026-09-28 GTE-macro input copy clause or its
+2026-09-29 plain copy clause, and every other prong. A write whose value is never read
 fails (B)(1). A variable whose per-value spelling needs an extra or a missing
 statement fails (C)(2). This ruling reopens no earlier FAIL by itself:
 func_800200DC `y1`, func_80045878 `c`, func_8008B488 `rate` and every other

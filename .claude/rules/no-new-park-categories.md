@@ -835,6 +835,159 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     against (1)-(6); nothing here pre-decides it. Record:
     docs/grind/decisions.md 2026-09-27 OWNER RULING — per-file declarations
     of the same bytes.
+  - **Amendment to prong (d): a union word view over small fields (owner
+    ruling 2026-09-29, twentieth batch, Q33).** The question put to the
+    owner, verbatim: "Some shipped code clears two adjacent 16-bit values
+    with one 32-bit store. Right now the only way to write that is a
+    pointer cast, which the reviewers reject. It affects func_8005E54C (a
+    local pair of round counters) and func_80070188's neighbour (the
+    0x800A3560 slot records, the open item in borderline.md). A cast-free
+    way is to declare the storage as a union of the small fields and one
+    32-bit word. May we use a union like that, when the shipped bytes show
+    the single 32-bit access?" Owner (Trenton) chose, verbatim: **"Allow,
+    with evidence (Recommended)"**, whose text is: "A union of the real
+    fields plus one word member is allowed only where the original bytes
+    show a single word store or load over those fields. Layer-2 reviews
+    every use. This closes func_8005E54C's counters and lets 0x800A3560 be
+    declared as records, which drops about 9 filler variables." (Record:
+    docs/grind/owner-rulings-2026-09-26.md, batch 20.) What follows is the
+    author's narrowing, not the owner's words. An object (a global or a
+    local) may be declared as a union with a word member ONLY when ALL of
+    (1)-(7) hold:
+    1. **The original bytes show one word access.** At every site that
+       names the word member, the function's original instructions
+       (`asm/funcs/<func>.s`) show ONE `lw` or `sw` spanning exactly the
+       bytes the word member covers, cited in the ledger by function,
+       address and opcode, and the build emits that one instruction there.
+       Only a 32-bit access qualifies (the question and the answer speak of
+       a single 32-bit, word, store or load). A halfword view, an
+       unaligned `lwl`/`lwr` or `swl`/`swr` pair, a block copy and any
+       access wider than a word are outside this amendment.
+    2. **Exactly the real object plus one word.** The union has exactly two
+       members: the real object (the record array, struct or field array
+       that its own evidence establishes, e.g. under prongs (a)-(b) for a
+       merged global) and one `s32` or `u32` member. Union members start
+       at offset 0, so the word covers the object's first four bytes: the
+       original word access must start at the object's first byte, and the
+       object must be at least four bytes long. No third member, no nested
+       union, no padding or filler member added for the union, no word
+       member at any other offset. Where an instruction acting on a loaded
+       word reveals signedness (the evidence list of the Q13 amendment to
+       (a4′) above), the word member's type has that signedness. Its name
+       claims only that it is the word view (e.g. `word`); a role name
+       needs its own evidence ([[names-require-evidence]]).
+    3. **The word member only at the word sites.** The word member is
+       named only at sites whose original bytes show the (1) access. Every
+       other access to those bytes, in every function, goes through the
+       real object's members. A word-member store writes a value the target
+       stores there; a word-member load's value is consumed by the
+       function's logic.
+    4. **No cast, no constructor.** No pointer cast to, from or through the
+       union or either member at any site; no cast-to-union constructor
+       (`(union u)x`); the union is not reached through a union-typed
+       parameter or return value. Prong (d)'s ban on per-use pointer puns
+       is otherwise unchanged: a pointer cast over the object stays refused
+       even where a union would serve, except the one cast store on a local
+       array that the Q36 amendment below admits.
+    5. **Globals and locals.** For a global, the union is the object's one
+       canonical declaration in the shared header, and every aggregate-merge
+       prong (a)-(e), with its amendments, that governs that declaration
+       holds. The word member is not object-model evidence for (a) and
+       changes nothing in (b). Every other consumer is respelled through
+       the union's members and stays byte-neutral ((e)). For a local, the
+       union is the local's one declaration at its scope. Its real member
+       is typed by the function's own accesses as any local is, and every
+       other rule that governs the local (e.g. Rulings 5-12 of
+       [[ordinary-c-judge-decidable]] for a reused local) applies
+       unchanged.
+    6. **Layer-2 reviews every use.** Every commit that adds a union under
+       this amendment, or adds a site naming a word member, needs a fresh
+       layer-2 `cheat-reviewer` PASS that checks (1)-(5) at each site
+       against the ledger's cited addresses. On the Grinder path a Judge
+       PASS is not enough: such a body lands only through the manual path's
+       layer-2. Sandbox 0 and full-build SHA1 == oracle apply as always.
+    7. **What this is not.** This is NOT the F5 union-constructor CLOBBER
+       ("Surveyed and NOT extended" below; refused 2026-07-19), which
+       retypes a scalar as a single-member union and assigns through a
+       cast-to-union constructor so that GCC emits a bare CLOBBER that
+       changes jump2's cross-jump: a union with no data purpose, used only
+       for an RTL side effect. That family, the dead union local, the
+       single-member union and every other USE/CLOBBER-manufacture spelling
+       stay refused; a union that misses any of (1)-(6) gets nothing from
+       this amendment. The Q21 exception's condition (2) above still
+       refuses a union as a per-file second view of the same bytes, and the
+       Silent Hill two-view practice stays refused.
+
+    Nothing is pre-decided: func_8005E54C's local, and a record declaration
+    of 0x800A3560 (func_80070188, landed COMPLETED-C 9e69a87c7 without it;
+    func_8006E534 and the object's other consumers), are fresh submissions
+    judged against (1)-(7). Record: docs/grind/decisions.md 2026-09-29
+    OWNER RULING — a union word view over small fields.
+  - **Amendment: one cast store on a local array (owner ruling 2026-09-29,
+    twentieth batch, Q36, a follow-up to Q33).** The question put to the
+    owner, verbatim: "Follow-up on the union answer. For func_8005E54C's
+    local pair of 16-bit counters, measurement shows the union can't
+    reproduce the shipped code. GCC 2.7.2 keeps a 4-byte union in a
+    register and moves it to the stack too late, leaving the function 197
+    instructions off. The only matching form is almost certainly what the
+    original programmer wrote: a local `s16 vals[2]` cleared with one cast
+    store, `*(s32 *)vals = 0;`, at a single site. May that one cast store
+    on a local array be allowed?" Owner (Trenton) chose, verbatim:
+    **"Allow narrowly (Recommended)"**, whose text is: "Only a local
+    array, written once through a 32-bit cast at a site where the target
+    bytes show exactly that one word store covering exactly the array,
+    after the union form was measured and failed. It must be annotated and
+    pass layer-2. The union answer still covers globals like 0x800A3560."
+    (Record: docs/grind/owner-rulings-2026-09-26.md, batch 20.) What
+    follows is the author's narrowing, not the owner's words. One
+    statement of the form `*(s32 *)arr = value;` (or `*(u32 *)arr =
+    value;`) is admitted ONLY when ALL of (1)-(7) hold:
+    1. **A local array with its real element type.** `arr` is a local
+       array of this function (not a parameter, global, `static`, struct
+       member or pointer), declared with the element type its other
+       accesses show (e.g. `s16 vals[2]` for halfword counters), and its
+       total size is exactly four bytes. The array is also accessed through
+       its elements (`arr[i]`) elsewhere in the function, at least one such
+       access is a read whose value the function consumes, and the element
+       type is narrower than 32 bits (s8, u8, s16, u16). An array with no
+       element read is governed by [[dead-vars-local-array]], not by this
+       amendment.
+    2. **One word store in the target, exactly over the array.** The
+       target function's original instructions show, at that statement's
+       position, ONE `sw` at exactly the array's frame offset, covering
+       exactly its four bytes (e.g. func_8005E54C 0x8005EA44
+       `sw $zero,0x18($sp)`), cited in the ledger by address; the build
+       emits that one instruction there, and the stored value is the one
+       the target stores.
+    3. **Written once, a store only.** The body contains exactly one such
+       cast statement, and it is a store. A cast load, a second cast
+       store, a halfword or byte cast, a cast of a pointer to part of the
+       array (`(s32 *)&arr[1]`), a cast to any other type, and any other
+       cast of that array's address anywhere in the function fail. Every
+       other access to the array goes through its elements (`arr[i]`).
+    4. **The union form was measured and missed first.** The ledger banks
+       the Q33 union spelling of the same local (the array and one word
+       member, used at this site) on the same body, with its
+       `sandbox --disable all` score, and it does not reach the target.
+       A union spelling that reaches the target wins, and this amendment
+       does not apply.
+    5. **Annotation.** An inline comment at the cast statement says that
+       it is one word store over the whole array, cites the (2) address,
+       the ledger file holding the (4) measurement, and this ruling.
+    6. **Layer-2.** A fresh layer-2 `cheat-reviewer` PASS checks (1)-(5)
+       against the ledger. On the Grinder path a Judge PASS is not enough:
+       such a body lands only through the manual path's layer-2. Sandbox 0
+       and full-build SHA1 == oracle apply as always.
+    7. **Locals only.** A global, a static, a struct member, a merged
+       aggregate or any object reached through a pointer never qualifies:
+       globals take the Q33 union form (the owner's answer names
+       0x800A3560), and prong (d)'s pun ban stands for them. This admits no
+       other pointer cast of any kind, and no cast-offset access
+       ([[cast-offset-access-not-in-struct]] class).
+
+    Nothing is pre-decided: func_8005E54C's `*(s32 *)vals = 0;` is a fresh
+    submission judged against (1)-(7). Record: docs/grind/decisions.md
+    2026-09-29 OWNER RULING — one cast store on a local array.
 - **`do { ... } while (0);` wrap** (empty or non-empty body)
   ([[do-while-zero-exception]] / [[sotn-do-while-zero-research-2026-06-04]]):
   sanctioned as a pure-C match device for ANY codegen effect, including
@@ -1007,6 +1160,106 @@ annotation, layer-1+2 review):
   Prerequisites: `// !FAKE` annotation; ledger frame-forensics showing
   the target slot genuinely untouched ([[phantom-slot-frame-lever]]
   procedure); honest producers measured inert first.
+  - **Extension: a trailing unused local array with sibling evidence
+    (owner ruling 2026-09-29, twentieth batch, Q35).** The question put to
+    the owner, verbatim: "func_8005E54C's stack frame has 8 bytes after a
+    local struct that no instruction touches. The sibling functions keep a
+    digit array at exactly that spot, so the original probably declared an
+    array there that this function never uses. An unused, labelled pad
+    local is allowed today only as the FIRST local, and the trailing
+    position was granted to one function only. Without it the function is
+    47 instructions off. Allow a trailing unused local array when sibling
+    functions show a real array at that slot?" Owner (Trenton) chose,
+    verbatim: **"Allow with sibling evidence (Recommended)"**, whose text
+    is: "A FAKE-labelled unused array in a non-leading position is allowed
+    only when the frame layout proves the bytes are untouched and
+    completed sibling functions declare a real array of that size at that
+    offset. It needs honest names, the frame measurements recorded, and
+    layer-2. Lane B's func_8005C8A8 may hit the same frame gap." (Record:
+    docs/grind/owner-rulings-2026-09-26.md, batch 20.) What follows is the
+    author's narrowing, not the owner's words. It relaxes, for an array
+    meeting ALL of (1)-(8), only three parts of the FORM CONSTRAINT above:
+    the first-decl position (and with it the 2026-08-17/18 func_8003CF84
+    "trailing does not generalize" line), the `pad` name, and the `u32`
+    element type (replaced by the cited sibling array's own type).
+    Everything else in this entry stands.
+    1. **Frame forensics prove the bytes untouched.** The ledger lists
+       every `$sp`-relative access in the target function (address, opcode,
+       offset) and shows that no instruction touches the region. It gives
+       the region's exact offset and size, and shows that it lies in the
+       locals area, not the outgoing-argument, callee-save or reload spill
+       area ([[phantom-slot-frame-lever]] instruments: the `.frame`
+       gradient and the spill-slot order).
+    2. **Completed siblings declare a real array there.** At least two
+       COMPLETED-C functions in the same source file each declare, in
+       committed source, a real array of the same element type and count
+       as the (3) declaration. Each array sits at the same offset from the
+       start of a local object whose leading members, over the size of the
+       object the region follows, have that object's layout and are used
+       the same way. Each is cited by file:line. At least one is a separate
+       local declared immediately after that object, and that is the array
+       (3) copies. The others may be separate locals or trailing members of
+       the sibling's own struct. Each is real: the sibling's own code reads
+       or writes it (line cited). A same-offset array of a different size,
+       or one that is itself unused, FAKE-annotated or admitted under this
+       family, is corroboration only and does not count toward the two.
+    3. **Same array, same place.** The declaration copies the (2)
+       separate-local sibling array's element type and element count
+       exactly. It is a
+       separate local declared immediately after the local object it
+       follows; a member added to a struct type, a scalar, and any filler
+       beside the array are outside this extension. The element type is one
+       the engine's unused-array detector reads (`s8`, `u8`, `s16`, `u16`,
+       `s32`, `u32`, `char`, `short`, `int`, `long`). With the array, the
+       build's frame equals the target's (frame size, locals-region size and
+       every `$sp` offset), and the array's bytes, rounded up to the
+       compiler's stack-slot alignment, are exactly the (1) region.
+    4. **Form: the sibling's declaration with `volatile` added.** A
+       landing declares the cited sibling array's exact element type,
+       count and identifier, with `volatile` added (e.g. `volatile s16
+       digit[3];` after the object it follows), with no initializer, never
+       referenced, and no `(void)` shims. This is the family's FORM
+       CONSTRAINT with only the position, name and element type changed. The reason for
+       `volatile`: it is the engine's sanctioned-pad marker, not a codegen
+       device. The sandbox strips every never-referenced local array unless
+       `_SANCTIONED_UNWRITTEN_PADS` has a row for it, and that allowlist
+       admits only a `volatile`-qualified declaration (see (8)). The ledger
+       banks that the same declaration without `volatile` compiles
+       byte-identically (both listings or object hashes, with the command
+       lines), so the qualifier is shown to do no codegen work.
+    5. **An honest name.** The name is the cited sibling array's own
+       identifier (e.g. `digit`), which states the role the siblings' array
+       has. `pad`, `pre_pad`, `pad2`, `dummy`, `spill`, `slack`, `_unused`,
+       `_tmp` and other coercion-announcing names are not admitted under
+       this extension: the FORM CONSTRAINT's `volatile u32 pad[N]` is the
+       family's example, and the engine allowlist keys on the exact name,
+       not on `pad`.
+    6. **Annotation.** A `/* FAKE: ... */` (or `// !FAKE:`) comment at the
+       declaration says the array is unused here, cites the (2) sibling
+       declarations by file:line, the ledger file holding the (1) census
+       and the (7) measurements, and this ruling.
+    7. **Honest producers measured inert first.** The ledger banks, with
+       `sandbox --disable all` scores and the `.frame` gradient: the body
+       without the array, all three [[phantom-slot-frame-lever]] producers,
+       and every real local of the function that could occupy the region,
+       each leaving the frame short of the target's.
+    8. **Engine row and review.** The sandbox's
+       `find_unused_local_arrays` flags every never-referenced local array,
+       and `engine/volatile_cheats.py` `_SANCTIONED_UNWRITTEN_PADS` admits
+       one only through an exact (function, name, element count) row with
+       the declaration `volatile`-qualified. Each landing therefore adds
+       its own per-function row, a detector-config change to that table
+       only (no engine code change), reviewed by the landing's layer-2,
+       citing this ruling, with `engine test` kept green; this ruling adds
+       no row. A fresh layer-2 `cheat-reviewer` PASS walks
+       (1)-(7) against the ledger; on the Grinder path a Judge PASS is not
+       enough. Sandbox 0 and full-build SHA1 == oracle apply as always.
+
+    Nothing is pre-decided: func_8005E54C (whose ledger names
+    func_8005D814, func_8005E098 and func_8005F1C8 as siblings) and
+    func_8005C8A8 are fresh submissions judged against (1)-(8). Record:
+    docs/grind/decisions.md 2026-09-29 OWNER RULING — a trailing unused
+    local array with sibling evidence.
 
 Surveyed and NOT extended (2026-08-18, refusals stand): F1
 constant→local→local staging chain (WEAK — genus shipped, species not),

@@ -2,7 +2,7 @@
 name: dead-vars-local-array
 paths: [".claude/rules/dead-vars-local-array.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
-description: "FORBIDDEN as of 2026-05-31 (expanded 2026-06-01) — unused local arrays and (void)&scalar address-coercion. NARROW CARVE-OUT 2026-07-01: a WRITTEN-never-read local array is sanctioned (SOTN dra/62DEC.c ships u8 sp70[4] written 4x/read 0x, twice, in matched core) when the TARGET bytes contain the dead stores (oracle-enforced), after exhaustion, FAKE-annotated, dual-reviewed. OVERSIZED-LOCALS CARVE-OUT 2026-07-13: a locals object with an unwritten tail (written-prefix buffer) or, fallback, a dead pad local is sanctioned when the target frame equation PROVES the original declared locals strictly larger than the bytes it writes — frame-math proof + range annotation + exhaustion + dual review required."
+description: "FORBIDDEN since 2026-05-31: unused local arrays and (void)&scalar coercion. Carve-outs: a WRITTEN-never-read array when the target bytes hold the dead stores (2026-07-01); OVERSIZED-LOCALS unwritten tail, or fallback dead pad, when the frame equation proves the original locals strictly larger than the bytes written, range-annotated (2026-07-13); a trailing unused array with COMPLETED-C sibling evidence (Q35, 2026-09-29). Each needs exhaustion, FAKE annotation and dual review."
 metadata:
   type: reference
   status: forbidden
@@ -98,6 +98,29 @@ metadata:
 > allowlist through the engine (with `engine test` kept green) is part
 > of closing the FIRST fully-dead-pad family member; do not weaken the
 > detector silently.
+
+> **TRAILING UNUSED ARRAY WITH SIBLING EVIDENCE (owner ruling 2026-09-29,
+> twentieth batch, Q35).** An UNWRITTEN local array in a non-leading
+> position is admitted only under the phantom-frame-slot volatile pad
+> family's Q35 extension ([[no-new-park-categories]] § "Phantom-frame-slot
+> volatile pad local", "Extension: a trailing unused local array with
+> sibling evidence"), and only when every one of its prongs (1)-(8) holds:
+> frame forensics prove the bytes untouched; at least two COMPLETED-C
+> same-file siblings declare a real array of the same element type and
+> count at the same offset from a same-layout local object (file:line), at
+> least one as a separate local immediately after it, which is the array
+> copied (a different-size, unused or FAKE sibling array is corroboration
+> only); the declaration is that sibling's exact element type, count and
+> identifier
+> with `volatile` added (the engine's sanctioned-pad marker, its
+> byte-neutrality banked), never a `pad`/`dummy` name; FAKE annotation; honest
+> producers measured inert first; a per-function
+> `_SANCTIONED_UNWRITTEN_PADS` row; layer-2. The volatile qualifier there
+> is the family's allowlist form, proven byte-neutral, not the volatile
+> coercion the OVERSIZED-LOCALS list above still forbids. Every other
+> unwritten array stays FORBIDDEN as below. Record:
+> docs/grind/decisions.md 2026-09-29 OWNER RULING — a trailing unused
+> local array with sibling evidence.
 
 ## Status
 

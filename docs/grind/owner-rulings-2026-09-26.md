@@ -301,3 +301,35 @@ the run was being set up:
 
 No question was put to the owner; these are the owner's own words, unprompted. The rule text is
 .claude/rules/ordinary-c-judge-decidable.md § Ruling 13.
+
+# Owner exchange 2026-09-29 (twentieth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: unattended manual-lane run (three lanes). laneC (func_8005E54C) reported three constructs that each
+need an owner decision (memory/grind/func_8005E54C/evidence.md, match0/: sandbox 0/799 with all three; the score
+with each removed alone: union 2, copy 6, trailing pad 47). Question 1 also covers the open borderline.md entry
+of 2026-09-29 (func_80070188 with func_8006E534, a word view of the 0x800A3560 slot records). The owner was
+present and answered all three in one call.
+
+## Q33 — a union word view over small fields
+Question, verbatim: "Some shipped code clears two adjacent 16-bit values with one 32-bit store. Right now the only way to write that is a pointer cast, which the reviewers reject. It affects func_8005E54C (a local pair of round counters) and func_80070188's neighbour (the 0x800A3560 slot records, the open item in borderline.md). A cast-free way is to declare the storage as a union of the small fields and one 32-bit word. May we use a union like that, when the shipped bytes show the single 32-bit access?"
+Owner chose: **"Allow, with evidence (Recommended)"** — option text: "A union of the real fields plus one word member is allowed only where the original bytes show a single word store or load over those fields. Layer-2 reviews every use. This closes func_8005E54C's counters and lets 0x800A3560 be declared as records, which drops about 9 filler variables."
+Other option offered: "Don't allow" — "These stay unfinished and keep grinding for another spelling. func_80070188 stays as landed, with its filler variables."
+
+## Q34 — a copy as one value of a shared variable
+Question, verbatim: "In func_8005E54C the shipped code copies one variable into another (`move s4,s0`: the round counter starts from the TOTAL row's y). That variable later holds other real values, and our shared-variable rule (Ruling 11) refuses any value that is just a copy. Without the copy the function is 6 instructions off. Allow a plain copy as one of a shared variable's values, when the copy instruction is in the shipped bytes?"
+Owner chose: **"Allow narrowly (Recommended)"** — option text: "Only when the register copy is in the target's bytes at that spot, the variable's other values are real computations, and the full Ruling 11 proof and fresh layer-2 still apply. This is like the GTE-input copy exception you granted on 2026-09-28."
+Other option offered: "Don't allow" — "Plain copies stay refused. func_8005E54C keeps grinding for another spelling."
+
+## Q35 — a trailing unused local array with sibling evidence
+Question, verbatim: "func_8005E54C's stack frame has 8 bytes after a local struct that no instruction touches. The sibling functions keep a digit array at exactly that spot, so the original probably declared an array there that this function never uses. An unused, labelled pad local is allowed today only as the FIRST local, and the trailing position was granted to one function only. Without it the function is 47 instructions off. Allow a trailing unused local array when sibling functions show a real array at that slot?"
+Owner chose: **"Allow with sibling evidence (Recommended)"** — option text: "A FAKE-labelled unused array in a non-leading position is allowed only when the frame layout proves the bytes are untouched and completed sibling functions declare a real array of that size at that offset. It needs honest names, the frame measurements recorded, and layer-2. Lane B's func_8005C8A8 may hit the same frame gap."
+Other option offered: "Don't allow" — "Keep leading-only. func_8005E54C keeps grinding for a real local that fills the gap."
+
+## Q36 — follow-up to Q33: one cast store on a local array
+Context: after Q33, laneC measured (memory/grind/func_8005E54C/evidence.md) that `union { s16 v[2]; s32 word; } vals;`
+scores 197 (GCC 2.7.2 gives a 4-byte aligned union SImode, expand_decl keeps it in a pseudo, put_var_into_stack
+moves it too late; frame 216 vs 184); `volatile union` 146; an `s16 v[4]` union 0 but with a fake size; a plain
+`s16 vals[2]` with `*(s32 *)vals = 0;` 0 (the target's object at sp+0x18 is allocated at declaration, i.e.
+BLKmode, consistent with an s16 array). The single site is 0x8005EA44 `sw zero,0x18(sp)`.
+Question, verbatim: "Follow-up on the union answer. For func_8005E54C's local pair of 16-bit counters, measurement shows the union can't reproduce the shipped code. GCC 2.7.2 keeps a 4-byte union in a register and moves it to the stack too late, leaving the function 197 instructions off. The only matching form is almost certainly what the original programmer wrote: a local `s16 vals[2]` cleared with one cast store, `*(s32 *)vals = 0;`, at a single site. May that one cast store on a local array be allowed?"
+Owner chose: **"Allow narrowly (Recommended)"** — option text: "Only a local array, written once through a 32-bit cast at a site where the target bytes show exactly that one word store covering exactly the array, after the union form was measured and failed. It must be annotated and pass layer-2. The union answer still covers globals like 0x800A3560."
+Other option offered: "Don't allow" — "func_8005E54C stays unfinished (2 instructions off) and keeps grinding for another spelling."
