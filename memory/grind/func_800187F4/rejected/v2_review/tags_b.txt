@@ -1,0 +1,16 @@
+lz_r11abl_temp_lzc_in_P1
+lz_r11abl_temp_lzc_in_P2
+lz_r11abl_temp_lzc_in_P4
+lz_r11abl_temp_lzc_in_P5
+lz_r11abl_temp_lzc_in_P6
+lz_r11abl_temp_lzc_in_P7
+lz_r11abl_temp_lzc_in_P8
+lz_r11abl_temp_lzc_in_P9
+lz_r11pv_temp_P1
+lz_r11pv_temp_P2
+lz_r11pv_temp_P4
+lz_r11pv_temp_P5
+lz_r11pv_temp_P6
+lz_r11pv_temp_P7
+lz_r11pv_temp_P8
+lz_r11pv_temp_P9

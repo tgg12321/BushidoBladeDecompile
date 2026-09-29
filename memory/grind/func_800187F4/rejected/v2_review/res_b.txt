@@ -1,0 +1,16 @@
+lz_r11abl_temp_lzc_in_P7 diff=27 tgt=662 ours=662 li19=2
+lz_r11pv_temp_P9 diff=61 tgt=662 ours=662 li19=2
+lz_r11pv_temp_P4 diff=61 tgt=662 ours=662 li19=2
+lz_r11abl_temp_lzc_in_P1 diff=26 tgt=662 ours=662 li19=2
+lz_r11abl_temp_lzc_in_P8 diff=27 tgt=662 ours=662 li19=2
+lz_r11pv_temp_P5 diff=42 tgt=662 ours=662 li19=2
+lz_r11abl_temp_lzc_in_P2 diff=26 tgt=662 ours=662 li19=2
+lz_r11pv_temp_P6 diff=64 tgt=662 ours=662 li19=2
+lz_r11abl_temp_lzc_in_P9 diff=26 tgt=662 ours=662 li19=2
+lz_r11abl_temp_lzc_in_P4 diff=26 tgt=662 ours=662 li19=2
+lz_r11pv_temp_P7 diff=42 tgt=662 ours=662 li19=2
+lz_r11pv_temp_P1 diff=61 tgt=662 ours=662 li19=2
+lz_r11abl_temp_lzc_in_P5 diff=27 tgt=662 ours=662 li19=2
+lz_r11pv_temp_P8 diff=42 tgt=662 ours=662 li19=2
+lz_r11pv_temp_P2 diff=61 tgt=662 ours=662 li19=2
+lz_r11abl_temp_lzc_in_P6 diff=33 tgt=662 ours=662 li19=2
