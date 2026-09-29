@@ -55,7 +55,24 @@ target frame 0xB8, ours 0xB0: the target has one extra 8-byte spill slot at 0x78
 initially-unallocated pseudos (BB2_FRAME_DEBUG: p72,p75,p78,p79,p80,p82,p490,p537 in ours), so the target has one more
 MEM pseudo X with 82 < X < 490 whose every reference vanished. Known mechanism that leaves such a hole:
 reload1.c delete_output_reload "forget we had a stack slot" (a LOCAL pseudo, one death, completely replaced by
-inherited reload regs) — the slot's frame space stays allocated. The only t0-computed-and-consumed value in the target
+inherited reload regs) â€” the slot's frame space stays allocated. The only t0-computed-and-consumed value in the target
 is `mflo t0; sll v0,t0,3` (the icon-loop product j*count), whose code is identical whether the product pseudo is in LO
 (ours: global gives pseudo 150 LO, pref LO_REG else GR_REGS) or MEM (target?). Not yet reproduced; ruled out so far:
 size spellings e1-e5 (tmp/func_8005C8A8/v), named product intermediate m1, pointer-arith m2, operand order m3.
+
+Hole investigation (s2, 2026-09-29), all measured with tmp/orch/sbx.ps1 / tools/sandbox_sweep.ps1 on the committed
+candidate (variants in tmp/func_8005C8A8/v/):
+- cc1psx calibration (tmp/func_8005C8A8/psx.sh): the ORIGINAL compiler on this exact C also emits .frame 176
+  (vars=112) - the missing slot is in the source, not a toolchain difference.
+- A copy of mode (`m2 = mode;`, declared last, regno between size and the loop temps) that the FINAL dim tile reads
+  reproduces the slot at exactly 0x78 and every other offset: score 2 (tmp/func_8005C8A8/v/nv2.c). The two remaining
+  diffs are the copy's own `sw t0,0x78` and the final tile reading 0x78 instead of mode's 0x48. 15-variant matrix
+  (copy placed at 5 points x 3 use-sets, mx_*.c): every variant whose final tile reads the copy scores 2; every
+  variant where the final tile reads mode folds the copy away in cse (score 30). The copy is a no-op copy (refused
+  construct), so nv2 is diagnostic only, NOT a landing form.
+- Decomp-permuter (2 campaigns: tmp/perm_c8a8 from the candidate, 4.7k iterations, best 338 = the same mode copy;
+  tmp/perm_c8a8_nv2 from nv2, 4.5k iterations, nothing below its base).
+- Killed (frame stays 0xB0): inline helper set_pair(...) for the centred pairs (ih1-4, also +2..4 insns);
+  Size5C8A8 *sz pointer (sz1-3, loses insns); param types s16/u16/u8 mode, s16 ot (pt1-4); extra `start` base
+  variable for size (z1, z3), `size = end_off - (s32)tile` (z2), `size = arg2 + 0x4F0; size -= arg2` (z4);
+  redundant k-diamond in the first border loop (hk1, +9 insns).
