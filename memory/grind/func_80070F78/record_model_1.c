@@ -13,7 +13,12 @@ void func_80070F78(s32 arg0, DescF97C *s) {
     s16 port_ofs;
     s32 max;
     s32 min;
+    s32 sel;
+    s32 id;
     s32 c;
+    s32 *tim;
+    s32 k;
+    s32 k2;
 
     flag = 0;
     sheets = *(s32 **)(D_800A35A8 + 0x74);
@@ -26,29 +31,22 @@ void func_80070F78(s32 arg0, DescF97C *s) {
     s->scale_y = 0x100;
     for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
         if (D_800A3578 == 0) {
-            s32 rec = i * 3;
-
-            if (D_800A3560[rec] == 5) {
-                D_800A3560[rec + 2] = 6;
+            if (D_800A3560[i].unk0 == 5) {
+                D_800A3560[i].unk2 = 6;
                 flag = 1;
                 ((s16 *)D_800A35C4)[i + 2] = 0;
-            } else if (D_800A3560[rec] == 0x10) {
-                D_800A3560[rec + 2] = 7;
+            } else if (D_800A3560[i].unk0 == 0x10) {
+                D_800A3560[i].unk2 = 7;
                 flag = 1;
                 ((s16 *)D_800A35C4)[i + 2] = 0;
             }
         }
     }
     for (i = 0; i < 1 + D_800A35B0 + (port_ofs = D_800A3558); i++) {
-        s32 rec;
-
         vram = *(u8 **)(D_800A35A8 + 0x7C);
         vram += i << 6;
         port = i - port_ofs;
-        rec = i * 3;
-        if (D_800A3560[rec] != 5 && D_800A3560[rec] != 0x10) {
-            s32 ofs;
-
+        if (D_800A3560[i].unk0 != 5 && D_800A3560[i].unk0 != 0x10) {
             if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
                 if (D_8009BC7C[D_800A3561] & 2) {
                     max = 5;
@@ -57,15 +55,14 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     max = 4;
                     min = 0;
                 }
-            } else if (D_8009BC7C[D_800A3560[i * 3 + 1]] & 2) {
+            } else if (D_8009BC7C[D_800A3560[i].unk1] & 2) {
                 max = 4;
                 min = 0;
             } else {
                 max = 5;
                 min = 1;
             }
-            ofs = i * 3;
-            if (D_800A3560[ofs + 2] == 0xFF) {
+            if (D_800A3560[i].unk2 == 0xFF) {
                 D_800A3544[i] = 7;
                 D_800A3540[i] = 0;
                 ((s16 *)D_800A35C4)[i + 2] = 0x1E;
@@ -78,31 +75,23 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 }
                 D_800A3594[i] = i;
                 if (D_800A35BC == 3) {
-                    s32 idx;
-                    s32 sel;
-                    s32 id;
-                    s32 *tim;
-
                     func_8005C650(1, 0x7F, 0x7F);
                     D_800A3565 = 0;
                     D_800A3562 = 0;
-                    idx = i * 3;
-                    if (D_8009BC7C[D_800A3560[idx + 1]] & 2) {
-                        sel = 0;
+                    if (D_8009BC7C[D_800A3560[i].unk1] & 2) {
+                        k = 0;
                     } else {
-                        sel = 1;
+                        k = 1;
                     }
-                    id = D_800A3560[idx + 2];
-                    tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + sel * 4);
-                    LoadImage(vram + id * 8, *tim);
+                    id = D_800A3560[i].unk2;
+                    {
+                        s32 *tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + k * 4);
+                        LoadImage(vram + id * 8, *tim);
+                    }
                     DrawSync(0);
                 } else if (D_800A354C & (0x40 << (port * 16))) {
-                    s32 sel;
-                    s32 id;
-                    s32 *tim;
-
                     func_8005C650(1, 0x7F, 0x7F);
-                    D_800A3560[i * 3 + 2] = D_8009BC38[D_800A3590[i]];
+                    D_800A3560[i].unk2 = D_8009BC38[D_800A3590[i]];
                     sel = 1;
                     if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
                         if (D_8009BC7C[D_800A3561] & 2) {
@@ -110,10 +99,10 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                         } else {
                             sel = 0;
                         }
-                    } else if (D_8009BC7C[D_800A3560[i * 3 + 1]] & 2) {
+                    } else if (D_8009BC7C[D_800A3560[i].unk1] & 2) {
                         sel = 0;
                     }
-                    id = D_800A3560[i * 3 + 2];
+                    id = D_800A3560[i].unk2;
                     tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + sel * 4);
                     LoadImage(vram + id * 8, *tim);
                     DrawSync(0);
@@ -131,7 +120,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                         if (D_800A3554 == 1) {
                             D_800A3563 = 0xFF;
                         } else {
-                            D_800A3560[i * 3] = 0xFF;
+                            D_800A3560[i].unk0 = 0xFF;
                         }
                         break;
                     }
@@ -141,7 +130,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     func_8005C650(2, 0x7F, 0x7F);
                     D_800A35C8[0] = 0xF;
                     D_800A35C8[1] = 0x14;
-                    D_800A3560[ofs + 2] = 0xFF;
+                    D_800A3560[i].unk2 = 0xFF;
                 }
                 D_800A3544[i] = 9;
                 if (((s16 *)D_800A35C4)[i + 2] != 0) {
@@ -188,27 +177,22 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 ((s32 *)arg0)[1] = func_80073728((s32)s, 0);
             }
         } else {
-            if (D_800A3578 == 0) {
-                s32 other = i == 0 ? 3 : 0;
-
-                if (D_800A3560[other + 2] != 0xFF && ((s16 *)D_800A35C4 + 2)[i == 0 ? 1 : 0] == 0) {
-                    s32 idx;
-                    s32 sel;
-                    s32 *tim;
-
-                    func_8005C650(1, 0x7F, 0x7F);
-                    flag = 2;
-                    vram = *(u8 **)(D_800A35A8 + 0x7C);
-                    vram += i << 6;
-                    idx = i * 3;
-                    if (D_8009BC7C[D_800A3560[idx + 1]] & 2) {
-                        sel = 0;
-                    } else {
-                        sel = 1;
-                    }
-                    tim = (s32 *)(D_800A35A8 + 0x14 + D_800A3560[idx + 2] * 8 + sel * 4);
-                    LoadImage(vram + D_800A3560[idx + 2] * 8, *tim);
-                    DrawSync(0);
+            if (D_800A3578 == 0 && D_800A3560[i == 0 ? 1 : 0].unk2 != 0xFF) {
+                if (((s16 *)D_800A35C4 + 2)[i == 0 ? 1 : 0] == 0) {
+                func_8005C650(1, 0x7F, 0x7F);
+                flag = 2;
+                vram = *(u8 **)(D_800A35A8 + 0x7C);
+        vram += i << 6;
+                if (D_8009BC7C[D_800A3560[i].unk1] & 2) {
+                    k2 = 0;
+                } else {
+                    k2 = 1;
+                }
+                {
+                    s32 *tim = (s32 *)(D_800A35A8 + 0x14 + D_800A3560[i].unk2 * 8 + k2 * 4);
+                    LoadImage(vram + D_800A3560[i].unk2 * 8, *tim);
+                }
+                DrawSync(0);
                 }
             }
             if (D_800A354C & (0x10 << (i * 16))) {
@@ -222,7 +206,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     D_800A3558 = 0;
                     D_800A3563 = 0xFF;
                 } else {
-                    D_800A3560[i * 3] = 0xFF;
+                    D_800A3560[i].unk0 = 0xFF;
                 }
                 ((s16 *)D_800A35C4)[i + 2] = 0x1E;
             }
@@ -236,7 +220,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
     s->ot_idx = 0xC;
     cells = s->header + 0x24;
     for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
-        if (D_800A3560[i * 3] != 5 && D_800A3560[i * 3] != 0x10 && D_800A3578 != 3) {
+        if (D_800A3560[i].unk0 != 5 && D_800A3560[i].unk0 != 0x10 && D_800A3578 != 3) {
             s->table = cells;
             s->x = (D_800A3590[i] << 6) + 0x80;
             s->y = 0xAC - (D_800A3594[i] << 5);
@@ -244,7 +228,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 if (D_8009BC7C[D_800A3561] & 2) {
                     s->table += *(u8 *)(s->header + 2) * 8;
                 }
-            } else if (!(D_8009BC7C[D_800A3560[i * 3 + 1]] & 2)) {
+            } else if (!(D_8009BC7C[D_800A3560[i].unk1] & 2)) {
                 s->table += *(u8 *)(s->header + 2) * 8;
             }
             s->pad0C = ((s32 *)arg0)[1];

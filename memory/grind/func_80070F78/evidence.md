@@ -77,3 +77,44 @@ Open construct questions for landing (not yet settled):
   store (union word view = Q33, being encoded 2026-09-29) — or a per-byte fallback with per-site
   FAKE record-offset locals (70188 style), unmeasured on this body yet.
 - `tim` pointer locals (three sites) and the selector variables `k`/`k2` separate from `sel`.
+
+### s2 continued (2026-09-29) — per-byte model closes; record/union model does not land
+- Timer select (locked arm, the other player's countdown): `((s16 *)D_800A35C4 + 2)[i == 0 ? 1 : 0]`
+  (also `[i == 0]` / `[!i]`) = the target's single base load + `addiu +4` / `+6` select; every
+  pointer-variable spelling (if/else, ?:, `+= ?:`, `&[..]`, block-local) seats base/pointer in v1/v0
+  (global.c allocno_compare tie at pri 30000: the variable's pseudo 86 < the load's 707, ALLOCDBG
+  `ord=6 pseudo=86` / `ord=8 pseudo=707`, dumps via tools/dump.py + BB2_ALLOC_DEBUG). Record model
+  6 -> 1 (record_model_1.c; the 1 is the GPREL-name artifact `%gp_rel(D_800A35C8+2)` vs
+  `D_800A35CA`, same bytes).
+- Q33 union merge measured (mini prefix with `union { Unk800A3560Record rec[2]; s32 word; }`):
+  67/822. Constant-offset member accesses (`.rec[0].unk2`, `.rec[1].unk0`, `.rec[1].unk2`,
+  `.rec[0].unk1`) go through change_address -> explow.c memory_address, which force_regs every
+  constant address at -G0; cse then shares one base (`lui s8; addiu s8,s8,5`, `sb zero,0(s8)` /
+  `sb zero,-3(s8)`) where the target stores gp-direct to D_800A3565 / D_800A3562. Only a scalar
+  VAR_DECL keeps (mem (symbol_ref)). So the record/union declaration cannot reproduce this function's
+  constant-offset accesses without per-byte scalar handles beside it (prong (c) forbids both), and the
+  landing stays on main's per-byte model (u8 D_800A3560[] + D_800A3561..D_800A3565 scalars).
+- Per-byte model: inline `D_800A3560[i * 3 + k]` everywhere = 149/818. Per-site offset locals
+  (70188 mechanism: an offset already in a pseudo keeps (plus off sym+k) legitimate in
+  explow.c memory_address; inline, force_operand copies sym+k into a pseudo that cse shares / loop.c
+  hoists). All 13 sites as locals: 13; + `other = i == 0 ? 3 : 0` for the other player's record: 1.
+  Single-site ablation (inline one local, others kept; tools/ablate.py): needed alone o1 (loop 1) 52,
+  o4 (sel test + else-arm cancel store) 10, o5 (==3 site) 23, o11 (locked LoadImage site) 26; o2 / o3 /
+  o6-o9 / o12-o14 each 1. Keeping only o1/o4/o5/o11: 14 (the three `[i * 3]` offset-0 sites then share
+  one hoisted `lui t1; addiu t1` symbol pseudo); adding back any ONE of o2 (loop-2 top) / o9 / o12 = 1.
+  Chosen: o2 (loop-2 top). `other` inline (`[(i == 0 ? 3 : 0) + 2]`) 13 (fold distributes the PLUS over
+  the COND_EXPR: two loads); in-condition assignment 1; block-scoped `s32 other = ...` 1.
+- tim pointer locals (ablation on the block form): inline at ==3 9, confirm 10, locked 15.
+  Selector per block (`sel` block-local at each LoadImage site) and `id` block-local per site: 1
+  (a_idb). vram split into two variables: 13 (b_f1/b_f2); one-statement vram: 24.
+- candidate.c (2026-09-29) = this body: mini TU 1, full TU (tools/sc.py) 1 (artifact only);
+  func_80070C70 0, func_80070188 0, func_800720FC 0, func_80071C4C 0 with the landing edits
+  (tools/sc_reps.py: prototype `DescF97C *`, func_80070C70's private PrimC70 typedef replaced by
+  DescF97C (identical layout; field renames only) so the call passes `&prim` without a cast).
+- PROOF (2026-09-29, laneA under the landing lock): tools/land.py splice + `lock.ps1 rebuild`:
+  build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true. Reverted and rebuilt green.
+- Ruling 11 per-value splits on candidate.c (r11/): vram 13, sheets (0x60 value separate) 3,
+  cells all 10 / else-arm only 4 / tail only 7 / pre-loop-3 only 10, everything split 24.
+  Mechanism sketch (dumps to bank): the 0x60 sheets value and the else-arm/tail cells values sit in
+  callee-saved fp / s0 only because they share the pseudo that crosses calls (loop 2/3); split, each is
+  a one-block pseudo that local-alloc gives a call-clobbered register.

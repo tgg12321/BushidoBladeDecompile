@@ -8,6 +8,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
     u8 *vram;
     s32 flag;
     s32 cells;
+    s32 cells_b;
     s16 i;
     s16 port;
     s16 port_ofs;
@@ -175,8 +176,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 } else {
                     s->header = sheets[i];
                 }
-                cells = s->header + 0xC;
-                s->table = cells;
+                cells_b = s->header + 0xC;
+                s->table = cells_b;
                 c = ((rsin(((((s32 *)D_800A35C4)[2] & 0x1F) << D_800A3544[i]) + i * 511) * 63) >> 12) - 0x40;
                 s->col_b = c;
                 s->col_g = c;

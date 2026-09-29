@@ -5,6 +5,7 @@ extern s16 D_800A3594[];
 extern u8 D_800A3562;
 void func_80070F78(s32 arg0, DescF97C *s) {
     s32 *sheets;
+    s32 *sheets2;
     u8 *vram;
     s32 flag;
     s32 cells;
@@ -228,8 +229,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
             }
         }
     }
-    sheets = *(s32 **)(D_800A35A8 + 0x60);
-    s->header = sheets[0];
+    sheets2 = *(s32 **)(D_800A35A8 + 0x60);
+    s->header = sheets2[0];
     s->scale_x = 0x80;
     s->scale_y = 0x80;
     s->has_color = 0;

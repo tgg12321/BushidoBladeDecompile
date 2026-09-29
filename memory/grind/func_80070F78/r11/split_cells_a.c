@@ -8,6 +8,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
     u8 *vram;
     s32 flag;
     s32 cells;
+    s32 cells_a;
     s16 i;
     s16 port;
     s16 port_ofs;
@@ -154,8 +155,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 }
                 *(u8 *)(s->header + 2) = D_800A3540[i];
                 s->has_color = 0;
-                cells = s->header + 0xC;
-                s->table = cells;
+                cells_a = s->header + 0xC;
+                s->table = cells_a;
                 s->x = (D_800A3590[i] << 6) + 0x85;
                 s->y = 0xB6 - (D_800A3594[i] << 5);
                 s->ot_idx = 7;
