@@ -29,3 +29,30 @@
 - [s1] No WIP checkpoint existed (memory/wip/ has only README). Ledger was a bare init_ledger skeleton (session_count=0) from a prior aborted blitz.
 
 - [s1] regfix.txt contains NO rules for this function (grep clean) — the only cheat is the asmfix replace_with_asmfile.
+
+## 2026-09-30 -- laneA manual session 2 (reset name func_80065800): first full C body, sandbox 57
+
+candidate.c is a complete C body. It uses dev alias names TMRx/POSx for the per-mode arrays at
+0x800F0BA8 (s16[18]) / 0x800F0CA0 (12-byte records[18]), which this TU still declares as ~70
+per-word scalars (D_800F0BA8.., D_800F0CA0..). A real landing needs that aggregate merge across
+the ~40 consumers in text1b_tu1c.c, plus moving jtbl_800158F8 / jtbl_80015940 out of
+src/text1a_b_pre_rodata_b.c. text1b_tu1c.o(.rodata) links right after it, and this function's
+two compiler tables land first in it, at 0x800158F8.
+Score 57 at 1452/1454 insns (alias-symbol addends account for ~7 operand-only hunks).
+Progression (tmp/f65800/): m2c draft 423 -> 405 (rgb store order, case 5 / case 0 shared else) ->
+369 (duplicated size stores, n local in case 12) -> 216 (explicit shared-quad code) -> 112 (y
+read as `*(s32 *)D_800A34B8 >> 16` = lh 2(a0), the sibling idiom) -> 91 (12-15 / 8-9 `goto quad`
+into case 3/4's coordinate code) -> 57 (w/h locals in the corner loop; separate scale locals).
+Findings:
+- 11-ish GTE islands (inline_c.h: SetRotMatrix, SetTransMatrix(outer), ldv0, rtps (post-DMPSX
+  0x4A180001), stsxy, stdp, stflg, stszotz).
+- Cross-jump ordering (BB2_XJUMP_DEBUG, tmp/f65800/dB/cc1.err): jump2 tries chain partners in
+  reverse insn order, and jumps redirected to NEW labels leave the chain. With plain duplicated
+  code, case 5's last two insns grab the 12-15 / 8-9 / 3-4 tails, giving three copies instead of
+  one. An explicit `goto quad` (own-label cross-jump against 3/4's code before `quad`) reproduces
+  the target's single copy exactly.
+- fold-const.c split_tree reassociates `w * (X * 25)` into `(w * 25) * X`; the target keeps
+  (X*25)*w, which we got with a separate local (sw / sh). This is a named-intermediate
+  candidate, so it needs FAKE paperwork or a better spelling.
+- Residual real diffs: case 10 t-pointer insn order; case 12 then-arm reload of TMR (CSE path);
+  loop init order (move s1,zero / move s3,s7).
