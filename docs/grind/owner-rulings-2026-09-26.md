@@ -428,3 +428,60 @@ Other options offered: "Keep the header rule" — "Declare Intr in a shared head
 Note: "library source" means the original Sony PsyQ source for that library module as identified in the project's
 libscan/provenance records (for Intr: PsyQ libcd bios.c, memory/closer/libcd-identity.md). Every other aggregate-merge
 prong still applies, and the TU must no longer declare any second C handle to the merged bytes.
+
+# Owner exchange 2026-09-30 (twenty-third batch, in conversation) — VERBATIM RECORD — GRANTED
+Context: after the Q37–Q42 remediation, the orchestrator listed the decisions still open and, at the owner's request
+("Lets go through all the decisions for me. What are your recommendations on these items?"), gave one recommendation
+per item. The owner's answer, verbatim:
+
+> "Go ahead with all your recommendations. Just know my highest priority is avoiding regressions, cheats or
+> workarounds being introduced. And weeding out any remaining cheats that might be lurking in our project. SOTN is
+> the gold standard when in doubt"
+
+The recommendations adopted, as presented to the owner (condensed only by removing the supporting prose):
+
+## Q43 — func_80036940 / CdState D_80101E58 (conditional)
+"If the cdrom_StartAudio proof holds: keep the merge, but shrink the struct to the span actually proven (roughly
+0x80101E58–0x80101E73). Today it runs to 0x80101EA7, which covers bytes nobody uses. The 0x80101E9C–0x80101EA7 part
+lost its proof when func_80036140 went back to assembly. If it fails: reopen func_80036940 and cdrom_StartAudio
+together with the layout change." (The proof is the Q2 (a1)/(a2) case under construction in
+tmp/audit-2026-09-29/q2-startaudio/; a fresh layer-2 decides whether it holds.)
+
+## Q44 — the 0x800A3560 object model
+"Go the -G8 route, not separate one-byte variables. [...] First check the rest of the file at -G8, so no
+already-finished function changes. -G8 per file with proof is a route you've already allowed (Q10). If that check
+fails, those functions stay unfinished rather than adopting the two-name model." The per-byte model (u8 D_800A3560[]
+plus scalar D_800A3561..65 second handles) is NOT admitted.
+
+## Q45 — func_8005C8A8 constant cancellation (borderline.md 2026-09-29)
+"Don't allow it (option B). `size = (s32)tile + 0x4F0 - arg2`, where tile was just set to arg2, is a fancy way of
+writing 0x4F0. It exists only to hide the constant from the compiler. [...] The function stays unfinished, 33
+instructions off, and keeps being worked for another spelling."
+
+## Q46 — Q33 union word views on struct members
+"Extend it, same conditions. Your Q33 condition is that the shipped bytes show one word access over the small
+fields. Whether the storage is a global, a local or a struct field doesn't change that. Keep the evidence requirement
+and a second review for every use."
+
+## Q47 — duplicated calls into arms (duplicated-statement-into-arms)
+"Allow when the bytes don't change, with a FAKE comment. [...] The rule bans duplicated calls because they normally
+add code. Here the compiler merges the copies, so the reason doesn't apply. Keep the FAKE comment when the
+duplication exists to get the match, as the rule already requires for statements."
+
+## Q48 — volatile locals
+"Allow only with proof from the shipped code. 'SOTN does it' isn't evidence, because SOTN is itself a decompilation.
+If the target reloads the local from memory on every access, which only volatile produces, then volatile is probably
+what Sony wrote. Allow it with that proof, like Q2. Without it, not allowed."
+Note: the owner's same-message guidance "SOTN is the gold standard when in doubt" was given after this
+recommendation; the orchestrator flagged the tension to the owner in the same turn. Until the owner says otherwise,
+Q48 stands as recommended.
+
+## Q49 — the ~30 retro-audit CONCERNs
+"Yes, as a second batch, but triaged. Fix forward about 10: those where a reviewer found a false claim, or an
+undisclosed construct that changes the output [func_8005763C, func_80021DB0, func_800571C0, func_80031B24,
+func_80021424, func_80070188's extra names (via Q44), func_8001DCB0, func_800720FC's `other`]. Ledger note only: the
+rest [...]. Backfilling old review records: no."
+
+## Standing directive (owner, verbatim above)
+Highest priority: no regressions, cheats or workarounds introduced; weed out remaining cheats already in the
+project; SOTN is the gold standard when in doubt.
