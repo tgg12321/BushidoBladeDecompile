@@ -66,3 +66,12 @@ Everything else in the body is the retro-audit body, which that audit found ordi
 Landing: landing.patch (this directory) against src/text1b.c at 231895b18: two hunks, the
 Cell_80052D00 typedef (union -> plain struct) and the INCLUDE_ASM line -> candidate.c. Nothing
 else changes (no header, no symbol file).
+
+## 2026-09-30 -- LANDED COMPLETED-C (0eb256779, queue a1b2eccaa)
+Layer-2 PASS, reviewer l2-80052D00-r1, round 1, body_hash 25ebf3eade31d99c, scope match
+(memory/grind/func_80052D00/layer2.jsonl). Landed text = candidate.c + the Cell_80052D00 plain-struct
+typedef (landing.patch). Reviewer: fold_truthop word compare confirmed by probe (plain field
+compares give lw 136/140 + xor); W casts the value of a pointer-holding global, not a pun;
+per-branch flags all read; the assignment-in-condition break is a real store. Commit-message
+wording fix before commit ("raised no objection to (independently re-reviewed at layer-2)").
+Rebuild SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa; check_completion_integrity OK.
