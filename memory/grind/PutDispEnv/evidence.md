@@ -16,3 +16,34 @@ COMPLETED-C in de62daf26 (layer-2 cheat-reviewer PASS; oracle SHA1 match).
 ## 2026-09-29 -- REOPENED (retro-audit FAIL, Q37 class C, 803d0fea1)
 
 The de62daf26 landing FAILed the 2026-09-29 retro-audit: macro-hidden `(volatile _dispenv_rect *)` cast on the non-IRQ RAM global g_gpu_disp_env (DISP_RECT_EQ), plus the `(*(_dispenv *)&g_gpu_disp_env)` per-use pun; 'Sony semantics' came from psyz, a decompilation. Per owner Q37 class C the body went back to `INCLUDE_ASM("asm/funcs", PutDispEnv);` and the function is back in the queue. Landed text banked verbatim in `rejected/retro-audit-2026-09-29.c`. Removed with the body: the PutDispEnv-private _dispenv_rect/_dispenv typedefs and the DISP_RECT_EQ/CLAMP/info macros (+ their #undefs); no other code uses them. Kept: the four extern/prototype lines the landing added (D_8009BE77, D_80015FF8, GetVideoMode, get_dx), now unused before get_dx's definition.
+
+## 2026-09-30 -- laneA fix-forward (candidate.c)
+
+Frontier = the two REOPENED objections. Both removed without a macro or an object pun:
+- **Per-use pun `(*(_dispenv *)&g_gpu_disp_env)` removed**: the splice retypes the declaration
+  `extern u8 g_gpu_disp_env;` (display.c:25) to `extern DISPENV g_gpu_disp_env;` with the public
+  LIBGPU.H `RECT`/`DISPENV` layout, so every access is plain member access. Only other consumer in
+  src/ is GetDispEnv (`memcpy(a0, &g_gpu_disp_env, 0x14)`, unchanged text, void* param).
+- **Macro-hidden volatile rect cast removed**: open-coded `*(volatile s16 *)&g_gpu_disp_env.screen.x`
+  per field (8 sites), FAKE-annotated, on Q55 (matched-SOTN precedent overrides the
+  interrupt-touched-only refusal) citing tmp/sotn-decomp `src/main/psxsdk/libspu/s_m_m.c:48 @aa53500`
+  (SpuMalloc, `c` segment in config/splat.us.main.yaml:242): `*(volatile int *)&_spu_memList[var_s2].addr`,
+  a use-site volatile read of a non-IRQ RAM global member. SOTN's PSX build compiles with
+  bin/cc1-psx-26 (tools/builds/gen.py:777), i.e. its PS1 build, not our exact GCC 2.7.2.
+  Byte evidence (also meets Q48's shape): every global-side field load in both rect compares is
+  `lhu; sll 16; sra 16` while the env-side operand of the same compare is `lh`.
+  Simpler spellings measured (alias harness, tmp/PutDispEnv/): plain member reads 75 (289/298 insns,
+  lh folded; banked rejected/nonvolatile-75.c, alias-harness text with g_gpu_disp_env_x); u16 fields + (s16) cast 75; (s16)(u16) cast 75;
+  `((volatile RECT *)&g.screen)->x` and `extern volatile DISPENV` both score like the chosen form (20 = alias artifact only) (not chosen: a
+  type-level claim with no IRQ writer; the use-site form is the one SOTN ships).
+- isinter word compare `*(s32 *)&g_gpu_disp_env.isinter != *(s32 *)&env->isinter` kept (single lw
+  +0x10 both sides): SOTN `src/main/psxsdk/libgpu/sys.c:367 @aa53500` LOW() = `*(s32*)&` (common.h:73),
+  same statement in SOTN's matched PutDispEnv.
+- Mode-width chain respelled to SOTN's nested `if (w > 280) { ... }` (byte-identical to the old
+  empty-arm chain). The h test keeps an empty then-arm = SOTN sys.c:394 verbatim form
+  (`env->pad0 ? 288 : 256`); FAKE-annotated. Measured alternatives: `if (h > (pad0?288:256))` 25
+  (302 insns); `!(h <= ...)` 24; `h > (!pad0 ? 256 : 288)` 24; `(pad0?288:256) < h` 25.
+- Alias-harness score 20 = 8 operand-only reloc-addend hunks from the unresolved alias symbol only;
+  the real splice is measured under the lock.
+- Unchanged from the byte-exact landed body: `get_dx((s16 *)env)` (get_dx's matched prototype),
+  `memcpy((s32)&...)` (display.c:14 prototype), the open-coded clamps (old CLAMP macro expanded).
