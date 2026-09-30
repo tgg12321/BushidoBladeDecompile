@@ -140,3 +140,12 @@ f20, f3C) plus the S_800747D8 merge in ONE landing and settle Q33(5) once. (4) T
 forces 747D8/75670 respells, which can't PASS without the f10 fix, so 768DC can't land alone. (5) GaugeWork
 (text1b_tu2.c:1154-1157) declares 0x6A as `u8 rows[2][10]` and passes `rows[i]` as `s16 *`, while
 func_800770B8 / func_80076D74 treat those bytes as s16 — another mismatched view; queue it.
+
+## Note after the reopen (ff-c, 2026-09-30)
+
+rev-45 item 1 says D_8009BD21 has no built asm referrer. That was true of the reviewed tree only:
+since 5fbcca017 func_800770B8 is INCLUDE_ASM again, and asm/funcs/func_800770B8.s references
+`%hi/%lo(D_8009BD21)` (0x80077338-44). So undefined_syms_auto.txt row 71 must stay until the
+cluster landing either re-lands func_800770B8 as C or respells that asm as `D_8009BD20 + 1`. My
+func_800770B8 ledger line "the dlabel / linker row stay for the INCLUDE_ASM users" was wrong for
+the reviewed tree (both referrers were C then).
