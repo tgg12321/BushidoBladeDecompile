@@ -70,17 +70,6 @@
       "addr": "8007BC08"
     },
     {
-      "func": "CD_cw",
-      "file": "system",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): Alarm_t merge incomplete/TU-local (per-word Alarm_plus_* still used) + Intr second object over g_cd_status_a/b/c. Banked: memory/grind/CD_cw/rejected/retro-audit-2026-09-29.c",
-      "addr": "800812FC"
-    },
-    {
       "func": "CD_ready",
       "file": "system",
       "distance": 0,
@@ -408,14 +397,14 @@
     }
   ],
   "counts": {
-    "total": 34,
-    "active": 22,
+    "total": 33,
+    "active": 21,
     "by_status": {
-      "active": 22,
+      "active": 21,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 20,
+      "C": 19,
       "ASM-PARTIAL": 2
     }
   },
