@@ -33,3 +33,7 @@ above func_80052D00 (existing `#undef W` after func_80053E9C unchanged).
 verify-oracle --rebuild --allow-dirty = 62efab4f73f992798c43e8c730aa43baa10bb4fa;
 sandbox against the spliced src = 0 (385/385, 0 source-level, 0 operand-only,
 33 not-scored branch-displacement hunks).
+
+## 2026-09-29 -- REOPENED (retro-audit FAIL, Q37 class C, 803d0fea1)
+
+The 1ea98419d landing FAILed the 2026-09-29 retro-audit: union word view `Cell_80052D00 { struct {s16 x, z;} c; s32 w; }` landed 2026-09-25, before Q33, and outside Q33 scope (a member of a TU-local typedef reached through `#define W ((Work_80053E9C *)D_800A33F4)`). Per owner Q37 class C the body went back to `INCLUDE_ASM("asm/funcs", func_80052D00);` and the function is back in the queue. Landed text banked verbatim in `rejected/retro-audit-2026-09-29.c`. LEFT IN PLACE: typedef Cell_80052D00 and Work_80053E9C (members unk88/unk8C), the `#define W` view, and the D_800A33F4 / func_80053694 externs. Work_80053E9C is still used by func_80053754 and func_80053E9C; after this reopen nothing reads unk88/unk8C through the union.
