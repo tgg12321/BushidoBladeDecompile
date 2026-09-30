@@ -59,6 +59,17 @@
       "addr": "8001C8DC"
     },
     {
+      "func": "func_8001F2E4",
+      "file": "code6cac_tu2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "retro-audit 2026-09-29 FAIL: unannotated tgt_x constant-holder + ang/tgt_y/dx/dz/dist reuse without an admitting package; splits 6-97",
+      "addr": "8001F2E4"
+    },
+    {
       "func": "func_800759D0",
       "file": "text1b_tu2",
       "distance": 0,
@@ -344,14 +355,14 @@
     }
   ],
   "counts": {
-    "total": 28,
-    "active": 16,
+    "total": 29,
+    "active": 17,
     "by_status": {
-      "active": 16,
+      "active": 17,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 15,
+      "C": 16,
       "ASM-PARTIAL": 1
     }
   },
