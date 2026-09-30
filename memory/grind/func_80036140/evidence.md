@@ -287,3 +287,10 @@ CURRENT STATE — supersedes the "REVERTED" floor 16 above. Artifacts: `q62/` (t
   Substance PASS (Q62 tentative definitions vs the EXE zeros; (a1)/(a2)/(a4')+Q13/Q14; Q43 reading; member
   types; sdata_funcs row pre-existing). Re-staged: rebuild SHA1 == oracle, five sandbox scores 0, body hash
   unchanged.
+
+## LANDED 2026-09-30 evening — COMPLETED-C (layer-2 PASS, round 2)
+Match 2b1e35fb8 (staged body == candidate.c == q62/body_q62.c; body hash b127fdedc2744766), queue cea3662dd.
+Layer-2: round 1 rev-36140 FAIL (paperwork: mixed-baseline necessity table; fixed, 783310656); round 2
+rev-36140-r2 PASS — numbers match q62/runs.txt, cc1psx -G8 confirms (a1)/(a2), Q14 identity holds, no
+leftover consumers, cited paths exist, plain C. Rebuild SHA1 == oracle; check_completion_integrity OK.
+Ledger closed.
