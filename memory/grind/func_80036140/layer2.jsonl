@@ -1,0 +1,1 @@
+{"func": "func_80036140", "addr": "80036140", "verdict": "FAIL", "body_hash": "b127fdedc2744766", "body_kind": "c", "file": "code6cac_b5", "reviewer": "rev-36140", "scope": "match", "date": "2026-09-30T22:19:04Z", "head": "b1c4be4e2", "notes": "paperwork: mixed-baseline necessity table in msg + code6cac.h comment; substance PASS"}

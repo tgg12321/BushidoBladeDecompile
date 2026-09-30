@@ -280,3 +280,10 @@ CURRENT STATE — supersedes the "REVERTED" floor 16 above. Artifacts: `q62/` (t
   same body with separate externs (`q62/psx/separate_vars.cc1psx-G8.s` 479/485/495/504: direct
   `lhu/sh D_80101E9C`, `lw/sw D_80101EA4`); (a4') member table `landing/member_table.md` with the Q13
   forced-in members unk3E (u16) / expected_pos (s32, Q14 clause: `q62/q14_s32_vs_u32.txt`).
+- Layer-2 round 1 (rev-36140, body b127fdedc2744766, 2026-09-30): FAIL on paperwork only. The necessity
+  table in the message and in the include/code6cac.h comment gave the extension as 0 (the landed figure)
+  beside raw scratch figures from q62/runs.txt, whose `ext` row is 2 (jtbl operand). Fixed: both places
+  now give the scratch 2 (jtbl operand only) and cite the landed 0 separately to q62/landed_sandbox.txt.
+  Substance PASS (Q62 tentative definitions vs the EXE zeros; (a1)/(a2)/(a4')+Q13/Q14; Q43 reading; member
+  types; sdata_funcs row pre-existing). Re-staged: rebuild SHA1 == oracle, five sandbox scores 0, body hash
+  unchanged.

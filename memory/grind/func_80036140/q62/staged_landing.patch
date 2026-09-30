@@ -1,5 +1,5 @@
 diff --git a/include/code6cac.h b/include/code6cac.h
-index 437c95b9f..590afce62 100644
+index 437c95b9f..ece9c9364 100644
 --- a/include/code6cac.h
 +++ b/include/code6cac.h
 @@ -311,7 +311,7 @@ extern s32 D_800A36B4;
@@ -21,7 +21,7 @@ index 437c95b9f..590afce62 100644
  extern u8 g_cd_result[8];
  extern u8 D_800A3769;
  extern u8 D_800A376A;
-@@ -535,14 +536,29 @@ typedef struct {
+@@ -535,14 +536,32 @@ typedef struct {
      s32 b;
  } CamPair;
  
@@ -44,20 +44,23 @@ index 437c95b9f..590afce62 100644
 + * 0x80101EA4 keep the address in a register (la; lX 0(r); sX 0(r)) only for
 + * a variable larger than 8 bytes -- a smaller one is small data, and cse
 + * folds any pointer back to the symbol; the original compiler agrees.
-+ * Separate variables score 18, block-local pointers 18,
++ * Scratch whole-file scores: separate variables 18, block-local pointers 18,
 + * function-scope pointers 43, the object ending at 0x80101E9F or 0x80101EA3
 + * (0x80101EA4 separate) 8, a separate 12-byte record at 0x80101E9C 8 (and
-+ * cdrom_ReadyCallback 12); this object 0.  unk3E and expected_pos lie inside
-+ * that span but func_80036140 never touches them: they are typed by their
-+ * other users' original accesses (owner rulings 2026-09-26 Q13/Q14): unk3E by
-+ * game_FrameLoop / cdrom_StartRead (u16, the lhu at 80036F9C); expected_pos by
-+ * cdrom_ReadyCallback / func_80036940 (s32: no access reveals its signedness,
-+ * and s32 / u32 build byte-identical).  Measurements and dumps:
-+ * memory/grind/func_80036140/evidence.md.
++ * cdrom_ReadyCallback 12), this object 2 (the jump-table operand only, which
++ * the link settles); linked, this object scores 0.  unk3E and expected_pos
++ * lie inside that span but func_80036140 never touches them: they are typed
++ * by their other users' original accesses (owner rulings 2026-09-26
++ * Q13/Q14): unk3E by game_FrameLoop / cdrom_StartRead (u16, the lhu at
++ * 80036F9C); expected_pos by cdrom_ReadyCallback / func_80036940 (s32: no
++ * access reveals its signedness, and s32 / u32 build byte-identical).
++ * Measurements and dumps: memory/grind/func_80036140/evidence.md; scratch
++ * rows memory/grind/func_80036140/q62/runs.txt, linked
++ * memory/grind/func_80036140/q62/landed_sandbox.txt.
   *
   * The 8-byte `pair` is also one CamPair by the table it is copied from: the
   * source is indexed `&g_cd_file_table + i*8` and copied as a whole CamPair
-@@ -567,13 +583,22 @@ typedef struct {
+@@ -567,13 +586,22 @@ typedef struct {
      u8 unk30; /* 0x80101E90 */
      s32 unk34; /* 0x80101E94 */
      s16 unk38; /* 0x80101E98 */
@@ -84,7 +87,7 @@ index 437c95b9f..590afce62 100644
   *   - 0x80101E58..0x80101E62 is one object: cdrom_StartAudio forms the
   *     CdlSetfilter parameter (file, chan) at 0x80101E58 as &0x80101E62 - 0xA
   *     (800370AC addiu a1,s0,-0xA; 800370B0 sb v0,-0xA(s0)).  Only those two
-@@ -594,19 +619,15 @@ typedef struct {
+@@ -594,19 +622,15 @@ typedef struct {
   *     object: cdrom_StartAudio 0 under both cc1 and the original cc1psx; cut
   *     at 0x80101E64, 0x80101E68 or 0x80101E6C: 8 (cc1) / 12 (cc1psx).
   *     Dumps and runs: memory/grind/cdrom_StartAudio/evidence.md.
