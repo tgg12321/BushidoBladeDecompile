@@ -4,6 +4,15 @@
 (`size = (s32)tile + 0x4F0 - arg2` and every cancel-against-a-second-name variant). See evidence.md s3c + s3d. Look
 for another source form that keeps the once-set constant out of update_equiv_regs' REG_EQUIV rewrite.
 
+## LEAD (orchestrator, 2026-09-30; not yet spent)
+The target's `li/sw` at entry + `lw` at the return is a reload SPILL of a pseudo live across the whole body
+(slot 0x70 in pseudo order between mode_off 0x68 and the xpos orphan 0x78), not a declared stack local. So
+look for a source value GCC keeps live the whole body with no REG_EQUIV constant that is genuinely NOT a
+constant in the C: a size derived from real prim-pointer arithmetic, a count of emitted prims times a sizeof,
+or a value computed from arguments that happen to be the same at every call site -- provided it is not a
+cancellation of one value against itself or a second name for it (owner Q45). Callers for the latter check:
+src/code6cac_c2.c:748, src/code6cac_tu2.c:2082, src/ings.c:468/470 (arg2 = D_800A38B4 at every site).
+
 ## s4 (2026-09-30, laneC): KILLED volatile / s16 / one-member struct / one-element array / `return 0x4F0;`
 (probes/s4/scores.txt). The slot needs a once-set pseudo with no REG_EQUIV constant, i.e. a set whose constant
 cse cannot see (evidence.md s4: cse.c:6918-6934, local-alloc.c:1019-1032, reload1.c:567-586/2381-2385).
