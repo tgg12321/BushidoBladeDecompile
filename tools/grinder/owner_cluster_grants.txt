@@ -47,7 +47,7 @@ func_8002F2D0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; cens
 # 2026-09-23 — the next census member reached floor 0 in a manual session and
 # earns a row on the same Ruling 3 terms as func_8002F2D0. Operator-added while
 # landing func_8002F770; every other mechanical and review gate still applies:
-func_8002F770 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :82; row per owner Ruling 3 terms, 2026-09-15, decisions.md:26863; operator-added 2026-09-23)
+# func_8002F770 row removed 2026-09-29: reopened per owner Q38 (2026-09-29, 803d0fea1) -- no recorded owner instruction for the grant, and the islands do not qualify under the 2026-09-26 inline_o.h class grant.
 # 2026-09-23 — a named carrier of the 2026-09-01 widened-anchor owner grant
 # (decisions.md:17921, which lists func_8003E6D8 among the confirmed
 # handwritten-tagged carriers) reached floor 0 in a manual session, so it earns
