@@ -174,3 +174,41 @@ RULING — object-relative rodata alignment.
 - **Records relocated** (file field only): 12 queue items, 16 grind `state.json` files, one
   grinder scope line, and 24 reviewed assembly-region grants in `tools/canonical_asm_regions.json`,
   each moved only after its island hashes recomputed from the new file equalled the reviewed ones.
+
+## 8. func_80058580's tables and the text1b.c / text1b_tu1c.c boundary (2026-09-30, after adoption)
+
+Goal: let func_80058580's three switch tables (0x8001585C..0x800158B4) be compiler-emitted at their
+real address. Byte-neutral while the function is INCLUDE_ASM.
+
+**The one boundary the bytes prove.** func_80058580's tables are phase 4; func_80065800's
+(0x800158F8, 0x80015940) and func_8006B578's (0x80015988) are phase 0. So an original TU boundary
+lies between func_80058580 and func_80065800 (rule condition 1). Its rodata position lies in
+0x800158B4..0x800158F8; the text cut is byte-neutral inside the window. Placed at snd_Init (new
+file `text1b_tu1c.c` from snd_Init's extern block to the end of the old file): the next rodata item,
+0x800158B4 "common_vab start:%08x\n", and 0x800158CC "vab id:%d mistake\n" belong to the sound-bank
+loader that starts at snd_Init (it calls SsInit / SsSetTickMode / SsSetReservedVoice). Alternatives
+with identical bytes: the cut anywhere after func_80058580 up to func_80060E38.
+
+**No boundary before func_80058580.** Every table from text1a_c's start (0x80010DD4) through
+0x8001589C is phase 4, and the item just before its tables (0x80015840 "Destruction tiny model.\n")
+belongs to func_80054604 in text1b.c, so nothing proves a boundary there. func_80058580 stays the last
+item of `text1b.c`, and its three tables moved verbatim from `text1a_b_pre_rodata.c` to just before
+its INCLUDE_ASM line. text1b.o had no other rodata, so its rodata now starts at 0x8001585C with those
+tables. (A first version split func_80058580 into its own file; layer-2 FAILed it under condition 1
+and this is the remedy.)
+
+| File | Text | Rodata |
+|---|---|---|
+| text1b.c | unchanged, still ends with func_80058580 | 0x8001585C..0x800158B4 (the three tables) |
+| text1a_b_pre_rodata_b.c | none (transcribed data, not a TU) | 0x800158B4..0x80015988, the old file's tail |
+| text1b_tu1c.c | snd_Init .. the function before func_800747D8 | 0x80015988.. (the tables formerly in text1b.o) |
+
+Caveat: under the model text1b_tu1c.c spans at least two original TUs. snd_LoadCommonVab's
+phase-4 strings (0x800158B4) cannot share a TU with func_80065800's phase-0 tables (0x800158F8 is 0x44
+past them). This is harmless while those items stay transcribed, and must be resolved (another
+evidence-placed boundary between them) when func_80065800 is compiled.
+
+Check (`poc/tbltest.sh`, scratch copy): with the session-2 C candidate in place of the transcribed
+arrays, text1b.o's compiled .rodata is 0x58 bytes at 0x8001585C with zero words at +0x24 and +0x3C,
+the original's layout (jtbl_8001585C[9], jtbl_80015884[5]). The pads come from the object-relative
+`.align 3`; nothing hand-written.

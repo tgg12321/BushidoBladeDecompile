@@ -229,14 +229,14 @@
       ]
     },
     "func_800678A8": {
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "sha256": [
         "8961b0c8392d0778799f80983fd9e48f800a1fba3f1fa62fe0add30085c540d7",
         "adcf86c232f33923bb694a1ed4312f7d878bf0f98cbaddd438afe4b434e8ce1d"
       ]
     },
     "func_80067200": {
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "sha256": [
         "8961b0c8392d0778799f80983fd9e48f800a1fba3f1fa62fe0add30085c540d7",
         "6b532f1a79f1fc83f95122d5640b786964a83f8a35c1fabac32b82048c2320e5",
@@ -309,19 +309,19 @@
       ]
     },
     "func_800620B8": {
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "sha256": [
         "5de9074acd28062434de929e849092783d0a9ed6ce33805c5ede9d9a79c98baf"
       ]
     },
     "func_8006295C": {
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "sha256": [
         "95443066560512dd3e4424e52f989487b3d64abb142bd0a8289bfb01cb475b46"
       ]
     },
     "func_80063E10": {
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "sha256": [
         "652c4f72c25bae65282bc28011ca47920dea2a19eefd863444f21a862aa2ad6b",
         "e570ecec9d35f461d2f6e3c9527e281bef50ef27624712b7bac280eb2ddae5c1",
@@ -349,7 +349,7 @@
       ]
     },
     "func_800646E8": {
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "sha256": [
         "8961b0c8392d0778799f80983fd9e48f800a1fba3f1fa62fe0add30085c540d7",
         "95443066560512dd3e4424e52f989487b3d64abb142bd0a8289bfb01cb475b46"
