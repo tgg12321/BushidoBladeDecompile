@@ -92,17 +92,6 @@
       "addr": "80049718"
     },
     {
-      "func": "func_800747D8",
-      "file": "text1b_tu2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "SelWork cluster, layer-2 rev-45 (2026-09-30): one data-model landing needed (SelWork unions f10/f1C/f20/f3C + S_800747D8 merge, Q33(5) size question, p_old, D_8009BD20); owner Q37 fallback, revert 5fbcca017; memory/grind/func_800768DC/selwork-cluster-2026-09-30.md",
-      "addr": "800747D8"
-    },
-    {
       "func": "func_80074E08",
       "file": "text1b_tu2",
       "distance": 0,
@@ -112,17 +101,6 @@
       "origin": "regression",
       "reopen_reason": "retro-audit 2026-09-29 FAIL: reused table (4 writes) fails Ruling 5 ext. prong C; every plain spelling 12/281, no Q51 citation; owner Q37 fallback, revert 5f8e7c52b; memory/grind/func_80074E08/evidence.md",
       "addr": "80074E08"
-    },
-    {
-      "func": "func_80075670",
-      "file": "text1b_tu2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "SelWork cluster, layer-2 rev-45 (2026-09-30): one data-model landing needed (SelWork unions f10/f1C/f20/f3C + S_800747D8 merge, Q33(5) size question, p_old, D_8009BD20); owner Q37 fallback, revert 5fbcca017; memory/grind/func_800768DC/selwork-cluster-2026-09-30.md",
-      "addr": "80075670"
     },
     {
       "func": "func_800759D0",
@@ -145,17 +123,6 @@
       "origin": "regression",
       "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): per-use byte pun ((u8 *)D_8009BCF8)[index] over merged Unk8009BCF8Record[20], stride as magic *2/*20. Banked: memory/grind/func_80075F80/rejected/retro-audit-2026-09-29.c",
       "addr": "80075F80"
-    },
-    {
-      "func": "func_800768DC",
-      "file": "text1b_tu2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "SelWork cluster, layer-2 rev-45 (2026-09-30): one data-model landing needed (SelWork unions f10/f1C/f20/f3C + S_800747D8 merge, Q33(5) size question, p_old, D_8009BD20); owner Q37 fallback, revert 5fbcca017; memory/grind/func_800768DC/selwork-cluster-2026-09-30.md",
-      "addr": "800768DC"
     },
     {
       "func": "func_800770B8",
@@ -390,14 +357,14 @@
     }
   ],
   "counts": {
-    "total": 32,
-    "active": 20,
+    "total": 29,
+    "active": 17,
     "by_status": {
-      "active": 20,
+      "active": 17,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 20
+      "C": 17
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
