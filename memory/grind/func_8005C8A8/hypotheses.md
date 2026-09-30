@@ -1,5 +1,9 @@
 # Hypothesis ledger - func_8005C8A8
 
+## OPEN (floor 33, 2026-09-30): the `size` 0x4F0 stack slot. Owner Q45 option B REFUSED the cancellation spelling
+(`size = (s32)tile + 0x4F0 - arg2` and every cancel-against-a-second-name variant). See evidence.md s3c + s3d. Look
+for another source form that keeps the once-set constant out of update_equiv_regs' REG_EQUIV rewrite.
+
 ## s3 RESOLVED (floor 0): the hole is a combine-orphan `(use)` of the dead sign-extension temp of an always-zero
 s16 local read once after the case-0 label (Q27 (A)); see evidence.md s3. H1 (a)/(c) and H2 are moot; H1 (b)'s
 family (combine orphans) was right, via the known-zero fold rather than a stale reg_n_refs.

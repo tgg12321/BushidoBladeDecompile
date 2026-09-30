@@ -1,5 +1,14 @@
 # func_80070F78 — landing plan (per-byte model; BANKED, not landed — 2026-09-29)
 
+**REFUSED 2026-09-30 — this plan will NOT land.** Owner ruling Q44 (twenty-third batch,
+docs/grind/owner-rulings-2026-09-26.md, d023686ea): the per-byte model (`u8 D_800A3560[]` plus the
+scalar D_800A3561..65 second handles) is NOT admitted. The route is per-file -G8 by proof (Q10). First
+screen the whole TU holding the consumers at -G8, so that no completed function changes; if that screen
+fails, the consumers stay INCOMPLETE rather than taking the two-name model. The orchestrator runs the
+-G8 screen (single agent, 2026-09-30; do not start a parallel one). The text below is kept for
+provenance only. The record/union form's -G0 measurement (67/822) is in evidence.md "Union / record
+merge vs this function".
+
 Status: held by the orchestrator pending the owner's ruling on the 0x800A3560 object model
 (the per-byte model `u8 D_800A3560[]` + scalars D_800A3561..D_800A3565 is under audit on
 func_8006E534 / func_80070188). This plan lands the per-byte form; if the owner rules for a

@@ -216,3 +216,16 @@ State banked:
 - rejected/size-tile-cancel-0.c is the 0-scoring cancellation form.
 - Owner question: docs/grind/borderline.md 2026-09-29 func_8005C8A8 policy-question. Tree reverted; lock.ps1 rebuild
   laneB == oracle.
+
+## s3d (2026-09-30) — owner ruling Q45: option B, cancellation spelling REFUSED
+
+Owner, twenty-third batch Q45 (docs/grind/owner-rulings-2026-09-26.md, d023686ea): "Don't allow it (option B).
+`size = (s32)tile + 0x4F0 - arg2`, where tile was just set to arg2, is a fancy way of writing 0x4F0. It exists only
+to hide the constant from the compiler. [...] The function stays unfinished, 33 instructions off, and keeps being
+worked for another spelling." Resolution line: docs/grind/borderline.md 2026-09-29 func_8005C8A8 entry.
+
+Consequence for the next session: rejected/size-tile-cancel-0.c is permanently out, along with every variant that
+cancels a live value against a second name for it (`mode_off + 0x18 - arg2`, `cur + 0x400 - arg2`, and the like).
+Do not resubmit one. The open problem is unchanged: keep the 0x70($sp) slot for a once-set 0x4F0 without
+update_equiv_regs rematerializing it (local-alloc.c 1024-1032), in a form the target's own dataflow supports.
+Admissible floor stays 33 (candidate.c + fix1-merges.patch). Status: INCLUDE_ASM/active, no rotation.
