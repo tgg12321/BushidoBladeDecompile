@@ -209,8 +209,12 @@ the definition (comment/layout edits inside it keep the hash). The key covers
 the function's definition ONLY — file-scope macros, typedefs, globals and
 helpers it depends on can change without moving it. Conversely, renaming a
 callee or global (a naming wave) changes the key of EVERY function whose
-definition references it and voids their pending PASSes — fail-closed by
-design; expect re-review before those land. No override flag exists.
+definition references it and voids their PENDING PASSes (not yet landed) —
+fail-closed by design; expect re-review before those land. Completed
+functions are not affected: the integrity check's departures audit
+(engine/departures.py) judges a committed departure against the body that
+left the queue, so a later naming wave does not send them back to review.
+No override flag exists.
 For the grinder, the driver records the Judge's FINAL CALL verdict (PASS or
 FAIL, scope `grinder-final-call`) against the hash taken just before the Judge
 saw the body.
