@@ -30124,3 +30124,19 @@ split tool's declared-name resolution repaired and all parts re-split from HEAD)
 (moves-only verified against HEAD, volatile-detector counts back to HEAD, engine parity 47/47,
 oracle rebuilt independently).
 
+## 2026-09-30 — OWNER DECISION — maspsx `.L`-label mflo-hazard fix declined (func_80058580)
+
+Context: func_80058580's floor includes two nops the original assembler (ASPSX) inserted after a
+cross-jump join label (`mflo; subu; .L: nop; mult`). maspsx's `is_label()` only matches `$L`
+labels, so its mflo/mult hazard arm never fires at this GCC fork's `.L` labels. A scratch-tree
+probe (is_label also matching `.L`, plus an unconditional jump ending the hazard) kept the whole
+build byte-identical and moved the function 57 -> 55 (memory/grind/func_80058580/probes/).
+Asked whether to adopt it, the owner (Trenton) answered, verbatim: **"No let's find an avenue
+without any kind of compiler or maspx fix or patch"**.
+
+**Record.** No maspsx or compiler change is made. The probe stays in the ledger as evidence only.
+Consequence (ledger, same day): the two nops are unreachable from C in the current pipeline
+(the label position is fixed by the target's jump bytes; only maspsx inserts nops there), so
+func_80058580 cannot reach 0 under the current substrate; work continues on the rest of its
+residual.
+
