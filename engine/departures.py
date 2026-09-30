@@ -35,19 +35,27 @@ RENAMES. tools/naming_wave.py appends the old name to a `renamed_from` LIST on
 the queue item it renames and on every layer2.jsonl line it retargets; the
 audit reads those chains from the current queue, every post-gate queue
 version, and the live and archived records. A chain [c0..ck] on a carrier N
-only NOMINATES edges — each ci -> N and the hops c0 -> c1 ... ck -> N — and an
-edge counts only when ALL of these hold, where D is the commit in which `old`
-last left the queue ("the working tree" if only there, its parent then being
-HEAD; for a never-listed intermediate name, renamed twice between queue
-versions, D is its rename event R):
-  (a) a git-visible RENAME EVENT R on the ancestry path (git's own rename
-      detection, --raw -M): asm/funcs/<old>.s deleted and asm/funcs/<new>.s
-      added, their contents identical once <old> is spelled <new>; and in R
+NOMINATES edges — each ci -> N and the hops c0 -> c1 ... ck -> N — and so does
+every rename event out of a gone name (a `git revert` of a wave restores the
+old name with no chain). A nominated edge counts only when ALL of these hold,
+where D is the commit in which `old` last left the queue ("the working tree"
+if only there, its parent then being HEAD; for a never-listed intermediate
+name, renamed twice between queue versions, D is its rename event R):
+  (a) a RENAME EVENT R: git's own rename detection on the ancestry path
+      (--raw -M) shows asm/funcs/<old>.s deleted and asm/funcs/<new>.s added —
+      or, for a wave not yet committed, HEAD has <old>.s and the working tree
+      has <new>.s and no <old>.s — carrying the SAME MACHINE CODE: equal
+      ordered splat columns /* offset vaddr bytes */ (a wave rewrites every
+      .s with its whole name map, so operand text naming other renamed
+      functions is not compared; hand-written asm with no columns must match
+      token for token outside the glabel line) and `glabel old` -> `glabel
+      new` (a file-stem move that keeps its glabel is no rename); and in R
       the body moves — at R^ `old` has a body and `new` none, at R `new` has
       one and `old` none, over EVERY source file (src/**/*.c, src/**/*.h,
       include/**/*.h; a C definition or an asm body such as INCLUDE_ASM);
-  (b) the address in asm/funcs/<old>.s at D^ (first address comment, as the
-      census reads it) equals the address in R's <old>.s;
+  (b) R's <old>.s is the file `old` had at D^: the same machine columns
+      (so the same addresses; for hand-written asm with no columns, the same
+      tokens outside the glabel line);
   (c) `new` is not listed in the queue version at D^ and has no body in any
       source file at D^;
   (d) `old` has no body in any source file now and no asm/funcs/<old>.s now;
@@ -98,7 +106,6 @@ QUEUE_FILE = "engine/queue.json"
 _FUNC_RE = re.compile(rb'"func"\s*:\s*"([^"\\]+)"')
 _WIN_GITDIR = re.compile(r"^([A-Za-z]):[\\/](.*)$")
 _MNT_GITDIR = re.compile(r"^/mnt/([A-Za-z])/(.*)$")
-_ASM_ADDR = re.compile(r"^\s*/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s", re.M)
 ASM_DIR = "asm/funcs"
 _SRC_PATH = re.compile(r"^(src/.+\.[ch]|include/.+\.h)$")
 _ZERO = "0" * 40
@@ -283,11 +290,36 @@ def _key(text: str | None, name: str) -> str | None:
     return k[1] if k else None
 
 
-def _addr_of(asm_text: str | None) -> str | None:
-    """First address comment of a splat .s (as docs/naming/build_census.py
-    reads it); no fallback from the spelling of a name."""
-    m = _ASM_ADDR.search(asm_text) if asm_text else None
-    return m.group(1).upper() if m else None
+# splat's machine columns: /* <rom offset> <vaddr> <instruction bytes> */
+_MACHINE = re.compile(r"/\*\s*([0-9A-Fa-f]+)\s+([0-9A-Fa-f]{8})\s+([0-9A-Fa-f]{8})\s*\*/")
+_GLABEL = re.compile(r"^\s*glabel\s+(\S+)", re.M)
+
+
+def _machine(asm_text: str | None) -> list[tuple[str, str, str]]:
+    return [tuple(x.upper() for x in m.groups()) for m in _MACHINE.finditer(asm_text or "")]
+
+
+def same_asm(old_text: str | None, new_text: str | None, old: str, new: str) -> bool:
+    """Is new_text the glabel file old_text renamed old -> new? Identity is
+    the ordered splat machine columns (offset, vaddr, bytes) — which a naming
+    wave never touches — plus `glabel old` -> `glabel new`. Text is NOT
+    compared: a wave rewrites every .s with its whole map (jal / .word /
+    %hi/%lo operands naming other renamed functions change too)."""
+    g_old, g_new = _GLABEL.search(old_text or ""), _GLABEL.search(new_text or "")
+    if not (g_old and g_new and g_old.group(1) == old and g_new.group(1) == new):
+        return False
+    ident = asm_identity(old_text)
+    return bool(ident) and ident == asm_identity(new_text)
+
+
+def asm_identity(asm_text: str | None) -> list:
+    """What makes a glabel file THIS function: its ordered splat machine
+    columns; for hand-written asm with none (e.g. the GTE register helpers),
+    every token but the glabel line's — nothing normalised."""
+    cols = _machine(asm_text)
+    if cols:
+        return cols
+    return _GLABEL.sub("", asm_text or "", count=1).split()
 
 
 _WB_CACHE: dict[int, set[str]] = {}
@@ -474,10 +506,31 @@ def unreviewed_departures() -> list[str]:
                     if isinstance(rec, dict) and isinstance(rec.get("func"), str):
                         chains.append((rec["func"], _chain(rec.get("renamed_from"))))
         relevant = [(n, ch) for n, ch in chains if set(ch) & gone]
-        where_now = _src_scan(set(gone) | {n for n, _ch in relevant})
+
+        # a rename still in the working tree (an uncommitted wave): HEAD has
+        # <old>.s, the working tree has <new>.s and no <old>.s, same machine code
+        head_asm = {}
+        tree = batch.get(f"HEAD:{ASM_DIR}")
+        i = 0
+        while tree and i < len(tree):
+            sp, nul = tree.index(b" ", i), tree.index(b"\0", tree.index(b" ", i))
+            head_asm[tree[sp + 1:nul].decode("utf-8", "replace")] = tree[nul + 1:nul + 21].hex()
+            i = nul + 21
+        wt_new = [p for p in sorted(Path(ASM_DIR).glob("*.s")) if p.name not in head_asm]
+        for old in sorted(gone):
+            sha = head_asm.get(f"{old}.s")
+            if sha is None or Path(f"{ASM_DIR}/{old}.s").exists():
+                continue
+            o_text = batch.text(sha)
+            for p in wt_new:
+                if same_asm(o_text, layer2._read_text(p), old, p.stem):
+                    rename_events.setdefault((old, p.stem), []).append(("WORKTREE", sha, None))
+
+        where_now = _src_scan(set(gone) | {n for n, _ch in relevant}
+                              | {n for (o, n) in rename_events if o in gone})
 
         def parent_of(commit):
-            return "HEAD" if commit == "HEAD" else f"{commit}^"
+            return "HEAD" if commit in ("HEAD", "WORKTREE") else f"{commit}^"
 
         def queue_at(rev):
             b = batch.get(f"{rev}:{QUEUE_FILE}")
@@ -496,35 +549,41 @@ def unreviewed_departures() -> list[str]:
                 if old in listed or not events:
                     return False
                 commit = events[0][0]
-                queue_before = queue_at(f"{commit}^")
+                queue_before = queue_at(parent_of(commit))
             else:
                 commit, _item, queue_before = dep
             par = parent_of(commit)
             # (c) new was not queued, and had no body, when old left
             if new in queue_before or _body_at(batch, par, new):
                 return False
-            addr_old = _addr_of(batch.text(f"{par}:{ASM_DIR}/{old}.s"))
+            ident_old = asm_identity(batch.text(f"{par}:{ASM_DIR}/{old}.s"))
             for r_commit, o_blob, n_blob in events:
-                o_text, n_text = batch.text(o_blob), batch.text(n_blob)
-                # (a) the glabel file moved unchanged but for the name ...
-                if o_text is None or n_text is None or o_text.replace(old, new) != n_text:
+                wt = r_commit == "WORKTREE"
+                o_text = batch.text(o_blob)
+                n_text = layer2._read_text(Path(f"{ASM_DIR}/{new}.s")) if wt else batch.text(n_blob)
+                # (a) the same machine code under the new glabel ...
+                if not same_asm(o_text, n_text, old, new):
                     continue
                 # (b) ... and it is the file old had when it left the queue
-                if not addr_old or _addr_of(o_text) != addr_old:
+                # (same machine columns — so the same addresses — as at D^)
+                if not ident_old or asm_identity(o_text) != ident_old:
                     continue
                 # (a) ... and the body moved with it
-                r_par = f"{r_commit}^"
+                r_par, r_rev = parent_of(r_commit), (None if wt else r_commit)
                 if (_body_at(batch, r_par, old) and not _body_at(batch, r_par, new)
-                        and _body_at(batch, r_commit, new) and not _body_at(batch, r_commit, old)):
+                        and _body_at(batch, r_rev, new) and not _body_at(batch, r_rev, old)):
                     return True
             return False
 
-        # a chain [c0, ..., ck] on carrier N nominates each ci -> N and the
-        # hops c0->c1, ..., ck->N (naming_wave appends one name per wave); only
-        # edges out of a gone name or a never-listed intermediate matter
+        # edges are nominated by renamed_from chains — a chain [c0, ..., ck]
+        # on carrier N gives each ci -> N and the hops c0->c1, ..., ck->N — and
+        # straight by git's rename events (so a `git revert` of a wave, which
+        # restores the old name with no chain, nominates the reverse edge);
+        # only edges out of a gone name or a never-listed intermediate matter
         nominated = {(old, new) for carrier, ch in relevant
                      for old, new in [*zip(ch, ch[1:] + [carrier]), *((c, carrier) for c in ch)]
                      if old != new and (old in gone or old not in listed)}
+        nominated |= {(old, new) for (old, new) in rename_events if old != new and old in gone}
         valid = {(old, new) for old, new in sorted(nominated) if valid_edge(old, new)}
         # (e) injective, both ways: one old -> one new, one new <- one old
         olds_of = {n: {o for o, n2 in valid if n2 == n} for _o, n in valid}

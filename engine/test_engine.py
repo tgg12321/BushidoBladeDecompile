@@ -3234,6 +3234,7 @@ def test_departures() -> None:
     identity-bound renames (forgeries A/A2/A3 resolve nothing), departed-body
     judgement (naming waves B/B2 stay clear), latest-record fail-closed, and
     the behaviour of every git walk flag that has one."""
+    import re
     import subprocess
     from engine import departures, layer2
 
@@ -3247,33 +3248,51 @@ def test_departures() -> None:
 
     addrs = {}
 
-    def glabel_file(name, addr):
+    def glabel_file(name, addr, calls=()):
         """A splat-shaped asm/funcs/<name>.s: long enough that git's rename
-        detection pairs it with itself and with nothing else."""
+        detection pairs it with itself and with nothing else; `calls` adds
+        `jal <callee>` lines (a wave rewrites those operands)."""
         base = int(addr, 16)
         lines = [f"glabel {name}"] + [
             f"    /* {base - 0x80010000 + 4 * i:X} {base + 4 * i:08X} {(base * 7 + i) & 0xFFFFFFFF:08X} */"
             f"  addiu      $v{i % 2}, $a0, {i}" for i in range(8)]
+        lines += [f"    /* {base - 0x80010000 + 32 + 4 * i:X} {base + 32 + 4 * i:08X} 0C00{i:04X} */"
+                  f"  jal        {callee}" for i, callee in enumerate(calls)]
         return "\n".join(lines) + "\n"
 
-    def fn(name, src="src/k.c", n=None, include_asm=False):
+    def fn(name, src="src/k.c", n=None, include_asm=False, calls=()):
         """Add a function: a C body (or an INCLUDE_ASM line) in `src` and
         splat's asm/funcs/<name>.s."""
         addrs.setdefault(name, f"8001{len(addrs) * 0x100:04X}")
         Path(src).parent.mkdir(parents=True, exist_ok=True)
+        body = " ".join(f"{c}(a);" for c in calls)
         with open(src, "a") as fh:
             fh.write(f'INCLUDE_ASM("asm/funcs", {name});\n' if include_asm else
-                     f"int {name}(int a) {{ return a + {n if n is not None else len(addrs)}; }}\n")
+                     f"int {name}(int a) {{ {body} return a + "
+                     f"{n if n is not None else len(addrs)}; }}\n")
         Path("asm/funcs").mkdir(parents=True, exist_ok=True)
-        Path(f"asm/funcs/{name}.s").write_text(glabel_file(name, addrs[name]))
+        Path(f"asm/funcs/{name}.s").write_text(glabel_file(name, addrs[name], calls))
 
-    def rename(old, new, src="src/k.c"):
-        """What a naming wave does: the definition and the glabel .s move."""
-        Path(src).write_text(Path(src).read_text().replace(f"int {old}(", f"int {new}("))
-        s = Path(f"asm/funcs/{old}.s")
-        Path(f"asm/funcs/{new}.s").write_text(s.read_text().replace(old, new))
-        s.unlink()
-        addrs[new] = addrs[old]
+    def wave(code_map):
+        """What tools/naming_wave.py does to the tree: every source and every
+        asm/funcs/*.s is rewritten with the WHOLE map (word-bounded), then
+        each renamed function's glabel file moves."""
+        pat = re.compile(r"\b(" + "|".join(map(re.escape, code_map)) + r")\b")
+        files = [*Path(".").glob("src/**/*.[ch]"), *Path(".").glob("include/**/*.h"),
+                 *Path(".").glob("asm/funcs/*.s")]
+        for p in files:
+            t = p.read_text()
+            new_t = pat.sub(lambda m: code_map[m.group(1)], t)
+            if new_t != t:
+                p.write_text(new_t)
+        for old, new in code_map.items():
+            s = Path(f"asm/funcs/{old}.s")
+            if s.exists():
+                s.rename(f"asm/funcs/{new}.s")
+            addrs[new] = addrs.get(old)
+
+    def rename(old, new):
+        wave({old: new})
 
     def edit(name, src="src/k.c"):
         """Change `name`'s body (e.g. a callee renamed by a later wave)."""
@@ -3547,15 +3566,19 @@ def test_departures() -> None:
             commit("g3 later wave")
             v, fl = audit()
             eq("departures: identity-bound renames (A, A2, A3, A4) and waves (B, B2)",
-               fl, ["func_L", "func_L3", "func_L4", "func_L5", "func_L6"])
+               fl, ["func_L2", "func_L3", "func_L4", "func_L5", "func_L6"])
             check("departures (A4): a forged glabel address on an EXISTING function "
                   "launders nothing", "func_L5" in fl)
             check("departures (A5): a forged chain on a brand-new function at another "
                   "address launders nothing", "func_L6" in fl)
             check("departures: a body living in a header is found (departed and current)",
                   "func_H" not in fl)
+            # the genuine rename L -> L2 is followed (its git rename event
+            # nominates it); the forged chain on G is not — so L is audited
+            # as L2, which left the queue without a PASS
             check("departures (A): a src rename + forged chain on a queued item "
-                  "launders nothing", "func_L" in fl)
+                  "launders nothing",
+                  "func_L2" in fl and any(s.startswith("func_L2 (listed as func_L)") for s in v))
             check("departures (A2): a forged chain on a PASSed record launders nothing",
                   "func_L4" in fl and "func_P" not in fl)
             check("departures (A3): a body moved into a header + forged chain launders "
@@ -3732,6 +3755,51 @@ def test_departures() -> None:
             eq("departures (double rename, and B3): renamed, completed, renamed again -> "
                "clear", audit()[1], [])
 
+            # ── repo cc: caller and callee renamed in ONE wave (F1-r4) ───────
+            new_repo(Path(td) / "cc", ["func_80058580", "func_Q", "func_SX"])
+            fn("func_80055B60", calls=["func_80058580"])    # jal func_80058580
+            # hand-written asm (no splat columns), as the GTE register helpers
+            fn("func_80052CD4", include_asm=True)
+            Path("asm/funcs/func_80052CD4.s").write_text(
+                "glabel func_80052CD4\n    mfc2   $t0, $9\n    mfc2   $t1, $10\n"
+                "    sra    $t0, $t0, 2\n    jr     $ra\n    nop\n")
+            write_queue([item(f) for f in ("func_80058580", "func_80055B60", "func_Q",
+                                           "func_80052CD4", "func_SX")])
+            commit("cc0")
+            wave({"func_80055B60": "func_Caller", "func_80058580": "func_Callee",
+                  "func_80052CD4": "gte_ReadIR1IR2Sra2"})
+            # a FILE-only move: SX's glabel file becomes func_SY.s, its glabel
+            # still says func_SX — not the same symbol under a new name
+            t = Path("src/k.c").read_text()
+            Path("src/k.c").write_text(t.replace("int func_SX(", "int func_SY("))
+            Path("asm/funcs/func_SX.s").rename("asm/funcs/func_SY.s")
+            write_queue([item("func_Callee", renamed_from=["func_80058580"]),
+                         item("func_Caller", renamed_from=["func_80055B60"]),
+                         item("gte_ReadIR1IR2Sra2", renamed_from=["func_80052CD4"]),
+                         item("func_SY", renamed_from=["func_SX"]), item("func_Q")])
+            commit("cc1 one wave renames caller and callee (and a GTE helper)")
+            check("departures (F1-r4): the wave rewrote the caller's jal operand",
+                  "jal        func_Callee" in Path("asm/funcs/func_Caller.s").read_text())
+            eq("departures (F1-r4): caller + callee (+ hand-written asm) in one wave -> "
+               "clear; a file-only move is no rename", audit()[1], ["func_SX"])
+
+            # ── repo rv: `git revert` of a committed wave (F2-r4) ───────────
+            new_repo(Path(td) / "rv", ["func_RVA", "func_Q"])
+            wave({"func_RVA": "func_RVB"})
+            write_queue([item("func_RVB", renamed_from=["func_RVA"]), item("func_Q")])
+            w = commit("wave RVA -> RVB")
+            git("revert", "--no-edit", w)
+            check("departures (F2-r4): the revert restored the old name with no chain",
+                  json.loads(Path("engine/queue.json").read_text())["items"][0]
+                  == item("func_RVA"))
+            eq("departures (F2-r4): a reverted wave -> clear", audit()[1], [])
+
+            # ── repo wtw: a wave not yet committed (F3-r4) ─────────────────
+            new_repo(Path(td) / "wtw", ["func_P1", "func_Q"])
+            wave({"func_P1": "func_P1N"})
+            write_queue([item("func_P1N", renamed_from=["func_P1"]), item("func_Q")])
+            eq("departures (F3-r4): an uncommitted wave -> clear", audit()[1], [])
+
             # ── repo hard: each identity hardening on its own ───────────────
             new_repo(Path(td) / "hard", ["func_H2", "func_H3", "func_H7", "func_H8",
                                          "func_H9", "func_HA", "func_Q"])
@@ -3751,10 +3819,13 @@ def test_departures() -> None:
             # body only, H8 with a glabel file only
             rename("func_H7", "func_W7")
             rename("func_H8", "func_W8")
-            # (a) H9's glabel file changes more than its name in the rename
+            # (a) H9's MACHINE CODE changes in the rename (one instruction's
+            # bytes column) — not the same function under a new name
             rename("func_H9", "func_W9")
-            Path("asm/funcs/func_W9.s").write_text(
-                Path("asm/funcs/func_W9.s").read_text().replace("addiu", "addu ", 1))
+            w9 = Path("asm/funcs/func_W9.s").read_text().splitlines(True)
+            m = re.search(r"([0-9A-F]{8}) \*/", w9[1])
+            w9[1] = w9[1][:m.start(1)] + "DEADBEEF" + w9[1][m.end(1):]
+            Path("asm/funcs/func_W9.s").write_text("".join(w9))
             write_queue([item("func_W2", renamed_from=["func_H2"]),
                          item("func_W3", renamed_from=["func_H3"]),
                          item("func_W7", renamed_from=["func_H7"]),
