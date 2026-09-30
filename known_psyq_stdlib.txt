@@ -25,7 +25,7 @@ func_8003043C                         psyq_memset               16 insns, store-
 func_80038148                         psyq_memset               10 insns, store-loop with no load
 func_800404D8                         psyq_memset               14 insns, store-loop with no load
 func_8004A348                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
-func_8004A4E0                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
+func_8004A4E0                         handwritten_asm           uses GCC-unfriendly mnemonics: 2 trapping addi (0x8004A5A0, 0x8004A67C) and 4 ctc2; no add/sub/syscall (corrected 2026-09-29, owner Q40)
 func_8004A808                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8004A940                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8004BB68                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
