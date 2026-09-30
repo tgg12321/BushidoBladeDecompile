@@ -81,17 +81,6 @@
       "addr": "80052D00"
     },
     {
-      "func": "func_8006CFBC",
-      "file": "text1b_tu1c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): union word view Counts_8006CFBC landed before Q33 + undisclosed 3-write carrier value. Banked: memory/grind/func_8006CFBC/rejected/retro-audit-2026-09-29.c",
-      "addr": "8006CFBC"
-    },
-    {
       "func": "func_800759D0",
       "file": "text1b_tu2",
       "distance": 0,
@@ -386,14 +375,14 @@
     }
   ],
   "counts": {
-    "total": 32,
-    "active": 20,
+    "total": 31,
+    "active": 19,
     "by_status": {
-      "active": 20,
+      "active": 19,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 18,
+      "C": 17,
       "ASM-PARTIAL": 2
     }
   },
