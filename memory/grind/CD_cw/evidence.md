@@ -85,3 +85,7 @@ typed object or a pointer the compiler can't see through. Decay-from-array does 
   Fixed 2026-09-22; F3 now scores 0 and the honest candidate 38. Scores in the table
   above measured before that fix (all except F3/M1) may be a few points high.
 - cc1psx-check on E5 (23): cc1psx scores 31 -> SOURCE-SIDE, not a compiler gap.
+
+## 2026-09-29 -- REOPENED (retro-audit FAIL, Q37 class C, 803d0fea1)
+
+The bba90442b landing FAILed the 2026-09-29 retro-audit: Alarm_t aggregate merge incomplete and TU-local (old per-word D_800F19B8..C0 / Alarm_plus_0x4/0x8 externs still used in the same TU, prongs (c)/(d)); Intr is a second C object over the bytes the TU still reaches as g_cd_status_a/b/c. Per owner Q37 class C the body went back to `INCLUDE_ASM("asm/funcs", CD_cw);` and the function is back in the queue. Landed text banked verbatim in `rejected/retro-audit-2026-09-29.c`. Removed with the body: CD_cw's private static inline helpers set_alarm/get_alarm/callback. LEFT IN PLACE (shared or merge declarations, per the reopen brief): typedef CD_intr + `static volatile CD_intr Intr = {0};` (still used by getintr), typedef Alarm_t + `extern Alarm_t Alarm;` (now UNUSED), the D_800A12FC/D_800A13FC/D_80016254/D_8001625C/D_8001626C externs (now unused), the SOTN `CD_cw(u8, u8 *, u8 *, s32)` prototypes, the asm/data split + bb2.ld system.o(.data) placement, and named_syms.txt `Alarm = 0x800F19B8`.
