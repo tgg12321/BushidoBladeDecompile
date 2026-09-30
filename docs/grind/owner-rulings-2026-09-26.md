@@ -541,3 +541,13 @@ Owner chose: **"Yes, judge the file as a whole (Recommended)"** — option text:
 Other option offered: "No, every function must prove -G8" — "The split isn't possible, so the 0x800A3560 cluster stays as it is (func_8006E534 FAIL, 3 concerns) and func_80070F78 stays unfinished."
 Note: prongs (i)/(ii) are still owed at file level (the gp-access listings and the cc1psx -G8 vs -G0 confirmation
 banked in the ledger), and a function without gp accesses must be byte-identical at -G8 and -G0.
+
+# Owner exchange 2026-09-30 (twenty-seventh batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: a layer-2 re-review of the Q46–Q53 rule encoding found older rules that still flatly refuse specific
+constructs (inline-asm-policy's default ban, legitimate-volatile-interrupt-touched's "ONLY for globals", the
+fabricated-dead-call refusal, "may not be re-proposed in any spelling" entries) with no precedence clause against Q50.
+
+## Q55 — Q50 precedence over older refusals; matched SOTN code only
+Question, verbatim: "Older rules still flatly refuse specific tricks: the inline-assembly ban, 'volatile only on interrupt-touched globals', never-executed calls, and constructs you said 'may not be re-proposed in any spelling'. Does a verified SOTN citation override those too?"
+Owner chose: **"Yes, matched SOTN code only (Recommended)"** — option text: "Q50 wins over every older refusal, but the citation must be SOTN code that actually compiles to a match in its PS1 build — not INCLUDE_ASM, not NON_MATCHING/disabled C, not an unmatched function. Paperwork (FAKE comment, simpler spellings tried, second review) still applies."
+Other options offered: "Yes, any SOTN code" — "Any construct present anywhere in SOTN's PS1-build files counts, matched or not. Broadest reading; opens asm and non-matching code as precedent."; "No, keep those specific refusals" — "Q50 applies to everything except these explicitly refused families; they stay refused even with a SOTN citation."
