@@ -37,7 +37,7 @@ diffs in func_800768DC/ and func_800770B8/.
   — the f1C/f20 unions grow sizeof(SelWork_800768DC) from 0x92 to 0x94 (the s32 member makes
   the struct 4-aligned), which prong (5) ("the struct's size ... unchanged") forbids: this
   needs an owner ruling or a layout that keeps the size.
-(The reviewer's full text was requested from rev-45; if it arrives it is appended below.)
+(The reviewer's full text is appended at the end of this file.)
 
 ## Frontier — the one landing the next worker should build
 
@@ -81,3 +81,62 @@ asm/rodata/jtbl_80015A0C.s (5 words, read from the oracle EXE: .L800748F0 .L8007
 .L80074A58 .L80074AB0) via INCLUDE_RODATA immediately before its INCLUDE_ASM, so text1b_tu2.o's
 .rodata keeps jtbl (0x0) then D_80015A20 (0x14). Rebuild == oracle. Landed bodies in each
 function's rejected/selwork-cluster-2026-09-30.c (func_800747D8's with its doc comment).
+
+## rev-45 full review text (appended by the orchestrator from the reviewer's messages, 2026-09-30)
+
+Verdicts (all re-scored sandbox 0; full-build SHA1 not verified by the reviewer):
+func_800747D8 d8db9fc860829384 FAIL · func_80075670 ae836e096f26313c FAIL ·
+func_800768DC 0d456e1392bb3646 PASS · func_800770B8 120523d39b6ddfad FAIL.
+
+**func_800747D8 / func_80075670 (FAIL).** `src/text1b_tu2.c:211` / `:578` read `*(s32 *)(base + 0x10)`, a
+cast word view over the two per-player s16 at 0x10. The target has the same single read (0x800747F4
+`lw $v0,0x10($a2)`, 0x80075684 `lw $v0,0x10($v1)`), and the halves are per-player s16 (func_800768DC
+0x8007690C `lh 0x10` at base + player*2). Q33 (4) refuses the cast where a union would do. `S_800747D8`
+already declares a `field10 {word10, half10}` union that :211 does not use, while `SelWork_800768DC`
+declares the same bytes as plain `s16 f10[2]`; Q46 (5) wants one definition. Fix: merge the two structs
+into one type with a Q46 union at 0x10, name `.word` only at those two reads, and send every other f10
+access through `.half[]` (:310, :591, :817, :856, :1070).
+
+**func_800768DC (PASS).** All member access through SelWork. `D_800A35D0[arg3]` matches the target
+(0x80076948 `sll 2`, base add at 0x8007695C) and is the `s16 *` pair func_800692C0 walks
+(text1b_tu1c.c:6251). `D_8009BCE4[...]` matches the `lbu`/`sb` at 0x80076B88–A4. `(u32 *)&arg0` is only a
+prototype conversion. Caveat: the f10/f3C unions will change this body, so its PASS goes stale then.
+
+**func_800770B8 (FAIL).**
+1. D_8009BD21 merge incomplete. Prongs (a)/(b) hold (func_800747D8 builds the D_8009BD20 base at
+   0x800749B4 and adds the column; 2-byte stride at 0x80074694–D4 and 0x80077338–44). Prong (c):
+   `undefined_syms_auto.txt:71 D_8009BD21` stays although its only asm users (func_80074488.s,
+   func_800770B8.s) are compiled from C and asm/text1b.s is not linked. Prong (d): D_8009BD20 is declared
+   TU-local at text1b_tu2.c:106, :170 and text1b_tu1e.c:520 (identical, so one handle), but a merged
+   cross-TU table belongs in the shared header. Fix: `extern u8 D_8009BD20[2][2];` in include/game.h with
+   an object-model comment (7D920.data.s:23805–23817), delete the three TU-local externs and row 71.
+2. Q46 unions f1C/f20 against Q33: (1) holds (0x800772B4 `lw $a0,D_800A36A0`; 0x800772BC `sw $zero,0x20($a0)`;
+   0x800772C0 `sw $zero,0x1C($a0)`). (2) holds except size: `s16 half[2]` is the real member (func_80075F80
+   `lhu`/`sh` 0x1C at 0x80076114/24, `lh` 0x20 at 0x80076158/88, `lh` 0x1C/0x20 at 0x800761B4/B8, `sh` 0x20 at
+   0x8007616C/78/0x800761A4; func_800759D0 `lh` 0x1C/0x20 at 0x80075BC4/C8). (3) `.word` only at :1128-1129.
+   (4) no cast through the union. **(5) FAILS on size**: offsets unchanged, but the s32 raises alignment
+   2→4 and sizeof 0x92→0x94; (2) forbids filler and nothing accesses 0x92+. Needs an owner ruling on
+   whether trailing alignment padding counts as "size" (docs/audits/RETRO-AUDIT-2026-09-29.md, open Q2).
+3. `p_old` (:1007 decl, :1031 `= arg0 + 0x58`, :1038 `= func_8006E49C(...)`, :1052 FAKE restore) holds two
+   unrelated values; the FAKE at :1041-1051 covers only the dead store, and its mechanism
+   (combine_regs reg_n_deaths == 1) depends on the second role. No ruling admits it. Try
+   `s32 *work = (s32 *)func_8006E49C(...); D_800A36A0 = (u8 *)work; work[1] = (s32)prev;`; else a Ruling 11
+   package with an honest generic name.
+4. Mixed handles: raw `*(T *)(base + off)` writes to SelWork members (f10/f14/f3C :1070-1074, f40 :1080-1081,
+   f7E via p_7e :1086-1087, f5C/f60 :1094-1095, f64 :1131/:1133/:1136-1137, f65 :1142) beside the new member
+   stores; MEM_IN_STRUCT_P differs. The do-while FAKE records a struct-typed rederive at 178 insns (miss).
+   Measure the member spelling on today's chassis before claiming the casts are required.
+5. FAKE comments at :1012-1027 and :1041-1051 cite evidence.md [s9]/[s11] and hypotheses.md deleted in
+   bf8588dd8; repoint to `bf8588dd8^:memory/grind/func_800770B8/{evidence,hypotheses}.md`. The new `sym` row
+   pointer FAKE (:1060-1066) meets pointer-alias-fake-exception (f3 19/175, f3b 18/175).
+
+Declarations: `s16 D_800A35D0[2][2]` real (8 bytes at 91C98.data.s:4279-4282; one symbol row, :905); TU-local
+acceptable, but declared 3× (:171, :567, :998) — collapse. `u8 D_8009BCE4[20]` real (7D920.data.s:23732-23753).
+
+Concerns: (1) func_80075F80's banked body `(&D_800A35D0) + (arg3 * 2)` silently becomes +arg3*16 under
+`[2][2]` — respell `D_800A35D0[arg3]`. (2) With f1C/f20 unions, func_800759D0 (`state[0x1C / 2]`) and
+func_80075F80 must go through `.half[arg3]`; neither re-lands unchanged. (3) Do every SelWork union (f10, f1C,
+f20, f3C) plus the S_800747D8 merge in ONE landing and settle Q33(5) once. (4) The D_800A35D0 type change
+forces 747D8/75670 respells, which can't PASS without the f10 fix, so 768DC can't land alone. (5) GaugeWork
+(text1b_tu2.c:1154-1157) declares 0x6A as `u8 rows[2][10]` and passes `rows[i]` as `s16 *`, while
+func_800770B8 / func_80076D74 treat those bytes as s16 — another mismatched view; queue it.
