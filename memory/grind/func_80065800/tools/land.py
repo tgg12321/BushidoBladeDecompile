@@ -2,7 +2,8 @@
 1. text1b_tu1c.c: aggregate merge of the per-mode tables (D_800F0BA8 s16[18], D_800F0CA0
    Unk800F0C10Record[18]) across every consumer, then the func_80065800 body.
 2. include/game.h: the two array declarations.
-3. text1a_b_pre_rodata_b.c: drop the hand-transcribed jtbl_800158F8 / jtbl_80015940.
+3. text1b_tu1c.c: drop the hand-transcribed jtbl_800158F8 / jtbl_80015940 (now compiled);
+   text1a_b_pre_rodata_b.c: comment only.
 4. undefined_syms_auto.txt / named_syms.txt: retire the per-word alias rows for the merged bytes."""
 import re
 from pathlib import Path
@@ -77,6 +78,12 @@ t = t.replace('@@TMR@@', 'D_800F0BA8').replace('@@POS@@', 'D_800F0CA0')
 left = [l for l in t.split(NL) if re.search(r'\(u16 \*\)&D_800F0BA8|\(s16 \*\)&D_800F0BA8|u16 \*\w+ = &D_800F0BA8|\(s16\)D_800F0BA8', l)]
 assert not left, left
 inc = 'INCLUDE_ASM("asm/funcs", func_80065800);\n'
+# The two transcribed switch tables (moved here by the 5c543ce1d boundary commit) become the
+# compiler's own tables for the C body, at the same place in text1b_tu1c.o's .rodata.
+ja = t.index('/* jtbl_800158F8: 18 words (72B) @ 0x800158F8 */')
+jb = t.index(inc)
+assert t.count('jtbl_800158F8') == 2 and t.count('jtbl_80015940') == 2 and ja < jb
+t = t[:ja] + t[jb:]
 t = sub1(t, inc, rd('tmp/f65800/final.c'))
 wr(P, t)
 print('text1b_tu1c.c: dropped %d per-word externs' % dropped)
@@ -99,25 +106,11 @@ extern Unk800F0C10Record D_800F0CA0[18];
 """)
 wr(G, h)
 
-# ---- 3. text1a_b_pre_rodata_b.c --------------------------------------------------------
+# ---- 3. text1a_b_pre_rodata_b.c: comment only ------------------------------------------
 R = 'src/text1a_b_pre_rodata_b.c'
 r = rd(R)
-r = sub1(r, """ * 0x800158B4..0x80015987: the sound-bank loader's strings (snd_LoadCommonVab,
- * func_8005C2A8), func_80061064's string and func_80065800's two tables. */""",
-         """ * 0x800158B4..0x800158F7: the sound-bank loader's strings (snd_LoadCommonVab,
- * func_8005C2A8) and func_80061064's string. func_80065800's two switch tables
- * (0x800158F8, 0x80015940) are compiler output in build/src/text1b_tu1c.o's .rodata,
- * which bb2.ld links directly after this object. */""")
-a = r.index('/* jtbl_800158F8: 18 words (72B) @ 0x800158F8 */')
-b = r.index('/* NOTE: the cluster continues in src/text1a_b_mid_rodata.c.')
-r = r[:a] + r[b:]
-r = sub1(r, """ * 0x80015988 through 0x80015A0B are supplied by build/src/text1b_tu1c.o
- * (func_8006B578's compiler-generated switch table and the warning string,
- * up to 0x800159AF) and build/src/text1b_tu1d.o (the func_8006E534 and
- * func_8006ECF4 tables, from 0x800159B0). */""", """ * 0x800158F8 through 0x80015A0B are supplied by build/src/text1b_tu1c.o
- * (func_80065800's two switch tables, then func_8006B578's switch table
- * and the warning string, up to 0x800159AF) and build/src/text1b_tu1d.o
- * (the func_8006E534 and func_8006ECF4 tables, from 0x800159B0). */""")
+r = sub1(r, "(func_80061064's string, func_80065800's two tables, func_8006B578's\n * compiler-generated switch table",
+         "(func_80061064's string, func_80065800's two compiler-generated switch\n * tables, func_8006B578's compiler-generated switch table")
 wr(R, r)
 
 # ---- 4. symbol rows ---------------------------------------------------------------------

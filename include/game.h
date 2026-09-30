@@ -330,6 +330,17 @@ typedef struct {
 
 extern Unk800F0C10Record D_800F0C10[4][3];
 
+/* Per-effect-mode state, modes 0..0x11 (func_80065800 and its per-mode init and step
+ * functions). Object model evidence (the original binary): asm/funcs/func_80065800.s
+ * :39-45 addresses the position records as base + mode*12 (sll/addu/sll, then
+ * %lo(D_800F0CA0)($at)) and :147-152 the timers as base + mode*2; modes 8/9 read
+ * element mode-2, base - 4 + mode*2 (:351-356). The init functions
+ * func_80064E90..func_800652AC fill the records and initialise the timers; the step
+ * functions func_800652F4..func_800657B0 advance the timers. Replaces the splat
+ * per-word scalars D_800F0BA8..D_800F0BCA and D_800F0CA0..D_800F0D74. */
+extern s16 D_800F0BA8[18];
+extern Unk800F0C10Record D_800F0CA0[18];
+
 /* 0x800948BC: per-stage function pairs, indexed by stage_GetId().
  * stage_ExecInitFunc calls .init; func_8003E6D8 calls .unk4 (e.g. entry 13
  * holds camera_InitBone2 / func_800475A4). */

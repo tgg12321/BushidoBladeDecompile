@@ -2,7 +2,8 @@
  * mode 0..0x11): projects this mode's D_800F0CA0 position record through the current
  * camera, picks the texture/colour and quad size from the mode and its D_800F0BA8
  * timer, shapes the four corners (switch 2) and links one POLY_FT4 into the OT. Modes
- * 6/7 and 10/11 re-run the body for the paired mode (arg0 + 2) via `goto again`.
+ * 6/7 re-run the body for the paired mode (arg0 + 2, i.e. 8/9) via `goto again`; the
+ * re-run is guarded by `arg0 < 9`, so modes 10/11 draw once.
  *
  * Eight GTE islands, each a PsyQ Run-time Library Release 4.3 inline_c.h (DMPSX)
  * macro body - instruction text, "r" operands and clobbers as the header has them;
@@ -99,7 +100,8 @@ u8 func_80065800(s32 arg0) {
         "lwc2   $0, 0(%0)\n"
         "lwc2   $1, 4(%0)\n"
         :: "r"(p_v));
-    /* gte_rtps() --- inline_c.h :484-487, post-DMPSX command word */
+    /* gte_rtps() --- inline_c.h :484-487; post-DMPSX word 0x4A180001 (RTPS sf=1)
+       replaces the header's DMPSX placeholder .word 0x0000007f */
     __asm__ volatile(
         "nop\n"
         "nop\n"

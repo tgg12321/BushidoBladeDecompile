@@ -8,7 +8,7 @@ authorized by the row in the preceding auth: commit (owner rulings 2026-09-23 +
 2026-09-24 extension). HEAD carried INCLUDE_ASM (asm-until-matched); this is its
 first C body on main.
 
-sandbox --disable all == 0 (1454/1454, 0 scored hunks) on the spliced src; full build
+sandbox --disable all == 0 (1454/1454, 0 hunks) on the spliced src; full build
 SHA1 == oracle 62efab4f73f992798c43e8c730aa43baa10bb4fa (lock.ps1 rebuild). This
 commit records the eight island hashes in tools/canonical_asm_regions.json.
 Ledger: memory/grind/func_80065800/evidence.md (2026-09-30 sections) and evidence/.
@@ -20,10 +20,16 @@ Aggregate merge (no-new-park-categories.md, per-word splat symbol -> aggregate m
   asm/funcs/func_80065800.s:39-45 indexes the records as base + mode*12 and :147-152
   the timers as base + mode*2 (modes 8/9 read element mode-2, :351-356).
 - src/text1b_tu1c.c: the 78 per-word externs are gone and all 28 other consumers
-  (func_80064E90..func_800657B0) use element/member access, no casts. Each sandboxes 0
-  (0 hunks). One consumer changed shape: func_80065680's `u16 *v1` becomes `s16 *` (the
-  element type), so `v0 = *v1 + 1; *v1 = v0;` (which then loads lh; the target has lhu)
-  is written `*v1 = *v1 + 1;`, and its `(s16)D_800F0BA8[14]` cast is dropped.
+  (func_80064E90..func_800657B0) use element/member access, no casts
+  (memory/grind/func_80065800/tools/land.py). One consumer changed
+  shape: func_80065680's `u16 *v1` becomes `s16 *` (the element type), so
+  `v0 = *v1 + 1; *v1 = v0;` (which then loads lh; the target has lhu) is written
+  `*v1 = *v1 + 1;`, and its `(s16)D_800F0BA8[14]` cast is dropped. The full build is
+  the oracle, so every consumer is byte-neutral.
+- src/text1b.c: four unused per-word externs for bytes inside D_800F0CA0
+  (D_800F0D30/34/3C/40, records 12-13), which came into text1b.c with the 5c543ce1d
+  boundary move, are removed (memory/grind/func_80065800/tools/land_text1b.py). No
+  C declaration of a merged per-word symbol remains in src/ or include/.
 - Retired alias rows (no C or assembled-asm referrer remains): 62 undefined_syms_auto.txt
   rows (D_800F0BAA..D_800F0BCA, D_800F0CA4..D_800F0D74) and 65 named_syms.txt
   g_motion_ex_* rows naming bytes inside the two arrays, including the two second names
@@ -31,11 +37,12 @@ Aggregate merge (no-new-park-categories.md, per-word splat symbol -> aggregate m
   _id0_pos). The prose of the named_syms rows that stay now names D_800F0BA8[k] /
   D_800F0CA0[r].
 
-Jump tables: jtbl_800158F8 / jtbl_80015940 are deleted from src/text1a_b_pre_rodata_b.c.
-This function's two switch tables are compiler output at the head of
-text1b_tu1c.o(.rodata), which bb2.ld already links directly after
-text1a_b_pre_rodata_b.o, so they land at 0x800158F8 / 0x80015940 (build SHA1). Same
-operation as func_8006B578's table (2a5db4c32); bb2.ld is unchanged.
+Jump tables: the transcribed jtbl_800158F8 / jtbl_80015940 (moved into text1b_tu1c.c,
+just before this function, by the 5c543ce1d boundary commit, docs/grind/
+rodata-align-2026-09-30.md section 9) are deleted; this function's two switch tables
+are now compiler output at the same place in text1b_tu1c.o's .rodata, right after
+D_800158E0 (0x800158F8 / 0x80015940; build SHA1). bb2.ld is unchanged; the
+text1a_b_pre_rodata_b.c NOTE comment says the tables are compiled.
 
 Load-bearing (memory/grind/func_80065800/evidence.md and evidence/):
 - The context pointer locals. D_800A34EC's value is kept in `s32 outer` and nine field
@@ -43,11 +50,16 @@ Load-bearing (memory/grind/func_80065800/evidence.md and evidence/):
   target holds them in s-registers / stack homes (asm/funcs/func_80065800.s:15-26).
 - (MATRIX *)outer as the gte_SetTransMatrix operand (target lw $t4,0x14($s0)): the macro
   reads only +20..+28, which is p_t, the vector ApplyRotMatrixLV has just written.
+- gte_rtps carries the post-DMPSX word 0x4A180001 for the header's 0x0000007f under the
+  2026-09-24 DMPSX-placeholder extension (standing class ruling for inline_c.h islands;
+  same substitution on main in func_80063E10's row), see the auth: commit.
 - Cross-case control flow: `goto size_sel` (10/11 into 6/7's size block), `goto quad`
-  (12-15 and 8/9 into 3/4's coordinates; 112 -> 91 when introduced), `goto again` (6/7,
-  10/11 re-run the body for mode + 2 after linking the first prim). Case 0 is a plain
-  duplicate of case 5's else-arm, placed after case 5 (same bytes as a `case 0:` label
-  inside that else-arm; the plain form landed).
+  (12-15 and 8/9 into 3/4's coordinates; 112 -> 91 when introduced), `goto again` (modes
+  6/7 re-run the body for mode + 2, i.e. 8/9, after linking the first prim; the re-run is
+  guarded by `arg0 < 9` (target 0x80066DC4 slti $v0,$s3,0x9), so 10/11 draw once; `arg0 += 2`
+  is the mode's one update, the paired mode). Case 0 is a plain duplicate of case 5's else-arm,
+  placed after case 5 (same bytes as a `case 0:` label inside that else-arm; the plain
+  form landed).
 - Case 12-15: no pointer local; D_800F0BA8[arg0] at every read and the D_800A3488 store
   written before `n = 10 - D_800F0BA8[arg0];` reproduces the target's second timer load
   (evidence/case12-store-order.txt: n first 13, pointer forms 24).
@@ -56,9 +68,9 @@ Load-bearing (memory/grind/func_80065800/evidence.md and evidence/):
   read and written through casts as in this TU's other emitters; the texture records
   are the separate D_8009B8C8.. dlabels of asm/data/7D920.data.s, addressed like
   func_8006295C / func_80063084 do. D_8009BD44 is read as the TU already declares it
-  (`extern s32 D_8009BD44[]`); the dossier flags it as a split aggregate
-  (g_menu_screen_live_byte_c + 1). This body does not change that and adds no new
-  handle or cast on those bytes.
+  (`extern s32 D_8009BD44[]`). This body adds no new handle or cast on those bytes.
+- sdata_exclude.txt:43 (`func_80065800: g_gpu_ot_ptr, D_800A3834`) is load-bearing for
+  this function under the current lists (unchanged here).
 
 FAKE constructs (annotated at the declarations, each citing its evidence file):
 - tbl: pointer alias of D_800F0BA8 (pointer-alias-fake-exception.md). Case 10/11 is
@@ -70,12 +82,25 @@ FAKE constructs (annotated at the declarations, each citing its evidence file):
 - sw, sh: named intermediates (named-local-fake-exception.md; no-new-park-categories.md
   named-intermediate entry). Written once, read once, real values, byte-neutral. Inline,
   fold-const.c split_tree reassociates `*p_w * (X * 25)` into `(*p_w * 25) * X` (sw
-  inline 14, sh inline 13 / 1455 insns). Evidence: evidence/named-locals.txt.
+  inline 14, sh inline 13 / 1455 insns). Evidence: evidence/named-locals.txt, with the
+  cc1 -dr dumps of both sw forms in evidence/sw-rtl/ (the reassociated operand order is
+  already in the RTL expand emits, i.e. decided in fold-const.c).
 - w, h: named intermediates. *p_w / *p_h are loaded once before the corner sign test;
   inline, each arm loads (w inline 11 / 1456 insns, h inline 92, ?: form 12).
   Evidence: evidence/named-locals.txt.
+(Measured scores above include the 4-point jump-table addend of the pre-landing
+reference; the landed body's 4 became 0 once the tables were compiled.)
 
-No pins, no barriers, no reused variables (arg0 += 2 is the paired mode, its one
-update).
+No pins, no barriers, no reused locals.
+
+Pure-C attempts:
+  [1] technique=m2c-draft score=423 outcome=m2c structure, GTE block as placeholders (memory/grind/func_80065800/rejected/m2c-draft-423.c)
+  [2] technique=case10-no-pointer score=11 outcome=1457/1454 (memory/grind/func_80065800/rejected/case10-no-pointer-11.c)
+  [3] technique=corner-ternary score=12 outcome=1452/1454 (memory/grind/func_80065800/rejected/wh-ternary-12.c)
+  [4] technique=inline_c.h-islands score=0 outcome=1454/1454, this body. GCC 2.7.2 has no cop2 emitter.
+
+Layer-2 round 1 (rev-65800, body b572e1adbcd9f19c): FAIL on text only (rtps island comment
+gives both words; the 6/7-only re-run; consumer count 28); fixed in comments, this message
+and the ledger; body hash unchanged.
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>

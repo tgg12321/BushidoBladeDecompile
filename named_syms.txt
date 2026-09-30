@@ -597,7 +597,6 @@ g_scratchpad_ptr_ac             = 0x800A3484;  /* points to 0x1F8000AC */
 g_gnd_target_id_array           = 0x800A33E8;  /* array base for gnd-target IDs (s16 each); -1 sentinel */
 g_seq_init_pending              = 0x800A38C6;  /* 0xFFFF = pending init request, 0 = inited */
 g_mental_bar_max_packets        = 0x800A38F8;  /* max-count cap for mental-bar busy-wait (paired with g_mental_bar_packet_count) */
-g_motion_ex_counter_p2          = 0x800F0BC4;  /* p2's motion-ex counter (paired with D_800F0BC0 p1) */
 g_dma_madr_ptr                  = 0x800A263C;  /* pointer to DMA register; (val >> 24) & 0x7F = status read */
 Alarm = 0x800F19B8;  /* libcd bios.c alarm {time, count, name} (SOTN name; memory/closer/libcd-identity.md) */
 _snd_seq_tick_env_plus_0x4              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */  /* data-wave 2026-09-07: was g_alarm_armed_flag */
@@ -795,8 +794,8 @@ VBLANK_MINUS                                      = 0x80104E80;  /* ref: md_game
 /* Char / motion subsystem (4) */
 char_get_motion_keyframe_table_entry_prev_80021904      = 0x80021904;  /* reads D_80101F4E (prev keyframe field, +0x4E in char_state) */
 motion_dispatch_event_handler_80032854                  = 0x80032854;  /* 255-insn motion dispatcher; calls func_80061250/61658/etc text1b emitters */
-motion_ex_init_state_b_80065134                         = 0x80065134;  /* 2nd motion-ex init: writes D_800F0BBE counter (paired with g_motion_ex_counter_p2) */
-motion_ex_init_state_c_80065264                         = 0x80065264;  /* 3rd motion-ex init: writes D_800F0BC8 counter */
+motion_ex_init_state_b_80065134                         = 0x80065134;  /* 2nd motion-ex init: writes D_800F0BA8[11] counter (paired with D_800F0BA8[14]) */
+motion_ex_init_state_c_80065264                         = 0x80065264;  /* 3rd motion-ex init: writes D_800F0BA8[16] counter */
 motion_ex_play_id5_dynamic_80065484                     = 0x80065484;  /* motion_SetExMotion(5) with 1x/2x/3x step multiplier */
 motion_ex_play_idCE_80065680                            = 0x80065680;  /* motion_SetExMotion(0xC) + (0xE) with 11-play cap */
 /* File-IO / game-input state machine (3) */
@@ -981,16 +980,9 @@ g_status_up_data_buf                                    = 0x801027BC;  /* passed
 
 /* === Motion-ex per-id state arrays (2026-05-17) === */
 /* Found in text1b.c:14205-14223 init pattern: 12-byte state + 4-byte flag + 2-byte counter per motion id. */
-/* Existing g_motion_ex_counter_p1 (D_800F0BC0) and _p2 (D_800F0BC4) are at offsets +0x18/+0x1C from D_800F0BA8. */
-g_motion_ex_state_block_table_12                        = 0x800F0CA0;  /* 12-byte stride per motion id: [pos0, pos1, pos2_ptr] */
+/* The per-id 12-byte state records and 2-byte counters are the arrays D_800F0CA0[18] and D_800F0BA8[18]
+ * (include/game.h; merged 2026-09-30 with func_80065800, which retired their per-word alias names). */
 g_motion_ex_flag_table_4                                = 0x800F10E0;  /* 4-byte stride per motion id: init-done flag (set to 1) */
-g_motion_ex_counter_table_base                          = 0x800F0BA8;  /* 2-byte stride per motion id: tick counter (reset to 0 in init) */
-g_motion_ex_state_id0_pos                               = 0x800F0CA0;  /* alias for record 0 of g_motion_ex_state_block_table_12 */
-g_motion_ex_state_id0_extra                             = 0x800F0CA4;  /* +4 from id0_pos */
-g_motion_ex_state_id0_data_ptr                          = 0x800F0CA8;  /* +8: pointer-to-data field */
-g_motion_ex_state_id1_pos                               = 0x800F0CAC;  /* record 1 +0 */
-g_motion_ex_state_id1_extra                             = 0x800F0CB0;
-g_motion_ex_state_id1_data_ptr                          = 0x800F0CB4;
 
 /* === Pulled from symbol_addrs.txt (2026-05-17) -- 14 names === */
 /* Pre-existing semantic names in symbol_addrs.txt that hadn't been */
@@ -1388,29 +1380,6 @@ g_gnd_gauge_d_max                                       = 0x800F6644;  /* gauge 
 /* PracticeParams D_80102778 (code6cac.h, merged 2026-09-26 with */
 /* func_80034708); its per-word names are retired. */
 
-/* === Motion-ex state IDs 2-7 (2026-05-17) -- 18 highs === */
-/* Extension of the existing motion-ex state cluster (IDs 0-1 named */
-/* earlier in this naming sprint).  Each ID has 12-byte state block: */
-/*   +0x0 = pos, +0x4 = extra, +0x8 = data_ptr */
-/* Spanning 0x800F0CA0 (id0) through 0x800F0CFC (id7) = 24 entries x 4 bytes. */
-g_motion_ex_state_id2_pos                               = 0x800F0CB8;
-g_motion_ex_state_id2_extra                             = 0x800F0CBC;
-g_motion_ex_state_id2_data_ptr                          = 0x800F0CC0;
-g_motion_ex_state_id3_pos                               = 0x800F0CC4;
-g_motion_ex_state_id3_extra                             = 0x800F0CC8;
-g_motion_ex_state_id3_data_ptr                          = 0x800F0CCC;
-g_motion_ex_state_id4_pos                               = 0x800F0CD0;
-g_motion_ex_state_id4_extra                             = 0x800F0CD4;
-g_motion_ex_state_id4_data_ptr                          = 0x800F0CD8;
-g_motion_ex_state_id5_pos                               = 0x800F0CDC;
-g_motion_ex_state_id5_extra                             = 0x800F0CE0;
-g_motion_ex_state_id5_data_ptr                          = 0x800F0CE4;
-g_motion_ex_state_id6_pos                               = 0x800F0CE8;
-g_motion_ex_state_id6_extra                             = 0x800F0CEC;
-g_motion_ex_state_id6_data_ptr                          = 0x800F0CF0;
-g_motion_ex_state_id7_pos                               = 0x800F0CF4;
-g_motion_ex_state_id7_extra                             = 0x800F0CF8;
-g_motion_ex_state_id7_data_ptr                          = 0x800F0CFC;
 
 /* === Motion-ex flag table entries (2026-05-17) -- 3 highs === */
 /* The flag table base at 0x800F10E0 is g_motion_ex_flag_table_4. */
@@ -1423,16 +1392,11 @@ g_motion_ex_flag_id3                                    = 0x800F10EC;
 /* Each motion ID has its own init function in text1b.c:14220-14298 family. */
 /* Init pattern: read 3 fields from g_text1b_render_buf_ptr (D_800A347C), */
 /* write to state struct, set flag, reset counter. */
-motion_ex_Init_id1                                      = 0x80064ED8;  /* init id1 (state @ D_800F0CAC, flag @ D_800F10E4, counter @ D_800F0BAA) */
-motion_ex_Init_id2                                      = 0x80064F20;  /* init id2 (state @ D_800F0CB8, flag @ D_800F10E8, counter @ D_800F0BAC) */
-motion_ex_Init_id3                                      = 0x80064F68;  /* init id3 (state @ D_800F0CC4, flag @ D_800F10F4, counter @ D_800F0BAE = 0x40) */
-motion_ex_Init_id4                                      = 0x80064FB4;  /* init id4 (state @ D_800F0CD0, flag @ D_800F10F8, counter @ D_800F0BB0 = 0x40) */
-motion_ex_Init_id5                                      = 0x80065000;  /* init id5 (state @ D_800F0CDC, flag @ D_800F10FC, counter @ D_800F0BB2) */
-g_motion_ex_counter_id1                                 = 0x800F0BAA;  /* per-id tick counter (reset to 0 by motion_ex_Init_id1) */
-g_motion_ex_counter_id2                                 = 0x800F0BAC;
-g_motion_ex_counter_id3                                 = 0x800F0BAE;  /* default 0x40 (64 frames) */
-g_motion_ex_counter_id4                                 = 0x800F0BB0;  /* default 0x40 */
-g_motion_ex_counter_id5                                 = 0x800F0BB2;
+motion_ex_Init_id1                                      = 0x80064ED8;  /* init id1 (state @ D_800F0CA0[1], flag @ D_800F10E4, counter @ D_800F0BA8[1]) */
+motion_ex_Init_id2                                      = 0x80064F20;  /* init id2 (state @ D_800F0CA0[2], flag @ D_800F10E8, counter @ D_800F0BA8[2]) */
+motion_ex_Init_id3                                      = 0x80064F68;  /* init id3 (state @ D_800F0CA0[3], flag @ D_800F10F4, counter @ D_800F0BA8[3] = 0x40) */
+motion_ex_Init_id4                                      = 0x80064FB4;  /* init id4 (state @ D_800F0CA0[4], flag @ D_800F10F8, counter @ D_800F0BA8[4] = 0x40) */
+motion_ex_Init_id5                                      = 0x80065000;  /* init id5 (state @ D_800F0CA0[5], flag @ D_800F10FC, counter @ D_800F0BA8[5]) */
 
 /* === Voice-control state cluster (2026-05-17) -- 11 highs === */
 /* From code6cac.c around line 775-790 (voice packet table assignment) */
@@ -2110,8 +2074,7 @@ g_bios_callback_v0_1952                                 = 0x800A362C;  /* cached
 g_kernel_intr_ra_save_a                                 = 0x800A3618;  /* return-address save slot for kernel interrupt handler A */
 g_kernel_intr_ra_save_b                                 = 0x800A3628;  /* paired ra-save slot for handler B */
 
-/* === Motion-ex counter id15 + text1b glyph data (2026-05-17) -- 3 highs === */
-g_motion_ex_counter_id15                                = 0x800F0BC6;  /* +0x1E from g_motion_ex_counter_table_base; 2-byte stride; incremented per frame */
+/* === text1b glyph data (2026-05-17) === */
 g_text1b_glyph_data_b1                                  = 0x800F115B;  /* glyph buffer data; D_800F1180 set to point at this (cursor target) */
 g_text1b_glyph_data_b2                                  = 0x800F115C;  /* paired with _b1; accessed via &D + 0/+1 */
 
@@ -2390,11 +2353,7 @@ g_vab_vb_sbaddr_plus_0x8                               = 0x800EFB40;  /* +8 from
 g_effect_pool_b_24_field_4_plus_1                       = 0x800EFB7D;  /* +1 from g_effect_pool_b_24_field_4 (0x800EFB7C) */
 g_vab_rec_ptr_plus_0x4                                = 0x800EFC3C;  /* +4 from g_effect_struct_b (0x800EFC38) */  /* data-wave 2026-09-24: was g_effect_struct_b_plus_4 */
 g_vab_rec_ptr_plus_0x8                                = 0x800EFC40;  /* +8 from g_effect_struct_b (0x800EFC38) */  /* data-wave 2026-09-24: was g_effect_struct_b_plus_8 */
-g_motion_ex_counter_id5_plus_2                          = 0x800F0BB4;  /* +2 from g_motion_ex_counter_id5 (0x800F0BB2) */
-g_motion_ex_counter_id5_plus_4                          = 0x800F0BB6;  /* +4 from g_motion_ex_counter_id5 (0x800F0BB2) */
-g_motion_ex_counter_id15_plus_2                         = 0x800F0BC8;  /* +2 from g_motion_ex_counter_id15 (0x800F0BC6) */
-g_motion_ex_counter_id15_plus_4                         = 0x800F0BCA;  /* +4 from g_motion_ex_counter_id15 (0x800F0BC6) */
-g_motion_ex_counter_id15_plus_6                         = 0x800F0BCC;  /* +6 from g_motion_ex_counter_id15 (0x800F0BC6) */
+g_motion_ex_counter_id15_plus_6                         = 0x800F0BCC;  /* the halfword just past D_800F0BA8[18] */
 g_motion_state_flag_table_plus_4                        = 0x800F10D4;  /* +4 from g_motion_state_flag_table (0x800F10D0) */
 g_motion_state_flag_table_plus_8                        = 0x800F10D8;  /* +8 from g_motion_state_flag_table (0x800F10D0) */
 g_motion_ex_flag_id3_plus_4                             = 0x800F10F0;  /* +4 from g_motion_ex_flag_id3 (0x800F10EC) */
@@ -2465,22 +2424,6 @@ D_800EFB24                                     = 0x800EFB24;  /* 5 refs */  /* d
 D_800EFB28                                     = 0x800EFB28;  /* 5 refs */  /* data-wave 2026-09-25: was g_snd_data_subblock_4_ptr */
 g_vab_rec_ptr_plus_0xC                                 = 0x800EFC44;  /* 5 refs */  /* data-wave 2026-09-24: was g_effect_struct_b_off_C */
 g_vab_rec_ptr_plus_0x18                                = 0x800EFC50;  /* 5 refs */  /* data-wave 2026-09-24: was g_effect_struct_b_off_18 */
-g_motion_ex_counter_slot10                              = 0x800F0BBC;  /* 6 refs */
-g_motion_ex_counter_slot11                              = 0x800F0BBE;  /* 6 refs */
-g_motion_ex_counter_slot12                              = 0x800F0BC0;  /* 5 refs */
-g_motion_ex_counter_slot13                              = 0x800F0BC2;  /* 5 refs */
-g_motion_ex_state_id10_pos                              = 0x800F0D18;  /* 5 refs */
-g_motion_ex_state_id10_extra                            = 0x800F0D1C;  /* 5 refs */
-g_motion_ex_state_id10_data_ptr                         = 0x800F0D20;  /* 5 refs */
-g_motion_ex_state_id11_pos                              = 0x800F0D24;  /* 5 refs */
-g_motion_ex_state_id11_extra                            = 0x800F0D28;  /* 5 refs */
-g_motion_ex_state_id11_data_ptr                         = 0x800F0D2C;  /* 5 refs */
-g_motion_ex_state_id16_pos                              = 0x800F0D60;  /* 5 refs */
-g_motion_ex_state_id16_extra                            = 0x800F0D64;  /* 5 refs */
-g_motion_ex_state_id16_data_ptr                         = 0x800F0D68;  /* 5 refs */
-g_motion_ex_state_id17_pos                              = 0x800F0D6C;  /* 5 refs */
-g_motion_ex_state_id17_extra                            = 0x800F0D70;  /* 5 refs */
-g_motion_ex_state_id17_data_ptr                         = 0x800F0D74;  /* 5 refs */
 g_motion_ex_extra_at_0                                  = 0x800F0FB8;  /* 5 refs */
 g_motion_ex_extra_at_4                                  = 0x800F0FBC;  /* 5 refs */
 g_motion_ex_extra_at_8                                  = 0x800F0FC0;  /* 5 refs */
@@ -2642,18 +2585,6 @@ g_text1b_flag_ptr_F0C04                                       = 0x800F0C04;
 g_text1b_addr_800F0C10                                       = 0x800F0C10;
 g_text1b_addr_800F0C14                                       = 0x800F0C14;
 g_text1b_addr_800F0C18                                       = 0x800F0C18;
-g_motion_ex_state_id11_data_ptr_plus_4                       = 0x800F0D30;
-g_motion_ex_state_id11_data_ptr_plus_8                       = 0x800F0D34;
-g_motion_ex_state_id11_data_ptr_plus_12                      = 0x800F0D38;
-g_motion_ex_state_id11_data_ptr_plus_16                      = 0x800F0D3C;
-g_motion_ex_state_id13_off4                                  = 0x800F0D40;
-g_motion_ex_state_id13_off8                                  = 0x800F0D44;
-g_motion_ex_state_id14_off0                                  = 0x800F0D48;
-g_motion_ex_state_id14_off4                                  = 0x800F0D4C;
-g_motion_ex_state_id14_off8                                  = 0x800F0D50;
-g_motion_ex_state_id15_off0                                  = 0x800F0D54;
-g_motion_ex_state_id15_off4                                  = 0x800F0D58;
-g_motion_ex_state_id15_off8                                  = 0x800F0D5C;
 g_motion_ex_state_id17_data_ptr_plus_4                       = 0x800F0D78;
 g_motion_ex_state_id17_data_ptr_plus_8                       = 0x800F0D7C;
 g_motion_ex_pool_b_xyz_x                                       = 0x800F0E38;
@@ -3468,11 +3399,11 @@ gpu_render_800646E8                                = 0x800646E8;  /* builds + OT
 /* RESET 0x800481E8: retired name 'efc_buki_zanzou_drawlist_800481E8' — preserved note: draw-loop over buki-zanzou record list, on-screen cull x<0x280, calls efc_buki_draw_zanzou per entry */
 motutil_GetWalkDir_all_800644FC = 0x800644FC;  /* bitmask(D_800A3454[idx]) loop over count, calls motutil_GetWalkDir for each active entry (stride 0x20) */
 /* RENAME 0x8007F87C: retired name 'mtx_rotate_8007F87C' — preserved note: in-place rotate matrix rows@+6/+C by angle a0 via sincos LUT D_8009C928 (pairs [6,C],[8,E],[A,10]) */
-motion_ExMotionDrive0_800652F4 = 0x800652F4;  /* calls motion_SetExMotion(0), advances accum D_800F0BA8 += 0x1FF, gated return (<0x1001) */
-motion_ExMotionDrive3_800653E4 = 0x800653E4;  /* calls motion_SetExMotion(3), advances accum D_800F0BAE += 0x19, gated return (<0xC9) */
-motion_ExMotionDriveA_800655E0 = 0x800655E0;  /* calls motion_SetExMotion(0xA), advances accum D_800F0BBC += 0x32, gated return (<0x100) */
-motion_ExMotionDriveDF_800656EC = 0x800656EC;  /* calls motion_SetExMotion(0xD)+(0xF), advances accums D_800F0BC2/BC6, gated return (<0xB) */
-motion_ExMotionDrive11_800657B0 = 0x800657B0;  /* calls motion_SetExMotion(0x11), advances accum D_800F0BCA += 0x1C6, gated return (<0x11C8) */
+motion_ExMotionDrive0_800652F4 = 0x800652F4;  /* calls motion_SetExMotion(0), advances accum D_800F0BA8[0] += 0x1FF, gated return (<0x1001) */
+motion_ExMotionDrive3_800653E4 = 0x800653E4;  /* calls motion_SetExMotion(3), advances accum D_800F0BA8[3] += 0x19, gated return (<0xC9) */
+motion_ExMotionDriveA_800655E0 = 0x800655E0;  /* calls motion_SetExMotion(0xA), advances accum D_800F0BA8[10] += 0x32, gated return (<0x100) */
+motion_ExMotionDriveDF_800656EC = 0x800656EC;  /* calls motion_SetExMotion(0xD)+(0xF), advances accums D_800F0BA8[13]/[15], gated return (<0xB) */
+motion_ExMotionDrive11_800657B0 = 0x800657B0;  /* calls motion_SetExMotion(0x11), advances accum D_800F0BA8[17] += 0x1C6, gated return (<0x11C8) */
 gpu_SetTexAttr_800485EC = 0x800485EC;  /* parses src prim header (type 0x10), fills dst descriptor with uv + clut(gpu_CalcClut) + tpage(gpu_CalcTPage) */
 /* RENAME 0x8008BE04: retired name 'dev_AddDevice_8008BE04' — preserved note: EnterCS + bios_AddDevice_B(DCB @ D_800A307C) + ExitCS = register one device driver */
 /* RENAME 0x8007FEDC: retired name 'bios_InstallHandler_8007FEDC' — preserved note: EnterCS + BIOS B-call, copies handler code stub (D_8007FF44, reads COP0 $13 CAUSE) into BIOS table, FlushCache */

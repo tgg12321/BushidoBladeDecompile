@@ -19,8 +19,10 @@ placeholder text is confirmed against rood-reverse@11349608 Release 4.5,
 byte-identical except the $PSLibId line, as in func_80063E10's row).
 
 One command macro carries the post-DMPSX word in place of the header's placeholder
-(Extension (A)-(D)), byte-identical to the original instruction:
-- gte_rtps: 0x0000007f -> 0x4A180001, RTPS sf=1, at 0x80065930
+(§ Extension (A)-(D), a standing class ruling for inline_c.h islands; the same
+substitution is on main in func_80063E10's row, COMPLETED-INLINE-ASM-CANONICAL, with
+no per-function owner row), byte-identical to the original instruction:
+- gte_rtps: .word 0x0000007f -> .word 0x4A180001, RTPS sf=1, at 0x80065930
 Independent no-DMPSX mapping: pcsx-redux/nugget@22037bd3 psyq/include/inline_n.h
 (:498-502) and PSn00bSDK@5d9aa2d3 libpsn00b/include/inline_c.h (:1159-1162):
 "cop2 0x0180001".
@@ -30,5 +32,13 @@ as lw $t4,0x14($s0) with s0 = outer (0x800658FC), i.e. outer+0x14..+0x1C, the VE
 ApplyRotMatrixLV has just written. No preamble, no GPR outside macro text, operand
 seats chosen by cc1. Canonical gate route ASM-PARTIAL: 15/1454 cop2 insns in regions
 [29,30] [34,36] [65,65] [67,68] [72,74] [77,78] [80,80] [84,84].
+
+Pure-C attempts (sandbox --disable all on the merged TU; scores up to the next commit
+include the 4-point jump-table addend artifact of the transcribed-table reference):
+  [1] technique=m2c-draft score=423 outcome=m2c structure, GTE block as placeholders, switch cases without the shared tails (memory/grind/func_80065800/rejected/m2c-draft-423.c)
+  [2] technique=case10-no-pointer score=11 outcome=D_800F0BA8[arg0] at each case 10/11 read, 1457/1454 (memory/grind/func_80065800/rejected/case10-no-pointer-11.c)
+  [3] technique=corner-ternary score=12 outcome=?: corner spelling, lhu + sh in the delay slot, 1452/1454 (memory/grind/func_80065800/rejected/wh-ternary-12.c)
+  [4] technique=sw-inline score=14 outcome=scale inline, fold-const split_tree reassociates the multiply (memory/grind/func_80065800/rejected/sw-inline-14.c)
+  [5] technique=inline_c.h-islands score=0 outcome=1454/1454 with the eight islands; the body that lands next. GCC 2.7.2 has no cop2 emitter, so no construct outside the islands can produce these instructions.
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>

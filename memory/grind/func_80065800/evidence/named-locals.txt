@@ -144,3 +144,18 @@ w / h (corner loop; each written once per iteration, read in both arms of the si
     target  j b008
 @ hunk 57/91  delete  target[782] ours[781]  — source-level
     target  sh v1,2(s6)
+
+--- sw: RTL dump of the reassociation (2026-09-30, laneC; tools/dump_sw.sh, cc1 -dr with the
+build's flags, on the spliced text1b_tu1c.c; full function dumps evidence/sw-rtl/landed.rtl,
+evidence/sw-rtl/inline.rtl; the sequence from the rsin call to the >> 13 in
+evidence/sw-rtl/excerpt.txt)
+  landed (`sw = (rsin(..) + 0x1000) * 25; *p_w * sw`): expand builds the x25 shift/add chain on the
+    rsin result (REG_EQUAL (mult:SI (reg 663) (const_int 25)) chain on 663 = v0 + 0x1000), then
+    sets sw (reg/v 87, REG_EQUAL (mult:SI (reg 663) (const_int 25))), then loads *p_w (insn 1618,
+    mem:HI (reg/v 79)) into reg 669 and multiplies: (mult:SI (reg 669) (reg/v 87)) - the target's order.
+  inline (`*p_w * ((rsin(..) + 0x1000) * 25)`, rejected/sw-inline-14.c): the tree reaching expand
+    is already (*p_w * 25) * X: *p_w is loaded right after the call (insn 1585, mem:HI (reg/v 79)),
+    sign-extended into reg 660, and the x25 chain runs on 660 (REG_EQUAL (mult:SI (reg 660)
+    (const_int 2/3/24/25))), the rsin result (reg 658) entering only at the final mult.
+  The operand order is fixed before RTL exists, i.e. by fold-const.c (split_tree / the
+  associative MULT_EXPR folding in fold(), tools/gcc-2.7.2/fold-const.c), not by a later pass.

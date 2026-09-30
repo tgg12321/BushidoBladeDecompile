@@ -3294,11 +3294,7 @@ extern s16 D_800F0BEC[];
 
 
 
-extern s32 D_800F0D30;
-extern s32 D_800F0D34;
 
-extern s32 D_800F0D3C;
-extern s32 D_800F0D40;
 
 
 

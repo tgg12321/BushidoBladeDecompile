@@ -103,7 +103,9 @@ landing/msg_auth.txt, landing/msg_match.txt. layer2 hash of the staged body was 
 - Package still holds after the rodata-object-alignment adoption and the Q62 COMMON model:
   tools/run.sh (scratch TU via tools/mk.py, msbx.py) scores func_80065800 4/1454, the only
   scored hunk being the jtbl-2 `lw v0,72(at)` addend (build/ still carries the transcribed
-  tables; reference artifact), and all 30 consumers of the merged bytes 0. Full scratch build of
+  tables; reference artifact), and all 28 consumers of the merged bytes
+  (func_80064E90..func_800657B0) 0 (func_800645B0 / func_800646E8, also scored 0, touch only
+  D_800F0BCC / D_800F0D78, outside both arrays). Full scratch build of
   land.py (tools/scratch.sh pkg, /tmp/laneC/pkg): EXE sha1 == oracle 62efab4f...; text1b_tu1c.o
   .rodata at 0x800158F8.
 - TU boundary (rodata-object-alignment rule, docs/grind/rodata-align-2026-09-30.md section 8
@@ -136,3 +138,21 @@ text1b_tu1c.c body == HEAD tail with the two relocations. tools/implicit_cmp.sh:
 declarations equal (24 names). Records via tools/relocate.py. Record: rodata-align doc section 9.
 The Match follows the boundary layer-2; land.py must then delete the tables from text1b_tu1c.c
 (not text1a_b_pre_rodata_b.c).
+
+## 2026-09-30 (night) -- laneC: boundary landed (5c543ce1d, layer-2 rev-boundary PASS); Match prepared
+
+tools/land.py now deletes the transcribed tables from text1b_tu1c.c (where 5c543ce1d put them).
+tools/land_text1b.py drops the four unused per-word externs D_800F0D30/34/3C/40 that the boundary
+move carried into text1b.c (bytes inside D_800F0CA0[12..13]; rows retired by land.py). On the
+spliced tree under the landing lock: lock.ps1 rebuild EXE sha1 == oracle; `sandbox func_80065800
+--disable all` 0 (1454/1454, 0 hunks); canonical ASM-PARTIAL 15/1454;
+check_completion_integrity OK. The staged body == candidate.c. Canonical row appended from
+landing/row.txt; region hashes via landing/addrh.py (8). Messages: tmp/func_80065800/msg_auth.txt,
+msg_match.txt (Pure-C attempts blocks added).
+
+Layer-2 round 1 (rev-65800, body b572e1adbcd9f19c, 2026-09-30): FAIL, text only; recorded in
+layer2.jsonl. Fixed: the gte_rtps island comment gives both words (0x0000007f -> 0x4A180001);
+the function-header comment and msg_match.txt say only modes 6/7 re-run (guard `arg0 < 9`,
+target 0x80066DC4 slti $v0,$s3,0x9); consumer count 28 (func_800645B0 / func_800646E8 touch only
+D_800F0BCC / D_800F0D78). Advisory: evidence/named-locals.txt now cites cc1 -dr dumps of both sw
+forms (evidence/sw-rtl/, tools/dump_sw.sh). landing/msg_*.txt refreshed from the staged messages.
