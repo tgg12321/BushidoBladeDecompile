@@ -4,6 +4,16 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_8001C8DC",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): cross-symbol arithmetic p=&D_800A37D2; p[t!=0]++ reaches D_800A37D3 (refused 2026-07-20). Banked: memory/grind/func_8001C8DC/rejected/retro-audit-2026-09-29.c"
+    },
+    {
       "func": "func_8005C8A8",
       "file": "text1b",
       "distance": 752,
@@ -237,14 +247,14 @@
     }
   ],
   "counts": {
-    "total": 20,
-    "active": 8,
+    "total": 21,
+    "active": 9,
     "by_status": {
-      "active": 8,
+      "active": 9,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 6,
+      "C": 7,
       "ASM-PARTIAL": 2
     }
   },
