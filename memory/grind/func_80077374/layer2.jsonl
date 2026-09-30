@@ -1,0 +1,1 @@
+{"func": "func_80077374", "addr": "80077374", "verdict": "PASS", "body_hash": "d4a770a7c4c6b5bc", "body_kind": "c", "file": "text1b_tu2", "reviewer": "rev-selwork-r4", "scope": "cheat-cleanup", "date": "2026-09-30T23:46:18Z", "head": "1bca33730", "notes": "SelWork cluster round 4 PASS: completed body respelled through SelWork members (game.h), sandbox 0, oracle SHA1"}

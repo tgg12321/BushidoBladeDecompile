@@ -517,8 +517,6 @@ skip_init:
 
     arg0[2] = q;
 }
-extern u8 D_8009BD20[][2];
-extern u8 *D_800A36A0;
 
 typedef struct {
     s32 sp18;
@@ -545,14 +543,14 @@ void func_80074488(s32 *arg0) {
     s32 value;
     s32 color;
     s16 rect[4];
-    u8 *base;
+    SelWork *base;
 
-    base = D_800A36A0;
+    base = SELWORK;
     i = 0;
-    mask = (1 << *(s16 *)(base + 0x3C))
-         + (1 << (*(u8 *)(base + 0x65) + 5))
-         + (1 << (*(u8 *)(base + 0x67) + 8))
-         + (1 << (*(u8 *)(base + 0x66) + 9));
+    mask = (1 << base->f3C[0])
+         + (1 << (base->f65 + 5))
+         + (1 << (base->f67 + 8))
+         + (1 << (base->f66 + 9));
     s.sp2C = 2;
     table = *(s32 **)(arg0[0] + 0x34);
     do {
@@ -561,33 +559,33 @@ void func_80074488(s32 *arg0) {
         s.sp28 = 0;
         if ((mask >> i) & 1) {
             if (i < 5) {
-                color = ((rsin(((*(u16 *)(D_800A36A0 + 0x34) & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
                 s.sp43 = color;
-                s.sp34 = *(s16 *)(D_800A36A0 + 0x42);
+                s.sp34 = SELWORK->f40[0][1];
             } else if (i < 8) {
-                if (*(s16 *)(D_800A36A0 + 0x3C) == 0) {
-                    color = ((rsin(((*(u16 *)(D_800A36A0 + 0x34) & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                if (SELWORK->f3C[0] == 0) {
+                    color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
                     s.sp43 = color;
-                    s.sp30 = *(s16 *)(D_800A36A0 + 0x40);
-                    s.sp34 = *(s16 *)(D_800A36A0 + 0x42);
+                    s.sp30 = SELWORK->f40[0][0];
+                    s.sp34 = SELWORK->f40[0][1];
                 } else {
                     s.sp43 = 0x80;
                 }
             } else if (i < 10) {
-                if (*(s16 *)(D_800A36A0 + 0x3C) == 1) {
-                    color = ((rsin(((*(u16 *)(D_800A36A0 + 0x34) & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                if (SELWORK->f3C[0] == 1) {
+                    color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
                     s.sp43 = color;
-                    s.sp30 = *(s16 *)(D_800A36A0 + 0x40);
-                    s.sp34 = *(s16 *)(D_800A36A0 + 0x42);
+                    s.sp30 = SELWORK->f40[0][0];
+                    s.sp34 = SELWORK->f40[0][1];
                 } else {
                     s.sp43 = 0x80;
                 }
             } else if (i < 14) {
-                if (*(s16 *)(D_800A36A0 + 0x3C) == 2) {
-                    color = ((rsin(((*(u16 *)(D_800A36A0 + 0x34) & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                if (SELWORK->f3C[0] == 2) {
+                    color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
                     s.sp43 = color;
-                    s.sp30 = *(s16 *)(D_800A36A0 + 0x40);
-                    s.sp34 = *(s16 *)(D_800A36A0 + 0x42);
+                    s.sp30 = SELWORK->f40[0][0];
+                    s.sp34 = SELWORK->f40[0][1];
                 } else {
                     s.sp43 = 0x80;
                 }
@@ -609,8 +607,8 @@ void func_80074488(s32 *arg0) {
             }
         }
         if ((u16)(i - 10) >= 4 ||
-            D_8009BD20[*(u8 *)(D_800A36A0 + 0x67)][0] + 9 == i ||
-            D_8009BD20[*(u8 *)(D_800A36A0 + 0x67)][1] + 9 == i) {
+            D_8009BD20[SELWORK->f67][0] + 9 == i ||
+            D_8009BD20[SELWORK->f67][1] + 9 == i) {
             value = table[i];
             s.sp18 = value;
             s.sp1C = value + 0xC;
