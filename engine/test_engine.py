@@ -3362,6 +3362,7 @@ def test_departures() -> None:
                 '  {"func": "func_M1", "file": "k"},\n>>>>>>> side\n'
                 '  {"func": "func_K", "file": "k"}, {"func": "func_G", "file": "k"}\n]}\n')
             git("commit", "-qam", "c8 conflict")
+            c8_blob = git("rev-parse", "HEAD:engine/queue.json").strip()
             write_queue(q6)
             git("commit", "-qam", "c9 resolved")
             # c10: a version with no function name at all; c11 repairs it
@@ -3384,7 +3385,7 @@ def test_departures() -> None:
                   "func_A" not in fl and "func_B" not in fl)
             check("departures (fix 3): TU resplit, then completed -> clear", "func_T" not in fl)
             check("departures (fix 5): a conflicted version's names are audited, not dropped",
-                  "func_M1" in fl and not any("c8" in s and s.startswith("Q39") for s in v))
+                  "func_M1" in fl and not any(c8_blob in s for s in v if s.startswith("Q39")))
             check("departures: a version naming no function is a violation",
                   any(s.startswith("Q39") and "names no function" in s for s in v))
             check("departures (C1): a completed function renamed by a later naming wave "
@@ -3423,6 +3424,14 @@ def test_departures() -> None:
             finally:
                 subprocess.Popen = real_popen
             eq("departures: three git processes for the whole history", len(calls), 3)
+            # the walk flags are part of the contract even where this git makes
+            # one redundant (--ancestry-path already disables pruning in git
+            # 2.33 and 2.43, so no history here can tell --full-history's absence)
+            check("departures: the anchor walk is --topo-order --full-history",
+                  any("--diff-filter=A" in c and "--topo-order" in c and "--full-history" in c
+                      for c in calls))
+            check("departures: the history walk is --full-history --ancestry-path",
+                  any("--ancestry-path" in c and "--full-history" in c for c in calls))
 
             # git failing is a violation, never a silent pass
             os.environ["GIT_DIR"] = str(Path(td) / "no-such-gitdir")
@@ -3474,6 +3483,27 @@ def test_departures() -> None:
             v, fl = audit()
             eq("departures (C2): delete + re-add anchors at the oldest add (topo order)",
                fl, ["func_W"])
+            # ...and across a merge, where only --topo-order puts the old-dated
+            # re-add (on a side branch) BEFORE the original add
+            new_repo(Path(td) / "f")
+            write_queue([item("func_A")])
+            git("add", "-A"); git("commit", "-qm", "pre-gate root")
+            Path("engine/layer2.py").write_text("# gate\n")
+            git("add", "-A"); git("commit", "-qm", "G1")
+            git("checkout", "-qb", "side")
+            Path("engine/layer2.py").unlink()
+            git("add", "-A"); git("commit", "-qm", "gate deleted")
+            Path("engine/layer2.py").write_text("# gate again\n")
+            git("add", "-A"); git("commit", "-qm", "G2", date="2001-01-01T00:00:00+0000")
+            git("checkout", "-q", "main")
+            write_queue([item("func_A"), item("func_W")])
+            git("commit", "-qam", "W listed")
+            write_queue([item("func_A")])
+            git("commit", "-qam", "W leaves")
+            git("merge", "-q", "-m", "merge", "side")
+            v, fl = audit()
+            check("departures (C2): a merged, old-dated re-add does not become the anchor",
+                  fl == ["func_W"] and not any(s.startswith("Q39") for s in v))
 
             # C3: a side branch lists func_N and drops it; the merge's queue
             # equals its first parent's — only --full-history sees the side
