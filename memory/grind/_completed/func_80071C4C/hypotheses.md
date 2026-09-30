@@ -98,3 +98,46 @@ Mechanisms (instrumented cc1 `tools/gcc-2.7.2/cc1`, dumps in cleanup-locals/):
   333 = i*10 in $5; loop 2: 331 = i*3 in $4, 329 = i*10 in $5): the 4-point operand-only swap.
 
 - [cleanup 2026-09-29, layer-2 record] The copy-loop cleanup (comment-only: FAKE annotations on the four per-site dst/ctx named intermediates) received a fresh layer-2 cheat-reviewer PASS on the exact staged diff (src/text1b.c +19/-4, comments only) before it was committed as 62a05bd26: every named-intermediate prong verified (once-written, real a0/a1 givs, byte-neutral 270/270, not Q22 dummies), mechanisms checked against explow.c:419/:447 and global.c:643 and the banked dumps in cleanup-locals/, `u8 *rec` alternative judged not simpler (Ruling 1(4)); no required fixes.
+
+## [g8 2026-09-30] `dst` after the D_800A3560 record union and the -G8 TU (Q44/Q54 change 3)
+
+The union (`D_800A3560.rec[i].unk0` / `.unk2`) removes both `ctx` locals byte-identically, so the old
+`dst` mechanism ("dst computed before ctx wins allocno_compare for $a0") no longer applies. Re-measured
+on the landed text1b_tu1d (-G8), sandbox --disable all:
+
+| spelling (both loops, no `dst`) | score / insns |
+|---|---|
+| landed (`dst` in both loops) | 0 / 270 |
+| loop 1 inlined only | 1 / 270 |
+| loop 2 inlined only | 1 / 270 |
+| `*(u8 *)(D_800A3568 + i * 10)` / `+ 1` | 2 / 270 |
+| `*(u8 *)(i * 10 + D_800A3568)` / `+ 1` | 2 / 270 |
+| `*(u8 *)(D_800A3568 + 10 * i)` / `+ 1` | 2 / 270 |
+| `((u8 *)D_800A3568)[i * 10]` / `[i * 10 + 1]` | 2 / 270 |
+| `((u8 (*)[10])D_800A3568)[i][0]` / `[i][1]` | 2 / 270 |
+
+(The five lever rows were first measured by the change-3 layer-2 reviewer; reproduced here with
+g8-dst-2026-09-30/levers.py, output levers.txt.) Each miss is the same one instruction per loop, an
+operand-order swap in the store-address add: target `addu v0,v0,a0`, inlined `addu v0,a0,v0`
+(target insn 226 / 249).
+
+Mechanism (dumps in g8-dst-2026-09-30/, instrumented `tools/gcc-2.7.2/cc1 -da`, proven .s-identical
+to the frozen build/cc1 on both variants in the same run; landed = current body, inlined1 = loop 1
+inlined as `D_800A3568 + i * 10`). The order is fixed at RTL expansion and never revisited:
+- The store `*(u8 *)(addr)` expands its address with EXPAND_SUM (expr.c:4563, INDIRECT_REF).
+- Inlined, `i * 10` under EXPAND_SUM returns `(mult (reg i) (const_int 10))` (expr.c:5359-5383), and
+  PLUS_EXPR's both_summands "Put a constant term last and put a multiplication first"
+  (expr.c:5288-5290) swaps it ahead of the D_800A3568 load. memory_address breaks out the MEM first
+  (explow.c:416 break_out_memory_refs: rtl insn 601 loads D_800A3568 into pseudo 283), then
+  force_operand (expr.c:3744) expands XEXP 0, the mult (insns 603-607, pseudo 287), and emits
+  insn 609 `(plus (reg 287) (reg 283))` = i*10 + D.
+- With `dst`, op1 is a REG (the user variable, pseudo 283), not a MULT, so nothing is swapped:
+  insn 612 `(plus (reg 288 = D_800A3568) (reg/v 283 = dst))`.
+- The operand order survives every later pass unchanged: .greg insn 612 `(plus v0 a0)` (landed) vs
+  insn 609 `(plus a0 v0)` (inlined1), and the only .s difference is that one `addu`.
+Named-intermediate prong (6): the named mechanism is expr.c:5288-5290 (RTL expansion, both_summands).
+Loop 2, dumped separately (inlined2 = loop 2 inlined as `D_800A3568 + i * 10 + 1`, dump_loop2.sh;
+instrumented cc1 .s-identical to the frozen one): rtl insn 664 loads D_800A3568 (pseudo 303), insns
+666-670 form i*10 (pseudo 307), insn 672 `(plus (reg 307) (reg 303))` = i*10 + D, the +1 folds into
+the store offset; .greg `(plus a0 v0)`; the only .s difference from landed is that one `addu`
+(`addu $2,$4,$2` vs `addu $2,$2,$4`). Same expansion path as loop 1, measured 1/270.

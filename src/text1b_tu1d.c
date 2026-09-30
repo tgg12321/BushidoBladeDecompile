@@ -1,3 +1,11 @@
+/* func_8006E534..func_80073200, split out of text1b_tu1c.c (tail in text1b_tu1e.c)
+ * and compiled -G8 (Makefile GP_FILES; per-file -G8 by proof, owner rulings Q10,
+ * Q44 and Q54). Their original bytes reach the small globals 0x800A32E8..0x800A35CA
+ * (40 addresses, 403 accesses) straight off $gp, which the original compiler
+ * emits only at -G8, and no function outside this range gp-accesses any of them.
+ * func_8006E8CC, func_8006E950, func_8006EA28 and func_80072F30 have no gp access
+ * and compile to identical bytes at -G8 and -G0 (Q54). Proof and both-ways
+ * listings: memory/grind/func_80070F78/g8-evidence.md. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -104,9 +112,6 @@ extern u8 D_800A32E9;
 extern u8 D_800A32EC[8];
 extern s16 D_800A3554;
 extern s16 D_800A3558;
-extern u8 D_800A3560[];
-extern u8 D_800A3561;
-extern u8 D_800A3564;
 extern s32 D_800A3568;
 extern s32 D_800A356C;
 extern s16 D_800A3570;
@@ -175,7 +180,7 @@ s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
 
     D_800A356C = func_8006EA28((s32 *)D_800A356C);
     D_800A356C = func_8006E49C(D_800A356C, (s32 *)D_800A35AC);
-    *(s32 *)D_800A3560 = -1;
+    D_800A3560.word = -1;
     D_800A3570 = 0;
     D_800A3578 = 0;
     D_800A357C = 0;
@@ -185,8 +190,8 @@ s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
     D_800A358C[0] = 0;
     D_800A3588[1] = 2;
     D_800A358C[1] = 0;
-    D_800A3561 = D_8009BC40[0][0].value;
-    D_800A3564 = D_8009BC40[0][2].value;
+    D_800A3560.rec[0].unk1 = D_8009BC40[0][0].value;
+    D_800A3560.rec[1].unk1 = D_8009BC40[0][2].value;
 
     for (i = 0; i < 0x16; i++) {
         value = D_8009BC7C[i] & 0xFA;
@@ -390,7 +395,6 @@ done: ;
 extern s16 D_800A3554;
 extern s32 D_800A35B0;
 extern u8 D_8009BC7C[];
-extern u8 D_800A3560[];
 extern SelectEntryE534 D_8009BC40[][6];
 extern s16 D_800A3588[];
 extern s16 D_800A358C[];
@@ -494,7 +498,7 @@ void func_8006ECF4(s32 arg0) {
     p1_dispatch:;
 
         if (D_800A35B0 != 0) goto p1_idx;
-        if (D_8009BC7C[D_800A3560[i * 3 + 1]] & 2) goto p1_idx;
+        if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) goto p1_idx;
         if (D_800A35BC != 2) goto p1_fallback;
         if (*(s32 *)((s32)D_800A3568 + 0x14) & 0x20000) goto p1_idx;
     p1_fallback:
@@ -620,15 +624,15 @@ void func_8006F100(s32 arg0) {
     s.unk28 = 0;
     base = *(s32 *)(D_800A35A8 + 0x58);
     for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
-        obj = *(Obj_8006F100 **)(base + D_800A3560[i * 3 + 2] * 4);
+        obj = *(Obj_8006F100 **)(base + D_800A3560.rec[i].unk2 * 4);
         sel = 1;
         if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
-            if (D_8009BC7C[D_800A3561] & 2) {
+            if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
                 sel = 1;
             } else {
                 sel = 0;
             }
-        } else if (D_8009BC7C[D_800A3560[i * 3 + 1]] & 2) {
+        } else if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) {
             sel = 0;
         }
         s.hdr = &obj->hdr[sel];
@@ -874,7 +878,7 @@ typedef struct DescF97C {
     s32 header;
     s32 table;
     s32 out;
-    s32 pad0C;
+    s32 unk0C;
     s32 semi;
     s32 ot_idx;
     s32 x;
@@ -978,20 +982,7 @@ void func_8006F97C(s32 *arg0) {
                 s.x = 0;
                 s.has_color = 0;
                 for (i = 0; i < 1 + D_800A35B0 + D_800A3554; i++) {
-                    /* FAKE: named intermediate for player i's 3-byte D_800A3560
-                     * record offset (named-intermediate entry, no-new-park-categories.md).
-                     * mechanism: loop.c scan_loop -- the inline `D_800A3560[i * 3]`
-                     * expands the symbol load BEFORE the index insns (expr.c:4659
-                     * INDIRECT_REF, EXPAND_SUM MULT), so that pseudo lives 3 insns and
-                     * threshold*savings*lifetime >= insn_count (loop.c:1631) hoists it,
-                     * leaving `lui/addiu/addu/lbu 0()`; with the index already in a
-                     * pseudo it lives 1 insn, stays put, and combine folds it into the
-                     * target's `lbu %lo(D_800A3560)(at)`. Lever exhaustion: inline index,
-                     * `*(D_800A3560 + i * 3)` and `D_800A3560[i + i * 2]` all 31/515
-                     * (memory/grind/func_8006F97C/hypotheses.md). */
-                    s32 rec = i * 3;
-
-                    if (D_800A3560[rec] == 0xFF) {
+                    if (D_800A3560.rec[i].unk0 == 0xFF) {
                         shift[i] = 7;
                     } else {
                         shift[i] = 9;
@@ -1049,15 +1040,13 @@ void func_8006F97C(s32 *arg0) {
     func_80069898((GameObj *)arg0, rect, 1);
     func_80070188((s32)arg0);
     func_8006ECF4((s32)arg0);
-    D_800A32E8 = D_800A3564;
+    D_800A32E8 = D_800A3560.rec[1].unk1;
     D_800A32E9 = D_800A3554;
     func_80072E10((s32)arg0);
     func_80073200((s32)arg0);
 }
 extern s16 D_800A3530[];
 extern s16 D_800A3534[];
-extern u8 D_800A3563;
-extern u8 D_800A3565;
 void func_80070188(s32 arg0) {
     DescF97C s;
     s32 *sheets;
@@ -1078,59 +1067,35 @@ void func_80070188(s32 arg0) {
     AddPrim(g_gpu_ot_ptr + 0x20, ((s32 *)arg0)[6]);
     ((s32 *)arg0)[6] += 0xC;
     for (i = 0; i < 1 + D_800A35B0 + (port_ofs = D_800A3554); i++) {
-        /* FAKE: named intermediate for player i's 3-byte D_800A3560 record
-         * offset (named-intermediate entry, no-new-park-categories.md). This
-         * and the per-site offsets below (idx, sel, ofs) share one mechanism:
-         * an inline `D_800A3560[i * 3 + k]` is expanded as *(&D_800A3560 +
-         * (i * 3 + k)) (expr.c:4659); its EXPAND_SUM address (plus (mult i 3)
-         * sym+k) is not a legitimate address, so explow.c:447 memory_address
-         * -> force_operand -> expand_binop copies the symbol into its own
-         * pseudo, which cse shares across the block and loop.c hoists out of
-         * the walk loops (`lui/addiu` + `addu`, 0() addressing). With the
-         * offset already in a pseudo, (plus off sym+k) is a legitimate address
-         * as it stands (explow.c:419), giving the target's `lui $at; addu
-         * $at,$at,off; sb %lo(D_800A356k)($at)` and the target's reuse or
-         * recompute of the offset at each site. Measured (sandbox, full TU,
-         * this form 6 = GPREL-name artifacts only): inlining rec 28, all four
-         * walk idx 47 (each alone 12/12/16/16), sel 28, ofs 18; exhaustion
-         * and dumps: memory/grind/func_80070188/evidence.md [s3]. */
-        s32 rec = i * 3;
-
         col = &D_800A3588[i];
         row = &D_800A358C[i];
         flags = &D_8009BC7C[D_8009BC40[*row][*col].value];
-        D_800A3560[rec + 1] = D_8009BC40[*row][*col].value;
+        D_800A3560.rec[i].unk1 = D_8009BC40[*row][*col].value;
         port = i - port_ofs;
-        if (D_800A3560[rec] == 0xFF) {
+        if (D_800A3560.rec[i].unk0 == 0xFF) {
             ((s16 *)D_800A35C4)[i] = 0x1E;
             if (D_800A354C & (0x4000 << (port * 16))) {
                 func_8005C650(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
-                    s32 idx; /* FAKE: per-walk record offset, mechanism at `rec` */
-
                     (*row)++;
                     if (*row >= 5) {
                         *row = 0;
                     }
                     flags = &D_8009BC7C[D_8009BC40[*row][*col].value];
-                    idx = i * 3;
-                    D_800A3560[idx + 1] = D_8009BC40[*row][*col].value;
+                    D_800A3560.rec[i].unk1 = D_8009BC40[*row][*col].value;
                 } while (*flags & 4);
                 *flags |= 4;
             } else if (D_800A354C & (0x1000 << (port * 16))) {
                 func_8005C650(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
-                    s32 idx; /* FAKE: per-walk record offset, mechanism at `rec` */
-
                     (*row)--;
                     if (*row < 0) {
                         *row = 4;
                     }
                     flags = &D_8009BC7C[D_8009BC40[*row][*col].value];
-                    idx = i * 3;
-                    D_800A3560[idx + 1] = D_8009BC40[*row][*col].value;
+                    D_800A3560.rec[i].unk1 = D_8009BC40[*row][*col].value;
                 } while (*flags & 4);
                 *flags |= 4;
             }
@@ -1138,30 +1103,24 @@ void func_80070188(s32 arg0) {
                 func_8005C650(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
-                    s32 idx; /* FAKE: per-walk record offset, mechanism at `rec` */
-
                     (*col)++;
                     if (*col > D_800A35B4) {
                         *col = 0;
                     }
                     flags = &D_8009BC7C[D_8009BC40[*row][*col].value];
-                    idx = i * 3;
-                    D_800A3560[idx + 1] = D_8009BC40[*row][*col].value;
+                    D_800A3560.rec[i].unk1 = D_8009BC40[*row][*col].value;
                 } while ((!(*flags & 1) && *col >= 4) || (*flags & 4));
                 *flags |= 4;
             } else if (D_800A354C & (0x8000 << (port * 16))) {
                 func_8005C650(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
-                    s32 idx; /* FAKE: per-walk record offset, mechanism at `rec` */
-
                     (*col)--;
                     if (*col < 0) {
                         *col = D_800A35B4;
                     }
                     flags = &D_8009BC7C[D_8009BC40[*row][*col].value];
-                    idx = i * 3;
-                    D_800A3560[idx + 1] = D_8009BC40[*row][*col].value;
+                    D_800A3560.rec[i].unk1 = D_8009BC40[*row][*col].value;
                 } while ((!(*flags & 1) && *col >= 4) || (*flags & 4));
                 *flags |= 4;
             }
@@ -1185,25 +1144,23 @@ void func_80070188(s32 arg0) {
             s.out = ((s32 *)arg0)[4];
             ((s32 *)arg0)[4] = func_8007352C((s32)&s);
         }
-        if ((D_800A354C & (0x40 << (port * 16))) && D_800A3560[i * 3] == 0xFF) {
+        if ((D_800A354C & (0x40 << (port * 16))) && D_800A3560.rec[i].unk0 == 0xFF) {
             if (*flags & 1) {
-                s32 sel = i * 3; /* FAKE: record offset, mechanism at `rec` */
-
-                D_800A3560[sel + 2] = 0xFF;
+                D_800A3560.rec[i].unk2 = 0xFF;
                 D_800A3590[i] = 2;
-                D_800A3560[sel] = D_8009BC40[*row][*col].unk1;
+                D_800A3560.rec[i].unk0 = D_8009BC40[*row][*col].unk1;
                 func_8005C650(D_8009BC40[*row][*col].value + 0xB, 0x7F, 0x7F);
                 D_800A35C8[0] = 0xF;
                 D_800A35C8[1] = 0x14;
                 if (D_800A35BC == 2 && (*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 0) {
-                    if (D_8009BC7C[D_800A3561] & 2) {
+                    if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
                         D_800A3588[1] = 2;
                     } else {
                         D_800A3588[1] = 0;
                     }
                     D_800A358C[1] = 0;
                     if (((s16 *)D_800A35C4)[0] == 0) {
-                        D_800A3564 = D_8009BC40[0][D_800A3588[1]].value;
+                        D_800A3560.rec[1].unk1 = D_8009BC40[0][D_800A3588[1]].value;
                         D_8009BC7C[D_8009BC40[0][D_800A3588[1]].value] |= 4;
                     }
                     break;
@@ -1214,22 +1171,18 @@ void func_80070188(s32 arg0) {
         } else if (D_800A354C & (0x10 << (port * 16))) {
             if (D_800A3578 == 0) {
                 func_8005C650(2, 0x7F, 0x7F);
-                if (D_800A3560[i * 3] == 0xFF && D_800A3554 == 0) {
+                if (D_800A3560.rec[i].unk0 == 0xFF && D_800A3554 == 0) {
                     D_800A35A0 = -1;
                 } else if (D_800A3554 == 1) {
-                    if (D_800A3563 == 0xFF) {
+                    if (D_800A3560.rec[1].unk0 == 0xFF) {
                         D_800A3554 = 0;
-                        D_800A3560[0] = 0xFF;
+                        D_800A3560.rec[0].unk0 = 0xFF;
                     } else {
-                        D_800A3563 = 0xFF;
+                        D_800A3560.rec[1].unk0 = 0xFF;
                     }
                     *flags &= ~4;
-                } else {
-                    s32 ofs = i * 3; /* FAKE: record offset, mechanism at `rec` */
-
-                    if (D_800A3560[ofs] != 0xFF && (*flags & 1)) {
-                        D_800A3560[ofs] = 0xFF;
-                    }
+                } else if (D_800A3560.rec[i].unk0 != 0xFF && (*flags & 1)) {
+                    D_800A3560.rec[i].unk0 = 0xFF;
                 }
             }
         }
@@ -1254,15 +1207,15 @@ void func_80070188(s32 arg0) {
         s.out = ((s32 *)arg0)[4];
         ((s32 *)arg0)[4] = func_8007352C((s32)&s);
     }
-    if (D_800A3580 == 0 && D_800A3560[0] != 0xFF && ((s16 *)D_800A35C4)[0] == 0) {
+    if (D_800A3580 == 0 && D_800A3560.rec[0].unk0 != 0xFF && ((s16 *)D_800A35C4)[0] == 0) {
         if (D_800A35BC == 2 && (*(s32 *)(D_800A3568 + 0x14) & 0x20000)) {
             D_800A3554 = 1;
         }
-        if ((D_800A3563 != 0xFF && ((s16 *)D_800A35C4)[1] == 0) || D_800A35B0 + D_800A3554 == 0) {
+        if ((D_800A3560.rec[1].unk0 != 0xFF && ((s16 *)D_800A35C4)[1] == 0) || D_800A35B0 + D_800A3554 == 0) {
             D_800A3578 = 1;
             D_800A3558 = 0;
             if (D_800A35BC == 2) {
-                D_800A3565 = 0xFF;
+                D_800A3560.rec[1].unk2 = 0xFF;
                 D_800A3590[1] = 2;
             }
             D_800A3584 = 1;
@@ -1271,7 +1224,6 @@ void func_80070188(s32 arg0) {
     func_8005C6D0();
 }
 extern s16 D_800A3558;
-extern u8 D_800A3560[];
 extern s16 D_800A3590[];
 extern s32 D_800A35A8;
 extern s32 D_800A35B0;
@@ -1281,24 +1233,10 @@ extern s32 g_gpu_ot_ptr;
 
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 
-extern void func_80070F78(s32 a0, s32 *prim);
+extern void func_80070F78(s32 a0, DescF97C *s);
 extern void func_8006ECF4(s32);
 extern void func_80072E10(s32);
 extern void func_80073200(s32);
-
-typedef struct PrimC70 {
-    s32 p_geom;
-    s32 p_static;
-    s32 link;
-    s32 pad0C;
-    s32 zero10;
-    s32 code;
-    s32 mode;
-    s32 zero1C;
-    s32 width;
-    s32 height;
-    u8  byte28;
-} PrimC70;
 
 typedef struct IconC70 {
     s16 sp48;
@@ -1315,7 +1253,7 @@ void func_80070C70(s32 arg0) {
                      * `li a1,0x60` at each call site and measures 7/191 vs 0/194.
                      * lever-exhaustion: memory/grind/func_80070C70/hypotheses.md (s11-s17;
                      * literal re-measured on every chassis, 9 declaration slots inert) */
-    PrimC70 prim;
+    DescF97C prim;
     u16 rect[4];
     s32 ctx_or_var_s2;
     s32 var_s0;
@@ -1323,27 +1261,27 @@ void func_80070C70(s32 arg0) {
     u8 code;
     s32 g;
 
-    prim.zero10 = 0;
-    prim.mode = 0;
-    prim.zero1C = 0;
-    prim.width = 0x100;
-    prim.height = 0x100;
-    prim.byte28 = 0;
+    prim.semi = 0;
+    prim.x = 0;
+    prim.y = 0;
+    prim.scale_x = 0x100;
+    prim.scale_y = 0x100;
+    prim.has_color = 0;
     ctx_or_var_s2 = (s32)*(s32 **)(D_800A35A8 + 0x64);
     /* NOT a coercion: the target itself stores zero to both fields twice - asm/funcs/
      * func_80070C70.s emits `sw zero,48(sp)` / `sw zero,52(sp)` before the `lw s2,100(v1)`
-     * context fetch AND again after it.  The original source clears mode/zero1C a second
+     * context fetch AND again after it.  The original source clears x/y a second
      * time after fetching the context; both stores are in the matched 194 insns. */
-    prim.zero1C = 0;
-    prim.mode = 0;
+    prim.y = 0;
+    prim.x = 0;
     g = *(s32 *)(ctx_or_var_s2 + 4);
     t = g + 0xC;
-    prim.p_geom = g;
-    prim.p_static = t;
-    prim.link = *(s32 *)(arg0 + 0x10);
-    prim.code = 1;
+    prim.header = g;
+    prim.table = t;
+    prim.out = *(s32 *)(arg0 + 0x10);
+    prim.ot_idx = 1;
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
-    SetDrawMode(((GameObj *)arg0)->field_18, 1, 0, func_8006E480(prim.p_geom, c60), 0);
+    SetDrawMode(((GameObj *)arg0)->field_18, 1, 0, func_8006E480(prim.header, c60), 0);
     AddPrim(g_gpu_ot_ptr + 4, ((GameObj *)arg0)->field_18);
     ((GameObj *)arg0)->field_18 += 0xC;
     rect[2] = 0xE7;
@@ -1353,59 +1291,326 @@ void func_80070C70(s32 arg0) {
     func_80069898((GameObj *)arg0, (u16 *)rect, 1);
     g = *(s32 *)(ctx_or_var_s2);
     t = g + 0x48;
-    prim.p_geom = g;
-    prim.p_static = t;
+    prim.header = g;
+    prim.table = t;
     for (var_s0 = 0; var_s0 < 6; var_s0++) {
-        prim.mode = var_s0 << 6;
-        prim.link = *(s32 *)(arg0 + 0x10);
-        prim.code = 0xA;
+        prim.x = var_s0 << 6;
+        prim.out = *(s32 *)(arg0 + 0x10);
+        prim.ot_idx = 0xA;
         *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
-        prim.p_geom += 0xC;
+        prim.header += 0xC;
     }
-    prim.p_geom = *(s32 *)(ctx_or_var_s2);
-    SetDrawMode(((GameObj *)arg0)->field_18, 1, 0, func_8006E480(prim.p_geom, c60), 0);
+    prim.header = *(s32 *)(ctx_or_var_s2);
+    SetDrawMode(((GameObj *)arg0)->field_18, 1, 0, func_8006E480(prim.header, c60), 0);
     AddPrim(g_gpu_ot_ptr + 0x28, ((GameObj *)arg0)->field_18);
     ((GameObj *)arg0)->field_18 += 0xC;
-    prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8);
+    prim.header = *(s32 *)(ctx_or_var_s2 + 8);
     for (var_s0 = 0; var_s0 < 1 + D_800A35B0 + D_800A3558; var_s0++) {
-            s32 ctx = var_s0 * 3; /* FAKE: named intermediate for the D_800A3560 byte
-                     * index, mechanism: loop.c strength_reduce reduces ctx itself as the
-                     * giv to a byte OFFSET biv (the target's `addu $at,$at,$s2` /
-                     * `addiu $s2,$s2,3`) instead of reducing the full ADDRESS giv the
-                     * inlined index builds; lever-exhaustion: memory/grind/func_80070C70/
-                     * hypotheses.md [s6] 30-variant index sweep - inlined index 53/193 vs
-                     * this named local 49/194 (rejected/inlined-index-for-chassis-53.c) */
-            code = D_800A3560[ctx];
+            code = D_800A3560.rec[var_s0].unk0;
             if ((code != 5) && (code != 16)) {
-                g = prim.p_geom;
+                g = prim.header;
                 t = g + 0xC;
-                prim.p_static = t;
-                prim.p_static += D_800A3590[var_s0] << 4;
+                prim.table = t;
+                prim.table += D_800A3590[var_s0] << 4;
                 if (((D_800A35B0 + D_800A3558) != 0) || (D_800A35BC == 2)) {
-                    prim.mode = 0x50 + var_s0 * 0x16C;
+                    prim.x = 0x50 + var_s0 * 0x16C;
                 } else {
-                    prim.mode = 0x105;
+                    prim.x = 0x105;
                 }
-                prim.link = *(s32 *)(arg0 + 0x10);
-                prim.code = 1;
+                prim.out = *(s32 *)(arg0 + 0x10);
+                prim.ot_idx = 1;
                 *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
             }
     }
-    SetDrawMode(((GameObj *)arg0)->field_18, 1, 0, func_8006E480(prim.p_geom, c60), 0);
+    SetDrawMode(((GameObj *)arg0)->field_18, 1, 0, func_8006E480(prim.header, c60), 0);
     AddPrim(g_gpu_ot_ptr + 4, ((GameObj *)arg0)->field_18);
     ((GameObj *)arg0)->field_18 += 0xC;
-    func_80070F78(arg0, (s32 *)&prim);
+    func_80070F78(arg0, &prim);
     func_8006ECF4(arg0);
     func_80072E10(arg0);
     func_80073200(arg0);
 }
-INCLUDE_ASM("asm/funcs", func_80070F78);
-extern u8 D_800A3561;
+extern s16 D_800A3540[];
+extern s16 D_800A3544[];
+extern u8 D_8009BC38[];
+extern s16 D_800A3594[];
+void func_80070F78(s32 arg0, DescF97C *s) {
+    s32 *sheets; /* several values of one kind, a sprite-sheet header table:
+                  * *(D_800A35A8 + 0x74) (loaded at entry and again in the
+                  * selected-slot arm) and *(D_800A35A8 + 0x60) (the table the
+                  * last loop draws from). Ruling 11
+                  * (ordinary-c-judge-decidable.md), proof in
+                  * memory/grind/func_80070F78/r11/README.md. */
+    s32 flag;
+    s32 cells; /* several values of one kind: the cell table following a sheet
+                * header (s->header + 0xC in the two loop-2 draws, s->header +
+                * 0x24 for the last loop). Ruling 11, proof in
+                * memory/grind/func_80070F78/r11/README.md. */
+    s16 i;
+    s16 port;
+    s16 port_ofs;
+    s32 c;
+
+    flag = 0;
+    sheets = *(s32 **)(D_800A35A8 + 0x74);
+    s->header = sheets[0];
+    SetDrawMode(((s32 *)arg0)[6], 1, 0, func_8006E480(s->header, 0x60), 0);
+    AddPrim(g_gpu_ot_ptr + 0x20, ((s32 *)arg0)[6]);
+    ((s32 *)arg0)[6] += 0xC;
+    s->has_color = 1;
+    s->scale_x = 0x100;
+    s->scale_y = 0x100;
+    for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
+        if (D_800A3578 == 0) {
+            if (D_800A3560.rec[i].unk0 == 5) {
+                D_800A3560.rec[i].unk2 = 6;
+                flag = 1;
+                ((s16 *)D_800A35C4)[i + 2] = 0;
+            } else if (D_800A3560.rec[i].unk0 == 0x10) {
+                D_800A3560.rec[i].unk2 = 7;
+                flag = 1;
+                ((s16 *)D_800A35C4)[i + 2] = 0;
+            }
+        }
+    }
+    for (i = 0; i < 1 + D_800A35B0 + (port_ofs = D_800A3558); i++) {
+        u8 *vram; /* several values of one kind: player i's VRAM rect row,
+                   * *(D_800A35A8 + 0x7C) + (i << 6), computed at the top of the
+                   * loop and again in the locked-slot arm. Ruling 11, proof in
+                   * memory/grind/func_80070F78/r11/README.md. */
+
+        vram = *(u8 **)(D_800A35A8 + 0x7C);
+        vram += i << 6;
+        port = i - port_ofs;
+        if (D_800A3560.rec[i].unk0 != 5 && D_800A3560.rec[i].unk0 != 0x10) {
+            s32 max;
+            s32 min;
+
+            if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
+                if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
+                    max = 5;
+                    min = 1;
+                } else {
+                    max = 4;
+                    min = 0;
+                }
+            } else if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) {
+                max = 4;
+                min = 0;
+            } else {
+                max = 5;
+                min = 1;
+            }
+            if (D_800A3560.rec[i].unk2 == 0xFF) {
+                D_800A3544[i] = 7;
+                D_800A3540[i] = 0;
+                ((s16 *)D_800A35C4)[i + 2] = 0x1E;
+                if ((D_800A354C & (0x2000 << (port * 16))) && D_800A3590[i] < max) {
+                    func_8005C650(0, 0x7F, 0x7F);
+                    D_800A3590[i]++;
+                } else if ((D_800A354C & (0x8000 << (port * 16))) && min < D_800A3590[i]) {
+                    func_8005C650(0, 0x7F, 0x7F);
+                    D_800A3590[i]--;
+                }
+                D_800A3594[i] = i;
+                if (D_800A35BC == 3) {
+                    s32 sel;
+                    s32 id;
+                    s32 *tim; /* FAKE: named intermediate for the address of the image
+                               * pointer LoadImage reads (named-intermediate entry,
+                               * no-new-park-categories.md). Under `*(...)` the sum is an
+                               * address and expands with EXPAND_SUM (INDIRECT_REF,
+                               * expr.c:4563), where PLUS_EXPR's both_summands (expr.c:5248,
+                               * "associate it to put the constant outside" :5257-5286) moves
+                               * the constant 0x14 outside (the load becomes `lw 0x14(reg)`);
+                               * assigned to a local it expands as a value (not EXPAND_SUM:
+                               * expr.c:5237-5239 goto binop), computing
+                               * id * 8 + 0x14 first as the target does (`addiu
+                               * $v0,$a0,0x14; addu $v1,$v1,$v0; ...; lw $a1,0($v1)`).
+                               * Inlined (sandbox, landed -G8 union form, 2026-09-30):
+                               * this site 8, the confirm site 9, the locked site 14;
+                               * earlier chassis: memory/grind/func_80070F78/evidence.md [s2]. */
+
+                    func_8005C650(1, 0x7F, 0x7F);
+                    D_800A3560.rec[1].unk2 = 0;
+                    D_800A3560.rec[0].unk2 = 0;
+                    if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) {
+                        sel = 0;
+                    } else {
+                        sel = 1;
+                    }
+                    id = D_800A3560.rec[i].unk2;
+                    tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + sel * 4);
+                    LoadImage(vram + id * 8, *tim);
+                    DrawSync(0);
+                } else if (D_800A354C & (0x40 << (port * 16))) {
+                    s32 sel;
+                    s32 id;
+                    s32 *tim; /* FAKE: image pointer address, mechanism at the ==3 `tim` */
+
+                    func_8005C650(1, 0x7F, 0x7F);
+                    D_800A3560.rec[i].unk2 = D_8009BC38[D_800A3590[i]];
+                    sel = 1;
+                    if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
+                        if (!(D_8009BC7C[D_800A3560.rec[0].unk1] & 2)) {
+                            sel = 0;
+                        }
+                    } else if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) {
+                        sel = 0;
+                    }
+                    id = D_800A3560.rec[i].unk2;
+                    tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + sel * 4);
+                    LoadImage(vram + id * 8, *tim);
+                    DrawSync(0);
+                } else if (D_800A354C & (0x10 << (port * 16))) {
+                    func_8005C650(2, 0x7F, 0x7F);
+                    if (D_800A3558 == 1) {
+                        D_800A3558 = 0;
+                        D_800A3560.rec[0].unk2 = 0xFF;
+                    } else {
+                        D_800A3560.rec[1].unk2 = 0xFF;
+                        D_800A3560.rec[0].unk2 = 0xFF;
+                        D_800A3578 = 3;
+                        D_800A3584 = 0;
+                        func_8005C650(6, 0x7F, 0x7F);
+                        if (D_800A3554 == 1) {
+                            D_800A3560.rec[1].unk0 = 0xFF;
+                        } else {
+                            D_800A3560.rec[i].unk0 = 0xFF;
+                        }
+                        break;
+                    }
+                }
+            } else {
+                if ((D_800A354C & (0x10 << (port * 16))) && D_800A3578 == 0 && D_800A35BC != 3) {
+                    func_8005C650(2, 0x7F, 0x7F);
+                    D_800A35C8[0] = 0xF;
+                    D_800A35C8[1] = 0x14;
+                    D_800A3560.rec[i].unk2 = 0xFF;
+                }
+                D_800A3544[i] = 9;
+                if (((s16 *)D_800A35C4)[i + 2] != 0) {
+                    ((s16 *)D_800A35C4)[i + 2]--;
+                }
+                sheets = *(s32 **)(D_800A35A8 + 0x74);
+                s->header = sheets[3];
+                if (D_800A3540[i] < 12) {
+                    D_800A3540[i]++;
+                }
+                *(u8 *)(s->header + 2) = D_800A3540[i];
+                s->has_color = 0;
+                cells = s->header + 0xC;
+                s->table = cells;
+                s->x = (D_800A3590[i] << 6) + 0x85;
+                s->y = 0xB6 - (D_800A3594[i] << 5);
+                s->ot_idx = 7;
+                s->out = ((s32 *)arg0)[4];
+                ((s32 *)arg0)[4] = func_8007352C((s32)s);
+            }
+            if (D_800A3578 != 3) {
+                s->scale_x = 0x100;
+                s->scale_y = 0x100;
+                if (((s16 *)D_800A35C4)[i + 2] != 0) {
+                    s->has_color = 1;
+                } else {
+                    s->has_color = 0;
+                }
+                if (D_800A3558 != 0 && i != 0) {
+                    s->header = sheets[i + 1];
+                } else {
+                    s->header = sheets[i];
+                }
+                cells = s->header + 0xC;
+                s->table = cells;
+                c = ((rsin(((((s32 *)D_800A35C4)[2] & 0x1F) << D_800A3544[i]) + i * 511) * 63) >> 12) - 0x40;
+                s->col_b = c;
+                s->col_g = c;
+                s->col_r = c;
+                s->x = (D_800A3590[i] << 6) + 0x80;
+                s->y = 0xAC - (D_800A3594[i] << 5);
+                s->unk0C = ((s32 *)arg0)[1];
+                s->ot_idx = 7;
+                ((s32 *)arg0)[1] = func_80073728((s32)s, 0);
+            }
+        } else {
+            if (D_800A3578 == 0) {
+                if (D_800A3560.rec[i == 0 ? 1 : 0].unk2 != 0xFF && ((s16 *)D_800A35C4 + 2)[i == 0 ? 1 : 0] == 0) {
+                    s32 sel;
+                    s32 id;
+                    s32 *tim; /* FAKE: image pointer address, mechanism at the ==3 `tim` */
+
+                    func_8005C650(1, 0x7F, 0x7F);
+                    flag = 2;
+                    vram = *(u8 **)(D_800A35A8 + 0x7C);
+                    vram += i << 6;
+                    if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) {
+                        sel = 0;
+                    } else {
+                        sel = 1;
+                    }
+                    id = D_800A3560.rec[i].unk2;
+                    tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + sel * 4);
+                    LoadImage(vram + id * 8, *tim);
+                    DrawSync(0);
+                }
+            }
+            if (D_800A354C & (0x10 << (i * 16))) {
+                func_8005C650(2, 0x7F, 0x7F);
+                D_800A3578 = 3;
+                func_8005C650(6, 0x7F, 0x7F);
+                D_800A3584 = 0;
+                D_800A3560.rec[1].unk2 = 0xFF;
+                D_800A3560.rec[0].unk2 = 0xFF;
+                if (D_800A3558 == 1) {
+                    D_800A3558 = 0;
+                    D_800A3560.rec[1].unk0 = 0xFF;
+                } else {
+                    D_800A3560.rec[i].unk0 = 0xFF;
+                }
+                ((s16 *)D_800A35C4)[i + 2] = 0x1E;
+            }
+        }
+    }
+    sheets = *(s32 **)(D_800A35A8 + 0x60);
+    s->header = sheets[0];
+    s->scale_x = 0x80;
+    s->scale_y = 0x80;
+    s->has_color = 0;
+    s->ot_idx = 0xC;
+    cells = s->header + 0x24;
+    for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
+        if (D_800A3560.rec[i].unk0 != 5 && D_800A3560.rec[i].unk0 != 0x10 && D_800A3578 != 3) {
+            s->table = cells;
+            s->x = (D_800A3590[i] << 6) + 0x80;
+            s->y = 0xAC - (D_800A3594[i] << 5);
+            if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
+                if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
+                    s->table += *(u8 *)(s->header + 2) * 8;
+                }
+            } else if (!(D_8009BC7C[D_800A3560.rec[i].unk1] & 2)) {
+                s->table += *(u8 *)(s->header + 2) * 8;
+            }
+            s->unk0C = ((s32 *)arg0)[1];
+            ((s32 *)arg0)[1] = func_80073728((s32)s, 0);
+        }
+    }
+    if (D_800A3560.rec[0].unk2 != 0xFF && ((s16 *)D_800A35C4)[2] == 0) {
+        if (D_800A35BC == 2) {
+            D_800A3558 = 1;
+        }
+        if (((D_800A3560.rec[1].unk2 != 0xFF && ((s16 *)D_800A35C4)[3] == 0) || D_800A35B0 + D_800A3558 == 0) && flag != 1) {
+            D_800A3578 = 0x101;
+            D_800A3584 = 2;
+            D_800A3550 = 1;
+            D_800A355C = 0;
+        }
+    }
+}
 extern u8 D_8009BC7C[];
 s32 func_80071C20(void) {
     s32 v1;
     v1 = 3;
-    if (D_8009BC7C[D_800A3561] & 2) {
+    if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
         v1 = 9;
     }
     return v1;
@@ -1421,23 +1626,21 @@ void func_80071C4C(s32 arg0) {
 
     base = *(s32 *)(D_800A35A8 + 0x58);
     for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
-        s32 ctx = i * 3;
-
-        if (D_800A3560[ctx] != 5 && D_800A3560[ctx] != 16) {
+        if (D_800A3560.rec[i].unk0 != 5 && D_800A3560.rec[i].unk0 != 16) {
             s.unk14 = 1;
             s.unk10 = 0;
             s.scale_x = 0x100;
             s.scale_y = 0x100;
             s.unk28 = 0;
-            obj = *(Obj_8006F100 **)(base + D_800A3560[ctx + 2] * 4);
+            obj = *(Obj_8006F100 **)(base + D_800A3560.rec[i].unk2 * 4);
             sel = 1;
             if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
-                if (D_8009BC7C[D_800A3561] & 2) {
+                if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
                     sel = 1;
                 } else {
                     sel = 0;
                 }
-            } else if (D_8009BC7C[D_800A3560[ctx + 1]] & 2) {
+            } else if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) {
                 sel = 0;
             }
             s.hdr = &obj->hdr[sel];
@@ -1485,30 +1688,26 @@ void func_80071C4C(s32 arg0) {
         }
         for (i = 0; i < 1 + D_800A35B0 + D_800A3554; i++) {
             s32 dst = i * 10; /* FAKE: named intermediate for player i's 10-byte replay-record
-                               * offset (named-intermediate entry, no-new-park-categories.md);
-                               * mechanism: computed before ctx, its loop.c strength_reduce giv
-                               * gets the shorter live length and wins global.c allocno_compare
-                               * priority for $a0 (i*3 then takes $a1, as the target);
-                               * exhaustion: inlined form 4
-                               * (memory/grind/_completed/func_80071C4C/hypotheses.md, cleanup 2026-09-29) */
-            s32 ctx = i * 3; /* FAKE: named intermediate for player i's 3-byte D_800A3560 offset
-                              * (named-intermediate entry, no-new-park-categories.md); mechanism:
-                              * a register index keeps the read's address (plus reg sym) legitimate
-                              * in explow.c memory_address, so loop.c strength_reduce keeps the
-                              * target's sym+index form instead of reducing the whole address to a
-                              * pointer; exhaustion: inlined form 5 (same ledger) */
+                               * offset (named-intermediate entry, no-new-park-categories.md).
+                               * Mechanism, fixed at RTL expansion: the store's address expands
+                               * with EXPAND_SUM, where an inlined `i * 10` comes back as
+                               * (mult i 10) (expr.c:5359-5383) and PLUS_EXPR's "put a
+                               * multiplication first" (expr.c:5288-5290) swaps it ahead of
+                               * D_800A3568; force_operand (expr.c:3744) then emits
+                               * (plus i*10 D_800A3568), `addu v0,a0,v0`. dst is a REG, so
+                               * nothing is swapped and the add keeps the target's
+                               * `addu v0,v0,a0`. Every inlined lever 1 per loop (sandbox
+                               * 2026-09-30); dumps and scores:
+                               * memory/grind/_completed/func_80071C4C/hypotheses.md [g8 2026-09-30] */
 
-            *(u8 *)(D_800A3568 + dst) = D_800A3560[ctx];
+            *(u8 *)(D_800A3568 + dst) = D_800A3560.rec[i].unk0;
         }
         for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
             s32 dst = i * 10; /* FAKE: named intermediate for player i's 10-byte replay-record
                                * offset; same entry, mechanism and ledger as the first loop's
-                               * dst; exhaustion: inlined form 4 */
-            s32 ctx = i * 3; /* FAKE: named intermediate for player i's 3-byte D_800A3560 offset;
-                              * same entry, mechanism and ledger as the first loop's ctx;
-                              * exhaustion: inlined form 5 */
+                               * dst (here the `+ 1` store); inlined 1 (sandbox 2026-09-30) */
 
-            *(u8 *)(D_800A3568 + dst + 1) = D_800A3560[ctx + 2];
+            *(u8 *)(D_800A3568 + dst + 1) = D_800A3560.rec[i].unk2;
         }
     }
     func_8006F038(arg0);
@@ -1574,7 +1773,6 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     u8 code;
     u8 action;
     s32 c;
-    s32 other;
     s16 *timer;
 
     menu = *(u8 **)(D_800A35A8 + 0x80);
@@ -1757,17 +1955,15 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     if (D_800A3578 == 0) {
         for (i = 0; i < D_800A35B0 + 1; i++) {
             if (D_800A354C & (0x10 << (i * 16))) {
-                s32 ctx = i * 3;
                 s32 slot;
 
                 func_8005C650(2, 0x7F, 0x7F);
-                slot = D_800A3560[ctx];
-                D_800A3560[ctx + 2] = 0xFF;
+                slot = D_800A3560.rec[i].unk0;
+                D_800A3560.rec[i].unk2 = 0xFF;
                 if (slot == 5 || slot == 16) {
                     D_800A3580 = 0;
-                    other = i == 0 ? 3 : 0;
-                    D_800A3560[other + 2] = 0xFF;
-                    D_800A3560[ctx] = 0xFF;
+                    D_800A3560.rec[i == 0 ? 1 : 0].unk2 = 0xFF;
+                    D_800A3560.rec[i].unk0 = 0xFF;
                 } else {
                     D_800A3580 = 1;
                 }

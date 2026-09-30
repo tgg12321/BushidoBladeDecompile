@@ -273,6 +273,37 @@ extern Unk800EFAE8Ctrl D_800EFAE8;
  * the splat per-word scalars D_800A34F0 / D_800A34F2. */
 extern s16 D_800A34F0[2];
 
+/* 0x800A3560: two 3-byte records, one per selection slot i (slot i at
+ * 0x800A3560 + i * 3; 0x800A3566/7 pad before D_800A3568). Object model evidence
+ * from the original binary, independent of the byte-chasing: func_8006F100 reads
+ * bytes +2 and +1 through ONE offset register stepped by 3 per slot
+ * (asm/funcs/func_8006F100.s:73-75 `lbu %lo(D_800A3562)($at)` and :100-102
+ * `lbu %lo(D_800A3561)($at)` with $s3, `addiu $s3,$s3,0x3` at :267);
+ * func_80070C70 walks byte +0 the same way ($s2, `addiu $s2,$s2,0x3`,
+ * func_80070C70.s:114-116, :166); func_80070188 forms i*3 once and reaches
+ * +0, +1 and +2 through it (func_80070188.s:58-76, 386-419); func_8006E534 stores
+ * byte +1 of both records (func_8006E534.s:96-97, D_800A3561 / D_800A3564).
+ * Replaces the splat per-byte symbols D_800A3560..D_800A3565 in C (per-word splat
+ * symbol -> aggregate merge family, owner ruling 2026-08-17); their
+ * undefined_syms_auto.txt rows are retired (no assembled referrer is left).
+ * `word`: Q33 union word view (owner ruling 2026-09-29), named only at
+ * func_8006E534's one word store over bytes 0..3, `sw $v0,%gp_rel(D_800A3560)($gp)`
+ * with $v0 = -1 (func_8006E534.s:85, 0x8006E668). Every other access goes
+ * through rec[]. Owner rulings Q44/Q54: every consumer is in the -G8 file
+ * src/text1b_tu1d.c (proof: memory/grind/func_80070F78/g8-evidence.md). */
+typedef struct {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+} Unk800A3560Record;
+
+typedef union {
+    Unk800A3560Record rec[2];
+    s32 word;
+} Unk800A3560Slots;
+
+extern Unk800A3560Slots D_800A3560;
+
 /* Record table at 0x800F0C10 (0x90 bytes, ends at D_800F0CA0): 4 rows of 3
  * records of 3 s32 words. Object model evidence (the original binary):
  * asm/funcs/func_800678A8.s addresses it as base + arg1*36 + idx*12 (+0/+4/+8),

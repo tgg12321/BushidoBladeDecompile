@@ -121,7 +121,7 @@ $(EXE): $(BIN) $(TARGET_EXE) tools/make_psexe.py
 # -- Per-file GP-relative opt-in --
 # List C files (without path/extension) that need GP-relative addressing.
 # These are compiled with -G8 and use sdata_syms.txt for selective GP-rel.
-GP_FILES := text1a_pre text1a_pre_tu2 text1a_post code6cac_b3 code6cac_b4 code6cac_b5
+GP_FILES := text1a_pre text1a_pre_tu2 text1a_post code6cac_b3 code6cac_b4 code6cac_b5 text1b_tu1d
 
 # -- Per-file lb/lh expansion opt-in --
 # ASPSX expands lb→lbu+sll+sra and lh→lhu+sll+sra in certain contexts.

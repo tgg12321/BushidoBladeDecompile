@@ -1031,7 +1031,7 @@ g_replay_motion_shared_state_a                          = 0x800A3578;  /* halfwo
 g_replay_motion_shared_state_b                          = 0x800A35A0;  /* word; same consumers */
 g_replay_motion_shared_state_c                          = 0x800A35BC;  /* word; same consumers */
 g_replay_motion_shared_state_d                          = 0x800A358A;  /* halfword; same consumers */
-g_replay_motion_shared_state_e                          = 0x800A3560;  /* byte; same consumers */
+g_replay_motion_shared_state_e                          = 0x800A3560;  /* 2x3-byte per-slot records (union D_800A3560, include/game.h) */
 g_motion_shift_state_a                                  = 0x800A3550;  /* shorts; consumer: motion_ShiftControl */
 g_status_up_data_state_a                                = 0x800A371C;  /* word; consumer: single_game_CheckStatusUpDataTotalOver */
 g_status_up_data_state_b                                = 0x800A3769;  /* byte; consumer: single_game_CheckStatusUpDataTotalOver */
@@ -1999,7 +1999,7 @@ g_mottest_slot_value_table                              = 0x8008E748;  /* s8 tab
 /* === Motion func dispatch + lookup tables (2026-05-17) -- 3 highs === */
 g_motion_func_dispatch_offset                           = 0x8009BA60;  /* per-idx offset combined with g_motion_state_flag_table to select function pointer in chractar_use_pset_combo_id_table */
 g_byte_lookup_table_256                                 = 0x8009AD18;  /* 256-byte table indexed by `i & 0xFF`; used in text1b.c per-byte processing */
-g_player_byte_flags_table                               = 0x8009BC7C;  /* per-player byte flags indexed by D_800A3561; bit & 2 test */
+g_player_byte_flags_table                               = 0x8009BC7C;  /* per-player byte flags indexed by D_800A3560.rec[i].unk1; bit & 2 test */
 
 /* === 3D sound data buffer cluster (2026-05-17) -- 6 highs === */
 D_80102C00                                  = 0x80102C00;  /* data-wave 2026-09-29: was g_sound_3d_data_buffer */
@@ -2337,8 +2337,6 @@ g_menuctl_arg0_saved_plus_4                             = 0x800A3520;  /* +4 fro
 g_menuctl_call_counter_plus_4                           = 0x800A352C;  /* +4 from g_menuctl_call_counter (0x800A3528) */
 g_menuctl_call_counter_plus_8                           = 0x800A3530;  /* +8 from g_menuctl_call_counter (0x800A3528) */
 g_motion_shift_state_a_plus_8                           = 0x800A3558;  /* +8 from g_motion_shift_state_a (0x800A3550) */
-g_replay_motion_shared_state_e_plus_1                   = 0x800A3561;  /* +1 from g_replay_motion_shared_state_e (0x800A3560) */
-g_replay_motion_shared_state_e_plus_2                   = 0x800A3562;  /* +2 from g_replay_motion_shared_state_e (0x800A3560) */
 g_fade_next_dispatch_idx_plus_4                         = 0x800A3588;  /* +4 from g_fade_next_dispatch_idx (0x800A3584) */
 g_replay_motion_shared_state_d_plus_2                   = 0x800A358C;  /* +2 from g_replay_motion_shared_state_d (0x800A358A) */
 g_replay_motion_shared_state_d_plus_6                   = 0x800A3590;  /* +6 from g_replay_motion_shared_state_d (0x800A358A) */
