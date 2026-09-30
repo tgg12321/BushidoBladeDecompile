@@ -197,13 +197,17 @@ skill §4 (Landing it).
 **Recorded and enforced (owner ruling Q39, 2026-09-29).** Every layer-2
 verdict — PASS, FAIL or NEEDS_USER — is recorded with
 `python3 -m engine.cli layer2 record <func> --verdict <V> --reviewer <id>
---scope <match|cheat-cleanup|auth> --notes "<key findings>"` while the reviewed
-body is in `src/`; it appends to `memory/grind/<func>/layer2.jsonl`, keyed to
-that body's comment/whitespace-insensitive hash. Commit the record with the
+--scope <match|cheat-cleanup|auth> --expect-hash <h> --notes "<key findings>"`,
+where `<h>` is the `body_hash` the reviewer reported (`layer2 hash <func>` on
+the body it reviewed — required in its verdict). The record is refused without
+`<h>` or when `src/` no longer hashes to it; it appends to
+`memory/grind/<func>/layer2.jsonl`. Commit the record with the
 landing. `queue done` (and regen's drop of a listed item) refuses unless the
 LATEST record is a PASS on the CURRENT body: re-review after any code change
-(comment-only edits keep the hash). No override flag exists. For the grinder,
-the driver records the Judge's FINAL CALL PASS (scope `grinder-final-call`).
+(comment/layout edits keep the hash; any token change moves it). No override
+flag exists. For the grinder, the driver records the Judge's FINAL CALL PASS
+(scope `grinder-final-call`) against the hash taken just before the Judge saw
+the diff.
 
 ## Periodic re-audits
 

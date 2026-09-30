@@ -902,6 +902,11 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     }
     # 2) bytes proven — now the Judge rules on the C
     $diff = (git -C $Root diff -- "src/$stem.c" | Out-String)
+    # Owner ruling Q39: the layer-2 key of the body the Judge is about to see;
+    # the PASS path records the verdict against exactly this hash.
+    $l2Hash = ''
+    $l2h = Invoke-Eng @('layer2', 'hash', $func, '--file', $stem)
+    if ($l2h -match '"body_hash"\s*:\s*"([0-9a-f]{16})"') { $l2Hash = $Matches[1] }
     $led = "memory/grind/$func"
     $scopeBlock = ''
     try { $scopeBlock = (python tools/grinder/grindlib.py rule-scopes . $func 2>$null | Out-String).Trim() } catch { }
@@ -989,15 +994,16 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         if ($nIsl -gt 0 -and $listed) { $bucket = 'COMPLETED-INLINE-ASM-CANONICAL' }
         # Owner ruling Q39: `queue done` refuses without a recorded layer-2 PASS on
         # the exact body. For autonomous work the Judge's FINAL CALL is that review
-        # (judge-sole-gate rule 2), so record it keyed to the body the Judge saw:
-        # nothing since the FINAL CALL diff touched src/. (No --expect-hash with
-        # $bodyHash: for a K&R definition grindlib falls back to a whole-file
-        # key, which the engine's definition key never equals.) A ruling-request
-        # clearance is NOT recorded here — it only skips layer-1; the FINAL CALL
-        # above still ruled.
-        $l2 = Invoke-Eng @('layer2', 'record', $func, '--verdict', 'PASS', '--reviewer', 'judge',
-                           '--scope', 'grinder-final-call', '--file', $stem,
-                           '--notes', 'Judge FINAL CALL PASS - justification in state.json review_ledger and docs/grind/decisions.md')
+        # (judge-sole-gate rule 2), so record it against $l2Hash, the layer-2 key
+        # taken from src/ just before the FINAL CALL diff was shown (--expect-hash
+        # is required; with no hash the record refuses and queue done then
+        # refuses too). A ruling-request clearance is NOT recorded here — it only
+        # skips layer-1; the FINAL CALL above still ruled.
+        $l2Args = @('layer2', 'record', $func, '--verdict', 'PASS', '--reviewer', 'judge',
+                    '--scope', 'grinder-final-call', '--file', $stem,
+                    '--notes', 'Judge FINAL CALL PASS - justification in state.json review_ledger and docs/grind/decisions.md')
+        if ($l2Hash) { $l2Args += @('--expect-hash', $l2Hash) }
+        $l2 = Invoke-Eng $l2Args
         if ($l2 -notmatch '"ok"\s*:\s*true') { Log "${func}: layer-2 record NOT written: $(($l2 -replace '\s+', ' ').Trim())" }
         $qd = Invoke-Eng @('queue', 'done', $func)
         if ($qd -notmatch '"ok"\s*:\s*true') {

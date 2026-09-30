@@ -13,9 +13,12 @@ per line, committed with the landing:
   {"func", "verdict": PASS|FAIL|NEEDS_USER, "body_hash", "body_kind": c|asm,
    "file", "reviewer", "scope", "date", "head", "notes"}
 
-Written by `python3 -m engine.cli layer2 record <func> --verdict ...`, which
-computes body_hash from the CURRENT body in src/ — the body the reviewer just
-ruled on. The LAST line is the function's standing verdict.
+Written by `python3 -m engine.cli layer2 record <func> --verdict ...
+--expect-hash <h>`. `--expect-hash` is REQUIRED: <h> is the hash the reviewer
+reported (`layer2 hash <func>`) for the body it ruled on, and the record is
+refused unless the body now in src/ hashes to it — so a PASS on body A can
+never be written against a body B edited in afterwards. The LAST line is the
+function's standing verdict.
 
 THE GATE (`gate`): `queue done` — and regen's mechanical drop of an item it
 previously listed — requires that last line to be PASS with body_hash equal to
@@ -23,15 +26,17 @@ the current body's hash. A FAIL/NEEDS_USER after a PASS revokes it; any code
 change after the review breaks the hash. No override flag exists (none is
 authorized by any owner ruling).
 
-THE HASH is the grinder's review key (tools/grinder/grindlib.body_hash:
-comments stripped, whitespace collapsed, sha1[:16]) applied to the function's
-definition as located by inlineasm._func_body_span, so a comment-only edit
-keeps the hash and the grinder's Judge verdicts and this record share one key.
-(Exception: a K&R definition, which grindlib cannot parse and keys by the
-whole file; here it is keyed by its own definition, so a sibling's edit
-never moves it.)
-A function supplied wholly from asm (canonical INCLUDE_ASM / `.include` /
-`glabel` block) is keyed by its asm block text plus the included .s file.
+THE HASH is sha1[:16] of the function's FULL definition (storage class and
+return type through the closing brace, as located by
+inlineasm._func_body_span) reduced to its C token sequence: comments dropped,
+string/char literals kept verbatim, tokens joined by one space. A comment or
+layout edit keeps the hash; any token change — `s16` vs `s32`, `static`, a
+space inside a string, `a - --b` vs `a-- - b` — moves it. Deliberately NOT
+grindlib.body_hash, which collapses whitespace inside strings, strips `//`
+inside strings, merges `- --` into `---`, omits the return type, and keys
+K&R definitions by the whole file (layer-2 review of 5d46a66e1). A function
+supplied wholly from asm (canonical INCLUDE_ASM / `.include` / `glabel`
+block) is keyed by its asm block text plus the included .s file.
 """
 from __future__ import annotations
 
@@ -40,15 +45,9 @@ import hashlib
 import json
 import re
 import subprocess
-import sys
 from pathlib import Path
 
 from . import inlineasm
-
-_ROOT = Path(__file__).resolve().parent.parent
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
-from tools.grinder import grindlib  # noqa: E402
 
 RECORD_NAME = "layer2.jsonl"
 VERDICTS = ("PASS", "FAIL", "NEEDS_USER")
@@ -56,6 +55,30 @@ VERDICTS = ("PASS", "FAIL", "NEEDS_USER")
 # the grinder's Judge FINAL CALL (judge-sole-gate: the Judge is the acceptance
 # gate for autonomous work).
 SCOPES = ("match", "cheat-cleanup", "auth", "grinder-final-call")
+
+
+# One C token per match, maximal munch; `tokens` drops the `skip` group
+# (whitespace, comments). A string/char literal is ONE token, so nothing inside
+# it is normalized.
+_TOKEN_RE = re.compile(r"""
+    (?P<skip> \s+ | /\*.*?\*/ | //[^\n]* )
+  | "(?:\\.|[^"\\\n])*"
+  | '(?:\\.|[^'\\\n])*'
+  | \.?[0-9](?:[eEpP][+-]|[A-Za-z0-9_.])*
+  | [A-Za-z_]\w*
+  | <<= | >>= | \.\.\. | -> | \+\+ | -- | << | >> | <= | >= | == | != | && | \|\|
+  | [-+*/%&|^]= | \#\#
+  | .
+""", re.S | re.X)
+
+
+def tokens(text: str) -> list[str]:
+    """`text` as C tokens: comments and whitespace dropped, literals verbatim."""
+    return [m.group(0) for m in _TOKEN_RE.finditer(text or "") if m.group("skip") is None]
+
+
+def _key(text: str) -> str:
+    return hashlib.sha1(" ".join(tokens(text)).encode("utf-8")).hexdigest()[:16]
 
 
 def record_path(func: str) -> Path:
@@ -101,11 +124,12 @@ def body_key(text: str, func: str) -> tuple[str, str] | None:
     no body can be located (fail closed: nothing to key a verdict to)."""
     span = inlineasm._func_body_span(text, func)
     if span is not None:
-        return "c", grindlib.body_hash(text[span[0]:span[1]], func)
+        # A definition sharing a line with the previous function's `}` starts
+        # its span at that brace; it is not part of this function.
+        return "c", _key(re.sub(r"^\}", "", text[span[0]:span[1]]))
     pieces = _asm_pieces(text, func)
     if pieces:
-        norm = grindlib.normalize_c("\n".join(pieces))
-        return "asm", hashlib.sha1(norm.encode("utf-8")).hexdigest()[:16]
+        return "asm", _key("\n".join(pieces))
     return None
 
 
@@ -162,20 +186,26 @@ def _head() -> str:
 
 def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
            stem: str | None = None, expect_hash: str | None = None) -> dict:
-    """Append one verdict keyed to the CURRENT body of `func` in src/."""
+    """Append one verdict for the body the reviewer reported (`expect_hash`),
+    refused unless that is the body now in src/."""
     if verdict not in VERDICTS:
         return {"ok": False, "func": func, "reason": f"verdict must be one of {VERDICTS}"}
     if scope not in SCOPES:
         return {"ok": False, "func": func, "reason": f"scope must be one of {SCOPES}"}
     if not reviewer.strip():
         return {"ok": False, "func": func, "reason": "reviewer is required"}
+    if not expect_hash:
+        return {"ok": False, "func": func,
+                "reason": ("--expect-hash is required: the `layer2 hash` the reviewer reported "
+                           "for the body it ruled on (a verdict bound to whatever is in src/ at "
+                           "record time is not a verdict on the landed body — owner ruling Q39)")}
     stem = stem or locate_stem(func)
     key = current_key(func, stem) if stem else None
     if key is None:
         return {"ok": False, "func": func,
                 "reason": f"no body for {func} found in src/{stem or '*'}.c — nothing to key the verdict to"}
     kind, h = key
-    if expect_hash and expect_hash != h:
+    if expect_hash != h:
         return {"ok": False, "func": func,
                 "reason": (f"the body in src/{stem}.c hashes {h}, not the reviewed {expect_hash} — "
                            f"the reviewer ruled on a different body; nothing recorded")}
@@ -199,7 +229,8 @@ def gate(func: str, stem: str) -> str | None:
     body; otherwise the refusal reason, naming the fix."""
     fix = (f"Fix: spawn a fresh cheat-reviewer (layer 2) on the exact body being landed; on PASS "
            f"run `python3 -m engine.cli layer2 record {func} --verdict PASS --reviewer <id> "
-           f"--scope <{'|'.join(SCOPES)}> --notes \"...\"` and commit memory/grind/{func}/"
+           f"--scope <{'|'.join(SCOPES)}> --expect-hash <the reviewer's `layer2 hash`> "
+           f"--notes \"...\"` and commit memory/grind/{func}/"
            f"{RECORD_NAME} with the landing (owner ruling Q39, "
            f".claude/rules/review-discipline-before-commit.md).")
     key = current_key(func, stem)

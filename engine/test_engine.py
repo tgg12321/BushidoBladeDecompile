@@ -2735,22 +2735,21 @@ def test_layer2_gate() -> None:
     listed is the same completion, so it is gated the same way.
 
     The retro-audit behind the ruling found landings with no recorded PASS and
-    PASSes given on an earlier body than the one landed. Pinned: the key is
-    the grinder's review key (one hash, not two); a comment-only edit keeps
-    it; no record, a later FAIL, or a changed body all refuse; the refusal
-    names the fix; and neither mark_done nor regen has a way around it.
+    PASSes given on an earlier body than the one landed. Pinned: a record
+    binds only to the hash the reviewer reported (--expect-hash, required);
+    a comment/layout edit keeps the key and every token change moves it; no
+    record, a later FAIL, or a changed body all refuse; the refusal names the
+    fix; and neither mark_done nor any regen drop point has a way around it.
     """
     from engine import layer2
-    from tools.grinder import grindlib
 
     src = ("/* header */\nint other(void) { return 1; }\n"
            "int func_L2(int a) {\n    /* why */\n    return a + 1;\n}\n")
     commented = src.replace("/* why */", "/* a different, longer comment */")
     changed = src.replace("a + 1", "a + 2")
 
-    # 1. ONE key: the grinder's comment/whitespace-insensitive body hash.
-    eq("layer2: C key is the grinder's review key",
-       layer2.body_key(src, "func_L2"), ("c", grindlib.body_hash(src, "func_L2")))
+    # 1. The key: the full definition as C tokens (comments/layout ignored).
+    eq("layer2: C body keys as c", (layer2.body_key(src, "func_L2") or ("",))[0], "c")
     eq("layer2: comment-only edit keeps the hash",
        layer2.body_key(commented, "func_L2"), layer2.body_key(src, "func_L2"))
     eq("layer2: whitespace-only edit keeps the hash",
@@ -2767,6 +2766,32 @@ def test_layer2_gate() -> None:
     check("layer2: a K&R definition is keyed by itself, not the whole file",
           layer2.body_key(knr, "func_KR")
           == layer2.body_key(knr.replace("return 1;", "return 7;"), "func_KR"))
+    check("layer2: a K&R definition's parameter declaration is in the key",
+          layer2.body_key(knr, "func_KR")
+          != layer2.body_key(knr.replace("s16 *a;", "s32 *a;"), "func_KR"))
+    # Collisions the first key (grindlib.body_hash) had — layer-2 review of
+    # 5d46a66e1. Each pair differs in bytes-relevant C and must key apart.
+    for desc, a_src, b_src in (
+            ("return type", "s16 func_C(void) { return 0; }\n",
+             "s32 func_C(void) { return 0; }\n"),
+            ("storage class", "static int func_C(void) { return 0; }\n",
+             "int func_C(void) { return 0; }\n"),
+            ("whitespace inside a string",
+             'void func_C(void) { g("a  b"); }\n', 'void func_C(void) { g("a b"); }\n'),
+            ("`//` inside a string",
+             'void func_C(void) { g("x//y"); h(1); }\n',
+             'void func_C(void) { g("x//y"); h(2); }\n'),
+            ("`/*` inside a char/string",
+             "void func_C(void) { g('/'); g(\"/*\"); h(1); }\n",
+             "void func_C(void) { g('/'); g(\"/*\"); h(2); }\n"),
+            ("token boundary `a - --b` vs `a-- - b`",
+             "int func_C(int a, int b) { return a - --b; }\n",
+             "int func_C(int a, int b) { return a-- - b; }\n")):
+        ka, kb = layer2.body_key(a_src, "func_C"), layer2.body_key(b_src, "func_C")
+        check(f"layer2: no collision on {desc}", ka is not None and ka != kb)
+    eq("layer2: layout-only edit (incl. a brace-shared line) keeps the key",
+       layer2.body_key("}int func_C(int a){return a+1;}\n", "func_C"),
+       layer2.body_key("}\nint func_C(int a)\n{\n    return a + 1; // x\n}\n", "func_C"))
 
     cwd = os.getcwd()
     with tempfile.TemporaryDirectory() as td:
@@ -2796,11 +2821,23 @@ def test_layer2_gate() -> None:
             check("layer2: refusal names the fix",
                   "layer2 record func_L2" in (why or "") and "Q39" in (why or ""))
 
+            def _rec(verdict, reviewer="rev-A", scope="match"):
+                """Record `verdict` for the body now in src/ — the hash the
+                reviewer would have reported via `layer2 hash`."""
+                return layer2.record("func_L2", verdict, reviewer, scope, stem="l2tu",
+                                     expect_hash=layer2.current_key("func_L2", "l2tu")[1])
+
             r = layer2.record("func_L2", "PASS", "rev-A", "match", "ok", stem="l2tu",
                               expect_hash="0" * 16)
             check("layer2: record refuses a body other than the reviewed one",
                   r["ok"] is False and not rec_p.exists())
-            r = layer2.record("func_L2", "PASS", "rev-A", "bogus", stem="l2tu")
+            for scope in layer2.SCOPES:
+                r = layer2.record("func_L2", "PASS", "rev-A", scope, stem="l2tu")
+                check(f"layer2: record refuses without --expect-hash (scope {scope})",
+                      r["ok"] is False and "--expect-hash is required" in r.get("reason", "")
+                      and not rec_p.exists())
+            r = layer2.record("func_L2", "PASS", "rev-A", "bogus", stem="l2tu",
+                              expect_hash=layer2.current_key("func_L2", "l2tu")[1])
             check("layer2: record refuses an unknown scope", r["ok"] is False)
 
             h = layer2.body_key(src, "func_L2")[1]
@@ -2823,16 +2860,23 @@ def test_layer2_gate() -> None:
             check("layer2: PASS on a different body hash -> refused",
                   "changed after review" in why and h in why)
 
+            # The F1 scenario: PASS given on body A, body B edited in, then a
+            # PASS "recorded" with A's hash — refused, nothing written.
+            n_before = len(rec_p.read_text().splitlines())
+            r = layer2.record("func_L2", "PASS", "rev-A", "match", stem="l2tu", expect_hash=h)
+            check("layer2: a PASS on body A cannot be recorded against body B",
+                  r["ok"] is False and len(rec_p.read_text().splitlines()) == n_before)
+
             Path("src/l2tu.c").write_text(src)
-            layer2.record("func_L2", "FAIL", "rev-B", "match", "construct X", stem="l2tu")
+            _rec("FAIL", "rev-B")
             why = layer2.gate("func_L2", "l2tu") or ""
             check("layer2: a later FAIL on the same body revokes the PASS",
                   "latest layer-2 verdict for func_L2 is FAIL" in why)
-            layer2.record("func_L2", "NEEDS_USER", "rev-C", "match", stem="l2tu")
+            _rec("NEEDS_USER", "rev-C")
             check("layer2: NEEDS_USER is not a PASS",
                   "is NEEDS_USER" in (layer2.gate("func_L2", "l2tu") or ""))
 
-            layer2.record("func_L2", "PASS", "rev-D", "match", stem="l2tu")
+            _rec("PASS", "rev-D")
             eq("layer2: a fresh PASS on the current body reopens the gate",
                layer2.gate("func_L2", "l2tu"), None)
             with open(rec_p, "a") as fh:
@@ -2865,7 +2909,7 @@ def test_layer2_gate() -> None:
             eq("layer2: refusal comes before the oracle check", verified, [])
             eq("layer2: refused item stays queued",
                [it["func"] for it in Q.load()["items"]], ["func_L2"])
-            layer2.record("func_L2", "PASS", "rev-A", "match", stem="l2tu")
+            _rec("PASS")
             Path("src/l2tu.c").write_text(changed)
             r = Q.mark_done("func_L2")
             check("layer2: queue done REFUSES a PASS on an earlier body",
@@ -2876,8 +2920,10 @@ def test_layer2_gate() -> None:
                   r["ok"] is True and r.get("completion") == "COMPLETED-C")
             rec_p.unlink()
 
-            # 5. regen: dropping an item it LISTED is a completion — gated too,
-            #    with or without --no-preserve. Never-listed completions are not.
+            # 5. regen: dropping an item it LISTED is a completion — gated at
+            #    each of the three drop points (COMPLETED-C, canonical, and the
+            #    unscorable branch), with or without --no-preserve. `other` is a
+            #    never-listed completion and always drops.
             Path("build/src").mkdir(parents=True)
             Path("build/src/l2tu.o").write_text("")
             saved_regen = (P.c_stems, canonical.scan_all, cheats.is_jtbl_infra,
@@ -2890,19 +2936,33 @@ def test_layer2_gate() -> None:
             cheats.is_canonical_extraction_only = lambda f: False
             Q.sandbox.build_stripped_object = lambda *a, **k: {}
             score._o_func_table = lambda o: {"func_L2": (0, 0), "other": (0, 0)}
-            score.score_func = lambda a, b, f: {"score": 0}
+
+            def _unscorable(a, b, f):
+                raise KeyError(f)
+
             try:
-                for preserve in (True, False):
+                for point, canon, scorer in (
+                        ("COMPLETED-C", set(), lambda a, b, f: {"score": 0}),
+                        # distance 300: only the canonical branch can drop it
+                        ("canonical", {"func_L2"},
+                         lambda a, b, f: {"score": 300 if f == "func_L2" else 0}),
+                        ("unscorable", set(), _unscorable)):
+                    cheats.canonical_asm_funcs = lambda canon=canon: canon
+                    score.score_func = scorer
+                    for preserve in (True, False):
+                        qp.write_text(json.dumps(seed))
+                        items = Q.generate(workdir=str(Path(td) / "wd"),
+                                           preserve=preserve)["items"]
+                        eq(f"layer2: regen [{point}, preserve={preserve}] HOLDS a listed "
+                           f"item without a PASS", [it["func"] for it in items], ["func_L2"])
+                        check(f"layer2: held item says why [{point}, preserve={preserve}]",
+                              bool(items) and "layer-2 gate"
+                              in items[0].get("layer2_pending", ""))
+                    _rec("PASS")
                     qp.write_text(json.dumps(seed))
-                    items = Q.generate(workdir=str(Path(td) / "wd"), preserve=preserve)["items"]
-                    eq(f"layer2: regen (preserve={preserve}) HOLDS a listed item without a PASS",
-                       [it["func"] for it in items], ["func_L2"])
-                    check(f"layer2: held item says why (preserve={preserve})",
-                          "layer-2 gate" in items[0].get("layer2_pending", ""))
-                layer2.record("func_L2", "PASS", "rev-A", "match", stem="l2tu")
-                qp.write_text(json.dumps(seed))
-                eq("layer2: regen drops a listed item once its PASS matches",
-                   Q.generate(workdir=str(Path(td) / "wd"))["items"], [])
+                    eq(f"layer2: regen [{point}] drops a listed item once its PASS matches",
+                       Q.generate(workdir=str(Path(td) / "wd"))["items"], [])
+                    rec_p.unlink()
             finally:
                 (P.c_stems, canonical.scan_all, cheats.is_jtbl_infra,
                  cheats.is_canonical_extraction_only,

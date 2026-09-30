@@ -369,12 +369,22 @@ designed to catch. A PASS from a detector means "this specific family
 not detected," NOT "this is clean." Your semantic review is the
 authoritative test.
 
+# Required: name the body you reviewed (owner ruling Q39)
+
+When the body under review is in `src/` (a landing / layer-2 review), run
+`& tools/wteng.ps1 main layer2 hash <func>` and put its `body_hash` in your
+verdict. That hash is the ONLY body your verdict may be recorded against:
+`queue done` refuses unless the recorded PASS matches the body landed, so a
+PASS without it cannot land anything. If the body is not in `src/` (a draft or
+candidate file), set `body_hash` to `""`.
+
 # Output
 
 JSON only, matching the schema:
 {
   "decision": "PASS" | "FAIL" | "NEEDS_USER",
   "function": "<the function name reviewed>",
+  "body_hash": "<`layer2 hash <func>` of the body you reviewed, or \"\">",
   "summary": "<one-line bottom-line>",
   "evidence": [
     {

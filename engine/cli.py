@@ -139,15 +139,15 @@ def main() -> int:
     qp.add_argument("--force-rescan", action="store_true",
                     help="auto-return: re-measure every rotated candidate even though the "
                          "fingerprint did not move (recovery after a corrupted re-measure)")
-    l2p = sub.add_parser("layer2", help="layer-2 review record (owner ruling Q39): `record` a verdict keyed to the current body; `check` = the gate `queue done` applies")
-    l2p.add_argument("action", choices=["record", "check"])
+    l2p = sub.add_parser("layer2", help="layer-2 review record (owner ruling Q39): `hash` = the key of the body in src/ (the reviewer reports it); `record` a verdict for that hash; `check` = the gate `queue done` applies")
+    l2p.add_argument("action", choices=["hash", "record", "check"])
     l2p.add_argument("func")
     l2p.add_argument("--verdict", choices=list(L2.VERDICTS), help="record: the reviewer's decision")
     l2p.add_argument("--reviewer", default="", help="record: who ruled (agent id / name)")
     l2p.add_argument("--scope", choices=list(L2.SCOPES), help="record: completion-class kind being landed")
     l2p.add_argument("--notes", default="", help="record: key findings / required fixes")
     l2p.add_argument("--file", default="", help="src file stem (default: the queue item's file, else a src/ scan)")
-    l2p.add_argument("--expect-hash", default="", help="record: refuse unless the current body hashes to this (the body the reviewer saw)")
+    l2p.add_argument("--expect-hash", default="", help="record (REQUIRED): the `layer2 hash` the reviewer reported for the body it ruled on; refused unless src/ still hashes to it")
     ccp = sub.add_parser("cc1psx-check", help="self-disproof: score a function's candidate under our cc1 AND the original cc1psx (out of tree); a closer cc1psx = fidelity lead")
     ccp.add_argument("func")
     ccp.add_argument("--candidate", default="", help="candidate body (default memory/grind/<func>/candidate.c)")
@@ -322,9 +322,15 @@ def main() -> int:
         else:
             stem = a.file or L2.locate_stem(a.func)
             key = L2.current_key(a.func, stem) if stem else None
-            reason = L2.gate(a.func, stem) if stem else f"no body for {a.func} found in src/"
-            r = {"ok": reason is None, "func": a.func, "file": stem,
-                 "body_hash": key[1] if key else None, "reason": reason}
+            if a.action == "hash":
+                r = {"ok": key is not None, "func": a.func, "file": stem,
+                     "body_hash": key[1] if key else None,
+                     "body_kind": key[0] if key else None}
+            else:
+                reason = (L2.gate(a.func, stem) if stem
+                          else f"no body for {a.func} found in src/")
+                r = {"ok": reason is None, "func": a.func, "file": stem,
+                     "body_hash": key[1] if key else None, "reason": reason}
         print(json.dumps(r, indent=2))
         return 0 if r.get("ok") else 1
 
