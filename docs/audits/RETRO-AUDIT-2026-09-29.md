@@ -47,14 +47,20 @@ Reopened (INCLUDE_ASM + queue; bodies and frontier banked in `memory/grind/<f>/`
 - SelWork cluster: func_800747D8, func_80075670, func_800768DC, func_800770B8 — see
   `memory/grind/func_800768DC/selwork-cluster-2026-09-30.md` (one landing for all SelWork unions)
 
-## Open for the owner
-1. `sdata_exclude.txt` is a per-function maspsx toggle list; by the Q9 reasoning (maspsx_comm_syms
-   withdrawn) it may itself be a workaround class. Needs a ruling before anyone adds rows.
-2. Q33 (5): does trailing alignment padding (sizeof 0x92→0x94 when an s32 union member raises
-   alignment) count as a "size change"? Blocks the SelWork unions.
-3. Ruling 11 (D)(2): does a cse-level necessity proof (not an allocator decision) qualify? (func_8001F2E4)
-4. Duplicated calls whose layout proves the original wrote them twice: is `FAKE` the right label? (func_80022580)
-5. Deferred: project-wide semantic sweep of pre-09-19 completions.
+## Owner decisions at close (2026-09-30, Q56–Q60 in docs/grind/owner-rulings-2026-09-26.md, 29th batch)
+- **Q56 sdata_exclude.txt — audit in two steps (NEXT SESSION).** 105 rows / 103 functions (99 completed C),
+  160 symbol entries, liveness unmeasured. (1) Mechanically test each row (drop it, rebuild/sandbox); delete
+  dead rows. (2) Live rows must meet .claude/rules/maspsx-gate-lists.md (a)-(d) — Sony's ASPSX reproduces the
+  shipped bytes; unprovable rows removed and their functions reopened.
+- **Q57 — allowed:** a Q33/Q46 union whose s32 member rounds sizeof up for alignment (e.g. 0x92→0x94), when
+  every member offset is unchanged, no filler is added and the build is byte-identical. Unblocks the SelWork
+  cluster. **Rule text not yet encoded** — needs a scribe pass + layer-2 (Q33 condition (5) in
+  no-new-park-categories.md).
+- **Q58 — widened:** Ruling 11 (D)(2) accepts any named compiler pass (e.g. cse) as the necessity mechanism,
+  with the same dump-proof bar and all other conditions. Helps func_8001F2E4. **Rule text not yet encoded**
+  (ordinary-c-judge-decidable.md Ruling 11).
+- **Q59 — no change:** keep `/* FAKE */` even where the layout suggests the original wrote it that way.
+- **Q60 — deferred:** no project-wide sweep; audit functions as other work touches them.
 
 ## Follow-ups (not started)
 - func_80065800 (orchestrator laneA): sandbox 0 with a ready landing package

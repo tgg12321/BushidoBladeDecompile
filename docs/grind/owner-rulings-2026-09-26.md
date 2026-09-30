@@ -569,3 +569,36 @@ Second message, verbatim:
 
 No AskUserQuestion options were involved; these are the owner's own words. The rule text is
 .claude/rules/ordinary-c-judge-decidable.md § Ruling 14.
+
+# Owner exchange 2026-09-30 (twenty-ninth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: closing the 2026-09-29 retro-audit (docs/audits/RETRO-AUDIT-2026-09-29.md), the orchestrator put the
+open owner questions with a recommendation each. The owner answered in two calls; the first answer to the
+sdata_exclude question was a clarifying question ("How many items depend on sdata_exclude"), answered by the
+orchestrator (105 rows, 103 functions, 160 symbol entries; 99 are completed C; liveness unmeasured — at least
+two rows were shown dead today), then re-asked.
+
+## Q56 — sdata_exclude.txt
+Question, verbatim: "sdata_exclude.txt lists 103 functions (99 finished C). How many actually depend on it is unmeasured. What should happen?"
+Owner chose: **"Audit in two steps (Recommended)"** — option text: "1) Mechanically test each row; delete dead ones. 2) Live rows must be proven by Sony's assembler (the sibling list's standard); unprovable rows removed and their functions reopened. Next session."
+Other options offered: "Declare it a workaround now" — "Remove the whole list and reopen every finished function that stops matching (up to 99)."; "Accept it as-is" — "Treat it as legitimate assembler fidelity; no audit."
+("The sibling list's standard" = .claude/rules/maspsx-gate-lists.md, the COMMON-list admission conditions (a)-(d).)
+
+## Q57 — Q33/Q46 union and trailing alignment padding
+Question, verbatim: "Q33/Q46 union word views: when an s32 union member makes the compiler round a struct's size up for alignment (0x92 -> 0x94), with no member offset changed and no filler added, is that allowed?"
+Owner chose: **"Allow it (Recommended)"** — option text: "Allowed when every member offset is unchanged, no filler member is added, and the build stays byte-identical. Unblocks the SelWork cluster."
+Other option offered: "Don't allow" — "Any sizeof change blocks the union; those word stores stay without an admitted spelling and the functions stay reopened."
+
+## Q58 — Ruling 11 mechanism may be any named compiler pass
+Question, verbatim: "Ruling 11 (reused variables) requires the proof's cause to be a register-allocation decision. Should a cause in another named compiler pass (e.g. common-subexpression elimination), proven with saved compiler dumps to the same standard, also count?"
+Owner chose: **"Yes, any named pass (Recommended)"** — option text: "Same dump-proof bar and all other Ruling 11 conditions unchanged; only the 'allocator' restriction is widened. Helps func_8001F2E4."
+Other option offered: "No, allocator only" — "Keep Ruling 11 as written; such reuses need a SOTN citation or stay unfinished."
+
+## Q59 — FAKE label when the layout suggests original source
+Question, verbatim: "When the shipped code's layout suggests the original source really wrote a construct that way (e.g. func_80022580's duplicated calls), should it still carry a /* FAKE */ label?"
+Owner chose: **"Keep FAKE (Recommended)"** — option text: "Originality can't be proven, and the label keeps anything match-motivated visible. No change."
+Other option offered: "Allow a softer label" — "Permit e.g. /* MATCH: … */ when the target's layout is positive evidence the original had it; FAKE otherwise."
+
+## Q60 — project-wide sweep
+Question, verbatim: "You deferred the project-wide cheat sweep of the ~1,150 functions finished before 09-19. Today's 101-landing audit found about 1 in 5 failing, and turned up more lurking workarounds in neighbouring functions. Schedule it?"
+Owner chose: **"Keep it deferred"** — option text: "Only audit functions as they're touched by other work."
+Other option offered: "Yes, next session (Recommended)" — "Mechanical scan for risky patterns first (aliases, casts on globals, unions, volatile, reuse, FAKE), then fresh default-FAIL reviewers over the flagged set; fixes go through the gate or reopen. Large one-time token cost."
