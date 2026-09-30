@@ -47,3 +47,24 @@ Frontier = the two REOPENED objections. Both removed without a macro or an objec
   the real splice is measured under the lock.
 - Unchanged from the byte-exact landed body: `get_dx((s16 *)env)` (get_dx's matched prototype),
   `memcpy((s32)&...)` (display.c:14 prototype), the open-coded clamps (old CLAMP macro expanded).
+- Prepared for landing 2026-09-30 (laneA, under the landing lock): candidate.c (+ provenance
+  header) spliced into src/display.c with the RECT/DISPENV typedefs and the
+  `extern DISPENV g_gpu_disp_env;` retype. Spliced-src sandbox --disable all = 0 (298/298,
+  0 hunks); lock.ps1 rebuild SHA1 = oracle. layer2 hash 3e7973088e3625f9. Awaiting layer-2.
+
+## 2026-09-30 -- layer-2 round 1 FAIL (l2-PutDispEnv-r1, body 3e7973088e3625f9) and round-2 fixes
+
+Recorded in layer2.jsonl; body banked rejected/l2-r1-fail-3e7973088e3625f9.c. HELD: the 8 volatile
+reads (Q50/Q55, s_m_m.c:48), the isinter LOW compare (sys.c:367), the empty arm (sys.c:394).
+FAILED on, and fixed in round 2 (all under the landing lock, same session):
+1. Clamp reuse had no inline SOTN tag. Added `SOTN: src/main/psxsdk/libgpu/sys.c:358 @aa53500`.
+2. Prong (c): retired undefined_syms_auto.txt D_8009BEE2/E6/EA/EE and named_syms.txt
+   g_gpu_disp_env_field_e2/e6/ea/ee_*. No live referrer: PutDispEnv.s is no longer INCLUDE_ASM'd,
+   asm/text2.s is not in bb2.ld/Makefile, and 7D920.data.s defines its own dlabels. One C handle:
+   `memset(&g_gpu_disp_env, ...)` in SetDispMask measured 14 (36/39). The target addresses the
+   bytes off the debug_level base (asm/funcs/SetDispMask.s:22 `addiu $a0,$s1,0x6A`), so the bytes
+   are a member of the GPU state block. GpuCtx.disp_env is now typed DISPENV and the memset takes
+   `&...->disp_env`. Sandbox: SetDispMask 0, GetDispEnv 0.
+3. Prong (d): RECT/DISPENV + `extern DISPENV g_gpu_disp_env;` moved to include/gpu.h.
+4. SOTN tag comments reworded to name no SOTN symbols.
+Round-2 splice: PutDispEnv sandbox 0 (298/298, 0 hunks); lock.ps1 rebuild SHA1 = oracle.
