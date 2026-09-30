@@ -68,3 +68,20 @@ FAILED on, and fixed in round 2 (all under the landing lock, same session):
 3. Prong (d): RECT/DISPENV + `extern DISPENV g_gpu_disp_env;` moved to include/gpu.h.
 4. SOTN tag comments reworded to name no SOTN symbols.
 Round-2 splice: PutDispEnv sandbox 0 (298/298, 0 hunks); lock.ps1 rebuild SHA1 = oracle.
+
+## 2026-09-30 -- layer-2 round 2 FAIL (l2-PutDispEnv-r2, body 3e7973088e3625f9; SetDispMask c57216b13ab924fa -> bc25eca16a8a4137)
+
+Recorded in layer2.jsonl. Banked: rejected/l2-r2-fail.c (body) + rejected/l2-r2-fail-splice.patch
+(the whole staged splice: display.c, gpu.h, named_syms.txt, undefined_syms_auto.txt). Reverted
+(reverse-applied patch, index + tree); rebuild SHA1 = oracle; landing lock released.
+Verified clean by the reviewer: citations, retired rows, sandbox 0 on all three functions.
+Findings = the new frontier:
+1. Prong (c): no single C object over 0x8009BEE0..+0x14 -- g_gpu_disp_env, the display.c
+   `((GpuCtx *)&g_gpu_type)->disp_env` view, and gpu.c ResetGraph's GpuConfig `(u8 *)s0 + 0x6C`.
+2. `(GpuCtx *)&g_gpu_type` is a per-use pun over an extern u8 (already on main in COMPLETED
+   SetDispMask), TU-local typedef, no SOTN citation. Retyping it extends it.
+3. D_8009BE77 is a second name for the byte g_gpu_dither (gpu.h) names.
+Required fix: ONE real object for the 0x80-byte GPU state block at 0x8009BE74 in include/gpu.h
+(DISPENV disp_env at +0x6C), every consumer through members (SetDispMask, PutDispEnv, GetDispEnv,
+ResetGraph, PutDrawEnv/DrawOTagEnv base+0xE, all others), byte-neutral per consumer, alias rows
+retired, name from evidence. Landing = PutDispEnv match + cheat-cleanup of changed consumers.

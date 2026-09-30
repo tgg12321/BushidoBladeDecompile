@@ -1,0 +1,188 @@
+diff --git a/include/gpu.h b/include/gpu.h
+index bf0a5e213..65ba9d4c4 100644
+--- a/include/gpu.h
++++ b/include/gpu.h
+@@ -57,6 +57,23 @@ typedef struct GpuDevTable {
+ } GpuDevTable;
+ 
+ extern GpuDevTable *g_gpu_dev_table;
++
++/* PsyQ LIBGPU.H display environment (RECT + DISPENV, 0x14 bytes); the saved copy
++ * PutDispEnv compares against and GetDispEnv returns lives at 0x8009BEE0. */
++typedef struct {
++    s16 x, y, w, h;
++} RECT;
++
++typedef struct {
++    RECT disp;   /* +0x00 */
++    RECT screen; /* +0x08 */
++    u8 isinter;  /* +0x10 */
++    u8 isrgb24;  /* +0x11 */
++    u8 pad0;     /* +0x12 */
++    u8 pad1;     /* +0x13 */
++} DISPENV;
++
++extern DISPENV g_gpu_disp_env;
+ extern s16 g_gpu_disp_x;
+ extern s16 g_gpu_disp_y;
+ extern u8 g_gpu_dither;
+diff --git a/named_syms.txt b/named_syms.txt
+index 5fd3ceb89..e11e303f7 100644
+--- a/named_syms.txt
++++ b/named_syms.txt
+@@ -2998,10 +2998,6 @@ g_scratchpad_ptr_24_1F800024                       = 0x1F800024;  /* 6 refs; scr
+ g_scratchpad_ptr_28_1F800028                       = 0x1F800028;  /* 6 refs; scratchpad RAM offset 0x28 */
+ g_scratchpad_ptr_58_1F800058                       = 0x1F800058;  /* 6 refs; scratchpad RAM offset 0x58 */
+ g_scratchpad_ptr_60_1F800060                       = 0x1F800060;  /* 6 refs; scratchpad RAM offset 0x60 */
+-g_gpu_disp_env_field_e2_8009BEE2                   = 0x8009BEE2;  /* 7 refs; first of 4-field 4-byte-stride cluster */
+-g_gpu_disp_env_field_e6_8009BEE6                   = 0x8009BEE6;  /* 7 refs; +4 stride */
+-g_gpu_disp_env_field_ea_8009BEEA                   = 0x8009BEEA;  /* 7 refs; +4 stride */
+-g_gpu_disp_env_field_ee_8009BEEE                   = 0x8009BEEE;  /* 7 refs; +4 final */
+ g_game_state_field_0_800A3258                      = 0x800A3258;  /* 7 refs; first of 3-field 4-byte-stride cluster */
+ g_game_state_field_4_800A325C                      = 0x800A325C;  /* 7 refs; +4 stride */
+ g_game_state_field_8_800A3260                      = 0x800A3260;  /* 7 refs; +4 final field */
+diff --git a/src/display.c b/src/display.c
+index a6e746a2d..0fb975c30 100644
+--- a/src/display.c
++++ b/src/display.c
+@@ -22,7 +22,6 @@ extern u32 *g_gpu_dma_bcr;
+ extern volatile u32 *g_gpu_dma_chcr;
+ extern u8 ctlbuf[];
+ extern u8 g_gpu_draw_env;
+-extern u8 g_gpu_disp_env;
+ extern u8 D_8009BE74;
+ extern s16 D_8009BE78;
+ extern s16 D_8009BE7A;
+@@ -65,7 +64,7 @@ typedef struct {
+     u8 unk8[4];        /* +0x08 */
+     u32 draw_mode;     /* +0x0C g_gpu_draw_mode */
+     u8 draw_env[0x5C]; /* +0x10 g_gpu_draw_env */
+-    u8 disp_env[0x14]; /* +0x6C g_gpu_disp_env */
++    DISPENV disp_env;  /* +0x6C g_gpu_disp_env */
+ } GpuCtx;              /* size 0x80 */
+ 
+ void SetDispMask(s32 a0) {
+@@ -74,7 +73,7 @@ void SetDispMask(s32 a0) {
+         GPU_printf(&g_str_setdispmask, a0);
+     }
+     if (!a0) {
+-        memset(((GpuCtx *)&g_gpu_type)->disp_env, -1, 0x14);
++        memset(&((GpuCtx *)&g_gpu_type)->disp_env, -1, 0x14);
+     }
+     {
+         u32 cmd = GP1_DISP_ENABLE;
+@@ -302,7 +301,98 @@ extern u8 D_8009BE77;
+ extern const char D_80015FF8[];
+ extern s32 GetVideoMode(void);
+ s32 get_dx(s16 *arg0);
+-INCLUDE_ASM("asm/funcs", PutDispEnv);
++/* PsyQ 4.0 LIBGPU SYS: PutDispEnv (verbatim-linked Sony object, census 2026-07-09);
++   C ref: SOTN src/main/psxsdk/libgpu/sys.c:336 @aa53500 (a PsyQ 3.3 build; structure only) */
++DISPENV *PutDispEnv(DISPENV *env) {
++    s32 h_start, h_end;
++    s32 v_start, v_end;
++    s32 mode;
++
++    mode = 0x08000000;
++    if (g_gpu_debug_level >= 2) {
++        GPU_printf(D_80015FF8, env);
++    }
++    g_gpu_dev_table->ctl(
++        g_gpu_type == 1 || g_gpu_type == 2
++            ? ((env->disp.y & 0xFFF) << 12) | (get_dx((s16 *)env) & 0xFFF) | 0x05000000
++            : ((env->disp.y & 0x3FF) << 10) | (env->disp.x & 0x3FF) |
++                  0x05000000);
++    /* FAKE: volatile-qualified reads of the saved environment (8 casts, both rect
++       compares). The shipped bytes load every one of these fields as lhu + sll 16 +
++       sra 16 -- the un-folded extend GCC keeps only for a volatile halfword -- while
++       the env-> side of the same compares is a plain lh; the non-volatile spelling
++       folds to lh and scores 75 (memory/grind/PutDispEnv/evidence.md).
++       SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @aa53500 (a use-site
++       `*(volatile int *)&` read of a struct member in non-IRQ RAM). */
++    if (!(*(volatile s16 *)&g_gpu_disp_env.screen.x == env->screen.x &&
++          *(volatile s16 *)&g_gpu_disp_env.screen.y == env->screen.y &&
++          *(volatile s16 *)&g_gpu_disp_env.screen.w == env->screen.w &&
++          *(volatile s16 *)&g_gpu_disp_env.screen.h == env->screen.h)) {
++        env->pad0 = GetVideoMode();
++        h_start = env->screen.x * 10 + 0x260;
++        v_start = env->screen.y + (env->pad0 ? 0x13 : 0x10);
++        h_end = h_start + (env->screen.w ? env->screen.w * 10 : 2560);
++        v_end = v_start + (env->screen.h ? env->screen.h : 240);
++        /* each value clamped in place. SOTN: src/main/psxsdk/libgpu/sys.c:358 @aa53500 */
++        h_start = h_start < 500 ? 500 : (h_start > 3290 ? 3290 : h_start);
++        h_end = h_end < h_start + 0x50 ? h_start + 0x50
++                                       : (h_end > 3290 ? 3290 : h_end);
++        v_start = v_start < 0x10 ? 0x10
++                : (v_start > (env->pad0 ? 310 : 256) ? (env->pad0 ? 310 : 256)
++                                                     : v_start);
++        v_end = v_end < v_start + 2 ? v_start + 2
++              : (v_end > (env->pad0 ? 312 : 258) ? (env->pad0 ? 312 : 258)
++                                                 : v_end);
++        g_gpu_dev_table->ctl(
++            ((h_end & 0xFFF) << 12) | 0x06000000 | (h_start & 0xFFF));
++        g_gpu_dev_table->ctl(
++            ((v_end & 0x3FF) << 10) | 0x07000000 | (v_start & 0x3FF));
++    }
++    /* isinter..pad1 compared as one word: the shipped bytes are a single lw at
++       +0x10 on both sides. SOTN: src/main/psxsdk/libgpu/sys.c:367 @aa53500
++       (the same compare of the saved and new environment, through LOW() =
++       `*(s32 *)&`, SOTN include/common.h:73). */
++    if (*(s32 *)&g_gpu_disp_env.isinter != *(s32 *)&env->isinter ||
++        !(*(volatile s16 *)&g_gpu_disp_env.disp.x == env->disp.x &&
++          *(volatile s16 *)&g_gpu_disp_env.disp.y == env->disp.y &&
++          *(volatile s16 *)&g_gpu_disp_env.disp.w == env->disp.w &&
++          *(volatile s16 *)&g_gpu_disp_env.disp.h == env->disp.h)) {
++        env->pad0 = GetVideoMode();
++        if (env->pad0 == 1) {
++            mode |= 0x8;
++        }
++        if (env->isrgb24) {
++            mode |= 0x10;
++        }
++        if (env->isinter) {
++            mode |= 0x20;
++        }
++        if (D_8009BE77) {
++            mode |= 0x80;
++        }
++        if (env->disp.w > 280) {
++            if (env->disp.w <= 352) {
++                mode |= 1;
++            } else if (env->disp.w <= 400) {
++                mode |= 0x40;
++            } else if (env->disp.w <= 560) {
++                mode |= 2;
++            } else {
++                mode |= 3;
++            }
++        }
++        /* FAKE: empty then-arm; the direct `if (env->disp.h > ...) mode |= 0x24;`
++           and its respellings add 4 insns (memory/grind/PutDispEnv/evidence.md).
++           SOTN: src/main/psxsdk/libgpu/sys.c:394 @aa53500 (same statement, same form). */
++        if (env->disp.h <= (env->pad0 ? 288 : 256)) {
++        } else {
++            mode |= 0x24;
++        }
++        g_gpu_dev_table->ctl(mode);
++    }
++    memcpy((s32)&g_gpu_disp_env, env, sizeof(DISPENV));
++    return env;
++}
+ s32 GetDispEnv(s32 a0) {
+     memcpy(a0, &g_gpu_disp_env, 0x14);
+     return a0;
+diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
+index fb426a5c2..405c9d72e 100644
+--- a/undefined_syms_auto.txt
++++ b/undefined_syms_auto.txt
+@@ -80,10 +80,6 @@ D_8009BE75 = 0x8009BE75;
+ D_8009BE76 = 0x8009BE76;
+ D_8009BE77 = 0x8009BE77;
+ D_8009BE7A = 0x8009BE7A;
+-D_8009BEE2 = 0x8009BEE2;
+-D_8009BEE6 = 0x8009BEE6;
+-D_8009BEEA = 0x8009BEEA;
+-D_8009BEEE = 0x8009BEEE;
+ D_800A157A = 0x800A157A;
+ _snd_seq_tick_env_plus_0x11 = 0x800A26DD;  /* data-wave 2026-09-07: was D_800A26DD */
+ _snd_seq_tick_env_plus_0x12 = 0x800A26DE;  /* data-wave 2026-09-07: was D_800A26DE */
