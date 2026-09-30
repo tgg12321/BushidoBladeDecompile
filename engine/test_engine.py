@@ -3491,12 +3491,12 @@ def test_departures() -> None:
 
             # ── repo g: identity-bound renames (F1: A, A2, A3) and naming
             #    waves after completion (F2: B, B2) ─────────────────────────
-            new_repo(Path(td) / "g", ["func_L", "func_L3", "func_L4", "func_L5", "func_G",
-                                      "func_P", "func_BA", "func_CA"])
+            new_repo(Path(td) / "g", ["func_L", "func_L3", "func_L4", "func_L5", "func_L6",
+                                      "func_G", "func_P", "func_BA", "func_CA"])
             fn("func_H", src="include/h.h")                 # a body that lives in a header
             write_queue([item(f) for f in ("func_L", "func_L3", "func_L4", "func_L5",
-                                           "func_G", "func_P", "func_BA", "func_CA",
-                                           "func_H")])
+                                           "func_L6", "func_G", "func_P", "func_BA",
+                                           "func_CA", "func_H")])
             commit("g0")
             rec("func_H", key("func_H", "include/h.h"))     # H leaves properly in g1
             # A4: G's glabel file is forged to L5's address — but G already
@@ -3519,21 +3519,28 @@ def test_departures() -> None:
             rename("func_BA", "func_BB")
             rename("func_CA", "func_CB")
             rec("func_CB", key("func_CB"), renamed_from=["func_CA"])
+            # A5: a brand-NEW function N2 (no body before) is queued carrying a
+            # forged chain naming L6, which is dropped — only the address differs
+            fn("func_N2")
             write_queue([item("func_G", renamed_from=["func_L", "func_L3", "func_L5"]),
-                         item("func_BB", renamed_from=["func_BA"])])
+                         item("func_BB", renamed_from=["func_BA"]),
+                         item("func_N2", renamed_from=["func_L6"])])
             commit("g1")
             edit("func_BB")                                 # B: worked on after the wave,
             rec("func_BB", key("func_BB"))                  # then done properly
-            write_queue([item("func_G", renamed_from=["func_L", "func_L3", "func_L5"])])
+            write_queue([item("func_G", renamed_from=["func_L", "func_L3", "func_L5"]),
+                         item("func_N2", renamed_from=["func_L6"])])
             commit("g2")
             edit("func_BB")                                 # a later callee rename
             edit("func_CB")
             commit("g3 later wave")
             v, fl = audit()
             eq("departures: identity-bound renames (A, A2, A3, A4) and waves (B, B2)",
-               fl, ["func_L", "func_L3", "func_L4", "func_L5"])
+               fl, ["func_L", "func_L3", "func_L4", "func_L5", "func_L6"])
             check("departures (A4): a forged glabel address on an EXISTING function "
                   "launders nothing", "func_L5" in fl)
+            check("departures (A5): a forged chain on a brand-new function at another "
+                  "address launders nothing", "func_L6" in fl)
             check("departures: a body living in a header is found (departed and current)",
                   "func_H" not in fl)
             check("departures (A): a src rename + forged chain on a queued item "
