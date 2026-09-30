@@ -1,18 +1,22 @@
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
+        s32 *vin;
+        s32 *vout;
         *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
         *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
         *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
-        /* gte_ApplyRotMatrix(obj + 0xF8, obj + 0x100) -- gtemac.h 4.3 :354-357 = inline_o.h 4.3 gte_ldv0 :16-20,
+        vin = (s32 *)(obj + 0xF8);
+        vout = (s32 *)(obj + 0x100);
+        /* gte_ApplyRotMatrix(vin, vout) -- gtemac.h 4.3 :354-357 = inline_o.h 4.3 gte_ldv0 :16-20,
          * gte_rtv0 :426-430 (post-DMPSX word 0x4A486012 for the placeholder 0x0000013f),
          * gte_stlvnl :904-909 */
-        __asm__ volatile ("move  $12,%0": :"r"((s32 *)(obj + 0xF8)):"$12","$13","$14","$15","memory");
+        __asm__ volatile ("move  $12,%0": :"r"(vin):"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
         __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("move  $12,%0": :"r"((s32 *)(obj + 0x100)):"$12","$13","$14","$15","memory");
+        __asm__ volatile ("move  $12,%0": :"r"(vout):"$12","$13","$14","$15","memory");
         __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
@@ -42,7 +46,6 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                 s32 ax = cx - x0;
                 s32 dx;
                 s32 az;
-                s32 bz;
                 /* FAKE: the third edge test's edge difference z2 - z0 is staged through the
                  * `flag` parameter (its own job, the mode test at entry, is finished: nothing
                  * reads `flag` after `if (flag == 0)`, and this value is consumed by the two
@@ -66,8 +69,17 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                 dx = x2 - x0;
                 az = cz - z0;
                 kc = (flag * ax) - (dx * az);
-                bz = pz - z0;
-                kp = (flag * (px - x0)) - (dx * bz);
+                /* FAKE: the query difference pz - z0 is staged through the existing, now-dead
+                 * local `ax` (its cx - x0 value was consumed by the kc line above; this value
+                 * is consumed on the next line), mechanism: sched.c adjust_priority ->
+                 * birthing_insn_p (reg_n_sets == 1): a once-assigned `ax` gets max priority in
+                 * sched1 and is emitted AFTER the twice-assigned `flag`, transposing the
+                 * target's `ax` (delay slot) / `flag` order; a twice-assigned `ax` ties and
+                 * rank_for_schedule falls through to source order, lever-exhaustion:
+                 * memory/grind/func_8002D780/hypotheses.md s23 (sh_tt/sh_ttB/tb_tt: 5, 3, 2;
+                 * ax reused for px - x0: 23; both reused: 23; tmp first in source: 2). */
+                ax = pz - z0;
+                kp = (flag * (px - x0)) - (dx * ax);
                 if ((kc ^ kp) >= 0)
                     return 1;
             }

@@ -3,7 +3,7 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
         *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
         *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
-        /* gte_ApplyRotMatrix(obj + 0xF8, obj + 0x100) -- gtemac.h 4.3 :354-357 = inline_o.h 4.3 gte_ldv0 :16-20,
+        /* gte_ApplyRotMatrix(vin, vout) -- gtemac.h 4.3 :354-357 = inline_o.h 4.3 gte_ldv0 :16-20,
          * gte_rtv0 :426-430 (post-DMPSX word 0x4A486012 for the placeholder 0x0000013f),
          * gte_stlvnl :904-909 */
         __asm__ volatile ("move  $12,%0": :"r"((s32 *)(obj + 0xF8)):"$12","$13","$14","$15","memory");
@@ -40,34 +40,24 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             kp = z2 * px - x2 * pz;
             if ((kc ^ kp) >= 0) {
                 s32 ax = cx - x0;
+                s32 dz;
                 s32 dx;
                 s32 az;
-                s32 bz;
-                /* FAKE: the third edge test's edge difference z2 - z0 is staged through the
-                 * `flag` parameter (its own job, the mode test at entry, is finished: nothing
-                 * reads `flag` after `if (flag == 0)`, and this value is consumed by the two
-                 * products below and never needed again), instead of through a fresh
-                 * block-local, mechanism: local-alloc.c local_alloc admission (local-alloc.c:472
-                 * REG_BASIC_BLOCK >= 0 && REG_N_DEATHS == 1) - a pseudo referenced in two basic
-                 * blocks (the entry test and this block) is left to global.c, so block 7's
-                 * local-alloc quantity table seats dx first in $v1 and global_alloc, reaching the
-                 * parameter's pseudo fourth in allocno order, seats it in $a0, the lowest free
-                 * register at that turn (tmp/grind/func_8002D780/s23/r4 greg: "72 in 4"; the
-                 * entry copy from $a0 is folded away by combine AFTER flow has fixed the
-                 * pseudo's REG_BASIC_BLOCK as global) (the target's seats; a block-local dz
-                 * ties dx in qty_compare_1 and takes $v1 itself),
-                 * lever-exhaustion: memory/grind/func_8002D780/hypotheses.md s14-s23
-                 * (declaration order/scope, statement order, staging, hoisting, sign flips,
-                 * 2,080 + 816 + 528 enumerated block-local spellings, all >= 2/202; a fresh
-                 * function-scope scratch shared with the sqrt block reaches 0 but was
-                 * Judge-FAILed 2026-09-15 23:16 as an invented multi-write carrier; the
-                 * `threshold` parameter as carrier scores 28; s23 third run). */
-                flag = z2 - z0;
+                dz = z2 - z0;
                 dx = x2 - x0;
                 az = cz - z0;
-                kc = (flag * ax) - (dx * az);
-                bz = pz - z0;
-                kp = (flag * (px - x0)) - (dx * bz);
+                kc = (dz * ax) - (dx * az);
+                /* FAKE: the query difference pz - z0 is staged through the existing, now-dead
+                 * local `ax` (its cx - x0 value was consumed by the kc line above; this value
+                 * is consumed on the next line), mechanism: sched.c adjust_priority ->
+                 * birthing_insn_p (reg_n_sets == 1): a once-assigned `ax` gets max priority in
+                 * sched1 and is emitted AFTER the twice-assigned `flag`, transposing the
+                 * target's `ax` (delay slot) / `flag` order; a twice-assigned `ax` ties and
+                 * rank_for_schedule falls through to source order, lever-exhaustion:
+                 * memory/grind/func_8002D780/hypotheses.md s23 (sh_tt/sh_ttB/tb_tt: 5, 3, 2;
+                 * ax reused for px - x0: 23; both reused: 23; tmp first in source: 2). */
+                ax = pz - z0;
+                kp = (dz * (px - x0)) - (dx * ax);
                 if ((kc ^ kp) >= 0)
                     return 1;
             }

@@ -2852,3 +2852,32 @@ tmp/grind/judge_func_8002D780.json.
 ## 2026-09-29 -- REOPENED (retro-audit FAIL, Q38, 803d0fea1)
 
 The 957140ebc landing FAILed the 2026-09-29 retro-audit: canonical grant rows (9bdfcc6cc, 'owner-instructed 2026-09-21') have no recorded owner instruction, and the islands do not qualify under the 2026-09-26 inline_o.h class grant (audit-q38: gtemacro match_unit None; `addu $t4` preamble form, joined statements, unpinned macros). Per owner Q38 the body went back to `INCLUDE_ASM("asm/funcs", func_8002D780);` and the function is back in the queue. Landed text banked verbatim in `rejected/retro-audit-2026-09-29.c`. Registry rows removed (commented): inline_asm_canonical.txt, tools/grinder/owner_cluster_grants.txt, tools/canonical_asm_regions.json.
+
+## 2026-09-30 — laneB: islands respelled as verbatim inline_o.h statements -> 0/202
+
+Frontier (Q38 reopen): the islands were not verbatim inline_o.h. Respelled every island as
+the pinned header's own statements (engine/gtemacro.py PINNED; each statement carries
+`move  $12,%0` / the header's instruction text / `"$12","$13","$14","$15","memory"`):
+- entry block: gtemac.h gte_ApplyRotMatrix(obj+0xF8, obj+0x100) = inline_o.h gte_ldv0 :16-20
+  + gte_rtv0 :426-430 + gte_stlvnl :904-909, operands written inline (no vin/vout locals).
+  ONE deviation: gte_rtv0's DMPSX placeholder `.word 0x0000013f` carried as the post-DMPSX
+  word `.word 0x4A486012` (the func_8002DE20 / func_800187F4 situation) -> needs a
+  per-function owner grant row; not class-admissible (class prong (C)).
+- sqrt block: gtemac.h gte_Lzc(m, &sp_var) = gte_ldlzc :207-210, gte_nop x2 :1095-1097,
+  gte_stlzc :1074-1077 — header-exact, no deviation. The s27 note (address computed between
+  the nops and the move) is reproduced naturally: stlzc's own `move  $12,%0` takes "r"(&sp_var).
+- The full inline_o.h clobber list is the "$13","$14","$15" footprint s23-s27 derived.
+
+Measured (sandbox --disable all, --candidate; probes-0930/mk.py, ablate.py, dzsweep.py):
+| variant | score |
+|---|---|
+| verbatim islands, `vout` assigned before the islands (rejected/inline-o-h-vout-before-islands-3.c) | 3 (addiu hoisted) |
+| verbatim islands, operands inline or `vout` assigned just before stlvnl | 0/202 |
+| + `ax = pz - z0` reuse FAKE REMOVED (fresh block-local instead) = **candidate.c** | **0/202** |
+| + `m = dist` re-store removed (rejected/inline-o-h-no-m-restore-4.c) | 4 |
+| + `flag` staging replaced by fresh block-local dz (rejected/inline-o-h-fresh-dz-9.c) | 9 |
+| dz spellings without flag: initialized first 2, edge pair ex/ez 2, inline 9, dx-first 9, outer scope 19 | >= 2 |
+| all three FAKEs removed | 13 |
+candidate.c keeps two C FAKEs from the landed body (the `flag` parameter staging and the
+`m = dist` same-value re-store, unchanged text and exhaustion); the `ax` reuse FAKE is gone.
+Not spliced: src/code6cac_b_tu2.c is reserved by the peer session.
