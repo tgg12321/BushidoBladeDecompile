@@ -2848,3 +2848,7 @@ tmp/grind/judge_func_8002D780.json.
 - [s27] The banned multi-write scratch `tmp` carrier is untouched — no form this session declares
   it. src/code6cac_b.c restored to its INCLUDE_ASM baseline; git status clean except
   metrics/events.jsonl (pre-existing at session start) and this ledger.
+
+## 2026-09-29 -- REOPENED (retro-audit FAIL, Q38, 803d0fea1)
+
+The 957140ebc landing FAILed the 2026-09-29 retro-audit: canonical grant rows (9bdfcc6cc, 'owner-instructed 2026-09-21') have no recorded owner instruction, and the islands do not qualify under the 2026-09-26 inline_o.h class grant (audit-q38: gtemacro match_unit None; `addu $t4` preamble form, joined statements, unpinned macros). Per owner Q38 the body went back to `INCLUDE_ASM("asm/funcs", func_8002D780);` and the function is back in the queue. Landed text banked verbatim in `rejected/retro-audit-2026-09-29.c`. Registry rows removed (commented): inline_asm_canonical.txt, tools/grinder/owner_cluster_grants.txt, tools/canonical_asm_regions.json.
