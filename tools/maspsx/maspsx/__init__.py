@@ -258,7 +258,9 @@ def expand_move(line: str):
 
 
 def is_label(line: str):
-    return re.match(r"\$L(b|e)?\d+:$", line)
+    # $L: upstream cc1psx labels. .L: this GCC fork's labels (owner ruling 2026-09-30,
+    # docs/grind/decisions.md "maspsx `.L`-label mflo-hazard fix adopted").
+    return re.match(r"(\$L(b|e)?|\.L)\d+:$", line)
 
 
 # ── Per-function prefill-label gate (owner ruling 2026-09-04, `main`) ────────
@@ -817,10 +819,10 @@ class MaspsxProcessor:
     ) -> List[str]:
         res: List[str] = []
 
-        # is_label() only recognizes $L-prefix locals, but this GCC fork emits
-        # .L-prefix. So a load whose result is consumed across a single .L merge
-        # label is not seen as a load-delay hazard and loses its nop, which the
-        # target has (ASPSX emitted it). Two arms, BOTH global since 2026-09-14:
+        # is_label() recognized only $L-prefix locals until 2026-09-30 (this GCC
+        # fork emits .L-prefix), so a load whose result is consumed across a single
+        # .L merge label was not seen as a load-delay hazard and lost its nop, which
+        # the target has (ASPSX emitted it). Two arms, BOTH global since 2026-09-14:
         # the jalr-consumer case immediately below (`lw $rN; .L<n>:; jalr $rN`,
         # which maspsx renders as `jal $31,$rN`), and the load/branch/store-value
         # consumer case after it.
@@ -931,6 +933,11 @@ class MaspsxProcessor:
         next_next_instruction = self.get_next_instruction(
             skip=1, ignore_nop=True, ignore_set=True, ignore_label=True
         )
+
+        # An unconditional jump between mflo/mfhi and the mult/div ends the hazard: the mult/div
+        # after the jump's target label is not reached from the mflo/mfhi on this path.
+        if next_instruction.split("\t")[0].strip() in ("j", "b", "jr"):
+            return res
 
         if any(
             next_instruction.startswith(x)

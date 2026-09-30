@@ -63,6 +63,12 @@
       "floor": 32,
       "modality": "manual",
       "headline": "case-3 row index split out as slot; mask back in work3 with (u32) bit test"
+    },
+    {
+      "session": 3,
+      "floor": 30,
+      "modality": "manual",
+      "headline": "maspsx .L-label mflo-hazard fix adopted globally (owner ruling 2026-09-30): the two cross-jump join nops now emitted; candidate unchanged"
     }
   ],
   "frontier": [
@@ -70,11 +76,6 @@
       "hypothesis": "Remaining register diffs are local: R1B 447/445/449 load order, R2 u16 st copy (a0/v1), 0xF-case value reg (v1 vs a1), nav leg-loop a0/a1, random-loop D90 address shape, big-loop et copies.",
       "mechanism": "local-alloc/global tie-breaks and scheduler order; t1..t5 priorities are now t1 0.67 > t2 0.66 > t3 0.66 > t4 > t5 in the target's order (see cc1 -dg dump)",
       "next_probe": "work the register diff list region by region with the greg dump"
-    },
-    {
-      "hypothesis": "BLOCKER (needs owner ruling): the three jump tables cannot be placed byte-exactly by the current pipeline even after TU re-attribution.",
-      "mechanism": "target tables sit at 0x8001585C/84/9C (all 4 mod 8) with one zero word after table 1 and table 2 - the original assembler's .align 3 applied relative to the object. Our pipeline seds .align 3 -> .align 2 for text1b (Makefile RODATA_ALIGN2_FILES), which drops the gaps; GNU as .align 3 is absolute, so no text1b.o(.rodata) placement can put table 1 at a 4-mod-8 address. The project's existing workaround (an explicit const zero word between functions, e.g. D_800159CC) cannot reach gaps between three tables emitted back to back by one function.",
-      "next_probe": "owner decision: (a) pipeline emulation of object-relative .align 3 for rodata (maspsx/sed pass emitting explicit padding; touches every RODATA_ALIGN2 file and the existing zero-word consts), or (b) another sanctioned route. Only then move 0x8001585C..0x80015988 from src/text1a_b_pre_rodata.c into src/text1b.c at the right source positions."
     },
     {
       "hypothesis": "lh+sra 4 for (0x438 >> 4) at 0x8005AB34 and 0x8005ACCC needs a spelling where combine cannot merge the sign-extending load with the shift.",

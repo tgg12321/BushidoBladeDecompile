@@ -237,7 +237,7 @@
     {
       "func": "func_80058580",
       "file": "text1b",
-      "distance": 32,
+      "distance": 30,
       "verdict": "C",
       "rules": 0,
       "status": "active",
