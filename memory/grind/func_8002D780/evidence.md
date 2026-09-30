@@ -2897,3 +2897,26 @@ exhaustion, now re-measured: fresh dz 9, best dz 2). `m = dist` is a same-value 
 (dead-store/self-assign family): dropping it = 4, spelling it `m = m;` = 4 (rejected/
 inline-o-h-m-self-assign-4.c: cse folds the self-set, so only a SET of m from dist invalidates
 the equivalence). Both annotations updated with the 2026-09-30 numbers in candidate.c.
+
+## 2026-09-30 — laneA: landing prep on main a739dbd20 — kc/kp Ruling 11 package, table reads, flag dump
+
+Re-measured candidate.c against main a739dbd20: 0/202. Three changes before landing, each 0/202:
+- **`kc`/`kp` -> `cross_center`/`cross_point` + Ruling 11 package.** Each is written three times (one
+  cross product per triangle side test), so each is a multi-value local. Ruling 5 does not admit them
+  (the writes differ by named variables, not by one subscript: 1(b)). Package: r11/proof.md. Mechanism
+  = sched.c adjust_priority -> birthing_insn_p (reg_n_sets == 1) in sched1: a once-set cross-product
+  variable gets max_priority and flips its test's subtract order (test 1 via cross_point value 1,
+  tests 2/3 via cross_center values 2/3); dumps both ways in r11/dumps_table.txt. One-variable-per-value
+  36; each variable split alone 38 (centroid) / 44 (point); 64-subset grid zeros only where both
+  variables stay multi-valued (r11/grid64_scores.txt); 71 respellings of the per-value body 35..65
+  (r11/pv_respell_scores.txt). Permuter from the per-value body: campaign 1 zero only with an unread
+  `cross_center1` local (dead-store family, Q30 set-aside, variants/pinl_dead.c; 35 without it); the
+  other finds re-create a reuse. Names per (E)(ii) as the sibling func_8002E6B0; (F) annotation at the
+  declaration.
+- **Table reads** spelled `(&g_sqrt_table_u8)[i]` (the form func_8002EBDC landed with today) instead of
+  `*((&g_sqrt_table_u8) + i)`.
+- **`flag` FAKE annotation**: the dump citation now points at dumps-0930/greg-flag-seat.txt (re-dumped
+  on this chassis: pseudo 72 reached third, "72 in 4"), not at a tmp/ path (committed 2026-09-30 in the
+  first laneA ledger commit).
+- Permuter campaign 2 (fresh seed, 12,252 iterations): zeros again only via the unread `cross_center1`
+  local; every other low find (20/45/70/155/225) writes `cross_point1` a second time (r11/proof.md).

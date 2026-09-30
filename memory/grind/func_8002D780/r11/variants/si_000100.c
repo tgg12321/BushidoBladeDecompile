@@ -32,22 +32,25 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         s32 cz = (z0 + z2) / 3;
         s32 px = *(s32 *)(obj + 0x100);
         s32 pz = *(s32 *)(obj + 0x104);
-        /* cross_center and cross_point each hold three values, one per side test (Ruling 11,
-         * owner 2026-09-26; proof: memory/grind/func_8002D780/r11/proof.md): the 2-D cross
-         * product of one edge of the triangle (0,0), (x0,z0), (x2,z2) with the centroid's
-         * offset (cross_center) and with the query point's offset (cross_point), for the edge
-         * (0,0)-(x0,z0), then (0,0)-(x2,z2), then (x0,z0)-(x2,z2). */
-        s32 cross_center = z0 * cx - x0 * cz;
-        s32 cross_point = z0 * px - x0 * pz;
+        s32 cross_center1;
+        s32 cross_point1;
 
-        if ((cross_center ^ cross_point) >= 0) {
-            cross_center = z2 * cx - x2 * cz;
-            cross_point = z2 * px - x2 * pz;
-            if ((cross_center ^ cross_point) >= 0) {
+        cross_center1 = z0 * cx - x0 * cz;
+        cross_point1 = z0 * px;
+        cross_point1 -= x0 * pz;
+
+        if ((cross_center1 ^ cross_point1) >= 0) {
+            s32 cross_point2;
+            s32 cross_center2;
+            cross_center2 = z2 * cx - x2 * cz;
+            cross_point2 = z2 * px - x2 * pz;
+            if ((cross_center2 ^ cross_point2) >= 0) {
                 s32 ax = cx - x0;
                 s32 dx;
                 s32 az;
                 s32 bz;
+                s32 cross_point3;
+                s32 cross_center3;
                 /* FAKE: the third edge test's edge difference z2 - z0 is staged through the
                  * `flag` parameter (its own job, the mode test at entry, is finished: nothing
                  * reads `flag` after `if (flag == 0)`, and this value is consumed by the two
@@ -72,10 +75,10 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                 flag = z2 - z0;
                 dx = x2 - x0;
                 az = cz - z0;
-                cross_center = (flag * ax) - (dx * az);
+                cross_center3 = (flag * ax) - (dx * az);
                 bz = pz - z0;
-                cross_point = (flag * (px - x0)) - (dx * bz);
-                if ((cross_center ^ cross_point) >= 0)
+                cross_point3 = (flag * (px - x0)) - (dx * bz);
+                if ((cross_center3 ^ cross_point3) >= 0)
                     return 1;
             }
         }
@@ -101,10 +104,7 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                  * skip over this arm (skip_blocks) and only a SET of `m` inside the skipped
                  * arm invalidates the m == dist equivalence made by the copy above, so the
                  * `(u32)m >> shift` read below keeps reading the $a0 copy instead of being
-                 * canonicalised to dist ($s1); without it the srlv reads $s1 (drop-1 = 4/202);
-                 * the copy itself is the target's `addu $a0,$s1,$zero` at 0x8002D980 (the
-                 * delay slot of the `dist < 0x400` branch), and the sibling func_8002D518 in
-                 * this file ships the same re-store of its `ud` copy,
+                 * canonicalised to dist ($s1); without it the srlv reads $s1 (drop-1 = 4/202),
                  * lever-exhaustion: memory/grind/func_8002D780/hypotheses.md s1-s5 (14 copy
                  * spellings) and s23 (do-while(0) wraps, copy placement, arm re-stores of the
                  * shared variable: all >= 1/202 or worse; re-measured 2026-09-30 on the verbatim
