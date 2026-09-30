@@ -124,3 +124,14 @@ the real splice.
   comment on MEM_IN_STRUCT_P) -> GpuDevTable member calls, each to be measured.
 - Stale prose in named_syms.txt (the retired-name notes at 0x8007B244 / 0x8007B3A8 / 0x8007BAB4 and
   the g_gpu_init_msg_buf comment) now names g_gpu_ctx members, a comment-only change.
+
+## 2026-09-30 -- LANDED (COMPLETED-C)
+
+Layer-2 round 3 PASS (l2-PutDispEnv-r3). PutDispEnv c3bdafaa317ef86f (match) plus 28 consumer
+bodies (cheat-cleanup), recorded in each memory/grind/<func>/layer2.jsonl. Landed in b6b45920b
+(the staged body = candidate.c = round-3 splice), queue done in abef8c31d. The rebuild SHA1 is the
+oracle, and check_completion_integrity reports OK. The reviewer confirmed: one object over
+0x8009BE74..F3, the layout from ResetGraph's base+offset, API-restating member names,
+`draw_env = *env` (SOTN sys.c:326), SetGraphDebug (sys.c:181-190), and the cse related-value
+mechanism by dump (evidence/cse-related-value.txt). Open leads (b) and (c) are listed in the
+round-3 section above.
