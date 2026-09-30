@@ -24,6 +24,16 @@
       "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): grant row (9bdfcc6cc owner-instructed) has no owner record; islands not inline_o.h-exact (audit-q38). Banked: memory/grind/func_8002D780/rejected/retro-audit-2026-09-29.c"
     },
     {
+      "func": "func_8002EBDC",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): grant row (9bdfcc6cc owner-instructed) has no owner record; islands not inline_o.h-exact (audit-q38). Banked: memory/grind/func_8002EBDC/rejected/retro-audit-2026-09-29.c"
+    },
+    {
       "func": "func_8002F770",
       "file": "code6cac_b",
       "distance": 0,
@@ -327,14 +337,14 @@
     }
   ],
   "counts": {
-    "total": 29,
-    "active": 17,
+    "total": 30,
+    "active": 18,
     "by_status": {
-      "active": 17,
+      "active": 18,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 15,
+      "C": 16,
       "ASM-PARTIAL": 2
     }
   },
