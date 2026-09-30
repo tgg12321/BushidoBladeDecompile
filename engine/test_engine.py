@@ -3457,6 +3457,24 @@ def test_departures() -> None:
             check("departures (C2): independent gate adds fail closed",
                   len(v) == 1 and "no single ancestry chain" in v[0])
 
+            # C2: delete + re-add on one chain -> the OLDEST add anchors, in
+            # topological order even when the re-add's date is skewed back
+            new_repo(Path(td) / "e")
+            write_queue([item("func_A"), item("func_W")])
+            git("add", "-A"); git("commit", "-qm", "pre-gate root")
+            Path("engine/layer2.py").write_text("# gate\n")
+            git("add", "-A"); git("commit", "-qm", "gate")
+            write_queue([item("func_A")])                 # func_W leaves unreviewed
+            git("commit", "-qam", "W leaves")
+            Path("engine/layer2.py").unlink()
+            git("add", "-A"); git("commit", "-qm", "gate deleted")
+            Path("engine/layer2.py").write_text("# gate again\n")
+            git("add", "-A"); git("commit", "-qm", "gate re-added",
+                                  date="2001-01-01T00:00:00+0000")
+            v, fl = audit()
+            eq("departures (C2): delete + re-add anchors at the oldest add (topo order)",
+               fl, ["func_W"])
+
             # C3: a side branch lists func_N and drops it; the merge's queue
             # equals its first parent's — only --full-history sees the side
             new_repo(Path(td) / "c")
