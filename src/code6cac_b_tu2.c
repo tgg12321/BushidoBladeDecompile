@@ -5524,7 +5524,12 @@ void func_80033BC0(void) {
     }
 }
 void func_80033D38(void) {
-    FileRecord *rec = &D_80106A50;
+    /* FAKE: pointer to the record, admitted on SOTN precedent (Q50, Q53); mechanism: its
+     * register (t1) is the base of every times[] access and of the shift loop's pointer;
+     * exhaustion: direct D_80106A50.times[] 34 (each access lui/addu/%lo, 53/47 insns),
+     * direct for-loop 34, member-wise shift 41, times-array pointer 11 (base + 8);
+     * memory/grind/func_80034708/evidence.md [s10] */
+    FileRecord *rec = &D_80106A50; /* SOTN: src/dra/4CE2C.c:63 @db41b28 */
     s32 n = 3;
     s32 j;
     s32 k;

@@ -436,3 +436,57 @@ the four following functions moved verbatim to src/code6cac_b3_post.c); queue co
 PASS; full-build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa; sandbox 0 (544/544);
 check_completion_integrity OK. Non-blocking leftover the reviewer noted: code6cac_b3_post.c:18's
 TABLED line still says "unreproducible" (historical note, left as is).
+
+## [s10] ff-b 2026-09-30 — retro-audit FAIL (65897593b, class A): the unannotated `rec` handles
+Finding (tmp/audit-2026-09-29/review/batch_04.md): ings.c func_800167EC `rec = &D_80106A50;` beside
+direct `D_80106A50.flags / .unk_04 / .times[0].unk_4` stores, no FAKE note, no exhaustion record; the
+same unannotated `FileRecord *rec = &D_80106A50;` in func_80033D38 (now src/code6cac_b_tu2.c). Owner
+Q37 (fix forward by class), Q50/Q55 (matched PS1 SOTN code is precedent), Q53 (family paperwork owed).
+All scores: `engine.cli sandbox <f> --disable all --candidate <file>` (cleanup-alias/, score.py).
+
+func_800167EC (target 31 insns; cleanup-alias/func_800167EC/scores.txt):
+| spelling | score | insns |
+|---|---|---|
+| landed (rec first, `u32 c` holder, rec for unk_00 + loop) | 0 | 31 |
+| direct only (5 orders / while / `c` holder) | 19-21 | 34 |
+| rec only | 10 | 29 |
+| rec only + `c` holder | 11 | 29 |
+| `FileTimeRec *t = D_80106A50.times` for the loop | 8 | 31 |
+| `t = D_80106A50.times; t++` walk | 17 | 33 |
+| per-element `FileTimeRec *t = &D_80106A50.times[i]` | 10 | 31 |
+| rec for header + loop, final store direct | 0 | 31 |
+| same + `c` holder | 2 | 31 |
+| **rec for the loop only, set before the header stores (CHOSEN)** | **0** | **31** |
+| rec for the loop only, set after the header stores | 15 | 30 |
+Plain C is out: with the symbol, every loop store is `lui at; addu at,at,idx; sb %lo(sym+off)(at)`
+(no base register), but the target walks one register from &D_80106A50 (`move v1,v0`, +8 per pass)
+and stores unk_00 at 0(v1). A pointer to the times array puts the base at +8 (8), so the original
+pointer held the record's address. RTL (cleanup-alias/func_800167EC/rtl/): cse rewrites the three
+header stores onto rec's pseudo (reg 73); loop.c's giv (reg 93) for rec->times[i] is initialised from
+it; cse2 returns flags (+0x23) and unk_04 (+4) to symbol+offset, while unk_00 (+0) stays `(mem (reg
+73))`. The chosen form keeps the handle only where it is load-bearing (the loop) and drops the
+landed `u32 c = 0x1A5E0` constant holder (unneeded: 0 without it) and the dead `i = 0` initialiser.
+
+func_80033D38 (target 47 insns; cleanup-alias/func_80033D38/scores.txt):
+| spelling | score | insns |
+|---|---|---|
+| landed `FileRecord *rec = &D_80106A50` (CHOSEN, body unchanged) | 0 | 47 |
+| same in a for-loop search | 0 | 47 |
+| direct `D_80106A50.times[]` | 34 | 53 |
+| direct, for-loop search | 34 | 53 |
+| direct, member-wise shift | 41 | 65 |
+| `FileTimeRec *t = D_80106A50.times` | 11 | 47 |
+The target holds &D_80106A50 in t1 for the whole function (search `t1 + j*8 + 0xC`, shift pointer
+`t1 + 0x10`); the direct form addresses each access as lui/addu/%lo; the times pointer puts t1 at +8.
+
+SOTN precedent (Q50; checked at db41b28, matched C in a PS1 build, read for the construct):
+- src/st/st0/2A218.c:48 EntityCutscene: `Tilemap* tilemap = &g_Tilemap;` read through `tilemap->`,
+  and line 128 writes `g_Tilemap.width = 0x100;` directly in the same function (both handles in one
+  function; splat.us.stst0.yaml `[0x2A218, c]`; no INCLUDE_ASM in the file; not under #if).
+- src/dra/4CE2C.c:63 RenderTilemap: `Tilemap* t = &g_Tilemap;`, the function's only handle
+  (splat.us.dra.yaml `[0x4CE2C, c, 4CE2C]`; no INCLUDE_ASM in the file).
+SOTN presents neither as a hack (no FAKE/TODO marking). Q53 paperwork is still carried: a FAKE comment
+naming the mechanism and the exhaustion at each declaration, and the SOTN tag on it.
+Layer-2: fresh reviewer rev-rec PASS on func_800167EC 01d20808bbfd7f2b and func_80033D38
+537229559cb74efe (memory/grind/func_800167EC/layer2.jsonl, memory/grind/func_80033D38/layer2.jsonl).
+Rebuild SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa; check_completion_integrity OK.
