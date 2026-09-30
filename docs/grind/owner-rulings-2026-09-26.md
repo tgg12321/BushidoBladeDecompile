@@ -405,3 +405,26 @@ Owner (Trenton), verbatim: "No let's find an avenue without any kind of compiler
 Follow-up questions (owner, verbatim): "Would you consider this kind of maspx patch a cheat? Does SOTN do the same?", "how confident are you this problem iis a maspx bug, not some other issue?", "Is there any avenue where this item or our other items could be decompiled without a maspx patch? Or is this a hard, verified requirement"
 Owner (Trenton), verbatim: "alright go ahead and redact my no maspx changes rule and make this change"
 (Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — maspsx `.L`-label mflo-hazard fix adopted.)
+
+# Owner exchange 2026-09-30 (twenty-second batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: follow-up to the Q37/Q38 retro-audit remediation. A read-only review of the functions that still consume
+declarations shared with reopened functions (tmp/audit-2026-09-29/SUMMARY.md, "Shared-declaration follow-up") found:
+(1) func_8002F2D0's GTE islands are identical to the islands of func_8002EBDC / func_8002F770 reopened under Q38
+(engine/gtemacro.py match_unit None for all 5; the 2026-08-17 `addu $t4` preamble form, with `addiu $v0,$sp,0x10`),
+and its grant row (789ce34d7) records no verbatim owner instruction; (2) getintr, CD_sync, CD_ready and CD_datasync
+FAIL — CD_sync/CD_ready/CD_datasync use the cross-symbol idiom refused for CD_sync on 2026-07-20 (decisions.md:950),
+getintr consumes the `Intr` aggregate while `g_cd_status_a/b/c` stay declared in the same TU. The owner was present
+and answered both in one call.
+
+## Q41 — func_8002F2D0 grant row
+Question, verbatim: "func_8002F2D0's approval entry (commit 789ce34d7) says you approved it in conversation on 09-22, 'on the same terms as its siblings'. Its assembly pieces are identical to the three functions reopened under Q38. Did you approve it?"
+Owner chose: **"No — reopen it (Recommended)"** — option text: "Treat it like func_8002F770/D780/EBDC under Q38: put the original assembly back, remove its approval entries, and return it to the queue."
+Other option offered: "Yes, I approved it" — "Record your approval now in a rules: commit and keep it complete. It still needs a recorded second review."
+
+## Q42 — a TU-local `static` aggregate that restates verbatim Sony library source
+Question, verbatim: "The CD functions could be fixed by declaring Sony's actual `static volatile CD_intr Intr` in system.c and removing the three separate byte names. Your merge rules say a merged struct must live in a shared header, never local to one file. Allow a `static` struct local to one file when it copies Sony's own library source?"
+Owner chose: **"Allow for verbatim Sony (Recommended)"** — option text: "Only where the library source shows that exact static object. Then complete the Intr merge for getintr/CD_sync/CD_ready/CD_datasync (+ tidy CD_flush/CD_init/cdrom_IrqHandler), each with a fresh second review."
+Other options offered: "Keep the header rule" — "Declare Intr in a shared header instead, if the bytes still match. Otherwise reopen the four failing CD functions."; "Reopen the four" — "Put getintr, CD_sync, CD_ready and CD_datasync back as assembly and in the queue, and deal with it later."
+Note: "library source" means the original Sony PsyQ source for that library module as identified in the project's
+libscan/provenance records (for Intr: PsyQ libcd bios.c, memory/closer/libcd-identity.md). Every other aggregate-merge
+prong still applies, and the TU must no longer declare any second C handle to the merged bytes.
