@@ -3283,7 +3283,8 @@ def test_departures() -> None:
             names = ["func_E", "func_X", "func_Y", "func_R", "func_K", "func_S", "func_U"]
             write_queue([item(f) for f in names])
             git("add", "-A"); git("commit", "-qm", "c1")
-            write_queue([item(f) for f in names if f != "func_E"])   # pre-gate: exempt
+            # pre-gate: func_E and func_S leave (exempt)
+            write_queue([item(f) for f in names if f not in ("func_E", "func_S")])
             git("commit", "-qam", "c2")
             eq("departures: no gate in the history -> nothing to audit", flagged(), [])
             Path("engine/layer2.py").write_text("# gate\n")
@@ -3293,10 +3294,11 @@ def test_departures() -> None:
             pass_for("func_Y", archived=True)
             q = [item(f) for f in ("func_R", "func_K", "func_S", "func_U")]
             q[0] = item("func_R2", renamed_from=["func_R"])
-            write_queue(q)
-            git("add", "-A"); git("commit", "-qm", "c4")
-            # func_S leaves in a commit whose DATE is skewed decades back
             write_queue([it for it in q if it["func"] != "func_S"])
+            git("add", "-A"); git("commit", "-qm", "c4")
+            # func_S is re-queued ONLY in a commit whose DATE is skewed decades
+            # back, then leaves again: that skewed version is its sole listing
+            write_queue(q)
             git("commit", "-qam", "c5 skewed", date="2001-01-01T00:00:00+0000")
             # func_U completes WITH a PASS, then a naming wave renames it to func_U2
             pass_for("func_U")
