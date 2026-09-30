@@ -75,3 +75,14 @@
   `lock.ps1 rebuild laneC`: build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
   `sandbox func_80029454 --disable all --diff` on the spliced src: score 0, 1025/1025, 0
   source-level / 0 operand-only / 142 not-scored (probes/sandbox_spliced.txt). Awaiting layer-2.
+- [s2] LAYER-2 ROUND 1 (2026-09-29): FAIL on one construct. `u8 *rec` is written in both record
+  loops, which both run, so it is a reused local that the message had not disclosed (Rulings 5
+  and 6 do not admit it). Everything else passed: ScrPad/SPAD, box_overlap, `u32 mask`, the
+  grouped offset, the loop counters, the unprototyped func_8002DE20, the five scorer-artifact
+  words. The reviewer's split (rec block-local in each loop) measured structdiff 6 / rawdiff 83.
+- [s2] ROUND-1 FIX: `rec` kept as one local under Ruling 11; full (A)-(H) record in r11/proof.md
+  (dumps of both exact bodies with command lines, global.c:970-975 call-crossing mechanism, Q31
+  banked search of seven per-value/structural spellings, all missing (6/83 at best), permuter
+  campaign from the split body, 1127 iterations, finds rescored, best 6/83), annotation at the
+  declaration. Re-spliced (added lines identical to candidate.c), rebuild SHA1 == oracle,
+  spliced sandbox 0 (probes/sandbox_spliced.txt).

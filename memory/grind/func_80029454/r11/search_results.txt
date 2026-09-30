@@ -1,0 +1,14 @@
+== s0_blocklocal
+target 1025  ours 1025  structdiff 6  rawdiff 83
+== s1_funcscope_rec2
+target 1025  ours 1025  structdiff 6  rawdiff 83
+== s2_walking
+target 1025  ours 1023  structdiff 145  rawdiff 175
+== s3_inline
+target 1025  ours 1038  structdiff 169  rawdiff 218
+== s4_blocklocal_first
+target 1025  ours 1025  structdiff 6  rawdiff 83
+== s5_blocklocal_index
+target 1025  ours 1025  structdiff 6  rawdiff 83
+== s6_funcscope_rec2_first
+target 1025  ours 1025  structdiff 6  rawdiff 83

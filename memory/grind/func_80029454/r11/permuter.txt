@@ -1,0 +1,21 @@
+# Permuter campaign r11-rec-split (seed: s0_blocklocal), workspace tmp/func_80029454/r11/perm, -j 2
+## harvest (tools/permuter_campaign.py harvest --stop)
+  "elapsed_s": 225.2,
+  "iterations": 1127,
+  "best_new_score": 199090,
+  "stopped": true,
+## every find rescored with the q.py harness (permeval.py)
+output-199090-1 target 1025  ours 1025  structdiff 6  rawdiff 83
+output-199230-1 target 1025  ours 1025  structdiff 6  rawdiff 83
+output-199235-1 target 1025  ours 1025  structdiff 6  rawdiff 83
+output-199240-1 target 1025  ours 1025  structdiff 6  rawdiff 83
+output-199240-2 target 1025  ours 1025  structdiff 6  rawdiff 83
+output-199321-1 target 1025  ours 1019  structdiff 147  rawdiff 204
+output-199350-1 target 1025  ours 1025  structdiff 30  rawdiff 107
+output-199405-1 target 1025  ours 1025  structdiff 18  rawdiff 95
+output-199460-1 target 1025  ours 1025  structdiff 23  rawdiff 100
+output-199510-1 target 1025  ours 1027  structdiff 130  rawdiff 215
+output-199625-1 target 1025  ours 1028  structdiff 126  rawdiff 208
+output-199632-1 target 1025  ours 1026  structdiff 150  rawdiff 227
+output-199645-1 target 1025  ours 1023  structdiff 84  rawdiff 162
+output-199647-1 target 1025  ours 1027  structdiff 21  rawdiff 98

@@ -71,6 +71,7 @@ s32 func_80029454(void) {
      * not two: ordinary-c-judge-decidable.md Ruling 11, (E)(ii) name; (D)
      * record in memory/grind/func_80029454/r11/proof.md. */
     u8 *rec;
+    u8 *rec2;
 
     if (D_80101F04 < 4) {
         return -1;
@@ -129,25 +130,25 @@ s32 func_80029454(void) {
         }
     }
 
-    for (i = 0; i < 2; i++) {
+    rec2 = (u8 *)&D_80101EC8;
+    for (i = 0; i < 2; i++, rec2 += 0x44C) {
         LeafPos *dst = &ws[i * 8];
-        rec = (u8 *)&D_80101EC8 + i * 0x44C;
         dst[0] = SPAD->unk00[i][0];
         dst[1] = SPAD->unk00[i][1];
-        dst[2] = *(LeafPos *)(rec + 0x210);
-        dst[3] = *(LeafPos *)(rec + 0x21C);
+        dst[2] = *(LeafPos *)(rec2 + 0x210);
+        dst[3] = *(LeafPos *)(rec2 + 0x21C);
         count[i] = 2;
-        if (*(s16 *)(rec + 0x96) != 0 || *(s16 *)(rec + 0x92) == 0 || *(s16 *)(rec + 0xC) == 0x1F) {
+        if (*(s16 *)(rec2 + 0x96) != 0 || *(s16 *)(rec2 + 0x92) == 0 || *(s16 *)(rec2 + 0xC) == 0x1F) {
             dst[0].y = 100000;
             dst[1].y = 100000;
             dst[2].y = 100000;
             dst[3].y = 100000;
         }
-        if (*(s16 *)(rec + 0x8C) != 0) {
+        if (*(s16 *)(rec2 + 0x8C) != 0) {
             dst[4] = SPAD->unk48[i][0];
             dst[5] = SPAD->unk48[i][1];
-            dst[6] = *(LeafPos *)(rec + 0x234);
-            dst[7] = *(LeafPos *)(rec + 0x240);
+            dst[6] = *(LeafPos *)(rec2 + 0x234);
+            dst[7] = *(LeafPos *)(rec2 + 0x240);
             count[i] += 2;
         }
     }

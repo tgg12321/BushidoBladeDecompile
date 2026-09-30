@@ -70,7 +70,6 @@ s32 func_80029454(void) {
      * the record pointer of the second (each &D_80101EC8 record i). One local,
      * not two: ordinary-c-judge-decidable.md Ruling 11, (E)(ii) name; (D)
      * record in memory/grind/func_80029454/r11/proof.md. */
-    u8 *rec;
 
     if (D_80101F04 < 4) {
         return -1;
@@ -83,7 +82,7 @@ s32 func_80029454(void) {
     }
 
     for (i = 0; i < 2; i++) {
-        rec = (u8 *)&D_80101EC8 + i * 0x44C;
+        u8 *rec = &((u8 *)&D_80101EC8)[i * 0x44C];
         if (*(u16 *)(rec + 0xE) == 6 || *(u16 *)(rec + 0xE) == 7) {
             continue;
         }
@@ -131,7 +130,7 @@ s32 func_80029454(void) {
 
     for (i = 0; i < 2; i++) {
         LeafPos *dst = &ws[i * 8];
-        rec = (u8 *)&D_80101EC8 + i * 0x44C;
+        u8 *rec = &((u8 *)&D_80101EC8)[i * 0x44C];
         dst[0] = SPAD->unk00[i][0];
         dst[1] = SPAD->unk00[i][1];
         dst[2] = *(LeafPos *)(rec + 0x210);
