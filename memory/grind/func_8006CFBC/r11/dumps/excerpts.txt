@@ -1,0 +1,30 @@
+======================================================================
+spelling c1 (reuse: one `temp`, three writes)
+.sched: the three `+ 12` adds (uid, dest, src) : [('71', 'reg/v:SI 79', '92'), ('301', 'reg/v:SI 79', '189'), ('435', 'reg/v:SI 79', '221')]
+  .sched insn order around add 71: 60 64 588 71 66 74
+  .sched insn order around add 301: 286 294 291 301 296 304
+  .sched insn order around add 435: 425 427 430 435 438 441
+  .lreg: Register 79 used 16 times across 8 insns; dies in 3 places; GR_REGS or none; pointer.
+  .lreg: Register 92 used 9 times across 4 insns in block 2; GR_REGS or none.
+  .lreg: Register 189 used 9 times across 8 insns in block 9; GR_REGS or none.
+  .lreg: Register 221 used 4 times across 10 insns in block 18; GR_REGS or none.
+  .greg dispositions: 79 in $2, 92 in $3, 189 in $3, 221 in $3
+  sched1 SCHEDDBG ADJPRI insn=71 deaths=0 birth=0 maxpri=2130706433 pri=2
+  sched1 SCHEDDBG ADJPRI insn=301 deaths=0 birth=0 maxpri=2130706433 pri=2
+  sched1 SCHEDDBG ADJPRI insn=435 deaths=0 birth=0 maxpri=2130706433 pri=2
+======================================================================
+spelling split3 (one-variable-per-value: cells1/cells2/cells3)
+.sched: the three `+ 12` adds (uid, dest, src) : [('72', 'reg/v:SI 85', '92'), ('304', 'reg/v:SI 175', '190'), ('440', 'reg/v:SI 202', '223')]
+  .sched insn order around add 72: 65 594 67 72 75 79
+  .sched insn order around add 304: 297 294 299 304 307 310
+  .sched insn order around add 440: 430 432 435 440 443 446
+  .lreg: Register 85 used 6 times across 2 insns in block 2; GR_REGS or none; pointer.
+  .lreg: Register 92 used 9 times across 4 insns in block 2; GR_REGS or none.
+  .lreg: Register 175 used 6 times across 2 insns in block 9; GR_REGS or none; pointer.
+  .lreg: Register 190 used 9 times across 4 insns in block 9; GR_REGS or none.
+  .lreg: Register 202 used 4 times across 2 insns in block 18; GR_REGS or none; pointer.
+  .lreg: Register 223 used 4 times across 10 insns in block 18; GR_REGS or none.
+  .greg dispositions: 85 in $3, 92 in $3, 175 in $3, 190 in $3, 202 in $3, 223 in $3
+  sched1 SCHEDDBG ADJPRI insn=72 deaths=0 birth=1 maxpri=2130706433 pri=2
+  sched1 SCHEDDBG ADJPRI insn=304 deaths=0 birth=1 maxpri=2130706433 pri=2
+  sched1 SCHEDDBG ADJPRI insn=440 deaths=0 birth=1 maxpri=2130706433 pri=2

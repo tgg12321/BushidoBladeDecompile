@@ -1,0 +1,716 @@
+WARNING: instrumented .s differs
+adds (uid, dest, src): [('72', 'reg/v:SI 85', '92'), ('304', 'reg/v:SI 175', '190'), ('440', 'reg/v:SI 202', '223'), ('520', 'reg:SI 235', '234')]
+SCHEDDBG block=2 n_insns=10 n_ready=4
+SCHEDDBG insn priorities:
+SCHEDDBG   insn=55 kind=INSN pri=1 refcnt=1
+SCHEDDBG   insn=56 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=59 kind=INSN pri=1 refcnt=1
+SCHEDDBG   insn=61 kind=INSN pri=1 refcnt=1
+SCHEDDBG   insn=65 kind=INSN pri=1 refcnt=3
+SCHEDDBG   insn=67 kind=INSN pri=2 refcnt=0
+SCHEDDBG   insn=72 kind=INSN pri=2 refcnt=1
+SCHEDDBG   insn=75 kind=INSN pri=2 refcnt=0
+SCHEDDBG   insn=78 kind=INSN pri=1 refcnt=0
+SCHEDDBG   insn=594 kind=INSN pri=1 refcnt=0
+SCHEDDBG units n0=3 n1=0 n2=0 n3=0 n4=0
+SCHEDDBG deps:
+SCHEDDBG   node insn=55 luid=0 unit=-1 icost=1 code=181 pri=1 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG   node insn=56 luid=1 unit=-1 icost=1 code=191 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=56 pred=55 kind=0
+SCHEDDBG   node insn=59 luid=2 unit=-1 icost=1 code=181 pri=1 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=59 pred=56 kind=0
+SCHEDDBG   node insn=61 luid=3 unit=-1 icost=1 code=3 pri=1 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=61 pred=59 kind=0
+SCHEDDBG   node insn=65 luid=4 unit=0 icost=2 code=159 pri=1 ref=3 grp=0 bmin=1 bmax=2
+SCHEDDBG     dep insn=65 pred=61 kind=0
+SCHEDDBG   node insn=67 luid=5 unit=0 icost=0 code=159 pri=2 ref=0 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=67 pred=65 kind=0
+SCHEDDBG   node insn=72 luid=6 unit=-1 icost=1 code=3 pri=2 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=72 pred=65 kind=0
+SCHEDDBG   node insn=75 luid=7 unit=0 icost=0 code=159 pri=2 ref=0 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=75 pred=65 kind=14
+SCHEDDBG     dep insn=75 pred=72 kind=0
+SCHEDDBG   node insn=78 luid=8 unit=-1 icost=0 code=163 pri=1 ref=0 grp=0 bmin=-1 bmax=-1
+SCHEDDBG   node insn=594 luid=11 unit=-1 icost=0 code=159 pri=1 ref=0 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=594 pred=56 kind=0
+SCHEDDBG initial ready list (sorted by SCHED_SORT):
+SCHEDDBG   pos=0 insn=75 pri=2 luid=7
+SCHEDDBG   pos=1 insn=67 pri=2 luid=5
+SCHEDDBG   pos=2 insn=594 pri=1 luid=11
+SCHEDDBG   pos=3 insn=78 pri=1 luid=8
+SCHEDDBG PICK clock=1 picked=75 (pri=2 luid=7)
+SCHEDDBG   ready was: [ 75(p=2,l=7) 67(p=2,l=5) 594(p=1,l=11) 78(p=1,l=8) ]
+SCHEDDBG   last_scheduled=75
+SCHEDDBG ADJPRI insn=72 deaths=0 birth=1 maxpri=2130706433 pri=2
+SCHEDDBG PICK clock=2 picked=72 (pri=2130706433 luid=6)
+SCHEDDBG   ready was: [ 72(p=2130706433,l=6) 67(p=2,l=5) 594(p=1,l=11) 78(p=1,l=8) ]
+SCHEDDBG   last_scheduled=72
+SCHEDDBG BLOCKAGE unit=0 clock=3 raw_tick=4 adj_tick=2 maxb=3 exec=67 last=75
+SCHEDDBG PICK clock=3 picked=67 (pri=2 luid=5)
+SCHEDDBG   ready was: [ 67(p=2,l=5) 594(p=1,l=11) 78(p=1,l=8) ]
+SCHEDDBG   last_scheduled=67
+SCHEDDBG ADJPRI insn=65 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=4 picked=594 (pri=1 luid=11)
+SCHEDDBG   ready was: [ 594(p=1,l=11) 78(p=1,l=8) ]
+SCHEDDBG   last_scheduled=594
+SCHEDDBG BLOCKAGE unit=0 clock=5 raw_tick=6 adj_tick=5 maxb=3 exec=65 last=67
+SCHEDDBG PICK clock=5 picked=65 (pri=2130706433 luid=4)
+SCHEDDBG   ready was: [ 65(p=2130706433,l=4) 78(p=1,l=8) ]
+SCHEDDBG   last_scheduled=65
+SCHEDDBG ADJPRI insn=61 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=6 picked=61 (pri=2130706433 luid=3)
+SCHEDDBG   ready was: [ 61(p=2130706433,l=3) 78(p=1,l=8) ]
+SCHEDDBG   last_scheduled=61
+SCHEDDBG ADJPRI insn=59 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=7 picked=59 (pri=2130706433 luid=2)
+SCHEDDBG   ready was: [ 59(p=2130706433,l=2) 78(p=1,l=8) ]
+SCHEDDBG   last_scheduled=59
+SCHEDDBG ADJPRI insn=56 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=8 picked=56 (pri=2130706433 luid=1)
+SCHEDDBG   ready was: [ 56(p=2130706433,l=1) 78(p=1,l=8) ]
+SCHEDDBG   last_scheduled=56
+SCHEDDBG ADJPRI insn=55 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=9 picked=55 (pri=2130706433 luid=0)
+SCHEDDBG   ready was: [ 55(p=2130706433,l=0) 78(p=1,l=8) ]
+SCHEDDBG   last_scheduled=55
+SCHEDDBG PICK clock=10 picked=78 (pri=1 luid=8)
+SCHEDDBG   ready was: [ 78(p=1,l=8) ]
+SCHEDDBG   last_scheduled=78
+-----
+SCHEDDBG block=9 n_insns=18 n_ready=1
+SCHEDDBG insn priorities:
+SCHEDDBG   insn=275 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=277 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=278 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=280 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=281 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=283 kind=INSN pri=1 refcnt=3
+SCHEDDBG   insn=288 kind=INSN pri=1 refcnt=1
+SCHEDDBG   insn=289 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=294 kind=INSN pri=1 refcnt=1
+SCHEDDBG   insn=297 kind=INSN pri=1 refcnt=5
+SCHEDDBG   insn=299 kind=INSN pri=2 refcnt=2
+SCHEDDBG   insn=304 kind=INSN pri=2 refcnt=2
+SCHEDDBG   insn=307 kind=INSN pri=2 refcnt=2
+SCHEDDBG   insn=310 kind=INSN pri=2 refcnt=2
+SCHEDDBG   insn=312 kind=INSN pri=3 refcnt=1
+SCHEDDBG   insn=315 kind=INSN pri=1 refcnt=1
+SCHEDDBG   insn=317 kind=CALL pri=3 refcnt=1
+SCHEDDBG   insn=321 kind=INSN pri=3 refcnt=0
+SCHEDDBG units n0=7 n1=0 n2=0 n3=0 n4=0
+SCHEDDBG deps:
+SCHEDDBG   node insn=275 luid=0 unit=-1 icost=1 code=181 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG   node insn=277 luid=1 unit=-1 icost=1 code=3 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=277 pred=275 kind=0
+SCHEDDBG   node insn=278 luid=2 unit=-1 icost=1 code=181 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=278 pred=277 kind=0
+SCHEDDBG   node insn=280 luid=3 unit=-1 icost=1 code=16 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=280 pred=278 kind=0
+SCHEDDBG   node insn=281 luid=4 unit=-1 icost=1 code=181 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=281 pred=280 kind=0
+SCHEDDBG   node insn=283 luid=5 unit=0 icost=1 code=159 pri=1 ref=3 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=283 pred=281 kind=0
+SCHEDDBG   node insn=288 luid=6 unit=-1 icost=1 code=159 pri=1 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG   node insn=289 luid=7 unit=-1 icost=1 code=181 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=289 pred=288 kind=0
+SCHEDDBG   node insn=294 luid=9 unit=-1 icost=1 code=96 pri=1 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=294 pred=289 kind=0
+SCHEDDBG   node insn=297 luid=10 unit=0 icost=2 code=159 pri=1 ref=5 grp=0 bmin=1 bmax=2
+SCHEDDBG     dep insn=297 pred=283 kind=0
+SCHEDDBG   node insn=299 luid=11 unit=0 icost=1 code=159 pri=2 ref=2 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=299 pred=297 kind=0
+SCHEDDBG   node insn=304 luid=12 unit=-1 icost=1 code=3 pri=2 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=304 pred=297 kind=0
+SCHEDDBG   node insn=307 luid=13 unit=0 icost=1 code=159 pri=2 ref=2 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=307 pred=297 kind=14
+SCHEDDBG     dep insn=307 pred=304 kind=0
+SCHEDDBG   node insn=310 luid=14 unit=0 icost=2 code=159 pri=2 ref=2 grp=0 bmin=1 bmax=2
+SCHEDDBG     dep insn=310 pred=283 kind=0
+SCHEDDBG     dep insn=310 pred=299 kind=0
+SCHEDDBG     dep insn=310 pred=307 kind=0
+SCHEDDBG   node insn=312 luid=15 unit=0 icost=1 code=159 pri=3 ref=1 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=312 pred=297 kind=14
+SCHEDDBG     dep insn=312 pred=310 kind=0
+SCHEDDBG   node insn=315 luid=16 unit=-1 icost=1 code=159 pri=1 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG   node insn=317 luid=17 unit=-1 icost=1 code=319 pri=3 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=317 pred=297 kind=14
+SCHEDDBG     dep insn=317 pred=310 kind=14
+SCHEDDBG     dep insn=317 pred=275 kind=14
+SCHEDDBG     dep insn=317 pred=277 kind=14
+SCHEDDBG     dep insn=317 pred=278 kind=14
+SCHEDDBG     dep insn=317 pred=280 kind=14
+SCHEDDBG     dep insn=317 pred=281 kind=14
+SCHEDDBG     dep insn=317 pred=283 kind=14
+SCHEDDBG     dep insn=317 pred=289 kind=14
+SCHEDDBG     dep insn=317 pred=294 kind=14
+SCHEDDBG     dep insn=317 pred=299 kind=14
+SCHEDDBG     dep insn=317 pred=304 kind=14
+SCHEDDBG     dep insn=317 pred=307 kind=14
+SCHEDDBG     dep insn=317 pred=312 kind=14
+SCHEDDBG     dep insn=317 pred=315 kind=0
+SCHEDDBG   node insn=321 luid=19 unit=0 icost=0 code=159 pri=3 ref=0 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=321 pred=317 kind=0
+SCHEDDBG initial ready list (sorted by SCHED_SORT):
+SCHEDDBG   pos=0 insn=321 pri=3 luid=19
+SCHEDDBG PICK clock=1 picked=321 (pri=3 luid=19)
+SCHEDDBG   ready was: [ 321(p=3,l=19) ]
+SCHEDDBG   last_scheduled=321
+SCHEDDBG ADJPRI insn=317 deaths=0 birth=0 maxpri=2130706433 pri=3
+SCHEDDBG PICK clock=2 picked=317 (pri=3 luid=17)
+SCHEDDBG   ready was: [ 317(p=3,l=17) ]
+SCHEDDBG   last_scheduled=317
+SCHEDDBG ADJPRI insn=294 deaths=0 birth=0 maxpri=2130706433 pri=1
+SCHEDDBG ADJPRI insn=312 deaths=0 birth=0 maxpri=2130706433 pri=3
+SCHEDDBG ADJPRI insn=315 deaths=0 birth=0 maxpri=2130706433 pri=1
+SCHEDDBG BLOCKAGE unit=0 clock=3 raw_tick=4 adj_tick=2 maxb=3 exec=312 last=321
+SCHEDDBG PICK clock=3 picked=312 (pri=3 luid=15)
+SCHEDDBG   ready was: [ 312(p=3,l=15) 315(p=1,l=16) 294(p=1,l=9) ]
+SCHEDDBG   last_scheduled=312
+SCHEDDBG ADJPRI insn=310 deaths=0 birth=1 maxpri=2130706433 pri=2
+SCHEDDBG PICK clock=4 picked=315 (pri=1 luid=16)
+SCHEDDBG   ready was: [ 315(p=1,l=16) 294(p=1,l=9) ]
+SCHEDDBG   last_scheduled=315
+SCHEDDBG BLOCKAGE unit=0 clock=5 raw_tick=6 adj_tick=5 maxb=3 exec=310 last=312
+SCHEDDBG PICK clock=5 picked=310 (pri=2130706433 luid=14)
+SCHEDDBG   ready was: [ 310(p=2130706433,l=14) 294(p=1,l=9) ]
+SCHEDDBG   last_scheduled=310
+SCHEDDBG ADJPRI insn=299 deaths=0 birth=0 maxpri=2130706433 pri=2
+SCHEDDBG ADJPRI insn=307 deaths=0 birth=0 maxpri=2130706433 pri=2
+SCHEDDBG BLOCKAGE unit=0 clock=6 raw_tick=8 adj_tick=6 maxb=3 exec=307 last=310
+SCHEDDBG BLOCKAGE unit=0 clock=6 raw_tick=8 adj_tick=6 maxb=3 exec=299 last=310
+SCHEDDBG PICK clock=6 picked=307 (pri=2 luid=13)
+SCHEDDBG   ready was: [ 307(p=2,l=13) 299(p=2,l=11) 294(p=1,l=9) ]
+SCHEDDBG   last_scheduled=307
+SCHEDDBG ADJPRI insn=304 deaths=0 birth=1 maxpri=2130706433 pri=2
+SCHEDDBG PICK clock=7 picked=304 (pri=2130706433 luid=12)
+SCHEDDBG   ready was: [ 304(p=2130706433,l=12) 299(p=2,l=11) 294(p=1,l=9) ]
+SCHEDDBG   last_scheduled=304
+SCHEDDBG BLOCKAGE unit=0 clock=8 raw_tick=9 adj_tick=7 maxb=3 exec=299 last=307
+SCHEDDBG PICK clock=8 picked=299 (pri=2 luid=11)
+SCHEDDBG   ready was: [ 299(p=2,l=11) 294(p=1,l=9) ]
+SCHEDDBG   last_scheduled=299
+SCHEDDBG ADJPRI insn=297 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=9 picked=294 (pri=1 luid=9)
+SCHEDDBG   ready was: [ 294(p=1,l=9) ]
+SCHEDDBG   last_scheduled=294
+SCHEDDBG ADJPRI insn=289 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG BLOCKAGE unit=0 clock=10 raw_tick=11 adj_tick=10 maxb=3 exec=297 last=299
+SCHEDDBG PICK clock=10 picked=297 (pri=2130706433 luid=10)
+SCHEDDBG   ready was: [ 297(p=2130706433,l=10) 289(p=2130706433,l=7) ]
+SCHEDDBG   last_scheduled=297
+SCHEDDBG ADJPRI insn=283 deaths=0 birth=0 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=11 picked=289 (pri=2130706433 luid=7)
+SCHEDDBG   ready was: [ 289(p=2130706433,l=7) 283(p=1,l=5) ]
+SCHEDDBG   last_scheduled=289
+SCHEDDBG ADJPRI insn=288 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=12 picked=288 (pri=2130706433 luid=6)
+SCHEDDBG   ready was: [ 288(p=2130706433,l=6) 283(p=1,l=5) ]
+SCHEDDBG   last_scheduled=288
+SCHEDDBG PICK clock=13 picked=283 (pri=1 luid=5)
+SCHEDDBG   ready was: [ 283(p=1,l=5) ]
+SCHEDDBG   last_scheduled=283
+SCHEDDBG ADJPRI insn=281 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=14 picked=281 (pri=2130706433 luid=4)
+SCHEDDBG   ready was: [ 281(p=2130706433,l=4) ]
+SCHEDDBG   last_scheduled=281
+SCHEDDBG ADJPRI insn=280 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=15 picked=280 (pri=2130706433 luid=3)
+SCHEDDBG   ready was: [ 280(p=2130706433,l=3) ]
+SCHEDDBG   last_scheduled=280
+SCHEDDBG ADJPRI insn=278 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=16 picked=278 (pri=2130706433 luid=2)
+SCHEDDBG   ready was: [ 278(p=2130706433,l=2) ]
+SCHEDDBG   last_scheduled=278
+SCHEDDBG ADJPRI insn=277 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=17 picked=277 (pri=2130706433 luid=1)
+SCHEDDBG   ready was: [ 277(p=2130706433,l=1) ]
+SCHEDDBG   last_scheduled=277
+SCHEDDBG ADJPRI insn=275 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=18 picked=275 (pri=2130706433 luid=0)
+SCHEDDBG   ready was: [ 275(p=2130706433,l=0) ]
+SCHEDDBG   last_scheduled=275
+-----
+SCHEDDBG block=18 n_insns=23 n_ready=1
+SCHEDDBG insn priorities:
+SCHEDDBG   insn=420 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=421 kind=INSN pri=1 refcnt=4
+SCHEDDBG   insn=424 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=426 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=427 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=429 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=430 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=432 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=435 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=438 kind=INSN pri=1 refcnt=2
+SCHEDDBG   insn=440 kind=INSN pri=2 refcnt=2
+SCHEDDBG   insn=443 kind=INSN pri=2 refcnt=2
+SCHEDDBG   insn=446 kind=INSN pri=2 refcnt=2
+SCHEDDBG   insn=448 kind=INSN pri=3 refcnt=1
+SCHEDDBG   insn=451 kind=INSN pri=1 refcnt=1
+SCHEDDBG   insn=453 kind=CALL pri=3 refcnt=5
+SCHEDDBG   insn=457 kind=INSN pri=3 refcnt=1
+SCHEDDBG   insn=460 kind=INSN pri=3 refcnt=2
+SCHEDDBG   insn=462 kind=INSN pri=3 refcnt=1
+SCHEDDBG   insn=467 kind=INSN pri=3 refcnt=1
+SCHEDDBG   insn=468 kind=INSN pri=3 refcnt=1
+SCHEDDBG   insn=470 kind=INSN pri=3 refcnt=1
+SCHEDDBG   insn=471 kind=JUMP pri=2147483390 refcnt=0
+SCHEDDBG units n0=7 n1=0 n2=0 n3=0 n4=0
+SCHEDDBG deps:
+SCHEDDBG   node insn=420 luid=0 unit=-1 icost=1 code=181 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG   node insn=421 luid=1 unit=-1 icost=1 code=191 pri=1 ref=4 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=421 pred=420 kind=0
+SCHEDDBG   node insn=424 luid=2 unit=-1 icost=1 code=181 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=424 pred=421 kind=0
+SCHEDDBG   node insn=426 luid=3 unit=-1 icost=1 code=3 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=426 pred=421 kind=0
+SCHEDDBG     dep insn=426 pred=424 kind=0
+SCHEDDBG   node insn=427 luid=4 unit=-1 icost=1 code=181 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=427 pred=426 kind=0
+SCHEDDBG   node insn=429 luid=5 unit=-1 icost=1 code=16 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=429 pred=421 kind=0
+SCHEDDBG     dep insn=429 pred=427 kind=0
+SCHEDDBG   node insn=430 luid=6 unit=-1 icost=1 code=181 pri=1 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=430 pred=429 kind=0
+SCHEDDBG   node insn=432 luid=7 unit=0 icost=1 code=159 pri=1 ref=2 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=432 pred=430 kind=0
+SCHEDDBG   node insn=435 luid=8 unit=0 icost=1 code=159 pri=1 ref=2 grp=0 bmin=1 bmax=3
+SCHEDDBG   node insn=438 luid=9 unit=0 icost=2 code=159 pri=1 ref=2 grp=0 bmin=1 bmax=2
+SCHEDDBG   node insn=440 luid=10 unit=-1 icost=1 code=3 pri=2 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=440 pred=438 kind=0
+SCHEDDBG   node insn=443 luid=11 unit=0 icost=1 code=159 pri=2 ref=2 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=443 pred=440 kind=0
+SCHEDDBG   node insn=446 luid=12 unit=0 icost=2 code=159 pri=2 ref=2 grp=0 bmin=1 bmax=2
+SCHEDDBG     dep insn=446 pred=432 kind=0
+SCHEDDBG     dep insn=446 pred=435 kind=0
+SCHEDDBG     dep insn=446 pred=443 kind=0
+SCHEDDBG   node insn=448 luid=13 unit=0 icost=1 code=159 pri=3 ref=1 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=448 pred=446 kind=0
+SCHEDDBG   node insn=451 luid=14 unit=-1 icost=1 code=3 pri=1 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG   node insn=453 luid=15 unit=-1 icost=1 code=319 pri=3 ref=5 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=453 pred=435 kind=14
+SCHEDDBG     dep insn=453 pred=438 kind=14
+SCHEDDBG     dep insn=453 pred=446 kind=14
+SCHEDDBG     dep insn=453 pred=421 kind=14
+SCHEDDBG     dep insn=453 pred=424 kind=14
+SCHEDDBG     dep insn=453 pred=426 kind=14
+SCHEDDBG     dep insn=453 pred=427 kind=14
+SCHEDDBG     dep insn=453 pred=429 kind=14
+SCHEDDBG     dep insn=453 pred=430 kind=14
+SCHEDDBG     dep insn=453 pred=432 kind=14
+SCHEDDBG     dep insn=453 pred=440 kind=14
+SCHEDDBG     dep insn=453 pred=443 kind=14
+SCHEDDBG     dep insn=453 pred=448 kind=14
+SCHEDDBG     dep insn=453 pred=451 kind=0
+SCHEDDBG   node insn=457 luid=17 unit=0 icost=0 code=159 pri=3 ref=1 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=457 pred=453 kind=0
+SCHEDDBG   node insn=460 luid=18 unit=-1 icost=1 code=3 pri=3 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=460 pred=453 kind=14
+SCHEDDBG   node insn=462 luid=19 unit=-1 icost=0 code=163 pri=3 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=462 pred=420 kind=14
+SCHEDDBG     dep insn=462 pred=460 kind=0
+SCHEDDBG   node insn=467 luid=22 unit=-1 icost=1 code=181 pri=3 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=467 pred=460 kind=0
+SCHEDDBG     dep insn=467 pred=453 kind=14
+SCHEDDBG   node insn=468 luid=23 unit=-1 icost=1 code=191 pri=3 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=468 pred=453 kind=14
+SCHEDDBG     dep insn=468 pred=467 kind=0
+SCHEDDBG   node insn=470 luid=24 unit=-1 icost=1 code=258 pri=3 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=470 pred=453 kind=14
+SCHEDDBG     dep insn=470 pred=468 kind=0
+SCHEDDBG   node insn=471 luid=25 unit=-1 icost=0 code=221 pri=2147483390 ref=0 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=471 pred=457 kind=14
+SCHEDDBG     dep insn=471 pred=462 kind=14
+SCHEDDBG     dep insn=471 pred=470 kind=0
+SCHEDDBG initial ready list (sorted by SCHED_SORT):
+SCHEDDBG   pos=0 insn=471 pri=2147483390 luid=25
+SCHEDDBG PICK clock=1 picked=471 (pri=2147483390 luid=25)
+SCHEDDBG   ready was: [ 471(p=2147483390,l=25) ]
+SCHEDDBG   last_scheduled=471
+SCHEDDBG ADJPRI insn=457 deaths=0 birth=0 maxpri=2130706433 pri=3
+SCHEDDBG ADJPRI insn=462 deaths=0 birth=0 maxpri=2130706433 pri=3
+SCHEDDBG ADJPRI insn=470 deaths=0 birth=1 maxpri=2130706433 pri=3
+SCHEDDBG PICK clock=2 picked=470 (pri=2130706433 luid=24)
+SCHEDDBG   ready was: [ 470(p=2130706433,l=24) 462(p=3,l=19) 457(p=3,l=17) ]
+SCHEDDBG   last_scheduled=470
+SCHEDDBG ADJPRI insn=468 deaths=0 birth=1 maxpri=2130706433 pri=3
+SCHEDDBG PICK clock=3 picked=468 (pri=2130706433 luid=23)
+SCHEDDBG   ready was: [ 468(p=2130706433,l=23) 462(p=3,l=19) 457(p=3,l=17) ]
+SCHEDDBG   last_scheduled=468
+SCHEDDBG ADJPRI insn=467 deaths=0 birth=1 maxpri=2130706433 pri=3
+SCHEDDBG PICK clock=4 picked=467 (pri=2130706433 luid=22)
+SCHEDDBG   ready was: [ 467(p=2130706433,l=22) 462(p=3,l=19) 457(p=3,l=17) ]
+SCHEDDBG   last_scheduled=467
+SCHEDDBG SELBEST clock=5 insn=457 pos=1
+SCHEDDBG PICK clock=5 picked=457 (pri=3 luid=17)
+SCHEDDBG   ready was: [ 457(p=3,l=17) 462(p=3,l=19) ]
+SCHEDDBG   last_scheduled=457
+SCHEDDBG PICK clock=6 picked=462 (pri=3 luid=19)
+SCHEDDBG   ready was: [ 462(p=3,l=19) ]
+SCHEDDBG   last_scheduled=462
+SCHEDDBG ADJPRI insn=460 deaths=0 birth=1 maxpri=2130706433 pri=3
+SCHEDDBG PICK clock=7 picked=460 (pri=2130706433 luid=18)
+SCHEDDBG   ready was: [ 460(p=2130706433,l=18) ]
+SCHEDDBG   last_scheduled=460
+SCHEDDBG ADJPRI insn=453 deaths=0 birth=0 maxpri=2130706433 pri=3
+SCHEDDBG PICK clock=8 picked=453 (pri=3 luid=15)
+SCHEDDBG   ready was: [ 453(p=3,l=15) ]
+SCHEDDBG   last_scheduled=453
+SCHEDDBG ADJPRI insn=448 deaths=0 birth=0 maxpri=2130706433 pri=3
+SCHEDDBG ADJPRI insn=451 deaths=0 birth=0 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=9 picked=448 (pri=3 luid=13)
+SCHEDDBG   ready was: [ 448(p=3,l=13) 451(p=1,l=14) ]
+SCHEDDBG   last_scheduled=448
+SCHEDDBG ADJPRI insn=446 deaths=0 birth=1 maxpri=2130706433 pri=2
+SCHEDDBG PICK clock=10 picked=451 (pri=1 luid=14)
+SCHEDDBG   ready was: [ 451(p=1,l=14) ]
+SCHEDDBG   last_scheduled=451
+SCHEDDBG BLOCKAGE unit=0 clock=11 raw_tick=12 adj_tick=11 maxb=3 exec=446 last=448
+SCHEDDBG PICK clock=11 picked=446 (pri=2130706433 luid=12)
+SCHEDDBG   ready was: [ 446(p=2130706433,l=12) ]
+SCHEDDBG   last_scheduled=446
+SCHEDDBG ADJPRI insn=432 deaths=0 birth=0 maxpri=2130706433 pri=1
+SCHEDDBG ADJPRI insn=435 deaths=0 birth=0 maxpri=2130706433 pri=1
+SCHEDDBG ADJPRI insn=443 deaths=0 birth=0 maxpri=2130706433 pri=2
+SCHEDDBG BLOCKAGE unit=0 clock=12 raw_tick=14 adj_tick=12 maxb=3 exec=443 last=446
+SCHEDDBG PICK clock=12 picked=443 (pri=2 luid=11)
+SCHEDDBG   ready was: [ 443(p=2,l=11) 435(p=1,l=8) 432(p=1,l=7) ]
+SCHEDDBG   last_scheduled=443
+SCHEDDBG ADJPRI insn=440 deaths=0 birth=1 maxpri=2130706433 pri=2
+SCHEDDBG PICK clock=13 picked=440 (pri=2130706433 luid=10)
+SCHEDDBG   ready was: [ 440(p=2130706433,l=10) 435(p=1,l=8) 432(p=1,l=7) ]
+SCHEDDBG   last_scheduled=440
+SCHEDDBG ADJPRI insn=438 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG BLOCKAGE unit=0 clock=14 raw_tick=15 adj_tick=13 maxb=3 exec=435 last=443
+SCHEDDBG BLOCKAGE unit=0 clock=14 raw_tick=15 adj_tick=13 maxb=3 exec=432 last=443
+SCHEDDBG PICK clock=14 picked=435 (pri=1 luid=8)
+SCHEDDBG   ready was: [ 435(p=1,l=8) 432(p=1,l=7) ]
+SCHEDDBG   last_scheduled=435
+SCHEDDBG BLOCKAGE unit=0 clock=15 raw_tick=17 adj_tick=16 maxb=3 exec=438 last=435
+SCHEDDBG SELBLOCK clock=15 insn=438 unit=0 cost=1
+SCHEDDBG BLOCKAGE unit=0 clock=15 raw_tick=17 adj_tick=15 maxb=3 exec=432 last=435
+SCHEDDBG PICK clock=15 picked=432 (pri=1 luid=7)
+SCHEDDBG   ready was: [ 432(p=1,l=7) ]
+SCHEDDBG   last_scheduled=432
+SCHEDDBG ADJPRI insn=430 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG BLOCKAGE unit=0 clock=16 raw_tick=18 adj_tick=17 maxb=3 exec=438 last=432
+SCHEDDBG SELBLOCK clock=16 insn=438 unit=0 cost=1
+SCHEDDBG PICK clock=16 picked=430 (pri=2130706433 luid=6)
+SCHEDDBG   ready was: [ 430(p=2130706433,l=6) ]
+SCHEDDBG   last_scheduled=430
+SCHEDDBG ADJPRI insn=429 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG BLOCKAGE unit=0 clock=17 raw_tick=18 adj_tick=17 maxb=3 exec=438 last=432
+SCHEDDBG PICK clock=17 picked=438 (pri=2130706433 luid=9)
+SCHEDDBG   ready was: [ 438(p=2130706433,l=9) 429(p=2130706433,l=5) ]
+SCHEDDBG   last_scheduled=438
+SCHEDDBG PICK clock=18 picked=429 (pri=2130706433 luid=5)
+SCHEDDBG   ready was: [ 429(p=2130706433,l=5) ]
+SCHEDDBG   last_scheduled=429
+SCHEDDBG ADJPRI insn=427 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=19 picked=427 (pri=2130706433 luid=4)
+SCHEDDBG   ready was: [ 427(p=2130706433,l=4) ]
+SCHEDDBG   last_scheduled=427
+SCHEDDBG ADJPRI insn=426 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=20 picked=426 (pri=2130706433 luid=3)
+SCHEDDBG   ready was: [ 426(p=2130706433,l=3) ]
+SCHEDDBG   last_scheduled=426
+SCHEDDBG ADJPRI insn=424 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=21 picked=424 (pri=2130706433 luid=2)
+SCHEDDBG   ready was: [ 424(p=2130706433,l=2) ]
+SCHEDDBG   last_scheduled=424
+SCHEDDBG ADJPRI insn=421 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=22 picked=421 (pri=2130706433 luid=1)
+SCHEDDBG   ready was: [ 421(p=2130706433,l=1) ]
+SCHEDDBG   last_scheduled=421
+SCHEDDBG ADJPRI insn=420 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=23 picked=420 (pri=2130706433 luid=0)
+SCHEDDBG   ready was: [ 420(p=2130706433,l=0) ]
+SCHEDDBG   last_scheduled=420
+-----
+SCHEDDBG block=19 n_insns=33 n_ready=1
+SCHEDDBG insn priorities:
+SCHEDDBG   insn=481 kind=INSN pri=1 refcnt=3
+SCHEDDBG   insn=483 kind=INSN pri=2 refcnt=1
+SCHEDDBG   insn=486 kind=INSN pri=2 refcnt=1
+SCHEDDBG   insn=488 kind=INSN pri=1 refcnt=1
+SCHEDDBG   insn=490 kind=CALL pri=2 refcnt=6
+SCHEDDBG   insn=494 kind=INSN pri=2 refcnt=2
+SCHEDDBG   insn=496 kind=INSN pri=2 refcnt=1
+SCHEDDBG   insn=498 kind=INSN pri=2 refcnt=1
+SCHEDDBG   insn=500 kind=INSN pri=2 refcnt=1
+SCHEDDBG   insn=502 kind=INSN pri=2 refcnt=1
+SCHEDDBG   insn=504 kind=CALL pri=3 refcnt=4
+SCHEDDBG   insn=507 kind=INSN pri=3 refcnt=2
+SCHEDDBG   insn=511 kind=INSN pri=4 refcnt=1
+SCHEDDBG   insn=513 kind=INSN pri=3 refcnt=1
+SCHEDDBG   insn=515 kind=CALL pri=4 refcnt=15
+SCHEDDBG   insn=518 kind=INSN pri=4 refcnt=7
+SCHEDDBG   insn=520 kind=INSN pri=5 refcnt=2
+SCHEDDBG   insn=522 kind=INSN pri=5 refcnt=5
+SCHEDDBG   insn=527 kind=INSN pri=4 refcnt=1
+SCHEDDBG   insn=529 kind=INSN pri=5 refcnt=1
+SCHEDDBG   insn=532 kind=INSN pri=4 refcnt=1
+SCHEDDBG   insn=534 kind=INSN pri=5 refcnt=1
+SCHEDDBG   insn=537 kind=INSN pri=4 refcnt=1
+SCHEDDBG   insn=539 kind=INSN pri=5 refcnt=1
+SCHEDDBG   insn=542 kind=INSN pri=4 refcnt=1
+SCHEDDBG   insn=544 kind=INSN pri=5 refcnt=1
+SCHEDDBG   insn=549 kind=INSN pri=4 refcnt=1
+SCHEDDBG   insn=551 kind=INSN pri=4 refcnt=1
+SCHEDDBG   insn=553 kind=INSN pri=4 refcnt=1
+SCHEDDBG   insn=555 kind=CALL pri=5 refcnt=3
+SCHEDDBG   insn=559 kind=INSN pri=5 refcnt=1
+SCHEDDBG   insn=562 kind=INSN pri=5 refcnt=1
+SCHEDDBG   insn=563 kind=INSN pri=2147483390 refcnt=0
+SCHEDDBG units n0=12 n1=0 n2=0 n3=0 n4=0
+SCHEDDBG deps:
+SCHEDDBG   node insn=481 luid=0 unit=0 icost=2 code=159 pri=1 ref=3 grp=0 bmin=1 bmax=2
+SCHEDDBG   node insn=483 luid=1 unit=0 icost=1 code=159 pri=2 ref=1 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=483 pred=481 kind=0
+SCHEDDBG   node insn=486 luid=2 unit=-1 icost=1 code=159 pri=2 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=486 pred=481 kind=0
+SCHEDDBG   node insn=488 luid=3 unit=-1 icost=1 code=159 pri=1 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG   node insn=490 luid=4 unit=-1 icost=1 code=319 pri=2 ref=6 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=490 pred=481 kind=14
+SCHEDDBG     dep insn=490 pred=483 kind=14
+SCHEDDBG     dep insn=490 pred=486 kind=0
+SCHEDDBG     dep insn=490 pred=488 kind=0
+SCHEDDBG   node insn=494 luid=6 unit=0 icost=1 code=159 pri=2 ref=2 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=494 pred=490 kind=0
+SCHEDDBG   node insn=496 luid=7 unit=0 icost=2 code=159 pri=2 ref=1 grp=0 bmin=1 bmax=2
+SCHEDDBG     dep insn=496 pred=494 kind=0
+SCHEDDBG     dep insn=496 pred=490 kind=14
+SCHEDDBG   node insn=498 luid=8 unit=-1 icost=1 code=159 pri=2 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=498 pred=490 kind=14
+SCHEDDBG   node insn=500 luid=9 unit=-1 icost=1 code=159 pri=2 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=500 pred=490 kind=14
+SCHEDDBG   node insn=502 luid=10 unit=-1 icost=1 code=159 pri=2 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=502 pred=490 kind=0
+SCHEDDBG   node insn=504 luid=11 unit=-1 icost=1 code=319 pri=3 ref=4 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=504 pred=494 kind=14
+SCHEDDBG     dep insn=504 pred=490 kind=14
+SCHEDDBG     dep insn=504 pred=496 kind=0
+SCHEDDBG     dep insn=504 pred=498 kind=0
+SCHEDDBG     dep insn=504 pred=500 kind=0
+SCHEDDBG     dep insn=504 pred=502 kind=0
+SCHEDDBG   node insn=507 luid=12 unit=0 icost=2 code=159 pri=3 ref=2 grp=0 bmin=1 bmax=2
+SCHEDDBG     dep insn=507 pred=504 kind=14
+SCHEDDBG   node insn=511 luid=14 unit=-1 icost=1 code=3 pri=4 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=511 pred=504 kind=14
+SCHEDDBG     dep insn=511 pred=507 kind=0
+SCHEDDBG   node insn=513 luid=15 unit=0 icost=2 code=159 pri=3 ref=1 grp=0 bmin=1 bmax=2
+SCHEDDBG     dep insn=513 pred=504 kind=14
+SCHEDDBG   node insn=515 luid=16 unit=-1 icost=1 code=319 pri=4 ref=15 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=515 pred=507 kind=14
+SCHEDDBG     dep insn=515 pred=504 kind=14
+SCHEDDBG     dep insn=515 pred=511 kind=0
+SCHEDDBG     dep insn=515 pred=513 kind=0
+SCHEDDBG   node insn=518 luid=17 unit=0 icost=2 code=159 pri=4 ref=7 grp=0 bmin=1 bmax=2
+SCHEDDBG     dep insn=518 pred=515 kind=14
+SCHEDDBG   node insn=520 luid=18 unit=-1 icost=1 code=3 pri=5 ref=2 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=520 pred=515 kind=14
+SCHEDDBG     dep insn=520 pred=518 kind=0
+SCHEDDBG   node insn=522 luid=19 unit=0 icost=1 code=159 pri=5 ref=5 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=522 pred=515 kind=14
+SCHEDDBG     dep insn=522 pred=518 kind=14
+SCHEDDBG     dep insn=522 pred=520 kind=0
+SCHEDDBG   node insn=527 luid=21 unit=-1 icost=1 code=163 pri=4 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=527 pred=515 kind=14
+SCHEDDBG   node insn=529 luid=22 unit=0 icost=1 code=163 pri=5 ref=1 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=529 pred=515 kind=14
+SCHEDDBG     dep insn=529 pred=522 kind=15
+SCHEDDBG     dep insn=529 pred=518 kind=14
+SCHEDDBG     dep insn=529 pred=527 kind=0
+SCHEDDBG   node insn=532 luid=23 unit=-1 icost=1 code=163 pri=4 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=532 pred=515 kind=14
+SCHEDDBG   node insn=534 luid=24 unit=0 icost=1 code=163 pri=5 ref=1 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=534 pred=515 kind=14
+SCHEDDBG     dep insn=534 pred=522 kind=15
+SCHEDDBG     dep insn=534 pred=518 kind=14
+SCHEDDBG     dep insn=534 pred=532 kind=0
+SCHEDDBG   node insn=537 luid=25 unit=-1 icost=1 code=163 pri=4 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=537 pred=515 kind=14
+SCHEDDBG   node insn=539 luid=26 unit=0 icost=1 code=163 pri=5 ref=1 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=539 pred=515 kind=14
+SCHEDDBG     dep insn=539 pred=522 kind=15
+SCHEDDBG     dep insn=539 pred=518 kind=14
+SCHEDDBG     dep insn=539 pred=537 kind=0
+SCHEDDBG   node insn=542 luid=27 unit=-1 icost=1 code=163 pri=4 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=542 pred=515 kind=14
+SCHEDDBG   node insn=544 luid=28 unit=0 icost=1 code=163 pri=5 ref=1 grp=0 bmin=1 bmax=3
+SCHEDDBG     dep insn=544 pred=515 kind=14
+SCHEDDBG     dep insn=544 pred=522 kind=15
+SCHEDDBG     dep insn=544 pred=518 kind=14
+SCHEDDBG     dep insn=544 pred=542 kind=0
+SCHEDDBG   node insn=549 luid=30 unit=-1 icost=1 code=159 pri=4 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=549 pred=515 kind=14
+SCHEDDBG   node insn=551 luid=31 unit=-1 icost=1 code=3 pri=4 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=551 pred=515 kind=14
+SCHEDDBG   node insn=553 luid=32 unit=-1 icost=1 code=159 pri=4 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=553 pred=515 kind=14
+SCHEDDBG   node insn=555 luid=33 unit=-1 icost=1 code=312 pri=5 ref=3 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=555 pred=518 kind=14
+SCHEDDBG     dep insn=555 pred=520 kind=14
+SCHEDDBG     dep insn=555 pred=522 kind=14
+SCHEDDBG     dep insn=555 pred=529 kind=14
+SCHEDDBG     dep insn=555 pred=534 kind=14
+SCHEDDBG     dep insn=555 pred=539 kind=14
+SCHEDDBG     dep insn=555 pred=544 kind=14
+SCHEDDBG     dep insn=555 pred=515 kind=14
+SCHEDDBG     dep insn=555 pred=549 kind=0
+SCHEDDBG     dep insn=555 pred=551 kind=0
+SCHEDDBG     dep insn=555 pred=553 kind=0
+SCHEDDBG   node insn=559 luid=35 unit=-1 icost=1 code=181 pri=5 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=559 pred=555 kind=14
+SCHEDDBG   node insn=562 luid=37 unit=-1 icost=1 code=191 pri=5 ref=1 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=562 pred=555 kind=14
+SCHEDDBG     dep insn=562 pred=559 kind=0
+SCHEDDBG   node insn=563 luid=38 unit=-1 icost=0 code=-1 pri=2147483390 ref=0 grp=0 bmin=-1 bmax=-1
+SCHEDDBG     dep insn=563 pred=555 kind=14
+SCHEDDBG     dep insn=563 pred=562 kind=0
+SCHEDDBG initial ready list (sorted by SCHED_SORT):
+SCHEDDBG   pos=0 insn=563 pri=2147483390 luid=38
+SCHEDDBG PICK clock=1 picked=563 (pri=2147483390 luid=38)
+SCHEDDBG   ready was: [ 563(p=2147483390,l=38) ]
+SCHEDDBG   last_scheduled=563
+SCHEDDBG ADJPRI insn=562 deaths=0 birth=0 maxpri=2130706433 pri=5
+SCHEDDBG PICK clock=2 picked=562 (pri=5 luid=37)
+SCHEDDBG   ready was: [ 562(p=5,l=37) ]
+SCHEDDBG   last_scheduled=562
+SCHEDDBG ADJPRI insn=559 deaths=0 birth=1 maxpri=2130706433 pri=5
+SCHEDDBG PICK clock=3 picked=559 (pri=2130706433 luid=35)
+SCHEDDBG   ready was: [ 559(p=2130706433,l=35) ]
+SCHEDDBG   last_scheduled=559
+SCHEDDBG ADJPRI insn=555 deaths=0 birth=0 maxpri=2130706433 pri=5
+SCHEDDBG PICK clock=4 picked=555 (pri=5 luid=33)
+SCHEDDBG   ready was: [ 555(p=5,l=33) ]
+SCHEDDBG   last_scheduled=555
+SCHEDDBG ADJPRI insn=529 deaths=0 birth=0 maxpri=2130706433 pri=5
+SCHEDDBG ADJPRI insn=534 deaths=0 birth=0 maxpri=2130706433 pri=5
+SCHEDDBG ADJPRI insn=539 deaths=0 birth=0 maxpri=2130706433 pri=5
+SCHEDDBG ADJPRI insn=544 deaths=0 birth=0 maxpri=2130706433 pri=5
+SCHEDDBG ADJPRI insn=549 deaths=0 birth=0 maxpri=2130706433 pri=4
+SCHEDDBG ADJPRI insn=551 deaths=0 birth=0 maxpri=2130706433 pri=4
+SCHEDDBG ADJPRI insn=553 deaths=0 birth=0 maxpri=2130706433 pri=4
+SCHEDDBG PICK clock=5 picked=544 (pri=5 luid=28)
+SCHEDDBG   ready was: [ 544(p=5,l=28) 539(p=5,l=26) 534(p=5,l=24) 529(p=5,l=22) 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=544
+SCHEDDBG ADJPRI insn=542 deaths=0 birth=1 maxpri=2130706433 pri=4
+SCHEDDBG PICK clock=6 picked=542 (pri=2130706433 luid=27)
+SCHEDDBG   ready was: [ 542(p=2130706433,l=27) 539(p=5,l=26) 534(p=5,l=24) 529(p=5,l=22) 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=542
+SCHEDDBG BLOCKAGE unit=0 clock=7 raw_tick=8 adj_tick=6 maxb=3 exec=539 last=544
+SCHEDDBG BLOCKAGE unit=0 clock=7 raw_tick=8 adj_tick=6 maxb=3 exec=534 last=544
+SCHEDDBG BLOCKAGE unit=0 clock=7 raw_tick=8 adj_tick=6 maxb=3 exec=529 last=544
+SCHEDDBG PICK clock=7 picked=539 (pri=5 luid=26)
+SCHEDDBG   ready was: [ 539(p=5,l=26) 534(p=5,l=24) 529(p=5,l=22) 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=539
+SCHEDDBG ADJPRI insn=537 deaths=0 birth=1 maxpri=2130706433 pri=4
+SCHEDDBG PICK clock=8 picked=537 (pri=2130706433 luid=25)
+SCHEDDBG   ready was: [ 537(p=2130706433,l=25) 534(p=5,l=24) 529(p=5,l=22) 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=537
+SCHEDDBG BLOCKAGE unit=0 clock=9 raw_tick=10 adj_tick=8 maxb=3 exec=534 last=539
+SCHEDDBG BLOCKAGE unit=0 clock=9 raw_tick=10 adj_tick=8 maxb=3 exec=529 last=539
+SCHEDDBG PICK clock=9 picked=534 (pri=5 luid=24)
+SCHEDDBG   ready was: [ 534(p=5,l=24) 529(p=5,l=22) 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=534
+SCHEDDBG ADJPRI insn=532 deaths=0 birth=1 maxpri=2130706433 pri=4
+SCHEDDBG PICK clock=10 picked=532 (pri=2130706433 luid=23)
+SCHEDDBG   ready was: [ 532(p=2130706433,l=23) 529(p=5,l=22) 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=532
+SCHEDDBG BLOCKAGE unit=0 clock=11 raw_tick=12 adj_tick=10 maxb=3 exec=529 last=534
+SCHEDDBG PICK clock=11 picked=529 (pri=5 luid=22)
+SCHEDDBG   ready was: [ 529(p=5,l=22) 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=529
+SCHEDDBG ADJPRI insn=522 deaths=0 birth=0 maxpri=2130706433 pri=5
+SCHEDDBG ADJPRI insn=527 deaths=0 birth=1 maxpri=2130706433 pri=4
+SCHEDDBG PICK clock=12 picked=527 (pri=2130706433 luid=21)
+SCHEDDBG   ready was: [ 527(p=2130706433,l=21) 522(p=5,l=19) 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=527
+SCHEDDBG BLOCKAGE unit=0 clock=13 raw_tick=14 adj_tick=12 maxb=3 exec=522 last=529
+SCHEDDBG PICK clock=13 picked=522 (pri=5 luid=19)
+SCHEDDBG   ready was: [ 522(p=5,l=19) 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=522
+SCHEDDBG ADJPRI insn=520 deaths=0 birth=1 maxpri=2130706433 pri=5
+SCHEDDBG PICK clock=14 picked=520 (pri=2130706433 luid=18)
+SCHEDDBG   ready was: [ 520(p=2130706433,l=18) 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=520
+SCHEDDBG ADJPRI insn=518 deaths=0 birth=1 maxpri=2130706433 pri=4
+SCHEDDBG PICK clock=15 picked=553 (pri=4 luid=32)
+SCHEDDBG   ready was: [ 553(p=4,l=32) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=553
+SCHEDDBG PICK clock=16 picked=518 (pri=2130706433 luid=17)
+SCHEDDBG   ready was: [ 518(p=2130706433,l=17) 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=518
+SCHEDDBG PICK clock=17 picked=551 (pri=4 luid=31)
+SCHEDDBG   ready was: [ 551(p=4,l=31) 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=551
+SCHEDDBG PICK clock=18 picked=549 (pri=4 luid=30)
+SCHEDDBG   ready was: [ 549(p=4,l=30) ]
+SCHEDDBG   last_scheduled=549
+SCHEDDBG ADJPRI insn=515 deaths=0 birth=0 maxpri=2130706433 pri=4
+SCHEDDBG PICK clock=19 picked=515 (pri=4 luid=16)
+SCHEDDBG   ready was: [ 515(p=4,l=16) ]
+SCHEDDBG   last_scheduled=515
+SCHEDDBG ADJPRI insn=511 deaths=0 birth=0 maxpri=2130706433 pri=4
+SCHEDDBG ADJPRI insn=513 deaths=0 birth=0 maxpri=2130706433 pri=3
+SCHEDDBG PICK clock=20 picked=511 (pri=4 luid=14)
+SCHEDDBG   ready was: [ 511(p=4,l=14) ]
+SCHEDDBG   last_scheduled=511
+SCHEDDBG ADJPRI insn=507 deaths=0 birth=1 maxpri=2130706433 pri=3
+SCHEDDBG PICK clock=21 picked=513 (pri=3 luid=15)
+SCHEDDBG   ready was: [ 513(p=3,l=15) ]
+SCHEDDBG   last_scheduled=513
+SCHEDDBG BLOCKAGE unit=0 clock=22 raw_tick=24 adj_tick=22 maxb=3 exec=507 last=513
+SCHEDDBG PICK clock=22 picked=507 (pri=2130706433 luid=12)
+SCHEDDBG   ready was: [ 507(p=2130706433,l=12) ]
+SCHEDDBG   last_scheduled=507
+SCHEDDBG ADJPRI insn=504 deaths=0 birth=0 maxpri=2130706433 pri=3
+SCHEDDBG PICK clock=23 picked=504 (pri=3 luid=11)
+SCHEDDBG   ready was: [ 504(p=3,l=11) ]
+SCHEDDBG   last_scheduled=504
+SCHEDDBG ADJPRI insn=496 deaths=0 birth=0 maxpri=2130706433 pri=2
+SCHEDDBG ADJPRI insn=498 deaths=0 birth=0 maxpri=2130706433 pri=2
+SCHEDDBG ADJPRI insn=500 deaths=0 birth=0 maxpri=2130706433 pri=2
+SCHEDDBG ADJPRI insn=502 deaths=0 birth=1 maxpri=2130706433 pri=2
+SCHEDDBG PICK clock=24 picked=502 (pri=2130706433 luid=10)
+SCHEDDBG   ready was: [ 502(p=2130706433,l=10) 500(p=2,l=9) 498(p=2,l=8) ]
+SCHEDDBG   last_scheduled=502
+SCHEDDBG SELBEST clock=25 insn=496 pos=2
+SCHEDDBG PICK clock=25 picked=496 (pri=2 luid=7)
+SCHEDDBG   ready was: [ 496(p=2,l=7) 500(p=2,l=9) 498(p=2,l=8) ]
+SCHEDDBG   last_scheduled=496
+SCHEDDBG ADJPRI insn=494 deaths=0 birth=0 maxpri=2130706433 pri=2
+SCHEDDBG BLOCKAGE unit=0 clock=26 raw_tick=28 adj_tick=26 maxb=3 exec=494 last=496
+SCHEDDBG SELBEST clock=26 insn=494 pos=2
+SCHEDDBG PICK clock=26 picked=494 (pri=2 luid=6)
+SCHEDDBG   ready was: [ 494(p=2,l=6) 500(p=2,l=9) 498(p=2,l=8) ]
+SCHEDDBG   last_scheduled=494
+SCHEDDBG PICK clock=27 picked=500 (pri=2 luid=9)
+SCHEDDBG   ready was: [ 500(p=2,l=9) 498(p=2,l=8) ]
+SCHEDDBG   last_scheduled=500
+SCHEDDBG PICK clock=28 picked=498 (pri=2 luid=8)
+SCHEDDBG   ready was: [ 498(p=2,l=8) ]
+SCHEDDBG   last_scheduled=498
+SCHEDDBG ADJPRI insn=490 deaths=0 birth=0 maxpri=2130706433 pri=2
+SCHEDDBG PICK clock=29 picked=490 (pri=2 luid=4)
+SCHEDDBG   ready was: [ 490(p=2,l=4) ]
+SCHEDDBG   last_scheduled=490
+SCHEDDBG ADJPRI insn=483 deaths=0 birth=0 maxpri=2130706433 pri=2
+SCHEDDBG ADJPRI insn=486 deaths=0 birth=0 maxpri=2130706433 pri=2
+SCHEDDBG ADJPRI insn=488 deaths=0 birth=0 maxpri=2130706433 pri=1
+SCHEDDBG SELBEST clock=30 insn=483 pos=1
+SCHEDDBG PICK clock=30 picked=483 (pri=2 luid=1)
+SCHEDDBG   ready was: [ 483(p=2,l=1) 486(p=2,l=2) 488(p=1,l=3) ]
+SCHEDDBG   last_scheduled=483
+SCHEDDBG PICK clock=31 picked=486 (pri=2 luid=2)
+SCHEDDBG   ready was: [ 486(p=2,l=2) 488(p=1,l=3) ]
+SCHEDDBG   last_scheduled=486
+SCHEDDBG ADJPRI insn=481 deaths=0 birth=1 maxpri=2130706433 pri=1
+SCHEDDBG PICK clock=32 picked=488 (pri=1 luid=3)
+SCHEDDBG   ready was: [ 488(p=1,l=3) ]
+SCHEDDBG   last_scheduled=488
+SCHEDDBG PICK clock=33 picked=481 (pri=2130706433 luid=0)
+SCHEDDBG   ready was: [ 481(p=2130706433,l=0) ]
+SCHEDDBG   last_scheduled=481
+-----
