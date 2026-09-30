@@ -86,3 +86,16 @@
   campaign from the split body, 1127 iterations, finds rescored, best 6/83), annotation at the
   declaration. Re-spliced (added lines identical to candidate.c), rebuild SHA1 == oracle,
   spliced sandbox 0 (probes/sandbox_spliced.txt).
+- [s2] LAYER-2 PASS (Q39 record): 2026-09-29, round 2, fresh layer-2 cheat-reviewer, verdict
+  PASS with no required fixes. Body reviewed: the staged src/code6cac_b.c function =
+  memory/grind/func_80029454/candidate.c at c9b77d3b3, which includes the Ruling 11 declaration
+  comment on `rec`. Key findings: `rec` meets every Ruling 11 prong (the reviewer re-measured
+  r11/s/s0_blocklocal.c at 6/83 and checked the r11 dumps against global.c's call-crossing
+  logic); `mask`, `p`, `count[]` and the loop counters are ordinary one-role C; the commit
+  message is accurate. Round 1 (same day) FAILed only on the undisclosed reuse of `rec`; its
+  PASS items (ScrPad/SPAD view, box_overlap, u32 mask, grouped halving offset, loop counters,
+  unprototyped func_8002DE20, the five scorer-artifact words) stand.
+- [s2] LANDED COMPLETED-C: Match dff1fc2de (body identical to candidate.c at c9b77d3b3), queue
+  4ce422cf6 (`queue done`: ok, SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa);
+  check_completion_integrity: OK. Ledger closed. Note: `queue regen` keeps a function only at
+  distance 0; after this landing build/ is compiled from the C, and the spliced sandbox scores 0.
