@@ -30,3 +30,6 @@ the 2026-09-24 Extension) still scores 0 (candidate_alt_rtv0_inline_c_h.c, score
 sandbox). Not proposed: it mixes two Sony headers in one function, and the two headers define
 the same macro names, so one original TU could not have included both. The DMPSX-word row
 question is filed for the owner: docs/grind/borderline.md 2026-09-30 (commit 10626c5b6).
+
+## 2026-09-30 — laneB: Ruling 11 package for det/sum started (r11/)
+Mechanisms named from dumps (r11/proof.md, r11/dumps_table.txt): work/det = local-alloc.c:472 admission (split -> block-0 pseudo local-allocated to $v0; reuse -> global, $t2 as target); temp/sum = global.c set_preference (:1484, :1671-1760) giving temp's allocno the $a0 preference only when it is the `<< 16` source (split -> $s0). Renamed/annotated body: candidate_r11.c (0). Per-value spellings: 41 / 41 / 41; singles 6 and 35. Permuter: 37,248 iterations, best 30 (re-creates the reuse). Status: banked, not submitted.

@@ -1,0 +1,8 @@
+== tmp/F770/d_reuse:func_8002F770
+   det: pseudo 84, seat global 10 | Register 84 used 16 times across 21 insns; dies in 2 places; GR_REGS or none. | no preference line
+   sum: pseudo 92, seat global 4 | Register 92 used 8 times across 22 insns; dies in 3 places; GR_REGS or none. | ;; 92 preferences: 4 16 17
+== tmp/F770/d_pv:func_8002F770
+   det: pseudo 84, seat global 2 | Register 84 used 13 times across 16 insns in block 0; GR_REGS or none. | no preference line
+   sum: pseudo 92, seat global 16 | Register 92 used 6 times across 19 insns; dies in 2 places; GR_REGS or none. | ;; 92 preferences: 16 17
+tmp/F770/d_reuse:func_8002F770: shift dest pseudo 239 (local seat 4), source pseudo 92
+tmp/F770/d_pv:func_8002F770: shift dest pseudo 241 (local seat 4), source pseudo 237
