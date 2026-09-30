@@ -1594,7 +1594,8 @@ everything has to be decompiled eventually."
 
 - **(A) Scope.** The unattended manual-lane run the owner started on 2026-09-29, until the owner next speaks.
   Functions that land during it stay landed afterwards. Nothing here changes the Grinder's frozen Judge policy.
-- **(B) No precedent is not a FAIL ground for clearly-fine ordinary C.** A construct that has a truthful
+- **(B) No precedent is not a FAIL ground for clearly-fine ordinary C.** (Ratified as STANDING with (D)'s wall,
+  2026-09-30, owner Q64: § Ratification below Ruling 14.) A construct that has a truthful
   semantic reading as program logic under Ruling 1(3) (the rename test), that a programmer could have
   written from the function's behaviour, and that does real, consumed work in the program (no dead store,
   no no-op copy, no write or statement the compiler deletes, no pad or dummy object) may PASS layer-2 even
@@ -1650,7 +1651,8 @@ are by no means a cheat or workaround or regression."
   (SOTN's bar is pure C that matches) and is by no means a cheat or workaround; it still yields to the entry
   that governs a construct, exactly as its text says. That renewal is logged in the same commit as this ruling
   to docs/grind/borderline.md as "ORCHESTRATOR READING (Ruling 14): Ruling 13 (B) renewed for this run" for
-  owner ratification; unratified, it is not precedent after the run. Its (E) is replaced by (D) below; the part
+  owner ratification; unratified, it is not precedent after the run (ratified as standing, owner Q64,
+  § Ratification below). Its (E) is replaced by (D) below; the part
   of 13 (E) that says an item that does not close "is banked in its ledger and stays active; it stays the run's
   target and changes modality" survives in (D)'s last sentence. Its (C) is replaced by (B) and (C) below;
   nothing decided under Ruling 13 (C) carries over.
@@ -1713,6 +1715,27 @@ are by no means a cheat or workaround or regression."
   body. A decision under (B) never replaces that review: the landing's reviewer still FAILs a construct that is
   not the one decided or misses the decision's stated conditions. Record: docs/grind/decisions.md 2026-09-30
   OWNER RULING — Ruling 14.
+
+### Ratification (owner, 2026-09-30, thirtieth batch, Q64) — Ruling 13 (B) is standing
+
+**Question and answer** (record: docs/grind/owner-rulings-2026-09-26.md, thirtieth batch, Q64; filed:
+docs/grind/borderline.md 2026-09-30 "ORCHESTRATOR READING (Ruling 14): Ruling 13 (B) renewed for this run").
+The operator asked the owner to confirm the renewal, recommending "for the overnight run only" and offering
+"If you'd rather it stay in force, say it continues until you revoke it". The owner (Trenton) answered,
+verbatim: **"for item 4, i agree with that precedent. Honest C is the explicit goal"**.
+
+**Rule text.** The author's narrowing, not the owner's words. Ruling 13 (B) is ratified as standing precedent,
+no longer scoped to any run: in every layer-2 review, "no precedent" is not a FAIL ground for clearly-fine
+ordinary C meeting 13 (B)'s test (a truthful semantic reading under Ruling 1(3), writable from the function's
+behaviour, real consumed work). Its own limits stay: the reviewer judges each construct on its merits, "in
+doubt, FAIL" still applies to whether it is clearly fine, and an entry that governs the construct decides it
+(13 (B) adds nothing there). Ratification covers 13 (B), and Ruling 13 (D)'s wall is made standing with it, as
+the limit on every use of standing 13 (B). Ruling 13 (C) and (E) and Ruling 14 (B)-(D) (orchestrator decisions,
+rotation limits) stay scoped to their runs. Reading "standing" is the author's reading of the owner's words,
+flagged to the owner in the same session. The
+Grinder's frozen Judge policy is not edited by this record; teaching it the same sentence is a separate
+reviewed `tools/grinder` change. Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — Ruling 13 (B)
+ratified as standing.
 
 ## What this ruling does NOT change
 

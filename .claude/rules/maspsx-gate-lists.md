@@ -229,6 +229,46 @@ its `-G8` file under compiler-flags-canonical.md § "Per-file -G8 by proof". It
 pre-decides no landing. Record: docs/grind/decisions.md 2026-09-26 OWNER
 RULING — maspsx COMMON gate (`maspsx_comm_syms.txt`).
 
+## The global COMMON model — tentative definitions, every file (owner ruling 2026-09-30, thirtieth batch, Q62)
+
+**Question and answer** (record: docs/grind/owner-rulings-2026-09-26.md, thirtieth batch, Q62; filed question:
+docs/grind/borderline.md 2026-09-30 "cdrom_SetMix + func_80035F78 (likely func_80036140) — C tentative
+definitions with ASPSX's COMMON rule"; evidence memory/grind/cdrom_SetMix/evidence.md 2026-09-30 and
+probes-0930/, memory/grind/func_80036140/research-common-gp.md § 0). The operator put option "A: Adopt both
+changes as a separate reviewed build-tool commit, then land the CD functions with their own reviews." with a
+recommendation; the owner (Trenton) answered, verbatim: **"Go ahead with your recommendations."**
+
+**What it admits.** The model the 2026-09-30 COMMON-gate ruling's point 3 said would need its own owner
+ruling: the assembler follows each file's own declarations, for every file, with no function or symbol list.
+The author's narrowing, not the owner's words:
+
+1. **The maspsx parser fix.** maspsx parses the three-field `.comm name,size,align` directive our cc1 emits
+   for a file-scope tentative definition (today it crashes on it). Parse-only, bug-fix scope under
+   [[no-compiler-divergence]] item 2.
+2. **The upstream flag, globally.** maspsx's existing upstream option `--use-comm-section` is enabled in the
+   Makefile's maspsx flags for EVERY file, and `engine/buildconfig.py` mirrors the Makefile verbatim
+   ([[buildconfig-mirror-drift-false-mismatch]]). A tentative definition then stays a COMMON symbol that GNU ld
+   resolves to its symbol-file address without allocating it, and the gp choice for it is maspsx's own
+   `.comm`-driven rule (gp at the base only; the measured ASPSX 2.34 behaviour of research-common-gp.md § 0).
+3. **The substrate commit.** Both changes land together as their own `substrate:` commit before any function
+   spends them: BYTE-NEUTRAL on the tree it lands on (every `src/*.c` object built both ways with its exact
+   recipe and compared, 0 differing, 0 failed, plus full-build SHA1 == oracle), `engine test` green, and a fresh
+   default-FAIL layer-2 `cheat-reviewer` PASS on the patch, the flag and the mirror.
+4. **The landings.** cdrom_SetMix and func_80035F78 may then declare `g_cd_atv` / `D_800A36B8` as file-scope
+   tentative definitions (`CdlATV g_cd_atv;`), the ordinary C form, each landing with sandbox 0, oracle SHA1
+   and its own fresh layer-2 PASS recorded on the exact body. func_80036140 is judged fresh on its own
+   evidence. A tentative definition is chosen by evidence (the target's gp-at-base / lui-at-offset shape), and
+   only for an object that had no starting value: the original EXE's bytes over the object's whole extent are
+   zero (the ledger cites the disc offset and the bytes), no translation unit gives it an initializer, and its
+   address comes from a symbol-file row, so GNU ld does not allocate it. A tentative definition of an object
+   whose original bytes are not all zero is false C and is refused, whatever the gp shape. Its type and layout
+   are judged under the aggregate-merge entry of [[no-new-park-categories]] as before.
+
+**What it does not change.** `maspsx_comm_syms.txt` stays RETIRED and EMPTY, and the 2026-09-30 ruling that a
+per-function COMMON gate is a cheat stands in full: no row, no per-function or per-symbol toggle, no Q9/Q15/Q18
+revival. Nothing is pre-decided for any function. Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — the
+global COMMON model (tentative definitions, every file).
+
 ## Enforcement (wired 2026-07-13)
 
 - `engine/cheats.py: MASPSX_GATE_LISTS` + `maspsx_gate_entries(func)` — the

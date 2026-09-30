@@ -602,3 +602,87 @@ Other option offered: "Allow a softer label" — "Permit e.g. /* MATCH: … */ w
 Question, verbatim: "You deferred the project-wide cheat sweep of the ~1,150 functions finished before 09-19. Today's 101-landing audit found about 1 in 5 failing, and turned up more lurking workarounds in neighbouring functions. Schedule it?"
 Owner chose: **"Keep it deferred"** — option text: "Only audit functions as they're touched by other work."
 Other option offered: "Yes, next session (Recommended)" — "Mechanical scan for risky patterns first (aliases, casts on globals, unions, volatile, reuse, FAKE), then fresh default-FAIL reviewers over the flagged set; fixes go through the gate or reopen. Large one-time token cost."
+
+# Owner exchange 2026-09-30 (thirtieth batch, in conversation) — VERBATIM RECORD — GRANTED
+Context: after the 2026-09-30 overnight manual-lane run, the owner asked a fresh operator session: "Lets discuss
+those pending rule questions. Go through each question, present them to me, and give me your suggestions". The
+operator presented the four open policy-questions of docs/grind/borderline.md (2026-09-30 gte_rtv0 DMPSX word;
+2026-09-30 cdrom_SetMix COMMON tentative definitions; 2026-09-30 func_8001C8DC F4 byte pair; 2026-09-30
+ORCHESTRATOR READING (Ruling 14): Ruling 13 (B) renewed) in conversation, each with a recommendation. No
+AskUserQuestion options were involved. The owner's reply, verbatim:
+
+> "Go ahead with your recommendations. for item 4, i agree with that precedent. Honest C is the explicit goal"
+
+## Q61 — gte_rtv0's DMPSX command word in func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770
+Presented, verbatim: "All four now match the original exactly. Their graphics-chip (GTE) commands are copied
+character for character from Sony's own header, with one exception. For the "rotate vector" command, Sony's
+header writes a placeholder number, and a separate Sony tool (DMPSX) swapped in the real command after compiling.
+We don't have that tool, so our copy contains the real command, which is what the game itself contains." /
+"You've already approved this exact swap, with the same number, for func_8002DE20 and func_800187F4." Options:
+"A: Grant it for these four." / "B: Refuse. They stay unfinished." Operator's suggestion, verbatim: "A. It's the
+same swap you've approved twice, and it just reproduces a Sony build step. A yes doesn't finish all four at once:
+func_8002D780 still has two workaround constructs to remove. F2D0 and F770 still need their shared-value evidence
+written up. Each one still needs its own independent review." Also offered, verbatim: "Worth considering: this
+will be the fifth and sixth time the question comes up. You could make it a standing rule: "this exact swap is
+allowed wherever the rest of the command block is copied exactly from Sony's header." That saves future questions
+without loosening anything."
+Owner: **"Go ahead with your recommendations."** → option A, a per-function grant for each of the four.
+Recorder's note: the standing-rule idea was offered as "Worth considering", outside options A/B and outside the
+recommendation ("A"), so "Go ahead with your recommendations" does not adopt it. It would also widen prong (C) of
+the 2026-09-26 inline_o.h class, which the owner's 2026-09-26 second-batch Q6 choice "Keep strict wording"
+confirmed as written (Q6 asked about `0($12)`, not the DMPSX word, and the operator did not mention it when asking).
+No class widening is recorded. The point was reported back to the owner in the same session.
+Correction to the question (recorder): "with the same number, for func_8002DE20 and func_800187F4" is inaccurate.
+func_800187F4's Q29 grant covered 0x4A480012 / 0x4AA00428 / 0x4B90003D / 0x4BA8003E (gte_rtv0tr, gte_sqr0, gte_gpf0,
+gte_gpl12), not 0x4A486012. 0x4A486012 was approved for func_8002DE20 (Q11) and, under the 2026-09-24 Extension,
+for func_80067200. In the author's judgment this does not change the question (the same kind of swap, on the same
+independent sources); it is recorded so the record is accurate, and was reported to the owner in the same session.
+Target positions of the substituted word: func_8002D780 0x8002D80C; func_8002EBDC 0x8002ED7C and 0x8002EE8C;
+func_8002F2D0 0x8002F708; func_8002F770 0x8002FC18.
+
+## Q62 — C tentative definitions with ASPSX's COMMON rule (cdrom_SetMix, func_80035F78, likely func_80036140)
+Presented, verbatim: "These variables were most likely declared the ordinary C way, with no starting value (like
+`CdlATV g_cd_atv;`). Sony's assembler handled that kind of variable specially, and the shipped bytes show that
+handling. Two things in our assembler helper tool (maspsx) stop us reproducing it: A parsing bug: it crashes on a
+line format our compiler emits. The fix is one line. A setting that's off: the tool's upstream project already has
+an option (`--use-comm-section`) that handles these variables the way the linker expects. It's off by default." /
+"On 09-30 you ruled the old per-function list a cheat. That list told the tool "behave differently for these named
+functions." The argument made at the time was that a fair version would apply to every file and be triggered by
+how the C declares its variables. This proposal is that version: no function is named anywhere. With both changes,
+all 53 existing object files came out byte-for-byte identical." Options: "A: Adopt both changes as a separate
+reviewed build-tool commit, then land the CD functions with their own reviews." / "B: Refuse. The three stay
+unfinished; no plain-C route has been found." Operator's suggestion, verbatim: "A. It fixes a real crash, turns on
+an existing upstream option for everyone, and lets the C say what the programmer most likely wrote. It's the tool
+imitating Sony's assembler, not faking output. Because it changes the build tools, it should still get the full
+byte-for-byte check against the original and its own independent review before anything relies on it."
+Owner: **"Go ahead with your recommendations."** → option A.
+
+## Q63 — two adjacent bytes reached by indexing past the first (func_8001C8DC; func_8003CF84)
+Presented, verbatim: "The game treats the bytes at 0x800A37D2 and 0x800A37D3 in two ways: As two separate one-byte
+variables, each read and written by its own name. As a pair, by indexing from the first one's address
+(`p = &first; p[flag]++`). Declaring them as one array or struct can't produce the "each by its own name" part,
+because our compiler routes element accesses through a shared register and the game doesn't. So the only C that
+matches is two separate variables plus indexing past the first into the second. That is the pattern you refused on
+07-20 and again on 08-18, because SOTN's norm is to declare such data as one struct instead." / "Here that
+SOTN-style fix was actually tried, and it can't produce these bytes. The compiler evidence suggests the original
+programmer really did write two separate variables and index past one of them, which was a common trick in C code
+of that era. If so, this is the authentic source rather than a disguise." Options: "A: Admit it for this one byte
+pair, marked as a workaround at each use and citing the compiler evidence." / "B: Refuse." Operator's suggestion,
+verbatim: "A narrowly, after one more check. The actual test only tried the *array* declaration. The struct case
+rests on reading the compiler's source code, and the struct is SOTN's standard fix. I'd have the struct measured
+first. If it also fails, admit A for this pair only." And: "func_8003CF84 is already marked finished but uses the
+same refused pattern. If you choose B, it should go back into the queue rather than stay as "recorded debt.""
+Owner: **"Go ahead with your recommendations."** → option A, conditional on the struct measurement.
+
+## Q64 — ratify the overnight run's reading: Ruling 13 (B) renewed
+Presented, verbatim: "Last night you gave the orchestrator authority to decide borderline rule questions that are
+"within SOTN's standards and by no means a cheat or workaround or regression." The orchestrator read that as also
+renewing an older, narrower permission (Ruling 13 (B)): "clearly-fine ordinary C with an honest meaning may be
+accepted." It logged that reading for you to confirm. If you don't, it isn't precedent after this run, though
+anything landed under it stays landed." Operator's suggestion, verbatim: "confirm it for the overnight run only.
+The older permission is a stricter subset of what you granted. If you'd rather it stay in force, say it continues
+until you revoke it, and future runs won't have to re-derive it."
+Owner: **"for item 4, i agree with that precedent. Honest C is the explicit goal"** → the author's reading: ratified
+as a standing precedent, not limited to the overnight run (item 4 was answered separately from the blanket
+"recommendations" answer, whose item-4 recommendation was run-only, and "that precedent" answers the question's
+"it isn't precedent after this run"). Flagged to the owner as a reading in the same session.

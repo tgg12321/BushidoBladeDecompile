@@ -30461,3 +30461,49 @@ flat across multiple sessions of this run, with every modality run, no frontier 
 none of rotation-not-foreclosure Ruling 4's excluded grounds relied on, and the rotation commit stating the
 session count and flat-floor history; otherwise it is banked and stays active; (E) sandbox 0, oracle SHA1 and a
 fresh layer-2 PASS recorded on the exact body for every landing. Nothing is pre-decided.
+
+## 2026-09-30 — OWNER RULING — per-function GTE grants for func_8002D780 / func_8002EBDC / func_8002F2D0 / func_8002F770 (`.claude/rules/inline-asm-policy.md` § Per-function grants: func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770)
+
+Thirtieth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 30, Q61; the owner's own words in
+conversation: "Go ahead with your recommendations."). Option A: four named per-function grants covering only
+gte_rtv0's post-DMPSX word 0x4A486012 in place of the inline_o.h placeholder 0x0000013f (1, 2, 1, 1 units), on the
+terms of the func_8002DE20 (Q11) grant. (The question said func_800187F4 had this exact word approved; that was
+inaccurate — Q29 covered four other DMPSX words — and the record carries the correction.) The 2026-09-26 class
+prong (C) stays strict: the operator's standing-rule idea was offered as "Worth considering", outside the options
+and the recommendation, so it is not adopted (it would also widen prong (C), which the 2026-09-26 second-batch Q6
+"Keep strict wording" confirmed as written). The grant rows land with each function; each landing still owes
+its own open items (func_8002D780's two FAKEs; the F2D0/F770 det/sum Ruling 11 package) and a fresh layer-2.
+
+## 2026-09-30 — OWNER RULING — the global COMMON model (tentative definitions, every file) (`.claude/rules/maspsx-gate-lists.md` § The global COMMON model)
+
+Thirtieth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 30, Q62; "Go ahead with your
+recommendations."). Option A: maspsx's three-field `.comm` parser fix plus its upstream `--use-comm-section` flag
+for every file (Makefile and engine/buildconfig.py mirror), landed first as their own byte-neutral `substrate:`
+commit (every src object built both ways, 0 differing; oracle SHA1; engine test green; fresh layer-2 PASS). Then
+cdrom_SetMix and func_80035F78 may land with file-scope tentative definitions, each with its own layer-2 — a
+tentative definition only for an object whose original bytes over its whole extent are zero (no starting value);
+anything else is false C and refused, whatever the gp shape;
+func_80036140 is judged fresh. This is the global, declaration-driven model the 2026-09-30 COMMON-gate ruling's
+point 3 reserved for the owner; that ruling stands in full (maspsx_comm_syms.txt retired and empty, no per-function
+or per-symbol toggle). Nothing is pre-decided.
+
+## 2026-09-30 — OWNER RULING — the D_800A37D2 / D_800A37D3 byte pair (`.claude/rules/no-new-park-categories.md` § Owner ruling 2026-09-30 — the D_800A37D2 / D_800A37D3 byte pair)
+
+Thirtieth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 30, Q63; "Go ahead with your
+recommendations."). Option A, conditional on the operator's stated check: a two-member struct at 0x800A37D2 is
+measured first (every consumer converted, full build, banked with the existing array measurement). If every
+single-object form fails, two adjacent scalars plus the FAKE-annotated index from &D_800A37D2 are admitted for this
+pair only, the pointer local `p` carrying its own FAKE annotation and meeting pointer-alias-fake-exception's
+prerequisites: func_8001C8DC lands with its own layer-2, and func_8003CF84's existing `(&D_800A37D2)[D_800A3748]` gets
+the same annotation in a `cheat-cleanup:` commit with its own layer-2. If a single object matches, the ruling
+lapses and that object is used. The 2026-07-20 / 2026-08-18 F4 refusal stands for every other pair.
+
+## 2026-09-30 — OWNER RULING — Ruling 13 (B) ratified as standing (`.claude/rules/ordinary-c-judge-decidable.md` § Ratification (owner, 2026-09-30, thirtieth batch, Q64))
+
+Thirtieth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 30, Q64). Owner, verbatim: "for item
+4, i agree with that precedent. Honest C is the explicit goal". The orchestrator's Ruling 14 reading (Ruling 13 (B)
+renewed for the overnight run) is ratified and made standing: in every layer-2 review, "no precedent" is not a
+FAIL ground for clearly-fine ordinary C meeting 13 (B)'s test, which still yields to any entry governing the
+construct and keeps "in doubt, FAIL". 13 (B) is made standing together with 13 (D)'s wall, as its limit; 13 (C)/(E)
+and Ruling 14 (B)-(D) stay run-scoped. "Standing" is the author's reading, flagged to the owner. The Grinder's
+frozen Judge policy is not edited by this record.

@@ -1318,6 +1318,42 @@ F2 signedness-split dual read (WEAK), F4 cross-symbol arithmetic idiom
 (ABSENT — SOTN's norm is the struct merge), F5 union-constructor CLOBBER
 (ABSENT).
 
+## Owner ruling 2026-09-30 — the D_800A37D2 / D_800A37D3 byte pair (thirtieth batch, Q63), conditional
+
+**Question and answer** (record: docs/grind/owner-rulings-2026-09-26.md, thirtieth batch, Q63; filed question:
+docs/grind/borderline.md 2026-09-30 "func_8001C8DC (+ func_8003CF84) — two scalar bytes indexed from the first
+one's address (F4)"; evidence memory/grind/func_8001C8DC/evidence.md s1 and s1/). The operator recommended
+"A narrowly, after one more check. [...] I'd have the struct measured first. If it also fails, admit A for this
+pair only." The owner (Trenton) answered, verbatim: **"Go ahead with your recommendations."**
+
+**Rule text.** The author's narrowing, not the owner's words. The F4 refusal above stands for every other
+symbol pair. For the two bytes at 0x800A37D2 / 0x800A37D3 only:
+
+1. **Condition precedent — the single-object forms are measured and fail.** Before anything spends this
+   ruling, the ledger banks, with the scripts and command lines, a scratch full-build SHA1 and the listing of
+   differing words for each (a whole-tree change: every consumer in five files moves together, so the
+   per-function sandbox cannot score it): the one-array form (`u8 D_800A37D2[2]`; SHA1 687de142 and 42
+   differing words, banked in evidence.md s1) AND a two-member struct form (one struct object at 0x800A37D2
+   with a `u8` member per byte, every C consumer of either byte converted), each failing to reproduce the
+   target. If any single-object declaration (array, struct, union) matches, this ruling lapses: that form is
+   used and the aggregate-merge entry decides it.
+2. **The admitted form.** Two adjacent scalar declarations (`u8 D_800A37D2;` / `u8 D_800A37D3;`, the second
+   keeping its own symbol row), each byte reached by its own name wherever the target does, and the
+   indexed access spelled from the first one's address (`p = &D_800A37D2; p[t != 0]++`,
+   `(&D_800A37D2)[D_800A3748]`). Each indexed use carries a `/* FAKE: ... */` annotation naming this ruling
+   and the ledger proof (the target reaches each byte by its own symbol, which a single object's constant-offset
+   element access cannot produce). The pointer local `p` is a C-level pointer alias to a global, which the
+   retro-audit FAIL named as a separate defect: its assignment carries its own `/* FAKE: ... */`, and it meets
+   [[pointer-alias-fake-exception]]'s prerequisites on their own (exhaustion recorded — the index without `p`,
+   s1/xsym.c, scores 19 — and the named mechanism).
+3. **The functions.** func_8001C8DC lands with this form, sandbox 0, oracle SHA1 and its own fresh layer-2
+   PASS. func_8003CF84's existing `(&D_800A37D2)[D_800A3748]` (COMPLETED, on main) is admitted with the same
+   annotation in a `cheat-cleanup:` commit carrying its own layer-2; if condition 1 lapses, it is respelled to
+   the matching single object instead.
+4. **Nothing else.** No other symbol pair, and no other construct, may cite this ruling; every other F4
+   occurrence stays refused and returns only through Q55's own route. Record: docs/grind/decisions.md
+   2026-09-30 OWNER RULING — the D_800A37D2 / D_800A37D3 byte pair.
+
 ## Owner ruling 2026-09-30 — SOTN precedent suffices (twenty-fourth batch, Q50)
 
 Context (record): the orchestrator flagged a tension between Q48

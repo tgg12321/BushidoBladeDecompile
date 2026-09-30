@@ -706,6 +706,53 @@ a placeholder word needs its own owner ruling. What follows is the author's narr
 the function, each under the terms above, not in the commit that records this ruling. Record:
 docs/grind/decisions.md 2026-09-28 OWNER RULING — func_800187F4 per-function GTE grant.
 
+### Per-function grants: func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770 (owner, 2026-09-30, thirtieth batch)
+
+**Question and answer** (record: docs/grind/owner-rulings-2026-09-26.md, thirtieth batch, Q61; filed question:
+docs/grind/borderline.md 2026-09-30 "func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770 — gte_rtv0's
+DMPSX command word"). The four functions, reopened under owner Q37/Q38/Q41, match with every GTE island written
+as the pinned inline_o.h / gtemac.h statements except one: `gte_rtv0()`'s DMPSX placeholder `.word 0x0000013f`
+is carried as the post-DMPSX word `.word 0x4A486012` (once in func_8002D780 at 0x8002D80C, func_8002F2D0 at
+0x8002F708 and func_8002F770 at 0x8002FC18; twice in func_8002EBDC, at 0x8002ED7C and 0x8002EE8C). The operator
+put option "A: Grant it for these four." (per-function rows, on the terms of func_8002DE20 / Q11) with a
+recommendation; the owner (Trenton) answered, verbatim: **"Go ahead with your recommendations."** (The question
+also said this exact word had been approved for func_800187F4; that was inaccurate — Q29 covered four other
+DMPSX words — and the record carries the correction.)
+
+**Four named per-function grants, not a class widening.** The 2026-09-26 class's prong (C) ("No respelling of
+any kind") stays exactly as written. The operator also floated a standing rule for this swap as "Worth
+considering", outside options A/B and outside the recommendation, so the reply does not adopt it; it would also
+widen prong (C), which the owner's 2026-09-26 second-batch Q6 "Keep strict wording" confirmed as written. No
+other function may cite these grants; another function with a placeholder word needs its own owner ruling. What
+follows is the author's narrowing.
+
+1. **The owner-row scope: gte_rtv0's DMPSX word only.** Each function's
+   `tools/grinder/owner_cluster_grants.txt` row admits exactly its `gte_rtv0()` units (1, 2, 1, 1 as listed
+   above), each identical to the pinned header's expansion (PsyQ Release 4.3 `inline_o.h` `gte_rtv0` :426-430,
+   the `engine/gtemacro.py` PINNED source and SHA-256 of § Owner ruling 2026-09-26 (A)) except that the `.word`
+   operand is `0x4A486012` in place of `0x0000013f`. Each substitution meets prongs (A)-(C) of § Extension
+   (owner, 2026-09-24), whose word mapping (MVMVA sf=1, mx=rotation, v=V0, cv=none, lm=0) and independent
+   sources are recorded there (pcsx-redux/nugget@22037bd3 `psyq/include/inline_n.h` :516-520;
+   Lameguy64/PSn00bSDK@5d9aa2d3 `libpsn00b/include/inline_c.h` :1183-1186), and each word is byte-identical to
+   the instruction at the corresponding position in `asm/funcs/<func>.s`. The layer-2 reviewer decodes every
+   field against both sources. The row admits nothing else.
+2. **Every other island is class-exact.** Every other island in each body is a qualifying unit under § Owner
+   ruling 2026-09-26 prongs (A), (B) and (D), statement for statement and character for character
+   (whitespace only) against the pinned `PINNED` excerpts. The inline_c.h one-statement `gte_rtv0` spelling
+   (banked as `candidate_alt_rtv0_inline_c_h.c`) is not the admitted form: it would mix islands from two Sony
+   headers that define the same macro names inside one function.
+3. **Everything else stands.** Conditions 2-5 of § Owner ruling 2026-09-23 apply: inline in `src/*.c`,
+   sandbox 0 and full-build SHA1 == oracle, region hashes in `tools/canonical_asm_regions.json`, the
+   `inline_asm_canonical.txt` row in its own `auth:` commit with the Pure-C attempts blocks, the `canonical`
+   gate's route recorded. A fresh layer-2 `cheat-reviewer` reviews the row and the body. Each body's C is
+   judged under [[ordinary-c-judge-decidable]] on its own merits; these grants decide none of it. In
+   particular func_8002D780's two FAKE constructs (the `flag` parameter staging; the `m = dist` re-store) and
+   func_8002F2D0 / func_8002F770's det/sum shared value (Ruling 11) keep their own routes and reviews.
+
+**Not in the rules commit.** Each owner_cluster_grants.txt row and inline_asm_canonical.txt row lands with its
+function, under the terms above, citing owner Q61. Record: docs/grind/decisions.md 2026-09-30 OWNER RULING —
+per-function GTE grants for func_8002D780 / func_8002EBDC / func_8002F2D0 / func_8002F770.
+
 # Why this distinction matters
 
 For a long time the BB2 project lumped canonical and cheat asm together as

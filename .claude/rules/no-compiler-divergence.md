@@ -98,7 +98,10 @@ cheat (Q17).
    gaps; new GLOBAL behaviour changes require owner policy sign-off. (The
    owner signed off on one new per-function gate on 2026-09-26, fourth batch:
    `maspsx_comm_syms.txt`. WITHDRAWN 2026-09-30: the owner ruled that gate a
-   cheat; the list is retired and empty, [[maspsx-gate-lists]].) The same batch authorized a bug-fix-scope
+   cheat; the list is retired and empty, [[maspsx-gate-lists]]. The owner then
+   signed off, 2026-09-30 thirtieth batch Q62, on the GLOBAL declaration-driven
+   model: the three-field `.comm` parser fix plus upstream `--use-comm-section`
+   for every file, [[maspsx-gate-lists]] § The global COMMON model.) The same batch authorized a bug-fix-scope
    parser fix: maspsx's load/store parser accepts an empty-offset `($REG)`
    operand, as Sony's ASPSX 2.34 does (calibration check, commit 4ef521cdd,
    `memory/grind/func_8002DE20/aspsx-paren-check/`), provided every object
