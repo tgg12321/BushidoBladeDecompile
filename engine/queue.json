@@ -59,17 +59,6 @@
       "addr": "8001C8DC"
     },
     {
-      "func": "PutDispEnv",
-      "file": "display",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): macro-hidden volatile cast on non-IRQ global g_gpu_disp_env (DISP_RECT_EQ) + per-use pun. Banked: memory/grind/PutDispEnv/rejected/retro-audit-2026-09-29.c",
-      "addr": "8007BC08"
-    },
-    {
       "func": "func_80052D00",
       "file": "text1b",
       "distance": 0,
@@ -375,14 +364,14 @@
     }
   ],
   "counts": {
-    "total": 31,
-    "active": 19,
+    "total": 30,
+    "active": 18,
     "by_status": {
-      "active": 19,
+      "active": 18,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 17,
+      "C": 16,
       "ASM-PARTIAL": 2
     }
   },
