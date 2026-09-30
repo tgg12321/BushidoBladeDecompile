@@ -34,6 +34,16 @@
       "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): Alarm_t merge incomplete/TU-local (per-word Alarm_plus_* still used) + Intr second object over g_cd_status_a/b/c. Banked: memory/grind/CD_cw/rejected/retro-audit-2026-09-29.c"
     },
     {
+      "func": "func_80075F80",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): per-use byte pun ((u8 *)D_8009BCF8)[index] over merged Unk8009BCF8Record[20], stride as magic *2/*20. Banked: memory/grind/func_80075F80/rejected/retro-audit-2026-09-29.c"
+    },
+    {
       "func": "func_8005C8A8",
       "file": "text1b",
       "distance": 752,
@@ -267,14 +277,14 @@
     }
   ],
   "counts": {
-    "total": 23,
-    "active": 11,
+    "total": 24,
+    "active": 12,
     "by_status": {
-      "active": 11,
+      "active": 12,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 9,
+      "C": 10,
       "ASM-PARTIAL": 2
     }
   },
