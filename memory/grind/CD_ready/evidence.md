@@ -86,3 +86,30 @@ Applied 2026-09-30 (`lock.ps1 rebuild ff-intr`): build SHA1 62efab4f73f992798c43
 oracle. `layer2 hash CD_ready` = 8dc0c4b626cbfc4a (body_kind asm). This supersedes the C-body hash
 752cc81b0c982a88 in "Post-rebuild" above. check_completion_integrity flags CD_ready
 ("NOT in queue ... 1 cheat construct") until `queue reopen CD_ready --file system` runs after the src commit.
+
+## 2026-09-30 — laneB: SOTN's own shape closes it once the Alarm merge exists
+
+The rev-intr FAIL's frontier was check2's `-1($s3)` ready-byte access. With Sony's
+`Alarm_t Alarm` merged (CD_cw landing 181820b49) and the bios.c static-inline helpers
+(set_alarm / get_alarm / callback, bios.c:95 / :102 / :210 @aa53500) available in the TU,
+SOTN's matched CD_ready (src/main/psxsdk/libcd/bios.c:260 @aa53500) compiles to the target
+VERBATIM: plain `Intr.c` / `Intr.ready`, no handles, no wraps, no staging. cse/loop hoist
+&Intr, &Intr+1, &Intr+2 into $s2/$s6/$s3 and express check2's ready byte as -1($s3) by
+themselves. The earlier SOTN-shape probe (rejected/ff-intr-sotn-shape-20.c, 20) differed
+only in using per-word Alarm externs and hand-inlined helpers.
+
+Measured (probes-0930/gen.py builds a full system.c copy with the helper block moved
+above CD_sync, Sony's order; scored with memory/grind/CD_cw/probes-0930/score_full.py):
+| variant | CD_ready | CD_sync | CD_datasync | CD_cw |
+|---|---|---|---|---|
+| SOTN CD_ready (candidate.c), CD_sync/CD_datasync as on main | 2 (0 scored hunks; the &Intr lui/addiu against main's D_800A1494 relocation, same artifact as CD_cw's) | 0 | 0 | 0 |
+| + SOTN CD_sync (probes-0930/CD_sync_sotn.c, bios.c:232) | 2 | 0/160 | 0 | 0 |
+| + SOTN CD_datasync (probes-0930/CD_datasync_sotn.c, bios.c:459) | 2 | 0 | 0/91 | 0 |
+| CD_datasync with a direct return on each exit (rejected/datasync-direct-returns-4.c) | – | – | 4/91 (94 insns) | – |
+Every other scorable system.c function stays 0 in the combined file.
+
+So CD_sync and CD_datasync can shed every FAKE they carry (pointer-alias handles,
+do-while(0) wraps, named staging intermediates, the staged `src` reuse): each becomes
+SOTN's verbatim body. The only construct left needing paperwork is CD_datasync's `ret`,
+written on each of its three exits exactly as SOTN's (bios.c:460): Q51 citation + Q53
+FAKE note, direct returns = 4.
