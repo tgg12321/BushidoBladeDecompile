@@ -63,9 +63,6 @@ g_cd_req_reg = 0x800A1484;
 g_cd_irq_reg = 0x800A1488;
 g_cd_dma_madr = 0x800A148C;
 g_cd_spu_voice = 0x800A1490;
-g_cd_status_a = 0x800A1494;
-g_cd_status_b = 0x800A1495;
-g_cd_status_c = 0x800A1496;
 /* data-wave 2026-09-07: g_cd_debug_level = 0x800A11C0 retired; CD_debug is now object-defined */
 /* data-wave 2026-09-07: g_cd_mode = 0x800A11C4 retired; CD_status is now object-defined */
 /* data-wave 2026-09-07: g_cd_param = 0x800A11D0 retired; CD_pos is now object-defined */
@@ -611,7 +608,6 @@ g_seq_init_pending              = 0x800A38C6;  /* 0xFFFF = pending init request,
 g_mental_bar_max_packets        = 0x800A38F8;  /* max-count cap for mental-bar busy-wait (paired with g_mental_bar_packet_count) */
 g_motion_ex_counter_p2          = 0x800F0BC4;  /* p2's motion-ex counter (paired with D_800F0BC0 p1) */
 g_dma_madr_ptr                  = 0x800A263C;  /* pointer to DMA register; (val >> 24) & 0x7F = status read */
-Alarm = 0x800F19B8;  /* libcd bios.c alarm {time, count, name} (SOTN name; memory/closer/libcd-identity.md) */
 Alarm_plus_0x8          = 0x800F19C0;  /* cached pointer to panic format string (&D_80016240) */  /* data-wave 2026-09-25: was g_panic_msg_format_ptr */
 _snd_seq_tick_env_plus_0x4              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */  /* data-wave 2026-09-07: was g_alarm_armed_flag */
 D_800A14E4              = 0x800A14E4;  /* volatile alarm handle; -1 = no alarm */  /* data-wave 2026-09-24: was g_irq_alarm_handle */
@@ -2307,7 +2303,6 @@ D_8009BC04                                 = 0x8009BC04;  /* +8 from g_str_r_800
 g_menu_screen_live_byte_c_plus_1                        = 0x8009BD44;  /* +1 from g_menu_screen_live_byte_c (0x8009BD43) */
 g_intro_get_set_value_plus_4                            = 0x8009BD84;  /* +4 from g_intro_get_set_value (0x8009BD80) */
 g_intro_get_set_value_plus_8                            = 0x8009BD88;  /* +8 from g_intro_get_set_value (0x8009BD80) */
-g_cd_status_c_plus_2                                    = 0x800A1498;  /* +2 from g_cd_status_c (0x800A1496) */
 g_sys_irq_vtable_plus_4                                 = 0x800A2604;  /* +4 from g_sys_irq_vtable (0x800A2600) */
 g_sys_irq_counter_plus_4                                = 0x800A260C;  /* +4 from g_sys_irq_counter (0x800A2608) */
 _snd_seq_tick_env_plus_0x8                               = 0x800A26D4;  /* +4 from g_alarm_armed_flag (0x800A26D0) */  /* data-wave 2026-09-24: was g_alarm_secondary_cb_ptr */
@@ -3536,7 +3531,7 @@ CdSetDebug = 0x80080168;  /* swaps debug level global D_800A11C0, returns old */
 CdIntToPos = 0x800806A4;  /* frames+150 -> min/sec/frame BCD triplet (magic-const div chains) */
 CdPosToInt = 0x800807A8;  /* BCD min/sec/frame triplet -> absolute frame count -150 */
 CD_vol = 0x80081718;  /* writes cmd via g_cd_index_reg/g_cd_irq_reg register-pointer block */
-CD_flush = 0x800817A0;  /* acks IRQ via g_cd_irq_reg, drains D_800A1496 */
+CD_flush = 0x800817A0;  /* acks IRQ via g_cd_irq_reg, resets the libcd Intr status block (src/system.c) */
 CD_initvol = 0x80081880;  /* programs CD-audio path regs (g_cd_index_reg block + D_800A1490) */
 CD_initintr = 0x80081974;  /* irq_DisableInterrupts, clears cd state globals D_800A11B4..C8, irq_EnableInterrupts */
 CD_getsector = 0x80081D1C;  /* CD sector DMA -> RAM via g_cd_dma_ctrl + g_cd_index_reg block */
