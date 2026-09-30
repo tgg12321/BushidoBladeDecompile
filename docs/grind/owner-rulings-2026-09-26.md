@@ -485,3 +485,25 @@ rest [...]. Backfilling old review records: no."
 ## Standing directive (owner, verbatim above)
 Highest priority: no regressions, cheats or workarounds introduced; weed out remaining cheats already in the
 project; SOTN is the gold standard when in doubt.
+
+# Owner exchange 2026-09-30 (twenty-fourth batch, in conversation) — VERBATIM RECORD — GRANTED
+Context: the orchestrator flagged a tension between Q48 (volatile locals admitted only with target-byte proof;
+"'SOTN does it' isn't evidence") and the owner's same-day guidance "SOTN is the gold standard when in doubt", and
+asked whether SOTN precedent should be enough. It also proposed a project-wide semantic cheat sweep of the ~1,150
+pre-2026-09-19 completions. The owner's answer, verbatim:
+
+> "Wait on a project wide sweep. But SOTN precedent is good enough for any constructs if they verifiably exist in
+> the SOTN repo"
+
+## Q50 — SOTN precedent suffices
+A construct is admissible when it verifiably exists in the SOTN decomp repository. This supersedes Q48's "SOTN does
+it isn't evidence" clause: a volatile local that SOTN ships is admitted on that precedent (the target-byte proof of
+Q48 remains an alternative route when no SOTN precedent exists).
+Author's reading of "verifiably exist" (not the owner's words; flag to the owner if a case turns on it): the
+citation is a file:line in the SOTN repo that is part of a PSX (GCC 2.7.2) build — config/splat.*.yaml
+membership, per memory reference/sotn-citation-requires-version-check — and the cited construct does the same
+thing as ours when read, not merely shares its spelling (memory feedback/citation-check-reads-the-cited-code).
+Layer-2 checks the citation.
+
+## Project-wide sweep — deferred
+The owner asked to wait on a project-wide sweep of pre-2026-09-19 completions. Not started.
