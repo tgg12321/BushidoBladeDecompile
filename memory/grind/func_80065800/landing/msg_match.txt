@@ -1,0 +1,81 @@
+Match: func_80065800 — COMPLETED-INLINE-ASM-CANONICAL (manual); per-mode tables merged
+
+The shared draw routine of the 18 per-mode effect wrappers in text1b_tu1c.c (1454
+insns): it projects the mode's position record through the camera, picks texture,
+colour and quad size from the mode and its timer, shapes the four corners and links
+one POLY_FT4. It goes from INCLUDE_ASM to ordinary C plus eight GTE islands,
+authorized by the row in the preceding auth: commit (owner rulings 2026-09-23 +
+2026-09-24 extension). HEAD carried INCLUDE_ASM (asm-until-matched); this is its
+first C body on main.
+
+sandbox --disable all == 0 (1454/1454, 0 scored hunks) on the spliced src; full build
+SHA1 == oracle 62efab4f73f992798c43e8c730aa43baa10bb4fa (lock.ps1 rebuild). This
+commit records the eight island hashes in tools/canonical_asm_regions.json.
+Ledger: memory/grind/func_80065800/evidence.md (2026-09-30 sections) and evidence/.
+
+Aggregate merge (no-new-park-categories.md, per-word splat symbol -> aggregate merge):
+- include/game.h declares `extern s16 D_800F0BA8[18];` (per-mode timers) and
+  `extern Unk800F0C10Record D_800F0CA0[18];` (per-mode 3-word position records, the
+  shape D_800F0C10 already uses). Object model from the original binary:
+  asm/funcs/func_80065800.s:39-45 indexes the records as base + mode*12 and :147-152
+  the timers as base + mode*2 (modes 8/9 read element mode-2, :351-356).
+- src/text1b_tu1c.c: the 78 per-word externs are gone and all 28 other consumers
+  (func_80064E90..func_800657B0) use element/member access, no casts. Each sandboxes 0
+  (0 hunks). One consumer changed shape: func_80065680's `u16 *v1` becomes `s16 *` (the
+  element type), so `v0 = *v1 + 1; *v1 = v0;` (which then loads lh; the target has lhu)
+  is written `*v1 = *v1 + 1;`, and its `(s16)D_800F0BA8[14]` cast is dropped.
+- Retired alias rows (no C or assembled-asm referrer remains): 62 undefined_syms_auto.txt
+  rows (D_800F0BAA..D_800F0BCA, D_800F0CA4..D_800F0D74) and 65 named_syms.txt
+  g_motion_ex_* rows naming bytes inside the two arrays, including the two second names
+  for the bases (g_motion_ex_counter_table_base, g_motion_ex_state_block_table_12 /
+  _id0_pos). The prose of the named_syms rows that stay now names D_800F0BA8[k] /
+  D_800F0CA0[r].
+
+Jump tables: jtbl_800158F8 / jtbl_80015940 are deleted from src/text1a_b_pre_rodata_b.c.
+This function's two switch tables are compiler output at the head of
+text1b_tu1c.o(.rodata), which bb2.ld already links directly after
+text1a_b_pre_rodata_b.o, so they land at 0x800158F8 / 0x80015940 (build SHA1). Same
+operation as func_8006B578's table (2a5db4c32); bb2.ld is unchanged.
+
+Load-bearing (memory/grind/func_80065800/evidence.md and evidence/):
+- The context pointer locals. D_800A34EC's value is kept in `s32 outer` and nine field
+  pointers (p_dp .. p_th) are made once at entry, as in the sibling func_80067D14; the
+  target holds them in s-registers / stack homes (asm/funcs/func_80065800.s:15-26).
+- (MATRIX *)outer as the gte_SetTransMatrix operand (target lw $t4,0x14($s0)): the macro
+  reads only +20..+28, which is p_t, the vector ApplyRotMatrixLV has just written.
+- Cross-case control flow: `goto size_sel` (10/11 into 6/7's size block), `goto quad`
+  (12-15 and 8/9 into 3/4's coordinates; 112 -> 91 when introduced), `goto again` (6/7,
+  10/11 re-run the body for mode + 2 after linking the first prim). Case 0 is a plain
+  duplicate of case 5's else-arm, placed after case 5 (same bytes as a `case 0:` label
+  inside that else-arm; the plain form landed).
+- Case 12-15: no pointer local; D_800F0BA8[arg0] at every read and the D_800A3488 store
+  written before `n = 10 - D_800F0BA8[arg0];` reproduces the target's second timer load
+  (evidence/case12-store-order.txt: n first 13, pointer forms 24).
+- y read as `*(s32 *)D_800A34B8 >> 16` (lh 2(a0)), the sibling idiom (216 -> 112).
+- D_800A3488/D_800A3490/D_800A34A8.. are the TU's existing s32 pointer-holding globals,
+  read and written through casts as in this TU's other emitters; the texture records
+  are the separate D_8009B8C8.. dlabels of asm/data/7D920.data.s, addressed like
+  func_8006295C / func_80063084 do. D_8009BD44 is read as the TU already declares it
+  (`extern s32 D_8009BD44[]`); the dossier flags it as a split aggregate
+  (g_menu_screen_live_byte_c + 1). This body does not change that and adds no new
+  handle or cast on those bytes.
+
+FAKE constructs (annotated at the declarations, each citing its evidence file):
+- tbl: pointer alias of D_800F0BA8 (pointer-alias-fake-exception.md). Case 10/11 is
+  `tbl = D_800F0BA8; t = tbl + arg0;`. The target loads the base into its own register
+  before the index shift (lui/addiu v1; sll v0; addu a1,v0,v1). .rtl/.greg in
+  evidence/case10-base-register.txt. Measured alternatives: `t = D_800F0BA8; t +=
+  arg0;` 7 (base in t's register), `&D_800F0BA8[arg0]` / `D_800F0BA8 + arg0` 8
+  (expand emits the shift first), no pointer 11 (1457 insns), base set once at entry 8.
+- sw, sh: named intermediates (named-local-fake-exception.md; no-new-park-categories.md
+  named-intermediate entry). Written once, read once, real values, byte-neutral. Inline,
+  fold-const.c split_tree reassociates `*p_w * (X * 25)` into `(*p_w * 25) * X` (sw
+  inline 14, sh inline 13 / 1455 insns). Evidence: evidence/named-locals.txt.
+- w, h: named intermediates. *p_w / *p_h are loaded once before the corner sign test;
+  inline, each arm loads (w inline 11 / 1456 insns, h inline 92, ?: form 12).
+  Evidence: evidence/named-locals.txt.
+
+No pins, no barriers, no reused variables (arg0 += 2 is the paired mode, its one
+update).
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>

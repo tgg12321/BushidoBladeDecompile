@@ -56,3 +56,43 @@ Findings:
   candidate, so it needs FAKE paperwork or a better spelling.
 - Residual real diffs: case 10 t-pointer insn order; case 12 then-arm reload of TMR (CSE path);
   loop init order (move s1,zero / move s3,s7).
+
+## 2026-09-30 -- laneA manual session 2 (cont.): sandbox 0 on the merged TU; landing prepared
+
+candidate.c == the body staged in src/text1b_tu1c.c (verbatim). Sandbox --disable all on the
+spliced src: 0 (1454/1454, 0 source-level / 0 operand-only hunks); full build SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa (lock.ps1 rebuild).
+Landing package (memory/grind/func_80065800/tools/land.py, run from the repo root under the lock):
+- Aggregate merge: include/game.h declares `s16 D_800F0BA8[18]` (per-mode timers) and
+  `Unk800F0C10Record D_800F0CA0[18]` (per-mode position records); the 78 per-word externs in
+  text1b_tu1c.c are gone and every consumer (func_80064E90..func_800657B0, 28 functions) uses
+  element/member access. Each consumer sandboxes 0. Only func_80065680 changed shape: its u16
+  pointer local became `s16 *` (the element type), so `v0 = *v1 + 1; *v1 = v0;` (now lh, target
+  lhu) is spelled `*v1 = *v1 + 1;` (HImode add, lhu), and the `(s16)` cast on D_800F0BA8[14] is gone.
+- Alias rows retired: 62 undefined_syms_auto.txt rows (D_800F0BAA..D_800F0BCA,
+  D_800F0CA4..D_800F0D74) and 65 named_syms.txt g_motion_ex_* rows naming bytes inside the two
+  arrays; the prose in the rows that stay now names D_800F0BA8[k] / D_800F0CA0[r].
+- jtbl_800158F8 / jtbl_80015940 deleted from src/text1a_b_pre_rodata_b.c: this function's two
+  switch tables are now compiler output at the head of text1b_tu1c.o(.rodata), which bb2.ld
+  links right after text1a_b_pre_rodata_b.o, landing at 0x800158F8 / 0x80015940 (build SHA1).
+- Canonical row + 8 region hashes (the eight inline_c.h islands, gate ASM-PARTIAL 15/1454).
+Closing the last residuals (see the evidence/ files):
+- case 12-15: no pointer local; D_800F0BA8[arg0] at every read with the D_800A3488 store before
+  n = 10 - D_800F0BA8[arg0] reproduces the target's second timer load (evidence/case12-store-order.txt).
+- case 10/11: `tbl = D_800F0BA8; t = tbl + arg0;` (pointer alias, FAKE) gives the base its own
+  register ahead of the shift (evidence/case10-base-register.txt: .rtl/.greg for this form,
+  `t = D_800F0BA8; t += arg0;` 7, `&D_800F0BA8[arg0]` 8, no pointer 11, base at entry 8).
+- case 5 / case 0: a plain duplicated case 0 body after case 5 gives the same bytes as the old
+  `case 0:` label inside case 5's else (sandbox 0, build SHA1); the plain form landed.
+- sw / sh / w / h: FAKE named intermediates (evidence/named-locals.txt: inline forms 14 / 13 /
+  11 / 92; the ?: corner spelling 12).
+
+## 2026-09-30 -- BANKED at session close (landing prepared, not reviewed)
+The owner closed the session before layer-2 ran. The landing package above was staged, then
+reverted (src/, include/, *.txt, regions json back to HEAD by reverse-applying laneA's own
+patch); main still carries INCLUDE_ASM. Floor: sandbox 0 (1454/1454) with the merge applied,
+full build SHA1 == oracle (measured under the lock, 2026-09-30). To resume: under the landing
+lock run `python3 memory/grind/func_80065800/tools/land.py` (it reads tmp/f65800/final.c = a copy
+of candidate.c), append landing/row.txt to inline_asm_canonical.txt, add the 8 region hashes
+(landing/addrh.py), rebuild, sandbox the 28 consumers, precheck, layer-2. Commit message drafts:
+landing/msg_auth.txt, landing/msg_match.txt. layer2 hash of the staged body was c428aa424743db26.

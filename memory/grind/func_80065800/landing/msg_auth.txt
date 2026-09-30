@@ -1,0 +1,34 @@
+auth: func_80065800 (text1b_tu1c.c) — canonical row under owner rulings 2026-09-23/24
+
+Adds the inline_asm_canonical.txt row for func_80065800, tagged
+gcc-cannot-emit:gte_cop2_sdk_macro. The island hashes go into
+tools/canonical_asm_regions.json with the body in the next commit.
+Authority: owner ruling 2026-09-23 (inline-asm-policy.md § Owner ruling
+2026-09-23, commit 4494f53a6) as extended by owner ruling 2026-09-24 (§ Extension,
+commit 4f6bf28e7). The row lands ahead of the body, as the ruling requires (audit
+G1 split).
+
+It covers eight inline islands, each a PsyQ DMPSX inline_c.h macro body:
+gte_SetRotMatrix (:297-310), gte_SetTransMatrix (:360-369), gte_ldv0 (:16-20),
+gte_rtps (:484-487), gte_stsxy (:900-904), gte_stdp (:1018-1022), gte_stflg
+(:1024-1030) and gte_stszotz (:1082-1089). Provenance is pinned to Release 4.3 at
+silent-hill-decomp@a1f407cb, sha256 de1a70ef..., and confirmed against an
+independent 4.3 copy at xenogears-decomp@54d7ef3e, sha256 2f1261e5... (same text and
+lines for every macro except gte_rtps, whose placeholder that project replaced; the
+placeholder text is confirmed against rood-reverse@11349608 Release 4.5,
+byte-identical except the $PSLibId line, as in func_80063E10's row).
+
+One command macro carries the post-DMPSX word in place of the header's placeholder
+(Extension (A)-(D)), byte-identical to the original instruction:
+- gte_rtps: 0x0000007f -> 0x4A180001, RTPS sf=1, at 0x80065930
+Independent no-DMPSX mapping: pcsx-redux/nugget@22037bd3 psyq/include/inline_n.h
+(:498-502) and PSn00bSDK@5d9aa2d3 libpsn00b/include/inline_c.h (:1159-1162):
+"cop2 0x0180001".
+
+The gte_SetTransMatrix operand is (MATRIX *)outer: the target reads the translation
+as lw $t4,0x14($s0) with s0 = outer (0x800658FC), i.e. outer+0x14..+0x1C, the VECTOR
+ApplyRotMatrixLV has just written. No preamble, no GPR outside macro text, operand
+seats chosen by cc1. Canonical gate route ASM-PARTIAL: 15/1454 cop2 insns in regions
+[29,30] [34,36] [65,65] [67,68] [72,74] [77,78] [80,80] [84,84].
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>

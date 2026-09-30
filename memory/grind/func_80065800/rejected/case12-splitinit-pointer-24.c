@@ -1,13 +1,3 @@
-/* Shared draw routine of the per-mode effect wrappers (func_800652F4..func_800657B0,
- * mode 0..0x11): projects this mode's D_800F0CA0 position record through the current
- * camera, picks the texture/colour and quad size from the mode and its D_800F0BA8
- * timer, shapes the four corners (switch 2) and links one POLY_FT4 into the OT. Modes
- * 6/7 and 10/11 re-run the body for the paired mode (arg0 + 2) via `goto again`.
- *
- * Eight GTE islands, each a PsyQ Run-time Library Release 4.3 inline_c.h (DMPSX)
- * macro body - instruction text, "r" operands and clobbers as the header has them;
- * only separators/whitespace differ, except that gte_rtps carries the post-DMPSX
- * command word in place of the header's DMPSX placeholder (noted at the island). */
 u8 func_80065800(s32 arg0) {
     extern s32 D_800A3720;
     extern s32 D_800A3724;
@@ -40,18 +30,12 @@ u8 func_80065800(s32 arg0) {
     s16 *p_th;
     VECTOR *dst;
     s32 n;
-    s32 w; /* FAKE: named intermediate - *p_w read once before the corner sign test
-            * (memory/grind/func_80065800/evidence/named-locals.txt) */
-    s32 sw; /* FAKE: named intermediate - the width scale multiplied into *p_w whole
-             * (memory/grind/func_80065800/evidence/named-locals.txt) */
-    s32 sh; /* FAKE: named intermediate - the height scale multiplied into *p_h whole
-             * (memory/grind/func_80065800/evidence/named-locals.txt) */
-    s32 h; /* FAKE: named intermediate - *p_h read once before the corner sign test
-            * (memory/grind/func_80065800/evidence/named-locals.txt) */
+    s32 w;
+    s32 sw;
+    s32 sh;
+    s32 h;
     s16 *t;
-    s16 *tbl; /* FAKE: pointer alias of D_800F0BA8 - case 10/11's base address in its own
-               * register ahead of the index shift
-               * (memory/grind/func_80065800/evidence/case10-base-register.txt) */
+    s16 *tbl;
     s32 i;
 
     outer = D_800A34EC;
@@ -243,15 +227,17 @@ again:
         prim->b0 = 0x13;
         *(s16 *)D_800A34A8 *= 2;
         *(s16 *)D_800A34AC *= 2;
-        if (D_800F0BA8[arg0] >= 8) {
+        t = D_800F0BA8;
+        t += arg0;
+        if (*t >= 8) {
             D_800A3488 = (s32)D_8009B8C8;
-            n = 10 - D_800F0BA8[arg0];
+            n = 10 - *t;
             prim->r0 = n << 6;
             prim->g0 = n * 0x70 / 3;
             prim->b0 = n * 0x60 / 15;
             *(s32 *)D_800A3490 = 0x2E;
         } else {
-            if (D_800F0BA8[arg0] >= 5) {
+            if (*t >= 5) {
                 D_800A3488 = (s32)D_8009B9F0;
             } else {
                 D_800A3488 = (s32)D_8009B9E8;

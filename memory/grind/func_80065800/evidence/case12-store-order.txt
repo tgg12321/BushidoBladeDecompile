@@ -1,0 +1,22 @@
+  func_80065800 case 12-15, the >= 8 arm (2026-09-30, laneA)
+
+Target (0x80065DC8+, insns 386-399 of 1454):
+    la v1,D_800F0BA8; sll v0,s3,1; addu a0,v0,v1; lh v1,0(a0)   the test read
+    slti v0,v1,8; bnez v0,<else>; [slti v0,v1,5]                 else arm reuses v1
+    lui v1,0x5555; ori; lh v0,0(a0); li a0,10; subu a0,a0,v0     >= 8 arm READS THE TIMER AGAIN
+    ... la a1,D_8009B8C8; ... sw a1,D_800A3488(gp)               the D_800A3488 store comes later
+
+Landed spelling: no pointer local, D_800F0BA8[arg0] at every read, and the D_800A3488 store written
+BEFORE the n computation in the >= 8 arm. Score 4 (jtbl addend only), 1454/1454.
+Measured on the landed body with only this arm changed (memory/grind/func_80065800/tools/msbx.py):
+- n computed before the store (rejected/case12-n-before-store-13.c): score 13, 1452/1454 - the
+  second read is CSEd into the test's register (no reload) and the address is the lui/addu at-form.
+- `t = &D_800F0BA8[arg0]` with *t reads (rejected/case12-pointer-24.c): score 24, 1451/1454.
+- `t = D_800F0BA8; t += arg0;` with *t reads (rejected/case12-splitinit-pointer-24.c): score 24.
+Earlier probes on the session-2 body (tmp/f65800/v26..v33, ~60 variants over the t-init form,
+the read forms and the statement order) scored 8-27; the landed form is the only one at 4.
+A 648-variant sweep on a standalone reduction (memory/grind/func_80065800/tools/psxt/sweep.py,
+checker chk.py, results sweep.out; the base case tools/psxt/t1.c gives the same case-12 code
+under our cc1 and PsyQ cc1psx, tools/psxt/run.sh): all 78 variants that keep the pointer in a register AND reload the timer ahead
+of the D_800A3488 store ("reg reload hoist") have the store written before the n read; none of
+the n-first variants does.
