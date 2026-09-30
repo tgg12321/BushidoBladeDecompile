@@ -43,7 +43,7 @@ func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row 
 # so it earns a row on exactly the Ruling 3 terms the two 2026-09-21 rows got.
 # Operator-added at the owner's instruction 2026-09-22 (conversation, the
 # manual-lane landing of func_8002F2D0); every other gate applies unchanged:
-func_8002F2D0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :81; row per owner Ruling 3 terms, 2026-09-15, decisions.md:26863; operator-added 2026-09-22)
+# func_8002F2D0 row removed 2026-09-30: reopened per owner Q41 (2026-09-30, a67c58486) -- the owner did not approve the 789ce34d7 row; islands identical to the Q38 reopens (func_8002F770/D780/EBDC).
 # 2026-09-23 — the next census member reached floor 0 in a manual session and
 # earns a row on the same Ruling 3 terms as func_8002F2D0. Operator-added while
 # landing func_8002F770; every other mechanical and review gate still applies:
