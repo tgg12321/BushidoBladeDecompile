@@ -61,7 +61,6 @@ extern void func_80057E84(u8 *, u8 *, s32, s32);
 #define i t4
 #define j t4
 #define n t4
-#define et t5
 s32 func_80058580(u8 *p) {
     s32 wx;
     u8 *pscript;
@@ -75,6 +74,7 @@ s32 func_80058580(u8 *p) {
     u8 *script3;
     u8 mode;
     s32 t1, t2, t3, t4, t5;
+    s16 et;
     s32 k;
     s32 va;
     s32 vd;
@@ -82,7 +82,7 @@ s32 func_80058580(u8 *p) {
     s32 vn;
     s32 vc;
     s32 adj;
-    s32 sc;
+    s16 sc;
     u8 *pois;
     s32 tx, ty2;
     s32 r;
@@ -602,9 +602,9 @@ s32 func_80058580(u8 *p) {
                 }
             }
         } else if (CPU_S16(0x398) == 0) {
-            flip = CPU_TBL(6);
+            s32 tired = CPU_TBL(6);
             r = rand() & 0xFF;
-            if (p[0x440] == 4 ? r < (flip >> 2) : r < flip) {
+            if (p[0x440] == 4 ? r < (tired >> 2) : r < tired) {
                 best = -1;
                 besti = -1;
                 j = 0;
@@ -634,10 +634,10 @@ s32 func_80058580(u8 *p) {
                         case 1:
                         case 3:
                             if (rand() & 1) {
-                                flip = 1;
                                 if (p[0x449] != 0) {
                                     goto pick_next;
                                 }
+                                flip = 1;
                             } else if (p[0x445] != 0) {
                                 goto pick_next;
                             }
@@ -795,7 +795,7 @@ s32 func_80058580(u8 *p) {
                         }
                         lo = e[1] * 40;
                         hi = e[2] * 40;
-                        et = (u8)(e[0] & 7);
+                        et = e[0] & 7;
                         ok = 0;
                         if (et == 0) {
                             if (lo < D_800A387C && D_800A387C < hi) {
@@ -809,7 +809,8 @@ s32 func_80058580(u8 *p) {
                                 lo = -(et < 5) & 100000;
                                 hi = 100000;
                             } else {
-                                adj = (((0x1000 - lv) * 625) >> 10) - 400 + CPU_S16(0x40A);
+                                adj = (((0x1000 - lv) * 625) >> 10) - 400;
+                                adj += CPU_S16(0x40A);
                                 lo += adj;
                                 hi += adj;
                             }
@@ -824,16 +825,20 @@ s32 func_80058580(u8 *p) {
                             } else if (lo < D_800A387C && D_800A387C < hi &&
                                        CPU_S16(0x43C) < 0x200 - (CPU_S16(0x438) >> 4) &&
                                        (CPU_S32(0x430) & 0x280) != 0x280) {
-                                if (et == 5) {
+                                switch (et) {
+                                case 5:
                                     if ((0x78 >> p[0xB1]) & 1) {
                                         ok = 1;
                                     }
-                                } else if (et == 6) {
+                                    break;
+                                case 6:
                                     if (p[0x443] == 0x15 || CPU_S16(0x330) != 0) {
                                         ok = 1;
                                     }
-                                } else {
+                                    break;
+                                default:
                                     ok = 1;
+                                    break;
                                 }
                             }
                         }
@@ -988,4 +993,3 @@ s32 func_80058580(u8 *p) {
 #undef i
 #undef j
 #undef n
-#undef et
