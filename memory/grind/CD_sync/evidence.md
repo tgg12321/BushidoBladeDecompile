@@ -45,3 +45,12 @@ needed, and no site can be plain member access.
 now addressing Intr too, `sandbox CD_sync --disable all` = 0 (160/160 insns).
 `tools/check_completion_integrity.py`: OK. `layer2 hash CD_sync` = 36b70614f987fd0f (uncommitted tree; diff
 tmp/audit-2026-09-29/ff-intr.diff). Awaiting a fresh layer-2 cheat-reviewer.
+
+## 2026-09-30 — Alarm merge (laneB, landed with CD_cw)
+The timeout alarm's per-word externs (D_800F19B8 / Alarm_plus_0x4 / Alarm_plus_0x8) are
+replaced by Sony's `Alarm_t Alarm` {time, count, name} (include/system.h), completing
+the merge CD_cw's retro-audit FAILed on. This body is respelled member-for-word, and the
+`pp = &Alarm_plus_0x8` pointer-alias FAKE is dropped: with the struct, the direct
+`Alarm.name` argument is byte-exact (sandbox 0, measured before and after the landing;
+the alias's 2026-09 ablation was measured on the per-word model only).
+Evidence: memory/grind/CD_cw/evidence.md 2026-09-30 (variants B0/B1).

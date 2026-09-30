@@ -1,0 +1,1 @@
+{"func": "CdLastPos", "addr": "800800CC", "verdict": "PASS", "body_hash": "7298a287d297af07", "body_kind": "c", "file": "system", "reviewer": "l2-CD_cw-r1", "scope": "cheat-cleanup", "date": "2026-09-30T16:18:32Z", "head": "c455ef48b", "notes": "CD_pos retyped u8[4] (Sony bios.c:42); return CD_pos, byte-neutral"}

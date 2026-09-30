@@ -16,7 +16,7 @@ extern s32 CD_datasync(s32);
 
 /* Externs for globals */
 extern u8 CD_status;
-extern u8 CD_pos;
+extern u8 CD_pos[4]; /* Sony's u_char CD_pos[4] (SOTN: src/main/psxsdk/libcd/bios.c:42 @aa53500) */
 extern u8 CD_mode;
 extern u8 CD_com;
 extern s32 CD_cbsync;
@@ -49,7 +49,7 @@ u32 CdLastCom(void) {
 }
 
 void *CdLastPos(void) {
-    return &CD_pos;
+    return CD_pos;
 }
 
 extern void CD_initintr(void);
@@ -507,10 +507,7 @@ extern s32 CD_cbready;
 extern void Result;
 extern void Result_plus_0x8;
 extern void Result_plus_0x10;
-extern void D_80016240;
-extern s32 D_800F19B8;
-extern s32 Alarm_plus_0x4;
-extern void *Alarm_plus_0x8;
+extern char D_80016240[]; /* "CD_sync" */
 extern s32 D_800161B8;
 extern s32 D_800161C8;
 extern u8 CD_com;
@@ -532,21 +529,21 @@ s32 CD_sync(s32 a0, u8 *a1)
   s32 i;
   u8 b;
   s32 temp;
-  D_800F19B8 = VSync(-1) + 0x3C0;
+  Alarm.time = VSync(-1) + 0x3C0;
   tbl_125c = CD_intstr; /* FAKE: pointer alias (second handle) to the CD_intstr table per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: global.c seats the base in $s3 across the whole function as the target does (asm/funcs/CD_sync.s:16-17); lever-exhaustion: s126 ablation C1 (direct D_800A125C[] subscript) = 31/160, plus the 125-session ledger in memory/grind/CD_sync/hypotheses.md */
   intr = &Intr; /* FAKE: pointer alias (second handle) to the one libcd Intr object per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape; Intr is Sony's `static volatile CD_intr`, owner ruling Q42), mechanism: global.c seats the base in $s2 across the poll loop as the target does (asm/funcs/CD_sync.s:18-19); lever-exhaustion (ff-intr 2026-09-30, memory/grind/CD_sync/evidence.md): plain Intr member access with no handle = 21/160; Intr.sync in place of the handle at one site = 5 (t0), 26 (sync callback), 5 (tail read), 5 (tail store); s126 ablation C2 (direct subscript) = 29/160 */
   idx_1495 = &Intr.ready; /* FAKE: second handle to the ready byte of the same Intr object per pointer-alias-fake-exception (a member address; replaces the `1 + idx_1494` spelling refused 2026-07-20), mechanism: global.c seats the ready-byte base in $s4 and cse relates it to the Intr base as an offset of one object (`addiu s4,s2,1`, asm/funcs/CD_sync.s:20); lever-exhaustion (ff-intr 2026-09-30): Intr.ready at the ready callback = 15/160, intr->ready there = 14/160; s105 (three honest respellings of the old chain-extender) = 15 */
-  Alarm_plus_0x4 = 0;
-  Alarm_plus_0x8 = &D_80016240;
+  Alarm.count = 0;
+  Alarm.name = D_80016240;
   loop:
   v0 = VSync(-1);
 
-  if (D_800F19B8 < v0)
+  if (Alarm.time < v0)
   {
     goto do_timeout;
   }
-  cnt = Alarm_plus_0x4;
-  Alarm_plus_0x4 = cnt + 1;
+  cnt = Alarm.count;
+  Alarm.count = cnt + 1;
   if (!(0x3C0000 < cnt))
   {
     goto success;
@@ -557,14 +554,12 @@ s32 CD_sync(s32 a0, u8 *a1)
     s32 arg5;
     s32 t0;
     s32 *pB;
-    void **pp;
     t0 = intr->sync; /* FAKE: named intermediate for the sync byte, placed BEFORE the wrap (loop depth 1), mechanism: flow.c:2081 loop_depth-weighted reg_n_refs feeds local-alloc.c:1660 qty_compare_1 - the depth-1 mention leaves the merged chain-A quantity below the second table read's priority, so the chain takes $a0 and the value $v1 exactly as at asm/funcs/CD_sync.s:49/56/60/65; lever-exhaustion: s126 probe B3 (read inlined into the src address) = 14/160, the 125-session t0 ledger in hypotheses.md s118-s125 */
     do { /* FAKE: do-while(0) wrap per do-while-zero-exception (owner ruling 2026-07-06), mechanism: sched.c:2081 loop-note barrier on the first insn inside (the ready-byte address chain) orders the sync-byte load ahead of it and every later register-argument load after it, and flow.c loop_depth ref weighting seats tbl_125c in $s3; lever-exhaustion: s126 ablation A8 (wrap removed) = 25/160 */
       pB = (s32 *)((intr->ready << 2) + (s32)tbl_125c); /* FAKE: named address intermediate (fresh, once-written, once-read, real value = `addu $v0,$v0,$s3` at asm/funcs/CD_sync.s:56), mechanism: rank_for_schedule INSN_LUID tie-break (sched.c:2462) between the boosted chain-B address insn and the boosted chain-A shift - the address must precede the shift and the value load follow it in RTL order; lever-exhaustion: s126 probe B1 (folded back into the arg5 load) = 7/160 */
       src = (u8 *)((t0 << 2) + (s32)tbl_125c); /* FAKE: chain-A address staged through the (dead-here) src copy-loop variable per staged-value-reused-variable (owner-sanctioned 2026-07-03), mechanism: the multi-set destination keeps the addu unboosted (birthing_insn_p sched.c:2505) so it fills the backward-pass slot behind the sw instead of the shift, and global.c seats it in $a0 with src's copy-loop lives; lever-exhaustion: s126 ablation A6 (fresh local `ta` instead of the reused src) = 8/160 */
       arg5 = *pB; /* FAKE: named intermediate for the fifth (stack) argument (fresh, once-written, once-read, real value = `lw $v1,0($v0)` at asm/funcs/CD_sync.s:60), mechanism: calls.c store_one_arg - a named value is loaded before the call sequence and stored by the sw at the target slot 64; lever-exhaustion: s126 probe B2 (passed as *pB directly) = 9/160 */
-      pp = &Alarm_plus_0x8; /* FAKE: pointer alias (second handle) to the alarm callback slot per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: calls.c:1652-1664 expand_call precomputes a register argument whose rtx_cost > 2 into a pseudo inside a loop (preserve_subexpressions_p), whereas `*pp` is a cheap mem(reg) that stays in the call sequence and cse folds the alias back to the target's `lui $a1 / lw $a1` at asm/funcs/CD_sync.s:51-52; lever-exhaustion: s126 ablation A5 (direct D_800F19C0 read) = 18/160; the CD_alarm struct spelling that this candidate carried through s117-s125 is BANNED (decisions.md 2026-09-06 11:38) and is removed here */
-      printf(&D_800161C8, *pp, CD_comstr[CD_com], *(s32 *)src, arg5);
+      printf(&D_800161C8, Alarm.name, CD_comstr[CD_com], *(s32 *)src, arg5);
       CD_flush();
     } while (0);
   }
@@ -650,7 +645,112 @@ extern char D_80016254[]; /* "%s...\n" */
 extern char D_8001625C[]; /* "%s: no param\n" */
 extern char D_8001626C[]; /* "CD_cw" */
 
-INCLUDE_ASM("asm/funcs", CD_cw);
+/* bios.c's alarm helpers, as in Sony's source (SOTN: src/main/psxsdk/libcd/bios.c:95 @aa53500).
+ * SOTN reaches its `volatile Alarm_t Alarm` only through the non-volatile view
+ * `((Alarm_t *)&Alarm)->`; include/system.h declares Alarm non-volatile, which is
+ * that view without the cast. */
+static inline void set_alarm(char *name)
+{
+    Alarm.time = VSync(-1) + 0x3C0;
+    Alarm.count = 0;
+    Alarm.name = name;
+}
+
+/* SOTN: src/main/psxsdk/libcd/bios.c:102 @aa53500 */
+static inline s32 get_alarm(void)
+{
+    if (Alarm.time < VSync(-1) || Alarm.count++ > 0x3C0000) {
+        puts(&D_800161B8);
+        printf(&D_800161C8, Alarm.name, CD_comstr[CD_com],
+               CD_intstr[Intr.sync], CD_intstr[Intr.ready]);
+        CD_flush();
+        return -1;
+    }
+    return 0;
+}
+
+/* SOTN: src/main/psxsdk/libcd/bios.c:210 @aa53500 */
+static inline void callback(void)
+{
+    s32 status;
+    u8 saved;
+
+    saved = *D_800A147C & 3;
+    while (1) {
+        status = getintr();
+        if (status == 0) {
+            break;
+        }
+        if ((status & 4) && CD_cbready != 0) {
+            ((void (*)(u8, void *))CD_cbready)(Intr.ready, &Result_plus_0x8);
+        }
+        if ((status & 2) && CD_cbsync != 0) {
+            ((void (*)(u8, void *))CD_cbsync)(Intr.sync, &Result);
+        }
+    }
+    *D_800A147C = saved;
+}
+
+s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
+{
+    /* FAKE: one counter for both loops (the CD_pos copy and the parameter
+     * write), reused exactly as SOTN's CD_cw reuses its i (Q51, Q53);
+     * lever-exhaustion: separate counters = 7/263,
+     * memory/grind/CD_cw/evidence.md */
+    s32 i; /* SOTN: src/main/psxsdk/libcd/bios.c:292 @aa53500 */
+
+    if (CD_debug > 1) {
+        printf(D_80016254, CD_comstr[com]);
+    }
+    if (D_800A13FC[com] != 0 && param == 0) {
+        if (CD_debug > 0) {
+            printf(D_8001625C, CD_comstr[com]);
+        }
+        return -2;
+    }
+    CD_sync(0, 0);
+    if (com == 2) {
+        for (i = 0; i < 4; i++) {
+            CD_pos[i] = param[i];
+        }
+    }
+    if (com == 0xE) {
+        CD_mode = param[0];
+    }
+    Intr.sync = 0;
+    if (D_800A12FC[com]) {
+        Intr.ready = 0;
+    }
+    *D_800A147C = 0;
+    /* FAKE: the parameter count D_800A13FC[com] read through the preceding
+     * table's base, verbatim SOTN (Q50/Q55, Q53); mechanism: cse keeps
+     * &D_800A12FC from the ready-flag read above live and forms the count's
+     * address as that base + 0x100 (asm/funcs/CD_cw.s: `addiu $v0, $v1, 0x100`
+     * at 0x80081460); lever-exhaustion: D_800A13FC[com] = 23/263,
+     * memory/grind/CD_cw/evidence.md */
+    for (i = 0; i < D_800A12FC[com + 0x40]; i++) { /* SOTN: src/main/psxsdk/libcd/bios.c:314 @aa53500 */
+        *g_cd_req_reg = param[i];
+    }
+    CD_com = com;
+    *g_cd_param_fifo = com;
+    if (async != 0) {
+        return 0;
+    }
+
+    set_alarm(D_8001626C);
+
+    while (Intr.sync == 0) {
+        if (get_alarm()) {
+            return -1;
+        }
+        if (CheckCallback()) {
+            callback();
+        }
+    }
+
+    _memcpy(result, &Result, 8);
+    return -(Intr.sync == 5);
+}
 /* kengo:MED  |  tsl_tm2/tslTm2LoadImage  |  253i  |  -10 x2 size collision */
 
 s32 CD_vol(u8 *a0) {
@@ -778,12 +878,9 @@ s32 CD_init(void) {
 extern s32 VSync(s32);
 extern void puts(void *);
 extern void printf();
-extern s32 D_800F19B8;
-extern s32 Alarm_plus_0x4;
-extern void *Alarm_plus_0x8;
 extern s32 g_str_cd_timeout;
 extern s32 D_800161C8;
-extern void D_800162C0;
+extern char D_800162C0[]; /* "CD_datasync" */
 extern u8 CD_com;
 extern s32 CD_comstr[];
 extern s32 CD_intstr[];
@@ -798,20 +895,20 @@ s32 CD_datasync(s32 a0) {
     volatile CD_intr *intr;
     s32 *tbl_125c;
 
-    D_800F19B8 = VSync(-1) + 0x3C0;
+    Alarm.time = VSync(-1) + 0x3C0;
     tbl_11dc = CD_comstr; /* FAKE: pointer alias (second handle) to the libcd command-name table per pointer-alias-fake-exception (owner ruling 2026-07-01), mechanism: global.c seats the base in $s3 across the poll loop as the target does (asm/funcs/CD_datasync.s:11-12); lever-exhaustion: s62 ablation A4 (direct D_800A11DC[] subscript) = 18/88, plus the 61-session ledger in memory/grind/CD_datasync/hypotheses.md */
     intr = &Intr; /* FAKE: pointer alias (second handle) to the one libcd Intr object per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape; Intr is Sony's `static volatile CD_intr`, owner ruling Q42), mechanism: global.c seats the base in $s1 across the poll loop as the target does (asm/funcs/CD_datasync.s:13-14); lever-exhaustion (ff-intr 2026-09-30, memory/grind/CD_datasync/evidence.md): plain Intr member access with no handle = 20/91; one site spelled Intr.sync / Intr.ready = 10 / 18; s62 ablation A5 (direct subscript) = 20/90 */
     tbl_125c = CD_intstr; /* FAKE: pointer alias (second handle) to the CD_intstr table per pointer-alias-fake-exception (owner ruling 2026-07-01), mechanism: global.c seats the base in $s0 across the poll loop as the target does (asm/funcs/CD_datasync.s:15-16); lever-exhaustion: s62 ablation A3 (direct D_800A125C[] subscript) = 27/89 */
-    Alarm_plus_0x4 = 0;
-    Alarm_plus_0x8 = &D_800162C0;
+    Alarm.count = 0;
+    Alarm.name = D_800162C0;
 
 loop:
     v0 = VSync(-1);
-    if (D_800F19B8 < v0) {
+    if (Alarm.time < v0) {
         goto do_timeout;
     }
-    cnt = Alarm_plus_0x4;
-    Alarm_plus_0x4 = cnt + 1;
+    cnt = Alarm.count;
+    Alarm.count = cnt + 1;
     if (!(0x3C0000 < cnt)) {
         goto success;
     }
@@ -821,12 +918,10 @@ do_timeout:
     {
         s32 t0;
         s32 tb;
-        void **pp;
-        t0 = intr->sync; /* FAKE: named intermediate for the sync byte, placed BEFORE the wrap (loop depth 1), mechanism: flow.c loop_depth-weighted reg_n_refs feeds local-alloc.c qty_compare - the depth-1 mention leaves the merged chain-A quantity below the second table read's priority, so the chain takes $a0 and the value $v1 exactly as at asm/funcs/CD_datasync.s:50/56/60/65; lever-exhaustion: s62 probe B3 (same read placed inside the wrap) = 4/91, s62 probe B1 (inlined into the call) = 12/91, s60 in-place spelling = 15 */
+            t0 = intr->sync; /* FAKE: named intermediate for the sync byte, placed BEFORE the wrap (loop depth 1), mechanism: flow.c loop_depth-weighted reg_n_refs feeds local-alloc.c qty_compare - the depth-1 mention leaves the merged chain-A quantity below the second table read's priority, so the chain takes $a0 and the value $v1 exactly as at asm/funcs/CD_datasync.s:50/56/60/65; lever-exhaustion: s62 probe B3 (same read placed inside the wrap) = 4/91, s62 probe B1 (inlined into the call) = 12/91, s60 in-place spelling = 15 */
         do { /* FAKE: do-while(0) wrap per do-while-zero-exception (owner ruling 2026-07-06), mechanism: sched.c:2081 loop-note barrier on the first insn inside (the ready-byte load) orders the sync-byte load ahead of it and every later register-argument load after it, and flow.c loop_depth ref weighting seats tbl_125c in $s0; lever-exhaustion: s62 ablation A2 (wrap removed) = 13/91, s61 ablation 2 -> 12 */
             tb = intr->ready; /* FAKE: named intermediate for the ready byte (fresh, once-written, once-read, real value = lbu $v0,1($s1) at asm/funcs/CD_datasync.s:51), mechanism: expand argument staging keeps the fifth (stack) argument's chain out of the call sequence so the sw lands at slot 63; lever-exhaustion: s62 probe B1 (tb inlined into the call) = 12/91, s62 probe A6 (all intermediates inlined) = 13/91 */
-            pp = &Alarm_plus_0x8; /* FAKE: pointer alias (second handle) to the alarm callback slot per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: calls.c:1652-1664 expand_call precomputes a register argument whose rtx_cost > 2 into a pseudo inside a loop (preserve_subexpressions_p), whereas `*pp` is a cheap mem(reg) that stays in the call sequence and cse folds the alias back to the target's `lui $a1 / lw $a1` at asm/funcs/CD_datasync.s:52-53; lever-exhaustion: s62 ablation A1 (direct D_800F19C0 read) = 4/91 */
-            printf(&D_800161C8, *pp, tbl_11dc[CD_com], tbl_125c[t0], tbl_125c[tb]);
+            printf(&D_800161C8, Alarm.name, tbl_11dc[CD_com], tbl_125c[t0], tbl_125c[tb]);
             CD_flush();
         } while (0);
     }

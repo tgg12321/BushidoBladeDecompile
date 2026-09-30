@@ -608,7 +608,8 @@ g_seq_init_pending              = 0x800A38C6;  /* 0xFFFF = pending init request,
 g_mental_bar_max_packets        = 0x800A38F8;  /* max-count cap for mental-bar busy-wait (paired with g_mental_bar_packet_count) */
 g_motion_ex_counter_p2          = 0x800F0BC4;  /* p2's motion-ex counter (paired with D_800F0BC0 p1) */
 g_dma_madr_ptr                  = 0x800A263C;  /* pointer to DMA register; (val >> 24) & 0x7F = status read */
-Alarm_plus_0x8          = 0x800F19C0;  /* cached pointer to panic format string (&D_80016240) */  /* data-wave 2026-09-25: was g_panic_msg_format_ptr */
+Alarm = 0x800F19B8;  /* libcd bios.c alarm {time, count, name} (SOTN name; memory/closer/libcd-identity.md) */
+Alarm_plus_0x8          = 0x800F19C0;  /* cached pointer to panic format string (&D_80016240) */  /* data-wave 2026-09-25: was g_panic_msg_format_ptr */  /* alias of Alarm+0x8; retire with CD_ready */
 _snd_seq_tick_env_plus_0x4              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */  /* data-wave 2026-09-07: was g_alarm_armed_flag */
 D_800A14E4              = 0x800A14E4;  /* volatile alarm handle; -1 = no alarm */  /* data-wave 2026-09-24: was g_irq_alarm_handle */
 
@@ -1570,7 +1571,7 @@ mode_handler_29_StageLeafUpdate                         = 0x8003CF84;  /* calls 
 /* references resolve correctly. */
 g_replay_camera_mode                                    = 0x800A3740;  /* mode enum {1, 3, 4} */
 g_text1b_glyph_buf_e                                    = 0x800F1168;  /* additional glyph buffer slot in the same family as g_text1b_slot_a/b/c_flags */
-Alarm_plus_0x4                                  = 0x800F19BC;  /* IRQ dispatch sequence counter (already noted as g_cdrom_init_counter elsewhere in IRQ subsystem) */  /* data-wave 2026-09-25: was g_irq_dispatch_counter */
+Alarm_plus_0x4                                  = 0x800F19BC;  /* IRQ dispatch sequence counter (already noted as g_cdrom_init_counter elsewhere in IRQ subsystem) */  /* data-wave 2026-09-25: was g_irq_dispatch_counter */  /* alias of Alarm+0x4; retire with CD_ready */
 
 /* === 0x800EEDB0 matrix elements (2026-05-17; camera names RESET 2026-09-29) === */
 /* 9 s16 at +0..+0x10 (stride 2), written by func_80046F24 and read by func_8004700C. */

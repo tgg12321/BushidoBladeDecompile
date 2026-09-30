@@ -108,7 +108,7 @@ adds it to named_syms.txt; probe bodies were in tmp/CD_cw/):
 | B0: `Alarm_t Alarm` (time/count/name) for ALL consumers; CD_sync/CD_datasync respelled member-for-word, pp alias kept as `&Alarm.name` | 8 | 0/160 | 0/91 | – |
 | B1: B0 with the `pp` FAKE alias dropped in CD_sync and CD_datasync (direct `Alarm.name` read) | 8 | 0/160 | 0/91 | – |
 | B2: B1 + `extern u8 CD_pos[4]` (was a scalar indexed `(&CD_pos)[i]`), CdLastPos `return CD_pos;` | 8 | 0 | 0 | 0/4 |
-| B3: B2 with the loop bound spelled `D_800A13FC[com]` | 31 | 0 | 0 | 0 |
+| B3: B2 with the loop bound spelled `D_800A13FC[com]` | 31 (pre-landing; 23 on the landed tree, see below) | 0 | 0 | 0 |
 | FINAL (B2 + annotations = candidate.c) | 8 | 0 | 0 | 0; every other scorable system.c function 0 |
 
 - The pp alias in CD_sync / CD_datasync existed only for the per-word model (its
@@ -125,5 +125,29 @@ adds it to named_syms.txt; probe bodies were in tmp/CD_cw/):
   bytes above; file is `[0xA398, c, psxsdk/libcd/bios]` in config/splat.us.main.yaml; no
   INCLUDE_ASM/NON_MATCHING/hack marker in the file). The target shows the same shape
   (`addiu $v0,$v1,0x100` at 0x80081460 on the kept `&D_800A12FC`). The simpler direct
-  spelling `D_800A13FC[com]` measures 31 (B3). Admitted on the Q50/Q55 citation with Q53's
+  spelling `D_800A13FC[com]` measures 23 on the landed tree (31 pre-landing included the 8-point Intr+1 artifact; rejected/direct-nparam-read-23.c). Admitted on the Q50/Q55 citation with Q53's
   FAKE annotation + this exhaustion record.
+
+### Landing preparation (laneB, 2026-09-30, under the landing lock)
+- Tree edits: probes-0930/apply_landing.py (src/system.c, include/system.h, named_syms.txt,
+  undefined_syms_auto.txt), then probes-0930/resplice.py for the Q51 annotation on `i`.
+- `Alarm_t` + `extern Alarm_t Alarm;` live in include/system.h (prong (d): the shared
+  header); `Alarm = 0x800F19B8` re-added to named_syms.txt; the per-word rows
+  (D_800F19B8, Alarm_plus_0x4, Alarm_plus_0x8 in both symbol files) carry
+  `alias of Alarm+0xN; retire with CD_ready` (CD_ready's asm still names them);
+  D_800A1495's row retired (no built reference once CD_cw is C); D_800A1494's suffix now
+  says CD_ready only.
+- Probes on the landed tree (sandbox --candidate): separate loop counters (`j` for the
+  parameter write) = 7/263 (rejected/two-loop-counters-7.c) — the shared `i` is SOTN's own
+  (bios.c:292, both loops :305/:314) and carries the Q51/Q53 FAKE note; helpers
+  hand-inlined into CD_cw = 44/263 (rejected/no-inline-helpers-44.c).
+- `verify-oracle --rebuild --allow-dirty`: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+  sandbox --disable all on the spliced src: CD_cw 0/263 (27 not-scored branch hunks only),
+  CD_sync 0/160, CD_datasync 0/91, CdLastPos 0/4. The pre-landing 8 on CD_cw was the
+  Intr+1 relocation artifact, as predicted.
+- layer2 hash: CD_cw 048fd9442f152f24, CD_sync 50f47817e3c646a2, CD_datasync
+  3a0f75962d4fc29b, CdLastPos 7298a287d297af07.
+- Correction (layer-2 l2-CD_cw-r1, round 1): the direct `D_800A13FC[com]` loop bound
+  scores 23/263 on the landed tree (re-measured by laneB, rejected/direct-nparam-read-23.c);
+  the earlier 31 included the 8-point Intr+1 relocation artifact. FAKE note and commit
+  message corrected.

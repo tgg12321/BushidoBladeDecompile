@@ -1,49 +1,3 @@
-/* bios.c's alarm helpers, as in Sony's source (SOTN: src/main/psxsdk/libcd/bios.c:95 @aa53500).
- * SOTN reaches its `volatile Alarm_t Alarm` only through the non-volatile view
- * `((Alarm_t *)&Alarm)->`; include/system.h declares Alarm non-volatile, which is
- * that view without the cast. */
-static inline void set_alarm(char *name)
-{
-    Alarm.time = VSync(-1) + 0x3C0;
-    Alarm.count = 0;
-    Alarm.name = name;
-}
-
-/* SOTN: src/main/psxsdk/libcd/bios.c:102 @aa53500 */
-static inline s32 get_alarm(void)
-{
-    if (Alarm.time < VSync(-1) || Alarm.count++ > 0x3C0000) {
-        puts(&D_800161B8);
-        printf(&D_800161C8, Alarm.name, CD_comstr[CD_com],
-               CD_intstr[Intr.sync], CD_intstr[Intr.ready]);
-        CD_flush();
-        return -1;
-    }
-    return 0;
-}
-
-/* SOTN: src/main/psxsdk/libcd/bios.c:210 @aa53500 */
-static inline void callback(void)
-{
-    s32 status;
-    u8 saved;
-
-    saved = *D_800A147C & 3;
-    while (1) {
-        status = getintr();
-        if (status == 0) {
-            break;
-        }
-        if ((status & 4) && CD_cbready != 0) {
-            ((void (*)(u8, void *))CD_cbready)(Intr.ready, &Result_plus_0x8);
-        }
-        if ((status & 2) && CD_cbsync != 0) {
-            ((void (*)(u8, void *))CD_cbsync)(Intr.sync, &Result);
-        }
-    }
-    *D_800A147C = saved;
-}
-
 s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
 {
     /* FAKE: one counter for both loops (the CD_pos copy and the parameter
@@ -79,9 +33,9 @@ s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
      * table's base, verbatim SOTN (Q50/Q55, Q53); mechanism: cse keeps
      * &D_800A12FC from the ready-flag read above live and forms the count's
      * address as that base + 0x100 (asm/funcs/CD_cw.s: `addiu $v0, $v1, 0x100`
-     * at 0x80081460); lever-exhaustion: D_800A13FC[com] = 23/263,
+     * at 0x80081460); lever-exhaustion: D_800A13FC[com] = 31/263,
      * memory/grind/CD_cw/evidence.md */
-    for (i = 0; i < D_800A12FC[com + 0x40]; i++) { /* SOTN: src/main/psxsdk/libcd/bios.c:314 @aa53500 */
+    for (i = 0; i < D_800A13FC[com]; i++) { /* SOTN: src/main/psxsdk/libcd/bios.c:314 @aa53500 */
         *g_cd_req_reg = param[i];
     }
     CD_com = com;
