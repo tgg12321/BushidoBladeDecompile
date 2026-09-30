@@ -76,7 +76,7 @@ func_80018300 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; cens
 # owner-instructed approvals were func_8002F2D0 (789ce34d7) and func_80018300
 # (eeda6664b), plus func_8003E6D8 under the widened-anchor grant. Re-asked
 # with the correction; the owner answered "Still approve both".
-func_8002CD58 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :72; owner-instructed row 2026-09-25, with func_8002DAD0 only; operator-added 2026-09-25)
+# func_8002CD58 row removed 2026-09-30: reopened per owner Q37 (retro-audit 2026-09-29 FAIL c1efaa556: `dist` shared across the three sqrt sites with no admitting ruling; the Q51 SOTN citation failed layer-2 rev-2cd58). The owner's 2026-09-25 approval of its GTE islands (cd61ed9f6 / 83883c4c0) is NOT withdrawn and still stands for a future re-land.
 func_8002DAD0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :76; owner-instructed row 2026-09-25, reverses the 2026-09-21 decline for this function; operator-added 2026-09-25)
 # 2026-09-26 — census member func_8002DE20 (cop2-addressing-preamble-cluster.md).
 # Its GTE islands are header-exact PsyQ 4.3 inline_o.h / gtemac.h statements

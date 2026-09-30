@@ -87,3 +87,55 @@ emits the addiu/copy itself. candidate.c now carries that form: 26 islands
 (was 23), sandbox 0 at 352/352, full-build SHA1 == oracle, 26 region hashes.
 Lead for a later re-audit (not this function): func_8002E838 / func_8001F2E4
 / func_8002F2D0 carry the same hardcoded LZC preamble.
+
+## 2026-09-30 ff-b â€” retro-audit FAIL (c1efaa556, class B): `dist` / `angle` reuse
+Finding (tmp/audit-2026-09-29/review/batch_03.md): `dist` written at three sqrt sites (|n| for the
+`(u32)dist < 0x4000` guard, |a.xz| and |n.xz| for ratan2 arg 2) with no admitting ruling; `angle`
+(4 writes) not measured (CONCERN). Route per orchestrator policy (2026-09-30): plain C, else a Q51
+SOTN reuse citation, else Q37 reopen (no multi-hour Ruling 11 package).
+
+Measurements (sandbox --disable all on the in-tree body, target 352 insns; ff-b-2026-09-30/):
+| spelling | score |
+|---|---|
+| landed (shared dist, shared angle) | 0 |
+| angle split per path (angle2 / angle3) | 0 |
+| angle one name per write (yaw / pitch / nyaw / npitch) â€” CHOSEN | 0 |
+| angle as yaw / pitch, each written once per path | 0 |
+| dist split per site (dist / xz_dist / nxz_dist) | 3 |
+| same, declarations first / reversed / site-1 as u32 | 3 / 3 / 3 |
+| angle4 + dist split, yaw/pitch + dist split | 3 / 3 |
+`angle`'s reuse is not load-bearing: it is gone (one name per write, plain C). `dist`'s is: split per
+site, the site-1 value sits in $v0 instead of the target's $a1 (the shared pseudo carries the
+ratan2-argument $a1 preference to site 1; same effect as 2026-09-25 row d).
+
+Q51 citation: SOTN src/dra/4B758.c:71 @db41b28, func_800EB758 â€” `s32 distance;` takes four successive
+`SquareRoot12(...)` magnitudes (lines 71, 80, 89, 98; the PSP-only block above is under #ifdef), each
+read by the next two statements before the next write. Matched C in the PS1 dra build
+(splat.us.dra.yaml `[0x4B758, c, 4B758]`, no INCLUDE_ASM in the file). Q53: FAKE comment at the
+declaration naming the mechanism and the exhaustion, plus the SOTN tag. GTE islands untouched.
+
+Applied for review as body_hash 8814d34d40b92b72 (rebuild SHA1 == oracle, integrity OK); banked as
+rejected/ff-b-q51-citation-fail-0.c.
+
+Layer-2 rev-2cd58 (2026-09-30): FAIL on the `dist` citation only. The angle split is honest, the
+mechanism claim is true (the reviewer checked the $a1 seat against asm/funcs/func_8002CD58.s:108/133/135)
+and the paperwork format is right, but Q51 condition (2) fails: SOTN's `distance` has ONE role (four
+per-vertex copies, each read only as a multiplier), while ours carries a guard value at site 1
+(`(u32)dist < 0x4000`) and a ratan2 argument at sites 2/3 — different consumers — and the score-carrying
+link is exactly that cross-role sharing (splitting site 1 alone = 3). No other SOTN reuse citation was
+searched beyond the ~20-minute budget; no Ruling 11 package was built (orchestrator policy).
+
+## 2026-09-30 ff-b — reopened per owner Q37
+- src/code6cac_b_tu2.c: back to `INCLUDE_ASM("asm/funcs", func_8002CD58);` with a short doc comment.
+  The landed body (HEAD c1efaa556 form, with its full doc comment) is banked verbatim in
+  rejected/retro-audit-2026-09-30.c.
+- inline_asm_canonical.txt and tools/grinder/owner_cluster_grants.txt: the func_8002CD58 rows become
+  history comments. The owner's 2026-09-25 approval of the GTE islands (cd61ed9f6 / 83883c4c0; the
+  grants-file header paragraph is kept) is not withdrawn and stands for a re-land.
+  tools/canonical_asm_regions.json: the entry is removed (reopen precedent 8c23ce1f6); its hashes stay
+  in other functions' lists where shared.
+Carry-forward for the next worker:
+- `angle` needs no reuse: one name per write (yaw / pitch / nyaw / npitch) scores 0.
+- The only open question is `dist`. Shared, it scores 0: the ratan2-argument $a1 preference seats the
+  site-1 value in $a1. Split per site it scores 3 (site 1 in $v0). Next routes: a SOTN citation where one
+  variable feeds a guard and then a call argument, or the Ruling 11 (D) package.
