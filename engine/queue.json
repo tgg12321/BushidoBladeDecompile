@@ -4,6 +4,17 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_8002C22C",
+      "file": "code6cac_b_tu2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (8a3843d5e): d_tbl alias indexed past scalar D_80102314; no admissible spelling reaches 0 (owner Q37); honest fix = declare the 2 x 0x44C table at D_80101EC8; memory/grind/func_8002C22C/evidence.md",
+      "addr": "8002C22C"
+    },
+    {
       "func": "func_8002D780",
       "file": "code6cac_b_tu2",
       "distance": 0,
@@ -366,14 +377,14 @@
     }
   ],
   "counts": {
-    "total": 30,
-    "active": 18,
+    "total": 31,
+    "active": 19,
     "by_status": {
-      "active": 18,
+      "active": 19,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 17,
+      "C": 18,
       "ASM-PARTIAL": 1
     }
   },
