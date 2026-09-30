@@ -3505,9 +3505,15 @@ def test_departures() -> None:
 
             # ── repo w: naming waves never make a departure ────────────────
             new_repo(Path(td) / "w", ["func_80058580", "func_80055B60", "func_P1",
-                                      "func_RVA", "func_DN", "func_Q"])
+                                      "func_RVA", "func_DN", "func_RQ", "func_Q"])
             wave({"func_80055B60": "func_Caller", "func_80058580": "func_Callee"})
             commit("caller + callee renamed in one wave")
+            wave({"func_RQ": "func_RQ2"})                 # renamed while queued,
+            commit("RQ -> RQ2")
+            edit("func_RQ2")                              # worked on,
+            rec("func_RQ2", key("func_RQ2"))              # completed properly
+            drop("func_RQ2")
+            commit("RQ2 done with a PASS")
             wave({"func_RVA": "func_RVB"})
             w1 = commit("wave RVA -> RVB")
             git("revert", "--no-edit", w1)                # revert
