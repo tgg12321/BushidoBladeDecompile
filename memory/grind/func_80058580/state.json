@@ -57,6 +57,12 @@
       "floor": 37,
       "modality": "manual",
       "headline": "q = e + 4 (et/ep seats); block-scoped rnd/row named intermediates for both per-character rate reads (symbol-first association, target la+addu shape); mask split out of t3 as u32 (clears the e/q/pbest cascade); hi split out of t2"
+    },
+    {
+      "session": 3,
+      "floor": 32,
+      "modality": "manual",
+      "headline": "case-3 row index split out as slot; mask back in work3 with (u32) bit test"
     }
   ],
   "frontier": [

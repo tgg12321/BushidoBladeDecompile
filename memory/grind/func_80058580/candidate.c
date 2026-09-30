@@ -44,7 +44,7 @@ s32 func_80058580(u8 *p) {
     u8 mode;
     s32 work1, work2, work3, work4;
     s32 hi;
-    u32 mask;
+    s32 slot;
     s16 et;
     s32 va;
     s32 vd;
@@ -712,45 +712,45 @@ s32 func_80058580(u8 *p) {
                             switch (D_800A38DC) {
                             case 3:
                                 if (D_800A38E2 < 0x5B) {
-                                    mask = (u8)(D_800A38E2 / 10) * 2;
+                                    slot = (u8)(D_800A38E2 / 10) * 2;
                                     if ((u8)(D_800A38E2 % 10) == 0) {
-                                        mask--;
+                                        slot--;
                                     }
                                 } else if (D_800A38E2 < 0x5E) {
-                                    mask = 0x12;
+                                    slot = 0x12;
                                 } else if (D_800A38E2 < 0x60) {
-                                    mask = 0x13;
+                                    slot = 0x13;
                                 } else if (D_800A38E2 < 0x62) {
-                                    mask = 0x14;
+                                    slot = 0x14;
                                 } else if (D_800A38E2 < 0x64) {
-                                    mask = 0x15;
+                                    slot = 0x15;
                                 } else {
-                                    mask = 0x16;
+                                    slot = 0x16;
                                 }
-                                mask = D_8009A928[p[0x440]][mask];
+                                work3 = D_8009A928[p[0x440]][slot];
                                 break;
                             case 2:
                                 work1 = D_8009A9F0[D_8009A9DC[CPU_S16(0xE)][p[0x440]]][D_800A3788];
-                                mask = 0;
+                                work3 = 0;
                                 work2 = work1 & 0xF;
                                 if (work2 != 0) {
                                     if (work1 >> 27) {
                                         while (work2 > 0) {
                                             work1 >>= 4;
-                                            mask |= 1 << ((work1 & 0xF) - 1);
+                                            work3 |= 1 << ((work1 & 0xF) - 1);
                                             work2--;
                                         }
                                     } else {
                                         work1 >>= ((u8)(p[0x3F2] / 3) % work2) * 4 + 4;
-                                        mask = 1 << ((work1 & 0xF) - 1);
+                                        work3 = 1 << ((work1 & 0xF) - 1);
                                     }
                                 }
                                 break;
                             default:
-                                mask = D_8009A8CA[p[0x440]][D_800A37A0 - 1][0];
+                                work3 = D_8009A8CA[p[0x440]][D_800A37A0 - 1][0];
                                 break;
                             }
-                            if ((e[3] >> 4) == 0 || !(mask & (1 << ((e[3] >> 4) - 1)))) {
+                            if ((e[3] >> 4) == 0 || !((u32)work3 & (1 << ((e[3] >> 4) - 1)))) {
                                 goto next;
                             }
                         }
