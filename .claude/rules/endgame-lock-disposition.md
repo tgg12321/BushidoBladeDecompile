@@ -4,7 +4,7 @@ paths: [".claude/rules/endgame-lock-disposition.md"]
 # on-demand: surfaced via codegen-technique-index; read when an escalation
 
 # proposes canonical-asm OR a new coercion family for an RA/scheduler-locked fn.
-description: "OWNER POLICY 2026-07-20 + AUTO-RULING 2026-07-27 + judge-sole-gate 2026-08-18 for RA/scheduler-locked endgame functions: canonical-asm ONLY with STRONG scan_hand_coded evidence (pipeline-executed grant, no owner wait); coercion families ONLY with in-hand SOTN precedent (borderline-logged, refused under the current frozen list); absent both, REFUSED / OWNER-ACCEPTED INCOMPLETE applies AUTOMATICALLY. NOTHING escalates to a waiting owner."
+description: "OWNER POLICY 2026-07-20 + AUTO-RULING 2026-07-27 + judge-sole-gate 2026-08-18 for RA/scheduler-locked endgame functions: canonical-asm ONLY with STRONG scan_hand_coded evidence (pipeline-executed grant, no owner wait); coercion families ONLY with in-hand SOTN precedent (borderline-logged, refused under the current frozen list; Q50 (author: manual layer-2) admits verified SOTN citation); absent both, REFUSED / OWNER-ACCEPTED INCOMPLETE applies AUTOMATICALLY. NOTHING escalates to a waiting owner."
 metadata:
   type: rules
 ---
@@ -45,6 +45,7 @@ tiebreak.
    "the only lever left", and "measured to work" do NOT lower the bar. A
    spelling unique to this repo, or a novel extension of an existing sanctioned
    family to a shape that family's evidence does not cover, is **refused.**
+   Exception, owner ruling 2026-09-30 (Q50): a construct with a verified SOTN citation ([[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices) is admissible on that citation, with Q53's prerequisites. Author's narrowing, not the owner's words (flag to the owner): it lands only through the manual path's layer-2, never on a Judge PASS; it is not a frozen-list extension; VS/ESA or other non-SOTN precedent, and any construct without a verified citation, keep the disposition above.
 
 ## STANDING AUTO-RULING (owner, 2026-07-27) — both-gates-fail is pre-decided
 
@@ -74,6 +75,7 @@ NOTHING waits on the owner anymore):**
    `family-candidate` entry and the function takes the terminal refusal under
    the CURRENT frozen list. The list remains owner-only to extend; the owner
    batch-reviews the ledger and a later landed ruling can spend the entry.
+   Exception, owner ruling 2026-09-30 (Q50): a construct with a verified SOTN citation ([[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices) is admissible on that citation, with Q53's prerequisites. Author's narrowing, not the owner's words (flag to the owner): it lands only through the manual path's layer-2, never on a Judge PASS; it is not a frozen-list extension; VS/ESA or other non-SOTN precedent, and any construct without a verified citation, keep the disposition above.
 
 Owner directives verbatim: (2026-07-27) *"I only ever want to be presented
 with new techniques that DO have SOTN precedence and are not an explicit

@@ -63,7 +63,7 @@ never a wait on the owner.
    CURRENT list (refusal / terminal OWNER-ACCEPTED INCOMPLETE park per
    [[endgame-lock-disposition]]). The owner reviews the ledger in batches;
    a later ruling can unfreeze specific entries and the function becomes
-   re-attemptable.
+   re-attemptable. Exception, owner ruling 2026-09-30 (Q50): a construct with a verified SOTN citation ([[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices) is admissible on that citation, with Q53's prerequisites. Author's narrowing, not the owner's words (flag to the owner): it lands only through the manual path's layer-2, never on a Judge PASS; it is not a frozen-list extension; VS/ESA or other non-SOTN precedent, and any construct without a verified citation, keep the disposition above.
 
 5. **Reviewer NEEDS_USER is retired as a blocking state.** A
    `cheat-reviewer` NEEDS_USER verdict maps to **FAIL + borderline-ledger

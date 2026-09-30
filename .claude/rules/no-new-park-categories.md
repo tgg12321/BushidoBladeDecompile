@@ -235,7 +235,9 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     Ruling 10 (2026-09-25, the verified original source's own variable,
     verbatim), or, when none of those admits it, every prong of its
     Ruling 11 (2026-09-26, a reused local proven necessary by allocator
-    dumps, with an honest generic name and layer-2); whichever ruling
+    dumps, with an honest generic name and layer-2), or, under owner ruling
+    Q51 (2026-09-30), a verified SOTN reuse citation per § Owner ruling
+    2026-09-30 — SOTN precedent suffices, with Q53; whichever ruling
     applies governs that variable exclusively: the reused variable itself may
     not also claim this entry or [[staged-value-reused-variable]]; other
     locals in the same body, including a Ruling 5 1(b)(ii) selector
@@ -785,7 +787,21 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
        at a different width than the other file's (e.g. a `u16` over two
        `u8`), or that is reached through a cast, a pointer pun, a union or
        an `asm("sym")` alias, is refused. Prong (d)'s ban on per-use pointer
-       puns applies unchanged.
+       puns applies unchanged. **Owner ruling 2026-09-30, twenty-fifth
+       batch, Q52:** a local cast re-view (`(T *)&D_80xxxxxx`) that SOTN marks as a hack or debt (the author's narrowing, not the owner's words: any hack or debt signal SOTN attaches to the construct, in any form: a comment at or naming it anywhere in the file or header — `!FAKE`, `FAKE`, `fake`, `hack`, `HACK`, `TODO`, `FIXME` or similar; a label, identifier or macro name calling it a hack or fake, e.g. `goto hack;`, `CREATE_FACTORY_FAKE_ARGS`; or code compiled only under `HACKS` or a hack- or fake-named define; when a reviewer finds any such signal, ours carries `/* FAKE: … */`)
+       is NOT refused by (2) or by prong (d)'s pun ban when SOTN ships the
+       same construct (a citation meeting § Owner ruling 2026-09-30 — SOTN
+       precedent suffices below) and ours carries a `/* FAKE: ... */`
+       marking, with Q53's family prerequisites met. Such a re-view is
+       admitted on that citation, not by (1)-(6)'s admission test. The
+       family prerequisites it owes under Q53 are, explicitly: this
+       exception's own annotation requirement ((4): an inline comment
+       citing the evidence and this ruling, here the SOTN citation) and
+       its exhaustion requirement ((1)'s banked, measured single-declaration
+       respellings), plus [[pointer-alias-fake-exception]] prerequisite 3's
+       FAKE annotation; layer-2 per (6). An unmarked SOTN cast re-view (one SOTN presents as
+       ordinary code) rests on the general Q50 section below and is likewise
+       not refused by (2).
     3. **File-local.** Each declaration sits in its own `.c` file. No shared
        header declares those bytes in either form. The exception covers only
        the files whose functions the (1) proof covers, and each of them
@@ -819,7 +835,8 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     in the shared header), they are read with this exception's relaxations
     of (c) and (d), and only across the proven files. The per-file array still needs its (a)
     object-model evidence and its (b) shape, and every other consumer in
-    each file stays byte-neutral. Prong (d)'s pun ban also stands; only its
+    each file stays byte-neutral. Prong (d)'s pun ban also stands (except
+    the SOTN-cited cast re-views in (2)); only its
     shared-header and never-TU-local requirements are relaxed, and only for
     the proven files. On data declarations, the same research found
     volatile-in-one-TU essentially absent ecosystem-wide, and cross-TU
@@ -829,8 +846,10 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     matched code carrying !FAKE/TODO debt markers and which cleanup PRs move
     away from, and Silent Hill's practice, where a unified view cannot
     re-match, of keeping two typed views through a union and a second linker
-    symbol at the same address, each annotated @hack. (2) refuses both
-    spellings. The extension to data
+    symbol at the same address, each annotated @hack. (2) refuses the
+    Silent Hill spelling absent a verified SOTN citation (Q55); SOTN's cast
+    re-view is admitted only under the Q52 amendment to (2) or the general
+    Q50 section. The extension to data
     declarations in game code therefore rests on this owner ruling alone.
     func_8001CE60's per-file form is judged fresh
     against (1)-(6); nothing here pre-decides it. Record:
@@ -852,9 +871,9 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     every use. This closes func_8005E54C's counters and lets 0x800A3560 be
     declared as records, which drops about 9 filler variables." (Record:
     docs/grind/owner-rulings-2026-09-26.md, batch 20.) What follows is the
-    author's narrowing, not the owner's words. An object (a global or a
-    local) may be declared as a union with a word member ONLY when ALL of
-    (1)-(7) hold:
+    author's narrowing, not the owner's words. An object (a global, a
+    local or, under the Q46 extension below, a struct member) may be
+    declared as a union with a word member ONLY when ALL of (1)-(7) hold:
     1. **The original bytes show one word access.** At every site that
        names the word member, the function's original instructions
        (`asm/funcs/<func>.s`) show ONE `lw` or `sw` spanning exactly the
@@ -890,7 +909,7 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
        is otherwise unchanged: a pointer cast over the object stays refused
        even where a union would serve, except the one cast store on a local
        array that the Q36 amendment below admits.
-    5. **Globals and locals.** For a global, the union is the object's one
+    5. **Globals, locals and struct members.** For a global, the union is the object's one
        canonical declaration in the shared header, and every aggregate-merge
        prong (a)-(e), with its amendments, that governs that declaration
        holds. The word member is not object-model evidence for (a) and
@@ -900,7 +919,18 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
        is typed by the function's own accesses as any local is, and every
        other rule that governs the local (e.g. Rulings 5-12 of
        [[ordinary-c-judge-decidable]] for a reused local) applies
-       unchanged.
+       unchanged. For a struct member (Q46 extension below), the union is
+       that member's one declaration in the struct type's one definition,
+       where the union replaces the adjacent members it spans, at their
+       existing offsets: the struct's size and
+       every other member's offset are unchanged, and the word member is
+       not evidence for the struct's layout, which rests on its own
+       evidence. The struct may be a global, a local or reached through a
+       pointer; (1)'s access is then the one at the member's offset from
+       the struct's base, and the struct object or pointer stays governed
+       by the rules that govern it. Every other access to the member, in
+       every function, goes through the union's real member and stays
+       byte-neutral.
     6. **Layer-2 reviews every use.** Every commit that adds a union under
        this amendment, or adds a site naming a word member, needs a fresh
        layer-2 `cheat-reviewer` PASS that checks (1)-(5) at each site
@@ -924,6 +954,26 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     func_8006E534 and the object's other consumers), are fresh submissions
     judged against (1)-(7). Record: docs/grind/decisions.md 2026-09-29
     OWNER RULING — a union word view over small fields.
+
+    **Extension to struct members (owner ruling 2026-09-30, twenty-third
+    batch, Q46).** The recommendation put to the owner, verbatim: "Extend
+    it, same conditions. Your Q33 condition is that the shipped bytes show
+    one word access over the small fields. Whether the storage is a
+    global, a local or a struct field doesn't change that. Keep the
+    evidence requirement and a second review for every use." The owner
+    adopted it, verbatim: "Go ahead with all your recommendations. Just
+    know my highest priority is avoiding regressions, cheats or
+    workarounds being introduced. And weeding out any remaining cheats
+    that might be lurking in our project. SOTN is the gold standard when
+    in doubt" (Record: docs/grind/owner-rulings-2026-09-26.md, twenty-third
+    batch, commit d023686ea.) Only the object's scope widens: the object
+    may also be a member of a struct, whether the struct is reached
+    through a pointer or not. (1)-(7) apply unchanged at every site, with
+    the struct-member clause of (5); the evidence requirement and a fresh
+    layer-2 for every commit adding such a union or a word-member site
+    ((6)) stay. The Q36 cast store below stays locals-only (its (7)).
+    Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — Q33 union
+    word views on struct members.
   - **Amendment: one cast store on a local array (owner ruling 2026-09-29,
     twentieth batch, Q36, a follow-up to Q33).** The question put to the
     owner, verbatim: "Follow-up on the union answer. For func_8005E54C's
@@ -1094,7 +1144,7 @@ the rule file BEFORE using:
   2026-08-17 against `db41b28`: no `if (0)` block in matched PSX code
   contains a call), it fabricates a callee symbol against
   [[names-require-evidence]], and it is a parameterized general-purpose
-  frame lever (argument count selects the frame delta).
+  frame lever (argument count selects the frame delta). (Owner ruling Q55, 2026-09-30: a verified Q50 citation of matched SOTN code admits a construct this text refuses, with Q53's prerequisites; [[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices, Precedence.)
 
 What the 2026-07-01 research explicitly does NOT support relaxing
 (zero community precedent found): register-asm pins, hardcoded-`$N`
@@ -1268,6 +1318,139 @@ F2 signedness-split dual read (WEAK), F4 cross-symbol arithmetic idiom
 (ABSENT — SOTN's norm is the struct merge), F5 union-constructor CLOBBER
 (ABSENT).
 
+## Owner ruling 2026-09-30 — SOTN precedent suffices (twenty-fourth batch, Q50)
+
+Context (record): the orchestrator flagged a tension between Q48
+(volatile locals admitted only with target-byte proof; "'SOTN does it'
+isn't evidence") and the owner's same-day guidance "SOTN is the gold
+standard when in doubt", and asked whether SOTN precedent should be
+enough. Owner (Trenton), verbatim: **"Wait on a project wide sweep. But
+SOTN precedent is good enough for any constructs if they verifiably
+exist in the SOTN repo"**. (Record: docs/grind/owner-rulings-2026-09-26.md,
+twenty-fourth batch, Q50, commit a68bde8ee.)
+
+As recorded: a construct is admissible when it verifiably exists in the
+SOTN decomp repository. This supersedes Q48's "SOTN does it isn't
+evidence" clause; [[legitimate-volatile-interrupt-touched]] § volatile
+locals now has a SOTN-precedent route beside the target-byte proof.
+
+**"Verifiably exist" — the author's reading, as the record states it,
+not the owner's words (flag to the owner if a case turns on it):**
+
+1. **A PSX build file.** The citation is a file:line in the SOTN repo
+   (`C:/Users/Trenton/Desktop/sotn-decomp`) in a file that is part of
+   a PS1 build (`splat.us.*` / `splat.hd.*`) (correction to the author's reading, 2026-09-30:
+   an earlier text said "PSX (GCC 2.7.2)"; SOTN's PS1 build uses
+   `bin/cc1-psx-26`, and the owner never named a compiler):
+   `config/splat.*.yaml` membership (PS1 configs
+   are `splat.us.*` / `splat.hd.*`; `src/maria/` and `splat.pspeu.*`-only
+   files are PSP, `src/saturn/` is SH-2; a `src/servant/` citation must sit
+   outside any PSP version guard). In a file
+   shared with other versions, the cited line is not inside a non-PSX
+   version guard (memory reference/sotn-citation-requires-version-check).
+   The author's reading, not the owner's words: every citation names the
+   SOTN commit it was read at (the clone at
+   `C:/Users/Trenton/Desktop/sotn-decomp` is at db41b28), and citations are
+   C source constructs only, never SOTN build, toolchain, Makefile or
+   assembler configuration. The author's reading, not the owner's words
+   (flag to the owner): a line in a header (`include/**/*.h` or
+   `src/**/*.h`: a macro, type, static inline or included function body)
+   counts when it is cited together with a use site in a splat-member file
+   (a `splat.us.*` / `splat.hd.*` member) whose preprocessed text includes
+   it (directly or through other headers, as the preprocessor resolves it
+   under that file's PS1 build defines), and **the use site itself** meets (2) and (4) (it
+   applies the construct to the same kind of object — global, local or
+   struct member — in the same way as ours). The construct is read as its
+   expansion under the defines SOTN's PS1 build passes for that file. (4)
+   and the Q52 markers are checked at both the definition and the use
+   site: a definition compiled only under `HACKS` makes the construct
+   SOTN-marked. An asm or `volatile` expansion owes that family's Q53
+   paperwork.
+2. **It does the same thing as ours when read,** not merely shares its
+   spelling: the cited file is opened and the construct read in its
+   context. A line that only matches a shape class in
+   docs/reference/sotn-construct-index.md is not a citation (memory
+   feedback/citation-check-reads-the-cited-code).
+3. **Layer-2 checks the citation**: a fresh layer-2 `cheat-reviewer`
+   verifies (1), (2) and (4) against the SOTN source itself. Author's narrowing, not the owner's words — flag to the owner: on the Grinder path a Judge PASS is not enough: a body relying on a Q50 citation lands only through the manual path's layer-2.
+4. **Matched SOTN code** (owner ruling Q55, 2026-09-30, below). In the
+   owner's words, the cited code "actually compiles to a match in its PS1
+   build — not INCLUDE_ASM, not NON_MATCHING/disabled C, not an unmatched
+   function". The author's reading, not the owner's words: the cited line
+   is not inside an `INCLUDE_ASM` / `INCLUDE_RODATA` stub, not under
+   `#ifdef NON_MATCHING` / `#ifndef NON_MATCHINGS`, not in any branch that
+   the defines SOTN's PS1 build passes for that file
+   (`tools/builds/gen.py:771` `cpp_defs` plus the per-file `$cpp_flags`,
+   e.g. gen.py:453) leave disabled, and not
+   in a function SOTN still carries as asm.
+
+Q50 names only SOTN: psyz and every other decompilation project is still
+not evidence for a construct. Author's narrowing, not the owner's words:
+Every construct admitted on a SOTN citation carries an inline comment naming the citation (`/* SOTN: <file>:<line> @<commit> */`), so SOTN-derived constructs stay findable. The tag names no symbol, only the path, line and commit (see project memory comments-in-src-c-affect-queue-generation).
+
+**Precedence (owner ruling Q55, 2026-09-30, twenty-seventh batch).** The
+question put to the owner, verbatim: "Older rules still flatly refuse
+specific tricks: the inline-assembly ban, 'volatile only on
+interrupt-touched globals', never-executed calls, and constructs you said
+'may not be re-proposed in any spelling'. Does a verified SOTN citation
+override those too?" Owner (Trenton) chose, verbatim: **"Yes, matched SOTN
+code only (Recommended)"**, whose text is: "Q50 wins over every older refusal, but the citation must be SOTN code that actually compiles to a match in its PS1 build — not INCLUDE_ASM, not NON_MATCHING/disabled C, not an unmatched function. Paperwork (FAKE comment, simpler spellings tried, second review) still applies." (Record:
+docs/grind/owner-rulings-2026-09-26.md, twenty-seventh batch, commit
+e7c8e3ef5.) Q50 is newer than every refusal in `.claude/rules/` and in the
+`cheat-reviewer` brief. Where an older rule, owner ruling, catalog entry or
+banned list refuses a construct (e.g. [[inline-asm-policy]]'s default ban,
+[[legitimate-volatile-interrupt-touched]]'s two prongs, the
+fabricated-dead-call refusal above, entries that "may not be re-proposed
+in any spelling"), a citation meeting (1)-(4) still admits it, with Q53's
+prerequisites. The older text governs every construct without such a
+citation. Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — Q50
+precedence over older refusals, matched SOTN code only.
+
+**Owner rulings 2026-09-30, twenty-fifth batch, Q51-Q53** (questions,
+answers and the options not chosen verbatim in
+docs/grind/owner-rulings-2026-09-26.md, twenty-fifth batch, commit
+f7b29afeb). They settle how Q50 meets earlier rule text:
+
+- **Q51 — reused variables.** Question: "Does your new 'SOTN precedent is
+  good enough for any constructs' override that?" (the 2026-09-24
+  decline of "a scratch variable reused exactly as SOTN's matched code
+  reuses it", repeated in Rulings 9, 10 and 11). Owner chose **"Yes, Q50
+  overrides it (Recommended)"**: "A variable reused exactly the way a
+  PS1-build SOTN file reuses one is admitted on that citation. Reopens the
+  question for e.g. func_8008B488's `rate` (SOTN's `var_a2`). Newer,
+  explicit ruling wins." Author's narrowing, not the owner's words: such a variable is admitted on a citation meeting
+  (1)-(4) above, instead of the Ruling 5-11 proof packages of
+  [[ordinary-c-judge-decidable]]; the cited SOTN variable must be reused
+  the same way when read (the same roles, written and read at
+  corresponding statements).
+- **Q52 — SOTN's self-marked fakes.** Question: "Do SOTN's own
+  self-admitted fakes count as precedent?" Owner chose **"Yes, with the
+  same FAKE marking (Recommended)"**: "Admitted when SOTN ships the same
+  construct, but ours must carry the same `/* FAKE */` annotation SOTN
+  uses, so it stays visible as a workaround." Author's narrowing, not the owner's words: a construct
+  that SOTN marks as a hack or debt (any hack or debt signal SOTN attaches to the construct, in any form: a comment at or naming it anywhere in the file or header — `!FAKE`, `FAKE`, `fake`, `hack`, `HACK`, `TODO`, `FIXME` or similar; a label, identifier or macro name calling it a hack or fake, e.g. `goto hack;`, `CREATE_FACTORY_FAKE_ARGS`; or code compiled only under `HACKS` or a hack- or fake-named define; when a reviewer finds any such signal, ours carries `/* FAKE: … */`) (e.g. a local `(T*)&D_...` cast re-view, the Q52
+  amendment to Q21 condition (2) above) counts as precedent under (1)-(4),
+  and ours carries a `/* FAKE: ... */` annotation at the construct.
+- **Q53 — family prerequisites still owed.** Question: "When a construct
+  is admitted on SOTN precedent, does it still owe its family's usual
+  paperwork (FAKE annotation where match-motivated, proof that simpler
+  spellings were tried)?" Owner chose **"Yes, still owed
+  (Recommended)"**: "SOTN precedent answers 'is this kind of construct
+  allowed', not 'was it needed here'. Keeps workarounds visible and stops
+  them being used where plain C would match." Author's narrowing, not the owner's words: a construct
+  admitted on SOTN precedent still owes its family's usual paperwork:
+  every annotation, exhaustion, byte-neutrality and review prerequisite of
+  the family entry that governs it, but not that entry's test of whether
+  the kind of construct is allowed, which the citation answers (e.g. a Q51
+  reuse owes no Ruling 5-11 proof package). In any case it carries a
+  `/* FAKE: ... */` annotation where it is match-motivated and has ledger
+  proof that simpler spellings were tried (documented lever exhaustion; the simplest-known-form rule of
+  [[ordinary-c-judge-decidable]] Ruling 1(4) applies).
+
+The owner deferred the project-wide sweep of pre-2026-09-19 completions;
+it is not started. Records: docs/grind/decisions.md 2026-09-30 OWNER
+RULING — SOTN precedent suffices, and the Q51, Q52 and Q53 entries.
+
 ## What the SOTN standard accepts
 
 [[community-standard]] is the bar: pure C, or canonical-body asm for code
@@ -1305,7 +1488,7 @@ decisions.md, skipped by `queue next`, re-activated on new evidence or
 owner unpark). There is no (d) "new infrastructure carve-out", and a
 proposed frozen-list extension is a clean FAIL(CONSTRUCT) logged to
 `docs/grind/borderline.md` — never granted in-pipeline, never filed as a
-question to the owner.
+question to the owner. Exception, owner ruling 2026-09-30 (Q50): a construct with a verified SOTN citation ([[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices) is admissible on that citation, with Q53's prerequisites. Author's narrowing, not the owner's words (flag to the owner): it lands only through the manual path's layer-2, never on a Judge PASS; it is not a frozen-list extension; VS/ESA or other non-SOTN precedent, and any construct without a verified citation, keep the disposition above.
 
 ## Related
 

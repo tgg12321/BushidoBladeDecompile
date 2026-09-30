@@ -48,6 +48,12 @@ by the pipeline under a mechanical checklist:
    extend — but **non-membership is now a clean FAIL(CONSTRUCT) plus a
    borderline-ledger entry, never an ESCALATE**. The Judge's
    `family-extension` and `policy-question` escalate kinds are retired.
+   **Owner ruling 2026-09-30 (Q50):** a construct that verifiably exists
+   in the SOTN repo is admissible on that precedent, with layer-2
+   checking the citation and the family's prerequisites still owed (Q53);
+   what "verifiably" requires, and Q51-Q53, are in
+   [[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent
+   suffices. Author's narrowing, not the owner's words — flag to the owner: on the Grinder path a Judge PASS is not enough: a body relying on a Q50 citation lands only through the manual path's layer-2.
 3. **The rename test replaces motive-testing.** Judge and reviewers rule
    on the C TEXT: does each construct have a truthful semantic reading, do
    neutral names survive, is the mandated annotation present? A construct
@@ -90,7 +96,7 @@ than once is admitted ONLY if it meets every prong of Ruling 5
 (2026-09-23), of Ruling 8 (2026-09-24, vmNoiseOn's `temp` only), of Ruling 9
 (2026-09-25) or of Ruling 10 (2026-09-25), or, when none of those admits
 it, every prong of Ruling 11 (2026-09-26, allocator-necessity proof),
-whichever governs that variable, exclusively: the reused
+whichever governs that variable (or, under owner ruling Q51, 2026-09-30, a verified SOTN reuse citation per [[no-new-park-categories]] § SOTN precedent suffices, with Q53), exclusively: the reused
 variable itself may not also claim this entry or
 [[staged-value-reused-variable]]; other locals in the same body,
 including a Ruling 5 1(b)(ii) selector binding, are judged under their
@@ -98,7 +104,7 @@ own entries.) All other prongs (real value, byte-neutral, fresh not
 borrowed, destination not live-pre-initialized, standard prerequisites)
 are unchanged. Where Rulings 5-10 below say that a variable they do not
 admit "fails", that is read subject to Ruling 11: such a variable is
-admitted if, and only if, it meets every prong of Ruling 11.
+admitted if, and only if, it meets every prong of Ruling 11 or has a verified Q51 citation.
 
 ## Ruling 2 — dead-store deadness is STORE-level
 
@@ -611,7 +617,7 @@ words. It admits ONE statement in ONE function and nothing else:
 
 - **(A) Scope.** Only the function `sprintf` (PsyQ LIBC, 0x80079A30,
   `src/text1b_b.c`). No other function may cite this ruling; a second function
-  wanting the same shape needs its own owner ruling.
+  wanting the same shape needs its own owner ruling. (Owner rulings Q50/Q51, 2026-09-30: a construct with a SOTN citation meeting conditions (1)-(4) of [[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices (a PS1-build file, the same construct when read, verified by layer-2, and matched SOTN code per Q55) may instead be admitted on that citation, with Q53's prerequisites and layer-2. This ruling's own scope is unchanged.)
 - **(B) The statement.** Only the SOTN line
   `bufPtr = (char*)&args - sizeof(printf_info) - 4;`
   (SOTN `src/main/psxsdk/libc/sprintf.c:90`), appearing EXACTLY ONCE in the
@@ -688,7 +694,7 @@ words. It admits ONE local in ONE function and nothing else:
 
 - **(A) Scope.** Only the function `vmNoiseOn` (PsyQ LIBSND vm_no1.c,
   0x80086CF8, `src/main.c`). No other function may cite this ruling. A pan
-  cascade elsewhere (e.g. SOTN's SpuVmSetVol) needs its own owner ruling.
+  cascade elsewhere (e.g. SOTN's SpuVmSetVol) needs its own owner ruling. (Owner rulings Q50/Q51, 2026-09-30: a construct with a SOTN citation meeting conditions (1)-(4) of [[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices (a PS1-build file, the same construct when read, verified by layer-2, and matched SOTN code per Q55) may instead be admitted on that citation, with Q53's prerequisites and layer-2. This ruling's own scope is unchanged.)
 - **(B) The local and the cascade.** One `u32 temp;`, declared once at
   function scope with no initializer. The function contains the following
   statements exactly once, as one contiguous run, immediately after the
@@ -751,6 +757,7 @@ name `temp` alone fails Ruling 5 prong 1(f). `temp` may not also claim Ruling
 [[staged-value-reused-variable]]. This does NOT relax Ruling 5, its
 extension, or Ruling 6 for any other variable or function. It also does not
 relax the multi-WRITE carrier bans (y1, `c`, `src`/`idx`), which stand.
+(Owner rulings Q50/Q51, 2026-09-30: a construct with a SOTN citation meeting conditions (1)-(4) of [[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices (a PS1-build file, the same construct when read, verified by layer-2, and matched SOTN code per Q55) may instead be admitted on that citation, with Q53's prerequisites and layer-2. This ruling's own scope is unchanged.)
 Record: docs/grind/decisions.md 2026-09-24 OWNER RULING — Ruling 8.
 
 ## Ruling 9 (owner, 2026-09-25) — one meaning, several constant offsets
@@ -912,12 +919,15 @@ only Ruling 10 can admit prnt's `n`); func_8001BE20 `shift` (2026-09-25:
 (b)/(d)); func_8005490C `obj` (2026-09-25: different consumers, each init
 write read twice, the right-hand side a call, (a)/(b)/(c)); func_8002A458
 dx/dy/dz (2026-09-25: each written three times with different quantities,
-(b)); func_8008B488 `rate` (2026-09-25: five different ADSR fields feeding two
-different registers, with clamp constants, (a)/(b)/(d)); func_80057E84 `vtx`/`node` (2026-09-25: a cast, scaled cursor and `&buf->node[c]`, not `BASE + K`, (b)); func_800288C8 `tbl` and func_8002A458 `lzc_in` (2026-09-25: bare copies and loads, (b)/(d)). This ruling does NOT
-reopen the class the owner declined on 2026-09-24 ("a scratch variable reused
-exactly as SOTN's matched code reuses it", decisions.md Ruling 8 entry): its
-test is one meaning shown by layout evidence, and a SOTN or other precedent
-counts for nothing under it.
+(b)); func_8008B488 `rate` (under this ruling; 2026-09-25: five different ADSR fields feeding two
+different registers, with clamp constants, (a)/(b)/(d)); func_80057E84 `vtx`/`node` (2026-09-25: a cast, scaled cursor and `&buf->node[c]`, not `BASE + K`, (b)); func_800288C8 `tbl` and func_8002A458 `lzc_in` (2026-09-25: bare copies and loads, (b)/(d)). This ruling's
+test is one meaning shown by layout evidence; a precedent is not part of it.
+The class the owner declined on 2026-09-24 ("a scratch variable reused
+exactly as SOTN's matched code reuses it", decisions.md Ruling 8 entry) is
+reopened by owner ruling Q51 (2026-09-30), outside this ruling: a variable
+reused exactly the way a PS1-build SOTN file reuses one is admitted on that
+verified citation, with Q53's family prerequisites ([[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices). A precedent
+from psyz or any other non-SOTN decompilation counts for nothing.
 
 **func_8007636C directive.** func_8007636C landed COMPLETED-C in d844de59a
 (2026-09-24). Its function-scope `q` has this shape: five writes of
@@ -1069,7 +1079,7 @@ unchanged. **(b′) does NOT admit a variable whose writes differ in meaning on
 normal paths.** If any normal path reaches a sub-object of a different kind,
 (b) fails exactly as before, and no anomaly record cures it. It does not
 reopen any item on the still-banned list above, nor the class the owner
-declined on 2026-09-24.
+declined on 2026-09-24 (Q51 reopens it separately).
 
 **Application.** func_800759D0's reverted body
 (`memory/grind/func_800759D0/rejected/ruling9-cells-placeholder-overrun-0.c`)
@@ -1168,11 +1178,19 @@ Other locals in the body are judged under their own entries.
   ruling. This ruling sanctions nothing but the (C) variable.
 
 **Scope.** This covers few functions: library code whose original source
-survives publicly, such as prnt from 4.3BSD-Reno. It does NOT reopen the
-class the owner declined on 2026-09-24 ("a scratch variable reused exactly as
-SOTN's matched code reuses it"). SOTN is a decompilation, so such a reuse fails
-(A). func_8008B488's shared `rate` (SOTN's `var_a2` in `_SpuSetVoiceAttr`)
-therefore stays inadmissible. Ruling 8 stays vmNoiseOn-only. Ruling 5, its
+survives publicly, such as prnt from 4.3BSD-Reno. It is not the
+route for "a scratch variable reused exactly as SOTN's matched code reuses it"
+(the class the owner declined on 2026-09-24): SOTN is a decompilation, so such
+a reuse fails (A). Owner ruling Q51 (2026-09-30) overrides that decline, and
+such a reuse is admitted instead on its verified SOTN citation, with Q53's
+family prerequisites ([[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices). func_8008B488's
+shared `rate` (SOTN's `var_a2` in `_SpuSetVoiceAttr`) is therefore no longer
+barred by the 2026-09-24 decline. It may be resubmitted on a SOTN `var_a2`
+citation, which a fresh layer-2 must verify (conditions (1)-(4) of § SOTN
+precedent suffices: a PS1-build file, the same reuse when read, matched SOTN
+code per Q55), with Q53's prerequisites. Nothing here pre-decides whether that
+citation holds. A reuse matching psyz or any other
+non-SOTN decompilation still fails (A) and gets nothing. Ruling 8 stays vmNoiseOn-only. Ruling 5, its
 extension, Ruling 6, Ruling 9 and the multi-WRITE carrier bans are unchanged
 for every variable this ruling does not admit. prnt's rejected form is
 re-submitted to a fresh layer-2 under this text. Its ledger
@@ -1204,7 +1222,10 @@ part)."
 owner's words. It applies only to a fresh local written more than once that
 none of Ruling 5 (with its extension), Ruling 6, Ruling 8, Ruling 9 or
 Ruling 10 admits. A variable one of them admits is judged under that ruling
-and gets nothing from this one. A variable in scope here is admitted ONLY if
+and gets nothing from this one. A variable reused exactly the way a PS1-build
+SOTN file reuses one, with a citation verified under owner ruling Q51
+(2026-09-30; [[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices), is admitted on that citation instead, with
+Q53's prerequisites, and owes no (A)-(H) package. Any other variable in scope here is admitted ONLY if
 it meets EVERY prong (A)-(H) below; missing any prong is a FAIL(CONSTRUCT)
 under Ruling 1. The variable may not also claim Ruling 1's named-intermediate
 relaxation or [[staged-value-reused-variable]], and no consumer of it may be
@@ -1458,12 +1479,17 @@ submissions meeting (C)(3)'s 2026-09-28 GTE-macro input copy clause or its
 fails (B)(1). A variable whose per-value spelling needs an extra or a missing
 statement fails (C)(2). This ruling reopens no earlier FAIL by itself:
 func_800200DC `y1`, func_80045878 `c`, func_8008B488 `rate` and every other
-variable on the still-banned lists of Rulings 5, 6 and 9 can return only as a
-fresh submission that meets every prong, and nothing here pre-decides one.
-It does NOT reopen the class the owner declined on 2026-09-24 ("a scratch
+variable on the still-banned lists of Rulings 5, 6 and 9 can return under this
+ruling only as a fresh submission that meets every prong, and nothing here
+pre-decides one. Under this ruling a precedent counts for nothing; only the
+(D) proof admits. The class the owner declined on 2026-09-24 ("a scratch
 variable reused exactly as SOTN's matched code reuses it", decisions.md
-Ruling 8 entry): a SOTN or other precedent counts for nothing under this
-ruling. Only the (D) proof admits.
+Ruling 8 entry) is reopened by owner ruling Q51 (2026-09-30) as a separate
+route: a variable reused exactly the way a PS1-build SOTN file reuses one is
+admitted on that verified citation, with Q53's family prerequisites
+([[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices); func_8008B488 `rate` may be resubmitted on that route (Ruling 10 Scope; nothing pre-decided).
+A precedent from psyz or any other non-SOTN decompilation counts for
+nothing.
 
 **Application.** func_80055138 (`v`), func_8003993C (`win` and `key`) and
 func_8002DE20 (`side_a`/`side_b`) may each be submitted to a fresh layer-2
@@ -1596,8 +1622,7 @@ everything has to be decompiled eventually."
   or any non-canonical `__asm__`; scheduling barriers; build, Makefile, linker, maspsx-gate or compiler
   changes that alter a function's bytes; build-time assembly rewriting in any spelling; a construct with no
   semantic purpose outside the frozen family list (still a FAIL(CONSTRUCT) under Ruling 1(2)); any construct
-  that fails the prongs of the ruling, family entry or clause governing it; a multi-write local outside Rulings 5-12 (those rulings keep
-  governing reused locals exclusively); anything on a still-banned list or refused by an earlier owner
+  that fails the prongs of the ruling, family entry or clause governing it; a multi-write local outside Rulings 5-12 and owner ruling Q51's SOTN reuse citation (those keep governing reused locals exclusively); anything on a still-banned list or refused by an earlier owner
   ruling; the AUTO-REJECT class of [[escalation-not-parked]]. Canonical-asm stays the `canonical` gate's call.
 - **(E) No rotations during the run.** No `queue rotate` of any item during the run. An item that does not
   close is banked in its ledger and stays active; it stays the run's target and changes modality

@@ -20,7 +20,9 @@ metadata:
 > skipped by `queue next`, re-activated on new evidence or owner unpark —
 > never surfaced as a question). Ordinary-C construct questions are
 > Judge-decidable against the frozen family list (non-membership = FAIL +
-> borderline log, never a packet). This file's AUTO-REJECT class and its
+> borderline log, never a packet; owner ruling 2026-09-30, Q50: a construct
+> with a verified SOTN citation is admissible on it, per
+> [[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices). This file's AUTO-REJECT class and its
 > "everything must be decompiled eventually" posture survive unchanged.
 
 Owner (Trenton), verbatim:

@@ -281,6 +281,10 @@ sanctioned-family set. Later additions this brief must honor:
   chain, F2 signedness-split dual read, F4 cross-symbol arithmetic,
   F5 union CLOBBER; also the fabricated dead call site (2026-08-17).
 
+## 2026-09-30 owner rulings Q46–Q55 (authority: `.claude/rules/no-new-park-categories.md` § Owner ruling 2026-09-30 — SOTN precedent suffices; read it)
+- **Q50 SOTN precedent suffices.** A construct that verifiably exists in the SOTN repo is admissible on that citation. It is NOT a FAIL under tests 1-3, 5 or 6 or the forbidden-family list on the ground that the kind of construct is refused (Q53: the citation answers that); its family's paperwork is still checked. Under Q55 a verified citation prevails over every older refusal in the rules and this brief. Verify the citation yourself: open the cited SOTN file:line; confirm `config/splat.us.*`/`splat.hd.*` membership and no non-PSX version guard (a header line: per § SOTN precedent suffices (1), with a use site in a PS1 (`splat.us.*`/`splat.hd.*`) splat-member file that includes it directly or transitively and itself meets (2) and (4); the construct is read as its expansion under that file's PS1 defines, and (4) and the markers are checked at the definition too); confirm the cited code compiles to a match in SOTN's PS1 build (Q55: not inside `INCLUDE_ASM`/`INCLUDE_RODATA`, not under `NON_MATCHING` or any branch the defines SOTN's PS1 build passes for that file (`tools/builds/gen.py:771` `cpp_defs` plus the per-file `$cpp_flags`, e.g. gen.py:453) leave disabled, not in a function SOTN still carries as asm); confirm the construct does the same thing as ours when read, not merely its spelling. Then check Q53: a `/* FAKE: … */` where match-motivated (Q52: required for every construct that SOTN marks as a hack or debt (the author's narrowing, not the owner's words: any hack or debt signal SOTN attaches to the construct, in any form: a comment at or naming it anywhere in the file or header — `!FAKE`, `FAKE`, `fake`, `hack`, `HACK`, `TODO`, `FIXME` or similar; a label, identifier or macro name calling it a hack or fake, e.g. `goto hack;`, `CREATE_FACTORY_FAKE_ARGS`; or code compiled only under `HACKS` or a hack- or fake-named define; when a reviewer finds any such signal, ours carries `/* FAKE: … */`)), ledger proof that simpler spellings were tried, and the governing family's annotation, exhaustion and byte-neutrality prerequisites. A Q51 reused variable owes no Ruling 5-11 package. Every construct admitted on a SOTN citation carries an inline comment naming the citation (`/* SOTN: <file>:<line> @<commit> */`), so SOTN-derived constructs stay findable. The tag names no symbol, only the path, line and commit (see project memory comments-in-src-c-affect-queue-generation). Missing it is FAIL. psyz or any other non-SOTN decompilation is not evidence. An unverifiable citation, or one that differs when read, is FAIL.
+- **Q47** duplicated calls into arms, byte-identical only; **Q48/Q50** volatile locals by SOTN citation or target-byte proof; **Q46** Q33 union word views on struct members. See the rule files.
+
 # The "is this a cheat" test (apply each, in order)
 
 For EVERY construct in the proposed source change, walk this checklist:
@@ -340,6 +344,7 @@ For EVERY construct in the proposed source change, walk this checklist:
    above, even by analogy? "It's different because it's spelled with X
    instead of Y" is exactly the loophole the policy forbids. The catalog
    is open; new spellings of the same intent are also forbidden. **FAIL.**
+   (Except a construct with a verified Q50 citation; see the 2026-09-30 block.)
 
 6. **Naming-announces-intent test.** Variable names like `pad`, `_pad`,
    `pad2`, `pre_pad`, `dummy`, `unused`, `_unused`, `spill`, `_spill`,

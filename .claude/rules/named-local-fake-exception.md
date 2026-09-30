@@ -178,7 +178,7 @@ RULING — always-zero narrow frame locals and per-branch constant holders.
   or 10 depending on `r->flag`; src/display.c, COMPLETED-C). A local that
   is fixed at its subscript reads and is later given an unrelated
   run-time value (a reused local) is judged, unchanged, under the
-  reused-variable rulings (ordinary-c-judge-decidable Rulings 5-12),
+  reused-variable rulings (ordinary-c-judge-decidable Rulings 5-12 or Q51),
   where a value whose writes are all literal constants fails Ruling 11
   (C)(3) unless its per-branch-constants clause applies; its subscript
   reads are reads of a non-dummy local and are outside this refusal. A

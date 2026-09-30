@@ -2,7 +2,7 @@
 name: duplicated-statement-into-arms
 paths: [".claude/rules/duplicated-statement-into-arms.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
-description: "NARROW SANCTIONED EXCEPTION (owner ruling 2026-07-01): duplicating a REAL statement into 2+ arms (instead of label-sharing) is legitimate — incl. when cross-jump re-merges the copies to identical bytes and the effect is a reg_n_refs priority lift. SOTN duplicates assignments across arms routinely (7-arm, 11-arm instances). Prerequisites: byte-neutrality verified, lever-exhaustion, FAKE annotation when match-motivated."
+description: "NARROW SANCTIONED EXCEPTION (owner ruling 2026-07-01): duplicating a REAL statement into 2+ arms (instead of label-sharing) is legitimate — incl. when cross-jump re-merges the copies to identical bytes and the effect is a reg_n_refs priority lift. SOTN duplicates assignments across arms routinely (7-arm, 11-arm instances). Prerequisites: byte-neutrality verified, lever-exhaustion, FAKE annotation when match-motivated. Calls too, if byte-identical (Q47)."
 metadata:
   type: rule
 ---
@@ -73,8 +73,10 @@ copy via a label/goto — is a legitimate matching technique,
 ## Non-extension
 
 Does NOT sanction: dead stores (see [[dead-store-fake-exception]]),
-duplicating CALLS (changes bytes), or any duplication that survives to
-the final bytes (fails prerequisite 2 — that's a real code change).
+a duplicated CALL that survives into the final bytes, or any duplication
+that survives to the final bytes (fails prerequisite 2 — that's a real
+code change). A duplicated call whose copies cross-jump merges, leaving
+byte-identical output, IS covered (owner ruling 2026-09-30, Q47, below).
 Per [[no-new-park-categories]], other spellings need their own evidence.
 
 ## Clarified scope — control-transfer tails (owner ruling 2026-08-06)
@@ -91,6 +93,41 @@ written out 3× (vs_vh.c:69-128), instances in base file doors.c
 transfers; the owner ruled the conditional-branch tail a difference of
 DEGREE, not kind (func_80021280, first accepted instance — the
 mechanism record lives in that function's preamble comment).
+
+## Duplicated calls — byte-identical only (owner ruling 2026-09-30, Q47)
+
+The recommendation put to the owner (twenty-third batch), verbatim:
+"Allow when the bytes don't change, with a FAKE comment. [...] The rule
+bans duplicated calls because they normally add code. Here the compiler
+merges the copies, so the reason doesn't apply. Keep the FAKE comment
+when the duplication exists to get the match, as the rule already
+requires for statements." The owner adopted it, verbatim: "Go ahead with
+all your recommendations. Just know my highest priority is avoiding
+regressions, cheats or workarounds being introduced. And weeding out any
+remaining cheats that might be lurking in our project. SOTN is the gold
+standard when in doubt" (Record: docs/grind/owner-rulings-2026-09-26.md,
+twenty-third batch, commit d023686ea.)
+
+What follows is the author's narrowing, not the owner's words. A
+statement that contains a call may be duplicated into 2+ arms under this
+rule only when every prerequisite above holds, as for any statement:
+
+- **(1) The call is real on each path**: a call the path genuinely
+  makes, to the callee and with the arguments of the call the target
+  has there. A never-executed or fabricated call stays REFUSED
+  (absent a Q55 citation of matched SOTN code)
+  ([[no-new-park-categories]], "Fabricated dead call site").
+- **(2) Byte-neutral**: jump2's cross-jump merges the copies, so the
+  emitted function is byte-identical to the reference (objdump diff
+  and/or full SHA1). A duplicated call that survives into the final
+  bytes (an extra `jal` the target lacks) fails (2) and is NOT
+  sanctioned.
+- **(4) `/* FAKE: <reason> */`** on the duplicated copy when the
+  duplication is match-motivated.
+- (3) and (5) apply unchanged.
+
+Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — duplicated
+calls into arms, byte-identical only.
 
 ## Related
 

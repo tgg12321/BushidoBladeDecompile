@@ -3,7 +3,7 @@ name: legitimate-volatile-interrupt-touched
 paths: [".claude/rules/legitimate-volatile-interrupt-touched.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
 
-description: "NARROW SANCTIONED CARVE-OUT (user policy 2026-06-08): `extern volatile T G;` is allowed ONLY for globals asynchronously mutated by an identifiable IRQ/MMIO writer AND read at a use-site shape that demonstrably requires CSE-defeat (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound). SOTN-grounded. Does NOT relax the broader `volatile`-coercion ban in [[inline-asm-policy]] for any other case."
+description: "NARROW SANCTIONED CARVE-OUT (user policy 2026-06-08): `extern volatile T G;` ONLY for globals asynchronously mutated by an identifiable IRQ/MMIO writer AND read at a use-site shape that demonstrably requires CSE-defeat (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound). SOTN-grounded. Does NOT otherwise relax the `volatile`-coercion ban in [[inline-asm-policy]]. Volatile LOCALS: SOTN precedent or target-byte proof (Q48/Q50). Q55: matched-SOTN citation overrides."
 metadata:
   type: rule
 ---
@@ -34,7 +34,7 @@ codegen-coercion device, nor a general relaxation of the volatile ban,
 nor a justification for `*(volatile T *)&G` inline casts on globals
 that fall outside the carve-out. The default posture for
 `extern volatile T D_xxxxxxxx;` REMAINS FORBIDDEN; this rule documents
-the specific exception, not a relaxation of the default.**
+the specific exception, not a relaxation of the default.** (Owner ruling Q55, 2026-09-30: a verified Q50 citation of matched SOTN code admits a construct this text refuses, with Q53's prerequisites; [[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices, Precedence.)
 
 ## Sibling carve-out precedent
 
@@ -286,6 +286,87 @@ working on:
    convention is `# <func> — IRQ writer: <writer>:<file>:<line>`).
 6. **Reference this rule in the commit message** so the policy basis
    is linked from git history.
+
+## Owner rulings 2026-09-30 — volatile locals (Q48, amended by Q50)
+
+**Q48 (twenty-third batch).** The recommendation put to the owner,
+verbatim: "Allow only with proof from the shipped code. 'SOTN does it'
+isn't evidence, because SOTN is itself a decompilation. If the target
+reloads the local from memory on every access, which only volatile
+produces, then volatile is probably what Sony wrote. Allow it with that
+proof, like Q2. Without it, not allowed." The owner adopted it,
+verbatim: "Go ahead with all your recommendations. Just know my highest
+priority is avoiding regressions, cheats or workarounds being
+introduced. And weeding out any remaining cheats that might be lurking
+in our project. SOTN is the gold standard when in doubt". (Record:
+docs/grind/owner-rulings-2026-09-26.md, twenty-third batch, commit
+d023686ea.)
+
+**Q50 (twenty-fourth batch).** The orchestrator flagged the tension
+between Q48's "'SOTN does it' isn't evidence" and "SOTN is the gold
+standard when in doubt". The owner, verbatim: "Wait on a project wide
+sweep. But SOTN precedent is good enough for any constructs if they
+verifiably exist in the SOTN repo". The record: this "supersedes Q48's
+'SOTN does it isn't evidence' clause: a volatile local that SOTN ships
+is admitted on that precedent (the target-byte proof of Q48 remains an
+alternative route when no SOTN precedent exists)." (Record: same file,
+twenty-fourth batch, Q50, commit a68bde8ee.)
+
+What follows is the author's narrowing, not the owner's words. The
+two-prong criterion above governs globals only. A `volatile`-qualified
+automatic local (`volatile T x;`, the local's own storage qualified)
+that holds a value the function uses is admitted ONLY by route A or
+route B, and in either case only with (4):
+
+- **Route A — SOTN precedent (Q50).** SOTN ships a `volatile` automatic
+  local that verifiably exists in the sense of [[no-new-park-categories]]
+  § Owner ruling 2026-09-30 — SOTN precedent suffices: a file:line in a
+  file of SOTN's PS1 build (`splat.us.*` / `splat.hd.*`) (the author's reading, corrected
+  2026-09-30: an earlier text said "PSX (GCC 2.7.2)"; SOTN's PS1 build uses
+  `bin/cc1-psx-26`, and the owner never named a compiler), where the cited
+  local does the same thing as ours when read, not merely shares its
+  spelling, and the cited code compiles to a match in SOTN's PS1 build
+  (condition (4), owner ruling Q55: not INCLUDE_ASM, not
+  NON_MATCHING/disabled C, not an unmatched function). The citation is recorded in the ledger and the inline
+  `/* SOTN: … */` tag, and Q53's
+  prerequisites apply (a `/* FAKE: ... */` annotation where the
+  qualifier is match-motivated; simpler spellings tried). Only SOTN
+  counts: psyz and every other decompilation is still not evidence.
+- **Route B — target-byte proof (Q48).** ALL of (1)-(3):
+
+1. **Every access is a memory round-trip in the target.** The ledger
+   lists every access to the local in the function's original
+   instructions (`asm/funcs/<func>.s`), cited by address and opcode with
+   the local's `$sp` offset: every write is a store to that slot and
+   every read is a load from it. No access is served from a register,
+   including a read whose value a register still holds from the
+   preceding store or load of the slot.
+2. **Only `volatile` produces it.** The ledger banks the same body with
+   the `volatile` qualifier removed and nothing else changed, its
+   `sandbox --disable all` score, and the diff showing that the
+   compiler then serves at least one of the (1) accesses from a
+   register. If the body without `volatile` emits the same memory
+   accesses, (2) is not met.
+3. **The proof is in the ledger, Q2-style.** (1) and (2) are banked in
+   the function's ledger with their cited addresses and outputs, so a
+   reviewer can check each claim against the target, as the Q2
+   amendment's (a1)/(a2) evidence is banked ([[no-new-park-categories]],
+   aggregate merge).
+4. **Layer-2.** A fresh layer-2 `cheat-reviewer` PASS checks route A's
+   citation against the SOTN source itself, or (1)-(3) against the
+   ledger and the target. On the Grinder path a Judge PASS is not
+   enough: such a body lands only through the manual path's layer-2.
+   Sandbox 0 and full-build SHA1 == oracle apply as always.
+
+Without route A or route B, and (4), a `volatile` local stays the
+CSE-defeat coercion that [[inline-asm-policy]]'s expanded catalog
+forbids. This section does not govern the unused `volatile` pad local
+(the phantom-frame-slot family and its Q35 extension in
+[[no-new-park-categories]]), a local pointer to volatile data
+(`volatile T *p`, where the qualifier is on the pointee:
+[[mmio-volatile-type-level]] and this rule's two prongs), or any
+`volatile` cast. Record: docs/grind/decisions.md 2026-09-30 OWNER RULING
+— volatile locals: SOTN precedent or target-byte proof.
 
 ## Related rules
 

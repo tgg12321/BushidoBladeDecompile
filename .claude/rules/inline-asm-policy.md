@@ -48,7 +48,7 @@ metadata:
 >   carve-out applying ONLY to globals asynchronously mutated by an
 >   identifiable IRQ handler at use sites that demonstrably require
 >   CSE-defeat. The default ban is unchanged for every case OUTSIDE the
->   two-pronged criterion in that rule. **2026-07-01: for hardware
+>   two-pronged criterion in that rule. (Owner ruling Q55, 2026-09-30: a verified Q50 citation of matched SOTN code admits a construct this text refuses, with Q53's prerequisites; [[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices, Precedence.) **2026-07-01: for hardware
 >   I/O-register addresses (0x1F801000-0x1F802FFF) volatile is now
 >   TYPE-LEVEL hardware semantics — all shapes incl. single reads —
 >   per [[mmio-volatile-type-level]]; the two-prong gate governs

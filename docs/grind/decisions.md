@@ -30346,3 +30346,96 @@ Owner (Trenton), verbatim: **"alright go ahead and redact my no maspx changes ru
    behaviour, verified against Sony's tools and byte-neutral for every completed function.
    Per-function assembler gates stay governed by `.claude/rules/maspsx-gate-lists.md` (the COMMON
    gate remains a cheat).
+
+## 2026-09-30 — OWNER RULING — Q33 union word views on struct members (`.claude/rules/no-new-park-categories.md` § aggregate merge, amendment to prong (d), Q46 extension)
+
+Twenty-third batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, Q46, commit d023686ea). The owner
+adopted the recommendation "Extend it, same conditions." The Q33 union word view's object may now also be a
+struct member, whether the struct is reached through a pointer or not. Conditions (1)-(7) are unchanged: every
+word-member site is one `lw`/`sw` in the original bytes over exactly those fields (cited by address), and a
+fresh layer-2 reviews every commit adding such a union or a word-member site. The author's narrowing, not the owner's words: for a struct member the union is
+the member's one declaration in the struct type's one definition, replacing the adjacent members it spans at
+their existing offsets; the struct's
+size and other offsets are unchanged and the word member is not evidence for the struct's layout. The Q36 cast
+store stays locals-only. Nothing is pre-decided.
+
+## 2026-09-30 — OWNER RULING — duplicated calls into arms, byte-identical only (`.claude/rules/duplicated-statement-into-arms.md` § Duplicated calls)
+
+Twenty-third batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, Q47, commit d023686ea). The owner
+adopted the recommendation "Allow when the bytes don't change, with a FAKE comment." A statement containing a
+real call may be duplicated into 2+ arms when every prerequisite of the rule holds: in particular, cross-jump
+merges the copies so the emitted function is byte-identical to the reference, and a `/* FAKE: */` annotation
+marks the duplicated copy when the duplication is match-motivated. A duplicated call that survives into the
+final bytes still fails prerequisite 2. The author's narrowing, not the owner's words: a fabricated or never-executed call stays refused (absent a Q55 citation of matched SOTN code).
+
+## 2026-09-30 — OWNER RULING — volatile locals: SOTN precedent or target-byte proof (`.claude/rules/legitimate-volatile-interrupt-touched.md` § Owner rulings 2026-09-30 — volatile locals)
+
+Twenty-third batch Q48 as amended by twenty-fourth batch Q50 (verbatim record docs/grind/owner-rulings-2026-09-26.md;
+Q48 in commit d023686ea, Q50 in a68bde8ee). The owner adopted the Q48 recommendation "Allow only with proof from the shipped code";
+Q50 then superseded its "'SOTN does it' isn't evidence" clause. A `volatile` automatic local holding a used value is
+admitted by route A, a SOTN precedent that verifiably exists (a file:line in a PSX build file of the SOTN repo, the
+cited local doing the same thing when read (the author's reading; and, per Q55 below, matched SOTN code); Q53's prerequisites owed), or by route B, the ledger showing from the target's bytes that every
+access to the local is a store to or load from its frame slot (cited by address) and banking the same body without
+`volatile` serving at least one of those accesses from a register (Q2-style banked evidence). The author's narrowing, not the owner's words: either way a fresh
+layer-2 PASS checks it and the body lands through the manual path. Unused volatile pad locals, pointers to volatile
+data and volatile casts are governed elsewhere, unchanged.
+
+## 2026-09-30 — OWNER RULING — SOTN precedent suffices (`.claude/rules/no-new-park-categories.md` § Owner ruling 2026-09-30 — SOTN precedent suffices)
+
+Twenty-fourth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, Q50, commit a68bde8ee). Owner, verbatim: "Wait on a
+project wide sweep. But SOTN precedent is good enough for any constructs if they verifiably exist in the SOTN repo".
+A construct is admissible when it verifiably exists in the SOTN decomp repository; this supersedes Q48's "SOTN does
+it isn't evidence" clause. The author's reading of "verifiably exist", as the record states it (flag to the owner
+if a case turns on it): a file:line in a file of SOTN's PS1 build (`splat.us.*` / `splat.hd.*`) (correction to the author's reading:
+an earlier text said "PSX (GCC 2.7.2)"; SOTN's PS1 build uses `bin/cc1-psx-26`, and the owner never named a
+compiler), where the cited construct does the same thing as ours when read, not merely shares its spelling
+(and, per Q55 below, matched SOTN code); layer-2 checks the citation. psyz and other non-SOTN decompilations are still not evidence. Author's narrowing, not the owner's words: on
+the Grinder path a Judge PASS is not enough; a body relying on a Q50 citation lands only through the manual path's
+layer-2. Also the author's narrowings, not the owner's words: a header line (`include/**/*.h`, `src/**/*.h`)
+counts only with a cited use site in a `splat.us.*`/`splat.hd.*` member whose preprocessed text includes it and
+which itself meets conditions (2) and (4), with (4) and the hack markers checked at the definition too; and every
+construct admitted on a SOTN citation carries an inline `/* SOTN: <file>:<line> @<commit> */` tag naming no symbol,
+missing it is FAIL. How Q50 meets earlier rule text is settled by Q51-Q53 (entries below). The project-wide sweep is deferred by the
+owner.
+
+## 2026-09-30 — OWNER RULING — Q50 overrides the 2026-09-24 SOTN-reuse decline (`.claude/rules/ordinary-c-judge-decidable.md` Rulings 9, 10, 11; `.claude/rules/no-new-park-categories.md` § SOTN precedent suffices, Q51)
+
+Twenty-fifth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, Q51, commit f7b29afeb). The owner chose
+"Yes, Q50 overrides it (Recommended)": "A variable reused exactly the way a PS1-build SOTN file reuses one is
+admitted on that citation." The author's narrowing, not the owner's words: such a variable is admitted on a Q50 citation (PS1-build file, the
+same reuse when read, layer-2 verifies; and, per Q55 below, matched SOTN code) instead of the Ruling 5-11 proof packages, with Q53's prerequisites. Rulings 9, 10 and 11 now say
+so; a precedent from psyz or any other non-SOTN decompilation still counts for nothing. func_8008B488's shared
+`rate` (SOTN's `var_a2` in `_SpuSetVoiceAttr`) is therefore no longer barred by the 2026-09-24 decline. It may be
+resubmitted on a SOTN `var_a2` citation, which a fresh layer-2 must verify (a PS1-build file, the same reuse when
+read; and, per Q55 below, matched SOTN code), with Q53's prerequisites. Nothing here pre-decides whether that citation holds.
+
+## 2026-09-30 — OWNER RULING — SOTN's self-marked fakes count, with the same FAKE marking (`.claude/rules/no-new-park-categories.md` § SOTN precedent suffices, Q52; Q21 condition (2))
+
+Twenty-fifth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, Q52, commit f7b29afeb). The owner chose
+"Yes, with the same FAKE marking (Recommended)": "Admitted when SOTN ships the same construct, but ours must carry the
+same `/* FAKE */` annotation SOTN uses, so it stays visible as a workaround." A construct that SOTN marks as a hack or debt (the author's narrowing, not the owner's words: any hack or debt signal SOTN attaches to the construct, in any form: a comment at or naming it anywhere in the file or header — `!FAKE`, `FAKE`, `fake`, `hack`, `HACK`, `TODO`, `FIXME` or similar; a label, identifier or macro name calling it a hack or fake, e.g. `goto hack;`, `CREATE_FACTORY_FAKE_ARGS`; or code compiled only under `HACKS` or a hack- or fake-named define; when a reviewer finds any such signal, ours carries `/* FAKE: … */`)
+counts as Q50 precedent; ours carries a `/* FAKE: ... */` annotation. Q21 condition (2) and prong (d)'s pun ban no
+longer refuse a local `(T *)&D_...` cast re-view that SOTN ships the same way; such a re-view is admitted on that
+citation, not under Q21 (1)-(6). The Silent Hill union-and-second-symbol practice stays refused absent a verified SOTN citation (Q55).
+
+## 2026-09-30 — OWNER RULING — family prerequisites still owed on SOTN precedent (`.claude/rules/no-new-park-categories.md` § SOTN precedent suffices, Q53)
+
+Twenty-fifth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, Q53, commit f7b29afeb). The owner chose
+"Yes, still owed (Recommended)": "SOTN precedent answers 'is this kind of construct allowed', not 'was it needed
+here'." A construct admitted on SOTN precedent still owes every annotation, exhaustion, byte-neutrality and review
+prerequisite of the family entry that governs it; the author's narrowing, not the owner's words: but not that entry's test of whether the kind of construct is
+allowed, which the citation answers (a Q51 reuse owes no Ruling 5-11 proof package); in any case it carries a `/* FAKE: ... */` annotation where match-motivated and ledger proof that simpler spellings
+were tried (lever exhaustion; simplest-known-form, Ruling 1(4)).
+
+## 2026-09-30 — OWNER RULING — Q50 precedence over older refusals, matched SOTN code only (`.claude/rules/no-new-park-categories.md` § Owner ruling 2026-09-30 — SOTN precedent suffices, condition (4) and Precedence)
+
+Twenty-seventh batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, Q55, commit e7c8e3ef5). The owner chose
+"Yes, matched SOTN code only (Recommended)": "Q50 wins over every older refusal, but the citation must be SOTN code that actually compiles to a match in its PS1 build — not INCLUDE_ASM, not NON_MATCHING/disabled C, not an unmatched function. Paperwork (FAKE comment, simpler spellings tried, second review) still applies." Q50 is newer than every
+refusal in `.claude/rules/` and the `cheat-reviewer` brief: where an older rule, owner ruling, catalog entry or banned list refuses
+a construct (inline-asm-policy's default ban, legitimate-volatile-interrupt-touched's two prongs, the
+fabricated-dead-call refusal, "may not be re-proposed in any spelling" entries), a verified citation still admits it,
+with Q53's prerequisites; the older text governs every construct without one. Q50's "verifiably exist" gains
+condition (4): the cited code compiles to a match in SOTN's PS1 build. The author's narrowing, not the owner's
+words: not inside `INCLUDE_ASM`/`INCLUDE_RODATA`, not under `#ifdef NON_MATCHING`/`#ifndef NON_MATCHINGS` or in any
+branch the defines SOTN's PS1 build passes for that file (`tools/builds/gen.py:771` `cpp_defs` plus the per-file `$cpp_flags`, e.g. gen.py:453) leave disabled, not in a function SOTN still carries as asm. Pointers added at the refusing passages; the
+cheat-reviewer brief checks (4).
