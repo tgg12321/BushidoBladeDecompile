@@ -2912,7 +2912,135 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     }
 }
 
-INCLUDE_ASM("asm/funcs", func_8002EBDC);
+void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
+    s32 sp_tmp;
+    u8 *scr = (u8 *)0x1F8002B8;
+    s32 *mat;
+    s32 *vec;
+    s32 angle1;
+    s32 angle2;
+    s32 dist_sq;
+    s32 dist;
+
+    angle1 = ratan2(dir[0], dir[2]);
+    *(s16 *)(scr + 0xFA) = 0x800 - angle1;
+    dist_sq = dir[0] * dir[0] + dir[2] * dir[2];
+
+    if ((u32)dist_sq < 0x400) {
+        dist = (u32)(&g_sqrt_table_u8)[dist_sq] >> 3;
+    } else {
+        s32 lzcr = 0;
+        if (dist_sq >= 0) {
+            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210, gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
+            __asm__ volatile ("move  $12,%0": :"r"(dist_sq):"$12","$13","$14","$15","memory");
+            __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
+            __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
+            __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
+            __asm__ volatile ("move  $12,%0": :"r"(&sp_tmp):"$12","$13","$14","$15","memory");
+            __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
+            lzcr = sp_tmp;
+        }
+        {
+            s32 shift = 0x16 - (lzcr & ~1);
+            dist = (u32)((&g_sqrt_table_u8)[(u32)dist_sq >> shift] << 16) >> (0x13 - ((u32)shift >> 1));
+        }
+    }
+
+    angle2 = ratan2(dir[1], dist);
+    mat = (s32 *)(scr + 0xD8);
+    *(s16 *)(scr + 0xF8) = 0x800 - angle2;
+
+    *(s16 *)(scr + 0xD8) = 0x1000;
+    *(s16 *)(scr + 0xDA) = 0;
+    *(s16 *)(scr + 0xDC) = 0;
+    *(s16 *)(scr + 0xDE) = 0;
+    *(s16 *)(scr + 0xE0) = 0x1000;
+    *(s16 *)(scr + 0xE2) = 0;
+    *(s16 *)(scr + 0xE4) = 0;
+    *(s16 *)(scr + 0xE6) = 0;
+    *(s16 *)(scr + 0xE8) = 0x1000;
+    RotMatrixY(*(s16 *)(scr + 0xFA), mat);
+    RotMatrixX(*(s16 *)(scr + 0xF8), mat);
+
+    /* inline_o.h: gte_SetRotMatrix :272-284 */
+    __asm__ volatile ("move  $12,%0": :"r"(mat):"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lw    $13,($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lw    $14,4($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("ctc2  $13,$0": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("ctc2  $14,$1": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lw    $13,8($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lw    $14,12($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lw    $15,16($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("ctc2  $13,$2": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word is the
+     * post-DMPSX word .word 0x4A486012 in place of the header's DMPSX placeholder
+     * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner Q61 per-function grant) */
+    __asm__ volatile ("move  $12,%0": :"r"(vec_in):"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("sll   $14,$14,16": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("or    $13,$13,$14": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("mtc2  $13,$0": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lwc2  $1,8($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
+    vec = (s32 *)(scr + 0xA8);
+    /* inline_o.h: gte_stlvnl :904-909 */
+    __asm__ volatile ("move  $12,%0": :"r"(vec):"$12","$13","$14","$15","memory");
+    __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
+
+    vec[2] = (vec[2] * scale_z) / 256;
+    vec[0] = (vec[0] * scale_xy) / 256;
+    vec[1] = (vec[1] * scale_xy) / 256;
+
+    *(s16 *)(scr + 0xD8) = 0x1000;
+    *(s16 *)(scr + 0xDA) = 0;
+    *(s16 *)(scr + 0xDC) = 0;
+    *(s16 *)(scr + 0xDE) = 0;
+    *(s16 *)(scr + 0xE0) = 0x1000;
+    *(s16 *)(scr + 0xE2) = 0;
+    *(s16 *)(scr + 0xE4) = 0;
+    *(s16 *)(scr + 0xE6) = 0;
+    *(s16 *)(scr + 0xE8) = 0x1000;
+    RotMatrixX(-*(s16 *)(scr + 0xF8), mat);
+    RotMatrixY(-*(s16 *)(scr + 0xFA), mat);
+
+    /* inline_o.h: gte_SetRotMatrix :272-284 */
+    __asm__ volatile ("move  $12,%0": :"r"(mat):"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lw    $13,($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lw    $14,4($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("ctc2  $13,$0": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("ctc2  $14,$1": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lw    $13,8($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lw    $14,12($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lw    $15,16($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("ctc2  $13,$2": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word is the
+     * post-DMPSX word .word 0x4A486012 in place of the header's DMPSX placeholder
+     * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner Q61 per-function grant) */
+    __asm__ volatile ("move  $12,%0": :"r"(vec):"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("sll   $14,$14,16": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("or    $13,$13,$14": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("mtc2  $13,$0": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lwc2  $1,8($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
+    /* inline_o.h: gte_stlvnl :904-909 */
+    __asm__ volatile ("move  $12,%0": :"r"(out):"$12","$13","$14","$15","memory");
+    __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
+}
 /* kengo:LOW  |  su_menu_single/_DispSchoolBG  |  188i  |  PS2 UI — reverted */
 void func_8002EECC(void *arg0, void *arg1) {
     s16 temp_a3;
