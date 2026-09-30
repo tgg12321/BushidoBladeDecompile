@@ -527,3 +527,17 @@ Other option offered: "No, not SOTN's self-marked hacks" — "Only constructs SO
 Question, verbatim: "When a construct is admitted on SOTN precedent, does it still owe its family's usual paperwork (FAKE annotation where match-motivated, proof that simpler spellings were tried)?"
 Owner chose: **"Yes, still owed (Recommended)"** — option text: "SOTN precedent answers 'is this kind of construct allowed', not 'was it needed here'. Keeps workarounds visible and stops them being used where plain C would match."
 Other option offered: "No, the citation is enough" — "A verified SOTN citation replaces the family prerequisites entirely."
+
+# Owner exchange 2026-09-30 (twenty-sixth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: the Q44 -G8 screen (tmp/audit-2026-09-29/g8-screen/) found the whole of src/text1b_tu1c.c fails at -G8
+but a 3-way split works: -G0 head through func_8006E49C | a new -G8 TU func_8006E534..func_80073200 (the smallest
+range closed under prong (i)'s neighbour clause) | -G0 tail func_8007352C..func_80074488, linked bytes identical. Four
+finished functions inside that range (func_8006E8CC, func_8006E950, func_8006EA28, func_80072F30) have no gp accesses,
+so they cannot meet prong (iii)'s "each function in it meets (i) and (ii) on its own" when read literally.
+
+## Q54 — -G8 proof judged per file
+Question, verbatim: "The new -G8 file (func_8006E534–func_80073200) has to include 4 functions that don't use fast addressing at all, because they sit between functions that do. Their bytes come out identical either way. May a -G8 file include them?"
+Owner chose: **"Yes, judge the file as a whole (Recommended)"** — option text: "The original compiler compiled whole files with one flag set, so a file-level -G8 proof covers every function in it, as long as each one's bytes are identical at -G8 and -G0. Lets the 0x800A3560 cluster and func_80070F78 be finished honestly."
+Other option offered: "No, every function must prove -G8" — "The split isn't possible, so the 0x800A3560 cluster stays as it is (func_8006E534 FAIL, 3 concerns) and func_80070F78 stays unfinished."
+Note: prongs (i)/(ii) are still owed at file level (the gp-access listings and the cc1psx -G8 vs -G0 confirmation
+banked in the ledger), and a function without gp accesses must be byte-identical at -G8 and -G0.
