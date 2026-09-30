@@ -3568,7 +3568,7 @@ def test_departures() -> None:
             # ── repo w: naming waves never make a departure ────────────────
             new_repo(Path(td) / "w", ["func_80058580", "func_80055B60", "func_P1",
                                       "func_RVA", "func_DN", "func_RQ", "func_WL",
-                                      "func_FX", "func_UL", "func_Q"])
+                                      "func_FX", "func_UL", "func_BX", "func_Q"])
             wave({"func_80055B60": "func_Caller", "func_80058580": "func_Callee"})
             commit("caller + callee renamed in one wave")
             wave({"func_RQ": "func_RQ2"})                 # renamed while queued,
@@ -3595,6 +3595,16 @@ def test_departures() -> None:
             rec("func_WL2", key("func_WL2"))
             drop("func_WL2")
             commit("WL -> WL2 and WL2 done, one commit")
+            # BX: renamed and dropped in one commit with NO genuine PASS; a record
+            # carries BX's address but names ANOTHER function (Q) with Q's body
+            wave({"func_BX": "func_BX2"})
+            layer2.record_path("func_Q").parent.mkdir(parents=True, exist_ok=True)
+            with open(layer2.record_path("func_Q"), "a") as fh:
+                fh.write(json.dumps({"func": "func_Q", "addr": addrs["func_BX"],
+                                     "verdict": "PASS", "body_hash": key("func_Q"),
+                                     "date": "2026-10-01T01:00:00Z"}) + "\n")
+            drop("func_BX2")
+            commit("BX -> BX2 and dropped, one commit, no genuine PASS")
             drop("func_FX")                               # hand-dropped, no PASS,
             commit("FX hand-dropped")
             wave({"func_FX": "func_FX2"})                 # then renamed
@@ -3607,7 +3617,9 @@ def test_departures() -> None:
             eq("departures: waves (caller+callee, revert, revert-of-revert, back and "
                "forth, double rename after completion, rename+land in one commit and "
                "uncommitted, uncommitted) -> clear; only the hand-drop is flagged",
-               fl, ["func_FX"])
+               fl, ["func_BX", "func_FX"])
+            check("departures: a stand-in name must have the departed address at D",
+                  "func_BX" in fl)
             check("departures: the fix names the function as it is NOW",
                   any(s.startswith("func_FX ") and "queue reopen func_FX2 " in s for s in v))
 
@@ -3625,6 +3637,7 @@ def test_departures() -> None:
             commit("main moves on")
             git("merge", "-q", "--no-commit", "side")
             rec("func_Z", key("func_Z"))
+            Path("asm/funcs/func_Z.s").unlink()           # only parent 2 has Z's glabel file
             write_queue(["func_A"])                       # Z leaves IN the merge, reviewed
             commit("merge: Z done with a PASS")
             eq("departures (merge): the parent-2 version is addressed from parent 2's files",
