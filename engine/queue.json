@@ -81,17 +81,6 @@
       "addr": "8002F770"
     },
     {
-      "func": "func_8001C8DC",
-      "file": "code6cac_tu2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): cross-symbol arithmetic p=&D_800A37D2; p[t!=0]++ reaches D_800A37D3 (refused 2026-07-20). Banked: memory/grind/func_8001C8DC/rejected/retro-audit-2026-09-29.c",
-      "addr": "8001C8DC"
-    },
-    {
       "func": "func_8001F2E4",
       "file": "code6cac_tu2",
       "distance": 0,
@@ -432,14 +421,14 @@
     }
   ],
   "counts": {
-    "total": 36,
-    "active": 24,
+    "total": 35,
+    "active": 23,
     "by_status": {
-      "active": 24,
+      "active": 23,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 23,
+      "C": 22,
       "ASM-PARTIAL": 1
     }
   },
