@@ -184,7 +184,7 @@
     },
     {
       "func": "func_8005C8A8",
-      "file": "text1b_tu1c",
+      "file": "text1b",
       "distance": 752,
       "verdict": "C",
       "rules": 0,
@@ -291,7 +291,7 @@
     },
     {
       "func": "func_8005D554",
-      "file": "text1b_tu1c",
+      "file": "text1b",
       "distance": 65,
       "verdict": "C",
       "rules": 0,

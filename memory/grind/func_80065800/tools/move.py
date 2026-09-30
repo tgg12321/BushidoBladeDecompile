@@ -58,6 +58,32 @@ i = one(r, defn)
 r = r[:i] + r[i + len(defn):]
 tail = tail.replace('\nextern s32 D_800158E0;\n', '\n' + defn, 1)
 assert tail.count(defn) == 1
+# func_80065800's two transcribed switch tables follow D_800158E0 in the same object, so they move
+# with it, verbatim, to just before their owner's INCLUDE_ASM line (as section 8 did for
+# func_80058580's). Skipped when land.py already replaced them with compiled tables.
+JT = '/* jtbl_800158F8: 18 words (72B) @ 0x800158F8 */'
+if JT in r:
+    ja = one(r, JT)
+    jb = one(r, '/* NOTE: the cluster continues in src/text1a_b_mid_rodata.c.')
+    tables = r[ja:jb]
+    r = r[:ja] + r[jb:]
+    inc = 'INCLUDE_ASM("asm/funcs", func_80065800);\n'
+    k = one(tail, inc)
+    tail = tail[:k] + tables + tail[k:]
+# Comments only: what this file still holds, and who supplies the bytes after it.
+r = r.replace(""" * 0x800158B4..0x80015987: the sound-bank loader's strings (snd_LoadCommonVab,
+ * func_8005C2A8), func_80061064's string and func_80065800's two tables. */""",
+              """ * 0x800158B4..0x800158DF: the sound-bank loader's strings (snd_LoadCommonVab,
+ * func_8005C2A8), rodata of text1b.c's TU (docs/grind/rodata-align-2026-09-30.md
+ * section 9). */""", 1)
+r = r.replace("""/* NOTE: the cluster continues in src/text1a_b_mid_rodata.c. The bytes from
+ * 0x80015988 through 0x80015A0B are supplied by build/src/text1b_tu1c.o
+ * (func_8006B578's compiler-generated switch table and the warning string,
+ * up to 0x800159AF)""", """/* NOTE: the cluster continues in src/text1a_b_mid_rodata.c. The bytes from
+ * 0x800158E0 through 0x80015A0B are supplied by build/src/text1b_tu1c.o
+ * (func_80061064's string, func_80065800's two tables, func_8006B578's
+ * compiler-generated switch table and the warning string, up to 0x800159AF)""", 1)
+assert '0x800158B4..0x800158DF' in r and '0x800158E0 through 0x80015A0B' in r
 wr(C, tail)
 wr(R, r)
 

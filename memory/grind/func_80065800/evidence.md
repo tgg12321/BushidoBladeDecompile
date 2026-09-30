@@ -124,3 +124,15 @@ landing/msg_auth.txt, landing/msg_match.txt. layer2 hash of the staged body was 
   text1a_b_pre_rodata_b.o 0x800158B4 (0x2c). Awaiting the orchestrator's go/no-go (it touches
   text1b.c and the records of func_8005C8A8 / func_8005D554 / func_8005D814 / func_8005E54C /
   func_8005F1C8).
+
+## 2026-09-30 (evening, cont.) -- laneC: boundary commit prepared (orchestrator GO on option 1)
+
+The text1b | text1b_tu1c boundary move (tools/move.py, now also moving func_80065800's two
+transcribed tables verbatim to just before its INCLUDE_ASM line: without that, D_800158E0 in
+text1b_tu1c.o would land after them and the scratch build mismatches) applied on main under the
+landing lock: lock.ps1 rebuild EXE sha1 == oracle; text1b_tu1c.o .rodata 0x800158E0 (0xd0).
+tools/verbatim_check.py: text1b.c == HEAD + moved block (minus the CVECTOR/DVECTOR typedefs),
+text1b_tu1c.c body == HEAD tail with the two relocations. tools/implicit_cmp.sh: union of implicit
+declarations equal (24 names). Records via tools/relocate.py. Record: rodata-align doc section 9.
+The Match follows the boundary layer-2; land.py must then delete the tables from text1b_tu1c.c
+(not text1a_b_pre_rodata_b.c).

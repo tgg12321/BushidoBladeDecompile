@@ -3011,3 +3011,2930 @@ const u32 jtbl_8001589C[6] = {
 };
 
 INCLUDE_ASM("asm/funcs", func_80058580);
+extern s16 D_800A3400;
+extern s32 D_800A3408;
+extern s32 g_vab_vb_sbaddr[];
+extern u32 D_800EFB78[];
+extern u8 D_800EFB7C[];
+extern s32 *g_vab_rec_ptr[];
+extern void SsStart(void);
+extern s32 SsSetTickMode(s32);
+extern s32 SsSetReservedVoice(s32);
+extern s32 SsInit(void);
+extern void func_800858D0(s32);
+extern s32 SsUtSetReverbDepth(s32, s32);
+extern s32 SsUtSetReverbType(s32);
+extern s32 SsUtReverbOff(void);
+void snd_Init(void) {
+    s32 *p1;
+    s32 *p2;
+    s32 i;
+    u8 *q;
+    s32 j;
+
+    i = 0;
+    p1 = g_vab_vb_sbaddr;
+    p2 = (s32 *)g_vab_rec_ptr;
+    do {
+        *p2 = 0;
+        *p1 = 0;
+        p1 += 1;
+        i += 1;
+        p2 += 1;
+    } while (i < 0x10);
+    SsInit();
+    func_800858D0(0);
+    SsUtReverbOff();
+    SsUtSetReverbType(0);
+    SsUtSetReverbDepth(0, 0);
+    SsSetReservedVoice(0);
+    SsSetTickMode(1);
+    {
+        s32 v = 0x7F;
+        q = (u8 *)&D_800EFB78;
+        j = 0;
+        do {
+            *(s32 *)((u8 *)&D_800EFB78 + j) = 0;
+            *(s8 *)(q + 5) = v;
+            *(s8 *)((u8 *)&D_800EFB7C + j) = v;
+            j += 8;
+            q += 8;
+        } while (j < 0xC0);
+    }
+    SsStart();
+    D_800A3408 = 0;
+    D_800A3400 = 0;
+}
+void func_800858D0(s32);
+
+
+
+void SsEnd(void);
+void SsQuit(void);
+
+
+extern s32 D_800A3408;
+void snd_Quit(void) {
+    s32 i;
+    s32 *a0;
+    s32 *v1;
+    func_800858D0(0);
+    SsUtReverbOff();
+    SsUtSetReverbType(0);
+    SsUtSetReverbDepth(0, 0);
+    SsEnd();
+    SsQuit();
+    i = 0;
+    a0 = g_vab_vb_sbaddr;
+    v1 = g_vab_rec_ptr;
+    do {
+        *v1 = 0;
+        *a0 = 0;
+        a0++;
+        i++;
+        v1++;
+    } while (i < 0x10);
+    D_800A3408 = 0;
+}
+
+void func_800858D0(s32);
+void func_8005B58C(void) {
+    func_800858D0(0);
+}
+extern void func_800858D0(s32);
+extern void func_80086130(s32, s32, s32);
+
+
+void func_8005B5AC(void) {
+    s32 s1;
+    s32 s3;
+    u8 *s2;
+    s32 s0;
+    func_800858D0(0);
+    s1 = 0;
+    s3 = 0x7F;
+    s2 = (u8 *)D_800EFB78;
+    s0 = 0;
+    do {
+        *(u32 *)((u8 *)D_800EFB78 + s0) = 0;
+        s2[5] = s3;
+        *((u8 *)D_800EFB7C + s0) = s3;
+        func_80086130((s16)s1, 0, 0);
+        s2 += 8;
+        s1++;
+        s0 += 8;
+    } while (s1 < 24);
+}
+void func_800858D0(s32);
+void SsVabClose(s16);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+extern u8 D_8009BA60[];
+extern s32 chractar_use_pset_combo_id_table[];
+extern s32 D_8009BC04;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is the
+   character the round was fought with (func_8005E54C reads it at
+   j * 10 + i * 2 and picks UesrWorkDef / D_8009B58C by it; func_80060414 reads
+   player 0 round 0). 0x14 bytes, ending at the flag word below. */
+typedef struct {
+    u8 chr;
+    u8 unk1;
+} Unk8009BD24Record;
+extern Unk8009BD24Record D_8009BD24[2][5];
+/* 0x8009BD38: the match-settings flag word, bit fields named by bit offset.
+   Every reader in this file extracts it by field: unk0 (`& 0xF`), unk10 (the
+   round count - 3; also picks the results-screen layout), unk12 (`== 2`
+   tests), unk14 (1 bit), unk15 (one bit per player); func_80077894 stores
+   unk0. Byte 3 is not named here (text1b_b.c reads it as D_8009BD3B). */
+typedef struct {
+    u32 unk0 : 4;
+    u32 unk4 : 6;
+    u32 unk10 : 2;
+    u32 unk12 : 2;
+    u32 unk14 : 1;
+    u32 unk15 : 2;
+    u32 unk17 : 1;
+    u32 unk18 : 6;
+} Unk8009BD38Flags;
+extern Unk8009BD38Flags D_8009BD38;
+
+
+
+
+extern u8 D_8009BD58;
+extern u8 D_8009BD59;
+
+
+
+
+
+
+extern s32 D_800A32C8;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+extern s16 D_800F0BCC[];
+extern s16 D_800F0BEC[];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+extern s32 D_800F0D30;
+extern s32 D_800F0D34;
+
+extern s32 D_800F0D3C;
+extern s32 D_800F0D40;
+
+
+
+
+
+
+
+
+
+
+
+
+
+extern s32 D_800F0D78;
+extern s32 D_800F0D7C;
+extern s32 videoDec;
+extern s32 D_800F0FB8;
+extern s32 D_800F0FBC;
+extern s32 D_800F0FC0;
+
+
+extern s16 D_800F10A0;
+extern s16 D_800F10A2;
+extern s16 D_800F10A4;
+extern s32 D_800F10D0[];
+
+
+
+
+extern s32 D_800F10EC;
+extern s32 D_800F10F0;
+
+
+
+
+
+
+
+
+
+
+
+extern s32 D_800F1138;
+
+extern s32 D_800F1144;
+extern s32 D_800F1148;
+
+extern s32 D_800F1178;
+extern s32 D_800F117C;
+extern s32 D_800F1180;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void func_8005B644(s32 a0) {
+    s32 v;
+    func_800858D0(0);
+    v = a0 * 2 + a0 + 1;
+    SsVabClose(v);
+    *(s32*)((u8*)&g_vab_rec_ptr + (v * 4)) = 0;
+    *(s32*)((u8*)&g_vab_vb_sbaddr + (v * 4)) = 0;
+}
+extern s32 g_vab_rec_ptr_plus_0x8;
+extern s32 g_vab_vb_sbaddr_plus_0x8;
+extern s32 g_vab_rec_ptr_plus_0x14;
+extern s32 g_vab_vb_sbaddr_plus_0x14;
+void func_800858D0(s32);
+
+void func_8005B6AC(void) {
+    func_800858D0(0);
+    SsVabClose(2);
+    g_vab_rec_ptr_plus_0x8 = 0;
+    g_vab_vb_sbaddr_plus_0x8 = 0;
+    SsVabClose(5);
+    g_vab_rec_ptr_plus_0x14 = 0;
+    g_vab_vb_sbaddr_plus_0x14 = 0;
+}
+extern s32 g_vab_rec_ptr_plus_0x4[];
+extern s32 g_vab_vb_sbaddr_plus_0x4[];
+void SsVabClose(s16);
+void func_8005B6FC(void) {
+    SsVabClose(1);
+    g_vab_rec_ptr_plus_0x4[0] = 0;
+    g_vab_vb_sbaddr_plus_0x4[0] = 0;
+}
+void func_800858D0(s32);
+s32 SsUtReverbOff(void);
+s32 SsUtSetReverbType(s32);
+s32 SsUtSetReverbDepth(s32, s32);
+
+void func_8005B5AC(void);
+
+
+extern s32 D_800A3408;
+void func_8005B72C(void) {
+    s32 s0;
+    s32 *s2;
+    s32 *s1;
+    func_800858D0(0);
+    SsUtReverbOff();
+    SsUtSetReverbType(0);
+    SsUtSetReverbDepth(0, 0);
+    s2 = g_vab_vb_sbaddr_plus_0x4;
+    s1 = g_vab_rec_ptr_plus_0x4;
+    for (s0 = 1; s0 < 0x10; s0++) {
+        SsVabClose((s16)s0);
+        *s1 = 0;
+        *s2 = 0;
+        s2++;
+        s1++;
+    }
+    D_800A3408 = 0;
+    func_8005B5AC();
+}
+
+#define NULL ((void *)0)
+
+typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
+typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
+typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
+typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
+
+/* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
+ * field layout is the union of all observed accesses; m2c picks the type
+ * that best fits each access site. Mirroring smart_match.py's layout. */
+typedef struct GameObj {
+    u8 field_00; u8 field_01; s16 field_02;
+    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
+    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
+    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
+    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
+    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
+    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
+    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
+    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
+    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
+    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
+    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
+    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
+    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
+    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
+    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
+    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
+    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
+    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
+    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
+    s16 field_FA; s32 field_FC;
+} GameObj;
+extern s32 func_80036EA8();
+extern s32 func_80036F28();
+extern s32 func_8005C2A8(s32 *, s16, s32);
+
+s32 printf(s32 *, s32);               /* extern */
+s32 game_FrameLoop();                           /* extern */
+s32 cdrom_StartRead(s32, s32);               /* extern */
+
+extern s32 D_800158B4;
+extern s32 g_vab_sticky_sbaddr;
+extern s32 D_800A3408;
+extern s32 D_800A340C;
+
+s32 snd_LoadCommonVab(s32 arg0) {
+    s32 temp_v0;
+    u32 temp_s0;
+    s32 ret;
+
+    func_800858D0(0);
+    printf(&D_800158B4, arg0);
+    game_FrameLoop();
+    temp_v0 = func_80036EA8(2, 1);
+    cdrom_StartRead(temp_v0, arg0);
+    temp_s0 = func_80036F28(temp_v0);
+    game_FrameLoop();
+    D_800A3408 = 0;
+    D_800A340C = 0x1010;
+    g_vab_sticky_sbaddr = 0x1010;
+    ret = func_8005C2A8((GameObj *) arg0, 0, arg0 + temp_s0);
+    D_800A340C = g_vab_sticky_sbaddr;
+    return ret;
+}
+extern s32 g_vab_rec_ptr_plus_0x20;
+extern s32 g_vab_vb_sbaddr_plus_0x20;
+extern s32 g_vab_rec_ptr_plus_0x10;
+extern s32 g_vab_vb_sbaddr_plus_0x10;
+
+
+void func_8005B868(void) {
+    func_800858D0(0);
+    SsVabClose(8);
+    g_vab_rec_ptr_plus_0x20 = 0;
+    g_vab_vb_sbaddr_plus_0x20 = 0;
+    SsVabClose(4);
+    g_vab_rec_ptr_plus_0x10 = 0;
+    g_vab_vb_sbaddr_plus_0x10 = 0;
+}
+extern s32 func_80036EA8(s32, s32);
+extern s32 func_80036F28(s32);
+extern s32 func_8005C2A8(s32 *, s16, s32);
+extern void func_8005B868(void);
+extern void func_800858D0(s32);
+
+s32 func_8005B8B8(s32 arg0) {
+    s32 t0;
+    s32 size;
+    s32 ret;
+    s32 t0_2;
+
+    func_8005B868();
+    func_800858D0(0);
+    t0 = func_80036EA8(2, 0x5D);
+    game_FrameLoop();
+    cdrom_StartRead(t0, arg0);
+    size = func_80036F28(t0);
+    game_FrameLoop();
+    ret = func_8005C2A8(arg0, 8, arg0 + size);
+    t0_2 = func_80036EA8(2, 0x5E);
+    game_FrameLoop();
+    cdrom_StartRead(t0_2, arg0 + ret);
+    size = func_80036F28(t0_2) + ret;
+    game_FrameLoop();
+    return func_8005C2A8(arg0 + ret, 4, arg0 + size) + ret;
+}
+s32 snd_VabFakeOpen(s32, s16);
+void func_8005B98C(s32 a0) {
+    snd_VabFakeOpen(a0, 8);
+    snd_VabFakeOpen(a0, 4);
+}
+extern s32 g_vab_rec_ptr_plus_0x24;
+extern s32 g_vab_vb_sbaddr_plus_0x24;
+void func_800858D0(s32);
+void SsVabClose(s16);
+void func_8005B9C4(void) {
+    func_800858D0(0);
+    SsVabClose(9);
+    g_vab_rec_ptr_plus_0x24 = 0;
+    g_vab_vb_sbaddr_plus_0x24 = 0;
+}
+void func_8005B9C4(void);
+s32 func_80036EA8(s32, s32);
+s32 game_FrameLoop(void);
+s32 cdrom_StartRead(s32, s32);
+s32 func_80036F28(s32);
+s32 func_8005C2A8(s32 *, s16, s32);
+void func_8005B9FC(s32 a0) {
+    s32 s1;
+    func_8005B9C4();
+    s1 = func_80036EA8(2, 8);
+    game_FrameLoop();
+    cdrom_StartRead(s1, a0);
+    s1 = func_80036F28(s1);
+    game_FrameLoop();
+    func_8005C2A8(a0, 9, a0 + s1);
+}
+s32 snd_VabFakeOpen(s32, s16);
+void func_8005BA6C(s32 a0) {
+    snd_VabFakeOpen(a0, 9);
+}
+typedef struct {
+    s32 off;
+    s32 size;
+} VabEnt;
+typedef struct {
+    VabEnt ent[3];
+    s32 len[3];
+} VabLoad;
+
+
+extern u8 D_8009AD18[];
+extern void func_800858D0(s32);
+extern void SsVabClose(s16);
+extern s32 func_80036EA8(s32, s32);
+extern s32 game_FrameLoop(void);
+extern s32 cdrom_StartRead(s32, s32);
+extern s32 func_80036F28(s32);
+
+
+extern s32 snd_VabFakeOpen(s32, s16);
+extern s32 g_vab_rec_ptr_plus_0xC;
+extern s32 g_vab_rec_ptr_plus_0x18;
+s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
+    VabLoad loc;
+    u8 *p;
+    s32 base;
+    s32 task;
+    s32 size;
+    u8 count;
+    s32 i;
+    u32 j;
+
+    p = (u8 *)hdr;
+    func_800858D0(0);
+    for (i = 0; i < 3; i++) {
+        SsVabClose(D_8009AD18[i]);
+        g_vab_rec_ptr[D_8009AD18[i]] = 0;
+        g_vab_vb_sbaddr[D_8009AD18[i]] = 0;
+    }
+    task = func_80036EA8(2, arg1 + 9);
+    game_FrameLoop();
+    cdrom_StartRead(task, (s32)p);
+    size = func_80036F28(task);
+    game_FrameLoop();
+    ((s32 *)p)[12] += (s32)p;
+    func_80062020(((s32 *)p)[12]);
+    count = 3;
+    base = (s32)p;
+    if (arg2 == arg3) {
+        count = 2;
+    }
+    loc.ent[0].off = ((VabEnt *)p)[0].off;
+    loc.ent[0].size = ((VabEnt *)p)[0].size;
+    loc.ent[1].off = ((VabEnt *)p)[arg2 + 1].off;
+    loc.ent[1].size = ((VabEnt *)p)[arg2 + 1].size;
+    if (count == 3) {
+        loc.ent[2].off = ((VabEnt *)p)[arg3 + 1].off;
+        loc.ent[2].size = ((VabEnt *)p)[arg3 + 1].size;
+    }
+    for (i = 0; i < count; i++) {
+        loc.ent[i].off += (s32)p;
+        loc.len[i] = func_8005C2A8(loc.ent[i].off, D_8009AD18[i], (s32)p + size);
+    }
+    for (i = 0; i < count; i++) {
+        for (j = 0; j < (u32)loc.len[i]; j++) {
+            p[j] = ((u8 *)loc.ent[i].off)[j];
+        }
+        snd_VabFakeOpen((s32)p - loc.ent[i].off, D_8009AD18[i]);
+        loc.ent[i].off = (s32)p;
+        p += loc.len[i];
+    }
+    if (count == 2) {
+        g_vab_rec_ptr_plus_0x18 = g_vab_rec_ptr_plus_0xC;
+    }
+    return (s32)p - base;
+}
+
+extern void func_800858D0(s32);
+
+extern s32 g_vab_rec_ptr_plus_0x18;
+extern s32 g_vab_rec_ptr_plus_0xC;
+
+void func_8005BD30(s32 arg0) {
+    u8 count;
+    s32 i;
+    func_800858D0(0);
+    count = (g_vab_rec_ptr_plus_0x18 == g_vab_rec_ptr_plus_0xC) ? 2 : 3;
+    i = 0;
+    if (count != 0) {
+        do {
+            u8 byte = D_8009AD18[i & 0xFF];
+            snd_VabFakeOpen(arg0, byte);
+            i += 1;
+        } while ((u32)(i & 0xFF) < (u32)count);
+    }
+    if (count == 2) {
+        g_vab_rec_ptr_plus_0x18 = g_vab_rec_ptr_plus_0xC;
+    }
+}
+extern s32 *g_vab_rec_ptr[];
+extern s32 g_vab_vb_sbaddr[];
+
+extern void SsVabClose(s16);
+void func_8005BDF0(void) {
+    u32 *s3 = g_vab_rec_ptr;
+    u32 *s2 = g_vab_vb_sbaddr;
+    u8 *s0 = D_8009AD18;
+    u8 *s1 = (u8 *)((s32)s0 + 3);
+    do {
+        SsVabClose(*s0);
+        s3[*s0] = 0;
+        s2[*s0] = 0;
+        s0++;
+    } while ((s32)s0 < (s32)s1);
+}
+extern s16 D_8009AD1C[][2];
+extern void func_800858D0(s32);
+
+
+
+extern s32 SsUtReverbOn();
+extern s32 SpuClearReverbWorkArea(s16);
+s32 func_8005BE84(s32 arg0)
+{
+  s32 result;
+  s16 *p;
+  s16 temp_a0;
+  s16 *base;
+  s32 doubled;
+  func_800858D0(0);
+  base = &D_8009AD1C[0][0];
+  p = base + arg0 * 2;
+  doubled = arg0 << 1;
+  if (*p >= 0)
+  {
+    SsUtReverbOff();
+    SsUtSetReverbType(0);
+    SsUtSetReverbDepth(0, 0);
+    result = SsUtSetReverbType(*p);
+    SpuClearReverbWorkArea(*p);
+    temp_a0 = doubled + 1;
+    SsUtSetReverbDepth(temp_a0, temp_a0);
+    SsUtReverbOn();
+  }
+  else
+  {
+    result = -1;
+  }
+  return (s16) result;
+}
+void func_800858D0(s32);
+
+
+
+void func_8005BF3C(void) {
+    func_800858D0(0);
+    SsUtReverbOff();
+    SsUtSetReverbType(0);
+    SsUtSetReverbDepth(0, 0);
+}
+
+extern s32 SsVabFakeBody();
+extern s32 SsVabFakeHead();
+extern s32 SpuRead();
+extern s32 SpuWrite();
+extern s32 SpuSetTransferStartAddr();
+extern s32 SpuIsTransferCompleted();
+extern void func_800858D0(s32);
+
+
+s32 snd_MoveVabBody(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    func_800858D0(0);
+    SsVabClose((s16) arg1);
+    SpuSetTransferStartAddr(arg3);
+    SpuRead(arg0, g_vab_rec_ptr[arg1][3]);
+    SpuIsTransferCompleted(1);
+    SpuSetTransferStartAddr(arg2);
+    SpuWrite(arg0, g_vab_rec_ptr[arg1][3]);
+    SpuIsTransferCompleted(1);
+    SsVabFakeHead(g_vab_rec_ptr[arg1][1], (s16) arg1, arg2);
+    SsVabFakeBody((s16) arg1);
+    g_vab_vb_sbaddr[arg1] = arg2;
+    return arg2 + g_vab_rec_ptr[arg1][3];
+}
+/* func_8005C074 (text1b.c) - SPU VAB compaction: sorts the resident VAB slots
+ * 1..15 by SPU address (selection order into order[]), then walks them from the
+ * end of slot 0; the first slot that is not already contiguous, and every slot
+ * after it, is moved down with func_8005BF78. Ordinary C: no FAKE, no volatile,
+ * no asm, no pin, no dead store, no pad, no alias local. `vabid` is passed by
+ * the caller (func_8005C2A8) but the target never reads it.
+ * Grinder s1/recon 2026-09-15: sandbox --disable all = 0.
+ * The loop-invariant `addr` assignment inside the first (otherwise empty) loop
+ * is what the bytes say: the target computes addr in that loop's preheader,
+ * AFTER its `count > 0` guard. Assigning addr before the loop instead measures
+ * 43 / 142 insns (banked under rejected/).
+ */
+s32 func_8005C074(s16 vabid, s32 base) {
+    s16 order[16];
+    s16 count;
+    u16 mask;
+    u32 min;
+    s16 minidx;
+    s16 i;
+    s16 j;
+    s16 k;
+    s32 addr;
+
+    count = 0;
+    mask = 0;
+    for (;;) {
+        min = 0x7FFFF;
+        minidx = -1;
+        for (i = 1; i < 16; i++) {
+            if (!((mask >> i) & 1) && g_vab_vb_sbaddr[i] != 0 && g_vab_vb_sbaddr[i] < min) {
+                min = g_vab_vb_sbaddr[i];
+                minidx = i;
+            }
+        }
+        if (minidx == -1) {
+            break;
+        }
+        order[count++] = minidx;
+        mask += 1 << minidx;
+    }
+    for (j = 0; j < count; j++) {
+        addr = g_vab_vb_sbaddr[0] + g_vab_rec_ptr[0][3];
+    }
+    for (j = 0; j < count; j++) {
+        if (g_vab_vb_sbaddr[order[j]] == addr) {
+            addr += g_vab_rec_ptr[order[j]][3];
+        } else {
+            for (k = j; k < count; k++) {
+                addr = snd_MoveVabBody(base, order[k], addr, g_vab_vb_sbaddr[order[k]]);
+            }
+            return 0;
+        }
+    }
+    return 0;
+}
+/* func_8005C2A8 (text1b.c) - MATCHED: sandbox --disable all = 0 and full-build
+ * SHA1 == oracle (s2/recon, 2026-09-15). Ordinary C; no FAKE, no volatile, no
+ * asm, no pin, no dead store, no pad, no alias local, no sanctioned-family
+ * exception claimed or needed.
+ *
+ * This body supersedes the 2026-09-14 form that layer-1 FAILed. Both banned
+ * constructs are GONE and neither is respelled:
+ *   - the second local bound to the unmodified parameter is deleted; every use
+ *     site reads the parameter directly (measured: still score 0).
+ *   - the forward prototype no longer contradicts anything: the in-TU callee's
+ *     DEFINITION (src/text1b.c, the VAB-open wrapper at 0x8005C5A8) is changed
+ *     in the same diff from `s16` to `s32` return, keeping its body's explicit
+ *     `(s16)` cast on the SsVabTransBody result. That callee's own bytes are
+ *     unchanged (measured: sandbox snd_VabOpen --disable all = 0 before and
+ *     after), because the sll/sra at 0x8005C5F4 is emitted by the cast in its
+ *     body, not by its return type. The return type is therefore not decidable
+ *     from that function's own bytes; it IS decidable from this call site's
+ *     bytes, and they say s32. Prototype and definition agree.
+ *
+ * Apply: replace `INCLUDE_ASM("asm/funcs", func_8005C2A8);` (src/text1b.c:2662)
+ * with everything below, AND change the callee definition's return type as
+ * described above.
+ */
+extern s32 *func_80077D00(void);
+extern void func_800858D0(s32);
+
+
+extern s16 SsVabTransCompleted(s16);
+extern s32 SsUtGetVBaddrInSB(s16);
+extern s32 snd_VabOpen(s32 *, s16);
+
+extern const char D_800158CC[];
+extern s32 *g_vab_rec_ptr[];
+extern s32 g_vab_vb_sbaddr[];
+extern s32 g_vab_sticky_sbaddr;
+extern s32 D_800A3408;
+extern s32 D_800A340C;
+
+s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
+    s16 i;
+    s16 id;
+
+    if ((func_80077D00()[5] & 0xF) == 3 && vabid == 5) {
+        return 0;
+    }
+    func_800858D0(0);
+    if (g_vab_rec_ptr[vabid] != 0) {
+        SsVabClose(vabid);
+        g_vab_rec_ptr[vabid] = 0;
+        g_vab_vb_sbaddr[vabid] = 0;
+    }
+    if (vabid != 0) {
+        g_vab_sticky_sbaddr = g_vab_vb_sbaddr[0];
+        for (i = 0; i < 16; i++) {
+            if (g_vab_rec_ptr[i] != 0) {
+                g_vab_sticky_sbaddr += g_vab_rec_ptr[i][3];
+            }
+        }
+    }
+    D_800A3408 = g_vab_sticky_sbaddr - D_800A340C;
+    if (vabid != 0) {
+        func_8005C074(vabid, arg2);
+    }
+    hdr[0] += (s32) hdr;
+    hdr[1] += (s32) hdr;
+    hdr[2] += (s32) hdr;
+    id = snd_VabOpen(hdr, vabid);
+    SsVabTransCompleted(1);
+    if (id != -1) {
+        g_vab_rec_ptr[id] = hdr;
+        D_800A3408 += hdr[3];
+        g_vab_sticky_sbaddr = D_800A340C + D_800A3408;
+        g_vab_vb_sbaddr[vabid] = SsUtGetVBaddrInSB(vabid);
+        return hdr[2] - (s32) hdr;
+    }
+    printf(D_800158CC, vabid);
+    return 0;
+}
+
+
+
+
+/* saFidLoad tail: s16 result-carrier + single trailing return — the target
+ * CFG (li -1 in its own block; shared sll/sra sext join) is only producible
+ * from this spelling class (direct-return floors at 4, s32 carrier at 8).
+ * Structured single-exit representative sanctioned by user 2026-06-10; the
+ * goto-end spelling remains REJECTED. See
+ * .claude/rules/proven-spelling-class-reconstruction.md. */
+s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
+    s32 idx;
+    u8 *base;
+    s32 **p;
+    s32 *v;
+    s32 *vv;
+    s16 ret;
+    func_800858D0(0);
+    idx = arg1;
+    base = (u8 *)&g_vab_rec_ptr;
+    p = (s32 **)(base + idx * 4);
+    v = *p;
+    if (v != 0) {
+        v = (s32 *)((u8 *)v + arg0);
+        *p = v;
+        *v = *v + arg0;
+        vv = *p;
+        *(s32 *)((u8 *)vv + 4) = *(s32 *)((u8 *)vv + 4) + arg0;
+        SsVabClose(idx);
+        ret = SsVabFakeHead(*(s32 *)((u8 *)*p + 4), idx, *(s32 *)((u8 *)&g_vab_vb_sbaddr + idx * 4));
+        if (ret != idx) {
+            return ret;
+        }
+        ret = SsVabFakeBody(ret);
+    } else {
+        ret = -1;
+    }
+    return ret;
+}
+
+extern s32 g_vab_sticky_sbaddr;
+
+void SsVabOpenHeadSticky(s32, s16, s32);
+s32 SsVabTransBody(s32, s16);
+s32 snd_VabOpen(s32 *a0, s16 a1) {
+    SsVabClose(a1);
+    SsVabOpenHeadSticky(a0[1], a1, g_vab_sticky_sbaddr);
+    *(s32 *)(a0[1] + 8) = a1;
+    return (s16)SsVabTransBody(a0[2], a1);
+}
+void SsSetMVol(s32, s32);
+void func_800858D0(s32);
+void SsSetStereo(void);
+void SsSetAutoKeyOffMode(s32);
+void func_8005C614(void) {
+    SsSetMVol(0x7F, 0x7F);
+    func_800858D0(0);
+    SsSetStereo();
+    SsSetAutoKeyOffMode(0);
+}
+extern s32 D_8009AA70;
+
+
+extern u8 D_800EFB7D;
+void func_8005C650(s32 a0, s32 a1, s32 a2) {
+    s16 a3 = 0;
+    s32 *base = (s32 *)((u8 *)&D_8009AA70 + a0 * 4);
+    do {
+        s32 off = a3 * 8;
+        if (!*(s32 *)((u8 *)&D_800EFB78 + off)) {
+            *(s32 *)((u8 *)&D_800EFB78 + off) = (s32)base;
+            *((u8 *)&D_800EFB7C + off) = (u8)a1;
+            *((u8 *)&D_800EFB7D + off) = (u8)a2;
+            return;
+        }
+        a3 = (s16)(a3 + 1);
+    } while ((s16)a3 < 0x18);
+}
+/* Per-frame sound-request flush: walk the 24-entry pending-sound pool, and for
+ * every entry whose VAB is loaded, find the first free SPU voice at or after the
+ * running `next` cursor and key the note on with the entry's stored volumes.
+ * Each pool slot is cleared as it is visited.
+ */
+extern s32 g_vab_rec_ptr_plus_0xC;
+extern s32 g_vab_rec_ptr_plus_0x18;
+extern void SpuGetAllKeysStatus(u8 *);
+extern s32 SpuGetKeyStatus(s32);
+extern s32 SsUtKeyOnV(s16, s16, s16, s16, s16, s16, s16, s16);
+void func_8005C6D0(void) {
+
+    u8 keys[24];
+    s16 i;
+    s16 voice;
+    s16 next;
+    u16 vab;
+    u16 *p;
+    s32 off;
+    s32 nv;
+    u32 *ev;
+
+    SpuGetAllKeysStatus(keys);
+    next = 0;
+    for (i = 0; (s16)i < 0x18; i = (s16)(i + 1)) {
+        off = i * 8;
+        p = *(u16 **)((u8 *)&D_800EFB78 + off);
+        if (p != 0 && (s32)g_vab_rec_ptr[*p] < 0) {
+            voice = next;
+            for (; (s16)voice < 0x18; voice = (s16)(voice + 1)) {
+                /* FAKE: second name for the pool byte offset i*8, feeding only the
+                 * two volume-byte reads (named-intermediate family, .claude/rules/
+                 * no-new-park-categories.md SOTN-accepted list as amended by
+                 * .claude/rules/ordinary-c-judge-decidable.md Ruling 1);
+                 * mechanism: GCC 2.7.2 local-alloc/global.c gives one C name one
+                 * pseudo, so a single name can never produce the target's second,
+                 * callee-saved copy of the offset that survives the SpuGetKeyStatus
+                 * call (`addu $s2,$v1,$zero`, asm/funcs/func_8005C6D0.s:41,
+                 * 0x8005C768); loop.c LICM hoists this copy into the scan preheader
+                 * exactly where the target emits it;
+                 * lever-exhaustion: memory/grind/func_8005C6D0/hypotheses.md H9 +
+                 * evidence.md s2 - nine single-name spellings (8..39, all short of
+                 * 118 insns), fifteen guard-free arrangements, and a 6,562-iteration
+                 * decomp-permuter campaign that converged independently on this form. */
+                nv = off;
+                if (SpuGetKeyStatus(1 << voice) != 1) {
+                    vab = *p;
+                    if (vab == 6 && g_vab_rec_ptr_plus_0x18 == g_vab_rec_ptr_plus_0xC) {
+                        vab = 3;
+                    }
+                    ev = &((u32 *)g_vab_rec_ptr[vab][0])[p[1]];
+                    SsUtKeyOnV((s16)voice, (s16)vab,
+                               (s16)(*ev & 0x7F),
+                               (s16)((*ev >> 7) & 0xF),
+                               (s16)((*ev >> 11) & 0x7F),
+                               (s16)((*ev >> 18) & 0x7F),
+                               *((u8 *)&D_800EFB7D + nv),
+                               *((u8 *)&D_800EFB7C + nv));
+                    next = (s16)(voice + 1);
+                    break;
+                }
+            }
+        }
+        *(s32 *)((u8 *)&D_800EFB78 + i * 8) = 0;
+    }
+}
+INCLUDE_ASM("asm/funcs", func_8005C8A8);
+extern s32 func_80073728(s32, s32);
+extern s32 D_8009B2C8;
+extern s32 D_8009B340;
+extern s32 D_8009B358;
+typedef struct {
+    void *p0;
+    s32 *p1;
+    s32 pad08;
+    s32 ret;
+    s32 zero10;
+    s32 one14;
+    s32 zero18;
+    s32 zero1C;
+    s32 c20;
+    s32 c24;
+    s8 byte28;
+    u8 byte29;
+    u8 byte2A;
+    u8 byte2B;
+} S46C;
+void func_8005D46C(s32 arg0, s32 arg1) {
+    S46C s;
+    s32 stride;
+    s32 ret;
+    s32 idx;
+    idx = arg1;
+    if (arg1 > 0) {
+        idx = arg1 - 1;
+    }
+    stride = idx * 0x3C;
+    s.byte28 = 0;
+    s.p0 = (void *)((u8 *)(&D_8009B2C8) + stride);
+    s.p1 = &D_8009B340;
+    s.c24 = 0x100;
+    s.c20 = 0x100;
+    s.zero1C = 0;
+    s.zero18 = 0;
+    s.zero10 = 0;
+    s.one14 = 1;
+    s.ret = arg0;
+    ret = func_80073728((s32)(&s), 0);
+    s.byte28 = 0;
+    s.p0 = (void *)(((u8 *)(&D_8009B2C8) + stride) + 0xC);
+    s.p1 = &D_8009B358;
+    s.c24 = 0x100;
+    s.c20 = 0x100;
+    s.zero1C = 0;
+    s.zero18 = 0;
+    s.zero10 = 0;
+    s.one14 = 1;
+    s.ret = ret;
+    func_80073728((s32)(&s), 0);
+}
+INCLUDE_ASM("asm/funcs", func_8005D554);
+/* The 0x2C-byte draw descriptor func_8007352C consumes (same layout as EnvA,
+   defined further down this file): .header = a D_8009B398 sprite-sheet
+   header (cell count at +2), .table = its 8-byte cell array. */
+typedef struct {
+    Unk8009B398Record *header;
+    Unk8009B400Record *table;
+    s32 out;
+    s32 pad0C;
+    s32 semi;
+    s32 ot_idx;
+    s32 x;
+    s32 y;
+    s32 pad20, pad24;
+    u8 has_color;
+    u8 col_r;
+    u8 col_g;
+    u8 col_b;
+} Env5D814;
+/* PsyQ libgpu TILE primitive (SetTile / SetSemiTrans / AddPrim). */
+typedef struct {
+    u32 tag;
+    u8 r0, g0, b0, code;
+    s16 x0, y0;
+    s16 w, h;
+} Tile5D814;
+extern Unk8009B400Record D_8009B3C8[3];
+extern Unk8009B400Record D_8009B3E0[2];
+extern Unk8009B400Record D_8009B3F0;
+extern Unk8009B400Record D_8009B3F8;
+extern s32 func_8007352C(s32);
+extern s32 func_8006E480(s32, s32);
+extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+extern s32 AddPrim(s32, s32);
+extern s32 SetSemiTrans(void *, s32);
+extern s32 SetTile(void *);
+s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    Env5D814 s;
+    s16 digit[3];
+    Tile5D814 *tile;
+    s32 cur;
+    s32 mode_off;
+    s32 end_off;
+    s16 i;
+    s16 j;
+    s16 num_tens;
+    s16 shown;
+    Unk8009B398Record *hdr2;  /* FAKE: pointer alias of D_8009B398[2] */
+    Unk8009B398Record *hdr3;  /* FAKE: pointer alias of D_8009B398[3] */
+    Unk8009B400Record *cell2; /* FAKE: pointer alias of D_8009B3F0 */
+    Unk8009B400Record *cell3; /* FAKE: pointer alias of D_8009B3F8 */
+
+    arg1--;
+    tile = (Tile5D814 *)arg2;
+    s.has_color = 0;
+    s.y = 0;
+    s.x = 0;
+    s.ot_idx = arg3;
+    s.semi = 0;
+    s.header = &D_8009B398[0];
+    cur = arg2 + 0xA0;
+    mode_off = arg2 + 0x2F8;
+    end_off = arg2 + 0x304;
+    for (i = 0; i < 3; i++) {
+        s.table = &D_8009B3C8[i];
+        s.out = cur;
+        cur = func_8007352C((s32)&s);
+    }
+
+    s.header = &D_8009B398[1];
+    for (i = 0; i < 2; i++) {
+        s.table = &D_8009B3E0[i];
+        if (i != 0) {
+            if (arg1 == 1) {
+                s.table->unk6 = 0x2D;
+            } else {
+                s.table->unk6 = 0x3C;
+            }
+        }
+        s.out = cur;
+        cur = func_8007352C((s32)&s);
+    }
+
+    s.header = &D_8009B398[0];
+    s.has_color = 0;
+    s.y = 0x16;
+    s.semi = 0;
+    s.ot_idx = arg3;
+    for (j = 0; j < 3; j++) {
+        for (i = 0; i < 2; i++) {
+            switch (j) {
+            case 0:
+                digit[i] = *arg0;
+                if (i != 0) {
+                    digit[i] = digit[i] % 10;
+                } else {
+                    s16 tens = digit[0] / 10;
+
+                    digit[0] = tens % 10;
+                }
+                s.table = &D_8009B400[digit[i]];
+                if (digit[i] == 1) {
+                    s.x = i * 20 + 3;
+                } else {
+                    s.x = i * 20;
+                }
+                s.table->unk0 = 0x1A2;
+                break;
+            case 1:
+                digit[i] = *((u8 *)arg0 + 2);
+                if (i != 0) {
+                    digit[i] = digit[i] % 10;
+                } else {
+                    s16 tens = digit[0] / 10;
+
+                    digit[0] = tens % 10;
+                }
+                s.table = &D_8009B400[digit[i]];
+                if (digit[i] == 1) {
+                    s.x = i * 20 + 3;
+                } else {
+                    s.x = i * 20;
+                }
+                s.table->unk0 = 0x1D3;
+                break;
+            case 2:
+                digit[i] = *((u8 *)arg0 + 3);
+                if (i != 0) {
+                    digit[i] = digit[i] % 10;
+                } else {
+                    s16 tens = digit[0] / 10;
+
+                    digit[0] = tens % 10;
+                }
+                s.table = &D_8009B400[digit[i]];
+                if (digit[i] == 1) {
+                    s.x = i * 20 + 3;
+                } else {
+                    s.x = i * 20;
+                }
+                s.table->unk0 = 0x209;
+                break;
+            }
+            s.out = cur;
+            cur = func_8007352C((s32)&s);
+        }
+    }
+
+    s.header = &D_8009B398[0];
+    digit[0] = digit[1] = digit[2] = arg1;
+    num_tens = digit[1] / 10;
+    digit[2] = digit[2] % 10;
+    digit[1] = num_tens % 10;
+    digit[0] = digit[0] / 100;
+    digit[1] = digit[1] % 100;
+    s.y = 0x29;
+    /* FAKE (pointer-alias-fake-exception): the tile loop's second sheet
+     * and cell, set here ahead of the digit loop. Their live range spans
+     * both loops, so global.c ranks them last (livelen ~300) and they are
+     * spilled and rematerialized inside the tile loop; set outside the tile
+     * loop, header[3] is also not related to header[2] by cse
+     * (use_related_value), which would give header[2] a fourth ref and
+     * reverse the $s6/$s7 order. memory/grind/func_8005D814/evidence.md. */
+    hdr3 = &D_8009B398[3]; /* FAKE: pointer alias */
+    cell3 = &D_8009B3F8;   /* FAKE: pointer alias */
+    shown = 0;
+    for (j = 0; j < 3; j++) {
+        if (shown || digit[j] != 0 || j == 2) {
+            s.table = &D_8009B400[digit[j]];
+            s.table->unk0 = 0x1F3;
+            shown = 1;
+            if (digit[j] == 1) {
+                s.x = j * 21 + 3;
+            } else {
+                s.x = j * 21;
+            }
+            s.out = cur;
+            cur = func_8007352C((s32)&s);
+        }
+    }
+
+    s.col_r = 0xFF;
+    s.col_b = 0x10;
+    s.col_g = 0x10;
+    s.has_color = 1;
+    s.x = 0;
+    s.semi = 0;
+    s.ot_idx = arg3;
+    for (j = 0; j < 2; j++) {
+        SetTile(tile);
+        tile->r0 = 0xFF;
+        tile->g0 = 0x10;
+        tile->b0 = 0x10;
+        tile->x0 = D_8009B450[j].x;
+        tile->y0 = D_8009B450[j].y;
+        tile->w = 0x238 - D_8009B450[j].x;
+        tile->h = 1;
+        SetSemiTrans(tile, 0);
+        AddPrim(g_gpu_ot_ptr + arg3 * 4, (s32)tile);
+        tile++;
+        /* FAKE (pointer-alias-fake-exception): the first sheet and cell,
+         * named a few insns before their stores so loop.c hoists them
+         * (lifetime >= 3 at loop.c:1631), header then cell; the cell's
+         * shorter live range ranks it first in global.c ($s6), the header
+         * second ($s7). memory/grind/func_8005D814/evidence.md. */
+        hdr2 = &D_8009B398[2]; /* FAKE: pointer alias */
+        cell2 = &D_8009B3F0;   /* FAKE: pointer alias */
+        s.y = D_8009B450[j].y;
+        s.header = hdr2;
+        s.table = cell2;
+        s.out = cur;
+        cur = func_8007352C((s32)&s);
+        s.header = hdr3;
+        s.table = cell3;
+        s.out = cur;
+        cur = func_8007352C((s32)&s);
+    }
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B398[0], 0), 0);
+    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
+    return end_off - arg2;
+}
+
+
+
+typedef struct {
+    void *p0;
+    void *p1;
+    s32 in_tex;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg3;
+    s32 width;
+    s32 height;
+    s32 pad20;
+    s32 pad24;
+    u8 byte28;
+    u8 byte29;
+    u8 byte2A;
+    u8 byte2B;
+    s32 pad2C;
+    s16 d[2];
+} S5E098;
+typedef struct {
+    u32 tag;
+    u8 r0, g0, b0, code;
+    s16 x0, y0;
+    s16 w, h;
+} T5E098;
+extern s32 D_8009B488;
+extern u8 D_8009B48E;
+extern s32 func_8007352C(s32);
+extern s32 func_8006E480(s32, s32);
+extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+extern s32 AddPrim(s32, s32);
+extern s32 SetSemiTrans(void *, s32);
+extern s32 SetTile(void *);
+s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    S5E098 s;
+    T5E098 *tile;
+    s32 cur;
+    s32 mode_off;
+    s32 end_off;
+    s16 i;
+    s16 j;
+    s16 v;
+    Unk8009B400Record *p;
+
+    tile = (T5E098 *)arg2;
+    s.byte28 = 0;
+    s.height = 0;
+    s.width = 0;
+    s.zero10 = 0;
+    s.p0 = &D_8009B398[1];
+    cur = arg2 + 0xA0;
+    mode_off = arg2 + 0x2F8;
+    end_off = arg2 + 0x304;
+    s.arg3 = arg3;
+    for (i = 0; i < 2; i++) {
+        if (arg0 < 0) {
+            s.p1 = &D_8009B488;
+            if (arg1 == 1) {
+                D_8009B48E = 0x2D;
+            } else {
+                D_8009B48E = 0x3C;
+            }
+        } else {
+            s.p1 = &D_8009B458[0][i];
+        }
+        s.in_tex = cur;
+        cur = func_8007352C((s32)&s);
+        if (arg0 < 0) {
+            break;
+        }
+    }
+
+    s.p0 = &D_8009B398[0];
+    s.byte28 = 0;
+    s.zero10 = 0;
+    s.height = 0x16;
+    s.arg3 = arg3;
+    for (j = 0; j < 2; j++) {
+        if (j) {
+            s.d[0] = s.d[1] = arg0;
+        } else {
+            s.d[0] = s.d[1] = arg1;
+        }
+        v = s.d[0] / 10;
+        s.d[1] = s.d[1] % 10;
+        s.d[0] = v % 10;
+        for (i = 0; i < 2; i++) {
+            if (s.d[i] == 0 && i == 0 && arg0 < 0) {
+                i++;
+            }
+            p = &D_8009B400[s.d[i]];
+            s.p1 = p;
+            if (j != 0) {
+                p->unk0 = 0x50;
+            } else {
+                p->unk0 = 0x209;
+            }
+            if (s.d[i] == 1) {
+                s.width = i * 20 + 3;
+            } else {
+                s.width = i * 20;
+            }
+            s.in_tex = cur;
+            cur = func_8007352C((s32)&s);
+        }
+        if (arg0 < 0) {
+            break;
+        }
+    }
+
+    s.byte29 = 0xFF;
+    s.byte2B = 0x10;
+    s.byte2A = 0x10;
+    s.byte28 = 1;
+    s.width = 0;
+    s.zero10 = 0;
+    s.arg3 = arg3;
+    for (j = 0; j < 2; j++) {
+        SetTile(tile);
+        tile->r0 = 0xFF;
+        tile->g0 = 0x10;
+        tile->b0 = 0x10;
+        tile->x0 = 0x209 - j * 0x1C1;
+        tile->y0 = 0x24;
+        tile->w = 0x30;
+        tile->h = 1;
+        SetSemiTrans(tile, 0);
+        AddPrim(g_gpu_ot_ptr + arg3 * 4, (s32)tile);
+        tile++;
+        s.height = 0x24;
+        s.p0 = &D_8009B398[2];
+        s.p1 = &D_8009B458[j + 1][0];
+        s.in_tex = cur;
+        cur = func_8007352C((s32)&s);
+        s.p0 = &D_8009B398[3];
+        s.p1 = &D_8009B458[j + 1][1];
+        s.in_tex = cur;
+        cur = func_8007352C((s32)&s);
+        if (arg0 < 0) {
+            break;
+        }
+    }
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B398[0], 0), 0);
+    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
+    return end_off - arg2;
+}
+s32 func_8005E098(s32, s32, s32, s32);
+s32 func_8005E51C(s32 a0, s32 a1, s32 a2) {
+    return func_8005E098(-1, a0 - 1, a1, a2);
+}
+/* The 0x2C-byte draw descriptor func_8007352C (SPRT walker) and func_80073728
+   (POLY_FT4 walker) consume; same layout as S_6A880. */
+typedef struct {
+    Unk8009B398Record *header;
+    Unk8009B400Record *table;
+    s32 sprt_out;
+    s32 ft4_out;
+    s32 semi;
+    s32 ot_idx;
+    s32 x;
+    s32 y;
+    s32 scale_x;
+    s32 scale_y;
+    u8 has_color;
+    u8 col_r;
+    u8 col_g;
+    u8 col_b;
+} Env5E54C;
+extern Unk8009B398Record D_8009ADB4;
+extern Unk8009B400Record D_8009ADC0[3];
+extern Unk8009B400Record UesrWorkDef[][3];
+extern Unk8009B398Record D_8009B4B0;
+extern Unk8009B400Record D_8009B4BC[5];
+extern Unk8009B398Record D_8009B4E4;
+extern Unk8009B398Record D_8009B4F0;
+extern Unk8009B400Record D_8009B4FC;
+extern Unk8009B400Record D_8009B504;
+extern Unk8009B400Record D_8009B50C;
+extern Unk8009B400Record D_8009B514;
+extern Unk8009B400Record D_8009B51C;
+extern Unk8009B398Record D_8009B524;
+extern Unk8009B398Record D_8009B530;
+extern Unk8009B398Record D_8009B53C;
+extern Unk8009B398Record D_8009B548;
+extern Unk8009B400Record D_8009B554[3];
+extern Unk8009B400Record D_8009B56C[2];
+extern Unk8009B400Record D_8009B57C[2];
+extern u8 D_8009B58C[];
+extern u8 D_800A3270[];
+s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
+    /* The per-player points pair: each round's points in the round rows,
+       then the per-player totals under them. The target addresses both
+       through the one frame slot sp+0x18 (a separate totals array measured
+       13-204: memory/grind/func_8005E54C/evidence.md [s4 cont.]). */
+    s16 points[2];
+    s16 wins[2];
+    Env5E54C s;
+    /* FAKE: unused here. The frame keeps the 8 untouched bytes at
+       sp+0x58 = descriptor + 0x30 where the COMPLETED siblings keep a real
+       s16[3] digit array: func_8005D814 `s16 digit[3];` (src/text1b.c:4231,
+       copied here) and func_8005F1C8 `s16 d[3];` (src/text1b.c:4911).
+       Census and measurements: memory/grind/func_8005E54C/frame_census.txt,
+       evidence.md [s4]/[s5]. Owner ruling 2026-09-29 Q35
+       (no-new-park-categories.md, phantom-frame-slot pad family, trailing
+       unused array with sibling evidence). */
+    volatile s16 digit[3];
+    T5E098 *tile;
+    s32 cur;
+    s32 ft4;
+    s32 mode_off;
+    s32 end_off;
+    /* i counts the players (first loop) and then the rounds; j is the
+       player and k the mark; each phase restarts them as plain loop indices,
+       the counter reuse of func_8005E098 / func_8005F1C8. Separate counters
+       per phase measured 8-77 (memory/grind/func_8005E54C/evidence.md [s3]). */
+    s16 i;
+    s16 j;
+    s16 k;
+    s16 c;
+    s16 y;
+
+    tile = (T5E098 *)arg1;
+    s.has_color = 0;
+    s.semi = 0;
+    s.y = 0;
+    cur = arg1 + 0xA0;
+    ft4 = arg1 + 0x898;
+    mode_off = arg1 + 0xBB8;
+    end_off = arg1 + 0xBC4;
+    s.ot_idx = arg2;
+    for (i = 0; i < 2; i++) {
+        if (!(D_8009BD38.unk15 >> i & 1)) {
+            s.header = &D_8009B524;
+        } else {
+            s.header = &D_8009B53C;
+        }
+        s.x = i * 320;
+        s.table = D_8009B554;
+        s.sprt_out = cur;
+        cur = func_8007352C((s32)&s);
+        if (!(D_8009BD38.unk15 >> i & 1)) {
+            s.header = &D_8009B530;
+            s.table = D_8009B56C;
+        } else {
+            s.header = &D_8009B548;
+            s.table = D_8009B57C;
+        }
+        s.sprt_out = cur;
+        cur = func_8007352C((s32)&s);
+    }
+
+    s.semi = 0;
+    s.has_color = 0;
+    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
+        points[0] = (arg0 >> (i * 4)) & 3;
+        points[1] = (arg0 >> (i * 4 + 2)) & 3;
+        if (D_8009BD38.unk10 == 2) {
+            s.y = i * 24 + 0x44;
+        } else if (D_8009BD38.unk10 == 1) {
+            s.y = i * 24 + 0x4F;
+        } else {
+            s.y = i * 34 + 0x4F;
+        }
+        if (points[0] == 3 || points[1] == 3) {
+            s.header = &D_8009B4B0;
+            s.x = 0;
+            s.y += 2;
+            s.table = &D_8009B4BC[D_800A3270[i]];
+            s.sprt_out = cur;
+            cur = func_8007352C((s32)&s);
+        } else {
+            s.header = &D_8009B4E4;
+            s.x = 0;
+            s.table = &D_8009B514;
+            s.sprt_out = cur;
+            cur = func_8007352C((s32)&s);
+            for (j = 0; j < 2; j++) {
+                s.x = j * 70;
+                if (points[j] > *(j ? &points[0] : &points[1])) {
+                    s.table = &D_8009B4FC;
+                } else if (points[j] < *(j ? &points[0] : &points[1])) {
+                    s.table = &D_8009B504;
+                } else {
+                    s.table = &D_8009B50C;
+                }
+                s.sprt_out = cur;
+                cur = func_8007352C((s32)&s);
+            }
+            s.y += 5;
+            for (j = 0; j < 2; j++) {
+                s.header = &D_8009B4F0;
+                s.table = &D_8009B51C;
+                for (k = 0; k < points[j]; k++) {
+                    if (j) {
+                        s.x = k * 16 + 0x179;
+                    } else {
+                        s.x = (1 - k) * 16 + 0xE2;
+                    }
+                    s.sprt_out = cur;
+                    cur = func_8007352C((s32)&s);
+                }
+            }
+        }
+    }
+
+    s.header = &D_8009B4E4;
+    s.x = 0;
+    if (D_8009BD38.unk10 == 2) {
+        y = 0xC6;
+    } else if (D_8009BD38.unk10 == 1) {
+        y = 0xC2;
+    } else {
+        y = 0xBE;
+    }
+    s.y = y + 3;
+    s.table = &D_8009B514;
+    s.sprt_out = cur;
+    cur = func_8007352C((s32)&s);
+    /* One 32-bit store clears the whole pair (target 0x8005EA44
+       `sw $zero,0x18($sp)`); the union spelling measured 197
+       (memory/grind/func_8005E54C/evidence.md [s5]). Owner ruling
+       2026-09-29 Q36 (no-new-park-categories.md, one cast store on a
+       local array). */
+    *(s32 *)points = 0;
+    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
+        if (((arg0 >> (i * 4)) & 3) != 3) {
+            points[0] += (arg0 >> (i * 4)) & 3;
+        }
+        if (((arg0 >> (i * 4 + 2)) & 3) != 3) {
+            points[1] += (arg0 >> (i * 4 + 2)) & 3;
+        }
+    }
+    for (j = 0; j < 2; j++) {
+        s.header = &D_8009B4F0;
+        s.table = &D_8009B51C;
+        for (k = 0; k < points[j]; k++) {
+            if (j) {
+                s.x = (k >> 1) * 20 + 0x181;
+            } else {
+                s.x = 0xF2 - (k >> 1) * 20;
+            }
+            s.y = y + (k & 1) * 12;
+            s.sprt_out = cur;
+            cur = func_8007352C((s32)&s);
+        }
+    }
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B524, 0), 0);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
+    mode_off += 0xC;
+
+    s.ot_idx = arg2;
+    wins[0] = wins[1] = 0;
+    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
+        s.header = &D_8009ADB4;
+        s.semi = 0;
+        points[0] = (arg0 >> (i * 4)) & 3;
+        points[1] = (arg0 >> (i * 4 + 2)) & 3;
+        s.col_r = s.col_g = s.col_b = 0x40;
+        for (j = 0; j < 2; j++) {
+            if (points[j] <= *(j ? &points[0] : &points[1])) {
+                if (points[j] != 3) {
+                    s.has_color = 1;
+                } else {
+                    s.has_color = 0;
+                }
+            } else {
+                if (points[j] != 3) {
+                    wins[j]++;
+                }
+                s.has_color = 0;
+            }
+            c = D_8009BD24[j][i].chr;
+            if (c >= 12) {
+                c -= 2;
+            }
+            s.table = UesrWorkDef[c];
+            s.x = j * 320 + D_8009B58C[c];
+            if (D_8009BD38.unk10 == 2) {
+                s.y = i * 24 - 8;
+            } else if (D_8009BD38.unk10 == 1) {
+                s.y = i * 24 + 3;
+            } else {
+                s.y = i * 34 + 3;
+            }
+            s.sprt_out = cur;
+            cur = func_8007352C((s32)&s);
+            if (D_8009BD24[j][i].chr == 8) {
+                s.table = D_8009ADC0;
+                s.sprt_out = cur;
+                cur = func_8007352C((s32)&s);
+            }
+        }
+        s.has_color = 0;
+        if (points[0] == 3) {
+            s.y += 0x4C;
+            s.scale_x = 0x100;
+            s.x = 0;
+            s.semi = 0;
+            s.scale_y = 0x400;
+            s.y += 6;
+            for (j = 0; j < 2; j++) {
+                s.header = &D_8009B398[j + 2];
+                s.table = D_8009B490[j];
+                s.ft4_out = ft4;
+                ft4 = func_80073728((s32)&s, 0);
+                s.table = &D_8009B490[j][1];
+                s.ft4_out = ft4;
+                ft4 = func_80073728((s32)&s, 0);
+            }
+        }
+    }
+
+    s.header = &D_8009B398[0];
+    s.semi = 0;
+    if (D_8009BD38.unk10 == 2) {
+        s.y = 0xC9;
+    } else if (D_8009BD38.unk10 == 1) {
+        s.y = 0xC5;
+    } else {
+        s.y = 0xC1;
+    }
+    for (j = 0; j < 2; j++) {
+        s.x = j * 70 + 0x113;
+        if (wins[j] == 1) {
+            s.x += 3;
+        }
+        s.table = &D_8009B400[wins[j]];
+        s.table->unk0 = s.table->unk2 = 0;
+        s.sprt_out = cur;
+        cur = func_8007352C((s32)&s);
+    }
+
+    SetTile(tile);
+    tile->r0 = 0xFF;
+    tile->g0 = 0x10;
+    tile->b0 = 0x10;
+    tile->x0 = 8;
+    tile->y0 = 0x3A;
+    tile->w = 0xDC;
+    tile->h = 1;
+    SetSemiTrans(tile, 0);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, (s32)tile);
+    tile++;
+    SetTile(tile);
+    tile->r0 = 0xFF;
+    tile->g0 = 0x10;
+    tile->b0 = 0x10;
+    tile->x0 = 0x19D;
+    tile->y0 = 0x3A;
+    tile->w = 0xDC;
+    tile->h = 1;
+    SetSemiTrans(tile, 0);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, (s32)tile);
+    tile++;
+    SetTile(tile);
+    tile->r0 = 0xFF;
+    tile->g0 = 0x10;
+    tile->b0 = 0x10;
+    /* Each arm sets the whole (x0, y0) position: the target stores x0 once
+       per arm (0x8005F0E0, 0x8005F0F8, 0x8005F104); one x0 store above the
+       if/else measured 10 (memory/grind/func_8005E54C/probes/x0h.c). */
+    if (D_8009BD38.unk10 == 2) {
+        tile->x0 = 0x5E;
+        tile->y0 = 0xC1;
+    } else if (D_8009BD38.unk10 == 1) {
+        tile->x0 = 0x5E;
+        tile->y0 = 0xBD;
+    } else {
+        tile->x0 = 0x5E;
+        tile->y0 = 0xB9;
+    }
+    tile->w = 0x1C5;
+    tile->h = 1;
+    SetSemiTrans(tile, 0);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, (s32)tile);
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009ADB4, 0), 0);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
+    return end_off - arg1;
+}
+typedef struct {
+    Unk8009B398Record *p0;
+    Unk8009B400Record *p1;
+    s32 in_tex;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg3;
+    s32 width;
+    s32 height;
+    s32 pad20;
+    s32 pad24;
+    u8 byte28;
+    u8 byte29;
+    u8 byte2A;
+    u8 byte2B;
+    s32 pad2C;
+    s16 d[3];
+} S5F1C8;
+extern Unk8009B398Record D_8009B5A0[2];
+extern Unk8009B400Record D_8009B5B8[2][2];
+extern Unk8009B400Record D_8009B5D8[2];
+extern Unk8009B400Record D_8009B5E8;
+s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    S5F1C8 s;
+    T5E098 *tile;
+    s32 cur;
+    s32 mode_off;
+    s32 end_off;
+    /* i/row count the win-mark pips' players and rows; k and j are reused
+     * as plain loop indices by the later phases (tile strip k/j, timer j/k),
+     * the same counter reuse as func_8005E098 and the func_8003800C
+     * single-counter shape. Separate counters per phase measured 38-73
+     * (memory/grind/func_8005F1C8/evidence.md s2). */
+    s16 i;
+    s16 j;
+    s16 k;
+    s16 row;
+    s16 wins;
+    s16 count;
+    s32 x;
+
+    s.byte28 = 0;
+    s.height = 0;
+    s.zero10 = 0;
+    tile = (T5E098 *)arg2;
+    cur = arg2 + 0xA0;
+    mode_off = arg2 + 0x2F8;
+    end_off = arg2 + 0x304;
+    s.arg3 = arg3;
+    for (i = 0; i < 2; i++) {
+        s.p0 = &D_8009B5A0[i];
+        wins = (arg1 >> (i * 8)) & 0xFF;
+        if (i != 0) {
+            count = 2;
+        } else {
+            count = D_8009BD38.unk14 + 1;
+        }
+        for (row = 0; row < 2; row++) {
+            for (k = 0; k < count; k++) {
+                if (row != 0) {
+                    s.width = i * 8 + 0x1C2 - (0x1C - i * 8) * k;
+                } else {
+                    s.width = (0x1C - i * 8) * k;
+                }
+                s.p1 = &D_8009B5B8[i][0];
+                if (k >= ((wins >> (row * 4)) & 0xF)) {
+                    s.p1++;
+                }
+                s.in_tex = cur;
+                cur = func_8007352C((s32)&s);
+            }
+        }
+    }
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B5A0[0], 0), 0);
+    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
+    mode_off += 0xC;
+
+    s.byte28 = 0;
+    s.height = 0;
+    s.zero10 = 0;
+    s.p0 = &D_8009B398[1];
+    s.arg3 = arg3;
+    for (k = 0; k < 2; k++) {
+        for (j = 0; j < 2; j++) {
+            s.width = j * 550;
+            s.p1 = &D_8009B5D8[k];
+            s.in_tex = cur;
+            cur = func_8007352C((s32)&s);
+        }
+    }
+
+    s.byte29 = 0xFF;
+    s.byte2B = 0x10;
+    s.byte2A = 0x10;
+    s.byte28 = 1;
+    s.width = 0;
+    s.zero10 = 0;
+    s.arg3 = arg3;
+    for (k = 0; k < 2; k++) {
+        for (j = 0; j < 2; j++) {
+            SetTile(tile);
+            tile->r0 = 0xFF;
+            tile->g0 = 0x10;
+            tile->b0 = 0x10;
+            tile->x0 = 0x48 + j * 431 + j * (k << 4);
+            tile->y0 = k * 20 + 0x24;
+            tile->w = 0x42 - k * 16;
+            tile->h = 1;
+            SetSemiTrans(tile, 0);
+            AddPrim(g_gpu_ot_ptr + arg3 * 4, (s32)tile);
+            tile++;
+            s.height = k * 20 + 0x24;
+            s.p0 = &D_8009B398[2];
+            s.p1 = &D_8009B5F0[j][0];
+            s.in_tex = cur;
+            cur = func_8007352C((s32)&s);
+            s.p0 = &D_8009B398[3];
+            s.p1 = &D_8009B5F0[j][1];
+            s.in_tex = cur;
+            cur = func_8007352C((s32)&s);
+        }
+    }
+
+    s.p0 = &D_8009B398[0];
+    s.byte28 = 0;
+    s.height = 0x16;
+    s.zero10 = 0;
+    s.arg3 = arg3;
+    for (j = 0; j < 2; j++) {
+        for (k = 0; k < 3; k++) {
+            switch (j) {
+            case 0:
+                if (k < 2 || D_8009BD38.unk12 == 2) {
+                    s.d[k] = arg0[2];
+                    if (k == 0 && D_8009BD38.unk12 == 2) {
+                        s.d[k] = s.d[k] / 100;
+                    } else if (k == 0 || (k == 1 && D_8009BD38.unk12 == 2)) {
+                        s.d[k] = s.d[k] / 10;
+                    }
+                    s.d[k] = s.d[k] % 10;
+                    s.p1 = &D_8009B400[s.d[k]];
+                    if (s.d[k] == 1) {
+                        s.width = k * 20 + 3;
+                    } else {
+                        s.width = k * 20;
+                    }
+                }
+                break;
+            case 1:
+                if (k < 2) {
+                    s.d[k] = arg0[3];
+                    if (k != 0) {
+                        s.d[k] = s.d[k] % 10;
+                    } else {
+                        s16 tens = s.d[k] / 10;
+
+                        s.d[k] = tens % 10;
+                    }
+                    x = (D_8009BD38.unk12 == 2) ? k * 20 + 0x48 : k * 20 + 0x34;
+                    s.p1 = &D_8009B400[s.d[k]];
+                    if (s.d[k] == 1) {
+                        s.width = x + 3;
+                    } else {
+                        s.width = x;
+                    }
+                }
+                break;
+            }
+            if (D_8009BD38.unk12 == 2) {
+                s.p1->unk0 = 0x109;
+            } else {
+                s.p1->unk0 = 0x113;
+            }
+            s.in_tex = cur;
+            cur = func_8007352C((s32)&s);
+        }
+        s.p1 = &D_8009B5E8;
+        if (D_8009BD38.unk12 == 2) {
+            s.width = j * 6 + 0x145;
+        } else {
+            s.width = j * 6 + 0x13B;
+        }
+        s.in_tex = cur;
+        cur = func_8007352C((s32)&s);
+    }
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B398[1], 0), 0);
+    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
+    return end_off - arg2;
+}
+extern s32 D_8009B610;
+extern s32 D_8009B634;
+extern s32 D_8009B63C;
+extern s32 D_8009B660;
+extern s32 D_8009B670;
+extern s32 D_8009B678;
+s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
+    S46C s;
+    s32 ret;
+    s32 start = arg1;
+    s32 end = arg1 + 0x190;
+
+    s.c20 = 0x200;
+    s.c24 = 0x100;
+    s.p0 = (void *)((u8 *)(&D_8009B63C) + (arg0 * 0xC));
+    s.byte28 = 0;
+    s.zero1C = 0;
+    s.zero18 = 0;
+    s.zero10 = 0;
+    s.one14 = arg2;
+    switch (arg0) {
+    case 0:
+        s.p1 = &D_8009B660;
+        break;
+    case 1:
+        s.p1 = &D_8009B670;
+        break;
+    case 2:
+        s.p1 = &D_8009B678;
+        break;
+    }
+    s.ret = start;
+    ret = func_80073728((s32)(&s), 0);
+    s.p0 = (void *)((u8 *)(&D_8009B610) + (arg0 * 0xC));
+    s.p1 = &D_8009B634;
+    s.ret = ret;
+    func_80073728((s32)(&s), 0);
+    return end - arg1;
+}
+extern u8 D_800A327C[8];
+extern u8 D_800A3284[8];
+extern s32 D_800A3278;
+
+void func_8005FBC8(s32 arg0, u8 *arg1) {
+    u8 r1[8], r2[8];
+    s32 s0;
+    s0 = func_80036EA8(2, arg0 + 0x33);
+    cdrom_StartRead(s0, (s32)arg1);
+    game_FrameLoop();
+    func_80036F28(s0);
+    __builtin_memcpy(r1, D_800A327C, 8);
+    __builtin_memcpy(r2, D_800A3284, 8);
+    LoadImage((s32)r1, (s32)(arg1 + 0x40));
+    DrawSync(0);
+    LoadImage((s32)r2, (s32)(arg1 + 0x14));
+    DrawSync(0);
+    D_800A3278 = 0;
+}
+
+extern s32 g_gpu_ot_ptr;
+
+
+
+
+
+
+extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+extern s32 AddPrim(s32, s32);
+
+extern s32 func_8007352C(s32);
+extern s32 func_8006E480(s32, s32);
+
+extern s32 D_800A36AC;
+extern u8 g_gpu_db;
+extern s32 D_800A3278;
+extern s32 D_8009B698;
+extern s32 D_8009B6B0;
+extern s32 SetDrawArea();
+extern s32 SetPolyG4();
+extern s32 SetSemiTrans(void *, s32);
+
+typedef struct {
+    s16 x, y, w, h;
+} RectFC9C;
+
+typedef struct {
+    RectFC9C clip;
+} EnvFC9C;
+
+typedef struct {
+    u32 tag;
+    u8 r0, g0, b0, code;
+    s16 x0, y0;
+    u8 r1, g1, b1, p1;
+    s16 x1, y1;
+    u8 r2, g2, b2, p2;
+    s16 x2, y2;
+    u8 r3, g3, b3, p3;
+    s16 x3, y3;
+} PolyG4FC9C;
+
+typedef struct {
+    s32 *p0;
+    s32 *p1;
+    s32 in_tex;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg2;
+    s32 width;
+    s32 height;
+    s32 pad20;
+    s32 pad24;
+    s8 byte28;
+} SFC9C;
+
+s32 func_8005FC9C(s32 arg0, s32 arg1)
+{
+    SFC9C s;
+    RectFC9C r;
+    RectFC9C *clip;
+    EnvFC9C *env;
+    s32 cur_tex;
+    s32 mode_off;
+    PolyG4FC9C *poly;
+    s32 area;
+    s32 end_off;
+    s16 j;
+    s16 i;
+    s16 off;
+    s16 x;
+    u8 c;
+
+    cur_tex = arg0;
+    mode_off = arg0 + 0x280;
+    poly = (PolyG4FC9C *)(arg0 + 0x28C);
+    area = arg0 + 0x2D4;
+    end_off = arg0 + 0x2F8;
+    j = 0;
+    env = (EnvFC9C *)(&g_gpu_db + (D_800A36AC & 1) * 0x4090);
+    r.x = env->clip.x;
+    r.y = env->clip.y;
+    r.w = env->clip.w;
+    r.h = env->clip.h;
+    clip = &env->clip;
+    SetDrawArea(area, &r);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, area);
+    area = arg0 + 0x2E0;
+    s.byte28 = 0;
+    s.zero10 = 0;
+    s.width = 0;
+    s.arg2 = arg1;
+    s.p1 = &D_8009B6B0;
+    off = (D_800A3278 - 0xB4) * 24;
+    do {
+        if (D_800A3278 >= 0xB5) {
+            SetPolyG4(poly);
+            SetSemiTrans(poly, 1);
+            if (j != 0) {
+                x = off + 0x140;
+                r.x = clip->x + x;
+                r.y = clip->y;
+                r.w = clip->w / 2 - off;
+                r.h = clip->h;
+                poly->x0 = x;
+                poly->y0 = 0;
+                poly->x1 = x;
+                poly->y1 = 0xF0;
+                poly->x2 = off + 0x154;
+                poly->y2 = 0;
+                poly->x3 = off + 0x154;
+                poly->y3 = 0xF0;
+            } else {
+                r.x = clip->x;
+                r.y = clip->y;
+                r.w = clip->w / 2 - off;
+                r.h = clip->h;
+                poly->x0 = 0x140 - off;
+                poly->y0 = 0;
+                poly->x1 = 0x140 - off;
+                poly->y1 = 0xF0;
+                poly->x2 = 0x12C - off;
+                poly->y2 = 0;
+                poly->x3 = 0x12C - off;
+                poly->y3 = 0xF0;
+            }
+            c = ~((off * 255) / 320);
+            poly->r0 = c;
+            poly->g0 = 0;
+            poly->b0 = 0;
+            poly->r1 = c;
+            poly->g1 = 0;
+            poly->b1 = 0;
+            poly->r2 = 0;
+            poly->g2 = 0;
+            poly->b2 = 0;
+            poly->r3 = 0;
+            poly->g3 = 0;
+            poly->b3 = 0;
+            AddPrim(g_gpu_ot_ptr + arg1 * 4, poly);
+            poly++;
+        }
+        for (i = 0; i < 2; i++) {
+            s.p0 = (s32 *)((u8 *)&D_8009B698 + i * 12);
+            s.height = i << 6;
+            s.in_tex = cur_tex;
+            cur_tex = func_8007352C((s32)&s);
+        }
+        if (D_800A3278 >= 0xB5) {
+            SetDrawArea(area, &r);
+            AddPrim(g_gpu_ot_ptr + arg1 * 4, area);
+            area += 0xC;
+        }
+        j++;
+    } while (j < 2);
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B698, 0x20), 0);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, mode_off);
+    if (off <= 0x140) {
+        D_800A3278++;
+    }
+    return end_off - arg0;
+}
+typedef struct {
+    s32 *p0;
+    s32 *p1;
+    s32 in_tex;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg2;
+    s32 width;
+    s32 zero1C;
+    s32 pad20;
+    s32 pad24;
+    s8 byte28;
+    s8 padpad[7];
+    s16 d0;
+    s16 d1;
+} S60C8;
+extern s32 D_8009B6F0;
+extern s32 D_8009B6FC;
+extern s32 D_8009B708;
+extern s32 D_8009B758;
+s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
+{
+    S60C8 s;
+    s32 dist_off = arg1 + 0xB4;
+    s32 end_off = arg1 + 0xC0;
+    s32 cur_tex = arg1;
+    s32 i;
+    s16 hi;
+
+    s.p0 = &D_8009B6F0;
+    s.byte28 = 0;
+    s.zero10 = 0;
+    s.zero1C = 0;
+    s.arg2 = arg2;
+    if (arg0 < 0xA) {
+        s.width = 0x93;
+    } else {
+        s.width = 0xA3;
+    }
+    s.p1 = &D_8009B758;
+    s.in_tex = cur_tex;
+    cur_tex = func_8007352C((s32)&s);
+    hi = arg0;
+    s.p0 = &D_8009B6FC;
+    s.d1 = hi;
+    s.d0 = hi;
+    hi = ((s16)arg0) / 10;
+    s.d1 = hi % 10;
+    s.d0 = ((s16)arg0) % 10;
+    i = 0;
+loop_60C8:
+    s.p1 = (s32 *)((s32)&D_8009B708 + ((&s.d0)[i] * 8));
+    if (arg0 < 0xA) {
+        s.width = 0x64;
+    } else {
+        s.width = (((1 - i) << 2) << 3) + 0x54;
+    }
+    s.in_tex = cur_tex;
+    cur_tex = func_8007352C((s32)&s);
+    if (s.d1 != 0) {
+        i += 1;
+        if (i < 2) goto loop_60C8;
+    }
+    SetDrawMode(dist_off, 1, 0, func_8006E480((s32 *)&D_8009B6F0, 0), 0);
+    AddPrim(g_gpu_ot_ptr + (arg2 * 4), dist_off);
+    return end_off - arg1;
+}
+extern u8 D_800A3294[8];
+extern u8 D_800A329C[8];
+extern u8 D_800A32A4[8];
+extern u8 D_800A32AC[8];
+
+void func_800602AC(s32 arg0, s32 *arg1) {
+    u8 r1[8], r2[8], r3[8], r4[8];
+    s32 s1;
+    u8 *p;
+    s1 = func_80036EA8(2, arg0 + 0x3D);
+    cdrom_StartRead(s1, (s32)arg1);
+    game_FrameLoop();
+    func_80036F28(s1);
+    arg1[0] = arg1[0] + (s32)arg1;
+    arg1[1] = arg1[1] + (s32)arg1;
+    __builtin_memcpy(r1, D_800A3294, 8);
+    __builtin_memcpy(r2, D_800A329C, 8);
+    p = (u8 *)arg1[0];
+    LoadImage((s32)r1, (s32)(p + 0x40));
+    DrawSync(0);
+    LoadImage((s32)r2, (s32)(p + 0x14));
+    DrawSync(0);
+    __builtin_memcpy(r3, D_800A32A4, 8);
+    __builtin_memcpy(r4, D_800A32AC, 8);
+    arg1 = (s32 *)arg1[1];
+    LoadImage((s32)r3, (s32)((u8 *)arg1 + 0x60));
+    DrawSync(0);
+    LoadImage((s32)r4, (s32)((u8 *)arg1 + 0x14));
+    DrawSync(0);
+}
+extern s32 func_8006E480();
+extern s32 func_8007352C();
+extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+extern s32 AddPrim(s32, s32);
+extern s32 D_8009B7AC;
+extern s32 D_8009B7B8;
+extern s32 D_8009B7C4;
+extern u16 D_8009B850;
+extern s32 D_800A328C;
+typedef struct {
+    s32 *p_geom;
+    s32 *p_static;
+    s32 arg1_field;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg2_field;
+    s32 width;
+    s32 height;
+    s32 pad20;
+    s32 pad24;
+    s8 byte28;
+} S414;
+s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
+    S414 s;
+    s32 dist_off;
+    s32 end_off;
+    s32 new_var;
+    new_var = arg1;
+    dist_off = new_var + 0x14;
+    end_off = new_var + 0x2C;
+    s.byte28 = 0;
+    s.zero10 = 0;
+    s.arg2_field = arg2;
+    s.width = (((u16)(*((&D_8009B850) + (arg0 & 0x7FFF)))) >> 7) + 0x37;
+    s.height = ((*((&D_8009B850) + (arg0 & 0x7FFF))) & 0x7F) + 0x2A;
+    if (arg0 & 0x8000) {
+        s.p_geom = &D_8009B7AC;
+    } else if (D_8009BD24[0][0].chr < 0xC) {
+        s.p_geom = &D_8009B7B8;
+    } else {
+        s.p_geom = &D_8009B7C4;
+    }
+    s.p_static = &D_800A328C;
+    s.arg1_field = new_var;
+    func_8007352C((s32)(&s));
+    SetDrawMode(dist_off, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
+    AddPrim(g_gpu_ot_ptr + (arg2 * 4), dist_off);
+    return end_off - arg1;
+}
+extern s32 D_8009B770;
+extern s32 D_8009B7A0;
+extern s32 D_8009B7D0;
+extern s32 D_8009B7D8;
+extern s32 D_8009B800;
+extern s32 D_8009B820;
+extern s32 D_8009B840;
+typedef struct {
+    s32 *p_geom;
+    s32 *p_static;
+    s32 arg1_field;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg2_field;
+    s32 width;
+    s32 height;
+    s32 pad20;
+    s32 pad24;
+    u8 byte28;
+    u8 byte29;
+    u8 byte2A;
+    u8 byte2B;
+} S544;
+s32 func_80060544(s32 arg0, s32 arg1) {
+    s32 geom;
+    s32 c3;
+    s32 stat;
+    s32 last;
+    S544 s;
+    s32 end_off;
+    s32 mid_off;
+    s32 i;
+    s32 j;
+    s32 idx;
+    s32 new_var6;
+    s32 prev;
+    s32 *p0;
+    S544 *new_var2;
+    s32 *p1;
+    int new_var3;
+    prev = arg0;
+    mid_off = arg0 + 0x4EC;
+    end_off = arg0 + 0x5F4;
+    s.byte28 = 0;
+    s.zero10 = 0;
+    s.arg2_field = arg1;
+    new_var3 = arg0 + 0x5DC;
+    new_var6 = end_off;
+    s.pad20 = 0x200;
+    s.pad24 = 0x100;
+    s.height = 0;
+    s.width = 0;
+    /* FAKE: dead store.  THE VALUE STORED HERE IS ARBITRARY AND IS NEVER READ —
+     * it is not "the Case3 handle" and it is not the i == 0 table being set up
+     * early; any value would do, and flow.c deletes the store outright, so this
+     * line contributes NO instruction to the output (the build is 133 insns,
+     * exactly target's count).  The line exists solely to give the pseudo an
+     * earlier reference than its real assignment in the Case3 arm, before
+     * loop.c runs: that moves `regno_first_uid[c3]` off the `la`, which makes
+     * `reg_in_basic_block_p` return 0 at loop.c:700 and disqualifies
+     * `c3 = (s32)(&D_8009B7D0);` as a movable (loop.c:693-701 — cases (2) and
+     * (3) are already false for a named local assigned under `maybe_never`), so
+     * the `la D_8009B7D0` is NOT hoisted into loop 1's preheader.  It therefore
+     * reaches sched1 inside the Case3 block as a live pseudo with
+     * reg_n_sets == 1 (this store having been deleted), and
+     * adjust_priority()/birthing_insn_p() promote it to LAUNCH_PRIORITY
+     * (sched.c:2496/2531/2601), which is what puts `addu $a1,$zero,$zero` first
+     * in that block exactly as target has it.
+     * Lever exhaustion: hypotheses.md s1-s8 — every C-level restructuring of the
+     * block (s2/s3), ~97,000 permuter samples across three chassis (s4/s5), the
+     * instrumented-compiler case analysis (s5/s6/s7), the s8 route table
+     * (A/B/C), and the s8b re-measurement showing every LIVE hoist-blocking
+     * mention costs +2/+3 instructions or lands the address in a callee-save.
+     * Family: [[dead-store-fake-exception]]; mechanism family
+     * [[defeat-licm-hoist-var-reuse]]. */
+    c3 = (s32)(&D_8009B7D8);
+    i = 0;
+    /* FAKE: constant-holder for the special-cased last index.  It must sit
+     * BETWEEN `i = 0;` and `idx = 0;` — that source position is what reproduces
+     * target's prologue init order `$s0 = 0 / $s5 = 3 / $s1 = 0`
+     * (asm/funcs/func_80060544.s prologue; hypotheses.md s1 H3: a loop.c-hoisted
+     * CSE constant provably cannot land there, because move_movables emits
+     * preheader movables immediately before the loop start, i.e. AFTER both
+     * inits — which is exactly what the literal-3 spelling produced).  It is
+     * read twice (`i == last`, `i != last`), so it is live, but it is still a
+     * constant-holder and therefore carries this annotation per the 13:11 and
+     * 15:57 rulings.  Lever exhaustion: hypotheses.md s1-s8.
+     * Family: [[named-local-fake-exception]]. */
+    last = 3;
+    idx = 0;
+    do {
+        geom = (s32)(&D_8009B770);
+        geom += idx;
+        s.p_geom = (s32 *)geom;
+        if (i < 3) {
+            if (i > 0) {
+                goto S800;
+            }
+            if (i == 0) {
+                goto S7D8;
+            }
+            goto Skip;
+        }
+        if (i == last) {
+            goto Case3;
+        }
+        goto Skip;
+    S7D8:
+        stat = (s32)(&D_8009B7D8);
+        s.p_static = (s32 *)stat;
+        goto Skip;
+    S800:
+        stat = (s32)(&D_8009B800);
+        s.p_static = (s32 *)stat;
+        goto Skip;
+    Case3:
+        c3 = (s32)(&D_8009B7D0);
+        s.p_static = (s32 *)c3;
+        s.pad0C = mid_off;
+        mid_off = func_80073728((s32)&s, 0);
+    Skip:
+        if (i != last) {
+            s.arg1_field = prev;
+            prev = func_8007352C(&s);
+        }
+        i += 1;
+        idx += 0xC;
+    } while (i < 4);
+    s.p_geom = &D_8009B7A0;
+    s.p_static = &D_8009B820;
+    s.arg1_field = prev;
+    new_var2 = &s;
+    prev = func_8007352C(new_var2);
+    j = 0;
+    p1 = &D_8009B840;
+    p0 = (s32 *)&D_8009B398[2];
+    s.byte29 = 0xFF;
+    s.byte2B = 0x10;
+    s.byte2A = 0x10;
+    s.byte28 = 1;
+    do {
+        s.p_geom = p0;
+        s.p_static = p1;
+        s.arg1_field = prev;
+        prev = func_8007352C(&s);
+        p1 = (s32 *)(((s32)p1) + 8);
+        j += 1;
+        p0 = (s32 *)(((s32)p0) + 0xC);
+    } while (j < 2);
+    SetDrawMode(new_var3, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
+    AddPrim(g_gpu_ot_ptr + (arg1 * 4), new_var3);
+    return new_var6 - arg0;
+}
+
+extern u16 D_800A32B6;
+extern u16 D_800A32B4;
+void func_80060758(void) {
+    D_800A32B6 = 0;
+    D_800A32B4 = 0;
+}
+extern s32 D_8009B0C0;
+extern s32 g_gpu_ot_ptr;
+extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
+extern s32 SetSemiTrans(void *, s32);
+
+extern s32 SetTile(void *);
+
+s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
+    s32 sp18;
+    s32 sp1C;
+    s32 t1;
+    s32 t2;
+    u16 cur1;
+    u16 cur2;
+    s32 end_off;
+    s32 tile_off;
+
+    tile_off = arg0 + 0x7D0;
+    end_off = arg0 + 0xAC8;
+    sp18 = arg0;
+    sp1C = arg0 + 0x870;
+    func_8006D808(&sp18, &sp1C, &D_8009B0C0, arg1, arg2);
+    if ((u32)arg2 < 3U) {
+        SetTile((void *)tile_off);
+        *(u8 *)(arg0 + 0x7D4) = 0xFF;
+        *(s16 *)(arg0 + 0x7D8) = 0x6A;
+        *(u8 *)(arg0 + 0x7D5) = 0;
+        *(u8 *)(arg0 + 0x7D6) = 0;
+        *(s16 *)(arg0 + 0x7DA) = (s16)(arg2 * 0x1A + 0x5B);
+        cur1 = D_800A32B4;
+        /* FAKE: increment staged through t1 (real value, stored next line; t1 is
+           then reused for the product), family staged-value-reused-variable,
+           mechanism: GCC 2.7.2 cse.c - reassignment clobbers the increment
+           pseudo, invalidating the mem==reg equivalence so the clamp re-read
+           emits lh, lever-exhaustion: memory/grind/func_80060768/evidence.md [s2] */
+        t1 = cur1 + 1;
+        D_800A32B4 = t1;
+        t1 = (s32)((s16)cur1) * 0x1AA;
+        *(s16 *)(arg0 + 0x7DE) = 2;
+        *(s16 *)(arg0 + 0x7DC) = (s16)(t1 / 0x1E);
+        if ((s16)D_800A32B4 >= 0x1F) {
+            D_800A32B4 = 0x1E;
+        }
+        SetSemiTrans((void *)tile_off, 0);
+        AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+        tile_off = arg0 + 0x7E0;
+    }
+    SetTile((void *)tile_off);
+    *(u8 *)(tile_off + 4) = 0xFF;
+    *(s16 *)(tile_off + 8) = 0x9E;
+    *(u8 *)(tile_off + 5) = 0;
+    *(u8 *)(tile_off + 6) = 0;
+    *(s16 *)(tile_off + 0xA) = 0xBD;
+    cur2 = D_800A32B6;
+    /* FAKE: increment staged through t2 (real value, stored next line; t2 is
+       then reused for the product), family staged-value-reused-variable,
+       mechanism: GCC 2.7.2 cse.c - reassignment clobbers the increment
+       pseudo, invalidating the mem==reg equivalence so the clamp re-read
+       emits lh, lever-exhaustion: memory/grind/func_80060768/evidence.md [s2] */
+    t2 = cur2 + 1;
+    D_800A32B6 = t2;
+    t2 = (s32)((s16)cur2) * 0x144;
+    *(s16 *)(tile_off + 0xE) = 2;
+    *(s16 *)(tile_off + 0xC) = (s16)(t2 / 0x1E);
+    if ((s16)D_800A32B6 >= 0x1F) {
+        D_800A32B6 = 0x1E;
+    }
+    SetSemiTrans((void *)tile_off, 0);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+    tile_off += 0x10;
+
+    SetTile((void *)tile_off);
+    *(s16 *)(tile_off + 8) = 0x3F;
+    *(s16 *)(tile_off + 0xA) = 0x2D;
+    *(s16 *)(tile_off + 0xC) = 0x202;
+    *(u8 *)(tile_off + 4) = 0;
+    *(u8 *)(tile_off + 5) = 0;
+    *(u8 *)(tile_off + 6) = 0;
+    *(s16 *)(tile_off + 0xE) = 0x6C;
+    SetSemiTrans((void *)tile_off, 1);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+    tile_off += 0x10;
+
+    SetTile((void *)tile_off);
+    *(s16 *)(tile_off + 8) = 0x92;
+    *(s16 *)(tile_off + 0xA) = 0xAA;
+    *(s16 *)(tile_off + 0xC) = 0x15C;
+    *(u8 *)(tile_off + 4) = 0;
+    *(u8 *)(tile_off + 5) = 0;
+    *(u8 *)(tile_off + 6) = 0;
+    *(s16 *)(tile_off + 0xE) = 0x1A;
+    SetSemiTrans((void *)tile_off, 1);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+
+    SetDrawMode((void *)sp1C, 1, 0, 0, 0);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)sp1C);
+    sp1C += 0xC;
+    return end_off - arg0;
+}
+/* [s29 2026-09-05 - synthesis modality.  MATCH: `sandbox func_80060A68 --disable all` = score 0,
+ * build_insns 66 / target_insns 66; `verify-oracle` = build_sha1
+ * 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, build_matches true.
+ * Zero FAKE constructs, zero named intermediates, zero staged locals, zero volatile, zero inline
+ * asm, and no local declared for codegen reasons at all - `result`, the dispatch call's return
+ * value, is the function's only local.
+ *
+ * WHAT CHANGED after 28 sessions of cast-through-integer geometry: the global at 0x800A3468 is a
+ * POINTER, not an integer that happens to hold an address, and the object it points at gets a
+ * declared shape.  src/text1b.c's own COMMITTED, MATCHED C is the evidence, independently of any
+ * codegen observation (line numbers below are against the INCLUDE_ASM tree, i.e. src/text1b.c as
+ * committed at s29):
+ *   - :3358 `extern s32 *D_800A3468;` -- the matched sibling func_80061064 ALREADY declares this
+ *     exact global with a pointer type.  The pointer typing is not this session's invention; it is
+ *     the file's existing, accepted declaration for the same symbol.
+ *   - Sixteen sites assign a POINTER into it: `D_800A3468 = (s32)v1;` where v1 is a callee's
+ *     returned pointer (:3406, :3423, :3457, :3472, :3492, :3506, :3521, :3562, :3599, :3628,
+ *     :3659, :3694, :3709, :3722), plus :3315 `= 0x1F800000` (the scratchpad base) and :3740
+ *     `= (s32)&D_800F116C`.  Nothing ever stores a non-address into it.
+ *   - :3369 `*(s32 **)((s32)D_800A3468 + 0x14) = ...` and :3432 / :3530 / :3637 / :3670 / :3750 --
+ *     the member at +0x14 always receives a pointer to a byte buffer; this function stores one byte
+ *     through it (`sb`), which is what `s8 *p14` declares.
+ *   - :3433, :3531, :3638, :3671, :3751 write the WHOLE 32-bit word at offset 0 as a single
+ *     constant -- 0x210009, 0x210005, 0x210010, 0x210002, 0x210014.  In every one of the five the
+ *     low halfword is the character index this function loads with `lhu`, and bit 21 (0x200000) is
+ *     the flag this function tests at the tail.  :3371 writes the same word as a bare loop index.
+ *     One storage location written whole at five sites and read at two widths here is what the
+ *     union at offset 0 declares.
+ * The three tables are declared as the arrays the naming census already documents them to be
+ * (24-entry flag table; per-index offset table; per-character combo-id table), so every access in
+ * the body is a member reference or an array subscript and nothing is spelled as pointer
+ * arithmetic through a cast.
+ *
+ * ROBUSTNESS OF THE MODEL (s29, measured on today's HEAD chassis).  The object model, not a swept
+ * spelling, determines the bytes: FOUR structurally distinct faithful spellings of this same model
+ * all measure 0/66 -- this body; the tables spelled through the address of their first word
+ * (alt-s29-score0-tables-through-address-of-first-word.c); offset 0 declared as two u16 members
+ * with the flag test cast instead of a union
+ * (alt-s29-score0-two-halfwords-plus-cast-flag-read.c); and a FILE-scope struct with every member
+ * renamed and the unused words typed u32 (alt-s29-score0-file-scope-struct-renamed-members.c).
+ * The spelling that regresses (11/66) is the one that CONTRADICTS :3358's committed pointer
+ * declaration by reading offset 0 through an integer cast.
+ *
+ * WHY THAT REACHES THE TARGET STREAM (observation, recorded for the next reader - not the reason
+ * any construct is here):
+ *  1. The three `lw ?,0x10($v1)` loads, and the two reloads of the object pointer after the call,
+ *     are cse's doing rather than the source's.  Each store made through the pointer invalidates
+ *     cse's memory table (tools/gcc-2.7.2/cse.c:1703-1719), so the read preceding each of the
+ *     0x18 / 0x1A / 0x1C stores becomes its own load; the `jalr` and the byte store invalidate it
+ *     again in the tail.  The source writes each of those statements exactly once.
+ *  2. Member references set MEM_IN_STRUCT_P, which is what lets the offset-0 read and the two
+ *     scalar stores at 0x800A3478 / 0x800A347C be disambiguated in `true_dependence`
+ *     (tools/gcc-2.7.2/sched.c:826-841): that escape needs the read to be MEM_IN_STRUCT_P with a
+ *     varying address and the store to be neither.  A bare-MEM spelling of the same read does not
+ *     fire it, which is what stranded the read window on every previous chassis.  Measured this
+ *     session on otherwise identical bodies: bare-MEM offset-0 read = 11/66
+ *     (tmp/grind/func_80060A68/s29/B.c), member = 0/66.
+ *
+ * Also measured 0/66 with the tables spelled through the address of their first word rather than
+ * as array declarations; the array declarations are kept because they put the object model at the
+ * declaration instead of at each use site. */
+void func_80060A68(void) {
+    struct Ob {
+        union { s32 w; u16 h; } id;
+        s32 u04;
+        s32 u08;
+        s32 *p0C;
+        u16 *p10;
+        s8 *p14;
+        u16 m18;
+        u16 m1A;
+        u16 m1C;
+        u16 u1E;
+        s32 m20;
+        s32 m24;
+        s32 m28;
+    };
+    extern struct Ob *D_800A3468;
+    extern s32 D_800A3478;
+    extern s32 D_800A347C;
+    extern s32 D_800A32BC;
+
+
+
+    s32 result;
+
+    D_800F10D0[D_800A3468->id.h] = 0;
+    D_800A3468->m20 = D_800A3468->p0C[0];
+    D_800A3468->m24 = D_800A3468->p0C[1];
+    D_800A3468->m28 = D_800A3468->p0C[2];
+    D_800A3468->m18 = D_800A3468->p10[0];
+    D_800A3468->m1A = D_800A3468->p10[1];
+    D_800A3478 = (s32)&D_800A3468->m18;
+    D_800A3468->m1C = D_800A3468->p10[2];
+    D_800A347C = (s32)&D_800A3468->m20;
+
+    result = ((s32 (*)(void)) chractar_use_pset_combo_id_table[
+                  D_8009BA60[D_800A3468->id.h]
+                  + D_800F10D0[D_800A3468->id.h]])();
+    *D_800A3468->p14 = result;
+
+    if (D_800A3468->id.w & 0x200000) {
+        D_800A32BC = 0xA;
+    }
+}
+void func_80060B70(void) {
+    extern s32 D_800A3468;
+    extern s32 D_800A346C;
+    extern s32 D_800A3470;
+    extern s32 D_800A3474;
+
+
+
+    extern void func_80061FAC(s32, s32, s32);
+    s32 outer;
+    s32 dst_u16;
+    s32 dst_s32;
+    u16 idx;
+    s32 result;
+
+    outer = D_800A3468;
+    dst_u16 = (s32)D_800A346C;
+    *(u16 *)(dst_u16 + 0) = *(u16 *)(*(s32 *)(outer + 4) + 0);
+    *(u16 *)(dst_u16 + 2) = *(u16 *)(*(s32 *)(outer + 4) + 2);
+    *(u16 *)(dst_u16 + 4) = *(u16 *)(*(s32 *)(outer + 4) + 4);
+
+    dst_s32 = (s32)D_800A3470;
+    *(s32 *)(dst_s32 + 0) = *(s32 *)(*(s32 *)(outer + 8) + 0);
+    *(s32 *)(dst_s32 + 4) = *(s32 *)(*(s32 *)(outer + 8) + 4);
+    {
+        s32 last_arg = D_800A3474;
+        *(s32 *)(dst_s32 + 8) = *(s32 *)(*(s32 *)(outer + 8) + 8);
+        func_80061FAC(dst_u16, dst_s32, last_arg);
+    }
+
+    idx = *(u16 *)D_800A3468;
+    result = ((s32 (*)(void)) *(s32 *)((s32)&chractar_use_pset_combo_id_table
+              + (*(u8 *)((s32)&D_8009BA60 + idx) + *(s32 *)((s32)&D_800F10D0 + idx * 4)) * 4))();
+
+    *(s8 *)*(s32 *)((s32)D_800A3468 + 0x14) = result;
+}
+
+extern u8 D_800F1150[];
+extern s16 D_800A345E;
+extern s16 D_800A345C;
+extern s32 D_800A3458;
+extern s32 D_800A3454[];
+extern s32 D_800A3450;
+extern u32 D_800A344C[];
+extern s32 D_800A3460;
+extern s32 D_800A3444;
+extern s32 D_800A3448;
+void func_80060C60(void) {
+    s32 i = 0;
+    s32 *p = D_800F10D0;
+    do {
+        *p = 0;
+        D_800F1150[i] = 0;
+        i++;
+        p++;
+    } while (i < 0x1C);
+    D_800A345E = 0;
+    D_800A345C = 0;
+    D_800A3458 = 0;
+    D_800A3454[0] = 0;
+    D_800A3450 = 0;
+    D_800A344C[0] = 0;
+    D_800A3460 = 0;
+    D_800A3444 = 0;
+    D_800A3448 = 0;
+}
+
+extern s32 D_800A3420;
+extern s32 D_800A3424;
+
+s32 func_80060CB8(s32 arg0, s32 arg1)
+{
+  unsigned int new_var; /* FAKE: single forward-order param alias — prologue pair order.
+                           Sanctioned per owner ruling 2026-07-17 (docs/grind/decisions.md,
+                           param-local-alias-prologue-pair-flip NARROWED). Mechanism: cse
+                           unifies arg0/new_var, combine sinks the single-use a0 entry copy
+                           below a1's, flipping the s2/s1 save+copy pair order to target.
+                           Exhaustion dossier: memory/grind/func_80060CB8/evidence.md (s2). */
+  typedef struct
+  {
+    s16 sp10;
+    s16 sp12;
+    s16 sp14;
+    s16 sp16;
+  } SLocal;
+  SLocal s;
+  s32 v;
+  s32 ret;
+  new_var = arg0;
+  game_FrameLoop();
+  v = D_8009BD38.unk0;
+  if (v == 0)
+  {
+    cdrom_StartRead(func_80036EA8(2, 0x3C), arg0);
+  }
+  else
+    if (v == 3)
+  {
+    cdrom_StartRead(func_80036EA8(2, 0x2F), new_var);
+  }
+  else
+    if (v == 2)
+  {
+    cdrom_StartRead(func_80036EA8(2, 0x30), new_var);
+  }
+  else
+    if (v == 5)
+  {
+    cdrom_StartRead(func_80036EA8(2, 0x31), new_var);
+  }
+  else
+  {
+    cdrom_StartRead(func_80036EA8(2, 0), new_var);
+  }
+  game_FrameLoop();
+  s.sp10 = 0x380;
+  s.sp12 = 0;
+  s.sp14 = 0x80;
+  s.sp16 = 0x1DC;
+  DrawSync(0);
+  LoadImage(&s.sp10, new_var);
+  DrawSync(0);
+  s.sp14 = 0x70;
+  s.sp12 = 0x1DC;
+  s.sp16 = 0x24;
+  LoadImage(&s.sp10, new_var + 0x1DC00);
+  DrawSync(0);
+  func_80060C60();
+  srand(rand());
+  ret = arg1 + 0x4650;
+  D_800A3420 = arg1;
+  D_800A3424 = ret;
+  return ret + 0x4650;
+}
+extern s32 D_800A3420;
+extern s32 D_800A3424;
+extern s32 D_800A37D4;
+extern s32 D_800A3720;
+void func_80060E04(s32 arg0) {
+    D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
+    D_800A3720 = D_800A37D4;
+}
+extern s32 D_800A3468;
+extern s32 D_800A346C;
+extern s32 D_800A3470;
+extern s32 D_800A3474;
+extern s32 D_800A3480;
+extern s32 D_800A3484;
+extern s32 D_800A3488;
+extern s32 D_800A348C;
+extern s32 D_800A3490;
+extern s32 D_800A3494;
+extern s32 D_800A3498;
+extern s32 D_800A349C;
+extern s32 D_800A34A0;
+extern s32 D_800A34A4;
+extern s32 D_800A34A8;
+extern s32 D_800A34AC;
+extern s32 D_800A34B0;
+extern s32 D_800A34B4;
+extern s32 D_800A34B8;
+extern s32 D_800A34BC;
+extern s32 D_800A34C0;
+extern s32 D_800A34C4;
+extern s32 D_800A34C8;
+extern s32 D_800A34CC;
+extern s32 D_800A34D0;
+extern s32 D_800A34D4;
+extern s32 D_800A34D8;
+extern s32 D_800A34DC;
+extern s32 D_800A34E0;
+extern s32 D_800A34E4;
+extern s32 D_800A34E8;
+extern s32 D_800A34EC;
+void func_80060E38(s32 arg0, s32 arg1) {
+    D_800A3468 = 0x1F800000;
+    D_800A346C = 0x1F800018;
+    D_800A3470 = 0x1F800020;
+    D_800A3474 = 0x1F800030;
+    D_800A3488 = 0x1F800050;
+    D_800A3490 = 0x1F800058;
+    D_800A3494 = 0x1F80005C;
+    D_800A3498 = 0x1F800060;
+    D_800A349C = 0x1F800062;
+    D_800A34A0 = 0x1F800064;
+    D_800A34A4 = 0x1F800066;
+    D_800A34A8 = 0x1F800068;
+    D_800A34AC = 0x1F80006A;
+    D_800A34B0 = 0x1F80006C;
+    D_800A34B4 = 0x1F800070;
+    D_800A34B8 = 0x1F800074;
+    D_800A34BC = 0x1F800080;
+    D_800A34C0 = 0x1F800082;
+    D_800A34C4 = 0x1F800084;
+    D_800A34C8 = 0x1F800088;
+    D_800A34CC = 0x1F80008C;
+    D_800A34D0 = 0x1F800090;
+    D_800A34D4 = 0x1F800098;
+    D_800A34D8 = 0x1F80009A;
+    D_800A34DC = 0x1F80009C;
+    D_800A34E0 = 0x1F80009E;
+    D_800A34E4 = 0x1F8000A0;
+    D_800A34E8 = 0x1F8000A4;
+    D_800A3480 = 0x1F8000A8;
+    D_800A3484 = 0x1F8000AC;
+    D_800A348C = 0x1F8000B0;
+    D_800A34EC = 0x1F8000B8;
+    *(s32 *)0x1F800004 = arg0;
+    *(s32 *)0x1F800008 = arg1;
+}

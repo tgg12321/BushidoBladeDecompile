@@ -212,3 +212,73 @@ Check (`poc/tbltest.sh`, scratch copy): with the session-2 C candidate in place 
 arrays, text1b.o's compiled .rodata is 0x58 bytes at 0x8001585C with zero words at +0x24 and +0x3C,
 the original's layout (jtbl_8001585C[9], jtbl_80015884[5]). The pads come from the object-relative
 `.align 3`; nothing hand-written.
+
+## 9. The text1b / text1b_tu1c boundary moves to func_80061064 (2026-09-30, closes section 8's caveat)
+
+Section 8 placed the one boundary the bytes prove between func_80058580 and func_80065800 at
+snd_Init, with text1b_tu1c.c's rodata starting at 0x800158B4, and noted that this position fails
+the model once func_80065800's tables are compiled. This section applies the rule's conditions
+to that boundary again, with func_80065800's tables as its first compiled item, and moves it.
+It supersedes section 8's snd_Init placement; everything else in section 8 stands.
+
+**Existence (condition 1).** Unchanged from section 8: func_80058580's tables (0x8001585C,
+0x80015884, 0x8001589C) are phase 4 and func_80065800's (0x800158F8, 0x80015940) phase 0, so they
+come from different original files.
+
+**Rodata position (condition 2).** The file holding func_80065800 must start its rodata at an
+item start in 0x800158B4..0x800158F8 whose phase equals its first table's, phase 0. The items,
+with their owners (the function whose code references them):
+
+| Address | Phase | Item | Owner |
+|---|---|---|---|
+| 0x800158B4 | 4 | "common_vab start:%08x\n" | snd_LoadCommonVab (printf) |
+| 0x800158CC | 4 | "vab id:%d mistake\n" | func_8005C2A8 (printf) |
+| 0x800158E0 | 0 | "eff prim over :%d \n" (20 bytes), then 4 zero bytes | func_80061064 (printf) |
+| 0x800158F8 | 0 | jtbl_800158F8, then jtbl_80015940 | func_80065800 |
+
+Surviving positions: 0x800158E0 and 0x800158F8. At 0x800158E0 the 4 zero bytes at 0x800158F4
+are exactly the object-relative `.align 3` pad before the first table (0x18 past the start). At
+0x800158F8 they must be an item of the previous file (an unreferenced "" string, the kind section
+4 describes). Both give identical bytes. 0x800158B4 and 0x800158CC (phase 4) do not survive, so
+snd_LoadCommonVab and func_8005C2A8 belong to the file before the boundary, text1b.c, whose rodata
+starts at 0x8001585C (phase 4) with func_80058580's tables; their strings follow those tables
+contiguously and in function order. The position used is 0x800158E0, the earliest byte-equivalent
+one (the convention of sites 1 and 3 in section 7); 0x800158F8 is the recorded alternative.
+
+**Text cut (condition 3).** With rodata starting at 0x800158E0, the new file contains
+func_80061064 (owner of 0x800158E0) and not func_8005C2A8 (owner of 0x800158CC). The window is
+after func_8005C2A8 up to func_80061064; the functions in between own no rodata, so the cut is
+byte-neutral anywhere inside it. By the convention (cut at the item that begins the new file's
+rodata) it sits at func_80061064's extern block.
+
+**Moves only (condition 4).** Done by memory/grind/func_80065800/tools/move.py:
+- snd_Init's extern block .. func_80060E38 (2927 lines, 51 functions) move verbatim from
+  text1b_tu1c.c to the end of text1b.c, the file they were split from in section 8. Two
+  declarations of the moved block are dropped because text1b.c already has them from
+  include/gte.h:27-28 (a second definition does not compile): the CVECTOR and DVECTOR typedefs.
+- text1b_tu1c.c's header is rebuilt by the section 7 split tool
+  (memory/grind/func_80058580/aspsx-align-check/poc/splitc.py): its include block, the earlier
+  declarations the remaining functions use, verbatim and in order, then declarations derived from
+  definitions.
+- D_800158E0 (24 bytes, text unchanged) moves from text1a_b_pre_rodata_b.c to text1b_tu1c.c in
+  place of func_80061064's `extern s32 D_800158E0;` (the two would conflict), and func_80065800's
+  two transcribed tables move verbatim to just before its INCLUDE_ASM line, as section 8 did for
+  func_80058580's. text1a_b_pre_rodata_b.c keeps the two sound-bank strings; its comments are
+  updated.
+
+| File | Text | Rodata |
+|---|---|---|
+| text1b.c | unchanged head, then snd_Init .. func_80060E38 | 0x8001585C..0x800158B4 (func_80058580's tables) |
+| text1a_b_pre_rodata_b.c | none (transcribed data) | 0x800158B4..0x800158E0, the sound-bank strings |
+| text1b_tu1c.c | func_80061064 .. the function before func_8006E534 | 0x800158E0.. (D_800158E0, func_80065800's tables, func_8006B578's table and string) |
+
+**Checks.** Full rebuild: EXE sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa (the oracle);
+text1b_tu1c.o .rodata at 0x800158E0 (0xd0 bytes), text1a_b_pre_rodata_b.o at 0x800158B4 (0x2c).
+Implicit function declarations (memory/grind/func_80065800/tools/implicit_cmp.sh, cc1 with
+`-Wimplicit`): the union over text1b.c and text1b_tu1c.c is the same 24 names before and after.
+Per file, func_80062020 and srand move from text1b_tu1c.c to text1b.c with their only implicit
+call sites, and LoadImage's text1b_tu1c.c entry disappears because text1b.c already declared it
+implicitly before the move. Records relocated (file field only, section 7 procedure,
+memory/grind/func_80065800/tools/relocate.py): the queue items func_8005C8A8 and func_8005D554,
+and the grind state.json of func_8005C8A8, func_8005D554, func_8005D814, func_8005E54C and
+func_8005F1C8. No canonical_asm_regions entry or scope_allow line names a moved function.
