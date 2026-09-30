@@ -449,14 +449,26 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
     now = datetime.datetime.now(datetime.timezone.utc).strftime(fmt)
     date = now
     others = [d for d in addr_dates(addr) if d]
+    for d in others:
+        try:
+            datetime.datetime.strptime(d, fmt)
+        except ValueError:
+            return {"ok": False, "func": func,
+                    "reason": (f"a record carrying {addr} has the effective date {d!r} "
+                               f"(its ledger's running max), not a canonical {fmt} date — "
+                               f"the audit orders records by date, so repair that ledger "
+                               f"line before recording (nothing recorded)")}
     if others and max(others) >= now:
         # a record (in any ledger) is dated at or past now: go one second past
         # it, so a TIE is never broken by ledger path order in the audit
         try:
             date = (datetime.datetime.strptime(max(others), fmt)
                     + datetime.timedelta(seconds=1)).strftime(fmt)
-        except ValueError:
-            date = max(others)
+        except OverflowError:
+            return {"ok": False, "func": func,
+                    "reason": (f"a record carrying {addr} is dated {max(others)!r}; no later "
+                               f"date exists to stamp this one after it — repair that ledger "
+                               f"line before recording (nothing recorded)")}
     date = max([date, *(str(r.get("date", "")) for r in prior)])
     rec = {"func": func, "addr": addr, "verdict": verdict, "body_hash": expect_hash,
            "body_kind": key[0] if key and key[1] == expect_hash else "",
@@ -470,17 +482,23 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
 
 
 def addr_dates(addr: str) -> list[str]:
-    """The dates of every record carrying `addr`, in every ledger
-    (memory/grind/**/layer2.jsonl, _completed/ included)."""
+    """The EFFECTIVE dates of every record carrying `addr`, in every ledger
+    (memory/grind/**/layer2.jsonl, _completed/ included) — each line's date
+    raised to the running maximum of the dates before it in its own file,
+    exactly the order engine/departures.py merges records by."""
     out = []
     for p in sorted(Path("memory/grind").glob("**/" + RECORD_NAME)):
+        eff = ""
         for line in (_read_text(p) or "").splitlines():
             try:
                 rec = json.loads(line)
             except ValueError:
                 continue
-            if isinstance(rec, dict) and str(rec.get("addr", "")).upper() == addr:
-                out.append(str(rec.get("date", "")))
+            if not isinstance(rec, dict):
+                continue
+            eff = max(eff, str(rec.get("date", "")))
+            if str(rec.get("addr", "")).upper() == addr:
+                out.append(eff)
     return out
 
 

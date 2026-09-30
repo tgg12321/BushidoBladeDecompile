@@ -3904,6 +3904,47 @@ def test_layer2_addresses() -> None:
                (layer2.addr_of("func_8001C624"), layer2.addr_index().get("func_8001C624")),
                ("8001C624", "8001C624"))
 
+            # round-9 hardening: the dates record() steps past are the audit's
+            # own (running max per ledger), and a date it can't step past is
+            # a refusal, never an equal stamp or a traceback
+            Path("src/r2.c").write_text("int func_80014000(int a) { return a + 1; }\n")
+            h2 = layer2.current_key("func_80014000", "r2")[1]
+            arch = Path("memory/grind/_completed/func_80014000/layer2.jsonl")
+            arch.parent.mkdir(parents=True)
+
+            def arch_lines(*recs):
+                arch.write_text("".join(json.dumps({"func": "func_80014000", "addr": a,
+                                                    "verdict": "PASS", "body_hash": h2,
+                                                    "date": d}) + "\n" for a, d in recs))
+
+            def rec2():
+                try:
+                    return layer2.record("func_80014000", "FAIL", "rev", "match", stem="r2",
+                                         expect_hash=h2)
+                except Exception as e:                   # a refusal must not raise
+                    return {"ok": None, "reason": f"raised {type(e).__name__}: {e}"}
+
+            # another address's line dated 2099, then this one's with a clock
+            # that went back: the audit orders the second at 2099-06-01
+            arch_lines(("80019999", "2099-06-01T00:00:00Z"), ("80014000", "2026-01-01T00:00:00Z"))
+            eq("dates: addr_dates returns the running-max effective dates the audit uses",
+               layer2.addr_dates("80014000"), ["2099-06-01T00:00:00Z"])
+            r = rec2()
+            check("dates: ...so record() stamps strictly after that effective date",
+                  r.get("ok") is True and r.get("date") > "2099-06-01T00:00:00Z")
+            layer2.record_path("func_80014000").unlink()
+            arch_lines(("80014000", "2099-01-01 00:00:00"))
+            r = rec2()
+            check("dates: record() REFUSES when a record carrying the address has a "
+                  "non-canonical date", r.get("ok") is False
+                  and "not a canonical" in r.get("reason", ""))
+            check("dates: ...and writes nothing", not layer2.record_path("func_80014000").exists())
+            arch_lines(("80014000", "9999-12-31T23:59:59Z"))
+            r = rec2()
+            check("dates: record() REFUSES (no traceback) when no later date exists",
+                  r.get("ok") is False and "no later date" in r.get("reason", ""))
+            check("dates: ...and writes nothing", not layer2.record_path("func_80014000").exists())
+
             # regen refuses to write an item nothing addresses
             Path("build/src").mkdir(parents=True)
             Path("build/src/faketu.o").write_text("")
