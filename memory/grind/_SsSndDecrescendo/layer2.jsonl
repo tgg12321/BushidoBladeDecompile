@@ -1,0 +1,1 @@
+{"func": "_SsSndDecrescendo", "verdict": "PASS", "body_hash": "bec8f15955f416b3", "body_kind": "c", "file": "main", "reviewer": "rev-decresc", "scope": "cheat-cleanup", "date": "2026-09-30T10:45:06Z", "head": "6fd3fb9d3", "notes": "retro-audit 2026-09-29 FAIL (69c19b9ac) cleared: alias/intermediate removed, plain C"}
