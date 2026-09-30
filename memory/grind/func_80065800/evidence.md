@@ -96,3 +96,31 @@ lock run `python3 memory/grind/func_80065800/tools/land.py` (it reads tmp/f65800
 of candidate.c), append landing/row.txt to inline_asm_canonical.txt, add the 8 region hashes
 (landing/addrh.py), rebuild, sandbox the 28 consumers, precheck, layer-2. Commit message drafts:
 landing/msg_auth.txt, landing/msg_match.txt. layer2 hash of the staged body was c428aa424743db26.
+
+## 2026-09-30 (evening) -- laneC: package re-measured on current main; the TU cut must move
+
+- candidate.c: dropped the unused block-scope `extern s32 D_800A3724;` (no codegen effect).
+- Package still holds after the rodata-object-alignment adoption and the Q62 COMMON model:
+  tools/run.sh (scratch TU via tools/mk.py, msbx.py) scores func_80065800 4/1454, the only
+  scored hunk being the jtbl-2 `lw v0,72(at)` addend (build/ still carries the transcribed
+  tables; reference artifact), and all 30 consumers of the merged bytes 0. Full scratch build of
+  land.py (tools/scratch.sh pkg, /tmp/laneC/pkg): EXE sha1 == oracle 62efab4f...; text1b_tu1c.o
+  .rodata at 0x800158F8.
+- TU boundary (rodata-object-alignment rule, docs/grind/rodata-align-2026-09-30.md section 8
+  caveat): func_80065800's tables are phase 0 (0x800158F8, 0x80015940), so its TU starts its
+  rodata at 0x800158E0 or 0x800158F8. The strings at 0x800158B4 (snd_LoadCommonVab) and
+  0x800158CC (func_8005C2A8) then belong to text1b.c's TU (rodata from 0x8001585C, phase 4), and
+  the snd_Init cut (rodata start 0x800158B4, phase 4) is no longer a surviving position once the
+  tables are compiled. 0x800158E0 is D_800158E0 "eff prim over :%d \n" (20 bytes, func_80061064's
+  printf) + 4 zero bytes; with the TU starting there the zeros are exactly the .align 3 pad before
+  the tables. 0x800158F8 needs the zeros to be an unreferenced "" item in text1b.c's TU. Both give
+  identical bytes; the earliest (0x800158E0, cut at func_80061064) is the rule's convention.
+- tools/move.py (after land.py): snd_Init's extern block .. func_80060E38 (2925 lines, 51
+  functions) appended verbatim to text1b.c; text1b_tu1c.c's header rebuilt by the rodata-align
+  splitc.py; the moved block's CVECTOR/DVECTOR typedefs dropped (text1b.c has them from
+  include/gte.h:27-28); D_800158E0[24] moved verbatim into text1b_tu1c.c in place of
+  func_80061064's conflicting `extern s32 D_800158E0;`. Scratch build (tools/scratch.sh move,
+  /tmp/laneC/move): EXE sha1 == oracle; text1b_tu1c.o .rodata 0x800158E0 (0xd0),
+  text1a_b_pre_rodata_b.o 0x800158B4 (0x2c). Awaiting the orchestrator's go/no-go (it touches
+  text1b.c and the records of func_8005C8A8 / func_8005D554 / func_8005D814 / func_8005E54C /
+  func_8005F1C8).

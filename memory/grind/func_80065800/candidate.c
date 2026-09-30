@@ -10,7 +10,6 @@
  * command word in place of the header's DMPSX placeholder (noted at the island). */
 u8 func_80065800(s32 arg0) {
     extern s32 D_800A3720;
-    extern s32 D_800A3724;
     extern s32 D_8009BD44[];
     extern s16 D_800A3834;
     extern u16 D_8009B8C8[];
