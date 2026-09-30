@@ -57,6 +57,7 @@ os.chdir(REPO)
 from engine import cheats, inlineasm, pipeline as P, score  # noqa: E402
 from engine import buildstamp, completion, buildconfig  # noqa: E402
 from engine import queue as Q  # noqa: E402
+from engine import layer2  # noqa: E402
 sys.path.insert(0, str(REPO / "tools"))
 import audit_asm_cheats as AAC  # noqa: E402  (the manual detector's island scanner)
 
@@ -206,6 +207,13 @@ def main() -> int:
                 violations.append(f'{func}: standalone assembly is neither queued nor canonical')
             else:
                 total_completed_canon += 1
+
+    # Owner ruling Q39: every function that left engine/queue.json once the gate
+    # existed (a commit whose parent tree has engine/layer2.py, or the
+    # uncommitted working tree) must hold a layer-2 PASS on its CURRENT body —
+    # catches a completion that bypassed `queue done` (hand-edited queue.json).
+    # Pre-gate completions are exempt.
+    violations.extend(layer2.unreviewed_departures())
 
     print(f"COMPLETED-C:                    {total_completed_c} functions")
     print(f"COMPLETED-INLINE-ASM-CANONICAL: {total_completed_canon} functions")

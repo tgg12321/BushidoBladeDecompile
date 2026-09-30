@@ -295,8 +295,8 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     listed = ({it["func"]: it for it in load().get("items", [])}
               if Path(QUEUE_PATH).exists() else {})
 
-    # Listed funcs whose drop was DECIDED in the scan (gate passed, or not a C
-    # function at all). Every other listed func missing from the new items —
+    # Listed funcs whose drop was DECIDED in the scan (their gate passed).
+    # Every other listed func missing from the new items —
     # its stem had no reference .o, its stripped build raised, it left the
     # symbol table — is gated at the one choke point after the scan.
     decided = set()
@@ -372,8 +372,13 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                         items.append(held)
                         continue
                     if cheats_unscored < 0 and _not_a_c_function(stem, func):
-                        decided.add(func)
-                        continue  # nothing to track
+                        # Not decomp work — but a LISTED item leaving is still a
+                        # completion, so it goes through the gate (Q39).
+                        held = _held(func, stem, -1, rules)
+                        if held is None:
+                            continue  # nothing to track
+                        items.append(held)
+                        continue
                 dist = -1
                 scorable = False
                 if cheats_unscored > 0 and _no_c_body(stem, func):
@@ -453,7 +458,10 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                     items.append(held)
                     continue
                 if dist == 0 and cheat_count < 0 and _not_a_c_function(stem, func):
-                    decided.add(func)
+                    held = _held(func, stem, dist, rules)  # listed -> gated (Q39)
+                    if held is None:
+                        continue
+                    items.append(held)
                     continue
             if func in prev:  # sticky parked
                 pv = prev[func]

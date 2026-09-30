@@ -40,6 +40,11 @@ class Q39DriverWiring(unittest.TestCase):
         self.assertGreaterEqual(i, 0, f"missing: {needle}")
         return i
 
+    PASS_REC = ("$l2 = Invoke-Eng @('layer2', 'record', $func, '--verdict', 'PASS', "
+                "'--expect-hash', $l2Hash,")
+    FAIL_REC = ("$l2f = Invoke-Eng @('layer2', 'record', $func, '--verdict', 'FAIL', "
+                "'--expect-hash', $l2Hash,")
+
     def test_hash_and_definition_taken_before_the_judge(self):
         judge = self._at("$v = Invoke-Judge $func $task")
         self.assertLess(self._at("@('layer2', 'hash', $func, '--file', $stem)"), judge)
@@ -47,12 +52,24 @@ class Q39DriverWiring(unittest.TestCase):
         task = self.final[self._at("$task = @\""):judge]
         self.assertIn("$l2Def", task, "the FINAL CALL brief must carry the full definition")
 
+    def test_l2hash_assigned_exactly_once_before_the_judge(self):
+        judge = self._at("$v = Invoke-Judge $func $task")
+        assigns = [m.start() for m in re.finditer(r"\$l2Hash\s*=(?!=)", self.final)]
+        self.assertEqual(len(assigns), 1, "the recorded hash must be the one the Judge saw")
+        self.assertLess(assigns[0], judge)
+
+    def test_no_single_body_is_banked_before_the_judge(self):
+        judge = self._at("$v = Invoke-Judge $func $task")
+        guard = self._at("if (-not $l2Hash) {")
+        self.assertLess(guard, judge)
+        block = self.final[guard:judge]
+        self.assertIn("@('layer2', 'check', $func, '--file', $stem)", block)
+        self.assertRegex(block, r"(?s)Bank-CandidateRefusal \$func 'layer2-no-single-body'.*\breturn\b")
+
     def test_pass_recorded_against_the_judged_hash_before_queue_done(self):
         p = self.final[self.pass_i:self.else_i]
-        rec = p.find("'layer2', 'record', $func, '--verdict', 'PASS'")
-        self.assertGreaterEqual(rec, 0)
-        self.assertRegex(p, r"--expect-hash', \$l2Hash")
-        self.assertIn("$l2 = Invoke-Eng $l2Args", p[rec:])
+        rec = p.find(self.PASS_REC)
+        self.assertGreaterEqual(rec, 0, "PASS record must be sent with --expect-hash $l2Hash")
         qd = p.find("@('queue', 'done', $func)")
         self.assertLess(rec, qd)
         # a refused record returns before queue done, under its own ground
@@ -63,11 +80,10 @@ class Q39DriverWiring(unittest.TestCase):
     def test_judge_fail_recorded_after_the_checkout(self):
         e = self.final[self.else_i:]
         checkout = e.find("git -C $Root checkout -- .")
-        rec = e.find("'layer2', 'record', $func, '--verdict', 'FAIL'")
+        rec = e.find(self.FAIL_REC)
         self.assertGreaterEqual(checkout, 0)
+        self.assertGreaterEqual(rec, 0, "FAIL record must be sent with --expect-hash $l2Hash")
         self.assertGreater(rec, checkout, "a FAIL record before the checkout would be reverted")
-        self.assertRegex(e[rec:rec + 600], r"--expect-hash', \$l2Hash")
-        self.assertIn("Invoke-Eng $l2fArgs", e[rec:rec + 800], "the FAIL record must be sent")
         self.assertLess(rec, e.find("Add-Decision $func 'final call' 'FAIL'"))
 
     def test_record_survives_the_ledger_deletion(self):

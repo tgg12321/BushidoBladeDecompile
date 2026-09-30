@@ -117,7 +117,51 @@ PY_KEYLIKE_MAXLEN = 60
 # Free-form build files edited by whole-word substitution on non-comment text.
 PLAIN_FILES = ["bb2.ld", "Makefile"]
 
-LEDGER_DIRS = ["memory/wip", "memory/grind"]
+# `_completed` holds archived ledgers — with their layer-2 record (owner ruling
+# Q39), which the completion-integrity audit looks up by the CURRENT name.
+LEDGER_DIRS = ["memory/wip", "memory/grind", "memory/grind/_completed"]
+LAYER2_RECORD = "layer2.jsonl"
+
+
+def retarget_layer2_record(text: str, old: str, new: str) -> tuple[str, list[str]]:
+    """A ledger's layer2.jsonl moved from <old>/ to <new>/: rewrite each line's
+    `func` so the record stays readable under the new name (engine/layer2.py
+    refuses a line whose func is not the ledger's). Safe: the renamed
+    definition hashes differently, so no old PASS can open the gate for it.
+    The old name is kept as `renamed_from`; unparseable lines are left alone
+    (the gate still refuses them)."""
+    out, changed = [], []
+    for n, line in enumerate(text.split("\n"), 1):
+        try:
+            rec = json.loads(line) if line.strip() else None
+        except ValueError:
+            rec = None
+        if isinstance(rec, dict) and rec.get("func") == old:
+            rec["func"] = new
+            rec.setdefault("renamed_from", old)
+            line = json.dumps(rec, ensure_ascii=False)
+            changed.append(f"line {n}: func {old} -> {new}")
+        out.append(line)
+    return "\n".join(out), changed
+
+
+def plan_ledger_renames(plan: "Plan", code_map: dict[str, str], root: Path | None = None) -> None:
+    """Queue every per-function ledger directory rename, and the func-field
+    rewrite of each layer2.jsonl moving with one (applied before the move)."""
+    root = root or ROOT
+    for base in LEDGER_DIRS:
+        bp = root / base
+        if not bp.exists():
+            continue
+        for d in sorted(bp.iterdir()):
+            if d.is_dir() and d.name in code_map:
+                new = code_map[d.name]
+                plan.dir_renames.append((f"{base}/{d.name}", f"{base}/{new}"))
+                rec = d / LAYER2_RECORD
+                if rec.is_file():
+                    text, changed = retarget_layer2_record(read(rec), d.name, new)
+                    if changed:
+                        plan.json_edits[f"{base}/{d.name}/{LAYER2_RECORD}"] = (text, changed)
 
 
 def die(msg: str) -> "NoReturn":  # noqa: F821
@@ -820,14 +864,8 @@ def plan_wave(wave: Wave) -> Plan:
             for s in skips:
                 plan.out_of_scope.append(f"{rel}:{s}")
 
-    # --- per-function ledger directories ----------------------------------
-    for base in LEDGER_DIRS:
-        bp = ROOT / base
-        if not bp.exists():
-            continue
-        for d in sorted(bp.iterdir()):
-            if d.is_dir() and d.name in wave.code_map:
-                plan.dir_renames.append((f"{base}/{d.name}", f"{base}/{wave.code_map[d.name]}"))
+    # --- per-function ledger directories (+ their layer-2 records) --------
+    plan_ledger_renames(plan, wave.code_map)
 
     return plan
 

@@ -122,8 +122,8 @@ queue next
            └─ sandbox <func> --disable all     # iterate to 0
               └─ verify-oracle --rebuild       # the real gate
                  └─ layer-2 review + layer2 record <func>
-                    └─ queue done <func>
-                    └─ commit
+                    └─ commit                  # incl. memory/grind/<func>/layer2.jsonl
+                       └─ queue done <func>    # then commit engine/queue.json
 ```
 
 Read the `--diff` output *before* choosing a lever. Chasing a hunk the scorer marks

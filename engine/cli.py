@@ -315,32 +315,17 @@ def main() -> int:
 
     if a.cmd == "layer2":
         if a.action == "record":
-            verdict, expect, notes, extra = a.verdict, a.expect_hash, a.notes, None
-            r = None
+            if not a.scope or not (a.verdict or a.verdict_file):
+                print("layer2 record: requires --scope and --verdict (or --verdict-file)")
+                return 2
             if a.verdict_file:
-                try:
-                    vf = L2.read_verdict_file(a.verdict_file)
-                except ValueError as e:
-                    vf, r = None, {"ok": False, "func": a.func, "reason": str(e)}
-                if vf is not None:
-                    clash = [f"{n} {mine!r} vs the file's {theirs!r}" for n, mine, theirs in (
-                        ("function", a.func, vf["function"]),
-                        ("--verdict", verdict or vf["verdict"], vf["verdict"]),
-                        ("--expect-hash", expect or vf["body_hash"], vf["body_hash"]))
-                        if mine != theirs]
-                    if clash:
-                        r = {"ok": False, "func": a.func,
-                             "reason": "verdict file disagrees: " + "; ".join(clash)}
-                    verdict, expect = vf["verdict"], vf["body_hash"]
-                    notes = notes or vf["summary"]
-                    extra = {"verdict_file": vf["verdict_file"],
-                             "verdict_sha1": vf["verdict_sha1"]}
-            if r is None:
-                if not verdict or not a.scope:
-                    print("layer2 record: requires --scope and --verdict (or --verdict-file)")
-                    return 2
-                r = L2.record(a.func, verdict, a.reviewer, a.scope, notes,
-                              stem=a.file or None, expect_hash=expect or None, extra=extra)
+                r = L2.record_from_verdict_file(a.func, a.verdict_file, a.reviewer, a.scope,
+                                                a.notes, stem=a.file or None,
+                                                verdict=a.verdict,
+                                                expect_hash=a.expect_hash or None)
+            else:
+                r = L2.record(a.func, a.verdict, a.reviewer, a.scope, a.notes,
+                              stem=a.file or None, expect_hash=a.expect_hash or None)
         elif a.action == "show":
             stem = a.file or L2.locate_stem(a.func)
             text = L2._read_text(Path(f"src/{stem}.c")) if stem else None

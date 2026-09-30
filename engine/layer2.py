@@ -114,6 +114,12 @@ def record_path(func: str) -> Path:
     return Path("memory/grind") / func / RECORD_NAME
 
 
+def completed_record_path(func: str) -> Path:
+    """Where the record lives once the ledger is archived (the grinder's
+    close-ledger step; manual ledgers archived under _completed/)."""
+    return Path("memory/grind/_completed") / func / RECORD_NAME
+
+
 def _read_text(p: Path) -> str | None:
     try:
         return p.read_text(encoding="utf-8", errors="replace")
@@ -192,10 +198,10 @@ def locate_stem(func: str) -> str | None:
     return None
 
 
-def read_records(func: str) -> list[dict]:
+def read_records(func: str, path: Path | None = None) -> list[dict]:
     """Every record for `func`, oldest first. Raises ValueError on a malformed
     line — a record the gate cannot read must never read as absent."""
-    p = record_path(func)
+    p = path or record_path(func)
     text = _read_text(p) if p.exists() else ""
     if text is None:
         raise ValueError(f"{p} is unreadable")
@@ -244,7 +250,48 @@ def read_verdict_file(path: str) -> dict:
     return {"verdict": v["decision"], "function": v["function"],
             "body_hash": str(v["body_hash"]), "summary": str(v.get("summary") or ""),
             "verdict_file": Path(path).as_posix(),
-            "verdict_sha1": hashlib.sha1(raw).hexdigest()}
+            "verdict_sha1": hashlib.sha1(raw).hexdigest(), "raw": raw}
+
+
+VERDICTS_DIR = "layer2_verdicts"
+
+
+def record_from_verdict_file(func: str, path: str, reviewer: str, scope: str,
+                             notes: str = "", stem: str | None = None,
+                             verdict: str | None = None,
+                             expect_hash: str | None = None) -> dict:
+    """`record` with the verdict and hash read from the reviewer's JSON. Any
+    explicit --verdict / --expect-hash must agree with it. The JSON is copied
+    byte-for-byte to memory/grind/<func>/layer2_verdicts/<sha1>.json, and the
+    record points at that copy, so verdict_sha1 stays checkable after tmp/ is
+    cleaned."""
+    try:
+        vf = read_verdict_file(path)
+    except ValueError as e:
+        return {"ok": False, "func": func, "reason": str(e)}
+    clash = [f"{n} {mine!r} vs the file's {theirs!r}" for n, mine, theirs in (
+        ("function", func, vf["function"]),
+        ("--verdict", verdict or vf["verdict"], vf["verdict"]),
+        ("--expect-hash", expect_hash or vf["body_hash"], vf["body_hash"])) if mine != theirs]
+    if clash:
+        return {"ok": False, "func": func,
+                "reason": "verdict file disagrees: " + "; ".join(clash)}
+    copy = record_path(func).parent / VERDICTS_DIR / f"{vf['verdict_sha1']}.json"
+    existed = copy.exists()
+    if not existed:
+        copy.parent.mkdir(parents=True, exist_ok=True)
+        copy.write_bytes(vf["raw"])
+    r = record(func, vf["verdict"], reviewer, scope, notes or vf["summary"], stem=stem,
+               expect_hash=vf["body_hash"],
+               extra={"verdict_file": copy.as_posix(), "verdict_source": vf["verdict_file"],
+                      "verdict_sha1": vf["verdict_sha1"]})
+    if not r.get("ok") and not existed:
+        copy.unlink()
+        try:
+            copy.parent.rmdir()
+        except OSError:
+            pass
+    return r
 
 
 def _head() -> str:
@@ -332,3 +379,111 @@ def gate(func: str, stem: str) -> str | None:
                 f"covered body {last['body_hash']}, but the body now in src/{stem}.c hashes {h} "
                 f"— the code changed after review (comment/layout edits keep the hash). {fix}")
     return None
+
+
+# ── Standing audit: completions since the gate existed (round-3 review K2) ──
+GATE_FILE = "engine/layer2.py"
+QUEUE_FILE = "engine/queue.json"
+
+
+def _git(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", *args], capture_output=True, text=True)
+
+
+def _queue_items_at(rev: str | None) -> dict[str, dict] | None:
+    """func -> item of engine/queue.json at `rev` (None = the working tree)."""
+    if rev is None:
+        text = _read_text(Path(QUEUE_FILE))
+    else:
+        r = _git("show", f"{rev}:{QUEUE_FILE}")
+        text = r.stdout if r.returncode == 0 else None
+    if text is None:
+        return None
+    try:
+        return {it["func"]: it for it in json.loads(text).get("items", []) if it.get("func")}
+    except (ValueError, TypeError, KeyError):
+        return None
+
+
+def _departed(before: dict, after: dict) -> dict[str, dict]:
+    """Items in `before` missing from `after`, minus renames. A naming wave
+    rewrites ONLY the func field and the old name leaves src/, so a removed
+    item is a rename only when its old name has no body any more AND an added
+    item (each used once) equals it in every other field. Anything less is a
+    departure (fail closed)."""
+    def rest(it):
+        return {k: v for k, v in it.items() if k != "func"}
+    new = [rest(it) for f, it in after.items() if f not in before]
+    out = {}
+    for f, it in before.items():
+        if f in after:
+            continue
+        if rest(it) in new and current_key(f, it.get("file", "")) is None:
+            new.remove(rest(it))
+            continue
+        out[f] = it
+    return out
+
+
+def _has_gate(rev: str) -> bool:
+    return _git("cat-file", "-e", f"{rev}:{GATE_FILE}").returncode == 0
+
+
+def pass_on_current_body(func: str, stem: str) -> str | None:
+    """None when func's latest record (live ledger, else the archived one) is a
+    PASS on its current body; otherwise why not."""
+    key = current_key(func, stem)
+    if key is None:
+        return f"no single body in src/{stem}.c"
+    for p in (record_path(func), completed_record_path(func)):
+        if p.exists():
+            try:
+                recs = read_records(func, p)
+            except ValueError as e:
+                return str(e)
+            if not recs:
+                continue
+            last = recs[-1]
+            if last["verdict"] != "PASS":
+                return f"latest record in {p.as_posix()} is {last['verdict']}"
+            if last["body_hash"] != key[1]:
+                return (f"latest PASS in {p.as_posix()} covers body {last['body_hash']}, "
+                        f"current body is {key[1]}")
+            return None
+    return "no layer-2 record (memory/grind/<f>/ or _completed/<f>/layer2.jsonl)"
+
+
+def unreviewed_departures() -> list[str]:
+    """Every function that LEFT engine/queue.json in a commit whose parent
+    already had the gate (engine/layer2.py) — or in the uncommitted working
+    tree — and is still out of the queue, yet has no layer-2 PASS on its
+    current body. Catches completions that bypassed `queue done` (a hand-edited
+    queue.json). Pre-gate completions are exempt: their parent tree has no
+    gate. Run from the repo root."""
+    added = _git("log", "--diff-filter=A", "--format=%cI", "--", GATE_FILE).stdout.split()
+    if not added:
+        return []
+    departures: dict[str, tuple[str, dict]] = {}
+    for c in _git("log", f"--since={added[-1]}", "--format=%H", "--", QUEUE_FILE).stdout.split():
+        if not _has_gate(f"{c}^"):
+            continue
+        before, after = _queue_items_at(f"{c}^"), _queue_items_at(c)
+        if before is None or after is None:
+            continue
+        for f, it in _departed(before, after).items():
+            departures.setdefault(f, (c[:9], it))
+    if _has_gate("HEAD"):
+        before, after = _queue_items_at("HEAD"), _queue_items_at(None)
+        if before is not None and after is not None:
+            for f, it in _departed(before, after).items():
+                departures.setdefault(f, ("working tree", it))
+    current = _queue_items_at(None) or {}
+    out = []
+    for f, (where, it) in sorted(departures.items()):
+        if f in current:
+            continue
+        why = pass_on_current_body(f, it.get("file", ""))
+        if why:
+            out.append(f"{f}: left the queue ({where}) without a layer-2 PASS on its "
+                       f"current body — {why} (owner ruling Q39)")
+    return out

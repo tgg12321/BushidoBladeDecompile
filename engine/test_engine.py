@@ -2978,8 +2978,19 @@ def test_layer2_gate() -> None:
             rec = json.loads(rec_p.read_text().splitlines()[-1]) if rec_p.exists() else {}
             check("layer2 cli: --verdict-file records verdict + hash + its sha1",
                   rc == 0 and rec.get("verdict") == "PASS" and rec.get("body_hash") == cur
-                  and rec.get("notes") == "clean" and rec.get("verdict_file") == "verdict.json"
+                  and rec.get("notes") == "clean" and rec.get("verdict_source") == "verdict.json"
                   and len(rec.get("verdict_sha1", "")) == 40)
+            # K5: the verdict JSON is kept, byte-for-byte, where the record points
+            import hashlib as _hl
+            kept = Path(rec.get("verdict_file", "") or "/nonexistent")
+            check("layer2 cli: --verdict-file keeps a byte copy under layer2_verdicts/",
+                  kept.as_posix() == f"memory/grind/func_L2/layer2_verdicts/{rec.get('verdict_sha1')}.json"
+                  and kept.is_file()
+                  and _hl.sha1(kept.read_bytes()).hexdigest() == rec.get("verdict_sha1"))
+            vf.unlink()
+            check("layer2 cli: the kept copy outlives the reviewer's tmp file",
+                  kept.is_file() and not vf.exists())
+            vf.write_text("{}")
             vf.write_text(json.dumps({"decision": "PASS", "function": "func_L2"}))
             rc, _out = _cli_run(*base, "--verdict-file", str(vf))
             check("layer2 cli: a verdict file without body_hash -> exit 1", rc == 1)
@@ -3094,17 +3105,146 @@ def test_layer2_gate() -> None:
                     rec_p.unlink()
                     ref_o.write_text("")
                     Q.sandbox.build_stripped_object = lambda *a, **k: {}
+
+                # K1: a LISTED item that turns out not to be a C function (its
+                # name no longer appears in the .c) is held too — both the
+                # scored and the unscorable not-a-C drop go through _held. A
+                # never-listed non-C symbol still drops silently.
+                score._o_func_table = lambda o: {"func_NC": (0, 0), "func_NC2": (0, 0)}
+                inlineasm.file_func_cheat_asm_count = (
+                    lambda s, f: -1 if f.startswith("func_NC") else 0)
+                nc_seed = {"items": [{"func": "func_NC", "file": "l2tu", "distance": 0,
+                                      "verdict": "C", "rules": 0, "status": "active"}],
+                           "counts": {}}
+                for point, scorer in (("scored", lambda a, b, f: {"score": 0}),
+                                      ("unscorable", _unscorable)):
+                    score.score_func = scorer
+                    qp.write_text(json.dumps(nc_seed))
+                    items = Q.generate(workdir=str(Path(td) / "wd"))["items"]
+                    eq(f"layer2: regen [not-a-C, {point}] HOLDS a listed item, drops the "
+                       f"never-listed one", [it["func"] for it in items], ["func_NC"])
+                    check(f"layer2: held not-a-C item says why [{point}]",
+                          bool(items) and "layer-2 gate" in items[0].get("layer2_pending", ""))
+                inlineasm.file_func_cheat_asm_count = lambda s, f: 0
             finally:
                 (P.c_stems, canonical.scan_all, cheats.is_jtbl_infra,
                  cheats.is_canonical_extraction_only,
                  Q.sandbox.build_stripped_object, score._o_func_table,
                  score.score_func) = saved_regen
+
+            # N1: a naming wave moves the ledger (and the archived one) and must
+            # retarget layer2.jsonl's `func`, or the renamed function could
+            # never be recorded again. The old PASS must not open the gate.
+            import naming_wave as nw
+            Path("src/nw.c").write_text("int func_OLD(int a) { return a + 1; }\n")
+            old_h = layer2.current_key("func_OLD", "nw")[1]
+            r = layer2.record("func_OLD", "PASS", "rev", "match", stem="nw", expect_hash=old_h)
+            done_p = layer2.completed_record_path("func_OLD")
+            done_p.parent.mkdir(parents=True)
+            done_p.write_text(layer2.record_path("func_OLD").read_text())
+            saved_root = nw.ROOT
+            nw.ROOT = Path.cwd()
+            try:
+                plan = nw.Plan()
+                nw.plan_ledger_renames(plan, {"func_OLD": "func_NEW"})
+                nw.apply_plan(plan)
+            finally:
+                nw.ROOT = saved_root
+            Path("src/nw.c").write_text("int func_NEW(int a) { return a + 1; }\n")
+            try:
+                recs = layer2.read_records("func_NEW")
+                moved = layer2.read_records("func_NEW", layer2.completed_record_path("func_NEW"))
+            except ValueError as e:
+                recs, moved = [], [{"error": str(e)}]
+            check("layer2: naming wave retargets the moved record's func",
+                  r["ok"] and len(recs) == 1 and recs[0]["func"] == "func_NEW"
+                  and recs[0].get("renamed_from") == "func_OLD"
+                  and not layer2.record_path("func_OLD").exists())
+            check("layer2: naming wave retargets the archived (_completed) record too",
+                  len(moved) == 1 and moved[0].get("func") == "func_NEW")
+            check("layer2: the pre-rename PASS does not open the gate for the new name",
+                  "changed after review" in (layer2.gate("func_NEW", "nw") or ""))
+            new_h = layer2.current_key("func_NEW", "nw")[1]
+            r = layer2.record("func_NEW", "PASS", "rev", "match", stem="nw", expect_hash=new_h)
+            check("layer2: the renamed function is recordable after the wave",
+                  r["ok"] is True and layer2.gate("func_NEW", "nw") is None)
         finally:
             os.chdir(cwd)
             (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
              cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
              inlineasm.file_func_cheat_asm_count, completion.source_issues,
              Q.O.verify) = saved
+
+
+def test_layer2_departures() -> None:
+    """Round-3 review K2: the standing audit (check_completion_integrity.py ->
+    layer2.unreviewed_departures) flags every function that left
+    engine/queue.json once the gate existed — committed or in the working tree
+    — without a layer-2 PASS on its current body. Pre-gate departures and
+    naming-wave renames are not departures. Pinned on a throwaway git repo."""
+    import subprocess
+    from engine import layer2
+
+    def git(*a):
+        subprocess.run(["git", "-c", "user.email=t@e", "-c", "user.name=t",
+                        "-c", "core.hooksPath=/dev/null", *a],
+                       check=True, capture_output=True, text=True)
+
+    def queue(*funcs):
+        items = [{"func": f, "file": "k", "distance": 3, "verdict": "C", "rules": 0,
+                  "status": "active"} for f in funcs]
+        Path("engine/queue.json").write_text(json.dumps({"items": items}, indent=2) + "\n")
+
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        try:
+            git("init", "-q")
+            Path("engine").mkdir()
+            Path("src").mkdir()
+            Path("src/k.c").write_text("".join(
+                f"int {f}(int a) {{ return a + {i}; }}\n"
+                for i, f in enumerate(("func_E", "func_X", "func_Y", "func_R2", "func_K"))))
+            queue("func_E", "func_X", "func_Y", "func_R", "func_K")
+            git("add", "-A"); git("commit", "-qm", "c1")
+            queue("func_X", "func_Y", "func_R", "func_K")          # pre-gate: exempt
+            git("commit", "-qam", "c2")
+            Path("engine/layer2.py").write_text("# gate\n")
+            git("add", "-A"); git("commit", "-qm", "c3 gate lands")
+            # func_Y leaves WITH an archived PASS on its current body
+            h = layer2.current_key("func_Y", "k")[1]
+            p = layer2.completed_record_path("func_Y")
+            p.parent.mkdir(parents=True)
+            p.write_text(json.dumps({"func": "func_Y", "verdict": "PASS", "body_hash": h}) + "\n")
+            # func_X leaves with NO record; func_R is renamed (func only changes)
+            q = json.loads(Path("engine/queue.json").read_text())
+            q["items"] = [dict(it, func="func_R2") if it["func"] == "func_R" else it
+                          for it in q["items"] if it["func"] not in ("func_X", "func_Y")]
+            Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
+            git("add", "-A"); git("commit", "-qm", "c4")
+            # func_K leaves in the WORKING TREE (a hand edit not yet committed)
+            q["items"] = [it for it in q["items"] if it["func"] != "func_K"]
+            Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
+
+            v = layer2.unreviewed_departures()
+            flagged = sorted(s.split(":")[0] for s in v)
+            eq("departures: exactly the unreviewed post-gate departures", flagged,
+               ["func_K", "func_X"])
+            check("departures: the working-tree departure is named as such",
+                  any(s.startswith("func_K:") and "working tree" in s for s in v))
+            # a matching PASS clears it; a stale one (body edited since) does not
+            h = layer2.current_key("func_X", "k")[1]
+            layer2.record_path("func_X").parent.mkdir(parents=True)
+            layer2.record_path("func_X").write_text(
+                json.dumps({"func": "func_X", "verdict": "PASS", "body_hash": h}) + "\n")
+            eq("departures: a PASS on the current body clears it",
+               sorted(s.split(":")[0] for s in layer2.unreviewed_departures()), ["func_K"])
+            Path("src/k.c").write_text(Path("src/k.c").read_text().replace("a + 1;", "a - 1;"))
+            eq("departures: a PASS on an earlier body does not",
+               sorted(s.split(":")[0] for s in layer2.unreviewed_departures()),
+               ["func_K", "func_X"])
+        finally:
+            os.chdir(cwd)
 
 
 def test_orphaned_local_decls() -> None:
@@ -4172,6 +4312,7 @@ def main() -> int:
     test_buildstamp()
     test_canonical_completion_is_the_drop()
     test_layer2_gate()
+    test_layer2_departures()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()

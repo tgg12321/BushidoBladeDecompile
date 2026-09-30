@@ -207,7 +207,10 @@ the landing. `queue done` (and regen's drop of a listed item) refuses unless
 the LATEST record is a PASS on the CURRENT body: re-review after any change to
 the definition (comment/layout edits inside it keep the hash). The key covers
 the function's definition ONLY — file-scope macros, typedefs, globals and
-helpers it depends on can change without moving it. No override flag exists.
+helpers it depends on can change without moving it. Conversely, renaming a
+callee or global (a naming wave) changes the key of EVERY function whose
+definition references it and voids their pending PASSes — fail-closed by
+design; expect re-review before those land. No override flag exists.
 For the grinder, the driver records the Judge's FINAL CALL verdict (PASS or
 FAIL, scope `grinder-final-call`) against the hash taken just before the Judge
 saw the body.
