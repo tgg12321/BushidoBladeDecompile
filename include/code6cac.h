@@ -270,8 +270,14 @@ typedef struct StatusFlagRec {
     u16 flags;
     u8 unk2;
     u8 unk3;
-    u8 unk4[0x18 - 4];
-} StatusFlagRec;
+    u8 unk4;
+    u8 unk5;
+    u8 unk6;
+    u8 unk7;
+    u8 pick_weight[7];   /* +0x8: func_80058580's 7-entry random pick, indexed by pick */
+    u8 script_weight[8]; /* +0xF: func_80058580's script-entry types 0..7 (et), indexed by type */
+    u8 unk17;
+} StatusFlagRec; /* size 0x18 */
 extern StatusFlagRec D_80099D88[];
 /* Rows of eight 4-byte entries: func_80055138 reads [row][col][0..1] (row*0x20 + col*4);
  * func_80058580 reads the halfword at byte 2 of [row][col] (D_8009A8CA + row<<5 +

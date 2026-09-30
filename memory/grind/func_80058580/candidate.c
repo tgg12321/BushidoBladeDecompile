@@ -25,40 +25,11 @@ extern void func_80057E84(u8 *, u8 *, s32, s32);
 #define CPU_U16(o) (*(u16 *)(p + (o)))
 #define CPU_S32(o) (*(s32 *)(p + (o)))
 #define CPU_FLAGS (D_80099D88[p[0x443]].flags)
-#define CPU_TBL(o) (D_80099D88[p[0x443]].unk4[(o) - 4])
 #define CPU_OARR(o) (*(s16 *)(CPU_OPP + *(s16 *)(CPU_OPP + 0x86) * 2 + (o)))
 #define CPU_SARR(o) (*(s16 *)(p + *(s16 *)(p + 0x86) * 2 + (o)))
 #define CPU_WP(i) (p + (i) * 6)
 #define CPU_SQ(x) ((x) * (x))
 
-#define side t3
-#define n447 t3
-#define ang t3
-#define prod t3
-#define force t3
-#define idx t3
-#define dist t3
-#define coin t3
-#define ok t3
-#define cmask t3
-#define script4 t3
-#define n449 t1
-#define base t1
-#define kind t1
-#define x1 t1
-#define m445 t1
-#define w t1
-#define lo t1
-#define n445 t2
-#define pace t2
-#define y1 t2
-#define m449 t2
-#define best t2
-#define cnt2 t2
-#define lvl t2
-#define i t4
-#define j t4
-#define n t4
 s32 func_80058580(u8 *p) {
     s32 wx;
     u8 *pscript;
@@ -71,11 +42,10 @@ s32 func_80058580(u8 *p) {
     u8 *script2;
     u8 *script3;
     u8 mode;
-    s32 t1, t2, t3, t4, t5;
+    s32 work1, work2, work3, work4;
     s32 hi;
     u32 mask;
     s16 et;
-    s32 k;
     s32 va;
     s32 vd;
     s32 vb;
@@ -117,14 +87,14 @@ s32 func_80058580(u8 *p) {
                 s32 f;
                 tbl[0] = D_8009A874;
                 tbl[1] = D_8009A870;
-                side = CPU_OPP[0xAF] & 1;
+                work3 = CPU_OPP[0xAF] & 1;
                 f = CPU_S32(0x430);
                 if (!(((f & 0x20) || ((f & 0x10) && p[0x3F3] % ((CPU_S16(0x438) >> 8) + 2) != (CPU_S16(0x438) >> 8) + 1)) &&
                       (!(CPU_FLAGS & 0xFF00) || (f & 0x40))) ||
                     (file_GetFlag1() && D_800A38DC != 3)) {
-                    side = !side;
+                    work3 = !work3;
                 }
-                script1 = tbl[side];
+                script1 = tbl[work3];
                 mode = 3;
             }
             if (CPU_U16(0x6A) == 0xD) {
@@ -136,9 +106,9 @@ s32 func_80058580(u8 *p) {
             }
         } else if (CPU_U16(0x6A) == 0x15) {
             mode = 4;
-            n447 = p[0x447] == 0;
-            n449 = p[0x449] == 0;
-            n445 = p[0x445] == 0;
+            work3 = p[0x447] == 0;
+            work1 = p[0x449] == 0;
+            work2 = p[0x445] == 0;
             if (p[0x426] == 2) {
                 if (CPU_S16(0x42E) * CPU_S16(0x42E) <
                     CPU_SQ(CPU_S16(0x42A) - CPU_S32(0xF4)) + CPU_SQ(CPU_S16(0x42C) - CPU_S32(0xFC))) {
@@ -146,7 +116,7 @@ s32 func_80058580(u8 *p) {
                     p[0x426] = 4;
                     p[0x425] = 4;
                     p[0x3F3]++;
-                } else if (n447 && (CPU_S32(0x430) & 8) &&
+                } else if (work3 && (CPU_S32(0x430) & 8) &&
                            (!(CPU_FLAGS & 0x8F00) || ((CPU_FLAGS & 0x300) && D_800A37A0 >= 6))) {
                     script1 = D_8009A890;
                 }
@@ -157,15 +127,15 @@ s32 func_80058580(u8 *p) {
                 if ((CPU_S32(0x430) & 8) &&
                     (!(CPU_FLAGS & 0xBF00) || ((CPU_FLAGS & 0x300) && D_800A37A0 >= 7))) {
                     if (*(s16 *)(CPU_OPP + 0x43A) > 0) {
-                        if (n449) {
+                        if (work1) {
                             script1 = D_8009A880;
-                        } else if (n445) {
+                        } else if (work2) {
                             script1 = D_8009A878;
                         }
                     } else {
-                        if (n445) {
+                        if (work2) {
                             script1 = D_8009A878;
-                        } else if (n449) {
+                        } else if (work1) {
                             script1 = D_8009A880;
                         }
                     }
@@ -190,15 +160,15 @@ s32 func_80058580(u8 *p) {
         if (CPU_FLAGS & 0x8000) {
             CPU_S32(0x3CC) = 0x2000;
         } else if (CPU_S32(0x430) & 8) {
-            ang = CPU_S16(0x43A);
+            work3 = CPU_S16(0x43A);
             if (p[0x441] == 0) {
-                ang = (ang + 0x800) & 0xFFF;
-                if (ang > 0x800) {
-                    ang -= 0x1000;
+                work3 = (work3 + 0x800) & 0xFFF;
+                if (work3 > 0x800) {
+                    work3 -= 0x1000;
                 }
             }
             if (!(CPU_FLAGS & 0xF00)) {
-                if (ang < 0) {
+                if (work3 < 0) {
                     if (p[0x445] == 0 || p[0x445] == 3) {
                         CPU_S32(0x3CC) = 0x4000;
                     }
@@ -222,7 +192,7 @@ s32 func_80058580(u8 *p) {
     } else {
         st = CPU_U16(0x6A);
         if (st == 0xF || st == 0x1C || st == 0x1D || st == 0x1E || st == 0x1F || st == 0x20 || st == 0x21) {
-            if (CPU_U16(0x6A) == 0x1D && (rand() & 0xFF) < CPU_TBL(4) && p[0x447] == 0) {
+            if (CPU_U16(0x6A) == 0x1D && (rand() & 0xFF) < D_80099D88[p[0x443]].unk4 && p[0x447] == 0) {
                 CPU_S32(0x3CC) = 0x8000;
             } else {
                 vd = 0x80;
@@ -246,9 +216,9 @@ s32 func_80058580(u8 *p) {
                 a = CPU_S16(0x26E);
                 b = CPU_S16(0x270);
                 c = CPU_S16(0x272);
-                prod = 0x1000 - (((CPU_S16(0x26C) == 0 ? a + 4 + b : a + b) + c) << 8);
-                prod = (CPU_S16(0x438) * prod) >> 12;
-                if ((rand() & 0xFFF) < prod) {
+                work3 = 0x1000 - (((CPU_S16(0x26C) == 0 ? a + 4 + b : a + b) + c) << 8);
+                work3 = (CPU_S16(0x438) * work3) >> 12;
+                if ((rand() & 0xFFF) < work3) {
                     CPU_S32(0x3CC) = 0x20;
                 } else if (CPU_S32(0x430) & 0x20) {
                     CPU_S32(0x3CC) = 0x20;
@@ -258,28 +228,28 @@ s32 func_80058580(u8 *p) {
             if ((CPU_S32(0x148) - CPU_S32(0xBC) >= 0 ? CPU_S32(0x148) - CPU_S32(0xBC)
                                                      : CPU_S32(0xBC) - CPU_S32(0x148)) < 200 && !(CPU_FLAGS & 0x8C00) &&
                 ((!file_GetFlag1() && D_800A38DC != 3) || D_800A38DC == 3)) {
-                force = 0;
+                work3 = 0;
                 if ((p[0x426] == 1 || p[0x425] == 2) && (CPU_S32(0x430) & 8)) {
-                    force = 1;
+                    work3 = 1;
                 }
                 far = 0;
                 if ((rand() & 0xFFF) < (CPU_S16(0x438) >> 3)) {
                     far = CPU_U16(0x3E8) > 0x3C;
                 }
                 if (CPU_S16(0xE) >= 6) {
-                    base = 100000;
+                    work1 = 100000;
                 } else {
-                    base = (&D_8009A838)[CPU_S16(0xE)] * 8;
+                    work1 = (&D_8009A838)[CPU_S16(0xE)] * 8;
                 }
-                for (i = 0; i < 8U; i++) {
-                    if (!(D_8009A850[i][3] & 1) || CPU_S16(0x40) >= (*(u8 **)(p + 0x50))[8] - 2 || force) {
-                        if ((D_800A387C < (t2 = D_8009A850[i][2] * 16 + base + CPU_S16(0x40A)) &&
-                             (!(D_8009A850[i][3] & 8) || CPU_S16(0x43C) < 0x100) &&
-                             (far || (D_8009A850[i][3] & 4))) ||
-                            force) {
-                            if (D_8009A850[i][0] == CPU_U16(0x6A) &&
-                                ((u8)(st2 = D_8009A850[i][1]) == 0xFF || st2 == CPU_OPP[0x6A])) {
-                                if (D_8009A850[i][3] & 2) {
+                for (work4 = 0; work4 < 8U; work4++) {
+                    if (!(D_8009A850[work4][3] & 1) || CPU_S16(0x40) >= (*(u8 **)(p + 0x50))[8] - 2 || work3) {
+                        if ((D_800A387C < (work2 = D_8009A850[work4][2] * 16 + work1 + CPU_S16(0x40A)) &&
+                             (!(D_8009A850[work4][3] & 8) || CPU_S16(0x43C) < 0x100) &&
+                             (far || (D_8009A850[work4][3] & 4))) ||
+                            work3) {
+                            if (D_8009A850[work4][0] == CPU_U16(0x6A) &&
+                                ((u8)(st2 = D_8009A850[work4][1]) == 0xFF || st2 == CPU_OPP[0x6A])) {
+                                if (D_8009A850[work4][3] & 2) {
                                     vb = 0x40;
                                     if (CPU_U16(0x3E8) & 1) {
                                         vb = 0x20;
@@ -330,9 +300,9 @@ s32 func_80058580(u8 *p) {
             }
             lim = 2000;
             if (wtype == 1) {
-                kind = p[0x44A];
+                work1 = p[0x44A];
                 if (!(CPU_S32(0x430) & 0x800) || D_800A387C < 4000) {
-                    if (p[0x442] == 2 && !(kind == 1 || kind == 2)) {
+                    if (p[0x442] == 2 && !(work1 == 1 || work1 == 2)) {
                         lim = CPU_OARR(0x3F8);
                     } else if ((p[0x442] == 1 || p[0x442] == 2) || p[0x442] == 3) {
                         if (!(CPU_FLAGS & 0x4000)) {
@@ -388,17 +358,17 @@ s32 func_80058580(u8 *p) {
                     u8 *wp;
                     u8 *wp2;
                     u8 *wp3;
-                    kind = p[0x44A];
-                    idx = p[0x362] - 1;
-                    pace = p[0x444];
-                    wp = CPU_WP(idx);
+                    work1 = p[0x44A];
+                    work3 = p[0x362] - 1;
+                    work2 = p[0x444];
+                    wp = CPU_WP(work3);
                     wx = *(s16 *)(wp + 0x364);
                     wy = *(s16 *)(wp + 0x366);
-                    if (!(kind == 1 || kind == 2)) {
+                    if (!(work1 == 1 || work1 == 2)) {
                         script2 = 0;
                         if (wp[0x368] == 1) {
-                            if ((pace == 3 && D_800A387C < CPU_OARR(0x404)) ||
-                                (pace == 5 && (CPU_OARR(0x404) < D_800A387C && D_800A387C < CPU_OARR(0x404)))) {
+                            if ((work2 == 3 && D_800A387C < CPU_OARR(0x404)) ||
+                                (work2 == 5 && (CPU_OARR(0x404) < D_800A387C && D_800A387C < CPU_OARR(0x404)))) {
                                 if (CPU_U16(0x6A) == 0x13) {
                                     script2 = D_8009A8A4;
                                 } else if (p[0x440] != 4) {
@@ -413,36 +383,36 @@ s32 func_80058580(u8 *p) {
                     if (CPU_S32(0x3CC) != 0) {
                         return CPU_S32(0x3CC);
                     }
-                    j = idx;
-                    if (idx == 0) {
+                    work4 = work3;
+                    if (work3 == 0) {
                         if (p[0x368] == 1) {
-                            dist = SquareRoot0(CPU_SQ(CPU_S32(0xF4) - tx) + CPU_SQ(CPU_S32(0xFC) - ty2));
+                            work3 = SquareRoot0(CPU_SQ(CPU_S32(0xF4) - tx) + CPU_SQ(CPU_S32(0xFC) - ty2));
                         } else {
-                            dist = SquareRoot0(CPU_SQ(CPU_S32(0xF4) - wx) + CPU_SQ(CPU_S32(0xFC) - wy));
+                            work3 = SquareRoot0(CPU_SQ(CPU_S32(0xF4) - wx) + CPU_SQ(CPU_S32(0xFC) - wy));
                         }
                     } else {
-                        dist = SquareRoot0(CPU_SQ(wx - CPU_S32(0xF4)) + CPU_SQ(wy - CPU_S32(0xFC)));
-                        while (j >= 2) {
+                        work3 = SquareRoot0(CPU_SQ(wx - CPU_S32(0xF4)) + CPU_SQ(wy - CPU_S32(0xFC)));
+                        while (work4 >= 2) {
                             u8 *a;
                             u8 *b;
-                            a = CPU_WP(j);
-                            b = CPU_WP(j - 1);
-                            j = j - 1;
-                            dist += SquareRoot0(CPU_SQ(*(s16 *)(a + 0x364) - *(s16 *)(b + 0x364)) +
+                            a = CPU_WP(work4);
+                            b = CPU_WP(work4 - 1);
+                            work4 = work4 - 1;
+                            work3 += SquareRoot0(CPU_SQ(*(s16 *)(a + 0x364) - *(s16 *)(b + 0x364)) +
                                                 CPU_SQ(*(s16 *)(a + 0x366) - *(s16 *)(b + 0x366)));
                         }
                         {
-                            x1 = CPU_S16(0x36A);
-                            y1 = CPU_S16(0x36C);
+                            work1 = CPU_S16(0x36A);
+                            work2 = CPU_S16(0x36C);
                             if (p[0x368] == 1) {
-                                dist += SquareRoot0(CPU_SQ(x1 - tx) + CPU_SQ(y1 - ty2));
+                                work3 += SquareRoot0(CPU_SQ(work1 - tx) + CPU_SQ(work2 - ty2));
                             } else {
-                                dist += SquareRoot0(CPU_SQ(x1 - CPU_S16(0x364)) + CPU_SQ(y1 - CPU_S16(0x366)));
+                                work3 += SquareRoot0(CPU_SQ(work1 - CPU_S16(0x364)) + CPU_SQ(work2 - CPU_S16(0x366)));
                             }
                         }
                     }
-                    dist = lim < dist;
-                    CPU_S32(0x3CC) = func_80057094(p, wx, wy, dist);
+                    work3 = lim < work3;
+                    CPU_S32(0x3CC) = func_80057094(p, wx, wy, work3);
                     va = 300;
                     vn = CPU_S32(0x3CC) & 4;
                     if (vn) {
@@ -453,12 +423,12 @@ s32 func_80058580(u8 *p) {
                         va * (vn ? 1000 : 300)) {
                         if ((u8)--p[0x362] != 0) {
                             wp3 = CPU_WP(p[0x362] - 1);
-                            ang = (ratan2(*(s16 *)(wp3 + 0x364) - CPU_S32(0xF4), *(s16 *)(wp3 + 0x366) - CPU_S32(0xFC)) -
+                            work3 = (ratan2(*(s16 *)(wp3 + 0x364) - CPU_S32(0xF4), *(s16 *)(wp3 + 0x366) - CPU_S32(0xFC)) -
                                    CPU_S16(0x1CA)) & 0xFFF;
-                            if (ang > 0x800) {
-                                ang -= 0x1000;
+                            if (work3 > 0x800) {
+                                work3 -= 0x1000;
                             }
-                            if ((ang < 0 ? -ang : ang) > 0x300) {
+                            if ((work3 < 0 ? -work3 : work3) > 0x300) {
                                 return 0;
                             }
                         }
@@ -486,22 +456,22 @@ s32 func_80058580(u8 *p) {
             }
             if (!(CPU_FLAGS & 0x8C00)) {
                 cnt = 0;
-                coin = CPU_TBL(0xC) < (rand() & 0xFF);
+                work3 = D_80099D88[p[0x443]].pick_weight[4] < (rand() & 0xFF);
                 sel = -1;
-                m445 = p[0x445] == 0;
-                m449 = p[0x449] == 0;
-                for (; cnt < 2; cnt++, coin++) {
-                    if (coin & 1) {
+                work1 = p[0x445] == 0;
+                work2 = p[0x449] == 0;
+                for (; cnt < 2; cnt++, work3++) {
+                    if (work3 & 1) {
                         if (*(s16 *)(CPU_OPP + 0x43A) < 0) {
-                            if (m445) {
+                            if (work1) {
                                 sel = 6;
-                            } else if (m449) {
+                            } else if (work2) {
                                 sel = 7;
                             }
                         } else {
-                            if (m449) {
+                            if (work2) {
                                 sel = 7;
-                            } else if (m445) {
+                            } else if (work1) {
                                 sel = 6;
                             }
                         }
@@ -524,17 +494,17 @@ s32 func_80058580(u8 *p) {
         if (CPU_S16(0x398) >= CPU_S16(0x39A)) {
             script3 = 0;
             if (p[0x39C] != 1) {
-                t3 = CPU_S32(0x394);
+                work3 = CPU_S32(0x394);
             } else if (*(u16 *)(CPU_OPP + 0x6A) == 0x19) {
                 u8 buf[4];
                 __builtin_memcpy(buf, D_800A325C, 4);
-                t3 = buf[CPU_OPP[0x441]];
+                work3 = buf[CPU_OPP[0x441]];
             } else if (*(u16 *)(CPU_OPP + 0x6A) == 0x1A) {
                 u8 buf2[4];
                 __builtin_memcpy(buf2, D_800A3260, 4);
-                t3 = buf2[CPU_OPP[0x441]];
+                work3 = buf2[CPU_OPP[0x441]];
             }
-            switch (t3) {
+            switch (work3) {
             case 0:
                 if (p[0x447] == 0) {
                     CPU_S32(0x3CC) = 0x8000;
@@ -602,22 +572,22 @@ s32 func_80058580(u8 *p) {
                 }
             }
         } else if (CPU_S16(0x398) == 0) {
-            s32 tired = CPU_TBL(6);
+            s32 tired = D_80099D88[p[0x443]].unk6;
             r = rand() & 0xFF;
             if (p[0x440] == 4 ? r < (tired >> 2) : r < tired) {
-                best = -1;
+                work2 = -1;
                 besti = -1;
-                j = 0;
+                work4 = 0;
             pick_loop:
                 {
                     s32 rnd;
                     u8 *row;
                     rnd = rand() & 0xFFF;
-                    row = (u8 *)&D_80099D88[p[0x443]] + 8;
-                    score = (rnd * row[j]) >> 12;
+                    row = D_80099D88[p[0x443]].pick_weight;
+                    score = (rnd * row[work4]) >> 12;
                     if (score != 0) {
                         flip = 0;
-                        switch (j) {
+                        switch (work4) {
                         case 0:
                         case 2:
                             if (rand() & 1) {
@@ -626,11 +596,11 @@ s32 func_80058580(u8 *p) {
                                 goto pick_next;
                             }
                             vc = CPU_S16(0x3F0);
-                            if (CPU_TBL(7) < (vc >= 0 ? vc : -vc)) {
+                            if (D_80099D88[p[0x443]].unk7 < (vc >= 0 ? vc : -vc)) {
                                 score += 0x80;
                                 flip = vc > 0;
                             }
-                            if (CPU_S16(0xE) >= 6 && p[0x34A] == 0 && j == 2) {
+                            if (CPU_S16(0xE) >= 6 && p[0x34A] == 0 && work4 == 2) {
                                 score += 0x100;
                                 flip = 0;
                             }
@@ -661,22 +631,22 @@ s32 func_80058580(u8 *p) {
                             }
                             break;
                         }
-                        if ((s16)best < score) {
-                            besti = j;
-                            best = score;
+                        if ((s16)work2 < score) {
+                            besti = work4;
+                            work2 = score;
                             bestflip = flip;
                         }
                     }
                 }
             pick_next:
-                if (++j < 7) {
+                if (++work4 < 7) {
                     goto pick_loop;
                 }
-                if ((t1 = (s8)besti) != -1) {
+                if ((work1 = (s8)besti) != -1) {
                     CPU_S32(0x394) = 0;
                     p[0x39C] = 0;
-                    CPU_S16(0x398) = (((((rand() & 0xFFF) * CPU_TBL(6)) >> 12) + 0x17) << 12) / CPU_S16(0x1C);
-                    switch (t1) {
+                    CPU_S16(0x398) = (((((rand() & 0xFFF) * D_80099D88[p[0x443]].unk6) >> 12) + 0x17) << 12) / CPU_S16(0x1C);
+                    switch (work1) {
                     case 0:
                         CPU_S32(0x394) = bestflip != 0;
                         break;
@@ -732,7 +702,7 @@ s32 func_80058580(u8 *p) {
                     }
                     list = *(u16 **)(p + *(s16 *)(p + 0x86) * 4 + 0x3A8);
                     off = *list;
-                    n = 0;
+                    work4 = 0;
                     while (off != 0) {
                         ep = off + *(u8 **)(p + 0x3A4);
                         e = ep;
@@ -760,19 +730,19 @@ s32 func_80058580(u8 *p) {
                                 mask = D_8009A928[p[0x440]][mask];
                                 break;
                             case 2:
-                                w = D_8009A9F0[D_8009A9DC[CPU_S16(0xE)][p[0x440]]][D_800A3788];
+                                work1 = D_8009A9F0[D_8009A9DC[CPU_S16(0xE)][p[0x440]]][D_800A3788];
                                 mask = 0;
-                                cnt2 = w & 0xF;
-                                if (cnt2 != 0) {
-                                    if (w >> 27) {
-                                        while (cnt2 > 0) {
-                                            w >>= 4;
-                                            mask |= 1 << ((w & 0xF) - 1);
-                                            cnt2--;
+                                work2 = work1 & 0xF;
+                                if (work2 != 0) {
+                                    if (work1 >> 27) {
+                                        while (work2 > 0) {
+                                            work1 >>= 4;
+                                            mask |= 1 << ((work1 & 0xF) - 1);
+                                            work2--;
                                         }
                                     } else {
-                                        w >>= ((u8)(p[0x3F2] / 3) % cnt2) * 4 + 4;
-                                        mask = 1 << ((w & 0xF) - 1);
+                                        work1 >>= ((u8)(p[0x3F2] / 3) % work2) * 4 + 4;
+                                        mask = 1 << ((work1 & 0xF) - 1);
                                     }
                                 }
                                 break;
@@ -784,12 +754,12 @@ s32 func_80058580(u8 *p) {
                                 goto next;
                             }
                         }
-                        if (!(CPU_FLAGS & 0x80) && *(s8 *)(p + 0x40D) == CPU_S16(0x86) && *(s8 *)(p + 0x40C) == n) {
+                        if (!(CPU_FLAGS & 0x80) && *(s8 *)(p + 0x40D) == CPU_S16(0x86) && *(s8 *)(p + 0x40C) == work4) {
                             goto next;
                         }
                         if (q[0] == 0x40) {
-                            cmask = q[4] << 24 | q[3] << 16 | q[2] << 8 | q[1];
-                            if (!((u32)cmask & (1 << p[0x443]))) {
+                            work3 = q[4] << 24 | q[3] << 16 | q[2] << 8 | q[1];
+                            if (!((u32)work3 & (1 << p[0x443]))) {
                                 goto next;
                             }
                             ep += 5;
@@ -797,65 +767,65 @@ s32 func_80058580(u8 *p) {
                         if ((e[0] & 0x80) && CPU_S16(0x26C) == 0) {
                             goto next;
                         }
-                        lo = e[1] * 40;
+                        work1 = e[1] * 40;
                         hi = e[2] * 40;
                         et = e[0] & 7;
-                        ok = 0;
+                        work3 = 0;
                         if (et == 0) {
-                            if (lo < D_800A387C && D_800A387C < hi) {
+                            if (work1 < D_800A387C && D_800A387C < hi) {
                                 st = *(u16 *)(CPU_OPP + 0x6A);
                                 if (st == 0x15 || st == 0x2C || st == 0xE || st == 0x19) {
-                                    ok = 1;
+                                    work3 = 1;
                                 }
                             }
                         } else {
                             if ((CPU_FLAGS & 0xFC00) || CPU_S16(0xE) >= 6) {
-                                lo = -(et < 5) & 100000;
+                                work1 = -(et < 5) & 100000;
                                 hi = 100000;
                             } else {
                                 adj = (((0x1000 - lv) * 625) >> 10) - 400;
                                 adj += CPU_S16(0x40A);
-                                lo += adj;
+                                work1 += adj;
                                 hi += adj;
                             }
                             if (et < 5) {
-                                if (D_800A387C < lo && !(CPU_S32(0x430) & 0x20000)) {
+                                if (D_800A387C < work1 && !(CPU_S32(0x430) & 0x20000)) {
                                     if ((CPU_S32(0x430) & 0x200) ? CPU_S16(0x43C) < 0x800 : CPU_S16(0x43C) < 0x400) {
-                                        ok = 1;
+                                        work3 = 1;
                                     } else if (CPU_S16(0xE) >= 6) {
-                                        ok = 1;
+                                        work3 = 1;
                                     }
                                 }
-                            } else if (lo < D_800A387C && D_800A387C < hi &&
+                            } else if (work1 < D_800A387C && D_800A387C < hi &&
                                        CPU_S16(0x43C) < 0x200 - (CPU_S16(0x438) >> 4) &&
                                        (CPU_S32(0x430) & 0x280) != 0x280) {
                                 switch (et) {
                                 case 5:
                                     if ((0x78 >> p[0xB1]) & 1) {
-                                        ok = 1;
+                                        work3 = 1;
                                     }
                                     break;
                                 case 6:
                                     if (p[0x443] == 0x15 || CPU_S16(0x330) != 0) {
-                                        ok = 1;
+                                        work3 = 1;
                                     }
                                     break;
                                 default:
-                                    ok = 1;
+                                    work3 = 1;
                                     break;
                                 }
                             }
                         }
-                        if (ok) {
+                        if (work3) {
                             s32 rnd2;
                             u8 *row2;
 
                             rnd2 = rand() & 0xFFF;
-                            row2 = (u8 *)&D_80099D88[p[0x443]] + 0xF;
+                            row2 = D_80099D88[p[0x443]].script_weight;
                             sc = (rnd2 * row2[et]) >> 12;
                             if (sc != 0 && pbest < sc) {
                                 pbest = sc;
-                                pbesti = n;
+                                pbesti = work4;
                                 pscript = ep;
                                 phi = hi;
                             }
@@ -863,7 +833,7 @@ s32 func_80058580(u8 *p) {
                     next:
                         list++;
                         off = *list;
-                        n++;
+                        work4++;
                     }
                     if (pbest != -1) {
                         func_80055B44(p, (s32)pscript, 0, 0);
@@ -878,41 +848,41 @@ s32 func_80058580(u8 *p) {
             } else if (st == 0x15 && CPU_S16(0x26C) != 0 && p[0x440] != 4 &&
                        CPU_S16(0x43C) < 0x200 - (CPU_S16(0x438) >> 4) &&
                        !(D_800A38DC == 2 || D_800A38DC == 3)) {
-                script4 = 0;
-                if ((rand() & 0xFF) < (CPU_TBL(0x14) >> 2) && ((0x78 >> p[0xB1]) & 1) && p[0x442] == 0 &&
+                work3 = 0;
+                if ((rand() & 0xFF) < (D_80099D88[p[0x443]].script_weight[5] >> 2) && ((0x78 >> p[0xB1]) & 1) && p[0x442] == 0 &&
                     CPU_OARR(0x404) < D_800A387C && D_800A387C < 4500) {
-                    script4 = (s32)D_8009A8C0;
+                    work3 = (s32)D_8009A8C0;
                 } else {
                     if (p[0x443] == 0x15) {
-                        lvl = p[0x34D];
+                        work2 = p[0x34D];
                         near = CPU_OARR(0x3F8);
                     } else {
                         near = CPU_OARR(0x404) + 300;
                         if (CPU_FLAGS & 0x300) {
-                            lvl = 0;
+                            work2 = 0;
                             if (D_800A37A0 >= 6) {
-                                lvl = p[0x34A];
+                                work2 = p[0x34A];
                             }
                         } else {
-                            lvl = CPU_S16(0x330);
+                            work2 = CPU_S16(0x330);
                         }
                     }
                     ok4 = 0;
-                    if ((rand() & 0xFF) < (CPU_TBL(0x15) >> 2) && lvl != 0 && near < D_800A387C &&
+                    if ((rand() & 0xFF) < (D_80099D88[p[0x443]].script_weight[6] >> 2) && work2 != 0 && near < D_800A387C &&
                         CPU_S32(0x434) == 100000 && p[0x442] == 0 && (CPU_S32(0x430) & 0xA002) &&
-                        (p[0x443] != 0x15 || D_800A387C < 3000) && (CPU_S16(0x8A) == 0 || lvl >= 2)) {
+                        (p[0x443] != 0x15 || D_800A387C < 3000) && (CPU_S16(0x8A) == 0 || work2 >= 2)) {
                         ok4 = 1;
                     }
                     if (ok4) {
-                        if ((CPU_FLAGS & 0x10) && lvl >= 2 && (rand() & 1)) {
-                            script4 = (s32)D_8009A8B4;
+                        if ((CPU_FLAGS & 0x10) && work2 >= 2 && (rand() & 1)) {
+                            work3 = (s32)D_8009A8B4;
                         } else {
-                            script4 = (s32)D_8009A8AC;
+                            work3 = (s32)D_8009A8AC;
                         }
                     }
                 }
-                if (script4 != 0) {
-                    func_80055B44(p, script4, 2, 0);
+                if (work3 != 0) {
+                    func_80055B44(p, work3, 2, 0);
                 }
             }
         }
@@ -967,36 +937,7 @@ s32 func_80058580(u8 *p) {
 #undef CPU_U16
 #undef CPU_S32
 #undef CPU_FLAGS
-#undef CPU_TBL
 #undef CPU_OARR
 #undef CPU_SARR
 #undef CPU_WP
 #undef CPU_SQ
-#undef side
-#undef n447
-#undef ang
-#undef prod
-#undef force
-#undef idx
-#undef dist
-#undef coin
-#undef ok
-#undef cmask
-#undef script4
-#undef n449
-#undef base
-#undef kind
-#undef x1
-#undef m445
-#undef w
-#undef lo
-#undef n445
-#undef pace
-#undef y1
-#undef m449
-#undef best
-#undef cnt2
-#undef lvl
-#undef i
-#undef j
-#undef n
