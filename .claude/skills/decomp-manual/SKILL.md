@@ -213,10 +213,11 @@ scoring, so they cannot move it. They are inert here by construction.
 6. **Record the verdict** (owner ruling Q39), PASS or not, with the reviewed
    body still in `src/`: `& tools/wteng.ps1 main layer2 record <func> --verdict
    <PASS|FAIL|NEEDS_USER> --reviewer <id> --scope <match|cheat-cleanup|auth>
-   --expect-hash <the reviewer's body_hash> --notes "<key findings>"` →
-   `memory/grind/<func>/layer2.jsonl`. It refuses without `--expect-hash`, and
-   when `src/` no longer holds the reviewed body — then re-review, never
-   re-hash.
+   --expect-hash <the reviewer's body_hash> --notes "<key findings>"` (or
+   `--verdict-file <the reviewer's JSON>` in place of `--verdict`/
+   `--expect-hash`/`--notes`) → `memory/grind/<func>/layer2.jsonl`. It refuses
+   without the hash, and a PASS refuses when `src/` no longer holds the
+   reviewed body — then re-review, never re-hash.
    **PASS** → commit (`Match: <func> — COMPLETED-C (manual)`, `git commit -F
    tmp/msg.txt`, including the `layer2.jsonl`) → `& tools/wteng.ps1 main queue
    done <func>` (refuses unless the latest record is a PASS on the current

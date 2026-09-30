@@ -907,6 +907,9 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     $l2Hash = ''
     $l2h = Invoke-Eng @('layer2', 'hash', $func, '--file', $stem)
     if ($l2h -match '"body_hash"\s*:\s*"([0-9a-f]{16})"') { $l2Hash = $Matches[1] }
+    # ...and the full definition that key covers: the diff's 3-line context
+    # hides most of the body the verdict is recorded against.
+    $l2Def = (Invoke-Eng @('layer2', 'show', $func, '--file', $stem)).TrimEnd()
     $led = "memory/grind/$func"
     $scopeBlock = ''
     try { $scopeBlock = (python tools/grinder/grindlib.py rule-scopes . $func 2>$null | Out-String).Trim() } catch { }
@@ -919,6 +922,12 @@ full-build SHA1 == oracle). Rule ONLY on the legitimacy of the C.
 The candidate diff against HEAD:
 ``````diff
 $diff
+``````
+
+The FULL current definition of $func (layer-2 key $l2Hash — your verdict is
+recorded against exactly this body, owner ruling Q39):
+``````c
+$l2Def
 ``````
 
 $scopeBlock
@@ -1004,7 +1013,22 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
                     '--notes', 'Judge FINAL CALL PASS - justification in state.json review_ledger and docs/grind/decisions.md')
         if ($l2Hash) { $l2Args += @('--expect-hash', $l2Hash) }
         $l2 = Invoke-Eng $l2Args
-        if ($l2 -notmatch '"ok"\s*:\s*true') { Log "${func}: layer-2 record NOT written: $(($l2 -replace '\s+', ' ').Trim())" }
+        if ($l2 -notmatch '"ok"\s*:\s*true') {
+            # Its own outcome, NOT a queue-done refusal: the Judge PASSed, but its
+            # verdict could not be bound to the body in src/ (no hash taken, or
+            # src/ moved after the FINAL CALL). No config cheat is implied.
+            $why = (($l2 -replace '["\r\n\t]+', ' ') -replace '\s+', ' ').Trim()
+            $reason = ("layer-2 record refused after a Judge PASS (owner ruling Q39) — the verdict could " +
+                       "not be bound to the body in src/ (hash '$l2Hash'): $why")
+            $reason = $reason.Substring(0, [Math]::Min(400, $reason.Length))
+            Log "${func}: layer-2 record REFUSED after judge PASS — not landing; banking."
+            git -C $Root add -- metrics/events.jsonl 2>$null
+            git -C $Root checkout -- . 2>$null
+            Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore canonical build/
+            Journal "${func}: layer-2 record refused after judge PASS — candidate not landed."
+            Bank-CandidateRefusal $func 'layer2-record-refused' $reason $bodyHash 'Re-submit the candidate: the FINAL CALL must rule on the body src/ holds when the verdict is recorded (driver-side; no session change needed unless it repeats).' "grind: $func layer-2 record refusal banked"
+            return
+        }
         $qd = Invoke-Eng @('queue', 'done', $func)
         if ($qd -notmatch '"ok"\s*:\s*true') {
             # A Judge-PASSed, bytes-proven candidate that queue done still
@@ -1062,6 +1086,15 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
                         Where-Object { $_ -match '^(ROTATED|FORECLOSED) SIBLING' })
         } catch { }
         foreach ($fs in $fsibs) { Log "${func}: $fs"; Journal "$func completed — $fs" }
+        # Owner ruling Q39: the layer-2 record outlives the ledger. It moves to
+        # memory/grind/_completed/<func>/layer2.jsonl — where archived manual
+        # ledgers already keep theirs — appended byte-for-byte if one is there.
+        $l2Src = Join-Path $Root "memory\grind\$func\layer2.jsonl"
+        if (Test-Path $l2Src) {
+            $l2Dir = Join-Path $Root "memory\grind\_completed\$func"
+            New-Item -ItemType Directory -Force -Path $l2Dir | Out-Null
+            [IO.File]::AppendAllText((Join-Path $l2Dir 'layer2.jsonl'), [IO.File]::ReadAllText($l2Src))
+        }
         Remove-Item -Recurse -Force (Join-Path $Root "memory\grind\$func")
         git -C $Root add -A -- memory/grind docs/grind 2>$null
         git -C $Root add -- metrics/events.jsonl 2>$null
@@ -1077,6 +1110,17 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         git -C $Root add -- metrics/events.jsonl 2>$null   # staged telemetry survives the checkout
         git -C $Root checkout -- . 2>$null
         Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore green build/
+        if ($v.verdict -eq 'FAIL') {
+            # Owner ruling Q39: the Judge FAIL goes on the layer-2 record against the
+            # hash it ruled on — src/ is back at HEAD now, and a FAIL may bind to a
+            # body src/ no longer holds — so it revokes any earlier (or forged) PASS.
+            $l2fArgs = @('layer2', 'record', $func, '--verdict', 'FAIL', '--reviewer', 'judge',
+                         '--scope', 'grinder-final-call', '--file', $stem,
+                         '--notes', 'Judge FINAL CALL FAIL - see docs/grind/decisions.md')
+            if ($l2Hash) { $l2fArgs += @('--expect-hash', $l2Hash) }
+            $l2f = Invoke-Eng $l2fArgs
+            if ($l2f -notmatch '"ok"\s*:\s*true') { Log "${func}: layer-2 FAIL record NOT written: $(($l2f -replace '\s+', ' ').Trim())" }
+        }
         Add-Decision $func 'final call' 'FAIL' $v.justification
         $c = if ($v.constraint) { [string]$v.constraint } else { [string]$v.justification }
         python tools/grinder/grindlib.py constrain . $func $c | Out-Null

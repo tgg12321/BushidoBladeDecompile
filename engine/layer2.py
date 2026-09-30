@@ -10,33 +10,42 @@ verdicts lived only as free text in ledgers.
 THE RECORD: `memory/grind/<func>/layer2.jsonl`, append-only, one JSON object
 per line, committed with the landing:
 
-  {"func", "verdict": PASS|FAIL|NEEDS_USER, "body_hash", "body_kind": c|asm,
-   "file", "reviewer", "scope", "date", "head", "notes"}
+  {"func", "verdict": PASS|FAIL|NEEDS_USER, "body_hash", "body_kind": c|asm|"",
+   "file", "reviewer", "scope", "date", "head", "notes"
+   [, "verdict_file", "verdict_sha1"]}
 
-Written by `python3 -m engine.cli layer2 record <func> --verdict ...
---expect-hash <h>`. `--expect-hash` is REQUIRED: <h> is the hash the reviewer
-reported (`layer2 hash <func>`) for the body it ruled on, and the record is
-refused unless the body now in src/ hashes to it — so a PASS on body A can
-never be written against a body B edited in afterwards. The LAST line is the
-function's standing verdict.
+Written by `python3 -m engine.cli layer2 record <func> ...` with the hash the
+reviewer reported (`layer2 hash <func>` on the body it ruled on) — given as
+`--expect-hash <h>` or read, with the verdict, from the reviewer's own JSON via
+`--verdict-file` (whose path + sha1 are then recorded). The hash is REQUIRED.
+A PASS is refused unless the body now in src/ hashes to it, so a PASS on body
+A can never be written against a body B edited in afterwards. A FAIL or
+NEEDS_USER binds to the reviewer's hash even when src/ has moved on: those
+verdicts can only close the gate. The LAST line is the function's standing
+verdict.
 
-THE GATE (`gate`): `queue done` — and regen's mechanical drop of an item it
-previously listed — requires that last line to be PASS with body_hash equal to
-the current body's hash. A FAIL/NEEDS_USER after a PASS revokes it; any code
-change after the review breaks the hash. No override flag exists (none is
-authorized by any owner ruling).
+THE GATE (`gate`): `queue done` — and regen's drop of an item it previously
+listed — requires that last line to be PASS with body_hash equal to the current
+body's hash. Any later FAIL/NEEDS_USER revokes it; any change to the definition
+breaks the hash. No override flag exists (none is authorized by any owner
+ruling).
 
-THE HASH is sha1[:16] of the function's FULL definition (storage class and
-return type through the closing brace, as located by
-inlineasm._func_body_span) reduced to its C token sequence: comments dropped,
-string/char literals kept verbatim, tokens joined by one space. A comment or
-layout edit keeps the hash; any token change — `s16` vs `s32`, `static`, a
-space inside a string, `a - --b` vs `a-- - b` — moves it. Deliberately NOT
-grindlib.body_hash, which collapses whitespace inside strings, strips `//`
-inside strings, merges `- --` into `---`, omits the return type, and keys
-K&R definitions by the whole file (layer-2 review of 5d46a66e1). A function
-supplied wholly from asm (canonical INCLUDE_ASM / `.include` / `glabel`
-block) is keyed by its asm block text plus the included .s file.
+THE HASH is sha1[:16] of the function's definition (storage class and return
+type through the closing brace, as located by inlineasm._func_body_span)
+reduced to its C token sequence: comments dropped, string/char literals kept
+verbatim, preprocessor lines newline-terminated, tokens joined by one space.
+A comment or layout edit inside the definition keeps the hash; a token change
+inside it moves it. SCOPE: the definition only — file-scope macros, typedefs,
+globals, prototypes and helper functions the body depends on can change
+without moving the key; the reviewer and the oracle cover those, not this
+hash. A function with more than one definition in the file (e.g. an `#if 0`
+copy), or with both a C definition and an asm body, has NO key (fail closed).
+Deliberately NOT grindlib.body_hash, which collapses whitespace inside
+strings, strips `//` inside strings, merges `- --` into `---`, omits the
+return type, and keys K&R definitions by the whole file (layer-2 review of
+5d46a66e1). A function supplied wholly from asm (canonical INCLUDE_ASM /
+`.include` / `glabel` block) is keyed by its asm block text plus the included
+.s file.
 """
 from __future__ import annotations
 
@@ -55,13 +64,15 @@ VERDICTS = ("PASS", "FAIL", "NEEDS_USER")
 # the grinder's Judge FINAL CALL (judge-sole-gate: the Judge is the acceptance
 # gate for autonomous work).
 SCOPES = ("match", "cheat-cleanup", "auth", "grinder-final-call")
+_HASH_RE = re.compile(r"[0-9a-f]{16}")
 
 
-# One C token per match, maximal munch; `tokens` drops the `skip` group
-# (whitespace, comments). A string/char literal is ONE token, so nothing inside
-# it is normalized.
+# One C token per match, maximal munch. `splice` (backslash-newline) and `skip`
+# (whitespace, comments) are dropped. A string/char literal is ONE token, so
+# nothing inside it is normalized.
 _TOKEN_RE = re.compile(r"""
-    (?P<skip> \s+ | /\*.*?\*/ | //[^\n]* )
+    (?P<splice> \\\r?\n )
+  | (?P<skip> \s+ | /\*.*?\*/ | //[^\n]* )
   | "(?:\\.|[^"\\\n])*"
   | '(?:\\.|[^'\\\n])*'
   | \.?[0-9](?:[eEpP][+-]|[A-Za-z0-9_.])*
@@ -73,8 +84,26 @@ _TOKEN_RE = re.compile(r"""
 
 
 def tokens(text: str) -> list[str]:
-    """`text` as C tokens: comments and whitespace dropped, literals verbatim."""
-    return [m.group(0) for m in _TOKEN_RE.finditer(text or "") if m.group("skip") is None]
+    """`text` as C tokens: comments and whitespace dropped, literals verbatim.
+    A preprocessor line (first token `#`) ends with a "\\n" token, because a
+    directive is newline-terminated: `#define A 1` + `x` differs from
+    `#define A 1 x`."""
+    text = text or ""
+    out, in_pp = [], False
+    for m in _TOKEN_RE.finditer(text):
+        tok = m.group(0)
+        if m.group("splice") is not None:
+            continue
+        if m.group("skip") is not None:
+            if in_pp and "\n" in tok:
+                out.append("\n")
+                in_pp = False
+            continue
+        if (tok == "#" and not in_pp
+                and not text[text.rfind("\n", 0, m.start()) + 1:m.start()].strip()):
+            in_pp = True
+        out.append(tok)
+    return out
 
 
 def _key(text: str) -> str:
@@ -119,18 +148,27 @@ def _asm_pieces(text: str, func: str) -> list[str]:
     return pieces
 
 
-def body_key(text: str, func: str) -> tuple[str, str] | None:
-    """(kind, 16-hex hash) of `func`'s body in the C file `text`, or None when
-    no body can be located (fail closed: nothing to key a verdict to)."""
+def body_source(text: str, func: str) -> tuple[str, str] | None:
+    """(kind, source text) the key covers — the one C definition, or the asm
+    that supplies the function — or None when there is no single body."""
     span = inlineasm._func_body_span(text, func)
+    pieces = _asm_pieces(text, func)
     if span is not None:
+        if pieces or inlineasm._func_body_span(text[span[1]:], func) is not None:
+            return None  # a second definition, or C AND asm: ambiguous
         # A definition sharing a line with the previous function's `}` starts
         # its span at that brace; it is not part of this function.
-        return "c", _key(re.sub(r"^\}", "", text[span[0]:span[1]]))
-    pieces = _asm_pieces(text, func)
+        return "c", re.sub(r"^\}", "", text[span[0]:span[1]])
     if pieces:
-        return "asm", _key("\n".join(pieces))
+        return "asm", "\n".join(pieces)
     return None
+
+
+def body_key(text: str, func: str) -> tuple[str, str] | None:
+    """(kind, 16-hex hash) of `func`'s body in the C file `text`, or None when
+    there is no single body (fail closed: nothing to key a verdict to)."""
+    src = body_source(text, func)
+    return None if src is None else (src[0], _key(src[1]))
 
 
 def current_key(func: str, stem: str) -> tuple[str, str] | None:
@@ -176,6 +214,39 @@ def read_records(func: str) -> list[dict]:
     return out
 
 
+def read_verdict_file(path: str) -> dict:
+    """The reviewer's JSON verdict (cheat-reviewer output schema): decision,
+    function, body_hash, summary — plus the file's path and sha1 so the record
+    is auditable back to it. Tolerates text around the JSON object (first `{`
+    to last `}`). Raises ValueError when it is not a usable verdict."""
+    try:
+        raw = Path(path).read_bytes()
+    except OSError as e:
+        raise ValueError(f"cannot read verdict file {path}: {e}") from None
+    text = raw.decode("utf-8", errors="replace")
+    try:
+        v = json.loads(text)
+    except ValueError:
+        i, j = text.find("{"), text.rfind("}")
+        try:
+            v = json.loads(text[i:j + 1]) if 0 <= i < j else None
+        except ValueError:
+            v = None
+    if not isinstance(v, dict):
+        raise ValueError(f"verdict file {path} holds no JSON object")
+    if v.get("decision") not in VERDICTS:
+        raise ValueError(f"verdict file {path}: decision must be one of {VERDICTS}")
+    if not v.get("function"):
+        raise ValueError(f"verdict file {path}: no `function`")
+    if not v.get("body_hash"):
+        raise ValueError(f"verdict file {path}: no `body_hash` (the reviewer must report "
+                         f"`layer2 hash <func>` for the body it reviewed)")
+    return {"verdict": v["decision"], "function": v["function"],
+            "body_hash": str(v["body_hash"]), "summary": str(v.get("summary") or ""),
+            "verdict_file": Path(path).as_posix(),
+            "verdict_sha1": hashlib.sha1(raw).hexdigest()}
+
+
 def _head() -> str:
     try:
         return subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
@@ -185,9 +256,10 @@ def _head() -> str:
 
 
 def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
-           stem: str | None = None, expect_hash: str | None = None) -> dict:
-    """Append one verdict for the body the reviewer reported (`expect_hash`),
-    refused unless that is the body now in src/."""
+           stem: str | None = None, expect_hash: str | None = None,
+           extra: dict | None = None) -> dict:
+    """Append one verdict for the body the reviewer reported (`expect_hash`).
+    A PASS is refused unless src/ holds that body; a FAIL/NEEDS_USER is not."""
     if verdict not in VERDICTS:
         return {"ok": False, "func": func, "reason": f"verdict must be one of {VERDICTS}"}
     if scope not in SCOPES:
@@ -199,24 +271,30 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
                 "reason": ("--expect-hash is required: the `layer2 hash` the reviewer reported "
                            "for the body it ruled on (a verdict bound to whatever is in src/ at "
                            "record time is not a verdict on the landed body — owner ruling Q39)")}
+    if not _HASH_RE.fullmatch(expect_hash):
+        return {"ok": False, "func": func,
+                "reason": f"--expect-hash {expect_hash!r} is not a 16-hex `layer2 hash`"}
     stem = stem or locate_stem(func)
     key = current_key(func, stem) if stem else None
-    if key is None:
-        return {"ok": False, "func": func,
-                "reason": f"no body for {func} found in src/{stem or '*'}.c — nothing to key the verdict to"}
-    kind, h = key
-    if expect_hash != h:
-        return {"ok": False, "func": func,
-                "reason": (f"the body in src/{stem}.c hashes {h}, not the reviewed {expect_hash} — "
-                           f"the reviewer ruled on a different body; nothing recorded")}
+    if verdict == "PASS":
+        if key is None:
+            return {"ok": False, "func": func,
+                    "reason": (f"no single body for {func} found in src/{stem or '*'}.c — "
+                               f"nothing to key the PASS to")}
+        if expect_hash != key[1]:
+            return {"ok": False, "func": func,
+                    "reason": (f"the body in src/{stem}.c hashes {key[1]}, not the reviewed "
+                               f"{expect_hash} — the reviewer ruled on a different body; "
+                               f"nothing recorded")}
     try:
         read_records(func)
     except ValueError as e:
         return {"ok": False, "func": func, "reason": f"existing record is malformed: {e}"}
-    rec = {"func": func, "verdict": verdict, "body_hash": h, "body_kind": kind,
+    rec = {"func": func, "verdict": verdict, "body_hash": expect_hash,
+           "body_kind": key[0] if key and key[1] == expect_hash else "",
            "file": stem, "reviewer": reviewer.strip(), "scope": scope,
            "date": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-           "head": _head(), "notes": notes}
+           "head": _head(), "notes": notes, **(extra or {})}
     p = record_path(func)
     p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, "a", encoding="utf-8", newline="\n") as fh:
@@ -228,15 +306,15 @@ def gate(func: str, stem: str) -> str | None:
     """None when the latest layer-2 record for `func` is a PASS on the current
     body; otherwise the refusal reason, naming the fix."""
     fix = (f"Fix: spawn a fresh cheat-reviewer (layer 2) on the exact body being landed; on PASS "
-           f"run `python3 -m engine.cli layer2 record {func} --verdict PASS --reviewer <id> "
-           f"--scope <{'|'.join(SCOPES)}> --expect-hash <the reviewer's `layer2 hash`> "
-           f"--notes \"...\"` and commit memory/grind/{func}/"
+           f"run `python3 -m engine.cli layer2 record {func} --reviewer <id> "
+           f"--scope <{'|'.join(SCOPES)}> --verdict-file <its JSON verdict>` (or --verdict PASS "
+           f"--expect-hash <its `layer2 hash`>) and commit memory/grind/{func}/"
            f"{RECORD_NAME} with the landing (owner ruling Q39, "
            f".claude/rules/review-discipline-before-commit.md).")
     key = current_key(func, stem)
     if key is None:
-        return (f"layer-2 gate: no body for {func} found in src/{stem}.c, so no reviewed body "
-                f"can match it. {fix}")
+        return (f"layer-2 gate: no single body for {func} in src/{stem}.c (none, more than one "
+                f"definition, or C and asm both), so no reviewed body can match it. {fix}")
     _kind, h = key
     try:
         recs = read_records(func)
@@ -252,5 +330,5 @@ def gate(func: str, stem: str) -> str | None:
     if last["body_hash"] != h:
         return (f"layer-2 gate: the latest layer-2 PASS for {func} ({last.get('date', '?')}) "
                 f"covered body {last['body_hash']}, but the body now in src/{stem}.c hashes {h} "
-                f"— the code changed after review (comment/whitespace edits keep the hash). {fix}")
+                f"— the code changed after review (comment/layout edits keep the hash). {fix}")
     return None

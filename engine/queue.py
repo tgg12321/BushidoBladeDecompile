@@ -295,6 +295,12 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     listed = ({it["func"]: it for it in load().get("items", [])}
               if Path(QUEUE_PATH).exists() else {})
 
+    # Listed funcs whose drop was DECIDED in the scan (gate passed, or not a C
+    # function at all). Every other listed func missing from the new items —
+    # its stem had no reference .o, its stripped build raised, it left the
+    # symbol table — is gated at the one choke point after the scan.
+    decided = set()
+
     def _held(func, stem, dist, rules):
         """The kept entry for a scan-complete item that lacks a layer-2 PASS
         on its current body, or None when the drop may proceed."""
@@ -302,6 +308,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             return None
         why = layer2.gate(func, stem)
         if why is None:
+            decided.add(func)
             return None
         return {**listed[func], "file": stem, "distance": dist, "rules": rules,
                 "layer2_pending": why[:400]}
@@ -365,6 +372,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                         items.append(held)
                         continue
                     if cheats_unscored < 0 and _not_a_c_function(stem, func):
+                        decided.add(func)
                         continue  # nothing to track
                 dist = -1
                 scorable = False
@@ -445,6 +453,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                     items.append(held)
                     continue
                 if dist == 0 and cheat_count < 0 and _not_a_c_function(stem, func):
+                    decided.add(func)
                     continue
             if func in prev:  # sticky parked
                 pv = prev[func]
@@ -520,6 +529,17 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     for fn, it in prev.items():
         if fn not in have and it.get("origin") == "regression":
             items.append(it)
+            have.add(fn)
+    # Q39 choke point: a listed item the scan dropped WITHOUT a decision is
+    # held unless its layer-2 PASS matches — a stem skipped for a missing
+    # reference .o or a failed stripped build would otherwise lose it for good
+    # (the next regen no longer lists it).
+    for fn, it in listed.items():
+        if fn in have or fn in decided:
+            continue
+        why = layer2.gate(fn, it.get("file", ""))
+        if why is not None:
+            items.append({**it, "layer2_pending": why[:400]})
     items.sort(key=_sort_key)
     q = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
          "oracle_sha1": cfg.ORACLE_SHA1, "build_failures": failures, "items": items}

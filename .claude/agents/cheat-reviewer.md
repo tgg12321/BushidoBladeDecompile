@@ -371,12 +371,18 @@ authoritative test.
 
 # Required: name the body you reviewed (owner ruling Q39)
 
-When the body under review is in `src/` (a landing / layer-2 review), run
-`& tools/wteng.ps1 main layer2 hash <func>` and put its `body_hash` in your
-verdict. That hash is the ONLY body your verdict may be recorded against:
-`queue done` refuses unless the recorded PASS matches the body landed, so a
-PASS without it cannot land anything. If the body is not in `src/` (a draft or
-candidate file), set `body_hash` to `""`.
+When the body under review is in a `src/` (a landing / layer-2 review):
+1. Confirm the function's body in THAT tree's `src/<file>.c` is the body you
+   were briefed on (compare it with the briefed diff / staged file). If it is
+   not, your decision is FAIL ("src/ does not hold the briefed body").
+2. In the same tree, run `python3 -m engine.cli layer2 hash <func>` (or
+   `& tools/wteng.ps1 <that tree> layer2 hash <func>` — `main` only when the
+   body is on main) and put its `body_hash` in your verdict.
+That hash is the ONLY body your verdict may be recorded against (`layer2
+record --verdict-file <your JSON>`): `queue done` refuses unless the recorded
+PASS matches the body landed, so a PASS without it cannot land anything. If
+the body is not in any `src/` (a draft or candidate file), set `body_hash` to
+`""`.
 
 # Output
 

@@ -139,15 +139,16 @@ def main() -> int:
     qp.add_argument("--force-rescan", action="store_true",
                     help="auto-return: re-measure every rotated candidate even though the "
                          "fingerprint did not move (recovery after a corrupted re-measure)")
-    l2p = sub.add_parser("layer2", help="layer-2 review record (owner ruling Q39): `hash` = the key of the body in src/ (the reviewer reports it); `record` a verdict for that hash; `check` = the gate `queue done` applies")
-    l2p.add_argument("action", choices=["hash", "record", "check"])
+    l2p = sub.add_parser("layer2", help="layer-2 review record (owner ruling Q39): `hash` = the key of the body in src/ (the reviewer reports it); `show` = the source that key covers; `record` a verdict for that hash; `check` = the gate `queue done` applies")
+    l2p.add_argument("action", choices=["hash", "show", "record", "check"])
     l2p.add_argument("func")
     l2p.add_argument("--verdict", choices=list(L2.VERDICTS), help="record: the reviewer's decision")
     l2p.add_argument("--reviewer", default="", help="record: who ruled (agent id / name)")
     l2p.add_argument("--scope", choices=list(L2.SCOPES), help="record: completion-class kind being landed")
     l2p.add_argument("--notes", default="", help="record: key findings / required fixes")
     l2p.add_argument("--file", default="", help="src file stem (default: the queue item's file, else a src/ scan)")
-    l2p.add_argument("--expect-hash", default="", help="record (REQUIRED): the `layer2 hash` the reviewer reported for the body it ruled on; refused unless src/ still hashes to it")
+    l2p.add_argument("--expect-hash", default="", help="record (REQUIRED unless --verdict-file carries it): the `layer2 hash` the reviewer reported for the body it ruled on; a PASS is refused unless src/ still hashes to it")
+    l2p.add_argument("--verdict-file", default="", help="record: the reviewer's JSON verdict; supplies verdict + body_hash (+ notes from its summary) and its path/sha1 are recorded")
     ccp = sub.add_parser("cc1psx-check", help="self-disproof: score a function's candidate under our cc1 AND the original cc1psx (out of tree); a closer cc1psx = fidelity lead")
     ccp.add_argument("func")
     ccp.add_argument("--candidate", default="", help="candidate body (default memory/grind/<func>/candidate.c)")
@@ -314,11 +315,41 @@ def main() -> int:
 
     if a.cmd == "layer2":
         if a.action == "record":
-            if not a.verdict or not a.scope:
-                print("layer2 record: requires --verdict and --scope")
-                return 2
-            r = L2.record(a.func, a.verdict, a.reviewer, a.scope, a.notes,
-                          stem=a.file or None, expect_hash=a.expect_hash or None)
+            verdict, expect, notes, extra = a.verdict, a.expect_hash, a.notes, None
+            r = None
+            if a.verdict_file:
+                try:
+                    vf = L2.read_verdict_file(a.verdict_file)
+                except ValueError as e:
+                    vf, r = None, {"ok": False, "func": a.func, "reason": str(e)}
+                if vf is not None:
+                    clash = [f"{n} {mine!r} vs the file's {theirs!r}" for n, mine, theirs in (
+                        ("function", a.func, vf["function"]),
+                        ("--verdict", verdict or vf["verdict"], vf["verdict"]),
+                        ("--expect-hash", expect or vf["body_hash"], vf["body_hash"]))
+                        if mine != theirs]
+                    if clash:
+                        r = {"ok": False, "func": a.func,
+                             "reason": "verdict file disagrees: " + "; ".join(clash)}
+                    verdict, expect = vf["verdict"], vf["body_hash"]
+                    notes = notes or vf["summary"]
+                    extra = {"verdict_file": vf["verdict_file"],
+                             "verdict_sha1": vf["verdict_sha1"]}
+            if r is None:
+                if not verdict or not a.scope:
+                    print("layer2 record: requires --scope and --verdict (or --verdict-file)")
+                    return 2
+                r = L2.record(a.func, verdict, a.reviewer, a.scope, notes,
+                              stem=a.file or None, expect_hash=expect or None, extra=extra)
+        elif a.action == "show":
+            stem = a.file or L2.locate_stem(a.func)
+            text = L2._read_text(Path(f"src/{stem}.c")) if stem else None
+            src = L2.body_source(text, a.func) if text is not None else None
+            if src is None:
+                print(f"layer2 show: no single body for {a.func} in src/{stem or '*'}.c")
+                return 1
+            print(src[1])
+            return 0
         else:
             stem = a.file or L2.locate_stem(a.func)
             key = L2.current_key(a.func, stem) if stem else None

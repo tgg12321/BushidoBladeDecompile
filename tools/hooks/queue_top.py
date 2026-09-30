@@ -39,7 +39,8 @@ def main() -> int:
             f"{top['verdict']} | pure-C distance {top['distance']} | "
             f"{active} active remaining.\n"
             f"        Loop: canonical {top['func']} -> sandbox {top['func']} --disable all "
-            f"(edit src toward 0) -> verify-oracle -> queue done {top['func']} -> "
+            f"(edit src toward 0) -> verify-oracle -> layer-2 review + `layer2 record` "
+            f"(owner ruling Q39) -> queue done {top['func']} -> "
             f"commit. Finish THIS to COMPLETED-C before taking another. "
             f"(`engine queue next` for the full record.)")
         # Surface a WIP checkpoint if one exists for the top function. The WIP

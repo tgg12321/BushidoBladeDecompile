@@ -128,7 +128,10 @@ Steps for the single top function:
      (one tool call scores N forms and restores src; 10-20 per-edit sandbox
      round-trips per session was the #1 measured turn sink).
   5. & tools/wteng.ps1 main retire <func>         (drops rules + full SHA1 gate)
-  6. & tools/wteng.ps1 main queue done <func>
+  5b. Layer-2 review (owner ruling Q39): a fresh cheat-reviewer rules on the
+     body in src/ and reports its `layer2 hash`; record its verdict with
+     & tools/wteng.ps1 main layer2 record <func> --reviewer <id> --scope match --verdict-file <its JSON>
+  6. & tools/wteng.ps1 main queue done <func>     (refuses without a layer-2 PASS on this exact body)
   7. Register a finding if reusable (.claude/rules/ or memory/), then commit with
      git commit -F tmp/msg.txt (write the message file first; never a heredoc).
 

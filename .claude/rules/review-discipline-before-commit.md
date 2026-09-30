@@ -196,18 +196,21 @@ skill §4 (Landing it).
 
 **Recorded and enforced (owner ruling Q39, 2026-09-29).** Every layer-2
 verdict — PASS, FAIL or NEEDS_USER — is recorded with
-`python3 -m engine.cli layer2 record <func> --verdict <V> --reviewer <id>
---scope <match|cheat-cleanup|auth> --expect-hash <h> --notes "<key findings>"`,
-where `<h>` is the `body_hash` the reviewer reported (`layer2 hash <func>` on
-the body it reviewed — required in its verdict). The record is refused without
-`<h>` or when `src/` no longer hashes to it; it appends to
-`memory/grind/<func>/layer2.jsonl`. Commit the record with the
-landing. `queue done` (and regen's drop of a listed item) refuses unless the
-LATEST record is a PASS on the CURRENT body: re-review after any code change
-(comment/layout edits keep the hash; any token change moves it). No override
-flag exists. For the grinder, the driver records the Judge's FINAL CALL PASS
-(scope `grinder-final-call`) against the hash taken just before the Judge saw
-the diff.
+`python3 -m engine.cli layer2 record <func> --reviewer <id>
+--scope <match|cheat-cleanup|auth> --verdict-file <the reviewer's JSON>` (or
+`--verdict <V> --expect-hash <h>`), where `<h>` is the `body_hash` the reviewer
+reported (`layer2 hash <func>` on the body it reviewed — required in its
+verdict). The record is refused without `<h>`; a PASS is also refused when
+`src/` no longer hashes to it (a FAIL/NEEDS_USER is not — it can only close
+the gate). It appends to `memory/grind/<func>/layer2.jsonl`; commit it with
+the landing. `queue done` (and regen's drop of a listed item) refuses unless
+the LATEST record is a PASS on the CURRENT body: re-review after any change to
+the definition (comment/layout edits inside it keep the hash). The key covers
+the function's definition ONLY — file-scope macros, typedefs, globals and
+helpers it depends on can change without moving it. No override flag exists.
+For the grinder, the driver records the Judge's FINAL CALL verdict (PASS or
+FAIL, scope `grinder-final-call`) against the hash taken just before the Judge
+saw the body.
 
 ## Periodic re-audits
 
