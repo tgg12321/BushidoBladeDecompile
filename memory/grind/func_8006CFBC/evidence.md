@@ -38,3 +38,13 @@ mechanism, banked search, ablations, permuter). Short form: without a multi-writ
 destination, sched1's birth boost (sched.c:2584) puts each add below the header store
 and local-alloc's combine_regs (local-alloc.c:1784) ties it to the dying header load
 (score 8, every one-variable-per-value spelling banked in r11/spellings/ misses).
+
+## 2026-09-30 -- LANDED COMPLETED-C (9813176b2, queue eef645a1b)
+Layer-2 PASS, reviewer l2-8006CFBC-r1, round 1, body_hash 30c7eb47811df8a5, scope match
+(memory/grind/func_8006CFBC/layer2.jsonl). Staged body = candidate.c minus its extern
+block (the block already precedes the body in src/text1b_tu1c.c). Reviewer checked
+Q33/Q46 against the asm (only word site 0x8006D018; two-store spellings 2), the whole
+Ruling 11 package (twin differs only in declarations/identifiers, dumps of the exact body,
+ADJPRI/SELBEST/.greg traces), and the Env layout against sibling Env77D94. Non-blocking
+cosmetic note: `return (s16)result;` is a no-op cast (left, to keep the reviewed body).
+Rebuild SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa; check_completion_integrity OK.
