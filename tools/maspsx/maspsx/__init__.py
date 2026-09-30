@@ -560,6 +560,8 @@ class MaspsxProcessor:
         self.sdata_entries: dict[str, int] = {}
 
         self.comm_symbols: set[str] = set()
+        # symbols named by `.local` (our cc1's svr4 form of an uninitialized static)
+        self.local_symbols: set[str] = set()
         self.sdata_sym_list = sdata_sym_list or []
         self.sdata_func_set = set(sdata_func_list) if sdata_func_list else set()
         self.sdata_exclude_map = sdata_exclude_map or {}
@@ -603,6 +605,10 @@ class MaspsxProcessor:
             if line.startswith(".globl"):
                 continue
 
+            if line.startswith(".local"):
+                # record only; the line's handling below is unchanged
+                self.local_symbols.add(line.split()[1])
+
             if line.startswith(".text"):
                 in_sdata = False
                 continue
@@ -636,7 +642,18 @@ class MaspsxProcessor:
                 # e.g.	.comm	MENU_RadarScale_800AB480,4
                 in_sdata = False
                 _, var = line.split()
-                symbol, size_str = var.split(",")
+                # our cc1 writes `.comm sym,size,align` (three fields) for a public
+                # tentative definition; the alignment is implicit for COMMON, as
+                # cc1psx's two-field `.comm sym,size` (owner Q62, 2026-09-30)
+                symbol, size_str = var.split(",")[:2]
+                if line.startswith(".comm") and symbol in self.local_symbols:
+                    # `.local sym` + `.comm` = an uninitialized static; cc1psx wrote
+                    # `.lcomm`, which ASPSX treats differently (gp at every offset).
+                    # Not modelled: fail closed, as before the three-field parse.
+                    raise ValueError(
+                        f".local+.comm {symbol} (uninitialized static) is not modelled; "
+                        "ASPSX saw .lcomm -- needs its own ruling"
+                    )
                 size = int(size_str)
                 if size <= self.sdata_limit:
                     self.sbss_entries[symbol] = size
