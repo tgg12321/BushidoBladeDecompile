@@ -928,3 +928,10 @@ the 4-byte gap to 0x80015A24 (`tmp/grind/func_800747D8/dumps/text1b.s:21953`).
 - [s10] memory/grind/func_800747D8/self_vet.md was written against the proven body: one sanctioned-family claim (duplicated-statement-into-arms, .claude/rules/duplicated-statement-into-arms.md, scope quoted verbatim, precedent .claude/rules/duplicated-statement-into-arms.md:29) with all five prerequisites answered, and /* FAKE */ annotations emitted on BOTH duplicated `sound = 4;` copies naming tools/gcc-2.7.2/rtlanal.c:886-888 and tools/gcc-2.7.2/jump.c:1178 as the mechanism and hypotheses.md s1-s9 as the lever-exhaustion ledger. Everything else in the body is ordinary C — no pins, no __asm__, no volatile, no dead locals, no frame coercion.
 
 - [s10] Session hygiene: src/text1b.c and src/text1a_b_mid_rodata.c were reverted to HEAD after the proof and the tree was rebuilt — `& tools/wteng.ps1 main build` prints sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa MATCH in the restored state. git status --short shows only docs/grind/, memory/grind/func_800747D8/ and the engine's own metrics/events.jsonl.
+
+## 2026-09-30 — REOPENED under owner Q37 (layer-2 rev-45, SelWork cluster)
+
+Reopened together with the other SelWork consumers; the landed body is in
+rejected/selwork-cluster-2026-09-30.c. Frontier (one landing for the whole cluster, rev-45's
+findings, the Q33(5) size question, p_old, D_8009BD20, GaugeWork): 
+memory/grind/func_800768DC/selwork-cluster-2026-09-30.md (+ the reviewed patch beside it).
