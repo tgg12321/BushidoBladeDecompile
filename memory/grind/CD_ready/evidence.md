@@ -129,3 +129,12 @@ FAKE note, direct returns = 4.
   CD_cw 0/263 — 0 hunks each. canonical CD_ready: C.
 - layer2 hash: CD_ready 14bb9c645c2dcf07, CD_sync e73b60bc2971fed6, CD_datasync
   5175ffb0d18f9308 (CD_cw unchanged 048fd9442f152f24).
+
+## 2026-09-30 — LANDED: COMPLETED-C (598b2e3a8; queue 45750aab0)
+Layer-2 PASS l2-CD_ready-r1, round 1: CD_ready 14bb9c645c2dcf07 (match), CD_sync
+e73b60bc2971fed6 and CD_datasync 5175ffb0d18f9308 (cheat-cleanup), each verified
+statement by statement against SOTN bios.c @aa53500; check2's member arithmetic and all
+second handles gone. Per the reviewer's non-blocking note, the unreferenced
+g_str_cd_timeout rows (named_syms.txt, symbol_addrs.txt, undefined_syms_auto.txt) were
+retired in the same landing (rebuild byte-identical). check_completion_integrity OK.
+Open, optional: `extern s32 D_800161B8;` vs its `const char[16]` definition.
