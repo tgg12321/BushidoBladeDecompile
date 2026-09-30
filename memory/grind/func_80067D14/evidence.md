@@ -69,3 +69,13 @@ inline_c.h macro islands. m2c draft (tmp/func_80067D14/m2c.c). Measured progress
   tools/canonical_asm_regions.json entry (11 hashes) added. lock.ps1 rebuild SHA1 = oracle;
   spliced sandbox --disable all = 0 (1047/1047, 0 scored hunks); engine.completion.source_issues
   = []. Awaiting layer-2 (scope auth + match).
+
+## 2026-09-30 -- LANDED (COMPLETED-INLINE-ASM-CANONICAL)
+
+Layer-2 PASS l2-80067D14-r1 (auth + match scopes, body 6d89db20b21f7eda), both recorded in
+layer2.jsonl. Commits: auth d728e6111 (row only), Match 5dd51f144 (src + region hashes +
+ledger), queue fc9a52fdb. Rebuild SHA1 = oracle; check_completion_integrity OK. Reviewer
+findings: all 11 islands are verbatim vs the silent-hill 4.3 copy; the three DMPSX words were
+decoded field by field; the rood 4.5 rtpt provenance is acceptable; the region hashes are equal;
+the 17 context pointers are computed in the target itself (ordinary C); `p_out - 0x14` is the
+original's own idiom (func_800620B8); LOW/LOH are cited to matched SOTN code, so no FAKE is owed.
