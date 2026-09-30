@@ -1,8 +1,9 @@
 """Clean build pipeline — replaces the Makefile recipe macros.
 
 Per-C-file pipeline (identical stage order to the Makefile):
-    cpp | cc1 | prologue_fix | maspsx | [fix_lwl] | [align sed] | multu_pad
-        | regfix | regfix_stage2 | asmfix | as -> .o
+    cpp | cc1 | prologue_fix | maspsx | multu_pad | as -> .o,
+    then objcopy: .rodata alignment 4 (object-relative jump-table alignment, one rule
+    for every C object; owner ruling 2026-09-30).
 
 Then: ld (via splat linker script) -> objcopy -> make_psexe -> SHA1 check.
 
@@ -84,15 +85,15 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
         prologue_fix,
         f"{cfg.MASPSX} {maspsx_flags}",
     ]
-    if stem in cfg.RODATA_ALIGN2_FILES:
-        stages.append(r'sed "s/\.align\t3/.align\t2/"')
     stages += [
         cfg.MULTU_PAD,
         f"{cfg.AS} {cfg.AS_FLAGS} -o {out_o}",
     ]
     # Every stage must succeed. A compiler can emit plausible assembly after
     # reporting an error; that output is not a successful compilation.
-    return " | ".join(stages)
+    # Then the object-relative rodata alignment: one uniform rule for every C
+    # object (owner ruling 2026-09-30, .claude/rules/rodata-object-alignment.md).
+    return " | ".join(stages) + f" && {cfg.OBJCOPY} {cfg.RODATA_OBJ_ALIGN} {out_o}"
 
 
 def build_c_object(stem: str, out_o: str, cheat_overrides=None) -> str:

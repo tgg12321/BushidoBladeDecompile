@@ -3545,3 +3545,11 @@ func_8003F218 = 0x8003F218;  /* store D_800F665C + game_SetControllerPorts */
 stage_InitCollision = 0x8003F274;  /* per-player collision setup: game_GetPlayerCount, D_800A8FB0 block */
 stage_ApplyLighting = 0x8003F5CC;  /* 3x sys_StubEmpty3(light_ptr_i, target_ptr_i, i) - stubbed light apply, vestigial */
 /* RENAME 0x800819C4: retired name 'cdrom_Initialize' — preserved note: glabel-authoritative name; called by cdrom_CheckReady between Shutdown/ConfigSPU */
+g_cd_atv_plus_0x1 = 0x800A3719;  /* alias of g_cd_atv+1; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+g_cd_atv_plus_0x2 = 0x800A371A;  /* alias of g_cd_atv+2; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+g_cd_atv_plus_0x3 = 0x800A371B;  /* alias of g_cd_atv+3; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+D_80101EA4 = 0x80101EA4;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+g_cd_loc = 0x80101E6C;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+g_cd_result_plus_0x3 = 0x800A3763;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+g_cd_result_plus_0x4 = 0x800A3764;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+g_cd_result_plus_0x5 = 0x800A3765;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */

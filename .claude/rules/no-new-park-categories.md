@@ -536,9 +536,10 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     [[compiler-flags-canonical]] § "Per-file -G8 by proof", its own prongs
     (i)-(vi)). The maspsx COMMON model was ruled in the fourth batch the
     same day, as the gated list `maspsx_comm_syms.txt` with its own prongs
-    (a)-(d) in [[maspsx-gate-lists]]. A merge that depends on that gate is
-    admitted only when its rows meet those prongs; this amendment admits no
-    gate row. Record:
+    (a)-(d) in [[maspsx-gate-lists]]. WITHDRAWN 2026-09-30: the owner ruled
+    that per-function gate a cheat, the list is retired and empty, and no
+    merge or landing may depend on it (decisions.md 2026-09-30 OWNER RULING);
+    this amendment admits no gate row. Record:
     docs/grind/decisions.md 2026-09-26 OWNER RULING — aggregate-merge prong
     (a): compiler-necessity evidence, minimal span.
   - **Exception to prongs (c)/(d): per-file declarations of the same bytes

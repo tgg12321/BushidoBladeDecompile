@@ -264,3 +264,49 @@ class TestMflo(unittest.TestCase):
         res = mp.process_lines()
         clean_lines = strip_comments(res)
         self.assertEqual(expected_lines, clean_lines)
+
+    def test_mflo_mult_dot_label(self):
+        """
+        This GCC fork emits .L labels; ASPSX puts the mflo->mult hazard nop after the label
+        (same placement as test_div_div_label's $L case).
+        """
+        lines = [
+            "	mflo	$3",
+            "	subu	$2,$2,$3",
+            ".L5:",
+            "	mult	$4,$5",
+        ]
+        expected_lines = [
+            "mflo\t$3",
+            "subu\t$2,$2,$3",
+            ".L5:",
+            "nop",
+            "mult\t$4,$5",
+        ]
+        mp = MaspsxProcessor(lines)
+        res = mp.process_lines()
+        clean_lines = strip_comments(res)
+        self.assertEqual(expected_lines, clean_lines)
+
+    def test_mflo_jump_label_div(self):
+        """
+        An unconditional jump between mflo and the div ends the hazard: ASPSX adds only the
+        jump's delay-slot nop, no hazard nop after the label.
+        """
+        lines = [
+            "	mflo	$3",
+            "	j	.L2",
+            ".L3:",
+            "	divu	$0,$4,$5",
+        ]
+        expected_lines = [
+            "mflo\t$3",
+            "j\t.L2",
+            "nop",
+            ".L3:",
+            "divu\t$0,$4,$5",
+        ]
+        mp = MaspsxProcessor(lines)
+        res = mp.process_lines()
+        clean_lines = strip_comments(res)
+        self.assertEqual(expected_lines, clean_lines)

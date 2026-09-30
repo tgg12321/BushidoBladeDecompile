@@ -121,19 +121,22 @@ $(EXE): $(BIN) $(TARGET_EXE) tools/make_psexe.py
 # -- Per-file GP-relative opt-in --
 # List C files (without path/extension) that need GP-relative addressing.
 # These are compiled with -G8 and use sdata_syms.txt for selective GP-rel.
-GP_FILES := text1a_pre text1a_post code6cac_b3 code6cac_b4 code6cac_b5
+GP_FILES := text1a_pre text1a_pre_tu2 text1a_post code6cac_b3 code6cac_b4 code6cac_b5
 
 # -- Per-file lb/lh expansion opt-in --
 # ASPSX expands lb→lbu+sll+sra and lh→lhu+sll+sra in certain contexts.
 # These flags replicate that behavior via maspsx for files that need it.
-EXPAND_LB_FILES := code6cac_b code6cac_b3 code6cac_b3_post
+EXPAND_LB_FILES := code6cac_b code6cac_b_tu2 code6cac_b_tu3 code6cac_b3 code6cac_b3_post
 EXPAND_LH_FILES :=
 
-# -- Per-file rodata alignment fix --
-# GCC 2.7.2 emits .align 3 (8-byte) for switch tables in .rodata.
-# When rodata is split across objects, this creates unwanted padding.
-# Downgrade to .align 2 (4-byte) for files whose rodata is sandwiched.
-RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_b2_post code6cac_b3 code6cac_c code6cac_c0 code6cac_c_ab code6cac_c2 text1a_pre text1a_post text1a_b text1a_c text1a_c2 text1b text1b_b
+# -- Rodata alignment: object-relative, one rule for every C object --
+# Sony ASPSX pads `.align 3` (switch tables) relative to each object's start and
+# PSYLINK places objects on 4-byte boundaries (measured with the PsyQ 3.5 tools,
+# docs/grind/rodata-align-2026-09-30.md). GNU as already pads relative to the
+# section start, so setting every object's .rodata alignment to 4 after `as`
+# reproduces it. Owner ruling 2026-09-30 (.claude/rules/rodata-object-alignment.md);
+# replaces the retired per-file `.align 3 -> .align 2` sed.
+RODATA_OBJ_ALIGN := --set-section-alignment .rodata=4
 
 # -- Per-file -fno-strength-reduce opt-in --
 # Some functions were originally compiled without GCC's loop strength-reduction.
@@ -143,7 +146,6 @@ NO_SR_FILES :=
 # Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
 cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)
 maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(EXPAND_LB_FILES)), --expand-lb)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)
-rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.align\t2/" |,)
 
 # Shared pipeline dependencies for every C object. Without these, changing
 # pipeline/toolchain config can leave stale objects in place because
@@ -157,10 +159,11 @@ PIPELINE_DEPS := Makefile \
 	$(wildcard include/* src/*.h asm/funcs/*.s)
 
 # -- Compile C source (decompiled functions) --
-# Pipeline: cpp | cc1 | prologue_fix | maspsx | [sed align fix] | multu_pad | as -> .o
+# Pipeline: cpp | cc1 | prologue_fix | maspsx | multu_pad | as -> .o, then objcopy (.rodata alignment 4)
 $(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c $(PIPELINE_DEPS)
 	@mkdir -p $(dir $@)
-	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call rodata_align_fix,$*) $(MULTU_PAD) | $(AS) $(AS_FLAGS) -o $@
+	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(MULTU_PAD) | $(AS) $(AS_FLAGS) -o $@
+	$(OBJCOPY) $(RODATA_OBJ_ALIGN) $@
 
 # -- Assemble .s files (non-decompiled asm) --
 $(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s $(wildcard include/*)

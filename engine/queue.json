@@ -4,8 +4,38 @@
   "build_failures": [],
   "items": [
     {
+      "func": "cdrom_SetMix",
+      "file": "code6cac_b4",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/cdrom_SetMix/cheated-comm-gate-body.c"
+    },
+    {
+      "func": "func_80035F78",
+      "file": "code6cac_b4",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/func_80035F78/cheated-comm-gate-body.c"
+    },
+    {
+      "func": "func_80036140",
+      "file": "code6cac_b5",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/func_80036140/cheated-comm-gate-body.c"
+    },
+    {
       "func": "func_8001C8DC",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 0,
       "verdict": "C",
       "rules": 0,
@@ -15,7 +45,7 @@
     },
     {
       "func": "func_8002D780",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 0,
       "verdict": "C",
       "rules": 0,
@@ -25,7 +55,7 @@
     },
     {
       "func": "func_8002EBDC",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 0,
       "verdict": "C",
       "rules": 0,
@@ -35,7 +65,7 @@
     },
     {
       "func": "func_8002F770",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 0,
       "verdict": "C",
       "rules": 0,
@@ -75,7 +105,7 @@
     },
     {
       "func": "func_8006CFBC",
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "distance": 0,
       "verdict": "C",
       "rules": 0,
@@ -85,7 +115,7 @@
     },
     {
       "func": "func_800759D0",
-      "file": "text1b",
+      "file": "text1b_tu2",
       "distance": 0,
       "verdict": "C",
       "rules": 0,
@@ -95,7 +125,7 @@
     },
     {
       "func": "func_80075F80",
-      "file": "text1b",
+      "file": "text1b_tu2",
       "distance": 0,
       "verdict": "C",
       "rules": 0,
@@ -105,7 +135,7 @@
     },
     {
       "func": "func_8005C8A8",
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "distance": 752,
       "verdict": "C",
       "rules": 0,
@@ -118,7 +148,7 @@
     },
     {
       "func": "func_80070F78",
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "distance": 808,
       "verdict": "C",
       "rules": 0,
@@ -131,7 +161,7 @@
     },
     {
       "func": "func_80067D14",
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "distance": 1046,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
@@ -152,7 +182,7 @@
     },
     {
       "func": "func_8002AB08",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 1110,
       "verdict": "C",
       "rules": 0,
@@ -165,7 +195,7 @@
     },
     {
       "func": "func_80065800",
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "distance": 1453,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
@@ -173,7 +203,7 @@
     },
     {
       "func": "func_80023F08",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 2981,
       "verdict": "C",
       "rules": 0,
@@ -187,7 +217,7 @@
     {
       "func": "func_80058580",
       "file": "text1b",
-      "distance": 2989,
+      "distance": 30,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -227,7 +257,7 @@
     },
     {
       "func": "func_800204C0",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 52,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
@@ -238,7 +268,7 @@
     },
     {
       "func": "func_8005D554",
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "distance": 65,
       "verdict": "C",
       "rules": 0,
@@ -260,7 +290,7 @@
     },
     {
       "func": "func_80020E74",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 231,
       "verdict": "C",
       "rules": 0,
@@ -304,7 +334,7 @@
     },
     {
       "func": "func_800693CC",
-      "file": "text1b",
+      "file": "text1b_tu1c",
       "distance": 307,
       "verdict": "C",
       "rules": 0,
@@ -315,7 +345,7 @@
     },
     {
       "func": "func_800207C8",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 317,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
@@ -326,7 +356,7 @@
     },
     {
       "func": "func_800288C8",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 465,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
@@ -337,14 +367,14 @@
     }
   ],
   "counts": {
-    "total": 30,
-    "active": 18,
+    "total": 33,
+    "active": 21,
     "by_status": {
-      "active": 18,
+      "active": 21,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 16,
+      "C": 19,
       "ASM-PARTIAL": 2
     }
   },

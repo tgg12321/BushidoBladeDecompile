@@ -369,3 +369,39 @@ Other option offered: "No" — "Keep relying on process discipline."
 Question, verbatim: "Apply the func_8004A4E0 corrections (fix the false and missing reasons in its entry; the authorization itself stays)?"
 Owner chose: **"Yes, correct the text"** — option text: "Commit your approval as a rules: commit first, then fix the text in inline_asm_canonical.txt, known_psyq_stdlib.txt and the func_8004A808 entry."
 Other option offered: "Leave as is" — "The authorization is right; the wrong text stays as history."
+
+<!-- Merge provenance (2026-09-30, merge of origin/main into local main): two sessions appended to
+this record in parallel. The local lane recorded the fourteenth..twenty-first batches (Q26-Q40,
+2026-09-28/29, headings above); the origin lane independently recorded "Batch 14", "Batch 15" and
+"Batch 16" (2026-09-30, no Q numbers, below). Both numberings are kept verbatim and nothing is
+renumbered: a citation "batch 14..21" / "Q26..Q40" dated 2026-09-28/29 means the local-lane batch
+above; the origin-lane batches below are cited by their 2026-09-30 date and heading (e.g. "owner
+ruling 2026-09-30 (second)"). -->
+
+<!-- Batch 14: recorded 2026-09-30 by the session author from the owner's message in the manual session (no separate tmp record). -->
+# Owner ruling 2026-09-30 — VERBATIM RECORD
+Context: asked which of the rulings above are cheats or workarounds, the session author flagged
+Q9, Q15 and Q18 (the per-function `maspsx_comm_syms.txt` gate) first.
+
+## Q9 / Q15 / Q18 withdrawn — the per-function COMMON gate is a cheat
+Owner (Trenton), verbatim: "But the Q9, Q15, and Q18 thing you flagged is a big concern. Go ahead and mark those as cheats and make sure anything that allowed that construct is added back to the queue"
+(Rule text and execution: docs/grind/decisions.md 2026-09-30 OWNER RULING — the per-function maspsx
+COMMON gate is a cheat.)
+
+<!-- Batch 15: recorded 2026-09-30 by the session author from the owner's message in the manual session. -->
+# Owner ruling 2026-09-30 (second) — VERBATIM RECORD
+
+## Object-relative rodata alignment adopted
+Question (the session author's closing line, after the evidence report in docs/grind/rodata-align-2026-09-30.md sections 4-6): "do you want me to go ahead and adopt it on those terms? Your ruling would be recorded first, and the adoption would land only after a byte-identical oracle check and a layer-2 review."
+Owner (Trenton), verbatim: "Yes go ahead"
+(Rule text: .claude/rules/rodata-object-alignment.md; record: docs/grind/decisions.md 2026-09-30 OWNER RULING — object-relative rodata alignment.)
+
+<!-- Batch 16: recorded 2026-09-30 by the session author from the owner's messages in the manual session. -->
+# Owner rulings 2026-09-30 (third) — VERBATIM RECORD
+
+## maspsx `.L`-label mflo-hazard fix: declined, then adopted
+Question (session author): adopt the global maspsx fix (is_label also matching `.L` labels, plus an unconditional jump ending the mflo hazard), byte-identical for the whole build, func_80058580 57 -> 55?
+Owner (Trenton), verbatim: "No let's find an avenue without any kind of compiler or maspx fix or patch"
+Follow-up questions (owner, verbatim): "Would you consider this kind of maspx patch a cheat? Does SOTN do the same?", "how confident are you this problem iis a maspx bug, not some other issue?", "Is there any avenue where this item or our other items could be decompiled without a maspx patch? Or is this a hard, verified requirement"
+Owner (Trenton), verbatim: "alright go ahead and redact my no maspx changes rule and make this change"
+(Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — maspsx `.L`-label mflo-hazard fix adopted.)

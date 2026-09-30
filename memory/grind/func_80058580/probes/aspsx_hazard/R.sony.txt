@@ -1,0 +1,18 @@
+# Sony ASPSX 2.34 + PSYLINK 2.37 (DOSBox) output of R.S, disassembled
+   0:	00001812 	mflo	v1
+   4:	00491023 	subu	v0,v0,t1
+   8:	00000000 	nop
+   c:	00420018 	mult	v0,v0
+  10:	00001812 	mflo	v1
+  14:	08004008 	j	0x10020
+  18:	00000000 	nop
+  1c:	00430018 	mult	v0,v1
+  20:	00001812 	mflo	v1
+  24:	04010002 	b	0x30
+  28:	00000000 	nop
+  2c:	0043001b 	divu	zero,v0,v1
+  30:	00001810 	mfhi	v1
+  34:	03e00008 	jr	ra
+  38:	00000000 	nop
+  3c:	00430018 	mult	v0,v1
+  40:	00000000 	nop

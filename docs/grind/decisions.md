@@ -30221,3 +30221,128 @@ Re-audit record: `docs/audits/func_8004A4E0-canonical-2026-09-29.md`. The whole-
 This **supersedes the 2026-09-16 "Collateral finding (NOT acted on)"** recorded under the jtbl_80015988 entry. Its "likely overshoots, re-derive as pure C with ~6 islands" recommendation was wrong: it counted per-instruction blockers and never checked register flow across the `jal` sites. Its citation `inline_asm_canonical.txt:201` is stale (the row is at `:198`), and "`known_blocked.txt` does not exist" is imprecise: the file was pruned and the row is recoverable with `git show 713493325^:known_blocked.txt` line 65. Its `syscall` finding stands.
 
 Owner Q40 (2026-09-29, `docs/grind/owner-rulings-2026-09-26.md`, 803d0fea1) approved correcting the entry text; the authorization itself is unchanged. Corrected: `inline_asm_canonical.txt:198` (decisive ABI evidence, trapping-`addi`/`ctc2` addresses, known_blocked.txt recovery pointer), `inline_asm_canonical.txt:182` (func_8004A808: the caller does set `$a0` @0x8004A594 and `$s0` @0x8004A584/5A0/5C4; only the `$s0` handoff is custom), `known_psyq_stdlib.txt:28` (2 `addi`, no add/sub/syscall).
+
+<!-- Merge provenance (2026-09-30, merge of origin/main into local main): the entries above
+(2026-09-28/29, local lane) and below (2026-09-30, origin lane) were appended in parallel; both kept
+in full, chronological. The origin lane's owner-rulings "Batch 14/15/16" (2026-09-30) are not the
+local lane's fourteenth..sixteenth batches (2026-09-28); see the provenance note in
+docs/grind/owner-rulings-2026-09-26.md. -->
+
+## 2026-09-30 — OWNER RULING — the per-function maspsx COMMON gate is a cheat (Q9/Q15/Q18 withdrawn) (`.claude/rules/maspsx-gate-lists.md`)
+
+Context: the owner asked whether any of the 2026-09-26 recommended rulings
+(docs/grind/owner-rulings-2026-09-26.md) are cheats or workarounds, or fall short of the SOTN
+standard. The session author's answer named Q9, Q15 and Q18 first: `maspsx_comm_syms.txt` tells the
+assembler shim to behave differently for NAMED FUNCTIONS, a lever outside the committed C (the
+regfix/asmfix shape); the underlying ASPSX fact (a tentative definition is gp only at its base) is
+visible in C, so a faithful model would be global and driven by each file's declarations, not
+per-function; and Q15/Q18 relaxed the proof twice (the archived Sony toolchain reproduced 431 of 512
+words, the rest classified as explained). The author also noted the orchestrator's open scoping note
+after Q17 (maspsx changes outside "a compiler patch is a cheat"), to which the owner had not replied.
+Owner (Trenton), verbatim: **"But the Q9, Q15, and Q18 thing you flagged is a big concern. Go ahead and mark those as cheats and make sure anything that allowed that construct is added back to the queue"**.
+
+**Ruling (the author's narrowing).**
+1. **The per-function COMMON gate is a cheat.** Q9 (the gated list), Q15 (row proof when the archived
+   toolchain is not byte-faithful) and Q18 (nop pads and shifted branches as scheduling fallout) are
+   WITHDRAWN. `maspsx_comm_syms.txt` is retired: it stays EMPTY and no row may be added. A function
+   whose match depends on a row is not COMPLETED; it returns to `INCLUDE_ASM` and to the queue.
+   `engine/cheats.py` reclassifies the list from `fidelity` to `cheat-pathway`, so `queue done` and
+   `tools/check_completion_integrity.py` refuse any function named in it.
+2. **What returned to the queue.** The list's three rows were the only dependants: cdrom_SetMix
+   (g_cd_atv), func_80035F78 (D_800A36B8) and func_80036140 (g_cd_atv, D_800A36B8, g_cd_result). All
+   three are INCLUDE_ASM again (code6cac_b4.c, code6cac_b5.c; func_80036140's jump table
+   jtbl_80010938 transcribed again as before its landing) and re-queued (`queue reopen`,
+   origin regression). Their landed C bodies are banked as `memory/grind/<func>/cheated-comm-gate-body.c`
+   (a lead, not a landable form). Gate-free honest floors of those bodies (`sandbox --disable all`,
+   list emptied): cdrom_SetMix 6/18, func_80035F78 6/12, func_80036140 16/512; recorded in each
+   `migration_pin.json`. The per-byte symbol rows their asm references were restored as
+   retire-with aliases (prong (c) amendment 2026-09-03). The full build is byte-identical to the
+   pre-change tree (build/bb2.bin 42fce5aff1490a579e919b68af56ebc5b0dc657f before and after, cloud
+   container; the disc EXE is not present there, so the header-prefixed oracle SHA1 was not run).
+   func_80036940 (same -G8 file) never had a row and is unaffected.
+3. **What this does not decide.** The `($12)` maspsx parser fix (Q11, byte-neutral) and the other
+   maspsx gate lists are not ruled on here. The per-file -G8 files (Q5/Q8) and the CdlATV / CdState
+   aggregate merges stay as committed; a future landing of these three functions is judged under
+   the rules as they stand, and may not rely on any per-function assembler gate for COMMON
+   behaviour. A faithful, GLOBAL, declaration-driven model of ASPSX's COMMON rule would be a
+   substrate change needing its own owner ruling.
+
+## 2026-09-30 — OWNER RULING — object-relative rodata alignment; per-file align sed retired (`.claude/rules/rodata-object-alignment.md`)
+
+Context: func_80058580's three jump tables sit at 4 mod 8 with zero words between them. The owner
+asked whether a global fix would be a cheat, then asked for the investigation, then said to pursue
+it "only if it makes sense, is within our established rules, and is not a cheat". Evidence:
+docs/grind/rodata-align-2026-09-30.md. Sony ASPSX 2.34 + PSYLINK 2.37 pad `.align 3` relative to
+each object and place objects on 4-byte boundaries (measured). The model is consistent with all 85
+jump tables. It needs 7 new TU boundaries in 5 objects. At each one the bytes prove the boundary
+exists, and ownership either fixes the rodata position or leaves only byte-identical alternatives.
+A scratch-copy proof of concept (no per-file sed, one uniform rule, the five splits) gave a bin
+identical to the oracle build. The question put to the owner, verbatim: "do you want me to go ahead
+and adopt it on those terms? Your ruling would be recorded first, and the adoption would land only
+after a byte-identical oracle check and a layer-2 review."
+Owner (Trenton), verbatim: **"Yes go ahead"**.
+
+**Ruling (the author's narrowing):** the rule text is `.claude/rules/rodata-object-alignment.md`.
+Every C object's .rodata is 4-aligned after `as` (one uniform rule, Makefile and engine alike). The
+per-file `.align 3 -> .align 2` sed (`RODATA_ALIGN2_FILES`) is retired. TU boundaries are added only
+under that file's evidence conditions (existence from bytes; position from ownership, with
+byte-identical alternatives recorded; byte-neutral text cut placed by a stated convention; moves
+only). Adoption lands after a full-build byte-identical check and a layer-2 review. Nothing here
+decides any function's completion; func_80058580's tables become reachable from C, and that
+function is still judged on its own merits.
+
+**Execution (same day).** Adopted as recorded in docs/grind/rodata-align-2026-09-30.md section 7:
+uniform objcopy rule in the Makefile and engine (sed retired), seven moves-only TU splits
+(code6cac_tu2, code6cac_b_tu2/_tu3, text1a_pre_tu2, text1b_tu2, text1b_b_tu2/_tu3), records
+relocated by file field only. Full build bin 42fce5aff1490a579e919b68af56ebc5b0dc657f, EXE SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa. Layer-2 cheat-reviewer: first pass FAIL (relocation
+rewrote line-numbered/historical text in grind state files; split headers carried unused externs,
+including two `extern volatile`), both fixed (state.json reverted to file-field-only edits; the
+split tool's declared-name resolution repaired and all parts re-split from HEAD); second pass PASS
+(moves-only verified against HEAD, volatile-detector counts back to HEAD, engine parity 47/47,
+oracle rebuilt independently).
+
+## 2026-09-30 — OWNER DECISION — maspsx `.L`-label mflo-hazard fix declined (func_80058580)
+
+> **SUPERSEDED the same day** by "OWNER RULING — maspsx `.L`-label mflo-hazard fix adopted" below. Kept as history.
+
+Context: func_80058580's floor includes two nops the original assembler (ASPSX) inserted after a
+cross-jump join label (`mflo; subu; .L: nop; mult`). maspsx's `is_label()` only matches `$L`
+labels, so its mflo/mult hazard arm never fires at this GCC fork's `.L` labels. A scratch-tree
+probe (is_label also matching `.L`, plus an unconditional jump ending the hazard) kept the whole
+build byte-identical and moved the function 57 -> 55 (memory/grind/func_80058580/probes/).
+Asked whether to adopt it, the owner (Trenton) answered, verbatim: **"No let's find an avenue
+without any kind of compiler or maspx fix or patch"**.
+
+**Record.** No maspsx or compiler change is made. The probe stays in the ledger as evidence only.
+Consequence (ledger, same day): the two nops are unreachable from C in the current pipeline
+(the label position is fixed by the target's jump bytes; only maspsx inserts nops there), so
+func_80058580 cannot reach 0 under the current substrate; work continues on the rest of its
+residual.
+
+## 2026-09-30 — OWNER RULING — maspsx `.L`-label mflo-hazard fix adopted (supersedes the same-day decline)
+
+Context: after declining the fix ("No let's find an avenue without any kind of compiler or maspx
+fix or patch"), the owner asked whether it is a cheat, whether SOTN does the same, how confident
+the diagnosis is, and whether any avenue avoids it. Evidence presented (func_80058580 ledger,
+probes/aspsx_hazard/): Sony ASPSX 2.34 + PSYLINK 2.37 insert the mflo->mult hazard nop after a
+label, with the label on the nop, and add none when an unconditional jump sits between; upstream
+mkst/maspsx implements and tests that placement (`test_div_div_label`) but only recognizes `$L`
+labels, while this GCC fork emits `.L`; SOTN uses stock maspsx with a `$L`-emitting cc1, so it gets
+the behaviour unmodified; no C spelling or other stage can supply the nop (maspsx forces
+`.set noreorder`, cc1 emits no such nop); binary-wide, 35 hazard nops follow a label (33 load-delay,
+already covered by the 2026-09-14 global arms; 2 mflo->mult, both in func_80058580).
+Owner (Trenton), verbatim: **"alright go ahead and redact my no maspx changes rule and make this change"**.
+
+**Ruling (the author's narrowing).**
+1. The 2026-09-30 decline ("No let's find an avenue without any kind of compiler or maspx fix or
+   patch") is withdrawn.
+2. Adopted, as ONE global maspsx change (never per-function): `is_label()` also recognizes this
+   GCC fork's `.L<n>:` labels, and `_handle_mflo_mfhi` treats an unconditional jump (`j`, `b`,
+   `jr`) as the one intervening instruction as ending the hazard (ASPSX: only the delay-slot nop).
+   Pinned by maspsx unit tests; lands only with the full build byte-identical to the oracle and a
+   layer-2 review.
+3. Boundary kept: maspsx changes are admissible only as GLOBAL models of documented ASPSX
+   behaviour, verified against Sony's tools and byte-neutral for every completed function.
+   Per-function assembler gates stay governed by `.claude/rules/maspsx-gate-lists.md` (the COMMON
+   gate remains a cheat).

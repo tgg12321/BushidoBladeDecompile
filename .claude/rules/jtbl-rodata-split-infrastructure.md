@@ -44,6 +44,10 @@ metadata:
 > the proper resolution path (TU re-split per the recipe in
 > `memory/project/rodata-cleanup-progress.md`).
 
+> **UPDATE 2026-09-30:** jump-table alignment is now modelled globally
+> ([[rodata-object-alignment]]): each object's `.align 3` pads relative to its own start, and new
+> TU boundaries are added under that rule's evidence conditions. The per-file align sed is retired.
+
 ## The pattern
 
 A queue item routes `C`, shows `pure-C distance 0`, and carries a cluster of

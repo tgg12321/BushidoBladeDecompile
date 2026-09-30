@@ -1,0 +1,69 @@
+# bash memory/grind/func_800290B8/fam/dump_dup.sh ; full allocno list for dup_vtx_col appended
+=== d_dw_init  (row pseudo 92, column pseudo 96)
+  row .lreg: Register 92 used 4 times across 3 insns in block 1; GR_REGS or none.
+  row .lreg: ;; Register 92 in 2.
+  row disposition: hard reg 2
+  column .lreg: Register 96 used 4 times across 4 insns in block 1; GR_REGS or none.
+  column .lreg: ;; Register 96 in 3.
+  column disposition: hard reg 3
+  .s:  sra $2,$2,1 |  andi $3,$5,0x0001
+=== d_dup_vtx_col  (row pseudo 92, column pseudo 96)
+  row .lreg: Register 92 used 6 times across 5 insns; dies in 2 places; GR_REGS or none.
+  row .greg: ;; 92 conflicts: 72 73 74 75 80 92 96 99 29
+  row .greg: ;; 92 preferences: 2
+  row disposition: hard reg 2
+  column .lreg: Register 96 used 6 times across 5 insns; GR_REGS or none.
+  column .greg: ;; 96 conflicts: 72 73 74 75 80 92 96 99 2 29
+  column disposition: hard reg 3
+  .s:  sra $2,$2,1 |  andi $3,$5,0x0001
+=== d_dup_vtx_row  (row pseudo 92, column pseudo 96)
+  row .lreg: Register 92 used 6 times across 4 insns; GR_REGS or none.
+  row .greg: ;; 92 conflicts: 72 73 74 75 80 92 96 99 29
+  row .greg: ;; 92 preferences: 2
+  row disposition: hard reg 2
+  column .lreg: Register 96 used 6 times across 6 insns; dies in 2 places; GR_REGS or none.
+  column .greg: ;; 96 conflicts: 72 73 74 75 80 92 96 99 2 29
+  column disposition: hard reg 3
+  .s:  sra $2,$2,1 |  andi $3,$5,0x0001
+=== d_dwi_dup_col  (row pseudo 92, column pseudo 96)
+  row .lreg: Register 92 used 6 times across 5 insns; dies in 2 places; GR_REGS or none.
+  row .greg: ;; 92 conflicts: 72 73 74 75 80 92 96 99 29
+  row .greg: ;; 92 preferences: 2
+  row disposition: hard reg 2
+  column .lreg: Register 96 used 6 times across 5 insns; GR_REGS or none.
+  column .greg: ;; 96 conflicts: 72 73 74 75 80 92 96 99 2 29
+  column disposition: hard reg 3
+  .s:  sra $2,$2,1 |  andi $3,$5,0x0001
+=== d_dwi_dup_row  (row pseudo 92, column pseudo 96)
+  row .lreg: Register 92 used 6 times across 4 insns; GR_REGS or none.
+  row .greg: ;; 92 conflicts: 72 73 74 75 80 92 96 99 29
+  row .greg: ;; 92 preferences: 2
+  row disposition: hard reg 2
+  column .lreg: Register 96 used 6 times across 6 insns; dies in 2 places; GR_REGS or none.
+  column .greg: ;; 96 conflicts: 72 73 74 75 80 92 96 99 2 29
+  column disposition: hard reg 3
+  .s:  sra $2,$2,1 |  andi $3,$5,0x0001
+=== dup_vtx_col: every allocno's conflicts / surviving preferences (.greg, after prune_preferences)
+;; 21 regs to allocate: 113 141 92 96 169 181 79 194 97 78 188 75 77 254 74 80 72 76 81 99 73
+;; 72 conflicts: 72 73 74 75 76 77 78 79 80 81 92 96 97 99 113 141 169 181 188 194 254 2 3 4 5 6 7 29
+;; 73 conflicts: 72 73 74 75 76 77 78 79 80 81 92 96 97 99 113 141 169 181 188 194 254 2 3 4 5 6 7 29
+;; 74 conflicts: 72 73 74 75 76 77 78 79 80 81 92 96 97 99 113 141 169 181 188 194 254 2 3 4 5 6 7 29
+;; 75 conflicts: 72 73 74 75 76 77 78 79 80 81 92 96 97 99 113 141 169 181 188 194 254 2 3 4 5 6 7 29
+;; 76 conflicts: 72 73 74 75 76 77 78 79 81 181 188 194 254 2 3 4 5 6 7 29
+;; 77 conflicts: 72 73 74 75 76 77 78 79 81 181 254 2 3 4 5 6 7 29
+;; 78 conflicts: 72 73 74 75 76 77 78 79 81 181 254 2 3 4 5 6 7 29
+;; 79 conflicts: 72 73 74 75 76 77 78 79 81 181 254 2 3 4 5 6 7 29
+;; 80 conflicts: 72 73 74 75 80 92 96 97 99 113 141 169 2 29
+;; 81 conflicts: 72 73 74 75 76 77 78 79 81 181 188 194 254 2 3 4 5 6 7 29
+;; 92 conflicts: 72 73 74 75 80 92 96 99 29
+;; 92 preferences: 2
+;; 96 conflicts: 72 73 74 75 80 92 96 99 2 29
+;; 97 conflicts: 72 73 74 75 80 97 99 113 141 2 29
+;; 99 conflicts: 72 73 74 75 80 92 96 97 99 113 141 169 2 29
+;; 113 conflicts: 72 73 74 75 80 97 99 113 2 29
+;; 141 conflicts: 72 73 74 75 80 97 99 141 2 29
+;; 169 conflicts: 72 73 74 75 80 99 169 2 29
+;; 181 conflicts: 72 73 74 75 76 77 78 79 81 181 254 2 3 4 5 6 7 29
+;; 188 conflicts: 72 73 74 75 76 81 188 194 254 2 29
+;; 194 conflicts: 72 73 74 75 76 81 188 194 254 2 29
+;; 254 conflicts: 72 73 74 75 76 77 78 79 81 181 188 194 254 2 3 4 5 6 7 29
