@@ -30088,3 +30088,28 @@ Owner (Trenton), verbatim: **"But the Q9, Q15, and Q18 thing you flagged is a bi
    the rules as they stand, and may not rely on any per-function assembler gate for COMMON
    behaviour. A faithful, GLOBAL, declaration-driven model of ASPSX's COMMON rule would be a
    substrate change needing its own owner ruling.
+
+## 2026-09-30 — OWNER RULING — object-relative rodata alignment; per-file align sed retired (`.claude/rules/rodata-object-alignment.md`)
+
+Context: func_80058580's three jump tables sit at 4 mod 8 with zero words between them. The owner
+asked whether a global fix would be a cheat, then asked for the investigation, then said to pursue
+it "only if it makes sense, is within our established rules, and is not a cheat". Evidence:
+docs/grind/rodata-align-2026-09-30.md. Sony ASPSX 2.34 + PSYLINK 2.37 pad `.align 3` relative to
+each object and place objects on 4-byte boundaries (measured). The model is consistent with all 85
+jump tables. It needs 7 new TU boundaries in 5 objects. At each one the bytes prove the boundary
+exists, and ownership either fixes the rodata position or leaves only byte-identical alternatives.
+A scratch-copy proof of concept (no per-file sed, one uniform rule, the five splits) gave a bin
+identical to the oracle build. The question put to the owner, verbatim: "do you want me to go ahead
+and adopt it on those terms? Your ruling would be recorded first, and the adoption would land only
+after a byte-identical oracle check and a layer-2 review."
+Owner (Trenton), verbatim: **"Yes go ahead"**.
+
+**Ruling (the author's narrowing):** the rule text is `.claude/rules/rodata-object-alignment.md`.
+Every C object's .rodata is 4-aligned after `as` (one uniform rule, Makefile and engine alike). The
+per-file `.align 3 -> .align 2` sed (`RODATA_ALIGN2_FILES`) is retired. TU boundaries are added only
+under that file's evidence conditions (existence from bytes; position from ownership, with
+byte-identical alternatives recorded; byte-neutral text cut placed by a stated convention; moves
+only). Adoption lands after a full-build byte-identical check and a layer-2 review. Nothing here
+decides any function's completion; func_80058580's tables become reachable from C, and that
+function is still judged on its own merits.
+

@@ -182,3 +182,12 @@ Q9, Q15 and Q18 (the per-function `maspsx_comm_syms.txt` gate) first.
 Owner (Trenton), verbatim: "But the Q9, Q15, and Q18 thing you flagged is a big concern. Go ahead and mark those as cheats and make sure anything that allowed that construct is added back to the queue"
 (Rule text and execution: docs/grind/decisions.md 2026-09-30 OWNER RULING — the per-function maspsx
 COMMON gate is a cheat.)
+
+<!-- Batch 15: recorded 2026-09-30 by the session author from the owner's message in the manual session. -->
+# Owner ruling 2026-09-30 (second) — VERBATIM RECORD
+
+## Object-relative rodata alignment adopted
+Question (the session author's closing line, after the evidence report in docs/grind/rodata-align-2026-09-30.md sections 4-6): "do you want me to go ahead and adopt it on those terms? Your ruling would be recorded first, and the adoption would land only after a byte-identical oracle check and a layer-2 review."
+Owner (Trenton), verbatim: "Yes go ahead"
+(Rule text: .claude/rules/rodata-object-alignment.md; record: docs/grind/decisions.md 2026-09-30 OWNER RULING — object-relative rodata alignment.)
+
