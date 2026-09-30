@@ -46,7 +46,7 @@ s32 cdrom_StartRead(s32 a0, s32 a1) {
     D_80101E58.rec.unk08 = 0;
     D_80101E58.rec.unk02 = 2;
     reloaded = D_80101E58.rec.pair.b;
-    D_80101E9E = 0;
+    D_80101E58.rec.unk3E = 0;
     D_80101E58.rec.unk18 = (u32)(reloaded + 0x7FF) >> 11;
     return 1;
 }
@@ -77,7 +77,7 @@ u32 func_80036F28(s32 arg0) {
 void game_FrameLoop(void) {
     u16 *p;
     func_8003AA78();
-    p = &D_80101E9E;
+    p = &D_80101E58.rec.unk3E;
     while (1) {
         if (cdrom_IsIdle() != 0) {
             break;

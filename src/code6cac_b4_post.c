@@ -56,7 +56,7 @@ void cdrom_ReadyCallback(u8 arg0) {
         CdGetSector((s32)sp, 3);
         {
             s32 v0 = CdPosToInt((s32)sp);
-            if (v0 != g_cdread_expected_pos) {
+            if (v0 != D_80101E58.rec.expected_pos) {
                 D_80101E58.rec.sectors_remaining = -2;
                 goto do_stop;
             }
@@ -64,7 +64,7 @@ void cdrom_ReadyCallback(u8 arg0) {
         CdGetSector(D_80101E58.rec.dest_buffer, 0x200);
         D_80101E58.rec.dest_buffer = D_80101E58.rec.dest_buffer + 0x800;
         D_80101E58.rec.sectors_remaining = D_80101E58.rec.sectors_remaining - 1;
-        g_cdread_expected_pos = g_cdread_expected_pos + 1;
+        D_80101E58.rec.expected_pos = D_80101E58.rec.expected_pos + 1;
         if (D_80101E58.rec.sectors_remaining == 0) {
             goto do_stop;
         }
