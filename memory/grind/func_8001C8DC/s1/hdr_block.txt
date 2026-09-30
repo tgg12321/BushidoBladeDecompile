@@ -1,0 +1,11 @@
+/* 0x800A37D2: two per-player counter bytes, [0] and [1] (0x800A37D2..0x800A37D3).
+ * Object model evidence from the original binary, independent of the byte-chasing:
+ * asm/funcs/func_8003CF84.s indexes the pair by the player number D_800A3748
+ * (0x8003D1DC-0x8003D200: `lb $v1,%lo(D_800A3748)`, `addu $at,$at,$v1`,
+ * `lbu`/`sb %lo(D_800A37D2)($at)`), and asm/funcs/func_8001C8DC.s indexes it by
+ * a 0/1 flag from one base (0x8001CC44-0x8001CC60 and 0x8001CCE4-0x8001CD00:
+ * `addiu $v0,$v0,%lo(D_800A37D2)`, `sltu $v1,$zero,$v1`, `addu $v1,$v1,$v0`,
+ * `lbu`/`sb 0x0($v1)`) -- base+index addressing of one 2-byte object. Replaces the
+ * splat per-byte labels D_800A37D2 / D_800A37D3 in C (per-word splat symbol ->
+ * aggregate merge family, owner ruling 2026-08-17). */
+extern u8 D_800A37D2[2];
