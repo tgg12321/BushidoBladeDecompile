@@ -3228,10 +3228,12 @@ def test_layer2_gate() -> None:
 
 
 def test_departures() -> None:
-    """Q39 departures audit (engine/departures.py) — round-6 review fixes 1-6
-    and C1-C5, on throwaway git repos. The main repo walks every departure
-    shape at once; small repos cover the shallow clone, independent gate adds,
-    a --full-history merge and a missing blob."""
+    """Q39 departures audit (engine/departures.py) on throwaway git repos —
+    through three review rounds: union of versions, ancestry anchor, fail-closed
+    git (shallow, grafts, replace refs, independent adds, missing objects),
+    identity-bound renames (forgeries A/A2/A3 resolve nothing), departed-body
+    judgement (naming waves B/B2 stay clear), latest-record fail-closed, and
+    the behaviour of every git walk flag that has one."""
     import subprocess
     from engine import departures, layer2
 
@@ -3243,6 +3245,33 @@ def test_departures() -> None:
                                "-c", "core.hooksPath=/dev/null", "-c", "init.defaultBranch=main",
                                *a], check=True, capture_output=True, text=True, env=env).stdout
 
+    addrs = {}
+
+    def fn(name, src="src/k.c", n=None):
+        """Add a function: a body in `src` and splat's asm/funcs/<name>.s."""
+        addrs.setdefault(name, f"8001{len(addrs):04X}")
+        Path(src).parent.mkdir(parents=True, exist_ok=True)
+        with open(src, "a") as fh:
+            fh.write(f"int {name}(int a) {{ return a + {n if n is not None else len(addrs)}; }}\n")
+        Path("asm/funcs").mkdir(parents=True, exist_ok=True)
+        Path(f"asm/funcs/{name}.s").write_text(
+            f"glabel {name}\n    /* 1000 {addrs[name]} 00000000 */  nop\n")
+
+    def rename(old, new, src="src/k.c"):
+        """What a naming wave does: the definition and the glabel .s move."""
+        Path(src).write_text(Path(src).read_text().replace(f"int {old}(", f"int {new}("))
+        s = Path(f"asm/funcs/{old}.s")
+        Path(f"asm/funcs/{new}.s").write_text(s.read_text().replace(old, new))
+        s.unlink()
+        addrs[new] = addrs[old]
+
+    def edit(name, src="src/k.c"):
+        """Change `name`'s body (e.g. a callee renamed by a later wave)."""
+        lines = Path(src).read_text().splitlines(True)
+        Path(src).write_text("".join(
+            l.replace("return ", "return 1 + ", 1) if l.startswith(f"int {name}(") else l
+            for l in lines))
+
     def item(f, **extra):
         return dict({"func": f, "file": "k", "distance": 3, "verdict": "C", "rules": 0,
                      "status": "active"}, **extra)
@@ -3250,11 +3279,8 @@ def test_departures() -> None:
     def write_queue(items):
         Path("engine/queue.json").write_text(json.dumps({"items": items}, indent=2) + "\n")
 
-    def body(f, i):
-        return f"int {f}(int a) {{ return a + {i}; }}\n"
-
-    def key(f, stem="k"):
-        return layer2.current_key(f, stem)[1]
+    def key(f, src="src/k.c"):
+        return layer2.body_key(Path(src).read_text(), f)[1]
 
     def rec(func, h, verdict="PASS", archived=False, **extra):
         p = layer2.completed_record_path(func) if archived else layer2.record_path(func)
@@ -3263,132 +3289,149 @@ def test_departures() -> None:
             fh.write(json.dumps(dict({"func": func, "verdict": verdict, "body_hash": h},
                                      **extra)) + "\n")
 
+    def move_records(old, new):
+        lines = layer2.record_path(old).read_text().splitlines()
+        layer2.record_path(new).parent.mkdir(parents=True)
+        layer2.record_path(new).write_text("".join(
+            json.dumps(dict(json.loads(l), func=new, renamed_from=[old])) + "\n" for l in lines))
+        layer2.record_path(old).unlink()
+        layer2.record_path(old).parent.rmdir()
+
     def audit():
         v = departures.unreviewed_departures()
         return v, sorted(s.split(":")[0].split(" ")[0] for s in v if not s.startswith("Q39"))
 
-    def new_repo(path):
+    def commit(msg, date=None):
+        git("add", "-A")
+        git("commit", "-qm", msg, date=date)
+        return git("rev-parse", "HEAD").strip()
+
+    def new_repo(path, funcs=(), queue=None):
+        """A repo with a pre-gate root (funcs defined + queued) and the gate."""
         path.mkdir()
         os.chdir(path)
+        addrs.clear()
         git("init", "-q")
         Path("engine").mkdir()
         Path("src").mkdir()
+        for f in funcs:
+            fn(f)
+        write_queue([item(f) for f in (queue if queue is not None else funcs)])
+        commit("pre-gate root")
+        Path("engine/layer2.py").write_text("# gate\n")
+        commit("gate lands")
 
-    # the anchor is found by the gate module's path: a move must fail loudly
     repo_root = Path(departures.__file__).resolve().parent.parent
     check("departures: GATE_FILE is engine.layer2's own path (a move breaks this, "
           "not the anchor)",
           (repo_root / departures.GATE_FILE).resolve() == Path(layer2.__file__).resolve())
-
-    # fix 4: WSL cannot follow a Windows gitdir — translate it
+    # WSL <-> Windows gitdir translation, both directions (review fix 4 / C4)
     eq("departures: Windows gitdir -> /mnt path",
        departures.wsl_gitdir("gitdir: C:/Users/T/My Repo/.git/worktrees/w\n"),
        "/mnt/c/Users/T/My Repo/.git/worktrees/w")
     eq("departures: backslash gitdir -> /mnt path",
        departures.wsl_gitdir("gitdir: D:\\x\\.git\\worktrees\\w"), "/mnt/d/x/.git/worktrees/w")
-    eq("departures: a POSIX gitdir is left alone",
+    eq("departures: /mnt gitdir -> Windows path",
+       departures.win_gitdir("gitdir: /mnt/c/Repo/.git/worktrees/w"), "C:/Repo/.git/worktrees/w")
+    eq("departures: a plain POSIX gitdir is not a Windows one",
        departures.wsl_gitdir("gitdir: /home/u/r/.git/worktrees/w"), None)
 
     cwd = os.getcwd()
     with tempfile.TemporaryDirectory() as td:
         try:
-            if os.name == "posix":
-                os.chdir(td)
-                Path(".git").write_text("gitdir: C:/Repo/.git/worktrees/w\n")
-                eq("departures: git is pointed at the translated gitdir under WSL",
-                   departures._git_cmd(), ["git", "--git-dir=/mnt/c/Repo/.git/worktrees/w"])
-                Path(".git").unlink()
+            os.chdir(td)
+            Path(".git").write_text("gitdir: C:/Repo/.git/worktrees/w\n")
+            eq("departures: WSL git is pointed at the translated gitdir",
+               departures._git_cmd("posix"),
+               ["git", "--no-replace-objects", "--git-dir=/mnt/c/Repo/.git/worktrees/w"])
+            Path(".git").write_text("gitdir: /mnt/c/Repo/.git/worktrees/w\n")
+            eq("departures: Windows git is pointed at the translated gitdir",
+               departures._git_cmd("nt"),
+               ["git", "--no-replace-objects", "--git-dir=C:/Repo/.git/worktrees/w"])
+            Path(".git").unlink()
 
-            new_repo(Path(td) / "a")
-            k = ["func_E", "func_X", "func_Y", "func_R2", "func_K", "func_S", "func_U", "func_V",
-                 "func_Z", "func_F1", "func_F2", "func_P", "func_G", "func_A", "func_T"]
-            Path("src/k.c").write_text("".join(body(f, i) for i, f in enumerate(k)))
-            listed = [n if n != "func_R2" else "func_R" for n in k]
-            write_queue([item(f) for f in listed])
-            git("add", "-A"); git("commit", "-qm", "c1")
-            q2 = [f for f in listed if f not in ("func_E", "func_S")]   # pre-gate: exempt
-            write_queue([item(f) for f in q2])
-            git("commit", "-qam", "c2")
+            # ── repo a: the broad walk ─────────────────────────────────────
+            k = ["func_E", "func_X", "func_Y", "func_R", "func_K", "func_S", "func_U",
+                 "func_V", "func_Z", "func_F1", "func_F2", "func_P", "func_G", "func_A",
+                 "func_T"]
+            Path(td, "a").mkdir()
+            os.chdir(Path(td, "a"))
+            git("init", "-q")
+            Path("engine").mkdir()
+            for f in k:
+                fn(f)
+            write_queue([item(f) for f in k])
+            commit("c1")
+            write_queue([item(f) for f in k if f not in ("func_E", "func_S")])  # pre-gate
+            commit("c2")
             _v, f0 = audit()
             eq("departures: no gate in the history -> nothing to audit", f0, [])
             Path("engine/layer2.py").write_text("# gate\n")
-            git("add", "-A"); git("commit", "-qm", "c3 gate lands")
-
+            commit("c3 gate lands")
             # c4: X, Y, Z, V, F1, F2 leave; R -> R2 and A -> B renamed while
             # queued (naming wave); T's body moves to k2.c (TU resplit) while
             # its item still says k
             rec("func_Y", key("func_Y"), archived=True)
             rec("func_V", key("func_V"), verdict="FAIL")
             rec("func_Z", "f" * 16)                         # a PASS on neither body
-            text = Path("src/k.c").read_text()
-            t_body = body("func_T", k.index("func_T"))
-            Path("src/k.c").write_text(text.replace("int func_A(", "int func_B(")
-                                       .replace(t_body, ""))
-            Path("src/k2.c").write_text(t_body)
+            rename("func_R", "func_R2")
+            rename("func_A", "func_B")
+            t = Path("src/k.c").read_text()
+            t_line = next(l for l in t.splitlines(True) if l.startswith("int func_T("))
+            Path("src/k.c").write_text(t.replace(t_line, ""))
+            Path("src/k2.c").write_text(t_line)
             q4 = [item("func_R2", renamed_from=["func_R"]), item("func_K"), item("func_U"),
                   item("func_P"), item("func_G"), item("func_B", renamed_from=["func_A"]),
                   item("func_T")]
             write_queue(q4)
-            git("add", "-A"); git("commit", "-qm", "c4")
-            # c5: func_S re-queued ONLY in a commit whose date is skewed back
-            write_queue(q4 + [item("func_S")])
-            git("commit", "-qam", "c5 skewed", date="2001-01-01T00:00:00+0000")
-            # c6: S leaves; U, P, B, T leave WITH PASSes on their bodies — P's
-            # record carries a FORGED chain; G (still queued) a forged one too
+            commit("c4")
+            write_queue(q4 + [item("func_S")])             # S listed ONLY here, skewed
+            commit("c5 skewed", date="2001-01-01T00:00:00+0000")
+            # c6: S leaves; U, P, B, T leave WITH PASSes — P's record and the
+            # still-queued G carry FORGED chains naming F2 / F1
             rec("func_U", key("func_U"))
             rec("func_P", key("func_P"), renamed_from=["func_F2"])
             rec("func_B", key("func_B"))
-            rec("func_T", key("func_T", "k2"))
+            rec("func_T", key("func_T", "src/k2.c"))
             q6 = [item("func_R2", renamed_from=["func_R"]), item("func_K"),
                   item("func_G", renamed_from=["func_F1"])]
             write_queue(q6)
-            git("add", "-A"); git("commit", "-qm", "c6")
+            commit("c6")
             # c7: a naming wave renames the completed U and the departed V
-            text = Path("src/k.c").read_text()
-            Path("src/k.c").write_text(text.replace("int func_U(", "int func_U2(")
-                                       .replace("int func_V(", "int func_V2("))
             for old, new in (("func_U", "func_U2"), ("func_V", "func_V2")):
-                lines = layer2.record_path(old).read_text().splitlines()
-                layer2.record_path(new).parent.mkdir(parents=True)
-                layer2.record_path(new).write_text("".join(
-                    json.dumps(dict(json.loads(l), func=new, renamed_from=[old])) + "\n"
-                    for l in lines))
-                layer2.record_path(old).unlink()
-                layer2.record_path(old).parent.rmdir()
-            git("add", "-A"); git("commit", "-qm", "c7 naming wave")
-            # c8: a committed CONFLICT lists func_M1; c9 resolves it away
+                rename(old, new)
+                move_records(old, new)
+            commit("c7 naming wave")
             Path("engine/queue.json").write_text(
                 '{"items": [\n<<<<<<< HEAD\n  {"func": "func_R2", "file": "k"},\n=======\n'
                 '  {"func": "func_M1", "file": "k"},\n>>>>>>> side\n'
                 '  {"func": "func_K", "file": "k"}, {"func": "func_G", "file": "k"}\n]}\n')
-            git("commit", "-qam", "c8 conflict")
+            commit("c8 conflict")
             c8_blob = git("rev-parse", "HEAD:engine/queue.json").strip()
             write_queue(q6)
-            git("commit", "-qam", "c9 resolved")
-            # c10: a version with no function name at all; c11 repairs it
+            commit("c9 resolved")
             Path("engine/queue.json").write_text("{ not json")
-            git("commit", "-qam", "c10 garbage")
+            commit("c10 garbage")
             write_queue(q6)
-            git("commit", "-qam", "c11 repaired")
-            # working tree: K leaves by hand
-            write_queue([it for it in q6 if it["func"] != "func_K"])
+            commit("c11 repaired")
+            write_queue([it for it in q6 if it["func"] != "func_K"])   # hand edit (WT)
 
             v, fl = audit()
             eq("departures: exactly the unreviewed departures",
                fl, ["func_F1", "func_F2", "func_K", "func_M1", "func_S", "func_V2",
                     "func_X", "func_Z"])
-            check("departures (fix 1): a forged chain on a QUEUED item launders nothing",
+            check("departures: a forged chain on a QUEUED item launders nothing",
                   "func_F1" in fl)
-            check("departures (fix 1): a forged chain on a PASSed record launders nothing",
+            check("departures: a forged chain on a PASSed record launders nothing",
                   "func_F2" in fl and "func_P" not in fl)
-            check("departures (fix 2): renamed while queued, then completed -> clear",
+            check("departures: renamed while queued, then completed -> clear",
                   "func_A" not in fl and "func_B" not in fl)
-            check("departures (fix 3): TU resplit, then completed -> clear", "func_T" not in fl)
-            check("departures (fix 5): a conflicted version's names are audited, not dropped",
+            check("departures: TU resplit, then completed -> clear", "func_T" not in fl)
+            check("departures: a conflicted version's names are audited, not dropped",
                   "func_M1" in fl and not any(c8_blob in s for s in v if s.startswith("Q39")))
             check("departures: a version naming no function is a violation",
                   any(s.startswith("Q39") and "names no function" in s for s in v))
-            check("departures (C1): a completed function renamed by a later naming wave "
+            check("departures: a completed function renamed by a later naming wave "
                   "stays clear", "func_U2" not in fl and "func_U" not in fl)
             check("departures: an unreviewed departed function renamed later is reported "
                   "under its current name",
@@ -3396,21 +3439,20 @@ def test_departures() -> None:
             check("departures: every finding names the fix commands",
                   all("queue reopen" in s and "layer2 record" in s
                       for s in v if not s.startswith("Q39")))
-            # C1: the body that LEFT is what a PASS must cover
             rec("func_X", key("func_X"))
-            Path("src/k.c").write_text(Path("src/k.c").read_text().replace(
-                body("func_X", 1), "int func_X(int a) { return a - 1; }\n"))
+            edit("func_X")
             _v, fl = audit()
-            check("departures (C1): a PASS on the departed body clears it despite a later edit",
+            check("departures: a PASS on the departed body clears it despite a later edit",
                   "func_X" not in fl)
-            check("departures (C1): a PASS on neither the departed nor the current body "
+            check("departures: a PASS on neither the departed nor the current body "
                   "does not", "func_Z" in fl)
+            rec("func_X", key("func_X"), verdict="FAIL")
+            check("departures (C1/E): a FAIL on the CURRENT body revokes the departed-body "
+                  "PASS", "func_X" in audit()[1])
             rec("func_K", key("func_K"))
             check("departures: a working-tree departure clears on a PASS on its current body",
                   "func_K" not in audit()[1])
 
-            # a constant number of git processes, however many queue commits
-            # (subprocess.run spawns through Popen, so counting Popen counts all)
             real_popen, calls = subprocess.Popen, []
 
             class CountingPopen(real_popen):
@@ -3418,22 +3460,20 @@ def test_departures() -> None:
                     if args and args[0] == "git":
                         calls.append(args)
                     super().__init__(args, *a, **kw)
-            subprocess.Popen = CountingPopen
+            subprocess.Popen = CountingPopen      # subprocess.run spawns through it
             try:
                 departures.unreviewed_departures()
             finally:
                 subprocess.Popen = real_popen
-            eq("departures: three git processes for the whole history", len(calls), 3)
-            # the walk flags are part of the contract even where this git makes
-            # one redundant (--ancestry-path already disables pruning in git
-            # 2.33 and 2.43, so no history here can tell --full-history's absence)
-            check("departures: the anchor walk is --topo-order --full-history",
-                  any("--diff-filter=A" in c and "--topo-order" in c and "--full-history" in c
-                      for c in calls))
+            eq("departures: four git processes for the whole history", len(calls), 4)
+            check("departures: every git call ignores replace refs",
+                  all("--no-replace-objects" in c for c in calls))
+            # --full-history is behaviourally redundant beside --ancestry-path in
+            # git 2.33 and 2.43 (side branches are walked either way), so that
+            # flag's contract is pinned on the argv
             check("departures: the history walk is --full-history --ancestry-path",
                   any("--ancestry-path" in c and "--full-history" in c for c in calls))
 
-            # git failing is a violation, never a silent pass
             os.environ["GIT_DIR"] = str(Path(td) / "no-such-gitdir")
             try:
                 v = departures.unreviewed_departures()
@@ -3442,102 +3482,211 @@ def test_departures() -> None:
             check("departures: a git failure fails the audit closed",
                   len(v) == 1 and "could not read git history" in v[0])
 
-            # fix 6: a shallow clone cannot see the anchor's parent -> closed
             os.chdir(td)
             git("clone", "-q", "--depth", "1", f"file://{Path(td) / 'a'}", "shallow")
             os.chdir(Path(td) / "shallow")
             v = departures.unreviewed_departures()
-            check("departures (fix 6): a shallow clone fails closed",
+            check("departures: a shallow clone fails closed",
                   len(v) == 1 and "cannot establish the gate anchor (shallow clone?)" in v[0])
 
-            # C2: two independent adds of the gate module -> no single anchor
-            new_repo(Path(td) / "b")
+            # ── repo g: identity-bound renames (F1: A, A2, A3) and naming
+            #    waves after completion (F2: B, B2) ─────────────────────────
+            new_repo(Path(td) / "g", ["func_L", "func_L3", "func_L4", "func_G", "func_P",
+                                      "func_BA", "func_CA"])
+            # A: L renamed in src to a never-listed L2 and dropped; the forged
+            # chain sits on the still-queued G.  A3: L3's body moves into a
+            # header and it is dropped; G's forged chain names it too.
+            rename("func_L", "func_L2")
+            t = Path("src/k.c").read_text()
+            l3 = next(l for l in t.splitlines(True) if l.startswith("int func_L3("))
+            Path("src/k.c").write_text(t.replace(l3, ""))
+            Path("include").mkdir()
+            Path("include/l.h").write_text(l3)
+            # A2: L4 dropped; the forged chain sits on P's PASSed record
+            rec("func_P", key("func_P"), renamed_from=["func_L4"])
+            # B: a naming wave renames BA -> BB while queued.  B2: CA -> CB is
+            # renamed AND leaves in one commit, its PASS retargeted to CB.
+            rename("func_BA", "func_BB")
+            rename("func_CA", "func_CB")
+            rec("func_CB", key("func_CB"), renamed_from=["func_CA"])
+            write_queue([item("func_G", renamed_from=["func_L", "func_L3"]),
+                         item("func_BB", renamed_from=["func_BA"])])
+            commit("g1")
+            rec("func_BB", key("func_BB"))                  # B: done properly
+            write_queue([item("func_G", renamed_from=["func_L", "func_L3"])])
+            commit("g2")
+            edit("func_BB")                                 # a later callee rename
+            edit("func_CB")
+            commit("g3 later wave")
+            v, fl = audit()
+            eq("departures: identity-bound renames (A, A2, A3) and waves (B, B2)",
+               fl, ["func_L", "func_L3", "func_L4"])
+            check("departures (A): a src rename + forged chain on a queued item "
+                  "launders nothing", "func_L" in fl)
+            check("departures (A2): a forged chain on a PASSed record launders nothing",
+                  "func_L4" in fl and "func_P" not in fl)
+            check("departures (A3): a body moved into a header + forged chain launders "
+                  "nothing", "func_L3" in fl)
+            check("departures (B): renamed while queued, completed, later wave -> clear",
+                  "func_BA" not in fl and "func_BB" not in fl)
+            check("departures (B2): renamed and completed in one commit, later wave -> "
+                  "clear", "func_CA" not in fl and "func_CB" not in fl)
+
+            # ── repo h: record semantics (R, V, latest-only) and Fix 3 for a
+            #    working-tree departure ─────────────────────────────────────
+            new_repo(Path(td) / "h", ["func_RR", "func_VV", "func_LR", "func_Q"])
+            fn("func_WT", src="src/k2.c")                    # item still says "k"
+            write_queue([item(f) for f in ("func_RR", "func_VV", "func_LR", "func_Q",
+                                           "func_WT")])
+            commit("h0")
+            rec("func_RR", key("func_RR"))
+            rec("func_VV", key("func_VV"))
+            write_queue([item("func_Q"), item("func_LR"), item("func_WT")])
+            commit("h1 RR and VV leave with PASSes")
+            write_queue([item("func_Q"), item("func_LR"), item("func_WT"), item("func_RR")])
+            commit("h2 RR re-listed")
+            edit("func_RR")
+            write_queue([item("func_Q"), item("func_WT")])  # R: hand-dropped, body changed
+            commit("h3 RR and LR leave")
+            rec("func_VV", key("func_VV"), verdict="FAIL")   # V: revocation
+            edit("func_LR")
+            rec("func_LR", key("func_LR"))                   # a PASS on the current body...
+            rec("func_LR", "e" * 16)                         # ...then one on another body
+            write_queue([item("func_Q")])                    # WT leaves in the working tree
+            rec("func_WT", key("func_WT", "src/k2.c"))
+            v, fl = audit()
+            eq("departures: record semantics", fl, ["func_LR", "func_RR", "func_VV"])
+            check("departures (R): re-listed then hand-dropped with a changed body",
+                  "func_RR" in fl)
+            check("departures (V): a later FAIL on the departed body revokes its PASS",
+                  "func_VV" in fl)
+            check("departures (#16): only the LATEST record counts for the current body",
+                  "func_LR" in fl)
+            check("departures (#9): a working-tree departure finds its body via the src "
+                  "scan (TU resplit)", "func_WT" not in fl)
+
+            # ── repo i: _history --topo-order (behaviour) ──────────────────
+            new_repo(Path(td) / "i", ["func_X", "func_Q"])
+            rec("func_X", key("func_X"))
+            write_queue([item("func_Q")])
+            commit("X leaves with a PASS on v1")
+            git("checkout", "-qb", "side")
+            write_queue([item("func_Q"), item("func_X")])
+            commit("X re-listed", date="2001-01-01T00:00:00+0000")
+            edit("func_X")
+            write_queue([item("func_Q")])
+            commit("X dropped again, body v2", date="2001-01-02T00:00:00+0000")
+            git("checkout", "-q", "main")
+            Path("other").write_text("x\n")
+            commit("main moves on")
+            git("merge", "-q", "-m", "merge", "side")
+            eq("departures (#3): the LATEST departure (topological, old-dated side "
+               "branch) decides", audit()[1], ["func_X"])
+
+            # ── repo j: _history -m (behaviour): X leaves IN a merge commit ──
+            new_repo(Path(td) / "j", ["func_X", "func_Q"])
+            git("checkout", "-qb", "side")
+            Path("s").write_text("s\n")
+            commit("side")
+            git("checkout", "-q", "main")
+            Path("m").write_text("m\n")
+            commit("main")
+            git("merge", "-q", "--no-commit", "side")
+            rec("func_X", key("func_X"))
+            write_queue([item("func_Q")])
+            commit("merge drops X, with a PASS on its body")
+            edit("func_X")
+            commit("later wave")
+            eq("departures (#4): a departure inside a merge is judged at the merge",
+               audit()[1], [])
+
+            # ── repo k: grafts and replace refs ────────────────────────────
+            new_repo(Path(td) / "k", ["func_A"], queue=["func_A"])
+            fn("func_X")
+            write_queue([item("func_A"), item("func_X")])
+            commit("X listed")
             write_queue([item("func_A")])
-            git("add", "-A"); git("commit", "-qm", "base")
+            d = commit("X leaves unreviewed")
+            gate = git("rev-parse", "HEAD~2").strip()
+            eq("departures: baseline sees X", audit()[1], ["func_X"])
+            git("replace", "--graft", d, gate)               # hide the listing commit
+            eq("departures (F3): replace refs are ignored", audit()[1], ["func_X"])
+            git("replace", "-d", d)
+            Path(".git/info").mkdir(exist_ok=True)
+            Path(".git/info/grafts").write_text(f"{d} {gate}\n")
+            v = departures.unreviewed_departures()
+            check("departures (F3): a grafts file fails closed",
+                  len(v) == 1 and "grafts file" in v[0])
+
+            # ── repos b, e, f: the anchor ─────────────────────────────────
+            Path(td, "b").mkdir()
+            os.chdir(Path(td, "b"))
+            git("init", "-q")
+            Path("engine").mkdir()
+            write_queue([item("func_A")])
+            commit("base")
             git("checkout", "-qb", "one")
             Path("engine/layer2.py").write_text("# gate\n")
-            git("add", "-A"); git("commit", "-qm", "add on one")
+            commit("add on one")
             git("checkout", "-q", "main")
             git("checkout", "-qb", "two")
             Path("engine/layer2.py").write_text("# gate\n")
-            git("add", "-A"); git("commit", "-qm", "add on two")
+            commit("add on two")
             git("merge", "-q", "--no-ff", "-m", "merge", "one")
             v = departures.unreviewed_departures()
             check("departures (C2): independent gate adds fail closed",
                   len(v) == 1 and "no single ancestry chain" in v[0])
 
-            # C2: delete + re-add on one chain -> the OLDEST add anchors, in
-            # topological order even when the re-add's date is skewed back
-            new_repo(Path(td) / "e")
-            write_queue([item("func_A"), item("func_W")])
-            git("add", "-A"); git("commit", "-qm", "pre-gate root")
-            Path("engine/layer2.py").write_text("# gate\n")
-            git("add", "-A"); git("commit", "-qm", "gate")
-            write_queue([item("func_A")])                 # func_W leaves unreviewed
-            git("commit", "-qam", "W leaves")
+            new_repo(Path(td) / "e", ["func_A", "func_W"])
+            write_queue([item("func_A")])                   # W leaves unreviewed
+            commit("W leaves")
             Path("engine/layer2.py").unlink()
-            git("add", "-A"); git("commit", "-qm", "gate deleted")
+            commit("gate deleted")
             Path("engine/layer2.py").write_text("# gate again\n")
-            git("add", "-A"); git("commit", "-qm", "gate re-added",
-                                  date="2001-01-01T00:00:00+0000")
-            v, fl = audit()
-            eq("departures (C2): delete + re-add anchors at the oldest add (topo order)",
-               fl, ["func_W"])
-            # ...and across a merge, where only --topo-order puts the old-dated
-            # re-add (on a side branch) BEFORE the original add
-            new_repo(Path(td) / "f")
-            write_queue([item("func_A")])
-            git("add", "-A"); git("commit", "-qm", "pre-gate root")
-            Path("engine/layer2.py").write_text("# gate\n")
-            git("add", "-A"); git("commit", "-qm", "G1")
+            commit("gate re-added", date="2001-01-01T00:00:00+0000")
+            eq("departures (C2): delete + re-add anchors at the oldest add",
+               audit()[1], ["func_W"])
+
+            new_repo(Path(td) / "f", ["func_A"])
             git("checkout", "-qb", "side")
             Path("engine/layer2.py").unlink()
-            git("add", "-A"); git("commit", "-qm", "gate deleted")
+            commit("gate deleted")
             Path("engine/layer2.py").write_text("# gate again\n")
-            git("add", "-A"); git("commit", "-qm", "G2", date="2001-01-01T00:00:00+0000")
+            commit("G2", date="2001-01-01T00:00:00+0000")
             git("checkout", "-q", "main")
+            fn("func_W")
             write_queue([item("func_A"), item("func_W")])
-            git("commit", "-qam", "W listed")
+            commit("W listed")
             write_queue([item("func_A")])
-            git("commit", "-qam", "W leaves")
+            commit("W leaves")
             git("merge", "-q", "-m", "merge", "side")
             v, fl = audit()
             check("departures (C2): a merged, old-dated re-add does not become the anchor",
                   fl == ["func_W"] and not any(s.startswith("Q39") for s in v))
 
-            # C3: a side branch lists func_N and drops it; the merge's queue
-            # equals its first parent's — only --full-history sees the side
-            new_repo(Path(td) / "c")
-            write_queue([item("func_A")])
-            git("add", "-A"); git("commit", "-qm", "pre-gate root")
-            Path("engine/layer2.py").write_text("# gate\n")
-            git("add", "-A"); git("commit", "-qm", "gate")
+            # ── repo c: a side branch lists func_N and drops it ────────────
+            new_repo(Path(td) / "c", ["func_A"])
             write_queue([item("func_A"), item("func_Q")])
-            git("commit", "-qam", "anchor successor")
+            commit("anchor successor")
             git("checkout", "-qb", "side")
             write_queue([item("func_A"), item("func_Q"), item("func_N")])
-            git("commit", "-qam", "side lists func_N")
+            commit("side lists func_N")
             write_queue([item("func_A"), item("func_Q")])
-            git("commit", "-qam", "side drops func_N")
+            commit("side drops func_N")
             git("checkout", "-q", "main")
-            Path("src/k.c").write_text(body("func_A", 0))
-            git("add", "-A"); git("commit", "-qm", "main moves on")
+            Path("other").write_text("x\n")
+            commit("main moves on")
             git("merge", "-q", "--no-ff", "-m", "merge side", "side")
-            v, fl = audit()
             eq("departures (C3): a side branch's listing is audited through the merge",
-               fl, ["func_N"])
+               audit()[1], ["func_N"])
 
-            # C4: a queue version missing from the object store is a violation
-            new_repo(Path(td) / "d")
-            write_queue([item("func_A")])
-            git("add", "-A"); git("commit", "-qm", "pre-gate root")
-            Path("engine/layer2.py").write_text("# gate\n")
-            git("add", "-A"); git("commit", "-qm", "c0 gate")
+            # ── repo d: a queue version missing from the object store ──────
+            new_repo(Path(td) / "d", ["func_A"])
             write_queue([item("func_A"), item("func_M")])
-            git("commit", "-qam", "c1")
+            commit("c1")
             lost = git("rev-parse", "HEAD:engine/queue.json").strip()
             write_queue([item("func_A")])
-            git("commit", "-qam", "c2")
+            commit("c2")
             Path(".git/objects", lost[:2], lost[2:]).unlink()
             v = departures.unreviewed_departures()
             check("departures (C4): a missing queue version is a violation",
