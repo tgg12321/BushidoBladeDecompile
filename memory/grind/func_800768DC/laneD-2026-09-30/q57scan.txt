@@ -1,0 +1,141 @@
+## func_80074488: 14 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x34 base:0x3c base:0x40 base:0x42 base:0x65 base:0x66 base:0x67
+## func_800747D8: 29 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x10 base:0x18 base:0x34 base:0x38 base:0x3c base:0x64 base:0x65 base:0x66 base:0x67
+## func_80074B18: 3 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x4 base:0x65
+## func_80074E08: 13 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x24 idx:0x8 idx:0xc
+   idx-derivation 80074EE0: /* 656E0 80074EE0 21104300 */  addu       $v0, $v0, $v1   <- index def: /* 656DC 80074EDC 40101000 */  sll        $v0, $s0, 1
+   idx-derivation 800750B8: /* 658B8 800750B8 21200402 */  addu       $a0, $s0, $a0   <- index def: /* 65898 80075098 40801000 */  sll        $s0, $s0, 1
+   idx-derivation 8007519C: /* 6599C 8007519C 21800302 */  addu       $s0, $s0, $v1   <- index def: /* 65898 80075098 40801000 */  sll        $s0, $s0, 1
+## func_8007526C: 33 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x8 base:0xc base:0x10 base:0x14 base:0x18 base:0x38 base:0x3c
+## func_800753D8: 3 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x34 idx:0x42 idx:0x68
+   idx-derivation 8007544C: /* 65C4C 8007544C 2110B300 */  addu       $v0, $a1, $s3   <- index def: /* 65C04 80075404 03006012 */  beqz       $s3, .L80075414
+   idx-derivation 80075458: /* 65C58 80075458 2120A400 */  addu       $a0, $a1, $a0   <- index def: /* 65C1C 8007541C 80201300 */  sll        $a0, $s3, 2
+## func_80075670: 13 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x10 base:0x34 idx:0x10 idx:0x18 idx:0x38 idx:0x3c idx:0x68
+   idx-derivation 800756A0: /* 65EA0 800756A0 21306600 */  addu       $a2, $v1, $a2   <- index def: /* 65E9C 8007569C 40004624 */  addiu      $a2, $v0, 0x40
+   idx-derivation 800756CC: /* 65ECC 800756CC 21187000 */  addu       $v1, $v1, $s0   <- index def: /* 65E90 80075690 2180A000 */   addu      $s0, $a1, $zero
+   idx-derivation 800756E8: /* 65EE8 800756E8 21187000 */  addu       $v1, $v1, $s0   <- index def: /* 65E90 80075690 2180A000 */   addu      $s0, $a1, $zero
+   idx-derivation 8007570C: /* 65F0C 8007570C 2118B000 */  addu       $v1, $a1, $s0   <- index def: /* 65E90 80075690 2180A000 */   addu      $s0, $a1, $zero
+   idx-derivation 80075714: /* 65F14 80075714 21104500 */  addu       $v0, $v0, $a1   <- index def: /* 65F00 80075700 40101000 */  sll        $v0, $s0, 1
+   idx-derivation 8007574C: /* 65F4C 8007574C 21104500 */  addu       $v0, $v0, $a1   <- index def: /* 65F48 80075748 C3130200 */  sra        $v0, $v0, 15
+   idx-derivation 80075784: /* 65F84 80075784 2110F000 */  addu       $v0, $a3, $s0   <- index def: /* 65E90 80075690 2180A000 */   addu      $s0, $a1, $zero
+   idx-derivation 8007578C: /* 65F8C 8007578C 2138E300 */  addu       $a3, $a3, $v1   <- index def: /* 65F80 80075780 01006330 */  andi       $v1, $v1, 0x1
+## func_80075830: 3 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x34 idx:0x1c idx:0x20
+   idx-derivation 80075870: /* 66070 80075870 21186200 */  addu       $v1, $v1, $v0   <- index def: /* 6606C 8007586C 40180200 */  sll        $v1, $v0, 1
+   idx-derivation 8007591C: /* 6611C 8007591C 21204300 */  addu       $a0, $v0, $v1   <- index def: /* 66118 80075918 40101100 */  sll        $v0, $s1, 1
+## func_800759D0: 10 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x34 base:0x65 idx:0x1c idx:0x20 idx:0x3c
+   idx-derivation 80075BB8: /* 663B8 80075BB8 2110A202 */  addu       $v0, $s5, $v0   <- index def: /* 66368 80075B68 40A81200 */  sll        $s5, $s2, 1
+   idx-derivation 80075CBC: /* 664BC 80075CBC 21108500 */  addu       $v0, $a0, $a1   <- index def: /* 664B8 80075CB8 40201200 */  sll        $a0, $s2, 1
+   idx-derivation 80075D00: /* 66500 80075D00 21108500 */  addu       $v0, $a0, $a1   <- index def: /* 664B8 80075CB8 40201200 */  sll        $a0, $s2, 1
+   idx-derivation 80075D94: /* 66594 80075D94 21188500 */  addu       $v1, $a0, $a1   <- index def: /* 66588 80075D88 40201200 */  sll        $a0, $s2, 1
+   idx-derivation 80075E10: /* 66610 80075E10 21106502 */  addu       $v0, $s3, $a1   <- index def: /* 665CC 80075DCC 40981200 */  sll        $s3, $s2, 1
+## func_80075F80: 26 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x65 idx:0x10 idx:0x18 idx:0x1c idx:0x20 idx:0x38 idx:0x3c idx:0x48 idx:0x50 idx:0x60
+   idx-derivation 80075FB4: /* 667B4 80075FB4 21102302 */  addu       $v0, $s1, $v1   <- index def: /* 667A0 80075FA0 40881000 */  sll        $s1, $s0, 1
+   idx-derivation 80075FF4: /* 667F4 80075FF4 21282402 */  addu       $a1, $s1, $a0   <- index def: /* 667A0 80075FA0 40881000 */  sll        $s1, $s0, 1
+   idx-derivation 80076110: /* 66910 80076110 21182302 */  addu       $v1, $s1, $v1   <- index def: /* 667A0 80075FA0 40881000 */  sll        $s1, $s0, 1
+   idx-derivation 80076154: /* 66954 80076154 21204300 */  addu       $a0, $v0, $v1   <- index def: /* 66948 80076148 40101000 */  sll        $v0, $s0, 1
+   idx-derivation 80076184: /* 66984 80076184 21186200 */  addu       $v1, $v1, $v0   <- index def: /* 66960 80076160 03006214 */  bne        $v1, $v0, .L80076170
+   idx-derivation 800761B0: /* 669B0 800761B0 21286202 */  addu       $a1, $s3, $v0   <- index def: /* 669AC 800761AC 40981000 */  sll        $s3, $s0, 1
+   idx-derivation 8007626C: /* 66A6C 8007626C 21286602 */  addu       $a1, $s3, $a2   <- index def: /* 669AC 800761AC 40981000 */  sll        $s3, $s0, 1
+   idx-derivation 800762C4: /* 66AC4 800762C4 21104600 */  addu       $v0, $v0, $a2   <- index def: /* 66AC0 800762C0 40100200 */  sll        $v0, $v0, 1
+   idx-derivation 800762F8: /* 66AF8 800762F8 21186200 */  addu       $v1, $v1, $v0   <- index def: /* 66AF4 800762F4 40100200 */  sll        $v0, $v0, 1
+## func_8007636C: 19 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x34 base:0x65 idx:0x14 idx:0x3c idx:0x5c idx:0x7e
+   idx-derivation 800763C0: /* 66BC0 800763C0 21200202 */  addu       $a0, $s0, $v0   <- index def: /* 66BB4 800763B4 40801300 */  sll        $s0, $s3, 1
+   idx-derivation 80076508: /* 66D08 80076508 21280502 */  addu       $a1, $s0, $a1   <- index def: /* 66BB4 800763B4 40801300 */  sll        $s0, $s3, 1
+   idx-derivation 800765BC: /* 66DBC 800765BC 21108600 */  addu       $v0, $a0, $a2   <- index def: /* 66DB0 800765B0 40201300 */  sll        $a0, $s3, 1
+   idx-derivation 800765F0: /* 66DF0 800765F0 21208600 */  addu       $a0, $a0, $a2   <- index def: /* 66DB0 800765B0 40201300 */  sll        $a0, $s3, 1
+   idx-derivation 80076604: /* 66E04 80076604 2110A602 */   addu      $v0, $s5, $a2   <- index def: /* 66DDC 800765DC 40A80200 */  sll        $s5, $v0, 1
+   idx-derivation 80076618: /* 66E18 80076618 2118A602 */   addu      $v1, $s5, $a2   <- index def: /* 66DDC 800765DC 40A80200 */  sll        $s5, $v0, 1
+   idx-derivation 8007661C: /* 66E1C 8007661C 2110A602 */  addu       $v0, $s5, $a2   <- index def: /* 66DDC 800765DC 40A80200 */  sll        $s5, $v0, 1
+   idx-derivation 80076624: /* 66E24 80076624 21104300 */  addu       $v0, $v0, $v1   <- index def: /* 66E20 80076620 40180500 */  sll        $v1, $a1, 1
+   idx-derivation 80076668: /* 66E68 80076668 2120C203 */  addu       $a0, $fp, $v0   <- index def: /* 66DE0 800765E0 21F08000 */  addu       $fp, $a0, $zero
+   idx-derivation 8007672C: /* 66F2C 8007672C 21108600 */  addu       $v0, $a0, $a2   <- index def: /* 66F1C 8007671C 40201300 */  sll        $a0, $s3, 1
+   idx-derivation 80076744: /* 66F44 80076744 21208600 */   addu      $a0, $a0, $a2   <- index def: /* 66F1C 8007671C 40201300 */  sll        $a0, $s3, 1
+   idx-derivation 800767A4: /* 66FA4 800767A4 21280502 */  addu       $a1, $s0, $a1   <- index def: /* 66F70 80076770 40801300 */  sll        $s0, $s3, 1
+## func_800768DC: 52 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x65 idx:0x10 idx:0x14 idx:0x18 idx:0x38 idx:0x3c idx:0x48 idx:0x4a idx:0x50 idx:0x5c idx:0x60 idx:0x7c idx:0x7e
+   idx-derivation 80076908: /* 67108 80076908 21102202 */  addu       $v0, $s1, $v0   <- index def: /* 670FC 800768FC 40881000 */  sll        $s1, $s0, 1
+   idx-derivation 80076964: /* 67164 80076964 21304600 */   addu      $a2, $v0, $a2   <- index def: /* 67150 80076950 40006624 */  addiu      $a2, $v1, 0x40
+   idx-derivation 80076990: /* 67190 80076990 21202202 */  addu       $a0, $s1, $v0   <- index def: /* 670FC 800768FC 40881000 */  sll        $s1, $s0, 1
+   idx-derivation 800769C8: /* 671C8 800769C8 21182202 */  addu       $v1, $s1, $v0   <- index def: /* 670FC 800768FC 40881000 */  sll        $s1, $s0, 1
+   idx-derivation 80076A1C: /* 6721C 80076A1C 21182202 */  addu       $v1, $s1, $v0   <- index def: /* 67218 80076A18 40881000 */  sll        $s1, $s0, 1
+   idx-derivation 80076A54: /* 67254 80076A54 21186500 */  addu       $v1, $v1, $a1   <- index def: /* 67250 80076A50 40180300 */  sll        $v1, $v1, 1
+   idx-derivation 80076A58: /* 67258 80076A58 21402502 */  addu       $t0, $s1, $a1   <- index def: /* 67218 80076A18 40881000 */  sll        $s1, $s0, 1
+   idx-derivation 80076A74: /* 67274 80076A74 21104900 */  addu       $v0, $v0, $t1   <- index def: /* 67270 80076A70 40100200 */  sll        $v0, $v0, 1
+   idx-derivation 80076A7C: /* 6727C 80076A7C 21208600 */  addu       $a0, $a0, $a2   <- index def: /* 6726C 80076A6C 40200400 */  sll        $a0, $a0, 1
+   idx-derivation 80076AD4: /* 672D4 80076AD4 21186600 */  addu       $v1, $v1, $a2   <- index def: /* 672D0 80076AD0 C31B0300 */  sra        $v1, $v1, 15
+   idx-derivation 80076B08: /* 67308 80076B08 21186200 */  addu       $v1, $v1, $v0   <- index def: /* 67304 80076B04 40181000 */  sll        $v1, $s0, 1
+   idx-derivation 80076B44: /* 67344 80076B44 2118C400 */  addu       $v1, $a2, $a0   <- index def: /* 67340 80076B40 40301000 */  sll        $a2, $s0, 1
+   idx-derivation 80076BB8: /* 673B8 80076BB8 21104300 */  addu       $v0, $v0, $v1   <- index def: /* 673B4 80076BB4 40100200 */  sll        $v0, $v0, 1
+   idx-derivation 80076BC0: /* 673C0 80076BC0 2118C300 */  addu       $v1, $a2, $v1   <- index def: /* 67340 80076B40 40301000 */  sll        $a2, $s0, 1
+   idx-derivation 80076BD8: /* 673D8 80076BD8 21104500 */  addu       $v0, $v0, $a1   <- index def: /* 673D4 80076BD4 C3130200 */  sra        $v0, $v0, 15
+   idx-derivation 80076C14: /* 67414 80076C14 21186200 */  addu       $v1, $v1, $v0   <- index def: /* 67410 80076C10 40100200 */  sll        $v0, $v0, 1
+   idx-derivation 80076C44: /* 67444 80076C44 21104400 */  addu       $v0, $v0, $a0   <- index def: /* 67440 80076C40 40100200 */  sll        $v0, $v0, 1
+   idx-derivation 80076C64: /* 67464 80076C64 21286900 */  addu       $a1, $v1, $t1   <- index def: /* 6745C 80076C5C 40180600 */  sll        $v1, $a2, 1
+   idx-derivation 80076C6C: /* 6746C 80076C6C 21104A00 */  addu       $v0, $v0, $t2   <- index def: /* 67468 80076C68 40100200 */  sll        $v0, $v0, 1
+   idx-derivation 80076CB4: /* 674B4 80076CB4 21104900 */  addu       $v0, $v0, $t1   <- index def: /* 674B0 80076CB0 C3130200 */  sra        $v0, $v0, 15
+   idx-derivation 80076CE8: /* 674E8 80076CE8 21186A00 */  addu       $v1, $v1, $t2   <- index def: /* 674E4 80076CE4 40180300 */  sll        $v1, $v1, 1
+   idx-derivation 80076CF0: /* 674F0 80076CF0 21104900 */  addu       $v0, $v0, $t1   <- index def: /* 674E0 80076CE0 C3130200 */  sra        $v0, $v0, 15
+   idx-derivation 80076D38: /* 67538 80076D38 21104300 */  addu       $v0, $v0, $v1   <- index def: /* 67534 80076D34 40101000 */  sll        $v0, $s0, 1
+## func_80076D74: 16 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x0 base:0x36 base:0x65 base:0x66 base:0x67 base:0x68 base:0x69 idx:0x6a idx:0x7e
+   idx-derivation 80076EB4: /* 676B4 80076EB4 2110A400 */  addu       $v0, $a1, $a0   <- index def: /* 676A8 80076EA8 40280200 */  sll        $a1, $v0, 1
+   idx-derivation 80076EB8: /* 676B8 80076EB8 21104300 */  addu       $v0, $v0, $v1   <- index def: /* 676B0 80076EB0 C31B0300 */  sra        $v1, $v1, 15
+   idx-derivation 80076EE4: /* 676E4 80076EE4 2110A200 */  addu       $v0, $a1, $v0   <- index def: /* 676A8 80076EA8 40280200 */  sll        $a1, $v0, 1
+   idx-derivation 80076EE8: /* 676E8 80076EE8 21104300 */  addu       $v0, $v0, $v1   <- index def: /* 676B0 80076EB0 C31B0300 */  sra        $v1, $v1, 15
+## func_800770B8: 22 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x0 base:0x1c base:0x20 base:0x64 base:0x65 base:0x66 base:0x67 idx:0x8 idx:0xc idx:0x10 idx:0x14 idx:0x3c idx:0x40 idx:0x42 idx:0x5c idx:0x60 idx:0x68 idx:0x6a idx:0x7e
+   idx-derivation 80077164: /* 67964 80077164 21104400 */  addu       $v0, $v0, $a0   <- index def: /* 67958 80077158 40100500 */  sll        $v0, $a1, 1
+   idx-derivation 80077190: /* 67990 80077190 21108300 */  addu       $v0, $a0, $v1   <- index def: /* 67960 80077160 80180500 */  sll        $v1, $a1, 2
+   idx-derivation 80077194: /* 67994 80077194 21208500 */  addu       $a0, $a0, $a1   <- index def: /* 67954 80077154 032C0500 */  sra        $a1, $a1, 16
+   idx-derivation 800771B0: /* 679B0 800771B0 21186200 */  addu       $v1, $v1, $v0   <- index def: /* 679AC 800771AC 40180300 */  sll        $v1, $v1, 1
+   idx-derivation 800771CC: /* 679CC 800771CC 21184700 */  addu       $v1, $v0, $a3   <- index def: /* 679C8 800771C8 C3130200 */  sra        $v0, $v0, 15
+   idx-derivation 800771D0: /* 679D0 800771D0 21104500 */  addu       $v0, $v0, $a1   <- index def: /* 679C8 800771C8 C3130200 */  sra        $v0, $v0, 15
+   idx-derivation 80077210: /* 67A10 80077210 21186200 */  addu       $v1, $v1, $v0   <- index def: /* 67A04 80077204 40180300 */  sll        $v1, $v1, 1
+## func_80077374: 17 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x14 base:0x16 base:0x36 idx:0x14 idx:0x68
+   idx-derivation 80077404: /* 67C04 80077404 21104300 */  addu       $v0, $v0, $v1   <- index def: /* 67C00 80077400 C3130200 */  sra        $v0, $v0, 15
+   idx-derivation 80077480: /* 67C80 80077480 21104300 */  addu       $v0, $v0, $v1   <- index def: /* 67C7C 8007747C 40101000 */  sll        $v0, $s0, 1
+   idx-derivation 800774D4: /* 67CD4 800774D4 2110D000 */  addu       $v0, $a2, $s0   <- index def: /* 67CB8 800774B8 03841000 */  sra        $s0, $s0, 16
+   idx-derivation 800774E0: /* 67CE0 800774E0 2130D100 */   addu      $a2, $a2, $s1   <- index def: /* 67CD0 800774D0 6A003126 */  addiu      $s1, $s1, 0x6A
+   idx-derivation 800774F0: /* 67CF0 800774F0 21104300 */  addu       $v0, $v0, $v1   <- index def: /* 67CEC 800774EC 40101000 */  sll        $v0, $s0, 1
+   idx-derivation 80077528: /* 67D28 80077528 2110D000 */  addu       $v0, $a2, $s0   <- index def: /* 67CB8 800774B8 03841000 */  sra        $s0, $s0, 16
+   idx-derivation 80077534: /* 67D34 80077534 2130D100 */   addu      $a2, $a2, $s1   <- index def: /* 67CD0 800774D0 6A003126 */  addiu      $s1, $s1, 0x6A
+   idx-derivation 80077564: /* 67D64 80077564 2110D000 */  addu       $v0, $a2, $s0   <- index def: /* 67D48 80077548 03841000 */  sra        $s0, $s0, 16
+   idx-derivation 80077570: /* 67D70 80077570 2130D100 */   addu      $a2, $a2, $s1   <- index def: /* 67D60 80077560 6A003126 */  addiu      $s1, $s1, 0x6A
+   idx-derivation 80077580: /* 67D80 80077580 21104300 */  addu       $v0, $v0, $v1   <- index def: /* 67D7C 8007757C 40101000 */  sll        $v0, $s0, 1
+   idx-derivation 800775B8: /* 67DB8 800775B8 2110D000 */  addu       $v0, $a2, $s0   <- index def: /* 67D48 80077548 03841000 */  sra        $s0, $s0, 16
+   idx-derivation 800775C4: /* 67DC4 800775C4 2130D100 */   addu      $a2, $a2, $s1   <- index def: /* 67D60 80077560 6A003126 */  addiu      $s1, $s1, 0x6A
+   idx-derivation 80077614: /* 67E14 80077614 21107000 */  addu       $v0, $v1, $s0   <- index def: /* 67DD8 800775D8 03840200 */  sra        $s0, $v0, 16
+   idx-derivation 80077620: /* 67E20 80077620 21306600 */   addu      $a2, $v1, $a2   <- index def: /* 67E10 80077610 6A00C624 */  addiu      $a2, $a2, 0x6A
+   idx-derivation 80077660: /* 67E60 80077660 21186200 */  addu       $v1, $v1, $v0   <- index def: /* 67E5C 8007765C 40181000 */  sll        $v1, $s0, 1
+   idx-derivation 800776B4: /* 67EB4 800776B4 21107000 */  addu       $v0, $v1, $s0   <- index def: /* 67E78 80077678 03841000 */  sra        $s0, $s0, 16
+   idx-derivation 800776C0: /* 67EC0 800776C0 21306600 */   addu      $a2, $v1, $a2   <- index def: /* 67EB0 800776B0 6A00C624 */  addiu      $a2, $a2, 0x6A
+## func_80077724: 7 accesses through D_800A36A0-derived registers
+   offsets (kind:off): base:0x4 base:0x24 base:0x2c base:0x30 base:0x34
+
+## Part B: arithmetic immediates 0x92/0x94 in all asm/funcs (memory offsets through non-D_800A36A0 bases are other types: Part A covers every D_800A36A0-derived base)
+   func_8003FECC 8003FF1C addiu $v0, $v0, 0x94
+   func_80040A78 80040A7C addiu $v1, $a0, 0x94
+   func_80040B44 80040B50 addiu $t7, $t6, 0x94
+   func_80040CB8 80040CD0 addiu $t0, $a0, 0x94
+   func_80040D48 80040DC4 addiu $s3, $s4, 0x94
+   func_80041188 800411E0 addiu $t0, $v0, 0x94
+   func_80041688 800416B4 addiu $v1, $s0, 0x94
+   func_80060768 800609C4 addiu $v0, $zero, 0x92
+   func_80065800 80065854 addiu $fp, $s0, 0x94
+   func_8006A880 8006A928 addiu $v0, $zero, 0x92
+   func_8006ECF4 8006EDE4 addiu $v0, $zero, 0x94
+   (11 lines)
+
+## Part C: C sources
+   (end Part C)
