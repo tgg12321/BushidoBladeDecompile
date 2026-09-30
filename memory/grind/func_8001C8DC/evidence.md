@@ -51,3 +51,37 @@ Side note: func_8003CF84 (src/code6cac_c2.c:954) on main carries the same idiom,
 merge if the merge ever becomes possible, and is existing debt until then.
 Status: needs an owner-level decision on F4 for this byte pair (reported to the orchestrator);
 the function stays INCLUDE_ASM/active.
+
+## s2 (2026-09-30, operator session f1) -- owner Q63 condition precedent: the two-member struct also fails
+
+Owner ruling Q63 (thirtieth batch; .claude/rules/no-new-park-categories.md § Owner ruling 2026-09-30 -- the
+D_800A37D2 / D_800A37D3 byte pair) admits the two-scalar form only once every single-object declaration is
+measured and fails. Harness s2-struct/ (copied from s1/, re-pointed at tmp/c8dc2/; run from the repo root in
+WSL with the venv active; the scripts expect to live in tmp/c8dc2/): mktree.sh exports HEAD (06d898c5f)
+read-only; apply_struct.py declares `typedef struct { u8 p0; u8 p1; } Unk800A37D2;
+extern Unk800A37D2 D_800A37D2;` in include/code6cac.h, drops the D_800A37D3 symbol row and converts every
+consumer (func_8001CE60's call args .p0/.p1; code6cac_b_tu2.c's two clears; text1b.c's four uses .p0;
+func_8003CF84's player index as `((u8 *)&D_800A37D2)[D_800A3748]`); buildtree.sh = engine.pipeline.build_all().
+
+1. Harness check: the unmodified export builds 62efab4f73f992798c43e8c730aa43baa10bb4fa (oracle).
+2. Array form re-run on today's HEAD (apply_array.py = s1/apply.py, run_array.sh, cand_a.c --tail):
+   SHA1 687de142b791d59599e4d5340878736005c9ef6e, 42 differing words (func_8001C8DC 8, func_80055138 34) --
+   s1's result reproduces unchanged.
+3. Struct form, body = the retro-audit body with the pointer local kept (cand_s2.c: `p = (u8 *)&D_800A37D2;
+   p[t != 0]++`, clamps on .p0/.p1): `bash tmp/c8dc2/run.sh tmp/c8dc2/cand_s2.c`, SHA1
+   687de142b791d59599e4d5340878736005c9ef6e -- byte-identical to the array form, the same 42 words
+   (result_cand_s2.txt). fndiff.py func_8001C8DC: the only difference from the target is the end clamp, target
+   `lui v0,%hi; lbu v0,%lo(D_800A37D2)(v0) ... lui at,%hi; sb v0,%lo(D_800A37D2)(at)` vs ours `lui v1;
+   addiu v1,v1,%lo; lbu v0,0(v1) ... sb v0,0(v1)` -- the shared base register of s1's mechanism
+   (change_address -> memory_address -> force_reg; cse shares it), so a named struct member behaves like an
+   array element. func_8001CE60 is identical modulo addresses.
+4. Struct form without the pointer local (cand_s.c, `((u8 *)&D_800A37D2)[t != 0]++`, --tail): SHA1
+   6901d156307ba31718bd6420e0de935e23ce29ac, code6cac_tu2.o .text 4 bytes short (0xd604 vs 0xd608,
+   secsizes.sh) -- the indexed increments lose the target's register assignment (the s1/xsym.c finding: the
+   pointer local is load-bearing), which shifts every later address.
+
+Reading: Q63's condition precedent is met -- neither the one-array nor the two-member-struct declaration
+reproduces the target's own-symbol accesses (a union was not built separately; its members expand through the
+same COMPONENT_REF -> change_address path -- an inference, not a measurement). The
+admitted form is the two scalars plus the FAKE-annotated index and FAKE-annotated `p`
+(pointer-alias-fake-exception prerequisites), landing with its own layer-2.
