@@ -302,6 +302,8 @@ def _current_name(addr: str, index: dict, name: str | None, file: str | None):
     cands = [n for n, a in index.items() if a == addr]
     for n in sorted(dict.fromkeys([*([name] if name else []), *cands]),
                     key=lambda n: n != name):
+        if layer2.lookup(index, n) not in (addr, None):
+            continue                        # that name is another function now
         for p in ([Path(f"src/{file}.c")] if file else []) + sorted(Path("src").glob("**/*.c")):
             text = layer2._read_text(p)
             if text and n in text and layer2.body_key(text, n):
@@ -441,7 +443,15 @@ def unreviewed_departures() -> list[str]:
                 if c == "WORKTREE":
                     return _body_now(n, file)
                 return _body_at(batch, c, n, file) if c else None
-            body = body_of(name) if name else None
+
+            def at_d(n):
+                """n's address in D's own files (the working tree's for "WORKTREE")."""
+                if c == "WORKTREE":
+                    return layer2.addr_of(n)
+                return layer2.addr_at(n, lambda p: batch.text(f"{c}:{p}"))
+            # name@D's body only where D's files do not give name@D ANOTHER
+            # address (a chain rename in the same wave: X->Y and W->X)
+            body = body_of(name) if name and c and at_d(name) in (a, None) else None
             where = ("an unparseable version" if not name else "the working tree"
                      if c == "WORKTREE" else f"commit {c[:9]}" if c else "an unknown commit")
             recs = records.get(a, [])
@@ -459,10 +469,6 @@ def unreviewed_departures() -> list[str]:
                 # renamed and landed in ONE commit (or both uncommitted, or a
                 # squash): name@D has no body at D — the records' own names,
                 # where D's files give them this same address, stand in
-                def at_d(n):
-                    if c == "WORKTREE":
-                        return layer2.addr_of(n)
-                    return layer2.addr_at(n, lambda p: batch.text(f"{c}:{p}"))
                 alt = [n for n in dict.fromkeys(r.get("func") for r in recs)
                        if isinstance(n, str) and n != name and at_d(n) == a]
                 if any((r := verdict_on(body_of(n))) and r.get("verdict") == "PASS"

@@ -445,8 +445,19 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
     # never earlier than ANY record already carrying this address — in any
     # ledger, archived ones included: the departures audit merges files by
     # date, so a clock that went back must not reorder this function's history
-    now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    date = max([now, *(str(r.get("date", "")) for r in prior), *addr_dates(addr)])
+    fmt = "%Y-%m-%dT%H:%M:%SZ"
+    now = datetime.datetime.now(datetime.timezone.utc).strftime(fmt)
+    date = now
+    others = [d for d in addr_dates(addr) if d]
+    if others and max(others) >= now:
+        # a record (in any ledger) is dated at or past now: go one second past
+        # it, so a TIE is never broken by ledger path order in the audit
+        try:
+            date = (datetime.datetime.strptime(max(others), fmt)
+                    + datetime.timedelta(seconds=1)).strftime(fmt)
+        except ValueError:
+            date = max(others)
+    date = max([date, *(str(r.get("date", "")) for r in prior)])
     rec = {"func": func, "addr": addr, "verdict": verdict, "body_hash": expect_hash,
            "body_kind": key[0] if key and key[1] == expect_hash else "",
            "file": stem, "reviewer": reviewer.strip(), "scope": scope,
@@ -499,6 +510,9 @@ def gate(func: str, stem: str) -> str | None:
                 f"predates address-keyed records) — the departures audit cannot match it to "
                 f"the function. Record the verdict again with `layer2 record`. {fix}")
     now_addr = addr_of(func)
+    if now_addr is None:
+        return (f"layer-2 gate: {func} has no address now — regenerate the census or "
+                f"rebuild (build/bb2.map), then retry. {fix}")
     if last["addr"] != now_addr:
         return (f"layer-2 gate: the latest layer-2 record for {func} carries addr "
                 f"{last['addr']}, but {func} is at {now_addr} now — the record is not this "

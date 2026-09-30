@@ -3415,7 +3415,7 @@ def test_departures() -> None:
             # ── repo a: record semantics, TU split, asm body, reopen ─────────
             fns = ["func_X", "func_Y", "func_Z", "func_V", "func_W", "func_K", "func_R",
                    "func_T", "func_CAL", "func_CL", "func_SK", "func_SX", "func_FA2",
-                   "func_Q"]
+                   "CdTest", "func_Q"]
             Path(td, "a").mkdir()
             os.chdir(Path(td, "a"))
             git("init", "-q")
@@ -3459,18 +3459,29 @@ def test_departures() -> None:
                 pth.write_text(json.dumps({"func": "func_SX", "addr": addrs["func_SX"],
                                            "verdict": verdict, "body_hash": key("func_SX"),
                                            "date": date}) + "\n")
+            # CdTest: the same, for a ledger that sorts BEFORE _completed/
+            # ('C' < '_'): a tie must not be broken by path order
+            pth = Path("memory/grind/_completed/CdTest/layer2.jsonl")
+            pth.parent.mkdir(parents=True, exist_ok=True)
+            pth.write_text(json.dumps({"func": "CdTest", "addr": addrs["CdTest"],
+                                       "verdict": "PASS", "body_hash": key("CdTest"),
+                                       "date": "2099-01-01T00:00:00Z"}) + "\n")
             t = Path("src/k.c").read_text()               # TU split: T moves to k2.c,
             t_line = next(l for l in t.splitlines(True) if l.startswith("int func_T("))
             Path("src/k.c").write_text(t.replace(t_line, ""))
             Path("src/k2.c").write_text(t_line)           # its item still says k
             rec("func_T", key("func_T", "src/k2.c"))
             drop("func_X", "func_Y", "func_Z", "func_V", "func_W", "func_R", "func_T",
-                 "func_A1", "func_CL", "func_SK", "func_SX", "func_FA2")
+                 "func_A1", "func_CL", "func_SK", "func_SX", "func_FA2", "CdTest")
             d1 = commit("X hand-dropped; Y Z V W R T A1 leave")
             edit("func_Y")                                # a later callee rename
             edit("func_W")
             rec("func_W", key("func_W"), verdict="FAIL")  # FAIL on a LATER body
             edit("func_CL")                               # a reviewed cheat-cleanup
+            r = layer2.record("CdTest", "FAIL", "rev", "match", stem="k",
+                              expect_hash=key("CdTest"))
+            check("departures: record() dates a live FAIL strictly after a future PASS "
+                  "(no tie)", r.get("ok") is True and r.get("date") > "2099-01-01T00:00:00Z")
             r = layer2.record("func_FA2", "FAIL", "rev", "match", stem="k",
                               expect_hash=key("func_FA2"))
             check("departures: record() dates a live FAIL after an archived future PASS",
@@ -3486,7 +3497,8 @@ def test_departures() -> None:
             drop("func_K")                                # hand edit, not committed
             v, fl = audit()
             eq("departures: record semantics", fl,
-               ["func_FA2", "func_K", "func_R", "func_SK", "func_V", "func_X", "func_Z"])
+               ["CdTest", "func_FA2", "func_K", "func_R", "func_SK", "func_V", "func_X",
+                "func_Z"])
             check("departures: a reviewed cleanup after landing keeps the landing clear",
                   "func_CL" not in fl)
             check("departures: a FAIL on a later body does not revoke the landed body's PASS",
@@ -3568,7 +3580,9 @@ def test_departures() -> None:
             # ── repo w: naming waves never make a departure ────────────────
             new_repo(Path(td) / "w", ["func_80058580", "func_80055B60", "func_P1",
                                       "func_RVA", "func_DN", "func_RQ", "func_WL",
-                                      "func_FX", "func_UL", "func_BX", "func_Q"])
+                                      "func_FX", "func_UL", "func_BX", "func_SX1",
+                                      "func_SW1", "func_SX2", "func_SW2", "func_HX",
+                                      "func_HW", "func_Q"])
             wave({"func_80055B60": "func_Caller", "func_80058580": "func_Callee"})
             commit("caller + callee renamed in one wave")
             wave({"func_RQ": "func_RQ2"})                 # renamed while queued,
@@ -3605,6 +3619,17 @@ def test_departures() -> None:
                                      "date": "2026-10-01T01:00:00Z"}) + "\n")
             drop("func_BX2")
             commit("BX -> BX2 and dropped, one commit, no genuine PASS")
+            # S1: a CHAIN rename in one wave (SX1 -> SY1, SW1 -> SX1), SY1 landed
+            # in the same commit: name@D (SX1) is another function at D
+            wave({"func_SX1": "func_SY1", "func_SW1": "func_SX1"})
+            rec("func_SY1", key("func_SY1"))
+            drop("func_SY1")
+            commit("chain wave + SY1 done, one commit")
+            # R2: HX hand-dropped, then a chain wave HX -> HY, HW -> HX
+            drop("func_HX")
+            commit("HX hand-dropped")
+            wave({"func_HX": "func_HY", "func_HW": "func_HX"})
+            commit("chain wave HX -> HY, HW -> HX")
             drop("func_FX")                               # hand-dropped, no PASS,
             commit("FX hand-dropped")
             wave({"func_FX": "func_FX2"})                 # then renamed
@@ -3613,11 +3638,19 @@ def test_departures() -> None:
             wave({"func_UL": "func_UL2"})                 # uncommitted wave + landing
             rec("func_UL2", key("func_UL2"))
             drop("func_UL2")
+            wave({"func_SX2": "func_SY2", "func_SW2": "func_SX2"})   # S2: uncommitted
+            rec("func_SY2", key("func_SY2"))                         # chain wave +
+            drop("func_SY2")                                         # landing
             v, fl = audit()
             eq("departures: waves (caller+callee, revert, revert-of-revert, back and "
                "forth, double rename after completion, rename+land in one commit and "
                "uncommitted, uncommitted) -> clear; only the hand-drop is flagged",
-               fl, ["func_BX", "func_FX"])
+               fl, ["func_BX", "func_FX", "func_HX"])
+            check("departures (S1/S2): a chain rename + landing in one commit, committed "
+                  "or not, is clear", "func_SX1" not in fl and "func_SX2" not in fl)
+            check("departures (R2): after a chain wave the fix names the function that "
+                  "left (func_HY), not the one now called func_HX",
+                  any(s.startswith("func_HX ") and "queue reopen func_HY " in s for s in v))
             check("departures: a stand-in name must have the departed address at D",
                   "func_BX" in fl)
             check("departures: the fix names the function as it is NOW",
@@ -3845,7 +3878,7 @@ def test_layer2_addresses() -> None:
                                      "date": "2099-01-01T00:00:00Z"}) + "\n")
             r = layer2.record("func_80013000", "PASS", "rev", "match", stem="r", expect_hash=h)
             check("addresses: record() never stamps a date earlier than its file's last",
-                  r.get("ok") is True and r.get("date") == "2099-01-01T00:00:00Z"
+                  r.get("ok") is True and r.get("date") >= "2099-01-01T00:00:00Z"
                   and r.get("addr") == "80013000")
             eq("addresses: ...and the gate then opens on it",
                layer2.gate("func_80013000", "r"), None)
