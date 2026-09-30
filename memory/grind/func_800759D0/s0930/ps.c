@@ -1,3 +1,5 @@
+extern u8 D_8009BCE4;
+
 /* Character-select grid renderer (select-screen case 2 of func_80077374; the
  * draw half of func_80075F80), called once per player per frame.
  *   arg0 = draw context (arg0[0] root table, arg0[4] sprite chain,
@@ -24,18 +26,10 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        func_800753D8 (`zero`) and func_8007636C (`mode`). */
     s32 zero;
     s16 i;
-    /* the sheet's cell array. The code treats each sheet it draws here as
-       12-byte SprtHdrA headers followed by 8-byte SprtEntA cells: the head
-       treats the table[0] page sheet as one header (cells at +0xC), and
-       loops 1-3 treat their sheets as three headers, normal then one cursor
-       highlight per player at +12/+24 (cells at +0x24). Loop 2 applies that
-       three-header view to every pick slot, including the 0x14 placeholder
-       func_80075F80 stores for an unavailable cell, whose sheet the code
-       elsewhere draws as one header (func_80075830); there the +0x24 runs
-       past the sheet into bytes nothing references. Assumed layout, path
-       census, that anomaly path and the unreferenced-address search:
-       memory/grind/func_800759D0/evidence.md "Ruling 9 (b')". */
-    s32 cells;
+    s32 q0;
+    s32 q1;
+    s32 q2;
+    s32 q3;
 
     zero = 0;
     s.sp28 = 0;
@@ -44,8 +38,8 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s.sp18 = table[0];
     s.sp30 = arg3 * 240 + 0x88;
     s.sp34 = 0x33;
-    cells = s.sp18 + 0xC;
-    s.sp1C = cells;
+    q0 = s.sp18 + 0xC;
+    s.sp1C = q0;
     if (arg3 != 0) {
         s.sp2C = 0x16;
     } else {
@@ -69,16 +63,18 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     }
     s.sp30 = arg3 * 240;
     for (i = arg1 * 10; i < arg1 * 10 + 10; i++) {
-        u8 entry = (&D_8009BCF8[0][0] + i)->unk0;
+        u8 entry = (D_8009BCF8 + i)->unk0;
 
-        if (D_8009BCE4[entry] & 1) {
+        if ((&D_8009BCE4)[entry] & 1) {
             s16 *state;
+            s32 index;
 
             s.sp18 = table[entry + 1];
-            cells = s.sp18 + 0x24;
-            s.sp1C = cells;
+            q1 = s.sp18 + 0x24;
+            s.sp1C = q1;
             state = (s16 *)(arg3 * 2 + (s32)D_800A36A0);
-            if (D_8009BCF8[arg1][state[0x1C / 2] * 5 + state[0x20 / 2]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
+            index = (((state[0x1C / 2] * 5) + state[0x20 / 2]) * 2) + (arg1 * 20);
+            if (((u8 *)D_8009BCF8)[index] == (D_8009BCF8 + i)->unk0) {
                 s.sp40 = 1;
                 s.sp18 = s.sp18 + 12 + arg3 * 12;
             } else {
@@ -87,7 +83,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.sp34 = 0;
             s.sp20 = arg0[4];
             arg0[4] = func_8007352C((s32)&s);
-            if (D_8009BCE4[(&D_8009BCF8[0][0] + i)->unk0] & (4 << arg3)) {
+            if ((&D_8009BCE4)[(D_8009BCF8 + i)->unk0] & (4 << arg3)) {
                 func_80075830(arg0, i, arg3, 1);
             }
         } else {
@@ -98,7 +94,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < *(s16 *)(D_800A36A0 + arg3 * 2 + 0x3C) + 1; i++) {
         if (arg2[i] >= 0) {
             s.sp18 = table[arg2[i] + 1];
-            cells = s.sp18 + 0x24;
+            q2 = s.sp18 + 0x24;
             if (i != *(s16 *)(D_800A36A0 + arg3 * 2 + 0x3C)) {
                 s.sp40 = 0;
             } else {
@@ -106,7 +102,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
                 s.sp18 = s.sp18 + 12 + arg3 * 12;
             }
             s.sp34 = i * 17;
-            s.sp1C = cells;
+            s.sp1C = q2;
             s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
             s.sp20 = arg0[4];
             arg0[4] = func_8007352C((s32)&s);
@@ -117,11 +113,11 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < *(u8 *)(D_800A36A0 + 0x65) + 3; i++) {
         table = *(s32 **)(arg0[0] + *(u8 *)(D_800A36A0 + 0x65) * 4 + 0x20);
         s.sp18 = table[i];
-        cells = s.sp18 + 0x24;
+        q3 = s.sp18 + 0x24;
         if (i == *(s16 *)(D_800A36A0 + arg3 * 2 + 0x3C)) {
             s.sp18 = s.sp18 + 12 + arg3 * 12;
         }
-        s.sp1C = cells;
+        s.sp1C = q3;
         s.sp30 = arg3 * 240;
         s.sp34 = i * 17;
         if (arg3 != 0) {

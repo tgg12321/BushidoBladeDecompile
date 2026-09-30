@@ -1,3 +1,5 @@
+extern u8 D_8009BCE4;
+
 /* Character-select grid renderer (select-screen case 2 of func_80077374; the
  * draw half of func_80075F80), called once per player per frame.
  *   arg0 = draw context (arg0[0] root table, arg0[4] sprite chain,
@@ -32,8 +34,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        three-header view to every pick slot, including the 0x14 placeholder
        func_80075F80 stores for an unavailable cell, whose sheet the code
        elsewhere draws as one header (func_80075830); there the +0x24 runs
-       past the sheet into bytes nothing references. Assumed layout, path
-       census, that anomaly path and the unreferenced-address search:
+       past the sheet. Assumed layout, path census and that anomaly path:
        memory/grind/func_800759D0/evidence.md "Ruling 9 (b')". */
     s32 cells;
 
@@ -69,16 +70,18 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     }
     s.sp30 = arg3 * 240;
     for (i = arg1 * 10; i < arg1 * 10 + 10; i++) {
-        u8 entry = (&D_8009BCF8[0][0] + i)->unk0;
+        u8 entry = (D_8009BCF8 + i)->unk0;
 
-        if (D_8009BCE4[entry] & 1) {
+        if ((&D_8009BCE4)[entry] & 1) {
             s16 *state;
+            s32 index;
 
             s.sp18 = table[entry + 1];
             cells = s.sp18 + 0x24;
             s.sp1C = cells;
             state = (s16 *)(arg3 * 2 + (s32)D_800A36A0);
-            if (D_8009BCF8[arg1][state[0x1C / 2] * 5 + state[0x20 / 2]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
+            index = (((state[0x1C / 2] * 5) + state[0x20 / 2]) * 2) + (arg1 * 20);
+            if (((u8 *)D_8009BCF8)[index] == (D_8009BCF8 + i)->unk0) {
                 s.sp40 = 1;
                 s.sp18 = s.sp18 + 12 + arg3 * 12;
             } else {
@@ -87,7 +90,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.sp34 = 0;
             s.sp20 = arg0[4];
             arg0[4] = func_8007352C((s32)&s);
-            if (D_8009BCE4[(&D_8009BCF8[0][0] + i)->unk0] & (4 << arg3)) {
+            if ((&D_8009BCE4)[(D_8009BCF8 + i)->unk0] & (4 << arg3)) {
                 func_80075830(arg0, i, arg3, 1);
             }
         } else {

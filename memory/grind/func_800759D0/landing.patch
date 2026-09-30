@@ -1,0 +1,386 @@
+--- a/include/game.h
++++ b/include/game.h
+@@ -112,22 +112,24 @@
+  * D_8009BCD0 / D_8009BCD2 (same merge family). */
+ extern s16 D_8009BCD0[2];
+ 
+-/* 0x8009BCF8: 40-byte table of 20 two-byte records (0x8009BCF8..0x8009BD1F;
+- * D_8009BD20 follows). Object model evidence, independent of and predating any
+- * byte-chasing session, from the original binary: func_800759D0 takes the table
+- * base into a register (`lui $s6,%hi(D_8009BCF8); addiu $s6,$s6,%lo(D_8009BCF8)`)
+- * and reads `lbu %lo(D_8009BCF8)($at)` through a shift-1 (2-byte-stride) index;
+- * func_80075F80 reads `lbu %lo(D_8009BCF8)($at)` through a shift-1 index;
+- * func_80076D74 reads byte 1 of the record (`lbu %lo(D_8009BCF9)($at)`) through a
+- * shift-1 index. Data: the unk1 column is 0x00..0x09 then 0x0C..0x15 (20 entries).
+- * Replaces the splat per-word scalars D_8009BCF8 / D_8009BCF9 (per-word splat
+- * symbol -> aggregate merge family, owner ruling 2026-08-17). */
++/* 0x8009BCF8: 2 pages x 10 two-byte records (0x8009BCF8..0x8009BD1F; D_8009BD20
++ * follows), one page per character-select page, 2 rows x 5 columns of cells.
++ * Object model evidence from the original binary: func_80075F80 (0x800761B4-
++ * 0x800761E4) and func_800759D0 (0x80075BC4-0x80075BF0) address it as
++ * page * 20 + cell * 2 -- the cell (row * 5 + col) shifted left 1, the page times
++ * 5 shifted left 2, added, then `lbu %lo(D_8009BCF8)($at)` -- two-level array
++ * indexing of [page][cell]; func_800759D0's cell loop steps through the records
++ * flat from the table base (`lui $s6,%hi(D_8009BCF8); addiu $s6,$s6,%lo(D_8009BCF8)`,
++ * a 2-byte step), and func_80076D74 reads byte 1 (`lbu %lo(D_8009BCF9)($at)`)
++ * through a flat shift-1 index. Data: the unk1 column is 0x00..0x09 (page 0) then
++ * 0x0C..0x15 (page 1). Replaces the splat per-word scalars D_8009BCF8 / D_8009BCF9
++ * (per-word splat symbol -> aggregate merge family, owner ruling 2026-08-17). */
+ typedef struct {
+     u8 unk0;
+     u8 unk1;
+ } Unk8009BCF8Record;
+ 
+-extern Unk8009BCF8Record D_8009BCF8[20];
++extern Unk8009BCF8Record D_8009BCF8[2][10];
+ 
+ /* 0x8009BC94: table of {x, y} s16 position records, 6 records (24 bytes) per
+  * row. Object model evidence, independent of and predating any byte-chasing
+--- a/src/text1b_tu2.c
++++ b/src/text1b_tu2.c
+@@ -773,12 +773,6 @@
+     *(s32 *)(packet + 0x08) = arg0[0x10 / 4];
+     arg0[0x10 / 4] = func_8007352C((s32)packet);
+ }
+-extern u8 D_8009BCE4;
+-
+-INCLUDE_ASM("asm/funcs", func_800759D0);
+-extern u8 D_8009BCE4;
+-
+-INCLUDE_ASM("asm/funcs", func_80075F80);
+ /* Shared select work area at D_800A36A0 (the block func_80075F80 indexes by
+  * raw offset); two-element arrays are per player. Per player, f48 is a list
+  * of f60 entries with cursor f5C; confirming moves the entry under the cursor
+@@ -805,6 +799,293 @@
+ 
+ #define SELWORK_800768DC ((SelWork_800768DC *)D_800A36A0)
+ 
++extern u8 D_8009BCE4[20];
++
++/* Character-select grid renderer (select-screen case 2 of func_80077374; the
++ * draw half of func_80075F80), called once per player per frame.
++ *   arg0 = draw context (arg0[0] root table, arg0[4] sprite chain,
++ *          arg0[6] DR_MODE cursor)
++ *   arg1 = select page into D_8009BCF8 (10 cells per page)
++ *   arg2 = this player's pick list (-1 = cleared slot)
++ *   arg3 = player index (0/1)
++ * Draws the page frame, the page's 10 character cells (selectable cells as
++ * sprites with the cursor cell highlighted, taken cells via func_80075830,
++ * unselectable cells via func_80075830), the picks made so far, then the
++ * f65+3 slot sprites, and closes with two DR_MODE/AddPrim pairs. */
++void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
++    S_80074488 s;
++    s32 *table;
++    s32 color;
++    /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
++       func_8006E480's second argument at all three call sites is kept in
++       callee-save $fp (target: `addu $fp,$zero,$zero` in the entry block,
++       `addu $a1,$fp,$zero` at each call) instead of being re-materialized;
++       global.c gives the once-set constant pseudo a callee-save because it
++       crosses every call, and cse only folds a constant within the entry
++       extended basic block. A literal 0 measures 30/364 (362 insns); see
++       memory/grind/func_800759D0/hypotheses.md. Same shape as the siblings
++       func_800753D8 (`zero`) and func_8007636C (`mode`). */
++    s32 zero;
++    s16 i;
++    /* the sheet's cell array. The code treats each sheet it draws here as
++       12-byte SprtHdrA headers followed by 8-byte SprtEntA cells: the head
++       treats the table[0] page sheet as one header (cells at +0xC), and
++       loops 1-3 treat their sheets as three headers, normal then one cursor
++       highlight per player at +12/+24 (cells at +0x24). Loop 2 applies that
++       three-header view to every pick slot, including the 0x14 placeholder
++       func_80075F80 stores for an unavailable cell, whose sheet the code
++       elsewhere draws as one header (func_80075830); there the +0x24 runs
++       past the sheet into bytes nothing references. Assumed layout, path
++       census, that anomaly path and the unreferenced-address search:
++       memory/grind/func_800759D0/evidence.md "Ruling 9 (b')". */
++    s32 cells;
++
++    zero = 0;
++    s.sp28 = 0;
++    s.sp40 = 0;
++    table = *(s32 **)(arg0[0] + 0x14);
++    s.sp18 = table[0];
++    s.sp30 = arg3 * 240 + 0x88;
++    s.sp34 = 0x33;
++    cells = s.sp18 + 0xC;
++    s.sp1C = cells;
++    if (arg3 != 0) {
++        s.sp2C = 0x16;
++    } else {
++        s.sp2C = 0xC;
++    }
++    if (arg1 != 0) {
++        s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
++    }
++    s.sp20 = arg0[4];
++    arg0[4] = func_8007352C((s32)&s);
++    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
++    AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0[6]);
++    arg0[6] += 0xC;
++
++    color = ((rsin(((*(u16 *)(D_800A36A0 + 0x34) & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
++    s.sp41 = s.sp42 = s.sp43 = color;
++    if (arg3 != 0) {
++        s.sp2C = 0x14;
++    } else {
++        s.sp2C = 0xA;
++    }
++    s.sp30 = arg3 * 240;
++    for (i = arg1 * 10; i < arg1 * 10 + 10; i++) {
++        u8 entry = (&D_8009BCF8[0][0] + i)->unk0;
++
++        if (D_8009BCE4[entry] & 1) {
++            s16 *state;
++
++            s.sp18 = table[entry + 1];
++            cells = s.sp18 + 0x24;
++            s.sp1C = cells;
++            state = (s16 *)(arg3 * 2 + (s32)D_800A36A0);
++            if (D_8009BCF8[arg1][state[0x1C / 2] * 5 + state[0x20 / 2]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
++                s.sp40 = 1;
++                s.sp18 = s.sp18 + 12 + arg3 * 12;
++            } else {
++                s.sp40 = 0;
++            }
++            s.sp34 = 0;
++            s.sp20 = arg0[4];
++            arg0[4] = func_8007352C((s32)&s);
++            if (D_8009BCE4[(&D_8009BCF8[0][0] + i)->unk0] & (4 << arg3)) {
++                func_80075830(arg0, i, arg3, 1);
++            }
++        } else {
++            func_80075830(arg0, i, arg3, 0);
++        }
++    }
++
++    for (i = 0; i < *(s16 *)(D_800A36A0 + arg3 * 2 + 0x3C) + 1; i++) {
++        if (arg2[i] >= 0) {
++            s.sp18 = table[arg2[i] + 1];
++            cells = s.sp18 + 0x24;
++            if (i != *(s16 *)(D_800A36A0 + arg3 * 2 + 0x3C)) {
++                s.sp40 = 0;
++            } else {
++                s.sp40 = 1;
++                s.sp18 = s.sp18 + 12 + arg3 * 12;
++            }
++            s.sp34 = i * 17;
++            s.sp1C = cells;
++            s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
++            s.sp20 = arg0[4];
++            arg0[4] = func_8007352C((s32)&s);
++        }
++    }
++
++    s.sp40 = 0;
++    for (i = 0; i < *(u8 *)(D_800A36A0 + 0x65) + 3; i++) {
++        table = *(s32 **)(arg0[0] + *(u8 *)(D_800A36A0 + 0x65) * 4 + 0x20);
++        s.sp18 = table[i];
++        cells = s.sp18 + 0x24;
++        if (i == *(s16 *)(D_800A36A0 + arg3 * 2 + 0x3C)) {
++            s.sp18 = s.sp18 + 12 + arg3 * 12;
++        }
++        s.sp1C = cells;
++        s.sp30 = arg3 * 240;
++        s.sp34 = i * 17;
++        if (arg3 != 0) {
++            s.sp2C = 0x14;
++        } else {
++            s.sp2C = 0xA;
++        }
++        s.sp20 = arg0[4];
++        arg0[4] = func_8007352C((s32)&s);
++    }
++
++    table = *(s32 **)(arg0[0] + 0x14);
++    s.sp18 = table[1];
++    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
++    AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0[6]);
++    arg0[6] += 0xC;
++    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
++    AddPrim(g_gpu_ot_ptr + s.sp2C * 4 - 4, arg0[6]);
++    arg0[6] += 0xC;
++}
++extern u8 D_8009BCE4[20];
++
++/* Character-select cursor / pick handler; called once per player per frame.
++ *   arg0 = this frame's pad bits, both players packed (player N in bits N*16)
++ *   arg1 = select page into D_8009BCF8 (10 cells per page, 2 rows x 5 columns)
++ *   arg2 = this player's pick list (character ids, -1 = cleared slot)
++ *   arg3 = player index (0/1)
++ * D_800A36A0 is the shared select work area, two bytes of state per player at
++ * each offset; D_8009BCE4[] is the per-character flag byte (bit 0 = selectable,
++ * bit 4<<player = already taken by that player). */
++void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
++    u8 *flag;
++    s16 *state;
++    s32 result;
++    s32 bit;
++    s32 i;
++    u8 *base;
++
++    base = D_800A36A0;
++    if (*(s16 *)((base + (arg3 * 2)) + 0x10) != 0) {
++        return;
++    }
++
++    if (arg0 & (0x10 << (arg3 * 16))) {
++        u8 *cancel_base;
++        s16 *cancel_state;
++        s32 index;
++
++        func_8005C650(2, 0x7F, 0x7F);
++        cancel_base = D_800A36A0;
++        cancel_state = (s16 *)((arg3 * 2) + (s32)cancel_base);
++        if (cancel_state[0x3C / 2] != 0) {
++            arg2[cancel_state[0x3C / 2]] = -1;
++            cancel_state[0x3C / 2]--;
++            index = arg2[cancel_state[0x3C / 2]];
++            D_8009BCE4[index] &= ~(4 << arg3);
++            return;
++        }
++        if (*(s32 *)(cancel_base + 0x3C) != 0) {
++            return;
++        }
++        if (*(s16 *)(cancel_base + ((arg3 != 0) ? 0x14 : 0x16)) == 2) {
++            *(s16 *)(cancel_base + 0x12) = 3;
++            *(s16 *)(cancel_base + 0x10) = 3;
++            *(s16 *)(cancel_base + 0x1A) = 1;
++            *(s16 *)(cancel_base + 0x18) = 1;
++        }
++        return;
++    }
++
++    result = func_800692C0((u32 *)&arg0, arg3, (s16 *)(base + ((arg3 * 4) + 0x40)),
++                           (&D_800A35D0) + (arg3 * 2));
++    if (arg0 & (0xF000 << (arg3 * 16))) {
++        func_8005C650(0, 0x7F, 0x7F);
++    }
++    {
++        s32 low;
++
++        low = result & 0xFF;
++        if (low < 3 && low != 0) {
++            s16 *toggle_state;
++
++            toggle_state = (s16 *)((arg3 * 2) + (s32)D_800A36A0);
++            toggle_state[0x1C / 2] = (toggle_state[0x1C / 2] + 1) & 1;
++        }
++    }
++
++    switch (result >> 16) {
++    case 1: {
++        s16 *pstate;
++        s16 value;
++
++        pstate = (s16 *)((arg3 * 2) + (s32)D_800A36A0);
++        value = pstate[0x20 / 2];
++        if (value == 4) {
++            pstate[0x20 / 2] = 0;
++        } else {
++            pstate[0x20 / 2] = value + 1;
++        }
++    } break;
++    case 2: {
++        s16 *pstate;
++        s16 value;
++        s16 next;
++
++        pstate = (s16 *)((arg3 * 2) + (s32)D_800A36A0);
++        value = pstate[0x20 / 2];
++        if (value == 0) {
++            next = 4;
++        } else {
++            next = value - 1;
++        }
++        pstate[0x20 / 2] = next;
++    } break;
++    }
++
++    {
++        u8 *select_base;
++        u8 entry;
++
++        select_base = D_800A36A0;
++        state = (s16 *)((arg3 * 2) + (s32)select_base);
++        entry = D_8009BCF8[arg1][state[0x1C / 2] * 5 + state[0x20 / 2]].unk0;
++        flag = &D_8009BCE4[entry];
++        if ((*flag & 1) != 0) {
++            bit = 4 << arg3;
++            if ((*flag & bit) == 0) {
++                u8 *done_base;
++                u16 count;
++
++                arg2[state[0x3C / 2]] = entry;
++                if (arg0 & (0x40 << (arg3 * 16))) {
++                    func_8005C650(1, 0x7F, 0x7F);
++                    *flag |= bit;
++                    done_base = D_800A36A0;
++                    state = (s16 *)((arg3 * 2) + (s32)done_base);
++                    count = state[0x3C / 2];
++                    state[0x3C / 2] = count + 1;
++                    if (state[0x3C / 2] == (done_base[0x65] + 3)) {
++                        state[0x10 / 2] = 1;
++                        state[0x3C / 2] = count;
++                        state[0x38 / 2] = 0;
++                        state[0x18 / 2] = 3;
++                        for (i = 0; i < state[0x60 / 2]; i++) {
++                            SELWORK_800768DC->f48[arg3][i] = i;
++                        }
++                        if (arg1 != 0) {
++                            SELWORK_800768DC->f48[arg3][4] = 5;
++                        }
++                    }
++                }
++                return;
++            }
++        }
++        arg2[state[0x3C / 2]] = 0x14;
++        if (arg0 & (0x40 << (arg3 * 16))) {
++            func_8005C650(4, 0x7F, 0x7F);
++        }
++    }
++}
++
+ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
+     S_80074488 s;
+     s32 ot;
+@@ -967,7 +1248,7 @@
+             SELWORK_800768DC->f10[arg3] = 3;
+             SELWORK_800768DC->f18[arg3] = 2;
+             SELWORK_800768DC->f38[arg3] = SELWORK_800768DC->f65 + 2;
+-            (&D_8009BCE4)[arg2[SELWORK_800768DC->f38[arg3]]] &= ~(4 << arg3);
++            D_8009BCE4[arg2[SELWORK_800768DC->f38[arg3]]] &= ~(4 << arg3);
+             SELWORK_800768DC->f60[arg3] = 5;
+             for (i = 0; i < SELWORK_800768DC->f60[arg3]; i++) {
+                 SELWORK_800768DC->f48[arg3][i] = i;
+@@ -1058,7 +1339,7 @@
+         hdr->f15 = *(u8 *)(D_800A36A0 + 0x68) + *(u8 *)(D_800A36A0 + 0x69) * 2;
+         for (i = 0; i < 2; i++) {
+             for (j = 0; j < *(u8 *)(D_800A36A0 + 0x65) + 3; j++) {
+-                hdr->cells[i][j][0] = D_8009BCF8[*(s16 *)(D_800A36A0 + i * 10 + (j << 1) + 0x6A)].unk1;
++                hdr->cells[i][j][0] = D_8009BCF8[0][*(s16 *)(D_800A36A0 + i * 10 + (j << 1) + 0x6A)].unk1;
+                 hdr->cells[i][j][1] = *(u16 *)(D_800A36A0 + i * 10 + (j << 1) + 0x7E);
+             }
+         }
+@@ -1105,7 +1386,7 @@
+ extern u8 *D_800A36A0;
+ extern s32 D_800A35D8;
+ extern s8 D_800A35DC;
+-extern u8 D_8009BCE4;
++extern u8 D_8009BCE4[20];
+ extern u8 D_8009BD21;
+ extern s16 D_800A35D0;
+ extern s32 g_gpu_ot_ptr;
+@@ -1203,9 +1484,9 @@
+         for (a2 = 0; a2 < 0xA; a2 = (s16)(a2 + 1)) {
+             s16 idx = (s16)(a2 + (t0 * 10));
+             s32 mask = 1 << idx;
+-            (&D_8009BCE4)[idx] = (u8)((&D_8009BCE4)[idx] & 0xF2);
++            D_8009BCE4[idx] = (u8)(D_8009BCE4[idx] & 0xF2);
+             if ((arg2 & mask) != 0) {
+-                (&D_8009BCE4)[idx] = (u8)((&D_8009BCE4)[idx] | 1);
++                D_8009BCE4[idx] = (u8)(D_8009BCE4[idx] | 1);
+                 sp[t0] += 1;
+                 /* FAKE: same-value dead store re-establishing sym's own value
+                    (sym is never read after the loop body's D stores). Effect: it
