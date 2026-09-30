@@ -229,23 +229,28 @@ def _registry_addrs(read) -> dict[str, str]:
     return out
 
 
-def addr_at(func: str, read) -> str | None:
-    """`func`'s address from TRACKED files only, read through `read(path)` (the
-    working tree, or a git revision): its own glabel file, the symbol files,
-    the census, or a splat auto-name's own address."""
-    a = _asm_addr(read(f"asm/funcs/{func}.s"), func) or _registry_addrs(read).get(func)
-    if a:
-        return a
+def auto_addr(func: str) -> str | None:
+    """A splat auto-name's own address (func_XXXXXXXX)."""
     m = _AUTO_NAME.match(func)
     return m.group(1).upper() if m else None
 
 
+def addr_at(func: str, read) -> str | None:
+    """`func`'s address from TRACKED files only, read through `read(path)` (the
+    working tree, or a git revision) — the history-time subset of addr_of's
+    precedence: its own glabel file, the symbol files, the census, a splat
+    auto-name."""
+    return (_asm_addr(read(f"asm/funcs/{func}.s"), func) or _registry_addrs(read).get(func)
+            or auto_addr(func))
+
+
 def addr_index() -> dict[str, str]:
-    """name -> VRAM address (8 upper-case hex digits) for every function, all
-    sources: splat's asm/funcs glabel files (glabel -> the first machine
-    column's vaddr, as docs/naming/build_census.py reads it), the tracked
-    symbol files and census, then the link map build/bb2.map (definition AND
-    `name = 0x...` assignment lines) for what none of them name."""
+    """name -> VRAM address (8 upper-case hex digits), with ONE precedence
+    (addr_of uses the same): splat's asm/funcs glabel files (glabel -> the
+    first machine column's vaddr, as docs/naming/build_census.py reads it),
+    the tracked symbol files, the census, a splat auto-name's own address,
+    then the link map build/bb2.map (definition AND `name = 0x...` lines).
+    Names only an auto-name addresses are not listed: use lookup()."""
     out: dict[str, str] = {}
     for p in sorted(Path("asm/funcs").glob("*.s")):
         text = _read_text(p) or ""
@@ -256,14 +261,18 @@ def addr_index() -> dict[str, str]:
     for n, a in _registry_addrs(_disk).items():
         out.setdefault(n, a)
     for m in _MAP_DEF.finditer(_read_text(Path("build/bb2.map")) or ""):
-        out.setdefault(m.group(2), m.group(1).upper().zfill(8))
+        out.setdefault(m.group(2), auto_addr(m.group(2)) or m.group(1).upper().zfill(8))
     return out
 
 
+def lookup(index: dict[str, str], func: str) -> str | None:
+    """`func`'s address from an addr_index() — or its auto-name's."""
+    return index.get(func) or auto_addr(func)
+
+
 def addr_of(func: str) -> str | None:
-    """`func`'s VRAM address: tracked files first (addr_at), else the full
-    index (a glabel file under another stem, or the link map)."""
-    return addr_at(func, _disk) or addr_index().get(func)
+    """`func`'s VRAM address now (addr_index precedence)."""
+    return lookup(addr_index(), func)
 
 
 def current_key(func: str, stem: str) -> tuple[str, str] | None:
@@ -433,10 +442,11 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
                            f"entry, no build/bb2.map line) — a record must carry the "
                            f"function's address, which renames never change; add "
                            f"`{func} = 0x<ADDR>;` to symbol_addrs.txt")}
-    # never earlier than the file's last line: a clock that went back must not
-    # reorder this function's history (line order decides within a file)
+    # never earlier than ANY record already carrying this address — in any
+    # ledger, archived ones included: the departures audit merges files by
+    # date, so a clock that went back must not reorder this function's history
     now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    date = max([now, *(str(r.get("date", "")) for r in prior)])
+    date = max([now, *(str(r.get("date", "")) for r in prior), *addr_dates(addr)])
     rec = {"func": func, "addr": addr, "verdict": verdict, "body_hash": expect_hash,
            "body_kind": key[0] if key and key[1] == expect_hash else "",
            "file": stem, "reviewer": reviewer.strip(), "scope": scope,
@@ -446,6 +456,21 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
     with open(p, "a", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
     return {"ok": True, "path": p.as_posix(), **rec}
+
+
+def addr_dates(addr: str) -> list[str]:
+    """The dates of every record carrying `addr`, in every ledger
+    (memory/grind/**/layer2.jsonl, _completed/ included)."""
+    out = []
+    for p in sorted(Path("memory/grind").glob("**/" + RECORD_NAME)):
+        for line in (_read_text(p) or "").splitlines():
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(rec, dict) and str(rec.get("addr", "")).upper() == addr:
+                out.append(str(rec.get("date", "")))
+    return out
 
 
 def gate(func: str, stem: str) -> str | None:
@@ -473,6 +498,11 @@ def gate(func: str, stem: str) -> str | None:
         return (f"layer-2 gate: the latest layer-2 record for {func} carries no `addr` (it "
                 f"predates address-keyed records) — the departures audit cannot match it to "
                 f"the function. Record the verdict again with `layer2 record`. {fix}")
+    now_addr = addr_of(func)
+    if last["addr"] != now_addr:
+        return (f"layer-2 gate: the latest layer-2 record for {func} carries addr "
+                f"{last['addr']}, but {func} is at {now_addr} now — the record is not this "
+                f"function's. Record the verdict again with `layer2 record`. {fix}")
     if last["verdict"] != "PASS":
         return (f"layer-2 gate: the latest layer-2 verdict for {func} is {last['verdict']} "
                 f"({last.get('date', '?')}, body {last['body_hash']}); a later PASS on the "

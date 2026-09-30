@@ -3414,7 +3414,8 @@ def test_departures() -> None:
 
             # ── repo a: record semantics, TU split, asm body, reopen ─────────
             fns = ["func_X", "func_Y", "func_Z", "func_V", "func_W", "func_K", "func_R",
-                   "func_T", "func_CAL", "func_CL", "func_SK", "func_SX", "func_Q"]
+                   "func_T", "func_CAL", "func_CL", "func_SK", "func_SX", "func_FA2",
+                   "func_Q"]
             Path(td, "a").mkdir()
             os.chdir(Path(td, "a"))
             git("init", "-q")
@@ -3435,6 +3436,13 @@ def test_departures() -> None:
             rec("func_R", key("func_R"))
             rec("func_A1", key("func_A1"))                # asm body: INCLUDE_ASM + .s
             rec("func_CL", key("func_CL"))                # CL lands; cleaned up later
+            # FA2: an ARCHIVED future-dated PASS; a later live FAIL via record()
+            # must still come after it
+            pth = Path("memory/grind/_completed/func_FA2/layer2.jsonl")
+            pth.parent.mkdir(parents=True, exist_ok=True)
+            pth.write_text(json.dumps({"func": "func_FA2", "addr": addrs["func_FA2"],
+                                       "verdict": "PASS", "body_hash": key("func_FA2"),
+                                       "date": "2099-01-01T00:00:00Z"}) + "\n")
             # SK: a PASS, then a FAIL on the same body whose clock went BACK —
             # line order decides within a file
             rec("func_SK", key("func_SK"))
@@ -3457,12 +3465,16 @@ def test_departures() -> None:
             Path("src/k2.c").write_text(t_line)           # its item still says k
             rec("func_T", key("func_T", "src/k2.c"))
             drop("func_X", "func_Y", "func_Z", "func_V", "func_W", "func_R", "func_T",
-                 "func_A1", "func_CL", "func_SK", "func_SX")
+                 "func_A1", "func_CL", "func_SK", "func_SX", "func_FA2")
             d1 = commit("X hand-dropped; Y Z V W R T A1 leave")
             edit("func_Y")                                # a later callee rename
             edit("func_W")
             rec("func_W", key("func_W"), verdict="FAIL")  # FAIL on a LATER body
             edit("func_CL")                               # a reviewed cheat-cleanup
+            r = layer2.record("func_FA2", "FAIL", "rev", "match", stem="k",
+                              expect_hash=key("func_FA2"))
+            check("departures: record() dates a live FAIL after an archived future PASS",
+                  r.get("ok") is True and r.get("date") >= "2099-01-01T00:00:00Z")
             rec("func_CL", key("func_CL"))
             write_queue(queued() + ["func_R"])
             commit("R reopened")
@@ -3474,7 +3486,7 @@ def test_departures() -> None:
             drop("func_K")                                # hand edit, not committed
             v, fl = audit()
             eq("departures: record semantics", fl,
-               ["func_K", "func_R", "func_SK", "func_V", "func_X", "func_Z"])
+               ["func_FA2", "func_K", "func_R", "func_SK", "func_V", "func_X", "func_Z"])
             check("departures: a reviewed cleanup after landing keeps the landing clear",
                   "func_CL" not in fl)
             check("departures: a FAIL on a later body does not revoke the landed body's PASS",
@@ -3555,7 +3567,8 @@ def test_departures() -> None:
 
             # ── repo w: naming waves never make a departure ────────────────
             new_repo(Path(td) / "w", ["func_80058580", "func_80055B60", "func_P1",
-                                      "func_RVA", "func_DN", "func_RQ", "func_Q"])
+                                      "func_RVA", "func_DN", "func_RQ", "func_WL",
+                                      "func_FX", "func_UL", "func_Q"])
             wave({"func_80055B60": "func_Caller", "func_80058580": "func_Callee"})
             commit("caller + callee renamed in one wave")
             wave({"func_RQ": "func_RQ2"})                 # renamed while queued,
@@ -3578,9 +3591,43 @@ def test_departures() -> None:
             wave({"func_DN1": "func_DN2"})
             edit("func_DN2")
             commit("DN1 -> DN2, then a callee change")
+            wave({"func_WL": "func_WL2"})                 # renamed AND landed in one commit
+            rec("func_WL2", key("func_WL2"))
+            drop("func_WL2")
+            commit("WL -> WL2 and WL2 done, one commit")
+            drop("func_FX")                               # hand-dropped, no PASS,
+            commit("FX hand-dropped")
+            wave({"func_FX": "func_FX2"})                 # then renamed
+            commit("FX -> FX2")
             wave({"func_P1": "func_P1N"})                 # uncommitted wave
+            wave({"func_UL": "func_UL2"})                 # uncommitted wave + landing
+            rec("func_UL2", key("func_UL2"))
+            drop("func_UL2")
+            v, fl = audit()
             eq("departures: waves (caller+callee, revert, revert-of-revert, back and "
-               "forth, double rename after completion, uncommitted) -> clear",
+               "forth, double rename after completion, rename+land in one commit and "
+               "uncommitted, uncommitted) -> clear; only the hand-drop is flagged",
+               fl, ["func_FX"])
+            check("departures: the fix names the function as it is NOW",
+                  any(s.startswith("func_FX ") and "queue reopen func_FX2 " in s for s in v))
+
+            # ── repo mp: a merge's parent-2 version is addressed from parent
+            #    2's own files (Z's glabel file exists only there) ────────────
+            new_repo(Path(td) / "mp", ["func_A"])
+            git("checkout", "-qb", "side")
+            fn("func_Z")
+            q = json.loads(Path("engine/queue.json").read_text())
+            q["items"].append(item("func_Z", addr=False))  # a hand-added, addr-less item
+            Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
+            commit("side: Z queued without addr")
+            git("checkout", "-q", "main")
+            Path("other").write_text("x\n")
+            commit("main moves on")
+            git("merge", "-q", "--no-commit", "side")
+            rec("func_Z", key("func_Z"))
+            write_queue(["func_A"])                       # Z leaves IN the merge, reviewed
+            commit("merge: Z done with a PASS")
+            eq("departures (merge): the parent-2 version is addressed from parent 2's files",
                audit()[1], [])
 
             # ── fail closed: grafts, replace refs, missing objects, records ─
@@ -3789,6 +3836,27 @@ def test_layer2_addresses() -> None:
                   and r.get("addr") == "80013000")
             eq("addresses: ...and the gate then opens on it",
                layer2.gate("func_80013000", "r"), None)
+            with open(p, "a") as fh:
+                fh.write(json.dumps({"func": "func_80013000", "addr": "80019999",
+                                     "verdict": "PASS", "body_hash": h,
+                                     "date": "2099-01-02T00:00:00Z"}) + "\n")
+            check("addresses: gate refuses a record whose addr is not the function's",
+                  "is at 80013000 now" in (layer2.gate("func_80013000", "r") or ""))
+            # one precedence for addr_of and addr_index: the glabel file wins
+            # over a symbol file that disagrees
+            Path("asm/funcs").mkdir(parents=True, exist_ok=True)
+            Path("asm/funcs/func_PR.s").write_text(
+                "glabel func_PR\n    /* 5000 80015000 27BDFFE8 */  addiu $sp, $sp, -0x18\n")
+            with open("undefined_syms_auto.txt", "a") as fh:
+                fh.write("func_PR = 0x80099999;\n")
+            eq("addresses: addr_of and addr_index agree on precedence",
+               (layer2.addr_of("func_PR"), layer2.addr_index().get("func_PR")),
+               ("80015000", "80015000"))
+            with open("build/bb2.map", "a") as fh:            # a map that disagrees with
+                fh.write("                0x8001c630                func_8001C624\n")
+            eq("addresses: ...an auto-name's own address beats the link map in both",
+               (layer2.addr_of("func_8001C624"), layer2.addr_index().get("func_8001C624")),
+               ("8001C624", "8001C624"))
 
             # regen refuses to write an item nothing addresses
             Path("build/src").mkdir(parents=True)

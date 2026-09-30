@@ -561,7 +561,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     # departures audit keys on it, because renames never change it
     addrs = layer2.addr_index()
     for it in items:
-        a = addrs.get(it["func"]) or it.get("addr")
+        a = layer2.lookup(addrs, it["func"]) or it.get("addr")
         if a:
             it["addr"] = a
     missing = sorted(it["func"] for it in items if not it.get("addr"))

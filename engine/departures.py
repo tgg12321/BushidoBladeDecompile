@@ -31,8 +31,14 @@ body@D, the latest is a PASS. Records on other bodies (e.g. a later reviewed
 cheat-cleanup) neither clear nor revoke it; a later FAIL / NEEDS_USER on body@D
 revokes it. "Latest" is by effective date: the running maximum of the dates
 within the record's own file (line order decides there, whatever the clock
-did; layer2.record also never stamps a date earlier than its file's last),
-files merged by it.
+did), files merged by it. Across files the order is only as good as the dates,
+so layer2.record never stamps a date earlier than ANY record already carrying
+the same address, in any ledger (archived ones included).
+When name@D has no body at D — the function was renamed and landed in the
+same commit (or both uncommitted, or a squash of the two) — the names the
+records carrying A use stand in, each only where D's own files give it address
+A. A finding's fix names the function as it is NOW (the name with a body in
+src/ at that address), never a name that no longer exists.
 
 FAIL CLOSED: a git failure, a shallow or anchor-less history (an anchor with no
 parent), a grafts file (replace refs are ignored: --no-replace-objects), a
@@ -49,7 +55,9 @@ KNOWN LIMITS: (1) a function never listed from the anchor on is not audited;
 (2) a fork that branched before the anchor and is merged later contributes no
 versions; (3) forging an `addr` in queue.json or in a layer2.jsonl line is
 record forgery (like a forged PASS line in the core gate) — caught by review,
-not by this tool.
+not by this tool; (4) the census lists retired names beside current ones, and
+an address lookup by a retired census name still answers — a name another
+source now gives a different function at that address is not refused.
 """
 from __future__ import annotations
 
@@ -288,6 +296,19 @@ def _records() -> dict[str, list[dict]]:
     return {a: [r for *_k, r in sorted(v, key=lambda t: t[:3])] for a, v in by_addr.items()}
 
 
+def _current_name(addr: str, index: dict, name: str | None, file: str | None):
+    """(name, file stem) the function at `addr` has NOW — the one with a body
+    in src/, so the fix never names a function that no longer exists."""
+    cands = [n for n, a in index.items() if a == addr]
+    for n in sorted(dict.fromkeys([*([name] if name else []), *cands]),
+                    key=lambda n: n != name):
+        for p in ([Path(f"src/{file}.c")] if file else []) + sorted(Path("src").glob("**/*.c")):
+            text = layer2._read_text(p)
+            if text and n in text and layer2.body_key(text, n):
+                return n, p.relative_to("src").with_suffix("").as_posix()
+    return name, file
+
+
 def _fix(name: str, file: str) -> str:
     return (f"Fix: put it back (`python3 -m engine.cli queue reopen {name} --file {file} "
             f"--reason \"Q39: left the queue without a layer-2 PASS\"`) and re-land it; or, "
@@ -393,33 +414,63 @@ def unreviewed_departures() -> list[str]:
         for a in departed:
             if a in head:
                 left[a] = ("WORKTREE", head[a])
+        def parent_rev(c, src):
+            """The parent of `c` whose queue.json is `src` (a merge's diffs come
+            once per parent): its own files address that version's items."""
+            for k in range(1, max(1, len(parents.get(c, []))) + 1):
+                if batch.get(f"{c}^{k}:{QUEUE_FILE}") == batch.get(src):
+                    return f"{c}^{k}"
+            return f"{c}^"
+
         for c, s, d in diffs:
             if c not in audited or s == _ZERO:
                 continue
-            before, after = resolved(version(s), f"{c}^", c), resolved(version(d), c)
+            before = resolved(version(s), parent_rev(c, s), c)
+            after = resolved(version(d), c)
             for a in departed:
                 if a in before and a not in after and a not in left:
                     left[a] = (c, before[a])
 
         records = _records()
+        index = None
         for a in departed:
             c, item = left.get(a, (None, listed[a][1]))
             name, file = item.get("func"), item.get("file")
-            if not name:
-                body, where = None, "an unparseable version"
-            elif c == "WORKTREE":
-                body, where = _body_now(name, file), "the working tree"
-            elif c:
-                body, where = _body_at(batch, c, name, file), f"commit {c[:9]}"
-            else:
-                body, where = None, "an unknown commit"
+
+            def body_of(n):
+                if c == "WORKTREE":
+                    return _body_now(n, file)
+                return _body_at(batch, c, n, file) if c else None
+            body = body_of(name) if name else None
+            where = ("an unparseable version" if not name else "the working tree"
+                     if c == "WORKTREE" else f"commit {c[:9]}" if c else "an unknown commit")
             recs = records.get(a, [])
-            # only records on the body that left count: a later reviewed body
-            # (a cheat-cleanup) neither clears nor revokes this departure
-            on_body = [r for r in recs if body and r.get("body_hash") == body]
-            last = on_body[-1] if on_body else None
+
+            def verdict_on(b):
+                """The latest record on body `b`: only records on the body that
+                left count — a later reviewed body (a cheat-cleanup) neither
+                clears nor revokes this departure."""
+                on_body = [r for r in recs if b and r.get("body_hash") == b]
+                return on_body[-1] if on_body else None
+            last = verdict_on(body)
             if last and last.get("verdict") == "PASS":
                 continue
+            if body is None and c:
+                # renamed and landed in ONE commit (or both uncommitted, or a
+                # squash): name@D has no body at D — the records' own names,
+                # where D's files give them this same address, stand in
+                def at_d(n):
+                    if c == "WORKTREE":
+                        return layer2.addr_of(n)
+                    return layer2.addr_at(n, lambda p: batch.text(f"{c}:{p}"))
+                alt = [n for n in dict.fromkeys(r.get("func") for r in recs)
+                       if isinstance(n, str) and n != name and at_d(n) == a]
+                if any((r := verdict_on(body_of(n))) and r.get("verdict") == "PASS"
+                       for n in alt):
+                    continue
+            if index is None:
+                index = layer2.addr_index()
+            now_name, now_file = _current_name(a, index, name, file)
             why = ("no layer-2 record carries this address" if not recs else
                    f"no record on that body (latest: {recs[-1].get('verdict')} on "
                    f"{recs[-1].get('body_hash')})" if last is None else
@@ -427,7 +478,7 @@ def unreviewed_departures() -> list[str]:
                    f"({last.get('func')}, {last.get('date', '?')})")
             out.append(f"{name or '?'} (addr {a}): left {QUEUE_FILE} in {where} — body "
                        f"{body or '(not found)'} — without a layer-2 PASS on that body: {why}. "
-                       f"{_fix(name or '<name>', file or '<file>')}")
+                       f"{_fix(now_name or '<name>', now_file or '<file>')}")
         batch.close()
         batch = None
     except _AuditError as e:
