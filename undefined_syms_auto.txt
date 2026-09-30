@@ -695,6 +695,7 @@ D_80101F08 = 0x80101F08;
 D_80101F10 = 0x80101F10;
 D_80101F12 = 0x80101F12;
 D_80101F14 = 0x80101F14;
+D_80101F26 = 0x80101F26;  /* alias of g_practice_menu_table+0x5E (.unk_5E); retire with func_8001C8DC (asm/funcs/func_8001C8DC.s is its only live referrer; restored 2026-09-29 when func_8001C8DC was reopened) */
 D_80101F32 = 0x80101F32;
 D_80101F42 = 0x80101F42;
 D_80101F4C = 0x80101F4C;
