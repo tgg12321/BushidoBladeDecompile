@@ -3780,11 +3780,28 @@ def test_departures() -> None:
                 common, head = real.stdout.splitlines()[:2]
                 if not os.path.isabs(common):
                     common = str((repo_root / common).resolve())
+                # the real audit on this tree — the clone of its HEAD must agree
+                # unless the working tree has uncommitted edits the audit reads
+                os.chdir(repo_root)
+                expected = audit()
+                dirty = subprocess.run([*real_git, "status", "--porcelain", "--", "engine/queue.json",
+                                        "memory/grind", "src", "include", "asm/funcs",
+                                        "docs/naming", ":(glob)*.txt"],
+                                       cwd=str(repo_root), capture_output=True, text=True).stdout
                 os.chdir(td)
                 git("clone", "-q", "--shared", "--no-checkout", common, "real")
                 os.chdir(Path(td) / "real")
-                git("sparse-checkout", "set", "engine", "src", "include", "asm/funcs")
+                # every path the audit reads: the queue, the source, the asm
+                # bodies and glabel files, every ledger (memory/grind/**/
+                # layer2.jsonl, _completed/ too), the census; cone mode keeps
+                # the top-level symbol files
+                git("sparse-checkout", "set", "engine", "src", "include", "asm/funcs",
+                    "memory/grind", "docs/naming")
                 git("checkout", "-q", "--detach", head)
+                check("departures (real history): the clone holds every ledger the tree has",
+                      sorted(p.as_posix() for p in Path("memory/grind").glob("**/layer2.jsonl"))
+                      == sorted(l for l in git("ls-files", "memory/grind").splitlines()
+                                if l.endswith("/layer2.jsonl")))
                 q = json.loads(Path("engine/queue.json").read_text())
                 if not all("addr" in it for it in q["items"]):
                     idx = layer2.addr_index()     # anchor the clone as the backfill does
@@ -3792,15 +3809,28 @@ def test_departures() -> None:
                         it["addr"] = idx[it["func"]]
                     Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
                     git("commit", "-qam", "synthetic anchor")
-                check("departures (real history): the tree audits clean",
-                      departures.unreviewed_departures() == [])
+                got = audit()
+                if dirty.strip():
+                    skip("departures (real history): the clone audits as the tree does",
+                         "the tree has uncommitted edits the audit reads: "
+                         + " ".join(dirty.split())[:120])
+                else:
+                    eq("departures (real history): the clone audits as the tree does",
+                       got[0], expected[0])
+                # an item with a body and no record at all: dropping it by hand
+                # can't be cleared by an existing PASS
                 gone = next((it for it in q["items"]
-                             if layer2.current_key(it["func"], it.get("file", ""))), None)
-                q["items"] = [it for it in q["items"] if it is not gone]
-                Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
-                git("commit", "-qam", "synthetic unreviewed departure")
-                eq("departures (real history): a synthetic hand-drop is caught",
-                   audit()[1], [gone["func"]])
+                             if layer2.current_key(it["func"], it.get("file", ""))
+                             and not layer2.addr_dates(it["addr"])), None)
+                if gone is None:
+                    check("departures (real history): a queued item with no record to drop",
+                          False)
+                else:
+                    q["items"] = [it for it in q["items"] if it is not gone]
+                    Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
+                    git("commit", "-qam", "synthetic unreviewed departure")
+                    eq("departures (real history): a synthetic hand-drop is caught",
+                       audit()[1], sorted(got[1] + [gone["func"]]))
         finally:
             os.chdir(cwd)
 
