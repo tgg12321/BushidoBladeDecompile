@@ -686,3 +686,20 @@ Owner: **"for item 4, i agree with that precedent. Honest C is the explicit goal
 as a standing precedent, not limited to the overnight run (item 4 was answered separately from the blanket
 "recommendations" answer, whose item-4 recommendation was run-only, and "that precedent" answers the question's
 "it isn't precedent after this run"). Flagged to the owner as a reading in the same session.
+
+# Owner exchange 2026-09-30 (thirty-first batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: the Q56 audit of sdata_exclude.txt (twenty-ninth batch) produced a per-file gp model
+(tmp/q56/MODEL.md, banked as docs/grind/gp-model-2026-09-30.md). The orchestrator put the adoption question to
+the owner with a recommendation.
+
+## Q65 — per-file gp model
+Question, verbatim: "Q65: the gp lists. Right now 3 hand-kept lists (sdata_syms, sdata_funcs, sdata_exclude: about 750 entries) tell the assembler, function by function, when to use the fast gp-relative addressing. The Q56 audit found a single rule that replaces all of them. The rule is Sony's own assembler behaviour: a file uses gp for a small variable only if that file defines the variable. We checked it with Sony's real ASPSX 2.34 on all 6,337 variable accesses: 0 disagreements. A scratch build with all three lists deleted matches the original EXE byte for byte. Adopting it means: one small maspsx bug fix; the -G8 switch; about 323 variable definitions written into 28 C files; moving 51 initialized variables' data out of the asm data file into their C files; 'static' support for 6 variables; splitting 2 of our files that turn out to be 2 original files each; and treating 2 groups of adjacent files as single original files. Should we adopt it?"
+Owner chose: **"Adopt fully (Recommended)"** — option text: "Replace all 3 lists with Sony's per-file rule. It lands as a series of separately reviewed, byte-identical commits after the current landings finish. It's the most faithful option: no per-function lists remain, and gp use comes from where the C defines each variable, as in the original source."
+Other options offered: "Adopt, keep a tiny stand-in" — "Same, but leave the 51 initialized and 6 static variables on a small 8-symbol list for now instead of moving their data out of asm. Less work today; one small list remains as known debt."; "Don't adopt; audit the lists" — "Q56 step 2 as written: keep the lists. The ASPSX run now proves each live row, so register the list with the gate machinery, get it reviewed, and delete only the 31 dead rows. Per-function lists stay in the build."
+The rule text is .claude/rules/per-file-gp-model.md.
+
+## Q66 — func_800770B8 reused local + restore store (REFUSED)
+Question, verbatim: "Q66: func_800770B8 (SelWork group). The only form that matches uses one local variable for two real values in turn: first the list pointer, then the new work-area pointer. Ruling 11 can admit that with dump proof. It then sets the variable back to the list pointer with a do-nothing store (`p_old = prev;`, annotated FAKE). Without that store, 2 instructions use the wrong register (2/175). With two separate variables it's 20/175. Current rules refuse this exact combination: Ruling 11 bans a reused variable that also has a dead write, and Ruling 4 bans carriers whose extra write is dead. The residual involves D_800A36A0, whose addressing changes under Q65, so it may shift after Q65 lands. Allow it?"
+Owner chose: **"Refuse for now (Recommended)"** — option text: "Keep the current bans. 770B8 stays asm and the ordinary-C search continues, re-measured after Q65 lands, since its residual depends on D_800A36A0's addressing. The other SelWork functions land now."
+Other option offered: "Allow narrowly" — "Admit this one function: the full Ruling 11 dump proof plus dead-store family paperwork, FAKE-annotated. It lands now, but it's a one-off exception to two standing bans."
+Record only: no rule text changes; the existing bans stand.

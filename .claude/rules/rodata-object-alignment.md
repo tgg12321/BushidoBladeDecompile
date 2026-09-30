@@ -8,6 +8,14 @@ metadata:
 
 # Object-relative rodata alignment (owner ruling 2026-09-30)
 
+> **Update 2026-09-30 — per-file gp model boundaries (owner ruling Q65).** Boundaries proven by the per-file
+> gp model ([[per-file-gp-model]]) satisfy their existence by the gp split test in place of this rule's
+> condition 1, and are placed by that rule's cut convention in place of condition 3's placement clause.
+> Conditions 2-4 otherwise apply as that rule states. A boundary set under this rule may also be moved within its
+> recorded window by per-file-gp-model's cut outcome (i) or by its Merge-bullet boundary move; that move's
+> placement replaces condition 3's placement clause for that boundary, and its record in
+> docs/grind/rodata-align-2026-09-30.md is updated in the same commit.
+
 Owner (Trenton), verbatim, answering "do you want me to go ahead and adopt it on those terms?"
 (the terms: ruling recorded first, adoption lands only after a byte-identical oracle check and a
 layer-2 review): **"Yes go ahead"**. Evidence: `docs/grind/rodata-align-2026-09-30.md`

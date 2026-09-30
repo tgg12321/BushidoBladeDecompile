@@ -30554,3 +30554,71 @@ of Ruling 11 (D)(2) may be a decision in any named pass of `tools/gcc-2.7.2` (e.
 location, with (1)'s dumps plus that pass's own dump for both spellings (e.g. `.cse`/`.cse2`, `.combine`). (D)(3)
 (with the Q30 set-aside and Q31 mechanism + search), (D)(4) and every other prong of (A)-(H) are unchanged; Ruling
 12's (D) keeps its own text. Nothing is pre-decided: func_8001F2E4 is a fresh submission.
+
+## 2026-09-30 — OWNER RULING — the per-file gp model (`.claude/rules/per-file-gp-model.md`)
+
+Thirty-first batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 31, Q65). Owner chose "Adopt fully
+(Recommended)": "Replace all 3 lists with Sony's per-file rule. It lands as a series of separately reviewed,
+byte-identical commits after the current landings finish. It's the most faithful option: no per-function lists
+remain, and gp use comes from where the C defines each variable, as in the original source." Evidence:
+docs/grind/gp-model-2026-09-30.md (banked copy of tmp/q56/MODEL.md; ASPSX 2.34 agrees on 6,337 of 6,337 accesses;
+a scratch build with the three lists deleted matches the oracle). The rule: a file gets gp for a symbol of 8 bytes
+or less only if it defines it (.comm at the base only, .lcomm and .sdata at every offset, extern never).
+`--sdata-syms`/`--sdata-funcs`/`--sdata-exclude` give way to maspsx's `-G8`, with two global maspsx fixes (the
+indexed-operand `_uses_gp` guard, `.local`+`.comm` as `.lcomm`). A definition is admitted only with evidence (a gp
+original access in the file) and whole-file consistency (the rule predicts every original access to the symbol in
+that file). Macro-form accesses only: an explicit `%hi`/`%lo`/`%gp_rel` access in canonical hand-written asm
+(a function in inline_asm_canonical.txt, e.g. g_gpu_ot256_ptr in func_80051D08/func_80051ED4) is assembled as
+written and excluded from E1, E2 and the split test, each exclusion listed in the ledger with one ASPSX probe
+showing ASPSX leaves such an access as written. Kinds: bss at base only = tentative definition (Q62's conditions; an object wholly at or above the
+image end 0x800A3800 meets the zero condition by the EXE header's image size, a straddling object's in-image part
+must be zero with disc offset and bytes cited), bss at an offset = `static` referenced only in that file, its
+header `extern` deleted and its address given by bss link order alone (no per-symbol pin; if link order cannot
+produce it, borderline.md), initialized = one real initialized definition with its data moved out of
+asm/data/91C98.data.s. Splits and merges only where the evidence tests force them; the rule states tests, not counts (the
+evidence doc's findings were taken at a739dbd20 and are recomputed at adoption). For a proven split every cut position in the window is listed and tested (no
+gp-reached small symbol shared across the cut; rodata-object-alignment conditions 3-4; condition 2 as an owned
+item start with a valid phase, or met if the new part owns no compiled rodata), with rodata condition 3 applying
+only in its section-order, byte-neutrality and window-record parts (the gp convention replaces its placement
+convention). The gp convention is the cut immediately before the function holding the access the earlier part's
+assembly cannot produce: if every surviving position gives identical bytes, the conventional position is used,
+provided it survives; if surviving positions give different bytes, or the conventional position is not a
+survivor, the case goes to borderline.md and that commit does not land. The other survivors are recorded. Cut
+outcome at the conventional position: (i) if a boundary set under rodata-object-alignment has a recorded window
+containing the conventional position, that boundary moves there (its current position may lie outside the gp
+window) and no new file is created; (ii) otherwise a new part begins there. Legacy boundaries (not set under rodata-object-alignment, no
+recorded evidence) are never moved by the split test, only kept or removed under the merge test. A case fitting
+neither (i) nor (ii), or where (i) fits more than one boundary, goes to borderline.md and that commit does not
+land; a boundary moved under (i) has its record in docs/grind/rodata-align-2026-09-30.md updated in the same
+commit. A new part inherits the parent's GP_FILES, NO_SR_FILES, EXPAND_LB_FILES and EXPAND_LH_FILES memberships
+(as compiler-flags-canonical (iv) requires for splits). A gp-evidenced split must meet rodata-object-alignment
+conditions 2-4 (the gp split test supplies condition 1, and the gp cut convention replaces condition 3's
+placement clause; rodata-object-alignment.md carries an update note saying so). A boundary set under
+rodata-object-alignment may also be moved within its recorded window by per-file-gp-model's cut outcome (i) or by
+its Merge-bullet boundary move; that move's placement replaces condition 3's placement clause for that boundary,
+and its record in docs/grind/rodata-align-2026-09-30.md is updated in the same commit. A merge whose verbatim text does
+not compile because the parts declare a symbol differently is preceded by a separate byte-identical,
+separately layer-2-reviewed commit that gives each symbol its one truthful type by evidence (target-byte accesses
+and each consumer's use); if the evidence does not determine one type, borderline.md and the merge does not land.
+If the gp users of a symbol the merge test would join lie on both sides of a rodata-object-alignment boundary
+whose recorded window contains a position putting them all on one side, the boundary moves there in place of a
+merge (closest to its current position; a tie, or a move that splits another symbol's users, goes to
+borderline.md), with the record updated in the same commit; any other merge that would remove a rodata-rule
+boundary goes to borderline.md; anything
+undecided goes to borderline.md, never decided by fit. Each commit is byte-identical, keeps `engine test` green and
+gets its own fresh layer-2. Until the adoption lands the lists stay in force, and rows required by existing rules
+(e.g. compiler-flags-canonical's sdata_syms requirement) may still be added with their usual evidence; the adoption
+retires every row, including those. The Q56 row-by-row audit is not continued: the owner chose full adoption over "Don't adopt;
+audit the lists", whose text was "Q56 step 2 as written: keep the lists. [...]". The rule text is the author's
+encoding of the owner's answer. Nothing is pre-decided for any function.
+
+## 2026-09-30 — OWNER RULING — func_800770B8 reused local + restore store REFUSED (no rule change)
+
+Thirty-first batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 31, Q66). Owner chose "Refuse for
+now (Recommended)": "Keep the current bans. 770B8 stays asm and the ordinary-C search continues, re-measured after
+Q65 lands, since its residual depends on D_800A36A0's addressing. The other SelWork functions land now." The
+candidate (one local `p_old` for the list pointer then the new work-area pointer, plus a FAKE-annotated dead
+restore store `p_old = prev;`; 2/175 without the store, 20/175 with two separate variables) stays refused under
+the standing bans: Ruling 11 (B)(1) (a Ruling 11 variable may carry no dead write) and the Ruling 4 / Ruling 1
+multi-WRITE carrier ban (a carrier whose extra write is dead). No rule text changes. func_800770B8 stays
+INCLUDE_ASM and active; its ordinary-C search continues and is re-measured after the Q65 adoption lands.

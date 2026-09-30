@@ -8,6 +8,12 @@ metadata:
 
 # The per-function maspsx gate lists — adjudicated 2026-07-13
 
+> **Update 2026-09-30 — the sdata lists are retired upon adoption (owner ruling Q65).** `sdata_syms.txt`,
+> `sdata_funcs.txt` and `sdata_exclude.txt` are replaced by Sony's per-file gp rule and are deleted by the
+> adoption's commits ([[per-file-gp-model]]). Until the adoption lands, the lists stay in force, and rows
+> required by existing rules (e.g. [[compiler-flags-canonical]]'s `sdata_syms.txt` requirement) may still be
+> added with their usual evidence. The adoption retires every row, including those.
+
 > **Update 2026-09-30 — global fidelity fixes vs per-function gates.** Owner ruling (decisions.md
 > 2026-09-30 "maspsx `.L`-label mflo-hazard fix adopted"): maspsx changes are admissible only as
 > GLOBAL models of documented ASPSX behaviour, verified against Sony's tools and byte-neutral for
