@@ -48,17 +48,6 @@
       "addr": "8002D780"
     },
     {
-      "func": "func_8002EBDC",
-      "file": "code6cac_b_tu2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): grant row (9bdfcc6cc owner-instructed) has no owner record; islands not inline_o.h-exact (audit-q38). Banked: memory/grind/func_8002EBDC/rejected/retro-audit-2026-09-29.c",
-      "addr": "8002EBDC"
-    },
-    {
       "func": "func_8002F2D0",
       "file": "code6cac_b_tu2",
       "distance": 0,
@@ -421,14 +410,14 @@
     }
   ],
   "counts": {
-    "total": 35,
-    "active": 23,
+    "total": 34,
+    "active": 22,
     "by_status": {
-      "active": 23,
+      "active": 22,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 22,
+      "C": 21,
       "ASM-PARTIAL": 1
     }
   },
