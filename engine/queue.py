@@ -520,6 +520,10 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 status = "authorize" if verdict in _AUTHORIZE else "active"
             entry = {"func": func, "file": stem, "distance": dist,
                      "verdict": verdict, "rules": rules, "status": status}
+            if listed.get(func, {}).get("renamed_from"):
+                # naming-wave provenance: the departures audit reads it as
+                # positive evidence that the OLD name never left the queue
+                entry["renamed_from"] = listed[func]["renamed_from"]
             if tier is not None:
                 # The evidence the routing rests on, carried into the worklist
                 # so a reader (or an audit) never has to re-run the scan to see

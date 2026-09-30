@@ -153,6 +153,21 @@ def retarget_layer2_record(text: str, old: str, new: str) -> tuple[str, list[str
     return "\n".join(out), changed
 
 
+def retarget_queue_items(data: dict, code_map: dict[str, str]) -> list[str]:
+    """Rename queue items in place (func field; status/verdict untouched) and
+    append each old name to the item's `renamed_from` LIST — the positive
+    rename evidence the Q39 departures audit (engine/departures.py) needs to
+    know the old name did not LEAVE the queue."""
+    changed = []
+    for item in data.get("items", []):
+        if item.get("func") in code_map:
+            changed.append(f"{item['func']} -> {code_map[item['func']]}")
+            chain = item.get("renamed_from") or []
+            item["renamed_from"] = ([chain] if isinstance(chain, str) else list(chain)) + [item["func"]]
+            item["func"] = code_map[item["func"]]
+    return changed
+
+
 def plan_ledger_renames(plan: "Plan", code_map: dict[str, str], root: Path | None = None) -> None:
     """Queue every per-function ledger directory rename, and the func-field
     rewrite of each layer2.jsonl moving with one (applied before the move)."""
@@ -841,11 +856,7 @@ def plan_wave(wave: Wave) -> Plan:
     if qpath.exists():
         raw = read(qpath)
         data = json.loads(raw)
-        changed = []
-        for item in data.get("items", []):
-            if item.get("func") in wave.code_map:
-                changed.append(f"{item['func']} -> {wave.code_map[item['func']]}")
-                item["func"] = wave.code_map[item["func"]]
+        changed = retarget_queue_items(data, wave.code_map)
         for key in ("build_failures",):
             lst = data.get(key) or []
             for i, v in enumerate(lst):

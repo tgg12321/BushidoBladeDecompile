@@ -3126,6 +3126,18 @@ def test_layer2_gate() -> None:
                     check(f"layer2: held not-a-C item says why [{point}]",
                           bool(items) and "layer-2 gate" in items[0].get("layer2_pending", ""))
                 inlineasm.file_func_cheat_asm_count = lambda s, f: 0
+
+                # naming-wave provenance survives regen: an item rebuilt from
+                # scratch (still incomplete, distance 5) keeps `renamed_from`,
+                # the departures audit's rename evidence.
+                score._o_func_table = lambda o: {"func_L2": (0, 0)}
+                score.score_func = lambda a, b, f: {"score": 5}
+                qp.write_text(json.dumps({"items": [dict(seed["items"][0],
+                                                         renamed_from=["func_OLDL2"])]}))
+                items = Q.generate(workdir=str(Path(td) / "wd"))["items"]
+                eq("layer2: regen keeps a rebuilt item's renamed_from chain",
+                   [(it["func"], it.get("renamed_from")) for it in items],
+                   [("func_L2", ["func_OLDL2"])])
             finally:
                 (P.c_stems, canonical.scan_all, cheats.is_jtbl_infra,
                  cheats.is_canonical_extraction_only,
@@ -3213,6 +3225,169 @@ def test_layer2_gate() -> None:
              cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
              inlineasm.file_func_cheat_asm_count, completion.source_issues,
              Q.O.verify) = saved
+
+
+def test_departures() -> None:
+    """Q39 departures audit (engine/departures.py), redesigned after the
+    round-4 review of the first attempt (F1-F5). Pinned on a throwaway git
+    repo: union-of-versions semantics; pre-gate departures exempt by ancestry
+    (a skewed commit date changes nothing); renames resolved only through
+    `renamed_from` evidence, and a renamed completion clears once re-reviewed;
+    an unparseable queue version, and a git failure, are violations; a
+    constant number of git processes; the fix command is named; the working
+    tree's hand edit is caught."""
+    import subprocess
+    from engine import departures, layer2
+
+    def git(*a, date=None):
+        env = dict(os.environ)
+        if date:
+            env["GIT_COMMITTER_DATE"] = env["GIT_AUTHOR_DATE"] = date
+        subprocess.run(["git", "-c", "user.email=t@e", "-c", "user.name=t",
+                        "-c", "core.hooksPath=/dev/null", *a],
+                       check=True, capture_output=True, text=True, env=env)
+
+    def write_queue(items):
+        Path("engine/queue.json").write_text(json.dumps({"items": items}, indent=2) + "\n")
+
+    def item(f, **extra):
+        return dict({"func": f, "file": "k", "distance": 3, "verdict": "C", "rules": 0,
+                     "status": "active"}, **extra)
+
+    def flagged():
+        return sorted(s.split(":")[0].split(" ")[0] for s in departures.unreviewed_departures())
+
+    def pass_for(func, archived=False):
+        h = layer2.current_key(func, "k")[1]
+        p = layer2.completed_record_path(func) if archived else layer2.record_path(func)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        with open(p, "a") as fh:
+            fh.write(json.dumps({"func": func, "verdict": "PASS", "body_hash": h}) + "\n")
+
+    # the anchor is found by the gate module's path: a move must fail loudly
+    repo_root = Path(departures.__file__).resolve().parent.parent
+    check("departures: GATE_FILE is engine.layer2's own path (a move breaks this, "
+          "not the anchor)",
+          (repo_root / departures.GATE_FILE).resolve() == Path(layer2.__file__).resolve())
+
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        try:
+            git("init", "-q")
+            Path("engine").mkdir()
+            Path("src").mkdir()
+            Path("src/k.c").write_text("".join(
+                f"int {f}(int a) {{ return a + {i}; }}\n" for i, f in enumerate(
+                    ("func_E", "func_X", "func_Y", "func_R2", "func_K", "func_S", "func_U"))))
+            names = ["func_E", "func_X", "func_Y", "func_R", "func_K", "func_S", "func_U"]
+            write_queue([item(f) for f in names])
+            git("add", "-A"); git("commit", "-qm", "c1")
+            write_queue([item(f) for f in names if f != "func_E"])   # pre-gate: exempt
+            git("commit", "-qam", "c2")
+            eq("departures: no gate in the history -> nothing to audit", flagged(), [])
+            Path("engine/layer2.py").write_text("# gate\n")
+            git("add", "-A"); git("commit", "-qm", "c3 gate lands")
+            # func_X leaves unreviewed; func_Y leaves with an archived PASS;
+            # func_R is renamed by a naming wave (positive evidence on the item)
+            pass_for("func_Y", archived=True)
+            q = [item(f) for f in ("func_R", "func_K", "func_S", "func_U")]
+            q[0] = item("func_R2", renamed_from=["func_R"])
+            write_queue(q)
+            git("add", "-A"); git("commit", "-qm", "c4")
+            # func_S leaves in a commit whose DATE is skewed decades back
+            write_queue([it for it in q if it["func"] != "func_S"])
+            git("commit", "-qam", "c5 skewed", date="2001-01-01T00:00:00+0000")
+            # func_U completes WITH a PASS, then a naming wave renames it to func_U2
+            pass_for("func_U")
+            write_queue([it for it in q if it["func"] not in ("func_S", "func_U")])
+            git("add", "-A"); git("commit", "-qm", "c6 func_U done")
+            Path("src/k.c").write_text(Path("src/k.c").read_text().replace("func_U", "func_U2"))
+            rec = layer2.record_path("func_U")
+            line = json.loads(rec.read_text().splitlines()[-1])
+            layer2.record_path("func_U2").parent.mkdir(parents=True)
+            layer2.record_path("func_U2").write_text(json.dumps(
+                dict(line, func="func_U2", renamed_from=["func_U"])) + "\n")
+            rec.unlink()
+            rec.parent.rmdir()
+            git("add", "-A"); git("commit", "-qm", "c7 naming wave func_U -> func_U2")
+            # func_K leaves in the WORKING TREE (a hand edit, not committed)
+            write_queue([item("func_R2", renamed_from=["func_R"])])
+
+            v = departures.unreviewed_departures()
+            eq("departures: exactly the unreviewed post-gate departures (union of "
+               "versions; skewed date included; renamed ones resolved)",
+               flagged(), ["func_K", "func_S", "func_U2", "func_X"])
+            check("departures: a renamed completion is reported under its CURRENT name",
+                  any(s.startswith("func_U2 (listed as func_U)") for s in v))
+            check("departures: every finding names the fix commands",
+                  all("queue reopen" in s and "layer2 record" in s for s in v))
+            pass_for("func_U2")
+            check("departures: the renamed completion clears once its current body is "
+                  "re-reviewed (not flagged forever)", "func_U2" not in flagged())
+            pass_for("func_X")
+            eq("departures: a PASS on the current body clears a departure", flagged(),
+               ["func_K", "func_S"])
+            Path("src/k.c").write_text(Path("src/k.c").read_text().replace("a + 1;", "a - 1;"))
+            eq("departures: a PASS on an earlier body does not", flagged(),
+               ["func_K", "func_S", "func_X"])
+
+            # a constant number of git processes, however many queue commits
+            real_run, calls = subprocess.run, []
+
+            def counting(*a, **k):
+                if a and a[0] and a[0][0] == "git":
+                    calls.append(a[0][1])
+                return real_run(*a, **k)
+            subprocess.run = counting
+            try:
+                departures.unreviewed_departures()
+            finally:
+                subprocess.run = real_run
+            eq("departures: three git processes for the whole history", len(calls), 3)
+
+            # an unparseable version is a violation, not a skip
+            Path("engine/queue.json").write_text("{ not json")
+            git("commit", "-qam", "c8 garbage")
+            write_queue([item("func_R2", renamed_from=["func_R"])])
+            git("commit", "-qam", "c9 repaired")
+            check("departures: an unparseable queue version is a violation",
+                  any("unparseable" in s for s in departures.unreviewed_departures()))
+
+            # git failing is a violation, never a silent pass
+            os.environ["GIT_DIR"] = str(Path(td) / "no-such-gitdir")
+            try:
+                v = departures.unreviewed_departures()
+            finally:
+                del os.environ["GIT_DIR"]
+            check("departures: a git failure fails the audit closed",
+                  len(v) == 1 and "could not read git history" in v[0])
+        finally:
+            os.chdir(cwd)
+
+    # the evidence writer: naming_wave appends to the queue item's chain
+    import naming_wave as nw
+    data = {"items": [item("func_A"), item("func_B", renamed_from="func_Z")]}
+    nw.retarget_queue_items(data, {"func_A": "func_A2", "func_B": "func_B2"})
+    eq("departures: naming_wave records the queue rename chain as a list",
+       [(it["func"], it["renamed_from"]) for it in data["items"]],
+       [("func_A2", ["func_A"]), ("func_B2", ["func_Z", "func_B"])])
+
+    # the integrity wiring (M7): check_completion_integrity.main() extends its
+    # violations with the audit before it decides the exit code
+    import ast
+    src = (repo_root / "tools/check_completion_integrity.py").read_text(encoding="utf-8")
+    main_fn = next(n for n in ast.parse(src).body
+                   if isinstance(n, ast.FunctionDef) and n.name == "main")
+    wired = verdict_at = None
+    for i, st in enumerate(main_fn.body):
+        seg = ast.get_source_segment(src, st) or ""
+        if seg.strip() == "violations.extend(departures.unreviewed_departures())":
+            wired = i
+        if isinstance(st, ast.If) and (ast.get_source_segment(src, st.test) or "") == "violations":
+            verdict_at = i if verdict_at is None else verdict_at
+    check("departures: check_completion_integrity.main() runs the audit before its verdict",
+          wired is not None and verdict_at is not None and wired < verdict_at)
 
 
 def test_orphaned_local_decls() -> None:
@@ -4280,6 +4455,7 @@ def main() -> int:
     test_buildstamp()
     test_canonical_completion_is_the_drop()
     test_layer2_gate()
+    test_departures()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()
