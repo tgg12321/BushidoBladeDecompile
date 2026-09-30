@@ -53,8 +53,10 @@ return type, and keys K&R definitions by the whole file (layer-2 review of
 """
 from __future__ import annotations
 
+import csv
 import datetime
 import hashlib
+import io
 import json
 import re
 import subprocess
@@ -189,7 +191,7 @@ def body_key(text: str, func: str, read=_disk) -> tuple[str, str] | None:
 
 _ASM_VADDR = re.compile(r"/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s+[0-9A-Fa-f]{8}\s*\*/")
 _GLABEL_RE = re.compile(r"^\s*glabel\s+(\S+)", re.M)
-_MAP_DEF = re.compile(r"^\s+0x0*([0-9A-Fa-f]{1,8})\s+([A-Za-z_]\w*)\s*$", re.M)
+_MAP_DEF = re.compile(r"^\s+0x0*([0-9A-Fa-f]{1,8})\s+([A-Za-z_]\w*)(?:\s*=.*)?\s*$", re.M)
 ADDR_RE = re.compile(r"[0-9A-F]{8}")
 
 
@@ -199,11 +201,51 @@ def _asm_addr(text: str | None, func: str) -> str | None:
     return m.group(1).upper() if m else None
 
 
+# the tracked name -> address registries (so a fresh clone needs no build/):
+# splat's / the linker's symbol files, then the naming census
+SYMBOL_FILES = ("symbol_addrs.txt", "named_syms.txt", "undefined_funcs_auto.txt",
+                "undefined_syms_auto.txt")
+CENSUS = "docs/naming/function-names.csv"
+_SYM_LINE = re.compile(r"^\s*([A-Za-z_]\w*)\s*=\s*0x([0-9A-Fa-f]{1,8})\s*;", re.M)
+_AUTO_NAME = re.compile(r"^func_([0-9A-Fa-f]{8})$")
+
+
+def _registry_addrs(read) -> dict[str, str]:
+    """name -> address from the tracked registries, read through `read`."""
+    out: dict[str, str] = {}
+    for rel in SYMBOL_FILES:
+        for m in _SYM_LINE.finditer(read(rel) or ""):
+            out.setdefault(m.group(1), m.group(2).upper().zfill(8))
+    text = read(CENSUS)
+    if text:
+        for row in csv.DictReader(io.StringIO(text)):
+            a = (row.get("address") or "").strip().upper().replace("0X", "").zfill(8)
+            if not ADDR_RE.fullmatch(a):
+                continue
+            for n in (row.get("current_name"), row.get("glabel"),
+                      *(row.get("aliases") or "").split(";")):
+                if n and n.strip():
+                    out.setdefault(n.strip(), a)
+    return out
+
+
+def addr_at(func: str, read) -> str | None:
+    """`func`'s address from TRACKED files only, read through `read(path)` (the
+    working tree, or a git revision): its own glabel file, the symbol files,
+    the census, or a splat auto-name's own address."""
+    a = _asm_addr(read(f"asm/funcs/{func}.s"), func) or _registry_addrs(read).get(func)
+    if a:
+        return a
+    m = _AUTO_NAME.match(func)
+    return m.group(1).upper() if m else None
+
+
 def addr_index() -> dict[str, str]:
-    """name -> VRAM address (8 upper-case hex digits) for every function:
-    splat's asm/funcs glabel files (glabel name -> the first machine column's
-    vaddr, as docs/naming/build_census.py reads it), then the link map
-    build/bb2.map for anything without one (hand-written asm)."""
+    """name -> VRAM address (8 upper-case hex digits) for every function, all
+    sources: splat's asm/funcs glabel files (glabel -> the first machine
+    column's vaddr, as docs/naming/build_census.py reads it), the tracked
+    symbol files and census, then the link map build/bb2.map (definition AND
+    `name = 0x...` assignment lines) for what none of them name."""
     out: dict[str, str] = {}
     for p in sorted(Path("asm/funcs").glob("*.s")):
         text = _read_text(p) or ""
@@ -211,15 +253,17 @@ def addr_index() -> dict[str, str]:
         a = _asm_addr(text, g.group(1)) if g else None
         if a:
             out.setdefault(g.group(1), a)
+    for n, a in _registry_addrs(_disk).items():
+        out.setdefault(n, a)
     for m in _MAP_DEF.finditer(_read_text(Path("build/bb2.map")) or ""):
         out.setdefault(m.group(2), m.group(1).upper().zfill(8))
     return out
 
 
 def addr_of(func: str) -> str | None:
-    """`func`'s VRAM address: its own glabel file if it has one, else the
-    full index (a glabel file under another stem, or the link map)."""
-    return _asm_addr(_read_text(Path(f"asm/funcs/{func}.s")), func) or addr_index().get(func)
+    """`func`'s VRAM address: tracked files first (addr_at), else the full
+    index (a glabel file under another stem, or the link map)."""
+    return addr_at(func, _disk) or addr_index().get(func)
 
 
 def current_key(func: str, stem: str) -> tuple[str, str] | None:
@@ -379,20 +423,24 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
                                f"{expect_hash} — the reviewer ruled on a different body; "
                                f"nothing recorded")}
     try:
-        read_records(func)
+        prior = read_records(func)
     except ValueError as e:
         return {"ok": False, "func": func, "reason": f"existing record is malformed: {e}"}
     addr = addr_of(func)
     if addr is None:
         return {"ok": False, "func": func,
-                "reason": (f"no address for {func} (no asm/funcs glabel file, no build/bb2.map "
-                           f"entry) — a record must carry the function's address, which "
-                           f"renames never change")}
+                "reason": (f"no address for {func} (no glabel file, symbol-file or census "
+                           f"entry, no build/bb2.map line) — a record must carry the "
+                           f"function's address, which renames never change; add "
+                           f"`{func} = 0x<ADDR>;` to symbol_addrs.txt")}
+    # never earlier than the file's last line: a clock that went back must not
+    # reorder this function's history (line order decides within a file)
+    now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    date = max([now, *(str(r.get("date", "")) for r in prior)])
     rec = {"func": func, "addr": addr, "verdict": verdict, "body_hash": expect_hash,
            "body_kind": key[0] if key and key[1] == expect_hash else "",
            "file": stem, "reviewer": reviewer.strip(), "scope": scope,
-           "date": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-           "head": _head(), "notes": notes, **(extra or {})}
+           "date": date, "head": _head(), "notes": notes, **(extra or {})}
     p = record_path(func)
     p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, "a", encoding="utf-8", newline="\n") as fh:
@@ -421,6 +469,10 @@ def gate(func: str, stem: str) -> str | None:
     if not recs:
         return f"layer-2 gate: no layer-2 verdict is recorded for {func} (current body {h}). {fix}"
     last = recs[-1]
+    if not (isinstance(last.get("addr"), str) and ADDR_RE.fullmatch(last["addr"])):
+        return (f"layer-2 gate: the latest layer-2 record for {func} carries no `addr` (it "
+                f"predates address-keyed records) — the departures audit cannot match it to "
+                f"the function. Record the verdict again with `layer2 record`. {fix}")
     if last["verdict"] != "PASS":
         return (f"layer-2 gate: the latest layer-2 verdict for {func} is {last['verdict']} "
                 f"({last.get('date', '?')}, body {last['body_hash']}); a later PASS on the "

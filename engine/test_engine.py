@@ -32,6 +32,29 @@ from engine import completion, buildstamp
 _passed = _failed = _skipped = 0
 
 
+class _SynthAddrs(dict):
+    """Every name has an address: the tree's own if it gives one, else a
+    stable synthetic one — for tests whose functions are made up."""
+
+    def get(self, k, d=None):
+        import zlib
+        return super().get(k) or "8%07X" % (zlib.crc32(k.encode()) & 0x0FFFFFFF)
+
+
+@contextlib.contextmanager
+def _synth_addrs():
+    """queue.generate()/reopen() refuse an item without an address (owner
+    ruling Q39); tests that queue made-up functions give them one."""
+    from engine import layer2
+    real_index, real_of = layer2.addr_index, layer2.addr_of
+    layer2.addr_index = lambda: _SynthAddrs(real_index())
+    layer2.addr_of = lambda f: real_of(f) or _SynthAddrs().get(f)
+    try:
+        yield
+    finally:
+        layer2.addr_index, layer2.addr_of = real_index, real_of
+
+
 def check(desc: str, cond: bool) -> None:
     global _passed, _failed
     if cond:
@@ -3391,7 +3414,7 @@ def test_departures() -> None:
 
             # ── repo a: record semantics, TU split, asm body, reopen ─────────
             fns = ["func_X", "func_Y", "func_Z", "func_V", "func_W", "func_K", "func_R",
-                   "func_T", "func_CAL", "func_Q"]
+                   "func_T", "func_CAL", "func_CL", "func_SK", "func_SX", "func_Q"]
             Path(td, "a").mkdir()
             os.chdir(Path(td, "a"))
             git("init", "-q")
@@ -3411,17 +3434,36 @@ def test_departures() -> None:
             rec("func_W", key("func_W"))
             rec("func_R", key("func_R"))
             rec("func_A1", key("func_A1"))                # asm body: INCLUDE_ASM + .s
+            rec("func_CL", key("func_CL"))                # CL lands; cleaned up later
+            # SK: a PASS, then a FAIL on the same body whose clock went BACK —
+            # line order decides within a file
+            rec("func_SK", key("func_SK"))
+            with open(layer2.record_path("func_SK"), "a") as fh:
+                fh.write(json.dumps({"func": "func_SK", "addr": addrs["func_SK"],
+                                     "verdict": "FAIL", "body_hash": key("func_SK"),
+                                     "date": "2026-01-01T00:00:00Z"}) + "\n")
+            # SX: a FAIL in the live ledger, a LATER-dated PASS in the archived
+            # one (which sorts first by path) — files merge by date
+            for where, verdict, date in (("func_SX", "FAIL", "2026-10-01T09:00:00Z"),
+                                         ("_completed/func_SX", "PASS", "2026-10-02T09:00:00Z")):
+                pth = Path("memory/grind", where, "layer2.jsonl")
+                pth.parent.mkdir(parents=True, exist_ok=True)
+                pth.write_text(json.dumps({"func": "func_SX", "addr": addrs["func_SX"],
+                                           "verdict": verdict, "body_hash": key("func_SX"),
+                                           "date": date}) + "\n")
             t = Path("src/k.c").read_text()               # TU split: T moves to k2.c,
             t_line = next(l for l in t.splitlines(True) if l.startswith("int func_T("))
             Path("src/k.c").write_text(t.replace(t_line, ""))
             Path("src/k2.c").write_text(t_line)           # its item still says k
             rec("func_T", key("func_T", "src/k2.c"))
             drop("func_X", "func_Y", "func_Z", "func_V", "func_W", "func_R", "func_T",
-                 "func_A1")
+                 "func_A1", "func_CL", "func_SK", "func_SX")
             d1 = commit("X hand-dropped; Y Z V W R T A1 leave")
             edit("func_Y")                                # a later callee rename
             edit("func_W")
-            rec("func_W", key("func_W"), verdict="FAIL")  # FAIL on the CURRENT body
+            rec("func_W", key("func_W"), verdict="FAIL")  # FAIL on a LATER body
+            edit("func_CL")                               # a reviewed cheat-cleanup
+            rec("func_CL", key("func_CL"))
             write_queue(queued() + ["func_R"])
             commit("R reopened")
             edit("func_R")
@@ -3432,7 +3474,15 @@ def test_departures() -> None:
             drop("func_K")                                # hand edit, not committed
             v, fl = audit()
             eq("departures: record semantics", fl,
-               ["func_K", "func_R", "func_V", "func_W", "func_X", "func_Z"])
+               ["func_K", "func_R", "func_SK", "func_V", "func_X", "func_Z"])
+            check("departures: a reviewed cleanup after landing keeps the landing clear",
+                  "func_CL" not in fl)
+            check("departures: a FAIL on a later body does not revoke the landed body's PASS",
+                  "func_W" not in fl)
+            check("departures: within a file, line order beats a clock that went back",
+                  "func_SK" in fl)
+            check("departures: across files, the later effective date wins",
+                  "func_SX" not in fl)
             check("departures: a PASS on the body that left clears it despite a later edit",
                   "func_Y" not in fl)
             check("departures: a TU split finds the body at D in any source file",
@@ -3554,12 +3604,32 @@ def test_departures() -> None:
             check("departures: an unreadable record fails closed",
                   len(v) == 1 and "is not JSON" in v[0])
             layer2.record_path("func_X").unlink()
+            layer2.record_path("func_X").mkdir()          # a record "file" that cannot be read
+            v = departures.unreviewed_departures()
+            check("departures: an unreadable record file fails closed",
+                  len(v) == 1 and "is unreadable" in v[0])
+            layer2.record_path("func_X").rmdir()
+            # an item without addr: addressed from the tracked files if they can,
+            # a violation only if nothing does
+            q = json.loads(Path("engine/queue.json").read_text())
+            del q["items"][0]["addr"]                     # func_A: has a glabel file
+            q["items"].append({"func": "func_NOSRC", "file": "k"})
+            Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
+            v = departures.unreviewed_departures()
+            check("departures: an addr-less item its tracked files address is audited normally",
+                  not any("func_A " in s and "no valid addr" in s for s in v))
+            check("departures: an addr-less item nothing addresses is a violation",
+                  any("func_NOSRC" in s and "no valid addr" in s for s in v))
+            write_queue(["func_A"])                       # back to HEAD's queue
             q = json.loads(Path("engine/queue.json").read_text())
             del q["items"][0]["addr"]
             Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
+            commit("a HISTORICAL version without addr on func_A")
+            write_queue(["func_A"])
+            commit("addr restored")
             v = departures.unreviewed_departures()
-            check("departures: a queued item without addr is a violation",
-                  any("has no valid addr" in s for s in v))
+            check("departures: a historical addr-less item is addressed from its commit's "
+                  "own files", not any("no valid addr" in s for s in v))
 
             for what, spec in (("queue version", "HEAD~1:engine/queue.json"),
                                ("source blob", "HEAD:src/k.c"),
@@ -3647,6 +3717,114 @@ def test_departures() -> None:
             verdict_at = i if verdict_at is None else verdict_at
     check("departures: check_completion_integrity.main() runs the audit before its verdict",
           wired is not None and verdict_at is not None and wired < verdict_at)
+
+
+def test_layer2_addresses() -> None:
+    """Round-6 review FAIL-2..4: every function's address from TRACKED files
+    (a fresh clone has no build/), the link map's assignment lines, refusals
+    for an item or record without one, the gate refusing a pre-address record,
+    and record() never stamping a date earlier than its file's last."""
+    from engine import layer2
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        try:
+            Path("engine").mkdir()
+            Path("src").mkdir()
+            Path("engine/queue.json").write_text(json.dumps({"items": []}) + "\n")
+            # a static library function: no glabel file, only the TRACKED
+            # linker symbol file names it (the case the map regex missed)
+            Path("undefined_syms_auto.txt").write_text("sys_Panic = 0x80016C3C;\n")
+            eq("addresses: a tracked symbol file addresses a static function",
+               layer2.addr_of("sys_Panic"), "80016C3C")
+            saved = Q.QUEUE_PATH
+            Q.QUEUE_PATH = "engine/queue.json"
+            try:
+                r = Q.reopen("sys_Panic", "system", reason="test")
+                check("addresses: reopen of sys_Panic carries its address",
+                      r.get("ok") is True and r["item"].get("addr") == "80016C3C")
+                r = Q.reopen("func_nowhere", "system", reason="test")
+                check("addresses: reopen REFUSES a function with no address",
+                      r.get("ok") is False and "no address for func_nowhere" in r.get("reason", ""))
+                eq("addresses: the refused item was not written",
+                   [it["func"] for it in Q.load()["items"]], ["sys_Panic"])
+            finally:
+                Q.QUEUE_PATH = saved
+            Path("docs/naming").mkdir(parents=True)
+            Path("docs/naming/function-names.csv").write_text(
+                "address,current_name,glabel,aliases\n0x80012340,cen_Named,func_80012340,"
+                "cen_alias\n")
+            eq("addresses: the census addresses a function (current name and alias)",
+               (layer2.addr_of("cen_Named"), layer2.addr_of("cen_alias")),
+               ("80012340", "80012340"))
+            eq("addresses: a splat auto-name is its own address",
+               layer2.addr_of("func_8001ABCD"), "8001ABCD")
+            Path("build").mkdir()
+            Path("build/bb2.map").write_text(
+                "                0x800171b8                        rng_Next = 0x800171b8\n"
+                "                0x8001c624                func_mapdef\n")
+            idx = layer2.addr_index()
+            eq("addresses: the link map's assignment AND definition lines",
+               (idx.get("rng_Next"), idx.get("func_mapdef")), ("800171B8", "8001C624"))
+
+            # records: an address is required; the gate refuses a record
+            # written before records carried one; dates never go backwards
+            Path("src/r.c").write_text("int func_80013000(int a) { return a; }\n")
+            h = layer2.current_key("func_80013000", "r")[1]
+            p = layer2.record_path("func_80013000")
+            p.parent.mkdir(parents=True)
+            p.write_text(json.dumps({"func": "func_80013000", "verdict": "PASS",
+                                     "body_hash": h, "date": "2026-09-30T07:20:22Z"}) + "\n")
+            why = layer2.gate("func_80013000", "r") or ""
+            check("addresses: gate refuses a latest record without addr",
+                  "carries no `addr`" in why)
+            p.write_text(json.dumps({"func": "func_80013000", "addr": "80013000",
+                                     "verdict": "FAIL", "body_hash": h,
+                                     "date": "2099-01-01T00:00:00Z"}) + "\n")
+            r = layer2.record("func_80013000", "PASS", "rev", "match", stem="r", expect_hash=h)
+            check("addresses: record() never stamps a date earlier than its file's last",
+                  r.get("ok") is True and r.get("date") == "2099-01-01T00:00:00Z"
+                  and r.get("addr") == "80013000")
+            eq("addresses: ...and the gate then opens on it",
+               layer2.gate("func_80013000", "r"), None)
+
+            # regen refuses to write an item nothing addresses
+            Path("build/src").mkdir(parents=True)
+            Path("build/src/faketu.o").write_text("")
+            orig = (P.c_stems, canonical.scan_all, cheats.canonical_asm_funcs, Q._rule_count,
+                    cheats.func_prologue_count, inlineasm.file_func_cheat_asm_count,
+                    completion.source_issues, cheats.is_jtbl_infra,
+                    cheats.is_canonical_extraction_only, Q.sandbox.build_stripped_object,
+                    score._o_func_table, score.score_func, Q.QUEUE_PATH)
+            try:
+                Q.QUEUE_PATH = "engine/queue.json"
+                P.c_stems = lambda: ["faketu"]
+                canonical.scan_all = lambda: []
+                cheats.canonical_asm_funcs = lambda: set()
+                Q._rule_count = lambda f: 0
+                cheats.func_prologue_count = lambda f: 0
+                inlineasm.file_func_cheat_asm_count = lambda s, f: 1
+                completion.source_issues = lambda *a, **k: []
+                cheats.is_jtbl_infra = lambda f: False
+                cheats.is_canonical_extraction_only = lambda f: False
+                Q.sandbox.build_stripped_object = lambda *a, **k: {}
+                score._o_func_table = lambda o: {"func_nowhere2": (0, 0)}
+                score.score_func = lambda a, b, f: {"score": 7}
+                refused = None
+                try:
+                    Q.generate(workdir=str(Path(td) / "wd"))
+                except ValueError as e:
+                    refused = str(e)
+                check("addresses: regen REFUSES to write an item with no address",
+                      refused is not None and "no address for func_nowhere2" in refused)
+            finally:
+                (P.c_stems, canonical.scan_all, cheats.canonical_asm_funcs, Q._rule_count,
+                 cheats.func_prologue_count, inlineasm.file_func_cheat_asm_count,
+                 completion.source_issues, cheats.is_jtbl_infra,
+                 cheats.is_canonical_extraction_only, Q.sandbox.build_stripped_object,
+                 score._o_func_table, score.score_func, Q.QUEUE_PATH) = orig
+        finally:
+            os.chdir(cwd)
 
 
 def test_naming_wave_renames() -> None:
@@ -4786,12 +4964,16 @@ def main() -> int:
     test_asm_keyword_recognition()
     test_macro_asm_strip_round_trip()
     test_substitute_body()
-    test_include_asm_whole_body()
+    with _synth_addrs():
+        test_include_asm_whole_body()
     test_completion_region_grants()
     test_buildstamp()
-    test_canonical_completion_is_the_drop()
-    test_layer2_gate()
+    with _synth_addrs():
+        test_canonical_completion_is_the_drop()
+    with _synth_addrs():
+        test_layer2_gate()
     test_departures()
+    test_layer2_addresses()
     test_naming_wave_renames()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
@@ -4802,8 +4984,10 @@ def main() -> int:
     test_dead_conditional_stores()
     test_fake_annotated_lever_d_bypass()
     test_metrics()
-    test_queue_reopen()
-    test_queue_hand_coded_tier()
+    with _synth_addrs():
+        test_queue_reopen()
+    with _synth_addrs():
+        test_queue_hand_coded_tier()
     test_queue_write_serialization()
     test_queue_rotation()
     test_queue_remeasure_source_integrity()

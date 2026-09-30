@@ -564,6 +564,11 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
         a = addrs.get(it["func"]) or it.get("addr")
         if a:
             it["addr"] = a
+    missing = sorted(it["func"] for it in items if not it.get("addr"))
+    if missing:
+        raise ValueError(f"queue regen refused: no address for {', '.join(missing)} — every "
+                         f"queue item must carry its function's VRAM address (owner ruling "
+                         f"Q39); add `<name> = 0x<ADDR>;` to symbol_addrs.txt")
     q = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
          "oracle_sha1": cfg.ORACLE_SHA1, "build_failures": failures, "items": items}
     q["counts"] = _counts(items)
@@ -1140,8 +1145,12 @@ def reopen(func: str, file: str, reason: str = "", origin: str = "regression") -
                 "rules": 0, "status": "active", "origin": origin,
                 "reopen_reason": (reason or "")[:400]}
         addr = layer2.addr_of(func)
-        if addr:
-            item["addr"] = addr
+        if not addr:
+            return {"ok": False, "func": func,
+                    "reason": (f"no address for {func} — every queue item must carry its "
+                               f"function's VRAM address (owner ruling Q39); add "
+                               f"`{func} = 0x<ADDR>;` to symbol_addrs.txt")}
+        item["addr"] = addr
         items.append(item)
         items.sort(key=_sort_key)
         q["items"] = items

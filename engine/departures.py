@@ -6,8 +6,9 @@ hand. Run by tools/check_completion_integrity.py; every finding is a
 violation.
 
 KEYED BY ADDRESS. Every queue item carries `addr`, its function's VRAM
-address (engine/queue.py fills it; layer2.addr_index), and every layer-2
-record carries the same field. A rename — a naming wave, a revert, a reset —
+address (engine/queue.py fills it and refuses an item without one;
+layer2.addr_index: glabel files, the tracked symbol files and census, the link
+map), and every layer-2 record carries the same field. A rename — a naming wave, a revert, a reset —
 changes names, never addresses, so the audit needs no rename tracking at all.
 
 ANCHOR: the oldest commit (topological order) in HEAD's queue.json history
@@ -24,17 +25,22 @@ queued in the working tree now. For each departed address A:
            else any source file (src/**/*.c|h, include/**/*.h) — with an asm
            body's included .s read AT D too; a working-tree departure uses the
            current body.
-A departure is CLEAR only when the latest layer-2 record carrying addr A
-(memory/grind/**/layer2.jsonl, _completed/ included; latest by record date)
-is a PASS whose body_hash equals body@D. A latest FAIL / NEEDS_USER, a PASS on
-another body, or no record flags it.
+A departure is CLEAR only when, among the layer-2 records carrying addr A
+(memory/grind/**/layer2.jsonl, _completed/ included) whose body_hash equals
+body@D, the latest is a PASS. Records on other bodies (e.g. a later reviewed
+cheat-cleanup) neither clear nor revoke it; a later FAIL / NEEDS_USER on body@D
+revokes it. "Latest" is by effective date: the running maximum of the dates
+within the record's own file (line order decides there, whatever the clock
+did; layer2.record also never stamps a date earlier than its file's last),
+files merged by it.
 
 FAIL CLOSED: a git failure, a shallow or anchor-less history (an anchor with no
 parent), a grafts file (replace refs are ignored: --no-replace-objects), a
 missing object, an unparseable audited version (its addresses are then
 recovered by the pattern "addr": "<8 hex>" and audited; only a version giving
-none is a violation), an audited item without `addr`, or an unreadable record
-file — each is a violation. Git: three processes however long the history (the
+none is a violation), an audited item without `addr` that no tracked file of
+its own commit addresses (glabel file, symbol files, census), or an
+unreadable record file — each is a violation. Git: three processes however long the history (the
 grafts check, one `git log` of queue.json, one interactive
 `git cat-file --batch`). Under WSL a worktree `.git` naming a Windows gitdir
 is read through `--git-dir=/mnt/c/...`, and the reverse under Windows.
@@ -257,29 +263,38 @@ def _body_now(name: str, file: str | None) -> str | None:
 
 
 def _records() -> dict[str, list[dict]]:
-    """addr -> its records, oldest first (by record date, then file order)."""
+    """addr -> its records, oldest first. A line's effective date is the
+    running maximum of the dates in its file up to it, so a clock that went
+    back never reorders one file's history (line order decides there); files
+    are merged by effective date. An unreadable record file fails the audit."""
     by_addr: dict[str, list[tuple]] = {}
     files = sorted(Path("memory/grind").glob("**/" + layer2.RECORD_NAME))
     for fi, p in enumerate(files):
-        for li, line in enumerate((layer2._read_text(p) or "").splitlines()):
+        text = layer2._read_text(p)
+        if text is None:
+            raise _AuditError(f"{p.as_posix()} is unreadable")
+        eff = ""
+        for li, line in enumerate(text.splitlines()):
             if not line.strip():
                 continue
             try:
                 rec = json.loads(line)
             except ValueError:
                 raise _AuditError(f"{p.as_posix()}:{li + 1} is not JSON") from None
+            eff = max(eff, str(rec.get("date", "")) if isinstance(rec, dict) else "")
             a = rec.get("addr") if isinstance(rec, dict) else None
             if isinstance(a, str):
-                by_addr.setdefault(a.upper(), []).append((str(rec.get("date", "")), fi, li, rec))
+                by_addr.setdefault(a.upper(), []).append((eff, fi, li, rec))
     return {a: [r for *_k, r in sorted(v, key=lambda t: t[:3])] for a, v in by_addr.items()}
 
 
 def _fix(name: str, file: str) -> str:
     return (f"Fix: put it back (`python3 -m engine.cli queue reopen {name} --file {file} "
-            f"--reason \"Q39: left the queue without a layer-2 PASS\"`), or have a fresh "
-            f"cheat-reviewer rule on the body that left and record the verdict "
-            f"(`python3 -m engine.cli layer2 record {name} --reviewer <id> --scope "
-            f"<match|cheat-cleanup|auth> --verdict-file <its JSON>`).")
+            f"--reason \"Q39: left the queue without a layer-2 PASS\"`) and re-land it; or, "
+            f"while the body that left is still the body in src/, have a fresh "
+            f"cheat-reviewer rule on it and record the verdict (`python3 -m engine.cli layer2 "
+            f"record {name} --reviewer <id> --scope <match|cheat-cleanup|auth> --verdict-file "
+            f"<its JSON>`). If that body has changed since, only reopen then re-land works.")
 
 
 def _no_grafts() -> None:
@@ -298,8 +313,12 @@ def unreviewed_departures() -> list[str]:
     if current is None:
         return [f"Q39 departures audit: working-tree {QUEUE_FILE} is unreadable or has no "
                 f"addresses"]
+    for k in [k for k in current if k.startswith("?")]:
+        a = layer2.addr_of(k[1:])           # addressed from the working tree's files
+        if a:
+            current[a] = current.pop(k)
     out = [f"Q39 departures audit: working-tree {QUEUE_FILE} item {k[1:]} has no valid "
-           f"addr" for k in current if k.startswith("?")]
+           f"addr and none of the tracked files gives one" for k in current if k.startswith("?")]
     batch = None
     try:
         _no_grafts()
@@ -337,11 +356,25 @@ def unreviewed_departures() -> list[str]:
                 audited.add(c)
                 stack += children.get(c, [])
 
+        def resolved(items, *revs):
+            """Items without addr, addressed from the tracked files at `revs`
+            (a revision's own glabel file, symbol files, census)."""
+            out_items = {}
+            for k, it in (items or {}).items():
+                if k.startswith("?"):
+                    for rev in revs:
+                        a = layer2.addr_at(k[1:], lambda p, rev=rev: batch.text(f"{rev}:{p}"))
+                        if a:
+                            k = a
+                            break
+                out_items[k] = it
+            return out_items
+
         listed: dict[str, tuple[str, dict]] = {}
         for c, _s, d in diffs:
             if c not in audited or d == _ZERO:
                 continue
-            items = version(d)
+            items = resolved(version(d), c) if version(d) is not None else None
             if items is None:
                 out.append(f"Q39 departures audit: {QUEUE_FILE} at {c[:9]} ({d}) gives no "
                            f"address at all — read it with `git cat-file -p {d}`")
@@ -352,7 +385,7 @@ def unreviewed_departures() -> list[str]:
                                f"{a[1:]} has no valid addr")
                 else:
                     listed.setdefault(a, (c, it))
-        head = _items(batch.get(f"HEAD:{QUEUE_FILE}")) or {}
+        head = resolved(_items(batch.get(f"HEAD:{QUEUE_FILE}")), "HEAD")
         departed = sorted(a for a in listed if a not in current)
 
         # D: where each departed address last left the queue
@@ -363,7 +396,7 @@ def unreviewed_departures() -> list[str]:
         for c, s, d in diffs:
             if c not in audited or s == _ZERO:
                 continue
-            before, after = version(s) or {}, version(d) or {}
+            before, after = resolved(version(s), f"{c}^", c), resolved(version(d), c)
             for a in departed:
                 if a in before and a not in after and a not in left:
                     left[a] = (c, before[a])
@@ -381,12 +414,17 @@ def unreviewed_departures() -> list[str]:
             else:
                 body, where = None, "an unknown commit"
             recs = records.get(a, [])
-            last = recs[-1] if recs else None
-            if last and last.get("verdict") == "PASS" and body and last.get("body_hash") == body:
+            # only records on the body that left count: a later reviewed body
+            # (a cheat-cleanup) neither clears nor revokes this departure
+            on_body = [r for r in recs if body and r.get("body_hash") == body]
+            last = on_body[-1] if on_body else None
+            if last and last.get("verdict") == "PASS":
                 continue
-            why = ("no layer-2 record carries this address" if last is None else
-                   f"its latest record is {last.get('verdict')} on body {last.get('body_hash')}"
-                   f" ({last.get('func')}, {last.get('date', '?')})")
+            why = ("no layer-2 record carries this address" if not recs else
+                   f"no record on that body (latest: {recs[-1].get('verdict')} on "
+                   f"{recs[-1].get('body_hash')})" if last is None else
+                   f"the latest record on that body is {last.get('verdict')} "
+                   f"({last.get('func')}, {last.get('date', '?')})")
             out.append(f"{name or '?'} (addr {a}): left {QUEUE_FILE} in {where} — body "
                        f"{body or '(not found)'} — without a layer-2 PASS on that body: {why}. "
                        f"{_fix(name or '<name>', file or '<file>')}")
