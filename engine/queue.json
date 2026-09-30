@@ -153,15 +153,6 @@
       "addr": "8005C8A8"
     },
     {
-      "func": "func_80067D14",
-      "file": "text1b_tu1c",
-      "distance": 1046,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "addr": "80067D14"
-    },
-    {
       "func": "func_80055B60",
       "file": "text1b",
       "distance": 1108,
@@ -364,15 +355,15 @@
     }
   ],
   "counts": {
-    "total": 30,
-    "active": 18,
+    "total": 29,
+    "active": 17,
     "by_status": {
-      "active": 18,
+      "active": 17,
       "rotated": 12
     },
     "by_verdict": {
       "C": 16,
-      "ASM-PARTIAL": 2
+      "ASM-PARTIAL": 1
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
