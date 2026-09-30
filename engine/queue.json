@@ -169,17 +169,6 @@
       "addr": "800770B8"
     },
     {
-      "func": "func_80036140",
-      "file": "code6cac_b5",
-      "distance": 16,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/func_80036140/cheated-comm-gate-body.c",
-      "addr": "80036140"
-    },
-    {
       "func": "func_80058580",
       "file": "text1b",
       "distance": 30,
@@ -410,14 +399,14 @@
     }
   ],
   "counts": {
-    "total": 34,
-    "active": 22,
+    "total": 33,
+    "active": 21,
     "by_status": {
-      "active": 22,
+      "active": 21,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 21,
+      "C": 20,
       "ASM-PARTIAL": 1
     }
   },
