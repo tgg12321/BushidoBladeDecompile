@@ -262,3 +262,21 @@ CURRENT STATE — supersedes the "REVERTED" floor 16 above. Artifacts: `q62/` (t
   24 retired symbol rows): SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
 - sdata_funcs.txt: func_80036140's pre-existing row (as cdrom_SetMix / func_80035F78 / func_80036940) is
   load-bearing (without it 22) — the project's gp-function list, not a per-symbol gate; no sdata_exclude row.
+
+### Landing prepared (laneB, 2026-09-30 evening; landing lock held; orchestrator granted the file scope)
+- Staged body == `candidate.c` == `q62/body_q62.c` (checked by text comparison), the body every
+  `q62/runs.txt` row uses. The staged change is banked as `q62/staged_landing.patch`
+  (src/code6cac_b5.c, src/code6cac_b4_post.c, src/code6cac_b5_post.c, include/code6cac.h, named_syms.txt,
+  undefined_syms_auto.txt). Consumer grep over src/ + include/ for every retired name: only these files.
+- Landed tree: `lock.ps1 rebuild` SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (so header and
+  row retirements are byte-neutral for every TU). `sandbox --disable all --diff` (`q62/landed_sandbox.txt`):
+  func_80036140 0/512, func_80036940 0/274, cdrom_ReadyCallback 0/55, cdrom_StartRead 0/39,
+  game_FrameLoop 0/37; 0 cheat-asm stripped.
+- Aggregate-merge admission for unk3C..unk44 (.claude/rules/no-new-park-categories.md prong (a), mixed-field
+  struct): (a1) the necessity table above + `q62/dumps/` (cse find_best_addr folds a small-data pointer to
+  the symbol; a record member's `const(plus D_80101E58 68)` is not small data and stays in a register);
+  (a2) original cc1psx -G8 on the staged b5 (`q62/psx/staged_record_member.cc1psx-G8.s` lines 472-473,
+  494-495: `la $2,D_80101E58+68; lhu $3,0($2)` / `la $3,D_80101E58+76; lw $2,0($3)` = target shape) vs the
+  same body with separate externs (`q62/psx/separate_vars.cc1psx-G8.s` 479/485/495/504: direct
+  `lhu/sh D_80101E9C`, `lw/sw D_80101EA4`); (a4') member table `landing/member_table.md` with the Q13
+  forced-in members unk3E (u16) / expected_pos (s32, Q14 clause: `q62/q14_s32_vs_u32.txt`).

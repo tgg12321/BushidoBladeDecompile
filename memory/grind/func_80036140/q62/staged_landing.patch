@@ -1,0 +1,461 @@
+diff --git a/include/code6cac.h b/include/code6cac.h
+index 437c95b9f..2e85e68a8 100644
+--- a/include/code6cac.h
++++ b/include/code6cac.h
+@@ -311,7 +311,7 @@ extern s32 D_800A36B4;
+  * a COMMON symbol gp only at its base, so byte 0 is gp-relative and bytes 1..3
+  * are lui/%lo in all three accessors. Modelled by maspsx for every file from the
+  * declarations (owner Q62, 2026-09-30); the tentative definitions are in
+- * src/code6cac_b4.c. */
++ * the CD module's two -G8 units, src/code6cac_b4.c and src/code6cac_b5.c. */
+ typedef struct {
+     u8 val0;
+     u8 val1;
+@@ -353,7 +353,8 @@ extern u8 D_800A3758;
+  * func_80036140 reads result[4] and hands &result[3] / &result[5] (the reported
+  * position) to CdPosToInt. A tentative definition in the CD module's file, like
+  * the CdlATV blocks: result[0] is read gp-relative, result[4] with lui/%lo
+- * (the owner Q62 global COMMON model; no C tentative definition yet). */
++ * (the owner Q62 global COMMON model; the tentative definition is in
++ * src/code6cac_b5.c). */
+ extern u8 g_cd_result[8];
+ extern u8 D_800A3769;
+ extern u8 D_800A376A;
+@@ -535,14 +536,29 @@ typedef struct {
+     s32 b;
+ } CamPair;
+ 
+-/* The replay-camera / CD-read words at 0x80101E60..0x80101E99: the tail of
++/* The replay-camera / CD-read words at 0x80101E60..0x80101EA7: the tail of
+  * CdState D_80101E58 below, where the evidence that they are one object with
+  * its head is set out.  Member widths follow the original accesses;
+- * 0x80101E91..93 is the compiler's alignment padding.  0x80101E9A..9B lies
+- * inside the object (its size is a multiple of 4) and holds a halfword that
+- * only func_80036140's asm accesses, through the D_80101E9A alias row; it has
+- * no member (q2-review condition under owner ruling Q43) until that function
+- * lands in C.
++ * 0x80101E91..93 is the compiler's alignment padding.  unk3A (0x80101E9A)
++ * lies inside the proven span's object (its size is a multiple of 4) and is
++ * func_80036140's halfword (sh 80036548, lhu 80036778 / sh 80036788).
++ *
++ * unk3C..unk44 (0x80101E9C..0x80101EA7) are in the object by compiler
++ * necessity (aggregate-merge prong (a), (a1)/(a2)/(a4')): func_80036140 is
++ * compiled -G8, and there its read-modify-writes of 0x80101E9C and
++ * 0x80101EA4 keep the address in a register (la; lX 0(r); sX 0(r)) only for
++ * a variable larger than 8 bytes -- a smaller one is small data, and cse
++ * folds any pointer back to the symbol; the original compiler agrees.
++ * Separate variables score 18, block-local pointers 18,
++ * function-scope pointers 43, the object ending at 0x80101E9F or 0x80101EA3
++ * (0x80101EA4 separate) 8, a separate 12-byte record at 0x80101E9C 8 (and
++ * cdrom_ReadyCallback 12); this object 0.  unk3E and expected_pos lie inside
++ * that span but func_80036140 never touches them: they are typed by their
++ * other users' original accesses (owner rulings 2026-09-26 Q13/Q14): unk3E by
++ * game_FrameLoop / cdrom_StartRead (u16, the lhu at 80036F9C); expected_pos by
++ * cdrom_ReadyCallback / func_80036940 (s32: no access reveals its signedness,
++ * and s32 / u32 build byte-identical).  Measurements and dumps:
++ * memory/grind/func_80036140/evidence.md.
+  *
+  * The 8-byte `pair` is also one CamPair by the table it is copied from: the
+  * source is indexed `&g_cd_file_table + i*8` and copied as a whole CamPair
+@@ -567,13 +583,18 @@ typedef struct {
+     u8 unk30; /* 0x80101E90 */
+     s32 unk34; /* 0x80101E94 */
+     s16 unk38; /* 0x80101E98 */
++    s16 unk3A; /* 0x80101E9A */
++    s16 unk3C; /* 0x80101E9C */
++    u16 unk3E; /* 0x80101E9E */
++    s32 expected_pos; /* 0x80101EA0 */
++    s32 unk44; /* 0x80101EA4 */
+ } ReplayCamRec;
+ 
+-/* The CD module's state block, ONE object of 0x44 bytes at 0x80101E58.  Owner
++/* The CD module's state block, ONE object of 0x50 bytes at 0x80101E58.  Owner
+  * ruling Q43 (2026-09-30, docs/grind/owner-rulings-2026-09-26.md) bounds it to
+- * the span proven by the original binary, 0x80101E58..0x80101E99 (the size
+- * rounds it up to 0x80101E9B; 0x80101E9A..9B: see ReplayCamRec above), by
+- * three links:
++ * the span proven: 0x80101E58..0x80101E99 by the original binary's addressing,
++ * through 0x80101EA7 by func_80036140's compiler necessity (ReplayCamRec
++ * above).  The first span is proven by three links:
+  *   - 0x80101E58..0x80101E62 is one object: cdrom_StartAudio forms the
+  *     CdlSetfilter parameter (file, chan) at 0x80101E58 as &0x80101E62 - 0xA
+  *     (800370AC addiu a1,s0,-0xA; 800370B0 sb v0,-0xA(s0)).  Only those two
+@@ -594,19 +615,15 @@ typedef struct {
+  *     object: cdrom_StartAudio 0 under both cc1 and the original cc1psx; cut
+  *     at 0x80101E64, 0x80101E68 or 0x80101E6C: 8 (cc1) / 12 (cc1psx).
+  *     Dumps and runs: memory/grind/cdrom_StartAudio/evidence.md.
+- * 0x80101E9C, 0x80101E9E, 0x80101EA0 and 0x80101EA4 are declared separately
+- * because no proof places them in this object (owner ruling Q43); C uses only
+- * the two declared below. */
++ */
+ typedef struct {
+     u8 file; /* 0x80101E58 */
+     u8 chan; /* 0x80101E59 */
+     s32 unk04; /* 0x80101E5C */
+-    ReplayCamRec rec; /* 0x80101E60 .. 0x80101E99 */
++    ReplayCamRec rec; /* 0x80101E60 .. 0x80101EA7 */
+ } CdState;
+ 
+ extern CdState D_80101E58;
+-extern u16 D_80101E9E;
+-extern s32 g_cdread_expected_pos;
+ extern u8 D_80101EC8;
+ extern s16 D_80101EE8;
+ extern s32 D_80101F04;
+diff --git a/named_syms.txt b/named_syms.txt
+index 15666e94b..f097062e4 100644
+--- a/named_syms.txt
++++ b/named_syms.txt
+@@ -1700,7 +1700,7 @@ g_char_id_saved_b                                       = 0x800A3915;  /* paired
+ /* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
+ /* playback state.  D_80101E6C is the current BCD frame position; */
+ /* `cdrom_FramesToBcd(cdrom_BcdToFrames(D) + arg2, D)` advances it. */
+-/* 0x80101E58..0x80101E99 is ONE object, CdState D_80101E58 (include/code6cac.h, */
++/* 0x80101E58..0x80101EA7 is ONE object, CdState D_80101E58 (include/code6cac.h, */
+ /* owner ruling Q43, 2026-09-30); the per-word rows in that span are retired. */
+ 
+ /* === Memcard file-list state (2026-05-17) -- 3 highs === */
+@@ -1972,7 +1972,6 @@ g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base p
+ /* === CD-ROM stream reader state (2026-05-17) -- 4 highs === */
+ /* From code6cac_b2.c around line 388-408: CD-ROM streaming callback */
+ /* reads sectors into a buffer, checking BCD position for sync. */
+-g_cdread_expected_pos                             = 0x80101EA0;  /* next-expected sector position (CdPosToInt); cdrom_ReadyCallback compares each sector header with it */  /* data-wave 2026-09-24: was g_cdread_expected_bcd_frame */
+ /* data-wave 2026-09-24: g_event_class_lookup_table = 0x8008EC38 retired; g_cd_file_table_plus_0x4 is now object-defined */
+ /* data-wave 2026-09-24: g_special_cam_lengths = 0x8008EC38 retired; g_cd_file_table_plus_0x4 is now object-defined */
+ 
+@@ -3514,11 +3513,3 @@ func_8003F218 = 0x8003F218;  /* store D_800F665C + game_SetControllerPorts */
+ stage_InitCollision = 0x8003F274;  /* per-player collision setup: game_GetPlayerCount, D_800A8FB0 block */
+ stage_ApplyLighting = 0x8003F5CC;  /* 3x sys_StubEmpty3(light_ptr_i, target_ptr_i, i) - stubbed light apply, vestigial */
+ /* RENAME 0x800819C4: retired name 'cdrom_Initialize' — preserved note: glabel-authoritative name; called by cdrom_CheckReady between Shutdown/ConfigSPU */
+-g_cd_atv_plus_0x1 = 0x800A3719;  /* alias of g_cd_atv+1; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-g_cd_atv_plus_0x2 = 0x800A371A;  /* alias of g_cd_atv+2; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-g_cd_atv_plus_0x3 = 0x800A371B;  /* alias of g_cd_atv+3; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101EA4 = 0x80101EA4;  /* declared separately, past CdState D_80101E58 (owner ruling Q43); asm/funcs/func_80036140.s is its only live referrer */
+-g_cd_loc = 0x80101E6C;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-g_cd_result_plus_0x3 = 0x800A3763;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-g_cd_result_plus_0x4 = 0x800A3764;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-g_cd_result_plus_0x5 = 0x800A3765;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+diff --git a/src/code6cac_b4_post.c b/src/code6cac_b4_post.c
+index deda4be43..e68af5736 100644
+--- a/src/code6cac_b4_post.c
++++ b/src/code6cac_b4_post.c
+@@ -56,7 +56,7 @@ void cdrom_ReadyCallback(u8 arg0) {
+         CdGetSector((s32)sp, 3);
+         {
+             s32 v0 = CdPosToInt((s32)sp);
+-            if (v0 != g_cdread_expected_pos) {
++            if (v0 != D_80101E58.rec.expected_pos) {
+                 D_80101E58.rec.sectors_remaining = -2;
+                 goto do_stop;
+             }
+@@ -64,7 +64,7 @@ void cdrom_ReadyCallback(u8 arg0) {
+         CdGetSector(D_80101E58.rec.dest_buffer, 0x200);
+         D_80101E58.rec.dest_buffer = D_80101E58.rec.dest_buffer + 0x800;
+         D_80101E58.rec.sectors_remaining = D_80101E58.rec.sectors_remaining - 1;
+-        g_cdread_expected_pos = g_cdread_expected_pos + 1;
++        D_80101E58.rec.expected_pos = D_80101E58.rec.expected_pos + 1;
+         if (D_80101E58.rec.sectors_remaining == 0) {
+             goto do_stop;
+         }
+diff --git a/src/code6cac_b5.c b/src/code6cac_b5.c
+index 382163a2d..289f2d155 100644
+--- a/src/code6cac_b5.c
++++ b/src/code6cac_b5.c
+@@ -1,12 +1,16 @@
+ /* The CD module's two state-machine steppers, func_80036140 and func_80036940,
+  * moved out of code6cac_b4_post.c together into their own translation unit
+  * compiled -G8 (Makefile GP_FILES; owner ruling 2026-09-26, Q10): both read
+- * g_cd_result straight off $gp, which the original compiler emits only at -G8.
+- * func_80036140 is INCLUDE_ASM again (2026-09-30): its C matched only through the
+- * per-function maspsx COMMON gate, which the owner ruled a cheat. */
+-#define INCLUDE_ASM_USE_MACRO_INC 1
++ * g_cd_result (and func_80036140 g_cd_atv, D_800A36B8, D_800A3840, D_800A3854)
++ * straight off $gp, which the original compiler emits only at -G8.
++ * g_cd_atv, D_800A36B8 and g_cd_result are declared here as in
++ * code6cac_b4.c, the way their bytes show the original did: file-scope
++ * tentative definitions (no initializer; their original bytes are zero).
++ * Sony's assembler gave such a COMMON variable gp at its base only, never at
++ * an offset (func_80036140 reads byte 0 of each gp-relative and the others
++ * with lui/%lo); maspsx models that for every file (owner ruling Q62,
++ * 2026-09-30, global COMMON model), not per function. */
+ #include "common.h"
+-#include "include_asm.h"
+ #include "gpu.h"
+ #include "sound.h"
+ #include "game.h"
+@@ -23,16 +27,203 @@ extern s16 D_800A3840;
+ extern void cdrom_SetMix(s32, s32, s32, s32);
+ extern s32 CdSync(s32, u8 *);
+ extern s32 CdReady(s32, u8 *);
+-/* func_80036140's jump table (func_80036140 is INCLUDE_ASM again, so the table is
+- * transcribed; its last word is the zero word at 0x80010974 before
+- * func_80036940's compiler-emitted table). */
+-const u32 jtbl_80010938[16] = {
+-    0x80036360, 0x800363A4, 0x800363DC, 0x80036434,
+-    0x80036490, 0x800364C0, 0x80036634, 0x8003683C,
+-    0x8003686C, 0x80036880, 0x800368CC, 0x800368E0,
+-    0x800367B0, 0x800367D8, 0x80036808, 0x00000000,
+-};
+-INCLUDE_ASM("asm/funcs", func_80036140);
++CdlATV g_cd_atv;
++CdlATV D_800A36B8;
++u8 g_cd_result[8];
++void func_80036140(void) {
++    CdlATV atv;
++
++    if (D_800A3854 > 0) {
++        atv.val0 = (D_800A36B8.val0 * D_800A3840 + g_cd_atv.val0 * (D_800A3854 - D_800A3840)) / D_800A3854;
++        atv.val1 = (D_800A36B8.val1 * D_800A3840 + g_cd_atv.val1 * (D_800A3854 - D_800A3840)) / D_800A3854;
++        atv.val2 = (D_800A36B8.val2 * D_800A3840 + g_cd_atv.val2 * (D_800A3854 - D_800A3840)) / D_800A3854;
++        atv.val3 = (D_800A36B8.val3 * D_800A3840 + g_cd_atv.val3 * (D_800A3854 - D_800A3840)) / D_800A3854;
++        CdMix(&atv);
++        if (++D_800A3840 >= D_800A3854) {
++            D_800A3854 = 0;
++            g_cd_atv = D_800A36B8;
++        }
++    }
++
++    switch (D_80101E58.rec.unk02) {
++    case 0x10:
++        cdrom_SetMix(0, 0, 0, 0);
++        CdControlF(0xE, (s32)&D_80101E58.rec.unk30);
++        D_80101E58.rec.unk28 = 0;
++        D_80101E58.rec.unk2C = 0;
++        D_80101E58.rec.unk44 = 0;
++        D_80101E58.rec.unk02 = 0x11;
++        break;
++    case 0x11: {
++        s32 ret = CdSync(1, g_cd_result);
++        if (ret == 2) {
++            CdControlF(2, (s32)&D_80101E58.rec.pair);
++            D_80101E58.rec.unk02 = 0x12;
++        } else if (ret == 5) {
++            D_80101E58.rec.unk02 = 0x17;
++        }
++        break;
++    }
++    case 0x12:
++        if (++D_80101E58.rec.unk2C >= 3) {
++            s32 ret = CdSync(1, g_cd_result);
++            if (ret == 2) {
++                CdControlF(0x16, 0);
++                D_80101E58.rec.unk02 = 0x13;
++            } else if (ret == 5) {
++                D_80101E58.rec.unk02 = 0x17;
++            }
++        }
++        break;
++    case 0x13: {
++        s32 ret = CdSync(1, g_cd_result);
++        if (ret == 2) {
++            if (D_80101E58.rec.unk04 == 0) {
++                CdControlF(D_80101E58.rec.unk34 ? 0x1B : 3, 0);
++                D_80101E58.rec.unk02 = 0x14;
++            }
++        } else if (ret == 5) {
++            D_80101E58.rec.unk02 = 0x17;
++        }
++        break;
++    }
++    case 0x14: {
++        s32 ret = CdSync(1, g_cd_result);
++        if (ret == 2) {
++            D_80101E58.rec.unk3C = 0;
++            D_80101E58.rec.unk02 = 0x15;
++        } else if (ret == 5) {
++            D_80101E58.rec.unk02 = 0x17;
++        }
++        break;
++    }
++    case 0x15:
++        if (++D_80101E58.rec.unk28 == 2) {
++            cdrom_SetMix(0xFF, 0, 0xFF, 0);
++        }
++        if (D_80101E58.rec.unk08 != 0 && D_80101E58.rec.unk28 >= 5) {
++            D_80101E58.rec.unk02 = 0x1C;
++            break;
++        }
++        D_80101E58.rec.unk02 = 0x16;
++        if (D_80101E58.rec.unk34 != 0) {
++            CdControlF(0x11, (s32)g_cd_result);
++            D_80101E58.rec.unk3A = 0;
++            break;
++        }
++        CdControlF(1, 0);
++        {
++            s32 ret = CdReady(1, g_cd_result);
++            if (ret == 1) {
++                if (!(g_cd_result[4] & 0x80)) {
++                    D_80101E58.rec.unk3C = 0;
++                    if (CdPosToInt((s32)&g_cd_result[3]) >= D_80101E58.rec.unk14) {
++                        cdrom_SetMix(0, 0, 0, 0);
++                        D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
++                    }
++                }
++            } else if (ret == 5) {
++                D_80101E58.rec.unk02 = 0x17;
++            }
++        }
++        if (D_80101E58.rec.unk3C++ > 0x3C) {
++            D_80101E58.rec.unk02 = 0x17;
++        }
++        break;
++    case 0x16:
++        if (D_80101E58.rec.unk44 != 0) {
++            D_80101E58.rec.unk44 -= 4;
++            if (D_80101E58.rec.unk44 <= 0) {
++                cdrom_SetMix(0, 0, 0, 0);
++                D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
++                break;
++            }
++        }
++        {
++            s32 ret = CdSync(1, g_cd_result);
++            if (ret == 2) {
++                D_80101E58.rec.unk02 = 0x15;
++                if (D_80101E58.rec.unk34 != 0) {
++                    s32 pos = CdPosToInt((s32)&g_cd_result[5]);
++                    if (pos >= D_80101E58.rec.unk14) {
++                        cdrom_SetMix(0, 0, 0, 0);
++                        D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
++                    } else if (pos >= D_80101E58.rec.unk14 - 0x96) {
++                        if (D_80101E58.rec.unk44 == 0) {
++                            D_80101E58.rec.unk44 = D_80101E58.rec.unk14 - pos;
++                        }
++                    }
++                }
++            } else if (ret == 5) {
++                D_80101E58.rec.unk02 = 0x17;
++            } else if (D_80101E58.rec.unk34 != 0) {
++                if (++D_80101E58.rec.unk3A >= 0x1F) {
++                    CdFlush();
++                    D_80101E58.rec.unk02 = 0x15;
++                }
++            }
++        }
++        break;
++    case 0x1C:
++        cdrom_SetMix(0, 0, 0, 0);
++        CdControlF(9, 0);
++        D_80101E58.rec.unk02 = 0x1D;
++        break;
++    case 0x1D: {
++        s32 ret = CdSync(1, g_cd_result);
++        if (ret == 2) {
++            D_80101E58.rec.unk28 = 0;
++            D_80101E58.rec.unk02 = 0x1E;
++        } else if (ret == 5) {
++            D_80101E58.rec.unk02 = 0x17;
++        }
++        break;
++    }
++    case 0x1E:
++        if (++D_80101E58.rec.unk28 >= 5) {
++            D_80101E58.rec.unk02 = 0;
++        }
++        break;
++    case 0x17:
++        cdrom_SetMix(0, 0, 0, 0);
++        if (g_cd_result[0] & 0x10) {
++            D_80101E58.rec.unk02 = 0x18;
++        } else {
++            D_80101E58.rec.unk02 = 0x1A;
++        }
++        break;
++    case 0x18:
++        CdControlF(1, 0);
++        D_80101E58.rec.unk02 = 0x19;
++        break;
++    case 0x19: {
++        s32 ret = CdSync(1, g_cd_result);
++        if (ret == 2) {
++            if (g_cd_result[0] & 0x10) {
++                D_80101E58.rec.unk02 = 0x18;
++            } else {
++                D_80101E58.rec.unk02 = 0x1A;
++            }
++        } else if (ret == 5) {
++            D_80101E58.rec.unk02 = 0x18;
++        }
++        break;
++    }
++    case 0x1A:
++        CdControlF(0x13, 0);
++        D_80101E58.rec.unk02 = 0x1B;
++        break;
++    case 0x1B: {
++        s32 ret = CdSync(1, g_cd_result);
++        if (ret == 2) {
++            D_80101E58.rec.unk02 = D_80101E58.rec.unk08 ? 0 : 0x10;
++        } else if (ret == 5) {
++            D_80101E58.rec.unk02 = 0x17;
++        }
++        break;
++    }
++    }
++}
+ /* kengo:MED  |  nm_special_cam/special_camera_set_win_cam  |  502i  |  -10 */
+ void func_80036940(void);
+ extern s32 CdSync(s32, u8 *);
+@@ -75,7 +266,7 @@ void func_80036940(void) {
+         if (++D_80101E58.rec.unk2C >= 3) {
+             D_80101E58.rec.dest_buffer = D_80101E58.rec.unk1C;
+             D_80101E58.rec.sectors_remaining = D_80101E58.rec.unk18;
+-            g_cdread_expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
++            D_80101E58.rec.expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
+             CdControl(2, (s32)&D_80101E58.rec.pair, 0);
+             D_80101E58.rec.unk38 = 0;
+             D_80101E58.rec.unk02 = 5;
+diff --git a/src/code6cac_b5_post.c b/src/code6cac_b5_post.c
+index f1063d995..43ec7235d 100644
+--- a/src/code6cac_b5_post.c
++++ b/src/code6cac_b5_post.c
+@@ -46,7 +46,7 @@ s32 cdrom_StartRead(s32 a0, s32 a1) {
+     D_80101E58.rec.unk08 = 0;
+     D_80101E58.rec.unk02 = 2;
+     reloaded = D_80101E58.rec.pair.b;
+-    D_80101E9E = 0;
++    D_80101E58.rec.unk3E = 0;
+     D_80101E58.rec.unk18 = (u32)(reloaded + 0x7FF) >> 11;
+     return 1;
+ }
+@@ -77,7 +77,7 @@ u32 func_80036F28(s32 arg0) {
+ void game_FrameLoop(void) {
+     u16 *p;
+     func_8003AA78();
+-    p = &D_80101E9E;
++    p = &D_80101E58.rec.unk3E;
+     while (1) {
+         if (cdrom_IsIdle() != 0) {
+             break;
+diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
+index 3ed074a7a..9e41911b8 100644
+--- a/undefined_syms_auto.txt
++++ b/undefined_syms_auto.txt
+@@ -1461,26 +1461,3 @@ D_800A3418 = 0x800A3418;
+ D_8009B2E0 = 0x8009B2E0;
+ D_8009B388 = 0x8009B388;
+ D_8009B390 = 0x8009B390;
+-g_cd_atv_plus_0x1 = 0x800A3719;  /* alias of g_cd_atv+1; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-g_cd_atv_plus_0x2 = 0x800A371A;  /* alias of g_cd_atv+2; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-g_cd_atv_plus_0x3 = 0x800A371B;  /* alias of g_cd_atv+3; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_800A36B9 = 0x800A36B9;  /* alias of D_800A36B8+1; retire with func_80035F78/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_800A36BA = 0x800A36BA;  /* alias of D_800A36B8+2; retire with func_80035F78/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_800A36BB = 0x800A36BB;  /* alias of D_800A36B8+3; retire with func_80035F78/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E68 = 0x80101E68;  /* alias of D_80101E58+0x10; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E62 = 0x80101E62;  /* alias of D_80101E58+0xA; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E64 = 0x80101E64;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E6A = 0x80101E6A;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E74 = 0x80101E74;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E88 = 0x80101E88;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E8C = 0x80101E8C;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E90 = 0x80101E90;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E94 = 0x80101E94;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E9A = 0x80101E9A;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-D_80101E9C = 0x80101E9C;  /* declared separately, past CdState D_80101E58 (owner ruling Q43); asm/funcs/func_80036140.s is its only live referrer */
+-D_80101E9E = 0x80101E9E;  /* declared separately, past CdState D_80101E58 (owner ruling Q43); C: cdrom_StartRead, game_FrameLoop */
+-D_80101EA4 = 0x80101EA4;  /* declared separately, past CdState D_80101E58 (owner ruling Q43); asm/funcs/func_80036140.s is its only live referrer */
+-g_cd_loc = 0x80101E6C;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-g_cd_result_plus_0x3 = 0x800A3763;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-g_cd_result_plus_0x4 = 0x800A3764;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+-g_cd_result_plus_0x5 = 0x800A3765;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
