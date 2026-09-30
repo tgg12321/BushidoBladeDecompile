@@ -1,0 +1,12 @@
+# s4 probe (laneC 2026-09-30): tmp copy of src/text1b_tu1c.c + include/ with the fix1 game.h hunk
+# (s4probe.sh / s4hdr.py / s4splice.py), build cc1 + Makefile maspsx/as recipe; frame from cc1 .s;
+# "cmp" = s4cmp.py instruction-diff size vs asm/funcs/func_8005C8A8.s with relocs dropped and
+# branch targets masked. Reference: rejected/size-tile-cancel-0.c (engine sandbox 0) = cmp 19
+# (the harness's own normalisation floor: symbol-addend spellings), frame 184.
+rejected/size-tile-cancel-0.c   frame 184 (vars 120)  cmp 19   (reference, engine 0)
+lit.c (candidate.c, literal)    frame 176 (vars 112)  cmp 52   (engine 33)
+vol.c (volatile s32 size)       frame 184 (vars 120)  cmp 65   slot is an expand-time local, offsets differ
+s16.c (s16 size)                frame 176             cmp 52   REG_EQUIV constant, no slot
+one_struct.c (struct {s32 n;})  frame 176             cmp 52   same
+arr1.c (s32 size[1])            frame 176             cmp 52   same
+ret_lit.c (return 0x4F0;)       frame 176             cmp 52   same

@@ -4,6 +4,11 @@
 (`size = (s32)tile + 0x4F0 - arg2` and every cancel-against-a-second-name variant). See evidence.md s3c + s3d. Look
 for another source form that keeps the once-set constant out of update_equiv_regs' REG_EQUIV rewrite.
 
+## s4 (2026-09-30, laneC): KILLED volatile / s16 / one-member struct / one-element array / `return 0x4F0;`
+(probes/s4/scores.txt). The slot needs a once-set pseudo with no REG_EQUIV constant, i.e. a set whose constant
+cse cannot see (evidence.md s4: cse.c:6918-6934, local-alloc.c:1019-1032, reload1.c:567-586/2381-2385).
+SOTN precedent search for such a spelling in matched PS1 code: negative (evidence.md s4).
+
 ## s3 RESOLVED (floor 0): the hole is a combine-orphan `(use)` of the dead sign-extension temp of an always-zero
 s16 local read once after the case-0 label (Q27 (A)); see evidence.md s3. H1 (a)/(c) and H2 are moot; H1 (b)'s
 family (combine orphans) was right, via the known-zero fold rather than a stale reg_n_refs.

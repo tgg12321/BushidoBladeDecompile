@@ -229,3 +229,50 @@ cancels a live value against a second name for it (`mode_off + 0x18 - arg2`, `cu
 Do not resubmit one. The open problem is unchanged: keep the 0x70($sp) slot for a once-set 0x4F0 without
 update_equiv_regs rematerializing it (local-alloc.c 1024-1032), in a form the target's own dataflow supports.
 Admissible floor stays 33 (candidate.c + fix1-merges.patch). Status: INCLUDE_ASM/active, no rotation.
+
+## s4 (2026-09-30, laneC) — the `size` slot: what the target's dataflow requires; SOTN precedent search negative
+
+Floor unchanged: 33 (candidate.c + fix1-merges.patch). No src change this session. Receipts: probes/s4/scores.txt
+(volatile / s16 / one-member struct / one-element array / `return 0x4F0;` all measured, none keeps the slot).
+
+What the 0x70 slot proves about the original source (tools/gcc-2.7.2, read on this session):
+1. A pseudo gets a reload stack slot only when it has no hard reg AND no equivalence:
+   reload1.c:2381-2385 (`reg_equiv_constant[i] == 0 && reg_equiv_memory_loc[i] == 0`).
+   reg_equiv_constant is filled from any REG_EQUIV constant note (reload1.c:567-586).
+2. local-alloc.c update_equiv_regs turns a REG_EQUAL constant into REG_EQUIV for every
+   pseudo with reg_n_sets == 1 (1019-1032), whatever its number of uses (the n_refs == 2
+   test at 1079 only decides the extra init-deletion seen for the literal form).
+3. cse.c:6918-6934 adds that REG_EQUAL note to every single-SET insn whose source cse
+   knows to be a constant (src_const), including a plain literal (probes/s3b/size_dumps.txt:
+   `size = 0x4F0` gets REG_EQUAL 1264 at f.cse insn 38).
+4. So the target's size pseudo had either (a) reg_n_sets >= 2 -- excluded: a spilled
+   pseudo stores to its slot at every set, and the target has exactly one store to
+   0x70($sp) (asm/funcs/func_8005C8A8.s:28) -- or (b) a set whose constant value cse could
+   not know and only combine later folded. Every (b) form measured on this function is a
+   cancellation of a start pointer against a second name for it (s3b/s3c), which owner
+   ruling Q45 refused. A self-cancellation without a second name (`(arg2 + 0x4F0) - arg2`,
+   probes/s3b/paren.c) is folded before the note is written (33).
+   Also excluded here: a `volatile` or any other memory-resident local (its slot is
+   allocated at expand, before the reload slots, i.e. in the sp+0x44 alignment gap after
+   `s`, not at 0x70 between mode_off's 0x68 and xpos's 0x78); `u16`/`s16` size (the target
+   loads it with `lw`); a one-element array or one-member struct (SImode set, same note).
+
+SOTN precedent search (Q50/Q55 route, tmp/sotn-decomp @aa53500, PS1-build files only;
+Explore agent, very thorough): no matched PS1 C computes a byte count as a buffer end
+pointer minus the start it was derived from, or cancels a variable against a copy of
+itself to leave a constant. Closest hits, none the same construct when read:
+- src/dra/7879C.c:3040-3043 (EntityPlayerOutline; also 7879C.c:2466-2471, 7E4BC.c:1250-1255,
+  ric/pl_blueprints.c:1795-1800, bo4/rbo5 copies): `four = 4; spriteX = four + p[0];
+  width = spriteX - four;` -- u8 truncation, a data-dependent value, not a constant.
+- src/st/e_skelerang.h:244-245 `(Random() & 3) + 1 - 1` (comment: "required to align PSP")
+  and src/dra/7E4BC.c:298 `selfYPos - 1 + 1 - (rand() & 0x1F)`: constant pairs cancelled
+  around a variable expression; the value stays variable. They fold nothing into a
+  constant and carry no second name for a live value.
+- src/dra/4AEA4.c:239-240 DecompressData `return g_DecDstPtr - dst + 0x2000;`: a real
+  end-minus-start difference, computed at the return from a pointer advanced in a
+  callee -- data-dependent, not a constant computed at entry.
+None of these is a citation for keeping a constant out of cse by cancelling a live value.
+
+Frontier (unchanged in substance): a once-set 0x4F0 whose source cse cannot evaluate,
+without the Q45-refused cancellation. The tree-level evidence above leaves no ordinary
+C form in the families measured; the item stays active (no rotation).
