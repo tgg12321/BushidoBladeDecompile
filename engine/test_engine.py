@@ -3247,15 +3247,25 @@ def test_departures() -> None:
 
     addrs = {}
 
-    def fn(name, src="src/k.c", n=None):
-        """Add a function: a body in `src` and splat's asm/funcs/<name>.s."""
-        addrs.setdefault(name, f"8001{len(addrs):04X}")
+    def glabel_file(name, addr):
+        """A splat-shaped asm/funcs/<name>.s: long enough that git's rename
+        detection pairs it with itself and with nothing else."""
+        base = int(addr, 16)
+        lines = [f"glabel {name}"] + [
+            f"    /* {base - 0x80010000 + 4 * i:X} {base + 4 * i:08X} {(base * 7 + i) & 0xFFFFFFFF:08X} */"
+            f"  addiu      $v{i % 2}, $a0, {i}" for i in range(8)]
+        return "\n".join(lines) + "\n"
+
+    def fn(name, src="src/k.c", n=None, include_asm=False):
+        """Add a function: a C body (or an INCLUDE_ASM line) in `src` and
+        splat's asm/funcs/<name>.s."""
+        addrs.setdefault(name, f"8001{len(addrs) * 0x100:04X}")
         Path(src).parent.mkdir(parents=True, exist_ok=True)
         with open(src, "a") as fh:
-            fh.write(f"int {name}(int a) {{ return a + {n if n is not None else len(addrs)}; }}\n")
+            fh.write(f'INCLUDE_ASM("asm/funcs", {name});\n' if include_asm else
+                     f"int {name}(int a) {{ return a + {n if n is not None else len(addrs)}; }}\n")
         Path("asm/funcs").mkdir(parents=True, exist_ok=True)
-        Path(f"asm/funcs/{name}.s").write_text(
-            f"glabel {name}\n    /* 1000 {addrs[name]} 00000000 */  nop\n")
+        Path(f"asm/funcs/{name}.s").write_text(glabel_file(name, addrs[name]))
 
     def rename(old, new, src="src/k.c"):
         """What a naming wave does: the definition and the glabel .s move."""
@@ -3292,8 +3302,9 @@ def test_departures() -> None:
     def move_records(old, new):
         lines = layer2.record_path(old).read_text().splitlines()
         layer2.record_path(new).parent.mkdir(parents=True)
-        layer2.record_path(new).write_text("".join(
-            json.dumps(dict(json.loads(l), func=new, renamed_from=[old])) + "\n" for l in lines))
+        layer2.record_path(new).write_text("".join(      # as naming_wave: append a hop
+            json.dumps(dict(r, func=new, renamed_from=r.get("renamed_from", []) + [old])) + "\n"
+            for r in map(json.loads, lines)))
         layer2.record_path(old).unlink()
         layer2.record_path(old).parent.rmdir()
 
@@ -3337,6 +3348,7 @@ def test_departures() -> None:
        departures.wsl_gitdir("gitdir: /home/u/r/.git/worktrees/w"), None)
 
     cwd = os.getcwd()
+    real_git = departures._git_cmd()          # this tree's git (a worktree, maybe)
     with tempfile.TemporaryDirectory() as td:
         try:
             os.chdir(td)
@@ -3501,8 +3513,7 @@ def test_departures() -> None:
             rec("func_H", key("func_H", "include/h.h"))     # H leaves properly in g1
             # A4: G's glabel file is forged to L5's address — but G already
             # existed, so the chain still resolves nothing
-            Path("asm/funcs/func_G.s").write_text(
-                f"glabel func_G\n    /* 1000 {addrs['func_L5']} 00000000 */  nop\n")
+            Path("asm/funcs/func_G.s").write_text(glabel_file("func_G", addrs["func_L5"]))
             # A: L renamed in src to a never-listed L2 and dropped; the forged
             # chain sits on the still-queued G.  A3: L3's body moves into a
             # header and it is dropped; G's forged chain names it too.
@@ -3641,6 +3652,178 @@ def test_departures() -> None:
             check("departures (F3): a grafts file fails closed",
                   len(v) == 1 and "grafts file" in v[0])
 
+            # ── repo s: the round-3 identity forgeries (S1, S3, S4, S5) ────
+            new_repo(Path(td) / "s", ["func_X1", "func_Y1", "func_X4", "func_X5", "func_Q"])
+            fn("func_Y3", include_asm=True)                   # an asm-supplied function
+            write_queue([item(f) for f in ("func_X1", "func_Y1", "func_X4", "func_X5",
+                                           "func_Q", "func_Y3")])
+            commit("s0")
+            # S1: a genuine wave renames Y1 -> W1, whose chain ALSO claims X1;
+            # X1's dead glabel file is edited to W1's address
+            rename("func_Y1", "func_W1")
+            Path("asm/funcs/func_X1.s").write_text(glabel_file("func_X1", addrs["func_W1"]))
+            # S3: Y3's INCLUDE_ASM moves into a new header; W3 claims it
+            t = Path("src/k.c").read_text()
+            Path("src/k.c").write_text(t.replace('INCLUDE_ASM("asm/funcs", func_Y3);\n', ""))
+            Path("include").mkdir(exist_ok=True)
+            Path("include/y3.h").write_text('INCLUDE_ASM("asm/funcs", func_Y3);\n')
+            fn("func_W3")
+            # S5: a new W5 whose glabel file carries X5's address claims X5
+            fn("func_W5")
+            Path("asm/funcs/func_W5.s").write_text(glabel_file("func_W5", addrs["func_X5"]))
+            # S4: X4 "re-queued" under its address-spelled name, claiming X4
+            x4_hex = "func_" + addrs["func_X4"]
+            write_queue([item("func_Q"),
+                         item("func_W1", renamed_from=["func_Y1", "func_X1"]),
+                         item("func_W3", renamed_from=["func_Y3"]),
+                         item("func_W5", renamed_from=["func_X5"]),
+                         item(x4_hex, renamed_from=["func_X4"])])
+            commit("s1 forgeries")
+            v, fl = audit()
+            eq("departures: identity forgeries S1/S3/S4/S5 resolve nothing",
+               fl, ["func_X1", "func_X4", "func_X5", "func_Y3"])
+            check("departures (S1): a genuine wave's chain cannot also absorb another name",
+                  "func_X1" in fl and "func_Y1" not in fl)
+            check("departures (S3): an INCLUDE_ASM moved into a header is still a body",
+                  "func_Y3" in fl)
+            check("departures (S4): no address from a func_XXXXXXXX spelling",
+                  "func_X4" in fl)
+            check("departures (S5): a new glabel file with another's address is no rename",
+                  "func_X5" in fl)
+
+            # ── repo inj: two genuine rename events into ONE name -> neither ──
+            new_repo(Path(td) / "inj", ["func_O1", "func_O2", "func_Q"])
+            rename("func_O1", "func_N")
+            write_queue([item("func_N", renamed_from=["func_O1"]), item("func_O2"),
+                         item("func_Q")])
+            commit("O1 -> N")
+            rename("func_N", "func_N9")
+            write_queue([item("func_N9", renamed_from=["func_O1", "func_N"]), item("func_O2"),
+                         item("func_Q")])
+            commit("N -> N9")
+            rename("func_O2", "func_N")
+            write_queue([item("func_N9", renamed_from=["func_O1", "func_N"]),
+                         item("func_N", renamed_from=["func_O2"]), item("func_Q")])
+            commit("O2 -> N")
+            _v, fl = audit()
+            check("departures (injective): two old names claiming one new resolve neither",
+                  "func_O1" in fl and "func_O2" in fl)
+
+            # ── repo dr: a double rename across a completion (F2-r3) ─────────
+            new_repo(Path(td) / "dr", ["func_80010000", "func_CA2", "func_Q"])
+            rename("func_80010000", "func_Named1")
+            write_queue([item("func_Named1", renamed_from=["func_80010000"]),
+                         item("func_CA2"), item("func_Q")])
+            commit("wave 1 while queued")
+            edit("func_Named1")                             # worked on after the wave
+            rec("func_Named1", key("func_Named1"))
+            # B3: CA2 is renamed to CM AND completed in one commit
+            rename("func_CA2", "func_CM")
+            rec("func_CM", key("func_CM"), renamed_from=["func_CA2"])
+            write_queue([item("func_Q")])
+            commit("Named1 done; CA2 -> CM done, each with a PASS")
+            for old, new in (("func_Named1", "func_Named2"), ("func_CM", "func_CN")):
+                rename(old, new)
+                move_records(old, new)
+            commit("wave 2 after completion")
+            edit("func_Named2")
+            edit("func_CN")
+            commit("a later callee rename")
+            eq("departures (double rename, and B3): renamed, completed, renamed again -> "
+               "clear", audit()[1], [])
+
+            # ── repo hard: each identity hardening on its own ───────────────
+            new_repo(Path(td) / "hard", ["func_H2", "func_H3", "func_H7", "func_H8",
+                                         "func_H9", "func_HA", "func_Q"])
+            write_queue([item(f) for f in ("func_H2", "func_H3", "func_H7", "func_H8",
+                                           "func_H9", "func_HA", "func_Q")]
+                        + [item("func_W2")])              # W2: a stale entry, no body
+            commit("h0")
+            # (c) W2 was listed when H2 left: H2 -> W2 counts for nothing
+            rename("func_H2", "func_W2")
+            # (a) H3's body did NOT move at the rename: its C body went into a
+            # header (still there at R), deleted only afterwards
+            rename("func_H3", "func_W3")
+            h3 = "int func_H3(int a) { return a; }\n"
+            Path("include").mkdir(exist_ok=True)
+            Path("include/h3.h").write_text(h3)
+            # (d) H7 and H8 are genuinely renamed, then re-created: H7 with a
+            # body only, H8 with a glabel file only
+            rename("func_H7", "func_W7")
+            rename("func_H8", "func_W8")
+            # (a) H9's glabel file changes more than its name in the rename
+            rename("func_H9", "func_W9")
+            Path("asm/funcs/func_W9.s").write_text(
+                Path("asm/funcs/func_W9.s").read_text().replace("addiu", "addu ", 1))
+            write_queue([item("func_W2", renamed_from=["func_H2"]),
+                         item("func_W3", renamed_from=["func_H3"]),
+                         item("func_W7", renamed_from=["func_H7"]),
+                         item("func_W8", renamed_from=["func_H8"]),
+                         item("func_W9", renamed_from=["func_H9"]),
+                         item("func_HA"), item("func_Q")])
+            commit("h1 renames")
+            Path("include/h3.h").unlink()
+            with open("src/k.c", "a") as fh:
+                fh.write("int func_H7(int b) { return b; }\n")
+            Path("asm/funcs/func_H8.s").write_text(glabel_file("func_H8", "80019000"))
+            # (b) HA leaves; its glabel file's address is then edited, and a
+            # later wave renames it
+            write_queue([item("func_W2", renamed_from=["func_H2"]),
+                         item("func_W3", renamed_from=["func_H3"]),
+                         item("func_W7", renamed_from=["func_H7"]),
+                         item("func_W8", renamed_from=["func_H8"]),
+                         item("func_W9", renamed_from=["func_H9"]), item("func_Q")])
+            rec("func_HA", key("func_HA"))
+            commit("h2")
+            Path("asm/funcs/func_HA.s").write_text(glabel_file("func_HA", "8001F000"))
+            commit("h3 HA's address edited")
+            rename("func_HA", "func_WA")
+            move_records("func_HA", "func_WA")
+            commit("h4 HA -> WA")
+            _v, fl = audit()
+            eq("departures: each identity hardening refuses its edge",
+               fl, ["func_H2", "func_H3", "func_H7", "func_H8", "func_H9", "func_HA"])
+            check("departures (c): `new` already listed when `old` left", "func_H2" in fl)
+            check("departures (a): the body must MOVE at the rename (header scan at R)",
+                  "func_H3" in fl)
+            check("departures (d): `old` re-created with a body", "func_H7" in fl)
+            check("departures (d): `old` re-created with a glabel file", "func_H8" in fl)
+            check("departures (a): the glabel file must move unchanged but for the name",
+                  "func_H9" in fl)
+            check("departures (b): the renamed file must be the one `old` left with",
+                  "func_HA" in fl)
+
+            # ── the real history, walked on a clone (synthetic departure) ────
+            real = subprocess.run([*real_git, "rev-parse", "--git-common-dir",
+                                   "HEAD"], cwd=str(repo_root), capture_output=True, text=True)
+            if real.returncode != 0:
+                skip("departures: real-history smoke on a clone",
+                     f"git cannot read this tree here: {real.stderr.strip()[:120]}")
+            else:
+                common, head = real.stdout.splitlines()[:2]   # the path may hold spaces
+                common = str((repo_root / common).resolve()) if not os.path.isabs(common) \
+                    else common
+                os.chdir(td)
+                git("clone", "-q", "--shared", "--no-checkout", common, "real")
+                os.chdir(Path(td) / "real")
+                git("sparse-checkout", "set", "engine", "src", "include")
+                git("checkout", "-q", "--detach", head)
+                base_v, base_fl = audit()
+                check("departures (real history): the committed tree audits clean",
+                      base_v == [])
+                q = json.loads(Path("engine/queue.json").read_text())
+                gone_item = next((it for it in q["items"]
+                                  if layer2.current_key(it["func"], it.get("file", ""))), None)
+                if gone_item is None:
+                    skip("departures (real history): synthetic departure",
+                         "no queued item has a keyable body")
+                else:
+                    q["items"] = [it for it in q["items"] if it is not gone_item]
+                    Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
+                    git("commit", "-qam", "synthetic unreviewed departure")
+                    eq("departures (real history): a synthetic hand-drop is caught",
+                       audit()[1], [gone_item["func"]])
+
             # ── repos b, e, f: the anchor ─────────────────────────────────
             Path(td, "b").mkdir()
             os.chdir(Path(td, "b"))
@@ -3710,7 +3893,12 @@ def test_departures() -> None:
             lost = git("rev-parse", "HEAD:engine/queue.json").strip()
             write_queue([item("func_A")])
             commit("c2")
-            Path(".git/objects", lost[:2], lost[2:]).unlink()
+            # git writes loose objects read-only; Windows refuses to unlink
+            # those without a chmod (this suite runs under WSL — see
+            # CLAUDE.md — but keep the test portable)
+            obj = Path(".git/objects", lost[:2], lost[2:])
+            os.chmod(obj, 0o644)
+            obj.unlink()
             v = departures.unreviewed_departures()
             check("departures (C4): a missing queue version is a violation",
                   any("missing from the object store" in s and lost in s for s in v))

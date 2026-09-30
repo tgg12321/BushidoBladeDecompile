@@ -31,18 +31,32 @@ refs are ignored (`--no-replace-objects`). test_departures pins GATE_FILE to
 engine.layer2's own path, so moving the module fails the suite instead of
 silently re-anchoring.
 
-RENAMES are bound to IDENTITY, not to absence. tools/naming_wave.py appends the
-old name to a `renamed_from` LIST on the queue item it renames and on every
-layer2.jsonl line it retargets; the audit reads those chains from the current
-queue, every post-gate queue version, and the live and archived records. An
-edge old -> new counts only when both names resolve to the SAME function
-address — `old` at the commit where it left the queue (or its first parent),
-`new` now — from asm/funcs/<name>.s (splat's glabel file, which naming_wave
-renames with the glabel; the census reads addresses the same way), falling
-back to the address spelled in a `func_XXXXXXXX` name; and `new` had no body in
-the parent of that commit. A forged chain on another function's item or
-record therefore resolves nothing. A name that resolves to a name listed on
-its own is audited under that name's own departure.
+RENAMES. tools/naming_wave.py appends the old name to a `renamed_from` LIST on
+the queue item it renames and on every layer2.jsonl line it retargets; the
+audit reads those chains from the current queue, every post-gate queue
+version, and the live and archived records. A chain [c0..ck] on a carrier N
+only NOMINATES edges — each ci -> N and the hops c0 -> c1 ... ck -> N — and an
+edge counts only when ALL of these hold, where D is the commit in which `old`
+last left the queue ("the working tree" if only there, its parent then being
+HEAD; for a never-listed intermediate name, renamed twice between queue
+versions, D is its rename event R):
+  (a) a git-visible RENAME EVENT R on the ancestry path (git's own rename
+      detection, --raw -M): asm/funcs/<old>.s deleted and asm/funcs/<new>.s
+      added, their contents identical once <old> is spelled <new>; and in R
+      the body moves — at R^ `old` has a body and `new` none, at R `new` has
+      one and `old` none, over EVERY source file (src/**/*.c, src/**/*.h,
+      include/**/*.h; a C definition or an asm body such as INCLUDE_ASM);
+  (b) the address in asm/funcs/<old>.s at D^ (first address comment, as the
+      census reads it) equals the address in R's <old>.s;
+  (c) `new` is not listed in the queue version at D^ and has no body in any
+      source file at D^;
+  (d) `old` has no body in any source file now and no asm/funcs/<old>.s now;
+  (e) injective: no other gone name has a valid edge to the same `new` (two
+      claimants -> neither counts).
+There is no address fallback from a `func_XXXXXXXX` spelling. Resolution
+follows valid edges and stops at the first name that is queued now (nothing to
+audit) or is itself listed in a post-gate version (it is audited under its own
+departure); the departed body is looked up under every name on the way.
 
 BODY LOCATION: one pass over src/**/*.c, src/**/*.h and include/**/*.h gives a
 function's current file (TU resplits and header moves); a queue item's `file`
@@ -53,9 +67,9 @@ are recovered by pattern (`"func": "<name>"`) and audited like any other; only
 a version yielding no name at all is a violation.
 
 GIT: four processes however long the history — the grafts check, the anchor
-lookup, one `git log --raw` over the ancestry path, and ONE interactive
-`git cat-file --batch` for every queue version, departure-time source file and
-asm/funcs address lookup. Every git failure and a missing object is a
+lookup, one `git log --raw -M` over the ancestry path (queue.json, the gate
+module and asm/funcs), and ONE interactive `git cat-file --batch` for every
+queue version, source tree, source file and asm/funcs blob it needs. Every git failure and a missing object is a
 violation: an audit that cannot read history must not pass. Under WSL, a
 worktree `.git` naming a Windows gitdir (`gitdir: C:/...`) is read through
 `--git-dir=/mnt/c/...`; under Windows, `gitdir: /mnt/c/...` through
@@ -85,7 +99,8 @@ _FUNC_RE = re.compile(rb'"func"\s*:\s*"([^"\\]+)"')
 _WIN_GITDIR = re.compile(r"^([A-Za-z]):[\\/](.*)$")
 _MNT_GITDIR = re.compile(r"^/mnt/([A-Za-z])/(.*)$")
 _ASM_ADDR = re.compile(r"^\s*/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s", re.M)
-_AUTO_NAME = re.compile(r"^func_([0-9A-Fa-f]{8})$")
+ASM_DIR = "asm/funcs"
+_SRC_PATH = re.compile(r"^(src/.+\.[ch]|include/.+\.h)$")
 _ZERO = "0" * 40
 
 
@@ -201,23 +216,29 @@ def _anchor() -> tuple[str, list[str]] | None:
     return anc[0], [a[0] for a in adds[:-1]]
 
 
-def _history(anc: str) -> tuple[list[tuple[str, str, str]], set[str]]:
+def _history(anc: str):
     """Queue diffs (commit, src blob, dst blob), newest first in topological
-    order, and the commits on the ancestry path that add GATE_FILE."""
-    diffs, gate_adds, commit = [], set(), ""
-    for line in _git("log", "--topo-order", "--full-history", "--ancestry-path", "-m", "--raw",
-                     "--no-abbrev", "--format=commit %H", f"{anc}..HEAD", "--",
-                     QUEUE_FILE, GATE_FILE).decode().splitlines():
+    order; the commits on the ancestry path that add GATE_FILE; and git's
+    asm/funcs rename events {(old, new): [(commit, old blob, new blob)]}."""
+    diffs, gate_adds, renames, commit = [], set(), {}, ""
+    for line in _git("log", "--topo-order", "--full-history", "--ancestry-path", "-m", "-M",
+                     "--raw", "--no-abbrev", "--format=commit %H", f"{anc}..HEAD", "--",
+                     QUEUE_FILE, GATE_FILE, ASM_DIR).decode().splitlines():
         if line.startswith("commit "):
             commit = line.split()[1]
         elif line.startswith(":"):
-            meta, path = line.split("\t", 1)
+            meta, *paths = line.split("\t")
             f = meta.split()
-            if path == GATE_FILE and f[4].startswith("A"):
+            if f[4].startswith("R") and len(paths) == 2:
+                o, n = (Path(p) for p in paths)
+                if o.parent.as_posix() == ASM_DIR == n.parent.as_posix() \
+                        and o.suffix == n.suffix == ".s":
+                    renames.setdefault((o.stem, n.stem), []).append((commit, f[2], f[3]))
+            elif paths[0] == GATE_FILE and f[4].startswith("A"):
                 gate_adds.add(commit)
-            elif path == QUEUE_FILE:
+            elif paths[0] == QUEUE_FILE:
                 diffs.append((commit, f[2], f[3]))
-    return diffs, gate_adds
+    return diffs, gate_adds, renames
 
 
 def _parse(blob: bytes) -> dict[str, dict] | None:
@@ -262,13 +283,60 @@ def _key(text: str | None, name: str) -> str | None:
     return k[1] if k else None
 
 
-def _addr_of(asm_text: str | None, name: str) -> str | None:
-    if asm_text:
-        m = _ASM_ADDR.search(asm_text)
-        if m:
-            return m.group(1).upper()
-    a = _AUTO_NAME.match(name)
-    return a.group(1).upper() if a else None
+def _addr_of(asm_text: str | None) -> str | None:
+    """First address comment of a splat .s (as docs/naming/build_census.py
+    reads it); no fallback from the spelling of a name."""
+    m = _ASM_ADDR.search(asm_text) if asm_text else None
+    return m.group(1).upper() if m else None
+
+
+_WB_CACHE: dict[int, set[str]] = {}
+
+
+def _has_body(text: str | None, name: str) -> bool:
+    """A C definition of `name`, or an asm body (INCLUDE_ASM / .include /
+    glabel block) supplying it, in this file's text."""
+    if not text or name not in text:
+        return False
+    if inlineasm._func_body_span(text, name) is not None:
+        return True
+    k = hash(text)
+    if k not in _WB_CACHE:
+        _WB_CACHE[k] = inlineasm.whole_body_asm_funcs(text)
+    return name in _WB_CACHE[k]
+
+
+def _tree_sources(batch: "_Batch", rev: str) -> list[str]:
+    """Blob ids of every source file (src/**/*.c|h, include/**/*.h) at `rev`,
+    walked through the batch process (no extra git process)."""
+    out = []
+
+    def walk(obj, prefix):
+        data = batch.get(obj)
+        if data is None:
+            return
+        i = 0
+        while i < len(data):
+            sp = data.index(b" ", i)
+            nul = data.index(b"\0", sp)
+            mode, name = data[i:sp], data[sp + 1:nul].decode("utf-8", "replace")
+            sha = data[nul + 1:nul + 21].hex()
+            i = nul + 21
+            path = f"{prefix}/{name}"
+            if mode == b"40000":
+                walk(sha, path)
+            elif _SRC_PATH.match(path):
+                out.append(sha)
+    for top in ("src", "include"):
+        walk(f"{rev}:{top}", top)
+    return out
+
+
+def _body_at(batch: "_Batch", rev: str | None, name: str) -> bool:
+    """Does `name` have a body in any source file at `rev` (None = now)?"""
+    if rev is None:
+        return any(_has_body(layer2._read_text(p), name) for p in _source_files())
+    return any(_has_body(batch.text(sha), name) for sha in _tree_sources(batch, rev))
 
 
 def _records(func: str) -> tuple[list[dict], str | None]:
@@ -340,7 +408,7 @@ def unreviewed_departures() -> list[str]:
         if a is None:
             return []                       # the gate is not in this history yet
         anc, other_adds = a
-        diffs, gate_adds = _history(anc)
+        diffs, gate_adds, rename_events = _history(anc)
         stray = [c[:9] for c in other_adds if c not in gate_adds]
         if stray:
             raise _AuditError(f"{GATE_FILE} is added by commits not descended from the "
@@ -377,10 +445,11 @@ def unreviewed_departures() -> list[str]:
 
         # the commit each gone name last left the queue in (newest first);
         # "HEAD" = it left only in the working tree
-        left_in: dict[str, tuple[str, dict]] = {}
+        # (commit, the item, the queue before) — "HEAD": only in the working tree
+        left_in: dict[str, tuple[str, dict, dict]] = {}
         for f in gone:
             if f in head_items:
-                left_in[f] = ("HEAD", head_items[f])
+                left_in[f] = ("HEAD", head_items[f], head_items)
         for commit, src, dst in diffs:
             if src == _ZERO:
                 continue
@@ -390,7 +459,7 @@ def unreviewed_departures() -> list[str]:
             before, after = parsed[src] or {}, parsed.get(dst) or {}
             for f in before:
                 if f in gone and f not in after and f not in left_in:
-                    left_in[f] = (commit, before[f])
+                    left_in[f] = (commit, before[f], before)
 
         # renames: every chain naming a gone name, each edge bound to identity
         chains = [(f, _chain(it.get("renamed_from"))) for f, it in current.items()]
@@ -410,38 +479,68 @@ def unreviewed_departures() -> list[str]:
         def parent_of(commit):
             return "HEAD" if commit == "HEAD" else f"{commit}^"
 
-        def same_function(old, new):
-            commit, old_item = left_in.get(old, (None, None))
-            if commit is None:
-                return False
-            asm_old = None
-            for rev in ([commit] if commit == "HEAD" else [commit, f"{commit}^"]):
-                asm_old = _addr_of(batch.text(f"{rev}:asm/funcs/{old}.s"), old)
-                if asm_old:
-                    break
-            new_now = _addr_of(layer2._read_text(Path(f"asm/funcs/{new}.s")), new)
-            if not asm_old or asm_old != new_now:
-                return False
-            par = parent_of(commit)
-            for path in dict.fromkeys(filter(None, (
-                    where_now.get(new),
-                    f"src/{old_item.get('file')}.c" if old_item.get("file") else None))):
-                if _key(batch.text(f"{par}:{path}"), new):
-                    return False            # `new` already existed as a function
-            return True
+        def queue_at(rev):
+            b = batch.get(f"{rev}:{QUEUE_FILE}")
+            return (_parse(b) or {}) if b is not None else {}
 
-        renamed = {}
-        for new, ch in relevant:
-            for old in ch:
-                if old != new and old in gone and old not in renamed and same_function(old, new):
-                    renamed[old] = new
+        def valid_edge(old, new):
+            """The docstring's (a)-(d) for old -> new; (e) is applied after.
+            A never-listed intermediate name (renamed twice between queue
+            versions) has no departure of its own: its rename event stands in."""
+            # (d) old is gone from the tree: no body, no glabel file
+            if Path(f"{ASM_DIR}/{old}.s").exists() or _body_at(batch, None, old):
+                return False
+            events = rename_events.get((old, new), [])
+            dep = left_in.get(old)
+            if dep is None:
+                if old in listed or not events:
+                    return False
+                commit = events[0][0]
+                queue_before = queue_at(f"{commit}^")
+            else:
+                commit, _item, queue_before = dep
+            par = parent_of(commit)
+            # (c) new was not queued, and had no body, when old left
+            if new in queue_before or _body_at(batch, par, new):
+                return False
+            addr_old = _addr_of(batch.text(f"{par}:{ASM_DIR}/{old}.s"))
+            for r_commit, o_blob, n_blob in events:
+                o_text, n_text = batch.text(o_blob), batch.text(n_blob)
+                # (a) the glabel file moved unchanged but for the name ...
+                if o_text is None or n_text is None or o_text.replace(old, new) != n_text:
+                    continue
+                # (b) ... and it is the file old had when it left the queue
+                if not addr_old or _addr_of(o_text) != addr_old:
+                    continue
+                # (a) ... and the body moved with it
+                r_par = f"{r_commit}^"
+                if (_body_at(batch, r_par, old) and not _body_at(batch, r_par, new)
+                        and _body_at(batch, r_commit, new) and not _body_at(batch, r_commit, old)):
+                    return True
+            return False
+
+        # a chain [c0, ..., ck] on carrier N nominates each ci -> N and the
+        # hops c0->c1, ..., ck->N (naming_wave appends one name per wave); only
+        # edges out of a gone name or a never-listed intermediate matter
+        nominated = {(old, new) for carrier, ch in relevant
+                     for old, new in [*zip(ch, ch[1:] + [carrier]), *((c, carrier) for c in ch)]
+                     if old != new and (old in gone or old not in listed)}
+        valid = {(old, new) for old, new in sorted(nominated) if valid_edge(old, new)}
+        # (e) injective, both ways: one old -> one new, one new <- one old
+        olds_of = {n: {o for o, n2 in valid if n2 == n} for _o, n in valid}
+        news_of = {o: {n for o2, n in valid if o2 == o} for o, _n in valid}
+        renamed = {o: n for o, n in valid if len(news_of[o]) == 1 and len(olds_of[n]) == 1}
 
         for f, it in sorted(listed.items()):
             if f not in gone:
                 continue
-            name, hops = f, 0
-            while name in renamed and hops < 64:
-                name, hops = renamed[name], hops + 1
+            names, hops = [f], 0
+            while names[-1] in renamed and hops < 64:
+                names.append(renamed[names[-1]])
+                hops += 1
+                if names[-1] in current or names[-1] in listed:
+                    break
+            name = names[-1]
             if name in current:
                 continue
             if name != f and name in listed:
@@ -451,15 +550,15 @@ def unreviewed_departures() -> list[str]:
             cur = _key(layer2._read_text(Path(path_now)), name) if path_now else (
                 _key(layer2._read_text(Path(f"src/{stem}.c")), name) if stem else None)
             dep_key, dep_where = None, "the working tree"
-            commit, dep_item = left_in.get(f, (None, it))
+            commit, dep_item, _before = left_in.get(f, (None, it, None))
             if commit and commit != "HEAD":
                 dep_where = f"commit {commit[:9]}"
                 paths = dict.fromkeys(filter(None, (
                     f"src/{dep_item.get('file')}.c" if dep_item.get("file") else None,
-                    where_now.get(f), path_now)))
+                    *(where_now.get(n) for n in names))))
                 for path in paths:
                     text = batch.text(f"{commit}:{path}")
-                    dep_key = _key(text, name) or _key(text, f)
+                    dep_key = next(filter(None, (_key(text, n) for n in reversed(names))), None)
                     if dep_key:
                         break
             why = _clears(name, dep_key, cur)
