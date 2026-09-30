@@ -70,3 +70,8 @@
   used by both passes (H4), `u32 mask` (H5), the parenthesised halving offset (H2), loop counters
   shared across loops (H7), the K&R `extern s32 func_8002DE20();` (its Unk8002DE20Obj parameter
   type is declared later in the file).
+- [s2] LANDING PREP (2026-09-29, laneC lock): candidate.c spliced into src/code6cac_b.c in place
+  of its INCLUDE_ASM line (the only deletion; added lines identical to candidate.c at c551b99ba).
+  `lock.ps1 rebuild laneC`: build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+  `sandbox func_80029454 --disable all --diff` on the spliced src: score 0, 1025/1025, 0
+  source-level / 0 operand-only / 142 not-scored (probes/sandbox_spliced.txt). Awaiting layer-2.
