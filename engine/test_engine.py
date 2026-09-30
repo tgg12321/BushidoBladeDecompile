@@ -878,6 +878,38 @@ def test_gte_macro_units() -> None:
     as_today("gpf0 word appended to ldlvl", vsrc(*ldlvl, stmt(".word 0x4B90003D")))
     as_today("rtv0tr word with a 9-digit spelling", vsrc(*cmd("0x04A480012")))
 
+    # --- gte_ldlv0 / gte_SetRotMatrix pinned (2026-09-26 class grant (A): an engine:
+    # commit with layer-2; the func_8002EBDC / func_8002F2D0 / func_8002F770 cluster).
+    eq("gtemacro: gte_ldlv0 expands to 7 statements", len(macros["gte_ldlv0"][1]), 7)
+    eq("gtemacro: gte_SetRotMatrix expands to 11 statements", len(macros["gte_SetRotMatrix"][1]), 11)
+    ldlv0 = [stmt("move  $12,%0", "&v"), stmt("lhu   $14,4($12)"), stmt("lhu   $13,($12)"),
+             stmt("sll   $14,$14,16"), stmt("or    $13,$13,$14"), stmt("mtc2  $13,$0"),
+             stmt("lwc2  $1,8($12)")]
+    srm = [stmt("move  $12,%0", "&m"), stmt("lw    $13,($12)"), stmt("lw    $14,4($12)"),
+           stmt("ctc2  $13,$0"), stmt("ctc2  $14,$1"), stmt("lw    $13,8($12)"),
+           stmt("lw    $14,12($12)"), stmt("lw    $15,16($12)"), stmt("ctc2  $13,$2"),
+           stmt("ctc2  $14,$3"), stmt("ctc2  $15,$4")]
+    eq("gte unit POSITIVE: gte_ldlv0 recognized", kept(vsrc(*ldlv0)), ["gte_ldlv0"] * 7)
+    eq("gte unit POSITIVE: gte_SetRotMatrix recognized", kept(vsrc(*srm)), ["gte_SetRotMatrix"] * 11)
+    eq("gte unit POSITIVE: gte_ldlv0 with 0($12) for the header's ($12) recognized",
+       kept(vsrc(ldlv0[0], ldlv0[1], stmt("lhu   $13,0($12)"), *ldlv0[3:])), ["gte_ldlv0"] * 7)
+    cl = vsrc(*srm, *ldlv0, *rtv0, "out[1] = n;", *stl)
+    eq("gte unit POSITIVE: SetRotMatrix+ldlv0+rtv0, C, stlvnl -> four units",
+       kept(cl), ["gte_SetRotMatrix"] * 11 + ["gte_ldlv0"] * 7 + ["gte_rtv0"] * 3 + ["gte_stlvnl"] * 4)
+    eq("gte unit POSITIVE: SetRotMatrix+ldlv0+rtv0, C, stlvnl kept whole",
+       inlineasm.strip_cheat_asm_file(cl, keep_gte_macro_units=True), (cl, 0))
+    eq("gte unit: scoring is not admission — gate still counts the GPR-only statements (cluster set)",
+       inlineasm.func_cheat_asm_count(cl, "f"), 14)
+
+    # NEGATIVES (cluster additions) — each stripped exactly as today.
+    as_today("ldlv0 with its two lhu reordered", vsrc(ldlv0[0], ldlv0[2], ldlv0[1], *ldlv0[3:]))
+    as_today("ldlv0 missing its lwc2", vsrc(*ldlv0[:6]))
+    as_today("ldlv0 with an edited or register", vsrc(*ldlv0[:4], stmt("or    $13,$13,$15"), *ldlv0[5:]))
+    as_today("SetRotMatrix missing its last ctc2", vsrc(*srm[:10]))
+    as_today("SetRotMatrix with 4($12) for the header's ($12)",
+             vsrc(srm[0], stmt("lw    $13,4($12)"), *srm[2:]))
+    as_today("SetRotMatrix with an extra nop appended", vsrc(*srm, stmt("nop   ")))
+
 
 # --------------------------------------------------------------------------
 # cheats — regfix masking (other half of cheat-invisibility)

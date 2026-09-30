@@ -1,0 +1,131 @@
+{
+ "files_scanned": 2187,
+ "src_files": 53,
+ "changed": [
+  {
+   "file": "memory/grind/func_8002EBDC/candidate.c",
+   "stripped_before": 27,
+   "stripped_after": 0,
+   "units_before": 10,
+   "units_after": 56,
+   "new_macros": [
+    "gte_SetRotMatrix",
+    "gte_ldlv0",
+    "gte_rtv0"
+   ]
+  },
+  {
+   "file": "memory/grind/func_8002F2D0/candidate.c",
+   "stripped_before": 14,
+   "stripped_after": 0,
+   "units_before": 6,
+   "units_after": 31,
+   "new_macros": [
+    "gte_SetRotMatrix",
+    "gte_ldlv0",
+    "gte_rtv0",
+    "gte_stlvnl"
+   ]
+  },
+  {
+   "file": "memory/grind/func_8002F2D0/candidate_alt_rtv0_inline_c_h.c",
+   "stripped_before": 12,
+   "stripped_after": 6,
+   "units_before": 6,
+   "units_after": 17,
+   "new_macros": [
+    "gte_SetRotMatrix"
+   ]
+  },
+  {
+   "file": "memory/grind/func_8002F2D0/rejected/inline-o-h-fresh-dist-35.c",
+   "stripped_before": 14,
+   "stripped_after": 0,
+   "units_before": 6,
+   "units_after": 31,
+   "new_macros": [
+    "gte_SetRotMatrix",
+    "gte_ldlv0",
+    "gte_rtv0",
+    "gte_stlvnl"
+   ]
+  },
+  {
+   "file": "memory/grind/func_8002F2D0/rejected/inline-o-h-table-byte-inline-6.c",
+   "stripped_before": 14,
+   "stripped_after": 0,
+   "units_before": 6,
+   "units_after": 31,
+   "new_macros": [
+    "gte_SetRotMatrix",
+    "gte_ldlv0",
+    "gte_rtv0",
+    "gte_stlvnl"
+   ]
+  },
+  {
+   "file": "memory/grind/func_8002F2D0/rejected/inline-o-h-with-both-wraps-8.c",
+   "stripped_before": 14,
+   "stripped_after": 0,
+   "units_before": 6,
+   "units_after": 31,
+   "new_macros": [
+    "gte_SetRotMatrix",
+    "gte_ldlv0",
+    "gte_rtv0",
+    "gte_stlvnl"
+   ]
+  },
+  {
+   "file": "memory/grind/func_8002F770/candidate.c",
+   "stripped_before": 14,
+   "stripped_after": 0,
+   "units_before": 6,
+   "units_after": 31,
+   "new_macros": [
+    "gte_SetRotMatrix",
+    "gte_ldlv0",
+    "gte_rtv0",
+    "gte_stlvnl"
+   ]
+  },
+  {
+   "file": "memory/grind/func_8002F770/candidate_alt_rtv0_inline_c_h.c",
+   "stripped_before": 12,
+   "stripped_after": 6,
+   "units_before": 6,
+   "units_after": 17,
+   "new_macros": [
+    "gte_SetRotMatrix"
+   ]
+  },
+  {
+   "file": "memory/grind/func_8002F770/rejected/inline-o-h-fresh-dist-35.c",
+   "stripped_before": 14,
+   "stripped_after": 0,
+   "units_before": 6,
+   "units_after": 31,
+   "new_macros": [
+    "gte_SetRotMatrix",
+    "gte_ldlv0",
+    "gte_rtv0",
+    "gte_stlvnl"
+   ]
+  },
+  {
+   "file": "memory/grind/func_8002F770/rejected/inline-o-h-table-byte-inline-6.c",
+   "stripped_before": 14,
+   "stripped_after": 0,
+   "units_before": 6,
+   "units_after": 31,
+   "new_macros": [
+    "gte_SetRotMatrix",
+    "gte_ldlv0",
+    "gte_rtv0",
+    "gte_stlvnl"
+   ]
+  }
+ ],
+ "default_strip_changed": [],
+ "errors": []
+}

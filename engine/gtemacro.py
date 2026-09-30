@@ -53,7 +53,9 @@ PINNED holds only the macros needed today (the LZC family of func_800288C8,
 func_8002A458, func_8002CD58 and func_80018300; gte_ldv0 / gte_rtv0 /
 gte_stlvnl / gte_ApplyRotMatrix of func_8002DE20; gte_ldlvl / gte_lddp /
 gte_rtv0tr / gte_sqr0 / gte_gpf0 / gte_gpl12 / gte_stlvl of func_800187F4,
-owner ruling 2026-09-28, Q29). Each excerpt is the header's
+owner ruling 2026-09-28, Q29; gte_ldlv0 / gte_SetRotMatrix of the
+func_8002EBDC / func_8002F2D0 / func_8002F770 cluster, pinned as the 2026-09-26
+class grant's (A) allows: an engine: commit with layer-2). Each excerpt is the header's
 own lines, byte for byte; `engine test` re-hashes them. Adding a macro means
 adding its verbatim lines with the same provenance fields.
 """
@@ -185,6 +187,34 @@ PINNED = (
   __asm__ volatile ("swc2  $9,($12)": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("swc2  $10,4($12)": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("swc2  $11,8($12)": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
+            ("gte_ldlv0", (95, 103),
+             "25eddbcf07dae9b935b63070c470eeb63cdd501580cd06f2f2ffd38f1373b431",
+             r'''#define gte_ldlv0(r1) { \
+  __asm__ volatile ("move  $12,%0": :"r"(r1):"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("sll   $14,$14,16": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("or    $13,$13,$14": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("mtc2  $13,$0": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lwc2  $1,8($12)": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
+            ("gte_SetRotMatrix", (272, 284),
+             "1b3eac43829471d66b4599ad7b226ad27e8bde823bf1111d41e1592158ddd803",
+             r'''#define gte_SetRotMatrix(r1) { \
+  __asm__ volatile ("move  $12,%0": :"r"(r1):"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lw    $13,($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lw    $14,4($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("ctc2  $13,$0": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("ctc2  $14,$1": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lw    $13,8($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lw    $14,12($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lw    $15,16($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("ctc2  $13,$2": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory"); \
 }
 '''),
         ),
