@@ -191,3 +191,13 @@ Question (the session author's closing line, after the evidence report in docs/g
 Owner (Trenton), verbatim: "Yes go ahead"
 (Rule text: .claude/rules/rodata-object-alignment.md; record: docs/grind/decisions.md 2026-09-30 OWNER RULING — object-relative rodata alignment.)
 
+<!-- Batch 16: recorded 2026-09-30 by the session author from the owner's messages in the manual session. -->
+# Owner rulings 2026-09-30 (third) — VERBATIM RECORD
+
+## maspsx `.L`-label mflo-hazard fix: declined, then adopted
+Question (session author): adopt the global maspsx fix (is_label also matching `.L` labels, plus an unconditional jump ending the mflo hazard), byte-identical for the whole build, func_80058580 57 -> 55?
+Owner (Trenton), verbatim: "No let's find an avenue without any kind of compiler or maspx fix or patch"
+Follow-up questions (owner, verbatim): "Would you consider this kind of maspx patch a cheat? Does SOTN do the same?", "how confident are you this problem iis a maspx bug, not some other issue?", "Is there any avenue where this item or our other items could be decompiled without a maspx patch? Or is this a hard, verified requirement"
+Owner (Trenton), verbatim: "alright go ahead and redact my no maspx changes rule and make this change"
+(Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — maspsx `.L`-label mflo-hazard fix adopted.)
+

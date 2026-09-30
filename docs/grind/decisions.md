@@ -30126,6 +30126,8 @@ oracle rebuilt independently).
 
 ## 2026-09-30 — OWNER DECISION — maspsx `.L`-label mflo-hazard fix declined (func_80058580)
 
+> **SUPERSEDED the same day** by "OWNER RULING — maspsx `.L`-label mflo-hazard fix adopted" below. Kept as history.
+
 Context: func_80058580's floor includes two nops the original assembler (ASPSX) inserted after a
 cross-jump join label (`mflo; subu; .L: nop; mult`). maspsx's `is_label()` only matches `$L`
 labels, so its mflo/mult hazard arm never fires at this GCC fork's `.L` labels. A scratch-tree
@@ -30139,4 +30141,31 @@ Consequence (ledger, same day): the two nops are unreachable from C in the curre
 (the label position is fixed by the target's jump bytes; only maspsx inserts nops there), so
 func_80058580 cannot reach 0 under the current substrate; work continues on the rest of its
 residual.
+
+## 2026-09-30 — OWNER RULING — maspsx `.L`-label mflo-hazard fix adopted (supersedes the same-day decline)
+
+Context: after declining the fix ("No let's find an avenue without any kind of compiler or maspx
+fix or patch"), the owner asked whether it is a cheat, whether SOTN does the same, how confident
+the diagnosis is, and whether any avenue avoids it. Evidence presented (func_80058580 ledger,
+probes/aspsx_hazard/): Sony ASPSX 2.34 + PSYLINK 2.37 insert the mflo->mult hazard nop after a
+label, with the label on the nop, and add none when an unconditional jump sits between; upstream
+mkst/maspsx implements and tests that placement (`test_div_div_label`) but only recognizes `$L`
+labels, while this GCC fork emits `.L`; SOTN uses stock maspsx with a `$L`-emitting cc1, so it gets
+the behaviour unmodified; no C spelling or other stage can supply the nop (maspsx forces
+`.set noreorder`, cc1 emits no such nop); binary-wide, 35 hazard nops follow a label (33 load-delay,
+already covered by the 2026-09-14 global arms; 2 mflo->mult, both in func_80058580).
+Owner (Trenton), verbatim: **"alright go ahead and redact my no maspx changes rule and make this change"**.
+
+**Ruling (the author's narrowing).**
+1. The 2026-09-30 decline ("No let's find an avenue without any kind of compiler or maspx fix or
+   patch") is withdrawn.
+2. Adopted, as ONE global maspsx change (never per-function): `is_label()` also recognizes this
+   GCC fork's `.L<n>:` labels, and `_handle_mflo_mfhi` treats an unconditional jump (`j`, `b`,
+   `jr`) as the one intervening instruction as ending the hazard (ASPSX: only the delay-slot nop).
+   Pinned by maspsx unit tests; lands only with the full build byte-identical to the oracle and a
+   layer-2 review.
+3. Boundary kept: maspsx changes are admissible only as GLOBAL models of documented ASPSX
+   behaviour, verified against Sony's tools and byte-neutral for every completed function.
+   Per-function assembler gates stay governed by `.claude/rules/maspsx-gate-lists.md` (the COMMON
+   gate remains a cheat).
 

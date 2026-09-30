@@ -8,6 +8,12 @@ metadata:
 
 # The per-function maspsx gate lists — adjudicated 2026-07-13
 
+> **Update 2026-09-30 — global fidelity fixes vs per-function gates.** Owner ruling (decisions.md
+> 2026-09-30 "maspsx `.L`-label mflo-hazard fix adopted"): maspsx changes are admissible only as
+> GLOBAL models of documented ASPSX behaviour, verified against Sony's tools and byte-neutral for
+> every completed function. Adopted under it: `is_label()` recognizes `.L<n>:` labels and an
+> unconditional jump ends the mflo/mult hazard. Per-function gates remain governed below.
+
 > **Update 2026-09-14 — `maspsx_label_nop_funcs.txt` is RETIRED and DELETED.**
 > Its `.L`-label arm is now global. The per-function scoping was never
 > protecting ASPSX fidelity: it was containing a missing-guard bug (the arm
