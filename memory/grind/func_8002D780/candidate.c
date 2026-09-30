@@ -51,10 +51,10 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                  * REG_BASIC_BLOCK >= 0 && REG_N_DEATHS == 1) - a pseudo referenced in two basic
                  * blocks (the entry test and this block) is left to global.c, so block 7's
                  * local-alloc quantity table seats dx first in $v1 and global_alloc, reaching the
-                 * parameter's pseudo fourth in allocno order, seats it in $a0, the lowest free
-                 * register at that turn (tmp/grind/func_8002D780/s23/r4 greg: "72 in 4"; the
-                 * entry copy from $a0 is folded away by combine AFTER flow has fixed the
-                 * pseudo's REG_BASIC_BLOCK as global) (the target's seats; a block-local dz
+                 * parameter's pseudo third in allocno order, seats it in $a0, the lowest free
+                 * register at that turn (memory/grind/func_8002D780/dumps-0930/greg-flag-seat.txt:
+                 * "72 in 4"; the entry copy from $a0 is folded away by combine AFTER flow has fixed
+                 * the pseudo's REG_BASIC_BLOCK as global) (the target's seats; a block-local dz
                  * ties dx in qty_compare_1 and takes $v1 itself),
                  * lever-exhaustion: memory/grind/func_8002D780/hypotheses.md s14-s23
                  * (declaration order/scope, statement order, staging, hoisting, sign flips,
