@@ -70,6 +70,17 @@
       "addr": "8001F2E4"
     },
     {
+      "func": "func_80049718",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "layer-2 rev-48ba4 FAIL (2026-09-30): SVECTOR over-read, false MulMatrix0 prototype, unannotated load-bearing tbl block / new_var3 staging / p_anim reuse; honest types alone score 0 (b1), full honest rewrite 45; owner Q37 fallback, revert commit 016788ef0; memory/grind/func_80049718/evidence.md",
+      "addr": "80049718"
+    },
+    {
       "func": "func_800759D0",
       "file": "text1b_tu2",
       "distance": 0,
@@ -355,14 +366,14 @@
     }
   ],
   "counts": {
-    "total": 29,
-    "active": 17,
+    "total": 30,
+    "active": 18,
     "by_status": {
-      "active": 17,
+      "active": 18,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 16,
+      "C": 17,
       "ASM-PARTIAL": 1
     }
   },
