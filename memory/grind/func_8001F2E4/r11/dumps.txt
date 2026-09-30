@@ -611,7 +611,7 @@ FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
 FINDREGDBG  class=1 mode=4 size=1
 
 ====================================================================================================
-.lreg per-register lines (flow.c: 'in block N' = referenced in one basic block, local-alloc candidate, local-alloc.c:472; no block = REG_BLOCK_GLOBAL, flow.c:2073-2075/2509-2511) and local-alloc dispositions (';; Register N in R.')
+.lreg per-register lines (flow.c: 'in block N' = referenced in one basic block, local-alloc candidate, local-alloc.c:472; no block = REG_BLOCK_GLOBAL, flow.c:2072-2075/2508-2511) and local-alloc dispositions (';; Register N in R.')
 ====================================================================================================
 --- R_base
   Register 78 used 17 times across 47 insns; dies in 2 places; GR_REGS or none.

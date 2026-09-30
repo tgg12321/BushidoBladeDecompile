@@ -56,7 +56,7 @@ for v in sorted(os.listdir(D)):
         P(NL.join(x for x in blk if x.strip()))
 
 sect(".lreg per-register lines (flow.c: 'in block N' = referenced in one basic block, local-alloc "
-     "candidate, local-alloc.c:472; no block = REG_BLOCK_GLOBAL, flow.c:2073-2075/2509-2511) and "
+     "candidate, local-alloc.c:472; no block = REG_BLOCK_GLOBAL, flow.c:2072-2075/2508-2511) and "
      "local-alloc dispositions (';; Register N in R.')")
 WANT = {"R_base": [78, 79, 80, 81, 82], "split_all": [78, 79, 80, 81, 98, 99, 188, 214, 215, 216, 217, 281, 282],
         "only_V5": [82, 275], "only_V6": [82, 275], "only_XZ2": [80, 81, 212, 213]}

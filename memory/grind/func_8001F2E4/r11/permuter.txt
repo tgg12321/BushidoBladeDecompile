@@ -1,0 +1,100 @@
+# permuter campaign tmp/func_8001F2E4/perm1 (tools/permuter_campaign.py, -j 2, --stack-diffs), base = r11/one-var-per-value-form.c in the reduced TU of tools/mkperm.sh (the final body scores 0 there, checked)
+# harvest: 9658 iterations, 1300 s, 149 finds, base 2285, best 1570 (at 184-285 s), stopped: no novel find for ~1000 s
+# the 12 best finds, as changed lines against the normalized base (tools/permfinds.py):
+=== output-1570-1 (permuter score 1570): 5 changed lines
+   +
+   -    jit1 = (rng_Next() & 0x3F) - 0x20;
+   +    d1e6 = (rng_Next() & 0x3F) - 0x20;
+   +    jit1 = d1e6;
+   -
+=== output-1600-1 (permuter score 1600): 5 changed lines
+   +
+   -    *((u16 *) (b + 0x72)) += *((s16 *) (obj + 0x1EA));
+   +    delta = 0x72;
+   +    *((u16 *) (b + delta)) += *((s16 *) (obj + 0x1EA));
+   -
+=== output-1675-1 (permuter score 1675): 5 changed lines
+   +
+   -      *((s32 *) (obj + 0x260)) = *((s32 *) (obj + 0xF8));
+   +      d1e6 = *((s32 *) (obj + 0xF8));
+   +      *((s32 *) (obj + 0x260)) = d1e6;
+   -
+=== output-1690-1 (permuter score 1690): 16 changed lines
+   +
+   -          dist = ((u32) (tbl << 16)) >> (0x13 - (((u32) shift) >> 1));
+   +          if (1)
+   +          {
+   +            dist = ((u32) (tbl << 16)) >> (0x13 - (((u32) shift) >> 1));
+   +          }
+   -      if (twist < (-0x1FF))
+   -    {
+   -      twist = -0x1FF;
+   +    {
+   +      d1e6 = twist < (-0x1FF);
+   +      if (d1e6)
+   +      {
+   +        twist = -0x1FF;
+=== output-1710-1 (permuter score 1710): 5 changed lines
+   +
+   -    jit2 = (rng_Next() & 0x3F) - 0x20;
+   +    d1e8 = (rng_Next() & 0x3F) - 0x20;
+   +    jit2 = d1e8;
+   -
+=== output-1710-2 (permuter score 1710): 8 changed lines
+   +
+   -    delta = (twist_tgt - (*((s16 *) (obj + 0x1EA)))) & 0xFFF;
+   +    delta = 0xFFF;
+   +    delta = (twist_tgt - (*((s16 *) (obj + 0x1EA)))) & delta;
+   -    jit1 = (rng_Next() & 0x3F) - 0x20;
+   +    d1e6 = rng_Next() & 0x3F;
+   +    jit1 = d1e6 - 0x20;
+   -
+=== output-1740-1 (permuter score 1740): 5 changed lines
+   +
+   +  d1e6 = 0x1E6;
+   -  func_8002F770((s16 *) (b + 0x36), *((s16 *) (obj + 0x1E6)), *((s16 *) (obj + 0x1E8)), tgt_x);
+   +  func_8002F770((s16 *) (b + 0x36), *((s16 *) (obj + d1e6)), *((s16 *) (obj + 0x1E8)), tgt_x);
+   -
+=== output-1750-1 (permuter score 1750): 7 changed lines
+   +
+   +  s32 d1e6;
+   -  s32 d1e6;
+   -    twist_tgt = (ratan2(dist, (*((s32 *) ((*((u8 **) obj)) + 0xF8))) - (*((s32 *) (obj + 0x260)))) - 0x400) & 0xFFF;
+   +    d1e6 = ratan2(dist, (*((s32 *) ((*((u8 **) obj)) + 0xF8))) - (*((s32 *) (obj + 0x260)))) - 0x400;
+   +    twist_tgt = d1e6 & 0xFFF;
+   -
+=== output-1750-2 (permuter score 1750): 5 changed lines
+   +
+   -  if ((((u32) ((*((u16 *) (obj + 0xE))) - 6)) < 2U) && ((*((u16 *) (obj + 0x6A))) == 2))
+   +  d1e6 = *((u16 *) (obj + 0xE));
+   +  if ((((u32) (d1e6 - 6)) < 2U) && ((*((u16 *) (obj + 0x6A))) == 2))
+   -
+=== output-1760-1 (permuter score 1760): 17 changed lines
+   +
+   -  d1e8 = (elev - (*((s16 *) (obj + 0x1E8)))) & 0xFFF;
+   +  tgt_z = 0x1E8;
+   +  d1e8 = (elev - (*((s16 *) (obj + tgt_z)))) & 0xFFF;
+   -  func_8002F770((s16 *) (a + 0x36), *((s16 *) (obj + 0x1E6)), *((s16 *) (obj + 0x1E8)), tgt_x);
+   +  func_8002F770((s16 *) (a + 0x36), *((s16 *) (obj + 0x1E6)), *((s16 *) (obj + tgt_z)), tgt_x);
+   -      *((s32 *) (obj + 0x260)) = *((s32 *) (obj + 0xF8));
+   +      d1e6 = 0xF8;
+   +      *((s32 *) (obj + 0x260)) = *((s32 *) (obj + d1e6));
+   -        dist = ((u32) (tbl << 16)) >> (0x13 - (((u32) shift) >> 1));
+   + do { dist = ((u32) (tbl << 16)) >> (0x13 - (((u32) shift) >> 1)); } while (0);
+   -    *((u16 *) (a + 0x72)) += *((s16 *) (obj + 0x1EA));
+   -    *((u16 *) (b + 0x72)) += *((s16 *) (obj + 0x1EA));
+   +    t = 0x72;
+=== output-1795-1 (permuter score 1795): 5 changed lines
+   +
+   -    twist = (ratan2(D_800A387C, (*((s32 *) ((*((u8 **) obj)) + 0xF8))) - (*((s32 *) (obj + 0xF8)))) - 0x400) & 0xFFF;
+   +    d1e8 = (ratan2(D_800A387C, (*((s32 *) ((*((u8 **) obj)) + 0xF8))) - (*((s32 *) (obj + 0xF8)))) - 0x400) & 0xFFF;
+   +    twist = d1e8;
+   -
+=== output-1800-1 (permuter score 1800): 7 changed lines
+   +
+   +      d1e6 = 0x264;
+   -      *((s32 *) (obj + 0x264)) = *((s32 *) (obj + 0xFC));
+   +      *((s32 *) (obj + d1e6)) = *((s32 *) (obj + 0xFC));
+   -        asm volatile("move  $12,%0" : : "r"(dist_sq) : "$12", "$13", "$14", "$15", "memory");
+   +        asm volatile("move  $12,%0" : : "r"(dist_sq) : "$12", "$13", "$14", "$15", "memory");
+   -

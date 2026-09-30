@@ -226,7 +226,16 @@ r11f_M2b reaches the target, but it is not a one-variable-per-value spelling (fi
 defeat the reuse (the reuse body carries strictly fewer no-purpose constructs). Banked because it exists.
 
 ### Permuter
-(filled in below from tmp/func_8001F2E4/perm1 after harvest)
+Workspace tools/mkperm.sh (reduced TU: the body's own declarations + the body; compile.sh = the build's
+cpp | build cc1 (CC_FLAGS) | prologue_fix | maspsx (MASPSX_FLAGS) | multu_pad | as recipe; the final body
+built there differs from target.o in 0 instructions). Campaign from one-var-per-value-form.c
+(tools/permuter_campaign.py, 2 jobs, --stack-diffs): 9,658 iterations in 1,300 s, 149 finds, permuter
+score 2285 -> best 1570 (found at 184-285 s, then ~1,000 s with no better find; stopped). Nothing reached
+the target. What the finds reuse (permuter.txt, the 12 best as changed lines): every one re-introduces a
+second value into a per-value variable — the first jitter into `d1e6` (1570), the second into `d1e8`
+(1710), the twist into `d1e8` (1795), the twist target's ratan2 term into `d1e6` (1750), `delta`/`d1e6`
+/`tgt_z`/`t` reused as constant or load holders (1600-1760). That is the reuse this submission declares,
+rediscovered by search; none is a one-variable-per-value spelling.
 
 ## (E) Names
 `temp`, `temp2`: (E)(i) generic scratch words. `dx`, `dz`: (E)(ii) — every write of `dx` is a partner-
