@@ -113,3 +113,17 @@
 ## 2026-09-29 -- REOPENED (retro-audit FAIL, Q38, 803d0fea1)
 
 The 9b6db9034 landing FAILed the 2026-09-29 retro-audit: canonical grant rows (9bdfcc6cc, 'owner-instructed 2026-09-21') have no recorded owner instruction, and the islands do not qualify under the 2026-09-26 inline_o.h class grant (audit-q38). Per owner Q38 the body went back to `INCLUDE_ASM("asm/funcs", func_8002EBDC);` and the function is back in the queue. Landed text banked verbatim in `rejected/retro-audit-2026-09-29.c`. Registry rows removed (commented): inline_asm_canonical.txt, tools/grinder/owner_cluster_grants.txt, tools/canonical_asm_regions.json. func_8002F2D0's islands cite this body as 'character-identical' precedent.
+
+## 2026-09-30 — laneB: verbatim inline_o.h islands -> 0/182 (candidate.c)
+Islands respelled statement-for-statement from inline_o.h (probes-0930/convert.py + verbatim.py,
+text from tmp/libscan/psyq40/INCLUDE/INLINE_O.H, identical to the pinned 4.3 lines per
+engine/gtemacro.py): gte_Lzc(dist_sq, &sp_tmp) = gte_ldlzc + gte_nop x2 + gte_stlzc;
+gte_SetRotMatrix(mat) (:272-284); gte_ldlv0(vec_in) (:95-103) + gte_rtv0() (:426-430);
+gte_stlvnl(vec); then SetRotMatrix(mat), ldlv0(vec) + rtv0, stlvnl(out). Every statement
+carries "$12","$13","$14","$15","memory". The single-use `tbl` intermediate is inlined (still 0).
+Measured with probes-0930/score_nostrip.py (the cheat-strip is skipped, because
+gte_SetRotMatrix / gte_ldlv0 are not yet in engine/gtemacro.py PINNED; the standard sandbox would
+strip their GPR statements): 0/182, 0 hunks. Landing needs: (1) PINNED entries for
+gte_SetRotMatrix and gte_ldlv0 (engine: commit, excerpts checked against the pinned 4.3 header,
+layer-2); (2) a per-function owner grant for gte_rtv0's post-DMPSX word 0x4A486012 (x2), as
+func_8002DE20 / func_800187F4; (3) the file (src/code6cac_b_tu2.c) freed by the peer.

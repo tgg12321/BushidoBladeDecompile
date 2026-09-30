@@ -3,3 +3,21 @@
 ## 2026-09-30 -- REOPENED (retro-audit FAIL, Q41, a67c58486)
 
 The b8caedb00 landing FAILed the 2026-09-29 retro-audit: grant row (789ce34d7, 'owner-instructed 2026-09-22') has no recorded owner approval -- the owner answered Q41 'No -- reopen it'; its GTE islands are identical to the three reopened under Q38 (func_8002F770/D780/EBDC), which do not qualify under the 2026-09-26 inline_o.h class grant. Per owner Q41 the body went back to `INCLUDE_ASM("asm/funcs", func_8002F2D0);` and the function is back in the queue. Landed text banked verbatim in `rejected/retro-audit-2026-09-30.c`. Registry rows removed (commented): inline_asm_canonical.txt, tools/grinder/owner_cluster_grants.txt; tools/canonical_asm_regions.json entry deleted (its 5 hashes also appear in other live functions' own lists, which are untouched).
+
+## 2026-09-30 — laneB: verbatim inline_o.h islands, both do-while(0) wraps retired -> 0 (candidate.c)
+Islands respelled statement-for-statement from inline_o.h (probes-0930/convert.py): gte_Lzc(sum,
+&sp_tmp) = ldlzc + nop x2 + stlzc; gte_SetRotMatrix(mat) (:272-284); gte_ldlv0(vec) (:95-103) +
+gte_rtv0() (:426-430, post-DMPSX word 0x4A486012); gte_stlvnl(vec). All "$12"-"$15","memory".
+Measured with probes-0930/score_nostrip.py (strip skipped: SetRotMatrix/ldlv0 not yet PINNED):
+| variant | score |
+|---|---|
+| islands verbatim, both wraps kept (rejected/inline-o-h-with-both-wraps-8.c) | 8 (s3/s4 seat swap) |
+| wrap around `i2 = c2 / det` removed | 0/270 |
+| wrap around SetRotMatrix removed only | 8 |
+| **both wraps removed = candidate.c** | **0/270** |
+| + `det` split (fresh `dist` for the sqrt result; rejected/inline-o-h-fresh-dist-35.c) | 35 (269 insns) |
+| + `sum` not reused for the table byte (rejected/inline-o-h-table-byte-inline-6.c) | 6 |
+Remaining construct needing paperwork: `det` (determinant, then the sqrt result) and `sum`
+(sum of squares, then the table byte) are multi-value locals — Ruling 11 package (dumps,
+honest generic names, annotation) or a Q51 citation owed before landing. Plus the PINNED
+entries and the per-function DMPSX-word grant, as func_8002EBDC.
