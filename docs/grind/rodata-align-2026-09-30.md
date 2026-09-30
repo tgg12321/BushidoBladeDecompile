@@ -129,7 +129,7 @@ Result (`poc-result.txt`): **the linked .bin is identical to the current oracle 
 (sha1 42fce5af..., the same file the EXE with SHA1 62efab4f... is built from). The rodata
 placement differs from main only in the new part boundaries.
 
-## 6. What adoption would take (not done; needs an owner ruling first)
+## 6. What adoption would take (as proposed to the owner)
 
 - Split the five .c files for real at the section 4 boundaries (moves only, no code changes),
   adding the parts to `bb2.ld` next to their originals in every section list.
@@ -139,3 +139,38 @@ placement differs from main only in the new part boundaries.
   record.
 - Follow-up candidates it enables (each judged on its own): `code6cac_b_rodata_pre.c`'s
   `_bb2_101C_pre_lead` zero word is an alignment pad under the model; func_80058580's tables.
+
+## 7. Adopted (owner ruling 2026-09-30, "Yes go ahead")
+
+Rule: `.claude/rules/rodata-object-alignment.md`. Record: docs/grind/decisions.md 2026-09-30 OWNER
+RULING — object-relative rodata alignment.
+
+- **Build rule.** `Makefile`: `RODATA_ALIGN2_FILES` and its sed are gone; every C object gets
+  `$(OBJCOPY) $(RODATA_OBJ_ALIGN) $@` after `as`. `engine/pipeline.py` / `engine/buildconfig.py`
+  mirror it, pinned by `test_rodata_object_alignment` in `engine/test_engine.py`.
+- **The seven splits** (moves only, done by `memory/grind/func_80058580/aspsx-align-check/poc/splitc.py`; each new file starts with the parent's
+  include block, then the parent's earlier declarations its functions use, verbatim and in order,
+  then `extern` declarations derived from definitions in the parent). Each new part follows its
+  parent in every section list of `bb2.ld`; the -G8 and expand-lb per-file settings are inherited.
+
+  | New file | Starts at (text) | Rodata start | Text window (cut is byte-neutral inside it) |
+  |---|---|---|---|
+  | code6cac_tu2.c | `INCLUDE_RODATA D_800100A4`, then func_8001979C | 0x800100A4 | after func_80019568 .. up to func_8001C8DC |
+  | code6cac_b_tu2.c | `INCLUDE_RODATA D_80010478`, then func_800272FC | 0x80010478 | after func_80026DA4 .. up to func_8002738C |
+  | code6cac_b_tu3.c | `INCLUDE_RODATA jtbl_8001084C`, func_800344B4 | 0x8001081C | after func_80033498 .. up to func_800344B4 |
+  | text1a_pre_tu2.c | func_80040D48 | 0x80010DB8 | after func_80040304 .. up to func_80040D48 |
+  | text1b_tu2.c | func_800747D8 | 0x80015A0C | after func_8006ECF4 .. up to func_800747D8 |
+  | text1b_b_tu2.c | prnt (its strings D_80015A68/7C/84) | 0x80015A68 | PsyQ module start of prnt |
+  | text1b_b_tu3.c | sprintf | 0x80015C7C | PsyQ module start of sprintf |
+
+  Convention for the text cut: at the item that begins the new file's rodata (for sites 1 and 3 the
+  earliest byte-equivalent position, where the INCLUDE_RODATA blob already sits), or at the PsyQ
+  module start for library code.
+- **Checks.** Full clean build: `build/bb2.bin` sha1 42fce5aff1490a579e919b68af56ebc5b0dc657f
+  (unchanged) and the header-prefixed EXE sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa (the oracle).
+  The implicit-function-declaration set of each original file equals the union over its parts
+  (no function lost a declaration). `engine test`: 811 pass, 1 fail (the pre-existing
+  path-contains-space environment check).
+- **Records relocated** (file field only): 12 queue items, 16 grind `state.json` files, one
+  grinder scope line, and 24 reviewed assembly-region grants in `tools/canonical_asm_regions.json`,
+  each moved only after its island hashes recomputed from the new file equalled the reviewed ones.

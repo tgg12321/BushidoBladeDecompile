@@ -90,7 +90,7 @@
     },
     {
       "func": "func_80030D7C",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 707,
       "verdict": "C",
       "rules": 0,
@@ -103,7 +103,7 @@
     },
     {
       "func": "func_800198D0",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 747,
       "verdict": "C",
       "rules": 0,
@@ -168,7 +168,7 @@
     },
     {
       "func": "func_80029454",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 1024,
       "verdict": "C",
       "rules": 0,
@@ -202,7 +202,7 @@
     },
     {
       "func": "func_8002AB08",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 1110,
       "verdict": "C",
       "rules": 0,
@@ -223,7 +223,7 @@
     },
     {
       "func": "func_80023F08",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 2981,
       "verdict": "C",
       "rules": 0,
@@ -264,7 +264,7 @@
     },
     {
       "func": "func_8001BE20",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 5,
       "verdict": "C",
       "rules": 0,
@@ -292,7 +292,7 @@
     },
     {
       "func": "func_8002A458",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 30,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
@@ -334,7 +334,7 @@
     },
     {
       "func": "func_800204C0",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 52,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
@@ -367,7 +367,7 @@
     },
     {
       "func": "func_8002DAD0",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 204,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
@@ -378,7 +378,7 @@
     },
     {
       "func": "func_80020E74",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 231,
       "verdict": "C",
       "rules": 0,
@@ -433,7 +433,7 @@
     },
     {
       "func": "func_800207C8",
-      "file": "code6cac",
+      "file": "code6cac_tu2",
       "distance": 317,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
@@ -444,7 +444,7 @@
     },
     {
       "func": "func_800288C8",
-      "file": "code6cac_b",
+      "file": "code6cac_b_tu2",
       "distance": 465,
       "verdict": "ASM-PARTIAL",
       "rules": 0,

@@ -73,16 +73,16 @@ MASPSX_FLAGS_GP = (
 
 # -- Per-file opt-ins (C file stem, no path/extension) ----------------------
 # Mirrors the Makefile GP_FILES / EXPAND_LB_FILES /
-# RODATA_ALIGN2_FILES / NO_SR_FILES lists. Byte-parity (task 4) is the proof
+# NO_SR_FILES lists. Byte-parity (task 4) is the proof
 # these are correct; do not edit without re-running `engine parity`.
-GP_FILES = {"text1a_pre", "text1a_post", "code6cac_b3", "code6cac_b4", "code6cac_b5"}
-EXPAND_LB_FILES = {"code6cac_b", "code6cac_b3", "code6cac_b3_post"}
+GP_FILES = {"text1a_pre", "text1a_pre_tu2", "text1a_post", "code6cac_b3", "code6cac_b4", "code6cac_b5"}
+EXPAND_LB_FILES = {"code6cac_b", "code6cac_b_tu2", "code6cac_b_tu3", "code6cac_b3", "code6cac_b3_post"}
 EXPAND_LH_FILES = set()
-RODATA_ALIGN2_FILES = {
-    "code6cac", "code6cac_b", "code6cac_b2_post", "code6cac_b3", "code6cac_c", "code6cac_c0", "code6cac_c_ab",
-    "code6cac_c2", "text1a_pre", "text1a_post", "text1a_b", "text1a_c",
-    "text1a_c2", "text1b", "text1b_b", "main",
-}
+# Object-relative rodata alignment (owner ruling 2026-09-30,
+# .claude/rules/rodata-object-alignment.md): every C object's .rodata section
+# alignment is set to 4 after `as`, mirroring the Makefile's RODATA_OBJ_ALIGN.
+# One rule for all objects; the per-file .align sed is retired.
+RODATA_OBJ_ALIGN = "--set-section-alignment .rodata=4"
 NO_SR_FILES = set()
 
 # Mirrors the Makefile LINKED_ASM_FUNCS list: per-function objects assembled

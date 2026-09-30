@@ -30113,3 +30113,14 @@ only). Adoption lands after a full-build byte-identical check and a layer-2 revi
 decides any function's completion; func_80058580's tables become reachable from C, and that
 function is still judged on its own merits.
 
+**Execution (same day).** Adopted as recorded in docs/grind/rodata-align-2026-09-30.md section 7:
+uniform objcopy rule in the Makefile and engine (sed retired), seven moves-only TU splits
+(code6cac_tu2, code6cac_b_tu2/_tu3, text1a_pre_tu2, text1b_tu2, text1b_b_tu2/_tu3), records
+relocated by file field only. Full build bin 42fce5aff1490a579e919b68af56ebc5b0dc657f, EXE SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa. Layer-2 cheat-reviewer: first pass FAIL (relocation
+rewrote line-numbered/historical text in grind state files; split headers carried unused externs,
+including two `extern volatile`), both fixed (state.json reverted to file-field-only edits; the
+split tool's declared-name resolution repaired and all parts re-split from HEAD); second pass PASS
+(moves-only verified against HEAD, volatile-detector counts back to HEAD, engine parity 47/47,
+oracle rebuilt independently).
+

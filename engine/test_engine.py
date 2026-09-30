@@ -2052,6 +2052,30 @@ def test_canonical_build() -> None:
     eq("scan_all: zero NO-TARGET", len(no_target), 0)
 
 
+def test_rodata_object_alignment() -> None:
+    """Owner ruling 2026-09-30 (.claude/rules/rodata-object-alignment.md): ONE uniform rule for
+    every C object -- .rodata alignment set to 4 after `as` -- and the retired per-file
+    `.align 3 -> .align 2` sed must not come back in the engine or the Makefile."""
+    from engine import pipeline, buildconfig as bcfg
+    eq("rodata rule: the uniform objcopy flag", bcfg.RODATA_OBJ_ALIGN, "--set-section-alignment .rodata=4")
+    check("rodata rule: RODATA_ALIGN2_FILES retired from buildconfig", not hasattr(bcfg, "RODATA_ALIGN2_FILES"))
+    stems = pipeline.c_stems()
+    check("rodata rule: C stems found", len(stems) > 10)
+    bad_sed, bad_tail = [], []
+    for stem in stems:
+        cmd = pipeline.c_pipeline_cmd(stem, "tmp/x.o")
+        if ".align" in cmd:
+            bad_sed.append(stem)
+        if not cmd.endswith(f" && {bcfg.OBJCOPY} {bcfg.RODATA_OBJ_ALIGN} tmp/x.o"):
+            bad_tail.append(stem)
+    eq("rodata rule: no stem rewrites .align", bad_sed, [])
+    eq("rodata rule: every stem ends with the uniform objcopy", bad_tail, [])
+    mk = Path("Makefile").read_text()
+    check("rodata rule: Makefile has no per-file align sed", "RODATA_ALIGN2_FILES :=" not in mk and "rodata_align_fix" not in mk)
+    check("rodata rule: Makefile applies the uniform objcopy after as",
+          "$(AS) $(AS_FLAGS) -o $@\n\t$(OBJCOPY) $(RODATA_OBJ_ALIGN) $@\n" in mk)
+
+
 def test_score_object_paths() -> None:
     """score reads objects through an argv list, so an ABSOLUTE path whose
     directory contains spaces (this repo's own path does) must give the same
@@ -3721,6 +3745,7 @@ def main() -> int:
     test_objdump_failure_is_loud()
     test_prologue_config_fingerprint()
     test_canonical_build()
+    test_rodata_object_alignment()
     test_score_object_paths()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")
     return 1 if _failed else 0
