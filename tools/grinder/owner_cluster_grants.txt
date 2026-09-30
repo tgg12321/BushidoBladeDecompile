@@ -39,6 +39,15 @@ func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row 
 # instruction 2026-09-21; every other gate applies unchanged:
 # func_8002D780 row removed 2026-09-29: reopened per owner Q38 (2026-09-29, 803d0fea1) -- no recorded owner instruction for the grant, and the islands do not qualify under the 2026-09-26 inline_o.h class grant.
 # func_8002EBDC row removed 2026-09-29: reopened per owner Q38 (2026-09-29, 803d0fea1) -- no recorded owner instruction for the grant, and the islands do not qualify under the 2026-09-26 inline_o.h class grant.
+# 2026-09-30 — census member func_8002EBDC (cop2-addressing-preamble-cluster.md).
+# Its GTE islands are header-exact PsyQ 4.3 inline_o.h / gtemac.h statements
+# (inline-asm-policy.md § Owner ruling 2026-09-26, inline_o.h class), except
+# gte_rtv0's DMPSX placeholder `.word 0x0000013f`, carried as the post-DMPSX
+# command word `.word 0x4A486012` (two statements; no DMPSX pass in this build).
+# Operator-added at the owner's instruction 2026-09-30 (owner Q61, recorded in
+# 60643418a): this row covers ONLY that word substitution, for this function
+# only; every other gate applies unchanged:
+func_8002EBDC inline-asm-policy.md § Per-function grants: func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770 (owner Q61 2026-09-30, 60643418a): gte_rtv0 post-DMPSX word 0x4A486012 for placeholder 0x0000013f, 2 statements only; this function only; operator-added 2026-09-30
 # 2026-09-22 — one further census member reached floor 0 in a manual session,
 # so it earns a row on exactly the Ruling 3 terms the two 2026-09-21 rows got.
 # Operator-added at the owner's instruction 2026-09-22 (conversation, the
