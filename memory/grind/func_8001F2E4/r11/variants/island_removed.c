@@ -66,12 +66,6 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
                     /* gte_Lzc(dist_sq, &lzc_out): gtemac.h 4.3 :174-178 = inline_o.h 4.3
                      * gte_ldlzc :207-210, gte_nop :1095-1097 (x2), gte_stlzc :1074-1077;
                      * LZCR slot sp+0x10 in the target. */
-                    __asm__ volatile ("move  $12,%0": :"r"(dist_sq):"$12","$13","$14","$15","memory");
-                    __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
-                    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-                    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-                    __asm__ volatile ("move  $12,%0": :"r"(&lzc_out):"$12","$13","$14","$15","memory");
-                    __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
                     lzcr = lzc_out;
                 }
                 {
@@ -143,12 +137,6 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
                 /* gte_Lzc(dist_sq, &lzc_out2): gtemac.h 4.3 :174-178 = inline_o.h 4.3
                  * gte_ldlzc :207-210, gte_nop :1095-1097 (x2), gte_stlzc :1074-1077;
                  * LZCR slot sp+0x14 in the target. */
-                __asm__ volatile ("move  $12,%0": :"r"(dist_sq):"$12","$13","$14","$15","memory");
-                __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
-                __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-                __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-                __asm__ volatile ("move  $12,%0": :"r"(&lzc_out2):"$12","$13","$14","$15","memory");
-                __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
                 lzcr = lzc_out2;
             }
             {

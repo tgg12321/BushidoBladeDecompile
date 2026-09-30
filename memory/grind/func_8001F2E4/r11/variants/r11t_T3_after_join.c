@@ -5,17 +5,10 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
     /* temp2: two values -- the clamped elevation target that obj+0x1E8 eases
      * toward (0x100 in state 0x1F, 0 outside states 0x15/0x25), then the
      * clamped twist target that obj+0x1EA eases toward (obj+0xE in 6..7).
-     * Ruling 11 (owner 2026-09-26), (E)(i) generic name; (D) proof:
+     * Ruling 11 (owner 2026-09-26; (D)(2) by any named pass, owner Q58
+     * 2026-09-30), (E)(i) generic name; (D) proof:
      * memory/grind/func_8001F2E4/r11/proof.md. */
     s32 temp2;
-    /* FAKE: constant-holder (named-local-fake-exception.md) -- tgt_x is 0 on
-     * every path; cse works per extended basic block, so the three arm
-     * writes reach both func_8002F770 calls through the join unfolded, and
-     * global.c seats the pseudo, live across the first call, in $s2 as the
-     * target does (`addu $s2,$zero,$zero` in the arms, `addu $a3,$s2,$zero`
-     * before each call). The literal 0, one `= 0` initializer, or one write
-     * after the join / before the calls score 43-46; see
-     * memory/grind/func_8001F2E4/r11/proof.md. */
     s32 tgt_x;
     /* dx / dz: two values each -- the partner-minus-obj x (z) offset of
      * obj+0x180 (0x188) for the elevation, then of the saved obj+0xF4 (0xFC)
@@ -40,7 +33,6 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
     if (*(u16 *)(obj + 0x6A) == 0x15 || *(u16 *)(obj + 0x6A) == 0x25) {
         if (*(s16 *)(obj + 0xC) == 0x1F) {
             temp2 = 0x100;
-            tgt_x = 0;
             tgt_z = 0;
         } else {
             s32 dist_sq;
@@ -86,14 +78,13 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
             } else if (temp2 >= 0x100) {
                 temp2 = 0xFF;
             }
-            tgt_x = 0;
         }
     } else {
-        tgt_x = 0;
         temp2 = 0;
         tgt_z = 0;
     }
 
+    tgt_x = 0;
     temp = (tgt_z - *(s16 *)(obj + 0x1E6)) & 0xFFF;
     if (temp >= 0x800) {
         temp -= 0x1000;

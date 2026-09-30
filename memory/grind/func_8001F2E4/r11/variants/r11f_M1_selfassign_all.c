@@ -2,12 +2,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
     s32 lzc_out;
     s32 lzc_out2;
     s32 tgt_z;
-    /* temp2: two values -- the clamped elevation target that obj+0x1E8 eases
-     * toward (0x100 in state 0x1F, 0 outside states 0x15/0x25), then the
-     * clamped twist target that obj+0x1EA eases toward (obj+0xE in 6..7).
-     * Ruling 11 (owner 2026-09-26), (E)(i) generic name; (D) proof:
-     * memory/grind/func_8001F2E4/r11/proof.md. */
-    s32 temp2;
+    s32 elev;
     /* FAKE: constant-holder (named-local-fake-exception.md) -- tgt_x is 0 on
      * every path; cse works per extended basic block, so the three arm
      * writes reach both func_8002F770 calls through the join unfolded, and
@@ -17,20 +12,8 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
      * after the join / before the calls score 43-46; see
      * memory/grind/func_8001F2E4/r11/proof.md. */
     s32 tgt_x;
-    /* dx / dz: two values each -- the partner-minus-obj x (z) offset of
-     * obj+0x180 (0x188) for the elevation, then of the saved obj+0xF4 (0xFC)
-     * position for the twist. Ruling 11 (owner 2026-09-26), (E)(ii): every
-     * write is `partner.x - obj.x` (`.z`); (D) proof:
-     * memory/grind/func_8001F2E4/r11/proof.md. */
-    s32 dx;
-    s32 dz;
-    /* temp: six values -- the wrapped obj+0x1E6 easing delta, the wrapped
-     * obj+0x1E8 easing delta, the clamped twist stored to obj+0x1EA (states
-     * 0x1D/0xE), the wrapped obj+0x1EA easing delta, and the two random
-     * jitters (rng_Next() & 0x3F) - 0x20. Ruling 11 (owner 2026-09-26; (D)(2)
-     * by any named pass, owner Q58 2026-09-30), (E)(i) generic name; (D)
-     * proof: memory/grind/func_8001F2E4/r11/proof.md. */
-    s32 temp;
+    s32 d1e6;
+    s32 d1e8;
     s16 t;
 
     if (*(s16 *)(obj + 0x26C) == 0) {
@@ -39,12 +22,14 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
     }
     if (*(u16 *)(obj + 0x6A) == 0x15 || *(u16 *)(obj + 0x6A) == 0x25) {
         if (*(s16 *)(obj + 0xC) == 0x1F) {
-            temp2 = 0x100;
+            elev = 0x100;
             tgt_x = 0;
             tgt_z = 0;
         } else {
             s32 dist_sq;
             s32 dist;
+            s32 dx;
+            s32 dz;
 
             tgt_z = (*(s16 *)(obj + 0x1D8) - *(s16 *)(obj + 0x1CA)) & 0xFFF;
             if (tgt_z >= 0x800) {
@@ -80,52 +65,60 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
                     dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
                 }
             }
-            temp2 = 0x400 - ratan2(dist, *(s32 *)(*(u8 **)obj + 0x184) - *(s32 *)(obj + 0x184));
-            if (temp2 < -0xFF) {
-                temp2 = -0xFF;
-            } else if (temp2 >= 0x100) {
-                temp2 = 0xFF;
+            elev = 0x400 - ratan2(dist, *(s32 *)(*(u8 **)obj + 0x184) - *(s32 *)(obj + 0x184));
+            if (elev < -0xFF) {
+                elev = -0xFF;
+            } else if (elev >= 0x100) {
+                elev = 0xFF;
             }
             tgt_x = 0;
         }
     } else {
         tgt_x = 0;
-        temp2 = 0;
+        elev = 0;
         tgt_z = 0;
     }
 
-    temp = (tgt_z - *(s16 *)(obj + 0x1E6)) & 0xFFF;
-    if (temp >= 0x800) {
-        temp -= 0x1000;
+    d1e6 = (tgt_z - *(s16 *)(obj + 0x1E6)) & 0xFFF;
+    if (d1e6 >= 0x800) {
+        d1e6 -= 0x1000;
     }
-    *(s16 *)(obj + 0x1E6) = *(s16 *)(obj + 0x1E6) + temp / 8;
-    temp = (temp2 - *(s16 *)(obj + 0x1E8)) & 0xFFF;
-    if (temp >= 0x800) {
-        temp -= 0x1000;
+    *(s16 *)(obj + 0x1E6) = *(s16 *)(obj + 0x1E6) + d1e6 / 8;
+    d1e6 = d1e6;
+    d1e8 = (elev - *(s16 *)(obj + 0x1E8)) & 0xFFF;
+    if (d1e8 >= 0x800) {
+        d1e8 -= 0x1000;
     }
-    *(s16 *)(obj + 0x1E8) = *(s16 *)(obj + 0x1E8) + temp / 8;
+    *(s16 *)(obj + 0x1E8) = *(s16 *)(obj + 0x1E8) + d1e8 / 8;
+    d1e8 = d1e8;
     func_8002F770((s16 *)(a + 0x36), *(s16 *)(obj + 0x1E6), *(s16 *)(obj + 0x1E8), tgt_x);
     func_8002F770((s16 *)(b + 0x36), *(s16 *)(obj + 0x1E6), *(s16 *)(obj + 0x1E8), tgt_x);
 
     t = *(s16 *)(obj + 0xC);
     if ((t == 0x1D || t == 0xE) && *(s16 *)(obj + 0x8C) != 0) {
-        temp = (ratan2(D_800A387C, *(s32 *)(*(u8 **)obj + 0xF8) - *(s32 *)(obj + 0xF8)) - 0x400) & 0xFFF;
-        if (temp >= 0x800) {
-            temp -= 0x1000;
+        s32 twist;
+
+        twist = (ratan2(D_800A387C, *(s32 *)(*(u8 **)obj + 0xF8) - *(s32 *)(obj + 0xF8)) - 0x400) & 0xFFF;
+        if (twist >= 0x800) {
+            twist -= 0x1000;
         }
-        if (temp >= 0x200) {
-            temp = 0x1FF;
-        } else if (temp < -0x1FF) {
-            temp = -0x1FF;
+        if (twist >= 0x200) {
+            twist = 0x1FF;
+        } else if (twist < -0x1FF) {
+            twist = -0x1FF;
         }
-        *(s16 *)(obj + 0x1EA) = temp;
-        *(u16 *)(a + 0x7E) += temp;
-        *(u16 *)(b + 0x7E) += temp;
+        *(s16 *)(obj + 0x1EA) = twist;
+        *(u16 *)(a + 0x7E) += twist;
+        *(u16 *)(b + 0x7E) += twist;
     }
 
     if ((u32)(*(u16 *)(obj + 0xE) - 6) < 2U && *(u16 *)(obj + 0x6A) == 2) {
         s32 dist_sq;
         s32 dist;
+        s32 twist_tgt;
+        s32 delta;
+        s32 dx;
+        s32 dz;
 
         if (*(s32 *)(obj + 0x268) == 0) {
             *(s32 *)(obj + 0x25C) = *(s32 *)(obj + 0xF4);
@@ -157,34 +150,38 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
                 dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }
-        temp2 = (ratan2(dist, *(s32 *)(*(u8 **)obj + 0xF8) - *(s32 *)(obj + 0x260)) - 0x400) & 0xFFF;
-        if (temp2 >= 0x800) {
-            temp2 -= 0x1000;
+        twist_tgt = (ratan2(dist, *(s32 *)(*(u8 **)obj + 0xF8) - *(s32 *)(obj + 0x260)) - 0x400) & 0xFFF;
+        if (twist_tgt >= 0x800) {
+            twist_tgt -= 0x1000;
         }
-        if (temp2 >= 0x200) {
-            temp2 = 0x1FF;
-        } else if (temp2 < -0x1FF) {
-            temp2 = -0x1FF;
+        if (twist_tgt >= 0x200) {
+            twist_tgt = 0x1FF;
+        } else if (twist_tgt < -0x1FF) {
+            twist_tgt = -0x1FF;
         }
-        temp = (temp2 - *(s16 *)(obj + 0x1EA)) & 0xFFF;
-        if (temp >= 0x800) {
-            temp -= 0x1000;
+        delta = (twist_tgt - *(s16 *)(obj + 0x1EA)) & 0xFFF;
+        if (delta >= 0x800) {
+            delta -= 0x1000;
         }
-        *(s16 *)(obj + 0x1EA) = *(s16 *)(obj + 0x1EA) + temp / 8;
+        *(s16 *)(obj + 0x1EA) = *(s16 *)(obj + 0x1EA) + delta / 8;
+        delta = delta;
         *(u16 *)(a + 0x72) += *(s16 *)(obj + 0x1EA);
         *(u16 *)(b + 0x72) += *(s16 *)(obj + 0x1EA);
     }
 
     if (*(s16 *)(obj + 0x26E) != 0 && *(s16 *)(obj + 0x96) == 0) {
-        temp = (rng_Next() & 0x3F) - 0x20;
-        *(u16 *)(a + 0xC) += temp;
-        *(u16 *)(b + 0xC) += temp;
-        *(u16 *)(a + 0x14) -= temp;
-        *(u16 *)(b + 0x14) -= temp;
-        temp = (rng_Next() & 0x3F) - 0x20;
-        *(u16 *)(a + 0x1E) += temp;
-        *(u16 *)(b + 0x1E) += temp;
-        *(u16 *)(a + 0x26) -= temp;
-        *(u16 *)(b + 0x26) -= temp;
+        s32 jit1;
+        s32 jit2;
+
+        jit1 = (rng_Next() & 0x3F) - 0x20;
+        *(u16 *)(a + 0xC) += jit1;
+        *(u16 *)(b + 0xC) += jit1;
+        *(u16 *)(a + 0x14) -= jit1;
+        *(u16 *)(b + 0x14) -= jit1;
+        jit2 = (rng_Next() & 0x3F) - 0x20;
+        *(u16 *)(a + 0x1E) += jit2;
+        *(u16 *)(b + 0x1E) += jit2;
+        *(u16 *)(a + 0x26) -= jit2;
+        *(u16 *)(b + 0x26) -= jit2;
     }
 }

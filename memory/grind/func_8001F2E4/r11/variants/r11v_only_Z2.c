@@ -2,11 +2,6 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
     s32 lzc_out;
     s32 lzc_out2;
     s32 tgt_z;
-    /* temp2: two values -- the clamped elevation target that obj+0x1E8 eases
-     * toward (0x100 in state 0x1F, 0 outside states 0x15/0x25), then the
-     * clamped twist target that obj+0x1EA eases toward (obj+0xE in 6..7).
-     * Ruling 11 (owner 2026-09-26), (E)(i) generic name; (D) proof:
-     * memory/grind/func_8001F2E4/r11/proof.md. */
     s32 temp2;
     /* FAKE: constant-holder (named-local-fake-exception.md) -- tgt_x is 0 on
      * every path; cse works per extended basic block, so the three arm
@@ -17,19 +12,8 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
      * after the join / before the calls score 43-46; see
      * memory/grind/func_8001F2E4/r11/proof.md. */
     s32 tgt_x;
-    /* dx / dz: two values each -- the partner-minus-obj x (z) offset of
-     * obj+0x180 (0x188) for the elevation, then of the saved obj+0xF4 (0xFC)
-     * position for the twist. Ruling 11 (owner 2026-09-26), (E)(ii): every
-     * write is `partner.x - obj.x` (`.z`); (D) proof:
-     * memory/grind/func_8001F2E4/r11/proof.md. */
     s32 dx;
     s32 dz;
-    /* temp: six values -- the wrapped obj+0x1E6 easing delta, the wrapped
-     * obj+0x1E8 easing delta, the clamped twist stored to obj+0x1EA (states
-     * 0x1D/0xE), the wrapped obj+0x1EA easing delta, and the two random
-     * jitters (rng_Next() & 0x3F) - 0x20. Ruling 11 (owner 2026-09-26; (D)(2)
-     * by any named pass, owner Q58 2026-09-30), (E)(i) generic name; (D)
-     * proof: memory/grind/func_8001F2E4/r11/proof.md. */
     s32 temp;
     s16 t;
 
@@ -126,6 +110,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
     if ((u32)(*(u16 *)(obj + 0xE) - 6) < 2U && *(u16 *)(obj + 0x6A) == 2) {
         s32 dist_sq;
         s32 dist;
+        s32 dz2;
 
         if (*(s32 *)(obj + 0x268) == 0) {
             *(s32 *)(obj + 0x25C) = *(s32 *)(obj + 0xF4);
@@ -133,8 +118,8 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
             *(s32 *)(obj + 0x264) = *(s32 *)(obj + 0xFC);
         }
         dx = *(s32 *)(*(u8 **)obj + 0xF4) - *(s32 *)(obj + 0x25C);
-        dz = *(s32 *)(*(u8 **)obj + 0xFC) - *(s32 *)(obj + 0x264);
-        dist_sq = dx * dx + dz * dz;
+        dz2 = *(s32 *)(*(u8 **)obj + 0xFC) - *(s32 *)(obj + 0x264);
+        dist_sq = dx * dx + dz2 * dz2;
         if ((u32)dist_sq < 0x400) {
             dist = (u32)*(&g_sqrt_table_u8 + dist_sq) >> 3;
         } else {

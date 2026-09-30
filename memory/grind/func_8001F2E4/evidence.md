@@ -116,3 +116,25 @@ Q51 SOTN citation check not done (orchestrator: reopen first). Ruling 11 package
 campaign from split_all, (E) names, (F) comments, (A)-(H) walk; plus the jitter (D)(2) question. The
 r11-2026-09-30/tools scripts were written against tmp/ff-worker/f1f2e4/ paths (dumpall.sh, conf.py); adjust
 the paths before reuse. alloc.sh substitutes the candidate into src/code6cac_tu2.c (works on INCLUDE_ASM).
+
+## Manual laneE 2026-09-30 — Ruling 11 (+Q58) package built on a new landing body
+
+candidate.c is the body to stage (== r11/final.c), sandbox 0 (347/347). Changes against the retro-audit
+body: dist_sq/dist per-block (not shared), `ang` -> `temp`, `tgt_y` -> `temp2`, `sp_tmp*` -> `lzc_out*`,
+header-exact inline_o.h gte_Lzc islands (func_8001A820's form, same file) instead of the joined
+cop2-preamble text, no-op `(u8 *)` cast dropped, `tgt_x` FAKE constant-holder annotation, Ruling 11 (F)
+declaration comments. The whole package is r11/proof.md (dumps r11/dumps.txt, spellings r11/variants,
+scores r11/scores.txt). Findings in short:
+- one-var-per-value form 91; ablations: temp V1 27, V2 4, V3 11, V4 11, V5 11, V6 11; temp2 W2 9; dx 8,
+  dz 8 (both 16); 6 structural respellings 91-92; tgt_x alternatives 43-46.
+- Mechanisms, all dumped for both spellings: M1 flow.c REG_BLOCK_GLOBAL / local-alloc.c:472 (dx, dz,
+  jitters: per-value = single-block, local-alloc'd $v0); M2 global.c find_reg over the union of the
+  values' conflicts (temp {v0,v1} -> $a0; temp2 {v0,v1,a0} -> $a1; per-value d1e6/twist/delta/twist_tgt
+  {v0} -> $v1); M3 cse.c make_regs_eqv (cse.c:840-855) at the three `/ 8` expansions: the shared
+  variable is referenced after the quotient copy and stays the class head; per-value it is not, the
+  quotient pseudo becomes the head and an extra `move` appears. only_V2 = 4 is M3 alone (this is the
+  "not traced" d1E8 = 4 of r11-2026-09-30, and the jitter/cse open question, now answered by Q58).
+- Q30 set-aside record: only-V2 split + `d1e8++; d1e8--;` reaches 0 (FAKE cancellation pair, not a
+  per-value form); self-assign/do-while/cancel-pair on the full per-value form 83-94.
+- Permuter from the one-var form (tmp/func_8001F2E4/perm1): best finds all re-introduce reuse (jitter
+  into d1e6, twist into d1e8, ...); see proof.md § Permuter.
