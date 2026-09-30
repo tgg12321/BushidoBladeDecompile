@@ -4,6 +4,9 @@
 #include "sound.h"
 #include "game.h"
 #include "code6cac.h"
+#include "gte.h"
+
+extern s16 Judge[];
 
 extern s32 func_8005C2A8(s32 *, s16, s32);
 
@@ -626,15 +629,10 @@ extern s32 D_800A33E4;
 void func_80048B8C(s32 a0) {
     D_800A33E4 += a0;
 }
-typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
-typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
-typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
-typedef struct { s32 f0, f1, f2, f3, f4, f5, f6, f7; } _struct_copy_func48BA4;
 extern void *game_GetPlayerData();
-extern s16 Judge;
-extern void ApplyMatrix(s32, s16 *, s32 *);
-extern void math_RotMatrixZYX(s16 *, s16 *);
-extern void gte_MulMatrix0ClearTrans(s32, s16 *, s16 *);
+extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
+extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
+extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
 extern s32 ClearOTagR(s32, s32);
 extern s32 D_800A36AC;
 extern s32 D_800A378C;
@@ -642,18 +640,6 @@ extern s32 D_800A3820;
 extern s32 g_gpu_ot256_ptr;
 extern u8 g_gpu_ot256_db[];
 extern s16 D_80099C14[];
-extern s16 D_800FF558;
-extern s16 D_800FF55A;
-extern s16 D_800FF55C;
-extern s16 D_800FF55E;
-extern s16 D_800FF560;
-extern s16 D_800FF562;
-extern s16 D_800FF564;
-extern s16 D_800FF566;
-extern s16 D_800FF568;
-extern s32 D_800FF56C;
-extern s32 D_800FF570;
-extern s32 D_800FF574;
 
 void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     MATRIX mtx;
@@ -661,11 +647,9 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     s32 index;
     s32 scale;
     s32 old;
-    s16 *rotp;
-    s32 *vec;
     s16 *indices;
     s32 *ot;
-    u8 *player;
+    MATRIX **player;
     u8 *prim;
 
     player = game_GetPlayerData(D_800A33E0);
@@ -680,36 +664,33 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     rot.vy = 0;
     rot.vz = 0;
     scale = 0x1770;
-    rot.vz = ((s32)(&Judge)[arg0 & 0xFFF] * scale) >> 12;
-    rot.vx = ((s32)(&Judge)[(arg0 + 0x400) & 0xFFF] * scale) >> 12;
+    rot.vz = ((s32)Judge[arg0 & 0xFFF] * scale) >> 12;
+    rot.vx = ((s32)Judge[(arg0 + 0x400) & 0xFFF] * scale) >> 12;
     prim = (u8 *)D_800A33E4;
-    rotp = &rot.vx;
-    vec = &D_800FF56C;
-    ApplyMatrix(*(s32 *)player, rotp, vec);
-    vec[0] += *(s32 *)(*(u8 **)player + 0x14);
-    D_800FF570 += *(s32 *)(*(u8 **)(player + 4) + 0x18);
-    D_800FF574 += *(s32 *)(*(u8 **)(player + 8) + 0x1C);
+    ApplyMatrix(player[0], &rot, (VECTOR *)D_800FF558.t);
+    D_800FF558.t[0] += player[0]->t[0];
+    D_800FF558.t[1] += player[1]->t[1];
+    D_800FF558.t[2] += player[2]->t[2];
 
     rot.vx = 0;
     rot.vy = 0xC00 - arg0;
     rot.vz = 0;
     indices = D_80099C14;
-    math_RotMatrixZYX(rotp, mtx.m[0]);
-    gte_MulMatrix0ClearTrans(*(s32 *)player, mtx.m[0], mtx.m[0]);
-    D_800FF558 = mtx.m[0][0];
-    D_800FF55A = mtx.m[1][0];
-    D_800FF55C = mtx.m[2][0];
-    D_800FF55E = mtx.m[0][1];
-    D_800FF560 = mtx.m[1][1];
-    D_800FF562 = mtx.m[2][1];
-    D_800FF564 = mtx.m[0][2];
-    D_800FF566 = mtx.m[1][2];
-    D_800FF568 = mtx.m[2][2];
+    math_RotMatrixZYX(&rot, &mtx);
+    gte_MulMatrix0ClearTrans(player[0], &mtx, &mtx);
+    D_800FF558.m[0][0] = mtx.m[0][0];
+    D_800FF558.m[0][1] = mtx.m[1][0];
+    D_800FF558.m[0][2] = mtx.m[2][0];
+    D_800FF558.m[1][0] = mtx.m[0][1];
+    D_800FF558.m[1][1] = mtx.m[1][1];
+    D_800FF558.m[1][2] = mtx.m[2][1];
+    D_800FF558.m[2][0] = mtx.m[0][2];
+    D_800FF558.m[2][1] = mtx.m[1][2];
+    D_800FF558.m[2][2] = mtx.m[2][2];
 
     goto test_index;
 copy_index:
-        *((_struct_copy_func48BA4 *)(prim + 0x18)) =
-            *((_struct_copy_func48BA4 *)((u8 **)player)[index]);
+        *(MATRIX *)(prim + 0x18) = *player[index];
         ot = (s32 *)D_800A3820;
         D_800A3820 = (s32)(ot + 1);
         *ot = (s32)prim;
@@ -721,8 +702,7 @@ test_index:
         goto copy_index;
     }
     if (arg1 >= 0) {
-        *((_struct_copy_func48BA4 *)(prim + 0x18)) =
-            *((_struct_copy_func48BA4 *)*(u8 **)(player + 0x48));
+        *(MATRIX *)(prim + 0x18) = *player[18];
         ot = (s32 *)D_800A3820;
         *(s16 *)(prim + 2) = arg1 + 0xF;
         D_800A3820 = (s32)(ot + 1);
@@ -730,8 +710,7 @@ test_index:
         prim += 0x68;
     }
     if (arg2 != 0) {
-        *((_struct_copy_func48BA4 *)(prim + 0x18)) =
-            *((_struct_copy_func48BA4 *)*(u8 **)(player + 0x4C));
+        *(MATRIX *)(prim + 0x18) = *player[19];
         ot = (s32 *)D_800A3820;
         *(s16 *)(prim + 2) = 0x15;
         D_800A3820 = (s32)(ot + 1);
@@ -946,6 +925,7 @@ end:
 }
 void func_80049710(void) {
 }
+
 INCLUDE_ASM("asm/funcs", func_80049718);
 extern u8 D_80099CC8[];
 extern s16 D_80099D3C[];
@@ -2464,7 +2444,6 @@ void func_80055B44(u8 *a0, s32 a1, s32 a2, s32 a3) {
     *(s32 *)(a0 + 0x3CC) = -1;
 }
 INCLUDE_ASM("asm/funcs", func_80055B60);
-extern s16 Judge;
 extern s32 ratan2(s32, s32);
 extern u8 D_8009A820[];
 extern u8 D_8009A821[];
@@ -2506,10 +2485,10 @@ void func_80056CB8(s32 arg0) {
                              D_800F6608.w8 - *(s32 *)(obj + 0xFC));
         }
 
-        sin_p = &Judge + (flags & 0xFFF);
+        sin_p = &Judge[flags & 0xFFF];
         scale = D_8009A820[i * 2] << 8;
         x = *(s32 *)(obj + 0xB8) + ((scale * *sin_p) >> 12);
-        cos_p = &Judge + ((flags + 0x400) & 0xFFF);
+        cos_p = &Judge[(flags + 0x400) & 0xFFF];
         z = *(s32 *)(obj + 0xC0) + ((scale * *cos_p) >> 12);
         pt0[0] = *(s32 *)(obj + 0xB8);
         pt0[1] = *(s32 *)(obj + 0xBC) - 0x320;
@@ -2696,8 +2675,8 @@ s32 func_800571C0(s32 obj) {
             p = *(s32 *)obj;
             a = *(s16 *)(p + 0x1D8) + ang;
             goL = 0;
-            dx = rad * (&Judge)[a & 0xFFF];
-            dz = rad * (&Judge)[(a + 0x400) & 0xFFF];
+            dx = rad * Judge[a & 0xFFF];
+            dz = rad * Judge[(a + 0x400) & 0xFFF];
             x = *(s32 *)(p + 0xB8) + (dx >> 12);
             z = *(s32 *)(p + 0xC0) + (dz >> 12);
             probe.x = x;
@@ -2718,8 +2697,8 @@ s32 func_800571C0(s32 obj) {
             p = *(s32 *)obj;
             a = *(s16 *)(p + 0x1D8) - ang;
             goR = 0;
-            dx = rad * (&Judge)[a & 0xFFF];
-            dz = rad * (&Judge)[(a + 0x400) & 0xFFF];
+            dx = rad * Judge[a & 0xFFF];
+            dz = rad * Judge[(a + 0x400) & 0xFFF];
             x = *(s32 *)(p + 0xB8) + (dx >> 12);
             z = *(s32 *)(p + 0xC0) + (dz >> 12);
             probe.x = x;
@@ -2760,8 +2739,8 @@ s32 func_800571C0(s32 obj) {
                 a = base - ang;
             }
             e = obj + nl * 6;
-            *(s16 *)(e + 0x364) = *(s32 *)(*(s32 *)obj + 0xB8) + ((D_800A387C * (&Judge)[a & 0xFFF]) >> 12);
-            *(s16 *)(e + 0x366) = *(s32 *)(*(s32 *)obj + 0xC0) + ((D_800A387C * (&Judge)[(a + 0x400) & 0xFFF]) >> 12);
+            *(s16 *)(e + 0x364) = *(s32 *)(*(s32 *)obj + 0xB8) + ((D_800A387C * Judge[a & 0xFFF]) >> 12);
+            *(s16 *)(e + 0x366) = *(s32 *)(*(s32 *)obj + 0xC0) + ((D_800A387C * Judge[(a + 0x400) & 0xFFF]) >> 12);
             *(u8 *)(e + 0x368) = 2;
         }
         *(s16 *)(obj + 0x398) = 0;
@@ -2912,7 +2891,6 @@ s32 func_80057ACC(s32 arg0, u8 *arg1, s32 arg2, s32 arg3) {
     return best;
 }
 extern s32 ratan2(s32, s32);
-extern s16 Judge;
 /* Per-vertex neighbour-angle midpoint: computes the outward bisector direction at
  * vertex arg1 of the polygon whose vertex table hangs off arg0[4], and writes the
  * offset point into *arg2 / *arg3.
@@ -2990,8 +2968,8 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     }
 
     scale = arg0[2] * 40;
-    *arg2 = cx + ((scale * (s32)(*(&Judge + (ang_mid & 0xFFF)))) >> 12);
-    *arg3 = cy + ((scale * (s32)(*(&Judge + (((s16)ang_mid + 0x400) & 0xFFF)))) >> 12);
+    *arg2 = cx + ((scale * (s32)Judge[ang_mid & 0xFFF]) >> 12);
+    *arg3 = cy + ((scale * (s32)Judge[((s16)ang_mid + 0x400) & 0xFFF]) >> 12);
 }
 
 INCLUDE_ASM("asm/funcs", func_80057E84);

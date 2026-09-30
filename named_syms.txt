@@ -2674,16 +2674,6 @@ g_gpu_db_plus_0x6C                                       = 0x800F74A4;  /* data-
 g_gpu_db_plus_0x6D                                       = 0x800F74A5;  /* data-wave 2026-09-24: was g_text1b_state_byte_F74A5 */
 g_gpu_db_plus_0x40FC                                = 0x800FB534;  /* data-wave 2026-09-24: was g_disp_env_init_block_plus_16 */
 g_gpu_db_plus_0x40FD                                       = 0x800FB535;  /* data-wave 2026-09-24: was g_text1b_state_byte_FB535 */
-g_camera_view_state_plus_2                                   = 0x800FF55A;
-g_camera_view_state_plus_4                                   = 0x800FF55C;
-g_camera_view_state_plus_6                                   = 0x800FF55E;
-g_camera_view_state_plus_8                                   = 0x800FF560;
-g_camera_view_state_plus_10                                  = 0x800FF562;
-g_camera_view_state_plus_12                                  = 0x800FF564;
-g_camera_view_state_plus_14                                  = 0x800FF566;
-g_camera_view_state_plus_16                                  = 0x800FF568;
-g_text1b_addr_800FF570                                       = 0x800FF570;
-g_text1b_addr_800FF574                                       = 0x800FF574;
 g_char_p6_field_1E0                                          = 0x80103624;
 
 /* === Final cleanup batch: remaining 154 unnamed (2026-05-17) === */

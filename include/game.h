@@ -129,6 +129,17 @@ typedef struct {
 
 extern Unk8009BCF8Record D_8009BCF8[20];
 
+/* 0x800FF558: one PsyQ MATRIX (m[3][3], pad, t[3]; 0x20 bytes). Object model
+ * evidence from the original binary: func_8004A940 forms the single base
+ * %hi/%lo(0x800FF558) and reads t[0..2] at +0x14/+0x18/+0x1C, loads words
+ * +0x0..+0x10 into GTE control registers 0..4 (the SetRotMatrix sequence) and
+ * passes the base as the MATRIX * of gte_MulMatrix0ClearTrans; func_80048BA4
+ * passes +0x14 as ApplyMatrix's VECTOR * and writes the nine s16 at +0..+0x10.
+ * Replaces the twelve per-word splat scalars 0x800FF558..0x800FF574 (per-word
+ * splat symbol -> aggregate merge family). Declared through the struct tag so
+ * this header needs no gte.h; the type is complete wherever gte.h is included. */
+extern struct MATRIX D_800FF558;
+
 /* 0x8009BC94: table of {x, y} s16 position records, 6 records (24 bytes) per
  * row. Object model evidence, independent of and predating any byte-chasing
  * session, from the original binary: func_8006F100 and func_80071C4C form ONE

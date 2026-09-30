@@ -1,0 +1,1 @@
+{"func": "func_80056CB8", "addr": "80056CB8", "verdict": "PASS", "body_hash": "321ac34da73efdfe", "body_kind": "c", "file": "text1b", "reviewer": "rev-48ba4", "scope": "cheat-cleanup", "date": "2026-09-30T19:26:34Z", "head": "6c6d81b80", "notes": "rev-48ba4 round 2 PASS: Judge declared s16 Judge[] once in text1b.c; &Judge + i respelled &Judge[i]; byte-neutral"}
