@@ -1,0 +1,48 @@
+/* The select-screen work area D_800A36A0 points at (func_800770B8 places it at
+ * the end of the buffers func_8006E49C lays out). Two-element arrays are per
+ * player. Per player, f48 is a list of f60 entries with cursor f5C; confirming
+ * moves the entry under the cursor to f7E[f3C++], cancelling moves f7E[--f3C]
+ * back into f48 in sorted order; f6A holds the picked entries func_80076D74
+ * reports. f10, f14 and f3C are per-player s16 pairs that the original code
+ * also reads as one word (union word views, owner rulings Q33/Q46): `lw 0x10`
+ * at func_800747D8 0x800747F4 and func_80075670 0x80075684, `lw 0x14` at
+ * func_80077374 0x800773A4, `lw 0x3C` at func_80075F80 0x80076060. The s32 members make the struct 4-aligned, so
+ * sizeof is 0x94 (the members end at 0x92; owner ruling Q57, layout search in
+ * memory/grind/func_800768DC/q57-layout-search-2026-09-30.md). */
+typedef struct {
+    u8 pad00[8];
+    s16 f08[2];
+    s16 f0C[2];
+    union {
+        s16 half[2];
+        s32 word;
+    } f10;
+    union {
+        s16 half[2];
+        s32 word;
+    } f14;
+    s16 f18[2];
+    s16 f1C[2];
+    s16 f20[2];
+    u8 pad24[0x10];
+    u16 f34;
+    u16 f36;
+    s16 f38[2];
+    union {
+        s16 half[2];
+        s32 word;
+    } f3C;
+    s16 f40[2][2];
+    s16 f48[2][5];
+    s16 f5C[2];
+    s16 f60[2];
+    u8 f64;
+    u8 f65;
+    u8 f66;
+    u8 f67;
+    u8 f68[2];
+    s16 f6A[2][5];
+    s16 f7E[2][5];
+} SelWork;
+
+#define SELWORK ((SelWork *)D_800A36A0)

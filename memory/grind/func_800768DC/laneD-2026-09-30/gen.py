@@ -15,7 +15,7 @@ def rep(old, new, count=1):
     src = src.replace(old, new)
 
 
-STRUCT = open("tmp/laneD/struct_A.snip" if "no770" in flags else "tmp/laneD/struct.h", encoding="utf-8").read()
+STRUCT = open("tmp/laneD/struct_B.snip" if "B" in flags else "tmp/laneD/struct_A.snip" if "no770" in flags else "tmp/laneD/struct.h", encoding="utf-8").read()
 
 # ---- one SelWork type: replaces S_800747D8 (and, below, SelWork_800768DC) ----
 m = re.search(r"typedef struct \{\n    u8 pad00\[0x10\];\n    union \{\n        s32 word10;.*?\} S_800747D8;\n\n#define MENU_800747D8 \(\(S_800747D8 \*\)D_800A36A0\)\n", src, re.S)
@@ -68,8 +68,8 @@ for fn in ["func_800747D8", "func_800768DC", "func_8007636C", "func_80075670", "
 if "no770" in flags:
     m = re.search(r"\ns32 func_800770B8\([^)]*\) \{.*?\n\}\n", src, re.S)
     src = src[:m.start() + 1] + 'INCLUDE_ASM("asm/funcs", func_800770B8);\n' + src[m.end():]
-    src = re.sub(r"->(f1C|f20|f3C)\.half\[", r"->\1[", src)
-    assert ".word" not in src.replace("f10.word", "").replace("f14.word", ""), "stray word view"
+    src = re.sub(r"->(f1C|f20)\.half\[" if "B" in flags else r"->(f1C|f20|f3C)\.half\[", r"->\1[", src)
+    assert ".word" not in src.replace("f10.word", "").replace("f14.word", "").replace("f3C.word", ""), "stray word view"
     m = re.search(r"/\* func_800747D8 - s10 \(forensics\).*?\*/\n", src, re.S)
     src = src[:m.start()] + ("/* func_800747D8: the duplicated `sound = 4;` below is claimed under\n"
                              " * .claude/rules/duplicated-statement-into-arms.md and carries its FAKE\n"
@@ -90,5 +90,11 @@ if "no770" in flags:
     rep('INCLUDE_ASM("asm/funcs", func_800759D0);\nextern u8 D_8009BCE4[20];\n', 'INCLUDE_ASM("asm/funcs", func_800759D0);\n')
     rep("extern s8 D_800A35DC;\nextern u8 D_8009BCE4[20];\nextern s16 D_800A35D0[2][2];\nextern s32 g_gpu_ot_ptr;",
         "extern s8 D_800A35DC;\nextern u8 D_8009BD21;\nextern s32 g_gpu_ot_ptr;")
+
+for fn in ["func_800759D0", "func_80075F80"]:
+    var = [f.split("=", 1)[1] for f in flags if f.startswith(fn + "=")]
+    path = f"tmp/laneD/b_{fn}{'_' + var[0] if var else ''}.c"
+    if "B" in flags and os.path.exists(path):
+        rep('INCLUDE_ASM("asm/funcs", %s);\n' % fn, open(path, encoding="utf-8").read())
 
 open(out, "w", encoding="utf-8", newline="\n").write(src)
