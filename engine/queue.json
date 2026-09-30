@@ -225,15 +225,6 @@
       "addr": "8002AB08"
     },
     {
-      "func": "func_80065800",
-      "file": "text1b_tu1c",
-      "distance": 1453,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "addr": "80065800"
-    },
-    {
       "func": "func_80023F08",
       "file": "code6cac_tu2",
       "distance": 2981,
@@ -399,15 +390,14 @@
     }
   ],
   "counts": {
-    "total": 33,
-    "active": 21,
+    "total": 32,
+    "active": 20,
     "by_status": {
-      "active": 21,
+      "active": 20,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 20,
-      "ASM-PARTIAL": 1
+      "C": 20
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
