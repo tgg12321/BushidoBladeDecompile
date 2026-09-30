@@ -8564,9 +8564,6 @@ s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
     *(s32 *)((s32)D_800A35C4 + 0xC) = 0;
     return 1;
 }
-/* The original rodata has one zero word between this switch table and the
- * following function's compiler-generated table. */
-const u32 D_800159CC = 0;
 
 extern s32 D_800A35AC;
 s32 func_8006E8AC(s32 a0) {
