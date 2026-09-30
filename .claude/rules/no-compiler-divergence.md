@@ -110,7 +110,11 @@ cheat (Q17).
    scope IS permitted and has been exercised: on 2026-09-14 the owner signed off
    on globalizing the `.L`-label load-delay arm after a missing `$at`/`$gp`
    expansion guard was found in it, which retired `maspsx_label_nop_funcs.txt`
-   entirely — see [[maspsx-label-nop-gate]].
+   entirely — see [[maspsx-label-nop-gate]]. On 2026-09-30 (thirty-second batch, Q68) the owner signed off
+   on one more GLOBAL change, as a model of measured cc1psx behaviour: under maspsx `-G8`, an initialized
+   object of 8 bytes or less that our cc1 emits into `.data` goes to `.sdata`, the choice the fork switched
+   off in `tools/gcc-2.7.2` commit feeaecf "Fix sdata issues" (`config/mips/mips.c`:5471-5483). cc1 stays
+   unpatched; the conditions are in [[per-file-gp-model]] (A3).
 3. **Switching the build to cc1psx**, or per-function cc1psx opt-in. cc1psx is
    diagnostic-only ([[cc1psx-calibration-only]] / [[cc1psx-calibration]]).
 4. **Forking** anything in the toolchain (cc1, ld, as, maspsx) into a new

@@ -30622,3 +30622,58 @@ restore store `p_old = prev;`; 2/175 without the store, 20/175 with two separate
 the standing bans: Ruling 11 (B)(1) (a Ruling 11 variable may carry no dead write) and the Ruling 4 / Ruling 1
 multi-WRITE carrier ban (a carrier whose extra write is dead). No rule text changes. func_800770B8 stays
 INCLUDE_ASM and active; its ordinary-C search continues and is re-measured after the Q65 adoption lands.
+
+## 2026-09-30 — OWNER RULING — Q67: per-file static blocks, 4 merges, exact-size fillers (Q65 scope, part 1)
+
+Thirty-second batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 32, Q67). The layer-2 review of
+the Q65 evidence amendment returned NEEDS_OWNER: A1 widened the static scope past the Q65 question's "6 variables"
+and "2 groups of adjacent files". Owner chose "Yes, follow the evidence (Recommended)": "Adopt the full
+evidence-based layout: ~180 statics, 4 file merges in total, and exact-size filler variables where the original
+had unused data. The source ends up matching how the original files were really organized." Rule text:
+.claude/rules/per-file-gp-model.md (A1), (A2). Nothing is pre-decided for any function.
+
+## 2026-09-30 — OWNER RULING — Q68: maspsx models cc1psx's .sdata placement (Q65 scope, part 2)
+
+Thirty-second batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 32, Q68). The same review
+found A3 to be a new global maspsx behaviour change. Owner chose "Allow, as a model (Recommended)": "Treat it like
+-msoft-float and -mel: a global change that reproduces the original compiler's measured behaviour, proven
+byte-identical, with an engine test. It completes the adoption with no lists left." This is the owner-policy
+sign-off .claude/rules/no-compiler-divergence.md:95-98 requires for a new GLOBAL maspsx behaviour change. The
+choice it restores was switched off in the fork by tools/gcc-2.7.2 commit feeaecf "Fix sdata issues"
+(config/mips/mips.c:5471-5483); cc1 stays unpatched. Rule text: .claude/rules/per-file-gp-model.md (A3); pointer
+added to no-compiler-divergence.md. Nothing is pre-decided for any function.
+
+## 2026-09-30 — Q65 per-file gp model: amendments A1-A3 (owner rulings Q67 and Q68)
+
+Rule: .claude/rules/per-file-gp-model.md, "Amendment 2026-09-30 (evidence addendum; owner rulings Q67 and Q68)".
+A1 and A2 rest on owner ruling Q67, A3 on owner ruling Q68 (entries above). Evidence:
+docs/grind/gp-model-2026-09-30.md § Addendum 2026-09-30 (Sony PSYLINK 2.37 probes, the BB2 bss survey, the cc1psx
+calibration; scripts untracked in tmp/q56/). (A1) PSYLINK lays out each file's .lcomm statics of 8 bytes or less
+as a per-file .sbss block, the blocks in link order, then all small .comm tentatives after them; statics larger
+than 8 bytes go to .bss after the whole .sbss section, the file's .sbss block staying contiguous around them
+(A.4). BB2's bss has that shape. The static region is the longest run from the bss start in which the files reaching each object gp, taken in address order, never step back in bb2.ld .bss link order (each of the four groups named in the Merge bullet counts as one file, at its link position; a group must be contiguous in bb2.ld .bss link order, files with no .bss line in bb2.ld being skipped, otherwise the case goes to borderline.md); it ends at the end of the last gp-reached object before the first object that steps back. The COMMON block runs from there to the end of the highest bss object that any file reaches gp. (Survey result only: on the scratch reference build at base f777bdddd the first step-back is 0x800A3688 (code6cac_c_mid), which gives 0x800A3618; recomputed by this test at adoption.)
+Every object inside a file's per-file static block is K2 (static in that file); only objects in the COMMON block
+are K1. Block boundaries come from a stated test: a file's block runs from its lowest to its highest gp-reached
+object in the static region; blocks follow bb2.ld .bss link order and do not overlap except for merged files; an
+object outside every block belongs to the one adjacent file whose code references it, and otherwise goes to
+borderline.md; such an object is admitted by the amended E1 under that test. Size condition: the static region
+and the COMMON block hold objects of 8 bytes or less only, and so does the .sdata range by the -G8 threshold
+(ASPSX's small-object limit and cc1psx's -G8 section choice); a larger object found in the static region or the
+COMMON block, or a referenced one larger than 8 bytes in the .sdata range, goes to borderline.md. A K2
+object reached gp from more than one of our files triggers the merge test, as a K3 object does; a K2 object
+referenced from another file other than by gp goes to borderline.md. Merges are bounded: any merge other than the
+two Q65 groups (code6cac_b2_pre + replay_camera_rob_back_loose2 + code6cac_b2_post; code6cac_c2 + config) and the
+two Q67 groups (text1a_c2 + text1a_b + sound + text1b; text1b_tu2 + text1b_b) goes to borderline.md; the tail of
+text1a_c (after the Q65 split before func_80044800) joins the first Q67 group only on an object the evidence doc
+records it sharing, and the survey records none. (A2) A file's .sdata and its static block
+are each contiguous: an object strictly between the file's lowest and highest gp-reached objects in the same range
+is defined in that file even if never reached gp, only when no other file references it and E2 holds (every such
+object is 8 bytes or less, so any direct lui/%lo access fails E2; it is reached only by la or an indexed operand,
+or not at all). Unreferenced gap bytes are defined at their exact size, one object per maximal run, named
+D_<addr> and listed in the ledger; a run longer than 8 bytes goes to borderline.md; alignment padding the build
+already produces is not defined. E1's (A2) route allows exactly this; a K3 object is defined in the file whose
+accesses reach it gp or the file (A2) places it in. (A3) Under maspsx's -G8
+only, an initialized object of 8 bytes or less that our cc1 emits into .data goes to .sdata, modelling cc1psx's
+measured placement (calibration only; the fork switched it off in feeaecf); global objects as calibrated, a static
+only with its own added calibration; global, names no symbol; its landing commit is byte-proven and adds an
+engine test. Nothing is pre-decided for any function.

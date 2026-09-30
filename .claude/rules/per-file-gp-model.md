@@ -18,6 +18,17 @@ in `tmp/q56/`). Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — the 
 
 Everything below the owner's words is the author's narrowing, not the owner's words.
 
+**Amendment 2026-09-30 (evidence addendum; owner rulings Q67 and Q68, thirty-second batch).** The clauses
+marked (A1) and (A2) below rest on owner ruling Q67, and (A3) on owner ruling Q68 (both verbatim in
+docs/grind/owner-rulings-2026-09-26.md, thirty-second batch). Q67: the owner chose **"Yes, follow the evidence
+(Recommended)"**: "Adopt the full evidence-based layout: ~180 statics, 4 file merges in total, and exact-size
+filler variables where the original had unused data. The source ends up matching how the original files were
+really organized." Q68: the owner chose **"Allow, as a model (Recommended)"**: "Treat it like -msoft-float and
+-mel: a global change that reproduces the original compiler's measured behaviour, proven byte-identical, with
+an engine test. It completes the adoption with no lists left." Evidence: `docs/grind/gp-model-2026-09-30.md`
+§ Addendum 2026-09-30 (the Sony PSYLINK 2.37 layout probes, the BB2 bss survey and the cc1psx section-choice
+calibration). The conditions below are the author's narrowing, not the owner's words.
+
 ## The rule (Sony ASPSX 2.34, measured; evidence doc § 1)
 
 For a load or store in file F naming symbol S directly (`S` or `S+k`, no base register):
@@ -36,10 +47,25 @@ disagreements, and its negative controls show that with no definitions ASPSX giv
 
 ## What the adoption changes
 
-1. **maspsx, two global fixes.** `_uses_gp` (`tools/maspsx/maspsx/__init__.py`) returns False for an operand
+1. **maspsx, two global fixes and one global section choice (A3).** `_uses_gp` (`tools/maspsx/maspsx/__init__.py`) returns False for an operand
    with a base register (the indexed-operand fix, evidence doc § 3), and `.local` + `.comm` is modelled as
    `.lcomm` (today it raises, `__init__.py` "uninitialized static ... is not modelled"). Both are global: no
    list, no function or symbol name.
+   **(A3) Section choice, modelling cc1psx (owner ruling Q68).** When maspsx runs with its `-G8` switch, and
+   only then, an initialized object that our cc1 emits into `.data` with a total size of 8 bytes or less is
+   emitted into `.sdata` instead. The calibration (evidence doc § Addendum A.3) shows cc1psx at `-G8` placing
+   such objects in `.sdata` while our cc1 places them in `.data` at `-G0` and at `-G8`: the upstream fork
+   switched that choice off in `tools/gcc-2.7.2` commit feeaecf "Fix sdata issues"
+   (`config/mips/mips.c`:5471-5483, the commented-out `SMALL_DATA_SECTION ()` branches). This is a new GLOBAL
+   maspsx behaviour change; it is admitted by Q68 as the owner-policy sign-off that
+   `.claude/rules/no-compiler-divergence.md`:95-98 requires, and cc1 itself stays unpatched. The object is a label in `.data`
+   followed by data directives up to the next label or section change; its size is the sum of those
+   directives. The calibration covers global objects with zero and nonzero initializers; a `static`
+   initialized object is moved only if the landing commit adds a cc1psx calibration showing cc1psx places it
+   in `.sdata` too. The change is global and names no symbol, function or file. Its landing commit is
+   byte-proven (full-build SHA1 == oracle, and every `src/*.c` object built both ways and compared) and adds
+   an `engine test` case covering it: under `-G8` an initialized object of 8 bytes or less moves to `.sdata`,
+   and an object larger than 8 bytes, or any object without `-G8`, stays in `.data`.
 2. **Flags.** In the Makefile's `MASPSX_FLAGS` and `MASPSX_FLAGS_GP`, `--sdata-syms`, `--sdata-funcs` and
    `--sdata-exclude` are removed and maspsx's own `-G8` switch is added; `engine/buildconfig.py` mirrors the
    Makefile verbatim. `sdata_syms.txt`, `sdata_funcs.txt` and `sdata_exclude.txt` are deleted. This `-G8` is
@@ -53,10 +79,32 @@ disagreements, and its negative controls show that with no definitions ASPSX giv
 "Original access" means an instruction in the shipped bytes (`asm/funcs/<func>.s` of a function in F) that
 loads or stores S directly. A definition of S in F is admitted ONLY when both hold:
 
-- **(E1) Evidence.** At least one original access in F to S is gp-relative.
+- **(E1) Evidence.** At least one original access in F to S is gp-relative; or S meets the (A2) contiguity
+  test below; or (A1) test 3 places S in F's static block (an object outside every block that F's code, and
+  no other file of ours, references), in which case E2 and the size condition of (A1) apply to it as to any
+  other object of that block.
 - **(E2) Whole-file consistency.** Under the definition's kind (table above), the rule predicts every original
   access in F to S: each gp access is one the rule makes gp, and each `lui`/`%lo` access is one the rule makes
   non-gp. One contradicting access fails E2, whatever the other accesses do.
+
+**(A2) Contiguity (owner ruling Q67).** A file's `.sdata` is one contiguous section, and so is its per-file
+static block (A1) (evidence doc § Addendum A.1). An object S that lies in F's `.sdata` range or in F's static block, at an
+address strictly between F's lowest-addressed and highest-addressed objects that meet E1 by a gp access in
+that same range, is defined in F even if no access reaches it gp. This holds only when all of:
+1. no other file of ours references S, by any access, address formation or relocation (otherwise the merge
+   test or `docs/grind/borderline.md` decides);
+2. E2 holds for S in F. Every object (A2) admits is 8 bytes or less (the size condition of (A1)), and for
+   such an object the rule table makes every direct access gp, so any direct `lui`/`%lo` load or store of S in
+   F fails E2: S is reached, if at all, only through `la` (address formation) or an indexed `S($reg)`
+   operand;
+3. S's kind is the kind of the range it lies in ((K2) in a static block, (K3) in `.sdata`).
+
+Unreferenced gap bytes (no access, no address formation and no pointer word in the EXE resolves into them)
+are defined as one object per maximal unreferenced run, at its exact size, named `D_<addr>` after its start
+address, and listed in the ledger. Bytes that the build's own alignment of the next object already produces
+are padding, not an object, and are not defined (shown by building without them: the next object's address
+is unchanged). An unreferenced run longer than 8 bytes cannot be one object there (the size condition of
+(A1)); it goes to `docs/grind/borderline.md`. E1's (A2) route allows exactly this.
 
 **Explicit-relocation asm.** The gp rule governs macro-form symbol accesses (the form cc1 emits and ASPSX
 expands). An access written with an explicit `%hi`/`%lo`/`%gp_rel` operator in canonical hand-written asm text
@@ -66,19 +114,50 @@ ASPSX probe showing that ASPSX leaves an explicit `%hi`/`%lo` access to a file-d
 (Example: `g_gpu_ot256_ptr`, reached `lui`/`%lo` in `func_80051D08` / `func_80051ED4`, evidence doc § 4.)
 
 A definition that meets E1 but fails E2 is not fixed by choosing a different kind to suit the accesses; the
-kind is fixed by (K1)-(K3). Its F goes to the file-boundary test below. The kind of definition:
+kind is fixed by (K1)-(K3). Its F goes to the file-boundary test below.
 
-- **(K1) Tentative definition, `T S;`.** For a bss object (at or above 0x800A3308, evidence doc § 2) that F
-  reaches gp at its base only. Owner ruling Q62's conditions apply unchanged ([[maspsx-gate-lists]] § The global COMMON model: the
+**(A1) Which bss objects are K1 and which are K2 (owner ruling Q67).** Sony PSYLINK lays out each file's `.lcomm` statics as one
+per-file block, the blocks in link order, then every `.comm` tentative after all of them (evidence doc
+§ Addendum A.1). BB2's bss has that shape (§ Addendum A.2). The static region is the longest run from the bss start in which the files reaching each object gp, taken in address order, never step back in bb2.ld .bss link order (each of the four groups named in the Merge bullet counts as one file, at its link position; a group must be contiguous in bb2.ld .bss link order, files with no .bss line in bb2.ld being skipped, otherwise the case goes to borderline.md); it ends at the end of the last gp-reached object before the first object that steps back. The COMMON block runs from there to the end of the highest bss object that any file reaches gp. (Survey result only: on
+the scratch reference build at base f777bdddd (evidence doc § Addendum A.2) the first object that steps back is 0x800A3688 (code6cac_c_mid), which gives a static region
+0x800A3308-0x800A3618 and a COMMON block from 0x800A3618; the addresses are recomputed by this test at
+adoption.)
+Every object inside a file's per-file static block is K2 (static in that file); only objects in the COMMON
+block are K1. The block boundaries are read from the bss layout and recorded in the evidence doc, by this
+test:
+1. F's block runs from the start of F's lowest-addressed object in the static region that F reaches gp to the
+   end of its highest such object; (A2) places the objects between them in F.
+2. The recorded blocks follow the `bb2.ld` `.bss` link order and do not overlap, except that files the merge
+   test joins share one block. A layout that breaks this goes to `docs/grind/borderline.md`.
+3. An object in the static region outside every block (between two blocks, or before the first or after the
+   last) belongs to the block of the one file of ours whose code references it, when that file's block is
+   next to the object in link order. If no file of ours references it, more than one does, or the one that
+   does is not next to it, the case goes to `docs/grind/borderline.md`.
+4. **Size condition** (evidence doc § Addendum A.4). The static region and the COMMON block hold objects of 8
+   bytes or less only: PSYLINK places a static larger than 8 bytes in `.bss`, after the whole `.sbss` section,
+   in per-file blocks of large statics in link order, with the large tentatives after those. An object larger
+   than 8 bytes is never reached gp (rule table), so this rule gives it no definition, and (A1)-(A2) never
+   place one in a small block. An object larger than 8 bytes found inside the static region or the COMMON
+   block contradicts the layout and goes to `docs/grind/borderline.md`. The `.sdata` range likewise holds
+   objects of 8 bytes or less only, by the `-G8` threshold: ASPSX treats a definition larger than 8 bytes as
+   not small (rule table, evidence doc § 1), and cc1psx at `-G8` places an initialized object in `.sdata`
+   only when it is 8 bytes or less (§ Addendum A.3). A referenced object larger than 8 bytes inside the
+   `.sdata` range goes to `docs/grind/borderline.md`.
+
+The kind of definition:
+
+- **(K1) Tentative definition, `T S;`.** For a bss object in the COMMON block (A1); under E2, F reaches it gp
+  at its base only. Owner ruling Q62's conditions apply unchanged ([[maspsx-gate-lists]] § The global COMMON model: the
   original bytes over the whole object are zero, no file gives it an initializer, its address comes from a
   symbol-file row). The EXE image ends at 0x800A3800 (header t_size 0x93800 from load address 0x80010000,
   b_size 0). An object wholly at or above 0x800A3800 is uninitialized bss by construction; there are no disc
   bytes, and its zero condition is met by the EXE header's image size (cite it in the ledger). For an object
   that straddles 0x800A3800, the part inside the image must be zero (disc offset and bytes cited), and the part
   above is met as above. Every file that meets E1 and E2 for S gets its own `T S;`.
-- **(K2) `static`, `static T S;`.** For a bss object that F reaches gp at a nonzero offset.
-  Every reference to S in the whole program (C and asm) lies in F, and F is the only file that defines it. If
-  another file references S, K2 does not apply. The object's declaration moves OUT of every header and into F:
+- **(K2) `static`, `static T S;`.** For every object inside F's per-file static block (A1), whatever offset F
+  reaches it at. F is the only file that defines it. A K2 object reached gp from more than one of our files
+  triggers the merge test below, the same as a K3 object does; a K2 object referenced from another of our
+  files in any other way goes to `docs/grind/borderline.md`. The object's declaration moves OUT of every header and into F:
   any header `extern` for S is deleted in the same commit. The `.lcomm` object gets its address from bss link
   order alone: F's `.bss` position in `bb2.ld` plus the object's order within F, with no per-symbol address pin
   or linker-script symbol assignment. If link order cannot produce the symbol-file address, the case goes to
@@ -86,7 +165,8 @@ kind is fixed by (K1)-(K3). Its F goes to the file-boundary test below. The kind
 - **(K3) Initialized definition, `T S = value;`.** For an object in the initialized small-data region (the
   `.sdata` range that ends at 0x800A3308, inside the EXE image, evidence doc § 2), including one whose original
   bytes are zero. The initializer equals the
-  original bytes. It is defined in exactly ONE file, the one whose original accesses reach it gp. Its label and
+  original bytes. It is defined in exactly ONE file, the one whose original accesses reach it gp or the file
+  (A2) places it in. Its label and
   bytes are removed from `asm/data/91C98.data.s` in the same commit. If more than one file reaches it gp, the
   merge test below decides.
 
@@ -98,7 +178,8 @@ function becomes C (evidence doc § 4).
 ## File boundaries come from evidence only
 
 These are tests, not an inventory: which files they split, merge or move is computed at adoption. The evidence
-doc's findings were taken at `a739dbd20` and are recomputed then.
+doc's findings were taken at the commit it names for each part (sections 1-5 at `a739dbd20`; the addendum's
+bss survey on the scratch reference build at base `f777bdddd`) and are recomputed then.
 
 - **Split.** File F is split into two files only when one symbol S has two original accesses in F that no
   single definition of S in F can both produce: one is gp and the other is a direct `lui`/`%lo` access the rule
@@ -127,8 +208,14 @@ doc's findings were taken at `a739dbd20` and are recomputed then.
   that fits neither (i) nor (ii), or where (i) fits more than one boundary, goes to borderline.md and that
   commit does not land. When (i) moves a boundary, its record in
   `docs/grind/rodata-align-2026-09-30.md` is updated in the same commit.
-- **Merge.** Adjacent files are built as one file only when a (K3) initialized symbol is reached gp from each of
-  them and they are contiguous in link order. The merge moves source text verbatim, in link order, and changes
+- **Merge.** Adjacent files are built as one file only when a (K2) static or (K3) initialized object (A1) is
+  reached gp from each of them and they are contiguous in link order. Any merge other than the two Q65 groups
+  (`code6cac_b2_pre` + `replay_camera_rob_back_loose2` + `code6cac_b2_post`; `code6cac_c2` + `config`) and the
+  two Q67 groups (`text1a_c2` + `text1a_b` + `sound` + `text1b`; `text1b_tu2` + `text1b_b`) goes to
+  `docs/grind/borderline.md`. Whether the tail of `text1a_c` (after the Q65 split before `func_80044800`) joins
+  the first Q67 group is decided by the merge test on the evidence doc's record; the survey (§ Addendum A.2)
+  records no object that tail shares, so a merge that includes it goes to `docs/grind/borderline.md` until
+  the evidence doc records one. The merge moves source text verbatim, in link order, and changes
   nothing else. If the verbatim merged text does not compile because the parts declare the same symbol
   differently, the declarations are reconciled FIRST in a separate byte-identical commit. That commit gives
   each symbol its one truthful type, chosen by evidence from the target bytes (its accesses) and each
@@ -149,8 +236,9 @@ doc's findings were taken at `a739dbd20` and are recomputed then.
   replace, goes to `docs/grind/borderline.md`, and that commit does not land.
 - **Undecided cases.** A case these tests do not decide (surviving cut positions that give different bytes,
   a conventional cut position that is not a survivor, a cut outcome that fits neither (i) nor (ii) or where (i)
-  fits more than one boundary, a static referenced from two files, a static whose address link order cannot produce, an initialized
-  symbol reached from non-adjacent files, a merge whose declarations cannot be reconciled by evidence, a merge
+  fits more than one boundary, a (K2) static referenced from another file other than by gp, a static whose
+  address link order cannot produce, a bss layout or an object outside every static block that (A1) does not
+  place, a (K2) or (K3) object reached gp from non-adjacent files, a merge whose declarations cannot be reconciled by evidence, a merge
   across a rodata-rule boundary that the Merge bullet's boundary move does not replace) is not decided by
   picking what matches. It is logged to `docs/grind/borderline.md` as a
   policy-question, and the commit that needs it does not land.
@@ -162,8 +250,10 @@ doc's findings were taken at `a739dbd20` and are recomputed then.
 - **Not a list in any spelling.** No file, flag, pragma or maspsx option that names functions or symbols may
   select gp, including the proof of concept's `--poc-noncomm-syms` stand-in. `maspsx_comm_syms.txt` stays
   retired (Q62).
-- **Not a compiler change.** cc1 is untouched; both maspsx changes are models of measured ASPSX behaviour
-  ([[no-compiler-divergence]]).
+- **Not a compiler change.** cc1 is untouched. The two maspsx fixes model measured ASPSX behaviour, and the
+  (A3) section choice models measured cc1psx behaviour under owner ruling Q68; cc1psx is used only as a
+  calibration, never as a build path ([[no-compiler-divergence]]; the Claude harness memory rule
+  `rules/cc1psx-calibration-only`, not a repo path).
 
 ## How it lands
 

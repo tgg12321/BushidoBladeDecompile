@@ -703,3 +703,20 @@ Question, verbatim: "Q66: func_800770B8 (SelWork group). The only form that matc
 Owner chose: **"Refuse for now (Recommended)"** — option text: "Keep the current bans. 770B8 stays asm and the ordinary-C search continues, re-measured after Q65 lands, since its residual depends on D_800A36A0's addressing. The other SelWork functions land now."
 Other option offered: "Allow narrowly" — "Admit this one function: the full Ruling 11 dump proof plus dead-store family paperwork, FAKE-annotated. It lands now, but it's a one-off exception to two standing bans."
 Record only: no rule text changes; the existing bans stand.
+
+# Owner exchange 2026-09-30 (thirty-second batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: the layer-2 reviewer returned NEEDS_OWNER on the Q65 evidence amendment (per-file-gp-model.md A1-A3):
+A1 widened the static scope beyond the Q65 question's "6 variables" and "2 groups of adjacent files", and A3 was
+a new global maspsx behaviour change. The orchestrator put both questions to the owner with a recommendation.
+
+## Q67 — Q65 scope, part 1 (per-file static blocks)
+Question, verbatim: "Q67 (Q65 scope, part 1). Q65 said 'static support for 6 variables' and '2 groups of adjacent files'. Running Sony's real linker (PSYLINK) shows the original laid out each file's static variables as a per-file block. By that evidence, about 180 variables (not 6) were 'static' in their files. Four of them are shared by several of our files, which forces 2 more merges on top of the 2 you approved: (1) text1a_c2 + text1a_b + sound + text1b become one file; (2) text1b_tu2 + text1b_b become one file. It also means defining a few never-used 'filler' variables (named D_<addr>, sized exactly) that exist in the original data between used ones. Still byte-identical, still separately reviewed commits. Proceed with the bigger scope?"
+Owner chose: **"Yes, follow the evidence (Recommended)"** — option text: "Adopt the full evidence-based layout: ~180 statics, 4 file merges in total, and exact-size filler variables where the original had unused data. The source ends up matching how the original files were really organized."
+Other options offered: "Only what was approved" — "Keep the originally described scope (6 statics, 2 merge groups). The rest stay as shared tentative definitions, which still produce identical bytes but are less faithful. Some adoption steps may not complete."; "Pause the adoption" — "Stop Q65 adoption here; keep the current lists until later."
+The rule text is .claude/rules/per-file-gp-model.md (A1), (A2).
+
+## Q68 — Q65 scope, part 2 (small initialized objects in .sdata)
+Question, verbatim: "Q68 (Q65 scope, part 2). The original PsyQ compiler put small initialized variables (8 bytes or less) into the fast 'small data' section. Our compiler build puts them in the normal data section, because the upstream GCC fork deliberately switched that off (its commit 'Fix sdata issues'). Without fixing this, about 50 initialized variables can't get the fast addressing the original has, so the lists can't be fully retired. The proposed fix: maspsx (our assembler-compatibility layer) moves such variables to small data when -G8 is on. That reproduces what the original compiler did, as measured with the real one. It is global and names no variable. But it changes what our compiler's output becomes, which your earlier rulings (Q17) treat very strictly. Allow it?"
+Owner chose: **"Allow, as a model (Recommended)"** — option text: "Treat it like -msoft-float and -mel: a global change that reproduces the original compiler's measured behaviour, proven byte-identical, with an engine test. It completes the adoption with no lists left."
+Other option offered: "Refuse" — "Don't change how compiler output is placed. Those ~50 initialized variables keep today's list-based handling, so a small list survives as known debt."
+The rule text is .claude/rules/per-file-gp-model.md (A3); pointer in .claude/rules/no-compiler-divergence.md.
