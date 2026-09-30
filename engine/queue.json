@@ -14,6 +14,16 @@
       "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): cross-symbol arithmetic p=&D_800A37D2; p[t!=0]++ reaches D_800A37D3 (refused 2026-07-20). Banked: memory/grind/func_8001C8DC/rejected/retro-audit-2026-09-29.c"
     },
     {
+      "func": "PutDispEnv",
+      "file": "display",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): macro-hidden volatile cast on non-IRQ global g_gpu_disp_env (DISP_RECT_EQ) + per-use pun. Banked: memory/grind/PutDispEnv/rejected/retro-audit-2026-09-29.c"
+    },
+    {
       "func": "func_8005C8A8",
       "file": "text1b",
       "distance": 752,
@@ -247,14 +257,14 @@
     }
   ],
   "counts": {
-    "total": 21,
-    "active": 9,
+    "total": 22,
+    "active": 10,
     "by_status": {
-      "active": 9,
+      "active": 10,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 7,
+      "C": 8,
       "ASM-PARTIAL": 2
     }
   },
