@@ -53,3 +53,15 @@ admission ruling, so the block-local form lands (Ruling 1(4)).
 
 ## Not tried / not needed
 No permuter, no FAKE constructs, no do-while wraps.
+
+## Retro-audit correction (owner Q49), 2026-09-30 (laneG) — independent base+offset evidence
+The retro-audit (2026-09-29 batch_04, 40adc7d6c) found the one-object argument above under-evidenced on
+aggregate-merge prong (a): the func_8003B5A4 walk covers only 0x7D/0x7F, and "three separate arrays are not
+byte-neutral" is compiler-necessity reasoning, admitted only later (Q2, 262db111c) and then with dumps and cc1psx.
+Independent evidence that 0x8010277C.. is ONE object exists in the original binary and was not cited:
+asm/funcs/func_80034708.s:31-33 forms `$s5 = &D_8010277C` (`lui/addiu %hi/%lo(D_8010277C)`) and reads
+`lb 0x0($s5)`; :141 reads `lb 0xA($s5)` (0x80102786) and :152 `lb 0xB($s5)` (0x80102787) through the same base
+register — base+offset addressing across 0x7C..0x87 (prong (a), "base+offset addressing in the original binary").
+Current object model: the PlayerBytePairs declaration landed here was superseded by `PracticeParams D_80102778`
+(include/code6cac.h:724-740; unk_4[6] covers 0x7C..0x81), whose own layout evidence is
+memory/grind/func_80034708/evidence.md [s4]-[s5]. func_8001DCB0's body is unchanged; no code change needed.

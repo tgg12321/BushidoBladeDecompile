@@ -47,3 +47,19 @@ Non-blocking notes: (1) ProbeScr `Vec3i j[22]` is under-modelled — `j + 4` rea
 `((Vec3i (*)[22])0x1F8000A8)[other][j]` also scores 0, a byte-neutral model fix is open.
 (2) the func_80027AD8 prototype's 6th param (Tbl8008E194 *) fits this caller only;
 func_8002AB08 (asm) passes a 0/1 boolean there.
+
+## Retro-audit fix-forward (owner Q49), analysis 2026-09-30 (laneG) — NOT yet spliced (src/code6cac_b_tu2.c owned by laneA)
+Concern (retro-audit 2026-09-29 batch_02): `&SCR[other].j[j + 4]` with j < 22 on `ProbeScr { Vec3i j[22]; }`
+reaches j[25]: out of bounds of its own element. Cause: `SCR` (code6cac_b_tu2.c:1741-1742) is based at
+0x1F800078, 0x30 below the real per-character limb-point table. That table is 22 points per character at
+0x1F8000A8 + ch * 0x108 (func_800207C8's caller code6cac_c_mid.c:1505; text1b.c D_800A3480 = 0x1F8000A8), and
+the same TU already declares it: `ScrPad` / `SPAD->unkA8[2][22]` (code6cac_b_tu2.c:965-976). ProbeScr is a second,
+mis-based view of the same scratchpad bytes.
+
+Proposed cheat-cleanup: delete ProbeScr/SCR and respell its three consumers through SPAD:
+- func_8002C61C `SCR[i].j[5..9]` -> `SPAD->unkA8[i][1..5]`;
+- func_8002CA8C `&SCR[id].j[i + 4]` -> `&SPAD->unkA8[id][i]`;
+- func_80031B24 `&SCR[other].j[j + 4]` -> `&SPAD->unkA8[other][j]` (4 sites).
+Measured (sandbox --disable all, candidate bodies in probes-2026-09-30/): func_80031B24 0/327, func_8002C61C
+0/284, func_8002CA8C 0/179 (each identical to its landed score). Still owed at splice: full rebuild SHA1, a
+layer-2 on the three bodies (scope cheat-cleanup), and the ledger notes of func_8002C61C / func_8002CA8C.

@@ -34,3 +34,7 @@
   rebuild SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa`; fresh adversarial
   re-review PASS on the revised body; completion-integrity and new-cheat audits
   PASS; `queue done` recorded the function as COMPLETED-C.
+- CORRECTION 2026-09-30 (retro-audit 2026-09-29, owner Q49): the "whole-cluster structured ablation"
+  bullet above is false for the body that landed in 23068ab77: it kept `check_bounds:` inside two nested
+  `if` bodies with six gotos entering it, plus a no-op `goto no_intersection;`. The goto-free body and its
+  measurements are in `memory/grind/func_8005763C/evidence.md`.
