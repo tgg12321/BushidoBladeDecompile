@@ -191,28 +191,6 @@
       "addr": "800770B8"
     },
     {
-      "func": "cdrom_SetMix",
-      "file": "code6cac_b4",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/cdrom_SetMix/cheated-comm-gate-body.c",
-      "addr": "80035F30"
-    },
-    {
-      "func": "func_80035F78",
-      "file": "code6cac_b4",
-      "distance": 6,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/func_80035F78/cheated-comm-gate-body.c",
-      "addr": "80035F78"
-    },
-    {
       "func": "func_80036140",
       "file": "code6cac_b5",
       "distance": 16,
@@ -454,14 +432,14 @@
     }
   ],
   "counts": {
-    "total": 38,
-    "active": 26,
+    "total": 36,
+    "active": 24,
     "by_status": {
-      "active": 26,
+      "active": 24,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 25,
+      "C": 23,
       "ASM-PARTIAL": 1
     }
   },
