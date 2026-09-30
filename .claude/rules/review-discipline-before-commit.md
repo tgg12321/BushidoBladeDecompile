@@ -194,6 +194,17 @@ constructs (2/7 overturned), one self-resolved NEEDS_USER, and one
 self-sanctioning rule doc. Verdict handling: see the `decomp-manual`
 skill §4 (Landing it).
 
+**Recorded and enforced (owner ruling Q39, 2026-09-29).** Every layer-2
+verdict — PASS, FAIL or NEEDS_USER — is recorded with
+`python3 -m engine.cli layer2 record <func> --verdict <V> --reviewer <id>
+--scope <match|cheat-cleanup|auth> --notes "<key findings>"` while the reviewed
+body is in `src/`; it appends to `memory/grind/<func>/layer2.jsonl`, keyed to
+that body's comment/whitespace-insensitive hash. Commit the record with the
+landing. `queue done` (and regen's drop of a listed item) refuses unless the
+LATEST record is a PASS on the CURRENT body: re-review after any code change
+(comment-only edits keep the hash). No override flag exists. For the grinder,
+the driver records the Judge's FINAL CALL PASS (scope `grinder-final-call`).
+
 ## Periodic re-audits
 
 The reviewer can be invoked retroactively to audit COMPLETED-C functions

@@ -15,6 +15,7 @@ from . import oracle as O
 from . import canonical as CANON
 from . import diagnose as DIAG
 from . import integrate as INT
+from . import layer2 as L2
 from . import metrics as MET
 from . import orchestrator as ORCH
 from . import pipeline as P
@@ -138,6 +139,15 @@ def main() -> int:
     qp.add_argument("--force-rescan", action="store_true",
                     help="auto-return: re-measure every rotated candidate even though the "
                          "fingerprint did not move (recovery after a corrupted re-measure)")
+    l2p = sub.add_parser("layer2", help="layer-2 review record (owner ruling Q39): `record` a verdict keyed to the current body; `check` = the gate `queue done` applies")
+    l2p.add_argument("action", choices=["record", "check"])
+    l2p.add_argument("func")
+    l2p.add_argument("--verdict", choices=list(L2.VERDICTS), help="record: the reviewer's decision")
+    l2p.add_argument("--reviewer", default="", help="record: who ruled (agent id / name)")
+    l2p.add_argument("--scope", choices=list(L2.SCOPES), help="record: completion-class kind being landed")
+    l2p.add_argument("--notes", default="", help="record: key findings / required fixes")
+    l2p.add_argument("--file", default="", help="src file stem (default: the queue item's file, else a src/ scan)")
+    l2p.add_argument("--expect-hash", default="", help="record: refuse unless the current body hashes to this (the body the reviewer saw)")
     ccp = sub.add_parser("cc1psx-check", help="self-disproof: score a function's candidate under our cc1 AND the original cc1psx (out of tree); a closer cc1psx = fidelity lead")
     ccp.add_argument("func")
     ccp.add_argument("--candidate", default="", help="candidate body (default memory/grind/<func>/candidate.c)")
@@ -301,6 +311,22 @@ def main() -> int:
             MET.record_event("queue-reopen", a.func, r, exit_code=0 if r.get("ok") else 1)
             return 0 if r.get("ok") else 1
         return 0
+
+    if a.cmd == "layer2":
+        if a.action == "record":
+            if not a.verdict or not a.scope:
+                print("layer2 record: requires --verdict and --scope")
+                return 2
+            r = L2.record(a.func, a.verdict, a.reviewer, a.scope, a.notes,
+                          stem=a.file or None, expect_hash=a.expect_hash or None)
+        else:
+            stem = a.file or L2.locate_stem(a.func)
+            key = L2.current_key(a.func, stem) if stem else None
+            reason = L2.gate(a.func, stem) if stem else f"no body for {a.func} found in src/"
+            r = {"ok": reason is None, "func": a.func, "file": stem,
+                 "body_hash": key[1] if key else None, "reason": reason}
+        print(json.dumps(r, indent=2))
+        return 0 if r.get("ok") else 1
 
     if a.cmd == "scan-redundant":
         rebuild = not a.no_rebuild

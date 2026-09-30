@@ -987,6 +987,18 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
             $listed = $true
         }
         if ($nIsl -gt 0 -and $listed) { $bucket = 'COMPLETED-INLINE-ASM-CANONICAL' }
+        # Owner ruling Q39: `queue done` refuses without a recorded layer-2 PASS on
+        # the exact body. For autonomous work the Judge's FINAL CALL is that review
+        # (judge-sole-gate rule 2), so record it keyed to the body the Judge saw:
+        # nothing since the FINAL CALL diff touched src/. (No --expect-hash with
+        # $bodyHash: for a K&R definition grindlib falls back to a whole-file
+        # key, which the engine's definition key never equals.) A ruling-request
+        # clearance is NOT recorded here — it only skips layer-1; the FINAL CALL
+        # above still ruled.
+        $l2 = Invoke-Eng @('layer2', 'record', $func, '--verdict', 'PASS', '--reviewer', 'judge',
+                           '--scope', 'grinder-final-call', '--file', $stem,
+                           '--notes', 'Judge FINAL CALL PASS - justification in state.json review_ledger and docs/grind/decisions.md')
+        if ($l2 -notmatch '"ok"\s*:\s*true') { Log "${func}: layer-2 record NOT written: $(($l2 -replace '\s+', ' ').Trim())" }
         $qd = Invoke-Eng @('queue', 'done', $func)
         if ($qd -notmatch '"ok"\s*:\s*true') {
             # A Judge-PASSed, bytes-proven candidate that queue done still

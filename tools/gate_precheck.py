@@ -25,7 +25,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from engine import cheats, inlineasm, queue  # noqa: E402
+from engine import cheats, inlineasm, layer2, queue  # noqa: E402
 
 
 def main() -> int:
@@ -41,6 +41,8 @@ def main() -> int:
     print("canonical-listed :", args.func in cheats.canonical_asm_funcs())
     print("cheat constructs :",
           inlineasm.file_func_cheat_asm_count(args.stem, args.func))
+    print("layer-2 gate     :",
+          layer2.gate(args.func, args.stem) or "PASS recorded on the current body")
     return 0
 
 

@@ -2464,8 +2464,9 @@ def test_include_asm_whole_body() -> None:
             orig = (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
                     cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
                     inlineasm.file_func_cheat_asm_count, completion.source_issues,
-                    Q.O.verify)
+                    Q.O.verify, Q.layer2.gate)
             Q.QUEUE_PATH = str(qp)
+            Q.layer2.gate = lambda f, s: None  # the Q39 gate has its own test
             Q._rule_count = lambda f: 0
             cheats.func_prologue_count = lambda f: 0
             cheats.canonical_asm_funcs = lambda: canon
@@ -2480,7 +2481,7 @@ def test_include_asm_whole_body() -> None:
                 (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
                  cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
                  inlineasm.file_func_cheat_asm_count, completion.source_issues,
-                 Q.O.verify) = orig
+                 Q.O.verify, Q.layer2.gate) = orig
 
     r_attr = _done_with(1, set())
     check("include_asm: queue done REFUSES attributed cheat-asm",
@@ -2615,7 +2616,7 @@ def test_canonical_completion_is_the_drop() -> None:
                 completion.source_issues,
                 Q.sandbox.build_stripped_object, score._o_func_table,
                 score.score_func, Q.O.verify, cheats.is_jtbl_infra,
-                cheats.is_canonical_extraction_only)
+                cheats.is_canonical_extraction_only, Q.layer2.gate)
         try:
             # Patch INSIDE the try: a raise part-way through the assignments
             # would otherwise leak monkeypatches into every later test in the
@@ -2641,6 +2642,7 @@ def test_canonical_completion_is_the_drop() -> None:
             score.score_func = lambda a, b, f: {"score": 300}
             Q.O.verify = lambda rebuild=False: {"build_matches": True,
                                                 "build_sha1": "deadbeef"}
+            Q.layer2.gate = lambda f, s: None  # the Q39 gate has its own test
             # 2. the gate, against a queue that still lists it
             qp.write_text(json.dumps(seed))
             r = Q.mark_done("func_CANON")
@@ -2723,7 +2725,195 @@ def test_canonical_completion_is_the_drop() -> None:
              completion.source_issues,
              Q.sandbox.build_stripped_object, score._o_func_table,
              score.score_func, Q.O.verify, cheats.is_jtbl_infra,
-             cheats.is_canonical_extraction_only) = orig
+             cheats.is_canonical_extraction_only, Q.layer2.gate) = orig
+
+
+def test_layer2_gate() -> None:
+    """Owner ruling Q39 (2026-09-29): `queue done` refuses unless the latest
+    layer-2 verdict recorded in memory/grind/<func>/layer2.jsonl is a PASS on
+    the EXACT body being landed — and regen's drop of an item it previously
+    listed is the same completion, so it is gated the same way.
+
+    The retro-audit behind the ruling found landings with no recorded PASS and
+    PASSes given on an earlier body than the one landed. Pinned: the key is
+    the grinder's review key (one hash, not two); a comment-only edit keeps
+    it; no record, a later FAIL, or a changed body all refuse; the refusal
+    names the fix; and neither mark_done nor regen has a way around it.
+    """
+    from engine import layer2
+    from tools.grinder import grindlib
+
+    src = ("/* header */\nint other(void) { return 1; }\n"
+           "int func_L2(int a) {\n    /* why */\n    return a + 1;\n}\n")
+    commented = src.replace("/* why */", "/* a different, longer comment */")
+    changed = src.replace("a + 1", "a + 2")
+
+    # 1. ONE key: the grinder's comment/whitespace-insensitive body hash.
+    eq("layer2: C key is the grinder's review key",
+       layer2.body_key(src, "func_L2"), ("c", grindlib.body_hash(src, "func_L2")))
+    eq("layer2: comment-only edit keeps the hash",
+       layer2.body_key(commented, "func_L2"), layer2.body_key(src, "func_L2"))
+    eq("layer2: whitespace-only edit keeps the hash",
+       layer2.body_key(src.replace("a + 1", "a+1"), "func_L2"),
+       layer2.body_key(src, "func_L2"))
+    check("layer2: a code change moves the hash",
+          layer2.body_key(changed, "func_L2") != layer2.body_key(src, "func_L2"))
+    check("layer2: a sibling function's edit does not move the hash",
+          layer2.body_key(src.replace("return 1;", "return 7;"), "func_L2")
+          == layer2.body_key(src, "func_L2"))
+    eq("layer2: no body -> no key (fail closed)",
+       layer2.body_key("int x;\n", "func_L2"), None)
+    knr = "void func_KR(a) s16 *a; {\n    *a = 1;\n}\nint other(void) { return 1; }\n"
+    check("layer2: a K&R definition is keyed by itself, not the whole file",
+          layer2.body_key(knr, "func_KR")
+          == layer2.body_key(knr.replace("return 1;", "return 7;"), "func_KR"))
+
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        saved = (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
+                 cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
+                 inlineasm.file_func_cheat_asm_count, completion.source_issues,
+                 Q.O.verify)
+        try:
+            Path("src").mkdir()
+            Path("src/l2tu.c").write_text(src)
+            rec_p = Path("memory/grind/func_L2/layer2.jsonl")
+
+            # 2. whole-body asm is keyed by its block AND the included .s
+            Path("asm/funcs").mkdir(parents=True)
+            Path("asm/funcs/func_AS.s").write_text("glabel func_AS\n  jr $ra\n  nop\n")
+            asm_src = 'INCLUDE_ASM("asm/funcs", func_AS);\n'
+            k1 = layer2.body_key(asm_src, "func_AS")
+            eq("layer2: INCLUDE_ASM body keys as asm", (k1 or ("", ""))[0], "asm")
+            Path("asm/funcs/func_AS.s").write_text("glabel func_AS\n  jr $ra\n  li $v0, 1\n")
+            check("layer2: editing the included .s moves the asm key",
+                  layer2.body_key(asm_src, "func_AS") != k1)
+
+            # 3. the gate itself
+            why = layer2.gate("func_L2", "l2tu")
+            check("layer2: no record -> refused", bool(why))
+            check("layer2: refusal names the fix",
+                  "layer2 record func_L2" in (why or "") and "Q39" in (why or ""))
+
+            r = layer2.record("func_L2", "PASS", "rev-A", "match", "ok", stem="l2tu",
+                              expect_hash="0" * 16)
+            check("layer2: record refuses a body other than the reviewed one",
+                  r["ok"] is False and not rec_p.exists())
+            r = layer2.record("func_L2", "PASS", "rev-A", "bogus", stem="l2tu")
+            check("layer2: record refuses an unknown scope", r["ok"] is False)
+
+            h = layer2.body_key(src, "func_L2")[1]
+            r = layer2.record("func_L2", "PASS", "rev-A", "match", "ok", stem="l2tu",
+                              expect_hash=h)
+            check("layer2: PASS recorded", r["ok"] is True and rec_p.exists())
+            rec = json.loads(rec_p.read_text().splitlines()[-1])
+            eq("layer2: record fields",
+               sorted(rec), sorted(["func", "verdict", "body_hash", "body_kind", "file",
+                                    "reviewer", "scope", "date", "head", "notes"]))
+            eq("layer2: PASS on the same body -> gate open",
+               layer2.gate("func_L2", "l2tu"), None)
+
+            Path("src/l2tu.c").write_text(commented)
+            eq("layer2: comment-only edit after review keeps the PASS",
+               layer2.gate("func_L2", "l2tu"), None)
+
+            Path("src/l2tu.c").write_text(changed)
+            why = layer2.gate("func_L2", "l2tu") or ""
+            check("layer2: PASS on a different body hash -> refused",
+                  "changed after review" in why and h in why)
+
+            Path("src/l2tu.c").write_text(src)
+            layer2.record("func_L2", "FAIL", "rev-B", "match", "construct X", stem="l2tu")
+            why = layer2.gate("func_L2", "l2tu") or ""
+            check("layer2: a later FAIL on the same body revokes the PASS",
+                  "latest layer-2 verdict for func_L2 is FAIL" in why)
+            layer2.record("func_L2", "NEEDS_USER", "rev-C", "match", stem="l2tu")
+            check("layer2: NEEDS_USER is not a PASS",
+                  "is NEEDS_USER" in (layer2.gate("func_L2", "l2tu") or ""))
+
+            layer2.record("func_L2", "PASS", "rev-D", "match", stem="l2tu")
+            eq("layer2: a fresh PASS on the current body reopens the gate",
+               layer2.gate("func_L2", "l2tu"), None)
+            with open(rec_p, "a") as fh:
+                fh.write("not json\n")
+            check("layer2: a malformed record fails closed",
+                  "not JSON" in (layer2.gate("func_L2", "l2tu") or ""))
+            rec_p.unlink()
+
+            # 4. mark_done: refuses on the gate BEFORE the (minutes-long) oracle
+            #    check, and completes once the PASS matches.
+            qp = Path("queue.json")
+            seed = {"items": [{"func": "func_L2", "file": "l2tu", "distance": 0,
+                               "verdict": "C", "rules": 0, "status": "active"}],
+                    "counts": {}}
+            qp.write_text(json.dumps(seed))
+            verified = []
+            Q.QUEUE_PATH = str(qp)
+            Q._rule_count = lambda f: 0
+            cheats.func_prologue_count = lambda f: 0
+            cheats.canonical_asm_funcs = lambda: set()
+            cheats.maspsx_gate_entries = lambda f: []
+            inlineasm.file_func_cheat_asm_count = lambda s, f: 0
+            completion.source_issues = lambda *a, **k: []
+            Q.O.verify = lambda rebuild=False: (verified.append(1) or
+                                                {"build_matches": True,
+                                                 "build_sha1": "deadbeef"})
+            r = Q.mark_done("func_L2")
+            check("layer2: queue done REFUSES with no record",
+                  r["ok"] is False and "layer-2 gate" in r.get("reason", ""))
+            eq("layer2: refusal comes before the oracle check", verified, [])
+            eq("layer2: refused item stays queued",
+               [it["func"] for it in Q.load()["items"]], ["func_L2"])
+            layer2.record("func_L2", "PASS", "rev-A", "match", stem="l2tu")
+            Path("src/l2tu.c").write_text(changed)
+            r = Q.mark_done("func_L2")
+            check("layer2: queue done REFUSES a PASS on an earlier body",
+                  r["ok"] is False and "changed after review" in r.get("reason", ""))
+            Path("src/l2tu.c").write_text(commented)
+            r = Q.mark_done("func_L2")
+            check("layer2: queue done ACCEPTS a PASS on the same body (comments differ)",
+                  r["ok"] is True and r.get("completion") == "COMPLETED-C")
+            rec_p.unlink()
+
+            # 5. regen: dropping an item it LISTED is a completion — gated too,
+            #    with or without --no-preserve. Never-listed completions are not.
+            Path("build/src").mkdir(parents=True)
+            Path("build/src/l2tu.o").write_text("")
+            saved_regen = (P.c_stems, canonical.scan_all, cheats.is_jtbl_infra,
+                           cheats.is_canonical_extraction_only,
+                           Q.sandbox.build_stripped_object, score._o_func_table,
+                           score.score_func)
+            P.c_stems = lambda: ["l2tu"]
+            canonical.scan_all = lambda: []
+            cheats.is_jtbl_infra = lambda f: False
+            cheats.is_canonical_extraction_only = lambda f: False
+            Q.sandbox.build_stripped_object = lambda *a, **k: {}
+            score._o_func_table = lambda o: {"func_L2": (0, 0), "other": (0, 0)}
+            score.score_func = lambda a, b, f: {"score": 0}
+            try:
+                for preserve in (True, False):
+                    qp.write_text(json.dumps(seed))
+                    items = Q.generate(workdir=str(Path(td) / "wd"), preserve=preserve)["items"]
+                    eq(f"layer2: regen (preserve={preserve}) HOLDS a listed item without a PASS",
+                       [it["func"] for it in items], ["func_L2"])
+                    check(f"layer2: held item says why (preserve={preserve})",
+                          "layer-2 gate" in items[0].get("layer2_pending", ""))
+                layer2.record("func_L2", "PASS", "rev-A", "match", stem="l2tu")
+                qp.write_text(json.dumps(seed))
+                eq("layer2: regen drops a listed item once its PASS matches",
+                   Q.generate(workdir=str(Path(td) / "wd"))["items"], [])
+            finally:
+                (P.c_stems, canonical.scan_all, cheats.is_jtbl_infra,
+                 cheats.is_canonical_extraction_only,
+                 Q.sandbox.build_stripped_object, score._o_func_table,
+                 score.score_func) = saved_regen
+        finally:
+            os.chdir(cwd)
+            (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
+             cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
+             inlineasm.file_func_cheat_asm_count, completion.source_issues,
+             Q.O.verify) = saved
 
 
 def test_orphaned_local_decls() -> None:
@@ -2916,8 +3106,9 @@ def test_queue_write_serialization() -> None:
             saved = (Q._rule_count, Q.cheats.func_prologue_count,
                      Q.cheats.maspsx_gate_entries, Q.cheats.canonical_asm_funcs,
                      Q.inlineasm.file_func_cheat_asm_count,
-                     completion.source_issues, Q.O.verify)
+                     completion.source_issues, Q.O.verify, Q.layer2.gate)
             Q._rule_count = lambda f: 0
+            Q.layer2.gate = lambda f, s: None  # the Q39 gate has its own test
             Q.cheats.func_prologue_count = lambda f: 0
             Q.cheats.maspsx_gate_entries = lambda f: []
             Q.cheats.canonical_asm_funcs = lambda: set()
@@ -2955,7 +3146,7 @@ def test_queue_write_serialization() -> None:
                 (Q._rule_count, Q.cheats.func_prologue_count,
                  Q.cheats.maspsx_gate_entries, Q.cheats.canonical_asm_funcs,
                  Q.inlineasm.file_func_cheat_asm_count,
-                 completion.source_issues, Q.O.verify) = saved
+                 completion.source_issues, Q.O.verify, Q.layer2.gate) = saved
 
             # --- 6. Atomicity hygiene: the write-then-rename staging file is
             #        never left behind (a reader must never find a partial
@@ -3789,6 +3980,7 @@ def main() -> int:
     test_completion_region_grants()
     test_buildstamp()
     test_canonical_completion_is_the_drop()
+    test_layer2_gate()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()

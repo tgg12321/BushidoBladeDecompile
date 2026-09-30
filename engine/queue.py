@@ -77,6 +77,7 @@ from . import buildconfig as cfg
 from . import canonical
 from . import cheats
 from . import inlineasm
+from . import layer2
 from . import oracle as O
 from . import pipeline as P
 from . import sandbox
@@ -287,6 +288,24 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     # does, the save conflicts loudly instead of resurrecting the item.
     tok = _fingerprint()
     prev = {}
+    # Owner ruling Q39: an item the previous queue LISTED is a completion when
+    # regen drops it, so the drop needs the same layer-2 PASS `queue done`
+    # does — read regardless of `preserve`, or `regen --no-preserve` would be
+    # the bypass. Items never listed (historical completions) are not gated.
+    listed = ({it["func"]: it for it in load().get("items", [])}
+              if Path(QUEUE_PATH).exists() else {})
+
+    def _held(func, stem, dist, rules):
+        """The kept entry for a scan-complete item that lacks a layer-2 PASS
+        on its current body, or None when the drop may proceed."""
+        if func not in listed:
+            return None
+        why = layer2.gate(func, stem)
+        if why is None:
+            return None
+        return {**listed[func], "file": stem, "distance": dist, "rules": rules,
+                "layer2_pending": why[:400]}
+
     if preserve and Path(QUEUE_PATH).exists():
         for it in load().get("items", []):
             # `owner_override` is carried across too: routing here is mechanical
@@ -338,10 +357,15 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # unscored.
                 cheats_unscored = inlineasm.file_func_cheat_asm_count(stem, func)
                 source_ok = not completion.source_issues(stem, func, func in canon_funcs)
-                if rules == 0 and prologue == 0 and source_ok and (
-                        cheats_unscored == 0 or func in canon_funcs
-                        or (cheats_unscored < 0 and _not_a_c_function(stem, func))):
-                    continue  # nothing to track
+                if rules == 0 and prologue == 0 and source_ok:
+                    if cheats_unscored == 0 or func in canon_funcs:
+                        held = _held(func, stem, -1, rules)
+                        if held is None:
+                            continue  # completed
+                        items.append(held)
+                        continue
+                    if cheats_unscored < 0 and _not_a_c_function(stem, func):
+                        continue  # nothing to track
                 dist = -1
                 scorable = False
                 if cheats_unscored > 0 and _no_c_body(stem, func):
@@ -401,6 +425,10 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # must drop them too, or they sit in the queue forever waiting to be
                 # rediscovered (each ~$3 of agent time per false top).
                 if func in canon_funcs:
+                    held = _held(func, stem, dist, rules)
+                    if held is None:
+                        continue
+                    items.append(held)
                     continue
                 # COMPLETED-C: 0 rules + 0 distance + 0 cheat-asm = pure-C byte-clean.
                 #
@@ -410,14 +438,20 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # 2026-08-06). The one safe exception is a symbol that is not a
                 # C-level function at all (`_not_a_c_function`), which is not
                 # decomp work in the first place.
-                if dist == 0 and (cheat_count == 0
-                                  or (cheat_count < 0 and _not_a_c_function(stem, func))):
+                if dist == 0 and cheat_count == 0:
+                    held = _held(func, stem, dist, rules)
+                    if held is None:
+                        continue
+                    items.append(held)
+                    continue
+                if dist == 0 and cheat_count < 0 and _not_a_c_function(stem, func):
                     continue
             if func in prev:  # sticky parked
                 pv = prev[func]
                 # parked -> sticky regardless (until the user un-parks via regen
                 # after fixing the underlying blocker).
                 kept = {**pv, "file": stem, "distance": dist, "rules": rules}
+                kept.pop("layer2_pending", None)  # no longer scan-complete
                 if (kept.get("verdict") in ("ASM-SUSPECT", "ASM-STRUCTURAL")
                         and "hand_coded_tier" not in kept):
                     # Record the evidence on sticky items too — without this the
@@ -516,7 +550,9 @@ def mark_done(func: str) -> dict:
     oracle. (2) is what stops a cheated 'match' (register pins, plain
     `register` allocator hints, `move $N,$N` injection, scheduling barriers)
     from being recorded as completed — SHA1 alone can't catch it, since cheat
-    constructs can produce the right bytes.
+    constructs can produce the right bytes. (4) the latest layer-2 verdict in
+    memory/grind/<func>/layer2.jsonl is a PASS on the CURRENT body hash (owner
+    ruling Q39, engine/layer2.py) — no override exists.
 
     On success, the function is REMOVED from the queue (queue presence =
     INCOMPLETE; completed items don't live there)."""
@@ -625,6 +661,9 @@ def mark_done(func: str) -> dict:
     issues = completion.source_issues(item['file'], func)
     if issues:
         return {'ok': False, 'func': func, 'reason': '; '.join(issues)}
+    unreviewed = layer2.gate(func, item["file"])
+    if unreviewed:
+        return {"ok": False, "func": func, "reason": unreviewed}
     v = O.verify(rebuild=False)
     if not v.get("build_matches"):
         return {"ok": False, "func": func,
