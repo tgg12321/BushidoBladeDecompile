@@ -1379,6 +1379,26 @@ values.
   block to a dying input; global.c's allocno priority order). The dumps show
   that decision going the target's way in the reuse spelling and the other
   way in the one-variable-per-value spelling.
+  **Any named compiler pass (owner ruling 2026-09-30, twenty-ninth batch, Q58).**
+  The question put to the owner, verbatim: "Ruling 11 (reused variables) requires the proof's cause to be a
+  register-allocation decision. Should a cause in another named compiler pass (e.g. common-subexpression
+  elimination), proven with saved compiler dumps to the same standard, also count?" Owner (Trenton) chose,
+  verbatim: **"Yes, any named pass (Recommended)"**, whose text is: "Same dump-proof bar and all other Ruling 11
+  conditions unchanged; only the 'allocator' restriction is widened. Helps func_8001F2E4." (Record:
+  docs/grind/owner-rulings-2026-09-26.md, twenty-ninth batch.) The author's narrowing: the decision named under
+  (2) may be made in any named pass of `tools/gcc-2.7.2`, not only the register allocator (e.g. cse.c's
+  common-subexpression elimination). It is named by pass and by source location exactly as (2) requires, and the
+  dumps show it going the target's way in the reuse spelling and the other way in the one-variable-per-value
+  spelling. (1) stands unchanged and, where the pass is not the allocator, the ledger also banks, for BOTH
+  spellings, that pass's own dump compiled with the build's flags (e.g. `.cse` / `.cse2`, cc1 `-ds` / `-dt`;
+  `.combine`, `-dc`) or the instrumented cc1's output for it, with the command lines; excerpts are enough if
+  they carry the pseudo numbers and the decision at issue. Only the "allocator" restriction of (2) widens.
+  (3) (necessity, not effect, including the Q30 set-aside and the Q31 mechanism + search standard, whose (a)
+  "allocator mechanism" is read as the mechanism in the pass named under this clause), (4) and every other prong
+  of (A)-(H) apply unchanged; a record showing only that the reuse scores better, with no named mechanism, still
+  fails. This applies to Ruling 11 only: Ruling 12's (D), which cites the "Ruling 11 (D) standard", keeps its
+  own text unchanged. Nothing is pre-decided: func_8001F2E4 is a fresh submission. Record:
+  docs/grind/decisions.md 2026-09-30 OWNER RULING — Ruling 11 (D)(2) accepts any named compiler pass.
   (3) **Necessity, not effect.** The ledger states the property of the reuse
   spelling that the decision depends on (e.g. "the pseudo is live in more
   than one basic block, so local-alloc does not allocate it"), and shows that
@@ -1465,7 +1485,9 @@ and 9 each close with a Known weakness: the only codegen effect of their
 reuse is one pseudo spanning several sites, and allocator effect alone is
 never sufficient. That sentence stands for those rulings and for every
 variable this ruling does not admit. Ruling 11 is the owner's one exception to
-it: it admits a variable on allocator NECESSITY, proven under (D), never on a measured effect. Since the
+it: it admits a variable on allocator NECESSITY (since the owner's 2026-09-30 Q58 ruling, necessity by a
+decision in any named compiler pass, § "Any named compiler pass" in (D)), proven under (D), never on a
+measured effect. Since the
 owner's 2026-09-28 Q31 ruling, (D)(3) is met by a named mechanism plus a banked search in which no
 counting one-variable-per-value spelling reaches the target (§ "Mechanism + search" in (D)); a record
 showing only that the reuse scores better still fails.

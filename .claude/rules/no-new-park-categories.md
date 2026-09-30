@@ -922,7 +922,8 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
        unchanged. For a struct member (Q46 extension below), the union is
        that member's one declaration in the struct type's one definition,
        where the union replaces the adjacent members it spans, at their
-       existing offsets: the struct's size and
+       existing offsets: the struct's size (except for the trailing
+       alignment padding the Q57 clause below admits) and
        every other member's offset are unchanged, and the word member is
        not evidence for the struct's layout, which rests on its own
        evidence. The struct may be a global, a local or reached through a
@@ -974,6 +975,81 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     ((6)) stay. The Q36 cast store below stays locals-only (its (7)).
     Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — Q33 union
     word views on struct members.
+
+    **Trailing alignment padding (owner ruling 2026-09-30, twenty-ninth
+    batch, Q57).** The question put to the owner, verbatim: "Q33/Q46 union
+    word views: when an s32 union member makes the compiler round a
+    struct's size up for alignment (0x92 -> 0x94), with no member offset
+    changed and no filler added, is that allowed?" Owner (Trenton) chose,
+    verbatim: **"Allow it (Recommended)"**, whose text is: "Allowed when
+    every member offset is unchanged, no filler member is added, and the
+    build stays byte-identical. Unblocks the SelWork cluster." (Record:
+    docs/grind/owner-rulings-2026-09-26.md, twenty-ninth batch.) What
+    follows is the author's narrowing, not the owner's words. In the
+    struct-member clause of (5), "the struct's size ... unchanged" is
+    relaxed ONLY for the size change the compiler itself makes when the
+    union's `s32` or `u32` word member raises the struct's alignment to
+    four bytes, so that sizeof rounds up to the next multiple of four (e.g.
+    SelWork_800768DC, 0x92 -> 0x94). That size change is admitted ONLY when
+    ALL of (a)-(d) hold:
+    (a) **Every member offset is unchanged.** Every member of the struct,
+        the union included, sits at the offset it had before the union
+        replaced the adjacent members it spans; the added bytes lie after
+        the last member.
+    (b) **No filler member is added.** No member is declared, and no
+        member is widened, to occupy or account for the added bytes: they
+        are the compiler's own trailing padding. (2)'s ban on a padding or
+        filler member added for the union stands unchanged.
+    (c) **The build stays byte-identical.** Full-build SHA1 == oracle with
+        the grown struct in place, and sandbox 0 for every function the
+        commit changes, as (6) already requires.
+    (d) **Whole-program layout check** (author's narrowing of "every member
+        offset is unchanged"). Search the C in `src/` and `include/` AND the
+        target's own bytes (`asm/funcs`, asm data, EXE/disc pointer words)
+        for: (1) any containing layout — the struct as an array element or
+        as a member of another aggregate; (2) any use of the struct's size
+        or stride — `sizeof` in any spelling, a C literal or asm immediate,
+        a computed multiplier or stride (shift/add sequences, mult by a
+        loaded constant), or a copy/clear/allocation length; (3) any symbol,
+        dlabel, pointer word or access that starts inside the added bytes
+        `[old end, new end)`, or a partial access that reaches into them.
+        Record the search and every hit in the ledger; unsearched = FAIL.
+        Each hit is decided by the FIRST of these steps that applies:
+        1. **Added bytes — FAIL.** Anything (a symbol, dlabel, pointer
+           word, access, or copy/clear sequence) that starts inside an
+           instance's added bytes `[old end, new end)`, or reaches into
+           them, unless it is a single access or copy/clear sequence that
+           starts at that instance's base and covers exactly the new size.
+           Another object or member lives there.
+        2. **Unrelated — ignored, with the reason recorded.** The hit does
+           not address this struct type or any instance of it, e.g. an
+           equal immediate used for another quantity, or an offset from a
+           base of another type.
+        3. **Containing layout — FAIL.** The struct as an array element (a
+           stride of any size) or as a member of another aggregate.
+        4. **Old size — FAIL.** Any use of the struct's old size (`sizeof`
+           in any spelling, a C literal or asm immediate, a computed
+           multiplier, a copy/clear/allocation length). An original type
+           carrying the word member would itself be rounded, so the old
+           size is evidence against the union model.
+        5. **New size — passes.** A use of the new size, or a single access
+           or copy/clear sequence starting at the base and covering exactly
+           the new size.
+        6. **Anything else — FAIL.**
+
+        The instructions of one copy or clear sequence that starts at an
+        instance's base count as one access, judged by the sequence's total
+        length.
+    The ledger records the struct's size without and with the union, and
+    (6)'s layer-2 checks (a)-(d) together with (1)-(5). Nothing else
+    changes: (1)-(7) apply unchanged at every site, the global and local
+    clauses of (5) are unchanged, and a size change of any other origin (a
+    member moved, added or widened, or a union at a new offset) still fails
+    (5). Nothing is pre-decided: the SelWork cluster
+    (memory/grind/func_800768DC/selwork-cluster-2026-09-30.md) is a fresh
+    submission judged against (1)-(7) and this clause. Record:
+    docs/grind/decisions.md 2026-09-30 OWNER RULING — Q33 trailing
+    alignment padding.
   - **Amendment: one cast store on a local array (owner ruling 2026-09-29,
     twentieth batch, Q36, a follow-up to Q33).** The question put to the
     owner, verbatim: "Follow-up on the union answer. For func_8005E54C's

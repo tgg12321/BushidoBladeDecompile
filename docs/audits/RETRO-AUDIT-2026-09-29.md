@@ -54,11 +54,13 @@ Reopened (INCLUDE_ASM + queue; bodies and frontier banked in `memory/grind/<f>/`
   shipped bytes; unprovable rows removed and their functions reopened.
 - **Q57 — allowed:** a Q33/Q46 union whose s32 member rounds sizeof up for alignment (e.g. 0x92→0x94), when
   every member offset is unchanged, no filler is added and the build is byte-identical. Unblocks the SelWork
-  cluster. **Rule text not yet encoded** — needs a scribe pass + layer-2 (Q33 condition (5) in
-  no-new-park-categories.md).
+  cluster. **Rule text encoded** in .claude/rules/no-new-park-categories.md (Q33 condition (5) and
+  § "Trailing alignment padding (… Q57)" after the Q46 extension); decisions.md 2026-09-30 OWNER RULING — Q33
+  trailing alignment padding.
 - **Q58 — widened:** Ruling 11 (D)(2) accepts any named compiler pass (e.g. cse) as the necessity mechanism,
-  with the same dump-proof bar and all other conditions. Helps func_8001F2E4. **Rule text not yet encoded**
-  (ordinary-c-judge-decidable.md Ruling 11).
+  with the same dump-proof bar and all other conditions. Helps func_8001F2E4. **Rule text encoded** in
+  .claude/rules/ordinary-c-judge-decidable.md Ruling 11 (D), § "Any named compiler pass (… Q58)"; decisions.md
+  2026-09-30 OWNER RULING — Ruling 11 (D)(2) accepts any named compiler pass.
 - **Q59 — no change:** keep `/* FAKE */` even where the layout suggests the original wrote it that way.
 - **Q60 — deferred:** no project-wide sweep; audit functions as other work touches them.
 

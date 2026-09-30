@@ -30507,3 +30507,50 @@ FAIL ground for clearly-fine ordinary C meeting 13 (B)'s test, which still yield
 construct and keeps "in doubt, FAIL". 13 (B) is made standing together with 13 (D)'s wall, as its limit; 13 (C)/(E)
 and Ruling 14 (B)-(D) stay run-scoped. "Standing" is the author's reading, flagged to the owner. The Grinder's
 frozen Judge policy is not edited by this record.
+
+## 2026-09-30 — OWNER RULING — Q33 trailing alignment padding (`.claude/rules/no-new-park-categories.md` § aggregate merge, amendment to prong (d), Trailing alignment padding (Q57))
+
+Twenty-ninth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 29, Q57; recorded in 06d898c5f,
+rule text encoded here). Owner chose "Allow it (Recommended)": "Allowed when every member offset is unchanged, no
+filler member is added, and the build stays byte-identical. Unblocks the SelWork cluster." The struct-member clause
+of Q33 condition (5) ("the struct's size ... unchanged") is relaxed only for the compiler's own round-up of sizeof
+to a multiple of four when the union's `s32`/`u32` word member raises the struct's alignment (SelWork_800768DC 0x92
+-> 0x94), and only when every member offset is unchanged, no filler member is added or widened, full-build SHA1
+== oracle, and (d) a whole-program layout check (author's narrowing of "every member offset is unchanged"): search
+the C in src/ and include/ AND the target's own bytes (asm/funcs, asm data, EXE/disc pointer words) for (1) any
+containing layout (the struct as an array element or a member of another aggregate), (2) any use of the struct's
+size or stride (sizeof in any spelling, a C literal or asm immediate, a computed multiplier or stride such as
+shift/add sequences or mult by a loaded constant, or a copy/clear/allocation length), and (3) any symbol, dlabel,
+pointer word or access that starts inside the added bytes [old end, new end), or a partial access reaching into
+them. The search and every hit are recorded in the ledger; unsearched = FAIL. Each hit is decided by the FIRST of
+these steps that applies:
+1. Added bytes — FAIL. Anything (a symbol, dlabel, pointer word, access, or copy/clear sequence) that starts inside
+   an instance's added bytes [old end, new end), or reaches into them, unless it is a single access or copy/clear
+   sequence that starts at that instance's base and covers exactly the new size. Another object or member lives
+   there.
+2. Unrelated — ignored, with the reason recorded. The hit does not address this struct type or any instance of it,
+   e.g. an equal immediate used for another quantity, or an offset from a base of another type.
+3. Containing layout — FAIL. The struct as an array element (a stride of any size) or as a member of another
+   aggregate.
+4. Old size — FAIL. Any use of the struct's old size (sizeof in any spelling, a C literal or asm immediate, a
+   computed multiplier, a copy/clear/allocation length). An original type carrying the word member would itself be
+   rounded, so the old size is evidence against the union model.
+5. New size — passes. A use of the new size, or a single access or copy/clear sequence starting at the base and
+   covering exactly the new size.
+6. Anything else — FAIL.
+
+The instructions of one copy or clear sequence that starts at an instance's base count as one access, judged by
+the sequence's total length.
+The ledger records both sizes; layer-2 checks (a)-(d) with (1)-(5). Q33 (1)-(7), the Q46 extension and the
+global/local clauses of (5) are otherwise unchanged. Nothing is pre-decided: the SelWork cluster is a fresh
+submission.
+
+## 2026-09-30 — OWNER RULING — Ruling 11 (D)(2) accepts any named compiler pass (`.claude/rules/ordinary-c-judge-decidable.md` § Ruling 11 (D), Any named compiler pass (Q58))
+
+Twenty-ninth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 29, Q58; recorded in 06d898c5f,
+rule text encoded here). Owner chose "Yes, any named pass (Recommended)": "Same dump-proof bar and all other Ruling
+11 conditions unchanged; only the 'allocator' restriction is widened. Helps func_8001F2E4." The necessity mechanism
+of Ruling 11 (D)(2) may be a decision in any named pass of `tools/gcc-2.7.2` (e.g. cse.c), named by pass and source
+location, with (1)'s dumps plus that pass's own dump for both spellings (e.g. `.cse`/`.cse2`, `.combine`). (D)(3)
+(with the Q30 set-aside and Q31 mechanism + search), (D)(4) and every other prong of (A)-(H) are unchanged; Ruling
+12's (D) keeps its own text. Nothing is pre-decided: func_8001F2E4 is a fresh submission.
