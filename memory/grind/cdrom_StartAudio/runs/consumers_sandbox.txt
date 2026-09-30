@@ -1,0 +1,18 @@
+# `python3 -m engine.cli sandbox <f> --disable all` on the Q43 tree (every C consumer of CdState)
+cdrom_Init             score=0 target_insns=21 build_insns=21 file=code6cac_b4_post
+cdrom_ReadyCallback    score=0 target_insns=55 build_insns=55 file=code6cac_b4_post
+cdrom_IsIdle           score=0 target_insns=4 build_insns=4 file=code6cac_b5_post
+cdrom_StartRead        score=0 target_insns=39 build_insns=39 file=code6cac_b5_post
+cdrom_StartReadAt      score=0 target_insns=29 build_insns=29 file=code6cac_b5_post
+cdrom_Pause            score=0 target_insns=26 build_insns=26 file=code6cac_b5_post
+game_FrameLoop         score=0 target_insns=37 build_insns=37 file=code6cac_b5_post
+cdrom_StartAudio       score=0 target_insns=79 build_insns=79 file=code6cac_b5_post
+func_80036940          score=0 target_insns=274 build_insns=274 file=code6cac_b5
+func_80037110          score=0 target_insns=39 build_insns=39 file=code6cac_b5_post
+func_800371AC          score=0 target_insns=15 build_insns=15 file=code6cac_b5_post
+func_800371E8          score=0 target_insns=4 build_insns=4 file=code6cac_b5_post
+func_800371F8          score=0 target_insns=15 build_insns=15 file=code6cac_b5_post
+func_80037234          score=0 target_insns=7 build_insns=7 file=code6cac_b5_post
+func_80037250          score=0 target_insns=4 build_insns=4 file=code6cac_b5_post
+func_80037260          score=0 target_insns=24 build_insns=24 file=code6cac_b5_post
+func_800372C0          score=0 target_insns=13 build_insns=13 file=code6cac_b5_post

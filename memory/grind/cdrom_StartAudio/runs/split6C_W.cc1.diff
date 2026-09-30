@@ -1,0 +1,36 @@
+--- target
++++ split6C_W.cc1
+@@ -11,23 +11,19 @@
+ j @
+ move v0,zero
+-sll v0,a0,0x10
+-lui v1,@hi(0x8009)
+-addiu v1,v1,@lo(0xec34)
+-sra v0,v0,0xd
+-addu v0,v0,v1
+ lui at,@hi(0x8010)
+ sh a0,@lo(0x1e60)(at)
+-lw a0,0(v0)
+-lw a1,4(v0)
++sll a0,a0,0x10
++sra a0,a0,0xd
++lui v0,@hi(0x8009)
++addiu v0,v0,@lo(0xec34)
++addu a0,a0,v0
++lw v0,0(a0)
+ lui at,@hi(0x8010)
+-sw a0,@lo(0x1e6c)(at)
++sw v0,@lo(0x1e6c)(at)
++lw v0,4(a0)
+ lui at,@hi(0x8010)
+-sw a1,@lo(0x1e70)(at)
+-lui a0,@hi(0x8010)
+-lh a0,@lo(0x1e60)(a0)
++sw v0,@lo(0x1e70)(at)
++jal @
+ nop
+-sll a0,a0,0x3
+-jal @
+-addu a0,a0,v1
+ lui v1,@hi(0x8010)
+ lh v1,@lo(0x1e60)(v1)

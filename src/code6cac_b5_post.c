@@ -46,7 +46,7 @@ s32 cdrom_StartRead(s32 a0, s32 a1) {
     D_80101E58.rec.unk08 = 0;
     D_80101E58.rec.unk02 = 2;
     reloaded = D_80101E58.rec.pair.b;
-    D_80101E58.rec.unk3E = 0;
+    D_80101E9E = 0;
     D_80101E58.rec.unk18 = (u32)(reloaded + 0x7FF) >> 11;
     return 1;
 }
@@ -75,9 +75,9 @@ u32 func_80036F28(s32 arg0) {
     return (&g_cd_file_table_plus_0x4)[arg0 * 2];
 }
 void game_FrameLoop(void) {
-    u16 *s0;
+    u16 *p;
     func_8003AA78();
-    s0 = &D_80101E58.rec.unk3E;
+    p = &D_80101E9E;
     while (1) {
         if (cdrom_IsIdle() != 0) {
             break;
@@ -88,39 +88,21 @@ void game_FrameLoop(void) {
             func_8005C6D0();
         }
         func_800174F4();
-        *s0 = *s0 + 2;
+        *p = *p + 2;
         VSync(2);
     }
     func_8003AAB0();
 }
 extern void CdControlB(s32, u8 *, s32);
 s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
-    s16 *s0 = &D_80101E58.rec.unk02;
-
-    if (*s0 != 0) {
+    if (D_80101E58.rec.unk02 != 0) {
         return 0;
     }
 
     {
         extern u8 g_cd_file_table;
-        ReplayCamRec *rec = &D_80101E58.rec;
-        s32 idx;
-        u8 *cam;
-        CamPair *entry;
-
-        rec->unk00 = arg0;
-        /* FAKE: reading the index back out of the record (instead of reusing
-         * arg0) exists to win a scheduler tie-break, not to compute anything
-         * new.  sched.c rank_for_schedule() breaks equal-priority ties on
-         * INSN_LUID, i.e. on original RTL order, so splitting the sign-extend
-         * (this read-back -> sll16/sra16) from the scaling (idx * 8 -> sll3,
-         * which combine fuses back into the sra as sra13 AT THE sll3's
-         * position) and materialising the table base BETWEEN them is what puts
-         * the three insns in target's sll / lui+addiu / sra order. */
-        idx = rec->unk00;
-        cam = &g_cd_file_table;
-        entry = (CamPair *)(cam + idx * 8);
-        rec->pair = *entry;
+        D_80101E58.rec.unk00 = arg0;
+        D_80101E58.rec.pair = *(CamPair *)(&g_cd_file_table + D_80101E58.rec.unk00 * 8);
     }
 
     {
@@ -133,9 +115,9 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
         D_80101E58.rec.unk30 = 5;
     } else {
         D_80101E58.rec.unk34 = 1;
-        D_80101E58.filter.file = 1;
-        D_80101E58.filter.chan = arg1;
-        CdControlB(0xD, (u8 *)&D_80101E58.filter, 0);
+        D_80101E58.file = 1;
+        D_80101E58.chan = arg1;
+        CdControlB(0xD, &D_80101E58.file, 0);
         D_80101E58.rec.unk30 = 0xC8;
     }
 

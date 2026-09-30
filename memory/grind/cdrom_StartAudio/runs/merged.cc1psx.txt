@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "func": "cdrom_StartAudio",
+  "file": "code6cac_b5_post",
+  "candidate": "memory/grind/cdrom_StartAudio/candidates/merged.c",
+  "candidate_sha": "ac4d1ba72945",
+  "ours": {
+    "score": 0,
+    "target_insns": 79,
+    "build_insns": 79
+  },
+  "psx": {
+    "score": 0,
+    "target_insns": 79,
+    "build_insns": 79
+  },
+  "closer": false,
+  "verdict": "SOURCE-SIDE: the original compiler is no closer from this source \u2014 the residual is a spelling not yet found"
+}

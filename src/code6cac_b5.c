@@ -75,7 +75,7 @@ void func_80036940(void) {
         if (++D_80101E58.rec.unk2C >= 3) {
             D_80101E58.rec.dest_buffer = D_80101E58.rec.unk1C;
             D_80101E58.rec.sectors_remaining = D_80101E58.rec.unk18;
-            D_80101E58.rec.expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
+            g_cdread_expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
             CdControl(2, (s32)&D_80101E58.rec.pair, 0);
             D_80101E58.rec.unk38 = 0;
             D_80101E58.rec.unk02 = 5;

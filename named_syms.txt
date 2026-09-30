@@ -1715,8 +1715,8 @@ g_char_id_saved_b                                       = 0x800A3915;  /* paired
 /* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
 /* playback state.  D_80101E6C is the current BCD frame position; */
 /* `cdrom_FramesToBcd(cdrom_BcdToFrames(D) + arg2, D)` advances it. */
-/* 2026-09-26: 0x80101E58..0x80101EA7 is ONE object, CdState D_80101E58 */
-/* (include/code6cac.h); the per-word rows in that span are retired. */
+/* 0x80101E58..0x80101E99 is ONE object, CdState D_80101E58 (include/code6cac.h, */
+/* owner ruling Q43, 2026-09-30); the per-word rows in that span are retired. */
 
 /* === Memcard file-list state (2026-05-17) -- 3 highs === */
 g_memcard_file_list                                     = 0x80102810;  /* base of memcard file-list array (filled by bios_firstfile_B; stride 0x28 per file entry) */
@@ -1987,6 +1987,7 @@ g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base p
 /* === CD-ROM stream reader state (2026-05-17) -- 4 highs === */
 /* From code6cac_b2.c around line 388-408: CD-ROM streaming callback */
 /* reads sectors into a buffer, checking BCD position for sync. */
+g_cdread_expected_pos                             = 0x80101EA0;  /* next-expected sector position (CdPosToInt); cdrom_ReadyCallback compares each sector header with it */  /* data-wave 2026-09-24: was g_cdread_expected_bcd_frame */
 /* data-wave 2026-09-24: g_event_class_lookup_table = 0x8008EC38 retired; g_cd_file_table_plus_0x4 is now object-defined */
 /* data-wave 2026-09-24: g_special_cam_lengths = 0x8008EC38 retired; g_cd_file_table_plus_0x4 is now object-defined */
 
@@ -3548,7 +3549,7 @@ stage_ApplyLighting = 0x8003F5CC;  /* 3x sys_StubEmpty3(light_ptr_i, target_ptr_
 g_cd_atv_plus_0x1 = 0x800A3719;  /* alias of g_cd_atv+1; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
 g_cd_atv_plus_0x2 = 0x800A371A;  /* alias of g_cd_atv+2; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
 g_cd_atv_plus_0x3 = 0x800A371B;  /* alias of g_cd_atv+3; retire with cdrom_SetMix/func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
-D_80101EA4 = 0x80101EA4;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
+D_80101EA4 = 0x80101EA4;  /* declared separately, past CdState D_80101E58 (owner ruling Q43); asm/funcs/func_80036140.s is its only live referrer */
 g_cd_loc = 0x80101E6C;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
 g_cd_result_plus_0x3 = 0x800A3763;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */
 g_cd_result_plus_0x4 = 0x800A3764;  /* alias; retire with func_80036140 (asm/funcs referrer, INCLUDE_ASM again 2026-09-30) */

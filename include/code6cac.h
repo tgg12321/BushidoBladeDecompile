@@ -532,59 +532,20 @@ typedef struct {
     s32 b;
 } CamPair;
 
-/* FAKE structure (owner ruling 2026-08-10, docs/grind/decisions.md).
+/* The replay-camera / CD-read words at 0x80101E60..0x80101E99: the tail of
+ * CdState D_80101E58 below, where the evidence that they are one object with
+ * its head is set out.  Member widths follow the original accesses;
+ * 0x80101E91..93 is the compiler's alignment padding.  0x80101E9A..9B lies
+ * inside the object (its size is a multiple of 4) and holds a halfword that
+ * only func_80036140's asm accesses, through the D_80101E9A alias row; it has
+ * no member (q2-review condition under owner ruling Q43) until that function
+ * lands in C.
  *
- * The replay/special-camera words at 0x80101E60..0x80101E77 (unk00..unk14) were
- * declared as ONE record rather than per-word symbols by that grant; the
- * record now runs on to 0x80101EA7 (unk18..unk44, see "Honest evidence split").
- * What the 0x80101E60..0x80101E77 bundling buys is a
- * memory dependence: cc1's scheduler asks true_dependence() ->
- * memrefs_conflict_p(), where SIZE_FOR_MODE(BLKmode) == 0 makes the aggregate
- * store at `pair` conflict with the halfword load at `unk00` ONLY when the two
- * share a base symbol_ref.  With distinct per-word symbols no dependence can
- * exist at any record shape, and sched2 sinks the block move past the load.
- *
- * Honest evidence split:
- *   - The 8-byte `pair` is independently evidenced as one object by the table
- *     it is copied from: the source is indexed `&SpecialCam + i*8` and copied
- *     as a whole CamPair aggregate (replay_camera_Init and func_80036FD4), so
- *     the table is an array of this same 8-byte record.
- *   - The CdPosToInt/CdIntToPos call chain evidences ONLY `pair.a`:
- *     CdIntToPos (src/system.c) writes just p[0..2], three bytes of the first
- *     word.  Those calls say nothing about `pair.b` (0x80101E70).
- *   - The CdlFILTER cdrom_StartAudio hands to CdControlB is at 0x80101E58, 8
- *     bytes BEFORE this record: the head of the enclosing CdState below.  It
- *     is NOT evidence for this record's interior layout.
- *   - The FULL-SPAN bundling (unk00..unk0A into the same object as `pair`)
- *     rests ONLY on the scheduler-dependence mechanism above.  It is covered
- *     by the owner grant as annotated FAKE structure and is NOT claimed as the
- *     proven original object layout.
- *   - The extension unk18..unk3A (0x80101E78..0x80101E9B, 2026-09-26) is
- *     evidenced by base+offset addressing in the original binary, not by the
- *     grant: func_80036940 forms &pair (0x80101E6C) as &0x80101E8C - 0x20
- *     (80036A74) and as &0x80101E98 - 0x2C (80036B08), so 0x80101E6C..0x80101E99
- *     is one object; it has 4-byte members, so its size is a multiple of 4 and
- *     it covers 0x80101E9A..9B, which is accessed as a halfword (unk3A), i.e. a
- *     member.  Member widths follow the accesses; 0x80101E91..93 is the
- *     compiler's alignment padding.
- *   - The extension unk3C..unk44 (0x80101E9C..0x80101EA7, 2026-09-26) is
- *     compiler-necessity evidence (aggregate-merge prong (a), (a1)/(a2)/(a4')):
- *     func_80036140 is compiled -G8, and there its read-modify-writes of
- *     0x80101E9C / 0x80101EA4 keep their address in a register (la; lX 0(r);
- *     sX 0(r)) only for a variable larger than 8 bytes -- a small one is
- *     small data and cse folds any pointer back to the symbol -- and
- *     cdrom_ReadyCallback reads expected_pos directly only as an offset of
- *     THIS symbol (cse relates it to its &unk38 register); as a separate
- *     record both differ.  unk3E and expected_pos lie inside that span but
- *     func_80036140 never touches them: they are typed by their other users'
- *     original accesses (aggregate-merge (a4') forced-in bytes, owner rulings
- *     2026-09-26 Q13/Q14): unk3E by game_FrameLoop / cdrom_StartRead (u16, the
- *     lhu at 80036F9C); expected_pos by cdrom_ReadyCallback / func_80036940
- *     (s32: no access reveals its signedness -- lw, an equality test, +1, sw --
- *     and s32 / u32 build byte-identical, so it keeps its declared type on main).
- *     Dumps, the original compiler's runs and the member table:
- *     memory/grind/func_80036140/evidence.md.
- */
+ * The 8-byte `pair` is also one CamPair by the table it is copied from: the
+ * source is indexed `&g_cd_file_table + i*8` and copied as a whole CamPair
+ * aggregate (cdrom_StartRead, cdrom_StartAudio), so the table is an array of
+ * this same 8-byte record.  The CdPosToInt/CdIntToPos calls on it evidence
+ * only `pair.a`: CdIntToPos (src/system.c) writes just p[0..2]. */
 typedef struct {
     s16 unk00; /* 0x80101E60 */
     s16 unk02; /* 0x80101E62 */
@@ -603,38 +564,46 @@ typedef struct {
     u8 unk30; /* 0x80101E90 */
     s32 unk34; /* 0x80101E94 */
     s16 unk38; /* 0x80101E98 */
-    s16 unk3A; /* 0x80101E9A */
-    s16 unk3C; /* 0x80101E9C */
-    u16 unk3E; /* 0x80101E9E */
-    s32 expected_pos; /* 0x80101EA0 */
-    s32 unk44; /* 0x80101EA4 */
 } ReplayCamRec;
 
-/* libcd CdlFILTER, the CdlSetfilter (0xD) parameter. */
+/* The CD module's state block, ONE object of 0x44 bytes at 0x80101E58.  Owner
+ * ruling Q43 (2026-09-30, docs/grind/owner-rulings-2026-09-26.md) bounds it to
+ * the span proven by the original binary, 0x80101E58..0x80101E99 (the size
+ * rounds it up to 0x80101E9B; 0x80101E9A..9B: see ReplayCamRec above), by
+ * three links:
+ *   - 0x80101E58..0x80101E62 is one object: cdrom_StartAudio forms the
+ *     CdlSetfilter parameter (file, chan) at 0x80101E58 as &0x80101E62 - 0xA
+ *     (800370AC addiu a1,s0,-0xA; 800370B0 sb v0,-0xA(s0)).  Only those two
+ *     bytes are accessed; 0x80101E5A..5B is the compiler's alignment padding
+ *     before unk04.  cse relates two constant addresses only when
+ *     they are offsets of one symbol.
+ *   - 0x80101E6C..0x80101E99 is one object: func_80036940 forms &rec.pair
+ *     (0x80101E6C) as &0x80101E8C - 0x20 (80036A74) and as &0x80101E98 - 0x2C
+ *     (80036B08).
+ *   - 0x80101E60..62 and 0x80101E6C are in one object (aggregate-merge prong
+ *     (a), (a1)/(a2)): cdrom_StartAudio reloads rec.unk00 (lh at 8003703C)
+ *     only after its CamPair copy into rec.pair (sw at 8003702C/80037034).
+ *     sched1 orders the two through true_dependence (sched.c:817) ->
+ *     memrefs_conflict_p (sched.c:614): SIZE_FOR_MODE(BLKmode) is 0, so the
+ *     aggregate store conflicts with the halfword load only when both
+ *     addresses share one base symbol_ref (sched.c:777).  As separate objects
+ *     there is no dependence and the load is hoisted above the copy.  One
+ *     object: cdrom_StartAudio 0 under both cc1 and the original cc1psx; cut
+ *     at 0x80101E64, 0x80101E68 or 0x80101E6C: 8 (cc1) / 12 (cc1psx).
+ *     Dumps and runs: memory/grind/cdrom_StartAudio/evidence.md.
+ * 0x80101E9C, 0x80101E9E, 0x80101EA0 and 0x80101EA4 are declared separately
+ * because no proof places them in this object (owner ruling Q43); C uses only
+ * the two declared below. */
 typedef struct {
-    u8 file;
-    u8 chan;
-    u16 pad;
-} CdlFILTER;
-
-/* The CD module's state block, 0x80101E58..0x80101EA7, declared as ONE object.
- * Two pieces of it are evidenced by base+offset addressing in the original
- * binary (cse relates two constant addresses only when they are offsets of one
- * symbol):
- *   - 0x80101E58..0x80101E62: cdrom_StartAudio forms the CdlFILTER at
- *     0x80101E58 as &0x80101E62 - 0xA (800370AC addiu a1,s0,-0xA; 800370B0
- *     sb v0,-0xA(s0));
- *   - 0x80101E6C..0x80101EA7: see ReplayCamRec's evidence split above.
- * The link between them (0x80101E62 and 0x80101E6C in one object) is NOT
- * independently evidenced: it rests on ReplayCamRec's 0x80101E60..0x80101E77
- * bundling, which is the owner-granted FAKE structure above (2026-08-10). */
-typedef struct {
-    CdlFILTER filter; /* 0x80101E58 */
+    u8 file; /* 0x80101E58 */
+    u8 chan; /* 0x80101E59 */
     s32 unk04; /* 0x80101E5C */
-    ReplayCamRec rec; /* 0x80101E60 .. 0x80101EA7 */
+    ReplayCamRec rec; /* 0x80101E60 .. 0x80101E99 */
 } CdState;
 
 extern CdState D_80101E58;
+extern u16 D_80101E9E;
+extern s32 g_cdread_expected_pos;
 extern u8 D_80101EC8;
 extern s16 D_80101EE8;
 extern s32 D_80101F04;

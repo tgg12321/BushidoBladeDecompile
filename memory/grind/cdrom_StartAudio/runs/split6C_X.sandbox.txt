@@ -1,0 +1,68 @@
+{
+  "score": 10,
+  "target_insns": 79,
+  "build_insns": 78,
+  "scorable": true,
+  "func": "cdrom_StartAudio",
+  "file": "code6cac_b5_post",
+  "disable": "all",
+  "strip_cheat_asm": true,
+  "rules_dropped": 0,
+  "cheat_asm_stripped": 0,
+  "disabled_o": "tmp/sandbox/cdrom_StartAudio/code6cac_b5_post.o",
+  "candidate": "memory/grind/cdrom_StartAudio/candidates/split6C_X.c"
+}
+
+── insn diff vs target — cdrom_StartAudio (operands UNMASKED; the score masks some of these) ──
+target 79 insns · ours 78 insns · 9 hunk(s)
+  4 source-level · 0 operand-only (reg-alloc/scheduling) · 5 not-scored (masked cascade artifact)
+
+@ hunk 1/9  replace  target[10] ours[10]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 370
+    ours    j 36c
+
+@ hunk 2/9  insert  target[13] ours[13]  — source-level
+    ours    sra v0,v0,0xd
+
+@ hunk 3/9  delete  target[15] ours[16]  — source-level
+    target  sra v0,v0,0xd
+
+@ hunk 4/9  delete  target[19] ours[19]  — source-level
+    target  lw a0,0(v0)
+    target  lw a1,4(v0)
+    target  lui at,0x0
+    target  sw a0,20(at)
+    target  lui at,0x0
+    target  sw a1,24(at)
+
+@ hunk 5/9  replace  target[27] ours[21]  — source-level
+    target  nop
+    ours    lw a1,0(v0)
+    ours    lw a2,4(v0)
+    ours    lui at,0x0
+    ours    sw a1,0(at)
+    ours    lui at,0x0
+    ours    sw a2,4(at)
+
+@ hunk 6/9  replace  target[43] ours[42]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  sw v0,28(at)
+    target  bgez s1,314
+    ours    sw v0,8(at)
+    ours    bgez s1,310
+
+@ hunk 7/9  replace  target[47] ours[46]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  sw zero,60(at)
+    target  j 340
+    ours    sw zero,40(at)
+    ours    j 33c
+
+@ hunk 8/9  replace  target[52] ours[51]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  sw v0,60(at)
+    ours    sw v0,40(at)
+
+@ hunk 9/9  replace  target[62] ours[61]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  sb v0,56(at)
+    ours    sb v0,36(at)
+
+  NOTE: source-level hunks dominate the SCORED ones — the C is saying
+  something different. Register-seat / scheduling levers cannot close those.

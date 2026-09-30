@@ -218,3 +218,15 @@ row (`func_80036140: g_cd_atv, D_800A36B8, g_cd_result`) was its dependency. The
 body is banked as `cheated-comm-gate-body.c` (a lead, not landable). Its honest floor with the list
 emptied: 16/512 (`sandbox --disable all`, 2026-09-30; `migration_pin.json`). Frontier: reach the target's
 `sym+N` addressing without any assembler gate — the declaration and access spelling are the only lever.
+
+## Q43 (2026-09-30): CdState no longer covers 0x80101E9C..0x80101EA7
+Owner ruling Q43 shrank CdState D_80101E58 to the proven span 0x80101E58..0x80101E99 (sizeof 0x44):
+the E9C..EA7 extension (unk3C/unk3E/expected_pos/unk44, landing/member_table.md) rested on this
+function's -G8 necessity proof, which lapsed when it went back to INCLUDE_ASM. E9A..9B lies inside
+the object and holds this function's halfword (sh 80036548, lhu 80036778, sh 80036788, via the
+D_80101E9A alias row); it has no member until this function lands in C (q2-review condition; the
+owner has not ruled on E9A). D_80101E9C / D_80101E9E / g_cdread_expected_pos / D_80101EA4 are
+declared separately because no proof places them in the object — not proven separate (the span
+sweep's E58..EA3-as-one-object row also scores 0).
+A future landing of this function must re-prove any object over those bytes from scratch; the
+current CdState evidence is memory/grind/cdrom_StartAudio/evidence.md.

@@ -1,0 +1,36 @@
+M:S:IB                                   SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12}
+M:S:FB                                   SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12}
+58/74:S:IB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12, 'func_80036940': 13}
+58/74:S:FB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12, 'func_80036940': 13}
+58/78:S:IB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12, 'func_80036940': 13}
+58/78:S:FB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12, 'func_80036940': 13}
+58/98:S:IB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 21, 'func_80036940': 11}
+58/98:S:FB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 21, 'func_80036940': 11}
+58/9C:S:IB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20}
+58/9C:S:FB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20}
+58/A0:S:IB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20}
+58/A0:S:FB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20}
+58/A4:S:IB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12}
+58/A4:S:FB                               SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12}
+58/74/9C:S:IB                            SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20, 'func_80036940': 13}
+58/74/9C:S:FB                            SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20, 'func_80036940': 13}
+58/9C/9E/A0/A4:S:IB                      SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12}
+58/9C/9E/A0/A4:S:FB                      SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12}
+58/9C/A0:S:IB                            SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20}
+58/9C/A0:S:FB                            SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20}
+58/9C/A4:S:IB                            SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20}
+58/9C/A4:S:FB                            SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20}
+58/98/9C:S:IB                            SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 30, 'func_80036940': 21}
+58/98/9C:S:FB                            SA=0    h=9dbbc522 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 30, 'func_80036940': 21}
+58/6C/9C:S:IB                            SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20, 'func_80036940': 14}
+58/6C/9C:S:FB                            SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20, 'func_80036940': 14}
+58/64/9C:S:IB                            SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20}
+58/64/9C:S:FB                            SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 20}
+58/64:S:IB                               SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12}
+58/64:S:FB                               SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12}
+58/68:S:IB                               SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12}
+58/68:S:FB                               SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12}
+58/6C:S:IB                               SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12, 'func_80036940': 14}
+58/6C:S:FB                               SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12, 'func_80036940': 14}
+58/64/6C:S:IB                            SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12, 'func_80036940': 14}
+58/64/6C:S:FB                            SA=12   h=1ee7ecb3 other_nonzero={'cdrom_StartRead': 7, 'func_80037260': 2, 'func_80037540': 4, 'cdrom_ReadyCallback': 12, 'func_80036940': 14}

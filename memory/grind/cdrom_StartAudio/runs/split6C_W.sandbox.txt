@@ -1,0 +1,79 @@
+{
+  "score": 17,
+  "target_insns": 79,
+  "build_insns": 75,
+  "scorable": true,
+  "func": "cdrom_StartAudio",
+  "file": "code6cac_b5_post",
+  "disable": "all",
+  "strip_cheat_asm": true,
+  "rules_dropped": 0,
+  "cheat_asm_stripped": 0,
+  "disabled_o": "tmp/sandbox/cdrom_StartAudio/code6cac_b5_post.o",
+  "candidate": "memory/grind/cdrom_StartAudio/candidates/split6C_W.c"
+}
+
+── insn diff vs target — cdrom_StartAudio (operands UNMASKED; the score masks some of these) ──
+target 79 insns · ours 75 insns · 10 hunk(s)
+  5 source-level · 0 operand-only (reg-alloc/scheduling) · 5 not-scored (masked cascade artifact)
+
+@ hunk 1/10  replace  target[10] ours[10]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 370
+    ours    j 360
+
+@ hunk 2/10  delete  target[12] ours[12]  — source-level
+    target  sll v0,a0,0x10
+    target  lui v1,0x0
+    target  addiu v1,v1,0
+    target  sra v0,v0,0xd
+    target  addu v0,v0,v1
+
+@ hunk 3/10  replace  target[19] ours[14]  — source-level
+    target  lw a0,0(v0)
+    target  lw a1,4(v0)
+    ours    sll a0,a0,0x10
+    ours    sra a0,a0,0xd
+    ours    lui v0,0x0
+    ours    addiu v0,v0,0
+    ours    addu a0,a0,v0
+    ours    lw v0,0(a0)
+
+@ hunk 4/10  replace  target[22] ours[21]  — source-level
+    target  sw a0,20(at)
+    ours    sw v0,0(at)
+    ours    lw v0,4(a0)
+
+@ hunk 5/10  replace  target[24] ours[24]  — source-level
+    target  sw a1,24(at)
+    target  lui a0,0x0
+    target  lh a0,8(a0)
+    ours    sw v0,4(at)
+    ours    jal 0
+
+@ hunk 6/10  delete  target[28] ours[27]  — source-level
+    target  sll a0,a0,0x3
+    target  jal 0
+    target  addu a0,a0,v1
+
+@ hunk 7/10  replace  target[43] ours[39]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  sw v0,28(at)
+    target  bgez s1,314
+    ours    sw v0,8(at)
+    ours    bgez s1,304
+
+@ hunk 8/10  replace  target[47] ours[43]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  sw zero,60(at)
+    target  j 340
+    ours    sw zero,40(at)
+    ours    j 330
+
+@ hunk 9/10  replace  target[52] ours[48]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  sw v0,60(at)
+    ours    sw v0,40(at)
+
+@ hunk 10/10  replace  target[62] ours[58]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  sb v0,56(at)
+    ours    sb v0,36(at)
+
+  NOTE: source-level hunks dominate the SCORED ones — the C is saying
+  something different. Register-seat / scheduling levers cannot close those.

@@ -80,3 +80,15 @@ gp-read g_cd_result, 0x800A3760, so ruling (i) forbids splitting them). For that
   (the compiler emits it) — the trailing zero word at 0x80010974 must then come from somewhere
   (open: see hypotheses.md) — and retire the `alias ... retire with func_80036140` rows in
   undefined_syms_auto.txt / named_syms.txt (g_cd_loc).
+
+## Q43 (2026-09-30): CdState shrunk to 0x80101E58..0x80101E99
+Owner ruling Q43 + layer-2 (q2-review) HOLDS-WITH-CONDITIONS. Proven-fact 3 above ("E60..E77 is
+one record by the 2026-08-10 FAKE grant") is superseded: the E60/E62<->E6C link is now proven by
+cdrom_StartAudio's sched1 memory dependence (Q2 (a1)/(a2)); evidence, dumps, cc1/cc1psx runs and the
+(a4') member table: memory/grind/cdrom_StartAudio/evidence.md. This function's own contribution is
+fact 1 (E6C..E99 by 80036A74 / 80036B08); it does NOT need the E62<->E6C link (splits at 64/68 score
+0 for it — tmp q2-80036940 investigation), and cuts inside E6C..E99 cost it 13/13/11/14 (74/78/98/6C;
+memory/grind/cdrom_StartAudio/runs/span_sweep/span_cc1.txt). The earlier E9C..EA7 extension rested on
+func_80036140, which went back to INCLUDE_ASM; those bytes are declared separately again (no proof
+places them in the object; not proven separate), and this function's `sw` at 80036AAC stores to `g_cdread_expected_pos` (s32, a scalar). On the Q43 tree:
+`sandbox func_80036940 --disable all` = 0 (274/274), full build == oracle.
