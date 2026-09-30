@@ -1,5 +1,5 @@
 diff --git a/include/code6cac.h b/include/code6cac.h
-index 437c95b9f..2e85e68a8 100644
+index 437c95b9f..590afce62 100644
 --- a/include/code6cac.h
 +++ b/include/code6cac.h
 @@ -311,7 +311,7 @@ extern s32 D_800A36B4;
@@ -57,7 +57,7 @@ index 437c95b9f..2e85e68a8 100644
   *
   * The 8-byte `pair` is also one CamPair by the table it is copied from: the
   * source is indexed `&g_cd_file_table + i*8` and copied as a whole CamPair
-@@ -567,13 +583,18 @@ typedef struct {
+@@ -567,13 +583,22 @@ typedef struct {
      u8 unk30; /* 0x80101E90 */
      s32 unk34; /* 0x80101E94 */
      s16 unk38; /* 0x80101E98 */
@@ -76,11 +76,15 @@ index 437c95b9f..2e85e68a8 100644
 - * three links:
 + * the span proven: 0x80101E58..0x80101E99 by the original binary's addressing,
 + * through 0x80101EA7 by func_80036140's compiler necessity (ReplayCamRec
-+ * above).  The first span is proven by three links:
++ * above).  Q43 dropped 0x80101E9C..0x80101EA7 because that part "lost its
++ * proof when func_80036140 went back to assembly"; with func_80036140 in C
++ * the proof is re-made on its own body (aggregate-merge prong (a)), the case
++ * Q43 anticipated, not a reversal of it.  The first span is proven by three
++ * links:
   *   - 0x80101E58..0x80101E62 is one object: cdrom_StartAudio forms the
   *     CdlSetfilter parameter (file, chan) at 0x80101E58 as &0x80101E62 - 0xA
   *     (800370AC addiu a1,s0,-0xA; 800370B0 sb v0,-0xA(s0)).  Only those two
-@@ -594,19 +615,15 @@ typedef struct {
+@@ -594,19 +619,15 @@ typedef struct {
   *     object: cdrom_StartAudio 0 under both cc1 and the original cc1psx; cut
   *     at 0x80101E64, 0x80101E68 or 0x80101E6C: 8 (cc1) / 12 (cc1psx).
   *     Dumps and runs: memory/grind/cdrom_StartAudio/evidence.md.
