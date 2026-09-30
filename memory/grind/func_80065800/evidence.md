@@ -156,3 +156,11 @@ the function-header comment and msg_match.txt say only modes 6/7 re-run (guard `
 target 0x80066DC4 slti $v0,$s3,0x9); consumer count 28 (func_800645B0 / func_800646E8 touch only
 D_800F0BCC / D_800F0D78). Advisory: evidence/named-locals.txt now cites cc1 -dr dumps of both sw
 forms (evidence/sw-rtl/, tools/dump_sw.sh). landing/msg_*.txt refreshed from the staged messages.
+
+## 2026-09-30 -- LANDED (COMPLETED-INLINE-ASM-CANONICAL)
+Layer-2 round 2 PASS (rev-65800-r2, body b572e1adbcd9f19c; round 1 rev-65800 FAIL on text only,
+fixed): 1454/1454 0 hunks, 8/8 region hashes, islands verbatim inline_c.h with the rtps word under
+the 2026-09-24 extension, aggregate-merge prongs (28 consumers), FAKE prerequisites (tbl, sw, sh,
+w, h; sw -dr dump), text fixes. Commits: 5c543ce1d (TU boundary at func_80061064, rev-boundary
+PASS), ace33f8d9 (auth row), 1f6023c7d (Match; staged body == candidate.c), 3b7664be4 (queue
+done). check_completion_integrity OK after landing.
