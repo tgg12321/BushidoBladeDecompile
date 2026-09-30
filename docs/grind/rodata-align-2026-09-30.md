@@ -41,12 +41,13 @@ lists all 85 tables (compiled + transcribed) by address, phase, our object and o
   7 tables). Every one is a phase change inside one of our files:
   - code6cac.o: func_80019568 (0) | func_8001C8DC.. (4)
   - code6cac_b.o: func_80026DA4 (4) | func_8002738C..func_80033498 (0) | func_800344B4.. (4)
-  - code6cac_b5: the CD module (func_80036140, func_80036940) is phase 0 after phase-4 neighbours
   - text1a_pre.o: func_80040304 (4) | func_80040D48 (0) | text1a_c func_80042504 (4)
   - text1b.o: func_8006B578..8006ECF4 (0) | func_800747D8, func_80077374 (4)
   - text1b_b.o: func_80077B30, func_80077D94 (4) | prnt (0) | sprintf (4)
-  - the transcribed INCLUDE_ASM tables in text1a_b_pre_rodata.c: 0x8001541C/545C and
-    func_80058580's 0x8001585C/84/9C (4) | 0x800158F8/5940 (0)
+  (Correction, same day: an earlier draft also listed the CD module in code6cac_b5 and the
+  transcribed tables in text1a_b_pre_rodata.c here. Neither fails the model today: code6cac_b5 is
+  already its own object starting at phase 0, and transcribed tables are `.word` data with no
+  `.align 3`. The second one matters later; see section 4, "Predicted".)
 - Where a boundary is independently checkable it lands on a natural one: prnt and sprintf are
   separate PsyQ LIBC objects; the CD-module steppers begin a new phase.
 
@@ -67,3 +68,74 @@ boundaries differ from ours at these points. Our read-only-data boundaries come 
   speculative rodata reorder (`.claude/rules/no-new-park-categories.md`). Where ownership
   evidence is ambiguous, the model gives no licence.
 - **Owner ruling** before any of it lands (substrate change).
+
+## 4. Evidence check at every site (2026-09-30, second pass)
+
+Question from the owner: pursue this only if it makes sense, fits the established rules, and is
+not a cheat. The rule that decides it is `.claude/rules/jtbl-rodata-split-infrastructure.md`:
+evidence-based TU re-attribution is the legitimate (SOTN) path; a reorder chosen to force a match
+is banned. So at each site the test is whether the boundary comes from evidence rather than from
+the bytes it produces.
+
+Tools (`memory/grind/func_80058580/aspsx-align-check/poc/`): `owners.py` maps every data symbol
+to the functions whose target asm (`asm/funcs/*.s`, independent of our C) references it;
+`sitewin.py` shows one site's candidate window; `rodump.py` dumps the original bytes.
+
+**Emission order, measured.** CC1PSX and our cc1 both emit a TU's rodata in function order:
+each function's string literals, then its jump table (`order-test.c`, `order-test.cc1psx.s`,
+`order-test.cc1.s`). Strings nobody references ("SOUND ID:%d\n", "CHANBARA", "PRACTICE", `""`)
+are what GCC 2.7.2 leaves behind for debug prints it later deletes as dead code: the string is
+emitted at RTL expansion, before jump optimisation removes the call.
+
+**Three facts decide each site.**
+1. *Existence.* Two jump tables at different phases cannot come from one original file. Every
+   site below is a phase change, so each boundary's existence is read from the original bytes.
+2. *Rodata position.* The new file must start at an item start whose phase equals its first
+   table's phase. Item ownership removes more candidates: a TU's rodata is contiguous, and a
+   string literal is local to its TU.
+3. *Text position.* Splitting a file keeps every section in the same order, so where the text cut
+   falls inside the window changes no byte.
+
+| # | Our object | Phase change (table owners) | Rodata start of the new file | How it is fixed |
+|---|---|---|---|---|
+| 1 | code6cac.o | func_80019568 (0) / func_8001C8DC (4) | 0x800100A4, 0x800100B4 or 0x800100C4 | Any of the three: all are phase 4 and give identical bytes. |
+| 2 | code6cac_b.o | func_80026DA4 (4) / func_8002738C (0) | 0x80010478 | Ownership. The only other phase-valid start, 0x80010498, would put "ILLEGAL GUN MOTION : %d\n" in the previous file, but its user func_8002A458 comes after func_8002738C. |
+| 3 | code6cac_b.o | func_80033498 (0) / func_800344B4 (4) | 0x8001081C or 0x80010834 | Either (0x80010828 is phase 0); both give identical bytes. |
+| 4 | text1a_pre.o | func_80040304 (4) / func_80040D48 (0) | 0x80010DB8 | Forced: no bytes between the two tables. |
+| 5 | text1b.o | func_8006ECF4 (0) / func_800747D8 (4) | 0x80015A0C | Forced: no bytes between the two tables. |
+| 6 | text1b_b.o | func_80077D94 (4) / prnt (0) | 0x80015A68 | Forced: no bytes between. prnt is its own PsyQ LIBC module. |
+| 7 | text1b_b.o | prnt (0) / sprintf (4) | 0x80015C7C | Ownership: sprintf's own two hex strings start it (0x80015C90 is phase 0; 0x80015CA4 would leave sprintf's strings in prnt's module). |
+
+The model is contradicted nowhere. At every site the bytes prove the boundary exists. Where more
+than one rodata position survives the evidence, all of them produce the same bytes, so the bytes
+never choose between plausible layouts. The text cut is byte-neutral everywhere: its range is
+recorded, and the placement inside it is a documented convention.
+
+**Predicted, not needed today** (these tables are still transcribed `.word` data):
+func_80058580's file must start at 0x8001541C or 0x8001585C (identical bytes; 0x8001585C follows
+"Destruction tiny model.\n", owned by func_80054604). func_80065800's tables need a file starting
+at 0x800158E0 or 0x800158F8. Under the model, the zero words between func_80058580's tables are
+alignment padding, so no hand-written zero pad is needed when it becomes C.
+
+## 5. Proof of concept: byte-identical with no per-file sed
+
+`mkpoc.py`, run on a scratch copy of HEAD (`/tmp/claude-0/poc`; never on main), applies:
+- `RODATA_ALIGN2_FILES` emptied (the per-file `.align 3 -> .align 2` sed is gone);
+- one uniform rule for every C object: after `as`, `objcopy --set-section-alignment .rodata=4`;
+- the five objects split at the section 4 positions (sites 1-7). The split is done on the
+  assembler stream (`splitasm.py`), a proxy for splitting the .c file at the same point.
+
+Result (`poc-result.txt`): **the linked .bin is identical to the current oracle build's .bin**
+(sha1 42fce5af..., the same file the EXE with SHA1 62efab4f... is built from). The rodata
+placement differs from main only in the new part boundaries.
+
+## 6. What adoption would take (not done; needs an owner ruling first)
+
+- Split the five .c files for real at the section 4 boundaries (moves only, no code changes),
+  adding the parts to `bb2.ld` next to their originals in every section list.
+- Makefile and `engine/pipeline.py`/`engine/buildconfig.py`: replace the per-file sed with the
+  uniform rule, with an `engine test` case for it.
+- Full oracle verify, a layer-2 review of the substrate change, and a `docs/grind/decisions.md`
+  record.
+- Follow-up candidates it enables (each judged on its own): `code6cac_b_rodata_pre.c`'s
+  `_bb2_101C_pre_lead` zero word is an alignment pad under the model; func_80058580's tables.
