@@ -25,7 +25,6 @@ g_str_clearotag = 0x80015F80; // PsyQ: ClearOTag
 g_str_drawotag = 0x80015FB0; // PsyQ: DrawOTag
 g_str_cdinit_fail = 0x8001605C; // CD init failure message
 g_str_none = 0x80016074; // default CD command name
-g_str_cd_timeout = 0x800161B8; // CD timeout message
 g_str_sio_console = 0x8001649C; // SIO console string
 g_str_sio = 0x800164A8; // sio string
 

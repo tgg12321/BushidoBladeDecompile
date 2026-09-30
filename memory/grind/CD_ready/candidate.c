@@ -1,4 +1,5 @@
-s32 CD_ready(s32 mode, u8 *result) /* SOTN: src/main/psxsdk/libcd/bios.c:260 @aa53500 */
+/* SOTN: src/main/psxsdk/libcd/bios.c:260 @aa53500 */
+s32 CD_ready(s32 mode, u8 *result)
 {
     s32 c;
     s32 ready;

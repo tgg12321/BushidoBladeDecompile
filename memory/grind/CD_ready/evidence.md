@@ -113,3 +113,19 @@ do-while(0) wraps, named staging intermediates, the staged `src` reuse): each be
 SOTN's verbatim body. The only construct left needing paperwork is CD_datasync's `ret`,
 written on each of its three exits exactly as SOTN's (bios.c:460): Q51 citation + Q53
 FAKE note, direct returns = 4.
+
+### Landing preparation (laneB, 2026-09-30, under the landing lock)
+- probes-0930/apply_landing.py --apply: the bios.c helper block moves above CD_sync
+  (Sony's order; `extern char D_80016248[]` "CD_ready" beside it); CD_sync, CD_ready and
+  CD_datasync become SOTN's bodies (bios.c:232 / :260 / :459 @aa53500); the unused
+  `extern s32 g_str_cd_timeout;` (a second name for D_800161B8's "CD timeout: " string,
+  whose last C user was the old CD_datasync) is dropped; the Alarm per-word rows
+  (D_800F19B8, Alarm_plus_0x4, Alarm_plus_0x8 in undefined_syms_auto.txt; Alarm_plus_0x4/0x8
+  in named_syms.txt) retire with CD_ready; D_800A1494's row keeps only its 91C98 data note.
+  probes-0930/tagfix.py moved the SOTN tags off the signature lines (the layer2 hasher
+  returned null with a comment there).
+- verify-oracle --rebuild --allow-dirty: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+  sandbox --disable all on the spliced src: CD_ready 0/179, CD_sync 0/160, CD_datasync 0/91,
+  CD_cw 0/263 — 0 hunks each. canonical CD_ready: C.
+- layer2 hash: CD_ready 14bb9c645c2dcf07, CD_sync e73b60bc2971fed6, CD_datasync
+  5175ffb0d18f9308 (CD_cw unchanged 048fd9442f152f24).

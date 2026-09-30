@@ -1,4 +1,5 @@
-s32 CD_sync(s32 mode, u8 *result) /* SOTN: src/main/psxsdk/libcd/bios.c:232 @aa53500 */
+/* SOTN: src/main/psxsdk/libcd/bios.c:232 @aa53500 */
+s32 CD_sync(s32 mode, u8 *result)
 {
     s32 sync;
 

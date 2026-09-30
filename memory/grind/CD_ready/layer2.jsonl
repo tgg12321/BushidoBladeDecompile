@@ -1,0 +1,1 @@
+{"func": "CD_ready", "addr": "80081030", "verdict": "PASS", "body_hash": "14bb9c645c2dcf07", "body_kind": "c", "file": "system", "reviewer": "l2-CD_ready-r1", "scope": "match", "date": "2026-09-30T16:54:38Z", "head": "91d2ec64d", "notes": "COMPLETED-C; SOTN bios.c:260 @aa53500 verbatim, verified statement by statement; check2 member arithmetic gone; no second handles"}

@@ -1,4 +1,5 @@
-s32 CD_datasync(s32 mode) /* SOTN: src/main/psxsdk/libcd/bios.c:459 @aa53500 */
+/* SOTN: src/main/psxsdk/libcd/bios.c:459 @aa53500 */
+s32 CD_datasync(s32 mode)
 {
     /* FAKE: one return value written on each of the three exits, reused exactly
      * as SOTN's CD_datasync reuses its ret (Q51, Q53); lever-exhaustion: a direct

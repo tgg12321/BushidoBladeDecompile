@@ -43,3 +43,11 @@ the merge CD_cw's retro-audit FAILed on. This body is respelled member-for-word,
 `Alarm.name` argument is byte-exact (sandbox 0, measured before and after the landing;
 the alias's 2026-09 ablation was measured on the per-word model only).
 Evidence: memory/grind/CD_cw/evidence.md 2026-09-30 (variants B0/B1).
+
+## 2026-09-30 — SOTN's verbatim body (laneB, landed with CD_ready)
+With Sony's Alarm_t merged and the bios.c static-inline helpers above CD_sync, this
+function is SOTN's own body (src/main/psxsdk/libcd/bios.c @aa53500) and scores 0; every
+FAKE construct it carried (pointer-alias handles, do-while(0) wraps, named staging
+intermediates, staged reuse) is gone. Evidence: memory/grind/CD_ready/evidence.md
+2026-09-30.
+CD_datasync only: its `ret` (written on each of three exits, bios.c:460) is a Q51 reuse with a Q53 FAKE note; direct returns = 4/91 (memory/grind/CD_ready/rejected/datasync-direct-returns-4.c).
