@@ -107,7 +107,7 @@ void func_80067D14(s32 arg0, s32 arg1) {
             "lw     $14, 28(%0)\n"
             "ctc2   $13, $6\n"
             "ctc2   $14, $7\n"
-            :: "r"((u8 *)p_out - 0x14) : "$12", "$13", "$14");
+            :: "r"((MATRIX *)(outer + 0x10)) : "$12", "$13", "$14");
 
         p_vert[1].vx = (*p_ent)->unk0;
         p_vert[1].vz = (*p_ent)->unk4;
@@ -243,10 +243,8 @@ void func_80067D14(s32 arg0, s32 arg1) {
             *p_n = 2;
         }
         /* Packed xy / uv words written through word views of the POLY_FT4, as the
-           other emitters in this file do (whole-word coordinate and colour
-           writes, halfword uv writes).
-           SOTN: src/dra/8BEF8.c:185 @aa53500
-           SOTN: src/st/cat/e_bone_ark.c:436 @aa53500 */
+           other emitters in this file do. SOTN: src/dra/8BEF8.c:185 @aa53500
+           (the same whole-word writes of x0/y0 .. r0-code, via LOW()). */
         for (; *p_n >= 0; (*p_n)--) {
             p_ot[*p_prim - (POLY_FT4 *)D_800A37D4] = *(s32 *)D_800A34D0;
             *(s32 *)&(*p_prim)->x0 =

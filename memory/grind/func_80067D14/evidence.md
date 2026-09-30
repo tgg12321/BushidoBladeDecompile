@@ -41,7 +41,7 @@ inline_c.h macro islands. m2c draft (tmp/func_80067D14/m2c.c). Measured progress
   target's `addiu v0,a0,0x28; sw v0,0(s1); ...; sw v1,4(a0)` (advance before the code store, no
   reload).
 - d5b 4: arm order in the arg0<6 ladder `BD44&1` / `D_800A34F0[arg0-4] != 0` (rand) / else
-  0x2C285A78. The target's out-of-line blocks are loop.c exit-block moves, merged later by
+  0x2C285A78. The target's out-of-line blocks look like loop.c exit-block moves (not traced), merged later by
   cross-jumping. The 0x2E000000 / D_800A34F0-8 hoists also match after this.
 - v2_len_u8 0: POLY_FT4 (this TU's typedef) with `*(s32 *)&p->x0` word views and a
   `((u8 *)p)[3] = 9` length byte. Dumps (tmp/func_80067D14/dA/f.sched, f.sched2) show why the
@@ -59,3 +59,13 @@ inline_c.h macro islands. m2c draft (tmp/func_80067D14/m2c.c). Measured progress
   tmp/func_80067D14/c1.c = 0, and with comments and void = candidate.c (u8-return test copy = 0).
 - Return type: no v0 is set on any path and every caller ignores the value, so the body is
   `void` and the TU's 8 `u8 func_80067D14(s32, s32);` prototypes become void at the splice.
+- The pointer table is load-bearing. Replacing one pointer local with its `(T *)(outer + off)`
+  expression measured p_ot 81, p_count 94, p_b 104 (tmp/func_80067D14/v4_*.c). Each keeps outer
+  live in the loop, which the target never does (s0 is reused as outer+0x8C).
+- `(MATRIX *)(outer + 0x10)` as the SetTransMatrix operand on the final body measured 82
+  (rejected/settrans-outer-82.c).
+- Prepared for landing 2026-09-30 (laneA, under the landing lock): candidate.c spliced into
+  src/text1b_tu1c.c plus the 8 prototypes made void. inline_asm_canonical.txt row and
+  tools/canonical_asm_regions.json entry (11 hashes) added. lock.ps1 rebuild SHA1 = oracle;
+  spliced sandbox --disable all = 0 (1047/1047, 0 scored hunks); engine.completion.source_issues
+  = []. Awaiting layer-2 (scope auth + match).
