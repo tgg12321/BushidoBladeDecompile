@@ -3279,7 +3279,7 @@ def test_departures() -> None:
         each renamed function's glabel file moves."""
         pat = re.compile(r"\b(" + "|".join(map(re.escape, code_map)) + r")\b")
         files = [*Path(".").glob("src/**/*.[ch]"), *Path(".").glob("include/**/*.h"),
-                 *Path(".").glob("asm/funcs/*.s")]
+                 *Path(".").glob("asm/funcs/*.s"), *Path(".").glob("symbol_addrs.txt")]
         for p in files:
             t = p.read_text()
             new_t = pat.sub(lambda m: code_map[m.group(1)], t)
@@ -3799,6 +3799,89 @@ def test_departures() -> None:
             wave({"func_P1": "func_P1N"})
             write_queue([item("func_P1N", renamed_from=["func_P1"]), item("func_Q")])
             eq("departures (F3-r4): an uncommitted wave -> clear", audit()[1], [])
+
+            # ── repo c2: glabel files that naming_wave does NOT move (C2) ────
+            new_repo(Path(td) / "c2", ["func_GS", "func_Q"])
+            # GS's glabel file lives under another stem (stem != glabel)
+            Path("asm/funcs/func_GS.s").rename("asm/funcs/func_80017700.s")
+            # NS has no glabel file at all; symbol_addrs.txt holds its address
+            with open("src/k.c", "a") as fh:
+                fh.write("int func_NS(int a) { return a * 3; }\n")
+            Path("symbol_addrs.txt").write_text("func_NS = 0x80017800; // no .s\n")
+            write_queue([item("func_GS"), item("func_NS"), item("func_Q")])
+            commit("c2 base")
+            wave({"func_GS": "gs_Named", "func_NS": "ns_Named"})
+            check("departures (C2): the wave rewrote GS's glabel in place",
+                  Path("asm/funcs/func_80017700.s").read_text().startswith("glabel gs_Named")
+                  and not Path("asm/funcs/gs_Named.s").exists())
+            write_queue([item("gs_Named", renamed_from=["func_GS"]),
+                         item("ns_Named", renamed_from=["func_NS"]), item("func_Q")])
+            commit("c2 wave")
+            eq("departures (C2): stem != glabel, and no glabel file at all -> clear",
+               audit()[1], [])
+
+            # ── repo ci: a case-only rename, audited as on a case-INsensitive
+            #    filesystem (C3) ──────────────────────────────────────────────
+            new_repo(Path(td) / "ci", ["func_ci", "func_Q"])
+            wave({"func_ci": "func_CI"})
+            write_queue([item("func_CI", renamed_from=["func_ci"]), item("func_Q")])
+            commit("case-only wave")
+            real_exists = Path.exists
+
+            def case_insensitive_exists(self):
+                if real_exists(self):
+                    return True
+                parent = self.parent
+                return real_exists(parent) and parent.is_dir() and any(
+                    q.name.lower() == self.name.lower() for q in parent.iterdir())
+            Path.exists = case_insensitive_exists
+            try:
+                fl = audit()[1]
+            finally:
+                Path.exists = real_exists
+            eq("departures (C3): a case-only rename is gone case-exactly", fl, [])
+
+            # ── repo fa: departed body looked up in FORWARD name order (C1) ──
+            # NB: another, never-queued function that holds the name at D
+            new_repo(Path(td) / "fa", ["func_FF", "func_NB", "func_Q"],
+                     queue=["func_FF", "func_Q"])
+            rec("func_FF", key("func_FF"))
+            write_queue([item("func_Q")])
+            commit("FF done with a PASS; NB (another function) still has its name")
+            wave({"func_NB": "func_8001AB00"})               # a false-alias reset frees NB
+            commit("reset NB")
+            wave({"func_FF": "func_FM"})
+            move_records("func_FF", "func_FM")
+            commit("FF -> FM")
+            wave({"func_FM": "func_NB"})                     # the freed name is reused
+            move_records("func_FM", "func_NB")
+            commit("FM -> NB (name reuse)")
+            eq("departures (C1): a later name that meant ANOTHER function at D is not "
+               "used for the departed body", audit()[1], [])
+
+            # ── repo mb: a missing source blob fails closed (C5) ─────────────
+            new_repo(Path(td) / "mb", ["func_MA", "func_Q"])
+            wave({"func_MA": "func_MB"})
+            write_queue([item("func_MB", renamed_from=["func_MA"]), item("func_Q")])
+            r = commit("MA -> MB")
+            lost = git("rev-parse", f"{r}^:src/k.c").strip()
+            obj = Path(".git/objects", lost[:2], lost[2:])
+            os.chmod(obj, 0o644)
+            obj.unlink()
+            v = departures.unreviewed_departures()
+            check("departures (C5): a source blob the rename check needs, missing, fails "
+                  "closed", len(v) == 1 and "missing from the object store" in v[0])
+            new_repo(Path(td) / "mt", ["func_MA", "func_Q"])
+            wave({"func_MA": "func_MB"})
+            write_queue([item("func_MB", renamed_from=["func_MA"]), item("func_Q")])
+            r = commit("MA -> MB")
+            lost = git("rev-parse", f"{r}^:src").strip()
+            obj = Path(".git/objects", lost[:2], lost[2:])
+            os.chmod(obj, 0o644)
+            obj.unlink()
+            v = departures.unreviewed_departures()
+            check("departures (C5): a source TREE the rename check needs, missing, fails "
+                  "closed", len(v) == 1 and "missing from the object store" in v[0])
 
             # ── repo hard: each identity hardening on its own ───────────────
             new_repo(Path(td) / "hard", ["func_H2", "func_H3", "func_H7", "func_H8",

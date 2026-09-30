@@ -41,30 +41,44 @@ old name with no chain). A nominated edge counts only when ALL of these hold,
 where D is the commit in which `old` last left the queue ("the working tree"
 if only there, its parent then being HEAD; for a never-listed intermediate
 name, renamed twice between queue versions, D is its rename event R):
-  (a) a RENAME EVENT R: git's own rename detection on the ancestry path
-      (--raw -M) shows asm/funcs/<old>.s deleted and asm/funcs/<new>.s added —
-      or, for a wave not yet committed, HEAD has <old>.s and the working tree
-      has <new>.s and no <old>.s — carrying the SAME MACHINE CODE: equal
-      ordered splat columns /* offset vaddr bytes */ (a wave rewrites every
-      .s with its whole name map, so operand text naming other renamed
-      functions is not compared; hand-written asm with no columns must match
-      token for token outside the glabel line) and `glabel old` -> `glabel
-      new` (a file-stem move that keeps its glabel is no rename); and in R
-      the body moves — at R^ `old` has a body and `new` none, at R `new` has
-      one and `old` none, over EVERY source file (src/**/*.c, src/**/*.h,
-      include/**/*.h; a C definition or an asm body such as INCLUDE_ASM);
-  (b) R's <old>.s is the file `old` had at D^: the same machine columns
-      (so the same addresses; for hand-written asm with no columns, the same
-      tokens outside the glabel line);
+  (a) a RENAME EVENT R carrying the SAME MACHINE CODE — equal ordered splat
+      columns /* offset vaddr bytes */ (a wave rewrites every .s with its
+      whole name map, so operand text naming other renamed functions is not
+      compared; hand-written asm with no columns must match token for token
+      outside the glabel line) under `glabel old` -> `glabel new` (a file-stem
+      move that keeps its glabel is no rename). R is one of:
+        - git's own rename detection on the ancestry path (--raw -M):
+          asm/funcs/<old>.s deleted, asm/funcs/<new>.s added;
+        - an in-place edit of an asm/funcs file whose stem is not the
+          function's name (tools/naming_wave.py renames only files whose stem
+          is in its map; it rewrites the glabel inside the others);
+        - for a wave not yet committed: HEAD has <old>.s, the working tree has
+          <new>.s and no <old>.s;
+      and in R the body moves — at R^ `old` has a body and `new` none, at R
+      `new` has one and `old` none, over EVERY source file (src/**/*.c,
+      src/**/*.h, include/**/*.h; a C definition or an asm body such as
+      INCLUDE_ASM). A function with NO glabel file under either name has a
+      BODY-MOVE event instead: in a commit touching the name registries
+      (symbol_addrs.txt, named_syms.txt, undefined_funcs_auto.txt, the census
+      docs/naming/function-names.csv) or D itself, the body moves and the
+      registries give `old` (at R^) and `new` (at R) the same single address;
+  (b) R is the function `old` had at D^: its file there has the same machine
+      columns (so the same addresses; for hand-written asm, the same tokens)
+      under `glabel old` — or, for a body-move event, the registries at D^
+      give `old` that same address;
   (c) `new` is not listed in the queue version at D^ and has no body in any
       source file at D^;
-  (d) `old` has no body in any source file now and no asm/funcs/<old>.s now;
+  (d) `old` has no body in any source file now and no asm/funcs/<old>.s now
+      (checked against the directory listing, case-exact: a case-only rename
+      on a case-insensitive filesystem is not "still there");
   (e) injective: no other gone name has a valid edge to the same `new` (two
       claimants -> neither counts).
 There is no address fallback from a `func_XXXXXXXX` spelling. Resolution
 follows valid edges and stops at the first name that is queued now (nothing to
 audit) or is itself listed in a post-gate version (it is audited under its own
-departure); the departed body is looked up under every name on the way.
+departure); the departed body is looked up under every name on the way, in
+FORWARD order (the listed name first: a later name may have belonged to a
+different function at D).
 
 BODY LOCATION: one pass over src/**/*.c, src/**/*.h and include/**/*.h gives a
 function's current file (TU resplits and header moves); a queue item's `file`
@@ -76,23 +90,37 @@ a version yielding no name at all is a violation.
 
 GIT: four processes however long the history — the grafts check, the anchor
 lookup, one `git log --raw -M` over the ancestry path (queue.json, the gate
-module and asm/funcs), and ONE interactive `git cat-file --batch` for every
-queue version, source tree, source file and asm/funcs blob it needs. Every git failure and a missing object is a
-violation: an audit that cannot read history must not pass. Under WSL, a
-worktree `.git` naming a Windows gitdir (`gitdir: C:/...`) is read through
-`--git-dir=/mnt/c/...`; under Windows, `gitdir: /mnt/c/...` through
+module, asm/funcs and the name registries), and ONE interactive
+`git cat-file --batch` for every queue version, source tree, source file,
+glabel file and registry it needs. Every git failure and every missing object
+(a queue version, a source tree or blob — "unreadable" never reads as "no
+body") is a violation: an audit that cannot read history must not pass. Under
+WSL, a worktree `.git` naming a Windows gitdir (`gitdir: C:/...`) is read
+through `--git-dir=/mnt/c/...`; under Windows, `gitdir: /mnt/c/...` through
 `--git-dir=C:/...`.
+
+BY DESIGN: a naming wave on one branch while another completes the function
+under its OLD name, then a merge, flags the function — the wave changed the
+key of the body being landed, and review-discipline-before-commit.md already
+rules that a wave voids pending PASSes (re-review, record, done).
 
 KNOWN LIMITS: (1) a function never listed in any post-gate version is not
 audited; (2) queue versions on forks that branched BEFORE the anchor are not
 read, and a pre-anchor fork merged in can make a function it re-lists look
 like a departure (latent false positive); (3) two static functions of the same
-name in different TUs are one name here (the first body found is used);
-(4) a hand-forged layer2.jsonl PASS line is trusted, exactly as the core gate
-trusts it — the records are committed and reviewed, not signed.
+name in different TUs are one name here (the first body found is used).
+Deliberate RECORD FORGERY is caught by review, not by this tool (the core gate
+shares this): (K1) a hand-crafted commit that fakes a rename — renames the
+glabel file and moves the body of a function that was not renamed; (K2) forged
+layer2.jsonl lines, PASS included — records are committed and reviewed, not
+signed; (K3) a forged `renamed_from` chain riding a GENUINE rename (the edge is
+real, so it resolves); (K4) edited machine columns in a glabel file (the build
+never assembles a dead .s, and a live one is caught by the oracle).
 """
 from __future__ import annotations
 
+import csv
+import io
 import json
 import os
 import re
@@ -107,6 +135,10 @@ _FUNC_RE = re.compile(rb'"func"\s*:\s*"([^"\\]+)"')
 _WIN_GITDIR = re.compile(r"^([A-Za-z]):[\\/](.*)$")
 _MNT_GITDIR = re.compile(r"^/mnt/([A-Za-z])/(.*)$")
 ASM_DIR = "asm/funcs"
+# name -> address registries a naming wave rewrites (tools/naming_wave.py
+# SYMBOL_FILES + the census): the address source for a function with no .s
+NAME_REGISTRIES = ("symbol_addrs.txt", "named_syms.txt", "undefined_funcs_auto.txt",
+                   "docs/naming/function-names.csv")
 _SRC_PATH = re.compile(r"^(src/.+\.[ch]|include/.+\.h)$")
 _ZERO = "0" * 40
 
@@ -224,13 +256,17 @@ def _anchor() -> tuple[str, list[str]] | None:
 
 
 def _history(anc: str):
-    """Queue diffs (commit, src blob, dst blob), newest first in topological
-    order; the commits on the ancestry path that add GATE_FILE; and git's
-    asm/funcs rename events {(old, new): [(commit, old blob, new blob)]}."""
-    diffs, gate_adds, renames, commit = [], set(), {}, ""
+    """One walk of the ancestry path: queue diffs (commit, src blob, dst blob),
+    newest first in topological order; the commits adding GATE_FILE; git's
+    asm/funcs rename events {(old stem, new stem): [(commit, old blob, new
+    blob, old path)]}; in-place asm/funcs edits [(commit, path, old blob, new
+    blob)] (a wave rewrites the glabel of a file whose stem is not the
+    function's name without moving it); and the commits touching the name
+    registries (candidate rename commits for a function with no .s at all)."""
+    diffs, gate_adds, renames, edits, naming, commit = [], set(), {}, [], [], ""
     for line in _git("log", "--topo-order", "--full-history", "--ancestry-path", "-m", "-M",
                      "--raw", "--no-abbrev", "--format=commit %H", f"{anc}..HEAD", "--",
-                     QUEUE_FILE, GATE_FILE, ASM_DIR).decode().splitlines():
+                     QUEUE_FILE, GATE_FILE, ASM_DIR, *NAME_REGISTRIES).decode().splitlines():
         if line.startswith("commit "):
             commit = line.split()[1]
         elif line.startswith(":"):
@@ -240,12 +276,19 @@ def _history(anc: str):
                 o, n = (Path(p) for p in paths)
                 if o.parent.as_posix() == ASM_DIR == n.parent.as_posix() \
                         and o.suffix == n.suffix == ".s":
-                    renames.setdefault((o.stem, n.stem), []).append((commit, f[2], f[3]))
+                    renames.setdefault((o.stem, n.stem), []).append(
+                        (commit, f[2], f[3], paths[0]))
             elif paths[0] == GATE_FILE and f[4].startswith("A"):
                 gate_adds.add(commit)
             elif paths[0] == QUEUE_FILE:
                 diffs.append((commit, f[2], f[3]))
-    return diffs, gate_adds, renames
+            elif paths[0] in NAME_REGISTRIES:
+                if commit not in naming:
+                    naming.append(commit)
+            elif f[4].startswith("M") and paths[0].startswith(ASM_DIR + "/") \
+                    and paths[0].endswith(".s"):
+                edits.append((commit, paths[0], f[2], f[3]))
+    return diffs, gate_adds, renames, edits, naming
 
 
 def _parse(blob: bytes) -> dict[str, dict] | None:
@@ -338,37 +381,80 @@ def _has_body(text: str | None, name: str) -> bool:
     return name in _WB_CACHE[k]
 
 
+_SYM_LINE = re.compile(r"^\s*([A-Za-z_]\w*)\s*=\s*0x([0-9A-Fa-f]+)\s*;", re.M)
+
+
+def _name_addrs(batch: "_Batch", rev: str, name: str) -> set[str]:
+    """Every address the name registries at `rev` give `name`: the symbol
+    files' `name = 0xADDR;` lines and the census rows naming it (current name,
+    glabel or alias) — how tools/naming_wave.py maps names to addresses."""
+    out = set()
+    for reg in NAME_REGISTRIES:
+        text = batch.text(f"{rev}:{reg}")
+        if not text or name not in text:
+            continue
+        if reg.endswith(".csv"):
+            for row in csv.DictReader(io.StringIO(text)):
+                aliases = {a.strip() for a in (row.get("aliases") or "").split(";")}
+                if name in ((row.get("current_name") or "").strip(),
+                            (row.get("glabel") or "").strip()) or name in aliases:
+                    out.add((row.get("address") or "").strip().upper().replace("0X", ""))
+        else:
+            out.update(m.group(2).upper().zfill(8) for m in _SYM_LINE.finditer(text)
+                       if m.group(1) == name)
+    out.discard("")
+    return out
+
+
+def _tree_entries(data: bytes) -> list[tuple[bytes, str, str]]:
+    out, i = [], 0
+    while i < len(data):
+        sp = data.index(b" ", i)
+        nul = data.index(b"\0", sp)
+        out.append((data[i:sp], data[sp + 1:nul].decode("utf-8", "replace"),
+                    data[nul + 1:nul + 21].hex()))
+        i = nul + 21
+    return out
+
+
 def _tree_sources(batch: "_Batch", rev: str) -> list[str]:
     """Blob ids of every source file (src/**/*.c|h, include/**/*.h) at `rev`,
-    walked through the batch process (no extra git process)."""
+    walked through the batch process (no extra git process). A tree the object
+    store cannot produce fails the audit: "unreadable" never reads as "no
+    body". (A commit with no include/ at all simply has none.)"""
     out = []
 
-    def walk(obj, prefix):
+    def tree(obj, what):
         data = batch.get(obj)
         if data is None:
-            return
-        i = 0
-        while i < len(data):
-            sp = data.index(b" ", i)
-            nul = data.index(b"\0", sp)
-            mode, name = data[i:sp], data[sp + 1:nul].decode("utf-8", "replace")
-            sha = data[nul + 1:nul + 21].hex()
-            i = nul + 21
+            raise _AuditError(f"the {what} tree at {rev} is missing from the object store")
+        return data
+
+    def walk(sha, prefix):
+        for mode, name, sub in _tree_entries(tree(sha, prefix)):
             path = f"{prefix}/{name}"
             if mode == b"40000":
-                walk(sha, path)
+                walk(sub, path)
             elif _SRC_PATH.match(path):
-                out.append(sha)
-    for top in ("src", "include"):
-        walk(f"{rev}:{top}", top)
+                out.append(sub)
+    for mode, name, sha in _tree_entries(tree(f"{rev}^{{tree}}", "root")):
+        if mode == b"40000" and name in ("src", "include"):
+            walk(sha, name)
     return out
 
 
 def _body_at(batch: "_Batch", rev: str | None, name: str) -> bool:
-    """Does `name` have a body in any source file at `rev` (None = now)?"""
+    """Does `name` have a body in any source file at `rev` (None = now)? A
+    source blob the object store cannot produce fails the audit."""
     if rev is None:
         return any(_has_body(layer2._read_text(p), name) for p in _source_files())
-    return any(_has_body(batch.text(sha), name) for sha in _tree_sources(batch, rev))
+    for sha in _tree_sources(batch, rev):
+        text = batch.text(sha)
+        if text is None:
+            raise _AuditError(f"source blob {sha} at {rev} is missing from the object store")
+        if _has_body(text, name):
+            return True
+    return False
 
 
 def _records(func: str) -> tuple[list[dict], str | None]:
@@ -440,7 +526,7 @@ def unreviewed_departures() -> list[str]:
         if a is None:
             return []                       # the gate is not in this history yet
         anc, other_adds = a
-        diffs, gate_adds, rename_events = _history(anc)
+        diffs, gate_adds, rename_events, asm_edits, naming_commits = _history(anc)
         stray = [c[:9] for c in other_adds if c not in gate_adds]
         if stray:
             raise _AuditError(f"{GATE_FILE} is added by commits not descended from the "
@@ -507,24 +593,37 @@ def unreviewed_departures() -> list[str]:
                         chains.append((rec["func"], _chain(rec.get("renamed_from"))))
         relevant = [(n, ch) for n, ch in chains if set(ch) & gone]
 
+        # the glabel files present NOW, from the directory listing: a
+        # case-only rename must not read as "still there" on a
+        # case-insensitive filesystem
+        asm_now = set(os.listdir(ASM_DIR)) if os.path.isdir(ASM_DIR) else set()
+
+        # a wave rewrites the glabel of a .s whose stem is not the function's
+        # name IN PLACE (the file is not renamed): that is a rename event too
+        if gone:
+            for commit, path, o_blob, n_blob in asm_edits:
+                g_o = _GLABEL.search(batch.text(o_blob) or "")
+                g_n = _GLABEL.search(batch.text(n_blob) or "")
+                if g_o and g_n and g_o.group(1) != g_n.group(1):
+                    rename_events.setdefault((g_o.group(1), g_n.group(1)), []).append(
+                        (commit, o_blob, n_blob, path))
+
         # a rename still in the working tree (an uncommitted wave): HEAD has
         # <old>.s, the working tree has <new>.s and no <old>.s, same machine code
         head_asm = {}
         tree = batch.get(f"HEAD:{ASM_DIR}")
-        i = 0
-        while tree and i < len(tree):
-            sp, nul = tree.index(b" ", i), tree.index(b"\0", tree.index(b" ", i))
-            head_asm[tree[sp + 1:nul].decode("utf-8", "replace")] = tree[nul + 1:nul + 21].hex()
-            i = nul + 21
+        for _mode, name, sha in (_tree_entries(tree) if tree else []):
+            head_asm[name] = sha
         wt_new = [p for p in sorted(Path(ASM_DIR).glob("*.s")) if p.name not in head_asm]
         for old in sorted(gone):
             sha = head_asm.get(f"{old}.s")
-            if sha is None or Path(f"{ASM_DIR}/{old}.s").exists():
+            if sha is None or f"{old}.s" in asm_now:
                 continue
             o_text = batch.text(sha)
             for p in wt_new:
                 if same_asm(o_text, layer2._read_text(p), old, p.stem):
-                    rename_events.setdefault((old, p.stem), []).append(("WORKTREE", sha, None))
+                    rename_events.setdefault((old, p.stem), []).append(
+                        ("WORKTREE", sha, None, f"{ASM_DIR}/{old}.s"))
 
         where_now = _src_scan(set(gone) | {n for n, _ch in relevant}
                               | {n for (o, n) in rename_events if o in gone})
@@ -541,7 +640,7 @@ def unreviewed_departures() -> list[str]:
             A never-listed intermediate name (renamed twice between queue
             versions) has no departure of its own: its rename event stands in."""
             # (d) old is gone from the tree: no body, no glabel file
-            if Path(f"{ASM_DIR}/{old}.s").exists() or _body_at(batch, None, old):
+            if f"{old}.s" in asm_now or _body_at(batch, None, old):
                 return False
             events = rename_events.get((old, new), [])
             dep = left_in.get(old)
@@ -556,8 +655,14 @@ def unreviewed_departures() -> list[str]:
             # (c) new was not queued, and had no body, when old left
             if new in queue_before or _body_at(batch, par, new):
                 return False
-            ident_old = asm_identity(batch.text(f"{par}:{ASM_DIR}/{old}.s"))
-            for r_commit, o_blob, n_blob in events:
+
+            def body_moved(r_commit):
+                r_par = parent_of(r_commit)
+                r_rev = None if r_commit == "WORKTREE" else r_commit
+                return (_body_at(batch, r_par, old) and not _body_at(batch, r_par, new)
+                        and _body_at(batch, r_rev, new) and not _body_at(batch, r_rev, old))
+
+            for r_commit, o_blob, n_blob, o_path in events:
                 wt = r_commit == "WORKTREE"
                 o_text = batch.text(o_blob)
                 n_text = layer2._read_text(Path(f"{ASM_DIR}/{new}.s")) if wt else batch.text(n_blob)
@@ -566,12 +671,29 @@ def unreviewed_departures() -> list[str]:
                     continue
                 # (b) ... and it is the file old had when it left the queue
                 # (same machine columns — so the same addresses — as at D^)
+                at_d = batch.text(f"{par}:{o_path}")
+                g = _GLABEL.search(at_d or "")
+                ident_old = asm_identity(at_d) if g and g.group(1) == old else []
                 if not ident_old or asm_identity(o_text) != ident_old:
                     continue
                 # (a) ... and the body moved with it
-                r_par, r_rev = parent_of(r_commit), (None if wt else r_commit)
-                if (_body_at(batch, r_par, old) and not _body_at(batch, r_par, new)
-                        and _body_at(batch, r_rev, new) and not _body_at(batch, r_rev, old)):
+                if body_moved(r_commit):
+                    return True
+            if events:
+                return False
+            # no glabel file for either name: a BODY-MOVE event — the body moves
+            # old -> new in one commit (a naming commit, or D) and the name
+            # registries give both names the same single address, which is
+            # also old's address at D^
+            addr_d = _name_addrs(batch, par, old)
+            if len(addr_d) != 1:
+                return False
+            for r_commit in dict.fromkeys([*naming_commits, *([commit] if commit != "HEAD" else [])]):
+                if batch.get(f"{r_commit}^:{ASM_DIR}/{old}.s") is not None \
+                        or batch.get(f"{r_commit}:{ASM_DIR}/{new}.s") is not None:
+                    continue
+                if (_name_addrs(batch, f"{r_commit}^", old) == addr_d
+                        == _name_addrs(batch, r_commit, new) and body_moved(r_commit)):
                     return True
             return False
 
@@ -617,7 +739,7 @@ def unreviewed_departures() -> list[str]:
                     *(where_now.get(n) for n in names))))
                 for path in paths:
                     text = batch.text(f"{commit}:{path}")
-                    dep_key = next(filter(None, (_key(text, n) for n in reversed(names))), None)
+                    dep_key = next(filter(None, (_key(text, n) for n in names)), None)
                     if dep_key:
                         break
             why = _clears(name, dep_key, cur)
