@@ -24,6 +24,16 @@
       "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): macro-hidden volatile cast on non-IRQ global g_gpu_disp_env (DISP_RECT_EQ) + per-use pun. Banked: memory/grind/PutDispEnv/rejected/retro-audit-2026-09-29.c"
     },
     {
+      "func": "CD_cw",
+      "file": "system",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): Alarm_t merge incomplete/TU-local (per-word Alarm_plus_* still used) + Intr second object over g_cd_status_a/b/c. Banked: memory/grind/CD_cw/rejected/retro-audit-2026-09-29.c"
+    },
+    {
       "func": "func_8005C8A8",
       "file": "text1b",
       "distance": 752,
@@ -257,14 +267,14 @@
     }
   ],
   "counts": {
-    "total": 22,
-    "active": 10,
+    "total": 23,
+    "active": 11,
     "by_status": {
-      "active": 10,
+      "active": 11,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 8,
+      "C": 9,
       "ASM-PARTIAL": 2
     }
   },
