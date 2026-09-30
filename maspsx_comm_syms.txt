@@ -1,3 +1,7 @@
+# RETIRED 2026-09-30 — owner ruling: this per-function gate is a CHEAT (Q9/Q15/Q18 withdrawn;
+# docs/grind/decisions.md 2026-09-30 OWNER RULING). It must stay EMPTY: no row may be added.
+# The three former rows' functions returned to INCLUDE_ASM and to the queue. History below.
+#
 # maspsx per-function COMMON gate — FIDELITY class (owner ruling 2026-09-26, fourth batch, Q9;
 # docs/grind/decisions.md "OWNER RULING — maspsx COMMON gate (maspsx_comm_syms.txt)";
 # .claude/rules/maspsx-gate-lists.md § "maspsx_comm_syms.txt").
@@ -16,6 +20,3 @@
 # g_anim_select+2/+4, D_800A34F0+2, D_800A3588+2 / D_800A358C+2).
 #
 # Evidence for the rows below: memory/grind/func_80036140/evidence.md § "maspsx_comm_syms rows".
-cdrom_SetMix: g_cd_atv
-func_80035F78: D_800A36B8
-func_80036140: g_cd_atv, D_800A36B8, g_cd_result

@@ -4,6 +4,36 @@
   "build_failures": [],
   "items": [
     {
+      "func": "cdrom_SetMix",
+      "file": "code6cac_b4",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/cdrom_SetMix/cheated-comm-gate-body.c"
+    },
+    {
+      "func": "func_80035F78",
+      "file": "code6cac_b4",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/func_80035F78/cheated-comm-gate-body.c"
+    },
+    {
+      "func": "func_80036140",
+      "file": "code6cac_b5",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/func_80036140/cheated-comm-gate-body.c"
+    },
+    {
       "func": "func_8006C21C",
       "file": "text1b",
       "distance": 620,
@@ -425,14 +455,14 @@
     }
   ],
   "counts": {
-    "total": 35,
-    "active": 18,
+    "total": 38,
+    "active": 21,
     "by_status": {
-      "active": 18,
+      "active": 21,
       "rotated": 17
     },
     "by_verdict": {
-      "C": 14,
+      "C": 17,
       "ASM-PARTIAL": 4
     }
   },

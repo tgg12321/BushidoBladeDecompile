@@ -211,3 +211,10 @@ cbc69187b CdlATV + CdState through 0x80101EA7 | a6daf00b6 Match: func_80036140 (
 f601fc2ae g_cd_result u8[8]; queue 82243f747. Landed tree: lock.ps1 rebuild SHA1 == oracle, sandbox 0
 (512/512), engine test 805/0, check_completion_integrity OK (cdrom_SetMix, func_80035F78, func_80036140
 listed as maspsx_comm_syms.txt fidelity-gate completions). Ledger closed.
+
+## 2026-09-30 — REVERTED: the match depended on the per-function maspsx COMMON gate (a cheat)
+Owner ruling 2026-09-30 (docs/grind/decisions.md): `maspsx_comm_syms.txt` is a cheat; this function's
+row (`func_80036140: g_cd_atv, D_800A36B8, g_cd_result`) was its dependency. The function is INCLUDE_ASM again and back in the queue. The landed
+body is banked as `cheated-comm-gate-body.c` (a lead, not landable). Its honest floor with the list
+emptied: 16/512 (`sandbox --disable all`, 2026-09-30; `migration_pin.json`). Frontier: reach the target's
+`sym+N` addressing without any assembler gate — the declaration and access spelling are the only lever.

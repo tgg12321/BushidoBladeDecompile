@@ -930,8 +930,8 @@ def test_cheats() -> None:
         cl.write_text("# header\ncdrom_SetMix: g_cd_atv\nfunc_B: x, y\n\nfunc_C\n")
         eq("gate list: `func: syms` rows yield the func name",
            cheats._prologue_txt_funcs(str(cl)), {"cdrom_SetMix", "func_B", "func_C"})
-    eq("gate list: maspsx_comm_syms.txt is a fidelity gate",
-       cheats.MASPSX_GATE_LISTS.get("maspsx_comm_syms.txt"), "fidelity")
+    eq("gate list: maspsx_comm_syms.txt is a cheat-pathway gate (owner ruling 2026-09-30)",
+       cheats.MASPSX_GATE_LISTS.get("maspsx_comm_syms.txt"), "cheat-pathway")
 
 
 def test_lowercase_asm_cheats() -> None:
