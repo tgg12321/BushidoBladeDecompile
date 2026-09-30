@@ -123,7 +123,22 @@ LEDGER_DIRS = ["memory/wip", "memory/grind", "memory/grind/_completed"]
 LAYER2_RECORD = "layer2.jsonl"
 
 
-def retarget_layer2_record(text: str, old: str, new: str) -> tuple[str, list[str]]:
+def extend_rename_chain(chain, old: str, where: str) -> list[str]:
+    """`renamed_from` + one more hop. A list of names is extended; a legacy
+    single-string value is promoted to a one-element list first. Anything else
+    is a hand-damaged record the wave must not guess about: die, naming it."""
+    if chain is None or chain == "":
+        return [old]
+    if isinstance(chain, str):
+        return [chain, old]
+    if isinstance(chain, list) and all(isinstance(x, str) for x in chain):
+        return chain + [old]
+    die(f"{where}: renamed_from must be a list of function names (or a legacy single "
+        f"name), not {chain!r} — repair it by hand before running the wave")
+
+
+def retarget_layer2_record(text: str, old: str, new: str,
+                           where: str = LAYER2_RECORD) -> tuple[str, list[str]]:
     """A ledger's layer2.jsonl moved from <old>/ to <new>/: rewrite each line's
     `func` so the record stays readable under the new name (engine/layer2.py
     refuses a line whose func is not the ledger's). Safe: the renamed
@@ -141,8 +156,8 @@ def retarget_layer2_record(text: str, old: str, new: str) -> tuple[str, list[str
             rec = None
         if isinstance(rec, dict) and rec.get("func") == old:
             rec["func"] = new
-            chain = rec.get("renamed_from") or []
-            rec["renamed_from"] = ([chain] if isinstance(chain, str) else list(chain)) + [old]
+            rec["renamed_from"] = extend_rename_chain(rec.get("renamed_from"), old,
+                                                      f"{where} line {n}")
             vf = rec.get("verdict_file")
             for a, b in moved:
                 if isinstance(vf, str) and vf.startswith(a):
@@ -162,8 +177,8 @@ def retarget_queue_items(data: dict, code_map: dict[str, str]) -> list[str]:
     for item in data.get("items", []):
         if item.get("func") in code_map:
             changed.append(f"{item['func']} -> {code_map[item['func']]}")
-            chain = item.get("renamed_from") or []
-            item["renamed_from"] = ([chain] if isinstance(chain, str) else list(chain)) + [item["func"]]
+            item["renamed_from"] = extend_rename_chain(
+                item.get("renamed_from"), item["func"], f"engine/queue.json item {item['func']}")
             item["func"] = code_map[item["func"]]
     return changed
 
@@ -182,7 +197,8 @@ def plan_ledger_renames(plan: "Plan", code_map: dict[str, str], root: Path | Non
                 plan.dir_renames.append((f"{base}/{d.name}", f"{base}/{new}"))
                 rec = d / LAYER2_RECORD
                 if rec.is_file():
-                    text, changed = retarget_layer2_record(read(rec), d.name, new)
+                    text, changed = retarget_layer2_record(
+                        read(rec), d.name, new, f"{base}/{d.name}/{LAYER2_RECORD}")
                     if changed:
                         plan.json_edits[f"{base}/{d.name}/{LAYER2_RECORD}"] = (text, changed)
 

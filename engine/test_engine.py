@@ -3392,6 +3392,83 @@ def test_departures() -> None:
           wired is not None and verdict_at is not None and wired < verdict_at)
 
 
+def test_naming_wave_renames() -> None:
+    """naming_wave rename mechanics the Q39 record depends on (round-5 review
+    C1-C4): the stale-duplicate .s delete-then-rename still applies under the
+    preflight; a missing source is refused with NOTHING written; a legacy
+    single-string renamed_from is promoted to a list; any other shape dies
+    with a message naming the record."""
+    import naming_wave as nw
+
+    def run(plan):
+        """(died, stderr) — apply `plan` rooted at the cwd."""
+        saved, err = nw.ROOT, io.StringIO()
+        nw.ROOT = Path.cwd()
+        try:
+            with contextlib.redirect_stderr(err):
+                nw.apply_plan(plan)
+            return False, err.getvalue()
+        except SystemExit:
+            return True, err.getvalue()
+        finally:
+            nw.ROOT = saved
+
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        try:
+            # C1: the stale duplicate under the NEW name is deleted, then the
+            # old .s moves onto that path — the preflight must count the delete
+            Path("asm/funcs").mkdir(parents=True)
+            Path("asm/funcs/func_OLD.s").write_text("glabel func_OLD\n")
+            Path("asm/funcs/func_NEW.s").write_text("stale duplicate\n")
+            plan = nw.Plan()
+            plan.file_deletes.append("asm/funcs/func_NEW.s")
+            plan.file_renames.append(("asm/funcs/func_OLD.s", "asm/funcs/func_NEW.s"))
+            died, err = run(plan)
+            check("naming_wave: stale-duplicate .s delete-then-rename applies",
+                  not died and not Path("asm/funcs/func_OLD.s").exists()
+                  and Path("asm/funcs/func_NEW.s").read_text() == "glabel func_OLD\n")
+
+            # C2: a rename whose source is missing is refused before ANY write
+            Path("engine").mkdir()
+            Path("engine/queue.json").write_text("before\n")
+            plan = nw.Plan()
+            plan.json_edits["engine/queue.json"] = ("after\n", ["x"])
+            plan.dir_renames.append(("memory/grind/func_GONE", "memory/grind/func_G2"))
+            died, err = run(plan)
+            check("naming_wave: a missing rename source dies in preflight, nothing written",
+                  died and "rename preflight failed" in err
+                  and "cannot move missing path memory/grind/func_GONE" in err
+                  and Path("engine/queue.json").read_text() == "before\n")
+        finally:
+            os.chdir(cwd)
+
+    # C3: a legacy single-string renamed_from becomes a list, on both writers
+    line = json.dumps({"func": "func_B", "verdict": "PASS", "body_hash": "0" * 16,
+                       "renamed_from": "func_A"})
+    text, _ = nw.retarget_layer2_record(line, "func_B", "func_C")
+    eq("naming_wave: legacy string renamed_from promoted (layer2.jsonl)",
+       json.loads(text)["renamed_from"], ["func_A", "func_B"])
+    data = {"items": [{"func": "func_B", "renamed_from": "func_A"}]}
+    nw.retarget_queue_items(data, {"func_B": "func_C"})
+    eq("naming_wave: legacy string renamed_from promoted (queue item)",
+       data["items"][0]["renamed_from"], ["func_A", "func_B"])
+
+    # C4: any other shape is a clear, named refusal — never a guess
+    for bad in ({"x": 1}, 7, ["func_A", 3]):
+        err = io.StringIO()
+        try:
+            with contextlib.redirect_stderr(err):
+                nw.extend_rename_chain(bad, "func_B", "memory/grind/func_B/layer2.jsonl line 1")
+            died = False
+        except SystemExit:
+            died = True
+        check(f"naming_wave: renamed_from {bad!r} is refused by name",
+              died and "memory/grind/func_B/layer2.jsonl line 1" in err.getvalue()
+              and "renamed_from must be a list" in err.getvalue())
+
+
 def test_orphaned_local_decls() -> None:
     """find_orphaned_local_decls — the strip-completeness closure (2026-08-06).
 
@@ -4458,6 +4535,7 @@ def main() -> int:
     test_canonical_completion_is_the_drop()
     test_layer2_gate()
     test_departures()
+    test_naming_wave_renames()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()

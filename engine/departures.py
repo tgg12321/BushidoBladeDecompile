@@ -112,7 +112,9 @@ def _rename_map(current: dict[str, dict]) -> dict[str, str]:
     m: dict[str, str] = {}
 
     def add(name, chain):
-        for old in ([chain] if isinstance(chain, str) else chain or []):
+        # naming_wave refuses any other shape; one here is not evidence
+        for old in ([chain] if isinstance(chain, str) else
+                    chain if isinstance(chain, list) else []):
             if isinstance(old, str) and old != name:
                 m[old] = name
     for f, it in current.items():
