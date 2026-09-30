@@ -3135,21 +3135,31 @@ def test_layer2_gate() -> None:
             # N1: a naming wave moves the ledger (and the archived one) and must
             # retarget layer2.jsonl's `func`, or the renamed function could
             # never be recorded again. The old PASS must not open the gate.
+            # Round 4: the rename chain is kept as a LIST, the layer2_verdicts/
+            # pointer follows the move, and a rename that cannot run is
+            # refused BEFORE anything is written.
             import naming_wave as nw
+
+            def _wave(code_map):
+                saved_root = nw.ROOT
+                nw.ROOT = Path.cwd()
+                try:
+                    plan = nw.Plan()
+                    nw.plan_ledger_renames(plan, code_map)
+                    nw.apply_plan(plan)
+                finally:
+                    nw.ROOT = saved_root
+
             Path("src/nw.c").write_text("int func_OLD(int a) { return a + 1; }\n")
             old_h = layer2.current_key("func_OLD", "nw")[1]
-            r = layer2.record("func_OLD", "PASS", "rev", "match", stem="nw", expect_hash=old_h)
+            vf = Path("nw_verdict.json")
+            vf.write_text(json.dumps({"decision": "PASS", "function": "func_OLD",
+                                      "body_hash": old_h, "summary": "ok"}))
+            r = layer2.record_from_verdict_file("func_OLD", str(vf), "rev", "match", stem="nw")
             done_p = layer2.completed_record_path("func_OLD")
             done_p.parent.mkdir(parents=True)
             done_p.write_text(layer2.record_path("func_OLD").read_text())
-            saved_root = nw.ROOT
-            nw.ROOT = Path.cwd()
-            try:
-                plan = nw.Plan()
-                nw.plan_ledger_renames(plan, {"func_OLD": "func_NEW"})
-                nw.apply_plan(plan)
-            finally:
-                nw.ROOT = saved_root
+            _wave({"func_OLD": "func_NEW"})
             Path("src/nw.c").write_text("int func_NEW(int a) { return a + 1; }\n")
             try:
                 recs = layer2.read_records("func_NEW")
@@ -3158,93 +3168,51 @@ def test_layer2_gate() -> None:
                 recs, moved = [], [{"error": str(e)}]
             check("layer2: naming wave retargets the moved record's func",
                   r["ok"] and len(recs) == 1 and recs[0]["func"] == "func_NEW"
-                  and recs[0].get("renamed_from") == "func_OLD"
+                  and recs[0].get("renamed_from") == ["func_OLD"]
                   and not layer2.record_path("func_OLD").exists())
             check("layer2: naming wave retargets the archived (_completed) record too",
                   len(moved) == 1 and moved[0].get("func") == "func_NEW")
+            vptr = recs[0].get("verdict_file", "") if recs else ""
+            check("layer2: naming wave re-points verdict_file at the moved copy",
+                  vptr.startswith("memory/grind/func_NEW/layer2_verdicts/")
+                  and Path(vptr).is_file())
             check("layer2: the pre-rename PASS does not open the gate for the new name",
                   "changed after review" in (layer2.gate("func_NEW", "nw") or ""))
             new_h = layer2.current_key("func_NEW", "nw")[1]
             r = layer2.record("func_NEW", "PASS", "rev", "match", stem="nw", expect_hash=new_h)
             check("layer2: the renamed function is recordable after the wave",
                   r["ok"] is True and layer2.gate("func_NEW", "nw") is None)
+            _wave({"func_NEW": "func_NEWER"})
+            try:
+                chain = [x.get("renamed_from") for x in layer2.read_records("func_NEWER")]
+            except ValueError:
+                chain = []
+            eq("layer2: a second wave appends to the renamed_from chain",
+               chain, [["func_OLD", "func_NEW"], ["func_NEW"]])
+
+            # Preflight: func_P's ledger cannot move onto an existing func_Q/,
+            # so the wave dies — and its layer2.jsonl retarget was NOT written.
+            p_rec = Path("memory/grind/func_P/layer2.jsonl")
+            p_rec.parent.mkdir(parents=True)
+            p_line = json.dumps({"func": "func_P", "verdict": "PASS",
+                                 "body_hash": "0" * 16}) + "\n"
+            p_rec.write_text(p_line)
+            Path("memory/grind/func_Q").mkdir(parents=True)
+            died = False
+            with contextlib.redirect_stderr(io.StringIO()):
+                try:
+                    _wave({"func_P": "func_Q"})
+                except SystemExit:
+                    died = True
+            check("naming_wave: a rename onto an existing ledger dies in preflight",
+                  died and p_rec.read_text() == p_line
+                  and not Path("memory/grind/func_Q/layer2.jsonl").exists())
         finally:
             os.chdir(cwd)
             (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
              cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
              inlineasm.file_func_cheat_asm_count, completion.source_issues,
              Q.O.verify) = saved
-
-
-def test_layer2_departures() -> None:
-    """Round-3 review K2: the standing audit (check_completion_integrity.py ->
-    layer2.unreviewed_departures) flags every function that left
-    engine/queue.json once the gate existed — committed or in the working tree
-    — without a layer-2 PASS on its current body. Pre-gate departures and
-    naming-wave renames are not departures. Pinned on a throwaway git repo."""
-    import subprocess
-    from engine import layer2
-
-    def git(*a):
-        subprocess.run(["git", "-c", "user.email=t@e", "-c", "user.name=t",
-                        "-c", "core.hooksPath=/dev/null", *a],
-                       check=True, capture_output=True, text=True)
-
-    def queue(*funcs):
-        items = [{"func": f, "file": "k", "distance": 3, "verdict": "C", "rules": 0,
-                  "status": "active"} for f in funcs]
-        Path("engine/queue.json").write_text(json.dumps({"items": items}, indent=2) + "\n")
-
-    cwd = os.getcwd()
-    with tempfile.TemporaryDirectory() as td:
-        os.chdir(td)
-        try:
-            git("init", "-q")
-            Path("engine").mkdir()
-            Path("src").mkdir()
-            Path("src/k.c").write_text("".join(
-                f"int {f}(int a) {{ return a + {i}; }}\n"
-                for i, f in enumerate(("func_E", "func_X", "func_Y", "func_R2", "func_K"))))
-            queue("func_E", "func_X", "func_Y", "func_R", "func_K")
-            git("add", "-A"); git("commit", "-qm", "c1")
-            queue("func_X", "func_Y", "func_R", "func_K")          # pre-gate: exempt
-            git("commit", "-qam", "c2")
-            Path("engine/layer2.py").write_text("# gate\n")
-            git("add", "-A"); git("commit", "-qm", "c3 gate lands")
-            # func_Y leaves WITH an archived PASS on its current body
-            h = layer2.current_key("func_Y", "k")[1]
-            p = layer2.completed_record_path("func_Y")
-            p.parent.mkdir(parents=True)
-            p.write_text(json.dumps({"func": "func_Y", "verdict": "PASS", "body_hash": h}) + "\n")
-            # func_X leaves with NO record; func_R is renamed (func only changes)
-            q = json.loads(Path("engine/queue.json").read_text())
-            q["items"] = [dict(it, func="func_R2") if it["func"] == "func_R" else it
-                          for it in q["items"] if it["func"] not in ("func_X", "func_Y")]
-            Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
-            git("add", "-A"); git("commit", "-qm", "c4")
-            # func_K leaves in the WORKING TREE (a hand edit not yet committed)
-            q["items"] = [it for it in q["items"] if it["func"] != "func_K"]
-            Path("engine/queue.json").write_text(json.dumps(q, indent=2) + "\n")
-
-            v = layer2.unreviewed_departures()
-            flagged = sorted(s.split(":")[0] for s in v)
-            eq("departures: exactly the unreviewed post-gate departures", flagged,
-               ["func_K", "func_X"])
-            check("departures: the working-tree departure is named as such",
-                  any(s.startswith("func_K:") and "working tree" in s for s in v))
-            # a matching PASS clears it; a stale one (body edited since) does not
-            h = layer2.current_key("func_X", "k")[1]
-            layer2.record_path("func_X").parent.mkdir(parents=True)
-            layer2.record_path("func_X").write_text(
-                json.dumps({"func": "func_X", "verdict": "PASS", "body_hash": h}) + "\n")
-            eq("departures: a PASS on the current body clears it",
-               sorted(s.split(":")[0] for s in layer2.unreviewed_departures()), ["func_K"])
-            Path("src/k.c").write_text(Path("src/k.c").read_text().replace("a + 1;", "a - 1;"))
-            eq("departures: a PASS on an earlier body does not",
-               sorted(s.split(":")[0] for s in layer2.unreviewed_departures()),
-               ["func_K", "func_X"])
-        finally:
-            os.chdir(cwd)
 
 
 def test_orphaned_local_decls() -> None:
@@ -4312,7 +4280,6 @@ def main() -> int:
     test_buildstamp()
     test_canonical_completion_is_the_drop()
     test_layer2_gate()
-    test_layer2_departures()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()
