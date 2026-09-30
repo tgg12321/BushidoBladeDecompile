@@ -36,3 +36,28 @@ Scratch proof (nothing in-tree touched; probes-0930/):
 Status: this is the "faithful, GLOBAL, declaration-driven model of ASPSX's COMMON rule" that
 decisions.md 2026-09-30 (comm-gate ruling, point 3) says needs its own owner ruling. Filed as
 STATUS: QUESTION to the orchestrator. Not landed.
+
+## 2026-09-30 (operator session f1) -- landing under owner Q62 (global COMMON model, 60643418a)
+
+The owner answered the question above: option A (thirtieth batch Q62). The substrate lands first as its own
+`substrate:` commit: the maspsx three-field `.comm` parse for PUBLIC tentative definitions (a `.local` +
+`.comm` uninitialized static fails closed, per the substrate's layer-2 round 1) and `--use-comm-section` for
+every file, byte-neutral (tmp/q62/bothways2.sh: 53/53 identical, 0 failed; full rebuild == oracle).
+
+Landing body: probes-0930/b4_tentative.diff applied verbatim to src/code6cac_b4.c (`CdlATV g_cd_atv;` and
+`CdlATV D_800A36B8;` as file-scope tentative definitions, cdrom_SetMix and func_80035F78 in plain C), with the
+file's header comment updated.
+
+Q62 point 4 (no starting value), checked:
+- original bytes over each object's whole extent (CdlATV = 4 bytes), disc/SLUS_006.63:
+  g_cd_atv 0x800A3718 = file offset 0x93F18: 00 00 00 00; D_800A36B8 0x800A36B8 = file offset 0x93EB8:
+  00 00 00 00.
+- no translation unit gives either an initializer (grep src/ include/: only these two tentative definitions
+  and the `extern` declarations in include/code6cac.h:318/339).
+- both have symbol-file rows (undefined_syms_auto.txt:923/936, named_syms.txt:1019/1020), so GNU ld resolves
+  the COMMON symbol to its address without allocating it; maspsx_comm_syms.txt stays empty.
+
+Mechanical: sandbox --disable all cdrom_SetMix 0/18, func_80035F78 0/12, 0 cheat-asm stripped; full rebuild
+(with the substrate and the func_8001C8DC landing also in the tree) build/bb2.exe SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. Layer-2 body hashes: cdrom_SetMix 2a9b3fb257626e2c,
+func_80035F78 b854a0ed86e24081.

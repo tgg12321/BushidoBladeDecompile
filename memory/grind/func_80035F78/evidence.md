@@ -12,3 +12,5 @@ Same residual (D_800A36B8+1..+3 gp vs target lui/%lo). With `CdlATV D_800A36B8;`
 definition, the 1-line maspsx `.comm x,size,align` parse fix and upstream `--use-comm-section`,
 the banked body scores 0/12 in scratch. Full evidence: memory/grind/cdrom_SetMix/evidence.md
 2026-09-30 and memory/grind/cdrom_SetMix/probes-0930/.
+
+## 2026-09-30 -- landing with cdrom_SetMix under owner Q62: see memory/grind/cdrom_SetMix/evidence.md, the 2026-09-30 landing section (D_800A36B8 bytes 00 00 00 00 at file offset 0x93EB8; sandbox 0/12).

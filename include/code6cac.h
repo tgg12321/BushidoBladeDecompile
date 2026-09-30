@@ -308,7 +308,9 @@ extern s32 D_800A36B4;
  * over it with one struct assignment (the unaligned lwl/lwr/swl/swr at 80036310).
  * Both were tentative definitions in the CD module's file: ASPSX 2.34 gives such
  * a COMMON symbol gp only at its base, so byte 0 is gp-relative and bytes 1..3
- * are lui/%lo in all three accessors (maspsx_comm_syms.txt). */
+ * are lui/%lo in all three accessors. Modelled by maspsx for every file from the
+ * declarations (owner Q62, 2026-09-30); the tentative definitions are in
+ * src/code6cac_b4.c. */
 typedef struct {
     u8 val0;
     u8 val1;
@@ -350,7 +352,7 @@ extern u8 D_800A3758;
  * func_80036140 reads result[4] and hands &result[3] / &result[5] (the reported
  * position) to CdPosToInt. A tentative definition in the CD module's file, like
  * the CdlATV blocks: result[0] is read gp-relative, result[4] with lui/%lo
- * (maspsx_comm_syms.txt). */
+ * (the owner Q62 global COMMON model; no C tentative definition yet). */
 extern u8 g_cd_result[8];
 extern u8 D_800A3769;
 extern u8 D_800A376A;
