@@ -3737,6 +3737,8 @@ def test_layer2_addresses() -> None:
             Path("undefined_syms_auto.txt").write_text("sys_Panic = 0x80016C3C;\n")
             eq("addresses: a tracked symbol file addresses a static function",
                layer2.addr_of("sys_Panic"), "80016C3C")
+            eq("addresses: ...through the tracked-files-only lookup the audit uses on history",
+               layer2.addr_at("sys_Panic", layer2._disk), "80016C3C")
             saved = Q.QUEUE_PATH
             Q.QUEUE_PATH = "engine/queue.json"
             try:
