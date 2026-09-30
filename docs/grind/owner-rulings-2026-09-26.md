@@ -507,3 +507,23 @@ Layer-2 checks the citation.
 
 ## Project-wide sweep — deferred
 The owner asked to wait on a project-wide sweep of pre-2026-09-19 completions. Not started.
+
+# Owner exchange 2026-09-30 (twenty-fifth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: encoding Q50 ("SOTN precedent is good enough for any constructs if they verifiably exist in the SOTN repo"),
+the rules scribe found existing rule text that refuses constructs SOTN ships and did not reword it without an owner
+answer. The owner was present and answered all three in one call.
+
+## Q51 — Q50 against the reused-variable rules
+Question, verbatim: "On 09-24 you declined 'a scratch variable reused exactly as SOTN's matched code reuses it', and Rulings 9, 10 and 11 repeat that 'a SOTN precedent counts for nothing' for reused variables. Does your new 'SOTN precedent is good enough for any constructs' override that?"
+Owner chose: **"Yes, Q50 overrides it (Recommended)"** — option text: "A variable reused exactly the way a PS1-build SOTN file reuses one is admitted on that citation. Reopens the question for e.g. func_8008B488's `rate` (SOTN's `var_a2`). Newer, explicit ruling wins."
+Other option offered: "No, keep the reuse rules strict" — "Reused variables still need the Ruling 11 proof package; SOTN precedent doesn't count for them. Q50 applies to other constructs only."
+
+## Q52 — SOTN's self-marked fakes
+Question, verbatim: "SOTN itself ships some constructs it marks as hacks (e.g. local `(T*)&D_...` pointer-cast views tagged `!FAKE` or `TODO`). Your Q21 rule currently refuses those. Do SOTN's own self-admitted fakes count as precedent?"
+Owner chose: **"Yes, with the same FAKE marking (Recommended)"** — option text: "Admitted when SOTN ships the same construct, but ours must carry the same `/* FAKE */` annotation SOTN uses, so it stays visible as a workaround. Matches 'SOTN is the gold standard' while keeping workarounds labelled."
+Other option offered: "No, not SOTN's self-marked hacks" — "Only constructs SOTN presents as ordinary code count. Anything SOTN itself tags FAKE/TODO stays refused under Q21."
+
+## Q53 — family prerequisites still owed
+Question, verbatim: "When a construct is admitted on SOTN precedent, does it still owe its family's usual paperwork (FAKE annotation where match-motivated, proof that simpler spellings were tried)?"
+Owner chose: **"Yes, still owed (Recommended)"** — option text: "SOTN precedent answers 'is this kind of construct allowed', not 'was it needed here'. Keeps workarounds visible and stops them being used where plain C would match."
+Other option offered: "No, the citation is enough" — "A verified SOTN citation replaces the family prerequisites entirely."
