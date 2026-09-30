@@ -64,3 +64,27 @@ Q57 (d) layout search: memory/grind/func_800768DC/q57-layout-search-2026-09-30.m
 func_800770B8 status (laneD): all-member body byte-exact (candidate.c, 0/175) but it keeps the p_old
 reuse + FAKE dead restore that rev-45 item 3 refused; owner question filed via the orchestrator
 2026-09-30; not in this landing (INCLUDE_ASM).
+
+## 2026-09-30 — owner Q66: "Refuse for now (Recommended)" — p_old reuse stays banned; INCLUDE_ASM
+
+Frontier, measured by laneD on the all-member SelWork chassis. Details are in
+memory/grind/func_800768DC/laneD-2026-09-30.md; the bodies are in
+memory/grind/func_800768DC/laneD-2026-09-30/.
+
+| form | score | notes |
+|---|---|---|
+| candidate.c: all-member body, p_old reuse + FAKE restore | 0/175 | refused (Ruling 11 (B)(1), Q66) |
+| k0: no restore | 2/175 | see below |
+| v7, m1-m3: separate list / work locals (rev-45's suggestion) | 20/175 (170 insns) | see below |
+| r1/r2: Ruling 4 split of the list pointer | 20 | |
+| r3: function-scope work pointer reused as the loop base | 34 | |
+
+- **k0.** The only diff is the base register of the 0x30/0x34 clears: $s1 (p_old) where the target has
+  $v0 (the func_8006E49C return). The cause is cse. It keeps the D_800A36A0 reload in
+  SELWORK->f30/f34 equivalent to the pseudo stored into D_800A36A0, unless that pseudo is overwritten
+  after the store. The restore was what broke that equivalence.
+- **v7, m1-m3.** The list pointer arg0 + 0x58 is set once, so it is tied to arg0's register ($s0). The
+  function then uses one fewer callee-saved register.
+
+Re-measure after owner-adopted Q65 (the per-file gp model) lands. The residual involves D_800A36A0's
+%gp_rel addressing, which Q65 changes.
