@@ -3491,8 +3491,18 @@ def test_departures() -> None:
 
             # ── repo g: identity-bound renames (F1: A, A2, A3) and naming
             #    waves after completion (F2: B, B2) ─────────────────────────
-            new_repo(Path(td) / "g", ["func_L", "func_L3", "func_L4", "func_G", "func_P",
-                                      "func_BA", "func_CA"])
+            new_repo(Path(td) / "g", ["func_L", "func_L3", "func_L4", "func_L5", "func_G",
+                                      "func_P", "func_BA", "func_CA"])
+            fn("func_H", src="include/h.h")                 # a body that lives in a header
+            write_queue([item(f) for f in ("func_L", "func_L3", "func_L4", "func_L5",
+                                           "func_G", "func_P", "func_BA", "func_CA",
+                                           "func_H")])
+            commit("g0")
+            rec("func_H", key("func_H", "include/h.h"))     # H leaves properly in g1
+            # A4: G's glabel file is forged to L5's address — but G already
+            # existed, so the chain still resolves nothing
+            Path("asm/funcs/func_G.s").write_text(
+                f"glabel func_G\n    /* 1000 {addrs['func_L5']} 00000000 */  nop\n")
             # A: L renamed in src to a never-listed L2 and dropped; the forged
             # chain sits on the still-queued G.  A3: L3's body moves into a
             # header and it is dropped; G's forged chain names it too.
@@ -3500,7 +3510,7 @@ def test_departures() -> None:
             t = Path("src/k.c").read_text()
             l3 = next(l for l in t.splitlines(True) if l.startswith("int func_L3("))
             Path("src/k.c").write_text(t.replace(l3, ""))
-            Path("include").mkdir()
+            Path("include").mkdir(exist_ok=True)
             Path("include/l.h").write_text(l3)
             # A2: L4 dropped; the forged chain sits on P's PASSed record
             rec("func_P", key("func_P"), renamed_from=["func_L4"])
@@ -3509,18 +3519,23 @@ def test_departures() -> None:
             rename("func_BA", "func_BB")
             rename("func_CA", "func_CB")
             rec("func_CB", key("func_CB"), renamed_from=["func_CA"])
-            write_queue([item("func_G", renamed_from=["func_L", "func_L3"]),
+            write_queue([item("func_G", renamed_from=["func_L", "func_L3", "func_L5"]),
                          item("func_BB", renamed_from=["func_BA"])])
             commit("g1")
-            rec("func_BB", key("func_BB"))                  # B: done properly
-            write_queue([item("func_G", renamed_from=["func_L", "func_L3"])])
+            edit("func_BB")                                 # B: worked on after the wave,
+            rec("func_BB", key("func_BB"))                  # then done properly
+            write_queue([item("func_G", renamed_from=["func_L", "func_L3", "func_L5"])])
             commit("g2")
             edit("func_BB")                                 # a later callee rename
             edit("func_CB")
             commit("g3 later wave")
             v, fl = audit()
-            eq("departures: identity-bound renames (A, A2, A3) and waves (B, B2)",
-               fl, ["func_L", "func_L3", "func_L4"])
+            eq("departures: identity-bound renames (A, A2, A3, A4) and waves (B, B2)",
+               fl, ["func_L", "func_L3", "func_L4", "func_L5"])
+            check("departures (A4): a forged glabel address on an EXISTING function "
+                  "launders nothing", "func_L5" in fl)
+            check("departures: a body living in a header is found (departed and current)",
+                  "func_H" not in fl)
             check("departures (A): a src rename + forged chain on a queued item "
                   "launders nothing", "func_L" in fl)
             check("departures (A2): a forged chain on a PASSed record launders nothing",
@@ -3548,7 +3563,8 @@ def test_departures() -> None:
             edit("func_RR")
             write_queue([item("func_Q"), item("func_WT")])  # R: hand-dropped, body changed
             commit("h3 RR and LR leave")
-            rec("func_VV", key("func_VV"), verdict="FAIL")   # V: revocation
+            rec("func_VV", key("func_VV"), verdict="FAIL")   # V: revocation — and the
+            rec("func_VV", "d" * 16)                         # latest record is a PASS
             edit("func_LR")
             rec("func_LR", key("func_LR"))                   # a PASS on the current body...
             rec("func_LR", "e" * 16)                         # ...then one on another body
