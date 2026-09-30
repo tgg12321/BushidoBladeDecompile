@@ -74,6 +74,16 @@
       "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): Alarm_t merge incomplete/TU-local (per-word Alarm_plus_* still used) + Intr second object over g_cd_status_a/b/c. Banked: memory/grind/CD_cw/rejected/retro-audit-2026-09-29.c"
     },
     {
+      "func": "CD_ready",
+      "file": "system",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "retro-audit 2026-09-29: check2 member-to-member arithmetic refused (rev-intr); no honest spelling reached 0 (best 11), Q37 fallback"
+    },
+    {
       "func": "func_80052D00",
       "file": "text1b",
       "distance": 0,
@@ -377,14 +387,14 @@
     }
   ],
   "counts": {
-    "total": 34,
-    "active": 22,
+    "total": 35,
+    "active": 23,
     "by_status": {
-      "active": 22,
+      "active": 23,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 20,
+      "C": 21,
       "ASM-PARTIAL": 2
     }
   },
