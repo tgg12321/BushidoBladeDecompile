@@ -109,3 +109,7 @@
 - [s1] Disposition record filed: docs/grind/decisions.md '2026-09-10 — func_8002EBDC (src/code6cac_b.c) — CANONICAL-ASM GRANT PATH: blocked at the operator registry row' with the exact one-line registry remedy and the unpark/resubmit steps.
 
 - [s1] src/code6cac_b.c restored to HEAD (INCLUDE_ASM) before finishing; the proven form lives in memory/grind/func_8002EBDC/candidate.c.
+
+## 2026-09-29 -- REOPENED (retro-audit FAIL, Q38, 803d0fea1)
+
+The 9b6db9034 landing FAILed the 2026-09-29 retro-audit: canonical grant rows (9bdfcc6cc, 'owner-instructed 2026-09-21') have no recorded owner instruction, and the islands do not qualify under the 2026-09-26 inline_o.h class grant (audit-q38). Per owner Q38 the body went back to `INCLUDE_ASM("asm/funcs", func_8002EBDC);` and the function is back in the queue. Landed text banked verbatim in `rejected/retro-audit-2026-09-29.c`. Registry rows removed (commented): inline_asm_canonical.txt, tools/grinder/owner_cluster_grants.txt, tools/canonical_asm_regions.json. func_8002F2D0's islands cite this body as 'character-identical' precedent.

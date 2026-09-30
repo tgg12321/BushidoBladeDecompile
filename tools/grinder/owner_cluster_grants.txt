@@ -38,7 +38,7 @@ func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row 
 # tracked func_80019310's 2026-09-06 row. Operator-added at the owner's
 # instruction 2026-09-21; every other gate applies unchanged:
 # func_8002D780 row removed 2026-09-29: reopened per owner Q38 (2026-09-29, 803d0fea1) -- no recorded owner instruction for the grant, and the islands do not qualify under the 2026-09-26 inline_o.h class grant.
-func_8002EBDC cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :80; row per owner Ruling 3 terms, 2026-09-15, decisions.md:26863; operator-added 2026-09-21)
+# func_8002EBDC row removed 2026-09-29: reopened per owner Q38 (2026-09-29, 803d0fea1) -- no recorded owner instruction for the grant, and the islands do not qualify under the 2026-09-26 inline_o.h class grant.
 # 2026-09-22 — one further census member reached floor 0 in a manual session,
 # so it earns a row on exactly the Ruling 3 terms the two 2026-09-21 rows got.
 # Operator-added at the owner's instruction 2026-09-22 (conversation, the
