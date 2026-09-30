@@ -35,3 +35,30 @@
 - [s2] Data model: record = g_practice_menu_table[idx] (PracticeMenuRec, stride 0x44C) extended with every field this function touches (unk_XX names, offset-derived); 12-byte s32 triples (Vec3i32: +0xD8 +0xE8 +0xF4 +0x168 +0x174 +0x180 +0x18C +0x1F8, copied as 3-word block moves; the stack `other` triple too), 16-byte VECTOR layouts (Vec4i32: +0xB8 +0xC8 +0x104 +0x114 +0x124 +0x134 +0x24C — the +0xC8/+0x24C copies move all 4 words incl. the never-written pad), 8-byte SVECTOR layout (SVec4i16: +0x1C8 -> +0x1D0 copy is the align-2 lwl/lwr pair). Tables: D_8008EB28 u8[8][2], D_8008EB38 u8[8], D_8008DD5C u8[27][8], D_8008DE34/D_8008DF78 u16[27][6], D_8008E3C0 u16[28], D_8008E3F8/D_8008E4D0 u16[27][4] (extents from asm/data/7D920.data.s dlabels).
 
 - [s2] LANDED COMPLETED-C ca4dad5fc (queue c1b5b4642), layer-2 PASS 2026-09-26. Ledger closed. Non-blocking reviewer nit left as-is: func_8003047C(p) is called with no prototype in scope (implicit decl; callee takes u8 *).
+
+## Cleanup 2026-09-30 — FAKE annotation for the duplicated func_80021D10 pair (retro-audit FAIL, owner Q37 class A)
+- Finding (tmp/audit-2026-09-29/review/batch_05.md): case 0's non-warp arm repeats default's two
+  `func_80021D10(..., slot)` calls with no `/* FAKE */`, although the duplication is match-motivated
+  (duplicated-statement-into-arms prereq 4; calls admitted when byte-identical, owner Q47).
+- Re-measured on the current tree (cleanup-dup/gen.py; each variant = the landed body with only the
+  dispatch changed; sandbox --disable all, whole code6cac_tu2.c TU; cleanup-dup/scores.txt):
+  landed duplicated form 0 (621/621); case 0 `goto` into default 16 (619/621); `if (arg4 == 0) goto`
+  16 (619); case 0 falling into an adjacent default, case 2/3 last 16 (621); case 2/3 first, case 0
+  falling into default 21 (619); `if (mode == 0 && arg4)` then a switch over 2/3/default 19 (621);
+  plain if/else-if chain 19 (619); mirror label placement, default `goto` into case 0's (only) copy
+  16 (621). Annotated form 0 (621/621).
+- Mechanism: block layout (target asm/funcs/func_80022580.s:242-253). The target tests `beqz mode`
+  first (to case 0), then the <0 / <4 / <2 range tests, and reaches case 2/3 through
+  `j .L8002295C; nop` (.s:250-251); case 0's block is placed after the range tests, then case 2/3,
+  then default. Case 0's else arm is `beqz $s3,.L800229BC` into default (.s:253-254), which the
+  shared-goto form also emits, so it does not distinguish the forms. Each shared form lays the
+  dispatch out in another order (source-level hunks in cleanup-dup/<variant>.diff):
+  cond_break, fallthrough_c0first, ifchain test `bnez mode` and fall into the range tests without
+  the .s:250-251 `j` (619); ifchain_then_switch does the same but re-reads mode for the switch (621);
+  fallthrough (case 2/3 first) places case 2/3's block ahead of case 0's (619);
+  c0_default_adjacent and default_goto_case0 place the calls block ahead of case 2/3 (621).
+  Only the two-copy switch gives the target's order.
+- Byte-neutral: cross-jump merges the copies (no extra `jal`); sandbox 0 and full-build SHA1 ==
+  oracle. (No RTL dump taken; the text above describes the emitted blocks only.)
+- LANDING: the duplicated copy carries `/* FAKE: ... */` naming the family, Q47, the mechanism and
+  this record. No code change.

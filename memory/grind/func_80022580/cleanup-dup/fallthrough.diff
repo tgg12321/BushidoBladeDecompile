@@ -1,0 +1,337 @@
+{
+  "score": 21,
+  "target_insns": 621,
+  "build_insns": 619,
+  "scorable": true,
+  "func": "func_80022580",
+  "file": "code6cac_tu2",
+  "disable": "all",
+  "strip_cheat_asm": true,
+  "rules_dropped": 0,
+  "cheat_asm_stripped": 5,
+  "disabled_o": "tmp/sandbox/func_80022580/code6cac_tu2.o",
+  "candidate": "memory/grind/func_80022580/cleanup-dup/fallthrough.c"
+}
+
+── insn diff vs target — func_80022580 (operands UNMASKED; the score masks some of these) ──
+target 621 insns · ours 619 insns · 68 hunk(s)
+  3 source-level · 0 operand-only (reg-alloc/scheduling) · 65 not-scored (masked cascade artifact)
+
+@ hunk 1/68  replace  target[24] ours[24]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez s2,8e50
+    ours    bnez s2,7f24
+
+@ hunk 2/68  replace  target[39] ours[39]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beq v1,v0,8ea4
+    ours    beq v1,v0,7f78
+
+@ hunk 3/68  replace  target[41] ours[41]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,8ec0
+    ours    bne v1,v0,7f94
+
+@ hunk 4/68  replace  target[46] ours[46]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,8ec0
+    ours    bnez v0,7f94
+
+@ hunk 5/68  replace  target[53] ours[53]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 8f70
+    ours    j 8044
+
+@ hunk 6/68  replace  target[55] ours[55]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne s2,v0,8f0c
+    ours    bne s2,v0,7fe0
+
+@ hunk 7/68  replace  target[60] ours[60]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,8f0c
+    ours    bne v1,v0,7fe0
+
+@ hunk 8/68  replace  target[72] ours[72]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 8f60
+    ours    j 8034
+
+@ hunk 9/68  replace  target[77] ours[77]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,8f3c
+    ours    bnez v0,8010
+
+@ hunk 10/68  replace  target[82] ours[82]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beqz v0,8f3c
+    ours    beqz v0,8010
+
+@ hunk 11/68  replace  target[84] ours[84]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beqz s2,8f68
+    ours    beqz s2,803c
+
+@ hunk 12/68  replace  target[100] ours[100]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne s2,v0,8fa0
+    ours    bne s2,v0,8074
+
+@ hunk 13/68  replace  target[105] ours[105]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,8fa0
+    ours    bne v1,v0,8074
+
+@ hunk 14/68  replace  target[109] ours[109]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 8fb8
+    ours    j 808c
+
+@ hunk 15/68  replace  target[152] ours[152]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,90fc
+    ours    bne v1,v0,81d0
+
+@ hunk 16/68  replace  target[154] ours[154]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne s2,v0,90fc
+    ours    bne s2,v0,81d0
+
+@ hunk 17/68  replace  target[174] ours[174]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,90ac
+    ours    bne v1,v0,8180
+
+@ hunk 18/68  replace  target[176] ours[176]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 90b0
+    ours    j 8184
+
+@ hunk 19/68  replace  target[181] ours[181]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,90c8
+    ours    bne v1,v0,819c
+
+@ hunk 20/68  replace  target[183] ours[183]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 90cc
+    ours    j 81a0
+
+@ hunk 21/68  replace  target[188] ours[188]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,90e8
+    ours    bne v1,v0,81bc
+
+@ hunk 22/68  replace  target[191] ours[191]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 9124
+    ours    j 81f8
+
+@ hunk 23/68  replace  target[196] ours[196]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 9124
+    ours    j 81f8
+
+@ hunk 24/68  replace  target[215] ours[215]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beqz v1,9150
+    ours    beqz v1,8224
+
+@ hunk 25/68  replace  target[222] ours[222]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beqz v1,9184
+    ours    beqz v1,82b0
+
+@ hunk 26/68  replace  target[224] ours[224]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bltz v1,9220
+    ours    bltz v1,82ec
+
+@ hunk 27/68  replace  target[226] ours[226]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beqz v0,9220
+    ours    beqz v0,82ec
+
+@ hunk 28/68  replace  target[228] ours[228]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,9224
+    ours    bnez v0,82f0
+
+@ hunk 29/68  replace  target[230] ours[230]  — source-level
+    target  j 91c0
+    ours    beqz s3,828c
+
+@ hunk 30/68  replace  target[232] ours[232]  — source-level
+    target  beqz s3,9220
+    ours    addiu a1,s0,216
+    ours    lw v0,0(s0)
+    ours    nop
+    ours    lw v1,216(v0)
+    ours    lw a3,220(v0)
+    ours    lw t0,224(v0)
+    ours    sw v1,16(sp)
+    ours    sw a3,20(sp)
+    ours    sw t0,24(sp)
+    ours    jal 0
+    ours    addiu a2,sp,16
+    ours    j 8310
+    ours    nop
+    ours    lui a2,0x0
+    ours    lbu a2,0(a2)
+    ours    jal 0
+    ours    addiu a1,s0,216
+    ours    sltiu a0,s2,1
+    ours    lui a2,0x0
+    ours    lbu a2,0(a2)
+    ours    j 8308
+    ours    addiu a1,sp,16
+    ours    beqz s3,82ec
+
+@ hunk 31/68  replace  target[245] ours[267]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 9244
+    ours    j 8310
+
+@ hunk 32/68  delete  target[247] ours[269]  — source-level
+    target  beqz s3,91fc
+    target  move a0,s2
+    target  addiu a1,s0,216
+    target  lw v0,0(s0)
+    target  nop
+    target  lw v1,216(v0)
+    target  lw a3,220(v0)
+    target  lw t0,224(v0)
+    target  sw v1,16(sp)
+    target  sw a3,20(sp)
+    target  sw t0,24(sp)
+    target  jal 0
+    target  addiu a2,sp,16
+    target  j 9244
+    target  nop
+    target  lui a2,0x0
+    target  lbu a2,0(a2)
+    target  jal 0
+    target  addiu a1,s0,216
+    target  sltiu a0,s2,1
+    target  lui a2,0x0
+    target  lbu a2,0(a2)
+    target  j 923c
+    target  addiu a1,sp,16
+
+@ hunk 33/68  replace  target[410] ours[408]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,9458
+    ours    bne v1,v0,8524
+
+@ hunk 34/68  replace  target[427] ours[425]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,94cc
+    ours    bnez v0,8598
+
+@ hunk 35/68  replace  target[429] ours[427]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez s2,94cc
+    ours    bnez s2,8598
+
+@ hunk 36/68  replace  target[435] ours[433]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,94cc
+    ours    bnez v0,8598
+
+@ hunk 37/68  replace  target[440] ours[438]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beqz v0,94d8
+    ours    beqz v0,85a4
+
+@ hunk 38/68  replace  target[473] ours[471]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,9504
+    ours    bnez v0,85d0
+
+@ hunk 39/68  replace  target[495] ours[493]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beq v1,v0,95c4
+    ours    beq v1,v0,8690
+
+@ hunk 40/68  replace  target[497] ours[495]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,9618
+    ours    bne v1,v0,86e4
+
+@ hunk 41/68  replace  target[502] ours[500]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,9618
+    ours    bnez v0,86e4
+
+@ hunk 42/68  replace  target[506] ours[504]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beq a0,v0,95fc
+    ours    beq a0,v0,86c8
+
+@ hunk 43/68  replace  target[511] ours[509]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,9600
+    ours    bnez v0,86cc
+
+@ hunk 44/68  replace  target[514] ours[512]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beq a0,v0,95fc
+    ours    beq a0,v0,86c8
+
+@ hunk 45/68  replace  target[516] ours[514]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne a0,v0,960c
+    ours    bne a0,v0,86d8
+
+@ hunk 46/68  replace  target[520] ours[518]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 9724
+    ours    j 87f0
+
+@ hunk 47/68  replace  target[523] ours[521]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 9724
+    ours    j 87f0
+
+@ hunk 48/68  replace  target[528] ours[526]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,96e0
+    ours    bne v1,v0,87ac
+
+@ hunk 49/68  replace  target[530] ours[528]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne s2,v0,9660
+    ours    bne s2,v0,872c
+
+@ hunk 50/68  replace  target[535] ours[533]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beq v1,v0,9654
+    ours    beq v1,v0,8720
+
+@ hunk 51/68  replace  target[538] ours[536]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 9724
+    ours    j 87f0
+
+@ hunk 52/68  replace  target[543] ours[541]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,96e0
+    ours    bne v1,v0,87ac
+
+@ hunk 53/68  replace  target[545] ours[543]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne s2,v0,96e0
+    ours    bne s2,v0,87ac
+
+@ hunk 54/68  replace  target[550] ours[548]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,96e0
+    ours    bne v1,v0,87ac
+
+@ hunk 55/68  replace  target[556] ours[554]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beq v1,s2,96c0
+    ours    beq v1,s2,878c
+
+@ hunk 56/68  replace  target[561] ours[559]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,96c0
+    ours    bnez v0,878c
+
+@ hunk 57/68  replace  target[563] ours[561]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beq v1,v0,96c0
+    ours    beq v1,v0,878c
+
+@ hunk 58/68  replace  target[565] ours[563]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,9724
+    ours    bne v1,v0,87f0
+
+@ hunk 59/68  replace  target[573] ours[571]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 9724
+    ours    j 87f0
+
+@ hunk 60/68  replace  target[577] ours[575]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,96fc
+    ours    bne v1,v0,87c8
+
+@ hunk 61/68  replace  target[580] ours[578]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 9718
+    ours    j 87e4
+
+@ hunk 62/68  replace  target[583] ours[581]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bne v1,v0,9714
+    ours    bne v1,v0,87e0
+
+@ hunk 63/68  replace  target[586] ours[584]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 9718
+    ours    j 87e4
+
+@ hunk 64/68  replace  target[595] ours[593]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beq a0,v0,9768
+    ours    beq a0,v0,8834
+
+@ hunk 65/68  replace  target[600] ours[598]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,9768
+    ours    bnez v0,8834
+
+@ hunk 66/68  replace  target[602] ours[600]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez a0,9770
+    ours    bnez a0,883c
+
+@ hunk 67/68  replace  target[607] ours[605]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beqz v0,9770
+    ours    beqz v0,883c
+
+@ hunk 68/68  replace  target[609] ours[607]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  j 9774
+    ours    j 8840
+
+  NOTE: source-level hunks dominate the SCORED ones — the C is saying
+  something different. Register-seat / scheduling levers cannot close those.

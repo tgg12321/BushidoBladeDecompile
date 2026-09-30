@@ -3654,6 +3654,15 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
             other = p->unk_00->unk_D8;
             func_80022224(idx, &p->unk_D8.x, &other.x);
         } else {
+            /* FAKE: default's two func_80021D10 calls repeated in this arm
+             * (duplicated-statement-into-arms; calls byte-identical, owner
+             * Q47): cross-jump merges the copies (no extra jal). Mechanism:
+             * block layout. With the copy here the dispatch tests mode == 0
+             * first, places case 0's block after the range tests and reaches
+             * case 2/3 through the target's `j` (asm/funcs/func_80022580.s
+             * :250-251); every shared form measured lays the dispatch out
+             * in another order, lever-exhaustion: memory/grind/func_80022580/
+             * evidence.md "Cleanup 2026-09-30" (16-21). */
             func_80021D10(idx, &p->unk_D8.x, slot);
             func_80021D10(idx == 0, &other.x, slot);
         }

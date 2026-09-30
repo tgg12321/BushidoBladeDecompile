@@ -1,0 +1,1 @@
+{"func": "func_80022580", "addr": "80022580", "verdict": "PASS", "body_hash": "c7c16f87d10fbbdc", "body_kind": "c", "file": "code6cac_tu2", "reviewer": "rev-22580", "scope": "cheat-cleanup", "date": "2026-09-30T19:03:08Z", "head": "f979d146e", "notes": "retro-audit FAIL (ca4dad5fc) cleared: Q47 FAKE annotation, block-layout mechanism, lever-exhaustion 16-21"}
