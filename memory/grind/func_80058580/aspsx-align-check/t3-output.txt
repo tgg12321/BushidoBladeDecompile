@@ -1,0 +1,7 @@
+0 error(s) from 3 lines in 0.5 seconds
+0 error(s) from 5 lines in 0.5 seconds
+0 error(s) from 4 lines in 0.5 seconds
+0 error(s) in 0.11 seconds
+000000 11111111 b0b0b0b0 00000000 b1b1b1b1
+000010 c0c0c0c0
+000014

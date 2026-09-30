@@ -1,0 +1,87 @@
+-- code6cac.o (rodata starts 80010068, phase 0)
+   80010068 phase 0  rel 0  C  func_80019568
+   80010068 phase 0  rel 0  tr jtbl_80010068
+   80010088 phase 0  rel 0  C  func_80019568
+   80010088 phase 0  rel 0  tr jtbl_80010088
+   800100c4 phase 4  rel 4  C  func_8001C8DC
+   800100e4 phase 4  rel 4  C  func_8001DA8C
+   80010414 phase 4  rel 4  C  func_80021424
+-- code6cac_b.o (rodata starts 8001042c, phase 4)
+   8001042c phase 4  rel 0  C  func_80026DA4
+   80010498 phase 0  rel 4  C  func_8002738C
+   800104f0 phase 0  rel 4  C  func_80027438
+   80010548 phase 0  rel 4  C  func_80027AD8
+   800105a0 phase 0  rel 4  C  func_800324D0
+   800105d0 phase 0  rel 4  C  func_80032854
+   80010698 phase 0  rel 4  C  func_80032C50
+   800107c0 phase 0  rel 4  C  func_80033498
+   8001084c phase 4  rel 0  C  func_800344B4
+-- code6cac_b3.o (rodata starts 8001086c, phase 4)
+   8001086c phase 4  rel 0  C  func_80034708
+   8001089c phase 4  rel 0  C  func_80034708
+-- replay_camera_rob_back_loose2.o (rodata starts 800108cc, phase 4)
+   800108cc phase 4  rel 0  C  func_80035618
+-- code6cac_b2_post.o (rodata starts 800108ec, phase 4)
+   800108ec phase 4  rel 0  C  func_80035828
+   80010924 phase 4  rel 0  C  func_80035828
+-- code6cac_b5.o (rodata starts 80010938, phase 0)
+   80010938 phase 0  rel 0  tr jtbl_80010938
+   80010978 phase 0  rel 0  C  func_80036940
+-- code6cac_c0.o (rodata starts 800109d8, phase 0)
+   800109d8 phase 0  rel 0  C  func_80037D14
+-- code6cac_c_mid.o (rodata starts 800109ec, phase 4)
+   80010ac4 phase 4  rel 0  C  func_8003880C
+   80010af4 phase 4  rel 0  C  func_80038988
+   80010b24 phase 4  rel 0  C  func_80038988
+   80010b54 phase 4  rel 0  C  func_80038988
+   80010b84 phase 4  rel 0  C  func_80038988
+   80010bb4 phase 4  rel 0  C  func_80038C70
+   80010bfc phase 4  rel 0  C  func_80038C70
+   80010c2c phase 4  rel 0  C  func_80038C70
+   80010c5c phase 4  rel 0  C  func_80038C70
+-- code6cac_c_ab.o (rodata starts 80010ca4, phase 4)
+   80010ca4 phase 4  rel 0  C  func_8003AB44
+   80010cc4 phase 4  rel 0  C  func_8003AE5C
+   80010d1c phase 4  rel 0  C  func_8003B5A4
+-- code6cac_c2.o (rodata starts 80010d74, phase 4)
+   80010d74 phase 4  rel 0  C  func_8003BCB4
+-- text1a_pre.o (rodata starts 80010d9c, phase 4)
+   80010d9c phase 4  rel 0  C  func_80040304
+   80010db8 phase 0  rel 4  C  func_80040D48
+-- text1a_c.o (rodata starts 80010dd4, phase 4)
+   80010dd4 phase 4  rel 0  C  func_80042504
+-- text1a_c2.o (rodata starts 800152b4, phase 4)
+   800152b4 phase 4  rel 0  C  func_800460E4
+   80015334 phase 4  rel 0  C  func_800460E4
+-- text1a_b.o (rodata starts 800153b4, phase 4)
+   800153b4 phase 4  rel 0  C  func_800466C0
+-- text1a_b_pre_rodata.o (rodata starts 800153f0, phase 0)
+   8001541c phase 4  rel 4  tr jtbl_8001541C
+   8001545c phase 4  rel 4  tr jtbl_8001545C
+   8001585c phase 4  rel 4  tr jtbl_8001585C
+   80015884 phase 4  rel 4  tr jtbl_80015884
+   8001589c phase 4  rel 4  tr jtbl_8001589C
+   800158f8 phase 0  rel 0  tr jtbl_800158F8
+   80015940 phase 0  rel 0  tr jtbl_80015940
+-- text1b.o (rodata starts 80015988, phase 0)
+   80015988 phase 0  rel 0  C  func_8006B578
+   800159b0 phase 0  rel 0  C  func_8006E534
+   800159d0 phase 0  rel 0  C  func_8006ECF4
+   80015a0c phase 4  rel 4  C  func_800747D8
+   80015a24 phase 4  rel 4  C  func_80077374
+-- text1b_b.o (rodata starts 80015a3c, phase 4)
+   80015a3c phase 4  rel 0  C  func_80077B30
+   80015a54 phase 4  rel 0  C  func_80077D94
+   80015a98 phase 0  rel 4  C  prnt
+   80015ca4 phase 4  rel 0  C  sprintf
+-- system.o (rodata starts 8001622c, phase 4)
+   8001622c phase 4  rel 0  C  getintr
+-- main.o (rodata starts 800163c0, phase 0)
+   800163c0 phase 0  rel 0  C  SsSetTickMode
+   80016420 phase 0  rel 0  C  SpuSetCommonAttr
+   80016440 phase 0  rel 0  C  SpuSetCommonAttr
+   80016460 phase 0  rel 0  tr jtbl_80016460
+   80016480 phase 0  rel 0  tr jtbl_80016480
+-- ? (rodata starts 00000000, phase 0)
+   800a3620 phase 0  rel 0  tr jtbl_800A3620
+   800a3624 phase 4  rel 4  tr jtbl_800A3624
