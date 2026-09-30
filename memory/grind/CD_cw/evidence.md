@@ -151,3 +151,15 @@ adds it to named_syms.txt; probe bodies were in tmp/CD_cw/):
   scores 23/263 on the landed tree (re-measured by laneB, rejected/direct-nparam-read-23.c);
   the earlier 31 included the 8-point Intr+1 relocation artifact. FAKE note and commit
   message corrected.
+
+## 2026-09-30 — LANDED: COMPLETED-C (181820b49; queue 97033c907)
+Layer-2 PASS l2-CD_cw-r1, round 1, on body 048fd9442f152f24 (CD_cw, scope match) plus
+CD_sync 50f47817e3c646a2 / CD_datasync 3a0f75962d4fc29b / CdLastPos 7298a287d297af07
+(scope cheat-cleanup), all in their layer2.jsonl. Key findings: SOTN bios.c @aa53500
+citations verified (:314 com+0x40 count read reaching two tables up, same layout as BB2;
+:292 shared i; :95/:102/:210 helpers; bios.c matched C in splat.us.main.yaml); Alarm merge
+prongs (a)-(e) hold; retire-with-CD_ready alias rows correct; remaining CD_sync/CD_datasync
+FAKEs re-ablated and still load-bearing (34/9, 13/12). One correction applied before
+commit: direct `D_800A13FC[com]` = 23/263 (not 31). Oracle SHA1 re-verified after the
+comment fix; check_completion_integrity OK.
+Open follow-up: the per-word Alarm/Intr alias rows retire when CD_ready lands.
