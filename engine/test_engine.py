@@ -2074,9 +2074,24 @@ def test_queue_reopen() -> None:
             check("regen: regression-origin item NOT lost by preserve", it2 is not None)
             eq("regen: preserved item keeps origin", it2.get("origin") if it2 else None, "regression")
             eq("regen: preserved item stays active", it2["status"] if it2 else None, "active")
-            gone = next((i for i in q2["items"] if i["func"] == "func_PARKED_GONE"), None)
-            check("regen: parked item the scan no longer produces DROPS (unchanged old behavior)",
-                  gone is None)
+            # Owner ruling Q39 changed this: a LISTED item the scan no longer
+            # produces drops only on a layer-2 PASS for its current body
+            # (engine/queue.py generate's choke point); without one it is held.
+            held = next((i for i in q2["items"] if i["func"] == "func_PARKED_GONE"), None)
+            check("regen: listed item the scan no longer produces is HELD without a layer-2 PASS",
+                  held is not None and "layer-2 gate" in held.get("layer2_pending", ""))
+            P.c_stems, canonical.scan_all = (lambda: []), (lambda: [])
+            cheats.canonical_asm_funcs = lambda: set()
+            orig_gate = Q.layer2.gate
+            Q.layer2.gate = lambda f, s: None   # a matching PASS on record
+            try:
+                q3 = Q.generate(workdir=str(Path(td) / "scan"), preserve=True)
+            finally:
+                P.c_stems, canonical.scan_all = orig_stems, orig_scan
+                cheats.canonical_asm_funcs = orig_canon_funcs
+                Q.layer2.gate = orig_gate
+            gone = next((i for i in q3["items"] if i["func"] == "func_PARKED_GONE"), None)
+            check("regen: ...and DROPS once its layer-2 PASS matches", gone is None)
         finally:
             Q.QUEUE_PATH = orig_path
 
@@ -2464,8 +2479,9 @@ def test_include_asm_whole_body() -> None:
             orig = (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
                     cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
                     inlineasm.file_func_cheat_asm_count, completion.source_issues,
-                    Q.O.verify)
+                    Q.O.verify, Q.layer2.gate)
             Q.QUEUE_PATH = str(qp)
+            Q.layer2.gate = lambda f, s: None  # the Q39 gate has its own test
             Q._rule_count = lambda f: 0
             cheats.func_prologue_count = lambda f: 0
             cheats.canonical_asm_funcs = lambda: canon
@@ -2480,7 +2496,7 @@ def test_include_asm_whole_body() -> None:
                 (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
                  cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
                  inlineasm.file_func_cheat_asm_count, completion.source_issues,
-                 Q.O.verify) = orig
+                 Q.O.verify, Q.layer2.gate) = orig
 
     r_attr = _done_with(1, set())
     check("include_asm: queue done REFUSES attributed cheat-asm",
@@ -2615,7 +2631,7 @@ def test_canonical_completion_is_the_drop() -> None:
                 completion.source_issues,
                 Q.sandbox.build_stripped_object, score._o_func_table,
                 score.score_func, Q.O.verify, cheats.is_jtbl_infra,
-                cheats.is_canonical_extraction_only)
+                cheats.is_canonical_extraction_only, Q.layer2.gate)
         try:
             # Patch INSIDE the try: a raise part-way through the assignments
             # would otherwise leak monkeypatches into every later test in the
@@ -2641,6 +2657,7 @@ def test_canonical_completion_is_the_drop() -> None:
             score.score_func = lambda a, b, f: {"score": 300}
             Q.O.verify = lambda rebuild=False: {"build_matches": True,
                                                 "build_sha1": "deadbeef"}
+            Q.layer2.gate = lambda f, s: None  # the Q39 gate has its own test
             # 2. the gate, against a queue that still lists it
             qp.write_text(json.dumps(seed))
             r = Q.mark_done("func_CANON")
@@ -2723,7 +2740,479 @@ def test_canonical_completion_is_the_drop() -> None:
              completion.source_issues,
              Q.sandbox.build_stripped_object, score._o_func_table,
              score.score_func, Q.O.verify, cheats.is_jtbl_infra,
-             cheats.is_canonical_extraction_only) = orig
+             cheats.is_canonical_extraction_only, Q.layer2.gate) = orig
+
+
+def test_layer2_gate() -> None:
+    """Owner ruling Q39 (2026-09-29): `queue done` refuses unless the latest
+    layer-2 verdict recorded in memory/grind/<func>/layer2.jsonl is a PASS on
+    the EXACT body being landed — and regen's drop of an item it previously
+    listed is the same completion, so it is gated the same way.
+
+    The retro-audit behind the ruling found landings with no recorded PASS and
+    PASSes given on an earlier body than the one landed. Pinned: a record
+    binds only to the hash the reviewer reported (--expect-hash, required);
+    a comment/layout edit keeps the key and every token change moves it; no
+    record, a later FAIL, or a changed body all refuse; the refusal names the
+    fix; and neither mark_done nor any regen drop point has a way around it.
+    """
+    from engine import layer2
+
+    src = ("/* header */\nint other(void) { return 1; }\n"
+           "int func_L2(int a) {\n    /* why */\n    return a + 1;\n}\n")
+    commented = src.replace("/* why */", "/* a different, longer comment */")
+    changed = src.replace("a + 1", "a + 2")
+
+    # 1. The key: the full definition as C tokens (comments/layout ignored).
+    eq("layer2: C body keys as c", (layer2.body_key(src, "func_L2") or ("",))[0], "c")
+    eq("layer2: comment-only edit keeps the hash",
+       layer2.body_key(commented, "func_L2"), layer2.body_key(src, "func_L2"))
+    eq("layer2: whitespace-only edit keeps the hash",
+       layer2.body_key(src.replace("a + 1", "a+1"), "func_L2"),
+       layer2.body_key(src, "func_L2"))
+    check("layer2: a code change moves the hash",
+          layer2.body_key(changed, "func_L2") != layer2.body_key(src, "func_L2"))
+    check("layer2: a sibling function's edit does not move the hash",
+          layer2.body_key(src.replace("return 1;", "return 7;"), "func_L2")
+          == layer2.body_key(src, "func_L2"))
+    eq("layer2: no body -> no key (fail closed)",
+       layer2.body_key("int x;\n", "func_L2"), None)
+    knr = "void func_KR(a) s16 *a; {\n    *a = 1;\n}\nint other(void) { return 1; }\n"
+    check("layer2: a K&R definition is keyed by itself, not the whole file",
+          layer2.body_key(knr, "func_KR")
+          == layer2.body_key(knr.replace("return 1;", "return 7;"), "func_KR"))
+    check("layer2: a K&R definition's parameter declaration is in the key",
+          layer2.body_key(knr, "func_KR")
+          != layer2.body_key(knr.replace("s16 *a;", "s32 *a;"), "func_KR"))
+    # Collisions the first key (grindlib.body_hash) had — layer-2 review of
+    # 5d46a66e1. Each pair differs in bytes-relevant C and must key apart.
+    for desc, a_src, b_src in (
+            ("return type", "s16 func_C(void) { return 0; }\n",
+             "s32 func_C(void) { return 0; }\n"),
+            ("storage class", "static int func_C(void) { return 0; }\n",
+             "int func_C(void) { return 0; }\n"),
+            ("whitespace inside a string",
+             'void func_C(void) { g("a  b"); }\n', 'void func_C(void) { g("a b"); }\n'),
+            ("`//` inside a string",
+             'void func_C(void) { g("x//y"); h(1); }\n',
+             'void func_C(void) { g("x//y"); h(2); }\n'),
+            ("`/*` inside a char/string",
+             "void func_C(void) { g('/'); g(\"/*\"); h(1); }\n",
+             "void func_C(void) { g('/'); g(\"/*\"); h(2); }\n"),
+            ("token boundary `a - --b` vs `a-- - b`",
+             "int func_C(int a, int b) { return a - --b; }\n",
+             "int func_C(int a, int b) { return a-- - b; }\n")):
+        ka, kb = layer2.body_key(a_src, "func_C"), layer2.body_key(b_src, "func_C")
+        check(f"layer2: no collision on {desc}", ka is not None and ka != kb)
+    eq("layer2: layout-only edit (incl. a brace-shared line) keeps the key",
+       layer2.body_key("}int func_C(int a){return a+1;}\n", "func_C"),
+       layer2.body_key("}\nint func_C(int a)\n{\n    return a + 1; // x\n}\n", "func_C"))
+    # Preprocessor lines are newline-terminated (round-2 review C5): the line
+    # break after a directive is a token; a backslash-newline splice is not.
+    check("layer2: a directive's terminating newline is a token",
+          layer2.tokens("#define A 1\nx") != layer2.tokens("#define A 1 x"))
+    eq("layer2: a spliced directive continues the same line",
+       layer2.tokens("#define A \\\n 1\nx"), layer2.tokens("#define A 1\nx"))
+    check("layer2: an in-body directive's line break moves the key",
+          layer2.body_key("int func_C(void) {\n#if X\n    a();\n#endif\n}\n", "func_C")
+          != layer2.body_key("int func_C(void) {\n#if X a();\n#endif\n}\n", "func_C"))
+    eq("layer2: two definitions (an `#if 0` copy) -> no key (fail closed)",
+       layer2.body_key("#if 0\nint func_D(void) { return 1; }\n#endif\n"
+                       "int func_D(void) { return 2; }\n", "func_D"), None)
+    eq("layer2: a C definition AND an asm body -> no key (fail closed)",
+       layer2.body_key('int func_D(void) { return 1; }\nINCLUDE_ASM("asm/funcs", func_D);\n',
+                       "func_D"), None)
+
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        saved = (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
+                 cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
+                 inlineasm.file_func_cheat_asm_count, completion.source_issues,
+                 Q.O.verify)
+        try:
+            Path("src").mkdir()
+            Path("src/l2tu.c").write_text(src)
+            rec_p = Path("memory/grind/func_L2/layer2.jsonl")
+
+            # 2. whole-body asm is keyed by its block AND the included .s
+            Path("asm/funcs").mkdir(parents=True)
+            Path("asm/funcs/func_AS.s").write_text("glabel func_AS\n  jr $ra\n  nop\n")
+            asm_src = 'INCLUDE_ASM("asm/funcs", func_AS);\n'
+            k1 = layer2.body_key(asm_src, "func_AS")
+            eq("layer2: INCLUDE_ASM body keys as asm", (k1 or ("", ""))[0], "asm")
+            Path("asm/funcs/func_AS.s").write_text("glabel func_AS\n  jr $ra\n  li $v0, 1\n")
+            check("layer2: editing the included .s moves the asm key",
+                  layer2.body_key(asm_src, "func_AS") != k1)
+
+            # 3. the gate itself
+            why = layer2.gate("func_L2", "l2tu")
+            check("layer2: no record -> refused", bool(why))
+            check("layer2: refusal names the fix",
+                  "layer2 record func_L2" in (why or "") and "Q39" in (why or ""))
+
+            def _rec(verdict, reviewer="rev-A", scope="match"):
+                """Record `verdict` for the body now in src/ — the hash the
+                reviewer would have reported via `layer2 hash`."""
+                return layer2.record("func_L2", verdict, reviewer, scope, stem="l2tu",
+                                     expect_hash=layer2.current_key("func_L2", "l2tu")[1])
+
+            r = layer2.record("func_L2", "PASS", "rev-A", "match", "ok", stem="l2tu",
+                              expect_hash="0" * 16)
+            check("layer2: record refuses a body other than the reviewed one",
+                  r["ok"] is False and not rec_p.exists())
+            for scope in layer2.SCOPES:
+                r = layer2.record("func_L2", "PASS", "rev-A", scope, stem="l2tu")
+                check(f"layer2: record refuses without --expect-hash (scope {scope})",
+                      r["ok"] is False and "--expect-hash is required" in r.get("reason", "")
+                      and not rec_p.exists())
+            r = layer2.record("func_L2", "PASS", "rev-A", "bogus", stem="l2tu",
+                              expect_hash=layer2.current_key("func_L2", "l2tu")[1])
+            check("layer2: record refuses an unknown scope", r["ok"] is False)
+
+            h = layer2.body_key(src, "func_L2")[1]
+            r = layer2.record("func_L2", "PASS", "rev-A", "match", "ok", stem="l2tu",
+                              expect_hash=h)
+            check("layer2: PASS recorded", r["ok"] is True and rec_p.exists())
+            rec = json.loads(rec_p.read_text().splitlines()[-1])
+            eq("layer2: record fields",
+               sorted(rec), sorted(["func", "verdict", "body_hash", "body_kind", "file",
+                                    "reviewer", "scope", "date", "head", "notes"]))
+            eq("layer2: PASS on the same body -> gate open",
+               layer2.gate("func_L2", "l2tu"), None)
+
+            Path("src/l2tu.c").write_text(commented)
+            eq("layer2: comment-only edit after review keeps the PASS",
+               layer2.gate("func_L2", "l2tu"), None)
+
+            Path("src/l2tu.c").write_text(changed)
+            why = layer2.gate("func_L2", "l2tu") or ""
+            check("layer2: PASS on a different body hash -> refused",
+                  "changed after review" in why and h in why)
+
+            # The F1 scenario: PASS given on body A, body B edited in, then a
+            # PASS "recorded" with A's hash — refused, nothing written.
+            n_before = len(rec_p.read_text().splitlines())
+            r = layer2.record("func_L2", "PASS", "rev-A", "match", stem="l2tu", expect_hash=h)
+            check("layer2: a PASS on body A cannot be recorded against body B",
+                  r["ok"] is False and len(rec_p.read_text().splitlines()) == n_before)
+
+            # C1: a FAIL binds to the reviewer's hash even though src/ moved on
+            # (it can only close the gate) — so the stale PASS on body A cannot
+            # come back to life when src/ returns to A.
+            r = layer2.record("func_L2", "FAIL", "rev-A2", "match", stem="l2tu", expect_hash=h)
+            check("layer2: a FAIL on body A records while src/ holds body B",
+                  r["ok"] is True and r["body_hash"] == h and r["body_kind"] == "")
+            Path("src/l2tu.c").write_text(src)
+            check("layer2: src/ back at body A -> the stale PASS stays revoked",
+                  "latest layer-2 verdict for func_L2 is FAIL"
+                  in (layer2.gate("func_L2", "l2tu") or ""))
+            r = layer2.record("func_L2", "NEEDS_USER", "rev-A3", "match", stem="l2tu",
+                              expect_hash="f" * 16)
+            check("layer2: a NEEDS_USER binds to a hash src/ does not hold", r["ok"] is True)
+            r = layer2.record("func_L2", "FAIL", "rev-A4", "match", stem="l2tu",
+                              expect_hash="not-a-hash")
+            check("layer2: a malformed hash is refused for every verdict", r["ok"] is False)
+
+            _rec("FAIL", "rev-B")
+            why = layer2.gate("func_L2", "l2tu") or ""
+            check("layer2: a later FAIL on the same body revokes the PASS",
+                  "latest layer-2 verdict for func_L2 is FAIL" in why)
+            _rec("NEEDS_USER", "rev-C")
+            check("layer2: NEEDS_USER is not a PASS",
+                  "is NEEDS_USER" in (layer2.gate("func_L2", "l2tu") or ""))
+
+            _rec("PASS", "rev-D")
+            eq("layer2: a fresh PASS on the current body reopens the gate",
+               layer2.gate("func_L2", "l2tu"), None)
+            with open(rec_p, "a") as fh:
+                fh.write("not json\n")
+            check("layer2: a malformed record fails closed",
+                  "not JSON" in (layer2.gate("func_L2", "l2tu") or ""))
+            rec_p.unlink()
+
+            # R2: the CLI surface — `layer2 record` via engine.cli.main(argv).
+            import sys
+            from engine import cli as _cli
+
+            def _cli_run(*argv):
+                old_argv, buf = sys.argv, io.StringIO()
+                sys.argv = ["engine.cli", "layer2", *argv]
+                try:
+                    with contextlib.redirect_stdout(buf):
+                        rc = _cli.main()
+                finally:
+                    sys.argv = old_argv
+                return rc, buf.getvalue()
+
+            cur = layer2.current_key("func_L2", "l2tu")[1]
+            base = ("record", "func_L2", "--reviewer", "rev-cli", "--scope", "match",
+                    "--file", "l2tu")
+            rc, _out = _cli_run(*base, "--verdict", "PASS")
+            check("layer2 cli: record without --expect-hash -> exit 1, nothing written",
+                  rc == 1 and not rec_p.exists())
+            rc, _out = _cli_run(*base, "--verdict", "PASS", "--expect-hash", "0" * 16)
+            check("layer2 cli: record with a wrong hash -> exit 1, nothing written",
+                  rc == 1 and not rec_p.exists())
+            rc, _out = _cli_run(*base, "--verdict", "PASS", "--expect-hash", cur)
+            check("layer2 cli: record with the reviewed hash -> exit 0, written",
+                  rc == 0 and rec_p.exists()
+                  and json.loads(rec_p.read_text().splitlines()[-1])["body_hash"] == cur)
+            rc, out = _cli_run("hash", "func_L2", "--file", "l2tu")
+            check("layer2 cli: hash prints the key", rc == 0 and cur in out)
+            rc, out = _cli_run("show", "func_L2", "--file", "l2tu")
+            check("layer2 cli: show prints the keyed definition",
+                  rc == 0 and "int func_L2(int a)" in out and "return a + 1;" in out)
+            rec_p.unlink()
+            vf = Path("verdict.json")
+            vf.write_text("reviewer chatter\n" + json.dumps(
+                {"decision": "PASS", "function": "func_L2", "body_hash": cur,
+                 "summary": "clean", "evidence": [], "next_action": ""}) + "\n")
+            rc, _out = _cli_run(*base, "--verdict-file", str(vf), "--expect-hash", "0" * 16)
+            check("layer2 cli: --expect-hash disagreeing with the verdict file -> exit 1",
+                  rc == 1 and not rec_p.exists())
+            rc, _out = _cli_run("record", "func_OTHER", "--reviewer", "r", "--scope", "match",
+                                "--file", "l2tu", "--verdict-file", str(vf))
+            check("layer2 cli: a verdict file for another function -> exit 1", rc == 1)
+            rc, _out = _cli_run(*base, "--verdict-file", str(vf))
+            rec = json.loads(rec_p.read_text().splitlines()[-1]) if rec_p.exists() else {}
+            check("layer2 cli: --verdict-file records verdict + hash + its sha1",
+                  rc == 0 and rec.get("verdict") == "PASS" and rec.get("body_hash") == cur
+                  and rec.get("notes") == "clean" and rec.get("verdict_source") == "verdict.json"
+                  and len(rec.get("verdict_sha1", "")) == 40)
+            # K5: the verdict JSON is kept, byte-for-byte, where the record points
+            import hashlib as _hl
+            kept = Path(rec.get("verdict_file", "") or "/nonexistent")
+            check("layer2 cli: --verdict-file keeps a byte copy under layer2_verdicts/",
+                  kept.as_posix() == f"memory/grind/func_L2/layer2_verdicts/{rec.get('verdict_sha1')}.json"
+                  and kept.is_file()
+                  and _hl.sha1(kept.read_bytes()).hexdigest() == rec.get("verdict_sha1"))
+            vf.unlink()
+            check("layer2 cli: the kept copy outlives the reviewer's tmp file",
+                  kept.is_file() and not vf.exists())
+            vf.write_text("{}")
+            vf.write_text(json.dumps({"decision": "PASS", "function": "func_L2"}))
+            rc, _out = _cli_run(*base, "--verdict-file", str(vf))
+            check("layer2 cli: a verdict file without body_hash -> exit 1", rc == 1)
+            rec_p.unlink()
+
+            # 4. mark_done: refuses on the gate BEFORE the (minutes-long) oracle
+            #    check, and completes once the PASS matches.
+            qp = Path("queue.json")
+            seed = {"items": [{"func": "func_L2", "file": "l2tu", "distance": 0,
+                               "verdict": "C", "rules": 0, "status": "active"}],
+                    "counts": {}}
+            qp.write_text(json.dumps(seed))
+            verified = []
+            Q.QUEUE_PATH = str(qp)
+            Q._rule_count = lambda f: 0
+            cheats.func_prologue_count = lambda f: 0
+            cheats.canonical_asm_funcs = lambda: set()
+            cheats.maspsx_gate_entries = lambda f: []
+            inlineasm.file_func_cheat_asm_count = lambda s, f: 0
+            completion.source_issues = lambda *a, **k: []
+            Q.O.verify = lambda rebuild=False: (verified.append(1) or
+                                                {"build_matches": True,
+                                                 "build_sha1": "deadbeef"})
+            r = Q.mark_done("func_L2")
+            check("layer2: queue done REFUSES with no record",
+                  r["ok"] is False and "layer-2 gate" in r.get("reason", ""))
+            eq("layer2: refusal comes before the oracle check", verified, [])
+            eq("layer2: refused item stays queued",
+               [it["func"] for it in Q.load()["items"]], ["func_L2"])
+            _rec("PASS")
+            Path("src/l2tu.c").write_text(changed)
+            r = Q.mark_done("func_L2")
+            check("layer2: queue done REFUSES a PASS on an earlier body",
+                  r["ok"] is False and "changed after review" in r.get("reason", ""))
+            Path("src/l2tu.c").write_text(commented)
+            r = Q.mark_done("func_L2")
+            check("layer2: queue done ACCEPTS a PASS on the same body (comments differ)",
+                  r["ok"] is True and r.get("completion") == "COMPLETED-C")
+            rec_p.unlink()
+
+            # 5. regen: dropping an item it LISTED is a completion — gated at
+            #    each of the three drop points (COMPLETED-C, canonical, and the
+            #    unscorable branch), with or without --no-preserve. `other` is a
+            #    never-listed completion and always drops.
+            Path("build/src").mkdir(parents=True)
+            Path("build/src/l2tu.o").write_text("")
+            saved_regen = (P.c_stems, canonical.scan_all, cheats.is_jtbl_infra,
+                           cheats.is_canonical_extraction_only,
+                           Q.sandbox.build_stripped_object, score._o_func_table,
+                           score.score_func)
+            P.c_stems = lambda: ["l2tu"]
+            canonical.scan_all = lambda: []
+            cheats.is_jtbl_infra = lambda f: False
+            cheats.is_canonical_extraction_only = lambda f: False
+            Q.sandbox.build_stripped_object = lambda *a, **k: {}
+            score._o_func_table = lambda o: {"func_L2": (0, 0), "other": (0, 0)}
+
+            def _unscorable(a, b, f):
+                raise KeyError(f)
+
+            try:
+                for point, canon, scorer in (
+                        ("COMPLETED-C", set(), lambda a, b, f: {"score": 0}),
+                        # distance 300: only the canonical branch can drop it
+                        ("canonical", {"func_L2"},
+                         lambda a, b, f: {"score": 300 if f == "func_L2" else 0}),
+                        ("unscorable", set(), _unscorable)):
+                    cheats.canonical_asm_funcs = lambda canon=canon: canon
+                    score.score_func = scorer
+                    for preserve in (True, False):
+                        qp.write_text(json.dumps(seed))
+                        items = Q.generate(workdir=str(Path(td) / "wd"),
+                                           preserve=preserve)["items"]
+                        eq(f"layer2: regen [{point}, preserve={preserve}] HOLDS a listed "
+                           f"item without a PASS", [it["func"] for it in items], ["func_L2"])
+                        check(f"layer2: held item says why [{point}, preserve={preserve}]",
+                              bool(items) and "layer-2 gate"
+                              in items[0].get("layer2_pending", ""))
+                    _rec("PASS")
+                    qp.write_text(json.dumps(seed))
+                    eq(f"layer2: regen [{point}] drops a listed item once its PASS matches",
+                       Q.generate(workdir=str(Path(td) / "wd"))["items"], [])
+                    rec_p.unlink()
+
+                # R1: the scan can skip a whole stem — no reference .o, or its
+                # stripped build raises — and never reach any drop point. The
+                # choke point after the scan must hold the listed item, and the
+                # SECOND regen (whose `listed` is the first one's output) too.
+                cheats.canonical_asm_funcs = lambda: set()
+                score.score_func = lambda a, b, f: {"score": 0}
+
+                def _build_raises(*a, **k):
+                    raise RuntimeError("stripped build broke")
+
+                ref_o = Path("build/src/l2tu.o")
+                for point in ("missing ref .o", "stripped-build exception"):
+                    if point == "missing ref .o":
+                        ref_o.unlink()
+                    else:
+                        Q.sandbox.build_stripped_object = _build_raises
+                    qp.write_text(json.dumps(seed))
+                    for n in (1, 2):
+                        items = Q.generate(workdir=str(Path(td) / "wd"))["items"]
+                        eq(f"layer2: regen #{n} [{point}] HOLDS a listed item without a PASS",
+                           [it["func"] for it in items], ["func_L2"])
+                        check(f"layer2: held item says why [{point}, regen #{n}]",
+                              bool(items) and "layer-2 gate"
+                              in items[0].get("layer2_pending", ""))
+                    _rec("PASS")
+                    eq(f"layer2: [{point}] a matching PASS lets the item go",
+                       Q.generate(workdir=str(Path(td) / "wd"))["items"], [])
+                    rec_p.unlink()
+                    ref_o.write_text("")
+                    Q.sandbox.build_stripped_object = lambda *a, **k: {}
+
+                # K1: a LISTED item that turns out not to be a C function (its
+                # name no longer appears in the .c) is held too — both the
+                # scored and the unscorable not-a-C drop go through _held. A
+                # never-listed non-C symbol still drops silently.
+                score._o_func_table = lambda o: {"func_NC": (0, 0), "func_NC2": (0, 0)}
+                inlineasm.file_func_cheat_asm_count = (
+                    lambda s, f: -1 if f.startswith("func_NC") else 0)
+                nc_seed = {"items": [{"func": "func_NC", "file": "l2tu", "distance": 0,
+                                      "verdict": "C", "rules": 0, "status": "active"}],
+                           "counts": {}}
+                for point, scorer in (("scored", lambda a, b, f: {"score": 0}),
+                                      ("unscorable", _unscorable)):
+                    score.score_func = scorer
+                    qp.write_text(json.dumps(nc_seed))
+                    items = Q.generate(workdir=str(Path(td) / "wd"))["items"]
+                    eq(f"layer2: regen [not-a-C, {point}] HOLDS a listed item, drops the "
+                       f"never-listed one", [it["func"] for it in items], ["func_NC"])
+                    check(f"layer2: held not-a-C item says why [{point}]",
+                          bool(items) and "layer-2 gate" in items[0].get("layer2_pending", ""))
+                inlineasm.file_func_cheat_asm_count = lambda s, f: 0
+            finally:
+                (P.c_stems, canonical.scan_all, cheats.is_jtbl_infra,
+                 cheats.is_canonical_extraction_only,
+                 Q.sandbox.build_stripped_object, score._o_func_table,
+                 score.score_func) = saved_regen
+
+            # N1: a naming wave moves the ledger (and the archived one) and must
+            # retarget layer2.jsonl's `func`, or the renamed function could
+            # never be recorded again. The old PASS must not open the gate.
+            # Round 4: the rename chain is kept as a LIST, the layer2_verdicts/
+            # pointer follows the move, and a rename that cannot run is
+            # refused BEFORE anything is written.
+            import naming_wave as nw
+
+            def _wave(code_map):
+                saved_root = nw.ROOT
+                nw.ROOT = Path.cwd()
+                try:
+                    plan = nw.Plan()
+                    nw.plan_ledger_renames(plan, code_map)
+                    nw.apply_plan(plan)
+                finally:
+                    nw.ROOT = saved_root
+
+            Path("src/nw.c").write_text("int func_OLD(int a) { return a + 1; }\n")
+            old_h = layer2.current_key("func_OLD", "nw")[1]
+            vf = Path("nw_verdict.json")
+            vf.write_text(json.dumps({"decision": "PASS", "function": "func_OLD",
+                                      "body_hash": old_h, "summary": "ok"}))
+            r = layer2.record_from_verdict_file("func_OLD", str(vf), "rev", "match", stem="nw")
+            done_p = layer2.completed_record_path("func_OLD")
+            done_p.parent.mkdir(parents=True)
+            done_p.write_text(layer2.record_path("func_OLD").read_text())
+            _wave({"func_OLD": "func_NEW"})
+            Path("src/nw.c").write_text("int func_NEW(int a) { return a + 1; }\n")
+            try:
+                recs = layer2.read_records("func_NEW")
+                moved = layer2.read_records("func_NEW", layer2.completed_record_path("func_NEW"))
+            except ValueError as e:
+                recs, moved = [], [{"error": str(e)}]
+            check("layer2: naming wave retargets the moved record's func",
+                  r["ok"] and len(recs) == 1 and recs[0]["func"] == "func_NEW"
+                  and recs[0].get("renamed_from") == ["func_OLD"]
+                  and not layer2.record_path("func_OLD").exists())
+            check("layer2: naming wave retargets the archived (_completed) record too",
+                  len(moved) == 1 and moved[0].get("func") == "func_NEW")
+            vptr = recs[0].get("verdict_file", "") if recs else ""
+            check("layer2: naming wave re-points verdict_file at the moved copy",
+                  vptr.startswith("memory/grind/func_NEW/layer2_verdicts/")
+                  and Path(vptr).is_file())
+            check("layer2: the pre-rename PASS does not open the gate for the new name",
+                  "changed after review" in (layer2.gate("func_NEW", "nw") or ""))
+            new_h = layer2.current_key("func_NEW", "nw")[1]
+            r = layer2.record("func_NEW", "PASS", "rev", "match", stem="nw", expect_hash=new_h)
+            check("layer2: the renamed function is recordable after the wave",
+                  r["ok"] is True and layer2.gate("func_NEW", "nw") is None)
+            _wave({"func_NEW": "func_NEWER"})
+            try:
+                chain = [x.get("renamed_from") for x in layer2.read_records("func_NEWER")]
+            except ValueError:
+                chain = []
+            eq("layer2: a second wave appends to the renamed_from chain",
+               chain, [["func_OLD", "func_NEW"], ["func_NEW"]])
+
+            # Preflight: func_P's ledger cannot move onto an existing func_Q/,
+            # so the wave dies — and its layer2.jsonl retarget was NOT written.
+            p_rec = Path("memory/grind/func_P/layer2.jsonl")
+            p_rec.parent.mkdir(parents=True)
+            p_line = json.dumps({"func": "func_P", "verdict": "PASS",
+                                 "body_hash": "0" * 16}) + "\n"
+            p_rec.write_text(p_line)
+            Path("memory/grind/func_Q").mkdir(parents=True)
+            died = False
+            with contextlib.redirect_stderr(io.StringIO()):
+                try:
+                    _wave({"func_P": "func_Q"})
+                except SystemExit:
+                    died = True
+            check("naming_wave: a rename onto an existing ledger dies in preflight",
+                  died and p_rec.read_text() == p_line
+                  and not Path("memory/grind/func_Q/layer2.jsonl").exists())
+        finally:
+            os.chdir(cwd)
+            (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
+             cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
+             inlineasm.file_func_cheat_asm_count, completion.source_issues,
+             Q.O.verify) = saved
 
 
 def test_orphaned_local_decls() -> None:
@@ -2916,8 +3405,9 @@ def test_queue_write_serialization() -> None:
             saved = (Q._rule_count, Q.cheats.func_prologue_count,
                      Q.cheats.maspsx_gate_entries, Q.cheats.canonical_asm_funcs,
                      Q.inlineasm.file_func_cheat_asm_count,
-                     completion.source_issues, Q.O.verify)
+                     completion.source_issues, Q.O.verify, Q.layer2.gate)
             Q._rule_count = lambda f: 0
+            Q.layer2.gate = lambda f, s: None  # the Q39 gate has its own test
             Q.cheats.func_prologue_count = lambda f: 0
             Q.cheats.maspsx_gate_entries = lambda f: []
             Q.cheats.canonical_asm_funcs = lambda: set()
@@ -2955,7 +3445,7 @@ def test_queue_write_serialization() -> None:
                 (Q._rule_count, Q.cheats.func_prologue_count,
                  Q.cheats.maspsx_gate_entries, Q.cheats.canonical_asm_funcs,
                  Q.inlineasm.file_func_cheat_asm_count,
-                 completion.source_issues, Q.O.verify) = saved
+                 completion.source_issues, Q.O.verify, Q.layer2.gate) = saved
 
             # --- 6. Atomicity hygiene: the write-then-rename staging file is
             #        never left behind (a reader must never find a partial
@@ -3789,6 +4279,7 @@ def main() -> int:
     test_completion_region_grants()
     test_buildstamp()
     test_canonical_completion_is_the_drop()
+    test_layer2_gate()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()

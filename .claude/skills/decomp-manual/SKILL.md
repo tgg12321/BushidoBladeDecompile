@@ -199,7 +199,8 @@ scoring, so they cannot move it. They are inert here by construction.
 4. **Spawn a fresh `cheat-reviewer` agent.** Paste the precheck output. Brief it
    adversarially: default to FAIL, do not credit your verdict, work the specific
    diff against the 6-test checklist, and audit any rule doc the commit adds
-   (self-sanctioning docs are banned outright).
+   (self-sanctioning docs are banned outright). Its verdict must carry
+   `body_hash` — the `layer2 hash <func>` of the body it reviewed.
 5. **If the verdict is canonical-asm**, record the region grant BEFORE
    `queue done`, or it refuses with *"C/assembly function has no reviewed region
    grant"*: write `{file, sha256:[…]}` for the function into
@@ -209,9 +210,18 @@ scoring, so they cannot move it. They are inert here by construction.
    record of **what layer-2 actually reviewed**, so any later island edit
    correctly invalidates the grant. Preserve the file's existing indent; a
    reformat buries the 9-line addition in 180 lines of churn.
-6. **PASS** → commit (`Match: <func> — COMPLETED-C (manual)`, `git commit -F
-   tmp/msg.txt`) → `& tools/wteng.ps1 main queue done <func>` → `python3
-   tools/check_completion_integrity.py`.
+6. **Record the verdict** (owner ruling Q39), PASS or not, with the reviewed
+   body still in `src/`: `& tools/wteng.ps1 main layer2 record <func> --verdict
+   <PASS|FAIL|NEEDS_USER> --reviewer <id> --scope <match|cheat-cleanup|auth>
+   --expect-hash <the reviewer's body_hash> --notes "<key findings>"` (or
+   `--verdict-file <the reviewer's JSON>` in place of `--verdict`/
+   `--expect-hash`/`--notes`) → `memory/grind/<func>/layer2.jsonl`. It refuses
+   without the hash, and a PASS refuses when `src/` no longer holds the
+   reviewed body — then re-review, never re-hash.
+   **PASS** → commit (`Match: <func> — COMPLETED-C (manual)`, `git commit -F
+   tmp/msg.txt`, including the `layer2.jsonl`) → `& tools/wteng.ps1 main queue
+   done <func>` (refuses unless the latest record is a PASS on the current
+   body) → `python3 tools/check_completion_integrity.py`.
    **FAIL** → revert `src/` to `INCLUDE_ASM`, bank the body as
    `memory/grind/<func>/rejected/<slug>.c` with the reviewer's reasoning, and
    treat the objection as the next session's frontier. The item stays active:
@@ -337,6 +347,7 @@ and move on. Do not self-authorize a new grant
 | `& tools/wteng.ps1 main dossier <f>` | the full live-verified picture |
 | `& tools/wteng.ps1 main verify-oracle --rebuild --allow-dirty` | the only truth (landing step; `--allow-dirty` needed once src is spliced) |
 | `engine.completion.region_hashes(text, f)` | island hashes for `tools/canonical_asm_regions.json` — required before `queue done` on a canonical function |
-| `& tools/wteng.ps1 main queue done <f>` | record the completion (re-checks cheats + SHA1) |
+| `& tools/wteng.ps1 main layer2 hash <f>` / `record <f> --verdict … --reviewer … --scope … --expect-hash …` | the reviewed body's key / record a layer-2 verdict against it (`layer2 check <f>` = the gate) |
+| `& tools/wteng.ps1 main queue done <f>` | record the completion (re-checks cheats + layer-2 PASS on this body + SHA1) |
 | `python3 tools/reviewer_precheck.py --func <f> --staged` | procedural facts for the reviewer brief |
 | `python3 tools/check_completion_integrity.py` | standing audit of every completed function |

@@ -15,6 +15,7 @@ from . import oracle as O
 from . import canonical as CANON
 from . import diagnose as DIAG
 from . import integrate as INT
+from . import layer2 as L2
 from . import metrics as MET
 from . import orchestrator as ORCH
 from . import pipeline as P
@@ -138,6 +139,16 @@ def main() -> int:
     qp.add_argument("--force-rescan", action="store_true",
                     help="auto-return: re-measure every rotated candidate even though the "
                          "fingerprint did not move (recovery after a corrupted re-measure)")
+    l2p = sub.add_parser("layer2", help="layer-2 review record (owner ruling Q39): `hash` = the key of the body in src/ (the reviewer reports it); `show` = the source that key covers; `record` a verdict for that hash; `check` = the gate `queue done` applies")
+    l2p.add_argument("action", choices=["hash", "show", "record", "check"])
+    l2p.add_argument("func")
+    l2p.add_argument("--verdict", choices=list(L2.VERDICTS), help="record: the reviewer's decision")
+    l2p.add_argument("--reviewer", default="", help="record: who ruled (agent id / name)")
+    l2p.add_argument("--scope", choices=list(L2.SCOPES), help="record: completion-class kind being landed")
+    l2p.add_argument("--notes", default="", help="record: key findings / required fixes")
+    l2p.add_argument("--file", default="", help="src file stem (default: the queue item's file, else a src/ scan)")
+    l2p.add_argument("--expect-hash", default="", help="record (REQUIRED unless --verdict-file carries it): the `layer2 hash` the reviewer reported for the body it ruled on; a PASS is refused unless src/ still hashes to it")
+    l2p.add_argument("--verdict-file", default="", help="record: the reviewer's JSON verdict; supplies verdict + body_hash (+ notes from its summary) and its path/sha1 are recorded")
     ccp = sub.add_parser("cc1psx-check", help="self-disproof: score a function's candidate under our cc1 AND the original cc1psx (out of tree); a closer cc1psx = fidelity lead")
     ccp.add_argument("func")
     ccp.add_argument("--candidate", default="", help="candidate body (default memory/grind/<func>/candidate.c)")
@@ -301,6 +312,43 @@ def main() -> int:
             MET.record_event("queue-reopen", a.func, r, exit_code=0 if r.get("ok") else 1)
             return 0 if r.get("ok") else 1
         return 0
+
+    if a.cmd == "layer2":
+        if a.action == "record":
+            if not a.scope or not (a.verdict or a.verdict_file):
+                print("layer2 record: requires --scope and --verdict (or --verdict-file)")
+                return 2
+            if a.verdict_file:
+                r = L2.record_from_verdict_file(a.func, a.verdict_file, a.reviewer, a.scope,
+                                                a.notes, stem=a.file or None,
+                                                verdict=a.verdict,
+                                                expect_hash=a.expect_hash or None)
+            else:
+                r = L2.record(a.func, a.verdict, a.reviewer, a.scope, a.notes,
+                              stem=a.file or None, expect_hash=a.expect_hash or None)
+        elif a.action == "show":
+            stem = a.file or L2.locate_stem(a.func)
+            text = L2._read_text(Path(f"src/{stem}.c")) if stem else None
+            src = L2.body_source(text, a.func) if text is not None else None
+            if src is None:
+                print(f"layer2 show: no single body for {a.func} in src/{stem or '*'}.c")
+                return 1
+            print(src[1])
+            return 0
+        else:
+            stem = a.file or L2.locate_stem(a.func)
+            key = L2.current_key(a.func, stem) if stem else None
+            if a.action == "hash":
+                r = {"ok": key is not None, "func": a.func, "file": stem,
+                     "body_hash": key[1] if key else None,
+                     "body_kind": key[0] if key else None}
+            else:
+                reason = (L2.gate(a.func, stem) if stem
+                          else f"no body for {a.func} found in src/")
+                r = {"ok": reason is None, "func": a.func, "file": stem,
+                     "body_hash": key[1] if key else None, "reason": reason}
+        print(json.dumps(r, indent=2))
+        return 0 if r.get("ok") else 1
 
     if a.cmd == "scan-redundant":
         rebuild = not a.no_rebuild

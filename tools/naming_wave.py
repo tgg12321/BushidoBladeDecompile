@@ -117,7 +117,59 @@ PY_KEYLIKE_MAXLEN = 60
 # Free-form build files edited by whole-word substitution on non-comment text.
 PLAIN_FILES = ["bb2.ld", "Makefile"]
 
-LEDGER_DIRS = ["memory/wip", "memory/grind"]
+# `_completed` holds archived ledgers — with their layer-2 record (owner ruling
+# Q39), which must keep following the function's CURRENT name.
+LEDGER_DIRS = ["memory/wip", "memory/grind", "memory/grind/_completed"]
+LAYER2_RECORD = "layer2.jsonl"
+
+
+def retarget_layer2_record(text: str, old: str, new: str) -> tuple[str, list[str]]:
+    """A ledger's layer2.jsonl moved from <old>/ to <new>/: rewrite each line's
+    `func` so the record stays readable under the new name (engine/layer2.py
+    refuses a line whose func is not the ledger's). Safe: the renamed
+    definition hashes differently, so no old PASS can open the gate for it.
+    Every hop is kept, oldest first, in the `renamed_from` LIST, and a
+    `verdict_file` pointer into a moving ledger (the layer2_verdicts/ copy) is
+    re-pointed at its new path. Unparseable lines are left alone (the gate
+    still refuses them)."""
+    out, changed = [], []
+    moved = [(f"{b}/{old}/", f"{b}/{new}/") for b in LEDGER_DIRS]
+    for n, line in enumerate(text.split("\n"), 1):
+        try:
+            rec = json.loads(line) if line.strip() else None
+        except ValueError:
+            rec = None
+        if isinstance(rec, dict) and rec.get("func") == old:
+            rec["func"] = new
+            chain = rec.get("renamed_from") or []
+            rec["renamed_from"] = ([chain] if isinstance(chain, str) else list(chain)) + [old]
+            vf = rec.get("verdict_file")
+            for a, b in moved:
+                if isinstance(vf, str) and vf.startswith(a):
+                    rec["verdict_file"] = b + vf[len(a):]
+            line = json.dumps(rec, ensure_ascii=False)
+            changed.append(f"line {n}: func {old} -> {new}")
+        out.append(line)
+    return "\n".join(out), changed
+
+
+def plan_ledger_renames(plan: "Plan", code_map: dict[str, str], root: Path | None = None) -> None:
+    """Queue every per-function ledger directory rename, and the func-field
+    rewrite of each layer2.jsonl moving with one (applied before the move)."""
+    root = root or ROOT
+    for base in LEDGER_DIRS:
+        bp = root / base
+        if not bp.exists():
+            continue
+        for d in sorted(bp.iterdir()):
+            if d.is_dir() and d.name in code_map:
+                new = code_map[d.name]
+                plan.dir_renames.append((f"{base}/{d.name}", f"{base}/{new}"))
+                rec = d / LAYER2_RECORD
+                if rec.is_file():
+                    text, changed = retarget_layer2_record(read(rec), d.name, new)
+                    if changed:
+                        plan.json_edits[f"{base}/{d.name}/{LAYER2_RECORD}"] = (text, changed)
 
 
 def die(msg: str) -> "NoReturn":  # noqa: F821
@@ -820,14 +872,8 @@ def plan_wave(wave: Wave) -> Plan:
             for s in skips:
                 plan.out_of_scope.append(f"{rel}:{s}")
 
-    # --- per-function ledger directories ----------------------------------
-    for base in LEDGER_DIRS:
-        bp = ROOT / base
-        if not bp.exists():
-            continue
-        for d in sorted(bp.iterdir()):
-            if d.is_dir() and d.name in wave.code_map:
-                plan.dir_renames.append((f"{base}/{d.name}", f"{base}/{wave.code_map[d.name]}"))
+    # --- per-function ledger directories (+ their layer-2 records) --------
+    plan_ledger_renames(plan, wave.code_map)
 
     return plan
 
@@ -1109,7 +1155,30 @@ def dirty_targets(plan: Plan) -> list[str]:
     return sorted(p for p in dirty if p in ours or any(p.startswith(o + "/") for o in ours))
 
 
+def preflight_renames(plan: Plan) -> None:
+    """Die BEFORE any write unless every file/dir rename can run, in plan
+    order: its source exists (or an earlier rename creates it) and its
+    destination does not (or an earlier rename vacates it). apply_plan writes
+    the edits — including each moving ledger's retargeted layer2.jsonl —
+    before it moves anything, so a rename refused at move time would leave a
+    record rewritten for a name its directory never got."""
+    # file_deletes run before any move (stale duplicate .s under a new name).
+    made, gone, bad = set(), set(plan.file_deletes), []
+    for old, new in plan.file_renames + plan.dir_renames:
+        if not ((ROOT / old).exists() and old not in gone) and old not in made:
+            bad.append(f"cannot move missing path {old}")
+        if ((ROOT / new).exists() and new not in gone) or new in made:
+            bad.append(f"refusing to overwrite existing {new}")
+        gone.add(old)
+        made.discard(old)
+        made.add(new)
+        gone.discard(new)
+    if bad:
+        die("rename preflight failed — nothing was written:\n  " + "\n  ".join(bad))
+
+
 def apply_plan(plan: Plan) -> None:
+    preflight_renames(plan)
     for rel, (text, _) in plan.file_edits.items():
         write_lf(ROOT / rel, text)
     for rel, (text, _) in plan.json_edits.items():

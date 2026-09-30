@@ -172,6 +172,12 @@ Must return `build_matches: True` with SHA1 ==
 
 ## Then queue done + commit
 
+`queue done` refuses without a layer-2 PASS recorded on this exact body (owner
+ruling Q39): `& tools/wteng.ps1 main layer2 record <func> --verdict PASS
+--reviewer <id> --scope auth --expect-hash <the reviewer's `layer2 hash`>
+--notes "..."` after the review, and commit the
+`memory/grind/<func>/layer2.jsonl` with the `auth:` commit.
+
 ```pwsh
 & tools/wteng.ps1 main queue done <func>
 git commit -F tmp/msg.txt  # subject: auth: <func> (<file>.c) — COMPLETED-INLINE-ASM-CANONICAL

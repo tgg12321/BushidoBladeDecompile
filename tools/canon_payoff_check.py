@@ -17,6 +17,10 @@ state. All four must hold:
      which still lists the function; running it against the regen would ask
      mark_done about an item regen has already (correctly) dropped and get
      "not in queue" for every one of them.
+  Owner ruling Q39: 3 and 4 also require a layer-2 PASS recorded on the
+  function's current body (memory/grind/<func>/layer2.jsonl). Without one,
+  regen HOLDS the item (`layer2_pending`) and mark_done refuses; the report
+  names that gate explicitly rather than mislabelling it. Not bypassed.
 
 Read-only contract:
   * engine/queue.json is never written (QUEUE_PATH points at a temp copy).
@@ -40,7 +44,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from engine import cheats, queue as Q
+from engine import cheats, layer2, queue as Q
 
 funcs = sys.argv[1:]
 if len(funcs) == 1 and funcs[0].endswith(".txt"):
@@ -94,6 +98,7 @@ for f in funcs:
     c3 = it is None  # dropped by regen == canonical completion
     state = dn.get("completion") or dn.get("completion_state")
     c4 = dn.get("ok") is True and state == "COMPLETED-INLINE-ASM-CANONICAL"
+    l2 = layer2.gate(f, (it or {}).get("file") or layer2.locate_stem(f) or "")
     ok = c1 and c2 and c3 and c4
     fail += 0 if ok else 1
     print(f"{'PASS' if ok else 'FAIL'}  {f}")
@@ -102,6 +107,8 @@ for f in funcs:
     print(f"      regen     {('status=' + it['status'] + ' verdict=' + str(it.get('verdict'))) if it else 'ABSENT (dropped = completed)'}   [{'ok' if c3 else 'BAD'}]")
     print(f"      mark_done ok={dn.get('ok')} state={state}"
           f"{'' if dn.get('ok') else ' reason=' + str(dn.get('reason'))[:120]}   [{'ok' if c4 else 'BAD'}]")
+    print(f"      layer-2   {'PASS recorded on the current body' if l2 is None else 'NO PASS on the current body (Q39 gate — regen holds it, mark_done refuses): ' + l2[:160]}"
+          f"   [{'ok' if l2 is None else 'BAD'}]")
 
 print(f"\n{len(funcs) - fail}/{len(funcs)} passed")
 sys.exit(1 if fail else 0)

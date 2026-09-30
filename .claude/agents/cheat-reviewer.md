@@ -369,12 +369,28 @@ designed to catch. A PASS from a detector means "this specific family
 not detected," NOT "this is clean." Your semantic review is the
 authoritative test.
 
+# Required: name the body you reviewed (owner ruling Q39)
+
+When the body under review is in a `src/` (a landing / layer-2 review):
+1. Confirm the function's body in THAT tree's `src/<file>.c` is the body you
+   were briefed on (compare it with the briefed diff / staged file). If it is
+   not, your decision is FAIL ("src/ does not hold the briefed body").
+2. In the same tree, run `python3 -m engine.cli layer2 hash <func>` (or
+   `& tools/wteng.ps1 <that tree> layer2 hash <func>` — `main` only when the
+   body is on main) and put its `body_hash` in your verdict.
+That hash is the ONLY body your verdict may be recorded against (`layer2
+record --verdict-file <your JSON>`): `queue done` refuses unless the recorded
+PASS matches the body landed, so a PASS without it cannot land anything. If
+the body is not in any `src/` (a draft or candidate file), set `body_hash` to
+`""`.
+
 # Output
 
 JSON only, matching the schema:
 {
   "decision": "PASS" | "FAIL" | "NEEDS_USER",
   "function": "<the function name reviewed>",
+  "body_hash": "<`layer2 hash <func>` of the body you reviewed, or \"\">",
   "summary": "<one-line bottom-line>",
   "evidence": [
     {

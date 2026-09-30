@@ -55,7 +55,9 @@ command goes in a script file, never an inline `-c` string.)
 | `sandbox <func> --disable all --candidate FILE` | score a substituted body against a **copy** of src — `main` is never touched |
 | `diagnose <func>` | classify the gap: matchable / control-flow / canonical / plateau |
 | `verify-oracle --rebuild` | the authoritative gate: full build + link + SHA1 |
-| `queue done <func>` | mark complete; re-checks cheat-freedom and SHA1, refuses otherwise |
+| `layer2 hash <func>` | the body's layer-2 key — the reviewer reports it with its verdict |
+| `layer2 record <func> --verdict … --reviewer … --scope … --expect-hash …` | record the layer-2 verdict for the reviewed body (refused unless `src/` still holds it) |
+| `queue done <func>` | mark complete; re-checks cheat-freedom, a layer-2 PASS on this exact body (owner ruling Q39), and SHA1, refuses otherwise |
 | `test` | engine regression suite — keep green if you touch `engine/` |
 
 Two standing audits, run both before you commit:
@@ -119,8 +121,9 @@ queue next
         └─ edit src/<file>.c                   # honest C only (§6)
            └─ sandbox <func> --disable all     # iterate to 0
               └─ verify-oracle --rebuild       # the real gate
-                 └─ queue done <func>
-                    └─ commit
+                 └─ layer-2 review + layer2 record <func>
+                    └─ commit                  # incl. memory/grind/<func>/layer2.jsonl
+                       └─ queue done <func>    # then commit engine/queue.json
 ```
 
 Read the `--diff` output *before* choosing a lever. Chasing a hunk the scorer marks
