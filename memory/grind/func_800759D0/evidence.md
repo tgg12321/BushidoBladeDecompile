@@ -308,3 +308,7 @@ q). One variable was shared in the original source. Details and measurements: hy
 ## Tools
 tmp/f759d0/gen.py (variant generator), tmp/f759d0/rtl.py (splice + cc1 -da, per-function
 dumps), tmp/f759d0/hk.py (scored hunks). tmp is gitignored.
+
+## 2026-09-29 -- REOPENED (retro-audit FAIL, Q37 class C, 803d0fea1)
+
+The 70cc557b1 landing FAILed the 2026-09-29 retro-audit: same per-use byte pun as func_80075F80: `((u8 *)D_8009BCF8)[index]` over the merged Unk8009BCF8Record[20], stride as magic `*2`/`*20`; load-bearing (member spelling measured 67). Per owner Q37 class C the body went back to `INCLUDE_ASM("asm/funcs", func_800759D0);` and the function is back in the queue. Landed text banked verbatim in `rejected/retro-audit-2026-09-29.c`. Second reopen (first: da429a8c2). The preceding `extern u8 D_8009BCE4;` stays. Unk8009BCF8Record (include/game.h) stays.
