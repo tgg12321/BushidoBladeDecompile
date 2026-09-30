@@ -1,0 +1,1 @@
+{"func": "func_800768DC", "addr": "800768DC", "verdict": "FAIL", "body_hash": "9527f3a1d74845d5", "body_kind": "c", "file": "text1b_tu2", "reviewer": "l2-759D0-r1", "scope": "cheat-cleanup", "date": "2026-09-30T18:43:59Z", "head": "ea39535f1", "notes": "joint landing round 1 MIXED (not landed); see memory/grind/func_800759D0/evidence.md 2026-09-30 joint-l2-r1"}
