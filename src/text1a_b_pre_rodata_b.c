@@ -58,6 +58,7 @@ const u32 jtbl_80015940[18] = {
 };
 
 /* NOTE: the cluster continues in src/text1a_b_mid_rodata.c. The bytes from
- * 0x80015988 through 0x80015A0B are supplied by build/src/text1b_tu1c.o: the
- * compiler-generated switch tables for func_8006B578 and func_8006ECF4 plus
- * the intervening warning string and func_8006E534 table. */
+ * 0x80015988 through 0x80015A0B are supplied by build/src/text1b_tu1c.o
+ * (func_8006B578's compiler-generated switch table and the warning string,
+ * up to 0x800159AF) and build/src/text1b_tu1d.o (the func_8006E534 and
+ * func_8006ECF4 tables, from 0x800159B0). */
