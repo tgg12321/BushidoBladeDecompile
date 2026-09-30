@@ -30439,3 +30439,25 @@ condition (4): the cited code compiles to a match in SOTN's PS1 build. The autho
 words: not inside `INCLUDE_ASM`/`INCLUDE_RODATA`, not under `#ifdef NON_MATCHING`/`#ifndef NON_MATCHINGS` or in any
 branch the defines SOTN's PS1 build passes for that file (`tools/builds/gen.py:771` `cpp_defs` plus the per-file `$cpp_flags`, e.g. gen.py:453) leave disabled, not in a function SOTN still carries as asm. Pointers added at the refusing passages; the
 cheat-reviewer brief checks (4).
+
+## 2026-09-30 — OWNER RULING — Ruling 14: overnight-run delegation, borderline rule questions within SOTN's standards (`.claude/rules/ordinary-c-judge-decidable.md` § Ruling 14)
+
+Twenty-eighth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 28; the owner's own words in
+conversation). The author's narrowing, not the owner's words: for the overnight manual-lane run started
+2026-09-30, until the owner next speaks: (A) Ruling 13's run has ended (its landings stay landed); its (D) and
+(F) are renewed; its (B) is renewed on the author's reading, logged to borderline.md for owner ratification; its
+(E) is replaced by (D) below; its (C) is replaced; (B) the orchestrator may decide a borderline rule question
+(never a family-candidate or family-extension) YES only when it is within SOTN's standards (ordinary C by the
+community bar passing Ruling 13 (B)'s test; a SOTN citation counts only under Q50 (1)-(4) and the same-thing
+test, never by analogy), is by no means a cheat or workaround (nothing on Ruling 13 (D)'s wall in full, no hiding
+device, nothing needing a FAKE annotation) and is no regression (lowers no standard, re-admits nothing an owner
+ruling refused, reinterprets, relaxes or extends no prong of any owner ruling (Rulings 1-13, Q1-Q55,
+frozen-family entries and the rest, wherever recorded) or any banned list beyond what Q50-Q55 already say,
+touches nothing kept with the owner, nor inline_asm_canonical.txt or the maspsx gate lists); in doubt NO, logged
+to borderline.md, the function stays active; (C) each YES is its own ORCHESTRATOR DECISION (Ruling 14) `rules:`
+commit, layer-2-reviewed before code spends it, logged to borderline.md for ratification, not precedent after the
+run unless ratified; (D) no lane rotates; the orchestrator rotates only when rotation is not avoidable: an item
+flat across multiple sessions of this run, with every modality run, no frontier and no open (B) question left,
+none of rotation-not-foreclosure Ruling 4's excluded grounds relied on, and the rotation commit stating the
+session count and flat-floor history; otherwise it is banked and stays active; (E) sandbox 0, oracle SHA1 and a
+fresh layer-2 PASS recorded on the exact body for every landing. Nothing is pre-decided.

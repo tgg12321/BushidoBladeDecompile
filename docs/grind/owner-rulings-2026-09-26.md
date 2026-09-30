@@ -551,3 +551,21 @@ fabricated-dead-call refusal, "may not be re-proposed in any spelling" entries) 
 Question, verbatim: "Older rules still flatly refuse specific tricks: the inline-assembly ban, 'volatile only on interrupt-touched globals', never-executed calls, and constructs you said 'may not be re-proposed in any spelling'. Does a verified SOTN citation override those too?"
 Owner chose: **"Yes, matched SOTN code only (Recommended)"** — option text: "Q50 wins over every older refusal, but the citation must be SOTN code that actually compiles to a match in its PS1 build — not INCLUDE_ASM, not NON_MATCHING/disabled C, not an unmatched function. Paperwork (FAKE comment, simpler spellings tried, second review) still applies."
 Other options offered: "Yes, any SOTN code" — "Any construct present anywhere in SOTN's PS1-build files counts, matched or not. Broadest reading; opens asm and non-matching code as precedent."; "No, keep those specific refusals" — "Q50 applies to everything except these explicitly refused families; they stay refused even with a SOTN citation."
+
+# Owner exchange 2026-09-30 (twenty-eighth batch, in conversation) — VERBATIM RECORD — GRANTED
+Context: the owner handed an overnight manual-lane run to the orchestrator, in conversation (relayed verbatim to
+the rules scribe). First message, verbatim:
+
+> "Another agent is wrapping up a series of audits and revisions. When it is done, I want you to ensure main is
+> synced, then oversee an overnight manual decomp session. Open 3 lanes for agents to work in, and try to work
+> through as much of the queue as you can. Note that I will not be available, so try to avoid prompting me for
+> questions. But also avoid rotating items if possible. We are down to the bottom of the queue and everything has
+> go be decompiled anyway."
+
+Second message, verbatim:
+
+> "I give you authority to grant borderline rule questions if they are within SOTN's standards and are by no means
+> a cheat or workaround or regression."
+
+No AskUserQuestion options were involved; these are the owner's own words. The rule text is
+.claude/rules/ordinary-c-judge-decidable.md § Ruling 14.

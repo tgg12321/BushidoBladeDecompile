@@ -1631,6 +1631,89 @@ everything has to be decompiled eventually."
   default-FAIL layer-2 `cheat-reviewer` PASS on the exact staged body. Record: docs/grind/decisions.md
   2026-09-29 OWNER RULING — Ruling 13.
 
+## Ruling 14 (owner, 2026-09-30) — overnight-run delegation: borderline rule questions within SOTN's standards
+
+**The owner's words.** Recorded verbatim in docs/grind/owner-rulings-2026-09-26.md, twenty-eighth batch. The
+operative sentences: "Note that I will not be available, so try to avoid prompting me for questions. But also
+avoid rotating items if possible. We are down to the bottom of the queue and everything has go be decompiled
+anyway." and "I give you authority to grant borderline rule questions if they are within SOTN's standards and
+are by no means a cheat or workaround or regression."
+
+**Rule text.** This is the author's narrowing, not the owner's words.
+
+- **(A) Scope, and Ruling 13.** The overnight manual-lane run the owner started on 2026-09-30, until the owner
+  next speaks. Functions that land during it stay landed afterwards. Nothing here changes the Grinder's frozen
+  Judge policy. Ruling 13 was scoped "until the owner next speaks"; the owner has spoken since (batches 20-28),
+  so its run has ended, and functions it landed stay landed (no ORCHESTRATOR DECISION was recorded under its
+  (C)). For this run, Ruling 13's (D) and (F) are renewed as they stand. Its (B) is renewed as it stands, on the
+  author's reading that clearly-fine ordinary C with a truthful semantic reading is "within SOTN's standards"
+  (SOTN's bar is pure C that matches) and is by no means a cheat or workaround; it still yields to the entry
+  that governs a construct, exactly as its text says. That renewal is logged in the same commit as this ruling
+  to docs/grind/borderline.md as "ORCHESTRATOR READING (Ruling 14): Ruling 13 (B) renewed for this run" for
+  owner ratification; unratified, it is not precedent after the run. Its (E) is replaced by (D) below; the part
+  of 13 (E) that says an item that does not close "is banked in its ledger and stays active; it stays the run's
+  target and changes modality" survives in (D)'s last sentence. Its (C) is replaced by (B) and (C) below;
+  nothing decided under Ruling 13 (C) carries over.
+- **(B) Borderline rule questions.** A question that would otherwise be filed to the owner (a
+  docs/grind/borderline.md policy-question, a reviewer NEEDS_USER question, or a question a lane raises; a
+  family-candidate or family-extension is never decided under this ruling and keeps the log-and-refuse routing)
+  may be decided YES by the orchestrator ONLY when ALL of (1)-(3) hold. The author's reading, not the owner's
+  words: the owner's 2026-09-30 grant is, for this run only, the owner ruling that spends such a question in
+  place of [[judge-sole-gate]] rule 5's no-re-adjudication; (3)'s protection of [[judge-sole-gate]] covers all
+  its other prongs.
+  1. **Within SOTN's standards.** The construct is ordinary C by the SOTN community bar (memory
+     rules/community-standard: pure C through the standard pipeline; no regfix-equivalent, no register pins, no
+     non-canonical asm) that passes Ruling 13 (B)'s test (a truthful semantic reading as program logic under
+     Ruling 1(3), writable from the function's behaviour, real consumed work). A SOTN citation counts as
+     evidence only when read under conditions (1)-(4) of [[no-new-park-categories]] § Owner ruling 2026-09-30 —
+     SOTN precedent suffices, and it must be shown to do the same thing as ours when read; an analogy to a
+     different SOTN construct, or to a "kind" of construct, is not evidence. A construct that already meets a
+     Q50 citation or an existing entry needs no decision: that entry's own tests decide.
+  2. **By no means a cheat or workaround.** The YES admits a construct with a truthful semantic reading as
+     program logic that does real, consumed work: nothing on Ruling 13 (D)'s wall in full (among others:
+     register pins; hardcoded-`$N` or any non-canonical `__asm__`; scheduling barriers; build, Makefile, linker,
+     maspsx-gate or compiler changes that alter bytes; build-time assembly rewriting in any spelling; a
+     construct with no semantic purpose outside the frozen family list; a multi-write local outside Rulings
+     5-12 and Q51), and no device whose only job is to hide something from the compiler. A construct that
+     needs a `/* FAKE: ... */` or `!FAKE` annotation (match-motivated, no semantic purpose) is a workaround in
+     this sense and is never admitted by a decision under this ruling: it keeps its family entry or the
+     Q50-Q53 route, whose own tests decide.
+  3. **No regression.** The YES lowers no standard; re-admits nothing an owner ruling refused (e.g. Q45's
+     cancellation spelling, the 2026-08-18 F1/F2/F4/F5 refusals, the AUTO-REJECT class of
+     [[escalation-not-parked]]; a refused construct returns only through Q55's own route, never by a decision);
+     does not reinterpret, relax or extend any prong of any owner ruling wherever it is recorded (among
+     others: Rulings 1-13 and the amendments of this file, owner Q-rulings Q1-Q55 in
+     docs/grind/owner-rulings-2026-09-26.md, every frozen-family entry or clause of [[no-new-park-categories]],
+     [[rotation-not-foreclosure]], [[judge-sole-gate]], [[asm-until-matched]], and every other OWNER RULING
+     entry in docs/grind/decisions.md), or any banned list beyond what owner rulings Q50-Q55 already say; and
+     touches nothing [[integration-handoff-self-serve]] keeps with the owner (the frozen family list, the oracle,
+     substrate or build flags, a guard, gate or the Judge's policy, disc assets or the original EXE), nor
+     `inline_asm_canonical.txt` or the maspsx gate lists.
+
+  In doubt, NO. A question that is not decided YES is logged to docs/grind/borderline.md as before and stays
+  open for the owner (no question is put to the owner during the run); its function stays active, is not
+  rotated, and keeps grinding in ordinary C.
+- **(C) Procedure.** Each YES lands first as its own `rules:` commit titled ORCHESTRATOR DECISION (Ruling 14),
+  never OWNER RULING, stating the question, the evidence (pointers), each of (B)(1)-(3) argued, and the
+  decision. A fresh default-FAIL layer-2 `cheat-reviewer`, told that the decision's author directs the lanes
+  whose code will spend it, must PASS that commit before any code spends it; the landing that spends it gets
+  its own fresh layer-2. Each decision is logged to docs/grind/borderline.md as "ORCHESTRATOR DECISION
+  (Ruling 14)" for owner ratification. It is per-question and may be spent only during this run. Unratified,
+  it is not precedent after the run; functions it landed stay landed.
+- **(D) Rotations: "avoid rotating items if possible".** No lane rotates an item. Only the orchestrator may,
+  and only when rotation is not avoidable: the item's honest floor has been flat across multiple sessions of
+  this run, every modality has run in that window ([[rotation-not-foreclosure]] Rulings 3 and 4), no frontier
+  or open (B) question remains, and the rotation commit states the session count and the flat-floor history.
+  None of the grounds [[rotation-not-foreclosure]] Ruling 4 excludes (one session without a match, one layer-2
+  FAIL, an open owner question, an item that is close) is enough. Otherwise an item that does not close is
+  banked in its ledger and stays active; it stays the run's target and changes modality
+  ([[no-deferral-work-to-completion]]).
+- **(E) Review is unchanged.** Every landing needs `sandbox --disable all` 0, full-build SHA1 == oracle and a
+  fresh default-FAIL layer-2 `cheat-reviewer` PASS recorded (`layer2 record`, owner ruling Q39) on the exact
+  body. A decision under (B) never replaces that review: the landing's reviewer still FAILs a construct that is
+  not the one decided or misses the decision's stated conditions. Record: docs/grind/decisions.md 2026-09-30
+  OWNER RULING — Ruling 14.
+
 ## What this ruling does NOT change
 
 - The completion bar, the oracle, the cheat catalog for non-C mechanisms,
