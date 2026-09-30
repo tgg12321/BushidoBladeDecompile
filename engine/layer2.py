@@ -10,9 +10,13 @@ verdicts lived only as free text in ledgers.
 THE RECORD: `memory/grind/<func>/layer2.jsonl`, append-only, one JSON object
 per line, committed with the landing:
 
-  {"func", "verdict": PASS|FAIL|NEEDS_USER, "body_hash", "body_kind": c|asm|"",
-   "file", "reviewer", "scope", "date", "head", "notes"
+  {"func", "addr", "verdict": PASS|FAIL|NEEDS_USER, "body_hash",
+   "body_kind": c|asm|"", "file", "reviewer", "scope", "date", "head", "notes"
    [, "verdict_file", "verdict_sha1"]}
+
+`addr` is the function's VRAM address at record time (addr_of: its glabel
+file, else the link map) — the key engine/departures.py matches records by,
+since a rename never changes it; a function without one cannot be recorded.
 
 Written by `python3 -m engine.cli layer2 record <func> ...` with the hash the
 reviewer reported (`layer2 hash <func>` on the body it ruled on) — given as
@@ -127,11 +131,16 @@ def _read_text(p: Path) -> str | None:
         return None
 
 
-def _asm_pieces(text: str, func: str) -> list[str]:
+def _disk(path: str) -> str | None:
+    return _read_text(Path(path))
+
+
+def _asm_pieces(text: str, func: str, read=_disk) -> list[str]:
     """Source text that supplies `func` wholly from asm: its INCLUDE_ASM line,
     every `__asm__` block naming it (`glabel func` or `.include .../func.s`),
-    and the contents of each included .s file (a missing file hashes as a
-    marker, so it can never alias a present one)."""
+    and the contents of each included .s file, fetched by `read(path)` (the
+    working tree by default; a git revision for the departures audit). A
+    missing file hashes as a marker, so it can never alias a present one."""
     pieces = []
     for m in inlineasm._INCLUDE_ASM_MACRO_RE.finditer(text):
         if m.group(1) != func:
@@ -139,7 +148,7 @@ def _asm_pieces(text: str, func: str) -> list[str]:
         pieces.append(m.group(0))
         folder = re.search(r'"([^"]*)"', m.group(0)).group(1)
         inc = Path(folder) / f"{func}.s"
-        pieces.append(_read_text(inc) or f"<missing {inc.as_posix()}>")
+        pieces.append(read(inc.as_posix()) or f"<missing {inc.as_posix()}>")
     glabel = re.compile(r"\bglabel\s+" + re.escape(func) + r"\b")
     include = re.compile(r'\.include\s+\\?"([^"\\]*?/' + re.escape(func) + r'\.s)\\?"')
     for kw in inlineasm.cia.find_asm_keywords(text):
@@ -150,15 +159,15 @@ def _asm_pieces(text: str, func: str) -> list[str]:
             continue
         pieces.append(text[kw.start:kw.end + 1])
         for rel in incs:
-            pieces.append(_read_text(Path(rel)) or f"<missing {rel}>")
+            pieces.append(read(rel) or f"<missing {rel}>")
     return pieces
 
 
-def body_source(text: str, func: str) -> tuple[str, str] | None:
+def body_source(text: str, func: str, read=_disk) -> tuple[str, str] | None:
     """(kind, source text) the key covers — the one C definition, or the asm
     that supplies the function — or None when there is no single body."""
     span = inlineasm._func_body_span(text, func)
-    pieces = _asm_pieces(text, func)
+    pieces = _asm_pieces(text, func, read)
     if span is not None:
         if pieces or inlineasm._func_body_span(text[span[1]:], func) is not None:
             return None  # a second definition, or C AND asm: ambiguous
@@ -170,11 +179,47 @@ def body_source(text: str, func: str) -> tuple[str, str] | None:
     return None
 
 
-def body_key(text: str, func: str) -> tuple[str, str] | None:
+def body_key(text: str, func: str, read=_disk) -> tuple[str, str] | None:
     """(kind, 16-hex hash) of `func`'s body in the C file `text`, or None when
-    there is no single body (fail closed: nothing to key a verdict to)."""
-    src = body_source(text, func)
+    there is no single body (fail closed: nothing to key a verdict to).
+    `read(path)` supplies included .s files (default: the working tree)."""
+    src = body_source(text, func, read)
     return None if src is None else (src[0], _key(src[1]))
+
+
+_ASM_VADDR = re.compile(r"/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s+[0-9A-Fa-f]{8}\s*\*/")
+_GLABEL_RE = re.compile(r"^\s*glabel\s+(\S+)", re.M)
+_MAP_DEF = re.compile(r"^\s+0x0*([0-9A-Fa-f]{1,8})\s+([A-Za-z_]\w*)\s*$", re.M)
+ADDR_RE = re.compile(r"[0-9A-F]{8}")
+
+
+def _asm_addr(text: str | None, func: str) -> str | None:
+    g = _GLABEL_RE.search(text or "")
+    m = _ASM_VADDR.search(text or "") if g and g.group(1) == func else None
+    return m.group(1).upper() if m else None
+
+
+def addr_index() -> dict[str, str]:
+    """name -> VRAM address (8 upper-case hex digits) for every function:
+    splat's asm/funcs glabel files (glabel name -> the first machine column's
+    vaddr, as docs/naming/build_census.py reads it), then the link map
+    build/bb2.map for anything without one (hand-written asm)."""
+    out: dict[str, str] = {}
+    for p in sorted(Path("asm/funcs").glob("*.s")):
+        text = _read_text(p) or ""
+        g = _GLABEL_RE.search(text)
+        a = _asm_addr(text, g.group(1)) if g else None
+        if a:
+            out.setdefault(g.group(1), a)
+    for m in _MAP_DEF.finditer(_read_text(Path("build/bb2.map")) or ""):
+        out.setdefault(m.group(2), m.group(1).upper().zfill(8))
+    return out
+
+
+def addr_of(func: str) -> str | None:
+    """`func`'s VRAM address: its own glabel file if it has one, else the
+    full index (a glabel file under another stem, or the link map)."""
+    return _asm_addr(_read_text(Path(f"asm/funcs/{func}.s")), func) or addr_index().get(func)
 
 
 def current_key(func: str, stem: str) -> tuple[str, str] | None:
@@ -337,7 +382,13 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
         read_records(func)
     except ValueError as e:
         return {"ok": False, "func": func, "reason": f"existing record is malformed: {e}"}
-    rec = {"func": func, "verdict": verdict, "body_hash": expect_hash,
+    addr = addr_of(func)
+    if addr is None:
+        return {"ok": False, "func": func,
+                "reason": (f"no address for {func} (no asm/funcs glabel file, no build/bb2.map "
+                           f"entry) — a record must carry the function's address, which "
+                           f"renames never change")}
+    rec = {"func": func, "addr": addr, "verdict": verdict, "body_hash": expect_hash,
            "body_kind": key[0] if key and key[1] == expect_hash else "",
            "file": stem, "reviewer": reviewer.strip(), "scope": scope,
            "date": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

@@ -11,7 +11,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): grant row (9bdfcc6cc owner-instructed) has no owner record; islands not inline_o.h-exact (audit-q38). Banked: memory/grind/func_8002D780/rejected/retro-audit-2026-09-29.c"
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): grant row (9bdfcc6cc owner-instructed) has no owner record; islands not inline_o.h-exact (audit-q38). Banked: memory/grind/func_8002D780/rejected/retro-audit-2026-09-29.c",
+      "addr": "8002D780"
     },
     {
       "func": "func_8002EBDC",
@@ -21,7 +22,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): grant row (9bdfcc6cc owner-instructed) has no owner record; islands not inline_o.h-exact (audit-q38). Banked: memory/grind/func_8002EBDC/rejected/retro-audit-2026-09-29.c"
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): grant row (9bdfcc6cc owner-instructed) has no owner record; islands not inline_o.h-exact (audit-q38). Banked: memory/grind/func_8002EBDC/rejected/retro-audit-2026-09-29.c",
+      "addr": "8002EBDC"
     },
     {
       "func": "func_8002F2D0",
@@ -31,7 +33,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit FAIL (Q41, a67c58486): grant row 789ce34d7 not owner-approved; islands identical to the Q38 reopens (not inline_o.h-exact). Banked: memory/grind/func_8002F2D0/rejected/retro-audit-2026-09-30.c"
+      "reopen_reason": "retro-audit FAIL (Q41, a67c58486): grant row 789ce34d7 not owner-approved; islands identical to the Q38 reopens (not inline_o.h-exact). Banked: memory/grind/func_8002F2D0/rejected/retro-audit-2026-09-30.c",
+      "addr": "8002F2D0"
     },
     {
       "func": "func_8002F770",
@@ -41,7 +44,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): grant row operator-added (974ce052c) without owner record; islands not inline_o.h-exact (audit-q38). Banked: memory/grind/func_8002F770/rejected/retro-audit-2026-09-29.c"
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): grant row operator-added (974ce052c) without owner record; islands not inline_o.h-exact (audit-q38). Banked: memory/grind/func_8002F770/rejected/retro-audit-2026-09-29.c",
+      "addr": "8002F770"
     },
     {
       "func": "func_8001C8DC",
@@ -51,7 +55,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): cross-symbol arithmetic p=&D_800A37D2; p[t!=0]++ reaches D_800A37D3 (refused 2026-07-20). Banked: memory/grind/func_8001C8DC/rejected/retro-audit-2026-09-29.c"
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): cross-symbol arithmetic p=&D_800A37D2; p[t!=0]++ reaches D_800A37D3 (refused 2026-07-20). Banked: memory/grind/func_8001C8DC/rejected/retro-audit-2026-09-29.c",
+      "addr": "8001C8DC"
     },
     {
       "func": "PutDispEnv",
@@ -61,7 +66,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): macro-hidden volatile cast on non-IRQ global g_gpu_disp_env (DISP_RECT_EQ) + per-use pun. Banked: memory/grind/PutDispEnv/rejected/retro-audit-2026-09-29.c"
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): macro-hidden volatile cast on non-IRQ global g_gpu_disp_env (DISP_RECT_EQ) + per-use pun. Banked: memory/grind/PutDispEnv/rejected/retro-audit-2026-09-29.c",
+      "addr": "8007BC08"
     },
     {
       "func": "CD_cw",
@@ -71,7 +77,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): Alarm_t merge incomplete/TU-local (per-word Alarm_plus_* still used) + Intr second object over g_cd_status_a/b/c. Banked: memory/grind/CD_cw/rejected/retro-audit-2026-09-29.c"
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): Alarm_t merge incomplete/TU-local (per-word Alarm_plus_* still used) + Intr second object over g_cd_status_a/b/c. Banked: memory/grind/CD_cw/rejected/retro-audit-2026-09-29.c",
+      "addr": "800812FC"
     },
     {
       "func": "CD_ready",
@@ -91,7 +98,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): union word view Cell_80052D00 (.w) landed before Q33 and outside its scope (member of TU-local typedef via W cast). Banked: memory/grind/func_80052D00/rejected/retro-audit-2026-09-29.c"
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): union word view Cell_80052D00 (.w) landed before Q33 and outside its scope (member of TU-local typedef via W cast). Banked: memory/grind/func_80052D00/rejected/retro-audit-2026-09-29.c",
+      "addr": "80052D00"
     },
     {
       "func": "func_8006CFBC",
@@ -101,7 +109,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): union word view Counts_8006CFBC landed before Q33 + undisclosed 3-write carrier value. Banked: memory/grind/func_8006CFBC/rejected/retro-audit-2026-09-29.c"
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): union word view Counts_8006CFBC landed before Q33 + undisclosed 3-write carrier value. Banked: memory/grind/func_8006CFBC/rejected/retro-audit-2026-09-29.c",
+      "addr": "8006CFBC"
     },
     {
       "func": "func_800759D0",
@@ -111,7 +120,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): per-use byte pun ((u8 *)D_8009BCF8)[index] over merged Unk8009BCF8Record[20], stride as magic *2/*20 (member form 67). Banked: memory/grind/func_800759D0/rejected/retro-audit-2026-09-29.c"
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): per-use byte pun ((u8 *)D_8009BCF8)[index] over merged Unk8009BCF8Record[20], stride as magic *2/*20 (member form 67). Banked: memory/grind/func_800759D0/rejected/retro-audit-2026-09-29.c",
+      "addr": "800759D0"
     },
     {
       "func": "func_80075F80",
@@ -121,7 +131,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): per-use byte pun ((u8 *)D_8009BCF8)[index] over merged Unk8009BCF8Record[20], stride as magic *2/*20. Banked: memory/grind/func_80075F80/rejected/retro-audit-2026-09-29.c"
+      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): per-use byte pun ((u8 *)D_8009BCF8)[index] over merged Unk8009BCF8Record[20], stride as magic *2/*20. Banked: memory/grind/func_80075F80/rejected/retro-audit-2026-09-29.c",
+      "addr": "80075F80"
     },
     {
       "func": "cdrom_SetMix",
@@ -131,7 +142,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/cdrom_SetMix/cheated-comm-gate-body.c"
+      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/cdrom_SetMix/cheated-comm-gate-body.c",
+      "addr": "80035F30"
     },
     {
       "func": "func_80035F78",
@@ -141,7 +153,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/func_80035F78/cheated-comm-gate-body.c"
+      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/func_80035F78/cheated-comm-gate-body.c",
+      "addr": "80035F78"
     },
     {
       "func": "func_80036140",
@@ -151,7 +164,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/func_80036140/cheated-comm-gate-body.c"
+      "reopen_reason": "cheated (per-function maspsx COMMON gate, maspsx_comm_syms.txt): owner ruling 2026-09-30, docs/grind/decisions.md; reverted to INCLUDE_ASM, prior body banked in memory/grind/func_80036140/cheated-comm-gate-body.c",
+      "addr": "80036140"
     },
     {
       "func": "func_80058580",
@@ -164,7 +178,8 @@
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
-      "hand_coded_tier": "LOW"
+      "hand_coded_tier": "LOW",
+      "addr": "80058580"
     },
     {
       "func": "func_8005C8A8",
@@ -177,7 +192,8 @@
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
-      "hand_coded_tier": "LOW"
+      "hand_coded_tier": "LOW",
+      "addr": "8005C8A8"
     },
     {
       "func": "func_80070F78",
@@ -190,7 +206,8 @@
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
-      "hand_coded_tier": "LOW"
+      "hand_coded_tier": "LOW",
+      "addr": "80070F78"
     },
     {
       "func": "func_80067D14",
@@ -198,7 +215,8 @@
       "distance": 1046,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "addr": "80067D14"
     },
     {
       "func": "func_80055B60",
@@ -211,7 +229,8 @@
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
-      "hand_coded_tier": "LOW"
+      "hand_coded_tier": "LOW",
+      "addr": "80055B60"
     },
     {
       "func": "func_8002AB08",
@@ -224,7 +243,8 @@
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
-      "hand_coded_tier": "LOW"
+      "hand_coded_tier": "LOW",
+      "addr": "8002AB08"
     },
     {
       "func": "func_80065800",
@@ -232,7 +252,8 @@
       "distance": 1453,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "addr": "80065800"
     },
     {
       "func": "func_80023F08",
@@ -245,7 +266,8 @@
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
-      "hand_coded_tier": "LOW"
+      "hand_coded_tier": "LOW",
+      "addr": "80023F08"
     },
     {
       "func": "func_80057E84",
@@ -259,7 +281,8 @@
       "unparked_from": "flat floor 44/447 honest (2 sessions, permuter ~30min); node ptr (a1) needs one fresh pointer shared across both corner blocks (layer-2 FAIL R5/R6; no real carrier exists). Pending unruled va-borrow reaches 22. PathWalker/i/buf ruled sound. See memory/grind/func_80057E84/hypotheses.md",
       "unpark_reason": "auto-return: toolchain change re-measure floor None -> 44 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
       "returned_at": "2026-09-25T22:11:51+00:00",
-      "rotation": "restore rotation: the 2026-09-25 return was the engine None->44 bounce (floor unchanged at 44/447; fixed 07e77ac51). Prior rotation stands: node ptr needs one pointer shared across both corner blocks, vtx/node named banned in Ruling 9 list; va-borrow question moot without it. See memory/grind/func_80057E84/hypotheses.md"
+      "rotation": "restore rotation: the 2026-09-25 return was the engine None->44 bounce (floor unchanged at 44/447; fixed 07e77ac51). Prior rotation stands: node ptr needs one pointer shared across both corner blocks, vtx/node named banned in Ruling 9 list; va-borrow question moot without it. See memory/grind/func_80057E84/hypotheses.md",
+      "addr": "80057E84"
     },
     {
       "func": "func_8005490C",
@@ -273,7 +296,8 @@
       "unparked_from": "flat floor 47/399 single-role (permuter 18.9k flat); allocator proof: rotation temp + init player ptrs need multi-write locals vz/obj (layer-2 FAIL, Ruling 5/6); single loop ruled out (unrolled constants). Prep landed a9c634304. See memory/grind/func_8005490C/",
       "unpark_reason": "auto-return: toolchain change re-measure floor None -> 47 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
       "returned_at": "2026-09-25T22:11:43+00:00",
-      "rotation": "restore rotation: the 2026-09-25 return was the engine None->47 bounce (floor unchanged at 47/399; fixed 07e77ac51). Prior rotation stands: needs multi-write vz/obj, obj named banned in Ruling 9 list. See memory/grind/func_8005490C/hypotheses.md"
+      "rotation": "restore rotation: the 2026-09-25 return was the engine None->47 bounce (floor unchanged at 47/399; fixed 07e77ac51). Prior rotation stands: needs multi-write vz/obj, obj named banned in Ruling 9 list. See memory/grind/func_8005490C/hypotheses.md",
+      "addr": "8005490C"
     },
     {
       "func": "func_800204C0",
@@ -284,7 +308,8 @@
       "status": "rotated",
       "rotation": "FORECLOSED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-08-31): 2026-09-08 \u2014 func_800204C0 \u2014 JUDGE ESCALATE on ruling request (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
       "rotated_from_legacy": "foreclosed",
-      "rotated_at": "2026-09-08T16:33:08+00:00"
+      "rotated_at": "2026-09-08T16:33:08+00:00",
+      "addr": "800204C0"
     },
     {
       "func": "func_8005D554",
@@ -295,7 +320,8 @@
       "status": "rotated",
       "rotation": "ROTATED (ladder exhausted, non-endgame residual \u2014 owner ruling 2026-09-02 wording; 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md:26067 \u2014 2026-09-09 \u2014 func_8005D554 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 LADDER EXHAUSTED (non-endgame residual, floor 6): ROTATED",
       "rotated_at": "2026-09-10T00:33:37+00:00",
-      "rotation_count": 1
+      "rotation_count": 1,
+      "addr": "8005D554"
     },
     {
       "func": "_exeque",
@@ -306,7 +332,8 @@
       "status": "rotated",
       "rotation": "ROTATED (standing ruling 2026-07-27 wording; owner ruling 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md 2026-09-16 -- _exeque -- OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): ROTATED",
       "rotated_at": "2026-09-16T07:19:10+00:00",
-      "rotation_count": 1
+      "rotation_count": 1,
+      "addr": "8007D6D8"
     },
     {
       "func": "func_80020E74",
@@ -317,7 +344,8 @@
       "status": "rotated",
       "rotation": "Target frame requires an untouched 256-byte local; byte-zero also needs a do-while(0) RA wrapper. Both are forbidden families under standing rulings; no independently attested workspace contract found.",
       "rotated_at": "2026-09-21T00:35:35+00:00",
-      "rotation_count": 1
+      "rotation_count": 1,
+      "addr": "80020E74"
     },
     {
       "func": "func_80048FFC",
@@ -328,7 +356,8 @@
       "status": "rotated",
       "rotation": "Honest C reached 232/232 and score 31, but exact register allocation only appeared with a variable reused across unrelated height/mask roles; refinement required non-idiomatic register-steering temporaries, so not landable under standing rules.",
       "rotated_at": "2026-09-21T01:02:39+00:00",
-      "rotation_count": 1
+      "rotation_count": 1,
+      "addr": "80048FFC"
     },
     {
       "func": "func_8003EDC0",
@@ -339,7 +368,8 @@
       "status": "rotated",
       "rotation": "Recon shows a multi-phase packed-stream parser with four loops, dynamic dispatch, and several global table initializations; choosing a narrower candidate for a clean exact completion.",
       "rotated_at": "2026-09-21T01:02:54+00:00",
-      "rotation_count": 1
+      "rotation_count": 1,
+      "addr": "8003EDC0"
     },
     {
       "func": "_SsVmFlush",
@@ -350,7 +380,8 @@
       "status": "rotated",
       "rotation": "source-side first-loop address-rematerialization floor: best honest one-handle score 8/270; cc1psx 34/270; score-0 two-symbol form rejected by fresh review (memory/grind/_SsVmFlush/ledger.md)",
       "rotated_at": "2026-09-23T03:59:40+00:00",
-      "rotation_count": 1
+      "rotation_count": 1,
+      "addr": "800863DC"
     },
     {
       "func": "func_800693CC",
@@ -361,7 +392,8 @@
       "status": "rotated",
       "rotation": "memory/grind/func_800693CC/evidence.md",
       "rotated_at": "2026-09-24T21:03:51+00:00",
-      "rotation_count": 1
+      "rotation_count": 1,
+      "addr": "800693CC"
     },
     {
       "func": "func_800207C8",
@@ -372,7 +404,8 @@
       "status": "rotated",
       "rotation": "memory/grind/func_800207C8/evidence.md",
       "rotated_at": "2026-09-24T21:09:08+00:00",
-      "rotation_count": 1
+      "rotation_count": 1,
+      "addr": "800207C8"
     },
     {
       "func": "func_800288C8",
@@ -383,7 +416,8 @@
       "status": "rotated",
       "rotation": "sandbox 90 from scorer-stripped header GPR stmts (owner question, borderline 2026-09-25) + tbl copy FAIL; oracle-green body banked in memory/grind/func_800288C8",
       "rotated_at": "2026-09-25T16:23:47+00:00",
-      "rotation_count": 1
+      "rotation_count": 1,
+      "addr": "800288C8"
     }
   ],
   "counts": {

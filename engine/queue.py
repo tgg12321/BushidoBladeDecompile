@@ -149,8 +149,16 @@ def _locked():
 
 
 def load() -> dict:
+    """The queue; an item's `addr` (its function's VRAM address — the key the
+    Q39 departures audit uses) must be 8 upper-case hex digits when present."""
     p = Path(QUEUE_PATH)
-    return json.loads(p.read_text()) if p.exists() else {"items": []}
+    q = json.loads(p.read_text()) if p.exists() else {"items": []}
+    for it in q.get("items", []):
+        if "addr" in it and not (isinstance(it["addr"], str)
+                                 and layer2.ADDR_RE.fullmatch(it["addr"])):
+            raise ValueError(f"{QUEUE_PATH}: {it.get('func')}: addr {it['addr']!r} is not "
+                             f"8 upper-case hex digits")
+    return q
 
 
 def save(q: dict, expect: str | None = None) -> None:
@@ -520,10 +528,6 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 status = "authorize" if verdict in _AUTHORIZE else "active"
             entry = {"func": func, "file": stem, "distance": dist,
                      "verdict": verdict, "rules": rules, "status": status}
-            if listed.get(func, {}).get("renamed_from"):
-                # naming-wave provenance: the departures audit reads it as
-                # positive evidence that the OLD name never left the queue
-                entry["renamed_from"] = listed[func]["renamed_from"]
             if tier is not None:
                 # The evidence the routing rests on, carried into the worklist
                 # so a reader (or an audit) never has to re-run the scan to see
@@ -553,6 +557,13 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
         if why is not None:
             items.append({**it, "layer2_pending": why[:400]})
     items.sort(key=_sort_key)
+    # every item carries its function's VRAM address (owner ruling Q39): the
+    # departures audit keys on it, because renames never change it
+    addrs = layer2.addr_index()
+    for it in items:
+        a = addrs.get(it["func"]) or it.get("addr")
+        if a:
+            it["addr"] = a
     q = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
          "oracle_sha1": cfg.ORACLE_SHA1, "build_failures": failures, "items": items}
     q["counts"] = _counts(items)
@@ -1128,6 +1139,9 @@ def reopen(func: str, file: str, reason: str = "", origin: str = "regression") -
         item = {"func": func, "file": file, "distance": 0, "verdict": "C",
                 "rules": 0, "status": "active", "origin": origin,
                 "reopen_reason": (reason or "")[:400]}
+        addr = layer2.addr_of(func)
+        if addr:
+            item["addr"] = addr
         items.append(item)
         items.sort(key=_sort_key)
         q["items"] = items

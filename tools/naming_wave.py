@@ -169,16 +169,13 @@ def retarget_layer2_record(text: str, old: str, new: str,
 
 
 def retarget_queue_items(data: dict, code_map: dict[str, str]) -> list[str]:
-    """Rename queue items in place (func field; status/verdict untouched) and
-    append each old name to the item's `renamed_from` LIST — the positive
-    rename evidence the Q39 departures audit (engine/departures.py) needs to
-    know the old name did not LEAVE the queue."""
+    """Rename queue items in place: the func field only (status, verdict and
+    `addr` untouched — the Q39 departures audit keys items by that address,
+    which a rename never changes, so no old name is carried here)."""
     changed = []
     for item in data.get("items", []):
         if item.get("func") in code_map:
             changed.append(f"{item['func']} -> {code_map[item['func']]}")
-            item["renamed_from"] = extend_rename_chain(
-                item.get("renamed_from"), item["func"], f"engine/queue.json item {item['func']}")
             item["func"] = code_map[item["func"]]
     return changed
 
