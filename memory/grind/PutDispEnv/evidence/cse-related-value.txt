@@ -1,0 +1,42 @@
+cse related-value addressing -- dump evidence for the GpuCtx single-object model
+(layer-2 reviewer l2-PutDispEnv-r3, 2026-09-30; copied from tmp/rev_putdispenv_l2r3/).
+
+Mechanism: with ONE symbol, &g_gpu_ctx.disp_env (const sym+108) is rewritten by cse into
+reg+106, where reg holds &g_gpu_ctx.debug_level (sym+2). That is GCC 2.7.2 cse.c
+use_related_value (:1781), and it gives SetDispMask's `addiu $a0,$s1,0x6A`
+(asm/funcs/SetDispMask.s:22). The same mechanism gives PutDrawEnv's base+0xE.
+
+== probe.c ==
+typedef struct { unsigned char type, qm, dbg, rev; short w, h; int u8_; unsigned cb; char draw[0x5C]; char disp[0x14]; } S;
+extern S g_gpu_ctx;
+extern void (*GPU_printf)();
+extern void *memset(void *, int, int);
+extern int str;
+extern unsigned *dev;
+void SetDispMask(int a0) {
+    if (g_gpu_ctx.dbg >= 2) GPU_printf(&str, a0);
+    if (!a0) memset(&g_gpu_ctx.disp, -1, 0x14);
+    ((void (*)(unsigned))dev[4])(a0 ? 0x3000000 : 0x3000001);
+}
+
+== run.sh ==
+cd "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/rev_putdispenv_l2r3"
+../../tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -dr -ds -dc probe.c -o probe.s 2>&1
+ls
+grep -n "0x6a\|0x6c\|108\|106" probe.c.rtl probe.c.cse probe.c.combine 2>/dev/null | head -20
+grep -n "addiu\|la\b" probe.s | head
+
+== probe.c.rtl lines 77-80 (insn 32, before cse) ==
+
+(insn 32 30 34 (set (reg:SI 79)
+        (const:SI (plus:SI (symbol_ref:SI ("g_gpu_ctx"))
+                (const_int 108)))) -1 (nil)
+
+== probe.c.cse lines 89-94 (insn 32, after cse) ==
+
+(insn 32 30 34 (set (reg:SI 79)
+        (plus:SI (reg:SI 73)
+            (const_int 106))) 3 {addsi3_internal} (nil)
+    (expr_list:REG_EQUAL (const:SI (plus:SI (symbol_ref:SI ("g_gpu_ctx"))
+                (const_int 108)))
+

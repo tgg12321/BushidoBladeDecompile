@@ -11,7 +11,6 @@ extern void _ExitCard(void);
 extern s32 D_80015D58;
 extern s32 D_80015D70;
 extern s32 D_80015EA8;
-extern u8 g_gpu_interlace;
 extern s32 D_80015ED4;
 extern s32 D_80015E90;
 extern s32 D_80015DD8;
@@ -547,39 +546,27 @@ void DumpDispEnv(s16 *a0) {
     GPU_printf(&D_80015E10, ((u8 *)a0)[0x10]);
     GPU_printf(&D_80015E1C, ((u8 *)a0)[0x11]);
 }
-typedef struct {
-    u8 mode;
-    u8 active;
-    u8 level;
-    u8 flag;
-    s16 width;
-    s16 height;
-} GpuConfig;
 /* PsyQ LIBGPU sys.c v1.129: ResetGraph — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c */
 u32 ResetGraph(s32 a0) {
-    GpuConfig *s0;
-    u32 idx;
     switch (a0 & 7) {
     case 0:
     case 3:
-        printf(&D_80015E5C, &D_8009BE2C, &g_gpu_type);
+        printf(&D_80015E5C, &D_8009BE2C, &g_gpu_ctx);
         /* fallthrough */
     case 5:
-        s0 = (GpuConfig *)&g_gpu_type;
-        memset(s0, 0, 0x80);
+        memset(&g_gpu_ctx, 0, sizeof(g_gpu_ctx));
         ResetCallback();
         GPU_cw((u32)g_gpu_dev_table & 0xFFFFFF);
-        s0->mode = (idx = _reset(a0));
-        idx = (u8)idx;
-        s0->active = 1;
-        s0->width = D_8009BEF4[idx];
-        s0->height = D_8009BF08[idx];
-        memset((u8 *)s0 + 0x10, -1, 0x5C);
-        memset((u8 *)s0 + 0x6C, -1, 0x14);
-        return s0->mode;
+        g_gpu_ctx.type = _reset(a0);
+        g_gpu_ctx.queue_mode = 1;
+        g_gpu_ctx.width = D_8009BEF4[g_gpu_ctx.type];
+        g_gpu_ctx.height = D_8009BF08[g_gpu_ctx.type];
+        memset(&g_gpu_ctx.draw_env, -1, sizeof(DRAWENV));
+        memset(&g_gpu_ctx.disp_env, -1, sizeof(DISPENV));
+        return g_gpu_ctx.type;
     default:
-        if (g_gpu_debug_level >= 2) {
+        if (g_gpu_ctx.debug_level >= 2) {
             GPU_printf(&D_80015E7C, a0);
         }
         ((void (*)(s32))((u32 *)g_gpu_dev_table)[0x34 / 4])(1);
@@ -587,24 +574,23 @@ u32 ResetGraph(s32 a0) {
     }
 }
 u32 SetGraphReverse(s32 a0) {
-    u8 *p = &g_gpu_dither;
-    u32 old = *p;
+    u32 old = g_gpu_ctx.reverse;
     u32 val;
-    if (g_gpu_debug_level >= 2) {
+    if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&D_80015E90, a0);
     }
-    *p = a0;
+    g_gpu_ctx.reverse = a0;
     val = ((u32 (*)(s32))((u32 *)g_gpu_dev_table)[0x28 / 4])(8);
-    if (*p) {
+    if (g_gpu_ctx.reverse) {
         val |= 0x8000080;
     } else {
         val |= 0x8000000;
     }
     ((void (*)(u32))((u32 *)g_gpu_dev_table)[0x10 / 4])(val);
-    if (g_gpu_type == 2) {
+    if (g_gpu_ctx.type == 2) {
         u32 *tbl = (u32 *)g_gpu_dev_table;
         val = 0x20000504;
-        if (g_gpu_dither) {
+        if (g_gpu_ctx.reverse) {
             val = 0x20000501;
         }
         ((void (*)(u32))tbl[0x10 / 4])(val);
@@ -613,33 +599,31 @@ u32 SetGraphReverse(s32 a0) {
 }
 
 u32 SetGraphDebug(s32 a0) {
-    u8 *p = &g_gpu_debug_level;
-    u32 old = *p;
-    u32 val = a0 & 0xFF;
-    *p = a0;
-    if (val) {
-        GPU_printf(&D_80015EA8, val, g_gpu_type, g_gpu_dither);
+    u32 old = g_gpu_ctx.debug_level;
+    g_gpu_ctx.debug_level = a0;
+    if (g_gpu_ctx.debug_level) {
+        GPU_printf(&D_80015EA8, g_gpu_ctx.debug_level, g_gpu_ctx.type,
+                   g_gpu_ctx.reverse);
     }
     return old;
 }
 u32 SetGraphQueue(s32 a0) {
-    u8 *p = &g_gpu_interlace;
-    u32 old = *p;
-    if (g_gpu_debug_level >= 2) {
+    u32 old = g_gpu_ctx.queue_mode;
+    if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&D_80015ED4, a0);
     }
-    if (a0 != *p) {
+    if (a0 != g_gpu_ctx.queue_mode) {
         ((void (*)(s32))((u32 *)g_gpu_dev_table)[0x34 / 4])(1);
-        *p = a0;
+        g_gpu_ctx.queue_mode = a0;
         DMACallback(2, 0);
     }
     return old;
 }
 
 u32 GetGraphType(void) {
-    return g_gpu_type;
+    return g_gpu_ctx.type;
 }
 
 u32 GetGraphDebug(void) {
-    return g_gpu_debug_level;
+    return g_gpu_ctx.debug_level;
 }

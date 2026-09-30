@@ -1,0 +1,1 @@
+{"func": "get_dx", "addr": "8007CA00", "verdict": "PASS", "body_hash": "2e50e09decd20d6c", "body_kind": "c", "file": "display", "reviewer": "l2-PutDispEnv-r3", "scope": "cheat-cleanup", "date": "2026-09-30T17:22:58Z", "head": "978ca6d06", "notes": "round 3 PASS (PutDispEnv landing): consumer respelled through g_gpu_ctx members; one object over 0x8009BE74..F3; sandbox 0"}

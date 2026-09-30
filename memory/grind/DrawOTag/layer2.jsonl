@@ -1,0 +1,1 @@
+{"func": "DrawOTag", "addr": "8007B93C", "verdict": "PASS", "body_hash": "f0c4f0f05c4d1420", "body_kind": "c", "file": "display", "reviewer": "l2-PutDispEnv-r3", "scope": "cheat-cleanup", "date": "2026-09-30T17:20:24Z", "head": "b5eb213dd", "notes": "round 3 PASS (PutDispEnv landing): consumer respelled through g_gpu_ctx members; one object over 0x8009BE74..F3; sandbox 0"}

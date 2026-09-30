@@ -1,0 +1,1 @@
+{"func": "SetGraphDebug", "addr": "8007B114", "verdict": "PASS", "body_hash": "ff16575776519590", "body_kind": "c", "file": "gpu", "reviewer": "l2-PutDispEnv-r3", "scope": "cheat-cleanup", "date": "2026-09-30T17:21:53Z", "head": "b5eb213dd", "notes": "round 3 PASS (PutDispEnv landing): consumer respelled through g_gpu_ctx members; one object over 0x8009BE74..F3; sandbox 0"}

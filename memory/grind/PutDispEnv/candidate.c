@@ -6,11 +6,11 @@ DISPENV *PutDispEnv(DISPENV *env) {
     s32 mode;
 
     mode = 0x08000000;
-    if (g_gpu_debug_level >= 2) {
+    if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(D_80015FF8, env);
     }
     g_gpu_dev_table->ctl(
-        g_gpu_type == 1 || g_gpu_type == 2
+        g_gpu_ctx.type == 1 || g_gpu_ctx.type == 2
             ? ((env->disp.y & 0xFFF) << 12) | (get_dx((s16 *)env) & 0xFFF) | 0x05000000
             : ((env->disp.y & 0x3FF) << 10) | (env->disp.x & 0x3FF) |
                   0x05000000);
@@ -21,10 +21,10 @@ DISPENV *PutDispEnv(DISPENV *env) {
        folds to lh and scores 75 (memory/grind/PutDispEnv/evidence.md).
        SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @aa53500 (a use-site
        `*(volatile int *)&` read of a struct member in non-IRQ RAM). */
-    if (!(*(volatile s16 *)&g_gpu_disp_env.screen.x == env->screen.x &&
-          *(volatile s16 *)&g_gpu_disp_env.screen.y == env->screen.y &&
-          *(volatile s16 *)&g_gpu_disp_env.screen.w == env->screen.w &&
-          *(volatile s16 *)&g_gpu_disp_env.screen.h == env->screen.h)) {
+    if (!(*(volatile s16 *)&g_gpu_ctx.disp_env.screen.x == env->screen.x &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.screen.y == env->screen.y &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.screen.w == env->screen.w &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.screen.h == env->screen.h)) {
         env->pad0 = GetVideoMode();
         h_start = env->screen.x * 10 + 0x260;
         v_start = env->screen.y + (env->pad0 ? 0x13 : 0x10);
@@ -49,11 +49,11 @@ DISPENV *PutDispEnv(DISPENV *env) {
        +0x10 on both sides. SOTN: src/main/psxsdk/libgpu/sys.c:367 @aa53500
        (the same compare of the saved and new environment, through LOW() =
        `*(s32 *)&`, SOTN include/common.h:73). */
-    if (*(s32 *)&g_gpu_disp_env.isinter != *(s32 *)&env->isinter ||
-        !(*(volatile s16 *)&g_gpu_disp_env.disp.x == env->disp.x &&
-          *(volatile s16 *)&g_gpu_disp_env.disp.y == env->disp.y &&
-          *(volatile s16 *)&g_gpu_disp_env.disp.w == env->disp.w &&
-          *(volatile s16 *)&g_gpu_disp_env.disp.h == env->disp.h)) {
+    if (*(s32 *)&g_gpu_ctx.disp_env.isinter != *(s32 *)&env->isinter ||
+        !(*(volatile s16 *)&g_gpu_ctx.disp_env.disp.x == env->disp.x &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.disp.y == env->disp.y &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.disp.w == env->disp.w &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.disp.h == env->disp.h)) {
         env->pad0 = GetVideoMode();
         if (env->pad0 == 1) {
             mode |= 0x8;
@@ -64,7 +64,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
         if (env->isinter) {
             mode |= 0x20;
         }
-        if (D_8009BE77) {
+        if (g_gpu_ctx.reverse) {
             mode |= 0x80;
         }
         if (env->disp.w > 280) {
@@ -87,6 +87,6 @@ DISPENV *PutDispEnv(DISPENV *env) {
         }
         g_gpu_dev_table->ctl(mode);
     }
-    memcpy((s32)&g_gpu_disp_env, env, sizeof(DISPENV));
+    memcpy((s32)&g_gpu_ctx.disp_env, env, sizeof(DISPENV));
     return env;
 }

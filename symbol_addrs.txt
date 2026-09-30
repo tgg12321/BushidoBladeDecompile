@@ -45,15 +45,7 @@ g_sin_table = 0x800973FC; // sine lookup table (4096 entries, s16)
 // data-wave 2026-09-07: g_gpu_debug_func = 0x8009BE70 retired; GPU_printf is now object-defined
 g_gpu_dev_table = 0x8009BE6C; // GPU device function vtable
 g_gpu_move_param = 0x8009BF1C; // PsyQ libgpu sys.c MoveImage `u_long param[5]` blit packet (head 2 words initialized: 0x04FFFFFF, 0x80000000)
-g_gpu_type = 0x8009BE74; // GPU hardware type
-g_gpu_interlace = 0x8009BE75; // interlace mode flag
-g_gpu_debug_level = 0x8009BE76; // GPU debug verbosity (>=2 prints)
-g_gpu_dither = 0x8009BE77; // GPU dither enable
-g_gpu_disp_x = 0x8009BE78; // display offset X
-g_gpu_disp_y = 0x8009BE7A; // display offset Y
-g_gpu_draw_mode = 0x8009BE80; // GPU draw mode state
-g_gpu_draw_env = 0x8009BE84; // DrawEnv structure (0x5C bytes)
-g_gpu_disp_env = 0x8009BEE0; // DispEnv structure (0x14 bytes)
+g_gpu_ctx = 0x8009BE74; // libgpu SYS state block (GpuCtx, 0x80 bytes; include/gpu.h)
 g_gpu_ot_end = 0x8009BF30; // OT list terminator
 g_gpu_stat_reg = 0x8009BF48; // GPU status register ptr
 g_gpu_data_reg = 0x8009BF44; // GPU data register ptr

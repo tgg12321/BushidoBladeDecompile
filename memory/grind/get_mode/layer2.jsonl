@@ -1,0 +1,1 @@
+{"func": "get_mode", "addr": "8007C748", "verdict": "PASS", "body_hash": "afb0e2f718e91010", "body_kind": "c", "file": "display", "reviewer": "l2-PutDispEnv-r3", "scope": "cheat-cleanup", "date": "2026-09-30T17:23:05Z", "head": "978ca6d06", "notes": "round 3 PASS (PutDispEnv landing): consumer respelled through g_gpu_ctx members; one object over 0x8009BE74..F3; sandbox 0"}

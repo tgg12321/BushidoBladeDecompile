@@ -21,18 +21,12 @@ extern volatile u32 *g_gpu_dma_madr;
 extern u32 *g_gpu_dma_bcr;
 extern volatile u32 *g_gpu_dma_chcr;
 extern u8 ctlbuf[];
-extern u8 g_gpu_draw_env;
-extern u8 g_gpu_disp_env;
-extern u8 D_8009BE74;
-extern s16 D_8009BE78;
-extern s16 D_8009BE7A;
 extern s32 g_gpu_vcount;
 extern s32 g_gpu_draw_count;
 extern u32 g_str_drawotag;
 extern u32 g_str_drawsync;
 extern u32 D_80015EE8;
 extern u32 D_80015FDC;
-extern u32 g_gpu_draw_mode;
 
 extern u32 g_str_setdispmask;
 
@@ -44,37 +38,20 @@ extern u8 D_80015F4C;
 
 u32 DrawSyncCallback(s32 a0) {
     u32 old;
-    if (g_gpu_debug_level >= 2) {
+    if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&D_80015EE8, a0);
     }
-    old = g_gpu_draw_mode;
-    g_gpu_draw_mode = a0;
+    old = g_gpu_ctx.drawsync_cb;
+    g_gpu_ctx.drawsync_cb = a0;
     return old;
 }
-/* PsyQ LIBGPU sys.c models the GPU state block rooted at g_gpu_type as one
-   static struct (C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c) — gpu.c's
-   gpu_SetMode already clears the whole 0x80-byte object and initializes
-   draw_env/disp_env through the same base. */
-typedef struct {
-    u8 type;           /* +0x00 g_gpu_type */
-    u8 interlace;      /* +0x01 g_gpu_interlace */
-    u8 debug_level;    /* +0x02 g_gpu_debug_level */
-    u8 dither;         /* +0x03 g_gpu_dither */
-    s16 disp_x;        /* +0x04 g_gpu_disp_x */
-    s16 disp_y;        /* +0x06 g_gpu_disp_y */
-    u8 unk8[4];        /* +0x08 */
-    u32 draw_mode;     /* +0x0C g_gpu_draw_mode */
-    u8 draw_env[0x5C]; /* +0x10 g_gpu_draw_env */
-    u8 disp_env[0x14]; /* +0x6C g_gpu_disp_env */
-} GpuCtx;              /* size 0x80 */
 
 void SetDispMask(s32 a0) {
-    u8 *p = &((GpuCtx *)&g_gpu_type)->debug_level;
-    if (*p >= 2) {
+    if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&g_str_setdispmask, a0);
     }
     if (!a0) {
-        memset(((GpuCtx *)&g_gpu_type)->disp_env, -1, 0x14);
+        memset(&g_gpu_ctx.disp_env, -1, 0x14);
     }
     {
         u32 cmd = GP1_DISP_ENABLE;
@@ -86,7 +63,7 @@ void SetDispMask(s32 a0) {
     }
 }
 void DrawSync(s32 a0) {
-    if (g_gpu_debug_level >= 2) {
+    if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&g_str_drawsync, a0);
     }
     {
@@ -96,18 +73,18 @@ void DrawSync(s32 a0) {
 }
 void checkRECT(u8 *str, s16 *rect) {
     s16 w, x, y, h;
-    if (g_gpu_debug_level == 1) goto level_1;
-    if (g_gpu_debug_level == 2) goto level_2;
+    if (g_gpu_ctx.debug_level == 1) goto level_1;
+    if (g_gpu_ctx.debug_level == 2) goto level_2;
     goto end;
 level_1:
     w = rect[2];
-    if (w > D_8009BE78) goto bad;
+    if (w > g_gpu_ctx.width) goto bad;
     x = rect[0];
-    if (w + x > D_8009BE78) goto bad;
+    if (w + x > g_gpu_ctx.width) goto bad;
     y = rect[1];
-    if (y > D_8009BE7A) goto bad;
+    if (y > g_gpu_ctx.height) goto bad;
     h = rect[3];
-    if (y + h > D_8009BE7A) goto bad;
+    if (y + h > g_gpu_ctx.height) goto bad;
     if (w <= 0) goto bad;
     if (x < 0) goto bad;
     if (y < 0) goto bad;
@@ -182,7 +159,7 @@ extern u32 g_str_clearotag;
 extern u32 g_gpu_ot_end;
 
 u32 *ClearOTag(u32 *a0, s32 a1) {
-    if (g_gpu_debug_level >= 2) {
+    if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&g_str_clearotag, a0, a1);
     }
     a1--;
@@ -205,7 +182,7 @@ extern u32 D_80015F98;
 
 u32 *ClearOTagR(u32 *ot, s32 n) {
     u32 *new_var;
-    if (g_gpu_debug_level >= 2) {
+    if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&D_80015F98, ot, n);
         new_var = ot; /* FAKE: cse.c make_regs_eqv beyond-block gate; flow-deleted pre-RA */
     }
@@ -225,7 +202,7 @@ void DrawPrim(u8 *a0) {
     ((void (*)(u32 *, u32))dev[5])(a0 + 4, size);
 }
 void DrawOTag(s32 a0) {
-    if (g_gpu_debug_level >= 2) {
+    if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&g_str_drawotag, a0);
     }
     {
@@ -236,75 +213,132 @@ void DrawOTag(s32 a0) {
 extern u32 g_str_putdrawenv;
 
 
-typedef struct { s32 a, b, c, d; } _drawenv_q;
-typedef struct { s32 a, b, c; } _drawenv_t;
-
-s32 *PutDrawEnv(s32 *arg0) {
-    s32 *p;
+DRAWENV *PutDrawEnv(DRAWENV *env) {
     u32 *dev;
-    _drawenv_q *src;
-    _drawenv_q *dst;
-    _drawenv_q *end;
-    u8 *base = &g_gpu_debug_level;
 
-    if (*base >= 2) {
-        GPU_printf(&g_str_putdrawenv, arg0);
+    if (g_gpu_ctx.debug_level >= 2) {
+        GPU_printf(&g_str_putdrawenv, env);
     }
-    p = arg0 + 7;
-    SetDrawEnv2(p, arg0);
-    arg0[7] |= 0xFFFFFF;
+    SetDrawEnv2(&env->dr_env, env);
+    env->dr_env.tag |= 0xFFFFFF;
     dev = (u32 *)g_gpu_dev_table;
-    ((s32 (*)(u32, s32 *, s32, s32))dev[2])(dev[6], p, 0x40, 0);
-
-    dst = (_drawenv_q *)(base + 0xE);
-    src = (_drawenv_q *)arg0;
-    end = (_drawenv_q *)(arg0 + 0x14);
-    do {
-        *dst = *src;
-        src++;
-        dst++;
-    } while (src != end);
-    *(_drawenv_t *)dst = *(_drawenv_t *)src;
-    return arg0;
+    ((s32 (*)(u32, DR_ENV *, s32, s32))dev[2])(dev[6], &env->dr_env, 0x40, 0);
+    g_gpu_ctx.draw_env = *env;
+    return env;
 }
-void DrawOTagEnv(s32 arg0, s32 *arg1) {
-    s32 *p;
+void DrawOTagEnv(s32 arg0, DRAWENV *env) {
     u32 *dev;
-    _drawenv_q *src;
-    _drawenv_q *dst;
-    _drawenv_q *end;
-    u8 *base = &g_gpu_debug_level;
 
-    if (*base >= 2) {
-        GPU_printf(&D_80015FDC, arg0, arg1);
+    if (g_gpu_ctx.debug_level >= 2) {
+        GPU_printf(&D_80015FDC, arg0, env);
     }
-    p = arg1 + 7;
-    SetDrawEnv2(p, arg1);
-    arg1[7] = (arg1[7] & 0xFF000000) | (arg0 & 0xFFFFFF);
+    SetDrawEnv2(&env->dr_env, env);
+    env->dr_env.tag = (env->dr_env.tag & 0xFF000000) | (arg0 & 0xFFFFFF);
     dev = (u32 *)g_gpu_dev_table;
-    ((s32 (*)(u32, s32 *, s32, s32))dev[2])(dev[6], p, 0x40, 0);
-
-    dst = (_drawenv_q *)(base + 0xE);
-    src = (_drawenv_q *)arg1;
-    end = (_drawenv_q *)(arg1 + 0x14);
-    do {
-        *dst = *src;
-        src++;
-        dst++;
-    } while (src != end);
-    *(_drawenv_t *)dst = *(_drawenv_t *)src;
+    ((s32 (*)(u32, DR_ENV *, s32, s32))dev[2])(dev[6], &env->dr_env, 0x40, 0);
+    g_gpu_ctx.draw_env = *env;
 }
 s32 GetDrawEnv(s32 a0) {
-    memcpy(a0, &g_gpu_draw_env, 0x5C);
+    memcpy(a0, &g_gpu_ctx.draw_env, 0x5C);
     return a0;
 }
-extern u8 D_8009BE77;
 extern const char D_80015FF8[];
 extern s32 GetVideoMode(void);
 s32 get_dx(s16 *arg0);
-INCLUDE_ASM("asm/funcs", PutDispEnv);
+/* PsyQ 4.0 LIBGPU SYS: PutDispEnv (verbatim-linked Sony object, census 2026-07-09);
+   C ref: SOTN src/main/psxsdk/libgpu/sys.c:336 @aa53500 (a PsyQ 3.3 build; structure only) */
+DISPENV *PutDispEnv(DISPENV *env) {
+    s32 h_start, h_end;
+    s32 v_start, v_end;
+    s32 mode;
+
+    mode = 0x08000000;
+    if (g_gpu_ctx.debug_level >= 2) {
+        GPU_printf(D_80015FF8, env);
+    }
+    g_gpu_dev_table->ctl(
+        g_gpu_ctx.type == 1 || g_gpu_ctx.type == 2
+            ? ((env->disp.y & 0xFFF) << 12) | (get_dx((s16 *)env) & 0xFFF) | 0x05000000
+            : ((env->disp.y & 0x3FF) << 10) | (env->disp.x & 0x3FF) |
+                  0x05000000);
+    /* FAKE: volatile-qualified reads of the saved environment (8 casts, both rect
+       compares). The shipped bytes load every one of these fields as lhu + sll 16 +
+       sra 16 -- the un-folded extend GCC keeps only for a volatile halfword -- while
+       the env-> side of the same compares is a plain lh; the non-volatile spelling
+       folds to lh and scores 75 (memory/grind/PutDispEnv/evidence.md).
+       SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @aa53500 (a use-site
+       `*(volatile int *)&` read of a struct member in non-IRQ RAM). */
+    if (!(*(volatile s16 *)&g_gpu_ctx.disp_env.screen.x == env->screen.x &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.screen.y == env->screen.y &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.screen.w == env->screen.w &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.screen.h == env->screen.h)) {
+        env->pad0 = GetVideoMode();
+        h_start = env->screen.x * 10 + 0x260;
+        v_start = env->screen.y + (env->pad0 ? 0x13 : 0x10);
+        h_end = h_start + (env->screen.w ? env->screen.w * 10 : 2560);
+        v_end = v_start + (env->screen.h ? env->screen.h : 240);
+        /* each value clamped in place. SOTN: src/main/psxsdk/libgpu/sys.c:358 @aa53500 */
+        h_start = h_start < 500 ? 500 : (h_start > 3290 ? 3290 : h_start);
+        h_end = h_end < h_start + 0x50 ? h_start + 0x50
+                                       : (h_end > 3290 ? 3290 : h_end);
+        v_start = v_start < 0x10 ? 0x10
+                : (v_start > (env->pad0 ? 310 : 256) ? (env->pad0 ? 310 : 256)
+                                                     : v_start);
+        v_end = v_end < v_start + 2 ? v_start + 2
+              : (v_end > (env->pad0 ? 312 : 258) ? (env->pad0 ? 312 : 258)
+                                                 : v_end);
+        g_gpu_dev_table->ctl(
+            ((h_end & 0xFFF) << 12) | 0x06000000 | (h_start & 0xFFF));
+        g_gpu_dev_table->ctl(
+            ((v_end & 0x3FF) << 10) | 0x07000000 | (v_start & 0x3FF));
+    }
+    /* isinter..pad1 compared as one word: the shipped bytes are a single lw at
+       +0x10 on both sides. SOTN: src/main/psxsdk/libgpu/sys.c:367 @aa53500
+       (the same compare of the saved and new environment, through LOW() =
+       `*(s32 *)&`, SOTN include/common.h:73). */
+    if (*(s32 *)&g_gpu_ctx.disp_env.isinter != *(s32 *)&env->isinter ||
+        !(*(volatile s16 *)&g_gpu_ctx.disp_env.disp.x == env->disp.x &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.disp.y == env->disp.y &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.disp.w == env->disp.w &&
+          *(volatile s16 *)&g_gpu_ctx.disp_env.disp.h == env->disp.h)) {
+        env->pad0 = GetVideoMode();
+        if (env->pad0 == 1) {
+            mode |= 0x8;
+        }
+        if (env->isrgb24) {
+            mode |= 0x10;
+        }
+        if (env->isinter) {
+            mode |= 0x20;
+        }
+        if (g_gpu_ctx.reverse) {
+            mode |= 0x80;
+        }
+        if (env->disp.w > 280) {
+            if (env->disp.w <= 352) {
+                mode |= 1;
+            } else if (env->disp.w <= 400) {
+                mode |= 0x40;
+            } else if (env->disp.w <= 560) {
+                mode |= 2;
+            } else {
+                mode |= 3;
+            }
+        }
+        /* FAKE: empty then-arm; the direct `if (env->disp.h > ...) mode |= 0x24;`
+           and its respellings add 4 insns (memory/grind/PutDispEnv/evidence.md).
+           SOTN: src/main/psxsdk/libgpu/sys.c:394 @aa53500 (same statement, same form). */
+        if (env->disp.h <= (env->pad0 ? 288 : 256)) {
+        } else {
+            mode |= 0x24;
+        }
+        g_gpu_dev_table->ctl(mode);
+    }
+    memcpy((s32)&g_gpu_ctx.disp_env, env, sizeof(DISPENV));
+    return env;
+}
 s32 GetDispEnv(s32 a0) {
-    memcpy(a0, &g_gpu_disp_env, 0x14);
+    memcpy(a0, &g_gpu_ctx.disp_env, 0x14);
     return a0;
 }
 u32 GetODE(void) {
@@ -397,9 +431,9 @@ void SetDrawEnv(s32 *out, Rect *r)
     buf[3] = (u16) r->h;
     if (new_var >= 0)
     {
-      if ((D_8009BE78 - 1) < new_var)
+      if ((g_gpu_ctx.width - 1) < new_var)
       {
-        var_v0 = D_8009BE78 - 1;
+        var_v0 = g_gpu_ctx.width - 1;
       }
       else
       {
@@ -413,9 +447,9 @@ void SetDrawEnv(s32 *out, Rect *r)
     buf[2] = (u16) var_v0;
     if (((s16) buf[3]) >= 0)
     {
-      if ((D_8009BE7A - 1) < ((s16) buf[3]))
+      if ((g_gpu_ctx.height - 1) < ((s16) buf[3]))
       {
-        var_v0_2 = D_8009BE7A - 1;
+        var_v0_2 = g_gpu_ctx.height - 1;
       }
       else
       {
@@ -473,9 +507,9 @@ void SetDrawEnv2(s32 *out, Rect *r)
     buf[3] = (u16) r->h;
     if (new_var >= 0)
     {
-      if ((D_8009BE78 - 1) < new_var)
+      if ((g_gpu_ctx.width - 1) < new_var)
       {
-        var_v0 = D_8009BE78 - 1;
+        var_v0 = g_gpu_ctx.width - 1;
       }
       else
       {
@@ -489,9 +523,9 @@ void SetDrawEnv2(s32 *out, Rect *r)
     buf[2] = (u16) var_v0;
     if (((s16) buf[3]) >= 0)
     {
-      if ((D_8009BE7A - 1) < ((s16) buf[3]))
+      if ((g_gpu_ctx.height - 1) < ((s16) buf[3]))
       {
-        var_v0_2 = D_8009BE7A - 1;
+        var_v0_2 = g_gpu_ctx.height - 1;
       }
       else
       {
@@ -526,7 +560,7 @@ s32 get_mode(s32 arg0, s32 arg1, s32 arg2) {
     s32 var_v1;
     s32 var_v0;
 
-    if ((u32) (D_8009BE74 - 1) < 2U) {
+    if ((u32) (g_gpu_ctx.type - 1) < 2U) {
         var_v1 = 0xE1000000;
         if (arg1 != 0) {
             var_v1 = 0xE1000800;
@@ -552,16 +586,16 @@ s32 get_mode(s32 arg0, s32 arg1, s32 arg2) {
  * Body: the published psxsdk clamp idiom (sotn-decomp
  * src/main/psxsdk/libgpu/sys.c house style) with THIS library build's limits
  * and dispatch — clamping both axes against the halfword globals
- * D_8009BE78/D_8009BE7A and dispatching on the D_8009BE74 range check.
+ * g_gpu_ctx.width/g_gpu_ctx.height and dispatching on the g_gpu_ctx.type range check.
  * It is NOT SOTN's get_cs verbatim: that build clamps against constants and
  * dispatches on a boolean global (different library build, per ledger H2).
  * Adopted under the 2026-08-10 owner ruling because it uniquely measures
  * 0/51. */
 s32 get_cs(s16 x, s16 y)
 {
-    x = x < 0 ? 0 : (x > D_8009BE78 - 1 ? D_8009BE78 - 1 : x);
-    y = y < 0 ? 0 : (y > D_8009BE7A - 1 ? D_8009BE7A - 1 : y);
-    if ((u32)(D_8009BE74 - 1) < 2U) {
+    x = x < 0 ? 0 : (x > g_gpu_ctx.width - 1 ? g_gpu_ctx.width - 1 : x);
+    y = y < 0 ? 0 : (y > g_gpu_ctx.height - 1 ? g_gpu_ctx.height - 1 : y);
+    if ((u32)(g_gpu_ctx.type - 1) < 2U) {
         return 0xE3000000 | ((y & 0xFFF) << 12) | (x & 0xFFF);
     } else {
         return 0xE3000000 | ((y & 0x3FF) << 10) | (x & 0x3FF);
@@ -569,30 +603,29 @@ s32 get_cs(s16 x, s16 y)
 }
 /* PsyQ libgpu get_ce, the get_cs twin (verbatim-linked Sony object, census
  * 2026-07-09). Same published psxsdk clamp idiom as func_8007C7A0 above, with
- * the packet constant 0xE4000000; the limits (D_8009BE78/D_8009BE7A), the
- * dispatch (D_8009BE74 range check) and both arms' masks/shifts were read off
+ * the packet constant 0xE4000000; the limits (g_gpu_ctx.width/g_gpu_ctx.height), the
+ * dispatch (g_gpu_ctx.type range check) and both arms' masks/shifts were read off
  * THIS function's own target bytes (asm/funcs/func_8007C86C.s), not assumed
  * symmetric. Not SOTN's get_ce verbatim — different library build, per ledger
  * H2. Adopted under the 2026-08-10 owner ruling because it uniquely measures
  * 0/51. */
 s32 get_ce(s16 x, s16 y)
 {
-    x = x < 0 ? 0 : (x > D_8009BE78 - 1 ? D_8009BE78 - 1 : x);
-    y = y < 0 ? 0 : (y > D_8009BE7A - 1 ? D_8009BE7A - 1 : y);
-    if ((u32)(D_8009BE74 - 1) < 2U) {
+    x = x < 0 ? 0 : (x > g_gpu_ctx.width - 1 ? g_gpu_ctx.width - 1 : x);
+    y = y < 0 ? 0 : (y > g_gpu_ctx.height - 1 ? g_gpu_ctx.height - 1 : y);
+    if ((u32)(g_gpu_ctx.type - 1) < 2U) {
         return 0xE4000000 | ((y & 0xFFF) << 12) | (x & 0xFFF);
     } else {
         return 0xE4000000 | ((y & 0x3FF) << 10) | (x & 0x3FF);
     }
 }
-extern u8 g_gpu_type;
 s32 get_ofs(s32 arg0, s32 arg1) {
     s32 var_v0;
     s32 var_v1;
     int new_var2;
     var_v1 = arg1 & 0xFFF;
     new_var2 = arg0;
-    if ((u32) (g_gpu_type - 1) >= 2U) {
+    if ((u32) (g_gpu_ctx.type - 1) >= 2U) {
         var_v1 = arg1 & 0x7FF;
         var_v1 = var_v1 << 0xB;
         var_v0 = new_var2 & 0x7FF;
@@ -625,13 +658,11 @@ s32 get_tw(u8 *arg0) {
     }
     return 0;
 }
-extern u8 D_8009BE74;
-extern u8 D_8009BE77;
 s32 get_dx(s16 *arg0) {
     s32 v1, a, t;
-    switch (D_8009BE74) {
+    switch (g_gpu_ctx.type) {
     case 1:
-        if (D_8009BE77 != 0) {
+        if (g_gpu_ctx.reverse != 0) {
             t = 0x400;
             v1 = arg0[2];
             a = arg0[0];
@@ -642,7 +673,7 @@ s32 get_dx(s16 *arg0) {
         t = arg0[0];
         goto ret;
     case 2:
-        if (0 != D_8009BE77) {
+        if (0 != g_gpu_ctx.reverse) {
             v1 = ((s16)(*((u16 *)(arg0 + 2)))) / 2;
             a = arg0[0];
             /* FAKE: wrap keeps the 0x400 load below the div chain so it
@@ -706,8 +737,8 @@ u32 _param(u32 a0);
 s32 _clr(GpuRect *rect, u32 color) {
     u32 ptr;
 
-    rect->w = rect->w < 0 ? 0 : (rect->w > D_8009BE78 - 1 ? D_8009BE78 - 1 : rect->w);
-    rect->h = rect->h < 0 ? 0 : (rect->h > D_8009BE7A - 1 ? D_8009BE7A - 1 : rect->h);
+    rect->w = rect->w < 0 ? 0 : (rect->w > g_gpu_ctx.width - 1 ? g_gpu_ctx.width - 1 : rect->w);
+    rect->h = rect->h < 0 ? 0 : (rect->h > g_gpu_ctx.height - 1 ? g_gpu_ctx.height - 1 : rect->h);
     if (rect->x & 0x3F || rect->w & 0x3F) {
         /* unaligned clear: split in two packets */
         ptr = (u32)&D_800F1858.code[8];
@@ -754,8 +785,8 @@ s32 _dws(GpuRect *rect, s32 *data) {
 
     var_s4 = 0;
     set_alarm();
-    rect->w = rect->w < 0 ? 0 : (rect->w > D_8009BE78 ? D_8009BE78 : rect->w);
-    rect->h = rect->h < 0 ? 0 : (rect->h > D_8009BE7A ? D_8009BE7A : rect->h);
+    rect->w = rect->w < 0 ? 0 : (rect->w > g_gpu_ctx.width ? g_gpu_ctx.width : rect->w);
+    rect->h = rect->h < 0 ? 0 : (rect->h > g_gpu_ctx.height ? g_gpu_ctx.height : rect->h);
     to_write = (rect->w * rect->h + 1) / 2;
     if (to_write <= 0) {
         return -1;
@@ -800,8 +831,8 @@ s32 _drs(GpuRect *rect, s32 *data) {
     s32 var_s0;
 
     set_alarm();
-    rect->w = rect->w < 0 ? 0 : (rect->w > D_8009BE78 ? D_8009BE78 : rect->w);
-    rect->h = rect->h < 0 ? 0 : (rect->h > D_8009BE7A ? D_8009BE7A : rect->h);
+    rect->w = rect->w < 0 ? 0 : (rect->w > g_gpu_ctx.width ? g_gpu_ctx.width : rect->w);
+    rect->h = rect->h < 0 ? 0 : (rect->h > g_gpu_ctx.height ? g_gpu_ctx.height : rect->h);
     to_read = (rect->w * rect->h + 1) / 2;
     if (to_read <= 0) {
         return -1;
@@ -876,9 +907,6 @@ void _exeque();                           /* extern */
 s32 get_alarm();                                /* extern */
 s32 DMACallback(s32, s32 (*)()); /* extern */
 s32 SetIntrMask(s32);                         /* extern */
-extern u8 D_8009BE75;
-extern s32 D_8009BE7C;
-extern s32 D_8009BE80;
 extern volatile s32 *D_8009BF54;
 extern volatile s32 _qlog[];
 extern s32 *D_8009BF6C;
@@ -903,9 +931,9 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
         _exeque();
     }
     D_8009BF80 = SetIntrMask(0);
-    D_8009BE7C = 1;
-    if (D_8009BE75 == 0 ||
-        (_qin == _qout && !(*D_8009BF54 & 0x01000000) && D_8009BE80 == 0)) {
+    g_gpu_ctx.unk08 = 1;
+    if (g_gpu_ctx.queue_mode == 0 ||
+        (_qin == _qout && !(*D_8009BF54 & 0x01000000) && g_gpu_ctx.drawsync_cb == 0)) {
         while (!(*D_8009BF48 & 0x04000000)) {
         }
         func(arg, count);

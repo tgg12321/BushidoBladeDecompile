@@ -85,3 +85,42 @@ Required fix: ONE real object for the 0x80-byte GPU state block at 0x8009BE74 in
 (DISPENV disp_env at +0x6C), every consumer through members (SetDispMask, PutDispEnv, GetDispEnv,
 ResetGraph, PutDrawEnv/DrawOTagEnv base+0xE, all others), byte-neutral per consumer, alias rows
 retired, name from evidence. Landing = PutDispEnv match + cheat-cleanup of changed consumers.
+
+## 2026-09-30 -- round 3: the GPU state-block merge (prepared under the landing lock, laneA)
+
+The reviewer's hypothesis held. With ONE object, cse's related-value addressing reproduces the
+target's base-relative forms on its own: `&g_gpu_ctx.disp_env` = base+0x6A in SetDispMask, and
+the `g_gpu_ctx.draw_env = *env` struct copy = base+0xE plus the 16-byte movstr loop in
+PutDrawEnv/DrawOTagEnv. The `u8 *base` locals, the `_drawenv_q` manual copy loop and the
+`(GpuCtx *)&g_gpu_type` pun become unnecessary. First measured with an alias harness
+(tmp/PutDispEnv/gs/*.c: every natural spelling = only the unresolved-alias addend hunk), then on
+the real splice.
+- include/gpu.h: RECT, DR_ENV, DRAWENV, DISPENV (LIBGPU.H layouts) and `GpuCtx` (0x80 bytes), with
+  `extern GpuCtx g_gpu_ctx;` as the one C handle for 0x8009BE74..0x8009BEF3. The evidence comment
+  names ResetGraph's 0x80 clear and the base-relative addressing. Member names restate the owning
+  API: type, queue_mode, debug_level, reverse, width, height, unk08, drawsync_cb, draw_env, disp_env.
+- Every consumer is respelled through members. display.c (23 bodies): ClearOTag ClearOTagR DrawOTag
+  DrawOTagEnv DrawSync DrawSyncCallback GetDispEnv GetDrawEnv PutDispEnv(new) PutDrawEnv SetDispMask
+  SetDrawEnv SetDrawEnv2 _addque2 _clr _drs _dws checkRECT get_ce get_cs get_dx get_mode get_ofs.
+  gpu.c (6): GetGraphDebug GetGraphType ResetGraph SetGraphDebug SetGraphQueue SetGraphReverse.
+  Rewritten (not only renamed): SetDispMask (pointer local dropped), PutDrawEnv/DrawOTagEnv (typed
+  DRAWENV *env, struct copy), ResetGraph (GpuConfig pun + s0/idx locals dropped, sizeof()),
+  SetGraphReverse/SetGraphDebug/SetGraphQueue (pointer-alias locals dropped).
+- Removed: display.c's TU-local GpuCtx typedef and per-field externs, gpu.c's GpuConfig and
+  `extern u8 g_gpu_interlace;`, gpu.h's per-field externs.
+- Retired rows (C-only aliases; asm/data/7D920.data.s still carries its own dlabels for the
+  storage; _exeque.s's D_8009BE7C/D_8009BE80 need no rows): named_syms g_gpu_type..g_gpu_disp_env
+  (9 rows, replaced by g_gpu_ctx), g_gpu_loop_flag, g_gpu_disp_env_field_*; undefined_syms_auto
+  D_8009BE74/75/76/77/78/7A, D_8009BEE2/E6/EA/EE, g_gpu_type/interlace/draw_mode/draw_env/disp_env;
+  symbol_addrs g_gpu_* (9 rows, replaced by g_gpu_ctx).
+- Result: lock.ps1 rebuild SHA1 = oracle on the first try. sandbox --disable all = 0 with 0 hunks
+  on all 29 changed functions (tmp/PutDispEnv/gs/final_summary.txt).
+- Mechanism, dump-verified by the round-3 layer-2 reviewer (l2-PutDispEnv-r3):
+  memory/grind/PutDispEnv/evidence/cse-related-value.txt. In a SetDispMask probe, .rtl insn 32
+  `const(g_gpu_ctx+108)` becomes `plus(reg,106)` in .cse (cse.c use_related_value :1781).
+- Open cleanup leads, deliberately NOT in this landing because they would change reviewed bodies:
+  (b) type drawsync_cb as a function pointer (DrawSyncCallback/_addque2 treat it as u32);
+  (c) the `(u32 *)g_gpu_dev_table` word views in display.c/gpu.c (see the gpu.h GpuDevTable
+  comment on MEM_IN_STRUCT_P) -> GpuDevTable member calls, each to be measured.
+- Stale prose in named_syms.txt (the retired-name notes at 0x8007B244 / 0x8007B3A8 / 0x8007BAB4 and
+  the g_gpu_init_msg_buf comment) now names g_gpu_ctx members, a comment-only change.

@@ -1,0 +1,1 @@
+{"func": "SetDispMask", "addr": "8007B2A0", "verdict": "PASS", "body_hash": "2345a58dd88c52bf", "body_kind": "c", "file": "display", "reviewer": "l2-PutDispEnv-r3", "scope": "cheat-cleanup", "date": "2026-09-30T17:21:34Z", "head": "b5eb213dd", "notes": "round 3 PASS (PutDispEnv landing): consumer respelled through g_gpu_ctx members; one object over 0x8009BE74..F3; sandbox 0"}

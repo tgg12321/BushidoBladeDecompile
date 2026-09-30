@@ -32,15 +32,7 @@ replay_camera_check_stage_80060758 = 0x80060758;  /* MISNAMED: 2-halfword clear 
 g_sin_table = 0x800973FC;
 /* data-wave 2026-09-07: g_gpu_debug_func = 0x8009BE70 retired; GPU_printf is now object-defined */
 g_gpu_dev_table = 0x8009BE6C;
-g_gpu_type = 0x8009BE74;
-g_gpu_interlace = 0x8009BE75;
-g_gpu_debug_level = 0x8009BE76;
-g_gpu_dither = 0x8009BE77;
-g_gpu_disp_x = 0x8009BE78;
-g_gpu_disp_y = 0x8009BE7A;
-g_gpu_draw_mode = 0x8009BE80;
-g_gpu_draw_env = 0x8009BE84;
-g_gpu_disp_env = 0x8009BEE0;
+g_gpu_ctx = 0x8009BE74;
 g_gpu_ot_end = 0x8009BF30;
 g_gpu_stat_reg = 0x8009BF48;
 g_gpu_data_reg = 0x8009BF44;
@@ -1098,15 +1090,15 @@ eff_FrameUpdate                                         = 0x80061064;  /* per-fr
 /* Functions whose body is a clear single-purpose wrapper around a */
 /* named function with extra logic (clamp, walk list, set+return old). */
 /* RESET 0x8002906C: retired name 'snd_ClearAllSeBuffer' — preserved note: walks snd_GetSeId() list, zeroes +2 of each 0x10-byte entry until terminator */
-/* RENAME 0x8007B244: retired name 'gpu_DrawSyncCallback' — preserved note: PSX libgpu DrawSyncCallback: saves old g_gpu_draw_mode (= prev callback), sets new, returns old; debug-traces "DrawSyncCallback(%08x)" */
+/* RENAME 0x8007B244: retired name 'gpu_DrawSyncCallback' — preserved note: PSX libgpu DrawSyncCallback: saves old g_gpu_ctx.drawsync_cb (= prev callback), sets new, returns old; debug-traces "DrawSyncCallback(%08x)" */
 /* RENAME 0x80087F64: retired name 'snd_ChannelDmaFlush' — preserved note: if g_snd_ch_status[idx]==1: spu_DmaTransfer(g_snd_ch_addr[idx]), clear status, decrement g_snd_ch_count */
 /* RENAME 0x8008AD64: retired name 'spu_TransferDirect_capped' — preserved note: spu_TransferDirect(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
 /* RENAME 0x8008ADC4: retired name 'spu_TransferData_capped' — preserved note: spu_TransferData(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
 /* RESET 0x8008A904: retired name 'coli_HitPauseKatana_3' — preserved note: coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */
 
 /* === More GPU/display wrapper functions (2026-05-17) -- 2 highs === */
-/* RENAME 0x8007B3A8: retired name 'gpu_DebugCheckRect' — preserved note: PSX-style rect validator: at debug-level 1 validates against D_8009BE78/7A (screen w/h); logs "%s:bad RECT" + "(%d,%d)-(%d,%d)" via g_gpu_debug_func */
-/* RENAME 0x8007BAB4: retired name 'gpu_DrawOTagEnv' — preserved note: PSX libgpu DrawOTagEnv: copies _drawenv_q struct, submits via g_gpu_dev_table cmd 0x40; logs "DrawOTagEnv(%08x,%08x)" */
+/* RENAME 0x8007B3A8: retired name 'gpu_DebugCheckRect' — preserved note: PSX-style rect validator: at debug-level 1 validates against g_gpu_ctx.width/height; logs "%s:bad RECT" + "(%d,%d)-(%d,%d)" via g_gpu_debug_func */
+/* RENAME 0x8007BAB4: retired name 'gpu_DrawOTagEnv' — preserved note: PSX libgpu DrawOTagEnv: copies the DRAWENV into g_gpu_ctx.draw_env, submits via g_gpu_dev_table cmd 0x40; logs "DrawOTagEnv(%08x,%08x)" */
 
 /* === Practice-lesson state struct continued (2026-05-17) -- 5 highs === */
 /* From code6cac_b.c func_80033DF4 lines 3765-3783: each lesson entry */
@@ -1225,7 +1217,6 @@ _que                                 = 0x80103680;  /* function-pointer field (o
 g_gpu_packet_pending_arg1                               = 0x8009BF6C;  /* saved arg1 from last GPU-packet submit */
 g_gpu_motion_save_a                                     = 0x8009BF80;  /* motion_make_table(0) state saved during async draw */
 g_gpu_motion_save_b                                     = 0x8009BF88;  /* parallel motion_make_table save for outer caller */
-g_gpu_loop_flag                                         = 0x8009BE7C;  /* set to 1 during successful packet submit */
 g_gpu_status_alt_reg                                    = 0x8009BF60;  /* parallel GPU status reg; cleared and written 0x11000002 (GPU primitive header) */
 
 /* === Effect/physics object cluster (2026-05-17) -- 4 highs === */
@@ -1300,7 +1291,7 @@ g_text1b_render_color                                   = 0x800A3464;  /* 24-bit
 /* g_bitmask_table_5_8009BEF4 (5 entries) but is actually */
 /* g_gpu_mode_widths_table (parallel to the heights table below). */
 g_gpu_mode_heights_table                                = 0x8009BF08;  /* 5 s16/s32 height values indexed by GPU mode (paired with widths table at BEF4); s0->height = D[idx] */
-g_gpu_init_msg_buf                                      = 0x8009BE2C;  /* passed as buffer to debug_printf along with &g_gpu_type at gpu init time */
+g_gpu_init_msg_buf                                      = 0x8009BE2C;  /* passed as buffer to debug_printf along with &g_gpu_ctx at gpu init time */
 
 /* === code6cac.c game-state cluster (2026-05-17) -- 9 highs === */
 /* From code6cac.c around lines 827-1500: various game/audio/stage state */
@@ -2995,10 +2986,6 @@ g_scratchpad_ptr_24_1F800024                       = 0x1F800024;  /* 6 refs; scr
 g_scratchpad_ptr_28_1F800028                       = 0x1F800028;  /* 6 refs; scratchpad RAM offset 0x28 */
 g_scratchpad_ptr_58_1F800058                       = 0x1F800058;  /* 6 refs; scratchpad RAM offset 0x58 */
 g_scratchpad_ptr_60_1F800060                       = 0x1F800060;  /* 6 refs; scratchpad RAM offset 0x60 */
-g_gpu_disp_env_field_e2_8009BEE2                   = 0x8009BEE2;  /* 7 refs; first of 4-field 4-byte-stride cluster */
-g_gpu_disp_env_field_e6_8009BEE6                   = 0x8009BEE6;  /* 7 refs; +4 stride */
-g_gpu_disp_env_field_ea_8009BEEA                   = 0x8009BEEA;  /* 7 refs; +4 stride */
-g_gpu_disp_env_field_ee_8009BEEE                   = 0x8009BEEE;  /* 7 refs; +4 final */
 g_game_state_field_0_800A3258                      = 0x800A3258;  /* 7 refs; first of 3-field 4-byte-stride cluster */
 g_game_state_field_4_800A325C                      = 0x800A325C;  /* 7 refs; +4 stride */
 g_game_state_field_8_800A3260                      = 0x800A3260;  /* 7 refs; +4 final field */

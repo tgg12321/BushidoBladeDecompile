@@ -24,7 +24,6 @@ typedef struct {
 
 /* Named globals */
 extern void (*GPU_printf)();
-extern u8 g_gpu_debug_level;
 /* PsyQ libgpu device table ("gpu" in the SDK's sys.c): a 0x40-byte struct of
  * function pointers, the object at D_8009BE2C, reached through the pointer
  * g_gpu_dev_table (0x8009BE6C).  Member names/offsets are the PsyQ ones; every
@@ -57,10 +56,63 @@ typedef struct GpuDevTable {
 } GpuDevTable;
 
 extern GpuDevTable *g_gpu_dev_table;
-extern s16 g_gpu_disp_x;
-extern s16 g_gpu_disp_y;
-extern u8 g_gpu_dither;
-extern u8 g_gpu_type;
+
+/* PsyQ LIBGPU.H environment types (public header layouts). */
+typedef struct {
+    s16 x, y, w, h;
+} RECT;
+
+typedef struct {
+    u32 tag;
+    u32 code[15];
+} DR_ENV; /* 0x40 */
+
+typedef struct {
+    RECT clip;     /* +0x00 */
+    s16 ofs[2];    /* +0x08 */
+    RECT tw;       /* +0x0C */
+    u16 tpage;     /* +0x14 */
+    u8 dtd;        /* +0x16 */
+    u8 dfe;        /* +0x17 */
+    u8 isbg;       /* +0x18 */
+    u8 r0, g0, b0; /* +0x19 */
+    DR_ENV dr_env; /* +0x1C */
+} DRAWENV; /* 0x5C */
+
+typedef struct {
+    RECT disp;   /* +0x00 */
+    RECT screen; /* +0x08 */
+    u8 isinter;  /* +0x10 */
+    u8 isrgb24;  /* +0x11 */
+    u8 pad0;     /* +0x12 */
+    u8 pad1;     /* +0x13 */
+} DISPENV; /* 0x14 */
+
+/* libgpu SYS state block: one 0x80-byte object at 0x8009BE74 (the one C handle
+ * for these bytes). Evidence that it is one object: ResetGraph clears 0x80 bytes
+ * from its base and then re-fills +0x10 (0x5C) and +0x6C (0x14); SetDispMask,
+ * PutDrawEnv and DrawOTagEnv address disp_env / draw_env off the register that
+ * holds &debug_level (+0x6A, +0xE), which cse's related-value addressing only
+ * does for offsets of ONE symbol. Member names restate the API that owns each
+ * field: GetGraphType/_reset (type), SetGraphQueue (queue_mode), SetGraphDebug
+ * (debug_level), SetGraphReverse (reverse; get_dx mirrors x when set),
+ * ResetGraph's per-type limit tables + the clamps in checkRECT/get_cs/_clr
+ * (width/height), DrawSyncCallback (drawsync_cb), GetDrawEnv/PutDrawEnv
+ * (draw_env), GetDispEnv/PutDispEnv (disp_env). unk08 is set to 1 by _addque2. */
+typedef struct {
+    u8 type;         /* +0x00 */
+    u8 queue_mode;   /* +0x01 */
+    u8 debug_level;  /* +0x02 */
+    u8 reverse;      /* +0x03 */
+    s16 width;       /* +0x04 */
+    s16 height;      /* +0x06 */
+    s32 unk08;       /* +0x08 */
+    u32 drawsync_cb; /* +0x0C */
+    DRAWENV draw_env; /* +0x10 */
+    DISPENV disp_env; /* +0x6C */
+} GpuCtx; /* 0x80 */
+
+extern GpuCtx g_gpu_ctx;
 
 /* Functions */
 extern void gpu_SetDispMaskOn(void);
