@@ -16,3 +16,9 @@ Consumer census (2026-09-30 grep) that a complete merge must respell (each byte-
 Proposed: one declaration each (`D_801027B0[][5]`, `D_800A3860[]`), every consumer through elements, per-word
 externs and splat rows retired (or suffixed "retire with <asm sibling>" where an INCLUDE_ASM .s still names
 them), and ownership evidence or removal for D_80010428. Not measured yet; waits for laneE (code6cac_tu2.c).
+
+Consumer-to-function map (2026-09-30): :2877 func_80020D70; :2886/:2889 func_80021210; :3143/:3154/:3162/:3169
+func_80021904 / func_80021974 / func_800219E4 / func_80021A3C (all four also read the 0x80101EC8 player records
+through `(u8 *)&D_80101F12 + a0 * 1100`-style per-use puns, so a clean respell of them is its own cleanup);
+:3193/:3196 func_80021A98; :3742/:3746 func_80022F34. Size: ~8 functions in code6cac_tu2.c + 2 in other files —
+a dedicated cleanup session, each function sandbox-0 and one layer-2 over the set.
