@@ -1,5 +1,7 @@
 void func_80036140(void) {
     CdlATV atv;
+    s16 *pE9C = &D_80101E9C;
+    s32 *pEA4 = &D_80101EA4;
 
     if (D_800A3854 > 0) {
         atv.val0 = (D_800A36B8.val0 * D_800A3840 + g_cd_atv.val0 * (D_800A3854 - D_800A3840)) / D_800A3854;
@@ -19,7 +21,7 @@ void func_80036140(void) {
         CdControlF(0xE, (s32)&D_80101E58.rec.unk30);
         D_80101E58.rec.unk28 = 0;
         D_80101E58.rec.unk2C = 0;
-        D_80101E58.rec.unk44 = 0;
+        *pEA4 = 0;
         D_80101E58.rec.unk02 = 0x11;
         break;
     case 0x11: {
@@ -58,7 +60,7 @@ void func_80036140(void) {
     case 0x14: {
         s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
-            D_80101E58.rec.unk3C = 0;
+            *pE9C = 0;
             D_80101E58.rec.unk02 = 0x15;
         } else if (ret == 5) {
             D_80101E58.rec.unk02 = 0x17;
@@ -84,7 +86,7 @@ void func_80036140(void) {
             s32 ret = CdReady(1, g_cd_result);
             if (ret == 1) {
                 if (!(g_cd_result[4] & 0x80)) {
-                    D_80101E58.rec.unk3C = 0;
+                    *pE9C = 0;
                     if (CdPosToInt((s32)&g_cd_result[3]) >= D_80101E58.rec.unk14) {
                         cdrom_SetMix(0, 0, 0, 0);
                         D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
@@ -94,14 +96,14 @@ void func_80036140(void) {
                 D_80101E58.rec.unk02 = 0x17;
             }
         }
-        if (D_80101E58.rec.unk3C++ > 0x3C) {
+        if (*pE9C++ > 0x3C) {
             D_80101E58.rec.unk02 = 0x17;
         }
         break;
     case 0x16:
-        if (D_80101E58.rec.unk44 != 0) {
-            D_80101E58.rec.unk44 -= 4;
-            if (D_80101E58.rec.unk44 <= 0) {
+        if (*pEA4 != 0) {
+            *pEA4 -= 4;
+            if (*pEA4 <= 0) {
                 cdrom_SetMix(0, 0, 0, 0);
                 D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
                 break;
@@ -117,8 +119,8 @@ void func_80036140(void) {
                         cdrom_SetMix(0, 0, 0, 0);
                         D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
                     } else if (pos >= D_80101E58.rec.unk14 - 0x96) {
-                        if (D_80101E58.rec.unk44 == 0) {
-                            D_80101E58.rec.unk44 = D_80101E58.rec.unk14 - pos;
+                        if (*pEA4 == 0) {
+                            *pEA4 = D_80101E58.rec.unk14 - pos;
                         }
                     }
                 }

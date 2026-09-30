@@ -230,3 +230,35 @@ declared separately because no proof places them in the object — not proven se
 sweep's E58..EA3-as-one-object row also scores 0).
 A future landing of this function must re-prove any object over those bytes from scratch; the
 current CdState evidence is memory/grind/cdrom_StartAudio/evidence.md.
+
+## 2026-09-30 evening (laneB) — Q62 global COMMON model: the body closes; CdState re-extended by necessity
+CURRENT STATE — supersedes the "REVERTED" floor 16 above. Artifacts: `q62/` (tools, runs, dumps).
+- Owner Q62 (substrate 1ffaa7b71: maspsx parses cc1's three-field `.comm`, `--use-comm-section` for every
+  file; maspsx_comm_syms.txt empty) — first users cdrom_SetMix / func_80035F78 (f73f76504). This function
+  needs the same three tentative definitions in its own -G8 unit src/code6cac_b5.c: `CdlATV g_cd_atv;`,
+  `CdlATV D_800A36B8;`, `u8 g_cd_result[8];` (base gp-relative, +1..+5 lui/%lo, as in the shipped words).
+- Body: `candidate.c` == `q62/body_q62.c` == the banked cheated-comm-gate-body.c text minus its header
+  comment — no body change; only the declaration model changes.
+- CdState: Q43 dropped 0x80101E9C..0x80101EA7 because its proof rested on this function. Re-proven here
+  under the Q62 model (no gate), scratch whole-file builds on the exact recipes (`q62/runs.txt`):
+  | E9C / EA4 model | func_80036140 | others (b5, b4_post, b5_post) |
+  |---|---|---|
+  | CdState through 0x80101EA7 (ext) | 2 = the jtbl `lw %lo` operand only (section reloc vs the reference's jtbl symbol; settled by the link) | all 0 |
+  | CdState through E9F, EA0/EA4 separate (ext48) / through EA3, EA4 separate (ext4C) | 8 / 8 | all 0 |
+  | separate variables (sep) | 18 | all 0 |
+  | sep + block-local pointer RMW (body_ptr.c) | 18 | all 0 |
+  | sep + function-scope pointer aliases (body_alias.c) | 43 | all 0 |
+  | separate 12-byte record at E9C (sep12) | 8 | cdrom_ReadyCallback 12 |
+  Mechanism dumps (build cc1, -G8, `q62/dumps/`): sep_ptr_G8 .cse insns 713/717 — the pointer is folded
+  back to `(mem:HI (symbol_ref/v "D_80101E9C"))` (small-data symbol, address cost 1, cse find_best_addr);
+  ext_rec_G8 .cse insns 715-721 — `(reg 279) = (const (plus D_80101E58 68))`, load and store through
+  `(mem/s:HI (reg 279))` = the target's `la; lhu 0(v0); ...; sh 0(v0)`.
+  E9A: inside the proven 0x44 object; member `s16 unk3A` (sh 80036548; lhu 80036778 + sh 80036788, then
+  sll/sra 16 + slti 0x1F at 8003678C-94 = signed). E9E u16 / EA0 s32 forced-in members per Q13/Q14 (member
+  evidence landing/member_table.md); Q14 byte-identity re-checked on the landed shape: `q62/q14_s32_vs_u32.txt`
+  (b4_post, b5, b5_post objects identical).
+- Scratch full clean build of HEAD 1e3891343 + `q62/tools/land.py` (header, b5 splice, consumer respells
+  cdrom_ReadyCallback / func_80036940 -> rec.expected_pos, cdrom_StartRead / game_FrameLoop -> rec.unk3E,
+  24 retired symbol rows): SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+- sdata_funcs.txt: func_80036140's pre-existing row (as cdrom_SetMix / func_80035F78 / func_80036940) is
+  load-bearing (without it 22) — the project's gp-function list, not a per-symbol gate; no sdata_exclude row.

@@ -1,0 +1,636 @@
+34,36c34,36
+< 			6c: R_MIPS_HI16	D_800A36B9
+< 	lbu	v0,0(v0)
+< 			70: R_MIPS_LO16	D_800A36B9
+---
+> 			6c: R_MIPS_HI16	D_800A36B8
+> 	lbu	v0,1(v0)
+> 			70: R_MIPS_LO16	D_800A36B8
+41,43c41,43
+< 			80: R_MIPS_HI16	g_cd_atv_plus_0x1
+< 	lbu	v0,0(v0)
+< 			84: R_MIPS_LO16	g_cd_atv_plus_0x1
+---
+> 			80: R_MIPS_HI16	g_cd_atv
+> 	lbu	v0,1(v0)
+> 			84: R_MIPS_LO16	g_cd_atv
+61,63c61,63
+< 			c8: R_MIPS_HI16	D_800A36BA
+< 	lbu	v0,0(v0)
+< 			cc: R_MIPS_LO16	D_800A36BA
+---
+> 			c8: R_MIPS_HI16	D_800A36B8
+> 	lbu	v0,2(v0)
+> 			cc: R_MIPS_LO16	D_800A36B8
+68,70c68,70
+< 			dc: R_MIPS_HI16	g_cd_atv_plus_0x2
+< 	lbu	v0,0(v0)
+< 			e0: R_MIPS_LO16	g_cd_atv_plus_0x2
+---
+> 			dc: R_MIPS_HI16	g_cd_atv
+> 	lbu	v0,2(v0)
+> 			e0: R_MIPS_LO16	g_cd_atv
+88,90c88,90
+< 			124: R_MIPS_HI16	D_800A36BB
+< 	lbu	v0,0(v0)
+< 			128: R_MIPS_LO16	D_800A36BB
+---
+> 			124: R_MIPS_HI16	D_800A36B8
+> 	lbu	v0,3(v0)
+> 			128: R_MIPS_LO16	D_800A36B8
+95,97c95,97
+< 			138: R_MIPS_HI16	g_cd_atv_plus_0x3
+< 	lbu	v0,0(v0)
+< 			13c: R_MIPS_LO16	g_cd_atv_plus_0x3
+---
+> 			138: R_MIPS_HI16	g_cd_atv
+> 	lbu	v0,3(v0)
+> 			13c: R_MIPS_LO16	g_cd_atv
+149,151c149,151
+< 			1e4: R_MIPS_HI16	D_80101E62
+< 	lhu	v0,0(v0)
+< 			1e8: R_MIPS_LO16	D_80101E62
+---
+> 			1e4: R_MIPS_HI16	D_80101E58
+> 	lhu	v0,10(v0)
+> 			1e8: R_MIPS_LO16	D_80101E58
+157c157
+< 	beqz	v0,7ec <.L800368E0+0x4c>
+---
+> 	beqz	v0,7ec <func_80036140+0x7ec>
+160c160
+< 			208: R_MIPS_HI16	jtbl_80010938
+---
+> 			208: R_MIPS_HI16	.rodata
+163c163
+< 			210: R_MIPS_LO16	jtbl_80010938
+---
+> 			210: R_MIPS_LO16	.rodata
+167,168d166
+< 
+< 00000220 <.L80036360>:
+176,178c174,176
+< 			234: R_MIPS_HI16	D_80101E90
+< 	addiu	a1,a1,0
+< 			238: R_MIPS_LO16	D_80101E90
+---
+> 			234: R_MIPS_HI16	D_80101E58
+> 	addiu	a1,a1,56
+> 			238: R_MIPS_LO16	D_80101E58
+183,194c181,192
+< 			244: R_MIPS_HI16	D_80101E88
+< 	sw	zero,0(at)
+< 			248: R_MIPS_LO16	D_80101E88
+< 	lui	at,0x0
+< 			24c: R_MIPS_HI16	D_80101E8C
+< 	sw	zero,0(at)
+< 			250: R_MIPS_LO16	D_80101E8C
+< 	lui	at,0x0
+< 			254: R_MIPS_HI16	D_80101EA4
+< 	sw	zero,0(at)
+< 			258: R_MIPS_LO16	D_80101EA4
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 			244: R_MIPS_HI16	D_80101E58
+> 	sw	zero,48(at)
+> 			248: R_MIPS_LO16	D_80101E58
+> 	lui	at,0x0
+> 			24c: R_MIPS_HI16	D_80101E58
+> 	sw	zero,52(at)
+> 			250: R_MIPS_LO16	D_80101E58
+> 	lui	at,0x0
+> 			254: R_MIPS_HI16	D_80101E58
+> 	sw	zero,76(at)
+> 			258: R_MIPS_LO16	D_80101E58
+> 	j	7e4 <func_80036140+0x7e4>
+197,198d194
+< 
+< 00000264 <.L800363A4>:
+208c204
+< 	bne	v1,v0,7dc <.L800368E0+0x3c>
+---
+> 	bne	v1,v0,7dc <func_80036140+0x7dc>
+211,213c207,209
+< 			284: R_MIPS_HI16	g_cd_loc
+< 	addiu	a1,a1,0
+< 			288: R_MIPS_LO16	g_cd_loc
+---
+> 			284: R_MIPS_HI16	D_80101E58
+> 	addiu	a1,a1,20
+> 			288: R_MIPS_LO16	D_80101E58
+217c213
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+220,221d215
+< 
+< 0000029c <.L800363DC>:
+223,225c217,219
+< 			29c: R_MIPS_HI16	D_80101E8C
+< 	addiu	v1,v1,0
+< 			2a0: R_MIPS_LO16	D_80101E8C
+---
+> 			29c: R_MIPS_HI16	D_80101E58
+> 	addiu	v1,v1,52
+> 			2a0: R_MIPS_LO16	D_80101E58
+231c225
+< 	bnez	v0,7ec <.L800368E0+0x4c>
+---
+> 	bnez	v0,7ec <func_80036140+0x7ec>
+242c236
+< 	bne	v1,v0,7dc <.L800368E0+0x3c>
+---
+> 	bne	v1,v0,7dc <func_80036140+0x7dc>
+248c242
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+251,252d244
+< 
+< 000002f4 <.L80036434>:
+262c254
+< 	bne	v1,v0,7dc <.L800368E0+0x3c>
+---
+> 	bne	v1,v0,7dc <func_80036140+0x7dc>
+265,267c257,259
+< 			314: R_MIPS_HI16	D_80101E64
+< 	lh	v0,0(v0)
+< 			318: R_MIPS_LO16	D_80101E64
+---
+> 			314: R_MIPS_HI16	D_80101E58
+> 	lh	v0,12(v0)
+> 			318: R_MIPS_LO16	D_80101E58
+269c261
+< 	bnez	v0,7ec <.L800368E0+0x4c>
+---
+> 	bnez	v0,7ec <func_80036140+0x7ec>
+272,274c264,266
+< 			328: R_MIPS_HI16	D_80101E94
+< 	lw	v0,0(v0)
+< 			32c: R_MIPS_LO16	D_80101E94
+---
+> 			328: R_MIPS_HI16	D_80101E58
+> 	lw	v0,60(v0)
+> 			32c: R_MIPS_LO16	D_80101E58
+276c268
+< 	beqz	v0,340 <.L80036434+0x4c>
+---
+> 	beqz	v0,340 <func_80036140+0x340>
+282c274
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+285,286d276
+< 
+< 00000350 <.L80036490>:
+296c286
+< 	bne	v1,v0,7dc <.L800368E0+0x3c>
+---
+> 	bne	v1,v0,7dc <func_80036140+0x7dc>
+299,302c289,292
+< 			370: R_MIPS_HI16	D_80101E9C
+< 	sh	zero,0(at)
+< 			374: R_MIPS_LO16	D_80101E9C
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 			370: R_MIPS_HI16	D_80101E58
+> 	sh	zero,68(at)
+> 			374: R_MIPS_LO16	D_80101E58
+> 	j	7e4 <func_80036140+0x7e4>
+305,306d294
+< 
+< 00000380 <.L800364C0>:
+308,310c296,298
+< 			380: R_MIPS_HI16	D_80101E88
+< 	addiu	s0,s0,0
+< 			384: R_MIPS_LO16	D_80101E88
+---
+> 			380: R_MIPS_HI16	D_80101E58
+> 	addiu	s0,s0,48
+> 			384: R_MIPS_LO16	D_80101E58
+314c302
+< 	bne	v0,v1,3b0 <.L800364C0+0x30>
+---
+> 	bne	v0,v1,3b0 <func_80036140+0x3b0>
+323,325c311,313
+< 			3b0: R_MIPS_HI16	D_80101E68
+< 	lh	v0,0(v0)
+< 			3b4: R_MIPS_LO16	D_80101E68
+---
+> 			3b0: R_MIPS_HI16	D_80101E58
+> 	lh	v0,16(v0)
+> 			3b4: R_MIPS_LO16	D_80101E58
+327c315
+< 	beqz	v0,3d8 <.L800364C0+0x58>
+---
+> 	beqz	v0,3d8 <func_80036140+0x3d8>
+332c320
+< 	beqz	v0,7e4 <.L800368E0+0x44>
+---
+> 	beqz	v0,7e4 <func_80036140+0x7e4>
+335,337c323,325
+< 			3d8: R_MIPS_HI16	D_80101E62
+< 	addiu	s0,s0,0
+< 			3dc: R_MIPS_LO16	D_80101E62
+---
+> 			3d8: R_MIPS_HI16	D_80101E58
+> 	addiu	s0,s0,10
+> 			3dc: R_MIPS_LO16	D_80101E58
+339,341c327,329
+< 			3e0: R_MIPS_HI16	D_80101E94
+< 	lw	v1,0(v1)
+< 			3e4: R_MIPS_LO16	D_80101E94
+---
+> 			3e0: R_MIPS_HI16	D_80101E58
+> 	lw	v1,60(v1)
+> 			3e4: R_MIPS_LO16	D_80101E58
+343c331
+< 	beqz	v1,414 <.L800364C0+0x94>
+---
+> 	beqz	v1,414 <func_80036140+0x414>
+353,356c341,344
+< 			404: R_MIPS_HI16	D_80101E9A
+< 	sh	zero,0(at)
+< 			408: R_MIPS_LO16	D_80101E9A
+< 	j	7ec <.L800368E0+0x4c>
+---
+> 			404: R_MIPS_HI16	D_80101E58
+> 	sh	zero,66(at)
+> 			408: R_MIPS_LO16	D_80101E58
+> 	j	7ec <func_80036140+0x7ec>
+372c360
+< 	bne	v1,v0,4b8 <.L800364C0+0x138>
+---
+> 	bne	v1,v0,4b8 <func_80036140+0x4b8>
+375,377c363,365
+< 			440: R_MIPS_HI16	g_cd_result_plus_0x4
+< 	lbu	v0,0(v0)
+< 			444: R_MIPS_LO16	g_cd_result_plus_0x4
+---
+> 			440: R_MIPS_HI16	g_cd_result
+> 	lbu	v0,4(v0)
+> 			444: R_MIPS_LO16	g_cd_result
+380c368
+< 	bnez	v0,4c4 <.L800364C0+0x144>
+---
+> 	bnez	v0,4c4 <func_80036140+0x4c4>
+383,389c371,377
+< 			458: R_MIPS_HI16	g_cd_result_plus_0x3
+< 	addiu	a0,a0,0
+< 			45c: R_MIPS_LO16	g_cd_result_plus_0x3
+< 	lui	at,0x0
+< 			460: R_MIPS_HI16	D_80101E9C
+< 	sh	zero,0(at)
+< 			464: R_MIPS_LO16	D_80101E9C
+---
+> 			458: R_MIPS_HI16	g_cd_result
+> 	addiu	a0,a0,3
+> 			45c: R_MIPS_LO16	g_cd_result
+> 	lui	at,0x0
+> 			460: R_MIPS_HI16	D_80101E58
+> 	sh	zero,68(at)
+> 			464: R_MIPS_LO16	D_80101E58
+394,396c382,384
+< 			470: R_MIPS_HI16	D_80101E74
+< 	lw	v1,0(v1)
+< 			474: R_MIPS_LO16	D_80101E74
+---
+> 			470: R_MIPS_HI16	D_80101E58
+> 	lw	v1,28(v1)
+> 			474: R_MIPS_LO16	D_80101E58
+399c387
+< 	bnez	v0,4c4 <.L800364C0+0x144>
+---
+> 	bnez	v0,4c4 <func_80036140+0x4c4>
+407,409c395,397
+< 			498: R_MIPS_HI16	D_80101E6A
+< 	lh	v0,0(v0)
+< 			49c: R_MIPS_LO16	D_80101E6A
+---
+> 			498: R_MIPS_HI16	D_80101E58
+> 	lh	v0,18(v0)
+> 			49c: R_MIPS_LO16	D_80101E58
+411c399
+< 	beqz	v0,4b0 <.L800364C0+0x130>
+---
+> 	beqz	v0,4b0 <func_80036140+0x4b0>
+414c402
+< 	j	4c4 <.L800364C0+0x144>
+---
+> 	j	4c4 <func_80036140+0x4c4>
+417c405
+< 	bne	v1,v0,4c4 <.L800364C0+0x144>
+---
+> 	bne	v1,v0,4c4 <func_80036140+0x4c4>
+421,423c409,411
+< 			4c4: R_MIPS_HI16	D_80101E9C
+< 	addiu	v0,v0,0
+< 			4c8: R_MIPS_LO16	D_80101E9C
+---
+> 			4c4: R_MIPS_HI16	D_80101E58
+> 	addiu	v0,v0,68
+> 			4c8: R_MIPS_LO16	D_80101E58
+430c418
+< 	bnez	v1,7ec <.L800368E0+0x4c>
+---
+> 	bnez	v1,7ec <func_80036140+0x7ec>
+432c420
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+435,436d422
+< 
+< 000004f4 <.L80036634>:
+438,440c424,426
+< 			4f4: R_MIPS_HI16	D_80101EA4
+< 	addiu	v1,v1,0
+< 			4f8: R_MIPS_LO16	D_80101EA4
+---
+> 			4f4: R_MIPS_HI16	D_80101E58
+> 	addiu	v1,v1,76
+> 			4f8: R_MIPS_LO16	D_80101E58
+443c429
+< 	beqz	v0,550 <.L80036634+0x5c>
+---
+> 	beqz	v0,550 <func_80036140+0x550>
+445c431
+< 	bgtz	v0,550 <.L80036634+0x5c>
+---
+> 	bgtz	v0,550 <func_80036140+0x550>
+454,456c440,442
+< 			528: R_MIPS_HI16	D_80101E6A
+< 	lh	v0,0(v0)
+< 			52c: R_MIPS_LO16	D_80101E6A
+---
+> 			528: R_MIPS_HI16	D_80101E58
+> 	lh	v0,18(v0)
+> 			52c: R_MIPS_LO16	D_80101E58
+458c444
+< 	beqz	v0,540 <.L80036634+0x4c>
+---
+> 	beqz	v0,540 <func_80036140+0x540>
+462,465c448,451
+< 			540: R_MIPS_HI16	D_80101E62
+< 	sh	v1,0(at)
+< 			544: R_MIPS_LO16	D_80101E62
+< 	j	7ec <.L800368E0+0x4c>
+---
+> 			540: R_MIPS_HI16	D_80101E58
+> 	sh	v1,10(at)
+> 			544: R_MIPS_LO16	D_80101E58
+> 	j	7ec <func_80036140+0x7ec>
+477c463
+< 	bne	v1,v0,618 <.L80036634+0x124>
+---
+> 	bne	v1,v0,618 <func_80036140+0x618>
+480,482c466,468
+< 			570: R_MIPS_HI16	D_80101E62
+< 	addiu	s0,s0,0
+< 			574: R_MIPS_LO16	D_80101E62
+---
+> 			570: R_MIPS_HI16	D_80101E58
+> 	addiu	s0,s0,10
+> 			574: R_MIPS_LO16	D_80101E58
+484,486c470,472
+< 			578: R_MIPS_HI16	D_80101E94
+< 	lw	v1,0(v1)
+< 			57c: R_MIPS_LO16	D_80101E94
+---
+> 			578: R_MIPS_HI16	D_80101E58
+> 	lw	v1,60(v1)
+> 			57c: R_MIPS_LO16	D_80101E58
+488c474
+< 	beqz	v1,7ec <.L800368E0+0x4c>
+---
+> 	beqz	v1,7ec <func_80036140+0x7ec>
+491,493c477,479
+< 			58c: R_MIPS_HI16	g_cd_result_plus_0x5
+< 	addiu	a0,a0,0
+< 			590: R_MIPS_LO16	g_cd_result_plus_0x5
+---
+> 			58c: R_MIPS_HI16	g_cd_result
+> 	addiu	a0,a0,5
+> 			590: R_MIPS_LO16	g_cd_result
+498,500c484,486
+< 			59c: R_MIPS_HI16	D_80101E74
+< 	lw	a0,0(a0)
+< 			5a0: R_MIPS_LO16	D_80101E74
+---
+> 			59c: R_MIPS_HI16	D_80101E58
+> 	lw	a0,28(a0)
+> 			5a0: R_MIPS_LO16	D_80101E58
+503c489
+< 	bnez	v0,5e8 <.L80036634+0xf4>
+---
+> 	bnez	v0,5e8 <func_80036140+0x5e8>
+512,514c498,500
+< 			5c8: R_MIPS_HI16	D_80101E6A
+< 	lh	v0,0(v0)
+< 			5cc: R_MIPS_LO16	D_80101E6A
+---
+> 			5c8: R_MIPS_HI16	D_80101E58
+> 	lh	v0,18(v0)
+> 			5cc: R_MIPS_LO16	D_80101E58
+516c502
+< 	beqz	v0,5e0 <.L80036634+0xec>
+---
+> 	beqz	v0,5e0 <func_80036140+0x5e0>
+519c505
+< 	j	7ec <.L800368E0+0x4c>
+---
+> 	j	7ec <func_80036140+0x7ec>
+523c509
+< 	bnez	v0,7ec <.L800368E0+0x4c>
+---
+> 	bnez	v0,7ec <func_80036140+0x7ec>
+526,528c512,514
+< 			5f4: R_MIPS_HI16	D_80101EA4
+< 	lw	v0,0(v0)
+< 			5f8: R_MIPS_LO16	D_80101EA4
+---
+> 			5f4: R_MIPS_HI16	D_80101E58
+> 	lw	v0,76(v0)
+> 			5f8: R_MIPS_LO16	D_80101E58
+530c516
+< 	bnez	v0,7ec <.L800368E0+0x4c>
+---
+> 	bnez	v0,7ec <func_80036140+0x7ec>
+533,536c519,522
+< 			608: R_MIPS_HI16	D_80101EA4
+< 	sw	v0,0(at)
+< 			60c: R_MIPS_LO16	D_80101EA4
+< 	j	7ec <.L800368E0+0x4c>
+---
+> 			608: R_MIPS_HI16	D_80101E58
+> 	sw	v0,76(at)
+> 			60c: R_MIPS_LO16	D_80101E58
+> 	j	7ec <func_80036140+0x7ec>
+539c525
+< 	beq	v1,v0,7e4 <.L800368E0+0x44>
+---
+> 	beq	v1,v0,7e4 <func_80036140+0x7e4>
+542,544c528,530
+< 			620: R_MIPS_HI16	D_80101E94
+< 	lw	v0,0(v0)
+< 			624: R_MIPS_LO16	D_80101E94
+---
+> 			620: R_MIPS_HI16	D_80101E58
+> 	lw	v0,60(v0)
+> 			624: R_MIPS_LO16	D_80101E58
+546c532
+< 	beqz	v0,7ec <.L800368E0+0x4c>
+---
+> 	beqz	v0,7ec <func_80036140+0x7ec>
+549,551c535,537
+< 			634: R_MIPS_HI16	D_80101E9A
+< 	lhu	v0,0(v0)
+< 			638: R_MIPS_LO16	D_80101E9A
+---
+> 			634: R_MIPS_HI16	D_80101E58
+> 	lhu	v0,66(v0)
+> 			638: R_MIPS_LO16	D_80101E58
+555,557c541,543
+< 			644: R_MIPS_HI16	D_80101E9A
+< 	sh	v0,0(at)
+< 			648: R_MIPS_LO16	D_80101E9A
+---
+> 			644: R_MIPS_HI16	D_80101E58
+> 	sh	v0,66(at)
+> 			648: R_MIPS_LO16	D_80101E58
+561c547
+< 	bnez	v0,7ec <.L800368E0+0x4c>
+---
+> 	bnez	v0,7ec <func_80036140+0x7ec>
+566c552
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+569,570d554
+< 
+< 00000670 <.L800367B0>:
+581c565
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+584,585d567
+< 
+< 00000698 <.L800367D8>:
+595c577
+< 	bne	v1,v0,7dc <.L800368E0+0x3c>
+---
+> 	bne	v1,v0,7dc <func_80036140+0x7dc>
+598,601c580,583
+< 			6b8: R_MIPS_HI16	D_80101E88
+< 	sw	zero,0(at)
+< 			6bc: R_MIPS_LO16	D_80101E88
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 			6b8: R_MIPS_HI16	D_80101E58
+> 	sw	zero,48(at)
+> 			6bc: R_MIPS_LO16	D_80101E58
+> 	j	7e4 <func_80036140+0x7e4>
+604,605d585
+< 
+< 000006c8 <.L80036808>:
+607,609c587,589
+< 			6c8: R_MIPS_HI16	D_80101E88
+< 	addiu	v1,v1,0
+< 			6cc: R_MIPS_LO16	D_80101E88
+---
+> 			6c8: R_MIPS_HI16	D_80101E58
+> 	addiu	v1,v1,48
+> 			6cc: R_MIPS_LO16	D_80101E58
+615c595
+< 	bnez	v0,7ec <.L800368E0+0x4c>
+---
+> 	bnez	v0,7ec <func_80036140+0x7ec>
+618,621c598,601
+< 			6ec: R_MIPS_HI16	D_80101E62
+< 	sh	zero,0(at)
+< 			6f0: R_MIPS_LO16	D_80101E62
+< 	j	7ec <.L800368E0+0x4c>
+---
+> 			6ec: R_MIPS_HI16	D_80101E58
+> 	sh	zero,10(at)
+> 			6f0: R_MIPS_LO16	D_80101E58
+> 	j	7ec <func_80036140+0x7ec>
+624,625d603
+< 
+< 000006fc <.L8003683C>:
+636c614
+< 	bnez	v0,7e4 <.L800368E0+0x44>
+---
+> 	bnez	v0,7e4 <func_80036140+0x7e4>
+638c616
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+641,642d618
+< 
+< 0000072c <.L8003686C>:
+647c623
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+650,651d625
+< 
+< 00000740 <.L80036880>:
+661c635
+< 	bne	v1,v0,77c <.L80036880+0x3c>
+---
+> 	bne	v1,v0,77c <func_80036140+0x77c>
+667c641
+< 	bnez	v0,7e4 <.L800368E0+0x44>
+---
+> 	bnez	v0,7e4 <func_80036140+0x7e4>
+669c643
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+672c646
+< 	bne	v1,v0,7ec <.L800368E0+0x4c>
+---
+> 	bne	v1,v0,7ec <func_80036140+0x7ec>
+674c648
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+677,678d650
+< 
+< 0000078c <.L800368CC>:
+683c655
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+686,687d657
+< 
+< 000007a0 <.L800368E0>:
+697c667
+< 	bne	v1,v0,7d8 <.L800368E0+0x38>
+---
+> 	bne	v1,v0,7d8 <func_80036140+0x7d8>
+700,702c670,672
+< 			7c0: R_MIPS_HI16	D_80101E68
+< 	lh	v0,0(v0)
+< 			7c4: R_MIPS_LO16	D_80101E68
+---
+> 			7c0: R_MIPS_HI16	D_80101E58
+> 	lh	v0,16(v0)
+> 			7c4: R_MIPS_LO16	D_80101E58
+705c675
+< 	j	7e4 <.L800368E0+0x44>
+---
+> 	j	7e4 <func_80036140+0x7e4>
+709c679
+< 	bne	v1,v0,7ec <.L800368E0+0x4c>
+---
+> 	bne	v1,v0,7ec <func_80036140+0x7ec>
+712,714c682,684
+< 			7e4: R_MIPS_HI16	D_80101E62
+< 	sh	v0,0(at)
+< 			7e8: R_MIPS_LO16	D_80101E62
+---
+> 			7e4: R_MIPS_HI16	D_80101E58
+> 	sh	v0,10(at)
+> 			7e8: R_MIPS_LO16	D_80101E58
+diff rc=1
