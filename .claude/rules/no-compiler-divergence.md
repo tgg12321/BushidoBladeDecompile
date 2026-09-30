@@ -77,7 +77,9 @@ them back to the queue"**.
   the owner, verbatim: "Today's assembler-shim changes (the `($12)` parser fix
   and the "declared, no value" list) are changes to maspsx, not the compiler.
   SOTN uses maspsx too. I'm treating those as outside this ruling." The owner
-  has not replied to that point. So the maspsx gates ([[maspsx-gate-lists]])
+  has not replied to that point in general; on 2026-09-30 the owner ruled the
+  per-function COMMON gate (`maspsx_comm_syms.txt`, Q9/Q15/Q18) a cheat
+  (decisions.md 2026-09-30 OWNER RULING). For the rest, the maspsx gates ([[maspsx-gate-lists]])
   and the maspsx parser fix are outside Q17 as the orchestrator's stated
   scoping, NOT an owner ruling. It stays open for the owner to overrule, and
   those changes keep their own rulings meanwhile.
@@ -95,8 +97,8 @@ cheat (Q17).
    `expand_dest_funcs.txt`) are the established mechanism for assembler-fidelity
    gaps; new GLOBAL behaviour changes require owner policy sign-off. (The
    owner signed off on one new per-function gate on 2026-09-26, fourth batch:
-   `maspsx_comm_syms.txt`, admitted only under its prongs in
-   [[maspsx-gate-lists]].) The same batch authorized a bug-fix-scope
+   `maspsx_comm_syms.txt`. WITHDRAWN 2026-09-30: the owner ruled that gate a
+   cheat; the list is retired and empty, [[maspsx-gate-lists]].) The same batch authorized a bug-fix-scope
    parser fix: maspsx's load/store parser accepts an empty-offset `($REG)`
    operand, as Sony's ASPSX 2.34 does (calibration check, commit 4ef521cdd,
    `memory/grind/func_8002DE20/aspsx-paren-check/`), provided every object

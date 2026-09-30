@@ -30049,3 +30049,42 @@ trail."
 5. **Unchanged.** No standard, rule, grant, ban or gate list changes: only records of settled questions are
    removed. A deleted refusal that is still in force was already carried by a live rule file or kept entry
    (the audit's PARTIAL/ACTIVE-RULE classes).
+
+## 2026-09-30 — OWNER RULING — the per-function maspsx COMMON gate is a cheat (Q9/Q15/Q18 withdrawn) (`.claude/rules/maspsx-gate-lists.md`)
+
+Context: the owner asked whether any of the 2026-09-26 recommended rulings
+(docs/grind/owner-rulings-2026-09-26.md) are cheats or workarounds, or fall short of the SOTN
+standard. The session author's answer named Q9, Q15 and Q18 first: `maspsx_comm_syms.txt` tells the
+assembler shim to behave differently for NAMED FUNCTIONS, a lever outside the committed C (the
+regfix/asmfix shape); the underlying ASPSX fact (a tentative definition is gp only at its base) is
+visible in C, so a faithful model would be global and driven by each file's declarations, not
+per-function; and Q15/Q18 relaxed the proof twice (the archived Sony toolchain reproduced 431 of 512
+words, the rest classified as explained). The author also noted the orchestrator's open scoping note
+after Q17 (maspsx changes outside "a compiler patch is a cheat"), to which the owner had not replied.
+Owner (Trenton), verbatim: **"But the Q9, Q15, and Q18 thing you flagged is a big concern. Go ahead and mark those as cheats and make sure anything that allowed that construct is added back to the queue"**.
+
+**Ruling (the author's narrowing).**
+1. **The per-function COMMON gate is a cheat.** Q9 (the gated list), Q15 (row proof when the archived
+   toolchain is not byte-faithful) and Q18 (nop pads and shifted branches as scheduling fallout) are
+   WITHDRAWN. `maspsx_comm_syms.txt` is retired: it stays EMPTY and no row may be added. A function
+   whose match depends on a row is not COMPLETED; it returns to `INCLUDE_ASM` and to the queue.
+   `engine/cheats.py` reclassifies the list from `fidelity` to `cheat-pathway`, so `queue done` and
+   `tools/check_completion_integrity.py` refuse any function named in it.
+2. **What returned to the queue.** The list's three rows were the only dependants: cdrom_SetMix
+   (g_cd_atv), func_80035F78 (D_800A36B8) and func_80036140 (g_cd_atv, D_800A36B8, g_cd_result). All
+   three are INCLUDE_ASM again (code6cac_b4.c, code6cac_b5.c; func_80036140's jump table
+   jtbl_80010938 transcribed again as before its landing) and re-queued (`queue reopen`,
+   origin regression). Their landed C bodies are banked as `memory/grind/<func>/cheated-comm-gate-body.c`
+   (a lead, not a landable form). Gate-free honest floors of those bodies (`sandbox --disable all`,
+   list emptied): cdrom_SetMix 6/18, func_80035F78 6/12, func_80036140 16/512; recorded in each
+   `migration_pin.json`. The per-byte symbol rows their asm references were restored as
+   retire-with aliases (prong (c) amendment 2026-09-03). The full build is byte-identical to the
+   pre-change tree (build/bb2.bin 42fce5aff1490a579e919b68af56ebc5b0dc657f before and after, cloud
+   container; the disc EXE is not present there, so the header-prefixed oracle SHA1 was not run).
+   func_80036940 (same -G8 file) never had a row and is unaffected.
+3. **What this does not decide.** The `($12)` maspsx parser fix (Q11, byte-neutral) and the other
+   maspsx gate lists are not ruled on here. The per-file -G8 files (Q5/Q8) and the CdlATV / CdState
+   aggregate merges stay as committed; a future landing of these three functions is judged under
+   the rules as they stand, and may not rely on any per-function assembler gate for COMMON
+   behaviour. A faithful, GLOBAL, declaration-driven model of ASPSX's COMMON rule would be a
+   substrate change needing its own owner ruling.
