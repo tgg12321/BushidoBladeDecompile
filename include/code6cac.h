@@ -217,7 +217,8 @@ typedef struct {
 } LeafThreshold;
 
 extern LeafThreshold D_8008EA44[5];
-extern s16 D_8008EAC0;
+/* per-stage s16 table, 34 entries (0x8008EAC0..0x8008EB03, one data label) */
+extern s16 D_8008EAC0[34];
 extern s16 D_8008EB04;
 extern s16 D_8008EB06;
 extern s16 D_8008EB08;
