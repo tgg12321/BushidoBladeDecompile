@@ -15,3 +15,5 @@
 - Separate break test `W->unk80 = f(); if (W->unk80 != 0) break;`: sandbox 0 but
   oracle FAIL (2 words, thread_jumps retarget; see evidence.md). Landed the
   assignment-in-condition form.
+
+## 2026-09-30 (laneC): RESOLVED -- the union word view is not needed; field compares fold to the word compare (fold-const.c fold_truthop). See evidence.md 2026-09-30.

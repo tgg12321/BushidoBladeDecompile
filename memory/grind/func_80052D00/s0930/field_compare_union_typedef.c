@@ -16,19 +16,19 @@ s32 func_80052D00(s32 arg0, s32 arg1) {
     W->unk0 = 0x7FFFFFFF;
     W->unk6C = W->unk20 + 32000;
     W->unk70 = W->unk68 - W->unk60;
-    W->unk88.x = W->unk60 / 2000;
-    W->unk88.z = W->unk64 / 2000;
-    W->unk8C.x = W->unk68 / 2000;
-    W->unk8C.z = W->unk6C / 2000;
+    W->unk88.c.x = W->unk60 / 2000;
+    W->unk88.c.z = W->unk64 / 2000;
+    W->unk8C.c.x = W->unk68 / 2000;
+    W->unk8C.c.z = W->unk6C / 2000;
     W->unk74 = W->unk6C - W->unk64;
-    if (W->unk88.x == W->unk8C.x && W->unk88.z == W->unk8C.z) {
+    if (W->unk88.c.x == W->unk8C.c.x && W->unk88.c.z == W->unk8C.c.z) {
         if (W->unk8 == W->unk18 && W->unkC == W->unk1C && W->unk10 == W->unk20) {
             return 0;
         }
-        W->unk5C(W->unk88.x, W->unk88.z);
+        W->unk5C(W->unk88.c.x, W->unk88.c.z);
     } else {
-        W->unk80 = W->unk88.x * 2000 + 1000;
-        W->unk84 = W->unk88.z * 2000 + 1000;
+        W->unk80 = W->unk88.c.x * 2000 + 1000;
+        W->unk84 = W->unk88.c.z * 2000 + 1000;
         W->unk60 -= W->unk80;
         W->unk64 -= W->unk84;
         W->unk68 -= W->unk80;
@@ -71,7 +71,7 @@ s32 func_80052D00(s32 arg0, s32 arg1) {
         W->unk64 -= (W->unk60 * W->unk7C) >> 12;
         W->unk78 = (W->unk7C * 2000) >> 12;
         while (--W->unk90 != -1) {
-            if ((W->unk80 = W->unk5C(W->unk88.x, W->unk88.z)) != 0) {
+            if ((W->unk80 = W->unk5C(W->unk88.c.x, W->unk88.c.z)) != 0) {
                 break;
             }
             W->unk64 %= 2000;
@@ -82,37 +82,37 @@ s32 func_80052D00(s32 arg0, s32 arg1) {
             if (W->unk64 > 2000) {
                 if (swapped) {
                     if (xdir < 0) {
-                        W->unk88.x--;
+                        W->unk88.c.x--;
                     } else {
-                        W->unk88.x++;
+                        W->unk88.c.x++;
                     }
                 } else {
                     if (zdir < 0) {
-                        W->unk88.z--;
+                        W->unk88.c.z--;
                     } else {
-                        W->unk88.z++;
+                        W->unk88.c.z++;
                     }
                 }
-                if ((W->unk80 = W->unk5C(W->unk88.x, W->unk88.z)) != 0) {
+                if ((W->unk80 = W->unk5C(W->unk88.c.x, W->unk88.c.z)) != 0) {
                     break;
                 }
             }
             if (swapped) {
                 if (zdir < 0) {
-                    W->unk88.z--;
+                    W->unk88.c.z--;
                 } else {
-                    W->unk88.z++;
+                    W->unk88.c.z++;
                 }
             } else {
                 if (xdir < 0) {
-                    W->unk88.x--;
+                    W->unk88.c.x--;
                 } else {
-                    W->unk88.x++;
+                    W->unk88.c.x++;
                 }
             }
         }
-        if (W->unk80 == 0 && (W->unk88.x != W->unk8C.x || W->unk88.z != W->unk8C.z)) {
-            W->unk5C(W->unk8C.x, W->unk8C.z);
+        if (W->unk80 == 0 && (W->unk88.c.x != W->unk8C.c.x || W->unk88.c.z != W->unk8C.c.z)) {
+            W->unk5C(W->unk8C.c.x, W->unk8C.c.z);
         }
     }
     return func_80053694((s32 *)arg0, (s16 *)arg1);
