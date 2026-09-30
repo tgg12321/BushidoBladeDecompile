@@ -88,7 +88,8 @@
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29: check2 member-to-member arithmetic refused (rev-intr); no honest spelling reached 0 (best 11), Q37 fallback"
+      "reopen_reason": "retro-audit 2026-09-29: check2 member-to-member arithmetic refused (rev-intr); no honest spelling reached 0 (best 11), Q37 fallback",
+      "addr": "80081030"
     },
     {
       "func": "func_80052D00",
