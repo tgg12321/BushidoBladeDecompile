@@ -1,9 +1,11 @@
 # SelWork — Q57 (d) whole-program layout search (laneD, 2026-09-30)
 
 Rule: `.claude/rules/no-new-park-categories.md`, "Trailing alignment padding (owner ruling 2026-09-30,
-twenty-ninth batch, Q57)", conditions (a)-(d). Struct: `SelWork` (src/text1b_tu2.c, the one definition
-of the select work area D_800A36A0 points at; it replaces S_800747D8, SelWork_800768DC and func_80077374's
-local GaugeWork).
+twenty-ninth batch, Q57)", conditions (a)-(d). Struct: `SelWork` (since round 2, 2026-09-30: include/game.h, the one definition of the select work area
+D_800A36A0 points at; it replaces S_800747D8, SelWork_800768DC and func_80077374's local GaugeWork).
+Round 2 named the formerly padded 0x00-0x07 and 0x24-0x33 (f00, f04, f24, pad28, f2C, f30) at the offsets the
+code accesses; every offset and the size are unchanged, and the scan (re-run on the round-2 tree, output
+identical) covers include/*.h.
 
 ## Sizes (a)/(b)
 
