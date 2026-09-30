@@ -18,3 +18,12 @@ Measured with probes-0930/score_nostrip.py (strip skipped: SetRotMatrix/ldlv0 no
 | + `sum` not reused for the table byte (rejected/inline-o-h-table-byte-inline-6.c) | 6 |
 Remaining construct needing paperwork (the retro-audit's secondary objection): `det` and `sum`
 multi-value reuse — Ruling 11 package or Q51 citation owed. Plus PINNED entries + DMPSX grant.
+
+### 2026-09-30 — inline_c.h gte_rtv0 alternative checked (orchestrator route 1)
+inline_c.h 4.3 :499-502 writes gte_rtv0 as ONE statement (`"nop;" "nop;" ".word 0x0000013f"`,
+no clobber list); inline_o.h :426-430 writes three statements each clobbering
+"$12"-"$15","memory". Swapping only the rtv0 run for the inline_c.h form (post-DMPSX word under
+the 2026-09-24 Extension) still scores 0 (candidate_alt_rtv0_inline_c_h.c, score_nostrip /
+sandbox). Not proposed: it mixes two Sony headers in one function, and the two headers define
+the same macro names, so one original TU could not have included both. The DMPSX-word row
+question is filed for the owner: docs/grind/borderline.md 2026-09-30 (commit 10626c5b6).

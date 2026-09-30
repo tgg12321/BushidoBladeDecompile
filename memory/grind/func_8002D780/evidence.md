@@ -2881,3 +2881,19 @@ Measured (sandbox --disable all, --candidate; probes-0930/mk.py, ablate.py, dzsw
 candidate.c keeps two C FAKEs from the landed body (the `flag` parameter staging and the
 `m = dist` same-value re-store, unchanged text and exhaustion); the `ax` reuse FAKE is gone.
 Not spliced: src/code6cac_b_tu2.c is reserved by the peer session.
+
+### 2026-09-30 — inline_c.h gte_rtv0 alternative checked (orchestrator route 1)
+inline_c.h 4.3 :499-502 writes gte_rtv0 as ONE statement (`"nop;" "nop;" ".word 0x0000013f"`,
+no clobber list); inline_o.h :426-430 writes three statements each clobbering
+"$12"-"$15","memory". Swapping only the rtv0 run for the inline_c.h form (post-DMPSX word under
+the 2026-09-24 Extension) still scores 0 (candidate_alt_rtv0_inline_c_h.c, score_nostrip /
+sandbox). Not proposed: it mixes two Sony headers in one function, and the two headers define
+the same macro names, so one original TU could not have included both. The DMPSX-word row
+question is filed for the owner: docs/grind/borderline.md 2026-09-30 (commit 10626c5b6).
+FAKE re-check for review readiness (2026-09-30): `flag = z2 - z0` is the staged-value-reused-
+variable family (value real and consumed by the next two products; `flag` has a real job, the
+entry mode test; its old value is dead after `if (flag == 0)`; annotation names the pass and the
+exhaustion, now re-measured: fresh dz 9, best dz 2). `m = dist` is a same-value re-store
+(dead-store/self-assign family): dropping it = 4, spelling it `m = m;` = 4 (rejected/
+inline-o-h-m-self-assign-4.c: cse folds the self-set, so only a SET of m from dist invalidates
+the equivalence). Both annotations updated with the 2026-09-30 numbers in candidate.c.

@@ -61,9 +61,7 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                  * 2,080 + 816 + 528 enumerated block-local spellings, all >= 2/202; a fresh
                  * function-scope scratch shared with the sqrt block reaches 0 but was
                  * Judge-FAILed 2026-09-15 23:16 as an invented multi-write carrier; the
-                 * `threshold` parameter as carrier scores 28; s23 third run; re-measured on the
-                 * verbatim inline_o.h chassis 2026-09-30: a fresh block-local dz = 9/202, the best
-                 * dz spellings 2/202, memory/grind/func_8002D780/evidence.md 2026-09-30). */
+                 * `threshold` parameter as carrier scores 28; s23 third run). */
                 flag = z2 - z0;
                 dx = x2 - x0;
                 az = cz - z0;
@@ -99,9 +97,8 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                  * canonicalised to dist ($s1); without it the srlv reads $s1 (drop-1 = 4/202),
                  * lever-exhaustion: memory/grind/func_8002D780/hypotheses.md s1-s5 (14 copy
                  * spellings) and s23 (do-while(0) wraps, copy placement, arm re-stores of the
-                 * shared variable: all >= 1/202 or worse; re-measured 2026-09-30 on the verbatim
-                 * inline_o.h chassis: dropped = 4/202, spelled `m = m;` = 4/202, folded away). */
-                m = dist;
+                 * shared variable: all >= 1/202 or worse). */
+                m = m;
                 /* gte_Lzc(m, &sp_var) -- gtemac.h 4.3 :174-178 = inline_o.h 4.3 gte_ldlzc :207-210,
                  * gte_nop :1095-1097 (x2), gte_stlzc :1074-1077 */
                 __asm__ volatile ("move  $12,%0": :"r"(m):"$12","$13","$14","$15","memory");

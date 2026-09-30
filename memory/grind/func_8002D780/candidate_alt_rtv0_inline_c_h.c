@@ -1,17 +1,18 @@
+/* ALTERNATIVE (laneB 2026-09-30): gte_rtv0 spelled from inline_c.h, every other island inline_o.h.
+ * Mixes two Sony headers in one function (they define the same macro names, so one TU could not
+ * include both); banked for the reviewer/owner, NOT the preferred form. Scores 0 (score_nostrip). */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
         *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
         *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
         /* gte_ApplyRotMatrix(obj + 0xF8, obj + 0x100) -- gtemac.h 4.3 :354-357 = inline_o.h 4.3 gte_ldv0 :16-20,
-         * gte_rtv0 :426-430 (post-DMPSX word 0x4A486012 for the placeholder 0x0000013f),
+         * gte_rtv0 from inline_c.h 4.3 :499-502 (one statement, no clobbers; post-DMPSX word 0x4A486012),
          * gte_stlvnl :904-909 */
         __asm__ volatile ("move  $12,%0": :"r"((s32 *)(obj + 0xF8)):"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
+        __asm__ volatile ("nop;" "nop;" ".word 0x4A486012");
         __asm__ volatile ("move  $12,%0": :"r"((s32 *)(obj + 0x100)):"$12","$13","$14","$15","memory");
         __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");

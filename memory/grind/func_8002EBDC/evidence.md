@@ -127,3 +127,12 @@ strip their GPR statements): 0/182, 0 hunks. Landing needs: (1) PINNED entries f
 gte_SetRotMatrix and gte_ldlv0 (engine: commit, excerpts checked against the pinned 4.3 header,
 layer-2); (2) a per-function owner grant for gte_rtv0's post-DMPSX word 0x4A486012 (x2), as
 func_8002DE20 / func_800187F4; (3) the file (src/code6cac_b_tu2.c) freed by the peer.
+
+### 2026-09-30 — inline_c.h gte_rtv0 alternative checked (orchestrator route 1)
+inline_c.h 4.3 :499-502 writes gte_rtv0 as ONE statement (`"nop;" "nop;" ".word 0x0000013f"`,
+no clobber list); inline_o.h :426-430 writes three statements each clobbering
+"$12"-"$15","memory". Swapping only the rtv0 run for the inline_c.h form (post-DMPSX word under
+the 2026-09-24 Extension) still scores 0 (candidate_alt_rtv0_inline_c_h.c, score_nostrip /
+sandbox). Not proposed: it mixes two Sony headers in one function, and the two headers define
+the same macro names, so one original TU could not have included both. The DMPSX-word row
+question is filed for the owner: docs/grind/borderline.md 2026-09-30 (commit 10626c5b6).
