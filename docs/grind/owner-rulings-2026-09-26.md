@@ -172,3 +172,13 @@ Other options offered: "Keep universal proof" — "Every new kind of rewrite nee
 Author's note (2026-09-27, after the layer-2 rule-text review of Q25; the transcript above is unchanged): the Q25 question said "30 rewrites" and "none matches". Accurate: 27 banked func_800340A0 respellings (memory/grind/func_8001CE60/probes/calib_800340A0/ 21, landing_tu_cond/ 6); no COUNTING one matches, but three that rely on refused/set-aside constructs do (A340_zero_one and A340_rv8_S5, Q22; A340_ptr_end, Q23). The owner's option ("Only an actual matching rewrite defeats") is applied with Q22/Q23's set-asides, per declaration.
 Author's note 2 (2026-09-27, Q25 rule-text review round 2): the Q25 context line's "fix the score-byte addressing" holds for R1/R1w/R2/R2w only; R7/R7n miss the addressing too (landing_tu_cond/Q24-AGREEMENT-cond.txt, "part-1 forms short: 2").
 Author's note 3 (2026-09-27, Q25 rule-text review round 3): the context line's "37-53 lines" is the layer-2 reviewer's cmp.py metric (tmp/l2rev_ce60/cmp.py, against landing_tu/A340_0.cc1.s: R1 42, R1w 48, R2 37, R2w 53; R7/R7n 65).
+
+<!-- Batch 14: recorded 2026-09-30 by the session author from the owner's message in the manual session (no separate tmp record). -->
+# Owner ruling 2026-09-30 — VERBATIM RECORD
+Context: asked which of the rulings above are cheats or workarounds, the session author flagged
+Q9, Q15 and Q18 (the per-function `maspsx_comm_syms.txt` gate) first.
+
+## Q9 / Q15 / Q18 withdrawn — the per-function COMMON gate is a cheat
+Owner (Trenton), verbatim: "But the Q9, Q15, and Q18 thing you flagged is a big concern. Go ahead and mark those as cheats and make sure anything that allowed that construct is added back to the queue"
+(Rule text and execution: docs/grind/decisions.md 2026-09-30 OWNER RULING — the per-function maspsx
+COMMON gate is a cheat.)

@@ -32,7 +32,7 @@ based adjudication and the enforcement that now exists.
 | List | Class | Evidence |
 |---|---|---|
 | `maspsx_prefill_label_funcs.txt` | **fidelity** (assembler label placement; owner ruling 2026-09-04) | ASPSX "retarget iff filled": it filled a branch's delay slot with the instruction at the target label and pointed THAT branch one word past it; an unfilled branch kept pointing at the label. Our cc1's reorg does the filling itself and, having proven the instruction redundant on the unfilled paths, deletes the pre-instruction label and retargets the unfilled branches too — two branch words differ, no C spelling can move an assembler label (main: 7 escape hatches probed, permuter blind by design; cc1psx on the identical `ings.i` keeps the single label). The gate re-emits the label before P for opted-in functions only: an unfilled reorder-mode branch to L whose preceding instruction P is verbatim a filled branch's delay slot is retargeted to a fresh `L_pf` label before P. No instruction added/removed/reordered; the label emits no bytes. Per-function because a read-only census found 36 target sites in 33 matched functions that legitimately sit on the post-P label — never globalize. Growth tag: `[infra-rule: maspsx-prefill-label]` + target-site evidence. Record: decisions.md 2026-09-04 OWNER RULING (main). |
-| `maspsx_comm_syms.txt` | **fidelity** (assembler storage-class knowledge; owner ruling 2026-09-26, fourth batch) | Sony ASPSX 2.34 gives a tentative (`.comm`) definition gp for its base byte only, never for `sym+N`; our C declares every such variable `extern`, so maspsx cannot know the storage class. Per-function rows, each proven by ASPSX reproducing the shipped bytes; admission prongs (a)-(d) in § "`maspsx_comm_syms.txt`" below. Built 2026-09-26 (`--comm-syms`, first rows cdrom_SetMix / func_80035F78 / func_80036140; evidence memory/grind/func_80036140/evidence.md). Growth tag: `[infra-rule: maspsx-comm]`. Record: decisions.md 2026-09-26 OWNER RULING — maspsx COMMON gate. |
+| `maspsx_comm_syms.txt` | **RETIRED — CHEAT** (owner ruling 2026-09-30; was fidelity under the 2026-09-26 fourth batch, now withdrawn) | A per-function assembler toggle is a lever outside the committed C. The list stays EMPTY; `engine/cheats.py` classifies it cheat-pathway, so `queue done` and the integrity audit refuse any function named in it. Its three former rows (cdrom_SetMix, func_80035F78, func_80036140) returned to INCLUDE_ASM and the queue. Record: decisions.md 2026-09-30 OWNER RULING — the per-function maspsx COMMON gate is a cheat. |
 | `expand_lb_funcs.txt` | **fidelity** (unmodeled context) | The target's adjacent `lbu; sll 24; sra 24` (e.g. func_8003047C @ 0x800304AC) is UNREACHABLE from any C in this fork: a 4-spelling probe (2026-07-13, tmp/lb_probe.c — explicit shifts, (s8) cast, plain s8 load, named-temp shifts) all fold to `lb` in combine. The Makefile documents the expansion as ASPSX behavior "in certain contexts" (Makefile:106-108); the per-site list encodes which sites the original expanded. |
 | `expand_dest_funcs.txt` | **fidelity** (assembler-internal) | Which scratch register ($at vs $rdest) the assembler uses to expand a macro load is not controllable from C at all. The list models an ASPSX-internal choice our maspsx doesn't fully capture. |
 | `multu_funcs.txt` | **cheat-pathway; current entries VESTIGIAL** | `mult`→`multu` IS reachable from C (unsigned operand types emit `multu` naturally) — gating a C function through this list instead of fixing the types is a cheat by config. The 2 current entries (func_8007F87C, func_8007FA1C) are DEAD: both are now whole-body canonical asm writing `multu` literally, and glabel bodies never emit `.ent`, so maspsx `current_func` never matches them. |
@@ -49,6 +49,11 @@ its one narrow, semantically-neutral transform at pattern-matched sites — no
 gate can inject arbitrary bytes.
 
 ## `maspsx_comm_syms.txt` — the COMMON (tentative-definition) gate (owner ruling 2026-09-26, fourth batch)
+
+> **WITHDRAWN — CHEAT (owner ruling 2026-09-30).** Q9, Q15 and Q18 are withdrawn: the per-function
+> COMMON gate is a cheat. The list is retired and must stay empty; everything below is HISTORY and
+> admits nothing. Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — the per-function maspsx
+> COMMON gate is a cheat.
 
 **Question and answer.** Filed question: docs/grind/borderline.md 2026-09-26
 func_80036140 (item (a), "tell maspsx that g_cd_atv / D_800A36B8 were COMMON
@@ -247,8 +252,8 @@ RULING — maspsx COMMON gate (`maspsx_comm_syms.txt`).
 label-nop: RETIRED 2026-09-14 — the list is deleted and no completion depends
 on it. The 9 functions that were listed still byte-match with the arm global.
 prefill-label (fidelity): main — first and only entry (owner ruling 2026-09-04).
-comm (fidelity): cdrom_SetMix (g_cd_atv), func_80035F78 (D_800A36B8), func_80036140
-(g_cd_atv, D_800A36B8, g_cd_result) — the first rows, landed with func_80036140 (2026-09-26).
+comm: RETIRED 2026-09-30 (cheat) — the list is empty; its three former rows' functions
+(cdrom_SetMix, func_80035F78, func_80036140) are INCLUDE_ASM again and in the queue.
 expand-lb (fidelity): func_8003047C — COMPLETED-C stands.
 expand-dest: func_8007CE0C — in queue (its other debt); the gate entry is
 fidelity and may remain when it completes.
