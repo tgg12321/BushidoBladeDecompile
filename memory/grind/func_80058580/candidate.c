@@ -40,7 +40,6 @@ extern void func_80057E84(u8 *, u8 *, s32, s32);
 #define dist t3
 #define coin t3
 #define ok t3
-#define mask t3
 #define cmask t3
 #define script4 t3
 #define n449 t1
@@ -56,7 +55,6 @@ extern void func_80057E84(u8 *, u8 *, s32, s32);
 #define m449 t2
 #define best t2
 #define cnt2 t2
-#define hi t2
 #define lvl t2
 #define i t4
 #define j t4
@@ -74,6 +72,8 @@ s32 func_80058580(u8 *p) {
     u8 *script3;
     u8 mode;
     s32 t1, t2, t3, t4, t5;
+    s32 hi;
+    u32 mask;
     s16 et;
     s32 k;
     s32 va;
@@ -610,7 +610,11 @@ s32 func_80058580(u8 *p) {
                 j = 0;
             pick_loop:
                 {
-                    score = ((rand() & 0xFFF) * ((u8 *)&D_80099D88[p[0x443]] + 8)[j]) >> 12;
+                    s32 rnd;
+                    u8 *row;
+                    rnd = rand() & 0xFFF;
+                    row = (u8 *)&D_80099D88[p[0x443]] + 8;
+                    score = (rnd * row[j]) >> 12;
                     if (score != 0) {
                         flip = 0;
                         switch (j) {
@@ -733,7 +737,7 @@ s32 func_80058580(u8 *p) {
                         ep = off + *(u8 **)(p + 0x3A4);
                         e = ep;
                         ep += 4;
-                        q = ep;
+                        q = e + 4;
                         if (CPU_FLAGS & 0xFF00) {
                             switch (D_800A38DC) {
                             case 3:
@@ -776,7 +780,7 @@ s32 func_80058580(u8 *p) {
                                 mask = D_8009A8CA[p[0x440]][D_800A37A0 - 1][0];
                                 break;
                             }
-                            if ((e[3] >> 4) == 0 || !((u32)mask & (1 << ((e[3] >> 4) - 1)))) {
+                            if ((e[3] >> 4) == 0 || !(mask & (1 << ((e[3] >> 4) - 1)))) {
                                 goto next;
                             }
                         }
@@ -843,7 +847,12 @@ s32 func_80058580(u8 *p) {
                             }
                         }
                         if (ok) {
-                            sc = ((rand() & 0xFFF) * ((u8 *)&D_80099D88[p[0x443]] + 0xF)[et]) >> 12;
+                            s32 rnd2;
+                            u8 *row2;
+
+                            rnd2 = rand() & 0xFFF;
+                            row2 = (u8 *)&D_80099D88[p[0x443]] + 0xF;
+                            sc = (rnd2 * row2[et]) >> 12;
                             if (sc != 0 && pbest < sc) {
                                 pbest = sc;
                                 pbesti = n;
@@ -972,7 +981,6 @@ s32 func_80058580(u8 *p) {
 #undef dist
 #undef coin
 #undef ok
-#undef mask
 #undef cmask
 #undef script4
 #undef n449
@@ -988,7 +996,6 @@ s32 func_80058580(u8 *p) {
 #undef m449
 #undef best
 #undef cnt2
-#undef hi
 #undef lvl
 #undef i
 #undef j

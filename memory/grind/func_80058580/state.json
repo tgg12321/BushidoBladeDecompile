@@ -51,6 +51,12 @@
       "floor": 57,
       "modality": "manual",
       "headline": "jtbl blocker resolved by the rodata-object-alignment ruling (tables now text1b.o rodata at 0x8001585C); flip set after the case 1/3 skip test; block-scoped s32 tired; s16 et/sc; adj compound split; switch on et. maspsx .L-label mflo hazard gap found (55 with a byte-identical probe fix; not applied, needs ruling)"
+    },
+    {
+      "session": 3,
+      "floor": 37,
+      "modality": "manual",
+      "headline": "q = e + 4 (et/ep seats); block-scoped rnd/row named intermediates for both per-character rate reads (symbol-first association, target la+addu shape); mask split out of t3 as u32 (clears the e/q/pbest cascade); hi split out of t2"
     }
   ],
   "frontier": [
