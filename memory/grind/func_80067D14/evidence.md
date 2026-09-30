@@ -23,3 +23,39 @@
 - [s1] [fable-blitz 2026-07-07] Emit-tail duplication note (cross-jump exposure): the three (prim-D_800A3720)/0x28<0x1C1 capacity chains (L992-1010, L1028-1046, L1053-1071) and the two identical-shape 0x2E-code stores share suffix [sw prim+0x28 -> s1; sw code -> prim+4; j .L80068D20] merged into .L80068CAC/.L80068CBC join blocks - target KEEPS separate copies of the /0x28 chain per arm (no LICM/cross-jump merge of the 11-insn chain) but merges the 3-insn store tails. C that computes the capacity check inline per arm (duplicated expression, not a hoisted temp) reproduces the unmerged chains naturally; the tail merges are jump2's doing and should fall out free.
 
 - [s1] [fable-blitz 2026-07-07] Two rand-fold shapes to spell correctly: L349-363 seed update `s = *seedp; s ^= rand(); *seedp = s; jitter = s*0x1B1..-chain` (xor BEFORE the multiply chain, seed word lives at *(sp+0x60) = the value stored in prologue L19 - it is ctx+0x1AC via D_800A3724); L749-767 pair `r = rand()%?? via bgez-fold (r + (r<0 ? 0x7FFF... : 0)) >> 15`-style sign-folds feeding color bytes (type>=8 arm).
+
+## 2026-09-30 -- laneA manual session: from scratch to sandbox 0 (candidate.c)
+
+Starting point: pre-include-asm-body.c is an empty placeholder, so this is a first decomp. The
+canonical gate gives ASM-PARTIAL (27/1047 insns are cop2), which splits into 11 PsyQ 4.3
+inline_c.h macro islands. m2c draft (tmp/func_80067D14/m2c.c). Measured progression
+(sandbox --disable all, tmp/func_80067D14/*.c):
+- d1 205 (1050/1047): m2c structure, pointer locals in sp-slot order, 11 islands. kill at the end.
+- d2 137: kill block written in place (the target keeps it inline after the jitter test); the
+  distance test puts the sum on the left; `sxy` local for the two rand() jitters (target keeps
+  D_800A34B8 in s0 across both calls); each colour arm stores and advances itself.
+- d3 59: gte_SetTransMatrix operand `(u8 *)p_out - 0x14` (target `addiu v0,s7,-0x14`; with
+  `(MATRIX *)(outer + 0x10)`, outer stays live in the loop, one more spill slot, frame 0xC0),
+  the idiom func_800620B8 and func_800646E8 use in this TU (text1b_tu1c.c SetTransMatrix((u8 *)tv - 0x14)).
+- d4 51: prim cursor typed `POLY **`; the arms' `(*p_prim)++->code` post-increment gives the
+  target's `addiu v0,a0,0x28; sw v0,0(s1); ...; sw v1,4(a0)` (advance before the code store, no
+  reload).
+- d5b 4: arm order in the arg0<6 ladder `BD44&1` / `D_800A34F0[arg0-4] != 0` (rand) / else
+  0x2C285A78. The target's out-of-line blocks are loop.c exit-block moves, merged later by
+  cross-jumping. The 0x2E000000 / D_800A34F0-8 hoists also match after this.
+- v2_len_u8 0: POLY_FT4 (this TU's typedef) with `*(s32 *)&p->x0` word views and a
+  `((u8 *)p)[3] = 9` length byte. Dumps (tmp/func_80067D14/dA/f.sched, f.sched2) show why the
+  word-member form (PolyW, in-struct COMPONENT_REF) left 4. An in-struct store lets sched2 hoist
+  the scalar-global loads D_800A34C4/D_800A34C0 above it; the target shows those loads held
+  below each xy store. That is consistent with a non-MEM_IN_STRUCT store, which is what
+  `*(s32 *)&p->x0` gives (expr.c:4567-4575, INDIRECT_REF of ADDR_EXPR of a non-aggregate field;
+  a scalar varying store conflicts with a scalar fixed load in true_dependence). Measured, not
+  traced in a target dump. The OT
+  store stays `p_ot[i]` (INDIRECT_REF over PLUS = in-struct). With the sibling's
+  `*(s16 *)((s32)p_ot + i*2)` spelling, B8/BC loads are not hoisted either: 10 (d6).
+- Byte-neutral simplifications, all 0: for-loop emit (`for (; *p_n >= 0; (*p_n)--)`); both
+  kill sites written out as `(*p_ent)->unk10 = 3; continue;` instead of a goto; `*p_seed ^=
+  rand()` instead of a seed temp; no (s16) casts on the /30 lanes. The combined body is
+  tmp/func_80067D14/c1.c = 0, and with comments and void = candidate.c (u8-return test copy = 0).
+- Return type: no v0 is set on any path and every caller ignores the value, so the body is
+  `void` and the TU's 8 `u8 func_80067D14(s32, s32);` prototypes become void at the splice.
