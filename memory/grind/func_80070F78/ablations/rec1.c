@@ -31,28 +31,12 @@ void func_80070F78(s32 arg0, DescF97C *s) {
     s->scale_y = 0x100;
     for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
         if (D_800A3578 == 0) {
-            /* FAKE: named intermediate for player i's 3-byte D_800A3560 record
-             * offset (named-intermediate entry, no-new-park-categories.md). This
-             * and the per-site offsets below (rec, ofs, idx, other) share
-             * func_80070188's mechanism: an inline `D_800A3560[i * 3 + k]` is
-             * expanded as *(&D_800A3560 + (i * 3 + k)) (expr.c); its EXPAND_SUM
-             * address (plus (mult i 3) sym+k) is not a legitimate address, so
-             * explow.c memory_address -> force_operand copies sym+k into its own
-             * pseudo, which cse shares and loop.c hoists (`lui/addiu` + `addu`,
-             * 0() addressing). With the offset already in a pseudo, (plus off
-             * sym+k) is legitimate as it stands, giving the target's `lui $at;
-             * addu $at,$at,off; lbu %lo(D_800A356k)($at)`. Measured (this body 1
-             * = one GPREL-name artifact): inlining this rec 52, the loop-2 rec 14,
-             * ofs 22, the ==3 idx 32, the locked idx 33, other 24;
-             * memory/grind/func_80070F78/evidence.md [s2]. */
-            s32 rec = i * 3;
-
-            if (D_800A3560[rec] == 5) {
-                D_800A3560[rec + 2] = 6;
+            if (D_800A3560[i * 3] == 5) {
+                D_800A3560[i * 3 + 2] = 6;
                 flag = 1;
                 ((s16 *)D_800A35C4)[i + 2] = 0;
-            } else if (D_800A3560[rec] == 0x10) {
-                D_800A3560[rec + 2] = 7;
+            } else if (D_800A3560[i * 3] == 0x10) {
+                D_800A3560[i * 3 + 2] = 7;
                 flag = 1;
                 ((s16 *)D_800A35C4)[i + 2] = 0;
             }

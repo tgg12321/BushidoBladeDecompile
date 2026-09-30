@@ -170,6 +170,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     }
                 }
             } else {
+                s32 cells_a;
+
                 if ((D_800A354C & (0x10 << (port * 16))) && D_800A3578 == 0 && D_800A35BC != 3) {
                     func_8005C650(2, 0x7F, 0x7F);
                     D_800A35C8[0] = 0xF;
@@ -187,8 +189,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 }
                 *(u8 *)(s->header + 2) = D_800A3540[i];
                 s->has_color = 0;
-                cells = s->header + 0xC;
-                s->table = cells;
+                cells_a = s->header + 0xC;
+                s->table = cells_a;
                 s->x = (D_800A3590[i] << 6) + 0x85;
                 s->y = 0xB6 - (D_800A3594[i] << 5);
                 s->ot_idx = 7;

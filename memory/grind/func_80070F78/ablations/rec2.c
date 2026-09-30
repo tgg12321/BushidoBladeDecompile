@@ -63,13 +63,11 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                    * *(D_800A35A8 + 0x7C) + (i << 6), computed at the top of the
                    * loop and again in the locked-slot arm. Ruling 11, proof in
                    * memory/grind/func_80070F78/r11/README.md. */
-        s32 rec; /* FAKE: record offset, mechanism at the loop-1 `rec` */
 
         vram = *(u8 **)(D_800A35A8 + 0x7C);
         vram += i << 6;
         port = i - port_ofs;
-        rec = i * 3;
-        if (D_800A3560[rec] != 5 && D_800A3560[rec] != 0x10) {
+        if (D_800A3560[i * 3] != 5 && D_800A3560[i * 3] != 0x10) {
             s32 max;
             s32 min;
             s32 ofs; /* FAKE: record offset, mechanism at the loop-1 `rec` */

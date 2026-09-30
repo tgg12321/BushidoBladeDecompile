@@ -226,7 +226,6 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                                              * mechanism at the loop-1 `rec` */
 
                 if (D_800A3560[other + 2] != 0xFF && ((s16 *)D_800A35C4 + 2)[i == 0 ? 1 : 0] == 0) {
-                    s32 idx; /* FAKE: record offset, mechanism at the loop-1 `rec` */
                     s32 sel;
                     s32 id;
                     s32 *tim; /* FAKE: image pointer address, mechanism at the ==3 `tim` */
@@ -235,13 +234,12 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     flag = 2;
                     vram = *(u8 **)(D_800A35A8 + 0x7C);
                     vram += i << 6;
-                    idx = i * 3;
-                    if (D_8009BC7C[D_800A3560[idx + 1]] & 2) {
+                    if (D_8009BC7C[D_800A3560[i * 3 + 1]] & 2) {
                         sel = 0;
                     } else {
                         sel = 1;
                     }
-                    id = D_800A3560[idx + 2];
+                    id = D_800A3560[i * 3 + 2];
                     tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + sel * 4);
                     LoadImage(vram + id * 8, *tim);
                     DrawSync(0);

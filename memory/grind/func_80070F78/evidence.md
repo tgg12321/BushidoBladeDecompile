@@ -118,3 +118,71 @@ Open construct questions for landing (not yet settled):
   Mechanism sketch (dumps to bank): the 0x60 sheets value and the else-arm/tail cells values sit in
   callee-saved fp / s0 only because they share the pseudo that crosses calls (loop 2/3); split, each is
   a one-block pseudo that local-alloc gives a call-clobbered register.
+
+### s2 landing form (2026-09-29) — candidate.c = tmp/func_80070F78/final.c
+- Structure changes vs the proven u9 body, each measured 1: `vram` declared in the loop-2 body
+  block (innermost scope of its writes), `max`/`min` in the state block, `id` block-local at each
+  LoadImage site (the locked site too: `id` single-set keeps the birthing-boost order), the confirm
+  selector as `sel = 1; if (special) { if (!(bit)) sel = 0; } else if (bit) sel = 0;` (the
+  redundant `sel = 1` write removed; the one-write-per-path if/else chain `... else sel = 1;` = 6).
+  Annotations added (comments only).
+- Single-construct ablations on candidate.c (memory/grind/func_80070F78/ablations/, generator
+  tools/abl_final.py; mini TU, engine score; candidate 1 = GPREL-name artifact):
+  loop-1 `rec` inlined 52/809; loop-2 `rec` 14/811; `ofs` 22/811; ==3 `idx` 32/816; locked `idx`
+  33/812; `other` 24/815; `tim` inlined at ==3 9/811, confirm 10/811, locked 15/809; vram as one
+  statement per site 29/809.
+- Ruling 11 package for `vram` / `sheets` / `cells`: memory/grind/func_80070F78/r11/README.md
+  (per-value spellings r11/r11_*.c: all 24, vram 13, sheets 3, cells a/b/c 4/7/10, cells all 10;
+  dumps r11/r11info.txt + r11/allocdbg.txt; permuter campaign r11-all-final from r11/r11_all.c).
+- Known weak point for review: the V2 `vram` and second S1 `sheets` writes re-load the same lvalue
+  after intervening calls (Ruling 5 2(c) path-wise record in r11/README.md (B)(2)); the target
+  bytes contain both reloads (asm lines 442, 612).
+- Q33 union route re-measured on the landing body (2026-09-29, after the orchestrator asked for the
+  union merge): rejected/union-merge-final-67.c = candidate.c with every access as a member of
+  `union { Unk800A3560Record rec[2]; s32 word; } D_800A3560` and the offset locals dropped: 67/822.
+  Failing hunks are the constant-offset accesses: the three `D_800A3565 = X; D_800A3562 = X;` pairs
+  share a forced base (`lui s8; addiu s8,s8,5`, `sb 0(s8)` / `sb -3(s8)`), and the D_800A3561 reads
+  become `lui v0; lbu 1(v0)`; the target has all of them gp-direct (scalar DECL_RTL only). Reported
+  to the orchestrator as incompatible with a complete merge (prong (c)).
+
+### Union / record merge vs this function (write-up for the owner, 2026-09-29)
+- Measurement: the landing body respelled for the Q33 union
+  (`union { Unk800A3560Record rec[2]; s32 word; } D_800A3560`, every access a member, the per-site
+  offset locals dropped: rejected/union-merge-final-67.c) scores 67/822 at the build's -G0; the
+  per-byte landing body scores 1/810 (GPREL-name artifact only) and builds oracle-identical.
+- Mechanism at -G0: a member access at a CONSTANT offset (`.rec[0].unk1`, `.rec[0].unk2`,
+  `.rec[1].unk0`, `.rec[1].unk2`) expands as COMPONENT_REF -> change_address -> explow.c
+  memory_address, which force_regs every constant address while cse is expected
+  (explow.c: "By passing constant addresses thru registers we get a chance to cse them"). cse then
+  relates the target's three `slot1.sel = X; slot0.sel = X;` pairs to one base register
+  (`lui s8; addiu s8,s8,5` hoisted by loop.c; `sb zero,0(s8)` / `sb zero,-3(s8)`), and the lone
+  constant reads come out as `lui v0; lbu 1(v0)`. The target has every one of them gp-direct
+  (`%gp_rel(D_800A3561/2/3/5)`), which at -G0 only a scalar VAR_DECL produces: its DECL_RTL
+  (mem (symbol_ref)) never passes through memory_address. A variable index at those sites would be a
+  Q22 fixed-value dummy. So under -G0 no complete merge (prong (c): one handle per byte) can
+  reproduce this function; func_80070188's constant accesses (D_800A3563/D_800A3565, `D_800A3560[0]`)
+  are the same class.
+- The target's gp-relative constant-offset accesses fit an object the ORIGINAL compiler treated as
+  small data (PsyQ ccpsx defaulted to -G8, compiler-flags-canonical.md): at -G8 a <= 8-byte object is
+  SYMBOL_REF_FLAG-small, its constant address is legitimate and cheaper than a register, so cse keeps
+  it direct and the assembler makes it gp-relative.
+- Quick scratch measurement (no build change): tools/scg8b.py = tools/sc.py with text1b added to
+  GP_FILES (-G8 cc1 + the GP maspsx flags) and a probe sdata_exclude copy whose func_80070F78 row
+  drops D_800A3560 (g8/sdata_exclude.probe.txt). Mini TU: the union body at -G8 = 15/810 with
+  0 source-level hunks — every remaining hunk is a gp displacement naming artifact
+  (`%gp_rel(D_800A3560+k)` vs the target's `%gp_rel(D_800A356k)`, same address). With D_800A3560
+  still excluded for this function: 29/824 (maspsx then leaves the constant-offset macros non-gp).
+  The per-byte landing body at -G8: 1/810 (unchanged).
+- Therefore: per-file -G8 for text1b (the owner's "per-file -G8 by proof" route) WOULD let a
+  record/union declaration of 0x800A3560 produce this function's accesses (this function measured;
+  the other consumers and the rest of text1b at -G8 are NOT measured — that route's screening,
+  cc1psx confirmation and full-TU/oracle proof are an owner-level project). Under the current -G0
+  build the per-byte model is the only form found that matches.
+
+### Bank (2026-09-30) � held, not landed
+- candidate.c (== tmp/func_80070F78/final.c) spliced with the landing edits built oracle-identical
+  (build_sha1 62efab4f..., laneA lock, reverted + rebuilt green, lock released).
+- Ruling 11 permuter campaigns harvested (r11/README.md "Permuter"): best engine re-score 21, none
+  reaches the target.
+- Held by the orchestrator (2026-09-29) pending the owner's ruling on the 0x800A3560 object model;
+  landing steps in landing_plan.md.

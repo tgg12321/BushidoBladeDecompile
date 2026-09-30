@@ -65,8 +65,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                    * memory/grind/func_80070F78/r11/README.md. */
         s32 rec; /* FAKE: record offset, mechanism at the loop-1 `rec` */
 
-        vram = *(u8 **)(D_800A35A8 + 0x7C);
-        vram += i << 6;
+        vram = *(u8 **)(D_800A35A8 + 0x7C) + (i << 6);
         port = i - port_ofs;
         rec = i * 3;
         if (D_800A3560[rec] != 5 && D_800A3560[rec] != 0x10) {
@@ -233,8 +232,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
 
                     func_8005C650(1, 0x7F, 0x7F);
                     flag = 2;
-                    vram = *(u8 **)(D_800A35A8 + 0x7C);
-                    vram += i << 6;
+                    vram = *(u8 **)(D_800A35A8 + 0x7C) + (i << 6);
                     idx = i * 3;
                     if (D_8009BC7C[D_800A3560[idx + 1]] & 2) {
                         sel = 0;

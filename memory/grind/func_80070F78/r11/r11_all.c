@@ -10,6 +10,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                   * last loop draws from). Ruling 11
                   * (ordinary-c-judge-decidable.md), proof in
                   * memory/grind/func_80070F78/r11/README.md. */
+    s32 *sheets2;
+    s32 cells_c;
     s32 flag;
     s32 cells; /* several values of one kind: the cell table following a sheet
                 * header (s->header + 0xC in the two loop-2 draws, s->header +
@@ -170,6 +172,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     }
                 }
             } else {
+                s32 cells_a;
+
                 if ((D_800A354C & (0x10 << (port * 16))) && D_800A3578 == 0 && D_800A35BC != 3) {
                     func_8005C650(2, 0x7F, 0x7F);
                     D_800A35C8[0] = 0xF;
@@ -187,8 +191,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 }
                 *(u8 *)(s->header + 2) = D_800A3540[i];
                 s->has_color = 0;
-                cells = s->header + 0xC;
-                s->table = cells;
+                cells_a = s->header + 0xC;
+                s->table = cells_a;
                 s->x = (D_800A3590[i] << 6) + 0x85;
                 s->y = 0xB6 - (D_800A3594[i] << 5);
                 s->ot_idx = 7;
@@ -196,6 +200,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 ((s32 *)arg0)[4] = func_8007352C((s32)s);
             }
             if (D_800A3578 != 3) {
+                s32 cells_b;
+
                 s->scale_x = 0x100;
                 s->scale_y = 0x100;
                 if (((s16 *)D_800A35C4)[i + 2] != 0) {
@@ -208,8 +214,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 } else {
                     s->header = sheets[i];
                 }
-                cells = s->header + 0xC;
-                s->table = cells;
+                cells_b = s->header + 0xC;
+                s->table = cells_b;
                 c = ((rsin(((((s32 *)D_800A35C4)[2] & 0x1F) << D_800A3544[i]) + i * 511) * 63) >> 12) - 0x40;
                 s->col_b = c;
                 s->col_g = c;
@@ -230,11 +236,12 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     s32 sel;
                     s32 id;
                     s32 *tim; /* FAKE: image pointer address, mechanism at the ==3 `tim` */
+                    u8 *vram2;
 
                     func_8005C650(1, 0x7F, 0x7F);
                     flag = 2;
-                    vram = *(u8 **)(D_800A35A8 + 0x7C);
-                    vram += i << 6;
+                    vram2 = *(u8 **)(D_800A35A8 + 0x7C);
+                    vram2 += i << 6;
                     idx = i * 3;
                     if (D_8009BC7C[D_800A3560[idx + 1]] & 2) {
                         sel = 0;
@@ -243,7 +250,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     }
                     id = D_800A3560[idx + 2];
                     tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + sel * 4);
-                    LoadImage(vram + id * 8, *tim);
+                    LoadImage(vram2 + id * 8, *tim);
                     DrawSync(0);
                 }
             }
@@ -264,16 +271,16 @@ void func_80070F78(s32 arg0, DescF97C *s) {
             }
         }
     }
-    sheets = *(s32 **)(D_800A35A8 + 0x60);
-    s->header = sheets[0];
+    sheets2 = *(s32 **)(D_800A35A8 + 0x60);
+    s->header = sheets2[0];
     s->scale_x = 0x80;
     s->scale_y = 0x80;
     s->has_color = 0;
     s->ot_idx = 0xC;
-    cells = s->header + 0x24;
+    cells_c = s->header + 0x24;
     for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
         if (D_800A3560[i * 3] != 5 && D_800A3560[i * 3] != 0x10 && D_800A3578 != 3) {
-            s->table = cells;
+            s->table = cells_c;
             s->x = (D_800A3590[i] << 6) + 0x80;
             s->y = 0xAC - (D_800A3594[i] << 5);
             if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {

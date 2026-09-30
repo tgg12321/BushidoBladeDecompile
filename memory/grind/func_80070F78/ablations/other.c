@@ -222,10 +222,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
             }
         } else {
             if (D_800A3578 == 0) {
-                s32 other = i == 0 ? 3 : 0; /* FAKE: the other player's record offset,
-                                             * mechanism at the loop-1 `rec` */
-
-                if (D_800A3560[other + 2] != 0xFF && ((s16 *)D_800A35C4 + 2)[i == 0 ? 1 : 0] == 0) {
+                if (D_800A3560[(i == 0 ? 3 : 0) + 2] != 0xFF && ((s16 *)D_800A35C4 + 2)[i == 0 ? 1 : 0] == 0) {
                     s32 idx; /* FAKE: record offset, mechanism at the loop-1 `rec` */
                     s32 sel;
                     s32 id;

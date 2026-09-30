@@ -230,11 +230,12 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     s32 sel;
                     s32 id;
                     s32 *tim; /* FAKE: image pointer address, mechanism at the ==3 `tim` */
+                    u8 *vram2;
 
                     func_8005C650(1, 0x7F, 0x7F);
                     flag = 2;
-                    vram = *(u8 **)(D_800A35A8 + 0x7C);
-                    vram += i << 6;
+                    vram2 = *(u8 **)(D_800A35A8 + 0x7C);
+                    vram2 += i << 6;
                     idx = i * 3;
                     if (D_8009BC7C[D_800A3560[idx + 1]] & 2) {
                         sel = 0;
@@ -243,7 +244,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     }
                     id = D_800A3560[idx + 2];
                     tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + sel * 4);
-                    LoadImage(vram + id * 8, *tim);
+                    LoadImage(vram2 + id * 8, *tim);
                     DrawSync(0);
                 }
             }

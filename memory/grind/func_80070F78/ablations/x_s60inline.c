@@ -264,8 +264,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
             }
         }
     }
-    sheets = *(s32 **)(D_800A35A8 + 0x60);
-    s->header = sheets[0];
+    s->header = **(s32 **)(D_800A35A8 + 0x60);
     s->scale_x = 0x80;
     s->scale_y = 0x80;
     s->has_color = 0;

@@ -10,6 +10,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                   * last loop draws from). Ruling 11
                   * (ordinary-c-judge-decidable.md), proof in
                   * memory/grind/func_80070F78/r11/README.md. */
+    s32 cells_c;
     s32 flag;
     s32 cells; /* several values of one kind: the cell table following a sheet
                 * header (s->header + 0xC in the two loop-2 draws, s->header +
@@ -270,10 +271,10 @@ void func_80070F78(s32 arg0, DescF97C *s) {
     s->scale_y = 0x80;
     s->has_color = 0;
     s->ot_idx = 0xC;
-    cells = s->header + 0x24;
+    cells_c = s->header + 0x24;
     for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
         if (D_800A3560[i * 3] != 5 && D_800A3560[i * 3] != 0x10 && D_800A3578 != 3) {
-            s->table = cells;
+            s->table = cells_c;
             s->x = (D_800A3590[i] << 6) + 0x80;
             s->y = 0xAC - (D_800A3594[i] << 5);
             if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {

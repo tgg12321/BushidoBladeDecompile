@@ -128,8 +128,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                         sel = 1;
                     }
                     id = D_800A3560[idx + 2];
-                    tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + sel * 4);
-                    LoadImage(vram + id * 8, *tim);
+                    LoadImage(vram + id * 8, *(s32 *)(D_800A35A8 + 0x14 + id * 8 + sel * 4));
                     DrawSync(0);
                 } else if (D_800A354C & (0x40 << (port * 16))) {
                     s32 sel;

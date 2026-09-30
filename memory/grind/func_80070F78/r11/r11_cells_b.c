@@ -196,6 +196,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 ((s32 *)arg0)[4] = func_8007352C((s32)s);
             }
             if (D_800A3578 != 3) {
+                s32 cells_b;
+
                 s->scale_x = 0x100;
                 s->scale_y = 0x100;
                 if (((s16 *)D_800A35C4)[i + 2] != 0) {
@@ -208,8 +210,8 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 } else {
                     s->header = sheets[i];
                 }
-                cells = s->header + 0xC;
-                s->table = cells;
+                cells_b = s->header + 0xC;
+                s->table = cells_b;
                 c = ((rsin(((((s32 *)D_800A35C4)[2] & 0x1F) << D_800A3544[i]) + i * 511) * 63) >> 12) - 0x40;
                 s->col_b = c;
                 s->col_g = c;

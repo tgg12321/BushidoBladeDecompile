@@ -72,7 +72,6 @@ void func_80070F78(s32 arg0, DescF97C *s) {
         if (D_800A3560[rec] != 5 && D_800A3560[rec] != 0x10) {
             s32 max;
             s32 min;
-            s32 ofs; /* FAKE: record offset, mechanism at the loop-1 `rec` */
 
             if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
                 if (D_8009BC7C[D_800A3561] & 2) {
@@ -89,8 +88,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                 max = 5;
                 min = 1;
             }
-            ofs = i * 3;
-            if (D_800A3560[ofs + 2] == 0xFF) {
+            if (D_800A3560[i * 3 + 2] == 0xFF) {
                 D_800A3544[i] = 7;
                 D_800A3540[i] = 0;
                 ((s16 *)D_800A35C4)[i + 2] = 0x1E;
@@ -174,7 +172,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                     func_8005C650(2, 0x7F, 0x7F);
                     D_800A35C8[0] = 0xF;
                     D_800A35C8[1] = 0x14;
-                    D_800A3560[ofs + 2] = 0xFF;
+                    D_800A3560[i * 3 + 2] = 0xFF;
                 }
                 D_800A3544[i] = 9;
                 if (((s16 *)D_800A35C4)[i + 2] != 0) {

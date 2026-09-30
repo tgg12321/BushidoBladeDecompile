@@ -42,6 +42,8 @@ def c70(txt):
     body = body.replace('    PrimC70 prim;\n', '    DescF97C prim;\n')
     for old, new in FIELDS:
         body = re.sub(r'\bprim\.' + old + r'\b', 'prim.' + new, body)
+    assert body.count('The original source clears mode/zero1C a second') == 1
+    body = body.replace('The original source clears mode/zero1C a second', 'The original source clears x/y a second')
     assert body.count('func_80070F78(arg0, (s32 *)&prim);') == 1
     body = body.replace('func_80070F78(arg0, (s32 *)&prim);', 'func_80070F78(arg0, &prim);')
     return txt[:a] + body + txt[b:]
