@@ -879,3 +879,13 @@ Question, verbatim: "Q65, one declaration: func_80044100 is called once with two
 Owner chose: **"Allow (Recommended)"** — option text: "`extern void func_80044100();`, recorded next to func_8004153C in the owner-decided list."
 Other options offered: "Use varargs instead" — "`void (s32, ...)`, also byte-identical, but it claims a variable argument list the function doesn't have."; "Hold step 08" — "Wait for a different evidence-based declaration; the adoption waits."
 The rule text is .claude/rules/per-file-gp-model.md (A5).
+
+# Owner exchange 2026-10-01 (forty-first batch, AskUserQuestion) — VERBATIM RECORD — GRANTED (staged)
+Context: borderline.md 2026-10-01 "camera_CalcAngles — no -G0 spelling exists for the A8 array; the evidence points
+to a -G8 file that ends before text1b's hand-written asm" (laneA, ledger 4a206a4ac; g0proof/).
+
+## Q89 — text1b split before its hand-written asm, first part -G8
+Question, verbatim: "camera_CalcAngles (the one function reopened by Q65): under the current build no plain C can match it. Compiler dumps show the original compiler with the small-data option off (-G0) also produces the extra instruction, so the original file was almost certainly compiled with that option (-G8). Your Q83 '-G8 for all of text1b' failed. The lane found why: under -G8 the compiler emits hand-written asm before every function, and text1b mixes hand-written asm functions between C functions, so no single -G8 file can produce the shipped order. The proposal: split text1b just before its first hand-written asm and compile only the first part with -G8. That's a new file boundary, justified by this evidence. It would land only after func_80048FFC is in C, after a few mis-declared objects get their real types, and only if the full build still matches exactly. Allow pursuing that?"
+Owner chose: **"Allow, staged (Recommended)"** — option text: "Lanes do the prerequisites (func_80048FFC, real types), then propose the split + -G8 for the first part with its proof; it lands only if the oracle matches and a fresh review passes."
+Other option offered: "Refuse" — "No new file boundary for this; camera_CalcAngles stays assembly and active, one instruction off."
+The rule text is .claude/rules/compiler-flags-canonical.md § Owner ruling Q89.

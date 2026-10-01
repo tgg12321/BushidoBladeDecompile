@@ -62,6 +62,21 @@ RULING — per-file -G8 by proof; Q16 split/respelling order; -G8 screening scop
 
 `-G8` is never admitted for a measured score improvement alone.
 
+**Owner ruling Q89 (2026-10-01) — text1b's -G8 head part (camera_CalcAngles).** text1b may be split
+immediately before its first whole-body hand-written asm function (the inline_asm_canonical.txt block
+starting at math_RotMatrixZYX), the part before the cut joining `GP_FILES` (cc1 `-G8`). Evidence class:
+under `-G8` cc1 emits every function after all file-scope asm, so a mid-file hand-written block cannot sit
+inside one `-G8` file; camera_CalcAngles's A8 array store needs `-G8` (cc1psx and our cc1 alike; `-G0`
+proof in `memory/grind/camera_CalcAngles/g0proof/`). Staged, ALL required: func_80048FFC lands in C first;
+the small-declared objects in that part get their real types first (each its own reviewed landing); the cut
+passes [[per-file-gp-model]]'s split tests in full (no shared gp symbol of any kind across the cut, so no Q67
+merge object's gp users are separated; [[rodata-object-alignment]] conditions 2-4; parts inherit
+`NO_SR_FILES`/`EXPAND_LB_FILES`/`EXPAND_LH_FILES`). Q89 is an added evidence class, not a waiver: it replaces
+only (iii)'s "the TU holds only functions meeting (i)+(ii)" for this part, whose other functions qualify by a
+both-ways full build showing each byte- and relocation-identical. Everything else above still applies: (i)+(ii)
+banked for camera_CalcAngles; the rest of (iii) (no file-scope `__asm__`, `INCLUDE_ASM` or `INCLUDE_RODATA` in
+the `-G8` part; the extern screening); (iv); (v); (vi) incl. manual path only. Only this cut, only this file.
+
 ## Related
 
 [[no-compiler-divergence]] (the toolchain is frozen; this rule is its corollary) · [[cross-jump-call-merge]] ·

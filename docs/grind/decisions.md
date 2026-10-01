@@ -1134,3 +1134,16 @@ Q87 "Later cleanup": the adoption keeps D_800A3220 / D_800A328C as declared and 
 evidence comments; a later aggregate-merge cleanup retypes them as their 8-byte records (own layer-2). Q88 "Allow":
 `extern void func_80044100();` (unprototyped), added to A5's owner-decided list. Rule text: .claude/rules/per-file-gp-model.md
 (A5, Q88); Q86/Q87 are records only.
+
+## 2026-10-01 — OWNER RULING — Q89: text1b split before its hand-written asm block, first part -G8 (staged)
+
+Forty-first batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 41). Owner chose "Allow, staged":
+text1b may be split immediately before its first whole-body hand-written asm function, the part before the cut
+joining GP_FILES, on the evidence that cc1 -G8 emits all file-scope asm before every function (so a mid-file
+hand-written block cannot sit inside one -G8 file) and camera_CalcAngles needs -G8 (g0proof). Prerequisites, each
+its own reviewed landing: func_80048FFC in C; real types for the small-declared objects in that part. Then the full
+per-file-gp-model split tests (no shared gp symbol of any kind across the cut; rodata-object-alignment 2-4; flag
+inheritance), a both-ways build (every other function byte- and relocation-identical), oracle SHA1, engine test,
+fresh layer-2. It is an added evidence class replacing only (iii)'s 'only functions meeting (i)+(ii)' for that part;
+the rest of the per-file -G8-by-proof conditions (i)-(vi) still apply. Until then camera_CalcAngles stays INCLUDE_ASM/active. Rule text: .claude/rules/compiler-flags-canonical.md
+§ Owner ruling Q89.
