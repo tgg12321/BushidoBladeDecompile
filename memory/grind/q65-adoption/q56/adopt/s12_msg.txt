@@ -1,0 +1,8 @@
+An uninitialized `static` (our cc1: `.local S` + `.comm S,size,align`; cc1psx: `.lcomm S,size`) is modelled as
+`.lcomm`: file-own storage (.sbss when small), never COMMON, a local symbol, gp at every offset (Sony ASPSX
+2.34 probe lcomm4). Every such static is 4-aligned whatever its size: owner ruling Q79 (rules: 8c57bc4ab,
+per-file-gp-model.md A8), calibrated by the Sony ASPSX 2.34 + PSYLINK 2.37 probe
+memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.sh / .out (twenty statics of 1..16 bytes, all at
+4-aligned offsets). Tests: tools/maspsx/tests/test_static_lcomm.py (incl. the 1-byte / 8-byte alignment case),
+engine test test_maspsx_static_lcomm. Inert at this step (no C static exists; maspsx has no -G yet):
+byte-neutral, every object compared.

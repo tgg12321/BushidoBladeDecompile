@@ -154,7 +154,9 @@ def elem(t):
 
 
 def lcomm_align(n):
-    return 8 if n >= 8 else 4 if n >= 4 else 2 if n >= 2 else 1
+    """(A8, owner ruling Q79, rules: 8c57bc4ab): Sony ASPSX 2.34 + PSYLINK place every `.lcomm` static
+    4-aligned whatever its size (lcomm_align_probe); maspsx models it (step 12)"""
+    return 4
 
 
 def obj_align(reg, size, dims, e):
@@ -294,6 +296,20 @@ for f, uses in sorted(P.items()):
         # a gap the build's own alignment of the next object already produces is padding, not an object
         # (per-file-gp-model.md, gap clause); a block that ends on an odd byte is followed by the linker's
         # SUBALIGN(2) padding before the next input section (no filler byte)
+        # (A8): in a static block, a static's tail to the next 4-byte boundary is padding; a gap run beyond it
+        # (A2) is still an object
+        if reg == "static":
+            split_items = []
+            for it in items:
+                if it[0] == "fill" and it[1] % 4:
+                    t4 = min(it[2], 4 - it[1] % 4)
+                    log(f"PADDING {f} static {hex(it[1])} ({t4} B): the tail of the static before it to the next "
+                        f"4-byte boundary (A8)")
+                    if it[2] > t4:
+                        split_items.append(("fill", it[1] + t4, it[2] - t4, None))
+                    continue
+                split_items.append(it)
+            items = split_items
         kept = []
         for k, it in enumerate(items):
             if it[0] == "fill" and k + 1 < len(items) and items[k + 1][0] == "obj":
@@ -417,7 +433,8 @@ for i in range(len(st) - 1):
             why = orphan_ok(nm, files[0] if len(files) == 1 else "-", sz, x)
             nb = "adjacent to its block" if files and files[0] in (st[i][2], st[i + 1][2]) else "not adjacent to its file's block"
             ORPHANS.append((x, sz, nm, files, why or nb))
-            log(f"ORPHAN-LEFT {hex(x)} ({sz} B, {nm}) named by {files}: {why or nb} - stays in the data blob (borderline)")
+            log(f"ORPHAN-LEFT {hex(x)} ({sz} B, {nm}) named by {files}: {why or nb} - stays in the data blob "
+                f"(A9, owner ruling Q81)")
 
 
 def fmt(v, size, signed):
@@ -471,6 +488,14 @@ def filler_decls(start, size, static_kw, init):
     import bisect
     out, a, end = [], start, start + size
     while a < end:
+        if static_kw and a % 4:
+            # (A8): a static run never starts inside a 4-byte slot - those bytes are the tail of the static
+            # that starts the slot (padding), even where the blob carries a label there
+            t4 = min(end - a, 4 - a % 4)
+            log(f"PADDING static {hex(a)} ({t4} B): the tail of the static before it to the next 4-byte "
+                f"boundary (A8){' - blob label ' + BLOB_LABELS[a] if a in BLOB_LABELS else ''}")
+            a += t4
+            continue
         k_ = bisect.bisect_right(_LABEL_ADDRS, a)
         nxt = min(_LABEL_ADDRS[k_] if k_ < len(_LABEL_ADDRS) else end, end)
         nm = BLOB_LABELS.get(a, "D_%08X" % a)
@@ -521,9 +546,11 @@ def fill_comment(nm, f):
         if fs:
             parts.append(what + " in " + ", ".join(fn if g == f else f"{g}:{fn}" for g, fn in fs))
     if dp:
-        parts.append("named by the pointer word at " + ", ".join(f"{x:#010X} ({fn})" for fn, x in dp))
-        log(f"BORDERLINE-A2 {f} {nm}: named by a pointer word in asm data {[(fn, hex(x)) for fn, x in dp]}: "
-            f"(A2) 'no other file references it' is not established (owner question); defined here meanwhile")
+        parts.append("named by the pointer word at " + ", ".join(f"{x:#010X} ({fn})" for fn, x in dp) +
+                     " (A9, owner ruling Q80, rules: 8c57bc4ab: this file's K3 global by layout - it lies between"
+                     " this file's gp-reached objects; the pointer table's owning file is open)")
+        log(f"A9 {f} {nm}: named by a pointer word in asm data {[(fn, hex(x)) for fn, x in dp]}: defined here "
+            f"as a K3 global (owner ruling Q80); the table's owning file is open")
     if not parts:
         return "/* not named by any code or data: size from the gap */"
     return "/* " + "; ".join(parts) + ": size from the blob label */"
@@ -829,7 +856,7 @@ for p, pats in (("engine/buildstamp.py", [("'sdata_syms.txt', 'sdata_funcs.txt',
 open("/tmp/q56/s10_log.txt", "w").write(NL.join(LOG) + NL)
 open(f"{H}/s15_log.txt", "w", newline=NL).write(NL.join(LOG) + NL)
 # the commit body: every disposition the generator took (layer-2 round 1, step-15 finding 6)
-msg = ["Rule: .claude/rules/per-file-gp-model.md (Q65, Q67-Q72). Generator: s15_apply.py (docstring); evidence",
+msg = ["Rule: .claude/rules/per-file-gp-model.md (Q65, Q67-Q72; A8/A9 = Q79-Q81, rules: 8c57bc4ab). Generator: s15_apply.py (docstring); evidence",
        "docs/grind/gp-model-2026-09-30.md; full generator log banked as memory/grind/q65-adoption/q56/adopt/s15_log.txt.",
        "Explicit-relocation asm excluded from E1/E2/split: memory/grind/q65-adoption/q56/adopt/explicit_exclusions.md.", ""]
 for title, pfx in (("Blocks extended to their last gp-reached object (no C declaration yet)", "BLOCK-END"),
@@ -837,8 +864,8 @@ for title, pfx in (("Blocks extended to their last gp-reached object (no C decla
                    ("Block ends on an odd byte (linker SUBALIGN(2) padding, no object)", "END-PAD"),
                    ("(A6, Q71) runs no single object fits, split into the fewest aligned pieces", "A6 "),
                    ("(A1) orphan objects joined to the one block that names them", "ORPHAN-JOIN"),
-                   ("(A1) objects named by code but left in the data blob (borderline.md)", "ORPHAN-LEFT"),
-                   ("(A2) objects whose 'no other file references it' is not established (owner question)", "BORDERLINE"),
+                   ("(A1; A9, owner ruling Q81) objects named by code but left in the data blob", "ORPHAN-LEFT"),
+                   ("(A9, owner ruling Q80) objects named by a pointer in asm data, defined by layout", "A9 "),
                    ("Arrays sized from the original's object boundary", "SIZED-FROM-GAP"),
                    ("(K2) externs of the new statics removed from other files", "EXTERN-REMOVED"),
                    ("(K2) header externs removed", "HEADER"),

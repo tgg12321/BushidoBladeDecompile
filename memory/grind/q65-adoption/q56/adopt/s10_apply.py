@@ -26,7 +26,8 @@ def subn(p, a, b, n):
 T2, BB, D1 = "src/text1b_tu2.c", "src/text1b_b.c", "src/text1b_tu1d.c"
 sub1(D1, "void func_8006E950(s32 *a0, s32 *a1) {", "void func_8006E950(s32 a0, s32 *a1) {")
 sub1(D1, "    s0_addr = (s32)a0;\n    game_FrameLoop();", "    s0_addr = a0;\n    game_FrameLoop();")
-sub1(T2, "void func_8006E950(s32 *a0, s32 *a1);", "void func_8006E950(s32 a0, s32 *a1);")
+if "void func_8006E950(s32 a0, s32 *a1);" not in rd(T2):   # func_800770B8's landing already declares it so
+    sub1(T2, "void func_8006E950(s32 *a0, s32 *a1);", "void func_8006E950(s32 a0, s32 *a1);")
 sub1(BB, "extern s32 func_8006E950(s32, s32 *);", "extern void func_8006E950(s32, s32 *);")
 sub1(BB, "extern u8 *func_8006E49C(s32, s32);", "extern s32 func_8006E49C(s32, s32 *);")
 sub1(BB, "func_8006E49C(r, D_800A35F4);", "func_8006E49C(r, (s32 *)D_800A35F4);")

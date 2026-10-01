@@ -1,0 +1,15 @@
+Each object that step 15 makes a static gets ONE declaration, typed by evidence, before the switch (byte-
+identical; layer-2 on every changed body, listed in memory/grind/q65-adoption/q56/adopt/body_hashes.txt).
+- D_800A3468 (text1b_tu1c): the file's `s32`; func_80060A68 reads it through `#define OB ((struct Ob
+  *)D_800A3468)` instead of a block-scope `extern struct Ob *`.
+- Per-word element names (layer-2 round 1, step-15 finding 1): g_anim_hit_flags s16[2] / g_anim_hit_data
+  s32[2] (func_800420E8 indexes both with a0 < 2; g_anim_counter and D_800A3388 were their element 1),
+  D_800A344C u32[2] / D_800A3454 s32[2] (per-lane pairs; D_800A3450 / D_800A3458 were element 1),
+  D_800A35C8 s16[2] (declaration completed).
+- (A8, owner ruling Q79, rules: 8c57bc4ab; probe memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.*):
+  Sony places every `.lcomm` static 4-aligned, so each gp-reached s16 name at a 2-mod-4 address is the
+  second halfword of its slot's static: D_800A33C8[2] (was D_800A33C8 + D_800A33CA), D_800A33E8[2]
+  (+ D_800A33EA; text1b already indexed `(&D_800A33E8)[idx]`), D_800A345C[2] (+ D_800A345E),
+  D_800A350C[2] (+ D_800A350E; `&D_800A350C` is the pair pointer passed to func_800692C0), D_800A3510[2]
+  (+ D_800A3512).
+- Symbol-file rows of the retired element names go where nothing names them any more.

@@ -3,7 +3,9 @@
 uninitialized `static` (our cc1: `.local S` + `.comm S,size,align`; cc1psx: `.lcomm S,size`) as `.lcomm`:
 the file's own storage (.sbss when size <= the -G limit, else .bss), never COMMON, so Sony ASPSX 2.34 gives
 it gp at every offset (probe lcomm4); it stays a LOCAL symbol. Replaces the fail-closed ValueError of the Q62
-parser fix. Inert today (no C static exists; maspsx has no -G yet): byte-neutral.
+parser fix. Every such static is 4-aligned whatever its size (owner ruling Q79, rules: 8c57bc4ab,
+per-file-gp-model.md A8; Sony ASPSX 2.34 + PSYLINK probe lcomm_align_probe.sh/.out). Inert today (no C static
+exists; maspsx has no -G yet): byte-neutral.
 usage: s12_apply.py <tree>"""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -49,7 +51,12 @@ sub1(P, """                if section == "sbss":
 
                 # only mark bss symbols as global
                 if section == "bss":""",
-"""                if section == "sbss" or symbol in self.static_symbols:
+"""                if symbol in self.static_symbols:
+                    # Sony ASPSX 2.34 + PSYLINK place every `.lcomm` static 4-aligned,
+                    # whatever its size (owner ruling Q79, per-file-gp-model.md A8; probe
+                    # memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.*)
+                    res.append("\\t.align 2")
+                elif section == "sbss":
                     if size >= 8:
                         res.append("\\t.align 3")
                     elif size >= 4:
@@ -101,6 +108,14 @@ class TestStaticLcomm(unittest.TestCase):
         self.assertIn("lb\\t$4,%gp_rel(cm)($gp)", res)
         self.assertIn("lb\\t$5,cm+1", res)
 
+    def test_static_is_4_aligned_whatever_its_size(self):
+        # Sony ASPSX 2.34 + PSYLINK (lcomm_align_probe, owner ruling Q79 / A8): a 1-byte static, then an
+        # 8-byte one at +4: every `.lcomm` static is 4-aligned
+        res = run([".text", ".ent\\tf", "lb\\t$4,a1", "lw\\t$5,b8", ".end\\tf",
+                   ".local\\ta1", ".comm\\ta1,1,1", ".local\\tb8", ".comm\\tb8,8,4"])
+        self.assertEqual(res[res.index("a1:") - 1], ".align 2")
+        self.assertEqual(res[res.index("b8:") - 1], ".align 2")
+
     def test_static_without_g_is_local_bss_not_gp(self):
         res = run([".text", ".ent\\tf", "lb\\t$4,st", ".end\\tf", ".local\\tst", ".comm\\tst,4,4"], g=0)
         self.assertNotIn("lb\\t$4,%gp_rel(st)($gp)", res)
@@ -123,6 +138,12 @@ sub1("engine/test_engine.py", """def test_maspsx_fingerprint() -> None:""", '''d
     res = [l.split("#")[0].strip() for l in MaspsxProcessor(lines, sdata_limit=8).process_lines()]
     eq("maspsx -G8: a static is gp at base and offset",
        [l for l in res if l.startswith("lb")], ["lb\\t$4,%gp_rel(st)($gp)", "lb\\t$5,%gp_rel(st+1)($gp)"])
+    # owner ruling Q79 (A8): Sony ASPSX + PSYLINK place every `.lcomm` static 4-aligned (lcomm_align_probe)
+    lines2 = [".text", ".ent\\tf", "lb\\t$4,a1", "lw\\t$5,b8", ".end\\tf",
+              ".local\\ta1", ".comm\\ta1,1,1", ".local\\tb8", ".comm\\tb8,8,4"]
+    res2 = [l.split("#")[0].strip() for l in MaspsxProcessor(lines2, sdata_limit=8).process_lines()]
+    eq("maspsx: a 1-byte and an 8-byte static are each 4-aligned (Sony probe)",
+       [res2[res2.index("a1:") - 1], res2[res2.index("b8:") - 1]], [".align 2", ".align 2"])
 
 
 def test_maspsx_fingerprint() -> None:''')

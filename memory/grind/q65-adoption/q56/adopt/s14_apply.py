@@ -22,6 +22,10 @@ the element is written through the array. Byte-identical (same address, same wid
   text1b_tu1d: D_800A35C8 is s16[2] (func_8006F100 reads/writes [i] per player; func_80070188 and
     func_80070F78 write [0] and [1]); the declaration was incomplete (no body change).
 The merged names' symbol-file rows go when nothing still names them (C or an INCLUDE_ASM function's .s).
+(A8, owner ruling Q79, rules: 8c57bc4ab): every `.lcomm` static is 4-aligned (Sony probe lcomm_align_probe),
+so a gp-reached name at a 2-mod-4 address of a static block is the second halfword of the slot's static: the
+five s16 pairs D_800A33C8/CA, D_800A33E8/EA (text1b), D_800A345C/5E, D_800A350C/0E, D_800A3510/12
+(text1b_tu1c) become s16[2] arrays (A8_PAIRS below; body changes in each function naming them).
 usage: s14_apply.py <tree>"""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -86,4 +90,46 @@ for nm in ("g_anim_counter", "D_800A3388", "D_800A3450", "D_800A3458", "D_800A35
         if len(K) != len(L):
             wr(sf, NL.join(K))
             print(f"row removed: {sf} {nm}")
+# ---- (A8, Q79): one .lcomm static per 4-byte slot. Sony ASPSX + PSYLINK place every static 4-aligned
+# (lcomm_align_probe), so a name at a 2-mod-4 address in the static region is the second halfword of the
+# static that starts the slot. Each pair below is two s16 names in one slot of one file's static block; the
+# pair becomes `s16 X[2]` and the second name X[1]. Evidence: the slot itself, and text1b's own
+# `(&D_800A33E8)[idx]` (indexing past the first name), and the pair pointer `&D_800A350C` handed to
+# func_800692C0 as an `s16 *`.
+A8_PAIRS = [("D_800A33C8", "D_800A33CA"), ("D_800A33E8", "D_800A33EA"), ("D_800A345C", "D_800A345E"),
+            ("D_800A350C", "D_800A350E"), ("D_800A3510", "D_800A3512")]
+
+
+def a8_merge(text, X, Y):
+    text = _re.sub(r"^[ \t]*extern\s+s16\s+%s\s*;[^\n]*\n" % Y, "", text, flags=_re.M)
+    text = _re.sub(r"^([ \t]*)extern\s+s16\s+%s\s*;" % X, r"\1extern s16 @@X[2];", text, flags=_re.M)
+    text = _re.sub(r"\(&%s\)\[" % X, "@@X[", text)            # (&X)[i] -> X[i]
+    text = _re.sub(r"&%s\b(?!\s*\[)" % X, "@@X", text)          # &X (the pair's address) -> X
+    text = _re.sub(r"\b%s\b" % Y, "@@X[1]", text)                # the second halfword
+    text = _re.sub(r"\b%s\b(?!\s*\[)" % X, "@@X[0]", text)       # the first halfword
+    return text.replace("@@X", X)
+
+
+for X, Y in A8_PAIRS:
+    hit = []
+    for f in sorted(glob.glob("src/*.c") + glob.glob("include/*.h")):
+        s = rd(f)
+        if not _re.search(r"\b(%s|%s)\b" % (X, Y), s):
+            continue
+        s2 = a8_merge(s, X, Y)
+        if s2 != s:
+            wr(f, s2)
+            hit.append(f)
+    print(f"A8 {X}[2] (was {X} + {Y}): {hit}")
+    users = [f for f in glob.glob("src/*.c") + glob.glob("include/*.h") if _re.search(r"\b%s\b" % Y, rd(f))] + \
+            [fn for fn, s in asm.items() if _re.search(r"\b%s\b" % Y, s)]
+    if users:
+        print(f"row kept: {Y} still named by {users}")
+        continue
+    for sf in ("undefined_syms_auto.txt", "named_syms.txt"):
+        L = rd(sf).split(NL)
+        K = [l for l in L if not _re.match(r"^\s*%s\s*=" % Y, l)]
+        if len(K) != len(L):
+            wr(sf, NL.join(K))
+            print(f"row removed: {sf} {Y}")
 print("step 14 applied")
