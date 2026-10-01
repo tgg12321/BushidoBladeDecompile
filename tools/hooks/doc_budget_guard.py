@@ -8,7 +8,7 @@ src/*.c read. History belongs in commit messages and git; files hold current sta
 Checks the STAGED tree (index blobs, not the working copy):
   1. New .md files need `[new-doc]` in the commit message (justify it in the body).
      Exempt: per-function grind ledgers (memory/grind/**), docs/naming/data_evidence/.
-  2. Each .claude/rules/*.md <= RULE_MAX bytes (AUTHORITY_RULES <= AUTHORITY_MAX).
+  2. Each .claude/rules/*.md <= RULE_MAX bytes (split long policy into on-demand files).
   3. Rules whose `paths:` match src/*.c (they auto-load on every source read)
      total <= AUTOLOAD_MAX bytes.
   4. memory/grind/<func>/{hypotheses,evidence}.md <= LEDGER_MAX bytes
@@ -26,14 +26,6 @@ import subprocess
 import sys
 
 RULE_MAX = 8 * 1024
-# Policy authorities that reviewers apply prong-by-prong get a larger ceiling.
-AUTHORITY_RULES = {
-    ".claude/rules/no-new-park-categories.md",
-    ".claude/rules/ordinary-c-judge-decidable.md",
-    ".claude/rules/codegen-technique-index.md",
-    ".claude/rules/inline-asm-policy.md",
-}
-AUTHORITY_MAX = 24 * 1024
 AUTOLOAD_MAX = 60 * 1024
 LEDGER_MAX = 64 * 1024
 LOG_CAPS = {
@@ -86,7 +78,7 @@ def main() -> int:
         size = staged_size(path)
         if size is None:
             continue
-        cap = AUTHORITY_MAX if path in AUTHORITY_RULES else RULE_MAX
+        cap = RULE_MAX
         if path.startswith(".claude/rules/") and path.endswith(".md") and size > cap:
             errors.append(f"{path} is {size} B > {cap} B: a rule holds the operative rule "
                           "only — move rulings/case history into the commit message.")

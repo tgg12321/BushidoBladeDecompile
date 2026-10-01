@@ -41,9 +41,6 @@ HARNESS_MARK = "/.claude/projects/"
 HARNESS_NOTE_MAX = 6144
 HARNESS_MAX_NOTES = 10
 RULE_MAX = 8 * 1024
-RULE_AUTHORITY_MAX = 24 * 1024
-RULE_AUTHORITIES = {"no-new-park-categories.md", "ordinary-c-judge-decidable.md",
-                    "codegen-technique-index.md", "inline-asm-policy.md"}
 
 MAX_DESC_LEN = 500  # description max chars. MEMORY.md stays compact regardless:
                     # regen_memory_index.py shows only the first sentence (<=130 chars).
@@ -160,7 +157,7 @@ def validate_content(file_path: str, content: str) -> list[str]:
     if is_rules:
         # Documentation budget (CLAUDE.md): block growth past the cap; shrinking edits
         # of an over-cap file stay allowed. Mirrors tools/hooks/doc_budget_guard.py.
-        cap = RULE_AUTHORITY_MAX if name in RULE_AUTHORITIES else RULE_MAX
+        cap = RULE_MAX
         size = len(content.encode("utf-8"))
         old = p.stat().st_size if p.exists() else 0
         if size > cap and size > old:

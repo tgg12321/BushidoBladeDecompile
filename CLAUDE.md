@@ -80,7 +80,7 @@ auto-loaded ~100K tokens of rules. Don't rebuild that.
   and investigation notes go in the commit message body, or a few lines in an EXISTING doc.
   A new file needs `[new-doc]` + a justification in the commit body.
 - **Rules (`.claude/rules/`) hold the operative rule only:** what to do, the test, at most one
-  short example. ≤ 8 KB each (the four policy authorities ≤ 24 KB). No Q&A transcripts, dated
+  short example. ≤ 8 KB each (split long policy into on-demand files it links). No Q&A transcripts, dated
   amendment chains, or case histories — edit the rule in place; the diff is the history.
   Rules matching `src/*.c` must total ≤ 60 KB; give new technique rules self-only `paths:` and an
   index line in `codegen-technique-index`.
