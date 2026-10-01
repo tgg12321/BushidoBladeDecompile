@@ -1,0 +1,1 @@
+{"func": "stage_InitCollision", "addr": "8003F274", "verdict": "PASS", "body_hash": "b5c48386649a15d1", "body_kind": "c", "file": "config", "reviewer": "rev-q65r2-b0610", "scope": "cheat-cleanup", "date": "2026-10-01T22:15:19Z", "head": "fd171b8ff", "notes": "Q65 per-file gp model adoption, step 06 (owner rulings Q65/Q67/Q79/Q84/Q86-Q88); layer-2 group review rev-q65r2-b0610"}

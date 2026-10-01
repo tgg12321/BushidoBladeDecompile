@@ -1,0 +1,1 @@
+{"func": "func_80054604", "addr": "80054604", "verdict": "PASS", "body_hash": "def31064c14fda49", "body_kind": "c", "file": "text1b", "reviewer": "rev-q65r3-s0814", "scope": "cheat-cleanup", "date": "2026-10-01T22:18:40Z", "head": "2c5848f2e", "notes": "Q65 per-file gp model adoption, step 08 (owner rulings Q65/Q67/Q79/Q84/Q86-Q88); layer-2 group review rev-q65r3-s0814"}

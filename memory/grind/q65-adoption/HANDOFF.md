@@ -1,6 +1,10 @@
 # Q65 adoption (per-file gp model): handoff, 2026-10-01
 
-**State (round 5, 2026-10-01, laneA).** Round 4 review: 09, 14 and all bodies PASS; step 15 FAIL on one item, fixed:
+**State: APPLIED (2026-10-01, laneA).** Steps 01-16 landed as b6c0c0d24..4fca9a4dd (round 5 series, base
+43e73e46b; each step oracle), oracle re-locked by the following `engine:` commit, layer-2 records of the 48
+changed completed bodies in their ledgers. Owed: the `rules:` / `docs:` updates (own review).
+
+**Round 5 (2026-10-01).** Round 4 review: 09, 14 and all bodies PASS; step 15 FAIL on one item, fixed:
 s15 now adds a symbol-file row for every K1 tentative definition that had none (ROW-ADDED: D_800A36DC, D_800A36E0,
 D_800A36E4, D_800A3724, all text1b_tu1c; byte-neutral, owner ruling Q62), and the struct alignment model is
 cc1's DATA_ALIGNMENT word (4). Regenerated on the same base: only step 15 differs from round 4 (r5diff/15.diff),
