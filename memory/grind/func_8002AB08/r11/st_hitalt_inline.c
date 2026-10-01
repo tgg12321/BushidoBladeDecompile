@@ -40,6 +40,9 @@ typedef struct {
 } R8002AB08;
 extern void func_8002CA8C(u8 *a0, s32 a1, s32 a2);
 extern s32 func_8002CD58(u8 *obj);
+static inline void copy_pt(u8 *dst, LeafPos *pts, s32 n) {
+    *(LeafPos *)dst = pts[n];
+}
 void func_8002AB08(s32 mode) {
     u8 *scr = (u8 *)0x1F8002B8;
     s16 *vec = &D_800A37E8;
@@ -143,13 +146,13 @@ void func_8002AB08(s32 mode) {
                 c = 0;
             }
             if (alt == 0) {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][temp2];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp1);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp2);
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg[temp2];
             } else {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][temp2];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp1);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp2);
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg2[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg2[temp2];
             }
@@ -352,20 +355,19 @@ void func_8002AB08(s32 mode) {
         if (ang >= 0x800) {
             ang = 0x1000 - ang;
         }
-        alt = (mask_a & (1 << idx)) != 0;
         if (((R8002AB08 *)other)->fae == 0) {
             continue;
         }
         if (((R8002AB08 *)other)->f8c != 0
-            && (((R8002AB08 *)other)->frame < ((R8002AB08 *)other)->win[alt] || ((R8002AB08 *)other)->frame > ((R8002AB08 *)other)->win[alt + 2])) {
+            && (((R8002AB08 *)other)->frame < ((R8002AB08 *)other)->win[(mask_a & (1 << idx)) != 0] || ((R8002AB08 *)other)->frame > ((R8002AB08 *)other)->win[((mask_a & (1 << idx)) != 0) + 2])) {
             continue;
         }
         flag = 0;
         if (!((u16)((R8002AB08 *)other)->e == 6 || (u16)((R8002AB08 *)other)->e == 7)) {
-            if ((((R8002AB08 *)other)->c == 0x1D || ((R8002AB08 *)other)->c == 0xE) && alt != 0) {
+            if ((((R8002AB08 *)other)->c == 0x1D || ((R8002AB08 *)other)->c == 0xE) && (mask_a & (1 << idx))) {
                 flag = 1;
             } else {
-                func_800274BC(&((R8002AB08 *)other)->vel[alt].vx, vec);
+                func_800274BC(&((R8002AB08 *)other)->vel[(mask_a & (1 << idx)) != 0].vx, vec);
             }
         }
         if (D_800A3140 == 0) {
@@ -376,7 +378,7 @@ void func_8002AB08(s32 mode) {
         if (mask_b & (1 << idx) & ~mask_c) {
             strong = 0;
         }
-        func_80027AD8(0, self, idx, ang, strong, (Tbl8008E194 *)alt, flag, 0);
+        func_80027AD8(0, self, idx, ang, strong, (Tbl8008E194 *)((mask_a & (1 << idx)) != 0), flag, 0);
         ((R8002AB08 *)other)->fad = 0;
     }
 }

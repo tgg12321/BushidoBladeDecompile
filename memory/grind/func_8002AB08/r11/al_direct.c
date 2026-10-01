@@ -40,9 +40,11 @@ typedef struct {
 } R8002AB08;
 extern void func_8002CA8C(u8 *a0, s32 a1, s32 a2);
 extern s32 func_8002CD58(u8 *obj);
+static inline void copy_pt(u8 *dst, LeafPos *pts, s32 n) {
+    *(LeafPos *)dst = pts[n];
+}
 void func_8002AB08(s32 mode) {
     u8 *scr = (u8 *)0x1F8002B8;
-    s16 *vec = &D_800A37E8;
     s32 i;
     u8 *other;
     u8 *self;
@@ -143,13 +145,13 @@ void func_8002AB08(s32 mode) {
                 c = 0;
             }
             if (alt == 0) {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][temp2];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp1);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp2);
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg[temp2];
             } else {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][temp2];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp1);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp2);
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg2[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg2[temp2];
             }
@@ -255,8 +257,8 @@ void func_8002AB08(s32 mode) {
             }
         }
         if (mode == 1) {
-            func_800274BC(&((R8002AB08 *)other)->vel[0].vx, vec);
-            func_80032854(i, 4, (u8 *)&SPAD->unkA8[i][idx], vec);
+            func_800274BC(&((R8002AB08 *)other)->vel[0].vx, &D_800A37E8);
+            func_80032854(i, 4, (u8 *)&SPAD->unkA8[i][idx], &D_800A37E8);
             return;
         }
         near = 0;
@@ -365,7 +367,7 @@ void func_8002AB08(s32 mode) {
             if ((((R8002AB08 *)other)->c == 0x1D || ((R8002AB08 *)other)->c == 0xE) && alt != 0) {
                 flag = 1;
             } else {
-                func_800274BC(&((R8002AB08 *)other)->vel[alt].vx, vec);
+                func_800274BC(&((R8002AB08 *)other)->vel[alt].vx, &D_800A37E8);
             }
         }
         if (D_800A3140 == 0) {

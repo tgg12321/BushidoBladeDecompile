@@ -40,9 +40,12 @@ typedef struct {
 } R8002AB08;
 extern void func_8002CA8C(u8 *a0, s32 a1, s32 a2);
 extern s32 func_8002CD58(u8 *obj);
+static inline void copy_pt(u8 *dst, LeafPos *pts, s32 n) {
+    *(LeafPos *)dst = pts[n];
+}
 void func_8002AB08(s32 mode) {
     u8 *scr = (u8 *)0x1F8002B8;
-    s16 *vec = &D_800A37E8;
+    s16 *vec;
     s32 i;
     u8 *other;
     u8 *self;
@@ -76,6 +79,7 @@ void func_8002AB08(s32 mode) {
     s32 strong;
 
     for (i = 0; i < 2; i++) {
+        vec = &D_800A37E8;
         if (mode == 1 && D_800A38AE == i) {
             continue;
         }
@@ -143,13 +147,13 @@ void func_8002AB08(s32 mode) {
                 c = 0;
             }
             if (alt == 0) {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][temp2];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp1);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp2);
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg[temp2];
             } else {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][temp2];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp1);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp2);
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg2[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg2[temp2];
             }

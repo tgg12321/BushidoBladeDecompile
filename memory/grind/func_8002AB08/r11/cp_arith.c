@@ -143,13 +143,13 @@ void func_8002AB08(s32 mode) {
                 c = 0;
             }
             if (alt == 0) {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][temp2];
+                *(LeafPos *)(scr + 0x0) = ((LeafPos *)((u8 *)SPAD->unk00 + (i == 0) * 0x24))[temp1];
+                *(LeafPos *)(scr + 0xC) = ((LeafPos *)((u8 *)SPAD->unk00 + (i == 0) * 0x24))[temp2];
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg[temp2];
             } else {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][temp2];
+                *(LeafPos *)(scr + 0x0) = ((LeafPos *)((u8 *)SPAD->unk48 + (i == 0) * 0x18))[temp1];
+                *(LeafPos *)(scr + 0xC) = ((LeafPos *)((u8 *)SPAD->unk48 + (i == 0) * 0x18))[temp2];
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg2[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg2[temp2];
             }

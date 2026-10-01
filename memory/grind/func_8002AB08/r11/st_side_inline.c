@@ -40,6 +40,9 @@ typedef struct {
 } R8002AB08;
 extern void func_8002CA8C(u8 *a0, s32 a1, s32 a2);
 extern s32 func_8002CD58(u8 *obj);
+static inline void copy_pt(u8 *dst, LeafPos *pts, s32 n) {
+    *(LeafPos *)dst = pts[n];
+}
 void func_8002AB08(s32 mode) {
     u8 *scr = (u8 *)0x1F8002B8;
     s16 *vec = &D_800A37E8;
@@ -143,13 +146,13 @@ void func_8002AB08(s32 mode) {
                 c = 0;
             }
             if (alt == 0) {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][temp2];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp1);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp2);
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg[temp2];
             } else {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][temp2];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp1);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp2);
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg2[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg2[temp2];
             }
@@ -275,8 +278,7 @@ void func_8002AB08(s32 mode) {
                   || (u16)((R8002AB08 *)other)->move == 0x26)
                 || near == 0)) {
             bit = 1 << idx;
-            temp3 = (mask_a & bit) != 0;
-            if (temp3) {
+            if (mask_a & bit) {
                 dx = SPAD->unk48[i == 0][0].x - ((R8002AB08 *)other)->pos.x;
                 dz = SPAD->unk48[i == 0][0].z - ((R8002AB08 *)other)->pos.z;
                 temp1 = dx * dx + dz * dz;
@@ -322,8 +324,8 @@ void func_8002AB08(s32 mode) {
                 if (work < 0) {
                     work = 0;
                 }
-                dx = dx / 4 + (((R8002AB08 *)other)->vel[temp3].vx * work / 2 >> 11);
-                dz = dz / 4 + (((R8002AB08 *)other)->vel[temp3].vz * work / 2 >> 11);
+                dx = dx / 4 + (((R8002AB08 *)other)->vel[(mask_a & bit) != 0].vx * work / 2 >> 11);
+                dz = dz / 4 + (((R8002AB08 *)other)->vel[(mask_a & bit) != 0].vz * work / 2 >> 11);
                 if ((u16)((R8002AB08 *)other)->move == 3 || (u16)((R8002AB08 *)other)->move == 7 || (u16)((R8002AB08 *)other)->move == 0xD
                     || (u16)((R8002AB08 *)other)->move == 0x2C) {
                     ((R8002AB08 *)self)->nudge.vx += dx / 2;

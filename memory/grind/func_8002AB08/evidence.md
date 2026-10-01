@@ -53,3 +53,13 @@ u16 views of +0xE/+0x6A (candidate uses a TU-local view R8002AB08 as a stand-in)
 dx/dy/dz, a/b, k, j, alt, w; (3) pointer-alias exhaustion for vec; (4) copy_pt justification; (5) the
 `(Tbl8008E194 *)alt` 6th argument to func_80027AD8 (the target passes the 0/1 flag where the TU prototype
 types a record pointer) and the `(s32 *)&hit` casts.
+
+## s3 (2026-10-01, laneC) — candidate simplified; Ruling 11 package built (r11/README.md)
+- copy_pt dropped: on the current body the plain `SPAD->unk00[i == 0][temp1]` copies also score 0
+  (r11/scores_copypt.txt; ternary / pointer-arith forms 217). No helper remains.
+- Reused locals renamed to (E) names (temp1/temp2/temp3/idx/work; dx/dy/dz/alt kind names); the min/max
+  counter is its own `j` (its split matched); the unused `side` declaration removed. Still 0.
+- vec alias: direct `&D_800A37E8` 6, per-block alias 6, alias assigned at the loop top 0 (r11/scores_alias.txt).
+- Orchestrator 2026-10-01: PracticeMenuRec members (a) s16 +0x8C/+0x92/+0x26C and (b) Vec4i32 unk_114[2]
+  are mine to add AFTER laneB-2's func_80058580 landing, under the landing lock; +0xA3 layout conflict
+  (`other + 0xA3 + alt` = a 2-byte array vs laneB's scalar unk_A3) reported to the orchestrator.

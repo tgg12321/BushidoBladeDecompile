@@ -40,6 +40,9 @@ typedef struct {
 } R8002AB08;
 extern void func_8002CA8C(u8 *a0, s32 a1, s32 a2);
 extern s32 func_8002CD58(u8 *obj);
+static inline void copy_pt(u8 *dst, LeafPos *pts, s32 n) {
+    *(LeafPos *)dst = pts[n];
+}
 void func_8002AB08(s32 mode) {
     u8 *scr = (u8 *)0x1F8002B8;
     s16 *vec = &D_800A37E8;
@@ -74,6 +77,7 @@ void func_8002AB08(s32 mode) {
     s32 work;
     s32 flag;
     s32 strong;
+    u8 nearest_;
 
     for (i = 0; i < 2; i++) {
         if (mode == 1 && D_800A38AE == i) {
@@ -143,13 +147,13 @@ void func_8002AB08(s32 mode) {
                 c = 0;
             }
             if (alt == 0) {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][temp2];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp1);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp2);
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg[temp2];
             } else {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][temp2];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp1);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp2);
                 *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg2[temp1];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg2[temp2];
             }
@@ -250,13 +254,13 @@ void func_8002AB08(s32 mode) {
                 work = dx * dx + dy * dy + dz * dz - *(u16 *)(rec + 0xE);
                 if (work < best) {
                     best = work;
-                    idx = temp3;
+                    nearest_ = temp3;
                 }
             }
         }
         if (mode == 1) {
             func_800274BC(&((R8002AB08 *)other)->vel[0].vx, vec);
-            func_80032854(i, 4, (u8 *)&SPAD->unkA8[i][idx], vec);
+            func_80032854(i, 4, (u8 *)&SPAD->unkA8[i][nearest_], vec);
             return;
         }
         near = 0;
@@ -267,14 +271,14 @@ void func_8002AB08(s32 mode) {
         guard = 0;
         if (((u16)((R8002AB08 *)other)->e == 6 || (u16)((R8002AB08 *)other)->e == 7 || ((R8002AB08 *)other)->c == 0x1D
              || ((R8002AB08 *)other)->c == 0xE)
-            && (mask_a & (1 << idx))) {
+            && (mask_a & (1 << nearest_))) {
             guard = 1;
         }
         if (guard == 0
             && (!((u16)((R8002AB08 *)other)->move == 2 || (u16)((R8002AB08 *)other)->move == 0x1B || (u16)((R8002AB08 *)other)->move == 0x28
                   || (u16)((R8002AB08 *)other)->move == 0x26)
                 || near == 0)) {
-            bit = 1 << idx;
+            bit = 1 << nearest_;
             temp3 = (mask_a & bit) != 0;
             if (temp3) {
                 dx = SPAD->unk48[i == 0][0].x - ((R8002AB08 *)other)->pos.x;
@@ -352,7 +356,7 @@ void func_8002AB08(s32 mode) {
         if (ang >= 0x800) {
             ang = 0x1000 - ang;
         }
-        alt = (mask_a & (1 << idx)) != 0;
+        alt = (mask_a & (1 << nearest_)) != 0;
         if (((R8002AB08 *)other)->fae == 0) {
             continue;
         }
@@ -369,14 +373,14 @@ void func_8002AB08(s32 mode) {
             }
         }
         if (D_800A3140 == 0) {
-            strong = deep & (1 << idx);
+            strong = deep & (1 << nearest_);
         } else {
             strong = 1;
         }
-        if (mask_b & (1 << idx) & ~mask_c) {
+        if (mask_b & (1 << nearest_) & ~mask_c) {
             strong = 0;
         }
-        func_80027AD8(0, self, idx, ang, strong, (Tbl8008E194 *)alt, flag, 0);
+        func_80027AD8(0, self, nearest_, ang, strong, (Tbl8008E194 *)alt, flag, 0);
         ((R8002AB08 *)other)->fad = 0;
     }
 }

@@ -40,6 +40,9 @@ typedef struct {
 } R8002AB08;
 extern void func_8002CA8C(u8 *a0, s32 a1, s32 a2);
 extern s32 func_8002CD58(u8 *obj);
+static inline void copy_pt(u8 *dst, LeafPos *pts, s32 n) {
+    *(LeafPos *)dst = pts[n];
+}
 void func_8002AB08(s32 mode) {
     u8 *scr = (u8 *)0x1F8002B8;
     s16 *vec = &D_800A37E8;
@@ -74,6 +77,8 @@ void func_8002AB08(s32 mode) {
     s32 work;
     s32 flag;
     s32 strong;
+    u8 pt0_;
+    s32 dsq0_;
 
     for (i = 0; i < 2; i++) {
         if (mode == 1 && D_800A38AE == i) {
@@ -128,29 +133,29 @@ void func_8002AB08(s32 mode) {
         for (pass = 0; pass < npass; pass++) {
             if (pass == 0) {
                 alt = 0;
-                temp1 = 0;
+                pt0_ = 0;
                 temp2 = 1;
                 c = 1;
             } else if (((R8002AB08 *)other)->f8c != 0) {
                 alt = 1;
-                temp1 = 0;
+                pt0_ = 0;
                 temp2 = 1;
                 c = 1;
             } else if ((u16)((R8002AB08 *)other)->e == 4 || (u16)((R8002AB08 *)other)->e == 5) {
                 alt = 0;
-                temp1 = 1;
+                pt0_ = 1;
                 temp2 = 2;
                 c = 0;
             }
             if (alt == 0) {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][temp2];
-                *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg[temp1];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], pt0_);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk00[1] : SPAD->unk00[0], temp2);
+                *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg[pt0_];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg[temp2];
             } else {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][temp2];
-                *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg2[temp1];
+                copy_pt(scr + 0x0, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], pt0_);
+                copy_pt(scr + 0xC, i == 0 ? SPAD->unk48[1] : SPAD->unk48[0], temp2);
+                *(LeafPos *)(scr + 0x18) = ((R8002AB08 *)other)->seg2[pt0_];
                 *(LeafPos *)(scr + 0x24) = ((R8002AB08 *)other)->seg2[temp2];
             }
             *(s32 *)(scr + 0x30) = (*(s32 *)(scr + 0x0) + *(s32 *)(scr + 0x18)) / 2;
@@ -279,7 +284,7 @@ void func_8002AB08(s32 mode) {
             if (temp3) {
                 dx = SPAD->unk48[i == 0][0].x - ((R8002AB08 *)other)->pos.x;
                 dz = SPAD->unk48[i == 0][0].z - ((R8002AB08 *)other)->pos.z;
-                temp1 = dx * dx + dz * dz;
+                dsq0_ = dx * dx + dz * dz;
                 dx = SPAD->unk48[i == 0][1].x - ((R8002AB08 *)other)->pos.x;
                 dz = SPAD->unk48[i == 0][1].z - ((R8002AB08 *)other)->pos.z;
                 temp2 = dx * dx + dz * dz;
@@ -288,7 +293,7 @@ void func_8002AB08(s32 mode) {
             } else if (mask_b & bit) {
                 dx = SPAD->unk00[i == 0][2].x - ((R8002AB08 *)other)->pos.x;
                 dz = SPAD->unk00[i == 0][2].z - ((R8002AB08 *)other)->pos.z;
-                temp1 = dx * dx + dz * dz;
+                dsq0_ = dx * dx + dz * dz;
                 dx = SPAD->unk00[i == 0][1].x - ((R8002AB08 *)other)->pos.x;
                 dz = SPAD->unk00[i == 0][1].z - ((R8002AB08 *)other)->pos.z;
                 temp2 = dx * dx + dz * dz;
@@ -297,14 +302,14 @@ void func_8002AB08(s32 mode) {
             } else {
                 dx = SPAD->unk00[i == 0][0].x - ((R8002AB08 *)other)->pos.x;
                 dz = SPAD->unk00[i == 0][0].z - ((R8002AB08 *)other)->pos.z;
-                temp1 = dx * dx + dz * dz;
+                dsq0_ = dx * dx + dz * dz;
                 dx = SPAD->unk00[i == 0][1].x - ((R8002AB08 *)other)->pos.x;
                 dz = SPAD->unk00[i == 0][1].z - ((R8002AB08 *)other)->pos.z;
                 temp2 = dx * dx + dz * dz;
                 dx = SPAD->unk00[i == 0][1].x - SPAD->unk00[i == 0][0].x;
                 dz = SPAD->unk00[i == 0][1].z - SPAD->unk00[i == 0][0].z;
             }
-            if (temp2 < temp1) {
+            if (temp2 < dsq0_) {
                 dx = -dx;
                 dz = -dz;
             }
