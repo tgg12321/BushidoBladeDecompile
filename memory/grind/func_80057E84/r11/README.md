@@ -1,5 +1,10 @@
 # func_80057E84 — Ruling 11 package for vtx / node / route (laneB, 2026-10-01)
 
+**Re-run (round 2)** on the body after the data-model fix (../dm/README.md: CpuRoute / NavPoly /
+NavPolySet in include/code6cac.h, no casts in the body), on main after the Q65 adoption with that
+data-model cleanup applied: every score, pseudo, find_reg trace and allocation line below is unchanged
+(scores_b.txt, scores_s.txt, pseudos.txt, findreg.txt regenerated); permuter re-run: permuter.txt.
+
 Ruling: `.claude/rules/reused-local-necessity.md` § Ruling 11 (owner 2026-09-26; Q31/Q58 proof
 standard). Each of `vtx`, `node`, `route` is judged on its own. The fourth multi-write local, the
 counter `i`, is a Q51 SOTN reuse (below), not part of this package.
@@ -12,8 +17,8 @@ as a staged-value borrow, but a multi-write local may only claim Rulings 5-12 / 
 (Ruling 6 (A)). No public original source (10). Ruling 11 admits what 5-10 fail.
 
 ## Bodies (scripts in this directory; run from anywhere under WSL)
-- **reuse spelling** = `memory/grind/func_80057E84/candidate.c` (the body spliced at landing), with the
-  header edit `prep_hdr.py` (PracticeMenuRec +0x360/+0x361 split out of `unk_352`).
+- **reuse spelling** = `memory/grind/func_80057E84/candidate.c` (the body spliced at landing; round 1
+  measured it with `prep_hdr.py`'s header edit, round 2 on main with the data-model cleanup).
 - `gen.sh` -> `gen.py` writes into tmp/func_80057E84/r11/b/: `pv_<var>.c` (every value of one variable in
   its own fresh local, declared where the variable is), `pv_all.c` (all nine values), `pvbs_*.c` (each
   value declared at the innermost block enclosing it), `r_<value>.c` (one value split). Comments are
@@ -79,14 +84,16 @@ copy values, no copy-clause value.
 | pvs_noptr_all (the three) | 44 | 445 |
 | pvs_tail_cond (tail as one ?: ) | 46 | 447 |
 | pvs_node_early (node before the c >= 7 test) | 50 | 445 |
-| pvs_vtx_struct (NavVtx {x, z} pointers) | 46 | 447 |
+| pvs_vtx_struct (NavVtx {x, z} pointers; round 2 through a cast, evidence only) | 46 | 447 |
 | pvs_vtab (vertex table loaded once per edge pass) | 76 | 446 |
 | pvs_register (every split value `register`, no asm) | 46 | 447 |
 
 Earlier-chassis receipts (PathWalker/u8* body, hypotheses.md; superseded but same mechanism): static
 inline vertex helper = n0, struct view = n0, Ruling 4 node split-init 36/445, hoisted vertex table 44.
 
-Permuter campaign from the full split (permuter.txt): split base 700, 6445 iterations, best 440 (the\nedge-end vertex staged through another vertex local: a re-share, evidence only); the reuse body\nscores 0 on the same scorer (perm_control.sh).
+Permuter campaign from the full split (permuter.txt), round 2: split base 700, 6903 iterations, best 490
+(borrows and junk; round 1: 6445 iterations, best 440, a vertex-pointer re-share); the reuse body scores
+0 on the same scorer (perm_control.sh).
 
 ## (D)(1) dumps and command lines
 `dump.sh <tag> <body>` (`dumpall.sh` for reuse, pv_vtx, pv_node, pv_route, pv_all, pvbs_all and the

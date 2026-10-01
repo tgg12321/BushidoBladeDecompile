@@ -86,8 +86,8 @@ def register(s):
 
 def copy_k(s):
     s = sub(s, "    s16 next;\n", "    s16 next;\n    s16 k;\n")
-    return sub(s, "    for (i = route_pick->count - 1; i >= 0; i--) {\n        arg0->unk_364[arg0->unk_362] = route_pick->node[i];",
-               "    for (k = route_pick->count - 1; k >= 0; k--) {\n        arg0->unk_364[arg0->unk_362] = route_pick->node[k];")
+    return sub(s, "    for (i = route_pick->count - 1; i >= 0; i--) {\n        arg0->cpu_route.node[arg0->cpu_route.count] = route_pick->node[i];",
+               "    for (k = route_pick->count - 1; k >= 0; k--) {\n        arg0->cpu_route.node[arg0->cpu_route.count] = route_pick->node[k];")
 
 
 VARIANTS = {

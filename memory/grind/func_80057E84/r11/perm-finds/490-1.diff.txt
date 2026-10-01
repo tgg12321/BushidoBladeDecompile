@@ -1,0 +1,39 @@
+--- before
++++ after
+@@ -1820,6 +1820,7 @@
+   s16 ofs1_z;
+   s32 hit_x;
+   s32 hit_z;
++  CpuRoute *new_var;
+   s16 dn_x;
+   s16 dn_z;
+   s16 up_x;
+@@ -1895,7 +1896,8 @@
+       vtx_b = poly->vtx[next];
+       bx = vtx_b[0];
+       bz = vtx_b[1];
+-      func_80057CC8(poly, next, &ofs1_x, &ofs1_z);
++      vtx_dn = &ofs1_z;
++      func_80057CC8(poly, next, &ofs1_x, vtx_dn);
+       if (go_dn && (!hit_dn))
+       {
+         if (((dn_x != ofs0_x) || (dn_z != ofs0_z)) && ((dn_x != ofs1_x) || (dn_z != ofs1_z)))
+@@ -1908,7 +1910,7 @@
+       }
+       if (go_up && (!hit_up))
+       {
+-        if (((up_x != ofs0_x) || (up_z != ofs0_z)) && ((up_x != ofs1_x) || (up_z != ofs1_z)))
++        if (((up_x != ofs0_x) || (up_z != ofs0_z)) && ((ofs1_x != up_x) || (up_z != ofs1_z)))
+         {
+           if (func_8005763C(up_x, up_z, goal_x, goal_z, ax, az, bx, bz, &hit_x, &hit_z))
+           {
+@@ -2006,7 +2008,8 @@
+ 
+   if (dist_dn < dist_up)
+   {
+-    route_pick = &path[0];
++    new_var = &path[0];
++    route_pick = new_var;
+   }
+   else
+   {
