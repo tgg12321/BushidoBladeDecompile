@@ -61,3 +61,9 @@ candidate.c reproduces it. go_up lives in $fp. Reload spill regs t1/t2
 - The staged-value rule does not mention type. Layer-2's s1 verdict treats a
   PathBuf*/PathNode* carrying an s16* as a pun, and Ruling 5 1(b) bans
   cast-laundered bases. Treat a cast-typed borrow as disqualifying.
+
+## Session 3 (laneB, 2026-10-01) — landing prepared (round 1)
+Body = candidate.c (83327e250) spliced into src/text1b.c + include/code6cac.h unk_360/unk_361; full build
+SHA1 == oracle; sandbox --disable all on the spliced src 0 (447/447, 0 source-level / operand-only);
+layer2 hash 4c0dc0cccbcea75a; reviewer_precheck clean. Rulings relied on: Ruling 11 (vtx, node, route;
+r11/README.md), Q51/Q53 (i; SOTN src/dra/42398.c:75 @aa53500). Data model: hypotheses.md Session 3.

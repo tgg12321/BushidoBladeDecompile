@@ -1,0 +1,45 @@
+Match: func_80057E84 — COMPLETED-C (manual)
+
+Corner router on the typed PracticeMenuRec and polygon records; three Ruling 11 pointer locals, i under Q51.
+
+func_80057E84 (447 insns), called once from func_80058580's record path: walks the vertex ring of the
+walker's current polygon both ways, stepping corner to corner while the segment to the goal crosses an
+edge (func_8005763C), and appends the cheaper corner chain to the walker's route. sandbox --disable all
+on the spliced src: 0 (447/447, 0 source-level, 0 operand-only hunks); full build SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa.
+
+Data model:
+- arg0 is `PracticeMenuRec *` (the prototype func_80058580 already declares). include/code6cac.h:
+  `u8 unk_360` / `u8 unk_361` (polygon index / vertex index, the bytes func_80057ACC writes) split out
+  of `unk_352[0x362 - 0x352]`, which no C reads; the walker x/z are `unk_F4.x` / `.z`, the route
+  `unk_362` / `unk_364[]` (CpuWaypoint, struct copy in the append loop).
+- Local typedefs before the function: `NavPoly` (8-byte polygon record: flags 0x80 = open chain, kind
+  byte copied into the waypoints, margin, nvtx, `s16 (*vtx)[2]`; the layout func_80057ACC /
+  func_80057CC8 read), `NavPolySet` (a 12-byte D_8009A658 row: count, polygon array), `RouteBuf`
+  (a route under construction, laid out like PracticeMenuRec +0x360..+0x393; two on the stack,
+  `path[2]`, frame 0x120).
+- Casts left: `(NavPolySet *)arg1` (the caller passes the `u8 *` row; the prototype on main says
+  `u8 *`) and `(u8 *)poly` at the four func_80057CC8 calls (its completed `u8 *` parameter).
+
+Constructs a reviewer should check (ledger memory/grind/func_80057E84/, package r11/README.md, measured on
+this exact body):
+- vtx (four values: edge start, edge end, down corner, up corner), node (the waypoint appended to the
+  down / up route), route (&path[0] in the down block, &path[1] in the up block, the cheaper route for
+  the copy): Ruling 11, each annotated at its declaration; vtx/node at the top of the iter-loop body,
+  route at function scope. 18 twins with identical statement lists (stmtcheck.txt); every split misses:
+  pv_vtx 22, pv_node 22, pv_route 4, full split 46; single-value ablations 3 / 3 / 8 / 8, 22 / 22,
+  2 / 2 / 4; structural respellings 44..76 (no pointers, ?: tail, early node, struct vertices, hoisted
+  table, register); permuter from the full split 6445 iterations, base 700, best 440 (a vertex-pointer
+  re-share), reuse control 0. Dumps with both compilers IDENTITY OK: the shared pseudo is global
+  (several deaths), find_reg seats vtx/route in $t0 and node in $a1 as the target
+  (0x80057FC0/0x80057FEC/0x800581DC/0x80058340, 0x80058250/0x800583B4/0x800584CC, 0x80058270/0x800583D4);
+  split, each value is single-block and combine_regs ties it to its dying input ($v0/$v1/$a0), route_dn
+  and route_up lose the tail's $a1-$a3 conflicts and take $a1. (B)(2) re-store records in README.md.
+  vtx/node are on Ruling 9's banned list; Ruling 11 is the admitting ruling (Ruling 1 text).
+- `i`: the edge-scan counter reused as the copy-loop countdown, `/* FAKE */` + `/* SOTN:
+  src/dra/42398.c:75 @aa53500 */` (Q51/Q53: DebugCaptureScreen counts its file-search loop up with a
+  break, lines 85-95, then its row loop down, line 131); a fresh counter scores 79.
+- `c` per corner block (`c = route->count; route->count = c + 1;`, s32: slti on the old count).
+
+History: rotated 2026-09-25 at honest floor 44 after layer-2 FAILed the then-0 body's vtx/node under
+Rulings 5/6 (Ruling 11 landed the next day); this body is that 0-body re-typed, with buf renamed route.
