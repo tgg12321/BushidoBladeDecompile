@@ -108,3 +108,5 @@ corrected on the way (the verifier's `g_sqrt_table_u8`, not the miner's `g_isqrt
 data_wave never consumes it), `held.csv`, `verify/<vein>.csv` (every verifier verdict; `data_cam.csv` is
 the camera-matrix lane; `final_review.csv` is the cross-vein review), `rejected/<vein>.md`,
 `keep/inferred.md`, `miner-brief.md`, `verifier-brief.md`. Read `rejected/` and `keep/` before re-mining.
+
+> **Trimmed 2026-10-01:** `keep/`, `rejected/`, `verify/*.md` and the miner/verifier briefs were removed; they resolve at git tag `pre-slim-2026-10-01` (same paths). Read the tagged `rejected/` and `keep/` before re-mining.

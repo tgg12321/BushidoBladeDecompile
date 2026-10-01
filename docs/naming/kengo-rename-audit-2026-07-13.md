@@ -3,7 +3,7 @@
 Audit-only pass (READ-ONLY; no renames applied) cross-checking the legacy
 renamer's map against the **current** state of `named_syms.txt` +
 `symbol_addrs.txt` on `main`. Companion to
-[`LEGACY_RENAMER_AUDIT.md`](LEGACY_RENAMER_AUDIT.md), which recorded the
+`LEGACY_RENAMER_AUDIT.md`, which recorded the
 2026-05-17 cluster audits but did so **in a worktree** — this pass verifies
 what actually reached `main`.
 

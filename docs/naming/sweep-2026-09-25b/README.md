@@ -82,3 +82,5 @@ per vein — read before re-mining.
   is accurate; slot 9 is dead code, so "snd_Se" is unsupported, not contradicted. It stays a recorded
   link-map desync (census `empty_stub`, C `snd_SeNullCallback`). Side note: `docs/engine/sound.md`
   describes this as a "sample finished" callback — it is a heap-relocation callback.
+
+> **Trimmed 2026-10-01:** `keep/`, `rejected/`, `verify/*.md` and the miner/verifier briefs were removed; they resolve at git tag `pre-slim-2026-10-01` (same paths). Read the tagged `rejected/` and `keep/` before re-mining.

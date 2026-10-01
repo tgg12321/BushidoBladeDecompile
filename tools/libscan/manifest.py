@@ -756,7 +756,8 @@ w("- `docs/naming/libscan/rename_manifest.csv` — the manifest (one row per in-
 w("- `docs/naming/libscan/libsyms.json` — every XDEF/local placement with lib, module, offset")
 w("- `docs/naming/libscan/anomalies.txt` — the mid-function XDEF list")
 w("- `tools/libscan/manifest.py` — the generator")
-open(os.path.join(OUT, "manifest_report.md"), "w", encoding="utf-8",
+os.makedirs(os.path.join(REPO, "tmp"), exist_ok=True)
+open(os.path.join(REPO, "tmp", "libscan_manifest_report.md"), "w", encoding="utf-8",
      newline="\n").write("\n".join(L) + "\n")
 
 print("accepted placements:", len(accepted), " symbol addrs:", len(symrecs))

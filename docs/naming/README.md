@@ -341,8 +341,7 @@ proposal tables, and `git log -S` for otherwise-unattributed names.
 # Naming Proposal Database (pre-existing — retained)
 
 Evidence-backed function-name proposals for the unnamed `func_XXXXXXXX` functions. The
-initial 1217-function analyzer pass was fully resolved as of 2026-07-13 (see
-`proposals_audit_2026-07-13.md`); this dir stays as the analyzer's regenerable output for
+initial 1217-function analyzer pass was fully resolved as of 2026-07-13 ; this dir stays as the analyzer's regenerable output for
 future passes and as the archive of applied/superseded proposals. **The census above now
 supersedes this as the primary naming worklist**, and cites these tables as an evidence
 source.
@@ -352,21 +351,18 @@ source.
 - **High confidence:** 0 pending (all 10 resolved).
 - **Medium confidence:** 0 pending (all 111 resolved).
 - **Low confidence still pending:** 23 (weak-evidence `_local_`/`_func_` stubs).
-- Full audit: `proposals_audit_2026-07-13.md`; resolved rows: `proposals_resolved.csv`.
+- Resolved rows: `proposals_resolved.csv`.
 
 ## Files
 
 - `proposals.csv` — canonical machine-readable proposal table
   (address, current_name, proposed_name, confidence, evidence_summary, evidence_detail_file)
-- `proposals_high_confidence.md` / `proposals_medium_confidence.md` — review tables
 - `proposals_resolved.csv` — rows already applied (or applied under a different name)
-- `proposals_audit_2026-07-13.md` — applied-as-proposed / applied-differently / pending counts
-- `psyq_library_matches.md` — PsyQ stdlib / BIOS jumptable / syscall wrapper proposals
-- `subsystem_clusters.md` — call-graph cluster analysis
-- `data_symbols_quick_wins.md` — naming hints for `D_*` symbols by access pattern
+- generated views (high/medium review tables, PsyQ matches, subsystem clusters, data quick wins):
+  `python3 tools/render_naming_docs.py` writes them to `tmp/naming_views/` (untracked since 2026-10-01)
 - `methodology.md` — analyzer design, evidence kinds, scoring, caveats
 - `MISNOMERS.md` — names demonstrated wrong by body analysis
-- `LEGACY_RENAMER_AUDIT.md`, `kengo-rename-audit-2026-07-13.md` — rename-map audits
+- `kengo-rename-audit-2026-07-13.md` — rename-map audit
 - `evidence/<func_name>.md` — per-function evidence detail
 
 ## Regenerating the proposal tables
@@ -393,3 +389,5 @@ ONLY after an adversarial default-refute verification pass (see
 manifest_report.md addendum + naming-verification-2026-08-18.md). The
 verified names live in rename_manifest.csv `proposed_name`; the census
 re-derives the RENAME actions from there on regen.
+
+> **Trimmed 2026-10-01:** stale audits/plans (REMAINING_DATA_CATALOG, LEGACY_RENAMER_AUDIT, LONG_TERM_DX_PROMOTION_FIX, header-type/memory-project/proposals audits, ADDENDUM-APPLY-PLAN, naming-verification-2026-08-18, RODATA_CATALOG/RECORD_SCHEMA, charptr_functions), libscan reports (manifest_report, near/data verifier reports, callee_web, data_candidates) and generated views (suspect-list → `tmp/suspect-list.md` via build_suspect_list.py) resolve at git tag `pre-slim-2026-10-01`.

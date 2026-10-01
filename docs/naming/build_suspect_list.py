@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render docs/naming/suspect-list.md — the SUSPECT slice of the naming census.
+"""Render tmp/suspect-list.md — the SUSPECT slice of the naming census.
 
 Read-only apart from its one output file. Run after docs/naming/build_census.py.
 """
@@ -7,7 +7,7 @@ import csv, io, os, re, collections
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CSVP = os.path.join(ROOT, "docs", "naming", "function-names.csv")
-OUTP = os.path.join(ROOT, "docs", "naming", "suspect-list.md")
+OUTP = os.path.join(ROOT, "tmp", "suspect-list.md")  # generated view, untracked since 2026-10-01
 
 with io.open(CSVP, encoding="utf-8", newline="") as fh:
     rows = list(csv.DictReader(fh))

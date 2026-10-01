@@ -155,7 +155,7 @@ When decompiling a function that accesses a `D_80101XXX` or
   be a less-used slot (e.g., a tournament-mode tag-team partner or
   spectator record).
 - The 504 "unclassified" rodata labels from
-  [RODATA_CATALOG.md](RODATA_CATALOG.md) are mostly **fixed-stride
+  RODATA_CATALOG.md are mostly **fixed-stride
   per-character record DATA** (the actual record content for each
   character), separate from this schema (which describes the per-game
   state struct).

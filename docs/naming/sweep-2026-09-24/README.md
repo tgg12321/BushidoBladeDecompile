@@ -57,3 +57,5 @@ own corrected name/RESET).
   although they are Sony names; `named_syms.txt` defines `g_char_class_table` twice.
 - The INFERRED obj_InitAll / obj_InitPair / obj_InitTask look like "SsVabClose + clear VAB
   tables" routines (data verifier) — candidates for an INFERRED-name audit.
+
+> **Trimmed 2026-10-01:** `keep/`, `rejected/`, `verify/*.md` and the miner/verifier briefs were removed; they resolve at git tag `pre-slim-2026-10-01` (same paths). Read the tagged `rejected/` and `keep/` before re-mining.

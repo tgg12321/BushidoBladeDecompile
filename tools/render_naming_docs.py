@@ -2,11 +2,11 @@
 """render_naming_docs.py -- build markdown views of docs/naming/proposals.csv.
 
 Outputs:
-  docs/naming/proposals_high_confidence.md     -- high tier review table
-  docs/naming/proposals_medium_confidence.md   -- medium tier review table
-  docs/naming/subsystem_clusters.md            -- call-graph cluster analysis
-  docs/naming/psyq_library_matches.md          -- PsyQ idiom matches
-  docs/naming/data_symbols_quick_wins.md       -- data-symbol naming hints
+  tmp/naming_views/proposals_high_confidence.md     -- high tier review table
+  tmp/naming_views/proposals_medium_confidence.md   -- medium tier review table
+  tmp/naming_views/subsystem_clusters.md            -- call-graph cluster analysis
+  tmp/naming_views/psyq_library_matches.md          -- PsyQ idiom matches
+  tmp/naming_views/data_symbols_quick_wins.md       -- data-symbol naming hints
 
 Run after `tools/propose_function_names.py`.
 """
@@ -567,11 +567,14 @@ def main() -> int:
     buckets = by_conf(rows)
     DOCS.mkdir(parents=True, exist_ok=True)
 
-    high_md = DOCS / "proposals_high_confidence.md"
-    med_md = DOCS / "proposals_medium_confidence.md"
-    sub_md = DOCS / "subsystem_clusters.md"
-    psyq_md = DOCS / "psyq_library_matches.md"
-    data_md = DOCS / "data_symbols_quick_wins.md"
+    # generated views go to scratch (untracked since 2026-10-01)
+    views = ROOT / "tmp" / "naming_views"
+    views.mkdir(parents=True, exist_ok=True)
+    high_md = views / "proposals_high_confidence.md"
+    med_md = views / "proposals_medium_confidence.md"
+    sub_md = views / "subsystem_clusters.md"
+    psyq_md = views / "psyq_library_matches.md"
+    data_md = views / "data_symbols_quick_wins.md"
     readme_md = DOCS / "README.md"
     method_md = DOCS / "methodology.md"
 

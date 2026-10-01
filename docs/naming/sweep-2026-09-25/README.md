@@ -106,3 +106,5 @@ went INFERRED 668 → 553, VERIFIED 406 → 412, CORROBORATED 76 → 106, AUTO 3
   `g_snd_se_id` / `g_snd_bgm_id` / `g_snd_cached_bgm_arg` / `g_snd_play_count` /
   `g_snd_fade_pos` / `g_snd_fade_amt`, `g_file_heap_base_plus_4/_plus_5`, the six MEDIUM
   `gte_mvmva` RESETs (an incidental inline MVMVA is not a contradiction under this bar).
+
+> **Trimmed 2026-10-01:** `keep/`, `rejected/`, `verify/*.md` and the miner/verifier briefs were removed; they resolve at git tag `pre-slim-2026-10-01` (same paths). Read the tagged `rejected/` and `keep/` before re-mining.
