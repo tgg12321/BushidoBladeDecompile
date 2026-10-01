@@ -1,0 +1,1 @@
+{"func": "func_80031B24", "addr": "80031B24", "verdict": "PASS", "body_hash": "9bf3c60617274002", "body_kind": "c", "file": "code6cac_b_tu2", "reviewer": "rev-d6a78-b", "scope": "cheat-cleanup", "date": "2026-10-01T14:54:52Z", "head": "585c7a66a", "notes": "0a0069bdf fix intact; Vec3i -> Vec3i32 same layout"}

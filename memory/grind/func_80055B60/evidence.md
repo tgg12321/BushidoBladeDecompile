@@ -104,3 +104,12 @@ build/src). Measured: func_80030208 goto+members 33, index `for` 51, pointer `fo
 func_80030BA8 goto+members 8 (f_80030BA8_goto.c), index `for` 34, pointer `for` 0; func_80030D7C members with
 scalar D_800A36F2 20 (sched.c true_dependence 834-836 escape lets the D_800A36F2 load pass an in-struct velocity
 store), D_800A36F2[2] array read 0. Whole TU: 81/81 functions 0; full build == oracle.
+
+## s4b (2026-10-01) — preparatory landing FAILED; reverted; cluster plan written
+rev-d6a78-a FAIL (data model: old externs D_80106A7A/80/82 still declared; +0x0C..0x2B is a MATRIX; record-only
+callees func_800300B4 / func_8002FF20 / func_80031890 still pun via `(u8 *)obj`; per-body debt in func_80030208,
+func_8003043C, func_8003047C, func_80030524, func_80030580, func_800307D0). rev-d6a78-b: FAIL func_80030D04
+(`neg` constant holder; literal 0/17); PASS func_80030900, cpu_set_move_command_and_dir, func_80030BA8,
+func_80030D7C (D_800A36F2[2] honest; sched.c 834-836 verified: scalar-style read 20, [0] 0; Ruling 11 on the new
+body: PV2 21, temp-only 4, work-only 17 — probes/rev_d6a78b/), func_80031B24. Verdicts in each function's
+memory/grind/<func>/layer2.jsonl. Staged hunks reverted; rebuild == oracle. Next: cluster-plan-2026-10-01.md.
