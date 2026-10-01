@@ -1,0 +1,12 @@
+# hand-classified scan hits: source<TAB>disposition
+src/code6cac_tu2.c:1077	Rec1C call boundary: func_8001B748(&D_800F6608, arg0, arg1, (s32 *)arg2, ...) passes s32 * arg0/arg1 into Rec1C * params and casts the int arg2 to a pointer
+src/code6cac_tu2.c:3494	stage data: (s16 *) view of the stage_GetDataPtr() return
+src/code6cac_tu2.c:3507	call-boundary (s32 *) cast of a typed local (nrm)
+src/code6cac_tu2.c:3515	call-boundary (s32 *) cast of a typed local (nrm)
+src/code6cac_tu2.c:3523	call-boundary (s32 *) cast of a typed local (nrm)
+src/code6cac_tu2.c:3532	call-boundary (s32 *) cast of a typed local (nrm)
+src/code6cac_b_tu2.c:3941	D_80106A78 0x64-byte records (u8 * base of a scalar-declared record table)
+src/code6cac_b_tu2.c:4215	D_80106A78 0x64-byte records (u8 * base of a scalar-declared record table)
+src/code6cac_b_tu2.c:4648	D_80104E88 0x2C-byte records (scalar-& base + 2)
+src/code6cac_b_tu2.c:4893	not debt: Judge element index arithmetic ((angle + 0x400) & 0xFFF)
+src/code6cac_c2.c:744	Rec44 [T]: func_80046BF4((s16 *)a0, ...) under code6cac_c2.c's own prototype (s16 *, s16 *, s32); the definition in sound.c takes (s32 *, u16 *, s32)

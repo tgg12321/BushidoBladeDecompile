@@ -2,13 +2,16 @@
 Flags, per source line (comments stripped): pointer casts `(T *)`, cast dereferences `*(T *)(`,
 byte-offset arithmetic `+ 0x…` / `- 0x…` / `+ N` inside an address, scalar-& indexing `(&X)[` /
 `&X +`, and the practice-table byte names. Output: one block per function, every hit with its
-source line number. usage: python tmp/laneH/scan.py > memory/grind/judge-decl-cleanup/scan-2026-09-30.txt"""
+source line number. usage: python memory/grind/judge-decl-cleanup/scan-2026-09-30/scan.py > scan.txt (from the repo root)"""
 import re
 import sys
-sys.path.insert(0, 'tmp/laneH')
-from edits import _span
+import os
+import sys
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from span import _span  # noqa: E402
 
-funcs = [l.strip() for l in open('tmp/laneH/final2_funcs.txt', encoding='utf-8') if l.strip()]
+funcs = [l.strip() for l in open(os.path.join(HERE, 'final2_funcs.txt'), encoding='utf-8') if l.strip()]
 files = ['src/code6cac.c', 'src/code6cac_b_tu2.c', 'src/code6cac_tu2.c', 'src/code6cac_c2.c']
 PATS = [
     ('cast', re.compile(r'\(\s*(?:const\s+)?(?:u8|s8|s16|u16|s32|u32|int|char|short|void|[A-Z]\w*|\w+_t)\s*\*+\s*\)')),

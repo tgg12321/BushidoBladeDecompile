@@ -89,7 +89,7 @@
    set: a2 = *(s16 *)(arg0 + 0x150)
    set: tbl_val = D_800A310C[D_8008DA08[*(s16 *)(arg0 + 0xA)]]
    set: sub_result = *(s16 *)(arg0 + 0x1A)
-   acc: arg0                         +6:s16 +0xA:s16 +0x1A:s16 +0x2C:u32 +0x44:s16 +0x6A:u16 +0xD8:s32 +0xE0:s32 +0x14C:s16 +0x14E:u16 +0x14E:s16 +0x150:s16 +0x1CA:s16 +0x1CA:u16 +0x1D8:s16
+   acc: arg0                         +6:s16 +0xA:s16 +0x1A:s16 +0x2C:u32 +0x44:s16 +0x6A:u16 +0xD8:s32 +0xE0:s32 +0x14C:s16 +0x14E:s16 +0x14E:u16 +0x150:s16 +0x1CA:s16 +0x1CA:u16 +0x1D8:s16
 == func_800274BC (src/code6cac_b_tu2.c)
    sig: void func_800274BC(s32 *arg0, s16 *arg1)
 == func_800283D0 (src/code6cac_b_tu2.c)
@@ -196,7 +196,7 @@
    ptr: u8 * src = (u8 *)arg0
    set: obj = (u8 *)&D_80106A78
    set: tbl = &D_8008E194[arg1]
-   acc: obj                          +0:s16 +2:s16 +4:u8 +5:u8 +6:u8 +7:u8 +8:u8 +0xA:u8 +0x2C:s32 +0x2C:Vec3i +0x30:s32 +0x34:s32 +0x38:Vec3i +0x44:s32 +0x48:s32 +0x4C:s32 +0x50:s32 +0x54:s16 +0x56:u16 +0x58:s16 +0x5C:u16 +0x5C:s16 +0x5E:s16 +0x5E:u16 +0x60:s16
+   acc: obj                          +0:s16 +2:s16 +4:u8 +5:u8 +6:u8 +7:u8 +8:u8 +0xA:u8 +0x2C:Vec3i +0x2C:s32 +0x30:s32 +0x34:s32 +0x38:Vec3i +0x44:s32 +0x48:s32 +0x4C:s32 +0x50:s32 +0x54:s16 +0x56:u16 +0x58:s16 +0x5C:s16 +0x5C:u16 +0x5E:s16 +0x5E:u16 +0x60:s16
    acc: src                          +4:u16 +0x1A:s16 +0xF4:s32 +0xF8:s32 +0xFC:s32 +0x1CA:s16 +0x1CA:u16
 == func_80030D7C (src/code6cac_b_tu2.c)
    sig: void func_80030D7C(void)
@@ -207,7 +207,7 @@
    set: nrm = (s16 *)(scr + 0x30)
    set: temp = func_8005344C((s32 *)(obj + 0x2C), (s32 *)scr, (s32 *)(scr + 0x10), (s32 *)nrm, (s32)(scr 
    set: state = *(s16 *)(obj + 2)
-   acc: obj                          +0:s16 +2:s16 +4:u8 +5:u8 +6:u8 +7:u8 +8:u8 +0xA:u8 +0x2C:s32 +0x2C:Vec3i32 +0x30:s32 +0x34:s32 +0x38:Vec3i32 +0x44:s32 +0x48:s32 +0x4C:s32 +0x50:s32 +0x54:s16 +0x56:s16 +0x58:s16 +0x5C:s16 +0x5E:s16 +0x60:s16
+   acc: obj                          +0:s16 +2:s16 +4:u8 +5:u8 +6:u8 +7:u8 +8:u8 +0xA:u8 +0x2C:Vec3i32 +0x2C:s32 +0x30:s32 +0x34:s32 +0x38:Vec3i32 +0x44:s32 +0x48:s32 +0x4C:s32 +0x50:s32 +0x54:s16 +0x56:s16 +0x58:s16 +0x5C:s16 +0x5E:s16 +0x60:s16
    acc: scr                          +0:Vec3i32 +0x0:s32 +0x4:s32 +0x8:s32 +0x10:Vec3i32 +0x10:s32 +0x14:s32 +0x18:s32 +0x20:s32 +0x24:s32 +0x28:s32 +0x32:s16
 == func_80032064 (src/code6cac_b_tu2.c)
    sig: u8 *func_80032064(u8 *src, s32 type)

@@ -1,14 +1,17 @@
 """Second pass over the 36 bodies: for every byte-offset / cast ACCESS, extract (base expression,
 offset, access type). Also lists cast views without offsets and pointer locals initialised
 from casts/globals, so each base can be traced to its object.
-usage: python tmp/laneH/scan2.py"""
+usage (repo root): python memory/grind/judge-decl-cleanup/scan-2026-09-30/scan2.py"""
 import re
 import sys
+import os
+import sys
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from span import _span  # noqa: E402
 from collections import defaultdict
-sys.path.insert(0, 'tmp/laneH')
-from edits import _span
 
-funcs = [l.strip() for l in open('tmp/laneH/final2_funcs.txt', encoding='utf-8') if l.strip()]
+funcs = [l.strip() for l in open(os.path.join(HERE, 'final2_funcs.txt'), encoding='utf-8') if l.strip()]
 files = ['src/code6cac.c', 'src/code6cac_b_tu2.c', 'src/code6cac_tu2.c', 'src/code6cac_c2.c']
 ACC = re.compile(r'\*\s*\(\s*(\w+)\s*\*\s*\)\s*\(\s*(?:\(\s*u8\s*\*\s*\)\s*)?(&?\s*[\w\->.\[\]]+)\s*([+-])\s*(0x[0-9A-Fa-f]+|\d+)\s*\)')
 ACC0 = re.compile(r'\*\s*\(\s*(\w+)\s*\*\s*\)\s*(&?[\w\->.\[\]]+)')
@@ -46,5 +49,5 @@ for fn in funcs:
             if m:
                 print(f'   set: {m.group(1)} = {m.group(2).strip()[:90]}')
         for base in sorted(acc):
-            print(f'   acc: {base:<28} {" ".join(sorted(acc[base], key=lambda s: int(s.split(":")[0].replace("+", ""), 0) if s.split(":")[0][1:2] != "" else 0))}')
+            print(f'   acc: {base:<28} {" ".join(sorted(acc[base], key=lambda s: (int(s.split(":")[0].lstrip("+"), 0), s)))}')
         break

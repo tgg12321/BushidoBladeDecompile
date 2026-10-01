@@ -1,0 +1,591 @@
+function	source	construct	disposition	text
+func_80018094	src/code6cac.c:407	cast	model/geometry data	dx = ((s32 *)arg0[1])[5] - arg1[10];
+func_80018094	src/code6cac.c:409	cast	model/geometry data	dy = ((s32 *)arg0[1])[6] - arg1[11];
+func_80018094	src/code6cac.c:411	cast	model/geometry data	dz = ((s32 *)arg0[1])[7] - arg1[12];
+func_80018094	src/code6cac.c:530	cast,offset	model/geometry data	*(MATRIX *)(dst + 5) = *(MATRIX *)arg0[1];
+func_80018300	src/code6cac.c:602	cast	scratchpad view (0x1F80xxxx)	out = (s32 *)0x1F8000BC;
+func_80018300	src/code6cac.c:603	cast,offset	model/geometry data	count = *(s16 *)((u8 *)arg0 + 6) - 1;
+func_80018300	src/code6cac.c:604	cast,offset	model/geometry data	data = *(s32 **)((u8 *)arg0 + 0x10);
+func_80018300	src/code6cac.c:605	cast,offset	model/geometry data	base = *(u8 **)((u8 *)arg0 + 0xC);
+func_80018300	src/code6cac.c:617	cast	model/geometry data	p1 = (s32 *)(base + ((thresh >> 16) << 6));
+func_80018300	src/code6cac.c:618	cast	model/geometry data	p2 = (s32 *)(base + ((thresh & 0xFFFF) << 6));
+func_80018300	src/code6cac.c:649	cast	scratchpad view (0x1F80xxxx)	*(s32 *)0x1F800000 = dx >> 3;
+func_80018300	src/code6cac.c:650	cast	scratchpad view (0x1F80xxxx)	*(s32 *)0x1F800004 = dy >> 3;
+func_80018300	src/code6cac.c:651	cast	scratchpad view (0x1F80xxxx)	*(s32 *)0x1F800008 = dz >> 3;
+func_80018300	src/code6cac.c:658	cast	scratchpad view (0x1F80xxxx)	: : "r"((s32 *)0x1F800000) : "$12", "$13", "$14", "$15", "memory");
+func_80018300	src/code6cac.c:674	cast	scratchpad view (0x1F80xxxx)	: : "r"((s32 *)0x1F80000C) : "$12", "$13", "$14", "$15", "memory");
+func_80018300	src/code6cac.c:675	cast	scratchpad view (0x1F80xxxx)	sum = *(s32 *)0x1F80000C + *(s32 *)0x1F800010 + *(s32 *)0x1F800014;
+func_80018300	src/code6cac.c:678	cast	model/geometry data	p1 = (s32 *)(base + ((thresh >> 16) << 6));
+func_80018300	src/code6cac.c:679	cast	model/geometry data	p2 = (s32 *)(base + ((thresh & 0xFFFF) << 6));
+func_80018300	src/code6cac.c:687	cast	model/geometry data	p1 = (s32 *)(base + ((thresh >> 16) << 6));
+func_80018300	src/code6cac.c:688	cast	model/geometry data	p2 = (s32 *)(base + ((thresh & 0xFFFF) << 6));
+func_80018300	src/code6cac.c:717	cast	scratchpad view (0x1F80xxxx)	: : "r"((s32 *)0x1F800000) : "$12", "$13", "$14", "$15", "memory");
+func_80018300	src/code6cac.c:745	cast	scratchpad view (0x1F80xxxx)	*(s32 *)0x1F800000 = dx >> 3;
+func_80018300	src/code6cac.c:746	cast	scratchpad view (0x1F80xxxx)	*(s32 *)0x1F800004 = dy >> 3;
+func_80018300	src/code6cac.c:747	cast	scratchpad view (0x1F80xxxx)	*(s32 *)0x1F800008 = dz >> 3;
+func_80018300	src/code6cac.c:754	cast	scratchpad view (0x1F80xxxx)	: : "r"((s32 *)0x1F800000) : "$12", "$13", "$14", "$15", "memory");
+func_80018300	src/code6cac.c:767	cast	scratchpad view (0x1F80xxxx)	: : "r"((s32 *)0x1F80000C) : "$12", "$13", "$14", "$15", "memory");
+func_80018300	src/code6cac.c:768	cast	scratchpad view (0x1F80xxxx)	sum = *(s32 *)0x1F80000C + *(s32 *)0x1F800010 + *(s32 *)0x1F800014;
+func_80018300	src/code6cac.c:797	cast	scratchpad view (0x1F80xxxx)	: : "r"((s32 *)0x1F800000) : "$12", "$13", "$14", "$15", "memory");
+func_800187F4	src/code6cac.c:888	cast	model/geometry data	func_80018094((s32 *)arg0, arg1);
+func_800187F4	src/code6cac.c:889	cast,offset	model/geometry data	count = *(s16 *)((u8 *)arg1 + 4);
+func_800187F4	src/code6cac.c:890	cast	model/geometry data	node = (s32 *)arg1[3];
+func_800187F4	src/code6cac.c:936	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	if (node[6] >= -0xFF) {
+func_800187F4	src/code6cac.c:991	cast,offset	model/geometry data	if (*(s32 *)((u8 *)arg0 + 0xC) != 0) {
+func_8001A67C	src/code6cac_tu2.c:516	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	while ((((u32)(dx + 0x4000)) > 0x8000U) || (((u32)(dz + 0x4000)) > 0x8000U)) {
+func_8001A820	src/code6cac_tu2.c:615	cast	scratchpad view (0x1F80xxxx)	scr = (CamScratch *)0x1F800000;
+func_8001A820	src/code6cac_tu2.c:623	cast	PracticeMenuRec record by byte offset [T] (unk_168 vector)	dx = ((s32 *)arg1)[0] - ((s32 *)arg0)[0];
+func_8001A820	src/code6cac_tu2.c:624	cast	PracticeMenuRec record by byte offset [T] (unk_168 vector)	dy = ((s32 *)arg1)[1] - ((s32 *)arg0)[1];
+func_8001A820	src/code6cac_tu2.c:625	cast	PracticeMenuRec record by byte offset [T] (unk_168 vector)	dz = ((s32 *)arg1)[2] - ((s32 *)arg0)[2];
+func_8001A820	src/code6cac_tu2.c:627	cast	PracticeMenuRec record by byte offset [T] (unk_168 vector)	scr->focus.vx = (((s32 *)arg0)[0] + ((s32 *)arg1)[0]) / 2;
+func_8001A820	src/code6cac_tu2.c:628	cast	PracticeMenuRec record by byte offset [T] (unk_168 vector)	scr->focus.vy = (((s32 *)arg0)[1] + ((s32 *)arg1)[1]) / 2;
+func_8001A820	src/code6cac_tu2.c:629	cast	PracticeMenuRec record by byte offset [T] (unk_168 vector)	scr->focus.vz = (((s32 *)arg0)[2] + ((s32 *)arg1)[2]) / 2;
+func_8001A820	src/code6cac_tu2.c:631	cast	PracticeMenuRec record by byte offset [T] (unk_168 vector)	scr->focus = *(CamVec *)arg0;
+func_8001A820	src/code6cac_tu2.c:641	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	while ((u32)(x + 0x4000) > 0x8000U || (u32)(z + 0x4000) > 0x8000U) {
+func_8001A820	src/code6cac_tu2.c:670	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	q = 0x2000000U / (dist + 0x4000) + 0x400;
+func_8001A820	src/code6cac_tu2.c:671	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(u16 *)(arg2 + 0x6A) == 0x13 || *(u16 *)(arg2 + 0x6A) == 0x1B || *(u16 *)(arg2 + 0x6A) == 0x30 ||
+func_8001A820	src/code6cac_tu2.c:672	cast,offset	PracticeMenuRec record by byte offset [T]	*(u16 *)(arg3 + 0x6A) == 0x13 || *(u16 *)(arg3 + 0x6A) == 0x1B || *(u16 *)(arg3 + 0x6A) == 0x30) {
+func_8001A820	src/code6cac_tu2.c:680	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(u16 *)(arg2 + 0x6A) == 0xF || *(u16 *)(arg2 + 0x6A) == 0x1C || *(u16 *)(arg2 + 0x6A) == 0x1D ||
+func_8001A820	src/code6cac_tu2.c:681	cast,offset	PracticeMenuRec record by byte offset [T]	*(u16 *)(arg2 + 0x6A) == 0x1E || *(u16 *)(arg2 + 0x6A) == 0x1F || *(u16 *)(arg2 + 0x6A) == 0x20 ||
+func_8001A820	src/code6cac_tu2.c:682	cast,offset	PracticeMenuRec record by byte offset [T]	*(u16 *)(arg2 + 0x6A) == 0x21) {
+func_8001A820	src/code6cac_tu2.c:686	cast,offset	PracticeMenuRec record by byte offset [T]	if (!(*(u16 *)(arg2 + 0x6A) == 0xF || *(u16 *)(arg2 + 0x6A) == 0x1C || *(u16 *)(arg2 + 0x6A) == 0x1D ||
+func_8001A820	src/code6cac_tu2.c:687	cast,offset	PracticeMenuRec record by byte offset [T]	*(u16 *)(arg2 + 0x6A) == 0x1E || *(u16 *)(arg2 + 0x6A) == 0x1F || *(u16 *)(arg2 + 0x6A) == 0x20 ||
+func_8001A820	src/code6cac_tu2.c:688	cast,offset	PracticeMenuRec record by byte offset [T]	*(u16 *)(arg2 + 0x6A) == 0x21) && cam->w18 < 0x1770) {
+func_8001A820	src/code6cac_tu2.c:701	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(u16 *)(arg2 + 0x6A) == 0x11) {
+func_8001A820	src/code6cac_tu2.c:716	cast	Rec44 [T] (func_8001A538 call cast) | scratchpad view (0x1F80xxxx) (CamScratch view of 0x1F800000; (s32 *)scr->... call-boundary casts)	func_8001A538((s32 *)cam, (s32 *)&scr->eye);
+func_8001A820	src/code6cac_tu2.c:718	cast,offset	PracticeMenuRec record by byte offset [T]	scr->head = *(CamVec *)(arg3 + 0xB8);
+func_8001A820	src/code6cac_tu2.c:720	cast,offset	PracticeMenuRec record by byte offset [T]	scr->head = *(CamVec *)(arg2 + 0xB8);
+func_8001A820	src/code6cac_tu2.c:723	cast	scratchpad view (0x1F80xxxx) (CamScratch view of 0x1F800000; (s32 *)scr->... call-boundary casts)	if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm, (s32)&scr->unk60) &&
+func_8001A820	src/code6cac_tu2.c:724	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	scr->nrm[1] < -0x320) {
+func_8001A820	src/code6cac_tu2.c:725	cast	scratchpad view (0x1F80xxxx) (CamScratch view of 0x1F800000; (s32 *)scr->... call-boundary casts)	func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
+func_8001A820	src/code6cac_tu2.c:753	cast	Rec44 [T] (func_8001A538 call cast) | scratchpad view (0x1F80xxxx) (CamScratch view of 0x1F800000; (s32 *)scr->... call-boundary casts)	func_8001A538((s32 *)cam, (s32 *)&scr->eye);
+func_8001A820	src/code6cac_tu2.c:754	cast	scratchpad view (0x1F80xxxx) (CamScratch view of 0x1F800000; (s32 *)scr->... call-boundary casts)	if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm,
+func_8001A820	src/code6cac_tu2.c:756	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	scr->nrm[1] < -0x320) {
+func_8001A820	src/code6cac_tu2.c:783	cast	Rec44 [T] (func_8001A538 call cast) | scratchpad view (0x1F80xxxx) (CamScratch view of 0x1F800000; (s32 *)scr->... call-boundary casts)	func_8001A538((s32 *)cam, (s32 *)&scr->eye);
+func_8001A820	src/code6cac_tu2.c:784	cast	scratchpad view (0x1F80xxxx) (CamScratch view of 0x1F800000; (s32 *)scr->... call-boundary casts)	if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm,
+func_8001A820	src/code6cac_tu2.c:786	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	scr->nrm[1] < -0x320) {
+func_8001A820	src/code6cac_tu2.c:787	cast	scratchpad view (0x1F80xxxx) (CamScratch view of 0x1F800000; (s32 *)scr->... call-boundary casts)	func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
+func_8001B294	src/code6cac_tu2.c:848	cast,offset	PracticeMenuRec record by byte offset [T]	void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30[0][0] = 0x64;    D_800F6608.h30[0][1] = 0;    D_800F6608.h30[0][2] = 0x64;    D_800F6608.h30[1][0] = 0x64;    D_800F6608.h30[1][1] = 0;    D_800F6608.h30[1][2] = 0x64;    func_8003F1E4(0);    D_800F6608.w0 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F6608.w4 = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = ratan2(dx, dy);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
+func_8001B3C0	src/code6cac_tu2.c:849	cast,offset	PracticeMenuRec record by byte offset [T]	void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5328.h30[0][0] = 0x64;    D_800F5328.h30[0][1] = 0;    D_800F5328.h30[0][2] = 0x64;    D_800F5328.h30[1][0] = 0x64;    D_800F5328.h30[1][1] = 0;    D_800F5328.h30[1][2] = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5328.w8 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
+func_8001B748	src/code6cac_tu2.c:976	cast,scalar&,table-name	PracticeMenuRec record by byte offset [T]	u8 *base = (u8 *)&D_80101EC8 + D_800A3748 * 0x44C;
+func_8001B748	src/code6cac_tu2.c:1000	cast,offset	PracticeMenuRec record by byte offset [T]	s32 sum = (*((s32 *) (base + 0x19C))) + (*((s32 *) (base + 0x1A8)));
+func_8001B748	src/code6cac_tu2.c:1002	cast,offset	PracticeMenuRec record by byte offset [T]	if ((avg - (*((s32 *) (base + 0x184)))) < 0xC8) {
+func_8001BAE4	src/code6cac_tu2.c:1067	cast,offset	Rec1C records via s32* params	temp_a2 = ratan2(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4),
+func_8001BAE4	src/code6cac_tu2.c:1068	cast,offset	Rec1C records via s32* params	*(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8));
+func_8001BAE4	src/code6cac_tu2.c:1077	cast	Rec1C call boundary: func_8001B748(&D_800F6608, arg0, arg1, (s32 *)arg2, ...) passes s32 * arg0/arg1 into Rec1C * params and casts the int arg2 to a pointer	func_8001B748(&D_800F6608, arg0, arg1, (s32 *)arg2, var_s3, (0x500 - temp_a2) - (var_v0 >> 2));
+func_8001F2E4	src/code6cac_tu2.c:2393	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(s16 *)(obj + 0x26C) == 0) {
+func_8001F2E4	src/code6cac_tu2.c:2394	cast	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	func_80027334((s32 *)a);
+func_8001F2E4	src/code6cac_tu2.c:2395	cast	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	func_80027334((s32 *)b);
+func_8001F2E4	src/code6cac_tu2.c:2397	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(u16 *)(obj + 0x6A) == 0x15 || *(u16 *)(obj + 0x6A) == 0x25) {
+func_8001F2E4	src/code6cac_tu2.c:2398	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(s16 *)(obj + 0xC) == 0x1F) {
+func_8001F2E4	src/code6cac_tu2.c:2406	cast,offset	PracticeMenuRec record by byte offset [T]	tgt_z = (*(s16 *)(obj + 0x1D8) - *(s16 *)(obj + 0x1CA)) & 0xFFF;
+func_8001F2E4	src/code6cac_tu2.c:2410	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	if (tgt_z < -0x1FF) {
+func_8001F2E4	src/code6cac_tu2.c:2415	cast,offset	PracticeMenuRec record by byte offset [T]	dx = *(s32 *)(*(u8 **)obj + 0x180) - *(s32 *)(obj + 0x180);
+func_8001F2E4	src/code6cac_tu2.c:2416	cast,offset	PracticeMenuRec record by byte offset [T]	dz = *(s32 *)(*(u8 **)obj + 0x188) - *(s32 *)(obj + 0x188);
+func_8001F2E4	src/code6cac_tu2.c:2440	cast,offset	PracticeMenuRec record by byte offset [T]	temp2 = 0x400 - ratan2(dist, *(s32 *)(*(u8 **)obj + 0x184) - *(s32 *)(obj + 0x184));
+func_8001F2E4	src/code6cac_tu2.c:2441	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	if (temp2 < -0xFF) {
+func_8001F2E4	src/code6cac_tu2.c:2454	cast,offset	PracticeMenuRec record by byte offset [T]	temp = (tgt_z - *(s16 *)(obj + 0x1E6)) & 0xFFF;
+func_8001F2E4	src/code6cac_tu2.c:2458	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(obj + 0x1E6) = *(s16 *)(obj + 0x1E6) + temp / 8;
+func_8001F2E4	src/code6cac_tu2.c:2459	cast,offset	PracticeMenuRec record by byte offset [T]	temp = (temp2 - *(s16 *)(obj + 0x1E8)) & 0xFFF;
+func_8001F2E4	src/code6cac_tu2.c:2463	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(obj + 0x1E8) = *(s16 *)(obj + 0x1E8) + temp / 8;
+func_8001F2E4	src/code6cac_tu2.c:2464	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C) | PracticeMenuRec record by byte offset [T]	func_8002F770((s16 *)(a + 0x36), *(s16 *)(obj + 0x1E6), *(s16 *)(obj + 0x1E8), tgt_x);
+func_8001F2E4	src/code6cac_tu2.c:2465	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C) | PracticeMenuRec record by byte offset [T]	func_8002F770((s16 *)(b + 0x36), *(s16 *)(obj + 0x1E6), *(s16 *)(obj + 0x1E8), tgt_x);
+func_8001F2E4	src/code6cac_tu2.c:2467	cast,offset	PracticeMenuRec record by byte offset [T]	t = *(s16 *)(obj + 0xC);
+func_8001F2E4	src/code6cac_tu2.c:2468	cast,offset	PracticeMenuRec record by byte offset [T]	if ((t == 0x1D || t == 0xE) && *(s16 *)(obj + 0x8C) != 0) {
+func_8001F2E4	src/code6cac_tu2.c:2469	cast,offset	PracticeMenuRec record by byte offset [T]	temp = (ratan2(D_800A387C, *(s32 *)(*(u8 **)obj + 0xF8) - *(s32 *)(obj + 0xF8)) - 0x400) & 0xFFF;
+func_8001F2E4	src/code6cac_tu2.c:2475	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	} else if (temp < -0x1FF) {
+func_8001F2E4	src/code6cac_tu2.c:2478	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(obj + 0x1EA) = temp;
+func_8001F2E4	src/code6cac_tu2.c:2479	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	*(u16 *)(a + 0x7E) += temp;
+func_8001F2E4	src/code6cac_tu2.c:2480	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	*(u16 *)(b + 0x7E) += temp;
+func_8001F2E4	src/code6cac_tu2.c:2483	cast,offset	PracticeMenuRec record by byte offset [T]	if ((u32)(*(u16 *)(obj + 0xE) - 6) < 2U && *(u16 *)(obj + 0x6A) == 2) {
+func_8001F2E4	src/code6cac_tu2.c:2487	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(s32 *)(obj + 0x268) == 0) {
+func_8001F2E4	src/code6cac_tu2.c:2488	cast,offset	PracticeMenuRec record by byte offset [T]	*(s32 *)(obj + 0x25C) = *(s32 *)(obj + 0xF4);
+func_8001F2E4	src/code6cac_tu2.c:2489	cast,offset	PracticeMenuRec record by byte offset [T]	*(s32 *)(obj + 0x260) = *(s32 *)(obj + 0xF8);
+func_8001F2E4	src/code6cac_tu2.c:2490	cast,offset	PracticeMenuRec record by byte offset [T]	*(s32 *)(obj + 0x264) = *(s32 *)(obj + 0xFC);
+func_8001F2E4	src/code6cac_tu2.c:2492	cast,offset	PracticeMenuRec record by byte offset [T]	dx = *(s32 *)(*(u8 **)obj + 0xF4) - *(s32 *)(obj + 0x25C);
+func_8001F2E4	src/code6cac_tu2.c:2493	cast,offset	PracticeMenuRec record by byte offset [T]	dz = *(s32 *)(*(u8 **)obj + 0xFC) - *(s32 *)(obj + 0x264);
+func_8001F2E4	src/code6cac_tu2.c:2517	cast,offset	PracticeMenuRec record by byte offset [T]	temp2 = (ratan2(dist, *(s32 *)(*(u8 **)obj + 0xF8) - *(s32 *)(obj + 0x260)) - 0x400) & 0xFFF;
+func_8001F2E4	src/code6cac_tu2.c:2523	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	} else if (temp2 < -0x1FF) {
+func_8001F2E4	src/code6cac_tu2.c:2526	cast,offset	PracticeMenuRec record by byte offset [T]	temp = (temp2 - *(s16 *)(obj + 0x1EA)) & 0xFFF;
+func_8001F2E4	src/code6cac_tu2.c:2530	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(obj + 0x1EA) = *(s16 *)(obj + 0x1EA) + temp / 8;
+func_8001F2E4	src/code6cac_tu2.c:2531	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C) | PracticeMenuRec record by byte offset [T]	*(u16 *)(a + 0x72) += *(s16 *)(obj + 0x1EA);
+func_8001F2E4	src/code6cac_tu2.c:2532	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C) | PracticeMenuRec record by byte offset [T]	*(u16 *)(b + 0x72) += *(s16 *)(obj + 0x1EA);
+func_8001F2E4	src/code6cac_tu2.c:2535	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(s16 *)(obj + 0x26E) != 0 && *(s16 *)(obj + 0x96) == 0) {
+func_8001F2E4	src/code6cac_tu2.c:2537	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	*(u16 *)(a + 0xC) += temp;
+func_8001F2E4	src/code6cac_tu2.c:2538	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	*(u16 *)(b + 0xC) += temp;
+func_8001F2E4	src/code6cac_tu2.c:2539	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	*(u16 *)(a + 0x14) -= temp;
+func_8001F2E4	src/code6cac_tu2.c:2540	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	*(u16 *)(b + 0x14) -= temp;
+func_8001F2E4	src/code6cac_tu2.c:2542	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	*(u16 *)(a + 0x1E) += temp;
+func_8001F2E4	src/code6cac_tu2.c:2543	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	*(u16 *)(b + 0x1E) += temp;
+func_8001F2E4	src/code6cac_tu2.c:2544	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	*(u16 *)(a + 0x26) -= temp;
+func_8001F2E4	src/code6cac_tu2.c:2545	cast,offset	caller's stack buffers (func_80023F08 sp+0x18 / sp+0x9C)	*(u16 *)(b + 0x26) -= temp;
+func_8001F888	src/code6cac_tu2.c:2560	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	while ((u32)(dx + 0x4000) > 0x8000 || (u32)(dy + 0x4000) > 0x8000) {
+func_80021DB0	src/code6cac_tu2.c:3494	cast	stage data: (s16 *) view of the stage_GetDataPtr() return	stage = (s16 *)stage_GetDataPtr();
+func_80021DB0	src/code6cac_tu2.c:3502	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	dx = (Judge[(angle + 0x400) & 0xFFF] * 4000) / 4096;
+func_80021DB0	src/code6cac_tu2.c:3507	cast	call-boundary (s32 *) cast of a typed local (nrm)	if (func_80053614(&base.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0) {
+func_80021DB0	src/code6cac_tu2.c:3515	cast	call-boundary (s32 *) cast of a typed local (nrm)	if (func_8005344C(&cur.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0) {
+func_80021DB0	src/code6cac_tu2.c:3523	cast	call-boundary (s32 *) cast of a typed local (nrm)	if (func_80053614(&out->x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) == 0) {
+func_80021DB0	src/code6cac_tu2.c:3526	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	if (nrm[1] != -0x1000) {
+func_80021DB0	src/code6cac_tu2.c:3532	cast,offset	call-boundary (s32 *) cast of a typed local (nrm)	if (func_8005344C(&cur.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0 && nrm[1] == -0x1000) {
+func_800233AC	src/code6cac_tu2.c:4063	cast,offset	PracticeMenuRec record by byte offset [T]	bits = *(u32 *)(arg0 + 0x2C);
+func_800233AC	src/code6cac_tu2.c:4087	cast,offset	PracticeMenuRec record by byte offset [T]	px = *(s32 *)(arg0 + 0xB8);
+func_800233AC	src/code6cac_tu2.c:4092	cast,offset	PracticeMenuRec record by byte offset [T]	pos[1] = *(s32 *)(arg0 + 0xBC) - 0x64;
+func_800233AC	src/code6cac_tu2.c:4093	cast,offset	PracticeMenuRec record by byte offset [T]	pos[2] = *(s32 *)(arg0 + 0xC0);
+func_800233AC	src/code6cac_tu2.c:4096	cast,offset	PracticeMenuRec record by byte offset [T]	s32 angle = (*(s16 *)(arg0 + 0x1D8) + a1_val) & 0xFFF;
+func_800233AC	src/code6cac_tu2.c:4104	cast,offset	PracticeMenuRec record by byte offset [T]	s32 angle2 = (*(s16 *)(arg0 + 0x1D8) + a1_val + 0x400) & 0xFFF;
+func_800233AC	src/code6cac_tu2.c:4111	cast	call-boundary (s32 *) cast of a typed local	if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+func_800233AC	src/code6cac_tu2.c:4115	cast,offset	PracticeMenuRec record by byte offset [T] | call-boundary (s32 *) cast of a typed local	*(SVec8_233AC *)(arg0 + 0x98) = *(SVec8_233AC *)out1;
+func_800233AC	src/code6cac_tu2.c:4121	cast,offset	PracticeMenuRec record by byte offset [T]	pos[0] = *(s32 *)(arg0 + 0xB8);
+func_800233AC	src/code6cac_tu2.c:4122	cast,offset	PracticeMenuRec record by byte offset [T]	pos[1] = *(s32 *)(arg0 + 0xBC) - 0x898;
+func_800233AC	src/code6cac_tu2.c:4123	cast,offset	PracticeMenuRec record by byte offset [T]	pos[2] = *(s32 *)(arg0 + 0xC0);
+func_800233AC	src/code6cac_tu2.c:4136	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	s32 angle4 = (fwd_angle + 0xC00) & 0xFFF;
+func_800233AC	src/code6cac_tu2.c:4141	cast	call-boundary (s32 *) cast of a typed local	if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) != 0) {
+func_800233AC	src/code6cac_tu2.c:4149	cast	call-boundary (s32 *) cast of a typed local	if (func_80053614(off, pos, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+func_80023648	src/code6cac_tu2.c:4158	cast,offset	PracticeMenuRec record by byte offset [T]	u16 kind = *(u16 *)(arg0 + 0x6A);
+func_80023648	src/code6cac_tu2.c:4169	cast,offset	PracticeMenuRec record by byte offset [T]	u32 bits = *(u32 *)(arg0 + 0x2C);
+func_80023648	src/code6cac_tu2.c:4194	cast,offset	PracticeMenuRec record by byte offset [T]	if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
+func_80023648	src/code6cac_tu2.c:4195	cast,offset	PracticeMenuRec record by byte offset [T]	func_8001F860((s16 *)arg0, *(s16 *)(arg0 + 0x1CA) + a2 / 4);
+func_80023648	src/code6cac_tu2.c:4197	cast,offset	PracticeMenuRec record by byte offset [T]	func_8001F860((s16 *)arg0, *(s16 *)(arg0 + 0x1D8) + a2);
+func_80023648	src/code6cac_tu2.c:4200	cast,offset	PracticeMenuRec record by byte offset [T]	if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
+func_80023648	src/code6cac_tu2.c:4201	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x14C) = 0;
+func_80023648	src/code6cac_tu2.c:4215	cast,offset	PracticeMenuRec record by byte offset [T]	a2 = *(s16 *)(arg0 + 0x150);
+func_80023648	src/code6cac_tu2.c:4224	cast,offset	PracticeMenuRec record by byte offset [T]	s32 sub_result = *(u16 *)(arg0 + 0x14E) - a2;
+func_80023648	src/code6cac_tu2.c:4225	cast,offset	PracticeMenuRec record by byte offset [T]	s32 div16 = *(s16 *)(arg0 + 0x1A);
+func_80023648	src/code6cac_tu2.c:4231	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x14E) = sub_result;
+func_80023648	src/code6cac_tu2.c:4237	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x14E) = new_14e;
+func_80023648	src/code6cac_tu2.c:4239	cast,offset	PracticeMenuRec record by byte offset [T]	tbl_val = D_800A310C[D_8008DA08[*(s16 *)(arg0 + 0xA)]];
+func_80023648	src/code6cac_tu2.c:4245	cast,offset	PracticeMenuRec record by byte offset [T]	sub_result = *(s16 *)(arg0 + 0x1A);
+func_80023648	src/code6cac_tu2.c:4250	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x14E) = limit;
+func_80023648	src/code6cac_tu2.c:4252	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x14E) = 0;
+func_80023648	src/code6cac_tu2.c:4256	cast,offset	PracticeMenuRec record by byte offset [T]	s32 speed_prod = *(s16 *)(arg0 + 0x14E) * *(s16 *)(arg0 + 0x44);
+func_80023648	src/code6cac_tu2.c:4257	cast,offset	PracticeMenuRec record by byte offset [T]	s16 sin_val = Judge[(*(u16 *)(arg0 + 0x1CA) & 0xFFF)];
+func_80023648	src/code6cac_tu2.c:4266	cast,offset	PracticeMenuRec record by byte offset [T]	*(s32 *)(arg0 + 0xD8) += (sin_val * a2) >> 16;
+func_80023648	src/code6cac_tu2.c:4269	cast,offset	PracticeMenuRec record by byte offset [T]	s16 cos_val = Judge[((*(s16 *)(arg0 + 0x1CA) + 0x400) & 0xFFF)];
+func_80023648	src/code6cac_tu2.c:4270	cast,offset	PracticeMenuRec record by byte offset [T]	*(s32 *)(arg0 + 0xE0) += (cos_val * a2) >> 16;
+func_80023648	src/code6cac_tu2.c:4276	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(s16 *)(arg0 + 0x14E) > 0) {
+func_80023648	src/code6cac_tu2.c:4278	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x14C) = 0;
+func_80023648	src/code6cac_tu2.c:4280	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x14E) = 0;
+func_800283D0	src/code6cac_b_tu2.c:628	cast	PracticeMenuRec record by byte offset [T]	temp_s4 = *(u8 **)(arg0);
+func_800283D0	src/code6cac_b_tu2.c:630	cast,offset	PracticeMenuRec record by byte offset [T]	temp_a1 = *(u16 *)(arg0 + 0x6A);
+func_800283D0	src/code6cac_b_tu2.c:639	cast,offset	PracticeMenuRec record by byte offset [T] (unk_00 record)	u16 temp_v0 = *(u16 *)(temp_s4 + 0x6A);
+func_800283D0	src/code6cac_b_tu2.c:652	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	if (((u32)(temp_a1 - 0x19) >= 2U) && (temp_v1 != 2) && (temp_v1 != 0x26) && (temp_v1 != 0x1B) && (temp_v1 != 0x15) && (temp_v1 != 0x25) && (temp_v1 != 0x2C) && (temp_v1 != 0xC)) {
+func_800283D0	src/code6cac_b_tu2.c:662	cast,offset	PracticeMenuRec record by byte offset [T]	temp_a1_2 = (d_val >> *(s16 *)(arg0 + 4)) & 1;
+func_800283D0	src/code6cac_b_tu2.c:663	cast,offset	PracticeMenuRec record by byte offset [T] (unk_00 record)	temp_s5 = (d_val >> *(s16 *)(temp_s4 + 4)) & 1;
+func_800283D0	src/code6cac_b_tu2.c:664	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(s16 *)(arg0 + 0x8C) != 0) {
+func_800283D0	src/code6cac_b_tu2.c:668	cast,offset	PracticeMenuRec record by byte offset [T]	s16 temp_v1_2 = *(s16 *)(arg0 + 0xC);
+func_800283D0	src/code6cac_b_tu2.c:679	cast,offset	PracticeMenuRec record by byte offset [T] (unk_00 record)	s16 temp_v1_3 = *(s16 *)(temp_s4 + temp_s5 * 2 + 0x288);
+func_800283D0	src/code6cac_b_tu2.c:681	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288) > 0) {
+func_800283D0	src/code6cac_b_tu2.c:688	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x286) = var_v0;
+func_800283D0	src/code6cac_b_tu2.c:690	cast,offset	PracticeMenuRec record by byte offset [T]	func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
+func_800283D0	src/code6cac_b_tu2.c:691	cast,offset	PracticeMenuRec record by byte offset [T]	func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
+func_800283D0	src/code6cac_b_tu2.c:697	cast,offset	PracticeMenuRec record by byte offset [T]	s16 temp_v0_3 = *(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288);
+func_800283D0	src/code6cac_b_tu2.c:701	cast,offset	PracticeMenuRec record by byte offset [T]	func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
+func_800283D0	src/code6cac_b_tu2.c:702	cast,offset	PracticeMenuRec record by byte offset [T]	func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
+func_800283D0	src/code6cac_b_tu2.c:704	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288) == 5) {
+func_800283D0	src/code6cac_b_tu2.c:705	cast,offset	PracticeMenuRec record by byte offset [T] | PracticeMenuRec record by byte offset [T] (unk_00 record)	if (((u32)(*(u16 *)(arg0 + 0xE) - 6) < 2U) || ((u32)(*(u16 *)(temp_s4 + 0xE) - 6) < 2U)) {
+func_800283D0	src/code6cac_b_tu2.c:713	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x286) = 0x19;
+func_800283D0	src/code6cac_b_tu2.c:733	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x286) = var_v0_4;
+func_800283D0	src/code6cac_b_tu2.c:736	cast,offset	PracticeMenuRec record by byte offset [T]	func_80032854(*(s16 *)(arg0 + 4), 0x26, arg1, (s16 *)0);
+func_800283D0	src/code6cac_b_tu2.c:737	cast,offset	PracticeMenuRec record by byte offset [T]	func_80032854(*(s16 *)(arg0 + 4), 0x2D, arg1, (s16 *)0);
+func_800283D0	src/code6cac_b_tu2.c:740	cast,offset	PracticeMenuRec record by byte offset [T]	s32 temp_v1_4 = -*(s16 *)(arg0 + 0x1CA);
+func_800283D0	src/code6cac_b_tu2.c:742	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	s32 idx0 = (temp_v1_4 + 0x400) & 0xFFF;
+func_800283D0	src/code6cac_b_tu2.c:744	cast	PracticeMenuRec record by byte offset [T] (unk_00 record)	s32 *tail = (s32 *)(temp_s4 + (temp_s5 * 0x10));
+func_800283D0	src/code6cac_b_tu2.c:769	cast,offset	PracticeMenuRec record by byte offset [T]	*(s16 *)(arg0 + 0x286) = var_v0_2;
+func_8002A458	src/code6cac_b_tu2.c:1377	cast	scratchpad view (0x1F80xxxx)	u8 *scr = (u8 *)0x1F8002B8;
+func_8002A458	src/code6cac_b_tu2.c:1378	cast,offset	PracticeMenuRec record by byte offset [T]	s32 id = *(s16 *)(obj + 4);
+func_8002A458	src/code6cac_b_tu2.c:1379	cast	PracticeMenuRec record by byte offset [T]	u8 *partner = *(u8 **)obj;
+func_8002A458	src/code6cac_b_tu2.c:1411	cast,offset	scratchpad view (0x1F80xxxx)	*(u8 **)(scr + 0x60) = scr;
+func_8002A458	src/code6cac_b_tu2.c:1412	cast,offset	scratchpad view (0x1F80xxxx)	*(u8 **)(scr + 0x64) = scr + 0xC;
+func_8002A458	src/code6cac_b_tu2.c:1413	cast,offset	scratchpad view (0x1F80xxxx)	*(Vec3i *)(scr + 0xC8) = *(Vec3i *)(scr + 0xC);
+func_8002A458	src/code6cac_b_tu2.c:1414	cast,offset	scratchpad view (0x1F80xxxx)	dx = (*(s32 **)(scr + 0x64))[0] - (*(s32 **)(scr + 0x60))[0];
+func_8002A458	src/code6cac_b_tu2.c:1415	cast,offset	scratchpad view (0x1F80xxxx)	dy = (*(s32 **)(scr + 0x64))[1] - (*(s32 **)(scr + 0x60))[1];
+func_8002A458	src/code6cac_b_tu2.c:1416	cast,offset	scratchpad view (0x1F80xxxx)	dz = (*(s32 **)(scr + 0x64))[2] - (*(s32 **)(scr + 0x60))[2];
+func_8002A458	src/code6cac_b_tu2.c:1417	cast,offset	PracticeMenuRec record by byte offset [T] (unk_00 record)	diff = (*(s16 *)(partner + 0x1D8) - ratan2(dx, dz)) & 0xFFF;
+func_8002A458	src/code6cac_b_tu2.c:1448	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xF8) = -ratan2(dy, hlen);
+func_8002A458	src/code6cac_b_tu2.c:1449	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xFA) = ratan2(dx, dz);
+func_8002A458	src/code6cac_b_tu2.c:1450	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xFC) = 0;
+func_8002A458	src/code6cac_b_tu2.c:1452	cast,offset	scratchpad view (0x1F80xxxx)	func_80032854(id == 0, 0xB, scr + 0xC8, (s16 *)(scr + 0xF8));
+func_8002A458	src/code6cac_b_tu2.c:1480	cast,offset	scratchpad view (0x1F80xxxx)	**(Vec3i **)(scr + 0x60) = **(Vec3i **)(scr + 0x64);
+func_8002A458	src/code6cac_b_tu2.c:1481	cast,offset	scratchpad view (0x1F80xxxx)	(*(s32 **)(scr + 0x64))[0] += qx * 4;
+func_8002A458	src/code6cac_b_tu2.c:1482	cast,offset	scratchpad view (0x1F80xxxx)	(*(s32 **)(scr + 0x64))[1] += qy * 4;
+func_8002A458	src/code6cac_b_tu2.c:1483	cast,offset	scratchpad view (0x1F80xxxx)	(*(s32 **)(scr + 0x64))[2] += qz * 4;
+func_8002A458	src/code6cac_b_tu2.c:1495	cast,offset	PracticeMenuRec record by byte offset [T]	if (*(s16 *)(obj + 0x26C) == 0 && i >= 6 && i <= 9) {
+func_8002A458	src/code6cac_b_tu2.c:1498	cast	scratchpad view (0x1F80xxxx)	pos = (s32 *)((u8 *)0x1F8000A8 + id * 0x108 + i * 0xC);
+func_8002A458	src/code6cac_b_tu2.c:1499	cast,offset	D_800F5F68 0x1B8-byte records [T]	if (func_8002EA24(scr, pos, *(u16 *)(rec + 0xC), *(u16 *)(rec + 0xE)) != 0) {
+func_8002A458	src/code6cac_b_tu2.c:1502	cast	D_800F5F68 0x1B8-byte records [T]	if (*(s16 *)rec != 0
+func_8002A458	src/code6cac_b_tu2.c:1503	cast,offset	D_800F5F68 0x1B8-byte records [T]	&& func_8002EA24(scr, pos, *(u16 *)(rec + 0x10), *(u16 *)(rec + 0x12)) != 0) {
+func_8002A458	src/code6cac_b_tu2.c:1509	cast,offset	scratchpad view (0x1F80xxxx)	*(s32 *)(scr + 0xA8) = (*(s32 **)(scr + 0x60))[0] - qx / 4;
+func_8002A458	src/code6cac_b_tu2.c:1510	cast,offset	scratchpad view (0x1F80xxxx)	*(s32 *)(scr + 0xAC) = (*(s32 **)(scr + 0x60))[1] - qy / 4;
+func_8002A458	src/code6cac_b_tu2.c:1511	cast,offset	scratchpad view (0x1F80xxxx)	*(s32 *)(scr + 0xB0) = (*(s32 **)(scr + 0x60))[2] - qz / 4;
+func_8002A458	src/code6cac_b_tu2.c:1512	cast,offset	scratchpad view (0x1F80xxxx)	if (func_80053614((s32 *)(scr + 0xA8), *(s32 **)(scr + 0x64), (s32 *)(scr + 0x100),
+func_8002A458	src/code6cac_b_tu2.c:1513	cast,offset	scratchpad view (0x1F80xxxx)	(s32 *)(scr + 0xF8), work) != 0
+func_8002A458	src/code6cac_b_tu2.c:1516	cast,offset	scratchpad view (0x1F80xxxx)	p = *(s32 **)(scr + 0x60);
+func_8002A458	src/code6cac_b_tu2.c:1517	cast,offset	scratchpad view (0x1F80xxxx)	dx = *(s32 *)(scr + 0x100) - p[0];
+func_8002A458	src/code6cac_b_tu2.c:1518	cast,offset	scratchpad view (0x1F80xxxx)	dy = *(s32 *)(scr + 0x104) - p[1];
+func_8002A458	src/code6cac_b_tu2.c:1519	cast,offset	scratchpad view (0x1F80xxxx)	dz = *(s32 *)(scr + 0x108) - p[2];
+func_8002A458	src/code6cac_b_tu2.c:1521	cast,offset	PracticeMenuRec record by byte offset [T]	dx = *(s32 *)(obj + 0xF4) - p[0];
+func_8002A458	src/code6cac_b_tu2.c:1522	cast,offset	PracticeMenuRec record by byte offset [T]	dy = *(s32 *)(obj + 0xF8) - p[1];
+func_8002A458	src/code6cac_b_tu2.c:1523	cast,offset	PracticeMenuRec record by byte offset [T]	dz = *(s32 *)(obj + 0xFC) - p[2];
+func_8002D320	src/code6cac_b_tu2.c:1950	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
+func_8002D320	src/code6cac_b_tu2.c:1951	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
+func_8002D320	src/code6cac_b_tu2.c:1952	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
+func_8002D320	src/code6cac_b_tu2.c:1953	cast,offset	scratchpad 0x1F8002B8 block passed as obj	vin = (s32 *)(obj + 0xF8);
+func_8002D320	src/code6cac_b_tu2.c:1962	cast,offset	scratchpad 0x1F8002B8 block passed as obj	vout = (s32 *)(obj + 0x100);
+func_8002D320	src/code6cac_b_tu2.c:1982	cast,offset	scratchpad 0x1F8002B8 block passed as obj	x = *(s32 *)(obj + 0x100);
+func_8002D320	src/code6cac_b_tu2.c:1984	cast,offset	scratchpad 0x1F8002B8 block passed as obj	z = *(s32 *)(obj + 0x104);
+func_8002D320	src/code6cac_b_tu2.c:2015	cast,offset	scratchpad 0x1F8002B8 block passed as obj	y_low = *(s32 *)(obj + 0xB0);
+func_8002D320	src/code6cac_b_tu2.c:2021	cast,offset	scratchpad 0x1F8002B8 block passed as obj	y_high = *(s32 *)(obj + 0xC0);
+func_8002D320	src/code6cac_b_tu2.c:2027	cast,offset	scratchpad 0x1F8002B8 block passed as obj	y = *(s32 *)(obj + 0x108);
+func_8002D780	src/code6cac_b_tu2.c:2244	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
+func_8002D780	src/code6cac_b_tu2.c:2245	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
+func_8002D780	src/code6cac_b_tu2.c:2246	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
+func_8002D780	src/code6cac_b_tu2.c:2263	cast,offset	scratchpad 0x1F8002B8 block passed as obj	s32 y = *(s32 *)(obj + 0x108);
+func_8002D780	src/code6cac_b_tu2.c:2268	cast,offset	scratchpad 0x1F8002B8 block passed as obj	s32 x0 = *(s32 *)(obj + 0xA8);
+func_8002D780	src/code6cac_b_tu2.c:2269	cast,offset	scratchpad 0x1F8002B8 block passed as obj	s32 x2 = *(s32 *)(obj + 0xB8);
+func_8002D780	src/code6cac_b_tu2.c:2270	cast,offset	scratchpad 0x1F8002B8 block passed as obj	s32 z0 = *(s32 *)(obj + 0xAC);
+func_8002D780	src/code6cac_b_tu2.c:2271	cast,offset	scratchpad 0x1F8002B8 block passed as obj	s32 z2 = *(s32 *)(obj + 0xBC);
+func_8002D780	src/code6cac_b_tu2.c:2274	cast,offset	scratchpad 0x1F8002B8 block passed as obj	s32 px = *(s32 *)(obj + 0x100);
+func_8002D780	src/code6cac_b_tu2.c:2275	cast,offset	scratchpad 0x1F8002B8 block passed as obj	s32 pz = *(s32 *)(obj + 0x104);
+func_8002D780	src/code6cac_b_tu2.c:2326	cast,offset	scratchpad 0x1F8002B8 block passed as obj	s32 y = *(s32 *)(obj + 0x108);
+func_8002D780	src/code6cac_b_tu2.c:2370	cast,offset	scratchpad 0x1F8002B8 block passed as obj	p118 = (s32 *)(obj + 0x118);
+func_8002D780	src/code6cac_b_tu2.c:2371	cast,offset	scratchpad 0x1F8002B8 block passed as obj	p124 = (s32 *)(obj + 0x124);
+func_8002D780	src/code6cac_b_tu2.c:2372	cast,offset	scratchpad 0x1F8002B8 block passed as obj	p118[0] = *(s32 *)(obj + 0xA8) - *(s32 *)(obj + 0x100);
+func_8002D780	src/code6cac_b_tu2.c:2373	cast,offset	scratchpad 0x1F8002B8 block passed as obj	p118[1] = *(s32 *)(obj + 0xAC) - *(s32 *)(obj + 0x104);
+func_8002D780	src/code6cac_b_tu2.c:2374	cast,offset	scratchpad 0x1F8002B8 block passed as obj	p124[0] = *(s32 *)(obj + 0xB8) - *(s32 *)(obj + 0x100);
+func_8002D780	src/code6cac_b_tu2.c:2375	cast,offset	scratchpad 0x1F8002B8 block passed as obj	p124[1] = *(s32 *)(obj + 0xBC) - *(s32 *)(obj + 0x104);
+func_8002D780	src/code6cac_b_tu2.c:2378	cast,offset	scratchpad 0x1F8002B8 block passed as obj	p10C = (s32 *)(obj + 0x10C);
+func_8002D780	src/code6cac_b_tu2.c:2379	cast,offset	scratchpad 0x1F8002B8 block passed as obj	p10C[0] = -*(s32 *)(obj + 0x100);
+func_8002D780	src/code6cac_b_tu2.c:2380	cast,offset	scratchpad 0x1F8002B8 block passed as obj	p10C[1] = -*(s32 *)(obj + 0x104);
+func_8002DAD0	src/code6cac_b_tu2.c:2404	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xA8) = (*(s32 **)(obj + 0x64))[0] - (*(s32 **)(obj + 0x60))[0];
+func_8002DAD0	src/code6cac_b_tu2.c:2405	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xAC) = (*(s32 **)(obj + 0x64))[1] - (*(s32 **)(obj + 0x60))[1];
+func_8002DAD0	src/code6cac_b_tu2.c:2406	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xB0) = (*(s32 **)(obj + 0x64))[2] - (*(s32 **)(obj + 0x60))[2];
+func_8002DAD0	src/code6cac_b_tu2.c:2408	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xB8) = (*(s32 **)(obj + 0x68))[0] - (*(s32 **)(obj + 0x60))[0];
+func_8002DAD0	src/code6cac_b_tu2.c:2409	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xBC) = (*(s32 **)(obj + 0x68))[1] - (*(s32 **)(obj + 0x60))[1];
+func_8002DAD0	src/code6cac_b_tu2.c:2410	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xC0) = (*(s32 **)(obj + 0x68))[2] - (*(s32 **)(obj + 0x60))[2];
+func_8002DAD0	src/code6cac_b_tu2.c:2426	offset	scratchpad 0x1F8002B8 block passed as obj	:: "r"(obj + 0xA8) : "$12", "$13", "$14", "$15");
+func_8002DAD0	src/code6cac_b_tu2.c:2444	offset	scratchpad 0x1F8002B8 block passed as obj	:: "r"(obj + 0xB8) : "$12");
+func_8002DAD0	src/code6cac_b_tu2.c:2455	offset	scratchpad 0x1F8002B8 block passed as obj	:: "r"(obj + 0xC8) : "$12", "memory");
+func_8002DAD0	src/code6cac_b_tu2.c:2457	cast,offset	scratchpad 0x1F8002B8 block passed as obj	if ((u32)(*(s32 *)(obj + 0xC8) + 0x3FFF) < 0x7FFF &&
+func_8002DAD0	src/code6cac_b_tu2.c:2458	cast,offset	scratchpad 0x1F8002B8 block passed as obj	(u32)(*(s32 *)(obj + 0xCC) + 0x3FFF) < 0x7FFF &&
+func_8002DAD0	src/code6cac_b_tu2.c:2459	cast,offset	scratchpad 0x1F8002B8 block passed as obj	(u32)(*(s32 *)(obj + 0xD0) + 0x3FFF) < 0x7FFF) {
+func_8002DAD0	src/code6cac_b_tu2.c:2463	cast,offset	scratchpad 0x1F8002B8 block passed as obj	angle1 = ratan2(*(s32 *)(obj + 0xC8), *(s32 *)(obj + 0xD0));
+func_8002DAD0	src/code6cac_b_tu2.c:2464	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xC8) = *(s32 *)(obj + 0xC8) >> 6;
+func_8002DAD0	src/code6cac_b_tu2.c:2465	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xCC) = *(s32 *)(obj + 0xCC) >> 6;
+func_8002DAD0	src/code6cac_b_tu2.c:2485	cast,offset	scratchpad 0x1F8002B8 block passed as obj	dist = *(s32 *)(obj + 0xD0);
+func_8002DAD0	src/code6cac_b_tu2.c:2487	cast,offset	scratchpad 0x1F8002B8 block passed as obj	dist_sq = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8) + dist * dist;
+func_8002DAD0	src/code6cac_b_tu2.c:2488	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xD0) = dist;
+func_8002DAD0	src/code6cac_b_tu2.c:2489	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xFA) = 0x800 - angle1;
+func_8002DAD0	src/code6cac_b_tu2.c:2524	cast,offset	scratchpad 0x1F8002B8 block passed as obj	angle2 = ratan2(*(s32 *)(obj + 0xCC), dist);
+func_8002DAD0	src/code6cac_b_tu2.c:2525	cast,offset	scratchpad 0x1F8002B8 block passed as obj	mat = (s32 *)(obj + 0xD8);
+func_8002DAD0	src/code6cac_b_tu2.c:2526	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xF8) = 0x800 - angle2;
+func_8002DAD0	src/code6cac_b_tu2.c:2529	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xD8) = 0x1000;
+func_8002DAD0	src/code6cac_b_tu2.c:2530	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xDA) = 0;
+func_8002DAD0	src/code6cac_b_tu2.c:2531	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xDC) = 0;
+func_8002DAD0	src/code6cac_b_tu2.c:2532	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xDE) = 0;
+func_8002DAD0	src/code6cac_b_tu2.c:2533	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xE0) = 0x1000;
+func_8002DAD0	src/code6cac_b_tu2.c:2534	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xE2) = 0;
+func_8002DAD0	src/code6cac_b_tu2.c:2535	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xE4) = 0;
+func_8002DAD0	src/code6cac_b_tu2.c:2536	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xE6) = 0;
+func_8002DAD0	src/code6cac_b_tu2.c:2537	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xE8) = 0x1000;
+func_8002DAD0	src/code6cac_b_tu2.c:2538	cast,offset	scratchpad 0x1F8002B8 block passed as obj	RotMatrixY(*(s16 *)(obj + 0xFA), mat);
+func_8002DAD0	src/code6cac_b_tu2.c:2539	cast,offset	scratchpad 0x1F8002B8 block passed as obj	RotMatrixX(*(s16 *)(obj + 0xF8), mat);
+func_8002DAD0	src/code6cac_b_tu2.c:2579	offset	scratchpad 0x1F8002B8 block passed as obj	:: "r"(obj + 0xA8) : "$12", "$13", "$14");
+func_8002DAD0	src/code6cac_b_tu2.c:2586	offset	scratchpad 0x1F8002B8 block passed as obj	:: "r"(obj + 0xA8) : "$12", "memory");
+func_8002DAD0	src/code6cac_b_tu2.c:2601	offset	scratchpad 0x1F8002B8 block passed as obj	:: "r"(obj + 0xB8) : "$12", "$13", "$14");
+func_8002DAD0	src/code6cac_b_tu2.c:2608	offset	scratchpad 0x1F8002B8 block passed as obj	:: "r"(obj + 0xB8) : "$12", "memory");
+func_8002E838	src/code6cac_b_tu2.c:2883	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xA8) = (*(s32 **)(obj + 0x64))[0] - (*(s32 **)(obj + 0x60))[0];
+func_8002E838	src/code6cac_b_tu2.c:2884	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xAC) = (*(s32 **)(obj + 0x64))[1] - (*(s32 **)(obj + 0x60))[1];
+func_8002E838	src/code6cac_b_tu2.c:2885	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s32 *)(obj + 0xB0) = (*(s32 **)(obj + 0x64))[2] - (*(s32 **)(obj + 0x60))[2];
+func_8002E838	src/code6cac_b_tu2.c:2886	cast,offset	scratchpad 0x1F8002B8 block passed as obj	angle = ratan2(*(s32 *)(obj + 0xA8), *(s32 *)(obj + 0xB0));
+func_8002E838	src/code6cac_b_tu2.c:2887	cast,offset	scratchpad 0x1F8002B8 block passed as obj	dist_sq = *(s32 *)(obj + 0xA8) * *(s32 *)(obj + 0xA8)
+func_8002E838	src/code6cac_b_tu2.c:2888	cast,offset	scratchpad 0x1F8002B8 block passed as obj	+ *(s32 *)(obj + 0xB0) * *(s32 *)(obj + 0xB0);
+func_8002E838	src/code6cac_b_tu2.c:2889	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xFA) = 0x800 - angle;
+func_8002E838	src/code6cac_b_tu2.c:2919	cast,offset	scratchpad 0x1F8002B8 block passed as obj	angle = ratan2(*(s32 *)(obj + 0xAC), dist);
+func_8002E838	src/code6cac_b_tu2.c:2920	cast,offset	scratchpad 0x1F8002B8 block passed as obj	mat = (s32 *)(obj + 0xD8);
+func_8002E838	src/code6cac_b_tu2.c:2921	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xF8) = 0x800 - angle;
+func_8002E838	src/code6cac_b_tu2.c:2924	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xD8) = 0x1000;
+func_8002E838	src/code6cac_b_tu2.c:2925	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xDA) = 0;
+func_8002E838	src/code6cac_b_tu2.c:2926	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xDC) = 0;
+func_8002E838	src/code6cac_b_tu2.c:2927	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xDE) = 0;
+func_8002E838	src/code6cac_b_tu2.c:2928	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xE0) = 0x1000;
+func_8002E838	src/code6cac_b_tu2.c:2929	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xE2) = 0;
+func_8002E838	src/code6cac_b_tu2.c:2930	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xE4) = 0;
+func_8002E838	src/code6cac_b_tu2.c:2931	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xE6) = 0;
+func_8002E838	src/code6cac_b_tu2.c:2932	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xE8) = 0x1000;
+func_8002E838	src/code6cac_b_tu2.c:2933	cast,offset	scratchpad 0x1F8002B8 block passed as obj	RotMatrixY(*(s16 *)(obj + 0xFA), mat);
+func_8002E838	src/code6cac_b_tu2.c:2934	cast,offset	scratchpad 0x1F8002B8 block passed as obj	RotMatrixX(*(s16 *)(obj + 0xF8), mat);
+func_8002E838	src/code6cac_b_tu2.c:2952	cast,offset	scratchpad 0x1F8002B8 block passed as obj	vec = (s32 *)(obj + 0xA8);
+func_8002EA24	src/code6cac_b_tu2.c:2981	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
+func_8002EA24	src/code6cac_b_tu2.c:2982	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
+func_8002EA24	src/code6cac_b_tu2.c:2983	cast,offset	scratchpad 0x1F8002B8 block passed as obj	*(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
+func_8002EA24	src/code6cac_b_tu2.c:2984	cast,offset	scratchpad 0x1F8002B8 block passed as obj	vin = (s32 *)(obj + 0xF8);
+func_8002EA24	src/code6cac_b_tu2.c:2993	cast,offset	scratchpad 0x1F8002B8 block passed as obj	vout = (s32 *)(obj + 0x100);
+func_8002EA24	src/code6cac_b_tu2.c:3013	cast,offset	scratchpad 0x1F8002B8 block passed as obj	x = *(s32 *)(obj + 0x100);
+func_8002EA24	src/code6cac_b_tu2.c:3015	cast,offset	scratchpad 0x1F8002B8 block passed as obj	z = *(s32 *)(obj + 0x104);
+func_8002EA24	src/code6cac_b_tu2.c:3048	cast,offset	scratchpad 0x1F8002B8 block passed as obj	y_low = *(s32 *)(obj + 0xB0);
+func_8002EA24	src/code6cac_b_tu2.c:3054	cast,offset	scratchpad 0x1F8002B8 block passed as obj	y = *(s32 *)(obj + 0x108);
+func_8002EBDC	src/code6cac_b_tu2.c:3062	cast	scratchpad view (0x1F80xxxx)	u8 *scr = (u8 *)0x1F8002B8;
+func_8002EBDC	src/code6cac_b_tu2.c:3071	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xFA) = 0x800 - angle1;
+func_8002EBDC	src/code6cac_b_tu2.c:3095	cast,offset	scratchpad view (0x1F80xxxx)	mat = (s32 *)(scr + 0xD8);
+func_8002EBDC	src/code6cac_b_tu2.c:3096	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xF8) = 0x800 - angle2;
+func_8002EBDC	src/code6cac_b_tu2.c:3098	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xD8) = 0x1000;
+func_8002EBDC	src/code6cac_b_tu2.c:3099	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDA) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3100	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDC) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3101	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDE) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3102	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE0) = 0x1000;
+func_8002EBDC	src/code6cac_b_tu2.c:3103	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE2) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3104	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE4) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3105	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE6) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3106	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE8) = 0x1000;
+func_8002EBDC	src/code6cac_b_tu2.c:3107	cast,offset	scratchpad view (0x1F80xxxx)	RotMatrixY(*(s16 *)(scr + 0xFA), mat);
+func_8002EBDC	src/code6cac_b_tu2.c:3108	cast,offset	scratchpad view (0x1F80xxxx)	RotMatrixX(*(s16 *)(scr + 0xF8), mat);
+func_8002EBDC	src/code6cac_b_tu2.c:3135	cast,offset	scratchpad view (0x1F80xxxx)	vec = (s32 *)(scr + 0xA8);
+func_8002EBDC	src/code6cac_b_tu2.c:3146	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xD8) = 0x1000;
+func_8002EBDC	src/code6cac_b_tu2.c:3147	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDA) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3148	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDC) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3149	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDE) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3150	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE0) = 0x1000;
+func_8002EBDC	src/code6cac_b_tu2.c:3151	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE2) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3152	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE4) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3153	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE6) = 0;
+func_8002EBDC	src/code6cac_b_tu2.c:3154	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE8) = 0x1000;
+func_8002EBDC	src/code6cac_b_tu2.c:3155	cast,offset	scratchpad view (0x1F80xxxx)	RotMatrixX(-*(s16 *)(scr + 0xF8), mat);
+func_8002EBDC	src/code6cac_b_tu2.c:3156	cast,offset	scratchpad view (0x1F80xxxx)	RotMatrixY(-*(s16 *)(scr + 0xFA), mat);
+func_8002F2D0	src/code6cac_b_tu2.c:3239	cast	scratchpad view (0x1F80xxxx)	m = (MATRIX *)0x1F800390;
+func_8002F2D0	src/code6cac_b_tu2.c:3240	cast	model/geometry data (MATRIX *)	*m = *(MATRIX *)a0;
+func_8002F2D0	src/code6cac_b_tu2.c:3255	cast	scratchpad view (0x1F80xxxx)	scr = (u8 *)0x1F8002B8;
+func_8002F2D0	src/code6cac_b_tu2.c:3279	cast,offset	scratchpad view (0x1F80xxxx)	mat = (s32 *)(scr + 0xD8);
+func_8002F2D0	src/code6cac_b_tu2.c:3280	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xD8) = 0x1000;
+func_8002F2D0	src/code6cac_b_tu2.c:3281	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDA) = 0;
+func_8002F2D0	src/code6cac_b_tu2.c:3282	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDC) = 0;
+func_8002F2D0	src/code6cac_b_tu2.c:3283	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDE) = 0;
+func_8002F2D0	src/code6cac_b_tu2.c:3284	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE0) = 0x1000;
+func_8002F2D0	src/code6cac_b_tu2.c:3285	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE2) = 0;
+func_8002F2D0	src/code6cac_b_tu2.c:3286	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE4) = 0;
+func_8002F2D0	src/code6cac_b_tu2.c:3287	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE6) = 0;
+func_8002F2D0	src/code6cac_b_tu2.c:3288	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE8) = 0x1000;
+func_8002F2D0	src/code6cac_b_tu2.c:3304	cast,offset	scratchpad view (0x1F80xxxx)	vec = (s32 *)(scr + 0xA8);
+func_8002F2D0	src/code6cac_b_tu2.c:3327	cast	s16 triple held in an s32 * param	((s16 *)a1)[0] = ratan2(vec[2], vec[1]);
+func_8002F2D0	src/code6cac_b_tu2.c:3328	cast	s16 triple held in an s32 * param	((s16 *)a1)[1] = -ang_y;
+func_8002F2D0	src/code6cac_b_tu2.c:3329	cast	s16 triple held in an s32 * param	((s16 *)a1)[2] = -ang_z;
+func_8002F770	src/code6cac_b_tu2.c:3352	cast	scratchpad view (0x1F80xxxx)	init_scr = (u8 *)0x1F8002B8;
+func_8002F770	src/code6cac_b_tu2.c:3353	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(init_scr + 0xD8) = 0x1000;
+func_8002F770	src/code6cac_b_tu2.c:3354	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(init_scr + 0xDA) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3355	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(init_scr + 0xDC) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3356	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(init_scr + 0xDE) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3357	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(init_scr + 0xE0) = 0x1000;
+func_8002F770	src/code6cac_b_tu2.c:3358	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(init_scr + 0xE2) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3359	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(init_scr + 0xE4) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3360	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(init_scr + 0xE6) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3361	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(init_scr + 0xE8) = 0x1000;
+func_8002F770	src/code6cac_b_tu2.c:3362	cast	scratchpad view (0x1F80xxxx)	RotMatrixX(x, (s32 *)0x1F800390);
+func_8002F770	src/code6cac_b_tu2.c:3363	cast	scratchpad view (0x1F80xxxx)	RotMatrixY(y, (s32 *)0x1F800390);
+func_8002F770	src/code6cac_b_tu2.c:3364	cast	scratchpad view (0x1F80xxxx)	RotMatrixZ(-z, (s32 *)0x1F800390);
+func_8002F770	src/code6cac_b_tu2.c:3365	cast	scratchpad view (0x1F80xxxx)	RotMatrixX(angles[0], (s32 *)0x1F800390);
+func_8002F770	src/code6cac_b_tu2.c:3366	cast	scratchpad view (0x1F80xxxx)	RotMatrixY(angles[1], (s32 *)0x1F800390);
+func_8002F770	src/code6cac_b_tu2.c:3367	cast	scratchpad view (0x1F80xxxx)	RotMatrixZ(angles[2], (s32 *)0x1F800390);
+func_8002F770	src/code6cac_b_tu2.c:3369	cast	scratchpad view (0x1F80xxxx)	m = (MATRIX *)0x1F800390;
+func_8002F770	src/code6cac_b_tu2.c:3383	cast	scratchpad view (0x1F80xxxx)	scr = (u8 *)0x1F8002B8;
+func_8002F770	src/code6cac_b_tu2.c:3407	cast,offset	scratchpad view (0x1F80xxxx)	mat = (s32 *)(scr + 0xD8);
+func_8002F770	src/code6cac_b_tu2.c:3408	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xD8) = 0x1000;
+func_8002F770	src/code6cac_b_tu2.c:3409	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDA) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3410	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDC) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3411	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xDE) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3412	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE0) = 0x1000;
+func_8002F770	src/code6cac_b_tu2.c:3413	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE2) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3414	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE4) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3415	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE6) = 0;
+func_8002F770	src/code6cac_b_tu2.c:3416	cast,offset	scratchpad view (0x1F80xxxx)	*(s16 *)(scr + 0xE8) = 0x1000;
+func_8002F770	src/code6cac_b_tu2.c:3432	cast,offset	scratchpad view (0x1F80xxxx)	vec = (s32 *)(scr + 0xA8);
+func_8003032C	src/code6cac_b_tu2.c:3859	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	cos_val = Judge[(angle + 0x400) & 0xFFF];
+func_8003032C	src/code6cac_b_tu2.c:3863	cast,offset	untraced object (no direct caller; offsets match D_80106A78 velocity fields)	vx = *((s32 *)(((u8 *)a0) + 0x44));
+func_8003032C	src/code6cac_b_tu2.c:3866	cast,offset	untraced object (no direct caller; offsets match D_80106A78 velocity fields)	vz = *((s32 *)(((u8 *)a0) + 0x4C));
+func_8003032C	src/code6cac_b_tu2.c:3869	cast,offset	untraced object (no direct caller; offsets match D_80106A78 velocity fields)	v48 = *((s32 *)(((u8 *)a0) + 0x48));
+func_8003032C	src/code6cac_b_tu2.c:3870	cast,offset	untraced object (no direct caller; offsets match D_80106A78 velocity fields)	*((s32 *)(((u8 *)a0) + 0x44)) = ((rx * cos_val) - (rz * sin_val)) >> 15;
+func_8003032C	src/code6cac_b_tu2.c:3871	cast,offset	untraced object (no direct caller; offsets match D_80106A78 velocity fields)	*((s32 *)(((u8 *)a0) + 0x4C)) = ((rx * sin_val) + (rz * cos_val)) >> 15;
+func_8003032C	src/code6cac_b_tu2.c:3876	cast,offset	untraced object (no direct caller; offsets match D_80106A78 velocity fields)	*((s32 *)(((u8 *)a0) + 0x48)) = v48 >> 2;
+func_80030580	src/code6cac_b_tu2.c:3937	cast	PracticeMenuRec record by byte offset [T]	u8 *src = (u8 *)arg0;
+func_80030580	src/code6cac_b_tu2.c:3941	cast,scalar&	D_80106A78 0x64-byte records (u8 * base of a scalar-declared record table)	obj = (u8 *)&D_80106A78;
+func_80030580	src/code6cac_b_tu2.c:3943	cast,offset	D_80106A78 0x64-byte records	if (*(s16 *)(obj + 2) == -1 && *(u8 *)(obj + 0xA) == 0xFF) break;
+func_80030580	src/code6cac_b_tu2.c:3945	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 0xA) = i;
+func_80030580	src/code6cac_b_tu2.c:3946	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 2) = arg1;
+func_80030580	src/code6cac_b_tu2.c:3947	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 7) = 0;
+func_80030580	src/code6cac_b_tu2.c:3948	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 8) = 0;
+func_80030580	src/code6cac_b_tu2.c:3949	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 4) = 1;
+func_80030580	src/code6cac_b_tu2.c:3950	cast,offset	D_80106A78 0x64-byte records | PracticeMenuRec record by byte offset [T]	*(u8 *)(obj + 6) = *(u16 *)(src + 4);
+func_80030580	src/code6cac_b_tu2.c:3951	cast,offset	D_80106A78 0x64-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(obj + 0x2C) = *(s32 *)(src + 0xF4);
+func_80030580	src/code6cac_b_tu2.c:3952	cast,offset	D_80106A78 0x64-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(obj + 0x30) = *(s32 *)(src + 0xF8) - *(s16 *)(src + 0x1A) / 32;
+func_80030580	src/code6cac_b_tu2.c:3953	cast,offset	D_80106A78 0x64-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(obj + 0x34) = *(s32 *)(src + 0xFC);
+func_80030580	src/code6cac_b_tu2.c:3955	cast,offset	D_80106A78 0x64-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(obj + 0x44) = (Judge[*(u16 *)(src + 0x1CA) & 0xFFF] * tbl->unk4) >> 12;
+func_80030580	src/code6cac_b_tu2.c:3956	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x48) = tbl->unk6;
+func_80030580	src/code6cac_b_tu2.c:3957	cast,offset	D_80106A78 0x64-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(obj + 0x4C) = (Judge[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * tbl->unk4) >> 12;
+func_80030580	src/code6cac_b_tu2.c:3958	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x2C) += *(s32 *)(obj + 0x44);
+func_80030580	src/code6cac_b_tu2.c:3959	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x30) += *(s32 *)(obj + 0x48);
+func_80030580	src/code6cac_b_tu2.c:3960	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x34) += *(s32 *)(obj + 0x4C);
+func_80030580	src/code6cac_b_tu2.c:3961	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x2C) += *(s32 *)(obj + 0x44) / 2;
+func_80030580	src/code6cac_b_tu2.c:3962	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x30) += *(s32 *)(obj + 0x48) / 2;
+func_80030580	src/code6cac_b_tu2.c:3963	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x34) += *(s32 *)(obj + 0x4C) / 2;
+func_80030580	src/code6cac_b_tu2.c:3964	cast,offset	D_80106A78 0x64-byte records	*(Vec3i *)(obj + 0x38) = *(Vec3i *)(obj + 0x2C);
+func_80030580	src/code6cac_b_tu2.c:3965	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x54) = 0;
+func_80030580	src/code6cac_b_tu2.c:3966	cast,offset	D_80106A78 0x64-byte records | PracticeMenuRec record by byte offset [T]	*(u16 *)(obj + 0x56) = *(u16 *)(src + 0x1CA);
+func_80030580	src/code6cac_b_tu2.c:3967	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x58) = 0;
+func_80030580	src/code6cac_b_tu2.c:3969	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5C) = 0;
+func_80030580	src/code6cac_b_tu2.c:3970	cast,offset	D_80106A78 0x64-byte records	*(u16 *)(obj + 0x5E) = tbl->unk8;
+func_80030580	src/code6cac_b_tu2.c:3971	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x60) = 0;
+func_80030580	src/code6cac_b_tu2.c:3973	cast,offset	D_80106A78 0x64-byte records	*(u16 *)(obj + 0x5C) = tbl->unk8;
+func_80030580	src/code6cac_b_tu2.c:3974	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5E) = 0;
+func_80030580	src/code6cac_b_tu2.c:3975	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x60) = 0;
+func_80030580	src/code6cac_b_tu2.c:3977	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5C) = 0;
+func_80030580	src/code6cac_b_tu2.c:3978	cast,offset	D_80106A78 0x64-byte records	*(u16 *)(obj + 0x5E) = tbl->unk8;
+func_80030580	src/code6cac_b_tu2.c:3979	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x60) = 0;
+func_80030580	src/code6cac_b_tu2.c:3981	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5C) = 0;
+func_80030580	src/code6cac_b_tu2.c:3982	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5E) = 0;
+func_80030580	src/code6cac_b_tu2.c:3983	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x60) = 0;
+func_80030580	src/code6cac_b_tu2.c:3985	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x50) = 1;
+func_80030580	src/code6cac_b_tu2.c:3986	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 5) = 0;
+func_80030580	src/code6cac_b_tu2.c:3987	cast	D_80106A78 0x64-byte records	*(s16 *)obj = 0;
+func_80030580	src/code6cac_b_tu2.c:3988	cast	D_80106A78 0x64-byte records	return (s32 *)obj;
+func_80030D7C	src/code6cac_b_tu2.c:4214	cast	scratchpad view (0x1F80xxxx)	scr = (u8 *)0x1F8002B8;
+func_80030D7C	src/code6cac_b_tu2.c:4215	cast,scalar&	D_80106A78 0x64-byte records (u8 * base of a scalar-declared record table)	obj = (u8 *)&D_80106A78;
+func_80030D7C	src/code6cac_b_tu2.c:4228	cast,offset	D_80106A78 0x64-byte records	if (*(s16 *)(obj + 2) == -1) {
+func_80030D7C	src/code6cac_b_tu2.c:4229	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 0xA) = 0xFF;
+func_80030D7C	src/code6cac_b_tu2.c:4232	cast,offset	D_80106A78 0x64-byte records	if (*(u8 *)(obj + 8) != 0) {
+func_80030D7C	src/code6cac_b_tu2.c:4235	cast,offset	D_80106A78 0x64-byte records	*(Vec3i32 *)(obj + 0x38) = *(Vec3i32 *)(obj + 0x2C);
+func_80030D7C	src/code6cac_b_tu2.c:4236	cast,offset	D_80106A78 0x64-byte records	if (*(s32 *)(obj + 0x50) != 0) {
+func_80030D7C	src/code6cac_b_tu2.c:4237	cast	D_80106A78 0x64-byte records	(*(s16 *)obj)++;
+func_80030D7C	src/code6cac_b_tu2.c:4239	cast,offset	D_80106A78 0x64-byte records	if (*(s16 *)(obj + 2) == 0x10 && *(s32 *)(obj + 0x50) != 0 && *(u8 *)(obj + 5) == 0
+func_80030D7C	src/code6cac_b_tu2.c:4240	cast	D_80106A78 0x64-byte records	&& *(s16 *)obj >= 14) {
+func_80030D7C	src/code6cac_b_tu2.c:4241	cast,offset	D_80106A78 0x64-byte records	temp = ratan2(*(s32 *)(obj + 0x44), *(s32 *)(obj + 0x4C));
+func_80030D7C	src/code6cac_b_tu2.c:4242	cast	D_80106A78 0x64-byte records	work = (0x4E - *(s16 *)obj) * 96 / 64;
+func_80030D7C	src/code6cac_b_tu2.c:4248	cast,offset	scratchpad view (0x1F80xxxx) | D_80106A78 0x64-byte records	*(s32 *)(scr + 0x10) = (Judge[(temp + 0x400) & 0xFFF] * *(s32 *)(obj + 0x44)
+func_80030D7C	src/code6cac_b_tu2.c:4249	cast,offset	D_80106A78 0x64-byte records	- Judge[temp & 0xFFF] * *(s32 *)(obj + 0x4C)) >> 12;
+func_80030D7C	src/code6cac_b_tu2.c:4250	cast,offset	scratchpad view (0x1F80xxxx) | D_80106A78 0x64-byte records	*(s32 *)(scr + 0x14) = *(s32 *)(obj + 0x48);
+func_80030D7C	src/code6cac_b_tu2.c:4251	cast,offset	scratchpad view (0x1F80xxxx) | D_80106A78 0x64-byte records	*(s32 *)(scr + 0x18) = (Judge[temp & 0xFFF] * *(s32 *)(obj + 0x44)
+func_80030D7C	src/code6cac_b_tu2.c:4252	cast,offset	D_80106A78 0x64-byte records	+ Judge[(temp + 0x400) & 0xFFF] * *(s32 *)(obj + 0x4C)) >> 12;
+func_80030D7C	src/code6cac_b_tu2.c:4253	cast,offset	scratchpad view (0x1F80xxxx)	*(s32 *)(scr + 0x20) = *(s32 *)(scr + 0x10);
+func_80030D7C	src/code6cac_b_tu2.c:4255	cast,offset	scratchpad view (0x1F80xxxx)	*(s32 *)(scr + 0x24) = (Judge[(half + 0x400) & 0xFFF] * *(s32 *)(scr + 0x14)
+func_80030D7C	src/code6cac_b_tu2.c:4256	cast,offset	scratchpad view (0x1F80xxxx)	- Judge[half & 0xFFF] * *(s32 *)(scr + 0x18)) >> 12;
+func_80030D7C	src/code6cac_b_tu2.c:4257	cast,offset	scratchpad view (0x1F80xxxx)	*(s32 *)(scr + 0x28) = (Judge[half & 0xFFF] * *(s32 *)(scr + 0x14)
+func_80030D7C	src/code6cac_b_tu2.c:4258	cast,offset	scratchpad view (0x1F80xxxx)	+ Judge[(half + 0x400) & 0xFFF] * *(s32 *)(scr + 0x18)) >> 12;
+func_80030D7C	src/code6cac_b_tu2.c:4259	cast,offset	D_80106A78 0x64-byte records | scratchpad view (0x1F80xxxx)	*(s32 *)(obj + 0x44) = (Judge[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x20)
+func_80030D7C	src/code6cac_b_tu2.c:4260	cast,offset	scratchpad view (0x1F80xxxx)	- Judge[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
+func_80030D7C	src/code6cac_b_tu2.c:4261	cast,offset	D_80106A78 0x64-byte records | scratchpad view (0x1F80xxxx)	*(s32 *)(obj + 0x48) = *(s32 *)(scr + 0x24);
+func_80030D7C	src/code6cac_b_tu2.c:4262	cast,offset	D_80106A78 0x64-byte records | scratchpad view (0x1F80xxxx)	*(s32 *)(obj + 0x4C) = (Judge[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x20)
+func_80030D7C	src/code6cac_b_tu2.c:4263	cast,offset	scratchpad view (0x1F80xxxx)	+ Judge[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
+func_80030D7C	src/code6cac_b_tu2.c:4264	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5C) = *(s16 *)(obj + 0x5C) * 63 / 64;
+func_80030D7C	src/code6cac_b_tu2.c:4265	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5E) = *(s16 *)(obj + 0x5E) * 63 / 64;
+func_80030D7C	src/code6cac_b_tu2.c:4266	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x60) = *(s16 *)(obj + 0x60) * 63 / 64;
+func_80030D7C	src/code6cac_b_tu2.c:4268	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5C) = *(s16 *)(obj + 0x5C) * 15 / 16;
+func_80030D7C	src/code6cac_b_tu2.c:4269	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5E) = *(s16 *)(obj + 0x5E) * 15 / 16;
+func_80030D7C	src/code6cac_b_tu2.c:4270	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x60) = *(s16 *)(obj + 0x60) * 15 / 16;
+func_80030D7C	src/code6cac_b_tu2.c:4272	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x54) += *(s16 *)(obj + 0x5C);
+func_80030D7C	src/code6cac_b_tu2.c:4273	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x56) += *(s16 *)(obj + 0x5E);
+func_80030D7C	src/code6cac_b_tu2.c:4274	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x58) += *(s16 *)(obj + 0x60);
+func_80030D7C	src/code6cac_b_tu2.c:4275	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x48) += 13;
+func_80030D7C	src/code6cac_b_tu2.c:4276	cast,offset	scratchpad view (0x1F80xxxx) | D_80106A78 0x64-byte records	*(s32 *)(scr + 0x0) = *(s32 *)(obj + 0x2C) + *(s32 *)(obj + 0x44);
+func_80030D7C	src/code6cac_b_tu2.c:4277	cast,offset	scratchpad view (0x1F80xxxx) | D_80106A78 0x64-byte records	*(s32 *)(scr + 0x4) = *(s32 *)(obj + 0x30) + *(s32 *)(obj + 0x48);
+func_80030D7C	src/code6cac_b_tu2.c:4278	cast,offset	scratchpad view (0x1F80xxxx) | D_80106A78 0x64-byte records	*(s32 *)(scr + 0x8) = *(s32 *)(obj + 0x34) + *(s32 *)(obj + 0x4C);
+func_80030D7C	src/code6cac_b_tu2.c:4279	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x30) -= 8;
+func_80030D7C	src/code6cac_b_tu2.c:4280	cast,offset	scratchpad view (0x1F80xxxx)	nrm = (s16 *)(scr + 0x30);
+func_80030D7C	src/code6cac_b_tu2.c:4281	cast,offset	D_80106A78 0x64-byte records | scratchpad view (0x1F80xxxx) | scratchpad view (0x1F80xxxx) (nrm; call-boundary (s32 *) cast)	temp = func_8005344C((s32 *)(obj + 0x2C), (s32 *)scr, (s32 *)(scr + 0x10), (s32 *)nrm, (s32)(scr + 0x38));
+func_80030D7C	src/code6cac_b_tu2.c:4286	cast,offset	D_80106A78 0x64-byte records	if (*(s16 *)(obj + 2) == 0xF) {
+func_80030D7C	src/code6cac_b_tu2.c:4287	cast,offset	D_80106A78 0x64-byte records	func_80032854(*(u8 *)(obj + 6), 0xE, scr + 0x10, nrm);
+func_80030D7C	src/code6cac_b_tu2.c:4288	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 2) = -1;
+func_80030D7C	src/code6cac_b_tu2.c:4291	cast,offset	D_80106A78 0x64-byte records	dot = (*(s32 *)(obj + 0x44) * nrm[0]
+func_80030D7C	src/code6cac_b_tu2.c:4292	cast,offset	D_80106A78 0x64-byte records	+ *(s32 *)(obj + 0x48) * nrm[1]
+func_80030D7C	src/code6cac_b_tu2.c:4293	cast,offset	D_80106A78 0x64-byte records	+ *(s32 *)(obj + 0x4C) * nrm[2]) / 2048;
+func_80030D7C	src/code6cac_b_tu2.c:4294	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x44) -= nrm[0] * dot / 4096;
+func_80030D7C	src/code6cac_b_tu2.c:4295	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x48) -= nrm[1] * dot / 4096;
+func_80030D7C	src/code6cac_b_tu2.c:4296	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x4C) -= nrm[2] * dot / 4096;
+func_80030D7C	src/code6cac_b_tu2.c:4297	cast,offset	D_80106A78 0x64-byte records | scratchpad view (0x1F80xxxx)	*(Vec3i32 *)(obj + 0x2C) = *(Vec3i32 *)(scr + 0x10);
+func_80030D7C	src/code6cac_b_tu2.c:4298	cast,offset	D_80106A78 0x64-byte records	state = *(s16 *)(obj + 2);
+func_80030D7C	src/code6cac_b_tu2.c:4300	cast,offset	D_80106A78 0x64-byte records	if (*(s32 *)(obj + 0x50) != 0) {
+func_80030D7C	src/code6cac_b_tu2.c:4301	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x44) = *(s32 *)(obj + 0x44) * work / 4096;
+func_80030D7C	src/code6cac_b_tu2.c:4302	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x48) = *(s32 *)(obj + 0x48) * work / 4096;
+func_80030D7C	src/code6cac_b_tu2.c:4303	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x4C) = *(s32 *)(obj + 0x4C) * work / 4096;
+func_80030D7C	src/code6cac_b_tu2.c:4304	cast,offset	D_80106A78 0x64-byte records	spd = *(s32 *)(obj + 0x44) * *(s32 *)(obj + 0x44)
+func_80030D7C	src/code6cac_b_tu2.c:4305	cast,offset	D_80106A78 0x64-byte records	+ *(s32 *)(obj + 0x4C) * *(s32 *)(obj + 0x4C);
+func_80030D7C	src/code6cac_b_tu2.c:4306	cast,offset	scratchpad view (0x1F80xxxx)	if (*(s16 *)(scr + 0x32) >= -0x7FF) {
+func_80030D7C	src/code6cac_b_tu2.c:4307	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5E) += (rng_Next() & 1) ? spd / 64 : -spd / 64;
+func_80030D7C	src/code6cac_b_tu2.c:4308	cast,offset	D_80106A78 0x64-byte records	if (*(s16 *)(obj + 2) != 0xE && *(u8 *)(obj + 4) != 0) {
+func_80030D7C	src/code6cac_b_tu2.c:4309	cast,offset	D_80106A78 0x64-byte records	func_80032854(*(u8 *)(obj + 6), 1, obj + 0x2C, 0);
+func_80030D7C	src/code6cac_b_tu2.c:4312	cast,offset	D_80106A78 0x64-byte records	if (*(s16 *)(obj + 2) == 0xE) {
+func_80030D7C	src/code6cac_b_tu2.c:4313	cast,offset	D_80106A78 0x64-byte records	if (*(u8 *)(obj + 4) != 0) {
+func_80030D7C	src/code6cac_b_tu2.c:4314	cast,offset	D_80106A78 0x64-byte records	func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2F, obj + 0x2C, 0);
+func_80030D7C	src/code6cac_b_tu2.c:4316	cast,offset	D_80106A78 0x64-byte records	} else if (*(s16 *)(obj + 2) < 0x12) {
+func_80030D7C	src/code6cac_b_tu2.c:4318	cast,offset	D_80106A78 0x64-byte records	func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2C, obj + 0x2C, 0);
+func_80030D7C	src/code6cac_b_tu2.c:4320	cast,offset	D_80106A78 0x64-byte records	} else if ((u16)(*(s16 *)(obj + 2) - 0x12) < 12) {
+func_80030D7C	src/code6cac_b_tu2.c:4322	cast,offset	D_80106A78 0x64-byte records	func_80032854(*(u8 *)(obj + 6), 0x29, obj + 0x2C, 0);
+func_80030D7C	src/code6cac_b_tu2.c:4325	cast,offset	scratchpad view (0x1F80xxxx)	} else if (*(s16 *)(scr + 0x32) >= -0x7FF && state == 0xE) {
+func_80030D7C	src/code6cac_b_tu2.c:4326	cast,offset	D_80106A78 0x64-byte records	if (*(u8 *)(obj + 5) == 1) {
+func_80030D7C	src/code6cac_b_tu2.c:4327	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x50) = 1;
+func_80030D7C	src/code6cac_b_tu2.c:4328	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x56) += 0x780 + (rng_Next() & 0xFF);
+func_80030D7C	src/code6cac_b_tu2.c:4329	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x44) = Judge[*(s16 *)(obj + 0x56) & 0xFFF] / 64;
+func_80030D7C	src/code6cac_b_tu2.c:4330	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x48) = -150;
+func_80030D7C	src/code6cac_b_tu2.c:4331	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x4C) = Judge[(*(s16 *)(obj + 0x56) + 0x400) & 0xFFF] / 64;
+func_80030D7C	src/code6cac_b_tu2.c:4332	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 5) = 2;
+func_80030D7C	src/code6cac_b_tu2.c:4333	cast,offset	D_80106A78 0x64-byte records	func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2F, obj + 0x2C, 0);
+func_80030D7C	src/code6cac_b_tu2.c:4336	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 4) = 0;
+func_80030D7C	src/code6cac_b_tu2.c:4337	cast,offset	D_80106A78 0x64-byte records	if (*(u8 *)(obj + 7) == 1) {
+func_80030D7C	src/code6cac_b_tu2.c:4338	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 7) = 2;
+func_80030D7C	src/code6cac_b_tu2.c:4340	cast,offset	D_80106A78 0x64-byte records	if (*(u8 *)(obj + 5) == 2) {
+func_80030D7C	src/code6cac_b_tu2.c:4341	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 5) = 3;
+func_80030D7C	src/code6cac_b_tu2.c:4344	cast,offset	D_80106A78 0x64-byte records | scratchpad view (0x1F80xxxx)	*(Vec3i32 *)(obj + 0x2C) = *(Vec3i32 *)scr;
+func_80030D7C	src/code6cac_b_tu2.c:4346	cast,offset	D_80106A78 0x64-byte records	if ((u32)(*(s32 *)(obj + 0x48) + 15) < 31 && (u32)(*(s32 *)(obj + 0x44) + 3) < 7
+func_80030D7C	src/code6cac_b_tu2.c:4347	cast,offset	D_80106A78 0x64-byte records	&& (u32)(*(s32 *)(obj + 0x4C) + 3) < 7) {
+func_80030D7C	src/code6cac_b_tu2.c:4350	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 2) = -1;
+func_80030D7C	src/code6cac_b_tu2.c:4352	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x50) = 0;
+func_80030D7C	src/code6cac_b_tu2.c:4353	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 5) = 1;
+func_80030D7C	src/code6cac_b_tu2.c:4354	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x44) = 0;
+func_80030D7C	src/code6cac_b_tu2.c:4355	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x48) = 0;
+func_80030D7C	src/code6cac_b_tu2.c:4356	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x4C) = 0;
+func_80030D7C	src/code6cac_b_tu2.c:4360	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x50) = 1;
+func_80030D7C	src/code6cac_b_tu2.c:4362	cast,offset	D_80106A78 0x64-byte records	if (*(s16 *)(obj + 2) == 0xE) {
+func_80030D7C	src/code6cac_b_tu2.c:4363	cast,offset	D_80106A78 0x64-byte records	if (*(u8 *)(obj + 5) == 1 && !(rng_Next() & 0x133)) {
+func_80030D7C	src/code6cac_b_tu2.c:4364	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x50) = 1;
+func_80030D7C	src/code6cac_b_tu2.c:4365	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5E) += (rng_Next() & 0x7F) - 0x40;
+func_80030D7C	src/code6cac_b_tu2.c:4366	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x44) = Judge[*(s16 *)(obj + 0x56) & 0xFFF] / 64;
+func_80030D7C	src/code6cac_b_tu2.c:4367	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x48) = -150;
+func_80030D7C	src/code6cac_b_tu2.c:4368	cast,offset	D_80106A78 0x64-byte records	*(s32 *)(obj + 0x4C) = Judge[(*(s16 *)(obj + 0x56) + 0x400) & 0xFFF] / 64;
+func_80030D7C	src/code6cac_b_tu2.c:4369	cast,offset	D_80106A78 0x64-byte records	*(u8 *)(obj + 5) = 2;
+func_80030D7C	src/code6cac_b_tu2.c:4370	cast,offset	D_80106A78 0x64-byte records	func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2F, obj + 0x2C, 0);
+func_80030D7C	src/code6cac_b_tu2.c:4373	cast,offset	D_80106A78 0x64-byte records	if (*(u8 *)(obj + 7) == 2) {
+func_80030D7C	src/code6cac_b_tu2.c:4374	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x56) = math_LerpAngle(*(s16 *)(obj + 0x56), 0, 0x800);
+func_80030D7C	src/code6cac_b_tu2.c:4375	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x58) = math_LerpAngle(*(s16 *)(obj + 0x58), 0x400, 0xE00);
+func_80030D7C	src/code6cac_b_tu2.c:4376	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x5E) = *(s16 *)(obj + 0x5E) * 3 / 4;
+func_80030D7C	src/code6cac_b_tu2.c:4377	cast,offset	D_80106A78 0x64-byte records	} else if (*(u8 *)(obj + 4) == 0 && D_8008E194[*(s16 *)(obj + 2)].unk0 == 2) {
+func_80030D7C	src/code6cac_b_tu2.c:4378	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x54) = math_LerpAngle(*(s16 *)(obj + 0x54), 0, 0xE00);
+func_80030D7C	src/code6cac_b_tu2.c:4379	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x56) = math_LerpAngle(*(s16 *)(obj + 0x56), 0, 0x600);
+func_80030D7C	src/code6cac_b_tu2.c:4380	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 0x58) = math_LerpAngle(*(s16 *)(obj + 0x58), -0x400, 0xE00);
+func_80030D7C	src/code6cac_b_tu2.c:4382	cast,offset	D_80106A78 0x64-byte records	if (*(s32 *)(obj + 0x30) > 0x3A98) {
+func_80030D7C	src/code6cac_b_tu2.c:4383	cast,offset	D_80106A78 0x64-byte records	*(s16 *)(obj + 2) = -1;
+func_80032064	src/code6cac_b_tu2.c:4590	offset	D_80104E88 0x2C-byte records	*(s0 + 1) = 1;
+func_80032064	src/code6cac_b_tu2.c:4591	offset	D_80104E88 0x2C-byte records	*(s0 + 2) = 0;
+func_80032064	src/code6cac_b_tu2.c:4592	cast,offset	PracticeMenuRec record by byte offset [T] | D_80104E88 0x2C-byte records	*(s0 + 3) = *(u16 *)(src + 4);
+func_80032064	src/code6cac_b_tu2.c:4593	cast,offset	D_80104E88 0x2C-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(s0 + 4) = *(s32 *)(src + 0xF4);
+func_80032064	src/code6cac_b_tu2.c:4595	cast,offset	PracticeMenuRec record by byte offset [T]	s32 v1 = *(s16 *)(src + 0x1A);
+func_80032064	src/code6cac_b_tu2.c:4597	cast,offset	D_80104E88 0x2C-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(s0 + 8) = *(s32 *)(src + 0xBC) - (v1 >> 5);
+func_80032064	src/code6cac_b_tu2.c:4599	cast,offset	D_80104E88 0x2C-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(s0 + 0xC) = *(s32 *)(src + 0xFC);
+func_80032064	src/code6cac_b_tu2.c:4600	cast,offset	D_80104E88 0x2C-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(s0 + 0x1C) = ((s32)Judge[*(u16 *)(src + 0x1CA) & 0xFFF] * speed) >> 12;
+func_80032064	src/code6cac_b_tu2.c:4601	cast,offset	D_80104E88 0x2C-byte records	*(s32 *)(s0 + 0x20) = vel_y;
+func_80032064	src/code6cac_b_tu2.c:4602	cast,offset	D_80104E88 0x2C-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(s0 + 0x24) = ((s32)Judge[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * speed) >> 12;
+func_80032064	src/code6cac_b_tu2.c:4603	cast,offset	D_80104E88 0x2C-byte records	*(Vec3_copy *)(s0 + 0x10) = *(Vec3_copy *)(s0 + 4);
+func_80032064	src/code6cac_b_tu2.c:4604	cast,offset	D_80104E88 0x2C-byte records | PracticeMenuRec record by byte offset [T]	*(s32 *)(s0 + 0x28) = *(s32 *)(src + 0xBC);
+func_80032064	src/code6cac_b_tu2.c:4605	cast,offset	PracticeMenuRec record by byte offset [T]	sp_area[1] = *(u16 *)(src + 0x1CA);
+func_80032064	src/code6cac_b_tu2.c:4607	cast,offset	PracticeMenuRec record by byte offset [T]	s32 a0_arg = *(u8 *)(src + 0xB2);
+func_80032314	src/code6cac_b_tu2.c:4648	scalar&	D_80104E88 0x2C-byte records (scalar-& base + 2)	u8 *a3 = &D_80104E88 + 2;
+func_80032314	src/code6cac_b_tu2.c:4662	cast,offset	D_80104E88 0x2C-byte records	s32 v1_v = (*(u8 *)(a3 + 1) == 0);
+func_80032314	src/code6cac_b_tu2.c:4679	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	if ((u32)(state - 0x1C) < 2) goto next;
+func_80032314	src/code6cac_b_tu2.c:4680	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	if ((u32)(state - 0x1E) < 2) goto next;
+func_80032314	src/code6cac_b_tu2.c:4681	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	if ((u32)(state - 0x20) < 2) goto next;
+func_80032314	src/code6cac_b_tu2.c:4684	cast,offset	D_80104E88 0x2C-byte records	s32 dx = ent->unk_F4.x - *(s32 *)(a3 + 2);
+func_80032314	src/code6cac_b_tu2.c:4685	cast,offset	D_80104E88 0x2C-byte records	s32 dy = ent->unk_F4.y - *(s32 *)(a3 + 6);
+func_80032314	src/code6cac_b_tu2.c:4686	cast,offset	D_80104E88 0x2C-byte records	s32 dz = ent->unk_F4.z - *(s32 *)(a3 + 0xA);
+func_800325E0	src/code6cac_b_tu2.c:4838	cast,offset	Rec44 [T] (pointer held in s32 global D_800A36B4)	dx = *(s32 *)((u8 *)D_800A36B4 + 0x20) - arg1[0];
+func_800325E0	src/code6cac_b_tu2.c:4839	cast,offset	Rec44 [T] (pointer held in s32 global D_800A36B4)	dy = *(s32 *)((u8 *)D_800A36B4 + 0x24) - arg1[1];
+func_800325E0	src/code6cac_b_tu2.c:4840	cast,offset	Rec44 [T] (pointer held in s32 global D_800A36B4)	dz = *(s32 *)((u8 *)D_800A36B4 + 0x28) - arg1[2];
+func_800325E0	src/code6cac_b_tu2.c:4842	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	if (((u32)(dx + 0x9C40) > 0x13880U) || ((u32)(dz + 0x9C40) > 0x13880U)) {
+func_800325E0	src/code6cac_b_tu2.c:4892	cast,offset	Rec44 [T] (pointer held in s32 global D_800A36B4)	listener_angle = *(s16 *)((u8 *)D_800A36B4 + 0x12);
+func_800325E0	src/code6cac_b_tu2.c:4893	offset	not debt: Judge element index arithmetic ((angle + 0x400) & 0xFFF)	projected_pan = (s32)((dx * (s32)Judge[(listener_angle + 0x400) & 0xFFF])
+func_8003C9A4	src/code6cac_c2.c:744	cast	Rec44 [T]: func_80046BF4((s16 *)a0, ...) under code6cac_c2.c's own prototype (s16 *, s16 *, s32); the definition in sound.c takes (s32 *, u16 *, s32)	func_80046BF4((s16 *)a0, a1, 0x2710);
+func_8003CE18	src/code6cac_c2.c:863	offset	not debt: integer arithmetic (no pointer arithmetic or cast on the line)	if ((u16)(val - 6) < 2) {
