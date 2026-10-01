@@ -2920,3 +2920,11 @@ Re-measured candidate.c against main a739dbd20: 0/202. Three changes before land
   first laneA ledger commit).
 - Permuter campaign 2 (fresh seed, 12,252 iterations): zeros again only via the unread `cross_center1`
   local; every other low find (20/45/70/155/225) writes `cross_point1` a second time (r11/proof.md).
+
+## 2026-09-30 — LANDED (laneA): COMPLETED-INLINE-ASM-CANONICAL
+Layer-2 cheat-reviewer rev-2d780, round 1, fresh PASS on body_hash b2d72487c7e94ef6 (the staged body =
+candidate.c @ 7679f31f4; layer2.jsonl). Key findings: 0/202 + oracle SHA1, 16/16 region hashes PINNED-exact,
+Q61 word decoded, every Ruling 11 prong for cross_center/cross_point (r11/proof.md), flag staging bounds,
+`m = dist` same-value re-store (func_8002D518 precedent), (&g_sqrt_table_u8)[i] reads one object.
+Commits: auth 4d17eaaf9, Match d6312b8e1, queue 86b438d69; check_completion_integrity OK.
+Reviewer side note (not acted on here): include/code6cac.h:11 `extern u8 g_sqrt_table_u8;` is really an array.
