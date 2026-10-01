@@ -75,6 +75,15 @@ func_8002F2D0 inline-asm-policy.md § Per-function grants: func_8002D780, func_8
 # earns a row on the same Ruling 3 terms as func_8002F2D0. Operator-added while
 # landing func_8002F770; every other mechanical and review gate still applies:
 # func_8002F770 row removed 2026-09-29: reopened per owner Q38 (2026-09-29, 803d0fea1) -- no recorded owner instruction for the grant, and the islands do not qualify under the 2026-09-26 inline_o.h class grant.
+# 2026-09-30 — census member func_8002F770 (cop2-addressing-preamble-cluster.md).
+# Its GTE islands are header-exact PsyQ 4.3 inline_o.h / gtemac.h statements
+# (inline-asm-policy.md § Owner ruling 2026-09-26, inline_o.h class), except
+# gte_rtv0's DMPSX placeholder `.word 0x0000013f`, carried as the post-DMPSX
+# command word `.word 0x4A486012` (one statement; no DMPSX pass in this build).
+# Operator-added at the owner's instruction 2026-09-30 (owner Q61, recorded in
+# 60643418a): this row covers ONLY that word substitution, for this function
+# only; every other gate applies unchanged:
+func_8002F770 inline-asm-policy.md § Per-function grants: func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770 (owner Q61 2026-09-30, 60643418a): gte_rtv0 post-DMPSX word 0x4A486012 for placeholder 0x0000013f, 1 statement only; this function only; operator-added 2026-09-30
 # 2026-09-23 — a named carrier of the 2026-09-01 widened-anchor owner grant
 # (decisions.md:17921, which lists func_8003E6D8 among the confirmed
 # handwritten-tagged carriers) reached floor 0 in a manual session, so it earns
