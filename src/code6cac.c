@@ -17,7 +17,6 @@ typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
 typedef struct GameObj GameObj;
 
 /* Extern data declarations */
-extern u8 g_sqrt_table_u8;
 
 
 
@@ -127,9 +126,6 @@ extern void *RotMatrixY(s32, s32);
 extern void *RotMatrixZ(s32, s32);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 extern u16 D_8008D59C;
-extern s16 D_8008EB40;
-extern u8 D_800F5F68;
-extern s16 Judge;
 
 
 extern void func_8003F218(s32);
@@ -339,11 +335,12 @@ end:
  *     arm raises that region's flow.c loop depth, so the SAME references count for more
  *     (n_refs 8 -> 11 at unchanged live_length 7, pri 34285 -> 47142 versus sum_sq's 40000),
  *     and the small arm's byte stays in its own short-lived pseudo at $v0.
- *     Measured: tmp/grind/func_80018094/s10/e1.allocdbg.txt (BB2_ALLOC_DEBUG on the
+ *     Measured: memory/grind/func_80018094/tmp-evidence/s10/e1.allocdbg.txt (BB2_ALLOC_DEBUG on the
  *     instrumented cc1) -- the priorities were PREDICTED from the m1/candidate arrays before
  *     the form was written and came out exact.
  *
- * EVERY CONSTRUCT IS ABLATION-MEASURED THIS SESSION (all still 153 build insns):
+ * EVERY CONSTRUCT IS ABLATION-MEASURED THIS SESSION (all still 153 build insns; the s10/
+ *   files are in memory/grind/func_80018094/tmp-evidence/):
  *   drop the outer do-while(0)        -> 13  (s10/f1.c)
  *   drop the small-arm do-while(0)    -> 10  (s10/f3.c)
  *   drop the LZC-arm do-while(0)      -> 13  (s10/a0.c)
@@ -354,7 +351,7 @@ typedef struct { s32 pad[9]; s32 x, y, z; } ScrV;
 #define SCRV ((ScrV *)0x1F800000)
 void func_80018094(s32 *arg0, s32 *arg1) {
     /* n.b.! sp_tmp must be 9-16 bytes (inclusive): s32[3] and s32[4] are byte-identical (measured,
-     * tmp/grind/func_80018094/s4/v20g.s == v20h.s). Frame derivation from the target bytes alone
+     * memory/grind/func_80018094/tmp-evidence/s4/v20g.s == v20h.s). Frame derivation from the target bytes alone
      * (asm/funcs/func_80018094.s): frame 0x30 = outgoing args 0x10 + locals 0x10 + callee-saves 0x10
      * (s0/s1/ra at 0x20/0x24/0x28); the ONLY locals traffic in the whole target is the island's
      * `swc2 $31,0($t4)` with $t4 = $sp+0x10 and the matching `lw $v1,0x10($sp)`, i.e. 4 bytes written
@@ -427,7 +424,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
              * NOTE_INSN_LOOP_BEG/END raise the block's loop depth, and every reference in
              * the region is then weighted by that depth in `reg_n_refs[regno] += loop_depth`
              * (flow.c:2081), which is the numerator of global.c's allocno_compare priority.
-             * Ablation: dropping this wrap scores 13 (tmp/grind/func_80018094/s10/f1.c).
+             * Ablation: dropping this wrap scores 13 (memory/grind/func_80018094/tmp-evidence/s10/f1.c).
              * lever-exhaustion: memory/grind/func_80018094/hypotheses.md s5 H26-H28,
              * s6 H29-H32, s7 H31-H37, s8, s9 H42-H49.
              * Family: do-while-zero-exception (owner ruling 2026-07-06). */
@@ -456,7 +453,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                  * s6 H29-H32, s7 H31-H37, s8, s9 H42 (cse class kill), s9b H44-H46.
                  * Family: do-while-zero-exception (owner ruling 2026-07-06). */
                 do {
-                    sum_sq = (u8)(*(&g_sqrt_table_u8 + sum_sq)) >> 3;
+                    sum_sq = (u8)(g_sqrt_table_u8[sum_sq]) >> 3;
                     goto lzc_done;
                 } while (0);
             }
@@ -468,14 +465,15 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                  * weight 3, so allocno_n_refs[lut] goes 8 -> 11 while sum_sq's goes 19 -> 21,
                  * and global.c's allocno_compare priority
                  * (floor_log2(n_refs)*n_refs/live_length*10000) becomes 47142 for `lut` versus
-                 * 40000 for `sum_sq` -- measured, tmp/grind/func_80018094/s10/e1.allocdbg.txt.
+                 * 40000 for `sum_sq` -- measured, memory/grind/func_80018094/tmp-evidence/s10/e1.allocdbg.txt.
                  * `lut` is then allocated FIRST and takes $a0, sum_sq $a1, exactly as the
                  * target seats them, and the small arm's LUT byte is free to stay in its own
                  * short-lived pseudo at $v0.
                  * SINGLE LEVEL IS INSUFFICIENT (nested-wrap prerequisite, measured this
                  * session): with only the outer wrap and the small-arm wrap the body scores
-                 * 13 (tmp/grind/func_80018094/s10/a0.c); dropping the outer wrap instead
-                 * scores 13 (s10/f1.c); dropping the small-arm wrap scores 10 (s10/f3.c).
+                 * 13 (memory/grind/func_80018094/tmp-evidence/s10/a0.c); dropping the outer wrap instead
+                 * scores 13 (memory/grind/func_80018094/tmp-evidence/s10/f1.c); dropping the small-arm
+                 * wrap scores 10 (memory/grind/func_80018094/tmp-evidence/s10/f3.c).
                  * Each of the three wraps is load-bearing and none subsumes another.
                  * lever-exhaustion: memory/grind/func_80018094/hypotheses.md s9b H46-H49 (the
                  * numerator side is spelled out -- eight reference-site spellings measured at
@@ -515,7 +513,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                     shift_a = 0x16 - li_v0;
                 }
                 shift_b = shift_a >> 1;
-                lut = (u8)(*(&g_sqrt_table_u8 + (sum_sq >> shift_a)));
+                lut = (u8)(g_sqrt_table_u8[sum_sq >> shift_a]);
                 sum_sq = ((s32)(lut << 16)) >> (0x13 - shift_b);
                 } while (0);
             }
@@ -676,7 +674,7 @@ void func_80018300(s32 *arg0) {
             : : "r"((s32 *)0x1F80000C) : "$12", "$13", "$14", "$15", "memory");
         sum = *(s32 *)0x1F80000C + *(s32 *)0x1F800010 + *(s32 *)0x1F800014;
         if (sum < 0x400) {
-            len = (&g_sqrt_table_u8)[sum];
+            len = g_sqrt_table_u8[sum];
             p1 = (s32 *)(base + ((thresh >> 16) << 6));
             p2 = (s32 *)(base + ((thresh & 0xFFFF) << 6));
         } else {
@@ -707,7 +705,7 @@ void func_80018300(s32 *arg0) {
              * memory/grind/func_80018300/hypotheses.md. */
             len = lz[0];
             len = 0x16 - (len & ~1);
-            sum = (&g_sqrt_table_u8)[sum >> len];
+            sum = g_sqrt_table_u8[sum >> len];
             len = (u32)(sum << 16) >> (0x10 - ((s32)len >> 1));
         }
         /* gte_ldlvl(r1) -- inline_o.h:308 */
@@ -769,7 +767,7 @@ void func_80018300(s32 *arg0) {
         : : "r"((s32 *)0x1F80000C) : "$12", "$13", "$14", "$15", "memory");
     sum = *(s32 *)0x1F80000C + *(s32 *)0x1F800010 + *(s32 *)0x1F800014;
     if (sum < 0x400) {
-        len = (&g_sqrt_table_u8)[sum];
+        len = g_sqrt_table_u8[sum];
     } else {
         /* gte_ldlzc(r1) -- inline_o.h:645 */
         __asm__ volatile(
@@ -787,7 +785,7 @@ void func_80018300(s32 *arg0) {
         /* FAKE: same staged len/sum reuse as the loop's LZC arm above. */
         len = lz[0];
         len = 0x16 - (len & ~1);
-        sum = (&g_sqrt_table_u8)[sum >> len];
+        sum = g_sqrt_table_u8[sum >> len];
         len = (u32)(sum << 16) >> (0x10 - ((s32)len >> 1));
     }
     /* gte_ldlvl(r1) -- inline_o.h:308 */
@@ -1053,7 +1051,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 work = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
                 temp = work;
                 if (work < 0x400) {
-                    work = (&g_sqrt_table_u8)[work] >> 3;
+                    work = g_sqrt_table_u8[work] >> 3;
                 } else {
                     /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
                      * the leading-zero count, then the table shift. */
@@ -1069,7 +1067,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                     __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
                     nbits = lz[0];
                     nbits = 0x16 - (nbits & ~1);
-                    temp = (&g_sqrt_table_u8)[work >> nbits];
+                    temp = g_sqrt_table_u8[work >> nbits];
                     work = (temp << 16) >> (0x13 - (nbits >> 1));
                 }
                 if (work >= r) {
@@ -1107,7 +1105,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
                 sq2 = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
                 if (sq2 < 0x400) {
-                    dist2 = (&g_sqrt_table_u8)[sq2] >> 3;
+                    dist2 = g_sqrt_table_u8[sq2] >> 3;
                 } else {
                     /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
                      * the leading-zero count, then the table shift. */
@@ -1123,7 +1121,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                     __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
                     nbits2 = lz[1];
                     nbits2 = 0x16 - (nbits2 & ~1);
-                    temp = (&g_sqrt_table_u8)[sq2 >> nbits2];
+                    temp = g_sqrt_table_u8[sq2 >> nbits2];
                     dist2 = (temp << 16) >> (0x13 - (nbits2 >> 1));
                 }
                 tot = work + dist2;

@@ -8,8 +8,23 @@
 /* Named globals */
 extern s16 StatusUpBuf;
 extern u8 cpu_practice_honmokuroku_data_tbl[][4];
-extern u8 g_sqrt_table_u8;
+/* g_sqrt_table_u8[i] = floor(8 * sqrt(i)), i = 0..0x3FF: 0x8008D118..0x8008D517
+ * (0x400 bytes; the first 8 are the words after DelDrv in src/main_post.c,
+ * the rest asm/data/7D920.data.s dlabel D_8008D120). */
+extern u8 g_sqrt_table_u8[0x400];
 extern s32 menuDat;
+/* 0x1B8-byte per-character records (func_8002A458 / func_800206B0 walk them by byte offset). */
+extern u8 D_800F5F68[];
+/* D_8008EB40: 3 rows x 3 s16 angle offsets, read as [row][col] with row, col
+ * in 0..2 from the pad bits (func_800233AC, func_80023648); 0x8008EB40..0x8008EB51,
+ * then 2 bytes of word-alignment padding before D_8008EB54 (dlabel 0x14 bytes,
+ * asm/data/7D920.data.s). */
+extern s16 D_8008EB40[3][3];
+/* Judge: the sine table, one full turn in 0x1000 steps, 1.0 = 0x1000
+ * (cos(a) = Judge[(a + 0x400) & 0xFFF]). 0x800973FC..0x800993FB = 0x1000 s16
+ * (asm/data/7D920.data.s dlabel Judge, 0x2000 bytes; every reader indexes it
+ * with a 12-bit angle). */
+extern s16 Judge[0x1000];
 
 /* Per-character record pointed to by D_800A3860[ch] (ch = rec+0x4A). f14 is
  * the modulus func_800213A0 / func_80021424 wrap rec+0x86 with. The u16
@@ -62,7 +77,9 @@ typedef struct PracticeMenuRec {
     s32 unk_3C;
     u8  unk_40[0x5E - 0x40];
     s16 unk_5E;                    /* 0/1, set alongside func_80021A98 */
-    u8  unk_60[0x72 - 0x60];
+    u8  unk_60[0x6A - 0x60];
+    u16 unk_6A;
+    u8  unk_6C[0x72 - 0x6C];
     s16 unk_72;
     u8  unk_74[0x7C - 0x74];
     s32 unk_7C;
@@ -177,7 +194,7 @@ extern u8 D_8008D864;
 extern s32 D_8008D86C;
 extern s32 D_8008D88C;
 extern u8 D_8008D9EC[];
-extern u8 D_8008DA08;
+extern u8 D_8008DA08[0x48];         /* 0x8008DA08..0x8008DA4F (asm/data/7D920.data.s dlabel D_8008DA08) */
 extern s16 D_8008DA50;
 extern s16 D_8008DA94;
 extern s16 D_8008DAD8;
@@ -287,7 +304,7 @@ extern StatusFlagRec D_80099D88[];
 extern u8 D_8009A8C4[][8][4];
 extern u8 D_8009A9B4[][2];         /* byte pairs (func_80055138) */
 extern u8 D_800A3100[][4];         /* [D_8008D9EC flag] -> 3 bytes (func_80041BF4 args), stride 4 */
-extern s16 D_800A310C;
+extern s16 D_800A310C[4];          /* 0x800A310C..0x800A3113 (asm/data/91C98.data.s dlabel D_800A310C) */
 extern s32 D_800A3134;
 extern s32 D_800A3140;
 extern u8 D_800A31DA;
@@ -475,8 +492,7 @@ typedef struct Rec44 {
     s32 w18;
     s16 h1C; u8 b1E; u8 b1F;
     s32 w20; s32 w24; s32 w28; s32 w2C;
-    s16 h30; s16 h32; s16 h34; s16 h36;
-    s16 h38; s16 h3A; s16 h3C; s16 h3E;
+    s16 h30[2][4];                 /* two 4 x s16 limit vectors; func_8001A820 passes h30[p] to func_8001A67C */
     u8 b40; u8 b41; u8 b42; u8 b43;
 } Rec44;
 /* 0x1C-byte record: func_8003993C walks an array of these at D_800A36EC with element
@@ -649,9 +665,7 @@ extern u8 D_80101F7B;
 extern s32 D_80101F80;
 extern s32 D_80101F84;
 extern s32 D_80101F88;
-extern s32 D_80101FA0;
 extern s32 D_80101FA4;
-extern s32 D_80101FA8;
 extern s32 D_80101FB0;
 extern s32 D_80101FB4;
 extern s32 D_80101FB8;
@@ -706,8 +720,6 @@ extern s16 D_8010238E;
 extern s16 D_801023AA;
 extern u8 D_801023C1;
 extern u8 D_801023C5;
-extern s32 D_801023EC;
-extern s32 D_801023F4;
 extern s32 D_80102408;
 extern s32 D_80102410;
 extern s32 D_80102448;

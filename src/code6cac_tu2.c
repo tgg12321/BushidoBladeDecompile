@@ -11,7 +11,6 @@
 /* Declarations from the file this TU was split from (code6cac.c). */
 typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
 typedef struct GameObj GameObj;
-extern u8 g_sqrt_table_u8;
 extern s32 func_80037110(s32);
 extern void func_8002F770(s16 *, s32, s32, s32);
 extern void game_FrameLoop(void);
@@ -60,9 +59,6 @@ extern void *RotMatrixY(s32, s32);
 extern void *RotMatrixZ(s32, s32);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 extern u16 D_8008D59C;
-extern s16 D_8008EB40;
-extern u8 D_800F5F68;
-extern s16 Judge;
 extern void func_8003F218(s32);
 extern s32 math_FovToScreenDist(s32);
 extern void SetGeomScreen(s32);
@@ -523,7 +519,7 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
     }
     dist_sq = (dx * dx) + (dz * dz);
     if (dist_sq < 0x400U) {
-        log2_val = ((u32)((u8)(*((&g_sqrt_table_u8) + dist_sq)))) >> 3;
+        log2_val = ((u32)((u8)(g_sqrt_table_u8[dist_sq]))) >> 3;
     } else {
         u32 shift_a;
         u32 shift_b;
@@ -550,7 +546,7 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
             shift_a = 0x16 - li_v0;
         }
         shift_b = shift_a >> 1;
-        log2_val = (((u32)((u8)(*((&g_sqrt_table_u8) + (dist_sq >> shift_a))))) << 16) >> (0x13 - shift_b);
+        log2_val = (((u32)((u8)(g_sqrt_table_u8[dist_sq >> shift_a]))) << 16) >> (0x13 - shift_b);
     }
     arg0[0] = (s16)math_FloorDiv2000(arg2[0] + ((dx << 10) / ((s32)log2_val)));
     arg0[2] = (s16)math_FloorDiv2000(arg2[2] + ((dz << 10) / ((s32)log2_val)));
@@ -577,7 +573,7 @@ typedef struct {
     s32 unk60;      /* 0x60 */
 } CamScratch;
 /* Two-fighter camera for D_800F6608 (arg0/arg1 = the fighters' positions,
- * arg2/arg3 = the fighter records; caller func_8001E878). Resets the h30..h3C
+ * arg2/arg3 = the fighter records; caller func_8001E878). Resets the h30[][]
  * limits; eases the focus toward the fighters' midpoint (or arg0's position
  * when D_800A3690 is set); turns the fighters' separation into a zoom target
  * (distance through the D_8008D118 byte-LUT square root with the GTE
@@ -618,12 +614,12 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
 
     scr = (CamScratch *)0x1F800000;
     cam = &D_800F6608;
-    cam->h30 = 0x64;
-    cam->h32 = 0;
-    cam->h34 = 0x64;
-    cam->h38 = 0x64;
-    cam->h3A = 0;
-    cam->h3C = 0x64;
+    cam->h30[0][0] = 0x64;
+    cam->h30[0][1] = 0;
+    cam->h30[0][2] = 0x64;
+    cam->h30[1][0] = 0x64;
+    cam->h30[1][1] = 0;
+    cam->h30[1][2] = 0x64;
     dx = ((s32 *)arg1)[0] - ((s32 *)arg0)[0];
     dy = ((s32 *)arg1)[1] - ((s32 *)arg0)[1];
     dz = ((s32 *)arg1)[2] - ((s32 *)arg0)[2];
@@ -650,7 +646,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     }
     dist_sq = x * x + z * z + y * y;
     if (dist_sq < 0x400) {
-        dist = (u32)*(&g_sqrt_table_u8 + dist_sq) >> 3;
+        dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
     } else {
         s32 lzcr = 0;
         if ((s32)dist_sq >= 0) {
@@ -666,7 +662,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
         }
         {
             s32 sh = 0x16 - (lzcr & ~1);
-            s32 tbl = *(&g_sqrt_table_u8 + (dist_sq >> sh));
+            s32 tbl = g_sqrt_table_u8[dist_sq >> sh];
             dist = (u32)(tbl << 16) >> (0x13 - ((u32)sh >> 1));
         }
     }
@@ -726,7 +722,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
         scr->head.vy -= 0xC8;
         if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm, (s32)&scr->unk60) &&
             scr->nrm[1] < -0x320) {
-            func_8001A67C((s16 *)((u8 *)cam + 0x30 + p * 8), (s32 *)&scr->eye, scr->hit);
+            func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
             if (D_800A30F0[p]) {
                 D_800A30F4[p] += 0x20;
             } else {
@@ -788,7 +784,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm,
                                   (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
-                    func_8001A67C((s16 *)((u8 *)cam + 0x30 + p * 8), (s32 *)&scr->eye, scr->hit);
+                    func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
                     lo = cam->h10;
                 } else {
                     work = cam->h10;
@@ -849,8 +845,8 @@ void func_8001B138(s32 *arg0) {
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
-void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30 = 0x64;    D_800F6608.h32 = 0;    D_800F6608.h34 = 0x64;    D_800F6608.h38 = 0x64;    D_800F6608.h3A = 0;    D_800F6608.h3C = 0x64;    func_8003F1E4(0);    D_800F6608.w0 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F6608.w4 = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = ratan2(dx, dy);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
-void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5328.h30 = 0x64;    D_800F5328.h32 = 0;    D_800F5328.h34 = 0x64;    D_800F5328.h38 = 0x64;    D_800F5328.h3A = 0;    D_800F5328.h3C = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5328.w8 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
+void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30[0][0] = 0x64;    D_800F6608.h30[0][1] = 0;    D_800F6608.h30[0][2] = 0x64;    D_800F6608.h30[1][0] = 0x64;    D_800F6608.h30[1][1] = 0;    D_800F6608.h30[1][2] = 0x64;    func_8003F1E4(0);    D_800F6608.w0 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F6608.w4 = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = ratan2(dx, dy);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
+void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5328.h30[0][0] = 0x64;    D_800F5328.h30[0][1] = 0;    D_800F5328.h30[0][2] = 0x64;    D_800F5328.h30[1][0] = 0x64;    D_800F5328.h30[1][1] = 0;    D_800F5328.h30[1][2] = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5328.w8 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
 void func_8001B478(s32 arg0) {
     u8 *obj = (u8 *)arg0;
     u8 *s2 = (u8 *)&D_800F5328;
@@ -1049,12 +1045,12 @@ void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 va
         dd += 0xF;
     }
     dst->w18 = cur + (dd >> 4);
-    dst->h30 = 0x64;
-    dst->h32 = 0;
-    dst->h34 = 0x64;
-    dst->h38 = 0x64;
-    dst->h3A = 0;
-    dst->h3C = 0x64;
+    dst->h30[0][0] = 0x64;
+    dst->h30[0][1] = 0;
+    dst->h30[0][2] = 0x64;
+    dst->h30[1][0] = 0x64;
+    dst->h30[1][1] = 0;
+    dst->h30[1][2] = 0x64;
 }
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
@@ -1074,7 +1070,7 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
     if (arg2 < 0) {
         var_v1 = arg2 + 3;
     }
-    var_v0 = *(s16 *)((u8 *)&Judge + ((var_v1 >> 1) & 0x1FFE)) * 3;
+    var_v0 = Judge[(var_v1 >> 2) & 0xFFF] * 3;
     if (var_v0 < 0) {
         var_v0 += 3;
     }
@@ -2420,7 +2416,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
             dz = *(s32 *)(*(u8 **)obj + 0x188) - *(s32 *)(obj + 0x188);
             dist_sq = dx * dx + dz * dz;
             if ((u32)dist_sq < 0x400) {
-                dist = (u32)*(&g_sqrt_table_u8 + dist_sq) >> 3;
+                dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
             } else {
                 s32 lzcr = 0;
                 if (dist_sq >= 0) {
@@ -2437,7 +2433,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
                 }
                 {
                     s32 shift = 0x16 - (lzcr & ~1);
-                    s32 tbl = *(&g_sqrt_table_u8 + ((u32)dist_sq >> shift));
+                    s32 tbl = g_sqrt_table_u8[(u32)dist_sq >> shift];
                     dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
                 }
             }
@@ -2497,7 +2493,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
         dz = *(s32 *)(*(u8 **)obj + 0xFC) - *(s32 *)(obj + 0x264);
         dist_sq = dx * dx + dz * dz;
         if ((u32)dist_sq < 0x400) {
-            dist = (u32)*(&g_sqrt_table_u8 + dist_sq) >> 3;
+            dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
         } else {
             s32 lzcr = 0;
             if (dist_sq >= 0) {
@@ -2514,7 +2510,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
             }
             {
                 s32 shift = 0x16 - (lzcr & ~1);
-                s32 tbl = *(&g_sqrt_table_u8 + ((u32)dist_sq >> shift));
+                s32 tbl = g_sqrt_table_u8[(u32)dist_sq >> shift];
                 dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }
@@ -2558,8 +2554,8 @@ void func_8001F860(s16 *arg0, s32 arg1) {
     *(s16 *)((u8 *)arg0 + 0x14C) = arg1;
 }
 s32 func_8001F888(void) {
-    s32 dx = D_80102408 - D_80101FBC;
-    s32 dy = D_80102410 - D_80101FC4;
+    s32 dx = g_practice_menu_table[1].unk_F4.x - g_practice_menu_table[0].unk_F4.x;
+    s32 dy = g_practice_menu_table[1].unk_F4.z - g_practice_menu_table[0].unk_F4.z;
     s32 s0 = 0;
     while ((u32)(dx + 0x4000) > 0x8000 || (u32)(dy + 0x4000) > 0x8000) {
         s32 t;
@@ -3503,8 +3499,8 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     base.z = pos[2];
     for (i = 0; i < 8; i++) {
         angle = (phase + ((ofs + i * 3) << 9)) & 0xFFF;
-        dx = ((&Judge)[(angle + 0x400) & 0xFFF] * 4000) / 4096;
-        dz = ((&Judge)[angle] * 4000) / 4096;
+        dx = (Judge[(angle + 0x400) & 0xFFF] * 4000) / 4096;
+        dz = (Judge[angle] * 4000) / 4096;
         probe.x = base.x + dx;
         probe.y = base.y;
         probe.z = base.z + dz;
@@ -4063,7 +4059,6 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
     u32 bits;
     s32 a1_idx;
     s32 a0_idx;
-    s16 *judge_ptr;
 
     bits = *(u32 *)(arg0 + 0x2C);
     a1_idx = (bits >> 14) & 1;
@@ -4076,13 +4071,21 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
     }
 
     {
-        s16 *tbl = &D_8008EB40;
+        /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception). The row
+         * pointer local puts the table address in a register at its own statement,
+         * ahead of the a0_idx * 6 row offset, as the target does. Written directly
+         * (D_8008EB40[a0_idx]), expr.c:5245 expands the array base under EXPAND_SUM
+         * as a bare constant term that is forced to a register only after the index
+         * insns. Direct D_8008EB40[a0_idx], D_8008EB40[a0_idx][a1_idx] and a flat
+         * D_8008EB40 + a0_idx * 3 each miss; dumps and measurements:
+         * memory/grind/judge-decl-cleanup/eb40-pointer-alias.md */
+        s16 (*tbl)[3] = D_8008EB40;
         s32 px;
         s16 *row;
         s32 a1_val;
 
         px = *(s32 *)(arg0 + 0xB8);
-        row = tbl + a0_idx * 3;
+        row = tbl[a0_idx];
         a1_val = row[a1_idx];
 
         pos[0] = px;
@@ -4091,8 +4094,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
 
         {
             s32 angle = (*(s16 *)(arg0 + 0x1D8) + a1_val) & 0xFFF;
-            s16 jv = (&Judge)[angle];
-            judge_ptr = &Judge;
+            s16 jv = Judge[angle];
 
             off[0] = px + jv / 4;
             off[1] = pos[1];
@@ -4100,7 +4102,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
 
         {
             s32 angle2 = (*(s16 *)(arg0 + 0x1D8) + a1_val + 0x400) & 0xFFF;
-            s16 jv2 = judge_ptr[angle2];
+            s16 jv2 = Judge[angle2];
 
             off[2] = pos[2] + jv2 / 4;
         }
@@ -4124,7 +4126,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
 
         {
             s32 angle3 = fwd_800 & 0xFFF;
-            s16 jv3 = judge_ptr[angle3];
+            s16 jv3 = Judge[angle3];
             off[0] = pos[0] + jv3 / 8;
         }
 
@@ -4132,7 +4134,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
 
         {
             s32 angle4 = (fwd_angle + 0xC00) & 0xFFF;
-            s16 jv4 = judge_ptr[angle4];
+            s16 jv4 = Judge[angle4];
             off[2] = pos[2] + jv4 / 8;
         }
 
@@ -4154,7 +4156,13 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
 }
 void func_80023648(u8 *arg0) {
     u16 kind = *(u16 *)(arg0 + 0x6A);
-    s16 *new_var;
+    /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception), same
+     * mechanism as func_800233AC: the row pointer local puts the table address in
+     * a register ahead of the a0 * 6 row offset, as the target does (direct
+     * D_8008EB40[a0] lets expr.c:5245 keep the base a constant term until after
+     * the index insns). Dumps and measurements:
+     * memory/grind/judge-decl-cleanup/eb40-pointer-alias.md */
+    s16 (*tbl)[3];
 
     if (kind == 0x13 || kind == 0x1B || kind == 0x30) {
         s32 a2;
@@ -4172,8 +4180,8 @@ void func_80023648(u8 *arg0) {
                 a0++;
             }
 
-            new_var = &D_8008EB40;
-            row = new_var + (a0 * 3);
+            tbl = D_8008EB40;
+            row = tbl[a0];
             /* FAKE: index-first element address `a1[row]` (identical value to
              * `row[a1]` - C defines E1[E2] as *(E1+E2), so this is the same load),
              * mechanism: GCC 2.7.2 RTL expansion emits the operands of the
@@ -4228,7 +4236,7 @@ void func_80023648(u8 *arg0) {
                 new_14e = sub_result + div16;
                 *(s16 *)(arg0 + 0x14E) = new_14e;
 
-                tbl_val = (&D_800A310C)[(&D_8008DA08)[*(s16 *)(arg0 + 0xA)]];
+                tbl_val = D_800A310C[D_8008DA08[*(s16 *)(arg0 + 0xA)]];
                 /* FAKE: the second read of *(s16*)(arg0+0x1A) is staged through
                  * the existing `sub_result` (its 0x14E difference is dead here -
                  * consumed by the store above and by new_14e), mechanism: GCC
@@ -4246,7 +4254,7 @@ void func_80023648(u8 *arg0) {
 
                 {
                     s32 speed_prod = *(s16 *)(arg0 + 0x14E) * *(s16 *)(arg0 + 0x44);
-                    s16 sin_val = (&Judge)[(*(u16 *)(arg0 + 0x1CA) & 0xFFF)];
+                    s16 sin_val = Judge[(*(u16 *)(arg0 + 0x1CA) & 0xFFF)];
 
                     /* FAKE: the >>12 speed is staged through the existing `a2`
                      * (its clamped-|0x150| value is dead here - consumed by
@@ -4258,7 +4266,7 @@ void func_80023648(u8 *arg0) {
                     *(s32 *)(arg0 + 0xD8) += (sin_val * a2) >> 16;
 
                     {
-                        s16 cos_val = (&Judge)[((*(s16 *)(arg0 + 0x1CA) + 0x400) & 0xFFF)];
+                        s16 cos_val = Judge[((*(s16 *)(arg0 + 0x1CA) + 0x400) & 0xFFF)];
                         *(s32 *)(arg0 + 0xE0) += (cos_val * a2) >> 16;
                     }
                 }

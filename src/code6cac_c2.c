@@ -730,8 +730,8 @@ void func_8003C958(void) {
 extern void func_80046BF4(s16 *, s16 *, s32);
 void func_8003C9A4(void) {
     s32 ret;
-    s32 *a0 = (s32 *)&D_800F6608;
-    s16 *a1 = (s16 *)((u8 *)a0 + 0x10);
+    s32 *a0 = &D_800F6608.w0;
+    s16 *a1 = &D_800F6608.h10;
 
     func_8003F1E4(0);
     a0[0] = 0;
@@ -788,7 +788,7 @@ void func_8003C9A4(void) {
         }
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;
-        D_800A38DF = (u8)func_80022408((s32 *)((u8 *)&D_80101FBC + (s32)D_800A3748 * 1100));
+        D_800A38DF = (u8)func_80022408(&g_practice_menu_table[D_800A3748].unk_F4.x);
         D_800A3834 = 0;
         return;
     }
@@ -873,10 +873,10 @@ void func_8003CE18(void) {
         }
     }
     {
-        s32 *addr = (s32 *)&D_80101FBC;
+        s32 *addr = &g_practice_menu_table[0].unk_F4.x;
         s32 result;
         if (D_800A3748 == 0) {
-            addr = (s32 *)((u8 *)addr + 0x44C);
+            addr = &g_practice_menu_table[1].unk_F4.x;
         }
         result = func_80022408(addr);
         D_800A3818 = result;

@@ -106,7 +106,6 @@ extern s32 stage_GetDataPtr(void);
 
 
 
-extern s16 Judge;
 
 extern u16 D_8008EBA0;
 
@@ -139,10 +138,6 @@ extern u8 D_800F65F8;
 extern u8 D_80106A78;
 
 
-extern s32 D_80102410;
-extern s32 D_80102408;
-extern s32 D_80101FC4;
-extern s32 D_80101FBC;
 extern s16 D_800A3824;
 extern s16 D_800A3876;
 extern s16 D_800A38A8;
