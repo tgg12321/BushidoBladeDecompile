@@ -101,3 +101,8 @@
 - [s3b] Cast / goto pass (orchestrator review list): (u16)rec->unk_0E < 2 -> (unk_0E == 0 || unk_0E == 1),
   byte-identical; (u32)ent[3] << 16 kept (no cast 3); the two interface casts and the gotos kept with
   measured alternatives — casts/receipts.txt. candidate.c updated (bytes == the s3 body).
+- [s3c] Checklist 1001c pass: the (u32)ent[3] cast is a value-preserving fold-const dodge, so the mask is now a
+  `u32 mask` named intermediate (FAKE family 6, fold-const.c:4437 mechanism, fake/mask_jump.txt); bytes
+  unchanged. Checklist item 4 scan: ~250 pre-existing raw `*(T *)(p + 0xNN)` sites in src/ reach offsets this
+  data model types (many are PracticeMenuRec handles in u8 *-typed bodies: code6cac_b_tu2.c 111,
+  code6cac_tu2.c 44, text1b.c 34, text1a_pre_tu2.c 24, text1b_tu1c.c 23, ...) — scope question to orchestrator.

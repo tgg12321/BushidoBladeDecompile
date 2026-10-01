@@ -155,10 +155,16 @@ void func_80023F08(s32 arg0, PadState *pad) {
     } else if (rec->unk_50->unk_08 >= rec->unk_40) {
         ent = rec->unk_50->unk_0A;
         while ((cmd = ent[0]) != 0) {
-            /* the entry's 32-bit class mask; the high half is widened to u32
-             * before the shift (hi << 16 is not representable in int once bit
-             * 15 of hi is set) */
-            if (!(cmd & 0x8000) || ((ent[2] | ((u32)ent[3] << 16)) & (1 << rec->unk_0A))) {
+            /* FAKE: named intermediate (no-new-park-categories.md family 6): the
+             * entry's 32-bit class mask, held unsigned. Tested directly as an int,
+             * fold-const.c:4437 turns (mask & (1 << cls)) != 0 into
+             * ((mask >> cls) & 1) != 0 (srav / andi; score 3); against an unsigned
+             * mask the int (1 << cls) is converted, the rewrite does not apply and
+             * the target's li 1 / sllv / and stays (0x800244E0..E8). Receipts:
+             * memory/grind/func_80023F08/casts/receipts.txt */
+            u32 mask;
+
+            if (!(cmd & 0x8000) || ((mask = ent[2] | (ent[3] << 16)) & (1 << rec->unk_0A))) {
                 switch (cmd & 0x30) {
                 case 0x00:
                     keys = rec->unk_24.held;
