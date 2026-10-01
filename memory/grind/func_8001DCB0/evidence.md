@@ -65,3 +65,7 @@ register — base+offset addressing across 0x7C..0x87 (prong (a), "base+offset a
 Current object model: the PlayerBytePairs declaration landed here was superseded by `PracticeParams D_80102778`
 (include/code6cac.h:724-740; unk_4[6] covers 0x7C..0x81), whose own layout evidence is
 memory/grind/func_80034708/evidence.md [s4]-[s5]. func_8001DCB0's body is unchanged; no code change needed.
+
+Layer-2 (2026-09-30): the record-only correction above PASSed a fresh review (rev-21db0, job B): the
+func_80034708 base+offset citation is true and resolves the retro-audit concern. Body unchanged (no layer2
+record: the tool's scopes are body-keyed match / cheat-cleanup / auth).
