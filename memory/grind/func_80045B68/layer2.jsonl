@@ -1,0 +1,1 @@
+{"func": "func_80045B68", "addr": "80045B68", "verdict": "PASS", "body_hash": "9cbbd1b947ee6aeb", "body_kind": "c", "file": "text1a_c", "reviewer": "rev-44010", "scope": "cheat-cleanup", "date": "2026-10-01T10:24:57Z", "head": "47b8faece", "notes": "call sites follow the corrected func_80044010 prototype; bytes unchanged"}

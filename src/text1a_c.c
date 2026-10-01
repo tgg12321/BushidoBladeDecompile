@@ -1038,7 +1038,29 @@ s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
     mid = (a2 + (((u32)(a0 << 17)) >> 23)) & 0x1FF;
     return (s16)(low | ((a0 & (s16)0x8000) | (mid << 6)));
 }
-INCLUDE_ASM("asm/funcs", func_80044010);
+/* Relocates a block of pointer slots in place. p[0] is the header word: the slot count in its low
+ * 15 bits, bit 15 set once the block is relocated. Marks the block relocated (keeping the low
+ * halfword), records its first slot and count in D_80103608 / D_80103658 [slot], and, if it was not
+ * relocated yet, turns each slot's block-relative offset into an address by adding the block's base.
+ * func_80044098 is the inverse. */
+void func_80044010(s32 *p, s16 slot) {
+    s32 *base = p;
+    s32 hdr;
+    s32 i;
+    u16 n;
+
+    hdr = *p;
+    *p = (hdr | 0x8000) & 0xFFFF;
+    p++;
+    D_80103608[slot] = p;
+    D_80103658[slot] = hdr & 0x7FFF;
+    if (!(hdr & 0x8000)) {
+        n = hdr;
+        for (i = 0; i < n; i++) {
+            *p++ += (s32)base;
+        }
+    }
+}
 void func_80044098(s16 a0) {
     s32 *v1;
     s32 a4;
@@ -2106,7 +2128,7 @@ extern s16 D_800993FC[];
 extern void func_800480C0(s32, s32, s16, s16, s16, s16);
 extern s32 func_80044378(s32, s32 *, s16 *);
 extern s32 func_8004428C(s32 *, s16 *);
-extern void func_80044010(s32, s32);
+extern void func_80044010(s32 *, s16);
 extern s32 func_80049C24(s32, s32);
 extern void func_80044F50(s32, s32, s32);
 extern s32 *func_800455AC(s32);
@@ -2209,10 +2231,10 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     if (arg3 != 0) {
         dst = (s32 *)((s32)p + 4);
         dl = func_80044378(last, dst, sp18);
-        func_80044010((s32)dst, 6);
+        func_80044010(dst, 6);
     } else {
         dl = func_8004428C((s32 *)last, sp18);
-        func_80044010(last, 6);
+        func_80044010((s32 *)last, 6);
     }
     func_80045230(dl);
 
