@@ -53,3 +53,36 @@ What remains before the merge can land as one cheat-cleanup:
    (func_80020E74 is INCLUDE_ASM and names them); retire the D_801027D4 and D_800A3864 rows.
 4. `const u32 D_80010428[1] = {0}` (unowned tail word): find ownership evidence or remove it.
 5. verify-oracle --rebuild, sandbox 0 for every touched function, one layer-2 over the set.
+
+## Evidence for the three open points (2026-09-30, laneG; orchestrator asked to settle the debt)
+1. **f18 length N = 27.** func_80021A3C's only caller is func_8001EEB4 (code6cac_tu2.c, `func_80021A3C(D_800A3748,
+   *(s16 *)(entry + 0xA))`), i.e. a1 = PracticeMenuRec.unk_0A, the character class. Its only writer in the
+   binary is func_80022580's `p->unk_0A = D_8008D538[arg2];` (the INCLUDE_ASM .s files naming D_80101ED2 only
+   read it: func_8001CE60.s:373, func_80023F08.s:2926). D_8008D538 (asm/data/7D920.data.s:305-342) holds the
+   values 0x00..0x1A only, so a1 is 0..26; the other per-class tables are sized [27] (D_8008DE34[27][6],
+   D_8008DF78[27][6], include/code6cac.h:186-187). 27 halfwords from +0x18 end at exactly +0x4E, where f4E
+   begins: `u16 f18[27]` covers the gap with no filler. func_80021A3C reads it with `lhu 0x18($a1)`
+   (asm/funcs/func_80021A3C.s:19).
+2. **f16 = u16 at +0x16.** func_800219E4 `lhu $v0,0x16($v0)` (asm/funcs/func_800219E4.s:18); like f18 its
+   value indexes the D_80102760 halfword table. Readers of the record pointers in the whole binary
+   (asm/funcs naming D_800A3860/64): func_80020D70, func_80020E74 (header words +0x3/+0x4..+0x10, inside
+   pad00), func_800213A0 (f14), func_80021424, func_80021904/974 (f4E), func_800219E4 (f16), func_80021A3C (f18).
+   func_800213A0 also re-viewed the record as `s16 *` (`v[0x14 / 2]`); respelled `->f14`: 0/33.
+3. **D_80010428 is data, placed by the bytes; D_800100E0 is redundant.** tailword.py builds code6cac_tu2.c
+   with the engine's exact per-file recipe: deleting `D_800100E0` leaves .rodata (0x388, sha1 c0d15a980773,
+   == build/src/code6cac_tu2.o) and .text identical, with the same relocation count — it is the pad
+   `.align 3` regenerates before func_8001DA8C's table (jtbl_800100E4), so the explicit word is a
+   hand-written duplicate. Deleting `D_80010428` shrinks .rodata to 0x384 (code6cac_b.o's table would land
+   at 0x80010428), so that word is real: Sony's PSYLINK does not pad object ends (rodata-align evidence
+   section 1, t1: object C follows B's last word directly), and code6cac_b.o's first table at 0x8001042C
+   fixes that object's start under object-relative alignment. refs.py: no instruction in the binary
+   references 0x80010428 (the referenced rodata items in 0x800100A4..0x8001042F are D_800100A4,
+   jtbl_800100C4, jtbl_800100E4, jtbl_80010414, jtbl_8001042C). So its existence and position are proven
+   but its original declaration is not recoverable; `const u32 D_80010428 = 0;` (scalar) is byte-identical
+   to the `[1]` array form.
+
+Landing script: probes-2026-09-30/land.py (copy of tmp/func_80021424/land.py; `--dry` checks every
+anchor without writing; dry-run passes 2026-09-30). Still measured only at landing (header change):
+func_800219E4 / func_80021A3C through f16 / f18 (`.m.c`), and whether the sandbox needs the D_801027D4 /
+D_800A3864 rows to resolve func_80021210 / func_8003CF84 / func_80020D70's targets (`--rows retire` first;
+`--rows keep` only if it does).

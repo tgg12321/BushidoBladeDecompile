@@ -28,7 +28,7 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
         u16 old_kind = *((u16 *) (s0 + 0x6A));
         s32 a0_58 = *((s32 *) (s0 + 0x58));
         *((u8 *) (s0 + 0x60)) = (u8) arg2;
-        /* FAKE: load-bearing match device â€” removing this empty do-while(0)
+        /* FAKE: load-bearing match device — removing this empty do-while(0)
          * moves the sandbox score 0 -> 2 (measured 2026-08-08); mechanism:
          * the sanctioned do-while(0) wrap's codegen effect on the seating
          * of the surrounding byte stores (do-while-zero-exception.md,
