@@ -42,16 +42,14 @@ s32 func_80058580(u8 *p) {
     u8 *script2;
     u8 *script3;
     u8 mode;
-    s32 work1, work2, work3, work4;
+    s32 work1, work2, work3, work4, work5;
     s32 hi;
-    s32 slot;
     s16 et;
     s32 va;
     s32 vd;
     s32 vb;
     s32 vn;
     s32 vc;
-    s32 adj;
     s16 sc;
     u8 *pois;
     s32 tx, ty2;
@@ -712,29 +710,30 @@ s32 func_80058580(u8 *p) {
                             switch (D_800A38DC) {
                             case 3:
                                 if (D_800A38E2 < 0x5B) {
-                                    slot = (u8)(D_800A38E2 / 10) * 2;
+                                    work3 = (u8)(D_800A38E2 / 10) * 2;
                                     if ((u8)(D_800A38E2 % 10) == 0) {
-                                        slot--;
+                                        work3--;
                                     }
                                 } else if (D_800A38E2 < 0x5E) {
-                                    slot = 0x12;
+                                    work3 = 0x12;
                                 } else if (D_800A38E2 < 0x60) {
-                                    slot = 0x13;
+                                    work3 = 0x13;
                                 } else if (D_800A38E2 < 0x62) {
-                                    slot = 0x14;
+                                    work3 = 0x14;
                                 } else if (D_800A38E2 < 0x64) {
-                                    slot = 0x15;
+                                    work3 = 0x15;
                                 } else {
-                                    slot = 0x16;
+                                    work3 = 0x16;
                                 }
-                                work3 = D_8009A928[p[0x440]][slot];
+                                work3 = D_8009A928[p[0x440]][work3];
                                 break;
                             case 2:
                                 work1 = D_8009A9F0[D_8009A9DC[CPU_S16(0xE)][p[0x440]]][D_800A3788];
                                 work3 = 0;
+                                work5 = work1 >> 27;
                                 work2 = work1 & 0xF;
                                 if (work2 != 0) {
-                                    if (work1 >> 27) {
+                                    if (work5) {
                                         while (work2 > 0) {
                                             work1 >>= 4;
                                             work3 |= 1 << ((work1 & 0xF) - 1);
@@ -783,12 +782,12 @@ s32 func_80058580(u8 *p) {
                                 work1 = -(et < 5) & 100000;
                                 hi = 100000;
                             } else {
-                                adj = (((0x1000 - lv) * 625) >> 10) - 400;
-                                adj += CPU_S16(0x40A);
-                                work1 += adj;
-                                hi += adj;
+                                work5 = (((0x1000 - lv) * 625) >> 10) - 400;
+                                work1 += work5 + CPU_S16(0x40A);
+                                hi += work5 + CPU_S16(0x40A);
                             }
-                            if (et < 5) {
+                            work5 = et;
+                            if (work5 < 5) {
                                 if (D_800A387C < work1 && !(CPU_S32(0x430) & 0x20000)) {
                                     if ((CPU_S32(0x430) & 0x200) ? CPU_S16(0x43C) < 0x800 : CPU_S16(0x43C) < 0x400) {
                                         work3 = 1;
@@ -799,7 +798,7 @@ s32 func_80058580(u8 *p) {
                             } else if (work1 < D_800A387C && D_800A387C < hi &&
                                        CPU_S16(0x43C) < 0x200 - (CPU_S16(0x438) >> 4) &&
                                        (CPU_S32(0x430) & 0x280) != 0x280) {
-                                switch (et) {
+                                switch (work5) {
                                 case 5:
                                     if ((0x78 >> p[0xB1]) & 1) {
                                         work3 = 1;

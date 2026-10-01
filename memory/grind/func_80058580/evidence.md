@@ -77,3 +77,36 @@
   reg: v0 in ours. For the target's a1, v0/v1/a0 must be occupied in that block (other local qtys or live hard
   regs) or the temp must carry a hard-reg suggestion (a copy to/from $a1). Frontier: a truthful spelling where
   the `w >> 27` test's block also holds live values (none found yet).
+- [s5 2026-10-01 laneB2] 30 -> 14 (candidate.c). Three changes, each measured on the full sandbox:
+  (1) a fifth work local `work5` holds three values: case 2's `work5 = work1 >> 27` test (computed before the
+  cnt test, so reorg puts the `sra` in the beqz delay slot and `mask = 0` in the lw delay as in the target),
+  the adj offset `work5 = ((0x1000 - lv) * 625 >> 10) - 400` (consumed as `work1 += work5 + CPU_S16(0x40A)`,
+  same for hi; the old `adj += lh` tied the sum to adj's register), and `work5 = et;` (Q34-style copy, target
+  `move a1,s5` at insn 2373) feeding `work5 < 5` and the 5/6 switch. Mechanism: work5 is ONE global pseudo whose
+  live range includes the et-test region where v0/v1/a0 are busy, so global alloc gives it a1 everywhere (target
+  `sra a1,s1,27`, `addiu a1,v1,-400; addu v0,a1,v0`, `move a1,s5`). 30 -> 22.
+  Ablation at 14 (probes/s5/ablate_work5.py): each value split into its own local: c2 34, adj 18, et 34; any
+  two 38; all three 38.
+  (2) case 3's row index folded back into work3 (`work3 = (u8)(D_800A38E2/10)*2; ... work3 =
+  D_8009A928[..][work3];`): target s3 for both. With work5 occupying a1 the old e/q/pbest cascade no longer
+  appears: 22 -> 14. (`slot` removed.)
+  Remaining at 14 (scored hunks): lim-chain extra `j` (target 935); q copy (`move a2,s6` vs ours `addiu a2,a3,4`);
+  `0x438 >> 4` x2 (lh/sra vs lhu/sll/sra); the 3 jtbl `lw %lo` sandbox artifacts.
+- [s5] q = ep copy (`ep = off+base; e = ep; ep += 4; q = ep;`) gives the target's `move a2,s6` but swaps et/ep
+  seats (23): ep's weighted refs go 14 -> 16 so floor_log2 jumps (BB2_ALLOC_DEBUG: ep pseudo 105 nrefs 16
+  livelen 299 pri 2140 vs et pseudo 90 nrefs 8 livelen 124 pri 1935; with q = e + 4 ep is nrefs 14 pri 1404).
+  The target's final code has the same 8 ep insns (addu s6; move a3,s6; addiu s6,4; move a2,s6; addiu s6,5;
+  sw s6) and 4 et insns, so the difference must be in pre-combine live lengths (ep needs livelen > 330 or et
+  < 112). Tried: `e` first (q1/q5 16: e takes the addu), `e = ep = ...` / `q = ep += 4` (23), switch(et) /
+  `(work5 = et) < 5` (23), et < 5 direct (42).
+- [s5] 0x438 >> 4: the fold is CSE's associative-shift fold (cse.c fold_rtx, "If we have (<op> <reg>
+  <const_int>) for an associative OP"), which merges the extendhisi2 shift pair's `ashiftrt 16` with `>> 4`
+  into `ashiftrt 20` whenever both are in one CSE path. Isolated test file (tmp only): every spelling tried
+  folds under build/cc1 AND tools/cc1psx.exe (s16/s32 temps, inline fns, statement-exprs, enum count,
+  bitfield, `>>=` forms, joins before the use). Binary-wide scan: these two sites are the ONLY lh+sra(N<16)
+  pairs in compiled code (func_8004A940 is hand asm). Open.
+- [s5] lim-chain `j` (target 935: `move s5,a2` in the delay slot of `j L938`, skipping L937's redundant
+  `li v0,1`): reorg retargets a pre-existing `j L937`, so the original RTL had a jump after `lim = ob`, i.e.
+  something between that arm and L937 that reorg later removed. Tried (all 30 at the time, or worse): else
+  `lim = sum` on the 0x200 test (l1), ternary chain (l2), final else (l3), sb/ob locals with both elses (l5/l8
+  52-57), goto-shared sum (l7/l9 51-57).
