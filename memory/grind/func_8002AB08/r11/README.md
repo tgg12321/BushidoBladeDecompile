@@ -26,9 +26,36 @@ variable in these roles (Q51 needs the same roles at corresponding statements).
   recomputed for the hit (`(mask_a & (1 << idx)) != 0`).
 - work: `lensq` segment length^2, `dist` contact distance minus radius, `ang` facing difference, `weight`
   push weight (`0x400 - ang`, clamped at 0).
-Every value has a real computation (load / arithmetic / call result); temp1/temp2 `pt*` are Q20 per-branch
-constants. The min/max loop counter was a temp3 value in s2; its split matched (sandbox 0, evidence.md s3), so it
-is its own local `j` (not reused).
+Value table (writes and the target instruction each one is; addresses in asm/funcs/func_8002AB08.s):
+| var | value | writes | target |
+|---|---|---|---|
+| dx $s0 | seg | `= scr[3].x - scr[9].x` | subu 0x8002B0C8 |
+| | hit | `= unkA8[i][n].x - ref.x` | subu 0x8002B4CC |
+| | off0 / off1 | `= pt.x - other->unk_F4.x` (3 branches each) | subu 0x8002B6B4 / 0x8002B6EC (shared tail 0x8002B84C) |
+| | dir | `= p1.x - p0.x` / `(..) / 4` / `= -dx` | subu 0x8002B84C, sra 0x8002B7B4, negu 0x8002B880 |
+| | push | `= dx / 4 + (..)` | addu 0x8002B958 |
+| dy $a3 | seg / hit | differences | subu 0x8002B0CC / 0x8002B4E8 |
+| dz $s1 | seg / hit / off0 / off1 / dir / push | as dx | subu 0x8002B0E4 / 0x8002B508 / 0x8002B6D0 / 0x8002B840, subu 0x8002B858, sra 0x8002B7C0, negu 0x8002B884, addu 0x8002B980 |
+| temp1 slot 0x50 | pt0 | `= 0` / `= 0` / `= 1` (Q20 per-branch constants) | sw 0x8002AEF0 (shared tail), 0x8002AF24 |
+| | dsq0 | `= dx * dx + dz * dz` | sw 0x8002B79C / 0x8002B854 |
+| temp2 slot 0x58 | pt1 | `= 1` / `= 1` / `= 2` (Q20) | sw 0x8002AEF4 (shared tail), 0x8002AF28 |
+| | dsq1 | as dsq0 | sw 0x8002B7AC / 0x8002B864 |
+| temp3 $s4 | hn | `= 0`, `++` | 0x8002B49C, addiu 0x8002B540 |
+| | side | `= (mask_a & bit) != 0` | and / sltu 0x8002B684 / 0x8002B688 |
+| idx $s5 | seg | `= 0`, `++` | 0x8002B1B8, addiu 0x8002B42C |
+| | nearest | `idx = temp3;` (Q34 plain copy) | `addu $s5,$s4,$zero` 0x8002B538 |
+| alt $fp | blade | `= 0` / `= 1` / `= 0` (Q20) | 0x8002AED0 / 0x8002AEE4 / 0x8002AF18 |
+| | hitalt | `= (mask_a & (1 << idx)) != 0` | and / sltu 0x8002BB0C / 0x8002BB1C |
+| work $a1 | lensq | `= dx*dx + dy*dy + dz*dz` | addu 0x8002B1A0 |
+| | dist | `= .. - radius` | subu 0x8002B524 |
+| | ang | `= (..) & 0xFFF`, `= 0x1000 - work` | andi 0x8002B8F0, subu 0x8002B904 |
+| | weight | `= 0x400 - work`, `= 0` (clamp) | subu 0x8002B90C, 0x8002B918 |
+
+**Copy-clause value (Q34, one in the function): idx `nearest`** = `idx = temp3;` (temp3, a named local,
+is read again by the loop's `temp3++` / `temp3 < 22`; no cast; target `addu $s5,$s4,$zero` 0x8002B538). Every
+other value of idx (`seg`) is a counter. Banked and measured: the fresh local (ab/r_nearest.c 131) and the
+no-copy body (round2/nocopy_ptr.c: the nearest slot kept as a `LeafPos *` and the index recovered after the
+loop, 223).
 
 ## (C)(2) statement lists
 `stmtcheck.py <cand> <twin>`: every twin (single-value ablations `roles.py <cand> one`, per-variable splits
@@ -96,3 +123,31 @@ call-saved registers; reload1.c alter_reg gives each unallocated pseudo its own 
   (func_80031B24) and the 0/1 alternate-blade flag on this pass-0 call (the target loads `fp` into that
   argument slot); its `tbl == NULL ? 0xB : 0x19` mirrors func_80029454's `+0x8C != 0 ? 0x19 : 0xB`.
   Commented at the call.
+
+## Round 2 (layer-2 round 1: rev-2AB08-dm PASS, rev-2AB08-r11 FAIL)
+- (1) Q34 for idx `nearest`: above.
+- (3) The knockback reads alt (`sll v0,fp,4` 0x8002B8C0) also on path (b) = npass == 0, hit != 0, guard not
+  taken, where this iteration has no write to alt. Infeasible: hit is set only by func_8002A458 in the two
+  pre-pass blocks, each entered only when other->unk_0E is 6/7 (first) or other->unk_0C is 0x1D/0xE (second),
+  and mask_a |= hit after each, so the nearest bit is in mask_a; the guard is then taken unless +0x0C/+0x0E
+  changed in between. Nothing writes them: func_8002A458's C body stores only to scr, *hit, *deep and
+  D_800A37E8..EC and passes no record pointer on; the effect calls (func_80032854 0x32 / 0x2A with SPAD
+  addresses; 0xB / 0xA with scr addresses from func_8002A458) reach func_800395B4 (D_80101BF0 effect slots),
+  func_800325E0 and func_800611A4 / func_800619F0 -> func_80060A68, whose indirect calls dispatch through
+  chractar_use_pset_combo_id_table (62 targets, asm/data/7D920.data.s:23341-23404). The transitive closure
+  (round2/writeset_pathb_table.txt: 115 functions incl. the table targets; writeset_pathb.txt without them; writeset.txt for every func_80032854 arm, 133) references no symbol inside either
+  record (0x80101EC8..0x80102713), receives no record pointer, and its displacement-0xC..0xF stores are into
+  D_80101BF0 slots, func_80053614's workspace (D_800A33F4 = the caller's buffer), MATRIX out-parameters and
+  effect / primitive buffers. No global in src/ is assigned a record address (the two record-derived
+  assignments are a u8 result and a flag).
+- (2) BLOCKED: three writes re-store the value already held on every feasible path, and the target executes
+  them. The pass-loop callees never write other->unk_8C (round2/writeset_8c.txt: func_8002CA8C stores only to
+  scr; func_8002CD58 and their callees reference no record symbol, no displacement-0x8C store), so every pass
+  >= 1 takes the same arm and pass 0 always writes alt = 0, temp1 = 0, temp2 = 1 first:
+  `temp1 = 0; temp2 = 1;` (and `c = 1;`) in the unk_8C arm always re-store 0 / 1 / 1, and `alt = 0;` in the
+  unk_0E 4/5 arm always re-stores 0. The target has them: the unk_8C arm (`li $fp,1` 0x8002AEE4) falls into
+  the shared tail that pass 0 also reaches (`sw $zero,0x50` / `sw $t3,0x58` / `sw $t4,0x60` 0x8002AEF0-FC,
+  pass 0 jumping in with `move $fp,$zero` in the delay slot 0x8002AED0); the 4/5 arm has `move $fp,$zero`
+  0x8002AF18. Spellings without them (round2/rs_v*.c): no unk_8C-arm stores and no 4/5 alt store 13; no
+  unk_8C-arm stores 12; no 4/5 alt store 1 (the missing `move $fp,$zero`); pass-0 / unk_8C merged with
+  `alt = pass != 0` 4. Owner question: docs/grind/borderline.md 2026-10-01 func_8002AB08.

@@ -79,3 +79,14 @@ types a record pointer) and the `(s32 *)&hit` casts.
   flag on pass 0 (`tbl == NULL ? 0xB : 0x19`, passed on to func_800278C0 as an integer); the target loads the
   0/1 blade flag into that stack slot (`sw fp,0x14(sp)` 0x8002BC08). Any single parameter type leaves a cast
   at one of the two call sites; this one keeps both completed bodies untouched.
+
+## s4 (2026-10-01, laneC) — layer-2 round 1: dm PASS, r11 FAIL; round-2 paperwork; QUESTION on re-store writes
+Landing was staged (SHA1 == oracle, sandbox 0; keys func_8002AB08 c18bdc0cf44756a9, func_80022580
+6715ae64d158047e, func_8002A458 e01e18d75bfb581c). rev-2AB08-dm PASSed the data model, casts, vec and the
+two retyped bodies; rev-2AB08-r11 FAILed the Ruling 11 package on three points, answered in r11/README.md
+"Round 2": (1) idx's nearest value is a Q34 copy (receipt 0x8002B538; no-copy body 223, fresh local 131);
+(3) the stale alt read's path (npass 0, hit set) is infeasible (transitive callee write-sets, round2/);
+(2) the unk_8C arm's temp1/temp2/c writes and the 4/5 arm's alt write re-store held values on every feasible
+path and the target executes them; no spelling without them matches (round2/rs_v*.c: 1-13). Tree reverted
+(src/include), lock.ps1 rebuild == oracle, lock released. Policy question: docs/grind/borderline.md
+2026-10-01 func_8002AB08.
