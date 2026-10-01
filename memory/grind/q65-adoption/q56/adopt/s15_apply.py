@@ -51,6 +51,64 @@ subprocess.run("rm -rf /tmp/q56/pre04obj && cp -r build/src /tmp/q56/pre04obj", 
 subprocess.run([sys.executable, f"{H}/defs_plan.py", R], check=True, capture_output=True)
 P = json.load(open("/tmp/q56/defs_plan.json"))
 
+# ---- 0. who names each small-data symbol, and how (for the orphan test, E2 and truthful filler comments) ----
+# REFS[name] = set of (file, function, kind): kind gp (GPREL16), la (lui + addiu), indexed (lui, then the base
+# register is added to before the %lo access), direct (lui + %lo load/store on the same register: a direct
+# access the rule would make gp for a <= 8-byte definition in that file), word (a data word in a C object).
+REFS = {}
+_INSN = re.compile(r"^\s*([0-9a-f]+):\s+[0-9a-f]{8}\s+(\S+)\s*(.*)$")
+_RELOC = re.compile(r"^\s*[0-9a-f]+:\s+R_MIPS_(\w+)\s+(\S+)$")
+for _o in sorted(os.listdir("/tmp/q56/pre04obj")):
+    if not _o.endswith(".o"):
+        continue
+    _f = _o[:-2]
+    _out = subprocess.run(f"mipsel-linux-gnu-objdump -dr --no-show-raw-insn -M no-aliases /tmp/q56/pre04obj/{_o}",
+                          shell=True, capture_output=True, text=True).stdout.splitlines()
+    _func, _prev, _hi = None, None, {}
+    for _l in _out:
+        _m = re.match(r"^[0-9a-f]+ <([^>]+)>:$", _l)
+        if _m:
+            _func, _prev, _hi = _m.group(1), None, {}
+            continue
+        _m = re.match(r"^\s*([0-9a-f]+):\s+(\S+)\s*(.*)$", _l)
+        if _m and not _l.strip().split(":", 1)[1].strip().startswith("R_MIPS_"):
+            _prev = (_m.group(2), _m.group(3))
+            op, ops = _prev
+            regs = [x.strip() for x in ops.split(",")]
+            # an addu into a register that holds a %hi(S) makes later %lo(S)(reg) accesses indexed
+            if op in ("addu", "add") and regs and regs[0] in _hi:
+                _hi[regs[0]] = (_hi[regs[0]][0], True)
+            continue
+        _m = _RELOC.match(_l)
+        if not _m or _prev is None:
+            continue
+        kind, sym = _m.group(1), re.sub(r"\+0x[0-9a-f]+$", "", _m.group(2))
+        op, ops = _prev
+        regs = [x.strip() for x in ops.split(",")]
+        if kind == "GPREL16":
+            k = "gp"
+        elif kind == "HI16":
+            _hi[regs[0]] = (sym, False)
+            k = None
+        elif kind == "LO16":
+            if op == "addiu":
+                k = "la"
+            else:
+                bm = re.search(r"\((\w+)\)", ops)
+                hv = _hi.get(bm.group(1)) if bm else None
+                k = "indexed" if (hv and hv[1]) else "direct"
+        elif kind == "32":
+            k = "word"
+        else:
+            k = None
+        if k:
+            REFS.setdefault(sym, set()).add((_f, _func or "?", k))
+# data words in the asm data files that name a symbol (a pointer in data whose owning C file is not known)
+DPTR = {}
+for _fn in sorted(os.listdir("asm/data")):
+    for _m in re.finditer(r"/\*\s*[0-9A-F]+\s+([0-9A-F]{8})\s+[0-9A-F]+\s*\*/\s*\.word\s+(\w+)", open(f"asm/data/{_fn}").read()):
+        DPTR.setdefault(_m.group(2), []).append((_fn, int(_m.group(1), 16)))
+
 BASE = {"s8": (1, True), "u8": (1, False), "char": (1, False), "s16": (2, True), "u16": (2, False),
         "short": (2, True), "s32": (4, True), "u32": (4, False), "int": (4, True), "long": (4, True)}
 
@@ -105,6 +163,27 @@ def obj_align(reg, size, dims, e):
     if reg == "static":
         return lcomm_align(size)
     return 4 if dims else (e[0] if e else 4)
+
+
+# the data blob's own object boundaries (splat dlabels; each marks an object some code or data names)
+BLOB_LABELS = {}
+_lab = None
+for _l in open("asm/data/91C98.data.s"):
+    _m = re.match(r"^dlabel (\w+)", _l)
+    if _m:
+        _lab = _m.group(1); continue
+    _m = re.search(r"/\*\s*[0-9A-F]+\s+([0-9A-F]{8})", _l)
+    if _m and _lab:
+        BLOB_LABELS[int(_m.group(1), 16)] = _lab
+        _lab = None
+_LABEL_ADDRS = sorted(BLOB_LABELS)
+
+
+def label_end(a):
+    """the end of the original object at a: the next blob label after a (or the image end)"""
+    import bisect
+    k = bisect.bisect_right(_LABEL_ADDRS, a)
+    return _LABEL_ADDRS[k] if k < len(_LABEL_ADDRS) else HI
 
 
 # ---- 1. objects per file and region -----------------------------------------------------------------
@@ -184,7 +263,10 @@ for f, uses in sorted(P.items()):
                 raise SystemExit(1)
             if dims and not dims[-1].strip():
                 es = e[0] if e else sizeof(f, nm, t, dims[:-1] + ["1"])
-                nxt = next((y for y in addrs if y > x), hi_obj + 1)
+                nxt = next((y for y in addrs if y > x), None)
+                if nxt is None:
+                    # no later object of this file: the extent is the original's own object boundary
+                    nxt = label_end(x)
                 n = max(1, (nxt - x) // es)
                 dims = dims[:-1] + [str(n)]
                 log(f"SIZED-FROM-GAP {f} {nm}: incomplete array -> [{n}] (next object at {hex(nxt)})")
@@ -192,9 +274,22 @@ for f, uses in sorted(P.items()):
             if size is None:
                 log(f"NO-SIZE {f} {nm}: {t} {dims}")
                 raise SystemExit(1)
+            # evidence check: no gp access of this file reaches past the object (cross-symbol storage, refused)
+            offs = uses[nm].get("gp_offsets", [])
+            if offs and max(offs) >= size:
+                log(f"OVERRUN {f} {nm}: gp offset {max(offs)} >= size {size} - size by evidence first")
+                raise SystemExit(1)
             items.append(("obj", x, size, (nm, t, dims, e, isgp)))
             cur = x + size
             last_end = cur
+        # the block runs to the end of the LAST object the file reaches gp-relative, declared in C or not
+        # (an object reached gp only from INCLUDE_ASM code has no C declaration yet; its extent is the
+        # original's object boundary, the blob label after it)
+        if hi_obj >= cur:
+            hend = min(label_end(hi_obj), stop)
+            items.append(("fill", cur, hend - cur, None))
+            log(f"BLOCK-END {f} {reg}: extends to {hex(hend)} (last gp-reached object {hex(hi_obj)} has no C declaration)")
+            cur = last_end = hend
         end = last_end
         # a gap the build's own alignment of the next object already produces is padding, not an object
         # (per-file-gp-model.md, gap clause); a block that ends on an odd byte is followed by the linker's
@@ -217,6 +312,112 @@ for f, uses in sorted(P.items()):
     for nm, u in uses.items():
         if u["gp"] and u["region"] == "common":
             tentative.setdefault(f, []).append((u["addr"], nm))
+
+
+# ---- 1b. (A1) orphans: "an orphan object joins the adjacent block of the one file referencing it; only objects
+# <= 8 bytes live in these blocks". An object in the static region outside every block, named by exactly one
+# file's code, joins that file's block when it is adjacent to it (directly, or across that object's own
+# alignment padding), is <= 8 bytes, and E2 holds (the file's accesses are la / indexed only: a direct lui/%lo
+# load or store would be gp under a <= 8-byte static). Applied repeatedly from each block edge; anything else
+# in the run stays in the data blob and is logged (ORPHAN-LEFT, borderline).
+def orphan_ok(nm, F, size, a):
+    refs = REFS.get(nm, set())
+    files = {r[0] for r in refs}
+    if DPTR.get(nm):
+        return f"named by a data word in asm data {[(fn, hex(x)) for fn, x in DPTR[nm]]}"
+    if files != {F}:
+        return f"named by {sorted(files) or 'nothing'}" + ("" if files else " (unreferenced)")
+    if size > 8:
+        return f"{size} bytes > 8 (a static that large is .bss, not this block)"
+    bad = sorted((fn, k) for _, fn, k in refs if k not in ("la", "indexed"))
+    if bad:
+        return f"E2: accesses {bad} (only la / indexed are predicted for a <= 8-byte static)"
+    if a % lcomm_align(size):
+        return f"misaligned for a {size}-byte static"
+    return None
+
+
+def block_entry(F):
+    for k, (reg, its) in enumerate(defs.get(F, [])):
+        if reg == "static":
+            return k
+    return None
+
+
+def orphan_item(F, a, size):
+    """the joined object: typed from F's own declaration when it has one, else a label-named filler"""
+    nm = BLOB_LABELS[a]
+    u = P.get(F, {}).get(nm)
+    if u and u["decls"]:
+        pd = parse_decl(u["decls"][0], nm)
+        if pd and pd[1] and not pd[1][-1].strip():
+            pd = (pd[0], pd[1][:-1] + [str(size // (elem(pd[0])[0] if elem(pd[0]) else 1))])
+        if pd:
+            t, dims = pd
+            sz = sizeof(F, nm, t, dims)
+            if sz == size:
+                return ("obj", a, size, (nm, t, dims, elem(t), False))
+    return ("fill", a, size, None)
+
+
+ORPHANS = []
+for _round in range(2):
+    st = sorted(s for s in spans if s[3] == ".sbss")
+    for i in range(len(st) - 1):
+        (xlo, xend, X, _), (ylo, yend, Y, _) = st[i], st[i + 1]
+        labs = [x for x in _LABEL_ADDRS if xend <= x < ylo]
+        objs_ = [(x, min(label_end(x), ylo)) for x in labs]
+        # from Y's start downwards
+        newlo, add = ylo, []
+        for x, e in reversed(objs_):
+            if e != newlo:
+                break
+            why = orphan_ok(BLOB_LABELS[x], Y, e - x, x)
+            if why:
+                break
+            add.insert(0, orphan_item(Y, x, e - x))
+            newlo = x
+        if add:
+            k = block_entry(Y)
+            defs[Y][k] = ("static", add + defs[Y][k][1])
+            spans[spans.index(st[i + 1])] = (newlo, yend, Y, ".sbss")
+            for it in add:
+                log(f"ORPHAN-JOIN {Y} static {hex(it[1])} ({it[2]} B, {BLOB_LABELS[it[1]]}): named only by {Y}, la/indexed")
+            st[i + 1] = (newlo, yend, Y, ".sbss")
+        # from X's end upwards
+        newend, add = xend, []
+        for x, e in objs_:
+            if x >= st[i + 1][0]:
+                break
+            al = lcomm_align(e - x)
+            if not (newend <= x < ((newend + al - 1) // al) * al + 1 and x % al == 0):
+                break
+            why = orphan_ok(BLOB_LABELS[x], X, e - x, x)
+            if why:
+                break
+            if x > newend:
+                log(f"PADDING {X} static {hex(newend)} ({x - newend} B): the joined orphan's {al}-alignment produces it")
+            add.append(orphan_item(X, x, e - x))
+            newend = e
+        if add:
+            k = block_entry(X)
+            defs[X][k] = ("static", defs[X][k][1] + add)
+            spans[spans.index(st[i])] = (xlo, newend, X, ".sbss")
+            for it in add:
+                log(f"ORPHAN-JOIN {X} static {hex(it[1])} ({it[2]} B, {BLOB_LABELS[it[1]]}): named only by {X}, la/indexed")
+            st[i] = (xlo, newend, X, ".sbss")
+# what is left between blocks and named by code: logged, stays in the data blob
+st = sorted(s for s in spans if s[3] == ".sbss")
+for i in range(len(st) - 1):
+    for x in [x for x in _LABEL_ADDRS if st[i][1] <= x < st[i + 1][0]]:
+        nm = BLOB_LABELS[x]
+        if REFS.get(nm) or DPTR.get(nm):
+            sz = min(label_end(x), st[i + 1][0]) - x
+            files = sorted({r[0] for r in REFS.get(nm, set())})
+            why = orphan_ok(nm, files[0] if len(files) == 1 else "-", sz, x)
+            nb = "adjacent to its block" if files and files[0] in (st[i][2], st[i + 1][2]) else "not adjacent to its file's block"
+            ORPHANS.append((x, sz, nm, files, why or nb))
+            log(f"ORPHAN-LEFT {hex(x)} ({sz} B, {nm}) named by {files}: {why or nb} - stays in the data blob (borderline)")
 
 
 def fmt(v, size, signed):
@@ -284,18 +485,55 @@ def filler_decls(start, size, static_kw, init):
 
 
 def old_filler_decls(start, size, static_kw, init):
-    """per-file-gp-model.md (A6), owner ruling Q71: a run no single object can occupy is split
-    deterministically - in address order, each piece is the largest size of 8 bytes or less that the build
-    places exactly at its start address and that still fits in the rest of the run; named D_<addr>."""
-    out, a, end = [], start, start + size
-    while a < end:
+    """per-file-gp-model.md (A6), owner ruling Q71: a run no single object can occupy splits deterministically
+    into the FEWEST aligned pieces, each <= 8 bytes and placed by the build exactly at its start; among
+    splits with that many pieces, the one whose pieces are largest earliest. Named D_<addr>."""
+    end = start + size
+    best = {end: (0, [])}
+    for a in range(end - 1, start - 1, -1):
+        cands = []
         for n in range(min(8, end - a), 0, -1):
-            d = one_object(a, n, static_kw, init, "D_%08X" % a)
-            if d:
-                break
+            if (a + n) in best and one_object(a, n, static_kw, init, "D_%08X" % a):
+                c, rest = best[a + n]
+                cands.append((c + 1, [-n] + [-x for x in rest], n, rest))
+        if cands:
+            c, _, n, rest = min(cands)
+            best[a] = (c, [n] + rest)
+    out, a = [], start
+    for n in best[start][1]:
+        d = one_object(a, n, static_kw, init, "D_%08X" % a)
         out.append(d)
         log(f"A6 piece {hex(a)} {n} B: {d}")
         a += n
+    return out
+
+
+def fill_comment(nm, f):
+    """what names a filler object, from the pre-switch objects' relocations and the asm data words"""
+    refs, dp = REFS.get(nm, set()), DPTR.get(nm, [])
+    parts = []
+    gpf = sorted({fn for g, fn, k in refs if k == "gp"})
+    if gpf:
+        parts.append("reached gp-relative by " + ", ".join(gpf) + " (no C declaration yet)")
+    for kind, what in (("la", "address taken (lui/addiu)"), ("indexed", "indexed (lui + %lo)"),
+                       ("direct", "direct lui/%lo access"), ("word", "a data word")):
+        fs = sorted({(g, fn) for g, fn, k in refs if k == kind})
+        if fs:
+            parts.append(what + " in " + ", ".join(fn if g == f else f"{g}:{fn}" for g, fn in fs))
+    if dp:
+        parts.append("named by the pointer word at " + ", ".join(f"{x:#010X} ({fn})" for fn, x in dp))
+        log(f"BORDERLINE-A2 {f} {nm}: named by a pointer word in asm data {[(fn, hex(x)) for fn, x in dp]}: "
+            f"(A2) 'no other file references it' is not established (owner question); defined here meanwhile")
+    if not parts:
+        return "/* not named by any code or data: size from the gap */"
+    return "/* " + "; ".join(parts) + ": size from the blob label */"
+
+
+def fill_lines(a, size, f, reg):
+    out = []
+    for d in filler_decls(a, size, "static " if reg == "static" else "", reg == "sdata"):
+        nm = re.search(r"\b(\w+)(?:\[\d+\])?\s*(?:=|;)", d).group(1)
+        out.append(d + "  " + fill_comment(nm, f))
     return out
 
 
@@ -312,8 +550,7 @@ for f in sorted(set(defs) | set(tentative)):
             bottom.append("/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */")
         for kind, a, size, o in items:
             if kind == "fill":
-                (top if reg == "static" else bottom).extend(
-                    [l + "  /* unreferenced: size from the gap */" for l in filler_decls(a, size, "static " if reg == "static" else "", reg == "sdata")])
+                (top if reg == "static" else bottom).extend(fill_lines(a, size, f, reg))
                 continue
             nm, t, dims, e, isgp = o
             dimtxt = "".join(f"[{d}]" for d in dims)
@@ -323,6 +560,15 @@ for f in sorted(set(defs) | set(tentative)):
                 # shared header's (only this file reaches a static; the header line also decided the
                 # emission order, cc1 emitting statics in first-declaration order)
                 src, n = re.subn(r"^extern\s+[^;{}()]*\b%s\b(?:\s*\[[^\]]*\])*\s*;[^\n]*\n" % re.escape(nm), "", src, flags=re.M)
+                # K2: defined only in F - every other file's `extern` of it goes too (file or block scope)
+                for g in sorted(os.listdir("src")):
+                    if not g.endswith(".c") or g == f"{f}.c":
+                        continue
+                    gt = open(f"src/{g}").read()
+                    gt2, gn = re.subn(r"^[ \t]*extern\s+[^;{}()]*\b%s\b(?:\s*\[[^\]]*\])*\s*;[^\n]*\n" % re.escape(nm), "", gt, flags=re.M)
+                    if gn:
+                        open(f"src/{g}", "w", newline=NL).write(gt2)
+                        log(f"EXTERN-REMOVED src/{g}: {gn} extern line(s) of {nm} (now a static of {f})")
                 for hp in sorted(os.listdir("include")):
                     if not hp.endswith(".h"):
                         continue
@@ -581,4 +827,28 @@ for p, pats in (("engine/buildstamp.py", [("'sdata_syms.txt', 'sdata_funcs.txt',
         t = t.replace(a, bb)
     open(p, "w", newline=NL).write(t)
 open("/tmp/q56/s10_log.txt", "w").write(NL.join(LOG) + NL)
+open(f"{H}/s15_log.txt", "w", newline=NL).write(NL.join(LOG) + NL)
+# the commit body: every disposition the generator took (layer-2 round 1, step-15 finding 6)
+msg = ["Rule: .claude/rules/per-file-gp-model.md (Q65, Q67-Q72). Generator: s15_apply.py (docstring); evidence",
+       "docs/grind/gp-model-2026-09-30.md; full generator log banked as memory/grind/q65-adoption/q56/adopt/s15_log.txt.",
+       "Explicit-relocation asm excluded from E1/E2/split: memory/grind/q65-adoption/q56/adopt/explicit_exclusions.md.", ""]
+for title, pfx in (("Blocks extended to their last gp-reached object (no C declaration yet)", "BLOCK-END"),
+                   ("Alignment padding inside a block (no object: the next object's alignment produces it)", "PADDING"),
+                   ("Block ends on an odd byte (linker SUBALIGN(2) padding, no object)", "END-PAD"),
+                   ("(A6, Q71) runs no single object fits, split into the fewest aligned pieces", "A6 "),
+                   ("(A1) orphan objects joined to the one block that names them", "ORPHAN-JOIN"),
+                   ("(A1) objects named by code but left in the data blob (borderline.md)", "ORPHAN-LEFT"),
+                   ("(A2) objects whose 'no other file references it' is not established (owner question)", "BORDERLINE"),
+                   ("Arrays sized from the original's object boundary", "SIZED-FROM-GAP"),
+                   ("(K2) externs of the new statics removed from other files", "EXTERN-REMOVED"),
+                   ("(K2) header externs removed", "HEADER"),
+                   ("Held / blocked blocks", "HELD"), ("Blocked", "BLOCKED"), ("K2 violations", "K2-VIOLATION"),
+                   ("K1 non-zero", "K1-NONZERO"), ("Aliases", "ALIAS"), ("Overlaps", "OVERLAP")):
+    rows = [l for l in LOG if l.startswith(pfx)]
+    if rows:
+        msg.append(f"{title} ({len(rows)}):")
+        msg += ["- " + r for r in rows]
+        msg.append("")
+msg += [l for l in LOG if l.startswith(("defined in ", "symbol-file rows", "blob cut", "PSYQ_LIBRARY_FILES"))]
+open(f"{H}/s15_msg.txt", "w", newline=NL).write(NL.join(msg) + NL)
 print("step 15 applied")

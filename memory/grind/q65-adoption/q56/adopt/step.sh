@@ -14,6 +14,19 @@ rm -rf build
 make -j16 build/bb2.exe > "/tmp/q56/step$NN.build.log" 2>&1; rc=$?
 SHA=$(sha1sum build/bb2.exe 2>/dev/null | cut -d' ' -f1)
 echo "step $NN build rc=$rc exe_sha1=$SHA"
+echo "step $NN build rc=$rc exe_sha1=$SHA $(date -u +%FT%TZ)" >> "$OUT/series_run.log"
+# per-object compare: every src object against the previous step's build (same name = built both ways)
+PREVN=$(printf "%02d" $((10#$NN - 1)))
+rm -rf "/tmp/q56/objs_step$NN" && cp -r build/src "/tmp/q56/objs_step$NN"
+if [ -d "/tmp/q56/objs_step$PREVN" ]; then
+  n=0; d=0; dl=""
+  for o in /tmp/q56/objs_step$NN/*.o; do
+    b=$(basename "$o"); [ -f "/tmp/q56/objs_step$PREVN/$b" ] || { dl="$dl +$b"; continue; }
+    n=$((n+1)); cmp -s "$o" "/tmp/q56/objs_step$PREVN/$b" || { d=$((d+1)); dl="$dl $b"; }
+  done
+  for o in /tmp/q56/objs_step$PREVN/*.o; do b=$(basename "$o"); [ -f "/tmp/q56/objs_step$NN/$b" ] || dl="$dl -$b"; done
+  echo "step $NN objects vs step $PREVN: $n compared, $d differ;${dl:- none}" | tee -a "$OUT/series_run.log"
+fi
 [ "$SHA" = "62efab4f73f992798c43e8c730aa43baa10bb4fa" ] || { tail -20 "/tmp/q56/step$NN.build.log"; echo "NOT ORACLE"; exit 1; }
 git checkout -q -- metrics/events.jsonl 2>/dev/null   # engine commands append metrics; not part of a step
 git add -A . >/dev/null

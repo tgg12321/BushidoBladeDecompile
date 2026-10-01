@@ -25,15 +25,41 @@ funcs = [re.match(r"^[\w\s\*]*\b(func_\w+|snd_\w+)\s*\(", l).group(1) for l in L
 assert funcs[-1] == "func_80060E38", funcs[-4:]
 prev = funcs[funcs.index("func_80060A68") - 1]
 run(f"{H}/splitc.py", "src/text1b.c", str(defline("src/text1b.c", "func_80060A68")), "/tmp/q56/s03/tail.c")
-run(f"{H}/mergec.py", "src/text1b_tu1c.c", "/tmp/q56/s03/tail.c", "src/text1b_tu1c.c")
+import subprocess, io, contextlib
+_r = subprocess.run([sys.executable, f"{H}/mergec.py", "src/text1b_tu1c.c", "/tmp/q56/s03/tail.c", "src/text1b_tu1c.c"],
+                    capture_output=True, text=True)
+print(_r.stdout.strip()); assert _r.returncode == 0, _r.stderr
+DUPS = [l.strip() for l in _r.stdout.splitlines() if "dropped verbatim repeat (" in l]
 sub1("src/text1b_tu1c.c", "/* ---- merged from tail.c (owner ruling Q65: one original file) ---- */",
      "/* func_80060A68 .. func_80060E38 moved here from text1b.c: the file boundary follows the per-file gp evidence\n"
      " * (owner ruling Q65; docs/grind/rodata-align-2026-09-30.md section 9 record). */")
 sub1("src/text1b_tu1c.c", "/* ---- merged from text1b_tu1c.c (owner ruling Q65: one original file) ---- */\n", "")
-drop_header_duplicates("src/text1b_tu1c.c")
+_buf = io.StringIO()
+with contextlib.redirect_stdout(_buf):
+    drop_header_duplicates("src/text1b_tu1c.c")
+print(_buf.getvalue().strip())
+HDR = [l.split(": dropped verbatim repeat of a header definition: ")[1] for l in _buf.getvalue().splitlines()
+       if ": dropped verbatim repeat of a header definition: " in l]
+INC_ADDED = [l for l in rd("src/text1b_tu1c.c").split(NL)[:12] if l.startswith("#include")]
 D = "docs/grind/rodata-align-2026-09-30.md"
 sub1(D, "| text1b.c | unchanged head, then snd_Init .. func_80060E38 |",
      f"| text1b.c | unchanged head, then snd_Init .. {prev} |")
 sub1(D, "| text1b_tu1c.c | func_80061064 .. the function before func_8006E534 |",
      "| text1b_tu1c.c | func_80060A68 .. the function before func_8006E534 (func_80060A68 .. func_80060E38 moved here by owner ruling Q65: per-file gp model, boundary move in the recorded window) |")
+msg = [
+    "Rule: per-file-gp-model.md, Merge bullet \"Boundary move instead of a merge\" (owner ruling Q65; original text",
+    "64c69153a, dropped by the slim commit ffec95a08, restored in rules: commit e5317cbf9). The text1b / text1b_tu1c",
+    f"boundary moves from func_80061064 to func_80060A68: func_80060A68 .. func_80060E38 move verbatim from the end of",
+    f"text1b.c (which now ends with {prev}) to the start of text1b_tu1c.c; the section 9 record of",
+    "docs/grind/rodata-align-2026-09-30.md is updated. Evidence: s03_apply.py docstring (cutsearch.py).",
+    "",
+    "Besides the move, text1b_tu1c.c changes only in its declarations (mergec.py / drop_header_duplicates):",
+    "- the include block is the union of both parts' includes: " + ", ".join(INC_ADDED) + ";",
+    "- typedef -> gte.h: text1b_tu1c.c's own one-line typedefs, verbatim repeats of include/gte.h's definitions now",
+    "  that the moved part brings `#include \"gte.h\"`, are dropped (a repeat is a redefinition error):",
+] + ["    " + h for h in HDR] + [
+    f"- duplicate-declaration dedup: {len(DUPS)} file-scope declarations repeated verbatim (normalized text identical to",
+    "  one already emitted earlier in the merged file) are dropped; each named object keeps its first declaration:",
+] + ["    " + d.split("): ", 1)[1] + "  (" + d.split("(", 1)[1].split(")")[0] + ")" for d in DUPS]
+wr(f"{H}/s03_msg.txt", NL.join(msg) + NL)
 print(f"step 3 applied (text1b.c now ends with {prev})")

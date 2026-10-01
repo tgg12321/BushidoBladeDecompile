@@ -34,6 +34,7 @@ for p in parts:
 emitted = {}      # normalized declaration text -> first part
 declnames = {}    # name -> normalized text
 report = []
+dropped = []   # (part, line, text) of each verbatim repeat dropped
 chunks = []
 for p, raw, lines, n in bodies:
     sts = statements(raw, n, len(lines))
@@ -50,6 +51,7 @@ for p, raw, lines, n in bodies:
         norm = " ".join("\n".join(lines[st["a"]:st["b"] + 1]).split())
         if norm in emitted:
             drop.update(range(st["a"], st["b"] + 1))
+            dropped.append((os.path.basename(p), st["a"] + 1, norm))
             continue
         emitted[norm] = p
         for nm in declared(st, set()):
@@ -64,3 +66,5 @@ open(out, "w", newline="\n").write("\n".join(head) + "\n" + "".join(chunks))
 print(f"merged {len(parts)} parts into {out}; conflicts: {len(report)}")
 for r in report:
     print("  " + r)
+for part, ln, norm in dropped:
+    print(f"  dropped verbatim repeat ({part}:{ln}): {norm}")

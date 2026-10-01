@@ -6,6 +6,7 @@ set -o pipefail
 H="/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/q56"
 FIRST="${2:-01}"
 if [ "$FIRST" = "01" ]; then
+  rm -f "$H/adopt/series_run.log" "$H/adopt/series_full.log"
   bash "$H/adopt_setup.sh" "$1" || exit 1
   printf '/.venv\n/disc\n/tools/gcc-2.7.2\n/tmp\n' >> "/tmp/q56/adopt tree/.git/info/exclude"
 fi
@@ -31,7 +32,7 @@ for s in "${steps[@]}"; do
   IFS='|' read -r NN NAME SUBJ <<< "$s"
   [[ "$NN" < "$FIRST" ]] && continue
   echo "===== step $NN $NAME"
-  bash "$H/adopt/step.sh" "$NN" "$NAME" "$SUBJ" 2>&1 | grep -v "missing .end" | tail -30 || exit 1
+  bash "$H/adopt/step.sh" "$NN" "$NAME" "$SUBJ" 2>&1 | grep -v "missing .end" | tee -a "$H/adopt/series_full.log" | tail -30 || exit 1
   [ -f "$H/adopt/$NN-$NAME.patch" ] || { echo "step $NN produced no patch"; exit 1; }
   cd "/tmp/q56/adopt tree" && git describe --tags --exact-match HEAD 2>/dev/null | grep -q "step$NN" || { echo "step $NN not committed"; exit 1; }
 done

@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
-"""Step 13 (Q65; needs the rule amendment A3, PLAN.md): maspsx models cc1psx -G8's section choice for small
-initialized objects. cc1psx -G8 emits an initialized object of <= 8 bytes in `.sdata`; our cc1 emits it in
-`.data` even at -G8 (calibration tmp/q56/cc1psx_decl_probe.sh: `int z1 = 0; int w1 = 5;`). Under -G<n>
-maspsx moves each such `.data` object (its `.align`, label and data directives) into `.sdata`, where it is the
-file's own small data (gp at every offset). Global, names no symbol; inert without -G (byte-neutral today).
+"""Step 13 (Q65 / Q68; rule amendment A3): maspsx models cc1psx -G8's section choice for small initialized
+objects. cc1psx -G8 emits an initialized object of <= 8 bytes - global or `static` - in `.sdata`; our cc1 emits
+it in `.data` even at -G8. Calibration (both recorded in docs/grind/gp-model-2026-09-30.md A.3):
+cc1psx_decl_probe.sh (`int z1 = 0; int w1 = 5;`) and, added here, cc1psx_static_probe.sh (initialized statics
+si/sc/sd/sz, a global gi, an 8-byte `.string` array s8, s4/q2 strings, a halfword hs, a pointer sp8; a
+16-byte big stays in .data): every <= 8-byte one is in cc1psx's .sdata, each behind its own `.align`.
+Under -G<n> maspsx moves each such `.data` object AS A UNIT - its `.globl`, `.align`, `.type`, `.size`, label
+and data directives - into `.sdata` (so its alignment comes with it: two 3-byte char arrays land at +0 and +4,
+as cc1psx's), where it is the file's own small data (gp at every offset). The size is the object's `.size`
+(our cc1 always emits one), else the sum of its data directives (`.string`/`.asciz` = decoded bytes + 1,
+`.ascii` = decoded bytes, escapes counted as one byte). Global, names no symbol; inert without -G
+(byte-neutral today). Not modelled (A3 covers `.data` only): cc1psx -G8 also puts small `.rodata` items
+(a const int, a short string literal) in .sdata - logged in the A.3 calibration note.
 usage: s13_apply.py <tree>"""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from adoptlib import *
+H_ = os.path.dirname(os.path.abspath(__file__))
 os.chdir(sys.argv[1])
 P = "tools/maspsx/maspsx/__init__.py"
 sub1(P, """        self.bss_entries = {}
@@ -23,107 +32,220 @@ sub1(P, """        self.bss_entries = {}
             self.lines = self._small_data_to_sdata(self.lines)
         self.preprocess_lines()""")
 sub1(P, """    def process_lines(self):""",
-'''    _DATA_DIRECTIVES = (".word", ".half", ".short", ".byte", ".space", ".ascii", ".asciz")
+'''    _DATA_DIRECTIVES = (".word", ".half", ".short", ".byte", ".space", ".ascii", ".asciz", ".string")
+    _OBJECT_HEAD = (".globl", ".align", ".type", ".size")
+    _LABEL_RE = re.compile(r"^([A-Za-z_][\\w.$]*):$")
+
+    @staticmethod
+    def _string_bytes(arg: str) -> int:
+        """byte length of an assembler string literal: an escape (\\\\n, \\\\", \\\\\\\\, \\\\NNN octal, \\\\xHH)
+        is one byte"""
+        s = arg.strip()
+        assert s.startswith('"') and s.endswith('"'), arg
+        s, n, i = s[1:-1], 0, 0
+        while i < len(s):
+            if s[i] == "\\\\":
+                i += 1
+                if i < len(s) and s[i] in "01234567":
+                    j = i
+                    while j < len(s) and j < i + 3 and s[j] in "01234567":
+                        j += 1
+                    i = j
+                elif i < len(s) and s[i] == "x":
+                    i += 1
+                    while i < len(s) and s[i] in "0123456789abcdefABCDEF":
+                        i += 1
+                else:
+                    i += 1
+            else:
+                i += 1
+            n += 1
+        return n
 
     def _data_size(self, line: str) -> int:
-        if line.startswith(".space"):
-            return int(line.split()[1], 0)
-        if line.startswith(".word"):
-            return 4 * (line.count(",") + 1)
-        if line.startswith(".half") or line.startswith(".short"):
-            return 2 * (line.count(",") + 1)
-        if line.startswith(".byte"):
-            return line.count(",") + 1
-        if line.startswith(".asciz"):
-            return len(line) - 10 + 1
-        if line.startswith(".ascii"):
-            return len(line) - 9
+        op, _, arg = line.partition("\\t") if "\\t" in line else line.partition(" ")
+        op, arg = op.strip(), arg.strip()
+        if op == ".space":
+            return int(arg, 0)
+        if op == ".word":
+            return 4 * (arg.count(",") + 1)
+        if op in (".half", ".short"):
+            return 2 * (arg.count(",") + 1)
+        if op == ".byte":
+            return arg.count(",") + 1
+        if op in (".asciz", ".string"):
+            return self._string_bytes(arg) + 1
+        if op == ".ascii":
+            return self._string_bytes(arg)
         raise Exception(f"Unable to size data directive: {line}")
 
     def _small_data_to_sdata(self, lines):
-        """cc1psx -G<n> emits an initialized object of <= n bytes in `.sdata`; our cc1
-        emits it in `.data` (owner ruling Q65). Move each such `.data` object (its
-        `.align`, label and data directives) into `.sdata`, then return to `.data`."""
+        """cc1psx -G<n> emits an initialized object of <= n bytes in `.sdata`; our cc1 emits it in
+        `.data` (owner rulings Q65/Q68, amendment A3). Move each such `.data` object as a unit - its
+        `.globl`/`.align`/`.type`/`.size` head, label and data directives - into `.sdata`, then
+        return to `.data`."""
         out, sec, i, n = [], None, 0, len(lines)
         while i < n:
-            line = lines[i]
-            s = line.strip()
+            s = lines[i].strip()
             if s.startswith(".data"):
                 sec = "data"
             elif s.startswith((".sdata", ".rdata", ".text", ".section", ".bss", ".sbss")):
                 sec = "other"
-            j = i
-            if sec == "data" and s.startswith(".align") and i + 1 < n and re.match(r"^[A-Za-z_][\\w.$]*:$", lines[i + 1].strip()):
-                j = i + 1
-            label = lines[j].strip()
-            if sec == "data" and re.match(r"^[A-Za-z_][\\w.$]*:$", label) and not label.startswith(("$", ".")):
-                k, size = j + 1, 0
-                while k < n and lines[k].strip().startswith(self._DATA_DIRECTIVES):
-                    size += self._data_size(lines[k].strip())
-                    k += 1
-                if 0 < size <= self.sdata_limit:
-                    out += [".sdata"] + lines[i:k] + [".data"]
-                else:
-                    out += lines[i:k]
-                i = k
-                continue
-            out.append(line)
+            if sec == "data":
+                j = i
+                while j < n and lines[j].strip().startswith(self._OBJECT_HEAD):
+                    j += 1
+                m = self._LABEL_RE.match(lines[j].strip()) if j < n else None
+                if m and not m.group(1).startswith(("$", ".")):
+                    name, declared = m.group(1), None
+                    heads = [lines[x].strip() for x in range(i, j)]
+                    # every head line names this object (an `.align` names none)
+                    if all(h.startswith(".align") or re.split(r"[\\s,]+", h)[1] == name for h in heads):
+                        for h in heads:
+                            if h.startswith(".size"):
+                                declared = int(re.split(r"[\\s,]+", h)[2], 0)
+                        k, size = j + 1, 0
+                        while k < n and lines[k].strip().startswith(self._DATA_DIRECTIVES):
+                            size += self._data_size(lines[k].strip())
+                            k += 1
+                        if declared is not None:
+                            size = declared
+                        if 0 < size <= self.sdata_limit:
+                            out += [".sdata"] + lines[i:k] + [".data"]
+                        else:
+                            out += lines[i:k]
+                        i = k
+                        continue
+            out.append(lines[i])
             i += 1
         return out
 
     def process_lines(self):''')
-wr("tools/maspsx/tests/test_small_data_sdata.py", '''"""cc1psx -G8 emits an initialized object of <= 8 bytes in `.sdata`; our cc1 emits `.data`. Under -G8 maspsx
-moves it to `.sdata`, where it is the file's own small data (gp); larger objects stay in `.data`; without -G
-nothing moves (owner ruling Q65)."""
+# the unit test: our cc1's real output for the calibration probe (tmp/q56/r2/p.c = cc1psx_static_probe.sh's
+# source), with the expectations cc1psx -G8 gives for it
+probe = [l for l in open(f"{H_}/cc1psx_static_probe_cc1.s").read().split("\n")]
+wr("tools/maspsx/tests/test_small_data_sdata.py", '''"""cc1psx -G8 emits an initialized object of <= 8 bytes (global or static) in `.sdata`; our cc1 emits `.data`.
+Under -G8 maspsx moves each such object as a unit (.globl/.align/.type/.size/label/data) to `.sdata`, where it is
+the file's own small data (gp); larger objects stay in `.data`; without -G nothing moves (owner rulings Q65/Q68).
+SRC is our cc1's real output for the calibration probe (docs/grind/gp-model-2026-09-30.md A.3, static probe);
+the expected sections are cc1psx -G8's for the same source."""
 import unittest
 
 from maspsx import MaspsxProcessor
 
 from .util import strip_comments
 
-SRC = [".globl\\tz1", ".data", ".align\\t2", "z1:", ".word\\t0", ".globl\\tbig", ".align\\t2", "big:",
-       ".word\\t1", ".word\\t2", ".word\\t3", ".text", ".ent\\tf", "lw\\t$4,z1", "lw\\t$5,big", ".end\\tf"]
+SRC = """''' + "\n".join(probe).replace("\\", "\\\\") + '''""".split("\\n")
+SMALL = ["si", "sc", "sd", "sz", "gi", "s8", "s4", "q2", "hs", "sp8"]   # cc1psx -G8: .sdata
+SECTIONS = (".data", ".text", ".sdata", ".rdata", ".bss", ".sbss")
 
 
 def run(g):
     return [l for l in strip_comments(MaspsxProcessor(SRC, sdata_limit=g).process_lines()) if l.strip()]
 
 
+def section_of(res, idx):
+    for l in reversed(res[:idx]):
+        w = l.split()
+        if w and w[0] == ".section":
+            return w[1]
+        if w and w[0] in SECTIONS:
+            return w[0]
+    return None
+
+
+def label_index(res, name):
+    return res.index(name + ":")
+
+
 class TestSmallDataSdata(unittest.TestCase):
-    def test_small_initialized_object_is_sdata_and_gp(self):
+    def test_small_objects_are_sdata(self):
         res = run(8)
-        self.assertIn("lw\\t$4,%gp_rel(z1)($gp)", res)
-        self.assertNotIn("lw\\t$5,%gp_rel(big)($gp)", res)
-        self.assertLess(res.index(".section .sdata"), res.index("z1:"))
+        for nm in SMALL:
+            self.assertEqual(section_of(res, label_index(res, nm)), ".sdata", nm)
+        self.assertEqual(section_of(res, label_index(res, "big")), ".data")
+
+    def test_object_moves_as_a_unit(self):
+        # sd's own .align/.type/.size come with it: it lands at +4 after the 3-byte sc, as cc1psx's
+        res = run(8)
+        k = label_index(res, "sd")
+        self.assertEqual(res[k - 3:k], [".align\\t2", ".type\\t sd,@object", ".size\\t sd,3"])
+        self.assertEqual(section_of(res, k - 3), ".sdata")
+        g = res.index(".globl\\tgi")
+        self.assertEqual(section_of(res, g), ".sdata")
+
+    def test_string_array_and_static_are_gp(self):
+        res = run(8)
+        self.assertIn("lw\\t$2,%gp_rel(si)($gp)", res)       # initialized static
+        self.assertIn("lbu\\t$4,%gp_rel(s8+3)($gp)", res)    # 8-byte `.string` array
+        self.assertIn("lbu\\t$3,%gp_rel(sd+1)($gp)", res)    # 3-byte static array, at an offset
+        self.assertNotIn("lw\\t$3,%gp_rel(big+8)($gp)", res)  # 16 bytes: stays .data
+
+    def test_string_sizes(self):
+        p = MaspsxProcessor([], sdata_limit=8)
+        self.assertEqual(p._data_size('.string\\t"abcdefg"'), 8)
+        self.assertEqual(p._data_size('.asciz\\t"abc"'), 4)
+        self.assertEqual(p._data_size('.ascii\\t"abc\\\\000"'), 4)
+        self.assertEqual(p._data_size('.ascii\\t"\\\\001\\\\n\\\\\\\\x"'), 4)
 
     def test_nothing_moves_without_g(self):
         res = run(0)
         self.assertNotIn(".section .sdata", res)
-        self.assertNotIn("lw\\t$4,%gp_rel(z1)($gp)", res)
+        self.assertNotIn("lw\\t$2,%gp_rel(si)($gp)", res)
 
 
 if __name__ == "__main__":
     unittest.main()
 ''')
 sub1("engine/test_engine.py", """def test_maspsx_fingerprint() -> None:""", '''def test_maspsx_small_data_sdata() -> None:
-    """Owner ruling Q65 (amendment A3): under -G8 a <= 8-byte initialized object our cc1 put in `.data` moves
-    to `.sdata` (cc1psx -G8's choice) and is gp; without -G nothing moves (byte-neutral today)."""
+    """Owner rulings Q65/Q68 (amendment A3): under -G8 a <= 8-byte initialized object (global or static) our cc1
+    put in `.data` moves to `.sdata` as a unit (its .align/.type/.size/label/data; cc1psx -G8's choice) and is gp;
+    two 3-byte arrays keep their own alignment; without -G nothing moves (byte-neutral today). Input: our cc1's
+    real output shape."""
     import sys
     sys.path.insert(0, str(Path("tools/maspsx").resolve()))
     try:
         from maspsx import MaspsxProcessor
     finally:
         sys.path.pop(0)
-    sd = [".globl\\tz1", ".data", ".align\\t2", "z1:", ".word\\t0", ".text", ".ent\\tf", "lw\\t$4,z1", ".end\\tf"]
+    sd = [".data", ".align\\t2", ".type\\t a,@object", ".size\\t a,3", "a:", ".byte\\t1", ".byte\\t2", ".byte\\t3",
+          ".align\\t2", ".type\\t b,@object", ".size\\t b,3", "b:", ".byte\\t4", ".byte\\t5", ".byte\\t6",
+          ".align\\t2", ".type\\t s8,@object", ".size\\t s8,8", "s8:", '.string\\t"abcdefg"',
+          ".text", ".ent\\tf", "lbu\\t$4,b+1", "lbu\\t$5,s8+3", ".end\\tf"]
 
     def run(g):
         return [l.split("#")[0].strip() for l in MaspsxProcessor(sd, sdata_limit=g).process_lines() if l.split("#")[0].strip()]
-    check("maspsx -G8: a 4-byte initialized object moves to .sdata and is gp",
-          ".section .sdata" in run(8) and "lw\\t$4,%gp_rel(z1)($gp)" in run(8))
+    r8 = run(8)
+    kb = r8.index("b:")
+    check("maspsx -G8: static 3-byte arrays and an 8-byte .string move to .sdata as units and are gp",
+          ".section .sdata" in r8 and r8[kb - 3] == ".align\\t2" and "lbu\\t$4,%gp_rel(b+1)($gp)" in r8
+          and "lbu\\t$5,%gp_rel(s8+3)($gp)" in r8)
     check("maspsx without -G: no .sdata move, no gp",
-          ".section .sdata" not in run(0) and "lw\\t$4,%gp_rel(z1)($gp)" not in run(0))
+          ".section .sdata" not in run(0) and "lbu\\t$4,%gp_rel(b+1)($gp)" not in run(0))
 
 
 def test_maspsx_fingerprint() -> None:''')
 sub1("engine/test_engine.py", "    test_maspsx_fingerprint()\n", "    test_maspsx_small_data_sdata()\n    test_maspsx_fingerprint()\n")
+# the calibration (A.3): cc1psx -G8 with initialized statics, recorded verbatim
+src = open(f"{H_}/cc1psx_static_probe.c").read()
+ps = open(f"{H_}/cc1psx_static_probe_cc1psx.s").read()
+keep = [l for l in ps.split("\n") if l.strip() and not l.strip().startswith(("#", ".file", ".frame", ".mask", ".fmask"))]
+cut = next(i for i, l in enumerate(keep) if l.strip().startswith(".ent"))
+D = "docs/grind/gp-model-2026-09-30.md"
+note = ("\n#### A.3b Initialized statics, string arrays, alignment (`cc1psx_static_probe.sh`, added with Q65 step 13)\n\n"
+        "The A.3 probe has no initialized `static`; amendment A3 moves a static only with a calibration showing it.\n"
+        "Probe source (memory/grind/q65-adoption/q56/adopt/cc1psx_static_probe.c):\n\n```\n" + src.strip() +
+        "\n```\n\ncc1psx -G8, data part (verbatim, comments and frame directives dropped):\n\n```\n" +
+        "\n".join(keep[:cut]) + "\n```\n\nReading: every initialized object of 8 bytes or less - the statics `si`, "
+        "`sc`, `sd`, `sz`, `s8`, `s4`, `q2`, `hs`, `sp8` and the global `gi` - is in `.sdata`, each behind its own "
+        "`.align` (so the 3-byte `sd` sits 4 bytes after the 3-byte `sc`); the 16-byte `big` stays in `.data`. Our "
+        "cc1 emits all of them in `.data` with `.type`/`.size` heads and `.string` for the char arrays. maspsx "
+        "-G8 (step 13) moves each object with its whole head; `tools/maspsx/tests/test_small_data_sdata.py` runs "
+        "our cc1's real output for this probe against these sections. Not modelled: cc1psx -G8 also puts the "
+        "3-byte literal `$LC0` (\"xy\") in `.sdata`, where our cc1 puts it in `.rodata`; A3 covers `.data` only, "
+        "so a game file with such a literal is a borderline case, not a silent widening.\n")
+t = rd(D)
+a = "\n### A.4 "
+assert t.count(a) == 1
+wr(D, t.replace(a, note + a, 1))
 print("step 13 applied")

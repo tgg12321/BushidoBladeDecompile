@@ -17,4 +17,11 @@ run(f"{H}/mergec.py", "src/text1b_b.c", *[f"src/{p}.c" for p in parts])
 for p in parts[:-1]:
     os.remove(f"src/{p}.c")
 ld_merge("text1b_b", parts)
+t = rd("src/text1b_b.c")
+assert "(owner ruling Q65: one original file)" in t
+wr("src/text1b_b.c", t.replace("(owner ruling Q65: one original file)", "(owner ruling Q67: one original file)"))
+# rodata-align record, section 7 table: text1b_tu2.c is merged into text1b_b.c
+sub1("docs/grind/rodata-align-2026-09-30.md",
+     "  | text1b_tu2.c | func_800747D8 | 0x80015A0C | after func_8006ECF4 .. up to func_800747D8 |",
+     "  | text1b_tu2.c (merged into text1b_b.c, owner ruling Q67, Q65 step 11; text1b_b.c now starts here) | func_800747D8 | 0x80015A0C | after func_8006ECF4 .. up to func_800747D8 |")
 print("M4 merge applied")

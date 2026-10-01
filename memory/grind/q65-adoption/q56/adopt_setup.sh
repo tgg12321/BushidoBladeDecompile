@@ -17,3 +17,4 @@ mkdir -p tmp; ln -s "$REPO/tools/gcc-2.7.2" tools/gcc-2.7.2; ln -s "$REPO/.venv"
 source .venv/bin/activate
 make -j16 build/bb2.exe > /tmp/q56/adopt_base_build.log 2>&1 || { tail -5 /tmp/q56/adopt_base_build.log; exit 1; }
 sha1sum build/bb2.exe
+rm -rf /tmp/q56/objs_step00 && cp -r build/src /tmp/q56/objs_step00

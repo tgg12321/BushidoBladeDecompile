@@ -14,6 +14,25 @@ run was on main `6c73a2796` (2026-10-01, laneA). On that run every step built to
   `text1b_tu2`; the list now includes text1a_c2, text1a_b, text1a_b_pre_rodata, sound and text1b_tu2.
 Per-step layer-2 body keys of every changed completed body: `q56/adopt/body_hashes.txt` (body_hashes.py).
 
+**Round 2 (2026-10-01, laneA) — generators fixed for every round-1 layer-2 finding (tmp/orch/q65_fixes.md), series
+NOT regenerated: two owner questions block step 15** (docs/grind/borderline.md 2026-10-01 q65-adoption entries).
+- Done in the generators: s03 commit body (dedup list, typedef -> gte.h, cites e5317cbf9 / 64c69153a); s08
+  func_800475A4 `MATRIX buf1, buf2`; s09/s11 Q67 banners + rodata-align §9/§7 rows; s13 sdata move as a unit
+  (.globl/.align/.type/.size), `.string`, escape-aware sizes, tests on real cc1 output, A.3b cc1psx calibration
+  (cc1psx_static_probe.*); s14 per-word names merged (g_anim_hit_flags[2] / g_anim_hit_data[2], D_800A344C[2] /
+  D_800A3454[2], D_800A35C8[2]; dead rows dropped; body changes func_800420D0, func_8004211C, func_80060C60);
+  s15 block ends at the last gp-reached object, (A1) orphan joins (D_800A3540/3544 -> tu1d, D_800A35D0 ->
+  text1b_b), ORPHAN-LEFT log (D_800A3530, 12-byte D_800A3534), truthful filler comments, A6 fewest pieces (DP),
+  overrun guard, externs of new statics dropped from every other file, generated commit body (s15_msg.txt);
+  s16 the four research tools + relocate_records keyed on the ledger directory; step.sh logs every step's
+  exe_sha1 and a per-object compare against the previous step (series_run.log).
+- **New evidence (lcomm_align_probe.sh/.out): Sony ASPSX 2.34 + PSYLINK place EVERY `.lcomm` static 4-aligned**
+  (1..16-byte statics), where maspsx aligns by size (8 -> 8, 2 -> 2, 1 -> 1). The s14 merged s32[2] arrays sit
+  at 4-mod-8 addresses: impossible under maspsx's model, fine under Sony's. chain.sh with only the 8 -> 4 change
+  (`B`) builds every step s08..s16 to the oracle; the full Sony model would also turn 46 sub-word statics
+  (subword.sh: A6 static pieces, halfword pairs such as D_800A33C8/D_800A33CA) into padding or array elements.
+  Which model to adopt is the open owner question; s12 is unchanged until it is answered.
+
 The series is generated, never hand-applied. Main moves under the lanes, so always regenerate on the
 then-current main. Commit ids per step: `q56/adopt/series_base.txt`. Patches: `q56/adopt/NN-*.patch`, against
 64c69153a.

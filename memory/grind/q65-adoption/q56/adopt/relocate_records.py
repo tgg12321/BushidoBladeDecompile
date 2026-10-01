@@ -47,14 +47,14 @@ if n:
 # grind state.json
 for sp in sorted(glob.glob("memory/grind/*/state.json")):
     s = open(sp).read()
-    m = re.search(r'"func":\s*"(\w+)"', s)
+    fn = os.path.basename(os.path.dirname(sp))   # the ledger directory names the function
     f = re.search(r'"file":\s*"(\w+)"', s)
-    if not m or not f:
+    if not f:
         continue
-    new = target(m.group(1), f.group(1))
+    new = target(fn, f.group(1))
     if new:
-        print(f"state: {m.group(1)}: {f.group(1)} -> {new}")
-        moved[m.group(1)] = (f.group(1), new)
+        print(f"state: {fn}: {f.group(1)} -> {new}")
+        moved[fn] = (f.group(1), new)
         s = s[:f.start()] + s[f.start():f.end()].replace(f.group(1), new) + s[f.end():]
         open(sp, "w", newline="\n").write(s)
 # canonical_asm_regions.json
