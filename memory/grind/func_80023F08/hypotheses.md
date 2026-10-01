@@ -12,3 +12,14 @@
   5. Can't be split into separate symbols; stage it: one session data model + m2c, then sessions per region.
 - DEPENDS: shares the record with func_80058580 and the L1-L4 cleanup. Calls func_800204C0 / func_800207C8 but isn't blocked by them.
 - ODDS/LANE: 10+ sessions; manual scaffold first, then the Grinder for the long residual (restart needs owner approval). ~25% to 0 [I]; large drop very likely.
+
+## [s2] 2026-10-01 laneC — next steps from the v18 scaffold (sandbox 0)
+1. Data model into include/code6cac.h: PracticeMenuRec members (PadState unk_24 replacing unk_22/2C/30/34 —
+   code6cac_b.c's 7 unk_2C/unk_30 reads become unk_24.held/.pressed; Pose at 0x290; u16 unk_288[2]; unk_320
+   Vec3i32; SVec4i16 unk_98; …), Pose / move-script record types, ScrPad+SPAD moved out of code6cac_b_tu2.c,
+   D_8008DA50/94/D8 as s16 arrays, D_800A3888 as Pose *[2] (+func_80020D70 respell, D_800A388C extern
+   retired), D_800A36D8 pointer-typed (+tu2:2774/2779 respell), func_80023F08(s32, PadState *) + 3 callers.
+2. Move-script record vs u16 dispatch-table view of func_80021424's return: decide an honest type (struct for
+   unk_50/unk_7C byte+halfword header; u16 * for dispatch indexing) — text1b.c uses `unk_50[8]` (laneB).
+3. Multi-write locals to eliminate or package (Ruling 11 / Q51): d (split), state (split), t (ternary?),
+   add / nf (ternary?), a (angle then angle+0x400), bits (switch + zeroing), flags (loop + normalisation).

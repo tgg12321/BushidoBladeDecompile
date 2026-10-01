@@ -25,3 +25,35 @@
 - [s1] No transplant shortcut: slog-kengo-dead-end memory records func_80023F08 (2983) has NO Kengo equivalent at function, sub-region, or callee-signature level. First-principles only.
 
 - [s1] Unread bulk regions for later sessions: 0x240A0-0x24414 and ~0x25430-0x26290 (the big state-machine middle with most singleton calls); everything read so far is ordinary field-compare/branch code in the style of matched cpu_* siblings.
+
+## [s2] 2026-10-01 laneC manual session — scaffold to sandbox 0 (local data model, not landable yet)
+- m2c regenerated: s2/m2c.c (`python3 tools/m2c/m2c.py --valid-syntax asm/funcs/func_80023F08.s`, s2/m2c.sh).
+- Floor history (sandbox --disable all --candidate, each banked as candidate.c at the time):
+  v1 508 (first typed draft) -> v4 357 (array/block-scoped stack locals) -> v8 268 -> v12 227 -> v15 52 -> v16 17 -> v17 3 -> v18 **0**
+  (2983/2983 insns, 0 source-level / 0 operand-only hunks). v18 == candidate.c at this commit.
+- v18 still uses a candidate-local mirror struct (R23 / Pose23 / Move23 / ScrPad23) and several casts; it is a
+  byte-exact SCAFFOLD, not a landable body. Data-model + policy cleanup is the next step (see hypotheses.md [s2]).
+- Mechanisms found (each measured in the full function):
+  * Frame: GCC 2.7.2 gives every BLKmode local 8-byte alignment and allocates address-taken scalars lazily, so the
+    target frame implies `Pose pose[2]` (0x18/0x9C), `Vec3i32 v[2]` (0x120/0x12C), `s32 pos[3]`, `s16 ang[4]`
+    (0x148; ang[0]/ang[1] = pose[0]/pose[1] facing), then &dir (0x150) / &sid (0x154) at first address-take, then
+    block-scoped dv[3]/tgt[3] (0x28 arm), MATRIX m1/m2 (rot arm), vc (31A arm).
+  * 0x84-byte Pose copies have the runtime (src|dst)&3 dual loop because Pose holds only 16-bit members
+    (alignment 2): plain struct assignment, not memcpy. `rec->unk_1F8 = v[1]`, LeafPos scratchpad copies,
+    `rec->unk_C8 = rec->unk_B8`, `rec->unk_24C = rec->unk_104`, `rec->unk_24 = *pad` are struct assignments too.
+  * Pointer-select loads (`D_8008E0BC` row, dispatch[c ? 0x17 : 0x18]): fold-const distributes `p + (c ? i : k)`
+    into `c ? p+i : p+k` with p SAVE_EXPR'd; `x < 4 ? x : 3` folds to MIN_EXPR instead (branchy index), so the
+    clamp must be spelled `x >= 4 ? 3 : x`.
+  * `obj = rec->unk_5E == 0 ? .. + 1 : 0` (ternary) keeps cse from carrying unk_58[1] into the add arms; the
+    if-form lets jump.c turn `add = unk_58[1]` into a store-flag AND mask.
+  * State local: two sites load unk_6A into an int local before the test (0x86=0x84 test, 8/0x22 test): the
+    target loads 6A before the 7A branch / rematerialises li 8 — only reproduced with an int local.
+  * 0x8C block: if/goto shape (`beqz h -> clear; j set`); COND-in-if gives bne/j.
+  * The two `40 >= A5 && 40 <= A6` range tests must not be textually identical (fold factors
+    `(A && R) || (B && R)` into `(A||B) && R`): second spelled `A6 >= 40`.
+  * 0x62|=8 block: gate1 then `if (DC==3 && arg0==1 && 384C==4) {opp checks} else if (gate2) {self checks}`,
+    0x10/0x20 parts written in both arms (cross-jump merges).
+  * Mask test `(ent[2] | ((u32)ent[3] << 16)) & (1 << cls)`: with an int OR combine rewrites to srav/andi; the
+    u32 OR keeps li 1 / sllv / and.
+  * Store-order (sched2) fixes: 0x23 arm B8,D8,1F8; 0x28 arm 104x,104z,72,74; D8 += 104 in x,y,z; 168 x,y,z;
+    `+= 1` (not ++) on unk_288; 15E/160/162 written per if/else arm (cross-jumped).
