@@ -218,3 +218,8 @@ evidence: memory/grind/func_80058580/evidence.md [s5] (13 -> 7) and [s6] (rev-58
 Question for the owner (plain language): "Twice the code divides a value by 16 the 'fixed-point' way. Written as `x >> 4`, our compiler merges the shift into the load and produces different bytes; written as `(x * 0x100) >> 12` (multiply by the 4.12 constant for 1/16, then drop 12 bits, the same pattern the function already uses for this value) it produces exactly the shipped bytes. Unlike Q45 nothing cancels out: it is one ordinary fixed-point multiply. Is that acceptable, annotated, or does Q45 cover it?"
 options: (A, recommended) Allow as ordinary fixed-point C at these two sites, with a comment naming the 4.12 factor and the measured cse fold. (B) Treat as Q45-class: refuse; the function stays open on these two sites (6 words).
 recommendation: (A). It is a real fixed-point scaling the same function uses for this field, not a cancellation; disclosed at the site.
+
+## 2026-10-01 — func_80058580 (a)/(b)/(c), func_8005C8A8 — owner rulings Q74-Q77 — resolution
+category: resolution
+evidence: docs/grind/owner-rulings-2026-09-26.md batch 35; docs/grind/decisions.md 2026-10-01 OWNER RULING Q74-Q77.
+disposition taken: the three 2026-10-01 func_80058580 policy-questions are SPENT (Q74 (a) allowed narrowly, Q75 (b) Q34 extended, Q76 (c) allowed at the two sites); the 2026-10-01 func_8005C8A8 policy-question is closed REFUSED (Q77: Q45 stands for options A and C). Each landing still needs its own fresh layer-2.

@@ -1074,3 +1074,15 @@ restore store `p_old = prev;`; 2/175 without the store, 20/175 with two separate
 the standing bans: Ruling 11 (B)(1) (a Ruling 11 variable may carry no dead write) and the Ruling 4 / Ruling 1
 multi-WRITE carrier ban (a carrier whose extra write is dead). No rule text changes. func_800770B8 stays
 INCLUDE_ASM and active; its ordinary-C search continues and is re-measured after the Q65 adoption lands.
+
+## 2026-10-01 — OWNER RULING — Q74-Q77: func_80058580 stale-read work variable, Q34 constant start, fixed-point rescale GRANTED; func_8005C8A8 cancellation forms REFUSED
+
+Thirty-fifth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 35). Q74 "Allow narrowly": in
+func_80058580 only, work3 may reproduce the original's read-before-write at the 0x394-slot switch ($s3 read at
+0x80059D70/0x80059DB4 with no write on the path 0x80059D18 -> 0x80059D6C -> 0x80059DB0), the path and addresses
+disclosed in its comment, that read never satisfying (B)(1), rest of the Ruling 11 package and a fresh layer-2. Q75 "Extend
+Q34": a Ruling 11 value may be one constant initial write plus one plain copy, both shown in the target, with the
+Q34 receipts. Q76 "Allow": at func_80058580's two `lh; sra 4` sites (0x8005AB34, 0x8005ACCC) `0x200 - ((x * 0x100) >> 12)` is ordinary 4.12
+fixed-point C, commented. Q77 "keep refused": Q45 covers the sibling end-pointer and layout-struct end-minus-start
+forms for func_8005C8A8; it stays INCLUDE_ASM/active at 33 and is worked for a new mechanism. Rule text:
+.claude/rules/reused-local-necessity.md (Q74, Q75), .claude/rules/ordinary-c-judge-decidable.md (Q76, Q77).

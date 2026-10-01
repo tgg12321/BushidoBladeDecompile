@@ -80,5 +80,16 @@ multi-write local outside Rulings 5-12 / Q51; nothing on a banned list or refuse
 ruling. The run-scoped orchestrator-decision and rotation clauses of Rulings 13/14 have
 expired.
 
+## Owner rulings on constant spellings (2026-10-01)
+
+- **Q76 — fixed-point rescale, func_80058580 only.** At its two `lh; sra 4` sites (target 0x8005AB34 and 0x8005ACCC),
+  `0x200 - ((x * 0x100) >> 12)` (4.12 multiply by 1/16, the function's own `* k >> 12` idiom on
+  that field) is admitted for `0x200 - (x >> 4)`, with a comment at each site naming the 4.12
+  factor and the measured cse shift fold. Nothing cancels; not a precedent elsewhere.
+- **Q77 — Q45 stands for func_8005C8A8.** Neither the sibling end-pointer form
+  (`end_off = arg2 + 0x4F0; size = end_off - arg2;`) nor end-of-chunk minus start through a
+  layout struct (`(u8 *)((T *)arg2 + 1) - (u8 *)arg2`) is admitted: both compute a constant by
+  cancellation. The function stays open for a new mechanism.
+
 Related: [[no-new-park-categories]] · [[dead-store-fake-exception]] · [[judge-sole-gate]] ·
 [[review-discipline-before-commit]] · [[staged-value-reused-variable]]

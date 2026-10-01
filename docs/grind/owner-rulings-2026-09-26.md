@@ -759,3 +759,32 @@ Question, verbatim: "Q73: func_8002BC68 and func_8002BEA0 read 8 words inside th
 Owner chose: **"Allow narrowly, Q63-style (Recommended)"** — option text: "Only for these 8 words in these 2 functions, and only if dumps prove every single-object spelling fails for this compiler reason. Keep the separate per-word declarations, each annotated FAKE with the evidence. Everything else about the table goes through the struct."
 Other options offered: "Reopen both as asm" — "Revert func_8002BC68 and func_8002BEA0 to INCLUDE_ASM and put them back in the queue (Q37 fallback). No overlap is allowed; the functions get re-solved later."; "Keep searching first" — "Hold the whole combined landing while the lanes look harder for a single-object spelling, then decide."
 The rule text is .claude/rules/no-new-park-categories.md § Owner ruling 2026-09-30 — the practice-menu per-word reads (Q73).
+
+# Owner exchange 2026-10-01 (thirty-fifth batch, AskUserQuestion) — VERBATIM RECORD
+Context: the three-lane run's top items each carried open borderline.md policy questions (2026-10-01 entries for
+func_80058580 (a)/(b)/(c) and func_8005C8A8). The orchestrator put them to the owner, who was present, with a
+recommendation each.
+
+## Q74 — func_80058580 (a): one work variable whose stale value the original reads (GRANTED, narrow)
+Question, verbatim: "func_80058580 (AI routine): on one rare path, the original code branches on a scratch variable it never set on that path, so it uses whatever an earlier, unrelated calculation left behind. Our C reproduces that only by sharing one scratch variable (`work3`) across those calculations, which is what the shipped bytes do. The reused-variable rule (Ruling 11) can't certify it, because that stale read ties nine of the variable's jobs together. Allow the shared variable for this function, with a comment documenting the read-before-write?"
+Owner chose: **"Allow narrowly (Recommended)"** — option text: "work3 lands as one shared variable; the comment names the path and addresses; full reused-variable paperwork and a fresh review. No other C reproduces this."
+Other option offered: "Refuse" — "Function stays assembly and open; there is no other known C spelling for this behavior."
+The rule text is .claude/rules/reused-local-necessity.md § Owner ruling Q74.
+
+## Q75 — func_80058580 (b): Q34 copy clause with a constant start value (GRANTED)
+Question, verbatim: "func_80058580: a scratch variable holds a running maximum: start at -1, then copy in each better score. The copy rule (Q34) allows one plain copy and nothing else; the constants rule (Q20) needs two different constants. This ordinary 'start at -1, keep the best' pattern falls between them. Extend Q34 to allow one constant start value plus one copy when the original bytes show both?"
+Owner chose: **"Extend Q34 (Recommended)"** — option text: "Allow one constant start + one copy, with the usual Q34 evidence. Plainest loop-maximum code; nothing hidden."
+Other option offered: "Keep refused" — "The value must be split or respelled; splitting it currently costs 23 instructions, and the search continues."
+The rule text is .claude/rules/reused-local-necessity.md (C) *Constant start + copy (Q75)*.
+
+## Q76 — func_80058580 (c): fixed-point rescale vs Q45 (GRANTED, two sites)
+Question, verbatim: "func_80058580: twice the code divides a value by 16 the fixed-point way. Written as `x >> 4`, our compiler merges the shift into the load and produces different bytes. Written as `(x * 0x100) >> 12` (multiply by the 4.12 fixed-point constant for 1/16, then drop 12 bits, the same pattern this function already uses on this value), it produces exactly the shipped bytes. Nothing cancels out, unlike Q45. Acceptable with a comment at each site?"
+Owner chose: **"Allow (Recommended)"** — option text: "Ordinary fixed-point C at these two sites, with a comment naming the 4.12 factor and the compiler fold it avoids."
+Other option offered: "Treat as Q45, refuse" — "Those two sites stay open (6 instructions off)."
+The rule text is .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on constant spellings (Q76).
+
+## Q77 — func_8005C8A8: the 0x4F0 slot after Q45 (REFUSED; Q45 stands)
+Question, verbatim: "func_8005C8A8 returns a fixed size, 0x4F0, which the original kept in a stack slot from entry to exit. You refused 'start + 0x4F0 - start under another name' (Q45). Every other route has been measured. Eight finished sibling functions in the same file write `end = start + size` at entry and `return end - start`. The exact matching forms are (A) that end-pointer variable with the subtraction moved to entry, or (C) 'end of the chunk minus its start', using a struct describing the chunk's real layout (15 tiles + sprite area + draw-mode space = 0x4F0). Both are still a constant computed by cancellation. The worker recommends B."
+Owner chose: **"B: keep refused (Recommended)"** — option text: "Q45 stands; the function stays open at 33 instructions off, and work continues only if a new mechanism turns up."
+Other options offered: "A: sibling end-pointer" — "`end_off = arg2 + 0x4F0; size = end_off - arg2;` at entry, annotated with a citation of the eight siblings, plus a fresh review."; "C: struct end-minus-start" — "`size = (u8*)((Buf*)arg2 + 1) - (u8*)arg2;` with the struct built from the function's own accesses, annotated, plus a fresh review."
+The rule text is .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on constant spellings (Q77).

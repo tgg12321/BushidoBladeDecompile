@@ -36,6 +36,11 @@ For a fresh multi-write local none of Rulings 5-10 admits (a Q51-cited SOTN reus
     has the register move (`addu/or rd,rs,$zero`) at that position, cited; EVERY other value of
     the variable is a real computation; at most one copy-clause value per variable; the fresh
     local and the no-copy body are banked and measured.
+  - *Constant start + copy (Q75, 2026-10-01)*: a value may instead be exactly one constant
+    initial write plus one Q34 plain copy (e.g. a running maximum: `best = -1;` before the loop,
+    `best = score;` on improvement), both shown in the target at their positions (cite the
+    constant load(s) and the move), with every other Q34 receipt; it is that variable's one
+    copy-clause value.
   Constants-only, copies of params (Ruling 12), staging chains (F1) stay refused.
 - **(D) Dump proof of necessity.** (1) Allocation dumps (`.lreg`, `.greg`, `.flow`, and/or the
   instrumented cc1's `BB2_*_DEBUG`) for the reuse and the one-variable-per-value spellings,
@@ -57,6 +62,17 @@ For a fresh multi-write local none of Rulings 5-10 admits (a Q51-cited SOTN reus
 - **(F)** Inline comment: holds several values, names them, cites this ruling and the ledger.
 - **(G)** A fresh layer-2 PASS walking (A)-(H); a Judge PASS is not enough (manual path).
 - **(H)** Everything else judged normally.
+
+**Owner ruling Q74 (2026-10-01) — func_80058580 only: an original read-before-write.** The
+target's 0x394-slot switch reads $s3 (`sltiu` 0x80059D70, `sll` 0x80059DB4) with no write on
+the path p[0x39C] == 1, opponent state neither 0x19 nor 0x1A (0x80059D18 -> 0x80059D6C ->
+0x80059DB0): the stale value of earlier, unrelated work. The one shared work variable
+reproducing that read (work3; the name may change under (E)) may land under Ruling 11 although
+that read joins several of its values. Conditions: the (F) comment names the path and these
+addresses; the stale read does not satisfy (B)(1) (every write still has a read on some other
+path); values are grouped by Ruling 11's definition with that one read excluded, and
+(C)(1)/(C)(3)/(D) are met on that grouping (no other read may be excluded); every other prong
+applies unchanged; fresh layer-2. Not a precedent for any other read or function.
 
 ## Ruling 12 — a local copy of a stack-passed parameter (2026-09-26)
 
