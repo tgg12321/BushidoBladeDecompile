@@ -10,9 +10,9 @@
 
 > Entries before 2026-10-01 rotated out; full history + any `decisions.md:N` citation resolves at git tag pre-slim-2026-10-01.
 
-## Standing owner rulings — index (rotated 2026-10-01)
+## Standing owner rulings — index (tools/rotate_grind_logs.py)
 
-One line per OWNER RULING/DECISION entry still present at the rotation (the 2026-09-28 cleanup had already deleted the outdated ones). The operative text is the cited `.claude/rules/` file; the full entry resolves at the tag line given. Later rulings (ruling Q-numbers) are in docs/grind/owner-rulings-2026-09-26.md.
+One line per OWNER RULING/DECISION entry rotated out of this file, pointing at its line in the anchor commit or tag named. The operative text is the cited `.claude/rules/` file; later verbatim owner answers are in docs/grind/owner-rulings-2026-09-26.md.
 
 - 2026-07-13 18:05 — func_80037540 — OWNER RULING: oversized-locals family carve-out — GRANTED — `pre-slim-2026-10-01:docs/grind/decisions.md:443`
 - 2026-07-14 13:45 — func_8003B3A4 — OWNER RULING (Trenton, recorded by operator) — SANCTIONED — `pre-slim-2026-10-01:docs/grind/decisions.md:501`
@@ -95,21 +95,17 @@ One line per OWNER RULING/DECISION entry still present at the rotation (the 2026
 - 2026-09-02 — OWNER RULING — foreclosed-bucket disposition: `_SANCTIONED_UNWRITTEN_PADS` row for func_80030580, maspsx label-nop opt-in for func_800... — `pre-slim-2026-10-01:docs/grind/decisions.md:21023`
 - 2026-09-03 — func_80033550 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:21527`
 - 2026-09-03 — func_80062020 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:21801`
-- 2026-09-03 — func_80062020 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:21854`
-- 2026-09-03 — func_80062020 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:22016`
 - 2026-09-04 — get_alarm — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:22385`
 - 2026-09-04 — OWNER RULING — foreclosed-bucket re-evaluation: 3 unparks with named probes, 3 foreclosures affirmed, 4 driver/engine defects ordered... — `pre-slim-2026-10-01:docs/grind/decisions.md:22421`
 - 2026-09-04 — OWNER RULING — `main`: the per-function maspsx prefill-label gate is a FIDELITY gate; build it (spends the 2026-09-04 borderline.md po... — `pre-slim-2026-10-01:docs/grind/decisions.md:22884`
 - 2026-09-05 — func_80034F88 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:23408`
 - 2026-09-05 — func_80022F34 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:23775`
-- 2026-09-05 — func_80022F34 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:24012`
 - 2026-09-05 — func_800480C0 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:24204`
 - 2026-09-06 — func_8004473C — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:24411`
 - 2026-09-06 — _addque2 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:24463`
 - 2026-09-06 — func_8002C61C — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:24663`
 - 2026-09-07 — foreclosed-bucket review (owner-directed, all 4 items) — 3 UNPARKED, 1 CLOSED — `pre-slim-2026-10-01:docs/grind/decisions.md:25148`
 - 2026-09-07 — OWNER RULING (delegated: "research those pending items and follow through with your best judgment") — `-msoft-float` ADOPTED as canoni... — `pre-slim-2026-10-01:docs/grind/decisions.md:25287`
-- 2026-09-08 — func_800204C0 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:25470`
 - 2026-09-08 — OWNER RULING — rotation replaces foreclosure (`.claude/rules/rotation-not-foreclosure.md`) — `pre-slim-2026-10-01:docs/grind/decisions.md:25710`
 - 2026-09-08 — func_800335D8 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:26042`
 - 2026-09-10 — func_80018094 — JUDGE ESCALATE on final call (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:26246`
@@ -117,7 +113,6 @@ One line per OWNER RULING/DECISION entry still present at the rotation (the 2026
 - 2026-09-11 — _spu_gcSPU — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:26641`
 - 2026-09-14 — func_80018094 — JUDGE ESCALATE on final call (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:26678`
 - 2026-09-14 — maspsx `.L`-label load-delay arm — OWNER RULING (substrate / global maspsx behavior change) — `pre-slim-2026-10-01:docs/grind/decisions.md:26713`
-- 2026-09-14 — func_80018094 — JUDGE ESCALATE on final call (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:26789`
 - 2026-09-15 — OWNER RULING — the candidate-path no-progress tripwire + a registry row for func_80018094 — `pre-slim-2026-10-01:docs/grind/decisions.md:26826`
 - 2026-09-15 — func_80063BD0 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:26945`
 - 2026-09-15 — _clr — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait) — `pre-slim-2026-10-01:docs/grind/decisions.md:27013`
@@ -136,7 +131,6 @@ One line per OWNER RULING/DECISION entry still present at the rotation (the 2026
 - 2026-09-25 — OWNER RULING — scorer: header-exact GTE macro statements are scored as written (`.claude/rules/inline-asm-policy.md`) — `pre-slim-2026-10-01:docs/grind/decisions.md:28986`
 - 2026-09-25 — OWNER RULING — Ruling 9 amendment (b′): the layout the code assumes (`.claude/rules/ordinary-c-judge-decidable.md`) — `pre-slim-2026-10-01:docs/grind/decisions.md:29039`
 - 2026-09-25 — OWNER RULING — scorer amendment `0(reg)` ≡ `(reg)` (`.claude/rules/inline-asm-policy.md`) — `pre-slim-2026-10-01:docs/grind/decisions.md:29099`
-- 2026-09-25 — OWNER RULING — func_800288C8 owner-cluster row: none now; granted when a body passes review (`.claude/rules/inline-asm-policy.md`) — `pre-slim-2026-10-01:docs/grind/decisions.md:29140`
 - 2026-09-25 — OWNER RULING — Ruling 9 (b′)(3) clarification: past-the-end into unreferenced bytes (`.claude/rules/ordinary-c-judge-decidable.md`) — `pre-slim-2026-10-01:docs/grind/decisions.md:29175`
 - 2026-09-25 — oracle compiler: narrow PLUS->IOR condition ADOPTED (per owner ruling bcdc1648e) — `pre-slim-2026-10-01:docs/grind/decisions.md:29237`
 - 2026-09-26 — OWNER RULING — rotate only when truly stuck across multiple sessions (`.claude/rules/rotation-not-foreclosure.md` Ruling 4) — `pre-slim-2026-10-01:docs/grind/decisions.md:29276`
@@ -177,7 +171,6 @@ One line per OWNER RULING/DECISION entry still present at the rotation (the 2026
 - 2026-09-29 — OWNER RULING — one cast store on a local array (`.claude/rules/no-new-park-categories.md` § aggregate merge, "Amendment: one cast stor... — `pre-slim-2026-10-01:docs/grind/decisions.md:30202`
 - 2026-09-30 — OWNER RULING — the per-function maspsx COMMON gate is a cheat (Q9/Q15/Q18 withdrawn) (`.claude/rules/maspsx-gate-lists.md`) — `pre-slim-2026-10-01:docs/grind/decisions.md:30231`
 - 2026-09-30 — OWNER RULING — object-relative rodata alignment; per-file align sed retired (`.claude/rules/rodata-object-alignment.md`) — `pre-slim-2026-10-01:docs/grind/decisions.md:30270`
-- 2026-09-30 — OWNER DECISION — maspsx `.L`-label mflo-hazard fix declined (func_80058580) — `pre-slim-2026-10-01:docs/grind/decisions.md:30305`
 - 2026-09-30 — OWNER RULING — maspsx `.L`-label mflo-hazard fix adopted (supersedes the same-day decline) — `pre-slim-2026-10-01:docs/grind/decisions.md:30323`
 - 2026-09-30 — OWNER RULING — Q33 union word views on struct members (`.claude/rules/no-new-park-categories.md` § aggregate merge, amendment to prong... — `pre-slim-2026-10-01:docs/grind/decisions.md:30350`
 - 2026-09-30 — OWNER RULING — duplicated calls into arms, byte-identical only (`.claude/rules/duplicated-statement-into-arms.md` § Duplicated calls) — `pre-slim-2026-10-01:docs/grind/decisions.md:30362`
@@ -195,7 +188,6 @@ One line per OWNER RULING/DECISION entry still present at the rotation (the 2026
 - 2026-09-30 — OWNER RULING — Q33 trailing alignment padding (`.claude/rules/no-new-park-categories.md` § aggregate merge, amendment to prong (d), Tr... — `pre-slim-2026-10-01:docs/grind/decisions.md:30511`
 - 2026-09-30 — OWNER RULING — Ruling 11 (D)(2) accepts any named compiler pass (`.claude/rules/ordinary-c-judge-decidable.md` § Ruling 11 (D), Any na... — `pre-slim-2026-10-01:docs/grind/decisions.md:30548`
 - 2026-09-30 — OWNER RULING — the per-file gp model (`.claude/rules/per-file-gp-model.md`) — `pre-slim-2026-10-01:docs/grind/decisions.md:30558`
-- 2026-09-30 — OWNER RULING — func_800770B8 reused local + restore store REFUSED (no rule change) — `pre-slim-2026-10-01:docs/grind/decisions.md:30615`
 - 2026-09-30 — OWNER RULING — Q67: per-file static blocks, 4 merges, exact-size fillers (Q65 scope, part 1) — `pre-slim-2026-10-01:docs/grind/decisions.md:30626`
 - 2026-09-30 — OWNER RULING — Q68: maspsx models cc1psx's .sdata placement (Q65 scope, part 2) — `pre-slim-2026-10-01:docs/grind/decisions.md:30635`
 - 2026-09-30 — Q65 per-file gp model: amendments A1-A3 (owner rulings Q67 and Q68) — `pre-slim-2026-10-01:docs/grind/decisions.md:30646`

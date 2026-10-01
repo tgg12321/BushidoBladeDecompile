@@ -17,9 +17,9 @@ the incident is resolved with `python3 tools/resolve_tooling_incident.py` — `-
 `--false-positive "<why>"` (then tighten the signature), or `--defer "<why>"` (logged
 known-unfixed). Adding a signature is itself a valid permanent fix. Tests:
 `tools/hooks/test_tooling_error_guard.py`, `tools/hooks/test_tooling_incident_e2e.sh`.
+Rotate with `python3 tools/rotate_grind_logs.py`.
 
-Entries before 2026-09-01 (other than DEFERRED) rotated out 2026-10-01; full history at git
-tag pre-slim-2026-10-01.
+> Entries before 2026-09-01 (other than DEFERRED) rotated out; full history resolves at git tag pre-slim-2026-10-01.
 
 ---
 
