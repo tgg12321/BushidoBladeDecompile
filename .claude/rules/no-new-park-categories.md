@@ -1430,6 +1430,67 @@ symbol pair. For the two bytes at 0x800A37D2 / 0x800A37D3 only:
    occurrence stays refused and returns only through Q55's own route. Record: docs/grind/decisions.md
    2026-09-30 OWNER RULING — the D_800A37D2 / D_800A37D3 byte pair.
 
+## Owner ruling 2026-09-30 — the practice-menu per-word reads (thirty-fourth batch, Q73), conditional
+
+**Question and answer** (record: docs/grind/owner-rulings-2026-09-26.md, thirty-fourth batch, Q73: the question,
+verbatim, and the options not chosen). Owner (Trenton) chose, verbatim: **"Allow narrowly, Q63-style
+(Recommended)"**, whose text is: "Only for these 8 words in these 2 functions, and only if dumps prove every
+single-object spelling fails for this compiler reason. Keep the separate per-word declarations, each annotated FAKE
+with the evidence. Everything else about the table goes through the struct."
+
+**Rule text.** The author's narrowing, not the owner's words. Prong (c)'s one-handle rule and the F4 refusal stand
+for every other storage location and symbol. For these eight words of `g_practice_menu_table` only (two 1,100-byte
+records): `D_80101FA0`, `D_80101FA8`, `D_801023EC`, `D_801023F4`, `D_80101FBC`, `D_80101FC4`, `D_80102408`,
+`D_80102410`:
+
+Definitions. "These reads" are only the reads the target makes of one of the eight words through that word's
+own absolute `%hi`/`%lo` address in `func_8002BC68` or `func_8002BEA0`, each cited by instruction address in the
+ledger. A spelling "reaches the target" when the function scores `sandbox --disable all` 0 and the full build's
+SHA1 equals the oracle.
+
+1. **Condition precedent — every single-object spelling fails, for the named reason.** Before anything spends
+   this ruling, each function's ledger (`memory/grind/func_8002BC68/`, `memory/grind/func_8002BEA0/`) banks, for
+   each of these minimum single-object spellings of these reads, its `sandbox --disable all` score and a dump
+   (with command lines) showing that it misses for the reason the question put to the owner: "the compiler
+   notices they share a base and reuses a register". Stated precisely: the single-object spelling reaches the
+   words relative to one shared base (a constant symbol address or a base register), so the compiler reuses
+   that base, while the target reaches each word through its own absolute `%hi`/`%lo` address. The forms and
+   their dumps:
+   (a) `g_practice_menu_table[k].field` directly: the `.cse` dump (cc1 `-ds`) showing the cause, cse relating
+       the constant addresses as offsets of one symbol (`use_related_value`, `tools/gcc-2.7.2/cse.c`:1408-1429,
+       1781), and also the final-addressing evidence every form needs (below);
+   (b) the read through the typed base pointer, declared exactly `PracticeMenuRec *t2_base =
+       g_practice_menu_table;` with `t3_base` likewise (`t2_base + 1`, or `g_practice_menu_table + 1`, matching
+       the target), read as `t2_base->field` / `t3_base->field`, with every other `t2_base`/`t3_base` cast in
+       the function converted to fields;
+   (c) a per-record pointer local, `PracticeMenuRec *r = &g_practice_menu_table[k]; r->field`.
+   Final addressing, for all three forms: the `.greg` dump (cc1 `-dg`) or the final `.s`, showing that the read
+   at each cited target instruction address is still addressed off the shared base register where the target
+   uses an absolute `%hi`/`%lo` address. A `.cse` dump alone does not show this: reload can still fold an
+   unallocated pseudo with a `reg_equiv_constant` back into an absolute address after cse
+   (`tools/gcc-2.7.2/reload1.c`:586, 2829-2834).
+   A miss caused by anything other than this shared-base relation does not count toward this condition. Every
+   single-object spelling a reviewer proposes is measured and banked the same way (owner ruling Q31's
+   mechanism + search standard, as in [[ordinary-c-judge-decidable]] Ruling 11 (D)(3)): a banked spelling that
+   misses is evidence, not a FAIL ground, and only a spelling that reaches the target defeats the ruling. If
+   one does, the ruling lapses for that function and that spelling is used.
+2. **The admitted form.** Each of the eight words keeps its own per-word declaration, overlapping the table, and
+   is read by that name only at these reads. Each per-word declaration carries a
+   `/* FAKE: ... */` annotation naming this ruling and the ledger file that holds the (1) evidence.
+3. **Everything else goes through the struct.** Every other access to the table, in these two functions and in
+   every other function, including writes to these eight words and any read of them that is not one of these
+   reads, uses `g_practice_menu_table`. No function other than these two may newly read the per-word names;
+   the existing readers convert under this route. Six landed C functions read them today: `func_8001E878`,
+   `func_8001F888`, `func_8001C8DC`, `func_8001EA84` (`code6cac_tu2.c`), `func_8003C9A4` and
+   `func_8003CE18` (`code6cac_c2.c`). The PracticeMenuRec cleanup series converts them to struct members, each
+   with its own layer-2. A Q73 landing in `func_8002BC68`/`func_8002BEA0` does not certify them and does not
+   wait for them. If any of them cannot convert byte-neutrally, that is a new owner question; this ruling does
+   not extend to it. The asm `func_8002AB08` references `D_80101FBC`; its symbol row stays as an alias until
+   that function is C.
+4. **Nothing else.** No other word, function or construct may cite this ruling. The functions land with sandbox 0,
+   oracle SHA1 and their own fresh layer-2 PASS. Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — the
+   practice-menu per-word reads (Q73).
+
 ## Owner ruling 2026-09-30 — SOTN precedent suffices (twenty-fourth batch, Q50)
 
 Context (record): the orchestrator flagged a tension between Q48

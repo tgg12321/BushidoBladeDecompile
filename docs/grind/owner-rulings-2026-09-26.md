@@ -749,3 +749,13 @@ Question, verbatim: "Q72: the big text1b merge (Q67's four files) also has to ab
 Owner chose: **"Include it (Recommended)"** — option text: "Clarify that a data-only file lying between members of an approved group joins that group. Its bytes are already in the right place; this just puts them in the right source file."
 Other option offered: "Don't include" — "Then that merge can't land, and the related statics stay as they are today."
 The rule text is .claude/rules/per-file-gp-model.md (A7).
+
+# Owner exchange 2026-09-30 (thirty-fourth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: the combined landing that carries the square-root-table fix also changes func_8002BC68 and func_8002BEA0.
+The orchestrator put the question to the owner with a recommendation.
+
+## Q73 — per-word declarations overlapping the practice-menu table
+Question, verbatim: "Q73: func_8002BC68 and func_8002BEA0 read 8 words inside the two 1,100-byte practice-menu records (e.g. D_80101FA0 = record 0 + 0xD8), each by its own absolute address. They also use a pointer to the table base for other accesses. If we write those reads as fields of the one table object (g_practice_menu_table[0].field), the compiler notices they share a base and reuses a register, which adds 1 instruction and changes registers. So the original most likely read them through separately declared variables that overlap the table: the same 'two names for one storage' pattern you allowed narrowly in Q63 for the D_800A37D2/D3 byte pair. These two functions have to change anyway (the square-root-table fix touches them), so they can't be left out of the current landing. What should we do?"
+Owner chose: **"Allow narrowly, Q63-style (Recommended)"** — option text: "Only for these 8 words in these 2 functions, and only if dumps prove every single-object spelling fails for this compiler reason. Keep the separate per-word declarations, each annotated FAKE with the evidence. Everything else about the table goes through the struct."
+Other options offered: "Reopen both as asm" — "Revert func_8002BC68 and func_8002BEA0 to INCLUDE_ASM and put them back in the queue (Q37 fallback). No overlap is allowed; the functions get re-solved later."; "Keep searching first" — "Hold the whole combined landing while the lanes look harder for a single-object spelling, then decide."
+The rule text is .claude/rules/no-new-park-categories.md § Owner ruling 2026-09-30 — the practice-menu per-word reads (Q73).
