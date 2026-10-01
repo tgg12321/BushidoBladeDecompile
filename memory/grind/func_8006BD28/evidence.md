@@ -31,8 +31,9 @@ callee names) = 46.
 Every inline spelling measured 31 (same diff): `rejected/c_inline-31.c`
 (`header + 0xC + j * 8`), `c_paren-31.c` (`(header + 0xC) + j * 8`), `c_ptr-31.c` (u8 * cast form),
 `c_arr-31.c` (`&((s32 (*)[2])(header + 0xC))[j]`).
-Mechanism (loop dumps `cc1 -da`, build flags): in one expression, fold-const.c:3685-3703
-(`associate:` / `split_tree`) moves the constant out: `(header + j*8) + 12`. loop.c then sees giv
+Mechanism (loop dumps `cc1 -da`, build flags): in one expression,
+tools/gcc-2.7.2/fold-const.c:3685-3737 (`associate:` / `split_tree`, "return VAR +- (ARG1 +- CON)")
+regroups it as `header + (j*8 + 12)`. loop.c then sees giv
 `mult 8 add 12` (c_inline `.loop`: "Insn 149: giv reg 105 ... mult 8 add 12", "giv at 149 reduced
 to (reg:SI 123)"), the reduced induction register takes a callee-saved reg (123 in 18), and the
 hoisted constant 8 loses its register (rematerialized `li` in the loop). With `cells`, the giv is

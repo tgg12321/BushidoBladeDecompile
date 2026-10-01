@@ -2,14 +2,15 @@
 extern u8 *D_800A36E0;
 extern u8 *D_800A36E4;
 void func_8006BD28(s32 arg0, s32 arg1, S_6A880 *arg2, s32 arg3) {
-    /* the sheet-header table at +0x20 of the D_800A34FC record's +0x24 block:
-       two sheet pointers per arg0 */
+    /* sprite-sheet header pointers, two per arg0: the table that word +0x20 of
+       the block at *(D_800A34FC + 0x24) points to */
     s32 *sheets;
     /* FAKE: named intermediate (no-new-park-categories entry 6): the sheet's
-       8-byte cells start at header + 0xC. Spelled inline, fold-const.c:3685-3703
-       reassociates header + 0xC + j * 8 into (header + j * 8) + 0xC and loop.c
-       strength-reduces the j * 8 + 0xC giv into its own callee-saved register;
-       the target adds 0xC first and keeps j << 3 per iteration.
+       8-byte cells start at header + 0xC. Spelled inline, fold
+       (tools/gcc-2.7.2/fold-const.c:3685-3737) reassociates header + 0xC + j * 8
+       into header + (j * 8 + 0xC) and loop.c strength-reduces that giv into its
+       own callee-saved register; the target adds 0xC first and recomputes
+       j << 3 each iteration.
        Receipts: memory/grind/func_8006BD28/evidence.md */
     s32 cells;
     s32 i, j, n;
@@ -23,8 +24,9 @@ void func_8006BD28(s32 arg0, s32 arg1, S_6A880 *arg2, s32 arg3) {
     for (i = 0; i < 2; i++) {
         /* FAKE: operand grouping (or-tree-shape-shift carve-out): with
            (sheets + i) + arg0 * 2, loop.c hoists arg0 * 8 alone (the target's
-           prologue sll + spill at sp+0x20); sheets[arg0 * 2 + i] and
-           (sheets + arg0 * 2)[i] measured 33 and 51.
+           prologue sll + spill at sp+0x20) and keeps i * 4 + sheets per
+           iteration; sheets[arg0 * 2 + i] and (sheets + arg0 * 2)[i] measured
+           33 and 51.
            Receipts: memory/grind/func_8006BD28/evidence.md */
         arg2->header = *(sheets + i + arg0 * 2);
         if (arg2->header == -1) return;
