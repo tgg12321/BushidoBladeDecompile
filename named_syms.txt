@@ -2443,7 +2443,7 @@ g_motion_state_flag_at_25                               = 0x800F1134;  /* 5 refs
 g_motion_state_flag_at_26                               = 0x800F1138;  /* 5 refs */
 g_text1b_gte_rgb_lookup_1024                                     = 0x800F2B70;  /* 10 refs */
 g_disp_state_buf                                     = 0x800F33D8;  /* 16 refs */
-g_camera_view_state                                     = 0x800FF558;  /* 8 refs */
+D_800FF558                                     = 0x800FF558;  /* 8 refs */  /* data-wave 2026-09-30: was g_camera_view_state */
 _svm_pg                                     = 0x800FF6A0;  /* 5 refs */  /* data-wave 2026-09-07: was g_voice_state_ptr */
 
 /* === Bulk text1b/text1b_b unnamed batch (2026-05-17) === */
