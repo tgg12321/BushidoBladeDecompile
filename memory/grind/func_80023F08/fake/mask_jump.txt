@@ -1,0 +1,150 @@
+# cc1 -dj/-ds/-dc RTL at the command-list mask test: mcand = (ent[2] | ((u32)ent[3] << 16)) & (1 << cls)
+# (unsigned AND, same RTL as the landing's u32 mask), mnc = int spelling (ent[2] | (ent[3] << 16)) & (1 << cls).
+=== mcand jump
+(insn 870 868 871 (set (reg:SI 380)
+        (const_int 1)) -1 (nil)
+    (nil))
+
+(insn 871 870 872 (set (reg:SI 379)
+        (ashift:SI (reg:SI 380)
+            (reg:SI 377))) -1 (nil)
+    (nil))
+
+(insn 872 871 874 (set (reg:SI 381)
+        (and:SI (reg:SI 375)
+            (reg:SI 379))) -1 (nil)
+    (nil))
+
+(jump_insn 874 872 877 (set (pc)
+        (if_then_else (eq:SI (reg:SI 381)
+                (const_int 0))
+            (label_ref 1172)
+            (pc))) 221 {branch_zero} (nil)
+    (nil))
+
+=== mcand cse
+(insn 870 868 871 (set (reg:SI 380)
+        (const_int 1)) 159 {movsi_internal2} (nil)
+    (expr_list:REG_EQUAL (const_int 1)
+        (nil)))
+
+(insn 871 870 872 (set (reg:SI 379)
+        (ashift:SI (reg:SI 380)
+            (reg:SI 377))) 181 {ashlsi3} (nil)
+    (nil))
+
+(insn 872 871 874 (set (reg:SI 381)
+        (and:SI (reg:SI 375)
+            (reg:SI 379))) 92 {andsi3} (nil)
+    (nil))
+
+(jump_insn 874 872 877 (set (pc)
+        (if_then_else (eq:SI (reg:SI 381)
+                (const_int 0))
+            (label_ref 1172)
+            (pc))) 221 {branch_zero} (nil)
+    (nil))
+
+=== mcand combine
+(insn 870 868 871 (set (reg:SI 380)
+        (const_int 1)) 159 {movsi_internal2} (nil)
+    (expr_list:REG_EQUAL (const_int 1)
+        (nil)))
+
+(insn 871 870 872 (set (reg:SI 379)
+        (ashift:SI (reg:SI 380)
+            (reg:SI 377))) 181 {ashlsi3} (insn_list 868 (insn_list 870 (nil)))
+    (expr_list:REG_DEAD (reg:SI 380)
+        (expr_list:REG_DEAD (reg:SI 377)
+            (nil))))
+
+(insn 872 871 874 (set (reg:SI 381)
+        (and:SI (reg:SI 375)
+            (reg:SI 379))) 92 {andsi3} (insn_list 864 (insn_list 871 (nil)))
+    (expr_list:REG_DEAD (reg:SI 375)
+        (expr_list:REG_DEAD (reg:SI 379)
+            (nil))))
+
+(jump_insn 874 872 877 (set (pc)
+        (if_then_else (eq:SI (reg:SI 381)
+                (const_int 0))
+            (label_ref 1172)
+            (pc))) 221 {branch_zero} (insn_list 872 (nil))
+    (expr_list:REG_DEAD (reg:SI 381)
+        (nil)))
+
+=== mnc jump
+(insn 868 867 869 (set (reg:SI 377)
+        (ashiftrt:SI (reg:SI 378)
+            (const_int 16))) -1 (nil)
+    (expr_list:REG_EQUAL (sign_extend:SI (reg:HI 376))
+        (nil)))
+
+(insn 869 868 870 (set (reg:SI 379)
+        (ashiftrt:SI (reg:SI 375)
+            (reg:SI 377))) -1 (nil)
+    (nil))
+
+(insn 870 869 872 (set (reg:SI 380)
+        (and:SI (reg:SI 379)
+            (const_int 1))) -1 (nil)
+    (nil))
+
+(jump_insn 872 870 875 (set (pc)
+        (if_then_else (eq:SI (reg:SI 380)
+                (const_int 0))
+            (label_ref 1170)
+            (pc))) 221 {branch_zero} (nil)
+    (nil))
+
+=== mnc cse
+(insn 868 867 869 (set (reg:SI 377)
+        (ashiftrt:SI (reg:SI 378)
+            (const_int 16))) 191 {ashrsi3} (nil)
+    (expr_list:REG_EQUAL (sign_extend:SI (reg:HI 376))
+        (nil)))
+
+(insn 869 868 870 (set (reg:SI 379)
+        (ashiftrt:SI (reg:SI 375)
+            (reg:SI 377))) 191 {ashrsi3} (nil)
+    (nil))
+
+(insn 870 869 872 (set (reg:SI 380)
+        (and:SI (reg:SI 379)
+            (const_int 1))) 92 {andsi3} (nil)
+    (nil))
+
+(jump_insn 872 870 875 (set (pc)
+        (if_then_else (eq:SI (reg:SI 380)
+                (const_int 0))
+            (label_ref 1170)
+            (pc))) 221 {branch_zero} (nil)
+    (nil))
+
+=== mnc combine
+(insn 868 867 869 (set (reg:SI 377)
+        (sign_extend:SI (mem/s:HI (plus:SI (reg/v:SI 76)
+                    (const_int 10))))) 125 {extendhisi2_internal} (nil)
+    (nil))
+
+(insn 869 868 870 (set (reg:SI 379)
+        (ashiftrt:SI (reg:SI 375)
+            (reg:SI 377))) 191 {ashrsi3} (insn_list 864 (insn_list 868 (nil)))
+    (expr_list:REG_DEAD (reg:SI 375)
+        (expr_list:REG_DEAD (reg:SI 377)
+            (nil))))
+
+(insn 870 869 872 (set (reg:SI 380)
+        (and:SI (reg:SI 379)
+            (const_int 1))) 92 {andsi3} (insn_list 869 (nil))
+    (expr_list:REG_DEAD (reg:SI 379)
+        (nil)))
+
+(jump_insn 872 870 875 (set (pc)
+        (if_then_else (eq:SI (reg:SI 380)
+                (const_int 0))
+            (label_ref 1170)
+            (pc))) 221 {branch_zero} (insn_list 870 (nil))
+    (expr_list:REG_DEAD (reg:SI 380)
+        (nil)))
+
