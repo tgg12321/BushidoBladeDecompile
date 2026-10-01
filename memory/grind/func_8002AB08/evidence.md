@@ -90,3 +90,14 @@ two retyped bodies; rev-2AB08-r11 FAILed the Ruling 11 package on three points, 
 path and the target executes them; no spelling without them matches (round2/rs_v*.c: 1-13). Tree reverted
 (src/include), lock.ps1 rebuild == oracle, lock released. Policy question: docs/grind/borderline.md
 2026-10-01 func_8002AB08.
+
+## s5 (2026-10-01, laneC) — LANDED, COMPLETED-C; ledger closed for work
+Owner Q85 (rules 9cdb9cd08; name clarification 918b32f6e). `c` renamed `deep_on`, scoped to the pass loop,
+admitted under Ruling 11 + Q20 (single-write spellings 29-75; r11/README.md "deep_on"). The r11 package was
+re-measured on the landed body (11dd8e03d: full split 528, nearest 134, no-copy 225, permuter 704 iterations,
+best 12594). Layer-2 rev-2AB08-r2 PASS (full scope) on func_8002AB08 4091d3e87958285b (match),
+func_80022580 6715ae64d158047e and func_8002A458 e01e18d75bfb581c (cheat-cleanup). Match: cb42a7dea; queue
+done 257c323f0 (SHA1 == oracle; check_completion_integrity OK). The reviewer's one non-blocking note, that
+deep_on's comment said "re-stores the held 1" for a per-iteration local, was fixed in the comment only, with
+the hash unchanged. No open work. The src comments cite r11/README.md, so this directory is left in place
+for close-ledger.

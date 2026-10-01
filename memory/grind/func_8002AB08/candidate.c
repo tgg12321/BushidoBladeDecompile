@@ -115,7 +115,7 @@ void func_8002AB08(s32 mode) {
         for (pass = 0; pass < npass; pass++) {
             /* deep_on: func_8002CA8C's third argument (it runs the deep-hit test only when set): one
              * value, written per arm as per-branch constants 1 / 1 / 0 (Q20); the unk_8C arm's
-             * `deep_on = 1;` re-stores the held 1 (target 0x8002AEFC), owner Q85 (rules 9cdb9cd08;
+             * `deep_on = 1;` is the 0x8002AEFC store it shares with pass 0, owner Q85 (rules 9cdb9cd08;
              * the name: 918b32f6e). Ruling 11; (D): memory/grind/func_8002AB08/r11/README.md (deep_on). */
             s32 deep_on;
 

@@ -1,7 +1,7 @@
 {
  "func": "calc_loc_mat_fw",
  "file": "code6cac_b_tu2",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,15 +15,15 @@
    "floor": 0,
    "modality": "structural",
    "headline": "full draft 1110 -> 0 sandbox (laneC 2026-10-01); landing owes PracticeMenuRec members, Ruling 11 packages, vec alias exhaustion (evidence.md s2)"
-  }
- ],
- "frontier": [
+  },
   {
-   "hypothesis": "candidate.c is byte-exact; make it landable",
-   "mechanism": "evidence.md s2",
-   "next_probe": "PracticeMenuRec members (coordinate laneB-2), Ruling 11 (D) dumps per reused local, alias exhaustion"
+   "session": 3,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "LANDED COMPLETED-C: Match cb42a7dea, queue done 257c323f0 (rev-2AB08-r2 PASS; Q85 9cdb9cd08 + 918b32f6e)"
   }
  ],
+ "frontier": [],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T20:14:53.860647+00:00",
