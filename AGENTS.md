@@ -1,211 +1,74 @@
 # AGENTS.md
 
-Project-level facts for any AI coding agent (Claude Code, Codex, Cursor, Cline, Aider, Gemini CLI, Windsurf, Copilot, etc.) working on this repo. Tool-agnostic. See [agents.md](https://agents.md/) for the open standard.
+Tool-agnostic project facts for any AI coding agent ([agents.md](https://agents.md/) standard).
+Claude-Code-specific workflow lives in `CLAUDE.md`.
 
-Tool-specific guidance (hooks, skills, the active-marker workflow, memory system) lives in `CLAUDE.md` and is loaded only by Claude Code.
+> **About to decompile a function? Read [`docs/DECOMP_WORKFLOW.md`](docs/DECOMP_WORKFLOW.md) first**
+> (what "done" means, the per-function loop, the honest-C standard, mandatory adversarial review).
+> `docs/MATCHING.md` is the technique catalog.
 
-> **About to decompile a function? Read [`docs/DECOMP_WORKFLOW.md`](docs/DECOMP_WORKFLOW.md) first.**
-> It is the tool-agnostic operating manual: what "done" means, the per-function loop, the
-> honest-C standard, the ablation discipline required before defending a construct, the
-> catalog of defects that have actually landed here, and the mandatory adversarial review
-> before any completion commit. This file (toolchain and build facts) is its prerequisite;
-> `docs/MATCHING.md` is the technique catalog you reach for once you are inside the loop.
+## Project
 
-## Project overview
-
-Matching decompilation of **Bushido Blade 2** (SLUS-00663) — a PS1 fighting game published by SquareSoft (1998, North America). The goal: C source that compiles to a byte-identical copy of the original executable.
-
-- **Platform:** PlayStation 1 (MIPS R3000A, 2 MB RAM, PsyQ SDK)
-- **Developer:** Lightweight (40% Square subsidiary)
-- **Engine:** "Marionation" (Lightweight's proprietary engine, later reused for Kengo on PS2)
-- **Build date:** Fri Aug 7 22:26:32 1998
+Matching decompilation of **Bushido Blade 2** (SLUS-00663, PS1, SquareSoft/Lightweight 1998, the
+"Marionation" engine): C source that rebuilds a byte-identical executable. Single-person project
+(Trenton, `tgg12321@gmail.com`). History: `docs/HISTORY.md`; state: `docs/STATUS.md`; disc layout,
+asset formats and inspectors: `docs/formats/`.
 
 ## Toolchain (confirmed from binary analysis)
 
-- **PsyQ SDK 3.5** (DTL-S3000), copyright "1993-1997"
-- **Compiler:** GCC 2.7.2 (SN Systems fork / cc1psx)
-  - Build uses the open-source port: `decompals/mips-gcc-2.7.2` (functionally equivalent for our purposes)
-- **Assembler:** ASPSX ~2.34 (via the [maspsx](https://github.com/mkst/maspsx) compatibility layer)
-- **Section order:** `.rodata → .text → .data → .bss` (PsyQ standard)
-- Identified via CVS `$Id:` tags in linked PsyQ libraries:
-  - `sys.c v1.129 1996/12/25` (libgpu)
-  - `bios.c v1.86 1997/03/28` (libcd)
-  - `intr.c v1.76 1997/02/12` (libapi)
+- **PsyQ SDK 3.5** (DTL-S3000; CVS tags libgpu `sys.c v1.129`, libcd `bios.c v1.86`, libapi `intr.c v1.76`).
+- **Compiler:** GCC 2.7.2 (SN cc1psx); the build uses the open-source port `decompals/mips-gcc-2.7.2`.
+- **Assembler:** ASPSX 2.34 via [maspsx](https://github.com/mkst/maspsx) (`--aspsx-version=2.34`).
+- **Section order:** `.rodata → .text → .data → .bss` (PsyQ standard).
+- Per C file: `mipsel-linux-gnu-cpp | cc1 | maspsx | mipsel-linux-gnu-as → .o`; link with
+  `mipsel-linux-gnu-ld`, `objcopy`, then `make_psexe.py` prepends the original 0x800-byte header.
+- **`-mel` and `-msoft-float` in `CC_FLAGS` are load-bearing — do not remove.** The prebuilt cc1's
+  `mips-mips-gnu` triple defaults to big-endian and hard float; the PS1 is little-endian with no
+  FPU, and PsyQ's cc1psx reports `-msoft-float`.
+- `tools/cc1psx.exe` (original PsyQ cc1psx) is for calibration only — never a build path.
 
-## Executable details
+## Executable
 
-**Main EXE:** `disc/SLUS_006.63` (606,208 bytes)
-- SHA1: `62efab4f73f992798c43e8c730aa43baa10bb4fa`
-- PS-X EXE format, load address `0x80010000`, entry point `0x800836EC`
-- Stack: `0x801FFFF0`, GP: `0x800A30CC`
-- Text+data size: `0x93800` (604,160 bytes), loads at file offset `0x800`
-- Code ends ~`0x8008D070`, data/tables from ~`0x8008D080` to `0x800A3800`
-- 1,429 unique functions identified by splat (per the naming census, `docs/naming/README.md`, corrected by the 2026-08-07 duplicate survey: 1,437 `asm/funcs/*.s` files as of the 2026-08-07 survey (the count drifts — asm-until-matched adds/removes `.s` files; regenerate the census before quoting), minus the `D_8007E08C` data-as-code blob, minus 7 stale duplicate-address pairs — 2 same-glabel pairs plus 5 same-address pairs invisible to glabel scans; see `docs/TASK19-PROTO-ANALYSIS.md`)
+- **Main EXE** `disc/SLUS_006.63` (606,208 bytes), **SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa`**
+  — the oracle; "done" means the full build reproduces it.
+- PS-X EXE, load `0x80010000`, entry `0x800836EC`, stack `0x801FFFF0`, GP `0x800A30CC`;
+  text+data `0x93800` bytes from file offset `0x800`; code ends ~`0x8008D070`.
+- Overlay `disc/STR/MOVOVL.EXE` (FMV/MDEC): loads at `0x801D8800`, no overlap with the main EXE.
 
-**Overlay EXE:** `disc/STR/MOVOVL.EXE` (122,880 bytes) — FMV/MDEC playback overlay
-- Loads at `0x801D8800`, entry `0x801DA084` — no overlap with main EXE
+## Build
 
-**PsyQ libraries linked:** libgpu, libcd, libapi, libspu, MDEC decode (overlay)
-
-## Splat configuration
-
-The binary is split using [splat](https://github.com/ethteck/splat) v0.41.0 via `splat.yaml`. Re-run via:
+Builds run inside WSL (Ubuntu 24.04); toolchain setup: `bash tools/setup_wsl.sh`.
 
 ```bash
-python -m splat split splat.yaml
+cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && source .venv/bin/activate
+make          # build and verify SHA1
+make clean
 ```
 
-This regenerates `asm/`, the linker script, and symbol files.
+- **Never run `make setup`.** `bb2.ld` is hand-maintained and `asm/data/*.rodata*.s` are
+  deliberately deleted; re-running splat breaks the build (recovery procedure in `splat.yaml`).
+- **Build files** (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, pipeline `*.txt`) **must be LF.**
+  Windows-side editors and Windows Python text-mode writes produce CRLF and silently break the
+  GNU toolchain.
 
-Current split layout:
-- `asm/data/800.rodata.s` — .rodata section (strings, jump tables, constants)
-- `asm/6CAC.s` — .text section (all assembly; the per-function split lives in `asm/funcs/`)
-- `asm/data/7D920.data.s` — .data section (initialized globals)
-- `bb2.ld` — generated linker script
-- `undefined_syms_auto.txt` — auto-detected data symbol addresses
-- `undefined_funcs_auto.txt` — auto-detected external function addresses
-- `symbol_addrs.txt` — manually identified symbol names (add known names here)
-- `named_syms.txt` — additional named symbol assignments
+### PowerShell-first scripting
 
-## Disc structure
+Calling WSL from a Windows-side agent nests shells (Git Bash/PowerShell → wsl → bash); every `$`,
+quote and backslash is re-parsed per layer, silently breaking inline awk/sed, heredocs and
+hand-escaped quotes.
+- Engine commands: `& tools/wteng.ps1 main <cmd>` (PowerShell) — builds the WSL call internally
+  and pins the repo.
+- Anything beyond one simple command → write a `.py`/`.sh`/`.ps1` under `tmp/` and run the file.
+- Multi-line commit messages → `git commit -F <file>`.
 
-Extracted to `disc/` via `tools/extract_iso.py` from the MODE2/2352 BIN/CUE image.
+## Conventions
 
-| Directory | Purpose |
-|-----------|---------|
-| `LOADSE/`, `LOADSE1/` | Stage geometry/data (STAGE00–STAGE37.BIN) + sound effect banks (.SE) |
-| `MOTION/` | Character animation bundles (.BBM), plus WIN.DAT |
-| `NDATA/` | Large packed data archive (NDATA.DAT ~55 MB + NDATA.INF index) |
-| `TIM2D/` | 2D textures (.TIM), UI/menu data, sound banks (.BNK), selection screens |
-| `U_PIC/` | Stage background images (STG00–STG29.BIN) |
-| `XA_0/`, `XA_1/` | XA-ADPCM streamed audio (music, voice, endings) |
-| `STR/` | FMV opening (OPENING.STR), title screen (TITLE.TIM), movie overlay (MOVOVL.EXE) |
-
-Per-format documentation in `docs/formats/`:
-- `NDATA.md`, `BBM.md`, `TIM.md`, `STAGE_BIN.md`, `BNK.md`, `SE.md`, `XA.md`, `STR.md`, `MOVOVL.md`
-
-## Build commands
-
-All build commands run inside WSL (Ubuntu 24.04) for Linux toolchain compatibility:
-
-```bash
-cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile"
-source .venv/bin/activate
-make          # build and verify SHA1 match
-make clean    # remove build artifacts
-# make setup  # DO NOT RUN — bb2.ld is HAND-MAINTAINED since the 2026-06-09
-#             # rodata cleanup; `make setup` re-adds dead rodata lines and
-#             # conflicts with const decls now in src/*.c (recovery procedure
-#             # in splat.yaml). Re-run splat only via that documented procedure.
-```
-
-From Git Bash on Windows host:
-```bash
-wsl bash -c 'cd /mnt/c/Users/Trenton/Desktop/"Bushido Blade 2 Decompile" && source .venv/bin/activate && make'
-```
-
-### PowerShell-first scripting (avoid the shell-nesting footgun)
-
-Invoking WSL through a Windows-side agent nests multiple shells (Git Bash → wsl → bash, or
-PowerShell → wsl → bash); every `$`, quote, and backslash is parsed at each layer, which silently
-breaks inline `awk`/`sed`, shell-function definitions, heredocs, and hand-escaped quotes. Standards:
-
-- **Run engine commands through `tools/wteng.ps1`** (PowerShell): `& tools/wteng.ps1 main queue next`. Zero
-  quoting; it builds the `wsl bash -c '…'` string internally and pins the repo. (`tools/eng.ps1` is its
-  superseded predecessor — guards steer away from it.)
-- **Anything beyond one simple command** (awk/sed, multi-statement pipelines, heredocs) → **write a
-  `.py`/`.sh`/`.ps1` file and run that file**, not an inline `-c` string. A Python script is more
-  robust and readable than inline `awk`.
-- **Multi-line commit messages → `git commit -F <file>`**, not a `<<EOF` heredoc.
-
-Claude Code enforces this via `tools/hooks/shell_footgun_guard.py` (a PreToolUse block); other
-agents should follow it by convention.
-
-### Build pipeline (per C file)
-
-```
-mipsel-linux-gnu-cpp | cc1 (GCC 2.7.2) | maspsx (--aspsx-version=2.34) | mipsel-linux-gnu-as → .o
-```
-
-Since 2026-08-04 cc1 runs with `-mel` in `CC_FLAGS`: the prebuilt cc1's
-`mips-mips-gnu` target triple defaults to BIG-endian, and `-mel` flips the
-runtime `BYTES_BIG_ENDIAN` to match the little-endian PS1 (spill-slot layout,
-bitfield direction, lwl/lwr offsets). `-mel` is load-bearing for the oracle
-match — do not remove it.
-
-Since 2026-09-07 cc1 also runs with `-msoft-float`: the same triple defaults to
-HARD float, but the PS1 has no FPU and PsyQ's original cc1psx prints
-`# Cc1 defaults: -mgas -msoft-float`. Hard float leaves the 32 FP registers
-allocatable, which doubles GCC's loop-invariant hoisting threshold
-(`loop.c` 122 vs 58) and made our build hoist constants the original compiler
-kept in-loop. Also load-bearing — do not remove.
-
-All objects linked with `mipsel-linux-gnu-ld`, stripped to binary via `objcopy`, then `make_psexe.py` prepends the original 0x800-byte PS-EXE header. Final SHA1 compared against original.
-
-### Environment setup
-
-Toolchain installer: `bash tools/setup_wsl.sh` (handles GCC 2.7.2 build, mipsel-linux-gnu toolchain, splat/m2c Python deps).
-
-Required local deps (gitignored):
-- `tools/gcc-2.7.2/` — PsyQ-era GCC cross-compiler (built from `decompals/mips-gcc-2.7.2`)
-- `tools/maspsx/` — ASPSX compatibility layer (cloned from `mkst/maspsx`)
-- `tools/decomp-permuter/` — [decomp-permuter](https://github.com/simonlindholm/decomp-permuter) for auto-matching C code
-- `tools/cc1psx.exe` — original PsyQ cc1psx (calibration/self-disproof only; never a build path — see the cc1psx-calibration-only policy in the Claude memory / `.claude/rules/no-compiler-divergence.md`)
-- `.venv/` — Python virtual env with splat, m2c, etc.
-- `disc/` — extracted disc filesystem
-
-## File-edit conventions (cross-tool)
-
-- **Build files** (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, the project `*.txt` files like `named_syms.txt`, `sdata*.txt`, `expand_lb_funcs.txt`) **MUST be saved with Unix LF line endings**. Editing from Windows-side editors that default to CRLF silently breaks the GNU toolchain. Edit via WSL or configure your editor to enforce LF on these paths.
-- The `tmp/` directory is for scratch — fully gitignored. (An old carve-out for `tmp/batch_attempt.csv` described the retired dc.sh-era queue; the live worklist is `engine/queue.json`.)
-- `permuter/` directories are gitignored (per-function permuter workspaces).
-- `auto_matches/` and `codex_lab/` are gitignored (workspace artifacts).
-
-## Root-directory cleanliness
-
-**Don't create new files at the repo root unless they're project-essential.** Specifically:
-
-| Where to write | What goes there |
-|---|---|
-| `tmp/` (gitignored) | One-off scripts, audits, scratch outputs, exploratory CSVs, log captures |
-| `logs/` (gitignored, create on demand) | Long-lived logs if genuinely needed (we don't currently have any) |
-| `docs/` | Permanent documentation |
-| `tools/` | Reusable tools (committed) |
-| root | Only the build files, configs, and tracked docs — see `tools/check_root_cleanliness.py` for the allowlist |
-
-Tooling that enforces this:
-- **`tools/hooks/root_write_guard.py`** (Claude Code PreToolUse) — blocks `*.log`, `*.csv`, `gccdump.*`, `*.bak`, `*.orig`, `triage_*`, `_tmp_*`, etc. at root. Suggests `tmp/<name>` as the replacement.
-- **`tools/check_root_cleanliness.py`** — manual or briefing-time audit; reports unknown / suspicious root files (silent if clean, flags drift otherwise).
-
-## Commit conventions
-
-See [`docs/COMMIT_CONVENTIONS.md`](docs/COMMIT_CONVENTIONS.md) for the subject-prefix catalog and body structure used across this project. The commit-msg guard chain (`tools/hooks/commit_msg_chain.sh`), the manual cheat audit (`tools/audit_asm_cheats.py`), and `git log` searches parse commit subjects/bodies for structured information, so consistency improves searchability and audit reliability.
-
-## Asset/format reverse engineering
-
-Per-format inspectors live in `tools/`:
-- `tools/inspect_ndata.py`, `inspect_bbm.py`, `inspect_tim.py`, `inspect_stage_bin.py`, `inspect_bnk.py`, `inspect_se.py`, `inspect_xa.py`, `inspect_str.py`
-
-Asset catalog data: `docs/formats/ndata_filemap.csv` (763 entries with semantic naming).
-
-## Key conventions for PS1 decomp
-
-- All addresses are MIPS virtual addresses in KSEG0 (`0x80000000`+)
-- `0x1F800000`–`0x1F8003FF` = scratchpad RAM (fast 1 KB SRAM)
-- The PsyQ SDK provides BIOS calls, GPU, SPU, CD, controller, and memory card APIs
-- PS1 uses little-endian MIPS I instruction set
-- Struct padding and alignment must match the PsyQ compiler's behavior
-- GTE (cop2) ops have no C analog — inline `__asm__` for those is canonical
-- **Not-yet-decompiled functions are committed as `INCLUDE_ASM("asm/funcs", <func>);`**
-  (owner ruling 2026-08-19): no cheat constructs, no draft C
-  on `main` — C lands once, when the function byte-matches honestly. In-progress
+- **Not-yet-matched functions are committed as `INCLUDE_ASM("asm/funcs", <func>);`** — no cheat
+  constructs and no draft C on `main`; C lands once, when it byte-matches honestly. In-progress
   candidates live in `memory/grind/<func>/`.
-- When adding known symbol names, add them to `symbol_addrs.txt` and re-run splat
-
-## Project history
-
-See `docs/HISTORY.md` for the timeline of major milestones (zero-stub completion 2026-04-27, foundation rebuild, etc.) and `docs/STATUS.md` for the current state.
-
-## Getting help
-
-This is a single-person project (Trenton, `tgg12321@gmail.com`). Start with [`docs/DECOMP_WORKFLOW.md`](docs/DECOMP_WORKFLOW.md) for the workflow and standards. Issues / context for understanding what's been done previously: `docs/HISTORY.md` + git log. The repo's been worked on extensively in Claude Code; references to "the agent" and the engine workflow (`engine/` CLI, the Grinder) are part of that workflow. Older docs and commits mention a retired `dc.sh` driver — see `docs/HISTORY.md`.
+- GTE (cop2) ops and BIOS/syscall trampolines have no C form — inline `__asm__` for those is canonical.
+- Addresses are KSEG0 (`0x80000000`+); `0x1F800000`–`0x1F8003FF` is scratchpad RAM.
+- Scratch goes in `tmp/` (gitignored); don't add files at the repo root
+  (`tools/check_root_cleanliness.py`).
+- Commit subjects/bodies follow [`docs/COMMIT_CONVENTIONS.md`](docs/COMMIT_CONVENTIONS.md) — the
+  commit-msg guard chain and audits parse them.
