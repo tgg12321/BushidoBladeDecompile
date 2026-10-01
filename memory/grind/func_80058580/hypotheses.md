@@ -46,3 +46,21 @@ Bytes are solved (rejected/l2-fail-2026-10-01-e5799063.c links byte-identical); 
    a/b/c, rnd/row, ok4, ob.
 7. Redo r11/ for the new body (only if (a) is admitted; otherwise work3 needs a different spelling) and
    rewrite the message to list every construct.
+
+### 2026-10-01 update: rulings Q74/Q75/Q76 committed (rules: 30a3e2d2d) — plan step 1 done
+- Q74 (reused-local-necessity.md § Owner ruling Q74): work3's read-before-write at the 0x394-slot switch ($s3
+  read at 0x80059D70 / 0x80059DB4 on 0x80059D18 -> 0x80059D6C -> 0x80059DB0) may land under Ruling 11. The (F)
+  comment must name that path and those addresses; that read never satisfies (B)(1); regroup work3's values
+  with ONLY that read excluded and redo (C)(1)/(C)(3)/(D) on that grouping (r11/roles.py's 16 values are
+  roughly that grouping; re-derive it from reads, not roles).
+- Q75 ((C) clause): work2 `best` (`-1` at 0x8005A108/A118, `move $s2,$s3` 0x8005A350) is admitted as work2's one
+  copy-clause value with the Q34 receipts; cite the constant loads and the move.
+- Q76 (ordinary-c-judge-decidable.md): `0x200 - ((x * 0x100) >> 12)` at 0x8005AB34 / 0x8005ACCC, each site
+  commented with the 4.12 factor and the measured cse shift fold (cse.c fold_rtx associative shift).
+- Cite 30a3e2d2d in the annotations and the Match commit body.
+Next frontier (plan steps 2-7 unchanged, in order): PracticeMenuRec typing of p (joint with func_80055138 and
+the 80055B60 / 80021424 L1 member adds); D_8009A830 3x8 table + func_80056FE8; the byte-moving casts (dm
+results: st2 3, (s16)work2 8, (s8)besti 3, (u32)work3 11, 8U 1 — each needs a typed spelling that matches);
+`q = ep` (58 without it: annotate under a family with exhaustion or restructure); work5 inside `while (off !=
+0)`; byte-neutral cast removals and the ternary; buf/buf2 renames; named_syms.txt:2466 retirement; full
+disclosure in the message. Then re-run r11/ (measure.sh, dump_all.sh, findreg_all.sh) on the new body.
