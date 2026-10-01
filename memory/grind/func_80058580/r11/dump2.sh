@@ -5,7 +5,7 @@ cd "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile"
 source .venv/bin/activate
 tag=$1; body=$2; T=memory/grind/func_80058580/typed
 D=tmp/func_80058580/r11b/dumps/$tag; rm -rf $D; mkdir -p $D/v
-cp $body $D/v/f58580.c; cp $T/f55138.c $T/f56fe8.c $T/src_edits.py $T/hdr_edits.py $D/v/
+cp $body $D/v/f58580.c; cp $T/hdr_edits.py $T/src_edits.py $D/v/
 python3 tmp/func_80058580/h/splice.py $D/v $D/s > /dev/null
 mipsel-linux-gnu-cpp -I$D/s/inc -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C $D/s/text1b.c > $D/t.i
 python3 tools/decomp-permuter/strip_other_fns.py $D/t.i func_80058580

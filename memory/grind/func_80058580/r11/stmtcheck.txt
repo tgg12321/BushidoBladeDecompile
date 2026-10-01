@@ -10,36 +10,32 @@ pvbs_work2.c IDENTICAL statement lists
 pvbs_work3.c IDENTICAL statement lists
 pvbs_work4.c IDENTICAL statement lists
 pvbs_work5.c IDENTICAL statement lists
-pvs_work4a.c DIFFER (8406 vs 8407 tokens)
-pvs_work4b.c DIFFER (8406 vs 8411 tokens)
-pvs_work5a.c DIFFER (8406 vs 8413 tokens)
-pvs_work5b.c DIFFER (8406 vs 8402 tokens)
-pvt_all.c DIFFER (8406 vs 8463 tokens)
-pvt_work1.c DIFFER (8406 vs 8424 tokens)
-pvt_work2.c DIFFER (8406 vs 8421 tokens)
-pvt_work3.c DIFFER (8406 vs 8427 tokens)
+pvs_work4a.c DIFFER (8398 vs 8399 tokens)
+pvs_work4b.c DIFFER (8398 vs 8403 tokens)
+pvs_work5a.c DIFFER (8398 vs 8405 tokens)
+pvs_work5b.c DIFFER (8398 vs 8394 tokens)
+pvt_all.c DIFFER (8398 vs 8464 tokens)
+pvt_work1.c DIFFER (8398 vs 8413 tokens)
+pvt_work2.c DIFFER (8398 vs 8413 tokens)
+pvt_work3.c DIFFER (8398 vs 8431 tokens)
 pvt_work4.c IDENTICAL statement lists
-pvt_work5.c DIFFER (8406 vs 8409 tokens)
+pvt_work5.c DIFFER (8398 vs 8401 tokens)
 r_adj.c IDENTICAL statement lists
 r_ang.c IDENTICAL statement lists
 r_base.c IDENTICAL statement lists
 r_best.c IDENTICAL statement lists
-r_bsel.c IDENTICAL statement lists
 r_cmask.c IDENTICAL statement lists
 r_cnt2.c IDENTICAL statement lists
 r_coin.c IDENTICAL statement lists
 r_dang.c IDENTICAL statement lists
-r_dist.c IDENTICAL statement lists
 r_farflag.c IDENTICAL statement lists
 r_force.c IDENTICAL statement lists
 r_i.c IDENTICAL statement lists
-r_idx.c IDENTICAL statement lists
 r_k.c IDENTICAL statement lists
 r_kind.c IDENTICAL statement lists
 r_kind2.c IDENTICAL statement lists
 r_kindet.c IDENTICAL statement lists
 r_lo.c IDENTICAL statement lists
-r_lvl.c IDENTICAL statement lists
 r_m445.c IDENTICAL statement lists
 r_m449.c IDENTICAL statement lists
 r_mask.c IDENTICAL statement lists
@@ -47,10 +43,10 @@ r_n.c IDENTICAL statement lists
 r_n445.c IDENTICAL statement lists
 r_n447.c IDENTICAL statement lists
 r_n449.c IDENTICAL statement lists
+r_near.c IDENTICAL statement lists
 r_ok.c IDENTICAL statement lists
 r_pace.c IDENTICAL statement lists
 r_prod.c IDENTICAL statement lists
-r_script4.c IDENTICAL statement lists
 r_sel3.c IDENTICAL statement lists
 r_side.c IDENTICAL statement lists
 r_slot.c IDENTICAL statement lists

@@ -34,31 +34,30 @@ s32 func_80058580(PracticeMenuRec *p) {
     u8 *script3;
     u8 *script4;
     u8 mode;
-    /* work1 holds ten values in turn, each read before work1 is written again: the
+    /* work1 holds nine values in turn, each read before work1 is written again: the
      * unk_444[5] == 0 flag of the state-0x15 script choice; the stage distance base (100000,
      * or D_8009A838[stage] * 8) of the D_8009A850 scan; unk_444[6] for the lim chain; unk_444[6]
      * again for the waypoint script; the x of waypoint 1; the unk_444[1] == 0 flag of the 0x394
-     * action pick; the chosen pick (besti sign-extended, `sll; sra 24` at 0x8005A364); case 2's
-     * D_8009A9F0 pattern word, shifted in place; a script entry's low distance bound (e[1] * 40,
-     * then adjusted); the state-0x15 script's near bound (the opponent's unk_3F8 entry, or its
-     * unk_404 entry + 300; `lh $s1` 0x8005ADD8 / `addiu $s1` 0x8005AE24).
+     * action pick; case 2's D_8009A9F0 pattern word, shifted in place; a script entry's low
+     * distance bound (e[1] * 40, then adjusted); the state-0x15 script's near bound (the
+     * opponent's unk_3F8 entry, or its unk_404 entry + 300; `lh $s1` 0x8005ADD8 / `addiu $s1`
+     * 0x8005AE24).
      * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
     s32 work1;
-    /* work2 holds eight values in turn, each read before work2 is written again: the
+    /* work2 holds seven values in turn, each read before work2 is written again: the
      * unk_444[1] == 0 flag of the state-0x15 script choice; a D_8009A850 entry's distance; the
      * pace byte unk_444[0]; the z of waypoint 1; the unk_444[5] == 0 flag of the 0x394 action
      * pick; the best random pick score so far (Q75 constant start + copy, rules 30a3e2d2d:
      * `li $s2,-1` at 0x8005A108 / 0x8005A118, `addu $s2,$s3,$zero` at 0x8005A350; compared as
-     * an s16, `sll; sra 16` at 0x8005A338); case 2's nibble count, counted down; the state-0x15
-     * script's counter value (unk_34D, unk_34A, 0, or unk_330).
+     * an s16, `sll; sra 16` at 0x8005A338, owner ruling Q82); case 2's nibble count, counted down.
      * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
     s32 work2;
-    /* work3 holds fifteen values in turn, each read before work3 is written again: the
+    /* work3 holds thirteen values in turn, each read before work3 is written again: the
      * script side bit (opponent unk_AF & 1, possibly inverted); unk_444[3] == 0; the unk_43A
      * angle, wrapped to +-0x800; the state-0x11 threshold (0x1000 - (stance sum << 8)), scaled
-     * by unk_438 >> 12; the forced-scan flag (0 or 1) of the D_8009A850 scan; the waypoint index
-     * unk_362 - 1; the path length to the target; the "longer than lim" flag; the bearing to the
-     * next waypoint, wrapped; the 0x394 action pick's coin bit, stepped per try; the 0x394 slot
+     * by unk_438 >> 12; the forced-scan flag (0 or 1) of the D_8009A850 scan; the "longer than
+     * lim" flag (lim < the path length); the bearing to the next waypoint, wrapped; the 0x394
+     * action pick's coin bit, stepped per try; the 0x394 slot
      * (unk_394, or a D_800A325C / D_800A3260 entry); case 3's column in D_8009A928; the
      * entry-type mask (case 3 / case 2 / default); a script entry's character mask; the
      * entry's accept flag (0 or 1).
@@ -70,7 +69,7 @@ s32 func_80058580(PracticeMenuRec *p) {
      * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
     s32 work3;
     /* work4 holds three values in turn, each read before work4 is written again: the
-     * D_8009A850 scan index; the waypoint walk index (a copy of work3's waypoint index taken in
+     * D_8009A850 scan index; the waypoint walk index (a copy of the waypoint index wi taken in
      * the walk branch, Q34: `addu $s4,$s3,$zero` in the branch delay slot at 0x800596DC, counted
      * down); the script-list entry index.
      * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
@@ -395,14 +394,16 @@ s32 func_80058580(PracticeMenuRec *p) {
                     goto after_nav;
                 }
                 {
+                    s32 dist;
+                    s32 wi;
                     work1 = p->unk_444[6];
-                    work3 = p->unk_362 - 1;
+                    wi = p->unk_362 - 1;
                     work2 = p->unk_444[0];
-                    wx = p->unk_364[work3].x;
-                    wz = p->unk_364[work3].z;
+                    wx = p->unk_364[wi].x;
+                    wz = p->unk_364[wi].z;
                     if (!(work1 == 1 || work1 == 2)) {
                         script2 = 0;
-                        if (p->unk_364[work3].kind == 1) {
+                        if (p->unk_364[wi].kind == 1) {
                             if (work2 == 3 && D_800A387C < p->unk_00->unk_404[p->unk_00->unk_86]) {
                                 goto pick2;
                             }
@@ -428,17 +429,17 @@ s32 func_80058580(PracticeMenuRec *p) {
                     if (p->unk_3CC != 0) {
                         return p->unk_3CC;
                     }
-                    if (work3 == 0) {
+                    if (wi == 0) {
                         if (p->unk_364[0].kind == 1) {
-                            work3 = SquareRoot0(CPU_SQ(p->unk_F4.x - tx) + CPU_SQ(p->unk_F4.z - tz));
+                            dist = SquareRoot0(CPU_SQ(p->unk_F4.x - tx) + CPU_SQ(p->unk_F4.z - tz));
                         } else {
-                            work3 = SquareRoot0(CPU_SQ(p->unk_F4.x - wx) + CPU_SQ(p->unk_F4.z - wz));
+                            dist = SquareRoot0(CPU_SQ(p->unk_F4.x - wx) + CPU_SQ(p->unk_F4.z - wz));
                         }
                     } else {
-                        work4 = work3;
-                        work3 = SquareRoot0(CPU_SQ(wx - p->unk_F4.x) + CPU_SQ(wz - p->unk_F4.z));
+                        work4 = wi;
+                        dist = SquareRoot0(CPU_SQ(wx - p->unk_F4.x) + CPU_SQ(wz - p->unk_F4.z));
                         while (work4 >= 2) {
-                            work3 += SquareRoot0(CPU_SQ(p->unk_364[work4].x - p->unk_364[work4 - 1].x) +
+                            dist += SquareRoot0(CPU_SQ(p->unk_364[work4].x - p->unk_364[work4 - 1].x) +
                                                 CPU_SQ(p->unk_364[work4].z - p->unk_364[work4 - 1].z));
                             work4--;
                         }
@@ -446,13 +447,13 @@ s32 func_80058580(PracticeMenuRec *p) {
                             work1 = p->unk_364[1].x;
                             work2 = p->unk_364[1].z;
                             if (p->unk_364[0].kind == 1) {
-                                work3 += SquareRoot0(CPU_SQ(work1 - tx) + CPU_SQ(work2 - tz));
+                                dist += SquareRoot0(CPU_SQ(work1 - tx) + CPU_SQ(work2 - tz));
                             } else {
-                                work3 += SquareRoot0(CPU_SQ(work1 - p->unk_364[0].x) + CPU_SQ(work2 - p->unk_364[0].z));
+                                dist += SquareRoot0(CPU_SQ(work1 - p->unk_364[0].x) + CPU_SQ(work2 - p->unk_364[0].z));
                             }
                         }
                     }
-                    work3 = lim < work3;
+                    work3 = lim < dist;
                     p->unk_3CC = func_80057094(p, wx, wz, work3);
                     va = 300;
                     vn = p->unk_3CC & 4;
@@ -674,6 +675,10 @@ s32 func_80058580(PracticeMenuRec *p) {
                             }
                             break;
                         }
+                        /* Owner ruling Q82 (rules 215f2d11a): work2's best score (the Q75 value) is compared as
+                         * an s16, as the target does (`sll $v0,$s2,16; sra $v0,$v0,16; slt` at 0x8005A338).
+                         * Measured alternatives, all off: no cast 8 words, an `s16 best` local 23, `s16 score`
+                         * 12, both 26, work2 as s16 222 (memory/grind/func_80058580/evidence.md [s10]). */
                         if ((s16)work2 < score) {
                             besti = pick;
                             work2 = score;
@@ -685,11 +690,11 @@ s32 func_80058580(PracticeMenuRec *p) {
                 if (++pick < 7) {
                     goto pick_loop;
                 }
-                if ((work1 = besti) != -1) {
+                if (besti != -1) {
                     p->unk_394 = 0;
                     p->unk_39C = 0;
                     p->unk_398 = (((((rand() & 0xFFF) * D_80099D88[p->unk_443].unk6) >> 12) + 0x17) << 12) / p->unk_1C;
-                    switch (work1) {
+                    switch (besti) {
                     case 0:
                         p->unk_394 = bestflip != 0;
                         break;
@@ -934,28 +939,30 @@ s32 func_80058580(PracticeMenuRec *p) {
                     p->unk_00->unk_404[p->unk_00->unk_86] < D_800A387C && D_800A387C < 4500) {
                     script4 = D_8009A8C0;
                 } else {
+                    s32 level;
+
                     if (p->unk_443 == 0x15) {
-                        work2 = p->unk_34D;
+                        level = p->unk_34D;
                         work1 = p->unk_00->unk_3F8[p->unk_00->unk_86];
                     } else {
                         work1 = p->unk_00->unk_404[p->unk_00->unk_86] + 300;
                         if (D_80099D88[p->unk_443].flags & 0x300) {
-                            work2 = 0;
+                            level = 0;
                             if (D_800A37A0 >= 6) {
-                                work2 = p->unk_34A;
+                                level = p->unk_34A;
                             }
                         } else {
-                            work2 = p->unk_330;
+                            level = p->unk_330;
                         }
                     }
                     ok4 = 0;
-                    if ((rand() & 0xFF) < (D_80099D88[p->unk_443].script_weight[6] >> 2) && work2 != 0 && work1 < D_800A387C &&
+                    if ((rand() & 0xFF) < (D_80099D88[p->unk_443].script_weight[6] >> 2) && level != 0 && work1 < D_800A387C &&
                         p->unk_434 == 100000 && p->unk_442 == 0 && (p->unk_430 & 0xA002) &&
-                        (p->unk_443 != 0x15 || D_800A387C < 3000) && (p->unk_8A == 0 || work2 >= 2)) {
+                        (p->unk_443 != 0x15 || D_800A387C < 3000) && (p->unk_8A == 0 || level >= 2)) {
                         ok4 = 1;
                     }
                     if (ok4) {
-                        if ((D_80099D88[p->unk_443].flags & 0x10) && work2 >= 2 && (rand() & 1)) {
+                        if ((D_80099D88[p->unk_443].flags & 0x10) && level >= 2 && (rand() & 1)) {
                             script4 = D_8009A8B4;
                         } else {
                             script4 = D_8009A8AC;

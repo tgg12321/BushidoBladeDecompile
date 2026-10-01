@@ -9,19 +9,19 @@ cand, pv4, out = sys.argv[1], sys.argv[2], sys.argv[3]
 os.makedirs(out, exist_ok=True)
 s = open(pv4).read()
 old = """                        while (n_ >= 2) {
-                            work3 += SquareRoot0(CPU_SQ(p->unk_364[n_].x - p->unk_364[n_ - 1].x) +
+                            dist += SquareRoot0(CPU_SQ(p->unk_364[n_].x - p->unk_364[n_ - 1].x) +
                                                 CPU_SQ(p->unk_364[n_].z - p->unk_364[n_ - 1].z));
                             n_--;
                         }
 """
 assert old in s
 open(f"{out}/pvs_work4a.c", "w", newline="\n").write(s.replace(old, """                        for (; n_ >= 2; n_--) {
-                            work3 += SquareRoot0(CPU_SQ(p->unk_364[n_].x - p->unk_364[n_ - 1].x) +
+                            dist += SquareRoot0(CPU_SQ(p->unk_364[n_].x - p->unk_364[n_ - 1].x) +
                                                 CPU_SQ(p->unk_364[n_].z - p->unk_364[n_ - 1].z));
                         }
 """))
-assert "n_ = work3;" in s
-open(f"{out}/pvs_work4b.c", "w", newline="\n").write(s.replace("n_ = work3;", "n_ = p->unk_362 - 1;"))
+assert "n_ = wi;" in s
+open(f"{out}/pvs_work4b.c", "w", newline="\n").write(s.replace("n_ = wi;", "n_ = p->unk_362 - 1;"))
 f = open(cand).read()
 ET = ("""                            work5 = et;
                             if (work5 < 5) {""", """                            if (et < 5) {""")

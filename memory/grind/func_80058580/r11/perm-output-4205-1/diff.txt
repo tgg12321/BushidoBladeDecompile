@@ -1,0 +1,93 @@
+--- before
++++ after
+@@ -1641,6 +1641,7 @@
+   s32 i_;
+   s32 n_;
+   s32 k_;
++  u8 *pois;
+   s32 top_;
+   s32 adj_;
+   s32 kindet_;
+@@ -1652,7 +1653,6 @@
+   s32 vn;
+   s32 vc;
+   s16 sc;
+-  u8 *pois;
+   s32 tx;
+   s32 tz;
+   s32 r;
+@@ -2257,73 +2257,7 @@
+         __builtin_memcpy(slots1, D_800A3260, 4);
+         sel3_ = slots1[p->unk_00->unk_441];
+       }
+-      switch (sel3_)
+-      {
+-        case 0:
+-          if (p->unk_444[3] == 0)
+-        {
+-          p->unk_3CC = 0x8000;
+-        }
+-          break;
+-
+-        case 1:
+-          if (p->unk_444[0] == 0)
+-        {
+-          p->unk_3CC = 0x2000;
+-        }
+-          break;
+-
+-        case 2:
+-          if (p->unk_444[1] == 0)
+-        {
+-          p->unk_3CC = 0x4000;
+-        }
+-          break;
+-
+-        case 3:
+-          if (p->unk_444[5] == 0)
+-        {
+-          p->unk_3CC = 0x1000;
+-        }
+-          break;
+-
+-        case 4:
+-          if ((p->unk_444[3] == 0) && (D_800A387C < p->unk_3FE[p->unk_86]))
+-        {
+-          script3 = D_8009A890;
+-        }
+-          break;
+-
+-        case 5:
+-          if ((p->unk_444[0] == 0) && (p->unk_3F8[p->unk_86] < D_800A387C))
+-        {
+-          script3 = D_8009A888;
+-        }
+-          break;
+-
+-        case 6:
+-          if ((p->unk_444[1] == 0) && (D_800A387C < p->unk_3FE[p->unk_86]))
+-        {
+-          script3 = D_8009A878;
+-        }
+-          break;
+-
+-        case 7:
+-          if ((p->unk_444[5] == 0) && (D_800A387C < p->unk_3FE[p->unk_86]))
+-        {
+-          script3 = D_8009A880;
+-        }
+-          break;
+-
+-        case 8:
+-          if ((((!((p->unk_444[6] == 1) || (p->unk_444[6] == 2))) && (D_800A387C > 3000)) && (D_800A387C < 5000)) && (p->unk_43C < 0x200))
+-        {
+-          script3 = D_8009A89C;
+-        }
+-          break;
+-
+-      }
+-
++ do { switch (sel3_) { case 0: if (p->unk_444[3] == 0) { p->unk_3CC = 0x8000; } break; case 1: if (p->unk_444[0] == 0) { p->unk_3CC = 0x2000; } break; case 2: if (p->unk_444[1] == 0) { p->unk_3CC = 0x4000; } break; case 3: if (p->unk_444[5] == 0) { p->unk_3CC = 0x1000; } break; case 4: if ((p->unk_444[3] == 0) && (D_800A387C < p->unk_3FE[p->unk_86])) { script3 = D_8009A890; } break; case 5: if ((p->unk_444[0] == 0) && (p->unk_3F8[p->unk_86] < D_800A387C)) { script3 = D_8009A888; } break; case 6: if ((p->unk_444[1] == 0) && (D_800A387C < p->unk_3FE[p->unk_86])) { script3 = D_8009A878; } break; case 7: if ((p->unk_444[5] == 0) && (D_800A387C < p->unk_3FE[p->unk_86])) { script3 = D_8009A880; } break; case 8: if ((((!((p->unk_444[6] == 1) || (p->unk_444[6] == 2))) && (D_800A387C > 3000)) && (D_800A387C < 5000)) && (p->unk_43C < 0x200)) { script3 = D_8009A89C; } break; } } while (0);
+       if (((p->unk_426 == 1) || (p->unk_426 == 2)) || ((p->unk_425 == 1) || (p->unk_425 == 2)))
+       {
+         if (p->unk_3CC != 0)

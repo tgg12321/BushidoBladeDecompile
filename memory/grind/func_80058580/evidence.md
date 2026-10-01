@@ -287,3 +287,12 @@
   * Value-ternary `(flip ? p->unk_444[5] : p->unk_444[1]) != 0`: +3 insns (6958 words); kept the pointer form.
   * q = ep comment: SOTN tag now standalone `/* SOTN: src/st/no0/e_stone_rose.c:611 @aa53500 */`.
   r11/ must be re-run on this body (work1 +near, work3 -script4, work4 copy moved) before landing.
+- [s11 2026-10-01 laneB] Q82 granted (rules 215f2d11a): `(s16)work2 < score` at 0x8005A338, commented. r11/
+  re-run on the s10 body found four values that split free (bsel, dist, idx, lvl: 0 words each, 0 together):
+  they are now ordinary locals (`besti` read directly in `if (besti != -1) { ... switch (besti)`, `dist`,
+  `wi`, `level`, block-scoped; dist / wi land in $s3 like the target). Final package on this body
+  (r11/README.md, scores_typed.txt): reuse 0 words; pv_work1..5 / pv_all 7706 / 7676 / 7648 / 7824 / 6789 /
+  7881; every single-value ablation fails (3..7824); typed / structural respellings fail; permuter from
+  the split base 6730 -> best 4205 (junk). Allocation dumps regenerated; find_reg traces identical to round
+  1 modulo pseudo renumbering. Main moved under the candidate (s16 unk_6C landed with func_80055B60): the
+  candidate links 0 differing words on HEAD with no header edit.
