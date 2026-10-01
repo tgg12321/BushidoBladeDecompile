@@ -92,7 +92,7 @@ surveys @8bd7c777). Narrow per-function rulings (sprintf, vmNoiseOn) live in
 constant→local→local staging; F2 signedness-split dual read; F4 cross-symbol arithmetic
 (except the two named Q63/Q73 cases in [[aggregate-merge-family]]); F5 union-constructor
 CLOBBER; register pins; hardcoded-`$N` asm; build-time rewriting; alias renames; redundant
-width casts.
+width casts (except the one Q82 compare in [[ordinary-c-judge-decidable]]).
 
 ## Owner ruling 2026-09-30 — SOTN precedent suffices
 

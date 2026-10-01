@@ -80,7 +80,7 @@ multi-write local outside Rulings 5-12 / Q51; nothing on a banned list or refuse
 ruling. The run-scoped orchestrator-decision and rotation clauses of Rulings 13/14 have
 expired.
 
-## Owner rulings on constant spellings (2026-10-01)
+## Owner rulings on narrow spellings (2026-10-01)
 
 - **Q76 — fixed-point rescale, func_80058580 only.** At its two `lh; sra 4` sites (target 0x8005AB34 and 0x8005ACCC),
   `0x200 - ((x * 0x100) >> 12)` (4.12 multiply by 1/16, the function's own `* k >> 12` idiom on
@@ -90,6 +90,10 @@ expired.
   (`end_off = arg2 + 0x4F0; size = end_off - arg2;`) nor end-of-chunk minus start through a
   layout struct (`(u8 *)((T *)arg2 + 1) - (u8 *)arg2`) is admitted: both compute a constant by
   cancellation. The function stays open for a new mechanism.
+- **Q82 — one s16 compare, func_80058580 only.** `(s16)work2 < score` at the target's
+  `sll; sra 16; slt` (0x8005A338), work2 holding the Q75 best-score value, is admitted despite the
+  redundant-width-cast refusal, with a comment citing the sign-extend pair, the Q75 value and the measured
+  alternatives. No other cast or site.
 
 Related: [[no-new-park-categories]] · [[dead-store-fake-exception]] · [[judge-sole-gate]] ·
 [[review-discipline-before-commit]] · [[staged-value-reused-variable]]

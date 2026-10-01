@@ -279,3 +279,8 @@ evidence: memory/grind/func_80058580/evidence.md [s10]; layer-2 rev-58580-dm-b F
 Question for the owner (plain language): "In the AI routine, the shared scratch variable that holds the 'best score so far' (you allowed that in Q75) is compared as a 16-bit number: the shipped code sign-extends it from 16 bits right before the compare. Writing that needs a `(s16)` cast on the shared variable at that one compare, which the rules refuse as a redundant width cast (the value always fits). Every other spelling is measured and misses. Allow this one cast at this one compare, or keep the function open?"
 options: (A, recommended) Allow narrowly for func_80058580: `(s16)work2 < score` at 0x8005A338 only, with a comment citing the sll/sra pair, the Q75 value and the measurements. (B) Allow the shift-pair form instead. (C) Refuse: func_80058580 stays INCLUDE_ASM/active at 8 words.
 recommendation: (A). The narrowing is in the shipped bytes at that compare (the s16 view of the value, matching the function's other s16 scores pbest/sc); it is one disclosed cast, not a hidden pin or coercion of unrelated code.
+
+## 2026-10-01 — func_80058580 (d), q65-adoption step 14 (A8) camera_CalcAngles — owner rulings Q82-Q84 — resolution
+category: resolution
+evidence: docs/grind/owner-rulings-2026-09-26.md batch 38; docs/grind/decisions.md 2026-10-01 OWNER RULING Q82-Q84.
+disposition taken: func_80058580 (d) SPENT, option (A) allowed narrowly (Q82). camera_CalcAngles: Q83 (text1b -G8 if proven) failed its proof (EXE 16 bytes short); Q84 chose option (D): land Q65 with camera_CalcAngles reverted to INCLUDE_ASM and re-queued, A8 unchanged. Each landing still needs its own layer-2.

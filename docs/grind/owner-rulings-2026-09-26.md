@@ -781,13 +781,13 @@ The rule text is .claude/rules/reused-local-necessity.md (C) *Constant start + c
 Question, verbatim: "func_80058580: twice the code divides a value by 16 the fixed-point way. Written as `x >> 4`, our compiler merges the shift into the load and produces different bytes. Written as `(x * 0x100) >> 12` (multiply by the 4.12 fixed-point constant for 1/16, then drop 12 bits, the same pattern this function already uses on this value), it produces exactly the shipped bytes. Nothing cancels out, unlike Q45. Acceptable with a comment at each site?"
 Owner chose: **"Allow (Recommended)"** — option text: "Ordinary fixed-point C at these two sites, with a comment naming the 4.12 factor and the compiler fold it avoids."
 Other option offered: "Treat as Q45, refuse" — "Those two sites stay open (6 instructions off)."
-The rule text is .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on constant spellings (Q76).
+The rule text is .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on narrow spellings (Q76).
 
 ## Q77 — func_8005C8A8: the 0x4F0 slot after Q45 (REFUSED; Q45 stands)
 Question, verbatim: "func_8005C8A8 returns a fixed size, 0x4F0, which the original kept in a stack slot from entry to exit. You refused 'start + 0x4F0 - start under another name' (Q45). Every other route has been measured. Eight finished sibling functions in the same file write `end = start + size` at entry and `return end - start`. The exact matching forms are (A) that end-pointer variable with the subtraction moved to entry, or (C) 'end of the chunk minus its start', using a struct describing the chunk's real layout (15 tiles + sprite area + draw-mode space = 0x4F0). Both are still a constant computed by cancellation. The worker recommends B."
 Owner chose: **"B: keep refused (Recommended)"** — option text: "Q45 stands; the function stays open at 33 instructions off, and work continues only if a new mechanism turns up."
 Other options offered: "A: sibling end-pointer" — "`end_off = arg2 + 0x4F0; size = end_off - arg2;` at entry, annotated with a citation of the eight siblings, plus a fresh review."; "C: struct end-minus-start" — "`size = (u8*)((Buf*)arg2 + 1) - (u8*)arg2;` with the struct built from the function's own accesses, annotated, plus a fresh review."
-The rule text is .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on constant spellings (Q77).
+The rule text is .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on narrow spellings (Q77).
 
 # Owner exchange 2026-10-01 (thirty-sixth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
 Context: Q66 (2026-09-30) refused func_800770B8's restore store "for now", to be re-measured after Q65. laneA
@@ -821,3 +821,28 @@ Question, verbatim: "Q65 adoption, leftovers: two pieces of data just in front o
 Owner chose: **"Leave as raw data (Recommended)"** — option text: "Logged; revisit once text1b_tu1d's code reveals the real object sizes."
 Other option offered: "Split by best guess" — "Define small objects now from a guess at the sizes. Not backed by evidence, which the rules normally refuse."
 The rule text is .claude/rules/per-file-gp-model.md (A9).
+
+# Owner exchange 2026-10-01 (thirty-eighth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED (Q83 conditional, failed)
+Context: borderline.md 2026-10-01 entries "func_80058580 (d)" (laneB, after layer-2 rev-58580-dm-b FAIL) and
+"q65-adoption step 14 (A8) — camera_CalcAngles" (laneA, after Q79).
+
+## Q82 — func_80058580 (d): the best score's s16 compare
+Question, verbatim: "func_80058580 (AI routine) is now cast-free except one spot. The shared scratch variable holding the 'best score so far' (allowed by your Q75) is compared as a 16-bit number: the shipped code sign-extends it from 16 bits right before the compare (shift left 16, shift right 16). In C that needs `(s16)work2 < score` at that one compare. The standing rules refuse this as a 'redundant width cast', because the value (-1 to 0x27E) always fits. Every other spelling was measured and misses: a separate 16-bit 'best' variable is 23 instructions off, and no cast is 8 off. The original most likely had a 16-bit variable that our compiler allocates differently. Allow this one cast at this one compare?"
+Owner chose: **"Allow narrowly (Recommended)"** — option text: "Only `(s16)work2 < score` at 0x8005A338, with a comment citing the sign-extend pair, the Q75 value and the measurements; fresh review. func_80058580 can then land."
+Other option offered: "Refuse" — "The redundant-width-cast ban stands; func_80058580 stays assembly, 8 instructions off, and the search continues."
+The rule text is .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on narrow spellings (Q82).
+
+## Q83 — text1b compiled -G8 (camera_CalcAngles, Q65 A8 join)
+Question, verbatim: "Q65, side effect of your Q79 alignment answer: in text1b two 16-bit variables (D_800A33C8/D_800A33CA) must become one 2-element array. One small function, camera_CalcAngles, writes both halves and returns the array's address. Written as an array it compiles 1 instruction longer, because text1b is compiled without the small-data option (-G8). The original compiler with -G8 produces the exact original code, and so does ours with -G8. So the original file was most likely compiled -G8. Options: compile text1b with -G8 (measured both ways; it lands only if every other text1b function stays byte-identical), or hold the adoption."
+Owner chose: **"text1b -G8, if proven (Recommended)"** — option text: "Add text1b to the -G8 file list at the gp switch, only if a both-ways build shows every other text1b function byte-identical; otherwise it comes back as a hold. Fresh review."
+Other option offered: "Hold the adoption" — "Q65 waits until a plain C spelling for camera_CalcAngles is found; nothing changes in the build."
+Outcome (same day): the condition failed. laneA measured text1b under cc1 -G8 and other functions change (the EXE
+comes out 16 bytes short; ledger 200e065b9), so no rule text was added; superseded by Q84.
+
+## Q84 — camera_CalcAngles after Q83 failed its proof
+Question, verbatim: "Q65 is blocked on one function. The -G8 route you allowed (Q83) failed its proof: compiling text1b with -G8 changes other functions (the EXE comes out 16 bytes short). So camera_CalcAngles, a finished function, can't be written in C once its two 16-bit variables become the 2-element array your Q79 alignment rule requires: every spelling is 1 instruction long. Keeping them as two separate variables isn't possible either, because Sony's 4-byte alignment would move the second one. How should the adoption proceed?"
+Owner chose: **"Land Q65, reopen 1 fn (Recommended)"** — option text: "Apply the adoption with Sony's alignment model exact; camera_CalcAngles goes back to assembly and back into the queue, with its 1-instruction residual recorded (the Q37 fallback). Everything else proceeds."
+Other options offered: "Exempt small statics" — "Align only statics of 4+ bytes to 4; smaller ones keep size alignment. camera_CalcAngles stays C, but the model departs from Sony's measured behaviour for sub-word statics."; "Hold the adoption" — "Nothing lands until a C spelling for camera_CalcAngles is found. The rest of the series waits."
+Record only (a one-time action in the adoption series, no rule text): the series reverts camera_CalcAngles to
+INCLUDE_ASM at the step that joins D_800A33C8[2] (its pre-revert C body banked in its ledger with the measured
+1-instruction residual) and re-queues it active; A8 is applied unchanged.

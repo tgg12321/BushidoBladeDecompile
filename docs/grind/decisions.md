@@ -1106,3 +1106,14 @@ layer-2 on each changed body. Q80 "Accept in text1b": D_800A3264 is text1b's K3 
 table D_8009B0C0 stays an open record. Q81 "Leave as raw data": D_800A3530 / D_800A3534 stay in asm/data, logged; revisit once
 text1b_tu1d's code reveals the real object sizes.
 Rule text: .claude/rules/per-file-gp-model.md (A8, A9).
+
+## 2026-10-01 — OWNER RULING — Q82-Q84: func_80058580 s16 best compare allowed narrowly; text1b -G8 failed its proof; camera_CalcAngles reopened as asm in the Q65 series
+
+Thirty-eighth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 38). Q82 "Allow narrowly":
+`(s16)work2 < score` at func_80058580's sll/sra/slt compare (0x8005A338) only, commented with the sign-extend pair,
+the Q75 value and the measured alternatives; fresh layer-2; no other cast or site. Q83 "text1b -G8, if proven":
+granted only if a both-ways build showed every other text1b function byte-identical; it did not (EXE 16 bytes short,
+ledger 200e065b9), so nothing changes in GP_FILES. Q84 "Land Q65, reopen 1 fn": the adoption applies A8 unchanged;
+camera_CalcAngles reverts to INCLUDE_ASM at the step that joins D_800A33C8[2] (C body and its 1-instruction residual
+to be banked in its ledger) and is re-queued active (Q37-style fallback). Rule text: .claude/rules/ordinary-c-judge-decidable.md
+(Q82); Q83/Q84 are records only.
