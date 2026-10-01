@@ -35,15 +35,14 @@ typedef struct MotionFrame {
 /* Header of one move record of a character's move script (the u16 stream
  * func_80021424 returns pointers into; PracticeMenuRec.unk_50 is the current
  * move, unk_7C a buffered one).  unk_00 / unk_02 are follow-up move ids,
- * unk_04 the motion id func_80021A98 reads, unk_07 / unk_08 frame bounds
- * against PracticeMenuRec.unk_40, unk_09 flag bits; unk_0A starts the
+ * unk_07 / unk_08 frame bounds against PracticeMenuRec.unk_40, unk_09 flag
+ * bits (func_80023F08, func_80055B60, func_80058580); unk_0A starts the
  * command list func_80023F08 walks: (flags, move id[, mask lo, mask hi])
  * entries of 2 or 4 halfwords, ended by a zero flags word. */
 typedef struct MoveScript {
     u16 unk_00;
     u16 unk_02;
-    u16 unk_04;
-    u8  unk_06;
+    u8  unk_04[0x07 - 0x04];
     u8  unk_07;
     u8  unk_08;
     u8  unk_09;

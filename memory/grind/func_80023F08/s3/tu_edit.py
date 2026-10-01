@@ -6,7 +6,7 @@ from pathlib import Path
 body, outdir = sys.argv[1:3]
 out = Path(outdir)
 out.mkdir(parents=True, exist_ok=True)
-B = open(body).read().rstrip("\n")
+B = None if body == "-" else open(body).read().rstrip("\n")
 
 
 def edit(stem, reps):
@@ -19,7 +19,7 @@ def edit(stem, reps):
 
 
 edit("code6cac_tu2", [
-    ('INCLUDE_ASM("asm/funcs", func_80023F08);', B, 1),
+] + ([('INCLUDE_ASM("asm/funcs", func_80023F08);', B, 1)] if B else []) + [
     ("extern void func_80023F08(s32, s32);", "extern void func_80023F08(s32, PadState *);", 1),
     ("func_80023F08(0, (s32)&buf);", "func_80023F08(0, &buf);", 1),
     ("func_80023F08(1, (s32)&buf);", "func_80023F08(1, &buf);", 1),

@@ -156,7 +156,10 @@ void func_80023F08(s32 arg0, PadState *pad) {
         ent = rec->unk_50->unk_0A;
         while ((cmd = ent[0]) != 0) {
             /* FAKE: named intermediate (no-new-park-categories.md family 6): the
-             * entry's 32-bit class mask, held unsigned. Tested directly as an int,
+             * entry's class mask, a 32-bit set with one bit per character class
+             * (unk_0A, 27 classes; bit set = the entry applies), held as a u32
+             * bitset as func_8002AB08 holds its mask_a / mask_b / mask_c (layer-2
+             * rev-2AB08-dm PASS). Tested directly as an int,
              * fold-const.c:4437 turns (mask & (1 << cls)) != 0 into
              * ((mask >> cls) & 1) != 0 (srav / andi; score 3); against an unsigned
              * mask the int (1 << cls) is converted, the rewrite does not apply and

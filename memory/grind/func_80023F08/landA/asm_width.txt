@@ -1,0 +1,10 @@
+func_8001EA84.s              167 sb   D_80101F7B rec0+0xB3   unk_B3                 u8   AGREE
+func_8001FBE8.s               51 sh   D_80101F14 rec0+0x4C   unk_4C                 s16  AGREE
+func_8001FBE8.s               63 sh   D_8010238E rec1+0x7A   unk_7A                 s16  AGREE
+func_8001FBE8.s               65 sh   D_80101F42 rec0+0x7A   unk_7A                 s16  AGREE
+func_80021904.s               11 lh   D_80101F12 rec0+0x4A   unk_4A                 s16  AGREE
+func_80021974.s               11 lh   D_80101F12 rec0+0x4A   unk_4A                 s16  AGREE
+func_800219E4.s               11 lh   D_80101F12 rec0+0x4A   unk_4A                 s16  AGREE
+func_80021A3C.s               11 lh   D_80101F12 rec0+0x4A   unk_4A                 s16  AGREE
+func_80023F08.s             1030 lh   D_80101F12 rec0+0x4A   unk_4A                 s16  AGREE
+# Counter({'AGREE': 9})
