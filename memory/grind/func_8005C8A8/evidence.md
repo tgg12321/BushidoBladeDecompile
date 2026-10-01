@@ -301,3 +301,32 @@ computes it at the return (`subu $v0, ...` before `jr $ra`). The sibling-faithfu
 idiom supports an end-pointer local but not by itself the entry-time subtraction.
 Status: every admissible spelling found is at 33; the closing forms (e2 / the tile cancellation) need an owner
 ruling. Question: docs/grind/borderline.md 2026-10-01 func_8005C8A8. Item stays active, no rotation.
+
+## s5b (2026-10-01, laneA) — the deciding pass, named from dumps; typed end-of-object forms
+
+Dumps (probes/s5/dump.sh: the build cc1 with -da on the spliced TU, fix1 game.h; function-only sections):
+- 33 body (candidate.c): f.rtl insn 38 `(set (reg/v:SI 81) (const_int 1264))` (literal from expand);
+  f.cse insn 38 gains `REG_EQUAL (const_int 1264)` (cse.c:6918-6934); f.combine unchanged; f.lreg insn 38 is
+  `NOTE_INSN_DELETED` and the return insn 1911 is `(set (reg/i:SI 2 v0) (const_int 1264))`: local-alloc.c
+  update_equiv_regs (1019-1032 REG_EQUAL -> REG_EQUIV for reg_n_sets == 1; one use -> substituted into the
+  use and the init deleted) removes the pseudo; f.greg/func.s `li $2,0x4f0` at the return, frame 176.
+- 0 body (probes/s5/e2.c): f.rtl/f.cse/f.cse2 insn 41 `(set (reg/v:SI 82) (minus (reg/v 81) (reg/v 76)))`
+  with r81 = r76 + 1264 and NO note (cse does not simplify (minus (plus a c) a) through the two pseudos);
+  f.combine insn 38 deleted, insn 41 `(set (reg/v:SI 82) (const_int 1264))` with no REG_EQUAL (combine's
+  substitution + simplify); update_equiv_regs finds no note, r82 stays a global pseudo, gets no hard reg and
+  reload gives it the 0x70 slot: func.s `li $8,0x4f0; sw $8,112($sp)` at entry, `lw $2,112($sp)` at the
+  return, frame 184. The deciding pass is CSE: a source form whose constant cse can see loses the slot.
+- t2 (typed end-of-object pointer over an s32 address, `(u8 *)((Buf5C8A8 *)arg2 + 1) - (u8 *)arg2`): the
+  int->pointer casts keep fold-const from seeing the same operand, the tree becomes arg2 - (arg2 - 0x4F0),
+  and the RTL goes the e2 way (cse no note, combine folds): 0. With arg2 typed `Buf5C8A8 *` (p1/p2/p3) the
+  same subtraction folds at tree level and scores 33. probes/s5/scores.txt.
+What object is 0x4F0: the prim chunk this call fills from the prim-pool cursor D_800A38B4 (callers advance it
+by the return: src/code6cac_c2.c:748, src/code6cac_tu2.c:2196); laid out as 15 TILEs (0xF0), the sprite area
+func_8007352C writes (0x3E8), 0x18 of draw-mode space (one DR_MODE used at +0x4D8). No such type, header field
+or caller-side size exists in the code or data; callers pass the bare cursor. sizeof of a declared layout is a
+literal (t1, 33). So every 0-form found computes the size as end minus start of the same address: t2 has no
+second NAME (Q45's literal boundary) but is still a cancellation that works only because the s32 parameter
+hides the identity from fold. Not landed; added to the borderline.md 2026-10-01 entry as option (C).
+Permuter not run this round: every byte-exact route found needs a cse-invisible constant (above), which a
+permuter mutation of the 33 body cannot introduce except as such a cancellation; two earlier campaigns
+(s2, 9.2k iterations) found nothing below their bases.

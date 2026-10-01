@@ -18,3 +18,20 @@ u4  union { s32 n; } size; size = (typeof(size)) 0x4F0;  same clobber; d_u4 f.fl
     `(clobber (reg/v:SI 81))`, f.lreg keeps REG_EQUAL (not EQUIV), li/sw 112($sp) + lw at return,
     frame 184; the only diff is the li/sw scheduled to the top of the prologue                          4
 d1  s64 size                                                                                             88
+
+# deeper round (same harness). Buf5C8A8 = { Tile5C8A8 tiles[15]; u8 sprt[0x3E8]; u32 modes[2][3]; } (0x4F0),
+# the layout the body's own accesses show (tiles at +0, the func_8007352C sprite cursor at +0xF0, the draw mode
+# at +0x4D8); declared in the candidate only.
+t1  size = sizeof(Buf5C8A8);                                         33  (literal)
+t2  size = (u8 *)((Buf5C8A8 *)arg2 + 1) - (u8 *)arg2;   arg2 stays s32  0
+t3  size = (u8 *)&((Buf5C8A8 *)arg2)->modes[2] - (u8 *)((Buf5C8A8 *)arg2)->tiles;   0
+t4  size = (u8 *)&((Buf5C8A8 *)arg2)[1] - (u8 *)arg2;                0
+p0  arg2 typed Buf5C8A8 *buf (tile/cur/mode_off through members), size = 0x4F0      33
+p1  typed: size = (u8 *)(buf + 1) - (u8 *)buf;                       33  (fold-const folds the
+    same-pointer difference at tree level: f.rtl `(set (reg/v:SI 82) (const_int 1264))`)
+p2  typed: size = (u8 *)&buf->modes[2] - (u8 *)buf->tiles;           33
+p3  typed: size = (s32)(buf + 1) - (s32)buf;                         33
+# t2 dumps (dump.sh t2): f.rtl insn 38 `(set (reg 89) (plus (reg/v 74) (const_int -1264)))`, insn 40
+# `(set (reg/v 81) (minus (reg/v 74) (reg 89)))` (the tree became arg2 - (arg2 - 0x4F0) through the int->pointer
+# casts); f.cse insn 40 unchanged, no REG_EQUAL; f.combine insn 40 `(set (reg/v 81) (const_int 1264))`, no note;
+# func.s li/sw 112($sp) + lw at the return. Same pass decision as e2: the constant appears only in combine.
