@@ -157,3 +157,16 @@ is ONE store of a value chosen on two paths, which is what a conditional express
 produces. T9 is "if the tempo is above or below the target, step it one unit toward the target". It has
 no goto, no multi-write local and no dead code. The `> || <` guard (instead of `!=`, T3) mirrors the
 `>` / `<` ladder of the function's own else-branch; `!=` scores 5.
+
+## 7. Layer-2 round 2 (rev-ssscore-r2): FAIL on one paperwork defect; _SsSndTempo PASS
+
+Recorded: func_80084CC0 FAIL 0e956ece35f317ae, _SsSndTempo PASS 4cbf41f446f92b99 (`> || <` guard is
+ordinary C under Ruling 13(B)). Objection: `velocity` is a multi-write local. "One meaning on exclusive
+paths" is not an admitting route; the route is Q51. The reviewer verified that SOTN
+src/main/psxsdk/libsnd/seqread.c @aa53500 declares `u8 var_s3;` at :57, writes it at :66 and :92 (the 0x90
+arm of each switch), and reads it only as _SsNoteOn's 4th argument at :68/:94. The file is matched
+(config/splat.us.main.yaml:188), and _SsGetSeqData has no INCLUDE_ASM or NON_MATCHING.
+Fix (comments only): the header comment cites Q51 and SOTN's var_s3, and the declaration carries the
+`/* SOTN: ... */` tag plus a Q53 `/* FAKE: ... */` with the §6 receipts (v6/v6b/v6d/v6e = 40). The
+_SsSeqGetEof function-pointer cast is annotated as a prototype contradiction: the target loads $a2 at both
+calls (0x80084D68 `lbu $a2,1($v1)`, 0x8008500C `addiu $a2,$zero,0x2F`), and the definition reads two.
