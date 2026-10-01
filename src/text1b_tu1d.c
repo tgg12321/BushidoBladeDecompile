@@ -258,7 +258,7 @@ void func_8006E8CC(s32 *a0) {
     LoadImage(rect, data);
     DrawSync(0);
 }
-void func_8006E950(s32 *a0, s32 *a1) {
+void func_8006E950(s32 a0, s32 *a1) {
     s32 *s1 = a1;
     s32 s2;
     s32 s3;
@@ -267,7 +267,7 @@ void func_8006E950(s32 *a0, s32 *a1) {
     s32 v0;
     s16 rect[4];
 
-    s0_addr = (s32)a0;
+    s0_addr = a0;
     game_FrameLoop();
     v0 = func_80036EA8(2, s0_addr);
     cdrom_StartRead(v0, (s32)s1);
