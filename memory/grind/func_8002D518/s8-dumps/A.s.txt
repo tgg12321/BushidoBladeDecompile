@@ -1,0 +1,229 @@
+func_8002D518:
+	.frame	$sp,8,$31		# vars= 8, regs= 0/0, args= 0, extra= 0
+	.mask	0x00000000,0
+	.fmask	0x00000000,0
+	move	$9,$5
+	lw	$5,0($6)
+	lw	$3,0($7)
+	#nop
+	slt	$2,$5,$3
+	.set	noreorder
+	.set	nomacro
+	beq	$2,$0,.L680
+	subu	$sp,$sp,8
+	.set	macro
+	.set	reorder
+
+	subu	$2,$0,$4
+	slt	$2,$3,$2
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L700
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+	slt	$2,$4,$5
+	.set	noreorder
+	.set	nomacro
+	beq	$2,$0,.L683
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+	j	.L700
+.L680:
+	subu	$2,$0,$4
+	slt	$2,$5,$2
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L700
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+	slt	$2,$4,$3
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L700
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+.L683:
+	lw	$5,4($6)
+	lw	$3,4($7)
+	#nop
+	slt	$2,$5,$3
+	.set	noreorder
+	.set	nomacro
+	beq	$2,$0,.L687
+	subu	$2,$0,$4
+	.set	macro
+	.set	reorder
+
+	slt	$2,$3,$2
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L700
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+	slt	$2,$4,$5
+	.set	noreorder
+	.set	nomacro
+	beq	$2,$0,.L690
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+	j	.L700
+.L687:
+	slt	$2,$5,$2
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L700
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+	slt	$2,$4,$3
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L700
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+.L690:
+	lw	$4,0($7)
+	lw	$5,0($6)
+	#nop
+	subu	$4,$4,$5
+	mult	$4,$4
+	lw	$2,4($7)
+	lw	$3,4($6)
+	mflo	$8
+	#nop
+	subu	$2,$2,$3
+	mult	$2,$2
+	mflo	$6
+	#nop
+	#nop
+	mult	$4,$5
+	mflo	$4
+	#nop
+	#nop
+	mult	$2,$3
+	mflo	$11
+	#nop
+	#nop
+	mult	$5,$5
+	mflo	$5
+	#nop
+	#nop
+	mult	$3,$3
+	addu	$2,$4,$11
+	mflo	$3
+	#nop
+	sll	$7,$2,1
+	sra	$2,$7,9
+	mult	$2,$2
+	addu	$2,$5,$3
+	subu	$2,$2,$9
+	sra	$2,$2,9
+	addu	$5,$8,$6
+	mflo	$4
+	#nop
+	sra	$3,$5,9
+	sll	$2,$2,2
+	mult	$3,$2
+	mflo	$3
+	#nop
+	#nop
+	subu	$6,$4,$3
+	.set	noreorder
+	.set	nomacro
+	bgez	$6,.L694
+	sltu	$2,$6,1024
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	j	.L700
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+.L694:
+	.set	noreorder
+	.set	nomacro
+	beq	$2,$0,.L696
+	move	$4,$6
+	.set	macro
+	.set	reorder
+
+	lbu	$2,g_sqrt_table_u8($6)
+	.set	noreorder
+	.set	nomacro
+	j	.L697
+	srl	$6,$2,3
+	.set	macro
+	.set	reorder
+
+.L696:
+	.set	noreorder
+	.set	nomacro
+	bltz	$6,.L698
+	move	$3,$0
+	.set	macro
+	.set	reorder
+
+ #APP
+	addu   $t4, $4, $zero
+mtc2   $t4, $30
+nop
+nop
+addu   $t4, $sp, $zero
+swc2   $31, 0($t4)
+
+ #NO_APP
+	lw	$3,0($sp)
+.L698:
+	li	$2,-2			# 0xfffffffe
+	and	$2,$3,$2
+	li	$3,0x00000016		# 22
+	subu	$3,$3,$2
+	srl	$2,$4,$3
+	lbu	$4,g_sqrt_table_u8($2)
+	srl	$3,$3,1
+	li	$2,0x00000013		# 19
+	subu	$2,$2,$3
+	sll	$4,$4,16
+	srl	$6,$4,$2
+.L697:
+	sll	$6,$6,9
+	subu	$2,$0,$7
+	addu	$4,$2,$6
+	sll	$4,$4,8
+	sll	$3,$5,1
+	div	$4,$4,$3
+	subu	$2,$2,$6
+	sll	$2,$2,8
+	div	$3,$2,$3
+	.set	noreorder
+	.set	nomacro
+	bltz	$4,.L699
+	move	$5,$0
+	.set	macro
+	.set	reorder
+
+	slt	$5,$3,257
+.L699:
+	move	$2,$5
+.L700:
+	addu	$sp,$sp,8
+	j	$31
+	.end	func_8002D518
