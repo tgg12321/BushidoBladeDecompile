@@ -89,7 +89,7 @@ void func_8002AB08(s32 mode) {
                 other->unk_34A -= 1;
                 *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][1];
                 *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][0];
-                func_8002A458((u8 *)self, (s32 *)&hit, (s32 *)&deep, 0);
+                func_8002A458((u8 *)self, &hit, &deep, 0);
                 mask_a |= hit;
             } else {
                 func_80032854(i == 0, 0x32, (u8 *)(i == 0 ? &SPAD->unk00[1][1] : &SPAD->unk00[0][1]), 0);
@@ -103,7 +103,7 @@ void func_8002AB08(s32 mode) {
             other->unk_34A -= 1;
             *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][1];
             *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][0];
-            func_8002A458((u8 *)self, (s32 *)&hit, (s32 *)&deep, other->unk_0C == 0xE);
+            func_8002A458((u8 *)self, &hit, &deep, other->unk_0C == 0xE);
             func_80032854(i == 0, 0x2A, (u8 *)(i == 0 ? &SPAD->unk00[1][1] : &SPAD->unk00[0][1]), 0);
             mask_a |= hit;
         }
@@ -358,6 +358,9 @@ void func_8002AB08(s32 mode) {
         if (mask_b & (1 << idx) & ~mask_c) {
             strong = 0;
         }
+        /* func_80027AD8's sixth argument is a record pointer on its pass-1 calls (func_80031B24) and,
+         * on this pass-0 call, the 0/1 alternate-blade flag the target passes in that slot: its
+         * `tbl == NULL ? 0xB : 0x19` picks the same reaction func_80029454 picks from +0x8C. */
         func_80027AD8(0, (u8 *)self, idx, ang, strong, (Tbl8008E194 *)alt, flag, 0);
         other->unk_AD = 0;
     }

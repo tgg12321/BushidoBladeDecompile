@@ -14,4 +14,5 @@ for k, v in (("114.vx", "114[0].vx"), ("114.vy", "114[0].vy"), ("114.vz", "114[0
              ("124.vx", "114[1].vx"), ("124.vy", "114[1].vy"), ("124.vz", "114[1].vz")):
     sub1('src/code6cac_tu2.c', f"    p->unk_{k} = 0;\n", f"    p->unk_{v} = 0;\n")
 sub1('undefined_syms_auto.txt', "retire with func_80023F08, func_8002AB08, func_80055B60 */", "retire with func_80023F08, func_80055B60 */")
+sub1('src/code6cac_b_tu2.c', 'void func_8002A458(u8 *obj, s32 *hit, s32 *deep, s32 quiet) {', 'void func_8002A458(u8 *obj, u32 *hit, u32 *deep, s32 quiet) {')
 print("applied")

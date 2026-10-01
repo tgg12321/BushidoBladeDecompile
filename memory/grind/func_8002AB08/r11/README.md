@@ -47,9 +47,10 @@ body (stmtcheck.txt, 38/38).
 | pv_idx | 131 | | alt blade/hitalt | 118/107 |
 | pv_alt / pv_work | 118 / 9 | | work lensq/dist/ang/weight | 2/3/4/9 |
 Structural respellings (fst_*.c, scores_final.txt): side tested inline 197; hitalt inline 123; point indices
-u8 36; weight s16 20; nearest u8 129. Permuter campaign from fpv_all (perm_setup.sh workspace with the header
-overlay, -j2, ~20 min, 433 iterations, permuter_harvest_typed.json): base 14699, best find 11653 (a stale copy
-of the hit mask into dy_seg_ reused for mask_c); the landing body scores 30 on the same scorer
+u8 36; weight s16 20; nearest u8 129. Permuter campaign from fpv_all of the landing body (perm_setup.sh workspace with the
+header overlay, -j2, ~20 min, 451 iterations, permuter_harvest_final.json): base 14699, best find 12713. The
+previous body's split (identical but for two casts at the func_8002A458 call): 433 iterations, best 11653, a
+stale copy of the hit mask into dy_seg_ reused for mask_c (permuter_harvest_typed.json); the landing body scores 30 on the same scorer
 (relocation/sdata residue; 0 in the engine sandbox). The untyped round: 370 iterations, best 12734
 (permuter_harvest.json).
 
@@ -79,3 +80,19 @@ call-saved registers; reload1.c alter_reg gives each unallocated pseudo its own 
 - alt (target $fp): reused -> $fp; split, blade is spilled to memory and hitalt takes $s0.
 - work (target $a1 throughout): reused, one global allocno -> first free $a1; split, lensq is local-alloc'd,
   dist and ang take $v1.
+
+## Other constructs (not Ruling 11)
+- `vec` (pointer-alias-fake-exception, `/* FAKE */` at its declaration): direct `&D_800A37E8` at the three call
+  sites 6 (fal_direct.c); alias declared inside the mode==1 block 6; alias assigned at the loop top 0 (same
+  mechanism, s3 scores_alias.txt). Mechanism (dumps/cand): pseudo 74 carries REG_EQUIV (symbol_ref
+  "D_800A37E8") in .lreg, ALLOCDBG `pseudo=74 hardreg=-1 pri=92` (lowest; live 1506 insns, 13 calls), so
+  reload1.c's reg_equiv_constant rematerializes the address at each use. In-file precedent:
+  func_80027AD8 `vec = &D_800A37E8;` (src/code6cac_b_tu2.c:395).
+- `hit` / `deep` are `u32` bitmasks (the 22-slot test `hit & (1 << temp3)` keeps sllv/and only on an unsigned
+  mask: fold-const.c:4437-4467 rewrites the signed form to `(hit >> n) & 1`; s32 locals score 3). The landing
+  retypes func_8002A458's out-parameters to `u32 *hit, u32 *deep` instead of casting (its cc1 output is
+  identical: typed/a458check.sh).
+- `(Tbl8008E194 *)alt`: func_80027AD8's sixth parameter carries a record on its pass-1 calls
+  (func_80031B24) and the 0/1 alternate-blade flag on this pass-0 call (the target loads `fp` into that
+  argument slot); its `tbl == NULL ? 0xB : 0x19` mirrors func_80029454's `+0x8C != 0 ? 0x19 : 0xB`.
+  Commented at the call.
