@@ -9,7 +9,7 @@ halfword of the static `s16 D_800A33C8[2]` in text1b (the M3 merge of sound + te
 memory/grind/q65-adoption/q56/adopt/s14_apply.py) puts this function back to INCLUDE_ASM (asm/funcs/
 camera_CalcAngles.s = func_80047384.s with its label renamed) and re-queues it (engine `queue reopen`).
 
-candidate.c is the array spelling on the Q65 tree (after step 08's casts). Residual: +1 instruction under our
+candidate.c is the array spelling on the Q65 tree (after step 08: SVECTOR rot, VECTOR sp18, MATRIX pos). Residual: +1 instruction under our
 cc1 -G0. The element store's constant address is not a legitimate -G0 MIPS address, so cc1 puts it in a
 register (memory_address), and cse shares that register with the returned address:
 target `negu v1,v0 / lui v0 / addiu v0 / sh v1,gp(D_800A33C8) / sh s0,gp(D_800A33CA)`, ours

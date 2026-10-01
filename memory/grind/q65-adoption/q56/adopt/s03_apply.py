@@ -44,6 +44,13 @@ INC_ADDED = [l for l in rd("src/text1b_tu1c.c").split(NL)[:12] if l.startswith("
 D = "docs/grind/rodata-align-2026-09-30.md"
 sub1(D, "| text1b.c | unchanged head, then snd_Init .. func_80060E38 |",
      f"| text1b.c | unchanged head, then snd_Init .. {prev} |")
+sub1(D, "## 9. The text1b / text1b_tu1c boundary moves to func_80061064 (2026-09-30, closes section 8's caveat)",
+     "## 9. The text1b / text1b_tu1c boundary moves to func_80061064 (2026-09-30, closes section 8's caveat; moved again to func_80060A68 by the Q65 adoption, step 03)")
+sub1(D, "rodata) it sits at func_80061064's extern block.\n",
+     "rodata) it sits at func_80061064's extern block. The Q65 adoption (step 03, per-file-gp-model.md\n"
+     "\"Boundary move instead of a merge\") moves the cut inside this window to func_80060A68, the one\n"
+     "position that puts every gp user of text1b_tu1c's per-file objects on one side; the rodata start\n"
+     "0x800158E0 is unchanged (func_80060A68 .. func_80060E38 own no rodata).\n")
 sub1(D, "| text1b_tu1c.c | func_80061064 .. the function before func_8006E534 |",
      "| text1b_tu1c.c | func_80060A68 .. the function before func_8006E534 (func_80060A68 .. func_80060E38 moved here by owner ruling Q65: per-file gp model, boundary move in the recorded window) |")
 msg = [

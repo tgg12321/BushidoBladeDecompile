@@ -46,6 +46,14 @@ body = body.replace("\nvoid func_80060A68(void) {",
 body = body.rstrip(NL) + "\n#undef OB\n"
 wr(p, t[:fstart] + body + t[fend:])
 print(f"text1b_tu1c func_80060A68: {n} member accesses through OB")
+# its header comment cited a declaration that no longer exists (layer-2 round 2, step-14 note 5)
+sub1(p, """ *   - :3358 `extern s32 *D_800A3468;` -- the matched sibling func_80061064 ALREADY declares this
+ *     exact global with a pointer type.  The pointer typing is not this session's invention; it is
+ *     the file's existing, accepted declaration for the same symbol.
+""", """ *   - :3358 (then) `extern s32 *D_800A3468;` -- the matched sibling func_80061064 declared this global
+ *     with a pointer type at the time.  Since the Q65 adoption (step 14) the file declares it once, as
+ *     the `s32` its other users read and write, and this function reaches the object through the OB view.
+""")
 p = "src/text1a_post.c"
 sub1(p, "void func_800420D0(void) {\n    extern s16 g_anim_hit_flags;\n    g_anim_counter = 0;\n    g_anim_hit_flags = 0;\n",
      "extern s16 g_anim_hit_flags[];\nvoid func_800420D0(void) {\n    g_anim_counter = 0;\n    g_anim_hit_flags[0] = 0;\n")
@@ -55,6 +63,22 @@ k = t.index("void func_800420D0(void) {")
 rest = t[k:]
 assert rest.count("extern s16 g_anim_hit_flags[];\n") == 1
 wr(p, t[:k] + rest.replace("extern s16 g_anim_hit_flags[];\n", "", 1))
+# ---- the memory-card file name is its own object (layer-2 round 2, step-15 finding 5): D_800A31F0 holds its
+# address (0x80010AAC). func_80038170 copies exactly 0x40 halfwords (128 bytes = 32 words) of D_80010A2C; the
+# six words after them are the string "BASLUS-00663BUSHIDO2" and its zero padding. Same bytes, same place.
+p = "src/code6cac_c_mid.c"
+sub1(p, """ * arrays since the content is word-aligned. D_80010A2C ends with the literal
+ * save-file id "BASLUS-00663BUSHIDO2" (per the asm/data block's content). */""",
+     """ * arrays since the content is word-aligned. D_80010A2C is the 128 bytes func_80038170 copies
+ * (0x40 halfwords); the save-file id after it is its own object, D_80010AAC, whose address
+ * D_800A31F0 holds. */""")
+sub1(p, """const u32 D_80010A2C[38] = {""", """const u32 D_80010A2C[32] = {""")
+sub1(p, """    0x00001000, 0x008EB200, 0x00000000, 0x00020000,
+    0x4C534142, 0x302D5355, 0x33363630, 0x48535542,
+    0x324F4449, 0x00000000,
+};""", """    0x00001000, 0x008EB200, 0x00000000, 0x00020000,
+};
+const char D_80010AAC[24] = "BASLUS-00663BUSHIDO2";""")
 # ---- per-word names of array elements -> the array's elements
 p = "src/text1a_post.c"
 sub1(p, "extern s16 g_anim_counter;\n", "")

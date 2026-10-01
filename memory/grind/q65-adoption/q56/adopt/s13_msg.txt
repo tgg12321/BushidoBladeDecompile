@@ -1,0 +1,8 @@
+Owner rulings Q65/Q68 (amendment A3): under maspsx -G<n> an initialized object of <= n bytes that our cc1 put
+in `.data` moves to `.sdata` as a unit (its .globl/.align/.type/.size head, label and data), as cc1psx -G8
+emits it. Calibration: docs/grind/gp-model-2026-09-30.md A.3 (global objects) and A.3b, added here
+(initialized statics, 3-byte arrays at +0/+4, an 8-byte .string array; cc1psx_static_probe.sh). Layer-2 round 2
+also calibrated function-scope initialized statics (cc1 names like fl.4 / fc.5): cc1psx -G8 puts them in .sdata
+in source order and ours matches (none exist in the tree). Sizes come from .size; .string/.asciz count the
+decoded bytes + 1, .ascii escape-aware. Tests: tools/maspsx/tests/test_small_data_sdata.py (our cc1's real
+output for the probe, cc1psx's sections as expectations), engine test. Inert without -G (byte-neutral here).

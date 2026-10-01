@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from adoptlib import *
 os.chdir(sys.argv[1])
 parts = ["text1b_tu2", "text1b_b"]
-run(f"{H}/mergec.py", "src/text1b_b.c", *[f"src/{p}.c" for p in parts])
+merge_msg("11", "Rule: per-file-gp-model.md Merge (owner ruling Q67 group): text1b_tu2 + text1b_b are one original file; declarations reconciled in step 10 (evidence: s11_apply.py docstring, m34_evidence.md).", "src/text1b_b.c", *[f"src/{p}.c" for p in parts])
 for p in parts[:-1]:
     os.remove(f"src/{p}.c")
 ld_merge("text1b_b", parts)

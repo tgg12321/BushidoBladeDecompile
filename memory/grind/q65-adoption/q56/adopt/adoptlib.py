@@ -10,6 +10,26 @@ def run(*a):
     assert r.returncode == 0, r.stderr
 
 
+def merge_msg(nn, intro, out, *parts):
+    """run mergec.py and write the step's commit body (tmp/q56/adopt/sNN_msg.txt): the intro, then every
+    verbatim-identical re-declaration the merge dropped, grouped by text with its count (layer-2 round 2)"""
+    r = subprocess.run([sys.executable, f"{H}/mergec.py", out, *parts], capture_output=True, text=True)
+    print(r.stdout.strip())
+    assert r.returncode == 0, r.stderr
+    drops = {}
+    for l in r.stdout.splitlines():
+        if "dropped verbatim repeat (" in l:
+            txt = l.split("): ", 1)[1]
+            drops.setdefault(txt, []).append(l.split("(", 1)[1].split(")")[0])
+    body = [intro, "",
+            f"Besides concatenating the parts in link order (union of their include blocks), the merge drops "
+            f"{sum(len(v) for v in drops.values())} file-scope declarations that repeat, verbatim, one already emitted "
+            f"earlier in the merged file (each object keeps its first declaration):"]
+    for txt, where in sorted(drops.items(), key=lambda kv: -len(kv[1])):
+        body.append(f"- {txt}  x{len(where)} ({', '.join(where[:4])}{', ...' if len(where) > 4 else ''})")
+    open(f"{H}/s{nn}_msg.txt", "w", newline=NL).write(NL.join(body) + NL)
+
+
 def rd(p):
     return open(p).read()
 

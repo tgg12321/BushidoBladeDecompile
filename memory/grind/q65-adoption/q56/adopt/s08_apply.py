@@ -146,4 +146,61 @@ hw = [h for w in words for h in (w & 0xFFFF, w >> 16)]
 new = "/* D_800153F0: 22 halfwords (44B) @ 0x800153F0 */\n" + REC + "const Unk800153F0Record D_800153F0 = {{\n" + \
       "".join("    " + ", ".join(f"0x{h:04X}" for h in hw[i:i + 8]) + ",\n" for i in range(0, 22, 8)) + "}};\n"
 sub1(PR, old, new)
+# the libgte prototypes take SVECTOR / VECTOR / MATRIX: the locals handed to them are those types (layer-2 round 2,
+# step 08: no (SVECTOR *) / (VECTOR *) / (MATRIX *) puns on s16[3] / s32[3..8] arrays); byte-identical (sound.o)
+sub1(SD, """void func_800475A4(void) {
+    s16 rot[3];
+    s32 result[4];""", """void func_800475A4(void) {
+    SVECTOR rot;
+    VECTOR result;""")
+sub1(SD, """    rot[0] = 0;
+    rot[1] = 0;
+    rot[2] = 0x6590;
+    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, (SVECTOR *)rot, (VECTOR *)result);
+
+    angle = ratan2(result[0], result[2]);
+
+    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
+    result[2] = computed;
+
+    {
+        s16 neg = -ratan2(result[1], computed);""", """    rot.vx = 0;
+    rot.vy = 0;
+    rot.vz = 0x6590;
+    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, &rot, &result);
+
+    angle = ratan2(result.vx, result.vz);
+
+    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz + (s32)Judge[angle & 0xFFF] * result.vx) >> 12;
+    result.vz = computed;
+
+    {
+        s16 neg = -ratan2(result.vy, computed);""")
+sub1(SD, """    s16 rot[3];
+    s32 sp18[3];
+    s32 pos[8];
+    s16 s0;
+
+    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, pos);
+    rot[0] = 0;
+    rot[1] = 0;
+    rot[2] = 0x1000;
+    ApplyMatrix((MATRIX *)pos, (SVECTOR *)rot, (VECTOR *)sp18);
+    s0 = ratan2(sp18[0], sp18[2]);
+    sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
+              + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
+    D_800A33C8 = -ratan2(sp18[1], sp18[2]);""", """    SVECTOR rot;
+    VECTOR sp18;
+    MATRIX pos;
+    s16 s0;
+
+    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, (s32 *)&pos);
+    rot.vx = 0;
+    rot.vy = 0;
+    rot.vz = 0x1000;
+    ApplyMatrix(&pos, &rot, &sp18);
+    s0 = ratan2(sp18.vx, sp18.vz);
+    sp18.vz = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18.vz
+              + (s32)Judge[s0 & 0xFFF] * sp18.vx) >> 12;
+    D_800A33C8 = -ratan2(sp18.vy, sp18.vz);""")
 print("M3 reconciliation applied")

@@ -10,7 +10,7 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from adoptlib import *
 os.chdir(sys.argv[1])
-run(f"{H}/mergec.py", "src/code6cac_c2.c", "src/code6cac_c2.c", "src/config.c")
+merge_msg("07", "Rule: per-file-gp-model.md Merge (owner ruling Q65 group): code6cac_c2 + config are one original file; declarations reconciled in step 06 (evidence: s07_apply.py docstring).", "src/code6cac_c2.c", "src/code6cac_c2.c", "src/config.c")
 os.remove("src/config.c")
 ld_merge("code6cac_c2", ["code6cac_c2", "config"])
 print("step 7 applied")

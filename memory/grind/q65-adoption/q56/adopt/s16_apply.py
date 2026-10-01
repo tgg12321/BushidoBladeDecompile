@@ -65,4 +65,38 @@ OLD = ["text1a_c", "code6cac_b_tu2", "text1b", "code6cac_b2_pre", "replay_camera
        "text1a_c2", "text1a_b", "text1a_b_pre_rodata", "sound", "text1b_tu2"]
 r = subprocess.run([sys.executable, f"{H}/relocate_records.py", R] + OLD, capture_output=True, text=True)
 print(r.stdout.strip()); assert r.returncode == 0, r.stderr
+# tools/sched_solver/validate.py's default stems name config.c, merged into code6cac_c2.c by step 07
+edit("tools/sched_solver/validate.py", [('DEFAULT_STEMS = ["config", ', 'DEFAULT_STEMS = ["code6cac_c2", ')])
+# dead small-data rows (layer-2 round 2): a symbol-file row in the small-data area that no C file, no header,
+# no INCLUDE_ASM function's .s and no asm data file names any more is an alias left behind by the
+# reconciliations (e.g. g_anim_hit_flags[1]'s old name): it goes
+import glob
+texts = [open(p).read() for p in glob.glob("src/*.c") + glob.glob("include/*.h") + glob.glob("asm/data/*.s")]
+inc = set()
+for p in glob.glob("src/*.c"):
+    inc |= set(re.findall(r'INCLUDE_ASM\(\s*"[^"]*"\s*,\s*(\w+)\s*\)', open(p).read()))
+texts += [open(f"asm/funcs/{fn}.s").read() for fn in sorted(inc) if os.path.exists(f"asm/funcs/{fn}.s")]
+blob = "\n".join(texts)
+DEAD = []
+for sf in ("undefined_syms_auto.txt",):   # named_syms.txt is the naming record, not auto rows: kept
+    L = open(sf).read().split(NL)
+    keep = []
+    for l in L:
+        m = re.match(r"^\s*(\w+)\s*=\s*0x([0-9A-Fa-f]+)\s*;", l)
+        if m and 0x800A30CC <= int(m.group(2), 16) < 0x800A3800 and not re.search(r"\b%s\b" % m.group(1), blob):
+            print(f"dead row removed: {sf} {m.group(1)}")
+            DEAD.append(f"{sf} {m.group(1)}")
+            continue
+        keep.append(l)
+    open(sf, "w", newline=NL).write(NL.join(keep))
+msg = ["Tooling and records follow the retired lists and the moved functions (owner ruling Q65). Byte-neutral.",
+       "- gate / key / root lists drop sdata_syms.txt / sdata_funcs.txt / sdata_exclude.txt: tools/grinder/grindlib.py,",
+       "  tools/check_root_cleanliness.py, tools/naming_wave.py, tools/data_wave.py, tools/desync_audit.py; the research",
+       "  scripts tools/ra_solver/mkasm_honest.sh, tools/sched_solver/mkasm.sh (per-file -G8 as the Makefile),",
+       "  tools/mar_perm_compile.sh, tools/mar_perm_workspace.sh (marionation_Exec is Sony library code: no -G8);",
+       "  tools/sched_solver/validate.py's default stems name code6cac_c2 for the merged config.",
+       "- records: relocate_records.py over the files steps 02-11 split, merged or cut (" + ", ".join(OLD) + "):",
+       "  " + (r.stdout.strip().replace(NL, "; ") or "no record moved") + ".",
+       "- dead small-data rows (no C file, header, INCLUDE_ASM .s or asm data names them): " + (", ".join(DEAD) or "none") + "."]
+open(f"{H}/s16_msg.txt", "w", newline=NL).write(NL.join(msg) + NL)
 print("step 16 applied")

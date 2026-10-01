@@ -9,6 +9,14 @@ at step16. Round-2 fixes for every layer-2 round-1 finding (tmp/orch/q65_fixes.m
 camera_CalcAngles back to INCLUDE_ASM and re-queued in step 14). Changed completed bodies per step with layer-2
 keys: q56/adopt/body_hashes.txt. Step commit bodies: s03_msg.txt, s08_msg.txt, s12_msg.txt, s14_msg.txt,
 s15_msg.txt (generated; full generator log s15_log.txt). Commit ids: q56/adopt/series_base.txt.
+Round 3 (2026-10-01): the generators carry every round-2 finding (tmp/orch/q65_fixes.md "# ROUND 2"): s08
+SVECTOR/VECTOR/MATRIX locals; s14 the memory-card file name D_80010AAC split out of D_80010A2C, the stale
+D_800A3468 comment; s15 types from another file's declaration (TYPED-ELSEWHERE), BLOCK-TAIL, address-valued
+words spelled as addresses (ADDRESS), DATA-MODEL notes for D_800A3224 / D_800A3290, rows and externs of every
+new object (incl. fillers), generated body with removed rows and blob pieces; s16 dead auto rows,
+validate.py stems; generated bodies for 01/03/05/07/09/11/12/13/14/15/16; step.sh logs engine/maspsx tests.
+Checked on a test clone (chain.sh, s08..s16): oracle at every step. The final regeneration waits for laneB /
+laneC's landings (§ Application plan).
 
 ## Regenerating on current main
 

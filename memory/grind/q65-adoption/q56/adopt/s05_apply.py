@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from adoptlib import *
 os.chdir(sys.argv[1])
 M = ["code6cac_b2_pre", "replay_camera_rob_back_loose2", "code6cac_b2_post"]
-run(f"{H}/mergec.py", "src/code6cac_b2_post.c", *[f"src/{m}.c" for m in M])
+merge_msg("05", "Rule: per-file-gp-model.md Merge (owner ruling Q65 group): code6cac_b2_pre + replay_camera_rob_back_loose2 + code6cac_b2_post are one original file (evidence: s05_apply.py docstring).", "src/code6cac_b2_post.c", *[f"src/{m}.c" for m in M])
 for m in M[:-1]:
     os.remove(f"src/{m}.c")
 ld_merge("code6cac_b2_post", M)

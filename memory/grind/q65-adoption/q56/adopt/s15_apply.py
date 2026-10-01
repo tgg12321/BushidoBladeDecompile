@@ -103,6 +103,33 @@ for _o in sorted(os.listdir("/tmp/q56/pre04obj")):
             k = None
         if k:
             REFS.setdefault(sym, set()).add((_f, _func or "?", k))
+# image addresses -> the C-defined object there (pre-switch build): a small-data word whose original value is
+# such an address is spelled as that object's address (layer-2 round 2, step-15 finding 5)
+SYM_AT = {}
+for _l in subprocess.run("mipsel-linux-gnu-nm build/bb2.elf", shell=True, capture_output=True, text=True).stdout.splitlines():
+    _p = _l.split()
+    if len(_p) == 3:   # the image is one .main section, so data shows as T; c_definition_of keeps C data only
+        SYM_AT.setdefault(int(_p[0], 16), []).append(_p[2])
+NEED_EXTERN = {}   # file -> extern lines its initializers need
+CURRENT_FILE = [None]
+
+
+def vtext(v, es, signed, t=None):
+    """an initializer value: an image address that is a C-defined object's address is spelled as that address"""
+    if es == 4 and 0x80010000 <= v < 0x800A3800 and v in SYM_AT:
+        for nm in SYM_AT[v]:
+            cd = c_definition_of(nm)
+            if cd:
+                if cd[0] != f"src/{CURRENT_FILE[0]}.c":
+                    NEED_EXTERN.setdefault(CURRENT_FILE[0], []).append(cd[1])
+                expr = nm if cd[1].endswith("[];") else f"&{nm}"
+                log(f"ADDRESS {CURRENT_FILE[0]} value {v:#010x} spelled ({t or 's32'}){expr} ({cd[0]})")
+                return f"({t or 's32'}){expr}" if not (t and "*" in t) else (expr if cd[1].endswith("[];") else f"({t}){expr}")
+    if t and "*" in t:
+        return f"({t})0x{v:08X}" if v else "0"
+    return fmt(v, es, signed)
+
+
 # data words in the asm data files that name a symbol (a pointer in data whose owning C file is not known)
 DPTR = {}
 for _fn in sorted(os.listdir("asm/data")):
@@ -121,6 +148,31 @@ def parse_decl(d, name):
     t = " ".join(m.group(1).split())
     dims = re.findall(r"\[([^\]]*)\]", m.group(2))
     return t, dims
+
+
+SRC_TEXT = {p: open(p).read() for p in sorted([f"src/{g}" for g in os.listdir("src") if g.endswith(".c")] +
+                                             [f"include/{h}" for h in os.listdir("include") if h.endswith(".h")])}
+
+
+def decl_anywhere(nm):
+    """the first `extern T nm...;` any source file or header declares (types follow existing declarations), as
+    (path, decl text) - for an object a file reaches gp-relative without declaring it itself"""
+    for p, t in SRC_TEXT.items():
+        m = re.search(r"^\s*(extern\s+[^;{}()]*?\b%s\b(?:\s*\[[^\]]*\])*\s*;)" % re.escape(nm), t, re.M)
+        if m:
+            return p, " ".join(m.group(1).split())
+    return None
+
+
+def c_definition_of(nm):
+    """the C definition (`[const] T nm[...]` at file scope, not extern) of an image object, as an extern line"""
+    for p, t in SRC_TEXT.items():
+        if not p.startswith("src/"):
+            continue
+        m = re.search(r"^((?:const\s+)?[A-Za-z_]\w*(?:\s+\w+)*?)\s+\**\s*%s\s*(\[[^\]]*\])?\s*=" % re.escape(nm), t, re.M)
+        if m and not m.group(1).startswith(("extern", "static", "return")):
+            return p, f"extern {' '.join(m.group(1).split())} {nm}{'[]' if m.group(2) else ''};"
+    return None
 
 
 CPP = ("mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ "
@@ -219,6 +271,17 @@ for f, uses in sorted(P.items()):
                 log(f"UNPARSED decl {f} {nm}: {u['decls'][0]}")
                 continue
             objs.setdefault(u["addr"], []).append((nm, pd, u["gp"]))
+        # a gp-reached object this file does not declare takes the type another file declares for it (types
+        # follow existing declarations; layer-2 round 2, step-15 finding 3)
+        for nm, u in uses.items():
+            if u["region"] != reg or not u["gp"] or u["decls"] or u["addr"] in objs:
+                continue
+            da = decl_anywhere(nm)
+            if da:
+                pd = parse_decl(da[1], nm)
+                if pd:
+                    objs.setdefault(u["addr"], []).append((nm, pd, True))
+                    log(f"TYPED-ELSEWHERE {f} {nm}: {da[1]} ({da[0]}; {f} reaches it gp-relative without a declaration)")
         # an object another file ALSO reaches gp-relative cannot be this file's static: when it sits at an
         # end of the block it stays a tentative definition (interim, held merge) and the rest is the block
         shared = sorted(a for a, fs in gpown.items() if region(a) == reg and f in fs and len(fs) > 1)
@@ -290,9 +353,13 @@ for f, uses in sorted(P.items()):
         if hi_obj >= cur:
             hend = min(label_end(hi_obj), stop)
             items.append(("fill", cur, hend - cur, None))
-            log(f"BLOCK-END {f} {reg}: extends to {hex(hend)} (last gp-reached object {hex(hi_obj)} has no C declaration)")
+            log(f"BLOCK-END {f} {reg}: extends to {hex(hend)} (last gp-reached object {hex(hi_obj)} is declared in no C file; its extent is the original's label)")
             cur = last_end = hend
         end = last_end
+        le = min(label_end(max(hi_obj, lo)), stop)
+        if le - end >= 4:   # a shorter tail is alignment (END-PAD / A8 tail), not left-over data
+            log(f"BLOCK-TAIL {f} {reg} {hex(end)} ({le - end} B): after the last object of the block (inside the "
+                f"original's label run ending {hex(le)}), left in the data blob")
         # a gap the build's own alignment of the next object already produces is padding, not an object
         # (per-file-gp-model.md, gap clause); a block that ends on an odd byte is followed by the linker's
         # SUBALIGN(2) padding before the next input section (no filler byte)
@@ -475,8 +542,8 @@ def one_object(a, n, static_kw, init, nm):
     if init:
         vals = [int.from_bytes(b(a + i * es, es), "little") for i in range(k)]
         if k == 1:
-            return f"{static_kw}{t} {nm} = {fmt(vals[0], es, t[0] == 's')};"
-        return f"{static_kw}{t} {nm}[{k}] = {{ {', '.join(fmt(v, es, t[0] == 's') for v in vals)} }};"
+            return f"{static_kw}{t} {nm} = {vtext(vals[0], es, t[0] == 's', t)};"
+        return f"{static_kw}{t} {nm}[{k}] = {{ {', '.join(vtext(v, es, t[0] == 's', t) for v in vals)} }};"
     return f"{static_kw}{t} {nm}" + (f"[{k}]" if k > 1 else "") + ";"
 
 
@@ -533,13 +600,27 @@ def old_filler_decls(start, size, static_kw, init):
     return out
 
 
+DATA_MODEL_NOTES = {
+    # layer-2 round 2, step-15 finding 4: bytes that belong to a larger object than its C declaration says;
+    # defined here as the declaration has it, the evidence logged for a later aggregate typing
+    "D_800A3224": "the w/h halves of the 8-byte RECT at D_800A3220 (code6cac_c2 passes &D_800A3220 to LoadImage, "
+                  "whose callee reads x/y/w/h); include/code6cac.h declares D_800A3220 u32",
+    "D_800A3290": "the second word of the 8-byte record at D_800A328C (text1b stores &D_800A328C as a descriptor's "
+                  "p_static for func_8007352C; its neighbours D_800A327C/3284/3294 are 8-byte records); text1b "
+                  "declares D_800A328C s32",
+}
+
+
 def fill_comment(nm, f):
     """what names a filler object, from the pre-switch objects' relocations and the asm data words"""
+    if nm in DATA_MODEL_NOTES:
+        log(f"DATA-MODEL {f} {nm}: {DATA_MODEL_NOTES[nm]} - defined as its own object, retype later")
+        return f"/* {DATA_MODEL_NOTES[nm]}; not named by code - logged (s15 DATA-MODEL) */"
     refs, dp = REFS.get(nm, set()), DPTR.get(nm, [])
     parts = []
     gpf = sorted({fn for g, fn, k in refs if k == "gp"})
     if gpf:
-        parts.append("reached gp-relative by " + ", ".join(gpf) + " (no C declaration yet)")
+        parts.append("reached gp-relative by " + ", ".join(gpf) + " (declared in no C file)")
     for kind, what in (("la", "address taken (lui/addiu)"), ("indexed", "indexed (lui + %lo)"),
                        ("direct", "direct lui/%lo access"), ("word", "a data word")):
         fs = sorted({(g, fn) for g, fn, k in refs if k == kind})
@@ -566,9 +647,39 @@ def fill_lines(a, size, f, reg):
 
 # ---- 2. write the definitions into the C files --------------------------------------------------------
 hdr_removed = {}
+FILL_NAMES = {}   # (file, region) -> names the gap fillers define
+
+
+def drop_externs(nm, f, src):
+    """K2: a static is defined only in F - F's file-scope `extern`, every other file's `extern` (file or block
+    scope) and a header's go (a header line also decided cc1's static emission order)"""
+    pat0 = r"^extern\s+[^;{}()]*\b%s\b(?:\s*\[[^\]]*\])*\s*;[^\n]*\n" % re.escape(nm)
+    pat1 = r"^[ \t]*extern\s+[^;{}()]*\b%s\b(?:\s*\[[^\]]*\])*\s*;[^\n]*\n" % re.escape(nm)
+    src, n = re.subn(pat0, "", src, flags=re.M)
+    for g in sorted(os.listdir("src")):
+        if not g.endswith(".c") or g == f"{f}.c":
+            continue
+        gt = open(f"src/{g}").read()
+        gt2, gn = re.subn(pat1, "", gt, flags=re.M)
+        if gn:
+            open(f"src/{g}", "w", newline=NL).write(gt2)
+            log(f"EXTERN-REMOVED src/{g}: {gn} extern line(s) of {nm} (now a static of {f})")
+    for hp in sorted(os.listdir("include")):
+        if not hp.endswith(".h"):
+            continue
+        ht = open(f"include/{hp}").read()
+        ht2, hn = re.subn(pat0, "", ht, flags=re.M)
+        if hn:
+            open(f"include/{hp}", "w", newline=NL).write(ht2)
+            hdr_removed.setdefault(hp, []).append(nm)
+            log(f"HEADER include/{hp}: extern {nm} removed (now a static of {f})")
+    return src
+
+
 for f in sorted(set(defs) | set(tentative)):
     path = f"src/{f}.c"
     src = open(path).read()
+    CURRENT_FILE[0] = f
     top, bottom = [], []
     for reg, items in defs.get(f, []):
         if reg == "static":
@@ -577,34 +688,19 @@ for f in sorted(set(defs) | set(tentative)):
             bottom.append("/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */")
         for kind, a, size, o in items:
             if kind == "fill":
-                (top if reg == "static" else bottom).extend(fill_lines(a, size, f, reg))
+                fl = fill_lines(a, size, f, reg)
+                (top if reg == "static" else bottom).extend(fl)
+                for l in fl:
+                    fnm = re.search(r"\b(\w+)(?:\[\d+\])?\s*(?:=|;)", l).group(1)
+                    FILL_NAMES.setdefault((f, reg), []).append(fnm)
+                    if reg == "static":
+                        src = drop_externs(fnm, f, src)
                 continue
             nm, t, dims, e, isgp = o
             dimtxt = "".join(f"[{d}]" for d in dims)
             if reg == "static":
                 top.append(f"static {t} {nm}{dimtxt};")
-                # a file-scope `extern` for it before the static is an error: drop the file's own, and a
-                # shared header's (only this file reaches a static; the header line also decided the
-                # emission order, cc1 emitting statics in first-declaration order)
-                src, n = re.subn(r"^extern\s+[^;{}()]*\b%s\b(?:\s*\[[^\]]*\])*\s*;[^\n]*\n" % re.escape(nm), "", src, flags=re.M)
-                # K2: defined only in F - every other file's `extern` of it goes too (file or block scope)
-                for g in sorted(os.listdir("src")):
-                    if not g.endswith(".c") or g == f"{f}.c":
-                        continue
-                    gt = open(f"src/{g}").read()
-                    gt2, gn = re.subn(r"^[ \t]*extern\s+[^;{}()]*\b%s\b(?:\s*\[[^\]]*\])*\s*;[^\n]*\n" % re.escape(nm), "", gt, flags=re.M)
-                    if gn:
-                        open(f"src/{g}", "w", newline=NL).write(gt2)
-                        log(f"EXTERN-REMOVED src/{g}: {gn} extern line(s) of {nm} (now a static of {f})")
-                for hp in sorted(os.listdir("include")):
-                    if not hp.endswith(".h"):
-                        continue
-                    ht = open(f"include/{hp}").read()
-                    ht2, hn = re.subn(r"^extern\s+[^;{}()]*\b%s\b(?:\s*\[[^\]]*\])*\s*;[^\n]*\n" % re.escape(nm), "", ht, flags=re.M)
-                    if hn:
-                        open(f"include/{hp}", "w", newline=NL).write(ht2)
-                        hdr_removed.setdefault(hp, []).append(nm)
-                        log(f"HEADER include/{hp}: extern {nm} removed (now a static of {f})")
+                src = drop_externs(nm, f, src)
                 continue
             es, signed, isptr = e
             count = 1
@@ -612,9 +708,9 @@ for f in sorted(set(defs) | set(tentative)):
                 count *= int(d, 0)
             vals = [int.from_bytes(b(a + i * es, es), "little") for i in range(count)]
             if isptr:
-                vtxt = [f"({t})0x{v:08X}" if v else "0" for v in vals]
+                vtxt = [vtext(v, es, False, t) for v in vals]
             else:
-                vtxt = [fmt(v, es, signed) for v in vals]
+                vtxt = [vtext(v, es, signed, t) for v in vals]
             init = vtxt[0] if not dims else "{ " + ", ".join(vtxt) + " }"
             bottom.append(f"{t} {nm}{dimtxt} = {init};")
     tents = sorted(tentative.get(f, []))
@@ -648,6 +744,8 @@ for f in sorted(set(defs) | set(tentative)):
             first -= 1
         lines[first:first] = top + [""]
         src = NL.join(lines)
+    if NEED_EXTERN.get(f):
+        bottom = [l for l in dict.fromkeys(NEED_EXTERN[f])] + bottom
     if bottom:
         src = src.rstrip(NL) + NL + NL + NL.join(bottom) + NL
     open(path, "w", newline=NL).write(src)
@@ -686,6 +784,9 @@ for f, blocks in defs.items():
         for kind, a, size, o in items:
             if kind == "obj":
                 defined_names[o[0]] = (f, reg)
+for (f, reg), nms in FILL_NAMES.items():
+    for nm in nms:
+        defined_names.setdefault(nm, (f, reg))
 k2_violations = []
 for nm, (f, reg) in sorted(defined_names.items()):
     others = sorted(o for o, rs in refs_by_obj.items() if o != f and nm in rs)
@@ -700,6 +801,7 @@ for sf in ("undefined_syms_auto.txt", "named_syms.txt"):
         m = re.match(r"^\s*(\w+)\s*=\s*0x[0-9A-Fa-f]+\s*;", l)
         if m and m.group(1) in defined_names and not any(v[0] == m.group(1) for v in k2_violations):
             rows_removed.append((sf, m.group(1)))
+            log(f"ROW-REMOVED {sf} {m.group(1)}: defined in C by {defined_names[m.group(1)][0]}")
             continue
         keep.append(l)
     open(sf, "w", newline=NL).write(NL.join(keep))
@@ -762,6 +864,12 @@ for lo, hi in pieces:
         continue
     nm = "91C98" if lo == BLOB0 else "%X" % (lo - 0x80010000 + 0x800)
     open(f"asm/data/{nm}.data.s", "w", newline=NL).write(piece_text(lo, hi))
+    if lo >= SD0:
+        labs = [x for x in _LABEL_ADDRS if lo <= x < hi]
+        desc = ", ".join(f"{BLOB_LABELS[x]}" + (f" (named by {sorted({r[0] for r in REFS.get(BLOB_LABELS[x], set())})})"
+                         if REFS.get(BLOB_LABELS[x]) else "") for x in labs[:10]) + (f" and {len(labs) - 10} more labels" if len(labs) > 10 else "") or "no label"
+        log(f"BLOB-PIECE {nm} [{hex(lo)}, {hex(hi)}): {desc} - outside every file's block (no file reaches it "
+            f"gp-relative and no block's contiguity covers it), so it stays data")
     names.append((lo, nm))
 ld = open("bb2.ld").read()
 seq = []
@@ -859,7 +967,13 @@ open(f"{H}/s15_log.txt", "w", newline=NL).write(NL.join(LOG) + NL)
 msg = ["Rule: .claude/rules/per-file-gp-model.md (Q65, Q67-Q72; A8/A9 = Q79-Q81, rules: 8c57bc4ab). Generator: s15_apply.py (docstring); evidence",
        "docs/grind/gp-model-2026-09-30.md; full generator log banked as memory/grind/q65-adoption/q56/adopt/s15_log.txt.",
        "Explicit-relocation asm excluded from E1/E2/split: memory/grind/q65-adoption/q56/adopt/explicit_exclusions.md.", ""]
-for title, pfx in (("Blocks extended to their last gp-reached object (no C declaration yet)", "BLOCK-END"),
+for title, pfx in (("Blocks extended to their last gp-reached object, declared in no C file", "BLOCK-END"),
+                   ("gp-reached objects typed by another file's declaration", "TYPED-ELSEWHERE"),
+                   ("Bytes after a block's last object inside the original's label run, left in the data blob", "BLOCK-TAIL"),
+                   ("Small-data words whose original value is a C object's address, spelled as that address", "ADDRESS"),
+                   ("Object-model notes (evidence for a later type; defined here as declared)", "DATA-MODEL"),
+                   ("Symbol-file rows removed (objects now defined in C)", "ROW-REMOVED"),
+                   ("Data-blob pieces between the C blocks", "BLOB-PIECE"),
                    ("Alignment padding inside a block (no object: the next object's alignment produces it)", "PADDING"),
                    ("Block ends on an odd byte (linker SUBALIGN(2) padding, no object)", "END-PAD"),
                    ("(A6, Q71) runs no single object fits, split into the fewest aligned pieces", "A6 "),

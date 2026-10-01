@@ -241,7 +241,9 @@ note = ("\n#### A.3b Initialized statics, string arrays, alignment (`cc1psx_stat
         "`.align` (so the 3-byte `sd` sits 4 bytes after the 3-byte `sc`); the 16-byte `big` stays in `.data`. Our "
         "cc1 emits all of them in `.data` with `.type`/`.size` heads and `.string` for the char arrays. maspsx "
         "-G8 (step 13) moves each object with its whole head; `tools/maspsx/tests/test_small_data_sdata.py` runs "
-        "our cc1's real output for this probe against these sections. Not modelled: cc1psx -G8 also puts the "
+        "our cc1's real output for this probe against these sections. Function-scope initialized statics (cc1 "
+        "names them like `fl.4` / `fc.5`) were calibrated the same way in layer-2 round 2: cc1psx -G8 puts them "
+        "in `.sdata` in source order and maspsx -G8 reproduces it (the tree has none). Not modelled: cc1psx -G8 also puts the "
         "3-byte literal `$LC0` (\"xy\") in `.sdata`, where our cc1 puts it in `.rodata`; A3 covers `.data` only, "
         "so a game file with such a literal is a borderline case, not a silent widening.\n")
 t = rd(D)

@@ -33,8 +33,10 @@ git add -A . >/dev/null
 if [ -f "$OUT/s${NN}_msg.txt" ]; then { echo "$SUBJ"; echo; cat "$OUT/s${NN}_msg.txt"; } > /tmp/q56/msg$NN.txt
 else echo "$SUBJ" > /tmp/q56/msg$NN.txt; fi
 git -c core.hooksPath=/dev/null commit -qF /tmp/q56/msg$NN.txt && git tag -f "step$NN" >/dev/null
-bash "$REPO/tmp/q56/etest.sh"
+bash "$REPO/tmp/q56/etest.sh" | tee /tmp/q56/etest_step.txt
+echo "step $NN $(head -1 /tmp/q56/etest_step.txt); $(tail -1 /tmp/q56/etest_step.txt)" >> "$OUT/series_run.log"
 (cd tools/maspsx && python3 -m unittest discover -s tests -t . > "/tmp/q56/step$NN.maspsx.log" 2>&1
- echo "maspsx unittest failures: $(grep -E '^(FAIL|ERROR):' /tmp/q56/step$NN.maspsx.log | awk '{print $2}' | sort | tr '\n' ' ')(baseline: test_div_expand_li_nop test_expand_li_0x1)")
+ echo "maspsx unittest failures: $(grep -E '^(FAIL|ERROR):' /tmp/q56/step$NN.maspsx.log | awk '{print $2}' | sort | tr '\n' ' ')(baseline: test_div_expand_li_nop test_expand_li_0x1)") | tee -a /tmp/q56/mtest_step.txt
+echo "step $NN $(tail -1 /tmp/q56/mtest_step.txt)" >> "$OUT/series_run.log"
 git format-patch -1 --stdout > "$OUT/$NN-$NAME.patch"
 echo "files touched:"; git show --stat --format= HEAD | sed 's/^/  /'
