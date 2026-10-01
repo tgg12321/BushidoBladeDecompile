@@ -1,6 +1,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
+#include "bios.h"
 #include "sound.h"
 #include "game.h"
 #include "code6cac.h"
@@ -1321,276 +1322,25 @@ s32 func_800788B0(void) {
     return D_800A3608 >= 0xB40;
 }
 
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel Exec\n"
-    "addiu $t2, $zero, 0xA0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x43\n"
-    "endlabel Exec\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_Exec */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel _bu_init\n"
-    "addiu $t2, $zero, 0xA0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x70\n"
-    "endlabel _bu_init\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios__bu_init_A0 */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel SetMem\n"
-    "addiu $t2, $zero, 0xA0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x9F\n"
-    "endlabel SetMem\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_SetMem */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel OpenEvent\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x8\n"
-    "endlabel OpenEvent\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_OpenEvent */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel CloseEvent\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x9\n"
-    "endlabel CloseEvent\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_CloseEvent */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel TestEvent\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0xB\n"
-    "endlabel TestEvent\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_TestEvent */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel EnableEvent\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0xC\n"
-    "endlabel EnableEvent\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_EnableEvent */
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel EnterCriticalSection\n"
-    "    addiu  $a0,$zero,1\n"
-    "    .word 0x0000000C\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel ExitCriticalSection\n"
-    "    addiu  $a0,$zero,2\n"
-    "    .word 0x0000000C\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel SetSp\n"
-    "    addu  $v0,$sp,$zero\n"
-    "    jr  $ra\n"
-    "    addu  $sp,$a0,$zero\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+BIOS_A_FUNCTION(Exec, 0x43);
+BIOS_A_FUNCTION(_bu_init, 0x70);
+BIOS_A_FUNCTION(SetMem, 0x9F);
+BIOS_B_FUNCTION(OpenEvent, 0x8);
+BIOS_B_FUNCTION(CloseEvent, 0x9);
+BIOS_B_FUNCTION(TestEvent, 0xB);
+BIOS_B_FUNCTION(EnableEvent, 0xC);
+INCLUDE_ASM("asm/funcs", EnterCriticalSection);
+INCLUDE_ASM("asm/funcs", ExitCriticalSection);
+INCLUDE_ASM("asm/funcs", SetSp);
 PAD_NOPS_1; /* padding after func_800789D8 */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel open\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x32\n"
-    "endlabel open\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_FileOpen_B */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel read\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x34\n"
-    "endlabel read\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_FileRead_B */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel write\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x35\n"
-    "endlabel write\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_FileWrite_B */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel close\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x36\n"
-    "endlabel close\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_FileClose_B */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel format\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x41\n"
-    "endlabel format\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_FormatDevice_B */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel firstfile\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x42\n"
-    "endlabel firstfile\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_firstfile_B */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel nextfile\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x43\n"
-    "endlabel nextfile\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_nextfile_B */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel ChangeClearPAD\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x5B\n"
-    "endlabel ChangeClearPAD\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_ChangeClearPad */
+BIOS_B_FUNCTION(open, 0x32);
+BIOS_B_FUNCTION(read, 0x34);
+BIOS_B_FUNCTION(write, 0x35);
+BIOS_B_FUNCTION(close, 0x36);
+BIOS_B_FUNCTION(format, 0x41);
+BIOS_B_FUNCTION(firstfile, 0x42);
+BIOS_B_FUNCTION(nextfile, 0x43);
+BIOS_B_FUNCTION(ChangeClearPAD, 0x5B);
 s32 SetRCnt(s32 arg0, s32 arg1, s32 arg2) {
     s32 a3;
     s32 t0;
@@ -1785,96 +1535,12 @@ s32 _IsVSync(void) {
     }
     return ret;
 }
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel InitPAD2\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x12\n"
-    "endlabel InitPAD2\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_InitPad */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel StartPAD2\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x13\n"
-    "endlabel StartPAD2\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_StartPad */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel StopPAD2\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x14\n"
-    "endlabel StopPAD2\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_StopPad */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel PAD_init2\n"
-    "addiu $t2, $zero, 0xB0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x15\n"
-    "endlabel PAD_init2\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_OutdatedPadInitAndStart */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel SysEnqIntRP\n"
-    "addiu $t2, $zero, 0xC0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x2\n"
-    "endlabel SysEnqIntRP\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_SysEnqIntRP */
-__asm__(
-    ".section .text\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel SysDeqIntRP\n"
-    "addiu $t2, $zero, 0xC0\n"
-    "jr    $t2\n"
-    "addiu $t1, $zero, 0x3\n"
-    "endlabel SysDeqIntRP\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-PAD_NOPS_1; /* padding after bios_SysDeqIntRP */
+BIOS_B_FUNCTION(InitPAD2, 0x12);
+BIOS_B_FUNCTION(StartPAD2, 0x13);
+BIOS_B_FUNCTION(StopPAD2, 0x14);
+BIOS_B_FUNCTION(PAD_init2, 0x15);
+BIOS_C_FUNCTION(SysEnqIntRP, 0x2);
+BIOS_C_FUNCTION(SysDeqIntRP, 0x3);
 
 extern void (*jtbl_800A3624)(void);
 /* func_80078F60 / func_80078F74: 5-insn bare tail-jump trampolines
@@ -1883,194 +1549,15 @@ extern void (*jtbl_800A3624)(void);
    2.7.2 has no MIPS sibling-call optimization, so no pure-C `(*fp)()` form
    emits a frameless `jr $t1` (it always builds a stack frame + jalr + jr $ra).
    Hand-coded canonical asm; user-authorized 2026-06-12. */
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel EnablePAD\n"
-    "    lui  $t1,%hi(jtbl_800A3620)\n"
-    "    lw  $t1,%lo(jtbl_800A3620)($t1)\n"
-    "    nop\n"
-    "    jr  $t1\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel DisablePAD\n"
-    "    lui  $t1,%hi(jtbl_800A3624)\n"
-    "    lw  $t1,%lo(jtbl_800A3624)($t1)\n"
-    "    nop\n"
-    "    jr  $t1\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel _patch_pad\n"
-    "    lui  $at,%hi(D_800A3618)\n"
-    "    sw  $ra,%lo(D_800A3618)($at)\n"
-    "    jal  EnterCriticalSection\n"
-    "    nop\n"
-    "    addiu  $t2,$zero,176\n"
-    "    jalr  $t2\n"
-    "    addiu  $t1,$zero,87\n"
-    "    lw  $v0,364($v0)\n"
-    "    lui  $at,%hi(jtbl_800A3620)\n"
-    "    addi  $v1,$v0,2180\n"
-    "    sw  $v1,%lo(jtbl_800A3620)($at)\n"
-    "    lui  $at,%hi(jtbl_800A3624)\n"
-    "    addi  $v1,$v0,2196\n"
-    "    addiu  $t1,$zero,11\n"
-    "    sw  $v1,%lo(jtbl_800A3624)($at)\n"
-    ".L80078FC4:\n"
-    "    addiu  $t1,$t1,-1\n"
-    "    sw  $zero,1428($v0)\n"
-    "    bnez  $t1,.L80078FC4\n"
-    "    addiu  $v0,$v0,4\n"
-    "    jal  FlushCache\n"
-    "    nop\n"
-    "    lui  $ra,%hi(D_800A3618)\n"
-    "    lw  $ra,%lo(D_800A3618)($ra)\n"
-    "    nop\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel FlushCache\n"
-    "    addiu $t2, $zero, 0xA0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0x44\n"
-    "    nop\n"
-    "    lui   $t1, %hi(D_800A362C)\n"
-    "    lw    $t1, %lo(D_800A362C)($t1)\n"
-    "    addiu $sp, $sp, -24\n"
-    "    sw    $ra, 20($sp)\n"
-    "    jalr  $t1\n"
-    "    nop\n"
-    "    lw    $ra, 20($sp)\n"
-    "    addiu $sp, $sp, 24\n"
-    "    jr    $ra\n"
-    "    nop\n"
-    "endlabel FlushCache\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel _send_pad\n"
-    "    lui  $at,%hi(D_800A3628)\n"
-    "    sw  $ra,%lo(D_800A3628)($at)\n"
-    "    jal  EnterCriticalSection\n"
-    "    nop\n"
-    "    addiu  $t2,$zero,176\n"
-    "    jalr  $t2\n"
-    "    addiu  $t1,$zero,87\n"
-    "    lw  $v0,364($v0)\n"
-    "    lui  $t2,%hi(func_800790A4)\n"
-    "    lui  $t1,%hi(D_800790B4)\n"
-    "    lui  $at,%hi(D_800A362C)\n"
-    "    addi  $v1,$v0,1952\n"
-    "    addiu  $t2,$t2,%lo(func_800790A4)\n"
-    "    addiu  $t1,$t1,%lo(D_800790B4)\n"
-    "    sw  $v1,%lo(D_800A362C)($at)\n"
-    ".L80079064:\n"
-    "    lw  $v1,0($t2)\n"
-    "    addiu  $t2,$t2,4\n"
-    "    sw  $v1,984($v0)\n"
-    "    addiu  $v0,$v0,4\n"
-    "    bne  $t2,$t1,.L80079064\n"
-    "    sw  $v1,1244($v0)\n"
-    "    jal  FlushCache\n"
-    "    nop\n"
-    "    jal  ExitCriticalSection\n"
-    "    nop\n"
-    "    lui  $ra,%hi(D_800A3628)\n"
-    "    lw  $ra,%lo(D_800A3628)($ra)\n"
-    "    lui  $v0,%hi(D_800A362C)\n"
-    "    lw  $v0,%lo(D_800A362C)($v0)\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel func_800790A4\n"
-    "    and  $v0,$v0,$s5\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+INCLUDE_ASM("asm/funcs", EnablePAD);
+INCLUDE_ASM("asm/funcs", DisablePAD);
+INCLUDE_ASM("asm/funcs", _patch_pad);
+INCLUDE_ASM("asm/funcs", FlushCache);
+INCLUDE_ASM("asm/funcs", _send_pad);
+INCLUDE_ASM("asm/funcs", func_800790A4);
 PAD_NOPS_3; /* padding after func_800790A4 */
 PAD_NOPS_3; /* padding after func_800790A4 */
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel _remove_ChgclrPAD\n"
-    "    lui  $at,%hi(D_800A3638)\n"
-    "    sw  $ra,%lo(D_800A3638)($at)\n"
-    "    jal  EnterCriticalSection\n"
-    "    nop\n"
-    "    addiu  $t2,$zero,176\n"
-    "    jalr  $t2\n"
-    "    addiu  $t1,$zero,87\n"
-    "    lw  $v0,364($v0)\n"
-    "    addiu  $t2,$zero,9\n"
-    "    addi  $v1,$v0,1580\n"
-    ".L800790E8:\n"
-    "    addiu  $t2,$t2,-1\n"
-    "    sw  $zero,0($v1)\n"
-    "    bnez  $t2,.L800790E8\n"
-    "    addiu  $v1,$v1,4\n"
-    "    jal  FlushCache\n"
-    "    nop\n"
-    "    jal  ExitCriticalSection\n"
-    "    nop\n"
-    "    lui  $ra,%hi(D_800A3638)\n"
-    "    lw  $ra,%lo(D_800A3638)($ra)\n"
-    "    nop\n"
-    "    jr  $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+INCLUDE_ASM("asm/funcs", _remove_ChgclrPAD);
 PAD_NOPS_1; /* padding after func_800790C0 */
 u8* memcpy(u8 *dst, u8 *src, s32 len) {
     u8 *ret;

@@ -133,7 +133,7 @@ InitGeom          # COP0 Status register manipulation: `mfc0 $v0, $12; mtc0 $v0,
 _patch_gte          # BIOS jumptable installer (jalr $t2 with $t1=0x56) + $k0 kernel-temp-register interrupt handler at D_8007FF44 (`addiu $k0, $zero, 0x100; lw $k0, 8($k0); lw $k0, 0($k0)`). Low-level kernel code not expressible in C.
 
 # break-instruction primitives
-func_800164F8          # break-instruction test: encoded as .word stream `0x2402270F (addiu); 0x0001000D (break code 0x10); 0x2442FFFF (addiu); 0x0441FFFD (bgez); 0x03E00008 (jr $ra)`. Tests the break-trap mechanism via raw word encoding because maspsx can't emit `break` with arbitrary code field.
+func_800164F8          # break-trap spin loop: C `for (i = 9999; i >= 0; i--)` around a one-instruction `break 1` island (.word 0x0001000D; maspsx cannot assemble break with a code operand). Whole-body .word block until 2026-10-01; re-expressed as C + island by the inline-asm audit (A7, docs/audits/INLINE-ASM-AUDIT-2026-10-01.md) -- the C compiles to the target 7 words exactly. break with a non-GCC code has no C form (GCC emits only break 6/7).
 PCopen          # break instruction `.word 0x000040CD` (break with code 0x103) plus return-value handling. Same pattern as authorized md_gview_init/bios_FileReadRaw; Marionation-engine custom kernel call.
 
 # BIOS jumptable installer (same pattern as authorized func_80078F88 / func_80079028)

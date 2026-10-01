@@ -6,19 +6,9 @@
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
+#include "bios.h"
 
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel AddDrv\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0x47\n"
-    "    nop\n"
-    "endlabel AddDrv\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+BIOS_B_FUNCTION(AddDrv, 0x47);
 
 __asm__(
     ".set noreorder\n"

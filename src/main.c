@@ -1,6 +1,7 @@
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
+#include "bios.h"
 #include "system.h"
 #include "psx.h"
 #include "sound.h"
@@ -2463,18 +2464,7 @@ void SpuQuit(void) {
         ExitCriticalSection();
     }
 }
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel DisableEvent\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0xD\n"
-    "    nop\n"
-    "endlabel DisableEvent\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+BIOS_B_FUNCTION(DisableEvent, 0xD);
 
 
 
@@ -3121,18 +3111,7 @@ s32 SpuClearReverbWorkArea(u32 rev_mode) {
     }
     return 0;
 }
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel WaitEvent\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0xA\n"
-    "    nop\n"
-    "endlabel WaitEvent\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+BIOS_B_FUNCTION(WaitEvent, 0xA);
 /* PsyQ 4.0 LIBSPU s_sk: SpuSetKey — verbatim-linked Sony object (census
  * 2026-07-09); C ref: sotn-decomp src/psxsdk/libspu/s_sk.c shape + PsyQ 4.0
  * S_SK object relocs (_spu_RQ = one u16[4]). Volatile decls are Ruling-4

@@ -1,5 +1,6 @@
 #include "common.h"
 #include "include_asm.h"
+#include "bios.h"
 #include "system.h"
 
 /* Forward declarations */
@@ -126,19 +127,7 @@ void v_wait(s32 a0, s32 a1) {
         }
     }
 }
-__asm__(
-    ".section .text\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel ChangeClearRCnt\n"
-    "    addiu $t2, $zero, 0xC0\n"
-    "    jr $t2\n"
-    "    addiu $t1, $zero, 0xA\n"
-    "    nop\n"
-    "endlabel ChangeClearRCnt\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+BIOS_C_FUNCTION(ChangeClearRCnt, 0xA);
 void ResetCallback(void) {
     ((void (*)(void))g_sys_irq_vtable[3])();
 }
@@ -373,86 +362,10 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-__asm__(
-    ".section .text\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel ReturnFromException\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr $t2\n"
-    "    addiu $t1, $zero, 0x17\n"
-    "    nop\n"
-    "endlabel ReturnFromException\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
-__asm__(
-    ".section .text\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel ResetEntryInt\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr $t2\n"
-    "    addiu $t1, $zero, 0x18\n"
-    "    nop\n"
-    "endlabel ResetEntryInt\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
-__asm__(
-    ".section .text\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel HookEntryInt\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr $t2\n"
-    "    addiu $t1, $zero, 0x19\n"
-    "    nop\n"
-    "endlabel HookEntryInt\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
-__asm__(
-    ".section .text\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel setjmp\n"
-    "    sw $ra, 0($a0)\n"
-    "    sw $gp, 44($a0)\n"
-    "    sw $sp, 4($a0)\n"
-    "    sw $fp, 8($a0)\n"
-    "    sw $s0, 12($a0)\n"
-    "    sw $s1, 16($a0)\n"
-    "    sw $s2, 20($a0)\n"
-    "    sw $s3, 24($a0)\n"
-    "    sw $s4, 28($a0)\n"
-    "    sw $s5, 32($a0)\n"
-    "    sw $s6, 36($a0)\n"
-    "    sw $s7, 40($a0)\n"
-    "    addu $v0, $zero, $zero\n"
-    "    jr $ra\n"
-    "    nop\n"
-    "    lw $ra, 0($a0)\n"
-    "    lw $gp, 44($a0)\n"
-    "    lw $sp, 4($a0)\n"
-    "    lw $fp, 8($a0)\n"
-    "    lw $s0, 12($a0)\n"
-    "    lw $s1, 16($a0)\n"
-    "    lw $s2, 20($a0)\n"
-    "    lw $s3, 24($a0)\n"
-    "    lw $s4, 28($a0)\n"
-    "    lw $s5, 32($a0)\n"
-    "    lw $s6, 36($a0)\n"
-    "    lw $s7, 40($a0)\n"
-    "    addu $v0, $a1, $zero\n"
-    "    jr $ra\n"
-    "    nop\n"
-    "    nop\n"
-    "    nop\n"
-    "endlabel setjmp\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+BIOS_B_FUNCTION(ReturnFromException, 0x17);
+BIOS_B_FUNCTION(ResetEntryInt, 0x18);
+BIOS_B_FUNCTION(HookEntryInt, 0x19);
+INCLUDE_ASM("asm/funcs", setjmp);
 extern s32 D_800A2614[8];
 extern volatile s32 Vcount;
 extern s32 *D_800A2638;
@@ -574,37 +487,8 @@ s32 GetVideoMode(void) {
     return g_sys_video_mode;
 }
 
-__asm__(
-    ".section .text\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel PCopen\n"
-    "    addu $a2, $a1, $zero\n"
-    "    addu $a1, $a0, $zero\n"
-    "    .word 0x000040CD\n"
-    "    beqz $v0, .L800836B0\n"
-    "    addu $v0, $v1, $zero\n"
-    "    addiu $v0, $zero, -0x1\n"
-    ".L800836B0:\n"
-    "    jr $ra\n"
-    "    nop\n"
-    "endlabel PCopen\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
-__asm__(
-    ".section .text\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel PCclose\n"
-    "    addu $a1, $a0, $zero\n"
-    "    .word 0x0000410D\n"
-    "    jr $ra\n"
-    "    nop\n"
-    "endlabel PCclose\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+INCLUDE_ASM("asm/funcs", PCopen);
+INCLUDE_ASM("asm/funcs", PCclose);
 extern s32 PClseek(s32, s32, s32);
 INCLUDE_ASM("asm/funcs", PClseek);
 INCLUDE_ASM("asm/funcs", __SN_ENTRY_POINT);
@@ -620,19 +504,7 @@ INCLUDE_ASM("asm/funcs", __SN_ENTRY_POINT);
 INCLUDE_ASM("asm/funcs", __main);
 INCLUDE_ASM("asm/funcs", __do_global_dtors);
 /* kengo:HIGH  |  is_motion/motion_Open  |  54i */
-__asm__(
-    ".section .text\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel InitHeap\n"
-    "    addiu $t2, $zero, 0xA0\n"
-    "    jr $t2\n"
-    "    addiu $t1, $zero, 0x39\n"
-    "    nop\n"
-    "endlabel InitHeap\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+BIOS_A_FUNCTION(InitHeap, 0x39);
 extern s32 _SN_read(s32, s32, s32, s32);
 
 s32 PCread(s32 addr, s32 dest, s32 len) {
@@ -661,22 +533,7 @@ s32 PCread(s32 addr, s32 dest, s32 len) {
     }
     return total;
 }
-__asm__(
-    ".section .text\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "glabel _SN_read\n"
-    "    .word 0x0000414D\n"
-    "    beqz $v0, .L8008394C\n"
-    "    addu $v0, $v1, $zero\n"
-    "    addiu $v0, $zero, -0x1\n"
-    ".L8008394C:\n"
-    "    jr $ra\n"
-    "    nop\n"
-    "endlabel _SN_read\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
+INCLUDE_ASM("asm/funcs", _SN_read);
 extern s32 _snd_seq_tick_env_plus_0x4;
 extern u8 _snd_seq_tick_env_plus_0x11;
 extern u8 _snd_seq_tick_env_plus_0x12;

@@ -1,5 +1,6 @@
 #include "common.h"
 #include "include_asm.h"
+#include "bios.h"
 #include "gpu.h"
 #include "psx.h"
 
@@ -82,54 +83,14 @@ u8 *memmove(u8 *dst, u8 *src, s32 n) {
     }
     return dst;
 }
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel _card_info\n"
-    "    addiu $t2, $zero, 0xA0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0xAB\n"
-    "    nop\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel _card_load\n"
-    "    addiu $t2, $zero, 0xA0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0xAC\n"
-    "    nop\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+BIOS_A_FUNCTION(_card_info, 0xAB);
+BIOS_A_FUNCTION(_card_load, 0xAC);
 void _card_clear(s32 a0) {
     _new_card(a0);
     _card_write(a0, 0x3F, 0);
 }
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel _card_write\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0x4E\n"
-    "    nop\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel _new_card\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0x50\n"
-    "    nop\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+BIOS_B_FUNCTION(_card_write, 0x4E);
+BIOS_B_FUNCTION(_new_card, 0x50);
 void InitCARD(s32 a0) {
     ChangeClearPAD(0);
     EnterCriticalSection();
@@ -151,83 +112,10 @@ void StopCARD(void) {
     _ExitCard();
 }
 
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel InitCARD2\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0x4A\n"
-    "    nop\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel StartCARD2\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0x4B\n"
-    "    nop\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel StopCARD2\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0x4C\n"
-    "    nop\n"
-    ".set reorder\n"
-    ".set at\n"
-);
-__asm__(
-    ".set\tnoreorder\n"
-    ".set noreorder\n"
-    ".set\tnoat\n"
-    ".set noat\n"
-    "glabel _ExitCard\n"
-    "\tlui\t$at,%hi(D_800A3648)\n"
-    "\tsw\t$ra,%lo(D_800A3648)($at)\n"
-    "\tjal\tEnterCriticalSection\n"
-    "\tnop\n"
-    "\taddiu\t$t2,$zero,176\n"
-    "\tjalr\t$t2\n"
-    "\taddiu\t$t1,$zero,86\n"
-    "\tlui\t$t2,%hi(D_8007A4C0)\n"
-    "\tlui\t$t1,%hi(D_8007A4CC)\n"
-    "\tlw\t$v0,24($v0)\n"
-    "\taddiu\t$t2,$t2,%lo(D_8007A4C0)\n"
-    "\taddiu\t$t1,$t1,%lo(D_8007A4CC)\n"
-    ".L8007A488:\n"
-    "\tlw\t$v1,0($t2)\n"
-    "\taddiu\t$t2,$t2,4\n"
-    "\taddiu\t$v0,$v0,4\n"
-    "\tbne\t$t2,$t1,.L8007A488\n"
-    "\tsw\t$v1,108($v0)\n"
-    "\tjal\tFlushCache\n"
-    "\tnop\n"
-    "\tjal\tExitCriticalSection\n"
-    "\tnop\n"
-    "\tlui\t$ra,%hi(D_800A3648)\n"
-    "\tlw\t$ra,%lo(D_800A3648)($ra)\n"
-    "\tnop\n"
-    "\tjr\t$ra\n"
-    "\tnop\n"
-    ".word 0\n"
-    ".word 0\n"
-    ".word 0\n"
-    ".word 0\n"
-    ".word 0\n"
-    ".word 0\n"
-    ".set\treorder\n"
-    ".set reorder\n"
-    ".set\tat\n"
-    ".set at\n"
-);
+BIOS_B_FUNCTION(InitCARD2, 0x4A);
+BIOS_B_FUNCTION(StartCARD2, 0x4B);
+BIOS_B_FUNCTION(StopCARD2, 0x4C);
+INCLUDE_ASM("asm/funcs", _ExitCard);
 u16 LoadTPage(s32 a0, s32 mode, s32 a2, s32 a3, s32 texpage, s32 width, s32 clut) {
     s16 buf[4];
     buf[0] = a3;

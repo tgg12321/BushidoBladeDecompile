@@ -100,20 +100,18 @@ extern void func_80060414(s32, u8 *, s32);
 
 
 /* --- Non-decompiled functions (INCLUDE_ASM) --- */
-__asm__(
-    ".set noreorder\n"
-    ".set noat\n"
-    "glabel func_800164F8\n"
-    "    .word 0x2402270F\n"
-    "    .word 0x0001000D\n"
-    "    .word 0x2442FFFF\n"
-    "    .word 0x0441FFFD\n"
-    "    .word 0x00000000\n"
-    "    .word 0x03E00008\n"
-    "    .word 0x00000000\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+/* func_800164F8 -- spins 10000 times executing `break 1` (0x0001000D). The loop
+ * is ordinary C; only the break has no C form, so it is a one-instruction island
+ * (spelled as its word: maspsx cannot assemble `break` with a code operand).
+ * Re-expressed 2026-10-01 from a whole-body .word block (inline-asm audit A7):
+ * this C compiles to the target's 7 words exactly. */
+void func_800164F8(void) {
+    s32 i;
+
+    for (i = 9999; i >= 0; i--) {
+        __asm__ volatile(".word 0x0001000D"); /* break 1 */
+    }
+}
 s32 pcdrv_LoadFile(s32 a0, u8 *dest) {
     s32 fd;
     s32 total;
