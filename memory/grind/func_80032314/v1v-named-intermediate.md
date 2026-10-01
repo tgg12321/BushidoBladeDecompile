@@ -29,5 +29,7 @@ Full rebuilds, oracle compare:
 ## Pre-existing citation
 The body's do-while(0) FAKE cites:
 - memory/grind/func_80032314/hypotheses.md: restored from b77e73fb3^ in the same ledger commit;
-- tmp/grind/func_80032314/s4/allocdbg.txt: a gitignored scratch file that no longer exists. Its
-  content is not recoverable, and this landing does not change that comment.
+- tmp/grind/func_80032314/s4/allocdbg.txt: a gitignored scratch file that no longer exists. It is
+  regenerated on the staged body as memory/grind/func_80032314/allocdbg-2026-09-30.txt (walker p74
+  4390 -> $a3, ent p75 4761 -> $a2, mult-temp p116 8000 -> $a1, as the comment claims) and the
+  comment re-pointed there (script tmp/laneH/allocdbg.sh, copied to v1v/allocdbg.sh).

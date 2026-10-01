@@ -1,0 +1,15 @@
+# BB2_ALLOC_DEBUG=1 tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float <src/code6cac_b_tu2.c preprocessed>  (staged combined landing, 2026-09-30)
+# section for func_80032314 only
+ALLOCDBG func=func_80032314 seed_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+ALLOCDBG func=func_80032314 ord=0 pseudo=114 hardreg=4 nrefs=12 livelen=13 pri=27692
+ALLOCDBG func=func_80032314 ord=1 pseudo=119 hardreg=65 nrefs=4 livelen=3 pri=26666
+ALLOCDBG func=func_80032314 ord=2 pseudo=126 hardreg=3 nrefs=6 livelen=5 pri=24000
+ALLOCDBG func=func_80032314 ord=3 pseudo=76 hardreg=3 nrefs=8 livelen=15 pri=16000
+ALLOCDBG func=func_80032314 ord=4 pseudo=77 hardreg=4 nrefs=8 livelen=18 pri=13333
+ALLOCDBG func=func_80032314 ord=5 pseudo=115 hardreg=4 nrefs=6 livelen=9 pri=13333
+ALLOCDBG func=func_80032314 ord=6 pseudo=117 hardreg=4 nrefs=4 livelen=6 pri=13333
+ALLOCDBG func=func_80032314 ord=7 pseudo=116 hardreg=5 nrefs=4 livelen=10 pri=8000
+ALLOCDBG func=func_80032314 ord=8 pseudo=75 hardreg=6 nrefs=10 livelen=63 pri=4761
+ALLOCDBG func=func_80032314 ord=9 pseudo=74 hardreg=7 nrefs=12 livelen=82 pri=4390
+ALLOCDBG func=func_80032314 ord=10 pseudo=72 hardreg=8 nrefs=7 livelen=84 pri=1666
+ALLOCDBG func=func_80032314 ord=11 pseudo=73 hardreg=9 nrefs=4 livelen=83 pri=963
