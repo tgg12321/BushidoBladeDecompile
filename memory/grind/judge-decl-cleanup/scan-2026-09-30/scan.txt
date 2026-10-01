@@ -1,0 +1,627 @@
+== func_80018094  src/code6cac.c  (4 hits)
+   src/code6cac.c:407  [cast]  dx = ((s32 *)arg0[1])[5] - arg1[10];
+   src/code6cac.c:409  [cast]  dy = ((s32 *)arg0[1])[6] - arg1[11];
+   src/code6cac.c:411  [cast]  dz = ((s32 *)arg0[1])[7] - arg1[12];
+   src/code6cac.c:530  [cast,offset]  *(MATRIX *)(dst + 5) = *(MATRIX *)arg0[1];
+== func_80018300  src/code6cac.c  (24 hits)
+   src/code6cac.c:602  [cast]  out = (s32 *)0x1F8000BC;
+   src/code6cac.c:603  [cast,offset]  count = *(s16 *)((u8 *)arg0 + 6) - 1;
+   src/code6cac.c:604  [cast,offset]  data = *(s32 **)((u8 *)arg0 + 0x10);
+   src/code6cac.c:605  [cast,offset]  base = *(u8 **)((u8 *)arg0 + 0xC);
+   src/code6cac.c:617  [cast]  p1 = (s32 *)(base + ((thresh >> 16) << 6));
+   src/code6cac.c:618  [cast]  p2 = (s32 *)(base + ((thresh & 0xFFFF) << 6));
+   src/code6cac.c:649  [cast]  *(s32 *)0x1F800000 = dx >> 3;
+   src/code6cac.c:650  [cast]  *(s32 *)0x1F800004 = dy >> 3;
+   src/code6cac.c:651  [cast]  *(s32 *)0x1F800008 = dz >> 3;
+   src/code6cac.c:658  [cast]  : : "r"((s32 *)0x1F800000) : "$12", "$13", "$14", "$15", "memory");
+   src/code6cac.c:674  [cast]  : : "r"((s32 *)0x1F80000C) : "$12", "$13", "$14", "$15", "memory");
+   src/code6cac.c:675  [cast]  sum = *(s32 *)0x1F80000C + *(s32 *)0x1F800010 + *(s32 *)0x1F800014;
+   src/code6cac.c:678  [cast]  p1 = (s32 *)(base + ((thresh >> 16) << 6));
+   src/code6cac.c:679  [cast]  p2 = (s32 *)(base + ((thresh & 0xFFFF) << 6));
+   src/code6cac.c:687  [cast]  p1 = (s32 *)(base + ((thresh >> 16) << 6));
+   src/code6cac.c:688  [cast]  p2 = (s32 *)(base + ((thresh & 0xFFFF) << 6));
+   src/code6cac.c:717  [cast]  : : "r"((s32 *)0x1F800000) : "$12", "$13", "$14", "$15", "memory");
+   src/code6cac.c:745  [cast]  *(s32 *)0x1F800000 = dx >> 3;
+   src/code6cac.c:746  [cast]  *(s32 *)0x1F800004 = dy >> 3;
+   src/code6cac.c:747  [cast]  *(s32 *)0x1F800008 = dz >> 3;
+   src/code6cac.c:754  [cast]  : : "r"((s32 *)0x1F800000) : "$12", "$13", "$14", "$15", "memory");
+   src/code6cac.c:767  [cast]  : : "r"((s32 *)0x1F80000C) : "$12", "$13", "$14", "$15", "memory");
+   src/code6cac.c:768  [cast]  sum = *(s32 *)0x1F80000C + *(s32 *)0x1F800010 + *(s32 *)0x1F800014;
+   src/code6cac.c:797  [cast]  : : "r"((s32 *)0x1F800000) : "$12", "$13", "$14", "$15", "memory");
+== func_800187F4  src/code6cac.c  (5 hits)
+   src/code6cac.c:888  [cast]  func_80018094((s32 *)arg0, arg1);
+   src/code6cac.c:889  [cast,offset]  count = *(s16 *)((u8 *)arg1 + 4);
+   src/code6cac.c:890  [cast]  node = (s32 *)arg1[3];
+   src/code6cac.c:936  [offset]  if (node[6] >= -0xFF) {
+   src/code6cac.c:991  [cast,offset]  if (*(s32 *)((u8 *)arg0 + 0xC) != 0) {
+== func_8001A67C  src/code6cac_tu2.c  (1 hits)
+   src/code6cac_tu2.c:516  [offset]  while ((((u32)(dx + 0x4000)) > 0x8000U) || (((u32)(dz + 0x4000)) > 0x8000U)) {
+== func_8001A820  src/code6cac_tu2.c  (32 hits)
+   src/code6cac_tu2.c:615  [cast]  scr = (CamScratch *)0x1F800000;
+   src/code6cac_tu2.c:623  [cast]  dx = ((s32 *)arg1)[0] - ((s32 *)arg0)[0];
+   src/code6cac_tu2.c:624  [cast]  dy = ((s32 *)arg1)[1] - ((s32 *)arg0)[1];
+   src/code6cac_tu2.c:625  [cast]  dz = ((s32 *)arg1)[2] - ((s32 *)arg0)[2];
+   src/code6cac_tu2.c:627  [cast]  scr->focus.vx = (((s32 *)arg0)[0] + ((s32 *)arg1)[0]) / 2;
+   src/code6cac_tu2.c:628  [cast]  scr->focus.vy = (((s32 *)arg0)[1] + ((s32 *)arg1)[1]) / 2;
+   src/code6cac_tu2.c:629  [cast]  scr->focus.vz = (((s32 *)arg0)[2] + ((s32 *)arg1)[2]) / 2;
+   src/code6cac_tu2.c:631  [cast]  scr->focus = *(CamVec *)arg0;
+   src/code6cac_tu2.c:641  [offset]  while ((u32)(x + 0x4000) > 0x8000U || (u32)(z + 0x4000) > 0x8000U) {
+   src/code6cac_tu2.c:670  [offset]  q = 0x2000000U / (dist + 0x4000) + 0x400;
+   src/code6cac_tu2.c:671  [cast,offset]  if (*(u16 *)(arg2 + 0x6A) == 0x13 || *(u16 *)(arg2 + 0x6A) == 0x1B || *(u16 *)(arg2 + 0x6A) == 0x30 ||
+   src/code6cac_tu2.c:672  [cast,offset]  *(u16 *)(arg3 + 0x6A) == 0x13 || *(u16 *)(arg3 + 0x6A) == 0x1B || *(u16 *)(arg3 + 0x6A) == 0x30) {
+   src/code6cac_tu2.c:680  [cast,offset]  if (*(u16 *)(arg2 + 0x6A) == 0xF || *(u16 *)(arg2 + 0x6A) == 0x1C || *(u16 *)(arg2 + 0x6A) == 0x1D ||
+   src/code6cac_tu2.c:681  [cast,offset]  *(u16 *)(arg2 + 0x6A) == 0x1E || *(u16 *)(arg2 + 0x6A) == 0x1F || *(u16 *)(arg2 + 0x6A) == 0x20 ||
+   src/code6cac_tu2.c:682  [cast,offset]  *(u16 *)(arg2 + 0x6A) == 0x21) {
+   src/code6cac_tu2.c:686  [cast,offset]  if (!(*(u16 *)(arg2 + 0x6A) == 0xF || *(u16 *)(arg2 + 0x6A) == 0x1C || *(u16 *)(arg2 + 0x6A) == 0x1D ||
+   src/code6cac_tu2.c:687  [cast,offset]  *(u16 *)(arg2 + 0x6A) == 0x1E || *(u16 *)(arg2 + 0x6A) == 0x1F || *(u16 *)(arg2 + 0x6A) == 0x20 ||
+   src/code6cac_tu2.c:688  [cast,offset]  *(u16 *)(arg2 + 0x6A) == 0x21) && cam->w18 < 0x1770) {
+   src/code6cac_tu2.c:701  [cast,offset]  if (*(u16 *)(arg2 + 0x6A) == 0x11) {
+   src/code6cac_tu2.c:716  [cast]  func_8001A538((s32 *)cam, (s32 *)&scr->eye);
+   src/code6cac_tu2.c:718  [cast,offset]  scr->head = *(CamVec *)(arg3 + 0xB8);
+   src/code6cac_tu2.c:720  [cast,offset]  scr->head = *(CamVec *)(arg2 + 0xB8);
+   src/code6cac_tu2.c:723  [cast]  if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm, (s32)&scr->unk60) &&
+   src/code6cac_tu2.c:724  [offset]  scr->nrm[1] < -0x320) {
+   src/code6cac_tu2.c:725  [cast]  func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
+   src/code6cac_tu2.c:753  [cast]  func_8001A538((s32 *)cam, (s32 *)&scr->eye);
+   src/code6cac_tu2.c:754  [cast]  if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm,
+   src/code6cac_tu2.c:756  [offset]  scr->nrm[1] < -0x320) {
+   src/code6cac_tu2.c:783  [cast]  func_8001A538((s32 *)cam, (s32 *)&scr->eye);
+   src/code6cac_tu2.c:784  [cast]  if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm,
+   src/code6cac_tu2.c:786  [offset]  scr->nrm[1] < -0x320) {
+   src/code6cac_tu2.c:787  [cast]  func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
+== func_8001B294  src/code6cac_tu2.c  (1 hits)
+   src/code6cac_tu2.c:848  [cast,offset]  void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30[0][0] = 0x64;    D_800F6608.h30[0][1] = 0;    D_800F6608.h30[0][2] = 0x64;    D_800F6608.h30[1][0] = 0x64;    D_800F6608.h30[1][1] = 0;    D_800F6608.h30[1][2] = 0x64;    func_8003F1E4(0);    D_800F6608.w0 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F6608.w4 = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = ratan2(dx, dy);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
+== func_8001B3C0  src/code6cac_tu2.c  (1 hits)
+   src/code6cac_tu2.c:849  [cast,offset]  void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5328.h30[0][0] = 0x64;    D_800F5328.h30[0][1] = 0;    D_800F5328.h30[0][2] = 0x64;    D_800F5328.h30[1][0] = 0x64;    D_800F5328.h30[1][1] = 0;    D_800F5328.h30[1][2] = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5328.w8 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
+== func_8001B748  src/code6cac_tu2.c  (3 hits)
+   src/code6cac_tu2.c:976  [cast,scalar&,table-name]  u8 *base = (u8 *)&D_80101EC8 + D_800A3748 * 0x44C;
+   src/code6cac_tu2.c:1000  [cast,offset]  s32 sum = (*((s32 *) (base + 0x19C))) + (*((s32 *) (base + 0x1A8)));
+   src/code6cac_tu2.c:1002  [cast,offset]  if ((avg - (*((s32 *) (base + 0x184)))) < 0xC8) {
+== func_8001BAE4  src/code6cac_tu2.c  (3 hits)
+   src/code6cac_tu2.c:1067  [cast,offset]  temp_a2 = ratan2(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4),
+   src/code6cac_tu2.c:1068  [cast,offset]  *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8));
+   src/code6cac_tu2.c:1077  [cast]  func_8001B748(&D_800F6608, arg0, arg1, (s32 *)arg2, var_s3, (0x500 - temp_a2) - (var_v0 >> 2));
+== func_8001F2E4  src/code6cac_tu2.c  (46 hits)
+   src/code6cac_tu2.c:2393  [cast,offset]  if (*(s16 *)(obj + 0x26C) == 0) {
+   src/code6cac_tu2.c:2394  [cast]  func_80027334((s32 *)a);
+   src/code6cac_tu2.c:2395  [cast]  func_80027334((s32 *)b);
+   src/code6cac_tu2.c:2397  [cast,offset]  if (*(u16 *)(obj + 0x6A) == 0x15 || *(u16 *)(obj + 0x6A) == 0x25) {
+   src/code6cac_tu2.c:2398  [cast,offset]  if (*(s16 *)(obj + 0xC) == 0x1F) {
+   src/code6cac_tu2.c:2406  [cast,offset]  tgt_z = (*(s16 *)(obj + 0x1D8) - *(s16 *)(obj + 0x1CA)) & 0xFFF;
+   src/code6cac_tu2.c:2410  [offset]  if (tgt_z < -0x1FF) {
+   src/code6cac_tu2.c:2415  [cast,offset]  dx = *(s32 *)(*(u8 **)obj + 0x180) - *(s32 *)(obj + 0x180);
+   src/code6cac_tu2.c:2416  [cast,offset]  dz = *(s32 *)(*(u8 **)obj + 0x188) - *(s32 *)(obj + 0x188);
+   src/code6cac_tu2.c:2440  [cast,offset]  temp2 = 0x400 - ratan2(dist, *(s32 *)(*(u8 **)obj + 0x184) - *(s32 *)(obj + 0x184));
+   src/code6cac_tu2.c:2441  [offset]  if (temp2 < -0xFF) {
+   src/code6cac_tu2.c:2454  [cast,offset]  temp = (tgt_z - *(s16 *)(obj + 0x1E6)) & 0xFFF;
+   src/code6cac_tu2.c:2458  [cast,offset]  *(s16 *)(obj + 0x1E6) = *(s16 *)(obj + 0x1E6) + temp / 8;
+   src/code6cac_tu2.c:2459  [cast,offset]  temp = (temp2 - *(s16 *)(obj + 0x1E8)) & 0xFFF;
+   src/code6cac_tu2.c:2463  [cast,offset]  *(s16 *)(obj + 0x1E8) = *(s16 *)(obj + 0x1E8) + temp / 8;
+   src/code6cac_tu2.c:2464  [cast,offset]  func_8002F770((s16 *)(a + 0x36), *(s16 *)(obj + 0x1E6), *(s16 *)(obj + 0x1E8), tgt_x);
+   src/code6cac_tu2.c:2465  [cast,offset]  func_8002F770((s16 *)(b + 0x36), *(s16 *)(obj + 0x1E6), *(s16 *)(obj + 0x1E8), tgt_x);
+   src/code6cac_tu2.c:2467  [cast,offset]  t = *(s16 *)(obj + 0xC);
+   src/code6cac_tu2.c:2468  [cast,offset]  if ((t == 0x1D || t == 0xE) && *(s16 *)(obj + 0x8C) != 0) {
+   src/code6cac_tu2.c:2469  [cast,offset]  temp = (ratan2(D_800A387C, *(s32 *)(*(u8 **)obj + 0xF8) - *(s32 *)(obj + 0xF8)) - 0x400) & 0xFFF;
+   src/code6cac_tu2.c:2475  [offset]  } else if (temp < -0x1FF) {
+   src/code6cac_tu2.c:2478  [cast,offset]  *(s16 *)(obj + 0x1EA) = temp;
+   src/code6cac_tu2.c:2479  [cast,offset]  *(u16 *)(a + 0x7E) += temp;
+   src/code6cac_tu2.c:2480  [cast,offset]  *(u16 *)(b + 0x7E) += temp;
+   src/code6cac_tu2.c:2483  [cast,offset]  if ((u32)(*(u16 *)(obj + 0xE) - 6) < 2U && *(u16 *)(obj + 0x6A) == 2) {
+   src/code6cac_tu2.c:2487  [cast,offset]  if (*(s32 *)(obj + 0x268) == 0) {
+   src/code6cac_tu2.c:2488  [cast,offset]  *(s32 *)(obj + 0x25C) = *(s32 *)(obj + 0xF4);
+   src/code6cac_tu2.c:2489  [cast,offset]  *(s32 *)(obj + 0x260) = *(s32 *)(obj + 0xF8);
+   src/code6cac_tu2.c:2490  [cast,offset]  *(s32 *)(obj + 0x264) = *(s32 *)(obj + 0xFC);
+   src/code6cac_tu2.c:2492  [cast,offset]  dx = *(s32 *)(*(u8 **)obj + 0xF4) - *(s32 *)(obj + 0x25C);
+   src/code6cac_tu2.c:2493  [cast,offset]  dz = *(s32 *)(*(u8 **)obj + 0xFC) - *(s32 *)(obj + 0x264);
+   src/code6cac_tu2.c:2517  [cast,offset]  temp2 = (ratan2(dist, *(s32 *)(*(u8 **)obj + 0xF8) - *(s32 *)(obj + 0x260)) - 0x400) & 0xFFF;
+   src/code6cac_tu2.c:2523  [offset]  } else if (temp2 < -0x1FF) {
+   src/code6cac_tu2.c:2526  [cast,offset]  temp = (temp2 - *(s16 *)(obj + 0x1EA)) & 0xFFF;
+   src/code6cac_tu2.c:2530  [cast,offset]  *(s16 *)(obj + 0x1EA) = *(s16 *)(obj + 0x1EA) + temp / 8;
+   src/code6cac_tu2.c:2531  [cast,offset]  *(u16 *)(a + 0x72) += *(s16 *)(obj + 0x1EA);
+   src/code6cac_tu2.c:2532  [cast,offset]  *(u16 *)(b + 0x72) += *(s16 *)(obj + 0x1EA);
+   src/code6cac_tu2.c:2535  [cast,offset]  if (*(s16 *)(obj + 0x26E) != 0 && *(s16 *)(obj + 0x96) == 0) {
+   src/code6cac_tu2.c:2537  [cast,offset]  *(u16 *)(a + 0xC) += temp;
+   src/code6cac_tu2.c:2538  [cast,offset]  *(u16 *)(b + 0xC) += temp;
+   src/code6cac_tu2.c:2539  [cast,offset]  *(u16 *)(a + 0x14) -= temp;
+   src/code6cac_tu2.c:2540  [cast,offset]  *(u16 *)(b + 0x14) -= temp;
+   src/code6cac_tu2.c:2542  [cast,offset]  *(u16 *)(a + 0x1E) += temp;
+   src/code6cac_tu2.c:2543  [cast,offset]  *(u16 *)(b + 0x1E) += temp;
+   src/code6cac_tu2.c:2544  [cast,offset]  *(u16 *)(a + 0x26) -= temp;
+   src/code6cac_tu2.c:2545  [cast,offset]  *(u16 *)(b + 0x26) -= temp;
+== func_8001F888  src/code6cac_tu2.c  (1 hits)
+   src/code6cac_tu2.c:2560  [offset]  while ((u32)(dx + 0x4000) > 0x8000 || (u32)(dy + 0x4000) > 0x8000) {
+== func_80021DB0  src/code6cac_tu2.c  (7 hits)
+   src/code6cac_tu2.c:3494  [cast]  stage = (s16 *)stage_GetDataPtr();
+   src/code6cac_tu2.c:3502  [offset]  dx = (Judge[(angle + 0x400) & 0xFFF] * 4000) / 4096;
+   src/code6cac_tu2.c:3507  [cast]  if (func_80053614(&base.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0) {
+   src/code6cac_tu2.c:3515  [cast]  if (func_8005344C(&cur.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0) {
+   src/code6cac_tu2.c:3523  [cast]  if (func_80053614(&out->x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) == 0) {
+   src/code6cac_tu2.c:3526  [offset]  if (nrm[1] != -0x1000) {
+   src/code6cac_tu2.c:3532  [cast,offset]  if (func_8005344C(&cur.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0 && nrm[1] == -0x1000) {
+== func_800233AC  src/code6cac_tu2.c  (14 hits)
+   src/code6cac_tu2.c:4063  [cast,offset]  bits = *(u32 *)(arg0 + 0x2C);
+   src/code6cac_tu2.c:4087  [cast,offset]  px = *(s32 *)(arg0 + 0xB8);
+   src/code6cac_tu2.c:4092  [cast,offset]  pos[1] = *(s32 *)(arg0 + 0xBC) - 0x64;
+   src/code6cac_tu2.c:4093  [cast,offset]  pos[2] = *(s32 *)(arg0 + 0xC0);
+   src/code6cac_tu2.c:4096  [cast,offset]  s32 angle = (*(s16 *)(arg0 + 0x1D8) + a1_val) & 0xFFF;
+   src/code6cac_tu2.c:4104  [cast,offset]  s32 angle2 = (*(s16 *)(arg0 + 0x1D8) + a1_val + 0x400) & 0xFFF;
+   src/code6cac_tu2.c:4111  [cast]  if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+   src/code6cac_tu2.c:4115  [cast,offset]  *(SVec8_233AC *)(arg0 + 0x98) = *(SVec8_233AC *)out1;
+   src/code6cac_tu2.c:4121  [cast,offset]  pos[0] = *(s32 *)(arg0 + 0xB8);
+   src/code6cac_tu2.c:4122  [cast,offset]  pos[1] = *(s32 *)(arg0 + 0xBC) - 0x898;
+   src/code6cac_tu2.c:4123  [cast,offset]  pos[2] = *(s32 *)(arg0 + 0xC0);
+   src/code6cac_tu2.c:4136  [offset]  s32 angle4 = (fwd_angle + 0xC00) & 0xFFF;
+   src/code6cac_tu2.c:4141  [cast]  if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) != 0) {
+   src/code6cac_tu2.c:4149  [cast]  if (func_80053614(off, pos, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+== func_80023648  src/code6cac_tu2.c  (24 hits)
+   src/code6cac_tu2.c:4158  [cast,offset]  u16 kind = *(u16 *)(arg0 + 0x6A);
+   src/code6cac_tu2.c:4169  [cast,offset]  u32 bits = *(u32 *)(arg0 + 0x2C);
+   src/code6cac_tu2.c:4194  [cast,offset]  if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
+   src/code6cac_tu2.c:4195  [cast,offset]  func_8001F860((s16 *)arg0, *(s16 *)(arg0 + 0x1CA) + a2 / 4);
+   src/code6cac_tu2.c:4197  [cast,offset]  func_8001F860((s16 *)arg0, *(s16 *)(arg0 + 0x1D8) + a2);
+   src/code6cac_tu2.c:4200  [cast,offset]  if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
+   src/code6cac_tu2.c:4201  [cast,offset]  *(s16 *)(arg0 + 0x14C) = 0;
+   src/code6cac_tu2.c:4215  [cast,offset]  a2 = *(s16 *)(arg0 + 0x150);
+   src/code6cac_tu2.c:4224  [cast,offset]  s32 sub_result = *(u16 *)(arg0 + 0x14E) - a2;
+   src/code6cac_tu2.c:4225  [cast,offset]  s32 div16 = *(s16 *)(arg0 + 0x1A);
+   src/code6cac_tu2.c:4231  [cast,offset]  *(s16 *)(arg0 + 0x14E) = sub_result;
+   src/code6cac_tu2.c:4237  [cast,offset]  *(s16 *)(arg0 + 0x14E) = new_14e;
+   src/code6cac_tu2.c:4239  [cast,offset]  tbl_val = D_800A310C[D_8008DA08[*(s16 *)(arg0 + 0xA)]];
+   src/code6cac_tu2.c:4245  [cast,offset]  sub_result = *(s16 *)(arg0 + 0x1A);
+   src/code6cac_tu2.c:4250  [cast,offset]  *(s16 *)(arg0 + 0x14E) = limit;
+   src/code6cac_tu2.c:4252  [cast,offset]  *(s16 *)(arg0 + 0x14E) = 0;
+   src/code6cac_tu2.c:4256  [cast,offset]  s32 speed_prod = *(s16 *)(arg0 + 0x14E) * *(s16 *)(arg0 + 0x44);
+   src/code6cac_tu2.c:4257  [cast,offset]  s16 sin_val = Judge[(*(u16 *)(arg0 + 0x1CA) & 0xFFF)];
+   src/code6cac_tu2.c:4266  [cast,offset]  *(s32 *)(arg0 + 0xD8) += (sin_val * a2) >> 16;
+   src/code6cac_tu2.c:4269  [cast,offset]  s16 cos_val = Judge[((*(s16 *)(arg0 + 0x1CA) + 0x400) & 0xFFF)];
+   src/code6cac_tu2.c:4270  [cast,offset]  *(s32 *)(arg0 + 0xE0) += (cos_val * a2) >> 16;
+   src/code6cac_tu2.c:4276  [cast,offset]  if (*(s16 *)(arg0 + 0x14E) > 0) {
+   src/code6cac_tu2.c:4278  [cast,offset]  *(s16 *)(arg0 + 0x14C) = 0;
+   src/code6cac_tu2.c:4280  [cast,offset]  *(s16 *)(arg0 + 0x14E) = 0;
+== func_800274BC  src/code6cac_b_tu2.c  (0 hits)
+== func_800283D0  src/code6cac_b_tu2.c  (26 hits)
+   src/code6cac_b_tu2.c:628  [cast]  temp_s4 = *(u8 **)(arg0);
+   src/code6cac_b_tu2.c:630  [cast,offset]  temp_a1 = *(u16 *)(arg0 + 0x6A);
+   src/code6cac_b_tu2.c:639  [cast,offset]  u16 temp_v0 = *(u16 *)(temp_s4 + 0x6A);
+   src/code6cac_b_tu2.c:652  [offset]  if (((u32)(temp_a1 - 0x19) >= 2U) && (temp_v1 != 2) && (temp_v1 != 0x26) && (temp_v1 != 0x1B) && (temp_v1 != 0x15) && (temp_v1 != 0x25) && (temp_v1 != 0x2C) && (temp_v1 != 0xC)) {
+   src/code6cac_b_tu2.c:662  [cast,offset]  temp_a1_2 = (d_val >> *(s16 *)(arg0 + 4)) & 1;
+   src/code6cac_b_tu2.c:663  [cast,offset]  temp_s5 = (d_val >> *(s16 *)(temp_s4 + 4)) & 1;
+   src/code6cac_b_tu2.c:664  [cast,offset]  if (*(s16 *)(arg0 + 0x8C) != 0) {
+   src/code6cac_b_tu2.c:668  [cast,offset]  s16 temp_v1_2 = *(s16 *)(arg0 + 0xC);
+   src/code6cac_b_tu2.c:679  [cast,offset]  s16 temp_v1_3 = *(s16 *)(temp_s4 + temp_s5 * 2 + 0x288);
+   src/code6cac_b_tu2.c:681  [cast,offset]  if (*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288) > 0) {
+   src/code6cac_b_tu2.c:688  [cast,offset]  *(s16 *)(arg0 + 0x286) = var_v0;
+   src/code6cac_b_tu2.c:690  [cast,offset]  func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
+   src/code6cac_b_tu2.c:691  [cast,offset]  func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
+   src/code6cac_b_tu2.c:697  [cast,offset]  s16 temp_v0_3 = *(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288);
+   src/code6cac_b_tu2.c:701  [cast,offset]  func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
+   src/code6cac_b_tu2.c:702  [cast,offset]  func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
+   src/code6cac_b_tu2.c:704  [cast,offset]  if (*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288) == 5) {
+   src/code6cac_b_tu2.c:705  [cast,offset]  if (((u32)(*(u16 *)(arg0 + 0xE) - 6) < 2U) || ((u32)(*(u16 *)(temp_s4 + 0xE) - 6) < 2U)) {
+   src/code6cac_b_tu2.c:713  [cast,offset]  *(s16 *)(arg0 + 0x286) = 0x19;
+   src/code6cac_b_tu2.c:733  [cast,offset]  *(s16 *)(arg0 + 0x286) = var_v0_4;
+   src/code6cac_b_tu2.c:736  [cast,offset]  func_80032854(*(s16 *)(arg0 + 4), 0x26, arg1, (s16 *)0);
+   src/code6cac_b_tu2.c:737  [cast,offset]  func_80032854(*(s16 *)(arg0 + 4), 0x2D, arg1, (s16 *)0);
+   src/code6cac_b_tu2.c:740  [cast,offset]  s32 temp_v1_4 = -*(s16 *)(arg0 + 0x1CA);
+   src/code6cac_b_tu2.c:742  [offset]  s32 idx0 = (temp_v1_4 + 0x400) & 0xFFF;
+   src/code6cac_b_tu2.c:744  [cast]  s32 *tail = (s32 *)(temp_s4 + (temp_s5 * 0x10));
+   src/code6cac_b_tu2.c:769  [cast,offset]  *(s16 *)(arg0 + 0x286) = var_v0_2;
+== func_8002A458  src/code6cac_b_tu2.c  (35 hits)
+   src/code6cac_b_tu2.c:1377  [cast]  u8 *scr = (u8 *)0x1F8002B8;
+   src/code6cac_b_tu2.c:1378  [cast,offset]  s32 id = *(s16 *)(obj + 4);
+   src/code6cac_b_tu2.c:1379  [cast]  u8 *partner = *(u8 **)obj;
+   src/code6cac_b_tu2.c:1411  [cast,offset]  *(u8 **)(scr + 0x60) = scr;
+   src/code6cac_b_tu2.c:1412  [cast,offset]  *(u8 **)(scr + 0x64) = scr + 0xC;
+   src/code6cac_b_tu2.c:1413  [cast,offset]  *(Vec3i *)(scr + 0xC8) = *(Vec3i *)(scr + 0xC);
+   src/code6cac_b_tu2.c:1414  [cast,offset]  dx = (*(s32 **)(scr + 0x64))[0] - (*(s32 **)(scr + 0x60))[0];
+   src/code6cac_b_tu2.c:1415  [cast,offset]  dy = (*(s32 **)(scr + 0x64))[1] - (*(s32 **)(scr + 0x60))[1];
+   src/code6cac_b_tu2.c:1416  [cast,offset]  dz = (*(s32 **)(scr + 0x64))[2] - (*(s32 **)(scr + 0x60))[2];
+   src/code6cac_b_tu2.c:1417  [cast,offset]  diff = (*(s16 *)(partner + 0x1D8) - ratan2(dx, dz)) & 0xFFF;
+   src/code6cac_b_tu2.c:1448  [cast,offset]  *(s16 *)(scr + 0xF8) = -ratan2(dy, hlen);
+   src/code6cac_b_tu2.c:1449  [cast,offset]  *(s16 *)(scr + 0xFA) = ratan2(dx, dz);
+   src/code6cac_b_tu2.c:1450  [cast,offset]  *(s16 *)(scr + 0xFC) = 0;
+   src/code6cac_b_tu2.c:1452  [cast,offset]  func_80032854(id == 0, 0xB, scr + 0xC8, (s16 *)(scr + 0xF8));
+   src/code6cac_b_tu2.c:1480  [cast,offset]  **(Vec3i **)(scr + 0x60) = **(Vec3i **)(scr + 0x64);
+   src/code6cac_b_tu2.c:1481  [cast,offset]  (*(s32 **)(scr + 0x64))[0] += qx * 4;
+   src/code6cac_b_tu2.c:1482  [cast,offset]  (*(s32 **)(scr + 0x64))[1] += qy * 4;
+   src/code6cac_b_tu2.c:1483  [cast,offset]  (*(s32 **)(scr + 0x64))[2] += qz * 4;
+   src/code6cac_b_tu2.c:1495  [cast,offset]  if (*(s16 *)(obj + 0x26C) == 0 && i >= 6 && i <= 9) {
+   src/code6cac_b_tu2.c:1498  [cast]  pos = (s32 *)((u8 *)0x1F8000A8 + id * 0x108 + i * 0xC);
+   src/code6cac_b_tu2.c:1499  [cast,offset]  if (func_8002EA24(scr, pos, *(u16 *)(rec + 0xC), *(u16 *)(rec + 0xE)) != 0) {
+   src/code6cac_b_tu2.c:1502  [cast]  if (*(s16 *)rec != 0
+   src/code6cac_b_tu2.c:1503  [cast,offset]  && func_8002EA24(scr, pos, *(u16 *)(rec + 0x10), *(u16 *)(rec + 0x12)) != 0) {
+   src/code6cac_b_tu2.c:1509  [cast,offset]  *(s32 *)(scr + 0xA8) = (*(s32 **)(scr + 0x60))[0] - qx / 4;
+   src/code6cac_b_tu2.c:1510  [cast,offset]  *(s32 *)(scr + 0xAC) = (*(s32 **)(scr + 0x60))[1] - qy / 4;
+   src/code6cac_b_tu2.c:1511  [cast,offset]  *(s32 *)(scr + 0xB0) = (*(s32 **)(scr + 0x60))[2] - qz / 4;
+   src/code6cac_b_tu2.c:1512  [cast,offset]  if (func_80053614((s32 *)(scr + 0xA8), *(s32 **)(scr + 0x64), (s32 *)(scr + 0x100),
+   src/code6cac_b_tu2.c:1513  [cast,offset]  (s32 *)(scr + 0xF8), work) != 0
+   src/code6cac_b_tu2.c:1516  [cast,offset]  p = *(s32 **)(scr + 0x60);
+   src/code6cac_b_tu2.c:1517  [cast,offset]  dx = *(s32 *)(scr + 0x100) - p[0];
+   src/code6cac_b_tu2.c:1518  [cast,offset]  dy = *(s32 *)(scr + 0x104) - p[1];
+   src/code6cac_b_tu2.c:1519  [cast,offset]  dz = *(s32 *)(scr + 0x108) - p[2];
+   src/code6cac_b_tu2.c:1521  [cast,offset]  dx = *(s32 *)(obj + 0xF4) - p[0];
+   src/code6cac_b_tu2.c:1522  [cast,offset]  dy = *(s32 *)(obj + 0xF8) - p[1];
+   src/code6cac_b_tu2.c:1523  [cast,offset]  dz = *(s32 *)(obj + 0xFC) - p[2];
+== func_8002BC68  src/code6cac_b_tu2.c  (0 hits)
+== func_8002BEA0  src/code6cac_b_tu2.c  (0 hits)
+== func_8002D320  src/code6cac_b_tu2.c  (10 hits)
+   src/code6cac_b_tu2.c:1950  [cast,offset]  *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
+   src/code6cac_b_tu2.c:1951  [cast,offset]  *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
+   src/code6cac_b_tu2.c:1952  [cast,offset]  *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
+   src/code6cac_b_tu2.c:1953  [cast,offset]  vin = (s32 *)(obj + 0xF8);
+   src/code6cac_b_tu2.c:1962  [cast,offset]  vout = (s32 *)(obj + 0x100);
+   src/code6cac_b_tu2.c:1982  [cast,offset]  x = *(s32 *)(obj + 0x100);
+   src/code6cac_b_tu2.c:1984  [cast,offset]  z = *(s32 *)(obj + 0x104);
+   src/code6cac_b_tu2.c:2015  [cast,offset]  y_low = *(s32 *)(obj + 0xB0);
+   src/code6cac_b_tu2.c:2021  [cast,offset]  y_high = *(s32 *)(obj + 0xC0);
+   src/code6cac_b_tu2.c:2027  [cast,offset]  y = *(s32 *)(obj + 0x108);
+== func_8002D518  src/code6cac_b_tu2.c  (0 hits)
+== func_8002D780  src/code6cac_b_tu2.c  (20 hits)
+   src/code6cac_b_tu2.c:2244  [cast,offset]  *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
+   src/code6cac_b_tu2.c:2245  [cast,offset]  *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
+   src/code6cac_b_tu2.c:2246  [cast,offset]  *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
+   src/code6cac_b_tu2.c:2263  [cast,offset]  s32 y = *(s32 *)(obj + 0x108);
+   src/code6cac_b_tu2.c:2268  [cast,offset]  s32 x0 = *(s32 *)(obj + 0xA8);
+   src/code6cac_b_tu2.c:2269  [cast,offset]  s32 x2 = *(s32 *)(obj + 0xB8);
+   src/code6cac_b_tu2.c:2270  [cast,offset]  s32 z0 = *(s32 *)(obj + 0xAC);
+   src/code6cac_b_tu2.c:2271  [cast,offset]  s32 z2 = *(s32 *)(obj + 0xBC);
+   src/code6cac_b_tu2.c:2274  [cast,offset]  s32 px = *(s32 *)(obj + 0x100);
+   src/code6cac_b_tu2.c:2275  [cast,offset]  s32 pz = *(s32 *)(obj + 0x104);
+   src/code6cac_b_tu2.c:2326  [cast,offset]  s32 y = *(s32 *)(obj + 0x108);
+   src/code6cac_b_tu2.c:2370  [cast,offset]  p118 = (s32 *)(obj + 0x118);
+   src/code6cac_b_tu2.c:2371  [cast,offset]  p124 = (s32 *)(obj + 0x124);
+   src/code6cac_b_tu2.c:2372  [cast,offset]  p118[0] = *(s32 *)(obj + 0xA8) - *(s32 *)(obj + 0x100);
+   src/code6cac_b_tu2.c:2373  [cast,offset]  p118[1] = *(s32 *)(obj + 0xAC) - *(s32 *)(obj + 0x104);
+   src/code6cac_b_tu2.c:2374  [cast,offset]  p124[0] = *(s32 *)(obj + 0xB8) - *(s32 *)(obj + 0x100);
+   src/code6cac_b_tu2.c:2375  [cast,offset]  p124[1] = *(s32 *)(obj + 0xBC) - *(s32 *)(obj + 0x104);
+   src/code6cac_b_tu2.c:2378  [cast,offset]  p10C = (s32 *)(obj + 0x10C);
+   src/code6cac_b_tu2.c:2379  [cast,offset]  p10C[0] = -*(s32 *)(obj + 0x100);
+   src/code6cac_b_tu2.c:2380  [cast,offset]  p10C[1] = -*(s32 *)(obj + 0x104);
+== func_8002DAD0  src/code6cac_b_tu2.c  (37 hits)
+   src/code6cac_b_tu2.c:2404  [cast,offset]  *(s32 *)(obj + 0xA8) = (*(s32 **)(obj + 0x64))[0] - (*(s32 **)(obj + 0x60))[0];
+   src/code6cac_b_tu2.c:2405  [cast,offset]  *(s32 *)(obj + 0xAC) = (*(s32 **)(obj + 0x64))[1] - (*(s32 **)(obj + 0x60))[1];
+   src/code6cac_b_tu2.c:2406  [cast,offset]  *(s32 *)(obj + 0xB0) = (*(s32 **)(obj + 0x64))[2] - (*(s32 **)(obj + 0x60))[2];
+   src/code6cac_b_tu2.c:2408  [cast,offset]  *(s32 *)(obj + 0xB8) = (*(s32 **)(obj + 0x68))[0] - (*(s32 **)(obj + 0x60))[0];
+   src/code6cac_b_tu2.c:2409  [cast,offset]  *(s32 *)(obj + 0xBC) = (*(s32 **)(obj + 0x68))[1] - (*(s32 **)(obj + 0x60))[1];
+   src/code6cac_b_tu2.c:2410  [cast,offset]  *(s32 *)(obj + 0xC0) = (*(s32 **)(obj + 0x68))[2] - (*(s32 **)(obj + 0x60))[2];
+   src/code6cac_b_tu2.c:2426  [offset]  :: "r"(obj + 0xA8) : "$12", "$13", "$14", "$15");
+   src/code6cac_b_tu2.c:2444  [offset]  :: "r"(obj + 0xB8) : "$12");
+   src/code6cac_b_tu2.c:2455  [offset]  :: "r"(obj + 0xC8) : "$12", "memory");
+   src/code6cac_b_tu2.c:2457  [cast,offset]  if ((u32)(*(s32 *)(obj + 0xC8) + 0x3FFF) < 0x7FFF &&
+   src/code6cac_b_tu2.c:2458  [cast,offset]  (u32)(*(s32 *)(obj + 0xCC) + 0x3FFF) < 0x7FFF &&
+   src/code6cac_b_tu2.c:2459  [cast,offset]  (u32)(*(s32 *)(obj + 0xD0) + 0x3FFF) < 0x7FFF) {
+   src/code6cac_b_tu2.c:2463  [cast,offset]  angle1 = ratan2(*(s32 *)(obj + 0xC8), *(s32 *)(obj + 0xD0));
+   src/code6cac_b_tu2.c:2464  [cast,offset]  *(s32 *)(obj + 0xC8) = *(s32 *)(obj + 0xC8) >> 6;
+   src/code6cac_b_tu2.c:2465  [cast,offset]  *(s32 *)(obj + 0xCC) = *(s32 *)(obj + 0xCC) >> 6;
+   src/code6cac_b_tu2.c:2485  [cast,offset]  dist = *(s32 *)(obj + 0xD0);
+   src/code6cac_b_tu2.c:2487  [cast,offset]  dist_sq = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8) + dist * dist;
+   src/code6cac_b_tu2.c:2488  [cast,offset]  *(s32 *)(obj + 0xD0) = dist;
+   src/code6cac_b_tu2.c:2489  [cast,offset]  *(s16 *)(obj + 0xFA) = 0x800 - angle1;
+   src/code6cac_b_tu2.c:2524  [cast,offset]  angle2 = ratan2(*(s32 *)(obj + 0xCC), dist);
+   src/code6cac_b_tu2.c:2525  [cast,offset]  mat = (s32 *)(obj + 0xD8);
+   src/code6cac_b_tu2.c:2526  [cast,offset]  *(s16 *)(obj + 0xF8) = 0x800 - angle2;
+   src/code6cac_b_tu2.c:2529  [cast,offset]  *(s16 *)(obj + 0xD8) = 0x1000;
+   src/code6cac_b_tu2.c:2530  [cast,offset]  *(s16 *)(obj + 0xDA) = 0;
+   src/code6cac_b_tu2.c:2531  [cast,offset]  *(s16 *)(obj + 0xDC) = 0;
+   src/code6cac_b_tu2.c:2532  [cast,offset]  *(s16 *)(obj + 0xDE) = 0;
+   src/code6cac_b_tu2.c:2533  [cast,offset]  *(s16 *)(obj + 0xE0) = 0x1000;
+   src/code6cac_b_tu2.c:2534  [cast,offset]  *(s16 *)(obj + 0xE2) = 0;
+   src/code6cac_b_tu2.c:2535  [cast,offset]  *(s16 *)(obj + 0xE4) = 0;
+   src/code6cac_b_tu2.c:2536  [cast,offset]  *(s16 *)(obj + 0xE6) = 0;
+   src/code6cac_b_tu2.c:2537  [cast,offset]  *(s16 *)(obj + 0xE8) = 0x1000;
+   src/code6cac_b_tu2.c:2538  [cast,offset]  RotMatrixY(*(s16 *)(obj + 0xFA), mat);
+   src/code6cac_b_tu2.c:2539  [cast,offset]  RotMatrixX(*(s16 *)(obj + 0xF8), mat);
+   src/code6cac_b_tu2.c:2579  [offset]  :: "r"(obj + 0xA8) : "$12", "$13", "$14");
+   src/code6cac_b_tu2.c:2586  [offset]  :: "r"(obj + 0xA8) : "$12", "memory");
+   src/code6cac_b_tu2.c:2601  [offset]  :: "r"(obj + 0xB8) : "$12", "$13", "$14");
+   src/code6cac_b_tu2.c:2608  [offset]  :: "r"(obj + 0xB8) : "$12", "memory");
+== func_8002E838  src/code6cac_b_tu2.c  (22 hits)
+   src/code6cac_b_tu2.c:2883  [cast,offset]  *(s32 *)(obj + 0xA8) = (*(s32 **)(obj + 0x64))[0] - (*(s32 **)(obj + 0x60))[0];
+   src/code6cac_b_tu2.c:2884  [cast,offset]  *(s32 *)(obj + 0xAC) = (*(s32 **)(obj + 0x64))[1] - (*(s32 **)(obj + 0x60))[1];
+   src/code6cac_b_tu2.c:2885  [cast,offset]  *(s32 *)(obj + 0xB0) = (*(s32 **)(obj + 0x64))[2] - (*(s32 **)(obj + 0x60))[2];
+   src/code6cac_b_tu2.c:2886  [cast,offset]  angle = ratan2(*(s32 *)(obj + 0xA8), *(s32 *)(obj + 0xB0));
+   src/code6cac_b_tu2.c:2887  [cast,offset]  dist_sq = *(s32 *)(obj + 0xA8) * *(s32 *)(obj + 0xA8)
+   src/code6cac_b_tu2.c:2888  [cast,offset]  + *(s32 *)(obj + 0xB0) * *(s32 *)(obj + 0xB0);
+   src/code6cac_b_tu2.c:2889  [cast,offset]  *(s16 *)(obj + 0xFA) = 0x800 - angle;
+   src/code6cac_b_tu2.c:2919  [cast,offset]  angle = ratan2(*(s32 *)(obj + 0xAC), dist);
+   src/code6cac_b_tu2.c:2920  [cast,offset]  mat = (s32 *)(obj + 0xD8);
+   src/code6cac_b_tu2.c:2921  [cast,offset]  *(s16 *)(obj + 0xF8) = 0x800 - angle;
+   src/code6cac_b_tu2.c:2924  [cast,offset]  *(s16 *)(obj + 0xD8) = 0x1000;
+   src/code6cac_b_tu2.c:2925  [cast,offset]  *(s16 *)(obj + 0xDA) = 0;
+   src/code6cac_b_tu2.c:2926  [cast,offset]  *(s16 *)(obj + 0xDC) = 0;
+   src/code6cac_b_tu2.c:2927  [cast,offset]  *(s16 *)(obj + 0xDE) = 0;
+   src/code6cac_b_tu2.c:2928  [cast,offset]  *(s16 *)(obj + 0xE0) = 0x1000;
+   src/code6cac_b_tu2.c:2929  [cast,offset]  *(s16 *)(obj + 0xE2) = 0;
+   src/code6cac_b_tu2.c:2930  [cast,offset]  *(s16 *)(obj + 0xE4) = 0;
+   src/code6cac_b_tu2.c:2931  [cast,offset]  *(s16 *)(obj + 0xE6) = 0;
+   src/code6cac_b_tu2.c:2932  [cast,offset]  *(s16 *)(obj + 0xE8) = 0x1000;
+   src/code6cac_b_tu2.c:2933  [cast,offset]  RotMatrixY(*(s16 *)(obj + 0xFA), mat);
+   src/code6cac_b_tu2.c:2934  [cast,offset]  RotMatrixX(*(s16 *)(obj + 0xF8), mat);
+   src/code6cac_b_tu2.c:2952  [cast,offset]  vec = (s32 *)(obj + 0xA8);
+== func_8002EA24  src/code6cac_b_tu2.c  (9 hits)
+   src/code6cac_b_tu2.c:2981  [cast,offset]  *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
+   src/code6cac_b_tu2.c:2982  [cast,offset]  *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
+   src/code6cac_b_tu2.c:2983  [cast,offset]  *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
+   src/code6cac_b_tu2.c:2984  [cast,offset]  vin = (s32 *)(obj + 0xF8);
+   src/code6cac_b_tu2.c:2993  [cast,offset]  vout = (s32 *)(obj + 0x100);
+   src/code6cac_b_tu2.c:3013  [cast,offset]  x = *(s32 *)(obj + 0x100);
+   src/code6cac_b_tu2.c:3015  [cast,offset]  z = *(s32 *)(obj + 0x104);
+   src/code6cac_b_tu2.c:3048  [cast,offset]  y_low = *(s32 *)(obj + 0xB0);
+   src/code6cac_b_tu2.c:3054  [cast,offset]  y = *(s32 *)(obj + 0x108);
+== func_8002EBDC  src/code6cac_b_tu2.c  (27 hits)
+   src/code6cac_b_tu2.c:3062  [cast]  u8 *scr = (u8 *)0x1F8002B8;
+   src/code6cac_b_tu2.c:3071  [cast,offset]  *(s16 *)(scr + 0xFA) = 0x800 - angle1;
+   src/code6cac_b_tu2.c:3095  [cast,offset]  mat = (s32 *)(scr + 0xD8);
+   src/code6cac_b_tu2.c:3096  [cast,offset]  *(s16 *)(scr + 0xF8) = 0x800 - angle2;
+   src/code6cac_b_tu2.c:3098  [cast,offset]  *(s16 *)(scr + 0xD8) = 0x1000;
+   src/code6cac_b_tu2.c:3099  [cast,offset]  *(s16 *)(scr + 0xDA) = 0;
+   src/code6cac_b_tu2.c:3100  [cast,offset]  *(s16 *)(scr + 0xDC) = 0;
+   src/code6cac_b_tu2.c:3101  [cast,offset]  *(s16 *)(scr + 0xDE) = 0;
+   src/code6cac_b_tu2.c:3102  [cast,offset]  *(s16 *)(scr + 0xE0) = 0x1000;
+   src/code6cac_b_tu2.c:3103  [cast,offset]  *(s16 *)(scr + 0xE2) = 0;
+   src/code6cac_b_tu2.c:3104  [cast,offset]  *(s16 *)(scr + 0xE4) = 0;
+   src/code6cac_b_tu2.c:3105  [cast,offset]  *(s16 *)(scr + 0xE6) = 0;
+   src/code6cac_b_tu2.c:3106  [cast,offset]  *(s16 *)(scr + 0xE8) = 0x1000;
+   src/code6cac_b_tu2.c:3107  [cast,offset]  RotMatrixY(*(s16 *)(scr + 0xFA), mat);
+   src/code6cac_b_tu2.c:3108  [cast,offset]  RotMatrixX(*(s16 *)(scr + 0xF8), mat);
+   src/code6cac_b_tu2.c:3135  [cast,offset]  vec = (s32 *)(scr + 0xA8);
+   src/code6cac_b_tu2.c:3146  [cast,offset]  *(s16 *)(scr + 0xD8) = 0x1000;
+   src/code6cac_b_tu2.c:3147  [cast,offset]  *(s16 *)(scr + 0xDA) = 0;
+   src/code6cac_b_tu2.c:3148  [cast,offset]  *(s16 *)(scr + 0xDC) = 0;
+   src/code6cac_b_tu2.c:3149  [cast,offset]  *(s16 *)(scr + 0xDE) = 0;
+   src/code6cac_b_tu2.c:3150  [cast,offset]  *(s16 *)(scr + 0xE0) = 0x1000;
+   src/code6cac_b_tu2.c:3151  [cast,offset]  *(s16 *)(scr + 0xE2) = 0;
+   src/code6cac_b_tu2.c:3152  [cast,offset]  *(s16 *)(scr + 0xE4) = 0;
+   src/code6cac_b_tu2.c:3153  [cast,offset]  *(s16 *)(scr + 0xE6) = 0;
+   src/code6cac_b_tu2.c:3154  [cast,offset]  *(s16 *)(scr + 0xE8) = 0x1000;
+   src/code6cac_b_tu2.c:3155  [cast,offset]  RotMatrixX(-*(s16 *)(scr + 0xF8), mat);
+   src/code6cac_b_tu2.c:3156  [cast,offset]  RotMatrixY(-*(s16 *)(scr + 0xFA), mat);
+== func_8002F2D0  src/code6cac_b_tu2.c  (17 hits)
+   src/code6cac_b_tu2.c:3239  [cast]  m = (MATRIX *)0x1F800390;
+   src/code6cac_b_tu2.c:3240  [cast]  *m = *(MATRIX *)a0;
+   src/code6cac_b_tu2.c:3255  [cast]  scr = (u8 *)0x1F8002B8;
+   src/code6cac_b_tu2.c:3279  [cast,offset]  mat = (s32 *)(scr + 0xD8);
+   src/code6cac_b_tu2.c:3280  [cast,offset]  *(s16 *)(scr + 0xD8) = 0x1000;
+   src/code6cac_b_tu2.c:3281  [cast,offset]  *(s16 *)(scr + 0xDA) = 0;
+   src/code6cac_b_tu2.c:3282  [cast,offset]  *(s16 *)(scr + 0xDC) = 0;
+   src/code6cac_b_tu2.c:3283  [cast,offset]  *(s16 *)(scr + 0xDE) = 0;
+   src/code6cac_b_tu2.c:3284  [cast,offset]  *(s16 *)(scr + 0xE0) = 0x1000;
+   src/code6cac_b_tu2.c:3285  [cast,offset]  *(s16 *)(scr + 0xE2) = 0;
+   src/code6cac_b_tu2.c:3286  [cast,offset]  *(s16 *)(scr + 0xE4) = 0;
+   src/code6cac_b_tu2.c:3287  [cast,offset]  *(s16 *)(scr + 0xE6) = 0;
+   src/code6cac_b_tu2.c:3288  [cast,offset]  *(s16 *)(scr + 0xE8) = 0x1000;
+   src/code6cac_b_tu2.c:3304  [cast,offset]  vec = (s32 *)(scr + 0xA8);
+   src/code6cac_b_tu2.c:3327  [cast]  ((s16 *)a1)[0] = ratan2(vec[2], vec[1]);
+   src/code6cac_b_tu2.c:3328  [cast]  ((s16 *)a1)[1] = -ang_y;
+   src/code6cac_b_tu2.c:3329  [cast]  ((s16 *)a1)[2] = -ang_z;
+== func_8002F770  src/code6cac_b_tu2.c  (29 hits)
+   src/code6cac_b_tu2.c:3352  [cast]  init_scr = (u8 *)0x1F8002B8;
+   src/code6cac_b_tu2.c:3353  [cast,offset]  *(s16 *)(init_scr + 0xD8) = 0x1000;
+   src/code6cac_b_tu2.c:3354  [cast,offset]  *(s16 *)(init_scr + 0xDA) = 0;
+   src/code6cac_b_tu2.c:3355  [cast,offset]  *(s16 *)(init_scr + 0xDC) = 0;
+   src/code6cac_b_tu2.c:3356  [cast,offset]  *(s16 *)(init_scr + 0xDE) = 0;
+   src/code6cac_b_tu2.c:3357  [cast,offset]  *(s16 *)(init_scr + 0xE0) = 0x1000;
+   src/code6cac_b_tu2.c:3358  [cast,offset]  *(s16 *)(init_scr + 0xE2) = 0;
+   src/code6cac_b_tu2.c:3359  [cast,offset]  *(s16 *)(init_scr + 0xE4) = 0;
+   src/code6cac_b_tu2.c:3360  [cast,offset]  *(s16 *)(init_scr + 0xE6) = 0;
+   src/code6cac_b_tu2.c:3361  [cast,offset]  *(s16 *)(init_scr + 0xE8) = 0x1000;
+   src/code6cac_b_tu2.c:3362  [cast]  RotMatrixX(x, (s32 *)0x1F800390);
+   src/code6cac_b_tu2.c:3363  [cast]  RotMatrixY(y, (s32 *)0x1F800390);
+   src/code6cac_b_tu2.c:3364  [cast]  RotMatrixZ(-z, (s32 *)0x1F800390);
+   src/code6cac_b_tu2.c:3365  [cast]  RotMatrixX(angles[0], (s32 *)0x1F800390);
+   src/code6cac_b_tu2.c:3366  [cast]  RotMatrixY(angles[1], (s32 *)0x1F800390);
+   src/code6cac_b_tu2.c:3367  [cast]  RotMatrixZ(angles[2], (s32 *)0x1F800390);
+   src/code6cac_b_tu2.c:3369  [cast]  m = (MATRIX *)0x1F800390;
+   src/code6cac_b_tu2.c:3383  [cast]  scr = (u8 *)0x1F8002B8;
+   src/code6cac_b_tu2.c:3407  [cast,offset]  mat = (s32 *)(scr + 0xD8);
+   src/code6cac_b_tu2.c:3408  [cast,offset]  *(s16 *)(scr + 0xD8) = 0x1000;
+   src/code6cac_b_tu2.c:3409  [cast,offset]  *(s16 *)(scr + 0xDA) = 0;
+   src/code6cac_b_tu2.c:3410  [cast,offset]  *(s16 *)(scr + 0xDC) = 0;
+   src/code6cac_b_tu2.c:3411  [cast,offset]  *(s16 *)(scr + 0xDE) = 0;
+   src/code6cac_b_tu2.c:3412  [cast,offset]  *(s16 *)(scr + 0xE0) = 0x1000;
+   src/code6cac_b_tu2.c:3413  [cast,offset]  *(s16 *)(scr + 0xE2) = 0;
+   src/code6cac_b_tu2.c:3414  [cast,offset]  *(s16 *)(scr + 0xE4) = 0;
+   src/code6cac_b_tu2.c:3415  [cast,offset]  *(s16 *)(scr + 0xE6) = 0;
+   src/code6cac_b_tu2.c:3416  [cast,offset]  *(s16 *)(scr + 0xE8) = 0x1000;
+   src/code6cac_b_tu2.c:3432  [cast,offset]  vec = (s32 *)(scr + 0xA8);
+== func_8003032C  src/code6cac_b_tu2.c  (7 hits)
+   src/code6cac_b_tu2.c:3859  [offset]  cos_val = Judge[(angle + 0x400) & 0xFFF];
+   src/code6cac_b_tu2.c:3863  [cast,offset]  vx = *((s32 *)(((u8 *)a0) + 0x44));
+   src/code6cac_b_tu2.c:3866  [cast,offset]  vz = *((s32 *)(((u8 *)a0) + 0x4C));
+   src/code6cac_b_tu2.c:3869  [cast,offset]  v48 = *((s32 *)(((u8 *)a0) + 0x48));
+   src/code6cac_b_tu2.c:3870  [cast,offset]  *((s32 *)(((u8 *)a0) + 0x44)) = ((rx * cos_val) - (rz * sin_val)) >> 15;
+   src/code6cac_b_tu2.c:3871  [cast,offset]  *((s32 *)(((u8 *)a0) + 0x4C)) = ((rx * sin_val) + (rz * cos_val)) >> 15;
+   src/code6cac_b_tu2.c:3876  [cast,offset]  *((s32 *)(((u8 *)a0) + 0x48)) = v48 >> 2;
+== func_80030580  src/code6cac_b_tu2.c  (41 hits)
+   src/code6cac_b_tu2.c:3937  [cast]  u8 *src = (u8 *)arg0;
+   src/code6cac_b_tu2.c:3941  [cast,scalar&]  obj = (u8 *)&D_80106A78;
+   src/code6cac_b_tu2.c:3943  [cast,offset]  if (*(s16 *)(obj + 2) == -1 && *(u8 *)(obj + 0xA) == 0xFF) break;
+   src/code6cac_b_tu2.c:3945  [cast,offset]  *(u8 *)(obj + 0xA) = i;
+   src/code6cac_b_tu2.c:3946  [cast,offset]  *(s16 *)(obj + 2) = arg1;
+   src/code6cac_b_tu2.c:3947  [cast,offset]  *(u8 *)(obj + 7) = 0;
+   src/code6cac_b_tu2.c:3948  [cast,offset]  *(u8 *)(obj + 8) = 0;
+   src/code6cac_b_tu2.c:3949  [cast,offset]  *(u8 *)(obj + 4) = 1;
+   src/code6cac_b_tu2.c:3950  [cast,offset]  *(u8 *)(obj + 6) = *(u16 *)(src + 4);
+   src/code6cac_b_tu2.c:3951  [cast,offset]  *(s32 *)(obj + 0x2C) = *(s32 *)(src + 0xF4);
+   src/code6cac_b_tu2.c:3952  [cast,offset]  *(s32 *)(obj + 0x30) = *(s32 *)(src + 0xF8) - *(s16 *)(src + 0x1A) / 32;
+   src/code6cac_b_tu2.c:3953  [cast,offset]  *(s32 *)(obj + 0x34) = *(s32 *)(src + 0xFC);
+   src/code6cac_b_tu2.c:3955  [cast,offset]  *(s32 *)(obj + 0x44) = (Judge[*(u16 *)(src + 0x1CA) & 0xFFF] * tbl->unk4) >> 12;
+   src/code6cac_b_tu2.c:3956  [cast,offset]  *(s32 *)(obj + 0x48) = tbl->unk6;
+   src/code6cac_b_tu2.c:3957  [cast,offset]  *(s32 *)(obj + 0x4C) = (Judge[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * tbl->unk4) >> 12;
+   src/code6cac_b_tu2.c:3958  [cast,offset]  *(s32 *)(obj + 0x2C) += *(s32 *)(obj + 0x44);
+   src/code6cac_b_tu2.c:3959  [cast,offset]  *(s32 *)(obj + 0x30) += *(s32 *)(obj + 0x48);
+   src/code6cac_b_tu2.c:3960  [cast,offset]  *(s32 *)(obj + 0x34) += *(s32 *)(obj + 0x4C);
+   src/code6cac_b_tu2.c:3961  [cast,offset]  *(s32 *)(obj + 0x2C) += *(s32 *)(obj + 0x44) / 2;
+   src/code6cac_b_tu2.c:3962  [cast,offset]  *(s32 *)(obj + 0x30) += *(s32 *)(obj + 0x48) / 2;
+   src/code6cac_b_tu2.c:3963  [cast,offset]  *(s32 *)(obj + 0x34) += *(s32 *)(obj + 0x4C) / 2;
+   src/code6cac_b_tu2.c:3964  [cast,offset]  *(Vec3i *)(obj + 0x38) = *(Vec3i *)(obj + 0x2C);
+   src/code6cac_b_tu2.c:3965  [cast,offset]  *(s16 *)(obj + 0x54) = 0;
+   src/code6cac_b_tu2.c:3966  [cast,offset]  *(u16 *)(obj + 0x56) = *(u16 *)(src + 0x1CA);
+   src/code6cac_b_tu2.c:3967  [cast,offset]  *(s16 *)(obj + 0x58) = 0;
+   src/code6cac_b_tu2.c:3969  [cast,offset]  *(s16 *)(obj + 0x5C) = 0;
+   src/code6cac_b_tu2.c:3970  [cast,offset]  *(u16 *)(obj + 0x5E) = tbl->unk8;
+   src/code6cac_b_tu2.c:3971  [cast,offset]  *(s16 *)(obj + 0x60) = 0;
+   src/code6cac_b_tu2.c:3973  [cast,offset]  *(u16 *)(obj + 0x5C) = tbl->unk8;
+   src/code6cac_b_tu2.c:3974  [cast,offset]  *(s16 *)(obj + 0x5E) = 0;
+   src/code6cac_b_tu2.c:3975  [cast,offset]  *(s16 *)(obj + 0x60) = 0;
+   src/code6cac_b_tu2.c:3977  [cast,offset]  *(s16 *)(obj + 0x5C) = 0;
+   src/code6cac_b_tu2.c:3978  [cast,offset]  *(u16 *)(obj + 0x5E) = tbl->unk8;
+   src/code6cac_b_tu2.c:3979  [cast,offset]  *(s16 *)(obj + 0x60) = 0;
+   src/code6cac_b_tu2.c:3981  [cast,offset]  *(s16 *)(obj + 0x5C) = 0;
+   src/code6cac_b_tu2.c:3982  [cast,offset]  *(s16 *)(obj + 0x5E) = 0;
+   src/code6cac_b_tu2.c:3983  [cast,offset]  *(s16 *)(obj + 0x60) = 0;
+   src/code6cac_b_tu2.c:3985  [cast,offset]  *(s32 *)(obj + 0x50) = 1;
+   src/code6cac_b_tu2.c:3986  [cast,offset]  *(u8 *)(obj + 5) = 0;
+   src/code6cac_b_tu2.c:3987  [cast]  *(s16 *)obj = 0;
+   src/code6cac_b_tu2.c:3988  [cast]  return (s32 *)obj;
+== func_80030D7C  src/code6cac_b_tu2.c  (114 hits)
+   src/code6cac_b_tu2.c:4214  [cast]  scr = (u8 *)0x1F8002B8;
+   src/code6cac_b_tu2.c:4215  [cast,scalar&]  obj = (u8 *)&D_80106A78;
+   src/code6cac_b_tu2.c:4228  [cast,offset]  if (*(s16 *)(obj + 2) == -1) {
+   src/code6cac_b_tu2.c:4229  [cast,offset]  *(u8 *)(obj + 0xA) = 0xFF;
+   src/code6cac_b_tu2.c:4232  [cast,offset]  if (*(u8 *)(obj + 8) != 0) {
+   src/code6cac_b_tu2.c:4235  [cast,offset]  *(Vec3i32 *)(obj + 0x38) = *(Vec3i32 *)(obj + 0x2C);
+   src/code6cac_b_tu2.c:4236  [cast,offset]  if (*(s32 *)(obj + 0x50) != 0) {
+   src/code6cac_b_tu2.c:4237  [cast]  (*(s16 *)obj)++;
+   src/code6cac_b_tu2.c:4239  [cast,offset]  if (*(s16 *)(obj + 2) == 0x10 && *(s32 *)(obj + 0x50) != 0 && *(u8 *)(obj + 5) == 0
+   src/code6cac_b_tu2.c:4240  [cast]  && *(s16 *)obj >= 14) {
+   src/code6cac_b_tu2.c:4241  [cast,offset]  temp = ratan2(*(s32 *)(obj + 0x44), *(s32 *)(obj + 0x4C));
+   src/code6cac_b_tu2.c:4242  [cast]  work = (0x4E - *(s16 *)obj) * 96 / 64;
+   src/code6cac_b_tu2.c:4248  [cast,offset]  *(s32 *)(scr + 0x10) = (Judge[(temp + 0x400) & 0xFFF] * *(s32 *)(obj + 0x44)
+   src/code6cac_b_tu2.c:4249  [cast,offset]  - Judge[temp & 0xFFF] * *(s32 *)(obj + 0x4C)) >> 12;
+   src/code6cac_b_tu2.c:4250  [cast,offset]  *(s32 *)(scr + 0x14) = *(s32 *)(obj + 0x48);
+   src/code6cac_b_tu2.c:4251  [cast,offset]  *(s32 *)(scr + 0x18) = (Judge[temp & 0xFFF] * *(s32 *)(obj + 0x44)
+   src/code6cac_b_tu2.c:4252  [cast,offset]  + Judge[(temp + 0x400) & 0xFFF] * *(s32 *)(obj + 0x4C)) >> 12;
+   src/code6cac_b_tu2.c:4253  [cast,offset]  *(s32 *)(scr + 0x20) = *(s32 *)(scr + 0x10);
+   src/code6cac_b_tu2.c:4255  [cast,offset]  *(s32 *)(scr + 0x24) = (Judge[(half + 0x400) & 0xFFF] * *(s32 *)(scr + 0x14)
+   src/code6cac_b_tu2.c:4256  [cast,offset]  - Judge[half & 0xFFF] * *(s32 *)(scr + 0x18)) >> 12;
+   src/code6cac_b_tu2.c:4257  [cast,offset]  *(s32 *)(scr + 0x28) = (Judge[half & 0xFFF] * *(s32 *)(scr + 0x14)
+   src/code6cac_b_tu2.c:4258  [cast,offset]  + Judge[(half + 0x400) & 0xFFF] * *(s32 *)(scr + 0x18)) >> 12;
+   src/code6cac_b_tu2.c:4259  [cast,offset]  *(s32 *)(obj + 0x44) = (Judge[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x20)
+   src/code6cac_b_tu2.c:4260  [cast,offset]  - Judge[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
+   src/code6cac_b_tu2.c:4261  [cast,offset]  *(s32 *)(obj + 0x48) = *(s32 *)(scr + 0x24);
+   src/code6cac_b_tu2.c:4262  [cast,offset]  *(s32 *)(obj + 0x4C) = (Judge[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x20)
+   src/code6cac_b_tu2.c:4263  [cast,offset]  + Judge[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
+   src/code6cac_b_tu2.c:4264  [cast,offset]  *(s16 *)(obj + 0x5C) = *(s16 *)(obj + 0x5C) * 63 / 64;
+   src/code6cac_b_tu2.c:4265  [cast,offset]  *(s16 *)(obj + 0x5E) = *(s16 *)(obj + 0x5E) * 63 / 64;
+   src/code6cac_b_tu2.c:4266  [cast,offset]  *(s16 *)(obj + 0x60) = *(s16 *)(obj + 0x60) * 63 / 64;
+   src/code6cac_b_tu2.c:4268  [cast,offset]  *(s16 *)(obj + 0x5C) = *(s16 *)(obj + 0x5C) * 15 / 16;
+   src/code6cac_b_tu2.c:4269  [cast,offset]  *(s16 *)(obj + 0x5E) = *(s16 *)(obj + 0x5E) * 15 / 16;
+   src/code6cac_b_tu2.c:4270  [cast,offset]  *(s16 *)(obj + 0x60) = *(s16 *)(obj + 0x60) * 15 / 16;
+   src/code6cac_b_tu2.c:4272  [cast,offset]  *(s16 *)(obj + 0x54) += *(s16 *)(obj + 0x5C);
+   src/code6cac_b_tu2.c:4273  [cast,offset]  *(s16 *)(obj + 0x56) += *(s16 *)(obj + 0x5E);
+   src/code6cac_b_tu2.c:4274  [cast,offset]  *(s16 *)(obj + 0x58) += *(s16 *)(obj + 0x60);
+   src/code6cac_b_tu2.c:4275  [cast,offset]  *(s32 *)(obj + 0x48) += 13;
+   src/code6cac_b_tu2.c:4276  [cast,offset]  *(s32 *)(scr + 0x0) = *(s32 *)(obj + 0x2C) + *(s32 *)(obj + 0x44);
+   src/code6cac_b_tu2.c:4277  [cast,offset]  *(s32 *)(scr + 0x4) = *(s32 *)(obj + 0x30) + *(s32 *)(obj + 0x48);
+   src/code6cac_b_tu2.c:4278  [cast,offset]  *(s32 *)(scr + 0x8) = *(s32 *)(obj + 0x34) + *(s32 *)(obj + 0x4C);
+   src/code6cac_b_tu2.c:4279  [cast,offset]  *(s32 *)(obj + 0x30) -= 8;
+   src/code6cac_b_tu2.c:4280  [cast,offset]  nrm = (s16 *)(scr + 0x30);
+   src/code6cac_b_tu2.c:4281  [cast,offset]  temp = func_8005344C((s32 *)(obj + 0x2C), (s32 *)scr, (s32 *)(scr + 0x10), (s32 *)nrm, (s32)(scr + 0x38));
+   src/code6cac_b_tu2.c:4286  [cast,offset]  if (*(s16 *)(obj + 2) == 0xF) {
+   src/code6cac_b_tu2.c:4287  [cast,offset]  func_80032854(*(u8 *)(obj + 6), 0xE, scr + 0x10, nrm);
+   src/code6cac_b_tu2.c:4288  [cast,offset]  *(s16 *)(obj + 2) = -1;
+   src/code6cac_b_tu2.c:4291  [cast,offset]  dot = (*(s32 *)(obj + 0x44) * nrm[0]
+   src/code6cac_b_tu2.c:4292  [cast,offset]  + *(s32 *)(obj + 0x48) * nrm[1]
+   src/code6cac_b_tu2.c:4293  [cast,offset]  + *(s32 *)(obj + 0x4C) * nrm[2]) / 2048;
+   src/code6cac_b_tu2.c:4294  [cast,offset]  *(s32 *)(obj + 0x44) -= nrm[0] * dot / 4096;
+   src/code6cac_b_tu2.c:4295  [cast,offset]  *(s32 *)(obj + 0x48) -= nrm[1] * dot / 4096;
+   src/code6cac_b_tu2.c:4296  [cast,offset]  *(s32 *)(obj + 0x4C) -= nrm[2] * dot / 4096;
+   src/code6cac_b_tu2.c:4297  [cast,offset]  *(Vec3i32 *)(obj + 0x2C) = *(Vec3i32 *)(scr + 0x10);
+   src/code6cac_b_tu2.c:4298  [cast,offset]  state = *(s16 *)(obj + 2);
+   src/code6cac_b_tu2.c:4300  [cast,offset]  if (*(s32 *)(obj + 0x50) != 0) {
+   src/code6cac_b_tu2.c:4301  [cast,offset]  *(s32 *)(obj + 0x44) = *(s32 *)(obj + 0x44) * work / 4096;
+   src/code6cac_b_tu2.c:4302  [cast,offset]  *(s32 *)(obj + 0x48) = *(s32 *)(obj + 0x48) * work / 4096;
+   src/code6cac_b_tu2.c:4303  [cast,offset]  *(s32 *)(obj + 0x4C) = *(s32 *)(obj + 0x4C) * work / 4096;
+   src/code6cac_b_tu2.c:4304  [cast,offset]  spd = *(s32 *)(obj + 0x44) * *(s32 *)(obj + 0x44)
+   src/code6cac_b_tu2.c:4305  [cast,offset]  + *(s32 *)(obj + 0x4C) * *(s32 *)(obj + 0x4C);
+   src/code6cac_b_tu2.c:4306  [cast,offset]  if (*(s16 *)(scr + 0x32) >= -0x7FF) {
+   src/code6cac_b_tu2.c:4307  [cast,offset]  *(s16 *)(obj + 0x5E) += (rng_Next() & 1) ? spd / 64 : -spd / 64;
+   src/code6cac_b_tu2.c:4308  [cast,offset]  if (*(s16 *)(obj + 2) != 0xE && *(u8 *)(obj + 4) != 0) {
+   src/code6cac_b_tu2.c:4309  [cast,offset]  func_80032854(*(u8 *)(obj + 6), 1, obj + 0x2C, 0);
+   src/code6cac_b_tu2.c:4312  [cast,offset]  if (*(s16 *)(obj + 2) == 0xE) {
+   src/code6cac_b_tu2.c:4313  [cast,offset]  if (*(u8 *)(obj + 4) != 0) {
+   src/code6cac_b_tu2.c:4314  [cast,offset]  func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2F, obj + 0x2C, 0);
+   src/code6cac_b_tu2.c:4316  [cast,offset]  } else if (*(s16 *)(obj + 2) < 0x12) {
+   src/code6cac_b_tu2.c:4318  [cast,offset]  func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2C, obj + 0x2C, 0);
+   src/code6cac_b_tu2.c:4320  [cast,offset]  } else if ((u16)(*(s16 *)(obj + 2) - 0x12) < 12) {
+   src/code6cac_b_tu2.c:4322  [cast,offset]  func_80032854(*(u8 *)(obj + 6), 0x29, obj + 0x2C, 0);
+   src/code6cac_b_tu2.c:4325  [cast,offset]  } else if (*(s16 *)(scr + 0x32) >= -0x7FF && state == 0xE) {
+   src/code6cac_b_tu2.c:4326  [cast,offset]  if (*(u8 *)(obj + 5) == 1) {
+   src/code6cac_b_tu2.c:4327  [cast,offset]  *(s32 *)(obj + 0x50) = 1;
+   src/code6cac_b_tu2.c:4328  [cast,offset]  *(s16 *)(obj + 0x56) += 0x780 + (rng_Next() & 0xFF);
+   src/code6cac_b_tu2.c:4329  [cast,offset]  *(s32 *)(obj + 0x44) = Judge[*(s16 *)(obj + 0x56) & 0xFFF] / 64;
+   src/code6cac_b_tu2.c:4330  [cast,offset]  *(s32 *)(obj + 0x48) = -150;
+   src/code6cac_b_tu2.c:4331  [cast,offset]  *(s32 *)(obj + 0x4C) = Judge[(*(s16 *)(obj + 0x56) + 0x400) & 0xFFF] / 64;
+   src/code6cac_b_tu2.c:4332  [cast,offset]  *(u8 *)(obj + 5) = 2;
+   src/code6cac_b_tu2.c:4333  [cast,offset]  func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2F, obj + 0x2C, 0);
+   src/code6cac_b_tu2.c:4336  [cast,offset]  *(u8 *)(obj + 4) = 0;
+   src/code6cac_b_tu2.c:4337  [cast,offset]  if (*(u8 *)(obj + 7) == 1) {
+   src/code6cac_b_tu2.c:4338  [cast,offset]  *(u8 *)(obj + 7) = 2;
+   src/code6cac_b_tu2.c:4340  [cast,offset]  if (*(u8 *)(obj + 5) == 2) {
+   src/code6cac_b_tu2.c:4341  [cast,offset]  *(u8 *)(obj + 5) = 3;
+   src/code6cac_b_tu2.c:4344  [cast,offset]  *(Vec3i32 *)(obj + 0x2C) = *(Vec3i32 *)scr;
+   src/code6cac_b_tu2.c:4346  [cast,offset]  if ((u32)(*(s32 *)(obj + 0x48) + 15) < 31 && (u32)(*(s32 *)(obj + 0x44) + 3) < 7
+   src/code6cac_b_tu2.c:4347  [cast,offset]  && (u32)(*(s32 *)(obj + 0x4C) + 3) < 7) {
+   src/code6cac_b_tu2.c:4350  [cast,offset]  *(s16 *)(obj + 2) = -1;
+   src/code6cac_b_tu2.c:4352  [cast,offset]  *(s32 *)(obj + 0x50) = 0;
+   src/code6cac_b_tu2.c:4353  [cast,offset]  *(u8 *)(obj + 5) = 1;
+   src/code6cac_b_tu2.c:4354  [cast,offset]  *(s32 *)(obj + 0x44) = 0;
+   src/code6cac_b_tu2.c:4355  [cast,offset]  *(s32 *)(obj + 0x48) = 0;
+   src/code6cac_b_tu2.c:4356  [cast,offset]  *(s32 *)(obj + 0x4C) = 0;
+   src/code6cac_b_tu2.c:4360  [cast,offset]  *(s32 *)(obj + 0x50) = 1;
+   src/code6cac_b_tu2.c:4362  [cast,offset]  if (*(s16 *)(obj + 2) == 0xE) {
+   src/code6cac_b_tu2.c:4363  [cast,offset]  if (*(u8 *)(obj + 5) == 1 && !(rng_Next() & 0x133)) {
+   src/code6cac_b_tu2.c:4364  [cast,offset]  *(s32 *)(obj + 0x50) = 1;
+   src/code6cac_b_tu2.c:4365  [cast,offset]  *(s16 *)(obj + 0x5E) += (rng_Next() & 0x7F) - 0x40;
+   src/code6cac_b_tu2.c:4366  [cast,offset]  *(s32 *)(obj + 0x44) = Judge[*(s16 *)(obj + 0x56) & 0xFFF] / 64;
+   src/code6cac_b_tu2.c:4367  [cast,offset]  *(s32 *)(obj + 0x48) = -150;
+   src/code6cac_b_tu2.c:4368  [cast,offset]  *(s32 *)(obj + 0x4C) = Judge[(*(s16 *)(obj + 0x56) + 0x400) & 0xFFF] / 64;
+   src/code6cac_b_tu2.c:4369  [cast,offset]  *(u8 *)(obj + 5) = 2;
+   src/code6cac_b_tu2.c:4370  [cast,offset]  func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2F, obj + 0x2C, 0);
+   src/code6cac_b_tu2.c:4373  [cast,offset]  if (*(u8 *)(obj + 7) == 2) {
+   src/code6cac_b_tu2.c:4374  [cast,offset]  *(s16 *)(obj + 0x56) = math_LerpAngle(*(s16 *)(obj + 0x56), 0, 0x800);
+   src/code6cac_b_tu2.c:4375  [cast,offset]  *(s16 *)(obj + 0x58) = math_LerpAngle(*(s16 *)(obj + 0x58), 0x400, 0xE00);
+   src/code6cac_b_tu2.c:4376  [cast,offset]  *(s16 *)(obj + 0x5E) = *(s16 *)(obj + 0x5E) * 3 / 4;
+   src/code6cac_b_tu2.c:4377  [cast,offset]  } else if (*(u8 *)(obj + 4) == 0 && D_8008E194[*(s16 *)(obj + 2)].unk0 == 2) {
+   src/code6cac_b_tu2.c:4378  [cast,offset]  *(s16 *)(obj + 0x54) = math_LerpAngle(*(s16 *)(obj + 0x54), 0, 0xE00);
+   src/code6cac_b_tu2.c:4379  [cast,offset]  *(s16 *)(obj + 0x56) = math_LerpAngle(*(s16 *)(obj + 0x56), 0, 0x600);
+   src/code6cac_b_tu2.c:4380  [cast,offset]  *(s16 *)(obj + 0x58) = math_LerpAngle(*(s16 *)(obj + 0x58), -0x400, 0xE00);
+   src/code6cac_b_tu2.c:4382  [cast,offset]  if (*(s32 *)(obj + 0x30) > 0x3A98) {
+   src/code6cac_b_tu2.c:4383  [cast,offset]  *(s16 *)(obj + 2) = -1;
+== func_80032064  src/code6cac_b_tu2.c  (14 hits)
+   src/code6cac_b_tu2.c:4590  [offset]  *(s0 + 1) = 1;
+   src/code6cac_b_tu2.c:4591  [offset]  *(s0 + 2) = 0;
+   src/code6cac_b_tu2.c:4592  [cast,offset]  *(s0 + 3) = *(u16 *)(src + 4);
+   src/code6cac_b_tu2.c:4593  [cast,offset]  *(s32 *)(s0 + 4) = *(s32 *)(src + 0xF4);
+   src/code6cac_b_tu2.c:4595  [cast,offset]  s32 v1 = *(s16 *)(src + 0x1A);
+   src/code6cac_b_tu2.c:4597  [cast,offset]  *(s32 *)(s0 + 8) = *(s32 *)(src + 0xBC) - (v1 >> 5);
+   src/code6cac_b_tu2.c:4599  [cast,offset]  *(s32 *)(s0 + 0xC) = *(s32 *)(src + 0xFC);
+   src/code6cac_b_tu2.c:4600  [cast,offset]  *(s32 *)(s0 + 0x1C) = ((s32)Judge[*(u16 *)(src + 0x1CA) & 0xFFF] * speed) >> 12;
+   src/code6cac_b_tu2.c:4601  [cast,offset]  *(s32 *)(s0 + 0x20) = vel_y;
+   src/code6cac_b_tu2.c:4602  [cast,offset]  *(s32 *)(s0 + 0x24) = ((s32)Judge[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * speed) >> 12;
+   src/code6cac_b_tu2.c:4603  [cast,offset]  *(Vec3_copy *)(s0 + 0x10) = *(Vec3_copy *)(s0 + 4);
+   src/code6cac_b_tu2.c:4604  [cast,offset]  *(s32 *)(s0 + 0x28) = *(s32 *)(src + 0xBC);
+   src/code6cac_b_tu2.c:4605  [cast,offset]  sp_area[1] = *(u16 *)(src + 0x1CA);
+   src/code6cac_b_tu2.c:4607  [cast,offset]  s32 a0_arg = *(u8 *)(src + 0xB2);
+== func_80032314  src/code6cac_b_tu2.c  (8 hits)
+   src/code6cac_b_tu2.c:4648  [scalar&]  u8 *a3 = &D_80104E88 + 2;
+   src/code6cac_b_tu2.c:4662  [cast,offset]  s32 v1_v = (*(u8 *)(a3 + 1) == 0);
+   src/code6cac_b_tu2.c:4679  [offset]  if ((u32)(state - 0x1C) < 2) goto next;
+   src/code6cac_b_tu2.c:4680  [offset]  if ((u32)(state - 0x1E) < 2) goto next;
+   src/code6cac_b_tu2.c:4681  [offset]  if ((u32)(state - 0x20) < 2) goto next;
+   src/code6cac_b_tu2.c:4684  [cast,offset]  s32 dx = ent->unk_F4.x - *(s32 *)(a3 + 2);
+   src/code6cac_b_tu2.c:4685  [cast,offset]  s32 dy = ent->unk_F4.y - *(s32 *)(a3 + 6);
+   src/code6cac_b_tu2.c:4686  [cast,offset]  s32 dz = ent->unk_F4.z - *(s32 *)(a3 + 0xA);
+== func_800325E0  src/code6cac_b_tu2.c  (6 hits)
+   src/code6cac_b_tu2.c:4838  [cast,offset]  dx = *(s32 *)((u8 *)D_800A36B4 + 0x20) - arg1[0];
+   src/code6cac_b_tu2.c:4839  [cast,offset]  dy = *(s32 *)((u8 *)D_800A36B4 + 0x24) - arg1[1];
+   src/code6cac_b_tu2.c:4840  [cast,offset]  dz = *(s32 *)((u8 *)D_800A36B4 + 0x28) - arg1[2];
+   src/code6cac_b_tu2.c:4842  [offset]  if (((u32)(dx + 0x9C40) > 0x13880U) || ((u32)(dz + 0x9C40) > 0x13880U)) {
+   src/code6cac_b_tu2.c:4892  [cast,offset]  listener_angle = *(s16 *)((u8 *)D_800A36B4 + 0x12);
+   src/code6cac_b_tu2.c:4893  [offset]  projected_pan = (s32)((dx * (s32)Judge[(listener_angle + 0x400) & 0xFFF])
+== func_8003C9A4  src/code6cac_c2.c  (1 hits)
+   src/code6cac_c2.c:744  [cast]  func_80046BF4((s16 *)a0, a1, 0x2710);
+== func_8003CE18  src/code6cac_c2.c  (1 hits)
+   src/code6cac_c2.c:863  [offset]  if ((u16)(val - 6) < 2) {
+TOTAL 590 hits in 36 functions
