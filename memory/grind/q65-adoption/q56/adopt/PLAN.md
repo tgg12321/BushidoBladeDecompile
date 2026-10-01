@@ -62,7 +62,8 @@ Each is byte-neutral: the step's full build is the oracle and every object is co
 - **func_8006E950 (text1b_tu1d.c, step 10).** `s32 *a0` + `s0_addr = (s32)a0` -> `s32 a0` + `s0_addr = a0`
   (callers pass integers 0x32 / 0x5F; the body uses it only as an integer).
 - **Cast-only call-site edits (steps 08 / 10)**, no statement added or removed: sound (func_80045694 callbacks
-  as `(s32)`, ApplyMatrix / gte_MulMatrix0ClearTrans SDK types, func_80044FA0 `(s32)v0`, D_800A3708->xf.rot,
+  as `(s32)`, ApplyMatrix / gte_MulMatrix0ClearTrans / MulMatrix0 SDK types (MulMatrix0: func_800475A4's one
+  call casts its two 8-word buffers and base + 0x18 to `MATRIX *`; added 2026-10-01), func_80044FA0 `(s32)v0`, D_800A3708->xf.rot,
   D_800F62E0[0]), text1a_c2 (func_80044010 `(s32 *)` first argument), text1b (`(s32)func_8004153C(..)`,
   `(s32 *)p1/p2`, `(s32)&D_80102C00`, D_800F62E0[0]), text1b_b (`(s32 *)D_800A35F4/360C`, `(s32)&s.header`,
   `(s32)&s.a`, `(s32 *)D_8009BD24`).

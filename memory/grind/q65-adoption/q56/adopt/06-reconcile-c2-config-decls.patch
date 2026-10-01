@@ -1,6 +1,6 @@
-From 4134369a60109390f1ac537ce9adad57742af827 Mon Sep 17 00:00:00 2001
+From 99d19851880765b1098c58df8d25c55837750845 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:03:50 -0500
+Date: Thu, 1 Oct 2026 10:31:47 -0500
 Subject: [PATCH] src: code6cac_c2 / config declarations of func_8004153C and
  D_800A3708 reconciled (owner ruling Q65, step 6)
 
@@ -10,7 +10,7 @@ Subject: [PATCH] src: code6cac_c2 / config declarations of func_8004153C and
  2 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/src/code6cac_c2.c b/src/code6cac_c2.c
-index 472d2a0a3..73e85b03c 100644
+index 85e16a214..c39881fce 100644
 --- a/src/code6cac_c2.c
 +++ b/src/code6cac_c2.c
 @@ -59,7 +59,7 @@ extern s16 D_800A7FE0[32][32];

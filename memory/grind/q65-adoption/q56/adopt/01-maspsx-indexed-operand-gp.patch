@@ -1,6 +1,6 @@
-From 149c33b8ad492e7f11cdd1635e26010b2b328b85 Mon Sep 17 00:00:00 2001
+From 75e2a3d0ea2c0e330b04529a1d8a074be0b2a322 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:02:32 -0500
+Date: Thu, 1 Oct 2026 10:29:36 -0500
 Subject: [PATCH] substrate: maspsx _uses_gp - an indexed sym($reg) operand is
  never gp (owner ruling Q65, step 1)
 
@@ -12,10 +12,10 @@ Subject: [PATCH] substrate: maspsx _uses_gp - an indexed sym($reg) operand is
  create mode 100644 tools/maspsx/tests/test_indexed_gp_nop.py
 
 diff --git a/engine/test_engine.py b/engine/test_engine.py
-index d0ec8b83b..4ee3af614 100644
+index 50787506a..817aa75bc 100644
 --- a/engine/test_engine.py
 +++ b/engine/test_engine.py
-@@ -4972,6 +4972,31 @@ def test_queue_remeasure_source_integrity() -> None:
+@@ -5050,6 +5050,31 @@ def test_queue_remeasure_source_integrity() -> None:
              Q.QUEUE_PATH = orig_path
  
  
@@ -47,7 +47,7 @@ index d0ec8b83b..4ee3af614 100644
  def test_maspsx_fingerprint() -> None:
      """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
      HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
-@@ -5210,6 +5235,7 @@ def main() -> int:
+@@ -5288,6 +5313,7 @@ def main() -> int:
      test_queue_write_serialization()
      test_queue_rotation()
      test_queue_remeasure_source_integrity()

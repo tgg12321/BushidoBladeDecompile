@@ -1,21 +1,21 @@
-From 4b56de3b20598764f8727d122e146b0868c899d3 Mon Sep 17 00:00:00 2001
+From 6adf8db5229058a1484d70b62679206b017924d7 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:05:06 -0500
+Date: Thu, 1 Oct 2026 10:36:28 -0500
 Subject: [PATCH] src: text1b_tu2 + text1b_b are one file (owner rulings
  Q65/Q67, step 11)
 
 ---
  bb2.ld           |    6 +-
- src/text1b_b.c   | 1129 +++++++++++++++++++++++++++++++++++++++++++---
- src/text1b_tu2.c | 1099 --------------------------------------------
- 3 files changed, 1064 insertions(+), 1170 deletions(-)
+ src/text1b_b.c   | 1523 ++++++++++++++++++++++++++++++++++++++++++++--
+ src/text1b_tu2.c | 1491 ---------------------------------------------
+ 3 files changed, 1457 insertions(+), 1563 deletions(-)
  delete mode 100644 src/text1b_tu2.c
 
 diff --git a/bb2.ld b/bb2.ld
-index 1f4923dce..02a2594df 100644
+index 6cf657feb..0e71d8935 100644
 --- a/bb2.ld
 +++ b/bb2.ld
-@@ -69,9 +69,8 @@ SECTIONS
+@@ -70,9 +70,8 @@ SECTIONS
          build/src/text1b_tu1c.o(.rodata);
          build/src/text1b_tu1d.o(.rodata);
          build/src/text1b_tu1e.o(.rodata);
@@ -26,7 +26,7 @@ index 1f4923dce..02a2594df 100644
          build/src/text1b_b_tu2.o(.rodata);
          build/src/text1b_b_tu3.o(.rodata);
          build/src/text1a_b_post_rodata.o(.rodata);
-@@ -113,7 +112,6 @@ SECTIONS
+@@ -114,7 +113,6 @@ SECTIONS
          build/src/text1b_tu1c.o(.text);
          build/src/text1b_tu1d.o(.text);
          build/src/text1b_tu1e.o(.text);
@@ -34,7 +34,7 @@ index 1f4923dce..02a2594df 100644
          build/src/text1b_b.o(.text);
          build/src/text1b_b_tu2.o(.text);
          build/src/text1b_b_tu3.o(.text);
-@@ -153,7 +151,6 @@ SECTIONS
+@@ -155,7 +153,6 @@ SECTIONS
          build/src/text1b_tu1c.o(.data);
          build/src/text1b_tu1d.o(.data);
          build/src/text1b_tu1e.o(.data);
@@ -42,7 +42,7 @@ index 1f4923dce..02a2594df 100644
          build/src/text1b_b.o(.data);
          build/src/text1b_b_tu2.o(.data);
          build/src/text1b_b_tu3.o(.data);
-@@ -196,7 +193,6 @@ SECTIONS
+@@ -199,7 +196,6 @@ SECTIONS
          build/src/text1b_tu1c.o(.bss);
          build/src/text1b_tu1d.o(.bss);
          build/src/text1b_tu1e.o(.bss);
@@ -51,12 +51,19 @@ index 1f4923dce..02a2594df 100644
          build/src/text1b_b_tu2.o(.bss);
          build/src/text1b_b_tu3.o(.bss);
 diff --git a/src/text1b_b.c b/src/text1b_b.c
-index 3a8a59421..572421ede 100644
+index e6e11ca33..ccf5cb418 100644
 --- a/src/text1b_b.c
 +++ b/src/text1b_b.c
-@@ -5,22 +5,31 @@
+@@ -1,27 +1,37 @@
+ #define INCLUDE_ASM_USE_MACRO_INC 1
+ #include "common.h"
+ #include "include_asm.h"
+-#include "bios.h"
+ #include "sound.h"
  #include "game.h"
  #include "code6cac.h"
++#include "gpu.h"
++#include "bios.h"
  
 -
 -#define NULL ((void *)0)
@@ -102,7 +109,7 @@ index 3a8a59421..572421ede 100644
  typedef struct GameObj {
      u8 field_00; u8 field_01; s16 field_02;
      s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
-@@ -44,6 +53,1044 @@ typedef struct GameObj {
+@@ -45,6 +55,1435 @@ typedef struct GameObj {
      s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
      s16 field_FA; s32 field_FC;
  } GameObj;
@@ -126,9 +133,11 @@ index 3a8a59421..572421ede 100644
 +s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3);
 +s32 func_800693CC(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 +extern void SetDrawOffset();
++/* func_8007352C's draw descriptor: .header = the sprite sheet's SprtHdrA, .table = its
++   SprtEntA cell array (the s32 form of S_80074488 / DescF97C). */
 +typedef struct EnvA {
-+    s32 *header;
-+    s8  *table;
++    s32  header;
++    s32  table;
 +    s32  out;
 +    s32  pad0C;
 +    s32  semi;
@@ -177,7 +186,7 @@ index 3a8a59421..572421ede 100644
 +
 +/* func_800747D8: the duplicated `sound = 4;` below is claimed under
 + * .claude/rules/duplicated-statement-into-arms.md and carries its FAKE
-+ * annotation inline; self-vet: memory/grind/func_800747D8/self_vet.md. */
++ * annotation inline; self-vet: pre-slim-2026-10-01:memory/grind/func_800747D8/self_vet.md. */
 +/* 0x800A35D0: one {s16, s16} pair per player (two words,
 + * asm/data/91C98.data.s:4279-4282), passed to func_800692C0 beside SelWork
 + * f40[player]; func_800768DC indexes it by player * 4 (0x80076948/5C). */
@@ -234,7 +243,7 @@ index 3a8a59421..572421ede 100644
 +             * `selection_sound:` CODE_LABEL, so the store-flag gate at
 +             * tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather than a
 +             * CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
-+             * sltiu/sll fold; lever-exhaustion: memory/grind/func_800747D8/
++             * sltiu/sll fold; lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_800747D8/
 +             * hypotheses.md s1-s9 (20 measured kills, incl. the s9
 +             * break-converged single-assignment control at score 10/205). */
 +            sound = 4;
@@ -251,7 +260,7 @@ index 3a8a59421..572421ede 100644
 +             * `selection_sound:` CODE_LABEL, so the store-flag gate at
 +             * tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather than a
 +             * CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
-+             * sltiu/sll fold; lever-exhaustion: memory/grind/func_800747D8/
++             * sltiu/sll fold; lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_800747D8/
 +             * hypotheses.md s1-s9 (20 measured kills, incl. the s9
 +             * break-converged single-assignment control at score 10/205). */
 +            sound = 4;
@@ -384,7 +393,130 @@ index 3a8a59421..572421ede 100644
 +    AddPrim(g_gpu_ot_ptr + var_s1 * 4, *(s32 *)(arg0 + 0x18));
 +    *(s32 *)(arg0 + 0x18) += 0xC;
 +}
-+INCLUDE_ASM("asm/funcs", func_80074E08);
++void func_80074E08(s32 *arg0, s32 arg1) {
++    EnvA s;
++    u16 rect[4];
++    u16 offset[2];
++    s32 *records;
++    s32 prim;
++    s32 ot_idx;
++    /* work holds two values (Ruling 11, owner 2026-09-26; the first under its
++       Q20 per-branch-constant clause): the backdrop TILE's OT index (0xE for
++       player 1, 4 for player 0), then ot_idx * 4, the OT byte offset the last
++       three AddPrim calls add. Proof: memory/grind/func_80074E08/r11/proof.md. */
++    s32 work;
++    s32 rect_x;
++    /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts
++       just past the sheet's one 12-byte SprtHdrA header (+0xC) on each of
++       the four root+0x18 sheets this function draws: one meaning at one
++       constant offset, written once per sheet (Ruling 9, owner 2026-09-25).
++       D_SEL.BIN census and receipts: memory/grind/func_80074E08/r9/. */
++    s32 cells;
++    s16 i;
++
++    prim = arg0[5];
++    SetTile(prim);
++    SetSemiTrans(prim, 0);
++    *(u8 *)(prim + 4) = 0xD0;
++    *(u8 *)(prim + 5) = 0xC8;
++    *(u8 *)(prim + 6) = 0xB8;
++    *(s16 *)(prim + 8) = arg1 * 0xF0 + 0x62;
++    *(s16 *)(prim + 0xA) = 0x14;
++    *(s16 *)(prim + 0xC) = 0xCC;
++    *(s16 *)(prim + 0xE) = 0xC8;
++    if (arg1 != 0) {
++        work = 0xE;
++    } else {
++        work = 4;
++    }
++    AddPrim(g_gpu_ot_ptr + work * 4 + 0x24, prim);
++    prim += 0x10;
++    arg0[5] = prim;
++
++    records = *(s32 **)(arg0[0] + 0x18);
++    s.semi = 0;
++    s.has_color = 0;
++    s.x = arg1 * 0xF0;
++    s.ot_idx = 2;
++    i = 0;
++    do {
++        s.y = (0xD2 - SELWORK->f0C[arg1]) * i;
++        s.header = records[3];
++        cells = s.header + 0xC;
++        s.table = cells;
++        s.out = arg0[4];
++        arg0[4] = func_8007352C((s32)&s);
++        s.header = records[2];
++        cells = s.header + 0xC;
++        s.table = cells;
++        s.out = arg0[4];
++        arg0[4] = func_8007352C((s32)&s);
++        s.table += *(u8 *)(s.header + 2) * 8;
++        s.pad20 = 0xCE00;
++        s.pad24 = 0x100;
++        s.pad0C = arg0[1];
++        arg0[1] = func_80073728((s32)&s, 0);
++        i++;
++    } while (i < 2);
++
++    s.x = arg1 * 0xF0;
++    s.y = 0;
++    s.header = records[0];
++    cells = s.header + 0xC;
++    s.table = cells;
++    if (arg1 != 0) {
++        s.ot_idx = 0x16;
++    } else {
++        s.ot_idx = 0xC;
++    }
++    s.out = arg0[4];
++    arg0[4] = func_8007352C((s32)&s);
++    s.header = records[1];
++    cells = s.header + 0xC;
++    s.table = cells;
++    s.out = arg0[4];
++    arg0[4] = func_8007352C((s32)&s);
++    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.header, 0), 0);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0[6]);
++    arg0[6] += 0xC;
++
++    if (arg1 != 0) {
++        ot_idx = 0xE;
++        rect_x = 0x14E;
++    } else {
++        ot_idx = 4;
++        rect_x = 0x5E;
++    }
++    rect[0] = ((DRAWENV *)SELWORK->f24)->clip.x + rect_x;
++    rect[1] = ((DRAWENV *)SELWORK->f24)->clip.y + 0x14;
++    rect[2] = 0xD4;
++    rect[3] = 0xC8 - SELWORK->f0C[arg1];
++    SetDrawArea(arg0[7], rect);
++    AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, arg0[7]);
++    arg0[7] += 0xC;
++
++    rect[0] = ((DRAWENV *)SELWORK->f24)->clip.x;
++    rect[1] = ((DRAWENV *)SELWORK->f24)->clip.y;
++    rect[2] = ((DRAWENV *)SELWORK->f24)->clip.w;
++    rect[3] = ((DRAWENV *)SELWORK->f24)->clip.h;
++    SetDrawArea(arg0[7], rect);
++    work = ot_idx * 4;
++    AddPrim(g_gpu_ot_ptr + work, arg0[7]);
++    arg0[7] += 0xC;
++
++    offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
++    offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1]
++              - SELWORK->f08[arg1];
++    SetDrawOffset(arg0[8], offset);
++    AddPrim(g_gpu_ot_ptr + work + 0x24, arg0[8]);
++    arg0[8] += 0xC;
++
++    offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
++    offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1];
++    SetDrawOffset(arg0[8], offset);
++    AddPrim(g_gpu_ot_ptr + work, arg0[8]);
++    arg0[8] += 0xC;
++}
 +void func_8007526C(void) {
 +    SelWork *base;
 +    s32 i;
@@ -613,9 +745,291 @@ index 3a8a59421..572421ede 100644
 + * func_800768DC lbu/sb at 0x80076B90/0x80076BA4). */
 +extern u8 D_8009BCE4[20];
 +
-+INCLUDE_ASM("asm/funcs", func_800759D0);
++/* Character-select grid renderer (select-screen case 2 of func_80077374; the
++ * draw half of func_80075F80), called once per player per frame.
++ *   arg0 = draw context (arg0[0] root table, arg0[4] sprite chain,
++ *          arg0[6] DR_MODE cursor)
++ *   arg1 = select page into D_8009BCF8 (10 cells per page)
++ *   arg2 = this player's pick list (-1 = cleared slot)
++ *   arg3 = player index (0/1)
++ * Draws the page frame, the page's 10 character cells (selectable cells as
++ * sprites with the cursor cell highlighted, taken cells via func_80075830,
++ * unselectable cells via func_80075830), the picks made so far, then the
++ * f65+3 slot sprites, and closes with two DR_MODE/AddPrim pairs. */
++void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
++    S_80074488 s;
++    /* table holds three values, each a sprite-sheet pointer table read from the
++     * root at arg0[0]: the page table at +0x14 (the head; read by the head and
++     * loops 1-2), the slot table at +0x20 + f65 * 4 (reloaded every loop-3
++     * iteration), and the page table at +0x14 again for the closing DR_MODE
++     * pair.  One local, not three: ordinary-c-judge-decidable.md Ruling 11;
++     * (A)-(H) record memory/grind/func_800759D0/manual-2026-10-01/r11.md. */
++    s32 *table;
++    s32 color;
++    /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
++       func_8006E480's second argument at all three call sites is kept in
++       callee-save $fp (target: `addu $fp,$zero,$zero` in the entry block,
++       `addu $a1,$fp,$zero` at each call) instead of being re-materialized;
++       global.c gives the once-set constant pseudo a callee-save because it
++       crosses every call, and cse only folds a constant within the entry
++       extended basic block. A literal 0 measures 30/364 (362 insns); see
++       memory/grind/func_800759D0/hypotheses.md. Same shape as the siblings
++       func_800753D8 (`zero`) and func_8007636C (`mode`). */
++    s32 zero;
++    s16 i;
++    /* the sheet's cell array. The code treats each sheet it draws here as
++       12-byte SprtHdrA headers followed by 8-byte SprtEntA cells: the head
++       treats the table[0] page sheet as one header (cells at +0xC), and
++       loops 1-3 treat their sheets as three headers, normal then one cursor
++       highlight per player at +12/+24 (cells at +0x24). Loop 2 applies that
++       three-header view to every pick slot, including the 0x14 placeholder
++       func_80075F80 stores for an unavailable cell, whose sheet the code
++       elsewhere draws as one header (func_80075830); there the +0x24 runs
++       past the sheet into bytes nothing references. Assumed layout, path
++       census, that anomaly path and the unreferenced-address search:
++       memory/grind/func_800759D0/evidence.md "Ruling 9 (b')". */
++    s32 cells;
 +
-+INCLUDE_ASM("asm/funcs", func_80075F80);
++    zero = 0;
++    s.sp28 = 0;
++    s.sp40 = 0;
++    table = *(s32 **)(arg0[0] + 0x14);
++    s.sp18 = table[0];
++    s.sp30 = arg3 * 240 + 0x88;
++    s.sp34 = 0x33;
++    cells = s.sp18 + 0xC;
++    s.sp1C = cells;
++    if (arg3 != 0) {
++        s.sp2C = 0x16;
++    } else {
++        s.sp2C = 0xC;
++    }
++    if (arg1 != 0) {
++        s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
++    }
++    s.sp20 = arg0[4];
++    arg0[4] = func_8007352C((s32)&s);
++    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
++    AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0[6]);
++    arg0[6] += 0xC;
++
++    color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
++    s.sp41 = s.sp42 = s.sp43 = color;
++    if (arg3 != 0) {
++        s.sp2C = 0x14;
++    } else {
++        s.sp2C = 0xA;
++    }
++    s.sp30 = arg3 * 240;
++    for (i = arg1 * 10; i < arg1 * 10 + 10; i++) {
++        /* i indexes the whole table flat (arg1 * 10 + cell), from the first record. */
++        /* SOTN: src/dra/62DEC.c:1091 @aa53500 */
++        /* FAKE: pointer form of the flat read (Q53).  `&D_8009BCF8[0][0] + i`
++         * forms the address as its own value, so cse reuses it for the second
++         * read and loop.c hoists the table base into $s6 (the target's
++         * `lui/addiu $s6` and 2-byte step); D_8009BCF8[0][i].unk0 at the three
++         * sites folds the symbol into each load (`lui $at; addu; lbu %lo`) and
++         * scores 44 (365 insns).  Ledger:
++         * memory/grind/func_800759D0/manual-2026-10-01/r11.md */
++        u8 entry = (&D_8009BCF8[0][0] + i)->unk0;
++
++        if (D_8009BCE4[entry] & 1) {
++            s.sp18 = table[entry + 1];
++            cells = s.sp18 + 0x24;
++            s.sp1C = cells;
++            if (D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
++                s.sp40 = 1;
++                s.sp18 = s.sp18 + 12 + arg3 * 12;
++            } else {
++                s.sp40 = 0;
++            }
++            s.sp34 = 0;
++            s.sp20 = arg0[4];
++            arg0[4] = func_8007352C((s32)&s);
++            if (D_8009BCE4[(&D_8009BCF8[0][0] + i)->unk0] & (4 << arg3)) {
++                func_80075830(arg0, i, arg3, 1);
++            }
++        } else {
++            func_80075830(arg0, i, arg3, 0);
++        }
++    }
++
++    for (i = 0; i < SELWORK->f3C[arg3] + 1; i++) {
++        if (arg2[i] >= 0) {
++            s.sp18 = table[arg2[i] + 1];
++            cells = s.sp18 + 0x24;
++            if (i != SELWORK->f3C[arg3]) {
++                s.sp40 = 0;
++            } else {
++                s.sp40 = 1;
++                s.sp18 = s.sp18 + 12 + arg3 * 12;
++            }
++            s.sp34 = i * 17;
++            s.sp1C = cells;
++            s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
++            s.sp20 = arg0[4];
++            arg0[4] = func_8007352C((s32)&s);
++        }
++    }
++
++    s.sp40 = 0;
++    for (i = 0; i < SELWORK->f65 + 3; i++) {
++        table = *(s32 **)(arg0[0] + SELWORK->f65 * 4 + 0x20);
++        s.sp18 = table[i];
++        cells = s.sp18 + 0x24;
++        if (i == SELWORK->f3C[arg3]) {
++            s.sp18 = s.sp18 + 12 + arg3 * 12;
++        }
++        s.sp1C = cells;
++        s.sp30 = arg3 * 240;
++        s.sp34 = i * 17;
++        if (arg3 != 0) {
++            s.sp2C = 0x14;
++        } else {
++            s.sp2C = 0xA;
++        }
++        s.sp20 = arg0[4];
++        arg0[4] = func_8007352C((s32)&s);
++    }
++
++    table = *(s32 **)(arg0[0] + 0x14);
++    s.sp18 = table[1];
++    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
++    AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0[6]);
++    arg0[6] += 0xC;
++    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
++    AddPrim(g_gpu_ot_ptr + s.sp2C * 4 - 4, arg0[6]);
++    arg0[6] += 0xC;
++}
++
++/* Character-select cursor / pick handler; called once per player per frame.
++ *   arg0 = this frame's pad bits, both players packed (player N in bits N*16)
++ *   arg1 = select page into D_8009BCF8 (2 rows x 5 columns per page)
++ *   arg2 = this player's pick list (character ids, -1 = cleared slot)
++ *   arg3 = player index (0/1)
++ * SELWORK is the shared select work area (per-player pairs); D_8009BCE4[] is
++ * the per-character flag byte (bit 0 = selectable, bit 4<<player = already
++ * taken by that player). */
++void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
++    u8 *flag;
++    s32 result;
++    s32 bit;
++    s32 i;
++
++    if (SELWORK->f10.half[arg3] != 0) {
++        return;
++    }
++
++    if (arg0 & (0x10 << (arg3 * 16))) {
++        func_8005C650(2, 0x7F, 0x7F);
++        if (SELWORK->f3C[arg3] != 0) {
++            arg2[SELWORK->f3C[arg3]] = -1;
++            SELWORK->f3C[arg3]--;
++            D_8009BCE4[arg2[SELWORK->f3C[arg3]]] &= ~(4 << arg3);
++            return;
++        }
++        /* Neither player has a pick yet.  fold merges the two adjacent halfword
++         * tests into the one `lw 0x3C` word test the target has at 0x80076060
++         * (tools/gcc-2.7.2/fold-const.c:2687 fold_truthop). */
++        if (SELWORK->f3C[0] != 0 || SELWORK->f3C[1] != 0) {
++            return;
++        }
++        if (SELWORK->f14.half[(arg3 != 0) ? 0 : 1] == 2) {
++            SELWORK->f10.half[1] = 3;
++            SELWORK->f10.half[0] = 3;
++            SELWORK->f18[1] = 1;
++            SELWORK->f18[0] = 1;
++        }
++        return;
++    }
++
++    result = func_800692C0(&arg0, arg3, SELWORK->f40[arg3], D_800A35D0[arg3]);
++    if (arg0 & (0xF000 << (arg3 * 16))) {
++        func_8005C650(0, 0x7F, 0x7F);
++    }
++    {
++        s32 low;
++
++        low = result & 0xFF;
++        if (low < 3 && low != 0) {
++            SELWORK->f1C[arg3] = (SELWORK->f1C[arg3] + 1) & 1;
++        }
++    }
++
++    switch (result >> 16) {
++    case 1: {
++        s16 value;
++
++        value = SELWORK->f20[arg3];
++        if (value == 4) {
++            SELWORK->f20[arg3] = 0;
++        } else {
++            SELWORK->f20[arg3] = value + 1;
++        }
++    } break;
++    case 2: {
++        s16 value;
++
++        value = SELWORK->f20[arg3];
++        if (value == 0) {
++            SELWORK->f20[arg3] = 4;
++        } else {
++            SELWORK->f20[arg3] = value - 1;
++        }
++    } break;
++    }
++
++    {
++        u8 entry;
++
++        entry = D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0;
++        flag = &D_8009BCE4[entry];
++        if ((*flag & 1) != 0) {
++            bit = 4 << arg3;
++            if ((*flag & bit) == 0) {
++                u16 count;
++
++                arg2[SELWORK->f3C[arg3]] = entry;
++                if (arg0 & (0x40 << (arg3 * 16))) {
++                    func_8005C650(1, 0x7F, 0x7F);
++                    *flag |= bit;
++                    count = SELWORK->f3C[arg3];
++                    SELWORK->f3C[arg3] = count + 1;
++                    if (SELWORK->f3C[arg3] == SELWORK->f65 + 3) {
++                        SELWORK->f10.half[arg3] = 1;
++                        SELWORK->f3C[arg3] = count;
++                        SELWORK->f38[arg3] = 0;
++                        SELWORK->f18[arg3] = 3;
++                        for (i = 0; i < SELWORK->f60[arg3]; i++) {
++                            SELWORK->f48[arg3][i] = i;
++                        }
++                        if (arg1 != 0) {
++                            SELWORK->f48[arg3][4] = 5;
++                        }
++                    }
++                }
++                return;
++            }
++            arg2[SELWORK->f3C[arg3]] = 0x14;
++            if (arg0 & (0x40 << (arg3 * 16))) {
++                func_8005C650(4, 0x7F, 0x7F);
++            }
++        } else {
++            /* FAKE: the placeholder tail is written in both arms (duplicated-
++             * statement-into-arms, calls per Q47: the store and the call are real on
++             * both paths).  Each arm is then reached by one path, so cse carries the
++             * work-area address it formed for the cursor read into the 0x3C load;
++             * jump2's cross-jump (tools/gcc-2.7.2/jump.c find_cross_jump) merges the two
++             * tails back into the target's one copy (`lh v0,0x3C($a1)` at 0x8007630C,
++             * 0x14 set in each predecessor).  One shared tail after the if recomputes
++             * the address (6).  Ledger: memory/grind/func_80075F80/manual-2026-10-01/scores.txt */
++            arg2[SELWORK->f3C[arg3]] = 0x14;
++            if (arg0 & (0x40 << (arg3 * 16))) {
++                func_8005C650(4, 0x7F, 0x7F);
++            }
++        }
++    }
++}
 +void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
 +    S_80074488 s;
 +    s32 ot;
@@ -624,7 +1038,7 @@ index 3a8a59421..572421ede 100644
 +       just past the sheet's 12-byte SprtHdrA headers: one header on the
 +       single-state sheets (+0xC), three (normal, then one cursor highlight
 +       per player) on the highlightable ones (+0x24). D_SEL.BIN layout:
-+       memory/grind/func_8007636C/evidence.md "Ruling 9 re-audit". */
++       pre-slim-2026-10-01:memory/grind/func_8007636C/evidence.md "Ruling 9 re-audit". */
 +    s32 cells;
 +    s32 color;
 +    s16 i;
@@ -635,7 +1049,7 @@ index 3a8a59421..572421ede 100644
 +     * rematerializes it as the target's `move t0,zero; slt` (0x800764A0); a
 +     * literal 0 lets combine fold the guard to a beqz (3/348). The case-2
 +     * sibling func_800759D0 holds this same argument's zero in $fp (asm lines
-+     * 20/56/334/356). Lever exhaustion: memory/grind/func_8007636C/hypotheses.md. */
++     * 20/56/334/356). Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_8007636C/hypotheses.md. */
 +    s32 mode;
 +    u16 idx;
 +
@@ -805,32 +1219,14 @@ index 3a8a59421..572421ede 100644
 +        SELWORK->f3C[arg3]--;
 +    }
 +}
-+/* func_80076D74 - Judge-CLEARED body (decisions.md 2026-09-15 13:47 ruling PASS, review-ledger hash ffd478b35c7a6afd). Submit VERBATIM.
-+ * s3 (permuter, 2026-09-15): re-measured sandbox --disable all = 0 on HEAD, and BYTES PROVEN ON MAIN - a full clean link with this body
-+ * in src/text1b.c (record-table declaration TU-local at text1b.c:2227-2235 for the measurement) gives SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa
-+ * == oracle (tmp/grind/func_80076D74/s3/fullbuild.log). Declaration placement is byte-neutral.
-+ *
-+ * FINAL FORM per the 13:47 Judge ruling (operator-applied, outside the grind surface; see docs/grind/decisions.md s3 INTEGRATION HANDOFF entry):
-+ *   include/game.h (after the Unk800F0EC8Record decl):  typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record;  extern Unk8009BCF8Record D_8009BCF8[20];
-+ *   src/text1b.c:2227-2228 and src/text1b_b.c:237-238: delete `extern u8 D_8009BCF8;` / `extern u8 D_8009BCF9;`
-+ *   undefined_syms_auto.txt:79: DELETE the `D_8009BCF9 = 0x8009BCF9;` row (not suffix); keep line 1252 `D_8009BCF8 = 0x8009BCF8;`
-+ *   memory/grind/func_80076D74/record_table_decl.patch carries all three hunks (game.h add, text1b_b.c delete, undefined_syms_auto.txt:79 DELETE) - corrected per the ruling.
-+ * s2-rerun (2026-09-15, driver session 2, third dispatch): bytes RE-PROVEN from clean HEAD 493ad9e97 - sandbox 0 at 161/161 (tmp/grind/func_80076D74/s2/handoff/
-+ * candidate_head.sandbox.txt) and full tmp-only link SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (s2/handoff/fullbuild.log). Filed as
-+ * OWNER-ESCALATION - INTEGRATION HANDOFF in docs/grind/decisions.md (scope grant: include/game.h src/text1b_b.c undefined_syms_auto.txt).
-+ * Object-model evidence (Judge-verified): asm/data/7D920.data.s:23762-23808 = 0x28 bytes = 20 two-byte records; func_800759D0.s:107-108 base in $s6,
-+ * :142-144 column 0 at 2-byte stride; func_80075F80.s:165-167 column 0 at 2-byte stride; func_80076D74.s:91-93 column 1 at 2-byte stride.
-+ * The BANNED `extern u8 D_8009BCF8[][2]` pair table is NOT used; the S_80076D74 typedef is emitted exactly ONCE (apply with tmp/grind/func_80076D74/s2/apply2.py).
-+ *
-+ * Tail (s1 residual 5, epilogue) closed by a single-level do { } while (0) wrap of the final arg0[6] += 0xC statement (sanctioned family,
-+ * .claude/rules/do-while-zero-exception.md, FAKE-annotated inline; layer-1 PASSED 2026-09-15 12:46, Judge PASS 13:47).
-+ * Mechanism: sched.c loop_notes attach NOTE_INSN_LOOP_END to the next insn (the return copy), which then depends on every earlier
-+ * set/use in the block, so it cannot be hoisted into the lw load-delay slot; the increment temp takes $v0; tail = lw/nop/addiu/sw/move.
-+ * Lever exhaustion (ordinary C, all 5 unless noted): u8 ret two-copy chain (s2); s32 arg0 + cast offsets (s1); slot pointer `s32 *dm` (s3);
-+ * packet-pointer round trip (s3, 21); branch-on-ret return (s3); permuter campaigns on s32-ret (34.7k), u8-ret (43.3k) and branch-on-ret
-+ * (31.6k) no-FAKE chassis find only do-while(0) forms (s2, s3). FAKE ablation this session (wrap removed, nothing else) = 5.
-+ * See evidence.md / hypotheses.md.
-+ */
++/* func_80076D74: select-screen fade-out.  Raises SELWORK->f36 by 8 per frame
++ * (capped at 0xFF) and, once it reaches 0xFF, fills the result record at
++ * SELWORK->f00 (f65, f66, f67, f68 packed into bitfields; per player and pick,
++ * the picked entry's D_8009BCF8 column 1 and its f7E value).  Every frame it
++ * draws the full-screen TILE with f36 as its colour.  The record and
++ * bitfield layout, the do-while(0) tail and their measurements:
++ * 3e35ec719^:memory/grind/func_80076D74/hypotheses.md (ledger closed at
++ * 3e35ec719). */
 +typedef struct {
 +    u8 cells[2][5][2];  /* 0x00: [row][col][{glyph, attr}] */
 +    u32 pad10 : 10;     /* 0x14 */
@@ -869,7 +1265,9 @@ index 3a8a59421..572421ede 100644
 +        hdr->f15 = SELWORK->f68[0] + SELWORK->f68[1] * 2;
 +        for (i = 0; i < 2; i++) {
 +            for (j = 0; j < SELWORK->f65 + 3; j++) {
-+                hdr->cells[i][j][0] = D_8009BCF8[SELWORK->f6A[i][j]].unk1;
++                /* flat character index into both pages, through row 0. */
++                /* SOTN: src/st/e_grave_keeper.h:534 @aa53500 */
++                hdr->cells[i][j][0] = D_8009BCF8[0][SELWORK->f6A[i][j]].unk1;
 +                hdr->cells[i][j][1] = SELWORK->f7E[i][j];
 +            }
 +        }
@@ -889,7 +1287,7 @@ index 3a8a59421..572421ede 100644
 +    arg0[5] = (s32)p;
 +    SetDrawMode(arg0[6], 1, 0, 0x40, 0);
 +    AddPrim(g_gpu_ot_ptr, (GameObj *)arg0[6]);
-+    do { /* FAKE: do-while(0) wrap, loop-end note pins the return copy after the sw so the increment temp takes v0; mechanism: sched.c loop_notes dependence on the first insn after NOTE_INSN_LOOP_END; lever-exhaustion: memory/grind/func_80076D74/hypotheses.md s1-s2 */
++    do { /* FAKE: do-while(0) wrap, loop-end note pins the return copy after the sw so the increment temp takes v0; mechanism: sched.c loop_notes dependence on the first insn after NOTE_INSN_LOOP_END; lever-exhaustion: 3e35ec719^:memory/grind/func_80076D74/hypotheses.md s1-s2 */
 +        arg0[6] += 0xC;
 +    } while (0);
 +    return ret;
@@ -1147,7 +1545,7 @@ index 3a8a59421..572421ede 100644
  s32 _Pad1(void);
  
  
-@@ -495,9 +1542,6 @@ extern s32 column;
+@@ -496,9 +1935,6 @@ extern s32 column;
      extern s32 D_800A3478;
      extern s32 D_800A347C;
      extern s32 D_800A32BC;
@@ -1157,7 +1555,7 @@ index 3a8a59421..572421ede 100644
      extern s32 D_800A346C;
      extern s32 D_800A3470;
      extern s32 D_800A3474;
-@@ -574,17 +1618,12 @@ extern s32 D_800A37D4;
+@@ -575,17 +2011,12 @@ extern s32 D_800A37D4;
  
  
  
@@ -1175,7 +1573,7 @@ index 3a8a59421..572421ede 100644
  
  
  
-@@ -666,12 +1705,7 @@ extern s32 D_800A37D4;
+@@ -667,12 +2098,7 @@ extern s32 D_800A37D4;
  
  
  
@@ -1188,7 +1586,7 @@ index 3a8a59421..572421ede 100644
  
  
  
-@@ -736,7 +1770,6 @@ extern s32 D_800A37D4;
+@@ -737,7 +2163,6 @@ extern s32 D_800A37D4;
  
  
  
@@ -1196,7 +1594,7 @@ index 3a8a59421..572421ede 100644
  
  
  
-@@ -780,7 +1813,6 @@ extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
+@@ -781,7 +2206,6 @@ extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
  
  
  
@@ -1204,7 +1602,7 @@ index 3a8a59421..572421ede 100644
  extern void func_8006E950(s32, s32 *);
  
  extern s32 func_8006E49C(s32, s32 *);
-@@ -798,7 +1830,6 @@ extern s32 func_8006E49C(s32, s32 *);
+@@ -799,7 +2223,6 @@ extern s32 func_8006E49C(s32, s32 *);
  
  /* --- Functions from text1b segment (0x80047ED0 - 0x80079A30) --- */
  
@@ -1212,7 +1610,7 @@ index 3a8a59421..572421ede 100644
  extern u8 D_8009BD3B;
  extern u8 D_8009BD3C;
  extern u8 D_8009BD3D;
-@@ -865,11 +1896,6 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
+@@ -866,11 +2289,6 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
  end:
      return s2;
  }
@@ -1224,7 +1622,7 @@ index 3a8a59421..572421ede 100644
  s32* func_80077D00(void) {
      return (s32 *)D_8009BD24;
  }
-@@ -890,12 +1916,7 @@ extern s32 D_800A3600;
+@@ -891,12 +2309,7 @@ extern s32 D_800A3600;
  s32 func_80077D74(s32 a0) {
      return D_800A35F4 + a0 * 44;
  }
@@ -1237,7 +1635,7 @@ index 3a8a59421..572421ede 100644
  
  typedef struct {
      s16 x, y, w, h;
-@@ -1140,9 +2161,7 @@ s32 func_800784E4(s32 arg0) {
+@@ -1141,9 +2554,7 @@ s32 func_800784E4(s32 arg0) {
  }
  
  extern void func_80077D94(s32 *);
@@ -1247,7 +1645,7 @@ index 3a8a59421..572421ede 100644
  typedef struct {
      s32 sp10;
      s32 sp14;
-@@ -1187,13 +2206,8 @@ extern s32 D_800A360C;
+@@ -1188,13 +2599,8 @@ extern s32 D_800A360C;
  s32 func_80078634(s32 a0) {
      return D_800A360C + a0 * 44;
  }
@@ -1261,7 +1659,7 @@ index 3a8a59421..572421ede 100644
  
  typedef struct {
      s32 a;       /* sp18 - 0x00 */
-@@ -1285,7 +2299,6 @@ check:
+@@ -1286,7 +2692,6 @@ check:
  
  extern s32 D_800A3614;
  extern s32 D_800A3304;
@@ -1269,7 +1667,7 @@ index 3a8a59421..572421ede 100644
  
  s32 func_80078824(s32 arg0) {
      s32 s0;
-@@ -1304,8 +2317,6 @@ s32 func_80078824(s32 arg0) {
+@@ -1305,8 +2710,6 @@ s32 func_80078824(s32 arg0) {
      gpu_SetDrawEnvBg(1, 0, 0, 0);
      return 1;
  }
@@ -1278,7 +1676,7 @@ index 3a8a59421..572421ede 100644
  
  void func_80078654(s32 *);
  s32 func_800788B0(void) {
-@@ -1666,7 +2677,6 @@ extern s32 D_8009BD80;
+@@ -1416,7 +2819,6 @@ extern s32 D_8009BD80;
  void SetInitPadFlag(s32 a0) {
      D_8009BD80 = a0;
  }
@@ -1286,7 +1684,7 @@ index 3a8a59421..572421ede 100644
  s32 ReadInitPadFlag(void) {
      return D_8009BD80;
  }
-@@ -1678,7 +2688,6 @@ void ChangeClearPAD(s32);
+@@ -1428,7 +2830,6 @@ void ChangeClearPAD(s32);
  s32 SetPatchPad(void);
  void PAD_init2(s32, s32, s32, s32);
  void _send_pad(void);
@@ -1294,7 +1692,7 @@ index 3a8a59421..572421ede 100644
  void PAD_init(s32 a0, s32 a1, s32 a2, s32 a3) {
      _remove_ChgclrPAD();
      EnterCriticalSection();
-@@ -1690,15 +2699,7 @@ void PAD_init(s32 a0, s32 a1, s32 a2, s32 a3) {
+@@ -1440,15 +2841,7 @@ void PAD_init(s32 a0, s32 a1, s32 a2, s32 a3) {
      _send_pad();
      D_8009BD80 = 1;
  }
@@ -1310,7 +1708,7 @@ index 3a8a59421..572421ede 100644
  void InitPAD(s32 a0, s32 a1, s32 a2, s32 a3) {
      _remove_ChgclrPAD();
      EnterCriticalSection();
-@@ -1711,14 +2712,12 @@ void InitPAD(s32 a0, s32 a1, s32 a2, s32 a3) {
+@@ -1461,14 +2854,12 @@ void InitPAD(s32 a0, s32 a1, s32 a2, s32 a3) {
      D_8009BD80 = 1;
  }
  void StartPAD2(void);
@@ -1325,7 +1723,7 @@ index 3a8a59421..572421ede 100644
  void DisablePAD(void);
  void StopPAD2(void);
  s32 RemovePatchPad(void);
-@@ -1751,9 +2750,7 @@ s32 SetPatchPad(void) {
+@@ -1501,9 +2892,7 @@ s32 SetPatchPad(void) {
      ExitCriticalSection();
      return 1;
  }
@@ -1337,16 +1735,17 @@ index 3a8a59421..572421ede 100644
      EnterCriticalSection();
 diff --git a/src/text1b_tu2.c b/src/text1b_tu2.c
 deleted file mode 100644
-index 3605b4fb6..000000000
+index 5bd299896..000000000
 --- a/src/text1b_tu2.c
 +++ /dev/null
-@@ -1,1099 +0,0 @@
+@@ -1,1491 +0,0 @@
 -#define INCLUDE_ASM_USE_MACRO_INC 1
 -#include "common.h"
 -#include "include_asm.h"
 -#include "sound.h"
 -#include "game.h"
 -#include "code6cac.h"
+-#include "gpu.h"
 -
 -/* Declarations from the file this TU was split from (text1b.c). */
 -extern s32 ClearOTagR(s32, s32);
@@ -1415,9 +1814,11 @@ index 3605b4fb6..000000000
 -s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3);
 -s32 func_800693CC(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 -extern void SetDrawOffset();
+-/* func_8007352C's draw descriptor: .header = the sprite sheet's SprtHdrA, .table = its
+-   SprtEntA cell array (the s32 form of S_80074488 / DescF97C). */
 -typedef struct EnvA {
--    s32 *header;
--    s8  *table;
+-    s32  header;
+-    s32  table;
 -    s32  out;
 -    s32  pad0C;
 -    s32  semi;
@@ -1466,7 +1867,7 @@ index 3605b4fb6..000000000
 -
 -/* func_800747D8: the duplicated `sound = 4;` below is claimed under
 - * .claude/rules/duplicated-statement-into-arms.md and carries its FAKE
-- * annotation inline; self-vet: memory/grind/func_800747D8/self_vet.md. */
+- * annotation inline; self-vet: pre-slim-2026-10-01:memory/grind/func_800747D8/self_vet.md. */
 -/* 0x800A35D0: one {s16, s16} pair per player (two words,
 - * asm/data/91C98.data.s:4279-4282), passed to func_800692C0 beside SelWork
 - * f40[player]; func_800768DC indexes it by player * 4 (0x80076948/5C). */
@@ -1523,7 +1924,7 @@ index 3605b4fb6..000000000
 -             * `selection_sound:` CODE_LABEL, so the store-flag gate at
 -             * tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather than a
 -             * CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
--             * sltiu/sll fold; lever-exhaustion: memory/grind/func_800747D8/
+-             * sltiu/sll fold; lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_800747D8/
 -             * hypotheses.md s1-s9 (20 measured kills, incl. the s9
 -             * break-converged single-assignment control at score 10/205). */
 -            sound = 4;
@@ -1540,7 +1941,7 @@ index 3605b4fb6..000000000
 -             * `selection_sound:` CODE_LABEL, so the store-flag gate at
 -             * tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather than a
 -             * CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
--             * sltiu/sll fold; lever-exhaustion: memory/grind/func_800747D8/
+-             * sltiu/sll fold; lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_800747D8/
 -             * hypotheses.md s1-s9 (20 measured kills, incl. the s9
 -             * break-converged single-assignment control at score 10/205). */
 -            sound = 4;
@@ -1674,7 +2075,130 @@ index 3605b4fb6..000000000
 -    AddPrim(g_gpu_ot_ptr + var_s1 * 4, *(s32 *)(arg0 + 0x18));
 -    *(s32 *)(arg0 + 0x18) += 0xC;
 -}
--INCLUDE_ASM("asm/funcs", func_80074E08);
+-void func_80074E08(s32 *arg0, s32 arg1) {
+-    EnvA s;
+-    u16 rect[4];
+-    u16 offset[2];
+-    s32 *records;
+-    s32 prim;
+-    s32 ot_idx;
+-    /* work holds two values (Ruling 11, owner 2026-09-26; the first under its
+-       Q20 per-branch-constant clause): the backdrop TILE's OT index (0xE for
+-       player 1, 4 for player 0), then ot_idx * 4, the OT byte offset the last
+-       three AddPrim calls add. Proof: memory/grind/func_80074E08/r11/proof.md. */
+-    s32 work;
+-    s32 rect_x;
+-    /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts
+-       just past the sheet's one 12-byte SprtHdrA header (+0xC) on each of
+-       the four root+0x18 sheets this function draws: one meaning at one
+-       constant offset, written once per sheet (Ruling 9, owner 2026-09-25).
+-       D_SEL.BIN census and receipts: memory/grind/func_80074E08/r9/. */
+-    s32 cells;
+-    s16 i;
+-
+-    prim = arg0[5];
+-    SetTile(prim);
+-    SetSemiTrans(prim, 0);
+-    *(u8 *)(prim + 4) = 0xD0;
+-    *(u8 *)(prim + 5) = 0xC8;
+-    *(u8 *)(prim + 6) = 0xB8;
+-    *(s16 *)(prim + 8) = arg1 * 0xF0 + 0x62;
+-    *(s16 *)(prim + 0xA) = 0x14;
+-    *(s16 *)(prim + 0xC) = 0xCC;
+-    *(s16 *)(prim + 0xE) = 0xC8;
+-    if (arg1 != 0) {
+-        work = 0xE;
+-    } else {
+-        work = 4;
+-    }
+-    AddPrim(g_gpu_ot_ptr + work * 4 + 0x24, prim);
+-    prim += 0x10;
+-    arg0[5] = prim;
+-
+-    records = *(s32 **)(arg0[0] + 0x18);
+-    s.semi = 0;
+-    s.has_color = 0;
+-    s.x = arg1 * 0xF0;
+-    s.ot_idx = 2;
+-    i = 0;
+-    do {
+-        s.y = (0xD2 - SELWORK->f0C[arg1]) * i;
+-        s.header = records[3];
+-        cells = s.header + 0xC;
+-        s.table = cells;
+-        s.out = arg0[4];
+-        arg0[4] = func_8007352C((s32)&s);
+-        s.header = records[2];
+-        cells = s.header + 0xC;
+-        s.table = cells;
+-        s.out = arg0[4];
+-        arg0[4] = func_8007352C((s32)&s);
+-        s.table += *(u8 *)(s.header + 2) * 8;
+-        s.pad20 = 0xCE00;
+-        s.pad24 = 0x100;
+-        s.pad0C = arg0[1];
+-        arg0[1] = func_80073728((s32)&s, 0);
+-        i++;
+-    } while (i < 2);
+-
+-    s.x = arg1 * 0xF0;
+-    s.y = 0;
+-    s.header = records[0];
+-    cells = s.header + 0xC;
+-    s.table = cells;
+-    if (arg1 != 0) {
+-        s.ot_idx = 0x16;
+-    } else {
+-        s.ot_idx = 0xC;
+-    }
+-    s.out = arg0[4];
+-    arg0[4] = func_8007352C((s32)&s);
+-    s.header = records[1];
+-    cells = s.header + 0xC;
+-    s.table = cells;
+-    s.out = arg0[4];
+-    arg0[4] = func_8007352C((s32)&s);
+-    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.header, 0), 0);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0[6]);
+-    arg0[6] += 0xC;
+-
+-    if (arg1 != 0) {
+-        ot_idx = 0xE;
+-        rect_x = 0x14E;
+-    } else {
+-        ot_idx = 4;
+-        rect_x = 0x5E;
+-    }
+-    rect[0] = ((DRAWENV *)SELWORK->f24)->clip.x + rect_x;
+-    rect[1] = ((DRAWENV *)SELWORK->f24)->clip.y + 0x14;
+-    rect[2] = 0xD4;
+-    rect[3] = 0xC8 - SELWORK->f0C[arg1];
+-    SetDrawArea(arg0[7], rect);
+-    AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, arg0[7]);
+-    arg0[7] += 0xC;
+-
+-    rect[0] = ((DRAWENV *)SELWORK->f24)->clip.x;
+-    rect[1] = ((DRAWENV *)SELWORK->f24)->clip.y;
+-    rect[2] = ((DRAWENV *)SELWORK->f24)->clip.w;
+-    rect[3] = ((DRAWENV *)SELWORK->f24)->clip.h;
+-    SetDrawArea(arg0[7], rect);
+-    work = ot_idx * 4;
+-    AddPrim(g_gpu_ot_ptr + work, arg0[7]);
+-    arg0[7] += 0xC;
+-
+-    offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
+-    offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1]
+-              - SELWORK->f08[arg1];
+-    SetDrawOffset(arg0[8], offset);
+-    AddPrim(g_gpu_ot_ptr + work + 0x24, arg0[8]);
+-    arg0[8] += 0xC;
+-
+-    offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
+-    offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1];
+-    SetDrawOffset(arg0[8], offset);
+-    AddPrim(g_gpu_ot_ptr + work, arg0[8]);
+-    arg0[8] += 0xC;
+-}
 -void func_8007526C(void) {
 -    SelWork *base;
 -    s32 i;
@@ -1907,9 +2431,291 @@ index 3605b4fb6..000000000
 - * func_800768DC lbu/sb at 0x80076B90/0x80076BA4). */
 -extern u8 D_8009BCE4[20];
 -
--INCLUDE_ASM("asm/funcs", func_800759D0);
+-/* Character-select grid renderer (select-screen case 2 of func_80077374; the
+- * draw half of func_80075F80), called once per player per frame.
+- *   arg0 = draw context (arg0[0] root table, arg0[4] sprite chain,
+- *          arg0[6] DR_MODE cursor)
+- *   arg1 = select page into D_8009BCF8 (10 cells per page)
+- *   arg2 = this player's pick list (-1 = cleared slot)
+- *   arg3 = player index (0/1)
+- * Draws the page frame, the page's 10 character cells (selectable cells as
+- * sprites with the cursor cell highlighted, taken cells via func_80075830,
+- * unselectable cells via func_80075830), the picks made so far, then the
+- * f65+3 slot sprites, and closes with two DR_MODE/AddPrim pairs. */
+-void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
+-    S_80074488 s;
+-    /* table holds three values, each a sprite-sheet pointer table read from the
+-     * root at arg0[0]: the page table at +0x14 (the head; read by the head and
+-     * loops 1-2), the slot table at +0x20 + f65 * 4 (reloaded every loop-3
+-     * iteration), and the page table at +0x14 again for the closing DR_MODE
+-     * pair.  One local, not three: ordinary-c-judge-decidable.md Ruling 11;
+-     * (A)-(H) record memory/grind/func_800759D0/manual-2026-10-01/r11.md. */
+-    s32 *table;
+-    s32 color;
+-    /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
+-       func_8006E480's second argument at all three call sites is kept in
+-       callee-save $fp (target: `addu $fp,$zero,$zero` in the entry block,
+-       `addu $a1,$fp,$zero` at each call) instead of being re-materialized;
+-       global.c gives the once-set constant pseudo a callee-save because it
+-       crosses every call, and cse only folds a constant within the entry
+-       extended basic block. A literal 0 measures 30/364 (362 insns); see
+-       memory/grind/func_800759D0/hypotheses.md. Same shape as the siblings
+-       func_800753D8 (`zero`) and func_8007636C (`mode`). */
+-    s32 zero;
+-    s16 i;
+-    /* the sheet's cell array. The code treats each sheet it draws here as
+-       12-byte SprtHdrA headers followed by 8-byte SprtEntA cells: the head
+-       treats the table[0] page sheet as one header (cells at +0xC), and
+-       loops 1-3 treat their sheets as three headers, normal then one cursor
+-       highlight per player at +12/+24 (cells at +0x24). Loop 2 applies that
+-       three-header view to every pick slot, including the 0x14 placeholder
+-       func_80075F80 stores for an unavailable cell, whose sheet the code
+-       elsewhere draws as one header (func_80075830); there the +0x24 runs
+-       past the sheet into bytes nothing references. Assumed layout, path
+-       census, that anomaly path and the unreferenced-address search:
+-       memory/grind/func_800759D0/evidence.md "Ruling 9 (b')". */
+-    s32 cells;
 -
--INCLUDE_ASM("asm/funcs", func_80075F80);
+-    zero = 0;
+-    s.sp28 = 0;
+-    s.sp40 = 0;
+-    table = *(s32 **)(arg0[0] + 0x14);
+-    s.sp18 = table[0];
+-    s.sp30 = arg3 * 240 + 0x88;
+-    s.sp34 = 0x33;
+-    cells = s.sp18 + 0xC;
+-    s.sp1C = cells;
+-    if (arg3 != 0) {
+-        s.sp2C = 0x16;
+-    } else {
+-        s.sp2C = 0xC;
+-    }
+-    if (arg1 != 0) {
+-        s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
+-    }
+-    s.sp20 = arg0[4];
+-    arg0[4] = func_8007352C((s32)&s);
+-    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
+-    AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0[6]);
+-    arg0[6] += 0xC;
+-
+-    color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
+-    s.sp41 = s.sp42 = s.sp43 = color;
+-    if (arg3 != 0) {
+-        s.sp2C = 0x14;
+-    } else {
+-        s.sp2C = 0xA;
+-    }
+-    s.sp30 = arg3 * 240;
+-    for (i = arg1 * 10; i < arg1 * 10 + 10; i++) {
+-        /* i indexes the whole table flat (arg1 * 10 + cell), from the first record. */
+-        /* SOTN: src/dra/62DEC.c:1091 @aa53500 */
+-        /* FAKE: pointer form of the flat read (Q53).  `&D_8009BCF8[0][0] + i`
+-         * forms the address as its own value, so cse reuses it for the second
+-         * read and loop.c hoists the table base into $s6 (the target's
+-         * `lui/addiu $s6` and 2-byte step); D_8009BCF8[0][i].unk0 at the three
+-         * sites folds the symbol into each load (`lui $at; addu; lbu %lo`) and
+-         * scores 44 (365 insns).  Ledger:
+-         * memory/grind/func_800759D0/manual-2026-10-01/r11.md */
+-        u8 entry = (&D_8009BCF8[0][0] + i)->unk0;
+-
+-        if (D_8009BCE4[entry] & 1) {
+-            s.sp18 = table[entry + 1];
+-            cells = s.sp18 + 0x24;
+-            s.sp1C = cells;
+-            if (D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
+-                s.sp40 = 1;
+-                s.sp18 = s.sp18 + 12 + arg3 * 12;
+-            } else {
+-                s.sp40 = 0;
+-            }
+-            s.sp34 = 0;
+-            s.sp20 = arg0[4];
+-            arg0[4] = func_8007352C((s32)&s);
+-            if (D_8009BCE4[(&D_8009BCF8[0][0] + i)->unk0] & (4 << arg3)) {
+-                func_80075830(arg0, i, arg3, 1);
+-            }
+-        } else {
+-            func_80075830(arg0, i, arg3, 0);
+-        }
+-    }
+-
+-    for (i = 0; i < SELWORK->f3C[arg3] + 1; i++) {
+-        if (arg2[i] >= 0) {
+-            s.sp18 = table[arg2[i] + 1];
+-            cells = s.sp18 + 0x24;
+-            if (i != SELWORK->f3C[arg3]) {
+-                s.sp40 = 0;
+-            } else {
+-                s.sp40 = 1;
+-                s.sp18 = s.sp18 + 12 + arg3 * 12;
+-            }
+-            s.sp34 = i * 17;
+-            s.sp1C = cells;
+-            s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
+-            s.sp20 = arg0[4];
+-            arg0[4] = func_8007352C((s32)&s);
+-        }
+-    }
+-
+-    s.sp40 = 0;
+-    for (i = 0; i < SELWORK->f65 + 3; i++) {
+-        table = *(s32 **)(arg0[0] + SELWORK->f65 * 4 + 0x20);
+-        s.sp18 = table[i];
+-        cells = s.sp18 + 0x24;
+-        if (i == SELWORK->f3C[arg3]) {
+-            s.sp18 = s.sp18 + 12 + arg3 * 12;
+-        }
+-        s.sp1C = cells;
+-        s.sp30 = arg3 * 240;
+-        s.sp34 = i * 17;
+-        if (arg3 != 0) {
+-            s.sp2C = 0x14;
+-        } else {
+-            s.sp2C = 0xA;
+-        }
+-        s.sp20 = arg0[4];
+-        arg0[4] = func_8007352C((s32)&s);
+-    }
+-
+-    table = *(s32 **)(arg0[0] + 0x14);
+-    s.sp18 = table[1];
+-    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
+-    AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0[6]);
+-    arg0[6] += 0xC;
+-    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
+-    AddPrim(g_gpu_ot_ptr + s.sp2C * 4 - 4, arg0[6]);
+-    arg0[6] += 0xC;
+-}
+-
+-/* Character-select cursor / pick handler; called once per player per frame.
+- *   arg0 = this frame's pad bits, both players packed (player N in bits N*16)
+- *   arg1 = select page into D_8009BCF8 (2 rows x 5 columns per page)
+- *   arg2 = this player's pick list (character ids, -1 = cleared slot)
+- *   arg3 = player index (0/1)
+- * SELWORK is the shared select work area (per-player pairs); D_8009BCE4[] is
+- * the per-character flag byte (bit 0 = selectable, bit 4<<player = already
+- * taken by that player). */
+-void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
+-    u8 *flag;
+-    s32 result;
+-    s32 bit;
+-    s32 i;
+-
+-    if (SELWORK->f10.half[arg3] != 0) {
+-        return;
+-    }
+-
+-    if (arg0 & (0x10 << (arg3 * 16))) {
+-        func_8005C650(2, 0x7F, 0x7F);
+-        if (SELWORK->f3C[arg3] != 0) {
+-            arg2[SELWORK->f3C[arg3]] = -1;
+-            SELWORK->f3C[arg3]--;
+-            D_8009BCE4[arg2[SELWORK->f3C[arg3]]] &= ~(4 << arg3);
+-            return;
+-        }
+-        /* Neither player has a pick yet.  fold merges the two adjacent halfword
+-         * tests into the one `lw 0x3C` word test the target has at 0x80076060
+-         * (tools/gcc-2.7.2/fold-const.c:2687 fold_truthop). */
+-        if (SELWORK->f3C[0] != 0 || SELWORK->f3C[1] != 0) {
+-            return;
+-        }
+-        if (SELWORK->f14.half[(arg3 != 0) ? 0 : 1] == 2) {
+-            SELWORK->f10.half[1] = 3;
+-            SELWORK->f10.half[0] = 3;
+-            SELWORK->f18[1] = 1;
+-            SELWORK->f18[0] = 1;
+-        }
+-        return;
+-    }
+-
+-    result = func_800692C0(&arg0, arg3, SELWORK->f40[arg3], D_800A35D0[arg3]);
+-    if (arg0 & (0xF000 << (arg3 * 16))) {
+-        func_8005C650(0, 0x7F, 0x7F);
+-    }
+-    {
+-        s32 low;
+-
+-        low = result & 0xFF;
+-        if (low < 3 && low != 0) {
+-            SELWORK->f1C[arg3] = (SELWORK->f1C[arg3] + 1) & 1;
+-        }
+-    }
+-
+-    switch (result >> 16) {
+-    case 1: {
+-        s16 value;
+-
+-        value = SELWORK->f20[arg3];
+-        if (value == 4) {
+-            SELWORK->f20[arg3] = 0;
+-        } else {
+-            SELWORK->f20[arg3] = value + 1;
+-        }
+-    } break;
+-    case 2: {
+-        s16 value;
+-
+-        value = SELWORK->f20[arg3];
+-        if (value == 0) {
+-            SELWORK->f20[arg3] = 4;
+-        } else {
+-            SELWORK->f20[arg3] = value - 1;
+-        }
+-    } break;
+-    }
+-
+-    {
+-        u8 entry;
+-
+-        entry = D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0;
+-        flag = &D_8009BCE4[entry];
+-        if ((*flag & 1) != 0) {
+-            bit = 4 << arg3;
+-            if ((*flag & bit) == 0) {
+-                u16 count;
+-
+-                arg2[SELWORK->f3C[arg3]] = entry;
+-                if (arg0 & (0x40 << (arg3 * 16))) {
+-                    func_8005C650(1, 0x7F, 0x7F);
+-                    *flag |= bit;
+-                    count = SELWORK->f3C[arg3];
+-                    SELWORK->f3C[arg3] = count + 1;
+-                    if (SELWORK->f3C[arg3] == SELWORK->f65 + 3) {
+-                        SELWORK->f10.half[arg3] = 1;
+-                        SELWORK->f3C[arg3] = count;
+-                        SELWORK->f38[arg3] = 0;
+-                        SELWORK->f18[arg3] = 3;
+-                        for (i = 0; i < SELWORK->f60[arg3]; i++) {
+-                            SELWORK->f48[arg3][i] = i;
+-                        }
+-                        if (arg1 != 0) {
+-                            SELWORK->f48[arg3][4] = 5;
+-                        }
+-                    }
+-                }
+-                return;
+-            }
+-            arg2[SELWORK->f3C[arg3]] = 0x14;
+-            if (arg0 & (0x40 << (arg3 * 16))) {
+-                func_8005C650(4, 0x7F, 0x7F);
+-            }
+-        } else {
+-            /* FAKE: the placeholder tail is written in both arms (duplicated-
+-             * statement-into-arms, calls per Q47: the store and the call are real on
+-             * both paths).  Each arm is then reached by one path, so cse carries the
+-             * work-area address it formed for the cursor read into the 0x3C load;
+-             * jump2's cross-jump (tools/gcc-2.7.2/jump.c find_cross_jump) merges the two
+-             * tails back into the target's one copy (`lh v0,0x3C($a1)` at 0x8007630C,
+-             * 0x14 set in each predecessor).  One shared tail after the if recomputes
+-             * the address (6).  Ledger: memory/grind/func_80075F80/manual-2026-10-01/scores.txt */
+-            arg2[SELWORK->f3C[arg3]] = 0x14;
+-            if (arg0 & (0x40 << (arg3 * 16))) {
+-                func_8005C650(4, 0x7F, 0x7F);
+-            }
+-        }
+-    }
+-}
 -void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
 -    S_80074488 s;
 -    s32 ot;
@@ -1918,7 +2724,7 @@ index 3605b4fb6..000000000
 -       just past the sheet's 12-byte SprtHdrA headers: one header on the
 -       single-state sheets (+0xC), three (normal, then one cursor highlight
 -       per player) on the highlightable ones (+0x24). D_SEL.BIN layout:
--       memory/grind/func_8007636C/evidence.md "Ruling 9 re-audit". */
+-       pre-slim-2026-10-01:memory/grind/func_8007636C/evidence.md "Ruling 9 re-audit". */
 -    s32 cells;
 -    s32 color;
 -    s16 i;
@@ -1929,7 +2735,7 @@ index 3605b4fb6..000000000
 -     * rematerializes it as the target's `move t0,zero; slt` (0x800764A0); a
 -     * literal 0 lets combine fold the guard to a beqz (3/348). The case-2
 -     * sibling func_800759D0 holds this same argument's zero in $fp (asm lines
--     * 20/56/334/356). Lever exhaustion: memory/grind/func_8007636C/hypotheses.md. */
+-     * 20/56/334/356). Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_8007636C/hypotheses.md. */
 -    s32 mode;
 -    u16 idx;
 -
@@ -2099,32 +2905,14 @@ index 3605b4fb6..000000000
 -        SELWORK->f3C[arg3]--;
 -    }
 -}
--/* func_80076D74 - Judge-CLEARED body (decisions.md 2026-09-15 13:47 ruling PASS, review-ledger hash ffd478b35c7a6afd). Submit VERBATIM.
-- * s3 (permuter, 2026-09-15): re-measured sandbox --disable all = 0 on HEAD, and BYTES PROVEN ON MAIN - a full clean link with this body
-- * in src/text1b.c (record-table declaration TU-local at text1b.c:2227-2235 for the measurement) gives SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa
-- * == oracle (tmp/grind/func_80076D74/s3/fullbuild.log). Declaration placement is byte-neutral.
-- *
-- * FINAL FORM per the 13:47 Judge ruling (operator-applied, outside the grind surface; see docs/grind/decisions.md s3 INTEGRATION HANDOFF entry):
-- *   include/game.h (after the Unk800F0EC8Record decl):  typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record;  extern Unk8009BCF8Record D_8009BCF8[20];
-- *   src/text1b.c:2227-2228 and src/text1b_b.c:237-238: delete `extern u8 D_8009BCF8;` / `extern u8 D_8009BCF9;`
-- *   undefined_syms_auto.txt:79: DELETE the `D_8009BCF9 = 0x8009BCF9;` row (not suffix); keep line 1252 `D_8009BCF8 = 0x8009BCF8;`
-- *   memory/grind/func_80076D74/record_table_decl.patch carries all three hunks (game.h add, text1b_b.c delete, undefined_syms_auto.txt:79 DELETE) - corrected per the ruling.
-- * s2-rerun (2026-09-15, driver session 2, third dispatch): bytes RE-PROVEN from clean HEAD 493ad9e97 - sandbox 0 at 161/161 (tmp/grind/func_80076D74/s2/handoff/
-- * candidate_head.sandbox.txt) and full tmp-only link SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (s2/handoff/fullbuild.log). Filed as
-- * OWNER-ESCALATION - INTEGRATION HANDOFF in docs/grind/decisions.md (scope grant: include/game.h src/text1b_b.c undefined_syms_auto.txt).
-- * Object-model evidence (Judge-verified): asm/data/7D920.data.s:23762-23808 = 0x28 bytes = 20 two-byte records; func_800759D0.s:107-108 base in $s6,
-- * :142-144 column 0 at 2-byte stride; func_80075F80.s:165-167 column 0 at 2-byte stride; func_80076D74.s:91-93 column 1 at 2-byte stride.
-- * The BANNED `extern u8 D_8009BCF8[][2]` pair table is NOT used; the S_80076D74 typedef is emitted exactly ONCE (apply with tmp/grind/func_80076D74/s2/apply2.py).
-- *
-- * Tail (s1 residual 5, epilogue) closed by a single-level do { } while (0) wrap of the final arg0[6] += 0xC statement (sanctioned family,
-- * .claude/rules/do-while-zero-exception.md, FAKE-annotated inline; layer-1 PASSED 2026-09-15 12:46, Judge PASS 13:47).
-- * Mechanism: sched.c loop_notes attach NOTE_INSN_LOOP_END to the next insn (the return copy), which then depends on every earlier
-- * set/use in the block, so it cannot be hoisted into the lw load-delay slot; the increment temp takes $v0; tail = lw/nop/addiu/sw/move.
-- * Lever exhaustion (ordinary C, all 5 unless noted): u8 ret two-copy chain (s2); s32 arg0 + cast offsets (s1); slot pointer `s32 *dm` (s3);
-- * packet-pointer round trip (s3, 21); branch-on-ret return (s3); permuter campaigns on s32-ret (34.7k), u8-ret (43.3k) and branch-on-ret
-- * (31.6k) no-FAKE chassis find only do-while(0) forms (s2, s3). FAKE ablation this session (wrap removed, nothing else) = 5.
-- * See evidence.md / hypotheses.md.
-- */
+-/* func_80076D74: select-screen fade-out.  Raises SELWORK->f36 by 8 per frame
+- * (capped at 0xFF) and, once it reaches 0xFF, fills the result record at
+- * SELWORK->f00 (f65, f66, f67, f68 packed into bitfields; per player and pick,
+- * the picked entry's D_8009BCF8 column 1 and its f7E value).  Every frame it
+- * draws the full-screen TILE with f36 as its colour.  The record and
+- * bitfield layout, the do-while(0) tail and their measurements:
+- * 3e35ec719^:memory/grind/func_80076D74/hypotheses.md (ledger closed at
+- * 3e35ec719). */
 -typedef struct {
 -    u8 cells[2][5][2];  /* 0x00: [row][col][{glyph, attr}] */
 -    u32 pad10 : 10;     /* 0x14 */
@@ -2163,7 +2951,9 @@ index 3605b4fb6..000000000
 -        hdr->f15 = SELWORK->f68[0] + SELWORK->f68[1] * 2;
 -        for (i = 0; i < 2; i++) {
 -            for (j = 0; j < SELWORK->f65 + 3; j++) {
--                hdr->cells[i][j][0] = D_8009BCF8[SELWORK->f6A[i][j]].unk1;
+-                /* flat character index into both pages, through row 0. */
+-                /* SOTN: src/st/e_grave_keeper.h:534 @aa53500 */
+-                hdr->cells[i][j][0] = D_8009BCF8[0][SELWORK->f6A[i][j]].unk1;
 -                hdr->cells[i][j][1] = SELWORK->f7E[i][j];
 -            }
 -        }
@@ -2183,7 +2973,7 @@ index 3605b4fb6..000000000
 -    arg0[5] = (s32)p;
 -    SetDrawMode(arg0[6], 1, 0, 0x40, 0);
 -    AddPrim(g_gpu_ot_ptr, (GameObj *)arg0[6]);
--    do { /* FAKE: do-while(0) wrap, loop-end note pins the return copy after the sw so the increment temp takes v0; mechanism: sched.c loop_notes dependence on the first insn after NOTE_INSN_LOOP_END; lever-exhaustion: memory/grind/func_80076D74/hypotheses.md s1-s2 */
+-    do { /* FAKE: do-while(0) wrap, loop-end note pins the return copy after the sw so the increment temp takes v0; mechanism: sched.c loop_notes dependence on the first insn after NOTE_INSN_LOOP_END; lever-exhaustion: 3e35ec719^:memory/grind/func_80076D74/hypotheses.md s1-s2 */
 -        arg0[6] += 0xC;
 -    } while (0);
 -    return ret;

@@ -1,6 +1,6 @@
-From c79b54df7ad3b5485413ca60f590516badb87ab9 Mon Sep 17 00:00:00 2001
+From f0e9df934e8c830f704dcb263df017c5fc12b9bb Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:05:37 -0500
+Date: Thu, 1 Oct 2026 10:37:23 -0500
 Subject: [PATCH] substrate: maspsx models cc1psx -G8's .sdata choice for small
  initialized objects (owner ruling Q68, step 13)
 
@@ -12,10 +12,10 @@ Subject: [PATCH] substrate: maspsx models cc1psx -G8's .sdata choice for small
  create mode 100644 tools/maspsx/tests/test_small_data_sdata.py
 
 diff --git a/engine/test_engine.py b/engine/test_engine.py
-index db8786631..ce238605f 100644
+index 99e1f0aca..ebf24cba3 100644
 --- a/engine/test_engine.py
 +++ b/engine/test_engine.py
-@@ -5012,6 +5012,25 @@ def test_maspsx_static_lcomm() -> None:
+@@ -5090,6 +5090,25 @@ def test_maspsx_static_lcomm() -> None:
         [l for l in res if l.startswith("lb")], ["lb\t$4,%gp_rel(st)($gp)", "lb\t$5,%gp_rel(st+1)($gp)"])
  
  
@@ -41,7 +41,7 @@ index db8786631..ce238605f 100644
  def test_maspsx_fingerprint() -> None:
      """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
      HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
-@@ -5252,6 +5271,7 @@ def main() -> int:
+@@ -5330,6 +5349,7 @@ def main() -> int:
      test_queue_remeasure_source_integrity()
      test_maspsx_indexed_operand_not_gp()
      test_maspsx_static_lcomm()

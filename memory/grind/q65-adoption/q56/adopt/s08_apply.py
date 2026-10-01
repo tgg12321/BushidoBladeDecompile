@@ -27,7 +27,8 @@ Functions (the definition's own prototype wins unless the call bytes contradict 
   func_8004153C   the step-6 declaration `extern s32 *func_8004153C();` (config's zero-argument calls).
   game_GetPlayerData  every caller passes the player index (text1b, code6cac, code6cac_b_tu2, code6cac_tu2);
                   the body forwards $a0 untouched to func_8004153C (defined `(s32 a0)`): `(s32 a0)`.
-  ApplyMatrix / gte_MulMatrix0ClearTrans  the PsyQ libgte prototypes (MATRIX / SVECTOR / VECTOR), as text1b.
+  ApplyMatrix / gte_MulMatrix0ClearTrans / MulMatrix0  the PsyQ libgte prototypes (MATRIX / SVECTOR / VECTOR),
+                  as text1b (MulMatrix0: sound's func_800475A4 passes two 8-word buffers and base + 0x18).
   func_80046020   defined (text1a_c_tu2) `void (void)`.
   func_800418D0   defined (text1a_post) `void (s32 *)`.
   func_80044FA0   defined (text1a_c_tu2) `s32 (s32, s32)`: $a1 is subtracted from (an integer).
@@ -98,6 +99,8 @@ sub1(SD, "gte_MulMatrix0ClearTrans(&sp10, var_s0, arg2);",
 sub1(SD, "extern void func_80044FA0(s32, s32 *);", "extern s32 func_80044FA0(s32, s32);")
 sub1(SD, "func_80044FA0(a0, v0);", "func_80044FA0(a0, (s32)v0);")
 sub1(SD, "extern void func_8004A1FC(void *);", "extern void func_8004A1FC();")
+sub1(SD, "extern void MulMatrix0(s32 *, s32 *, s32 *);", "extern MATRIX *MulMatrix0(MATRIX *, MATRIX *, MATRIX *);")
+sub1(SD, "MulMatrix0(buf2, buf1, (s32 *)(base + 0x18));", "MulMatrix0((MATRIX *)buf2, (MATRIX *)buf1, (MATRIX *)(base + 0x18));")
 sub1(SD, "extern s32 D_800F62E0;", "extern u8 D_800F62E0[8][0x60];")
 sub1(SD, "base = (u8 *)&D_800F62E0;", "base = D_800F62E0[0];")
 sub1(SD, "void *game_GetPlayerData(void) {\n    void *v0 = func_8004153C();",

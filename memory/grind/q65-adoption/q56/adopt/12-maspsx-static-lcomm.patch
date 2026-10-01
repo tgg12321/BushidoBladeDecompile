@@ -1,6 +1,6 @@
-From dc37b108e9a04ee76ccbef6a0bcc9facf4a443bb Mon Sep 17 00:00:00 2001
+From 440b28648484c6e985ef083810d25ed87c8fee1d Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:05:22 -0500
+Date: Thu, 1 Oct 2026 10:36:57 -0500
 Subject: [PATCH] substrate: maspsx models .local+.comm (an uninitialized
  static) as .lcomm (owner ruling Q65, step 12)
 
@@ -13,10 +13,10 @@ Subject: [PATCH] substrate: maspsx models .local+.comm (an uninitialized
  create mode 100644 tools/maspsx/tests/test_static_lcomm.py
 
 diff --git a/engine/test_engine.py b/engine/test_engine.py
-index 4ee3af614..db8786631 100644
+index 817aa75bc..99e1f0aca 100644
 --- a/engine/test_engine.py
 +++ b/engine/test_engine.py
-@@ -4997,6 +4997,21 @@ def test_maspsx_indexed_operand_not_gp() -> None:
+@@ -5075,6 +5075,21 @@ def test_maspsx_indexed_operand_not_gp() -> None:
         run("sb\t$2,sym"), ["lbu\t$2,0($4)", "nop", "sb\t$2,%gp_rel(sym)($gp)"])
  
  
@@ -38,7 +38,7 @@ index 4ee3af614..db8786631 100644
  def test_maspsx_fingerprint() -> None:
      """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
      HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
-@@ -5236,6 +5251,7 @@ def main() -> int:
+@@ -5314,6 +5329,7 @@ def main() -> int:
      test_queue_rotation()
      test_queue_remeasure_source_integrity()
      test_maspsx_indexed_operand_not_gp()

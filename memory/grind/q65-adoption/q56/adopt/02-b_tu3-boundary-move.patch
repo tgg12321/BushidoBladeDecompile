@@ -1,6 +1,6 @@
-From c8b441a9627c0d98e439a513cbd035fe5a2e86e9 Mon Sep 17 00:00:00 2001
+From 817376536588889b633ae36a94c2ba8afd393d0f Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:02:47 -0500
+Date: Thu, 1 Oct 2026 10:30:02 -0500
 Subject: [PATCH] src: code6cac_b_tu2 / code6cac_b_tu3 boundary moves to
  func_800343F0 (owner ruling Q65, step 2, cut outcome (i))
 
@@ -11,7 +11,7 @@ Subject: [PATCH] src: code6cac_b_tu2 / code6cac_b_tu3 boundary moves to
  3 files changed, 27 insertions(+), 23 deletions(-)
 
 diff --git a/docs/grind/rodata-align-2026-09-30.md b/docs/grind/rodata-align-2026-09-30.md
-index 4d64c0627..4aa33f5b5 100644
+index 27c466c69..44c029848 100644
 --- a/docs/grind/rodata-align-2026-09-30.md
 +++ b/docs/grind/rodata-align-2026-09-30.md
 @@ -157,7 +157,7 @@ RULING — object-relative rodata alignment.
@@ -24,10 +24,10 @@ index 4d64c0627..4aa33f5b5 100644
    | text1b_tu2.c | func_800747D8 | 0x80015A0C | after func_8006ECF4 .. up to func_800747D8 |
    | text1b_b_tu2.c | prnt (its strings D_80015A68/7C/84) | 0x80015A68 | PsyQ module start of prnt |
 diff --git a/src/code6cac_b_tu2.c b/src/code6cac_b_tu2.c
-index 89821035f..c32f6fc1a 100644
+index eab54ffbf..7b16a73ce 100644
 --- a/src/code6cac_b_tu2.c
 +++ b/src/code6cac_b_tu2.c
-@@ -5721,25 +5721,3 @@ loop:
+@@ -6276,25 +6276,3 @@ loop:
          D_800A3834 = 0;
      }
  }

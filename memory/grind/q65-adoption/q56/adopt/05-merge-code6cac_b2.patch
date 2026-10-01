@@ -1,6 +1,6 @@
-From c686fde2148fbc2385a371f0af80c93ac933492f Mon Sep 17 00:00:00 2001
+From 56a4cf1deae09d55eb757c64ae296c11ac760001 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:03:35 -0500
+Date: Thu, 1 Oct 2026 10:31:21 -0500
 Subject: [PATCH] src: code6cac_b2_pre + replay_camera_rob_back_loose2 +
  code6cac_b2_post are one file (owner ruling Q65, step 5)
 
@@ -14,7 +14,7 @@ Subject: [PATCH] src: code6cac_b2_pre + replay_camera_rob_back_loose2 +
  delete mode 100644 src/replay_camera_rob_back_loose2.c
 
 diff --git a/bb2.ld b/bb2.ld
-index f9b958df2..5acc8ebeb 100644
+index d8a1cff78..d1ac4cbc8 100644
 --- a/bb2.ld
 +++ b/bb2.ld
 @@ -46,7 +46,6 @@ SECTIONS
@@ -25,7 +25,7 @@ index f9b958df2..5acc8ebeb 100644
          build/src/code6cac_b2_post.o(.rodata);
          build/src/code6cac_b4.o(.rodata);
          build/src/code6cac_b4_post.o(.rodata);
-@@ -83,7 +82,6 @@ SECTIONS
+@@ -84,7 +83,6 @@ SECTIONS
          build/src/system.o(.rodata);
          build/src/text1a_b_tail_rodata.o(.rodata);
          build/src/main.o(.rodata);
@@ -33,7 +33,7 @@ index f9b958df2..5acc8ebeb 100644
          build/src/sound.o(.rodata);
          build/src/gpu.o(.rodata);
          build/src/display.o(.rodata);
-@@ -100,8 +98,6 @@ SECTIONS
+@@ -101,8 +99,6 @@ SECTIONS
          build/src/code6cac_b_tu3.o(.text);
          build/src/code6cac_b3.o(.text);
          build/src/code6cac_b3_post.o(.text);
@@ -42,7 +42,7 @@ index f9b958df2..5acc8ebeb 100644
          build/src/code6cac_b2_post.o(.text);
          build/src/code6cac_b4.o(.text);
          build/src/code6cac_b4_post.o(.text);
-@@ -147,7 +143,6 @@ SECTIONS
+@@ -148,7 +144,6 @@ SECTIONS
          build/src/code6cac_b_tu3.o(.data);
          build/src/code6cac_b3.o(.data);
          build/src/code6cac_b3_post.o(.data);
@@ -50,7 +50,7 @@ index f9b958df2..5acc8ebeb 100644
          build/src/code6cac_b2_post.o(.data);
          build/src/code6cac_b4.o(.data);
          build/src/code6cac_b4_post.o(.data);
-@@ -195,7 +190,6 @@ SECTIONS
+@@ -197,7 +192,6 @@ SECTIONS
          build/src/code6cac_b_tu3.o(.bss);
          build/src/code6cac_b3.o(.bss);
          build/src/code6cac_b3_post.o(.bss);

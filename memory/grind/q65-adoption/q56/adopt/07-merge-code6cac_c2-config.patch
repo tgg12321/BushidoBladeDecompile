@@ -1,6 +1,6 @@
-From 1989ef78c2b9994b1ad37bcd136fdc491467d4f6 Mon Sep 17 00:00:00 2001
+From 811e5ad02dfcb9b9ce21deba77eec66352c590cb Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:04:05 -0500
+Date: Thu, 1 Oct 2026 10:32:12 -0500
 Subject: [PATCH] src: code6cac_c2 + config are one file (owner ruling Q65,
  step 7)
 
@@ -12,7 +12,7 @@ Subject: [PATCH] src: code6cac_c2 + config are one file (owner ruling Q65,
  delete mode 100644 src/config.c
 
 diff --git a/bb2.ld b/bb2.ld
-index 5acc8ebeb..f43f66d53 100644
+index d1ac4cbc8..8106d368b 100644
 --- a/bb2.ld
 +++ b/bb2.ld
 @@ -58,7 +58,6 @@ SECTIONS
@@ -22,33 +22,33 @@ index 5acc8ebeb..f43f66d53 100644
 -        build/src/config.o(.rodata);
          build/src/text1a_pre.o(.rodata);
          build/src/text1a_pre_tu2.o(.rodata);
-         build/src/text1a_post.o(.rodata);
-@@ -108,7 +107,6 @@ SECTIONS
+         build/src/text1a_svc.o(.rodata);
+@@ -109,7 +108,6 @@ SECTIONS
          build/src/code6cac_c_mid.o(.text);
          build/src/code6cac_c_ab.o(.text);
          build/src/code6cac_c2.o(.text);
 -        build/src/config.o(.text);
          build/src/text1a_pre.o(.text);
          build/src/text1a_pre_tu2.o(.text);
-         build/asm/funcs/save_vc_ctrl.o(.text);
-@@ -153,7 +151,6 @@ SECTIONS
+         build/src/text1a_svc.o(.text);
+@@ -154,7 +152,6 @@ SECTIONS
          build/src/code6cac_c_mid.o(.data);
          build/src/code6cac_c_ab.o(.data);
          build/src/code6cac_c2.o(.data);
 -        build/src/config.o(.data);
          build/src/text1a_pre.o(.data);
          build/src/text1a_pre_tu2.o(.data);
-         build/src/text1a_post.o(.data);
-@@ -200,7 +197,6 @@ SECTIONS
+         build/src/text1a_svc.o(.data);
+@@ -202,7 +199,6 @@ SECTIONS
          build/src/code6cac_c_mid.o(.bss);
          build/src/code6cac_c_ab.o(.bss);
          build/src/code6cac_c2.o(.bss);
 -        build/src/config.o(.bss);
          build/src/text1a_pre.o(.bss);
          build/src/text1a_pre_tu2.o(.bss);
-         build/src/text1a_post.o(.bss);
+         build/src/text1a_svc.o(.bss);
 diff --git a/src/code6cac_c2.c b/src/code6cac_c2.c
-index 73e85b03c..cf0341dc8 100644
+index c39881fce..a9749c231 100644
 --- a/src/code6cac_c2.c
 +++ b/src/code6cac_c2.c
 @@ -7,6 +7,7 @@

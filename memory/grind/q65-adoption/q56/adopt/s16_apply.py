@@ -39,7 +39,8 @@ edit("tools/data_wave.py", [
 edit("tools/desync_audit.py", [('    "sdata_funcs.txt": r"^\\s*([A-Za-z_]\\w*)\\s*$",\n'
                                 '    "sdata_exclude.txt": r"^\\s*([A-Za-z_]\\w*)\\s*$",\n', "")])
 # the files steps 2-11 split / merged / cut / moved
-OLD = ["text1a_c", "code6cac_b_tu2", "text1b", "code6cac_b2_pre", "replay_camera_rob_back_loose2", "config"]
+OLD = ["text1a_c", "code6cac_b_tu2", "text1b", "code6cac_b2_pre", "replay_camera_rob_back_loose2", "config",
+       "text1a_c2", "text1a_b", "text1a_b_pre_rodata", "sound", "text1b_tu2"]
 r = subprocess.run([sys.executable, f"{H}/relocate_records.py", R] + OLD, capture_output=True, text=True)
 print(r.stdout.strip()); assert r.returncode == 0, r.stderr
 print("step 16 applied")

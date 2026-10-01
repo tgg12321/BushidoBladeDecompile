@@ -1,12 +1,18 @@
 # Q65 adoption (per-file gp model): handoff, 2026-10-01
 
 **State.** The adoption is ready but NOT applied. It is a series of 16 byte-identical commits. The last full
-run was on main `64c69153a` (2026-10-01). On that run every step built to the oracle
-`62efab4f73f992798c43e8c730aa43baa10bb4fa`, the maspsx unit tests showed only the two baseline failures, and
-`engine test` was green at every step whose output survived:
-- 1070-1076 passed, 0 failed;
-- step 15's test lines were cut off by the log tail, but steps 14 and 16 around it are green;
-- re-check step 15 when you regenerate.
+run was on main `6c73a2796` (2026-10-01, laneA). On that run every step built to the oracle
+`62efab4f73f992798c43e8c730aa43baa10bb4fa`, the maspsx unit tests showed only the two baseline failures,
+`engine test` was green at every step (1096-1102 passed, 0 failed; step 15 re-run separately with
+`atstep.sh step15 etest.sh`: 1102 passed), and `check_completion_integrity.py` is OK at step16 after
+`verify-oracle --rebuild` in the scratch clone. Regeneration on 6c73a2796 needed two generator fixes:
+- s08: the libscan naming wave (fe40a52b2) gave sound's func_800475A4 callee the name MulMatrix0, declared
+  `void (s32 *, s32 *, s32 *)` while text1b declares the libgte `MATRIX *(MATRIX *, MATRIX *, MATRIX *)`;
+  the merge failed ("conflicting types"). s08 now reconciles it like ApplyMatrix (libgte prototype, casts at
+  the one call site).
+- s16: relocate_records' stem list lacked the M3/M4 parts, so func_800770B8's queue record kept the deleted
+  `text1b_tu2`; the list now includes text1a_c2, text1a_b, text1a_b_pre_rodata, sound and text1b_tu2.
+Per-step layer-2 body keys of every changed completed body: `q56/adopt/body_hashes.txt` (body_hashes.py).
 
 The series is generated, never hand-applied. Main moves under the lanes, so always regenerate on the
 then-current main. Commit ids per step: `q56/adopt/series_base.txt`. Patches: `q56/adopt/NN-*.patch`, against
@@ -70,7 +76,8 @@ docs/grind/owner-rulings-2026-09-26.md (thirty-first to thirty-third batches).
 - game_StageCleanup, game_GetPlayerData, func_800486FC and func_80049F4C (step 08)
 - func_8006E950 (step 10)
 - func_80060A68 and func_800420D0 (step 14)
-- cast-only call-site edits in sound, text1a_c2, text1b and text1b_b (steps 08 and 10)
+- cast-only call-site edits in sound, text1a_c2, text1b and text1b_b (steps 08 and 10), incl. func_800475A4's
+  MulMatrix0 call (step 08, added 2026-10-01). Full list with keys: `q56/adopt/body_hashes.txt` (26 bodies).
 
 What changes in each, and why it is byte-neutral, is in `q56/adopt/PLAN.md` § Body changes. The per-symbol
 reconciliation evidence is in the docstrings of `s08_apply.py` and `s10_apply.py`. `layer2 record` keys on the

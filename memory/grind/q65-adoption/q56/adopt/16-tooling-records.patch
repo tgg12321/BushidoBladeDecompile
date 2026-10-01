@@ -1,19 +1,33 @@
-From da9d8107c3c7cb0e1f32d5a3634300d658d7871c Mon Sep 17 00:00:00 2001
+From b55913da8e3400a2d6bbe9d1fdb862ade87b9dea Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:06:31 -0500
+Date: Thu, 1 Oct 2026 10:48:43 -0500
 Subject: [PATCH] tools/records: follow the retired sdata lists and the moved
  functions (owner ruling Q65, step 16)
 
 ---
+ engine/queue.json               | 2 +-
  tools/check_root_cleanliness.py | 1 -
  tools/data_wave.py              | 7 +++----
  tools/desync_audit.py           | 2 --
  tools/grinder/grindlib.py       | 1 -
  tools/naming_wave.py            | 2 --
- 5 files changed, 3 insertions(+), 10 deletions(-)
+ 6 files changed, 4 insertions(+), 11 deletions(-)
 
+diff --git a/engine/queue.json b/engine/queue.json
+index 314f9c9c4..cd20ae8ce 100644
+--- a/engine/queue.json
++++ b/engine/queue.json
+@@ -5,7 +5,7 @@
+   "items": [
+     {
+       "func": "func_800770B8",
+-      "file": "text1b_tu2",
++      "file": "text1b_b",
+       "distance": 0,
+       "verdict": "C",
+       "rules": 0,
 diff --git a/tools/check_root_cleanliness.py b/tools/check_root_cleanliness.py
-index dabfb8d08..386ff3470 100644
+index 35e6b0d80..d7b127707 100644
 --- a/tools/check_root_cleanliness.py
 +++ b/tools/check_root_cleanliness.py
 @@ -41,7 +41,6 @@ ALLOWED_BUILD_TXT = {
@@ -56,10 +70,10 @@ index 539155b4c..baeba98d9 100644
  known = glabels | set(re.findall(r"^\s*([A-Za-z_]\w*)\s*\(", csrc, re.M)) | incasm
  known |= set(re.findall(r"\b([A-Za-z_]\w*)\s*\([^;{]*\)\s*\{", csrc))
 diff --git a/tools/grinder/grindlib.py b/tools/grinder/grindlib.py
-index fe25d78e4..c319ad599 100644
+index 3915d28a6..ce4768379 100644
 --- a/tools/grinder/grindlib.py
 +++ b/tools/grinder/grindlib.py
-@@ -1827,7 +1827,6 @@ GATE_FILES = (
+@@ -1849,7 +1849,6 @@ GATE_FILES = (
      "maspsx_comm_syms.txt",
      "multu_funcs.txt",
      "multu_pad_funcs.txt",

@@ -1,6 +1,6 @@
-From 32aeba8ac47440f7b4a2b2b4a387589bc576a122 Mon Sep 17 00:00:00 2001
+From a9d9a0849d873388994be016a8849549c0b11f11 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:03:03 -0500
+Date: Thu, 1 Oct 2026 10:30:28 -0500
 Subject: [PATCH] src: text1b / text1b_tu1c boundary moves to func_80060A68
  (owner ruling Q65, step 3, boundary move in the recorded window)
 
@@ -11,7 +11,7 @@ Subject: [PATCH] src: text1b / text1b_tu1c boundary moves to func_80060A68
  3 files changed, 346 insertions(+), 531 deletions(-)
 
 diff --git a/docs/grind/rodata-align-2026-09-30.md b/docs/grind/rodata-align-2026-09-30.md
-index 4aa33f5b5..2b61acc3a 100644
+index 44c029848..cccd86b8a 100644
 --- a/docs/grind/rodata-align-2026-09-30.md
 +++ b/docs/grind/rodata-align-2026-09-30.md
 @@ -268,9 +268,9 @@ rodata) it sits at func_80061064's extern block.
@@ -27,10 +27,10 @@ index 4aa33f5b5..2b61acc3a 100644
  **Checks.** Full rebuild: EXE sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa (the oracle);
  text1b_tu1c.o .rodata at 0x800158E0 (0xd0 bytes), text1a_b_pre_rodata_b.o at 0x800158B4 (0x2c).
 diff --git a/src/text1b.c b/src/text1b.c
-index 5fa0354c8..2ebfb9075 100644
+index 3602d45ea..c14321837 100644
 --- a/src/text1b.c
 +++ b/src/text1b.c
-@@ -5600,318 +5600,3 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
+@@ -5714,318 +5714,3 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
      sp1C += 0xC;
      return end_off - arg0;
  }
@@ -350,7 +350,7 @@ index 5fa0354c8..2ebfb9075 100644
 -    *(s32 *)0x1F800008 = arg1;
 -}
 diff --git a/src/text1b_tu1c.c b/src/text1b_tu1c.c
-index 59d3c56a1..9c15f9db0 100644
+index 5c8fc6117..c14b59a44 100644
 --- a/src/text1b_tu1c.c
 +++ b/src/text1b_tu1c.c
 @@ -4,18 +4,357 @@
@@ -1327,7 +1327,7 @@ index 59d3c56a1..9c15f9db0 100644
  void func_8006B898(s32 arg0, s32 arg1) {
      s32 sp10[10];
      u8 *t;
-@@ -5221,9 +5384,6 @@ typedef struct Tile {
+@@ -5277,9 +5440,6 @@ typedef struct Tile {
      s16 x0, y0;
      s16 w, h;
  } Tile;
@@ -1336,8 +1336,8 @@ index 59d3c56a1..9c15f9db0 100644
 -extern s32 D_800A34FC;
  extern s32 D_800A3900;
  extern Tile *D_800A36DC;
- extern u8 *D_800A36E0;
-@@ -5598,8 +5758,6 @@ void func_8006C21C(s32 *arg0) {
+ extern u8 D_800F11E0[];
+@@ -5651,8 +5811,6 @@ void func_8006C21C(s32 *arg0) {
      }
      arg0[4] = (s32)poly;
  }
@@ -1346,7 +1346,7 @@ index 59d3c56a1..9c15f9db0 100644
  
  void func_8006CBD4(s32 arg0, s32 arg1) {
      s32 code;
-@@ -5702,12 +5860,6 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
+@@ -5755,12 +5913,6 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
      }
      return ret;
  }
@@ -1359,7 +1359,7 @@ index 59d3c56a1..9c15f9db0 100644
  
  typedef struct {
      s32 *header;
-@@ -5824,7 +5976,6 @@ s32 func_8006CFBC(s32 *arg0) {
+@@ -5877,7 +6029,6 @@ s32 func_8006CFBC(s32 *arg0) {
      }
      return (s16)result;
  }
@@ -1367,7 +1367,7 @@ index 59d3c56a1..9c15f9db0 100644
  void func_8006D324(void) {
      s16 *v1 = (s16 *)D_800A34FC;
      v1[0x15] = 5;
-@@ -5844,10 +5995,7 @@ void func_8006D338(s32 arg0, s32 arg1) {
+@@ -5897,10 +6048,7 @@ void func_8006D338(s32 arg0, s32 arg1) {
      r = func_8006CFBC(sp10);
      func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
  }
@@ -1378,7 +1378,7 @@ index 59d3c56a1..9c15f9db0 100644
  /* EnvA: the 0x2C-byte draw descriptor func_8007352C consumes.  Same field
     layout as EnvB (func_8006DD94) and S69E18 (func_80069E18); this call site
     declares only the fields through col_b, which is what the target frame
-@@ -5918,7 +6066,6 @@ void func_8006D3DC(s32 *arg0) {
+@@ -5971,7 +6119,6 @@ void func_8006D3DC(s32 *arg0) {
      rect[3] = 1;
      func_80069898((GameObj *)arg0, rect, 0x11);
  }
@@ -1386,7 +1386,7 @@ index 59d3c56a1..9c15f9db0 100644
  
  
  s32 func_8006D5D4(s32 arg0, u32 arg1) {
-@@ -5959,9 +6106,6 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
+@@ -6012,9 +6159,6 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
      }
      return result;
  }
@@ -1396,7 +1396,7 @@ index 59d3c56a1..9c15f9db0 100644
  extern u8 g_gpu_db;  /* one type per TU: all uses here take (s32)&g_gpu_db */
  
  
-@@ -6128,8 +6272,6 @@ typedef struct EnvB {
+@@ -6181,8 +6325,6 @@ typedef struct EnvB {
      u8   col_b;
      s32  pad2C, pad30;
  } EnvB;
@@ -1405,7 +1405,7 @@ index 59d3c56a1..9c15f9db0 100644
  void func_8006DD94(s32 *arg0) {
      /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address is
         passed to func_8007352C every iteration; pad2C/pad30 are its unwritten tail.
-@@ -6209,7 +6351,6 @@ void func_8006DD94(s32 *arg0) {
+@@ -6262,7 +6404,6 @@ void func_8006DD94(s32 *arg0) {
      func_80069898((GameObj *)arg0, rect, 0x11);
  }
  extern s32 func_800692C0();
@@ -1413,7 +1413,7 @@ index 59d3c56a1..9c15f9db0 100644
  
  s32 func_8006DF68(s32 arg0, u32 arg1) {
      s32 sp10;
-@@ -6250,16 +6391,11 @@ void func_8006E068(s32 arg0, s32 arg1) {
+@@ -6303,16 +6444,11 @@ void func_8006E068(s32 arg0, s32 arg1) {
      func_8006DF68(arg0, arg1);
  }
  extern u8 D_800A32D8[8];
@@ -1430,7 +1430,7 @@ index 59d3c56a1..9c15f9db0 100644
  
  extern void SetDefDrawEnv(s32, s32, s32, s32, s32);
  extern void SetDefDispEnv(s32, s32, s32, s32, s32);
-@@ -6313,12 +6449,7 @@ s32 func_8006E10C(void) {
+@@ -6366,12 +6502,7 @@ s32 func_8006E10C(void) {
      SetDispMask(1);
      return 1;
  }
@@ -1443,7 +1443,7 @@ index 59d3c56a1..9c15f9db0 100644
  extern void DrawSync(s32);
  extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
  s32 func_8006E2A8(void) {
-@@ -6337,7 +6468,6 @@ s32 func_8006E2A8(void) {
+@@ -6390,7 +6521,6 @@ s32 func_8006E2A8(void) {
      SetDispMask(1);
      return 1;
  }

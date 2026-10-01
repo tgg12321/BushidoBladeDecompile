@@ -1,4 +1,4 @@
-# Files touched per step (base 64c69153a, 2026-10-01)
+# Files touched per step (base 6c73a2796, 2026-10-01)
 
 - **01** substrate: maspsx _uses_gp - an indexed sym($reg) operand is never gp (owner ruling Q65, s
   engine/test_engine.py tools/maspsx/maspsx/__init__.py tools/maspsx/tests/test_indexed_gp_nop.py 
@@ -31,4 +31,4 @@
 - **15** src/build: per-file gp model - definitions follow the evidence, data blob cut, maspsx -G8 
   Makefile asm/data/91C98.data.s asm/data/938EA.data.s asm/data/938FE.data.s asm/data/93950.data.s asm/data/93978.data.s asm/data/939DC.data.s asm/data/939E6.data.s asm/data/93A0E.data.s asm/data/93A30.data.s asm/data/93A3E.data.s asm/data/93AC0.data.s asm/data/93AEA.data.s asm/data/93B08.data.s asm/data/93B12.data.s asm/data/93B56.data.s asm/data/93B7C.data.s asm/data/93B8C.data.s asm/data/93C10.data.s asm/data/93D30.data.s asm/data/93DCA.data.s asm/data/93E18.data.s bb2.ld docs/grind/gp-model-2026-09-30.md engine/buildconfig.py engine/buildstamp.py engine/oracle.py engine/pipeline.py engine/queue.py engine/test_engine.py include/game.h include/sound.h named_syms.txt sdata_exclude.txt sdata_funcs.txt sdata_syms.txt src/code6cac_b2_post.c src/code6cac_b3.c src/code6cac_b4.c src/code6cac_b4_post.c src/code6cac_b5.c src/code6cac_b_tu2.c src/code6cac_c.c src/code6cac_c0.c src/code6cac_c2.c src/code6cac_c_ab.c src/code6cac_c_mid.c src/code6cac_tu2.c src/ings.c src/text1a_c.c src/text1a_c_tu2.c src/text1a_post.c src/text1a_pre.c src/text1b.c src/text1b_b.c src/text1b_tu1c.c src/text1b_tu1d.c src/text1b_tu1e.c tools/psyq_library_files.py undefined_syms_auto.txt 
 - **16** tools/records: follow the retired sdata lists and the moved functions (owner ruling Q65, s
-  tools/check_root_cleanliness.py tools/data_wave.py tools/desync_audit.py tools/grinder/grindlib.py tools/naming_wave.py 
+  engine/queue.json tools/check_root_cleanliness.py tools/data_wave.py tools/desync_audit.py tools/grinder/grindlib.py tools/naming_wave.py 

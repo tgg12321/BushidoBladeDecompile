@@ -1,6 +1,6 @@
-From a431770943e2d007e0f28605d538fe231854fa54 Mon Sep 17 00:00:00 2001
+From 99f3a1c93fb8d5fd7855adac36d4914226d44d53 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Wed, 30 Sep 2026 21:05:52 -0500
+Date: Thu, 1 Oct 2026 10:37:50 -0500
 Subject: [PATCH] src: one declaration each for D_800A3468 (text1b_tu1c) and
  g_anim_hit_flags (text1a_post) (owner ruling Q65, step 14)
 
@@ -10,7 +10,7 @@ Subject: [PATCH] src: one declaration each for D_800A3468 (text1b_tu1c) and
  2 files changed, 18 insertions(+), 17 deletions(-)
 
 diff --git a/src/text1a_post.c b/src/text1a_post.c
-index 53edcb788..76f5b31cd 100644
+index 5095ad6b3..cf0a14266 100644
 --- a/src/text1a_post.c
 +++ b/src/text1a_post.c
 @@ -555,13 +555,12 @@ void func_80041EB0(s32 a0, s32 a1)
@@ -30,7 +30,7 @@ index 53edcb788..76f5b31cd 100644
  void func_800420E8(s32 a0, s32 a1) {
      if (a0 < 2) {
 diff --git a/src/text1b_tu1c.c b/src/text1b_tu1c.c
-index 9c15f9db0..c6cfb205a 100644
+index c14b59a44..6549ce411 100644
 --- a/src/text1b_tu1c.c
 +++ b/src/text1b_tu1c.c
 @@ -96,6 +96,8 @@ extern s32 cdrom_StartRead(s32, s32);
