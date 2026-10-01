@@ -1,0 +1,1 @@
+{"func": "func_80055B44", "addr": "80055B44", "verdict": "PASS", "body_hash": "0ddaa5616f83d2dc", "body_kind": "c", "file": "text1b", "reviewer": "rev-pmr-split-r2", "scope": "cheat-cleanup", "date": "2026-10-01T17:11:01Z", "head": "a257e283c", "notes": "split r2 PASS 2026-10-01: PracticeMenuRec data model + respelling; r1 FAIL (unk_6C u16, 0x8009A8C4 claim) fixed"}

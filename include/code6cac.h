@@ -64,6 +64,15 @@ typedef struct { s16 vx, vy, vz, pad; } SVec4i16;
  * named_syms.txt:345 (g_practice_menu_table).  Only the fields reached by C so
  * far are named; the rest is reserved padding.  func_80022580 initializes
  * record [idx] (every field it writes is declared at its offset). */
+/* One CPU path waypoint (PracticeMenuRec.unk_364[]): func_800571C0 writes x/z from the
+ * opponent's position and kind 2; func_80058580 walks them back to front. */
+typedef struct CpuWaypoint {
+    s16 x;
+    s16 z;
+    u8 kind;
+    u8 unk5;
+} CpuWaypoint;
+
 typedef struct PracticeMenuRec {
     struct PracticeMenuRec *unk_00; /* the other record: [1] for record 0, else [0] (func_80022580) */
     s16 unk_04;                    /* this record's own index (func_80022580) */
@@ -86,17 +95,21 @@ typedef struct PracticeMenuRec {
     u8  unk_34[0x3C - 0x34];
     s32 unk_3C;
     s16 unk_40;
-    u8  unk_42[0x5E - 0x42];
+    u8  unk_42[0x50 - 0x42];
+    u8 *unk_50;                    /* entry whose byte 8 bounds unk_40 (func_80058580) */
+    u8  unk_54[0x58 - 0x54];
+    u8 *unk_58;                    /* byte 3 read by func_80056FE8 */
+    u8  unk_5C[0x5E - 0x5C];
     s16 unk_5E;                    /* 0/1, set alongside func_80021A98 */
     u8  unk_60[0x6A - 0x60];
-    s16 unk_6A;                    /* SEQ state code; CHAR_STRUCT_SCHEMA.md +0x06A */
+    u16 unk_6A;                    /* SEQ state code; CHAR_STRUCT_SCHEMA.md +0x06A */
     u8  unk_6C[0x72 - 0x6C];
     s16 unk_72;
     u8  unk_74[0x7C - 0x74];
     s32 unk_7C;
     u8  unk_80[0x84 - 0x80];
     s16 unk_84;
-    u8  unk_86[0x88 - 0x86];
+    s16 unk_86;                    /* row of unk_3A8 / unk_3F8 / unk_3FE / unk_404 */
     s16 unk_88;
     s16 unk_8A;
     u8  unk_8C[0x8E - 0x8C];
@@ -106,9 +119,13 @@ typedef struct PracticeMenuRec {
     s16 unk_96;
     u8  unk_98[0xA0 - 0x98];
     u8  unk_A0;
-    u8  unk_A1[0xAD - 0xA1];
+    u8  unk_A1[2];
+    u8  unk_A3[2];
+    u8  unk_A5[0xAD - 0xA5];
     u8  unk_AD;                    /* != 0: func_8002C61C re-runs func_800283D0 for both records */
-    u8  unk_AE[0xB1 - 0xAE];
+    u8  unk_AE;
+    u8  unk_AF;
+    u8  unk_B0;
     u8  unk_B1;
     u8  unk_B2;
     u8  unk_B3[0xB8 - 0xB3];
@@ -160,7 +177,10 @@ typedef struct PracticeMenuRec {
     Vec4i32 unk_24C;
     u8  unk_25C[0x268 - 0x25C];
     s32 unk_268;
-    u8  unk_26C[0x274 - 0x26C];
+    s16 unk_26C;
+    s16 unk_26E;
+    s16 unk_270;
+    s16 unk_272;
     s16 unk_274;
     s16 unk_276[4];
     s16 unk_27E[4];
@@ -180,7 +200,76 @@ typedef struct PracticeMenuRec {
     u8  unk_34E;                   /* written by func_8001BE20 for the OTHER record */
     u8  unk_34F[0x350 - 0x34F];
     s16 unk_350;
-    u8  unk_352[0x44C - 0x352];
+    u8  unk_352[0x362 - 0x352];
+    u8  unk_362;                   /* number of waypoints in unk_364 */
+    u8  unk_363;
+    CpuWaypoint unk_364[8];
+    s32 unk_394;
+    s16 unk_398;
+    s16 unk_39A;
+    u8  unk_39C;
+    u8  unk_39D;
+    s16 unk_39E;
+    s16 unk_3A0;
+    s16 unk_3A2;
+    u16 *unk_3A4;                  /* script list: u16 byte offsets from its own start */
+    u16 *unk_3A8[3];               /* per-row cursor into unk_3A4 (func_80055138) */
+    u8 *unk_3B4;                   /* script pointer (func_80055B44 / func_80055948) */
+    u8  unk_3B8;
+    u8  unk_3B9[0x3BC - 0x3B9];
+    u8  unk_3BC;
+    u8  unk_3BD;
+    u8  unk_3BE[0x3C0 - 0x3BE];
+    u8  unk_3C0;
+    u8  unk_3C1;
+    s16 unk_3C2;
+    s32 unk_3C4;
+    s32 unk_3C8;
+    s32 unk_3CC;
+    u8  unk_3D0[0x3D8 - 0x3D0];
+    s32 unk_3D8;
+    s32 unk_3DC;
+    s32 unk_3E0;
+    s32 unk_3E4;
+    u16 unk_3E8;
+    u8  unk_3EA[0x3EE - 0x3EA];
+    s16 unk_3EE;
+    s16 unk_3F0;
+    u8  unk_3F2;
+    u8  unk_3F3;
+    u8  unk_3F4;
+    u8  unk_3F5;
+    u8  unk_3F6;
+    u8  unk_3F7;
+    s16 unk_3F8[3];                /* [unk_86] distance bounds (func_80055138) */
+    s16 unk_3FE[3];
+    s16 unk_404[3];
+    s16 unk_40A;
+    s8  unk_40C;
+    s8  unk_40D;
+    s16 unk_40E;
+    s16 unk_410;
+    s16 unk_412;
+    u8  unk_414[0x424 - 0x414];
+    u8  unk_424;
+    u8  unk_425;
+    u8  unk_426;
+    u8  unk_427;
+    s16 unk_428;
+    s16 unk_42A;
+    s16 unk_42C;
+    s16 unk_42E;
+    s32 unk_430;
+    s32 unk_434;
+    s16 unk_438;
+    s16 unk_43A;
+    s16 unk_43C;
+    u8  unk_43E[0x440 - 0x43E];
+    u8  unk_440;
+    u8  unk_441;
+    u8  unk_442;
+    u8  unk_443;
+    u8  unk_444[8];                /* func_80056CB8's per-direction results */
 } PracticeMenuRec;                 /* sizeof == 0x44C */
 
 /* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
@@ -314,11 +403,16 @@ typedef struct StatusFlagRec {
     u8 unk17;
 } StatusFlagRec; /* size 0x18 */
 extern StatusFlagRec D_80099D88[];
-/* Rows of eight 4-byte entries: func_80055138 reads [row][col][0..1] (row*0x20 + col*4);
- * func_80058580 reads the halfword at byte 2 of [row][col] (D_8009A8CA + row<<5 +
- * (col-1)*4 = D_8009A8C4 + row*0x20 + col*4 + 2, 0x8005A854-78; D_8009A8CA is the alias
- * row D_8009A8C4+6). */
-extern u8 D_8009A8C4[][8][4];
+/* Rows of eight 4-byte entries starting at 0x8009A8C8: each 0x20-byte row ends with a zero
+ * entry (0x8009A8E4 / 0x8009A904 / 0x8009A924, asm/data/7D920.data.s). Both readers index the
+ * column 1-based, [row][D_800A37A0 - 1]: func_80055138 reads unk0/unk1 (GCC folds the -1
+ * into the address, %lo(0x8009A8C4)), func_80058580 the mask halfword (%lo(0x8009A8CA)). */
+typedef struct CpuLevelEntry {
+    u8 unk0;
+    u8 unk1;
+    u16 mask;
+} CpuLevelEntry;
+extern CpuLevelEntry D_8009A8C8[][8];
 extern u8 D_8009A9B4[][2];         /* byte pairs (func_80055138) */
 extern u8 D_800A3100[][4];         /* [D_8008D9EC flag] -> 3 bytes (func_80041BF4 args), stride 4 */
 extern s16 D_800A310C[4];          /* 0x800A310C..0x800A3113 (asm/data/91C98.data.s dlabel D_800A310C) */
