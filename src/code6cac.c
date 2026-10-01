@@ -158,7 +158,7 @@ typedef struct { s32 f0, f1, f2, f3; } Copy16;
 
 extern void func_80018300(s32 *);
 extern void func_800372C0(void);
-extern void func_80023F08(s32, s32);
+extern void func_80023F08(s32, PadState *);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 

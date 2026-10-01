@@ -192,17 +192,17 @@ void func_80026DA4(void) {
     } else if ((u16)g_practice_menu_table[0].unk_6A != 0xF) {
         for (i = 0; i < 2; i++) {
             current = record + i;
-            if (current->unk_30 & 0x20) {
+            if (current->unk_24.pressed & 0x20) {
                 current->unk_28C += current->unk_20;
             }
-            if (current->unk_30 & 0x40) {
+            if (current->unk_24.pressed & 0x40) {
                 current->unk_28C += current->unk_20;
             }
             if ((u16)current->unk_6A == 0x1D || (u16)current->unk_6A == 0x1E ||
                 (u16)current->unk_6A == 0x20) {
-                if (current->unk_2C & 0x1000) {
+                if (current->unk_24.held & 0x1000) {
                     dir = 1;
-                } else if (current->unk_2C & 0x4000) {
+                } else if (current->unk_24.held & 0x4000) {
                     dir = -1;
                 } else {
                     dir = 0;
@@ -249,15 +249,15 @@ void func_80026DA4(void) {
             }
         }
         if ((u16)record->unk_6A == 0x1D) {
-            if (record->unk_2C & 0x8000) {
-                if (partner->unk_2C & 0x8000) {
+            if (record->unk_24.held & 0x8000) {
+                if (partner->unk_24.held & 0x8000) {
                     record->unk_286 = 2;
                     partner->unk_286 = 2;
                 } else {
                     record->unk_286 = 2;
                     partner->unk_286 = 5;
                 }
-            } else if (partner->unk_2C & 0x8000) {
+            } else if (partner->unk_24.held & 0x8000) {
                 record->unk_286 = 5;
                 partner->unk_286 = 2;
             }

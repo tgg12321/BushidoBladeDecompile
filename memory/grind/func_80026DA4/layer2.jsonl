@@ -1,0 +1,1 @@
+{"func": "func_80026DA4", "addr": "80026DA4", "verdict": "PASS", "body_hash": "6fa99ac11f97da77", "body_kind": "c", "file": "code6cac_b", "reviewer": "rev-23F08-A", "scope": "cheat-cleanup", "date": "2026-10-01T23:24:06Z", "head": "c6e3f788e", "notes": "r1 paperwork FAIL fixed c6e3f788e; PASS 2026-10-01"}

@@ -951,18 +951,6 @@ s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
     return 0;
 }
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
-/* Scratchpad point tables at 0x1F800000, as far as this function uses them.
- * unk00: three points per character (func_8002C61C copies [0][0..2] and
- * [1][0..2] to the two records' +0x210); unk48: two more per character
- * (copied to +0x234); unkA8: 22 points per character (func_8002A458 reads
- * 0x1F8000A8 + id * 0x108 + i * 0xC, i < 22). */
-typedef struct {
-    LeafPos unk00[2][3];
-    LeafPos unk48[2][2];
-    u8 unk78[0xA8 - 0x78];
-    LeafPos unkA8[2][22];
-} ScrPad;
-#define SPAD ((ScrPad *)0x1F800000)
 
 /* 1 when the box at scr+0x78 (min) / +0x84 (max) and the box at scr+0x90 (min)
  * / +0x9C (max) overlap on all three axes. */

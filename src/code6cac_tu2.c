@@ -82,7 +82,7 @@ extern s32 func_8005FA98(s32, s32, s32);
 extern s32 func_8005D814(s16 *, s32, s32, s32);
 extern void func_800550E8(s32);
 extern void func_800372C0(void);
-extern void func_80023F08(s32, s32);
+extern void func_80023F08(s32, PadState *);
 
 INCLUDE_RODATA("asm/rodata", D_800100A4);
 void func_8001979C(s32 arg0, u32 *arg1) {
@@ -2133,9 +2133,9 @@ void func_8001E878(void) {
     func_80039320();
     func_8002006C();
     func_8001BE20(0, &buf);
-    func_80023F08(0, (s32)&buf);
+    func_80023F08(0, &buf);
     func_8001BE20(1, &buf);
-    func_80023F08(1, (s32)&buf);
+    func_80023F08(1, &buf);
     func_8002C61C();
     func_80030D7C();
     func_800321E8();
@@ -2182,8 +2182,8 @@ void func_8001EA84(void) {
     func_80039320();
     func_8002006C();
     func_8001BE08(&sp10);
-    func_80023F08(0, (s32)&sp10);
-    func_80023F08(1, (s32)&sp10);
+    func_80023F08(0, &sp10);
+    func_80023F08(1, &sp10);
     func_8002C61C();
     func_80030D7C();
     func_800321E8();
@@ -2287,8 +2287,8 @@ void func_8001EFA0(void) {
     func_80039320();
     func_8002006C();
     func_8001BE08(&sp10);
-    func_80023F08(0, (s32)&sp10);
-    func_80023F08(1, (s32)&sp10);
+    func_80023F08(0, &sp10);
+    func_80023F08(1, &sp10);
     func_8002C61C();
     func_80030D7C();
     func_800321E8();
@@ -3058,8 +3058,8 @@ void func_80020D38(void) {
 }
 
 void func_80020D70(void) {
-    D_800A3888 = (s32)0x80118800;
-    D_800A388C = (s32)0x8011C400;
+    D_800A3888[0] = (MotionFrame *)0x80118800;
+    D_800A3888[1] = (MotionFrame *)0x8011C400;
     D_800A3830 = (s32)0x80120000;
     D_800A3860[0] = (Tbl800A3860Entry *)0x80148800;
     D_800A3864 = (s32)0x80190800;

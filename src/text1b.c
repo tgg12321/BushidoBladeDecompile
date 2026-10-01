@@ -4133,7 +4133,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
                    ((D_80099D88[rec->unk_443].flags & 0xFF00)
                         ? (rec->unk_3F6 < rec->unk_3F5) << 2
                         : ((rand() & 0xFFF) < (rec->unk_438 >> 3) && rec->unk_3E8 >= 0x3D) << 2) |
-                   (((rand() & 0xFFF) < rec->unk_438 || rec->unk_3E8 < (rec->unk_438 >> 3)) << 3) | (((rand() & 0xFFF) < (rec->unk_438 >> 1) || rec->unk_3E8 < (rec->unk_438 >> 4)) << 4) | ((rec->unk_00->unk_6A == 2 || rec->unk_00->unk_6A == 0x1B || rec->unk_00->unk_6A == 0x28 || rec->unk_00->unk_6A == 0x26 || (rec->unk_6A == 0x11 && rec->unk_50[8] != rec->unk_58[1] - 1)) << 7) | ((rec->unk_6A == 0x13 || rec->unk_6A == 0x1B || rec->unk_6A == 0x30) << 8) | ((rec->unk_00->unk_6A == 0x13 || rec->unk_00->unk_6A == 0x1B || rec->unk_00->unk_6A == 0x30) << 9) | ((rec->unk_6A == 6 || rec->unk_6A == 4 || rec->unk_6A == 0x14) << 10) | ((rec->unk_00->unk_6A == 6 || rec->unk_00->unk_6A == 4 || rec->unk_00->unk_6A == 0x14) << 11) |
+                   (((rand() & 0xFFF) < rec->unk_438 || rec->unk_3E8 < (rec->unk_438 >> 3)) << 3) | (((rand() & 0xFFF) < (rec->unk_438 >> 1) || rec->unk_3E8 < (rec->unk_438 >> 4)) << 4) | ((rec->unk_00->unk_6A == 2 || rec->unk_00->unk_6A == 0x1B || rec->unk_00->unk_6A == 0x28 || rec->unk_00->unk_6A == 0x26 || (rec->unk_6A == 0x11 && rec->unk_50->unk_08 != rec->unk_58[1] - 1)) << 7) | ((rec->unk_6A == 0x13 || rec->unk_6A == 0x1B || rec->unk_6A == 0x30) << 8) | ((rec->unk_00->unk_6A == 0x13 || rec->unk_00->unk_6A == 0x1B || rec->unk_00->unk_6A == 0x30) << 9) | ((rec->unk_6A == 6 || rec->unk_6A == 4 || rec->unk_6A == 0x14) << 10) | ((rec->unk_00->unk_6A == 6 || rec->unk_00->unk_6A == 4 || rec->unk_00->unk_6A == 0x14) << 11) |
                    (rec->unk_6A == 0x15 ? 0x1000 : 0) |
                    (rec->unk_00->unk_6A == 0x15 ? 0x2000 : 0) |
                    (rec->unk_6A == 0x19 ? 0x4000 : 0) |
@@ -4197,7 +4197,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     }
     if (!(rec->unk_430 & 0x80) ||
         (rec->unk_6A != 0x11 ? (hi < rec->unk_00->unk_40 || lo - rec->unk_00->unk_40 >= 9)
-                                  : rec->unk_50[8] < rec->unk_40)) {
+                                  : rec->unk_50->unk_08 < rec->unk_40)) {
         if (rec->unk_428 != -1) {
             if (rec->unk_424 != 0 && (file_GetFlag1() == 0 || D_800A38DC == 3)) {
                 s32 slot;
@@ -5321,7 +5321,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                     p->unk_3CC = (p->unk_443 & 1) ? vd | 0x1000 : vd | 0x4000;
                 }
             }
-        } else if (state == 0x11 && p->unk_04 != D_800A38AE && p->unk_40 == p->unk_50[8] - 1) {
+        } else if (state == 0x11 && p->unk_04 != D_800A38AE && p->unk_40 == p->unk_50->unk_08 - 1) {
             {
                 s32 a, b, c;
                 a = p->unk_26E;
@@ -5353,7 +5353,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                     work1 = D_8009A838[p->unk_0E] * 8;
                 }
                 for (work4 = 0; work4 < sizeof(D_8009A850) / sizeof(D_8009A850[0]); work4++) {
-                    if (!(D_8009A850[work4][3] & 1) || p->unk_40 >= p->unk_50[8] - 2 || work3) {
+                    if (!(D_8009A850[work4][3] & 1) || p->unk_40 >= p->unk_50->unk_08 - 2 || work3) {
                         work2 = D_8009A850[work4][2] * 16 + work1 + p->unk_40A;
                         if ((D_800A387C < work2 &&
                              (!(D_8009A850[work4][3] & 8) || p->unk_43C < 0x100) &&

@@ -1,0 +1,1 @@
+{"func": "func_8001EFA0", "addr": "8001EFA0", "verdict": "PASS", "body_hash": "c14b6bdb8906690a", "body_kind": "c", "file": "code6cac_tu2", "reviewer": "rev-23F08-A", "scope": "cheat-cleanup", "date": "2026-10-01T23:24:55Z", "head": "c6e3f788e", "notes": "r1 paperwork FAIL fixed c6e3f788e; PASS 2026-10-01"}
