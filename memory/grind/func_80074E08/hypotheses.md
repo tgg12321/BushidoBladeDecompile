@@ -12,3 +12,7 @@
   5. Receipts exist (per-site 12/281, respellings, 35,979-iteration permuter, allocation receipt) but their dumps were in tmp/ - regenerate before citing. Fresh layer-2, `queue done`.
 - DEPENDS: independent. If f24 is retyped, re-verify func_80077724.
 - ODDS/LANE: ~1 session, ~65% [I]. Manual (header + Ruling 9 layer-2). First in the text1b_tu2 cluster.
+
+## 2026-10-01 laneB
+WARM-START steps 1-4 done (EnvA retype instead of S_80074488; f24 via DRAWENV, no game.h retype).
+Ruling 9 record in r9/receipts.md; permuter from r9/variants/nolocal.c.

@@ -1,0 +1,6 @@
+root+0x18: table @0x330, 5 entries
+   [ 0] sheet @0xCF8: 1 header(s) counts=[5] -> cells @+0xC: first {x=94,y=20,u=0,v=0,w=4,h=48}
+   [ 1] sheet @0xD2C: 1 header(s) counts=[5] -> cells @+0xC: first {x=302,y=20,u=0,v=0,w=4,h=48}
+   [ 2] sheet @0xD60: 1 header(s) counts=[1] -> cells @+0xC: first {x=89,y=10,u=0,v=0,w=8,h=10}
+   [ 3] sheet @0xD7C: 1 header(s) counts=[1] -> cells @+0xC: first {x=303,y=10,u=0,v=0,w=8,h=10}
+   [ 4] 0x0 (not a sheet)

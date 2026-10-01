@@ -31,3 +31,13 @@ verbatim in rejected/retro-audit-2026-09-29.c, src goes back to INCLUDE_ASM and 
 reopened. EnvA (text1b_tu2.c, used only here) stays declared.
 
 Reverted to INCLUDE_ASM (no jump table / rodata of its own) and reopened, 2026-09-30.
+
+## 2026-10-01 laneB — Ruling 9 route (r9/receipts.md)
+- WARM-START steps 1-2 done with EnvA retyped (`s32 header, table`, the sibling descriptors' form)
+  instead of S_80074488: every write is `cells = s.header + 0xC;` (no cast). Work-area reads moved to
+  SelWork members; `f24` read through `(DRAWENV *)` (draw-buffer evidence in r9/receipts.md), which
+  needs `#include "gpu.h"` in text1b_tu2.c. candidate.c sandbox 0 (281/281).
+- (b) census: r9/sheet_census_18.txt — root+0x18 [0..3] each 1 header, so +0xC = first cell.
+- No reuse-free spelling reaches 0: 10 respellings on the new chassis (12 / 16 / 30 / 31), r9/scores.txt.
+  Mechanism (r9/alloc_dump.txt): shared `cells` is multi-block -> global.c -> $v1; per-write values are
+  local-allocated to $v0 after the header value dies.
