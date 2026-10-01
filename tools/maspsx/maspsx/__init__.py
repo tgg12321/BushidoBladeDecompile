@@ -562,6 +562,8 @@ class MaspsxProcessor:
         self.comm_symbols: set[str] = set()
         # symbols named by `.local` (our cc1's svr4 form of an uninitialized static)
         self.local_symbols: set[str] = set()
+        # uninitialized statics (`.local` + `.comm`): emitted as local storage, never COMMON
+        self.static_symbols: set[str] = set()
         self.sdata_sym_list = sdata_sym_list or []
         self.sdata_func_set = set(sdata_func_list) if sdata_func_list else set()
         self.sdata_exclude_map = sdata_exclude_map or {}
@@ -648,12 +650,17 @@ class MaspsxProcessor:
                 symbol, size_str = var.split(",")[:2]
                 if line.startswith(".comm") and symbol in self.local_symbols:
                     # `.local sym` + `.comm` = an uninitialized static; cc1psx wrote
-                    # `.lcomm`, which ASPSX treats differently (gp at every offset).
-                    # Not modelled: fail closed, as before the three-field parse.
-                    raise ValueError(
-                        f".local+.comm {symbol} (uninitialized static) is not modelled; "
-                        "ASPSX saw .lcomm -- needs its own ruling"
-                    )
+                    # `.lcomm sym,size`. Sony ASPSX 2.34 keeps it in the file's own
+                    # .sbss when small (gp at EVERY offset) and PSYLINK allocates
+                    # each file's statics in link order (owner ruling Q65). Model it
+                    # exactly as `.lcomm`: never COMMON, a local symbol.
+                    self.static_symbols.add(symbol)
+                    size = int(size_str)
+                    if size <= self.sdata_limit:
+                        self.sbss_entries[symbol] = size
+                    else:
+                        self.bss_entries[symbol] = size
+                    continue
                 size = int(size_str)
                 if size <= self.sdata_limit:
                     self.sbss_entries[symbol] = size
@@ -760,7 +767,12 @@ class MaspsxProcessor:
                     res.append(f"\t.comm {symbol},{size}")
                     continue
 
-                if section == "sbss":
+                if symbol in self.static_symbols:
+                    # Sony ASPSX 2.34 + PSYLINK place every `.lcomm` static 4-aligned,
+                    # whatever its size (owner ruling Q79, per-file-gp-model.md A8; probe
+                    # memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.*)
+                    res.append("\t.align 2")
+                elif section == "sbss":
                     if size >= 8:
                         res.append("\t.align 3")
                     elif size >= 4:
@@ -768,8 +780,8 @@ class MaspsxProcessor:
                     elif size >= 2:
                         res.append("\t.align 1")
 
-                # only mark bss symbols as global
-                if section == "bss":
+                # only mark bss symbols as global (a static stays local)
+                if section == "bss" and symbol not in self.static_symbols:
                     res.append(
                         f"\t.globl {symbol}",
                     )

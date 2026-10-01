@@ -2,7 +2,8 @@
 model): our cc1 writes a public tentative definition as three-field `.comm sym,size,align`. maspsx parses it
 (the alignment is implicit for COMMON, as in cc1psx's two-field form); with --use-comm-section the symbol
 stays COMMON, and gp is used for its base only, never `sym+N` (the measured ASPSX 2.34 rule). An
-uninitialized static (`.local sym` + `.comm`) is NOT modelled and must fail closed."""
+uninitialized static (`.local sym` + `.comm`) is modelled as cc1psx's `.lcomm` (owner ruling Q65): file-own
+storage, never COMMON, a local symbol, gp at every offset when small (tests/test_static_lcomm.py)."""
 import unittest
 
 from maspsx import MaspsxProcessor
@@ -35,9 +36,11 @@ class TestCommGlobal(unittest.TestCase):
         self.assertIn("sb\t$4,%gp_rel(g_cd_atv)($gp)", res)
         self.assertIn("sb\t$5,g_cd_atv+1", res)
 
-    def test_local_comm_static_fails_closed(self):
-        with self.assertRaises(ValueError):
-            run([".local\tg_cd_atv", ".comm\tg_cd_atv,4,4"] + BODY, use_comm_section=True)
+    def test_local_comm_static_is_not_common(self):
+        res = run([".local\tg_cd_atv", ".comm\tg_cd_atv,4,4"] + BODY, use_comm_section=True)
+        self.assertNotIn(".comm g_cd_atv,4", res)
+        self.assertIn("g_cd_atv:", res)
+        self.assertIn("sb\t$5,%gp_rel(g_cd_atv+1)($gp)", res)  # a static takes gp at an offset
 
 
 if __name__ == "__main__":

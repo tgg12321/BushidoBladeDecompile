@@ -5075,6 +5075,27 @@ def test_maspsx_indexed_operand_not_gp() -> None:
        run("sb\t$2,sym"), ["lbu\t$2,0($4)", "nop", "sb\t$2,%gp_rel(sym)($gp)"])
 
 
+def test_maspsx_static_lcomm() -> None:
+    """Owner ruling Q65: an uninitialized static (`.local`+`.comm`, cc1psx `.lcomm`) is file-own small data
+    under -G8, gp at every offset, never COMMON; the Q62-era fail-closed error is gone."""
+    import sys
+    sys.path.insert(0, str(Path("tools/maspsx").resolve()))
+    try:
+        from maspsx import MaspsxProcessor
+    finally:
+        sys.path.pop(0)
+    lines = [".text", ".ent\tf", "lb\t$4,st", "lb\t$5,st+1", ".end\tf", ".local\tst", ".comm\tst,4,4"]
+    res = [l.split("#")[0].strip() for l in MaspsxProcessor(lines, sdata_limit=8).process_lines()]
+    eq("maspsx -G8: a static is gp at base and offset",
+       [l for l in res if l.startswith("lb")], ["lb\t$4,%gp_rel(st)($gp)", "lb\t$5,%gp_rel(st+1)($gp)"])
+    # owner ruling Q79 (A8): Sony ASPSX + PSYLINK place every `.lcomm` static 4-aligned (lcomm_align_probe)
+    lines2 = [".text", ".ent\tf", "lb\t$4,a1", "lw\t$5,b8", ".end\tf",
+              ".local\ta1", ".comm\ta1,1,1", ".local\tb8", ".comm\tb8,8,4"]
+    res2 = [l.split("#")[0].strip() for l in MaspsxProcessor(lines2, sdata_limit=8).process_lines()]
+    eq("maspsx: a 1-byte and an 8-byte static are each 4-aligned (Sony probe)",
+       [res2[res2.index("a1:") - 1], res2[res2.index("b8:") - 1]], [".align 2", ".align 2"])
+
+
 def test_maspsx_fingerprint() -> None:
     """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
     HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
@@ -5314,6 +5335,7 @@ def main() -> int:
     test_queue_rotation()
     test_queue_remeasure_source_integrity()
     test_maspsx_indexed_operand_not_gp()
+    test_maspsx_static_lcomm()
     test_maspsx_fingerprint()
     test_objdump_failure_is_loud()
     test_prologue_config_fingerprint()
