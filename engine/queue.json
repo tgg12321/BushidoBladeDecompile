@@ -4,6 +4,20 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_80057E84",
+      "file": "text1b",
+      "distance": 44,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-26T01:27:18+00:00",
+      "rotation_count": 2,
+      "unparked_from": "restore rotation: the 2026-09-25 return was the engine None->44 bounce (floor unchanged at 44/447; fixed 07e77ac51). Prior rotation stands: node ptr needs one pointer shared across both corner blocks, vtx/node named banned in Ruling 9 list; va-borrow question moot without it. See memory/grind/func_80057E84/hypotheses.md",
+      "unpark_reason": "early return - active list drained, 2026-10-01 run",
+      "returned_at": "2026-10-01T20:28:15+00:00",
+      "addr": "80057E84"
+    },
+    {
       "func": "func_8005C8A8",
       "file": "text1b",
       "distance": 752,
@@ -30,21 +44,6 @@
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
       "hand_coded_tier": "LOW",
       "addr": "80023F08"
-    },
-    {
-      "func": "func_80057E84",
-      "file": "text1b",
-      "distance": 44,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotated_at": "2026-09-26T01:27:18+00:00",
-      "rotation_count": 2,
-      "unparked_from": "flat floor 44/447 honest (2 sessions, permuter ~30min); node ptr (a1) needs one fresh pointer shared across both corner blocks (layer-2 FAIL R5/R6; no real carrier exists). Pending unruled va-borrow reaches 22. PathWalker/i/buf ruled sound. See memory/grind/func_80057E84/hypotheses.md",
-      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 44 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
-      "returned_at": "2026-09-25T22:11:51+00:00",
-      "rotation": "restore rotation: the 2026-09-25 return was the engine None->44 bounce (floor unchanged at 44/447; fixed 07e77ac51). Prior rotation stands: node ptr needs one pointer shared across both corner blocks, vtx/node named banned in Ruling 9 list; va-borrow question moot without it. See memory/grind/func_80057E84/hypotheses.md",
-      "addr": "80057E84"
     },
     {
       "func": "func_8005490C",
@@ -184,13 +183,13 @@
   ],
   "counts": {
     "total": 14,
-    "active": 2,
+    "active": 3,
     "by_status": {
-      "active": 2,
-      "rotated": 12
+      "active": 3,
+      "rotated": 11
     },
     "by_verdict": {
-      "C": 2
+      "C": 3
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
