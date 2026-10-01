@@ -1,0 +1,1 @@
+{"func": "func_8001F888", "addr": "8001F888", "verdict": "PASS", "body_hash": "44c233534eb8cf97", "body_kind": "c", "file": "code6cac_tu2", "reviewer": "rev-tables-r3", "scope": "cheat-cleanup", "date": "2026-10-01T03:57:22Z", "head": "31064e9d0", "notes": "round 3 (rev-tables-r3): PASS on the combined landing body"}
