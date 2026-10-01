@@ -1,66 +1,20 @@
 # func_80074E08 allocation dump excerpts (2026-10-01), r9/tools/dumps_all.sh on r9/variants/{reuse,pv_fn,nolocal}.c
 # cc1: tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -dl -dg -df
 
-== reuse: the four '+ 0xC' sets (.lreg)
-(insn 168 161 163 (set (reg/v:SI 78)
-(insn 195 188 190 (set (reg/v:SI 78)
-(insn 295 288 290 (set (reg/v:SI 78)
-(insn 343 336 338 (set (reg/v:SI 78)
--- lifetimes / local-alloc seats (.lreg) and global dispositions (.greg)
-Register 78 used 12 times across 12 insns; dies in 4 places; GR_REGS or none.
-Register 79 used 7 times across 56 insns; crosses 3 calls; 2 bytes; GR_REGS or none.
-Register 80 used 2 times across 4 insns in block 0; 1 bytes; GR_REGS or none.
-;; Register 80 in 2.
-Register 81 used 2 times across 4 insns in block 0; 1 bytes; GR_REGS or none.
-;; Register 81 in 2.
-Register 122 used 4 times across 6 insns in block 3; GR_REGS or none.
-;; Register 122 in 2.
-Register 146 used 2 times across 4 insns in block 6; GR_REGS or none.
-;; Register 146 in 2.
-78 in 3 79 in 17 80 in 2 81 in 2 
-;; 10 regs to allocate: 115 78 75 72 77 79 76 73 74 86
+== reuse: the four '+ 0xC' sets
+   insn 173: pseudo 79, global 3 | Register 79 used 12 times across 12 insns; dies in 4 places; GR_REGS or none.
+   insn 200: pseudo 79, global 3 | Register 79 used 12 times across 12 insns; dies in 4 places; GR_REGS or none.
+   insn 300: pseudo 79, global 3 | Register 79 used 12 times across 12 insns; dies in 4 places; GR_REGS or none.
+   insn 348: pseudo 79, global 3 | Register 79 used 12 times across 12 insns; dies in 4 places; GR_REGS or none.
 
-== pv_fn: the four '+ 0xC' sets (.lreg)
-(insn 168 163 171 (set (reg/v:SI 78)
-(insn 195 190 198 (set (reg/v:SI 79)
-(insn 295 290 298 (set (reg/v:SI 80)
-(insn 343 338 346 (set (reg/v:SI 81)
--- lifetimes / local-alloc seats (.lreg) and global dispositions (.greg)
-Register 78 used 4 times across 2 insns in block 3; GR_REGS or none.
-;; Register 78 in 2.
-Register 79 used 4 times across 2 insns in block 3; GR_REGS or none.
-;; Register 79 in 2.
-Register 80 used 2 times across 2 insns in block 4; GR_REGS or none.
-;; Register 80 in 2.
-Register 81 used 2 times across 2 insns in block 7; GR_REGS or none.
-;; Register 81 in 2.
-Register 117 used 4 times across 2 insns in block 3; GR_REGS or none.
-;; Register 117 in 2.
-Register 146 used 3 times across 3 insns in block 4; GR_REGS or none.
-;; Register 146 in 2.
-78 in 2 79 in 2 80 in 2 81 in 2 
-;; 9 regs to allocate: 118 75 72 77 82 76 73 74 89
+== pv_fn: the four '+ 0xC' sets
+   insn 173: pseudo 79, local-alloc 2 | Register 79 used 4 times across 2 insns in block 3; GR_REGS or none.
+   insn 200: pseudo 80, local-alloc 2 | Register 80 used 4 times across 2 insns in block 3; GR_REGS or none.
+   insn 300: pseudo 81, local-alloc 2 | Register 81 used 2 times across 2 insns in block 4; GR_REGS or none.
+   insn 348: pseudo 82, local-alloc 2 | Register 82 used 2 times across 2 insns in block 7; GR_REGS or none.
 
-== nolocal: the four '+ 0xC' sets (.lreg)
-(insn 168 163 170 (set (reg:SI 117)
-(insn 194 189 196 (set (reg:SI 122)
-(insn 293 288 295 (set (reg:SI 146)
-(insn 340 335 342 (set (reg:SI 153)
--- lifetimes / local-alloc seats (.lreg) and global dispositions (.greg)
-Register 78 used 7 times across 56 insns; crosses 3 calls; 2 bytes; GR_REGS or none.
-Register 79 used 2 times across 4 insns in block 0; 1 bytes; GR_REGS or none.
-;; Register 79 in 2.
-Register 80 used 2 times across 4 insns in block 0; 1 bytes; GR_REGS or none.
-;; Register 80 in 2.
-Register 81 used 2 times across 4 insns in block 0; 1 bytes; GR_REGS or none.
-;; Register 81 in 2.
-Register 117 used 4 times across 2 insns in block 3; GR_REGS or none.
-;; Register 117 in 2.
-Register 122 used 4 times across 2 insns in block 3; GR_REGS or none.
-;; Register 122 in 2.
-Register 146 used 2 times across 2 insns in block 4; GR_REGS or none.
-;; Register 146 in 2.
-Register 153 used 2 times across 2 insns in block 7; GR_REGS or none.
-;; Register 153 in 2.
-78 in 17 79 in 2 80 in 2 81 in 2 
-;; 9 regs to allocate: 114 75 72 77 78 76 73 74 85
+== nolocal: the four '+ 0xC' sets
+   insn 173: pseudo 118, local-alloc 2 | Register 118 used 4 times across 2 insns in block 3; GR_REGS or none.
+   insn 199: pseudo 123, local-alloc 2 | Register 123 used 4 times across 2 insns in block 3; GR_REGS or none.
+   insn 298: pseudo 147, local-alloc 2 | Register 147 used 2 times across 2 insns in block 4; GR_REGS or none.
+   insn 345: pseudo 154, local-alloc 2 | Register 154 used 2 times across 2 insns in block 7; GR_REGS or none.

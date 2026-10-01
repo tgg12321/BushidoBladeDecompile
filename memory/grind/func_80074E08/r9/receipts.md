@@ -59,9 +59,9 @@ noted); r9/scores.txt.
 | per-write locals computed from the record (pv_fn_from_rec.c) | 12 |
 | 2026-09-30 ff-c set on the old chassis (ff-c-2026-09-30/v1-v5) | 12 each |
 
-Allocation dump (r9/alloc_dump.txt, r9/tools/dumps_all.sh): in the reuse body `cells` is one pseudo
-(78) set in four blocks, `dies in 4 places`, so local-alloc leaves it to global.c, which seats it in $v1
-(`78 in 3`) beside the header value in $v0 — the target's `addiu $v1,$v0,0xC`. In every one-local-per-
+Allocation dump (r9/alloc_dump.txt, r9/tools/dumps_all.sh + r9/tools/alloc_excerpt.py): in the reuse body `cells` is one pseudo
+(79) set in four blocks, `dies in 4 places`, so local-alloc leaves it to global.c, which seats it in $v1
+(global 3) beside the header value in $v0 — the target's `addiu $v1,$v0,0xC`. In every one-local-per-
 write spelling each value is a single-block, single-death pseudo (`used 4 times across 2 insns in block
 3`), local-alloc seats it in $v0 after the header value dies, and the add moves after the header
 store: the 12 instructions of the residual.
@@ -75,3 +75,7 @@ the +0xC value through a variable that is live across blocks again: 615 (output-
 for it, 625 borrows `ot_idx` (`s.table = ot_idx = s.header + 0xC`), 638 adds one `new_var2` that
 stores records[2]'s value at a later site too (a different computation), 640 borrows `ot_idx` for the
 header. Kept finds: r9/perm_finds/. No find reaches the target.
+
+Landing chassis: after rev-74E08 the body gained the Ruling 11 `work` (r11/proof.md); r9/variants were
+regenerated from it and re-measured (r9/scores.txt, same scores) and the dump re-taken. The permuter
+campaign above ran on the earlier chassis (same `cells` sites and residual).

@@ -21,6 +21,11 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     s32 *records;
     s32 prim;
     s32 ot_idx;
+    /* work holds two values (Ruling 11, owner 2026-09-26; the first under its
+       Q20 per-branch-constant clause): the backdrop TILE's OT index (0xE for
+       player 1, 4 for player 0), then ot_idx * 4, the OT byte offset the last
+       three AddPrim calls add. Proof: memory/grind/func_80074E08/r11/proof.md. */
+    s32 work;
     s32 rect_x;
     s32 cells3;
     s32 cells2;
@@ -38,11 +43,12 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     *(s16 *)(prim + 0xA) = 0x14;
     *(s16 *)(prim + 0xC) = 0xCC;
     *(s16 *)(prim + 0xE) = 0xC8;
-    ot_idx = 4;
     if (arg1 != 0) {
-        ot_idx = 0xE;
+        work = 0xE;
+    } else {
+        work = 4;
     }
-    AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, prim);
+    AddPrim(g_gpu_ot_ptr + work * 4 + 0x24, prim);
     prim += 0x10;
     arg0[5] = prim;
 
@@ -113,19 +119,20 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     rect[2] = ((DRAWENV *)SELWORK->f24)->clip.w;
     rect[3] = ((DRAWENV *)SELWORK->f24)->clip.h;
     SetDrawArea(arg0[7], rect);
-    AddPrim(g_gpu_ot_ptr + ot_idx * 4, arg0[7]);
+    work = ot_idx * 4;
+    AddPrim(g_gpu_ot_ptr + work, arg0[7]);
     arg0[7] += 0xC;
 
     offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
     offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1]
               - SELWORK->f08[arg1];
     SetDrawOffset(arg0[8], offset);
-    AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, arg0[8]);
+    AddPrim(g_gpu_ot_ptr + work + 0x24, arg0[8]);
     arg0[8] += 0xC;
 
     offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
     offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1];
     SetDrawOffset(arg0[8], offset);
-    AddPrim(g_gpu_ot_ptr + ot_idx * 4, arg0[8]);
+    AddPrim(g_gpu_ot_ptr + work, arg0[8]);
     arg0[8] += 0xC;
 }

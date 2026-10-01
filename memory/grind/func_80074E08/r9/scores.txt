@@ -1,4 +1,4 @@
-# sandbox func_80074E08 --disable all --candidate <file> on main, 2026-10-01 (re-measured after the (u16) value casts were dropped; unchanged)
+# sandbox func_80074E08 --disable all --candidate <file> on main, 2026-10-01; variants regenerated from the Ruling 11 landing body (work), unchanged from the earlier chassis
 r9/variants/reuse.c score    0   insns 281/281
 r9/variants/pv_fn.c score   12   insns 281/281
 r9/variants/pv_fn_rev.c score   12   insns 281/281
