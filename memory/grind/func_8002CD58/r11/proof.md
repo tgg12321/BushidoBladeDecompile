@@ -108,8 +108,15 @@ shape at function scope).
 
 ## (D)(4) Permuter
 
-See the campaign record appended below (from r11/variants/pv_both.c's equivalent body, workspace
-built by r11/tools/mkperm.sh, launched by r11/tools/camp.sh, -j2, --stack-diffs).
+Campaign `cd58-pv-both` (laneB, 2026-10-01T07:34:18Z): workspace built by r11/tools/mkperm.sh from the
+full per-value body (preprocessed workspace copy r11/perm_finds/base.c; the pre-rename text of r11/variants/pv_both.c: `len`/`dist`/`nxz_dist`, `nxz_sq` +
+`tbl`; identifiers only differ, same sandbox score 9), launched by r11/tools/camp.sh, -j2, --stack-diffs,
+--stop-on-zero. The workspace's base.o reproduces the sandbox residual exactly (9 instructions: value 1
+of `len` in $v0, the squared length in $a1). Stopped after 1,372 s, 14,455 iterations, base 45
+(permuter scale), best 30. Finds (r11/perm_finds/): 30 (output-30-1) reads obj+0xD0 into a `new_var2` BEFORE the in-place
+`>>= 6` and multiplies the unshifted value, a different computation; 45 (output-45-1, = base) adds a
+`new_var` pointer alias and splits the `len` write in two. No find reaches the target, and none moves
+either seat.
 
 ## Q30 set-aside
 No spelling is set aside: no measured spelling carries a FAKE-annotated construct, and the body
