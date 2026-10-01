@@ -13,7 +13,12 @@ retro-audit standard), so every body a landing touches must come out with no rec
 
 ## Status
 
-- **L1 — ready, not yet landed** (waiting for laneH to release the landing lock; `tmp/prc/land_all.sh`, 13 bodies 0 in scratch on both bases).
+- **L1 — ready, NOT landed: the owner chose to bank it at the 2026-09-30 close-out.** Measured 2026-09-30 in
+  scratch only (13 bodies 0 against build/, on HEAD 89432dd97 and on main + laneH's then-staged table landing).
+  It has never been spliced into main, rebuilt, reviewed or committed; the round-1 layer-2 FAIL (rev-21424,
+  recorded in each function's layer2.jsonl) is the last verdict on file. Re-verify everything on the then-current
+  main before landing — laneH's combined table landing was committing at close-out and edits the same header
+  (Rec44 h30[2][4], PracticeMenuRec u16 unk_6A, D_80101FBC/FC4/2408/2410 externs) and code6cac_tu2.c.
 - **L2 — banked, not landed** (owner directive 2026-09-30: lanes closing). Measured 0 in scratch on both HEAD and
   the tree with laneH's Rec44 / unk_6A edits.
 - **L3, L4 and the follow-ups — not started.**
@@ -56,6 +61,35 @@ D_801027D4 / D_800A3864).
 |---|---|---|---|
 | baseline, main efa946124 | 102 / 33 / 26 | 38 / 25 | 85 |
 | main + laneH's staged table landing (pre-L1) | 80 / 29 / 21 | 35 / 22 | 81 |
+
+## Landing L1 cold (exact steps)
+
+1. `bash memory/grind/func_80021424/handoff/restore_tmp.sh` (puts land.py / land2.py / land3.py and their probe
+   bodies in tmp/func_80021424/, land_l1.py / land_all.sh / harness.py / census_all.py / the r3 bodies in tmp/prc/).
+2. Check the anchors still hold on current main, without the lock: `bash tmp/prc/test_on_current.sh` (runs the
+   chain on a scratch copy of main's working tree). Every `sub1` / body-span assertion must pass. If one fails,
+   look at what changed in that function or header line since 2026-09-30:
+   - `land.py` asserts each body it replaces equals its `tmp/func_80021424/<func>.base.c` (main at 2026-09-30).
+     If a body changed, re-extract it (`python3 tmp/func_80021424/extract.py <stem> <func> <out>`) and re-derive
+     that body's respell from the new text — never overwrite another landing's edit.
+   - `land_l1.py` accepts the PracticeMenuRec unk_60 region with or without laneH's `u16 unk_6A`; any other
+     header drift needs a new anchor.
+3. Score the scratch result against build/ (WSL, venv): `python3 tmp/prc/harness.py tmp/prc/cur func_80021424
+   func_80020D70 func_80021210 func_800213A0 func_800218C8 func_80021904 func_80021974 func_800219E4 func_80021A3C
+   func_80021A98 func_80022F34 func_8001FBE8 func_8003CF84` — all 0. (Validate the harness first on an unmodified
+   copy: it must print 0.)
+4. Take the landing lock; run `bash tmp/prc/land_all.sh` on main (no L1_ROOT); `pwsh tmp/orch/lock.ps1 rebuild
+   <lane>` — SHA1 must be 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+5. `& tools/wteng.ps1 main sandbox <func> --disable all --diff` for all 13 — 0, no source-level / operand-only
+   hunks. Ruling 6 receipt for func_8001FBE8: the per-region split (tmp/prc/func_8001FBE8.split.c applied the
+   same way) must still score 14.
+6. `python3 tmp/prc/census_all.py` — record the new row below.
+7. Stage only your hunks (`git diff -- include/code6cac.h src/code6cac_tu2.c src/code6cac_c2.c
+   undefined_syms_auto.txt > tmp/func_80021424/mine.patch`, `git apply --cached` it), write the message from
+   `tmp/func_80021424/msg_l1.txt` (update the Layer-2 line: round 1 FAIL rev-21424, round 2 pending), run
+   `tools/reviewer_precheck.py`, `layer2 hash` for all 13, and send it to a fresh layer-2.
+8. On PASS: `layer2 record` each of the 13 (scope cheat-cleanup), commit src + the 13 layer2.jsonl by pathspec under
+   the reintegration lock, update this file.
 
 ## How to land a step
 
