@@ -45,3 +45,11 @@ variants re-measured in the real sandbox (41/41/41/6). `d0` inlined into the det
 the identical construct in func_8002F2D0).
 - Permuter (laneA, landing per-value body, fresh seed): 14,717 iterations, best 150; low finds re-create a
   determinant-plus-second-value variable or split the determinant into two writes (r11/proof.md).
+
+## 2026-10-01 — LANDED (laneA): COMPLETED-INLINE-ASM-CANONICAL
+Layer-2 cheat-reviewer rev-2f770, round 1, fresh PASS on body_hash 3ff7585413cb36e4 (= candidate.c @ 5f9e5c870;
+layer2.jsonl). The reviewer re-ran the dumps on this body; Ruling 11 work/temp, d0/i0/i1, the matrix cast against
+the file's RotMatrixX prototype, islands, Q61 word, REOPENED objections and citations all pass.
+Commits: auth 67baf0168, Match f8e2bb3ee, queue 2e5b79340; check_completion_integrity OK.
+Optional tidy-up (reviewer note, NOT done: byte-neutral, not a cheat, would cost a review round): the
+`init_scr` local could be collapsed into the later `scr` view of the same scratchpad base.
