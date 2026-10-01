@@ -38,7 +38,7 @@ s32 func_80056FE8(PracticeMenuRec *arg0) {
      * (`;; 4 regs to allocate: 82 73 77 72` -> `73 in 5  77 in 6`);
      * lever-exhaustion: see the ladder in this function's preamble comment and
      * ffd7fef75^:memory/grind/func_80056FE8/hypotheses.md s1-s7b. */
-    if (a2->unk_A3 != 0xFF) {
+    if (a2->unk_A3[0] != 0xFF) {
         if (arg0->unk_5E == 0) {
             /* FAKE: duplicated copy (see above) */
             base += D_8009A830[a2->unk_0E] * 2;

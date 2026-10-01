@@ -9,7 +9,8 @@ Q74 / Q75 / Q76 (rules commit 30a3e2d2d).
 
 Data model (one landing; every other include/code6cac.h consumer byte-identical, full-build SHA1 above):
 - include/code6cac.h PracticeMenuRec: filler ranges split into the members this function, func_80055138,
-  func_80056FE8 and func_80055B44 read: unk_50 / unk_58 `u8 *`, u16 unk_6C, s16 unk_86, unk_A3, unk_AF,
+  func_80056FE8 and func_80055B44 read: unk_50 / unk_58 `u8 *`, u16 unk_6C, s16 unk_86, u8 unk_A1[2] / unk_A3[2] (two start/end byte pairs read with a runtime 0/1
+  index by func_8002AB08 / func_80029454; this landing reads unk_A3[0]), unk_AF,
   s16 unk_26C..unk_272, and 0x362..0x44B (unk_362 waypoint count, `CpuWaypoint unk_364[8]` {s16 x, z;
   u8 kind, unk5} as func_800571C0 writes them, s32 unk_394, s16 unk_398/39A, `u16 *unk_3A4` (script
   list: u16 byte offsets from its own start), `u16 *unk_3A8[3]` (per-row cursors), `u8 *unk_3B4`,
@@ -38,7 +39,7 @@ Bodies changed in this landing (cheat-cleanup scope for the three completed ones
   *cursor` (offsets are bytes from the list start); width casts on `% 5`, `/ 10`, `% 10` removed;
   `idx < sizeof(p->unk_444)` for the 8U bound. Its Ruling 11 `temp` / `idx` and staged-value FAKE text
   are unchanged.
-- func_80056FE8: `PracticeMenuRec *arg0`, members (unk_00, unk_58[3], unk_A3, unk_5E, unk_0E, unk_14,
+- func_80056FE8: `PracticeMenuRec *arg0`, members (unk_00, unk_58[3], unk_A3[0], unk_5E, unk_0E, unk_14,
   unk_40A); reads `D_8009A830[i]` / `D_8009A838[i]` / `D_8009A840[i]`; its duplicated-statement-into-arms
   FAKE now cites ffd7fef75^:memory/grind/func_80056FE8/hypotheses.md.
 - func_80055B44: `(PracticeMenuRec *a0, u8 *a1, s32 a2, s32 a3)`, member stores (its only caller is
