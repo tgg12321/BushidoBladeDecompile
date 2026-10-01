@@ -7,8 +7,7 @@ typedef struct VcCtrl {
 } VcCtrl;
 
 /* Adds delta to every record's non-null pointer (the block it points into moved by delta). */
-void save_vc_ctrl(s32 delta, s16 *recs, s32 n) {
-    VcCtrl *rec = (VcCtrl *)recs;
+void save_vc_ctrl(s32 delta, VcCtrl *rec, s32 n) {
     s32 i;
 
     for (i = n - 1; i != -1; i--) {
