@@ -110,3 +110,26 @@
   something between that arm and L937 that reorg later removed. Tried (all 30 at the time, or worse): else
   `lim = sum` on the 0x200 test (l1), ternary chain (l2), final else (l3), sb/ob locals with both elses (l5/l8
   52-57), goto-shared sum (l7/l9 51-57).
+- [s5] 14 -> 13: lim chain: `if (wtype == 1) { work1 = p[0x44A]; if (!(0x800) || 387C < 4000) {chain} else
+  { lim = 2000; } } else { lim = 2000; }` (no `lim = 2000` before the if). Mechanism (target 818/935): the
+  outer else block `li s5,2000` sits between the then-block's last arm (`lim = ob; j L937`) and L937; reorg
+  steals it into the `bne s2,v0` delay slot and redirects the bne past it, leaving the then-block's `j`
+  (retargeted to L938, skipping the redundant `li v0,1`). Inner-else only / outer-else only: 14 / 16.
+- [s5] 13 -> 7: the two `0x200 - (lv >> 4)` sites are `0x200 - ((CPU_S16(0x438) * 0x100) >> 12)` (the
+  function's own 4.12 fixed-point idiom, cf. `(CPU_S16(0x438) * work3) >> 12`). Mechanism: with `>> 4`, cse.c
+  fold_rtx's associative-shift fold merges the extendhisi2 pair's `ashiftrt 16` with `>> 4` into `ashiftrt
+  20` (lhu/sll/sra 20); `* 0x100 >> 12` leaves (ashiftrt (ashift R 8) 12) (different codes, no fold), and
+  combine turns lh-pair + ashift 8 + ashiftrt 12 into `lh; sra 4`. Isolated test (tmp/func_80058580/t/g.c):
+  `(x << 12) >> 16`, `(x * 0x1000) >> 16`, `(x << 8) >> 12`, `(x * 2) >> 5`, `(x << 4) >> 8` all give lh/sra 4;
+  plain `>> 4`, `/ 16`, s16/s32 temps, inline fns, bitfields all fold.
+- [s5] 7 -> 6 (only the 3 jtbl sandbox artifacts left): `q = ep;` (target `move a2,s6`) with the et
+  definition wrapped `do { et = e[0] & 7; } while (0);` (FAKE, do-while-zero-exception). Mechanism (global.c
+  allocno_compare, BB2_ALLOC_DEBUG): q = ep raises ep's weighted refs 14 -> 16 (floor_log2 4), ep pri 2147 >
+  et 1951, so ep took s5; the loop note around et's definition weights that ref 3 instead of 2 (et nrefs 9,
+  pri 2177 > 2147) and et is allocated first (et s5, ep s6 as in the target). Same effect wrapping `work5 =
+  et;` (dw4, 6). Natural-geometry attempts that left the order unchanged (ALLOCDBG identical): 8 respellings
+  of the ep-only region (s8 compare casts, mask test, mask assembly with +, bit test form, 0x80 test, work1/hi
+  order, %10 test, inner loop as for), `st` folded, `et < 5 ? 100000 : 0`; et types u16 17, s8 18, u8 25, s32
+  47; `et = e[0]; et &= 7;` flips the order but loses `andi 0xff` (16); `ep = q + 5` flips it but gives
+  `addiu s6,a2,5` (13). A wider wrap (et def .. end of the et tests) flips it but breaks elsewhere (67).
+  Permuter (whole loop body randomized, 9 min, 2860 iterations, tmp only): only a junk find (`far =` store).

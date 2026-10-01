@@ -296,7 +296,6 @@ s32 func_80058580(u8 *p) {
             if (!(CPU_U16(0x3E8) & 7)) {
                 CPU_S32(0x434) = func_80057ACC((s32)p, pois, tx, ty2);
             }
-            lim = 2000;
             if (wtype == 1) {
                 work1 = p[0x44A];
                 if (!(CPU_S32(0x430) & 0x800) || D_800A387C < 4000) {
@@ -327,7 +326,11 @@ s32 func_80058580(u8 *p) {
                             }
                         }
                     }
+                } else {
+                    lim = 2000;
                 }
+            } else {
+                lim = 2000;
             }
             if (wtype == 1) {
                 if (p[0x362] < 2 && (CPU_S32(0x434) != 100000 || D_800A387C >= lim)) {
@@ -705,7 +708,7 @@ s32 func_80058580(u8 *p) {
                         ep = off + *(u8 **)(p + 0x3A4);
                         e = ep;
                         ep += 4;
-                        q = e + 4;
+                        q = ep;
                         if (CPU_FLAGS & 0xFF00) {
                             switch (D_800A38DC) {
                             case 3:
@@ -768,7 +771,9 @@ s32 func_80058580(u8 *p) {
                         }
                         work1 = e[1] * 40;
                         hi = e[2] * 40;
-                        et = e[0] & 7;
+                        do {
+                            et = e[0] & 7;
+                        } while (0);
                         work3 = 0;
                         if (et == 0) {
                             if (work1 < D_800A387C && D_800A387C < hi) {
@@ -796,7 +801,7 @@ s32 func_80058580(u8 *p) {
                                     }
                                 }
                             } else if (work1 < D_800A387C && D_800A387C < hi &&
-                                       CPU_S16(0x43C) < 0x200 - (CPU_S16(0x438) >> 4) &&
+                                       CPU_S16(0x43C) < 0x200 - ((CPU_S16(0x438) * 0x100) >> 12) &&
                                        (CPU_S32(0x430) & 0x280) != 0x280) {
                                 switch (work5) {
                                 case 5:
@@ -845,7 +850,7 @@ s32 func_80058580(u8 *p) {
                     }
                 }
             } else if (st == 0x15 && CPU_S16(0x26C) != 0 && p[0x440] != 4 &&
-                       CPU_S16(0x43C) < 0x200 - (CPU_S16(0x438) >> 4) &&
+                       CPU_S16(0x43C) < 0x200 - ((CPU_S16(0x438) * 0x100) >> 12) &&
                        !(D_800A38DC == 2 || D_800A38DC == 3)) {
                 work3 = 0;
                 if ((rand() & 0xFF) < (D_80099D88[p[0x443]].script_weight[5] >> 2) && ((0x78 >> p[0xB1]) & 1) && p[0x442] == 0 &&
