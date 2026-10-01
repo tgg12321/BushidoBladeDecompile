@@ -27,3 +27,29 @@
 - [s1] Entry gate: `if (arg0 == 1 && D_800A38AE == s6) continue;` (skip that player); arg0==1 also takes the early-return fast path after the min-distance scan (func_800274BC + func_80032854(s6,4,minSlotVec,&D_800A37E8); return). Callsites: calc_loc_mat_fw(1) at code6cac_b.c:898, calc_loc_mat_fw(0) at :1045.
 
 - [s1] Ledger did not exist (this init); no WIP checkpoint; regfix.txt has zero rules for this function.
+
+## s2 (2026-10-01, laneC) — full draft 1110 -> 0 (sandbox); landing blocked on data model + Ruling 11 paperwork
+
+candidate.c scores 0 (engine sandbox --disable all, 1112/1112). Receipts: probes/s2/scores.txt (floor trail,
+necessity splits), probes/s2/*.c. Mechanisms found (each measured):
+- Pass-loop point copies: the target selects the SPAD base by a branch (`bnez s6; lui; ori 0x24`) and THEN adds
+  index*12. Any `cond ? A : B` inside an address is distributed by fold-const (fold-const.c:3275-3330) into
+  per-arm sums; only a call boundary keeps the select whole -> `static inline copy_pt(dst, pts, n)` (563).
+  Region B/C and the knockback use real ARRAY_REF `SPAD->unk00[i == 0][k]` (sltiu/negu/andi index).
+- `hit & (1 << j)` tests: fold-const.c:4437-4467 rewrites `(A & (1 << B)) != 0` to `(A >> B) & 1` unless the
+  shift is under a conversion; u32 bitmask locals give the target's sllv/and with a loop-hoisted `1`.
+- Reused locals (target register/slot evidence: dx/dz in s0/s1 across midpoint length, 22-hit deltas and the
+  knockback; j=s4 for min/max, 22-hit counter and side flag; k=s5 segment counter and best index; a/b slots
+  0x50/0x58 for indices and knockback distances; alt=fp; w=a1). Every split loses (scores.txt).
+- Record reads must be struct members: with `*(T *)(other + K)` sched cannot move the +0x96 load above the
+  hit/deep stack stores (no MEM_IN_STRUCT_P disambiguation); with member reads it can (init perms).
+- `&D_800A37E8` passed at three call sites is rematerialized per site in the target (lui/addiu into a1/a3):
+  only a function-wide pointer local (REG_EQUIV, never allocated) does that; the direct form is cse'd into a
+  callee-saved pseudo (pointer-alias FAKE family; exhaustion still owed).
+- strong: `if (D_800A3140 == 0) strong = deep & bit; else strong = 1;` (assigning 1 first lets cse reuse it as
+  the shift base). Midpoint stores precede the segment deltas. Angle: `ratan2(..) + 0x800 - yaw`.
+Open before READY_FOR_REVIEW: (1) PracticeMenuRec members for +0x8C/+0x92/+0x26C (s16), +0x114 as Vec4i32[2],
+u16 views of +0xE/+0x6A (candidate uses a TU-local view R8002AB08 as a stand-in); (2) Ruling 11 packages for
+dx/dy/dz, a/b, k, j, alt, w; (3) pointer-alias exhaustion for vec; (4) copy_pt justification; (5) the
+`(Tbl8008E194 *)alt` 6th argument to func_80027AD8 (the target passes the 0/1 flag where the TU prototype
+types a record pointer) and the `(s32 *)&hit` casts.

@@ -11,3 +11,6 @@
   4. `sandbox --diff`, fix region by region; state.json hypotheses cover the cross-jump ladder and the midpoint `/2` expressions.
 - DEPENDS: after func_8002C22C (header members), func_800288C8 (field spellings), func_8002CD58 (prototype). D_80101EC8 alias row shared with func_80023F08 and func_80055B60.
 - ODDS/LANE: 3-6 sessions, ~45% to 0 [I]. Grinder-suited (pure C, long ladder) but Grinder restart needs owner approval; otherwise manual.
+
+## s2 (2026-10-01, laneC): CONFIRMED byte-exact body (sandbox 0) = candidate.c; see evidence.md s2. Frontier is
+landing admissibility: data model (PracticeMenuRec), Ruling 11 packages, vec alias, copy_pt, casts.
