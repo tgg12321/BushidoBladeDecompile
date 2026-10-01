@@ -2412,6 +2412,37 @@ def test_include_asm_whole_body() -> None:
        [f for f, _s, _e in inlineasm.include_asm_spans(bios)], ["DeliverEvent"])
     check("include_asm: BIOS trampoline named in whole_body_asm_funcs",
           "DeliverEvent" in inlineasm.whole_body_asm_funcs(bios))
+    eq("include_asm: direct BIOS_FUNCTION(name, vector, id) recognised",
+       [f for f, _s, _e in inlineasm.include_asm_spans('BIOS_FUNCTION(Exec, 0xA0, 0x43);\n')], ["Exec"])
+    eq("include_asm: a non-numeric BIOS id is NOT recognised (could inject asm)",
+       inlineasm.include_asm_spans('BIOS_B_FUNCTION(f, 0x1; jr $ra);\n'), [])
+    eq("include_asm: BIOS_FUNCTION with a non-vector address is NOT recognised",
+       inlineasm.include_asm_spans('BIOS_FUNCTION(f, 0x80, 0x1);\n'), [])
+    for inj in ('BIOS_B_FUNCTION(bar, 0x1; .word 0x1);',
+                'BIOS_FUNCTION(bar, 0x80, 0x1);',
+                'BIOS_FUNCTION(bar, 0xB0, 0x1; nop);',
+                'BIOS_B_FUNCTION(bar, 0x7);'):
+        body = "void foo(void) {\n    " + inj + "\n}\n"
+        check(f"bios: in-body invocation counted as a cheat ({inj})",
+              inlineasm.func_cheat_asm_count(body, "foo") >= 1)
+        out, _n = inlineasm.strip_cheat_asm_file(body)
+        check(f"bios: in-body invocation stripped from the sandbox ({inj})",
+              "FUNCTION" not in out)
+    ind = "void foo(void) {\n    BIOS_B_FUNCTION(bar, 0x7);\n    x = 1;\n}\nvoid baz(void) {\n    y = 2;\n}\n"
+    out, _n = inlineasm.strip_cheat_asm_file(ind)
+    check("bios: stripping an indented in-body invocation keeps the following code intact",
+          "    x = 1;\n}\nvoid baz(void) {\n    y = 2;\n}\n" in out and "BIOS" not in out)
+    trail = "BIOS_B_FUNCTION(bar, 0x7);   \nint baz(void) {\n    return 2;\n}\n"
+    out, _n = inlineasm.strip_cheat_asm_file(trail)
+    check("bios: stripping a file-scope invocation with trailing blanks keeps the next function",
+          "int baz(void) {\n    return 2;\n}\n" in out and "BIOS" not in out)
+    evil = ("#define EVIL(x) BIOS_B_FUNCTION(x, 0x1; .word 1)\n"
+            "void foo(void) {\n    EVIL(bar);\n}\n")
+    check("bios: a local #define wrapping a BIOS macro counts at its use site",
+          inlineasm.func_cheat_asm_count(evil, "foo") >= 1)
+    loose = 'BIOS_B_FUNCTION(bar, 0x1; .word 0x1);\n'
+    eq("bios: a loose file-scope invocation attributes nothing (stays UNKNOWN)",
+       inlineasm.func_cheat_asm_count(loose, "bar"), -1)
     check("include_asm: a #define of the BIOS macro is not an invocation",
           inlineasm.include_asm_spans('#define BIOS_B_FUNCTION(name, id) BIOS_FUNCTION(name, 0xB0, id)\n') == [])
     check("include_asm: a #define of the macro is not an invocation",

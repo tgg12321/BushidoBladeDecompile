@@ -153,7 +153,7 @@ def _asm_pieces(text: str, func: str, read=_disk) -> list[str]:
         inc = Path(folder) / f"{func}.s"
         pieces.append(read(inc.as_posix()) or f"<missing {inc.as_posix()}>")
     for m in inlineasm._BIOS_MACRO_RE.finditer(text):
-        if m.group(1) == func:
+        if (m.group(1) or m.group(2)) == func:
             pieces.append(m.group(0))  # the macro line IS the whole body
     glabel = re.compile(r"\bglabel\s+" + re.escape(func) + r"\b")
     include = re.compile(r'\.include\s+\\?"([^"\\]*?/' + re.escape(func) + r'\.s)\\?"')

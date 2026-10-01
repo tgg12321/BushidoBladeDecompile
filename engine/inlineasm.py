@@ -68,8 +68,49 @@ _INCLUDE_ASM_MACRO_RE = re.compile(
 # BIOS_[ABC]_FUNCTION(name, id) (include/bios.h): the BIOS vector trampoline
 # macro. Same fact as an INCLUDE_ASM line -- a whole-body canonical asm function
 # supplied without C -- so include_asm_spans reports it alongside INCLUDE_ASM.
+# The id (and the direct BIOS_FUNCTION form's vector) must be a plain numeric
+# literal: the macro stringifies them into asm text, so anything else could
+# smuggle extra instructions (layer-2 hardening note, 2026-10-01).
 _BIOS_MACRO_RE = re.compile(
-    r'(?m)^[ \t]*BIOS_[ABC]_FUNCTION\s*\(\s*([A-Za-z_]\w*)\s*,[^()\n]*\)\s*;?[ \t]*')
+    r'(?m)^[ \t]*BIOS_(?:[ABC]_FUNCTION\s*\(\s*([A-Za-z_]\w*)\s*,'
+    r'|FUNCTION\s*\(\s*([A-Za-z_]\w*)\s*,\s*0[xX][ABCabc]0\s*,)'
+    r'\s*(?:0[xX][0-9A-Fa-f]+|[0-9]+)\s*\)\s*;?[ \t]*')
+# DETECTION (fail closed): ANY invocation of the BIOS trampoline macros, any
+# argument text, anywhere -- the macros expand to __asm__ the unexpanded-text
+# scanners cannot see. Every match is a strip span (counted, removed from the
+# sandbox source); only the strict _BIOS_MACRO_RE above ACCEPTS an invocation
+# as a function's whole-body asm.
+_BIOS_ANY_RE = re.compile(r'\bBIOS_(?:[ABC]_)?FUNCTION\s*\(')
+
+
+def bios_macro_spans(text: str) -> list[tuple[int, int]]:
+    """(start, end) of every BIOS_[ABC]_FUNCTION / BIOS_FUNCTION invocation in
+    code (comments and strings ignored), through the balanced `)` and an
+    optional `;`. An unbalanced invocation spans to end of text (fail closed)."""
+    code = _code_without_comments_and_strings(text)
+    out = []
+    for m in _BIOS_ANY_RE.finditer(code):
+        line_start = code.rfind('\n', 0, m.start()) + 1
+        if code[line_start:m.start()].lstrip().startswith(('#', '%:')):
+            continue  # a macro definition, not an invocation
+        depth, i = 0, m.end() - 1
+        while i < len(code):
+            if code[i] == '(':
+                depth += 1
+            elif code[i] == ')':
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        end = min(i + 1, len(text))
+        while end < len(text) and text[end] in ' \t':
+            end += 1
+        if end < len(text) and text[end] == ';':
+            end += 1
+        out.append((m.start(), end))
+    return out
+
+
 _INCLUDE_DIRECTIVE_RE = re.compile(r'\.include\s+\\?"[^"\\]*?/([A-Za-z_]\w*)\.s\\?"')
 _GLABEL_NAME_RE = re.compile(r'\bglabel\s+([A-Za-z_]\w*)')
 
@@ -84,7 +125,7 @@ def include_asm_spans(text: str) -> list[tuple[str, int, int]]:
     """
     spans = [(m.group(1), m.start(), m.end())
              for m in _INCLUDE_ASM_MACRO_RE.finditer(text)]
-    spans += [(m.group(1), m.start(), m.end())
+    spans += [(m.group(1) or m.group(2), m.start(), m.end())
               for m in _BIOS_MACRO_RE.finditer(text)]
     return sorted(spans, key=lambda t: t[1])
 
@@ -341,6 +382,14 @@ def _strip_spans(text: str) -> list[tuple[int, int]]:
 @functools.lru_cache(maxsize=8)
 def _strip_spans_cached(text: str) -> tuple[tuple[int, int], ...]:
     spans = [(s, e) for _f, s, e in include_asm_spans(text)]
+    # A strict invocation is already a span (include_asm_spans); the detection
+    # span of the same invocation can differ only in its edges (indent,
+    # trailing blanks). Overlapping spans would be deleted one after the other
+    # with stale offsets, so a BIOS span overlapping any existing span is
+    # dropped -- the invocation is already stripped and counted once.
+    for bs, be in bios_macro_spans(text):
+        if not any(bs < e and s < be for s, e in spans):
+            spans.append((bs, be))
     # find_asm_keywords sees the keyword the way cc1 does: comments and
     # backslash-newlines between `__asm__`, its qualifiers and `(` are
     # whitespace, and a comment/string that merely mentions `__asm__` is not

@@ -1379,6 +1379,10 @@ def find_nonvolatile_alias_renames(text: str) -> list[tuple[int, int, int]]:
             if kind == "nonvol"]
 
 
+_BIOS_MACROS = {"BIOS_FUNCTION", "BIOS_A_FUNCTION", "BIOS_B_FUNCTION",
+                "BIOS_C_FUNCTION"}
+
+
 def find_macro_asm_defs(text: str) -> list[tuple[int, int, str]]:
     """All `#define NAME ... __asm__(...)` macro definitions. Returns
     (def_start, def_end_eol, macro_name). The strip removes the macro
@@ -1396,8 +1400,12 @@ def find_macro_asm_defs(text: str) -> list[tuple[int, int, str]]:
     `#define W V`) is an asm macro too (transitive closure; a parameter of the
     same name shadows)."""
     defs = _directive_defines(text)
+    # A macro that invokes a BIOS trampoline macro (include/bios.h) expands to
+    # __asm__ just the same, so it seeds the set too (inline-asm audit A3
+    # hardening, 2026-10-01).
+    seeds = set(cia.ASM_SPELLINGS) | _BIOS_MACROS
     asm_names = {name for _s, _e, name, _params, idents in defs
-                 if name in cia.ASM_SPELLINGS or idents & set(cia.ASM_SPELLINGS)}
+                 if name in seeds or idents & seeds}
     grew = True
     while grew:
         grew = False
