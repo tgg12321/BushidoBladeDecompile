@@ -88,3 +88,15 @@ pre-slim-2026-10-01:memory/grind/func_800768DC/laneD-2026-09-30/.
 
 Re-measure after owner-adopted Q65 (the per-file gp model) lands. The residual involves D_800A36A0's
 %gp_rel addressing, which Q65 changes.
+
+## 2026-10-01 — laneA: re-measured on the regenerated Q65 series (scratch clone, tag step16 = b55913da8, base 6c73a2796)
+
+SelWork f1C/f20 given the Q33/Q46 union word views (uncommitted, scratch only; text1b_b's other f1C/f20
+element reads respelled `.half[...]`); f3C stays `s16 f3C[2]` as landed with func_80075F80. The function now
+lives in text1b_b (M4 merge). `engine sandbox --disable all`:
+- candidate.c (f3C.half -> f3C): 0/175 (only the masked D_8009BD21 reloc-symbol hunk at insn 163).
+- k0 (candidate without the refused `p_old = prev;` restore): **2/175, unchanged by Q65** — the same
+  operand-only hunk at insn 35: `sw zero,48 / sh zero,52` based on $s1 where the target uses $v0.
+So Q66's "may shift after Q65" did not happen: the gp model does not touch this residual (it is the cse
+equivalence of the D_800A36A0 reload, not its addressing). Frontier unchanged: an ordinary-C spelling that
+breaks that equivalence without a dead write. Scripts: tmp/func_800770B8/{mk.py,scratch_sbx.sh} (not banked).
