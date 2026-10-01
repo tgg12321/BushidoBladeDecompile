@@ -1738,8 +1738,6 @@ INCLUDE_ASM("asm/funcs", func_8002C22C);
 /* func_8002C61C candidate - s1b (recon, 2026-09-06). Loop-3 destinations spelled against the
    record base D_80101EC8 + off + field offset per the 2026-09-06 06:44 Judge ruling (off = i * 0x44C
    is the record stride; +0x174 midpoint, +0x18C centroid). */
-typedef struct { Vec3i j[22]; } ProbeScr;               /* scratchpad per-char block, stride 0x108 */
-#define SCR ((ProbeScr *)0x1F800078)
 void func_8002C61C(void) {
     u8 *s1 = (u8 *)&D_80101EC8;
     u8 *s0 = s1 + 0x44C;
@@ -1821,12 +1819,12 @@ void func_8002C61C(void) {
         s32 off;
         for (i = 0; i < 2; i++) {
             off = i * 0x44C;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x18C) = (SCR[i].j[5].x + SCR[i].j[6].x + SCR[i].j[7].x) / 3;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x190) = (SCR[i].j[5].y + SCR[i].j[6].y + SCR[i].j[7].y) / 3;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x194) = (SCR[i].j[5].z + SCR[i].j[6].z + SCR[i].j[7].z) / 3;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x174) = (SCR[i].j[8].x + SCR[i].j[9].x) / 2;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x178) = (SCR[i].j[8].y + SCR[i].j[9].y) / 2;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x17C) = (SCR[i].j[8].z + SCR[i].j[9].z) / 2;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x18C) = (SPAD->unkA8[i][1].x + SPAD->unkA8[i][2].x + SPAD->unkA8[i][3].x) / 3;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x190) = (SPAD->unkA8[i][1].y + SPAD->unkA8[i][2].y + SPAD->unkA8[i][3].y) / 3;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x194) = (SPAD->unkA8[i][1].z + SPAD->unkA8[i][2].z + SPAD->unkA8[i][3].z) / 3;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x174) = (SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x178) = (SPAD->unkA8[i][4].y + SPAD->unkA8[i][5].y) / 2;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x17C) = (SPAD->unkA8[i][4].z + SPAD->unkA8[i][5].z) / 2;
         }
     }
 
@@ -1894,7 +1892,7 @@ void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
         }
 
         if (a1 != 0) {
-            hit = func_8002D780(0, scr, (s32 *)&SCR[id].j[i + 4],
+            hit = func_8002D780(0, scr, (s32 *)&SPAD->unkA8[id][i],
                                 r, *(u16 *)(rec + 0xE));
             if (hit != 0) {
                 if (*(s16 *)rec != 0 && a2 != 0) {
@@ -1906,7 +1904,7 @@ void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
                 }
             }
         } else {
-            hit = func_8002D320(0, scr, (s32 *)&SCR[id].j[i + 4],
+            hit = func_8002D320(0, scr, (s32 *)&SPAD->unkA8[id][i],
                                 r, *(u16 *)(rec + 0xE));
             if (hit != 0) {
                 if (*(s16 *)rec != 0 && a2 != 0) {
@@ -4518,7 +4516,7 @@ void func_80031B24(void) {
         for (j = 0; j < 22; j++, rec += 0x14) {
             s32 *pos;
             if (*(s16 *)(ch + 0x26C) == 0 && j >= 6 && j <= 9) continue;
-            pos = (s32 *)&SCR[other].j[j + 4];
+            pos = (s32 *)&SPAD->unkA8[other][j];
             hit = func_8002EA24(scr, pos, *(u16 *)(rec + 0xC), *(u16 *)(rec + 0xE));
             if (hit != 0) {
                 deep = 0;
@@ -4539,7 +4537,7 @@ void func_80031B24(void) {
         r = func_80027AD8(1, ch, j, diff, deep, &D_8008E194[*(s16 *)(obj + 2)], 0, &flag);
         if (r == 2) continue;
         if (r != 0) {
-            func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2B, (u8 *)&SCR[other].j[j + 4], 0);
+            func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2B, (u8 *)&SPAD->unkA8[other][j], 0);
             func_8002FF20(obj, *(s16 *)(rec + 2));
             obj[4] = 0;
             st = *(u16 *)(ch + 0x6A);
@@ -4550,14 +4548,14 @@ void func_80031B24(void) {
         }
         kind = *(s16 *)(obj + 2);
         if (kind == 0xF) {
-            func_80032854(other ^ 1, 0xE, (u8 *)&SCR[other].j[j + 4], &D_800A37E8);
+            func_80032854(other ^ 1, 0xE, (u8 *)&SPAD->unkA8[other][j], &D_800A37E8);
             *(s16 *)(obj + 2) = -1;
             continue;
         }
         if (kind == 0xE) {
             func_80032854((D_800A36F2 ^ 0xE) != 0, 0x2F, obj + 0x2C, 0);
         } else if (flag == 0) {
-            func_80032854((kind ^ D_800A36F2) != 0, 0x2B, (u8 *)&SCR[other].j[j + 4], 0);
+            func_80032854((kind ^ D_800A36F2) != 0, 0x2B, (u8 *)&SPAD->unkA8[other][j], 0);
         }
         func_80031890(scr, obj, j);
         obj[4] = 0;

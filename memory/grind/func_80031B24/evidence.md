@@ -63,3 +63,12 @@ Proposed cheat-cleanup: delete ProbeScr/SCR and respell its three consumers thro
 Measured (sandbox --disable all, candidate bodies in probes-2026-09-30/): func_80031B24 0/327, func_8002C61C
 0/284, func_8002CA8C 0/179 (each identical to its landed score). Still owed at splice: full rebuild SHA1, a
 layer-2 on the three bodies (scope cheat-cleanup), and the ledger notes of func_8002C61C / func_8002CA8C.
+
+## Landed 2026-09-30 (laneG): cheat-cleanup, layer-2 PASS rev-31b24
+ProbeScr/SCR deleted; func_8002C61C, func_8002CA8C, func_80031B24 read the limb points as SPAD->unkA8[ch][k]
+(bodies c49148bce5748d4d / ec79034dde0f22d4 / df0a69dd66e3e8ce for 80031B24 / 8002C61C / 8002CA8C).
+Follow-up debt (reviewer note): raw, correctly based but not unified scratchpad casts remain in
+earlier-landed bodies in src/code6cac_b_tu2.c — func_80027AD8 (`scr = (u8 *)0x1F8000A8 + player * 0x108 +
+limb * 12`, ~line 409), func_8002A458 (`(s32 *)((u8 *)0x1F8000A8 + id * 0x108 + i * 0xC)`, ~1506) and
+func_8002CA8C (`*(s32 *)((u8 *)0x1F8000A8 + off)`, ~1876). Each could read SPAD->unkA8[..][..] instead;
+not measured.
