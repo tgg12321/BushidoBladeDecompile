@@ -6582,25 +6582,3 @@ loop:
         D_800A3834 = 0;
     }
 }
-
-
-void func_800343F0(void) {
-    s8 val_85 = (s8)D_80102778.unk_D;
-    s8 val_86 = (s8)D_80102778.unk_E;
-    s8 val_84 = (s8)D_80102778.unk_C;
-    s32 val_87 = (s8)D_80102778.unk_F;
-
-    D_800A36F6 = 0;
-    D_800A38DC = val_85;
-    D_800A38BA = val_86;
-    D_800A3140 = val_87;
-    D_800A36A4 = val_84;
-    player_SetCharId(0, 0);
-    player_SetCharId(1, 0);
-    D_800A376A = 0;
-    D_800A376B = 0;
-    D_800A380C = 0;
-    D_800A38D4 = 2;
-    D_800A37D3 = 0;
-    D_800A37D2 = 0;
-}

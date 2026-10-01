@@ -157,7 +157,7 @@ RULING — object-relative rodata alignment.
   |---|---|---|---|
   | code6cac_tu2.c | `INCLUDE_RODATA D_800100A4`, then func_8001979C | 0x800100A4 | after func_80019568 .. up to func_8001C8DC |
   | code6cac_b_tu2.c | `INCLUDE_RODATA D_80010478`, then func_800272FC | 0x80010478 | after func_80026DA4 .. up to func_8002738C |
-  | code6cac_b_tu3.c | `INCLUDE_RODATA jtbl_8001084C`, func_800344B4 | 0x8001081C | after func_80033498 .. up to func_800344B4 |
+  | code6cac_b_tu3.c | func_800343F0, then `INCLUDE_RODATA jtbl_8001084C`, func_800344B4 (moved from func_800344B4 by owner ruling Q65, per-file gp model, cut outcome (i): D_800A3140 is reached gp by func_8002AB08 and by lui/%lo in func_800343F0) | 0x8001081C | after func_80033498 .. up to func_800344B4 |
   | text1a_pre_tu2.c | func_80040D48 | 0x80010DB8 | after func_80040304 .. up to func_80040D48 |
   | text1b_tu2.c | func_800747D8 | 0x80015A0C | after func_8006ECF4 .. up to func_800747D8 |
   | text1b_b_tu2.c | prnt (its strings D_80015A68/7C/84) | 0x80015A68 | PsyQ module start of prnt |

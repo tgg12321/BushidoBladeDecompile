@@ -9,6 +9,32 @@
 #include "code6cac.h"
 #include "bb2_const.h"
 
+/* func_800343F0 moved here from code6cac_b_tu2.c: the file boundary follows the per-file gp evidence
+ * (owner ruling Q65; docs/grind/rodata-align-2026-09-30.md section 7, site 3 record). */
+/* Declarations from the file this TU was split from (code6cac_b_tu2.c). */
+extern void player_SetCharId(s32, s32);
+
+void func_800343F0(void) {
+    s8 val_85 = (s8)D_80102778.unk_D;
+    s8 val_86 = (s8)D_80102778.unk_E;
+    s8 val_84 = (s8)D_80102778.unk_C;
+    s32 val_87 = (s8)D_80102778.unk_F;
+
+    D_800A36F6 = 0;
+    D_800A38DC = val_85;
+    D_800A38BA = val_86;
+    D_800A3140 = val_87;
+    D_800A36A4 = val_84;
+    player_SetCharId(0, 0);
+    player_SetCharId(1, 0);
+    D_800A376A = 0;
+    D_800A376B = 0;
+    D_800A380C = 0;
+    D_800A38D4 = 2;
+    D_800A37D3 = 0;
+    D_800A37D2 = 0;
+}
+
 /* Declarations from the file this TU was split from (code6cac_b.c). */
 extern u8 D_800A3768;
 extern void eff_Init(void);
