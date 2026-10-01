@@ -1,0 +1,30 @@
+  loop notes: 1 | 'giv' lines: 15 | 'reduced' lines: 6
+    Loop from 14 to 170: 55 real insns.
+    Insn 31: possible biv, reg 83, const = (symbol_ref:SI ("g_practice_menu_table"))
+    Insn 92: possible biv, reg 97, const = 3
+    Insn 154: possible biv, reg 73, const = 2
+    Insn 157: possible biv, reg 72, const = 1
+    Reg 72: biv verified
+    Reg 73: biv verified
+    Reg 97: biv discarded, never incremented
+    Reg 83: biv discarded, never incremented
+    Insn 20: giv reg 76 src reg 72 benefit 2 used 1 lifetime 1 replaceable mult 16 add 0
+    Insn 22: giv reg 77 src reg 72 benefit 4 used 1 lifetime 1 replaceable mult 17 add 0
+    Insn 23: giv reg 78 src reg 72 benefit 6 used 1 lifetime 1 replaceable mult 68 add 0
+    Insn 25: giv reg 79 src reg 72 benefit 8 used 1 lifetime 1 replaceable mult 69 add 0
+    Insn 26: giv reg 80 src reg 72 benefit 10 used 1 lifetime 1 replaceable mult 276 add 0
+    Insn 28: giv reg 81 src reg 72 benefit 12 used 1 lifetime 1 replaceable mult 275 add 0
+    Insn 29: giv reg 82 src reg 72 benefit 14 used 1 lifetime 2 replaceable mult 1100 add 0
+    Cannot eliminate biv 72: biv used in insn 138.
+    giv of insn 56 not worth while, 0 vs 55.
+    giv of insn 20 not worth while, 0 vs 55.
+    giv at 29 reduced to (reg:SI 121)
+    giv at 28 reduced to (reg:SI 122)
+    giv at 26 reduced to (reg:SI 123)
+    giv at 25 reduced to (reg:SI 124)
+    giv at 23 reduced to (reg:SI 125)
+    giv at 22 reduced to (reg:SI 126)
+    Cannot eliminate biv 73: biv used in insn 69.
+== l1 (cmd: cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -dL tu.i)
+  loop notes: 0 | 'giv' lines: 0 | 'reduced' lines: 0
+== l1c3 (cmd: cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -dL tu.i)

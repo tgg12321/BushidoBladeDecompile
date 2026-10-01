@@ -125,3 +125,8 @@ separate record counter 19 (77), the landed reuse kept 19 (73), a `for` loop 4 (
 `offset += sizeof(PracticeMenuRec)` walk 0 (c8, not used). The do-while is a real loop, so loop.c strength-
 reduces `i * 0x44C` into the target's offset register with the table base re-added each pass; the goto loop
 gets no loop notes, so the multiply is recomputed (the 3 extra instructions).
+Loop dump (probes-2026-09-30/loopdump_22F34.txt, `cc1 <CC_FLAGS> -dL`): the do-while body (l1 = r3) is a loop
+(1 LOOP_BEG note; "Loop from 14 to 170"); the giv `i * 1100` (insn 29, reg 82) is strength-reduced to an
+offset register (reg 121) while the table base symbol stays a separate never-incremented value re-added each
+pass — the target's s1 += 0x44C / addu with &D_80101EC8. The goto-loop index form (l1c3) has no loop notes, so
+loop.c never runs on it and the i * 0x44C shift/add chain is recomputed (the 3 extra instructions).
