@@ -4,6 +4,95 @@
 #include "system.h"
 #include "psx.h"
 #include "sound.h"
+/* Sony LIBSND `_ss_score` (per-SEP score table), declared as SOTN declares
+   it: `struct SeqStruct *_ss_score[32]` (sotn-decomp
+   src/main/psxsdk/libsnd/libsnd_i.h:176 @aa53500). Base 0x80106F28, 32
+   words, up to _SsMarkCallback at 0x80106FA8. Each entry points at one
+   SEP's array of per-sequence score blocks: `_ss_score[sep][seq]`.
+   The RECORD LAYOUT is BB2's own, not SOTN's. BB2 links a different LIBSND
+   build (the interim 4.0-lineage build of memory/closer/libsnd-hunt-report.md)
+   whose score block is 0xB0 bytes (SOTN's is 0xAC) and orders its fields
+   differently. Every offset below is the one BB2's code uses. The comment
+   names the SOTN member that does the same job in the same Sony function
+   (SOTN stop.c, seqread.c, next.c, cres.c, tempo.c, vmanager.c @aa53500).
+   Members no BB2 code touches are unkNN pads. Replaces the raw
+   `extern s32 _ss_score` + byte-offset casts. */
+struct SeqStruct {
+    u8 *read_pos;       /* 0x00: SOTN read_pos */
+    u8 *next_sep_pos;   /* 0x04: SOTN next_sep_pos */
+    u8 *loop_pos;       /* 0x08: SOTN loop_pos */
+    u8 *unk0C;          /* 0x0C: BB2-only; used instead of next_sep_pos under flag 0x400 */
+    u8 *unk10;          /* 0x10: BB2-only; compared with read_pos under flags 0x401 */
+    u8 unk14;           /* 0x14: SOTN unk2b (1 = playing: set by replay, cleared by pause) */
+    u8 unk15;           /* 0x15: SOTN unk10 */
+    u8 unk16;           /* 0x16: SOTN unk11 (MIDI running status) */
+    u8 channel;         /* 0x17: SOTN channel */
+    u8 unk18;           /* 0x18: SOTN unk13 */
+    u8 unk19;           /* 0x19: SOTN unk14 */
+    u8 unk1A;           /* 0x1A: SOTN unk15 */
+    u8 unk1B;           /* 0x1B: SOTN unk16 */
+    u8 unk1C;           /* 0x1C: SOTN unk27 */
+    u8 unk1D;           /* 0x1D: SOTN unk28 */
+    u8 unk1E;           /* 0x1E: SOTN unk29 */
+    u8 unk1F;           /* 0x1F: SOTN unk2a */
+    u8 unk20;           /* 0x20: SOTN unk46 (loop count) */
+    u8 unk21;           /* 0x21: SOTN unk48 (loops played) */
+    u8 unk22;           /* 0x22: SOTN unk3C (next SEP) */
+    u8 unk23;           /* 0x23: SOTN unk0 (next SEQ) */
+    u8 unk24[3];        /* 0x24: not accessed by BB2 */
+    u8 panpot[16];      /* 0x27: SOTN panpot */
+    u8 programs[16];    /* 0x37: SOTN programs */
+    s16 unk48;          /* 0x48: SOTN unk3E */
+    s16 unk4A;          /* 0x4A: SOTN unk40 */
+    s16 unk4C;          /* 0x4C: SOTN unk42 */
+    s16 unk4E;          /* 0x4E: SOTN unk44 */
+    s16 unk50;          /* 0x50: SOTN unk4a */
+    s16 unk52;          /* 0x52: SOTN unk6E */
+    s16 unk54;          /* 0x54: SOTN unk70 */
+    s16 unk56;          /* 0x56: SOTN unk72 */
+    u16 unk58;          /* 0x58: SOTN unk74 (sequence L volume) */
+    u16 unk5A;          /* 0x5A: SOTN unk76 (sequence R volume) */
+    s16 unk5C;          /* 0x5C: SOTN unk78 */
+    s16 unk5E;          /* 0x5E: SOTN unk7A */
+    s16 vol[16];        /* 0x60: SOTN vol */
+    s32 unk80;          /* 0x80: not accessed by BB2 */
+    s32 unk84;          /* 0x84: SOTN unk7c */
+    s32 unk88;          /* 0x88: SOTN unk80 */
+    s32 unk8C;          /* 0x8C: SOTN unk84 */
+    s32 delta_value;    /* 0x90: SOTN delta_value */
+    u32 unk94;          /* 0x94: SOTN unk8c (tempo) */
+    s32 unk98;          /* 0x98: SOTN unk90 (play-state flags) */
+    s32 unk9C;          /* 0x9C: SOTN unk94 */
+    s32 unkA0;          /* 0xA0: SOTN unk98 */
+    s32 unkA4;          /* 0xA4: not accessed by BB2 */
+    s32 unkA8;          /* 0xA8: SOTN unkA0 */
+    u32 unkAC;          /* 0xAC: SOTN unkA4 (target tempo) */
+};
+extern struct SeqStruct *_ss_score[32]; /* _ss_score */
+
+/* Sony LIBSND `_SsFCALL`, verbatim from the PsyQ 4.0 LIBSND.H: the
+   sequencer's MIDI-event dispatch table. In BB2 it is the object at
+   0x800F3340 (148 bytes; the next object starts at 0x800F33D8). The 4.0
+   SSINIT object defines the 148-byte common `SsFCALL`, and the 4.0 MIDIREAD
+   _SsGetSeqData, which lines up with func_80084CC0 word for word except one
+   hoisted store, reaches it through SsFCALL+0/+4/+8/+0xC/+0x10 relocations
+   (docs/naming/sweep-2026-09-29/held.csv). That sweep holds the NAME at
+   MEDIUM, so the object keeps its splat name D_800F3340. It is one object,
+   not five scalars. func_80084CC0's target code keeps each handler load
+   behind the score-block store before it, and GCC 2.7.2's scheduler only
+   draws that dependence when the handler load is an in-struct access too
+   (evidence: memory/grind/func_80084CC0/cleanup-ss-score/evidence.md).
+   Replaces the per-word splat scalars D_800F3340/44/48/4C/50. */
+typedef struct {
+	void (*noteon) ();
+	void (*programchange) ();
+	void (*pitchbend) ();
+	void (*metaevent) ();
+	void (*control[13]) ();
+	void (*ccentry[20]) ();
+} _SsFCALL;
+extern _SsFCALL D_800F3340; /* SsFCALL */
+
 
 /* Forward declarations */
 
@@ -502,24 +591,22 @@ extern s32 _SsReadDeltaValue(s16, s16);
 
 s32 func_80084CC0(s16 a0, s16 a1)
 {
-  /* Each status-byte arm reads its operand bytes through its own block-local
-   * pointer, except `velocity`. It is one function-level local written in
-   * both 0x90 arms (after a status byte, and under running status) and read
-   * only as noteon's 4th argument. That is the reuse SOTN's matched
-   * _SsGetSeqData makes of `var_s3` (declared seqread.c:57, written :66 and
-   * :92, read only as _SsNoteOn's 4th argument at :68 and :94), admitted
-   * by owner ruling Q51 (no-new-park-categories.md). */
+  /* 100% pure C: no regfix rules, no register pins, no inline asm.
+   *
+   * One non-obvious choice: the 2nd switch's 0x90 case reads the sequence
+   * pointer into a *block-local* `cp` instead of the shared `cmd_ptr`.
+   * Sharing one variable made GCC's global allocator place `cmd_ptr` in $a2
+   * (reusing the handler arg register, since the temp dies just before arg
+   * setup); splitting that one use shrinks cmd_ptr's live range / conflicts
+   * so the allocator gives it $v1 (its default-order preference) across the
+   * 1st-switch cases — exactly target. Retires the last pin. */
   struct SeqStruct *state;
   s32 cmd;
   u8 *ptr;
+  u32 data;
   u8 b;
   u8 prev;
-  /* SOTN: src/main/psxsdk/libsnd/seqread.c:57 @aa53500 */
-  /* FAKE: Q51 reused variable, match-motivated (Q53). One local per 0x90
-     arm scores 40 in either arm alone or in both (allocator order,
-     operand-only): variants v6/v6b/v6d/v6e in
-     memory/grind/func_80084CC0/cleanup-ss-score/evidence.md §6. */
-  u8 velocity;
+  u8 next;
   s32 ret;
   state = &_ss_score[a0][a1];
   ptr = state->read_pos;
@@ -530,11 +617,6 @@ s32 func_80084CC0(s16 a0, s16 a1)
   {
     if (state->read_pos == state->unk10 + 1)
     {
-      /* Prototype contradiction, kept as the bytes demand: both
-         _SsSeqGetEof calls in the target load a 3rd argument into $a2
-         (0x80084D68 lbu, 0x8008500C li 0x2F), as SOTN's caller passes the
-         meta byte to _SsGetMetaEvent(s16, s16, u8) (seqread.c:5, :86
-         @aa53500), but BB2's _SsSeqGetEof definition reads only two. */
       ((void (*)(s16, s16, u8)) _SsSeqGetEof)(a0, a1, state->unk10[1]);
       return -1;
     }
@@ -548,15 +630,15 @@ s32 func_80084CC0(s16 a0, s16 a1)
       case 0x90:
       {
         u8 *cmd_ptr;
-        u32 note;
+        u8 next;
         state->unk16 = 0x90;
         cmd_ptr = state->read_pos;
         state->read_pos = cmd_ptr + 1;
-        note = cmd_ptr[0];
+        data = cmd_ptr[0];
         state->read_pos = cmd_ptr + 2;
-        velocity = cmd_ptr[1];
+        next = cmd_ptr[1];
         state->delta_value = _SsReadDeltaValue(a0, a1);
-        D_800F3340.noteon(a0, a1, note, velocity);
+        D_800F3340.noteon(a0, a1, data, next);
         goto end;
       }
 
@@ -621,11 +703,11 @@ s32 func_80084CC0(s16 a0, s16 a1)
     {
       case 0x90:
       {
-        u8 *cmd_ptr = state->read_pos;
-        state->read_pos = cmd_ptr + 1;
-        velocity = cmd_ptr[0];
+        u8 *cp = state->read_pos;
+        state->read_pos = cp + 1;
+        next = cp[0];
         state->delta_value = _SsReadDeltaValue(a0, a1);
-        D_800F3340.noteon(a0, a1, b, velocity);
+        D_800F3340.noteon(a0, a1, b, next);
         goto end;
       }
 
@@ -886,11 +968,18 @@ void _SsSndTempo(s16 a0, s16 a1) {
     }
 
     if (score->unk4E > 0) {
+        u32 new_val;
         if ((score->unkA8 % score->unk4E) != 0) {
             return;
         }
-        if (score->unk94 > score->unkAC || score->unk94 < score->unkAC) {
-            score->unk94 = (score->unk94 > score->unkAC) ? score->unk94 - 1 : score->unk94 + 1;
+        if (score->unk94 > score->unkAC) {
+            new_val = score->unk94 - 1;
+            goto tempo_store;
+        }
+        if (score->unk94 < score->unkAC) {
+            new_val = score->unk94 + 1;
+        tempo_store:
+            score->unk94 = new_val;
         }
     } else {
         if (score->unk94 > score->unkAC) {

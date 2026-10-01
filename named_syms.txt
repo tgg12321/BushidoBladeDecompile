@@ -322,7 +322,7 @@ g_palette_base_ptr           = 0x800A378C;  /* base of palette/CLUT table, 4-byt
 /* === Batch 5 data-symbol renames (2026-05-17) -- next 4 highs from rank 31-60 === */
 /* See docs/naming/data_evidence/D_{800A3044,80106F28,800A334C,800A3874}.md */
 g_spu_reg_base_ptr           = 0x800A3044;  /* SPU register block pointer; volatile-u16 +0xA |= 0x20 == channel-control */
-_ss_score             = 0x80106F28;  /* SEQ bank pointer table; outer = bank id, inner stride 0xB0 == per-channel control block (matches func_8008{5114,5210,5064}) */  /* data-wave 2026-09-07: was g_seq_bank_table */
+_ss_score             = 0x80106F28;  /* struct SeqStruct *_ss_score[32] (include/sound.h; SOTN libsnd_i.h:176 @aa53500, BB2's own 0xB0 record) */  /* data-wave 2026-09-07: was g_seq_bank_table */
 g_motion_play_countdown      = 0x800A334C;  /* u8 motion-state watchdog; set to 0x5A (90 frames), decremented, gated on `== 0 || (g_seq_active_voice_mask & 0x100010)` */
 g_match_round_index          = 0x800A3874;  /* match-round counter; indexes the round-result table (D_800A377C) and `D_800F65F8/F65F9 + round*2` */
 
@@ -936,12 +936,8 @@ g_char_prev_keyframe_idx                                = 0x80101F4E;  /* +0x86 
 
 /* === Sony LIBSND _svm_voice per-voice records (struct SpuVoice, include/sound.h; */
 /* base _svm_voice 0x800F4E18, 0x36-byte records, 24 voices). The per-word rows */
-/* below are aliases still named by INCLUDE_ASM _SsVmFlush / func_80087770. */
+/* below are aliases still named by INCLUDE_ASM _SsVmFlush. */
 _svm_voice_plus_0x6                          = 0x800F4E1E;  /* +0x04 -- counter (max 0x7FFF) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_4 */  /* alias of _svm_voice+0x6 (struct SpuVoice, include/sound.h); retire with _SsVmFlush */
-_svm_voice_plus_0x10                          = 0x800F4E28;  /* +0x0E -- init to 0xFF */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_E */  /* alias of _svm_voice+0x10 (struct SpuVoice, include/sound.h); retire with func_80087770 */
-_svm_voice_plus_0x12                         = 0x800F4E2A;  /* +0x10 -- init to 0 */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_10 */  /* alias of _svm_voice+0x12 (struct SpuVoice, include/sound.h); retire with func_80087770 */
-_svm_voice_plus_0x14                         = 0x800F4E2C;  /* +0x12 -- init to 0 */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_12 */  /* alias of _svm_voice+0x14 (struct SpuVoice, include/sound.h); retire with func_80087770 */
-_svm_voice_plus_0x16                         = 0x800F4E2E;  /* +0x14 -- init to 0xFF */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14 */  /* alias of _svm_voice+0x16 (struct SpuVoice, include/sound.h); retire with func_80087770 */
 
 /* === More indexed struct tables discovered (2026-05-17) === */
 g_sleep_menu_cursor_state_table                         = 0x800A3D40;  /* 24-byte stride per slot; 3 s32 + 6 s16 layout; consumed by DispSleepMenuTex */
@@ -2691,11 +2687,6 @@ D_800EF0D8                                        = 0x800EF0D8;  /* data-wave 20
 D_800EF168                                        = 0x800EF168;  /* data-wave 2026-09-25: was g_snd_voice_envelope_block_b */
 _svm_okon1                    = 0x800F1B10;  /* data-wave 2026-09-24: was g_spu_xfer_status_snapshot_plus_8_plus_16 */
 _svm_okon2                                         = 0x800F1B12;  /* data-wave 2026-09-24: was g_main_mask_reg_800F1B12 */
-g_seq_event_handler_90_NoteOn                                         = 0x800F3340;
-g_seq_event_handler_C0_PgmChange                                         = 0x800F3344;
-g_seq_event_handler_E0_PitchBend                                         = 0x800F3348;
-g_seq_event_handler_FF_Meta                                         = 0x800F334C;
-g_seq_event_handler_B0_CtrlChange                                         = 0x800F3350;
 _svm_voice                                         = 0x800F4E18;  /* data-wave 2026-09-24: was g_satan1_slot_state_anchor_FE18 */
 g_code6cac_state_F5344                                     = 0x800F5344;
 g_code6cac_state_F5347                                     = 0x800F5347;
