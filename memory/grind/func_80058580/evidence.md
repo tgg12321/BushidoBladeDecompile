@@ -263,3 +263,27 @@
   whose only assembled referrer was func_80058580.s: undefined_syms D_80099D8B/8C/8E/94/97/9C/9D, D_8009A851/2/3,
   D_8009A8CA (-> D_8009A8C8 row); named_syms _plus_3/_plus_4/_plus_6/_plus_7_plus_5/_13/_14,
   g_text1b_addr_8009A851/2/3/8CA; D_80099D8F re-noted (func_80055B60 only).
+- [s10 2026-10-01 laneB] Layer-2 round 2 on 9dfd17f47e702d1f: rev-58580-r11-b PASS (Ruling 11 incl. Q74/Q75),
+  rev-58580-dm-b FAIL on `(s16)work2`, `(u32)work3 &` x2, the int-held script pointer, and the SOTN comment form.
+  Data-model half landed separately (b3843cc02, cheat-cleanup PASS rev-pmr-split-r2). Base now = main + typed/
+  hdr_edits.py (only `s16 unk_6C`, original lh reads); candidate.c links 0 differing words. Cast work:
+  * Masks: block-scoped `s32 one = 1;` (inside `while (off != 0)`) at all four `1 << x` sites of the loop
+    (FAKE entry 2, loop-rotation-two-shift lever 1): 0 words, no cast. One only at the two tests 0 too.
+    Function-scope `one` assigned before the loop: 47 lines (two hoisted 1s, t1/t2 reload shift); used at
+    all four sites 91 (frame 0x78). `1U << n` 11; block `u32 cmask` (reviewer) 3 (cmask in v1, target $s3).
+  * Script pointer: own `u8 *script4` 16 words (script4 $s1 / near $s3 swapped, plus `work4 = work3`
+    canonicalised: cse make_regs_eqv prefers the longer-lived reg, work4 outlives work3 once script4 leaves
+    work3, so the `if (work3 == 0)` test reads $s4). Reusing script1 / script2 / script3: 33 / 24 / 31 lines.
+    Fixed by two ordinary changes: `near` is a work1 value (target computes it in $s1: lh 0x8005ADD8, addiu
+    0x8005AE24) and `work4 = work3;` sits at the top of the walk branch, the only place work4 is read (target
+    `bnez $s3` with the copy in its delay slot, 0x800596DC). Together: 0 words. near split alone with the
+    copy move: 12 (r_near). No casts left except the (s16) below.
+  * `(s16)work2 < score`: no cast 8; `s16 best` split 23 (best $s4 / score $s2 / pick $s3 vs target
+    $s2 / $s3 / $s4: best has 3 refs, pri 280 < score 3333, pick 2547 — it reaches $s2 only as part of
+    work2's allocno); split + do-while pick loop 23; `s16 score` 12, both s16 26; work2 s16 222; reuse
+    pbest / sc / et 34 / 27 / 133; `(work2 << 16 >> 16) < score` 0 (same redundancy, not applied). The target
+    sign-extends $s2 (`sll; sra 16`, 0x8005A338) before `slt` with the full score: the s16 view of the
+    best value exists only in the bytes. -> policy question (borderline.md 2026-10-01 func_80058580 (d)).
+  * Value-ternary `(flip ? p->unk_444[5] : p->unk_444[1]) != 0`: +3 insns (6958 words); kept the pointer form.
+  * q = ep comment: SOTN tag now standalone `/* SOTN: src/st/no0/e_stone_rose.c:611 @aa53500 */`.
+  r11/ must be re-run on this body (work1 +near, work3 -script4, work4 copy moved) before landing.

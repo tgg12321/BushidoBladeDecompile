@@ -32,14 +32,16 @@ s32 func_80058580(PracticeMenuRec *p) {
     u8 *script1;
     u8 *script2;
     u8 *script3;
+    u8 *script4;
     u8 mode;
-    /* work1 holds nine values in turn, each read before work1 is written again: the
+    /* work1 holds ten values in turn, each read before work1 is written again: the
      * unk_444[5] == 0 flag of the state-0x15 script choice; the stage distance base (100000,
      * or D_8009A838[stage] * 8) of the D_8009A850 scan; unk_444[6] for the lim chain; unk_444[6]
      * again for the waypoint script; the x of waypoint 1; the unk_444[1] == 0 flag of the 0x394
      * action pick; the chosen pick (besti sign-extended, `sll; sra 24` at 0x8005A364); case 2's
      * D_8009A9F0 pattern word, shifted in place; a script entry's low distance bound (e[1] * 40,
-     * then adjusted).
+     * then adjusted); the state-0x15 script's near bound (the opponent's unk_3F8 entry, or its
+     * unk_404 entry + 300; `lh $s1` 0x8005ADD8 / `addiu $s1` 0x8005AE24).
      * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
     s32 work1;
     /* work2 holds eight values in turn, each read before work2 is written again: the
@@ -51,16 +53,15 @@ s32 func_80058580(PracticeMenuRec *p) {
      * script's counter value (unk_34D, unk_34A, 0, or unk_330).
      * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
     s32 work2;
-    /* work3 holds sixteen values in turn, each read before work3 is written again: the
+    /* work3 holds fifteen values in turn, each read before work3 is written again: the
      * script side bit (opponent unk_AF & 1, possibly inverted); unk_444[3] == 0; the unk_43A
      * angle, wrapped to +-0x800; the state-0x11 threshold (0x1000 - (stance sum << 8)), scaled
      * by unk_438 >> 12; the forced-scan flag (0 or 1) of the D_8009A850 scan; the waypoint index
      * unk_362 - 1; the path length to the target; the "longer than lim" flag; the bearing to the
      * next waypoint, wrapped; the 0x394 action pick's coin bit, stepped per try; the 0x394 slot
      * (unk_394, or a D_800A325C / D_800A3260 entry); case 3's column in D_8009A928; the
-     * entry-type mask (case 3 / case 2 / default, tested as unsigned); a script entry's
-     * character mask (tested as unsigned); the entry's accept flag (0 or 1); the state-0x15
-     * script address (0, or D_8009A8C0 / D_8009A8B4 / D_8009A8AC, held as an integer).
+     * entry-type mask (case 3 / case 2 / default); a script entry's character mask; the
+     * entry's accept flag (0 or 1).
      * Read-before-write kept from the original (owner ruling Q74, rules 30a3e2d2d): the 0x394
      * slot switch below reads work3 with no write on the path unk_39C == 1, opponent state
      * neither 0x19 nor 0x1A (target 0x80059D18 -> 0x80059D6C -> 0x80059DB0; $s3 read by the
@@ -69,8 +70,9 @@ s32 func_80058580(PracticeMenuRec *p) {
      * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
     s32 work3;
     /* work4 holds three values in turn, each read before work4 is written again: the
-     * D_8009A850 scan index; the waypoint walk index (a copy of work3's waypoint index, Q34:
-     * `addu $s4,$s3,$zero` at 0x800596DC, counted down); the script-list entry index.
+     * D_8009A850 scan index; the waypoint walk index (a copy of work3's waypoint index taken in
+     * the walk branch, Q34: `addu $s4,$s3,$zero` in the branch delay slot at 0x800596DC, counted
+     * down); the script-list entry index.
      * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
     s32 work4;
     s32 pick;
@@ -94,7 +96,6 @@ s32 func_80058580(PracticeMenuRec *p) {
     s16 pbest;
     u8 st2;
     s8 flip;
-    s32 near;
     s32 wtype;
     s32 cnt;
     s32 ok4;
@@ -427,7 +428,6 @@ s32 func_80058580(PracticeMenuRec *p) {
                     if (p->unk_3CC != 0) {
                         return p->unk_3CC;
                     }
-                    work4 = work3;
                     if (work3 == 0) {
                         if (p->unk_364[0].kind == 1) {
                             work3 = SquareRoot0(CPU_SQ(p->unk_F4.x - tx) + CPU_SQ(p->unk_F4.z - tz));
@@ -435,6 +435,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                             work3 = SquareRoot0(CPU_SQ(p->unk_F4.x - wx) + CPU_SQ(p->unk_F4.z - wz));
                         }
                     } else {
+                        work4 = work3;
                         work3 = SquareRoot0(CPU_SQ(wx - p->unk_F4.x) + CPU_SQ(wz - p->unk_F4.z));
                         while (work4 >= 2) {
                             work3 += SquareRoot0(CPU_SQ(p->unk_364[work4].x - p->unk_364[work4 - 1].x) +
@@ -753,16 +754,26 @@ s32 func_80058580(PracticeMenuRec *p) {
                          * a copy of the entry type et for the et < 5 and et == 5 / 6 tests (Q34: `addu $a1,$s5,$zero` at 0x8005AA94).
                          * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
                         s32 work5;
+                        /* FAKE: opaque arithmetic variable (.claude/rules/no-new-park-categories.md entry 2;
+                         * .claude/rules/loop-rotation-two-shift.md, companion lever 1). With a literal 1,
+                         * fold-const.c (~4437) rewrites the mask tests `(x & (1 << n)) == 0` into
+                         * `((x >> n) & 1) == 0` (srav; andi); the target tests `sllv $v0,$fp,n; and` with
+                         * the 1 in $fp, set once before the loop (0x8005A63C) and shared with case 2's
+                         * mask shifts. Measured alternatives: `1U << n` 11 words, a u32 mask local 3, `one`
+                         * at function scope 47 / 91 lines, the `(u32)` operand cast (refused, layer-2
+                         * 2026-10-01): memory/grind/func_80058580/evidence.md [s10]. */
+                        s32 one = 1;
                         ep = off + (u8 *)p->unk_3A4;
                         e = ep;
                         ep += 4;
                         /* FAKE: pass-through pointer alias (.claude/rules/pointer-alias-fake-exception.md;
-                         * SOTN src/st/no0/e_stone_rose.c:611 `fakeEntity = self; // !FAKE` @aa53500). The
+                         * SOTN precedent below). The
                          * target copies the script start into its own register (`addu $a2,$s6,$zero` at
                          * 0x8005A67C) and reads the 0x40 character-mask header through it while ep stays in
                          * $s6; read through ep the header loads use $s6 and global.c's allocno order shifts
                          * (58 words off, memory/grind/func_80058580/review-2026-10-01/dm/results.txt
                          * vM_noq; respellings q = e + 4, e-first, `q = ep += 4`: evidence.md [s3] / [s5]). */
+                        /* SOTN: src/st/no0/e_stone_rose.c:611 @aa53500 */
                         q = ep;
                         if (D_80099D88[p->unk_443].flags & 0xFF00) {
                             switch (D_800A38DC) {
@@ -794,12 +805,12 @@ s32 func_80058580(PracticeMenuRec *p) {
                                     if (work5) {
                                         while (work2 > 0) {
                                             work1 >>= 4;
-                                            work3 |= 1 << ((work1 & 0xF) - 1);
+                                            work3 |= one << ((work1 & 0xF) - 1);
                                             work2--;
                                         }
                                     } else {
                                         work1 >>= (p->unk_3F2 / 3 % work2) * 4 + 4;
-                                        work3 = 1 << ((work1 & 0xF) - 1);
+                                        work3 = one << ((work1 & 0xF) - 1);
                                     }
                                 }
                                 break;
@@ -807,7 +818,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                                 work3 = D_8009A8C8[p->unk_440][D_800A37A0 - 1].mask;
                                 break;
                             }
-                            if ((e[3] >> 4) == 0 || !((u32)work3 & (1 << ((e[3] >> 4) - 1)))) {
+                            if ((e[3] >> 4) == 0 || !(work3 & (one << ((e[3] >> 4) - 1)))) {
                                 goto next;
                             }
                         }
@@ -816,7 +827,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                         }
                         if (q[0] == 0x40) {
                             work3 = q[4] << 24 | q[3] << 16 | q[2] << 8 | q[1];
-                            if (!((u32)work3 & (1 << p->unk_443))) {
+                            if (!(work3 & (one << p->unk_443))) {
                                 goto next;
                             }
                             ep += 5;
@@ -918,16 +929,16 @@ s32 func_80058580(PracticeMenuRec *p) {
                        /* Q76 (rules 30a3e2d2d): as above, 4.12 factor 0x100; target lh; sra 4 at 0x8005ACCC. */
                        p->unk_43C < 0x200 - ((p->unk_438 * 0x100) >> 12) &&
                        !(D_800A38DC == 2 || D_800A38DC == 3)) {
-                work3 = 0;
+                script4 = 0;
                 if ((rand() & 0xFF) < (D_80099D88[p->unk_443].script_weight[5] >> 2) && ((0x78 >> p->unk_B1) & 1) && p->unk_442 == 0 &&
                     p->unk_00->unk_404[p->unk_00->unk_86] < D_800A387C && D_800A387C < 4500) {
-                    work3 = (s32)D_8009A8C0;
+                    script4 = D_8009A8C0;
                 } else {
                     if (p->unk_443 == 0x15) {
                         work2 = p->unk_34D;
-                        near = p->unk_00->unk_3F8[p->unk_00->unk_86];
+                        work1 = p->unk_00->unk_3F8[p->unk_00->unk_86];
                     } else {
-                        near = p->unk_00->unk_404[p->unk_00->unk_86] + 300;
+                        work1 = p->unk_00->unk_404[p->unk_00->unk_86] + 300;
                         if (D_80099D88[p->unk_443].flags & 0x300) {
                             work2 = 0;
                             if (D_800A37A0 >= 6) {
@@ -938,21 +949,21 @@ s32 func_80058580(PracticeMenuRec *p) {
                         }
                     }
                     ok4 = 0;
-                    if ((rand() & 0xFF) < (D_80099D88[p->unk_443].script_weight[6] >> 2) && work2 != 0 && near < D_800A387C &&
+                    if ((rand() & 0xFF) < (D_80099D88[p->unk_443].script_weight[6] >> 2) && work2 != 0 && work1 < D_800A387C &&
                         p->unk_434 == 100000 && p->unk_442 == 0 && (p->unk_430 & 0xA002) &&
                         (p->unk_443 != 0x15 || D_800A387C < 3000) && (p->unk_8A == 0 || work2 >= 2)) {
                         ok4 = 1;
                     }
                     if (ok4) {
                         if ((D_80099D88[p->unk_443].flags & 0x10) && work2 >= 2 && (rand() & 1)) {
-                            work3 = (s32)D_8009A8B4;
+                            script4 = D_8009A8B4;
                         } else {
-                            work3 = (s32)D_8009A8AC;
+                            script4 = D_8009A8AC;
                         }
                     }
                 }
-                if (work3 != 0) {
-                    func_80055B44(p, (u8 *)work3, 2, 0);
+                if (script4 != 0) {
+                    func_80055B44(p, script4, 2, 0);
                 }
             }
         }
