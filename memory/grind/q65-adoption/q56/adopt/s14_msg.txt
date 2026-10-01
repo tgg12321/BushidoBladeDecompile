@@ -13,3 +13,7 @@ identical; layer-2 on every changed body, listed in memory/grind/q65-adoption/q5
   D_800A350C[2] (+ D_800A350E; `&D_800A350C` is the pair pointer passed to func_800692C0), D_800A3510[2]
   (+ D_800A3512).
 - Symbol-file rows of the retired element names go where nothing names them any more.
+- Owner ruling Q84 (rules: 215f2d11a): camera_CalcAngles, the only writer of the D_800A33C8 pair, returns to
+  INCLUDE_ASM (asm/funcs/camera_CalcAngles.s, func_80047384.s with its label renamed; as s16[2] our cc1 -G0 spends
+  one more instruction in every spelling measured, memory/grind/camera_CalcAngles/) and is re-queued active
+  (engine queue reopen); the D_800A33CA row stays for its asm.

@@ -110,7 +110,7 @@ def a8_merge(text, X, Y):
     return text.replace("@@X", X)
 
 
-# Owner ruling Q84: camera_CalcAngles, the one writer of the D_800A33C8 pair, returns to INCLUDE_ASM in this step
+# Owner ruling Q84 (rules: 215f2d11a): camera_CalcAngles, the one writer of the D_800A33C8 pair, returns to INCLUDE_ASM in this step
 # (as s16[2] our cc1 -G0 spends one more instruction in every spelling measured; cc1psx -G8 and our cc1 -G8 emit the
 # target - memory/grind/camera_CalcAngles/), and is re-queued active through the engine's reopen path.
 cf = [f for f in glob.glob("src/*.c") if "s16 *camera_CalcAngles(void) {" in rd(f)]
@@ -125,7 +125,7 @@ wr("asm/funcs/camera_CalcAngles.s", s.replace("func_80047384", "camera_CalcAngle
 import subprocess as _sp
 _r = _sp.run([sys.executable, "-m", "engine.cli", "queue", "reopen", "camera_CalcAngles", "--file",
               os.path.basename(cf[0])[:-2], "--reason",
-              "owner ruling Q84 (Q65 step 14, A8): D_800A33C8/D_800A33CA join into s16 D_800A33C8[2]; as an array "
+              "owner ruling Q84 (rules: 215f2d11a; Q65 step 14, A8): D_800A33C8/D_800A33CA join into s16 D_800A33C8[2]; as an array "
               "our cc1 -G0 spends one more instruction in every spelling measured - memory/grind/camera_CalcAngles/"],
              capture_output=True, text=True)
 print(_r.stdout.strip()[-300:]); assert _r.returncode == 0, _r.stderr[-500:]

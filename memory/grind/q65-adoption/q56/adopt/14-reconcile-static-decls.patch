@@ -1,36 +1,316 @@
-From 99f3a1c93fb8d5fd7855adac36d4914226d44d53 Mon Sep 17 00:00:00 2001
+From 1fa4751b89f7f479a8085662b77d775ef7f5ac39 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 10:37:50 -0500
+Date: Thu, 1 Oct 2026 13:16:30 -0500
 Subject: [PATCH] src: one declaration each for D_800A3468 (text1b_tu1c) and
  g_anim_hit_flags (text1a_post) (owner ruling Q65, step 14)
 
+Each object that step 15 makes a static gets ONE declaration, typed by evidence, before the switch (byte-
+identical; layer-2 on every changed body, listed in memory/grind/q65-adoption/q56/adopt/body_hashes.txt).
+- D_800A3468 (text1b_tu1c): the file's `s32`; func_80060A68 reads it through `#define OB ((struct Ob
+  *)D_800A3468)` instead of a block-scope `extern struct Ob *`.
+- Per-word element names (layer-2 round 1, step-15 finding 1): g_anim_hit_flags s16[2] / g_anim_hit_data
+  s32[2] (func_800420E8 indexes both with a0 < 2; g_anim_counter and D_800A3388 were their element 1),
+  D_800A344C u32[2] / D_800A3454 s32[2] (per-lane pairs; D_800A3450 / D_800A3458 were element 1),
+  D_800A35C8 s16[2] (declaration completed).
+- (A8, owner ruling Q79, rules: 8c57bc4ab; probe memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.*):
+  Sony places every `.lcomm` static 4-aligned, so each gp-reached s16 name at a 2-mod-4 address is the
+  second halfword of its slot's static: D_800A33C8[2] (was D_800A33C8 + D_800A33CA), D_800A33E8[2]
+  (+ D_800A33EA; text1b already indexed `(&D_800A33E8)[idx]`), D_800A345C[2] (+ D_800A345E),
+  D_800A350C[2] (+ D_800A350E; `&D_800A350C` is the pair pointer passed to func_800692C0), D_800A3510[2]
+  (+ D_800A3512).
+- Symbol-file rows of the retired element names go where nothing names them any more.
+- Owner ruling Q84 (rules: 215f2d11a): camera_CalcAngles, the only writer of the D_800A33C8 pair, returns to
+  INCLUDE_ASM (asm/funcs/camera_CalcAngles.s, func_80047384.s with its label renamed; as s16[2] our cc1 -G0 spends
+  one more instruction in every spelling measured, memory/grind/camera_CalcAngles/) and is re-queued active
+  (engine queue reopen); the D_800A33CA row stays for its asm.
 ---
- src/text1a_post.c |  5 ++---
- src/text1b_tu1c.c | 30 ++++++++++++++++--------------
- 2 files changed, 18 insertions(+), 17 deletions(-)
+ asm/funcs/camera_CalcAngles.s | 60 +++++++++++++++++++++++++++
+ engine/queue.json             | 19 +++++++--
+ named_syms.txt                |  1 -
+ src/text1a_post.c             | 17 ++++----
+ src/text1b.c                  | 47 +++++++--------------
+ src/text1b_tu1c.c             | 77 +++++++++++++++++------------------
+ src/text1b_tu1d.c             |  2 +-
+ undefined_syms_auto.txt       |  9 ----
+ 8 files changed, 134 insertions(+), 98 deletions(-)
+ create mode 100644 asm/funcs/camera_CalcAngles.s
 
+diff --git a/asm/funcs/camera_CalcAngles.s b/asm/funcs/camera_CalcAngles.s
+new file mode 100644
+index 000000000..ef47fbc7a
+--- /dev/null
++++ b/asm/funcs/camera_CalcAngles.s
+@@ -0,0 +1,60 @@
++glabel camera_CalcAngles
++    /* 37B84 80047384 A8FFBD27 */  addiu      $sp, $sp, -0x58
++    /* 37B88 80047388 5000B0AF */  sw         $s0, 0x50($sp)
++    /* 37B8C 8004738C 2800B027 */  addiu      $s0, $sp, 0x28
++    /* 37B90 80047390 0A80043C */  lui        $a0, %hi(D_800A3708)
++    /* 37B94 80047394 0837848C */  lw         $a0, %lo(D_800A3708)($a0)
++    /* 37B98 80047398 21280002 */  addu       $a1, $s0, $zero
++    /* 37B9C 8004739C 5400BFAF */  sw         $ra, 0x54($sp)
++    /* 37BA0 800473A0 A20A010C */  jal        math_RotMatrixYXZ
++    /* 37BA4 800473A4 10008424 */   addiu     $a0, $a0, 0x10
++    /* 37BA8 800473A8 21200002 */  addu       $a0, $s0, $zero
++    /* 37BAC 800473AC 1000A527 */  addiu      $a1, $sp, 0x10
++    /* 37BB0 800473B0 00100224 */  addiu      $v0, $zero, 0x1000
++    /* 37BB4 800473B4 1800A627 */  addiu      $a2, $sp, 0x18
++    /* 37BB8 800473B8 1000A0A7 */  sh         $zero, 0x10($sp)
++    /* 37BBC 800473BC 1200A0A7 */  sh         $zero, 0x12($sp)
++    /* 37BC0 800473C0 5BFB010C */  jal        ApplyMatrix
++    /* 37BC4 800473C4 1400A2A7 */   sh        $v0, 0x14($sp)
++    /* 37BC8 800473C8 1800A48F */  lw         $a0, 0x18($sp)
++    /* 37BCC 800473CC 2000A58F */  lw         $a1, 0x20($sp)
++    /* 37BD0 800473D0 57FF010C */  jal        ratan2
++    /* 37BD4 800473D4 00000000 */   nop
++    /* 37BD8 800473D8 21804000 */  addu       $s0, $v0, $zero
++    /* 37BDC 800473DC 00141000 */  sll        $v0, $s0, 16
++    /* 37BE0 800473E0 03140200 */  sra        $v0, $v0, 16
++    /* 37BE4 800473E4 00044224 */  addiu      $v0, $v0, 0x400
++    /* 37BE8 800473E8 FF0F4230 */  andi       $v0, $v0, 0xFFF
++    /* 37BEC 800473EC 40100200 */  sll        $v0, $v0, 1
++    /* 37BF0 800473F0 0980013C */  lui        $at, %hi(Judge)
++    /* 37BF4 800473F4 21082200 */  addu       $at, $at, $v0
++    /* 37BF8 800473F8 FC732384 */  lh         $v1, %lo(Judge)($at)
++    /* 37BFC 800473FC 2000A28F */  lw         $v0, 0x20($sp)
++    /* 37C00 80047400 00000000 */  nop
++    /* 37C04 80047404 18006200 */  mult       $v1, $v0
++    /* 37C08 80047408 FF0F0232 */  andi       $v0, $s0, 0xFFF
++    /* 37C0C 8004740C 40100200 */  sll        $v0, $v0, 1
++    /* 37C10 80047410 0980013C */  lui        $at, %hi(Judge)
++    /* 37C14 80047414 21082200 */  addu       $at, $at, $v0
++    /* 37C18 80047418 FC732384 */  lh         $v1, %lo(Judge)($at)
++    /* 37C1C 8004741C 12280000 */  mflo       $a1
++    /* 37C20 80047420 1800A28F */  lw         $v0, 0x18($sp)
++    /* 37C24 80047424 00000000 */  nop
++    /* 37C28 80047428 18006200 */  mult       $v1, $v0
++    /* 37C2C 8004742C 1C00A48F */  lw         $a0, 0x1C($sp)
++    /* 37C30 80047430 12180000 */  mflo       $v1
++    /* 37C34 80047434 2128A300 */  addu       $a1, $a1, $v1
++    /* 37C38 80047438 032B0500 */  sra        $a1, $a1, 12
++    /* 37C3C 8004743C 57FF010C */  jal        ratan2
++    /* 37C40 80047440 2000A5AF */   sw        $a1, 0x20($sp)
++    /* 37C44 80047444 23180200 */  negu       $v1, $v0
++    /* 37C48 80047448 0A80023C */  lui        $v0, %hi(D_800A33C8)
++    /* 37C4C 8004744C C8334224 */  addiu      $v0, $v0, %lo(D_800A33C8)
++    /* 37C50 80047450 FC0283A7 */  sh         $v1, %gp_rel(D_800A33C8)($gp)
++    /* 37C54 80047454 FE0290A7 */  sh         $s0, %gp_rel(D_800A33CA)($gp)
++    /* 37C58 80047458 5400BF8F */  lw         $ra, 0x54($sp)
++    /* 37C5C 8004745C 5000B08F */  lw         $s0, 0x50($sp)
++    /* 37C60 80047460 5800BD27 */  addiu      $sp, $sp, 0x58
++    /* 37C64 80047464 0800E003 */  jr         $ra
++    /* 37C68 80047468 00000000 */   nop
++endlabel camera_CalcAngles
+diff --git a/engine/queue.json b/engine/queue.json
+index 5f5216ba4..3d99a3b26 100644
+--- a/engine/queue.json
++++ b/engine/queue.json
+@@ -3,6 +3,17 @@
+   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+   "build_failures": [],
+   "items": [
++    {
++      "func": "camera_CalcAngles",
++      "file": "text1b",
++      "distance": 0,
++      "verdict": "C",
++      "rules": 0,
++      "status": "active",
++      "origin": "regression",
++      "reopen_reason": "owner ruling Q84 (rules: 215f2d11a; Q65 step 14, A8): D_800A33C8/D_800A33CA join into s16 D_800A33C8[2]; as an array our cc1 -G0 spends one more instruction in every spelling measured - memory/grind/camera_CalcAngles/",
++      "addr": "80047384"
++    },
+     {
+       "func": "func_80058580",
+       "file": "text1b",
+@@ -225,14 +236,14 @@
+     }
+   ],
+   "counts": {
+-    "total": 17,
+-    "active": 5,
++    "total": 18,
++    "active": 6,
+     "by_status": {
+-      "active": 5,
++      "active": 6,
+       "rotated": 12
+     },
+     "by_verdict": {
+-      "C": 5
++      "C": 6
+     }
+   },
+   "toolchain_fingerprint": "85cd2a73ee7a8972"
+diff --git a/named_syms.txt b/named_syms.txt
+index 9af8e4bde..5ba6a633e 100644
+--- a/named_syms.txt
++++ b/named_syms.txt
+@@ -148,7 +148,6 @@ g_anim_func_table = 0x800F66A0;
+ g_anim_hit_flags = 0x800A3380;
+ g_anim_hit_data = 0x800A3384;
+ g_anim_select = 0x800A3238;
+-g_anim_counter = 0x800A3382;
+ g_char_data = 0x800A6690;
+ g_char_setup_tbl = 0x80094E48;
+ _svm_stereo_mono = 0x800FF578;  /* data-wave 2026-09-07: was g_memcard_busy */
 diff --git a/src/text1a_post.c b/src/text1a_post.c
-index 5095ad6b3..cf0a14266 100644
+index 5095ad6b3..61524fcaf 100644
 --- a/src/text1a_post.c
 +++ b/src/text1a_post.c
-@@ -555,13 +555,12 @@ void func_80041EB0(s32 a0, s32 a1)
+@@ -553,34 +553,31 @@ void func_80041EB0(s32 a0, s32 a1)
+     func_8004A1FC((s32)fp_ptr);
+     func_8004A1FC((s32)D_800F6340);
  }
- extern s16 g_anim_counter;
+-extern s16 g_anim_counter;
  extern s16 g_anim_select[3];
-+extern s16 g_anim_hit_flags[];
++extern s16 g_anim_hit_flags[2];
  void func_800420D0(void) {
 -    extern s16 g_anim_hit_flags;
-     g_anim_counter = 0;
+-    g_anim_counter = 0;
 -    g_anim_hit_flags = 0;
++    g_anim_hit_flags[1] = 0;
 +    g_anim_hit_flags[0] = 0;
      g_anim_select[0] = -1;
  }
 -extern s16 g_anim_hit_flags[];
- extern s32 g_anim_hit_data[];
+-extern s32 g_anim_hit_data[];
++extern s32 g_anim_hit_data[2];
  void func_800420E8(s32 a0, s32 a1) {
      if (a0 < 2) {
+         g_anim_hit_flags[a0] = 1;
+         g_anim_hit_data[a0] = a1;
+     }
+ }
+-extern s32 D_800A3388;
+ void func_8004211C(void) {
+-    s32 val = g_anim_hit_flags[0] * 2 + g_anim_counter;
++    s32 val = g_anim_hit_flags[0] * 2 + g_anim_hit_flags[1];
+     switch (val) {
+     case 1:
+-        func_80041EB0(0, D_800A3388);
++        func_80041EB0(0, g_anim_hit_data[1]);
+         break;
+     case 2:
+         func_80041EB0(g_anim_hit_data[0], 0);
+         break;
+     case 3:
+-        func_80041EB0(g_anim_hit_data[0], D_800A3388);
++        func_80041EB0(g_anim_hit_data[0], g_anim_hit_data[1]);
+         break;
+     }
+ }
+diff --git a/src/text1b.c b/src/text1b.c
+index 3468a7533..4a5b588d6 100644
+--- a/src/text1b.c
++++ b/src/text1b.c
+@@ -625,8 +625,7 @@ extern void math_RotMatrixYXZ(s32 *, s32 *);
+ extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
+ extern s32 ratan2(s32, s32);
+ extern s16 Judge[];
+-extern s16 D_800A33C8;
+-extern s16 D_800A33CA;
++extern s16 D_800A33C8[2];
+ extern Unk80101DF0Record *D_800A3708;
+ extern void func_8004211C(void);
+ extern void func_800444BC(void);
+@@ -1088,24 +1087,7 @@ void camera_InitRotation(u8 *a0) {
+     *(Block32 *)(s0 + 0x18) = *(Block32 *)(s0 + 0x38);
+ }
+ 
+-s16 *camera_CalcAngles(void) {
+-    s16 rot[3];
+-    s32 sp18[3];
+-    s32 pos[8];
+-    s16 s0;
+-
+-    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, pos);
+-    rot[0] = 0;
+-    rot[1] = 0;
+-    rot[2] = 0x1000;
+-    ApplyMatrix((MATRIX *)pos, (SVECTOR *)rot, (VECTOR *)sp18);
+-    s0 = ratan2(sp18[0], sp18[2]);
+-    sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
+-              + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
+-    D_800A33C8 = -ratan2(sp18[1], sp18[2]);
+-    D_800A33CA = s0;
+-    return &D_800A33C8;
+-}
++INCLUDE_ASM("asm/funcs", camera_CalcAngles);
+ 
+ void game_EffInit(void) {
+     func_8004473C();
+@@ -2309,8 +2291,7 @@ void func_80048F58(s32 a0, s32 a1) {
+ INCLUDE_ASM("asm/funcs", func_80048FFC);
+ extern s16 D_800EF9F2;
+ extern s16 D_800EF9F4;
+-extern s16 D_800A33EA;
+-extern s16 D_800A33E8;
++extern s16 D_800A33E8[2];
+ extern s32 D_800A33EC;
+ void func_8004939C(void) {
+     s16 val = -1;
+@@ -2322,8 +2303,8 @@ void func_8004939C(void) {
+         p--;
+     } while (i >= 0);
+     D_800EF9F4 = -2;
+-    D_800A33EA = -1;
+-    D_800A33E8 = -1;
++    D_800A33E8[1] = -1;
++    D_800A33E8[0] = -1;
+     D_800A33EC = -1;
+ }
+ 
+@@ -2373,7 +2354,7 @@ void func_800494D4(s32 idx, s32 val) {
+     if (((u32)idx) >= 2U) {
+         func_80052C10();
+     }
+-    (&D_800A33E8)[idx] = (s16)val;
++    D_800A33E8[idx] = (s16)val;
+ }
+ s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2)
+ {
+@@ -2437,9 +2418,9 @@ void func_80049584(s32 arg0) {
+     if (D_800A33EC == 0) {
+         step = 0x10;
+     }
+-    hi = D_800A33E8;
++    hi = D_800A33E8[0];
+     if (hi == -1) {
+-        lo = D_800A33EA;
++        lo = D_800A33E8[1];
+         if (lo == hi) {
+             i = 0x24;
+             if (D_800A33EC == 0) {
+@@ -2450,11 +2431,11 @@ void func_80049584(s32 arg0) {
+         hi = lo;
+     } else {
+         lo = hi;
+-        if ((D_800A33EA != (-1)) && (hi != D_800A33EA)) {
+-            if (hi < D_800A33EA) {
+-                hi = D_800A33EA;
++        if ((D_800A33E8[1] != (-1)) && (hi != D_800A33E8[1])) {
++            if (hi < D_800A33E8[1]) {
++                hi = D_800A33E8[1];
+             } else {
+-                lo = D_800A33EA;
++                lo = D_800A33E8[1];
+             }
+         }
+     }
+@@ -2737,8 +2718,8 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
+         var_s4 = 0;
+     }
+ 
+-    var_s0 = D_800A33E8;
+-    var_s2 = D_800A33EA;
++    var_s0 = D_800A33E8[0];
++    var_s2 = D_800A33E8[1];
+     var_s1 = var_s3 + 0xC;
+ 
+     if (var_s0 == -1) {
 diff --git a/src/text1b_tu1c.c b/src/text1b_tu1c.c
-index c14b59a44..6549ce411 100644
+index c14b59a44..be5faca3f 100644
 --- a/src/text1b_tu1c.c
 +++ b/src/text1b_tu1c.c
 @@ -96,6 +96,8 @@ extern s32 cdrom_StartRead(s32, s32);
@@ -90,6 +370,187 @@ index c14b59a44..6549ce411 100644
  void func_80060B70(void) {
      extern s32 D_800A3468;
      extern s32 D_800A346C;
+@@ -178,12 +180,9 @@ void func_80060B70(void) {
+ }
+ 
+ extern u8 D_800F1150[];
+-extern s16 D_800A345E;
+-extern s16 D_800A345C;
+-extern s32 D_800A3458;
+-extern s32 D_800A3454[];
+-extern s32 D_800A3450;
+-extern u32 D_800A344C[];
++extern s16 D_800A345C[2];
++extern s32 D_800A3454[2];
++extern u32 D_800A344C[2];
+ extern s32 D_800A3460;
+ extern s32 D_800A3444;
+ extern s32 D_800A3448;
+@@ -196,11 +195,11 @@ void func_80060C60(void) {
+         i++;
+         p++;
+     } while (i < 0x1C);
+-    D_800A345E = 0;
+-    D_800A345C = 0;
+-    D_800A3458 = 0;
++    D_800A345C[1] = 0;
++    D_800A345C[0] = 0;
++    D_800A3454[1] = 0;
+     D_800A3454[0] = 0;
+-    D_800A3450 = 0;
++    D_800A344C[1] = 0;
+     D_800A344C[0] = 0;
+     D_800A3460 = 0;
+     D_800A3444 = 0;
+@@ -1602,23 +1601,23 @@ u8 func_80063BD0(s32);
+ u8 func_80063AF0(void) {
+     s32 *v1 = (s32 *)D_800A3468;
+     D_800F10D0[0] = 1;
+-    D_800A345C = (*v1 >> 17) & 3;
++    D_800A345C[0] = (*v1 >> 17) & 3;
+     return func_80063BD0(0);
+ }
+ extern s32 D_800F10D4;
+ u8 func_80063B34(void) {
+     s32 *v1 = (s32 *)D_800A3468;
+     D_800F10D4 = 1;
+-    D_800A345E = (*v1 >> 17) & 3;
++    D_800A345C[1] = (*v1 >> 17) & 3;
+     return func_80063BD0(1);
+ }
+ s32 func_80063E10(s32);
+ u8 func_80063B78(void) {
+-    *(s32 *)D_800A3480 = D_800A345C;
++    *(s32 *)D_800A3480 = D_800A345C[0];
+     return func_80063E10(0);
+ }
+ u8 func_80063BA4(void) {
+-    *(s32 *)D_800A3480 = D_800A345E;
++    *(s32 *)D_800A3480 = D_800A345C[1];
+     return func_80063E10(1);
+ }
+ extern s32 D_800A3478;
+@@ -3847,10 +3846,8 @@ extern s32 D_800A372C;
+ extern s32 D_800A3518;
+ extern s32 D_800A34F8;
+ extern s16 D_800A3528;
+-extern s16 D_800A3512;
+-extern s16 D_800A3510;
+-extern s16 D_800A350E;
+-extern s16 D_800A350C;
++extern s16 D_800A3510[2];
++extern s16 D_800A350C[2];
+ extern u8 D_800A32C0[8];
+ extern s32 snd_StopAll(void);
+ 
+@@ -3927,10 +3924,10 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
+             *(s16 *)(p_34fc + 0x2A) = value;
+             *(s16 *)(p_34fc + 0x28) = value;
+             flags = D_800A34F8 & ~0x1C00;
+-            D_800A3512 = 0;
+-            D_800A3510 = 0;
+-            D_800A350E = 0;
+-            D_800A350C = 0;
++            D_800A3510[1] = 0;
++            D_800A3510[0] = 0;
++            D_800A350C[1] = 0;
++            D_800A350C[0] = 0;
+             flags |= 0x1000;
+             D_800A34F8 = flags;
+             *(s16 *)(p_34fc + 0x12) = 0;
+@@ -5123,7 +5120,7 @@ s32 func_8006B578(s32 *arg0, s32 *arg1) {
+ 
+     v = *(u32 *)arg1;
+     sp10 = (v & 0xFFFF) | (v >> 16);
+-    ret = func_800692C0((u32 *)&sp10, 0, (s16 *)(D_800A34FC + 0xC), &D_800A350C);
++    ret = func_800692C0((u32 *)&sp10, 0, (s16 *)(D_800A34FC + 0xC), D_800A350C);
+     hi = ret >> 16;
+     switch (hi) {
+     case 1: {
+@@ -5261,7 +5258,7 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
+     u32 a0;
+     v = *arg1;
+     sp10 = (v & 0xFFFF) | (v >> 16);
+-    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
++    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, D_800A350C);
+     ret >>= 16;
+     switch (ret) {
+     case 1:
+@@ -6130,7 +6127,7 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
+     s32 sval;
+ 
+     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
+-    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
++    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, D_800A350C);
+     if ((ret >> 16) == 1) {
+         D_800A3528 = D_800A3528 + 1;
+         func_8005C650(0, 0x7F, 0x7F);
+@@ -6411,7 +6408,7 @@ s32 func_8006DF68(s32 arg0, u32 arg1) {
+     s32 result = 0;
+ 
+     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
+-    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
++    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, D_800A350C);
+     if (((ret >> 16) & 0xFF) != 0) {
+         D_800A352C += 1;
+         func_8005C650(0, 0x7F, 0x7F);
+diff --git a/src/text1b_tu1d.c b/src/text1b_tu1d.c
+index a072debc4..883e85d31 100644
+--- a/src/text1b_tu1d.c
++++ b/src/text1b_tu1d.c
+@@ -546,7 +546,7 @@ void func_8006F038(s32 arg0) {
+     *((s32 *)(((s32)arg0) + 0x18)) = (s32)(*((s32 *)(((s32)arg0) + 0x18)) + 0xC);
+ }
+ extern s16 D_800A355C;
+-extern s16 D_800A35C8[];
++extern s16 D_800A35C8[2];
+ extern s16 D_800A3590[];
+ extern void func_80072E10(s32);
+ extern void func_80073200(s32);
+diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
+index f7dd2b2ae..583619190 100644
+--- a/undefined_syms_auto.txt
++++ b/undefined_syms_auto.txt
+@@ -92,14 +92,9 @@ D_800A32B6 = 0x800A32B6;
+ D_800A32E9 = 0x800A32E9;
+ D_800A3382 = 0x800A3382;
+ D_800A33CA = 0x800A33CA;
+-D_800A33EA = 0x800A33EA;
+-D_800A345E = 0x800A345E;
+-D_800A350E = 0x800A350E;
+-D_800A3512 = 0x800A3512;
+ D_800A358A = 0x800A358A;
+ D_800A358E = 0x800A358E;
+ D_800A3592 = 0x800A3592;
+-D_800A35CA = 0x800A35CA;
+ D_800A3671 = 0x800A3671;
+ D_800A367A = 0x800A367A;
+ D_800A36C2 = 0x800A36C2;
+@@ -1151,7 +1146,6 @@ D_800A3360 = 0x800A3360;
+ D_800A3364 = 0x800A3364;
+ D_800A3368 = 0x800A3368;
+ D_800A3378 = 0x800A3378;
+-D_800A3388 = 0x800A3388;
+ D_800A3398 = 0x800A3398;
+ D_800A33A0 = 0x800A33A0;
+ D_800A33A4 = 0x800A33A4;
+@@ -1176,8 +1170,6 @@ D_800A3424 = 0x800A3424;
+ D_800A3440 = 0x800A3440;
+ D_800A3444 = 0x800A3444;
+ D_800A3448 = 0x800A3448;
+-D_800A3450 = 0x800A3450;
+-D_800A3458 = 0x800A3458;
+ D_800A345C = 0x800A345C;
+ D_800A3460 = 0x800A3460;
+ D_800A3464 = 0x800A3464;
+@@ -1247,7 +1239,6 @@ chractar_use_pset_combo_id_table = 0x8009BA7C;
+ file_GetFlag2 = 0x800167D4;
+ file_LoadSoundData = 0x80016CF8;
+ file_ResetDmaFlag = 0x80016C74;
+-g_anim_counter = 0x800A3382;
+ g_anim_func_table = 0x800F66A0;
+ g_anim_hit_data = 0x800A3384;
+ g_anim_hit_flags = 0x800A3380;
 -- 
 2.43.0
 

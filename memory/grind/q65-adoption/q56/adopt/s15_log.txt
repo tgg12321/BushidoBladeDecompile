@@ -1,0 +1,106 @@
+END-PAD code6cac_b2_post sdata block ends at 0x800a31db: linker SUBALIGN(2) pads to 0x800a31dc
+END-PAD code6cac_b4_post sdata block ends at 0x800a31e5: linker SUBALIGN(2) pads to 0x800a31e6
+BLOCK-END code6cac_c2 sdata: extends to 0x800a3234 (last gp-reached object 0x800a3230 has no C declaration)
+END-PAD code6cac_c_mid sdata block ends at 0x800a320d: linker SUBALIGN(2) pads to 0x800a320e
+PADDING code6cac_c_mid static 0x800a3319 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a331d (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a3321 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a3325 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a3329 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a332d (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a3331 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a3335 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a3339 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a333d (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a3341 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a3345 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a3349 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a334d (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING code6cac_c_mid static 0x800a3351 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+END-PAD code6cac_c_mid static block ends at 0x800a3355: linker SUBALIGN(2) pads to 0x800a3356
+SIZED-FROM-GAP code6cac_tu2 D_800A30F0: incomplete array -> [4] (next object at 0x800a30f4)
+SIZED-FROM-GAP code6cac_tu2 D_800A30F4: incomplete array -> [2] (next object at 0x800a30fc)
+END-PAD ings sdata block ends at 0x800a30e9: linker SUBALIGN(2) pads to 0x800a30ea
+SIZED-FROM-GAP text1b D_800A3270: incomplete array -> [8] (next object at 0x800a3278)
+BLOCK-END text1b static: extends to 0x800a3420 (last gp-reached object 0x800a3418 has no C declaration)
+PADDING text1b static 0x800a33fa (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b static 0x800a3402 (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_b static 0x800a35dd (3 B): the tail of the static before it to the next 4-byte boundary (A8)
+SIZED-FROM-GAP text1b_tu1c D_800A3438: incomplete array -> [4] (next object at 0x800a3440)
+PADDING text1b_tu1c static 0x800a3442 (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1c static 0x800a352a (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+SIZED-FROM-GAP text1b_tu1d D_800A3588: incomplete array -> [2] (next object at 0x800a358c)
+SIZED-FROM-GAP text1b_tu1d D_800A358C: incomplete array -> [2] (next object at 0x800a3590)
+SIZED-FROM-GAP text1b_tu1d D_800A3590: incomplete array -> [2] (next object at 0x800a3594)
+SIZED-FROM-GAP text1b_tu1d D_800A3594: incomplete array -> [2] (next object at 0x800a3598)
+PADDING text1b_tu1d static 0x800a3552 (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a3556 (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a355a (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a355e (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a3572 (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a357a (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a357e (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a3582 (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a3586 (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a359a (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a359e (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a35b6 (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+PADDING text1b_tu1d static 0x800a35ba (2 B): the tail of the static before it to the next 4-byte boundary (A8)
+ORPHAN-JOIN text1b_tu1d static 0x800a3540 (4 B, D_800A3540): named only by text1b_tu1d, la/indexed
+ORPHAN-JOIN text1b_tu1d static 0x800a3544 (4 B, D_800A3544): named only by text1b_tu1d, la/indexed
+ORPHAN-JOIN text1b_b static 0x800a35d0 (8 B, D_800A35D0): named only by text1b_b, la/indexed
+ORPHAN-LEFT 0x800a3530 (4 B, D_800A3530) named by ['text1b_tu1d']: adjacent to its block - stays in the data blob (A9, owner ruling Q81)
+ORPHAN-LEFT 0x800a3534 (12 B, D_800A3534) named by ['text1b_tu1d']: 12 bytes > 8 (a static that large is .bss, not this block) - stays in the data blob (A9, owner ruling Q81)
+defined in code6cac_b2_post: 0 static lines, 6 sdata/tentative lines
+defined in code6cac_b3: 0 static lines, 2 sdata/tentative lines
+defined in code6cac_b4: 0 static lines, 5 sdata/tentative lines
+defined in code6cac_b4_post: 0 static lines, 2 sdata/tentative lines
+defined in code6cac_b5: 0 static lines, 6 sdata/tentative lines
+defined in code6cac_b_tu2: 0 static lines, 6 sdata/tentative lines
+defined in code6cac_c: 0 static lines, 12 sdata/tentative lines
+defined in code6cac_c0: 0 static lines, 7 sdata/tentative lines
+defined in code6cac_c2: 9 static lines, 10 sdata/tentative lines
+defined in code6cac_c_ab: 0 static lines, 8 sdata/tentative lines
+A6 sdata run 0x800a31fd (3 B, D_800A31FD): no single object fits; split
+A6 piece 0x800a31fd 1 B: u8 D_800A31FD = 0;
+A6 piece 0x800a31fe 2 B: s16 D_800A31FE = 0;
+defined in code6cac_c_mid: 17 static lines, 46 sdata/tentative lines
+EXTERN-REMOVED src/code6cac.c: 1 extern line(s) of D_800A3310 (now a static of code6cac_tu2)
+defined in code6cac_tu2: 2 static lines, 6 sdata/tentative lines
+defined in ings: 0 static lines, 33 sdata/tentative lines
+defined in text1a_c: 0 static lines, 6 sdata/tentative lines
+EXTERN-REMOVED src/text1a_c.c: 1 extern line(s) of D_800A3398 (now a static of text1a_c_tu2)
+EXTERN-REMOVED src/text1a_c.c: 1 extern line(s) of D_800A33A0 (now a static of text1a_c_tu2)
+EXTERN-REMOVED src/text1a_c.c: 1 extern line(s) of D_800A33A4 (now a static of text1a_c_tu2)
+EXTERN-REMOVED src/text1a_c.c: 1 extern line(s) of D_800A33A8 (now a static of text1a_c_tu2)
+EXTERN-REMOVED src/text1a_c.c: 1 extern line(s) of D_800A33AC (now a static of text1a_c_tu2)
+defined in text1a_c_tu2: 7 static lines, 3 sdata/tentative lines
+defined in text1a_post: 3 static lines, 2 sdata/tentative lines
+defined in text1a_pre: 2 static lines, 2 sdata/tentative lines
+A9 text1b D_800A3264: named by a pointer word in asm data [('7D920.data.s', '0x8009b0d8')]: defined here as a K3 global (owner ruling Q80); the table's owning file is open
+HEADER include/sound.h: extern D_800A33B0 removed (now a static of text1b)
+HEADER include/sound.h: extern D_800A33B4 removed (now a static of text1b)
+HEADER include/sound.h: extern D_800A33D0 removed (now a static of text1b)
+defined in text1b: 27 static lines, 24 sdata/tentative lines
+defined in text1b_b: 18 static lines, 4 sdata/tentative lines
+A6 static run 0x800a3428 (16 B, D_800A3428): no single object fits; split
+A6 piece 0x800a3428 8 B: static s32 D_800A3428[2];
+A6 piece 0x800a3430 8 B: static s32 D_800A3430[2];
+EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3460 (now a static of text1b_tu1c)
+EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3468 (now a static of text1b_tu1c)
+EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A346C (now a static of text1b_tu1c)
+EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3470 (now a static of text1b_tu1c)
+EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3474 (now a static of text1b_tu1c)
+EXTERN-REMOVED src/text1b_b.c: 2 extern line(s) of D_800A3478 (now a static of text1b_tu1c)
+EXTERN-REMOVED src/text1b_b.c: 2 extern line(s) of D_800A347C (now a static of text1b_tu1c)
+EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A34E4 (now a static of text1b_tu1c)
+EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A34E8 (now a static of text1b_tu1c)
+EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A34EC (now a static of text1b_tu1c)
+HEADER include/game.h: extern D_800A34F0 removed (now a static of text1b_tu1c)
+defined in text1b_tu1c: 63 static lines, 12 sdata/tentative lines
+HEADER include/game.h: extern D_800A3560 removed (now a static of text1b_tu1d)
+defined in text1b_tu1d: 35 static lines, 3 sdata/tentative lines
+defined in text1b_tu1e: 0 static lines, 2 sdata/tentative lines
+symbol-file rows removed for C-defined objects: 192
+blob cut into 19 pieces around 26 C blocks
+PSYQ_LIBRARY_FILES (Q69): comb display gpu ings2 main system text1b_b_tu2 text1b_b_tu3

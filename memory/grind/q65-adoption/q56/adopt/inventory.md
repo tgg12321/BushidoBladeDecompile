@@ -1,4 +1,4 @@
-# Small-data inventory (2026-10-01, pre-switch tree step14 = 99f3a1c93)
+# Small-data inventory (2026-10-01, pre-switch tree step14 = 1fa4751b8)
 
 Blocks per file in link order (s04_spans.json); every object and every gap.
 
@@ -20,6 +20,7 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | code6cac_c2 | sdata | 0x800a3224 | 4 | gap | - | - | one object D_800A3224 (4 B) |
 | code6cac_c2 | sdata | 0x800a3228 | 4 | object D_800A3228 | gp | - |  |
 | code6cac_c2 | sdata | 0x800a322c | 4 | object D_800A322C | gp | - |  |
+| code6cac_c2 | sdata | 0x800a3230 | 4 | gap | - | - | one object D_800A3230 (4 B) |
 | code6cac_c2 | static | 0x800a3358 | 4 | object D_800A3358 | gp | - |  |
 | code6cac_c2 | static | 0x800a335c | 4 | object D_800A335C | gp | - |  |
 | code6cac_c2 | static | 0x800a3360 | 4 | object D_800A3360 | gp | - |  |
@@ -46,35 +47,20 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | code6cac_c_mid | sdata | 0x800a320a | 2 | gap | - | - | one object D_800A320A (2 B) |
 | code6cac_c_mid | sdata | 0x800a320c | 1 | object D_800A320C | gp | - |  |
 | code6cac_c_mid | static | 0x800a3318 | 1 | object D_800A3318 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3319 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3319 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a331c | 1 | object D_800A331C | gp | - |  |
-| code6cac_c_mid | static | 0x800a331d | 3 | gap | - | - | NO single 3-byte object fits at 0x800a331d (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3320 | 1 | object D_800A3320 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3321 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3321 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3324 | 1 | object D_800A3324 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3325 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3325 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3328 | 1 | object D_800A3328 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3329 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3329 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a332c | 1 | object D_800A332C | gp | - |  |
-| code6cac_c_mid | static | 0x800a332d | 3 | gap | - | - | NO single 3-byte object fits at 0x800a332d (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3330 | 1 | object D_800A3330 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3331 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3331 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3334 | 1 | object D_800A3334 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3335 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3335 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3338 | 1 | object D_800A3338 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3339 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3339 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a333c | 1 | object D_800A333C | gp | - |  |
-| code6cac_c_mid | static | 0x800a333d | 3 | gap | - | - | NO single 3-byte object fits at 0x800a333d (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3340 | 1 | object D_800A3340 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3341 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3341 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3344 | 1 | object D_800A3344 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3345 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3345 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3348 | 1 | object D_800A3348 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3349 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3349 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a334c | 1 | object D_800A334C | gp | - |  |
-| code6cac_c_mid | static | 0x800a334d | 3 | gap | - | - | NO single 3-byte object fits at 0x800a334d (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3350 | 1 | object D_800A3350 | gp | - |  |
-| code6cac_c_mid | static | 0x800a3351 | 3 | gap | - | - | NO single 3-byte object fits at 0x800a3351 (needs 2-alignment) |
 | code6cac_c_mid | static | 0x800a3354 | 1 | object D_800A3354 | gp | - |  |
 | code6cac_tu2 | sdata | 0x800a30ec | 4 | object D_800A30EC | gp | - |  |
 | code6cac_tu2 | sdata | 0x800a30f0 | 4 | object D_800A30F0 | (A2) between gp objects | - |  |
@@ -94,14 +80,12 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | text1a_c_tu2 | static | 0x800a33a8 | 4 | object D_800A33A8 | gp | - |  |
 | text1a_c_tu2 | static | 0x800a33ac | 4 | object D_800A33AC | gp | - |  |
 | text1a_post | sdata | 0x800a3238 | 6 | object g_anim_select | gp | - |  |
-| text1a_post | static | 0x800a3380 | 2 | object g_anim_hit_flags | gp | - |  |
-| text1a_post | static | 0x800a3382 | 2 | object g_anim_counter | gp | - |  |
-| text1a_post | static | 0x800a3384 | 4 | object g_anim_hit_data | gp | - |  |
-| text1a_post | static | 0x800a3388 | 4 | object D_800A3388 | gp | - |  |
+| text1a_post | static | 0x800a3380 | 4 | object g_anim_hit_flags | gp | - |  |
+| text1a_post | static | 0x800a3384 | 8 | object g_anim_hit_data | gp | - |  |
 | text1a_pre | sdata | 0x800a3234 | 4 | object D_800A3234 | gp | - |  |
 | text1a_pre | static | 0x800a3378 | 4 | object D_800A3378 | gp | - |  |
-| text1b | sdata | 0x800a3248 | 2 | object D_800A3248 | gp | - |  |
-| text1b | sdata | 0x800a324a | 2 | object D_800A324A | gp | - |  |
+| text1b | sdata | 0x800a3248 | 2 | object D_800A3248 | (A2) between gp objects | - |  |
+| text1b | sdata | 0x800a324a | 2 | object D_800A324A | (A2) between gp objects | - |  |
 | text1b | sdata | 0x800a324c | 4 | object D_800A324C | gp | - |  |
 | text1b | sdata | 0x800a3250 | 32 | gap | - | - | objects named by the blob's labels, referenced from text1b: D_800A3258, D_800A325C, D_800A3260, D_800A326C, ptr-word@0x8009b0d8 |
 | text1b | sdata | 0x800a3270 | 8 | object D_800A3270 | (A2) between gp objects | - |  |
@@ -116,38 +100,38 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | text1b | sdata | 0x800a32ac | 8 | object D_800A32AC | (A2) between gp objects | - |  |
 | text1b | sdata | 0x800a32b4 | 2 | object D_800A32B4 | gp | - |  |
 | text1b | sdata | 0x800a32b6 | 2 | object D_800A32B6 | gp | - |  |
-| text1b | static | 0x800a33b0 | 4 | object D_800A33B0 | gp | - |  |
-| text1b | static | 0x800a33b4 | 4 | object D_800A33B4 | gp | - |  |
+| text1b | static | 0x800a33b0 | 4 | object D_800A33B0 | (A2) between gp objects | - |  |
+| text1b | static | 0x800a33b4 | 4 | object D_800A33B4 | (A2) between gp objects | - |  |
 | text1b | static | 0x800a33b8 | 4 | gap | - | - | one object D_800A33B8 (4 B) |
-| text1b | static | 0x800a33bc | 4 | object D_800A33BC | gp | - |  |
-| text1b | static | 0x800a33c0 | 4 | object D_800A33C0 | gp | - |  |
+| text1b | static | 0x800a33bc | 4 | object D_800A33BC | (A2) between gp objects | - |  |
+| text1b | static | 0x800a33c0 | 4 | object D_800A33C0 | (A2) between gp objects | - |  |
 | text1b | static | 0x800a33c4 | 4 | gap | - | - | one object D_800A33C4 (4 B) |
-| text1b | static | 0x800a33c8 | 2 | object D_800A33C8 | gp | - |  |
-| text1b | static | 0x800a33ca | 2 | object D_800A33CA | gp | - |  |
+| text1b | static | 0x800a33c8 | 4 | object D_800A33C8 | (A2) between gp objects | - |  |
 | text1b | static | 0x800a33cc | 4 | gap | - | - | one object D_800A33CC (4 B) |
 | text1b | static | 0x800a33d0 | 4 | object D_800A33D0 | gp | - |  |
-| text1b | static | 0x800a33d4 | 4 | object D_800A33D4 | gp | - |  |
-| text1b | static | 0x800a33d8 | 4 | object D_800A33D8 | gp | - |  |
+| text1b | static | 0x800a33d4 | 4 | object D_800A33D4 | (A2) between gp objects | - |  |
+| text1b | static | 0x800a33d8 | 4 | object D_800A33D8 | (A2) between gp objects | - |  |
 | text1b | static | 0x800a33dc | 4 | gap | - | - | one object D_800A33DC (4 B) |
 | text1b | static | 0x800a33e0 | 4 | object D_800A33E0 | gp | - |  |
 | text1b | static | 0x800a33e4 | 4 | object D_800A33E4 | gp | - |  |
-| text1b | static | 0x800a33e8 | 2 | object D_800A33E8 | gp | - |  |
-| text1b | static | 0x800a33ea | 2 | object D_800A33EA | gp | - |  |
+| text1b | static | 0x800a33e8 | 4 | object D_800A33E8 | gp | - |  |
 | text1b | static | 0x800a33ec | 4 | object D_800A33EC | gp | - |  |
 | text1b | static | 0x800a33f0 | 4 | object D_800A33F0 | gp | - |  |
 | text1b | static | 0x800a33f4 | 4 | object D_800A33F4 | gp | - |  |
 | text1b | static | 0x800a33f8 | 2 | object D_800A33F8 | gp | - |  |
-| text1b | static | 0x800a33fa | 6 | gap | - | - | NO single 6-byte object fits at 0x800a33fa (needs 4-alignment) |
+| text1b | static | 0x800a33fc | 4 | gap | - | - | one object D_800A33FC (4 B) |
 | text1b | static | 0x800a3400 | 2 | object D_800A3400 | gp | - |  |
 | text1b | static | 0x800a3404 | 4 | object g_vab_sticky_sbaddr | gp | - |  |
 | text1b | static | 0x800a3408 | 4 | object D_800A3408 | gp | - |  |
 | text1b | static | 0x800a340c | 4 | object D_800A340C | gp | - |  |
+| text1b | static | 0x800a3410 | 16 | gap | - | - | objects named by the blob's labels, referenced from text1b: D_800A3418 |
 | text1b_b | sdata | 0x800a3304 | 4 | object D_800A3304 | gp | - |  |
-| text1b_b | static | 0x800a35d8 | 4 | object D_800A35D8 | gp | - |  |
-| text1b_b | static | 0x800a35dc | 1 | object D_800A35DC | gp | - |  |
-| text1b_b | static | 0x800a35e0 | 4 | object D_800A35E0 | gp | - |  |
+| text1b_b | static | 0x800a35d0 | 8 | object D_800A35D0 | (A2) between gp objects | - |  |
+| text1b_b | static | 0x800a35d8 | 4 | object D_800A35D8 | (A2) between gp objects | - |  |
+| text1b_b | static | 0x800a35dc | 1 | object D_800A35DC | (A2) between gp objects | - |  |
+| text1b_b | static | 0x800a35e0 | 4 | object D_800A35E0 | (A2) between gp objects | - |  |
 | text1b_b | static | 0x800a35e4 | 4 | object D_800A35E4 | gp | - |  |
-| text1b_b | static | 0x800a35e8 | 4 | object D_800A35E8 | gp | - |  |
+| text1b_b | static | 0x800a35e8 | 4 | object D_800A35E8 | (A2) between gp objects | - |  |
 | text1b_b | static | 0x800a35ec | 4 | gap | - | - | one object D_800A35EC (4 B) |
 | text1b_b | static | 0x800a35f0 | 4 | object D_800A35F0 | gp | - |  |
 | text1b_b | static | 0x800a35f4 | 4 | object D_800A35F4 | gp | - |  |
@@ -168,12 +152,9 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | text1b_tu1c | static | 0x800a3440 | 2 | object D_800A3440 | gp | - |  |
 | text1b_tu1c | static | 0x800a3444 | 4 | object D_800A3444 | gp | - |  |
 | text1b_tu1c | static | 0x800a3448 | 4 | object D_800A3448 | gp | - |  |
-| text1b_tu1c | static | 0x800a344c | 4 | object D_800A344C | gp | - |  |
-| text1b_tu1c | static | 0x800a3450 | 4 | object D_800A3450 | gp | - |  |
-| text1b_tu1c | static | 0x800a3454 | 4 | object D_800A3454 | gp | - |  |
-| text1b_tu1c | static | 0x800a3458 | 4 | object D_800A3458 | gp | - |  |
-| text1b_tu1c | static | 0x800a345c | 2 | object D_800A345C | gp | - |  |
-| text1b_tu1c | static | 0x800a345e | 2 | object D_800A345E | gp | - |  |
+| text1b_tu1c | static | 0x800a344c | 8 | object D_800A344C | gp | - |  |
+| text1b_tu1c | static | 0x800a3454 | 8 | object D_800A3454 | gp | - |  |
+| text1b_tu1c | static | 0x800a345c | 4 | object D_800A345C | gp | - |  |
 | text1b_tu1c | static | 0x800a3460 | 4 | object D_800A3460 | gp | - |  |
 | text1b_tu1c | static | 0x800a3464 | 4 | object D_800A3464 | gp | - |  |
 | text1b_tu1c | static | 0x800a3468 | 4 | object D_800A3468 | gp | - |  |
@@ -215,11 +196,9 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | text1b_tu1c | static | 0x800a34f8 | 4 | object D_800A34F8 | gp | - |  |
 | text1b_tu1c | static | 0x800a34fc | 4 | object D_800A34FC | gp | - |  |
 | text1b_tu1c | static | 0x800a3500 | 4 | object D_800A3500 | gp | - |  |
-| text1b_tu1c | static | 0x800a3504 | 8 | gap | - | - | NO single 8-byte object fits at 0x800a3504 (needs 8-alignment) |
-| text1b_tu1c | static | 0x800a350c | 2 | object D_800A350C | gp | - |  |
-| text1b_tu1c | static | 0x800a350e | 2 | object D_800A350E | gp | - |  |
-| text1b_tu1c | static | 0x800a3510 | 2 | object D_800A3510 | gp | - |  |
-| text1b_tu1c | static | 0x800a3512 | 2 | object D_800A3512 | gp | - |  |
+| text1b_tu1c | static | 0x800a3504 | 8 | gap | - | - | one object D_800A3504 (8 B) |
+| text1b_tu1c | static | 0x800a350c | 4 | object D_800A350C | gp | - |  |
+| text1b_tu1c | static | 0x800a3510 | 4 | object D_800A3510 | gp | - |  |
 | text1b_tu1c | static | 0x800a3514 | 4 | object D_800A3514 | gp | - |  |
 | text1b_tu1c | static | 0x800a3518 | 4 | object D_800A3518 | gp | - |  |
 | text1b_tu1c | static | 0x800a351c | 4 | object D_800A351C | gp | - |  |
@@ -229,33 +208,28 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | text1b_tu1c | static | 0x800a352c | 4 | object D_800A352C | gp | - |  |
 | text1b_tu1d | sdata | 0x800a32e8 | 1 | object D_800A32E8 | gp | - |  |
 | text1b_tu1d | sdata | 0x800a32e9 | 1 | object D_800A32E9 | gp | - |  |
+| text1b_tu1d | static | 0x800a3540 | 4 | object D_800A3540 | (A2) between gp objects | - |  |
+| text1b_tu1d | static | 0x800a3544 | 4 | object D_800A3544 | (A2) between gp objects | - |  |
 | text1b_tu1d | static | 0x800a3548 | 4 | object D_800A3548 | gp | - |  |
 | text1b_tu1d | static | 0x800a354c | 4 | object D_800A354C | gp | - |  |
 | text1b_tu1d | static | 0x800a3550 | 2 | object D_800A3550 | gp | - |  |
-| text1b_tu1d | static | 0x800a3552 | 2 | gap | - | - | one object D_800A3552 (2 B) |
 | text1b_tu1d | static | 0x800a3554 | 2 | object D_800A3554 | gp | - |  |
-| text1b_tu1d | static | 0x800a3556 | 2 | gap | - | - | one object D_800A3556 (2 B) |
 | text1b_tu1d | static | 0x800a3558 | 2 | object D_800A3558 | gp | - |  |
-| text1b_tu1d | static | 0x800a355a | 2 | gap | - | - | one object D_800A355A (2 B) |
 | text1b_tu1d | static | 0x800a355c | 2 | object D_800A355C | gp | - |  |
 | text1b_tu1d | static | 0x800a3560 | 8 | object D_800A3560 | gp | - |  |
 | text1b_tu1d | static | 0x800a3568 | 4 | object D_800A3568 | gp | - |  |
 | text1b_tu1d | static | 0x800a356c | 4 | object D_800A356C | gp | - |  |
 | text1b_tu1d | static | 0x800a3570 | 2 | object D_800A3570 | gp | - |  |
-| text1b_tu1d | static | 0x800a3572 | 6 | gap | - | - | NO single 6-byte object fits at 0x800a3572 (needs 4-alignment) |
+| text1b_tu1d | static | 0x800a3574 | 4 | gap | - | - | one object D_800A3574 (4 B) |
 | text1b_tu1d | static | 0x800a3578 | 2 | object D_800A3578 | gp | - |  |
-| text1b_tu1d | static | 0x800a357a | 2 | gap | - | - | one object D_800A357A (2 B) |
 | text1b_tu1d | static | 0x800a357c | 2 | object D_800A357C | gp | - |  |
-| text1b_tu1d | static | 0x800a357e | 2 | gap | - | - | one object D_800A357E (2 B) |
 | text1b_tu1d | static | 0x800a3580 | 2 | object D_800A3580 | gp | - |  |
-| text1b_tu1d | static | 0x800a3582 | 2 | gap | - | - | one object D_800A3582 (2 B) |
 | text1b_tu1d | static | 0x800a3584 | 2 | object D_800A3584 | gp | - |  |
 | text1b_tu1d | static | 0x800a3588 | 4 | object D_800A3588 | gp | - |  |
 | text1b_tu1d | static | 0x800a358c | 4 | object D_800A358C | gp | - |  |
 | text1b_tu1d | static | 0x800a3590 | 4 | object D_800A3590 | gp | - |  |
 | text1b_tu1d | static | 0x800a3594 | 4 | object D_800A3594 | (A2) between gp objects | - |  |
 | text1b_tu1d | static | 0x800a3598 | 2 | object D_800A3598 | gp | - |  |
-| text1b_tu1d | static | 0x800a359a | 2 | gap | - | - | one object D_800A359A (2 B) |
 | text1b_tu1d | static | 0x800a359c | 2 | object D_800A359C | gp | - |  |
 | text1b_tu1d | static | 0x800a35a0 | 4 | object D_800A35A0 | gp | - |  |
 | text1b_tu1d | static | 0x800a35a4 | 4 | object D_800A35A4 | gp | - |  |
@@ -263,38 +237,19 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | text1b_tu1d | static | 0x800a35ac | 4 | object D_800A35AC | gp | - |  |
 | text1b_tu1d | static | 0x800a35b0 | 4 | object D_800A35B0 | gp | - |  |
 | text1b_tu1d | static | 0x800a35b4 | 2 | object D_800A35B4 | gp | - |  |
-| text1b_tu1d | static | 0x800a35b6 | 2 | gap | - | - | one object D_800A35B6 (2 B) |
 | text1b_tu1d | static | 0x800a35b8 | 2 | object D_800A35B8 | gp | - |  |
 | text1b_tu1d | static | 0x800a35bc | 4 | object D_800A35BC | gp | - |  |
 | text1b_tu1d | static | 0x800a35c0 | 4 | object D_800A35C0 | gp | - |  |
 | text1b_tu1d | static | 0x800a35c4 | 4 | object D_800A35C4 | gp | - |  |
-| text1b_tu1d | static | 0x800a35c8 | 2 | object D_800A35C8 | gp | - |  |
+| text1b_tu1d | static | 0x800a35c8 | 4 | object D_800A35C8 | gp | - |  |
 
 Held blocks: none
 
-## Items the rule does not decide or refuses (21)
+## Items the rule does not decide or refuses (3)
 
 - code6cac_c_mid | sdata | 0x800a31fd | 3B | NO single 3-byte object fits at 0x800a31fd (needs 4-alignment)
-- code6cac_c_mid | static | 0x800a3319 | 3B | NO single 3-byte object fits at 0x800a3319 (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a331d | 3B | NO single 3-byte object fits at 0x800a331d (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a3321 | 3B | NO single 3-byte object fits at 0x800a3321 (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a3325 | 3B | NO single 3-byte object fits at 0x800a3325 (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a3329 | 3B | NO single 3-byte object fits at 0x800a3329 (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a332d | 3B | NO single 3-byte object fits at 0x800a332d (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a3331 | 3B | NO single 3-byte object fits at 0x800a3331 (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a3335 | 3B | NO single 3-byte object fits at 0x800a3335 (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a3339 | 3B | NO single 3-byte object fits at 0x800a3339 (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a333d | 3B | NO single 3-byte object fits at 0x800a333d (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a3341 | 3B | NO single 3-byte object fits at 0x800a3341 (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a3345 | 3B | NO single 3-byte object fits at 0x800a3345 (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a3349 | 3B | NO single 3-byte object fits at 0x800a3349 (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a334d | 3B | NO single 3-byte object fits at 0x800a334d (needs 2-alignment)
-- code6cac_c_mid | static | 0x800a3351 | 3B | NO single 3-byte object fits at 0x800a3351 (needs 2-alignment)
 - text1b | sdata | 0x800a3250 | 32B | objects named by the blob's labels, referenced from text1b: D_800A3258, D_800A325C, D_800A3260, D_800A326C, ptr-word@0x8009b0d8 - a pointer word in asm data names it
-- text1b | static | 0x800a33fa | 6B | NO single 6-byte object fits at 0x800a33fa (needs 4-alignment)
 - text1b_tu1c | static | 0x800a3428 | 16B | run > 8 bytes -> borderline
-- text1b_tu1c | static | 0x800a3504 | 8B | NO single 8-byte object fits at 0x800a3504 (needs 8-alignment)
-- text1b_tu1d | static | 0x800a3572 | 6B | NO single 6-byte object fits at 0x800a3572 (needs 4-alignment)
 
 ## COMMON tentatives (K1) per file
 

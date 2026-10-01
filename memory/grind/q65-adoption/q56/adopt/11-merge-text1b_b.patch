@@ -1,14 +1,15 @@
-From 6adf8db5229058a1484d70b62679206b017924d7 Mon Sep 17 00:00:00 2001
+From 37a722c2409457aa1430d737f1818e8eccea678b Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 10:36:28 -0500
+Date: Thu, 1 Oct 2026 13:14:54 -0500
 Subject: [PATCH] src: text1b_tu2 + text1b_b are one file (owner rulings
  Q65/Q67, step 11)
 
 ---
- bb2.ld           |    6 +-
- src/text1b_b.c   | 1523 ++++++++++++++++++++++++++++++++++++++++++++--
- src/text1b_tu2.c | 1491 ---------------------------------------------
- 3 files changed, 1457 insertions(+), 1563 deletions(-)
+ bb2.ld                                |    6 +-
+ docs/grind/rodata-align-2026-09-30.md |    2 +-
+ src/text1b_b.c                        | 1631 ++++++++++++++++++++++++-
+ src/text1b_tu2.c                      | 1599 ------------------------
+ 4 files changed, 1566 insertions(+), 1672 deletions(-)
  delete mode 100644 src/text1b_tu2.c
 
 diff --git a/bb2.ld b/bb2.ld
@@ -50,8 +51,21 @@ index 6cf657feb..0e71d8935 100644
          build/src/text1b_b.o(.bss);
          build/src/text1b_b_tu2.o(.bss);
          build/src/text1b_b_tu3.o(.bss);
+diff --git a/docs/grind/rodata-align-2026-09-30.md b/docs/grind/rodata-align-2026-09-30.md
+index 5a4ef6412..8a4608421 100644
+--- a/docs/grind/rodata-align-2026-09-30.md
++++ b/docs/grind/rodata-align-2026-09-30.md
+@@ -159,7 +159,7 @@ RULING — object-relative rodata alignment.
+   | code6cac_b_tu2.c | `INCLUDE_RODATA D_80010478`, then func_800272FC | 0x80010478 | after func_80026DA4 .. up to func_8002738C |
+   | code6cac_b_tu3.c | func_800343F0, then `INCLUDE_RODATA jtbl_8001084C`, func_800344B4 (moved from func_800344B4 by owner ruling Q65, per-file gp model, cut outcome (i): D_800A3140 is reached gp by func_8002AB08 and by lui/%lo in func_800343F0) | 0x8001081C | after func_80033498 .. up to func_800344B4 |
+   | text1a_pre_tu2.c | func_80040D48 | 0x80010DB8 | after func_80040304 .. up to func_80040D48 |
+-  | text1b_tu2.c | func_800747D8 | 0x80015A0C | after func_8006ECF4 .. up to func_800747D8 |
++  | text1b_tu2.c (merged into text1b_b.c, owner ruling Q67, Q65 step 11; text1b_b.c now starts here) | func_800747D8 | 0x80015A0C | after func_8006ECF4 .. up to func_800747D8 |
+   | text1b_b_tu2.c | prnt (its strings D_80015A68/7C/84) | 0x80015A68 | PsyQ module start of prnt |
+   | text1b_b_tu3.c | sprintf | 0x80015C7C | PsyQ module start of sprintf |
+ 
 diff --git a/src/text1b_b.c b/src/text1b_b.c
-index e6e11ca33..ccf5cb418 100644
+index e6e11ca33..015ecc5f1 100644
 --- a/src/text1b_b.c
 +++ b/src/text1b_b.c
 @@ -1,27 +1,37 @@
@@ -81,7 +95,7 @@ index e6e11ca33..ccf5cb418 100644
 -/* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
 - * field layout is the union of all observed accesses; m2c picks the type
 - * that best fits each access site. Mirroring smart_match.py's layout. */
-+/* ---- merged from text1b_tu2.c (owner ruling Q65: one original file) ---- */
++/* ---- merged from text1b_tu2.c (owner ruling Q67: one original file) ---- */
 +/* Declarations from the file this TU was split from (text1b.c). */
 +extern s32 ClearOTagR(s32, s32);
 +extern s32 D_800A36AC;
@@ -109,7 +123,7 @@ index e6e11ca33..ccf5cb418 100644
  typedef struct GameObj {
      u8 field_00; u8 field_01; s16 field_02;
      s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
-@@ -45,6 +55,1435 @@ typedef struct GameObj {
+@@ -45,6 +55,1543 @@ typedef struct GameObj {
      s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
      s16 field_FA; s32 field_FC;
  } GameObj;
@@ -726,7 +740,7 @@ index e6e11ca33..ccf5cb418 100644
 +        var_a1 = (arg1 - 0xA) / 5;
 +        var_a2 = (arg1 - 0xA) % 5;
 +    }
-+    if (SELWORK->f1C[arg2] == var_a1 && SELWORK->f20[arg2] == var_a2) {
++    if (SELWORK->f1C.half[arg2] == var_a1 && SELWORK->f20.half[arg2] == var_a2) {
 +        s.sp40 = 1;
 +    } else {
 +        s.sp40 = 0;
@@ -837,7 +851,7 @@ index e6e11ca33..ccf5cb418 100644
 +            s.sp18 = table[entry + 1];
 +            cells = s.sp18 + 0x24;
 +            s.sp1C = cells;
-+            if (D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
++            if (D_8009BCF8[arg1][SELWORK->f1C.half[arg3] * 5 + SELWORK->f20.half[arg3]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
 +                s.sp40 = 1;
 +                s.sp18 = s.sp18 + 12 + arg3 * 12;
 +            } else {
@@ -952,7 +966,7 @@ index e6e11ca33..ccf5cb418 100644
 +
 +        low = result & 0xFF;
 +        if (low < 3 && low != 0) {
-+            SELWORK->f1C[arg3] = (SELWORK->f1C[arg3] + 1) & 1;
++            SELWORK->f1C.half[arg3] = (SELWORK->f1C.half[arg3] + 1) & 1;
 +        }
 +    }
 +
@@ -960,21 +974,21 @@ index e6e11ca33..ccf5cb418 100644
 +    case 1: {
 +        s16 value;
 +
-+        value = SELWORK->f20[arg3];
++        value = SELWORK->f20.half[arg3];
 +        if (value == 4) {
-+            SELWORK->f20[arg3] = 0;
++            SELWORK->f20.half[arg3] = 0;
 +        } else {
-+            SELWORK->f20[arg3] = value + 1;
++            SELWORK->f20.half[arg3] = value + 1;
 +        }
 +    } break;
 +    case 2: {
 +        s16 value;
 +
-+        value = SELWORK->f20[arg3];
++        value = SELWORK->f20.half[arg3];
 +        if (value == 0) {
-+            SELWORK->f20[arg3] = 4;
++            SELWORK->f20.half[arg3] = 4;
 +        } else {
-+            SELWORK->f20[arg3] = value - 1;
++            SELWORK->f20.half[arg3] = value - 1;
 +        }
 +    } break;
 +    }
@@ -982,7 +996,7 @@ index e6e11ca33..ccf5cb418 100644
 +    {
 +        u8 entry;
 +
-+        entry = D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0;
++        entry = D_8009BCF8[arg1][SELWORK->f1C.half[arg3] * 5 + SELWORK->f20.half[arg3]].unk0;
 +        flag = &D_8009BCE4[entry];
 +        if ((*flag & 1) != 0) {
 +            bit = 4 << arg3;
@@ -1313,7 +1327,115 @@ index e6e11ca33..ccf5cb418 100644
 +
 +extern s32 func_80076FF8(s32 *);
 +
-+INCLUDE_ASM("asm/funcs", func_800770B8);
++s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
++    s16 sp[2];
++    /* work holds two values: the entry list pointer (arg0 + 0x58, passed to func_8006E950 /
++       func_80076FF8 and stored as the work area's f04), then the work area func_8006E49C returns
++       (stored to D_800A36A0). Owner Ruling 11 (reused-local-necessity.md) with owner ruling Q78
++       (rules: 6c8c276c3); package: memory/grind/func_800770B8/evidence.md (s41). */
++    void *work;
++    s32 r;
++    s16 t0;
++    s16 a2;
++
++    /* FAKE: empty do-while(0) wrap (do-while-zero-exception). Effect: its NOTE_INSN_LOOP_BEG/END
++       pair bounds sched2's region at this point, so the five frame-save stores are not interleaved
++       with the first body insns as in the target's prologue order. Measured without it (5) and
++       the prior search: memory/grind/func_800770B8/evidence.md (s41). */
++    do { } while (0);
++    sp[0] = 0;
++    sp[1] = 0;
++    ClearOTagR(g_gpu_ot_ptr, 0x1008);
++    work = (void *)(arg0 + 0x58);
++    D_800A35D8 = arg0;
++    snd_StopAll();
++    func_8006E950(6, work);
++    r = func_80076FF8(work);
++    {
++        s32 *list = work;
++        work = (void *)func_8006E49C(r, (s32 *)D_800A35D8);
++        D_800A36A0 = work;
++        SELWORK->f04 = list;
++        /* FAKE: dead store (dead-store-fake-exception; owner ruling Q78, rules: 6c8c276c3): work's
++           restored value is never read. Effect: cse.c make_regs_eqv puts work and the call's $v0 in
++           one quantity with work canonical, so the D_800A36A0 reloads for the 0x30/0x34 clears below
++           would become work ($s1); this store takes work out of that class first (cse.c
++           delete_reg_equiv), the reloads resolve to the f04 store's reload copy of the call result
++           instead, and the clears use $v0 as in the target (0x80077144/48). Dumps (.cse with and
++           without it, command lines) and lever exhaustion: memory/grind/func_800770B8/evidence.md (s40,
++           s41). */
++        work = list;
++        SELWORK->f30 = 0;
++        SELWORK->f34 = 0;
++    }
++    t0 = 0;
++    do {
++        SelWork *base = SELWORK;
++        /* FAKE: typed row pointer to D_800A35D0 (pointer-alias-fake-exception, the
++           `s16 (*p)[] = &D_xxx` re-view), kept so the same-value re-set below has a pseudo to re-set
++           (loop.c keeps its lui/addiu inside the outer loop). Measured without it:
++           memory/grind/func_800770B8/evidence.md (s41). */
++        s16 (*row)[2];
++        a2 = 0;
++        base->f10.half[t0] = 0;
++        base->f08[t0] = 0;
++        base->f0C[t0] = 0;
++        base->f14.half[t0] = 0;
++        base->f3C[t0] = 0;
++        row = D_800A35D0;
++        row[t0][1] = 0;
++        row[t0][0] = 0;
++        base->f40[t0][1] = 0;
++        base->f40[t0][0] = 0;
++        base->f68[t0] = t0;
++        do {
++            SELWORK->f6A[t0][a2] = -1;
++            SELWORK->f7E[t0][a2] = 0;
++            a2 = (s16)(a2 + 1);
++        } while (a2 < 5);
++        SELWORK->f5C[t0] = 0;
++        SELWORK->f60[t0] = 5;
++        for (a2 = 0; a2 < 0xA; a2 = (s16)(a2 + 1)) {
++            s16 idx = (s16)(a2 + (t0 * 10));
++            s32 mask = 1 << idx;
++            D_8009BCE4[idx] = (u8)(D_8009BCE4[idx] & 0xF2);
++            if ((arg2 & mask) != 0) {
++                D_8009BCE4[idx] = (u8)(D_8009BCE4[idx] | 1);
++                sp[t0] += 1;
++                /* FAKE: same-value dead store (dead-store-fake-exception): row is not read after
++                   this. Effect: a second set of row's pseudo in another basic block makes loop.c
++                   count_loop_regs_set mark it may_not_move (loop.c:3040-3041), so the lui/addiu of
++                   D_800A35D0 stays inside the outer loop where the target builds it instead of
++                   being hoisted to the pre-header. Measured without it and lever exhaustion:
++                   memory/grind/func_800770B8/evidence.md (s41). */
++                row = D_800A35D0;
++            }
++        }
++        t0 = (s16)(t0 + 1);
++    } while (t0 < 2);
++    {
++        SelWork *p = SELWORK;
++        p->f20.word = 0;
++        p->f1C.word = 0;
++        if (sp[0] < sp[1]) {
++            p->f64 = sp[0] - 3;
++        } else {
++            p->f64 = sp[1] - 3;
++        }
++    }
++    if (SELWORK->f64 >= 3) {
++        SELWORK->f64 = 2;
++    }
++    {
++        SelWork *q = SELWORK;
++        q->f00 = arg1;
++        q->f65 = 0;
++    }
++    SELWORK->f67 = 1;
++    SELWORK->f66 = D_8009BD20[SELWORK->f67][1];
++    D_800A35DC = 1;
++    return 1;
++}
 +
 +/* Tail word after func_800747D8's five-entry compiler-generated switch table. */
 +const u32 D_80015A20[1] = { 0x00000000 };
@@ -1526,7 +1648,7 @@ index e6e11ca33..ccf5cb418 100644
 +    D_800A35E4 = 1;
 +}
 +
-+/* ---- merged from text1b_b.c (owner ruling Q65: one original file) ---- */
++/* ---- merged from text1b_b.c (owner ruling Q67: one original file) ---- */
 +#define NULL ((void *)0)
 +
 +typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
@@ -1545,7 +1667,7 @@ index e6e11ca33..ccf5cb418 100644
  s32 _Pad1(void);
  
  
-@@ -496,9 +1935,6 @@ extern s32 column;
+@@ -496,9 +2043,6 @@ extern s32 column;
      extern s32 D_800A3478;
      extern s32 D_800A347C;
      extern s32 D_800A32BC;
@@ -1555,7 +1677,7 @@ index e6e11ca33..ccf5cb418 100644
      extern s32 D_800A346C;
      extern s32 D_800A3470;
      extern s32 D_800A3474;
-@@ -575,17 +2011,12 @@ extern s32 D_800A37D4;
+@@ -575,17 +2119,12 @@ extern s32 D_800A37D4;
  
  
  
@@ -1573,7 +1695,7 @@ index e6e11ca33..ccf5cb418 100644
  
  
  
-@@ -667,12 +2098,7 @@ extern s32 D_800A37D4;
+@@ -667,12 +2206,7 @@ extern s32 D_800A37D4;
  
  
  
@@ -1586,7 +1708,7 @@ index e6e11ca33..ccf5cb418 100644
  
  
  
-@@ -737,7 +2163,6 @@ extern s32 D_800A37D4;
+@@ -737,7 +2271,6 @@ extern s32 D_800A37D4;
  
  
  
@@ -1594,7 +1716,7 @@ index e6e11ca33..ccf5cb418 100644
  
  
  
-@@ -781,7 +2206,6 @@ extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
+@@ -781,7 +2314,6 @@ extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
  
  
  
@@ -1602,7 +1724,7 @@ index e6e11ca33..ccf5cb418 100644
  extern void func_8006E950(s32, s32 *);
  
  extern s32 func_8006E49C(s32, s32 *);
-@@ -799,7 +2223,6 @@ extern s32 func_8006E49C(s32, s32 *);
+@@ -799,7 +2331,6 @@ extern s32 func_8006E49C(s32, s32 *);
  
  /* --- Functions from text1b segment (0x80047ED0 - 0x80079A30) --- */
  
@@ -1610,7 +1732,7 @@ index e6e11ca33..ccf5cb418 100644
  extern u8 D_8009BD3B;
  extern u8 D_8009BD3C;
  extern u8 D_8009BD3D;
-@@ -866,11 +2289,6 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
+@@ -866,11 +2397,6 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
  end:
      return s2;
  }
@@ -1622,7 +1744,7 @@ index e6e11ca33..ccf5cb418 100644
  s32* func_80077D00(void) {
      return (s32 *)D_8009BD24;
  }
-@@ -891,12 +2309,7 @@ extern s32 D_800A3600;
+@@ -891,12 +2417,7 @@ extern s32 D_800A3600;
  s32 func_80077D74(s32 a0) {
      return D_800A35F4 + a0 * 44;
  }
@@ -1635,7 +1757,7 @@ index e6e11ca33..ccf5cb418 100644
  
  typedef struct {
      s16 x, y, w, h;
-@@ -1141,9 +2554,7 @@ s32 func_800784E4(s32 arg0) {
+@@ -1141,9 +2662,7 @@ s32 func_800784E4(s32 arg0) {
  }
  
  extern void func_80077D94(s32 *);
@@ -1645,7 +1767,7 @@ index e6e11ca33..ccf5cb418 100644
  typedef struct {
      s32 sp10;
      s32 sp14;
-@@ -1188,13 +2599,8 @@ extern s32 D_800A360C;
+@@ -1188,13 +2707,8 @@ extern s32 D_800A360C;
  s32 func_80078634(s32 a0) {
      return D_800A360C + a0 * 44;
  }
@@ -1659,7 +1781,7 @@ index e6e11ca33..ccf5cb418 100644
  
  typedef struct {
      s32 a;       /* sp18 - 0x00 */
-@@ -1286,7 +2692,6 @@ check:
+@@ -1286,7 +2800,6 @@ check:
  
  extern s32 D_800A3614;
  extern s32 D_800A3304;
@@ -1667,7 +1789,7 @@ index e6e11ca33..ccf5cb418 100644
  
  s32 func_80078824(s32 arg0) {
      s32 s0;
-@@ -1305,8 +2710,6 @@ s32 func_80078824(s32 arg0) {
+@@ -1305,8 +2818,6 @@ s32 func_80078824(s32 arg0) {
      gpu_SetDrawEnvBg(1, 0, 0, 0);
      return 1;
  }
@@ -1676,7 +1798,7 @@ index e6e11ca33..ccf5cb418 100644
  
  void func_80078654(s32 *);
  s32 func_800788B0(void) {
-@@ -1416,7 +2819,6 @@ extern s32 D_8009BD80;
+@@ -1416,7 +2927,6 @@ extern s32 D_8009BD80;
  void SetInitPadFlag(s32 a0) {
      D_8009BD80 = a0;
  }
@@ -1684,7 +1806,7 @@ index e6e11ca33..ccf5cb418 100644
  s32 ReadInitPadFlag(void) {
      return D_8009BD80;
  }
-@@ -1428,7 +2830,6 @@ void ChangeClearPAD(s32);
+@@ -1428,7 +2938,6 @@ void ChangeClearPAD(s32);
  s32 SetPatchPad(void);
  void PAD_init2(s32, s32, s32, s32);
  void _send_pad(void);
@@ -1692,7 +1814,7 @@ index e6e11ca33..ccf5cb418 100644
  void PAD_init(s32 a0, s32 a1, s32 a2, s32 a3) {
      _remove_ChgclrPAD();
      EnterCriticalSection();
-@@ -1440,15 +2841,7 @@ void PAD_init(s32 a0, s32 a1, s32 a2, s32 a3) {
+@@ -1440,15 +2949,7 @@ void PAD_init(s32 a0, s32 a1, s32 a2, s32 a3) {
      _send_pad();
      D_8009BD80 = 1;
  }
@@ -1708,7 +1830,7 @@ index e6e11ca33..ccf5cb418 100644
  void InitPAD(s32 a0, s32 a1, s32 a2, s32 a3) {
      _remove_ChgclrPAD();
      EnterCriticalSection();
-@@ -1461,14 +2854,12 @@ void InitPAD(s32 a0, s32 a1, s32 a2, s32 a3) {
+@@ -1461,14 +2962,12 @@ void InitPAD(s32 a0, s32 a1, s32 a2, s32 a3) {
      D_8009BD80 = 1;
  }
  void StartPAD2(void);
@@ -1723,7 +1845,7 @@ index e6e11ca33..ccf5cb418 100644
  void DisablePAD(void);
  void StopPAD2(void);
  s32 RemovePatchPad(void);
-@@ -1501,9 +2892,7 @@ s32 SetPatchPad(void) {
+@@ -1501,9 +3000,7 @@ s32 SetPatchPad(void) {
      ExitCriticalSection();
      return 1;
  }
@@ -1735,10 +1857,10 @@ index e6e11ca33..ccf5cb418 100644
      EnterCriticalSection();
 diff --git a/src/text1b_tu2.c b/src/text1b_tu2.c
 deleted file mode 100644
-index 5bd299896..000000000
+index 31fde3ab9..000000000
 --- a/src/text1b_tu2.c
 +++ /dev/null
-@@ -1,1491 +0,0 @@
+@@ -1,1599 +0,0 @@
 -#define INCLUDE_ASM_USE_MACRO_INC 1
 -#include "common.h"
 -#include "include_asm.h"
@@ -2412,7 +2534,7 @@ index 5bd299896..000000000
 -        var_a1 = (arg1 - 0xA) / 5;
 -        var_a2 = (arg1 - 0xA) % 5;
 -    }
--    if (SELWORK->f1C[arg2] == var_a1 && SELWORK->f20[arg2] == var_a2) {
+-    if (SELWORK->f1C.half[arg2] == var_a1 && SELWORK->f20.half[arg2] == var_a2) {
 -        s.sp40 = 1;
 -    } else {
 -        s.sp40 = 0;
@@ -2523,7 +2645,7 @@ index 5bd299896..000000000
 -            s.sp18 = table[entry + 1];
 -            cells = s.sp18 + 0x24;
 -            s.sp1C = cells;
--            if (D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
+-            if (D_8009BCF8[arg1][SELWORK->f1C.half[arg3] * 5 + SELWORK->f20.half[arg3]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
 -                s.sp40 = 1;
 -                s.sp18 = s.sp18 + 12 + arg3 * 12;
 -            } else {
@@ -2638,7 +2760,7 @@ index 5bd299896..000000000
 -
 -        low = result & 0xFF;
 -        if (low < 3 && low != 0) {
--            SELWORK->f1C[arg3] = (SELWORK->f1C[arg3] + 1) & 1;
+-            SELWORK->f1C.half[arg3] = (SELWORK->f1C.half[arg3] + 1) & 1;
 -        }
 -    }
 -
@@ -2646,21 +2768,21 @@ index 5bd299896..000000000
 -    case 1: {
 -        s16 value;
 -
--        value = SELWORK->f20[arg3];
+-        value = SELWORK->f20.half[arg3];
 -        if (value == 4) {
--            SELWORK->f20[arg3] = 0;
+-            SELWORK->f20.half[arg3] = 0;
 -        } else {
--            SELWORK->f20[arg3] = value + 1;
+-            SELWORK->f20.half[arg3] = value + 1;
 -        }
 -    } break;
 -    case 2: {
 -        s16 value;
 -
--        value = SELWORK->f20[arg3];
+-        value = SELWORK->f20.half[arg3];
 -        if (value == 0) {
--            SELWORK->f20[arg3] = 4;
+-            SELWORK->f20.half[arg3] = 4;
 -        } else {
--            SELWORK->f20[arg3] = value - 1;
+-            SELWORK->f20.half[arg3] = value - 1;
 -        }
 -    } break;
 -    }
@@ -2668,7 +2790,7 @@ index 5bd299896..000000000
 -    {
 -        u8 entry;
 -
--        entry = D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0;
+-        entry = D_8009BCF8[arg1][SELWORK->f1C.half[arg3] * 5 + SELWORK->f20.half[arg3]].unk0;
 -        flag = &D_8009BCE4[entry];
 -        if ((*flag & 1) != 0) {
 -            bit = 4 << arg3;
@@ -3005,7 +3127,115 @@ index 5bd299896..000000000
 -
 -extern s32 func_80076FF8(s32 *);
 -
--INCLUDE_ASM("asm/funcs", func_800770B8);
+-s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
+-    s16 sp[2];
+-    /* work holds two values: the entry list pointer (arg0 + 0x58, passed to func_8006E950 /
+-       func_80076FF8 and stored as the work area's f04), then the work area func_8006E49C returns
+-       (stored to D_800A36A0). Owner Ruling 11 (reused-local-necessity.md) with owner ruling Q78
+-       (rules: 6c8c276c3); package: memory/grind/func_800770B8/evidence.md (s41). */
+-    void *work;
+-    s32 r;
+-    s16 t0;
+-    s16 a2;
+-
+-    /* FAKE: empty do-while(0) wrap (do-while-zero-exception). Effect: its NOTE_INSN_LOOP_BEG/END
+-       pair bounds sched2's region at this point, so the five frame-save stores are not interleaved
+-       with the first body insns as in the target's prologue order. Measured without it (5) and
+-       the prior search: memory/grind/func_800770B8/evidence.md (s41). */
+-    do { } while (0);
+-    sp[0] = 0;
+-    sp[1] = 0;
+-    ClearOTagR(g_gpu_ot_ptr, 0x1008);
+-    work = (void *)(arg0 + 0x58);
+-    D_800A35D8 = arg0;
+-    snd_StopAll();
+-    func_8006E950(6, work);
+-    r = func_80076FF8(work);
+-    {
+-        s32 *list = work;
+-        work = (void *)func_8006E49C(r, (s32 *)D_800A35D8);
+-        D_800A36A0 = work;
+-        SELWORK->f04 = list;
+-        /* FAKE: dead store (dead-store-fake-exception; owner ruling Q78, rules: 6c8c276c3): work's
+-           restored value is never read. Effect: cse.c make_regs_eqv puts work and the call's $v0 in
+-           one quantity with work canonical, so the D_800A36A0 reloads for the 0x30/0x34 clears below
+-           would become work ($s1); this store takes work out of that class first (cse.c
+-           delete_reg_equiv), the reloads resolve to the f04 store's reload copy of the call result
+-           instead, and the clears use $v0 as in the target (0x80077144/48). Dumps (.cse with and
+-           without it, command lines) and lever exhaustion: memory/grind/func_800770B8/evidence.md (s40,
+-           s41). */
+-        work = list;
+-        SELWORK->f30 = 0;
+-        SELWORK->f34 = 0;
+-    }
+-    t0 = 0;
+-    do {
+-        SelWork *base = SELWORK;
+-        /* FAKE: typed row pointer to D_800A35D0 (pointer-alias-fake-exception, the
+-           `s16 (*p)[] = &D_xxx` re-view), kept so the same-value re-set below has a pseudo to re-set
+-           (loop.c keeps its lui/addiu inside the outer loop). Measured without it:
+-           memory/grind/func_800770B8/evidence.md (s41). */
+-        s16 (*row)[2];
+-        a2 = 0;
+-        base->f10.half[t0] = 0;
+-        base->f08[t0] = 0;
+-        base->f0C[t0] = 0;
+-        base->f14.half[t0] = 0;
+-        base->f3C[t0] = 0;
+-        row = D_800A35D0;
+-        row[t0][1] = 0;
+-        row[t0][0] = 0;
+-        base->f40[t0][1] = 0;
+-        base->f40[t0][0] = 0;
+-        base->f68[t0] = t0;
+-        do {
+-            SELWORK->f6A[t0][a2] = -1;
+-            SELWORK->f7E[t0][a2] = 0;
+-            a2 = (s16)(a2 + 1);
+-        } while (a2 < 5);
+-        SELWORK->f5C[t0] = 0;
+-        SELWORK->f60[t0] = 5;
+-        for (a2 = 0; a2 < 0xA; a2 = (s16)(a2 + 1)) {
+-            s16 idx = (s16)(a2 + (t0 * 10));
+-            s32 mask = 1 << idx;
+-            D_8009BCE4[idx] = (u8)(D_8009BCE4[idx] & 0xF2);
+-            if ((arg2 & mask) != 0) {
+-                D_8009BCE4[idx] = (u8)(D_8009BCE4[idx] | 1);
+-                sp[t0] += 1;
+-                /* FAKE: same-value dead store (dead-store-fake-exception): row is not read after
+-                   this. Effect: a second set of row's pseudo in another basic block makes loop.c
+-                   count_loop_regs_set mark it may_not_move (loop.c:3040-3041), so the lui/addiu of
+-                   D_800A35D0 stays inside the outer loop where the target builds it instead of
+-                   being hoisted to the pre-header. Measured without it and lever exhaustion:
+-                   memory/grind/func_800770B8/evidence.md (s41). */
+-                row = D_800A35D0;
+-            }
+-        }
+-        t0 = (s16)(t0 + 1);
+-    } while (t0 < 2);
+-    {
+-        SelWork *p = SELWORK;
+-        p->f20.word = 0;
+-        p->f1C.word = 0;
+-        if (sp[0] < sp[1]) {
+-            p->f64 = sp[0] - 3;
+-        } else {
+-            p->f64 = sp[1] - 3;
+-        }
+-    }
+-    if (SELWORK->f64 >= 3) {
+-        SELWORK->f64 = 2;
+-    }
+-    {
+-        SelWork *q = SELWORK;
+-        q->f00 = arg1;
+-        q->f65 = 0;
+-    }
+-    SELWORK->f67 = 1;
+-    SELWORK->f66 = D_8009BD20[SELWORK->f67][1];
+-    D_800A35DC = 1;
+-    return 1;
+-}
 -
 -/* Tail word after func_800747D8's five-entry compiler-generated switch table. */
 -const u32 D_80015A20[1] = { 0x00000000 };

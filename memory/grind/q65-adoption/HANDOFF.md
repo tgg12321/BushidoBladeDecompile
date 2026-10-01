@@ -1,41 +1,14 @@
 # Q65 adoption (per-file gp model): handoff, 2026-10-01
 
-**State.** The adoption is ready but NOT applied. It is a series of 16 byte-identical commits. The last full
-run was on main `6c73a2796` (2026-10-01, laneA). On that run every step built to the oracle
-`62efab4f73f992798c43e8c730aa43baa10bb4fa`, the maspsx unit tests showed only the two baseline failures,
-`engine test` was green at every step (1096-1102 passed, 0 failed; step 15 re-run separately with
-`atstep.sh step15 etest.sh`: 1102 passed), and `check_completion_integrity.py` is OK at step16 after
-`verify-oracle --rebuild` in the scratch clone. Regeneration on 6c73a2796 needed two generator fixes:
-- s08: the libscan naming wave (fe40a52b2) gave sound's func_800475A4 callee the name MulMatrix0, declared
-  `void (s32 *, s32 *, s32 *)` while text1b declares the libgte `MATRIX *(MATRIX *, MATRIX *, MATRIX *)`;
-  the merge failed ("conflicting types"). s08 now reconciles it like ApplyMatrix (libgte prototype, casts at
-  the one call site).
-- s16: relocate_records' stem list lacked the M3/M4 parts, so func_800770B8's queue record kept the deleted
-  `text1b_tu2`; the list now includes text1a_c2, text1a_b, text1a_b_pre_rodata, sound and text1b_tu2.
-Per-step layer-2 body keys of every changed completed body: `q56/adopt/body_hashes.txt` (body_hashes.py).
-
-**Round 2 (2026-10-01, laneA) — generators fixed for every round-1 layer-2 finding (tmp/orch/q65_fixes.md), series
-NOT regenerated: two owner questions block step 15** (docs/grind/borderline.md 2026-10-01 q65-adoption entries).
-- Done in the generators: s03 commit body (dedup list, typedef -> gte.h, cites e5317cbf9 / 64c69153a); s08
-  func_800475A4 `MATRIX buf1, buf2`; s09/s11 Q67 banners + rodata-align §9/§7 rows; s13 sdata move as a unit
-  (.globl/.align/.type/.size), `.string`, escape-aware sizes, tests on real cc1 output, A.3b cc1psx calibration
-  (cc1psx_static_probe.*); s14 per-word names merged (g_anim_hit_flags[2] / g_anim_hit_data[2], D_800A344C[2] /
-  D_800A3454[2], D_800A35C8[2]; dead rows dropped; body changes func_800420D0, func_8004211C, func_80060C60);
-  s15 block ends at the last gp-reached object, (A1) orphan joins (D_800A3540/3544 -> tu1d, D_800A35D0 ->
-  text1b_b), ORPHAN-LEFT log (D_800A3530, 12-byte D_800A3534), truthful filler comments, A6 fewest pieces (DP),
-  overrun guard, externs of new statics dropped from every other file, generated commit body (s15_msg.txt);
-  s16 the four research tools + relocate_records keyed on the ledger directory; step.sh logs every step's
-  exe_sha1 and a per-object compare against the previous step (series_run.log).
-- **New evidence (lcomm_align_probe.sh/.out): Sony ASPSX 2.34 + PSYLINK place EVERY `.lcomm` static 4-aligned**
-  (1..16-byte statics), where maspsx aligns by size (8 -> 8, 2 -> 2, 1 -> 1). The s14 merged s32[2] arrays sit
-  at 4-mod-8 addresses: impossible under maspsx's model, fine under Sony's. chain.sh with only the 8 -> 4 change
-  (`B`) builds every step s08..s16 to the oracle; the full Sony model would also turn 46 sub-word statics
-  (subword.sh: A6 static pieces, halfword pairs such as D_800A33C8/D_800A33CA) into padding or array elements.
-  Which model to adopt is the open owner question; s12 is unchanged until it is answered.
-
-The series is generated, never hand-applied. Main moves under the lanes, so always regenerate on the
-then-current main. Commit ids per step: `q56/adopt/series_base.txt`. Patches: `q56/adopt/NN-*.patch`, against
-64c69153a.
+**State (round 2, 2026-10-01, laneA).** Ready, NOT applied: 16 byte-identical commits regenerated on main
+`0107288ac` (after func_800770B8's landing). Every step: full build SHA1 == oracle (series_run.txt has one
+exe_sha1 line per step, incl. 15), engine test 0 failed (1096-1103 passed), maspsx unit tests only the two
+baseline failures, per-object compare against the previous step (series_run.txt); check_completion_integrity OK
+at step16. Round-2 fixes for every layer-2 round-1 finding (tmp/orch/q65_fixes.md) plus owner rulings Q79-Q81
+(rules: 8c57bc4ab: A8 4-aligned statics, A9 D_800A3264 / D_800A3530-3534) and Q84 (rules: 215f2d11a:
+camera_CalcAngles back to INCLUDE_ASM and re-queued in step 14). Changed completed bodies per step with layer-2
+keys: q56/adopt/body_hashes.txt. Step commit bodies: s03_msg.txt, s08_msg.txt, s12_msg.txt, s14_msg.txt,
+s15_msg.txt (generated; full generator log s15_log.txt). Commit ids: q56/adopt/series_base.txt.
 
 ## Regenerating on current main
 

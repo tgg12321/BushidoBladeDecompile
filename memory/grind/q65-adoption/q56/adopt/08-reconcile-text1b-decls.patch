@@ -1,6 +1,6 @@
-From 5f22c538f1b5d8a248b2f84ac654b047680cae80 Mon Sep 17 00:00:00 2001
+From fd1fe448aebfebd313b3ac75c414ae02c15f7d02 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 10:35:09 -0500
+Date: Thu, 1 Oct 2026 13:13:22 -0500
 Subject: [PATCH] src: text1a_c2 / text1a_b / text1a_b_pre_rodata / sound /
  text1b declarations reconciled by evidence (owner rulings Q65/Q67, step 8)
 
@@ -35,15 +35,15 @@ Body changes, each needing its own layer-2:
 - func_80049F4C uses the struct assignment.
 - Cast-only call-site edits in sound, text1a_c2 and text1b.
 ---
- src/sound.c               | 56 +++++++++++++++++++--------------------
+ src/sound.c               | 64 +++++++++++++++++++--------------------
  src/text1a_b.c            |  2 +-
- src/text1a_b_pre_rodata.c | 26 +++++++++---------
- src/text1a_c2.c           | 10 +++----
- src/text1b.c              | 48 ++++++++++++++++++---------------
- 5 files changed, 73 insertions(+), 69 deletions(-)
+ src/text1a_b_pre_rodata.c | 26 ++++++++--------
+ src/text1a_c2.c           | 10 +++---
+ src/text1b.c              | 48 ++++++++++++++++-------------
+ 5 files changed, 77 insertions(+), 73 deletions(-)
 
 diff --git a/src/sound.c b/src/sound.c
-index 4e6446d42..5c6f60a3a 100644
+index 4e6446d42..817a54c81 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -18,14 +18,14 @@ extern void func_8004473C(void);
@@ -213,7 +213,7 @@ index 4e6446d42..5c6f60a3a 100644
      s0 = ratan2(sp18[0], sp18[2]);
      sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
                + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
-@@ -565,7 +565,7 @@ extern s32 D_800EEE1C;
+@@ -565,12 +565,12 @@ extern s32 D_800EEE1C;
  extern s32 D_800EEE20;
  extern s32 D_800EEE24;
  extern s32 D_800F66B0;
@@ -222,6 +222,13 @@ index 4e6446d42..5c6f60a3a 100644
  void func_800475A4(void) {
      s16 rot[3];
      s32 result[4];
+-    s32 buf1[8];
+-    s32 buf2[8];
++    MATRIX buf1;
++    MATRIX buf2;
+     s16 angle;
+     s32 computed;
+     u8 *base;
 @@ -582,7 +582,7 @@ void func_800475A4(void) {
      rot[0] = 0;
      rot[1] = 0;
@@ -231,12 +238,16 @@ index 4e6446d42..5c6f60a3a 100644
  
      angle = ratan2(result[0], result[2]);
  
-@@ -600,7 +600,7 @@ void func_800475A4(void) {
+@@ -598,9 +598,9 @@ void func_800475A4(void) {
+     D_800EEE1C = D_80101DF0.xf.mat.t[0];
+     D_800EEE20 = D_80101DF0.xf.mat.t[1];
      D_800EEE24 = D_80101DF0.xf.mat.t[2] + 0x6590;
-     ((void (*)(u8 *, s32 *))D_800F66B0)(base + 0x10, buf1);
-     ((void (*)(u8 *, s32 *))g_anim_func_table[0])((u8 *)&D_80101DF0.xf.rot, buf2);
+-    ((void (*)(u8 *, s32 *))D_800F66B0)(base + 0x10, buf1);
+-    ((void (*)(u8 *, s32 *))g_anim_func_table[0])((u8 *)&D_80101DF0.xf.rot, buf2);
 -    MulMatrix0(buf2, buf1, (s32 *)(base + 0x18));
-+    MulMatrix0((MATRIX *)buf2, (MATRIX *)buf1, (MATRIX *)(base + 0x18));
++    ((void (*)(u8 *, MATRIX *))D_800F66B0)(base + 0x10, &buf1);
++    ((void (*)(u8 *, MATRIX *))g_anim_func_table[0])((u8 *)&D_80101DF0.xf.rot, &buf2);
++    MulMatrix0(&buf2, &buf1, (MATRIX *)(base + 0x18));
  
      {
          s32 *temp = (s32 *)D_800A3820;
@@ -339,7 +350,7 @@ index 6897e6602..9ec8c5147 100644
      func_8003EDC0((s32)s4, 7);
      func_80054410((s32)sp10);
 diff --git a/src/text1b.c b/src/text1b.c
-index c14321837..bfdf3a3b7 100644
+index f2ec1e0b9..061b26d6b 100644
 --- a/src/text1b.c
 +++ b/src/text1b.c
 @@ -411,7 +411,7 @@ typedef struct {

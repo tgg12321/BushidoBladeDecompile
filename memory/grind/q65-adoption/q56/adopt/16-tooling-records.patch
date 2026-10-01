@@ -1,31 +1,21 @@
-From b55913da8e3400a2d6bbe9d1fdb862ade87b9dea Mon Sep 17 00:00:00 2001
+From 0b083ce3140493cfbfc8ab79e0d7fcaa13653f4c Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 10:48:43 -0500
+Date: Thu, 1 Oct 2026 13:17:41 -0500
 Subject: [PATCH] tools/records: follow the retired sdata lists and the moved
  functions (owner ruling Q65, step 16)
 
 ---
- engine/queue.json               | 2 +-
  tools/check_root_cleanliness.py | 1 -
  tools/data_wave.py              | 7 +++----
  tools/desync_audit.py           | 2 --
  tools/grinder/grindlib.py       | 1 -
+ tools/mar_perm_compile.sh       | 3 +--
+ tools/mar_perm_workspace.sh     | 3 +--
  tools/naming_wave.py            | 2 --
- 6 files changed, 4 insertions(+), 11 deletions(-)
+ tools/ra_solver/mkasm_honest.sh | 4 +++-
+ tools/sched_solver/mkasm.sh     | 4 +++-
+ 9 files changed, 11 insertions(+), 16 deletions(-)
 
-diff --git a/engine/queue.json b/engine/queue.json
-index 314f9c9c4..cd20ae8ce 100644
---- a/engine/queue.json
-+++ b/engine/queue.json
-@@ -5,7 +5,7 @@
-   "items": [
-     {
-       "func": "func_800770B8",
--      "file": "text1b_tu2",
-+      "file": "text1b_b",
-       "distance": 0,
-       "verdict": "C",
-       "rules": 0,
 diff --git a/tools/check_root_cleanliness.py b/tools/check_root_cleanliness.py
 index 35e6b0d80..d7b127707 100644
 --- a/tools/check_root_cleanliness.py
@@ -81,6 +71,34 @@ index 3915d28a6..ce4768379 100644
      "volatile_extern_allowlist.txt",
  )
  
+diff --git a/tools/mar_perm_compile.sh b/tools/mar_perm_compile.sh
+index 7bbaa4020..996cf9412 100644
+--- a/tools/mar_perm_compile.sh
++++ b/tools/mar_perm_compile.sh
+@@ -9,8 +9,7 @@ tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 \
+     -mips1 -mno-abicalls -fno-builtin -w "$IN" -o /dev/stdout 2>/dev/null \
+   | python3 tools/prologue_fix.py \
+   | python3 tools/maspsx/maspsx.py --expand-div --aspsx-version=2.34 \
+-      --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt \
+-      --sdata-exclude=sdata_exclude.txt --expand-lb \
++      --expand-lb \
+       --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt \
+       --expand-dest-funcs=expand_dest_funcs.txt \
+        | python3 tools/multu_pad.py --funcs multu_pad_funcs.txt > "$TMPS"
+diff --git a/tools/mar_perm_workspace.sh b/tools/mar_perm_workspace.sh
+index a3d891c9e..be6306277 100644
+--- a/tools/mar_perm_workspace.sh
++++ b/tools/mar_perm_workspace.sh
+@@ -25,8 +25,7 @@ tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 \
+     -mips1 -mno-abicalls -fno-builtin -w "$IN" -o /dev/stdout 2>/dev/null \
+   | python3 tools/prologue_fix.py \
+   | python3 tools/maspsx/maspsx.py --expand-div --aspsx-version=2.34 \
+-      --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt \
+-      --sdata-exclude=sdata_exclude.txt --expand-lb \
++      --expand-lb \
+       --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt \
+       --expand-dest-funcs=expand_dest_funcs.txt \
+        | python3 tools/multu_pad.py --funcs multu_pad_funcs.txt > "$TMPS"
 diff --git a/tools/naming_wave.py b/tools/naming_wave.py
 index dcf51d132..1dcce3de3 100644
 --- a/tools/naming_wave.py
@@ -94,6 +112,36 @@ index dcf51d132..1dcce3de3 100644
      "inline_asm_canonical.txt",
      "maspsx_prefill_label_funcs.txt",
      "expand_lb_funcs.txt",
+diff --git a/tools/ra_solver/mkasm_honest.sh b/tools/ra_solver/mkasm_honest.sh
+index 23f4f7464..0a99e18c1 100644
+--- a/tools/ra_solver/mkasm_honest.sh
++++ b/tools/ra_solver/mkasm_honest.sh
+@@ -28,7 +28,9 @@ mkdir -p "$OUT/src"
+ CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
+ CC1="tools/gcc-2.7.2/build/cc1"
+ CC1F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
+-MASPSX_FLAGS="--expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt"
++MASPSX_FLAGS="--expand-div --aspsx-version=2.34 --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt"
++# owner rulings Q65/Q69: maspsx -G8 for every file except Sony library code (the Makefile's maspsx_flags_for)
++if python3 -c "import sys; sys.path.insert(0, '.'); from engine import buildconfig as c; sys.exit(0 if '$STEM' in c.PSYQ_LIBRARY_FILES else 1)"; then :; else MASPSX_FLAGS="$MASPSX_FLAGS -G8"; fi
+ 
+ # ---- ours: cheat-stripped source, no rules -------------------------------
+ python3 -c "
+diff --git a/tools/sched_solver/mkasm.sh b/tools/sched_solver/mkasm.sh
+index 7ed2755e2..e75130714 100644
+--- a/tools/sched_solver/mkasm.sh
++++ b/tools/sched_solver/mkasm.sh
+@@ -12,7 +12,9 @@ mkdir -p "$OUT"
+ CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
+ CC1="tools/gcc-2.7.2/build/cc1"
+ CC1F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
+-MASPSX_FLAGS="--expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt"
++MASPSX_FLAGS="--expand-div --aspsx-version=2.34 --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt"
++# owner rulings Q65/Q69: maspsx -G8 for every file except Sony library code (the Makefile's maspsx_flags_for)
++if python3 -c "import sys; sys.path.insert(0, '.'); from engine import buildconfig as c; sys.exit(0 if '$STEM' in c.PSYQ_LIBRARY_FILES else 1)"; then :; else MASPSX_FLAGS="$MASPSX_FLAGS -G8"; fi
+ 
+ $CPP "src/$STEM.c" 2>/dev/null > "$OUT/$STEM.i"
+ $CC1 $CC1F "$OUT/$STEM.i" -o "$OUT/$STEM.cc1.s" 2>/dev/null
 -- 
 2.43.0
 

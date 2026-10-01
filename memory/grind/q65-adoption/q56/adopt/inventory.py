@@ -56,7 +56,8 @@ for off in range(0x800, len(EXE) - 3, 4):
 
 
 def lcomm_align(n):
-    return 8 if n >= 8 else 4 if n >= 4 else 2 if n >= 2 else 1
+    # (A8, owner ruling Q79, rules: 8c57bc4ab): every `.lcomm` static is 4-aligned (lcomm_align_probe)
+    return 4
 
 
 def sdata_align(n):

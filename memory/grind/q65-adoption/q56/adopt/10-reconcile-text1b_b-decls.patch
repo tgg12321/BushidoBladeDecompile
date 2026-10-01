@@ -1,14 +1,13 @@
-From 555efe2eaec501bee123ac92713d4f927d6e709e Mon Sep 17 00:00:00 2001
+From c32923f83d1a4d5b0d686e35c5224f4d26f09acb Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 10:36:01 -0500
+Date: Thu, 1 Oct 2026 13:14:24 -0500
 Subject: [PATCH] src: text1b_tu2 / text1b_b (and the text1b_tu1d definition)
  declarations reconciled by evidence (owner rulings Q65/Q67, step 10)
 
 ---
  src/text1b_b.c    | 34 +++++++++++++++++++---------------
  src/text1b_tu1d.c |  4 ++--
- src/text1b_tu2.c  |  2 +-
- 3 files changed, 22 insertions(+), 18 deletions(-)
+ 2 files changed, 21 insertions(+), 17 deletions(-)
 
 diff --git a/src/text1b_b.c b/src/text1b_b.c
 index 049681e1d..e6e11ca33 100644
@@ -163,19 +162,6 @@ index 2f92e5fb4..a072debc4 100644
      game_FrameLoop();
      v0 = func_80036EA8(2, s0_addr);
      cdrom_StartRead(v0, (s32)s1);
-diff --git a/src/text1b_tu2.c b/src/text1b_tu2.c
-index 2a86d0b65..5bd299896 100644
---- a/src/text1b_tu2.c
-+++ b/src/text1b_tu2.c
-@@ -101,7 +101,7 @@ s32 func_8006E2A8(void);
- s32 func_8006E480(s32 a0_addr, s32 a1);
- s32 func_8006E49C(s32 arg0, s32 *arg1);
- s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3);
--void func_8006E950(s32 *a0, s32 *a1);
-+void func_8006E950(s32 a0, s32 *a1);
- s32 func_8006EACC(s32 arg0, s32 arg1);
- s32 func_8007352C(s32 env_addr);
- s32 func_80073728(s32 env_addr, s32 mode);
 -- 
 2.43.0
 
