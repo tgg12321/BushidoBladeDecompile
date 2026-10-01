@@ -21,13 +21,76 @@ s15_msg.txt (generated; full generator log s15_log.txt). Commit ids: q56/adopt/s
    - for each step: clean full build, SHA1 check, commit + tag `stepNN`, engine test, maspsx unit tests,
      and `NN-<name>.patch`.
 
-   It takes about 1 hour. Every definition, block and blob piece is recomputed from that commit's own
+   It takes about 12-15 minutes. Every definition, block and blob piece is recomputed from that commit's own
    oracle build.
 3. Read the step-15 log `/tmp/q56/s10_log.txt` (PADDING / END-PAD / A6 lines) and re-run the evidence:
    `bash tmp/q56/adopt/post_run.sh` writes `inventory.md` (step14) and `m34_evidence.md` (step07).
-4. Apply from the scratch branch: rebase or cherry-pick `step01..step16` onto main. Do this only with the
-   lanes quiet and holding `tools/reintegrate_lock.ps1`. After step 16, re-run `relocate_records.py` if
-   queue.json moved.
+4. Apply: see § Application plan below (never by hand-editing src; never with the lanes landing).
+
+## Application plan (round 2; prepared 2026-10-01, not executed)
+
+**Pending landings first, then regenerate.** Any `src/` change on main after the series base (0107288ac)
+makes the reviewed patches stale even where they would still apply: step 14's A8 respelling, step 15's
+definitions, extern removal and blob cut are generated from the base tree, and steps 14 / 16 edit
+`engine/queue.json`, which every `queue done` rewrites (textual conflict). The pending landings:
+- func_80058580 and func_8005C8A8 (text1b.c; both stay in text1b after step 03's boundary move, which ends
+  text1b at func_80060768) - affects steps 08/09 (text1b's declarations, the M3 merge), 14 (any new use of
+  D_800A33E8/EA, D_800A345C/5E, D_800A350C..12, g_anim_*, D_800A344C/50/54/58 gets respelled; a new
+  declaration of one of them with a different type is a compile error the regeneration surfaces) and 15
+  (text1b's sdata/static block typing takes each name's first declaration; new gp uses change nothing if
+  INCLUDE_ASM already had them).
+- func_8002AB08 (code6cac_b_tu2.c) - step 02 moves only func_800343F0; step 15 defines code6cac_b_tu2's
+  `.sdata` block (D_800A3140 gp from func_8002AB08, D_800A3144, D_800A314C); a new C declaration's type
+  becomes the definition's type.
+So: land them, freeze src, then run the series once on that HEAD (`run_all.sh <HEAD>`, ~12 min), `post_run.sh`,
+`body_hashes.py`, and compare each new `NN-*.patch` with the reviewed one (diff of the `+`/`-` lines only).
+Steps whose content changed beyond context get a targeted re-review (with their new body hashes); unchanged
+steps keep their round-2 PASS. Expected: 08 (if the new bodies touch reconciled declarations), 14 (new
+respellings), 15 (definitions / externs), 16 (records) - a few lines each, or none.
+
+**Apply (landing lock + `tools/reintegrate_lock.ps1`, lanes quiet, series base == main HEAD):**
+1. `git fetch "/tmp/q56/adopt tree" q56-adopt:refs/q65/adopt` (script file; read-only use of the clone).
+2. For NN = 01..16: `git cherry-pick stepNN` (a fast-forward-equivalent pick: same base), then
+   `git commit --amend --reset-author --no-edit` (author Trenton; runs the commit-msg chain - no new .md, the
+   step bodies are the generated sNN_msg texts); `lock.ps1 rebuild laneA` -> SHA1 must be
+   62efab4f73f992798c43e8c730aa43baa10bb4fa (stop and revert the pick if not); then the step's
+   `layer2 record` calls (below) with `--expect-hash`.
+   Step 14's pick carries camera_CalcAngles' `queue reopen` (queue.json + asm/funcs/camera_CalcAngles.s); check
+   `queue status` shows it active. Step 16 carries relocate_records' output (func_800770B8 is done, so no queue
+   move is expected; state.json / regions / scope lines may move).
+3. After step 16: `engine test`, `fixtures-verify`, `check_completion_integrity.py`; `engine verify-oracle
+   --rebuild` (the manifest still lists the three deleted lists and the old maspsx fingerprint) ->
+   `engine oracle-lock` -> commit `engine: oracle re-lock after the Q65 adoption` (oracle/manifest.json only).
+4. `rules:` commit (own layer-2): per-file-gp-model.md:12-13 ("Until the adoption lands ... stay in force")
+   -> "Adopted <date> in <step01..step16 commits>; the lists are deleted"; maspsx-gate-lists.md:30 likewise;
+   compiler-flags-canonical.md:47 and canonical-asm-authorization-recipe.md:18 replace `sdata_syms.txt` with
+   the file's own small-data definition. Then a `docs:` commit for docs/GLOSSARY.md:45 (gp addressing now
+   follows each file's definitions). Left as-is: tools/hooks/test_tooling_error_guard.py:141 (a glob
+   signature test, no file needed), the exists-guarded legacy tools rename_funcs / apply_kengo_names /
+   kengo_globals, and historical docs (handoff-2026-09-30, owner rulings, borderline).
+5. Release both locks.
+
+**layer2 record on application** (keys from q56/adopt/body_hashes.txt; reviewer = the round-2 group that
+PASSes the step; scope cheat-cleanup unless noted):
+- step 06 (group 06/08/10): stage_InitCollision b5c48386649a15d1.
+- step 08 (group 06/08/10): func_800460E4 7103e9254aa35494, func_800467B8 8519d94b993f2526, func_8004695C
+  6be407fb1b9aaad7, func_800469C4 86c538e9bbad80a3, func_80046BF4 945557971edb0bd4, func_8004700C
+  b9d23fd0d90b1398, func_800470B0 d8c649df7378cc1f, func_800475A4 22cadf9e368bb73c, func_800486FC
+  91ef82282b393c38, func_80048AD0 c8370ec348919a0c, func_80049E4C db8c2261e847d775, func_80049F4C
+  e1c8b97541369c3a, func_80054604 def31064c14fda49, func_80054F68 bfd45f6a0f9cbec9, game_GetPlayerData
+  2171330b16b14a5d, game_StageCleanup c2bdf6db0491ecfb. camera_CalcAngles' step-08 body (b75a3c79c1c92db6) is
+  not recorded: step 14 returns it to INCLUDE_ASM (Q84) and it is re-queued.
+- step 10 (group 06/08/10): func_8006E950 a7c9d42698332ae2, func_80077D00 a8866fe4ff77687b, func_80077D94
+  a63f216b21fca356, func_800784E4 3b8c117737402a72, func_80078654 ae1f1a217ee5f11c, func_80078824
+  d3d49804b8cfc737.
+- step 14 (group 14): func_800420D0 b7fd21173e7e5938, func_8004211C 4b925b3b4e033fcd, func_8004939C
+  e5f9816a4bb6f3b5, func_800494D4 f34311e386c27e9e, func_80049584 a382b4582eb01019, func_80049C24
+  4b5c268bae334cf6, func_80060A68 15c55ccbc19f6940, func_80060C60 bfef4059a61c599a, func_80063AF0
+  4834ae991f4cf373, func_80063B34 702d553c85cccef8, func_80063B78 163ad96e80695b89, func_80063BA4
+  132111cb441d4d6e, func_80068F70 80840d5d9a47d3a5, func_8006B578 7341b498b578ccd6, func_8006B92C
+  46405721f57b4de3, func_8006D5D4 05bc8f376f4102c9, func_8006DF68 9e7068065078ca45.
+- steps 01-05, 07, 09, 11-13, 15, 16: no completed body changes (moves verbatim; body keys unchanged).
+If the pre-application regeneration changes any of these keys, the new key and its re-review replace it.
 
 Helpers: `trial_seq.sh <tag> <sNN_apply.py>...` (try steps without committing), `objcompare.sh TAG...` (every
 object both ways), `implicit_check.sh`, `g8_test.sh` (the Q69 neutrality proof), `libfiles.py` /
