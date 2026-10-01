@@ -105,7 +105,8 @@ s = sub1(s, "/* Tail word after func_80021424's five-entry compiler-generated sw
  * (docs/grind/rodata-align-2026-09-30.md section 1, test t1), and code6cac_b.o must start at
  * 0x8001042C, the phase of its first jump table (object-relative .align 3). No instruction
  * references it, so its original declaration is not recoverable; any 4-byte zero object gives
- * these bytes. Evidence: memory/grind/func_80021424/retro-audit-2026-09-30.md. */
+ * these bytes. Spelled as one unreferenced filler named D_<addr> at its exact size, in the spirit of
+ * owner Q71 (per-file-gp-model.md (A6)). Evidence: memory/grind/func_80021424/retro-audit-2026-09-30.md. */
 const u32 D_80010428 = 0;
 """, "D_80010428")
 wr("src/code6cac_tu2.c", s)

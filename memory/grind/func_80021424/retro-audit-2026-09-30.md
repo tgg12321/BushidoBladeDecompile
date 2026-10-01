@@ -60,7 +60,7 @@ What remains before the merge can land as one cheat-cleanup:
    binary is func_80022580's `p->unk_0A = D_8008D538[arg2];` (the INCLUDE_ASM .s files naming D_80101ED2 only
    read it: func_8001CE60.s:373, func_80023F08.s:2926). D_8008D538 (asm/data/7D920.data.s:305-342) holds the
    values 0x00..0x1A only, so a1 is 0..26; the other per-class tables are sized [27] (D_8008DE34[27][6],
-   D_8008DF78[27][6], include/code6cac.h:186-187). 27 halfwords from +0x18 end at exactly +0x4E, where f4E
+   D_8008DF78[27][6], include/code6cac.h:193-194 as of the landing commit). 27 halfwords from +0x18 end at exactly +0x4E, where f4E
    begins: `u16 f18[27]` covers the gap with no filler. func_80021A3C reads it with `lhu 0x18($a1)`
    (asm/funcs/func_80021A3C.s:19).
 2. **f16 = u16 at +0x16.** func_800219E4 `lhu $v0,0x16($v0)` (asm/funcs/func_800219E4.s:18); like f18 its
@@ -86,3 +86,25 @@ anchor without writing; dry-run passes 2026-09-30). Still measured only at landi
 func_800219E4 / func_80021A3C through f16 / f18 (`.m.c`), and whether the sandbox needs the D_801027D4 /
 D_800A3864 rows to resolve func_80021210 / func_8003CF84 / func_80020D70's targets (`--rows retire` first;
 `--rows keep` only if it does).
+
+## Layer-2 round 1 (rev-21424, 2026-09-30): FAIL on one ground, fixed in the same landing
+Ground: func_80021904/974/9E4/A3C read `*(s16 *)((u8 *)&D_80101F12 + a0 * 1100)` (and D_80101F4C/F4E), mid-record
+per-word handles walked with a magic stride over g_practice_menu_table — the overlapping-handle class Q49 fixes.
+Fix (land2.py): PracticeMenuRec gains `s16 unk_4A` (+0x4A; lh in func_800213A0 0x800213C4, func_80021904/974
+`lh %lo(D_80101F12)`) and `s16 unk_86` (+0x86; lh/sh in func_800213A0 0x800213A0/0x80021418, lh in func_80021904,
+sh in func_800218C8); func_800218C8 / func_80021904 / func_80021974 / func_800219E4 / func_80021A3C index
+`g_practice_menu_table[a0].member`; func_800213A0 takes a `PracticeMenuRec *` (its caller in func_80021424
+passes `(PracticeMenuRec *)rec`); the C externs D_80101F12/F4C/F4E are gone; D_80101F12's row stays as an alias
+to retire with func_80023F08 (INCLUDE_ASM), F4C/F4E rows retire. All twelve bodies sandbox 0, full rebuild
+== oracle. Not in this landing (same class, other functions): the remaining mid-record externs D_80101F04,
+D_80101F08, D_80101F10, D_80101F14, D_80101F42, D_80101F5E (include/code6cac.h) and func_80021424's own
+`*(s16 *)(rec + 0x4A)`-style reads through its `u8 *rec` parameter.
+
+## 2026-09-30 late: scope widened to the full PracticeMenuRec handle cleanup (orchestrator), not landed yet
+Round-2 set (round2.patch) was staged; then func_80021424 itself respelled through `PracticeMenuRec *rec`
+(func_80021424.r3.c, land3.py: + `s16 unk_4C` lh 0x80021850, `s16 unk_78` sh x3) measured byte-neutral (sandbox 0
+for func_80021424 / func_8001FBE8 / func_800213A0, oracle). Its in-TU caller func_8001FBE8 passes a `u8 *rec`,
+so the orchestrator chose to retype func_8001FBE8's rec too and retire all six remaining mid-record externs
+(D_80101F04/F08/F10/F14/F42/F5E; C users func_8001C8DC, func_8001CE60, func_8001E404, func_8001EFA0,
+func_8001FBE8, func_80029454, func_8003993C) in the same landing. The src edits were reverted from main to let
+laneH land first; round3_full.patch (round 2 + land3) is the work to rebase.
