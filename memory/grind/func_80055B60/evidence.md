@@ -142,3 +142,26 @@ memory/grind/<func>/layer2.jsonl. Staged hunks reverted; rebuild == oracle. Next
   probes/r11b/d_proof.txt: pseudos 79-83 and every per-value pseudo get the same hard registers, priorities
   and conflict sets as s3 (renumbered: mask 723, da 788, near 656, len 761, far 657); the s3 mechanism text
   stands.
+
+## s6 (2026-10-01, laneC) — both landings prepared under the landing lock (not committed)
+Tree = main 00f040d74 + final/AB (land.py 3-way merge); full rebuild SHA1 == oracle; sandbox --disable all 0 for all
+18 changed bodies; check_completion_integrity OK; reviewer_precheck clean (func_800300B4: its pre-existing GTE islands).
+Staged: A (cheat-cleanup, msg_cleanup) + B (Match, msg_match). layer2 hash per body:
+  func_80055B60                    52c95e3c76da2225
+  func_80055138                    4d3863eee4618fcf
+  func_80022580                    d36a2f2c241e294f
+  func_8002FF20                    b675c03042cb37de
+  func_800300B4                    9d019faa77e996c7
+  func_80030208                    313d450b6bea4d62
+  func_8003043C                    d3177e2cb4836032
+  func_8003047C                    ee2a6ce4221d06c5
+  func_80030524                    0107e9564f408042
+  func_80030580                    8d5c318c5905fc3d
+  func_800307D0                    15d6276c09728ce3
+  func_80030900                    5935d526c6e7f04b
+  cpu_set_move_command_and_dir     aed30c93c9111dd7
+  func_80030BA8                    77c5e75a286d7635
+  func_80030D04                    e90edae493901505
+  func_80030D7C                    3cb328f126a763e0
+  func_80031890                    8e24821e276fc559
+  func_80031B24                    41a3f8796a0bbae1

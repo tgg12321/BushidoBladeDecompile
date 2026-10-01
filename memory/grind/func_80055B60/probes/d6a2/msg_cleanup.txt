@@ -1,0 +1,57 @@
+cheat-cleanup: D_80106A78 object records typed; 16 consumer bodies respelled
+
+Preparatory data-model landing for func_80055B60 (layer-2 rev-55B60-dm item 1: the twelve 0x64-byte records
+at 0x80106A78 were an `extern u8` walked by byte offset). Redoes the reverted first attempt with every
+objection of rev-d6a78-a / rev-d6a78-b fixed (memory/grind/func_80055B60/cluster-plan-2026-10-01.md,
+evidence.md s4b / s5). Full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa; every function of
+code6cac_b_tu2.c (81), code6cac_b.c and code6cac_tu2.c (94) byte-identical to the previous build
+(memory/grind/func_80055B60/probes/d6a2/chk.sh); sandbox --disable all 0 for each changed body.
+
+include/code6cac.h:
+- `Obj80106A78` (0x64 bytes) and `extern Obj80106A78 D_80106A78[12]` (12 x 0x64 ends at _ss_score). Members
+  from the consumers' loads/stores: s16 unk_00 (frames since spawn), s16 unk_02 (kind, -1 = free), u8
+  unk_04..unk_0B (unk_06 owner record index, unk_09 matrix-table index, unk_0A slot, 0xFF = never used),
+  `Obj80106A78Mat unk_0C` at +0x0C..+0x2B: the PsyQ MATRIX layout (s16 m[3][3], u16 pad, s32 t[3]) under a local
+  tag, as Unk80101DF0Mat already is (several TUs typedef MATRIX themselves). func_8002FF20 stores the identity
+  through m[i][j] and passes it to RotMatrixX/Y/Z and MulMatrix0; func_800300B4 passes it to MulMatrix0.
+  Vec3i32 unk_2C (position), unk_38 (previous position), unk_44 (velocity), s32 unk_50 (moving), s16
+  unk_54[3] (angles), s16 unk_5C[3] (angular speeds).
+- The per-word externs D_80106A7A / D_80106A80 / D_80106A82 are deleted (and their undefined_syms_auto.txt
+  rows; all their asm/funcs referrers are C bodies), as are the TU-local `extern u8 D_80106A78;` lines in
+  src/code6cac_b.c and src/code6cac_b_tu2.c.
+- `extern u8 D_800A36F2[2]`: func_8003047C stores [record index]; the readers read [0].
+- `extern s8 D_8008E338[27][5]` (dlabel 0x8008E338..0x8008E3BF = 27 x 5 + one 0x00 alignment byte; read lb
+  by func_8003047C, row = unk_0A class index).
+- `extern u16 D_8008EBA0[22]` (dlabel = 22 halfwords; func_80031890 reads [limb], limb < 22); the duplicate
+  scalar externs in src/code6cac_b.c and src/code6cac_b_tu2.c are removed.
+- PracticeMenuRec: `s16 unk_332[12]` (0x332..0x349, up to unk_34A) replaces `s16 unk_332` + filler:
+  func_8003047C fills [0..4], func_80030B10 shifts up to 12 entries, func_800307D0 / func_80030900 pop [0].
+  func_80022580's three scalar uses become unk_332[0] (text only; code6cac_tu2.c byte-identical).
+
+Bodies (src/code6cac_b_tu2.c unless noted):
+- func_800300B4(Obj80106A78 *), func_8002FF20(Obj80106A78 *, s16), func_80031890(u8 *scratch,
+  Obj80106A78 *ent, s32): the record through members. Canonical GTE islands: text unchanged, except
+  func_800300B4's gte_ldlv0 operand `arg0 + 0x2C` -> `&arg0->unk_2C` (same address); its
+  tools/canonical_asm_regions.json hash [1] is recomputed (engine.completion.region_hashes); the other
+  islands' hashes are unchanged. func_8002FF20 hands RotMatrixX/Y/Z `(s32 *)&arg0->unk_0C`: this TU declares
+  them (s32, s32 *), as its 12 other call sites use.
+- func_80030208, func_8003043C, func_80030524, func_80030D04, func_80030D7C, func_80031B24: members; `obj`
+  walks D_80106A78 as an Obj80106A78 *; literals -1 / 0xFF (no neg / val holders); the kind range tests read
+  `kind >= 0x12 && kind < 0x1E` and func_80030D7C's rest test `-15 <= v.y <= 15 && -3 <= v.x <= 3 &&
+  -3 <= v.z <= 3` (the unsigned-cast forms are gone; byte-identical); func_80031B24's fighter is
+  `PracticeMenuRec *ch = &g_practice_menu_table[other]` (no byte offset).
+- func_8003047C(PracticeMenuRec *), func_80030580(PracticeMenuRec *, s32) returning Obj80106A78 *,
+  func_800307D0(PracticeMenuRec *), func_80030900(PracticeMenuRec *, Vec3i32 *),
+  cpu_set_move_command_and_dir(PracticeMenuRec *, s32, Vec3i32 *), func_80030BA8(PracticeMenuRec *): all
+  record fields through members (their callers pass records: func_80022580, func_80027A58, func_80023F08);
+  func_800307D0's index is `idx = a0->unk_332[0] == a0->unk_14` under `count >= 2 && unk_88 != -1`; the stale
+  TABLED comment above it is deleted; func_80030BA8's single-use `a0val` is inlined.
+- Interface casts kept where an unchanged callee's prototype takes a different pointer type (the pattern of
+  func_8002AB08's `(u8 *)self`, cb42a7dea): func_80032854 (u8 *), func_80030B10 (u8 *), func_80027AD8 (u8 *),
+  func_800274BC / func_8005344C (s32 *). The 0x1F8002B8 scratch block stays untyped as before.
+
+Symbol files: undefined_syms_auto.txt drops D_80106A7A / D_80106A80 / D_80106A82; named_syms.txt drops
+g_active_slot_table_12, g_active_slot_flags_12 and g_active_slot_flags_12_plus_2, rewords the D_80106A78
+row and the notes at 0x8003043C / 0x80030BA8.
+
+Layer-2: (recorded on PASS).
