@@ -1,0 +1,30 @@
+func_80032314:
+	subu	$sp,$sp,8
+	la	$8,D_80104E88
+	move	$9,$0
+	addu	$7,$8,2
+	lbu	$2,0($8)
+	#nop
+	beq	$2,$0,.L1088
+	lbu	$3,1($7)
+	#nop
+	sltu	$3,$3,1
+	sll	$2,$3,4
+	addu	$2,$2,$3
+	sll	$2,$2,2
+	addu	$2,$2,$3
+	sll	$2,$2,2
+	subu	$2,$2,$3
+	sll	$2,$2,2
+	la	$3,g_practice_menu_table
+	addu	$6,$2,$3
+	lhu	$3,106($6)
+	li	$2,0x00000004		# 4
+	andi	$4,$3,0xffff
+	beq	$4,$2,.L1088
+	li	$2,0x00000014		# 20
+	beq	$4,$2,.L1088
+	li	$2,0x0000000f		# 15
+	beq	$4,$2,.L1088
+	addu	$2,$3,-28
+	sltu	$2,$2,2

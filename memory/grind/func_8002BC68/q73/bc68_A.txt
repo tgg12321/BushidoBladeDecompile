@@ -1,0 +1,100 @@
+func_8002BC68:
+	lw	$3,g_practice_menu_table+216
+	lw	$2,g_practice_menu_table+1316
+	#nop
+	subu	$7,$3,$2
+	mult	$7,$7
+	move	$5,$4
+	lw	$3,g_practice_menu_table+224
+	lw	$2,g_practice_menu_table+1324
+	mflo	$4
+	#nop
+	subu	$9,$3,$2
+	mult	$9,$9
+	subu	$sp,$sp,8
+	la	$10,g_practice_menu_table
+	mflo	$3
+	#nop
+	#nop
+	addu	$4,$4,$3
+	sltu	$2,$4,1024
+	beq	$2,$0,.L570
+	addu	$11,$10,1100
+
+	lbu	$2,g_sqrt_table_u8($4)
+	j	.L571
+	srl	$8,$2,3
+
+ #APP
+	addu   $t4, $4, $zero
+mtc2   $t4, $30
+nop
+nop
+addu   $t4, $sp, $zero
+swc2   $31, 0($t4)
+
+ #NO_APP
+	lw	$3,0($sp)
+	li	$2,-2			# 0xfffffffe
+	and	$2,$3,$2
+	li	$3,0x00000016		# 22
+	subu	$3,$3,$2
+	srl	$2,$4,$3
+	srl	$3,$3,1
+	lbu	$4,g_sqrt_table_u8($2)
+	li	$2,0x00000013		# 19
+	subu	$2,$2,$3
+	sll	$4,$4,16
+	srl	$8,$4,$2
+	slt	$2,$8,$5
+	beq	$2,$0,.L572
+	li	$4,0x51eb0000		# 1374355456
+
+	ori	$4,$4,0x851f
+	subu	$3,$5,$8
+	sll	$2,$3,2
+	addu	$2,$2,$3
+	sll	$2,$2,4
+	mult	$2,$4
+	sra	$2,$2,31
+	mfhi	$24
+	#nop
+	#nop
+	sra	$3,$24,5
+	j	.L573
+	subu	$4,$3,$2
+
+	subu	$3,$5,$8
+	bgez	$3,.L573
+	sra	$4,$3,4
+
+	addu	$3,$3,15
+	sra	$4,$3,4
+	mult	$7,$4
+	mflo	$3
+	#nop
+	addu	$2,$5,-100
+	div	$6,$3,$2
+	mult	$9,$4
+	mflo	$3
+	#nop
+	#nop
+	div	$5,$3,$2
+	subu	$3,$0,$4
+	mult	$7,$3
+	mflo	$4
+	#nop
+	#nop
+	div	$4,$4,$2
+	mult	$9,$3
+	mflo	$3
+	#nop
+	#nop
+	div	$2,$3,$2
+	sw	$6,308($10)
+	sw	$5,316($10)
+	sw	$4,308($11)
+	sw	$2,316($11)
+	move	$2,$8
+	addu	$sp,$sp,8
+	j	$31
