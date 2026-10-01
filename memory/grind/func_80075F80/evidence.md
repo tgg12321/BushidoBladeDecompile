@@ -91,3 +91,9 @@ declarations, the SELWORK f48 view) re-land unchanged once 1-4 are in, each with
   test is `f3C[0] != 0 || f3C[1] != 0`, which fold_truthop merges into the one word load, so no f3C union and no
   respell of the other f3C users. Remaining device: the placeholder tail duplicated in both arms (FAKE,
   duplicated-statement-into-arms + Q47; shared tail 6). Case 2 stores in each arm like case 1 (natural; `next` 7).
+
+## LANDED 2026-10-01 — COMPLETED-C (Match f79e2153c), split from func_800759D0
+Joint round: rev-75F80 PASS func_80075F80 (5be1b1cb58ead157) and func_80076D74 (28547bedfed08118), rev-759D0 FAIL
+func_800759D0 (56305667e7030c02: three-write `table`, flat read needs Q53 FAKE). Landed without func_800759D0
+(back to INCLUDE_ASM), with the [2][10] declaration and the g_text1b_addr_8009BCF8/9 named_syms rows retired;
+confirmation rev-75F80-r2 PASS on the reduced diff. SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa.
