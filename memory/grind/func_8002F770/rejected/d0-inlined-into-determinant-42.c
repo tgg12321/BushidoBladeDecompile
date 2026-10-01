@@ -9,7 +9,6 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
      * 3x3 determinant (the divisor of the six cofactors) and then the square root of
      * i0*i0 + i1*i1 (the ratan2 length). */
     s32 work;
-    s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
@@ -38,10 +37,9 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
 
     m = (MATRIX *)0x1F800390;
     c0 = m->m[1][2] * m->m[2][1] - m->m[1][1] * m->m[2][2];
-    d0 = m->m[0][0] * (c0 >> 12);
     c1 = m->m[0][1] * m->m[2][2] - m->m[0][2] * m->m[2][1];
     c2 = m->m[0][2] * m->m[1][1] - m->m[0][1] * m->m[1][2];
-    work = (d0 + m->m[1][0] * (c1 >> 12) + m->m[2][0] * (c2 >> 12)) >> 12;
+    work = (m->m[0][0] * (c0 >> 12) + m->m[1][0] * (c1 >> 12) + m->m[2][0] * (c2 >> 12)) >> 12;
     i0 = c0 / work;
     i1 = c1 / work;
     i2 = c2 / work;

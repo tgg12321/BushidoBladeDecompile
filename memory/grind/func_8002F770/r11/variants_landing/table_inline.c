@@ -5,17 +5,11 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     s32 *mat;
     s32 *vec;
     s32 c0, c1, c2;
-    /* work holds two values (Ruling 11, owner 2026-09-26; proof: memory/grind/func_8002F770/r11/proof.md): the
-     * 3x3 determinant (the divisor of the six cofactors) and then the square root of
-     * i0*i0 + i1*i1 (the ratan2 length). */
     s32 work;
     s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* temp holds two values (Ruling 11; proof: memory/grind/func_8002F770/r11/proof.md): i0*i0 + i1*i1 (the
-     * squared length fed to the table lookup and the leading-zero count) and then the
-     * square-root table byte. */
     s32 temp;
     s32 sp_tmp;
 
@@ -68,8 +62,7 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
         }
         {
             s32 shift = 0x16 - (lzcr & ~1);
-            temp = (&g_sqrt_table_u8)[(u32)temp >> shift];
-            work = (u32)(temp << 16) >> (0x13 - ((u32)shift >> 1));
+            work = (u32)((&g_sqrt_table_u8)[(u32)temp >> shift] << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
 

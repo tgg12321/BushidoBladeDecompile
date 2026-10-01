@@ -1,0 +1,20 @@
+== tmp/F770c/d_reuse:func_8002F770
+   det: pseudo 84, seat global 10 | Register 84 used 16 times across 21 insns; dies in 2 places; GR_REGS or none. | no preference line
+   sum: pseudo 94, seat global 4 | Register 94 used 8 times across 22 insns; dies in 3 places; GR_REGS or none. | ;; 94 preferences: 4 16 17
+== tmp/F770c/d_pv:func_8002F770
+   det: pseudo 84, seat global 2 | Register 84 used 13 times across 16 insns in block 0; GR_REGS or none. | no preference line
+   sum: pseudo 95, seat global 16 | Register 95 used 6 times across 19 insns; dies in 2 places; GR_REGS or none. | ;; 95 preferences: 16 17
+== tmp/F770c/d_split:func_8002F770
+   det: pseudo 84, seat global 2 | Register 84 used 13 times across 16 insns in block 0; GR_REGS or none. | no preference line
+   sum: pseudo 95, seat global 4 | Register 95 used 8 times across 22 insns; dies in 3 places; GR_REGS or none. | ;; 95 preferences: 4 16 17
+== tmp/F770c/d_sumsplit:func_8002F770
+   det: pseudo 84, seat global 10 | Register 84 used 16 times across 21 insns; dies in 2 places; GR_REGS or none. | no preference line
+   sum: pseudo 94, seat global 16 | Register 94 used 6 times across 19 insns; dies in 2 places; GR_REGS or none. | ;; 94 preferences: 16 17
+tmp/F770c/d_reuse:func_8002F770: shift dest pseudo 241 (local seat 4), source pseudo 94
+tmp/F770c/d_pv:func_8002F770: shift dest pseudo 243 (local seat 4), source pseudo 239
+tmp/F770c/d_sumsplit:func_8002F770: shift dest pseudo 242 (local seat 4), source pseudo 238
+
+# local-alloc evidence for the determinant pseudo 84 (landing chassis):
+#   d_pv    .lreg:194  ;; Register 84 in 2.            (local-alloc seat $v0)
+#   d_pv    .greg:3    ;; 27 regs to allocate: 123 187 204 ...   (84 absent)
+#   d_reuse .greg:3    ;; 27 regs to allocate: 84 94 122 ...     (84 global -> 10 = $t2)
