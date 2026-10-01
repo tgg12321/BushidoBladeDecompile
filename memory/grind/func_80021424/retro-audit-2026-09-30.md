@@ -37,3 +37,19 @@ evidenced) — not measured (header change). Then: drop the six per-word externs
 undefined_syms_auto.txt rows D_801027B4/B8/BC/C0 stay suffixed `/* alias of D_801027B0+N; retire with
 func_80020E74 */` (INCLUDE_ASM referrer), rows D_801027D4 / D_800A3864 retire (only C functions' .s name
 them); D_80010428 tail word: evidence or removal.
+
+## Follow-up debt (recorded 2026-09-30 at the orchestrator's direction; not landed this run)
+What remains before the merge can land as one cheat-cleanup:
+1. func_800219E4 reads the record at +0x16 (u16) and func_80021A3C at +0x18 + a1 * 2 (u16), both through
+   `*(s32 *)((u8 *)&D_800A3860 + ...)` casts. Tbl800A3860Entry (include/code6cac.h) covers 0x16..0x4D with
+   `u8 pad16[0x4E - 0x16]`, so it needs `u16 f16;` and a `u16 f18[N]` member. N is the open question: the
+   reachable range of a1 at every func_80021A3C call site (and any other reader of +0x18..) must be evidenced;
+   N = 27 only fills the gap to 0x4E, which is not evidence. Then respell both as `D_800A3860[v0]->f16` /
+   `->f18[a1]` and measure (expected byte-neutral, not yet measured).
+2. Apply the measured respellings (probes-2026-09-30/*.m.c) to func_80020D70, func_80021210, func_80021904,
+   func_80021974, func_80021A98, func_80022F34 (code6cac_tu2.c) and func_8003CF84 (code6cac_c2.c).
+3. Drop the six per-word externs (D_801027B4/B8/BC/C0/D4, D_800A3864) from include/code6cac.h; suffix the
+   undefined_syms_auto.txt rows D_801027B4/B8/BC/C0 `/* alias of D_801027B0+N; retire with func_80020E74 */`
+   (func_80020E74 is INCLUDE_ASM and names them); retire the D_801027D4 and D_800A3864 rows.
+4. `const u32 D_80010428[1] = {0}` (unowned tail word): find ownership evidence or remove it.
+5. verify-oracle --rebuild, sandbox 0 for every touched function, one layer-2 over the set.
