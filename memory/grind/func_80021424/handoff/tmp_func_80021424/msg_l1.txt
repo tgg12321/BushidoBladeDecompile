@@ -1,0 +1,62 @@
+cheat-cleanup: func_80021424 — complete the 0x801027B0 / 0x800A3860 merges and reach its practice record through PracticeMenuRec (retro-audit CONCERN 23152ce9e, owner Q49)
+
+The retro-audit (2026-09-29, batch_02) found func_80021424's `extern s32 D_801027B0[][5];` landed beside the
+per-word handles D_801027B4 / B8 / BC[][5] / C0 / D4 (the same storage), and `Tbl800A3860Entry *D_800A3860[]`
+beside `s32 D_800A3864` (== D_800A3860[1]): a partial merge without prong (c). Owner Q49 put it in the
+fix-forward set. Layer-2 round 1 (rev-21424) FAILed the first fix only because the changed readers still went
+through mid-record per-word handles over g_practice_menu_table; this landing removes every record handle and
+cast from every body it changes.
+
+1. The 0x801027B0 / 0x800A3860 merges (include/code6cac.h, undefined_syms_auto.txt):
+   - the six per-word externs are deleted; Tbl800A3860Entry gains `u16 f16` (+0x16) and `u16 f18[27]`
+     (+0x18..+0x4D) in place of pad16 — f18's index is the character class (PracticeMenuRec.unk_0A, written
+     only from D_8008D538, whose values are 0..26; the other class tables are [27]); 27 halfwords end exactly
+     at f4E; both read with lhu (func_800219E4.s:18, func_80021A3C.s:19);
+   - consumers through the one declaration: func_80020D70 `D_800A3860[1]`; func_80021210 / func_8003CF84
+     `D_801027B0[0][4]`, `[1][4]`; func_80021904 / func_80021974 `D_801027B0[v1][0] +
+     D_800A3860[v1]->f4E[v0] * 2`; func_800219E4 `->f16`; func_80021A3C `->f18[a1]`; func_80021A98
+     `D_801027B0[a3][1]` / `[a3][2]` (the `a3 * 5` stride local gone); func_80022F34 `D_801027B0[idx][3]`;
+   - rows: D_801027B4 / B8 / BC / C0 stay as aliases to retire with func_80020E74 (INCLUDE_ASM); D_801027D4
+     and D_800A3864 retire (only completed C's reference .s files name them; those functions still score 0).
+2. The practice record through PracticeMenuRec (g_practice_menu_table, 2 records of 0x44C at 0x80101EC8):
+   - new members, each typed by the target's own load/store at that offset (tmp/prc/acc.py <func> <reg>):
+     s16 unk_40 / unk_42 / unk_46 (sh), s16 unk_4A (lh: func_800213A0 0x800213C4, func_80021904/974),
+     s16 unk_4C (lh 0x80021850, sh 0x8001FF58), u8 *unk_50 (lw/sw; func_80021424's result, read as bytes),
+     s32 unk_54 / unk_58 (sw, lw/sw), s16 unk_5C (sh), u8 unk_60 / unk_61 (sb), u16 unk_6A (lhu/sh),
+     s16 unk_6C (lh/sh), s16 unk_6E / unk_70 (sh), s32 unk_74 (sw 0x8001FD78), s16 unk_78 (sh x3 in
+     func_80021424), s16 unk_7A (lh 0x8001FE18, sh 0x8001FF80), s16 unk_86 (lh/sh func_800213A0), s16 unk_94
+     (sh 0x8001FD40), u8 unk_AD / unk_AF (sb), u8 unk_B0 (lbu), s16 unk_154 (sh), u16 unk_272 (lhu/sh
+     0x8001FFA4/B0; signedness not revealed, typed by the load); offsets without a typed access stay padding;
+   - func_80021424 takes `(PracticeMenuRec *rec, s32 id, s16 *out)` and reads members (rec->unk_00->unk_4A
+     for the other record); func_8001FBE8's `rec` and func_80021A98's `s0` are `PracticeMenuRec *` and every
+     record cast is a member (func_8001FBE8's rec stays one variable under owner Ruling 6: the per-region
+     spelling still scores 14, as banked; func_80021A98's two FAKE do-while(0) wraps are unchanged);
+     func_80022F34 walks `&g_practice_menu_table[i]` in a do-while loop (its goto loop with a byte `offset +=
+     0x44C` is gone; the goto form of the index walk costs 3 instructions because a goto loop gets no loop
+     notes, the do-while lets loop.c strength-reduce i * 0x44C into the target's offset register) and reads
+     `rec->unk_00->unk_4A` instead of re-pointing rec at the other record; func_800213A0 takes a
+     `PracticeMenuRec *`; func_800218C8 / func_80021904 / func_80021974 / func_800219E4 / func_80021A3C index
+     `g_practice_menu_table[a0].member`. Boundary casts that remain are pointer-value conversions to
+     other-file prototypes (`func_800324D0((u8 *)s0)`, `func_8001FB34((s32 *)rec, ...)`,
+     `func_8001FAE4((s32 *)rec->unk_50)`);
+   - externs D_80101F08 / F10 / F12 / F14 / F42 / F4C / F4E leave C; rows: F08 (func_80026DA4), F10 and F12
+     (func_80020E74, func_80023F08) stay as aliases of their INCLUDE_ASM referrers; F14 / F42 / F4C / F4E
+     retire.
+3. Tail words: D_800100E0 (a hand-written copy of the pad `.align 3` regenerates before jtbl_800100E4) is
+   deleted — code6cac_tu2.o's .rodata, .text and relocation count are identical without it; D_80010428 is
+   respelled from the existing `[1]` array to the byte-identical scalar `const u32 D_80010428 = 0;` with its
+   evidence comment; it claims nothing new (data proven by the layout, unreferenced, an exact-size D_<addr>
+   filler in the spirit of owner Q71).
+
+Not in this landing (recorded debt, memory/grind/func_80021424/retro-audit-2026-09-30.md): the remaining
+per-word handles over g_practice_menu_table used by bodies this commit does not change (D_80101F04, D_80101F5E,
+D_801023AA, ...; counts by probes-2026-09-30/census_all.py, before/after in the ledger) in func_8001C8DC /
+CE60 / E404 / EFA0, func_8003993C, func_80029454 and others (follow-up landings L2-L4), and the cross-file
+func_80021424 prototype in code6cac_b_tu2.c.
+
+sandbox --disable all 0 for all thirteen bodies on the spliced src; full rebuild SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+
+Layer-2: round 1 FAIL (rev-21424); round 2 <pending>
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
