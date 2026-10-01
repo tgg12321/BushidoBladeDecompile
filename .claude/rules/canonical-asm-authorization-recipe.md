@@ -18,6 +18,10 @@ A-category authorization pass (5 functions: `func_8004DDB4`, `func_8006BD28`,
 `save_vc_ctrl`, `InitFadePanel`, `func_80044010`). One of the five required a
 revert + retry; the other four worked first-try by following these rules.
 
+> **Status note (2026-10-01):** `func_80044010`, `save_vc_ctrl` and `func_8006BD28` were DE-AUTHORIZED by owner
+> ruling (docs/grind/decisions.md, "inline-asm audit") and are INCOMPLETE queue items again. They remain valid
+> worked examples of the block-writing MECHANICS below; they are no longer examples of what qualifies.
+
 ## The three load-bearing technical rules
 
 ### 1. Use SYMBOL form for globals, NOT `%gp_rel(X)($gp)`

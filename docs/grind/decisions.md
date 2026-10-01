@@ -30763,3 +30763,29 @@ that cannot convert byte-neutrally is a new owner question. The asm func_8002AB0
 alias until it is C. Each per-word declaration is FAKE-annotated with the
 ruling and the evidence path. Every other access to the table goes through the struct. Prong (c)'s one-handle
 rule and the F4 refusal stand for everything else. Nothing is pre-decided for either function.
+
+## 2026-10-01 — OWNER RULING — inline-asm audit: three canonical-asm entries de-authorized and re-queued
+
+Context: the owner asked for an audit of every inline-asm function (count, sizes, whole-asm vs partial, and any
+marked asm while canonically C), then how SOTN handles such functions. Full report:
+docs/audits/INLINE-ASM-AUDIT-2026-10-01.md. The audit named three entries of inline_asm_canonical.txt whose cited
+evidence is reproduced by COMPLETED-C functions or is difficulty-of-reproduction only, and noted that SOTN has no
+"too hard, so call it asm" state (such a function stays INCLUDE_ASM / not decompiled until matched).
+
+Owner, verbatim (2026-10-01, in conversation): "Document all these action items and we will get to them. But the
+three suspects that are mis-designated we should add back to the queue."
+
+Ruling: `func_80044010`, `save_vc_ctrl` and `func_8006BD28` leave inline_asm_canonical.txt and return to the
+queue as ordinary INCOMPLETE items (asm-until-matched form, honest floor as their distance). This SUPERSEDES the
+2026-08-06 ruling recorded above ("func_8006BD28 — owner rules: leave authorized (the 2026-06-07 decision
+stands)"). Evidence summary:
+- func_80044010 (34 insns) and save_vc_ctrl (16 insns): authorized 2026-06-07 on "8-byte frame with no locals,
+  frame alloc in a branch delay slot, `addiu sp / jr ra / nop` epilogue". In the current tree, COMPLETED-C
+  functions show every one of those shapes (frame alloc in a delay slot: 11; phantom frame with no sp-relative
+  access: 35; that epilogue: 779 — e.g. func_8001F938, pure C); the phantom-frame mechanism was measured
+  2026-07-13, after the authorizations. Both bodies are otherwise ordinary cc1 output. Honest floors measured
+  2026-10-01: 3 and 2.
+- func_8006BD28 (103 insns): zero no-C-form instructions, scan_hand_coded 0/8 LOW, canonical gate verdict C;
+  its justification is difficulty-of-reproduction. Honest floor measured 2026-10-01: 48.
+The other 219 entries are unaffected. The audit's remaining action items (reporting split, source-form cleanups,
+func_8004A76C global-register-variable question) are documented for later and NOT decided by this ruling.
