@@ -1849,7 +1849,6 @@ GATE_FILES = (
     "maspsx_comm_syms.txt",
     "multu_funcs.txt",
     "multu_pad_funcs.txt",
-    "sdata_funcs.txt",
     "volatile_extern_allowlist.txt",
 )
 

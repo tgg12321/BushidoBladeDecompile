@@ -92,8 +92,6 @@ KEYED = {
     "expand_dest_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
     "multu_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
     "multu_pad_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
-    "sdata_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
-    "sdata_exclude.txt": r"^\s*([A-Za-z_]\w*)\s*$",
 }
 known = glabels | set(re.findall(r"^\s*([A-Za-z_]\w*)\s*\(", csrc, re.M)) | incasm
 known |= set(re.findall(r"\b([A-Za-z_]\w*)\s*\([^;{]*\)\s*\{", csrc))

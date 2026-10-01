@@ -26,7 +26,7 @@ WORK = ROOT / "tmp" / "sched_solver_work"
 sys.path.insert(0, str(HERE))
 import simulate as S  # noqa: E402
 
-DEFAULT_STEMS = ["config", "main", "code6cac", "display", "text1a", "text1b"]
+DEFAULT_STEMS = ["code6cac_c2", "main", "code6cac", "display", "text1a", "text1b"]
 
 
 def load(stem, do_extract):

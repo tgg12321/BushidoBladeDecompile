@@ -74,8 +74,6 @@ RULE_FILES = ["regfix.txt", "regfix_stage2.txt", "asmfix.txt",
 
 # One-name-per-line (optionally `name  # comment`) gate lists.
 LIST_FILES = [
-    "sdata_funcs.txt",
-    "sdata_exclude.txt",
     "inline_asm_canonical.txt",
     "maspsx_prefill_label_funcs.txt",
     "expand_lb_funcs.txt",

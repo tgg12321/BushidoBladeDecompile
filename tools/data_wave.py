@@ -41,10 +41,9 @@ REGISTRIES = ["undefined_syms_auto.txt", "named_syms.txt", "symbol_addrs.txt"]
 SYM_LINE = re.compile(r"^(\s*)([A-Za-z_]\w*)(\s*=\s*)(0x[0-9A-Fa-f]{8})(\s*;)(.*)$")
 AUTO = re.compile(r"^(D|func)_[0-9A-Fa-f]{8}$")
 ADDR = re.compile(r"^0x8[0-9A-Fa-f]{7}$")
-# sdata_syms.txt is load-bearing: maspsx (--sdata-syms) emits %gp_rel only for symbols listed
-# there, so a C-side rename that leaves the old spelling in it silently turns a gp-relative
-# access into lui+lw and shifts every later byte (2026-09-24 sweep verifier finding).
-LIST_FILES = ["volatile_extern_allowlist.txt", "sdata_funcs.txt", "sdata_exclude.txt", "sdata_syms.txt"]
+# (The sdata_syms / sdata_funcs / sdata_exclude lists were retired by owner ruling Q65: gp now
+# follows each file's own definitions, which a rename changes together with every use.)
+LIST_FILES = ["volatile_extern_allowlist.txt"]
 WAVE_TAG = "data-wave " + __import__("datetime").date.today().isoformat()
 
 

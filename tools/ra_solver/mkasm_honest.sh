@@ -28,7 +28,9 @@ mkdir -p "$OUT/src"
 CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
 CC1="tools/gcc-2.7.2/build/cc1"
 CC1F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
-MASPSX_FLAGS="--expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt"
+MASPSX_FLAGS="--expand-div --aspsx-version=2.34 --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt"
+# owner rulings Q65/Q69: maspsx -G8 for every file except Sony library code (the Makefile's maspsx_flags_for)
+if python3 -c "import sys; sys.path.insert(0, '.'); from engine import buildconfig as c; sys.exit(0 if '$STEM' in c.PSYQ_LIBRARY_FILES else 1)"; then :; else MASPSX_FLAGS="$MASPSX_FLAGS -G8"; fi
 
 # ---- ours: cheat-stripped source, no rules -------------------------------
 python3 -c "

@@ -41,7 +41,6 @@ ALLOWED_BUILD_TXT = {
     "named_syms.txt", "symbol_addrs.txt",
     "undefined_syms_auto.txt", "undefined_funcs_auto.txt",
     "inline_asm_canonical.txt", "known_blocked.txt", "known_psyq_stdlib.txt",
-    "sdata_exclude.txt", "sdata_funcs.txt", "sdata_syms.txt",
     "expand_lb_funcs.txt", "expand_dest_funcs.txt",
     "multu_funcs.txt", "multu_pad_funcs.txt",
     "reloc_addrs.txt",
