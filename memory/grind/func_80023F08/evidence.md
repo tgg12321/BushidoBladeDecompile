@@ -106,3 +106,9 @@
   unchanged. Checklist item 4 scan: ~250 pre-existing raw `*(T *)(p + 0xNN)` sites in src/ reach offsets this
   data model types (many are PracticeMenuRec handles in u8 *-typed bodies: code6cac_b_tu2.c 111,
   code6cac_tu2.c 44, text1b.c 34, text1a_pre_tu2.c 24, text1b_tu1c.c 23, ...) — scope question to orchestrator.
+- [s4] (A) landed as df7f419ef (rev-23F08-A PASS). (B) staged on it: oracle SHA1 match, sandbox 0, layer2 hash
+  d310797af659667d. Ruling 11 package re-measured on this exact body (r11/scores_landing.txt: split_all 25,
+  per value lim 6 / gap 7 / turn 3 / side 25, 14 partitions 3..25, split_block 25; r11/d_proof_landing.txt:
+  same find_reg decision, temp $a1 / lim $v1 / gap $a0 / turn local-alloc $a0 / side $a2); the permuter
+  campaign ran from the s3 split (same split up to the byte-identical unk_0E / mask respellings). Uninitialized
+  reads: r11/uninit.md (keys only; infeasible path).
