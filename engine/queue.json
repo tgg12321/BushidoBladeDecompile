@@ -26,17 +26,6 @@
       "addr": "800759D0"
     },
     {
-      "func": "func_80075F80",
-      "file": "text1b_tu2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): per-use byte pun ((u8 *)D_8009BCF8)[index] over merged Unk8009BCF8Record[20], stride as magic *2/*20. Banked: memory/grind/func_80075F80/rejected/retro-audit-2026-09-29.c",
-      "addr": "80075F80"
-    },
-    {
       "func": "func_800770B8",
       "file": "text1b_tu2",
       "distance": 0,
@@ -302,14 +291,14 @@
     }
   ],
   "counts": {
-    "total": 24,
-    "active": 12,
+    "total": 23,
+    "active": 11,
     "by_status": {
-      "active": 12,
+      "active": 11,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 12
+      "C": 11
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
