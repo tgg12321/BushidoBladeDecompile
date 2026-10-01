@@ -1,0 +1,55 @@
+--- 15-per-file-gp-switch.patch
++++ 15-per-file-gp-switch.patch
+@@ -10,4 +10,6 @@
+ .rodata (record only, byte-neutral); D_800A3224 / D_800A3290 stay defined as declared with their evidence
+ comments (the RECT / 8-byte record retype is owed after the adoption).
++Changed completed bodies (block-scope externs of the new statics removed, EXTERN-REMOVED below), each with
++its own layer-2: keys in memory/grind/q65-adoption/q56/adopt/body_hashes.txt (step15).
+ 
+ Blocks extended to their last gp-reached object, declared in no C file (1):
+@@ -250,5 +252,5 @@
+ - BLOB-PIECE 93D30 [0x800a3530, 0x800a3540): D_800A3530 (named by ['text1b_tu1d']), D_800A3534 (named by ['text1b_tu1d']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+ - BLOB-PIECE 93DCC [0x800a35cc, 0x800a35d0): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+-- BLOB-PIECE 93E18 [0x800a3618, 0x800a3800): D_800A3618 (named by ['text1b_b']), jtbl_800A3620 (named by ['text1b_b']), jtbl_800A3624 (named by ['text1b_b']), D_800A3628 (named by ['text1b_b']), D_800A362C (named by ['text1b_b']), D_800A3638 (named by ['text1b_b']), D_800A3648 (named by ['gpu']), D_800A3658 (named by ['display']), D_800A3668 (named by ['ings2']), D_800A3670 (named by ['code6cac_c2', 'code6cac_tu2']) and 119 more labels - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
++- BLOB-PIECE 93E18 [0x800a3618, 0x800a3800): overlaps the COMMON block - 58 K1 tentative definitions (g_comb_recv_buf, D_800A3690, g_comb_send_buf, D_800A36A0, g_disp_fade, D_800A36AC, ...) that 13 files reach gp-relative take their addresses here from symbol-file rows (owner ruling Q62); the piece keeps the original bytes of the range (labels: D_800A3618 (named by ['text1b_b']), jtbl_800A3620 (named by ['text1b_b']), jtbl_800A3624 (named by ['text1b_b']), D_800A3628 (named by ['text1b_b']), D_800A362C (named by ['text1b_b']), D_800A3638 (named by ['text1b_b']), D_800A3648 (named by ['gpu']), D_800A3658 (named by ['display']), D_800A3668 (named by ['ings2']), D_800A3670 (named by ['code6cac_c2', 'code6cac_tu2']) and 119 more labels)
+ 
+ Alignment padding inside a block (no object: the next object's alignment produces it) (33):
+@@ -323,4 +325,7 @@
+ - SIZED-FROM-GAP text1b_tu1d D_800A3590: incomplete array -> [2] (next object at 0x800a3594)
+ - SIZED-FROM-GAP text1b_tu1d D_800A3594: incomplete array -> [2] (next object at 0x800a3598)
++
++Initialized objects of a struct type (member by member from the original bytes) (1):
++- STRUCT-INIT text1b D_800A3258: PadBitTable (u8 at +0 [4]), initialized member by member from the original bytes
+ 
+ (K2) externs of the new statics removed (own file and other files) (173):
+@@ -6057,5 +6062,5 @@
+ +s32 D_800A314C = 0;
+ +/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+-+u8 D_800A36F2;
+++u8 D_800A36F2[2];
+ diff --git a/src/code6cac_c.c b/src/code6cac_c.c
+ --- a/src/code6cac_c.c
+@@ -6637,8 +6642,8 @@
+  extern void gte_ReadIR1IR2Sra2(s32 *, s32 *);
+  
+-@@ const u32 jtbl_8001589C[6] = {
+- };
+- 
+- INCLUDE_ASM("asm/funcs", func_80058580);
++@@ s32 func_80058580(PracticeMenuRec *p) {
++ 
++ 
++ #undef CPU_SQ
+ -extern s16 D_800A3400;
+ -extern s32 D_800A3408;
+@@ -6665,7 +6670,7 @@
+ +s32 D_800A324C = -1;
+ +s32 D_800A3250[2] = { 0x4c4c554e, 0 };  /* reached gp-relative by func_8005490C (declared in no C file): size from the blob label */
+-+s32 D_800A3258 = 0xe0c0f0d;  /* address taken (lui/addiu) in func_80055B60: size from the blob label */
+-+s32 D_800A325C = 0x3020001;  /* address taken (lui/addiu) in func_80058580: size from the blob label */
+-+s32 D_800A3260 = 0x7060405;  /* address taken (lui/addiu) in func_80058580: size from the blob label */
+++PadBitTable D_800A3258 = { { 0xd, 0xf, 0xc, 0xe } };
+++u8 D_800A325C[4] = { 1, 0, 2, 3 };
+++u8 D_800A3260[4] = { 5, 4, 6, 7 };
+ +s32 D_800A3264[2] = { 0x4e00b3, 0xc180000 };  /* named by the pointer word at 0X8009B0D8 (7D920.data.s) (A9, owner ruling Q80, rules: 8c57bc4ab: this file's K3 global by layout - it lies between this file's gp-reached objects; the pointer table's owning file is open): size from the blob label */
+ +s32 D_800A326C = 0;

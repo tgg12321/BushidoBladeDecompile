@@ -24,6 +24,7 @@ BLOCK-TAIL code6cac_tu2 static 0x800a3312 (6 B): after the last object of the bl
 END-PAD ings sdata block ends at 0x800a30e9: linker SUBALIGN(2) pads to 0x800a30ea
 BLOCK-TAIL text1a_pre static 0x800a337c (4 B): after the last object of the block (inside the original's label run ending 0x800a3380), left in the data blob
 TYPED-ELSEWHERE text1b D_800A326C: extern s32 D_800A326C; (src/text1b_b.c; text1b reaches it gp-relative without a declaration)
+STRUCT-INIT text1b D_800A3258: PadBitTable (u8 at +0 [4]), initialized member by member from the original bytes
 SIZED-FROM-GAP text1b D_800A3270: incomplete array -> [8] (next object at 0x800a3278)
 TYPED-ELSEWHERE text1b D_800A3418: extern s32 D_800A3418; (src/text1b_b.c; text1b reaches it gp-relative without a declaration)
 BLOCK-TAIL text1b static 0x800a341c (4 B): after the last object of the block (inside the original's label run ending 0x800a3420), left in the data blob
@@ -483,6 +484,6 @@ BLOB-PIECE 93B8C [0x800a338c, 0x800a3398): no label - outside every file's block
 BLOB-PIECE 93C1C [0x800a341c, 0x800a3420): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
 BLOB-PIECE 93D30 [0x800a3530, 0x800a3540): D_800A3530 (named by ['text1b_tu1d']), D_800A3534 (named by ['text1b_tu1d']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
 BLOB-PIECE 93DCC [0x800a35cc, 0x800a35d0): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
-BLOB-PIECE 93E18 [0x800a3618, 0x800a3800): D_800A3618 (named by ['text1b_b']), jtbl_800A3620 (named by ['text1b_b']), jtbl_800A3624 (named by ['text1b_b']), D_800A3628 (named by ['text1b_b']), D_800A362C (named by ['text1b_b']), D_800A3638 (named by ['text1b_b']), D_800A3648 (named by ['gpu']), D_800A3658 (named by ['display']), D_800A3668 (named by ['ings2']), D_800A3670 (named by ['code6cac_c2', 'code6cac_tu2']) and 119 more labels - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+BLOB-PIECE 93E18 [0x800a3618, 0x800a3800): overlaps the COMMON block - 58 K1 tentative definitions (g_comb_recv_buf, D_800A3690, g_comb_send_buf, D_800A36A0, g_disp_fade, D_800A36AC, ...) that 13 files reach gp-relative take their addresses here from symbol-file rows (owner ruling Q62); the piece keeps the original bytes of the range (labels: D_800A3618 (named by ['text1b_b']), jtbl_800A3620 (named by ['text1b_b']), jtbl_800A3624 (named by ['text1b_b']), D_800A3628 (named by ['text1b_b']), D_800A362C (named by ['text1b_b']), D_800A3638 (named by ['text1b_b']), D_800A3648 (named by ['gpu']), D_800A3658 (named by ['display']), D_800A3668 (named by ['ings2']), D_800A3670 (named by ['code6cac_c2', 'code6cac_tu2']) and 119 more labels)
 blob cut into 20 pieces around 26 C blocks
 PSYQ_LIBRARY_FILES (Q69): comb display gpu ings2 main system text1b_b_tu2 text1b_b_tu3

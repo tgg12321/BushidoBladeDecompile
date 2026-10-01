@@ -1,9 +1,16 @@
-From 41f0e92f4c269a224637757edf11b466f6b22751 Mon Sep 17 00:00:00 2001
+From 53d32fbe974df1785de33236049eda5c0f348e46 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 14:28:16 -0500
+Date: Thu, 1 Oct 2026 16:10:41 -0500
 Subject: [PATCH] src: code6cac_b_tu2 / code6cac_b_tu3 boundary moves to
  func_800343F0 (owner ruling Q65, step 2, cut outcome (i))
 
+Rule: per-file-gp-model.md "Cut position", outcome (i) (owner ruling Q65): the code6cac_b_tu2 / code6cac_b_tu3
+boundary moves to func_800343F0, inside the recorded window of rodata-align site 3; no new file. Evidence:
+s02_apply.py docstring (memory/grind/q65-adoption/q56/adopt/). func_800343F0 moves verbatim; the split carries
+the declarations it needs from code6cac_b_tu2.c's file-scope block (splitc.py); of those, code6cac_b_tu3.c
+did not already have:
+- extern void player_SetCharId(s32, s32);
+The rodata-align section 7 site-3 row records the move. Byte-identical: full build SHA1 == oracle, every object compared.
 ---
  docs/grind/rodata-align-2026-09-30.md |  2 +-
  src/code6cac_b_tu2.c                  | 22 ----------------------
@@ -24,10 +31,10 @@ index 27c466c69..44c029848 100644
    | text1b_tu2.c | func_800747D8 | 0x80015A0C | after func_8006ECF4 .. up to func_800747D8 |
    | text1b_b_tu2.c | prnt (its strings D_80015A68/7C/84) | 0x80015A68 | PsyQ module start of prnt |
 diff --git a/src/code6cac_b_tu2.c b/src/code6cac_b_tu2.c
-index bfc5bd223..77b168c9c 100644
+index 9c0f008db..cbe639660 100644
 --- a/src/code6cac_b_tu2.c
 +++ b/src/code6cac_b_tu2.c
-@@ -6653,25 +6653,3 @@ loop:
+@@ -6582,25 +6582,3 @@ loop:
          D_800A3834 = 0;
      }
  }

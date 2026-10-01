@@ -1,9 +1,26 @@
-From e0f9ab4fc715051d1966facd07721d79bef79aa2 Mon Sep 17 00:00:00 2001
+From 8371e828d013d2cff29a8f4c38c7af15834d9a95 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 14:30:14 -0500
+Date: Thu, 1 Oct 2026 16:12:50 -0500
 Subject: [PATCH] src: code6cac_c2 / config declarations of func_8004153C and
  D_800A3708 reconciled (owner ruling Q65, step 6)
 
+code6cac_c2.c and config.c (one original file, owner ruling Q65) declare two symbols differently; each gets
+its one truthful type before the merge. Byte-identical (full build SHA1 == oracle, every object compared).
+Generator and evidence: memory/grind/q65-adoption/q56/adopt/s06_apply.py.
+
+- func_8004153C (defined in text1a_post.c as `s32 func_8004153C(s32 a0)`; returns a record pointer):
+  code6cac_c2 declared `extern s32 *func_8004153C(s32);` (calls with one argument), config declared
+  `extern void *func_8004153C(void);` (calls `func_8004153C()`). One declaration serves both call forms only
+  unprototyped: `extern s32 *func_8004153C();` in both files (the argument is an s32 either way, so default
+  promotion changes nothing; the result is used as `s32 *` / `void *`).
+- D_800A3708 (pointer to the 0x58-byte Unk80101DF0Record at 0x80101DF0, include/code6cac.h): code6cac_c2
+  declared `Unk80101DF0Record *` and reads work.t[0] / work.t[2]; config declared `u8 *` and read the same two
+  words as `*(s32 *)(D_800A3708 + 0x4C)` / `+ 0x54` (work at +0x38, t at +0x14 in it). config now includes
+  code6cac.h, declares `extern Unk80101DF0Record *D_800A3708;` and reads `D_800A3708->work.t[0]` / `t[2]`,
+  as code6cac_c2's func_8003E6D8 does.
+
+Changed completed body (layer-2, keys: memory/grind/q65-adoption/q56/adopt/body_hashes.txt step06):
+stage_InitCollision (config.c) - the two D_800A3708 reads above.
 ---
  src/code6cac_c2.c | 2 +-
  src/config.c      | 9 +++++----

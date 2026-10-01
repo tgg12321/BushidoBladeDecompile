@@ -1,13 +1,16 @@
-From 207c4af259bfb7b32aed61a43139724bed73fa0e Mon Sep 17 00:00:00 2001
+From 6da099a11762884b70693d56cd0403df0dad87a9 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 14:34:12 -0500
-Subject: [PATCH] src: one declaration each for D_800A3468 (text1b_tu1c) and
- g_anim_hit_flags (text1a_post) (owner ruling Q65, step 14)
+Date: Thu, 1 Oct 2026 16:17:16 -0500
+Subject: [PATCH] src: one declaration per static - element names, A8 slot
+ joins, the memory-card name; camera_CalcAngles to INCLUDE_ASM (owner rulings
+ Q65/Q79/Q84, step 14)
 
-Each object that step 15 makes a static gets ONE declaration, typed by evidence, before the switch (byte-
-identical; layer-2 on every changed body, listed in memory/grind/q65-adoption/q56/adopt/body_hashes.txt).
+Every object step 15 makes a static gets ONE declaration, typed by evidence, before the switch; all byte-identical
+(full build SHA1 == oracle, every object compared). Changed completed bodies, each needing layer-2, with keys:
+memory/grind/q65-adoption/q56/adopt/body_hashes.txt (step14).
 - D_800A3468 (text1b_tu1c): the file's `s32`; func_80060A68 reads it through `#define OB ((struct Ob
-  *)D_800A3468)` instead of a block-scope `extern struct Ob *`.
+  *)D_800A3468)` instead of a block-scope `extern struct Ob *`. The comment above func_80060A68 that cited a
+  sibling's `extern s32 *D_800A3468;` now says that declaration existed then and is a single `s32` now.
 - Per-word element names (layer-2 round 1, step-15 finding 1): g_anim_hit_flags s16[2] / g_anim_hit_data
   s32[2] (func_800420E8 indexes both with a0 < 2; g_anim_counter and D_800A3388 were their element 1),
   D_800A344C u32[2] / D_800A3454 s32[2] (per-lane pairs; D_800A3450 / D_800A3458 were element 1),
@@ -18,11 +21,19 @@ identical; layer-2 on every changed body, listed in memory/grind/q65-adoption/q5
   (+ D_800A33EA; text1b already indexed `(&D_800A33E8)[idx]`), D_800A345C[2] (+ D_800A345E),
   D_800A350C[2] (+ D_800A350E; `&D_800A350C` is the pair pointer passed to func_800692C0), D_800A3510[2]
   (+ D_800A3512).
-- Symbol-file rows of the retired element names go where nothing names them any more.
 - Owner ruling Q84 (rules: 215f2d11a): camera_CalcAngles, the only writer of the D_800A33C8 pair, returns to
-  INCLUDE_ASM (asm/funcs/camera_CalcAngles.s, func_80047384.s with its label renamed; as s16[2] our cc1 -G0 spends
-  one more instruction in every spelling measured, memory/grind/camera_CalcAngles/) and is re-queued active
-  (engine queue reopen); the D_800A33CA row stays for its asm.
+  INCLUDE_ASM (asm/funcs/camera_CalcAngles.s, func_80047384.s with its label renamed; as s16[2] our cc1 -G0
+  spends one more instruction in every spelling measured, memory/grind/camera_CalcAngles/) and is re-queued
+  active (engine queue reopen); the D_800A33CA row stays for its asm.
+- The memory-card file name is its own object (layer-2 round 2, step-15 finding 5): code6cac_c_mid's
+  `const u32 D_80010A2C[38]` becomes `D_80010A2C[32]` plus `const char D_80010AAC[] = "BASLUS-00663BUSHIDO2";`.
+  Evidence: func_80038170 copies exactly 0x40 halfwords (128 bytes) of D_80010A2C; D_800A31F0's original word
+  is 0x80010AAC (the string's address); the string is 21 bytes with its terminator and the 3 zero bytes after
+  it are the file's rodata padding. The rodata comment above it is rewritten to say so. The symbol-file row
+  `D_80010A2C = 0x80010A2C;` that pinned the C-defined object goes. Noted for the rodata cleanup, not changed:
+  D_800109EC is declared [16] (64 bytes) but func_80038170 copies 0x10 halfwords (32 bytes); its last 32 bytes
+  are zero.
+- Symbol-file rows of the retired element names go where nothing names them any more.
 ---
  asm/funcs/camera_CalcAngles.s | 60 +++++++++++++++++++++++++
  engine/queue.json             | 19 ++++++--
@@ -32,8 +43,8 @@ identical; layer-2 on every changed body, listed in memory/grind/q65-adoption/q5
  src/text1b.c                  | 47 ++++++--------------
  src/text1b_tu1c.c             | 83 +++++++++++++++++------------------
  src/text1b_tu1d.c             |  2 +-
- undefined_syms_auto.txt       |  9 ----
- 9 files changed, 142 insertions(+), 106 deletions(-)
+ undefined_syms_auto.txt       | 10 -----
+ 9 files changed, 142 insertions(+), 107 deletions(-)
  create mode 100644 asm/funcs/camera_CalcAngles.s
 
 diff --git a/asm/funcs/camera_CalcAngles.s b/asm/funcs/camera_CalcAngles.s
@@ -103,7 +114,7 @@ index 000000000..ef47fbc7a
 +    /* 37C68 80047468 00000000 */   nop
 +endlabel camera_CalcAngles
 diff --git a/engine/queue.json b/engine/queue.json
-index 6b3e1fe55..d5944a0af 100644
+index 75c5460fa..d4e00c265 100644
 --- a/engine/queue.json
 +++ b/engine/queue.json
 @@ -3,6 +3,17 @@
@@ -122,29 +133,29 @@ index 6b3e1fe55..d5944a0af 100644
 +      "addr": "80047384"
 +    },
      {
-       "func": "func_80058580",
+       "func": "func_80057E84",
        "file": "text1b",
-@@ -211,14 +222,14 @@
+@@ -182,14 +193,14 @@
      }
    ],
    "counts": {
--    "total": 16,
--    "active": 4,
-+    "total": 17,
-+    "active": 5,
+-    "total": 14,
+-    "active": 3,
++    "total": 15,
++    "active": 4,
      "by_status": {
--      "active": 4,
-+      "active": 5,
-       "rotated": 12
+-      "active": 3,
++      "active": 4,
+       "rotated": 11
      },
      "by_verdict": {
--      "C": 4
-+      "C": 5
+-      "C": 3
++      "C": 4
      }
    },
    "toolchain_fingerprint": "85cd2a73ee7a8972"
 diff --git a/named_syms.txt b/named_syms.txt
-index 9af8e4bde..5ba6a633e 100644
+index f01429232..261570edc 100644
 --- a/named_syms.txt
 +++ b/named_syms.txt
 @@ -148,7 +148,6 @@ g_anim_func_table = 0x800F66A0;
@@ -156,7 +167,7 @@ index 9af8e4bde..5ba6a633e 100644
  g_char_setup_tbl = 0x80094E48;
  _svm_stereo_mono = 0x800FF578;  /* data-wave 2026-09-07: was g_memcard_busy */
 diff --git a/src/code6cac_c_mid.c b/src/code6cac_c_mid.c
-index bd2f33fd6..b1d0e47a5 100644
+index bd2f33fd6..604bf49d3 100644
 --- a/src/code6cac_c_mid.c
 +++ b/src/code6cac_c_mid.c
 @@ -297,14 +297,15 @@ extern u8 D_8008F1C0[];
@@ -166,8 +177,8 @@ index bd2f33fd6..b1d0e47a5 100644
 - * arrays since the content is word-aligned. D_80010A2C ends with the literal
 - * save-file id "BASLUS-00663BUSHIDO2" (per the asm/data block's content). */
 + * arrays since the content is word-aligned. D_80010A2C is the 128 bytes func_80038170 copies
-+ * (0x40 halfwords); the save-file id after it is its own object, D_80010AAC, whose address
-+ * D_800A31F0 holds. */
++ * (0x40 halfwords); the save-file id after it is its own object, D_80010AAC (D_800A31F0 holds
++ * its address); the 3 zero bytes after its terminator are rodata padding. */
  const u32 D_800109EC[16] = {
      0x77DF7FFF, 0x635E6B9F, 0x56FD5B1E, 0x427C4ABD,
      0x2DFB323C, 0x199B21BB, 0x0D3A115A, 0x8000051A,
@@ -185,7 +196,7 @@ index bd2f33fd6..b1d0e47a5 100644
 -    0x4C534142, 0x302D5355, 0x33363630, 0x48535542,
 -    0x324F4449, 0x00000000,
  };
-+const char D_80010AAC[24] = "BASLUS-00663BUSHIDO2";
++const char D_80010AAC[] = "BASLUS-00663BUSHIDO2";
  extern u8 D_800A3200;
  extern u8 D_800A3201;
  extern u8 *strcpy(u8 *, u8 *);
@@ -236,7 +247,7 @@ index 5095ad6b3..61524fcaf 100644
      }
  }
 diff --git a/src/text1b.c b/src/text1b.c
-index 10af34a73..27b818047 100644
+index f6dc79737..b8de57a0b 100644
 --- a/src/text1b.c
 +++ b/src/text1b.c
 @@ -625,8 +625,7 @@ extern void math_RotMatrixYXZ(s32 *, s32 *);
@@ -556,10 +567,10 @@ index a072debc4..883e85d31 100644
  extern void func_80072E10(s32);
  extern void func_80073200(s32);
 diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
-index 2fdd2ff0f..c414e251a 100644
+index 4731cea5e..573acddf7 100644
 --- a/undefined_syms_auto.txt
 +++ b/undefined_syms_auto.txt
-@@ -92,14 +92,9 @@ D_800A32B6 = 0x800A32B6;
+@@ -82,14 +82,9 @@ D_800A32B6 = 0x800A32B6;
  D_800A32E9 = 0x800A32E9;
  D_800A3382 = 0x800A3382;
  D_800A33CA = 0x800A33CA;
@@ -574,7 +585,15 @@ index 2fdd2ff0f..c414e251a 100644
  D_800A3671 = 0x800A3671;
  D_800A367A = 0x800A367A;
  D_800A36C2 = 0x800A36C2;
-@@ -1151,7 +1146,6 @@ D_800A3360 = 0x800A3360;
+@@ -906,7 +901,6 @@ D_80094CFC = 0x80094CFC;
+ D_80010034 = 0x80010034;
+ D_800109BC = 0x800109BC;
+ D_800109EC = 0x800109EC;
+-D_80010A2C = 0x80010A2C;
+ D_8001528C = 0x8001528C;
+ D_800158B4 = 0x800158B4;
+ D_800158E0 = 0x800158E0;
+@@ -1134,7 +1128,6 @@ D_800A3360 = 0x800A3360;
  D_800A3364 = 0x800A3364;
  D_800A3368 = 0x800A3368;
  D_800A3378 = 0x800A3378;
@@ -582,7 +601,7 @@ index 2fdd2ff0f..c414e251a 100644
  D_800A3398 = 0x800A3398;
  D_800A33A0 = 0x800A33A0;
  D_800A33A4 = 0x800A33A4;
-@@ -1176,8 +1170,6 @@ D_800A3424 = 0x800A3424;
+@@ -1159,8 +1152,6 @@ D_800A3424 = 0x800A3424;
  D_800A3440 = 0x800A3440;
  D_800A3444 = 0x800A3444;
  D_800A3448 = 0x800A3448;
@@ -591,7 +610,7 @@ index 2fdd2ff0f..c414e251a 100644
  D_800A345C = 0x800A345C;
  D_800A3460 = 0x800A3460;
  D_800A3464 = 0x800A3464;
-@@ -1247,7 +1239,6 @@ chractar_use_pset_combo_id_table = 0x8009BA7C;
+@@ -1230,7 +1221,6 @@ chractar_use_pset_combo_id_table = 0x8009BA7C;
  file_GetFlag2 = 0x800167D4;
  file_LoadSoundData = 0x80016CF8;
  file_ResetDmaFlag = 0x80016C74;

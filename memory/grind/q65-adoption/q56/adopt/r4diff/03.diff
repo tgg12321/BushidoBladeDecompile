@@ -1,0 +1,31 @@
+--- 03-text1b_tu1c-boundary-move.patch
++++ 03-text1b_tu1c-boundary-move.patch
+@@ -7,8 +7,15 @@
+ boundary moves from func_80061064 to func_80060A68: func_80060A68 .. func_80060E38 move verbatim from the end of
+ text1b.c (which now ends with func_80060768) to the start of text1b_tu1c.c; the section 9 record of
+-docs/grind/rodata-align-2026-09-30.md is updated. Evidence: s03_apply.py docstring (cutsearch.py).
++docs/grind/rodata-align-2026-09-30.md is updated. Evidence: memory/grind/q65-adoption/q56/adopt/s03_apply.py docstring (cutsearch.py).
+ 
+ Besides the move, text1b_tu1c.c changes only in its declarations (mergec.py / drop_header_duplicates):
+ - the include block is the union of both parts' includes: #include "common.h", #include "include_asm.h", #include "sound.h", #include "game.h", #include "code6cac.h", #include "gte.h";
++- splitc.py carries the text1b.c file-scope declarations the moved functions use; of those, text1b_tu1c.c
++  did not already have:
++    #include "gte.h"
++    extern u8 D_8009BA60[];
++    extern s32 chractar_use_pset_combo_id_table[];
++    typedef struct { ... } Unk8009BD38Flags;
++    extern Unk8009BD38Flags D_8009BD38;
+ - typedef -> gte.h: text1b_tu1c.c's own one-line typedefs, verbatim repeats of include/gte.h's definitions now
+   that the moved part brings `#include "gte.h"`, are dropped (a repeat is a redefinition error):
+@@ -17,7 +24,8 @@
+     typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
+ - duplicate-declaration dedup: 213 file-scope declarations repeated verbatim (normalized text identical to
+-  one already emitted earlier in the merged file) are dropped; each named object keeps its first declaration:
+-    extern s32 D_800A3420;  (tail.c:275)
+-    extern s32 D_800A3424;  (tail.c:276)
++  one already emitted earlier in the merged file) are dropped; each named object keeps its first declaration
++  (line numbers in this commit's parent; "carried" = a text1b.c declaration splitc.py carried with the move):
++    extern s32 D_800A3420;  (text1b.c:7253, moved)
++    extern s32 D_800A3424;  (text1b.c:7254, moved)
+     void DrawSync(s32);  (text1b_tu1c.c:16)
+     extern s32 rand(void);  (text1b_tu1c.c:18)

@@ -1,6 +1,6 @@
-From b2873b4fbd14486963c2c3f4b55de617226dd535 Mon Sep 17 00:00:00 2001
+From 80c6a3ab12fc3275b38e0eb147db58b674da44f4 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 14:35:27 -0500
+Date: Thu, 1 Oct 2026 16:20:17 -0500
 Subject: [PATCH] tools/records: follow the retired sdata lists and the moved
  functions (owner ruling Q65, step 16)
 
@@ -167,10 +167,10 @@ index 50e1a4157..528cbfe81 100644
  
  def load(stem, do_extract):
 diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
-index 862d337e5..9f183dac3 100644
+index 567149322..c8592023d 100644
 --- a/undefined_syms_auto.txt
 +++ b/undefined_syms_auto.txt
-@@ -81,12 +81,7 @@ _snd_seq_tick_env_plus_0x11 = 0x800A26DD;  /* data-wave 2026-09-07: was D_800A26
+@@ -71,12 +71,7 @@ _snd_seq_tick_env_plus_0x11 = 0x800A26DD;  /* data-wave 2026-09-07: was D_800A26
  _snd_seq_tick_env_plus_0x12 = 0x800A26DE;  /* data-wave 2026-09-07: was D_800A26DE */
  _spu_rev_attr_plus_0xA = 0x800A2892;  /* data-wave 2026-09-07: was D_800A2892 */
  _spu_voice_centerNote_plus_0x2E = 0x800A28D2;  /* data-wave 2026-09-29: was D_800A28D2 */
@@ -183,7 +183,7 @@ index 862d337e5..9f183dac3 100644
  D_800A3671 = 0x800A3671;
  D_800A367A = 0x800A367A;
  D_800A36C2 = 0x800A36C2;
-@@ -1050,7 +1045,6 @@ D_800A2D1C = 0x800A2D1C;
+@@ -1032,7 +1027,6 @@ D_800A2D1C = 0x800A2D1C;
  _spu_rev_startaddr = 0x800A2D44;  /* data-wave 2026-09-07: was D_800A2D44 */
  D_800A3044 = 0x800A3044;
  D_800A30D4 = 0x800A30D4;

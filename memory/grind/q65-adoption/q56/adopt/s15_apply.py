@@ -205,6 +205,31 @@ def elem(t):
     return None
 
 
+def struct_layout(f, t):
+    """the members of a `typedef struct { ... } t;` the file sees (its own text or a header) when every member is a
+    scalar or an array of scalars: [(member type, element size, signed, element count or None, offset)], laid out
+    with each member at its natural alignment; None for anything else"""
+    for p in [f"src/{f}.c"] + [q for q in SRC_TEXT if q.startswith("include/")]:
+        m = re.search(r"typedef\s+struct\s*\w*\s*\{([^{}]*)\}\s*%s\s*;" % re.escape(t), SRC_TEXT.get(p, ""))
+        if not m:
+            continue
+        body = re.sub(r"/\*.*?\*/", "", m.group(1), flags=re.S)
+        out, off = [], 0
+        for d in [x.strip() for x in body.split(";") if x.strip()]:
+            mm = re.match(r"^([A-Za-z_][\w ]*?)\s+(\w+)\s*(?:\[\s*(\w+)\s*\])?$", " ".join(d.split()))
+            if not mm or "," in d:
+                return None
+            e = elem(mm.group(1))
+            if e is None or e[2]:
+                return None
+            off = (off + e[0] - 1) // e[0] * e[0]
+            n = int(mm.group(3), 0) if mm.group(3) else None
+            out.append((mm.group(1), e[0], e[1], n, off))
+            off += e[0] * (n or 1)
+        return out
+    return None
+
+
 def lcomm_align(n):
     """(A8, owner ruling Q79, rules: 8c57bc4ab): Sony ASPSX 2.34 + PSYLINK place every `.lcomm` static
     4-aligned whatever its size (lcomm_align_probe); maspsx models it (step 12)"""
@@ -324,8 +349,15 @@ for f, uses in sorted(P.items()):
                 log(f"ALIAS {f} {hex(x)}: {[o[0] for o in objs[x]]} - defines {nm}")
             e = elem(t)
             if e is None and reg == "sdata":
-                log(f"NON-SCALAR initialized {f} {nm}: {t}{''.join('[%s]' % d for d in dims)}")
-                raise SystemExit(1)
+                lay = None if dims else struct_layout(f, t)
+                if lay is None:
+                    log(f"NON-SCALAR initialized {f} {nm}: {t}{''.join('[%s]' % d for d in dims)}")
+                    raise SystemExit(1)
+                if lay[-1][4] + lay[-1][1] * (lay[-1][3] or 1) != sizeof(f, nm, t, []):
+                    log(f"STRUCT-SIZE {f} {nm}: {t} member layout disagrees with cc1's sizeof")
+                    raise SystemExit(1)
+                log(f"STRUCT-INIT {f} {nm}: {t} ({', '.join(f'{mt} at +{mo}' + (f' [{mn}]' if mn else '') for mt, _, _, mn, mo in lay)}), "
+                    f"initialized member by member from the original bytes")
             if dims and not dims[-1].strip():
                 es = e[0] if e else sizeof(f, nm, t, dims[:-1] + ["1"])
                 nxt = next((y for y in addrs if y > x), None)
@@ -382,6 +414,8 @@ for f, uses in sorted(P.items()):
             if it[0] == "fill" and k + 1 < len(items) and items[k + 1][0] == "obj":
                 nx = items[k + 1]
                 al = obj_align(reg, nx[2], nx[3][2], nx[3][3])
+                if reg == "sdata" and nx[3][3] is None and not nx[3][2]:   # a struct: its widest member
+                    al = max(m[1] for m in struct_layout(f, nx[3][1]))
                 if ((it[1] + al - 1) // al) * al == it[1] + it[2]:
                     log(f"PADDING {f} {reg} {hex(it[1])} ({it[2]} B): the next object's {al}-alignment produces it")
                     continue
@@ -704,6 +738,13 @@ for f in sorted(set(defs) | set(tentative)):
                 top.append(f"static {t} {nm}{dimtxt};")
                 src = drop_externs(nm, f, src)
                 continue
+            if e is None:   # a struct of scalars (STRUCT-INIT above): one initializer per member
+                parts = []
+                for mt, mes, msg_, mn, mo in struct_layout(f, t):
+                    mv = [vtext(int.from_bytes(b(a + mo + i * mes, mes), "little"), mes, msg_, mt) for i in range(mn or 1)]
+                    parts.append("{ " + ", ".join(mv) + " }" if mn else mv[0])
+                bottom.append(f"{t} {nm} = {{ {', '.join(parts)} }};")
+                continue
             es, signed, isptr = e
             count = 1
             for d in dims:
@@ -996,6 +1037,7 @@ for title, pfx in (("Blocks extended to their last gp-reached object, declared i
                    ("(A1; A9, owner ruling Q81) objects named by code but left in the data blob", "ORPHAN-LEFT"),
                    ("(A9, owner ruling Q80) objects named by a pointer in asm data, defined by layout", "A9 "),
                    ("Arrays sized from the original's object boundary", "SIZED-FROM-GAP"),
+                   ("Initialized objects of a struct type (member by member from the original bytes)", "STRUCT-INIT"),
                    ("(K2) externs of the new statics removed (own file and other files)", "EXTERN-REMOVED"),
                    ("(K2) header externs removed", "HEADER"),
                    ("Held / blocked blocks", "HELD"), ("Blocked", "BLOCKED"), ("K2 violations", "K2-VIOLATION"),

@@ -1,4 +1,4 @@
-# Small-data inventory (2026-10-01, pre-switch tree step14 = 207c4af25)
+# Small-data inventory (2026-10-01, pre-switch tree step14 = 6da099a11)
 
 Blocks per file in link order (s04_spans.json); every object and every gap.
 
@@ -87,7 +87,11 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | text1b | sdata | 0x800a3248 | 2 | object D_800A3248 | gp | - |  |
 | text1b | sdata | 0x800a324a | 2 | object D_800A324A | gp | - |  |
 | text1b | sdata | 0x800a324c | 4 | object D_800A324C | gp | - |  |
-| text1b | sdata | 0x800a3250 | 28 | gap | - | - | objects named by the blob's labels, referenced from text1b: D_800A3258, D_800A325C, D_800A3260, ptr-word@0x8009b0d8 |
+| text1b | sdata | 0x800a3250 | 8 | gap | - | - | one object D_800A3250 (8 B) |
+| text1b | sdata | 0x800a3258 | 4 | object D_800A3258 | (A2) between gp objects | - |  |
+| text1b | sdata | 0x800a325c | 4 | object D_800A325C | (A2) between gp objects | - |  |
+| text1b | sdata | 0x800a3260 | 4 | object D_800A3260 | (A2) between gp objects | - |  |
+| text1b | sdata | 0x800a3264 | 8 | gap | - | - | objects named by the blob's labels, referenced from asm data only: ptr-word@0x8009b0d8 |
 | text1b | sdata | 0x800a326c | 4 | object D_800A326C | gp | - |  |
 | text1b | sdata | 0x800a3270 | 8 | object D_800A3270 | (A2) between gp objects | - |  |
 | text1b | sdata | 0x800a3278 | 4 | object D_800A3278 | gp | - |  |
@@ -250,7 +254,7 @@ Held blocks: none
 ## Items the rule does not decide or refuses (3)
 
 - code6cac_c_mid | sdata | 0x800a31fd | 3B | NO single 3-byte object fits at 0x800a31fd (needs 4-alignment)
-- text1b | sdata | 0x800a3250 | 28B | objects named by the blob's labels, referenced from text1b: D_800A3258, D_800A325C, D_800A3260, ptr-word@0x8009b0d8 - a pointer word in asm data names it
+- text1b | sdata | 0x800a3264 | 8B | objects named by the blob's labels, referenced from asm data only: ptr-word@0x8009b0d8 - a pointer word in asm data names it
 - text1b_tu1c | static | 0x800a3428 | 16B | run > 8 bytes -> borderline
 
 ## COMMON tentatives (K1) per file

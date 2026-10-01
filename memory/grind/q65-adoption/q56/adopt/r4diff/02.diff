@@ -1,0 +1,14 @@
+--- 02-b_tu3-boundary-move.patch
++++ 02-b_tu3-boundary-move.patch
+@@ -3,4 +3,11 @@
+  func_800343F0 (owner ruling Q65, step 2, cut outcome (i))
+ 
++Rule: per-file-gp-model.md "Cut position", outcome (i) (owner ruling Q65): the code6cac_b_tu2 / code6cac_b_tu3
++boundary moves to func_800343F0, inside the recorded window of rodata-align site 3; no new file. Evidence:
++s02_apply.py docstring (memory/grind/q65-adoption/q56/adopt/). func_800343F0 moves verbatim; the split carries
++the declarations it needs from code6cac_b_tu2.c's file-scope block (splitc.py); of those, code6cac_b_tu3.c
++did not already have:
++- extern void player_SetCharId(s32, s32);
++The rodata-align section 7 site-3 row records the move. Byte-identical: full build SHA1 == oracle, every object compared.
+ ---
+  docs/grind/rodata-align-2026-09-30.md |  2 +-

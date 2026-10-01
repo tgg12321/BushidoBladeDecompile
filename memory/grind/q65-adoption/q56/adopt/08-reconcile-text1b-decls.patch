@@ -1,12 +1,12 @@
-From 915d52add54c691dee4a85947634f8a04c5209a3 Mon Sep 17 00:00:00 2001
+From 7e77e54ca5015e7f6e1068d9c22f5c683b736cac Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 14:31:14 -0500
+Date: Thu, 1 Oct 2026 16:13:57 -0500
 Subject: [PATCH] src: text1a_c2 / text1a_b / text1a_b_pre_rodata / sound /
  text1b declarations reconciled by evidence (owner rulings Q65/Q67, step 8)
 
 text1a_c2, text1a_b, text1a_b_pre_rodata, sound and text1b are one original file (owner ruling Q67;
 text1a_b_pre_rodata joins under (A7), owner ruling Q72). Each symbol they declare differently gets one type
-before the merge. The per-symbol evidence is in the step script's docstring (tmp/q56/adopt/s08_apply.py).
+before the merge. The per-symbol evidence is in the step script's docstring (memory/grind/q65-adoption/q56/adopt/s08_apply.py).
 The parts stay separate files in this commit.
 
 Owner-decided types (per-file-gp-model.md (A5), owner ruling Q70):
@@ -393,7 +393,7 @@ index 6897e6602..9ec8c5147 100644
      func_8003EDC0((s32)s4, 7);
      func_80054410((s32)sp10);
 diff --git a/src/text1b.c b/src/text1b.c
-index f2ec1e0b9..061b26d6b 100644
+index 667ffd120..ede2c0c6d 100644
 --- a/src/text1b.c
 +++ b/src/text1b.c
 @@ -411,7 +411,7 @@ typedef struct {

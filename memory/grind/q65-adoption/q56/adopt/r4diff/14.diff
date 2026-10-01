@@ -1,0 +1,114 @@
+--- 14-reconcile-static-decls.patch
++++ 14-reconcile-static-decls.patch
+@@ -1,10 +1,13 @@
+ From: q56-scratch <q56@scratch>
+-Subject: [PATCH] src: one declaration each for D_800A3468 (text1b_tu1c) and
+- g_anim_hit_flags (text1a_post) (owner ruling Q65, step 14)
++Subject: [PATCH] src: one declaration per static - element names, A8 slot
++ joins, the memory-card name; camera_CalcAngles to INCLUDE_ASM (owner rulings
++ Q65/Q79/Q84, step 14)
+ 
+-Each object that step 15 makes a static gets ONE declaration, typed by evidence, before the switch (byte-
+-identical; layer-2 on every changed body, listed in memory/grind/q65-adoption/q56/adopt/body_hashes.txt).
++Every object step 15 makes a static gets ONE declaration, typed by evidence, before the switch; all byte-identical
++(full build SHA1 == oracle, every object compared). Changed completed bodies, each needing layer-2, with keys:
++memory/grind/q65-adoption/q56/adopt/body_hashes.txt (step14).
+ - D_800A3468 (text1b_tu1c): the file's `s32`; func_80060A68 reads it through `#define OB ((struct Ob
+-  *)D_800A3468)` instead of a block-scope `extern struct Ob *`.
++  *)D_800A3468)` instead of a block-scope `extern struct Ob *`. The comment above func_80060A68 that cited a
++  sibling's `extern s32 *D_800A3468;` now says that declaration existed then and is a single `s32` now.
+ - Per-word element names (layer-2 round 1, step-15 finding 1): g_anim_hit_flags s16[2] / g_anim_hit_data
+   s32[2] (func_800420E8 indexes both with a0 < 2; g_anim_counter and D_800A3388 were their element 1),
+@@ -17,9 +20,17 @@
+   D_800A350C[2] (+ D_800A350E; `&D_800A350C` is the pair pointer passed to func_800692C0), D_800A3510[2]
+   (+ D_800A3512).
++- Owner ruling Q84 (rules: 215f2d11a): camera_CalcAngles, the only writer of the D_800A33C8 pair, returns to
++  INCLUDE_ASM (asm/funcs/camera_CalcAngles.s, func_80047384.s with its label renamed; as s16[2] our cc1 -G0
++  spends one more instruction in every spelling measured, memory/grind/camera_CalcAngles/) and is re-queued
++  active (engine queue reopen); the D_800A33CA row stays for its asm.
++- The memory-card file name is its own object (layer-2 round 2, step-15 finding 5): code6cac_c_mid's
++  `const u32 D_80010A2C[38]` becomes `D_80010A2C[32]` plus `const char D_80010AAC[] = "BASLUS-00663BUSHIDO2";`.
++  Evidence: func_80038170 copies exactly 0x40 halfwords (128 bytes) of D_80010A2C; D_800A31F0's original word
++  is 0x80010AAC (the string's address); the string is 21 bytes with its terminator and the 3 zero bytes after
++  it are the file's rodata padding. The rodata comment above it is rewritten to say so. The symbol-file row
++  `D_80010A2C = 0x80010A2C;` that pinned the C-defined object goes. Noted for the rodata cleanup, not changed:
++  D_800109EC is declared [16] (64 bytes) but func_80038170 copies 0x10 halfwords (32 bytes); its last 32 bytes
++  are zero.
+ - Symbol-file rows of the retired element names go where nothing names them any more.
+-- Owner ruling Q84 (rules: 215f2d11a): camera_CalcAngles, the only writer of the D_800A33C8 pair, returns to
+-  INCLUDE_ASM (asm/funcs/camera_CalcAngles.s, func_80047384.s with its label renamed; as s16[2] our cc1 -G0 spends
+-  one more instruction in every spelling measured, memory/grind/camera_CalcAngles/) and is re-queued active
+-  (engine queue reopen); the D_800A33CA row stays for its asm.
+ ---
+  asm/funcs/camera_CalcAngles.s | 60 +++++++++++++++++++++++++
+@@ -31,6 +42,6 @@
+  src/text1b_tu1c.c             | 83 +++++++++++++++++------------------
+  src/text1b_tu1d.c             |  2 +-
+- undefined_syms_auto.txt       |  9 ----
+- 9 files changed, 142 insertions(+), 106 deletions(-)
++ undefined_syms_auto.txt       | 10 -----
++ 9 files changed, 142 insertions(+), 107 deletions(-)
+  create mode 100644 asm/funcs/camera_CalcAngles.s
+ 
+@@ -119,5 +130,5 @@
+ +    },
+      {
+-       "func": "func_80058580",
++       "func": "func_80057E84",
+        "file": "text1b",
+ @@
+@@ -125,16 +136,16 @@
+    ],
+    "counts": {
+--    "total": 16,
+--    "active": 4,
+-+    "total": 17,
+-+    "active": 5,
++-    "total": 14,
++-    "active": 3,
+++    "total": 15,
+++    "active": 4,
+      "by_status": {
+--      "active": 4,
+-+      "active": 5,
+-       "rotated": 12
++-      "active": 3,
+++      "active": 4,
++       "rotated": 11
+      },
+      "by_verdict": {
+--      "C": 4
+-+      "C": 5
++-      "C": 3
+++      "C": 4
+      }
+    },
+@@ -161,6 +172,6 @@
+ - * save-file id "BASLUS-00663BUSHIDO2" (per the asm/data block's content). */
+ + * arrays since the content is word-aligned. D_80010A2C is the 128 bytes func_80038170 copies
+-+ * (0x40 halfwords); the save-file id after it is its own object, D_80010AAC, whose address
+-+ * D_800A31F0 holds. */
+++ * (0x40 halfwords); the save-file id after it is its own object, D_80010AAC (D_800A31F0 holds
+++ * its address); the 3 zero bytes after its terminator are rodata padding. */
+  const u32 D_800109EC[16] = {
+      0x77DF7FFF, 0x635E6B9F, 0x56FD5B1E, 0x427C4ABD,
+@@ -180,5 +191,5 @@
+ -    0x324F4449, 0x00000000,
+  };
+-+const char D_80010AAC[24] = "BASLUS-00663BUSHIDO2";
+++const char D_80010AAC[] = "BASLUS-00663BUSHIDO2";
+  extern u8 D_800A3200;
+  extern u8 D_800A3201;
+@@ -564,4 +575,12 @@
+  D_800A367A = 0x800A367A;
+  D_800A36C2 = 0x800A36C2;
++@@ D_80094CFC = 0x80094CFC;
++ D_80010034 = 0x80010034;
++ D_800109BC = 0x800109BC;
++ D_800109EC = 0x800109EC;
++-D_80010A2C = 0x80010A2C;
++ D_8001528C = 0x8001528C;
++ D_800158B4 = 0x800158B4;
++ D_800158E0 = 0x800158E0;
+ @@ D_800A3360 = 0x800A3360;
+  D_800A3364 = 0x800A3364;

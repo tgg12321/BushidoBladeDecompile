@@ -1,16 +1,19 @@
 # Q65 adoption (per-file gp model): handoff, 2026-10-01
 
-**State (round 3 run banked, 2026-10-01, laneA).** Ready, NOT applied. The round-3 run (base `9e4e103aa`, frozen
-clone tags step0..step16) is banked here: patches NN-*.patch, series_base.txt (commit ids), series_run.txt
-(per step: exe_sha1 == oracle, object compare, engine test, maspsx tests), body_hashes.txt (changed completed
-bodies with layer-2 keys), s15_log.txt, inventory.md, m34_evidence.md, sNN_msg.txt. Round-3 layer-2: every
-code/data/build item PASS (tmp/orch/q65_fixes.md "# ROUND 3"). The generators banked with it already carry the
-round-3 paperwork fixes: s14 `const char D_80010AAC[]` + the rewritten rodata comment + removal of the
-`D_80010A2C = 0x80010A2C;` row (s14_msg.txt discloses the [38] -> [32] split and its evidence); s15 BLOB-PIECE
-wording for pieces overlapping the K1 COMMON block; generated bodies for 02/04 (declarations the split carries)
-and 03 (carried declaration block, text1b.c line numbers); hand-written bodies 06/10 (each declaration, evidence,
-changed bodies); s08 body cites this bank. Next: regenerate on main after laneB lands func_80058580, diff vs the
-round-3 patches, focused re-review of 14, 15 and the bodies (§ Application plan).
+**State (round 4 run banked, 2026-10-01, laneA).** Ready for the round-4 review, NOT applied. Base `43e73e46b`
+(func_80058580 and func_80055B60 landed; no build input changed after it). Scratch clone `/tmp/q56/adopt tree`
+frozen with tags step0..step16 (step16 80c6a3ab1). Every step: full build SHA1 == oracle (series_run.txt);
+verify-oracle + check_completion_integrity OK at step16; changed completed bodies identical to round 3
+(body_hashes.txt). Diff vs the round-3 patches (base 9e4e103aa): q56/adopt/r4diff/NN.diff (pdiff.py, ignores ids
+and hunk line numbers): 01/05/07/11/12/13/16 identical; 02/03/04/06/08/10 commit body only (round-3 fixes);
+09 dedup 118 -> 120 + line numbers (the landings); 14 body/subject, `const char D_80010AAC[]`, D_80010A2C row
+removed, queue-reopen counts; 15 follows main's new declarations (D_800A325C / D_800A3260 `u8[4]` from
+func_80058580, D_800A36F2 tentative `u8[2]` from 23581b8fc) and the new STRUCT-INIT path: an initialized
+object of a struct type whose members are all scalars / arrays of scalars (layout size == cc1 sizeof, else the
+generator stops) is initialized member by member from the original bytes, aligned to its widest member;
+here only `PadBitTable D_800A3258 = { { 0xd, 0xf, 0xc, 0xe } };` (func_80055B60's type), disclosed in the
+step-15 body. Run from step 15 again after that generator change: resume15.sh. On PASS: apply under the landing
+and reintegration locks with the lanes quiet (§ Application plan).
 
 ## Regenerating on current main
 

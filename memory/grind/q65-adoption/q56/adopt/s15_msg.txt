@@ -4,6 +4,8 @@ Explicit-relocation asm excluded from E1/E2/split: memory/grind/q65-adoption/q56
 Owner rulings Q86/Q87 (rules: a17a2c144): the eight small read-only items in files that get -G8 stay in
 .rodata (record only, byte-neutral); D_800A3224 / D_800A3290 stay defined as declared with their evidence
 comments (the RECT / 8-byte record retype is owed after the adoption).
+Changed completed bodies (block-scope externs of the new statics removed, EXTERN-REMOVED below), each with
+its own layer-2: keys in memory/grind/q65-adoption/q56/adopt/body_hashes.txt (step15).
 
 Blocks extended to their last gp-reached object, declared in no C file (1):
 - BLOCK-END code6cac_c2 sdata: extends to 0x800a3234 (last gp-reached object 0x800a3230 is declared in no C file; its extent is the original's label)
@@ -244,7 +246,7 @@ Data-blob pieces between the C blocks (19):
 - BLOB-PIECE 93C1C [0x800a341c, 0x800a3420): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
 - BLOB-PIECE 93D30 [0x800a3530, 0x800a3540): D_800A3530 (named by ['text1b_tu1d']), D_800A3534 (named by ['text1b_tu1d']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
 - BLOB-PIECE 93DCC [0x800a35cc, 0x800a35d0): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
-- BLOB-PIECE 93E18 [0x800a3618, 0x800a3800): D_800A3618 (named by ['text1b_b']), jtbl_800A3620 (named by ['text1b_b']), jtbl_800A3624 (named by ['text1b_b']), D_800A3628 (named by ['text1b_b']), D_800A362C (named by ['text1b_b']), D_800A3638 (named by ['text1b_b']), D_800A3648 (named by ['gpu']), D_800A3658 (named by ['display']), D_800A3668 (named by ['ings2']), D_800A3670 (named by ['code6cac_c2', 'code6cac_tu2']) and 119 more labels - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93E18 [0x800a3618, 0x800a3800): overlaps the COMMON block - 58 K1 tentative definitions (g_comb_recv_buf, D_800A3690, g_comb_send_buf, D_800A36A0, g_disp_fade, D_800A36AC, ...) that 13 files reach gp-relative take their addresses here from symbol-file rows (owner ruling Q62); the piece keeps the original bytes of the range (labels: D_800A3618 (named by ['text1b_b']), jtbl_800A3620 (named by ['text1b_b']), jtbl_800A3624 (named by ['text1b_b']), D_800A3628 (named by ['text1b_b']), D_800A362C (named by ['text1b_b']), D_800A3638 (named by ['text1b_b']), D_800A3648 (named by ['gpu']), D_800A3658 (named by ['display']), D_800A3668 (named by ['ings2']), D_800A3670 (named by ['code6cac_c2', 'code6cac_tu2']) and 119 more labels)
 
 Alignment padding inside a block (no object: the next object's alignment produces it) (33):
 - PADDING code6cac_c_mid static 0x800a3319 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
@@ -317,6 +319,9 @@ Arrays sized from the original's object boundary (8):
 - SIZED-FROM-GAP text1b_tu1d D_800A358C: incomplete array -> [2] (next object at 0x800a3590)
 - SIZED-FROM-GAP text1b_tu1d D_800A3590: incomplete array -> [2] (next object at 0x800a3594)
 - SIZED-FROM-GAP text1b_tu1d D_800A3594: incomplete array -> [2] (next object at 0x800a3598)
+
+Initialized objects of a struct type (member by member from the original bytes) (1):
+- STRUCT-INIT text1b D_800A3258: PadBitTable (u8 at +0 [4]), initialized member by member from the original bytes
 
 (K2) externs of the new statics removed (own file and other files) (173):
 - EXTERN-REMOVED src/code6cac_c2.c: 1 extern line(s) of D_800A3358 (its own static now)

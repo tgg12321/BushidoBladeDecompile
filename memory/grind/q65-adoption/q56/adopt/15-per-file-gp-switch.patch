@@ -1,6 +1,6 @@
-From 974e66e2a3ffb8e7b24d0b3a6574040d7fd57247 Mon Sep 17 00:00:00 2001
+From 6c82196baa471e5bad5aba414cf4457dd537cb96 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 14:34:51 -0500
+Date: Thu, 1 Oct 2026 16:19:40 -0500
 Subject: [PATCH] src/build: per-file gp model - definitions follow the
  evidence, data blob cut, maspsx -G8 per file, sdata lists retired (owner
  rulings Q65/Q67, step 15)
@@ -11,6 +11,8 @@ Explicit-relocation asm excluded from E1/E2/split: memory/grind/q65-adoption/q56
 Owner rulings Q86/Q87 (rules: a17a2c144): the eight small read-only items in files that get -G8 stay in
 .rodata (record only, byte-neutral); D_800A3224 / D_800A3290 stay defined as declared with their evidence
 comments (the RECT / 8-byte record retype is owed after the adoption).
+Changed completed bodies (block-scope externs of the new statics removed, EXTERN-REMOVED below), each with
+its own layer-2: keys in memory/grind/q65-adoption/q56/adopt/body_hashes.txt (step15).
 
 Blocks extended to their last gp-reached object, declared in no C file (1):
 - BLOCK-END code6cac_c2 sdata: extends to 0x800a3234 (last gp-reached object 0x800a3230 is declared in no C file; its extent is the original's label)
@@ -251,7 +253,7 @@ Data-blob pieces between the C blocks (19):
 - BLOB-PIECE 93C1C [0x800a341c, 0x800a3420): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
 - BLOB-PIECE 93D30 [0x800a3530, 0x800a3540): D_800A3530 (named by ['text1b_tu1d']), D_800A3534 (named by ['text1b_tu1d']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
 - BLOB-PIECE 93DCC [0x800a35cc, 0x800a35d0): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
-- BLOB-PIECE 93E18 [0x800a3618, 0x800a3800): D_800A3618 (named by ['text1b_b']), jtbl_800A3620 (named by ['text1b_b']), jtbl_800A3624 (named by ['text1b_b']), D_800A3628 (named by ['text1b_b']), D_800A362C (named by ['text1b_b']), D_800A3638 (named by ['text1b_b']), D_800A3648 (named by ['gpu']), D_800A3658 (named by ['display']), D_800A3668 (named by ['ings2']), D_800A3670 (named by ['code6cac_c2', 'code6cac_tu2']) and 119 more labels - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93E18 [0x800a3618, 0x800a3800): overlaps the COMMON block - 58 K1 tentative definitions (g_comb_recv_buf, D_800A3690, g_comb_send_buf, D_800A36A0, g_disp_fade, D_800A36AC, ...) that 13 files reach gp-relative take their addresses here from symbol-file rows (owner ruling Q62); the piece keeps the original bytes of the range (labels: D_800A3618 (named by ['text1b_b']), jtbl_800A3620 (named by ['text1b_b']), jtbl_800A3624 (named by ['text1b_b']), D_800A3628 (named by ['text1b_b']), D_800A362C (named by ['text1b_b']), D_800A3638 (named by ['text1b_b']), D_800A3648 (named by ['gpu']), D_800A3658 (named by ['display']), D_800A3668 (named by ['ings2']), D_800A3670 (named by ['code6cac_c2', 'code6cac_tu2']) and 119 more labels)
 
 Alignment padding inside a block (no object: the next object's alignment produces it) (33):
 - PADDING code6cac_c_mid static 0x800a3319 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
@@ -324,6 +326,9 @@ Arrays sized from the original's object boundary (8):
 - SIZED-FROM-GAP text1b_tu1d D_800A358C: incomplete array -> [2] (next object at 0x800a3590)
 - SIZED-FROM-GAP text1b_tu1d D_800A3590: incomplete array -> [2] (next object at 0x800a3594)
 - SIZED-FROM-GAP text1b_tu1d D_800A3594: incomplete array -> [2] (next object at 0x800a3598)
+
+Initialized objects of a struct type (member by member from the original bytes) (1):
+- STRUCT-INIT text1b D_800A3258: PadBitTable (u8 at +0 [4]), initialized member by member from the original bytes
 
 (K2) externs of the new statics removed (own file and other files) (173):
 - EXTERN-REMOVED src/code6cac_c2.c: 1 extern line(s) of D_800A3358 (its own static now)
@@ -5134,7 +5139,7 @@ index 99ab38c4f..091618f52 100644
  /* Sony LIBSND `_svm_cur` (vmanager current-voice state; psyz
     libsnd_private.h `struct struct_svm`), base 0x801027F0. One object: the
 diff --git a/named_syms.txt b/named_syms.txt
-index 5ba6a633e..ee81444f8 100644
+index 261570edc..c8f27b26f 100644
 --- a/named_syms.txt
 +++ b/named_syms.txt
 @@ -113,29 +113,17 @@ g_stage_collision = 0x800A8FB0;
@@ -5203,7 +5208,7 @@ index 5ba6a633e..ee81444f8 100644
  D_800EEE00                                      = 0x800EEE00;  /* sibling pair to D_800A33C8/D_800A33CA but for the bone-data2 context */  /* data-wave 2026-09-25: was g_snd_3d_angle_h_b */
  D_800EEE02                                      = 0x800EEE02;  /* sibling pair */  /* data-wave 2026-09-25: was g_snd_3d_angle_v_b */
  D_800EEE1C                                          = 0x800EEE1C;  /* position triple X (from D_80101DF0.xf.mat.t[0], 0x80101E1C) */  /* data-wave 2026-09-25: was g_snd_3d_pos_x */
-@@ -1697,7 +1677,6 @@ g_menuctl_effect_handle                                  = 0x800A372C;  /* effec
+@@ -1695,7 +1675,6 @@ g_menuctl_effect_handle                                  = 0x800A372C;  /* effec
  g_vab_vb_sbaddr                                      = 0x800EFB38;  /* 16-entry s32 array; cleared in sync with g_effect_struct_b */  /* data-wave 2026-09-24: was g_effect_pool_a_16 */
  g_effect_pool_b_24                                      = 0x800EFB78;  /* 24-entry x 8-byte struct array; +0..3 = s32 (cleared to 0), +4..5 = u8 (set to 0x7F) */
  g_effect_pool_b_24_field_4                              = 0x800EFB7C;  /* u8 field at offset +4 of each 8-byte entry of g_effect_pool_b_24 (init = 0x7F) */
@@ -5211,7 +5216,7 @@ index 5ba6a633e..ee81444f8 100644
  
  /* === text1b post-render + menu state (2026-05-17) -- 2 highs === */
  g_text1b_post_render_countdown                          = 0x800A32BC;  /* set to 0xA (10) when text1b render-state +0x0 bit 0x200000 is set; decremented per frame; tested >= 2 and == 1 in main loop */
-@@ -2034,7 +2013,6 @@ g_input_idle_flag                                       = 0x800A3804;  /* bool (
+@@ -2032,7 +2011,6 @@ g_input_idle_flag                                       = 0x800A3804;  /* bool (
  
  /* === Replay camera init + buki pre-hit args (2026-05-17) -- 3 highs === */
  g_replay_camera_init_flag                               = 0x800A3400;  /* reset to 0 in replay_camera_Init setup */
@@ -5219,7 +5224,7 @@ index 5ba6a633e..ee81444f8 100644
  g_buki_pre_hit_arg_alt                                  = 0x800A340C;  /* paired with _arg (init to same value, later set to _arg) */
  
  /* === Ground fog state pair (2026-05-17) -- 4 highs === */
-@@ -2248,7 +2226,6 @@ g_damage_debug_enabled_plus_4                           = 0x800A3200;  /* +4 fro
+@@ -2241,7 +2219,6 @@ g_damage_debug_enabled_plus_4                           = 0x800A3200;  /* +4 fro
  g_damage_debug_enabled_plus_5                           = 0x800A3201;  /* +5 from g_damage_debug_enabled (0x800A31FC) */
  g_input_pause_pending_clear_plus_4                      = 0x800A3208;  /* +4 from g_input_pause_pending_clear (0x800A3204) */
  g_input_pause_pending_clear_plus_5                      = 0x800A3209;  /* +5 from g_input_pause_pending_clear (0x800A3204) */
@@ -5227,7 +5232,7 @@ index 5ba6a633e..ee81444f8 100644
  g_text1a_color_blue_plus_4                              = 0x800A3240;  /* +4 from g_text1a_color_blue (0x800A323C) */
  g_eff_particle_remaining_plus_4                         = 0x800A3270;  /* +4 from g_eff_particle_remaining (0x800A326C) */
  g_text1b_byte_pair_table_8x7_plus_8                     = 0x800A3284;  /* +8 from g_text1b_byte_pair_table_8x7 (0x800A327C) */
-@@ -2260,8 +2237,6 @@ g_input_retry_counter_b_plus_8                          = 0x800A3328;  /* +8 fro
+@@ -2253,8 +2230,6 @@ g_input_retry_counter_b_plus_8                          = 0x800A3328;  /* +8 fro
  g_pad_press_countdown_plus_4                            = 0x800A3334;  /* +4 from g_pad_press_countdown (0x800A3330) */
  g_result_timer_complete_flag_plus_4                     = 0x800A3340;  /* +4 from g_result_timer_complete_flag (0x800A333C) */
  g_result_timer_complete_flag_plus_8                     = 0x800A3344;  /* +8 from g_result_timer_complete_flag (0x800A333C) */
@@ -6087,10 +6092,10 @@ index 289f2d155..2ea8b9c7b 100644
 +s16 D_800A3840;
 +s16 D_800A3854;
 diff --git a/src/code6cac_b_tu2.c b/src/code6cac_b_tu2.c
-index 77b168c9c..a46e5ca05 100644
+index cbe639660..2ad9fd319 100644
 --- a/src/code6cac_b_tu2.c
 +++ b/src/code6cac_b_tu2.c
-@@ -6653,3 +6653,10 @@ loop:
+@@ -6582,3 +6582,10 @@ loop:
          D_800A3834 = 0;
      }
  }
@@ -6100,7 +6105,7 @@ index 77b168c9c..a46e5ca05 100644
 +s32 D_800A3144[2] = { 0x15e, 0x172 };  /* address taken (lui/addiu) in func_800288C8: size from the blob label */
 +s32 D_800A314C = 0;
 +/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
-+u8 D_800A36F2;
++u8 D_800A36F2[2];
 diff --git a/src/code6cac_c.c b/src/code6cac_c.c
 index 7978c684d..7d55b6906 100644
 --- a/src/code6cac_c.c
@@ -6223,7 +6228,7 @@ index 126ce2caa..f14c43c7f 100644
 +s32 D_800A3908;
 +u8 D_800A3916;
 diff --git a/src/code6cac_c_mid.c b/src/code6cac_c_mid.c
-index b1d0e47a5..770b908c7 100644
+index 604bf49d3..3d690d466 100644
 --- a/src/code6cac_c_mid.c
 +++ b/src/code6cac_c_mid.c
 @@ -677,9 +677,26 @@ s32 func_8003880C(void) {
@@ -6336,7 +6341,7 @@ index b1d0e47a5..770b908c7 100644
 +s32 D_800A3908;
 +u8 D_800A3916;
 diff --git a/src/code6cac_tu2.c b/src/code6cac_tu2.c
-index 308acd0db..72d4742dd 100644
+index bd3ad6504..839621832 100644
 --- a/src/code6cac_tu2.c
 +++ b/src/code6cac_tu2.c
 @@ -26,7 +26,6 @@ extern void func_8005B5AC(void);
@@ -6569,7 +6574,7 @@ index 60bf69f7a..5b6286b38 100644
 +/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
 +s32 D_800A3234 = -1;
 diff --git a/src/text1b.c b/src/text1b.c
-index 27b818047..84b0b58d5 100644
+index b8de57a0b..bc1b939ff 100644
 --- a/src/text1b.c
 +++ b/src/text1b.c
 @@ -7,8 +7,6 @@
@@ -6692,16 +6697,16 @@ index 27b818047..84b0b58d5 100644
  extern void func_80052C4C(s32, s32, s32, s32);
  extern void gte_ReadIR1IR2Sra2(s32 *, s32 *);
  
-@@ -4606,8 +4619,6 @@ const u32 jtbl_8001589C[6] = {
- };
+@@ -5900,8 +5913,6 @@ s32 func_80058580(PracticeMenuRec *p) {
  
- INCLUDE_ASM("asm/funcs", func_80058580);
+ 
+ #undef CPU_SQ
 -extern s16 D_800A3400;
 -extern s32 D_800A3408;
  extern s32 g_vab_vb_sbaddr[];
  extern u32 D_800EFB78[];
  extern u8 D_800EFB7C[];
-@@ -5073,8 +5084,6 @@ s32 game_FrameLoop();                           /* extern */
+@@ -6367,8 +6378,6 @@ s32 game_FrameLoop();                           /* extern */
  s32 cdrom_StartRead(s32, s32);               /* extern */
  
  extern s32 D_800158B4;
@@ -6710,7 +6715,7 @@ index 27b818047..84b0b58d5 100644
  
  s32 snd_LoadCommonVab(s32 arg0) {
      s32 temp_v0;
-@@ -7158,3 +7167,28 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
+@@ -8452,3 +8461,28 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
      sp1C += 0xC;
      return end_off - arg0;
  }
@@ -6720,9 +6725,9 @@ index 27b818047..84b0b58d5 100644
 +s16 D_800A324A = -1;
 +s32 D_800A324C = -1;
 +s32 D_800A3250[2] = { 0x4c4c554e, 0 };  /* reached gp-relative by func_8005490C (declared in no C file): size from the blob label */
-+s32 D_800A3258 = 0xe0c0f0d;  /* address taken (lui/addiu) in func_80055B60: size from the blob label */
-+s32 D_800A325C = 0x3020001;  /* address taken (lui/addiu) in func_80058580: size from the blob label */
-+s32 D_800A3260 = 0x7060405;  /* address taken (lui/addiu) in func_80058580: size from the blob label */
++PadBitTable D_800A3258 = { { 0xd, 0xf, 0xc, 0xe } };
++u8 D_800A325C[4] = { 1, 0, 2, 3 };
++u8 D_800A3260[4] = { 5, 4, 6, 7 };
 +s32 D_800A3264[2] = { 0x4e00b3, 0xc180000 };  /* named by the pointer word at 0X8009B0D8 (7D920.data.s) (A9, owner ruling Q80, rules: 8c57bc4ab: this file's K3 global by layout - it lies between this file's gp-reached objects; the pointer table's owning file is open): size from the blob label */
 +s32 D_800A326C = 0;
 +u8 D_800A3270[8] = { 0, 1, 2, 3, 4, 0, 0, 0 };
@@ -7493,10 +7498,10 @@ index 000000000..13baec6f2
 +            print(f"MISMATCH: Makefile {mk} / buildconfig {bc} / evidence {lib}", file=sys.stderr)
 +            sys.exit(1)
 diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
-index c414e251a..862d337e5 100644
+index 573acddf7..567149322 100644
 --- a/undefined_syms_auto.txt
 +++ b/undefined_syms_auto.txt
-@@ -81,15 +81,7 @@ _snd_seq_tick_env_plus_0x11 = 0x800A26DD;  /* data-wave 2026-09-07: was D_800A26
+@@ -71,15 +71,7 @@ _snd_seq_tick_env_plus_0x11 = 0x800A26DD;  /* data-wave 2026-09-07: was D_800A26
  _snd_seq_tick_env_plus_0x12 = 0x800A26DE;  /* data-wave 2026-09-07: was D_800A26DE */
  _spu_rev_attr_plus_0xA = 0x800A2892;  /* data-wave 2026-09-07: was D_800A2892 */
  _spu_voice_centerNote_plus_0x2E = 0x800A28D2;  /* data-wave 2026-09-29: was D_800A28D2 */
@@ -7512,7 +7517,7 @@ index c414e251a..862d337e5 100644
  D_800A3382 = 0x800A3382;
  D_800A33CA = 0x800A33CA;
  D_800A358A = 0x800A358A;
-@@ -740,18 +732,12 @@ _svm_envx_hist = 0x80107898;  /* data-wave 2026-09-24: was D_80107898 */
+@@ -726,18 +718,12 @@ _svm_envx_hist = 0x80107898;  /* data-wave 2026-09-24: was D_80107898 */
  _svm_okof1 = 0x801078D8;  /* data-wave 2026-09-24: was D_801078D8 */
  _svm_okof2 = 0x801078DA;  /* data-wave 2026-09-24: was D_801078DA */
  D_801078E0 = 0x801078E0;
@@ -7531,7 +7536,7 @@ index c414e251a..862d337e5 100644
  D_800A3178 = 0x800A3178;
  D_800A3180 = 0x800A3180;
  D_800A3188 = 0x800A3188;
-@@ -765,17 +751,6 @@ D_800A31C0 = 0x800A31C0;
+@@ -751,17 +737,6 @@ D_800A31C0 = 0x800A31C0;
  D_800A31C8 = 0x800A31C8;
  D_800A31D0 = 0x800A31D0;
  g_str_sio_800A3210 = 0x800A3210;  /* data-wave 2026-09-24: was D_800A3210 */
@@ -7549,7 +7554,7 @@ index c414e251a..862d337e5 100644
  D_800A32C0 = 0x800A32C0;
  D_800A32C8 = 0x800A32C8;
  D_800A32D0 = 0x800A32D0;
-@@ -784,24 +759,8 @@ D_800A32E0 = 0x800A32E0;
+@@ -770,24 +745,8 @@ D_800A32E0 = 0x800A32E0;
  D_800A32EC = 0x800A32EC;
  D_800A32F4 = 0x800A32F4;
  D_800A32FC = 0x800A32FC;
@@ -7574,7 +7579,7 @@ index c414e251a..862d337e5 100644
  D_800A3618 = 0x800A3618;
  D_800A3628 = 0x800A3628;
  D_800A362C = 0x800A362C;
-@@ -908,7 +867,6 @@ _spu_memList = 0x800A2D40;  /* data-wave 2026-09-07: was D_800A2D40 */
+@@ -894,7 +853,6 @@ _spu_memList = 0x800A2D40;  /* data-wave 2026-09-07: was D_800A2D40 */
  D_800A3074 = 0x800A3074;
  D_800A307C = 0x800A307C;
  _spu_trans_mode = 0x800A2878;  /* data-wave 2026-09-07: was D_800A2878 */
@@ -7582,7 +7587,7 @@ index c414e251a..862d337e5 100644
  D_00000000 = 0x00000000;
  D_80094B48 = 0x80094B48;
  D_80094CFC = 0x80094CFC;
-@@ -1092,120 +1050,7 @@ D_800A2D1C = 0x800A2D1C;
+@@ -1074,120 +1032,7 @@ D_800A2D1C = 0x800A2D1C;
  _spu_rev_startaddr = 0x800A2D44;  /* data-wave 2026-09-07: was D_800A2D44 */
  D_800A3044 = 0x800A3044;
  D_800A30D4 = 0x800A30D4;
@@ -7703,7 +7708,7 @@ index c414e251a..862d337e5 100644
  D_800A36A0 = 0x800A36A0;
  D_800A36B0 = 0x800A36B0;
  D_800A36C0 = 0x800A36C0;
-@@ -1240,9 +1085,6 @@ file_GetFlag2 = 0x800167D4;
+@@ -1222,9 +1067,6 @@ file_GetFlag2 = 0x800167D4;
  file_LoadSoundData = 0x80016CF8;
  file_ResetDmaFlag = 0x80016C74;
  g_anim_func_table = 0x800F66A0;
@@ -7713,7 +7718,7 @@ index c414e251a..862d337e5 100644
  g_cam_bone_data = 0x800EEDD0;
  g_cam_bone_data2 = 0x800EEDF0;
  D_800F62FA = 0x800F62FA;  /* data-wave 2026-09-29: was g_cam_fov_div */
-@@ -1274,12 +1116,8 @@ g_cos_lut_q4 = 0x8009A794;
+@@ -1256,12 +1098,8 @@ g_cos_lut_q4 = 0x8009A794;
  /* data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined */
  g_file_data_buf = 0x800F6740;
  g_file_dma_flag = 0x800A3716;
@@ -7726,7 +7731,7 @@ index c414e251a..862d337e5 100644
  g_gpu_data_reg = 0x8009BF44;
  g_gpu_dev_table = 0x8009BE6C;
  g_gpu_dma_bcr = 0x8009BF50;
-@@ -1290,7 +1128,6 @@ g_gpu_ot_end = 0x8009BF30;
+@@ -1272,7 +1110,6 @@ g_gpu_ot_end = 0x8009BF30;
  g_gpu_stat_reg = 0x8009BF48;
  g_gpu_vcount = 0x8009BF8C;
  g_module_func_tbl = 0x8008D090;
@@ -7734,7 +7739,7 @@ index c414e251a..862d337e5 100644
  g_player_char_ids = 0x80094B88;
  g_player_ptrs = 0x800A9A10;
  /* data-wave 2026-09-07: g_sin_lut_q1 = 0x8009BF94 retired; rsin_tbl is now object-defined */
-@@ -1298,12 +1135,8 @@ g_sin_lut_q3 = 0x8009AF94;
+@@ -1280,12 +1117,8 @@ g_sin_lut_q3 = 0x8009AF94;
  D_800A307C = 0x800A307C;  /* data-wave 2026-09-29: was g_snd_callback */
  D_800EF848 = 0x800EF848;  /* data-wave 2026-09-29: was g_snd_ch_data */
  D_800EF7BC = 0x800EF7BC;  /* data-wave 2026-09-25: was g_snd_config_tbl */
@@ -7747,7 +7752,7 @@ index c414e251a..862d337e5 100644
  g_spu_busy = 0x800A2D10;
  g_spu_dma_ctrl = 0x800A2CF0;
  g_spu_init_flag = 0x800A2D14;
-@@ -1347,12 +1180,6 @@ D_80015F74 = 0x80015F74;
+@@ -1329,12 +1162,6 @@ D_80015F74 = 0x80015F74;
  D_8009BF24 = 0x8009BF24;
  D_8009BF28 = 0x8009BF28;
  D_8009BF2C = 0x8009BF2C;

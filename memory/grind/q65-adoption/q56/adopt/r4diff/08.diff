@@ -1,0 +1,9 @@
+--- 08-reconcile-text1b-decls.patch
++++ 08-reconcile-text1b-decls.patch
+@@ -5,5 +5,5 @@
+ text1a_c2, text1a_b, text1a_b_pre_rodata, sound and text1b are one original file (owner ruling Q67;
+ text1a_b_pre_rodata joins under (A7), owner ruling Q72). Each symbol they declare differently gets one type
+-before the merge. The per-symbol evidence is in the step script's docstring (tmp/q56/adopt/s08_apply.py).
++before the merge. The per-symbol evidence is in the step script's docstring (memory/grind/q65-adoption/q56/adopt/s08_apply.py).
+ The parts stay separate files in this commit.
+ 

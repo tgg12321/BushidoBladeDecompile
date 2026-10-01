@@ -1,6 +1,6 @@
-From 143996c42beb6dfcc9890be99e5284098378dd49 Mon Sep 17 00:00:00 2001
+From 232b994330c3affeea3713f2275037a76fae31d1 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 14:33:42 -0500
+Date: Thu, 1 Oct 2026 16:16:43 -0500
 Subject: [PATCH] substrate: maspsx models cc1psx -G8's .sdata choice for small
  initialized objects (owner ruling Q68, step 13)
 

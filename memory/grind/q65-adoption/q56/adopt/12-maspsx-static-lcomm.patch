@@ -1,6 +1,6 @@
-From 41832b23f85bc7292e8d35abb29838873472ddc7 Mon Sep 17 00:00:00 2001
+From ac466f4aa82cd4780499d0d14346267def3b1575 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 14:33:13 -0500
+Date: Thu, 1 Oct 2026 16:16:12 -0500
 Subject: [PATCH] substrate: maspsx models .local+.comm (an uninitialized
  static) as .lcomm (owner ruling Q65, step 12)
 

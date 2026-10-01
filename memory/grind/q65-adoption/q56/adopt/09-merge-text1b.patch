@@ -1,21 +1,21 @@
-From 663b1485a7c7e77d1604a5b82170840a71e2e2b2 Mon Sep 17 00:00:00 2001
+From 252f258e406f30c728e4f109cfc4699d03efc81b Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 14:31:44 -0500
+Date: Thu, 1 Oct 2026 16:14:29 -0500
 Subject: [PATCH] src: text1a_c2 + text1a_b + text1a_b_pre_rodata + sound +
  text1b are one file (owner rulings Q65/Q67, step 9)
 
 Rule: per-file-gp-model.md Merge (owner ruling Q67 group, A7 data-only join): text1a_c2 + text1a_b + text1a_b_pre_rodata + sound + text1b are one original file; declarations reconciled in step 08 (evidence: s09_apply.py docstring, m34_evidence.md).
 
-Besides concatenating the parts in link order (union of their include blocks), the merge drops 118 file-scope declarations that repeat, verbatim, one already emitted earlier in the merged file (each object keeps its first declaration):
-- void func_800858D0(s32);  x7 (text1b.c:3202, text1b.c:3230, text1b.c:3501, text1b.c:3520, ...)
-- extern void func_800858D0(s32);  x7 (text1b.c:3206, text1b.c:3634, text1b.c:3703, text1b.c:3769, ...)
-- extern s32 D_800A3408;  x4 (text1b.c:3178, text1b.c:3528, text1b.c:3593, text1b.c:3966)
+Besides concatenating the parts in link order (union of their include blocks), the merge drops 120 file-scope declarations that repeat, verbatim, one already emitted earlier in the merged file (each object keeps its first declaration):
+- void func_800858D0(s32);  x7 (text1b.c:4498, text1b.c:4526, text1b.c:4797, text1b.c:4816, ...)
+- extern void func_800858D0(s32);  x7 (text1b.c:4502, text1b.c:4930, text1b.c:4999, text1b.c:5065, ...)
+- extern s32 ratan2(s32, s32);  x4 (text1b.c:2569, text1b.c:2872, text1b.c:3027, text1b.c:3305)
+- extern s32 D_800A3408;  x4 (text1b.c:4474, text1b.c:4824, text1b.c:4889, text1b.c:5262)
 - extern s32 D_800A33EC;  x3 (text1b.c:777, text1b.c:808, text1b.c:839)
-- extern s32 g_gpu_ot_ptr;  x3 (text1b.c:2198, text1b.c:5157, text1b.c:5626)
-- extern s32 ratan2(s32, s32);  x3 (text1b.c:2562, text1b.c:2717, text1b.c:2995)
-- extern s32 SetDrawMode(s32, s32, s32, s32, s32);  x3 (text1b.c:4459, text1b.c:5164, text1b.c:5418)
-- extern s32 AddPrim(s32, s32);  x3 (text1b.c:4460, text1b.c:5165, text1b.c:5419)
-- extern s32 SetSemiTrans(void *, s32);  x3 (text1b.c:4461, text1b.c:5177, text1b.c:5628)
+- extern s32 g_gpu_ot_ptr;  x3 (text1b.c:2198, text1b.c:6453, text1b.c:6922)
+- extern s32 SetDrawMode(s32, s32, s32, s32, s32);  x3 (text1b.c:5755, text1b.c:6460, text1b.c:6714)
+- extern s32 AddPrim(s32, s32);  x3 (text1b.c:5756, text1b.c:6461, text1b.c:6715)
+- extern s32 SetSemiTrans(void *, s32);  x3 (text1b.c:5757, text1b.c:6473, text1b.c:6924)
 - extern s32 g_anim_func_table[];  x2 (sound.c:481, text1b.c:930)
 - extern s16 g_color_mode;  x2 (text1b.c:471, text1b.c:481)
 - extern s32 D_800A378C;  x2 (text1b.c:638, text1b.c:2200)
@@ -25,16 +25,16 @@ Besides concatenating the parts in link order (union of their include blocks), t
 - extern s32 gte_SumSquares3(s32, s32, s32);  x2 (text1b.c:1762, text1b.c:1837)
 - extern s32 func_80052D00(s32, s32);  x2 (text1b.c:1763, text1b.c:1795)
 - extern s32 func_80053E9C();  x2 (text1b.c:1765, text1b.c:1796)
-- void SsVabClose(s16);  x2 (text1b.c:3514, text1b.c:3665)
-- extern s32 func_8005C2A8(s32 *, s16, s32);  x2 (text1b.c:3585, text1b.c:3632)
-- extern s32 g_vab_rec_ptr_plus_0x18;  x2 (text1b.c:3771, text1b.c:4093)
-- extern s32 g_vab_rec_ptr_plus_0xC;  x2 (text1b.c:3772, text1b.c:4092)
-- extern s32 *g_vab_rec_ptr[];  x2 (text1b.c:3791, text1b.c:3963)
-- extern s32 g_vab_vb_sbaddr[];  x2 (text1b.c:3792, text1b.c:3964)
-- extern s32 g_vab_sticky_sbaddr;  x2 (text1b.c:3965, text1b.c:4049)
-- extern s32 func_8007352C(s32);  x2 (text1b.c:4457, text1b.c:5167)
-- extern s32 func_8006E480(s32, s32);  x2 (text1b.c:4458, text1b.c:5168)
-- extern s32 SetTile(void *);  x2 (text1b.c:4462, text1b.c:5630)
+- void SsVabClose(s16);  x2 (text1b.c:4810, text1b.c:4961)
+- extern s32 func_8005C2A8(s32 *, s16, s32);  x2 (text1b.c:4881, text1b.c:4928)
+- extern s32 g_vab_rec_ptr_plus_0x18;  x2 (text1b.c:5067, text1b.c:5389)
+- extern s32 g_vab_rec_ptr_plus_0xC;  x2 (text1b.c:5068, text1b.c:5388)
+- extern s32 *g_vab_rec_ptr[];  x2 (text1b.c:5087, text1b.c:5259)
+- extern s32 g_vab_vb_sbaddr[];  x2 (text1b.c:5088, text1b.c:5260)
+- extern s32 g_vab_sticky_sbaddr;  x2 (text1b.c:5261, text1b.c:5345)
+- extern s32 func_8007352C(s32);  x2 (text1b.c:5753, text1b.c:6463)
+- extern s32 func_8006E480(s32, s32);  x2 (text1b.c:5754, text1b.c:6464)
+- extern s32 SetTile(void *);  x2 (text1b.c:5758, text1b.c:6926)
 - extern s32 D_800A33B0;  x1 (text1a_b.c:5)
 - extern s32 D_800A33B4;  x1 (text1a_b.c:6)
 - extern void func_800453E0(s32);  x1 (sound.c:9)
@@ -71,14 +71,15 @@ Besides concatenating the parts in link order (union of their include blocks), t
 - extern s32 D_80102C00;  x1 (text1b.c:2196)
 - extern u16 D_800A38D6;  x1 (text1b.c:2197)
 - extern s32 D_800A3808;  x1 (text1b.c:2199)
-- extern s32 rand(void);  x1 (text1b.c:2757)
-- s32 snd_VabFakeOpen(s32, s16);  x1 (text1b.c:3688)
-- extern s32 func_80036EA8(s32, s32);  x1 (text1b.c:3705)
-- extern s32 func_80036F28(s32);  x1 (text1b.c:3708)
-- extern void SsVabClose(s16);  x1 (text1b.c:3794)
-- extern s32 D_800A340C;  x1 (text1b.c:3967)
-- extern s32 D_800A36AC;  x1 (text1b.c:5170)
-- extern s32 D_800A3278;  x1 (text1b.c:5172)
+- extern s32 rand(void);  x1 (text1b.c:3067)
+- extern s32 SquareRoot0(s32);  x1 (text1b.c:3259)
+- s32 snd_VabFakeOpen(s32, s16);  x1 (text1b.c:4984)
+- extern s32 func_80036EA8(s32, s32);  x1 (text1b.c:5001)
+- extern s32 func_80036F28(s32);  x1 (text1b.c:5004)
+- extern void SsVabClose(s16);  x1 (text1b.c:5090)
+- extern s32 D_800A340C;  x1 (text1b.c:5263)
+- extern s32 D_800A36AC;  x1 (text1b.c:6466)
+- extern s32 D_800A3278;  x1 (text1b.c:6468)
 ---
  bb2.ld                                |   13 -
  docs/grind/rodata-align-2026-09-30.md |    2 +-
@@ -86,8 +87,8 @@ Besides concatenating the parts in link order (union of their include blocks), t
  src/text1a_b.c                        |   32 -
  src/text1a_b_pre_rodata.c             |  321 -----
  src/text1a_c2.c                       |  243 ----
- src/text1b.c                          | 1672 +++++++++++++++++++++++--
- 7 files changed, 1565 insertions(+), 1706 deletions(-)
+ src/text1b.c                          | 1674 +++++++++++++++++++++++--
+ 7 files changed, 1565 insertions(+), 1708 deletions(-)
  delete mode 100644 src/sound.c
  delete mode 100644 src/text1a_b.c
  delete mode 100644 src/text1a_b_pre_rodata.c
@@ -1767,7 +1768,7 @@ index 9ec8c5147..000000000
 -    g_stage_variant = 0;
 -}
 diff --git a/src/text1b.c b/src/text1b.c
-index 061b26d6b..10af34a73 100644
+index ede2c0c6d..f6dc79737 100644
 --- a/src/text1b.c
 +++ b/src/text1b.c
 @@ -6,8 +6,1572 @@
@@ -2478,7 +2479,7 @@ index 061b26d6b..10af34a73 100644
 +s32 stage_GetVariant(void) {
 +    return g_stage_variant;
 +}
-+
+ 
 +s32 *func_800467B8(s32 a0) {
 +    s32 arg = a0;
 +    s32 chan = 8;
@@ -3334,7 +3335,7 @@ index 061b26d6b..10af34a73 100644
 +        return (val1 + val2) >> 12;
 +    }
 +}
- 
++
 +s32 func_80047EC8(void) {
 +    return 0xD00;
 +}
@@ -3550,15 +3551,23 @@ index 061b26d6b..10af34a73 100644
  extern s32 func_8005490C(void);
  extern void func_800444E0(void);
  s32 func_80054F68(void) {
-@@ -2559,7 +4075,6 @@ void func_80055B44(PracticeMenuRec *a0, u8 *a1, s32 a2, s32 a3) {
-     a0->unk_3CC = -1;
+@@ -2566,7 +4082,6 @@ typedef struct {
+ } PadBitTable;
+ extern PadBitTable D_800A3258;
+ extern u8 D_8009A088[];
+-extern s32 ratan2(s32, s32);
+ extern s32 SquareRoot0(s32);
+ extern s32 func_80058580(PracticeMenuRec *);
+ extern void func_80056CB8(s32);
+@@ -2869,7 +4384,6 @@ void func_80055B60(s32 arg0, PadState *arg1) {
+     *arg1 = rec->unk_3D0;
  }
- INCLUDE_ASM("asm/funcs", func_80055B60);
+ /* END func_80055B60 */
 -extern s32 ratan2(s32, s32);
  extern u8 D_8009A820[];
  extern u8 D_8009A821[];
  
-@@ -2714,7 +4229,6 @@ s32 func_80056FE8(PracticeMenuRec *arg0) {
+@@ -3024,7 +4538,6 @@ s32 func_80056FE8(PracticeMenuRec *arg0) {
      }
      return base + arg0->unk_00->unk_40A + 0x12C;
  }
@@ -3566,7 +3575,7 @@ index 061b26d6b..10af34a73 100644
  extern s32 func_800233AC(void *, s32 *);
  extern s32 D_8009AA50[];
  
-@@ -2754,7 +4268,6 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
+@@ -3064,7 +4577,6 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
      return var_v0;
  }
  typedef struct { s32 x, y, z, w; } Vec4_571C0;
@@ -3574,7 +3583,15 @@ index 061b26d6b..10af34a73 100644
  
  s32 func_800571C0(s32 obj) {
      Vec4_571C0 probe;
-@@ -2992,7 +4505,6 @@ s32 func_80057ACC(s32 arg0, u8 *arg1, s32 arg2, s32 arg3) {
+@@ -3256,7 +4768,6 @@ s32 func_8005763C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s3
+     return 1;
+ }
+ extern s32 func_8005763C(s32, s32, s32, s32, s32, s32, s32, s32, s32 *, s32 *);
+-extern s32 SquareRoot0(s32);
+ 
+ s32 func_80057ACC(s32 arg0, u8 *arg1, s32 arg2, s32 arg3) {
+     s32 sp28;
+@@ -3302,7 +4813,6 @@ s32 func_80057ACC(s32 arg0, u8 *arg1, s32 arg2, s32 arg3) {
      }
      return best;
  }
@@ -3582,7 +3599,7 @@ index 061b26d6b..10af34a73 100644
  /* Per-vertex neighbour-angle midpoint: computes the outward bisector direction at
   * vertex arg1 of the polygon whose vertex table hangs off arg0[4], and writes the
   * offset point into *arg2 / *arg3.
-@@ -3175,7 +4687,6 @@ void SsEnd(void);
+@@ -4471,7 +5981,6 @@ void SsEnd(void);
  void SsQuit(void);
  
  
@@ -3590,7 +3607,7 @@ index 061b26d6b..10af34a73 100644
  void snd_Quit(void) {
      s32 i;
      s32 *a0;
-@@ -3199,11 +4710,9 @@ void snd_Quit(void) {
+@@ -4495,11 +6004,9 @@ void snd_Quit(void) {
      D_800A3408 = 0;
  }
  
@@ -3602,7 +3619,7 @@ index 061b26d6b..10af34a73 100644
  extern void func_80086130(s32, s32, s32);
  
  
-@@ -3227,7 +4736,6 @@ void func_8005B5AC(void) {
+@@ -4523,7 +6030,6 @@ void func_8005B5AC(void) {
          s0 += 8;
      } while (s1 < 24);
  }
@@ -3610,7 +3627,7 @@ index 061b26d6b..10af34a73 100644
  void SsVabClose(s16);
  
  
-@@ -3498,7 +5006,6 @@ extern s32 g_vab_rec_ptr_plus_0x8;
+@@ -4794,7 +6300,6 @@ extern s32 g_vab_rec_ptr_plus_0x8;
  extern s32 g_vab_vb_sbaddr_plus_0x8;
  extern s32 g_vab_rec_ptr_plus_0x14;
  extern s32 g_vab_vb_sbaddr_plus_0x14;
@@ -3618,7 +3635,7 @@ index 061b26d6b..10af34a73 100644
  
  void func_8005B6AC(void) {
      func_800858D0(0);
-@@ -3511,13 +5018,11 @@ void func_8005B6AC(void) {
+@@ -4807,13 +6312,11 @@ void func_8005B6AC(void) {
  }
  extern s32 g_vab_rec_ptr_plus_0x4[];
  extern s32 g_vab_vb_sbaddr_plus_0x4[];
@@ -3632,7 +3649,7 @@ index 061b26d6b..10af34a73 100644
  s32 SsUtReverbOff(void);
  s32 SsUtSetReverbType(s32);
  s32 SsUtSetReverbDepth(s32, s32);
-@@ -3525,7 +5030,6 @@ s32 SsUtSetReverbDepth(s32, s32);
+@@ -4821,7 +6324,6 @@ s32 SsUtSetReverbDepth(s32, s32);
  void func_8005B5AC(void);
  
  
@@ -3640,7 +3657,7 @@ index 061b26d6b..10af34a73 100644
  void func_8005B72C(void) {
      s32 s0;
      s32 *s2;
-@@ -3582,7 +5086,6 @@ typedef struct GameObj {
+@@ -4878,7 +6380,6 @@ typedef struct GameObj {
  } GameObj;
  extern s32 func_80036EA8();
  extern s32 func_80036F28();
@@ -3648,7 +3665,7 @@ index 061b26d6b..10af34a73 100644
  
  s32 printf(s32 *, s32);               /* extern */
  s32 game_FrameLoop();                           /* extern */
-@@ -3590,7 +5093,6 @@ s32 cdrom_StartRead(s32, s32);               /* extern */
+@@ -4886,7 +6387,6 @@ s32 cdrom_StartRead(s32, s32);               /* extern */
  
  extern s32 D_800158B4;
  extern s32 g_vab_sticky_sbaddr;
@@ -3656,7 +3673,7 @@ index 061b26d6b..10af34a73 100644
  extern s32 D_800A340C;
  
  s32 snd_LoadCommonVab(s32 arg0) {
-@@ -3629,9 +5131,7 @@ void func_8005B868(void) {
+@@ -4925,9 +6425,7 @@ void func_8005B868(void) {
  }
  extern s32 func_80036EA8(s32, s32);
  extern s32 func_80036F28(s32);
@@ -3666,7 +3683,7 @@ index 061b26d6b..10af34a73 100644
  
  s32 func_8005B8B8(s32 arg0) {
      s32 t0;
-@@ -3661,8 +5161,6 @@ void func_8005B98C(s32 a0) {
+@@ -4957,8 +6455,6 @@ void func_8005B98C(s32 a0) {
  }
  extern s32 g_vab_rec_ptr_plus_0x24;
  extern s32 g_vab_vb_sbaddr_plus_0x24;
@@ -3675,7 +3692,7 @@ index 061b26d6b..10af34a73 100644
  void func_8005B9C4(void) {
      func_800858D0(0);
      SsVabClose(9);
-@@ -3685,7 +5183,6 @@ void func_8005B9FC(s32 a0) {
+@@ -4981,7 +6477,6 @@ void func_8005B9FC(s32 a0) {
      game_FrameLoop();
      func_8005C2A8(a0, 9, a0 + s1);
  }
@@ -3683,7 +3700,7 @@ index 061b26d6b..10af34a73 100644
  void func_8005BA6C(s32 a0) {
      snd_VabFakeOpen(a0, 9);
  }
-@@ -3700,12 +5197,9 @@ typedef struct {
+@@ -4996,12 +6491,9 @@ typedef struct {
  
  
  extern u8 D_8009AD18[];
@@ -3696,7 +3713,7 @@ index 061b26d6b..10af34a73 100644
  
  
  extern s32 snd_VabFakeOpen(s32, s16);
-@@ -3766,10 +5260,7 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
+@@ -5062,10 +6554,7 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
      return (s32)p - base;
  }
  
@@ -3707,7 +3724,7 @@ index 061b26d6b..10af34a73 100644
  
  void func_8005BD30(s32 arg0) {
      u8 count;
-@@ -3788,10 +5279,7 @@ void func_8005BD30(s32 arg0) {
+@@ -5084,10 +6573,7 @@ void func_8005BD30(s32 arg0) {
          g_vab_rec_ptr_plus_0x18 = g_vab_rec_ptr_plus_0xC;
      }
  }
@@ -3718,7 +3735,7 @@ index 061b26d6b..10af34a73 100644
  void func_8005BDF0(void) {
      u32 *s3 = g_vab_rec_ptr;
      u32 *s2 = g_vab_vb_sbaddr;
-@@ -3805,7 +5293,6 @@ void func_8005BDF0(void) {
+@@ -5101,7 +6587,6 @@ void func_8005BDF0(void) {
      } while ((s32)s0 < (s32)s1);
  }
  extern s16 D_8009AD1C[][2];
@@ -3726,7 +3743,7 @@ index 061b26d6b..10af34a73 100644
  
  
  
-@@ -3839,7 +5326,6 @@ s32 func_8005BE84(s32 arg0)
+@@ -5135,7 +6620,6 @@ s32 func_8005BE84(s32 arg0)
    }
    return (s16) result;
  }
@@ -3734,7 +3751,7 @@ index 061b26d6b..10af34a73 100644
  
  
  
-@@ -3856,7 +5342,6 @@ extern s32 SpuRead();
+@@ -5152,7 +6636,6 @@ extern s32 SpuRead();
  extern s32 SpuWrite();
  extern s32 SpuSetTransferStartAddr();
  extern s32 SpuIsTransferCompleted();
@@ -3742,7 +3759,7 @@ index 061b26d6b..10af34a73 100644
  
  
  s32 snd_MoveVabBody(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-@@ -3952,7 +5437,6 @@ s32 func_8005C074(s16 vabid, s32 base) {
+@@ -5248,7 +6731,6 @@ s32 func_8005C074(s16 vabid, s32 base) {
   * described above.
   */
  extern s32 *func_80077D00(void);
@@ -3750,7 +3767,7 @@ index 061b26d6b..10af34a73 100644
  
  
  extern s16 SsVabTransCompleted(s16);
-@@ -3960,11 +5444,6 @@ extern s32 SsUtGetVBaddrInSB(s16);
+@@ -5256,11 +6738,6 @@ extern s32 SsUtGetVBaddrInSB(s16);
  extern s32 snd_VabOpen(s32 *, s16);
  
  extern const char D_800158CC[];
@@ -3762,7 +3779,7 @@ index 061b26d6b..10af34a73 100644
  
  s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
      s16 i;
-@@ -4046,7 +5525,6 @@ s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
+@@ -5342,7 +6819,6 @@ s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
      return ret;
  }
  
@@ -3770,7 +3787,7 @@ index 061b26d6b..10af34a73 100644
  
  void SsVabOpenHeadSticky(s32, s16, s32);
  s32 SsVabTransBody(s32, s16);
-@@ -4057,7 +5535,6 @@ s32 snd_VabOpen(s32 *a0, s16 a1) {
+@@ -5353,7 +6829,6 @@ s32 snd_VabOpen(s32 *a0, s16 a1) {
      return (s16)SsVabTransBody(a0[2], a1);
  }
  void SsSetMVol(s32, s32);
@@ -3778,7 +3795,7 @@ index 061b26d6b..10af34a73 100644
  void SsSetStereo(void);
  void SsSetAutoKeyOffMode(s32);
  void func_8005C614(void) {
-@@ -4089,8 +5566,6 @@ void func_8005C650(s32 a0, s32 a1, s32 a2) {
+@@ -5385,8 +6860,6 @@ void func_8005C650(s32 a0, s32 a1, s32 a2) {
   * running `next` cursor and key the note on with the entry's stored volumes.
   * Each pool slot is cleared as it is visited.
   */
@@ -3787,7 +3804,7 @@ index 061b26d6b..10af34a73 100644
  extern void SpuGetAllKeysStatus(u8 *);
  extern s32 SpuGetKeyStatus(s32);
  extern s32 SsUtKeyOnV(s16, s16, s16, s16, s16, s16, s16, s16);
-@@ -4454,12 +5929,6 @@ typedef struct {
+@@ -5750,12 +7223,6 @@ typedef struct {
  } T5E098;
  extern s32 D_8009B488;
  extern u8 D_8009B48E;
@@ -3800,7 +3817,7 @@ index 061b26d6b..10af34a73 100644
  s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      S5E098 s;
      T5E098 *tile;
-@@ -5154,27 +6623,19 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
+@@ -6450,27 +7917,19 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
      D_800A3278 = 0;
  }
  
@@ -3828,7 +3845,7 @@ index 061b26d6b..10af34a73 100644
  
  typedef struct {
      s16 x, y, w, h;
-@@ -5415,8 +6876,6 @@ void func_800602AC(s32 arg0, s32 *arg1) {
+@@ -6711,8 +8170,6 @@ void func_800602AC(s32 arg0, s32 *arg1) {
  }
  extern s32 func_8006E480();
  extern s32 func_8007352C();
@@ -3837,7 +3854,7 @@ index 061b26d6b..10af34a73 100644
  extern s32 D_8009B7AC;
  extern s32 D_8009B7B8;
  extern s32 D_8009B7C4;
-@@ -5623,11 +7082,8 @@ void func_80060758(void) {
+@@ -6919,11 +8376,8 @@ void func_80060758(void) {
      D_800A32B4 = 0;
  }
  extern s32 D_8009B0C0;
