@@ -1,0 +1,51 @@
+cheat-cleanup: PracticeMenuRec data model + func_80055138/80056FE8/80055B44 respellings
+
+Data-model half of the func_80058580 landing (func_80058580 itself stays INCLUDE_ASM: layer-2
+rev-58580-dm-b FAILed its body on three casts; rev-58580-r11-b PASSed its Ruling 11 package).
+Full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa; sandbox --disable all 0 for
+func_80055138 (516), func_80056FE8 (43), func_80055B44 (7); every other include/code6cac.h
+consumer byte-identical (full build above; also typed/tuc.sh per TU).
+
+include/code6cac.h:
+- PracticeMenuRec: filler ranges split into the members these bodies and func_80058580 read:
+  unk_50 / unk_58 `u8 *`, u16 unk_6C, s16 unk_86, `u8 unk_A1[2]; u8 unk_A3[2];` (two start/end byte
+  pairs read with a runtime 0/1 index by func_8002AB08 / func_80029454; func_80056FE8 reads
+  unk_A3[0]), u8 unk_AE / unk_AF / unk_B0, s16 unk_26C..unk_272, and 0x362..0x44B: unk_362 waypoint
+  count, `CpuWaypoint unk_364[8]` {s16 x, z; u8 kind, unk5} (func_800571C0 writes them), s32
+  unk_394, s16 unk_398 / 39A / 39E / 3A0 / 3A2, u8 unk_39C / 39D, `u16 *unk_3A4` (script list: u16
+  byte offsets from its own start), `u16 *unk_3A8[3]` (per-row cursors), `u8 *unk_3B4`, the
+  0x3B8..0x3E8 bytes / words, s16 unk_3EE / 3F0, u8 unk_3F2..3F7, s16 unk_3F8[3] / 3FE[3] / 404[3]
+  (indexed by unk_86), s16 unk_40A, s8 unk_40C / 40D, s16 unk_40E / 410 / 412, u8 unk_424..427,
+  s16 unk_428..42E, s32 unk_430 / 434, s16 unk_438 / 43A / 43C, u8 unk_440..443, `u8 unk_444[8]`
+  (func_80056CB8's per-direction results). unk_6A s16 -> u16: every original access is lhu (plus
+  one lbu in func_80058580); the existing `(u16)` value casts in other bodies (code6cac_b.c,
+  code6cac_b_tu2.c, code6cac_tu2.c) are now redundant, their text unchanged (header-type-correction
+  prong (d) is not claimed for them).
+- `CpuLevelEntry { u8 unk0, unk1; u16 mask; } D_8009A8C8[][8]` replaces `u8 D_8009A8C4[][8][4]`:
+  rows of eight 4-byte entries at 0x8009A8C8, each row ending in a zero entry; 0x8009A8C4 is the 0x80
+  terminator of script D_8009A8C0 (asm/data/7D920.data.s). Readers index the column 1-based.
+
+Bodies (src/text1b.c):
+- func_80055138: `PracticeMenuRec *p = &g_practice_menu_table[arg0]`, members throughout; `src =
+  &D_8009A8C8[p->unk_86][D_800A37A0 - 1]` (GCC folds the -1 into %lo(0x8009A8C4); the `row` local is
+  gone); `list` typed `u16 *` and the entry address `(u8 *)list + *cursor` (offsets are bytes from the
+  list start; the one remaining cast); the `(u8)` casts on `% 5`, `/ 10`, `% 10` removed;
+  `idx < sizeof(p->unk_444)` for the 8U bound. Its Ruling 11 temp / idx and staged-value FAKE text are
+  unchanged; their twins were re-measured on this body, all fail
+  (memory/grind/func_80058580/typed/r11_55138.txt).
+- func_80056FE8: `PracticeMenuRec *arg0`, members (unk_00, unk_58[3], unk_A3[0], unk_5E, unk_0E,
+  unk_14, unk_40A); D_8009A830 / D_8009A838 / D_8009A840 are three arrays (`u8[]`, `s8[]`, `u8[]`):
+  their dlabels are 8, 8 and 16 bytes and 0x8009A838 is read lb while the others are read lbu, so
+  they are not rows of one 3x8 record. Its duplicated-statement-into-arms FAKE now cites
+  ffd7fef75^:memory/grind/func_80056FE8/hypotheses.md.
+- func_80055B44: `(PracticeMenuRec *a0, u8 *a1, s32 a2, s32 a3)`, member stores (its only caller is
+  func_80058580, still INCLUDE_ASM).
+
+Symbol files: undefined_syms_auto.txt adds D_8009A8C8 (the C table); D_8009A8CA stays (re-noted as
+the alias of D_8009A8C8[0][0].mask) with the other func_80058580-only alias rows, which retire when
+func_80058580 lands. named_syms.txt: the 0x8009A830 / 838 / 840 rows reworded as three tables.
+
+Noted for a later cheat-cleanup (not touched): func_80055948 `*(s32 *)(arg0 + 0x3B4)` and
+func_80056CB8 `*(s8 *)(arg0 + i + 0x444)` still read the record through byte offsets.
+
+Ledger: memory/grind/func_80058580/ (evidence.md [s8]-[s9], typed/).

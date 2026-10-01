@@ -1,0 +1,601 @@
+diff --git a/include/code6cac.h b/include/code6cac.h
+index 30578afac..d621c1f3c 100644
+--- a/include/code6cac.h
++++ b/include/code6cac.h
+@@ -64,6 +64,15 @@ typedef struct { s16 vx, vy, vz, pad; } SVec4i16;
+  * named_syms.txt:345 (g_practice_menu_table).  Only the fields reached by C so
+  * far are named; the rest is reserved padding.  func_80022580 initializes
+  * record [idx] (every field it writes is declared at its offset). */
++/* One CPU path waypoint (PracticeMenuRec.unk_364[]): func_800571C0 writes x/z from the
++ * opponent's position and kind 2; func_80058580 walks them back to front. */
++typedef struct CpuWaypoint {
++    s16 x;
++    s16 z;
++    u8 kind;
++    u8 unk5;
++} CpuWaypoint;
++
+ typedef struct PracticeMenuRec {
+     struct PracticeMenuRec *unk_00; /* the other record: [1] for record 0, else [0] (func_80022580) */
+     s16 unk_04;                    /* this record's own index (func_80022580) */
+@@ -86,17 +95,22 @@ typedef struct PracticeMenuRec {
+     u8  unk_34[0x3C - 0x34];
+     s32 unk_3C;
+     s16 unk_40;
+-    u8  unk_42[0x5E - 0x42];
++    u8  unk_42[0x50 - 0x42];
++    u8 *unk_50;                    /* entry whose byte 8 bounds unk_40 (func_80058580) */
++    u8  unk_54[0x58 - 0x54];
++    u8 *unk_58;                    /* byte 3 read by func_80056FE8 */
++    u8  unk_5C[0x5E - 0x5C];
+     s16 unk_5E;                    /* 0/1, set alongside func_80021A98 */
+     u8  unk_60[0x6A - 0x60];
+-    s16 unk_6A;                    /* SEQ state code; CHAR_STRUCT_SCHEMA.md +0x06A */
+-    u8  unk_6C[0x72 - 0x6C];
++    u16 unk_6A;                    /* SEQ state code; CHAR_STRUCT_SCHEMA.md +0x06A */
++    u16 unk_6C;
++    u8  unk_6E[0x72 - 0x6E];
+     s16 unk_72;
+     u8  unk_74[0x7C - 0x74];
+     s32 unk_7C;
+     u8  unk_80[0x84 - 0x80];
+     s16 unk_84;
+-    u8  unk_86[0x88 - 0x86];
++    s16 unk_86;                    /* row of unk_3A8 / unk_3F8 / unk_3FE / unk_404 */
+     s16 unk_88;
+     s16 unk_8A;
+     u8  unk_8C[0x8E - 0x8C];
+@@ -106,9 +120,13 @@ typedef struct PracticeMenuRec {
+     s16 unk_96;
+     u8  unk_98[0xA0 - 0x98];
+     u8  unk_A0;
+-    u8  unk_A1[0xAD - 0xA1];
++    u8  unk_A1[2];
++    u8  unk_A3[2];
++    u8  unk_A5[0xAD - 0xA5];
+     u8  unk_AD;                    /* != 0: func_8002C61C re-runs func_800283D0 for both records */
+-    u8  unk_AE[0xB1 - 0xAE];
++    u8  unk_AE;
++    u8  unk_AF;
++    u8  unk_B0;
+     u8  unk_B1;
+     u8  unk_B2;
+     u8  unk_B3[0xB8 - 0xB3];
+@@ -160,7 +178,10 @@ typedef struct PracticeMenuRec {
+     Vec4i32 unk_24C;
+     u8  unk_25C[0x268 - 0x25C];
+     s32 unk_268;
+-    u8  unk_26C[0x274 - 0x26C];
++    s16 unk_26C;
++    s16 unk_26E;
++    s16 unk_270;
++    s16 unk_272;
+     s16 unk_274;
+     s16 unk_276[4];
+     s16 unk_27E[4];
+@@ -180,7 +201,76 @@ typedef struct PracticeMenuRec {
+     u8  unk_34E;                   /* written by func_8001BE20 for the OTHER record */
+     u8  unk_34F[0x350 - 0x34F];
+     s16 unk_350;
+-    u8  unk_352[0x44C - 0x352];
++    u8  unk_352[0x362 - 0x352];
++    u8  unk_362;                   /* number of waypoints in unk_364 */
++    u8  unk_363;
++    CpuWaypoint unk_364[8];
++    s32 unk_394;
++    s16 unk_398;
++    s16 unk_39A;
++    u8  unk_39C;
++    u8  unk_39D;
++    s16 unk_39E;
++    s16 unk_3A0;
++    s16 unk_3A2;
++    u16 *unk_3A4;                  /* script list: u16 byte offsets from its own start */
++    u16 *unk_3A8[3];               /* per-row cursor into unk_3A4 (func_80055138) */
++    u8 *unk_3B4;                   /* script pointer (func_80055B44 / func_80055948) */
++    u8  unk_3B8;
++    u8  unk_3B9[0x3BC - 0x3B9];
++    u8  unk_3BC;
++    u8  unk_3BD;
++    u8  unk_3BE[0x3C0 - 0x3BE];
++    u8  unk_3C0;
++    u8  unk_3C1;
++    s16 unk_3C2;
++    s32 unk_3C4;
++    s32 unk_3C8;
++    s32 unk_3CC;
++    u8  unk_3D0[0x3D8 - 0x3D0];
++    s32 unk_3D8;
++    s32 unk_3DC;
++    s32 unk_3E0;
++    s32 unk_3E4;
++    u16 unk_3E8;
++    u8  unk_3EA[0x3EE - 0x3EA];
++    s16 unk_3EE;
++    s16 unk_3F0;
++    u8  unk_3F2;
++    u8  unk_3F3;
++    u8  unk_3F4;
++    u8  unk_3F5;
++    u8  unk_3F6;
++    u8  unk_3F7;
++    s16 unk_3F8[3];                /* [unk_86] distance bounds (func_80055138) */
++    s16 unk_3FE[3];
++    s16 unk_404[3];
++    s16 unk_40A;
++    s8  unk_40C;
++    s8  unk_40D;
++    s16 unk_40E;
++    s16 unk_410;
++    s16 unk_412;
++    u8  unk_414[0x424 - 0x414];
++    u8  unk_424;
++    u8  unk_425;
++    u8  unk_426;
++    u8  unk_427;
++    s16 unk_428;
++    s16 unk_42A;
++    s16 unk_42C;
++    s16 unk_42E;
++    s32 unk_430;
++    s32 unk_434;
++    s16 unk_438;
++    s16 unk_43A;
++    s16 unk_43C;
++    u8  unk_43E[0x440 - 0x43E];
++    u8  unk_440;
++    u8  unk_441;
++    u8  unk_442;
++    u8  unk_443;
++    u8  unk_444[8];                /* func_80056CB8's per-direction results */
+ } PracticeMenuRec;                 /* sizeof == 0x44C */
+ 
+ /* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
+@@ -314,11 +404,16 @@ typedef struct StatusFlagRec {
+     u8 unk17;
+ } StatusFlagRec; /* size 0x18 */
+ extern StatusFlagRec D_80099D88[];
+-/* Rows of eight 4-byte entries: func_80055138 reads [row][col][0..1] (row*0x20 + col*4);
+- * func_80058580 reads the halfword at byte 2 of [row][col] (D_8009A8CA + row<<5 +
+- * (col-1)*4 = D_8009A8C4 + row*0x20 + col*4 + 2, 0x8005A854-78; D_8009A8CA is the alias
+- * row D_8009A8C4+6). */
+-extern u8 D_8009A8C4[][8][4];
++/* Rows of eight 4-byte entries starting at 0x8009A8C8 (each row ends with a zero entry; the
++ * word at 0x8009A8C4 is the 0x80 terminator of the script D_8009A8C0). Both readers index the
++ * column 1-based, [row][D_800A37A0 - 1]: func_80055138 reads unk0/unk1 (GCC folds the -1
++ * into the address, %lo(0x8009A8C4)), func_80058580 the mask halfword (%lo(0x8009A8CA)). */
++typedef struct CpuLevelEntry {
++    u8 unk0;
++    u8 unk1;
++    u16 mask;
++} CpuLevelEntry;
++extern CpuLevelEntry D_8009A8C8[][8];
+ extern u8 D_8009A9B4[][2];         /* byte pairs (func_80055138) */
+ extern u8 D_800A3100[][4];         /* [D_8008D9EC flag] -> 3 bytes (func_80041BF4 args), stride 4 */
+ extern s16 D_800A310C[4];          /* 0x800A310C..0x800A3113 (asm/data/91C98.data.s dlabel D_800A310C) */
+diff --git a/named_syms.txt b/named_syms.txt
+index 21466faa8..9af8e4bde 100644
+--- a/named_syms.txt
++++ b/named_syms.txt
+@@ -884,7 +884,7 @@ g_display_state_table_a_7                               = 0x8009BF58;  /* 7 x 4-
+ g_cpu_no_action_table_24x3                              = 0x8009B0E0;  /* 3 x 24-byte records consumed by cpu_set_move_command_and_dir helper */
+ g_cpu_no_action_table_16x3                              = 0x8009B1AC;  /* 3 x 16-byte records, sibling consumer (func_8005C8A8) */
+ g_cpu_attack_arc_table_12x4                             = 0x8009B530;  /* 4 x 12-byte records consumed by func_8005E54C (CPU attack-arc helper) */
+-g_text1b_motion_byte_table_8x3                          = 0x8009A830;  /* 3 x 8-byte byte records; consumed by text1b */
++g_text1b_motion_byte_table_8x3                          = 0x8009A830;  /* u8[8] (dlabel D_8009A830); func_80056FE8. 0x8009A838 (s8[8]) and 0x8009A840 (u8[16]) are separate tables, not rows of one 3x8 record */
+ g_text1b_byte_pair_table_8x7                            = 0x800A327C;  /* 7 x 8-byte (.word) records, declared u8[8] in text1b */
+ g_text1b_state_record_table_8x4_a                       = 0x800A32C8;  /* 4 x 8-byte text1b state records */
+ g_text1b_state_record_table_8x4_b                       = 0x800A32EC;  /* 4 x 8-byte records, consumed by func_8006E534 */
+@@ -2230,7 +2230,7 @@ g_status_flag_record_table_80099D88_plus_4              = 0x80099D8C;  /* +4 fro
+ g_status_flag_record_table_80099D88_plus_5              = 0x80099D8D;  /* +5 from g_status_flag_record_table_80099D88 (0x80099D88) */
+ g_status_flag_record_table_80099D88_plus_6              = 0x80099D8E;  /* +6 from g_status_flag_record_table_80099D88 (0x80099D88) */
+ g_status_flag_record_table_80099D88_plus_7              = 0x80099D8F;  /* +7 from g_status_flag_record_table_80099D88 (0x80099D88) */
+-g_text1b_motion_byte_table_8x3_plus_8                   = 0x8009A838;  /* +8 from g_text1b_motion_byte_table_8x3 (0x8009A830) */
++g_text1b_motion_byte_table_8x3_plus_8                   = 0x8009A838;  /* s8[8] (dlabel D_8009A838, read lb); func_80056FE8, func_80058580 */
+ g_byte_lookup_table_256_plus_4                          = 0x8009AD1C;  /* +4 from g_byte_lookup_table_256 (0x8009AD18) */
+ D_8009BC04                                 = 0x8009BC04;  /* +8 from g_str_r_8009BBFC (0x8009BBFC) */  /* data-wave 2026-09-29: was g_str_r_8009BBFC_plus_8 */
+ g_menu_screen_live_byte_c_plus_1                        = 0x8009BD44;  /* +1 from g_menu_screen_live_byte_c (0x8009BD43) */
+@@ -2458,7 +2458,7 @@ g_status_flag_record_table_80099D88_plus_7_plus_14           = 0x80099D9D;
+ g_text1b_addr_8009A088                                       = 0x8009A088;
+ g_text1b_addr_8009A820                                       = 0x8009A820;
+ g_text1b_addr_8009A821                                       = 0x8009A821;
+-g_text1b_motion_byte_table_8x3_plus_8_plus_8                 = 0x8009A840;
++g_text1b_motion_byte_table_8x3_plus_8_plus_8                 = 0x8009A840;  /* u8[16] (dlabel D_8009A840); func_80056FE8 */
+ g_text1b_addr_8009A850                                       = 0x8009A850;
+ g_text1b_addr_8009A851                                       = 0x8009A851;
+ g_text1b_addr_8009A852                                       = 0x8009A852;
+diff --git a/src/text1b.c b/src/text1b.c
+index 3602d45ea..5f22fd9a5 100644
+--- a/src/text1b.c
++++ b/src/text1b.c
+@@ -2252,10 +2252,9 @@ void func_800550E8(s32 arg0) {
+ extern u32 file_GetFlag1(void);
+ extern s32 rand(void);
+ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
+-    u8 *p = (u8 *)g_practice_menu_table + arg0 * 0x44C;
+-    u8 *src;
++    PracticeMenuRec *p = &g_practice_menu_table[arg0];
++    CpuLevelEntry *src;
+     u8 *pair;
+-    u8 (*row)[4];
+     u8 base;
+     /* idx counts two loops: the eight bytes cleared at 0x444, then the two
+      * players (0 = this record, 1 = the opponent's). Admitted under Ruling 11
+@@ -2263,9 +2262,9 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
+      * pre-slim-2026-10-01:memory/grind/func_80055138/ruling11.md. */
+     s32 idx;
+     s32 sec;
+-    u8 *rec;
++    PracticeMenuRec *rec;
+     u16 *cursor;
+-    u8 *list;
++    u16 *list;
+     s32 chr;
+     s32 bit;
+     s32 lo, hi1, hi2;
+@@ -2278,37 +2277,36 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
+     s32 temp;
+     u32 cat;
+     s32 lo_val, hi1_val, hi2_val;
+-    u8 *other;
++    PracticeMenuRec *other;
+ 
+-    p[0x443] = *(u16 *)(p + 0xA);
+-    *(s16 *)(p + 0x438) = *(u16 *)(p + 8);
++    p->unk_443 = p->unk_0A;
++    p->unk_438 = p->unk_08;
+     switch (D_800A38DC) {
+     case 1:
+-        *(s16 *)(p + 0x438) = (D_800A3783 - 1) / 5 * 0x300 + 0x400;
+-        if (*(s16 *)(p + 0x438) > 0xD00) {
+-            *(s16 *)(p + 0x438) = 0xD00;
++        p->unk_438 = (D_800A3783 - 1) / 5 * 0x300 + 0x400;
++        if (p->unk_438 > 0xD00) {
++            p->unk_438 = 0xD00;
+         }
+         break;
+     case 0:
+         if (D_800A3680 == D_800A3671) {
+-            func_8005509C(*(s16 *)(p + 4));
++            func_8005509C(p->unk_04);
+         }
+-        if (D_80099D88[p[0x443]].flags & 0x300) {
+-            row = D_8009A8C4[*(s16 *)(p + 0x86)];
+-            src = row[D_800A37A0];
+-            p[0x424] = src[0];
+-            p[0x3F6] = src[1];
++        if (D_80099D88[p->unk_443].flags & 0x300) {
++            src = &D_8009A8C8[p->unk_86][D_800A37A0 - 1];
++            p->unk_424 = src->unk0;
++            p->unk_3F6 = src->unk1;
+         }
+         break;
+     case 2:
+         if (D_800A389A) {
+             temp = D_800A37D2 / 5;
+-            *(s16 *)(p + 0x438) = temp * 0x180 + 0x280;
+-            if (*(s16 *)(p + 0x438) > 0x1000) {
+-                *(s16 *)(p + 0x438) = 0x1000;
++            p->unk_438 = temp * 0x180 + 0x280;
++            if (p->unk_438 > 0x1000) {
++                p->unk_438 = 0x1000;
+             }
+-            if ((u8)(D_800A37D2 % 5) == 0) {
+-                func_8005509C(*(s16 *)(p + 4));
++            if (D_800A37D2 % 5 == 0) {
++                func_8005509C(p->unk_04);
+             }
+         } else {
+             temp = D_800A37D2 / 3;
+@@ -2316,73 +2314,73 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
+                 D_800A37D2 = 0;
+                 temp = 0;
+             }
+-            p[0x443] = 0x19;
+-            *(s16 *)(p + 0x1C) = (temp + 2) << 10;
+-            *(s16 *)(p + 0x438) = 0;
+-            p[0x424] = 0;
+-            p[0x3F6] = 0x3C - temp * 15;
++            p->unk_443 = 0x19;
++            p->unk_1C = (temp + 2) << 10;
++            p->unk_438 = 0;
++            p->unk_424 = 0;
++            p->unk_3F6 = 0x3C - temp * 15;
+         }
+         break;
+     case 3:
+-        p[0x443] = cpu_practice_honmokuroku_data_tbl[D_800A38E2 - 1][0] + 0x1B;
++        p->unk_443 = cpu_practice_honmokuroku_data_tbl[D_800A38E2 - 1][0] + 0x1B;
+         base = D_800A38E2 / 10;
+-        *(s16 *)(p + 0x438) = base * 16 + 0x80;
+-        if (D_80099D88[p[0x443]].flags & 0x3000) {
+-            *(s16 *)(p + 0x438) = base * 16 + 0x180;
++        p->unk_438 = base * 16 + 0x80;
++        if (D_80099D88[p->unk_443].flags & 0x3000) {
++            p->unk_438 = base * 16 + 0x180;
+         }
+-        if (D_80099D88[p[0x443]].flags & 0x4000) {
+-            *(s16 *)(p + 0x438) += 0x200;
++        if (D_80099D88[p->unk_443].flags & 0x4000) {
++            p->unk_438 += 0x200;
+         }
+         if ((D_800A38E2 - 1) % 10 == 0) {
+-            func_8005509C(*(s16 *)(p + 4));
++            func_8005509C(p->unk_04);
+         }
+-        temp = (u8)(D_800A38E2 / 10) * 2;
+-        if ((u8)(D_800A38E2 % 10) == 0) {
++        temp = D_800A38E2 / 10 * 2;
++        if (D_800A38E2 % 10 == 0) {
+             temp--;
+         }
+         pair = D_8009A9B4[temp];
+-        p[0x424] = pair[0];
+-        p[0x3F6] = pair[1];
++        p->unk_424 = pair[0];
++        p->unk_3F6 = pair[1];
+         break;
+     }
+     if (file_GetFlag1() && D_800A38DC != 3) {
+-        *(s16 *)(p + 0x438) = *(s16 *)(p + 0x438) * 11 >> 4;
++        p->unk_438 = p->unk_438 * 11 >> 4;
+     }
+-    if (!(D_80099D88[p[0x443]].flags & 0xFF00)) {
+-        p[0x424] = 0x11 - (*(s16 *)(p + 0x438) >> 8);
++    if (!(D_80099D88[p->unk_443].flags & 0xFF00)) {
++        p->unk_424 = 0x11 - (p->unk_438 >> 8);
+     }
+-    *(s16 *)(p + 0x39A) = 0x8000 / *(s16 *)(p + 0x1C);
+-    p[0x3BD] = 0x10 - (*(s16 *)(p + 0x438) >> 8);
+-    if (D_80099D88[p[0x443]].flags & 0x100) {
+-        D_80099D88[p[0x443]].unk3 = (rand() & 3) + 1;
++    p->unk_39A = 0x8000 / p->unk_1C;
++    p->unk_3BD = 0x10 - (p->unk_438 >> 8);
++    if (D_80099D88[p->unk_443].flags & 0x100) {
++        D_80099D88[p->unk_443].unk3 = (rand() & 3) + 1;
+     }
+-    for (idx = 0; idx < 8U; idx++) {
+-        (p + idx)[0x444] = 0;
++    for (idx = 0; idx < sizeof(p->unk_444); idx++) {
++        p->unk_444[idx] = 0;
+     }
+-    *(u16 **)(p + 0x3A4) = arg1;
++    p->unk_3A4 = arg1;
+     for (idx = 0; idx < 2; idx++) {
+         if (idx) {
+-            rec = *(u8 **)p;
++            rec = p->unk_00;
+             cursor = arg2;
+-            list = (u8 *)arg2;
+-            chr = *(s16 *)(rec + 0xA);
++            list = arg2;
++            chr = rec->unk_0A;
+         } else {
+             rec = p;
+             cursor = arg1;
+-            list = (u8 *)arg1;
+-            chr = p[0x443];
++            list = arg1;
++            chr = p->unk_443;
+         }
+-        *(s16 *)(rec + 0x40A) = (*(s16 *)(rec + 0x1A) - 0x1000) * 225 >> 11;
++        rec->unk_40A = (rec->unk_1A - 0x1000) * 225 >> 11;
+         for (sec = 0; sec < 3; sec++) {
+             bit = 1 << chr;
+             lo = 0xFFFF;
+             hi2 = 0;
+             hi1 = 0;
+             if (idx == 0) {
+-                *(u16 **)(p + 0x3A8 + sec * 4) = cursor;
++                p->unk_3A8[sec] = cursor;
+             }
+             while (*cursor != 0) {
+-                u8 *e = list + *cursor;
++                u8 *e = (u8 *)list + *cursor;
+                 if (e[4] == 0x40) {
+                     temp = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
+                     if (!(temp & bit)) {
+@@ -2408,7 +2406,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
+             next:
+                 cursor++;
+             }
+-            if (*(s16 *)(rec + 0xE) >= 6) {
++            if (rec->unk_0E >= 6) {
+                 lo_val = 0;
+                 hi2_val = 0x7530;
+                 hi1_val = 0x7530;
+@@ -2422,54 +2420,54 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
+                  * read after the join, so it is global-allocated and untied
+                  * (target: lh v0; addiu v1,v0,100). Lever exhaustion:
+                  * pre-slim-2026-10-01:memory/grind/func_80055138/ruling11.md. */
+-                hi2_val = *(s16 *)(rec + 0x40A) + 100;
++                hi2_val = rec->unk_40A + 100;
+                 lo_val = hi2_val + lo * 40;
+                 hi1_val = hi2_val + hi1 * 40;
+                 hi2_val += hi2 * 40;
+             }
+             cursor++;
+-            ((s16 *)(rec + 0x3F8))[sec] = lo_val;
+-            ((s16 *)(rec + 0x3FE))[sec] = hi1_val;
+-            ((s16 *)(rec + 0x404))[sec] = hi2_val;
++            rec->unk_3F8[sec] = lo_val;
++            rec->unk_3FE[sec] = hi1_val;
++            rec->unk_404[sec] = hi2_val;
+         }
+     }
+-    other = *(u8 **)p;
+-    *(s8 *)(p + 0x40D) = -1;
+-    *(s8 *)(p + 0x40C) = -1;
+-    *(s16 *)(p + 0x428) = -1;
+-    p[0x425] = 0;
+-    p[0x426] = 0;
+-    *(s32 *)(p + 0x3B4) = 0;
+-    *(s32 *)(p + 0x3E0) = 0;
+-    *(s32 *)(p + 0x3DC) = 0;
+-    *(s32 *)(p + 0x3D8) = 0;
+-    other[0x440] = 0;
+-    p[0x440] = 0;
+-    other[0x441] = 0;
+-    p[0x441] = 0;
+-    *(s16 *)(other + 0x43C) = 0;
+-    *(s16 *)(other + 0x43A) = 0;
+-    *(s16 *)(p + 0x43C) = 0;
+-    *(s16 *)(p + 0x43A) = 0;
+-    p[0x362] = 0;
+-    p[0x39D] = 0;
+-    p[0x3F5] = 0;
+-    p[0x3F4] = 0;
+-    p[0x3F3] = 0;
+-    p[0x3F2] = 0;
+-    *(s16 *)(p + 0x3EE) = 0;
+-    *(s16 *)(p + 0x3F0) = 0;
+-    *(s16 *)(p + 0x3E8) = 0;
+-    p[0x39C] = 0;
+-    *(s32 *)(p + 0x394) = 0;
+-    *(s16 *)(p + 0x398) = 0;
+-    *(s32 *)(p + 0x3C4) = 0;
+-    *(s16 *)(p + 0x3C2) = 0;
+-    p[0x3C1] = 0;
+-    p[0x3C0] = 0;
+-    p[0x440] = 0;
+-    *(s32 *)(p + 0x430) = 0;
+-    *(s32 *)(p + 0x3E4) = -1;
++    other = p->unk_00;
++    p->unk_40D = -1;
++    p->unk_40C = -1;
++    p->unk_428 = -1;
++    p->unk_425 = 0;
++    p->unk_426 = 0;
++    p->unk_3B4 = 0;
++    p->unk_3E0 = 0;
++    p->unk_3DC = 0;
++    p->unk_3D8 = 0;
++    other->unk_440 = 0;
++    p->unk_440 = 0;
++    other->unk_441 = 0;
++    p->unk_441 = 0;
++    other->unk_43C = 0;
++    other->unk_43A = 0;
++    p->unk_43C = 0;
++    p->unk_43A = 0;
++    p->unk_362 = 0;
++    p->unk_39D = 0;
++    p->unk_3F5 = 0;
++    p->unk_3F4 = 0;
++    p->unk_3F3 = 0;
++    p->unk_3F2 = 0;
++    p->unk_3EE = 0;
++    p->unk_3F0 = 0;
++    p->unk_3E8 = 0;
++    p->unk_39C = 0;
++    p->unk_394 = 0;
++    p->unk_398 = 0;
++    p->unk_3C4 = 0;
++    p->unk_3C2 = 0;
++    p->unk_3C1 = 0;
++    p->unk_3C0 = 0;
++    p->unk_440 = 0;
++    p->unk_430 = 0;
++    p->unk_3E4 = -1;
+ }
+ 
+ s32 func_80055948(u8 *arg0) {
+@@ -2547,12 +2545,12 @@ loop:
+ ret_3c8:
+     return *(s32 *)(arg0 + 0x3C8);
+ }
+-void func_80055B44(u8 *a0, s32 a1, s32 a2, s32 a3) {
+-    *(s32 *)(a0 + 0x3B4) = a1;
+-    a0[0x3BC] = (u8)a2;
+-    a0[0x3B8] = (u8)a3;
+-    *(s32 *)(a0 + 0x3C8) = 0;
+-    *(s32 *)(a0 + 0x3CC) = -1;
++void func_80055B44(PracticeMenuRec *a0, u8 *a1, s32 a2, s32 a3) {
++    a0->unk_3B4 = a1;
++    a0->unk_3BC = a2;
++    a0->unk_3B8 = a3;
++    a0->unk_3C8 = 0;
++    a0->unk_3CC = -1;
+ }
+ INCLUDE_ASM("asm/funcs", func_80055B60);
+ extern s32 ratan2(s32, s32);
+@@ -2656,9 +2654,12 @@ void func_80056CB8(s32 arg0) {
+ #undef sp68
+ #undef sp70
+ #undef sp78
+-extern u8 D_8009A830;
+-extern s8 D_8009A838;
+-extern u8 D_8009A840;
++/* Three byte tables (asm/data/7D920.data.s dlabels D_8009A830 / D_8009A838 / D_8009A840:
++ * 8, 8 and 16 bytes). D_8009A838 is read signed (lb) here and in func_80058580; the
++ * other two unsigned (lbu). */
++extern u8 D_8009A830[];
++extern s8 D_8009A838[];
++extern u8 D_8009A840[];
+ /* ang_hosei_80056FE8 / func_80056FE8 -- angle-correction table lookup.
+  *
+  * MATCH-HACK FAMILY: duplicated-statement-into-arms
+@@ -2669,7 +2670,7 @@ extern u8 D_8009A840;
+  * once after the join. Each copy is REAL on its path (prereq 1) and the copies
+  * are re-merged byte-neutrally by post-reload cross-jumping (prereq 2).
+  *
+- * Lever-exhaustion (prereq 3): memory/grind/func_80056FE8/hypotheses.md +
++ * Lever-exhaustion (prereq 3): ffd7fef75^:memory/grind/func_80056FE8/hypotheses.md +
+  * evidence.md, sessions s1-s7b -- structural reassociation (21 forms, s2/s3),
+  * permuter (4 chassis, ~150k iters, s4/s5), copy-preference (s6: $a1 has no
+  * ABI anchor in this 1-argument leaf, set_preference/global.c:1591 cannot
+@@ -2678,9 +2679,9 @@ extern u8 D_8009A840;
+  * priority), register pins (s6: reschedule to 41 insns, 2 load-delay nops
+  * lost). All measured dead.
+  */
+-s32 func_80056FE8(s32 arg0) {
+-    s32 a2 = *((s32 *) arg0);
+-    s32 a3 = *((u8 *) ((*((s32 *) (a2 + 0x58))) + 3));
++s32 func_80056FE8(PracticeMenuRec *arg0) {
++    PracticeMenuRec *a2 = arg0->unk_00;
++    s32 a3 = a2->unk_58[3];
+     s32 base = a3 * 40;
+     /* FAKE: `base += <arm value>` duplicated into all three dispatch arms
+      * instead of a post-join combine; mechanism: GCC 2.7.2 jump2 post-reload
+@@ -2692,20 +2693,20 @@ s32 func_80056FE8(s32 arg0) {
+      * `77 in 5  73 in 6`) -- which the post-join spelling provably cannot
+      * (`;; 4 regs to allocate: 82 73 77 72` -> `73 in 5  77 in 6`);
+      * lever-exhaustion: see the ladder in this function's preamble comment and
+-     * memory/grind/func_80056FE8/hypotheses.md s1-s7b. */
+-    if ((*((u8 *) (a2 + 0xA3))) != 0xFF) {
+-        if ((*((s16 *) (arg0 + 0x5E))) == 0) {
++     * ffd7fef75^:memory/grind/func_80056FE8/hypotheses.md s1-s7b. */
++    if (a2->unk_A3[0] != 0xFF) {
++        if (arg0->unk_5E == 0) {
+             /* FAKE: duplicated copy (see above) */
+-            base += (*((u8 *) (((s32) (&D_8009A830)) + (*((s16 *) (a2 + 0xE)))))) * 2;
++            base += D_8009A830[a2->unk_0E] * 2;
+         } else {
+             /* FAKE: duplicated copy (see above) */
+-            base += (*((s8 *) (((s32) (&D_8009A838)) + (*((s16 *) (a2 + 0xE)))))) * 8;
++            base += D_8009A838[a2->unk_0E] * 8;
+         }
+     } else {
+         /* FAKE: duplicated copy (see above) */
+-        base += (*((u8 *) (((s32) (&D_8009A840)) + (*((s16 *) (a2 + 0x14)))))) * 2;
++        base += D_8009A840[a2->unk_14] * 2;
+     }
+-    return base + (*((s16 *) ((*((s32 *) arg0)) + 0x40A))) + 0x12C;
++    return base + arg0->unk_00->unk_40A + 0x12C;
+ }
+ extern s32 ratan2(s32, s32);
+ extern s32 func_800233AC(void *, s32 *);
+diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
+index 47c39ebb4..35bb3e487 100644
+--- a/undefined_syms_auto.txt
++++ b/undefined_syms_auto.txt
+@@ -60,7 +60,8 @@ D_8009A821 = 0x8009A821;
+ D_8009A851 = 0x8009A851;
+ D_8009A852 = 0x8009A852;
+ D_8009A853 = 0x8009A853;
+-D_8009A8CA = 0x8009A8CA;  /* alias of D_8009A8C4+0x6 (entry [0][1], byte 2); retire with func_80058580 (asm/funcs/func_80058580.s is its only assembled referrer) */
++D_8009A8C8 = 0x8009A8C8;  /* CpuLevelEntry D_8009A8C8[][8] (include/code6cac.h); inside asm/data/7D920.data.s dlabel D_8009A8C4 */
++D_8009A8CA = 0x8009A8CA;  /* alias of D_8009A8C8[0][0].mask (CpuLevelEntry table); retire with func_80058580 (asm/funcs/func_80058580.s is its only assembled referrer) */
+ D_8009B14E = 0x8009B14E;
+ D_8009B2BE = 0x8009B2BE;
+ D_8009B48E = 0x8009B48E;
