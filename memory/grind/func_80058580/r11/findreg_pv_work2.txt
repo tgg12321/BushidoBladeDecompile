@@ -1,4 +1,4 @@
-FINDREGDBG func=func_80058580 pseudo=96 alt=0 acc=0 retry=0
+FINDREGDBG func=func_80058580 pseudo=95 alt=0 acc=0 retry=0
 FINDREGDBG  conflicts: 2 3 29
 FINDREGDBG  someone_prefers:
 FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 24 25 26 27 28 29 31

@@ -254,3 +254,12 @@
     `PracticeMenuRec *` members, `list` typed u16 * (`(u8 *)list + *cursor`), its three width casts removed,
     `idx < sizeof(p->unk_444)`; `temp = base * 2` for `(u8)(D_800A38E2 / 10) * 2` is NOT byte-neutral.
   * `ob` removed (byte-neutral). q kept with a pointer-alias FAKE annotation (SOTN e_stone_rose.c:611).
+- [s9 2026-10-01 laneB] Body final for landing: `s32 a, b, c;` in natural order (byte-identical; `b, c, a` was
+  not needed), wy/ty2 renamed wz/tz (they hold z coordinates). r11/ re-run on this exact body (README.md,
+  scores_typed.txt, dumps via dump2.sh): every twin, ablation and respelling identical to round 1; allocation
+  decisions identical modulo pseudo renumbering (work5 is now pseudo 1896, twin values one lower). Permuter from
+  the split: base 4205, best 3755 (junk). func_80055138 temp/idx twins on its typed body all fail
+  (typed/r11_55138.txt: pv_temp 11914 words, pv_idx 25, singles 2-11830). Landing also retires the alias rows
+  whose only assembled referrer was func_80058580.s: undefined_syms D_80099D8B/8C/8E/94/97/9C/9D, D_8009A851/2/3,
+  D_8009A8CA (-> D_8009A8C8 row); named_syms _plus_3/_plus_4/_plus_6/_plus_7_plus_5/_13/_14,
+  g_text1b_addr_8009A851/2/3/8CA; D_80099D8F re-noted (func_80055B60 only).

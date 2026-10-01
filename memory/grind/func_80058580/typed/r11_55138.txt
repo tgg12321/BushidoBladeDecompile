@@ -1,0 +1,12 @@
+func_80055138 Ruling 11 twins on typed/f55138.c (tmp t55.py -> typed/t55.py; full text1b.o link compare, fd = func diff lines)
+pv_both | text: 102788 bytes, 11914 differing words  | ours 512 target 516 diff-lines 117
+pv_idx | text: 102804 bytes, 25 differing words  | ours 516 target 516 diff-lines 25
+pv_temp | text: 102788 bytes, 11914 differing words  | ours 512 target 516 diff-lines 117
+r_b1 | text: 102800 bytes, 11830 differing words  | ours 515 target 516 diff-lines 11
+r_b2 | text: 102800 bytes, 11820 differing words  | ours 515 target 516 diff-lines 16
+r_clr | text: 102804 bytes, 25 differing words  | ours 516 target 516 diff-lines 25
+r_cmask | text: 102804 bytes, 2 differing words  | ours 516 target 516 diff-lines 2
+r_lvl3 | text: 102804 bytes, 33 differing words  | ours 516 target 516 diff-lines 33
+r_lvl5 | text: 102804 bytes, 4 differing words  | ours 516 target 516 diff-lines 4
+r_row | text: 102804 bytes, 33 differing words  | ours 516 target 516 diff-lines 33
+r_who | text: 102804 bytes, 25 differing words  | ours 516 target 516 diff-lines 25

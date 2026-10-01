@@ -24,7 +24,7 @@ extern void func_80057E84(PracticeMenuRec *, u8 *, s32, s32);
 s32 func_80058580(PracticeMenuRec *p) {
     s32 wx;
     u8 *pscript;
-    s32 wy;
+    s32 wz;
     s8 bestflip;
     s16 pbesti;
     s32 phi;
@@ -83,7 +83,7 @@ s32 func_80058580(PracticeMenuRec *p) {
     s32 vc;
     s16 sc;
     u8 *pois;
-    s32 tx, ty2;
+    s32 tx, tz;
     s32 r;
     s32 sel;
     u16 *list;
@@ -242,7 +242,7 @@ s32 func_80058580(PracticeMenuRec *p) {
             }
         } else if (state == 0x11 && p->unk_04 != D_800A38AE && p->unk_40 == p->unk_50[8] - 1) {
             {
-                s32 b, c, a;
+                s32 a, b, c;
                 a = p->unk_26E;
                 b = p->unk_270;
                 c = p->unk_272;
@@ -318,11 +318,11 @@ s32 func_80058580(PracticeMenuRec *p) {
         pois = D_8009A658[D_800A36A4];
         if (p->unk_39D == 0) {
             tx = p->unk_00->unk_F4.x;
-            ty2 = p->unk_00->unk_F4.z;
+            tz = p->unk_00->unk_F4.z;
             wtype = 1;
         } else {
             tx = p->unk_3A0;
-            ty2 = p->unk_3A2;
+            tz = p->unk_3A2;
             wtype = p->unk_39E;
         }
         /* !FAKE: the trailing `&& wtype == 1` repeats the first test (redundant condition,
@@ -333,7 +333,7 @@ s32 func_80058580(PracticeMenuRec *p) {
               (p->unk_00->unk_6A == 0xA || p->unk_443 == 0xA || (p->unk_0E >= 6 && p->unk_34A == 0)) &&
               wtype == 1)) {
             if (!(p->unk_3E8 & 7)) {
-                p->unk_434 = func_80057ACC((s32)p, pois, tx, ty2);
+                p->unk_434 = func_80057ACC((s32)p, pois, tx, tz);
             }
             if (wtype == 1) {
                 work1 = p->unk_444[6];
@@ -375,20 +375,20 @@ s32 func_80058580(PracticeMenuRec *p) {
                     goto record;
                 }
             } else if (p->unk_362 == 0) {
-                if (p->unk_434 != 100000 || CPU_SQ(p->unk_F4.x - tx) + CPU_SQ(p->unk_F4.z - ty2) > 0x15F8F) {
+                if (p->unk_434 != 100000 || CPU_SQ(p->unk_F4.x - tx) + CPU_SQ(p->unk_F4.z - tz) > 0x15F8F) {
                 record:
                     p->unk_364[0].x = tx;
-                    p->unk_364[0].z = ty2;
+                    p->unk_364[0].z = tz;
                     p->unk_364[0].kind = wtype;
                     p->unk_362 = 1;
                     if (p->unk_434 != 100000 && !(p->unk_3E8 & 7)) {
-                        func_80057E84(p, pois, tx, ty2);
+                        func_80057E84(p, pois, tx, tz);
                     }
                 }
             }
             if (p->unk_362 != 0) {
                 if (p->unk_364[0].kind == 1 ? (p->unk_434 == 100000 && D_800A387C < lim)
-                                  : SquareRoot0(CPU_SQ(p->unk_F4.x - tx) + CPU_SQ(p->unk_F4.z - ty2)) < 2000) {
+                                  : SquareRoot0(CPU_SQ(p->unk_F4.x - tx) + CPU_SQ(p->unk_F4.z - tz)) < 2000) {
                     p->unk_362 = 0;
                     p->unk_39D = 0;
                     goto after_nav;
@@ -398,7 +398,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                     work3 = p->unk_362 - 1;
                     work2 = p->unk_444[0];
                     wx = p->unk_364[work3].x;
-                    wy = p->unk_364[work3].z;
+                    wz = p->unk_364[work3].z;
                     if (!(work1 == 1 || work1 == 2)) {
                         script2 = 0;
                         if (p->unk_364[work3].kind == 1) {
@@ -430,12 +430,12 @@ s32 func_80058580(PracticeMenuRec *p) {
                     work4 = work3;
                     if (work3 == 0) {
                         if (p->unk_364[0].kind == 1) {
-                            work3 = SquareRoot0(CPU_SQ(p->unk_F4.x - tx) + CPU_SQ(p->unk_F4.z - ty2));
+                            work3 = SquareRoot0(CPU_SQ(p->unk_F4.x - tx) + CPU_SQ(p->unk_F4.z - tz));
                         } else {
-                            work3 = SquareRoot0(CPU_SQ(p->unk_F4.x - wx) + CPU_SQ(p->unk_F4.z - wy));
+                            work3 = SquareRoot0(CPU_SQ(p->unk_F4.x - wx) + CPU_SQ(p->unk_F4.z - wz));
                         }
                     } else {
-                        work3 = SquareRoot0(CPU_SQ(wx - p->unk_F4.x) + CPU_SQ(wy - p->unk_F4.z));
+                        work3 = SquareRoot0(CPU_SQ(wx - p->unk_F4.x) + CPU_SQ(wz - p->unk_F4.z));
                         while (work4 >= 2) {
                             work3 += SquareRoot0(CPU_SQ(p->unk_364[work4].x - p->unk_364[work4 - 1].x) +
                                                 CPU_SQ(p->unk_364[work4].z - p->unk_364[work4 - 1].z));
@@ -445,14 +445,14 @@ s32 func_80058580(PracticeMenuRec *p) {
                             work1 = p->unk_364[1].x;
                             work2 = p->unk_364[1].z;
                             if (p->unk_364[0].kind == 1) {
-                                work3 += SquareRoot0(CPU_SQ(work1 - tx) + CPU_SQ(work2 - ty2));
+                                work3 += SquareRoot0(CPU_SQ(work1 - tx) + CPU_SQ(work2 - tz));
                             } else {
                                 work3 += SquareRoot0(CPU_SQ(work1 - p->unk_364[0].x) + CPU_SQ(work2 - p->unk_364[0].z));
                             }
                         }
                     }
                     work3 = lim < work3;
-                    p->unk_3CC = func_80057094(p, wx, wy, work3);
+                    p->unk_3CC = func_80057094(p, wx, wz, work3);
                     va = 300;
                     vn = p->unk_3CC & 4;
                     if (vn) {
