@@ -31,10 +31,10 @@ and `*(((u8 *)&g_sqrt_table_u8) + i)`.
     func_8002D518, func_8002D780, func_8002DAD0, func_8002E838, func_8002EA24, func_8002EBDC,
     func_8002F2D0, func_8002F770, func_80032314, func_800325E0.
   - code6cac_tu2.c: func_8001A67C, func_8001A820, func_8001F2E4.
-- func_800274BC: `*((new_var = &g_sqrt_table_u8) + idx)` becomes
-  `(new_var = g_sqrt_table_u8)[idx]`. The `new_var` second handle is PRE-EXISTING and
-  unannotated. Dropping it (`g_sqrt_table_u8[idx]`) is also object-identical
-  (probe_sqrt_noalias).
+- func_800274BC: the PRE-EXISTING, unannotated second handle `u8 *new_var` is REMOVED
+  (orchestrator's decision 2026-09-30). `*((new_var = &g_sqrt_table_u8) + idx)` becomes
+  `g_sqrt_table_u8[idx]`. Object-identical: probe_sqrt_noalias, then the final `sqrt` stage that
+  includes the removal.
 
 ## Measurement
 tmp/laneH/harness.py (see memory/grind/judge-decl-cleanup/evidence.md), measured on top of the

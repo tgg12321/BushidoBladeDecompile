@@ -27,9 +27,10 @@ and indexed it as `(&Judge)[i]`, `*((&Judge) + i)`, `*(&Judge + i)`, and once as
 - func_8001BAE4: the byte offset `*(s16 *)((u8 *)&Judge + ((var_v1 >> 1) & 0x1FFE))` becomes
   `Judge[(var_v1 >> 2) & 0xFFF]`, which is the same value. combine folds sra 2 / andi 0xFFF /
   sll 1 into the target's `sra 1; andi 0x1FFE`. Object-identical.
-- func_800233AC: `judge_ptr = &Judge;` becomes `judge_ptr = Judge;`. The second handle itself is
-  PRE-EXISTING and unannotated. Dropping it (Judge[...] at all three reads) is also
-  object-identical (probe_judge_noalias).
+- func_800233AC: the PRE-EXISTING, unannotated second handle `s16 *judge_ptr` is REMOVED
+  (orchestrator's decision 2026-09-30: it was a pointer alias with no FAKE paperwork). It was
+  `judge_ptr = &Judge;` with three `judge_ptr[angleN]` reads, which are now `Judge[angleN]`.
+  Object-identical: probe_judge_noalias, then the final `judge` stage that includes the removal.
 
 ## Measurement
 tmp/laneH/harness.py builds all 33 TUs that include code6cac.h through the engine's exact C
