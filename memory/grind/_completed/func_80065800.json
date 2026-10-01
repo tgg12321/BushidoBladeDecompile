@@ -1,0 +1,16 @@
+{
+ "bucket": "COMPLETED-INLINE-ASM-CANONICAL",
+ "completed_at": "2026-09-30T18:02:47-05:00",
+ "file": "text1b_tu1c",
+ "func": "func_80065800",
+ "headline": "",
+ "mentions": [
+  "func_8005C8A8",
+  "func_8005D554"
+ ],
+ "names": [
+  "func_80065800",
+  "motion_SetExMotion"
+ ],
+ "sessions": 1
+}

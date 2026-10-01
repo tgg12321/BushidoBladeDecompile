@@ -1,0 +1,16 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-09-30T06:06:46-05:00",
+ "file": "text1b_tu1d",
+ "func": "func_8006ECF4",
+ "headline": "",
+ "mentions": [
+  "func_8006F97C",
+  "func_80070188",
+  "func_80070F78"
+ ],
+ "names": [
+  "func_8006ECF4"
+ ],
+ "sessions": 5
+}

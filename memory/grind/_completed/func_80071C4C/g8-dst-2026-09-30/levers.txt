@@ -1,5 +1,0 @@
-D+i*10: score 2 (270/270) 
-i*10+D: score 2 (270/270) 
-D+10*i: score 2 (270/270) 
-u8ptr[i*10]: score 2 (270/270) 
-rows[i][k]: score 2 (270/270) 

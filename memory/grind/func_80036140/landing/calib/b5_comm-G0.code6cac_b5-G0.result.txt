@@ -1,8 +1,0 @@
-[b5_comm-G0] code6cac_b5 class=comm cc1psx -G0 syms=g_cd_result,g_cd_atv,D_800A36B8,D_800A3840,D_800A3854
-  func_80036140: 512 target words, 128 differ after alignment (reloc imm masked); gp accesses target=10 ours=0
-      target gp: ['D_800A3854', 'D_800A36B8', 'D_800A3840', 'g_cd_atv', 'D_800A3840', 'D_800A3854', 'D_800A3840', 'D_800A3854', 'g_cd_result', 'g_cd_result']
-      ours   gp: []
-  func_80036940: 274 target words, 62 differ after alignment (reloc imm masked); gp accesses target=2 ours=0
-      target gp: ['g_cd_result', 'g_cd_result']
-      ours   gp: []
-  total words ours=802 target=786

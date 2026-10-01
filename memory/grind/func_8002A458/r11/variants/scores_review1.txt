@@ -1,7 +1,0 @@
-
-tmp/func_8002A458/r11v/temp_temp2_split.c score   13   insns 416/416
-tmp/func_8002A458/r11v/nocopy.c          score    2   insns 416/416
-tmp/func_8002A458/r11v/c5_temp2split_u8tbl.c score    2   insns 416/416
-tmp/func_8002A458/r11v/c6_temp2split_copyearly.c score    4   insns 417/416
-tmp/func_8002A458/r11v/c7_dxyz_own_fnscope_first.c score   37   insns 417/416
-

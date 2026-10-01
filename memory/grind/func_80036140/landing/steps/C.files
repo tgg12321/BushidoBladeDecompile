@@ -1,6 +1,0 @@
-include/code6cac.h
-src/code6cac_b4.c
-src/code6cac_b4_post.c
-undefined_syms_auto.txt
-named_syms.txt
-asm/data/91C98.data.s

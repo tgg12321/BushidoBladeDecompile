@@ -1,5 +1,0 @@
-(insn 703 700 706 (set (mem/s:HI (plus:SI (reg/v:SI 78)
-                (const_int 16)))
-        (subreg:HI (reg/v:SI 94) 0)) -1 (nil)
-    (nil))
------

@@ -1,7 +1,0 @@
-{
-  "floor": 1,
-  "measured": "2026-09-26",
-  "source": "Q17 reopen: `sandbox func_800174F4 --disable all --candidate memory/grind/func_800174F4/rejected/compiler-patch-dependent.c` under the stock build/cc1",
-  "banked_body": "rejected/compiler-patch-dependent.c",
-  "rules_retired": 0
-}

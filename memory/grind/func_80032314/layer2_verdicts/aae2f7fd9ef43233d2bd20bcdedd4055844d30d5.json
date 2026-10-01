@@ -1,8 +1,0 @@
-{
-  "decision": "PASS",
-  "function": "func_80032314",
-  "body_hash": "942eff255a48ebc8",
-  "summary": "Scoped aggregate-merge PASS against ecd42b52: explicit u16 conversion preserves original unsigned mode read after canonical field becomes schema-backed s16. Existing annotated constructs and canonical GTE island are unchanged. Read exact body and diff; full fresh oracle matches. This verdict covers this migration.",
-  "evidence": [],
-  "next_action": ""
-}

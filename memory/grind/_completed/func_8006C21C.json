@@ -1,0 +1,15 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-09-30T00:46:54-05:00",
+ "file": "text1b_tu1c",
+ "func": "func_8006C21C",
+ "headline": "",
+ "mentions": [
+  "func_800720FC"
+ ],
+ "names": [
+  "func_8006C21C",
+  "saTan4GaugeMain"
+ ],
+ "sessions": 4
+}

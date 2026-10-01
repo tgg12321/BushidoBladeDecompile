@@ -1,8 +1,0 @@
-[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
-tmp/codex-26da4/typed-split.c            score   25   insns 342/342
-[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
-tmp/codex-26da4/typed-split-no-tail-reset.c score   27   insns 340/342
-[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
-tmp/codex-26da4/typed-split-no-resets.c  score   84   insns 335/342
-[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
-tmp/codex-26da4/implicit-split-no-tail-reset.c score   20   insns 340/342

@@ -1,1 +1,0 @@
-tools/gcc-2.7.2/cc1 <build CC_FLAGS> -dL -dg -dl -dS -dc -ds t.i ; BB2_ALLOC_DEBUG=1 (t.i = cpp of sandbox-spliced src/text1b.c with final_split candidate)

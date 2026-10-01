@@ -1,2 +1,0 @@
-merged exit=0  # GNU C 2.7.2.SN.1 [AL 1.1, MM 40] Sony Playstation compiled by GNU C lines=930 StartAudio=1
-split6C exit=0  # GNU C 2.7.2.SN.1 [AL 1.1, MM 40] Sony Playstation compiled by GNU C lines=929 StartAudio=1

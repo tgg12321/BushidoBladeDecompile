@@ -1,6 +1,0 @@
-Layer-2 reviewer probes (2026-09-29, PASS review), scores as measured by the reviewer
-(sandbox --disable all); all miss the target:
-p1_inline_len.c     380   (756 insns)
-p2_flag_inv.c         4   (748 insns)
-p3_flag_default.c     3
-p4_len_block.c       14

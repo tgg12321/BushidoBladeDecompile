@@ -1,6 +1,0 @@
-direct                       score=34 build=53 target=47
-direct_for                   score=34 build=53 target=47
-direct_memberwise            score=41 build=65 target=47
-landed                       score=0 build=47 target=47
-rec_for                      score=0 build=47 target=47
-times_ptr                    score=11 build=47 target=47

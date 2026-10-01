@@ -1,0 +1,12 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-09-30T01:42:20+00:00",
+ "file": "text1b_b_tu3",
+ "func": "sprintf",
+ "headline": "",
+ "mentions": [],
+ "names": [
+  "func_80079A30"
+ ],
+ "sessions": 1
+}

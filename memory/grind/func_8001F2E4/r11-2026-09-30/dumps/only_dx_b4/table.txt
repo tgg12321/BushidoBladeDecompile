@@ -1,9 +1,0 @@
-tgt_z      s32        77   s1  global ord=18 nrefs=11 livelen=64 pri=5156 | hard-reg conflicts: v0 v1 a0 a1 t4 sp
-tgt_y      s32        78   a1  global ord=3 nrefs=17 livelen=47 pri=14468 | hard-reg conflicts: v0 v1 sp
-tgt_x      s32        79   s2  global ord=24 nrefs=5 livelen=46 pri=2173 | hard-reg conflicts: v0 v1 a0 a1 a2 a3 sp
-dx         s32        80   v0  local-alloc | hard-reg conflicts: (no global conflict line)
-dz         s32        81   v1  global ord=1 nrefs=6 livelen=4 pri=30000 | hard-reg conflicts: sp
-dist_sq    s32        82   a0  global ord=4 nrefs=12 livelen=26 pri=13846 | hard-reg conflicts: v0 v1 t4 sp
-dist       s32        83   a0  global ord=10 nrefs=6 livelen=14 pri=8571 | hard-reg conflicts: v0 a1 sp
-ang        s32        84   a0  global ord=0 nrefs=42 livelen=63 pri=33333 | hard-reg conflicts: v0 v1 sp
-dx2        s32        85   v0  local-alloc | hard-reg conflicts: (no global conflict line)

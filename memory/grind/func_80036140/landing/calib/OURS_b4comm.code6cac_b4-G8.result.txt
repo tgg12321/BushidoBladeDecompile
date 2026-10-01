@@ -1,8 +1,0 @@
-[OURS_b4comm] code6cac_b4 class=comm cc1psx -G8 syms=g_cd_atv,D_800A36B8,D_800A3840,D_800A3854
-  cdrom_SetMix: 18 target words, 0 differ after alignment (reloc imm masked); gp accesses target=2 ours=2
-      target gp: ['g_cd_atv', 'D_800A3854']
-      ours   gp: ['.sdata+g_cd_atv', '.sdata+D_800A3854']
-  func_80035F78: 12 target words, 0 differ after alignment (reloc imm masked); gp accesses target=3 ours=3
-      target gp: ['D_800A36B8', 'D_800A3854', 'D_800A3840']
-      ours   gp: ['.sdata+D_800A36B8', '.sdata+D_800A3854', '.sdata+D_800A3840']
-  total words ours=30 target=30

@@ -1,2 +1,0 @@
-mipsel-linux-gnu-cpp -lang-c -Iinclude -Iinclude/psxsdk -undef -Wall -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C -DNO_LOGS -DHACKS -DUSE_INCLUDE_ASM -D_internal_version_us -DSOTN_STR src/main/psxsdk/libsnd/ssclose.c
-exit=0

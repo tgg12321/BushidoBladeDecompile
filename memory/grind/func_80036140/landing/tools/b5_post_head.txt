@@ -1,4 +1,0 @@
-/* The code6cac_b4_post.c functions that follow func_80036940, moved unchanged so
- * that func_80036140 and func_80036940 can sit in their own -G8 unit
- * (code6cac_b5.c) before them. The declarations below are the source file's own,
- * for the names this code uses. */

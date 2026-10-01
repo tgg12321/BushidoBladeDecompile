@@ -1,8 +1,0 @@
-{
-  "decision": "PASS",
-  "function": "func_8001E800",
-  "body_hash": "9fa38e3da21f1e63",
-  "summary": "Scoped aggregate-merge PASS against ecd42b52: old alias references become the same-address canonical table/member access, preserving existing field widths, indices, arguments and control flow. Read exact body and diff; no new workaround or alternate storage handle is introduced. Full fresh oracle matches. This verdict covers this migration, not unrelated pre-existing scalar fields.",
-  "evidence": [],
-  "next_action": ""
-}

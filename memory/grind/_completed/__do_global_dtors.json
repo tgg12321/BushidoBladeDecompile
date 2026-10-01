@@ -1,0 +1,13 @@
+{
+ "bucket": "COMPLETED-INLINE-ASM-CANONICAL",
+ "completed_at": "2026-09-28T01:48:07-05:00",
+ "file": "ings2",
+ "func": "__do_global_dtors",
+ "headline": "",
+ "mentions": [],
+ "names": [
+  "__do_global_dtors",
+  "motion_Close"
+ ],
+ "sessions": 14
+}

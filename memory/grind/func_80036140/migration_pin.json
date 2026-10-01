@@ -1,6 +1,0 @@
-{
-  "floor": 16,
-  "measured": "2026-09-30",
-  "source": "sandbox --disable all on the reverted COMPLETED-C body with maspsx_comm_syms.txt emptied (owner ruling 2026-09-30: the per-function COMMON gate is a cheat); 16/512 target insns",
-  "banked_body": "cheated-comm-gate-body.c"
-}

@@ -1,3 +1,0 @@
-insn 245: (set (reg 131) (reg 117))
-insn 255: (set (reg 131) (reg 117))
-insn 337: (set (reg 122) (reg 158))

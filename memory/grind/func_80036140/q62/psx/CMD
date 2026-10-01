@@ -1,1 +1,0 @@
-cc1psx: bash tools/cc1psx_wrapper.sh -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -msoft-float -w < <preprocessed>; staged = src/code6cac_b5.c as landed; sep = tmp mk.py sep variant (q62/tools/mk.py) of the same body

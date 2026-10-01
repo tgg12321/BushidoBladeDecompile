@@ -1,0 +1,17 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-10-01T01:05:18-05:00",
+ "file": "code6cac_tu2",
+ "func": "func_8001CE60",
+ "headline": "",
+ "mentions": [
+  "func_80022580",
+  "func_8005D814",
+  "func_8005F1C8"
+ ],
+ "names": [
+  "func_8001CE60",
+  "camera_set_target_zoom"
+ ],
+ "sessions": 1
+}

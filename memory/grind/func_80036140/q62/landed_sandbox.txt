@@ -1,5 +1,0 @@
-func_80036140 "score": 0
-func_80036940 "score": 0
-cdrom_ReadyCallback "score": 0
-cdrom_StartRead "score": 0
-game_FrameLoop "score": 0

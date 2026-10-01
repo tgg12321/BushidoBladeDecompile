@@ -1,3 +1,0 @@
-cpp: mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C t.c > t.i  (t.c = src/code6cac_b5_post.c with candidates/<v>.c substituted)
-cc1: BB2_SCHED_DEBUG=1 BB2_RANK_DEBUG=1 tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -da t.i -o da.s  (sched trace = stderr)
-identity: tools/gcc-2.7.2/build/cc1 vs tools/gcc-2.7.2/cc1 on the same t.i, comment lines stripped
