@@ -180,7 +180,7 @@ extern struct SeqStruct *_ss_score[32]; /* _ss_score */
    not five scalars. func_80084CC0's target code keeps each handler load
    behind the score-block store before it, and GCC 2.7.2's scheduler only
    draws that dependence when the handler load is an in-struct access too
-   (evidence: memory/grind/func_80084CC0/cleanup-ss-score/evidence.md).
+   (evidence: pre-slim-2026-10-01:memory/grind/func_80084CC0/cleanup-ss-score/evidence.md).
    Replaces the per-word splat scalars D_800F3340/44/48/4C/50. */
 typedef struct {
 	void (*noteon) ();

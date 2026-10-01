@@ -8,7 +8,7 @@ This ledger is institutional memory: before reaching for a workaround, scan it
 for the failure class you're seeing -- the permanent fix may already be
 documented. See `CLAUDE.md` (Hooks) and the `debugging-discipline` memory rule.
 
-How the guard works (formerly docs/TOOLING_ERROR_GUARD.md): `tools/hooks/tooling_error_guard.py`
+How the guard works (formerly pre-slim-2026-10-01:docs/TOOLING_ERROR_GUARD.md): `tools/hooks/tooling_error_guard.py`
 (PostToolUse) matches command output against `tools/hooks/tooling_error_signatures.json` and
 checks written build files for CRLF; a block-tier hit writes `.bb2_tooling_incident.json` and
 `tools/hooks/tooling_incident_stop_guard.sh` (Stop/SubagentStop) refuses to end the turn until

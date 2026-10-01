@@ -97,7 +97,7 @@ claim resting on it can be re-derived and audited without the SDK.
 | `matches.json` | every module placement attempt with status, address(es), word count |
 | `libsyms.json` | every XDEF / module-local placement with lib, module, offset, kind |
 | `rename_manifest.csv` | the decision-ready manifest — one row per in-span function |
-| `manifest_report.md` | the human-readable narrative: counts, hard-misname table, collisions |
+| `tmp/libscan_manifest_report.md` | the human-readable narrative: counts, hard-misname table, collisions |
 | `anomalies.txt` | the mid-function XDEF list |
 | `wave_addresses.txt` | the address restriction handed to `tools/naming_wave.py` |
 

@@ -26,7 +26,7 @@ extern s16 D_800A3710;
 
 /* PsyQ libcd bios.c's command-timeout alarm (Sony's Alarm_t {int, int, char *};
  * SOTN: src/main/psxsdk/libcd/bios.c:24 @aa53500; object map:
- * memory/closer/libcd-identity.md): armed and polled by libcd's command
+ * pre-slim-2026-10-01:memory/closer/libcd-identity.md): armed and polled by libcd's command
  * wait loops in src/system.c. */
 typedef struct {
     s32 time;   /* 0x800F19B8: VSync(-1) deadline */

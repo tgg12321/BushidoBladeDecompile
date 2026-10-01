@@ -211,7 +211,7 @@ parking YOUR ASSIGNED FUNCTION is high. "Hard" is not enough; "I tried a few
 things" is not enough. Persistence is WITHIN your function (more levers, more
 analysis, more permuter time), NOT ACROSS functions (grabbing extras when yours
 finishes quickly).
-Read [[difficult-is-not-impossible]] and
+Read [[no-compiler-divergence]] and
 [[canonical-gate-distance-not-evidence]] BEFORE you consider parking. The
 matching C exists ([[no-compiler-divergence]]: the toolchain is frozen, the
 ONLY variable is the C). A verdict of ASM-SUSPECT is the gate's GUESS, NOT

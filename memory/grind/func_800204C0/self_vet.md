@@ -9,7 +9,7 @@ CONSTRUCTS: four GTE cop2 inline-asm islands in the func_800203B4-granted `move 
 SANCTIONED-FAMILY-CLAIMS:
   FAMILY: cop2 addressing-preamble cluster (canonical GTE islands, widened materialize-then-copy anchor)
   SCOPE: "the anchor widens from the literal `addu $t4,$aN,$zero` to the **general materialize-then-copy cop2 addressing preamble** — the copy source may be ANY register (observed in-band: `$v0/$v1/$s0-$s6/$t0/$t1/$sp`), same 0x8001-0x8003 band, same evidence set (redundant copy GCC 2.7.2 never emits + unfilled cop2 load-delay slots + splat `/* handwritten instruction */` tags), same 4-point mechanical per-function check below, unchanged."
-  PRECEDENT: .claude/rules/cop2-addressing-preamble-cluster.md:155
-  PRECEDENT: docs/grind/decisions.md:17959
+  PRECEDENT: pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:155
+  PRECEDENT: pre-slim-2026-10-01:docs/grind/decisions.md:17959
   PRECEDENT: inline_asm_canonical.txt:367
 ANNOTATION-CONFORMANCE: n/a — no FAKE construct (canonical-asm islands carry macro-name + inline_c.h line cites per owner Ruling A 2026-09-02; honest bucket COMPLETED-INLINE-ASM-CANONICAL, allowlist line + registry row are driver/operator surfaces).

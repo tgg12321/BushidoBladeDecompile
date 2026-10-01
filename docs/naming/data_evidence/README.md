@@ -6,7 +6,7 @@ function-side `docs/naming/evidence/` directory.
 
 ## How this differs from `data_symbols_quick_wins.md`
 
-`docs/naming/data_symbols_quick_wins.md` is a mechanical
+`pre-slim-2026-10-01:docs/naming/data_symbols_quick_wins.md` is a mechanical
 classification of every D_* symbol by access-width pattern (lw/lh/lb
 only, function-pointer call shape, GTE direct reference, etc.). It
 produces type-style names like `wtbl_*` / `stbl_*` / `btbl_*` /

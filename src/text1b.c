@@ -2149,7 +2149,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     /* idx counts two loops: the eight bytes cleared at 0x444, then the two
      * players (0 = this record, 1 = the opponent's). Admitted under Ruling 11
      * (.claude/rules/ordinary-c-judge-decidable.md); allocator-dump proof in
-     * memory/grind/func_80055138/ruling11.md. */
+     * pre-slim-2026-10-01:memory/grind/func_80055138/ruling11.md. */
     s32 idx;
     s32 sec;
     u8 *rec;
@@ -2163,7 +2163,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
      * (0 once it reaches 3); case 3's row in D_8009A9B4; a move entry's
      * byte-assembled character mask; the entry's stat bytes e[1] and e[2].
      * Admitted under Ruling 11 (.claude/rules/ordinary-c-judge-decidable.md);
-     * allocator-dump proof in memory/grind/func_80055138/ruling11.md. */
+     * allocator-dump proof in pre-slim-2026-10-01:memory/grind/func_80055138/ruling11.md. */
     s32 temp;
     u32 cat;
     s32 lo_val, hi1_val, hi2_val;
@@ -2310,7 +2310,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                  * (lh v1; addiu v1,v1,100); hi2_val is set in both arms and
                  * read after the join, so it is global-allocated and untied
                  * (target: lh v0; addiu v1,v0,100). Lever exhaustion:
-                 * memory/grind/func_80055138/ruling11.md. */
+                 * pre-slim-2026-10-01:memory/grind/func_80055138/ruling11.md. */
                 hi2_val = *(s16 *)(rec + 0x40A) + 100;
                 lo_val = hi2_val + lo * 40;
                 hi1_val = hi2_val + hi1 * 40;
@@ -2649,7 +2649,7 @@ s32 func_800571C0(s32 obj) {
     s8 nl;
     /* Ruling 11 (ordinary-c-judge-decidable.md): holds two values -- the count of clear probe steps on
      * the right-hand side, then which side was chosen (0 right, 1 left; per-branch constants, Q20).
-     * Proof: memory/grind/func_800571C0/r11/proof.md */
+     * Proof: pre-slim-2026-10-01:memory/grind/func_800571C0/r11/proof.md */
     s8 temp;
     u8 goL;
     u8 goR;
@@ -2883,7 +2883,7 @@ extern s32 ratan2(s32, s32);
  * of its five use sites rather than bound to one pointer local (F3
  * compound-address duplication across call arg-lists, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:377,
  * owner ruling 2026-08-18; re-adjudication granted for this function by owner ruling
- * 6b of the 2026-08-30 escalation batch, docs/grind/decisions.md:14685).
+ * 6b of the 2026-08-30 escalation batch, pre-slim-2026-10-01:docs/grind/decisions.md:14685).
  * mechanism: cse1 (cse.c:1948 hash_arg_in_memory / cse.c:7241-7246
  * `if (! CONST_CALL_P (insn)) invalidate_memory (&everything);`) folds the five
  * front-end loads down to the target's two, the intervening ratan2 CALL_INSN being
@@ -4248,7 +4248,7 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
      * spilled and rematerialized inside the tile loop; set outside the tile
      * loop, header[3] is also not related to header[2] by cse
      * (use_related_value), which would give header[2] a fourth ref and
-     * reverse the $s6/$s7 order. memory/grind/func_8005D814/evidence.md. */
+     * reverse the $s6/$s7 order. pre-slim-2026-10-01:memory/grind/func_8005D814/evidence.md. */
     hdr3 = &D_8009B398[3]; /* FAKE: pointer alias */
     cell3 = &D_8009B3F8;   /* FAKE: pointer alias */
     shown = 0;
@@ -4290,7 +4290,7 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
          * named a few insns before their stores so loop.c hoists them
          * (lifetime >= 3 at loop.c:1631), header then cell; the cell's
          * shorter live range ranks it first in global.c ($s6), the header
-         * second ($s7). memory/grind/func_8005D814/evidence.md. */
+         * second ($s7). pre-slim-2026-10-01:memory/grind/func_8005D814/evidence.md. */
         hdr2 = &D_8009B398[2]; /* FAKE: pointer alias */
         cell2 = &D_8009B3F0;   /* FAKE: pointer alias */
         s.y = D_8009B450[j].y;
@@ -4502,7 +4502,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     /* The per-player points pair: each round's points in the round rows,
        then the per-player totals under them. The target addresses both
        through the one frame slot sp+0x18 (a separate totals array measured
-       13-204: memory/grind/func_8005E54C/evidence.md [s4 cont.]). */
+       13-204: pre-slim-2026-10-01:memory/grind/func_8005E54C/evidence.md [s4 cont.]). */
     s16 points[2];
     s16 wins[2];
     Env5E54C s;
@@ -4510,7 +4510,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
        sp+0x58 = descriptor + 0x30 where the COMPLETED siblings keep a real
        s16[3] digit array: func_8005D814 `s16 digit[3];` (src/text1b.c:4231,
        copied here) and func_8005F1C8 `s16 d[3];` (src/text1b.c:4911).
-       Census and measurements: memory/grind/func_8005E54C/frame_census.txt,
+       Census and measurements: pre-slim-2026-10-01:memory/grind/func_8005E54C/frame_census.txt,
        evidence.md [s4]/[s5]. Owner ruling 2026-09-29 Q35
        (no-new-park-categories.md, phantom-frame-slot pad family, trailing
        unused array with sibling evidence). */
@@ -4523,7 +4523,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     /* i counts the players (first loop) and then the rounds; j is the
        player and k the mark; each phase restarts them as plain loop indices,
        the counter reuse of func_8005E098 / func_8005F1C8. Separate counters
-       per phase measured 8-77 (memory/grind/func_8005E54C/evidence.md [s3]). */
+       per phase measured 8-77 (pre-slim-2026-10-01:memory/grind/func_8005E54C/evidence.md [s3]). */
     s16 i;
     s16 j;
     s16 k;
@@ -4629,7 +4629,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     cur = func_8007352C((s32)&s);
     /* One 32-bit store clears the whole pair (target 0x8005EA44
        `sw $zero,0x18($sp)`); the union spelling measured 197
-       (memory/grind/func_8005E54C/evidence.md [s5]). Owner ruling
+       (pre-slim-2026-10-01:memory/grind/func_8005E54C/evidence.md [s5]). Owner ruling
        2026-09-29 Q36 (no-new-park-categories.md, one cast store on a
        local array). */
     *(s32 *)points = 0;
@@ -4769,7 +4769,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->b0 = 0x10;
     /* Each arm sets the whole (x0, y0) position: the target stores x0 once
        per arm (0x8005F0E0, 0x8005F0F8, 0x8005F104); one x0 store above the
-       if/else measured 10 (memory/grind/func_8005E54C/probes/x0h.c). */
+       if/else measured 10 (pre-slim-2026-10-01:memory/grind/func_8005E54C/probes/x0h.c). */
     if (D_8009BD38.unk10 == 2) {
         tile->x0 = 0x5E;
         tile->y0 = 0xC1;
@@ -4820,7 +4820,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
      * as plain loop indices by the later phases (tile strip k/j, timer j/k),
      * the same counter reuse as func_8005E098 and the func_8003800C
      * single-counter shape. Separate counters per phase measured 38-73
-     * (memory/grind/func_8005F1C8/evidence.md s2). */
+     * (pre-slim-2026-10-01:memory/grind/func_8005F1C8/evidence.md s2). */
     s16 i;
     s16 j;
     s16 k;

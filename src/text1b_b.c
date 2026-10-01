@@ -946,7 +946,7 @@ void func_80077D94(s32 *arg0) {
        delay slot, then `addu a1,s7,zero` at all 5 call sites). The inline
        literal re-materializes `li a1,0x20` per call: 12/465 vs 0/468.
        Same shape as func_80078654's `zero` and func_80070C70's `c60`.
-       Lever exhaustion: memory/grind/func_80077D94/evidence.md. */
+       Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80077D94/evidence.md. */
     s32 abr;
     s32 *hp;
     s32 i;
@@ -966,7 +966,7 @@ void func_80077D94(s32 *arg0) {
        has_color/r/g/b; the compiler cross-jumps the identical tails. The
        shared-tail spelling (arms set v only, the else skips the stores with
        a goto) measures 23/470 vs 0/468.
-       Lever exhaustion: memory/grind/func_80077D94/evidence.md. */
+       Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80077D94/evidence.md. */
     if (D_800A35F0 < in[D_800A3600] + 60 && D_800A35F0 >= in[D_800A3600]) {
         v = ((D_800A35F0 - in[D_800A3600]) << 7) / 60;
         s.has_color = 1;
@@ -1047,7 +1047,7 @@ void func_80077D94(s32 *arg0) {
                    (`((Ctx77D94 *)D_800A35F8)->img38[i]` or
                    `D_800A35F8 + i * 4 + 0x38`), fold moves 0x38 into the
                    load displacement and the giv is not reduced: 9/467.
-                   Lever exhaustion: memory/grind/func_80077D94/evidence.md. */
+                   Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80077D94/evidence.md. */
                 j = i * 4 + 0x38;
                 LoadImage((s32)&rect, *(s32 *)(D_800A35F8 + j) + 0x220);
                 DrawSync(0);
@@ -1084,7 +1084,7 @@ void func_80077D94(s32 *arg0) {
                r/g/b chain; the compiler cross-jumps the identical tails back
                into one. One shared chain after the if/else puts the value in
                a separate pseudo and costs a `move` at the join: 26/467 vs
-               0/468. Lever exhaustion: memory/grind/func_80077D94/evidence.md. */
+               0/468. Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80077D94/evidence.md. */
             if (D_800A35F0 < w->on + 60) {
                 s.has_color = 1;
                 v = ((D_800A35F0 - w->on) * 112) / 60;
@@ -1096,7 +1096,7 @@ void func_80077D94(s32 *arg0) {
                    into (off + 60) - cnt; the target computes cnt - 60
                    first (`addiu v0,a1,-60`). Inline: 16/469;
                    60 - (cnt - off): 16/469.
-                   Lever exhaustion: memory/grind/func_80077D94/evidence.md. */
+                   Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80077D94/evidence.md. */
                 s32 t = D_800A35F0 - 60;
                 s.has_color = 1;
                 v = ((w->off - t) * 112) / 60;

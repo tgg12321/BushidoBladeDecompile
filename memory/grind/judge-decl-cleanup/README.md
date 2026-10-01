@@ -3,7 +3,7 @@
 Start here. This ledger covers the combined cheat-cleanup landing that started as "36 scalar `&Judge`
 uses" (docs/audits/RETRO-AUDIT-2026-09-29.md § Follow-ups) and grew, through layer-2 rounds 1-5, into
 truthful declarations for five tables, Rec44, and the practice-table reads in 36 functions.
-The g_sqrt_table_u8 part is also summarized in memory/grind/sqrt-table-decl-cleanup/evidence.md.
+The g_sqrt_table_u8 part is also summarized in pre-slim-2026-10-01:memory/grind/sqrt-table-decl-cleanup/evidence.md.
 
 ## What landed
 Landing commit: 8e007927d (subject "cheat-cleanup: Judge, g_sqrt_table_u8, D_8008EB40, ...").
@@ -32,8 +32,8 @@ The full commit message is in git and in tmp/laneH/msg_final.txt at landing time
 - **Kept with FAKE paperwork:**
   - the D_8008EB40 row pointer `tbl` (800233AC, 80023648): eb40-pointer-alias.md;
   - the practice-table record pointers t2_base/t3_base (8002BC68, 8002BEA0):
-    memory/grind/func_8002BC68/q73-practice-reads.md;
-  - `v1_v` in 80032314 (named intermediate): memory/grind/func_80032314/v1v-named-intermediate.md.
+    pre-slim-2026-10-01:memory/grind/func_8002BC68/q73-practice-reads.md;
+  - `v1_v` in 80032314 (named intermediate): pre-slim-2026-10-01:memory/grind/func_80032314/v1v-named-intermediate.md.
 - **Symbol rows:** D_80101FA0/FA8/801023EC/23F4 retired (their only reader was 8002BC68).
   D_80101FBC/FC4/80102408/10 stay declared, because func_8001C8DC, func_8001E878 and
   func_8001EA84 (HEAD bodies, outside this landing) still read them.
@@ -52,7 +52,7 @@ Owner ruling Q73 (rule commit 321a8529f) would have kept the eight per-word read
 8002BC68/8002BEA0 only if every single-object spelling failed. One does not: record pointers set
 first and reads through them (form (b)) score sandbox 0 with an oracle SHA1. Q73 therefore lapses
 for both functions (its own text), and no per-word name is read there. Measurements:
-memory/grind/func_8002BC68/q73-practice-reads.md and q73/ (s1 18/12, s2 0, s3 0, s4 14 with +1
+pre-slim-2026-10-01:memory/grind/func_8002BC68/q73-practice-reads.md and q73/ (s1 18/12, s2 0, s3 0, s4 14 with +1
 insn, s5 18/12).
 
 ## D_8008EB40 pointer alias

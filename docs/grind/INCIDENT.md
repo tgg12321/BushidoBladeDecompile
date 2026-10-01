@@ -5,9 +5,9 @@
 git HEAD: 53452de69
 git status:
 ```
- M memory/grind/func_8006ECF4/candidate.c
+ M pre-slim-2026-10-01:memory/grind/func_8006ECF4/candidate.c
  M metrics/events.jsonl
-?? memory/grind/func_8006ECF4/rejected/s5-shared-p0-missing-i0-overwrite.c
+?? pre-slim-2026-10-01:memory/grind/func_8006ECF4/rejected/s5-shared-p0-missing-i0-overwrite.c
 
 ```
 Last 20 log lines:

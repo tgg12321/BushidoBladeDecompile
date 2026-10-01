@@ -1347,7 +1347,7 @@ def cmd_func(name):
 def cmd_check_new(commit_msg=None):
     """Return 1 if the working tree introduces new cheats since HEAD.
 
-    Completion policy (2026-05-21, [[completion-standard]]): the only acceptable
+    Completion policy (2026-05-21, completion-standard): the only acceptable
     end states are COMPLETED-C (pure C) and COMPLETED-INLINE-ASM-CANONICAL
     (whole-function hand-asm / GTE / BIOS, evidence-gated). Any NET-NEW regfix
     rule, register-asm pin, plain register hint, or cheat-asm (move-aliasing /

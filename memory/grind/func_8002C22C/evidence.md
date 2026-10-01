@@ -21,7 +21,7 @@ Spellings of the record-1 reads (sandbox --disable all, target 252 insns; ff-b-2
 | `(&D_80102314)[off/4]` | 26 | 262 | no: same indexing, and no match |
 | `*(s32 *)((u8 *)&D_80102314 + off)` | 26 | 262 | no: same |
 | `*(s32 *)((u8 *)&D_80101EC8 + 0x44C + off)` | 26 | 262 | no: cast past the u8 table-base scalar |
-| `u8 *rec1 = (u8 *)&D_80101EC8 + 0x44C; *(s32 *)(rec1 + off)` | 0 | 252 | no: the `((s32*)&D_80101EC8)[i]` cast-on-scalar family banned in docs/grind/decisions.md:83,91 |
+| `u8 *rec1 = (u8 *)&D_80101EC8 + 0x44C; *(s32 *)(rec1 + off)` | 0 | 252 | no: the `((s32*)&D_80101EC8)[i]` cast-on-scalar family banned in pre-slim-2026-10-01:docs/grind/decisions.md:83,91 |
 | `s32 *rec1 = (s32 *)((u8 *)&D_80101EC8 + 0x44C); rec1[off/4]` | 0 | 252 | no: same |
 Every form that reaches 0 reaches record 1 through arithmetic past a symbol declared as a scalar. The
 honest spelling needs the table declared as what it is: a 2-element array of a 0x44C-byte record at

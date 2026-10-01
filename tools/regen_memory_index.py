@@ -155,12 +155,12 @@ def main() -> int:
             fm, _ = parse_frontmatter(path.read_text(encoding="utf-8", errors="replace"))
             fm_name_to_stem[(fm.get("name") or stem).strip()] = stem
 
-    # The REPO memory tree (memory/{project,closer,grind,wip} in the repo, git-
+    # The REPO memory tree (memory/{closer,grind,wip} in the repo, git-
     # tracked — distinct from the harness auto-memory this tool indexes) also
-    # hosts link targets: research notes like sotn-family-research-2026-07-01
-    # live at memory/project/*.md. Accept their stems so cross-references from
-    # rules/memories to repo research notes don't false-flag as broken
-    # (2026-08-24 — they were ~30 of the reported "dangling" links).
+    # hosts link targets (ledger notes under memory/grind, memory/closer, ...).
+    # Accept their stems so cross-references into the repo memory tree don't
+    # false-flag as broken. (The repo research notes (project/ folder) were removed in the
+    # 2026-10-01 slim; cite them as pre-slim-2026-10-01:memory/project/<x>.md.)
     repo_memory_dir = REPO_PATH_RULES_DIR.parent.parent / "memory"
     if repo_memory_dir.exists():
         for path in repo_memory_dir.rglob("*.md"):

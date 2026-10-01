@@ -21,7 +21,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Documentation files (kept at root for visibility)
-# Note: dated handoff/audit docs moved to docs/handoffs/ and docs/naming/
+# Note: dated handoff/audit docs moved to pre-slim-2026-10-01:docs/handoffs/ and docs/naming/
 # as part of the 2026-05-18 root-cleanup pass.
 ALLOWED_DOCS = {
     "README.md", "CLAUDE.md", "AGENTS.md", "CONTRIBUTING.md", "BUILD.md",

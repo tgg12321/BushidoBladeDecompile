@@ -49,7 +49,7 @@ a key, oracle-verified per batch, never hand-applied. Applied so far:
 |---|---|---|
 | phase-2 reset wave | `2651e2e5` (2026-08-07) | **300 RESET + 2 RENAME** (`main`, `gpu_EnableDisplay`/`gpu_DisableDisplay` family) — the SUSPECT/Kengo purge, byte-neutral |
 | libscan wave | `fe40a52b` (2026-08-07) | **334 evidence-backed renames** from the PsyQ bit-verbatim library scan: 51 hard misnames corrected, 182 alias fixes, 73 fills, 28 style rows to bare Sony names (owner ruling). Census gained the `libscan-verbatim` -> VERIFIED tier |
-| addendum wave | `ef3919bd` (2026-08-10) | **12 RENAMEs + 1 RESET** from the ambiguous-tie resolutions + reloc-chain bonus IDs (`docs/naming/libscan/addendum_addresses.txt`). Part B: 5/9 XDEF splits obsolete (`6df437b6`), 4 genuine splits applied same day (`113abc0e`/`b6c73b0f`/`4ffc63aa`); only the 2 owner-gated re-derivations remain — see `docs/naming/ADDENDUM-APPLY-PLAN.md` |
+| addendum wave | `ef3919bd` (2026-08-10) | **12 RENAMEs + 1 RESET** from the ambiguous-tie resolutions + reloc-chain bonus IDs (`docs/naming/libscan/addendum_addresses.txt`). Part B: 5/9 XDEF splits obsolete (`6df437b6`), 4 genuine splits applied same day (`113abc0e`/`b6c73b0f`/`4ffc63aa`); only the 2 owner-gated re-derivations remain — see `pre-slim-2026-10-01:docs/naming/ADDENDUM-APPLY-PLAN.md` |
 | apiscan wave | `naming: apiscan wave` (2026-09-07) | **21 RENAMEs** from the API-restatement class (`docs/naming/apiscan/`): 10 fills of auto glabels + 11 retirements of meaningless/wrong aliases (`pad_file_*`, `bios_helper`, `irq_helper`, `obj_helper`, `sys_helper`, `mode_helper`). Names restate the VERIFIED BIOS/PsyQ calls + literal device strings in the body; every row re-derived by a fresh default-refute verifier before landing. Census gained the `apiscan-restatement` -> CORROBORATED origin |
 | near-tier wave | this commit (2026-09-07) | **35 RENAMEs** under the owner's near-tier ruling (`docs/naming/libscan/near-tier-ruling-2026-09-07.md`): 7 `libscan-xref` (an accepted verbatim module's XREF + the EXE's jal target pin the callee — VERIFIED), 11 `libscan-near` (body matches a Sony build except explainable words, unique placement — CORROBORATED), 17 link-map desync corrections (C definition still carried the pre-2026-08-07 misnomer, e.g. SpuFree defined as spu_DmaTransfer). Audit: `near_audit_report.md`, `callee_web.md`; tools `tools/libscan/near_audit.py`, `callee_web.py`. build_census.py now compares the link-map object symbol against the glabel on every row |
 | data wave | this commit (2026-09-07) | **62 globals + 26 field offsets** renamed to Sony's own symbol names (`libscan-xref` for data: HI16/LO16 XREF pairs of accepted verbatim modules resolved through the EXE; `docs/naming/libscan/data_manifest.csv`, `data_candidates.md`, verifier report). New tool `tools/data_wave.py` (data-side sibling of naming_wave.py). Retired demonstrably wrong game names such as g_memcard_slot (= _SsVmMaxVoice), g_blood_spot_pos (= _snd_seq_tick_env), g_seq_bank_table (= _ss_score) |
@@ -218,7 +218,7 @@ carry no contradiction, so they are INFERRED rather than SUSPECT.
 Historical (pre-wave) totals: KEEP 1,132 / RESET 304 / RENAME 1. **Both waves have
 landed** (see the wave table above), so a fresh census run reports the residue, not these
 numbers. Outstanding as of 2026-08-07: the **addendum wave** (12 RENAMEs + 1 RESET,
-prepared — `docs/naming/ADDENDUM-APPLY-PLAN.md`) and the 9 mid-function XDEF splat
+prepared — `pre-slim-2026-10-01:docs/naming/ADDENDUM-APPLY-PLAN.md`) and the 9 mid-function XDEF splat
 boundary fixes (`docs/naming/libscan/boundary_fixes.md`, apply-time work, owner-gated
 sequencing in the same plan).
 
@@ -283,7 +283,7 @@ Non-negotiables for the phase-2 tool:
    so a blind `--apply` could not reintroduce them).
 5. **Do not run it while the Grinder is running** — foreign dirt in the working tree
    makes the driver's scope check discard sessions
-   ([[grinder-clobbers-uncommitted-edits]]).
+   ([[operator-gotchas]]).
 
 ---
 

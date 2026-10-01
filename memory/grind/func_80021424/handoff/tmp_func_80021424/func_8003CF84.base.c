@@ -50,7 +50,7 @@ void func_8003CF84(void) {
         if (D_800A38DC == 4 || D_800A38DC == 6) {
             /* FAKE: indexes past D_800A37D2 into D_800A37D3 by player number (owner Q63, this
              * byte pair only): the target also reaches each byte through its own symbol, which
-             * no single array or struct gives (proof: memory/grind/func_8001C8DC/evidence.md
+             * no single array or struct gives (proof: pre-slim-2026-10-01:memory/grind/func_8001C8DC/evidence.md
              * s1, s2-struct). */
             (&D_800A37D2)[D_800A3748] = (&D_800A37D2)[D_800A3748] + 1;
         }

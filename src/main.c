@@ -518,7 +518,7 @@ s32 func_80084CC0(s16 a0, s16 a1)
   /* FAKE: Q51 reused variable, match-motivated (Q53). One local per 0x90
      arm scores 40 in either arm alone or in both (allocator order,
      operand-only): variants v6/v6b/v6d/v6e in
-     memory/grind/func_80084CC0/cleanup-ss-score/evidence.md §6. */
+     pre-slim-2026-10-01:memory/grind/func_80084CC0/cleanup-ss-score/evidence.md §6. */
   u8 velocity;
   s32 ret;
   state = &_ss_score[a0][a1];
@@ -922,7 +922,7 @@ extern u8 _SsVmMaxVoice;
  * one-voice mask, then _SsVmKeyOffNow). Plain C since the 2026-09-24
  * _svm_voice aggregate merge: with the stores spelled as record-field
  * writes, the former empty-if (F6) closer and the u/offset carrier locals
- * are no longer needed (memory/grind/vmNoiseOn/evidence.md). */
+ * are no longer needed (pre-slim-2026-10-01:memory/grind/vmNoiseOn/evidence.md). */
 void func_800858D0(void) {
     s32 buf[16];
     s16 var_s0;
@@ -1459,7 +1459,7 @@ void vmNoiseOn(u8 vc) {
        call so its pseudo is live across that call and global.c seats it in
        call-saved $s0 as the target does (sched1 still places the zero-extend
        after the jal: no dependence ties it to the call). Measured on this
-       final body (memory/grind/vmNoiseOn/evidence.md): vc at each use puts
+       final body (pre-slim-2026-10-01:memory/grind/vmNoiseOn/evidence.md): vc at each use puts
        the index in $a0 and drops $s3 from the frame; idx also at the two
        _svm_voice[] uses differs too (the target zero-extends vc again there). */
     idx = vc;
@@ -3612,7 +3612,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
     for (voice = 0; voice < 24; voice++) {
         u16 temp; /* two values: the clamped sustain rate (SR block), then the
                    * clamped sustain level (SL block); Ruling 11, proof in
-                   * memory/grind/func_8008B488/r11/proof.md */
+                   * pre-slim-2026-10-01:memory/grind/func_8008B488/r11/proof.md */
 
         if ((attr->voice & (1 << voice)) == 0) {
             continue;

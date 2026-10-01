@@ -14,7 +14,7 @@ void func_8003993C(void) {
     u8 *e;
     /* Ruling 11 (ordinary-c-judge-decidable.md): `temp` holds two values, the 0/1 weapon-set
      * selector (flags >> 1) & 1 in the per-player loop and the replay window of the event loop.
-     * Allocator-necessity proof: memory/grind/func_8003993C/ruling11.md. */
+     * Allocator-necessity proof: pre-slim-2026-10-01:memory/grind/func_8003993C/ruling11.md. */
     s32 temp;
     u8 save40;
     s32 save58;
@@ -38,7 +38,7 @@ void func_8003993C(void) {
     for (i = 0; i < 2; i++) {
         /* Ruling 11 (ordinary-c-judge-decidable.md): `entry` holds two values, the address of the
          * frame's 4-byte entry in the practice weapon table (if arm) and in the character's weapon
-         * table (else arm). Allocator-necessity proof: memory/grind/func_8003993C/ruling11.md. */
+         * table (else arm). Allocator-necessity proof: pre-slim-2026-10-01:memory/grind/func_8003993C/ruling11.md. */
         s32 entry;
 
         p = (u8 *)(D_800A36EC + idx * 56) + i * 28;

@@ -52,7 +52,7 @@ param(
     # completion, so the default-FAIL Judge never sees it — a false exhaustion is
     # the one expensive error with no gate behind it.
     #
-    # Protocol and the metrics to compare: docs/grind/model-experiment-2026-09-15.md.
+    # Protocol and the metrics to compare: pre-slim-2026-10-01:docs/grind/model-experiment-2026-09-15.md.
     # The arm-2 comparison is scored ONLY over functions >=188 insns, in both arms —
     # the headline rate from the mixed-difficulty queue is not a comparator any more.
     # Revert = set all three worker lanes to one model.
@@ -1514,7 +1514,7 @@ while ($true) {
             '',
             ('> ' + $script:lastDiscardReason),
             '',
-            'If this is a self_vet.md citation-format rejection: every PRECEDENT line must contain a literal file:line (e.g. `.claude/rules/no-new-park-categories.md:172`) or a 7-40 char commit hash. Prose descriptions, dates, or file + section-heading references are mechanically rejected regardless of merit.'
+            'If this is a self_vet.md citation-format rejection: every PRECEDENT line must contain a literal file:line (e.g. `.claude/rules/no-new-park-categories.md:78`) or a 7-40 char commit hash. Prose descriptions, dates, or file + section-heading references are mechanically rejected regardless of merit.'
         )
     }
     # The annotation fix-up is ONE-SHOT: consume it once the brief has carried the

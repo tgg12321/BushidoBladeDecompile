@@ -6,7 +6,7 @@
 # DOS .S files, some generated asm/*.s). The LIVE net for new CRLF is the
 # post-write check in tools/hooks/tooling_error_guard.py. To extend coverage to
 # another path, add it here ONLY after confirming `git status` stays clean.
-# See docs/TOOLING_ERROR_GUARD.md.
+# See docs/tooling_incidents.md (header summarizes the guard).
 
 # C source / headers (decompiled code)
 *.c                  text eol=lf

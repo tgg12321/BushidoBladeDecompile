@@ -3,7 +3,7 @@
 Prepared 2026-08-07 in an isolated worktree (branch `worktree-agent-acbdbab88162d8f4b`,
 base `9fb39395`). Analysis only — NO build was run (toolchain absent in the worktree);
 every codegen claim below is asm-evidence-based and must be oracle-verified on main
-per `docs/TASK19-APPLY-PLAN.md`.
+per `pre-slim-2026-10-01:docs/TASK19-APPLY-PLAN.md`.
 
 Source of the debt list: `docs/superpowers/specs/2026-08-06-tu-resplit-campaign.md`
 ("Recorded, not fixed — pre-existing signature debt in text1b").
@@ -178,7 +178,7 @@ variant. Ground truth at base `9fb39395`:
   inherent to regen and stays.)
 * **Disposition: KEEP, promoted** — canonical-authorization payoff checks
   recur (65 canonical-extraction asmfix entries are standing debt per
-  [[asmfix-all-debt-end-state]]; future waves need the same 4-conjunct
+  [[inline-asm-policy]]; future waves need the same 4-conjunct
   check), and tmp/ is unbacked. Promoted to **`tools/canon_payoff_check.py`**
   (committed) with the fix: refuse up front with an explicit message when
   `build/bb2.exe` is absent instead of letting mark_done trigger a build.

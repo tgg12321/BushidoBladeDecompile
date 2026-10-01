@@ -56,7 +56,7 @@ from the natural `u + du0` body. `sprintf`'s `andi 7 ; addiu 0x30` is neutral (t
 rewrite fires there and is undone under every compiler). The 571 `sll;addu` vs 0
 `sll;or` multiply idiom is weak evidence (most operands are not provably disjoint).
 
-**The 2026-09-25 study** (scratch-only, formerly `docs/ORACLE-COMPILER-STUDY-2026-09-25.md`,
+**The 2026-09-25 study** (scratch-only, formerly `pre-slim-2026-10-01:docs/ORACLE-COMPILER-STUDY-2026-09-25.md`,
 `ac5d2b0bb`) found that one condition explains every compilable site — rewrite
 except for a plain `(plus REG CONST_INT)` ("narrow") — and that a second condition
 (`exprop`: rewrite only when an operand is neither REG nor CONST_INT, or a REG
@@ -66,7 +66,7 @@ rewrite unconditionally, and GCC 3.x's narrowing fails at func_80073C78 and site
 C, so neither is a recovered historical compiler. `cc1psx` rewrites at site A,
 which the original did not, so the game was not built with `tools/cc1psx.exe`'s
 behaviour there (or site A's C is still wrong). The study also found that `main`'s
-granted FAKE same-pseudo chain (`.claude/rules/chained-accumulation-fake-exception.md`)
+granted FAKE same-pseudo chain (`pre-slim-2026-10-01:.claude/rules/chained-accumulation-fake-exception.md`)
 was needed only because of the then no-rewrite patch (study § 6.2). Register+register
 disjoint-sum site list: `python3 tools/rrscan_plus_ior.py <out.tsv>` (547 sites
 at 2026-09-25).
@@ -137,7 +137,7 @@ manifest exists to catch — clean them, don't create more.
 - **2026-05-18** — `build/cc1` built during a compiler-patch experiment (the
   `combine.c` PLUS->IOR removal) and silently adopted as the project compiler.
 - **2026-08-07** — reproducibility investigation + forensics (formerly
-  `docs/grind/cc1-forensics-2026-08-07.md`) identified it as stock GCC 2.7.2 minus
+  `pre-slim-2026-10-01:docs/grind/cc1-forensics-2026-08-07.md`) identified it as stock GCC 2.7.2 minus
   PLUS->IOR. Owner first elected stock, then (`d99ab6a6`, on Phase-0 evidence) kept
   the patch with the upstream pinned and the recipe scripted (SOTN pattern).
 - **2026-08-24** — host-ABI `negate_rtx` crash fix (owner ruling `262930f1b`,

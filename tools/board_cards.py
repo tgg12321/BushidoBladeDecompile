@@ -535,10 +535,9 @@ def known_rule_slugs():
 
 # Policy/non-technique slugs that should not be surfaced as a "technique" lever.
 _POLICY_SLUGS = {
-    "no-new-park-categories", "no-new-regfix-rules", "no-compiler-divergence",
-    "review-discipline-before-commit", "difficult-is-not-impossible",
-    "completion-standard", "community-standard", "inline-asm-policy",
-    "codegen-technique-index", "verify-claims-against-main",
+    "no-new-park-categories", "no-compiler-divergence", "review-discipline-before-commit",
+    "inline-asm-policy", "codegen-technique-index", "ordinary-c-judge-decidable",
+    "sotn-precedent-suffices", "judge-sole-gate", "rotation-not-foreclosure", "decomp-loop",
 }
 
 

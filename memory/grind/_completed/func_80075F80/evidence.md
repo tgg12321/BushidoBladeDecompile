@@ -27,7 +27,7 @@ puts the work pointer in `$a0` and the loaded value in `$a1`, ours the reverse.
 Note for future sessions: that session's cc1 dump script invoked
 `tools/gcc-2.7.2/build/cc1`, which is NOT the instrumented binary — `alloc.log`
 came out 0 bytes. The instrumented cc1 is `tools/gcc-2.7.2/cc1`
-([[instrumented-cc1-location]]).
+(instrumented-cc1-location).
 
 ## What closed it: deleting the permuter scaffolding, not adding to it
 

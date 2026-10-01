@@ -951,7 +951,7 @@ void func_8003CF84(void) {
         if (D_800A38DC == 4 || D_800A38DC == 6) {
             /* FAKE: indexes past D_800A37D2 into D_800A37D3 by player number (owner Q63, this
              * byte pair only): the target also reaches each byte through its own symbol, which
-             * no single array or struct gives (proof: memory/grind/func_8001C8DC/evidence.md
+             * no single array or struct gives (proof: pre-slim-2026-10-01:memory/grind/func_8001C8DC/evidence.md
              * s1, s2-struct). */
             (&D_800A37D2)[D_800A3748] = (&D_800A37D2)[D_800A3748] + 1;
         }
@@ -1169,7 +1169,7 @@ s16 *func_8003D7B4(s32 arg0) {
    s[2]=bits still available in s[1].  Returns the next `n` bits.
    `m1 = 1 << avail; m1 -= 1;` is the user-sanctioned same-variable split-init
    accumulation family (owner ruling 2026-06-13; Judge PASS precedent rob_life_ctrl_2,
-   docs/grind/decisions.md:1075) -- both statements are live and the pair folds back
+   pre-slim-2026-10-01:docs/grind/decisions.md:1075) -- both statements are live and the pair folds back
    into one emitted `addiu v0,v0,-1`. */
 s32 bitstream_ReadBits(u32 *s, s32 n)
 {
@@ -1837,7 +1837,7 @@ extern void func_800620B8(s16 *, s32 *);
  *                           :809-814); its two leading nops ride at the
  *                           tail of the gte_ldv0 island, as in func_80019310
  *   gte_stlvnl(r0)       -- inline_c.h:1111-1117; "memory" is its own clobber
- * Ledger: memory/grind/func_8003E6D8/. */
+ * Ledger: pre-slim-2026-10-01:memory/grind/func_8003E6D8/. */
 void func_8003E6D8(s32 arg0) {
     s32 mat[8];
     s16 vec[4];

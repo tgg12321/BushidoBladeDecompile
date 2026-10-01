@@ -10,7 +10,7 @@ Auditor: subagent audit-8004a4e0. Key claims ($s5, $s4, add/sub/syscall/addi cou
 by the orchestrator against `asm/funcs/func_8004A4E0.s` and `asm/funcs/func_8004A940.s`.
 
 ## Trap 0
-No owner ruling on record. Only `decisions.md:28114` (the unruled 2026-09-16 collateral finding).
+No owner ruling on record. Only `pre-slim-2026-10-01:docs/grind/decisions.md:28114` (the unruled 2026-09-16 collateral finding).
 
 ## Tools (both blind to this property)
 - `scan_hand_coded.py --single`: tier=LOW, 0/8 — S7 checks callee-side unsaved callee-saves; this
@@ -49,7 +49,7 @@ misses (func_80027AD8, func_80038C70) — two spot-checked, both guarded by earl
    dispatch. `$a0` is ordinary argument passing; only the `$s0` handoff is custom. Scratchpad
    0x1F800008 claim is accurate (0x8004A650, 0x8004A738).
 5. `tmp/asmaudit/FINDINGS.md:66,209` "standard ABI" — false.
-6. `docs/grind/decisions.md:28115` and memory `project/func-8004a4e0-canonical-underevidenced.md`
+6. `pre-slim-2026-10-01:docs/grind/decisions.md:28115` and memory `project/func-8004a4e0-canonical-underevidenced.md`
    cite `:201`; entry is now `:198`. Memo's re-derive recommendation superseded; "does not exist"
    imprecise (see 1).
 7. Minor: `:185` (math_RotMatrixZYX) "genuinely USES $s5..$s7/$fp" — true, but `$s3` is a ghost

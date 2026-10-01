@@ -45,7 +45,7 @@ Reopened (INCLUDE_ASM + queue; bodies and frontier banked in `memory/grind/<f>/`
 - func_80074E08 — reused `table`, 12 in every honest spelling
 - func_80049718 — p_anim/tbl/new_var3 reuse; honest partial (b1) banked
 - SelWork cluster: func_800747D8, func_80075670, func_800768DC, func_800770B8 — see
-  `memory/grind/func_800768DC/selwork-cluster-2026-09-30.md` (one landing for all SelWork unions)
+  `pre-slim-2026-10-01:memory/grind/func_800768DC/selwork-cluster-2026-09-30.md` (one landing for all SelWork unions)
 
 ## Owner decisions at close (2026-09-30, Q56–Q60 in docs/grind/owner-rulings-2026-09-26.md, 29th batch)
 - **Q56 sdata_exclude.txt — audit in two steps (NEXT SESSION).** 105 rows / 103 functions (99 completed C),
@@ -66,7 +66,7 @@ Reopened (INCLUDE_ASM + queue; bodies and frontier banked in `memory/grind/<f>/`
 
 ## Follow-ups (not started)
 - func_80065800 (orchestrator laneA): sandbox 0 with a ready landing package
-  (`memory/grind/func_80065800/tools/land.py`, 713f59461) that owes a layer-2 review.
+  (`pre-slim-2026-10-01:memory/grind/func_80065800/tools/land.py`, 713f59461) that owes a layer-2 review.
 - `_ss_score`: adopt Sony's `SeqStruct *_ss_score[32]` (SOTN libsnd_i.h:176) across ~15 main.c functions.
 - 36 scalar `&Judge` uses in code6cac_b / code6cac_b_tu2 / code6cac_tu2.
 - `g_camera_view_state` duplicate linker name for D_800FF558; GaugeWork 0x6A u8 vs s16 views.

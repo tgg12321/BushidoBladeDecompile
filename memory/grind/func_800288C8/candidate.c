@@ -29,7 +29,7 @@ extern s32 D_800A3144[];
  * push is then added to each character's +0x134/+0x13C.
  *
  * GTE ISLANDS: census member of the 2026-08-17 owner cluster ruling
- * (.claude/rules/cop2-addressing-preamble-cluster.md:68, LZCS sub-family, one
+ * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:68, LZCS sub-family, one
  * idiom site). The six statements are PsyQ gte_Lzc(r1, r2) (gtemac.h:230-236)
  * written out statement for statement from inline_o.h, the "DMPSX version 3"
  * header (vendored copy tmp/croc-ref/include/psyq/inline_o.h, sha256

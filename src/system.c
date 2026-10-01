@@ -402,7 +402,7 @@ extern void puts();
 extern void printf();
 
 s32 getintr(void) {
-    /* FAKE: volatile local admitted on SOTN precedent (Q50 route A, Q53); mechanism: every access becomes a $sp-slot memory round-trip instead of a register; lever-exhaustion: non-volatile nReg 67/354, buf 1/354, both 68/354, memory/grind/getintr/evidence.md */
+    /* FAKE: volatile local admitted on SOTN precedent (Q50 route A, Q53); mechanism: every access becomes a $sp-slot memory round-trip instead of a register; lever-exhaustion: non-volatile nReg 67/354, buf 1/354, both 68/354, pre-slim-2026-10-01:memory/grind/getintr/evidence.md */
     volatile char nReg; /* SOTN: src/main/psxsdk/libcd/bios.c:116 @db41b28 */
     volatile Result_t buf; /* SOTN: src/main/psxsdk/libcd/bios.c:117 @db41b28 */
     s32 i, j;
@@ -623,7 +623,7 @@ s32 CD_ready(s32 mode, u8 *result)
 /* PsyQ 4.0 LIBCD BIOS: CD_cw — verbatim-linked Sony object (census 2026-07-09);
  * C ref: SOTN src/main/psxsdk/libcd/bios.c (v1.77; BB2 links v1.86, which sets
  * CD_mode before issuing the command and copies the result unconditionally).
- * Identity + object map: memory/closer/libcd-identity.md. */
+ * Identity + object map: pre-slim-2026-10-01:memory/closer/libcd-identity.md. */
 
 extern s32 D_800A12FC[];  /* per-command "clears ready" flags; [com + 0x40] = param count */
 extern s32 D_800A13FC[];  /* per-command "needs param" flags (= D_800A12FC + 0x40) */
@@ -636,7 +636,7 @@ s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
     /* FAKE: one counter for both loops (the CD_pos copy and the parameter
      * write), reused exactly as SOTN's CD_cw reuses its i (Q51, Q53);
      * lever-exhaustion: separate counters = 7/263,
-     * memory/grind/CD_cw/evidence.md */
+     * pre-slim-2026-10-01:memory/grind/CD_cw/evidence.md */
     s32 i; /* SOTN: src/main/psxsdk/libcd/bios.c:292 @aa53500 */
 
     if (CD_debug > 1) {
@@ -667,7 +667,7 @@ s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
      * &D_800A12FC from the ready-flag read above live and forms the count's
      * address as that base + 0x100 (asm/funcs/CD_cw.s: `addiu $v0, $v1, 0x100`
      * at 0x80081460); lever-exhaustion: D_800A13FC[com] = 23/263,
-     * memory/grind/CD_cw/evidence.md */
+     * pre-slim-2026-10-01:memory/grind/CD_cw/evidence.md */
     for (i = 0; i < D_800A12FC[com + 0x40]; i++) { /* SOTN: src/main/psxsdk/libcd/bios.c:314 @aa53500 */
         *g_cd_req_reg = param[i];
     }
@@ -832,7 +832,7 @@ s32 CD_datasync(s32 mode)
 {
     /* FAKE: one return value written on each of the three exits, reused exactly
      * as SOTN's CD_datasync reuses its ret (Q51, Q53); lever-exhaustion: a direct
-     * return on each exit = 4/91 (94 insns), memory/grind/CD_ready/evidence.md */
+     * return on each exit = 4/91 (94 insns), pre-slim-2026-10-01:memory/grind/CD_ready/evidence.md */
     s32 ret; /* SOTN: src/main/psxsdk/libcd/bios.c:460 @aa53500 */
 
     set_alarm(D_800162C0);
@@ -1014,14 +1014,14 @@ typedef struct {
 /* PsyQ 4.0 LIBCD cdread.c: cd_read_retry (static) — verbatim-linked Sony
    object (census 2026-07-09). Body below is the HEAD interim form (still
    INCOMPLETE, carries rules); the honest struct respell of this one is
-   banked in memory/closer/candidates/ — see phase3-progress.md. These
+   banked in pre-slim-2026-10-01:memory/closer/candidates/ — see phase3-progress.md. These
    per-member externs are the HEAD-era declarations kept only for this
    function; they name the same Sony data block the CdlREAD struct spans. */
 /* Per-member view of the same volatile Sony cdread block (CdlREAD above):
    zero-offset symbol accesses are what Sony's cdread.c v1.86 compiles to
    (macro-form lw/sw; the struct+addend spelling la-materializes the first
    access — measured 2026-07-10, cc1psx-confirmed). Volatile pending the
-   Ruling-4 block grant (proposal §3, memory/closer/volatile-grant-proposals.md);
+   Ruling-4 block grant (proposal §3, pre-slim-2026-10-01:memory/closer/volatile-grant-proposals.md);
    saEft00Add's interim HEAD body compensates with de-volatile casts. */
 extern volatile s32 g_CdReadMode_value;
 extern volatile s32 D_800A14EC;

@@ -187,7 +187,7 @@ extern void func_80023F08(s32, s32);
  *     delay slot / `addiu sp,sp,8`) while `i` lives entirely in a register, so
  *     no frame store is ever emitted - exactly the target's zero-store frame.
  *     This is producer #1 ("Folded loop-guard compare") of
- *     .claude/rules/phantom-slot-frame-lever.md:37-41 (exhibit func_8003DBE4);
+ *     pre-slim-2026-10-01:.claude/rules/phantom-slot-frame-lever.md:37-41 (exhibit func_8003DBE4);
  *     the same spelling already ships in-tree at src/code6cac_c2.c:1325. The
  *     2026-08-20 Judge verified this lever independently and ruled it fine.
  *
@@ -226,7 +226,7 @@ extern void func_80023F08(s32, s32);
  * review PASSED the rotated guard and did NOT dispute the goto loop's honesty;
  * it FAILed on paperwork only - the goto-formed loop is a purely-for-matching
  * spelling choice among semantically-true C, and
- * `.claude/rules/do-while-zero-exception.md:46-51` (owner ruling 2026-07-06)
+ * `pre-slim-2026-10-01:.claude/rules/do-while-zero-exception.md:46-51` (owner ruling 2026-07-06)
  * requires such a spelling to carry an inline FAKE annotation at the construct
  * site. That annotation is now present on the `inner:` label below, and
  * self_vet.md carries the matching SANCTIONED-FAMILY-CLAIMS block. Nothing else
@@ -350,7 +350,7 @@ void func_8001924C(s16 *arg0, s32 arg1) {
  * gte_rtv0()-class operation encoded directly. The islands use the same `move $12, %0`
  * macro-body spelling as func_800203B4 (owner grant 2026-09-01, widened cop2
  * materialize-then-copy anchor; func_80019310 is named in that grant record,
- * docs/grind/decisions.md:17921 and .claude/rules/cop2-addressing-preamble-cluster.md:154).
+ * pre-slim-2026-10-01:docs/grind/decisions.md:17921 and pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:154).
  *
  * CLOBBER PROVENANCE (do not read the "memory" clobbers as SDK text): of the four macros
  * above, ONLY gte_stlvnl publishes "memory" in its own clobber list (inline_c.h:1116);
@@ -358,7 +358,7 @@ void func_8001924C(s16 *arg0, s32 arg1) {
  * clobber list at all, for gte_ldv0). The "memory" clobber on those three islands is ADDED
  * here, and is cited to the committed same-file precedent func_8002D320
  * (src/code6cac_b.c:935), whose lwc2 read island carries exactly that added truthful
- * clobber; func_800300B4's Judge PASS (docs/grind/decisions.md:20489) accepted the same
+ * clobber; func_800300B4's Judge PASS (pre-slim-2026-10-01:docs/grind/decisions.md:20489) accepted the same
  * addition. It is truthful in each case: islands 1-2 read the MATRIX through $12, island 3
  * reads the SVECTOR through $12, island 4 writes out[] which the C below reads. Its
  * byte-visible effect is on island 1, where it makes GCC re-read the MATRIX pointer before
@@ -1414,7 +1414,7 @@ typedef struct {
 } CamBuf;
 
 void func_8001E404(void) {
-    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner ruling 2026-08-17): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16, proven by frame-term forensics in memory/grind/func_8001E404/); SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
+    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner ruling 2026-08-17): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16, proven by frame-term forensics in pre-slim-2026-10-01:memory/grind/func_8001E404/); SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
     volatile u32 pre_pad[2];
     CamBuf local;
     s32 *s2;
@@ -1493,7 +1493,7 @@ typedef struct {
 } CamWork;
 
 void func_8001E6E4(s32 arg0) {
-    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner ruling 2026-08-17): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16, proven by frame-term forensics in memory/grind/func_8001E404/); SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
+    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner ruling 2026-08-17): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16, proven by frame-term forensics in pre-slim-2026-10-01:memory/grind/func_8001E404/); SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
     volatile u32 pre_pad[2];
     CamWork local;
     s32 *s2;
@@ -1810,7 +1810,7 @@ s32 func_8001F888(void) {
  *
  * PROVENANCE OF THIS BODY. It is the body previously banked as
  * memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c, installed VERBATIM per the
- * Judge PASS ruling of 2026-09-04 12:39 (docs/grind/decisions.md:22115), which holds that the
+ * Judge PASS ruling of 2026-09-04 12:39 (pre-slim-2026-10-01:docs/grind/decisions.md:22115), which holds that the
  * standing pre-ban on the "+0x270 signedness-split / dual-typed-view" family does NOT reach
  * this body: the ban's own text enumerates five SOURCE-level spellings, every one of which
  * writes a second view or a reinterpreting cast into the C, and this body has none of them --
@@ -1818,7 +1818,7 @@ s32 func_8001F888(void) {
  * shift. The second `lhu` and the `sll 16 ; sra 15` in the target are GCC 2.7.2's own
  * lowering of a signed `short` local (extendhisi2, tools/gcc-2.7.2/config/mips/mips.md:2340),
  * i.e. compiler behaviour, not source content. Under the owner ruling of 2026-08-31
- * (.claude/rules/ordinary-c-judge-decidable.md:51, Ruling 1(3) "the rename test replaces
+ * (pre-slim-2026-10-01:.claude/rules/ordinary-c-judge-decidable.md:51, Ruling 1(3) "the rename test replaces
  * motive-testing"), which POSTDATES both the ban and the 2026-08-25 layer-1 FAILs and
  * therefore governs per the dated-rulings clause, the test is the C text: "short dmg =
  * damage counter; clamp it to 3; index a table of shorts by dmg*2" is a truthful semantic
@@ -1842,7 +1842,7 @@ s32 func_8001F888(void) {
  *
  * The 8-byte stack frame the target carries (asm/funcs/func_8001F938.s:11 and :117, an
  * addiu pair with ZERO stack memory accesses in between -- a phantom frame in the sense of
- * [[phantom-frame-slots-gcc272]]) is bought by the same `short dmg` declaration: s13's
+ * phantom-frame-slots-gcc272) is bought by the same `short dmg` declaration: s13's
  * isolated micro-suite showed the trigger is a signed `short` local assigned on more than
  * one path and afterwards used in a sign-extending context, and six re-typings of every
  * other local in the floor-8 body all measured `vars= 0`. Frame and block are ONE construct.
@@ -2112,7 +2112,7 @@ void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
  * (97 insns, byte-exact with zero coercion) + the same four PsyQ SDK GTE macro islands as
  * func_800203B4 (owner grant 2026-09-01, widened cop2 materialize-then-copy anchor;
  * func_800204C0 is named by name as a confirmed handwritten-tagged carrier in that grant,
- * docs/grind/decisions.md:17959 and .claude/rules/cop2-addressing-preamble-cluster.md:155):
+ * pre-slim-2026-10-01:docs/grind/decisions.md:17959 and pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:155):
  * gte_SetRotMatrix, gte_ldlv0, cop2 MVMVA (.word 0x4A486012), gte_stlvnl — character-identical
  * to the func_800203B4 spelling in this file. Load-bearing measured facts (s1, do not tidy):
  *  - the counter head MUST be `+= 1` then a fresh re-read for the `& 7` test: cse.c forwards
@@ -2941,7 +2941,7 @@ void func_80023648(u8 *arg0) {
              * commutative PLUS in source order, so index-first flips the addu
              * operand order and the element pointer lands in $a2 as target does -
              * measured 8 -> 0, lever-exhaustion:
-             * memory/grind/func_80023648/hypotheses.md s6 */
+             * pre-slim-2026-10-01:memory/grind/func_80023648/hypotheses.md s6 */
             a2 = a1[row];
 
             if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
@@ -2963,7 +2963,7 @@ void func_80023648(u8 *arg0) {
              * ONE allocno spanning all of its live ranges, so global_alloc seats
              * every staged value in a single hard reg ($a2) exactly as target
              * does; separate locals form separate allocnos that find_reg seats in
-             * $a2/$a0/$a1, lever-exhaustion: memory/grind/func_80023648/hypotheses.md
+             * $a2/$a0/$a1, lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80023648/hypotheses.md
              * (s1-s5: structural axis, named-intermediate axis, two permuter basins) */
             a2 = *(s16 *)(arg0 + 0x150);
             if (a2 < 0) {
@@ -2994,7 +2994,7 @@ void func_80023648(u8 *arg0) {
                  * the existing `sub_result` (its 0x14E difference is dead here -
                  * consumed by the store above and by new_14e), mechanism: GCC
                  * 2.7.2 global.c multiply-set pseudo / single allocno as above,
-                 * lever-exhaustion: memory/grind/func_80023648/hypotheses.md */
+                 * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80023648/hypotheses.md */
                 sub_result = *(s16 *)(arg0 + 0x1A);
                 mult_res = sub_result * tbl_val;
                 limit = (mult_res << 4) >> 12;
@@ -3013,7 +3013,7 @@ void func_80023648(u8 *arg0) {
                      * (its clamped-|0x150| value is dead here - consumed by
                      * sub_result above), mechanism: GCC 2.7.2 global.c
                      * multiply-set pseudo / single allocno as above,
-                     * lever-exhaustion: memory/grind/func_80023648/hypotheses.md */
+                     * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80023648/hypotheses.md */
                     a2 = speed_prod >> 12;
 
                     *(s32 *)(arg0 + 0xD8) += (sin_val * a2) >> 16;

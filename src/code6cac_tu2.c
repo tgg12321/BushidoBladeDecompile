@@ -245,11 +245,11 @@ void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
     s32 ctr;
     /* Ruling 11 (ordinary-c-judge-decidable.md): two values, both loop indices --
      * the keyframe channel loop's and the post-pass column loop's. (D) proof:
-     * memory/grind/func_800198D0/r11/proof.md */
+     * pre-slim-2026-10-01:memory/grind/func_800198D0/r11/proof.md */
     s32 idx;
     s32 ch;
     /* Ruling 11: two values, both loop indices -- the sub-frame loop's and the
-     * post-pass row loop's. (D) proof: memory/grind/func_800198D0/r11/proof.md */
+     * post-pass row loop's. (D) proof: pre-slim-2026-10-01:memory/grind/func_800198D0/r11/proof.md */
     s32 idx2;
     s32 off;
     s32 shift;
@@ -257,7 +257,7 @@ void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
     u16 code;
     /* Ruling 11: eight values, each a bit field read by GETBITS -- the three
      * keyframe header words, the per-channel keyframe flag, the three
-     * sub-frame header words and case 3's 4-bit low code. (D) proof: memory/grind/func_800198D0/r11/proof.md */
+     * sub-frame header words and case 3's 4-bit low code. (D) proof: pre-slim-2026-10-01:memory/grind/func_800198D0/r11/proof.md */
     u32 field;
     s16 x;
 
@@ -345,7 +345,7 @@ decode:
         for (ch = 0; ch < 63; ch++) {
             /* Ruling 11: four values -- the channel's decoded delta, case 1's
              * magnitude, case 2's zero flag and case 3's magnitude. (D) proof:
-             * memory/grind/func_800198D0/r11/proof.md */
+             * pre-slim-2026-10-01:memory/grind/func_800198D0/r11/proof.md */
             s16 temp;
 
             code = work[ch + 0x87];
@@ -355,7 +355,7 @@ decode:
             switch (code) {
             case 1: {
                 /* Ruling 11: two values, both bit counts -- the zero-run length and
-                 * the suffix length (one less). (D) proof: memory/grind/func_800198D0/r11/proof.md */
+                 * the suffix length (one less). (D) proof: pre-slim-2026-10-01:memory/grind/func_800198D0/r11/proof.md */
                 s32 nbits;
 
                 nbits = 0;
@@ -398,7 +398,7 @@ decode:
                 GETBITS(temp, 1);
                 if (temp) {
                     /* Ruling 11: two values, both bit counts -- the zero-run length
-                     * and the suffix length (one less). (D) proof: memory/grind/func_800198D0/r11/proof.md */
+                     * and the suffix length (one less). (D) proof: pre-slim-2026-10-01:memory/grind/func_800198D0/r11/proof.md */
                     s32 nbits2;
 
                     GETBITS(field, 4);
@@ -608,7 +608,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
      * bisection angle (loop), the target angle max(pitch0, pitch1) clamped to
      * 0x80..0x1C0, and the final eased step. Ruling 11
      * (ordinary-c-judge-decidable.md); proof in
-     * memory/grind/func_8001A820/ruling11.md. */
+     * pre-slim-2026-10-01:memory/grind/func_8001A820/ruling11.md. */
     s32 work;
     s32 i, j;
 
@@ -741,7 +741,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
              * (allocno_n_refs 13 -> 21, pri 11142 -> 23333 against work's 13253), so
              * the bounds are allocated before `work` and take $s0 and `work` $s1, as
              * in the target; combine folds the pair to nothing (576/576 insns).
-             * lever-exhaustion: memory/grind/func_8001A820/ruling11.md § `hi`/`lo`. */
+             * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_8001A820/ruling11.md § `hi`/`lo`. */
             hi++;
             hi--;
             for (i = 0; i < 2; i++) {
@@ -1130,7 +1130,7 @@ void func_8001BE20(s32 arg0, PadState *arg1) {
     /* One local holds two values (Ruling 11, ordinary-c-judge-decidable.md):
      * (1) arg0 * 16, the bit offset of this player's half of the pad words;
      * (2) 0 or arg0 * 4, the bit offset of this player's colour-config nibble.
-     * Allocator-necessity proof: memory/grind/func_8001BE20/r11/proof.md. */
+     * Allocator-necessity proof: pre-slim-2026-10-01:memory/grind/func_8001BE20/r11/proof.md. */
     s32 temp;
     s32 out;
 
@@ -1492,7 +1492,7 @@ void func_8001CD68(s16 *arg0) {
  * the index-variable and regrouped-condition spellings that avoid that miss its
  * round-result stores or compares (dummy-index and pointer-alias spellings that
  * match are refused/set aside, Q22/Q23).
- * Evidence: memory/grind/func_8001CE60/evidence.md (s3),
+ * Evidence: pre-slim-2026-10-01:memory/grind/func_8001CE60/evidence.md (s3),
  * probes/calib_800340A0/ (Q24-AGREEMENT*.txt). */
 extern u8 D_800A3898[2];
 extern u8 D_800A38AA[2];
@@ -1522,7 +1522,7 @@ void func_8001CE60(void) {
          * its per-branch constants clause): the announcement length in
          * frames (0x50 after a draw, 0x64 otherwise), then the match clock's
          * frames left for the on-screen timer. Allocator dump proof:
-         * memory/grind/func_8001CE60/evidence.md (s2). */
+         * pre-slim-2026-10-01:memory/grind/func_8001CE60/evidence.md (s2). */
         s32 temp;
 
         if (D_800A381E != 0) {
@@ -1994,7 +1994,7 @@ typedef struct {
 } CamBuf;
 
 void func_8001E404(void) {
-    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner ruling 2026-08-17): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16, proven by frame-term forensics in memory/grind/func_8001E404/); SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
+    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner ruling 2026-08-17): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16, proven by frame-term forensics in pre-slim-2026-10-01:memory/grind/func_8001E404/); SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
     volatile u32 pre_pad[2];
     CamBuf local;
     s32 *s2;
@@ -2073,7 +2073,7 @@ typedef struct {
 } CamWork;
 
 void func_8001E6E4(s32 arg0) {
-    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner ruling 2026-08-17): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16, proven by frame-term forensics in memory/grind/func_8001E404/); SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
+    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner ruling 2026-08-17): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16, proven by frame-term forensics in pre-slim-2026-10-01:memory/grind/func_8001E404/); SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
     volatile u32 pre_pad[2];
     CamWork local;
     s32 *s2;
@@ -2363,7 +2363,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
      * toward (0x100 in state 0x1F, 0 outside states 0x15/0x25), then the
      * clamped twist target that obj+0x1EA eases toward (obj+0xE in 6..7).
      * Ruling 11 (owner 2026-09-26), (E)(i) generic name; (D) proof:
-     * memory/grind/func_8001F2E4/r11/proof.md. */
+     * pre-slim-2026-10-01:memory/grind/func_8001F2E4/r11/proof.md. */
     s32 temp2;
     /* FAKE: constant-holder (named-local-fake-exception.md) -- tgt_x is 0 on
      * every path; cse works per extended basic block, so the three arm
@@ -2372,13 +2372,13 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
      * target does (`addu $s2,$zero,$zero` in the arms, `addu $a3,$s2,$zero`
      * before each call). The literal 0, one `= 0` initializer, or one write
      * after the join / before the calls score 43-46; see
-     * memory/grind/func_8001F2E4/r11/proof.md. */
+     * pre-slim-2026-10-01:memory/grind/func_8001F2E4/r11/proof.md. */
     s32 tgt_x;
     /* dx / dz: two values each -- the partner-minus-obj x (z) offset of
      * obj+0x180 (0x188) for the elevation, then of the saved obj+0xF4 (0xFC)
      * position for the twist. Ruling 11 (owner 2026-09-26), (E)(ii): every
      * write is `partner.x - obj.x` (`.z`); (D) proof:
-     * memory/grind/func_8001F2E4/r11/proof.md. */
+     * pre-slim-2026-10-01:memory/grind/func_8001F2E4/r11/proof.md. */
     s32 dx;
     s32 dz;
     /* temp: six values -- the wrapped obj+0x1E6 easing delta, the wrapped
@@ -2386,7 +2386,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
      * 0x1D/0xE), the wrapped obj+0x1EA easing delta, and the two random
      * jitters (rng_Next() & 0x3F) - 0x20. Ruling 11 (owner 2026-09-26; (D)(2)
      * by any named pass, owner Q58 2026-09-30), (E)(i) generic name; (D)
-     * proof: memory/grind/func_8001F2E4/r11/proof.md. */
+     * proof: pre-slim-2026-10-01:memory/grind/func_8001F2E4/r11/proof.md. */
     s32 temp;
     s16 t;
 
@@ -2593,7 +2593,7 @@ s32 func_8001F888(void) {
  *
  * PROVENANCE OF THIS BODY. It is the body previously banked as
  * memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c, installed VERBATIM per the
- * Judge PASS ruling of 2026-09-04 12:39 (docs/grind/decisions.md:22115), which holds that the
+ * Judge PASS ruling of 2026-09-04 12:39 (pre-slim-2026-10-01:docs/grind/decisions.md:22115), which holds that the
  * standing pre-ban on the "+0x270 signedness-split / dual-typed-view" family does NOT reach
  * this body: the ban's own text enumerates five SOURCE-level spellings, every one of which
  * writes a second view or a reinterpreting cast into the C, and this body has none of them --
@@ -2625,7 +2625,7 @@ s32 func_8001F888(void) {
  *
  * The 8-byte stack frame the target carries (asm/funcs/func_8001F938.s:11 and :117, an
  * addiu pair with ZERO stack memory accesses in between -- a phantom frame in the sense of
- * [[phantom-frame-slots-gcc272]]) is bought by the same `short dmg` declaration: s13's
+ * phantom-frame-slots-gcc272) is bought by the same `short dmg` declaration: s13's
  * isolated micro-suite showed the trigger is a signed `short` local assigned on more than
  * one path and afterwards used in a sign-extending context, and six re-typings of every
  * other local in the floor-8 body all measured `vars= 0`. Frame and block are ONE construct.
@@ -3483,7 +3483,7 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
             * counter across consecutive loops (owner Q51): SOTN: src/dra/menu.c:138 @aa53500 */
     /* Ruling 11 (ordinary-c-judge-decidable.md): holds three values -- the ray-walk step (1..40), the
      * floor-climb step (1..40), then the chosen stage start-record index.
-     * Proof: memory/grind/func_80021DB0/r11/proof.md */
+     * Proof: pre-slim-2026-10-01:memory/grind/func_80021DB0/r11/proof.md */
     s32 temp;
     s32 angle;
     s32 dx;
@@ -3764,7 +3764,7 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
              * first, places case 0's block after the range tests and reaches
              * case 2/3 through the target's `j` (asm/funcs/func_80022580.s
              * :250-251); every shared form measured lays the dispatch out
-             * in another order, lever-exhaustion: memory/grind/func_80022580/
+             * in another order, lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80022580/
              * evidence.md "Cleanup 2026-09-30" (16-21). */
             func_80021D10(idx, &p->unk_D8.x, slot);
             func_80021D10(idx == 0, &other.x, slot);
@@ -4188,7 +4188,7 @@ void func_80023648(u8 *arg0) {
              * commutative PLUS in source order, so index-first flips the addu
              * operand order and the element pointer lands in $a2 as target does -
              * measured 8 -> 0, lever-exhaustion:
-             * memory/grind/func_80023648/hypotheses.md s6 */
+             * pre-slim-2026-10-01:memory/grind/func_80023648/hypotheses.md s6 */
             a2 = a1[row];
 
             if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
@@ -4210,7 +4210,7 @@ void func_80023648(u8 *arg0) {
              * ONE allocno spanning all of its live ranges, so global_alloc seats
              * every staged value in a single hard reg ($a2) exactly as target
              * does; separate locals form separate allocnos that find_reg seats in
-             * $a2/$a0/$a1, lever-exhaustion: memory/grind/func_80023648/hypotheses.md
+             * $a2/$a0/$a1, lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80023648/hypotheses.md
              * (s1-s5: structural axis, named-intermediate axis, two permuter basins) */
             a2 = *(s16 *)(arg0 + 0x150);
             if (a2 < 0) {
@@ -4241,7 +4241,7 @@ void func_80023648(u8 *arg0) {
                  * the existing `sub_result` (its 0x14E difference is dead here -
                  * consumed by the store above and by new_14e), mechanism: GCC
                  * 2.7.2 global.c multiply-set pseudo / single allocno as above,
-                 * lever-exhaustion: memory/grind/func_80023648/hypotheses.md */
+                 * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80023648/hypotheses.md */
                 sub_result = *(s16 *)(arg0 + 0x1A);
                 mult_res = sub_result * tbl_val;
                 limit = (mult_res << 4) >> 12;
@@ -4260,7 +4260,7 @@ void func_80023648(u8 *arg0) {
                      * (its clamped-|0x150| value is dead here - consumed by
                      * sub_result above), mechanism: GCC 2.7.2 global.c
                      * multiply-set pseudo / single allocno as above,
-                     * lever-exhaustion: memory/grind/func_80023648/hypotheses.md */
+                     * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80023648/hypotheses.md */
                     a2 = speed_prod >> 12;
 
                     *(s32 *)(arg0 + 0xD8) += (sin_val * a2) >> 16;

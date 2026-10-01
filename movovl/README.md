@@ -4,7 +4,7 @@ Parallel decomp scaffolding for `disc/STR/MOVOVL.EXE`, the boot-time FMV
 overlay of Bushido Blade 2 (SLUS-00663). Entirely separate from the main-EXE
 pipeline: nothing here touches `splat.yaml`, `bb2.ld`, `src/`, the Makefile,
 or the engine. Build integration is future apply-time work — see
-[docs/movovl/APPLY-PLAN.md](../docs/movovl/APPLY-PLAN.md).
+`pre-slim-2026-10-01:docs/movovl/APPLY-PLAN.md` (executed; history at that tag).
 
 ## The binary (the oracle)
 

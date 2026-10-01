@@ -162,7 +162,7 @@ and `ings`/`func_80017848` also hold hardcoded-`.L` rules but sit *before* every
 stub in their TU, so they cannot drift. Mitigation is Wave 0 below.
 
 **R2 — discarding a WIP decomp attempt.** The 12 substantial stubs represent real prior
-work (see `docs/history/asmfix_attempt_notes.md` for the plateau notes). Do not delete them
+work (see `pre-slim-2026-10-01:docs/history/asmfix_attempt_notes.md` for the plateau notes). Do not delete them
 into the void; move each body to the function's grind ledger (`memory/grind/<func>/`) before
 replacing it with `INCLUDE_ASM`. This is not optional — the body is the resume point.
 

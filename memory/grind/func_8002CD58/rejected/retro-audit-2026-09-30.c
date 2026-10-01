@@ -14,7 +14,7 @@
  * is func_8002E838's sequence (this file), applied to b as well as a.
  *
  * GTE ISLANDS: census member of the 2026-08-17 owner cluster ruling
- * (.claude/rules/cop2-addressing-preamble-cluster.md:72); owner-instructed
+ * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:72); owner-instructed
  * registry row cd61ed9f6 / 83883c4c0. 26 islands, each nothing but PsyQ GTE
  * macro text as spelled in inline_o.h, the "DMPSX version 3" header
  * (vendored copy tmp/croc-ref/include/psyq/inline_o.h; composites from

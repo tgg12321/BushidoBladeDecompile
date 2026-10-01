@@ -10,7 +10,7 @@ Scratch commit: `a739dbd204308581879038127c303a5c6ceb883e` (main HEAD at start).
 - **Sanity bound (all 105 rows removed, full clean build):** exe `c1819c29…` (≠ oracle); 18 objects differ; exactly **74 functions** change (branch-target shifts normalised) — identical to the set of live-row functions (72 single-row live + func_8006EACC + func_80070C70). No function outside the list changes.
 - **Proposed deletion verified by FULL clean build:** the 31 lines in `dead_rows.txt` deleted → exe SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` (oracle). Additionally deleting the 11 dead symbol entries inside live rows (section 'Dead symbols inside live rows') → also oracle SHA1.
 - **Duplicates:** lines 56/73 (`func_8006EACC: D_800A36AC`) and 80/104 (`func_80070C70: g_gpu_ot_ptr`) are exact duplicates: each alone tests dead, removing both is live (bin changes). Keep 56 and 80, delete 73 and 104.
-- **Step-2 census (`census.json`):** shipped bytes = `asm/funcs/*.s`; symbols compared by resolved address. ASPSX model used for the flag (memory/grind/func_80036140/research-common-gp.md §0, Sony ASPSX 2.34 run under dosemu2): a file gets gp for a symbol only if it DEFINES it (`.comm`/`.lcomm`/`.sdata`); an `extern` symbol is never gp. So within one original file, the base access of a symbol is gp in every function or in none.
+- **Step-2 census (`census.json`):** shipped bytes = `asm/funcs/*.s`; symbols compared by resolved address. ASPSX model used for the flag (pre-slim-2026-10-01:memory/grind/func_80036140/research-common-gp.md §0, Sony ASPSX 2.34 run under dosemu2): a file gets gp for a symbol only if it DEFINES it (`.comm`/`.lcomm`/`.sdata`); an `extern` symbol is never gp. So within one original file, the base access of a symbol is gp in every function or in none.
 
 ## Counts
 
@@ -222,7 +222,7 @@ line 5 func_80016E60: D_800A3770 · line 6 main: D_800A3770 · line 24 func_8003
 - **Surprises:** (1) two exact duplicate rows; (2) six dead rows name INCLUDE_ASM functions — func_8006BD28 is
   canonical-asm (safe to drop); func_80065800, func_800693CC, func_80074E08, func_800759D0, func_800770B8 are
   queued, and their shipped bytes access the listed symbols non-gp, so the row is likely needed again on
-  landing (func_80065800 has a ready landing package whose memory/grind/func_80065800/candidate.c names
+  landing (func_80065800 has a ready landing package whose pre-slim-2026-10-01:memory/grind/func_80065800/candidate.c names
   g_gpu_ot_ptr directly — deleting line 43 before it lands would very likely make that package miss the
   oracle; hold line 43, or the landing must re-add it under (a)-(d)); (3) 7 rows name functions not in sdata_funcs.txt and are structurally inert; (4) no row's removal
   breaks the build.

@@ -32,7 +32,7 @@ const char D_80015A84[20] =
  * ARG(): the target sign-extends %h for o/u/x (lh at all four ARG sites), which
  * is 5.35's va_arg(argp, short); 5.36 (1988-10-24) changed that to
  * (short unsigned)va_arg(argp, int). Transcription diff and provenance:
- * memory/grind/prnt/evidence.md. BB2's build does not count ordinary
+ * pre-slim-2026-10-01:memory/grind/prnt/evidence.md. BB2's build does not count ordinary
  * characters in the return value. The digit/"(null)" strings are the named
  * arrays above rather than literals: this file also holds LIBC SPRINTF (a
  * separate object in the original link), and GCC pools identical string
@@ -71,7 +71,7 @@ s32 prnt(s32 fd, u8 *fmt0, char *argp) {
      * Written/read at :148 :150 :152 :155 (precision digits), :167 :169 :171
      * (width digits), :359 :370 :373 :390 (padding loops), :377 :383 (string
      * length); its FILE-buffer uses (:92-107, :379-381) are absent with the
-     * FILE code. Evidence: memory/grind/prnt/evidence.md. */
+     * FILE code. Evidence: pre-slim-2026-10-01:memory/grind/prnt/evidence.md. */
     s32 n;
     char *t;
     u32 _ulong;

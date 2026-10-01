@@ -5,7 +5,7 @@
  * emits only at -G8, and no function outside this range gp-accesses any of them.
  * func_8006E8CC, func_8006E950, func_8006EA28 and func_80072F30 have no gp access
  * and compile to identical bytes at -G8 and -G0 (Q54). Proof and both-ways
- * listings: memory/grind/func_80070F78/g8-evidence.md. */
+ * listings: pre-slim-2026-10-01:memory/grind/func_80070F78/g8-evidence.md. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -900,7 +900,7 @@ void func_8006F97C(s32 *arg0) {
     /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts just
        past the sheet's 12-byte SprtHdrA headers: three on ctx[0] (normal, then
        one highlight per player, +0x24), one on every other sheet (+0xC).
-       SEL.BIN/SEL1.BIN/SEL2.BIN census: memory/grind/func_8006F97C/evidence.md. */
+       SEL.BIN/SEL1.BIN/SEL2.BIN census: pre-slim-2026-10-01:memory/grind/func_8006F97C/evidence.md. */
     s32 cells;
     s16 i;
     s16 row;
@@ -1340,12 +1340,12 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                   * selected-slot arm) and *(D_800A35A8 + 0x60) (the table the
                   * last loop draws from). Ruling 11
                   * (ordinary-c-judge-decidable.md), proof in
-                  * memory/grind/func_80070F78/r11/README.md. */
+                  * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md. */
     s32 flag;
     s32 cells; /* several values of one kind: the cell table following a sheet
                 * header (s->header + 0xC in the two loop-2 draws, s->header +
                 * 0x24 for the last loop). Ruling 11, proof in
-                * memory/grind/func_80070F78/r11/README.md. */
+                * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md. */
     s16 i;
     s16 port;
     s16 port_ofs;
@@ -1377,7 +1377,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
         u8 *vram; /* several values of one kind: player i's VRAM rect row,
                    * *(D_800A35A8 + 0x7C) + (i << 6), computed at the top of the
                    * loop and again in the locked-slot arm. Ruling 11, proof in
-                   * memory/grind/func_80070F78/r11/README.md. */
+                   * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md. */
 
         vram = *(u8 **)(D_800A35A8 + 0x7C);
         vram += i << 6;
@@ -1429,7 +1429,7 @@ void func_80070F78(s32 arg0, DescF97C *s) {
                                * $v0,$a0,0x14; addu $v1,$v1,$v0; ...; lw $a1,0($v1)`).
                                * Inlined (sandbox, landed -G8 union form, 2026-09-30):
                                * this site 8, the confirm site 9, the locked site 14;
-                               * earlier chassis: memory/grind/func_80070F78/evidence.md [s2]. */
+                               * earlier chassis: pre-slim-2026-10-01:memory/grind/func_80070F78/evidence.md [s2]. */
 
                     func_8005C650(1, 0x7F, 0x7F);
                     D_800A3560.rec[1].unk2 = 0;
@@ -1698,7 +1698,7 @@ void func_80071C4C(s32 arg0) {
                                * nothing is swapped and the add keeps the target's
                                * `addu v0,v0,a0`. Every inlined lever 1 per loop (sandbox
                                * 2026-09-30); dumps and scores:
-                               * memory/grind/_completed/func_80071C4C/hypotheses.md [g8 2026-09-30] */
+                               * pre-slim-2026-10-01:memory/grind/_completed/func_80071C4C/hypotheses.md [g8 2026-09-30] */
 
             *(u8 *)(D_800A3568 + dst) = D_800A3560.rec[i].unk0;
         }
@@ -1766,7 +1766,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
                 * header(s) of each sheet drawn (s.header + 0x18 for the
                 * two-header sheet, s.header + 0xC for the others). Ruling 11
                 * (ordinary-c-judge-decidable.md), proof in
-                * memory/grind/func_800720FC/r11/. */
+                * pre-slim-2026-10-01:memory/grind/func_800720FC/r11/. */
     s32 i;
     s32 j;
     s32 d;
@@ -1863,7 +1863,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
                         * 0x180/0x120; GCC 2.7.2 has no dead-store elimination for
                         * the stack descriptor, so only a source that stores both
                         * emits both. dead-store-fake-exception.md; receipts in
-                        * memory/grind/func_800720FC/evidence.md. */
+                        * pre-slim-2026-10-01:memory/grind/func_800720FC/evidence.md. */
     s.scale_y = 0x100; /* FAKE: same dead store as above (asm line 358). */
     s.y = 0;
     s.x = 0;
@@ -1978,7 +1978,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
                                      * single remaining use of the local is substituted
                                      * by loop.c's large-loop single-usage rule, giving
                                      * the target's two direct gp_rel stores. Receipts:
-                                     * memory/grind/func_800720FC/timers/README.md + evidence.md. */
+                                     * pre-slim-2026-10-01:memory/grind/func_800720FC/timers/README.md + evidence.md. */
                 timer[0] = 0xF;
                 timer[1] = 0x14;
                 ((s16 *)D_800A35C4)[3] = 0;

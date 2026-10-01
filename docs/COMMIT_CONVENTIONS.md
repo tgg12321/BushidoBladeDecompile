@@ -1,6 +1,6 @@
 # Commit conventions
 
-Subject-line prefixes and body structure used across this project. **These are conventions, not enforced rules** — but the commit-msg guard chain (`tools/hooks/commit_msg_chain.sh`) and `git log` searches parse commit subjects and bodies for structured information, so consistency improves searchability and audit reliability. _(The former `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool is retired — archived under `archive/dcsh_workflow_2026-05-26/`.)_
+Subject-line prefixes and body structure used across this project. **These are conventions, not enforced rules** — but the commit-msg guard chain (`tools/hooks/commit_msg_chain.sh`) and `git log` searches parse commit subjects and bodies for structured information, so consistency improves searchability and audit reliability. _(The former `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool is retired — archived under `pre-slim-2026-10-01:archive/dcsh_workflow_2026-05-26/`.)_
 
 The LIVE enforcement layer is the installed `commit-msg` chain — `tools/hooks/commit_msg_chain.sh` running `park_src_guard` → `wip_compaction_guard` → `detector_config_guard`. The programmatic cheat audit (`tools/audit_asm_cheats.py --check-new`) is a MANUAL detector, not a wired hook; semantic review is the layer-2 `cheat-reviewer` agent / the Grinder's Judge. _(The former `commit_audit_guard.sh` / `llm_audit.sh` audit hooks and the `active_func_guard.sh` blocker are retired.)_
 
@@ -38,7 +38,7 @@ These prefixes are what `git log --grep '^<prefix>'` matches on. Keep them recog
 | `cheat-cleanup: <name>` | Retiring a cheat (lost_codegen, wildcard subst, splice, etc.). Body documents what was retired and how. |
 | `auth: <func>` / `inline_asm_canonical: <func>` | Canonical-asm authorization (function declared as hand-coded asm with documented evidence). Body MUST include evidence tags per evidence-driven-authorization rule. |
 | `wip: <func>` | Save / update a checkpoint in `memory/wip/<func>/` — candidate C body + measured floor + technique + remaining gap. NOT a Match; the build is unchanged. Body should describe the lever and the new floor. See [memory/wip/README.md](../memory/wip/README.md). |
-| `park: <func>` | Terminal disposition only (judge-sole-gate 2026-08-18 — no pending-owner states). Touches `engine/queue.json` + `memory/project/` or `memory/wip/`; the build is unchanged. The `park_src_guard` hook BLOCKS `park:` commits that modify build-pipeline files (override: `[skip-park-src-guard]` + justification). |
+| `park: <func>` | Terminal disposition only (judge-sole-gate 2026-08-18 — no pending-owner states). Touches `engine/queue.json` + `pre-slim-2026-10-01:memory/project/` or `memory/wip/`; the build is unchanged. The `park_src_guard` hook BLOCKS `park:` commits that modify build-pipeline files (override: `[skip-park-src-guard]` + justification). |
 | `text1b.c: <action>`, `code6cac.c: <action>`, etc. | File-level work (often function matches that benefit from the file context being in the subject). |
 
 ### Project infrastructure
@@ -156,7 +156,7 @@ Put the trailer last; git keeps it for attribution and PR review.
 
 ## Why the conventions still matter for `git log` search
 
-_(The `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool that formerly parsed these is retired — archived under `archive/dcsh_workflow_2026-05-26/`. The conventions still pay off for ordinary `git log` search.)_
+_(The `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool that formerly parsed these is retired — archived under `pre-slim-2026-10-01:archive/dcsh_workflow_2026-05-26/`. The conventions still pay off for ordinary `git log` search.)_
 
 - Stable, recognizable subject prefixes → reliable `git log --grep '^<prefix>'` filtering.
 - Spell function names fully in the canonical `func_[0-9A-F]{8}` form → exact `git log --grep` / pickaxe (`git log -S`) hits.

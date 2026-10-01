@@ -50,7 +50,7 @@ func_80052B00  # LIBGTE SetRotMatrix leaf: 8x lw <- *a0 -> 8x ctc2 $0-$7 (3x3 R 
   here on `swc2`; `mvmva`, `lwc2` and the hand-placed GTE latency nops have no C form
   either. This is verbatim PsyQ LIBGTE (`RotTrans`-family matrix-vector multiply).
 - **Precedent fit.** Directly inside the gte-wrapper carve-out
-  (`.claude/rules/gte-wrapper-misroute-park.md`) and the func_80052B44 family; the
+  (`pre-slim-2026-10-01:.claude/rules/gte-wrapper-misroute-park.md`) and the func_80052B44 family; the
   func_80052B44 ruling named this function as needing its own sign-off.
 - **Proposed entry (approve verbatim):**
 
@@ -304,7 +304,7 @@ game_2d_CheckLifeGaugeNoDisp  # LIBGTE matrix-vector leaf (MISNAMED — body is 
      result reads are placed *inside* the preceding `mvmva`'s latency window, and the
      general-purpose packing (`and`/`andi`/`or`/`sll`/`srl` at
      `8005297C-80052994`, `800529A0-800529A8`, `800529D0-800529DC`) is threaded into the
-     same windows. `.claude/rules/gte-3x3.md` names exactly this — "the
+     same windows. `pre-slim-2026-10-01:.claude/rules/gte-3x3.md` names exactly this — "the
      mvmva→mfc2→mtc2→nop→mvmva pipeline interleaving (cycle N+1's setup during cycle N's
      GTE latency) is canonical hand-scheduling" — as the signature that carried
      `calc_fc_frame_8007EC5C` to ASM-WHOLE authorization on 2026-05-31.
@@ -339,5 +339,5 @@ game_2d_CheckLifeGaugeNoDisp  # LIBGTE matrix-vector leaf (MISNAMED — body is 
 - **Proposed entry (approve verbatim, whole-function disposition):**
 
 ```
-func_80052930  # LIBGTE 3-cycle matrix-vector leaf: 5x ctc2 $0-$4 (packed 3x3 R matrix) + 3x ctc2 $zero to $5-$7 (zero translation), all splat-tagged 'handwritten instruction', then three mvmva 1,0,0,0,0 cycles with each cycle's mtc2 $0/$1 setup and the previous cycle's mfc2 $9/$10/$11 result reads placed INSIDE the preceding mvmva's latency window, and the halfword packing threaded into the same windows. Canonical hand-scheduling per the calc_fc_frame_8007EC5C precedent (.claude/rules/gte-3x3.md, authorized 2026-05-31). The 0xFFFF0000 mask is materialised once into caller-saved $t9 and held live across all 60 instructions for three uses. Frameless, call-free, spill-free leaf in the 0x80052788-0x80052B7C hand-written run.
+func_80052930  # LIBGTE 3-cycle matrix-vector leaf: 5x ctc2 $0-$4 (packed 3x3 R matrix) + 3x ctc2 $zero to $5-$7 (zero translation), all splat-tagged 'handwritten instruction', then three mvmva 1,0,0,0,0 cycles with each cycle's mtc2 $0/$1 setup and the previous cycle's mfc2 $9/$10/$11 result reads placed INSIDE the preceding mvmva's latency window, and the halfword packing threaded into the same windows. Canonical hand-scheduling per the calc_fc_frame_8007EC5C precedent (pre-slim-2026-10-01:.claude/rules/gte-3x3.md, authorized 2026-05-31). The 0xFFFF0000 mask is materialised once into caller-saved $t9 and held live across all 60 instructions for three uses. Frameless, call-free, spill-free leaf in the 0x80052788-0x80052B7C hand-written run.
 ```

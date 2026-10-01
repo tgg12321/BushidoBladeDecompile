@@ -28,7 +28,7 @@ memory/wip/<func_name>/
 ├── candidate.c          # The candidate C body — just the function (and any necessary local decls).
 │                        # Copy-pasteable into src/<file>.c when resuming.
 ├── meta.json            # Engine-readable metadata: scores, technique, reviewer verdict, hypotheses.
-├── notes.md             # Human-readable summary: pointer to the deeper memory/project/ notes
+├── notes.md             # Human-readable summary: pointer to the deeper pre-slim-2026-10-01:memory/project/ notes
 │                        # if any, key observations from this session, what's been ruled out.
 └── rejected/            # OPTIONAL: forms that hit lower scores but failed cheat-reviewer.
     └── <slug>.c         # Preserved as "future agents should not re-derive this" warning.
@@ -81,7 +81,7 @@ memory/wip/<func_name>/
       "reason": "why this is a cheat — point at the violated rule"
     }
   ],
-  "memory_notes": [                        // related memory/project/ notes
+  "memory_notes": [                        // related pre-slim-2026-10-01:memory/project/ notes
     "memory/project/func-XXXX-foo.md"
   ]
 }
@@ -125,7 +125,7 @@ the commit body only for genuinely exceptional checkpoints (justify why).
 Ruled-out negatives belong in notes.md's ruled-out list as ONE bullet each
 ("operand reassociation — no change @floor 7"), not as preserved measurement
 tables. If a measurement table earns long-term value, it has outgrown the
-WIP entry — lift it to `memory/project/<func>-*.md` and point at it.
+WIP entry — lift it to `pre-slim-2026-10-01:memory/project/<func>-*.md` and point at it.
 
 ### Saving progress (no full match)
 
@@ -146,7 +146,7 @@ DO NOT save it as `candidate.c`. Save it under `rejected/<slug>.c` with a
 header comment naming the violated rule. This preserves the "future agents
 shouldn't re-derive this" lesson without polluting the active candidate.
 
-## Why not just use memory/project/ notes?
+## Why not just use pre-slim-2026-10-01:memory/project/ notes?
 
 `memory/project/func-XXXX-*.md` is great for the narrative — what was tried,
 what worked, why a particular gap remains. But:

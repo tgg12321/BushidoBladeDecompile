@@ -106,12 +106,12 @@ SANCTIONED-FAMILY-CLAIMS:
   prefer natural geometry, but exhaustion is not a hard gate for
   single-level wraps (rule prerequisite 2); mandatory `/* FAKE: ... */`
   annotation naming the observed effect."
-  PRECEDENT: .claude/rules/no-new-park-categories.md:265
+  PRECEDENT: pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:265
 
   FAMILY: do-while(0) wrap (nested, construct 3)
   SCOPE: "nested wraps need a written single-level-insufficient
   justification (rule prerequisite 3)."
-  PRECEDENT: .claude/rules/no-new-park-categories.md:272 (same entry,
+  PRECEDENT: pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:272 (same entry,
   nested-wrap prerequisite clause); justification measurement is this
   session's H9-vs-H10 A/B (floor 7 with single-level alone, floor 2 with
   the nested nesting added), recorded in hypotheses.md and
@@ -123,7 +123,7 @@ SANCTIONED-FAMILY-CLAIMS:
   merely because the agent chose it after observing the scheduler --
   'scheduling-motivated respelling' is not a FAIL ground when the spelling
   is semantically truthful."
-  PRECEDENT: .claude/rules/ordinary-c-judge-decidable.md:55 (Ruling 1,
+  PRECEDENT: pre-slim-2026-10-01:.claude/rules/ordinary-c-judge-decidable.md:55 (Ruling 1,
   point 3)
 
 ANNOTATION-CONFORMANCE: the two `/* FAKE: ... */` lines actually emitted in

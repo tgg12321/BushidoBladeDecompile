@@ -1,6 +1,6 @@
 // MOVOVL.EXE symbol map — seeded from docs/naming/movovl_scan/symbols.txt
 // (264 bit-verbatim PsyQ library symbols) + the 16 game-code function
-// starts verified independently (see docs/movovl/ notes). Statics that
+// starts verified independently (see pre-slim-2026-10-01:docs/movovl/ notes). Statics that
 // collide across modules carry a _<MODULE> suffix (memclr x3).
 func_801D919C = 0x801D919C; // type:func
 func_801D91CC = 0x801D91CC; // type:func

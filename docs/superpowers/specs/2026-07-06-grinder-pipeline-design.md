@@ -262,7 +262,7 @@ plain-English justification. This is the owner's post-hoc audit trail.
 
 ## Non-goals
 
-- No token/time/cost framing anywhere in the system ([[no-budget-caps]]).
+- No token/time/cost framing anywhere in the system ([[owner-directives]]).
 - No parallel lanes, no rotation, no tractability re-ranking (owner ruled:
   grind until done, period).
 - No changes to the engine's scoring, canonical gate, or oracle.

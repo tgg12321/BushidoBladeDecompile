@@ -1,5 +1,5 @@
 # MOVOVL.EXE overlay build — standalone, invoked as `make -C movovl`.
-# All-asm first build per docs/movovl/APPLY-PLAN.md: the split must byte-match
+# All-asm first build per pre-slim-2026-10-01:docs/movovl/APPLY-PLAN.md: the split must byte-match
 # the overlay oracle (movovl.sha1) with ZERO C before any draft is wired in.
 # The .header section is part of the link (splat split the 0x800 PS-EXE header
 # as data), so objcopy of the full ELF yields the complete 124,928-byte file.

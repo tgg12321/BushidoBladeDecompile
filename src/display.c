@@ -265,7 +265,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
        compares). The shipped bytes load every one of these fields as lhu + sll 16 +
        sra 16 -- the un-folded extend GCC keeps only for a volatile halfword -- while
        the env-> side of the same compares is a plain lh; the non-volatile spelling
-       folds to lh and scores 75 (memory/grind/PutDispEnv/evidence.md).
+       folds to lh and scores 75 (pre-slim-2026-10-01:memory/grind/PutDispEnv/evidence.md).
        SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @aa53500 (a use-site
        `*(volatile int *)&` read of a struct member in non-IRQ RAM). */
     if (!(*(volatile s16 *)&g_gpu_ctx.disp_env.screen.x == env->screen.x &&
@@ -326,7 +326,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
             }
         }
         /* FAKE: empty then-arm; the direct `if (env->disp.h > ...) mode |= 0x24;`
-           and its respellings add 4 insns (memory/grind/PutDispEnv/evidence.md).
+           and its respellings add 4 insns (pre-slim-2026-10-01:memory/grind/PutDispEnv/evidence.md).
            SOTN: src/main/psxsdk/libgpu/sys.c:394 @aa53500 (same statement, same form). */
         if (env->disp.h <= (env->pad0 ? 288 : 256)) {
         } else {

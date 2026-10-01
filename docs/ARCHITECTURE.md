@@ -180,7 +180,7 @@ The split is governed by a few key parameters in `splat.yaml`:
 
 Once split, the linker script `bb2.ld` interleaves C objects with their corresponding asm chunks to preserve the original layout. For example, the `.rodata` segment of `src/code6cac.c` is placed between `asm/data/800.rodata_pre.s` and `asm/data/800.rodata_post.s` — those two asm files are the original `.rodata` segment with a hole carved out for where `code6cac.c`'s rodata goes.
 
-This sandwich-and-interleave layout is the price of partial decomp. As more `.c` files are added, the linker script grows correspondingly. Jump-table placement techniques: `.claude/rules/jtbl-rodata-split-infrastructure.md`. (The `asm/data/*.rodata*.s` segments were retired 2026-06-09; rodata now lives in `src/*.c` const declarations.)
+This sandwich-and-interleave layout is the price of partial decomp. As more `.c` files are added, the linker script grows correspondingly. Jump-table placement techniques: `pre-slim-2026-10-01:.claude/rules/jtbl-rodata-split-infrastructure.md`. (The `asm/data/*.rodata*.s` segments were retired 2026-06-09; rodata now lives in `src/*.c` const declarations.)
 
 ## The post-pass tools
 

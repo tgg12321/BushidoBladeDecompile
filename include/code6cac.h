@@ -581,9 +581,9 @@ typedef struct {
  * Q13/Q14): unk3E by game_FrameLoop / cdrom_StartRead (u16, the lhu at
  * 80036F9C); expected_pos by cdrom_ReadyCallback / func_80036940 (s32: no
  * access reveals its signedness, and s32 / u32 build byte-identical).
- * Measurements and dumps: memory/grind/func_80036140/evidence.md; scratch
- * rows memory/grind/func_80036140/q62/runs.txt, linked
- * memory/grind/func_80036140/q62/landed_sandbox.txt.
+ * Measurements and dumps: pre-slim-2026-10-01:memory/grind/func_80036140/evidence.md; scratch
+ * rows pre-slim-2026-10-01:memory/grind/func_80036140/q62/runs.txt, linked
+ * pre-slim-2026-10-01:memory/grind/func_80036140/q62/landed_sandbox.txt.
  *
  * The 8-byte `pair` is also one CamPair by the table it is copied from: the
  * source is indexed `&g_cd_file_table + i*8` and copied as a whole CamPair
@@ -643,7 +643,7 @@ typedef struct {
  *     there is no dependence and the load is hoisted above the copy.  One
  *     object: cdrom_StartAudio 0 under both cc1 and the original cc1psx; cut
  *     at 0x80101E64, 0x80101E68 or 0x80101E6C: 8 (cc1) / 12 (cc1psx).
- *     Dumps and runs: memory/grind/cdrom_StartAudio/evidence.md.
+ *     Dumps and runs: pre-slim-2026-10-01:memory/grind/cdrom_StartAudio/evidence.md.
  */
 typedef struct {
     u8 file; /* 0x80101E58 */
@@ -743,7 +743,7 @@ extern s32 D_80102770;
  * fourth per-player pair only other functions touch (unk_A, indexed by player
  * in func_80022F34) and four single bytes. One object: func_80034708 reaches
  * unk_4 and unk_E as offsets from the address of unk_C (layout evidence:
- * memory/grind/func_80034708/evidence.md [s4]-[s5]). */
+ * pre-slim-2026-10-01:memory/grind/func_80034708/evidence.md [s4]-[s5]). */
 typedef struct {
     u16 unk_0[2];
     u8 unk_4[6];

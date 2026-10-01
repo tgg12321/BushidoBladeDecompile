@@ -1,7 +1,7 @@
 # Addendum-wave address restriction for tools/naming_wave.py --only-file
 # (task #23, 2026-08-07). 12 RENAMEs + 1 RESET. Evidence:
 # docs/naming/libscan/ambiguous_resolutions.md + rename_manifest.csv notes.
-# Apply plan: docs/naming/ADDENDUM-APPLY-PLAN.md.
+# Apply plan: pre-slim-2026-10-01:docs/naming/ADDENDUM-APPLY-PLAN.md.
 0x80083A18   # sys_Shutdown alias      -> SsInit          (RESOLVED_RELOC_TARGET)
 0x80083B30   # spu_Reset alias         -> SsQuit          (RESOLVED_RELOC_TARGET)
 0x80084948   # saTan4GaugeInit_wrapper -> _SsSndPlay      (RESOLVED_LAYOUT)

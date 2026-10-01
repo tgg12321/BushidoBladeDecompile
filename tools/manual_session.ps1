@@ -6,8 +6,8 @@
 .DESCRIPTION
   Exists because the dangerous parts of a manual session are mechanical, and a
   checklist followed by hand is exactly the failure mode the project has
-  recorded twice ([[grinder-clobbers-uncommitted-edits]],
-  [[engine-queue-ops-revert-uncommitted-tree]]).
+  recorded twice ([[operator-gotchas]],
+  [[operator-gotchas]]).
 
   `begin` stops the Grinder, WAITS for it to actually let go, refuses a dirty
   tree or a red oracle, pops the queue top, and prints the full context bundle.

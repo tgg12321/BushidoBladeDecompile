@@ -61,7 +61,7 @@ The four freedoms above are scoped by the project's standing invariants, which
 this lane inherits unchanged:
 
 - Exactly two completion states (`COMPLETED-C`, `COMPLETED-INLINE-ASM-CANONICAL`);
-  no gradations, no "almost done" ([[completion-standard]]).
+  no gradations, no "almost done" (completion-standard).
 - The oracle is the only truth: full build+link SHA1 ==
   `62efab4f73f992798c43e8c730aa43baa10bb4fa`.
 - **A fresh adversarial layer-2 `cheat-reviewer`, default-FAIL, before every
@@ -70,7 +70,7 @@ this lane inherits unchanged:
   ([[review-discipline-before-commit]]).
 - No cheats on `main`; INCOMPLETE stays `INCLUDE_ASM` ([[asm-until-matched]]).
 - No deferral: close the popped function or bank honestly and say so
-  ([[no-deferral-work-to-completion]]).
+  ([[rotation-not-foreclosure]]).
 
 ## Architecture
 
@@ -123,7 +123,7 @@ Target ~130 lines. Sections:
 3. **The loop** — iterate on `memory/grind/<func>/candidate.c`, score with
    `sandbox --candidate`. **The tree stays clean throughout**, which makes the
    "engine commands silently revert uncommitted edits" hazard
-   ([[engine-queue-ops-revert-uncommitted-tree]]) structurally impossible rather
+   ([[operator-gotchas]]) structurally impossible rather
    than something to remember.
 4. **The freedoms** — own approach, files outside the function, prose findings,
    sustained context. Each with its "but": the oracle still gates out-of-function

@@ -1,7 +1,7 @@
 # ============================================================================
 # DO NOT RUN `make setup` BLINDLY — IT REGENERATES bb2.ld AND WOULD UNDO THE
 # RODATA-CLEANUP WORK (rodata-cleanup project, 2026-06-09, see
-# docs/rodata-cleanup-project.md + memory/project/rodata-cleanup-progress.md).
+# docs/rodata-cleanup-project.md + pre-slim-2026-10-01:memory/project/rodata-cleanup-progress.md).
 #
 # bb2.ld is currently HAND-MAINTAINED — all 12 asm/data rodata blocks have
 # been retired and their bytes re-attributed to C source files (existing .c

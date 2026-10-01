@@ -119,7 +119,7 @@ takes a path, so a git blob goes through the real implementation — no mirror).
 The allowlist loader hardcodes its filename, so that parser is mirrored; to keep
 the mirror honest, `verify_parser_mirror()` checks it against the engine loader
 on the working-tree file every run and fails loudly on drift
-(`[[buildconfig-mirror-drift-false-mismatch]]` in miniature).
+(`[[operator-gotchas]]` in miniature).
 
 Reads no build artifact, so it is the one check that stays sound — and
 sub-second — while a build is running. It deliberately skips the build-in-flight
@@ -179,7 +179,7 @@ but never failures.
 
 **It does not mutate `engine/queue.json`.** `engine.queue.generate()` ends in
 `save()`, so calling it directly rewrites the queue — dirt that deadlocks the
-Grinder's scope check (`[[grinder-park-queue-dirt-deadlock]]`). The wrapper
+Grinder's scope check (``pre-slim-2026-10-01:memory/project/grinder-park-queue-dirt-deadlock.md``). The wrapper
 repoints `Q.QUEUE_PATH` at a scratch copy for the duration, so `generate()` seeds
 its `parked`/`owner_override` preservation from a copy of the real queue and
 writes its output to scratch. The lock path derives from `QUEUE_PATH`, so it

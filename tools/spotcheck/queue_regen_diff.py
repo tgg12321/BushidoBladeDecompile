@@ -29,7 +29,7 @@ WHY IT DOES NOT MUTATE
 ----------------------
 engine.queue.generate() ends in save(), so calling it directly rewrites
 engine/queue.json — dirt that deadlocks the Grinder's scope check
-([[grinder-park-queue-dirt-deadlock]]). This wrapper repoints
+(`pre-slim-2026-10-01:memory/project/grinder-park-queue-dirt-deadlock.md`). This wrapper repoints
 `engine.queue.QUEUE_PATH` at a scratch copy for the duration, so generate()
 reads its `parked`-preservation input from a COPY of the real queue and writes
 its output to the scratch file. The real queue is never opened for writing. The

@@ -101,17 +101,17 @@ extern void func_80041398(s32);
  * The 6 is EXACTLY the frame immediates (sp -0x18 vs -0x38, ra/s0
  * save+restore offsets): target carries a 0x20-byte allocated-but-
  * untouched LEADING local region (zero sp accesses in 0x10..0x2F; saves
- * at 0x30/0x34 — independently verified by the Judge, decisions.md:9074).
+ * at 0x30/0x34 — independently verified by the Judge, pre-slim-2026-10-01:docs/grind/decisions.md:9074).
  *
  * GATE 1 RESOLVED: the staged loop1 guard (`b = *(s16 *)(p+2) >= 0;
- * if (b)`) was GRANTED by the Judge 2026-08-20 12:41 (decisions.md:9070)
+ * if (b)`) was GRANTED by the Judge 2026-08-20 12:41 (pre-slim-2026-10-01:docs/grind/decisions.md:9070)
  * under [[staged-value-reused-variable]] — all five bounds hold; the
  * s4/s5/s7 rejected-bank entry (loop1-boolean-stage-b-reuse.c) is
  * SUPERSEDED (its dead-store premise ignored the same-iteration if(b)
  * read).
  *
  * GATE 2 NOW RIPE: the Judge's ripeness prerequisite for the pad row
- * (decisions.md:9072 — "honest producers measured inert FIRST") was
+ * (pre-slim-2026-10-01:docs/grind/decisions.md:9072 — "honest producers measured inert FIRST") was
  * discharged in s17: the full [[phantom-slot-frame-lever]] recipe was
  * run on the honest staged-guard baseline — .frame gradient (vars=0
  * honest vs 32 target), orphan detector (0 unallocated pseudos, 0 bare
@@ -128,7 +128,7 @@ extern void func_80041398(s32);
  * (identical in form to the b734618d sibling rows). With the row granted
  * this form should measure sandbox 0.
  *
- * INTEGRATION WARNING (Judge-corrected line numbers, decisions.md:9074):
+ * INTEGRATION WARNING (Judge-corrected line numbers, pre-slim-2026-10-01:docs/grind/decisions.md:9074):
  * do NOT place this form in src while regfix.txt lines 212-214 (the 3
  * lbu-operand subst rules) still apply — the staged form already emits
  * target's [b,r,g] order and the substs would corrupt the stream. Retire
@@ -137,7 +137,7 @@ extern void func_80041398(s32);
 void func_80041688(s32 arg0, s32 arg1) {
     volatile u32 pre_pad[8]; /* !FAKE: target frame 0x38 keeps 0x20 leading
         bytes allocated-but-untouched (word-diff s16: only sp/ra/s0 offset
-        immediates differ; Judge-verified decisions.md:9074);
+        immediates differ; Judge-verified pre-slim-2026-10-01:docs/grind/decisions.md:9074);
         phantom-frame-slot family (no-new-park-categories.md 2026-08-18);
         honest producers measured inert s17 (all 3 classes + both
         instruments, evidence.md [s17]); needs owner allowlist row. No
@@ -169,7 +169,7 @@ loop1:
        (second live set of b turns off the FALSE-arm lbu's LAUNCH_PRIORITY
        so it is picked last = emitted first, matching target [b,r,g]),
        lever-exhaustion: memory/grind/func_80041688/ s1-s17. GRANTED by
-       Judge 2026-08-20 (decisions.md:9070) under
+       Judge 2026-08-20 (pre-slim-2026-10-01:docs/grind/decisions.md:9070) under
        staged-value-reused-variable. */
     b = *(s16 *)(p + 2) >= 0;
     if (b) {

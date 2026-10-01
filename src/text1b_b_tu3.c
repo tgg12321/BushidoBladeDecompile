@@ -109,7 +109,7 @@ s32 sprintf(char* out, char* f, ...) {
          * adjacent), which keeps args in its stack slot as in the target.
          * Admitted for sprintf only by owner Ruling 7 (2026-09-23,
          * ordinary-c-judge-decidable.md); the truthful &buf[sizeof(buf)]
-         * spelling measures 96/535 (memory/grind/sprintf/evidence.md). */
+         * spelling measures 96/535 (pre-slim-2026-10-01:memory/grind/sprintf/evidence.md). */
         bufPtr = (char*)&args - sizeof(printf_info) - 4;
 
         if (info.leftJustified) {

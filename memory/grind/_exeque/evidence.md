@@ -101,7 +101,7 @@ yet, interleaves the `D_8009BF7C = (D_8009BF7C+1)&0x3F` increment and the
 loop-continuation reload of `D_8009BF78`/`D_8009BF7C`, and only THEN emits
 both `sw $a1,...` / `sw $a0,...` back to back just before the loop-exit
 `beq`. Net effect: same instructions, same values, DIFFERENT SCHEDULE — this
-is the class of diff [[difficult-is-not-impossible]] and
+is the class of diff [[no-compiler-divergence]] and
 [[no-compiler-divergence]] describe as "the C source structure, not the
 compiler, decides the schedule."
 
@@ -113,7 +113,7 @@ volatile and they do NOT. So marking D_8009BF6C/D_8009BF70 volatile would
 contradict banked project evidence (get_alarm's own closing grant) and is not
 the fix — the residual is a pure scheduling/statement-structure question,
 not a declaration gap. Did not test it (no need — the census evidence already
-rules it out; see OBJECT MODEL note in [[unannotated-fake-inflates-honest-floor]]-adjacent
+rules it out; see OBJECT MODEL note in unannotated-fake-inflates-honest-floor-adjacent
 caution: don't spend a measurement disproving something the ledger already
 answers).
 
@@ -304,7 +304,7 @@ A/B floor measurement 7 vs 2) is recorded in the annotation comment.
 
 - [s9] Chassis re-confirmed: applying memory/grind/_exeque/candidate.c verbatim to src/display.c (it had drifted back to INCLUDE_ASM at session start) reproduces sandbox _exeque --disable all == 2/187 (186 build insns vs 187 target), identical to s4-s8.
 
-- [s9] The classify tool requires object-level mode for this function: the text-stream classifier's own guard (docs/grind/inverse-compose-2026-08-06.md) refuses display.c because it is zero-rule; ran with --target-object build/src/display.o --ours-object tmp/sandbox/_exeque/display.o instead, argument order is `classify <stem> <func>` (display then _exeque, not the reverse — confirmed by a first failed attempt that looked up function 'display').
+- [s9] The classify tool requires object-level mode for this function: the text-stream classifier's own guard (pre-slim-2026-10-01:docs/grind/inverse-compose-2026-08-06.md) refuses display.c because it is zero-rule; ran with --target-object build/src/display.o --ours-object tmp/sandbox/_exeque/display.o instead, argument order is `classify <stem> <func>` (display then _exeque, not the reverse — confirmed by a first failed attempt that looked up function 'display').
 
 - [s9] sched_solver's own README documents that reorg.c's delay-slot filling runs after sched2 and is explicitly NOT modelled by the toolkit ('the mapper cancels reorg rather than modelling it') — this session's empty-search result is the first time that documented limitation has been directly demonstrated on _exeque's specific residual rather than inferred from the instrumented-cc1 dump read at s6.
 

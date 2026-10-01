@@ -554,7 +554,7 @@ for nm, addrs in sorted(by_prop.items()):
                           "proposed for %s" % (nm, ex, ", ".join(addrs)))
 
 # pipeline-key hazard: function names are KEYS in these files, so a rename that
-# collides with an existing key silently re-points a gate ([[name-keyed-gates-in-tool-source]]).
+# collides with an existing key silently re-points a gate ([[operator-gotchas]]).
 KEYFILES = ["regfix.txt", "asmfix.txt", "inline_asm_canonical.txt",
             "expand_lb_funcs.txt", "expand_dest_funcs.txt", "multu_funcs.txt",
             "multu_pad_funcs.txt", "maspsx_prefill_label_funcs.txt", "maspsx_comm_syms.txt",
@@ -646,7 +646,7 @@ w("| style-only | %d | the project name IS the Sony name wearing a project prefi
 w("| hard misname | %d | the project name asserts a **different function** than the "
   "bytes are (`gpu_SendPacket` -> `DrawPrim`, `cdrom_GetReadyFlag` -> `CdMode`, "
   "`memcard_SetBusy` -> `SsSetMono`, `spu_IrqHandler` -> `SpuInitMalloc`). These are "
-  "exactly what [[names-require-evidence]] targets. |" % len(hard_mis))
+  "exactly what [[owner-directives]] targets. |" % len(hard_mis))
 w("")
 w("Hard misnames, in full:\n")
 w("| addr | current (wrong) | Sony name | lib/module |")
@@ -686,7 +686,7 @@ w("")
 w("## Collisions\n")
 w("### With `engine/queue.json`\n")
 w("%d in-span functions are live decomp-queue items. Renaming a queued function "
-  "changes a pipeline key (see [[naming-wave-tool]]), so an apply session must run in "
+  "changes a pipeline key (see [[operator-gotchas]]), so an apply session must run in "
   "a grinder-quiet window.\n" % len(queue_rows))
 if queue_rows:
     w("| addr | current | proposed | lib/module | queue status | classification |")
@@ -718,7 +718,7 @@ w("")
 w("## What a future apply session must do\n")
 w("1. **Wait for a grinder-quiet window.** `tools/naming_wave.py` refuses a dirty "
   "tree, and the Grinder's end-of-session scope check discards a session that finds "
-  "foreign dirt ([[grinder-clobbers-uncommitted-edits]]). Stop the Grinder "
+  "foreign dirt ([[operator-gotchas]]). Stop the Grinder "
   "(`pwsh tools/grinder/grind.ps1 -Stop`) or wait for it to idle first.")
 w("2. **Teach `docs/naming/build_census.py` a `libscan` origin tier.** The census is "
   "GENERATED, so hand-edits are reverted. The tier must rank above `kengo-derived` "
@@ -726,7 +726,7 @@ w("2. **Teach `docs/naming/build_census.py` a `libscan` origin tier.** The censu
   "unlike the inference tiers. Rows should record "
   "`evidence=libscan-verbatim: <LIB>/<MODULE> XDEF <name> @ +0x<off>`.")
 w("3. **Apply only via `tools/naming_wave.py`** — the only sanctioned applier "
-  "([[naming-wave-tool]]); function names are pipeline keys (regfix/asmfix/gate-list "
+  "([[operator-gotchas]]); function names are pipeline keys (regfix/asmfix/gate-list "
   "files, `inline_asm_canonical.txt`, `expand_lb_funcs.txt`, …) and hand-editing "
   "`named_syms.txt` desynchronises them.")
 w("4. **Never run `make setup`** — `bb2.ld` is hand-maintained (CLAUDE.md standing "
@@ -734,7 +734,7 @@ w("4. **Never run `make setup`** — `bb2.ld` is hand-maintained (CLAUDE.md stan
 w("5. **Verify against the oracle.** Full build + link SHA1 must stay "
   "`62efab4f73f992798c43e8c730aa43baa10bb4fa`. Renames are expected to be "
   "byte-neutral; anything else means a name was load-bearing "
-  "([[name-keyed-gates-in-tool-source]]).")
+  "([[operator-gotchas]]).")
 w("6. **Decide the `bios_*`/`gpu_*`/`cdrom_*` prefix question first.** %d rows are "
   "glabel-level CONTRADICTED, and many are *semantically right but nominally wrong* "
   "(`gpu_DrawSync` → `DrawSync`, `bios_SetMem` → `SetMem`). These are not false "
@@ -743,7 +743,7 @@ w("6. **Decide the `bios_*`/`gpu_*`/`cdrom_*` prefix question first.** %d rows a
   "ones (`gpu_SendPacket` → `DrawPrim`, `cdrom_GetReadyFlag` → `CdMode`)."
   % cnt["CONTRADICTED"])
 w("7. **Do not propose names for the %d MODULE_LOCAL_STATIC rows.** Their OBJ names "
-  "are module-local; per [[names-require-evidence]] a local name is not an exported "
+  "are module-local; per [[owner-directives]] a local name is not an exported "
   "claim. If the owner wants them filled, a lib-prefixed auto form "
   "(`libspu_static_8008XXXX`) is the most that the evidence supports."
   % cnt["MODULE_LOCAL_STATIC"])

@@ -284,7 +284,7 @@ def cmd_classify(a):
                 f"--ours-object tmp/sandbox/{a.func}/{a.stem}.o\n"
                 f"  python3 tools/ra_solver/goal_from_tgt.py classify {a.stem} {a.func}\n"
                 f"(--force-text bypasses this guard for debugging the guard itself.)\n"
-                f"See docs/grind/inverse-compose-2026-08-06.md.")
+                f"See pre-slim-2026-10-01:docs/grind/inverse-compose-2026-08-06.md.")
         else:
             print(f"PATH: text-stream classifier ({a.stem}.hon.s vs {a.stem}.tgt.s); "
                   f"{a.func} is not `replace_with_asmfile`-wired.\n")

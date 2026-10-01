@@ -8,7 +8,8 @@ the outcome JSON — work you do not record never happened.
 
 Everything in CLAUDE.md and the auto-loaded `.claude/rules/` applies in full.
 Your task brief (the ledger digest) is the single source of truth for what has
-already been tried — do not re-derive rejected forms or re-run banked evidence.
+already been tried — do not re-derive rejected forms or re-run banked evidence. Ledger files are
+capped at 64 KB and compacted (older sessions summarized); older verbatim text is in git history.
 
 ## The prime directive
 Never produce a cheat, workaround, or reward-hack —

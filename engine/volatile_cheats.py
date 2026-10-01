@@ -453,7 +453,7 @@ def find_always_true_if_scaffolds(text: str, body_lo: int, body_hi: int) -> list
 # construct GCC's DCE removes but whose existence steers analysis upstream
 # of DCE (identified by 2026-06-02 thorough audit, 5+1 COMPLETED-C affected).
 #
-# Re-evaluation 2026-06-04 (memory/project/sotn-do-while-zero-research-2026-06-04.md):
+# Re-evaluation 2026-06-04 (pre-slim-2026-10-01:memory/project/sotn-do-while-zero-research-2026-06-04.md):
 # SOTN master ships 18+ instances of `do { ... } while (0);` (both empty and
 # non-empty body), including explicit `// FAKE` annotations in sprintf.c. Two
 # commits (511fdcfc4, 3aa8b65c5) explicitly accept the construct in code
@@ -798,7 +798,7 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # pad family, trailing unused array with sibling evidence): func_8005E54C's
     # 8 untouched bytes at sp+0x58 = descriptor + 0x30, the s16[3] digit slot of
     # its COMPLETED siblings func_8005D814 / func_8005F1C8
-    # (memory/grind/func_8005E54C/frame_census.txt, evidence.md [s4]/[s5]).
+    # (pre-slim-2026-10-01:memory/grind/func_8005E54C/frame_census.txt, evidence.md [s4]/[s5]).
     "func_8005E54C": frozenset({("digit", 3)}),
 }
 

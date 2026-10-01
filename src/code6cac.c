@@ -334,23 +334,23 @@ end:
  *     arm raises that region's flow.c loop depth, so the SAME references count for more
  *     (n_refs 8 -> 11 at unchanged live_length 7, pri 34285 -> 47142 versus sum_sq's 40000),
  *     and the small arm's byte stays in its own short-lived pseudo at $v0.
- *     Measured: memory/grind/func_80018094/tmp-evidence/s10/e1.allocdbg.txt (BB2_ALLOC_DEBUG on the
+ *     Measured: pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/e1.allocdbg.txt (BB2_ALLOC_DEBUG on the
  *     instrumented cc1) -- the priorities were PREDICTED from the m1/candidate arrays before
  *     the form was written and came out exact.
  *
  * EVERY CONSTRUCT IS ABLATION-MEASURED THIS SESSION (all still 153 build insns; the s10/
- *   files are in memory/grind/func_80018094/tmp-evidence/):
+ *   files are in pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/):
  *   drop the outer do-while(0)        -> 13  (s10/f1.c)
  *   drop the small-arm do-while(0)    -> 10  (s10/f3.c)
  *   drop the LZC-arm do-while(0)      -> 13  (s10/a0.c)
  *   s32 sp_tmp scalar instead of [4]  ->  8  (s10/f2.c)
- * Self-vet: memory/grind/func_80018094/self_vet.md.
+ * Self-vet: pre-slim-2026-10-01:memory/grind/func_80018094/self_vet.md.
  */
 typedef struct { s32 pad[9]; s32 x, y, z; } ScrV;
 #define SCRV ((ScrV *)0x1F800000)
 void func_80018094(s32 *arg0, s32 *arg1) {
     /* n.b.! sp_tmp must be 9-16 bytes (inclusive): s32[3] and s32[4] are byte-identical (measured,
-     * memory/grind/func_80018094/tmp-evidence/s4/v20g.s == v20h.s). Frame derivation from the target bytes alone
+     * pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s4/v20g.s == v20h.s). Frame derivation from the target bytes alone
      * (asm/funcs/func_80018094.s): frame 0x30 = outgoing args 0x10 + locals 0x10 + callee-saves 0x10
      * (s0/s1/ra at 0x20/0x24/0x28); the ONLY locals traffic in the whole target is the island's
      * `swc2 $31,0($t4)` with $t4 = $sp+0x10 and the matching `lw $v1,0x10($sp)`, i.e. 4 bytes written
@@ -361,7 +361,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
      * FAKE: unwritten tail sp_tmp[1..3] on the live LZC-output locals object, mechanism:
      * function.c assign_stack_local / mips.c compute_frame_size (get_frame_size raw 16 -> MIPS_STACK_ALIGN
      * keeps 16 where the scalar form rounds 4 -> 8), lever-exhaustion:
-     * memory/grind/func_80018094/hypotheses.md s2 H15 (declaration scope/order/hoisting), s3 H19-H22
+     * pre-slim-2026-10-01:memory/grind/func_80018094/hypotheses.md s2 H15 (declaration scope/order/hoisting), s3 H19-H22
      * (HImode narrowing, named-intermediate scalar splits, live 8-byte aggregate, BLKmode-only FRAMEDBG
      * census) and s4 (8,906 permuter iterations on the scalar chassis, 0 novel finds). */
     s32 sp_tmp[4];
@@ -423,8 +423,8 @@ void func_80018094(s32 *arg0, s32 *arg1) {
              * NOTE_INSN_LOOP_BEG/END raise the block's loop depth, and every reference in
              * the region is then weighted by that depth in `reg_n_refs[regno] += loop_depth`
              * (flow.c:2081), which is the numerator of global.c's allocno_compare priority.
-             * Ablation: dropping this wrap scores 13 (memory/grind/func_80018094/tmp-evidence/s10/f1.c).
-             * lever-exhaustion: memory/grind/func_80018094/hypotheses.md s5 H26-H28,
+             * Ablation: dropping this wrap scores 13 (pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/f1.c).
+             * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80018094/hypotheses.md s5 H26-H28,
              * s6 H29-H32, s7 H31-H37, s8, s9 H42-H49.
              * Family: do-while-zero-exception (owner ruling 2026-07-06). */
             do {
@@ -436,7 +436,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
              * Liveness (bound 3): `lut` holds nothing at this point (its LZC-arm write comes
              * later), and the staged value is consumed by the island BEFORE that write, so the
              * borrow is safe in both directions.  lever-exhaustion:
-             * memory/grind/func_80018094/hypotheses.md s5 H26-H28, s6 H29-H32, s7 H31-H37, s8,
+             * pre-slim-2026-10-01:memory/grind/func_80018094/hypotheses.md s5 H26-H28, s6 H29-H32, s7 H31-H37, s8,
              * s9 H42-H46 (every fresh-local and every declaration-scope spelling measured).
              * Family: staged-value-reused-variable (owner ruling 2026-07-03). */
             lut = sum_sq;
@@ -448,7 +448,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                  * label, and the gate's backward walk (tools/gcc-2.7.2/cse.c:8112-8118)
                  * stops on a LOOP_END note, so cse1 AND cse2 refuse to extend the block into
                  * the LZC arm and the `lut = sum_sq;` island-input copy survives.
-                 * lever-exhaustion: memory/grind/func_80018094/hypotheses.md s5 H26-H28,
+                 * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80018094/hypotheses.md s5 H26-H28,
                  * s6 H29-H32, s7 H31-H37, s8, s9 H42 (cse class kill), s9b H44-H46.
                  * Family: do-while-zero-exception (owner ruling 2026-07-06). */
                 do {
@@ -464,17 +464,17 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                  * weight 3, so allocno_n_refs[lut] goes 8 -> 11 while sum_sq's goes 19 -> 21,
                  * and global.c's allocno_compare priority
                  * (floor_log2(n_refs)*n_refs/live_length*10000) becomes 47142 for `lut` versus
-                 * 40000 for `sum_sq` -- measured, memory/grind/func_80018094/tmp-evidence/s10/e1.allocdbg.txt.
+                 * 40000 for `sum_sq` -- measured, pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/e1.allocdbg.txt.
                  * `lut` is then allocated FIRST and takes $a0, sum_sq $a1, exactly as the
                  * target seats them, and the small arm's LUT byte is free to stay in its own
                  * short-lived pseudo at $v0.
                  * SINGLE LEVEL IS INSUFFICIENT (nested-wrap prerequisite, measured this
                  * session): with only the outer wrap and the small-arm wrap the body scores
-                 * 13 (memory/grind/func_80018094/tmp-evidence/s10/a0.c); dropping the outer wrap instead
-                 * scores 13 (memory/grind/func_80018094/tmp-evidence/s10/f1.c); dropping the small-arm
-                 * wrap scores 10 (memory/grind/func_80018094/tmp-evidence/s10/f3.c).
+                 * 13 (pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/a0.c); dropping the outer wrap instead
+                 * scores 13 (pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/f1.c); dropping the small-arm
+                 * wrap scores 10 (pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/f3.c).
                  * Each of the three wraps is load-bearing and none subsumes another.
-                 * lever-exhaustion: memory/grind/func_80018094/hypotheses.md s9b H46-H49 (the
+                 * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80018094/hypotheses.md s9b H46-H49 (the
                  * numerator side is spelled out -- eight reference-site spellings measured at
                  * 4/5/8/13) and s10 H50-H52 (the two denominator-side and the
                  * assignment-in-condition levers, all measured dead).
@@ -592,7 +592,7 @@ void func_80018300(s32 *arg0) {
      * written 4-byte object gives ALIGN8(4)+16 = 0x18 != 0x28 (measured: lz[1]
      * and lz[4] score 8, lz[5] and lz[6] score 0, lz[7] scores 8).
      * lever-exhaustion:
-     * memory/grind/func_80018300/hypotheses.md (phantom-slot probes: 19
+     * pre-slim-2026-10-01:memory/grind/func_80018300/hypotheses.md (phantom-slot probes: 19
      * single spelling swaps (14 instruction-neutral, 5 not) +
      * assignment-as-value + store-base forms, none move `vars=`). */
     s32 lz[6];
@@ -610,7 +610,7 @@ void func_80018300(s32 *arg0) {
      * with dx/dy/p2 and takes the lowest free reg ($a1); sharing thresh's pseudo
      * seats it in $t1 as the target does (measured: own `pair` variable 8).
      * Family: staged-value-reused-variable (owner ruling 2026-07-03).
-     * lever-exhaustion: memory/grind/func_80018300/hypotheses.md. */
+     * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80018300/hypotheses.md. */
     thresh = data[1];
     radius = data[0];
     p1 = (s32 *)(base + ((thresh >> 16) << 6));
@@ -701,7 +701,7 @@ void func_80018300(s32 *arg0) {
              * Family: staged-value-reused-variable (owner ruling 2026-07-03);
              * same sum-for-byte reuse as func_8002F2D0 (src/code6cac_b.c).
              * lever-exhaustion:
-             * memory/grind/func_80018300/hypotheses.md. */
+             * pre-slim-2026-10-01:memory/grind/func_80018300/hypotheses.md. */
             len = lz[0];
             len = 0x16 - (len & ~1);
             sum = g_sqrt_table_u8[sum >> len];
@@ -880,7 +880,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
      * lz[0]/lz[1] written by gte_stlzc, then a 16-byte unwritten tail.
      * Measured: lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
      * lz[7]/lz[8] 0x80.
-     * lever-exhaustion: memory/grind/func_800187F4/evidence.md [s2] item 7 and
+     * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_800187F4/evidence.md [s2] item 7 and
      * r11/proof.md section 7 (the phantom-slot producer census). */
     s32 lz[6];
 
@@ -889,7 +889,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
     node = (s32 *)arg1[3];
 
     for (i = 0; i < count; i++, node += 16) {
-        /* Ruling 11 (reused local, proof memory/grind/func_800187F4/r11/proof.md):
+        /* Ruling 11 (reused local, proof pre-slim-2026-10-01:memory/grind/func_800187F4/r11/proof.md):
          * three values, all loop indices -- the add-force loop's, the
          * subtract-force loop's and the ellipsoid loop's. */
         s32 idx;
@@ -1228,7 +1228,7 @@ void func_8001924C(s16 *arg0, s32 arg1) {
  * gte_rtv0()-class operation encoded directly. The islands use the same `move $12, %0`
  * macro-body spelling as func_800203B4 (owner grant 2026-09-01, widened cop2
  * materialize-then-copy anchor; func_80019310 is named in that grant record,
- * docs/grind/decisions.md:17921 and pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:154).
+ * pre-slim-2026-10-01:docs/grind/decisions.md:17921 and pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:154).
  *
  * CLOBBER PROVENANCE (do not read the "memory" clobbers as SDK text): of the four macros
  * above, ONLY gte_stlvnl publishes "memory" in its own clobber list (inline_c.h:1116);
@@ -1236,7 +1236,7 @@ void func_8001924C(s16 *arg0, s32 arg1) {
  * clobber list at all, for gte_ldv0). The "memory" clobber on those three islands is ADDED
  * here, and is cited to the committed same-file precedent func_8002D320
  * (src/code6cac_b.c:935), whose lwc2 read island carries exactly that added truthful
- * clobber; func_800300B4's Judge PASS (docs/grind/decisions.md:20489) accepted the same
+ * clobber; func_800300B4's Judge PASS (pre-slim-2026-10-01:docs/grind/decisions.md:20489) accepted the same
  * addition. It is truthful in each case: islands 1-2 read the MATRIX through $12, island 3
  * reads the SVECTOR through $12, island 4 writes out[] which the C below reads. Its
  * byte-visible effect is on island 1, where it makes GCC re-read the MATRIX pointer before

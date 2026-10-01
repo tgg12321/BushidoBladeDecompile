@@ -11,7 +11,7 @@ source-side: the original compiler makes the same choice from this source,
 so a pure-C preimage with a different spelling exists.
 
 cc1psx is a calibration/self-disproof tool ONLY (.claude/rules/no-compiler-divergence.md,
-[[cc1psx-calibration-only]]); it is never a build path.
+[[no-compiler-divergence]]); it is never a build path.
 
 The candidate defaults to memory/grind/<func>/candidate.c and is spliced over
 the function's INCLUDE_ASM line (or its current definition) in a scratch copy

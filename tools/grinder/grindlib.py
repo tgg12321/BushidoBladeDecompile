@@ -2025,7 +2025,7 @@ def island_count(root, func, stem):
     cluster members (func_8002E838, func_80031890) merged as COMPLETED-C because
     the Judge said PASS (with a prose "write the allowlist line" note the driver
     never parses) and the engine gate scores cop2 islands as non-cheat
-    ([[cop2-island-completed-c-gate-gap]]). The PASS path now asks this
+    ([[operator-gotchas]]). The PASS path now asks this
     question BEFORE `queue done`: n>0 and not allowlisted => the grant door
     (grant_canonical_asm) must admit the function or the merge is refused.
     Uses the SAME island scanner as tools/audit_asm_cheats.py /

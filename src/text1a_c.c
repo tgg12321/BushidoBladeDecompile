@@ -802,7 +802,7 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                                re-merges the copies (bytes identical to `case 0: case 2:`),
                                but flow.c counts them before global RA: the extra refs and
                                live length seat count/base/kind in s3/s4/s5 as the target
-                               does (ledger: memory/grind/func_80043454/evidence.md). */
+                               does (ledger: pre-slim-2026-10-01:memory/grind/func_80043454/evidence.md). */
                             b[1] += arg1;
                             b[5] += arg1;
                             b[9] += arg1;

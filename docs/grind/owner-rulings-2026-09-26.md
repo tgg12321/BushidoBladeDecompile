@@ -52,7 +52,7 @@ Owner chose: **"Only if code changes (Recommended)"** — option text: "A small 
 
 <!-- Batch 4: appended verbatim from tmp/orch/owner_rulings_2026-09-26d.md (line endings normalized to LF; blank separator line added). -->
 # Owner rulings 2026-09-26 (fourth batch, via AskUserQuestion) — VERBATIM RECORD
-Context: research report memory/grind/func_80036140/research-common-gp.md (commit 2974e2e6b): Sony ASPSX 2.34 run under dosemu2 shows tentative (.comm) definitions get gp only for the first byte, never sym+k; census of 2,271 gp accesses in the shipped binary, zero exceptions; proposed gated list maspsx_comm_syms.txt (--comm-syms); all 34 src objects byte-identical with it.
+Context: research report pre-slim-2026-10-01:memory/grind/func_80036140/research-common-gp.md (commit 2974e2e6b): Sony ASPSX 2.34 run under dosemu2 shows tentative (.comm) definitions get gp only for the first byte, never sym+k; census of 2,271 gp accesses in the shipped binary, zero exceptions; proposed gated list maspsx_comm_syms.txt (--comm-syms); all 34 src objects byte-identical with it.
 
 ## Q9 — maspsx COMMON (tentative-definition) gated list
 Question: "Add a small per-function list telling our assembler shim which variables were plain 'declared, no initial value' in the original source (so it stops using the gp register for their byte offsets) — proven by Sony's own ASPSX assembler reproducing the shipped bytes, zero exceptions across the binary, and all current files byte-identical with it?"
@@ -63,7 +63,7 @@ Question: "func_80036140 shares a gp-read variable with its not-yet-decompiled n
 Owner chose: **"Do 36940 first, then both (Recommended)"** — option text: "Bring func_80036940 back from rotation now and decompile it, then move both into one -G8 file together. No rule change."
 
 ## Q11 — func_8002DE20 GTE blocks: maspsx `($12)` parser fix + per-function DMPSX-word row
-Context: slotE's banked ledger memory/grind/func_8002DE20/ (commit 72c3b4d41): islands written as separate verbatim inline_o.h macro statements; two residual deviations: D1 `0($12)` for `($12)` (6 statements; forced by maspsx's load/store parser tools/maspsx/maspsx/__init__.py:182-194 requiring a non-empty offset; a 2-line parser fix makes the verbatim form build to identical .text), D2 `.word 0x4A486012` for `.word 0x0000013f` (3 statements; the DMPSX post-pass substitution, mapping backed by the 2026-09-24 Extension).
+Context: slotE's banked ledger pre-slim-2026-10-01:memory/grind/func_8002DE20/ (commit 72c3b4d41): islands written as separate verbatim inline_o.h macro statements; two residual deviations: D1 `0($12)` for `($12)` (6 statements; forced by maspsx's load/store parser tools/maspsx/maspsx/__init__.py:182-194 requiring a non-empty offset; a 2-line parser fix makes the verbatim form build to identical .text), D2 `.word 0x4A486012` for `.word 0x0000013f` (3 statements; the DMPSX post-pass substitution, mapping backed by the 2026-09-24 Extension).
 Question: "For func_8002DE20's GTE blocks: fix our assembler shim so it accepts the header's exact `($12)` spelling (2-line parser fix, all builds byte-identical), and grant a per-function row for the one remaining difference — the 3 command words Sony's DMPSX tool would have patched in?"
 Owner chose: **"Fix parser + grant row (Recommended)"** — option text: "Blocks become header-exact except the DMPSX-patched word; per-function owner_cluster_grants row for that only. Plus the engine recognizer update. Layer-2 reviews everything."
 
@@ -136,7 +136,7 @@ Owner chose: **"Allow per-branch constants (Recommended)"** — option text: "On
 
 <!-- Batch 12: appended verbatim from tmp/orch/owner_rulings_2026-09-26l.md (line endings normalized to LF; blank separator line added). -->
 # Owner ruling 2026-09-26/27 (twelfth batch, via AskUserQuestion) — VERBATIM RECORD
-Context: func_8001CE60 (slotM) matches (sandbox 0/588; full build == oracle) only with D_800A3898[2] and D_800A38AA[2] declared as 2-element arrays in code6cac.c; with those arrays in scope func_800340A0 (COMPLETED-C, code6cac_b.c) drops to 5/88 because GCC (and Sony's cc1psx) keeps an array element's address in a register when the element is used twice; every array respelling of func_800340A0 stays at 5. Borderline entry filed 2026-09-26; edits in memory/grind/func_8001CE60/probes/per-tu-landing.diff.
+Context: func_8001CE60 (slotM) matches (sandbox 0/588; full build == oracle) only with D_800A3898[2] and D_800A38AA[2] declared as 2-element arrays in code6cac.c; with those arrays in scope func_800340A0 (COMPLETED-C, code6cac_b.c) drops to 5/88 because GCC (and Sony's cc1psx) keeps an array element's address in a register when the element is used twice; every array respelling of func_800340A0 stays at 5. Borderline entry filed 2026-09-26; edits in pre-slim-2026-10-01:memory/grind/func_8001CE60/probes/per-tu-landing.diff.
 
 ## Q21 — per-file declarations of the same bytes
 Question: "func_8001CE60 needs two player byte-pairs declared as 2-element arrays, but a completed neighbour in a different file (func_800340A0) only matches with the same bytes declared as separate single bytes — the original compiler (confirmed with Sony's cc1psx) can't produce both from one declaration. SOTN keeps annotated declaration mismatches when the original bytes require them. May each file declare those bytes the way its own code needs (arrays in code6cac.c, single bytes in code6cac_b.c), annotated, with the compiler evidence? A full build of this form matches the original."
@@ -144,7 +144,7 @@ Owner chose: **"Allow, per file, annotated (Recommended)"** — option text: "On
 
 <!-- Batch 13: transcribed by the session author from the owner's AskUserQuestion answer in the 2026-09-27 manual session (func_8001CE60 landing); no separate tmp record exists. -->
 # Owner ruling 2026-09-27 (thirteenth batch, via AskUserQuestion) — VERBATIM RECORD
-Context: the layer-2 review of the func_8001CE60 landing (per-file score-byte declarations under Q21) FAILed with a counterexample: func_800340A0 compiles to its target under ONE shared `u8 [2]` array declaration when indexed through `s32 zero = 0; s32 one = 1; /* FAKE */` (tmp/review_ce60/arr_zero_one.c, banked as memory/grind/func_8001CE60/probes/calib_800340A0/A340_zero_one-Q22-refused.c; produces the same output as the per-file scalar form (A340_0) under both our cc1 and cc1psx; under cc1 that is the target), which defeats Q21 condition (1) if that construct is admissible.
+Context: the layer-2 review of the func_8001CE60 landing (per-file score-byte declarations under Q21) FAILed with a counterexample: func_800340A0 compiles to its target under ONE shared `u8 [2]` array declaration when indexed through `s32 zero = 0; s32 one = 1; /* FAKE */` (tmp/review_ce60/arr_zero_one.c, banked as pre-slim-2026-10-01:memory/grind/func_8001CE60/probes/calib_800340A0/A340_zero_one-Q22-refused.c; produces the same output as the per-file scalar form (A340_0) under both our cc1 and cc1psx; under cc1 that is the target), which defeats Q21 condition (1) if that construct is admissible.
 
 ## Q22 — dummy constant locals used as array indices
 Question: "func_8001CE60 is matched, but the reviewer found a second way to make the old neighbour func_800340A0 match with the score bytes declared once, as an array: index the array with two dummy locals (`s32 zero = 0; s32 one = 1; /* FAKE */`, then `score[zero]`, `score[one]`). The compiler then treats the index as "unknown" and emits the direct accesses the original has. If that trick counts as allowed, the per-file declarations you approved (arrays in one file, single bytes in the other) are no longer proven necessary, and we'd have to add those FAKE locals to func_800340A0, which is clean C today. Our FAKE-local rules cover constants held across calls and `one = 1` against bit-test tricks, but not this purpose. Should dummy constant locals used as array indices count as an allowed construct?"
@@ -152,7 +152,7 @@ Owner chose: **"Doesn't count (Recommended)"** — option text: "Dummy constant 
 Other options offered: "Counts: one shared declaration" — "Treat it as a sanctioned FAKE local. Declare the score bytes once as arrays in the shared header, and add the annotated `zero`/`one` FAKE locals to func_800340A0 (it goes from clean C to carrying two FAKE constructs). The per-file exception isn't used."; "Look for a clean form first" — "Don't decide yet: leave func_8001CE60 unlanded (INCLUDE_ASM), log the question to borderline.md, and keep searching for a single-declaration spelling of func_800340A0 with no FAKE constructs."
 
 ## Q23 — per-file declarations vs FAKE-construct spellings
-Context (author's framing): the round-5 layer-2 review found func_800340A0 matching under one shared `u8 [2]` declaration through a FAKE pointer-alias spelling (tmp/rv5/ptr_end2.c, banked as memory/grind/func_8001CE60/probes/calib_800340A0/A340_ptr_end-Q23-set-aside.c).
+Context (author's framing): the round-5 layer-2 review found func_800340A0 matching under one shared `u8 [2]` declaration through a FAKE pointer-alias spelling (tmp/rv5/ptr_end2.c, banked as pre-slim-2026-10-01:memory/grind/func_8001CE60/probes/calib_800340A0/A340_ptr_end-Q23-set-aside.c).
 Question: "The reviewer found a second trick that lets the finished function func_800340A0 match with the score bytes declared once as an array: a dummy pointer to the end of the array (`u8 *se = &score[2]; /* FAKE */`, then `se[-2]`, `se[-1]`). This one falls under an existing allowed FAKE family (pointer aliases), not the dummy-index trick you refused. Each such trick, if allowed, means the per-file declarations aren't "proven necessary", so we'd have to put FAKE constructs into func_800340A0, which is clean C today. Instead of ruling trick by trick: when the only way to use ONE shared declaration needs FAKE constructs, should the per-file declarations win?"
 Owner chose: **"Per-file wins over FAKE (Recommended)"** — option text: "For the per-file-declaration rule, a one-declaration spelling that needs any FAKE-annotated construct (any family) doesn't count against it. The per-file form (zero FAKE constructs) lands, still with the compiler proof, annotations and layer-2. This matches the existing 'fewest no-purpose constructs wins' principle."
 Other options offered: "Only this pointer trick" — "Refuse just this pointer-to-array-end-used-for-element-access trick (like the dummy-index one); other FAKE families still count against the per-file rule, case by case."; "Allow it: one declaration" — "The pointer alias is sanctioned, so the per-file rule isn't met: declare the score bytes once as arrays and add the FAKE pointer locals to func_800340A0."
@@ -162,14 +162,14 @@ Context (author's framing): after Q22/Q23 (rules commit 77297f798), the func_800
 Question: "For func_8001CE60's per-file declarations, your rule says the proof needs "dumps + cc1psx" (Sony's original compiler) to agree that one shared declaration can't work. cc1psx agrees on half of it: arrays break the score-byte addressing, single bytes don't. The other half is how func_800340A0 stores the round result, and that's what rules out the ordinary 'winner index' rewrites that fix the addressing under one declaration. cc1psx can't judge that half, because it doesn't reproduce the original's store/jump structure even for the version of func_800340A0 that already matches (it's a slightly different compiler build). Our compiler shows every such rewrite misses by 30-64 lines. How should cc1psx count for the part it can't reproduce?"
 Owner chose: **"cc1psx only where it can (Recommended)"** — option text: "cc1psx must agree on every part of the proof where it reproduces the already-matching form; for parts it can't reproduce even there (like this store structure), our compiler's dumps and measurements decide. Record that as a narrow clarification, then land func_8001CE60 per-file after a fresh layer-2."
 Other options offered: "Keep the full requirement" — "No landing without cc1psx backing every part. func_8001CE60 stays unlanded (INCLUDE_ASM) and the search continues for a one-declaration spelling of func_800340A0 in plain C."; "Try one declaration first" — "Before deciding, spend more effort looking for a plain-C one-declaration spelling of func_800340A0 (winner-index style). If found, land that instead with no per-file exception; if not, come back to this question."
-Author's note (2026-09-27, after the layer-2 rule-text review; the transcript above is unchanged): the Q24 question's statement that cc1psx "can't judge that half" overstated it. cc1psx reproduces the round-result store structure of the committed scalar func_800340A0 except one arm, the P2 tie-break arm (memory/grind/func_8001CE60/probes/calib_800340A0/A340_0.cc1psx.diff hunk 72,81c72,77). The owner's chosen option is worded by location ("where it reproduces"); the rule text applies it instruction by instruction.
+Author's note (2026-09-27, after the layer-2 rule-text review; the transcript above is unchanged): the Q24 question's statement that cc1psx "can't judge that half" overstated it. cc1psx reproduces the round-result store structure of the committed scalar func_800340A0 except one arm, the P2 tie-break arm (pre-slim-2026-10-01:memory/grind/func_8001CE60/probes/calib_800340A0/A340_0.cc1psx.diff hunk 72,81c72,77). The owner's chosen option is worded by location ("where it reproduces"); the rule text applies it instruction by instruction.
 
 ## Q25 — proof standard for the per-file-declaration condition (1)
 Context (author's framing): after Q22-Q24 (rules commits 77297f798, 6aba31dee), the func_8001CE60 landing's layer-2 FAILed again on Q21 (1): condition-structure respellings of func_800340A0 (tmp/l2rev_ce60/R1.c etc., `&&`/`||` groupings) fix the score-byte addressing under one shared declaration but miss the full original elsewhere (37-53 lines); the ledger lacked a universal argument for that kind.
 Question: "For func_8001CE60's per-file score-byte declarations, the rule asks for proof that NO rewrite of the neighbour func_800340A0 can match the original with one shared declaration. So far 30 rewrites across 8 different kinds (arrays, structs, pointers, index variables, winner variables, rearranged if-conditions, ...) have been tried by me and 5 adversarial reviewers; none matches, both compilers agree on every one, and the per-file form matches byte-for-byte. But each review round finds a new *kind* of rewrite (latest: regrouping the if-conditions with && / ||) that also misses, and fails the landing because the ledger doesn't yet have a compiler-internals argument that *every* rewrite of that kind must miss. What proof standard do you want?"
 Owner chose: **"Mechanism + search (Recommended)"** — option text: "Accept when: the core compiler mechanism is shown with dumps + cc1psx, every rewrite a reviewer proposes is measured and misses the original, and no reviewer can produce one that matches. A new kind of rewrite that still misses gets banked as more evidence, not a FAIL. Only an actual matching rewrite defeats the per-file form."
 Other options offered: "Keep universal proof" — "Every new kind of rewrite needs its own compiler-pass argument that all variants of it miss. func_8001CE60 stays unlanded (INCLUDE_ASM) until the ledger covers each kind a reviewer raises."; "Bank it for now" — "Stop here for this session: leave func_8001CE60 as INCLUDE_ASM with everything banked in its ledger (rules are already committed), and revisit the proof standard later."
-Author's note (2026-09-27, after the layer-2 rule-text review of Q25; the transcript above is unchanged): the Q25 question said "30 rewrites" and "none matches". Accurate: 27 banked func_800340A0 respellings (memory/grind/func_8001CE60/probes/calib_800340A0/ 21, landing_tu_cond/ 6); no COUNTING one matches, but three that rely on refused/set-aside constructs do (A340_zero_one and A340_rv8_S5, Q22; A340_ptr_end, Q23). The owner's option ("Only an actual matching rewrite defeats") is applied with Q22/Q23's set-asides, per declaration.
+Author's note (2026-09-27, after the layer-2 rule-text review of Q25; the transcript above is unchanged): the Q25 question said "30 rewrites" and "none matches". Accurate: 27 banked func_800340A0 respellings (pre-slim-2026-10-01:memory/grind/func_8001CE60/probes/calib_800340A0/ 21, landing_tu_cond/ 6); no COUNTING one matches, but three that rely on refused/set-aside constructs do (A340_zero_one and A340_rv8_S5, Q22; A340_ptr_end, Q23). The owner's option ("Only an actual matching rewrite defeats") is applied with Q22/Q23's set-asides, per declaration.
 Author's note 2 (2026-09-27, Q25 rule-text review round 2): the Q25 context line's "fix the score-byte addressing" holds for R1/R1w/R2/R2w only; R7/R7n miss the addressing too (landing_tu_cond/Q24-AGREEMENT-cond.txt, "part-1 forms short: 2").
 Author's note 3 (2026-09-27, Q25 rule-text review round 3): the context line's "37-53 lines" is the layer-2 reviewer's cmp.py metric (tmp/l2rev_ce60/cmp.py, against landing_tu/A340_0.cc1.s: R1 42, R1w 48, R2 37, R2w 53; R7/R7n 65).
 
@@ -188,7 +188,7 @@ Disposition: no rule change. Ruling 11 and the per-branch-constants paragraph st
 
 # Owner exchange 2026-09-28 (fifteenth batch, in conversation) — VERBATIM RECORD — GRANTED
 Context: manual session s9 on func_8006C21C (ledger commit 2d2a64e6d). The operator measured a
-frame-exact spelling (memory/grind/func_8006C21C/probes/s9/POLICY-BLOCKED-frame-exact-dtd-tw-xy-4.c,
+frame-exact spelling (pre-slim-2026-10-01:memory/grind/func_8006C21C/probes/s9/POLICY-BLOCKED-frame-exact-dtd-tw-xy-4.c,
 sandbox 4/622, frame 0xC0) and, with the per-arm colour local, sandbox 0/622
 (probes/s9/POLICY-BLOCKED-frame-plus-col-0.c). The session report closed with, verbatim: "**Decision for
 you:** this function byte-matches if two things are allowed: - four `short` locals that are always 0
@@ -226,7 +226,7 @@ exhaustion, named mechanism, annotation, review) without the new exact-proof con
 
 # Owner exchange 2026-09-28 (sixteenth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
 Context: manual session on func_800187F4 (the queue top, 2026-09-28). The banked template
-(memory/grind/func_800187F4/template.c, expanded to candidate.c by gen.py) byte-matches the target on the
+(pre-slim-2026-10-01:memory/grind/func_800187F4/template.c, expanded to candidate.c by gen.py) byte-matches the target on the
 Makefile's real per-file recipe, and the copy-free template (template_copyfree.c) is 2 instructions off; both
 were re-measured on this date (tmp/func_800187F4/fast.sh, tags cur_g2 = 0 and cur_h5 = 2 differing lines).
 The filed form of Q28 is docs/grind/borderline.md 2026-09-27 "func_800187F4 (also func_800288C8,
@@ -239,7 +239,7 @@ Owner chose: **"Allow narrowly (Recommended)"** — option text: "Only a copy wh
 Other options offered: "This function only" — "Grant it for func_800187F4 alone; the two siblings would each need their own ruling."; "Don't allow" — "The function stays unfinished and the search for copy-free C continues (2 instructions off today)."
 Author's note (2026-09-28, the transcript above is unchanged): "every spelling without it is 2 instructions
 off" is accurate for the best measured copy-free spelling (template_copyfree.c); other measured copy-free
-spellings are further off (memory/grind/func_800187F4/evidence.md [s2]). "all 644 instructions" is the
+spellings are further off (pre-slim-2026-10-01:memory/grind/func_800187F4/evidence.md [s2]). "all 644 instructions" is the
 engine's instruction count for the target (`sandbox` target_insns 644).
 
 ## Q29 — DMPSX placeholder command words, func_800187F4
@@ -250,7 +250,7 @@ Other options offered: "Standing rule" — "Any function may use the real comman
 # Owner exchange 2026-09-28 (seventeenth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
 Context: manual session on func_800187F4. Two fresh layer-2 reviews of its landing FAILed on Ruling 11 (D)(3):
 the first because `work` and `delta` each byte-match as one-variable-per-value spellings plus one FAKE dead
-store (memory/grind/func_800187F4/rejected/r11-work-delta-reuse-layer2-fail-0.md), the second because
+store (pre-slim-2026-10-01:memory/grind/func_800187F4/rejected/r11-work-delta-reuse-layer2-fail-0.md), the second because
 `nforce` byte-matches as a one-variable-per-value spelling plus six FAKE do-while(0) wraps
 (rejected/r11-nforce-dowhile-layer2-fail-0.md). Neither review found a FAKE-free one-variable-per-value
 spelling that matches.
@@ -268,7 +268,7 @@ therefore means no dead store, do-while(0) wrap or other FAKE construct beyond t
 also carries.
 
 # Owner exchange 2026-09-28 (eighteenth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
-Context: the third fresh layer-2 of func_800187F4 (memory/grind/func_800187F4/rejected/
+Context: the third fresh layer-2 of func_800187F4 (pre-slim-2026-10-01:memory/grind/func_800187F4/rejected/
 r11-proof-args-v3-layer2-fail-0.md) passed the body, (A)-(C), (E), (F) and Q28 (a)-(d), found no FAKE-free one-variable-per-value spelling
 reaching the target in ~2,200 FAKE-free probes, and FAILed Ruling 11 (D)(3) on the
 universal arguments, plus a literal reading of the Q30 set-aside. Both questions were asked in one call.
@@ -304,7 +304,7 @@ No question was put to the owner; these are the owner's own words, unprompted. T
 
 # Owner exchange 2026-09-29 (twentieth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
 Context: unattended manual-lane run (three lanes). laneC (func_8005E54C) reported three constructs that each
-need an owner decision (memory/grind/func_8005E54C/evidence.md, match0/: sandbox 0/799 with all three; the score
+need an owner decision (pre-slim-2026-10-01:memory/grind/func_8005E54C/evidence.md, match0/: sandbox 0/799 with all three; the score
 with each removed alone: union 2, copy 6, trailing pad 47). Question 1 also covers the open borderline.md entry
 of 2026-09-29 (func_80070188 with func_8006E534, a word view of the 0x800A3560 slot records). The owner was
 present and answered all three in one call.
@@ -325,7 +325,7 @@ Owner chose: **"Allow with sibling evidence (Recommended)"** — option text: "A
 Other option offered: "Don't allow" — "Keep leading-only. func_8005E54C keeps grinding for a real local that fills the gap."
 
 ## Q36 — follow-up to Q33: one cast store on a local array
-Context: after Q33, laneC measured (memory/grind/func_8005E54C/evidence.md) that `union { s16 v[2]; s32 word; } vals;`
+Context: after Q33, laneC measured (pre-slim-2026-10-01:memory/grind/func_8005E54C/evidence.md) that `union { s16 v[2]; s32 word; } vals;`
 scores 197 (GCC 2.7.2 gives a 4-byte aligned union SImode, expand_decl keeps it in a pseudo, put_var_into_stack
 moves it too late; frame 216 vs 184); `volatile union` 146; an `s16 v[4]` union 0 but with a fake size; a plain
 `s16 vals[2]` with `*(s32 *)vals = 0;` 0 (the target's object at sp+0x18 is allocated at declaration, i.e.
@@ -412,7 +412,7 @@ declarations shared with reopened functions (tmp/audit-2026-09-29/SUMMARY.md, "S
 (1) func_8002F2D0's GTE islands are identical to the islands of func_8002EBDC / func_8002F770 reopened under Q38
 (engine/gtemacro.py match_unit None for all 5; the 2026-08-17 `addu $t4` preamble form, with `addiu $v0,$sp,0x10`),
 and its grant row (789ce34d7) records no verbatim owner instruction; (2) getintr, CD_sync, CD_ready and CD_datasync
-FAIL — CD_sync/CD_ready/CD_datasync use the cross-symbol idiom refused for CD_sync on 2026-07-20 (decisions.md:950),
+FAIL — CD_sync/CD_ready/CD_datasync use the cross-symbol idiom refused for CD_sync on 2026-07-20 (pre-slim-2026-10-01:docs/grind/decisions.md:950),
 getintr consumes the `Intr` aggregate while `g_cd_status_a/b/c` stay declared in the same TU. The owner was present
 and answered both in one call.
 
@@ -426,7 +426,7 @@ Question, verbatim: "The CD functions could be fixed by declaring Sony's actual 
 Owner chose: **"Allow for verbatim Sony (Recommended)"** — option text: "Only where the library source shows that exact static object. Then complete the Intr merge for getintr/CD_sync/CD_ready/CD_datasync (+ tidy CD_flush/CD_init/cdrom_IrqHandler), each with a fresh second review."
 Other options offered: "Keep the header rule" — "Declare Intr in a shared header instead, if the bytes still match. Otherwise reopen the four failing CD functions."; "Reopen the four" — "Put getintr, CD_sync, CD_ready and CD_datasync back as assembly and in the queue, and deal with it later."
 Note: "library source" means the original Sony PsyQ source for that library module as identified in the project's
-libscan/provenance records (for Intr: PsyQ libcd bios.c, memory/closer/libcd-identity.md). Every other aggregate-merge
+libscan/provenance records (for Intr: PsyQ libcd bios.c, pre-slim-2026-10-01:memory/closer/libcd-identity.md). Every other aggregate-merge
 prong still applies, and the TU must no longer declare any second C handle to the merged bytes.
 
 # Owner exchange 2026-09-30 (twenty-third batch, in conversation) — VERBATIM RECORD — GRANTED

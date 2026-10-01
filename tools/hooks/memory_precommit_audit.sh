@@ -64,7 +64,7 @@ fi
 if [ -f CLAUDE.md ]; then
     LINES=$(wc -l < CLAUDE.md)
     if [ "$LINES" -gt 250 ]; then
-        echo "[memory_precommit_audit] WARN: CLAUDE.md is $LINES lines (target <=200). Consider moving content to memory/rules/ or AGENTS.md."
+        echo "[memory_precommit_audit] WARN: CLAUDE.md is $LINES lines (target <=200). Consider moving content to .claude/rules/ or AGENTS.md."
     fi
 fi
 

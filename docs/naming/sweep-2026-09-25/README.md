@@ -3,7 +3,7 @@
 The follow-up the 2026-09-24 sweep left open: every function name at census tier **INFERRED**
 (668 rows, 645 from the old naming-analyzer; "plausible but unreviewed — not defended, just not
 contradicted") was audited against the owner's false-positive directive
-([[names-require-evidence]]). Same recipe as 2026-09-24: read-only **miners** per vein, then a
+([[owner-directives]]). Same recipe as 2026-09-24: read-only **miners** per vein, then a
 **fresh default-refute verifier** per vein that re-derived every claim from the EXE words /
 asm / disc image with its own harness. **Only CONFIRM rows landed.**
 

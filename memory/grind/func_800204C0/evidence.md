@@ -11,10 +11,10 @@
    the known GTE-wrapper misroute artifact (cop2-addressing-preamble-cluster.md, "LOW
    whole-function scan tier").
 3. Function is NAMED as a confirmed handwritten-tagged carrier in the 2026-09-01 widened-anchor
-   owner GRANT (docs/grind/decisions.md:17958-17960; .claude/rules/cop2-addressing-preamble-cluster.md:154-155).
+   owner GRANT (pre-slim-2026-10-01:docs/grind/decisions.md:17958-17960; pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:154-155).
    It has NO row in tools/grinder/owner_cluster_grants.txt (that grant's rows: func_80031890,
    func_8002FF20, func_80019310). Precedent path = func_80019310: candidate-ready -> Judge PASS
-   (decisions.md:24842) -> operator registry row (commit 2cef233c) -> driver grant ->
+   (pre-slim-2026-10-01:docs/grind/decisions.md:24842) -> operator registry row (commit 2cef233c) -> driver grant ->
    inline_asm_canonical.txt:378. The registry row is an OPERATOR step (tools/ is out of session scope).
 4. Islands: three materialize-then-copy `addu $t4,$rX,$zero` preambles with sources $v1/$v0/$v0
    (asm/funcs/func_800204C0.s lines 28, 50, 59) + 8 splat "handwritten instruction" tags — the
@@ -76,11 +76,11 @@
     a row in tools/grinder/owner_cluster_grants.txt. Tier is LOW; the registry (read this session)
     has rows for func_80031890, func_8002FF20 (2026-09-02) and func_80019310 (2026-09-06
     foreclosed-bucket review) but NO func_800204C0 row. The 2026-09-01 widened-anchor GRANT
-    names func_800204C0 by name as a confirmed handwritten-tagged carrier (decisions.md:17959;
-    .claude/rules/cop2-addressing-preamble-cluster.md:155). The registry is OPERATOR-MAINTAINED
+    names func_800204C0 by name as a confirmed handwritten-tagged carrier (pre-slim-2026-10-01:docs/grind/decisions.md:17959;
+    pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:155). The registry is OPERATOR-MAINTAINED
     ONLY (its header) and tools/ is outside session scope. Exact precedent: func_80019310 —
-    refused 12427b10 -> handoff entry decisions.md:24517 -> owner-gated/foreclosed 2aed243e ->
-    operator row 2cef233c -> unpark 0bb257ca -> Judge PASS decisions.md:24842 -> merged 3869ca31
+    refused 12427b10 -> handoff entry pre-slim-2026-10-01:docs/grind/decisions.md:24517 -> owner-gated/foreclosed 2aed243e ->
+    operator row 2cef233c -> unpark 0bb257ca -> Judge PASS pre-slim-2026-10-01:docs/grind/decisions.md:24842 -> merged 3869ca31
     as COMPLETED-INLINE-ASM-CANONICAL.
 16. Disposition filed this session: docs/grind/decisions.md "2026-09-08 — func_800204C0 —
     CANONICAL-ASM GRANT PATH: blocked at the operator registry row" (integration handoff, not an
@@ -92,10 +92,10 @@
 
 - [s1] sandbox func_800204C0 --disable all = 0 (122/122) on HEAD 387fa8f8 with candidate.c applied; canonical = ASM-PARTIAL 11/122 cop2; body identical to the Judge PASS record 8655cc28f3aa5cc7 (state.json review_ledger 2026-09-08 06:15).
 
-- [s1] scan_hand_coded tier LOW 1/8 (S4 only): no STRONG door; grant_canonical_asm (tools/grinder/grindlib.py:1493) then needs an owner_cluster_grants.txt row, which exists for func_80031890/func_8002FF20/func_80019310 but not func_800204C0, although the 2026-09-01 widened-anchor GRANT names func_800204C0 by name (decisions.md:17959; .claude/rules/cop2-addressing-preamble-cluster.md:155).
+- [s1] scan_hand_coded tier LOW 1/8 (S4 only): no STRONG door; grant_canonical_asm (tools/grinder/grindlib.py:1493) then needs an owner_cluster_grants.txt row, which exists for func_80031890/func_8002FF20/func_80019310 but not func_800204C0, although the 2026-09-01 widened-anchor GRANT names func_800204C0 by name (pre-slim-2026-10-01:docs/grind/decisions.md:17959; pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:155).
 
 - [s1] Refusal branch 'islands are C-expressible' measured dead: thin-island respelling of gte_SetRotMatrix scores 0/12 in the region (rejected/thin-island-c-loads-seat-t0-a0-v0-not-t5-t7.c).
 
-- [s1] Precedent chain for the remedy: func_80019310 refused 12427b10 -> handoff entry decisions.md:24517 -> owner-gated 2aed243e -> operator row 2cef233c -> unpark 0bb257ca -> Judge PASS decisions.md:24842 -> merged 3869ca31 COMPLETED-INLINE-ASM-CANONICAL.
+- [s1] Precedent chain for the remedy: func_80019310 refused 12427b10 -> handoff entry pre-slim-2026-10-01:docs/grind/decisions.md:24517 -> owner-gated 2aed243e -> operator row 2cef233c -> unpark 0bb257ca -> Judge PASS pre-slim-2026-10-01:docs/grind/decisions.md:24842 -> merged 3869ca31 COMPLETED-INLINE-ASM-CANONICAL.
 
-- [s1] Integration handoff filed: docs/grind/decisions.md:25395 with the exact one-line registry row the operator appends; src/code6cac.c restored to INCLUDE_ASM (asm-until-matched); candidate.c unchanged and ready to submit EXACTLY once the row lands.
+- [s1] Integration handoff filed: pre-slim-2026-10-01:docs/grind/decisions.md:25395 with the exact one-line registry row the operator appends; src/code6cac.c restored to INCLUDE_ASM (asm-until-matched); candidate.c unchanged and ready to submit EXACTLY once the row lands.

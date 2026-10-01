@@ -81,7 +81,8 @@ owner to audit after the fact. You are spawned for exactly two situations:
 
 ## Procedure
 1. Read the diff / construct in question and the ledger (state.json,
-   hypotheses.md, evidence.md, candidate.c, rejected/).
+   hypotheses.md, evidence.md, candidate.c, rejected/). Ledger files are capped at
+   64 KB and compacted; older verbatim sessions are in git history.
 2. Apply the 6-test cheat checklist from the cheat-reviewer discipline: semantic
    purpose? human-writable from spec? GCC-steering as sole function? annotated?
    sanctioned family with prerequisites? intent-announcing names?

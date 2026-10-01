@@ -123,7 +123,7 @@ void func_80074488(s32 *arg0);
 
 /* func_800747D8: the duplicated `sound = 4;` below is claimed under
  * .claude/rules/duplicated-statement-into-arms.md and carries its FAKE
- * annotation inline; self-vet: memory/grind/func_800747D8/self_vet.md. */
+ * annotation inline; self-vet: pre-slim-2026-10-01:memory/grind/func_800747D8/self_vet.md. */
 /* 0x800A35D0: one {s16, s16} pair per player (two words,
  * asm/data/91C98.data.s:4279-4282), passed to func_800692C0 beside SelWork
  * f40[player]; func_800768DC indexes it by player * 4 (0x80076948/5C). */
@@ -180,7 +180,7 @@ s32 func_800747D8(u32 input) {
              * `selection_sound:` CODE_LABEL, so the store-flag gate at
              * tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather than a
              * CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
-             * sltiu/sll fold; lever-exhaustion: memory/grind/func_800747D8/
+             * sltiu/sll fold; lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_800747D8/
              * hypotheses.md s1-s9 (20 measured kills, incl. the s9
              * break-converged single-assignment control at score 10/205). */
             sound = 4;
@@ -197,7 +197,7 @@ s32 func_800747D8(u32 input) {
              * `selection_sound:` CODE_LABEL, so the store-flag gate at
              * tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather than a
              * CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
-             * sltiu/sll fold; lever-exhaustion: memory/grind/func_800747D8/
+             * sltiu/sll fold; lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_800747D8/
              * hypotheses.md s1-s9 (20 measured kills, incl. the s9
              * break-converged single-assignment control at score 10/205). */
             sound = 4;
@@ -575,7 +575,7 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        just past the sheet's 12-byte SprtHdrA headers: one header on the
        single-state sheets (+0xC), three (normal, then one cursor highlight
        per player) on the highlightable ones (+0x24). D_SEL.BIN layout:
-       memory/grind/func_8007636C/evidence.md "Ruling 9 re-audit". */
+       pre-slim-2026-10-01:memory/grind/func_8007636C/evidence.md "Ruling 9 re-audit". */
     s32 cells;
     s32 color;
     s16 i;
@@ -586,7 +586,7 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
      * rematerializes it as the target's `move t0,zero; slt` (0x800764A0); a
      * literal 0 lets combine fold the guard to a beqz (3/348). The case-2
      * sibling func_800759D0 holds this same argument's zero in $fp (asm lines
-     * 20/56/334/356). Lever exhaustion: memory/grind/func_8007636C/hypotheses.md. */
+     * 20/56/334/356). Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_8007636C/hypotheses.md. */
     s32 mode;
     u16 idx;
 

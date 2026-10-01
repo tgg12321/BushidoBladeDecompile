@@ -313,7 +313,7 @@ carries SHA1-mismatch risk if any of the using functions get
 recompiled differently due to the type change.  The rename is a good
 follow-up but deferred to the decomp-agent's normal flow.
 
-For reference until the rename happens: `docs/engine/recent_naming_findings.md`
+For reference until the rename happens: `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`
 uses `D_80106A50` directly with the "move-enable bitmap" interpretation
 called out inline.
 
@@ -441,7 +441,7 @@ Proposed canonical name: `irq_cdrom_init` (parallel to `vsync_Init`).
 ## Pass 4: Cluster-trace findings (2026-05-17 end-of-session)
 
 After the placeholder-refinement addendum cluster traces
-(see `docs/engine/recent_naming_findings.md` §11-22), several
+(see `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md` §11-22), several
 existing names were found to misrepresent their actual role.
 
 ### Fixed in trace commits
@@ -908,7 +908,7 @@ pass-5/6 finding that `psyq_memset` / `syscall_wrapper` proposer
 categories require body-validation before application.
 
 The `kengo_pattern` (kengo `name-unique` with diff ≤ 1 insn) is
-1 of 1 wrong in this batch, consistent with [[kengo-name-unreliable]]
+1 of 1 wrong in this batch, consistent with kengo-name-unreliable
 when `n_claimants ≥ 2` (this had n_claimants=7).
 
 The `syscall_wrapper` and `data_as_code` categories were both right

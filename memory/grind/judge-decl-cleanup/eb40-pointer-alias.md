@@ -62,7 +62,7 @@ declaration (func_800233AC's `tbl` initializer; func_80023648's `tbl` declaratio
 func_80023648 the old name `new_var` is renamed `tbl` (identifier only).
 
 ## Earlier record
-docs/grind/decisions.md:14423 (2026-08-26 19:07, Judge final call PASS for func_80023648)
+pre-slim-2026-10-01:docs/grind/decisions.md:14423 (2026-08-26 19:07, Judge final call PASS for func_80023648)
 treated the `new_var = &D_8008EB40` base as ordinary. It is cited, but the paperwork is
 carried anyway (orchestrator instruction).
 

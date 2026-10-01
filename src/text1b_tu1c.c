@@ -1033,7 +1033,7 @@ s32 func_8006295C(void) {
        prim takes its real job as the quad cursor; mechanism: the second write
        to prim's pseudo keeps combine from folding `mats = base + 0x78` into
        the loop's giv init (target keeps `move s4,v0`) and puts base in s1;
-       lever-exhaustion: memory/grind/func_8006295C/hypotheses.md H1. */
+       lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_8006295C/hypotheses.md H1. */
     prim = (POLY_FT4 *)D_800A34EC;
     count = 0;
     mats = (MATRIX *)((u8 *)prim + 0x78);
@@ -1131,7 +1131,7 @@ s32 func_8006295C(void) {
            quad; mechanism: global.c priority -- a fresh cursor local
            (nrefs 10 / livelen 15) outranks the zbuf[k] giv and takes s0,
            while prim's pseudo is already seated in s1 as in the target;
-           lever-exhaustion: memory/grind/func_8006295C/hypotheses.md H2. */
+           lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_8006295C/hypotheses.md H2. */
         end = prim;
         for (prim = (POLY_FT4 *)D_800A37D4, k = 0; prim < end; prim++, k++) {
             AddPrim(g_gpu_ot_ptr + zbuf[k] * 4, (s32)prim);
@@ -1480,7 +1480,7 @@ s32 func_80063E10(s32 lane) {
        local-alloc seats in v0, while prim's pseudo lives across the calls and
        global.c seats it in s2, which is where the target holds the base
        (`lw s2,%gp_rel(D_800A34EC)` ... `lw s2,%gp_rel(D_800A37D4)`);
-       lever-exhaustion: memory/grind/func_80063E10/hypotheses.md H1. */
+       lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80063E10/hypotheses.md H1. */
     prim = (POLY_FT4 *)D_800A34EC;
     mats =(MATRIX *)((u8 *)prim + 0x28);
     cm = (MATRIX *)((u8 *)prim + 0x168);
@@ -1516,7 +1516,7 @@ s32 func_80063E10(s32 lane) {
            (threshold * savings * lifetime >= 141 insns) hoists it to the
            preheader (target spills it to 32(sp)); as a user variable bit also
            keeps combine from turning the test into srav/andi;
-           lever-exhaustion: memory/grind/func_80063E10/hypotheses.md H2. */
+           lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80063E10/hypotheses.md H2. */
         if (!(D_800A3454[lane] & (bit = 1 << i))) {
             continue;
         }
@@ -1730,7 +1730,7 @@ s32 func_80063E10(s32 lane) {
        mechanism: global.c priority -- with a fresh tail cursor prim loses the
        tail refs and sxy outranks it (sxy s2 / prim s3, swapped vs the
        target, 24 operand-only hunks); lever-exhaustion:
-       memory/grind/func_80063E10/hypotheses.md H3. */
+       pre-slim-2026-10-01:memory/grind/func_80063E10/hypotheses.md H3. */
     end = prim;
     for (prim = (POLY_FT4 *)D_800A37D4, k = 0; prim < end; prim++, k++) {
         D_800A34E8 = (s32)prim;
@@ -2441,17 +2441,17 @@ u8 func_80065800(s32 arg0) {
     VECTOR *dst;
     s32 n;
     s32 w; /* FAKE: named intermediate - *p_w read once before the corner sign test
-            * (memory/grind/func_80065800/evidence/named-locals.txt) */
+            * (pre-slim-2026-10-01:memory/grind/func_80065800/evidence/named-locals.txt) */
     s32 sw; /* FAKE: named intermediate - the width scale multiplied into *p_w whole
-             * (memory/grind/func_80065800/evidence/named-locals.txt) */
+             * (pre-slim-2026-10-01:memory/grind/func_80065800/evidence/named-locals.txt) */
     s32 sh; /* FAKE: named intermediate - the height scale multiplied into *p_h whole
-             * (memory/grind/func_80065800/evidence/named-locals.txt) */
+             * (pre-slim-2026-10-01:memory/grind/func_80065800/evidence/named-locals.txt) */
     s32 h; /* FAKE: named intermediate - *p_h read once before the corner sign test
-            * (memory/grind/func_80065800/evidence/named-locals.txt) */
+            * (pre-slim-2026-10-01:memory/grind/func_80065800/evidence/named-locals.txt) */
     s16 *t;
     s16 *tbl; /* FAKE: pointer alias of D_800F0BA8 - case 10/11's base address in its own
                * register ahead of the index shift
-               * (memory/grind/func_80065800/evidence/case10-base-register.txt) */
+               * (pre-slim-2026-10-01:memory/grind/func_80065800/evidence/case10-base-register.txt) */
     s32 i;
 
     outer = D_800A34EC;
@@ -4214,7 +4214,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
        (owner ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object
        (`s`, address passed to both descriptor callees) rather than adding a dead
        pad local.  In-tree precedent for this carve-out: func_8006DD94 in this TU
-       (same callee func_8007352C; Judge PASS docs/grind/decisions.md:26471) and
+       (same callee func_8007352C; Judge PASS pre-slim-2026-10-01:docs/grind/decisions.md:26471) and
        src/text1a_post.c:387-400 (func_80041BF4, accepted on main).
        Lever-exhaustion: memory/grind/func_80069F80/hypotheses.md - s1 H2 (0x2C
        form scores 12, every save/restore offset wrong), s3 180-variant sweep of
@@ -4318,8 +4318,8 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
        Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out
        (owner ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object
        rather than adding a dead pad local.  In-tree precedent: func_80069F80
-       (this TU, Judge PASS docs/grind/decisions.md:26892) and func_8006DD94
-       (this TU, Judge PASS docs/grind/decisions.md:26471).
+       (this TU, Judge PASS pre-slim-2026-10-01:docs/grind/decisions.md:26892) and func_8006DD94
+       (this TU, Judge PASS pre-slim-2026-10-01:docs/grind/decisions.md:26471).
        Lever-exhaustion: memory/grind/func_8006A1A0/hypotheses.md - s1 H2 (0x2C
        form scores 14, every save/restore offset wrong; no other residual). */
     S_69F80 s;
@@ -4590,15 +4590,15 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
        sprite-sheet table of the MOD.BIN root: +0x18 (option rows; first sheet,
        the row loop and row 7), +0x40 (counter frames), +0x24 twice (icon
        frames at [8 + frame], then FT4 frames at [frame]). Necessity proof
-       (allocator dumps): memory/grind/func_8006A880/ruling11.md. */
+       (allocator dumps): pre-slim-2026-10-01:memory/grind/func_8006A880/ruling11.md. */
     s32 *sheets;
     /* Ruling 11: holds two values, each a mask with one bit per option row:
        D_8009BC08 (scanned for the first row drawn) and D_8009BC04 (rows
-       switched on). Necessity proof: memory/grind/func_8006A880/ruling11.md. */
+       switched on). Necessity proof: pre-slim-2026-10-01:memory/grind/func_8006A880/ruling11.md. */
     u32 row_mask;
     /* Ruling 9: the sheet's cell array. Every sheet drawn here is one 12-byte
        header followed by its 8-byte cells, so the cells always start at
-       +0xC (MOD.BIN census: memory/grind/func_8006A880/evidence.md). */
+       +0xC (MOD.BIN census: pre-slim-2026-10-01:memory/grind/func_8006A880/evidence.md). */
     s32 cells;
     s32 yofs;
     s32 bit;
@@ -4791,7 +4791,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     *(s32 *)(arg0 + 0x1C) += 0xC;
 }
 /* One argument: the caller's s32[10] draw context (asm reads a0 only; see
- * memory/grind/func_8006B120/hypotheses.md). */
+ * pre-slim-2026-10-01:memory/grind/func_8006B120/hypotheses.md). */
 void func_8006B120(s32 *arg0);
 typedef struct {
     s32 p0;
@@ -5359,14 +5359,14 @@ void func_8006C21C(s32 *arg0) {
        callee-save $s5 (target: `addu $s5,$zero,$zero`, then `addu $a1,$s5,$zero`
        at the phase-3 and phase-5 calls; cse folds the phase-1 read to 0 inside
        the entry block). Literal 0 at every call measured worse; receipts in
-       memory/grind/func_8006C21C/admission.md "mode". Same shape as the
+       pre-slim-2026-10-01:memory/grind/func_8006C21C/admission.md "mode". Same shape as the
        siblings func_800753D8 (`zero`) and func_8007636C (`mode`). */
     s32 mode;
     /* Holds several values (Ruling 11, ordinary-c-judge-decidable.md): the
        phase-2 unlock-bit index, the phase-4 sprite index, the phase-6 tile
        row, and the phase-8 gauge level read per player. One variable is what
        the target's allocation requires (global.c: the merged pseudo outranks
-       `j` for $fp); proof in memory/grind/func_8006C21C/admission.md "work". */
+       `j` for $fp); proof in pre-slim-2026-10-01:memory/grind/func_8006C21C/admission.md "work". */
     s32 work;
     /* FAKE: per-branch constant holder (named-local-fake-exception, owner
        ruling 2026-09-28 Q27 (B)) -- the bar's far-corner red, 0 on the
@@ -5374,7 +5374,7 @@ void func_8006C21C(s32 *arg0) {
        four arms, it is not a loop.c movable, so the else-arm 0x80 is not
        matched with its twin and hoisted out of the row loop; the target
        loads `li $v0,0x80` in each else arm. Literal and chained forms
-       measured worse: memory/grind/func_8006C21C/evidence.md s2, s5, s8. */
+       measured worse: pre-slim-2026-10-01:memory/grind/func_8006C21C/evidence.md s2, s5, s8. */
     s32 col;
     /* FAKE: always-zero narrow locals (named-local-fake-exception, owner
        ruling 2026-09-28 Q27 (A)) -- SetDrawMode's dither and texture-window
@@ -5384,7 +5384,7 @@ void func_8006C21C(s32 *arg0) {
        four never-allocated temps take the target's four untouched frame
        slots (0x60-0x78, frame 0xC0). A read from phase 5 on keeps the local
        live across the phase-4 calls (callee-saved reg, +insns), so later
-       sites write a literal 0. Receipts: memory/grind/func_8006C21C/
+       sites write a literal 0. Receipts: pre-slim-2026-10-01:memory/grind/func_8006C21C/
        evidence.md s5, s6, s8, s9 and probes/s9. */
     s16 dtd;
     s16 xpos;
@@ -5397,7 +5397,7 @@ void func_8006C21C(s32 *arg0) {
     /* the sprite sheet's 8-byte cell array, which starts just past the sheet's
        12-byte header (SprtHdrA / SprtEntA, read by func_8007352C); every
        MOD.BIN sheet these four sites reach has one header (census). Ruling 9:
-       one meaning, header + 0xC at every write; memory/grind/func_8006C21C/
+       one meaning, header + 0xC at every write; pre-slim-2026-10-01:memory/grind/func_8006C21C/
        admission.md "cells". */
     u8 *cells;
 
@@ -5727,7 +5727,7 @@ typedef struct {
  * store (0x8006D018 `sw $zero,0x48($sp)`), so the storage is declared as
  * the counter array plus one word view (owner ruling Q33, 2026-09-29);
  * every other access goes through count[]. Evidence:
- * memory/grind/func_8006CFBC/evidence.md "Q33 union". */
+ * pre-slim-2026-10-01:memory/grind/func_8006CFBC/evidence.md "Q33 union". */
 typedef union {
     s16 count[2];
     s32 word;
@@ -5745,7 +5745,7 @@ s32 func_8006CFBC(s32 *arg0) {
      * s.header + 0xC stored to s.table -- for table[column + 8] in the
      * column loop, for table[12] when a row drew nothing, and for
      * table[17], [18] or [19] in the last loop. (D) proof in
-     * memory/grind/func_8006CFBC/r11/proof.md. */
+     * pre-slim-2026-10-01:memory/grind/func_8006CFBC/r11/proof.md. */
     s8 *temp;
 
     result = 0;
@@ -6007,7 +6007,7 @@ void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
        the smallest member.  The live-object choice follows the family model:
        EnvA + a separate 8-aligned s16 array at sp+0x48, as in func_8006D3DC
        (u16 rect[4]); same carve-out as the caller func_8006DD94.
-       Lever-exhaustion: memory/grind/func_8006D808/hypotheses.md. */
+       Lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_8006D808/hypotheses.md. */
     s16 d[5];
     s16 i;
     s16 k;

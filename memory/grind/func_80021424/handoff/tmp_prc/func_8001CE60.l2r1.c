@@ -19,7 +19,7 @@ void func_8001CE60(void) {
          * its per-branch constants clause): the announcement length in
          * frames (0x50 after a draw, 0x64 otherwise), then the match clock's
          * frames left for the on-screen timer. Allocator dump proof:
-         * memory/grind/func_8001CE60/evidence.md (s2). */
+         * pre-slim-2026-10-01:memory/grind/func_8001CE60/evidence.md (s2). */
         s32 temp;
 
         if (D_800A381E != 0) {

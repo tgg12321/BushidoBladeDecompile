@@ -57,7 +57,7 @@ floor 2 at s12; 12 sessions; live frontier (state.json is authoritative):
 - verdict: CONFIRMED
 - result: Score dropped 15 -> 12 (build_insns 186 -> 185, target 187). The entire final-callback instruction block now matches target with only masked branch-offset differences remaining.
 
-## [s3] H8 — CONFIRMED (diagnostic, not a fix): the instrumented cc1's `BB2_RANK_DEBUG` hook (tools/gcc-2.7.2/cc1, NOT tools/gcc-2.7.2/build/cc1 — see [[instrumented-cc1-location]]) proves the D_8009BF6C store (insn 189) ties with insn 198 (part of the .count field's address recompute chain) in BOTH `INSN_PRIORITY` (8) and de…
+## [s3] H8 — CONFIRMED (diagnostic, not a fix): the instrumented cc1's `BB2_RANK_DEBUG` hook (tools/gcc-2.7.2/cc1, NOT tools/gcc-2.7.2/build/cc1 — see instrumented-cc1-location) proves the D_8009BF6C store (insn 189) ties with insn 198 (part of the .count field's address recompute chain) in BOTH `INSN_PRIORITY` (8) and de…
 - verdict: CONFIRMED
 - result: `RANKDBG last=204 y=198 cls=3 x=189 cls2=3 val=0` — confirms the
 

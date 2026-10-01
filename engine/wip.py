@@ -8,9 +8,8 @@ outside cpp/cc1/maspsx); the canonical src/ is unchanged. The WIP is evidence
 + resume-point, not active code.
 
 This module is READ-ONLY. WIP entries are authored by agents (worker writes
-candidate.c + meta.json directly). Engine surfaces them via:
-- queue_top.py hook (SessionStart) — append a one-line WIP banner if the top
-  active item has a WIP entry
+candidate.c + meta.json directly); memory/wip is a legacy manual-path surface
+(the Grinder uses memory/grind ledgers). Engine surfaces them via:
 - queue next CLI — include wip block in the JSON output
 - queue regen — does not touch memory/wip/ (entries are sticky like parks).
 

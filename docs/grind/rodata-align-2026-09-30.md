@@ -72,7 +72,7 @@ boundaries differ from ours at these points. Our read-only-data boundaries come 
 ## 4. Evidence check at every site (2026-09-30, second pass)
 
 Question from the owner: pursue this only if it makes sense, fits the established rules, and is
-not a cheat. The rule that decides it is `.claude/rules/jtbl-rodata-split-infrastructure.md`:
+not a cheat. The rule that decides it is `pre-slim-2026-10-01:.claude/rules/jtbl-rodata-split-infrastructure.md`:
 evidence-based TU re-attribution is the legitimate (SOTN) path; a reorder chosen to force a match
 is banned. So at each site the test is whether the boundary comes from evidence rather than from
 the bytes it produces.
@@ -251,7 +251,7 @@ after func_8005C2A8 up to func_80061064; the functions in between own no rodata,
 byte-neutral anywhere inside it. By the convention (cut at the item that begins the new file's
 rodata) it sits at func_80061064's extern block.
 
-**Moves only (condition 4).** Done by memory/grind/func_80065800/tools/move.py:
+**Moves only (condition 4).** Done by pre-slim-2026-10-01:memory/grind/func_80065800/tools/move.py:
 - snd_Init's extern block .. func_80060E38 (2927 lines, 51 functions) move verbatim from
   text1b_tu1c.c to the end of text1b.c, the file they were split from in section 8. Two
   declarations of the moved block are dropped because text1b.c already has them from
@@ -274,11 +274,11 @@ rodata) it sits at func_80061064's extern block.
 
 **Checks.** Full rebuild: EXE sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa (the oracle);
 text1b_tu1c.o .rodata at 0x800158E0 (0xd0 bytes), text1a_b_pre_rodata_b.o at 0x800158B4 (0x2c).
-Implicit function declarations (memory/grind/func_80065800/tools/implicit_cmp.sh, cc1 with
+Implicit function declarations (pre-slim-2026-10-01:memory/grind/func_80065800/tools/implicit_cmp.sh, cc1 with
 `-Wimplicit`): the union over text1b.c and text1b_tu1c.c is the same 24 names before and after.
 Per file, func_80062020 and srand move from text1b_tu1c.c to text1b.c with their only implicit
 call sites, and LoadImage's text1b_tu1c.c entry disappears because text1b.c already declared it
 implicitly before the move. Records relocated (file field only, section 7 procedure,
-memory/grind/func_80065800/tools/relocate.py): the queue items func_8005C8A8 and func_8005D554,
+pre-slim-2026-10-01:memory/grind/func_80065800/tools/relocate.py): the queue items func_8005C8A8 and func_8005D554,
 and the grind state.json of func_8005C8A8, func_8005D554, func_8005D814, func_8005E54C and
 func_8005F1C8. No canonical_asm_regions entry or scope_allow line names a moved function.

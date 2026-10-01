@@ -22,19 +22,19 @@ func_8002D518 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; regi
 func_8002E838 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
 func_800300B4 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
 func_800325E0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
-# 2026-09-01 widened-anchor owner GRANT (decisions.md:17921) — confirmed
+# 2026-09-01 widened-anchor owner GRANT (pre-slim-2026-10-01:docs/grind/decisions.md:17921) — confirmed
 # handwritten-tagged carriers named in the grant; rows added by the operator
 # 2026-09-02 per owner Ruling A (decisions.md 2026-09-02 OWNER RULING):
 func_80031890 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:17921; row per owner ruling 2026-09-02)
 func_8002FF20 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:17921; row per owner ruling 2026-09-02)
 func_80019310 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:17921; row per owner ruling 2026-09-06 foreclosed-bucket review)
-# 2026-09-15 Ruling 3 (decisions.md:26863) — func_80018094 reached floor 0 after
+# 2026-09-15 Ruling 3 (pre-slim-2026-10-01:docs/grind/decisions.md:26863) — func_80018094 reached floor 0 after
 # the 2026-08-30 proven-or-near-floor cut was drawn; the owner ruled it earns a
 # row "on exactly the terms func_80019310 got one", added by the operator:
 func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row per owner Ruling 3, 2026-09-15, decisions.md:26863)
 # 2026-09-21 — two further census members reached floor 0 after the 2026-08-30
 # proven-or-near-floor cut was drawn, so they earn rows on exactly the terms
-# Ruling 3 (2026-09-15, decisions.md:26863) gave func_80018094, which in turn
+# Ruling 3 (2026-09-15, pre-slim-2026-10-01:docs/grind/decisions.md:26863) gave func_80018094, which in turn
 # tracked func_80019310's 2026-09-06 row. Operator-added at the owner's
 # instruction 2026-09-21; every other gate applies unchanged:
 # func_8002D780 row removed 2026-09-29: reopened per owner Q38 (2026-09-29, 803d0fea1) -- no recorded owner instruction for the grant, and the islands do not qualify under the 2026-09-26 inline_o.h class grant.
@@ -85,7 +85,7 @@ func_8002F2D0 inline-asm-policy.md § Per-function grants: func_8002D780, func_8
 # only; every other gate applies unchanged:
 func_8002F770 inline-asm-policy.md § Per-function grants: func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770 (owner Q61 2026-09-30, 60643418a): gte_rtv0 post-DMPSX word 0x4A486012 for placeholder 0x0000013f, 1 statement only; this function only; operator-added 2026-09-30
 # 2026-09-23 — a named carrier of the 2026-09-01 widened-anchor owner grant
-# (decisions.md:17921, which lists func_8003E6D8 among the confirmed
+# (pre-slim-2026-10-01:docs/grind/decisions.md:17921, which lists func_8003E6D8 among the confirmed
 # handwritten-tagged carriers) reached floor 0 in a manual session, so it earns
 # a row on the same terms as func_80031890 / func_8002FF20 / func_80019310.
 # Operator-added at the owner's instruction 2026-09-23 (conversation, the

@@ -6,7 +6,7 @@ Soft guard (warns, doesn't block) against:
 - AGENTS.md growing past ~250 lines
 - `@AGENTS.md` import being removed from CLAUDE.md
 - Rule-shaped content (HARD RULE / FORBIDDEN / MUST / NEVER) appearing
-  in CLAUDE.md — those belong in memory/rules/ atomic files
+  in CLAUDE.md — those belong in a .claude/rules/<slug>.md file
 - Tool-agnostic content (toolchain facts, build commands) ending up
   in CLAUDE.md instead of AGENTS.md
 
@@ -24,7 +24,7 @@ CLAUDE_MAX_LINES = 200
 CLAUDE_GROWTH_WARN_LINES = 50
 AGENTS_MAX_LINES = 250
 
-# Patterns that look like atomic rule content — should live in memory/rules/
+# Patterns that look like atomic rule content — should live in .claude/rules/
 RULE_PATTERNS = [
     r"\*\*FORBIDDEN:\*\*",
     r"\*\*REQUIRED:\*\*",
@@ -85,13 +85,13 @@ def check_claude_md(content: str, was_size: int | None) -> list[str]:
     if new_size > CLAUDE_MAX_LINES:
         warnings.append(
             f"CLAUDE.md will be {new_size} lines (target: <={CLAUDE_MAX_LINES}). "
-            f"Consider moving content to memory/rules/, memory/workflow/, or AGENTS.md."
+            f"Consider moving content to .claude/rules/ (path-scoped rule) or AGENTS.md."
         )
     if was_size is not None and (new_size - was_size) > CLAUDE_GROWTH_WARN_LINES:
         warnings.append(
             f"CLAUDE.md is growing by {new_size - was_size} lines in this edit "
             f"(was {was_size}, becomes {new_size}). Large additions usually belong "
-            f"in memory/rules/ (durable rules) or memory/workflow/ (harness mechanics)."
+            f"in .claude/rules/ (path-scoped rules) or AGENTS.md (tool-agnostic facts)."
         )
 
     if "@AGENTS.md" not in content:
@@ -107,7 +107,7 @@ def check_claude_md(content: str, was_size: int | None) -> list[str]:
         if m:
             warnings.append(
                 f"CLAUDE.md contains a rule-shaped pattern (`{m.group(0)[:50]}`) — "
-                f"this belongs in memory/rules/<rule>.md as an atomic rule file, "
+                f"this belongs in .claude/rules/<slug>.md as a path-scoped rule file, "
                 f"not in CLAUDE.md."
             )
             break  # one warning is enough; don't spam

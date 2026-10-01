@@ -415,7 +415,7 @@ def _parse_allowlist_text(text: str) -> set[str]:
     """Mirror of volatile_cheats._load_volatile_extern_allowlist's line
     semantics (strip at the FIRST '#', take the first whitespace token).
 
-    A mirror is a drift hazard ([[buildconfig-mirror-drift-false-mismatch]]),
+    A mirror is a drift hazard ([[operator-gotchas]]),
     so verify_parser_mirror() below checks this against the engine loader's own
     answer on the working-tree file every run. A mirror that silently drifts
     would produce exactly the confident fiction this tool exists to prevent.

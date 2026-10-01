@@ -152,7 +152,7 @@ extern u8 D_8009BD20[2][2];
  * Q33/Q46): `lw 0x10` at func_800747D8 0x800747F4 and func_80075670
  * 0x80075684, `lw 0x14` at func_80077374 0x800773A4. The s32 members make the
  * struct 4-aligned, so sizeof is 0x94 (the members end at 0x92; owner ruling
- * Q57, layout search in memory/grind/func_800768DC/q57-layout-search-2026-09-30.md). */
+ * Q57, layout search in pre-slim-2026-10-01:memory/grind/func_800768DC/q57-layout-search-2026-09-30.md). */
 typedef struct {
     void *f00;
     s32 *f04;
@@ -365,7 +365,7 @@ extern s16 D_800A34F0[2];
  * func_8006E534's one word store over bytes 0..3, `sw $v0,%gp_rel(D_800A3560)($gp)`
  * with $v0 = -1 (func_8006E534.s:85, 0x8006E668). Every other access goes
  * through rec[]. Owner rulings Q44/Q54: every consumer is in the -G8 file
- * src/text1b_tu1d.c (proof: memory/grind/func_80070F78/g8-evidence.md). */
+ * src/text1b_tu1d.c (proof: pre-slim-2026-10-01:memory/grind/func_80070F78/g8-evidence.md). */
 typedef struct {
     u8 unk0;
     u8 unk1;

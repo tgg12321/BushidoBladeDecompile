@@ -212,7 +212,7 @@ void func_800167EC(void) {
      * stores off rec's register and loop.c strength-reduces rec->times[i] into a pointer
      * copied from it, so unk_00 is stored at 0(base) and the loop walks base by 8;
      * exhaustion: direct only 19, rec only 10, times-array pointer 8, per-element pointer 10,
-     * rec set after the header stores 15; memory/grind/func_80034708/evidence.md [s10] */
+     * rec set after the header stores 15; pre-slim-2026-10-01:memory/grind/func_80034708/evidence.md [s10] */
     FileRecord *rec = &D_80106A50; /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
 
     D_800A3710 = 0;
@@ -664,12 +664,12 @@ void func_800174F4(void) {
     /* temp: holds two values, the case-1/2 fade loop's iteration count and
      * the case-20 D_800A37A8[] code passed to func_80060414. Ruling 11
      * (ordinary-c-judge-decidable.md); (D) proof in
-     * memory/grind/func_800174F4/evidence.md "Ruling 11 proof". */
+     * pre-slim-2026-10-01:memory/grind/func_800174F4/evidence.md "Ruling 11 proof". */
     s32 temp;
     u8 *prim;
     /* temp2: holds two values, the g_disp_enable switch selector and the
      * case-20 D_800A37A0 limit. Ruling 11; (D) proof in
-     * memory/grind/func_800174F4/evidence.md "Ruling 11 proof". */
+     * pre-slim-2026-10-01:memory/grind/func_800174F4/evidence.md "Ruling 11 proof". */
     s32 temp2;
 
     prim = &D_800F33D8;

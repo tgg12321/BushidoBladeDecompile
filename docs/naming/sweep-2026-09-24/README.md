@@ -1,7 +1,7 @@
 # Naming sweep 2026-09-24
 
 A naming pass over the still-unnamed functions and data symbols, run under the owner's
-false-positive directive ([[names-require-evidence]]: a wrong name costs more than an auto
+false-positive directive ([[owner-directives]]: a wrong name costs more than an auto
 name). Every applied row was **mined** by one agent and **re-derived by a fresh
 default-refute verifier** that treated the miner's evidence as a claim; only CONFIRM rows
 landed (PLAUSIBLE rows stay unapplied, REFUTE rows either drop or land under the verifier's

@@ -117,7 +117,7 @@ extern u16 D_8008EBA0;
  * which indexes them by player and does not produce those accesses from single
  * bytes. The mismatch is kept because no single declaration compiles both files
  * with a counting spelling (Q22/Q23 set-asides excluded).
- * Evidence: memory/grind/func_8001CE60/evidence.md (s3),
+ * Evidence: pre-slim-2026-10-01:memory/grind/func_8001CE60/evidence.md (s3),
  * probes/calib_800340A0/ (Q24-AGREEMENT*.txt). */
 extern u8 D_800A3898;
 extern u8 D_800A3899;
@@ -166,7 +166,7 @@ extern s32 D_801020FC;
  * multiple sets, removing sched.c's birthing boost from the timer call and
  * keeping the record-base load after it. Correct void declarations miss 7
  * instructions; the typed record rewrite and simpler forms are measured in
- * memory/grind/func_80026DA4/session-2026-10-01.md.
+ * pre-slim-2026-10-01:memory/grind/func_80026DA4/session-2026-10-01.md.
  * SOTN: src/main/psxsdk/libsnd/ssclose.c:8 and
  * src/main/psxsdk/libsnd/vmanager.c:1107 @db41b28eee52969244a52cc269c8163d1ed8826a */
 void func_80026DA4(void) {
