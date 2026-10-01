@@ -1093,22 +1093,15 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # (CD_ready 2 -> 0 on 2026-09-06 while foreclosed CD_sync / CD_datasync
         # sat on the same unsolved do_timeout window). A foreclosed sibling is
         # never dispatched, so it also gets surfaced to the log and the journal.
-        $fsibs = @()
-        try {
-            $fsibs = @(python tools/grinder/grindlib.py complete-ledger . $func $bucket $sessionsTaken 2>$null |
-                        Where-Object { $_ -match '^(ROTATED|FORECLOSED) SIBLING' })
-        } catch { }
-        foreach ($fs in $fsibs) { Log "${func}: $fs"; Journal "$func completed — $fs" }
-        # Owner ruling Q39: the layer-2 record outlives the ledger. It moves to
-        # memory/grind/_completed/<func>/layer2.jsonl — where archived manual
-        # ledgers already keep theirs — appended byte-for-byte if one is there.
-        $l2Src = Join-Path $Root "memory\grind\$func\layer2.jsonl"
-        if (Test-Path $l2Src) {
-            $l2Dir = Join-Path $Root "memory\grind\_completed\$func"
-            New-Item -ItemType Directory -Force -Path $l2Dir | Out-Null
-            [IO.File]::AppendAllText((Join-Path $l2Dir 'layer2.jsonl'), [IO.File]::ReadAllText($l2Src))
+        # Owner ruling Q39: the layer-2 record outlives the ledger — close-ledger
+        # moves layer2.jsonl AND layer2_verdicts/ to memory/grind/_completed/<func>/
+        # (verdict_file pointers re-pointed), then deletes the ledger directory.
+        $closeOut = @()
+        try { $closeOut = @(python tools/grinder/grindlib.py close-ledger . $func $bucket $sessionsTaken 2>&1) } catch { }
+        foreach ($fs in @($closeOut | Where-Object { $_ -match '^(ROTATED|FORECLOSED) SIBLING' })) {
+            Log "${func}: $fs"; Journal "$func completed — $fs"
         }
-        Remove-Item -Recurse -Force (Join-Path $Root "memory\grind\$func")
+        if ($LASTEXITCODE -ne 0) { Log "${func}: ledger NOT closed — $($closeOut -join ' ')" }
         git -C $Root add -A -- memory/grind docs/grind 2>$null
         git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root commit -m "grinder: close ledger for $func" | Out-Null
@@ -1350,7 +1343,7 @@ function Revert-SessionEdits([string]$func = '') {
     # root-level file (e.g. undefined_syms_auto.txt) dirty; src/include-only
     # reverting would carry that dirt into the NEXT session, whose scope check
     # flags it and discards an innocent session — the park-queue dirt-deadlock
-    # shape (memory/project/grinder-park-queue-dirt-deadlock.md). Tracked paths
+    # shape (harness memory history/grinder-park-queue-dirt-deadlock). Tracked paths
     # only: checkout cannot restore an untracked file, and the scope-violation
     # branch already `git clean`s those.
     if ($func) {
@@ -1434,6 +1427,18 @@ while ($true) {
             Log "${func}: unpark detected — exhaustion window reset (fresh flat window from here)."
             git -C $Root add -- "memory/grind/$func/state.json" 2>$null
             git -C $Root commit -m "grind: $func exhaustion window reset on unpark [skip-park-src-guard]" 2>$null | Out-Null
+        }
+    } catch { }
+
+    # 2c) ledger compaction (2026-10-01): a hypotheses.md / evidence.md over the
+    # 64K cap is rewritten as a current-state summary before the brief tells the
+    # session to read it whole (func_8005D554's 537 KB cost ~130k tokens/session).
+    try {
+        $cmp = @(python tools/grinder/grindlib.py compact-ledger . $func 2>$null | Where-Object { $_ })
+        if ($cmp.Count) {
+            foreach ($c in $cmp) { Log "${func}: $c" }
+            git -C $Root add -- "memory/grind/$func" 2>$null
+            git -C $Root commit -m "grind: $func ledger compacted (over the 64K cap) [skip-park-src-guard]" 2>$null | Out-Null
         }
     } catch { }
 
@@ -1547,6 +1552,11 @@ while ($true) {
 
     # 4) spawn
     $o = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'grind-session.md') $sessionModel $MockSessionScript $func -Modality $modality
+    # 4a) the session writes evidence.md / hypotheses.md directly: bring them back
+    # under the 64K cap before ANY driver commit (the doc-budget commit-msg guard
+    # refuses an over-cap ledger file, and every commit below runs 2>$null).
+    # Driver-side appends (grindlib append_*) compact themselves.
+    python tools/grinder/grindlib.py compact-ledger . $func 2>$null | ForEach-Object { Log "${func}: $_" }
 
     # 5) scope check — any edit outside the allowed surface invalidates the session
     $dirty = Assert-CleanTree
@@ -1833,6 +1843,8 @@ while ($true) {
                 Revert-SessionEdits $func
                 Log "${func}: progress applied — floor=$($o.floor), '$($o.headline)'"
                 Journal "$func s$sessionN [$modality] floor=$($o.floor): $($o.headline)"
+                # keep the commit under the doc-budget guard's ledger cap (step 2c too)
+                python tools/grinder/grindlib.py compact-ledger . $func 2>$null | Out-Null
                 git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
                 git -C $Root commit -m "grind: $func ledger s$sessionN update [skip-park-src-guard]" 2>$null | Out-Null
             }

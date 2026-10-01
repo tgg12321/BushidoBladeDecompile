@@ -15,6 +15,11 @@ The ledger (memory/grind/<func>/) is the pipeline's persistent brain:
   candidate.c    best form so far
   rejected/      judge/reviewer-rejected forms, named for the violated rule
 
+Append-only with ONE exception: over LEDGER_MAX (64K) the driver rewrites a
+.md file as a current-state summary (compact_ledger; full text stays in git).
+When the function completes the directory is closed (close_ledger): only its
+layer-2 record survives, under memory/grind/_completed/<func>/.
+
 Spec: docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md
 """
 import csv
@@ -84,6 +89,9 @@ _SCOPE_LINE = re.compile("(?im)^\\s*SCOPE\\s*:\\s*[\"“](.+?)[\"”]\\s*$")
 _PRECEDENT_LINE = re.compile(r"(?im)^\s*PRECEDENT\s*:\s*(.+)$")
 # file:line, or a git hash (>=7 hex). "same spirit" is explicitly not a citation.
 _CITATION = re.compile(r"([\w./\\-]+\.\w+:\d+)|(\b[0-9a-f]{7,40}\b)")
+# A citation into a file trimmed or deleted after a snapshot is written
+# `pre-slim-2026-10-01:<path>:<line>` and resolves at that git tag.
+_SNAPSHOT_REF = re.compile(r"\bpre-slim-\d{4}-\d{2}-\d{2}:$")
 
 
 def self_vet_path(root, func):
@@ -136,6 +144,8 @@ def validate_self_vet(root, func):
             for m in _CITATION.finditer(pr):
                 if not m.group(1):
                     continue  # commit hash — skip
+                if _SNAPSHOT_REF.search(pr[:m.start()]):
+                    continue  # `<tag>:<path>:<line>` resolves at the git tag, not the tree
                 path = m.group(1).rsplit(":", 1)[0].replace("\\", "/")
                 while path.startswith("./"):
                     path = path[2:]
@@ -657,6 +667,17 @@ def append_evidence(root, func, text, session=None):
     tag = f"[s{session}] " if session else ""
     with open(p, "a", encoding="utf-8", newline="\n") as f:
         f.write(f"\n- {tag}{text}\n")
+    _keep_under_cap(root, func, p)
+
+
+def _keep_under_cap(root, func, path):
+    """Driver-side appends keep the file under LEDGER_MAX (the doc-budget
+    commit-msg guard refuses an over-cap ledger file). Never raises."""
+    try:
+        if os.path.getsize(path) > LEDGER_MAX:
+            compact_ledger(root, func)
+    except Exception:
+        pass
 
 
 def append_hypothesis(root, func, h, session=None):
@@ -674,6 +695,7 @@ def append_hypothesis(root, func, h, session=None):
                 f"- probe: {h.get('probe', '?')}\n"
                 f"- result: {h.get('result', '?')}\n"
                 f"- verdict: {h.get('verdict', '?')}\n" + extra)
+    _keep_under_cap(root, func, p)
 
 
 def _has_measurement(text):
@@ -2186,7 +2208,7 @@ MODALITY_PLAYBOOK = {
                    "an in-hand SOTN-master precedent EXISTS for the closing construct "
                    "(file+line citation — 'same spirit' does not count). If BOTH gates FAIL "
                    "(scan LOW + no precedent — the common case), APPLY THE OWNER'S STANDING "
-                   "RULING (2026-07-27, .claude/rules/endgame-lock-disposition.md; ROTATION per the "
+                   "RULING (2026-07-27, .claude/rules/judge-sole-gate.md; ROTATION per the "
                    "2026-09-08 ruling rotation-not-foreclosure — the foreclosed state is "
                    "retired): APPEND an `## <date> — <func> — OWNER-ESCALATION — **RESOLVED BY "
                    "STANDING RULING (2026-07-27): ROTATED**` entry to docs/grind/decisions.md "
@@ -2794,17 +2816,22 @@ def _ledger_mentions(root, func):
     return out[:60]
 
 
-def write_completion_tombstone(root, func, bucket="", sessions=0, headline=""):
+def write_completion_tombstone(root, func, bucket="", sessions=0, headline="",
+                               file=None, completed_at=None):
     """Snapshot `func`'s ledger for sibling lookup, then return the tombstone.
-    Call BEFORE the ledger directory is deleted. Never raises."""
+    Call BEFORE the ledger directory is deleted. Never raises. A ledger with no
+    state.json (manual lane: layer2.jsonl + notes only) gets one only when the
+    caller names its src stem via `file`."""
     try:
         if not os.path.isfile(os.path.join(ledger_dir(root, func), "state.json")):
-            return None       # nothing to snapshot; never invent a tombstone
+            if not file or not os.path.isdir(ledger_dir(root, func)):
+                return None   # nothing to snapshot; never invent a tombstone
         st = load_state(root, func) or {}
         rec = {"func": func, "names": _ledger_names(root, func),
-               "file": st.get("file", "?"), "bucket": str(bucket or ""),
+               "file": st.get("file") or file or "?", "bucket": str(bucket or ""),
                "sessions": int(sessions or st.get("session_count", 0) or 0),
-               "completed_at": _now(), "mentions": _ledger_mentions(root, func),
+               "completed_at": completed_at or _now(),
+               "mentions": _ledger_mentions(root, func),
                "headline": str(headline or "")[:200]}
         d = completed_dir(root)
         os.makedirs(d, exist_ok=True)
@@ -2882,6 +2909,438 @@ def completed_siblings(root, func, names=None):
     # that closed last week.
     out.sort(key=lambda s: (s["floor_since_date"] or ""), reverse=True)
     return out[:MAX_COMPLETED_SIBLINGS]
+
+
+# ── Ledger close (2026-10-01 slim-down) ──────────────────────────────────────
+# A completed function's ledger is deleted; git keeps its history. Only the
+# layer-2 record outlives it (owner ruling Q39: `queue done` / departures audit
+# read memory/grind/**/layer2.jsonl), moved to _completed/<func>/ together with
+# the layer2_verdicts/ copies its records point at. Before this, the Grinder
+# moved layer2.jsonl but deleted layer2_verdicts/ (dangling verdict_file), and
+# the manual lane never closed anything: 210 completed ledgers (36 MB) piled up.
+_INCLUDE_ASM_RE = re.compile(r'INCLUDE_ASM\(\s*"[^"]*"\s*,\s*(\w+)\s*\)')
+
+
+def ledger_close_refusal(root, func):
+    """None when `func`'s ledger may be closed, else the reason: it is still
+    queued, still INCLUDE_ASM in src/, has no body in src/ at all, or carries
+    a HANDOFF.md (open follow-up work banked under a completed function's
+    name, e.g. func_80021424's PracticeMenuRec cleanup series)."""
+    if os.path.isfile(os.path.join(ledger_dir(root, func), "HANDOFF.md")):
+        return f"memory/grind/{func}/HANDOFF.md holds open work; close it by hand when done"
+    try:
+        with open(os.path.join(root, "engine", "queue.json"), encoding="utf-8") as fh:
+            if any(i.get("func") == func for i in json.load(fh).get("items", [])):
+                return f"{func} is still in engine/queue.json"
+    except (OSError, ValueError) as e:
+        return f"cannot read engine/queue.json: {e}"
+    if not locate_stem(root, func):
+        return f"{func} has no completed body in src/*.c (none, or a non-canonical INCLUDE_ASM)"
+    return None
+
+
+_SRC_CACHE = {}
+
+
+def _src_texts(root):
+    """{stem: text} of src/*.c, cached per root for a sweep's lifetime."""
+    if root not in _SRC_CACHE:
+        out = {}
+        src = os.path.join(root, "src")
+        for fn in sorted(os.listdir(src)) if os.path.isdir(src) else []:
+            if fn.endswith(".c"):
+                try:
+                    with open(os.path.join(src, fn), encoding="utf-8", errors="replace") as fh:
+                        out[fn[:-2]] = fh.read()
+                except OSError:
+                    pass
+        _SRC_CACHE[root] = out
+    return _SRC_CACHE[root]
+
+
+def locate_stem(root, func):
+    """The src/<stem>.c holding `func`'s completed body — a C definition, a
+    whole-body glabel, or an INCLUDE_ASM authorized in inline_asm_canonical.txt
+    — or '' (no body, or a not-yet-decompiled INCLUDE_ASM)."""
+    defn = re.compile(r"(?m)^[A-Za-z_][^;\n(=]*?\b" + re.escape(func) +
+                      r"\s*\([^;{}]*\)[ \t]*(?:\{|/[*/]|$)|glabel\s+" + re.escape(func) + r"\b")
+    hit = ""
+    for stem, t in _src_texts(root).items():
+        if func in t and func in _INCLUDE_ASM_RE.findall(t):
+            return stem if func in _canonical_funcs(root) else ""
+        if not hit and func in t and defn.search(t):
+            hit = stem
+    return hit
+
+
+def archive_ledger(root, func):
+    """Move the layer-2 record (layer2.jsonl, appended if an archive exists, and
+    layer2_verdicts/) to memory/grind/_completed/<func>/, re-point every moved
+    record's verdict_file at the moved copy, then delete the ledger directory.
+    Call AFTER write_completion_tombstone. Raises on I/O failure (a half-moved
+    record must not read as closed). Returns the number of records moved."""
+    import shutil
+    src = ledger_dir(root, func)
+    if not os.path.isdir(src):
+        return 0
+    dst = os.path.join(completed_dir(root), func)
+    old = f"memory/grind/{func}/layer2_verdicts/"
+    new = f"memory/grind/{COMPLETED_SUBDIR}/{func}/layer2_verdicts/"
+    vsrc = os.path.join(src, "layer2_verdicts")
+    if os.path.isdir(vsrc):
+        os.makedirs(os.path.join(dst, "layer2_verdicts"), exist_ok=True)
+        for fn in sorted(os.listdir(vsrc)):
+            t = os.path.join(dst, "layer2_verdicts", fn)
+            if not os.path.exists(t):            # named by sha1: same name, same bytes
+                shutil.copyfile(os.path.join(vsrc, fn), t)
+    n = 0
+    rec = os.path.join(src, "layer2.jsonl")
+    if os.path.isfile(rec):
+        with open(rec, encoding="utf-8") as fh:
+            lines = [l for l in fh.read().splitlines() if l.strip()]
+        out = []
+        for line in lines:
+            try:
+                r = json.loads(line)
+            except ValueError:
+                r = None
+            vf = r.get("verdict_file") if isinstance(r, dict) else None
+            if isinstance(vf, str) and vf.startswith(old):
+                r["verdict_file"] = new + vf[len(old):]
+                line = json.dumps(r, ensure_ascii=False)   # layer2.record's own form
+            out.append(line)
+        os.makedirs(dst, exist_ok=True)
+        with open(os.path.join(dst, "layer2.jsonl"), "a", encoding="utf-8", newline="\n") as fh:
+            fh.write("".join(l + "\n" for l in out))
+        n = len(out)
+    shutil.rmtree(src)
+    return n
+
+
+def _ledger_last_commit_date(root, func):
+    """ISO date of the last commit touching the ledger ('' if none) — the
+    completion date a bulk close stamps, so an old completion never reads as
+    fresh sibling news."""
+    try:
+        return subprocess.run(["git", "-C", root, "log", "-1", "--format=%cI", "--",
+                               f"memory/grind/{func}"], capture_output=True, text=True,
+                              timeout=60).stdout.strip()
+    except Exception:
+        return ""
+
+
+def close_ledger(root, func, bucket="", sessions=0, headline="", notify=True,
+                 completed_at=None):
+    """Tombstone + (optionally) sibling notice + archive. Returns (closed,
+    message_lines). Refuses (closed=False) per ledger_close_refusal."""
+    why = ledger_close_refusal(root, func)
+    if why:
+        return False, [f"NOT CLOSED {func}: {why}"]
+    stem = locate_stem(root, func)
+    if not bucket or bucket == "auto":
+        bucket = ("COMPLETED-INLINE-ASM-CANONICAL" if func in _canonical_funcs(root)
+                  else "COMPLETED-C")
+    msgs = []
+    try:
+        sibs = sibling_ledgers(root, func) if notify else []
+    except Exception:
+        sibs = []
+    if not os.path.isfile(os.path.join(completed_dir(root), func + ".json")) or notify:
+        write_completion_tombstone(root, func, bucket, sessions, headline, file=stem,
+                                   completed_at=completed_at)
+    if notify:
+        try:
+            notify_siblings(root, func, sessions, 0, headline or f"{func} {bucket}")
+        except Exception:
+            pass
+    for s in sibs:
+        if str(s.get("queue_status", "")).split()[0:1] in (["rotated"], ["foreclosed"]):
+            msgs.append(f"ROTATED SIBLING {s['func']} (floor {s['floor']}, "
+                        f"src/{s['file']}.c) — {func} just reached floor 0; its "
+                        f"body on main is an unspent transplant. The driver's "
+                        f"`queue auto-return` brings it back on this sibling notice.")
+    n = archive_ledger(root, func)
+    msgs.append(f"CLOSED {func} ({bucket}, src/{stem}.c): {n} layer-2 record(s) archived")
+    return True, msgs
+
+
+def _canonical_funcs(root):
+    out = set()
+    try:
+        with open(os.path.join(root, "inline_asm_canonical.txt"), encoding="utf-8",
+                  errors="replace") as fh:
+            for line in fh:
+                line = line.split("#", 1)[0].strip()
+                if line:
+                    out.add(line.split()[0])
+    except OSError:
+        pass
+    return out
+
+
+def close_completed(root):
+    """Close every ledger whose function is no longer queued and has its body
+    in src/ (the sweep for completions that bypassed a close step). No sibling
+    notices: these completions are old news; tombstones carry the ledger's
+    last-commit date. Returns message lines."""
+    base = os.path.join(root, "memory", "grind")
+    msgs = []
+    for d in sorted(os.listdir(base)) if os.path.isdir(base) else []:
+        if d == COMPLETED_SUBDIR or not os.path.isdir(os.path.join(base, d)):
+            continue
+        if ledger_close_refusal(root, d):
+            continue
+        ok, m = close_ledger(root, d, "auto", 0, "", notify=False,
+                             completed_at=_ledger_last_commit_date(root, d) or None)
+        msgs += m
+    return msgs
+
+
+# ── Ledger compaction (2026-10-01 slim-down) ─────────────────────────────────
+# The ledger .md files are append-only EXCEPT here. Every session re-read them
+# whole: func_8005D554's 537 KB was ~130k tokens per dispatch. Over LEDGER_MAX
+# a file is rewritten as a current-state summary — class kills and CONFIRMED
+# hypotheses kept (statement + result), every other entry one index line, the
+# newest session verbatim — with a pointer to the full text in git. The
+# parsers that read these files (_HYP_HEADER_RE / _HYP_VERDICT_RE, the
+# `- [sN]` evidence tags) see the same shapes after compaction.
+LEDGER_MAX = 64 * 1024              # mirrors tools/hooks/doc_budget_guard.py
+LEDGER_COMPACT_TARGET = 40 * 1024
+_COMPACT_NOTE = "> COMPACTED "
+_FIELD_RE = re.compile(r"^(?:- )?(result|verdict|kill_scope|measured_on|predicate_cite)\s*:\s*(.*)$",
+                       re.I)
+_EV_INDEX_HEAD = "## Index of older entries"
+_EV_RECENT_HEAD = "## Recent entries (verbatim)"
+
+
+def _cut(s, n):
+    s = re.sub(r"\s+", " ", str(s or "")).strip()
+    return s if len(s) <= n else s[:max(0, n - 1)].rstrip() + "…"
+
+
+def _git_head(root):
+    try:
+        return subprocess.run(["git", "-C", root, "rev-parse", "--short", "HEAD"],
+                              capture_output=True, text=True, timeout=60).stdout.strip()
+    except Exception:
+        return ""
+
+
+def _compact_note(root, func, name, before):
+    head = _git_head(root)
+    where = (f"`git show {head}:memory/grind/{func}/{name}`" if head
+             else f"`git log -p -- memory/grind/{func}/{name}`")
+    return (f"{_COMPACT_NOTE}{datetime.date.today().isoformat()} by `grindlib.py compact-ledger` "
+            f"({before:,} bytes, cap {LEDGER_MAX // 1024}K). Older entries are one-line index items;\n"
+            f"> full text: {where} (history before 2026-10-01: tag pre-slim-2026-10-01).\n"
+            f"> Look one up only when its index line bears on your probe. Append below as usual.\n")
+
+
+def _strip_old_note(lines):
+    """Drop the title line and a previous compaction note from the top."""
+    i = 1 if lines and lines[0].startswith("# ") else 0
+    if i < len(lines) and lines[i].strip() == "":
+        i += 1
+    if i < len(lines) and lines[i].startswith(_COMPACT_NOTE):
+        while i < len(lines) and lines[i].startswith(">"):
+            i += 1
+    return lines[i:]
+
+
+def _hyp_entries(text):
+    """(preamble, [entry]) where entry = {sess, stmt, verdict, scope, result,
+    cite, raw}. Lenient: hand-written entries put the verdict in the header
+    and fields without the `- ` prefix."""
+    heads = list(_HYP_HEADER_RE.finditer(text))
+    pre = text[:heads[0].start()] if heads else text
+    out = []
+    for i, h in enumerate(heads):
+        raw = text[h.start():heads[i + 1].start() if i + 1 < len(heads) else len(text)]
+        body = raw.splitlines()[1:]
+        stmt = [h.group(2)]
+        for l in body:
+            if not l.strip() or _FIELD_RE.match(l.strip()) or l.startswith(("#", "- ")):
+                break
+            stmt.append(l)
+        f = {}
+        for l in body:
+            m = _FIELD_RE.match(l.strip())
+            if m and m.group(1).lower() not in f:
+                f[m.group(1).lower()] = m.group(2)
+        verdict = (f.get("verdict") or "").split()[:1]
+        verdict = verdict[0].strip("*").upper() if verdict else ""
+        hdr = h.group(2).upper()
+        if verdict not in ("CONFIRMED", "KILLED"):
+            verdict = ("KILLED" if "KILLED" in hdr else "CONFIRMED" if "CONFIRMED" in hdr
+                       else verdict or "?")
+        scope = (f.get("kill_scope") or "").lower()
+        scope = ("class" if scope.startswith("class") or "(CLASS" in hdr
+                 else "instance")
+        out.append({"sess": h.group(1), "stmt": " ".join(stmt), "verdict": verdict,
+                    "scope": scope, "result": f.get("result", ""),
+                    "cite": f.get("predicate_cite", ""), "raw": raw.rstrip("\n") + "\n"})
+    return pre, out
+
+
+def _compact_hypotheses(root, func, text, st):
+    pre, ents = _hyp_entries(text)
+    if not ents:
+        return _compact_freeform(root, func, "hypotheses.md", text)
+    nums = [int(e["sess"]) for e in ents if e["sess"].isdigit()]
+    last = str(max(nums)) if nums else None
+    title = f"# Hypothesis ledger — {func}\n\n"
+    note = _compact_note(root, func, "hypotheses.md", len(text.encode("utf-8")))
+    rest = "\n".join(_strip_old_note(pre.splitlines())).split(
+        "## Current state (at compaction)")[0].strip()
+    state = ""
+    if st:
+        fh = st.get("floor_history") or []
+        cur = (f"floor {fh[-1].get('floor')} at s{fh[-1].get('session')}" if fh else "no floor yet")
+        fr = "".join(f"\n  - {_cut(x.get('hypothesis'), 220)}" for x in st.get("frontier") or [])
+        state = (f"## Current state (at compaction)\n{cur}; {st.get('session_count', 0)} sessions; "
+                 f"live frontier (state.json is authoritative):{fr or ' (none)'}\n\n")
+    levels = [(320, 400, 220, 160), (260, 260, 180, 100), (220, 180, 150, 60),
+              (180, 120, 120, 0), (140, 80, 100, 0)]
+    for keep_last in (True, False):
+        for ls, lr, li, lir in levels:
+            cls, conf, idx, recent = [], [], [], []
+            for e in ents:
+                tag = f"## [s{e['sess']}] "
+                if keep_last and e["sess"] == last:
+                    recent.append(e["raw"])
+                elif e["verdict"] == "KILLED" and e["scope"] == "class":
+                    cls.append(f"{tag}{_cut(e['stmt'], ls)}\n- verdict: KILLED\n- kill_scope: class\n"
+                               + (f"- predicate_cite: {_cut(e['cite'], 160)}\n" if e["cite"] else "")
+                               + (f"- result: {_cut(e['result'], lr)}\n" if lr and e["result"] else ""))
+                elif e["verdict"] == "CONFIRMED":
+                    conf.append(f"{tag}{_cut(e['stmt'], ls)}\n- verdict: CONFIRMED\n"
+                                + (f"- result: {_cut(e['result'], lr)}\n" if lr and e["result"] else ""))
+                else:
+                    r = f" — {_cut(e['result'], lir)}" if lir and e["result"] else ""
+                    idx.append(f"{tag}{_cut(e['stmt'], li)}\n- verdict: {e['verdict']} "
+                               f"({e['scope']}){r}\n")
+            if len(rest) > 1500:   # keep whole lines of an over-long preamble
+                rest = rest[:rest.rfind("\n", 0, 1500) if "\n" in rest[:1500] else 1500] + \
+                    "\n… (preamble truncated — full text in git, above)"
+            head = title + note + "\n" + (rest + "\n\n" if rest else "") + state
+
+            def render(ix, omitted=0):
+                out = head
+                if cls:
+                    out += "## Class-level kills (binding until the cited predicate changes)\n\n" + "\n".join(cls) + "\n"
+                if conf:
+                    out += "## Confirmed levers\n\n" + "\n".join(conf) + "\n"
+                if ix or omitted:
+                    out += "## Instance kills and other entries (index; chassis-relative, re-testable)\n\n"
+                    if omitted:
+                        out += f"({omitted} older index entries omitted — full text in git, above)\n\n"
+                    out += "\n".join(ix) + "\n"
+                if recent:
+                    out += f"## Latest session s{last} (verbatim)\n\n" + "\n".join(recent)
+                return out
+            out = render(idx)
+            if len(out.encode("utf-8")) <= LEDGER_COMPACT_TARGET:
+                return out
+    # still over at the tightest level, latest session indexed: drop oldest index lines
+    k = 0
+    while k < len(idx) and len(render(idx[k:], k).encode("utf-8")) > LEDGER_COMPACT_TARGET:
+        k += 1
+    return render(idx[k:], k)
+
+
+def _ev_items(lines):
+    """Split evidence lines into items: a heading, a column-0 bullet, or a
+    column-0 paragraph after a blank line, each with its continuation lines."""
+    items, cur, prev_blank = [], [], True
+    for l in lines:
+        start = bool(l) and not l[0].isspace() and (
+            l.startswith(("#", "- ", "* ")) or prev_blank)
+        if start and cur:
+            items.append(cur)
+            cur = []
+        if l.strip() or cur:
+            cur.append(l)
+        prev_blank = not l.strip()
+    if cur:
+        items.append(cur)
+    out = []
+    for i in items:
+        it = "\n".join(i).rstrip()
+        if (it and not it.startswith((_EV_INDEX_HEAD, _EV_RECENT_HEAD))
+                and not re.match(r"\(\d+ older entries omitted\)", it)):
+            out.append(it)
+    return out
+
+
+def _compact_freeform(root, func, name, text):
+    """evidence.md (and an entry-less hypotheses.md): newest items verbatim,
+    older ones reduced to their first line."""
+    kind = "Evidence bank" if name == "evidence.md" else "Hypothesis ledger"
+    title = f"# {kind} — {func}\n\n"
+    note = _compact_note(root, func, name, len(text.encode("utf-8")))
+    items = _ev_items(_strip_old_note(text.splitlines()))
+    recent, size = [], 0
+    for it in reversed(items):
+        n = len(it.encode("utf-8")) + 2
+        if recent and size + n > LEDGER_COMPACT_TARGET * 3 // 8:
+            break
+        if not recent and n > LEDGER_COMPACT_TARGET * 3 // 8:
+            break                        # one huge newest item: index it too
+        recent.insert(0, it)
+        size += n
+    older = items[:len(items) - len(recent)]
+
+    def line(it, n):
+        first = it.splitlines()[0]
+        return first if first.startswith("#") and len(first) <= 160 else _cut(first, n)
+
+    def render(ix, omitted=0):
+        out = title + note + "\n"
+        if ix or omitted:
+            out += _EV_INDEX_HEAD + " (first line each; full text in git, above)\n\n"
+            if omitted:
+                out += f"({omitted} older entries omitted)\n"
+            out += "\n".join(ix) + "\n\n"
+        if recent:
+            out += _EV_RECENT_HEAD + "\n\n" + "\n\n".join(recent) + "\n"
+        return out
+    for n in (220, 160, 120, 100):
+        ix = [line(it, n) for it in older]
+        out = render(ix)
+        if len(out.encode("utf-8")) <= LEDGER_COMPACT_TARGET:
+            return out
+    k = 0
+    while k < len(ix) and len(render(ix[k:], k).encode("utf-8")) > LEDGER_COMPACT_TARGET:
+        k += 1
+    return render(ix[k:], k)
+
+
+def compact_ledger(root, func, cap=LEDGER_MAX, force=False):
+    """Rewrite any of `func`'s hypotheses.md / evidence.md over `cap` bytes
+    (every one when `force`) as a current-state summary. Returns
+    [(name, bytes_before, bytes_after)] for the files rewritten."""
+    d = ledger_dir(root, func)
+    st = load_state(root, func) or {}
+    done = []
+    for name in ("hypotheses.md", "evidence.md"):
+        p = os.path.join(d, name)
+        if not os.path.isfile(p):
+            continue
+        before = os.path.getsize(p)
+        if before <= cap and not force:
+            continue
+        with open(p, encoding="utf-8", errors="replace") as fh:
+            text = fh.read()
+        new = (_compact_hypotheses(root, func, text, st) if name == "hypotheses.md"
+               else _compact_freeform(root, func, name, text))
+        after = len(new.encode("utf-8"))
+        if after >= before:
+            continue
+        with open(p + ".tmp", "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(new)
+        os.replace(p + ".tmp", p)
+        done.append((name, before, after))
+    return done
 
 
 # ── Current-scope injection (2026-09-01 post-mortem) ─────────────────────────
@@ -3039,7 +3498,7 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
     # Sony-library provenance goes ABOVE the modality playbook: if the target is
     # library code with published reference C, that changes what the session
     # should DO, so it must be read before the playbook frames the work.
-    # Full-picture hook (owner directive 2026-08-24, full-picture-first): the
+    # Full-picture hook (owner directive 2026-08-24, decomp-loop § Full picture first): the
     # dossier auditor supplies name aliases (rulings often live under OLD
     # names) and cross-surface consistency warnings. Degrades silently.
     _names, _warns = [func], []
@@ -3169,6 +3628,10 @@ Rejected forms bank (do NOT re-propose; full list in memory/grind/{func}/rejecte
 
 READ before working: memory/grind/{func}/evidence.md, memory/grind/{func}/hypotheses.md,
 memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting point).
+The two .md files are capped at {LEDGER_MAX // 1024}K each: over the cap the driver compacts them before
+dispatch (older entries become one-line index items; the note at the top names the git
+revision holding the full text). Read them whole; fetch an old entry from git only when its
+index line bears on your probe. Append new entries at the end as usual.
 
 ## Your contract
 - Work ONLY {func} in src/{st['file']}.c. Engine commands: `& tools/wteng.ps1 main sandbox {func} --disable all` (your gradient), canonical, diagnose. NEVER edit .claude/rules/engine/tools/Makefile/*.ld; NEVER run queue done/retire; NEVER commit.
@@ -3198,7 +3661,7 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
 - "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
 - "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and ROTATES the function to the back of the active worklist, from which it returns automatically (owner ruling 2026-09-08 rotation-not-foreclosure; 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — a recorded disposition, never a question to the owner) so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
 - OWNER'S STANDING AUTO-RULING (2026-07-27) — this governs HOW you word an escalation, and it NEVER authorizes ending a function early. Two separate questions, do not conflate them:
-  (A) IS THE FUNCTION EXHAUSTED? This is the DRIVER's call, not yours. The driver assigns `escalation` modality only after the honest floor has been FLAT across many sessions AND >=4 DISTINCT modalities. If your mandated modality is NOT `escalation`, the answer is NO — you may not dispose of the function, however dead your own axis looks. A killed axis is a `progress` outcome with the kills banked; the ladder still has untried modalities (forensics / rederive / synthesis) and the owner's standing directive is to work the top item to completion however many sessions it takes ([[no-deferral-work-to-completion]], [[difficult-is-not-impossible]]). Judge FAILs do NOT make a function exhausted — a FAILed construct is one dead lever, and a FAIL on annotation FORMAT is a one-comment fix, not a wall.
+  (A) IS THE FUNCTION EXHAUSTED? This is the DRIVER's call, not yours. The driver assigns `escalation` modality only after the honest floor has been FLAT across many sessions AND >=4 DISTINCT modalities. If your mandated modality is NOT `escalation`, the answer is NO — you may not dispose of the function, however dead your own axis looks. A killed axis is a `progress` outcome with the kills banked; the ladder still has untried modalities (forensics / rederive / synthesis) and the owner's standing directive is to work the top item to completion however many sessions it takes ([[rotation-not-foreclosure]], [[no-compiler-divergence]]). Judge FAILs do NOT make a function exhausted — a FAILed construct is one dead lever, and a FAIL on annotation FORMAT is a one-comment fix, not a wall.
   (B) ONCE THE DRIVER HAS DECLARED EXHAUSTION (you are in `escalation` modality), evaluate the two endgame-lock AND-gates: (1) canonical-asm needs STRONG `scan_hand_coded` signals (S1/S2/S6); (2) a coercion/spelling family needs an in-hand SOTN-master precedent you can CITE (file+line or commit). "Same spirit", "genre-adjacent", "only lever left", "measured to work", and a partition/elimination argument do NOT qualify — and a census you ran that came back NEGATIVE is a FAILED gate, not an open question. Whatever the gate outcome, your entry is a PROOF-OF-FORECLOSURE RECORD (owner ruling 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — the DECISION PACKET shape is retired; you never address a question to the owner): if the flat honest floor is <= {ENDGAME_LOCK_MAX_FLOOR} title it `## <date> — {func} — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**`; if the floor is > {ENDGAME_LOCK_MAX_FLOOR} the standing ruling is NOT its subject (owner ruling 2026-09-02) — title it `## <date> — {func} — OWNER-ESCALATION — **LADDER EXHAUSTED (non-endgame residual, floor N): ROTATED**` and never claim endgame-lock status. Either way state (i) the gate evidence (scan tier, precedent census result), (ii) evidence POINTERS (ledger lines, measurements, scan output), (iii) the re-activation triggers that would make the residual attackable again (a class grant covering it, a toolchain finding). The driver rotates the item; nothing is surfaced to the owner; it returns automatically on queue drain, toolchain change, or sibling movement (an owner unpark is an early return). Never write that policy blocks the function: a pure-C preimage exists by construction. "This is hard" is NOT a disposition: if the ladder is not exhausted, the honest outcome is `progress` with the kills banked, and the item stays active for the next modality. AUTO-REJECT CLASS (owner ruling 2026-08-24, reaffirmed 2026-08-31): a construct outside the frozen family list is a clean FAIL/refusal — do not argue for it in the record beyond citing the negative census; that residual's disposition is the same rotation.
 - Bytes proven but blocked ONLY by a surface you may not touch (prologue_config.json/inline_asm_canonical.txt) is an INTEGRATION HANDOFF, not an endgame lock: say so plainly in the entry, list the exact operator steps, and return owner-gated. Do not dress it up as exhaustion — and note the operator still runs a fresh layer-2 cheat-reviewer on your C before it is accepted, so a Judge PASS on a construct is not a guarantee of acceptance.
 - A hypothesis KILLED with measurements is a fully successful session. Eliminating search space IS the job. There is no such thing as a failed session — only an unproven one, and unproven sessions are discarded by the driver as if they never ran.
@@ -3275,6 +3738,9 @@ if __name__ == "__main__":
     #   grindlib.py supersede-bans <root> <func> <superseded_by> <needle> [needles...]  -> prints count moved
     #   grindlib.py siblings <root> <func>                          -> sibling-ledger block + pending notices
     #   grindlib.py psyq <root> <func>                              -> Sony-library provenance block ('' if none)
+    #   grindlib.py close-ledger <root> <func> <bucket|auto> <sessions> [headline]  -> close a completed ledger (exit 2: refused)
+    #   grindlib.py close-completed <root>                          -> close every completed function's leftover ledger
+    #   grindlib.py compact-ledger [<root>] <func>|--all [--force]  -> summarize .md files over the 64K cap
     import sys
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -3446,6 +3912,36 @@ if __name__ == "__main__":
         # notices, exactly as the next brief would carry them (read-only)
         print(render_siblings(sibling_ledgers(sys.argv[2], sys.argv[3]), sys.argv[3]))
         print(render_sibling_progress(load_state(sys.argv[2], sys.argv[3]) or {}))
+    elif cmd == "close-ledger":
+        # close-ledger <root> <func> <bucket|auto> <sessions> [headline]
+        # The ledger close for a function that just completed (Grinder merge path,
+        # manual_session.ps1 end): tombstone + sibling notice + layer-2 record to
+        # _completed/<func>/ + delete. Exit 2 (nothing touched) if it is still
+        # queued or has no completed body in src/.
+        _sess = int(sys.argv[5]) if len(sys.argv) > 5 and sys.argv[5].isdigit() else 0
+        _ok, _msgs = close_ledger(sys.argv[2], sys.argv[3],
+                                  sys.argv[4] if len(sys.argv) > 4 else "auto", _sess,
+                                  sys.argv[6] if len(sys.argv) > 6 else "")
+        print("\n".join(_msgs))
+        if not _ok:
+            sys.exit(2)
+    elif cmd == "compact-ledger":
+        # compact-ledger [<root>] <func>|--all [--force]  -> rewrite over-cap ledger .md
+        # files as current-state summaries (prints one line per file rewritten).
+        # <root> defaults to this repo (the doc-budget guard's fix hint omits it).
+        _args = [a for a in sys.argv[2:] if a != "--force"]
+        _root = (_args.pop(0) if len(_args) > 1 else
+                 os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        _base = os.path.join(_root, "memory", "grind")
+        _funcs = ([d for d in sorted(os.listdir(_base)) if d != COMPLETED_SUBDIR
+                   and os.path.isdir(os.path.join(_base, d))] if _args[0] == "--all" else _args)
+        for _f in _funcs:
+            for _n, _b, _a in compact_ledger(_root, _f, force="--force" in sys.argv):
+                print(f"compacted memory/grind/{_f}/{_n}: {_b:,} -> {_a:,} bytes")
+    elif cmd == "close-completed":
+        # close-completed <root>  -> close every completed function's leftover ledger
+        _SRC_CACHE.clear()
+        print("\n".join(close_completed(sys.argv[2])))
     elif cmd == "complete-ledger":
         # complete-ledger <root> <func> <bucket> <sessions> [headline]
         # Called by the merge path IMMEDIATELY BEFORE the ledger directory is

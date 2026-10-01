@@ -87,13 +87,14 @@ class Q39DriverWiring(unittest.TestCase):
         self.assertLess(rec, e.find("Add-Decision $func 'final call' 'FAIL'"))
 
     def test_record_survives_the_ledger_deletion(self):
+        # the ledger is closed by grindlib close-ledger (archives layer2.jsonl +
+        # layer2_verdicts/ to _completed/<func>/ before deleting; behaviour is
+        # pinned in test_grindlib.LedgerClose), after queue done and the Match
+        # commit, and never by a bare Remove-Item that would drop the record
         p = self.final[self.pass_i:self.else_i]
-        rm = p.find('Remove-Item -Recurse -Force (Join-Path $Root "memory\\grind\\$func")')
-        self.assertGreaterEqual(rm, 0)
-        keep = p[:rm]
-        self.assertRegex(keep, r'memory\\grind\\_completed\\\$func')
-        self.assertIn("layer2.jsonl", keep[keep.rfind("_completed"):])
-        self.assertIn("AppendAllText", keep[keep.rfind("_completed"):])
+        close = self._at("python tools/grinder/grindlib.py close-ledger . $func $bucket", region=p)
+        self.assertLess(self._at("@('queue', 'done', $func)", region=p), close)
+        self.assertNotIn('Remove-Item -Recurse -Force (Join-Path $Root "memory\\grind\\$func")', p)
 
 
 if __name__ == "__main__":

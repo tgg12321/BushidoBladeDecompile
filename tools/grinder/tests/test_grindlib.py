@@ -382,6 +382,17 @@ class TestSelfVet(unittest.TestCase):
         ok, why = G.validate_self_vet(self.root, "func_X")
         self.assertTrue(ok, why)
 
+    def test_missing_repo_citation_fails_but_snapshot_tag_form_resolves(self):
+        cite = ".claude/rules/deleted-rule.md:12"
+        self.write_vet(GOOD_VET.replace("src/main/psxsdk/libsnd/vs_vh.c:412", cite))
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertFalse(ok)
+        self.assertIn("does not", why)
+        self.write_vet(GOOD_VET.replace("src/main/psxsdk/libsnd/vs_vh.c:412",
+                                        "pre-slim-2026-10-01:" + cite))
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertTrue(ok, why)
+
     def test_candidate_ready_requires_self_vet_when_func_known(self):
         o = {"result": "candidate-ready", "floor": 0, "headline": "matched",
              "hypotheses": [], "evidence": [], "frontier": [], "artifacts": []}
@@ -976,7 +987,7 @@ class TestGrantRescan(unittest.TestCase):
     def test_apply_injects_constraint_and_supersedes_ban(self):
         from tools.grinder import grant_rescan as R
         hits = R.scan(self.root, ["compound address expression"])
-        R.apply(self.root, hits, family="F3 compound-address duplication", ref=".claude/rules/no-new-park-categories.md:377", date="2026-09-01")
+        R.apply(self.root, hits, family="F3 compound-address duplication", ref="pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:377", date="2026-09-01")
         st = G.load_state(self.root, "func_A")
         self.assertEqual(st["banned_constructs"], [])
         self.assertEqual(len(st["superseded_bans"]), 1)
@@ -996,7 +1007,7 @@ class TestGrantRescan(unittest.TestCase):
         hits = R.scan(self.root, ["compound address expression"])
         R.apply(self.root, hits,
                 family="F3 compound-address duplication across call argument lists",
-                ref=".claude/rules/no-new-park-categories.md:377", date="2026-09-01")
+                ref="pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:377", date="2026-09-01")
         cs = [c for c in G.load_state(self.root, "func_A")["judge_constraints"]
               if "RE-ADJUDICATE" in c]
         self.assertEqual(len(cs), 1)
@@ -2229,6 +2240,165 @@ class TestModuleMates(unittest.TestCase):
                          {"CD_sync": "src/system.c", "CD_other": ""})
         out = G.psyq_identity(root, "CD_cw")
         self.assertIn("CD_sync: COMPLETED (not in queue) — matched C in src/system.c", out)
+
+
+class TestLedgerClose(unittest.TestCase):
+    """2026-10-01: a completed function's ledger is closed — tombstone, layer-2
+    record (layer2.jsonl AND layer2_verdicts/, pointers re-pointed) to
+    _completed/<func>/, directory deleted — and never while it is still queued
+    or not yet landed in src/."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        os.makedirs(os.path.join(self.root, "engine"))
+        os.makedirs(os.path.join(self.root, "src"))
+        with open(os.path.join(self.root, "engine", "queue.json"), "w") as fh:
+            json.dump({"items": [{"func": "func_Q", "status": "active"}]}, fh)
+        with open(os.path.join(self.root, "src", "main.c"), "w", newline="\n") as fh:
+            fh.write('INCLUDE_ASM("asm/funcs", func_Q);\nINCLUDE_ASM("asm/funcs", func_A);\n'
+                     "s32 func_DONE(s32 a) {\n    return a;\n}\n"
+                     "s32 func_KR(a)\ns32 a;\n{\n    return a;\n}\n"
+                     'INCLUDE_ASM("asm/funcs", func_CAN);\n')
+        with open(os.path.join(self.root, "inline_asm_canonical.txt"), "w") as fh:
+            fh.write("func_CAN  # authorized\n")
+        G._SRC_CACHE.clear()
+
+    def tearDown(self):
+        G._SRC_CACHE.clear()
+        self.tmp.cleanup()
+
+    def _ledger(self, func, state=True):
+        d = G.ledger_dir(self.root, func)
+        if state:
+            G.init_ledger(self.root, func, "main")
+        os.makedirs(os.path.join(d, "layer2_verdicts"), exist_ok=True)
+        with open(os.path.join(d, "layer2_verdicts", "abc.json"), "w") as fh:
+            fh.write('{"decision": "PASS"}')
+        recs = [{"func": func, "verdict": "PASS", "body_hash": "h1",
+                 "verdict_file": f"memory/grind/{func}/layer2_verdicts/abc.json"},
+                {"func": func, "verdict": "PASS", "body_hash": "h2"}]
+        with open(os.path.join(d, "layer2.jsonl"), "w", newline="\n") as fh:
+            fh.write("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in recs))
+        with open(os.path.join(d, "evidence.md"), "a") as fh:
+            fh.write("history\n")
+        return d
+
+    def test_refuses_queued_and_unlanded(self):
+        for f in ("func_Q", "func_A", "func_NOBODY"):
+            self._ledger(f)
+            ok, msgs = G.close_ledger(self.root, f, "auto")
+            self.assertFalse(ok, f)
+            self.assertTrue(os.path.isdir(G.ledger_dir(self.root, f)), f)
+
+    def test_handoff_ledger_is_open_work(self):
+        d = self._ledger("func_DONE")
+        open(os.path.join(d, "HANDOFF.md"), "w").write("open follow-up\n")
+        self.assertFalse(G.close_ledger(self.root, "func_DONE", "auto")[0])
+        self.assertEqual(G.close_completed(self.root), [])
+        self.assertTrue(os.path.isdir(d))
+
+    def test_close_archives_record_and_verdicts(self):
+        self._ledger("func_DONE")
+        ok, msgs = G.close_ledger(self.root, "func_DONE", "auto", 3, "solved")
+        self.assertTrue(ok, msgs)
+        self.assertFalse(os.path.isdir(G.ledger_dir(self.root, "func_DONE")))
+        arch = os.path.join(G.completed_dir(self.root), "func_DONE")
+        recs = [json.loads(l) for l in open(os.path.join(arch, "layer2.jsonl"))]
+        self.assertEqual([r["body_hash"] for r in recs], ["h1", "h2"])
+        vf = recs[0]["verdict_file"]
+        self.assertEqual(vf, "memory/grind/_completed/func_DONE/layer2_verdicts/abc.json")
+        self.assertTrue(os.path.isfile(os.path.join(self.root, vf)))
+        self.assertNotIn("verdict_file", recs[1])
+        tomb = json.load(open(os.path.join(G.completed_dir(self.root), "func_DONE.json")))
+        self.assertEqual((tomb["bucket"], tomb["file"]), ("COMPLETED-C", "main"))
+
+    def test_stateless_kr_and_canonical_include_asm(self):
+        self._ledger("func_KR", state=False)
+        self._ledger("func_CAN", state=False)
+        msgs = G.close_completed(self.root)
+        self.assertEqual(len(msgs), 2, msgs)
+        t = json.load(open(os.path.join(G.completed_dir(self.root), "func_CAN.json")))
+        self.assertEqual(t["bucket"], "COMPLETED-INLINE-ASM-CANONICAL")
+        self.assertFalse(os.path.isdir(G.ledger_dir(self.root, "func_KR")))
+
+    def test_append_to_existing_archive(self):
+        arch = os.path.join(G.completed_dir(self.root), "func_DONE")
+        os.makedirs(arch)
+        with open(os.path.join(arch, "layer2.jsonl"), "w", newline="\n") as fh:
+            fh.write(json.dumps({"func": "func_DONE", "verdict": "FAIL", "body_hash": "h0"}) + "\n")
+        self._ledger("func_DONE")
+        G.close_ledger(self.root, "func_DONE", "auto")
+        recs = [json.loads(l) for l in open(os.path.join(arch, "layer2.jsonl"))]
+        self.assertEqual([r["body_hash"] for r in recs], ["h0", "h1", "h2"])
+
+
+class TestLedgerCompaction(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_X", "main")
+        self._cap, G.LEDGER_MAX = G.LEDGER_MAX, 10 ** 9   # build an over-cap ledger
+        for s in range(1, 50):
+            G.append_hypothesis(self.root, "func_X", {
+                "statement": f"lever {s} " + "x" * 300, "mechanism": "m" * 400,
+                "probe": "p" * 400, "result": f"scored {s} " + "r" * 400,
+                "verdict": "CONFIRMED" if s % 7 == 0 else "KILLED",
+                "kill_scope": "class" if s % 10 == 0 else "instance",
+                "measured_on": "chassis", "predicate_cite": "sched.c:1"}, session=s)
+            G.append_evidence(self.root, "func_X", f"fact {s} " + "e" * 2500, session=s)
+        G.LEDGER_MAX = self._cap
+        self.hyp = os.path.join(G.ledger_dir(self.root, "func_X"), "hypotheses.md")
+        self.ev = os.path.join(G.ledger_dir(self.root, "func_X"), "evidence.md")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_under_cap_untouched(self):
+        st = G.load_state(self.root, "func_X")
+        self.assertEqual(G.compact_ledger(self.root, "func_X", cap=10 ** 7), [])
+
+    def test_compacts_under_cap_and_keeps_parser_shapes(self):
+        before = G._prior_confirmed_statements(self.root, "func_X", 99)
+        done = G.compact_ledger(self.root, "func_X")
+        self.assertEqual(sorted(n for n, _, _ in done), ["evidence.md", "hypotheses.md"])
+        for p in (self.hyp, self.ev):
+            self.assertLessEqual(os.path.getsize(p), G.LEDGER_MAX)
+        h = open(self.hyp, encoding="utf-8").read()
+        self.assertIn(G._COMPACT_NOTE, h)
+        self.assertIn("predicate_cite: sched.c:1", h)        # class kills keep the cite
+        self.assertIn("## Latest session s49 (verbatim)", h)
+        # CONFIRMED statements stay recognisable (truncated statements are prefixes)
+        after = G._prior_confirmed_statements(self.root, "func_X", 99)
+        self.assertEqual(len(after), len(before))
+        e = open(self.ev, encoding="utf-8").read()
+        self.assertIn("- [s49] fact 49", e)
+        self.assertIn("- [s1] fact 1", e)
+
+    def test_idempotent_shape_on_recompaction(self):
+        G.compact_ledger(self.root, "func_X")
+        G.append_evidence(self.root, "func_X", "new " + "n" * 40000, session=50)
+        G.compact_ledger(self.root, "func_X", force=True)
+        e = open(self.ev, encoding="utf-8").read()
+        self.assertEqual(e.count(G._COMPACT_NOTE), 1)
+        self.assertEqual(e.count(G._EV_INDEX_HEAD), 1)
+        h = open(self.hyp, encoding="utf-8").read()
+        self.assertEqual(h.count("## Current state (at compaction)"), 1)
+
+    def test_idempotent_when_under_cap(self):
+        G.compact_ledger(self.root, "func_X")
+        snap = [open(p, encoding="utf-8").read() for p in (self.hyp, self.ev)]
+        self.assertEqual(G.compact_ledger(self.root, "func_X"), [])
+        self.assertEqual(snap, [open(p, encoding="utf-8").read() for p in (self.hyp, self.ev)])
+
+    def test_driver_appends_keep_files_under_cap(self):
+        G.compact_ledger(self.root, "func_X")
+        for s in range(50, 80):      # a long run of driver-side appends
+            G.append_evidence(self.root, "func_X", f"fact {s} " + "e" * 2500, session=s)
+            G.append_hypothesis(self.root, "func_X", {"statement": f"h {s} " + "x" * 2500,
+                                                      "verdict": "CONFIRMED"}, session=s)
+            for p in (self.hyp, self.ev):
+                self.assertLessEqual(os.path.getsize(p), G.LEDGER_MAX)
 
 
 if __name__ == "__main__":

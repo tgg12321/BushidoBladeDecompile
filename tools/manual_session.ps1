@@ -241,6 +241,17 @@ function Invoke-End {
     }
     Say '[manual] tree clean.' 'Green'
 
+    # Close the ledger of a function that completed this session (no longer
+    # queued, body in src/): tombstone, layer-2 record to _completed/<func>/,
+    # directory deleted — the same close the Grinder's merge path runs. Exit 2 =
+    # still queued / not landed: the ledger stays and is banked below.
+    $closeOut = (python (Join-Path $Root 'tools\grinder\grindlib.py') close-ledger $Root $s.func auto 0 'manual lane' 2>&1 | Out-String).Trim()
+    if ($LASTEXITCODE -eq 0) {
+        Say "[manual] $closeOut" 'Green'
+        git -C $Root add -A -- memory/grind 2>$null
+        git -C $Root commit -q -m "grind: close ledger for $($s.func) (manual lane)" -- memory/grind 2>$null | Out-Null
+    }
+
     # Bank any ledger movement so the Grinder resumes informed. Explicit
     # pathspecs on the commit: `git commit` takes the WHOLE index otherwise.
     $ledgerPaths = @("memory/grind/$($s.func)", 'docs/grind')
