@@ -15,20 +15,6 @@
       "addr": "80047384"
     },
     {
-      "func": "func_80057E84",
-      "file": "text1b",
-      "distance": 44,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-26T01:27:18+00:00",
-      "rotation_count": 2,
-      "unparked_from": "restore rotation: the 2026-09-25 return was the engine None->44 bounce (floor unchanged at 44/447; fixed 07e77ac51). Prior rotation stands: node ptr needs one pointer shared across both corner blocks, vtx/node named banned in Ruling 9 list; va-borrow question moot without it. See memory/grind/func_80057E84/hypotheses.md",
-      "unpark_reason": "early return - active list drained, 2026-10-01 run",
-      "returned_at": "2026-10-01T20:28:15+00:00",
-      "addr": "80057E84"
-    },
-    {
       "func": "func_80048FFC",
       "file": "text1b",
       "distance": 232,
@@ -195,14 +181,14 @@
     }
   ],
   "counts": {
-    "total": 15,
-    "active": 5,
+    "total": 14,
+    "active": 4,
     "by_status": {
-      "active": 5,
+      "active": 4,
       "rotated": 10
     },
     "by_verdict": {
-      "C": 5
+      "C": 4
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
