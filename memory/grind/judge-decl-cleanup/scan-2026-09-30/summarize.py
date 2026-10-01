@@ -13,7 +13,7 @@ for ln in open(os.path.join(HERE, 'disposition.tsv'), encoding='utf-8'):
         continue
     fn, src, kinds, disp, text = ln.rstrip('\n').split('\t', 4)
     rows += 1
-    line = src.rsplit(':', 1)[1]
+    line = src.rsplit(':', 1)[1] if ':' in src else src
     if disp.startswith('not debt'):
         notdebt[disp].append(f'{fn}:{line}')
         continue

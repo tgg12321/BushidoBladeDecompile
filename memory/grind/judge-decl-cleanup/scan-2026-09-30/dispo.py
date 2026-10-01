@@ -105,6 +105,16 @@ def main(scan, out):
             unresolved.append(f'{fn}\t{loc}\t{kinds}\t{text}')
             d = 'UNRESOLVED'
         rows.append(f'{fn}\t{loc}\t{kinds}\t{d}\t{text}')
+    # debt the scan patterns cannot see (split scalars, multi-write locals, names outside the bodies)
+    xf = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'manual_extra.tsv')
+    n_extra = 0
+    if os.path.exists(xf):
+        for row in open(xf, encoding='utf-8'):
+            if row.strip() and not row.startswith('#'):
+                assert row.count('\t') == 4, row
+                rows.append(row.rstrip('\n'))
+                n_extra += 1
+    print(f'{n_extra} extra rows from manual_extra.tsv')
     with open(out, 'w', encoding='utf-8', newline='\n') as f:
         f.write('function\tsource\tconstruct\tdisposition\ttext\n')
         f.write('\n'.join(rows) + '\n')

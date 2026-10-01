@@ -1,0 +1,9 @@
+# Debt named in the landing message / README that the scan patterns cannot see. dispo.py appends these rows.
+# function<TAB>source<TAB>construct<TAB>disposition<TAB>text
+func_8002A458	src/code6cac_b_tu2.c:1535	split-scalar	D_800A37E8/EA/EC split s16 vec3 (three scalar declarations written as one vector)	D_800A37E8 = -qx;
+func_8002A458	src/code6cac_b_tu2.c:1536	split-scalar	D_800A37E8/EA/EC split s16 vec3 (three scalar declarations written as one vector)	D_800A37EA = -qy;
+func_8002A458	src/code6cac_b_tu2.c:1537	split-scalar	D_800A37E8/EA/EC split s16 vec3 (three scalar declarations written as one vector)	D_800A37EC = -qz;
+func_8003CE18	src/code6cac_c2.c:876	multi-write local	PracticeMenuRec [T]: `addr` holds record 0's unk_F4.x address, then (if D_800A3748 == 0) record 1's; two writes, no Ruling 5-12 package (record-pointer respellings score 2)	s32 *addr = &g_practice_menu_table[0].unk_F4.x;
+func_8003CE18	src/code6cac_c2.c:879	multi-write local	PracticeMenuRec [T]: second write of `addr` (see line 876)	addr = &g_practice_menu_table[1].unk_F4.x;
+(outside the 36 bodies)	-	byte-base name	PracticeMenuRec [T]: D_80101EC8, the u8 byte-base name of g_practice_menu_table, is still declared and used by other functions' byte-offset walks (e.g. func_8001C8DC / func_8001E878 / func_8001EA84, left at HEAD for the PracticeMenuRec series)	extern u8 D_80101EC8;
+(outside the 36 bodies)	-	per-word declarations	PracticeMenuRec [T]: D_80101FBC/FC4/80102408/10 stay declared (include/code6cac.h) for func_8001C8DC / func_8001E878 / func_8001EA84 (HEAD bodies), per Q73 (3)	extern s32 D_80101FBC; ...

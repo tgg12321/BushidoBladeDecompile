@@ -60,8 +60,9 @@ eb40-pointer-alias.md, with dumps/ (expand RTL: expr.c:5245 keeps the array base
 term until after the row multiply).
 
 ## Disclosure scan
-scan-2026-09-30/: scan.txt (590 hits), access.txt, disposition.tsv (one row per hit: object or "not debt"),
-manual.tsv (hand-classified rows), summarize.py (groups disposition.tsv by object), and the
+scan-2026-09-30/: scan.txt (590 hits), access.txt, disposition.tsv (one row per hit, plus manual_extra.tsv rows:
+object or "not debt"),
+manual.tsv (hand-classified rows), manual_extra.tsv, summarize.py (groups disposition.tsv by object), and the
 self-contained scripts (span.py, scan.py, scan2.py, dispo.py). Re-run them from the repo root.
 
 ## Layer-2 history
@@ -69,14 +70,16 @@ Per-function layer2.jsonl rows:
 - r1 rev-judge 7 PASS / 3 FAIL;
 - r2 rev-tables 25/5;
 - r3 rev-tables-r3 32/7;
-- r4, r5 and r6: message-only FAILs;
+- r4, r5, r6 and r7: message-only FAILs;
 - final: FINAL_ROUND.
 
 ## Not-certified debt (verbatim from the landing message)
 NOT certified by this commit: remaining debt, out of scope.
 The definitive list is every row of
 memory/grind/judge-decl-cleanup/scan-2026-09-30/disposition.tsv that is not marked "not debt":
-566 of the 590 hits from the systematic scan of all 36 changed bodies. Each row has its function,
+566 of the 590 hits from the systematic scan of all 36 changed bodies, plus 7 rows from
+manual_extra.tsv for named debt the scan patterns cannot see (the D_800A37E8/EA/EC split vec3,
+func_8003CE18's two-write `addr`, and the names still used outside the bodies). Each row has its function,
 source line, construct and object. summarize.py groups them; scan.py / scan2.py / dispo.py re-run
 it from that directory alone. Summary by object ([T] = an object this landing touches):
 
