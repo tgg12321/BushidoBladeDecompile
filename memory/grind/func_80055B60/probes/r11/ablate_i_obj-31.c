@@ -23,26 +23,27 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     s32 lo, hi;
     /* work holds two values: D_800A387C - unk_43E, then its sign (work >> 31).
        One local, not two: ordinary-c-judge-decidable.md Ruling 11; (D) record in
-       memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 work;
     /* temp holds six values: the unk_148 distance, a slot count minus one
        (clamped at 0), the slot increment (4 or 8, then plus the old count,
        clamped at 0xFF), the 0x20/0x60 flag, the wrapped ratan2() angle
        difference and the poll result of func_80055948/func_80058580.
        One local, not six: Ruling 11 (per-branch constants: Q20); (D) record in
-       memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 temp;
     /* temp2 holds three values: the unk7 * 25 >> 3 limit, the func_80056FE8()
        result and the SquareRoot0() distance. One local, not three: Ruling 11;
-       (D) record in memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       (D) record in memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 temp2;
     /* temp3 holds two values: the least slot count seen (starting at 0x100) and
        the func_80056FE8() result plus 800. One local, not two: Ruling 11; (D)
-       record in memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       record in memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 temp3;
     /* the counter of each of the four loops, reused loop to loop the way
        SOTN's AddToInventory reuses i for its two loops (Q51) */
     s32 i; /* SOTN: src/dra/5D5BC.c:173 @aa53500 */
+    s32 j;
 
     rec = &g_practice_menu_table[arg0];
     rec->unk_3CC = 0;
@@ -227,8 +228,8 @@ void func_80055B60(s32 arg0, PadState *arg1) {
         rec->unk_425 = 1;
     } else {
         rec->unk_425 = 0;
-        for (i = 0; i < 12; i++) {
-            u8 *obj = (u8 *)&D_80106A78 + i * 0x64;
+        for (j = 0; j < 12; j++) {
+            u8 *obj = (u8 *)&D_80106A78 + j * 0x64;
 
             temp2 = SquareRoot0((rec->unk_F4.x - *(s32 *)(obj + 0x2C)) * (rec->unk_F4.x - *(s32 *)(obj + 0x2C)) +
                               (rec->unk_F4.z - *(s32 *)(obj + 0x34)) * (rec->unk_F4.z - *(s32 *)(obj + 0x34)));

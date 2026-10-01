@@ -25,3 +25,53 @@
 - [s1] [fable-blitz 2026-07-07] m2c reference decomp captured at tmp/blitz/m2c_calc_loc_mat_fw_80055B60.c (633 lines, --valid-syntax, clean run, 2-arg signature void (s32 arg0, void *arg1)). NOTE: current src stub declares 4 args (s32 x4) - target only homes/uses a0/a1; keep whatever signature the caller requires but only 2 are read.
 
 - [s1] [fable-blitz 2026-07-07] Template siblings: no COMPLETED near-duplicate exists (not in tmp/duplicates_leads.txt). Closest structural relatives for R13's key/trig block: the pad-processing shape (key, ~key, key&~old, ~key&old written as consecutive words then double block-copy) - search src/ for '0x3D0' '0x3D8' writers among completed functions in text1b/code6cac_c when drafting; the marionation player-struct offsets (0x430 flags, 0x438, 0x43A/0x43C/0x43E angles, 0x414 slot pairs) already have precedent in completed marionation-family matches.
+
+## s3 (2026-10-01, laneA) — landing body and its Ruling 11 (D) record
+
+Landing body = probes/r11/landing_body-0.c (= candidate.c; sandbox --disable all 0, 0 source-level / 0
+operand-only, with the PracticeMenuRec members of mkhdr.py). Scoring harness: probes/r11/sbx.py + sweep.sh (engine
+sandbox with the mkhdr.py header ahead of include/). Simplifications measured byte-neutral and adopted: the flag word
+is one expression (no flags / b3..b11 locals; probes/receipts); `rec->unk_428 = cond ? opp->unk_5C : 0xFE` without a
+local; `!= 1 && != 2` and `== 0x16 || == 0x17` spellings; D_80106A78 walked by byte offset as its other consumers do.
+Receipts kept: `* 25` (signed) 1; slot-loop `for (i = 0; ...)` init 2; me/opp as two ternaries 3 (probes/receipts/).
+
+Reused locals (Ruling 11; i on Q51, below). Values (target registers in brackets):
+- work [a1]: D_800A387C - unk_43E; its sign (work >> 31, read by the unk_3F0 reset test and the +-1 step).
+- temp [s0]: the unk_148 distance (unk_442 band); slot count - 1 clamped at 0; the slot increment (4 or 8 by
+  unk_6A == 0x11, then + old count, clamped at 0xFF); the 0x20/0x60 flag; the wrapped ratan2() difference; the
+  poll result of func_80055948/func_80058580.
+- temp2 [s4]: (unk7 * 25) >> 3; func_80056FE8() result; SquareRoot0() distance.
+- temp3 [a1]: the least slot count (from 0x100); func_80056FE8() + 800.
+(A) all four are declared at function scope, the innermost scope enclosing their writes (top-level statements for
+work/temp/temp2; both arms of the unk_430 & 0x80 if/else for temp3). (B)(2) path records (Ruling 5 2(c)): `temp = 4`
+can follow a slot count of 4 left by the scan, but with every scanned count 0 temp holds 0 there; `temp = 0x20` can
+follow a distance of 0x20, but with equal unk_148 positions temp holds 0; `temp3 = 0x100` follows an indeterminate
+value (temp3 is only written in the exclusive other arm); clamps write only when the value is outside range.
+(C)(1) one-variable-per-value spelling: probes/r11/onevar_PV-91.c (mkpv.py; only declarations and identifiers
+differ, each value's local at its innermost scope) = 91. (C)(3): every value is a load, arithmetic or call result in
+the target, except the per-branch constants 4/8 and 0x20/0x60 (Q20) and temp3's 0x100 start (the `li a1,256` of the
+scan value, whose other writes are loads).
+(D)(1) probes/r11/d_proof.txt (dproof.sh: build cc1 -da dumps, then the instrumented cc1 with BB2_ALLOC_DEBUG /
+BB2_FINDREG_DEBUG on the same tu.i, for landing body pseudos 79-83 and every per-value pseudo).
+(D)(2) mechanism (tools/gcc-2.7.2/global.c find_reg 940-1150, set_preference 1671-1754):
+- temp: the wrapped ratan2() difference is computed from the first ratan2() result, which local-alloc keeps in s0
+  across the second call; set_preference gives the destination a full preference for s0. Per value only `da`
+  carries it (pseudo 787 -> s0); dist -> v1, n -> a0, add -> a0, mask -> a1, ret -> v1 (pseudos 81/602/592/722/82).
+  As one pseudo (80, priority 40566, allocated first) all six values take s0, the target's register in every region.
+- temp2: the SquareRoot0() value is live across the two ratan2() calls, so the shared pseudo (81) crosses 2 calls:
+  call-used registers are excluded (find_reg 970-975) and s4 is the lowest callee-saved one free of its conflicts
+  {s0-s3}. Per value: lim is block-local (local-alloc, v0), near -> a0, len -> s5.
+- temp3: shared pseudo 82 conflicts {v0,v1,a0,s0,s2-s4} -> a1 for both values; per value least (591) has a1 in its
+  conflict set -> a2, far (656) -> a1.
+- work: pseudo 79 carries a full preference for a1 (own_full_prefs 5) -> a1 for both values; per value
+  diff (79) -> a0, sign (484, preference v1) -> v1.
+(D)(3)/(4) measured, sandbox --disable all on the full TU (probes/r11/):
+- full split 91; structural respellings: all per-value locals at function scope 91, declaration order reversed 91.
+- per-value ablations (one value split, the rest shared): dist 3, n 48, add 81, mask 3, da 74, ret 6, lim 4, near 6,
+  len 20, least 4, far 4, sign 14; per variable fully split: temp 67, temp2 16, temp3 4.
+- permuter campaigns from the full split (probes/r11/permuter_harvest.txt; mini-TU workspace with the full-TU
+  function asm, perm_compile.sh / perm_mk.sh): 2652 + 9478 iterations (-j 2, about 35 min), base 1165, best 490,
+  no 0; every find re-uses a per-value local for a further value, adds a dummy constant or splits a statement.
+i (Q51): one counter for the four loops (slot scan, flag scan, D_80106A78 scan, poll retry), as SOTN's
+AddToInventory (src/dra/5D5BC.c:141-198 @aa53500, splat.us.dra.yaml `[0x5D5BC, c, 5D5BC]`) reuses `i` for its two
+loops (:173, :183). Per-loop counters measured: slot 43, flag 5, objects 31, retry 5 (probes/r11/ablate_i_*).

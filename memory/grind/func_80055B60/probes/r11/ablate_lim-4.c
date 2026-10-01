@@ -23,26 +23,27 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     s32 lo, hi;
     /* work holds two values: D_800A387C - unk_43E, then its sign (work >> 31).
        One local, not two: ordinary-c-judge-decidable.md Ruling 11; (D) record in
-       memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 work;
     /* temp holds six values: the unk_148 distance, a slot count minus one
        (clamped at 0), the slot increment (4 or 8, then plus the old count,
        clamped at 0xFF), the 0x20/0x60 flag, the wrapped ratan2() angle
        difference and the poll result of func_80055948/func_80058580.
        One local, not six: Ruling 11 (per-branch constants: Q20); (D) record in
-       memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 temp;
     /* temp2 holds three values: the unk7 * 25 >> 3 limit, the func_80056FE8()
        result and the SquareRoot0() distance. One local, not three: Ruling 11;
-       (D) record in memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       (D) record in memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 temp2;
     /* temp3 holds two values: the least slot count seen (starting at 0x100) and
        the func_80056FE8() result plus 800. One local, not two: Ruling 11; (D)
-       record in memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       record in memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 temp3;
     /* the counter of each of the four loops, reused loop to loop the way
        SOTN's AddToInventory reuses i for its two loops (Q51) */
     s32 i; /* SOTN: src/dra/5D5BC.c:173 @aa53500 */
+    s32 lim;
 
     rec = &g_practice_menu_table[arg0];
     rec->unk_3CC = 0;
@@ -95,9 +96,9 @@ void func_80055B60(s32 arg0, PadState *arg1) {
 
     rec->unk_43E = rec->unk_3F8[rec->unk_86] +
                    (((rec->unk_404[rec->unk_86] - rec->unk_3F8[rec->unk_86]) * D_80099D88[rec->unk_443].unk5) >> 8);
-    temp2 = (D_80099D88[rec->unk_443].unk7 * 25u) >> 3;
+    lim = (D_80099D88[rec->unk_443].unk7 * 25u) >> 3;
     work = D_800A387C - rec->unk_43E;
-    if (temp2 < (work >= 0 ? work : -work)) {
+    if (lim < (work >= 0 ? work : -work)) {
         work >>= 31;
         if (work != (rec->unk_3F0 >> 15)) {
             rec->unk_3F0 = 0;

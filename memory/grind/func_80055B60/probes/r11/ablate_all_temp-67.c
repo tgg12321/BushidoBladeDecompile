@@ -23,26 +23,28 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     s32 lo, hi;
     /* work holds two values: D_800A387C - unk_43E, then its sign (work >> 31).
        One local, not two: ordinary-c-judge-decidable.md Ruling 11; (D) record in
-       memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 work;
     /* temp holds six values: the unk_148 distance, a slot count minus one
        (clamped at 0), the slot increment (4 or 8, then plus the old count,
        clamped at 0xFF), the 0x20/0x60 flag, the wrapped ratan2() angle
        difference and the poll result of func_80055948/func_80058580.
        One local, not six: Ruling 11 (per-branch constants: Q20); (D) record in
-       memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 temp;
     /* temp2 holds three values: the unk7 * 25 >> 3 limit, the func_80056FE8()
        result and the SquareRoot0() distance. One local, not three: Ruling 11;
-       (D) record in memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       (D) record in memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 temp2;
     /* temp3 holds two values: the least slot count seen (starting at 0x100) and
        the func_80056FE8() result plus 800. One local, not two: Ruling 11; (D)
-       record in memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+       record in memory/grind/func_80055B60/evidence.md (s3) and probes/r11/. */
     s32 temp3;
     /* the counter of each of the four loops, reused loop to loop the way
        SOTN's AddToInventory reuses i for its two loops (Q51) */
     s32 i; /* SOTN: src/dra/5D5BC.c:173 @aa53500 */
+    s32 ret;
+    s32 dist;
 
     rec = &g_practice_menu_table[arg0];
     rec->unk_3CC = 0;
@@ -107,10 +109,10 @@ void func_80055B60(s32 arg0, PadState *arg1) {
         rec->unk_3F0 = 0;
     }
 
-    temp = rec->unk_00->unk_148 - rec->unk_148;
-    if (temp < -1000) {
+    dist = rec->unk_00->unk_148 - rec->unk_148;
+    if (dist < -1000) {
         rec->unk_442 = 1;
-    } else if (temp > 1000) {
+    } else if (dist > 1000) {
         rec->unk_442 = 2;
     } else {
         rec->unk_442 = 0;
@@ -136,6 +138,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
             if (rec->unk_424 != 0 && (file_GetFlag1() == 0 || D_800A38DC == 3)) {
                 s32 slot;
                 s32 found;
+                s32 add;
 
                 temp3 = 0x100;
                 i = 0;
@@ -146,30 +149,32 @@ void func_80055B60(s32 arg0, PadState *arg1) {
                     if (rec->unk_414[i][0] == rec->unk_428) {
                         found = i;
                     } else {
-                        temp = rec->unk_414[i][1] - 1;
+                        s32 n;
+
+                        n = rec->unk_414[i][1] - 1;
                         if (rec->unk_414[i][1] < temp3) {
                             slot = i;
                             temp3 = rec->unk_414[i][1];
                         }
-                        if (temp < 0) {
-                            temp = 0;
+                        if (n < 0) {
+                            n = 0;
                         }
-                        rec->unk_414[i][1] = temp;
+                        rec->unk_414[i][1] = n;
                     }
                 }
-                temp = 4;
+                add = 4;
                 if ((u16)rec->unk_6A == 0x11) {
-                    temp = 8;
+                    add = 8;
                 }
                 if (found == -1) {
                     rec->unk_414[slot][0] = rec->unk_428;
-                    rec->unk_414[slot][1] = temp;
+                    rec->unk_414[slot][1] = add;
                 } else {
-                    temp += rec->unk_414[found][1];
-                    if (temp > 0xFF) {
-                        temp = 0xFF;
+                    add += rec->unk_414[found][1];
+                    if (add > 0xFF) {
+                        add = 0xFF;
                     }
-                    rec->unk_414[found][1] = temp;
+                    rec->unk_414[found][1] = add;
                 }
             }
             rec->unk_428 = -1;
@@ -209,11 +214,13 @@ void func_80055B60(s32 arg0, PadState *arg1) {
             for (i = 0; i < 8; i++) {
                 if (rec->unk_414[i][0] == rec->unk_428 && rec->unk_414[i][1] != 0 &&
                     rec->unk_414[i][1] >= rec->unk_424) {
-                    temp = 0x20;
+                    s32 mask;
+
+                    mask = 0x20;
                     if (rec->unk_414[i][1] >= rec->unk_424 * 4) {
-                        temp = 0x60;
+                        mask = 0x60;
                     }
-                    rec->unk_430 |= temp;
+                    rec->unk_430 |= mask;
                     break;
                 }
             }
@@ -233,12 +240,14 @@ void func_80055B60(s32 arg0, PadState *arg1) {
             temp2 = SquareRoot0((rec->unk_F4.x - *(s32 *)(obj + 0x2C)) * (rec->unk_F4.x - *(s32 *)(obj + 0x2C)) +
                               (rec->unk_F4.z - *(s32 *)(obj + 0x34)) * (rec->unk_F4.z - *(s32 *)(obj + 0x34)));
             if (*(s16 *)(obj + 2) != -1 && obj[4] != 0 && obj[6] != rec->unk_04) {
-                temp = (ratan2(rec->unk_F4.x - *(s32 *)(obj + 0x2C), rec->unk_F4.z - *(s32 *)(obj + 0x34)) -
+                s32 da;
+
+                da = (ratan2(rec->unk_F4.x - *(s32 *)(obj + 0x2C), rec->unk_F4.z - *(s32 *)(obj + 0x34)) -
                       ratan2(*(s32 *)(obj + 0x2C) - *(s32 *)(obj + 0x38), *(s32 *)(obj + 0x34) - *(s32 *)(obj + 0x40))) & 0xFFF;
-                if (temp > 0x800) {
-                    temp -= 0x1000;
+                if (da > 0x800) {
+                    da -= 0x1000;
                 }
-                if ((temp < 0 ? -temp : temp) < 0x80) {
+                if ((da < 0 ? -da : da) < 0x80) {
                     if ((rec->unk_B8.vy - *(s32 *)(obj + 0x30) >= 0) ? (rec->unk_B8.vy - *(s32 *)(obj + 0x30) < 2000)
                                                               : (*(s32 *)(obj + 0x30) - rec->unk_B8.vy < 2000)) {
                         rec->unk_425 = temp2 < 3000 ? 2 : 1;
@@ -287,14 +296,14 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     i = 0;
     do {
         if (rec->unk_3B4 != 0) {
-            temp = func_80055948((u8 *)rec);
+            ret = func_80055948((u8 *)rec);
         } else {
-            temp = func_80058580((u8 *)rec);
+            ret = func_80058580((u8 *)rec);
         }
         i++;
-    } while (temp == -1 && i < 4);
-    if (temp != -1) {
-        pad.held = temp;
+    } while (ret == -1 && i < 4);
+    if (ret != -1) {
+        pad.held = ret;
     } else {
         pad.held = 0;
     }

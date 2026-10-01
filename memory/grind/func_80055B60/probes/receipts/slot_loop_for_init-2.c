@@ -1,13 +1,9 @@
 /* BEGIN func_80055B60 */
-/* Four pad-bit numbers; func_80055B60 copies the table whole (align 1: lwl/lwr)
-   and indexes the copy by PracticeMenuRec.unk_441. */
 typedef struct {
-    u8 bit[4];
-} PadBitTable;
-/* The twelve 0x64-byte records at D_80106A78, walked by byte offset as in
-   their other consumers (src/code6cac_b_tu2.c func_80030D7C). */
+    u8 b[4];
+} Bytes800A3258;
 extern u8 D_80106A78;
-extern PadBitTable D_800A3258;
+extern Bytes800A3258 D_800A3258;
 extern u8 D_8009A088[];
 extern s32 ratan2(s32, s32);
 extern s32 SquareRoot0(s32);
@@ -19,30 +15,15 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     PracticeMenuRec *me;
     PracticeMenuRec *opp;
     PadState pad;
-    PadBitTable bits;
+    Bytes800A3258 bits;
+    s32 b3, b4, b7, b8, b9, b10, b11;
     s32 lo, hi;
-    /* work holds two values: D_800A387C - unk_43E, then its sign (work >> 31).
-       One local, not two: ordinary-c-judge-decidable.md Ruling 11; (D) record in
-       memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
+    s32 flags;
     s32 work;
-    /* temp holds six values: the unk_148 distance, a slot count minus one
-       (clamped at 0), the slot increment (4 or 8, then plus the old count,
-       clamped at 0xFF), the 0x20/0x60 flag, the wrapped ratan2() angle
-       difference and the poll result of func_80055948/func_80058580.
-       One local, not six: Ruling 11 (per-branch constants: Q20); (D) record in
-       memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
     s32 temp;
-    /* temp2 holds three values: the unk7 * 25 >> 3 limit, the func_80056FE8()
-       result and the SquareRoot0() distance. One local, not three: Ruling 11;
-       (D) record in memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
     s32 temp2;
-    /* temp3 holds two values: the least slot count seen (starting at 0x100) and
-       the func_80056FE8() result plus 800. One local, not two: Ruling 11; (D)
-       record in memory/grind/func_80055B60/evidence.md s3 (probes/r11/ there). */
     s32 temp3;
-    /* the counter of each of the four loops, reused loop to loop the way
-       SOTN's AddToInventory reuses i for its two loops (Q51) */
-    s32 i; /* SOTN: src/dra/5D5BC.c:173 @aa53500 */
+    s32 i;
 
     rec = &g_practice_menu_table[arg0];
     rec->unk_3CC = 0;
@@ -63,11 +44,23 @@ void func_80055B60(s32 arg0, PadState *arg1) {
         me->unk_440 = me->unk_441;
     }
 
-    rec->unk_430 = (rec->unk_430 & 0x40060) | ((rand() & 0xFFF) < ((s16)rec->unk_438 >> 3) && rec->unk_3E8 >= 0x3D) |
+    flags = (rec->unk_430 & 0x40060) | ((rand() & 0xFFF) < ((s16)rec->unk_438 >> 3) && rec->unk_3E8 >= 0x3D);
+    b3 = ((rand() & 0xFFF) < (s16)rec->unk_438 || rec->unk_3E8 < ((s16)rec->unk_438 >> 3)) << 3;
+    b4 = ((rand() & 0xFFF) < ((s16)rec->unk_438 >> 1) || rec->unk_3E8 < ((s16)rec->unk_438 >> 4)) << 4;
+    b7 = ((u16)rec->unk_00->unk_6A == 2 || (u16)rec->unk_00->unk_6A == 0x1B ||
+          (u16)rec->unk_00->unk_6A == 0x28 || (u16)rec->unk_00->unk_6A == 0x26 ||
+          ((u16)rec->unk_6A == 0x11 && rec->unk_50[8] != rec->unk_58[1] - 1)) << 7;
+    b8 = ((u16)rec->unk_6A == 0x13 || (u16)rec->unk_6A == 0x1B || (u16)rec->unk_6A == 0x30) << 8;
+    b9 = ((u16)rec->unk_00->unk_6A == 0x13 || (u16)rec->unk_00->unk_6A == 0x1B ||
+          (u16)rec->unk_00->unk_6A == 0x30) << 9;
+    b10 = ((u16)rec->unk_6A == 6 || (u16)rec->unk_6A == 4 || (u16)rec->unk_6A == 0x14) << 10;
+    b11 = ((u16)rec->unk_00->unk_6A == 6 || (u16)rec->unk_00->unk_6A == 4 ||
+           (u16)rec->unk_00->unk_6A == 0x14) << 11;
+    rec->unk_430 = flags |
                    ((D_80099D88[rec->unk_443].flags & 0xFF00)
                         ? (rec->unk_3F6 < rec->unk_3F5) << 2
                         : ((rand() & 0xFFF) < ((s16)rec->unk_438 >> 3) && rec->unk_3E8 >= 0x3D) << 2) |
-                   (((rand() & 0xFFF) < (s16)rec->unk_438 || rec->unk_3E8 < ((s16)rec->unk_438 >> 3)) << 3) | (((rand() & 0xFFF) < ((s16)rec->unk_438 >> 1) || rec->unk_3E8 < ((s16)rec->unk_438 >> 4)) << 4) | (((u16)rec->unk_00->unk_6A == 2 || (u16)rec->unk_00->unk_6A == 0x1B || (u16)rec->unk_00->unk_6A == 0x28 || (u16)rec->unk_00->unk_6A == 0x26 || ((u16)rec->unk_6A == 0x11 && rec->unk_50[8] != rec->unk_58[1] - 1)) << 7) | (((u16)rec->unk_6A == 0x13 || (u16)rec->unk_6A == 0x1B || (u16)rec->unk_6A == 0x30) << 8) | (((u16)rec->unk_00->unk_6A == 0x13 || (u16)rec->unk_00->unk_6A == 0x1B || (u16)rec->unk_00->unk_6A == 0x30) << 9) | (((u16)rec->unk_6A == 6 || (u16)rec->unk_6A == 4 || (u16)rec->unk_6A == 0x14) << 10) | (((u16)rec->unk_00->unk_6A == 6 || (u16)rec->unk_00->unk_6A == 4 || (u16)rec->unk_00->unk_6A == 0x14) << 11) |
+                   b3 | b4 | b7 | b8 | b9 | b10 | b11 |
                    ((u16)rec->unk_6A == 0x15 ? 0x1000 : 0) |
                    ((u16)rec->unk_00->unk_6A == 0x15 ? 0x2000 : 0) |
                    ((u16)rec->unk_6A == 0x19 ? 0x4000 : 0) |
@@ -138,11 +131,10 @@ void func_80055B60(s32 arg0, PadState *arg1) {
                 s32 found;
 
                 temp3 = 0x100;
-                i = 0;
                 slot = -1;
                 found = -1;
 
-                for (; i < 8; i++) {
+                for (i = 0; i < 8; i++) {
                     if (rec->unk_414[i][0] == rec->unk_428) {
                         found = i;
                     } else {
@@ -301,7 +293,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     if (pad.held & 0x660) {
         bits = D_800A3258;
         if ((u16)rec->unk_6A == 0x19) {
-            pad.held |= 1 << bits.bit[rec->unk_441];
+            pad.held |= 1 << bits.b[rec->unk_441];
         } else if ((u16)rec->unk_6A == 0x13) {
             pad.held |= 4;
         }

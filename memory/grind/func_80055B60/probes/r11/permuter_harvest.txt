@@ -1,0 +1,212 @@
+# permuter campaigns from onevar_PV-91.c (tools/permuter_campaign.py, -j 2, --stack-diffs).
+# workspace tmp/perm_b60f: mini TU (headers + the per-value body); its function asm equals the full-TU build (labels aside, perm_mk.sh).
+# run 1 'pv-final'  : 2026-10-01T12:01Z, 444 s, 2652 iterations, base 1165, best 490 (10 finds, outputs kept in tmp/perm_b60f_run1)
+# run 2 'pv-final-2': 2026-10-01T12:08Z, 1670 s, 9478 iterations, base 1165, best 490 (24 finds). No 0 in either run.
+# Every find below the base re-uses a per-value local (mostly diff) for a further value, adds a dummy constant, or splits a statement.
+
+== tmp/perm_b60f/output-490-1 (score 490)
+-  diff = D_800A387C - rec->unk_43E;
++  diff = D_800A387C;
++  diff = diff - rec->unk_43E;
+
+== tmp/perm_b60f_run1/output-490-1 (score 490)
+-  diff = D_800A387C - rec->unk_43E;
++  diff = D_800A387C;
++  diff = diff - rec->unk_43E;
+
+== tmp/perm_b60f/output-500-1 (score 500)
+-  if ((((((D_8009A088[rec->unk_00->unk_0E] >> rec->unk_00->unk_440) & 1) && (rec->unk_00->unk_43C < (((s16) rec->unk_438) >> 4))) && (rec->unk_0E < 6)) && (rec->unk_430 & 0x2000)) && (!(D_80099D88[re
++  if ((((((D_8009A088[rec->unk_00->unk_0E] >> rec->unk_00->unk_440) & 1) && (rec->unk_00->unk_43C < (((s16) rec->unk_438) >> 4))) && (rec->unk_0E < 6)) && (diff = rec->unk_430 & 0x2000)) && (!(D_8009
+
+== tmp/perm_b60f/output-505-1 (score 505)
+-          if (((rec->unk_B8.vy - (*((s32 *) (obj + 0x30)))) >= 0) ? ((rec->unk_B8.vy - (*((s32 *) (obj + 0x30)))) < 2000) : (((*((s32 *) (obj + 0x30))) - rec->unk_B8.vy) < 2000))
++          diff = rec->unk_B8.vy;
++          if (((diff - (*((s32 *) (obj + 0x30)))) >= 0) ? ((diff - (*((s32 *) (obj + 0x30)))) < 2000) : (((*((s32 *) (obj + 0x30))) - rec->unk_B8.vy) < 2000))
+
+== tmp/perm_b60f/output-540-1 (score 540)
++  diff = (u16) rec->unk_00->unk_6A;
+-  if (((((((rec->unk_430 & 1) && (!(D_80099D88[rec->unk_443].flags & 0xFF00))) && (rec->unk_426 != 1)) && (rec->unk_426 != 2)) && (rec->unk_425 != 1)) && (rec->unk_425 != 2)) && (((((((((rec->unk_430
++  if (((((((rec->unk_430 & 1) && (!(D_80099D88[rec->unk_443].flags & 0xFF00))) && (rec->unk_426 != 1)) && (rec->unk_426 != 2)) && (rec->unk_425 != 1)) && (rec->unk_425 != 2)) && (((((((((rec->unk_430
+
+== tmp/perm_b60f/output-620-1 (score 620)
+-    func_80056CB8((s32) rec);
++    diff = (s32) rec;
++    func_80056CB8(diff);
+-        near = func_80056FE8((s32) rec);
++        near = func_80056FE8(diff);
+
+== tmp/perm_b60f_run1/output-680-1 (score 680)
++  s32 *new_var;
++  diff = rec->unk_86;
+-  rec->unk_43E = rec->unk_3F8[rec->unk_86] + (((rec->unk_404[rec->unk_86] - rec->unk_3F8[rec->unk_86]) * D_80099D88[rec->unk_443].unk5) >> 8);
++  rec->unk_43E = rec->unk_3F8[diff] + (((rec->unk_404[diff] - rec->unk_3F8[diff]) * D_80099D88[rec->unk_443].unk5) >> 8);
+-          if (rec->unk_414[i][1] >= (rec->unk_424 * 4))
++          if (rec->unk_414[i][1] >= ((rec->unk_424 * 2) * 2))
+
+== tmp/perm_b60f/output-685-1 (score 685)
+-    if (sign != (rec->unk_3F0 >> 15))
++    if ((diff = sign) != (rec->unk_3F0 >> 15))
+-    rec->unk_3F0 += (sign) ? (-1) : (1);
++    rec->unk_3F0 += (diff) ? (-1) : (1);
+
+== tmp/perm_b60f/output-700-1 (score 700)
+-      rec->unk_430 |= 0x18;
+-    }
+-  }
+-  if (((((u16) rec->unk_00->unk_6A) == 0x12) && (rec->unk_00->unk_43C < 0x80)) && (D_800A387C < 0x1194))
++      rec->unk_430 = rec->unk_430 | 0x18;
++    }
+
+== tmp/perm_b60f/output-750-1 (score 750)
+-        rec->unk_428 = ((rec->unk_00->unk_6C != 0xE) && (rec->unk_00->unk_6C != 0x2C)) ? (rec->unk_00->unk_5C) : (0xFE);
++        diff = rec->unk_00->unk_6C;
++        rec->unk_428 = ((diff != 0xE) && (rec->unk_00->unk_6C != 0x2C)) ? (rec->unk_00->unk_5C) : (0xFE);
++      if (1)
++      {
++      }
+
+== tmp/perm_b60f/output-770-1 (score 770)
+-        da = (ratan2(rec->unk_F4.x - (*((s32 *) (obj + 0x2C))), rec->unk_F4.z - (*((s32 *) (obj + 0x34)))) - ratan2((*((s32 *) (obj + 0x2C))) - (*((s32 *) (obj + 0x38))), (*((s32 *) (obj + 0x34))) - 
++        diff = *((s32 *) (obj + 0x2C));
++        da = (ratan2(rec->unk_F4.x - diff, rec->unk_F4.z - (*((s32 *) (obj + 0x34)))) - ratan2(diff - (*((s32 *) (obj + 0x38))), (*((s32 *) (obj + 0x34))) - (*((s32 *) (obj + 0x40))))) & 0xFFF;
+
+== tmp/perm_b60f/output-810-1 (score 810)
++      diff = rec->unk_F4.z;
+-        da = (ratan2(rec->unk_F4.x - (*((s32 *) (obj + 0x2C))), rec->unk_F4.z - (*((s32 *) (obj + 0x34)))) - ratan2((*((s32 *) (obj + 0x2C))) - (*((s32 *) (obj + 0x38))), (*((s32 *) (obj + 0x34))) - 
++        da = (ratan2(rec->unk_F4.x - (*((s32 *) (obj + 0x2C))), diff - (*((s32 *) (obj + 0x34)))) - ratan2((*((s32 *) (obj + 0x2C))) - (*((s32 *) (obj + 0x38))), (*((s32 *) (obj + 0x34))) - (*((s32 *
+
+== tmp/perm_b60f_run1/output-815-1 (score 815)
++  diff = 7;
+-  if (((((((rec->unk_430 & 1) && (!(D_80099D88[rec->unk_443].flags & 0xFF00))) && (rec->unk_426 != 1)) && (rec->unk_426 != 2)) && (rec->unk_425 != 1)) && (rec->unk_425 != 2)) && (((((((((rec->unk_430
++  if (((((((rec->unk_430 & 1) && (!(D_80099D88[rec->unk_443].flags & 0xFF00))) && (rec->unk_426 != 1)) && (rec->unk_426 != 2)) && (rec->unk_425 != 1)) && (rec->unk_425 != 2)) && (((((((((rec->unk_430
+
+== tmp/perm_b60f_run1/output-830-1 (score 830)
++  diff = 0x2C;
+-        da = (ratan2(rec->unk_F4.x - (*((s32 *) (obj + 0x2C))), rec->unk_F4.z - (*((s32 *) (obj + 0x34)))) - ratan2((*((s32 *) (obj + 0x2C))) - (*((s32 *) (obj + 0x38))), (*((s32 *) (obj + 0x34))) - 
++        da = (ratan2(rec->unk_F4.x - (*((s32 *) (obj + diff))), rec->unk_F4.z - (*((s32 *) (obj + 0x34)))) - ratan2((*((s32 *) (obj + 0x2C))) - (*((s32 *) (obj + 0x38))), (*((s32 *) (obj + 0x34))) - 
+
+== tmp/perm_b60f/output-855-1 (score 855)
++  int new_var;
+-        far = near + 800;
++        new_var = 800;
++        far = near + new_var;
+-    if ((((u16) rec->unk_6A) != 0x25) && (D_80102788.held & 0x100))
++    diff = (((u16) rec->unk_6A) != 0x25) && (D_80102788.held & 0x100);
+
+== tmp/perm_b60f/output-860-1 (score 860)
+-  lim = (D_80099D88[rec->unk_443].unk7 * 25u) >> 3;
++  ;
+-  if (lim < ((diff >= 0) ? (diff) : (-diff)))
++  if (((D_80099D88[rec->unk_443].unk7 * 25u) >> 3) < ((diff >= 0) ? (diff) : (-diff)))
+
+== tmp/perm_b60f_run1/output-860-1 (score 860)
+-  if (((((((rec->unk_430 & 1) && (!(D_80099D88[rec->unk_443].flags & 0xFF00))) && (rec->unk_426 != 1)) && (rec->unk_426 != 2)) && (rec->unk_425 != 1)) && (rec->unk_425 != 2)) && (((((((((rec->unk_430
++  diff = rec->unk_430;
++  if (((((((rec->unk_430 & 1) && (!(D_80099D88[rec->unk_443].flags & 0xFF00))) && (rec->unk_426 != 1)) && (rec->unk_426 != 2)) && (rec->unk_425 != 1)) && (rec->unk_425 != 2)) && (((((((((rec->unk_430
+
+== tmp/perm_b60f/output-900-1 (score 900)
++      diff = rec->unk_00->unk_6C;
+-        rec->unk_428 = ((rec->unk_00->unk_6C != 0xE) && (rec->unk_00->unk_6C != 0x2C)) ? (rec->unk_00->unk_5C) : (0xFE);
++        rec->unk_428 = ((rec->unk_00->unk_6C != 0xE) && (diff != 0x2C)) ? (rec->unk_00->unk_5C) : (0xFE);
+
+== tmp/perm_b60f/output-955-1 (score 955)
++  int new_var;
++  new_var = D_800A387C < 0x1194;
+-  if (((((u16) rec->unk_00->unk_6A) == 0x12) && (rec->unk_00->unk_43C < 0x80)) && (D_800A387C < 0x1194))
++  if (((((u16) rec->unk_00->unk_6A) == 0x12) && (rec->unk_00->unk_43C < 0x80)) && new_var)
+
+== tmp/perm_b60f/output-1032-1 (score 1032)
+-  rec->unk_430 = ((((((((((((((rec->unk_430 & 0x40060) | (((rand() & 0xFFF) < (((s16) rec->unk_438) >> 3)) && (rec->unk_3E8 >= 0x3D))) | ((D_80099D88[rec->unk_443].flags & 0xFF00) ? ((rec->unk_3F6 < 
++  rec->unk_430 = ((((((((((((((rec->unk_430 & 0x40060) | (((diff = rand() & 0xFFF) < (((s16) rec->unk_438) >> 3)) && (rec->unk_3E8 >= 0x3D))) | ((D_80099D88[rec->unk_443].flags & 0xFF00) ? ((rec->unk
++    dist = rec->unk_00->unk_148 - rec->unk_148;
+-  dist = rec->unk_00->unk_148 - rec->unk_148;
+
+== tmp/perm_b60f/output-1045-1 (score 1045)
++  int new_var;
++  new_var = rec->unk_0E >= 6;
+-  if (rec->unk_0E >= 6)
++  if (new_var)
+
+== tmp/perm_b60f_run1/output-1055-1 (score 1055)
+-    if (rec->unk_428 != (-1))
++    diff = rec->unk_428;
++    if (diff != (-1))
+-          if (rec->unk_414[i][0] == rec->unk_428)
++          if (rec->unk_414[i][0] == diff)
+-          rec->unk_414[slot][0] = rec->unk_428;
+
+== tmp/perm_b60f/output-1070-1 (score 1070)
+-        if (((rec->unk_414[i][0] == rec->unk_428) && (rec->unk_414[i][1] != 0)) && (rec->unk_414[i][1] >= rec->unk_424))
++        diff = rec->unk_414[i][1] != 0;
++        if (((rec->unk_414[i][0] == rec->unk_428) && diff) && (rec->unk_414[i][1] >= rec->unk_424))
+
+== tmp/perm_b60f/output-1085-1 (score 1085)
++        s32 far;
+-        s32 far;
++  diff = D_80102788.held;
+-    if ((((u16) rec->unk_6A) != 0x25) && (D_80102788.held & 0x100))
++    if ((((u16) rec->unk_6A) != 0x25) && (diff & 0x100))
+
+== tmp/perm_b60f/output-1095-1 (score 1095)
++  struct PracticeMenuRec *new_var;
++  new_var = rec->unk_00;
+-  if (((((((rec->unk_430 & 1) && (!(D_80099D88[rec->unk_443].flags & 0xFF00))) && (rec->unk_426 != 1)) && (rec->unk_426 != 2)) && (rec->unk_425 != 1)) && (rec->unk_425 != 2)) && (((((((((rec->unk_430
++  if (((((((rec->unk_430 & 1) && (!(D_80099D88[rec->unk_443].flags & 0xFF00))) && (rec->unk_426 != 1)) && (rec->unk_426 != 2)) && (rec->unk_425 != 1)) && (rec->unk_425 != 2)) && (((((((((rec->unk_430
+
+== tmp/perm_b60f/output-1105-1 (score 1105)
+-  rec->unk_430 = ((((((((((((((rec->unk_430 & 0x40060) | (((rand() & 0xFFF) < (((s16) rec->unk_438) >> 3)) && (rec->unk_3E8 >= 0x3D))) | ((D_80099D88[rec->unk_443].flags & 0xFF00) ? ((rec->unk_3F6 < 
++  rec->unk_430 = ((((((((((((((rec->unk_430 & 0x40060) | (((rand() & 0xFFF) < (((s16) rec->unk_438) >> 3)) && (rec->unk_3E8 >= 0x3D))) | ((D_80099D88[rec->unk_443].flags & 0xFF00) ? ((rec->unk_3F6 < 
+-    if (sign != (rec->unk_3F0 >> 15))
++    if ((diff = sign) != (rec->unk_3F0 >> 15))
+-    rec->unk_3F0 += (sign) ? (-1) : (1);
++    rec->unk_3F0 += (diff) ? (-1) : (1);
+
+== tmp/perm_b60f_run1/output-1105-1 (score 1105)
++  diff = rec->unk_F4.z;
+-      len = SquareRoot0(((rec->unk_F4.x - (*((s32 *) (obj + 0x2C)))) * (rec->unk_F4.x - (*((s32 *) (obj + 0x2C))))) + ((rec->unk_F4.z - (*((s32 *) (obj + 0x34)))) * (rec->unk_F4.z - (*((s32 *) (obj +
++      len = SquareRoot0(((rec->unk_F4.x - (*((s32 *) (obj + 0x2C)))) * (rec->unk_F4.x - (*((s32 *) (obj + 0x2C))))) + ((diff - (*((s32 *) (obj + 0x34)))) * (rec->unk_F4.z - (*((s32 *) (obj + 0x34))))
+-        da = (ratan2(rec->unk_F4.x - (*((s32 *) (obj + 0x2C))), rec->unk_F4.z - (*((s32 *) (obj + 0x34)))) - ratan2((*((s32 *) (obj + 0x2C))) - (*((s32 *) (obj + 0x38))), (*((s32 *) (obj + 0x34))) - 
++        da = (ratan2(rec->unk_F4.x - (*((s32 *) (obj + 0x2C))), diff - (*((s32 *) (obj + 0x34)))) - ratan2((*((s32 *) (obj + 0x2C))) - (*((s32 *) (obj + 0x38))), (*((s32 *) (obj + 0x34))) - (*((s32 *
+
+== tmp/perm_b60f_run1/output-1110-1 (score 1110)
++  int new_var;
+-    if (sign != (rec->unk_3F0 >> 15))
++    diff = rec->unk_3F0 >> 15;
++    if (sign != diff)
+-      if ((((*((s16 *) (obj + 2))) != (-1)) && (obj[4] != 0)) && (obj[6] != rec->unk_04))
++      if (new_var = (((*((s16 *) (obj + 2))) != (-1)) && (obj[4] != 0)) && (obj[6] != rec->unk_04))
+
+== tmp/perm_b60f/output-1130-1 (score 1130)
+-        if (((da < 0) ? (-da) : (da)) < 0x80)
+-        {
+-          if (((rec->unk_B8.vy - (*((s32 *) (obj + 0x30)))) >= 0) ? ((rec->unk_B8.vy - (*((s32 *) (obj + 0x30)))) < 2000) : (((*((s32 *) (obj + 0x30))) - rec->unk_B8.vy) < 2000))
+-          {
+-            rec->unk_425 = (len < 3000) ? (2) : (1);
+-          }
+
+== tmp/perm_b60f/output-1160-1 (score 1160)
+-        slot = -1;
+-        found = -1;
++        slot = (found = -1);
+
+== tmp/perm_b60f_run1/output-1160-1 (score 1160)
+-        slot = -1;
+-        found = -1;
++        slot = (found = -1);
+
+== tmp/perm_b60f/output-1165-1 (score 1165)
+-  if (dist < (-1000))
++  i = dist;
++  if (i < (-1000))
+-    if (dist > 1000)
++    if (i > 1000)
+
+== tmp/perm_b60f/output-1165-2 (score 1165)
+-        if (found == (-1))
++        if (i == (-1))
+
+== tmp/perm_b60f_run1/output-1165-1 (score 1165)
++  long long new_var;
++  new_var = 8;
+-          add = 8;
++          add = new_var;

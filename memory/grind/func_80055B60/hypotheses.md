@@ -24,3 +24,8 @@ pad statement order, loop-counter init order).
 OPEN (policy, before landing): multi-write generic locals `temp` (6 values), `temp2` (3), `far` (3), `diff`
 (value then its sign) need Ruling 11 packages or split spellings; `(u16)rec->unk_6A` casts vs retyping unk_6A to
 u16 (L1 plans the same); D_80106A78 typed as a 12 x 0x64 record array in text1b.c only.
+
+## s3 (2026-10-01, laneA) — landing body (sandbox 0) with its Ruling 11 package; see evidence.md s3
+Simplified to one flag-word expression (no b3..b11/flags locals), no tgt local, natural `!= 1 && != 2` tests,
+D_80106A78 byte walk. Reused locals temp/temp2/temp3/work under Ruling 11 (record in evidence.md s3, probes/r11/),
+i under Q51 (SOTN AddToInventory). land.py applies the src/header/undefined_syms edits (landing lock only).
