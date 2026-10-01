@@ -91,7 +91,8 @@ is judged under its own rule, neither banned nor admitted by Q78. Not a preceden
 4/5 arm (`move $fp,$zero` 0x8002AF18) may re-store values the variables always hold there, despite
 (B)(2)/Ruling 5 2(c). Each variable's comment (c's too) cites its address. Q85 does not admit c (one
 role, constant writes) as a multi-write local: that needs its own ruling's prongs. Every other prong
-applies; fresh layer-2. No other write or function.
+applies; fresh layer-2. No other write or function. Names may change under (E) (`c` is spelled
+`deep_on`).
 
 ## Ruling 12 — a local copy of a stack-passed parameter (2026-09-26)
 
