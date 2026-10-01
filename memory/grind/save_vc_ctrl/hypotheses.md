@@ -19,7 +19,7 @@
   an ordering difference only), `while (n--)` b 8 / m 8, struct do-while l 0,
   struct for n/o 0. preauth_body.c 2.
 - Frame: phantom-slot-frame-lever producer 1. `.frame $sp,8 ... vars= 8`; in m1001/frame.sh +
-  combine.sh dumps the guard's `-1` (pseudo 81, `(set (reg:SI 81) (const_int -1))` feeding the `i == -1`
+  combine.sh dumps the guard's `-1` (pseudo 81 in the round-1 body, 80 in the landed one; `(set (reg:SI N) (const_int -1))` feeding the `i == -1`
   test before the loop) is folded by combine into `beqz $a2`; its refs survive, it never gets a hard
   register, and reload gives it the 8-byte slot no instruction touches.
 
@@ -28,3 +28,8 @@
    scores 0 (16/16). 2. The file comment's "as in func_8001F938" was false (that frame comes from its
    `short dmg` local). Loop form, mechanism and layout verified clean. Fix: typed parameter, comment
    cites gpu_SetDrawMoveArray. Banked: rejected/param-alias-fail-0.c.
+
+## 2026-10-01 LANDED — COMPLETED-C
+Round 2 rev-svc-r2 PASS (9bb2332d233f373c): typed `VcCtrl *rec` parameter, body otherwise round 1's;
+`vars= 8` with one unallocated guard pseudo (80); gpu_SetDrawMoveArray shows the same producer 1
+(its pseudo 83); callers' `(s16 *)` casts disclosed. Match 001db0689, queue 8339c61d2.
