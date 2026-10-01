@@ -34,7 +34,7 @@ reach for the object model first.
 2. Corroborate the shape (matched reference decomp of the same library source, the size literal at the call,
    indices across the codebase).
 3. Declare `extern T name[N];` at the true base and retire the per-word externs — one C handle per storage
-   (the aggregate-merge family in [[no-new-park-categories]], all its prongs).
+   ([[aggregate-merge-family]], all its prongs).
 4. Write elements in TARGET's first-store order (cse reaches the base by a negative offset from the first
    store's address).
 

@@ -8,47 +8,33 @@ metadata:
 
 # Inline-asm policy
 
-| Category | What | Status |
-|---|---|---|
-| canonical-body | whole function as file-scope `__asm__("glabel ...")`; original was hand-written asm | COMPLETED-INLINE-ASM-CANONICAL, listed in `inline_asm_canonical.txt` |
-| canonical | islands of opcodes with no C form: GTE/cop2 (`ctc2`/`mtc2`/`mfc2`/`cfc2`/`lwc2`/`swc2`/cop2 `.word`), BIOS vector jumps (`j 0xA0/B0/C0`), hardware pokes | COMPLETED-INLINE-ASM-CANONICAL when authorized |
-| cheat | asm or pins that steer GCC's allocator/scheduler, or emit GPR instructions C could express | INCOMPLETE (sandbox strips it; `queue done` refuses) |
-| none | pure C | COMPLETED-C (the goal) |
+- **canonical-body**: whole function as file-scope `__asm__("glabel ...")`, original was
+  hand-written asm; **canonical**: islands of opcodes with no C form (GTE/cop2, BIOS vector
+  jumps `j 0xA0/B0/C0`, hardware pokes). Both are COMPLETED-INLINE-ASM-CANONICAL only when the
+  `canonical` gate and an authorization route allow it ([[canonical-asm-authorization-recipe]],
+  [[judge-sole-gate]] rule 3, the GTE classes below; listed in `inline_asm_canonical.txt`).
+- **cheat**: anything steering GCC's allocator/scheduler or emitting GPR instructions C could
+  express. INCOMPLETE: the sandbox strips it and `queue done` refuses.
 
-Only the `canonical` gate and an authorization route make asm finished
-([[canonical-asm-authorization-recipe]], [[judge-sole-gate]] rule 3, the GTE classes below).
-`INCLUDE_ASM` marks either queue work or an authorized canonical body; disambiguate via
-`engine/queue.json` / `inline_asm_canonical.txt`.
+## The cheat catalog (`engine/volatile_cheats.py`, `engine/inlineasm.py`)
 
-## The cheat catalog (detected by `engine/volatile_cheats.py` / `engine/inlineasm.py`)
+- **Register pins** `register T x asm("$N")`: diagnostic only ([[register-asm-pins]]).
+- **Hardcoded-`$N` injection** (`__asm__("addu $8, $3, $zero")`, no `%N`): the regfix cheat
+  moved into C. Placeholder `move %0,%1` + pins is equally a cheat. Restructure the C instead.
+- **Alias renames** `extern T name asm("Y")` (name != Y): a second C handle to one object.
+- **Volatile coercion** on game-state globals, except [[legitimate-volatile-interrupt-touched]]
+  and [[mmio-volatile-type-level]].
+- **Scheduling barriers** (`__asm__("" ::: "memory")`), macro-hidden asm, GPR opcodes in asm.
 
-- **Register pins** `register T x asm("$N")`: diagnostic only, never committable
-  ([[register-asm-pins]]).
-- **Hardcoded-`$N` injection**: a single-instruction `__asm__("addu $8, $3, $zero")` with no
-  `%N` operands is the regfix cheat moved into C; GCC never produced those bytes. Placeholder
-  `move %0,%1` with pins is equally a cheat. If pins/injection is the only path, restructure
-  the C or pursue canonical-asm evidence; never fall back to literal registers.
-- **Alias renames**: `extern (volatile) T name asm("Y")` with name != Y (a second C handle to
-  defeat CSE or force a width). Use one canonical declaration.
-- **Volatile coercion** on game-state globals (`*(volatile T *)&D_x`, `extern volatile T D_x`)
-  except [[legitimate-volatile-interrupt-touched]] and [[mmio-volatile-type-level]].
-- **Scheduling barriers** (`__asm__("" ::: "memory")`), macro-hidden asm (`#define ... __asm__`),
-  general-purpose opcodes (`move`, `addu`, `nop`, `lui`, `negu`, ...) in asm.
-- Unused local arrays / dead param self-assigns: see [[dead-vars-local-array]] /
-  [[dead-store-fake-exception]] (narrow FAKE carve-outs only).
-
-A verified SOTN citation (Q50/Q55, [[no-new-park-categories]] § SOTN precedent suffices) can
-admit a construct this default ban refuses, with Q53's prerequisites, on the manual path.
+A verified SOTN citation ([[sotn-precedent-suffices]], Q55) can admit a construct this ban
+refuses, with Q53's prerequisites, on the manual path.
 
 ## GTE leaf wrappers (auto-authorize, 2026-05-26)
 
-A leaf that is only cop2 ops plus MECHANICAL packaging (loads/stores feeding or draining GTE
-registers, the GTE load-delay `nop`) has no C form: `canonical` routes it ASM-WHOLE →
-`authorize`. Finished form: remove any pin (GCC returns `mfc2`'s result in `$v0` naturally),
-keep the cop2 `.word`s and timing `nop`, `verify-oracle --rebuild`, add the
-`inline_asm_canonical.txt` row, `queue done`. A leaf that also does general-purpose
-COMPUTATION with a C form (e.g. summing `mfc2` outputs) is NOT in this class and needs the
-normal evidence route.
+A leaf of only cop2 ops plus MECHANICAL packaging (loads/stores feeding or draining GTE
+registers, the load-delay `nop`) has no C form; `canonical` routes it to `authorize`. Remove
+any pin, keep the cop2 `.word`s and timing `nop`, `verify-oracle --rebuild`, add the row,
+`queue done`. A leaf that also COMPUTES something C can express needs the normal evidence route.
 
 ## Owner ruling 2026-09-23 — verbatim PsyQ GTE macro islands
 
@@ -132,6 +118,4 @@ terms in docs/grind/decisions.md.
 - **Per-function grants: func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770** (Q61,
   2026-09-30): their `gte_rtv0()` units with `0x4A486012`.
 
-Related: [[register-asm-pins]] · [[canonical-asm-authorization-recipe]] ·
-[[cop2-addressing-preamble-cluster]] · [[legitimate-volatile-interrupt-touched]] ·
-[[no-new-park-categories]]
+Related: [[cop2-addressing-preamble-cluster]] · [[no-new-park-categories]]

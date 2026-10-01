@@ -32,7 +32,7 @@ Layer-2 runs the grep and the cast-necessity table itself, against the actual tr
 ## Scope limits
 
 Signedness only — no width flips, no scalar ↔ struct/union/pointer changes (those need their own evidence,
-e.g. the aggregate-merge entry of [[no-new-park-categories]]). Not a "flip a header type to close a byte"
+e.g. [[aggregate-merge-family]]). Not a "flip a header type to close a byte"
 license: the residual is never evidence. Grind sessions may not edit `include/*.h` without the four-prong pack.
 
 Example: func_8001B138 — `extern u16 g_file_vram_timer;` → `s16`; the body's `if (g < -0x1C00)` clamp was dead

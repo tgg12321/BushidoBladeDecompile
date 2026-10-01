@@ -66,7 +66,7 @@ only through a prerequisite-aware engine allowlist row, never by weakening the d
 ## Carve-out 3 — unwritten pads under the phantom-frame-slot family
 
 An UNWRITTEN `volatile` pad array is admitted only under the phantom-frame-slot volatile pad local
-family in [[no-new-park-categories]] (leading `volatile u32 pad[N]; // !FAKE`, per-function
+family in [[phantom-frame-pad-family]] (leading `volatile u32 pad[N]; // !FAKE`, per-function
 `_SANCTIONED_UNWRITTEN_PADS` row; owner rulings 2026-08-17/18) and its **Q35 extension** (owner
 ruling 2026-09-29 — a trailing unused local array with sibling evidence): frame forensics prove the
 bytes untouched; ≥2 COMPLETED-C same-file siblings declare a real array of the same type/count at the

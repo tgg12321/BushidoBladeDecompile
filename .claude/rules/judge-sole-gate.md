@@ -35,7 +35,7 @@ executes them.
    wait: a candidate family is logged to the borderline ledger with its evidence and the
    function keeps the CURRENT-list disposition (refused; keeps grinding). Exception (owner
    Q50, 2026-09-30): a construct with a verified SOTN citation
-   ([[no-new-park-categories]] § SOTN precedent suffices) is admissible on it with Q53's
+   ([[sotn-precedent-suffices]]) is admissible on it with Q53's
    prerequisites, and lands only through the manual path's layer-2, never on a Judge PASS.
 5. **Reviewer NEEDS_USER = FAIL + a `needs-user-downgrade` borderline entry.** The agent may
    re-invoke with genuinely NEW evidence but may never re-adjudicate the recorded question.

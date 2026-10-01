@@ -12,7 +12,7 @@ The default ban on `extern volatile T D_xxxxxxxx;` and every other volatile-as-C
 ([[inline-asm-policy]]) stands. This is the single published exception for GAME-STATE memory (KSEG0 RAM,
 scratchpad). Hardware I/O registers (`0x1F801000-0x1F802FFF`) are volatile at type level instead
 ([[mmio-volatile-type-level]]). A verified matched-SOTN citation can admit a construct this text refuses, with
-Q53's prerequisites ([[no-new-park-categories]] § SOTN precedent suffices, Precedence).
+Q53's prerequisites ([[sotn-precedent-suffices]] Q55).
 
 ## The two-pronged criterion (BOTH required)
 
@@ -59,8 +59,8 @@ A `volatile T x;` automatic local holding a value the function uses is admitted 
 always with (4). Record: decisions.md 2026-09-30 OWNER RULING — volatile locals: SOTN precedent or
 target-byte proof.
 
-- **Route A — SOTN precedent (Q50).** A citation meeting conditions (1)-(4) of [[no-new-park-categories]]
-  § SOTN precedent suffices (PS1-build file, the same thing when read, matched SOTN code), recorded in the
+- **Route A — SOTN precedent (Q50).** A citation meeting conditions (1)-(4) of [[sotn-precedent-suffices]]
+  (PS1-build file, the same thing when read, matched SOTN code), recorded in the
   ledger and an inline `/* SOTN: <file>:<line> @<commit> */` tag, with Q53's prerequisites (`/* FAKE: ... */`
   where match-motivated; simpler spellings tried). Only SOTN counts.
 - **Route B — target-byte proof (Q48).** All of:
