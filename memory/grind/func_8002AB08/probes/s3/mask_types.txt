@@ -1,0 +1,9 @@
+# s3 (laneC 2026-10-01): each contact bitmask declared s32 instead of u32 on the landing body (typed/runh.py,
+# header overlay; the call passes &hit / &deep to func_8002A458 retyped `u32 *hit, u32 *deep`, no cast).
+s32 hit     3   22-slot test `if (hit & (1 << temp3))` becomes srav/andi (fold-const.c:4437-4467)
+s32 mask_a 30   guard / side tests on mask_a fold the same way
+s32 deep    0
+s32 mask_b  0
+s32 mask_c  0
+# all five hold the same kind of value (sets of the 22 contact slots: deep/hit from func_8002A458, the
+# 0xB4/0xC4 words func_8002CA8C writes, and their alt/primary subsets mask_a/b/c), so they share one type.

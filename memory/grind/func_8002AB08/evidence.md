@@ -70,3 +70,12 @@ types a record pointer) and the `(s32 *)&hit` casts.
   set 0). Sandbox 0 with the overlay (typed/runh.py). func_80022580's unk_114 / unk_124 zeroing respelled
   unk_114[0] / [1]: code6cac_tu2 cc1 output identical (typed/tu2check.sh). Ruling 11 package re-run on this
   body: r11/README.md. Landing edits scripted in typed/land.py (after laneB-2's func_80058580 lands).
+- s3c types (probes/s3/mask_types.txt): the five contact masks are declared u32 (no cast anywhere; func_8002A458's
+  out-parameters become `u32 *hit, u32 *deep`, byte-identical). Only hit and mask_a need it (s32: 3 / 30); the
+  others are neutral and kept u32 because they hold the same kind of value (subsets of the same 22-slot sets).
+  In-file: func_80029454 declares its contact mask `u32 mask`; func_8002CA8C builds the 0xB4/0xC4 words in s32
+  locals (no shift-test there). `(Tbl8008E194 *)alt` stays: func_80027AD8's sixth parameter is a record pointer
+  on pass 1 (field reads only under `pass == 1`, func_80031B24 passes &D_8008E194[..]) and a NULL / non-NULL
+  flag on pass 0 (`tbl == NULL ? 0xB : 0x19`, passed on to func_800278C0 as an integer); the target loads the
+  0/1 blade flag into that stack slot (`sw fp,0x14(sp)` 0x8002BC08). Any single parameter type leaves a cast
+  at one of the two call sites; this one keeps both completed bodies untouched.
