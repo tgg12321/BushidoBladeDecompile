@@ -47,3 +47,10 @@ per-value body (12,583 iterations, best 30): every low find re-creates a variabl
 determinant plus a second value. `d0` (the m00 cofactor-expansion term, computed right after c0, where
 the target multiplies it) inlined into the determinant = 53 (rejected/d0-inlined-into-determinant-53.c);
 kept as the ordinary-C named term the previous landing carried.
+
+## 2026-10-01 — LANDED (laneA): COMPLETED-INLINE-ASM-CANONICAL
+Layer-2 cheat-reviewer rev-2f2d0, round 1, fresh PASS on body_hash ed550499206d26fb (= candidate.c @ 689cd5281;
+layer2.jsonl). Key findings: 0/270 + oracle, 31/31 region hashes, work/temp meet Ruling 11 (A)-(H) with dumps
+matching the target seats (41/6 re-measured), i0/i1 and d0 ordinary C (d0 = the term the target computes at
+0x8002F38C), parameter casts truthful views, islands + Q61 word 0x4A486012 decoded, retro-audit objection resolved.
+Commits: auth 3f97afb08, Match d606763ed, queue c800ccfe7; check_completion_integrity OK.
