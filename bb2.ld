@@ -46,7 +46,6 @@ SECTIONS
         build/src/code6cac_b_rodata_pre.o(.rodata);
         build/src/code6cac_b3.o(.rodata);
         build/src/code6cac_b3_post.o(.rodata);
-        build/src/replay_camera_rob_back_loose2.o(.rodata);
         build/src/code6cac_b2_post.o(.rodata);
         build/src/code6cac_b4.o(.rodata);
         build/src/code6cac_b4_post.o(.rodata);
@@ -84,7 +83,6 @@ SECTIONS
         build/src/system.o(.rodata);
         build/src/text1a_b_tail_rodata.o(.rodata);
         build/src/main.o(.rodata);
-        build/src/code6cac_b2_pre.o(.rodata);
         build/src/sound.o(.rodata);
         build/src/gpu.o(.rodata);
         build/src/display.o(.rodata);
@@ -101,8 +99,6 @@ SECTIONS
         build/src/code6cac_b_tu3.o(.text);
         build/src/code6cac_b3.o(.text);
         build/src/code6cac_b3_post.o(.text);
-        build/src/code6cac_b2_pre.o(.text);
-        build/src/replay_camera_rob_back_loose2.o(.text);
         build/src/code6cac_b2_post.o(.text);
         build/src/code6cac_b4.o(.text);
         build/src/code6cac_b4_post.o(.text);
@@ -148,7 +144,6 @@ SECTIONS
         build/src/code6cac_b_tu3.o(.data);
         build/src/code6cac_b3.o(.data);
         build/src/code6cac_b3_post.o(.data);
-        build/src/code6cac_b2_pre.o(.data);
         build/src/code6cac_b2_post.o(.data);
         build/src/code6cac_b4.o(.data);
         build/src/code6cac_b4_post.o(.data);
@@ -197,7 +192,6 @@ SECTIONS
         build/src/code6cac_b_tu3.o(.bss);
         build/src/code6cac_b3.o(.bss);
         build/src/code6cac_b3_post.o(.bss);
-        build/src/code6cac_b2_pre.o(.bss);
         build/src/code6cac_b2_post.o(.bss);
         build/src/code6cac_b4.o(.bss);
         build/src/code6cac_b4_post.o(.bss);
