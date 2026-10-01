@@ -93,7 +93,13 @@ because the sweep holds the name `SsFCALL` at MEDIUM.
 - _SsSndReplay / _SsSndNextSep: parameter 0 becomes s16 as in SOTN (was s32 plus the manual
   shift). The SsSeqCalledTbyT call drops its `(s16)i` cast.
 - _SsReadDeltaValue: parameter 0 becomes s16 as in SOTN seqread.c (`s32 _SsReadDeltaValue(s16,
-  s16)`). The `(s32)(arg0 << 16) >> 14` fold is gone.
+  s16)`). The `(s32)(arg0 << 16) >> 14` fold is gone. Also gone: the dead `result = val << 2;`
+  before the VLQ loop (overwritten unread) and the hand-split `result = val << 2; result =
+  (result + val) << 1;`. They become SOTN's `val * 10`. Whole-TU compare: 0 differ (w2 variant,
+  measured on the spliced src).
+- Measured and kept: func_80084CC0's block-local `u8 *cp` in the second switch's 0x90 case (the
+  landed body's documented choice). Spelling it through the shared `cmd_ptr` scores 17 (w3 variant).
+  `cp` holds the read pointer and is read twice (`cp + 1`, `cp[0]`).
 - _SsVmGetSeqVol: the FAKE pointer alias `ptr = &_svm_cur.seq_sep_no` (annotated "all pointer-free
   spellings measured 12") is gone. SOTN's SpuVmGetSeqVol shape (vmanager.c) is byte-identical once
   the table is typed.
