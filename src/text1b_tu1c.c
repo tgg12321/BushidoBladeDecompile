@@ -4,108 +4,282 @@
 #include "sound.h"
 #include "game.h"
 #include "code6cac.h"
+#include "gte.h"
 
+/* func_80060A68 .. func_80060E38 moved here from text1b.c: the file boundary follows the per-file gp evidence
+ * (owner ruling Q65; docs/grind/rodata-align-2026-09-30.md section 9 record). */
 /* Declarations from the file this TU was split from (text1b.c). */
-extern s32 func_8005C2A8(s32 *, s16, s32);
-typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
-typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
-typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
-extern s32 D_800A36AC;
-extern s32 rcos();
-extern s32 rsin();
 void DrawSync(s32);
-extern s32 g_gpu_ot_ptr;
 extern s32 rand(void);
-extern s32 D_8009BC04;
-extern s32 D_800A32C8;
-extern s16 D_800F0BCC[];
-extern s16 D_800F0BEC[];
-extern s32 D_800F0D78;
-extern s32 D_800F0D7C;
-extern s32 videoDec;
-extern s32 D_800F0FB8;
-extern s32 D_800F0FBC;
-extern s32 D_800F0FC0;
-extern s16 D_800F10A0;
-extern s16 D_800F10A2;
-extern s16 D_800F10A4;
+extern u8 D_8009BA60[];
+extern s32 chractar_use_pset_combo_id_table[];
+typedef struct {
+    u32 unk0 : 4;
+    u32 unk4 : 6;
+    u32 unk10 : 2;
+    u32 unk12 : 2;
+    u32 unk14 : 1;
+    u32 unk15 : 2;
+    u32 unk17 : 1;
+    u32 unk18 : 6;
+} Unk8009BD38Flags;
+extern Unk8009BD38Flags D_8009BD38;
 extern s32 D_800F10D0[];
-extern s32 D_800F10EC;
-extern s32 D_800F10F0;
-extern s32 D_800F1138;
-extern s32 D_800F1144;
-extern s32 D_800F1148;
-extern s32 D_800F1178;
-extern s32 D_800F117C;
-extern s32 D_800F1180;
-typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
-typedef struct GameObj {
-    u8 field_00; u8 field_01; s16 field_02;
-    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
-    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
-    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
-    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
-    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
-    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
-    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
-    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
-    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
-    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
-    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
-    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
-    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
-    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
-    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
-    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
-    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
-    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
-    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
-    s16 field_FA; s32 field_FC;
-} GameObj;
 extern s32 func_80036EA8();
-extern s32 func_80036F28();
-s32 printf(s32 *, s32);               /* extern */
 s32 game_FrameLoop();                           /* extern */
 s32 cdrom_StartRead(s32, s32);               /* extern */
 extern s32 func_80036EA8(s32, s32);
-extern s32 func_80036F28(s32);
 s32 func_80036EA8(s32, s32);
 s32 game_FrameLoop(void);
 s32 cdrom_StartRead(s32, s32);
-s32 func_80036F28(s32);
-s32 func_8005C2A8(s32 *, s16, s32);
 extern s32 game_FrameLoop(void);
 extern s32 cdrom_StartRead(s32, s32);
-extern s32 *func_80077D00(void);
-s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2);
-void func_8005C650(s32 a0, s32 a1, s32 a2);
-void func_8005C6D0(void);
-extern s32 func_80073728(s32, s32);
-extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
-extern s32 AddPrim(s32, s32);
-extern s32 SetSemiTrans(void *, s32);
-extern s32 SetTile(void *);
-extern u8 g_gpu_db;
-extern s32 SetDrawArea();
-extern s32 SetPolyG4();
-extern s32 func_8006E480();
-extern s32 func_8007352C();
-extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
-void func_80060A68(void);
-void func_80060B70(void);
+
+/* [s29 2026-09-05 - synthesis modality.  MATCH: `sandbox func_80060A68 --disable all` = score 0,
+ * build_insns 66 / target_insns 66; `verify-oracle` = build_sha1
+ * 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, build_matches true.
+ * Zero FAKE constructs, zero named intermediates, zero staged locals, zero volatile, zero inline
+ * asm, and no local declared for codegen reasons at all - `result`, the dispatch call's return
+ * value, is the function's only local.
+ *
+ * WHAT CHANGED after 28 sessions of cast-through-integer geometry: the global at 0x800A3468 is a
+ * POINTER, not an integer that happens to hold an address, and the object it points at gets a
+ * declared shape.  src/text1b.c's own COMMITTED, MATCHED C is the evidence, independently of any
+ * codegen observation (line numbers below are against the INCLUDE_ASM tree, i.e. src/text1b.c as
+ * committed at s29):
+ *   - :3358 `extern s32 *D_800A3468;` -- the matched sibling func_80061064 ALREADY declares this
+ *     exact global with a pointer type.  The pointer typing is not this session's invention; it is
+ *     the file's existing, accepted declaration for the same symbol.
+ *   - Sixteen sites assign a POINTER into it: `D_800A3468 = (s32)v1;` where v1 is a callee's
+ *     returned pointer (:3406, :3423, :3457, :3472, :3492, :3506, :3521, :3562, :3599, :3628,
+ *     :3659, :3694, :3709, :3722), plus :3315 `= 0x1F800000` (the scratchpad base) and :3740
+ *     `= (s32)&D_800F116C`.  Nothing ever stores a non-address into it.
+ *   - :3369 `*(s32 **)((s32)D_800A3468 + 0x14) = ...` and :3432 / :3530 / :3637 / :3670 / :3750 --
+ *     the member at +0x14 always receives a pointer to a byte buffer; this function stores one byte
+ *     through it (`sb`), which is what `s8 *p14` declares.
+ *   - :3433, :3531, :3638, :3671, :3751 write the WHOLE 32-bit word at offset 0 as a single
+ *     constant -- 0x210009, 0x210005, 0x210010, 0x210002, 0x210014.  In every one of the five the
+ *     low halfword is the character index this function loads with `lhu`, and bit 21 (0x200000) is
+ *     the flag this function tests at the tail.  :3371 writes the same word as a bare loop index.
+ *     One storage location written whole at five sites and read at two widths here is what the
+ *     union at offset 0 declares.
+ * The three tables are declared as the arrays the naming census already documents them to be
+ * (24-entry flag table; per-index offset table; per-character combo-id table), so every access in
+ * the body is a member reference or an array subscript and nothing is spelled as pointer
+ * arithmetic through a cast.
+ *
+ * ROBUSTNESS OF THE MODEL (s29, measured on today's HEAD chassis).  The object model, not a swept
+ * spelling, determines the bytes: FOUR structurally distinct faithful spellings of this same model
+ * all measure 0/66 -- this body; the tables spelled through the address of their first word
+ * (alt-s29-score0-tables-through-address-of-first-word.c); offset 0 declared as two u16 members
+ * with the flag test cast instead of a union
+ * (alt-s29-score0-two-halfwords-plus-cast-flag-read.c); and a FILE-scope struct with every member
+ * renamed and the unused words typed u32 (alt-s29-score0-file-scope-struct-renamed-members.c).
+ * The spelling that regresses (11/66) is the one that CONTRADICTS :3358's committed pointer
+ * declaration by reading offset 0 through an integer cast.
+ *
+ * WHY THAT REACHES THE TARGET STREAM (observation, recorded for the next reader - not the reason
+ * any construct is here):
+ *  1. The three `lw ?,0x10($v1)` loads, and the two reloads of the object pointer after the call,
+ *     are cse's doing rather than the source's.  Each store made through the pointer invalidates
+ *     cse's memory table (tools/gcc-2.7.2/cse.c:1703-1719), so the read preceding each of the
+ *     0x18 / 0x1A / 0x1C stores becomes its own load; the `jalr` and the byte store invalidate it
+ *     again in the tail.  The source writes each of those statements exactly once.
+ *  2. Member references set MEM_IN_STRUCT_P, which is what lets the offset-0 read and the two
+ *     scalar stores at 0x800A3478 / 0x800A347C be disambiguated in `true_dependence`
+ *     (tools/gcc-2.7.2/sched.c:826-841): that escape needs the read to be MEM_IN_STRUCT_P with a
+ *     varying address and the store to be neither.  A bare-MEM spelling of the same read does not
+ *     fire it, which is what stranded the read window on every previous chassis.  Measured this
+ *     session on otherwise identical bodies: bare-MEM offset-0 read = 11/66
+ *     (tmp/grind/func_80060A68/s29/B.c), member = 0/66.
+ *
+ * Also measured 0/66 with the tables spelled through the address of their first word rather than
+ * as array declarations; the array declarations are kept because they put the object model at the
+ * declaration instead of at each use site. */
+void func_80060A68(void) {
+    struct Ob {
+        union { s32 w; u16 h; } id;
+        s32 u04;
+        s32 u08;
+        s32 *p0C;
+        u16 *p10;
+        s8 *p14;
+        u16 m18;
+        u16 m1A;
+        u16 m1C;
+        u16 u1E;
+        s32 m20;
+        s32 m24;
+        s32 m28;
+    };
+    extern struct Ob *D_800A3468;
+    extern s32 D_800A3478;
+    extern s32 D_800A347C;
+    extern s32 D_800A32BC;
+
+
+
+    s32 result;
+
+    D_800F10D0[D_800A3468->id.h] = 0;
+    D_800A3468->m20 = D_800A3468->p0C[0];
+    D_800A3468->m24 = D_800A3468->p0C[1];
+    D_800A3468->m28 = D_800A3468->p0C[2];
+    D_800A3468->m18 = D_800A3468->p10[0];
+    D_800A3468->m1A = D_800A3468->p10[1];
+    D_800A3478 = (s32)&D_800A3468->m18;
+    D_800A3468->m1C = D_800A3468->p10[2];
+    D_800A347C = (s32)&D_800A3468->m20;
+
+    result = ((s32 (*)(void)) chractar_use_pset_combo_id_table[
+                  D_8009BA60[D_800A3468->id.h]
+                  + D_800F10D0[D_800A3468->id.h]])();
+    *D_800A3468->p14 = result;
+
+    if (D_800A3468->id.w & 0x200000) {
+        D_800A32BC = 0xA;
+    }
+}
+void func_80060B70(void) {
+    extern s32 D_800A3468;
+    extern s32 D_800A346C;
+    extern s32 D_800A3470;
+    extern s32 D_800A3474;
+
+
+
+    extern void func_80061FAC(s32, s32, s32);
+    s32 outer;
+    s32 dst_u16;
+    s32 dst_s32;
+    u16 idx;
+    s32 result;
+
+    outer = D_800A3468;
+    dst_u16 = (s32)D_800A346C;
+    *(u16 *)(dst_u16 + 0) = *(u16 *)(*(s32 *)(outer + 4) + 0);
+    *(u16 *)(dst_u16 + 2) = *(u16 *)(*(s32 *)(outer + 4) + 2);
+    *(u16 *)(dst_u16 + 4) = *(u16 *)(*(s32 *)(outer + 4) + 4);
+
+    dst_s32 = (s32)D_800A3470;
+    *(s32 *)(dst_s32 + 0) = *(s32 *)(*(s32 *)(outer + 8) + 0);
+    *(s32 *)(dst_s32 + 4) = *(s32 *)(*(s32 *)(outer + 8) + 4);
+    {
+        s32 last_arg = D_800A3474;
+        *(s32 *)(dst_s32 + 8) = *(s32 *)(*(s32 *)(outer + 8) + 8);
+        func_80061FAC(dst_u16, dst_s32, last_arg);
+    }
+
+    idx = *(u16 *)D_800A3468;
+    result = ((s32 (*)(void)) *(s32 *)((s32)&chractar_use_pset_combo_id_table
+              + (*(u8 *)((s32)&D_8009BA60 + idx) + *(s32 *)((s32)&D_800F10D0 + idx * 4)) * 4))();
+
+    *(s8 *)*(s32 *)((s32)D_800A3468 + 0x14) = result;
+}
+
 extern u8 D_800F1150[];
 extern s16 D_800A345E;
 extern s16 D_800A345C;
+extern s32 D_800A3458;
 extern s32 D_800A3454[];
+extern s32 D_800A3450;
 extern u32 D_800A344C[];
 extern s32 D_800A3460;
 extern s32 D_800A3444;
 extern s32 D_800A3448;
-void func_80060C60(void);
+void func_80060C60(void) {
+    s32 i = 0;
+    s32 *p = D_800F10D0;
+    do {
+        *p = 0;
+        D_800F1150[i] = 0;
+        i++;
+        p++;
+    } while (i < 0x1C);
+    D_800A345E = 0;
+    D_800A345C = 0;
+    D_800A3458 = 0;
+    D_800A3454[0] = 0;
+    D_800A3450 = 0;
+    D_800A344C[0] = 0;
+    D_800A3460 = 0;
+    D_800A3444 = 0;
+    D_800A3448 = 0;
+}
+
+extern s32 D_800A3420;
+extern s32 D_800A3424;
+
+s32 func_80060CB8(s32 arg0, s32 arg1)
+{
+  unsigned int new_var; /* FAKE: single forward-order param alias — prologue pair order.
+                           Sanctioned per owner ruling 2026-07-17 (docs/grind/decisions.md,
+                           param-local-alias-prologue-pair-flip NARROWED). Mechanism: cse
+                           unifies arg0/new_var, combine sinks the single-use a0 entry copy
+                           below a1's, flipping the s2/s1 save+copy pair order to target.
+                           Exhaustion dossier: memory/grind/func_80060CB8/evidence.md (s2). */
+  typedef struct
+  {
+    s16 sp10;
+    s16 sp12;
+    s16 sp14;
+    s16 sp16;
+  } SLocal;
+  SLocal s;
+  s32 v;
+  s32 ret;
+  new_var = arg0;
+  game_FrameLoop();
+  v = D_8009BD38.unk0;
+  if (v == 0)
+  {
+    cdrom_StartRead(func_80036EA8(2, 0x3C), arg0);
+  }
+  else
+    if (v == 3)
+  {
+    cdrom_StartRead(func_80036EA8(2, 0x2F), new_var);
+  }
+  else
+    if (v == 2)
+  {
+    cdrom_StartRead(func_80036EA8(2, 0x30), new_var);
+  }
+  else
+    if (v == 5)
+  {
+    cdrom_StartRead(func_80036EA8(2, 0x31), new_var);
+  }
+  else
+  {
+    cdrom_StartRead(func_80036EA8(2, 0), new_var);
+  }
+  game_FrameLoop();
+  s.sp10 = 0x380;
+  s.sp12 = 0;
+  s.sp14 = 0x80;
+  s.sp16 = 0x1DC;
+  DrawSync(0);
+  LoadImage(&s.sp10, new_var);
+  DrawSync(0);
+  s.sp14 = 0x70;
+  s.sp12 = 0x1DC;
+  s.sp16 = 0x24;
+  LoadImage(&s.sp10, new_var + 0x1DC00);
+  DrawSync(0);
+  func_80060C60();
+  srand(rand());
+  ret = arg1 + 0x4650;
+  D_800A3420 = arg1;
+  D_800A3424 = ret;
+  return ret + 0x4650;
+}
 extern s32 D_800A37D4;
 extern s32 D_800A3720;
+void func_80060E04(s32 arg0) {
+    D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
+    D_800A3720 = D_800A37D4;
+}
 extern s32 D_800A3468;
 extern s32 D_800A346C;
 extern s32 D_800A3470;
@@ -138,6 +312,119 @@ extern s32 D_800A34E0;
 extern s32 D_800A34E4;
 extern s32 D_800A34E8;
 extern s32 D_800A34EC;
+void func_80060E38(s32 arg0, s32 arg1) {
+    D_800A3468 = 0x1F800000;
+    D_800A346C = 0x1F800018;
+    D_800A3470 = 0x1F800020;
+    D_800A3474 = 0x1F800030;
+    D_800A3488 = 0x1F800050;
+    D_800A3490 = 0x1F800058;
+    D_800A3494 = 0x1F80005C;
+    D_800A3498 = 0x1F800060;
+    D_800A349C = 0x1F800062;
+    D_800A34A0 = 0x1F800064;
+    D_800A34A4 = 0x1F800066;
+    D_800A34A8 = 0x1F800068;
+    D_800A34AC = 0x1F80006A;
+    D_800A34B0 = 0x1F80006C;
+    D_800A34B4 = 0x1F800070;
+    D_800A34B8 = 0x1F800074;
+    D_800A34BC = 0x1F800080;
+    D_800A34C0 = 0x1F800082;
+    D_800A34C4 = 0x1F800084;
+    D_800A34C8 = 0x1F800088;
+    D_800A34CC = 0x1F80008C;
+    D_800A34D0 = 0x1F800090;
+    D_800A34D4 = 0x1F800098;
+    D_800A34D8 = 0x1F80009A;
+    D_800A34DC = 0x1F80009C;
+    D_800A34E0 = 0x1F80009E;
+    D_800A34E4 = 0x1F8000A0;
+    D_800A34E8 = 0x1F8000A4;
+    D_800A3480 = 0x1F8000A8;
+    D_800A3484 = 0x1F8000AC;
+    D_800A348C = 0x1F8000B0;
+    D_800A34EC = 0x1F8000B8;
+    *(s32 *)0x1F800004 = arg0;
+    *(s32 *)0x1F800008 = arg1;
+}
+
+/* Declarations from the file this TU was split from (text1b.c). */
+extern s32 func_8005C2A8(s32 *, s16, s32);
+extern s32 D_800A36AC;
+extern s32 rcos();
+extern s32 rsin();
+extern s32 g_gpu_ot_ptr;
+extern s32 D_8009BC04;
+extern s32 D_800A32C8;
+extern s16 D_800F0BCC[];
+extern s16 D_800F0BEC[];
+extern s32 D_800F0D78;
+extern s32 D_800F0D7C;
+extern s32 videoDec;
+extern s32 D_800F0FB8;
+extern s32 D_800F0FBC;
+extern s32 D_800F0FC0;
+extern s16 D_800F10A0;
+extern s16 D_800F10A2;
+extern s16 D_800F10A4;
+extern s32 D_800F10EC;
+extern s32 D_800F10F0;
+extern s32 D_800F1138;
+extern s32 D_800F1144;
+extern s32 D_800F1148;
+extern s32 D_800F1178;
+extern s32 D_800F117C;
+extern s32 D_800F1180;
+typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
+typedef struct GameObj {
+    u8 field_00; u8 field_01; s16 field_02;
+    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
+    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
+    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
+    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
+    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
+    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
+    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
+    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
+    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
+    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
+    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
+    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
+    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
+    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
+    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
+    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
+    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
+    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
+    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
+    s16 field_FA; s32 field_FC;
+} GameObj;
+extern s32 func_80036F28();
+s32 printf(s32 *, s32);               /* extern */
+extern s32 func_80036F28(s32);
+s32 func_80036F28(s32);
+s32 func_8005C2A8(s32 *, s16, s32);
+extern s32 *func_80077D00(void);
+s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2);
+void func_8005C650(s32 a0, s32 a1, s32 a2);
+void func_8005C6D0(void);
+extern s32 func_80073728(s32, s32);
+extern s32 func_8007352C(s32);
+extern s32 func_8006E480(s32, s32);
+extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+extern s32 AddPrim(s32, s32);
+extern s32 SetSemiTrans(void *, s32);
+extern s32 SetTile(void *);
+extern u8 g_gpu_db;
+extern s32 SetDrawArea();
+extern s32 SetPolyG4();
+extern s32 func_8006E480();
+extern s32 func_8007352C();
+extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
+void func_80060A68(void);
+void func_80060B70(void);
+void func_80060C60(void);
 void func_80060E38(s32 arg0, s32 arg1);
 
 extern s32 func_80041E10();
@@ -150,8 +437,6 @@ const char D_800158E0[24] = "eff prim over :%d \n";
 extern s32 D_800A32BC;
 extern s32 D_800A3464;
 
-extern s32 D_800A3720;
-extern s32 D_800A37D4;
 extern s32 D_800F1140;
 
 void func_80061064(void) {
@@ -179,8 +464,6 @@ void func_80061064(void) {
         printf(&D_800158E0, temp_a1 - 0x1C2);
     }
 }
-extern s32 D_800A32BC;
-void func_80060C60(void);
 
 void game_Cleanup(void) {
     func_80060C60();
@@ -189,7 +472,6 @@ void game_Cleanup(void) {
 }
 extern u8 D_800F116A;
 extern s32 D_800F116C;
-extern s32 D_800A3464;
 
 void func_800611A4(s32 *arg0, s32 *arg1) {
     u16 svec[3];
@@ -240,11 +522,6 @@ end:
     D_800A3464 = 0xFF0060;
 }
     extern u8 D_800F1154[];
-extern s32 D_800A3464;
-extern s32 D_800A3468;
-extern s32 D_800F116C;
-extern s32 D_800F1178;
-extern s32 D_800F1180;
 s32 func_8006133C(s32 *a0) {
     s32 *v1 = (s32 *)&D_800F116C;
     s32 *p = a0;
@@ -274,12 +551,6 @@ s32 func_800613C8(s32 *a0) {
     D_800A3464 = 0x8080FF;
     return 16;
 }
-extern u8 D_800F115B;
-extern s32 D_800A3464;
-extern s32 D_800A3468;
-extern s32 D_800F116C;
-extern s32 D_800F1178;
-extern s32 D_800F1180;
 s32 func_80061454(s32 *a0) {
     s32 *v1 = (s32 *)&D_800F116C;
     s32 *p = a0;
@@ -308,7 +579,6 @@ s32 func_800614E0(s32 *a0) {
     D_800A3464 = 0x8080FF;
     return 5;
 }
-extern u8 D_800F1154[];
 void func_8006156C(s32 *arg0) {
     s32 *v1 = (s32 *)&D_800F116C;
     s32 *p;
@@ -338,9 +608,6 @@ end:
     D_800A3464 = 0xFF8080;
 }
 extern u8 D_800F115C;
-extern s32 D_800F116C;
-extern s32 D_800A3464;
-extern s32 D_800A3468;
 void func_80061658(s32 *arg0, s32 arg1) {
     /* FAKE: local pointer alias to D_800F116C, mechanism: base-register
      * allocation / address-materialization caching in local-alloc (the alias
@@ -445,7 +712,6 @@ end:
     D_800A3464 = 0xC06013;
 }
 extern u8 D_800F1152[];
-extern s32 D_800F117C;
 void func_800618B4(s32 *arg0, s32 arg1) {
     s32 *v1 = (s32 *)&D_800F116C;
     u8 *new_var;
@@ -477,12 +743,7 @@ end:
     D_800F1148 = *p;
     D_800A3464 = 0xFF0000;
 }
-extern s32 D_800F116C;
-extern s32 D_800A3468;
-extern s32 D_800F1178;
-extern s32 D_800F1180;
 extern s32 D_800F1158;
-void func_80060A68(void);
 void func_800619A4(s32 *a0) {
     s32 *v1 = (s32 *)&D_800F116C;
     D_800A3468 = (s32)v1;
@@ -492,12 +753,7 @@ void func_800619A4(s32 *a0) {
     func_80060A68();
 }
 
-extern s32 D_800F116C;
-extern s32 D_800A3468;
-extern s32 D_800F1178;
-extern s32 D_800F1180;
 
-void func_80060A68(void);
 void func_800619F0(s32 *a0) {
     s32 *v1 = (s32 *)&D_800F116C;
     D_800A3468 = (s32)v1;
@@ -507,7 +763,6 @@ void func_800619F0(s32 *a0) {
     func_80060A68();
 }
 
-extern s32 D_800F117C;
 extern u8 D_800F1151;
 void func_80061A3C(s32 *a0, s16 a1, s32 a2, s32 a3) {
     s32 *v1 = (s32 *)&D_800F116C;
@@ -695,7 +950,6 @@ end:
     D_800F1148 = *p;
     D_800A3464 = 0xFF00FF;
 }
-extern s32 D_800A34EC;
 extern u8 D_8009BB74[];
 
 void ScaleMatrixL(u8*, u8*);
@@ -1343,9 +1597,7 @@ s32 func_80063084(void) {
     D_800A37D4 = (s32)prim;
     return D_800A3448 != 0;
 }
-extern s32 D_800A3468;
 
-extern s16 D_800A345C;
 u8 func_80063BD0(s32);
 u8 func_80063AF0(void) {
     s32 *v1 = (s32 *)D_800A3468;
@@ -1354,21 +1606,17 @@ u8 func_80063AF0(void) {
     return func_80063BD0(0);
 }
 extern s32 D_800F10D4;
-extern s16 D_800A345E;
 u8 func_80063B34(void) {
     s32 *v1 = (s32 *)D_800A3468;
     D_800F10D4 = 1;
     D_800A345E = (*v1 >> 17) & 3;
     return func_80063BD0(1);
 }
-extern s32 D_800A3480;
-extern s16 D_800A345C;
 s32 func_80063E10(s32);
 u8 func_80063B78(void) {
     *(s32 *)D_800A3480 = D_800A345C;
     return func_80063E10(0);
 }
-extern s16 D_800A345E;
 u8 func_80063BA4(void) {
     *(s32 *)D_800A3480 = D_800A345E;
     return func_80063E10(1);
@@ -1741,7 +1989,6 @@ s32 func_80063E10(s32 lane) {
     D_800A37D4 = (s32)end;
     return 1;
 }
-extern SVECTOR D_800F1000[][10];
 /* func_800644FC (src/text1b.c) -- MATCHING FORM.  Honest distance 0 / 45
  * (sandbox --disable all, zero cheat-asm) measured in grind session s1
  * (2026-09-06, recon modality) with this exact body in src/text1b.c.
@@ -1785,7 +2032,6 @@ void func_800644FC(s32 *count, MATRIX *m, s32 idx) {
         if (i < *count) goto top;
     }
 }
-extern s32 rand(void);
 
 /* func_800645B0 (src/text1b.c) -- MATCHING FORM.  Honest distance 0 / 78
  * (target_insns 78, build_insns 78, rules_dropped 0, zero cheat-asm), and the
@@ -2032,7 +2278,6 @@ s32 func_800646E8(void) {
     D_800A37D4 = (s32)*end;
     return 1;
 }
-extern s32 D_800A347C;
 extern s32 D_800F10E0;
 void func_80064E90(void) {
     void *p = D_800A347C;
@@ -2044,7 +2289,6 @@ void func_80064E90(void) {
     D_800F0BA8[0] = 0;
     D_800F0CA0[0].unk8 = last;
 }
-extern s32 D_800A347C;
 extern s32 D_800F10E4;
 void func_80064ED8(void) {
     void *p = D_800A347C;
@@ -2056,7 +2300,6 @@ void func_80064ED8(void) {
     D_800F0BA8[1] = 0;
     D_800F0CA0[1].unk8 = last;
 }
-extern s32 D_800A347C;
 extern s32 D_800F10E8;
 void func_80064F20(void) {
     void *p = D_800A347C;
@@ -2068,7 +2311,6 @@ void func_80064F20(void) {
     D_800F0BA8[2] = 0;
     D_800F0CA0[2].unk8 = last;
 }
-extern s32 D_800A347C;
 extern s32 D_800F10F4;
 
 s32 func_80064F68(void) {
@@ -2095,7 +2337,6 @@ s32 func_80064FB4(void) {
     D_800F0CA0[4].unk8 = last;
     return 1;
 }
-extern s32 D_800A347C;
 
 extern s32 D_800F10FC;
 extern s16 D_800A3440;
@@ -2112,7 +2353,6 @@ s32 func_80065000(void) {
     D_800A3440 = (*(s32 *)q >> 19) & 3;
     return 1;
 }
-extern s32 D_800A347C;
 extern s32 D_800F1100;
 void func_8006505C(void) {
     void *p = D_800A347C;
@@ -2124,7 +2364,6 @@ void func_8006505C(void) {
     D_800F0BA8[6] = 0;
     D_800F0CA0[6].unk8 = last;
 }
-extern s32 D_800A347C;
 extern s32 D_800F1104;
 void func_800650A4(void) {
     void *p = D_800A347C;
@@ -2136,7 +2375,6 @@ void func_800650A4(void) {
     D_800F0BA8[7] = 0;
     D_800F0CA0[7].unk8 = last;
 }
-extern s32 D_800A347C;
 extern s32 D_800F1108;
 void func_800650EC(void) {
     void *p = D_800A347C;
@@ -2148,7 +2386,6 @@ void func_800650EC(void) {
     D_800F0BA8[10] = 0;
     D_800F0CA0[10].unk8 = last;
 }
-extern s32 D_800A347C;
 extern s32 D_800F110C;
 void func_80065134(void) {
     void *p = D_800A347C;
@@ -2196,7 +2433,6 @@ void func_800651F0(void) {
     D_800F0BA8[15] = 0;
     D_800F0CA0[15].unk8 = (s32)p;
 }
-extern s32 D_800A347C;
 extern s32 D_800F1118;
 void func_80065264(void) {
     void *p = D_800A347C;
@@ -2208,7 +2444,6 @@ void func_80065264(void) {
     D_800F0BA8[16] = 0;
     D_800F0CA0[16].unk8 = last;
 }
-extern s32 D_800A347C;
 extern s32 D_800F111C;
 void func_800652AC(void) {
     void *p = D_800A347C;
@@ -2854,106 +3089,83 @@ u8 func_80066EC0(void) {
     D_800F10D8 = 1;
     return ret;
 }
-extern s32 D_800F10D8;
-u8 func_80067200(s32, s32, s32);
 u8 func_80066EF4(void) {
     u8 ret = func_80067200(0, 0, 1);
     D_800F10D8 = 2;
     return ret;
 }
 extern s32 D_800F10DC;
-u8 func_80067200(s32, s32, s32);
 u8 func_80066F28(void) {
     u8 ret = func_80067200(1, 1, 0);
     D_800F10DC = 1;
     return ret;
 }
-extern s32 D_800F10DC;
-u8 func_80067200(s32, s32, s32);
 u8 func_80066F5C(void) {
     u8 ret = func_80067200(1, 1, 1);
     D_800F10DC = 2;
     return ret;
 }
 extern s32 D_800F1120;
-u8 func_80067200(s32, s32, s32);
 u8 func_80066F90(void) {
     u8 ret = func_80067200(2, 1, 0);
     D_800F1120 = 1;
     return ret;
 }
-extern s32 D_800F1120;
-u8 func_80067200(s32, s32, s32);
 u8 func_80066FC4(void) {
     u8 ret = func_80067200(2, 1, 1);
     D_800F1120 = 2;
     return ret;
 }
 extern s32 D_800F1124;
-u8 func_80067200(s32, s32, s32);
 u8 func_80066FF8(void) {
     u8 ret = func_80067200(3, 0, 0);
     D_800F1124 = 1;
     return ret;
 }
-extern s32 D_800F1124;
-u8 func_80067200(s32, s32, s32);
 u8 func_8006702C(void) {
     u8 ret = func_80067200(3, 0, 1);
     D_800F1124 = 2;
     return ret;
 }
 extern s32 D_800F1128;
-u8 func_80067200(s32, s32, s32);
 u8 func_80067060(void) {
     u8 ret = func_80067200(4, 2, 0);
     D_800F1128 = 1;
     return ret;
 }
-extern s32 D_800F1128;
-u8 func_80067200(s32, s32, s32);
 u8 func_80067094(void) {
     u8 ret = func_80067200(4, 2, 1);
     D_800F1128 = 2;
     return ret;
 }
 extern s32 D_800F112C;
-u8 func_80067200(s32, s32, s32);
 u8 func_800670C8(void) {
     u8 ret = func_80067200(5, 3, 0);
     D_800F112C = 1;
     return ret;
 }
-extern s32 D_800F112C;
-u8 func_80067200(s32, s32, s32);
 u8 func_800670FC(void) {
     u8 ret = func_80067200(5, 3, 1);
     D_800F112C = 2;
     return ret;
 }
 extern s32 D_800F1130;
-u8 func_80067200(s32, s32, s32);
 u8 func_80067130(void) {
     u8 ret = func_80067200(6, 3, 0);
     D_800F1130 = 1;
     return ret;
 }
-extern s32 D_800F1130;
-u8 func_80067200(s32, s32, s32);
 u8 func_80067164(void) {
     u8 ret = func_80067200(6, 3, 1);
     D_800F1130 = 2;
     return ret;
 }
 extern s32 D_800F1134;
-u8 func_80067200(s32, s32, s32);
 u8 func_80067198(void) {
     u8 ret = func_80067200(7, 2, 0);
     D_800F1134 = 1;
     return ret;
 }
-extern s32 D_800F1134;
-u8 func_80067200(s32, s32, s32);
 u8 func_800671CC(void) {
     u8 ret = func_80067200(7, 2, 1);
     D_800F1134 = 2;
@@ -3117,64 +3329,42 @@ u8 func_800676C8(void) {
     func_80067D14(0, 0);
     return func_80068D88(0, 0);
 }
-u8 func_800678A8(s32, s32);
-void func_80067D14(s32, s32);
-u8 func_80068D88(s32, s32);
 u8 func_80067704(void) {
     func_800678A8(1, 1);
     func_80067D14(1, 1);
     return func_80068D88(1, 1);
 }
-u8 func_800678A8(s32, s32);
-void func_80067D14(s32, s32);
-u8 func_80068D88(s32, s32);
 u8 func_80067740(void) {
     func_800678A8(2, 1);
     func_80067D14(2, 1);
     return func_80068D88(2, 1);
 }
-u8 func_800678A8(s32, s32);
-void func_80067D14(s32, s32);
-u8 func_80068D88(s32, s32);
 u8 func_8006777C(void) {
     func_800678A8(3, 0);
     func_80067D14(3, 0);
     return func_80068D88(3, 0);
 }
-u8 func_800678A8(s32, s32);
-void func_80067D14(s32, s32);
-u8 func_80068D88(s32, s32);
 u8 func_800677B8(void) {
     func_800678A8(4, 2);
     func_80067D14(4, 2);
     return func_80068D88(4, 2);
 }
-u8 func_800678A8(s32, s32);
-void func_80067D14(s32, s32);
-u8 func_80068D88(s32, s32);
 u8 func_800677F4(void) {
     func_800678A8(5, 3);
     func_80067D14(5, 3);
     return func_80068D88(5, 3);
 }
-u8 func_800678A8(s32, s32);
-void func_80067D14(s32, s32);
-u8 func_80068D88(s32, s32);
 u8 func_80067830(void) {
     func_800678A8(6, 3);
     func_80067D14(6, 3);
     return func_80068D88(6, 3);
 }
-u8 func_800678A8(s32, s32);
-void func_80067D14(s32, s32);
-u8 func_80068D88(s32, s32);
 u8 func_8006786C(void) {
     func_800678A8(7, 2);
     func_80067D14(7, 2);
     return func_80068D88(7, 2);
 }
 extern s16 D_800EFC8A[];
-extern s16 D_800A3438[];
 extern s16 D_800F0B98[];
 extern u16 D_8009B890[];
 extern u16 D_8009B8B0[];
@@ -3661,7 +3851,6 @@ extern s16 D_800A3512;
 extern s16 D_800A3510;
 extern s16 D_800A350E;
 extern s16 D_800A350C;
-extern s32 D_8009BC04;
 extern u8 D_800A32C0[8];
 extern s32 snd_StopAll(void);
 
@@ -3757,10 +3946,6 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
     *(s8 *)((u8 *)D_800A34FC + 0x30) = (s8)(((s32 *)D_800A3524)[8] & 1);
     return 1;
 }
-extern s32 D_800A3524;
-extern s32 D_800A34FC;
-extern s32 D_800A372C;
-extern s32 D_800A351C;
 
 s32 *func_80069120(s32 a0) {
     s32 *v0 = (s32 *)D_800A3524;
@@ -3801,7 +3986,6 @@ void func_8006920C(s32 *a0, s32 a1) {
 
 extern void func_8006E390();
 extern s32 D_800A3514;
-extern s32 D_800A3518;
 s32 func_80069250(s32 arg0, s32 arg1) {
     s32 sp10[10];
     D_800A3514 = 0;
@@ -3956,7 +4140,6 @@ void func_80069A30(u8 *a0) {
     }
     a0[6] = (u8)v0;
 }
-s32 *func_80077D00(void);
 void func_80069A8C(u8 *a0) {
     s32 *p = func_80077D00();
     s32 v0;
@@ -3976,8 +4159,6 @@ typedef struct {
     s8 sp40;
 } S_69AE4;
 
-extern s32 func_8006E480(s32, s32);
-extern s32 func_8007352C(s32);
 
 extern void SetPolyF4(u8 *p);
 extern void func_80069A8C(u8 *p);
@@ -4177,16 +4358,7 @@ typedef struct {
     s32 sp44, sp48, sp4C, sp50;
 } S_69F80;
 
-extern s32 D_800A3524;
-extern s32 D_800A3514;
-extern s32 D_800A34FC;
-extern s32 g_gpu_ot_ptr;
-extern s32 func_80073728(s32, s32);
-extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 
-extern s32 rsin();
 
 void func_80069F80(s32 *arg0, s32 arg1) {
     /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address is
@@ -4394,10 +4566,6 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
         arg0[7] += 0xC;
     }
 }
-extern s32 func_8006E480(s32, s32);
-extern s32 func_8007352C(s32);
-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
-extern s32 AddPrim(s32, s32);
 void func_8006A3CC(s32 *arg0, u8 *arg1) {
     *(s32 *)(arg1 + 0) = *(s32 *)(*(s32 *)(*(s32 *)((u8 *)arg0 + 4) + 0x1C) + 0x10);
     *(s32 *)(arg1 + 0x18) = 0;
@@ -4412,7 +4580,6 @@ void func_8006A3CC(s32 *arg0, u8 *arg1) {
     AddPrim(g_gpu_ot_ptr + 4, arg0[7]);
     arg0[7] += 0xC;
 }
-extern s32 func_80073728(s32, s32);
 void func_8006A494(s32 *arg0, u8 *arg1) {
     *(s32 *)(arg1 + 0) = *(s32 *)(*(s32 *)(*(s32 *)((u8 *)arg0 + 4) + 0x1C) + 0x24);
     *(s32 *)(arg1 + 0x18) = 0;
@@ -4429,7 +4596,6 @@ void func_8006A494(s32 *arg0, u8 *arg1) {
     AddPrim(g_gpu_ot_ptr + 4, arg0[7]);
     arg0[7] += 0xC;
 }
-extern s32 D_800A34F8;
 void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
     u8 *tile;
     u8 *obj2;
@@ -4570,7 +4736,6 @@ typedef struct {
     s16 x, y, w, h;
 } Rect6A880;
 
-extern s32 D_8009BC04;
 extern s32 D_8009BC08;
 extern void SetDrawOffset();
 
@@ -5075,8 +5240,6 @@ tail:
  * switch tables. */
 const u8 D_800159A0[16] = "warning\n";
 
-extern s32 D_800A36AC;
-extern u8 g_gpu_db;
 void func_8006B898(s32 arg0, s32 arg1) {
     s32 sp10[10];
     u8 *t;
@@ -5277,9 +5440,6 @@ typedef struct Tile {
     s16 x0, y0;
     s16 w, h;
 } Tile;
-extern s32 D_800A36AC;
-extern s32 g_gpu_ot_ptr;
-extern s32 D_800A34FC;
 extern s32 D_800A3900;
 extern Tile *D_800A36DC;
 extern u8 D_800F11E0[];
@@ -5651,8 +5811,6 @@ void func_8006C21C(s32 *arg0) {
     }
     arg0[4] = (s32)poly;
 }
-extern s32 D_800A34FC;
-extern s32 D_800A3524;
 
 void func_8006CBD4(s32 arg0, s32 arg1) {
     s32 code;
@@ -5755,12 +5913,6 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
     }
     return ret;
 }
-extern s32 D_800A3524;
-extern s32 D_800A34FC;
-extern s32 g_gpu_ot_ptr;
-extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 
 typedef struct {
     s32 *header;
@@ -5877,7 +6029,6 @@ s32 func_8006CFBC(s32 *arg0) {
     }
     return (s16)result;
 }
-extern s32 D_800A34FC;
 void func_8006D324(void) {
     s16 *v1 = (s16 *)D_800A34FC;
     v1[0x15] = 5;
@@ -5897,10 +6048,7 @@ void func_8006D338(s32 arg0, s32 arg1) {
     r = func_8006CFBC(sp10);
     func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
-extern s16 D_800A3528;
-extern s32 g_gpu_ot_ptr;
 
-extern s32 func_8007352C(s32);
 /* EnvA: the 0x2C-byte draw descriptor func_8007352C consumes.  Same field
    layout as EnvB (func_8006DD94) and S69E18 (func_80069E18); this call site
    declares only the fields through col_b, which is what the target frame
@@ -5971,7 +6119,6 @@ void func_8006D3DC(s32 *arg0) {
     rect[3] = 1;
     func_80069898((GameObj *)arg0, rect, 0x11);
 }
-extern s16 D_800A350C;
 
 
 s32 func_8006D5D4(s32 arg0, u32 arg1) {
@@ -6012,9 +6159,6 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
     }
     return result;
 }
-extern s32 D_800A3514;
-extern s32 D_800A3518;
-extern s32 D_800A36AC;
 extern u8 g_gpu_db;  /* one type per TU: all uses here take (s32)&g_gpu_db */
 
 
@@ -6181,8 +6325,6 @@ typedef struct EnvB {
     u8   col_b;
     s32  pad2C, pad30;
 } EnvB;
-extern s32 g_gpu_ot_ptr;
-extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 void func_8006DD94(s32 *arg0) {
     /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address is
        passed to func_8007352C every iteration; pad2C/pad30 are its unwritten tail.
@@ -6262,7 +6404,6 @@ void func_8006DD94(s32 *arg0) {
     func_80069898((GameObj *)arg0, rect, 0x11);
 }
 extern s32 func_800692C0();
-extern s16 D_800A350C;
 
 s32 func_8006DF68(s32 arg0, u32 arg1) {
     s32 sp10;
@@ -6303,16 +6444,11 @@ void func_8006E068(s32 arg0, s32 arg1) {
     func_8006DF68(arg0, arg1);
 }
 extern u8 D_800A32D8[8];
-extern s32 D_800A3524;
-extern s32 D_800A3500;
 extern u8 g_gpu_db_plus_0x6C;
 extern u8 g_gpu_db_plus_0x6D;
 extern u8 g_gpu_db_plus_0x40FC;
 extern u8 g_gpu_db_plus_0x40FD;
-extern u8 g_gpu_db;  /* one type per TU: all uses here take (s32)&g_gpu_db */
-extern s32 func_80036EA8(s32, s32);
 
-extern s32 cdrom_StartRead(s32, s32);
 
 extern void SetDefDrawEnv(s32, s32, s32, s32, s32);
 extern void SetDefDispEnv(s32, s32, s32, s32, s32);
@@ -6366,12 +6502,7 @@ s32 func_8006E10C(void) {
     SetDispMask(1);
     return 1;
 }
-extern s32 D_800A3518;
 extern u8 D_800A32E0[8];
-extern void PutDrawEnv(s32);
-extern void PutDispEnv(s32);
-extern void ClearImage(s32, s32, s32, s32);
-extern void SetDispMask(s32);
 extern void DrawSync(s32);
 extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 s32 func_8006E2A8(void) {
@@ -6390,7 +6521,6 @@ s32 func_8006E2A8(void) {
     SetDispMask(1);
     return 1;
 }
-extern s32 D_800A34FC;
 extern s32 D_800A3520;
 s32 *func_80069120(s32);
 void func_8006E390(s32 *a0, s32 *a1) {

@@ -213,7 +213,7 @@ arrays, text1b.o's compiled .rodata is 0x58 bytes at 0x8001585C with zero words 
 the original's layout (jtbl_8001585C[9], jtbl_80015884[5]). The pads come from the object-relative
 `.align 3`; nothing hand-written.
 
-## 9. The text1b / text1b_tu1c boundary moves to func_80061064 (2026-09-30, closes section 8's caveat)
+## 9. The text1b / text1b_tu1c boundary moves to func_80061064 (2026-09-30, closes section 8's caveat; moved again to func_80060A68 by the Q65 adoption, step 03)
 
 Section 8 placed the one boundary the bytes prove between func_80058580 and func_80065800 at
 snd_Init, with text1b_tu1c.c's rodata starting at 0x800158B4, and noted that this position fails
@@ -249,7 +249,10 @@ one (the convention of sites 1 and 3 in section 7); 0x800158F8 is the recorded a
 func_80061064 (owner of 0x800158E0) and not func_8005C2A8 (owner of 0x800158CC). The window is
 after func_8005C2A8 up to func_80061064; the functions in between own no rodata, so the cut is
 byte-neutral anywhere inside it. By the convention (cut at the item that begins the new file's
-rodata) it sits at func_80061064's extern block.
+rodata) it sits at func_80061064's extern block. The Q65 adoption (step 03, per-file-gp-model.md
+"Boundary move instead of a merge") moves the cut inside this window to func_80060A68, the one
+position that puts every gp user of text1b_tu1c's per-file objects on one side; the rodata start
+0x800158E0 is unchanged (func_80060A68 .. func_80060E38 own no rodata).
 
 **Moves only (condition 4).** Done by pre-slim-2026-10-01:memory/grind/func_80065800/tools/move.py:
 - snd_Init's extern block .. func_80060E38 (2927 lines, 51 functions) move verbatim from
@@ -268,9 +271,9 @@ rodata) it sits at func_80061064's extern block.
 
 | File | Text | Rodata |
 |---|---|---|
-| text1b.c | unchanged head, then snd_Init .. func_80060E38 | 0x8001585C..0x800158B4 (func_80058580's tables) |
+| text1b.c | unchanged head, then snd_Init .. func_80060768 | 0x8001585C..0x800158B4 (func_80058580's tables) |
 | text1a_b_pre_rodata_b.c | none (transcribed data) | 0x800158B4..0x800158E0, the sound-bank strings |
-| text1b_tu1c.c | func_80061064 .. the function before func_8006E534 | 0x800158E0.. (D_800158E0, func_80065800's tables, func_8006B578's table and string) |
+| text1b_tu1c.c | func_80060A68 .. the function before func_8006E534 (func_80060A68 .. func_80060E38 moved here by owner ruling Q65: per-file gp model, boundary move in the recorded window) | 0x800158E0.. (D_800158E0, func_80065800's tables, func_8006B578's table and string) |
 
 **Checks.** Full rebuild: EXE sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa (the oracle);
 text1b_tu1c.o .rodata at 0x800158E0 (0xd0 bytes), text1a_b_pre_rodata_b.o at 0x800158B4 (0x2c).
