@@ -107,3 +107,53 @@ because the sweep holds the name `SsFCALL` at MEDIUM.
 - _SsSeqGetEof: the `val`/`threshold` locals are gone (SOTN `score->unk48++` shape).
 - _SsSndStop: the `ip = p + i` pointer loop becomes SOTN's `for` over programs/panpot/vol.
 - SsSeqCalledTbyT: the SS_SCORE_FLAG cast macro becomes SOTN's `_ss_score[i][j].unk98`.
+
+## 5. Layer-2 round 1 (rev-ssscore, 2026-09-30): FAIL
+
+Verdict on the landing in tmp/laneF/mine.patch. At review time the body was NOT staged (the landing lock was
+released for laneG), so the reviewer did not verify any body hash. The hashes laneF computed while
+the patch was staged are func_80084CC0 3761fc9e4ce504e0 and _SsSndTempo 036364740cf84133.
+PASSED: the SeqStruct layout, _SsFCALL, the deleted symbol rows, the s16 prototypes, `cp`, the citations.
+Objections, all against pre-existing constructs that this commit would have re-certified:
+1. func_80084CC0: `_SsSeqGetEof` was passed an unread 4th argument `ptr` at 3 sites ($a3 is never set at
+   0x80084D68 / 0x8008500C). Dropped; byte-identical (reviewer final3.c).
+2. func_80084CC0: `b` and `next` were reused for different meanings (`b = cmd_ptr[0]; data = b;` and
+   `next = b; if (next == 0x2F)`). Now `data = cmd_ptr[0];` and `if (b == 0x2F)`; byte-identical (v12.c).
+3. func_80084CC0: `cmd_ptr` / `databyte` were shared across switch arms with no admitting ruling. Now
+   per-arm block locals; byte-identical (reviewer v5.c includes 1-3).
+4. _SsSndTempo: `new_val` was written twice and read behind `goto tempo_store`, and it carried the match.
+
+## 6. Round-2 work (laneF), whole-TU compare (tu.py) against the HEAD build
+
+| variant (on reviewer v5.c) | change | func_80084CC0 / _SsSndTempo |
+|---|---|---|
+| v5 | reviewer's 1-3 | 0 |
+| v6c | `u32 data` moved into the first-switch 0x90 arm | 0 |
+| v6 / v6b | `next` split into one local per 0x90 arm (both arms), either declaration order | 40 |
+| v6d | `next` local only in the second-switch 0x90 arm | 40 |
+| v6e | `next` local only in the first-switch 0x90 arm | 40 |
+| v6f | second-switch arm passes `cp[0]` directly (no named velocity) | 46 (234/233) |
+
+The 40 is all operand-only: s2/s3/s4 rotate through the whole body (global allocator order). `next`
+holds the same value in both arms: the Note On velocity (the second data byte), read after a status byte
+in one arm and under running status in the other. These are two exclusive paths assigning one variable
+that has one meaning, read by the same call `noteon(a0, a1, note, velocity)`. It is renamed `velocity`
+and documented at the top of the function. `data` becomes the arm-local `note`, and the second switch's
+`cp` becomes the arm-local `cmd_ptr`. All renames are byte-neutral (F.c: 116/116, 0).
+
+_SsSndTempo step (on v6c; tmp/laneF/mkT.py):
+| variant | spelling | score |
+|---|---|---|
+| T1 | SOTN tempo.c: `if (>) unk94--; else if (<) unk94++;` | 3 (138/136) |
+| T3 | `if (unk94 != unkAC) unk94 = (unk94 > unkAC) ? unk94 - 1 : unk94 + 1;` | 5 (135/136) |
+| T5 | locals `tempo`/`target` read once, if/else-if stores | 3 |
+| T8 | `<` tested first | 7 |
+| T12 | `step` = -1/1/0, then `if (step) unk94 += step` | 11 |
+| **T9** | `if (unk94 > unkAC \|\| unk94 < unkAC) unk94 = (unk94 > unkAC) ? unk94 - 1 : unk94 + 1;` | **0 (136/136)** |
+
+Target shape (_SsSndTempo insns 48-58): `sltu target<t; bnez -> [j join; sw v0,0x94]` with `addiu v0,t,-1`
+in the delay slot; else `sltu t<target; beqz join; addiu v0,t,1`, falling into the same `j join; sw`. That
+is ONE store of a value chosen on two paths, which is what a conditional expression assigned once
+produces. T9 is "if the tempo is above or below the target, step it one unit toward the target". It has
+no goto, no multi-write local and no dead code. The `> || <` guard (instead of `!=`, T3) mirrors the
+`>` / `<` ladder of the function's own else-branch; `!=` scores 5.
