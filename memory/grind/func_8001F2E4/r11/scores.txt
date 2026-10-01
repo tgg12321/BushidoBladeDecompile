@@ -34,3 +34,7 @@ r11v_split_dxdz.c score   16   insns 347/347
 r11v_split_temp.c score   75   insns 349/347
 r11v_split_temp2.c score    9   insns 347/347
 island_removed.c score   38   insns 337/347
+# layer-2 rev-1f2e4 probes (tmp/l2probe_8001F2E4, reviewer-measured, Q31 banking)
+l2_P1_split_all_divassign.c score   78
+l2_P2_onlyV2_divassign.c score    9
+l2_P3_final_divassign.c score   64

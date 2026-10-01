@@ -138,3 +138,13 @@ scores r11/scores.txt). Findings in short:
   per-value form); self-assign/do-while/cancel-pair on the full per-value form 83-94.
 - Permuter from the one-var form (tmp/func_8001F2E4/perm1): best finds all re-introduce reuse (jitter
   into d1e6, twist into d1e8, ...); see proof.md § Permuter.
+
+## LANDED 2026-09-30 (laneE)
+
+Layer-2 round 1: fresh PASS, reviewer rev-1f2e4, body_hash e87fe1e104304cbe (the body == candidate.c == r11/final.c,
+spliced into src/code6cac_tu2.c). Key findings: 0/347, oracle, 12/12 region hashes, every Ruling 11 prong for
+temp/temp2/dx/dz incl. the Q58 cse dump bar, tgt_x under named-local-fake-exception, islands header-exact
+inline_o.h, citations verified. Its three probes (each `/ 8` split out as `d /= 8;`: one-var form 78, only-V2 9,
+final body 64) are banked as r11/variants/l2_*.c with r11/scores.txt (re-measured, same scores); proof.md (B)(2)
+now cites the plainly feasible obj+0x6A = 2 path for temp2 W2 and dx/dz (reviewer note). Commits: auth baa9914c2, Match ecc3c16ff,
+queue 7e80032dc; check_completion_integrity OK.

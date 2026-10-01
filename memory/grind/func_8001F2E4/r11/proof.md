@@ -85,11 +85,13 @@ different value (Ruling 5 2(c) as clarified 2026-09-26):
 - V5 (held: V2, V3 or V4), V6 (held: V5): rng_Next results; V6 = V5 only when the two random numbers
   agree mod 64, not on every path.
 - `temp2` W1 writes: no earlier write on any path; the clamps run only outside ±0xFF. W2 (held: W1):
-  path W1 = 0x100 (state 0x1F), W2 = the clamped ratan2 twist, e.g. 0 when partner.0xF8 - obj.0x260
-  gives ratan2(..) = 0x400. W2's clamps run only outside ±0x1FF.
-- `dx`/`dz` block 4 (held: block-1 value, or no value when block 1 did not run): path obj+0x6A = 2
-  (block 1 skipped) — no earlier write; and a path through both blocks with partner.0x180 - obj.0x180
-  = 5, partner.0xF4 - obj.0x25C = 7.
+  plainly feasible path obj+0x6A = 2, obj+0xE = 6 (block 4 runs; block 1 takes its else arm, so W1 = 0),
+  and the clamped twist nonzero, e.g. ratan2(..) = 0x600 gives 0x200, clamped to W2 = 0x1FF != 0.
+  W2's clamps run only outside ±0x1FF. (Corrected 2026-09-30 after layer-2 rev-1f2e4: the earlier path
+  W1 = 0x100 needed obj+0x6A to be 0x15/0x25 at block 1 and 2 at block 4, feasible only if a callee
+  rewrote obj+0x6A in between.)
+- `dx`/`dz` block 4 (held: block-1 value, or no value when block 1 did not run): plainly feasible path
+  obj+0x6A = 2, obj+0xE = 6 — block 1 does not write dx/dz, so there is no earlier write on that path.
 
 ## (C) Same statements; real computations
 (1) `one-var-per-value-form.c`: `temp` V1..V6 -> `d1e6`, `d1e8` (function scope: their writes are at
