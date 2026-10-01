@@ -73,7 +73,11 @@ all measured on the landing chassis, none reaching the target:
 
 ## (D)(4) Permuter
 - Campaign 1 (laneA, landing chassis, fresh workspace from variants_landing/pv_both.c; label
-  f770-pv-both-i01, -j2, --stack-diffs, no --stop-on-zero, launched 2026-10-01T01:34Z): CAMPAIGN_RESULT
+  f770-pv-both-i01, -j2, --stack-diffs, no --stop-on-zero, launched 2026-10-01T01:34Z): harvested and stopped after
+  1,403 s: 14,717 iterations, base 350, best 150. The low finds either make some variable hold the
+  determinant plus a second value again (150-1 `temp = <determinant>; work = temp;`; 160-2 `work =
+  m02*m20` inside r1's numerator; 150-2 `work = temp >= 0;`) or split the determinant expression into two
+  writes of `work` (160-1, 170-1; Ruling 4 splits, still 160/170). No find reaches the target.
 
 ## Q30 set-aside
 No spelling is set aside: no measured spelling carries a FAKE-annotated construct, and the body carries

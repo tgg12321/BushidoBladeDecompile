@@ -43,3 +43,5 @@ $v0 per-value; temp pseudo 94 gets the $a0 preference only as the `<< 16` source
 variants re-measured in the real sandbox (41/41/41/6). `d0` inlined into the determinant = 42
 (rejected/d0-inlined-into-determinant-42.c); kept as the ordinary-C named term (layer-2 rev-2f2d0 accepted
 the identical construct in func_8002F2D0).
+- Permuter (laneA, landing per-value body, fresh seed): 14,717 iterations, best 150; low finds re-create a
+  determinant-plus-second-value variable or split the determinant into two writes (r11/proof.md).
