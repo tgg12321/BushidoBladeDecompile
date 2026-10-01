@@ -15,7 +15,6 @@ extern u8 D_8009A658[][12];
 extern u16 D_8009A928[][23];
 extern u8 D_8009A9DC[][3];
 extern s32 D_8009A9F0[][8];
-extern u16 D_8009A8CA[][8][2];
 extern u8 D_800A325C[4];
 extern u8 D_800A3260[4];
 extern void func_80057E84(u8 *, u8 *, s32, s32);
@@ -42,7 +41,45 @@ s32 func_80058580(u8 *p) {
     u8 *script2;
     u8 *script3;
     u8 mode;
-    s32 work1, work2, work3, work4, work5;
+    /* work1 holds nine values in turn, each read before work1 is written again: the
+     * p[0x449] == 0 flag of the state-0x15 script choice; the stage distance base (100000,
+     * or D_8009A838[stage] * 8) of the D_8009A850 scan; p[0x44A] for the lim chain; p[0x44A]
+     * again for the waypoint script; the x of waypoint 1 (0x36A); the p[0x445] == 0 flag of
+     * the 0x394 action pick; the chosen pick (s8)besti; case 2's D_8009A9F0 pattern word,
+     * shifted in place; a script entry's low distance bound (e[1] * 40, then adjusted).
+     * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+    s32 work1;
+    /* work2 holds eight values in turn, each read before work2 is written again: the
+     * p[0x445] == 0 flag of the state-0x15 script choice; a D_8009A850 entry's distance; the
+     * pace byte p[0x444]; the y of waypoint 1 (0x36C); the p[0x449] == 0 flag of the 0x394
+     * action pick; the best random pick score so far (-1, then a copy of score); case 2's
+     * nibble count, counted down; the state-0x15 script's counter value (p[0x34D], p[0x34A],
+     * 0, or the 0x330 halfword).
+     * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+    s32 work2;
+    /* work3 holds sixteen values in turn, each read before work3 is written again: the
+     * script side bit (opponent byte 0xAF & 1, possibly inverted); p[0x447] == 0; the
+     * 0x43A angle, wrapped to +-0x800; the state-0x11 threshold (0x1000 - (stance sum << 8)),
+     * scaled by 0x438 >> 12; the forced-scan flag (0 or 1) of the D_8009A850 scan; the
+     * waypoint index p[0x362] - 1; the path length to the target; the "longer than lim"
+     * flag; the bearing to the next waypoint, wrapped; the 0x394 action pick's coin bit,
+     * stepped per try; the 0x394 slot (0x394, or a D_800A325C / D_800A3260 entry); case 3's
+     * column in D_8009A928; the entry-type mask (case 3 / case 2 / default); a script entry's
+     * character mask; the entry's accept flag (0 or 1); the state-0x15 script address (0, or
+     * D_8009A8C0 / D_8009A8B4 / D_8009A8AC).
+     * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+    s32 work3;
+    /* work4 holds three values in turn, each read before work4 is written again: the
+     * D_8009A850 scan index; the waypoint walk index (a copy of work3's waypoint index,
+     * counted down); the script-list entry index.
+     * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+    s32 work4;
+    /* work5 holds three values in turn, each read before work5 is written again: case 2's
+     * pattern-word top bits (work1 >> 27); the skill offset ((0x1000 - lv) * 625 >> 10) - 400;
+     * a copy of the entry type et for the et < 5 and et == 5 / 6 tests.
+     * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+    s32 work5;
+    s32 pick;
     s32 hi;
     s16 et;
     s32 va;
@@ -61,7 +98,6 @@ s32 func_80058580(u8 *p) {
     u8 *q;
     u16 off;
     s16 pbest;
-    u16 st;
     u16 st2;
     s8 flip;
     s32 near;
@@ -188,8 +224,10 @@ s32 func_80058580(u8 *p) {
             }
         }
     } else {
-        st = CPU_U16(0x6A);
-        if (st == 0xF || st == 0x1C || st == 0x1D || st == 0x1E || st == 0x1F || st == 0x20 || st == 0x21) {
+        u16 state;
+
+        state = CPU_U16(0x6A);
+        if (state == 0xF || state == 0x1C || state == 0x1D || state == 0x1E || state == 0x1F || state == 0x20 || state == 0x21) {
             if (CPU_U16(0x6A) == 0x1D && (rand() & 0xFF) < D_80099D88[p[0x443]].unk4 && p[0x447] == 0) {
                 CPU_S32(0x3CC) = 0x8000;
             } else {
@@ -208,7 +246,7 @@ s32 func_80058580(u8 *p) {
                     CPU_S32(0x3CC) = (p[0x443] & 1) ? vd | 0x1000 : vd | 0x4000;
                 }
             }
-        } else if (st == 0x11 && CPU_S16(4) != D_800A38AE && CPU_S16(0x40) == (*(u8 **)(p + 0x50))[8] - 1) {
+        } else if (state == 0x11 && CPU_S16(4) != D_800A38AE && CPU_S16(0x40) == (*(u8 **)(p + 0x50))[8] - 1) {
             {
                 s32 b, c, a;
                 a = CPU_S16(0x26E);
@@ -237,11 +275,12 @@ s32 func_80058580(u8 *p) {
                 if (CPU_S16(0xE) >= 6) {
                     work1 = 100000;
                 } else {
-                    work1 = (&D_8009A838)[CPU_S16(0xE)] * 8;
+                    work1 = D_8009A838[CPU_S16(0xE)] * 8;
                 }
                 for (work4 = 0; work4 < 8U; work4++) {
                     if (!(D_8009A850[work4][3] & 1) || CPU_S16(0x40) >= (*(u8 **)(p + 0x50))[8] - 2 || work3) {
-                        if ((D_800A387C < (work2 = D_8009A850[work4][2] * 16 + work1 + CPU_S16(0x40A)) &&
+                        work2 = D_8009A850[work4][2] * 16 + work1 + CPU_S16(0x40A);
+                        if ((D_800A387C < work2 &&
                              (!(D_8009A850[work4][3] & 8) || CPU_S16(0x43C) < 0x100) &&
                              (far || (D_8009A850[work4][3] & 4))) ||
                             work3) {
@@ -269,8 +308,10 @@ s32 func_80058580(u8 *p) {
         return CPU_S32(0x3CC);
     }
     if ((CPU_S32(0x430) & 0x4108) == 8) {
-        st = CPU_U16(0x6A);
-        if (st == 3 || st == 0x2C || st == 7 || (p[0x426] == 1 || p[0x426] == 2) ||
+        u16 state;
+
+        state = CPU_U16(0x6A);
+        if (state == 3 || state == 0x2C || state == 7 || (p[0x426] == 1 || p[0x426] == 2) ||
             (p[0x425] == 1 || p[0x425] == 2)) {
             p[0x39D] = 0;
             p[0x362] = 0;
@@ -583,17 +624,17 @@ s32 func_80058580(u8 *p) {
             if (p[0x440] == 4 ? r < (tired >> 2) : r < tired) {
                 work2 = -1;
                 besti = -1;
-                work4 = 0;
+                pick = 0;
             pick_loop:
                 {
                     s32 rnd;
                     u8 *row;
                     rnd = rand() & 0xFFF;
                     row = D_80099D88[p[0x443]].pick_weight;
-                    score = (rnd * row[work4]) >> 12;
+                    score = (rnd * row[pick]) >> 12;
                     if (score != 0) {
                         flip = 0;
-                        switch (work4) {
+                        switch (pick) {
                         case 0:
                         case 2:
                             if (rand() & 1) {
@@ -606,7 +647,7 @@ s32 func_80058580(u8 *p) {
                                 score += 0x80;
                                 flip = vc > 0;
                             }
-                            if (CPU_S16(0xE) >= 6 && p[0x34A] == 0 && work4 == 2) {
+                            if (CPU_S16(0xE) >= 6 && p[0x34A] == 0 && pick == 2) {
                                 score += 0x100;
                                 flip = 0;
                             }
@@ -638,14 +679,14 @@ s32 func_80058580(u8 *p) {
                             break;
                         }
                         if ((s16)work2 < score) {
-                            besti = work4;
+                            besti = pick;
                             work2 = score;
                             bestflip = flip;
                         }
                     }
                 }
             pick_next:
-                if (++work4 < 7) {
+                if (++pick < 7) {
                     goto pick_loop;
                 }
                 if ((work1 = (s8)besti) != -1) {
@@ -696,8 +737,10 @@ s32 func_80058580(u8 *p) {
         return CPU_S32(0x3CC);
     }
     if ((CPU_S32(0x430) & 6) && !(CPU_S32(0x430) & 0x800)) {
-        st = CPU_U16(0x6A);
-        if (st == 0x15 || (st == 0x19 && p[0x441] >= 2)) {
+        u16 state;
+
+        state = CPU_U16(0x6A);
+        if (state == 0x15 || (state == 0x19 && p[0x441] >= 2)) {
             if ((CPU_U16(0x3E8) & 1) || CPU_S16(0xE) >= 6) {
                 if (p[0x442] == 0 && p[0x447] != 1 && (CPU_S16(0xE) < 6 || p[0x34A] != 0)) {
                     pbest = -1;
@@ -754,7 +797,7 @@ s32 func_80058580(u8 *p) {
                                 }
                                 break;
                             default:
-                                work3 = D_8009A8CA[p[0x440]][D_800A37A0 - 1][0];
+                                work3 = D_8009A8C8[p[0x440]][D_800A37A0 - 1].mask;
                                 break;
                             }
                             if ((e[3] >> 4) == 0 || !((u32)work3 & (1 << ((e[3] >> 4) - 1)))) {
@@ -776,14 +819,20 @@ s32 func_80058580(u8 *p) {
                         }
                         work1 = e[1] * 40;
                         hi = e[2] * 40;
+                        /* FAKE: do-while(0) (.claude/rules/do-while-zero-exception.md). Its loop notes
+                         * make flow.c weight et's defining reference by loop depth 3 instead of 2
+                         * (reg_n_refs 8 -> 9), so global.c allocno_compare orders et (priority 2177)
+                         * ahead of ep (2147): et takes $s5 and ep $s6, as in the target. Unwrapped,
+                         * ep is allocated first and the two swap. Measurements and the plain
+                         * spellings tried: memory/grind/func_80058580/evidence.md [s5]. */
                         do {
                             et = e[0] & 7;
                         } while (0);
                         work3 = 0;
                         if (et == 0) {
                             if (work1 < D_800A387C && D_800A387C < hi) {
-                                st = *(u16 *)(CPU_OPP + 0x6A);
-                                if (st == 0x15 || st == 0x2C || st == 0xE || st == 0x19) {
+                                if (*(u16 *)(CPU_OPP + 0x6A) == 0x15 || *(u16 *)(CPU_OPP + 0x6A) == 0x2C ||
+                                    *(u16 *)(CPU_OPP + 0x6A) == 0xE || *(u16 *)(CPU_OPP + 0x6A) == 0x19) {
                                     work3 = 1;
                                 }
                             }
@@ -854,7 +903,7 @@ s32 func_80058580(u8 *p) {
                         CPU_S16(0x412) = phi;
                     }
                 }
-            } else if (st == 0x15 && CPU_S16(0x26C) != 0 && p[0x440] != 4 &&
+            } else if (state == 0x15 && CPU_S16(0x26C) != 0 && p[0x440] != 4 &&
                        CPU_S16(0x43C) < 0x200 - ((CPU_S16(0x438) * 0x100) >> 12) &&
                        !(D_800A38DC == 2 || D_800A38DC == 3)) {
                 work3 = 0;

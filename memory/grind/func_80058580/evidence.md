@@ -148,3 +148,22 @@
   (no goto) is +7 insns (cross-jump does not merge it).
   With both: text1b .text 102804 bytes 0 differing words, .rodata 88 bytes 0 differing words (the jtbl
   `lw %lo` sandbox artifacts are confirmed gone at link time).
+- [s5d] Landing-shaped body (candidate.c; links byte-identical via probes/s5/fullobj.sh + linkcheck.py):
+  * D_8009A838 is `extern s8 D_8009A838[];` and func_80056FE8 reads `D_8009A838[*((s16 *)(a2 + 0xE))]`
+    (was a scalar extern read through `(s32)&D_8009A838 + idx`); func_80058580 reads `D_8009A838[CPU_S16(0xE)]`.
+    The ternary `work1 = E >= 6 ? 100000 : D_8009A838[E] * 8` is one insn shorter (kept the if/else).
+  * The D_8009A8CA alias is gone: the table really starts at 0x8009A8C8 (rows of eight 4-byte entries, each row
+    ending with a zero entry; the word at 0x8009A8C4 is the 0x80 terminator of the script D_8009A8C0,
+    asm/data/7D920.data.s). New model (include/code6cac.h): `CpuLevelEntry { u8 unk0; u8 unk1; u16 mask; }
+    D_8009A8C8[][8]`, both readers index the column 1-based: func_80058580 `D_8009A8C8[p[0x440]][D_800A37A0 -
+    1].mask` (target %lo(0x8009A8CA), `addiu -1`), func_80055138 `src = &D_8009A8C8[*(s16 *)(p + 0x86)][D_800A37A0 -
+    1];` (GCC folds the -1 into %lo(0x8009A8C4), byte-identical; the `row` local is gone). `row = ...; src =
+    &row[c - 1]` does not fold (+7 insns). Landing also adds `D_8009A8C8 = 0x8009A8C8;` and retires the
+    D_8009A8CA row in undefined_syms_auto.txt.
+  * `st` split: the opponent-state test reads `*(u16 *)(CPU_OPP + 0x6A)` directly; the three reads of this
+    robot's state are block-scoped `u16 state;` locals (free).
+  * D_8009A850 scan: `work2 = D_8009A850[work4][2] * 16 + work1 + CPU_S16(0x40A);` is its own statement before
+    the test (was an assignment inside the condition whose stored value was never read); free.
+  * The pick-loop counter is its own `pick` (free); every other work-value split costs (ablation table in r11/).
+  * The waypoint handles wp/wp2/wp3/a/b stay (`e = obj + nl * 6` convention of func_800571C0): spelling them as
+    p-relative index expressions costs 1 word (wp), 7-11 insns (wp2/wp3), 4 insns (a/b).

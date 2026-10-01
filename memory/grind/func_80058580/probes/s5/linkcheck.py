@@ -3,7 +3,8 @@
 and compare its .text / .rodata bytes with build/bb2.bin (== oracle exe body) byte-for-byte."""
 import subprocess, sys, re
 obj = sys.argv[1]
-W = "tmp/func_80058580/full"
+import os
+W = os.path.dirname(sys.argv[1]) or "."
 TEXT, RODATA = 0x80047ED0, 0x8001585C
 LOAD, FILEOFF = 0x80010000, 0  # bb2.bin = text+data image starting at 0x80010000
 
@@ -18,9 +19,11 @@ for line in run("mipsel-linux-gnu-nm", "build/bb2.elf").splitlines():
     if len(p) == 3:
         syms[p[2]] = int(p[0], 16)
 undef = [l.split()[-1] for l in run("mipsel-linux-gnu-nm", "-u", obj).splitlines() if l.strip()]
-missing = [u for u in undef if u not in syms]
+missing = [u for u in undef if u not in syms and u != "D_8009A8C8"]
 with open(f"{W}/link.ld", "w") as f:
     f.write("_gp = 0x800A30CC;\n")
+    if "D_8009A8C8" in undef and "D_8009A8C8" not in syms:
+        f.write("D_8009A8C8 = 0x8009A8C8;\n")
     for u in undef:
         if u in syms:
             f.write(f"{u} = 0x{syms[u]:08X};\n")
