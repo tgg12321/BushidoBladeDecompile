@@ -1,0 +1,48 @@
+# func_80074E08 Ruling 11 (work) dump excerpts, 2026-10-01: r11/tools/dumps_all.sh <out> 75 76 77 78 on r11/variants/{reuse,pv}.c
+# cc1: tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -dl -dg -df;
+# find_reg traces: instrumented tools/gcc-2.7.2/cc1, same flags, BB2_FINDREG_DEBUG=<pseudo>
+# pseudos: 75 = prim, 76 = ot_idx (area select), 77 = work (reuse) / tile_ot (pv)
+
+== reuse
+Register 75 used 14 times across 35 insns; crosses 3 calls; GR_REGS or none.
+Register 76 used 3 times across 29 insns; crosses 1 call; GR_REGS or none.
+Register 77 used 7 times across 75 insns; dies in 2 places; crosses 7 calls; GR_REGS or none.
+;; 11 regs to allocate: 116 79 75 72 78 80 73 77 74 87 76
+;; 73 preferences: 16
+;; 76 preferences: 17
+;; 77 preferences: 17
+72 in 19 73 in 16 74 in 18 75 in 18 76 in 17 77 in 17 78 in 3 79 in 3 
+-- find_reg, prim (75):
+FINDREGDBG func=func_80074E08 pseudo=75 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 4 5 29
+FINDREGDBG  someone_prefers: 16 17
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 24 25 26 27 28 29 31
+
+== pv
+Register 75 used 14 times across 35 insns; crosses 3 calls; GR_REGS or none.
+Register 76 used 3 times across 29 insns; crosses 1 call; GR_REGS or none.
+Register 77 used 3 times across 23 insns; GR_REGS or none.
+;; 11 regs to allocate: 117 80 75 72 79 81 73 74 77 88 76
+;; 73 preferences: 16
+;; 76 preferences: 17
+72 in 19 73 in 16 74 in 18 75 in 17 76 in 17 77 in 3 79 in 3 
+-- find_reg, prim (75):
+FINDREGDBG func=func_80074E08 pseudo=75 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 4 5 29
+FINDREGDBG  someone_prefers: 16
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 24 25 26 27 28 29 31
+
+== reuse: work's sets (.lreg)
+(insn 691 13 16 (set (reg/v:SI 77)
+        (const_int 4)) 159 {movsi_internal2} (nil)
+--
+(insn 75 73 79 (set (reg/v:SI 77)
+        (const_int 14)) 159 {movsi_internal2} (nil)
+--
+(insn 562 545 547 (set (reg/v:SI 77)
+        (reg:SI 182)) 159 {movsi_internal2} (insn_list 492 (nil))
+(insn 492 494 496 (set (reg:SI 182)
+        (ashift:SI (reg/v:SI 76)
+            (const_int 2))) 181 {ashlsi3} (nil)
+Register 182 used 3 times across 20 insns in block 10; crosses 1 call; GR_REGS or none.
+;; Register 182 in 17.

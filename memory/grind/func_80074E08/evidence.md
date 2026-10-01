@@ -51,3 +51,10 @@ the EnvA s32 retype (DescF97C / S_80074488 precedent), DRAWENV casts, SelWork re
 disclose the single-handle byte-offset casts (TILE field stores prim+4..0xE, `*(s32 **)(arg0[0] + 0x18)`,
 `s.header + 2`). Banked: rejected/r9-ot-idx-restore-fail-0.c; reviewer variants rejected/rev74e08/.
 Frontier: a truthful spelling of the two selects with each variable written once per value.
+
+## 2026-10-01 laneB — ot_idx frontier closed with Ruling 11 `work` (r11/proof.md)
+Every variable written once per value: `ot_idx` only by the area select. The TILE's OT index goes into
+`work`, which later carries `ot_idx * 4` for the last three AddPrims (found by permuter e08-split-ot from
+the split body). Mechanism: work's second value is a copy of the $s1-seated `ot_idx << 2`, so its pseudo
+prefers $s1, and prim (allocated first, conflicting) is pushed to $s2 as in the target. Any spelling with
+a separate TILE variable scores 18-38 (r11/scores.txt); second permuter (13,362 iterations) best 545.

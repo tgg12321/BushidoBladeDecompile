@@ -1,0 +1,46 @@
+# sandbox func_80074E08 --disable all --candidate <file> on main (HEAD src, EnvA unchanged; r9/prefix.h in each file), 2026-10-01
+
+r11/variants/reuse.c score    0   insns 281/281
+r11/variants/pv.c score   22   insns 281/281
+r11/variants/pv_rev_decl.c score   22   insns 281/281
+r11/variants/pv_v1_block.c score   22   insns 281/281
+r11/variants/pv_no_ofs.c score   22   insns 281/281
+r11/variants/pv_ofs_after_select_all4.c score   26   insns 280/281
+r11/variants/pv_v1_default.c score   22   insns 281/281
+r11/variants/pv_v1_declinit.c score   18   insns 281/281
+r11/variants/pv_v1_ternary.c score   22   insns 281/281
+r11/variants/pv_v1_inarg.c score   38   insns 283/281
+
+# variants_extra (tile_ot = the TILE OT value; generators r11/tools/gen{w,x,y,z,z3}.py, run from tmp/e08/w):
+r11/variants_extra/w1_split_tileot.c score   22   insns 281/281
+r11/variants_extra/w2_split_tileot_declfirst.c score   22   insns 281/281
+r11/variants_extra/w3_ternary_arg.c score   38   insns 283/281
+r11/variants_extra/w4_ternary_arg_ifelse.c score   36   insns 283/281
+r11/variants_extra/w5_split_ifelse_first.c score   22   insns 281/281
+r11/variants_extra/w6_ternary_local.c score   22   insns 281/281
+r11/variants_extra/w7_init_after_prim.c score   18   insns 281/281
+r11/variants_extra/w8_init_first.c score   18   insns 281/281
+r11/variants_extra/w9_decl_init.c score   18   insns 281/281
+r11/variants_extra/x1_store_sum.c score   18   insns 281/281
+r11/variants_extra/x2_decl_order.c score   18   insns 281/281
+r11/variants_extra/x3_both.c score   18   insns 281/281
+r11/variants_extra/x4_decl_init_prim.c score   18   insns 281/281
+r11/variants_extra/x5_both_init.c score   18   insns 281/281
+r11/variants_extra/y1_prim_u8p.c score   18   insns 281/281
+r11/variants_extra/y2_tileot_u32.c score   18   insns 281/281
+r11/variants_extra/y3_tileot_s16.c score   18   insns 281/281
+r11/variants_extra/y4_ot_u32_both.c score   18   insns 281/281
+r11/variants_extra/z1_reuse_all4_aftersel.c score   67   insns 280/281
+r11/variants_extra/z2_reuse_last_permuter.c score    0   insns 281/281
+r11/variants_extra/z3_fresh_all4.c score   22   insns 280/281
+r11/variants_extra/z4_fresh_last.c score   18   insns 281/281
+r11/variants_extra/z5_reuse_last_before.c score   18   insns 281/281
+r11/variants_extra/z6_select_scaled_reuse.c score   66   insns 280/281
+r11/variants_extra/z7_preA2_useA2A3A4.c score    0   insns 281/281
+r11/variants_extra/z8_preA2_useA3A4.c score    0   insns 281/281
+r11/variants_extra/z9_preA3_useA3A4.c score   44   insns 281/281
+r11/variants_extra/z10_preA3_useA4.c score   44   insns 281/281
+r11/variants_extra/z11_preA2_useA2.c score    0   insns 281/281
+r11/variants_extra/z12_preofs_useA3A4.c score   44   insns 281/281
+r11/variants_extra/z13_preofs_useA4.c score   44   insns 281/281
+# reviewer rev-74E08: rejected/rev74e08/noreset_ot.c (ot_idx not re-stored) 26 (279 insns); split_ot.c / split_ot2.c 22

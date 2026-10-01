@@ -1,14 +1,26 @@
+#include "gpu.h"
+typedef struct EnvB {
+    s32  header;
+    s32  table;
+    s32  out;
+    s32  pad0C;
+    s32  semi;
+    u32  ot_idx;
+    s32  x;
+    s32  y;
+    s32  pad20, pad24;
+    u8   has_color;
+    u8   col_r;
+    u8   col_g;
+    u8   col_b;
+} EnvB;
 void func_80074E08(s32 *arg0, s32 arg1) {
-    EnvA s;
+    EnvB s;
     u16 rect[4];
     u16 offset[2];
     s32 *records;
     s32 prim;
     s32 ot_idx;
-    /* work holds two values (Ruling 11, owner 2026-09-26; the first under its
-       Q20 per-branch-constant clause): the backdrop TILE's OT index (0xE for
-       player 1, 4 for player 0), then ot_idx * 4, the OT byte offset the last
-       three AddPrim calls add. Proof: memory/grind/func_80074E08/r11/proof.md. */
     s32 work;
     s32 rect_x;
     /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts

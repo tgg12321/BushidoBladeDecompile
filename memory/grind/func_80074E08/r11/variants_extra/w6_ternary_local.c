@@ -1,21 +1,28 @@
+#include "gpu.h"
+typedef struct EnvB {
+    s32  header;
+    s32  table;
+    s32  out;
+    s32  pad0C;
+    s32  semi;
+    u32  ot_idx;
+    s32  x;
+    s32  y;
+    s32  pad20, pad24;
+    u8   has_color;
+    u8   col_r;
+    u8   col_g;
+    u8   col_b;
+} EnvB;
 void func_80074E08(s32 *arg0, s32 arg1) {
-    EnvA s;
+    EnvB s;
     u16 rect[4];
     u16 offset[2];
     s32 *records;
     s32 prim;
     s32 ot_idx;
-    /* work holds two values (Ruling 11, owner 2026-09-26; the first under its
-       Q20 per-branch-constant clause): the backdrop TILE's OT index (0xE for
-       player 1, 4 for player 0), then ot_idx * 4, the OT byte offset the last
-       three AddPrim calls add. Proof: memory/grind/func_80074E08/r11/proof.md. */
-    s32 work;
+    s32 tile_ot;
     s32 rect_x;
-    /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts
-       just past the sheet's one 12-byte SprtHdrA header (+0xC) on each of
-       the four root+0x18 sheets this function draws: one meaning at one
-       constant offset, written once per sheet (Ruling 9, owner 2026-09-25).
-       D_SEL.BIN census and receipts: memory/grind/func_80074E08/r9/. */
     s32 cells;
     s16 i;
 
@@ -29,12 +36,8 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     *(s16 *)(prim + 0xA) = 0x14;
     *(s16 *)(prim + 0xC) = 0xCC;
     *(s16 *)(prim + 0xE) = 0xC8;
-    if (arg1 != 0) {
-        work = 0xE;
-    } else {
-        work = 4;
-    }
-    AddPrim(g_gpu_ot_ptr + work * 4 + 0x24, prim);
+    tile_ot = arg1 != 0 ? 0xE : 4;
+    AddPrim(g_gpu_ot_ptr + tile_ot * 4 + 0x24, prim);
     prim += 0x10;
     arg0[5] = prim;
 
@@ -105,20 +108,19 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     rect[2] = ((DRAWENV *)SELWORK->f24)->clip.w;
     rect[3] = ((DRAWENV *)SELWORK->f24)->clip.h;
     SetDrawArea(arg0[7], rect);
-    work = ot_idx * 4;
-    AddPrim(g_gpu_ot_ptr + work, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + ot_idx * 4, arg0[7]);
     arg0[7] += 0xC;
 
     offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
     offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1]
               - SELWORK->f08[arg1];
     SetDrawOffset(arg0[8], offset);
-    AddPrim(g_gpu_ot_ptr + work + 0x24, arg0[8]);
+    AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, arg0[8]);
     arg0[8] += 0xC;
 
     offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
     offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1];
     SetDrawOffset(arg0[8], offset);
-    AddPrim(g_gpu_ot_ptr + work, arg0[8]);
+    AddPrim(g_gpu_ot_ptr + ot_idx * 4, arg0[8]);
     arg0[8] += 0xC;
 }
