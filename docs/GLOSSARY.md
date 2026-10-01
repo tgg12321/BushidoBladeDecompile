@@ -42,7 +42,7 @@ Terminology used throughout the BB2 decompilation. Organized by domain.
 | **`$s0`–`$s7`** | Saved registers ($16–$23). **Callee-saved** — if a function uses them, it must save them in prologue and restore in epilogue. |
 | **`$k0`, `$k1`** | Kernel temporaries ($26, $27). Reserved for the kernel; user code may not touch them. |
 | **`$gp`, `$sp`, `$fp`, `$ra`** | Special-purpose ($28, $29, $30, $31). |
-| **GP-relative addressing** | `lw $reg, sym($gp)` — single-instruction load using `$gp` as base. Restricted to symbols in `.sdata`/`.sbss` (small data) within `±32 KB` of `$gp`. The project's `sdata_funcs.txt` and `sdata_syms.txt` control which symbols and functions use it. |
+| **GP-relative addressing** | `lw $reg, sym($gp)` — single-instruction load using `$gp` as base. Restricted to symbols in `.sdata`/`.sbss` (small data) within `±32 KB` of `$gp`. Under the per-file gp model (owner ruling Q65, adopted 2026-10-01) a file reaches a symbol gp-relative only when that file itself defines it (<= 8 bytes; a tentative `.comm` definition at its base offset only; never through an indexed `sym($reg)` operand); the former `sdata_*.txt` lists are deleted. |
 | **Pseudo-instruction** | An assembly mnemonic that expands to multiple machine instructions. Examples: `la $reg, sym` → `lui + ori` (or `lui + addiu`). `lb $reg, sym` → `lui + lbu + sll + sra` (in ASPSX with `.set noreorder`). `move $rd, $rs` → `addu $rd, $rs, $zero`. |
 | **`.set noreorder`** | Assembler directive: don't auto-fill delay slots, treat each instruction literally. The default for PsyQ-style code. |
 | **`.set reorder`** | Assembler directive: auto-fill branch delay slots by pulling the next instruction in, treat instruction ordering as semantic. ASPSX uses this for some hot loops. |
