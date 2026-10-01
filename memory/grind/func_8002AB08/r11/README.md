@@ -152,3 +152,16 @@ call-saved registers; reload1.c alter_reg gives each unallocated pseudo its own 
   unk_8C-arm stores 12; no 4/5 alt store 1 (the missing `move $fp,$zero`); pass-0 / unk_8C merged with
   `alt = pass != 0` 4. Owner question docs/grind/borderline.md 2026-10-01 func_8002AB08: GRANTED as Q85
   (allow narrowly; each address cited in the variable's comment).
+
+## deep_on (was `c`; round 2)
+func_8002CA8C's third argument (it runs the deep-hit test only when set: `*(s16 *)rec != 0 && a2 != 0`),
+one value written per arm as per-branch constants 1 / 1 / 0 (Q20; target `li $t4,1; sw $t4,0x60($sp)` in the
+tail shared by pass 0 and the unk_8C arm, 0x8002AEFC, and `sw $zero,0x60($sp)` 0x8002AF2C), read once by the
+call (`lw $a2,0x60($sp)` 0x8002B3A4). The unk_8C arm's write re-stores the held 1 (Q85). Renamed from the
+single letter and declared in the pass-loop block (the innermost scope enclosing its writes): sandbox 0
+(round2/c_scoped.c). Single-write spellings miss: the argument computed at the call as `temp1 == 0` 75,
+`temp2 == 1` 75, `alt != 0 || pass == 0` 75 (round2/c_v1..v3.c); one write `deep_on = temp1 == 0;` before the
+copies 29 (round2/c_v4.c). Mechanism (round2/dump_deep.sh, deep_cand.fn.s / deep_single.fn.s, IDENTITY OK):
+expand emits each arm's constant move into the variable; with one computed write the value is an `sltu` on
+the reloaded temp1 stored after the join (deep_single.fn.s `lw $11,80($sp); sltu $11,$11,1; ... sw $11,96($sp)`),
+which no later pass turns back into per-arm constants; the target stores the constants in the arms.

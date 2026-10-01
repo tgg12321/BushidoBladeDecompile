@@ -35,6 +35,9 @@ void func_8002AB08(s32 mode) {
          * (D): memory/grind/func_8002AB08/r11/README.md. */
         s32 temp1;
         s32 temp2;
+        /* c: the pass's flag for func_8002CA8C; the unk_8C arm's `c = 1;` re-stores the held 1 (target
+         * 0x8002AEFC), owner Q85 (rules Q85HASH). */
+        s32 c;
         s32 nseg;
         /* idx: two values -- the triangle index of the segment loop, then the index of the nearest
          * hit, the Q34 plain copy `idx = temp3;` (target `addu $s5,$s4,$zero` 0x8002B538). Ruling 11;
@@ -113,27 +116,18 @@ void func_8002AB08(s32 mode) {
             mask_a |= hit;
         }
         for (pass = 0; pass < npass; pass++) {
-            /* deep_on: func_8002CA8C's third argument (it runs the deep-hit test only when set): one
-             * value, written per arm as per-branch constants 1 / 1 / 0 (Q20); the unk_8C arm's
-             * `deep_on = 1;` re-stores the held 1 (target 0x8002AEFC), owner Q85 (rules Q85HASH).
-             * Ruling 11; (D): memory/grind/func_8002AB08/r11/README.md (deep_on). */
-            s32 deep_on;
-
             if (pass == 0) {
                 alt = 0;
                 temp1 = 0;
                 temp2 = 1;
-                deep_on = 1;
             } else if (other->unk_8C != 0) {
                 alt = 1;
                 temp1 = 0;
                 temp2 = 1;
-                deep_on = 1;
             } else if (other->unk_0E == 4 || other->unk_0E == 5) {
                 alt = 0;
                 temp1 = 1;
                 temp2 = 2;
-                deep_on = 0;
             }
             if (alt == 0) {
                 *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][temp1];
@@ -214,7 +208,7 @@ void func_8002AB08(s32 mode) {
                         *(s32 *)(scr + 0x8C) = (*(s32 **)(scr + 0x60 + j * 4))[2];
                     }
                 }
-                func_8002CA8C((u8 *)self, func_8002CD58(scr), deep_on);
+                func_8002CA8C((u8 *)self, func_8002CD58(scr), temp1 == 0);
                 hit |= *(s32 *)(scr + 0xB4);
                 deep |= *(s32 *)(scr + 0xC4);
                 if (alt != 0) {
