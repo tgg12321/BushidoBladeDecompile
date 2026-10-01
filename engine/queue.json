@@ -4,17 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80074E08",
-      "file": "text1b_tu2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL: reused table (4 writes) fails Ruling 5 ext. prong C; every plain spelling 12/281, no Q51 citation; owner Q37 fallback, revert 5f8e7c52b; memory/grind/func_80074E08/evidence.md",
-      "addr": "80074E08"
-    },
-    {
       "func": "func_800759D0",
       "file": "text1b_tu2",
       "distance": 0,
@@ -291,14 +280,14 @@
     }
   ],
   "counts": {
-    "total": 23,
-    "active": 11,
+    "total": 22,
+    "active": 10,
     "by_status": {
-      "active": 11,
+      "active": 10,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 11
+      "C": 10
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
