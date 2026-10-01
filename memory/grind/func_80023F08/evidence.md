@@ -57,3 +57,44 @@
     u32 OR keeps li 1 / sllv / and.
   * Store-order (sched2) fixes: 0x23 arm B8,D8,1F8; 0x28 arm 104x,104z,72,74; D8 += 104 in x,y,z; 168 x,y,z;
     `+= 1` (not ++) on unk_288; 15E/160/162 written per if/else arm (cross-jumped).
+
+## [s3] 2026-10-01 laneC — landing body (header data model, policy pass)
+- Landing body: memory/grind/func_80023F08/candidate.c (== tmp body5.c; needs the header/consumer edits of
+  s3/hdr_edit.py + s3/tu_edit.py). Built with those edits (s3/xbuild.py over every TU that includes
+  code6cac.h): func_80023F08 0/2983; every other function in every such TU byte-identical, except
+  func_80020D70 (score 0; relocation addend only: D_800A388C -> D_800A3888+4).
+- Data model (include/code6cac.h): MotionFrame (0x84, 16-bit channels), MoveScript (u16 ids, u8 frame bounds /
+  flags at +7..+9, command list at +0xA), PracticeMenuRec gains PadState unk_24 (replaces unk_22[]/unk_2C/
+  unk_30/unk_34[]; code6cac_b.c func_80026DA4's 7 reads become unk_24.held/.pressed), unk_42/44/46, unk_4A/4C,
+  MoveScript *unk_50 (text1b.c: 2 reads each in func_80055B60 / func_80058580 become unk_50->unk_08),
+  u16 *unk_54, unk_62..unk_68, unk_70, unk_74/78/7A, MoveScript *unk_7C, unk_80/82, unk_94, SVec4i16 unk_98,
+  unk_A5..AC, unk_B3/B4, unk_154, unk_1DA, LeafPos unk_25C, u16 unk_288[2], MotionFrame unk_290, unk_314..31C,
+  Vec3i32 unk_320; ScrPad + SPAD move from code6cac_b_tu2.c to the header; D_8008DA50/94/D8 become s16[];
+  D_800A36D8 MoveScript *; D_800A3888 MotionFrame *[2] (func_80020D70 respelled; D_800A388C extern retired);
+  func_80023F08(s32, PadState *) and its three callers drop `(s32)&buf` / `(s32)&sp10`.
+- Every member width agrees with the original accesses (lhu on s16 members only where the body casts
+  (u16) for a range test or does a read-modify-write / plain copy).
+- Locals (the scaffold's d/a/b/state/t were split or renamed and each split measured):
+  * temp: four values (unk_14C limit, folded angle gap, turn step, stick side) — Ruling 11 package below.
+  * face (if/else, one value) and face90 = face + 0x400 (once-written, 4 reads): splitting them out of the
+    scaffold's shared temp is byte-identical (r11/split_face measured 0), so they are not in temp.
+  * frac, twist, perp: once-written, read 3/2/2 times. state x2: block-scoped once-written named
+    intermediates, FAKE family 6 (fake/ below). table x4: block-scoped u16 * holding func_80021424's
+    dispatch record (types the void * result; the cast spelling is byte-identical).
+  * r (old heading) removed: `twist = -ratan2(old) + ratan2(new)` evaluates the old heading first, 0.
+  * 0x62 |= 8 block: the 0x10/0x20 parts are written once after `else goto skip_62` (no duplication; 0).
+- Ruling 11 (temp), record in r11/: one-variable-per-value split_all 25 (2982 insns); per-value ablations
+  lim 6, gap 7, turn 3, side 25; all 14 non-trivial set partitions of {lim,gap,turn,side} nonzero
+  (r11/partitions.txt: 3..25); structural respelling split_block (each value block-scoped) 25; permuter
+  campaign from split_all (r11/permuter_harvest.txt: 3032 iterations, every find borrows another local or changes the arithmetic, none 0). Mechanism (r11/d_proof.txt, instrumented cc1
+  BB2_FINDREG_DEBUG / BB2_ALLOC_DEBUG on the same tu.i): global.c find_reg's pass loop (global.c:1052)
+  takes the first allowed hard reg outside the allocno's conflicts. Shared, temp is one allocno with the
+  union conflict set {2,3,4} -> $a1 for all four values, as the target. Split: lim conflicts {2} with
+  own_full_prefs {3} -> $v1; gap {2,3} -> $a0; side {2,3,4,5} -> $a2; turn is block-local and goes to
+  local-alloc.c block_alloc -> $a0.
+- FAKE named intermediates (fake/): site 1 `state` before the 0x86 = 0x84 test: direct reads score 3 (+2
+  insns): jump.c thread_jumps redirects the 0x23 test's unk_7A == 0 branch past this test and the 6A load
+  follows the branch (fake/site1_final_s.txt; target lhu 0x6A at 0x80024C10 before beqz 0x80024C14);
+  u16 state 1. Site 2 `state` before the 8/0x22 test: direct reads score 11: the second test compares
+  against the first test's constant pseudos in .cse (fake/site2_cse.txt); target li 8 / li 0x22 at
+  0x80025780 / 0x80025788.

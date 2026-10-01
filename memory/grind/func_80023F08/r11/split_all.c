@@ -45,7 +45,10 @@ void func_80023F08(s32 arg0, PadState *pad) {
      * stick side. One local, not four:
      * ordinary-c-judge-decidable.md Ruling 11; (D) record in
      * memory/grind/func_80023F08/r11/ (evidence.md [s3]). */
-    s32 temp;
+    s32 lim;
+    s32 gap;
+    s32 turn;
+    s32 side;
     s32 face;
     s32 face90;
     s32 blend;
@@ -243,11 +246,11 @@ void func_80023F08(s32 arg0, PadState *pad) {
         if (rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 || rec->unk_6A == 0x26 || rec->unk_6A == 0x24) {
             func_8001F860((s16 *)rec, rec->unk_1D8);
             if (rec->unk_6A == 2 || rec->unk_6A == 0x24) {
-                temp = (rec->unk_58[2] >> 4) * 0x88;
-                if (rec->unk_14C > temp) {
-                    rec->unk_14C = temp;
-                } else if (rec->unk_14C < -temp) {
-                    rec->unk_14C = -temp;
+                lim = (rec->unk_58[2] >> 4) * 0x88;
+                if (rec->unk_14C > lim) {
+                    rec->unk_14C = lim;
+                } else if (rec->unk_14C < -lim) {
+                    rec->unk_14C = -lim;
                 }
             }
         }
@@ -269,13 +272,13 @@ void func_80023F08(s32 arg0, PadState *pad) {
         s32 dv[3];
         s32 tgt[3];
 
-        temp = (rec->unk_1D8 - rec->unk_1C8.vy) & 0xFFF;
-        if (temp >= 0x800) {
-            temp = 0x1000 - temp;
+        gap = (rec->unk_1D8 - rec->unk_1C8.vy) & 0xFFF;
+        if (gap >= 0x800) {
+            gap = 0x1000 - gap;
         }
-        tgt[0] = rec->unk_00->unk_18C.x - ((Judge[rec->unk_1D8 & 0xFFF] * temp) >> 14);
+        tgt[0] = rec->unk_00->unk_18C.x - ((Judge[rec->unk_1D8 & 0xFFF] * gap) >> 14);
         tgt[1] = rec->unk_00->unk_18C.y;
-        tgt[2] = rec->unk_00->unk_18C.z - ((Judge[(rec->unk_1D8 + 0x400) & 0xFFF] * temp) >> 14);
+        tgt[2] = rec->unk_00->unk_18C.z - ((Judge[(rec->unk_1D8 + 0x400) & 0xFFF] * gap) >> 14);
         rec->unk_104.vy -= 0xFA;
         func_800200DC((s32 *)&rec->unk_180, tgt, rec->unk_104.vy, 0x1F, dv);
         rec->unk_104.vx += dv[0];
@@ -306,9 +309,9 @@ void func_80023F08(s32 arg0, PadState *pad) {
             rec->unk_86 = rec->unk_84;
         }
     }
-    temp = (rec->unk_14C * rec->unk_44) / 24576;
-    rec->unk_1C8.vy += temp;
-    rec->unk_14C -= temp;
+    turn = (rec->unk_14C * rec->unk_44) / 24576;
+    rec->unk_1C8.vy += turn;
+    rec->unk_14C -= turn;
     if (rec->unk_7A != 0) {
         if (rec->unk_78 != 0) {
             func_80023D08((s32)rec);
@@ -456,7 +459,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     {
         /* FAKE: named intermediate (no-new-park-categories.md family 6): with
          * `state`, cse.c keeps this test's own li 8 / li 0x22 (the target
-         * re-materialises them at 0x80025780 / 0x80025788); with direct rec->unk_6A
+         * re-materialises them at 0x80025784..8C); with direct rec->unk_6A
          * reads cse substitutes the previous test's constant pseudos (score 11).
          * .cse of both: memory/grind/func_80023F08/fake/ */
         s32 state = rec->unk_6A;
@@ -484,12 +487,12 @@ void func_80023F08(s32 arg0, PadState *pad) {
     rec->unk_D8.y += rec->unk_104.vy;
     rec->unk_D8.z += rec->unk_104.vz;
     if ((rec->unk_6A == 7 || rec->unk_6A == 0xD) && rec->unk_B4 == 0) {
-        temp = (rec->unk_24.held & 0x1000) ? 1 : -((rec->unk_24.held & 0x4000) != 0);
-        if (temp != 0) {
+        side = (rec->unk_24.held & 0x1000) ? 1 : -((rec->unk_24.held & 0x4000) != 0);
+        if (side != 0) {
             rec->unk_134.vx /= 2;
             rec->unk_134.vz /= 2;
-            rec->unk_134.vx += (Judge[rec->unk_1D8 & 0xFFF] - Judge[(rec->unk_1D8 + 0x400) & 0xFFF] * temp * 3) / 128;
-            rec->unk_134.vz += (Judge[(rec->unk_1D8 + 0x400) & 0xFFF] + Judge[rec->unk_1D8 & 0xFFF] * temp * 3) / 128;
+            rec->unk_134.vx += (Judge[rec->unk_1D8 & 0xFFF] - Judge[(rec->unk_1D8 + 0x400) & 0xFFF] * side * 3) / 128;
+            rec->unk_134.vz += (Judge[(rec->unk_1D8 + 0x400) & 0xFFF] + Judge[rec->unk_1D8 & 0xFFF] * side * 3) / 128;
         }
     }
     rec->unk_134.vx = (rec->unk_134.vx * rec->unk_15E) >> 12;

@@ -1,0 +1,17 @@
+14
+part_gap-turn__lim-side: 10
+part_gap__lim-turn-side: 7
+part_gap__lim-turn__side: 25
+part_gap__turn__lim-side: 10
+part_lim-gap-turn__side: 25
+part_lim-gap__turn-side: 25
+part_lim-gap__turn__side: 25
+part_lim-turn__gap-side: 25
+part_lim__gap-turn-side: 6
+part_lim__gap-turn__side: 25
+part_lim__gap__turn-side: 25
+part_lim__gap__turn__side: 25
+part_lim__turn__gap-side: 25
+part_turn__lim-gap-side: 3
+
+[exited with code 0]

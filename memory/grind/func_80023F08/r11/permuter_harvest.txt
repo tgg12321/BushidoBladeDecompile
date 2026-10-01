@@ -1,0 +1,55 @@
+# permuter campaign from r11/split_all.c (tools/permuter_campaign.py, -j 2, --stack-diffs), label r11-split
+# workspace tmp/perm_23f08: mini TU (code6cac_tu2.c head + callee prototypes + body; s3/permws.py); its func_80023F08 asm equals the full-TU build (labels aside); engine score of the mini build: reuse body 0, split 25.
+# run 'r11-split': 2026-10-01T21:19:55Z, ~840 s, 3032 iterations, permuter base 670, finds 175/475/500/570/575, none 0.
+# Every find reuses another local for a second value (motion, lim) / adds an inline helper or a void* temp / changes the arithmetic; none is a one-variable-per-value spelling.
+
+== tmp/perm_23f08/output-175-1
+-        if (rec->unk_14C > lim)
+-        {
+-          rec->unk_14C = lim;
++        motion = lim;
++        if (rec->unk_14C > motion)
++        {
++          rec->unk_14C = motion;
+
+== tmp/perm_23f08/output-475-1
++inline int inline_fn(PracticeMenuRec *arg0)
++{
++  return arg0->unk_46 == 0;
++}
++
+-        if (rec->unk_14C > lim)
+-        {
+-          rec->unk_14C = lim;
++        motion = lim;
++        if (rec->unk_14C > motion)
++        {
++          rec->unk_14C = motion;
+
+== tmp/perm_23f08/output-500-1
++  void *new_var;
+-        switch (cmd & 0x30)
++        lim = cmd;
++        switch (lim & 0x30)
+-        if (cmd & 0x2000)
++        if (lim & 0x2000)
+-        if ((cmd & 0xF) == 9)
++        if ((lim & 0xF) == 9)
+-    table = func_80021424((u8 *) rec, rec->unk_50->unk_00, (u8 *) (&rec->unk_5E));
++    table = (new_var = func_80021424((u8 *) rec, rec->unk_50->unk_00, (u8 *) (&rec->unk_5E)));
+
+== tmp/perm_23f08/output-570-1
++        }
++        else
++          if (rec->unk_14C < (-lim))
++        {
+-        }
+-        else
+-          if (rec->unk_14C < (-lim))
+-        {
+
+== tmp/perm_23f08/output-575-1
+-        if (rec->unk_14C > lim)
++        if ((rec->unk_14C - 1) >= lim)
+-      rec->unk_134.vz -= rec->unk_98.vz / 256;
++      rec->unk_134.vz = rec->unk_134.vz - (rec->unk_98.vz / 256);
