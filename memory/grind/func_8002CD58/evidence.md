@@ -139,3 +139,19 @@ Carry-forward for the next worker:
 - The only open question is `dist`. Shared, it scores 0: the ratan2-argument $a1 preference seats the
   site-1 value in $a1. Split per site it scores 3 (site 1 in $v0). Next routes: a SOTN citation where one
   variable feeds a guard and then a call argument, or the Ruling 11 (D) package.
+
+## 2026-10-01 laneB — Ruling 11 package (r11/proof.md)
+- Re-baselined on main: ff-b final.c with `g_sqrt_table_u8[i]` scores 0; its full split 9.
+- Per-value ablations of the 3-value `dist` (r11/variants_extra/a3_*): only value 1 (|n|, the
+  guard) needs company. Sharing it with either ratan2 argument scores 0 (a3_abl_v2 / a3_abl_v3);
+  splitting it alone scores 3. Landing shape: `len` = {|n|, |a.xz|}, declared in the n-small
+  block; the fallback root is its own `nxz_len`.
+- `nxz_sq` (squared length, then table byte; staged-value FAKE before) becomes `temp` under
+  Ruling 11 too, since staged-value is not a listed admission for multi-write locals.
+- Mechanisms named from dumps (r11/dumps_table.txt): `len` gets $a1 only as the pseudo copied
+  into $a1 for ratan2 (set_preference copy pref 5, find_reg copy pass); `temp` gets $a0 only as
+  the first operand of the `<< 16` whose result local-alloc puts in $a0.
+- No reuse-free spelling reaches 0: 19 landing-chassis spellings (r11/variants/, 3 / 6 / 9), an
+  inline sqrt helper (21 / 24), the ff-b and 2026-09-25 sets. Permuter: r11/proof.md (D)(4).
+- Doc comment: the islands' header citation now names github.com/Xeeynamo/croc@f30ff1ee (the
+  old text cited gitignored tmp/croc-ref/).

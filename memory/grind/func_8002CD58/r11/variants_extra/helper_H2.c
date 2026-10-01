@@ -1,58 +1,45 @@
-/* Orients a triangle's local frame. The three vertex pointers at obj+0x60/
- * 0x64/0x68 give edge vectors a = v1 - v0 (obj+0xA8) and b = v2 - v0
- * (obj+0xB8); the GTE outer product n = a x b lands in obj+0xC8. If every
- * component of n is within +-0x3FFF and |n| (GTE SQR, then the g_sqrt_table_u8
- * byte-LUT integer sqrt with the GTE leading-zero count for large inputs) is
- * below 0x4000, the yaw (obj+0xFA) and pitch (obj+0xF8) are taken from a;
- * otherwise n is scaled down by 64 in place and the angles are taken from n.
- * Either way a rotation matrix is built at obj+0xD8 (identity, RotMatrixY by
- * the yaw, RotMatrixX by the pitch), loaded into the GTE, and a and b are
- * rotated in place. Returns 0 on the first path, 1 on the second. Each tail
- * is func_8002E838's sequence (this file), applied to b as well as a.
- *
- * GTE ISLANDS: census member of the 2026-08-17 owner cluster ruling
- * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:72); owner-instructed
- * registry row cd61ed9f6 / 83883c4c0. 26 islands, each nothing but PsyQ GTE
- * macro text as spelled in inline_o.h, the "DMPSX version 3" header
- * (github.com/Xeeynamo/croc@f30ff1ee6721a172e270adcecab72b5b8a5e9bb1
- * include/psyq/inline_o.h, sha256 27a4abd6...; composites from gtemac.h,
- * "Run-time Library Release 3.7", same commit): gte_OuterProduct0
- * (gtemac.h:190-196) = gte_ldopv1 (inline_o.h:595) / gte_ldopv2 (:626) /
- * gte_op0 (:1866) / gte_stlvnl (:2422); gte_sqr0 (:1749) + gte_stlvnl;
- * gte_Lzc (gtemac.h:230-236) = gte_ldlzc (:645) / 2x gte_nop (:3068) /
- * gte_stlzc (:2999), three times; gte_SetRotMatrix (:860), gte_ldlv0 (:277),
- * gte_rtv0 (:1353), gte_stlvnl. No island carries GPR text outside its
- * macro: every operand is left to cc1 through %0 (the target's
- * `addu $t4,<reg>,$zero` is the macros' `move $12,%0`, and the
- * `addiu $v0,$sp,N` before each gte_stlzc is cc1 materializing &sp_tmpN).
- * Island boundaries and clobbers follow this file's authorized spellings
- * (operand expressions aside): gte_ldopv1 / gte_ldopv2 / gte_op0 as in
- * func_8002FDB0; gte_stlvnl, gte_SetRotMatrix, gte_ldlv0, gte_rtv0 as in
- * func_8002E838. The ldopv2, ldlv0 and ldlzc islands carry the two nops of
- * the macro that follows (gte_op0 / gte_rtv0 / the gte_Lzc pair of
- * gte_nop), so the op0 and rtv0 islands are just their command words.
- * gte_sqr0 and the gte_ldlzc / gte_stlzc islands have no in-file precedent
- * in this form. Each `.word` carries the real cop2 command (the target's own
- * bytes) in place of the header's DMPSX placeholder: op0 0x0000127f ->
- * 0x4B70000C, sqr0 0x00000f3f -> 0x4AA00428, rtv0 0x0000013f -> 0x4A486012.
- * Everything else is ordinary C; `len` and `temp` each hold two values
- * under Ruling 11 (annotated at their declarations). */
+static inline s32 isqrt(s32 x) {
+    s32 slot;
+    s32 lzcr;
+    s32 shift;
+    if ((u32)x < 0x400) {
+        return (u32)g_sqrt_table_u8[x] >> 3;
+    }
+    lzcr = 0;
+    if (x >= 0) {
+        __asm__ volatile(
+            "move   $12, %0
+"
+            "mtc2   $12, $30
+"
+            "nop
+"
+            "nop
+"
+            :: "r"(x) : "$12");
+        __asm__ volatile(
+            "move   $12, %0
+"
+            "swc2   $31, 0($12)
+"
+            :: "r"(&slot) : "$12", "memory");
+        lzcr = slot;
+    }
+    shift = 0x16 - (lzcr & ~1);
+    x = g_sqrt_table_u8[(u32)x >> shift];
+    return (u32)(x << 16) >> (0x13 - ((u32)shift >> 1));
+}
 s32 func_8002CD58(u8 *obj) {
-    s32 sp_tmp;
-    s32 sp_tmp2;
-    s32 sp_tmp3;
     s32 len_sq;
     s32 xz_sq;
-    /* temp holds two values (Ruling 11, owner 2026-09-26; proof:
-     * memory/grind/func_8002CD58/r11/proof.md): n.x*n.x + n.z*n.z of the
-     * scaled n (the squared length fed to the table lookup and the
-     * leading-zero count) and then the square-root table byte. */
-    s32 temp;
+    s32 nxz_sq;
     s32 yaw;
     s32 pitch;
     s32 nyaw;
     s32 npitch;
-    s32 nxz_len;
+    s32 dist;
+    s32 xz_dist;
+    s32 nxz_dist;
 
     *(s32 *)(obj + 0xA8) = (*(s32 **)(obj + 0x64))[0] - (*(s32 **)(obj + 0x60))[0];
     *(s32 *)(obj + 0xAC) = (*(s32 **)(obj + 0x64))[1] - (*(s32 **)(obj + 0x60))[1];
@@ -95,11 +82,6 @@ s32 func_8002CD58(u8 *obj) {
     if ((u32)(*(s32 *)(obj + 0xC8) + 0x3FFF) < 0x7FFF
         && (u32)(*(s32 *)(obj + 0xCC) + 0x3FFF) < 0x7FFF
         && (u32)(*(s32 *)(obj + 0xD0) + 0x3FFF) < 0x7FFF) {
-        /* len holds two values (Ruling 11, owner 2026-09-26; proof:
-         * memory/grind/func_8002CD58/r11/proof.md): |n|, the square root of
-         * len_sq read by the `< 0x4000` guard, and then |a.xz|, the square
-         * root of xz_sq passed to ratan2 for the pitch. */
-        s32 len;
         /* gte_sqr0() -- inline_o.h:1749: square IR1-IR3 (still n). */
         __asm__ volatile(
             "nop\n"
@@ -113,63 +95,14 @@ s32 func_8002CD58(u8 *obj) {
             "swc2   $27, 8($12)\n"
             :: "r"(obj + 0x100) : "$12", "memory");
         len_sq = *(s32 *)(obj + 0x100) + *(s32 *)(obj + 0x104) + *(s32 *)(obj + 0x108);
-        if ((u32)len_sq < 0x400) {
-            len = (u32)g_sqrt_table_u8[len_sq] >> 3;
-        } else {
-            s32 lzcr = 0;
-            if (len_sq >= 0) {
-                /* gte_Lzc(len_sq, &sp_tmp) -- gtemac.h:230-236: gte_ldlzc
-                 * (inline_o.h:645) + the two gte_nop (:3068), then gte_stlzc
-                 * (:2999) into the LZCR slot (sp+0x10 in the target). */
-                __asm__ volatile(
-                    "move   $12, %0\n"
-                    "mtc2   $12, $30\n"
-                    "nop\n"
-                    "nop\n"
-                    :: "r"(len_sq) : "$12");
-                __asm__ volatile(
-                    "move   $12, %0\n"
-                    "swc2   $31, 0($12)\n"
-                    :: "r"(&sp_tmp) : "$12", "memory");
-                lzcr = sp_tmp;
-            }
-            {
-                s32 shift = 0x16 - (lzcr & ~1);
-                s32 tbl = g_sqrt_table_u8[(u32)len_sq >> shift];
-                len = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
-            }
-        }
-        if ((u32)len < 0x4000) {
+        dist = isqrt(len_sq);
+        if ((u32)dist < 0x4000) {
             yaw = ratan2(*(s32 *)(obj + 0xA8), *(s32 *)(obj + 0xB0));
             xz_sq = *(s32 *)(obj + 0xA8) * *(s32 *)(obj + 0xA8)
                   + *(s32 *)(obj + 0xB0) * *(s32 *)(obj + 0xB0);
             *(s16 *)(obj + 0xFA) = 0x800 - yaw;
-            if ((u32)xz_sq < 0x400) {
-                len = (u32)g_sqrt_table_u8[xz_sq] >> 3;
-            } else {
-                s32 lzcr = 0;
-                if (xz_sq >= 0) {
-                    /* gte_Lzc(xz_sq, &sp_tmp2) -- gte_ldlzc (inline_o.h:645) +
-                     * 2x gte_nop (:3068), gte_stlzc (:2999); slot sp+0x14. */
-                    __asm__ volatile(
-                        "move   $12, %0\n"
-                        "mtc2   $12, $30\n"
-                        "nop\n"
-                        "nop\n"
-                        :: "r"(xz_sq) : "$12");
-                    __asm__ volatile(
-                        "move   $12, %0\n"
-                        "swc2   $31, 0($12)\n"
-                        :: "r"(&sp_tmp2) : "$12", "memory");
-                    lzcr = sp_tmp2;
-                }
-                {
-                    s32 shift = 0x16 - (lzcr & ~1);
-                    s32 tbl = g_sqrt_table_u8[(u32)xz_sq >> shift];
-                    len = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
-                }
-            }
-            pitch = ratan2(*(s32 *)(obj + 0xAC), len);
+            xz_dist = isqrt(xz_sq);
+            pitch = ratan2(*(s32 *)(obj + 0xAC), xz_dist);
             *(s16 *)(obj + 0xF8) = 0x800 - pitch;
             *(s16 *)(obj + 0xD8) = 0x1000;
             *(s16 *)(obj + 0xDA) = 0;
@@ -248,35 +181,11 @@ s32 func_8002CD58(u8 *obj) {
     *(s32 *)(obj + 0xC8) >>= 6;
     *(s32 *)(obj + 0xCC) >>= 6;
     *(s32 *)(obj + 0xD0) >>= 6;
-    temp = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8)
+    nxz_sq = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8)
            + *(s32 *)(obj + 0xD0) * *(s32 *)(obj + 0xD0);
     *(s16 *)(obj + 0xFA) = 0x800 - nyaw;
-    if ((u32)temp < 0x400) {
-        nxz_len = (u32)g_sqrt_table_u8[temp] >> 3;
-    } else {
-        s32 lzcr = 0;
-        if (temp >= 0) {
-            /* gte_Lzc(temp, &sp_tmp3) -- gte_ldlzc (inline_o.h:645) +
-             * 2x gte_nop (:3068), gte_stlzc (:2999); slot sp+0x18. */
-            __asm__ volatile(
-                "move   $12, %0\n"
-                "mtc2   $12, $30\n"
-                "nop\n"
-                "nop\n"
-                :: "r"(temp) : "$12");
-            __asm__ volatile(
-                "move   $12, %0\n"
-                "swc2   $31, 0($12)\n"
-                :: "r"(&sp_tmp3) : "$12", "memory");
-            lzcr = sp_tmp3;
-        }
-        {
-            s32 shift = 0x16 - (lzcr & ~1);
-            temp = g_sqrt_table_u8[(u32)temp >> shift];
-            nxz_len = (u32)(temp << 16) >> (0x13 - ((u32)shift >> 1));
-        }
-    }
-    npitch = ratan2(*(s32 *)(obj + 0xCC), nxz_len);
+    nxz_dist = isqrt(nxz_sq);
+    npitch = ratan2(*(s32 *)(obj + 0xCC), nxz_dist);
     *(s16 *)(obj + 0xF8) = 0x800 - npitch;
     *(s16 *)(obj + 0xD8) = 0x1000;
     *(s16 *)(obj + 0xDA) = 0;

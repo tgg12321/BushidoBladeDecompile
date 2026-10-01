@@ -67,3 +67,8 @@ spellings (h1/h2). None moves the site-3 register without the reuse.
   7. Before landing: `auth:` commit restoring the inline_asm_canonical.txt / owner_cluster_grants.txt rows and `tools/canonical_asm_regions.json` hashes, citing the standing approval.
 - DEPENDS: func_8002AB08 calls this; prototype must agree (`s32 func_8002CD58(u8 *obj)`).
 - ODDS/LANE: 1-2 sessions (mostly the proof package), ~70% [I]. Manual only (Ruling 11).
+
+## 2026-10-01 laneB
+Plan steps 1-5 done: candidate.c = Ruling 11 body (`len` 2 values in the n-small block, `temp`
+2 values), sandbox 0; package in r11/proof.md. Step 6 (e_plate_lord Q51 lead) not needed.
+Step 7 (auth rows) goes with the landing.

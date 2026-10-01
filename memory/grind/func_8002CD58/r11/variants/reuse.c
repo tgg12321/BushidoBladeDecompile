@@ -1,52 +1,9 @@
-/* Orients a triangle's local frame. The three vertex pointers at obj+0x60/
- * 0x64/0x68 give edge vectors a = v1 - v0 (obj+0xA8) and b = v2 - v0
- * (obj+0xB8); the GTE outer product n = a x b lands in obj+0xC8. If every
- * component of n is within +-0x3FFF and |n| (GTE SQR, then the g_sqrt_table_u8
- * byte-LUT integer sqrt with the GTE leading-zero count for large inputs) is
- * below 0x4000, the yaw (obj+0xFA) and pitch (obj+0xF8) are taken from a;
- * otherwise n is scaled down by 64 in place and the angles are taken from n.
- * Either way a rotation matrix is built at obj+0xD8 (identity, RotMatrixY by
- * the yaw, RotMatrixX by the pitch), loaded into the GTE, and a and b are
- * rotated in place. Returns 0 on the first path, 1 on the second. Each tail
- * is func_8002E838's sequence (this file), applied to b as well as a.
- *
- * GTE ISLANDS: census member of the 2026-08-17 owner cluster ruling
- * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:72); owner-instructed
- * registry row cd61ed9f6 / 83883c4c0. 26 islands, each nothing but PsyQ GTE
- * macro text as spelled in inline_o.h, the "DMPSX version 3" header
- * (github.com/Xeeynamo/croc@f30ff1ee6721a172e270adcecab72b5b8a5e9bb1
- * include/psyq/inline_o.h, sha256 27a4abd6...; composites from gtemac.h,
- * "Run-time Library Release 3.7", same commit): gte_OuterProduct0
- * (gtemac.h:190-196) = gte_ldopv1 (inline_o.h:595) / gte_ldopv2 (:626) /
- * gte_op0 (:1866) / gte_stlvnl (:2422); gte_sqr0 (:1749) + gte_stlvnl;
- * gte_Lzc (gtemac.h:230-236) = gte_ldlzc (:645) / 2x gte_nop (:3068) /
- * gte_stlzc (:2999), three times; gte_SetRotMatrix (:860), gte_ldlv0 (:277),
- * gte_rtv0 (:1353), gte_stlvnl. No island carries GPR text outside its
- * macro: every operand is left to cc1 through %0 (the target's
- * `addu $t4,<reg>,$zero` is the macros' `move $12,%0`, and the
- * `addiu $v0,$sp,N` before each gte_stlzc is cc1 materializing &sp_tmpN).
- * Island boundaries and clobbers follow this file's authorized spellings
- * (operand expressions aside): gte_ldopv1 / gte_ldopv2 / gte_op0 as in
- * func_8002FDB0; gte_stlvnl, gte_SetRotMatrix, gte_ldlv0, gte_rtv0 as in
- * func_8002E838. The ldopv2, ldlv0 and ldlzc islands carry the two nops of
- * the macro that follows (gte_op0 / gte_rtv0 / the gte_Lzc pair of
- * gte_nop), so the op0 and rtv0 islands are just their command words.
- * gte_sqr0 and the gte_ldlzc / gte_stlzc islands have no in-file precedent
- * in this form. Each `.word` carries the real cop2 command (the target's own
- * bytes) in place of the header's DMPSX placeholder: op0 0x0000127f ->
- * 0x4B70000C, sqr0 0x00000f3f -> 0x4AA00428, rtv0 0x0000013f -> 0x4A486012.
- * Everything else is ordinary C; `len` and `temp` each hold two values
- * under Ruling 11 (annotated at their declarations). */
 s32 func_8002CD58(u8 *obj) {
     s32 sp_tmp;
     s32 sp_tmp2;
     s32 sp_tmp3;
     s32 len_sq;
     s32 xz_sq;
-    /* temp holds two values (Ruling 11, owner 2026-09-26; proof:
-     * memory/grind/func_8002CD58/r11/proof.md): n.x*n.x + n.z*n.z of the
-     * scaled n (the squared length fed to the table lookup and the
-     * leading-zero count) and then the square-root table byte. */
     s32 temp;
     s32 yaw;
     s32 pitch;
@@ -95,10 +52,6 @@ s32 func_8002CD58(u8 *obj) {
     if ((u32)(*(s32 *)(obj + 0xC8) + 0x3FFF) < 0x7FFF
         && (u32)(*(s32 *)(obj + 0xCC) + 0x3FFF) < 0x7FFF
         && (u32)(*(s32 *)(obj + 0xD0) + 0x3FFF) < 0x7FFF) {
-        /* len holds two values (Ruling 11, owner 2026-09-26; proof:
-         * memory/grind/func_8002CD58/r11/proof.md): |n|, the square root of
-         * len_sq read by the `< 0x4000` guard, and then |a.xz|, the square
-         * root of xz_sq passed to ratan2 for the pitch. */
         s32 len;
         /* gte_sqr0() -- inline_o.h:1749: square IR1-IR3 (still n). */
         __asm__ volatile(

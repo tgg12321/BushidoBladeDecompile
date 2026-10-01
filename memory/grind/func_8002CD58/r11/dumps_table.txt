@@ -1,0 +1,61 @@
+# func_8002CD58 Ruling 11 dump excerpts (2026-10-01). Produced by r11/tools/dumps_all.sh + r11/tools/r11table.py
+# on r11/variants/{reuse,pv_len,pv_temp,pv_both}.c; cc1 command line:
+# cmd: tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -dl -dg -df tu.i -o tu.s
+# find_reg traces: tools/gcc-2.7.2/cc1 (instrumented, same flags without -d*), BB2_FINDREG_DEBUG=<pseudo>;
+# its .s is identical to build/cc1's except the -d flags echoed in the header comment.
+
+== fd_reuse
+   site-1 |n| (guard): pseudo 126, seat global 5 | Register 126 used 6 times across 9 insns; dies in 2 places; GR_REGS or none. | ;; 126 preferences: 2 5 | find_reg: conflicts: 4 17 29; own_copy_prefs: 5; own_full_prefs: 2 5
+   ratan2 arg2 #1 (|a.xz|): pseudo 126, seat global 5 | Register 126 used 6 times across 9 insns; dies in 2 places; GR_REGS or none. | ;; 126 preferences: 2 5 | find_reg: conflicts: 4 17 29; own_copy_prefs: 5; own_full_prefs: 2 5
+   ratan2 arg2 #2 (|n.xz|): pseudo 83, seat global 5 | Register 83 used 3 times across 5 insns; GR_REGS or none. | ;; 83 preferences: 2 5 | find_reg: -
+   fallback squared length: pseudo 78, seat global 4 | Register 78 used 8 times across 17 insns; dies in 3 places; GR_REGS or none. | ;; 78 preferences: 4 5 | find_reg: conflicts: 2 3 12 17 29; own_copy_prefs:; own_full_prefs: 4 5
+   `<< 16`: (set (reg 147) (ashift (reg/v 143) 16)), 147 seat local-alloc 4
+   `<< 16`: (set (reg 177) (ashift (reg/v 173) 16)), 177 seat local-alloc 4
+   `<< 16`: (set (reg 230) (ashift (reg/v 78) 16)), 230 seat local-alloc 4
+== fd_pv_len
+   site-1 |n| (guard): pseudo 126, seat global 2 | Register 126 used 3 times across 4 insns; GR_REGS or none. | ;; 126 preferences: 2 4 | find_reg: conflicts: 17 29; own_copy_prefs:; own_full_prefs: 2 4
+   ratan2 arg2 #1 (|a.xz|): pseudo 127, seat global 5 | Register 127 used 3 times across 5 insns; GR_REGS or none. | ;; 127 preferences: 2 5 | find_reg: conflicts: 4 17 29; own_copy_prefs: 5; own_full_prefs: 2 5
+   ratan2 arg2 #2 (|n.xz|): pseudo 83, seat global 5 | Register 83 used 3 times across 5 insns; GR_REGS or none. | ;; 83 preferences: 2 5 | find_reg: -
+   fallback squared length: pseudo 78, seat global 4 | Register 78 used 8 times across 17 insns; dies in 3 places; GR_REGS or none. | ;; 78 preferences: 4 5 | find_reg: conflicts: 2 3 12 17 29; own_copy_prefs:; own_full_prefs: 4 5
+   `<< 16`: (set (reg 148) (ashift (reg/v 144) 16)), 148 seat local-alloc 4
+   `<< 16`: (set (reg 178) (ashift (reg/v 174) 16)), 178 seat local-alloc 4
+   `<< 16`: (set (reg 231) (ashift (reg/v 78) 16)), 231 seat local-alloc 4
+== fd_pv_temp
+   site-1 |n| (guard): pseudo 126, seat global 5 | Register 126 used 6 times across 9 insns; dies in 2 places; GR_REGS or none. | ;; 126 preferences: 2 5 | find_reg: conflicts: 4 17 29; own_copy_prefs: 5; own_full_prefs: 2 5
+   ratan2 arg2 #1 (|a.xz|): pseudo 126, seat global 5 | Register 126 used 6 times across 9 insns; dies in 2 places; GR_REGS or none. | ;; 126 preferences: 2 5 | find_reg: conflicts: 4 17 29; own_copy_prefs: 5; own_full_prefs: 2 5
+   ratan2 arg2 #2 (|n.xz|): pseudo 83, seat global 5 | Register 83 used 3 times across 5 insns; GR_REGS or none. | ;; 83 preferences: 2 5 | find_reg: -
+   fallback squared length: pseudo 78, seat global 5 | Register 78 used 6 times across 15 insns; dies in 2 places; GR_REGS or none. | ;; 78 preferences: 5 | find_reg: conflicts: 2 3 12 17 29; own_copy_prefs:; own_full_prefs: 5
+   `<< 16`: (set (reg 147) (ashift (reg/v 143) 16)), 147 seat local-alloc 4
+   `<< 16`: (set (reg 177) (ashift (reg/v 173) 16)), 177 seat local-alloc 4
+   `<< 16`: (set (reg 231) (ashift (reg/v 227) 16)), 231 seat local-alloc 4
+== fd_pv_both
+   site-1 |n| (guard): pseudo 126, seat global 2 | Register 126 used 3 times across 4 insns; GR_REGS or none. | ;; 126 preferences: 2 4 | find_reg: conflicts: 17 29; own_copy_prefs:; own_full_prefs: 2 4
+   ratan2 arg2 #1 (|a.xz|): pseudo 127, seat global 5 | Register 127 used 3 times across 5 insns; GR_REGS or none. | ;; 127 preferences: 2 5 | find_reg: conflicts: 4 17 29; own_copy_prefs: 5; own_full_prefs: 2 5
+   ratan2 arg2 #2 (|n.xz|): pseudo 83, seat global 5 | Register 83 used 3 times across 5 insns; GR_REGS or none. | ;; 83 preferences: 2 5 | find_reg: -
+   fallback squared length: pseudo 78, seat global 5 | Register 78 used 6 times across 15 insns; dies in 2 places; GR_REGS or none. | ;; 78 preferences: 5 | find_reg: conflicts: 2 3 12 17 29; own_copy_prefs:; own_full_prefs: 5
+   `<< 16`: (set (reg 148) (ashift (reg/v 144) 16)), 148 seat local-alloc 4
+   `<< 16`: (set (reg 178) (ashift (reg/v 174) 16)), 178 seat local-alloc 4
+   `<< 16`: (set (reg 232) (ashift (reg/v 228) 16)), 232 seat local-alloc 4
+
+## RTL excerpts (.lreg, func_8002CD58 section)
+-- fd_reuse
+(insn 316 314 318 (set (reg:SI 5 a1)
+        (reg/v:SI 126)) 159 {movsi_internal2} (nil)
+(insn 530 528 531 (set (reg:SI 230)
+        (ashift:SI (reg/v:SI 78)
+            (const_int 16))) 181 {ashlsi3} (insn_list 528 (nil))
+;; Register 230 in 4.
+-- fd_pv_len
+(insn 316 314 318 (set (reg:SI 5 a1)
+        (reg/v:SI 127)) 159 {movsi_internal2} (nil)
+(insn 530 528 531 (set (reg:SI 231)
+        (ashift:SI (reg/v:SI 78)
+            (const_int 16))) 181 {ashlsi3} (insn_list 528 (nil))
+;; Register 231 in 4.
+-- fd_pv_temp
+(insn 316 314 318 (set (reg:SI 5 a1)
+        (reg/v:SI 126)) 159 {movsi_internal2} (nil)
+(insn 530 528 531 (set (reg:SI 231)
+        (ashift:SI (reg/v:SI 227)
+            (const_int 16))) 181 {ashlsi3} (insn_list 528 (nil))
+;; Register 231 in 4.
