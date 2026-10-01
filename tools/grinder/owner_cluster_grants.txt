@@ -62,6 +62,15 @@ func_8002D780 inline-asm-policy.md § Per-function grants: func_8002D780, func_8
 # Operator-added at the owner's instruction 2026-09-22 (conversation, the
 # manual-lane landing of func_8002F2D0); every other gate applies unchanged:
 # func_8002F2D0 row removed 2026-09-30: reopened per owner Q41 (2026-09-30, a67c58486) -- the owner did not approve the 789ce34d7 row; islands identical to the Q38 reopens (func_8002F770/D780/EBDC).
+# 2026-09-30 — census member func_8002F2D0 (cop2-addressing-preamble-cluster.md).
+# Its GTE islands are header-exact PsyQ 4.3 inline_o.h / gtemac.h statements
+# (inline-asm-policy.md § Owner ruling 2026-09-26, inline_o.h class), except
+# gte_rtv0's DMPSX placeholder `.word 0x0000013f`, carried as the post-DMPSX
+# command word `.word 0x4A486012` (one statement; no DMPSX pass in this build).
+# Operator-added at the owner's instruction 2026-09-30 (owner Q61, recorded in
+# 60643418a): this row covers ONLY that word substitution, for this function
+# only; every other gate applies unchanged:
+func_8002F2D0 inline-asm-policy.md § Per-function grants: func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770 (owner Q61 2026-09-30, 60643418a): gte_rtv0 post-DMPSX word 0x4A486012 for placeholder 0x0000013f, 1 statement only; this function only; operator-added 2026-09-30
 # 2026-09-23 — the next census member reached floor 0 in a manual session and
 # earns a row on the same Ruling 3 terms as func_8002F2D0. Operator-added while
 # landing func_8002F770; every other mechanical and review gate still applies:
