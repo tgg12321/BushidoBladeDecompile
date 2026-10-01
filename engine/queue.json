@@ -29,17 +29,6 @@
       "addr": "80058580"
     },
     {
-      "func": "func_8006BD28",
-      "file": "text1b_tu1c",
-      "distance": 48,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "de-authorized from inline_asm_canonical.txt by owner ruling 2026-10-01 (docs/grind/decisions.md 'inline-asm audit'); honest floor 48 measured 2026-10-01 via sandbox --disable all --candidate on the pre-authorization C body",
-      "addr": "8006BD28"
-    },
-    {
       "func": "func_8005C8A8",
       "file": "text1b",
       "distance": 752,
@@ -247,14 +236,14 @@
     }
   ],
   "counts": {
-    "total": 19,
-    "active": 7,
+    "total": 18,
+    "active": 6,
     "by_status": {
-      "active": 7,
+      "active": 6,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 7
+      "C": 6
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
