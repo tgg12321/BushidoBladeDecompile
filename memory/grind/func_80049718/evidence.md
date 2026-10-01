@@ -29,3 +29,18 @@ verbatim (with its file-scope declarations) in rejected/review-2026-09-30.c. Rem
 user in text1b.c): the `_struct_copy_func49718` typedef, `g_anim_func_table`, the false MulMatrix0
 prototype, the ApplyMatrix redeclaration and three redundant externs. Frontier for the next session:
 start from b1 (0, honest types) and find admissible forms for the three devices.
+
+## laneA manual 2026-10-01 — honest body at 0 (manual-2026-10-01/scores.txt)
+The three reopen devices are resolved or reduced to sanctioned families:
+- `new_var3` staging: gone. One block-scoped `ot` per ordering-table append (each one value read twice).
+- `p_anim = vehicle + 0x44` reuse: gone. Its job was allocation priority (BB2_ALLOC_DEBUG: arg3's pseudo,
+  pri 3333, outranked p_anim's, 3000, for $s0 once arg1 was copied into var_s3). With the flags
+  parameter rewritten in place (no copy local) the plain body matches; no reuse, no cast-typed borrow.
+- `{ tbl }` block and the anim pointer: gone. Reading D_800EF980[arg0] at both sites lets cse share one
+  address pseudo whose base is materialized first (r2, found from a permuter campaign); an `anim` pointer
+  needs the tbl alias (4 without it).
+Remaining FAKE-annotated constructs with receipts: `side` and `frame` (named intermediates, entry 6), the
+`val58 = 0` defensive init (dead store; never read, but the target keeps `move s5,zero`).
+Also fixed: real MulMatrix0 prototype, SVECTOR local for ApplyMatrix, MATRIX copy,
+g_anim_func_table as `s32[]` with the call-site cast every other TU uses (sound.c, text1a_post.c),
+honest names. Objects/parts stay byte-offset walks of u8 * as in the sibling func_80049A2C.

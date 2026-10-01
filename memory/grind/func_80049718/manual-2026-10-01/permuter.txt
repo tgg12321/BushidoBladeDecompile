@@ -1,0 +1,15 @@
+decomp-permuter campaigns (tools/permuter_campaign.py, -j 2, --stop-on-zero; workspaces built by mkperm.sh:
+full-TU cpp, other functions stripped, build cc1 + prologue_fix + maspsx + multu_pad + as; permuter scores are
+its own weighted metric, not sandbox distance).
+
+1. clean-noFAKE  base variants/clean.c (anim = &D_800EF980[arg0], side inline)      base 450
+   2026-10-01 08:27-08:31 UTC. Finds 395/350/235/225. 225 (permuter/clean-noFAKE_225.c) drops the anim
+   pointer and reads D_800EF980[arg0] at both sites -> variants/r2.c (sandbox 0 with side + frame + val58).
+2. r2-no-side    base variants/r_side_inline.c (r2 with side inline; sandbox 5)     base 225
+   08:31-08:38 UTC, 4548 iterations: finds 10, 83, 125, 150.
+3. r2-no-side-seed2  same base, fresh seed                                           base 225
+   08:38-08:55 UTC, 10994 iterations: finds 10, 83, 125, 140, 150.
+   Every find of 2 and 3 re-creates the `side` value as a local set before the func_8004153C call:
+   `new_var = flags & 1;` (10/125/150, e.g. permuter/side_10-1.c) or a borrow of val58
+   (`val58 = flags & 1;` 83, `val58 = (flags & 1) * 0x68;` 140 - staged-value borrows, not used).
+   No find without a pre-call local.
