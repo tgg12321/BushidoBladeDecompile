@@ -59,3 +59,10 @@ H2. The target's value that nv2 approximates (a pseudo equal to mode near the fi
 KILLED: running-offset accumulator (a1-a3, 33: flow deletes the dead earlier sets, reg_n_sets 1); sibling-faithful
 return-site `end_off - arg2` (e1, 110); struct constructor (u3, 33); s64 (d1, 88). Union constructor (u2/u4) keeps the
 slot via a clobber (4) but is a no-purpose wrapper. state.json synced. See evidence.md s5, probes/s5/scores.txt.
+
+## s6 (2026-10-01, laneC) — Q77 REFUSED options A/C (30a3e2d2d); floor 33 re-measured; mechanism space closed
+KILLED: no-op self-copy at entry / before the return (n1/n2, 33); `const` local (c1, 33). cc1psx on the literal
+body also rematerializes (frame 176): the original was not a literal. evidence.md s6 proves at pass level that the
+slot needs either a combine-only constant (an identity = cancellation / bit trick, Q45/Q77) or a counted set
+with no store (clobber constructs / no-op copies / REG_UNUSED side outputs, none semantic). OPEN only on a
+ruling change or new evidence of the original construct. Rest of the body: fix1 applies clean, no new consumers.

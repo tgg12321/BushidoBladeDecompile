@@ -1,7 +1,7 @@
 {
  "func": "func_8005C8A8",
  "file": "text1b",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "mechanism",
  "floor_history": [
   {
@@ -15,13 +15,19 @@
    "floor": 33,
    "modality": "mechanism",
    "headline": "re-baselined 33 (candidate.c + fix1 game.h hunk); accumulator / sibling end_off / union-clobber forms measured (probes/s5); closing forms need an owner ruling (borderline.md 2026-10-01)"
+  },
+  {
+   "session": 6,
+   "floor": 33,
+   "modality": "mechanism",
+   "headline": "Q77 refused A/C; re-baselined 33; cc1psx calibration (literal rematerialized by the original compiler too); no-op copy / const measured; pass-level closure of the slot's mechanism space (evidence.md s6)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "OPEN: keep the 0x70 slot for the once-set 0x4F0 without update_equiv_regs rematerializing it, in a form outside the Q45-refused cancellation class",
-   "mechanism": "evidence.md s4/s5: needs a cse-invisible set (only cancellations found) or reg_n_sets>=2 with one store (only a union-constructor clobber found, inadmissible)",
-   "next_probe": "await the owner's answer to docs/grind/borderline.md 2026-10-01 func_8005C8A8; meanwhile any new ordinary form is measured against probes/s5/scores.txt"
+   "hypothesis": "OPEN: keep the 0x70 slot for the once-set 0x4F0 in a form outside the Q45/Q77-refused cancellation class",
+   "mechanism": "evidence.md s6: only combine-only identities (refused) or counted sets without a store (clobber/no-op/REG_UNUSED, no semantic reading) reach it",
+   "next_probe": "none under current rulings; reopen on a ruling change or evidence of the original construct (e.g. a PsyQ/Square macro computing the size)"
   }
  ],
  "judge_constraints": [],

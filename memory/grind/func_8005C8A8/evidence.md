@@ -330,3 +330,46 @@ hides the identity from fold. Not landed; added to the borderline.md 2026-10-01 
 Permuter not run this round: every byte-exact route found needs a cse-invisible constant (above), which a
 permuter mutation of the 33 body cannot introduce except as such a cancellation; two earlier campaigns
 (s2, 9.2k iterations) found nothing below their bases.
+
+## s6 (2026-10-01, laneC) — Q77 refused A/C; re-baseline 33; the slot's mechanism space closed at pass level
+
+Owner Q77 (rules commit 30a3e2d2d, `.claude/rules/ordinary-c-judge-decidable.md` § Owner rulings on constant
+spellings): Q45 stands for the sibling end-pointer form (e2) and the layout-struct end-minus-start form (t2).
+Re-baseline on main eb1c75fca: candidate.c + fix1's game.h hunk (tmp harness = probes/s5 setup.py/sbx.py) = 33
+(2 source-level, 11 operand-only); `git apply --check fix1-merges.patch` clean; no new src/ or include/ consumer of
+any merged symbol (grep of src/, include/, *.txt). Receipts: probes/s6/ (scores.txt, variant files, psx.sh/run.sh).
+
+New this session:
+- cc1psx calibration on the literal body (probes/s6/psx_literal.txt): the ORIGINAL compiler also emits frame 176
+  and `li $2,0x4f0` at the return. So the original source was not a once-set literal either; whatever it wrote
+  kept 0x4F0 out of cse. No fidelity lead (rotation Ruling 2 check done by hand).
+- No-op self-copy (`size = size;` after the set, n1, or before the return, n2): 33 both. The copy is gone before
+  flow counts sets, so reg_n_sets stays 1 (and it would be a refused no-op copy anyway).
+- `const s32 size = 0x4F0;` (c1): 33 (decl_constant_value folds the read to the literal at tree level).
+
+Why no admissible spelling exists (tools/gcc-2.7.2, read this session; extends s4/s5b):
+1. The slot needs a size pseudo with no REG_EQUIV constant: reload1.c:563-586 (equivalence scan) and 2381-2385
+   (alter_reg allocates a slot only without one). update_equiv_regs promotes any REG_EQUAL constant when
+   reg_n_sets == 1 (local-alloc.c:1019-1032, no other condition).
+2. cse.c:6918-6934 writes REG_EQUAL on every single-SET insn into a REG whose source cse evaluates to a constant,
+   and the literal itself is such a source. cse2 runs after loop, so every set whose RTL source IS 0x4F0 before
+   flow carries the note. The target's `li 0x4F0` must therefore be created by COMBINE (the only later pass
+   that rewrites set sources; flow and local-alloc do not), and combine only gets it by algebraic
+   simplification of non-constant operands that are all set in the entry block, where cse already knows every
+   constant. Such an expression is an identity equal to 0x4F0 for every input: a cancellation (`a + K - a`,
+   Q45/Q77) or a bit/zero trick (`x & 0`, `x ^ x`, `(ior x K)` with nonzero_bits(x) inside K,
+   combine.c simplify_logical). Q45's reasoning ("a fancy way of writing 0x4F0 ... only to hide the constant")
+   covers every member.
+3. The other route is reg_n_sets >= 2 with one emitted store. Sets that reach flow but emit no store after
+   reload are: a dead set (flow deletes it before counting, flow.c:1490), a set combine merges away (combine.c
+   2305-2312 decrements reg_n_sets), a no-op copy (removed before flow, n1/n2), a CLOBBER (counted; emits
+   nothing) and a REG_UNUSED side output of a multi-SET insn. CLOBBERs of a user pseudo come only from
+   union/struct constructors, multi-word moves and BLKmode returns (u2/u4 union 4, s64 88, u3 struct 33);
+   multi-SET insns here would need a div/mod pair (the target has none). None has a semantic reading for a
+   byte count. A real second write would emit a second store (the target has exactly one,
+   asm/funcs/func_8005C8A8.s:28) unless jump2 cross-jumps it into the first, which needs a join before the
+   entry store (there is none: the first branch is at 0x8005C948).
+So, under Q45/Q77 and the no-no-op / no-purpose-wrapper rules, no spelling of this function keeps the 0x70
+slot; the admissible floor is 33 and it is a true floor for the current rulings, not an unexplored gap.
+The item stays INCLUDE_ASM/active (no rotation). Re-open trigger: a ruling change, or new evidence that the
+original wrote a different construct (e.g. a PsyQ/Square header macro computing the size).
