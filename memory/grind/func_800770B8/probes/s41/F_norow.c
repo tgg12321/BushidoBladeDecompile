@@ -42,20 +42,14 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     t0 = 0;
     do {
         SelWork *base = SELWORK;
-        /* FAKE: typed row pointer to D_800A35D0 (pointer-alias-fake-exception, the
-           `s16 (*p)[] = &D_xxx` re-view), kept so the same-value re-set below has a pseudo to re-set
-           (loop.c keeps its lui/addiu inside the outer loop). Measured without it:
-           memory/grind/func_800770B8/evidence.md (s41). */
-        s16 (*row)[2];
         a2 = 0;
         base->f10.half[t0] = 0;
         base->f08[t0] = 0;
         base->f0C[t0] = 0;
         base->f14.half[t0] = 0;
         base->f3C[t0] = 0;
-        row = D_800A35D0;
-        row[t0][1] = 0;
-        row[t0][0] = 0;
+        D_800A35D0[t0][1] = 0;
+        D_800A35D0[t0][0] = 0;
         base->f40[t0][1] = 0;
         base->f40[t0][0] = 0;
         base->f68[t0] = t0;
@@ -73,13 +67,6 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
             if ((arg2 & mask) != 0) {
                 D_8009BCE4[idx] = (u8)(D_8009BCE4[idx] | 1);
                 sp[t0] += 1;
-                /* FAKE: same-value dead store (dead-store-fake-exception): row is not read after
-                   this. Effect: a second set of row's pseudo in another basic block makes loop.c
-                   count_loop_regs_set mark it may_not_move (loop.c:3040-3041), so the lui/addiu of
-                   D_800A35D0 stays inside the outer loop where the target builds it instead of
-                   being hoisted to the pre-header. Measured without it and lever exhaustion:
-                   memory/grind/func_800770B8/evidence.md (s41). */
-                row = D_800A35D0;
             }
         }
         t0 = (s16)(t0 + 1);

@@ -125,3 +125,95 @@ scripts in probes/s40/). Dumps: cc1 -da on k0 and on candidate.c (c0).
 Conclusion: on the post-Q65 chassis every byte-exact form needs a write to p_old whose value never reaches an
 instruction; the only non-dead one (pointer pre-increment) costs one load. Filed as a policy-question
 (docs/grind/borderline.md 2026-10-01 func_800770B8), re-asking Q66 with this evidence.
+
+## 2026-10-01 — laneA s41: landing package under owner ruling Q78 (rules: 6c8c276c3), on main
+
+Chassis: a clone of main (HEAD 3717bfd7a) with SelWork's f1C/f20 as Q33/Q46 union word views
+(probes/s41/unions.py, mkmain.sh; text1b_tu2.c's other 14 f1C/f20 element accesses respelled `.half[...]`)
+and `func_8006E950`'s declaration `(s32 a0, s32 *a1)` (its callers pass integers 6 / 0x32 / 0x5F; the Q65
+series step 10 makes the definition agree); full build SHA1 == oracle. Bodies: probes/s41/ (F.c =
+candidate.c; ablations by mkF.py, splits by mkF.py / mkS.py). Scores: `engine sandbox func_800770B8
+--disable all` (msbx.sh); re-confirmed on the spliced main tree (sandbox 0, full build oracle).
+
+| body | score | insns | what differs from F |
+|---|---|---|---|
+| F (candidate.c) | 0 | 175 | — |
+| F_norestore | 2 | 175 | no `work = list;` (Q78 store): clears on $s1 (0x80077144/48) |
+| F_nodowhile | 5 | 175 | no empty do-while(0): prologue frame-save order (3 source-level hunks) |
+| F_noreset | 18 | 175 | no `row = D_800A35D0;` re-set: D_800A35D0's lui/addiu hoisted out of the outer loop |
+| F_norow | 19 | 176 | no row pointer at all (direct `D_800A35D0[t0][k]`) |
+| F_split0 | 20 | 170 | one variable per value, F's exact statement list: `s32 *list` (entry list pointer), `void *work` (result) |
+| F_split / F_split_b / F_split_w | 20 / 20 / 20 | 170 | split with `SelWork *work` (f04 through work) / declared then assigned / clears through work |
+| S_top / S_first / S_after | 20 / 20 / 20 | 170 | split, list assigned at the top / before the sp clears / after the D_800A35D8 store |
+| S_init | 15 | 173 | split, list as the declaration's initializer |
+| S_r1 / S_r2 | 20 / 20 | 170 | split, Ruling 4 two-statement list pointer (laneD r1 / r2) |
+| S_glob / S_darg | 20 / 20 | 170 | split, f04 stored through SELWORK / list from D_800A35D8 + 0x58 |
+
+Earlier split forms on the previous chassis (laneD 2026-09-30, pre-slim-2026-10-01:memory/grind/func_800768DC/
+laneD-2026-09-30.md:86-93): v7 / m1-m3 20, r1/r2 20, r3 (function-scope work reused as the loop base) 34.
+Permuter from the split body (S_base, 2 workers, 18,206 iterations, campaign label "split-R11-search", workspace probes/s41/mkpermm.sh): no zero;
+best find 240 (base 883) re-writes `list` inside the loop (`list = D_800A36A0`), i.e. a reuse, not a split.
+
+**Q78 store (`work = list;`). Dumps: dumps/s41/F and dumps/s41/F_norestore (`.cse`; command lines in cmd.txt).**
+F_norestore: insn 77 `(set (reg/v 75) (reg 2 v0))` (work = the call result); insn 80 `(set (mem D_800A36A0) (reg
+75))`; the f04 store (insn 85) and both clears (insns 90/95) are based on `(reg 75)`, because cse.c make_regs_eqv
+(tools/gcc-2.7.2/cse.c:826) made pseudo 75 the first register of the quantity it shares with the non-fixed hard
+reg $v0, and the D_800A36A0 memory entry is in that class; .greg seats 75 in $s1, so the clears are on $s1.
+F: the f04 store's SELWORK reload is kept as insn 83 `(set (reg 82) (reg 75))`, insn 85 stores f04 on 75, then
+insn 88 `(set (reg 75) (reg 80))` (the restore) removes 75 from the class (cse.c delete_reg_equiv, cse.c:887);
+the clears' reloads now resolve to reg 82 (insns 93/98), which .greg seats in $v0: `sw $zero,0x30($v0)` /
+`sh $zero,0x34($v0)` as in the target. The restore is dead (work is not read after; flow deletes it). Lever
+exhaustion: bf8588dd8^:memory/grind/func_800770B8/hypotheses.md class B, sessions s1-s39 (s7 named the cse
+pseudo identity; s31 measured the restore), and s40 above (the non-dead pointer pre-increment route costs one
+lw; `p_old = SELWORK` is a cse no-op; permuter 36,505 iterations from k0, no find).
+
+**Ruling 11 package for `work` (two real values).**
+- (A) a local, declared once at function scope (the innermost scope enclosing its writes: the entry
+  assignment and the block's call-result write), no other declaration moved, address never taken.
+- (B)(1) value 1 (`(void *)(arg0 + 0x58)`) is read by func_8006E950, func_80076FF8 and `list = work`; value 2
+  (func_8006E49C's result) by the D_800A36A0 store. The third write is the Q78 dead store, admitted by Q78
+  alone. (B)(2) Ruling 5 2(c): no write re-stores a value work already holds on every path (the call result is
+  not known equal to the list pointer; the restore stores the list pointer while work holds the call result).
+- (C)(1)/(2) the one-variable-per-value spelling with the same statement list is F_split0 (only declarations /
+  identifiers differ, and the restore has nothing to restore). (C)(3) both values are real computations in the
+  target: `addiu $s1,$s0,0x58` (0x800770E8) and the call result moved into $s1 (`addu $s1,$v0,$zero`,
+  0x80077128).
+- (D)(1) allocation dumps: dumps/s41/F/f.lreg, f.greg and dumps/s41/F_split0/f.lreg, f.greg (cmd.txt). (D)(2)
+  the deciding decision: local-alloc.c:472 takes a pseudo as a local-alloc quantity only if it dies exactly
+  once. In F_split0 the list pseudo (75) dies once, local-alloc takes it and ties it to arg0's quantity
+  (`;; Register 72 in 16.` / `;; Register 75 in 16.` in F_split0/f.lreg; asm `addu $16,$16,88`): one
+  callee-saved register fewer, 170 insns. In F, work (75) dies in 2 places (`Register 75 ... dies in 2 places`,
+  F/f.lreg), stays out of local-alloc, and global-alloc seats it in $s1 (`75 in 17`, F/f.greg) beside arg0 in
+  $s0: the target's two registers (`addu $s0,$a0,$zero` 0x800770C0, `addiu $s1,$s0,0x58` 0x800770E8). (D)(3)
+  every split spelling proposed (laneD v7/m1-m3/r1-r3 and the twelve above) measured; none byte-identical.
+  (D)(4) full split 20; per-value ablations n/a (two values); structural respellings S_init / S_r1 / S_r2 /
+  S_glob / S_darg / F_split_w; permuter from the split body (above).
+- (E) name `work` (a generic name Ruling 11 (E) lists); type `void *`, true of both values (an s32 list and the
+  SelWork area). (F) the declaration comment names both values and cites Ruling 11, Q78 (6c8c276c3) and this
+  entry. (G) fresh layer-2 pending.
+
+**`list` (`s32 *list = work;`).** A fresh local written once with the live list pointer just before work is
+overwritten, read by the f04 store and by the Q78 restore: ordinary C saving a value before its variable is
+reused (Ruling 1, named intermediate relaxed to once-written: a real, consumed value). The copy is in the
+target: `addu $v1,$s1,$zero` at 0x80077124, stored by `sw $v1,0x4($s1)` at 0x80077140.
+
+**Row pointer `row` (pointer-alias-fake-exception) and its re-set `row = D_800A35D0;` (dead-store-fake-
+exception).** Exhaustion: direct subscripts 19/176 (F_norow), row pointer without the re-set 18 (F_noreset);
+prior record bf8588dd8^:memory/grind/func_800770B8/hypotheses.md s38-s39 (s38: a second straight-line write is
+folded by cse; s39: a set in a second basic block trips loop.c count_loop_regs_set's may_not_move,
+loop.c:3040-3041, so scan_loop skips the hoist at loop.c:649) and 188 banked rejected forms there. The re-set's
+stored value is never read (store-level deadness, Ruling 2). Mechanism and annotation at the statements.
+
+**do-while(0)** (do-while-zero-exception, sanctioned; single level): 5 without it (F_nodowhile: the prologue's
+frame-save stores interleave with the first body insns); prior record s4-s11 (sched2 region bound; s9
+sched_solver sweep).
+
+**Data model and casts.** SelWork f1C/f20: Q33/Q46 union word views, byte evidence `sw $zero,0x20($a0)` /
+`sw $zero,0x1C($a0)` at 0x800772BC/C0 (one word store over each s16 pair; func_80075F80 reads and writes the
+halves, asm/funcs/func_80075F80.s:107); the other consumers (func_80075830, func_800759D0, func_80075F80)
+respelled `.half[...]`, each sandbox 0, full build oracle. `D_8009BD20[f67][1]` replaces the `D_8009BD21`
+alias; its undefined_syms_auto.txt row (`retire with func_800770B8`) goes (the asm data's own dlabel stays).
+Casts in the body: `(void *)(arg0 + 0x58)` and `(void *)func_8006E49C(...)` (integer addresses: arg0 is the
+s32 buffer base, func_8006E49C returns s32); `(s32 *)D_800A35D8` (the s32 buffer base passed as the callee's
+`s32 *`, as Q65 step 10 spells text1b_b's two calls); `(u8)` / `(s16)` value narrowings; SELWORK is game.h's
+typed view of D_800A36A0.

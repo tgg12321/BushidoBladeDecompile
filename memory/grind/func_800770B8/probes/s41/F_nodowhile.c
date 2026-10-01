@@ -9,11 +9,6 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     s16 t0;
     s16 a2;
 
-    /* FAKE: empty do-while(0) wrap (do-while-zero-exception). Effect: its NOTE_INSN_LOOP_BEG/END
-       pair bounds sched2's region at this point, so the five frame-save stores are not interleaved
-       with the first body insns as in the target's prologue order. Measured without it (5) and
-       the prior search: memory/grind/func_800770B8/evidence.md (s41). */
-    do { } while (0);
     sp[0] = 0;
     sp[1] = 0;
     ClearOTagR(g_gpu_ot_ptr, 0x1008);

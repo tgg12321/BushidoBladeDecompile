@@ -4,38 +4,29 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
        func_80076FF8 and stored as the work area's f04), then the work area func_8006E49C returns
        (stored to D_800A36A0). Owner Ruling 11 (reused-local-necessity.md) with owner ruling Q78
        (rules: 6c8c276c3); package: memory/grind/func_800770B8/evidence.md (s41). */
-    void *work;
+    s32 *list;
     s32 r;
     s16 t0;
     s16 a2;
 
     /* FAKE: empty do-while(0) wrap (do-while-zero-exception). Effect: its NOTE_INSN_LOOP_BEG/END
        pair bounds sched2's region at this point, so the five frame-save stores are not interleaved
-       with the first body insns as in the target's prologue order. Measured without it (5) and
-       the prior search: memory/grind/func_800770B8/evidence.md (s41). */
+       with the first body insns (without it: sw $s1 / addiu $s1,$s0,0x58 / lw g_gpu_ot_ptr / li
+       0x1008 / sw $ra where the target has sw $ra / sw $s1 / li 0x1008 / lw / addiu, 4 rows).
+       Measured without it: memory/grind/func_800770B8/evidence.md (s41). */
     do { } while (0);
     sp[0] = 0;
     sp[1] = 0;
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
-    work = (void *)(arg0 + 0x58);
+    list = (s32 *)(arg0 + 0x58);
     D_800A35D8 = arg0;
     snd_StopAll();
-    func_8006E950(6, work);
-    r = func_80076FF8(work);
+    func_8006E950(6, list);
+    r = func_80076FF8(list);
     {
-        s32 *list = work;
-        work = (void *)func_8006E49C(r, (s32 *)D_800A35D8);
-        D_800A36A0 = work;
-        SELWORK->f04 = list;
-        /* FAKE: dead store (dead-store-fake-exception; owner ruling Q78, rules: 6c8c276c3): work's
-           restored value is never read. Effect: cse.c make_regs_eqv puts work and the call's $v0 in
-           one quantity with work canonical, so the D_800A36A0 reloads for the 0x30/0x34 clears below
-           would become work ($s1); this store takes work out of that class first (cse.c
-           delete_reg_equiv), the reloads resolve to the f04 store's reload copy of the call result
-           instead, and the clears use $v0 as in the target (0x80077144/48). Dumps (.cse with and
-           without it, command lines) and lever exhaustion: memory/grind/func_800770B8/evidence.md (s40,
-           s41). */
-        work = list;
+        SelWork *work = (SelWork *)func_8006E49C(r, (s32 *)D_800A35D8);
+        D_800A36A0 = (u8 *)work;
+        work->f04 = list;
         SELWORK->f30 = 0;
         SELWORK->f34 = 0;
     }

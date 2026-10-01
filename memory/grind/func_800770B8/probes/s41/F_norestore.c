@@ -27,15 +27,6 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         work = (void *)func_8006E49C(r, (s32 *)D_800A35D8);
         D_800A36A0 = work;
         SELWORK->f04 = list;
-        /* FAKE: dead store (dead-store-fake-exception; owner ruling Q78, rules: 6c8c276c3): work's
-           restored value is never read. Effect: cse.c make_regs_eqv puts work and the call's $v0 in
-           one quantity with work canonical, so the D_800A36A0 reloads for the 0x30/0x34 clears below
-           would become work ($s1); this store takes work out of that class first (cse.c
-           delete_reg_equiv), the reloads resolve to the f04 store's reload copy of the call result
-           instead, and the clears use $v0 as in the target (0x80077144/48). Dumps (.cse with and
-           without it, command lines) and lever exhaustion: memory/grind/func_800770B8/evidence.md (s40,
-           s41). */
-        work = list;
         SELWORK->f30 = 0;
         SELWORK->f34 = 0;
     }
