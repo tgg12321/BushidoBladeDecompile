@@ -118,7 +118,10 @@ their last C user. Census tool: probes-2026-09-30/census_all.py (src/*.c + inclu
   D_80101EC8 named 38 times in 25 functions; 85 per-word externs declared in include/.
 Scratch (L1, tmp/prc harness = exact per-file recipe scored against build/): all 13 bodies 0, including
 func_8001FBE8 (Ruling 6 split re-measured: 14, as banked) and func_80021A98 (s0 retyped, its two FAKE do-while
-wraps unchanged). func_80022F34: every index spelling of the record walk scores 19 (73 vs 70 insns: the
-target steps a byte offset by 0x44C and re-adds the base each iteration, which loop.c does not produce from
-`&g_practice_menu_table[i]`); the walk spelled `(PracticeMenuRec *)((u8 *)g_practice_menu_table + offset)` with
-`offset += sizeof(PracticeMenuRec)` scores 0 (func_80022F34.c8.c) — open question to the orchestrator.
+wraps unchanged). func_80022F34 (CORRECTED same day: the earlier "every index spelling scores 19" was a measuring error — a
+quoting slip re-scored the r3 body for each variant): goto-loop `&g_practice_menu_table[i]` 19 (73 insns), a
+separate record counter 19 (77), the landed reuse kept 19 (73), a `for` loop 4 (70), a do-while loop 0 (70)
+(func_80022F34.c7.c, now the r3 body), and the `(PracticeMenuRec *)((u8 *)g_practice_menu_table + offset)` /
+`offset += sizeof(PracticeMenuRec)` walk 0 (c8, not used). The do-while is a real loop, so loop.c strength-
+reduces `i * 0x44C` into the target's offset register with the table base re-added each pass; the goto loop
+gets no loop notes, so the multiply is recomputed (the 3 extra instructions).

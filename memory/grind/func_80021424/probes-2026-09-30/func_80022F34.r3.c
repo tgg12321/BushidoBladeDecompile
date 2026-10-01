@@ -4,9 +4,7 @@ void func_80022F34(void) {
 
     i = 0;
     tbl = D_80102778.unk_0;
-
-loop_22F34:
-    {
+    do {
         PracticeMenuRec *rec = &g_practice_menu_table[i];
 
         if (rec->unk_06 != 0) {
@@ -37,6 +35,5 @@ loop_22F34:
 
         tbl++;
         i++;
-    }
-    if (i < 2) goto loop_22F34;
+    } while (i < 2);
 }
