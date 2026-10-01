@@ -133,3 +133,18 @@
   47; `et = e[0]; et &= 7;` flips the order but loses `andi 0xff` (16); `ep = q + 5` flips it but gives
   `addiu s6,a2,5` (13). A wider wrap (et def .. end of the et tests) flips it but breaks elsewhere (67).
   Permuter (whole loop body randomized, 9 min, 2860 iterations, tmp only): only a junk find (`far =` store).
+- [s5] SCORER BLIND SPOT: sandbox 6 (= only the jtbl artifacts) still hid two control-flow differences, because
+  the score masks branch targets. probes/s5/fullobj.sh (full Makefile pipeline on text1b.c with the candidate
+  spliced and the transcribed tables removed) + probes/s5/linkcheck.py (links that text1b.o alone at its real
+  addresses, undefined symbols from build/bb2.elf, and compares .text/.rodata with build/bb2.bin; negative
+  control build/src/text1b.o: 0 differing words) showed 4 differing branch words:
+  (1) 0x80058D3C/0x80058D58: when st == 0x11 but `CPU_S16(4) != D_800A38AE && CPU_S16(0x40) == ...` fails, the
+  target runs the final else (the 0x148 distance test): the condition belongs to the else-if, `else if (st ==
+  0x11 && ... && ...)`, not a nested if.
+  (2) 0x80059638/0x8005966C: in the waypoint script pick, failing `work2 == 5` or `OARR(0x404) < 387C` skips
+  the `script2 != 0` call test (target -> 0x800596C8) while failing `387C < OARR(0x404)` reaches it. Spelled
+  `if (work2 == 3 && 387C < O) goto pick2; if (work2 == 5 && O < 387C) { if (387C < O) { pick2: ... } if
+  (script2) call; }` (same goto-into-block style as the function's `goto record`). The duplicated-arm form
+  (no goto) is +7 insns (cross-jump does not merge it).
+  With both: text1b .text 102804 bytes 0 differing words, .rodata 88 bytes 0 differing words (the jtbl
+  `lw %lo` sandbox artifacts are confirmed gone at link time).

@@ -208,8 +208,8 @@ s32 func_80058580(u8 *p) {
                     CPU_S32(0x3CC) = (p[0x443] & 1) ? vd | 0x1000 : vd | 0x4000;
                 }
             }
-        } else if (st == 0x11) {
-            if (CPU_S16(4) != D_800A38AE && CPU_S16(0x40) == (*(u8 **)(p + 0x50))[8] - 1) {
+        } else if (st == 0x11 && CPU_S16(4) != D_800A38AE && CPU_S16(0x40) == (*(u8 **)(p + 0x50))[8] - 1) {
+            {
                 s32 b, c, a;
                 a = CPU_S16(0x26E);
                 b = CPU_S16(0x270);
@@ -368,16 +368,21 @@ s32 func_80058580(u8 *p) {
                     if (!(work1 == 1 || work1 == 2)) {
                         script2 = 0;
                         if (wp[0x368] == 1) {
-                            if ((work2 == 3 && D_800A387C < CPU_OARR(0x404)) ||
-                                (work2 == 5 && (CPU_OARR(0x404) < D_800A387C && D_800A387C < CPU_OARR(0x404)))) {
-                                if (CPU_U16(0x6A) == 0x13) {
-                                    script2 = D_8009A8A4;
-                                } else if (p[0x440] != 4) {
-                                    script2 = D_8009A89C;
-                                }
+                            if (work2 == 3 && D_800A387C < CPU_OARR(0x404)) {
+                                goto pick2;
                             }
-                            if (script2 != 0) {
-                                func_80055B44(p, (s32)script2, 4, 0);
+                            if (work2 == 5 && CPU_OARR(0x404) < D_800A387C) {
+                                if (D_800A387C < CPU_OARR(0x404)) {
+                                pick2:
+                                    if (CPU_U16(0x6A) == 0x13) {
+                                        script2 = D_8009A8A4;
+                                    } else if (p[0x440] != 4) {
+                                        script2 = D_8009A89C;
+                                    }
+                                }
+                                if (script2 != 0) {
+                                    func_80055B44(p, (s32)script2, 4, 0);
+                                }
                             }
                         }
                     }
