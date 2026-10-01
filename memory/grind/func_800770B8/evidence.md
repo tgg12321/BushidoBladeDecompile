@@ -100,3 +100,28 @@ lives in text1b_b (M4 merge). `engine sandbox --disable all`:
 So Q66's "may shift after Q65" did not happen: the gp model does not touch this residual (it is the cse
 equivalence of the D_800A36A0 reload, not its addressing). Frontier unchanged: an ordinary-C spelling that
 breaks that equivalence without a dead write. Scripts: tmp/func_800770B8/{mk.py,scratch_sbx.sh} (not banked).
+
+## 2026-10-01 — laneA s40: the cse decision named; the no-dead-write route measured (+1 lw); permuter 36.5k
+
+Chassis: private clone of the Q65 series (step16 + SelWork f1C/f20 unions, /tmp/l770/tree; probes and
+scripts in probes/s40/). Dumps: cc1 -da on k0 and on candidate.c (c0).
+- **Decision.** k0 `.cse`: insn 77 `(set 75 v0)` puts p_old (pseudo 75) and $v0 in one quantity with 75
+  first (cse.c make_regs_eqv: a pseudo beats a non-fixed hard reg); the D_800A36A0 store records the memory
+  in that class, so both reloads for the 0x30/0x34 clears become `(reg 75)` (insns 88/93) -> $s1. In c0 the
+  restore `(set 75 80)` (insn 86) takes 75 out of the class first; the reload becomes insn 89 `(set 82 (reg
+  v0))` and the clears use pseudo 82 -> $v0. So the target's split (D_800A36A0 and f04 stores on $s1, clears
+  on $v0, no extra insn) needs p_old to be written between the f04 store and the clears **with a value that
+  is never materialized**. The only ways a write leaves no instruction: it is dead (refused, Q66), or combine
+  folds it into its one user.
+- **The non-dead route exists and costs exactly one insn.** p1 `*++p_old = (s32)prev;` (and p2 `p_old++;
+  *p_old = ...`, p5 `p_old = (s32 *)&((SelWork *)p_old)->f04; *p_old = ...`): combine folds `75 = 75 + 4` into
+  the store (`sw $v1,4($s1)`) and the clears move to $v0 as in the target — but the store's address is a
+  plain register, neither MEM_IN_STRUCT nor a PLUS, so cse.c note_mem_written (7564-7574) sets `all` and
+  invalidates the D_800A36A0 memory entry: one extra `lw $v0,%gp_rel(D_800A36A0)($gp)` (3/176). Making that
+  store in-struct needs an INDIRECT_REF of a PLUS_EXPR on the incremented pointer (`(p_old += 2)[-1]`,
+  constant cancellation, Q45-refused) or a fake aggregate type; not pursued.
+- p3/p4 `p_old = (s32 *)SELWORK;` before the clears: cse makes it `75 = 75` and deletes it; 2/175 (= k0).
+- Permuter from k0 on this chassis (2 workers, 36,505 iterations, 2036 s): no find at or below base.
+Conclusion: on the post-Q65 chassis every byte-exact form needs a write to p_old whose value never reaches an
+instruction; the only non-dead one (pointer pre-increment) costs one load. Filed as a policy-question
+(docs/grind/borderline.md 2026-10-01 func_800770B8), re-asking Q66 with this evidence.

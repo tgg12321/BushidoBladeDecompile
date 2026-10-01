@@ -11,3 +11,4 @@
   4. Otherwise: owner question (Q66 offered "Allow narrowly"), or new modalities - permuter from k0, cse-dump study of the equivalence class.
 - DEPENDS: after Q65 and after the f3C union landing.
 - ODDS/LANE: 2+ sessions post-Q65, ~30% [I]. Manual. Last in the text1b_tu2 cluster.
+- 2026-10-01 laneA s40 (post-Q65 chassis): plan steps 1-2 done (k0 still 2/175; Q65 neutral); step 4 taken: cse decision named, non-dead pre-increment route measured (+1 lw, cse.c 7564-7574), permuter 36.5k no find; QUESTION filed (borderline.md 2026-10-01 func_800770B8). See evidence.md s40.
