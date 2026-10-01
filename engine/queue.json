@@ -29,6 +29,20 @@
       "addr": "80057E84"
     },
     {
+      "func": "func_80048FFC",
+      "file": "text1b",
+      "distance": 232,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-21T01:02:39+00:00",
+      "rotation_count": 1,
+      "addr": "80048FFC",
+      "unparked_from": "Honest C reached 232/232 and score 31, but exact register allocation only appeared with a variable reused across unrelated height/mask roles; refinement required non-idiomatic register-steering temporaries, so not landable under standing rules.",
+      "unpark_reason": "",
+      "returned_at": "2026-10-01T23:06:24+00:00"
+    },
+    {
       "func": "func_8005C8A8",
       "file": "text1b",
       "distance": 752,
@@ -120,18 +134,6 @@
       "addr": "80020E74"
     },
     {
-      "func": "func_80048FFC",
-      "file": "text1b",
-      "distance": 232,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "Honest C reached 232/232 and score 31, but exact register allocation only appeared with a variable reused across unrelated height/mask roles; refinement required non-idiomatic register-steering temporaries, so not landable under standing rules.",
-      "rotated_at": "2026-09-21T01:02:39+00:00",
-      "rotation_count": 1,
-      "addr": "80048FFC"
-    },
-    {
       "func": "func_8003EDC0",
       "file": "code6cac_c2",
       "distance": 234,
@@ -194,13 +196,13 @@
   ],
   "counts": {
     "total": 15,
-    "active": 4,
+    "active": 5,
     "by_status": {
-      "active": 4,
-      "rotated": 11
+      "active": 5,
+      "rotated": 10
     },
     "by_verdict": {
-      "C": 4
+      "C": 5
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
