@@ -271,7 +271,7 @@ position that puts every gp user of text1b_tu1c's per-file objects on one side; 
 
 | File | Text | Rodata |
 |---|---|---|
-| text1b.c | unchanged head, then snd_Init .. func_80060768 | 0x8001585C..0x800158B4 (func_80058580's tables) |
+| text1b.c | text1a_c2 + text1a_b + text1a_b_pre_rodata + sound merged in ahead of it (owner ruling Q67, Q65 step 09), then unchanged head, then snd_Init .. func_80060768 | 0x800152B4..0x800158B4 (step 09: text1a_c2 0x800152B4, text1a_b 0x800153B4, text1a_b_pre_rodata 0x800153F0, sound none, text1b 0x8001585C = func_80058580's tables) |
 | text1a_b_pre_rodata_b.c | none (transcribed data) | 0x800158B4..0x800158E0, the sound-bank strings |
 | text1b_tu1c.c | func_80060A68 .. the function before func_8006E534 (func_80060A68 .. func_80060E38 moved here by owner ruling Q65: per-file gp model, boundary move in the recorded window) | 0x800158E0.. (D_800158E0, func_80065800's tables, func_8006B578's table and string) |
 
