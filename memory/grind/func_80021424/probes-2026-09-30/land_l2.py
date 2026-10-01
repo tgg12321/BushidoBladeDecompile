@@ -11,7 +11,7 @@ from pathlib import Path
 
 srcroot = Path(__file__).resolve().parents[2]
 root = Path(os.environ.get("L1_ROOT") or srcroot)
-BODY = os.environ.get("L2BODY", "l2r1")
+BODY = os.environ.get("L2BODY", "l2")
 
 
 def rd(p):
@@ -47,6 +47,11 @@ for f in ("func_8001C8DC", "func_8001CE60", "func_8001E404", "func_8001EFA0", "f
           "func_8001FB34"):
     a, b = span(s, f)
     s = s[:a] + (srcroot / f"tmp/prc/{f}.{BODY}.c").read_bytes().decode("utf-8").rstrip("\n") + s[b:]
+s = sub1(s, "typedef struct {\n    s32 vx, vy, vz;\n    s32 pad0;\n    u16 rx, ry, rz;\n    u16 pad1;\n"
+            "    s32 dist;\n    s32 tail[10];\n} CamBuf;\n", "", "CamBuf typedef (func_8001E404 now uses Rec44)")
+if "s16 h30[2][4];" in h:  # laneH's Rec44 layout: the two limit vectors as an array
+    s = s.replace("    func_8003F3D4(&s2->h30);\n    func_8003F3D4(&s2->h38);\n",
+                  "    func_8003F3D4(s2->h30[0]);\n    func_8003F3D4(s2->h30[1]);\n")
 s = sub1(s, "        if (func_8001FB34((s32 *)rec, data[3] & 0x80) == 0) {\n",
          "        if (func_8001FB34(rec, data[3] & 0x80) == 0) {\n", "FBE8 call")
 wr("src/code6cac_tu2.c", s)

@@ -147,3 +147,11 @@ L2 scratch (2026-09-30, HEAD bodies + L1 chain + land_l2.py; harness vs build/):
 only func_8005FA98's result (the subscript assignment is gone). Open for L2 review: func_8001E404 also views camera
 data through `s2 = (s32 *)&D_800F6608` / `*(u16 *)((u8 *)s2 + 0x10)` / `*(CamBuf *)s2` (not the practice table);
 func_8001E878 passes record addresses to s32-typed prototypes (func_8001A820, func_8001B478) as `(s32)&...`.
+L2 update (orchestrator answers): func_8001E404's camera view is respelled too — `Rec44 *s2` (= &D_800F6608 /
+&D_800F5328, both declared Rec44), `Rec44 local` in place of the TU-local CamBuf (the same 0x44 bytes; CamBuf's
+vx/vy/vz/pad0/rx/ry/rz/pad1/dist/tail are Rec44's w0/w4/w8/wC/h10/h12/h14/h16/w18/rest), member reads
+`s2->w0`..`s2->w18`, `&s2->w20`, and the two limit vectors (`&s2->h30` / `&s2->h38` on HEAD's layout,
+`s2->h30[0]` / `s2->h30[1]` on laneH's h30[2][4], chosen by land_l2.py from the header). The CamBuf typedef goes.
+Measured 0/184 on both bases (HEAD scratch; current tree with laneH's staged edits). func_8001E878's `(s32)&...`
+arguments to func_8001A820 / func_8001B478 (s32-typed prototypes) stay disclosed call-boundary debt, as do
+`(s32 *)&local.h10` to func_80046BF4 / func_80061064 in func_8001E404.
