@@ -65,6 +65,7 @@ SECTIONS
         build/src/text1a_svc.o(.rodata);
         build/src/text1a_post.o(.rodata);
         build/src/text1a_c.o(.rodata);
+        build/src/text1a_c_tu2.o(.rodata);
         build/src/text1a_filepaths.o(.rodata);
         build/src/text1a_c2.o(.rodata);
         build/src/text1a_b.o(.rodata);
@@ -118,6 +119,7 @@ SECTIONS
         build/src/text1a_svc.o(.text);
         build/src/text1a_post.o(.text);
         build/src/text1a_c.o(.text);
+        build/src/text1a_c_tu2.o(.text);
         build/src/text1a_c2.o(.text);
         build/src/text1a_b.o(.text);
         build/src/sound.o(.text);
@@ -163,6 +165,7 @@ SECTIONS
         build/src/text1a_svc.o(.data);
         build/src/text1a_post.o(.data);
         build/src/text1a_c.o(.data);
+        build/src/text1a_c_tu2.o(.data);
         build/src/text1a_c2.o(.data);
         build/src/text1a_b.o(.data);
         build/src/sound.o(.data);
@@ -211,6 +214,7 @@ SECTIONS
         build/src/text1a_svc.o(.bss);
         build/src/text1a_post.o(.bss);
         build/src/text1a_c.o(.bss);
+        build/src/text1a_c_tu2.o(.bss);
         build/src/text1a_c2.o(.bss);
         build/src/text1a_b.o(.bss);
         build/src/sound.o(.bss);
