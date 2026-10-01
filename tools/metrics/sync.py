@@ -26,6 +26,7 @@ window contains the event; then the owning session; else NULL.
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import re
@@ -117,7 +118,8 @@ def ingest_events(conn, events_path, since=None):
         print(f"  events log not found: {events_path} (0 events)")
         return
     n_seen = n_new = 0
-    with conn.cursor() as cur, events_path.open(encoding="utf-8") as fh:
+    opener = gzip.open if events_path.suffix == ".gz" else open
+    with conn.cursor() as cur, opener(events_path, "rt", encoding="utf-8") as fh:
         for raw in fh:
             raw = raw.strip()
             if not raw:
@@ -552,6 +554,10 @@ def main():
         since = _read_since(a.since)
         if since:
             print(f"  fresh-slate cutoff: ingesting only data >= {since.isoformat()}")
+        # Rotated months (tools/metrics/rotate.py) first, then the live log;
+        # line_hash dedup makes the replay idempotent.
+        for arch in sorted(Path(a.events).parent.glob("history/events-*.jsonl.gz")):
+            ingest_events(conn, arch, since)
         ingest_events(conn, Path(a.events), since)
         ingest_experiments(conn, Path(a.experiments), since)
         runs = parse_all_transcripts(Path(a.transcripts))

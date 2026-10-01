@@ -104,3 +104,5 @@ derived tables from the durable sources each time.
 
 Tighten any of these in `tools/metrics/sync.py`; the raw events and transcripts
 are never discarded, so re-syncing applies new logic to all history.
+
+**Rotation:** `python tools/metrics/rotate.py` moves completed months into `metrics/history/events-YYYY-MM.jsonl.gz` (byte-identical lines; `sync.py` ingests them, line-hash dedup). Run it monthly — GitHub rejects files > 100 MB.
