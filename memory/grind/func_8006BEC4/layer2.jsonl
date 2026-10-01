@@ -1,0 +1,1 @@
+{"func": "func_8006BEC4", "addr": "8006BEC4", "verdict": "PASS", "body_hash": "2a84989477d822df", "body_kind": "c", "file": "text1b_tu1c", "reviewer": "rev-6BD28", "scope": "cheat-cleanup", "date": "2026-10-01T11:08:24Z", "head": "8eaccf30e", "notes": "caller retyped: s32 sp10[12] -> S_6A880 sp10 passed as &sp10; byte-identical (sandbox 0); redundant forward declaration removed"}
