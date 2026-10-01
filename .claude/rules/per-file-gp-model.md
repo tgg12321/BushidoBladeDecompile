@@ -90,10 +90,14 @@ halfwords) and `func_8004153C` (declaration unchanged) take owner-decided types.
   `bb2.ld` section. Only the Q65 groups (`code6cac_b2_pre`+`replay_camera_rob_back_loose2`+`code6cac_b2_post`;
   `code6cac_c2`+`config`) and Q67 groups (`text1a_c2`+`text1a_b`+`sound`+`text1b`; `text1b_tu2`+`text1b_b`)
   are approved. **(A7, Q72)** a `.rodata`-only file between members of one group joins it. Declarations that
-  conflict are reconciled first in a separate byte-identical, evidence-typed commit.
+  conflict are reconciled first in a separate byte-identical, evidence-typed commit. **Boundary move instead
+  of a merge:** if the gp users of a symbol the merge test would join lie on both sides of a rodata-rule
+  boundary whose recorded window contains a position putting them all on one side, that boundary moves there
+  (several positions: the one closest to its current position; a tie, or splitting another symbol's users →
+  borderline); its record in `docs/grind/rodata-align-2026-09-30.md` is updated in the same commit.
 - **Undecided cases** (divergent surviving cuts, unplaceable objects, non-adjacent gp users, irreconcilable
-  declarations, merges across a rodata-rule boundary) are logged to `docs/grind/borderline.md`; the commit
-  does not land. Never pick what matches.
+  declarations, merges across a rodata-rule boundary the boundary move does not replace) are logged to
+  `docs/grind/borderline.md`; the commit does not land. Never pick what matches.
 
 ## What this is not
 
