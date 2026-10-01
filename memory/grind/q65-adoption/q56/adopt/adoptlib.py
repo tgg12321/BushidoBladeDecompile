@@ -14,12 +14,35 @@ _DECL = re.compile(r"^(extern\b.*;|typedef\b.*|#include\b.*|#define\b.*|[A-Za-z_
 
 
 def decl_lines(text):
-    """column-0 declaration lines (extern / typedef / #include / #define / prototype), whitespace-normalized"""
-    return [" ".join(l.split()) for l in text.split(NL) if _DECL.match(l)]
+    """column-0 declarations (extern / typedef / #include / #define / prototype), whitespace-normalized; a
+    multi-line typedef / struct / union / enum definition is one item, `<first line> ... <closing line>`"""
+    out, L, i = [], text.split(NL), 0
+    while i < len(L):
+        l = L[i]
+        if re.match(r"^(typedef\b|struct\b|union\b|enum\b)", l) and not l.rstrip().endswith(";"):
+            j = i + 1
+            while j < len(L) and not (L[j].startswith("}") and L[j].rstrip().endswith(";")):
+                j += 1
+            out.append(" ".join(l.split()) + " ... " + " ".join(L[min(j, len(L) - 1)].split()))
+            i = j + 1
+            continue
+        if _DECL.match(l):
+            out.append(" ".join(l.split()))
+        i += 1
+    return out
+
+
+def carried_header(part, parent, cut):
+    """splitc.py output `part` = the declarations it carried + the parent's lines cut.. verbatim; `parent` is the
+    parent's text before the split. Returns the carried header's text."""
+    P, Q = rd(part).split(NL), parent.split(NL)
+    off = len(P) - (len(Q) - (cut - 1))
+    assert off >= 0 and P[off:] == Q[cut - 1:], (part, off)
+    return NL.join(P[:off])
 
 
 def added_decls(before, after):
-    """declaration lines `after` has that `before` does not (multiset difference, first-seen order)"""
+    """declarations `after` has that `before` does not (multiset difference, first-seen order)"""
     have = {}
     for l in decl_lines(before):
         have[l] = have.get(l, 0) + 1

@@ -43,7 +43,7 @@ print(_buf.getvalue().strip())
 HDR = [l.split(": dropped verbatim repeat of a header definition: ")[1] for l in _buf.getvalue().splitlines()
        if ": dropped verbatim repeat of a header definition: " in l]
 INC_ADDED = [l for l in rd("src/text1b_tu1c.c").split(NL)[:12] if l.startswith("#include")]
-NEW = added_decls(BEFORE_TU1C, rd("src/text1b_tu1c.c"))
+NEW = added_decls(BEFORE_TU1C, carried_header("/tmp/q56/s03/tail.c", NL.join(L), defline_before))
 CUT = defline_before
 TAIL = rd("/tmp/q56/s03/tail.c").split(NL)
 OFF = len(TAIL) - (len(L) - (CUT - 1))   # tail.c = carried header (OFF lines) + text1b.c lines CUT..
@@ -85,8 +85,8 @@ msg = [
     "",
     "Besides the move, text1b_tu1c.c changes only in its declarations (mergec.py / drop_header_duplicates):",
     "- the include block is the union of both parts' includes: " + ", ".join(INC_ADDED) + ";",
-    "- the moved part carries text1b.c's file-scope declarations its functions use (splitc.py); the lines",
-    "  text1b_tu1c.c did not already have:",
+    "- splitc.py carries the text1b.c file-scope declarations the moved functions use; of those, text1b_tu1c.c",
+    "  did not already have:",
 ] + ["    " + l for l in NEW] + [
     "- typedef -> gte.h: text1b_tu1c.c's own one-line typedefs, verbatim repeats of include/gte.h's definitions now",
     "  that the moved part brings `#include \"gte.h\"`, are dropped (a repeat is a redefinition error):",
