@@ -206,3 +206,7 @@ are measured above; best has no no-copy form (the running maximum must be kept).
 Names are the generic `work1`..`work5` (Ruling 11 (E)); each declaration carries the inline comment
 naming its values, citing the ruling and this file; work3's comment also names the Q74 path and
 addresses, work2's the Q75 constant loads and move and the Q82 compare (commented again at the site).
+
+## Reviewer spellings banked
+- rev-58580-r11-c, wi countdown (rev_wi_countdown.sh: the walk counts wi down directly, no work4 copy):
+  misses by 1 instruction (cc1 asm of the function differs in 52 lines; work4's n value stays necessary).

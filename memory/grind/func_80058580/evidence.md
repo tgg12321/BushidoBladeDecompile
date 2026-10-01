@@ -296,3 +296,9 @@
   the split base 6730 -> best 4205 (junk). Allocation dumps regenerated; find_reg traces identical to round
   1 modulo pseudo renumbering. Main moved under the candidate (s16 unk_6C landed with func_80055B60): the
   candidate links 0 differing words on HEAD with no header edit.
+- [s12 2026-10-01 laneB] LANDED COMPLETED-C. Layer-2 round 3 PASS on df7cb3209f325db8 (rev-58580-r11-c +
+  rev-58580-dm-c, recorded in layer2.jsonl). Match 332d406b2 (src/text1b.c, undefined_syms_auto.txt,
+  named_syms.txt alias retirements), queue 22c231751; full build SHA1 == oracle; check_completion_integrity OK.
+  Banked the reviewer's wi-countdown spelling (r11/rev_wi_countdown.sh, misses by 1 insn). Later cleanup
+  (non-blocking, reviewer note): the stray empty brace block in the state-0x11 arm (`{ { s32 a, b, c; ... } }`).
+  Ledger closed.
