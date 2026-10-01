@@ -8,7 +8,8 @@ part stays a separate file here; each object is byte-identical (the step's oracl
 Functions (the definition's own prototype wins unless the call bytes contradict it):
   func_800466C0   defined (text1a_b) `void (s32, s32)`; text1a_c2 only takes its address.
   func_80044100   defined (text1a_c) `void (s32 a0, s32 a1)`; text1a_b's call `func_80044100(8)` leaves $a1
-                  unset in the target, so no prototype was in scope there: unprototyped in both parts.
+                  unset in the target, so no prototype was in scope there: unprototyped in both parts (owner ruling Q88,
+                  rules: a17a2c144, per-file-gp-model.md A5).
   func_80045694   defined (text1a_c_tu2) `void (s32, s32)`: the word is stored in a callback table
                   (sw to D_800EED1C + i); sound passes its three callbacks as that word.
   func_800460E4   defined (text1a_c2) `void (s32 stage_id, s32 arg1)`, arg1 used throughout. Its caller

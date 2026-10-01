@@ -968,7 +968,10 @@ open(f"{H}/s15_log.txt", "w", newline=NL).write(NL.join(LOG) + NL)
 # the commit body: every disposition the generator took (layer-2 round 1, step-15 finding 6)
 msg = ["Rule: .claude/rules/per-file-gp-model.md (Q65, Q67-Q72; A8/A9 = Q79-Q81, rules: 8c57bc4ab). Generator: s15_apply.py (docstring); evidence",
        "docs/grind/gp-model-2026-09-30.md; full generator log banked as memory/grind/q65-adoption/q56/adopt/s15_log.txt.",
-       "Explicit-relocation asm excluded from E1/E2/split: memory/grind/q65-adoption/q56/adopt/explicit_exclusions.md.", ""]
+       "Explicit-relocation asm excluded from E1/E2/split: memory/grind/q65-adoption/q56/adopt/explicit_exclusions.md.",
+       "Owner rulings Q86/Q87 (rules: a17a2c144): the eight small read-only items in files that get -G8 stay in",
+       ".rodata (record only, byte-neutral); D_800A3224 / D_800A3290 stay defined as declared with their evidence",
+       "comments (the RECT / 8-byte record retype is owed after the adoption).", ""]
 for title, pfx in (("Blocks extended to their last gp-reached object, declared in no C file", "BLOCK-END"),
                    ("gp-reached objects typed by another file's declaration", "TYPED-ELSEWHERE"),
                    ("Bytes after a block's last object inside the original's label run, left in the data blob", "BLOCK-TAIL"),

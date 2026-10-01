@@ -7,6 +7,10 @@ Owner-decided types (per-file-gp-model.md (A5), owner ruling Q70):
 - D_80102C00 keeps s32. Its only use is taking its address.
 - func_8004153C keeps the unprototyped `extern s32 *func_8004153C();`. The tidy-up is deferred.
 - D_800153F0 is a 22-halfword struct, copied in one assignment.
+- func_80044100 is declared unprototyped, `extern void func_80044100();` (owner ruling Q88, rules: a17a2c144,
+  added to A5): text1a_b calls it with one argument ($a1 unset in the target), sound with two.
+- sound's func_800475A4 / camera_CalcAngles hand SVECTOR / VECTOR / MATRIX locals to the libgte calls
+  (layer-2 round 2): no casts on s16[3] / s32[3..8] buffers; byte-identical.
 
 Byte-identity proof for D_800153F0 (A5 requires it banked here):
 - func_8004A09C reads the 44 bytes as u16.
