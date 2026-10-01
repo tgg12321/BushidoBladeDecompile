@@ -5,7 +5,7 @@ import glob
 import re
 import sys
 
-sys.path.insert(0, "tmp/func_80023F08")
+sys.path.insert(0, "memory/grind/func_80023F08/landA")
 from consumer_scan import M  # noqa: E402  (offset -> (member, type))
 
 LOAD = {"lb": ("s8", 1), "lbu": ("u8", 1), "lh": ("s16", 2), "lhu": ("u16", 2), "lw": ("s32", 4),

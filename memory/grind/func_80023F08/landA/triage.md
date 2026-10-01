@@ -8,8 +8,13 @@ Triage of the non-AGREE rows by handle:
   game_GetPlayerData data (func_80027A58 v0); D_800A34FC / D_800A35A8 / D_800A33F4 tables; func_80037F40 `bp`
   (save-file records); gpu / spu / text1b_tu1c tile code; func_8001F2E4 `a`/`b` (MotionFrame: +0x26 is unk_0C[13], u16 —
   agrees); func_8003F824 scene; func_80017FA0 p68.
-- PracticeMenuRec handles among the non-AGREE rows: func_80039680 `a0` (`*(u16 *)(a0 + 0x68)` copied into an s16 field:
-  an lhu copy of the s16 member, which is how GCC copies an s16 — agrees in width). No contradicting width found.
+- PracticeMenuRec handles among the non-AGREE rows (two):
+  * func_80039680 `a0` (src/code6cac_c_mid.c:1375): `*(u16 *)(a0 + 0x68)` copied into an s16 field — an lhu copy of
+    the s16 member unk_68, which is how GCC copies an s16; agrees in width.
+  * func_800233AC `arg0` (src/code6cac_tu2.c:4117; the same function reads arg0 + 0x1D8, a PracticeMenuRec):
+    `*(SVec8_233AC *)(arg0 + 0x98)` stores a file-local struct of 4 x s16 — agrees with SVec4i16 unk_98 in width and
+    signedness; the file-local type over the record is pre-existing debt (checklist 1001c item 3).
+  No contradicting width or signedness found.
 Disposition: no consumer contradicts the new types; the PracticeMenuRec raw-offset sites that agree (u8 *-typed bodies in
 code6cac_tu2.c, code6cac_b_tu2.c, code6cac_c_mid.c, text1b.c, ...) stay as disclosed pre-existing debt (checklist 1001c
 item 4; precedent b3843cc02 / rev-pmr-split) — the func_80021424 L1-L4 handle series (memory/grind/func_80021424/HANDOFF.md).
