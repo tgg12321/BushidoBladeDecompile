@@ -75,3 +75,20 @@ BB2_FINDREG_DEBUG on the same tu.i, for landing body pseudos 79-83 and every per
 i (Q51): one counter for the four loops (slot scan, flag scan, D_80106A78 scan, poll retry), as SOTN's
 AddToInventory (src/dra/5D5BC.c:141-198 @aa53500, splat.us.dra.yaml `[0x5D5BC, c, 5D5BC]`) reuses `i` for its two
 loops (:173, :183). Per-loop counters measured: slot 43, flag 5, objects 31, retry 5 (probes/r11/ablate_i_*).
+
+## s3b (2026-10-01) — layer-2 round 1: split verdict (= FAIL), body a6f34d363c20ad3f
+- rev-55B60-r11 PASS: Ruling 11 (A)-(F) for temp/temp2/temp3/work; ablations re-measured; all 31 partitions of temp
+  nonzero (probes/rev55b60r11/partitions_results.txt); Q51 for i holds. Reviewer respellings banked in
+  probes/rev55b60r11/ (resp_results.txt: mask ternary 6, far inline 10, sign inline 14, lim inline 10, add ternary 0;
+  resp2: add split + ternary 81, all-temp split + ternary 67, PV + ternary 91). `temp = unk_6A == 0x11 ? 8 : 4` (0)
+  is the simpler spelling of the increment and is adopted.
+- rev-55B60-dm FAIL (data model / casts), objections = next frontier:
+  (1) `extern u8 D_80106A78;` scalar walked by byte offset (14 puns): type the 0x64-byte records in code6cac.h,
+      `extern Rec D_80106A78[12]`, respell every C consumer (func_80030580, func_80030D7C,
+      code6cac_b_tu2.c:4231/4364/4921, code6cac_b.c:133) as its own preparatory landing.
+  (2) retire named_syms rows g_status_flag_record_table_80099D88_plus_5 and g_practice_lesson_init_done_plus_4.
+  (3) no (u16) casts on unk_6A: correct the header field to u16 (header-type-correction-from-use-sites; check
+      96471164a, which flipped it to s16), byte-neutral for every consumer.
+  (4) disclose/respell the second handle D_80101F4E (code6cac.h:724) over unk_86 (func_800218C8/func_80021904).
+  (5) type unk_3B4 as a pointer (func_80055948 loads/stores one) or disclose.
+  Rejected body: rejected/layer2-r1-datamodel-fail-0.c. Tree reverted; rebuild == oracle.

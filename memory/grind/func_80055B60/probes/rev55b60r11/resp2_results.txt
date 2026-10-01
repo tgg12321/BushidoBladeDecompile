@@ -1,0 +1,1 @@
+R2_addsplit_tern=81  R2_alltemp_tern=67  R2_pv_tern=91
