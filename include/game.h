@@ -152,7 +152,9 @@ extern u8 D_8009BD20[2][2];
  * the first word of that context). f10 and f14 are per-player s16 pairs that
  * the original code also reads as one word (union word views, owner rulings
  * Q33/Q46): `lw 0x10` at func_800747D8 0x800747F4 and func_80075670
- * 0x80075684, `lw 0x14` at func_80077374 0x800773A4. The s32 members make the
+ * 0x80075684, `lw 0x14` at func_80077374 0x800773A4; f1C and f20 likewise, cleared with one
+ * `sw $zero` each by func_800770B8 (0x800772C0 / 0x800772BC), their halves read and written by
+ * func_80075F80 (`lhu`/`sh` 0x1C / 0x20). The s32 members make the
  * struct 4-aligned, so sizeof is 0x94 (the members end at 0x92; owner ruling
  * Q57, layout search in pre-slim-2026-10-01:memory/grind/func_800768DC/q57-layout-search-2026-09-30.md). */
 typedef struct {
@@ -169,8 +171,14 @@ typedef struct {
         s32 word;
     } f14;
     s16 f18[2];
-    s16 f1C[2];
-    s16 f20[2];
+    union {
+        s16 half[2];
+        s32 word;
+    } f1C;
+    union {
+        s16 half[2];
+        s32 word;
+    } f20;
     void *f24;
     u8 pad28[4];
     s32 *f2C;

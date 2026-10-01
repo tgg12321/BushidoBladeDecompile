@@ -1,0 +1,1 @@
+{"func": "func_80075830", "addr": "80075830", "verdict": "PASS", "body_hash": "82bec16a269994a7", "body_kind": "c", "file": "text1b_tu2", "reviewer": "rev-770B8-r2", "scope": "cheat-cleanup", "date": "2026-10-01T18:04:42Z", "head": "23a21244c", "notes": "f1C/f20 .half respelling with the func_800770B8 landing; r2 PASS 2026-10-01"}
