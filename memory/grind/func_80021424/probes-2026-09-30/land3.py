@@ -8,7 +8,9 @@ import re
 import sys
 from pathlib import Path
 
-root = Path(__file__).resolve().parents[2]
+import os
+SRCROOT = Path(__file__).resolve().parents[2]
+root = Path(os.environ.get("L1_ROOT") or SRCROOT)
 DRY = "--dry" in sys.argv
 CALLER = "--caller-cast" in sys.argv
 
@@ -53,7 +55,7 @@ s = rd("src/code6cac_tu2.c")
 s = sub1(s, "extern void *func_80021424(u8 *, s32, u8 *);\n",
          "extern void *func_80021424(PracticeMenuRec *, s32, s16 *);\n", "extern")
 a, b = func_span(s, "func_80021424")
-s = s[:a] + (root / "tmp/func_80021424/func_80021424.r3.c").read_bytes().decode("utf-8").rstrip("\n") + s[b:]
+s = s[:a] + (SRCROOT / "tmp/func_80021424/func_80021424.r3.c").read_bytes().decode("utf-8").rstrip("\n") + s[b:]
 if CALLER:
     s = sub1(s, "        snd = func_80021424(rec, ent->id, rec + 0x5E);\n",
              "        snd = func_80021424((PracticeMenuRec *)rec, ent->id, (s16 *)(rec + 0x5E));\n", "caller")

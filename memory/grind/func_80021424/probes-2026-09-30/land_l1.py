@@ -56,9 +56,13 @@ h = sub1(h, "    u8  unk_4E[0x5E - 0x4E];\n",
          "    u8  unk_4E[0x50 - 0x4E];\n"
          "    u8  *unk_50;                   /* func_80021424's result (func_80021A98); func_8001FAE4's argument */\n"
          "    s32 unk_54;\n    s32 unk_58;\n    s16 unk_5C;\n", "unk_4E")
-h = sub1(h, "    u8  unk_60[0x72 - 0x60];\n",
-         "    u8  unk_60;\n    u8  unk_61;\n    u8  unk_62[0x6A - 0x62];\n    u16 unk_6A;\n"
-         "    s16 unk_6C;\n    s16 unk_6E;\n    s16 unk_70;\n", "unk_60")
+MINE_60 = ("    u8  unk_60;\n    u8  unk_61;\n    u8  unk_62[0x6A - 0x62];\n    u16 unk_6A;\n"
+           "    s16 unk_6C;\n    s16 unk_6E;\n    s16 unk_70;\n")
+LANEH_60 = "    u8  unk_60[0x6A - 0x60];\n    u16 unk_6A;\n    u8  unk_6C[0x72 - 0x6C];\n"  # laneH's u16 unk_6A, if landed first
+if LANEH_60 in h:
+    h = sub1(h, LANEH_60, MINE_60, "unk_60 (rebased on laneH's unk_6A)")
+else:
+    h = sub1(h, "    u8  unk_60[0x72 - 0x60];\n", MINE_60, "unk_60")
 h = sub1(h, "    u8  unk_74[0x78 - 0x74];\n", "    s32 unk_74;\n", "unk_74")
 h = sub1(h, "    u8  unk_7A[0x7C - 0x7A];\n", "    s16 unk_7A;\n", "unk_7A")
 h = sub1(h, "    u8  unk_92[0x96 - 0x92];\n", "    u8  unk_92[0x94 - 0x92];\n    s16 unk_94;\n", "unk_92")

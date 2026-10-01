@@ -18,8 +18,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-root = Path(__file__).resolve().parents[2]
-d = root / "tmp/func_80021424"
+import os
+SRCROOT = Path(__file__).resolve().parents[2]
+root = Path(os.environ.get("L1_ROOT") or SRCROOT)
+d = SRCROOT / "tmp/func_80021424"
 rows = "keep" if "--rows" in sys.argv and sys.argv[sys.argv.index("--rows") + 1] == "keep" else "retire"
 
 
@@ -134,6 +136,8 @@ wr("undefined_syms_auto.txt", u)
 if DRY:
     sys.exit(0)
 files = ["include/code6cac.h", "src/code6cac_tu2.c", "src/code6cac_c2.c", "undefined_syms_auto.txt"]
+if os.environ.get("L1_ROOT"):
+    sys.exit(0)
 patch = subprocess.run(["git", "diff", "--"] + files, cwd=root, capture_output=True).stdout
 (d / "mine.patch").write_bytes(patch)
 print("applied; rows =", rows, "; patch bytes", len(patch))

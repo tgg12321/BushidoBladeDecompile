@@ -11,7 +11,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-root = Path(__file__).resolve().parents[2]
+import os
+SRCROOT = Path(__file__).resolve().parents[2]
+root = Path(os.environ.get("L1_ROOT") or SRCROOT)
 DRY = "--dry" in sys.argv
 
 
@@ -61,7 +63,7 @@ wr("include/code6cac.h", h)
 s = rd("src/code6cac_tu2.c")
 s = sub1(s, "            func_800213A0((s16 *)rec);\n", "            func_800213A0((PracticeMenuRec *)rec);\n",
          "func_800213A0 call")
-bodies = (d := root / "tmp/func_80021424")
+bodies = (d := SRCROOT / "tmp/func_80021424")
 for f in ("func_800213A0", "func_800218C8", "func_80021904", "func_80021974", "func_800219E4", "func_80021A3C"):
     s = set_body(s, f, (d / f"{f}.r2.c").read_bytes().decode("utf-8"))
 wr("src/code6cac_tu2.c", s)
@@ -76,6 +78,8 @@ wr("undefined_syms_auto.txt", u)
 if DRY:
     sys.exit(0)
 files = ["include/code6cac.h", "src/code6cac_tu2.c", "src/code6cac_c2.c", "undefined_syms_auto.txt"]
+if os.environ.get("L1_ROOT"):
+    sys.exit(0)
 patch = subprocess.run(["git", "diff", "HEAD", "--"] + files, cwd=root, capture_output=True).stdout
 (d / "mine.patch").write_bytes(patch)
 print("applied; patch bytes", len(patch))
