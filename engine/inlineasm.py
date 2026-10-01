@@ -65,18 +65,28 @@ _REGISTER_KEYWORD = re.compile(r"\bregister\b")
 # func_cheat_asm_count return -1, which queue.generate/mark_done read as clean.
 _INCLUDE_ASM_MACRO_RE = re.compile(
     r'(?m)^[ \t]*INCLUDE_ASM\s*\(\s*"[^"]*"\s*,\s*([A-Za-z_]\w*)\s*\)\s*;?[ \t]*')
+# BIOS_[ABC]_FUNCTION(name, id) (include/bios.h): the BIOS vector trampoline
+# macro. Same fact as an INCLUDE_ASM line -- a whole-body canonical asm function
+# supplied without C -- so include_asm_spans reports it alongside INCLUDE_ASM.
+_BIOS_MACRO_RE = re.compile(
+    r'(?m)^[ \t]*BIOS_[ABC]_FUNCTION\s*\(\s*([A-Za-z_]\w*)\s*,[^()\n]*\)\s*;?[ \t]*')
 _INCLUDE_DIRECTIVE_RE = re.compile(r'\.include\s+\\?"[^"\\]*?/([A-Za-z_]\w*)\.s\\?"')
 _GLABEL_NAME_RE = re.compile(r'\bglabel\s+([A-Za-z_]\w*)')
 
 
 def include_asm_spans(text: str) -> list[tuple[str, int, int]]:
-    """(func, start, end) for every `INCLUDE_ASM(FOLDER, func)` invocation.
+    """(func, start, end) for every `INCLUDE_ASM(FOLDER, func)` invocation and
+    every `BIOS_[ABC]_FUNCTION(func, id)` trampoline invocation (include/bios.h,
+    inline-asm audit A3 2026-10-01) -- both supply a whole function from asm.
 
     Anchored at line start, so a `#define INCLUDE_ASM(...)` in a header and a
     commented-out invocation do not match.
     """
-    return [(m.group(1), m.start(), m.end())
-            for m in _INCLUDE_ASM_MACRO_RE.finditer(text)]
+    spans = [(m.group(1), m.start(), m.end())
+             for m in _INCLUDE_ASM_MACRO_RE.finditer(text)]
+    spans += [(m.group(1), m.start(), m.end())
+              for m in _BIOS_MACRO_RE.finditer(text)]
+    return sorted(spans, key=lambda t: t[1])
 
 
 # Directives known NOT to emit bytes. This is a DENY-list on purpose: anything

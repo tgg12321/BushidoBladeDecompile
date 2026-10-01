@@ -104,16 +104,78 @@ _STRUCTURAL = {"nop", "jr"}  # pure padding/return — not "C work" (excluded fr
                              # isn't dragged below the threshold by its nops + jr).
 
 
+# Reasons that make a hit WHOLE-body evidence, not an island: the surrounding
+# code cannot be compiled C, so the function is hand-written asm all the way
+# through (inline-asm audit A8, 2026-10-01; mirrors scan_hand_coded S6/S7 and
+# the delay-slot construct cited by the LIBGTE grants).
+WHOLE_MARK = "[whole] "
+_BRANCH = re.compile(r"^(b|bal|j|jal|jalr|jr|beq|bne|beqz|bnez|blez|bgez|bltz|"
+                     r"bgtz|bgezal|bltzal|beql|bnel)$")
+_SREG = re.compile(r"\bs[0-7]\b")
+_SP_SAVE = re.compile(r"^(s[0-7]),\s*-?\w+\(sp\)")
+# GCC 2.7.2 emits `break` only as the div-by-zero (7) / overflow (6) trap.
+_GCC_BREAK = {"0x7", "0x6", "7", "6", "0x0,0x7", "0x0,0x6", "0,7", "0,6"}
+_VECTOR = r"(160|176|192|0xa0|0xb0|0xc0)"
+
+
+def _whole_signals(ins: list[tuple[str, str]]) -> list[tuple[int, str, str]]:
+    """Function-level hand-asm signals over (mnemonic, operands) pairs:
+    a BIOS vector tail jump (li rX,0xA0/B0/C0; jr rX -- GCC 2.7.2 has no
+    sibcalls), a BIOS vector call with the function id in $t1 in the jalr
+    delay slot, `break` with a non-GCC code, a no-C-form op in a branch delay
+    slot (GCC cannot schedule an __asm__ statement into one), and a callee-saved
+    register used with no stack save (custom calling convention)."""
+    hits = []
+    for i, (mn, ops) in enumerate(ins):
+        if mn in ("jr", "jalr") and ops != "ra":
+            vec = any(k >= 0 and ins[k][0] == "li"
+                      and re.fullmatch(re.escape(ops) + "," + _VECTOR, ins[k][1])
+                      for k in (i - 1, i - 2))
+            if vec and mn == "jr":
+                hits.append((i, mn, WHOLE_MARK + "BIOS vector tail-jump "
+                             "(jr through 0xA0/0xB0/0xC0) — no GCC 2.7.2 C form"))
+            elif vec and i + 1 < len(ins) and ins[i + 1][0] == "li" \
+                    and ins[i + 1][1].startswith("t1,"):
+                hits.append((i, mn, "BIOS vector call with the function id in "
+                             "$t1 in the delay slot — no GCC 2.7.2 C form"))
+        elif mn == "break" and ops not in _GCC_BREAK:
+            hits.append((i, mn, f"break with a non-GCC code ({ops})"))
+    for i in range(1, len(ins)):
+        mn = ins[i][0]
+        if (_GTE.match(mn) or mn in ("c2", "cop2", "add", "addi", "sub")) \
+                and _BRANCH.match(ins[i - 1][0]):
+            hits.append((i, mn, WHOLE_MARK + "no-C-form op in a branch delay "
+                         "slot — GCC cannot schedule an __asm__ statement there"))
+            break
+    saved, used, first = set(), set(), None
+    for i, (mn, ops) in enumerate(ins):
+        if mn in ("sw", "lw") and _SP_SAVE.match(ops):
+            if mn == "sw":
+                saved.add(_SP_SAVE.match(ops).group(1))
+            continue
+        regs = set(_SREG.findall(ops))
+        if regs - saved and first is None:
+            first = i
+        used |= regs
+    if used - saved:
+        hits.append((first or 0, "s-reg", WHOLE_MARK + f"callee-saved "
+                     f"{sorted(used - saved)} used with no stack save — custom "
+                     f"calling convention, no GCC 2.7.2 C form"))
+    return hits
+
+
 def _detect(dlines) -> tuple[list, int, int]:
     """Scan objdump -d instruction lines -> (hits, total_insns, structural). hits
     is a list of (idx, mnemonic, reason) for definitive-asm instructions;
     structural counts nop/jr (return + delay-slot padding)."""
     hits, idx, structural = [], 0, 0
+    ins = []
     for line in dlines:
         m = _DLINE.match(line)
         if not m:
             continue  # symbol header / blank
         mn, ops = m.group(1), m.group(2)
+        ins.append((mn, ops.strip()))
         if mn in _STRUCTURAL:
             structural += 1
         reason = None
@@ -135,6 +197,12 @@ def _detect(dlines) -> tuple[list, int, int]:
         if reason:
             hits.append((idx, mn, reason))
         idx += 1
+    seen = {i for i, _, _ in hits}
+    for h in _whole_signals(ins):
+        if h[0] not in seen or h[2].startswith(WHOLE_MARK):
+            hits.append(h)
+            seen.add(h[0])
+    hits.sort(key=lambda h: h[0])
     return hits, idx, structural
 
 
@@ -178,9 +246,11 @@ def _verdict(func: str, hits: list, total: int, structural: int = 0,
         # ASM-WHOLE if the function is dense in canonical ops (>=0.8) OR every
         # NON-structural instruction is canonical — a pure GTE/asm leaf wrapper
         # (mtc2/avsz3/mfc2 + nop/jr) whose only non-canonical insns are padding.
-        whole = frac >= 0.8 or (nonstruct > 0 and len(hits) == nonstruct)
+        whole = frac >= 0.8 or (nonstruct > 0 and len(hits) == nonstruct) \
+            or any(r.startswith(WHOLE_MARK) for _, _, r in hits)
         verdict = "ASM-WHOLE" if whole else "ASM-PARTIAL"
-        reasons = sorted({r for _, _, r in hits})
+        reasons = sorted({r[len(WHOLE_MARK):] if r.startswith(WHOLE_MARK) else r
+                          for _, _, r in hits})
         return {"func": func, "verdict": verdict, "asm_insns": len(hits), "total": total,
                 "regions": spans, "reasons": reasons,
                 "reason": f"{len(hits)}/{total} insns canonical-asm ({'; '.join(reasons)})"}

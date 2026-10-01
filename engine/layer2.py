@@ -138,7 +138,8 @@ def _disk(path: str) -> str | None:
 
 
 def _asm_pieces(text: str, func: str, read=_disk) -> list[str]:
-    """Source text that supplies `func` wholly from asm: its INCLUDE_ASM line,
+    """Source text that supplies `func` wholly from asm: its INCLUDE_ASM line or
+    BIOS_[ABC]_FUNCTION trampoline line,
     every `__asm__` block naming it (`glabel func` or `.include .../func.s`),
     and the contents of each included .s file, fetched by `read(path)` (the
     working tree by default; a git revision for the departures audit). A
@@ -151,6 +152,9 @@ def _asm_pieces(text: str, func: str, read=_disk) -> list[str]:
         folder = re.search(r'"([^"]*)"', m.group(0)).group(1)
         inc = Path(folder) / f"{func}.s"
         pieces.append(read(inc.as_posix()) or f"<missing {inc.as_posix()}>")
+    for m in inlineasm._BIOS_MACRO_RE.finditer(text):
+        if m.group(1) == func:
+            pieces.append(m.group(0))  # the macro line IS the whole body
     glabel = re.compile(r"\bglabel\s+" + re.escape(func) + r"\b")
     include = re.compile(r'\.include\s+\\?"([^"\\]*?/' + re.escape(func) + r'\.s)\\?"')
     for kw in inlineasm.cia.find_asm_keywords(text):

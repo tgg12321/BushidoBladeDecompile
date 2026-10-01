@@ -94,6 +94,10 @@ def main() -> int:
     data_as_code: list[str] = []
     total_completed_c = 0
     total_completed_canon = 0
+    # Code-size split (inline-asm audit A2, 2026-10-01): bytes per bucket, so
+    # the report can state SOTN-comparable coverage ("bytes converted to C",
+    # sotn-decomp README) beside the completion counts.
+    size = {"c": 0, "islands": 0, "whole": 0, "incomplete": 0}
 
     # Walk every C source file and check every function defined in it.
     # Use RELATIVE paths — score._o_func_table shells out via objdump, and an
@@ -106,8 +110,12 @@ def main() -> int:
             continue
         src_text = inlineasm._read_src_cached(stem)
         island_funcs = _island_funcs(src_text, stem)
-        for func in score._o_func_table(ref_o):
+        whole_asm = inlineasm.whole_body_asm_funcs(src_text) if src_text else set()
+        ftab = score._o_func_table(ref_o)
+        for func in ftab:
+            fsize = ftab[func][1]
             if func in in_queue:
+                size["incomplete"] += fsize
                 continue  # INCOMPLETE — the queue covers it
             # Data-as-code: a symbol in the object's function table that is not
             # a C-level function of the file at all (`.include`d asm body,
@@ -133,6 +141,7 @@ def main() -> int:
 
             if is_canon:
                 total_completed_canon += 1
+                size["whole" if func in whole_asm else "islands"] += fsize
                 if rules > 0:
                     violations.append(
                         f"{func} ({stem}.c): COMPLETED-INLINE-ASM-CANONICAL "
@@ -181,6 +190,7 @@ def main() -> int:
                     f"or it is injection (should be INCOMPLETE)")
             else:
                 total_completed_c += 1
+                size["c"] += fsize
                 # COMPLETED-C + maspsx gate: cheat-pathway gates are violations
                 # (a pure-C spelling exists — the completion leaned on config);
                 # fidelity gates are legitimate but must stay VISIBLE
@@ -217,6 +227,21 @@ def main() -> int:
     print(f"COMPLETED-C:                    {total_completed_c} functions")
     print(f"COMPLETED-INLINE-ASM-CANONICAL: {total_completed_canon} functions")
     print(f"INCOMPLETE (in queue):          {len(in_queue)} functions")
+    total_bytes = sum(size.values())
+    if total_bytes:
+        def pct(n):
+            return f"{100.0 * n / total_bytes:5.1f}%"
+        print(f"\ncode size by bucket ({total_bytes:,} bytes of C-object .text; "
+              f"data-as-code excluded):")
+        print(f"  COMPLETED-C                           {size['c']:>8,}  {pct(size['c'])}")
+        print(f"  canonical: C body + asm islands       {size['islands']:>8,}  {pct(size['islands'])}")
+        print(f"  canonical: whole-body hand-written asm{size['whole']:>8,}  {pct(size['whole'])}")
+        print(f"  INCOMPLETE (queue)                    {size['incomplete']:>8,}  {pct(size['incomplete'])}")
+        conv = size['c'] + size['islands']
+        print(f"  => in C (SOTN 'code coverage' sense: COMPLETED-C + C-with-islands): "
+              f"{conv:,} bytes, {pct(conv).strip()}")
+        print(f"  => completed incl. canonical hand-written asm: "
+              f"{conv + size['whole']:,} bytes, {pct(conv + size['whole']).strip()}")
     if data_as_code:
         print(f"\ndata-as-code symbols ({len(data_as_code)}) — in the objects' "
               f"function tables but structurally not C functions; excluded from "

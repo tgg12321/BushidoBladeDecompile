@@ -104,6 +104,45 @@ def test_canonical() -> None:
     check("detect: syscall detected", "syscall" in reasons)
     check("detect: ordinary addiu NOT flagged", "addiu" not in reasons)
 
+    # Whole-body signals (inline-asm audit A8, 2026-10-01).
+    tramp = [_dline("80078948", "240a00a0", "li", "t2,160"),
+             _dline("8007894c", "01400008", "jr", "t2"),
+             _dline("80078950", "24090043", "li", "t1,67"),
+             _dline("80078954", "00000000", "nop")]
+    h, t, st = canonical._detect(tramp)
+    eq("detect: BIOS vector tail-jump -> ASM-WHOLE",
+       canonical._verdict("Exec", h, t, structural=st)["verdict"], "ASM-WHOLE")
+    fptr = [_dline("80010000", "24020a00", "li", "v0,160"),
+            _dline("80010004", "0040f809", "jalr", "v0"),
+            _dline("80010008", "00000000", "nop")]
+    eq("detect: a C call through a constant pointer is NOT flagged",
+       canonical._detect(fptr)[0], [])
+    eq("detect: break 7 (GCC div-by-zero trap) NOT flagged",
+       canonical._detect([_dline("80010000", "0007000d", "break", "0x7")])[0], [])
+    check("detect: break with a non-GCC code flagged",
+          len(canonical._detect([_dline("80010000", "0001000d", "break", "0x1")])[0]) == 1)
+    slot = [_dline("80010000", "14400003", "bnez", "v0,80010010"),
+            _dline("80010004", "c8800000", "lwc2", "$0,0(a0)"),
+            _dline("80010008", "27bdfff0", "addiu", "sp,sp,-16"),
+            _dline("8001000c", "27bd0010", "addiu", "sp,sp,16"),
+            _dline("80010010", "27bd0010", "addiu", "sp,sp,16")]
+    h, t, st = canonical._detect(slot)
+    eq("detect: cop2 op in a branch delay slot -> ASM-WHOLE",
+       canonical._verdict("f", h, t, structural=st)["verdict"], "ASM-WHOLE")
+    s7 = [_dline("80010000", "26100018", "addiu", "s0,s0,24"),
+          _dline("80010004", "03e00008", "jr", "ra"),
+          _dline("80010008", "00000000", "nop")]
+    h, t, st = canonical._detect(s7)
+    eq("detect: unsaved callee-saved use -> ASM-WHOLE",
+       canonical._verdict("f", h, t, structural=st)["verdict"], "ASM-WHOLE")
+    saved = [_dline("80010000", "afb00010", "sw", "s0,16(sp)"),
+             _dline("80010004", "26100018", "addiu", "s0,s0,24"),
+             _dline("80010008", "8fb00010", "lw", "s0,16(sp)")]
+    eq("detect: saved callee-saved use NOT flagged", canonical._detect(saved)[0], [])
+    check("verdict: whole-mark stripped from the reported reasons",
+          not any(r.startswith(canonical.WHOLE_MARK) for r in
+                  canonical._verdict("Exec", *canonical._detect(tramp)[:2])["reasons"]))
+
     # _verdict: opcode fraction
     eq("verdict: all-asm -> ASM-WHOLE",
        canonical._verdict("f", [(0, "c2", "x")], 1)["verdict"], "ASM-WHOLE")
@@ -2368,6 +2407,13 @@ def test_include_asm_whole_body() -> None:
        [f for f, _s, _e in inlineasm.include_asm_spans(inc)], ["PClseek"])
     check("include_asm: named in whole_body_asm_funcs",
           "PClseek" in inlineasm.whole_body_asm_funcs(inc))
+    bios = 'BIOS_B_FUNCTION(DeliverEvent, 0x7);\n'
+    eq("include_asm: BIOS trampoline macro recognised",
+       [f for f, _s, _e in inlineasm.include_asm_spans(bios)], ["DeliverEvent"])
+    check("include_asm: BIOS trampoline named in whole_body_asm_funcs",
+          "DeliverEvent" in inlineasm.whole_body_asm_funcs(bios))
+    check("include_asm: a #define of the BIOS macro is not an invocation",
+          inlineasm.include_asm_spans('#define BIOS_B_FUNCTION(name, id) BIOS_FUNCTION(name, 0xB0, id)\n') == [])
     check("include_asm: a #define of the macro is not an invocation",
           inlineasm.include_asm_spans('#define INCLUDE_ASM(F, N) __asm__()\n') == [])
 
