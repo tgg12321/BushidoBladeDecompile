@@ -1,5 +1,9 @@
 # Project Status
 
+**Latest (2026-10-01):** the 2026-09-30 evening manual run closed. The Grinder is **stopped pending the owner's
+approval**. Open work, in priority order (Q65 gp-model adoption, the PracticeMenuRec cleanup, recorded debt) is in
+[`grind/handoff-2026-09-30.md`](grind/handoff-2026-09-30.md). The queue holds 13 active and 12 rotated items.
+
 **Live snapshot.** Refreshed 2026-09-07 (post `-msoft-float` adoption). For
 the live worklist run `& tools/wteng.ps1 main queue next` (and `queue status`
 for counters); for build health run `verify-oracle`. The workflow itself lives
