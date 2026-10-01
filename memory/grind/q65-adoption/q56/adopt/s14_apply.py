@@ -110,6 +110,32 @@ def a8_merge(text, X, Y):
     return text.replace("@@X", X)
 
 
+# Owner ruling Q84: camera_CalcAngles, the one writer of the D_800A33C8 pair, returns to INCLUDE_ASM in this step
+# (as s16[2] our cc1 -G0 spends one more instruction in every spelling measured; cc1psx -G8 and our cc1 -G8 emit the
+# target - memory/grind/camera_CalcAngles/), and is re-queued active through the engine's reopen path.
+cf = [f for f in glob.glob("src/*.c") if "s16 *camera_CalcAngles(void) {" in rd(f)]
+assert len(cf) == 1, cf
+t = rd(cf[0])
+a = t.index("s16 *camera_CalcAngles(void) {")
+b = t.index("\n}\n", a) + 3
+wr(cf[0], t[:a] + 'INCLUDE_ASM("asm/funcs", camera_CalcAngles);\n' + t[b:])
+s = rd("asm/funcs/func_80047384.s")
+assert s.startswith("glabel func_80047384\n") and s.count("func_80047384") == 2
+wr("asm/funcs/camera_CalcAngles.s", s.replace("func_80047384", "camera_CalcAngles"))
+import subprocess as _sp
+_r = _sp.run([sys.executable, "-m", "engine.cli", "queue", "reopen", "camera_CalcAngles", "--file",
+              os.path.basename(cf[0])[:-2], "--reason",
+              "owner ruling Q84 (Q65 step 14, A8): D_800A33C8/D_800A33CA join into s16 D_800A33C8[2]; as an array "
+              "our cc1 -G0 spends one more instruction in every spelling measured - memory/grind/camera_CalcAngles/"],
+             capture_output=True, text=True)
+print(_r.stdout.strip()[-300:]); assert _r.returncode == 0, _r.stderr[-500:]
+_sp.run("git checkout -q -- metrics/events.jsonl 2>/dev/null", shell=True)
+print(f"camera_CalcAngles -> INCLUDE_ASM in {cf[0]}, re-queued")
+inc = set()
+for f in glob.glob("src/*.c"):
+    inc |= set(_re.findall(r'INCLUDE_ASM\(\s*"[^"]*"\s*,\s*(\w+)\s*\)', rd(f)))
+asm = {fn: rd(f"asm/funcs/{fn}.s") for fn in inc if os.path.exists(f"asm/funcs/{fn}.s")}
+
 for X, Y in A8_PAIRS:
     hit = []
     for f in sorted(glob.glob("src/*.c") + glob.glob("include/*.h")):
