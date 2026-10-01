@@ -3483,8 +3483,12 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     s16 *stage;
     s32 ofs;
     s32 phase;
-    s32 i;
-    s32 j;
+    s32 i; /* the counter of both the probe loop and the start-record search, as SOTN reuses one
+            * counter across consecutive loops (owner Q51): SOTN: src/dra/menu.c:138 @aa53500 */
+    /* Ruling 11 (ordinary-c-judge-decidable.md): holds three values -- the ray-walk step (1..40), the
+     * floor-climb step (1..40), then the chosen stage start-record index.
+     * Proof: memory/grind/func_80021DB0/r11/proof.md */
+    s32 temp;
     s32 angle;
     s32 dx;
     s32 dz;
@@ -3508,10 +3512,10 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
             continue;
         }
         cur = base;
-        for (j = 1; j < 41; j++) {
+        for (temp = 1; temp < 41; temp++) {
             probe.y = base.y;
-            probe.x = base.x + (dx * j) / 40;
-            probe.z = base.z + (dz * j) / 40;
+            probe.x = base.x + (dx * temp) / 40;
+            probe.z = base.z + (dz * temp) / 40;
             if (func_8005344C(&cur.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0) {
                 break;
             }
@@ -3527,8 +3531,8 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
             continue;
         }
         cur = *out;
-        for (j = 1; j < 41; j++) {
-            probe.y = out->y + j * 100;
+        for (temp = 1; temp < 41; temp++) {
+            probe.y = out->y + temp * 100;
             if (func_8005344C(&cur.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0 && nrm[1] == -0x1000) {
                 out->y = hit.y;
                 return;
@@ -3537,21 +3541,21 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
         }
     }
     if (D_800A38DC == 3) {
-        j = D_800A38E0;
+        temp = D_800A38E0;
     } else {
         best = 0x7FFFFFFF;
         stage += D_800A36A4 * 24;
-        for (i = 0, j = 0; i < 4; i++) {
+        for (i = 0, temp = 0; i < 4; i++) {
             dx = stage[i * 6 + 3] - pos[0];
             dz = stage[i * 6 + 5] - pos[2];
             d = dx * dx + dz * dz;
             if (d < best) {
                 best = d;
-                j = i;
+                temp = i;
             }
         }
     }
-    stage += j * 6 + 3;
+    stage += temp * 6 + 3;
     out->x = stage[0];
     out->y = stage[1];
     out->z = stage[2];
