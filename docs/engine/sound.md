@@ -337,24 +337,24 @@ their case-branch.  The most plausible interpretation is that the
 never has a byte with the high bit set, so the call sites are never
 reached.  This suggests the dispatch table was implemented for a
 debug/future build but never populated in the shipped ROM.  See
-`docs/engine/recent_naming_findings.md` §11 for the binary-scan
+`pre-slim-2026-10-01:docs/engine/recent_naming_findings.md` §11 for the binary-scan
 evidence.
 
-## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
 
 Three clusters from the placeholder-refinement pass document the
 SPU/voice update path more directly:
 
-- [§11 Sequence-event handler table (MIDI-style dispatch)](recent_naming_findings.md#11-sequence-event-handler-table-midi-style-dispatch-5-slots)
+- §11 Sequence-event handler table (MIDI-style dispatch)
   — `g_seq_event_handler_{90_NoteOn, B0_CtrlChange, C0_PgmChange,
   E0_PitchBend, FF_Meta}` at `0x800F3340..0x800F3350` (the dispatch
   table for the `saTan0Main` MIDI-style interpreter above).
-- [§12 Sound data buffer pointer cluster](recent_naming_findings.md#12-sound-data-buffer-pointer-cluster-6-pointers--relocator)
+- §12 Sound data buffer pointer cluster
   — `g_snd_data_buf_base` + 5 subblock pointers at `0x800EFB14`,
   set by `func_80054604` (snd_LoadSelection path) and `func_8005490C`
   (header-offset unpack), relocated together by `func_80054FDC(delta)`
   when the buffer moves.  Connects the sound-loader to the saTan family.
-- [§13/14 SPU voice0E setup cluster](recent_naming_findings.md#1314-spu-voice0e-setup-cluster-d_800ef0700x800ef59c)
+- §13/14 SPU voice0E setup cluster
   — Full SPU voice0E definition: `g_snd_voice_init_block` struct at
   0x800EF070 with vol/pitch baselines at +0x4C/+0x54; double-buffered
   envelope blocks `g_snd_voice_envelope_block_a/b` for scratchpad-DMA;

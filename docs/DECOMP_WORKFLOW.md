@@ -188,7 +188,9 @@ Two constraints still bind:
 A construct that exists only to move codegen and asserts nothing must be a **member of the
 frozen SOTN-accepted list with that entry's own prerequisites met**. Non-membership is a
 clean FAIL plus a borderline-ledger entry — not a judgement call, not an escalation, and
-not something a reviewer may reason its way past. The list is owner-only to extend.
+not something a reviewer may reason its way past. The list is owner-only to extend; since
+owner ruling 2026-09-30 (Q50) a construct carried by matched SOTN code is precedent enough, with the
+family's prerequisites still owed (`no-new-park-categories.md` § SOTN precedent suffices).
 
 The standard prerequisites on the last-resort entries are all four of:
 
@@ -343,9 +345,7 @@ be reviewed by a *fresh adversarial reviewer* — an agent or person that did no
 starting from a default-FAIL posture, not crediting the author's own reasoning.
 
 This is the single highest-value step in the process. Byte-correctness and a green SHA1
-cannot catch a false object model or a contorted spelling — only reading can. In the audit
-that produced this document, eight of twelve functions carried defects, and every one of
-them was in a commit that lacked a genuine review of the committed body.
+cannot catch a false object model or a contorted spelling — only reading can.
 
 Three ways this gate gets faked. All three occurred:
 
@@ -403,4 +403,4 @@ file. Everything in the diff should be explainable from the message.
 | Terminology | [`GLOSSARY.md`](GLOSSARY.md) |
 | Project history and retired systems | [`HISTORY.md`](HISTORY.md) |
 | Commit prefixes | [`COMMIT_CONVENTIONS.md`](COMMIT_CONVENTIONS.md) |
-| Past rulings on specific constructs | `docs/grind/decisions.md` |
+| Past rulings on specific constructs | `docs/grind/decisions.md` (index of standing owner rulings; older entries at git tag `pre-slim-2026-10-01`) + `docs/grind/owner-rulings-2026-09-26.md` |

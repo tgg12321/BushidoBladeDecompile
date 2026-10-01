@@ -1,6 +1,6 @@
 # Project History
 
-A condensed timeline of the BB2 matching decompilation, from the initial commit to the present. Compiled from `git log`, the two `CODEX_HANDOFF_*.md` files, and the project's internal status memory.
+A condensed timeline of the BB2 matching decompilation, from the initial commit to the present. Compiled from `git log`, the Codex handoffs, and the project's internal status memory.
 
 For day-to-day commits, run `git log --oneline`. This document focuses on inflection points — milestones, infrastructure landings, and rule changes.
 
@@ -39,7 +39,7 @@ The project reaches a major milestone: **every `INCLUDE_ASM` stub cleared**. All
 | Date | Milestone |
 |---|---|
 | 2026-04-20–26 | Steady sweep through remaining stubs. ~470 functions converted to inline-asm or asmfix bridges. Late-stage strategy from the handoff: replace each `INCLUDE_ASM` with the smallest safe C definition + `name: replace_with_asmfile` in asmfix.txt. |
-| 2026-04-27 | **ZERO-STUB SWEEP COMPLETE.** All 1,410 functions have C source entries; `wsl make clean-check` passes; build SHA1 matches. Documented in [`CODEX_HANDOFF_2026-04-27.md`](handoffs/2026-04-27-codex.md). 68-commit day. |
+| 2026-04-27 | **ZERO-STUB SWEEP COMPLETE.** All 1,410 functions have C source entries; `wsl make clean-check` passes; build SHA1 matches. Documented in `CODEX_HANDOFF_2026-04-27.md`. 68-commit day. |
 | 2026-04-27 | Stabilizer functions identified: `single_game_VoiceContorol`, `camera_set_zoom`, plus pinned helpers (`saTan4GaugeInit`, `saTan0GaugeDraw`, etc.) — fragile due to label coupling in regfix_stage2 / asmfix. |
 | 2026-04-27 | **Goal shift.** Reaching zero-stub clarified that "stub clearing" wasn't the right metric. The new goal is **pure C**: eliminate the ~376 inline-asm + asmfix functions that produce the right bytes but aren't really decompiled. |
 
@@ -67,7 +67,7 @@ The project notices that 209 functions are bridged via `replace_with_asmfile` af
 | 2026-05-11 | **Stop-event hook (`tools/hooks/grind_check.sh`)** added. Rejects wrap-up language ("next session can continue", "diminishing returns", "I've made substantial progress") while a function is unmatched and active. The Claude Code agent doing the matching cannot voluntarily stop until the function is matched + committed. |
 | 2026-05-12 | **Active-marker hook (`tools/hooks/active_func_guard.sh`)** added/refined. Enforces THE HARD RULE: `git commit` blocked unless `dc.sh verify <active>` returns MATCH; `git checkout`/`restore`/`reset` blocked on src/ files; `dc.sh next*` blocked while a function is in progress. `dc.sh release` is the only escape hatch (user-driven, typed confirmation). |
 | 2026-05-12 | **Subagent orchestration archived.** Prior parallel-worker / orchestrator tooling moved to `archive/`. Solo end-to-end becomes the canonical working mode. |
-| 2026-05-12 | **Subsystem map + naming triage** captured ([`SUBSYSTEM_MAP_2026-05-12.md`](handoffs/2026-05-12-subsystem-map.md), [`AUDIT_EXISTING_C_2026-05-12.md`](handoffs/2026-05-12-audit.md), [`NAMING_TRIAGE_2026-05-12.md`](naming/2026-05-12-triage.md), [`KENGO_RENAME_QUEUE_2026-05-12.md`](naming/2026-05-12-rename-queue.md)). Address ranges and content map for every `src/*.c` file. 17 score-4 Kengo names triaged into keep / demote / rename decisions. |
+| 2026-05-12 | **Subsystem map + naming triage** captured (`SUBSYSTEM_MAP_2026-05-12.md`, `AUDIT_EXISTING_C_2026-05-12.md`, `NAMING_TRIAGE_2026-05-12.md`, `KENGO_RENAME_QUEUE_2026-05-12.md`). Address ranges and content map for every `src/*.c` file. 17 score-4 Kengo names triaged into keep / demote / rename decisions. |
 | 2026-05-12 | **Quick reference consolidation.** ~11 historical memory files merged into `feedback_quick_reference.md` (the symptom-indexed playbook). |
 
 ## Phase 6 — Bridge retirement + canonical inline-asm formalization (2026-05-13 to present)
@@ -125,7 +125,7 @@ session would do better.
 | 2026-07-11 | **LIBGTE canonical-asm authorization pass**: 10 functions retired as COMPLETED-INLINE-ASM-CANONICAL in one commit (`9eba9a3e`). 27 forbidden `dead-branch-scheduling` regfix rules cleared alongside. Infrastructure finding: `.set reorder/at` at end of file-scope `__asm__` block combined with a subsequent `.section .text`-opening block causes maspsx to insert a stray load-delay nop — fix documented in `canonical-asm-authorization-recipe.md`. |
 | 2026-07-12 | **`hoist-shared-arm-computation-defeats-copy-pref` sanctioned** as a new pure-C RA lever. Confirmed case: `saTan2Main` (banked at floor 5 since 2026-07-10). Rule doc in `.claude/rules/`. |
 
-## Phase 9 — Toolchain fidelity, asmfix-to-zero, naming (2026-07-14 to present)
+## Phase 9 — Toolchain fidelity, asmfix-to-zero, naming (2026-07-14 to 2026-08-24)
 
 The phase that moved the project's leverage from per-function grinding to
 *config fidelity* (make our compiler behave like Sony's), *class-wide debt
@@ -152,23 +152,23 @@ naming*. The Grinder ran continuously underneath it all.
 | 2026-08-19 | **The self-serve + asm-until-matched day.** (1) Three overnight bytes-proven INTEGRATION HANDOFFs (SioSyncroWrite, func_8001B748, func_8002D518) operator-integrated to COMPLETED-C under two-layer review — then made pipeline-executable forever ([[integration-handoff-self-serve]]: driver widens scope / clears Judge-superseded bans on Judge verdicts; `grindlib unban`, `queue unpark` added). (2) Stale-park re-audit: 6 of 33 parks reclaimed under post-park family rulings. (3) Modality-effectiveness report (`docs/grind/modality-effectiveness-2026-08-19.md`) → ladder retune (synthesis to s6, permuter cap 2, closing-modality instrumentation) + paperwork-FAIL fixes (family-selection table, citation prechecks, CITATION fix-up ground). (4) **asm-until-matched migration** ([[asm-until-matched]]): 191 INCOMPLETE functions converted to `INCLUDE_ASM`, 865 rules retired, oracle-verified per batch; 68 byte-coupling deferred (wave-2 mechanical retirement measured a dead end). Queue distances now pin to ledger honest floors. |
 
 
-## Standing items (2026-08-24)
+## Phase 10 — Zero rules, the Judge's rule book, build-model fidelity (2026-08-25 to 2026-10-01)
 
-- **COMPLETED-C**: 1,051 functions (per `tools/check_completion_integrity.py`, the authority).
-- **COMPLETED-INLINE-ASM-CANONICAL**: 179 functions in `inline_asm_canonical.txt` (BIOS trampolines, GTE primitives, hand-coded math kernels, LIBGTE modules).
-- **INCOMPLETE queue**: 244 items (211 active, 33 parked). Verdict breakdown: 208 C / 36 ASM-PARTIAL. INCOMPLETE = committed as `INCLUDE_ASM("asm/funcs", <func>);` except the 56 byte-coupling deferred ([[asm-until-matched]]).
-- **Rules**: 689 outstanding across 37 functions (all inside the 56 deferred) — down from 1,573 on 2026-08-17; all debt per the 2026-08-06/2026-08-19 rulings, retiring per function at COMPLETED-C.
-- **Retired work streams**: `dc.sh` workflow (2026-05-26), named-recipe library (2026-05-26), multi-agent fleet (2026-07-06), `dc.sh active_func_guard` hook (2026-05-22), Closer Phase 3 (2026-07-13).
-- **Owner escalation shelf**: retired 2026-08-24 (judge-sole-gate — no owner-wait surfaces); the `_spu_FiDMA` fork-crash question moved to `docs/grind/borderline.md` (2026-08-24 policy-question entry).
-
-## Major handoff documents
-
-| Document | Purpose |
+| Date | Milestone |
 |---|---|
-| CODEX_HANDOFF_2026-04-17.md (no longer present) | First Codex session handoff. Documents the shift from m2c/permuter-heavy workflow to the codex_lab + regfix/asmfix discipline. Introduced asmfix and the lab pattern. Never tracked in git; deleted during 2026-05-18 repo cleanup. |
-| [`CODEX_HANDOFF_2026-04-27.md`](handoffs/2026-04-27-codex.md) | Zero-stub sweep complete. Documents the late-stage zero-stub strategy (smallest-safe-C + asmfix bridge) and the stabilizers (`single_game_VoiceContorol`, `camera_set_zoom`, pinned helpers). |
-| [`AUDIT_EXISTING_C_2026-05-12.md`](handoffs/2026-05-12-audit.md) | Audit of the finished C surface as of 2026-05-12. Bridge-signature cleanup, naming-suspect list, subsystem map provenance. |
-| [`NAMING_TRIAGE_2026-05-12.md`](naming/2026-05-12-triage.md) | Per-symbol triage of 17 score-4 Kengo-derived names. Keep / demote / rename decisions with evidence. |
-| [`SUBSYSTEM_MAP_2026-05-12.md`](handoffs/2026-05-12-subsystem-map.md) | Object-level map: what lives in each `src/*.c` and at what address range. Plus a line/address landmark map for `text1b.c`. |
-| [`KENGO_RENAME_QUEUE_2026-05-12.md`](naming/2026-05-12-rename-queue.md) | Reviewed action queue for Kengo-derived renames, machine-readable in `kengo_name_decisions.csv`. |
-| `CLAIMS.md` (retired 2026-08-24) | April-era cross-session claims protocol — obsolete since the single-lane workflow; removed (git history preserves it). |
+| 2026-08-25 / 08-30 | **regfix/asmfix driven to zero rules**, then the rule files, pipeline stages and tooling removed. |
+| 2026-08-30 | Owner batch-resolved all 23 escalated items; 2026-08-31 **ordinary-c-judge-decidable**: escalations retired, the Judge decides ordinary C. |
+| 2026-09-07 | **`-msoft-float` adopted** into `CC_FLAGS` (hard float had doubled loop.c's hoist threshold). |
+| 2026-09-08 | **Rotation replaces foreclosure** — a stuck item goes to the back of the worklist and returns automatically. |
+| 2026-09-21 | **decomp-manual lane** (one focused agent on main) added beside the Grinder. |
+| 2026-09-24 | Cited `tmp/` evidence preserved as `docs/grind/evidence-2026-09-24.tar.gz`. |
+| 2026-09-25 / 09-26 | Oracle-compiler PLUS->IOR study and narrow-patch adoption, then **Q17: a compiler patch is a cheat** — build compiler back to pinned upstream + crash fix ([`ORACLE-COMPILER.md`](ORACLE-COMPILER.md)). |
+| 2026-09-26 – 09-30 | Owner AskUserQuestion batches Q1–Q73 ([`grind/owner-rulings-2026-09-26.md`](grind/owner-rulings-2026-09-26.md)): Ruling 11 reused locals, aggregate merges, per-file declarations, SOTN-precedent-suffices, GTE macro classes. |
+| 2026-09-29 | Retro-audit of landed completions ([`audits/RETRO-AUDIT-2026-09-29.md`](audits/RETRO-AUDIT-2026-09-29.md)); owner Q37 set the remediation route for the ~20 FAILed landings. |
+| 2026-09-30 | **Per-file gp model** (`.claude/rules/per-file-gp-model.md`) and **object-relative rodata alignment** adopted; the per-function maspsx COMMON gate ruled a cheat. |
+| 2026-10-01 | Inline-asm audit ([`audits/INLINE-ASM-AUDIT-2026-10-01.md`](audits/INLINE-ASM-AUDIT-2026-10-01.md)) de-authorized three canonical entries and re-queued them. **Docs/ledger slim-down**: Grinder records rotated to the queued functions, finished plans/campaigns/handoffs/forensics deleted; everything resolves at git tag `pre-slim-2026-10-01`. |
+
+Current counts: [`STATUS.md`](STATUS.md). Retired work streams: `dc.sh` workflow and named-recipe library
+(2026-05-26), multi-agent fleet and GitHub board (2026-07-06), Closer Phase 3 (2026-07-13), regfix/asmfix
+(2026-08-30). Early handoff documents (Codex handoffs, the 2026-05-12 audit/subsystem map/naming triage)
+resolve at the tag above or earlier in git history.

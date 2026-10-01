@@ -297,23 +297,23 @@ The engine supports multiple video modes (height/width combinations):
 The `s0->width = D_8009BEF4[idx]` / `s0->height = D_8009BF08[idx]` pattern
 in `gpu.c:608-610` confirms the tables are paired and idx is the mode code.
 
-## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
 
 Five clusters from the placeholder-refinement pass document render-path
 data more directly:
 
-- [§16 Walk-direction packed cos/sin table](recent_naming_findings.md#16-walk-direction-packed-cossin-table-d_8009c928-16384-bytes)
+- §16 Walk-direction packed cos/sin table
   — `g_trig_sin_cos_table_packed` at `0x8009C928` (4096 × 4 bytes,
   packed `(cos << 16) | sin` — verified from .data values; entry 0 =
   `0x10000000`). Indexed by `angle & 0xFFF`; uses sin(-x)=-sin(x) to
   halve table size. Used by `motutil_GetWalkDir` (display.c:2565,
   hand-coded asm) to build Tait-Bryan ZYX rotation matrices for walk
   direction. Distinct from `Judge` (`0x800973FC`, sin-only fade/envelope).
-- [§17 Display-state buffer + cursor](recent_naming_findings.md#17-display-state-buffer--cursor-d_800f33d8--d_800a36ec)
+- §17 Display-state buffer + cursor
   — `g_disp_state_buf` (`0x800F33D8`, 512 bytes) + `g_disp_state_buf_cursor`
   (`0x800A36EC`, +0x100 = matrix region). Doubles as the memcard save/load
   payload (see `code6cac_c_mid.c:507/524`).
-- [§18 Camera view-state — PsyQ MATRIX struct](recent_naming_findings.md#18-camera-view-state--psyq-matrix-struct-d_800ff558-32-bytes)
+- §18 Camera view-state — PsyQ MATRIX struct
   — `g_camera_view_state` at `0x800FF558` is a 32-byte PsyQ `MATRIX`
   (3×3 rotation in `m[3][3]` + s32 translation `t[3]`). Distinct from
   `g_cam_matrix` (`0x800EEDB0`, world/projection matrix). Built by
@@ -321,13 +321,13 @@ data more directly:
   rotation, translation zeroed) and text1b inline-asm vertex paths.
   Also drives LOD selection via the position-delta threshold at
   text1b.c:2359 (thresholds 0x4A00 / 0xA500 = LOD-cutoff distances).
-- [§19 HUD sprite size packed lookup](recent_naming_findings.md#19-hud-sprite-size-packed-lookup-d_8009b850)
+- §19 HUD sprite size packed lookup
   — `g_text1b_sprite_size_packed_lookup` at `0x8009B850`. u16-per-entry
   packed dimensions; consumed by `func_80060414` (text1b.c:12963), the
   HUD per-character sprite renderer called from `ings.c:759`. arg0
   bit 15 = highlight/active-slot flag (selects `D_8009B7AC` geometry),
   bits 14..0 = size table index. Width 55..566, height 42..169 ranges.
-- [§21 text1b 2D-draw helper geometry banks](recent_naming_findings.md#21-text1b-2d-draw-helper-geometry-banks-0x8009b3400x8009b850)
+- §21 text1b 2D-draw helper geometry banks
   — 20+ tables at `0x8009B340..0x8009B850`, each owned by a specific
   text1b 2D-UI draw helper. Cross-reference table in §21 maps each
   geometry/static/p0/p1 table to its consumer function

@@ -260,7 +260,7 @@ If you've seen a global in the source and want to know what it does:
 
 The following clusters were promoted from placeholders to semantic
 names during the placeholder-refinement sprint (see
-[recent_naming_findings.md](recent_naming_findings.md) §11-22 for
+the subsystem docs' naming-pass cross-references for
 full traces).  Indexed here by address range for reverse lookup:
 
 ### `0x8009_xxxx` range — text1b 2D-UI render substrate
@@ -344,8 +344,8 @@ full traces).  Indexed here by address range for reverse lookup:
   diagram
 - [memory_layout.md](memory_layout.md) — PS1 memory regions and gp window
 - [psyq_usage.md](psyq_usage.md) — PsyQ library identification
-- [recent_naming_findings.md](recent_naming_findings.md) — full cluster
-  traces (§1-22) with code/asm evidence and consumer chains
+- memory_layout.md § Naming-pass data clusters — cluster summary (full
+  traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
 - `named_syms.txt` and `symbol_addrs.txt` (project root) — primary symbol
   vocabulary (authoritative name→address map)
 - `engine/queue.json` (project root) — the ordered decomp worklist (functions

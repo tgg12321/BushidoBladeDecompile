@@ -373,7 +373,7 @@ def do_func(func, stem, reason, results, md):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--json", default="tmp/inverse_sweep_2026-08-06.json")
-    ap.add_argument("--md", default="docs/grind/inverse-sweep-2026-08-06.md")
+    ap.add_argument("--md", default="tmp/inverse-sweep-2026-08-06.md")
     ap.add_argument("--only", help="comma-separated function subset")
     a = ap.parse_args()
 

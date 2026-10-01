@@ -91,9 +91,12 @@ Everything under `disc/` is gitignored — the directory's contents come from yo
 ## Building
 
 ```bash
-make setup         # one-time: re-run splat to regenerate asm/, undefined_syms_auto.txt, etc.
-make               # incremental build
+make               # incremental build (asm/ is tracked — no splat step is needed)
 ```
+
+**Never run `make setup`** (it re-runs splat): `bb2.ld` is hand-maintained, and regenerating it
+re-adds dead rodata lines that conflict with const declarations now in `src/*.c`. The recovery
+procedure, if splat must ever be re-run, is in `splat.yaml`.
 
 The `make` invocation runs the full pipeline and prints `OK: bb2 matches!` on success. Subsequent `make` runs are incremental (about 3–10 seconds for typical edits).
 
@@ -104,7 +107,6 @@ Other handy `make` targets:
 | `make` / `make check` | Incremental build + SHA1 verify against `bb2.sha1`. Default target. |
 | `make clean-check` | `make clean` then `make check`. Always reproducible; the safest verification. |
 | `make clean` | Wipes `build/` so the next build is from scratch. |
-| `make setup` | Re-runs splat. Use after edits to `splat.yaml` or when `asm/funcs/` looks stale. |
 
 The full per-C-file pipeline, as defined in the [`Makefile`](Makefile):
 
@@ -145,7 +147,7 @@ To narrow a mismatch down to a single function:
 & tools/wteng.ps1 main diagnose <funcname>        # classify the gap (control-flow / plateau / canonical)
 ```
 
-The `engine/` CLI (invoked via `tools/wteng.ps1`) is the central wrapper for all decomp operations; see [`docs/TOOLS.md`](docs/TOOLS.md) for the full subcommand list. Under WSL directly you can invoke `python3 -m engine.cli <subcommand>` after activating `.venv`.
+The `engine/` CLI (invoked via `tools/wteng.ps1`) is the central wrapper for all decomp operations; see the CLI table in [`CLAUDE.md`](CLAUDE.md) for the subcommands. Under WSL directly you can invoke `python3 -m engine.cli <subcommand>` after activating `.venv`.
 
 ## Common errors
 
@@ -197,10 +199,6 @@ Script shebangs are `#!/bin/bash`; the files are line-ending sensitive. If you'v
 dos2unix tools/*.sh tools/hooks/*.sh
 ```
 
-### Splat (`make setup`) complains about missing symbols
-
-`splat.yaml` references `symbol_addrs.txt`, `undefined_syms_auto.txt`, `undefined_funcs_auto.txt`, `reloc_addrs.txt`, and a few others. They're all checked in; if any are missing, you cloned a partial repository — re-clone.
-
 ## Next steps
 
-Once your build verifies, you have everything needed to contribute. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the work-queue model, the per-function decomp workflow, and the escalation ladder for stuck functions.
+Once your build verifies, you have everything needed to contribute. Read [`CONTRIBUTING.md`](CONTRIBUTING.md), then [`docs/DECOMP_WORKFLOW.md`](docs/DECOMP_WORKFLOW.md).

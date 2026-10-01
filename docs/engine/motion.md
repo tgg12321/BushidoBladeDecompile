@@ -355,12 +355,12 @@ reused across both subsystems.
 | `motion_shift_set_mode2` | `0x800387C0` | Mode 2, sub-id 1 |
 | `motion_shift_set_mode3` | `0x800387E8` | Mode 3, sub-id 9 |
 
-## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
 
 One cluster from the placeholder-refinement pass extends the motion-state
 data model:
 
-- [§20 Motion-ex pool B (12-slot effect-spawn pool)](recent_naming_findings.md#20-motion-ex-pool-b-12-slot-effect-spawn-pool-d_800f0e380x800f0bec)
+- §20 Motion-ex pool B (12-slot effect-spawn pool)
   — `g_motion_ex_pool_b_xyz_x/y/z` at `0x800F0E38` (12 slots × 12 bytes
   column-major XYZ) + `g_motion_ex_pool_b_flag` at `0x800F0BEC` (12 ×
   s16). Allocated by `func_80062FEC` (text1b.c:14112) via the

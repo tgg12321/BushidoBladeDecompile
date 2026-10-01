@@ -7,19 +7,14 @@ Matching decompilation rebuilds the original program from human-written C that c
 
 ## Status
 
-The build currently verifies SHA1 against the original. 1,051 of the 1,429 identified functions have reached **COMPLETED-C** (pure-C body, zero build-time rules, byte-identical); 179 are authorized canonical inline assembly; 244 are INCOMPLETE. Since the 2026-08-19 **asm-until-matched** ruling, an INCOMPLETE function is committed as `INCLUDE_ASM("asm/funcs", <func>);` — the original bytes, honestly labeled, with zero cheats on main (56 byte-coupled functions still carry legacy build rules until solved). In-progress candidates live in `memory/grind/<func>/`. The project goal is pure C plus a small, audited set of canonically hand-assembled functions (BIOS trampolines, GTE primitives, custom calling conventions). The default autonomous workflow is **the Grinder** (`tools/grinder/` — see `CLAUDE.md`).
-
-| Metric | Value |
-|---|---|
-| Total functions identified | 1,429 |
-| **COMPLETED-C** (pure C, zero rules, byte-identical) | 1,051 |
-| **COMPLETED-INLINE-ASM-CANONICAL** ([`inline_asm_canonical.txt`](inline_asm_canonical.txt)) | 179 |
-| **INCOMPLETE** ([`engine/queue.json`](engine/queue.json)) | 244 (211 active, 33 parked) |
-| C source files | 32 (`src/*.c`, ~38k lines) |
-| Build SHA1 | matches original (`62efab4f…`) |
-
-Live counts: `& tools/wteng.ps1 main queue status` for the worklist,
-[`docs/STATUS.md`](docs/STATUS.md) for the latest refreshed snapshot.
+The build verifies SHA1 against the original. Every function is in one of three states: **COMPLETED-C**
+(pure C, zero cheats, byte-identical), **COMPLETED-INLINE-ASM-CANONICAL** (genuinely hand-written original
+assembly — BIOS trampolines, GTE primitives, custom calling conventions — listed in
+[`inline_asm_canonical.txt`](inline_asm_canonical.txt)), or **INCOMPLETE** (queued in
+[`engine/queue.json`](engine/queue.json) and committed as `INCLUDE_ASM("asm/funcs", <func>);` — the original
+bytes, honestly labeled, since the 2026-08-19 asm-until-matched ruling). In-progress candidates live in
+`memory/grind/<func>/`. Live counts: `& tools/wteng.ps1 main queue status` and
+`python3 tools/check_completion_integrity.py`; dated snapshot in [`docs/STATUS.md`](docs/STATUS.md).
 
 ## Project goals (1.0 release criteria)
 
@@ -64,9 +59,6 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full build-pipeline g
 3. Extract the disc, build, verify:
    ```bash
    python3 tools/extract_iso.py
-   make setup        # FIRST-TIME SETUP ONLY: runs splat to generate asm/.
-                     # NEVER re-run it on an existing tree — bb2.ld is
-                     # hand-maintained (recovery procedure in splat.yaml).
    make              # builds and prints "OK: bb2 matches!" on success
    ```
 
@@ -84,7 +76,7 @@ If the final line is `OK: bb2 matches!`, you have a byte-identical rebuild.
 |-- include/                   # Project headers (common.h, gte.h, psx.h, game.h, etc.)
 |-- Kengo/                     # Sister-engine reference: Kengo (PS2) debug symbols, ~2,500 named functions
 |-- memory/                    # TRACKED pipeline state: grind ledgers (memory/grind/<func>/), WIP checkpoints, closer research
-|-- src/                       # Decompiled C source — 32 files, ~38k lines
+|-- src/                       # Decompiled C source, one file per translation unit
 |-- tools/                     # Build pipeline (maspsx, prologue_fix, decomp-permuter, engine/, grinder/, ...)
 |-- engine/                    # The workflow spine: queue, canonical gate, sandbox, retire, verify-oracle
 |-- engine/queue.json          # Canonical ordered work list (`& tools/wteng.ps1 main queue status`)
@@ -98,19 +90,28 @@ If the final line is `OK: bb2 matches!`, you have a byte-identical rebuild.
 |-- BUILD.md / CONTRIBUTING.md # Setup and contribution guides
 ```
 
-Per-file C source content map: [`docs/handoffs/2026-05-12-subsystem-map.md`](docs/handoffs/2026-05-12-subsystem-map.md).
+Subsystem map (what lives where, by address): [`docs/engine/README.md`](docs/engine/README.md).
 
 ## Documentation
 
 | File | Purpose |
 |---|---|
 | [`BUILD.md`](BUILD.md) | End-to-end build setup (WSL toolchain, disc extraction, first build, troubleshooting) |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Work-queue model, per-function workflow, escalation ladder, PR conventions |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to contribute (short) |
+| [`docs/DECOMP_WORKFLOW.md`](docs/DECOMP_WORKFLOW.md) | The operating manual: what "done" means, the per-function loop, review |
+| [`docs/MATCHING.md`](docs/MATCHING.md) | Matching primer; the living technique catalog is `.claude/rules/` |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Build pipeline, splat split, PS1 memory map, EXE layout |
-| [`docs/MATCHING.md`](docs/MATCHING.md) | Matching techniques distilled from the playbook (penalty routing, C-side tricks, recipes) |
+| [`docs/ORACLE-COMPILER.md`](docs/ORACLE-COMPILER.md) | The build compiler: identity, recipe, manifest |
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Terminology: PsyQ, MIPS, decomp, BB2-specific terms |
-| [`docs/handoffs/2026-05-12-subsystem-map.md`](docs/handoffs/2026-05-12-subsystem-map.md) | What lives in each `src/*.c` file and at what address |
-| [`CLAUDE.md`](CLAUDE.md) | Operating instructions for the Claude Code agent that does most of the decomp work |
+| [`docs/engine/`](docs/engine/README.md) | What the game engine does, per subsystem |
+| [`docs/formats/`](docs/formats/README.md) | Disc asset formats |
+| [`docs/naming/`](docs/naming/README.md) | Function/data naming census and evidence |
+| [`docs/grind/`](docs/grind/) | Grinder owner-audit surfaces: `decisions.md` (Judge rulings), `journal.md` (one line per session), `borderline.md` (logged policy questions/grants), `owner-rulings-2026-09-26.md` (verbatim owner answers) |
+| [`docs/STATUS.md`](docs/STATUS.md) / [`docs/HISTORY.md`](docs/HISTORY.md) | Current snapshot / the one timeline |
+| [`CLAUDE.md`](CLAUDE.md) / [`AGENTS.md`](AGENTS.md) | Operating instructions for the agents that do most of the decomp work |
+
+Older docs, handoffs, plans and campaign reports were removed 2026-10-01; they resolve at git tag
+`pre-slim-2026-10-01`.
 
 ## Credits and acknowledgements
 

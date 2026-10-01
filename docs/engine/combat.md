@@ -373,14 +373,14 @@ per-character move-enable bitmap.  `func_80033DF4` queries it as
 `0x4000000` to decide which characters can use which moves.  See
 [../naming/MISNOMERS.md](../naming/MISNOMERS.md).
 
-## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
 
 The post-fight WIN-animation sound trigger script lives in
 code6cac_c2.c:870-899.  Drives the "katinuki" (win) sequence that
 plays SFX cues at exact frame counts and transitions back to the
 title menu:
 
-- [§15 Win-animation sound trigger cluster](recent_naming_findings.md#15-win-animation-sound-trigger-cluster-d_8008eac0-0x8008eb28)
+- §15 Win-animation sound trigger cluster
   — `g_winanim_per_stage_intro_frame[34]` (per-stage intro SFX frame
   targets, mostly 130f or disabled), single triggers at frames
   155/159/160/198 for callouts/special/fanfare, particle effect

@@ -282,12 +282,12 @@ opens 8 BIOS events at boot via `bios_OpenEvent`:
 `g_memcard1_poll_count` (`0x800A3924`) is incremented per poll; forces
 result=2 after ≥0x78 (120) ticks.
 
-## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
 
 The memcard save/load payload buffer was identified in the
 placeholder-refinement pass:
 
-- [§17 Display-state buffer + cursor](recent_naming_findings.md#17-display-state-buffer--cursor-d_800f33d8--d_800a36ec)
+- §17 Display-state buffer + cursor
   — `g_disp_state_buf` at `0x800F33D8` is a 512-byte (0x200) buffer that
   serves both as a draw-state struct AND as the memcard save/load payload.
   See `code6cac_c_mid.c:507` (write 0x200 bytes via `func_80037C34`) and

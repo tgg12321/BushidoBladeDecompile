@@ -359,7 +359,7 @@ The mode-1 (gameplay) handler is part of `gnd_disp_loop_ctrl`, defined at
   buffers.
 - Walks the ground/scene draw pipeline using `s2` as a pointer to
   `g_disp_state_buf` (`0x800F33D8`, a 512-byte draw-state struct; see
-  [recent_naming_findings.md §17](recent_naming_findings.md#17-display-state-buffer--cursor-d_800f33d8--d_800a36ec)).
+  the 2026-05-17 naming pass).
 
 This function works closely with the OT in `g_dma_buf_base` (D_800A374C) (the live OT pointer)
 and `g_cpu_move_pattern_cursor` (D_800A38B4) (the live primitive heap pointer).
@@ -398,21 +398,21 @@ asm:
 - `func_800164AC` — the boot data dispatch table (`ings.c:91`, also asm
   because it's pure data, 19 function-pointer words).
 
-## Cross-references (recent_naming_findings.md addendum 2026-05-17)
+## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
 
 Three clusters from the placeholder-refinement pass interact with the main loop:
 
-- [§11 Sequence-event handler table (MIDI-style dispatch)](recent_naming_findings.md#11-sequence-event-handler-table-midi-style-dispatch-5-slots)
+- §11 Sequence-event handler table (MIDI-style dispatch)
   — `g_seq_event_handler_{90_NoteOn, B0_CtrlChange, C0_PgmChange,
   E0_PitchBend, FF_Meta}` at `0x800F3340..0x800F3350`, invoked from
   `saTan0Main` (main.c:334-454) — per-character MIDI-style command-stream
   event dispatcher.  See [sound.md](sound.md) for the sequencer context.
-- [§12 Sound data buffer pointer cluster](recent_naming_findings.md#12-sound-data-buffer-pointer-cluster-6-pointers--relocator)
+- §12 Sound data buffer pointer cluster
   — `g_snd_data_buf_base` + `g_snd_data_subblock_0_ptr..4_ptr` at
   `0x800EFB14`.  Not main-loop ticked — relocated when the sound buffer
   moves via `func_80054FDC(delta)` (text1b.c:11363).  Owned by the
   sound subsystem.
-- [§22 IRQ-callback trampolines](recent_naming_findings.md#22-irq-callback-trampolines-d_80083edc--d_80083f1c)
+- §22 IRQ-callback trampolines
   — `g_irq_handler_entry_no_pri` (0x80083EDC) fires the pending primary
   callback (if armed) + always-secondary; `g_irq_handler_entry_with_pri`
   (0x80083F1C) implements a one-shot deferred-fire using

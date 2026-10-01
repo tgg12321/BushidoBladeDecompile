@@ -313,3 +313,29 @@ frame counter.  See [menus.md](menus.md).
 `main.c:3055` inline asm.  Each entry is a "mode handler" function.
 100% decoded as of 2026-05-17 — see [main_loop.md](main_loop.md) for
 the full per-mode table.
+
+### Naming-pass data clusters (2026-05-17)
+
+Folded in from the former `recent_naming_findings.md` (full traces: `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`; names per
+`named_syms.txt`, which wins on drift):
+
+- **BIOS event handles** `0x800A37DC..3850` — 4 memcard-class (0xF4000001) + 4 kernel-class
+  (0xF0000011) events (IO-complete / disconnect / count / general error), opened in
+  `memcard_event_init` and `bios_EnableEvent`'d; root-counter events at `0x800A3810`/`0x800A3738`;
+  memcard file handles at `0x800A3734`/`0x800A373C` (`"sio:"`).
+- **Scratchpad pointer cache** `0x800A346C..34EC` — 7 globals caching `0x1F8000xx` addresses
+  (set in one pass by `func_80060E38`); `g_scratchpad_save` (`0x800F5370`, 0x3E0 bytes) is the IRQ
+  save mirror.
+- **Match-round bookkeeping** — round index `0x800A3874`, per-round byte pairs `0x800F65F8` /
+  `0x800A389B`, outcome table `0x800A377C`; consumed by `_GetBattleSwichData`.
+- **Replay attack position** `0x80101E3C..1E44` (+ input position `0x80101E02/04`, camera
+  state/mode/target globals `0x80101E62..1FBC`, `0x800A3740`, `0x800A370C`) — see [replay.md](replay.md).
+- **text1b render state** `0x800F116C` (pointer cached at `0x800A3468`, field pointers
+  `0x800A3478/347C`, glyph cursor `0x800F1180`, slot busy-flag pairs `0x800F1152..1164`).
+- **GTE back colour** `0x800F6338..633A` (R/G/B bytes for `gte_SetBackColor`).
+- **SPU registers** — block pointer `0x800A3044`, register pairs `0x800F7420/7424`, voice array
+  `0x800F7298`, key/transfer masks and pending flags `0x800A2874..2D2C`.
+- **IRQ / alarm state** `0x800A26D0..26DE`, alarm handle `0x800A14E4`, vblank count `0x800A157A`,
+  dispatch counter `0x800F19BC`, VSync deadline `0x800F19B8` — walked by `irq_ProcessPending`.
+- **CD-ROM callback buffers** `0x800F19A0/19A8` (8-byte payloads for `cdrom_SetCallbackA/B`).
+- `g_file_disc_size` (`0x80106A50`) is a misnomer: it is a move-enable bitmap (see [combat.md](combat.md)).

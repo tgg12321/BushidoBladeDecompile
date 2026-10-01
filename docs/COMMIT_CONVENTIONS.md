@@ -36,7 +36,7 @@ These prefixes are what `git log --grep '^<prefix>'` matches on. Keep them recog
 |---|---|
 | `Match: func_XXXXXXXX` | New pure-C match of a function. Body should describe the technique. |
 | `cheat-cleanup: <name>` | Retiring a cheat (lost_codegen, wildcard subst, splice, etc.). Body documents what was retired and how. |
-| `auth: <func>` / `inline_asm_canonical: <func>` | Canonical-asm authorization (function declared as hand-coded asm with documented evidence). Body MUST include evidence tags per [evidence-driven-authorization rule](../memory/rules/evidence-driven-authorization.md). |
+| `auth: <func>` / `inline_asm_canonical: <func>` | Canonical-asm authorization (function declared as hand-coded asm with documented evidence). Body MUST include evidence tags per evidence-driven-authorization rule. |
 | `wip: <func>` | Save / update a checkpoint in `memory/wip/<func>/` — candidate C body + measured floor + technique + remaining gap. NOT a Match; the build is unchanged. Body should describe the lever and the new floor. See [memory/wip/README.md](../memory/wip/README.md). |
 | `park: <func>` | Terminal disposition only (judge-sole-gate 2026-08-18 — no pending-owner states). Touches `engine/queue.json` + `memory/project/` or `memory/wip/`; the build is unchanged. The `park_src_guard` hook BLOCKS `park:` commits that modify build-pipeline files (override: `[skip-park-src-guard]` + justification). |
 | `text1b.c: <action>`, `code6cac.c: <action>`, etc. | File-level work (often function matches that benefit from the file context being in the subject). |
@@ -69,7 +69,7 @@ These prefixes are what `git log --grep '^<prefix>'` matches on. Keep them recog
 | `audit: <topic>` | Changes to `tools/audit_*.py` or audit policy. |
 | `trace: <topic>` | Investigation notes that don't change source — typically commits to `docs/naming/*` or a research file. |
 | `research: <topic>` | Exploratory work that did or didn't pan out. Document the outcome. |
-| `misnomers: pass N` | Kengo-name reliability audits (see [kengo-name-unreliable rule](../.claude/rules/kengo-name-unreliable.md)). |
+| `misnomers: pass N` | Kengo-name reliability audits (see kengo-name-unreliable rule). |
 
 If you need a new prefix, just add it. The catalog is descriptive (what's been used), not prescriptive (what's allowed).
 
@@ -105,11 +105,11 @@ Verification:
 Co-Authored-By: <the current Claude model> <noreply@anthropic.com>
 ```
 
-The `Pure-C attempts:` block is the load-bearing part — POLICY requires it on canonical-asm work (checked by the layer-2 reviewer / Judge, not by a wired hook). See [evidence-driven-authorization](../memory/rules/evidence-driven-authorization.md) for the exact grammar.
+The `Pure-C attempts:` block is the load-bearing part — POLICY requires it on canonical-asm work (checked by the layer-2 reviewer / Judge, not by a wired hook). See evidence-driven-authorization for the exact grammar.
 
 #### For `auth:` / `inline_asm_canonical:` commits
 
-Same as above, plus an evidence-tag block per [evidence-driven-authorization](../memory/rules/evidence-driven-authorization.md):
+Same as above, plus an evidence-tag block per evidence-driven-authorization:
 
 ```
 DECISIVE evidence:
@@ -167,7 +167,7 @@ _(The `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool that 
 - Canonical-asm authorizations (`inline_asm_canonical.txt` additions) require a documented evidence tag — usually in both the commit message body AND the `inline_asm_canonical.txt` line comment
 - `minimize-asm-when-blocked` work without a `Pure-C attempts:` block of ≥10 enumerated entries is blocked
 
-See [`memory/rules/evidence-driven-authorization.md`](../memory/rules/evidence-driven-authorization.md), [`memory/rules/minimize-asm-when-blocked.md`](../memory/rules/minimize-asm-when-blocked.md), and `tools/audit_asm_cheats.py` for the formal gates.
+See `memory/rules/evidence-driven-authorization.md`, `memory/rules/minimize-asm-when-blocked.md`, and `tools/audit_asm_cheats.py` for the formal gates.
 
 ## Examples of good commits
 

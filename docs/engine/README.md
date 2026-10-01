@@ -93,7 +93,7 @@ per-subsystem table below.
 | Memory map | (data symbols project-wide) | n/a | [memory_layout.md](memory_layout.md) |
 | Cross-reference | (this doc + above) | n/a | [cross_reference.md](cross_reference.md) |
 | PsyQ library usage | (libgpu, libcd, libapi, libspu, MDEC) | n/a | [psyq_usage.md](psyq_usage.md) |
-| Recent naming-pass findings | (BIOS events, scratchpad cache, match-round, replay-pos, text1b render-state, GTE/SPU/IRQ clusters) | n/a | [recent_naming_findings.md](recent_naming_findings.md) |
+| Naming-pass data clusters | (BIOS events, scratchpad cache, match-round, replay-pos, text1b render-state, GTE/SPU/IRQ clusters) | n/a | [memory_layout.md](memory_layout.md) |
 
 ## Key globals to know
 
@@ -149,16 +149,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ## Decomp status caveat
 
-The project reached zero-stub completion on 2026-04-27: essentially every
-function is decompiled to C (only a handful of canonical-asm bodies remain as
-`INCLUDE_ASM`). The remaining work is not "asm-only" functions but
-**byte-matching** them without cheats — the outstanding functions are tracked
-in `engine/queue.json` (the single worklist). Some subsystem docs still cite bare `func_8XXXXXXX` names
-where `named_syms.txt` has since assigned a semantic name — trust
+Not-yet-matched functions are committed as `INCLUDE_ASM` (asm-until-matched) and tracked in
+`engine/queue.json`; the subsystem docs describe behaviour, not decomp state. Some docs still cite
+bare `func_8XXXXXXX` names where `named_syms.txt` has since assigned a semantic name — trust
 `named_syms.txt` when they disagree.
-
-`engine/queue.json` is the ordered worklist (pre-sorted easiest-first by honest
-pure-C distance); `python3 -m engine.cli queue next` prints the current top.
-The autonomous pipeline that grinds it is the **Grinder** (`tools/grinder/`,
-the `decomp-grind` skill). See `CLAUDE.md` for the full workflow. (The old
-`WORK_QUEUE.md` file and `dc.sh classify` tool are retired.)

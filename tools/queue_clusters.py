@@ -3,7 +3,7 @@
 same-file groups, shared-callee clusters, difficulty proxies.
 
 Reads engine/queue.json + asm/funcs/*.s + memory/grind/<func>/ ledgers and
-writes docs/grind/queue-clusters.md (LF). Pure analysis — touches no build
+writes tmp/queue-clusters.md (LF). Pure analysis — touches no build
 inputs, no engine state. Re-run any time; output is deterministic.
 
 Usage:  python tools/queue_clusters.py  [--json tmp/queue_clusters.json]
@@ -25,7 +25,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ASM_DIR = ROOT / "asm" / "funcs"
 GRIND_DIR = ROOT / "memory" / "grind"
-OUT_MD = ROOT / "docs" / "grind" / "queue-clusters.md"
+OUT_MD = ROOT / "tmp" / "queue-clusters.md"
 
 INSN_RE = re.compile(r"^\s*/\* [0-9A-F]+ [0-9A-F]+ [0-9A-F]{8} \*/\s+(\S+)\s*(.*)$")
 JAL_NAME_RE = re.compile(r"^jal\s+([A-Za-z_]\w*)")
