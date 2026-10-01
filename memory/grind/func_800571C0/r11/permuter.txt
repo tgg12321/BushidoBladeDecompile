@@ -1,0 +1,46 @@
+=== output-425-1 (permuter score 425): 4 changed lines
+   +
+   -        nr++;
+   + do { nr++; } while (0);
+   -
+=== output-435-1 (permuter score 435): 7 changed lines
+   +
+   -      x = (*((s32 *) (p + 0xB8))) + (dx >> 12);
+   +      x = (dx >> 12) + (*((s32 *) (p + 0xB8)));
+   -        right = probe;
+   -        nr++;
+   + do { right = probe; nr++; } while (0);
+   -
+=== output-525-1 (permuter score 525): 3 changed lines
+   +
+   +        nl = nr;
+   -
+=== output-584-1 (permuter score 584): 12 changed lines
+   +
+   +  s32 new_var;
+   +  s32 new_var2;
+   -      p = *((s32 *) obj);
+   +      new_var = *((s32 *) obj);
+   +      p = new_var;
+   +      nr++;
+   +      nr--;
+   +      new_var2 = *((s32 *) (p + 0xC0));
+   -      z = (*((s32 *) (p + 0xC0))) + (dz >> 12);
+   +      z = new_var2 + (dz >> 12);
+   -
+=== output-605-1 (permuter score 605): 9 changed lines
+   +
+   +      top.x = x;
+   -      top.x = x;
+   -        right = probe;
+   -        nr++;
+   + do { right = probe; nr++; } while (0);
+   -      *((u8 *) (e + 0x368)) = 2;
+   +      *((u8 *) ((obj + (nl * 6)) + 0x368)) = 2;
+   -
+=== output-689-1 (permuter score 689): 5 changed lines
+   +
+   -      x = (*((s32 *) (p + 0xB8))) + (dx >> 12);
+   +      nr = 0xB8;
+   +      x = (*((s32 *) (p + nr))) + (dx >> 12);
+   -

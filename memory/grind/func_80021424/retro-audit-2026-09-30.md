@@ -22,3 +22,18 @@ func_80021904 / func_80021974 / func_800219E4 / func_80021A3C (all four also rea
 through `(u8 *)&D_80101F12 + a0 * 1100`-style per-use puns, so a clean respell of them is its own cleanup);
 :3193/:3196 func_80021A98; :3742/:3746 func_80022F34. Size: ~8 functions in code6cac_tu2.c + 2 in other files —
 a dedicated cleanup session, each function sandbox-0 and one layer-2 over the set.
+
+## Measured respellings (2026-09-30, sandbox --disable all; bodies in probes-2026-09-30/*.m.c, gen.py)
+Every consumer respelled through the one declaration, each identical to its landed score 0:
+func_80020D70 `D_800A3860[1] = (Tbl800A3860Entry *)0x80190800;` 0/27; func_80021210 `D_801027B0[0][4]` /
+`D_801027B0[1][4]` 0/28; func_8003CF84 (code6cac_c2.c) `(u32 *)D_801027B0[0][4]` / `[1][4]` 0/208;
+func_80021904 / func_80021974 `return D_801027B0[v1][0] + D_800A3860[v1]->f4E[v0] * 2;` 0/28 each (the
+a0_2/v1_2 byte-offset intermediates and both casts gone; keeping a `base`/`tbl` statement order scores 7);
+func_80021A98 `D_801027B0[a3][1]` / `[a3][2]` with the `idx = a3 * 5` stride local dropped 0/158;
+func_80022F34 `D_801027B0[idx][3]` 0/70. func_8003993C already reads `D_801027B0[temp][1/2]`.
+Still open: func_800219E4 / func_80021A3C read the record at +0x16 and +0x18 + a1*2 through `(u8 *)&D_800A3860
++ ...` casts; they need Tbl800A3860Entry members there (`u16 f16; u16 f18[...]`, the f18 length to be
+evidenced) — not measured (header change). Then: drop the six per-word externs from include/code6cac.h;
+undefined_syms_auto.txt rows D_801027B4/B8/BC/C0 stay suffixed `/* alias of D_801027B0+N; retire with
+func_80020E74 */` (INCLUDE_ASM referrer), rows D_801027D4 / D_800A3864 retire (only C functions' .s name
+them); D_80010428 tail word: evidence or removal.
