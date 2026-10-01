@@ -41,7 +41,7 @@ Constructs to scrutinize:
    - idx's nearest value is the Q34 plain copy `idx = temp3;` (target `addu $s5,$s4,$zero` 0x8002B538;
      temp3 is read again by the loop); fresh local 134, no-copy body (nearest slot kept as a pointer,
      index recovered after the loop) 225.
-   - Owner Q85 (rules 9cdb9cd08): the unk_8C arm's `temp1 = 0; temp2 = 1; deep_on = 1;` (0x8002AEF0..0x8002AEFC,
+   - Owner Q85 (rules 9cdb9cd08; `c` is spelled `deep_on`: 918b32f6e): the unk_8C arm's `temp1 = 0; temp2 = 1; deep_on = 1;` (0x8002AEF0..0x8002AEFC,
      the stores that arm shares with pass 0) and the 4/5 arm's `alt = 0;` (0x8002AF18) re-store held values
      on every feasible path (the pass-loop callees never write other->unk_8C: r11/round2/writeset_8c.txt);
      each address is in the variable's comment. Spellings without them 1-13 (r11/round2/rs_v*.c).
