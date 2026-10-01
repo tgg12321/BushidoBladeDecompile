@@ -108,3 +108,17 @@ so the orchestrator chose to retype func_8001FBE8's rec too and retire all six r
 (D_80101F04/F08/F10/F14/F42/F5E; C users func_8001C8DC, func_8001CE60, func_8001E404, func_8001EFA0,
 func_8001FBE8, func_80029454, func_8003993C) in the same landing. The src edits were reverted from main to let
 laneH land first; round3_full.patch (round 2 + land3) is the work to rebase.
+
+## PracticeMenuRec cleanup plan (orchestrator-approved staged landings) + census
+Goal: no record-pointer byte-offset casts and no per-word handles over g_practice_menu_table (0x80101EC8, two
+0x44C records, up to 0x80102760) left in C. Landings, one review each: L1 (this concern: 13 bodies), L2
+(func_8001C8DC / CE60 / E404 / EFA0), L3 func_8003993C, L4 func_80029454; D_80101F5E / D_801023AA retire with
+their last C user. Census tool: probes-2026-09-30/census_all.py (src/*.c + include/*.h).
+- Baseline (main at efa946124, 2026-09-30): per-word handles 102 uses / 33 distinct in 26 functions; base
+  D_80101EC8 named 38 times in 25 functions; 85 per-word externs declared in include/.
+Scratch (L1, tmp/prc harness = exact per-file recipe scored against build/): all 13 bodies 0, including
+func_8001FBE8 (Ruling 6 split re-measured: 14, as banked) and func_80021A98 (s0 retyped, its two FAKE do-while
+wraps unchanged). func_80022F34: every index spelling of the record walk scores 19 (73 vs 70 insns: the
+target steps a byte offset by 0x44C and re-adds the base each iteration, which loop.c does not produce from
+`&g_practice_menu_table[i]`); the walk spelled `(PracticeMenuRec *)((u8 *)g_practice_menu_table + offset)` with
+`offset += sizeof(PracticeMenuRec)` scores 0 (func_80022F34.c8.c) — open question to the orchestrator.
