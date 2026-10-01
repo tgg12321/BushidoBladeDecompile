@@ -1,5 +1,5 @@
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
-    u16 sp[2];
+    s16 sp[2];
     /* work holds two values: the entry list pointer (arg0 + 0x58, passed to func_8006E950 /
        func_80076FF8 and stored as the work area's f04), then the work area func_8006E49C returns
        (stored to D_800A36A0). Owner Ruling 11 (reused-local-necessity.md) with owner ruling Q78
@@ -11,9 +11,8 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
 
     /* FAKE: empty do-while(0) wrap (do-while-zero-exception). Effect: its NOTE_INSN_LOOP_BEG/END
        pair bounds sched2's region at this point, so the five frame-save stores are not interleaved
-       with the first body insns (without it: sw $s1 / addiu $s1,$s0,0x58 / lw g_gpu_ot_ptr / li
-       0x1008 / sw $ra where the target has sw $ra / sw $s1 / li 0x1008 / lw / addiu, 4 rows).
-       Measured without it: memory/grind/func_800770B8/evidence.md (s41). */
+       with the first body insns as in the target's prologue order. Measured without it (5) and
+       the prior search: memory/grind/func_800770B8/evidence.md (s41). */
     do { } while (0);
     sp[0] = 0;
     sp[1] = 0;
@@ -78,10 +77,10 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         SelWork *p = SELWORK;
         p->f20.word = 0;
         p->f1C.word = 0;
-        if ((s16)sp[0] < (s16)sp[1]) {
-            p->f64 = (s16)sp[0] - 3;
+        if (sp[0] < sp[1]) {
+            p->f64 = sp[0] - 3;
         } else {
-            p->f64 = (s16)sp[1] - 3;
+            p->f64 = sp[1] - 3;
         }
     }
     if (SELWORK->f64 >= 3) {

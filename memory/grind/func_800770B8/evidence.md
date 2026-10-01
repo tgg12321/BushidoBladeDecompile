@@ -217,3 +217,14 @@ Casts in the body: `(void *)(arg0 + 0x58)` and `(void *)func_8006E49C(...)` (int
 s32 buffer base, func_8006E49C returns s32); `(s32 *)D_800A35D8` (the s32 buffer base passed as the callee's
 `s32 *`, as Q65 step 10 spells text1b_b's two calls); `(u8)` / `(s16)` value narrowings; SELWORK is game.h's
 typed view of D_800A36A0.
+
+## 2026-10-01 — laneA s41b: layer-2 round 1 (rev-770B8-r11 PASS, rev-770B8-dm FAIL on one defect)
+
+rev-770B8-r11 PASS (work / Q78 restore / list copy). rev-770B8-dm FAIL: `u16 sp[2]` read through `(s16)` casts at
+all four reads, while the target reads it signed (`lh` + `slt`, 0x800772C4-D0; the `lhu` is only the
+increment's load): Ruling 1(4) simplest form, refused signedness-split shape. Fix: `s16 sp[2]`, the four casts
+gone (the reviewer's measurement tmp/rev770b8/s16sp.c: 0/175). Everything else in dm scope PASSED; the three
+`.half` bodies PASSED (func_80075830 82bec16a269994a7, func_800759D0 e57b77f57c869a3a, func_80075F80
+61aca6158823c712). Re-measured on the fixed body (s41 table unchanged: F 0, F_norestore 2, F_nodowhile 5,
+F_noreset 18, F_norow 19/176, splits 15-20); dumps/s41 and probes/s41 regenerated from it (same insn numbers and
+allocations as quoted in s41). Spliced main: full build oracle, sandbox 0, layer2 hash dfd71d95a3fa9ed0.

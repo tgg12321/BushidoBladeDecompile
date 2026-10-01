@@ -1,5 +1,5 @@
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
-    u16 sp[2];
+    s16 sp[2];
     /* work holds two values: the entry list pointer (arg0 + 0x58, passed to func_8006E950 /
        func_80076FF8 and stored as the work area's f04), then the work area func_8006E49C returns
        (stored to D_800A36A0). Owner Ruling 11 (reused-local-necessity.md) with owner ruling Q78
@@ -79,10 +79,10 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         SelWork *p = SELWORK;
         p->f20.word = 0;
         p->f1C.word = 0;
-        if ((s16)sp[0] < (s16)sp[1]) {
-            p->f64 = (s16)sp[0] - 3;
+        if (sp[0] < sp[1]) {
+            p->f64 = sp[0] - 3;
         } else {
-            p->f64 = (s16)sp[1] - 3;
+            p->f64 = sp[1] - 3;
         }
     }
     if (SELWORK->f64 >= 3) {
