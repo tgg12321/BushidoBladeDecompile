@@ -67,3 +67,13 @@ Body = candidate.c (83327e250) spliced into src/text1b.c + include/code6cac.h un
 SHA1 == oracle; sandbox --disable all on the spliced src 0 (447/447, 0 source-level / operand-only);
 layer2 hash 4c0dc0cccbcea75a; reviewer_precheck clean. Rulings relied on: Ruling 11 (vtx, node, route;
 r11/README.md), Q51/Q53 (i; SOTN src/dra/42398.c:75 @aa53500). Data model: hypotheses.md Session 3.
+## Round-1 layer-2 (2026-10-01) on 4c0dc0cccbcea75a: FAIL (rejected/r1-local-navpoly-dm-fail-0.c)
+rev-57E84-r11 PASS (vtx/node/route Ruling 11 package, i Q51, scores reproduced). rev-57E84-dm FAIL on the
+data model. Frontier (the orchestrator's fix list): (1) NavPoly/NavPolySet in include/code6cac.h,
+`extern NavPolySet D_8009A658[];`, func_80058580's pois typed NavPolySet *, prototypes of E84/ACC
+`(PracticeMenuRec *, NavPolySet *, s32, s32)`, no `(NavPolySet *)arg1`; (2) func_80057ACC respelled on
+members, no `(s32)p` at its call; (3) the route record declared once in the header and embedded in
+PracticeMenuRec at +0x360 (replacing unk_352's tail, unk_362/363, unk_364[8]), used for path[2], consumers
+(E84, ACC, 58580, func_800571C0) respelled byte-neutrally; (4) func_80057CC8's arg0 retyped NavPoly *,
+the four `(u8 *)poly` casts dropped. Landing order after Q65: (A) data-model cheat-cleanup, (B) Match.
+src/include reverted, build/ back to the oracle.
