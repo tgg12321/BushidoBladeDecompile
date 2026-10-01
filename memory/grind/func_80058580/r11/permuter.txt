@@ -1,0 +1,11 @@
+Permuter campaign from the full split body (Ruling 11 (D)(4)), 2026-10-01, laneB.
+Workspace (tmp, not banked): base.c = pv_all.c (roles.py <candidate.c> all) spliced by probes/s5/splice.py,
+preprocessed (build CPP flags, patched include first), other function bodies removed with
+tools/decomp-permuter/strip_other_fns.py; compile.sh = build cc1 | prologue_fix | maspsx (build flags) |
+as, function extracted; target.o = asm/funcs/func_80058580.s assembled with tools/decomp-permuter/prelude.inc.
+Command: python3 tools/decomp-permuter/permuter.py <dir> -j 2 --stop-on-zero, three runs of 9.5 minutes.
+Scores (permuter metric): split base 4205; best finds 3585, 3700, 3935, 4125, 4160, 4200 (all random
+statement insertions / retypes, e.g. output-3585-1: `far` retyped unsigned, `adj_ = 0;` and
+`tx = *(s16 *)(p + 0x86);` inserted). The reuse body (candidate.c) scores 180 on the same scorer
+(relocation-name residue only: the reuse body links byte-identical, probes/s5/linkcheck.py).
+No find approaches the target.

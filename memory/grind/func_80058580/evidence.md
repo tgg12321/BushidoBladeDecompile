@@ -167,3 +167,14 @@
   * The pick-loop counter is its own `pick` (free); every other work-value split costs (ablation table in r11/).
   * The waypoint handles wp/wp2/wp3/a/b stay (`e = obj + nl * 6` convention of func_800571C0): spelling them as
     p-relative index expressions costs 1 word (wp), 7-11 insns (wp2/wp3), 4 insns (a/b).
+- [s5e] Redundant re-test kept with a `!FAKE` annotation (no-new-park-categories entry 16):
+  `!(wtype == 1 && (...) && wtype == 1)` — the target re-tests $s2 at 0x80059210 after the || chain.
+  `!(wtype == 1 && (...))` and `wtype != 1 || !(...)`: both 2989 insns (two short), 7889 differing words.
+  `va * (vn ? 1000 : 300)` stays (truthful: va times the same 1000/300 choice): `va * va` / `CPU_SQ(va)`
+  2974 insns; `(vn ? 1000 : 300) * va` byte-identical (either operand order).
+- [s5e] Ruling 11 package for work1..work5 banked in r11/ (README.md is the proof: values and target
+  writes, (A)-(F) walk, dumps excerpts and command lines, mechanism by pass/location, every split and
+  respelling measured, permuter campaign from the full split). Summary: reuse body 0 differing words;
+  pv_work1..5 / pv_all 7706 / 7676 / 7652 / 7636 / 6789 / 7703 differing words; every single-value
+  ablation fails (3..7802 words); typed and structural respellings fail; permuter from pv_all: best
+  3585 vs the reuse body's 180 on the same scorer.

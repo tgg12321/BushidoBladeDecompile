@@ -1,0 +1,4 @@
+pvs_work4a | text: 102796 bytes, 7636 differing words score 119 2989 / 2991 
+pvs_work4b | text: 102800 bytes, 7819 differing words score 120 2990 / 2991 
+pvs_work5a | text: 102808 bytes, 6718 differing words score 35 2992 / 2991 
+pvs_work5b | text: 102804 bytes, 21 differing words score 29 2991 / 2991 

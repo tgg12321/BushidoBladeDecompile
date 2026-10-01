@@ -331,6 +331,10 @@ s32 func_80058580(u8 *p) {
             ty2 = CPU_S16(0x3A2);
             wtype = CPU_S16(0x39E);
         }
+        /* !FAKE: the trailing `&& wtype == 1` repeats the first test (redundant condition,
+         * .claude/rules/no-new-park-categories.md entry 16). The target re-tests $s2 after the
+         * || chain (`beq $s2,$v0` at 0x80059210); without it the chain is two instructions
+         * shorter. Measurements: memory/grind/func_80058580/evidence.md [s5e]. */
         if (!(wtype == 1 &&
               (*(u16 *)(CPU_OPP + 0x6A) == 0xA || p[0x443] == 0xA || (CPU_S16(0xE) >= 6 && p[0x34A] == 0)) &&
               wtype == 1)) {

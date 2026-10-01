@@ -1,0 +1,6 @@
+pvt_all | text: 102864 bytes, 8592 differing words score 408 3006 / 2991 
+pvt_work1 | text: 102804 bytes, 2380 differing words score 339 2991 / 2991 
+pvt_work2 | text: 102816 bytes, 8587 differing words score 302 2994 / 2991 
+pvt_work3 | text: 102860 bytes, 8633 differing words score 161 3005 / 2991 
+pvt_work4 | text: 102796 bytes, 7636 differing words score 119 2989 / 2991 
+pvt_work5 | text: 102808 bytes, 6789 differing words score 33 2992 / 2991 
