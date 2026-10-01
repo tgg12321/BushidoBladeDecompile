@@ -1,0 +1,178 @@
+From dc37b108e9a04ee76ccbef6a0bcc9facf4a443bb Mon Sep 17 00:00:00 2001
+From: q56-scratch <q56@scratch>
+Date: Wed, 30 Sep 2026 21:05:22 -0500
+Subject: [PATCH] substrate: maspsx models .local+.comm (an uninitialized
+ static) as .lcomm (owner ruling Q65, step 12)
+
+---
+ engine/test_engine.py                   | 16 +++++++++++
+ tools/maspsx/maspsx/__init__.py         | 25 +++++++++++-------
+ tools/maspsx/tests/test_comm_global.py  | 11 +++++---
+ tools/maspsx/tests/test_static_lcomm.py | 35 +++++++++++++++++++++++++
+ 4 files changed, 74 insertions(+), 13 deletions(-)
+ create mode 100644 tools/maspsx/tests/test_static_lcomm.py
+
+diff --git a/engine/test_engine.py b/engine/test_engine.py
+index 4ee3af614..db8786631 100644
+--- a/engine/test_engine.py
++++ b/engine/test_engine.py
+@@ -4997,6 +4997,21 @@ def test_maspsx_indexed_operand_not_gp() -> None:
+        run("sb\t$2,sym"), ["lbu\t$2,0($4)", "nop", "sb\t$2,%gp_rel(sym)($gp)"])
+ 
+ 
++def test_maspsx_static_lcomm() -> None:
++    """Owner ruling Q65: an uninitialized static (`.local`+`.comm`, cc1psx `.lcomm`) is file-own small data
++    under -G8, gp at every offset, never COMMON; the Q62-era fail-closed error is gone."""
++    import sys
++    sys.path.insert(0, str(Path("tools/maspsx").resolve()))
++    try:
++        from maspsx import MaspsxProcessor
++    finally:
++        sys.path.pop(0)
++    lines = [".text", ".ent\tf", "lb\t$4,st", "lb\t$5,st+1", ".end\tf", ".local\tst", ".comm\tst,4,4"]
++    res = [l.split("#")[0].strip() for l in MaspsxProcessor(lines, sdata_limit=8).process_lines()]
++    eq("maspsx -G8: a static is gp at base and offset",
++       [l for l in res if l.startswith("lb")], ["lb\t$4,%gp_rel(st)($gp)", "lb\t$5,%gp_rel(st+1)($gp)"])
++
++
+ def test_maspsx_fingerprint() -> None:
+     """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
+     HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
+@@ -5236,6 +5251,7 @@ def main() -> int:
+     test_queue_rotation()
+     test_queue_remeasure_source_integrity()
+     test_maspsx_indexed_operand_not_gp()
++    test_maspsx_static_lcomm()
+     test_maspsx_fingerprint()
+     test_objdump_failure_is_loud()
+     test_prologue_config_fingerprint()
+diff --git a/tools/maspsx/maspsx/__init__.py b/tools/maspsx/maspsx/__init__.py
+index baeec8fb2..5108baf35 100644
+--- a/tools/maspsx/maspsx/__init__.py
++++ b/tools/maspsx/maspsx/__init__.py
+@@ -562,6 +562,8 @@ class MaspsxProcessor:
+         self.comm_symbols: set[str] = set()
+         # symbols named by `.local` (our cc1's svr4 form of an uninitialized static)
+         self.local_symbols: set[str] = set()
++        # uninitialized statics (`.local` + `.comm`): emitted as local storage, never COMMON
++        self.static_symbols: set[str] = set()
+         self.sdata_sym_list = sdata_sym_list or []
+         self.sdata_func_set = set(sdata_func_list) if sdata_func_list else set()
+         self.sdata_exclude_map = sdata_exclude_map or {}
+@@ -648,12 +650,17 @@ class MaspsxProcessor:
+                 symbol, size_str = var.split(",")[:2]
+                 if line.startswith(".comm") and symbol in self.local_symbols:
+                     # `.local sym` + `.comm` = an uninitialized static; cc1psx wrote
+-                    # `.lcomm`, which ASPSX treats differently (gp at every offset).
+-                    # Not modelled: fail closed, as before the three-field parse.
+-                    raise ValueError(
+-                        f".local+.comm {symbol} (uninitialized static) is not modelled; "
+-                        "ASPSX saw .lcomm -- needs its own ruling"
+-                    )
++                    # `.lcomm sym,size`. Sony ASPSX 2.34 keeps it in the file's own
++                    # .sbss when small (gp at EVERY offset) and PSYLINK allocates
++                    # each file's statics in link order (owner ruling Q65). Model it
++                    # exactly as `.lcomm`: never COMMON, a local symbol.
++                    self.static_symbols.add(symbol)
++                    size = int(size_str)
++                    if size <= self.sdata_limit:
++                        self.sbss_entries[symbol] = size
++                    else:
++                        self.bss_entries[symbol] = size
++                    continue
+                 size = int(size_str)
+                 if size <= self.sdata_limit:
+                     self.sbss_entries[symbol] = size
+@@ -760,7 +767,7 @@ class MaspsxProcessor:
+                     res.append(f"\t.comm {symbol},{size}")
+                     continue
+ 
+-                if section == "sbss":
++                if section == "sbss" or symbol in self.static_symbols:
+                     if size >= 8:
+                         res.append("\t.align 3")
+                     elif size >= 4:
+@@ -768,8 +775,8 @@ class MaspsxProcessor:
+                     elif size >= 2:
+                         res.append("\t.align 1")
+ 
+-                # only mark bss symbols as global
+-                if section == "bss":
++                # only mark bss symbols as global (a static stays local)
++                if section == "bss" and symbol not in self.static_symbols:
+                     res.append(
+                         f"\t.globl {symbol}",
+                     )
+diff --git a/tools/maspsx/tests/test_comm_global.py b/tools/maspsx/tests/test_comm_global.py
+index 0c738f5f3..751b6e957 100644
+--- a/tools/maspsx/tests/test_comm_global.py
++++ b/tools/maspsx/tests/test_comm_global.py
+@@ -2,7 +2,8 @@
+ model): our cc1 writes a public tentative definition as three-field `.comm sym,size,align`. maspsx parses it
+ (the alignment is implicit for COMMON, as in cc1psx's two-field form); with --use-comm-section the symbol
+ stays COMMON, and gp is used for its base only, never `sym+N` (the measured ASPSX 2.34 rule). An
+-uninitialized static (`.local sym` + `.comm`) is NOT modelled and must fail closed."""
++uninitialized static (`.local sym` + `.comm`) is modelled as cc1psx's `.lcomm` (owner ruling Q65): file-own
++storage, never COMMON, a local symbol, gp at every offset when small (tests/test_static_lcomm.py)."""
+ import unittest
+ 
+ from maspsx import MaspsxProcessor
+@@ -35,9 +36,11 @@ class TestCommGlobal(unittest.TestCase):
+         self.assertIn("sb\t$4,%gp_rel(g_cd_atv)($gp)", res)
+         self.assertIn("sb\t$5,g_cd_atv+1", res)
+ 
+-    def test_local_comm_static_fails_closed(self):
+-        with self.assertRaises(ValueError):
+-            run([".local\tg_cd_atv", ".comm\tg_cd_atv,4,4"] + BODY, use_comm_section=True)
++    def test_local_comm_static_is_not_common(self):
++        res = run([".local\tg_cd_atv", ".comm\tg_cd_atv,4,4"] + BODY, use_comm_section=True)
++        self.assertNotIn(".comm g_cd_atv,4", res)
++        self.assertIn("g_cd_atv:", res)
++        self.assertIn("sb\t$5,%gp_rel(g_cd_atv+1)($gp)", res)  # a static takes gp at an offset
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tools/maspsx/tests/test_static_lcomm.py b/tools/maspsx/tests/test_static_lcomm.py
+new file mode 100644
+index 000000000..86046c8e4
+--- /dev/null
++++ b/tools/maspsx/tests/test_static_lcomm.py
+@@ -0,0 +1,35 @@
++"""An uninitialized static (`.local S` + `.comm S,size,align`; cc1psx `.lcomm`) is the file's own storage:
++never COMMON, a local symbol, gp at EVERY offset when small; a tentative definition (`.comm`) only at its
++base (owner ruling Q65; Sony ASPSX 2.34 probes lcomm4 / comm4)."""
++import unittest
++
++from maspsx import MaspsxProcessor
++
++from .util import strip_comments
++
++
++def run(lines, g=8):
++    return [l for l in strip_comments(MaspsxProcessor(lines, sdata_limit=g).process_lines()) if l.strip()]
++
++
++class TestStaticLcomm(unittest.TestCase):
++    def test_static_is_gp_at_every_offset_and_local(self):
++        res = run([".text", ".ent\tf", "lb\t$4,st", "lb\t$5,st+1", ".end\tf", ".local\tst", ".comm\tst,4,4"])
++        self.assertIn("lb\t$4,%gp_rel(st)($gp)", res)
++        self.assertIn("lb\t$5,%gp_rel(st+1)($gp)", res)
++        self.assertIn("st:", res)
++        self.assertNotIn(".globl st", " ".join(res))
++
++    def test_tentative_is_gp_at_base_only(self):
++        res = run([".text", ".ent\tf", "lb\t$4,cm", "lb\t$5,cm+1", ".end\tf", ".comm\tcm,4,4"])
++        self.assertIn("lb\t$4,%gp_rel(cm)($gp)", res)
++        self.assertIn("lb\t$5,cm+1", res)
++
++    def test_static_without_g_is_local_bss_not_gp(self):
++        res = run([".text", ".ent\tf", "lb\t$4,st", ".end\tf", ".local\tst", ".comm\tst,4,4"], g=0)
++        self.assertNotIn("lb\t$4,%gp_rel(st)($gp)", res)
++        self.assertNotIn(".globl st", " ".join(res))
++
++
++if __name__ == "__main__":
++    unittest.main()
+-- 
+2.43.0
+

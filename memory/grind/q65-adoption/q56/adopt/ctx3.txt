@@ -1,0 +1,272 @@
+---- src/text1b_b.c:780-790
+  780 
+  781 
+  782 
+  783 extern s32 ClearOTagR(s32, s32);
+  784 extern s32 func_8006E950(s32, s32 *);
+  785 
+  786 extern u8 *func_8006E49C(s32, s32);
+  787 
+  788 
+  789 
+  790 
+---- src/text1b_b.c:864-900
+  864     }
+  865 end:
+  866     return s2;
+  867 }
+  868 extern s32 D_8009BD24;
+  869 s32* func_80077D00(void) {
+  870     return &D_8009BD24;
+  871 }
+  872 void func_8006920C(s32*, s32);
+  873 s32 func_80077D10(s32 *a0) {
+  874     func_8006920C(a0, a0[6]);
+  875     func_8006920C(a0, a0[7]);
+  876     func_8006920C(a0, a0[8]);
+  877     func_8006920C(a0, a0[9]);
+  878     func_8006920C(a0, a0[10]);
+  879     return a0[1];
+  880 }
+  881 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+  882 static s32 D_800A35F0;
+  883 static s32 D_800A35F4;
+  884 static s32 D_800A35F8;
+  885 static s32 D_800A35FC;
+  886 static s32 D_800A3600;
+  887 static s32 D_800A3604;  /* unreferenced: size from the gap */
+  888 static s32 D_800A3608;
+  889 static s32 D_800A360C;
+  890 static s32 * D_800A3610;
+  891 static s32 D_800A3614;
+  892 
+  893 s32 func_80077D74(s32 a0) {
+  894     return D_800A35F4 + a0 * 44;
+  895 }
+  896 extern s32 func_8006E480(s32, s32);
+  897 extern s32 func_8007352C(s32 *);
+  898 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+  899 extern s32 AddPrim(s32, s32);
+  900 extern void LoadImage(s32, s32);
+---- src/text1b_b.c:998-1004
+  998                 for (i = 0; i < 5; hp++, i++) {
+  999                     s.header = *hp;
+ 1000                     s.table = table;
+ 1001                     s.x = i << 7;
+ 1002                     s.out = arg0[4];
+ 1003                     arg0[4] = func_8007352C(&s.header);
+ 1004                     SetDrawMode(arg0[6], 1, 0, func_8006E480(s.header, abr), 0);
+---- src/text1b_b.c:1130-1140
+ 1130     s32 r;
+ 1131 
+ 1132     ClearOTagR(g_gpu_ot_ptr, 0x1008);
+ 1133     s0 = arg0 + 0x58;
+ 1134     D_800A35F4 = arg0;
+ 1135     D_800A35F8 = s0;
+ 1136     func_8006E950(0x32, s0);
+ 1137     r = func_80077D10(s0);
+ 1138     func_8006E49C(r, D_800A35F4);
+ 1139     D_800A35FC = 0;
+ 1140     D_800A35F0 = 0;
+---- src/text1b_b.c:1186-1195
+ 1186 }
+ 1187 s32 func_80078634(s32 a0) {
+ 1188     return D_800A360C + a0 * 44;
+ 1189 }
+ 1190 extern s32 func_8006E480(s32, s32);
+ 1191 extern s32 func_8007352C(s32 *);
+ 1192 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+ 1193 extern s32 AddPrim(s32, s32);
+ 1194 extern s32 g_gpu_ot_ptr;
+ 1195 
+---- src/text1b_b.c:1290-1298
+ 1290     ClearOTagR(g_gpu_ot_ptr, 0x1008);
+ 1291     s0 = arg0 + 0x58;
+ 1292     D_800A360C = arg0;
+ 1293     D_800A3610 = s0;
+ 1294     func_8006E950(0x5F, s0);
+ 1295     r = func_80078628(s0);
+ 1296     func_8006E49C(r, D_800A360C);
+ 1297     D_800A3304 = 0;
+ 1298     D_800A3608 = 0;
+---- src/text1a_c2.c:1-40
+    1 #include "common.h"
+    2 #define INCLUDE_ASM_USE_MACRO_INC 1
+    3 #include "include_asm.h"
+    4 #include "sound.h"
+    5 #include "game.h"
+    6 #include "code6cac.h"
+    7 
+    8 extern s32 D_800A33B0;
+    9 extern s32 D_800A33B4;
+   10 extern s32 *func_800457A0(s32);
+   11 extern s32 *func_800455AC(s32);
+   12 extern void func_80044F30(s32, s32);
+   13 extern void func_80045824(s32, s32, s32);
+   14 extern void func_80045230(s32);
+   15 extern void func_80044010(s32, s32);
+   16 extern void func_8003EDC0(s32, s32);
+   17 extern s32 func_80044670(s32, s32, s32);
+   18 extern void func_800477DC(s32);
+   19 extern s32 func_80047EC8(void);
+   20 extern void func_800481E8(s32, s32);
+   21 extern void func_80054410(s32);
+   22 extern void func_80045600(s32, s32);
+   23 extern void func_80045694(s32, s32);
+   24 extern void stage_ExecInitFunc(void);
+   25 extern void func_8004659C(s32);
+   26 extern void func_800466C0(void);
+   27 extern void func_80045510(s32, s32);
+   28 extern void func_80044098(s32);
+   29 
+   30 
+   31 #define ALIGN4(x) (((u32)(x) >> 2) << 2)
+   32 #define PTR_OFF(base, off) ((s32)((u8 *)(base) + (off)))
+   33 
+   34 void func_800460E4(s32 stage_id, s32 arg1) {
+   35     s32 *s0;
+   36     s32 s7;
+   37     s32 *s6, *s4, *s2;
+   38     s32 s3;
+   39     s32 *s1;
+   40     s32 *fp_ptr;
+---- src/text1a_c2.c:190-235
+  190         v0 = ((u32)s0[6] >> 2) << 2;
+  191         s1 = (s32 *)((u8 *)s0 + v0);
+  192         break;
+  193     case 3:
+  194     case 0x22:
+  195         v0 = ((u32)s0[5] >> 2) << 2;
+  196         s1 = (s32 *)((u8 *)s0 + v0);
+  197         break;
+  198     }
+  199     func_80044010(a0, 7);
+  200     func_8003EDC0(s1, 7);
+  201     func_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
+  202     g_stage_variant = 0;
+  203 }
+  204 void func_8004659C(s32 a0) {
+  205     s32 *s0;
+  206     s32 *s2;
+  207     s32 *s3;
+  208     s32 *s4p;
+  209     s32 *s1p;
+  210     s32 *s0p;
+  211     s32 v0;
+  212     if (a0 < 0) {
+  213         func_800464C4();
+  214         return;
+  215     }
+  216     if (g_stage_variant == 0) {
+  217         return;
+  218     }
+  219     v0 = func_800457A0(7);
+  220     s0 = (s32 *)v0;
+  221     v0 += 4;
+  222     v0 = v0 + a0 * 20;
+  223     s2 = (s32 *)((u8 *)s0 + *(s32 *)v0);
+  224     v0 += 4;
+  225     s3 = (s32 *)((u8 *)s0 + *(s32 *)v0);
+  226     v0 += 4;
+  227     s4p = (s32 *)((u8 *)s0 + *(s32 *)v0);
+  228     v0 += 4;
+  229     s1p = (s32 *)((u8 *)s0 + *(s32 *)v0);
+  230     s0p = (s32 *)((u8 *)s0 + *(s32 *)(v0 + 4));
+  231     func_80044098(7);
+  232     func_80044010(s2, 7);
+  233     func_80054410(s3);
+  234     D_800A33B0 = (s32)s4p;
+  235     D_800A33B4 = (s32)s1p;
+---- src/text1a_b.c:1-30
+    1 #include "common.h"
+    2 
+    3 extern void func_80044100(s32, ...);
+    4 extern void func_80044C70(s32);
+    5 extern s32 D_800A33B0;
+    6 extern s32 D_800A33B4;
+    7 extern u16 D_80099478;
+    8 extern void func_8005441C(s32);
+    9 extern void func_80047ED0(s32);
+   10 void func_800466C0(s32 a0, s32 a1) {
+   11     s32 rounded;
+   12     s16 val;
+   13     func_80044100(7, a1);
+   14     func_8005441C(a1);
+   15     rounded = (a1 / 4) * 4;
+   16     D_800A33B0 += rounded;
+   17     val = (s16)(D_80099478 - 4);
+   18     D_800A33B4 += rounded;
+   19     switch (val) {
+   20     case 0:
+   21     case 3:
+   22     case 14:
+   23         func_80044C70(a1);
+   24         break;
+   25     case 9:
+   26         func_80044100(8);
+   27         break;
+   28     case 7:
+   29         func_80047ED0(a1);
+   30         break;
+src/text1a_c2.c:31:#define ALIGN4(x) (((u32)(x) >> 2) << 2)
+src/text1a_c2.c:32:#define PTR_OFF(base, off) ((s32)((u8 *)(base) + (off)))
+src/text1a_c2.c:55:                    s32 off = ALIGN4(s0[s3 - 1]);
+src/text1a_c2.c:56:                    func_8003EDC0(PTR_OFF(s0, off), 7);
+src/text1a_c2.c:88:        s6 = (s32 *)((u8 *)s0 + ALIGN4(off1_raw));
+asm/funcs/func_8004A4E0.s:15:    /* 3AD14 8004A514 1080173C */  lui        $s7, %hi(D_80102C00)
+asm/funcs/func_8004A4E0.s:16:    /* 3AD18 8004A518 002CF726 */  addiu      $s7, $s7, %lo(D_80102C00)
+asm/funcs/func_80054F68.s:2:    /* 45768 80054F68 1080023C */  lui        $v0, %hi(D_80102C00)
+asm/funcs/func_80054F68.s:3:    /* 4576C 80054F6C 002C4224 */  addiu      $v0, $v0, %lo(D_80102C00)
+asm/funcs/func_80044504.s:81:    /* 34E2C 8004462C 1080023C */  lui        $v0, %hi(D_80102C00)
+asm/funcs/func_80044504.s:82:    /* 34E30 80044630 002C4224 */  addiu      $v0, $v0, %lo(D_80102C00)
+asm/funcs/func_80046BF4.s:5:    /* 37400 80046C00 1080023C */  lui        $v0, %hi(D_80102C00)
+asm/funcs/func_80046BF4.s:6:    /* 37404 80046C04 002C4224 */  addiu      $v0, $v0, %lo(D_80102C00)
+include/code6cac.h-529-    Unk80101DF0Xform xf;   /* +0x10 */
+include/code6cac.h-530-    Unk80101DF0Mat work;   /* +0x38 */
+include/code6cac.h:531:} Unk80101DF0Record;      /* 0x58 */
+include/code6cac.h-532-extern Unk80101DF0Record D_80101DF0;
+include/code6cac.h-533-extern Unk80101DF0Record D_800FF638;
+include/code6cac.h-534-typedef struct {
+include/code6cac.h-535-    s32 a;
+include/code6cac.h-536-    s32 b;
+include/code6cac.h-537-} CamPair;
+include/code6cac.h-538-
+include/code6cac.h-539-/* The replay-camera / CD-read words at 0x80101E60..0x80101EA7: the tail of
+include/code6cac.h-540- * CdState D_80101E58 below, where the evidence that they are one object with
+include/code6cac.h-541- * its head is set out.  Member widths follow the original accesses;
+include/code6cac.h-542- * 0x80101E91..93 is the compiler's alignment padding.  unk3A (0x80101E9A)
+include/code6cac.h-543- * lies inside the proven span's object (its size is a multiple of 4) and is
+include/code6cac.h-544- * func_80036140's halfword (sh 80036548, lhu 80036778 / sh 80036788).
+include/code6cac.h-545- *
+include/code6cac.h-546- * unk3C..unk44 (0x80101E9C..0x80101EA7) are in the object by compiler
+include/code6cac.h-547- * necessity (aggregate-merge prong (a), (a1)/(a2)/(a4')): func_80036140 is
+include/code6cac.h-548- * compiled -G8, and there its read-modify-writes of 0x80101E9C and
+include/code6cac.h-549- * 0x80101EA4 keep the address in a register (la; lX 0(r); sX 0(r)) only for
+include/code6cac.h-550- * a variable larger than 8 bytes -- a smaller one is small data, and cse
+include/code6cac.h-551- * folds any pointer back to the symbol; the original compiler agrees.
+include/code6cac.h-552- * Scratch whole-file scores: separate variables 18, block-local pointers 18,
+include/code6cac.h-553- * function-scope pointers 43, the object ending at 0x80101E9F or 0x80101EA3
+include/code6cac.h-554- * (0x80101EA4 separate) 8, a separate 12-byte record at 0x80101E9C 8 (and
+include/code6cac.h-555- * cdrom_ReadyCallback 12), this object 2 (the jump-table operand only, which
+include/code6cac.h-556- * the link settles); linked, this object scores 0.  unk3E and expected_pos
+include/code6cac.h-557- * lie inside that span but func_80036140 never touches them: they are typed
+include/code6cac.h-558- * by their other users' original accesses (owner rulings 2026-09-26
+include/code6cac.h-559- * Q13/Q14): unk3E by game_FrameLoop / cdrom_StartRead (u16, the lhu at
+include/code6cac.h-560- * 80036F9C); expected_pos by cdrom_ReadyCallback / func_80036940 (s32: no
+include/code6cac.h-561- * access reveals its signedness, and s32 / u32 build byte-identical).
+4:    /* 3A754 80049F54 0180063C */  lui        $a2, %hi(D_800153F0)
+5:    /* 3A758 80049F58 F053C624 */  addiu      $a2, $a2, %lo(D_800153F0)
+14:    /* 3A778 80049F78 0300C288 */  lwl        $v0, 0x3($a2)
+15:    /* 3A77C 80049F7C 0000C298 */  lwr        $v0, 0x0($a2)
+16:    /* 3A780 80049F80 0700C388 */  lwl        $v1, 0x7($a2)
+17:    /* 3A784 80049F84 0400C398 */  lwr        $v1, 0x4($a2)
+18:    /* 3A788 80049F88 0B00C488 */  lwl        $a0, 0xB($a2)
+19:    /* 3A78C 80049F8C 0800C498 */  lwr        $a0, 0x8($a2)
+20:    /* 3A790 80049F90 0F00C588 */  lwl        $a1, 0xF($a2)
+21:    /* 3A794 80049F94 0C00C598 */  lwr        $a1, 0xC($a2)
+50:    /* 3A7FC 80049FFC 0300C288 */  lwl        $v0, 0x3($a2)
+51:    /* 3A800 8004A000 0000C298 */  lwr        $v0, 0x0($a2)
+52:    /* 3A804 8004A004 0700C388 */  lwl        $v1, 0x7($a2)
+53:    /* 3A808 8004A008 0400C398 */  lwr        $v1, 0x4($a2)
+54:    /* 3A80C 8004A00C 0B00C488 */  lwl        $a0, 0xB($a2)
+55:    /* 3A810 8004A010 0800C498 */  lwr        $a0, 0x8($a2)

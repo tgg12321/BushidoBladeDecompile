@@ -1,0 +1,270 @@
+---- src/sound.c:1-50
+    1 #include "common.h"
+    2 #include "include_asm.h"
+    3 #include "sound.h"
+    4 #include "game.h"
+    5 #include "code6cac.h"
+    6 #include "gte.h"
+    7 
+    8 /* Forward declarations for called functions */
+    9 extern void func_800453E0(s32);
+   10 extern s32 *func_800455AC(s32);
+   11 extern void func_80045510(s32, s32);
+   12 extern void func_80045230(s32);
+   13 extern void func_80054FDC(s32);
+   14 extern void SetRCnt(u32, s32, s32);
+   15 extern void GetRCnt(u32);
+   16 extern void StartRCnt(u32);
+   17 extern void func_8004473C(void);
+   18 extern void func_80044800(void);
+   19 extern void func_80048F58(s32, s32);
+   20 extern void func_80048FFC(s32);
+   21 extern void *func_8004153C(void);
+   22 extern s32 func_800477E8(void);
+   23 extern void func_80047A90(void);
+   24 extern void func_80048B8C(s32);
+   25 extern void func_80044100(s32, s32);
+   26 extern void func_80045600(s32, s32);
+   27 extern void func_80045694(s32, void (*)(void));
+   28 extern void func_800460E4(s32);
+   29 extern void func_800421C8(s32);
+   30 extern void func_8003E0E0(void);
+   31 extern void func_8003E6D8(s32);
+   32 extern void func_8003DA8C(s32, s32);
+   33 extern void player_Destroy(s32);
+   34 extern void func_8004668C(void);
+   35 extern void func_80046020(void);
+   36 extern void func_80049E1C(void);
+   37 
+   38 extern void math_RotMatrixYXZ(s32 *, s32 *);
+   39 extern void ApplyMatrix(s32 *, s16 *, s32 *);
+   40 extern s16 ratan2(s32, s32);
+   41 extern s16 Judge[];
+   42 extern s16 D_800A33C8;
+   43 extern s16 D_800A33CA;
+   44 extern s32 D_800A3708;
+   45 extern void func_8004211C(void);
+   46 extern void func_800444BC(void);
+   47 extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
+   48 extern void func_80044FA0(s32, s32 *);
+   49 extern s16 D_800A324A;
+   50 
+---- src/sound.c:150-160
+  150                 s0 = (s32 *)((u8 *)s2 + off0);
+  151             }
+  152             func_80045230((s32)s1);
+  153             func_80044010(s0, 9);
+  154             func_80045600(chan, (s32)s1);
+  155             D_800A3248 = arg;
+  156         }
+  157     }
+  158     func_80045694(chan, func_800468DC);
+  159     return s2;
+  160 }
+---- src/sound.c:195-202
+  195 s32 *func_800469C4(s32 a0) {
+  196     s32 *v0;
+  197     s32 offset;
+  198 
+  199     v0 = func_800455AC(0xA);
+  200     func_80044FA0(a0, v0);
+  201     offset = (u32)v0[v0[0] + 1] >> 2 << 2;
+  202     {
+---- src/sound.c:276-282
+  276     s32 matrix_buf[8];
+  277     s16 *rot_base;
+  278     u8 *base;
+  279 
+  280     D_800A3820 = (s32)&D_80102C00;
+  281     {
+  282         u16 cnt = D_800A38D6;
+---- src/sound.c:315-360
+  315         }
+  316 
+  317         func_800418D0((s32 *)&D_80101DF0);
+  318         camera_InitBoneData();
+  319         stage_InitCollision();
+  320 
+  321         D_800A33C0 = a2;
+  322     }
+  323 
+  324     base = (u8 *)&D_800F62E0;
+  325     func_8004A1FC(base);
+  326     func_8004A1FC(base + 0x60);
+  327     func_8004A1FC(base + 0x180);
+  328     func_800420D0();
+  329     stage_ClearLighting();
+  330     stage_ApplyLighting();
+  331 }
+  332 void func_80046DA8(s32 a0) {
+  333     if (a0 & 1) {
+  334         func_80046EA0(D_800A33C0);
+  335     }
+  336     func_8004211C();
+  337     func_800444BC();
+  338 }
+  339 
+  340 s32 game_GetDummyFlag(void) {
+  341     return 0;
+  342 }
+  343 
+  344 void *game_GetPlayerData(void) {
+  345     void *v0 = func_8004153C();
+  346     if (v0) {
+  347         return (u8 *)v0 + 0x1994;
+  348     }
+  349     return NULL;
+  350 }
+  351 
+  352 void *game_GetPlayerBase(void) {
+  353     void *v0 = func_8004153C();
+  354     if (v0) {
+  355         return (u8 *)v0 + 0x2C;
+  356     }
+  357     return NULL;
+  358 }
+  359 
+  360 void func_80046E44(void) {
+---- src/sound.c:410-450
+  410     D_800EEDBC = div;
+  411     D_800EEDB0 = 0x1000;
+  412     D_800EEDC0 = 0x1000;
+  413     v0 = -(s16)num;
+  414     D_800EEDB2 = v0;
+  415     D_800EEDBE = v1;
+  416 }
+  417 void func_8004700C(s32 *a0, s32 *a1, s32 a2) {
+  418     s32 new_var;
+  419     s32 diff, prod;
+  420     gte_MulMatrix0ClearTrans(&D_800EEDB0, a0, a1);
+  421     new_var = a0[5];
+  422     diff = a0[6] - a2;
+  423     prod = diff * D_800EEDB2;
+  424     a1[6] = a2;
+  425     a1[5] = new_var + (prod >> 12);
+  426     diff = a0[6] - a2;
+  427     prod = diff * D_800EEDBE;
+  428     a1[7] = a0[7] + (prod >> 12);
+  429 }
+  430 void func_800470B0(s32 arg0, s32 *arg1, s32 *arg2, s32 arg3) {
+  431     MATRIX sp10;
+  432     s32 temp_v1;
+  433     s32 *var_s0;
+  434 
+  435     var_s0 = arg1;
+  436     temp_v1 = arg0 * 0x60;
+  437     sp10.m[0][0] = 0x1000;
+  438     sp10.m[0][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62F8 + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
+  439     sp10.m[0][2] = 0;
+  440     sp10.m[1][0] = 0;
+  441     sp10.m[1][1] = 0;
+  442     sp10.m[1][2] = 0;
+  443     sp10.m[2][0] = 0;
+  444     sp10.m[2][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62FC + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
+  445     sp10.m[2][2] = 0x1000;
+  446     gte_MulMatrix0ClearTrans(&sp10, var_s0, arg2);
+  447     arg2[5] = var_s0[5] + (((var_s0[6] - arg3) * sp10.m[0][1]) >> 12);
+  448     arg2[6] = arg3;
+  449     arg2[7] = var_s0[7] + (((var_s0[6] - arg3) * sp10.m[2][1]) >> 12);
+  450 }
+---- src/sound.c:505-525
+  505 }
+  506 
+  507 s16 *camera_CalcAngles(void) {
+  508     s16 rot[3];
+  509     s32 sp18[3];
+  510     s32 pos[8];
+  511     s16 s0;
+  512 
+  513     math_RotMatrixYXZ((s32 *)((u8 *)*(s32 **)&D_800A3708 + 0x10), pos);
+  514     rot[0] = 0;
+  515     rot[1] = 0;
+  516     rot[2] = 0x1000;
+  517     ApplyMatrix(pos, rot, sp18);
+  518     s0 = ratan2(sp18[0], sp18[2]);
+  519     sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
+  520               + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
+  521     D_800A33C8 = -ratan2(sp18[1], sp18[2]);
+  522     D_800A33CA = s0;
+  523     return &D_800A33C8;
+  524 }
+  525 
+---- src/sound.c:575-600
+  575     s32 computed;
+  576     u8 *base;
+  577 
+  578     if (stage_GetVariant() != 0) {
+  579         return;
+  580     }
+  581 
+  582     rot[0] = 0;
+  583     rot[1] = 0;
+  584     rot[2] = 0x6590;
+  585     ApplyMatrix((s32 *)&D_80101DF0.xf.mat, rot, result);
+  586 
+  587     angle = ratan2(result[0], result[2]);
+  588 
+  589     computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
+  590     result[2] = computed;
+  591 
+  592     {
+  593         s16 neg = -ratan2(result[1], computed);
+  594         base = &g_cam_bone_data2;
+  595         D_800EEE00 = neg;
+  596     }
+  597     D_800EEE02 = angle;
+  598     D_800EEE1C = D_80101DF0.xf.mat.t[0];
+  599     D_800EEE20 = D_80101DF0.xf.mat.t[1];
+  600     D_800EEE24 = D_80101DF0.xf.mat.t[2] + 0x6590;
+---- src/sound.c:640-690
+  640 void func_800477DC(s32 a0) {
+  641     D_800A33D0 = (s16 *)a0;
+  642 }
+  643 extern u32 GetTPage(s32, s32, s32, s32);
+  644 extern u32 GetClut(s32, s32);
+  645 extern void func_800417D0(s32 *);
+  646 extern s16 *D_800A33D0;
+  647 extern s8 D_800EF070;
+  648 extern s8 D_800EF071;
+  649 extern s16 D_800EF076;
+  650 extern s16 D_800EF078;
+  651 extern s16 D_800EF07A;
+  652 extern s32 D_800EF07C;
+  653 extern s16 D_800EF080;
+  654 extern s16 D_800EF082;
+  655 extern s16 D_800EF084;
+  656 extern s32 D_800EF0BC;
+  657 extern s32 D_800EF0C0;
+  658 extern s32 D_800EF0C4;
+  659 extern s32 D_800EF558[];
+  660 extern s32 D_800EF59C[];
+  661 s32 func_800477E8(void) {
+  662     s16 *s0;
+  663     s32 s3val;
+  664     s32 s2val;
+  665     s32 s1val;
+  666     s32 t1val;
+  667     s32 a3;
+  668     s32 a0;
+  669     s32 a2;
+  670     s32 a1;
+  671     s32 t0;
+  672     s32 v1;
+  673     s32 t2;
+  674     s32 v0;
+  675     s32 *ptr;
+  676     s32 *p;
+  677     s32 w;
+  678     s32 val;
+  679 
+  680     s0 = D_800A33D0;
+  681     s3val = GetTPage(0, 0, 0x2C0, 0x1C0);
+  682     s2val = GetTPage(0, 0, 0x2C0, 0x180);
+  683     s1val = GetClut(0x10, 0x1E0);
+  684     t1val = GetClut(0x10, 0x1E0);
+  685     a3 = 0;
+  686     t2 = 0x2C00;
+  687     a0 = 0;
+  688     do {
+  689         t0 = 0x1200;
+  690         a2 = 0x13;

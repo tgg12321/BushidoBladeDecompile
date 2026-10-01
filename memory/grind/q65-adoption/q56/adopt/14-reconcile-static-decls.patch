@@ -1,0 +1,95 @@
+From a431770943e2d007e0f28605d538fe231854fa54 Mon Sep 17 00:00:00 2001
+From: q56-scratch <q56@scratch>
+Date: Wed, 30 Sep 2026 21:05:52 -0500
+Subject: [PATCH] src: one declaration each for D_800A3468 (text1b_tu1c) and
+ g_anim_hit_flags (text1a_post) (owner ruling Q65, step 14)
+
+---
+ src/text1a_post.c |  5 ++---
+ src/text1b_tu1c.c | 30 ++++++++++++++++--------------
+ 2 files changed, 18 insertions(+), 17 deletions(-)
+
+diff --git a/src/text1a_post.c b/src/text1a_post.c
+index 53edcb788..76f5b31cd 100644
+--- a/src/text1a_post.c
++++ b/src/text1a_post.c
+@@ -555,13 +555,12 @@ void func_80041EB0(s32 a0, s32 a1)
+ }
+ extern s16 g_anim_counter;
+ extern s16 g_anim_select[3];
++extern s16 g_anim_hit_flags[];
+ void func_800420D0(void) {
+-    extern s16 g_anim_hit_flags;
+     g_anim_counter = 0;
+-    g_anim_hit_flags = 0;
++    g_anim_hit_flags[0] = 0;
+     g_anim_select[0] = -1;
+ }
+-extern s16 g_anim_hit_flags[];
+ extern s32 g_anim_hit_data[];
+ void func_800420E8(s32 a0, s32 a1) {
+     if (a0 < 2) {
+diff --git a/src/text1b_tu1c.c b/src/text1b_tu1c.c
+index 9c15f9db0..c6cfb205a 100644
+--- a/src/text1b_tu1c.c
++++ b/src/text1b_tu1c.c
+@@ -96,6 +96,8 @@ extern s32 cdrom_StartRead(s32, s32);
+  * Also measured 0/66 with the tables spelled through the address of their first word rather than
+  * as array declarations; the array declarations are kept because they put the object model at the
+  * declaration instead of at each use site. */
++extern s32 D_800A3468;
++#define OB ((struct Ob *)D_800A3468)
+ void func_80060A68(void) {
+     struct Ob {
+         union { s32 w; u16 h; } id;
+@@ -112,7 +114,6 @@ void func_80060A68(void) {
+         s32 m24;
+         s32 m28;
+     };
+-    extern struct Ob *D_800A3468;
+     extern s32 D_800A3478;
+     extern s32 D_800A347C;
+     extern s32 D_800A32BC;
+@@ -121,25 +122,26 @@ void func_80060A68(void) {
+ 
+     s32 result;
+ 
+-    D_800F10D0[D_800A3468->id.h] = 0;
+-    D_800A3468->m20 = D_800A3468->p0C[0];
+-    D_800A3468->m24 = D_800A3468->p0C[1];
+-    D_800A3468->m28 = D_800A3468->p0C[2];
+-    D_800A3468->m18 = D_800A3468->p10[0];
+-    D_800A3468->m1A = D_800A3468->p10[1];
+-    D_800A3478 = (s32)&D_800A3468->m18;
+-    D_800A3468->m1C = D_800A3468->p10[2];
+-    D_800A347C = (s32)&D_800A3468->m20;
++    D_800F10D0[OB->id.h] = 0;
++    OB->m20 = OB->p0C[0];
++    OB->m24 = OB->p0C[1];
++    OB->m28 = OB->p0C[2];
++    OB->m18 = OB->p10[0];
++    OB->m1A = OB->p10[1];
++    D_800A3478 = (s32)&OB->m18;
++    OB->m1C = OB->p10[2];
++    D_800A347C = (s32)&OB->m20;
+ 
+     result = ((s32 (*)(void)) chractar_use_pset_combo_id_table[
+-                  D_8009BA60[D_800A3468->id.h]
+-                  + D_800F10D0[D_800A3468->id.h]])();
+-    *D_800A3468->p14 = result;
++                  D_8009BA60[OB->id.h]
++                  + D_800F10D0[OB->id.h]])();
++    *OB->p14 = result;
+ 
+-    if (D_800A3468->id.w & 0x200000) {
++    if (OB->id.w & 0x200000) {
+         D_800A32BC = 0xA;
+     }
+ }
++#undef OB
+ void func_80060B70(void) {
+     extern s32 D_800A3468;
+     extern s32 D_800A346C;
+-- 
+2.43.0
+

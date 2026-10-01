@@ -1,0 +1,18 @@
+# Q65 adoption scratch series, banked 2026-09-30T23:42Z
+# base main commit: f5414d00586379abb997e8982041d13dbf6e334a
+# scratch clone: /tmp/q56/adopt tree (git clone --shared, not a worktree), branch q56-adopt
+step01 fbf47cc34 substrate: maspsx _uses_gp - an indexed sym($reg) operand is never gp (owner ruling Q65, step 1)
+step02 8ae58dff0 src: code6cac_b_tu2 / code6cac_b_tu3 boundary moves to func_800343F0 (owner ruling Q65, step 2, cut outcome (i
+step03 49630ea7e src: text1b / text1b_tu1c boundary moves to func_80060A68 (owner ruling Q65, step 3, boundary move in the reco
+step04 a94d985a7 src: text1a_c split before func_80044800 into text1a_c_tu2 (owner ruling Q65, step 4)
+step05 0a482bd07 src: code6cac_b2_pre + replay_camera_rob_back_loose2 + code6cac_b2_post are one file (owner ruling Q65, step 5
+step06 bda745c88 src: code6cac_c2 / config declarations of func_8004153C and D_800A3708 reconciled (owner ruling Q65, step 6)
+step07 b404bceb6 src: code6cac_c2 + config are one file (owner ruling Q65, step 7)
+step08 9c468ef4e substrate: maspsx models .local+.comm (an uninitialized static) as .lcomm (owner ruling Q65, step 8)
+step09 1d53f76d3 substrate: maspsx models cc1psx -G8's .sdata choice for small initialized objects (owner ruling Q65, step 9)
+step10 7798d719b src: one declaration each for D_800A3468 (text1b_tu1c) and g_anim_hit_flags (text1a_post) (owner ruling Q65, s
+step11 5caf61d68 src/build: per-file gp model - definitions follow the evidence, data blob cut, maspsx -G8 per file, sdata list
+step12 022986f65 tools/records: follow the retired sdata lists and the moved functions (owner ruling Q65, step 12)
+full clean build at 022986f65 (real definitions, no sdata lists): exe 62efab4f73f992798c43e8c730aa43baa10bb4fa
+bb2.bin 42fce5aff1490a579e919b68af56ebc5b0dc657f
+oracle  62efab4f73f992798c43e8c730aa43baa10bb4fa

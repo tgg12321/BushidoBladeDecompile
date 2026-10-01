@@ -1,0 +1,33 @@
+# Q56 step 1: exact sdata_exclude.txt lines to delete (line number in a739dbd20's file, then the text).
+# Full clean build with all of them deleted: exe SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa (oracle).
+18	comb_Write8: g_comb_send_buf
+19	comb_Read8: g_comb_recv_buf
+20	comb_WaitRead8: g_comb_recv_buf_plus_0x4, D_800A36C4
+34	func_800494D4: D_800A33E8
+40	func_80063BD0: D_800A344C, D_800A3454
+43	func_80065800: g_gpu_ot_ptr, D_800A3834
+44	func_800678A8: D_800A34E8
+45	func_80067D14: D_800A34E8
+47	func_80069250: D_800A3518
+48	func_800693CC: D_800A350C, D_800A3518, D_800A36AC
+54	func_8006B578: D_800A350C
+57	func_8006B92C: D_800A350C
+59	func_8006BD28: g_gpu_ot_ptr
+66	func_8006D5D4: D_800A350C
+70	func_8006DF68: D_800A350C
+73	func_8006EACC: D_800A36AC
+74	func_8006ECF4: D_800A3588, D_800A358C
+76	func_8006F100: D_800A35C8
+87	func_80074220: g_gpu_ot_ptr
+90	func_80074E08: g_gpu_ot_ptr
+92	func_800759D0: g_gpu_ot_ptr
+95	func_800770B8: g_gpu_ot_ptr
+101	func_80069AE4: g_gpu_ot_ptr
+102	SetDrawEnv2: D_8009BE78, D_8009BE7A
+103	_addque2: _qin, _qout, D_8009BE75, D_8009BF54, D_8009BE80, D_8009BF48, D_8009BF80, _qlog, D_8009BF6C, D_8009BF70, D_8009BE7C
+104	func_80070C70: g_gpu_ot_ptr
+105	func_80033D38: D_800A3858, D_80101ED2, D_80101ED6, D_800A38E9
+106	_spu_gcSPU: _spu_AllocLastNum, _spu_memList
+107	func_80068F70: D_8009BC04
+108	func_80077B30: D_8009BD41, D_8009BD42, D_8009BD43, D_8009BD3B, D_8009BD3C, D_8009BD3D, D_8009BD38
+109	_SpuSetAnyVoice: _spu_env, _spu_RXX, _spu_RQmask

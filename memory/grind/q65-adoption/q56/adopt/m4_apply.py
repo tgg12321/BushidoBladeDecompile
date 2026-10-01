@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+"""M4 merge (Q65/Q67, per-file-gp-model.md "Merge"): text1b_tu2 + text1a_b_mid_rodata + text1b_b are one file,
+text1b_b.c. Verbatim merge in link order (mergec.py; verbatim-identical re-declarations dropped); the
+declarations were reconciled in the previous step.
+
+Evidence (recorded as rodata-object-alignment section 7; tmp/q56/adopt/m34_evidence.md): the PSYLINK probe,
+the static-region gp reach per group, mergecheck2, and the jump-table phase check (text1b_tu2 and text1b_b
+both phase 4, text1a_b_mid_rodata has no jump table: no rodata-align boundary is removed).
+usage: m4_apply.py <tree>"""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from adoptlib import *
+os.chdir(sys.argv[1])
+parts = ["text1b_tu2", "text1a_b_mid_rodata", "text1b_b"]
+run(f"{H}/mergec.py", "src/text1b_b.c", *[f"src/{p}.c" for p in parts])
+for p in parts[:-1]:
+    os.remove(f"src/{p}.c")
+ld_merge("text1b_b", parts)
+print("M4 merge applied")

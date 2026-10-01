@@ -1,0 +1,3757 @@
+From b7a9d17ab026021bd5655d3ff782a911dccbedf4 Mon Sep 17 00:00:00 2001
+From: q56-scratch <q56@scratch>
+Date: Wed, 30 Sep 2026 21:04:36 -0500
+Subject: [PATCH] src: text1a_c2 + text1a_b + text1a_b_pre_rodata + sound +
+ text1b are one file (owner rulings Q65/Q67, step 9)
+
+---
+ bb2.ld                    |   13 -
+ src/sound.c               |  988 ----------------------
+ src/text1a_b.c            |   32 -
+ src/text1a_b_pre_rodata.c |  321 -------
+ src/text1a_c2.c           |  243 ------
+ src/text1b.c              | 1670 ++++++++++++++++++++++++++++++++++---
+ 6 files changed, 1564 insertions(+), 1703 deletions(-)
+ delete mode 100644 src/sound.c
+ delete mode 100644 src/text1a_b.c
+ delete mode 100644 src/text1a_b_pre_rodata.c
+ delete mode 100644 src/text1a_c2.c
+
+diff --git a/bb2.ld b/bb2.ld
+index f43f66d53..1f4923dce 100644
+--- a/bb2.ld
++++ b/bb2.ld
+@@ -64,9 +64,6 @@ SECTIONS
+         build/src/text1a_c.o(.rodata);
+         build/src/text1a_c_tu2.o(.rodata);
+         build/src/text1a_filepaths.o(.rodata);
+-        build/src/text1a_c2.o(.rodata);
+-        build/src/text1a_b.o(.rodata);
+-        build/src/text1a_b_pre_rodata.o(.rodata);
+         build/src/text1b.o(.rodata);
+         build/src/text1a_b_pre_rodata_b.o(.rodata);
+         build/src/text1b_tu1c.o(.rodata);
+@@ -81,7 +78,6 @@ SECTIONS
+         build/src/system.o(.rodata);
+         build/src/text1a_b_tail_rodata.o(.rodata);
+         build/src/main.o(.rodata);
+-        build/src/sound.o(.rodata);
+         build/src/gpu.o(.rodata);
+         build/src/display.o(.rodata);
+         build/src/ings2.o(.rodata);
+@@ -113,9 +109,6 @@ SECTIONS
+         build/src/text1a_post.o(.text);
+         build/src/text1a_c.o(.text);
+         build/src/text1a_c_tu2.o(.text);
+-        build/src/text1a_c2.o(.text);
+-        build/src/text1a_b.o(.text);
+-        build/src/sound.o(.text);
+         build/src/text1b.o(.text);
+         build/src/text1b_tu1c.o(.text);
+         build/src/text1b_tu1d.o(.text);
+@@ -156,9 +149,6 @@ SECTIONS
+         build/src/text1a_post.o(.data);
+         build/src/text1a_c.o(.data);
+         build/src/text1a_c_tu2.o(.data);
+-        build/src/text1a_c2.o(.data);
+-        build/src/text1a_b.o(.data);
+-        build/src/sound.o(.data);
+         build/src/text1b.o(.data);
+         build/src/text1b_tu1c.o(.data);
+         build/src/text1b_tu1d.o(.data);
+@@ -202,9 +192,6 @@ SECTIONS
+         build/src/text1a_post.o(.bss);
+         build/src/text1a_c.o(.bss);
+         build/src/text1a_c_tu2.o(.bss);
+-        build/src/text1a_c2.o(.bss);
+-        build/src/text1a_b.o(.bss);
+-        build/src/sound.o(.bss);
+         build/src/text1b.o(.bss);
+         build/src/text1b_tu1c.o(.bss);
+         build/src/text1b_tu1d.o(.bss);
+diff --git a/src/sound.c b/src/sound.c
+deleted file mode 100644
+index c84fed38f..000000000
+--- a/src/sound.c
++++ /dev/null
+@@ -1,988 +0,0 @@
+-#include "common.h"
+-#include "include_asm.h"
+-#include "sound.h"
+-#include "game.h"
+-#include "code6cac.h"
+-#include "gte.h"
+-
+-/* Forward declarations for called functions */
+-extern void func_800453E0(s32);
+-extern s32 *func_800455AC(s32);
+-extern void func_80045510(s32, s32);
+-extern void func_80045230(s32);
+-extern void func_80054FDC(s32);
+-extern void SetRCnt(u32, s32, s32);
+-extern void GetRCnt(u32);
+-extern void StartRCnt(u32);
+-extern void func_8004473C(void);
+-extern void func_80044800(void);
+-extern void func_80048F58(s32, s32);
+-extern void func_80048FFC(s32);
+-extern s32 *func_8004153C();
+-extern s32 func_800477E8(void);
+-extern void func_80047A90(void);
+-extern void func_80048B8C(s32);
+-extern void func_80044100();
+-extern void func_80045600(s32, s32);
+-extern void func_80045694(s32, s32);
+-extern void func_800460E4(s32, s32);
+-extern void func_800421C8(s32);
+-extern void func_8003E0E0(void);
+-extern void func_8003E6D8(s32);
+-extern void func_8003DA8C(s32, s32);
+-extern void player_Destroy(s32);
+-extern void func_8004668C(void);
+-extern void func_80046020(void);
+-extern void func_80049E1C(void);
+-
+-extern void math_RotMatrixYXZ(s32 *, s32 *);
+-extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
+-extern s32 ratan2(s32, s32);
+-extern s16 Judge[];
+-extern s16 D_800A33C8;
+-extern s16 D_800A33CA;
+-extern Unk80101DF0Record *D_800A3708;
+-extern void func_8004211C(void);
+-extern void func_800444BC(void);
+-extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
+-extern s32 func_80044FA0(s32, s32);
+-extern s16 D_800A324A;
+-
+-/* Externs for globals */
+-extern s16 D_800EEDB0;
+-extern s16 D_800EEDB2;
+-extern s16 D_800EEDBE;
+-extern s32 D_800A33C0;
+-extern s32 D_800A33D4;
+-extern s32 D_800A33D8;
+-
+-extern s32 D_800EF800[];
+-extern u8 g_stage_data;
+-extern s16 D_800F6654;
+-extern u8 g_cam_bone_data;
+-extern u8 g_cam_bone_data2;
+-
+-extern s16 g_cam_interp;
+-extern s16 D_800F62F8;
+-extern s16 D_800F62FA;
+-extern s16 D_800F62FC;
+-extern s16 D_800EEDB4;
+-extern s16 D_800EEDB6;
+-extern s16 D_800EEDB8;
+-extern s16 D_800EEDBA;
+-extern s16 D_800EEDBC;
+-extern s16 D_800EEDC0;
+-
+-extern void func_800451A0(void);
+-extern void func_800451D0(void);
+-extern void ApplyMatrixLV(void *, void *, void *);
+-extern void func_800418D0(s32 *);
+-extern void func_8004A1FC();
+-extern void func_800420D0(void);
+-extern void stage_ClearLighting(void);
+-extern void stage_ApplyLighting(void);
+-extern void stage_InitCollision(void);
+-extern s32 D_80102C00;
+-extern u16 D_800A38D6;
+-extern s32 g_gpu_ot_ptr;
+-extern s32 D_800A3808;
+-extern s32 D_800A378C;
+-extern u8 D_800F62E0[8][0x60];
+-extern s32 g_anim_func_table[];
+-extern void func_80042E90(void);
+-extern void func_80044498(void);
+-extern void func_80049E4C(void);
+-extern void func_80049F4C(void);
+-extern void func_8003D91C(void);
+-extern void func_800404D8(void);
+-extern void func_8003F7F4(void);
+-extern s16 D_800F6650;
+-extern s16 g_color_mode;
+-extern s16 D_800F6656;
+-extern s16 D_800F665A;
+-extern s32 D_800A33BC;
+-extern s32 func_800486FC(void);
+-extern s32 *func_8004574C(s32);
+-extern void func_80044F80(s32, s32 *);
+-extern void func_80044010(s32 *, s16);
+-extern s16 D_800A3248;
+-
+-void func_800468DC(s32 a0, s32 a1);
+-
+-/* --- Functions 0x80046780 - 0x80047EC8 --- */
+-
+-s32 func_80046780(void) {
+-    return D_800A33B0;
+-}
+-s32 func_8004678C(void) {
+-    return D_800A33B4;
+-}
+-
+-s32 stage_GetId(void) {
+-    return g_stage_id;
+-}
+-
+-s32 stage_GetVariant(void) {
+-    return g_stage_variant;
+-}
+-
+-s32 *func_800467B8(s32 a0) {
+-    s32 arg = a0;
+-    s32 chan = 8;
+-    s32 *s2;
+-
+-    if (func_800486FC()) {
+-        arg = arg + 0x1B;
+-    }
+-    {
+-        s32 *a1 = func_8004574C(8);
+-        if (a1 && D_800A3248 == arg) {
+-            s2 = (s32 *)a1[1];
+-        } else {
+-            s32 *s1;
+-            s32 *s0;
+-            s2 = func_800455AC(chan);
+-            func_80044F80(arg, s2);
+-            {
+-                s32 off1 = (u32)s2[2] >> 2 << 2;
+-                s32 off0 = (u32)s2[1] >> 2 << 2;
+-                s1 = (s32 *)((u8 *)s2 + off1);
+-                s0 = (s32 *)((u8 *)s2 + off0);
+-            }
+-            func_80045230((s32)s1);
+-            func_80044010(s0, 9);
+-            func_80045600(chan, (s32)s1);
+-            D_800A3248 = arg;
+-        }
+-    }
+-    func_80045694(chan, (s32)func_800468DC);
+-    return s2;
+-}
+-
+-void func_800468B0(s32 a0) {
+-    func_80045510(8, a0);
+-    func_80045230(0);
+-}
+-
+-void func_800468DC(s32 a0, s32 a1) {
+-    func_80048B8C(a1);
+-    func_80044100(9, a1);
+-}
+-
+-void func_80046914(void) {
+-    func_800453E0(8);
+-}
+-
+-void snd_AllocSe(void) {
+-    func_800455AC(9);
+-}
+-
+-void snd_SeNullCallback(void) {
+-}
+-
+-void func_8004695C(s32 a0) {
+-    func_80045230(a0);
+-    func_80045600(9, a0);
+-    func_80045694(9, (s32)snd_SeNullCallback);
+-}
+-
+-void func_800469A0(s32 a0) {
+-    func_80045510(9, a0);
+-}
+-
+-void func_80046A80(s32, s32);
+-
+-s32 *func_800469C4(s32 a0) {
+-    s32 *v0;
+-    s32 offset;
+-
+-    v0 = func_800455AC(0xA);
+-    func_80044FA0(a0, (s32)v0);
+-    offset = (u32)v0[v0[0] + 1] >> 2 << 2;
+-    {
+-        s32 *s0 = (s32 *)((u8 *)v0 + offset);
+-        func_80045230((s32)s0);
+-        func_80045600(0xA, (s32)s0);
+-    }
+-    D_800A324A = (s16)a0;
+-    func_80045694(0xA, (s32)func_80046A80);
+-    return v0;
+-}
+-
+-void func_80046A60(void) {
+-    func_800453E0(0xA);
+-}
+-
+-void func_80046A80(s32 a0, s32 a1) {
+-    func_80054FDC(a1);
+-}
+-
+-void snd_StopAll(void) {
+-    player_Destroy(0);
+-    player_Destroy(1);
+-    func_8004668C();
+-    func_80046020();
+-    func_80049E1C();
+-    func_80046914();
+-}
+-
+-void rcnt_StartCnt1(void) {
+-    SetRCnt(0xF2000001, -1, 0x2000);
+-    StartRCnt(0xF2000001);
+-}
+-
+-void rcnt_GetCnt1(void) {
+-    GetRCnt(0xF2000001);
+-}
+-
+-void game_Init(void) {
+-    /* FAKE: constant-holder locals — set in source order ahead of the fence
+-       below so 1 seats in $v0 and 2 in $v1 before the store tail, with $v0
+-       freed for reuse by 0x23 mid-tail */
+-    s16 one;
+-    s16 two;
+-
+-    func_800451A0();
+-    func_800451D0();
+-    func_80042E90();
+-    func_80044498();
+-    func_80049E4C();
+-    func_80049F4C();
+-    func_8003D91C();
+-    func_800404D8();
+-    func_8003F7F4();
+-    one = 1;
+-    two = 2;
+-    /* FAKE: sched.c mid-block loop-note fence — keeps the two pre-fence
+-       constant sets from being folded into the store tail (measured: without
+-       it CSE/sched collapse 1/2/0x23 into a single serialized $v0) */
+-    do { } while (0);
+-    D_800F6654 = one;
+-    D_800F665A = one;
+-    g_color_mode = 0;
+-    D_800F6650 = 0;
+-    D_800F6656 = 0;
+-    D_800F6658 = two;
+-    g_game_mirror_mode = 0;
+-    D_800A3790 = 0x23;
+-    D_800A33BC = 0;
+-}
+-void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
+-    s32 result[3];
+-    u16 *new_var;
+-    u16 new_var2;
+-    s32 trans[3];
+-    s16 rot[3];
+-    s32 matrix_buf[8];
+-    s16 *rot_base;
+-    u8 *base;
+-
+-    D_800A3820 = (s32)&D_80102C00;
+-    {
+-        u16 cnt = D_800A38D6;
+-        s32 old_ptr = g_gpu_ot_ptr;
+-        new_var2 = cnt - -1;
+-        D_800A3808 = old_ptr;
+-        D_800A38D6 = new_var2;
+-        D_800A378C = old_ptr + 0x10;
+-    }
+-
+-    new_var = &a1[2];
+-    if (a0 != 0) {
+-        rot_base = &D_80101DF0.xf.rot.vx;
+-
+-        *rot_base = -(s16)a1[0];
+-        D_80101DF0.xf.rot.vy = -(s16)a1[1];
+-        D_80101DF0.xf.rot.vz = -(s16)(*new_var);
+-
+-        trans[1] = (trans[0] = 0);
+-        trans[2] = -a2;
+-
+-        rot[0] = -(s16)a1[0];
+-        rot[1] = -(s16)a1[1];
+-        rot[2] = -(s16)(*new_var);
+-
+-        ((void (*)(s16 *, s32 *))g_anim_func_table[0])(rot, matrix_buf);
+-
+-        ApplyMatrixLV(matrix_buf, trans, result);
+-
+-        {
+-            s32 *rp = result;
+-            s32 *ap = a0;
+-            D_80101DF0.work.t[0] = *rp++ + *ap++;
+-            D_80101DF0.work.t[1] = *rp++ + *ap++;
+-            D_80101DF0.work.t[2] = *rp++ + *ap++;
+-        }
+-
+-        func_800418D0((s32 *)&D_80101DF0);
+-        camera_InitBoneData();
+-        stage_InitCollision();
+-
+-        D_800A33C0 = a2;
+-    }
+-
+-    base = D_800F62E0[0];
+-    func_8004A1FC(base);
+-    func_8004A1FC(base + 0x60);
+-    func_8004A1FC(base + 0x180);
+-    func_800420D0();
+-    stage_ClearLighting();
+-    stage_ApplyLighting();
+-}
+-void func_80046DA8(s32 a0) {
+-    if (a0 & 1) {
+-        func_80046EA0(D_800A33C0);
+-    }
+-    func_8004211C();
+-    func_800444BC();
+-}
+-
+-s32 game_GetDummyFlag(void) {
+-    return 0;
+-}
+-
+-void *game_GetPlayerData(s32 a0) {
+-    void *v0 = func_8004153C(a0);
+-    if (v0) {
+-        return (u8 *)v0 + 0x1994;
+-    }
+-    return NULL;
+-}
+-
+-void *game_GetPlayerBase(void) {
+-    void *v0 = func_8004153C();
+-    if (v0) {
+-        return (u8 *)v0 + 0x2C;
+-    }
+-    return NULL;
+-}
+-
+-void func_80046E44(void) {
+-    D_800F6654 = 0;
+-}
+-
+-void func_80046E54(s32 a0) {
+-    if (a0) {
+-        D_800F6654 = 1;
+-    } else {
+-        D_800F6654 = 0;
+-    }
+-}
+-
+-s32 func_80046E7C(void) {
+-    return D_800F6654;
+-}
+-
+-void func_80046E8C(void) {
+-    D_800A3790 = 0x23;
+-}
+-
+-void func_80046EA0(s32 a0) {
+-    func_8003E6D8(a0);
+-    {
+-        s32 v0 = stage_GetId();
+-        func_8003DA8C(v0, a0);
+-    }
+-}
+-
+-void game_StageCleanup(s32 a0, s32 a1) {
+-    func_800460E4(a0, a1);
+-    func_800421C8(a0);
+-    func_8003E0E0();
+-}
+-
+-void *stage_GetDataPtr(void) {
+-    return &g_stage_data;
+-}
+-
+-void func_80046F24(void) {
+-    s32 num = (s32)D_800F62F8 << 12;
+-    s32 div = D_800F62FA;
+-    s32 v0 = num / div;
+-    s32 v1 = ((s32)D_800F62FC << 12) / div;
+-    D_800EEDB4 = 0;
+-    div = 0;
+-    num = v0;
+-    D_800EEDB6 = 0;
+-    v1 = -(s16)v1;
+-    D_800EEDB8 = 0;
+-    D_800EEDBA = 0;
+-    D_800EEDBC = div;
+-    D_800EEDB0 = 0x1000;
+-    D_800EEDC0 = 0x1000;
+-    v0 = -(s16)num;
+-    D_800EEDB2 = v0;
+-    D_800EEDBE = v1;
+-}
+-void func_8004700C(s32 *a0, s32 *a1, s32 a2) {
+-    s32 new_var;
+-    s32 diff, prod;
+-    gte_MulMatrix0ClearTrans((MATRIX *)&D_800EEDB0, (MATRIX *)a0, (MATRIX *)a1);
+-    new_var = a0[5];
+-    diff = a0[6] - a2;
+-    prod = diff * D_800EEDB2;
+-    a1[6] = a2;
+-    a1[5] = new_var + (prod >> 12);
+-    diff = a0[6] - a2;
+-    prod = diff * D_800EEDBE;
+-    a1[7] = a0[7] + (prod >> 12);
+-}
+-void func_800470B0(s32 arg0, s32 *arg1, s32 *arg2, s32 arg3) {
+-    MATRIX sp10;
+-    s32 temp_v1;
+-    s32 *var_s0;
+-
+-    var_s0 = arg1;
+-    temp_v1 = arg0 * 0x60;
+-    sp10.m[0][0] = 0x1000;
+-    sp10.m[0][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62F8 + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
+-    sp10.m[0][2] = 0;
+-    sp10.m[1][0] = 0;
+-    sp10.m[1][1] = 0;
+-    sp10.m[1][2] = 0;
+-    sp10.m[2][0] = 0;
+-    sp10.m[2][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62FC + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
+-    sp10.m[2][2] = 0x1000;
+-    gte_MulMatrix0ClearTrans(&sp10, (MATRIX *)var_s0, (MATRIX *)arg2);
+-    arg2[5] = var_s0[5] + (((var_s0[6] - arg3) * sp10.m[0][1]) >> 12);
+-    arg2[6] = arg3;
+-    arg2[7] = var_s0[7] + (((var_s0[6] - arg3) * sp10.m[2][1]) >> 12);
+-}
+-typedef struct {
+-    s32 w[8];
+-} Block32;
+-typedef struct { s16 lo; s16 hi; } CamHalves;
+-extern s16 D_800EEDD6;
+-extern s16 D_800EEDD8;
+-void camera_InitBoneData(void) {
+-    /* FAKE: sched fence — without it sched1 hoists the lhu of D_800EEDD6
+-       above the block copy (renaming the copy's regs). D_800EEDD6/D_800EEDD8
+-       physically live INSIDE g_cam_bone_data (+6/+8), so the dependency is
+-       real, but the split extern symbols hide it from GCC's alias analysis;
+-       no distinct-symbol spelling can express it (measured s2). */
+-    do { *(Unk80101DF0Mat *)&g_cam_bone_data = D_80101DF0.xf.mat; } while (0);
+-    {
+-        s16 h0 = D_800EEDD6;
+-        s16 h1 = D_800EEDD8;
+-        D_800EEDD6 = h0 >> 1;
+-        D_800EEDD8 = h1 >> 1;
+-        /* struct-view of the two halfwords at D_800EEDD8 (target relocation
+-           D_800EEDD8+0x2 proves the object spans 4 bytes); the direct
+-           *((&D_800EEDD8)+1) spelling makes cse common the +2 address into a
+-           register (la) where target keeps both accesses symbolic */
+-        ((CamHalves *)&D_800EEDD8)->hi = ((CamHalves *)&D_800EEDD8)->hi >> 1;
+-    }
+-}
+-
+-void *camera_GetBoneData(void) {
+-    return &g_cam_bone_data;
+-}
+-
+-extern s32 g_anim_func_table[];
+-void camera_InitRotation(u8 *a0) {
+-    u8 *s0 = a0;
+-    *(s16 *)(s0 + 4) = 8;
+-    {
+-        s16 v0 = 4;
+-        *(s16 *)(s0 + 8) = 0;
+-        {
+-            u8 *a0_arg = s0 + 0x10;
+-            *(s16 *)(s0 + 2) = 0;
+-            s0[0] = 0;
+-            s0[1] = 0;
+-            *(s32 *)(s0 + 0xC) = 0;
+-            *(s16 *)(s0 + 0xA) = v0;
+-            *(s16 *)(s0 + 0x10) = 0;
+-            *(s16 *)(s0 + 0x12) = 0;
+-            *(s16 *)(s0 + 0x14) = 0;
+-            ((void (*)(u8 *, u8 *))g_anim_func_table[*(s16 *)(s0 + 8)])(a0_arg, s0 + 0x38);
+-        }
+-    }
+-    *(s32 *)(s0 + 0x54) = 0;
+-    *(s32 *)(s0 + 0x50) = 0;
+-    *(s32 *)(s0 + 0x4C) = 0;
+-    *(Block32 *)(s0 + 0x18) = *(Block32 *)(s0 + 0x38);
+-}
+-
+-s16 *camera_CalcAngles(void) {
+-    s16 rot[3];
+-    s32 sp18[3];
+-    s32 pos[8];
+-    s16 s0;
+-
+-    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, pos);
+-    rot[0] = 0;
+-    rot[1] = 0;
+-    rot[2] = 0x1000;
+-    ApplyMatrix((MATRIX *)pos, (SVECTOR *)rot, (VECTOR *)sp18);
+-    s0 = ratan2(sp18[0], sp18[2]);
+-    sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
+-              + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
+-    D_800A33C8 = -ratan2(sp18[1], sp18[2]);
+-    D_800A33CA = s0;
+-    return &D_800A33C8;
+-}
+-
+-void game_EffInit(void) {
+-    func_8004473C();
+-}
+-
+-void func_8004748C(void) {
+-    func_80044800();
+-}
+-
+-void game_AnimInit(void) {
+-    func_80048F58(0, 0);
+-}
+-
+-void func_800474D0(void) {
+-    func_80048FFC(0);
+-}
+-
+-void game_EffInit2(void) {
+-    func_8004473C();
+-}
+-
+-void func_80047510(void) {
+-    func_80044800();
+-}
+-
+-void func_80047530(void) {
+-    func_800477E8();
+-}
+-
+-void func_80047550(void) {
+-    func_80047A90();
+-}
+-
+-void camera_InitBone2(void) {
+-    camera_InitRotation(&g_cam_bone_data2);
+-    g_cam_interp = 4;
+-}
+-extern s16 D_800EEE00;
+-extern s16 D_800EEE02;
+-extern s32 D_800EEE1C;
+-extern s32 D_800EEE20;
+-extern s32 D_800EEE24;
+-extern s32 D_800F66B0;
+-extern void MulMatrix0(s32 *, s32 *, s32 *);
+-void func_800475A4(void) {
+-    s16 rot[3];
+-    s32 result[4];
+-    s32 buf1[8];
+-    s32 buf2[8];
+-    s16 angle;
+-    s32 computed;
+-    u8 *base;
+-
+-    if (stage_GetVariant() != 0) {
+-        return;
+-    }
+-
+-    rot[0] = 0;
+-    rot[1] = 0;
+-    rot[2] = 0x6590;
+-    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, (SVECTOR *)rot, (VECTOR *)result);
+-
+-    angle = ratan2(result[0], result[2]);
+-
+-    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
+-    result[2] = computed;
+-
+-    {
+-        s16 neg = -ratan2(result[1], computed);
+-        base = &g_cam_bone_data2;
+-        D_800EEE00 = neg;
+-    }
+-    D_800EEE02 = angle;
+-    D_800EEE1C = D_80101DF0.xf.mat.t[0];
+-    D_800EEE20 = D_80101DF0.xf.mat.t[1];
+-    D_800EEE24 = D_80101DF0.xf.mat.t[2] + 0x6590;
+-    ((void (*)(u8 *, s32 *))D_800F66B0)(base + 0x10, buf1);
+-    ((void (*)(u8 *, s32 *))g_anim_func_table[0])((u8 *)&D_80101DF0.xf.rot, buf2);
+-    MulMatrix0(buf2, buf1, (s32 *)(base + 0x18));
+-
+-    {
+-        s32 *temp = (s32 *)D_800A3820;
+-        D_800A3820 = (s32)(temp + 1);
+-        *temp = (s32)base;
+-    }
+-}
+-
+-void game_AnimStart(void) {
+-    func_80048F58(1, 0);
+-}
+-
+-void func_8004775C(void) {
+-    func_80048FFC(0);
+-}
+-
+-void game_EffStart(void) {
+-    func_8004473C();
+-}
+-
+-void func_8004779C(void) {
+-    func_80044800();
+-}
+-
+-void game_Stub1(void) {
+-}
+-
+-void game_Stub2(void) {
+-}
+-
+-void game_Stub3(void) {
+-}
+-
+-void game_Stub4(void) {
+-}
+-
+-void func_800477DC(s32 a0) {
+-    D_800A33D0 = (s16 *)a0;
+-}
+-extern u32 GetTPage(s32, s32, s32, s32);
+-extern u32 GetClut(s32, s32);
+-extern void func_800417D0(s32 *);
+-extern s16 *D_800A33D0;
+-extern s8 D_800EF070;
+-extern s8 D_800EF071;
+-extern s16 D_800EF076;
+-extern s16 D_800EF078;
+-extern s16 D_800EF07A;
+-extern s32 D_800EF07C;
+-extern s16 D_800EF080;
+-extern s16 D_800EF082;
+-extern s16 D_800EF084;
+-extern s32 D_800EF0BC;
+-extern s32 D_800EF0C0;
+-extern s32 D_800EF0C4;
+-extern s32 D_800EF558[];
+-extern s32 D_800EF59C[];
+-s32 func_800477E8(void) {
+-    s16 *s0;
+-    s32 s3val;
+-    s32 s2val;
+-    s32 s1val;
+-    s32 t1val;
+-    s32 a3;
+-    s32 a0;
+-    s32 a2;
+-    s32 a1;
+-    s32 t0;
+-    s32 v1;
+-    s32 t2;
+-    s32 v0;
+-    s32 *ptr;
+-    s32 *p;
+-    s32 w;
+-    s32 val;
+-
+-    s0 = D_800A33D0;
+-    s3val = GetTPage(0, 0, 0x2C0, 0x1C0);
+-    s2val = GetTPage(0, 0, 0x2C0, 0x180);
+-    s1val = GetClut(0x10, 0x1E0);
+-    t1val = GetClut(0x10, 0x1E0);
+-    a3 = 0;
+-    t2 = 0x2C00;
+-    a0 = 0;
+-    do {
+-        t0 = 0x1200;
+-        a2 = 0x13;
+-        /* FAKE: single-level do-while(0) wrap. Its loop note adds one unit of
+-         * loop_depth reference weight to everything in this body, which seats
+-         * t1val in $t1 and the 0x2C00 constant in $t2 as target has them
+-         * (without it: t1val 3 refs/76 insns loses to t2's 5/150). */
+-        do {
+-        a1 = 0;
+-        v1 = 1;
+-inner:
+-        if (a3 >= 5) {
+-            *s0 = s3val;
+-            s0 += 1;
+-            *s0 = t2;
+-            s0 += 1;
+-            *s0 = s1val;
+-            s0 += 1;
+-            v0 = -0xC1;
+-            *s0 = v0;
+-            s0 += 1;
+-            v0 = -0x100;
+-            *s0 = v0;
+-            s0 += 1;
+-            v0 = -0x3FC1;
+-            *s0 = v0;
+-            s0 += 1;
+-            v0 = -0x4000;
+-        } else {
+-            *s0 = s2val;
+-            s0 += 1;
+-            *s0 = t2;
+-            s0 += 1;
+-            *s0 = t1val;
+-            s0 += 1;
+-            v0 = -0x40C1;
+-            *s0 = v0;
+-            s0 += 1;
+-            v0 = -0x4100;
+-            *s0 = v0;
+-            s0 += 1;
+-            v0 = -0x7FC1;
+-            *s0 = v0;
+-            s0 += 1;
+-            v0 = -0x8000;
+-        }
+-        *s0 = v0;
+-        s0 += 1;
+-        if (a3 & 1) {
+-            v0 = a2 | t0;
+-            *s0 = v0;
+-            s0 += 1;
+-            v0 = v1 | a1;
+-        } else {
+-            v0 = v1 | a1;
+-            *s0 = v0;
+-            s0 += 1;
+-            v0 = a2 | t0;
+-        }
+-        *s0 = v0;
+-        s0 += 1;
+-        *s0 = 0;
+-        s0 += 1;
+-        *s0 = 0;
+-        s0 += 1;
+-        v0 = -0x1000;
+-        *s0 = v0;
+-        s0 += 1;
+-        t0 += 0x100;
+-        a2 += 1;
+-        a1 += 0x100;
+-        a0 += 1;
+-        v1 += 1;
+-        if (a0 < 0x10) goto inner;
+-        a3 += 1;
+-        } while (0);
+-        a0 = 0;
+-    } while (a3 < 8);
+-
+-    {
+-        s32 *a0p;
+-        a0p = (s32 *)&D_800EF070;
+-        *(s8 *)a0p = 0xE;
+-        D_800EF07A = 4;
+-        D_800EF0BC = -0x2EE0;
+-        D_800EF071 = 0;
+-        D_800EF0C0 = 0;
+-        D_800EF0C4 = -0xFA0;
+-        D_800EF080 = 0;
+-        D_800EF082 = 0;
+-        D_800EF084 = 0;
+-        D_800EF078 = 0;
+-        D_800EF07C = 0;
+-        D_800EF076 = 0;
+-        func_800417D0(a0p);
+-    }
+-
+-    a3 = 0;
+-    w = 0;
+-    do {
+-        val = w;
+-        p = &D_800EF59C[a3 * 0x11];
+-        for (a0 = 0x10; a0 >= 0; a0--) {
+-            p[a0] = val;
+-        }
+-        w += 0x7D0;
+-        a3 += 1;
+-    } while (a3 < 9);
+-
+-    a0 = 0;
+-    ptr = &D_800EF558[0];
+-loop3:
+-    *ptr = (a0 << 7) & 0xFFF;
+-    a0++;
+-    ptr++;
+-    if (0x11 > a0) goto loop3;
+-
+-    return (s32)s0 - (s32)D_800A33D0;
+-}
+-
+-void func_80047A90(void) {
+-    s32 i;
+-    s32 a3;
+-    s32 v1;
+-    s32 a0;
+-    s16 *jb;
+-    s32 *p558;
+-    s32 *p59C;
+-    s32 *pt2;
+-    s32 *pt1;
+-    s32 *pa1;
+-    s32 *pa2;
+-    s32 *pt3;
+-    s32 *temp;
+-
+-    i = 0;
+-    jb = Judge;
+-    p558 = D_800EF558;
+-    p59C = D_800EF59C;
+-  loop1:
+-    i++;
+-    *p59C = ((s32)jb[*p558 & 0xFFF] * 0x271) >> 10;
+-    p59C++;
+-    *p558 += 0x12;
+-    p558++;
+-    if (i < 0x11)
+-        goto loop1;
+-
+-    i = 1;
+-    pt2 = D_800EF59C;
+-    pt1 = D_800EF59C + 0x11;
+-  outer_loop:
+-    pa1 = pt1;
+-    do {
+-        /* FAKE: loop-note ref weighting lifts a3's allocno priority above
+-         * the shared counter i, seating a3 in $a3 and i in $t0 */
+-        a3 = 0;
+-    } while (0);
+-    do {
+-        /* FAKE: loop-note ref weighting lifts pa2 above the shared counter
+-         * i, seating pa2 in $a2 (shared with the loop-1 Judge base) */
+-        pa2 = pt2;
+-    } while (0);
+-    do {
+-        /* FAKE: loop-note ref weighting keeps pt1 ahead of pt2 in
+-         * allocation order (pt1->$t1, pt2->$t2) after the pa2 wrap's
+-         * weighted pt2 use lifted pt2 */
+-        pt3 = pt1 + 0x11;
+-    } while (0);
+-  inner_loop:
+-    a0 = 0x7D0 - (*pa1 - *pa2);
+-    if (a0 < 0) {
+-        v1 = (a0 + 0xF) >> 4;
+-    } else {
+-        v1 = a0 / 10;
+-    }
+-    *pa1 += v1;
+-    if (i == 8) {
+-        *(s32 *)((s8 *)D_800EF800 + a3) = v1;
+-        pa1++;
+-        a3 += 4;
+-        pa2++;
+-    } else {
+-        /* FAKE: loop tail duplicated into both arms (cross-jump re-merges,
+-         * byte-neutral); reg_n_refs lift lands pa2->$a2, a3->$a3 */
+-        pa1++;
+-        a3 += 4;
+-        pa2++;
+-    }
+-    if ((s32)pa1 < (s32)pt3)
+-        goto inner_loop;
+-    pt2 += 0x11;
+-    i++;
+-    pt1 += 0x11;
+-    if (i < 9)
+-        goto outer_loop;
+-
+-    temp = (s32 *)D_800A3820;
+-    D_800A3820 = (s32)(temp + 1);
+-    *temp = (s32)&D_800EF070;
+-}
+-
+-
+-extern void RotTransPers3(SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *);
+-extern void ReadSZfifo3(s32 *, s32 *, s32 *);
+-extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
+-extern SVECTOR D_800EF0D8[17];
+-extern SVECTOR D_800EF168[17];
+-void func_80047BE0(void) {
+-    s32 sxy0, sxy1, sxy2, pflag, flag;
+-    s32 sz0, sz1, sz2;
+-    s16 *s7val;
+-    s32 i, j;
+-    s32 *src;
+-    SVECTOR *base;
+-    SVECTOR *v;
+-    s32 *dst32;
+-    s16 *dst16;
+-    s16 z;
+-
+-    s7val = D_800A33D0;
+-    i = 0;
+-    src = D_800EF59C;
+-    while (i < 9) {
+-        if (i & 1) {
+-            base = D_800EF168;
+-            dst32 = (s32 *)0x1F800068;
+-            dst16 = (s16 *)0x1F800134;
+-        } else {
+-            base = D_800EF0D8;
+-            dst32 = (s32 *)0x1F800020;
+-            dst16 = (s16 *)0x1F800110;
+-        }
+-        v = base;
+-        j = 0;
+-        z = -0x2EE0;
+-        while (j < 17) {
+-            v->vx = src[j] - 0xFA0;
+-            v->vy = 0;
+-            v->vz = z;
+-            v++;
+-            z += 0x7D0;
+-            j++;
+-        }
+-        v = base;
+-        j = 0;
+-        while (j < 6) {
+-            RotTransPers3(&v[0], &v[1], &v[2], &sxy0, &sxy1, &sxy2, &pflag, &flag);
+-            v += 3;
+-            ReadSZfifo3(&sz0, &sz1, &sz2);
+-            *dst32++ = sxy0;
+-            *dst32++ = sxy1;
+-            *dst32++ = sxy2;
+-            *dst16++ = sz0;
+-            *dst16++ = sz1;
+-            *dst16++ = sz2;
+-            j++;
+-        }
+-        if (i != 0) {
+-            s7val = func_8004BCC0(0x10, (s16 *)base, s7val, 0);
+-        }
+-        i++;
+-        src += 17;
+-    }
+-}
+-extern s32 D_800EF7BC[];
+-
+-s32 func_80047D94(s32 a0) {
+-    s32 a1 = (a0 + 0x7D00) / 3200;
+-    s32 a0_div = a0 / 3200;
+-    s32 remainder = a0 - a0_div * 3200;
+-    s32 odd = remainder & 1;
+-    D_800A33D4 = a1;
+-    D_800A33D8 = odd;
+-    if ((u32)a1 >= 18) {
+-        return (s32)0xFFFE7960;
+-    }
+-    {
+-        s32 val1 = D_800EF7BC[a1] * odd;
+-        s32 val2 = D_800EF7BC[a1 + 1] * (0x1000 - odd);
+-        return ((val1 + val2) >> 12) - 0x3F48;
+-    }
+-}
+-s32 func_80047E5C(void) {
+-    s32 v1 = D_800A33D4;
+-    if ((u32)v1 >= 18) {
+-        return 0;
+-    }
+-    {
+-        s32 v0 = D_800EF800[v1];
+-        s32 a0 = D_800A33D8;
+-        s32 val1 = v0 * a0;
+-        s32 v3 = D_800EF800[v1 + 1];
+-        s32 val2 = v3 * (0x1000 - a0);
+-        return (val1 + val2) >> 12;
+-    }
+-}
+-
+-s32 func_80047EC8(void) {
+-    return 0xD00;
+-}
+diff --git a/src/text1a_b.c b/src/text1a_b.c
+deleted file mode 100644
+index 77c834d0b..000000000
+--- a/src/text1a_b.c
++++ /dev/null
+@@ -1,32 +0,0 @@
+-#include "common.h"
+-
+-extern void func_80044100();
+-extern void func_80044C70(s32);
+-extern s32 D_800A33B0;
+-extern s32 D_800A33B4;
+-extern u16 D_80099478;
+-extern void func_8005441C(s32);
+-extern void func_80047ED0(s32);
+-void func_800466C0(s32 a0, s32 a1) {
+-    s32 rounded;
+-    s16 val;
+-    func_80044100(7, a1);
+-    func_8005441C(a1);
+-    rounded = (a1 / 4) * 4;
+-    D_800A33B0 += rounded;
+-    val = (s16)(D_80099478 - 4);
+-    D_800A33B4 += rounded;
+-    switch (val) {
+-    case 0:
+-    case 3:
+-    case 14:
+-        func_80044C70(a1);
+-        break;
+-    case 9:
+-        func_80044100(8);
+-        break;
+-    case 7:
+-        func_80047ED0(a1);
+-        break;
+-    }
+-}
+diff --git a/src/text1a_b_pre_rodata.c b/src/text1a_b_pre_rodata.c
+deleted file mode 100644
+index 00b4da05a..000000000
+--- a/src/text1a_b_pre_rodata.c
++++ /dev/null
+@@ -1,321 +0,0 @@
+-/* Rodata sub-TU split out for the 101C.rodata_text1a_b_pre cluster
+- * (rodata-cleanup project, docs/rodata-cleanup-project.md, 2026-06-09).
+- * MULTI-FILE cluster: 23 symbols (12 jtbls + 5 strings + 6 data words)
+- * spanning text1a.c and text1b.c. Sub-TU packs all bytes into one file
+- * at the asm/data slot (between text1a_b.o and text1b_b.o). */
+-#include "common.h"
+-
+-/* Auto-extracted from asm/data/101C.rodata_text1a_b_pre.s */
+-
+-/* D_800153F0: 22 halfwords (44B) @ 0x800153F0 */
+-/* 0x800153F0: the 22-halfword record func_8004A09C unpacks (it walks it as u16). func_80049F4C copies
+-   it whole by assignment: the copy's run-time alignment test in the target bytes is the halfword
+-   type's alignment. */
+-typedef struct {
+-    u16 v[22];
+-} Unk800153F0Record;
+-const Unk800153F0Record D_800153F0 = {{
+-    0x0E00, 0x0E00, 0x0E00, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+-    0x0000, 0x0E00, 0x0A00, 0x0001, 0x0000, 0x0000, 0x0000, 0x0000,
+-    0x0000, 0x0000, 0x0030, 0x0030, 0x0030, 0x1000,
+-}};
+-
+-/* jtbl_8001541C: 16 words (64B) @ 0x8001541C */
+-const u32 jtbl_8001541C[16] = {
+-    0x8004A990,
+-    0x8004ABD8,
+-    0x8004A5D0,
+-    0x8004AE0C,
+-    0x8004A5D0,
+-    0x8004A5D0,
+-    0x8004A5D0,
+-    0x8004A5D0,
+-    0x8004A5D0,
+-    0x8004A5D0,
+-    0x8004AF84,
+-    0x8004A5D0,
+-    0x8004B0C8,
+-    0x8004B0E4,
+-    0x8004B4D8,
+-    0x8004B27C,
+-};
+-
+-/* jtbl_8001545C: 5 words (20B) @ 0x8001545C */
+-const u32 jtbl_8001545C[5] = {
+-    0x8004A614,
+-    0x8004A644,
+-    0x8004A694,
+-    0x8004A6F0,
+-    0x8004A730,
+-};
+-
+-/* D_80015470: 4 words (16B) @ 0x80015470 */
+-const u32 D_80015470[4] = {
+-    0x8004B6E4,
+-    0x8004BCC0,  /* saTan2LineDraw */
+-    0x80052C10,  /* InitFadePanel */
+-    0x80052C10,  /* InitFadePanel */
+-};
+-
+-/* D_80015480: 8 words (32B) @ 0x80015480 — function-pointer table */
+-const u32 D_80015480[8] = {
+-    0x8004C994,  /* func_8004C994 */
+-    0x8004CB8C,  /* func_8004CB8C */
+-    0x8004CDB0,  /* func_8004CDB0 */
+-    0x8004CFE0,  /* func_8004CFE0 */
+-    0x80051208,  /* func_80051208 */
+-    0x800513B0,  /* func_800513B0 */
+-    0x800515AC,  /* func_800515AC */
+-    0x80051754,  /* func_80051754 */
+-};
+-
+-/* D_800154A0: 96 words (384B) @ 0x800154A0 */
+-const u32 g_rsqrt_table[96] = {
+-    0x0FE01000,
+-    0x0FA30FC1,
+-    0x0F680F85,
+-    0x0F300F4C,
+-    0x0EFB0F15,
+-    0x0EC70EE1,
+-    0x0E960EAE,
+-    0x0E660E7E,
+-    0x0E380E4F,
+-    0x0E0C0E22,
+-    0x0DE20DF7,
+-    0x0DB90DCD,
+-    0x0D910DA5,
+-    0x0D6B0D7E,
+-    0x0D450D58,
+-    0x0D210D33,
+-    0x0CFF0D10,
+-    0x0CDD0CEE,
+-    0x0CBC0CCC,
+-    0x0C9C0CAC,
+-    0x0C7D0C8D,
+-    0x0C5F0C6E,
+-    0x0C420C51,
+-    0x0C260C34,
+-    0x0C0A0C18,
+-    0x0BEF0BFD,
+-    0x0BD50BE2,
+-    0x0BBB0BC8,
+-    0x0BA20BAF,
+-    0x0B8A0B96,
+-    0x0B720B7E,
+-    0x0B5B0B67,
+-    0x0B450B50,
+-    0x0B2E0B39,
+-    0x0B190B24,
+-    0x0B040B0E,
+-    0x0AEF0AF9,
+-    0x0ADB0AE5,
+-    0x0AC70AD1,
+-    0x0AB40ABD,
+-    0x0AA10AAA,
+-    0x0A8E0A97,
+-    0x0A7C0A85,
+-    0x0A6A0A73,
+-    0x0A590A61,
+-    0x0A470A50,
+-    0x0A370A3F,
+-    0x0A260A2E,
+-    0x0A160A1E,
+-    0x0A060A0E,
+-    0x09F609FE,
+-    0x09E709EF,
+-    0x09D809E0,
+-    0x09C909D1,
+-    0x09BB09C2,
+-    0x09AD09B4,
+-    0x099E09A5,
+-    0x09910998,
+-    0x0983098A,
+-    0x0976097C,
+-    0x0969096F,
+-    0x095C0962,
+-    0x094F0955,
+-    0x09430949,
+-    0x0936093C,
+-    0x092A0930,
+-    0x091E0924,
+-    0x09120918,
+-    0x0907090D,
+-    0x08FB0901,
+-    0x08F008F6,
+-    0x08E508EB,
+-    0x08DA08E0,
+-    0x08CF08D5,
+-    0x08C508CA,
+-    0x08BA08BF,
+-    0x08B008B5,
+-    0x08A608AB,
+-    0x089C08A1,
+-    0x08920897,
+-    0x0888088D,
+-    0x087E0883,
+-    0x0875087A,
+-    0x086B0870,
+-    0x08620867,
+-    0x0859085E,
+-    0x08500855,
+-    0x0847084C,
+-    0x083E0843,
+-    0x0836083A,
+-    0x082D0831,
+-    0x08240829,
+-    0x081C0820,
+-    0x08140818,
+-    0x080C0810,
+-    0x08040808,
+-};
+-
+-/* D_80015620: 128 words (512B) @ 0x80015620 */
+-const u32 g_sqrt_table[128] = {
+-    0x02000000,
+-    0x037602D4,
+-    0x04780400,
+-    0x054A04E6,
+-    0x060005A8,
+-    0x06A20653,
+-    0x073606ED,
+-    0x07BE077B,
+-    0x083F0800,
+-    0x08B7087C,
+-    0x092A08F1,
+-    0x09970961,
+-    0x0A0009CC,
+-    0x0A640A32,
+-    0x0AC50A95,
+-    0x0B220AF4,
+-    0x0B7D0B50,
+-    0x0BD50BA9,
+-    0x0C2A0C00,
+-    0x0C7D0C54,
+-    0x0CCE0CA6,
+-    0x0D1D0CF6,
+-    0x0D6A0D44,
+-    0x0DB60D90,
+-    0x0E000DDB,
+-    0x0E480E24,
+-    0x0E8F0E6C,
+-    0x0ED50EB2,
+-    0x0F190EF7,
+-    0x0F5C0F3B,
+-    0x0F9E0F7D,
+-    0x0FDF0FBF,
+-    0x101F1000,
+-    0x105E103F,
+-    0x109C107E,
+-    0x10DA10BB,
+-    0x111610F8,
+-    0x11521134,
+-    0x118C116F,
+-    0x11C611A9,
+-    0x120011E3,
+-    0x1238121C,
+-    0x12701254,
+-    0x12A7128C,
+-    0x12DE12C2,
+-    0x131412F9,
+-    0x1349132E,
+-    0x137E1364,
+-    0x13B21398,
+-    0x13E613CC,
+-    0x14191400,
+-    0x144C1432,
+-    0x147E1465,
+-    0x14B01497,
+-    0x14E114C8,
+-    0x151214F9,
+-    0x1542152A,
+-    0x1572155A,
+-    0x15A2158A,
+-    0x15D115B9,
+-    0x160015E8,
+-    0x162E1617,
+-    0x165C1645,
+-    0x16891673,
+-    0x16B716A0,
+-    0x16E416CD,
+-    0x171016FA,
+-    0x173C1726,
+-    0x17681752,
+-    0x1794177E,
+-    0x17BF17AA,
+-    0x17EA17D5,
+-    0x18151800,
+-    0x183F182A,
+-    0x18691854,
+-    0x1893187E,
+-    0x18BD18A8,
+-    0x18E618D1,
+-    0x190F18FA,
+-    0x19381923,
+-    0x1960194C,
+-    0x19881974,
+-    0x19B0199C,
+-    0x19D819C4,
+-    0x1A0019EC,
+-    0x1A271A13,
+-    0x1A4E1A3A,
+-    0x1A751A61,
+-    0x1A9B1A88,
+-    0x1AC21AAE,
+-    0x1AE81AD5,
+-    0x1B0E1AFB,
+-    0x1B331B21,
+-    0x1B591B46,
+-    0x1B7E1B6C,
+-    0x1BA31B91,
+-    0x1BC81BB6,
+-    0x1BED1BDB,
+-    0x1C121C00,
+-    0x1C361C24,
+-    0x1C5A1C48,
+-    0x1C7E1C6C,
+-    0x1CA21C90,
+-    0x1CC61CB4,
+-    0x1CE91CD8,
+-    0x1D0D1CFB,
+-    0x1D301D1E,
+-    0x1D531D41,
+-    0x1D761D64,
+-    0x1D981D87,
+-    0x1DBB1DAA,
+-    0x1DDD1DCC,
+-    0x1E001DEE,
+-    0x1E221E11,
+-    0x1E431E33,
+-    0x1E651E54,
+-    0x1E871E76,
+-    0x1EA81E98,
+-    0x1ECA1EB9,
+-    0x1EEB1EDA,
+-    0x1F0C1EFB,
+-    0x1F2D1F1C,
+-    0x1F4E1F3D,
+-    0x1F6E1F5E,
+-    0x1F8F1F7E,
+-    0x1FAF1F9F,
+-    0x1FCF1FBF,
+-    0x1FEF1FDF,
+-};
+-
+-/* D_80015820: 8 words (32B) @ 0x80015820 */
+-const u32 D_80015820[8] = {
+-    0x80050C0C,
+-    0x80050DAC,
+-    0x80050FB4,
+-    0x80051154,
+-    0x80051358,
+-    0x800514FC,
+-    0x800516FC,
+-    0x80051894,
+-};
+-
+-/* D_80015840: 1 string, 28B @ 0x80015840 */
+-const char D_80015840[28] = "Destruction tiny model.\n";
+-
+-/* NOTE: the cluster continues in src/text1b.c (func_80058580's three switch tables at
+- * 0x8001585C, text1b.o's rodata; rodata-object-alignment ruling 2026-09-30) and then in
+- * src/text1a_b_pre_rodata_b.c (0x800158B4..). */
+diff --git a/src/text1a_c2.c b/src/text1a_c2.c
+deleted file mode 100644
+index 9ec8c5147..000000000
+--- a/src/text1a_c2.c
++++ /dev/null
+@@ -1,243 +0,0 @@
+-#include "common.h"
+-#define INCLUDE_ASM_USE_MACRO_INC 1
+-#include "include_asm.h"
+-#include "sound.h"
+-#include "game.h"
+-#include "code6cac.h"
+-
+-extern s32 D_800A33B0;
+-extern s32 D_800A33B4;
+-extern s32 *func_800457A0(s32);
+-extern s32 *func_800455AC(s32);
+-extern void func_80044F30(s32, s32);
+-extern void func_80045824(s32, s32, s32);
+-extern void func_80045230(s32);
+-extern void func_80044010(s32 *, s16);
+-extern void func_8003EDC0(s32, s32);
+-extern s32 func_80044670(s32, s32, s32);
+-extern void func_800477DC(s32);
+-extern s32 func_80047EC8(void);
+-extern void func_800481E8(s32, s32);
+-extern void func_80054410(s32);
+-extern void func_80045600(s32, s32);
+-extern void func_80045694(s32, s32);
+-extern void stage_ExecInitFunc(void);
+-extern void func_8004659C(s32);
+-extern void func_800466C0(s32, s32);
+-extern void func_80045510(s32, s32);
+-extern void func_80044098(s32);
+-
+-
+-#define ALIGN4(x) (((u32)(x) >> 2) << 2)
+-#define PTR_OFF(base, off) ((s32)((u8 *)(base) + (off)))
+-
+-void func_800460E4(s32 stage_id, s32 arg1) {
+-    s32 *s0;
+-    s32 s7;
+-    s32 *s6, *s4, *s2;
+-    s32 s3;
+-    s32 *s1;
+-    s32 *fp_ptr;
+-    s32 *sp10, *sp18, *sp20;
+-
+-    s0 = func_800457A0(7);
+-    if (s0 != NULL) {
+-        if (g_stage_id == stage_id) {
+-            s7 = 1;
+-            switch (stage_id) {
+-            case 3:
+-                break;
+-            case 4:
+-            case 7:
+-            case 18:
+-                s3 = s0[0];
+-                {
+-                    s32 off = ALIGN4(s0[s3 - 1]);
+-                    func_8003EDC0(PTR_OFF(s0, off), 7);
+-                }
+-                break;
+-            case 34:
+-                s7 = 0;
+-                break;
+-            }
+-            stage_ExecInitFunc();
+-            if (s7 != 0) {
+-                return;
+-            }
+-        }
+-    }
+-
+-    g_stage_id = (s16)stage_id;
+-    s7 = 7;
+-    s0 = func_800455AC(7);
+-
+-    if (arg1 != 0) {
+-        func_80044F30(stage_id, arg1);
+-    } else {
+-        func_80044F30(stage_id, (s32)s0);
+-    }
+-
+-    if (arg1 != 0) {
+-        s3 = *(s32 *)arg1;
+-        func_80045824(arg1, (s32)s0, ((s32 *)arg1)[s3]);
+-    }
+-
+-    {
+-        s32 off1_raw = s0[1];
+-        s3 = s0[0];
+-        s6 = (s32 *)((u8 *)s0 + ALIGN4(off1_raw));
+-        {
+-            s32 *a0_ptr = (s32 *)((s3 << 2) + (s32)s0);
+-            s4 = (s32 *)((u8 *)s0 + ALIGN4(a0_ptr[-1]));
+-            sp10 = (s32 *)((u8 *)s0 + ALIGN4(s0[2]));
+-            sp18 = (s32 *)((u8 *)s0 + ALIGN4(s0[3]));
+-            sp20 = (s32 *)((u8 *)s0 + ALIGN4(s0[4]));
+-
+-            {
+-                s32 off = ALIGN4(a0_ptr[0]);
+-                s2 = (s32 *)((u8 *)s0 + off);
+-            }
+-
+-            if (arg1 != 0) {
+-                fp_ptr = (s32 *)((u8 *)arg1 + ALIGN4(((s32 *)arg1)[s3]));
+-            } else {
+-                fp_ptr = s2;
+-                {
+-                    s32 off3 = ALIGN4(a0_ptr[1]);
+-                    func_80045230(PTR_OFF(s0, off3));
+-                }
+-            }
+-        }
+-    }
+-
+-    g_stage_variant = 0;
+-    /* FAKE: live default init of s1 routed through a delta-rebase detour that
+-       combine folds back to s1 = s4 with zero emitted bytes, mechanism: flow.c
+-       reg_n_refs (+2 on s1's pseudo) lifts its global.c allocno_compare
+-       priority above the s2 pointer so allocation order matches target,
+-       lever-exhaustion: this function's grind ledger evidence.md [s1]+[s3] */
+-    s1 = (s32 *)((s32)s4 - (s32)s0);
+-    s1 = (s32 *)((s32)s1 + (s32)s0);
+-    switch (stage_id) {
+-    case 3: {
+-        /* FAKE: fresh once-written/once-read pointer intermediate naming the
+-         * address of the stage header's last word, mechanism: expand-time
+-         * MEM_IN_STRUCT_P (expr.c:4567-4577) -> sched.c anti_dependence
+-         * exemption -> sched1 load/store order, lever-exhaustion:
+-         * memory/grind/func_800460E4/hypotheses.md + evidence.md [s1]-[s8r] */
+-        s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;
+-        s1 = s2;
+-        s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
+-        s4 = (s32 *)((u8 *)s0 + ALIGN4(*hp));
+-        g_stage_variant = 1;
+-        break;
+-    }
+-    case 4:
+-    case 7:
+-    case 18:
+-        s1 = s2;
+-        func_80044010((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
+-        s1 = (s32 *)func_80044670(PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
+-        break;
+-    case 11:
+-        func_800477DC((s32)s1);
+-        s1 = (s32 *)((s32)s1 + func_80047EC8());
+-        break;
+-    case 13:
+-        s1 = s2;
+-        s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
+-        s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
+-        func_80044010((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
+-        g_stage_variant = 1;
+-        break;
+-    case 34:
+-        s1 = s2;
+-        g_stage_variant = 1;
+-        s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[5]));
+-        break;
+-    }
+-
+-    func_80044010(s6, 7);
+-    func_800481E8((s32)fp_ptr, 0);
+-    func_8003EDC0((s32)s4, 7);
+-    func_80054410((s32)sp10);
+-    D_800A33B0 = (s32)sp18;
+-    D_800A33B4 = (s32)sp20;
+-    DrawSync(0);
+-    func_80045600(s7, (s32)s1);
+-    func_80045694(s7, (s32)func_800466C0);
+-    stage_ExecInitFunc();
+-    if (D_800A38DC != 0) {
+-        if (stage_id != 0x22) {
+-            func_8004659C(-1);
+-        }
+-    }
+-}
+-void func_800464C4(void) {
+-    s32 *s0;
+-    s32 *s1;
+-    s32 *a0;
+-    s32 v0;
+-
+-    if (g_stage_variant == 0) {
+-        return;
+-    }
+-    s0 = (s32 *)func_800457A0(7);
+-    v0 = ((u32)s0[1] >> 2) << 2;
+-    a0 = (s32 *)((u8 *)s0 + v0);
+-    switch (g_stage_id) {
+-    case 0xD:
+-        v0 = ((u32)s0[6] >> 2) << 2;
+-        s1 = (s32 *)((u8 *)s0 + v0);
+-        break;
+-    case 3:
+-    case 0x22:
+-        v0 = ((u32)s0[5] >> 2) << 2;
+-        s1 = (s32 *)((u8 *)s0 + v0);
+-        break;
+-    }
+-    func_80044010(a0, 7);
+-    func_8003EDC0(s1, 7);
+-    func_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
+-    g_stage_variant = 0;
+-}
+-void func_8004659C(s32 a0) {
+-    s32 *s0;
+-    s32 *s2;
+-    s32 *s3;
+-    s32 *s4p;
+-    s32 *s1p;
+-    s32 *s0p;
+-    s32 v0;
+-    if (a0 < 0) {
+-        func_800464C4();
+-        return;
+-    }
+-    if (g_stage_variant == 0) {
+-        return;
+-    }
+-    v0 = func_800457A0(7);
+-    s0 = (s32 *)v0;
+-    v0 += 4;
+-    v0 = v0 + a0 * 20;
+-    s2 = (s32 *)((u8 *)s0 + *(s32 *)v0);
+-    v0 += 4;
+-    s3 = (s32 *)((u8 *)s0 + *(s32 *)v0);
+-    v0 += 4;
+-    s4p = (s32 *)((u8 *)s0 + *(s32 *)v0);
+-    v0 += 4;
+-    s1p = (s32 *)((u8 *)s0 + *(s32 *)v0);
+-    s0p = (s32 *)((u8 *)s0 + *(s32 *)(v0 + 4));
+-    func_80044098(7);
+-    func_80044010(s2, 7);
+-    func_80054410(s3);
+-    D_800A33B0 = (s32)s4p;
+-    D_800A33B4 = (s32)s1p;
+-    func_8003EDC0(s0p, 7);
+-}
+-extern void func_800453E0(s32);
+-void func_8004668C(void) {
+-    func_800453E0(7);
+-    g_stage_id = -1;
+-    g_stage_variant = 0;
+-}
+diff --git a/src/text1b.c b/src/text1b.c
+index a71df054f..8fbc5e708 100644
+--- a/src/text1b.c
++++ b/src/text1b.c
+@@ -6,8 +6,1572 @@
+ #include "code6cac.h"
+ #include "gte.h"
+ 
++/* ---- merged from text1a_c2.c (owner ruling Q65: one original file) ---- */
++extern s32 D_800A33B0;
++extern s32 D_800A33B4;
++extern s32 *func_800457A0(s32);
++extern s32 *func_800455AC(s32);
++extern void func_80044F30(s32, s32);
++extern void func_80045824(s32, s32, s32);
++extern void func_80045230(s32);
++extern void func_80044010(s32 *, s16);
++extern void func_8003EDC0(s32, s32);
++extern s32 func_80044670(s32, s32, s32);
++extern void func_800477DC(s32);
++extern s32 func_80047EC8(void);
++extern void func_800481E8(s32, s32);
++extern void func_80054410(s32);
++extern void func_80045600(s32, s32);
++extern void func_80045694(s32, s32);
++extern void stage_ExecInitFunc(void);
++extern void func_8004659C(s32);
++extern void func_800466C0(s32, s32);
++extern void func_80045510(s32, s32);
++extern void func_80044098(s32);
++
++
++#define ALIGN4(x) (((u32)(x) >> 2) << 2)
++#define PTR_OFF(base, off) ((s32)((u8 *)(base) + (off)))
++
++void func_800460E4(s32 stage_id, s32 arg1) {
++    s32 *s0;
++    s32 s7;
++    s32 *s6, *s4, *s2;
++    s32 s3;
++    s32 *s1;
++    s32 *fp_ptr;
++    s32 *sp10, *sp18, *sp20;
++
++    s0 = func_800457A0(7);
++    if (s0 != NULL) {
++        if (g_stage_id == stage_id) {
++            s7 = 1;
++            switch (stage_id) {
++            case 3:
++                break;
++            case 4:
++            case 7:
++            case 18:
++                s3 = s0[0];
++                {
++                    s32 off = ALIGN4(s0[s3 - 1]);
++                    func_8003EDC0(PTR_OFF(s0, off), 7);
++                }
++                break;
++            case 34:
++                s7 = 0;
++                break;
++            }
++            stage_ExecInitFunc();
++            if (s7 != 0) {
++                return;
++            }
++        }
++    }
++
++    g_stage_id = (s16)stage_id;
++    s7 = 7;
++    s0 = func_800455AC(7);
++
++    if (arg1 != 0) {
++        func_80044F30(stage_id, arg1);
++    } else {
++        func_80044F30(stage_id, (s32)s0);
++    }
++
++    if (arg1 != 0) {
++        s3 = *(s32 *)arg1;
++        func_80045824(arg1, (s32)s0, ((s32 *)arg1)[s3]);
++    }
++
++    {
++        s32 off1_raw = s0[1];
++        s3 = s0[0];
++        s6 = (s32 *)((u8 *)s0 + ALIGN4(off1_raw));
++        {
++            s32 *a0_ptr = (s32 *)((s3 << 2) + (s32)s0);
++            s4 = (s32 *)((u8 *)s0 + ALIGN4(a0_ptr[-1]));
++            sp10 = (s32 *)((u8 *)s0 + ALIGN4(s0[2]));
++            sp18 = (s32 *)((u8 *)s0 + ALIGN4(s0[3]));
++            sp20 = (s32 *)((u8 *)s0 + ALIGN4(s0[4]));
++
++            {
++                s32 off = ALIGN4(a0_ptr[0]);
++                s2 = (s32 *)((u8 *)s0 + off);
++            }
++
++            if (arg1 != 0) {
++                fp_ptr = (s32 *)((u8 *)arg1 + ALIGN4(((s32 *)arg1)[s3]));
++            } else {
++                fp_ptr = s2;
++                {
++                    s32 off3 = ALIGN4(a0_ptr[1]);
++                    func_80045230(PTR_OFF(s0, off3));
++                }
++            }
++        }
++    }
++
++    g_stage_variant = 0;
++    /* FAKE: live default init of s1 routed through a delta-rebase detour that
++       combine folds back to s1 = s4 with zero emitted bytes, mechanism: flow.c
++       reg_n_refs (+2 on s1's pseudo) lifts its global.c allocno_compare
++       priority above the s2 pointer so allocation order matches target,
++       lever-exhaustion: this function's grind ledger evidence.md [s1]+[s3] */
++    s1 = (s32 *)((s32)s4 - (s32)s0);
++    s1 = (s32 *)((s32)s1 + (s32)s0);
++    switch (stage_id) {
++    case 3: {
++        /* FAKE: fresh once-written/once-read pointer intermediate naming the
++         * address of the stage header's last word, mechanism: expand-time
++         * MEM_IN_STRUCT_P (expr.c:4567-4577) -> sched.c anti_dependence
++         * exemption -> sched1 load/store order, lever-exhaustion:
++         * memory/grind/func_800460E4/hypotheses.md + evidence.md [s1]-[s8r] */
++        s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;
++        s1 = s2;
++        s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
++        s4 = (s32 *)((u8 *)s0 + ALIGN4(*hp));
++        g_stage_variant = 1;
++        break;
++    }
++    case 4:
++    case 7:
++    case 18:
++        s1 = s2;
++        func_80044010((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
++        s1 = (s32 *)func_80044670(PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
++        break;
++    case 11:
++        func_800477DC((s32)s1);
++        s1 = (s32 *)((s32)s1 + func_80047EC8());
++        break;
++    case 13:
++        s1 = s2;
++        s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
++        s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
++        func_80044010((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
++        g_stage_variant = 1;
++        break;
++    case 34:
++        s1 = s2;
++        g_stage_variant = 1;
++        s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[5]));
++        break;
++    }
++
++    func_80044010(s6, 7);
++    func_800481E8((s32)fp_ptr, 0);
++    func_8003EDC0((s32)s4, 7);
++    func_80054410((s32)sp10);
++    D_800A33B0 = (s32)sp18;
++    D_800A33B4 = (s32)sp20;
++    DrawSync(0);
++    func_80045600(s7, (s32)s1);
++    func_80045694(s7, (s32)func_800466C0);
++    stage_ExecInitFunc();
++    if (D_800A38DC != 0) {
++        if (stage_id != 0x22) {
++            func_8004659C(-1);
++        }
++    }
++}
++void func_800464C4(void) {
++    s32 *s0;
++    s32 *s1;
++    s32 *a0;
++    s32 v0;
++
++    if (g_stage_variant == 0) {
++        return;
++    }
++    s0 = (s32 *)func_800457A0(7);
++    v0 = ((u32)s0[1] >> 2) << 2;
++    a0 = (s32 *)((u8 *)s0 + v0);
++    switch (g_stage_id) {
++    case 0xD:
++        v0 = ((u32)s0[6] >> 2) << 2;
++        s1 = (s32 *)((u8 *)s0 + v0);
++        break;
++    case 3:
++    case 0x22:
++        v0 = ((u32)s0[5] >> 2) << 2;
++        s1 = (s32 *)((u8 *)s0 + v0);
++        break;
++    }
++    func_80044010(a0, 7);
++    func_8003EDC0(s1, 7);
++    func_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
++    g_stage_variant = 0;
++}
++void func_8004659C(s32 a0) {
++    s32 *s0;
++    s32 *s2;
++    s32 *s3;
++    s32 *s4p;
++    s32 *s1p;
++    s32 *s0p;
++    s32 v0;
++    if (a0 < 0) {
++        func_800464C4();
++        return;
++    }
++    if (g_stage_variant == 0) {
++        return;
++    }
++    v0 = func_800457A0(7);
++    s0 = (s32 *)v0;
++    v0 += 4;
++    v0 = v0 + a0 * 20;
++    s2 = (s32 *)((u8 *)s0 + *(s32 *)v0);
++    v0 += 4;
++    s3 = (s32 *)((u8 *)s0 + *(s32 *)v0);
++    v0 += 4;
++    s4p = (s32 *)((u8 *)s0 + *(s32 *)v0);
++    v0 += 4;
++    s1p = (s32 *)((u8 *)s0 + *(s32 *)v0);
++    s0p = (s32 *)((u8 *)s0 + *(s32 *)(v0 + 4));
++    func_80044098(7);
++    func_80044010(s2, 7);
++    func_80054410(s3);
++    D_800A33B0 = (s32)s4p;
++    D_800A33B4 = (s32)s1p;
++    func_8003EDC0(s0p, 7);
++}
++extern void func_800453E0(s32);
++void func_8004668C(void) {
++    func_800453E0(7);
++    g_stage_id = -1;
++    g_stage_variant = 0;
++}
++
++/* ---- merged from text1a_b.c (owner ruling Q65: one original file) ---- */
++extern void func_80044100();
++extern void func_80044C70(s32);
++extern u16 D_80099478;
++extern void func_8005441C(s32);
++extern void func_80047ED0(s32);
++void func_800466C0(s32 a0, s32 a1) {
++    s32 rounded;
++    s16 val;
++    func_80044100(7, a1);
++    func_8005441C(a1);
++    rounded = (a1 / 4) * 4;
++    D_800A33B0 += rounded;
++    val = (s16)(D_80099478 - 4);
++    D_800A33B4 += rounded;
++    switch (val) {
++    case 0:
++    case 3:
++    case 14:
++        func_80044C70(a1);
++        break;
++    case 9:
++        func_80044100(8);
++        break;
++    case 7:
++        func_80047ED0(a1);
++        break;
++    }
++}
++
++/* ---- merged from text1a_b_pre_rodata.c (owner ruling Q65: one original file) ---- */
++/* Rodata sub-TU split out for the 101C.rodata_text1a_b_pre cluster
++ * (rodata-cleanup project, docs/rodata-cleanup-project.md, 2026-06-09).
++ * MULTI-FILE cluster: 23 symbols (12 jtbls + 5 strings + 6 data words)
++ * spanning text1a.c and text1b.c. Sub-TU packs all bytes into one file
++ * at the asm/data slot (between text1a_b.o and text1b_b.o). */
++#include "common.h"
++
++/* Auto-extracted from asm/data/101C.rodata_text1a_b_pre.s */
++
++/* D_800153F0: 22 halfwords (44B) @ 0x800153F0 */
++/* 0x800153F0: the 22-halfword record func_8004A09C unpacks (it walks it as u16). func_80049F4C copies
++   it whole by assignment: the copy's run-time alignment test in the target bytes is the halfword
++   type's alignment. */
++typedef struct {
++    u16 v[22];
++} Unk800153F0Record;
++const Unk800153F0Record D_800153F0 = {{
++    0x0E00, 0x0E00, 0x0E00, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
++    0x0000, 0x0E00, 0x0A00, 0x0001, 0x0000, 0x0000, 0x0000, 0x0000,
++    0x0000, 0x0000, 0x0030, 0x0030, 0x0030, 0x1000,
++}};
++
++/* jtbl_8001541C: 16 words (64B) @ 0x8001541C */
++const u32 jtbl_8001541C[16] = {
++    0x8004A990,
++    0x8004ABD8,
++    0x8004A5D0,
++    0x8004AE0C,
++    0x8004A5D0,
++    0x8004A5D0,
++    0x8004A5D0,
++    0x8004A5D0,
++    0x8004A5D0,
++    0x8004A5D0,
++    0x8004AF84,
++    0x8004A5D0,
++    0x8004B0C8,
++    0x8004B0E4,
++    0x8004B4D8,
++    0x8004B27C,
++};
++
++/* jtbl_8001545C: 5 words (20B) @ 0x8001545C */
++const u32 jtbl_8001545C[5] = {
++    0x8004A614,
++    0x8004A644,
++    0x8004A694,
++    0x8004A6F0,
++    0x8004A730,
++};
++
++/* D_80015470: 4 words (16B) @ 0x80015470 */
++const u32 D_80015470[4] = {
++    0x8004B6E4,
++    0x8004BCC0,  /* saTan2LineDraw */
++    0x80052C10,  /* InitFadePanel */
++    0x80052C10,  /* InitFadePanel */
++};
++
++/* D_80015480: 8 words (32B) @ 0x80015480 — function-pointer table */
++const u32 D_80015480[8] = {
++    0x8004C994,  /* func_8004C994 */
++    0x8004CB8C,  /* func_8004CB8C */
++    0x8004CDB0,  /* func_8004CDB0 */
++    0x8004CFE0,  /* func_8004CFE0 */
++    0x80051208,  /* func_80051208 */
++    0x800513B0,  /* func_800513B0 */
++    0x800515AC,  /* func_800515AC */
++    0x80051754,  /* func_80051754 */
++};
++
++/* D_800154A0: 96 words (384B) @ 0x800154A0 */
++const u32 g_rsqrt_table[96] = {
++    0x0FE01000,
++    0x0FA30FC1,
++    0x0F680F85,
++    0x0F300F4C,
++    0x0EFB0F15,
++    0x0EC70EE1,
++    0x0E960EAE,
++    0x0E660E7E,
++    0x0E380E4F,
++    0x0E0C0E22,
++    0x0DE20DF7,
++    0x0DB90DCD,
++    0x0D910DA5,
++    0x0D6B0D7E,
++    0x0D450D58,
++    0x0D210D33,
++    0x0CFF0D10,
++    0x0CDD0CEE,
++    0x0CBC0CCC,
++    0x0C9C0CAC,
++    0x0C7D0C8D,
++    0x0C5F0C6E,
++    0x0C420C51,
++    0x0C260C34,
++    0x0C0A0C18,
++    0x0BEF0BFD,
++    0x0BD50BE2,
++    0x0BBB0BC8,
++    0x0BA20BAF,
++    0x0B8A0B96,
++    0x0B720B7E,
++    0x0B5B0B67,
++    0x0B450B50,
++    0x0B2E0B39,
++    0x0B190B24,
++    0x0B040B0E,
++    0x0AEF0AF9,
++    0x0ADB0AE5,
++    0x0AC70AD1,
++    0x0AB40ABD,
++    0x0AA10AAA,
++    0x0A8E0A97,
++    0x0A7C0A85,
++    0x0A6A0A73,
++    0x0A590A61,
++    0x0A470A50,
++    0x0A370A3F,
++    0x0A260A2E,
++    0x0A160A1E,
++    0x0A060A0E,
++    0x09F609FE,
++    0x09E709EF,
++    0x09D809E0,
++    0x09C909D1,
++    0x09BB09C2,
++    0x09AD09B4,
++    0x099E09A5,
++    0x09910998,
++    0x0983098A,
++    0x0976097C,
++    0x0969096F,
++    0x095C0962,
++    0x094F0955,
++    0x09430949,
++    0x0936093C,
++    0x092A0930,
++    0x091E0924,
++    0x09120918,
++    0x0907090D,
++    0x08FB0901,
++    0x08F008F6,
++    0x08E508EB,
++    0x08DA08E0,
++    0x08CF08D5,
++    0x08C508CA,
++    0x08BA08BF,
++    0x08B008B5,
++    0x08A608AB,
++    0x089C08A1,
++    0x08920897,
++    0x0888088D,
++    0x087E0883,
++    0x0875087A,
++    0x086B0870,
++    0x08620867,
++    0x0859085E,
++    0x08500855,
++    0x0847084C,
++    0x083E0843,
++    0x0836083A,
++    0x082D0831,
++    0x08240829,
++    0x081C0820,
++    0x08140818,
++    0x080C0810,
++    0x08040808,
++};
++
++/* D_80015620: 128 words (512B) @ 0x80015620 */
++const u32 g_sqrt_table[128] = {
++    0x02000000,
++    0x037602D4,
++    0x04780400,
++    0x054A04E6,
++    0x060005A8,
++    0x06A20653,
++    0x073606ED,
++    0x07BE077B,
++    0x083F0800,
++    0x08B7087C,
++    0x092A08F1,
++    0x09970961,
++    0x0A0009CC,
++    0x0A640A32,
++    0x0AC50A95,
++    0x0B220AF4,
++    0x0B7D0B50,
++    0x0BD50BA9,
++    0x0C2A0C00,
++    0x0C7D0C54,
++    0x0CCE0CA6,
++    0x0D1D0CF6,
++    0x0D6A0D44,
++    0x0DB60D90,
++    0x0E000DDB,
++    0x0E480E24,
++    0x0E8F0E6C,
++    0x0ED50EB2,
++    0x0F190EF7,
++    0x0F5C0F3B,
++    0x0F9E0F7D,
++    0x0FDF0FBF,
++    0x101F1000,
++    0x105E103F,
++    0x109C107E,
++    0x10DA10BB,
++    0x111610F8,
++    0x11521134,
++    0x118C116F,
++    0x11C611A9,
++    0x120011E3,
++    0x1238121C,
++    0x12701254,
++    0x12A7128C,
++    0x12DE12C2,
++    0x131412F9,
++    0x1349132E,
++    0x137E1364,
++    0x13B21398,
++    0x13E613CC,
++    0x14191400,
++    0x144C1432,
++    0x147E1465,
++    0x14B01497,
++    0x14E114C8,
++    0x151214F9,
++    0x1542152A,
++    0x1572155A,
++    0x15A2158A,
++    0x15D115B9,
++    0x160015E8,
++    0x162E1617,
++    0x165C1645,
++    0x16891673,
++    0x16B716A0,
++    0x16E416CD,
++    0x171016FA,
++    0x173C1726,
++    0x17681752,
++    0x1794177E,
++    0x17BF17AA,
++    0x17EA17D5,
++    0x18151800,
++    0x183F182A,
++    0x18691854,
++    0x1893187E,
++    0x18BD18A8,
++    0x18E618D1,
++    0x190F18FA,
++    0x19381923,
++    0x1960194C,
++    0x19881974,
++    0x19B0199C,
++    0x19D819C4,
++    0x1A0019EC,
++    0x1A271A13,
++    0x1A4E1A3A,
++    0x1A751A61,
++    0x1A9B1A88,
++    0x1AC21AAE,
++    0x1AE81AD5,
++    0x1B0E1AFB,
++    0x1B331B21,
++    0x1B591B46,
++    0x1B7E1B6C,
++    0x1BA31B91,
++    0x1BC81BB6,
++    0x1BED1BDB,
++    0x1C121C00,
++    0x1C361C24,
++    0x1C5A1C48,
++    0x1C7E1C6C,
++    0x1CA21C90,
++    0x1CC61CB4,
++    0x1CE91CD8,
++    0x1D0D1CFB,
++    0x1D301D1E,
++    0x1D531D41,
++    0x1D761D64,
++    0x1D981D87,
++    0x1DBB1DAA,
++    0x1DDD1DCC,
++    0x1E001DEE,
++    0x1E221E11,
++    0x1E431E33,
++    0x1E651E54,
++    0x1E871E76,
++    0x1EA81E98,
++    0x1ECA1EB9,
++    0x1EEB1EDA,
++    0x1F0C1EFB,
++    0x1F2D1F1C,
++    0x1F4E1F3D,
++    0x1F6E1F5E,
++    0x1F8F1F7E,
++    0x1FAF1F9F,
++    0x1FCF1FBF,
++    0x1FEF1FDF,
++};
++
++/* D_80015820: 8 words (32B) @ 0x80015820 */
++const u32 D_80015820[8] = {
++    0x80050C0C,
++    0x80050DAC,
++    0x80050FB4,
++    0x80051154,
++    0x80051358,
++    0x800514FC,
++    0x800516FC,
++    0x80051894,
++};
++
++/* D_80015840: 1 string, 28B @ 0x80015840 */
++const char D_80015840[28] = "Destruction tiny model.\n";
++
++/* NOTE: the cluster continues in src/text1b.c (func_80058580's three switch tables at
++ * 0x8001585C, text1b.o's rodata; rodata-object-alignment ruling 2026-09-30) and then in
++ * src/text1a_b_pre_rodata_b.c (0x800158B4..). */
++
++/* ---- merged from sound.c (owner ruling Q65: one original file) ---- */
++/* Forward declarations for called functions */
++extern void func_80054FDC(s32);
++extern void SetRCnt(u32, s32, s32);
++extern void GetRCnt(u32);
++extern void StartRCnt(u32);
++extern void func_8004473C(void);
++extern void func_80044800(void);
++extern void func_80048F58(s32, s32);
++extern void func_80048FFC(s32);
++extern s32 *func_8004153C();
++extern s32 func_800477E8(void);
++extern void func_80047A90(void);
++extern void func_80048B8C(s32);
++extern void func_800460E4(s32, s32);
++extern void func_800421C8(s32);
++extern void func_8003E0E0(void);
++extern void func_8003E6D8(s32);
++extern void func_8003DA8C(s32, s32);
++extern void player_Destroy(s32);
++extern void func_8004668C(void);
++extern void func_80046020(void);
++extern void func_80049E1C(void);
++
++extern void math_RotMatrixYXZ(s32 *, s32 *);
++extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
++extern s32 ratan2(s32, s32);
+ extern s16 Judge[];
++extern s16 D_800A33C8;
++extern s16 D_800A33CA;
++extern Unk80101DF0Record *D_800A3708;
++extern void func_8004211C(void);
++extern void func_800444BC(void);
++extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
++extern s32 func_80044FA0(s32, s32);
++extern s16 D_800A324A;
++
++/* Externs for globals */
++extern s16 D_800EEDB0;
++extern s16 D_800EEDB2;
++extern s16 D_800EEDBE;
++extern s32 D_800A33C0;
++extern s32 D_800A33D4;
++extern s32 D_800A33D8;
++
++extern s32 D_800EF800[];
++extern u8 g_stage_data;
++extern s16 D_800F6654;
++extern u8 g_cam_bone_data;
++extern u8 g_cam_bone_data2;
++
++extern s16 g_cam_interp;
++extern s16 D_800F62F8;
++extern s16 D_800F62FA;
++extern s16 D_800F62FC;
++extern s16 D_800EEDB4;
++extern s16 D_800EEDB6;
++extern s16 D_800EEDB8;
++extern s16 D_800EEDBA;
++extern s16 D_800EEDBC;
++extern s16 D_800EEDC0;
++
++extern void func_800451A0(void);
++extern void func_800451D0(void);
++extern void ApplyMatrixLV(void *, void *, void *);
++extern void func_800418D0(s32 *);
++extern void func_8004A1FC();
++extern void func_800420D0(void);
++extern void stage_ClearLighting(void);
++extern void stage_ApplyLighting(void);
++extern void stage_InitCollision(void);
++extern s32 D_80102C00;
++extern u16 D_800A38D6;
++extern s32 g_gpu_ot_ptr;
++extern s32 D_800A3808;
++extern s32 D_800A378C;
++extern u8 D_800F62E0[8][0x60];
++extern s32 g_anim_func_table[];
++extern void func_80042E90(void);
++extern void func_80044498(void);
++extern void func_80049E4C(void);
++extern void func_80049F4C(void);
++extern void func_8003D91C(void);
++extern void func_800404D8(void);
++extern void func_8003F7F4(void);
++extern s16 D_800F6650;
++extern s16 g_color_mode;
++extern s16 D_800F6656;
++extern s16 D_800F665A;
++extern s32 D_800A33BC;
++extern s32 func_800486FC(void);
++extern s32 *func_8004574C(s32);
++extern void func_80044F80(s32, s32 *);
++extern s16 D_800A3248;
+ 
++void func_800468DC(s32 a0, s32 a1);
++
++/* --- Functions 0x80046780 - 0x80047EC8 --- */
++
++s32 func_80046780(void) {
++    return D_800A33B0;
++}
++s32 func_8004678C(void) {
++    return D_800A33B4;
++}
++
++s32 stage_GetId(void) {
++    return g_stage_id;
++}
++
++s32 stage_GetVariant(void) {
++    return g_stage_variant;
++}
++
++s32 *func_800467B8(s32 a0) {
++    s32 arg = a0;
++    s32 chan = 8;
++    s32 *s2;
++
++    if (func_800486FC()) {
++        arg = arg + 0x1B;
++    }
++    {
++        s32 *a1 = func_8004574C(8);
++        if (a1 && D_800A3248 == arg) {
++            s2 = (s32 *)a1[1];
++        } else {
++            s32 *s1;
++            s32 *s0;
++            s2 = func_800455AC(chan);
++            func_80044F80(arg, s2);
++            {
++                s32 off1 = (u32)s2[2] >> 2 << 2;
++                s32 off0 = (u32)s2[1] >> 2 << 2;
++                s1 = (s32 *)((u8 *)s2 + off1);
++                s0 = (s32 *)((u8 *)s2 + off0);
++            }
++            func_80045230((s32)s1);
++            func_80044010(s0, 9);
++            func_80045600(chan, (s32)s1);
++            D_800A3248 = arg;
++        }
++    }
++    func_80045694(chan, (s32)func_800468DC);
++    return s2;
++}
++
++void func_800468B0(s32 a0) {
++    func_80045510(8, a0);
++    func_80045230(0);
++}
++
++void func_800468DC(s32 a0, s32 a1) {
++    func_80048B8C(a1);
++    func_80044100(9, a1);
++}
++
++void func_80046914(void) {
++    func_800453E0(8);
++}
++
++void snd_AllocSe(void) {
++    func_800455AC(9);
++}
++
++void snd_SeNullCallback(void) {
++}
++
++void func_8004695C(s32 a0) {
++    func_80045230(a0);
++    func_80045600(9, a0);
++    func_80045694(9, (s32)snd_SeNullCallback);
++}
++
++void func_800469A0(s32 a0) {
++    func_80045510(9, a0);
++}
++
++void func_80046A80(s32, s32);
++
++s32 *func_800469C4(s32 a0) {
++    s32 *v0;
++    s32 offset;
++
++    v0 = func_800455AC(0xA);
++    func_80044FA0(a0, (s32)v0);
++    offset = (u32)v0[v0[0] + 1] >> 2 << 2;
++    {
++        s32 *s0 = (s32 *)((u8 *)v0 + offset);
++        func_80045230((s32)s0);
++        func_80045600(0xA, (s32)s0);
++    }
++    D_800A324A = (s16)a0;
++    func_80045694(0xA, (s32)func_80046A80);
++    return v0;
++}
++
++void func_80046A60(void) {
++    func_800453E0(0xA);
++}
++
++void func_80046A80(s32 a0, s32 a1) {
++    func_80054FDC(a1);
++}
++
++void snd_StopAll(void) {
++    player_Destroy(0);
++    player_Destroy(1);
++    func_8004668C();
++    func_80046020();
++    func_80049E1C();
++    func_80046914();
++}
++
++void rcnt_StartCnt1(void) {
++    SetRCnt(0xF2000001, -1, 0x2000);
++    StartRCnt(0xF2000001);
++}
++
++void rcnt_GetCnt1(void) {
++    GetRCnt(0xF2000001);
++}
++
++void game_Init(void) {
++    /* FAKE: constant-holder locals — set in source order ahead of the fence
++       below so 1 seats in $v0 and 2 in $v1 before the store tail, with $v0
++       freed for reuse by 0x23 mid-tail */
++    s16 one;
++    s16 two;
++
++    func_800451A0();
++    func_800451D0();
++    func_80042E90();
++    func_80044498();
++    func_80049E4C();
++    func_80049F4C();
++    func_8003D91C();
++    func_800404D8();
++    func_8003F7F4();
++    one = 1;
++    two = 2;
++    /* FAKE: sched.c mid-block loop-note fence — keeps the two pre-fence
++       constant sets from being folded into the store tail (measured: without
++       it CSE/sched collapse 1/2/0x23 into a single serialized $v0) */
++    do { } while (0);
++    D_800F6654 = one;
++    D_800F665A = one;
++    g_color_mode = 0;
++    D_800F6650 = 0;
++    D_800F6656 = 0;
++    D_800F6658 = two;
++    g_game_mirror_mode = 0;
++    D_800A3790 = 0x23;
++    D_800A33BC = 0;
++}
++void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
++    s32 result[3];
++    u16 *new_var;
++    u16 new_var2;
++    s32 trans[3];
++    s16 rot[3];
++    s32 matrix_buf[8];
++    s16 *rot_base;
++    u8 *base;
++
++    D_800A3820 = (s32)&D_80102C00;
++    {
++        u16 cnt = D_800A38D6;
++        s32 old_ptr = g_gpu_ot_ptr;
++        new_var2 = cnt - -1;
++        D_800A3808 = old_ptr;
++        D_800A38D6 = new_var2;
++        D_800A378C = old_ptr + 0x10;
++    }
++
++    new_var = &a1[2];
++    if (a0 != 0) {
++        rot_base = &D_80101DF0.xf.rot.vx;
++
++        *rot_base = -(s16)a1[0];
++        D_80101DF0.xf.rot.vy = -(s16)a1[1];
++        D_80101DF0.xf.rot.vz = -(s16)(*new_var);
++
++        trans[1] = (trans[0] = 0);
++        trans[2] = -a2;
++
++        rot[0] = -(s16)a1[0];
++        rot[1] = -(s16)a1[1];
++        rot[2] = -(s16)(*new_var);
++
++        ((void (*)(s16 *, s32 *))g_anim_func_table[0])(rot, matrix_buf);
++
++        ApplyMatrixLV(matrix_buf, trans, result);
++
++        {
++            s32 *rp = result;
++            s32 *ap = a0;
++            D_80101DF0.work.t[0] = *rp++ + *ap++;
++            D_80101DF0.work.t[1] = *rp++ + *ap++;
++            D_80101DF0.work.t[2] = *rp++ + *ap++;
++        }
++
++        func_800418D0((s32 *)&D_80101DF0);
++        camera_InitBoneData();
++        stage_InitCollision();
++
++        D_800A33C0 = a2;
++    }
++
++    base = D_800F62E0[0];
++    func_8004A1FC(base);
++    func_8004A1FC(base + 0x60);
++    func_8004A1FC(base + 0x180);
++    func_800420D0();
++    stage_ClearLighting();
++    stage_ApplyLighting();
++}
++void func_80046DA8(s32 a0) {
++    if (a0 & 1) {
++        func_80046EA0(D_800A33C0);
++    }
++    func_8004211C();
++    func_800444BC();
++}
++
++s32 game_GetDummyFlag(void) {
++    return 0;
++}
++
++void *game_GetPlayerData(s32 a0) {
++    void *v0 = func_8004153C(a0);
++    if (v0) {
++        return (u8 *)v0 + 0x1994;
++    }
++    return NULL;
++}
++
++void *game_GetPlayerBase(void) {
++    void *v0 = func_8004153C();
++    if (v0) {
++        return (u8 *)v0 + 0x2C;
++    }
++    return NULL;
++}
++
++void func_80046E44(void) {
++    D_800F6654 = 0;
++}
++
++void func_80046E54(s32 a0) {
++    if (a0) {
++        D_800F6654 = 1;
++    } else {
++        D_800F6654 = 0;
++    }
++}
++
++s32 func_80046E7C(void) {
++    return D_800F6654;
++}
++
++void func_80046E8C(void) {
++    D_800A3790 = 0x23;
++}
++
++void func_80046EA0(s32 a0) {
++    func_8003E6D8(a0);
++    {
++        s32 v0 = stage_GetId();
++        func_8003DA8C(v0, a0);
++    }
++}
++
++void game_StageCleanup(s32 a0, s32 a1) {
++    func_800460E4(a0, a1);
++    func_800421C8(a0);
++    func_8003E0E0();
++}
++
++void *stage_GetDataPtr(void) {
++    return &g_stage_data;
++}
++
++void func_80046F24(void) {
++    s32 num = (s32)D_800F62F8 << 12;
++    s32 div = D_800F62FA;
++    s32 v0 = num / div;
++    s32 v1 = ((s32)D_800F62FC << 12) / div;
++    D_800EEDB4 = 0;
++    div = 0;
++    num = v0;
++    D_800EEDB6 = 0;
++    v1 = -(s16)v1;
++    D_800EEDB8 = 0;
++    D_800EEDBA = 0;
++    D_800EEDBC = div;
++    D_800EEDB0 = 0x1000;
++    D_800EEDC0 = 0x1000;
++    v0 = -(s16)num;
++    D_800EEDB2 = v0;
++    D_800EEDBE = v1;
++}
++void func_8004700C(s32 *a0, s32 *a1, s32 a2) {
++    s32 new_var;
++    s32 diff, prod;
++    gte_MulMatrix0ClearTrans((MATRIX *)&D_800EEDB0, (MATRIX *)a0, (MATRIX *)a1);
++    new_var = a0[5];
++    diff = a0[6] - a2;
++    prod = diff * D_800EEDB2;
++    a1[6] = a2;
++    a1[5] = new_var + (prod >> 12);
++    diff = a0[6] - a2;
++    prod = diff * D_800EEDBE;
++    a1[7] = a0[7] + (prod >> 12);
++}
++void func_800470B0(s32 arg0, s32 *arg1, s32 *arg2, s32 arg3) {
++    MATRIX sp10;
++    s32 temp_v1;
++    s32 *var_s0;
++
++    var_s0 = arg1;
++    temp_v1 = arg0 * 0x60;
++    sp10.m[0][0] = 0x1000;
++    sp10.m[0][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62F8 + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
++    sp10.m[0][2] = 0;
++    sp10.m[1][0] = 0;
++    sp10.m[1][1] = 0;
++    sp10.m[1][2] = 0;
++    sp10.m[2][0] = 0;
++    sp10.m[2][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62FC + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
++    sp10.m[2][2] = 0x1000;
++    gte_MulMatrix0ClearTrans(&sp10, (MATRIX *)var_s0, (MATRIX *)arg2);
++    arg2[5] = var_s0[5] + (((var_s0[6] - arg3) * sp10.m[0][1]) >> 12);
++    arg2[6] = arg3;
++    arg2[7] = var_s0[7] + (((var_s0[6] - arg3) * sp10.m[2][1]) >> 12);
++}
++typedef struct {
++    s32 w[8];
++} Block32;
++typedef struct { s16 lo; s16 hi; } CamHalves;
++extern s16 D_800EEDD6;
++extern s16 D_800EEDD8;
++void camera_InitBoneData(void) {
++    /* FAKE: sched fence — without it sched1 hoists the lhu of D_800EEDD6
++       above the block copy (renaming the copy's regs). D_800EEDD6/D_800EEDD8
++       physically live INSIDE g_cam_bone_data (+6/+8), so the dependency is
++       real, but the split extern symbols hide it from GCC's alias analysis;
++       no distinct-symbol spelling can express it (measured s2). */
++    do { *(Unk80101DF0Mat *)&g_cam_bone_data = D_80101DF0.xf.mat; } while (0);
++    {
++        s16 h0 = D_800EEDD6;
++        s16 h1 = D_800EEDD8;
++        D_800EEDD6 = h0 >> 1;
++        D_800EEDD8 = h1 >> 1;
++        /* struct-view of the two halfwords at D_800EEDD8 (target relocation
++           D_800EEDD8+0x2 proves the object spans 4 bytes); the direct
++           *((&D_800EEDD8)+1) spelling makes cse common the +2 address into a
++           register (la) where target keeps both accesses symbolic */
++        ((CamHalves *)&D_800EEDD8)->hi = ((CamHalves *)&D_800EEDD8)->hi >> 1;
++    }
++}
++
++void *camera_GetBoneData(void) {
++    return &g_cam_bone_data;
++}
++
++void camera_InitRotation(u8 *a0) {
++    u8 *s0 = a0;
++    *(s16 *)(s0 + 4) = 8;
++    {
++        s16 v0 = 4;
++        *(s16 *)(s0 + 8) = 0;
++        {
++            u8 *a0_arg = s0 + 0x10;
++            *(s16 *)(s0 + 2) = 0;
++            s0[0] = 0;
++            s0[1] = 0;
++            *(s32 *)(s0 + 0xC) = 0;
++            *(s16 *)(s0 + 0xA) = v0;
++            *(s16 *)(s0 + 0x10) = 0;
++            *(s16 *)(s0 + 0x12) = 0;
++            *(s16 *)(s0 + 0x14) = 0;
++            ((void (*)(u8 *, u8 *))g_anim_func_table[*(s16 *)(s0 + 8)])(a0_arg, s0 + 0x38);
++        }
++    }
++    *(s32 *)(s0 + 0x54) = 0;
++    *(s32 *)(s0 + 0x50) = 0;
++    *(s32 *)(s0 + 0x4C) = 0;
++    *(Block32 *)(s0 + 0x18) = *(Block32 *)(s0 + 0x38);
++}
++
++s16 *camera_CalcAngles(void) {
++    s16 rot[3];
++    s32 sp18[3];
++    s32 pos[8];
++    s16 s0;
++
++    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, pos);
++    rot[0] = 0;
++    rot[1] = 0;
++    rot[2] = 0x1000;
++    ApplyMatrix((MATRIX *)pos, (SVECTOR *)rot, (VECTOR *)sp18);
++    s0 = ratan2(sp18[0], sp18[2]);
++    sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
++              + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
++    D_800A33C8 = -ratan2(sp18[1], sp18[2]);
++    D_800A33CA = s0;
++    return &D_800A33C8;
++}
++
++void game_EffInit(void) {
++    func_8004473C();
++}
++
++void func_8004748C(void) {
++    func_80044800();
++}
++
++void game_AnimInit(void) {
++    func_80048F58(0, 0);
++}
++
++void func_800474D0(void) {
++    func_80048FFC(0);
++}
++
++void game_EffInit2(void) {
++    func_8004473C();
++}
++
++void func_80047510(void) {
++    func_80044800();
++}
++
++void func_80047530(void) {
++    func_800477E8();
++}
++
++void func_80047550(void) {
++    func_80047A90();
++}
++
++void camera_InitBone2(void) {
++    camera_InitRotation(&g_cam_bone_data2);
++    g_cam_interp = 4;
++}
++extern s16 D_800EEE00;
++extern s16 D_800EEE02;
++extern s32 D_800EEE1C;
++extern s32 D_800EEE20;
++extern s32 D_800EEE24;
++extern s32 D_800F66B0;
++extern void MulMatrix0(s32 *, s32 *, s32 *);
++void func_800475A4(void) {
++    s16 rot[3];
++    s32 result[4];
++    s32 buf1[8];
++    s32 buf2[8];
++    s16 angle;
++    s32 computed;
++    u8 *base;
++
++    if (stage_GetVariant() != 0) {
++        return;
++    }
++
++    rot[0] = 0;
++    rot[1] = 0;
++    rot[2] = 0x6590;
++    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, (SVECTOR *)rot, (VECTOR *)result);
++
++    angle = ratan2(result[0], result[2]);
++
++    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
++    result[2] = computed;
++
++    {
++        s16 neg = -ratan2(result[1], computed);
++        base = &g_cam_bone_data2;
++        D_800EEE00 = neg;
++    }
++    D_800EEE02 = angle;
++    D_800EEE1C = D_80101DF0.xf.mat.t[0];
++    D_800EEE20 = D_80101DF0.xf.mat.t[1];
++    D_800EEE24 = D_80101DF0.xf.mat.t[2] + 0x6590;
++    ((void (*)(u8 *, s32 *))D_800F66B0)(base + 0x10, buf1);
++    ((void (*)(u8 *, s32 *))g_anim_func_table[0])((u8 *)&D_80101DF0.xf.rot, buf2);
++    MulMatrix0(buf2, buf1, (s32 *)(base + 0x18));
++
++    {
++        s32 *temp = (s32 *)D_800A3820;
++        D_800A3820 = (s32)(temp + 1);
++        *temp = (s32)base;
++    }
++}
++
++void game_AnimStart(void) {
++    func_80048F58(1, 0);
++}
++
++void func_8004775C(void) {
++    func_80048FFC(0);
++}
++
++void game_EffStart(void) {
++    func_8004473C();
++}
++
++void func_8004779C(void) {
++    func_80044800();
++}
++
++void game_Stub1(void) {
++}
++
++void game_Stub2(void) {
++}
++
++void game_Stub3(void) {
++}
++
++void game_Stub4(void) {
++}
++
++void func_800477DC(s32 a0) {
++    D_800A33D0 = (s16 *)a0;
++}
++extern u32 GetTPage(s32, s32, s32, s32);
++extern u32 GetClut(s32, s32);
++extern void func_800417D0(s32 *);
++extern s16 *D_800A33D0;
++extern s8 D_800EF070;
++extern s8 D_800EF071;
++extern s16 D_800EF076;
++extern s16 D_800EF078;
++extern s16 D_800EF07A;
++extern s32 D_800EF07C;
++extern s16 D_800EF080;
++extern s16 D_800EF082;
++extern s16 D_800EF084;
++extern s32 D_800EF0BC;
++extern s32 D_800EF0C0;
++extern s32 D_800EF0C4;
++extern s32 D_800EF558[];
++extern s32 D_800EF59C[];
++s32 func_800477E8(void) {
++    s16 *s0;
++    s32 s3val;
++    s32 s2val;
++    s32 s1val;
++    s32 t1val;
++    s32 a3;
++    s32 a0;
++    s32 a2;
++    s32 a1;
++    s32 t0;
++    s32 v1;
++    s32 t2;
++    s32 v0;
++    s32 *ptr;
++    s32 *p;
++    s32 w;
++    s32 val;
++
++    s0 = D_800A33D0;
++    s3val = GetTPage(0, 0, 0x2C0, 0x1C0);
++    s2val = GetTPage(0, 0, 0x2C0, 0x180);
++    s1val = GetClut(0x10, 0x1E0);
++    t1val = GetClut(0x10, 0x1E0);
++    a3 = 0;
++    t2 = 0x2C00;
++    a0 = 0;
++    do {
++        t0 = 0x1200;
++        a2 = 0x13;
++        /* FAKE: single-level do-while(0) wrap. Its loop note adds one unit of
++         * loop_depth reference weight to everything in this body, which seats
++         * t1val in $t1 and the 0x2C00 constant in $t2 as target has them
++         * (without it: t1val 3 refs/76 insns loses to t2's 5/150). */
++        do {
++        a1 = 0;
++        v1 = 1;
++inner:
++        if (a3 >= 5) {
++            *s0 = s3val;
++            s0 += 1;
++            *s0 = t2;
++            s0 += 1;
++            *s0 = s1val;
++            s0 += 1;
++            v0 = -0xC1;
++            *s0 = v0;
++            s0 += 1;
++            v0 = -0x100;
++            *s0 = v0;
++            s0 += 1;
++            v0 = -0x3FC1;
++            *s0 = v0;
++            s0 += 1;
++            v0 = -0x4000;
++        } else {
++            *s0 = s2val;
++            s0 += 1;
++            *s0 = t2;
++            s0 += 1;
++            *s0 = t1val;
++            s0 += 1;
++            v0 = -0x40C1;
++            *s0 = v0;
++            s0 += 1;
++            v0 = -0x4100;
++            *s0 = v0;
++            s0 += 1;
++            v0 = -0x7FC1;
++            *s0 = v0;
++            s0 += 1;
++            v0 = -0x8000;
++        }
++        *s0 = v0;
++        s0 += 1;
++        if (a3 & 1) {
++            v0 = a2 | t0;
++            *s0 = v0;
++            s0 += 1;
++            v0 = v1 | a1;
++        } else {
++            v0 = v1 | a1;
++            *s0 = v0;
++            s0 += 1;
++            v0 = a2 | t0;
++        }
++        *s0 = v0;
++        s0 += 1;
++        *s0 = 0;
++        s0 += 1;
++        *s0 = 0;
++        s0 += 1;
++        v0 = -0x1000;
++        *s0 = v0;
++        s0 += 1;
++        t0 += 0x100;
++        a2 += 1;
++        a1 += 0x100;
++        a0 += 1;
++        v1 += 1;
++        if (a0 < 0x10) goto inner;
++        a3 += 1;
++        } while (0);
++        a0 = 0;
++    } while (a3 < 8);
++
++    {
++        s32 *a0p;
++        a0p = (s32 *)&D_800EF070;
++        *(s8 *)a0p = 0xE;
++        D_800EF07A = 4;
++        D_800EF0BC = -0x2EE0;
++        D_800EF071 = 0;
++        D_800EF0C0 = 0;
++        D_800EF0C4 = -0xFA0;
++        D_800EF080 = 0;
++        D_800EF082 = 0;
++        D_800EF084 = 0;
++        D_800EF078 = 0;
++        D_800EF07C = 0;
++        D_800EF076 = 0;
++        func_800417D0(a0p);
++    }
++
++    a3 = 0;
++    w = 0;
++    do {
++        val = w;
++        p = &D_800EF59C[a3 * 0x11];
++        for (a0 = 0x10; a0 >= 0; a0--) {
++            p[a0] = val;
++        }
++        w += 0x7D0;
++        a3 += 1;
++    } while (a3 < 9);
++
++    a0 = 0;
++    ptr = &D_800EF558[0];
++loop3:
++    *ptr = (a0 << 7) & 0xFFF;
++    a0++;
++    ptr++;
++    if (0x11 > a0) goto loop3;
++
++    return (s32)s0 - (s32)D_800A33D0;
++}
++
++void func_80047A90(void) {
++    s32 i;
++    s32 a3;
++    s32 v1;
++    s32 a0;
++    s16 *jb;
++    s32 *p558;
++    s32 *p59C;
++    s32 *pt2;
++    s32 *pt1;
++    s32 *pa1;
++    s32 *pa2;
++    s32 *pt3;
++    s32 *temp;
++
++    i = 0;
++    jb = Judge;
++    p558 = D_800EF558;
++    p59C = D_800EF59C;
++  loop1:
++    i++;
++    *p59C = ((s32)jb[*p558 & 0xFFF] * 0x271) >> 10;
++    p59C++;
++    *p558 += 0x12;
++    p558++;
++    if (i < 0x11)
++        goto loop1;
++
++    i = 1;
++    pt2 = D_800EF59C;
++    pt1 = D_800EF59C + 0x11;
++  outer_loop:
++    pa1 = pt1;
++    do {
++        /* FAKE: loop-note ref weighting lifts a3's allocno priority above
++         * the shared counter i, seating a3 in $a3 and i in $t0 */
++        a3 = 0;
++    } while (0);
++    do {
++        /* FAKE: loop-note ref weighting lifts pa2 above the shared counter
++         * i, seating pa2 in $a2 (shared with the loop-1 Judge base) */
++        pa2 = pt2;
++    } while (0);
++    do {
++        /* FAKE: loop-note ref weighting keeps pt1 ahead of pt2 in
++         * allocation order (pt1->$t1, pt2->$t2) after the pa2 wrap's
++         * weighted pt2 use lifted pt2 */
++        pt3 = pt1 + 0x11;
++    } while (0);
++  inner_loop:
++    a0 = 0x7D0 - (*pa1 - *pa2);
++    if (a0 < 0) {
++        v1 = (a0 + 0xF) >> 4;
++    } else {
++        v1 = a0 / 10;
++    }
++    *pa1 += v1;
++    if (i == 8) {
++        *(s32 *)((s8 *)D_800EF800 + a3) = v1;
++        pa1++;
++        a3 += 4;
++        pa2++;
++    } else {
++        /* FAKE: loop tail duplicated into both arms (cross-jump re-merges,
++         * byte-neutral); reg_n_refs lift lands pa2->$a2, a3->$a3 */
++        pa1++;
++        a3 += 4;
++        pa2++;
++    }
++    if ((s32)pa1 < (s32)pt3)
++        goto inner_loop;
++    pt2 += 0x11;
++    i++;
++    pt1 += 0x11;
++    if (i < 9)
++        goto outer_loop;
++
++    temp = (s32 *)D_800A3820;
++    D_800A3820 = (s32)(temp + 1);
++    *temp = (s32)&D_800EF070;
++}
++
++
++extern void RotTransPers3(SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *);
++extern void ReadSZfifo3(s32 *, s32 *, s32 *);
++extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
++extern SVECTOR D_800EF0D8[17];
++extern SVECTOR D_800EF168[17];
++void func_80047BE0(void) {
++    s32 sxy0, sxy1, sxy2, pflag, flag;
++    s32 sz0, sz1, sz2;
++    s16 *s7val;
++    s32 i, j;
++    s32 *src;
++    SVECTOR *base;
++    SVECTOR *v;
++    s32 *dst32;
++    s16 *dst16;
++    s16 z;
++
++    s7val = D_800A33D0;
++    i = 0;
++    src = D_800EF59C;
++    while (i < 9) {
++        if (i & 1) {
++            base = D_800EF168;
++            dst32 = (s32 *)0x1F800068;
++            dst16 = (s16 *)0x1F800134;
++        } else {
++            base = D_800EF0D8;
++            dst32 = (s32 *)0x1F800020;
++            dst16 = (s16 *)0x1F800110;
++        }
++        v = base;
++        j = 0;
++        z = -0x2EE0;
++        while (j < 17) {
++            v->vx = src[j] - 0xFA0;
++            v->vy = 0;
++            v->vz = z;
++            v++;
++            z += 0x7D0;
++            j++;
++        }
++        v = base;
++        j = 0;
++        while (j < 6) {
++            RotTransPers3(&v[0], &v[1], &v[2], &sxy0, &sxy1, &sxy2, &pflag, &flag);
++            v += 3;
++            ReadSZfifo3(&sz0, &sz1, &sz2);
++            *dst32++ = sxy0;
++            *dst32++ = sxy1;
++            *dst32++ = sxy2;
++            *dst16++ = sz0;
++            *dst16++ = sz1;
++            *dst16++ = sz2;
++            j++;
++        }
++        if (i != 0) {
++            s7val = func_8004BCC0(0x10, (s16 *)base, s7val, 0);
++        }
++        i++;
++        src += 17;
++    }
++}
++extern s32 D_800EF7BC[];
++
++s32 func_80047D94(s32 a0) {
++    s32 a1 = (a0 + 0x7D00) / 3200;
++    s32 a0_div = a0 / 3200;
++    s32 remainder = a0 - a0_div * 3200;
++    s32 odd = remainder & 1;
++    D_800A33D4 = a1;
++    D_800A33D8 = odd;
++    if ((u32)a1 >= 18) {
++        return (s32)0xFFFE7960;
++    }
++    {
++        s32 val1 = D_800EF7BC[a1] * odd;
++        s32 val2 = D_800EF7BC[a1 + 1] * (0x1000 - odd);
++        return ((val1 + val2) >> 12) - 0x3F48;
++    }
++}
++s32 func_80047E5C(void) {
++    s32 v1 = D_800A33D4;
++    if ((u32)v1 >= 18) {
++        return 0;
++    }
++    {
++        s32 v0 = D_800EF800[v1];
++        s32 a0 = D_800A33D8;
++        s32 val1 = v0 * a0;
++        s32 v3 = D_800EF800[v1 + 1];
++        s32 val2 = v3 * (0x1000 - a0);
++        return (val1 + val2) >> 12;
++    }
++}
++
++s32 func_80047EC8(void) {
++    return 0xD00;
++}
++
++/* ---- merged from text1b.c (owner ruling Q65: one original file) ---- */
+ extern s32 func_8005C2A8(s32 *, s16, s32);
+ 
+ /* Padding NOP macro */
+@@ -410,8 +1974,6 @@ typedef struct {
+     /* 0x18 */ u32 *pixdata;
+     /* 0x1C */ u32 *clutdata;
+ } TimHdr485;
+-extern u32 GetTPage(s32, s32, s32, s32);
+-extern u32 GetClut(s32, s32);
+ void func_800485EC(tim, spr, x, y, cx, cy)
+ u32 *tim;
+ TimHdr485 *spr;
+@@ -468,7 +2030,6 @@ u16 cx, cy;
+         spr->tpage = GetTPage(spr->mode, 0, spr->x & 0xFFC0, spr->y & 0xFF00);
+     }
+ }
+-extern s16 g_color_mode;
+ s32 file_GetFlag0(void);
+ s32 func_800486FC(void) {
+     if (file_GetFlag0()) {
+@@ -478,7 +2039,6 @@ s32 func_800486FC(void) {
+     }
+     return g_color_mode;
+ }
+-extern s16 g_color_mode;
+ void func_80048744(s32 a0) {
+     if (a0) {
+         g_color_mode = 1;
+@@ -587,7 +2147,6 @@ extern void func_800468B0(s32);
+ extern u8 D_80099BCC;
+ extern s32 D_800A33E0;
+ extern s32 D_800A33E4;
+-extern s32 *func_8004153C();
+ s32 func_80048AD0(s32 arg0) {
+     s32 temp_v0;
+     s32 sound;
+@@ -625,17 +2184,13 @@ s32 func_80048AD0(s32 arg0) {
+     func_800468B0(delta + 0x6E8);
+     return 1;
+ }
+-extern s32 D_800A33E4;
+ void func_80048B8C(s32 a0) {
+     D_800A33E4 += a0;
+ }
+ extern void *game_GetPlayerData();
+-extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
+ extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
+-extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
+ extern s32 ClearOTagR(s32, s32);
+ extern s32 D_800A36AC;
+-extern s32 D_800A378C;
+ extern s32 D_800A3820;
+ extern s32 g_gpu_ot256_ptr;
+ extern u8 g_gpu_ot256_db[];
+@@ -774,7 +2329,6 @@ void func_8004939C(void) {
+ 
+ extern u8 D_80099CC8[];
+ extern u8 D_80099CC9[];
+-extern s32 D_800A33EC;
+ extern s16 D_800EF980[];
+ void func_800493E4(s32 arg0) {
+     u8 temp_v1;
+@@ -805,8 +2359,6 @@ void func_800493E4(s32 arg0) {
+         D_800EF980[D_80099CC9[idx]] = 1;
+     }
+ }
+-extern s32 D_800A33EC;
+-extern s16 D_800A33E8;
+ 
+ void func_800494D4(s32 idx, s32 val) {
+     s32 cond;
+@@ -835,13 +2387,8 @@ s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2)
+     return sum + (arg2 - arg1);
+ }
+ extern s16 D_80099C50[];
+-extern s16 D_800EF980[];
+-extern s32 D_800A33EC;
+-extern s16 D_800A33E8;
+-extern s16 D_800A33EA;
+ extern s32 D_800A324C;
+ extern s32 func_8004954C(s32, s32, s32);
+-extern void func_80046020(void);
+ extern void func_80045B68(s32, s32, s16 *, s32);
+ extern s32 func_8003E120();
+ void func_80049584(s32 arg0) {
+@@ -927,11 +2474,8 @@ void func_80049710(void) {
+ }
+ 
+ INCLUDE_ASM("asm/funcs", func_80049718);
+-extern u8 D_80099CC8[];
+ extern s16 D_80099D3C[];
+ extern u8 *D_800A38B4;
+-extern s16 D_800EF980[];
+-extern void func_800417D0(s32 *);
+ /* func_80049A2C - session s10 (rederive) INTEGRATION-HANDOFF FORM - BYTES PROVEN.
+  *
+  * FULL DRIVER BUILD with this body applied over src/text1b.c:868's
+@@ -1147,7 +2691,6 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
+     return var_s1;
+ }
+ extern s16 D_80099CC2;
+-extern s32 D_800A324C;
+ void func_80049E1C(void) {
+     s16 val = -1;
+     s32 i = 0x39;
+@@ -1159,9 +2702,7 @@ void func_80049E1C(void) {
+     } while (i >= 0);
+     D_800A324C = -1;
+ }
+-extern void func_800418D0(s32 *);
+ 
+-extern Unk80101DF0Record *D_800A3708;
+ extern void *D_800A370C;
+ void func_80049E4C(void) {
+     Unk80101DF0Record *p1 = &D_80101DF0;
+@@ -1194,11 +2735,7 @@ void func_80049E4C(void) {
+ /* 0x800153F0: the 22-halfword record func_8004A09C unpacks (it walks it as u16). func_80049F4C copies
+    it whole by assignment: the copy's run-time alignment test in the target bytes is the halfword
+    type's alignment. */
+-typedef struct {
+-    u16 v[22];
+-} Unk800153F0Record;
+ extern const Unk800153F0Record D_800153F0;
+-extern u8 D_800F62E0[8][0x60];
+ extern s32 g_gte_color_matrix_data;
+ extern u8 g_gte_back_color_r;
+ extern u8 g_gte_back_color_g;
+@@ -1619,7 +3156,6 @@ extern s32 func_80053754();
+ extern s32 func_80053E9C();
+ extern u8 D_800EFA00;
+ extern u8 D_800EF9F8;
+-extern s32 D_800A33F4;
+ typedef struct { s32 a, b, c, d; } _S16_53304;
+ void func_80053304(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
+     u8 *p;
+@@ -1648,10 +3184,6 @@ void func_80053304(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
+     }
+     func_80052D00(arg2, arg3);
+ }
+-extern s32 gte_SumSquares3(s32, s32, s32);
+-extern s32 func_80052D00(s32, s32);
+-extern s32 func_80053754();
+-extern s32 func_80053E9C();
+ 
+ typedef struct { s32 a, b, c, d; } _S16_5344C;
+ void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
+@@ -1681,10 +3213,6 @@ void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
+     }
+     func_80052D00(arg2, arg3);
+ }
+-extern s32 func_80052D00(s32, s32);
+-extern s32 func_80053E9C();
+-extern u8 D_800EFA00;
+-extern u8 D_800EF9F8;
+ 
+ typedef struct { s32 a, b, c, d; } _S16_53584;
+ void func_80053584(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
+@@ -1722,8 +3250,6 @@ s32 func_80053694(s32 *arg0, s16 *arg1) {
+     return 0;
+ }
+ extern s32 D_800A33F0;
+-extern s32 D_800A33F4;
+-extern s32 gte_SumSquares3(s32, s32, s32);
+ extern void func_80052C4C(s32, s32, s32, s32);
+ extern void gte_ReadIR1IR2Sra2(s32 *, s32 *);
+ 
+@@ -1964,7 +3490,6 @@ s32 func_80053E9C(s32 arg0, s32 arg1) {
+ }
+ 
+ #undef W
+-extern s32 D_800A33F0;
+ void func_80054410(s32 a0) {
+     D_800A33F0 = a0;
+ }
+@@ -1979,7 +3504,6 @@ INCLUDE_ASM("asm/funcs", func_80054440);
+ INCLUDE_ASM("asm/funcs", func_800545F4);
+ extern s32 D_800A3770;
+ extern const char D_80015840[];
+-extern s32 func_80044FA0(s32, s32);
+ extern s32 func_80045080(s32);
+ extern void func_80046914(void);
+ extern s32 *func_800469C4(s32);
+@@ -1992,7 +3516,6 @@ extern s32 math_FovToScreenDist(s32);
+ extern void SetGeomScreen(s32);
+ extern void gpu_ResetGraphMode1(void);
+ extern void game_StageCleanup(s32, s32);
+-extern void func_8004659C(s32);
+ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
+     /* FAKE: second C handle to the global ctrl block (pointer-alias family);
+        mechanism: expand/cse address materialisation -- the pointer local seats
+@@ -2082,11 +3605,6 @@ void func_800548DC(void) {
+     func_80046A60();
+ }
+ INCLUDE_ASM("asm/funcs", func_8005490C);
+-extern s32 D_80102C00;
+-extern u16 D_800A38D6;
+-extern s32 g_gpu_ot_ptr;
+-extern s32 D_800A3808;
+-extern s32 D_800A378C;
+ extern s32 func_8005490C(void);
+ extern void func_800444E0(void);
+ s32 func_80054F68(void) {
+@@ -2450,7 +3968,6 @@ void func_80055B44(u8 *a0, s32 a1, s32 a2, s32 a3) {
+     *(s32 *)(a0 + 0x3CC) = -1;
+ }
+ INCLUDE_ASM("asm/funcs", func_80055B60);
+-extern s32 ratan2(s32, s32);
+ extern u8 D_8009A820[];
+ extern u8 D_8009A821[];
+ 
+@@ -2602,7 +4119,6 @@ s32 func_80056FE8(s32 arg0) {
+     }
+     return base + (*((s16 *) ((*((s32 *) arg0)) + 0x40A))) + 0x12C;
+ }
+-extern s32 ratan2(s32, s32);
+ extern s32 func_800233AC(void *, s32 *);
+ extern s32 D_8009AA50[];
+ 
+@@ -2642,7 +4158,6 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
+     return var_v0;
+ }
+ typedef struct { s32 x, y, z, w; } Vec4_571C0;
+-extern s32 rand(void);
+ 
+ s32 func_800571C0(s32 obj) {
+     Vec4_571C0 probe;
+@@ -2877,7 +4392,6 @@ s32 func_80057ACC(s32 arg0, u8 *arg1, s32 arg2, s32 arg3) {
+     }
+     return best;
+ }
+-extern s32 ratan2(s32, s32);
+ /* Per-vertex neighbour-angle midpoint: computes the outward bisector direction at
+  * vertex arg1 of the polygon whose vertex table hangs off arg0[4], and writes the
+  * offset point into *arg2 / *arg3.
+@@ -3060,7 +4574,6 @@ void SsEnd(void);
+ void SsQuit(void);
+ 
+ 
+-extern s32 D_800A3408;
+ void snd_Quit(void) {
+     s32 i;
+     s32 *a0;
+@@ -3084,11 +4597,9 @@ void snd_Quit(void) {
+     D_800A3408 = 0;
+ }
+ 
+-void func_800858D0(s32);
+ void func_8005B58C(void) {
+     func_800858D0(0);
+ }
+-extern void func_800858D0(s32);
+ extern void func_80086130(s32, s32, s32);
+ 
+ 
+@@ -3112,7 +4623,6 @@ void func_8005B5AC(void) {
+         s0 += 8;
+     } while (s1 < 24);
+ }
+-void func_800858D0(s32);
+ void SsVabClose(s16);
+ 
+ 
+@@ -3383,7 +4893,6 @@ extern s32 g_vab_rec_ptr_plus_0x8;
+ extern s32 g_vab_vb_sbaddr_plus_0x8;
+ extern s32 g_vab_rec_ptr_plus_0x14;
+ extern s32 g_vab_vb_sbaddr_plus_0x14;
+-void func_800858D0(s32);
+ 
+ void func_8005B6AC(void) {
+     func_800858D0(0);
+@@ -3396,13 +4905,11 @@ void func_8005B6AC(void) {
+ }
+ extern s32 g_vab_rec_ptr_plus_0x4[];
+ extern s32 g_vab_vb_sbaddr_plus_0x4[];
+-void SsVabClose(s16);
+ void func_8005B6FC(void) {
+     SsVabClose(1);
+     g_vab_rec_ptr_plus_0x4[0] = 0;
+     g_vab_vb_sbaddr_plus_0x4[0] = 0;
+ }
+-void func_800858D0(s32);
+ s32 SsUtReverbOff(void);
+ s32 SsUtSetReverbType(s32);
+ s32 SsUtSetReverbDepth(s32, s32);
+@@ -3410,7 +4917,6 @@ s32 SsUtSetReverbDepth(s32, s32);
+ void func_8005B5AC(void);
+ 
+ 
+-extern s32 D_800A3408;
+ void func_8005B72C(void) {
+     s32 s0;
+     s32 *s2;
+@@ -3467,7 +4973,6 @@ typedef struct GameObj {
+ } GameObj;
+ extern s32 func_80036EA8();
+ extern s32 func_80036F28();
+-extern s32 func_8005C2A8(s32 *, s16, s32);
+ 
+ s32 printf(s32 *, s32);               /* extern */
+ s32 game_FrameLoop();                           /* extern */
+@@ -3475,7 +4980,6 @@ s32 cdrom_StartRead(s32, s32);               /* extern */
+ 
+ extern s32 D_800158B4;
+ extern s32 g_vab_sticky_sbaddr;
+-extern s32 D_800A3408;
+ extern s32 D_800A340C;
+ 
+ s32 snd_LoadCommonVab(s32 arg0) {
+@@ -3514,9 +5018,7 @@ void func_8005B868(void) {
+ }
+ extern s32 func_80036EA8(s32, s32);
+ extern s32 func_80036F28(s32);
+-extern s32 func_8005C2A8(s32 *, s16, s32);
+ extern void func_8005B868(void);
+-extern void func_800858D0(s32);
+ 
+ s32 func_8005B8B8(s32 arg0) {
+     s32 t0;
+@@ -3546,8 +5048,6 @@ void func_8005B98C(s32 a0) {
+ }
+ extern s32 g_vab_rec_ptr_plus_0x24;
+ extern s32 g_vab_vb_sbaddr_plus_0x24;
+-void func_800858D0(s32);
+-void SsVabClose(s16);
+ void func_8005B9C4(void) {
+     func_800858D0(0);
+     SsVabClose(9);
+@@ -3570,7 +5070,6 @@ void func_8005B9FC(s32 a0) {
+     game_FrameLoop();
+     func_8005C2A8(a0, 9, a0 + s1);
+ }
+-s32 snd_VabFakeOpen(s32, s16);
+ void func_8005BA6C(s32 a0) {
+     snd_VabFakeOpen(a0, 9);
+ }
+@@ -3585,12 +5084,9 @@ typedef struct {
+ 
+ 
+ extern u8 D_8009AD18[];
+-extern void func_800858D0(s32);
+ extern void SsVabClose(s16);
+-extern s32 func_80036EA8(s32, s32);
+ extern s32 game_FrameLoop(void);
+ extern s32 cdrom_StartRead(s32, s32);
+-extern s32 func_80036F28(s32);
+ 
+ 
+ extern s32 snd_VabFakeOpen(s32, s16);
+@@ -3651,10 +5147,7 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
+     return (s32)p - base;
+ }
+ 
+-extern void func_800858D0(s32);
+ 
+-extern s32 g_vab_rec_ptr_plus_0x18;
+-extern s32 g_vab_rec_ptr_plus_0xC;
+ 
+ void func_8005BD30(s32 arg0) {
+     u8 count;
+@@ -3673,10 +5166,7 @@ void func_8005BD30(s32 arg0) {
+         g_vab_rec_ptr_plus_0x18 = g_vab_rec_ptr_plus_0xC;
+     }
+ }
+-extern s32 *g_vab_rec_ptr[];
+-extern s32 g_vab_vb_sbaddr[];
+ 
+-extern void SsVabClose(s16);
+ void func_8005BDF0(void) {
+     u32 *s3 = g_vab_rec_ptr;
+     u32 *s2 = g_vab_vb_sbaddr;
+@@ -3690,7 +5180,6 @@ void func_8005BDF0(void) {
+     } while ((s32)s0 < (s32)s1);
+ }
+ extern s16 D_8009AD1C[][2];
+-extern void func_800858D0(s32);
+ 
+ 
+ 
+@@ -3724,7 +5213,6 @@ s32 func_8005BE84(s32 arg0)
+   }
+   return (s16) result;
+ }
+-void func_800858D0(s32);
+ 
+ 
+ 
+@@ -3741,7 +5229,6 @@ extern s32 SpuRead();
+ extern s32 SpuWrite();
+ extern s32 SpuSetTransferStartAddr();
+ extern s32 SpuIsTransferCompleted();
+-extern void func_800858D0(s32);
+ 
+ 
+ s32 snd_MoveVabBody(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+@@ -3837,7 +5324,6 @@ s32 func_8005C074(s16 vabid, s32 base) {
+  * described above.
+  */
+ extern s32 *func_80077D00(void);
+-extern void func_800858D0(s32);
+ 
+ 
+ extern s16 SsVabTransCompleted(s16);
+@@ -3845,11 +5331,6 @@ extern s32 SsUtGetVBaddrInSB(s16);
+ extern s32 snd_VabOpen(s32 *, s16);
+ 
+ extern const char D_800158CC[];
+-extern s32 *g_vab_rec_ptr[];
+-extern s32 g_vab_vb_sbaddr[];
+-extern s32 g_vab_sticky_sbaddr;
+-extern s32 D_800A3408;
+-extern s32 D_800A340C;
+ 
+ s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
+     s16 i;
+@@ -3931,7 +5412,6 @@ s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
+     return ret;
+ }
+ 
+-extern s32 g_vab_sticky_sbaddr;
+ 
+ void SsVabOpenHeadSticky(s32, s16, s32);
+ s32 SsVabTransBody(s32, s16);
+@@ -3942,7 +5422,6 @@ s32 snd_VabOpen(s32 *a0, s16 a1) {
+     return (s16)SsVabTransBody(a0[2], a1);
+ }
+ void SsSetMVol(s32, s32);
+-void func_800858D0(s32);
+ void SsSetStereo(void);
+ void SsSetAutoKeyOffMode(s32);
+ void func_8005C614(void) {
+@@ -3974,8 +5453,6 @@ void func_8005C650(s32 a0, s32 a1, s32 a2) {
+  * running `next` cursor and key the note on with the entry's stored volumes.
+  * Each pool slot is cleared as it is visited.
+  */
+-extern s32 g_vab_rec_ptr_plus_0xC;
+-extern s32 g_vab_rec_ptr_plus_0x18;
+ extern void SpuGetAllKeysStatus(u8 *);
+ extern s32 SpuGetKeyStatus(s32);
+ extern s32 SsUtKeyOnV(s16, s16, s16, s16, s16, s16, s16, s16);
+@@ -4339,12 +5816,6 @@ typedef struct {
+ } T5E098;
+ extern s32 D_8009B488;
+ extern u8 D_8009B48E;
+-extern s32 func_8007352C(s32);
+-extern s32 func_8006E480(s32, s32);
+-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+-extern s32 AddPrim(s32, s32);
+-extern s32 SetSemiTrans(void *, s32);
+-extern s32 SetTile(void *);
+ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+     S5E098 s;
+     T5E098 *tile;
+@@ -5039,27 +6510,19 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
+     D_800A3278 = 0;
+ }
+ 
+-extern s32 g_gpu_ot_ptr;
+ 
+ 
+ 
+ 
+ 
+ 
+-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+-extern s32 AddPrim(s32, s32);
+ 
+-extern s32 func_8007352C(s32);
+-extern s32 func_8006E480(s32, s32);
+ 
+-extern s32 D_800A36AC;
+ extern u8 g_gpu_db;
+-extern s32 D_800A3278;
+ extern s32 D_8009B698;
+ extern s32 D_8009B6B0;
+ extern s32 SetDrawArea();
+ extern s32 SetPolyG4();
+-extern s32 SetSemiTrans(void *, s32);
+ 
+ typedef struct {
+     s16 x, y, w, h;
+@@ -5300,8 +6763,6 @@ void func_800602AC(s32 arg0, s32 *arg1) {
+ }
+ extern s32 func_8006E480();
+ extern s32 func_8007352C();
+-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+-extern s32 AddPrim(s32, s32);
+ extern s32 D_8009B7AC;
+ extern s32 D_8009B7B8;
+ extern s32 D_8009B7C4;
+@@ -5508,11 +6969,8 @@ void func_80060758(void) {
+     D_800A32B4 = 0;
+ }
+ extern s32 D_8009B0C0;
+-extern s32 g_gpu_ot_ptr;
+ extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
+-extern s32 SetSemiTrans(void *, s32);
+ 
+-extern s32 SetTile(void *);
+ 
+ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
+     s32 sp18;
+-- 
+2.43.0
+

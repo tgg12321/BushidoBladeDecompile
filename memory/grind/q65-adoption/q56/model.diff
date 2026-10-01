@@ -1,0 +1,709 @@
+--- tree/Makefile	2026-09-30 16:35:51.000000000 -0500
++++ model/Makefile	2026-09-30 17:18:41.144637122 -0500
+@@ -17,8 +17,8 @@
+ PROLOGUE_FIX := python3 tools/prologue_fix.py
+ MULTU_PAD    := python3 tools/multu_pad.py --funcs multu_pad_funcs.txt
+ MASPSX       := python3 tools/maspsx/maspsx.py
+-MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --comm-syms=maspsx_comm_syms.txt --use-comm-section
+-MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --comm-syms=maspsx_comm_syms.txt --use-comm-section
++MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --comm-syms=maspsx_comm_syms.txt --use-comm-section -G8 --poc-noncomm-syms=poc_noncomm_syms.txt
++MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --comm-syms=maspsx_comm_syms.txt --use-comm-section -G8 --poc-noncomm-syms=poc_noncomm_syms.txt
+ 
+ # GNU MIPS cross-tools
+ AS           := mipsel-linux-gnu-as
+@@ -165,6 +165,24 @@
+ 	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(MULTU_PAD) | $(AS) $(AS_FLAGS) -o $@
+ 	$(OBJCOPY) $(RODATA_OBJ_ALIGN) $@
+ 
++$(BUILD_DIR)/$(SRC_DIR)/text1a_c.o: $(SRC_DIR)/text1a_c.c $(PIPELINE_DEPS)
++	@mkdir -p $(dir $@)
++	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,text1a_c) | $(PROLOGUE_FIX) > $(BUILD_DIR)/$(SRC_DIR)/text1a_c.cc1.s
++	python3 /mnt/c/Users/Trenton/Desktop/Bushido\ Blade\ 2\ Decompile/tmp/q56/splitcc1.py $(BUILD_DIR)/$(SRC_DIR)/text1a_c.cc1.s $(BUILD_DIR)/$(SRC_DIR)/text1a_c.p1.s $(BUILD_DIR)/$(SRC_DIR)/text1a_c.p2.s func_80044800 D_800A3240,D_800A3244,D_800A3398,D_800A33A0,D_800A33A4,D_800A33A8,D_800A33AC D_800A3708,D_800A378C,D_800A3790,D_800A3820,D_800A3828
++	$(MASPSX) $(call maspsx_flags_for,text1a_c) < $(BUILD_DIR)/$(SRC_DIR)/text1a_c.p1.s | $(MULTU_PAD) | $(AS) $(AS_FLAGS) -o $(BUILD_DIR)/$(SRC_DIR)/text1a_c.o
++	$(OBJCOPY) $(RODATA_OBJ_ALIGN) $(BUILD_DIR)/$(SRC_DIR)/text1a_c.o
++	$(MASPSX) $(call maspsx_flags_for,text1a_c) < $(BUILD_DIR)/$(SRC_DIR)/text1a_c.p2.s | $(MULTU_PAD) | $(AS) $(AS_FLAGS) -o $(BUILD_DIR)/$(SRC_DIR)/text1a_c__2.o
++	$(OBJCOPY) $(RODATA_OBJ_ALIGN) $(BUILD_DIR)/$(SRC_DIR)/text1a_c__2.o
++
++$(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2.o: $(SRC_DIR)/code6cac_b_tu2.c $(PIPELINE_DEPS)
++	@mkdir -p $(dir $@)
++	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,code6cac_b_tu2) | $(PROLOGUE_FIX) > $(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2.cc1.s
++	python3 /mnt/c/Users/Trenton/Desktop/Bushido\ Blade\ 2\ Decompile/tmp/q56/splitcc1.py $(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2.cc1.s $(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2.p1.s $(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2.p2.s func_800343F0 - D_800A3140,D_800A314C,D_800A36F2
++	$(MASPSX) $(call maspsx_flags_for,code6cac_b_tu2) < $(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2.p1.s | $(MULTU_PAD) | $(AS) $(AS_FLAGS) -o $(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2.o
++	$(OBJCOPY) $(RODATA_OBJ_ALIGN) $(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2.o
++	$(MASPSX) $(call maspsx_flags_for,code6cac_b_tu2) < $(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2.p2.s | $(MULTU_PAD) | $(AS) $(AS_FLAGS) -o $(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2__2.o
++	$(OBJCOPY) $(RODATA_OBJ_ALIGN) $(BUILD_DIR)/$(SRC_DIR)/code6cac_b_tu2__2.o
++
+ # -- Assemble .s files (non-decompiled asm) --
+ $(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s $(wildcard include/*)
+ 	@mkdir -p $(dir $@)
+--- tree/bb2.ld	2026-09-30 16:35:51.000000000 -0500
++++ model/bb2.ld	2026-09-30 17:18:41.144771629 -0500
+@@ -42,6 +42,7 @@
+         build/src/code6cac_tu2.o(.rodata);
+         build/src/code6cac_b.o(.rodata);
+         build/src/code6cac_b_tu2.o(.rodata);
++        build/src/code6cac_b_tu2__2.o(.rodata);
+         build/src/code6cac_b_tu3.o(.rodata);
+         build/src/code6cac_b_rodata_pre.o(.rodata);
+         build/src/code6cac_b3.o(.rodata);
+@@ -64,6 +65,7 @@
+         build/src/text1a_pre_tu2.o(.rodata);
+         build/src/text1a_post.o(.rodata);
+         build/src/text1a_c.o(.rodata);
++        build/src/text1a_c__2.o(.rodata);
+         build/src/text1a_filepaths.o(.rodata);
+         build/src/text1a_c2.o(.rodata);
+         build/src/text1a_b.o(.rodata);
+@@ -96,6 +98,7 @@
+         build/src/code6cac_tu2.o(.text);
+         build/src/code6cac_b.o(.text);
+         build/src/code6cac_b_tu2.o(.text);
++        build/src/code6cac_b_tu2__2.o(.text);
+         build/src/code6cac_b_tu3.o(.text);
+         build/src/code6cac_b3.o(.text);
+         build/src/code6cac_b3_post.o(.text);
+@@ -117,6 +120,7 @@
+         build/asm/funcs/save_vc_ctrl.o(.text);
+         build/src/text1a_post.o(.text);
+         build/src/text1a_c.o(.text);
++        build/src/text1a_c__2.o(.text);
+         build/src/text1a_c2.o(.text);
+         build/src/text1a_b.o(.text);
+         build/src/sound.o(.text);
+@@ -142,6 +146,7 @@
+         build/src/code6cac_tu2.o(.data);
+         build/src/code6cac_b.o(.data);
+         build/src/code6cac_b_tu2.o(.data);
++        build/src/code6cac_b_tu2__2.o(.data);
+         build/src/code6cac_b_tu3.o(.data);
+         build/src/code6cac_b3.o(.data);
+         build/src/code6cac_b3_post.o(.data);
+@@ -161,6 +166,7 @@
+         build/src/text1a_pre_tu2.o(.data);
+         build/src/text1a_post.o(.data);
+         build/src/text1a_c.o(.data);
++        build/src/text1a_c__2.o(.data);
+         build/src/text1a_c2.o(.data);
+         build/src/text1a_b.o(.data);
+         build/src/sound.o(.data);
+@@ -189,6 +195,7 @@
+         build/src/code6cac_tu2.o(.bss);
+         build/src/code6cac_b.o(.bss);
+         build/src/code6cac_b_tu2.o(.bss);
++        build/src/code6cac_b_tu2__2.o(.bss);
+         build/src/code6cac_b_tu3.o(.bss);
+         build/src/code6cac_b3.o(.bss);
+         build/src/code6cac_b3_post.o(.bss);
+@@ -208,6 +215,7 @@
+         build/src/text1a_pre_tu2.o(.bss);
+         build/src/text1a_post.o(.bss);
+         build/src/text1a_c.o(.bss);
++        build/src/text1a_c__2.o(.bss);
+         build/src/text1a_c2.o(.bss);
+         build/src/text1a_b.o(.bss);
+         build/src/sound.o(.bss);
+--- tree/tools/maspsx/maspsx.py	2026-09-30 16:35:51.000000000 -0500
++++ model/tools/maspsx/maspsx.py	2026-09-30 17:13:59.591279631 -0500
+@@ -45,6 +45,7 @@
+                         help="Path to file listing function names that should use GP-relative sdata addressing")
+     parser.add_argument("--sdata-exclude", type=str, default=None,
+                         help="Path to file listing per-function sdata symbol exclusions (func: sym1, sym2)")
++    parser.add_argument("--poc-noncomm-syms", type=str, default=None)
+     parser.add_argument("--comm-syms", type=str, default=None,
+                         help="Path to file listing, per function, symbols that were COMMON "
+                              "(tentative definitions) in the original translation unit "
+@@ -241,6 +242,9 @@
+         sdata_exclude_map=sdata_exclude_map,
+         comm_sym_map=comm_sym_map,
+     )
++    if args.poc_noncomm_syms:
++        with open(args.poc_noncomm_syms) as f:
++            maspsx_processor.poc_noncomm = set(l.split()[0] for l in f if l.strip() and not l.startswith('#'))
+     try:
+         out_lines = maspsx_processor.process_lines()
+     except Exception as err:
+--- tree/tools/maspsx/maspsx/__init__.py	2026-09-30 16:35:51.000000000 -0500
++++ model/tools/maspsx/maspsx/__init__.py	2026-09-30 17:18:41.122602971 -0500
+@@ -577,6 +577,8 @@
+         .claude/rules/maspsx-gate-lists.md): our C declares such variables `extern`,
+         so their storage class must come from the list. Only ever removes gp, only
+         from `sym+N` operands; the base access `sym` is unaffected."""
++        if symbol in getattr(self, 'poc_noncomm', ()):
++            return False
+         return symbol in self.comm_symbols or symbol in self.comm_sym_map.get(self.current_func, ())
+ 
+     def _sdata_allowed_for_current_func(self, symbol=None) -> bool:
+@@ -810,13 +812,15 @@
+             op, *rest = line.split("\t")
+             if op in load_mnemonics or op in store_mnemonics:
+                 (
+-                    _,
++                    r_source,
+                     _,
+                     operand,
+                     _,
+                     _,
+                 ) = parse_load_or_store(" ".join(rest))
+ 
++                if r_source is not None:
++                    return False  # indexed `sym($reg)`: expanded via $at, never gp
+                 if operand.count("+") == 1:
+                     symbol, _ = operand.split("+")
+                     gp_allowed = self.gp_allow_offset or not self._is_comm(symbol)
+--- tree/src/code6cac_b2_post.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_b2_post.c	2026-09-30 17:13:59.593446374 -0500
+@@ -387,3 +387,9 @@
+     } while (i < 0x1B);
+     return result;
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A31D8) D_800A31D8;
++__typeof__(D_800A31D9) D_800A31D9;
++__typeof__(D_800A31DA) D_800A31DA;
++__typeof__(D_800A3740) D_800A3740;
+--- tree/src/code6cac_b2_pre.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_b2_pre.c	2026-09-30 17:13:59.597485692 -0500
+@@ -183,3 +183,8 @@
+     func_80037110(1);
+     func_800371E8(1);
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A31D8) D_800A31D8;
++__typeof__(D_800A31DA) D_800A31DA;
++__typeof__(D_800A3740) D_800A3740;
+--- tree/src/code6cac_b3.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_b3.c	2026-09-30 17:13:59.605564331 -0500
+@@ -173,3 +173,6 @@
+         func_800344B4();
+     }
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A3174) D_800A3174;
+--- tree/src/code6cac_b4.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_b4.c	2026-09-30 17:13:59.609603649 -0500
+@@ -38,3 +38,7 @@
+     D_800A3840 = 0;
+     D_800A36B8.val3 = (u8)arg4;
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A3840) D_800A3840;
++__typeof__(D_800A3854) D_800A3854;
+--- tree/src/code6cac_b4_post.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_b4_post.c	2026-09-30 17:13:59.613642969 -0500
+@@ -76,3 +76,6 @@
+     CdReadyCallback(0);
+     CdControlF(9, 0);
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A31E4) D_800A31E4;
+--- tree/src/code6cac_b5.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_b5.c	2026-09-30 17:13:59.617682288 -0500
+@@ -170,3 +170,10 @@
+     }
+ }
+ /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A36B8) D_800A36B8;
++__typeof__(D_800A3840) D_800A3840;
++__typeof__(D_800A3854) D_800A3854;
++__typeof__(g_cd_atv) g_cd_atv;
++__typeof__(g_cd_result) g_cd_result;
+--- tree/src/code6cac_b_tu2.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_b_tu2.c	2026-09-30 17:13:59.625760925 -0500
+@@ -5488,3 +5488,8 @@
+     D_800A37D3 = 0;
+     D_800A37D2 = 0;
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A3140) D_800A3140;
++__typeof__(D_800A314C) D_800A314C;
++__typeof__(D_800A36F2) D_800A36F2;
+--- tree/src/code6cac_c.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_c.c	2026-09-30 17:15:13.494342222 -0500
+@@ -405,3 +405,16 @@
+     write(temp_v0, arg3, arg5);
+     return -(memcard_WaitHwEvent() != 1);
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(g_memcard_fd) g_memcard_fd;
++__typeof__(g_memcard_file_count) g_memcard_file_count;
++__typeof__(g_memcard_hw_event_err) g_memcard_hw_event_err;
++__typeof__(g_memcard_hw_event_ioe) g_memcard_hw_event_ioe;
++__typeof__(g_memcard_hw_event_new) g_memcard_hw_event_new;
++__typeof__(g_memcard_hw_event_timeout) g_memcard_hw_event_timeout;
++__typeof__(g_memcard_sw_event_err) g_memcard_sw_event_err;
++__typeof__(g_memcard_sw_event_ioe) g_memcard_sw_event_ioe;
++__typeof__(g_memcard_sw_event_new) g_memcard_sw_event_new;
++__typeof__(g_memcard_sw_event_timeout) g_memcard_sw_event_timeout;
++s32 D_800A3924;  /* Q56 POC: from the block-scope extern */
+--- tree/src/code6cac_c0.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_c0.c	2026-09-30 17:13:59.633839563 -0500
+@@ -106,3 +106,10 @@
+     }
+     return D_800A3890;
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A31E8) D_800A31E8;
++__typeof__(D_800A31EC) D_800A31EC;
++__typeof__(D_800A37F4) D_800A37F4;
++__typeof__(D_800A3890) D_800A3890;
++__typeof__(D_800A3924) D_800A3924;
+--- tree/src/code6cac_c2.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_c2.c	2026-09-30 17:15:13.495219135 -0500
+@@ -2102,3 +2102,16 @@
+ }
+ INCLUDE_ASM("asm/funcs", func_8003EDC0);
+ /* kengo:HIGH  |  md_game/md_game_check_mode  |  234i */
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A3218) D_800A3218;
++__typeof__(D_800A321C) D_800A321C;
++__typeof__(D_800A3228) D_800A3228;
++__typeof__(D_800A322C) D_800A322C;
++__typeof__(D_800A3358) D_800A3358;
++__typeof__(D_800A335C) D_800A335C;
++__typeof__(D_800A3360) D_800A3360;
++__typeof__(D_800A3364) D_800A3364;
++__typeof__(D_800A3368) D_800A3368;
++__typeof__(D_800A336C) D_800A336C;
++__typeof__(D_800A3818) D_800A3818;
+--- tree/src/code6cac_c_ab.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_c_ab.c	2026-09-30 17:13:59.645957520 -0500
+@@ -633,3 +633,12 @@
+         D_800A390D = 1;
+     }
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A37C4) D_800A37C4;
++__typeof__(D_800A37D8) D_800A37D8;
++__typeof__(D_800A38AC) D_800A38AC;
++__typeof__(D_800A38D0) D_800A38D0;
++__typeof__(D_800A38FC) D_800A38FC;
++__typeof__(D_800A3908) D_800A3908;
++__typeof__(D_800A3916) D_800A3916;
+--- tree/src/code6cac_c_mid.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_c_mid.c	2026-09-30 17:15:13.498310124 -0500
+@@ -1992,3 +1992,61 @@
+     func_8003AA48();
+     VSync(2);
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A31F0) D_800A31F0;
++__typeof__(D_800A31F4) D_800A31F4;
++__typeof__(D_800A31F8) D_800A31F8;
++__typeof__(D_800A31FC) D_800A31FC;
++__typeof__(D_800A3200) D_800A3200;
++__typeof__(D_800A3201) D_800A3201;
++__typeof__(D_800A3203) D_800A3203;
++__typeof__(D_800A3208) D_800A3208;
++__typeof__(D_800A320C) D_800A320C;
++__typeof__(D_800A36C0) D_800A36C0;
++__typeof__(D_800A36D0) D_800A36D0;
++__typeof__(D_800A36EC) D_800A36EC;
++__typeof__(D_800A36F8) D_800A36F8;
++__typeof__(D_800A3730) D_800A3730;
++__typeof__(D_800A3782) D_800A3782;
++__typeof__(D_800A379E) D_800A379E;
++__typeof__(D_800A37C4) D_800A37C4;
++__typeof__(D_800A37C8) D_800A37C8;
++__typeof__(D_800A37D0) D_800A37D0;
++__typeof__(D_800A3814) D_800A3814;
++__typeof__(D_800A382C) D_800A382C;
++__typeof__(D_800A3870) D_800A3870;
++__typeof__(D_800A38CC) D_800A38CC;
++__typeof__(D_800A38D0) D_800A38D0;
++__typeof__(D_800A38FC) D_800A38FC;
++__typeof__(D_800A3908) D_800A3908;
++__typeof__(D_800A3916) D_800A3916;
++__typeof__(g_comb_event_error) g_comb_event_error;
++__typeof__(g_comb_event_ioer) g_comb_event_ioer;
++__typeof__(g_comb_read_fd) g_comb_read_fd;
++__typeof__(g_comb_recv_buf) g_comb_recv_buf;
++__typeof__(g_comb_send_buf) g_comb_send_buf;
++__typeof__(g_comb_write_fd) g_comb_write_fd;
++u8 D_800A3334;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3204;  /* Q56 POC: from the block-scope extern */
++s16 D_800A3714;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3209;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3338;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3354;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3344;  /* Q56 POC: from the block-scope extern */
++u8 D_800A334C;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3207;  /* Q56 POC: from the block-scope extern */
++u8 D_800A333C;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3206;  /* Q56 POC: from the block-scope extern */
++u8 D_800A332C;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3340;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3350;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3324;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3348;  /* Q56 POC: from the block-scope extern */
++u8 D_800A331C;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3330;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3318;  /* Q56 POC: from the block-scope extern */
++u8 D_800A379C;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3205;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3320;  /* Q56 POC: from the block-scope extern */
++u8 D_800A3328;  /* Q56 POC: from the block-scope extern */
+--- tree/src/code6cac_tu2.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/code6cac_tu2.c	2026-09-30 17:13:59.658075477 -0500
+@@ -4303,3 +4303,9 @@
+ 
+ /* Tail word after func_80021424's five-entry compiler-generated switch table. */
+ const u32 D_80010428[1] = { 0x00000000 };
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A30EC) D_800A30EC;
++__typeof__(D_800A30FC) D_800A30FC;
++__typeof__(D_800A30FD) D_800A30FD;
++__typeof__(D_800A3310) D_800A3310;
+--- tree/src/config.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/config.c	2026-09-30 17:13:59.662114795 -0500
+@@ -635,3 +635,9 @@
+         *(s16 *)((s32)v1 + 6) = 1;
+     }
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A322C) D_800A322C;
++__typeof__(D_800A336C) D_800A336C;
++__typeof__(g_game_flag_a) g_game_flag_a;
++__typeof__(g_game_flag_b) g_game_flag_b;
+--- tree/src/ings.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/ings.c	2026-09-30 17:13:59.666154115 -0500
+@@ -980,3 +980,35 @@
+ 
+ void sys_StubEmpty3(void) {
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A30DC) D_800A30DC;
++__typeof__(D_800A30E8) D_800A30E8;
++__typeof__(D_800A3690) D_800A3690;
++__typeof__(D_800A36AC) D_800A36AC;
++__typeof__(D_800A36B0) D_800A36B0;
++__typeof__(D_800A36F1) D_800A36F1;
++__typeof__(D_800A36F9) D_800A36F9;
++__typeof__(D_800A3710) D_800A3710;
++__typeof__(D_800A3713) D_800A3713;
++__typeof__(D_800A3744) D_800A3744;
++__typeof__(D_800A3768) D_800A3768;
++__typeof__(D_800A3770) D_800A3770;
++__typeof__(D_800A3784) D_800A3784;
++__typeof__(D_800A3788) D_800A3788;
++__typeof__(D_800A3798) D_800A3798;
++__typeof__(D_800A37A0) D_800A37A0;
++__typeof__(D_800A37C0) D_800A37C0;
++__typeof__(D_800A3834) D_800A3834;
++__typeof__(D_800A389A) D_800A389A;
++__typeof__(D_800A38B4) D_800A38B4;
++__typeof__(D_800A38DC) D_800A38DC;
++__typeof__(D_800A38F8) D_800A38F8;
++__typeof__(D_800A3906) D_800A3906;
++__typeof__(D_800A390D) D_800A390D;
++__typeof__(D_800A3928) D_800A3928;
++__typeof__(g_disp_enable) g_disp_enable;
++__typeof__(g_disp_fade) g_disp_fade;
++__typeof__(g_file_dma_flag) g_file_dma_flag;
++__typeof__(g_gpu_ot_ptr) g_gpu_ot_ptr;
++__typeof__(g_rng_state) g_rng_state;
+--- tree/src/replay_camera_rob_back_loose2.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/replay_camera_rob_back_loose2.c	2026-09-30 17:13:59.670193433 -0500
+@@ -101,3 +101,7 @@
+         return;
+     }
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A31DA) D_800A31DA;
++__typeof__(D_800A3740) D_800A3740;
+--- tree/src/sound.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/sound.c	2026-09-30 17:13:59.678272070 -0500
+@@ -986,3 +986,16 @@
+ s32 func_80047EC8(void) {
+     return 0xD00;
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A3248) D_800A3248;
++__typeof__(D_800A324A) D_800A324A;
++__typeof__(D_800A33B0) D_800A33B0;
++__typeof__(D_800A33B4) D_800A33B4;
++__typeof__(D_800A33BC) D_800A33BC;
++__typeof__(D_800A33C0) D_800A33C0;
++__typeof__(D_800A33C8) D_800A33C8;
++__typeof__(D_800A33CA) D_800A33CA;
++__typeof__(D_800A33D0) D_800A33D0;
++__typeof__(D_800A33D4) D_800A33D4;
++__typeof__(D_800A33D8) D_800A33D8;
+--- tree/src/text1a_b.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1a_b.c	2026-09-30 17:13:59.682311390 -0500
+@@ -30,3 +30,7 @@
+         break;
+     }
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A33B0) D_800A33B0;
++__typeof__(D_800A33B4) D_800A33B4;
+--- tree/src/text1a_c.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1a_c.c	2026-09-30 17:13:59.686350709 -0500
+@@ -2329,3 +2329,17 @@
+         count--;
+     } while (count != -1);
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A3240) D_800A3240;
++__typeof__(D_800A3244) D_800A3244;
++__typeof__(D_800A3398) D_800A3398;
++__typeof__(D_800A33A0) D_800A33A0;
++__typeof__(D_800A33A4) D_800A33A4;
++__typeof__(D_800A33A8) D_800A33A8;
++__typeof__(D_800A33AC) D_800A33AC;
++__typeof__(D_800A3708) D_800A3708;
++__typeof__(D_800A378C) D_800A378C;
++__typeof__(D_800A3790) D_800A3790;
++__typeof__(D_800A3820) D_800A3820;
++__typeof__(D_800A3828) D_800A3828;
+--- tree/src/text1a_c2.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1a_c2.c	2026-09-30 17:13:59.694429347 -0500
+@@ -241,3 +241,7 @@
+     g_stage_id = -1;
+     g_stage_variant = 0;
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A33B0) D_800A33B0;
++__typeof__(D_800A33B4) D_800A33B4;
+--- tree/src/text1a_post.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1a_post.c	2026-09-30 17:13:59.698468666 -0500
+@@ -709,3 +709,10 @@
+     gpu_SetDrawEnvBg(1, r, g, b);
+     SetFarColor(r, g, b);
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A3388) D_800A3388;
++__typeof__(g_anim_counter) g_anim_counter;
++__typeof__(g_anim_hit_data) g_anim_hit_data;
++__typeof__(g_anim_hit_flags) g_anim_hit_flags;
++__typeof__(g_anim_select) g_anim_select;
+--- tree/src/text1a_pre.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1a_pre.c	2026-09-30 17:13:59.702507984 -0500
+@@ -548,3 +548,7 @@
+     } while (0);
+     *(s16 *)((s32)slot + 2) = -1;
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A3234) D_800A3234;
++__typeof__(D_800A3378) D_800A3378;
+--- tree/src/text1b.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1b.c	2026-09-30 17:15:13.499023533 -0500
+@@ -3011,3 +3011,16 @@
+ };
+ 
+ INCLUDE_ASM("asm/funcs", func_80058580);
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A324C) D_800A324C;
++__typeof__(D_800A33D0) D_800A33D0;
++__typeof__(D_800A33E0) D_800A33E0;
++__typeof__(D_800A33E4) D_800A33E4;
++__typeof__(D_800A33E8) D_800A33E8;
++__typeof__(D_800A33EA) D_800A33EA;
++__typeof__(D_800A33EC) D_800A33EC;
++__typeof__(D_800A33F0) D_800A33F0;
++__typeof__(D_800A33F4) D_800A33F4;
++__typeof__(D_800A33F8) D_800A33F8;
++__typeof__(g_gpu_ot256_ptr) g_gpu_ot256_ptr;
+--- tree/src/text1b_b.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1b_b.c	2026-09-30 17:13:59.714625941 -0500
+@@ -2125,3 +2125,16 @@
+     ap[3] = c;
+     prnt(1, fmt, ap + 1);
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A3304) D_800A3304;
++__typeof__(D_800A35E4) D_800A35E4;
++__typeof__(D_800A35F0) D_800A35F0;
++__typeof__(D_800A35F4) D_800A35F4;
++__typeof__(D_800A35F8) D_800A35F8;
++__typeof__(D_800A35FC) D_800A35FC;
++__typeof__(D_800A3600) D_800A3600;
++__typeof__(D_800A3608) D_800A3608;
++__typeof__(D_800A360C) D_800A360C;
++__typeof__(D_800A3610) D_800A3610;
++__typeof__(D_800A3614) D_800A3614;
+--- tree/src/text1b_tu1c.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1b_tu1c.c	2026-09-30 17:15:13.503141049 -0500
+@@ -8838,3 +8838,84 @@
+     arg1[0xF] = base4;
+     return base4 + tail;
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A3278) D_800A3278;
++__typeof__(D_800A32B4) D_800A32B4;
++__typeof__(D_800A32B6) D_800A32B6;
++__typeof__(D_800A32B8) D_800A32B8;
++__typeof__(D_800A32BC) D_800A32BC;
++__typeof__(D_800A3400) D_800A3400;
++__typeof__(D_800A3408) D_800A3408;
++__typeof__(D_800A340C) D_800A340C;
++__typeof__(D_800A3420) D_800A3420;
++__typeof__(D_800A3424) D_800A3424;
++__typeof__(D_800A3440) D_800A3440;
++__typeof__(D_800A3444) D_800A3444;
++__typeof__(D_800A3448) D_800A3448;
++__typeof__(D_800A344C) D_800A344C;
++__typeof__(D_800A3450) D_800A3450;
++__typeof__(D_800A3454) D_800A3454;
++__typeof__(D_800A3458) D_800A3458;
++__typeof__(D_800A345C) D_800A345C;
++__typeof__(D_800A345E) D_800A345E;
++__typeof__(D_800A3460) D_800A3460;
++__typeof__(D_800A3464) D_800A3464;
++__typeof__(D_800A3468) D_800A3468;
++__typeof__(D_800A346C) D_800A346C;
++__typeof__(D_800A3470) D_800A3470;
++__typeof__(D_800A3474) D_800A3474;
++__typeof__(D_800A3478) D_800A3478;
++__typeof__(D_800A347C) D_800A347C;
++__typeof__(D_800A3480) D_800A3480;
++__typeof__(D_800A3484) D_800A3484;
++__typeof__(D_800A3488) D_800A3488;
++__typeof__(D_800A348C) D_800A348C;
++__typeof__(D_800A3490) D_800A3490;
++__typeof__(D_800A3494) D_800A3494;
++__typeof__(D_800A3498) D_800A3498;
++__typeof__(D_800A349C) D_800A349C;
++__typeof__(D_800A34A0) D_800A34A0;
++__typeof__(D_800A34A4) D_800A34A4;
++__typeof__(D_800A34A8) D_800A34A8;
++__typeof__(D_800A34AC) D_800A34AC;
++__typeof__(D_800A34B0) D_800A34B0;
++__typeof__(D_800A34B4) D_800A34B4;
++__typeof__(D_800A34B8) D_800A34B8;
++__typeof__(D_800A34BC) D_800A34BC;
++__typeof__(D_800A34C0) D_800A34C0;
++__typeof__(D_800A34C4) D_800A34C4;
++__typeof__(D_800A34C8) D_800A34C8;
++__typeof__(D_800A34CC) D_800A34CC;
++__typeof__(D_800A34D0) D_800A34D0;
++__typeof__(D_800A34D4) D_800A34D4;
++__typeof__(D_800A34D8) D_800A34D8;
++__typeof__(D_800A34DC) D_800A34DC;
++__typeof__(D_800A34E0) D_800A34E0;
++__typeof__(D_800A34E4) D_800A34E4;
++__typeof__(D_800A34E8) D_800A34E8;
++__typeof__(D_800A34EC) D_800A34EC;
++__typeof__(D_800A34F0) D_800A34F0;
++__typeof__(D_800A34F8) D_800A34F8;
++__typeof__(D_800A34FC) D_800A34FC;
++__typeof__(D_800A3500) D_800A3500;
++__typeof__(D_800A350C) D_800A350C;
++__typeof__(D_800A350E) D_800A350E;
++__typeof__(D_800A3510) D_800A3510;
++__typeof__(D_800A3512) D_800A3512;
++__typeof__(D_800A3514) D_800A3514;
++__typeof__(D_800A3518) D_800A3518;
++__typeof__(D_800A351C) D_800A351C;
++__typeof__(D_800A3520) D_800A3520;
++__typeof__(D_800A3524) D_800A3524;
++__typeof__(D_800A3528) D_800A3528;
++__typeof__(D_800A352C) D_800A352C;
++__typeof__(D_800A36DC) D_800A36DC;
++__typeof__(D_800A36E0) D_800A36E0;
++__typeof__(D_800A36E4) D_800A36E4;
++__typeof__(D_800A3720) D_800A3720;
++__typeof__(D_800A372C) D_800A372C;
++__typeof__(D_800A37D4) D_800A37D4;
++__typeof__(D_800A3900) D_800A3900;
++__typeof__(g_vab_sticky_sbaddr) g_vab_sticky_sbaddr;
++s32 D_800A3724;  /* Q56 POC: from the block-scope extern */
+--- tree/src/text1b_tu1d.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1b_tu1d.c	2026-09-30 17:13:59.718665262 -0500
+@@ -2418,3 +2418,37 @@
+         *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
+     }
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A32E8) D_800A32E8;
++__typeof__(D_800A32E9) D_800A32E9;
++__typeof__(D_800A3548) D_800A3548;
++__typeof__(D_800A354C) D_800A354C;
++__typeof__(D_800A3550) D_800A3550;
++__typeof__(D_800A3554) D_800A3554;
++__typeof__(D_800A3558) D_800A3558;
++__typeof__(D_800A355C) D_800A355C;
++__typeof__(D_800A3560) D_800A3560;
++__typeof__(D_800A3568) D_800A3568;
++__typeof__(D_800A356C) D_800A356C;
++__typeof__(D_800A3570) D_800A3570;
++__typeof__(D_800A3578) D_800A3578;
++__typeof__(D_800A357C) D_800A357C;
++__typeof__(D_800A3580) D_800A3580;
++__typeof__(D_800A3584) D_800A3584;
++__typeof__(D_800A3588) D_800A3588;
++__typeof__(D_800A358C) D_800A358C;
++__typeof__(D_800A3590) D_800A3590;
++__typeof__(D_800A3598) D_800A3598;
++__typeof__(D_800A359C) D_800A359C;
++__typeof__(D_800A35A0) D_800A35A0;
++__typeof__(D_800A35A4) D_800A35A4;
++__typeof__(D_800A35A8) D_800A35A8;
++__typeof__(D_800A35AC) D_800A35AC;
++__typeof__(D_800A35B0) D_800A35B0;
++__typeof__(D_800A35B4) D_800A35B4;
++__typeof__(D_800A35B8) D_800A35B8;
++__typeof__(D_800A35BC) D_800A35BC;
++__typeof__(D_800A35C0) D_800A35C0;
++__typeof__(D_800A35C4) D_800A35C4;
++__typeof__(D_800A35C8) D_800A35C8;
+--- tree/src/text1b_tu1e.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1b_tu1e.c	2026-09-30 17:13:59.726743898 -0500
+@@ -630,3 +630,6 @@
+     rect[3] = 1;
+     func_80069898((GameObj *)arg0, (u16 *)rect, 2);
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A36A0) D_800A36A0;
+--- tree/src/text1b_tu2.c	2026-09-30 16:35:51.000000000 -0500
++++ model/src/text1b_tu2.c	2026-09-30 17:13:59.730783218 -0500
+@@ -931,3 +931,11 @@
+ void func_80077B20(void) {
+     D_800A35E4 = 1;
+ }
++
++/* Q56 POC: per-file gp model — this file defines the small data it reaches gp-relative */
++__typeof__(D_800A35D8) D_800A35D8;
++__typeof__(D_800A35DC) D_800A35DC;
++__typeof__(D_800A35E0) D_800A35E0;
++__typeof__(D_800A35E4) D_800A35E4;
++__typeof__(D_800A35E8) D_800A35E8;
++__typeof__(D_800A36A0) D_800A36A0;
+--- new file model/poc_noncomm_syms.txt
+# Q56 POC stand-in: original definition was initialized/static, not tentative
+D_800A3174  # initialized (.sdata); gp at offset in code6cac_b3
+g_anim_select  # initialized (.sdata); gp at offset in text1a_post
+D_800A34F0  # static (.lcomm); gp at offset in text1b_tu1c
+D_800A3560  # static (.lcomm); gp at offset in text1b_tu1d
+D_800A3588  # static (.lcomm); gp at offset in text1b_tu1d
+D_800A358C  # static (.lcomm); gp at offset in text1b_tu1d
+D_800A35C8  # static (.lcomm); gp at offset in text1b_tu1d
+D_800A3590  # static (.lcomm); gp at offset in text1b_tu1d

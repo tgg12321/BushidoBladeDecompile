@@ -1,0 +1,15 @@
+comm4: lb base=r28 (GP) | lui r5 | lb base=r5
+lcomm4: lb base=r28 (GP) | lb base=r28 (GP)
+sdata4: lb base=r28 (GP) | lb base=r28 (GP)
+extern4: lui r4 | lb base=r4 | lui r5 | lb base=r5
+undecl: lui r4 | lb base=r4
+two_funcs: lw base=r28 (GP) | op0 | nop | nop | sw base=r28 (GP) | op0 | nop | nop
+comm12: lui r2 | lw base=r2
+comm8: lw base=r28 (GP)
+indexed_after_load_comm: lbu base=r4 | lui r1 | addu r1,r1,r3 | sb base=r1
+indexed_after_load_extern: lbu base=r4 | lui r1 | addu r1,r1,r3 | sb base=r1
+direct_after_load_comm: lbu base=r4 | nop | sb base=r28 (GP)
+explicit_hilo_comm: 
+explicit_hilo_lcomm: 
+explicit_hilo_sdata: 
+macro_same_symbol: lw base=r28 (GP)

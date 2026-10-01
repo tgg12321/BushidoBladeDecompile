@@ -1,0 +1,27 @@
+
+Linking completed.
+0 error(s) in 0.6 seconds
+
+    Start     Stop   Length      Obj Group            Section name
+ 80010000 8001004F 00000050 80010000 TEXT             .TEXT
+ 80010050 80010063 00000014 80010050 SBSS             .SBSS
+ 80010064 8001007F 0000001C 80010064 BSS              .BSS
+
+
+  Address  Names alphabetically
+ 80010060  A_COM
+ 80010000  FA
+ 8001002C  FB
+
+  Address  Names in address order
+ 80010000  FA
+ 8001002C  FB
+ 80010060  A_COM
+
+  a_s1   at 80010050
+  a_big  at 80010064
+  a_s2   at 80010054
+  a_com  at 80010060
+  b_s1   at 80010058
+  b_big  at 80010070
+  b_s2   at 8001005c

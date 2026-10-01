@@ -1,0 +1,68 @@
+From 4134369a60109390f1ac537ce9adad57742af827 Mon Sep 17 00:00:00 2001
+From: q56-scratch <q56@scratch>
+Date: Wed, 30 Sep 2026 21:03:50 -0500
+Subject: [PATCH] src: code6cac_c2 / config declarations of func_8004153C and
+ D_800A3708 reconciled (owner ruling Q65, step 6)
+
+---
+ src/code6cac_c2.c | 2 +-
+ src/config.c      | 9 +++++----
+ 2 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/src/code6cac_c2.c b/src/code6cac_c2.c
+index 472d2a0a3..73e85b03c 100644
+--- a/src/code6cac_c2.c
++++ b/src/code6cac_c2.c
+@@ -59,7 +59,7 @@ extern s16 D_800A7FE0[32][32];
+ extern u16 D_800A87E0[];
+ extern u8 D_800A8FB0[];
+ extern s32 D_800A3820;
+-extern s32 *func_8004153C(s32);
++extern s32 *func_8004153C();
+ extern void func_800432A0(s32, s32, s32, s32, s32);
+ 
+ 
+diff --git a/src/config.c b/src/config.c
+index a93135533..93e586aa1 100644
+--- a/src/config.c
++++ b/src/config.c
+@@ -1,6 +1,7 @@
+ #include "common.h"
+ #include "include_asm.h"
+ #include "game.h"
++#include "code6cac.h"
+ 
+ /* Rodata owned by config.c per func_8003FA24's reference at asm/funcs/func_8003FA24.s:240-241.
+  * Re-attributed from asm/data/101C.rodata_c2_post.s 2026-06-09 (rodata-cleanup project,
+@@ -11,7 +12,7 @@ const char D_80010D8C[16] = "Multipul Model";
+ /* Forward declarations */
+ extern s32 stage_GetId(void);
+ extern void sys_StubEmpty3(s32, s32, s32);
+-extern void *func_8004153C(void);
++extern s32 *func_8004153C();
+ extern void obj_ClearAll(void);
+ extern void sys_StubEmpty2(void);
+ extern void obj_Clear(s32);
+@@ -31,7 +32,7 @@ extern u8 g_char_data;
+ extern s16 D_800F6656;
+ extern u8 g_stage_collision[];
+ extern s32 D_80094A6C[];
+-extern u8 *D_800A3708;
++extern Unk80101DF0Record *D_800A3708;
+ extern s32 g_stage_light_pos;
+ extern s32 D_800A93B4;
+ extern s32 D_800A93B8;
+@@ -96,8 +97,8 @@ void stage_InitCollision(void) {
+ 
+     func_8003F268();
+ 
+-    col_center = (*(s32 *)(D_800A3708 + 0x4C) + 0x7D00) / 2000;
+-    row_center = (*(s32 *)(D_800A3708 + 0x54) + 0x7D00) / 2000;
++    col_center = (D_800A3708->work.t[0] + 0x7D00) / 2000;
++    row_center = (D_800A3708->work.t[2] + 0x7D00) / 2000;
+ 
+     for (i = 0; i < 16; i++) {
+         adj_i = i - 8;
+-- 
+2.43.0
+

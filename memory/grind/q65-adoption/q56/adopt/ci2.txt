@@ -1,0 +1,215 @@
+==== func_8004153C
+  DECL src/code6cac_c2.c:62: extern s32 *func_8004153C();
+  DECL src/sound.c:21: extern void *func_8004153C(void);
+  use  src/sound.c:345: void *v0 = func_8004153C();
+  use  src/sound.c:353: void *v0 = func_8004153C();
+  DECL src/text1a_post.c:45: s32 func_8004153C(s32 a0) {
+  DECL src/text1b.c:588: extern s32 func_8004153C(s32);
+  use  src/text1b.c:615: temp_v0 = func_8004153C(arg0);
+  use  src/text1b.c:1011: vehicle = (u8 *) func_8004153C(arg1 >> 1);
+  use  src/text1b.c:2039: v = func_8004153C(0);
+  use  src/text1b.c:2043: v = func_8004153C(1);
+==== ApplyMatrix
+  DECL src/sound.c:39: extern void ApplyMatrix(s32 *, s16 *, s32 *);
+  use  src/sound.c:517: ApplyMatrix(pos, rot, sp18);
+  use  src/sound.c:585: ApplyMatrix((s32 *)&D_80101DF0.xf.mat, rot, result);
+  DECL src/text1a_c.c:518: extern s32 *ApplyMatrix(s32 *, s16 *, s32 *);
+  DECL src/text1b.c:647: extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
+  use  src/text1b.c:684: ApplyMatrix(player[0], &rot, (VECTOR *)D_800FF558.t);
+==== gte_MulMatrix0ClearTrans
+  DECL src/sound.c:47: extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
+  use  src/sound.c:420: gte_MulMatrix0ClearTrans(&D_800EEDB0, a0, a1);
+  use  src/sound.c:446: gte_MulMatrix0ClearTrans(&sp10, var_s0, arg2);
+  DECL src/text1a_post.c:206: extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
+  DECL src/text1b.c:649: extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
+  use  src/text1b.c:694: gte_MulMatrix0ClearTrans(player[0], &mtx, &mtx);
+  use  src/text1b.c:1395: INCLUDE_ASM("asm/funcs", gte_MulMatrix0ClearTrans);
+==== func_80046020
+  DECL src/sound.c:35: extern void func_80046020(void);
+  use  src/sound.c:224: func_80046020();
+  DECL src/text1a_c_tu2.c:900: void func_80046020(void) {
+  DECL src/text1b.c:849: extern s32 func_80046020();
+  use  src/text1b.c:926: func_80046020();
+==== func_800418D0
+  DECL src/sound.c:79: extern void func_800418D0(s32 *);
+  use  src/sound.c:317: func_800418D0((s32 *)&D_80101DF0);
+  DECL src/text1a_post.c:231: void func_800418D0(s32 *a0) {
+  DECL src/text1b.c:1167: extern s32 func_800418D0();
+  use  src/text1b.c:1184: func_800418D0(p1);
+  use  src/text1b.c:1195: func_800418D0(p2);
+==== D_800A3708
+  DECL src/code6cac_c2.c:1802: extern Unk80101DF0Record *D_800A3708;
+  DECL src/sound.c:44: extern s32 D_800A3708;
+  use  src/sound.c:513: math_RotMatrixYXZ((s32 *)((u8 *)*(s32 **)&D_800A3708 + 0x10), pos);
+  DECL src/text1a_c.c:1318: extern s32 D_800A3708;
+  DECL src/text1a_c.c:1467: s32 D_800A3708;
+  DECL src/text1b.c:1169: extern void *D_800A3708;
+  use  src/text1b.c:1196: D_800A3708 = p1;
+==== D_800153F0
+  DECL src/text1a_b_pre_rodata.c:11: const u32 D_800153F0[11] = {
+  DECL src/text1b.c:1199: extern u8 D_800153F0;
+  use  src/text1b.c:1213: __builtin_memcpy(sp10, &D_800153F0, 44);
+==== D_800F62E0
+  DECL src/sound.c:90: extern s32 D_800F62E0;
+  use  src/sound.c:324: base = (u8 *)&D_800F62E0;
+  DECL src/text1a_c.c:49: extern u8 D_800F62E0[8][0x60];
+  DECL src/text1a_post.c:475: extern s16 D_800F62E0[];
+  DECL src/text1b.c:1200: extern u8 D_800F62E0;
+  use  src/text1b.c:1215: base = &D_800F62E0;
+==== func_80044FA0
+  DECL src/sound.c:48: extern void func_80044FA0(s32, s32 *);
+  use  src/sound.c:200: func_80044FA0(a0, v0);
+  DECL src/text1a_c_tu2.c:285: s32 func_80044FA0(s32 a0, s32 a1) {
+  DECL src/text1b.c:1975: extern s32 func_80044FA0(s32, s32);
+  use  src/text1b.c:2006: ret = func_80044FA0(id, a6);
+==== stage_GetDataPtr
+  DECL src/code6cac.c:89: extern s32 stage_GetDataPtr(void);
+  DECL src/code6cac_b.c:97: extern s32 stage_GetDataPtr(void);
+  DECL src/code6cac_b_tu2.c:30: extern s32 stage_GetDataPtr(void);
+  DECL src/code6cac_tu2.c:47: extern s32 stage_GetDataPtr(void);
+  DECL src/sound.c:394: void *stage_GetDataPtr(void) {
+  DECL src/text1b.c:1979: extern s16 *stage_GetDataPtr(void);
+  use  src/text1b.c:2021: t = stage_GetDataPtr();
+==== game_StageCleanup
+  DECL src/sound.c:388: void game_StageCleanup(s32 a0) {
+  DECL src/text1b.c:1987: extern void game_StageCleanup(s32, s32);
+  use  src/text1b.c:2054: game_StageCleanup(n, a6);
+  use  src/text1b.c:2057: game_StageCleanup(n, (s32)&D_800A3770);
+==== D_80102C00
+  DECL src/sound.c:85: extern s32 D_80102C00;
+  use  src/sound.c:280: D_800A3820 = (s32)&D_80102C00;
+  DECL src/text1a_c.c:1321: extern s32 D_80102C00;
+  DECL src/text1b.c:2078: extern u32 D_80102C00;
+  use  src/text1b.c:2088: D_800A3820 = &D_80102C00;
+==== ratan2
+  DECL src/code6cac.c:84: extern s32 ratan2(s32, s32);
+  DECL src/code6cac_b.c:87: extern s32 ratan2(s32, s32);
+  DECL src/code6cac_b_tu2.c:25: extern s32 ratan2(s32, s32);
+  DECL src/code6cac_c2.c:1811: extern s32 ratan2(s32, s32);
+  DECL src/code6cac_tu2.c:46: extern s32 ratan2(s32, s32);
+  DECL src/display.c:3381: s32 ratan2(s32 arg0, s32 arg1) {
+  DECL src/sound.c:40: extern s16 ratan2(s32, s32);
+  use  src/sound.c:518: s0 = ratan2(sp18[0], sp18[2]);
+  use  src/sound.c:521: D_800A33C8 = -ratan2(sp18[1], sp18[2]);
+  use  src/sound.c:587: angle = ratan2(result[0], result[2]);
+  use  src/sound.c:593: s16 neg = -ratan2(result[1], computed);
+  DECL src/text1a_c.c:519: extern s16 ratan2(s32, s32);
+  DECL src/text1a_post.c:471: extern s32 ratan2(s32, s32);
+  DECL src/text1b.c:2446: extern s32 ratan2(s32, s32);
+  use  src/text1b.c:2483: flags += ratan2(D_800F6608.w0 - *(s32 *)(obj + 0xF4),
+  DECL src/text1b.c:2598: extern s32 ratan2(s32, s32);
+  use  src/text1b.c:2609: temp_s0 = ratan2(D_800F6608.w0 - *(s32 *)((s32)arg0 + 0xF4), D_800F6608.w8 - *(s32 *)((s32)arg0 + 0xFC));
+  use  src/text1b.c:2610: var_v0 = temp_s0 - ratan2(arg1 - *(s32 *)((s32)arg0 + 0xF4), arg2 - *(s32 *)((s32)arg0 + 0xFC));
+  DECL src/text1b.c:2892: extern s32 ratan2(s32, s32);
+  use  src/text1b.c:2904: * front-end loads down to the target's two, the intervening ratan2 CALL_INSN being
+  use  src/text1b.c:2943: ang_prev = ratan2((*(s16 **)(arg0 + 4))[pi * 2] - (s16) cx,
+  use  src/text1b.c:2946: ang_next = ratan2(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
+==== func_8006E950
+  DECL src/text1b_b.c:784: extern s32 func_8006E950(s32, s32 *);
+  use  src/text1b_b.c:1136: func_8006E950(0x32, s0);
+  use  src/text1b_b.c:1294: func_8006E950(0x5F, s0);
+  DECL src/text1b_tu1d.c:287: void func_8006E950(s32 *a0, s32 *a1) {
+  DECL src/text1b_tu2.c:101: void func_8006E950(s32 *a0, s32 *a1);
+==== func_8006E49C
+  DECL src/text1b_b.c:786: extern u8 *func_8006E49C(s32, s32);
+  use  src/text1b_b.c:1138: func_8006E49C(r, D_800A35F4);
+  use  src/text1b_b.c:1296: func_8006E49C(r, D_800A360C);
+  DECL src/text1b_tu1c.c:6515: s32 func_8006E49C(s32 arg0, s32 *arg1) {
+  DECL src/text1b_tu1d.c:101: s32 func_8006E49C(s32 arg0, s32 *arg1);
+  DECL src/text1b_tu2.c:99: s32 func_8006E49C(s32 arg0, s32 *arg1);
+==== D_8009BD24
+  DECL src/text1b.c:3194: extern Unk8009BD24Record D_8009BD24[2][5];
+  use  src/text1b.c:4687: c = D_8009BD24[j][i].chr;
+  use  src/text1b.c:4702: if (D_8009BD24[j][i].chr == 8) {
+  use  src/text1b.c:5339: } else if (D_8009BD24[0][0].chr < 0xC) {
+  DECL src/text1b_b.c:868: extern s32 D_8009BD24;
+  use  src/text1b_b.c:870: return &D_8009BD24;
+  DECL src/text1b_tu2.c:17: extern Unk8009BD24Record D_8009BD24[2][5];
+  use  src/text1b_tu2.c:829: func_80068F70(a0, (s32 *)&D_8009BD24);
+  use  src/text1b_tu2.c:877: func_8006E534(a0, D_800A35E0, &D_8009BD24[0][0].chr, D_800A35E8);
+  use  src/text1b_tu2.c:913: func_800770B8(a0, (s32)&D_8009BD24, D_800A35E8);
+==== func_8007352C
+  DECL src/text1b.c:4123: extern s32 func_8007352C(s32);
+  use  src/text1b.c:4159: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4173: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4237: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4270: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4304: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4308: cur = func_8007352C((s32)&s);
+  DECL src/text1b.c:4343: extern s32 func_8007352C(s32);
+  use  src/text1b.c:4382: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4419: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4449: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4453: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4555: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4564: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4585: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4591: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4602: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4615: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4633: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4659: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4701: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4705: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4745: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4864: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4882: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4910: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4914: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4969: cur = func_8007352C((s32)&s);
+  use  src/text1b.c:4978: cur = func_8007352C((s32)&s);
+  DECL src/text1b.c:5053: extern s32 func_8007352C(s32);
+  use  src/text1b.c:5189: cur_tex = func_8007352C((s32)&s);
+  use  src/text1b.c:5246: cur_tex = func_8007352C((s32)&s);
+  use  src/text1b.c:5263: cur_tex = func_8007352C((s32)&s);
+  DECL src/text1b.c:5303: extern s32 func_8007352C();
+  use  src/text1b.c:5346: func_8007352C((s32)(&s));
+  use  src/text1b.c:5474: prev = func_8007352C(&s);
+  use  src/text1b.c:5483: prev = func_8007352C(new_var2);
+  use  src/text1b.c:5495: prev = func_8007352C(&s);
+  DECL src/text1b_b.c:897: extern s32 func_8007352C(s32 *);
+  use  src/text1b_b.c:1003: arg0[4] = func_8007352C(&s.header);
+  use  src/text1b_b.c:1023: arg0[4] = func_8007352C(&s.header);
+  use  src/text1b_b.c:1042: arg0[4] = func_8007352C(&s.header);
+  use  src/text1b_b.c:1073: arg0[4] = func_8007352C(&s.header);
+  use  src/text1b_b.c:1121: arg0[4] = func_8007352C(&s.header);
+  DECL src/text1b_b.c:1191: extern s32 func_8007352C(s32 *);
+  use  src/text1b_b.c:1247: arg0[3] = func_8007352C(&s.a);
+  use  src/text1b_b.c:1275: arg0[3] = func_8007352C(&s.a);
+  DECL src/text1b_tu1c.c:444: extern s32 func_8007352C(s32);
+  DECL src/text1b_tu1c.c:454: extern s32 func_8007352C();
+  DECL src/text1b_tu1d.c:78: extern s32 func_8007352C(s32);
+  DECL src/text1b_tu1d.c:88: extern s32 func_8007352C();
+  DECL src/text1b_tu1e.c:36: extern s32 func_8007352C(s32);
+  DECL src/text1b_tu1e.c:43: extern s32 func_8007352C();
+  DECL src/text1b_tu1e.c:123: s32 func_8007352C(s32 env_addr) {
+  DECL src/text1b_tu2.c:57: extern s32 func_8007352C(s32);
+  DECL src/text1b_tu2.c:66: extern s32 func_8007352C();
+  DECL src/text1b_tu2.c:103: s32 func_8007352C(s32 env_addr);
+  use  src/text1b_tu2.c:228: *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
+  use  src/text1b_tu2.c:307: descriptor shape func_8006DD94 / func_80069F80 hand to func_8007352C) for the
+  use  src/text1b_tu2.c:352: arg0[4] = func_8007352C((s32)&s);
+  use  src/text1b_tu2.c:362: arg0[4] = func_8007352C((s32)&s);
+  use  src/text1b_tu2.c:366: arg0[4] = func_8007352C((s32)&s);
+  use  src/text1b_tu2.c:383: arg0[4] = func_8007352C((s32)&s);
+  use  src/text1b_tu2.c:431: arg0[0x10 / 4] = func_8007352C((s32)packet);
+  use  src/text1b_tu2.c:504: arg0[4] = func_8007352C((s32)&s);
+  use  src/text1b_tu2.c:527: arg0[4] = func_8007352C((s32)&s);
+  use  src/text1b_tu2.c:549: arg0[4] = func_8007352C((s32)&s);
+  use  src/text1b_tu2.c:555: arg0[4] = func_8007352C((s32)&s);
+  use  src/text1b_tu2.c:571: arg0[4] = func_8007352C((s32)&s);
+==== game_GetPlayerData
+  DECL src/code6cac.c:120: extern s32 game_GetPlayerData(s32);
+  DECL src/code6cac_b_tu2.c:369: extern s32 game_GetPlayerData(s32);
+  DECL src/code6cac_tu2.c:53: extern s32 game_GetPlayerData(s32);
+  DECL src/sound.c:344: void *game_GetPlayerData(void) {
+  DECL src/text1b.c:646: extern void *game_GetPlayerData();
+  use  src/text1b.c:669: player = game_GetPlayerData(D_800A33E0);
+==== func_8004A1FC
+  DECL src/sound.c:80: extern void func_8004A1FC(void *);
+  use  src/sound.c:325: func_8004A1FC(base);
+  use  src/sound.c:326: func_8004A1FC(base + 0x60);
+  use  src/sound.c:327: func_8004A1FC(base + 0x180);
+  DECL src/text1a_post.c:474: extern s32 func_8004A1FC(s32);
+  use  src/text1b.c:1255: func_8004A1FC();
+  DECL src/text1b.c:1263: void func_8004A1FC(arg0) s16 *arg0; {
