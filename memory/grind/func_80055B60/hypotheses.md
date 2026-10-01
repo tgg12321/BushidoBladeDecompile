@@ -12,3 +12,15 @@
   5. On landing retire undefined_syms_auto.txt rows 54, 56, 587, 685 (587 shared with func_80023F08 / func_8002AB08).
 - DEPENDS: PracticeMenuRec L1/L2 handle series edits the same header (coordinate). func_80058580 shares the D_80099D8F alias. No callee blocks it.
 - ODDS/LANE: 3-6 sessions; small residual very likely, 0 moderate (R3 register-allocation core is the risk). Grinder (after the state.json fix, restart needs owner approval) or manual. Modality: recon/draft.
+
+## s2 (2026-10-01, laneA) — full draft, sandbox 0
+candidate.c = byte-exact pure-C body (sandbox --disable all 0, 0 source-level / 0 operand-only) when
+include/code6cac.h carries the PracticeMenuRec members written by mkhdr.py (run from the repo root; it writes
+tmp/b60/inc/include/code6cac.h, which the scoring harness puts ahead of include/). Floor trail: 1108 -> 417 (m2c-led
+draft) -> 366 (`(cond) << K` flag values) -> 332 (the flag word assigned once) -> 296 (one expression incl. the
+`? 0x1000 : 0` terms; if-chain for 0x3F5) -> 250 (generic reused locals: temp/temp2) -> 105 (slot branch first:
+inverted condition) -> 74 (bit-1 gate as one condition) -> 54 -> 28 -> 19 (R7 order) -> 0 (far reuse, store order,
+pad statement order, loop-counter init order).
+OPEN (policy, before landing): multi-write generic locals `temp` (6 values), `temp2` (3), `far` (3), `diff`
+(value then its sign) need Ruling 11 packages or split spellings; `(u16)rec->unk_6A` casts vs retyping unk_6A to
+u16 (L1 plans the same); D_80106A78 typed as a 12 x 0x64 record array in text1b.c only.
