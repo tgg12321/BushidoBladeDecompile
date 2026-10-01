@@ -45,7 +45,7 @@ s32 func_80058580(u8 *p) {
      * p[0x449] == 0 flag of the state-0x15 script choice; the stage distance base (100000,
      * or D_8009A838[stage] * 8) of the D_8009A850 scan; p[0x44A] for the lim chain; p[0x44A]
      * again for the waypoint script; the x of waypoint 1 (0x36A); the p[0x445] == 0 flag of
-     * the 0x394 action pick; the chosen pick (s8)besti; case 2's D_8009A9F0 pattern word,
+     * the 0x394 action pick; the chosen pick besti; case 2's D_8009A9F0 pattern word,
      * shifted in place; a script entry's low distance bound (e[1] * 40, then adjusted).
      * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
     s32 work1;
@@ -74,11 +74,6 @@ s32 func_80058580(u8 *p) {
      * counted down); the script-list entry index.
      * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
     s32 work4;
-    /* work5 holds three values in turn, each read before work5 is written again: case 2's
-     * pattern-word top bits (work1 >> 27); the skill offset ((0x1000 - lv) * 625 >> 10) - 400;
-     * a copy of the entry type et for the et < 5 and et == 5 / 6 tests.
-     * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
-    s32 work5;
     s32 pick;
     s32 hi;
     s16 et;
@@ -106,7 +101,7 @@ s32 func_80058580(u8 *p) {
     s32 ok4;
     s32 far;
     s32 lim;
-    s32 besti;
+    s8 besti;
     s32 score;
 
     if (*(u16 *)(CPU_OPP + 0x6A) == 4 || *(u16 *)(CPU_OPP + 0x6A) == 0x14) {
@@ -185,7 +180,7 @@ s32 func_80058580(u8 *p) {
             }
         }
         if (script1 != 0) {
-            func_80055B44(p, (s32)script1, mode & 0xFF, 0);
+            func_80055B44(p, (s32)script1, mode, 0);
             return CPU_S32(0x3CC);
         }
     }
@@ -472,7 +467,7 @@ s32 func_80058580(u8 *p) {
                     wp2 = CPU_WP(p[0x362] - 1);
                     if (CPU_SQ(*(s16 *)(wp2 + 0x364) - CPU_S32(0xF4)) + CPU_SQ(*(s16 *)(wp2 + 0x366) - CPU_S32(0xFC)) <
                         va * (vn ? 1000 : 300)) {
-                        if ((u8)--p[0x362] != 0) {
+                        if (--p[0x362] != 0) {
                             wp3 = CPU_WP(p[0x362] - 1);
                             work3 = (ratan2(*(s16 *)(wp3 + 0x364) - CPU_S32(0xF4), *(s16 *)(wp3 + 0x366) - CPU_S32(0xFC)) -
                                    CPU_S16(0x1CA)) & 0xFFF;
@@ -547,13 +542,13 @@ s32 func_80058580(u8 *p) {
             if (p[0x39C] != 1) {
                 work3 = CPU_S32(0x394);
             } else if (*(u16 *)(CPU_OPP + 0x6A) == 0x19) {
-                u8 buf[4];
-                __builtin_memcpy(buf, D_800A325C, 4);
-                work3 = buf[CPU_OPP[0x441]];
+                u8 slots0[4];
+                __builtin_memcpy(slots0, D_800A325C, 4);
+                work3 = slots0[CPU_OPP[0x441]];
             } else if (*(u16 *)(CPU_OPP + 0x6A) == 0x1A) {
-                u8 buf2[4];
-                __builtin_memcpy(buf2, D_800A3260, 4);
-                work3 = buf2[CPU_OPP[0x441]];
+                u8 slots1[4];
+                __builtin_memcpy(slots1, D_800A3260, 4);
+                work3 = slots1[CPU_OPP[0x441]];
             }
             switch (work3) {
             case 0:
@@ -693,7 +688,7 @@ s32 func_80058580(u8 *p) {
                 if (++pick < 7) {
                     goto pick_loop;
                 }
-                if ((work1 = (s8)besti) != -1) {
+                if ((work1 = besti) != -1) {
                     CPU_S32(0x394) = 0;
                     p[0x39C] = 0;
                     CPU_S16(0x398) = (((((rand() & 0xFFF) * D_80099D88[p[0x443]].unk6) >> 12) + 0x17) << 12) / CPU_S16(0x1C);
@@ -757,6 +752,11 @@ s32 func_80058580(u8 *p) {
                     off = *list;
                     work4 = 0;
                     while (off != 0) {
+                        /* work5 holds three values in turn, each read before work5 is written again: case 2's
+                         * pattern-word top bits (work1 >> 27); the skill offset ((0x1000 - lv) * 625 >> 10) - 400;
+                         * a copy of the entry type et for the et < 5 and et == 5 / 6 tests.
+                         * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+                        s32 work5;
                         ep = off + *(u8 **)(p + 0x3A4);
                         e = ep;
                         ep += 4;
@@ -765,8 +765,8 @@ s32 func_80058580(u8 *p) {
                             switch (D_800A38DC) {
                             case 3:
                                 if (D_800A38E2 < 0x5B) {
-                                    work3 = (u8)(D_800A38E2 / 10) * 2;
-                                    if ((u8)(D_800A38E2 % 10) == 0) {
+                                    work3 = D_800A38E2 / 10 * 2;
+                                    if (D_800A38E2 % 10 == 0) {
                                         work3--;
                                     }
                                 } else if (D_800A38E2 < 0x5E) {
@@ -795,7 +795,7 @@ s32 func_80058580(u8 *p) {
                                             work2--;
                                         }
                                     } else {
-                                        work1 >>= ((u8)(p[0x3F2] / 3) % work2) * 4 + 4;
+                                        work1 >>= (p[0x3F2] / 3 % work2) * 4 + 4;
                                         work3 = 1 << ((work1 & 0xF) - 1);
                                     }
                                 }
@@ -842,7 +842,7 @@ s32 func_80058580(u8 *p) {
                             }
                         } else {
                             if ((CPU_FLAGS & 0xFC00) || CPU_S16(0xE) >= 6) {
-                                work1 = -(et < 5) & 100000;
+                                work1 = et < 5 ? 100000 : 0;
                                 hi = 100000;
                             } else {
                                 work5 = (((0x1000 - lv) * 625) >> 10) - 400;

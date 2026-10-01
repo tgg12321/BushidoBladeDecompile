@@ -217,3 +217,12 @@
   with member-type conflicts (respell onto PracticeMenuRec members together with func_80058580); width casts
   (`% 5`, `/ 10`, `% 10`); the list/cursor second handle.
   Policy questions filed in docs/grind/borderline.md (2026-10-01, func_80058580 a/b/c).
+- [s7 2026-10-01 laneB] Data-model / cast cleanup (fix plan items 4 and 6), each checked with
+  probes/s5/fullobj.sh (full text1b.o vs the oracle object: 0 differing text/rodata words; engine score 8 = the
+  jtbl relocation artifact, unchanged): byte-neutral casts removed (`mode & 0xFF`, `(u8)--p[0x362]`,
+  `(u8)(D_800A38E2 / 10)` / `% 10`, `(u8)(p[0x3F2] / 3)`); `-(et < 5) & 100000` -> `et < 5 ? 100000 : 0`;
+  work5 declared inside `while (off != 0)` (its innermost scope); memcpy tables renamed slots0/slots1;
+  `besti` typed `s8` so `(work1 = besti)` needs no cast (byte-identical). Measured and NOT applied: `u8 st2`
+  with the `(u8)` cast dropped -> jtbl targets shift by 4 (score 11, 2990 insns): st2's width cast is still
+  load-bearing. Still open: `(s16)work2`, `(u32)work3 &` x2, `work4 < 8U`, `q = ep`, the PracticeMenuRec
+  typing (item 2), the D_8009A830 3x8 table (item 3), r11/ redo (item 7) once Q74-Q76 land as rules.
