@@ -1,0 +1,5 @@
+{
+  "floor": 2,
+  "measured": "2026-10-01",
+  "source": "sandbox --disable all --candidate (pre-authorization C body, volatile frame pad removed); de-authorization 2026-10-01, docs/audits/INLINE-ASM-AUDIT-2026-10-01.md"
+}

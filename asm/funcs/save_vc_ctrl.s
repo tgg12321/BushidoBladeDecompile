@@ -1,7 +1,3 @@
-.include "macro.inc"
-
-.section .text
-
 .set	noat
 .set	noreorder
 .set noat

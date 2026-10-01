@@ -92,6 +92,28 @@
       "addr": "800770B8"
     },
     {
+      "func": "save_vc_ctrl",
+      "file": "text1a_svc",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "de-authorized from inline_asm_canonical.txt by owner ruling 2026-10-01 (docs/grind/decisions.md 'inline-asm audit'); honest floor 2 measured 2026-10-01 via sandbox --disable all --candidate on the pre-authorization C body",
+      "addr": "800414FC"
+    },
+    {
+      "func": "func_80044010",
+      "file": "text1a_c",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "de-authorized from inline_asm_canonical.txt by owner ruling 2026-10-01 (docs/grind/decisions.md 'inline-asm audit'); honest floor 3 measured 2026-10-01 via sandbox --disable all --candidate on the pre-authorization C body",
+      "addr": "80044010"
+    },
+    {
       "func": "func_80058580",
       "file": "text1b",
       "distance": 30,
@@ -104,6 +126,17 @@
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
       "hand_coded_tier": "LOW",
       "addr": "80058580"
+    },
+    {
+      "func": "func_8006BD28",
+      "file": "text1b_tu1c",
+      "distance": 48,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "de-authorized from inline_asm_canonical.txt by owner ruling 2026-10-01 (docs/grind/decisions.md 'inline-asm audit'); honest floor 48 measured 2026-10-01 via sandbox --disable all --candidate on the pre-authorization C body",
+      "addr": "8006BD28"
     },
     {
       "func": "func_8005C8A8",
@@ -313,14 +346,14 @@
     }
   ],
   "counts": {
-    "total": 25,
-    "active": 13,
+    "total": 28,
+    "active": 16,
     "by_status": {
-      "active": 13,
+      "active": 16,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 13
+      "C": 16
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
