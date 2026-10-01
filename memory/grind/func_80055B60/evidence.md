@@ -165,3 +165,10 @@ Staged: A (cheat-cleanup, msg_cleanup) + B (Match, msg_match). layer2 hash per b
   func_80030D7C                    3cb328f126a763e0
   func_80031890                    8e24821e276fc559
   func_80031B24                    41a3f8796a0bbae1
+
+## s7 (2026-10-01, laneC) — LANDED COMPLETED-C; ledger closed
+Layer-2: rev-55B60-A PASS (cheat-cleanup, 16 bodies at the s6 hashes; interface casts and the func_800300B4
+region re-key accepted; message fix: D_8008E338 is read lbu + sll 24 / sra 24) -> 23581b8fc. rev-55B60-B PASS
+(func_80055B60 52c95e3c76da2225 match; func_80055138 4d3863eee4618fcf cheat-cleanup; Ruling 11 / Q51
+reproduced, 25u truthful (srl)) -> efe9d06e0; queue done 6ce80896c. Oracle SHA1 after each landing;
+check_completion_integrity OK. Directory kept: src/text1b.c comments cite evidence.md s5 / probes/r11b/.
