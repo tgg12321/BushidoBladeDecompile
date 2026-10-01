@@ -82,3 +82,9 @@ src/include reverted, build/ back to the oracle.
 INCLUDE_ASM line; full build SHA1 == oracle; sandbox 0 (447/447, 0 source-level / operand-only); layer2
 hash 18f12977fa847c9f; precheck clean; Ruling 11 package re-run on this body (r11/README.md, round 2);
 lane_checklist_1001c run (no casts, no int-held pointers, header types, Q51 tag form).
+
+## LANDED COMPLETED-C (2026-10-01)
+Match 8bd07dcea (body hash 18f12977fa847c9f), queue 618265ec9; data model bdd726a8f. Layer-2 round 2:
+rev-57E84-B PASS (full scope: Ruling 11 package re-verified on this body, i/SOTN 42398.c verified, zero
+casts, lh/lhu as cc1's own choice, no read without a write). Round 1: rev-57E84-r11 PASS / rev-57E84-dm
+FAIL (data model). check_completion_integrity OK. Ledger closed.
