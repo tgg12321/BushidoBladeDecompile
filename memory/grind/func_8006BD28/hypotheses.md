@@ -15,3 +15,8 @@
   5. Then spill/reg choice: s7=0x12 and fp=8 are hoisted constants; base/offset spill; address shape `offset + (i*4 + base)` ~ `((s32*)base + i)[arg0*2]`.
 - DEPENDS: same file as func_800693CC (land that first). `sdata_funcs.txt:247` already lists it (GP-relative globals).
 - ODDS/LANE: multi-session, moderate. Manual deep-dive (or Grinder once restart approved).
+
+## 2026-10-01 laneA — CLOSED to sandbox 0 (candidate.c); details evidence.md
+- Plan steps 2-5 resolved: arg2 typed `S_6A880 *` (already declared above; caller retyped, byte-neutral);
+  frame skew was allocation, not a missing pad (giv j*8 unreduced + `arg0*8` hoisted -> 0x58 naturally);
+  two FAKE constructs with receipts in rejected/ (cells named intermediate; `(sheets + i) + arg0 * 2` grouping).
