@@ -44,3 +44,9 @@ Remaining FAKE-annotated constructs with receipts: `side` and `frame` (named int
 Also fixed: real MulMatrix0 prototype, SVECTOR local for ApplyMatrix, MATRIX copy,
 g_anim_func_table as `s32[]` with the call-site cast every other TU uses (sound.c, text1a_post.c),
 honest names. Objects/parts stay byte-offset walks of u8 * as in the sibling func_80049A2C.
+
+## LANDED 2026-10-01 — COMPLETED-C (Match 68dfe8107)
+Layer-2 round 1 FAIL rev-49718 (1c739c42cf71ae14): SOTN tag named a symbol, and geo_01.c:10 (one write)
+did not admit the second in-place write to flags. Fixed with the e_shop.c:4621/:4625 citation (parameter
+written, read, written, read), bare tags, FAKE receipt (y_flagscopy 9, alloc_flags.txt), s16 rot stores.
+Round 2 PASS rev-49718-r2 on eca099fbbe8d3e19. SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa.
