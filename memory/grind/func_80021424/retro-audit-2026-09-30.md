@@ -136,3 +136,14 @@ func_8001FB34 joins L2 (parameter retyped to PracticeMenuRec *, new member s16 u
 members). Separate follow-up debt, outside the record-table plan: func_8001FAE4 (walks the motion/sound entry held
 in unk_50 as integers: `(s32 *)((s32)arg0 + 0xA)`, +8/+4 steps) and func_800324D0 (code6cac_b_tu2.c, `u8 *pad`
 parameter read ~25 times; prototypes in code6cac.c / code6cac_tu2.c match its definition).
+Plan update 2 (orchestrator): L2 = func_8001C8DC, func_8001CE60, func_8001E404, func_8001EFA0, func_8001FB34,
+func_8001E878, func_8001EA84 (the last two handed back by laneH at HEAD; rev-tables-r3 notes: D_80101F5E /
+D_801023AA / D_80101F7A handles, `s32 *a0 = &D_80102030` with `(u8 *)a0 - 0x168` / `+ 0x44C` / `+ 0x2E4` record
+bases, `(u8 *)&D_80101EC8`, D_8010231A, `(&D_80101F7B)[ret = (D_800A3748 == 0) * 0x44C]`, and EA84's `ret` reused
+for func_8005FA98's result). func_8003C9A4 may join if laneH's Rec44 respell is not byte-neutral.
+L2 scratch (2026-09-30, HEAD bodies + L1 chain + land_l2.py; harness vs build/): func_8001C8DC 0/291, func_8001CE60
+0/588, func_8001E404 0/184, func_8001EFA0 0/137, func_8001E878 0/99, func_8001EA84 0/268, func_8001FB34 0/45
+(retyped; members unk_26C lh, unk_B3 sb), func_8001FBE8 0/289 (cast to func_8001FB34 dropped). EA84's `ret` now holds
+only func_8005FA98's result (the subscript assignment is gone). Open for L2 review: func_8001E404 also views camera
+data through `s2 = (s32 *)&D_800F6608` / `*(u16 *)((u8 *)s2 + 0x10)` / `*(CamBuf *)s2` (not the practice table);
+func_8001E878 passes record addresses to s32-typed prototypes (func_8001A820, func_8001B478) as `(s32)&...`.
