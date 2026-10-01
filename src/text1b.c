@@ -2647,7 +2647,10 @@ s32 func_800571C0(s32 obj) {
     s16 work[4];
     s32 ret;
     s8 nl;
-    s8 nr;
+    /* Ruling 11 (ordinary-c-judge-decidable.md): holds two values -- the count of clear probe steps on
+     * the right-hand side, then which side was chosen (0 right, 1 left; per-branch constants, Q20).
+     * Proof: memory/grind/func_800571C0/r11/proof.md */
+    s8 temp;
     u8 goL;
     u8 goR;
     s32 ang;
@@ -2660,7 +2663,7 @@ s32 func_800571C0(s32 obj) {
     s32 e;
     s32 z;
 
-    nr = 0;
+    temp = 0;
     nl = 0;
     goR = 1;
     goL = 1;
@@ -2712,28 +2715,28 @@ s32 func_800571C0(s32 obj) {
             }
             if (goR) {
                 right = probe;
-                nr++;
+                temp++;
             }
         }
     }
-    if (nl != 0 || nr != 0) {
-        if (nl == nr) {
+    if (nl != 0 || temp != 0) {
+        if (nl == temp) {
             if (rand() & 1) {
                 nl = 0;
             } else {
-                nr = 0;
+                temp = 0;
             }
         }
-        if (nl < nr) {
-            nl = nr;
-            nr = 0;
+        if (nl < temp) {
+            nl = temp;
+            temp = 0;
         } else {
-            nr = 1;
+            temp = 1;
         }
         ret = nl--;
         for (ang = 0x200; nl >= 0; nl--, ang += 0x200) {
             s32 base = *(s16 *)(*(s32 *)obj + 0x1D8);
-            if (nr != 0) {
+            if (temp != 0) {
                 a = base + ang;
             } else {
                 a = base - ang;

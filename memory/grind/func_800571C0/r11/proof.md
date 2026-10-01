@@ -89,7 +89,11 @@ Workspace tools/mkperm.sh (reduced TU: the body's own declarations + the body; c
 build cc1 (CC_FLAGS) | prologue_fix | maspsx (MASPSX_FLAGS) | multu_pad | as; the landed body built there differs
 from target.o in 0 instructions). Campaign from one-var-per-value-form.c (tools/permuter_campaign.py, 2 jobs,
 --stack-diffs, 2026-09-30 19:58-20:22): 19,957 iterations in 1,400 s, permuter score 3550 -> best 425 (found in
-the first minutes; nothing better afterwards; stopped). Nothing reached the target (score 0). What the finds
+the first minutes; nothing better afterwards; stopped). Q30 set-aside relied on (ordinary-c-judge-decidable.md
+§ Ruling 11 (D)(4)): "a one-variable-per-value spelling that needs any construct whose frozen-list entry, or the
+rule file that entry links, expressly requires a FAKE or !FAKE annotation ... is set aside"; the do-while(0)
+entry's sentence: do-while-zero-exception.md:61, "Inline `/* FAKE: ... */` or `// FAKE` annotation at the
+construct site". Nothing reached the target (score 0). What the finds
 change (permuter.txt, the 6 best): do-while(0) wraps around `nr++` / `right = probe; nr++;` (425, 435, 605 — a
 FAKE family, set aside under Q30), an extra `nl = nr;` (525), a `nr++; nr--;` cancellation pair plus two
 staging locals (584), and `nr = 0xB8;` staging a constant offset through the count variable (689) — the last
