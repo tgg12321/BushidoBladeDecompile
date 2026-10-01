@@ -11,3 +11,14 @@
   4. No caller declares a prototype (`src/text1a_pre_tu2.c:311-313`), so the signature is free. No owner ruling needed.
 - DEPENDS: same mechanism as func_80044010 - do back to back.
 - ODDS/LANE: ~1 hour, high [I]. Manual.
+
+## 2026-10-01 laneB — 0 in plain C (candidate.c)
+- Records typed as a 0x68-byte `VcCtrl` (pointer at +0xC) walked with `rec++`, counted down with
+  `for (i = n - 1; i != -1; i--)`: sandbox 0 (16/16), frame included. m1001/ variants (sandbox
+  --disable all): pointer forms a/c/d/e/f/g/h/i/j/k 2 (the `+0xC` add lands before the `-1` load;
+  an ordering difference only), `while (n--)` b 8 / m 8, struct do-while l 0,
+  struct for n/o 0. preauth_body.c 2.
+- Frame: phantom-slot-frame-lever producer 1. `.frame $sp,8 ... vars= 8`; in m1001/frame.sh +
+  combine.sh dumps the guard's `-1` (pseudo 81, `(set (reg:SI 81) (const_int -1))` feeding the `i == -1`
+  test before the loop) is folded by combine into `beqz $a2`; its refs survive, it never gets a hard
+  register, and reload gives it the 8-byte slot no instruction touches.

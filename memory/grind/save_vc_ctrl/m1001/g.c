@@ -1,0 +1,14 @@
+void save_vc_ctrl(s32 delta, s16 *recs, s32 n) {
+    s32 i = n - 1;
+    s32 *p;
+    if (i != -1) {
+        p = (s32 *)((u8 *)recs + 0xC);
+        do {
+            if (*p != 0) {
+                *p += delta;
+            }
+            i--;
+            p += 0x68 / 4;
+        } while (i != -1);
+    }
+}

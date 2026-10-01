@@ -11,3 +11,14 @@
   4. Leave func_80044098 alone (reverse op, no frame, own approved FAKE).
 - DEPENDS: after/with save_vc_ctrl.
 - ODDS/LANE: 1-2 hours, high [I]. Manual.
+
+## 2026-10-01 laneB — 0 in plain C (candidate.c)
+- `s32 *base = p; hdr = *p; *p = (hdr | 0x8000) & 0xFFFF; p++; ...; u16 n = hdr; for (i = 0; i < n; i++)
+  *p++ += (s32)base;` with the honest prototype `(s32 *p, s16 slot)`: sandbox 0 (34/34) on the spliced
+  src (the TU's extern fixed to `(s32 *, s16)`, func_80045B68's two calls lose/gain their casts; it stays
+  0 and the full build is byte-identical). m1001/ variants (raw-param shim, same codegen): a separate
+  `p = hdr + 1` (q1-q6) 9-19, `n` as s32 / `(u16)` in the test / do-while (r2-r4, r6) 10-13,
+  `(u16)(hdr | 0x8000)` store (r5) 2; preauth_body.c 3 (no frame).
+- Frame: producer 1 (rotated guard). The loop's entry test `slt i, n` (pseudo 101, i = 0) is folded by
+  combine into `blez n`; its REG_DEAD note is left as a bare `(use (reg:SI 101))` (.lreg insn 112),
+  reload slots it: `.frame $sp,8 ... vars= 8` (save_vc_ctrl/m1001/frame.sh + combine.sh).
