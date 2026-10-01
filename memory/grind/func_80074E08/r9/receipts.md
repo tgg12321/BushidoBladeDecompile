@@ -6,7 +6,8 @@ extension, failing its prong (C)). Changes from that body:
 - the descriptor's `.header` / `.table` are `s32` (EnvA, used only by this function in text1b_tu2.c), the
   form the file's sibling descriptors use (S_80074488 in func_8007636C, DescF97C in text1b_tu1d.c), so
   every write is `cells = s.header + 0xC;` with no cast; `records` is `s32 *`;
-- the four sites lose their bare `{ }` (inert: ff-c-2026-09-30/v4 measured 0);
+- the four sites lose their bare `{ }` (inert: ff-c-2026-09-30/v4 measured 0); the `(u16)` value casts
+  the old body's `*(u16 *)` reads implied are not needed (0 without them);
 - work-area reads go through SelWork members (`SELWORK->f0C[arg1]`, `f08[arg1]`, `f24`): 4fd37366e made
   SelWork the one declaration of those bytes. `f24` is the current draw buffer (`&g_gpu_db + idx *
   0x4090`, src/text1b_tu2.c func_80077724), whose first member is the DRAWENV (src/ings.c:267-268
@@ -67,7 +68,8 @@ store: the 12 instructions of the residual.
 
 Permuter: campaign `e08-nolocal` (laneB, launched 2026-10-01T08:30Z) from the carrier-free body
 r9/variants/nolocal.c (workspace r9/tools/mkperm.sh, copy r9/perm_finds/base.c; its base.o shows exactly
-the 12-instruction residual), r9/tools/camp.sh, -j2, --stack-diffs, --stop-on-zero. Stopped after
+the 12-instruction residual; that copy still carried two `(u16)` value casts on the f0C/f08 reads, dropped
+afterwards as byte-neutral — every variant re-measured unchanged, r9/scores.txt), r9/tools/camp.sh, -j2, --stack-diffs, --stop-on-zero. Stopped after
 1,300 s, 13,930 iterations, base 820 (permuter scale; target = 0), best 615. Every improving find routes
 the +0xC value through a variable that is live across blocks again: 615 (output-615-1) borrows `rect_x`
 for it, 625 borrows `ot_idx` (`s.table = ot_idx = s.header + 0xC`), 638 adds one `new_var2` that

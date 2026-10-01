@@ -95,7 +95,7 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     rect[0] = ((DRAWENV *)SELWORK->f24)->clip.x + rect_x;
     rect[1] = ((DRAWENV *)SELWORK->f24)->clip.y + 0x14;
     rect[2] = 0xD4;
-    rect[3] = 0xC8 - (u16)SELWORK->f0C[arg1];
+    rect[3] = 0xC8 - SELWORK->f0C[arg1];
     SetDrawArea(arg0[7], rect);
     AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, arg0[7]);
     arg0[7] += 0xC;
@@ -110,7 +110,7 @@ void func_80074E08(s32 *arg0, s32 arg1) {
 
     offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
     offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1]
-              - (u16)SELWORK->f08[arg1];
+              - SELWORK->f08[arg1];
     SetDrawOffset(arg0[8], offset);
     AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, arg0[8]);
     arg0[8] += 0xC;

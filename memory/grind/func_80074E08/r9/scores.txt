@@ -1,4 +1,4 @@
-
+# sandbox func_80074E08 --disable all --candidate <file> on main, 2026-10-01 (re-measured after the (u16) value casts were dropped; unchanged)
 r9/variants/reuse.c score    0   insns 281/281
 r9/variants/pv_fn.c score   12   insns 281/281
 r9/variants/pv_fn_rev.c score   12   insns 281/281
@@ -10,4 +10,3 @@ r9/variants/hdr_block.c score   12   insns 281/281
 r9/variants/hdr_block_tablefirst.c score   16   insns 281/281
 r9/variants/hdr_cells_block.c score   12   insns 281/281
 r9/variants/pv_fn_from_rec.c score   12   insns 281/281
-
