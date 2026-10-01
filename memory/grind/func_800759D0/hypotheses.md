@@ -103,3 +103,15 @@ Measured this session (all from candidate.c, `sandbox --disable all`):
   and the loops' record picks fail extension (B).
 - If the owner allows the one-role reuse (borderline.md), the 0 form lands as-is
   (re-review with the ruling cited; rename q to a role name for R5 1(f)).
+
+## WARM-START PLAN (queue review 2026-10-01; read-only review, no engine runs - scores are from this ledger, [I] = inference, unmeasured; re-baseline before trusting. Any 'owner ruling/question' step = a borderline.md entry per judge-sole-gate, never a wait state: keep working the function)
+- STATE: INCLUDE_ASM (reopened da429a8c2, then 803d0fea1 for the byte pun). `rejected/joint-l2-r1.c` scored 0 with a layer-2 PASS (c6fea6b4656345dd) but never landed because partner func_80075F80 failed. It still uses raw `D_800A36A0 + 0x34 / +arg3*2+0x3C / +0x65` and a `state = (s16 *)(arg3*2 + (s32)D_800A36A0)` pointer, so after SelWork (4fd37366e) both body and PASS are stale. Honest floor without the shared `cells`: 25/364.
+- CONSTRAINTS: per-use byte pun `((u8 *)D_8009BCF8)[idx]` refused (Q37/Q38); flat `[20]` misses in every spelling (3/11/30/67). `cells` stands on Ruling 9 (b') + the past-the-end clarification (2fc07a100); paperwork in evidence.md. `zero` is a FAKE constant holder (named-local-fake-exception). SOTN cite `src/dra/62DEC.c:1091` is tagged @aa53500 but `.claude/rules/sotn-precedent-suffices.md:13-22` names the local clone @db41b28 - re-verify and cite db41b28.
+- BLOCKER: data model only - `D_8009BCF8` must be `Unk8009BCF8Record D_8009BCF8[2][10]` (target scales page and cell separately). The body itself is solved.
+- PLAN (one landing with func_80075F80):
+  1. `include/game.h:130`: `D_8009BCF8[20]` -> `[2][10]`; fix the comment above it.
+  2. Respell completed func_80076D74 to `D_8009BCF8[0][slot].unk1` (`src/text1b_tu2.c:823`; its PASS 1429aa83406b5900 is stale anyway); trim its stale comment :756-777.
+  3. Port joint-l2-r1 to SelWork members `f34`, `f1C[arg3]`, `f20[arg3]`, `f3C[...]` (`.half[...]` once the f3C union lands), `f65`; drop the `state` pointer (the one unmeasured risk).
+  4. `sandbox --diff`; fresh layer-2 jointly with func_80075F80.
+- DEPENDS: shares the D_8009BCF8 decl and the f3C union with func_80075F80. The Q65 series (steps 10-11) merges text1b_tu2.c into text1b_b.c (Q67): landing before Q65 means regenerating the series, after means re-measuring in text1b_b.c - orchestrator's call.
+- ODDS/LANE: 1-2 sessions for the joint landing, ~60% [I]. Manual (headers, SOTN cite, multi-function commit).

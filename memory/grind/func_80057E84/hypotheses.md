@@ -133,3 +133,17 @@ site. So each target register needs ONE pseudo across several sites:
    structural discovery that makes the node address a global pseudo from ONE
    write. Neither exists today. With (1) and (2) both admitted the body is
    rejected/vtx-node-multiwrite-0.c (0, 447/447).
+
+## WARM-START PLAN (queue review 2026-10-01; read-only review, no engine runs - scores are from this ledger, [I] = inference, unmeasured; re-baseline before trusting. Any 'owner ruling/question' step = a borderline.md entry per judge-sole-gate, never a wait state: keep working the function)
+- STATE: rotated (floor 44/447). `candidate.c` (n0, every var single-role) = 44. `rejected/vtx-node-multiwrite-0.c` = 0 but failed layer-2 on `vtx`/`node`. `pending-va-borrow-22.c` = 22. Layer-2 already rated PathWalker, the `i` copy-loop reuse and `buf` sound.
+- RE-OPENABLE: rotated ~2026-09-25 20:27 CDT; Ruling 11 (reused local admitted on dump proof that no split matches) landed 262db111c 2026-09-26 13:30 CDT. The rotation cites Ruling 5/6/9 failures, but `.claude/rules/ordinary-c-judge-decidable.md:40-41` lets Ruling 11 admit what those fail. Never tried under Ruling 11.
+- CONSTRAINTS: `vtx`/`node` on the Ruling 9 banned list (`.claude/rules/reused-local-meaning-source.md:59-61`); Rulings 5/6 fail them (hypotheses.md verdict section). That list does not block Ruling 11.
+- BLOCKER [F]: dump-proven allocator effect - local-alloc.c:472-477 + combine_regs (:1784-1945) tie a block-local address pseudo to its dying input; the target's $t0/$a1 are reachable only by one global pseudo spanning several sites; no single-write spelling produces that.
+- PLAN:
+  1. Re-measure the 0-body on HEAD.
+  2. Retype the polygon record (`s16 (*vtx)[2]`) to drop the `*(s16 **)(poly + 4)` casts (struct view measured identical).
+  3. Ruling 11 package for vtx/node: bank .lreg/.greg for 0-body and n0 with command lines; name the mechanism above; bank every split measured (16, 22, 28, 36/445, 44, 125); the n0 permuter campaigns (~5.5k iters) count as the search; replace the staged-value FAKE text with a Ruling 11 (F) comment (names are kind-names true of every value).
+  4. Fresh manual layer-2.
+  5. Operator returns it with `queue auto-return`/`unpark` (not an owner ruling).
+- DEPENDS: PathWalker typedef must be visible to func_80058580's call - land this before func_80058580.
+- ODDS/LANE: manual, ~1 session of paperwork, ~65% [I].

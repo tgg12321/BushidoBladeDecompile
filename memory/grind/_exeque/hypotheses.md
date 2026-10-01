@@ -252,3 +252,17 @@ floor 2 at s12; 12 sessions; live frontier (state.json is authoritative):
 - kill_scope: class
 - measured_on: docs/reference/sotn-construct-index.md at HEAD (2026-09-16), full-file grep, PSX-tagged entries only
 - predicate_cite: .claude/rules/legitimate-volatile-interrupt-touched.md:1
+
+## WARM-START PLAN (queue review 2026-10-01; read-only review, no engine runs - scores are from this ledger, [I] = inference, unmeasured; re-baseline before trusting. Any 'owner ruling/question' step = a borderline.md entry per judge-sole-gate, never a wait state: keep working the function)
+- STATE: rotated 2026-09-16; INCLUDE_ASM (`src/display.c:963`). Best body `candidate.c` 2/187 after 12 sessions, two FAKE `do{}while(0)` wraps (nested one carries its "one level measured insufficient" note; s4 measured 7 vs 2). Names are stale: `D_8009BF78`->`_qin`, `D_8009BF7C`->`_qout`, `D_8009BF68`->`_qlog`; `D_8009BE7C`/`D_8009BE80` are now `g_gpu_ctx.unk08` / `g_gpu_ctx.drawsync_cb` (g_gpu_ctx at 0x8009BE74, `include/gpu.h:102-115`, b6b45920b). Owed decl fixes: `void _exeque();` (display.c:906) and `extern void _exeque();` (:1008) -> `s32 _exeque(void)`; add `extern s32 D_8009BF84;`.
+- CONSTRAINTS: `_qin/_qout/_que/_qlog` already volatile by grant (`volatile_extern_allowlist.txt:29,69-71`); `unk08` is not. Two-prong volatile rule `.claude/rules/legitimate-volatile-interrupt-touched.md` ("guard-clear" isn't one of its three shapes). Nested wraps: `do-while-zero-exception.md` prereq 3. `volatile s32 *p` cast-handle refused (`mmio-volatile-type-level.md` "Not covered").
+- BLOCKER: one insn - target keeps `sw $zero,0($v1)` (clearing unk08) before `jalr` with a nop in the delay slot; our reorg.c fills the slot with the store. s10 proved no register choice stops it (reorg.c:663-693); s2 found a volatile store closes it.
+- NEW SINCE ROTATION: Q50/Q55 SOTN-precedent ruling (2026-09-30, `.claude/rules/sotn-precedent-suffices.md`) can admit a volatile the two-prong rule refuses; s12 only searched the shape index, never SOTN source. SOTN @db41b28 `src/main/psxsdk/libgpu/sys.c:58,96-97` declares this module's queue state `static volatile` (_qin, _qout, queue array); PS1 build member (`config/splat.us.main.yaml:66`), fully matched. `libetc/intr_vb.c:12 volatile int Vcount` is another IRQ-written example. SOTN's _exeque body is rev 1.83 vs BB2's 1.129 - lead only, no unk08 clear.
+- PLAN:
+  1. Apply candidate with renames + decl fixes; `sandbox _exeque --disable all --diff`; expect 2/187 (re-baseline if the struct spelling moved it).
+  2. `GpuCtx` member -> `volatile s32 unk08;` in gpu.h with `/* SOTN: src/main/psxsdk/libgpu/sys.c:96 @db41b28 */`; re-enumerate `p` vs direct access; expect 0.
+  3. Confirm `_addque2` (display.c:934 writes unk08 = 1) and every other g_gpu_ctx consumer still sandbox 0; bank the census.
+  4. Fresh layer-2, `verify-oracle --rebuild`, retire `_que_plus_0x4/0x8` alias rows (named_syms.txt:948,2396; undefined_syms_auto.txt:737-739).
+  5. Owner ruling only if layer-2 refuses the SOTN tag (member qualifier vs module static) - existing re-activation trigger (1) in decisions.md:921-1012. Fallback: untried "axis 3" probe (a real intervening statement); thin, s7 ruled out a `cb` local.
+- DEPENDS: shared include/gpu.h (PutDispEnv, _addque2 ...); sdata_exclude.txt:103 lists the _addque2 symbols.
+- ODDS/LANE: small effort; ~70% if the volatile is admitted, <15% otherwise [I]. Manual (Q50 is manual-path layer-2 only); forensics/policy.

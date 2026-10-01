@@ -52,3 +52,18 @@ Per-site split sums (c), shared sums (f5/f6), statement order in the fallback
 (f1-f4, g4-g5), member vs raw-offset access (g1), plain vs compound shift
 (g3), explicit value locals (g2, changes instruction count), and both island
 spellings (h1/h2). None moves the site-3 register without the reuse.
+
+## WARM-START PLAN (queue review 2026-10-01; read-only review, no engine runs - scores are from this ledger, [I] = inference, unmeasured; re-baseline before trusting. Any 'owner ruling/question' step = a borderline.md entry per judge-sole-gate, never a wait state: keep working the function)
+- STATE: INCLUDE_ASM (`src/code6cac_b_tu2.c:1944`). Best body `ff-b-2026-09-30/final.c` (= `rejected/ff-b-q51-citation-fail-0.c`): 0 at 352/352, oracle SHA1. Reopened Q37: `dist` holds three square roots (|n| for the `<0x4000` guard, then |a.xz| and |n.xz| as ratan2 arg 2). Q51 citation SOTN `4B758.c:71` failed layer-2 rev-2cd58 (SOTN's var has one role, ours two). `angle` is solved as plain C (yaw/pitch/nyaw/npitch, 0). Splitting `dist` = 3 (site-1 value lands in $v0 not $a1). Owner's 2026-09-25 GTE-island approval (cd61ed9f6 / 83883c4c0) still stands; its registry rows are now history comments (`inline_asm_canonical.txt:392`, `tools/grinder/owner_cluster_grants.txt:115`).
+- CONSTRAINTS: a multi-write local needs exactly one of Rulings 5-12 or Q51 (`.claude/rules/ordinary-c-judge-decidable.md:33-41`). Don't re-cite `4B758.c` (rev-2cd58). Ruling 11 evidence (A)-(H): `.claude/rules/reused-local-necessity.md:16-64`. Q30/Q32: split spellings that need a FAKE don't count against necessity.
+- BLOCKER: register allocation - one shared pseudo carries ratan2's $a1 preference back to site 1. Documented; not a C gap.
+- PLAN:
+  1. Take `final.c`; respell `*(((u8 *)&g_sqrt_table_u8) + x)` as `g_sqrt_table_u8[x]` (now `u8[0x400]`, 8e007927d). Re-sandbox, expect 0.
+  2. Replace the Q51 comment on `dist` with a Ruling 11 package. In-TU precedents landed under Ruling 11: func_8002F2D0/F770 `work` (determinant then sqrt to ratan2 arg 2, `src/code6cac_b_tu2.c:3225-3228`), func_8002A458 `temp` (:1391-1395).
+  3. [I, recommended] fold `nxz_sq` (squared length then table byte, currently claimed as staged-value) into the same Ruling 11 proof - F2D0's `temp` shape; staged-value is not a listed admission for multi-write locals.
+  4. Evidence: .lreg/.greg + BB2_FINDREG_DEBUG dumps shared vs split (global.c expand_preferences/find_reg); bank the 9 ff-b split spellings; per-value ablations (split only site 1 / 2 / 3); one structural respelling; permuter from the split body.
+  5. Name it `dist` (each value is a length) or `work`.
+  6. Fallback (not combinable with Ruling 11): Q51 lead SOTN `src/st/e_plate_lord.h:120-133` @db41b28 (`func_us_801D27C4`): `distance` feeds a guard then ratan2 arg 2. Unverified; its later writes derive from the earlier value.
+  7. Before landing: `auth:` commit restoring the inline_asm_canonical.txt / owner_cluster_grants.txt rows and `tools/canonical_asm_regions.json` hashes, citing the standing approval.
+- DEPENDS: func_8002AB08 calls this; prototype must agree (`s32 func_8002CD58(u8 *obj)`).
+- ODDS/LANE: 1-2 sessions (mostly the proof package), ~70% [I]. Manual only (Ruling 11).
