@@ -63,3 +63,10 @@ types a record pointer) and the `(s32 *)&hit` casts.
 - Orchestrator 2026-10-01: PracticeMenuRec members (a) s16 +0x8C/+0x92/+0x26C and (b) Vec4i32 unk_114[2]
   are mine to add AFTER laneB-2's func_80058580 landing, under the landing lock; +0xA3 layout conflict
   (`other + 0xA3 + alt` = a 2-byte array vs laneB's scalar unk_A3) reported to the orchestrator.
+- s3b: landing body = candidate.c, records typed PracticeMenuRec * (typed/typed.py from the stand-in; header
+  overlay typed/hdr.py = laneB's staged PracticeMenuRec + s16 unk_8C, s16 unk_92, Vec4i32 unk_114[2]);
+  unk_0E needs no (u16) cast (range test still lhu); all per-player locals in the player-loop block ((A):
+  reused locals at their innermost enclosing scope; the nine alone moved there score 17, the whole per-player
+  set 0). Sandbox 0 with the overlay (typed/runh.py). func_80022580's unk_114 / unk_124 zeroing respelled
+  unk_114[0] / [1]: code6cac_tu2 cc1 output identical (typed/tu2check.sh). Ruling 11 package re-run on this
+  body: r11/README.md. Landing edits scripted in typed/land.py (after laneB-2's func_80058580 lands).

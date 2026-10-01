@@ -1,10 +1,12 @@
 # func_8002AB08 — Ruling 11 package (laneC, 2026-10-01)
 
-Ruling: `.claude/rules/reused-local-necessity.md` § Ruling 11. Body measured: `memory/grind/func_8002AB08/candidate.c`
-(sandbox --disable all = 0). NOTE: the record reads still use the TU-local stand-in view `R8002AB08`; the landing
-respells them on `PracticeMenuRec` (orchestrator, 2026-10-01) and this package is RE-RUN on that exact body
-(`dumpall.sh`, `run.py`) before READY_FOR_REVIEW. Record typing does not change allocation (laneB measured the
-same on func_80058580, its r11/README.md).
+Ruling: `.claude/rules/reused-local-necessity.md` � Ruling 11. Body measured = the landing body,
+`memory/grind/func_8002AB08/candidate.c`: records typed `PracticeMenuRec *` (members this landing adds:
+s16 unk_8C, s16 unk_92, Vec4i32 unk_114[2]; `typed/hdr.py` builds the header overlay
+tmp/func_8002AB08/typed/inc/include/code6cac.h on laneB's PracticeMenuRec), every per-player local declared in
+the player-loop block (the innermost scope enclosing every write of each reused local, (A)). All scores below
+use `typed/runh.py` (engine sandbox --disable all with the overlay ahead of include/); landing body = 0.
+An earlier round on the untyped u8 * body gave identical numbers (scores.txt).
 
 Reused locals (9): `dx`, `dy`, `dz`, `temp1`, `temp2`, `temp3`, `idx`, `alt`, `work`. Why Ruling 11: the
 values feed different consumers through different templates (not Ruling 5), are not one record pointer
@@ -25,14 +27,15 @@ variable in these roles (Q51 needs the same roles at corresponding statements).
 - work: `lensq` segment length^2, `dist` contact distance minus radius, `ang` facing difference, `weight`
   push weight (`0x400 - ang`, clamped at 0).
 Every value has a real computation (load / arithmetic / call result); temp1/temp2 `pt*` are Q20 per-branch
-constants. The min/max loop counter was a temp3 value in s2; its split matched (scores.txt r_mm, s2), so it
+constants. The min/max loop counter was a temp3 value in s2; its split matched (sandbox 0, evidence.md s3), so it
 is its own local `j` (not reused).
 
 ## (C)(2) statement lists
-`stmtcheck.py <cand> <twin>`: every twin (ab/r_*.c single-value ablations, pv_<var>.c per-variable splits,
-pv_all.c) is `IDENTICAL statement lists` with the reuse body (38/38).
+`stmtcheck.py <cand> <twin>`: every twin (single-value ablations `roles.py <cand> one`, per-variable splits
+`roles.py <cand> var`, the full split `roles.py <cand> all`) is `IDENTICAL statement lists` with the landing
+body (stmtcheck.txt, 38/38).
 
-## (D)(4) measurements (scores.txt; engine sandbox --disable all; reuse body = 0)
+## (D)(4) measurements (scores_final.txt; landing body = 0)
 | split | score | | single value | score |
 |---|---|---|---|---|
 | pv_all (every value fresh) | 524 | | dx seg/hit/off0/off1/dir/push | 14/4/180/180/393/12 |
@@ -43,10 +46,12 @@ pv_all.c) is `IDENTICAL statement lists` with the reuse body (38/38).
 | pv_temp3 | 192 | | idx seg/nearest | 131/131 |
 | pv_idx | 131 | | alt blade/hitalt | 118/107 |
 | pv_alt / pv_work | 118 / 9 | | work lensq/dist/ang/weight | 2/3/4/9 |
-Structural respellings (scores_struct.txt): side tested inline 197; hitalt inline 123; point indices u8 36;
-weight s16 20; nearest u8 129. Permuter campaign from pv_all (perm_setup.sh workspace, -j2, ~20 min, 370
-iterations, permuter_harvest.json): base 14699, best find 12734 (a retype of a split value); the reuse body
-scores 30 on the same scorer (relocation/sdata residue; 0 in the engine sandbox).
+Structural respellings (fst_*.c, scores_final.txt): side tested inline 197; hitalt inline 123; point indices
+u8 36; weight s16 20; nearest u8 129. Permuter campaign from fpv_all (perm_setup.sh workspace with the header
+overlay, -j2, ~20 min, 433 iterations, permuter_harvest_typed.json): base 14699, best find 11653 (a stale copy
+of the hit mask into dy_seg_ reused for mask_c); the landing body scores 30 on the same scorer
+(relocation/sdata residue; 0 in the engine sandbox). The untyped round: 370 iterations, best 12734
+(permuter_harvest.json).
 
 ## (D)(1)/(2) dumps and mechanism
 `dump.sh <tag> <body>` / `dumpall.sh`: splice over the INCLUDE_ASM in src/code6cac_b_tu2.c, build cpp,
@@ -54,8 +59,8 @@ scores 30 on the same scorer (relocation/sdata residue; 0 in the engine sandbox)
 -mno-abicalls -fno-builtin -w -mel -msoft-float -dr -dl -dg`, then the instrumented `tools/gcc-2.7.2/cc1`
 with `BB2_ALLOC_DEBUG=1`; the two compilers' asm is compared (IDENTITY OK for all 11). Banked:
 `alloc_<tag>.txt` (ALLOCDBG), `regs_<tag>.txt` (.lreg Register lines); `table.txt` (table.py) maps each
-value to its allocation. Pseudo map (reuse body): 85 alt, 86 temp1, 87 temp2, 90 idx, 91 dx, 92 dy,
-93 dz, 95 temp3, 103 work; in a twin the fresh values are 106.. in `roles.py` order.
+value to its allocation. Pseudo map (landing body): 86 alt, 87 temp1, 88 temp2, 91 idx, 92 dx, 93 dy,
+94 dz, 96 temp3, 104 work; in a twin the fresh values are 107.. in `roles.py` order.
 Mechanism (tools/gcc-2.7.2): flow.c counts refs / live length / calls crossed (flow.c:2081);
 local-alloc.c:472-475 gives single-block, single-death pseudos to local allocation; global.c:575 sorts the
 rest by allocno_compare; global.c find_reg :970-975 lets an allocno that crosses a call take only

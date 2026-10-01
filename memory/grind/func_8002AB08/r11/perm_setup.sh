@@ -15,7 +15,7 @@ mkdir -p "$W"
   echo 'extern void func_80032854(s32 arg0, s32 arg1, u8 *arg2, s16 *arg3);'
   cat "$CAND"
 } > "$W/src.c"
-mipsel-linux-gnu-cpp -Iinclude -Isrc -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C -P "$W/src.c" > "$W/base.c" 2>/dev/null
+mipsel-linux-gnu-cpp ${HDR_I} -Iinclude -Isrc -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C -P "$W/src.c" > "$W/base.c" 2>/dev/null
 sed 's/func_8005C8A8/func_8002AB08/' tmp/perm_c8a8/compile.sh | sed 's#sdata-exclude=sdata_exclude.txt#sdata-exclude=sdata_exclude.txt --use-comm-section#' > "$W/compile.sh"; chmod +x "$W/compile.sh"
 sed 's/func_8005C8A8/func_8002AB08/' tmp/perm_c8a8/settings.toml > "$W/settings.toml"
 sed 's/^.set gp=64$//' tools/decomp-permuter/prelude.inc > "$W/target.s"
