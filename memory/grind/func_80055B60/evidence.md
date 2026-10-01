@@ -113,3 +113,32 @@ func_8003043C, func_8003047C, func_80030524, func_80030580, func_800307D0). rev-
 func_80030D7C (D_800A36F2[2] honest; sched.c 834-836 verified: scalar-style read 20, [0] 0; Ruling 11 on the new
 body: PV2 21, temp-only 4, work-only 17 — probes/rev_d6a78b/), func_80031B24. Verdicts in each function's
 memory/grind/<func>/layer2.jsonl. Staged hunks reverted; rebuild == oracle. Next: cluster-plan-2026-10-01.md.
+
+## s5 (2026-10-01, laneC) — re-baselined on main d688fc1e5 (PracticeMenuRec typed by b3843cc02 / cb42a7dea)
+- Body (candidate.c = probes/r11b/landing.c): the s3 body with the (u16) casts on unk_6A and (s16) on unk_438
+  dropped (both members are now u16 / s16 on main), unk_A1[0]/[1] and unk_A3[0]/[1] (main's arrays), `temp =
+  rec->unk_6A == 0x11 ? 8 : 4`, func_80056FE8(rec) / func_80058580(rec) without casts (PracticeMenuRec * prototypes),
+  and the D_80106A78 scan through `Obj80106A78 *obj = &D_80106A78[i]` members. Header on top of main (probes/d6a2/
+  hdr.py): u16 unk_5C, s16 unk_6C, PadState unk_3D0 (func_80055138's four word stores respelled .held / .pressed /
+  .released / .unheld, mksrc.py), u8 unk_414[8][2], s16 unk_43E. Every text1b function 0 (tucheck).
+  Remaining interface casts at calls, as func_8002AB08's `(u8 *)self` (cb42a7dea): func_80056CB8((s32)rec),
+  func_80055948((u8 *)rec) (their completed bodies keep their own parameter types).
+- D_80106A78 cluster (rev-55B60-dm (1), cluster-plan steps 1-2, redone; probes/d6a2/): rejected-p1 patch +
+  MATRIX member (local tag Obj80106A78Mat), extern s8 D_8008E338[27][5], D_80106A7A/80/82 externs deleted,
+  D_8008EBA0[22] (dlabel = 22 shorts; func_80031890 indexes it by limb), PracticeMenuRec s16 unk_332[12]
+  (0x332..0x349, func_80030B10 shifts up to 12; func_80022580's three scalar uses -> [0]). Bodies f/*.c:
+  func_800300B4 / func_8002FF20 / func_80031890 (ent) on Obj80106A78 members; func_8003047C / func_80030580 /
+  func_800307D0 / func_80030900 / cpu_set_move_command_and_dir / func_80030BA8 on PracticeMenuRec members;
+  literals instead of neg/val holders; range tests `k >= 0x12 && k < 0x1E` and `-15 <= vy <= 15` style instead
+  of the unsigned casts (all byte-neutral); func_80031B24's `ch` = &g_practice_menu_table[other]. Interface
+  casts kept at calls into unchanged prototypes: func_80032854 (u8 *), func_80030B10 (u8 *), func_80027AD8
+  (u8 *), func_800274BC / func_8005344C (s32 *), RotMatrixX/Y/Z (TU prototype s32 *). code6cac_b_tu2 81/81,
+  code6cac_b, code6cac_tu2 94/94 all 0 (chk.sh). func_800300B4 island 2 operand `&arg0->unk_2C` changes its
+  region hash [1] (rh.py); the other two canonical bodies keep theirs.
+- Ruling 11 (D) re-measured on this exact body (probes/r11b/scores.txt; mkpv.py / abl2.py / abl_i.py adapted):
+  landing 0, PV 91; single-value splits dist 3, n 48, add 81, mask 3, da 74, ret 6, lim 4, near 6, len 20,
+  least 4, far 4, sign 14; per variable temp 67, temp2 16, temp3 4; Q51 per-loop counters slot 43, flag 5,
+  objects 31, retry 5 — identical to s3. (D)(1) dumps
+  probes/r11b/d_proof.txt: pseudos 79-83 and every per-value pseudo get the same hard registers, priorities
+  and conflict sets as s3 (renumbered: mask 723, da 788, near 656, len 761, far 657); the s3 mechanism text
+  stands.

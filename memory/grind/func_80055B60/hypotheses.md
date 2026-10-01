@@ -29,3 +29,9 @@ u16 (L1 plans the same); D_80106A78 typed as a 12 x 0x64 record array in text1b.
 Simplified to one flag-word expression (no b3..b11/flags locals), no tgt local, natural `!= 1 && != 2` tests,
 D_80106A78 byte walk. Reused locals temp/temp2/temp3/work under Ruling 11 (record in evidence.md s3, probes/r11/),
 i under Q51 (SOTN AddToInventory). land.py applies the src/header/undefined_syms edits (landing lock only).
+
+## s5 (2026-10-01, laneC) — re-baselined on main; both landings prepared (evidence.md s5)
+candidate.c = 0 on main's typed PracticeMenuRec + four members (probes/d6a2/hdr.py). D_80106A78 cluster redone
+on main (probes/d6a2/: f/*.c bodies, mkfinal.py builds the base / A / AB file sets) — all TUs 0. Ruling 11 /
+Q51 numbers identical to s3 on the new body (probes/r11b/). Next: land A (cheat-cleanup) + B (Match) under the
+landing lock, rebuild == oracle, layer-2.
