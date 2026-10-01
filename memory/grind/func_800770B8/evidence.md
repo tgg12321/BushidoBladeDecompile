@@ -228,3 +228,11 @@ gone (the reviewer's measurement tmp/rev770b8/s16sp.c: 0/175). Everything else i
 61aca6158823c712). Re-measured on the fixed body (s41 table unchanged: F 0, F_norestore 2, F_nodowhile 5,
 F_noreset 18, F_norow 19/176, splits 15-20); dumps/s41 and probes/s41 regenerated from it (same insn numbers and
 allocations as quoted in s41). Spliced main: full build oracle, sandbox 0, layer2 hash dfd71d95a3fa9ed0.
+
+## 2026-10-01 — LANDED (COMPLETED-C)
+
+Layer-2 round 2 rev-770B8-r2 PASS, full scope (re-generated the s41 dumps from the staged src, byte-equal):
+func_800770B8 dfd71d95a3fa9ed0 (match), func_80075830 82bec16a269994a7, func_800759D0 e57b77f57c869a3a,
+func_80075F80 61aca6158823c712 (cheat-cleanup). Landed in aa8064128 (Match), queue done 0b9653409; full build
+SHA1 == oracle; check_completion_integrity OK. Non-blocking reviewer note: `q->f00 = arg1` stores an s32 into the
+`void *` member without a cast (later typing cleanup of SelWork f00 / the arg1 parameter).
