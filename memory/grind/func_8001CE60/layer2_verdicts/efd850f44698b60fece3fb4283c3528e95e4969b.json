@@ -1,0 +1,8 @@
+{
+  "decision": "PASS",
+  "function": "func_8001CE60",
+  "body_hash": "4e31177480ebd161",
+  "summary": "Scoped aggregate-merge PASS against ecd42b52: both mode aliases use canonical record members with unsigned value semantics preserved. Plain table->unk_6A is truthful first-element access and restores byte-identical addressing; rejected pointer/integer identity round trip is absent. Read exact body and diff; full fresh oracle matches. This verdict covers this migration, not unrelated pre-existing scalar fields.",
+  "evidence": [],
+  "next_action": ""
+}

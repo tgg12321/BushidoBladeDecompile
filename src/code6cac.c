@@ -40,7 +40,6 @@ extern void seq_Start(s32, s32);
 
 
 extern u16 D_800A38C4;
-extern s16 D_80101F32;
 
 extern void func_8005B5AC(void);
 extern void func_8005BF3C(void);

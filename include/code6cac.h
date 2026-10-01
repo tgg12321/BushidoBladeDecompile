@@ -73,12 +73,16 @@ typedef struct PracticeMenuRec {
     s16 unk_1C;
     s16 unk_1E;
     s16 unk_20;
-    u8  unk_22[0x3C - 0x22];
+    u8  unk_22[0x2C - 0x22];
+    s32 unk_2C;
+    s32 unk_30;
+    u8  unk_34[0x3C - 0x34];
     s32 unk_3C;
-    u8  unk_40[0x5E - 0x40];
+    s16 unk_40;
+    u8  unk_42[0x5E - 0x42];
     s16 unk_5E;                    /* 0/1, set alongside func_80021A98 */
     u8  unk_60[0x6A - 0x60];
-    u16 unk_6A;
+    s16 unk_6A;                    /* SEQ state code; CHAR_STRUCT_SCHEMA.md +0x06A */
     u8  unk_6C[0x72 - 0x6C];
     s16 unk_72;
     u8  unk_74[0x7C - 0x74];
@@ -150,7 +154,9 @@ typedef struct PracticeMenuRec {
     s16 unk_276[4];
     s16 unk_27E[4];
     s16 unk_286;
-    u8  unk_288[0x31A - 0x288];
+    u8  unk_288[0x28C - 0x288];
+    s32 unk_28C;
+    u8  unk_290[0x31A - 0x290];
     s16 unk_31A;
     u8  unk_31C[0x330 - 0x31C];
     s16 unk_330;
@@ -247,7 +253,7 @@ extern s32 D_8008EB18;
 extern u8 D_8008EB1C;
 extern u8 D_8008EB28[8][2];         /* [unk_0E][flag] -> PracticeMenuRec.unk_12 */
 extern u8 D_8008EB38[8];            /* [unk_0E] -> PracticeMenuRec.unk_12 */
-/* 6-row tables func_80026DA4 selects by D_80101F32 mode (row 0..5): unk0
+/* 6-row tables func_80026DA4 selects by g_practice_menu_table[0].unk_6A mode (row 0..5): unk0
  * scales the Judge sin/cos offset, unk2 is added to y; D_8008EB6C[row] is
  * passed as func_80032854's arg1. */
 typedef struct {
@@ -647,10 +653,10 @@ typedef struct {
 } CdState;
 
 extern CdState D_80101E58;
-extern u8 D_80101EC8;
+
 extern s16 D_80101EE8;
 extern s32 D_80101F04;
-extern s16 D_80101F08;
+
 extern s16 D_80101F10;
 extern s16 D_80101F12;
 extern s16 D_80101F14;
@@ -708,14 +714,13 @@ extern s32 D_80102104;
 extern s32 D_80102108;
 extern s32 D_8010210C;
 extern s32 D_80102110;
-extern s16 D_8010214E;
-extern s32 D_80102154;
+
 extern s16 D_801021E2;
 extern s16 D_8010231A;
 extern s16 D_80102334;
 extern s32 D_80102350;
 extern s16 D_8010235C;
-extern u16 D_8010237E;
+
 extern s16 D_8010238E;
 extern s16 D_801023AA;
 extern u8 D_801023C1;
@@ -726,8 +731,7 @@ extern s32 D_80102448;
 extern s32 D_80102450;
 extern s16 D_80102462;
 extern s16 D_801024DE;
-extern s16 D_8010259A;
-extern s32 D_801025A0;
+
 extern s16 D_8010262E;
 extern s32 D_80102760;
 extern s32 D_80102764;

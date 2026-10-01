@@ -2121,7 +2121,7 @@ s32* func_8005508C(void) {
 void func_8005509C(s32 arg0)
 {
   s32 i;
-  u8 *p = ((u8 *) (&D_80101EC8)) + (arg0 * 0x44C);
+  u8 *p = (u8 *)g_practice_menu_table + (arg0 * 0x44C);
   i = 0;
   do
   {
@@ -2132,7 +2132,7 @@ void func_8005509C(s32 arg0)
 }
 void func_800550E8(s32 arg0) {
     s32 i;
-    u8 *p = (u8 *)&D_80101EC8 + arg0 * 0x44C;
+    u8 *p = (u8 *)g_practice_menu_table + arg0 * 0x44C;
     i = 0;
     do {
         p[i * 2 + 0x415] = p[i * 2 + 0x415] >> 1;
@@ -2141,7 +2141,7 @@ void func_800550E8(s32 arg0) {
 extern u32 file_GetFlag1(void);
 extern s32 rand(void);
 void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
-    u8 *p = (u8 *)&D_80101EC8 + arg0 * 0x44C;
+    u8 *p = (u8 *)g_practice_menu_table + arg0 * 0x44C;
     u8 *src;
     u8 *pair;
     u8 (*row)[4];

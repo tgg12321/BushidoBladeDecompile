@@ -13,7 +13,7 @@
 extern u8 D_8008E914[][8];
 extern s32 D_8008EA00[][4];
 extern s32 func_8001DB58(void);
-extern u16 D_80101F32;
+
 extern void player_SetCharId(s32, s32);
 extern u8 D_800A3768;
 extern u8 D_800A36A8;
@@ -788,7 +788,7 @@ void func_8002872C(void) {
         s32 a0_raw;
         s32 v1;
 
-        base = &D_80101EC8 + offset;
+        base = (u8 *)g_practice_menu_table + offset;
 
         cmp_a1 = *(s16 *)(base + 0xC);
         if (cmp_a1 != 0x1B) goto next;
@@ -981,7 +981,7 @@ static inline s32 box_overlap(u8 *scr) {
 extern s32 func_8002DAD0(u8 *obj);
 extern s32 func_8002DE20();
 
-/* Blade contact test between the two records at D_80101EC8 (stride 0x44C),
+/* Blade contact test between the two records at g_practice_menu_table (stride 0x44C),
  * called by func_8002C61C (its result goes to D_800A3824). Returns -1 unless
  * both records' +0x3C are at least 4.
  *
@@ -1024,7 +1024,7 @@ s32 func_80029454(void) {
     s32 k;
     s32 *p;
     /* rec holds two values: the record pointer of the first record loop and
-     * the record pointer of the second (each &D_80101EC8 record i). One local,
+     * the record pointer of the second (each (u8 *)g_practice_menu_table record i). One local,
      * not two: ordinary-c-judge-decidable.md Ruling 11, (E)(ii) name; (D)
      * record in memory/grind/func_80029454/r11/proof.md. */
     u8 *rec;
@@ -1040,7 +1040,7 @@ s32 func_80029454(void) {
     }
 
     for (i = 0; i < 2; i++) {
-        rec = (u8 *)&D_80101EC8 + i * 0x44C;
+        rec = (u8 *)g_practice_menu_table + i * 0x44C;
         if (*(u16 *)(rec + 0xE) == 6 || *(u16 *)(rec + 0xE) == 7) {
             continue;
         }
@@ -1088,7 +1088,7 @@ s32 func_80029454(void) {
 
     for (i = 0; i < 2; i++) {
         LeafPos *dst = &ws[i * 8];
-        rec = (u8 *)&D_80101EC8 + i * 0x44C;
+        rec = (u8 *)g_practice_menu_table + i * 0x44C;
         dst[0] = SPAD->unk00[i][0];
         dst[1] = SPAD->unk00[i][1];
         dst[2] = *(LeafPos *)(rec + 0x210);
@@ -1685,7 +1685,7 @@ void func_8002C0DC(void) {
     temp_s2 = func_8002BC68(D_800A371C);
 
     for (i = 0; i < 2; i++) {
-        u8 *e = (u8 *)&D_80101EC8 + i * 0x44C;
+        u8 *e = (u8 *)g_practice_menu_table + i * 0x44C;
         u8 *ptr = *(u8 **)e;
         s32 arg1 = *(s32 *)(ptr + 0xD8) - *(s32 *)(e + 0xD8);
         s32 arg2 = *(s32 *)(ptr + 0xE0) - *(s32 *)(e + 0xE0);
@@ -1697,7 +1697,7 @@ void func_8002C0DC(void) {
         s32 chk;
         idx = D_800A38AE;
         chk = D_800A376E;
-        var_s0 = &D_80101EC8 + idx * 0x44C;
+        var_s0 = (u8 *)g_practice_menu_table + idx * 0x44C;
 
         if (chk == 0) {
             if (D_800A3758 == 0xFF) {
@@ -1732,7 +1732,7 @@ void func_8002C0DC(void) {
 /* Accumulates a character's shadow vectors in PSX scratchpad RAM.  Everything
  * this function writes lives in the one record at 0x1F8002B8: two 3-word
  * vectors at +0xA8 and +0xB8, and the 3-word result at +0x13C.  Record 0 of
- * the 2 x 0x44C table at D_80101EC8 feeds the first vector sums and record 1
+ * the 2 x 0x44C table at g_practice_menu_table feeds the first vector sums and record 1
  * (base 0x80102314) the second.  Back to assembly per owner Q37: the landed C
  * reached record 1 by indexing past a scalar symbol, and no spelling without
  * that reaches 0; memory/grind/func_8002C22C/evidence.md. */
@@ -1740,15 +1740,15 @@ void func_8002C22C(void);
 INCLUDE_ASM("asm/funcs", func_8002C22C);
 
 /* func_8002C61C candidate - s1b (recon, 2026-09-06). Loop-3 destinations spelled against the
-   record base D_80101EC8 + off + field offset per the 2026-09-06 06:44 Judge ruling (off = i * 0x44C
+   record base g_practice_menu_table + off + field offset per the 2026-09-06 06:44 Judge ruling (off = i * 0x44C
    is the record stride; +0x174 midpoint, +0x18C centroid). */
 void func_8002C61C(void) {
-    u8 *s1 = (u8 *)&D_80101EC8;
+    u8 *s1 = (u8 *)g_practice_menu_table;
     u8 *s0 = s1 + 0x44C;
     s32 i;
     u16 mode;
 
-    mode = D_80101F32;
+    mode = g_practice_menu_table[0].unk_6A;
 
     if (mode == 0xF || mode == 0x1C || mode == 0x1D || mode == 0x1E ||
         mode == 0x1F || mode == 0x20 || mode == 0x21) {
@@ -1791,10 +1791,10 @@ void func_8002C61C(void) {
 
     }
 
-    if (D_80101F32 == 5) {
+    if ((u16)g_practice_menu_table[0].unk_6A == 5) {
         D_800A3748 = 1;
         D_800A3834 = 0x1C;
-    } else if (D_8010237E == 5) {
+    } else if ((u16)g_practice_menu_table[1].unk_6A == 5) {
         D_800A3748 = 0;
         D_800A3834 = 0x1C;
     }
@@ -1823,12 +1823,12 @@ void func_8002C61C(void) {
         s32 off;
         for (i = 0; i < 2; i++) {
             off = i * 0x44C;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x18C) = (SPAD->unkA8[i][1].x + SPAD->unkA8[i][2].x + SPAD->unkA8[i][3].x) / 3;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x190) = (SPAD->unkA8[i][1].y + SPAD->unkA8[i][2].y + SPAD->unkA8[i][3].y) / 3;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x194) = (SPAD->unkA8[i][1].z + SPAD->unkA8[i][2].z + SPAD->unkA8[i][3].z) / 3;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x174) = (SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x178) = (SPAD->unkA8[i][4].y + SPAD->unkA8[i][5].y) / 2;
-            *(s32 *)((u8 *)&D_80101EC8 + off + 0x17C) = (SPAD->unkA8[i][4].z + SPAD->unkA8[i][5].z) / 2;
+            *(s32 *)((u8 *)g_practice_menu_table + off + 0x18C) = (SPAD->unkA8[i][1].x + SPAD->unkA8[i][2].x + SPAD->unkA8[i][3].x) / 3;
+            *(s32 *)((u8 *)g_practice_menu_table + off + 0x190) = (SPAD->unkA8[i][1].y + SPAD->unkA8[i][2].y + SPAD->unkA8[i][3].y) / 3;
+            *(s32 *)((u8 *)g_practice_menu_table + off + 0x194) = (SPAD->unkA8[i][1].z + SPAD->unkA8[i][2].z + SPAD->unkA8[i][3].z) / 3;
+            *(s32 *)((u8 *)g_practice_menu_table + off + 0x174) = (SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2;
+            *(s32 *)((u8 *)g_practice_menu_table + off + 0x178) = (SPAD->unkA8[i][4].y + SPAD->unkA8[i][5].y) / 2;
+            *(s32 *)((u8 *)g_practice_menu_table + off + 0x17C) = (SPAD->unkA8[i][4].z + SPAD->unkA8[i][5].z) / 2;
         }
     }
 
@@ -4501,7 +4501,7 @@ void func_80031B24(void) {
         if (obj[4] == 0) continue;
         if (*(s32 *)(obj + 0x50) == 0) continue;
         other = obj[6] == 0;
-        ch = (u8 *)&D_80101EC8 + other * 0x44C;
+        ch = (u8 *)g_practice_menu_table + other * 0x44C;
         st = *(u16 *)(ch + 0x6A);
         if (st == 4 || st == 0x14 || st == 0xF || st == 0x1C || st == 0x1D || st == 0x1E ||
             st == 0x1F || st == 0x20 || st == 0x21 || st == 0x11) {
@@ -4662,7 +4662,7 @@ loop:
         s32 v1_v = (*(u8 *)(a3 + 1) == 0);
         ent = &g_practice_menu_table[v1_v];
     }
-    state = ent->unk_6A;
+    state = (u16)ent->unk_6A;
     a0 = state & 0xFFFF;
     if (a0 == 4) goto next;
     /* FAKE: single-level do-while(0) wrap (body executes once), mechanism:

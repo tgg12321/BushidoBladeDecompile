@@ -1,0 +1,37 @@
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+[wteng] bridge unavailable — direct wsl.exe
+{
+  "score": 7,
+  "target_insns": 342,
+  "build_insns": 342,
+  "scorable": true,
+  "func": "func_80026DA4",
+  "file": "code6cac_b",
+  "disable": "all",
+  "strip_cheat_asm": true,
+  "rules_dropped": 0,
+  "cheat_asm_stripped": 3,
+  "disabled_o": "tmp/sandbox/func_80026DA4/code6cac_b.o",
+  "candidate": "tmp/codex-26da4/current-prototypes.c"
+}
+
+── insn diff vs target — func_80026DA4 (operands UNMASKED; the score masks some of these) ──
+target 342 insns · ours 342 insns · 3 hunk(s)
+  3 source-level · 0 operand-only (reg-alloc/scheduling) · 0 not-scored (masked cascade artifact)
+
+@ hunk 1/3  insert  target[1] ours[1]  — source-level
+    ours    sw s0,48(sp)
+    ours    lui s0,0x0
+    ours    addiu s0,s0,0
+
+@ hunk 2/3  insert  target[4] ours[7]  — source-level
+    ours    jal 0
+
+@ hunk 3/3  delete  target[5] ours[9]  — source-level
+    target  jal 0
+    target  sw s0,48(sp)
+    target  lui s0,0x0
+    target  addiu s0,s0,0
+
+  NOTE: source-level hunks dominate the SCORED ones — the C is saying
+  something different. Register-seat / scheduling levers cannot close those.

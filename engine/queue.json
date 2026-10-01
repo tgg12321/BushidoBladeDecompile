@@ -4,17 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80026DA4",
-      "file": "code6cac_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (s0/s1 reuse, no admitting ruling); Q51 fix-forward FAILed layer-2 rev-26da4 (condition 2: selected-record role change at the 0x1C arm, restored at a 3-path join; no SOTN analog); owner Q37 fallback, revert 89a2a5c18; memory/grind/func_80026DA4/evidence.md",
-      "addr": "80026DA4"
-    },
-    {
       "func": "func_8002C22C",
       "file": "code6cac_b_tu2",
       "distance": 0,
@@ -346,14 +335,14 @@
     }
   ],
   "counts": {
-    "total": 28,
-    "active": 16,
+    "total": 27,
+    "active": 15,
     "by_status": {
-      "active": 16,
+      "active": 15,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 16
+      "C": 15
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"

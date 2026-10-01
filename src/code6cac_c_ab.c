@@ -436,7 +436,7 @@ void func_8003B328(void) {
     *p = v_3836;
     D_800A376A = v_36C8;
     player_SetCharId(0, v_36C8);
-    func_80022568(&D_80101EC8);
+    func_80022568((u8 *)g_practice_menu_table);
 }
 s32 func_8003B3A4(u8 *arg0) {
     u8 idx;
@@ -556,7 +556,7 @@ void func_8003B5A4(void) {
                 (&D_800A37A8)[counter] = byte;
                 D_800A3834 = 22;
                 done = 1;
-                func_80022568(&D_80101EC8);
+                func_80022568((u8 *)g_practice_menu_table);
                 D_800A3907 = 0;
                 break;
             }

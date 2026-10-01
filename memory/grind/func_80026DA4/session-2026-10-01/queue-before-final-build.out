@@ -1,0 +1,13 @@
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+{
+  "ok": false,
+  "func": "func_80026DA4",
+  "reason": "current build is unmatched or stale \u2014 run `verify-oracle --rebuild` first",
+  "freshness": {
+    "fresh": false,
+    "reason": "build inputs changed",
+    "changed": [
+      "Makefile"
+    ]
+  }
+}

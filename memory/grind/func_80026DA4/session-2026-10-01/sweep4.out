@@ -1,0 +1,18 @@
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/timer-after-base.c       score    9   insns 342/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/base-after-state.c       score    9   insns 342/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/base-array0.c            score    9   insns 342/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/wrap-0-0.c               score    9   insns 342/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/wrap-1-1.c               score   11   insns 342/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/wrap-2-2.c               score   17   insns 342/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/wrap-0-1.c               score   12   insns 343/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/wrap-1-2.c               score   11   insns 342/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/wrap-0-2.c               score   10   insns 343/342

@@ -21,7 +21,7 @@ extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
 extern void seq_Start(s32, s32);
 extern u16 D_800A38C4;
-extern s16 D_80101F32;
+
 extern void func_8005B5AC(void);
 extern void func_8005BF3C(void);
 extern void func_8005B9C4(void);
@@ -973,7 +973,7 @@ void func_8001B6F4(void) {
 void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 val) {
     s32 inv_frac = 0x1000 - frac;
     s32 inv_s1 = 0x1000 - frac_s1;
-    u8 *base = (u8 *)&D_80101EC8 + D_800A3748 * 0x44C;
+    u8 *base = (u8 *)g_practice_menu_table + D_800A3748 * 0x44C;
     s32 zval;
     s32 dx;
     s32 dy;
@@ -1229,7 +1229,7 @@ void func_8001C444(void) {
     D_80102778.unk_F = 0;
 }
 void func_8001C4C0(void) {
-    u16 v = D_80101F32;
+    u16 v = g_practice_menu_table[0].unk_6A;
     if (v == 0x32 || v == 0x11) {
         func_800218C8(0);
         {
@@ -1263,12 +1263,12 @@ void func_8001C51C(void) {
     func_80021280(1);
 }
 /* Initialise player-entry 0 of the 0x44C-stride player-entry table at
- * D_80101EC8 -- same table, same byte-offset addressing as func_8001EEB4 /
+ * g_practice_menu_table -- same table, same byte-offset addressing as func_8001EEB4 /
  * func_8001EFA0 / func_80021A98 elsewhere in this file. */
 void func_8001C624(void) {
     typedef struct { s32 a, b, c, d; } Blk16;
     typedef struct { s32 a, b, c; } Blk12;
-    u8 *e = (u8 *)&D_80101EC8;
+    u8 *e = (u8 *)g_practice_menu_table;
     s32 local[3];
     s32 x, y, z;
 
@@ -1618,14 +1618,14 @@ void func_8001CE60(void) {
             D_800A38B0 = 0;
             D_800A3920 = 1;
             D_800A3898[D_800A38B0 ^ 1]++;
-        } else if ((u16)D_80101F32 == 6 || D_8010237E == 6) {
+        } else if ((u16)g_practice_menu_table->unk_6A == 6 || (u16)g_practice_menu_table[1].unk_6A == 6) {
             D_800A3816 = 0x3C;
         } else if (D_80101F79 == 2) {
             u16 id;
 
             func_8005C650(0x9F, 0x7F, 0x7F);
             D_800A37E1 = 1;
-            id = D_80101F32;
+            id = g_practice_menu_table[0].unk_6A;
             if (id == 0x13 || id == 0x1B || id == 0x30 || id == 0x19 || id == 0x1A || id == 0x18) {
                 D_800A38B0 = 0;
             } else {
@@ -1636,7 +1636,7 @@ void func_8001CE60(void) {
 
             func_8005C650(0x9F, 0x7F, 0x7F);
             D_800A37E1 = 1;
-            id = D_8010237E;
+            id = g_practice_menu_table[1].unk_6A;
             if (id == 0x13 || id == 0x1B || id == 0x30 || id == 0x19 || id == 0x1A || id == 0x18) {
                 D_800A38B0 = 1;
             } else {
@@ -2007,7 +2007,7 @@ void func_8001E404(void) {
             }
         }
         if (D_800A36FA == 2) goto s2_default;
-        if ((u16)D_80101F32 == 0x11 || (u16)D_8010237E == 0x11) {
+        if ((u16)g_practice_menu_table[0].unk_6A == 0x11 || (u16)g_practice_menu_table[1].unk_6A == 0x11) {
             s2 = (s32 *)&D_800F6608;
             D_800A36FA = 1;
         } else {
@@ -2103,7 +2103,7 @@ void func_8001E6E4(s32 arg0) {
 }
 void func_8001E800(void) {
     s32 v = D_800A36F6;
-    u8 *ptr = (u8 *)(&D_80101EC8 + v * 1100);
+    u8 *ptr = (u8 *)g_practice_menu_table + v * 1100;
     s32 a1;
     if (ptr[0x62] & 1) {
         a1 = *(s16 *)(ptr + 0xE);
@@ -2171,7 +2171,7 @@ void func_8001EA84(void) {
 
     D_800A37B8 += 1;
     D_800A3778 = camera_GetBoneData();
-    base = (u8 *)&D_80101EC8;
+    base = (u8 *)g_practice_menu_table;
     if (D_800A3748 == 0) {
         base += 0x44C;
     }
@@ -2255,7 +2255,7 @@ void func_8001EA84(void) {
 /* kengo:HIGH  |  nm_cpu/cpu_get_move_pattern_table_number  |  265i  |  -3 near-exact */
 void func_8001EEB4(void) {
     s8 idx = D_800A3748;
-    u8 *entry = (u8 *)&D_80101EC8 + idx * 0x44C;
+    u8 *entry = (u8 *)g_practice_menu_table + idx * 0x44C;
     u16 a1 = *(u16 *)(entry + 0x6A);
 
     if (a1 != 0xA && *(s16 *)(entry + 0x72) == 0 &&
@@ -2280,7 +2280,7 @@ void func_8001EFA0(void) {
 
     D_800A37B8 += 1;
     D_800A3778 = camera_GetBoneData();
-    func_8001BCF0((u8 *)&D_80101EC8 + D_800A3748 * 1100, (D_800A37B8 << 12) / 105);
+    func_8001BCF0((u8 *)g_practice_menu_table + D_800A3748 * 1100, (D_800A37B8 << 12) / 105);
     func_8001E404();
     func_80039320();
     func_8002006C();
@@ -2774,7 +2774,7 @@ void func_8001FBE8(void) {
         func_80021A98(D_800A38AE, (u8 *)D_800A36D8, D_800A381C);
         if (D_800A36CA & 0x1000) {
             s32 o = (D_800A38AE == 0) ? 0x44C : 0;
-            *(s16 *)(&D_80101EC8 + o + 0x4C) = 1;
+            *(s16 *)((u8 *)g_practice_menu_table + o + 0x4C) = 1;
         }
         func_80021A98(D_800A38AE == 0, (u8 *)D_800A36D8, D_800A381C);
         D_8010238E = 2;
@@ -2782,7 +2782,7 @@ void func_8001FBE8(void) {
         return;
     }
     if (D_800A3758 != 0xFF) {
-        rec = &D_80101EC8 + D_800A3758 * 0x44C;
+        rec = (u8 *)g_practice_menu_table + D_800A3758 * 0x44C;
         if (D_800A3769 != 0) {
             *(s16 *)(rec + 0x286) = 1;
             *(s16 *)(rec + 0x94) = 0;
@@ -2803,14 +2803,14 @@ void func_8001FBE8(void) {
         D_800A3758 = 0xFF;
         return;
     }
-    if (D_8010214E != -1) {
+    if (g_practice_menu_table[0].unk_286 != -1) {
         return;
     }
-    if (D_8010259A != -1) {
+    if (g_practice_menu_table[1].unk_286 != -1) {
         return;
     }
     for (i = 0; i < 2; i++) {
-        rec = &D_80101EC8 + i * 0x44C;
+        rec = (u8 *)g_practice_menu_table + i * 0x44C;
         if (*(s16 *)(rec + 0x7A) == 0) {
             continue;
         }
@@ -3108,7 +3108,7 @@ void func_80021210(void) {
  */
 void func_80021280(s32 a0) {
     s32 a1 = 0;
-    u8 *a2 = (u8 *)&D_80101EC8 + a0 * 1100;
+    u8 *a2 = (u8 *)g_practice_menu_table + a0 * 1100;
     s32 a3 = *(u16 *)(a2 + 0x48);
     u16 *v1 = (u16 *)&D_800A38C4;
 
@@ -3357,7 +3357,7 @@ s32 func_80021A3C(s32 a0, s32 a1) {
     return D_80102760 + idx * 2;
 }
 void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
-    u8 *s0 = ((u8 *) (&D_80101EC8)) + (arg0 * 1100);
+    u8 *s0 = (u8 *)g_practice_menu_table + (arg0 * 1100);
     s32 a3;
     if ((*((s16 *) (s0 + 0x4C))) != 0) {
         a3 = *((s16 *) ((*((s32 *) s0)) + 0x4A));
@@ -3909,7 +3909,7 @@ void func_80022F34(void) {
 
 loop_22F34:
     {
-        u8 *rec = (u8 *)&D_80101EC8 + offset;
+        u8 *rec = (u8 *)g_practice_menu_table + offset;
 
         if (*(s16 *)(rec + 6) != 0) {
             s32 mode = D_800A38DC;

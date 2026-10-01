@@ -1,0 +1,10 @@
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/current.c                score    0   insns 342/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/current-prototypes.c     score    7   insns 342/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/current-no-loop-reset.c  score   61   insns 340/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/current-split.c          score   16   insns 342/342
+[wteng] target=main  root=C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile
+tmp/codex-26da4/current-plain.c          score   82   insns 335/342
