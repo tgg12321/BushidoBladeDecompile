@@ -655,7 +655,9 @@ def drop_externs(nm, f, src):
     scope) and a header's go (a header line also decided cc1's static emission order)"""
     pat0 = r"^extern\s+[^;{}()]*\b%s\b(?:\s*\[[^\]]*\])*\s*;[^\n]*\n" % re.escape(nm)
     pat1 = r"^[ \t]*extern\s+[^;{}()]*\b%s\b(?:\s*\[[^\]]*\])*\s*;[^\n]*\n" % re.escape(nm)
-    src, n = re.subn(pat0, "", src, flags=re.M)
+    src, n = re.subn(pat1, "", src, flags=re.M)   # F's own file- and block-scope externs (the static precedes them)
+    if n:
+        log(f"EXTERN-REMOVED src/{f}.c: {n} extern line(s) of {nm} (its own static now)")
     for g in sorted(os.listdir("src")):
         if not g.endswith(".c") or g == f"{f}.c":
             continue
@@ -981,7 +983,7 @@ for title, pfx in (("Blocks extended to their last gp-reached object, declared i
                    ("(A1; A9, owner ruling Q81) objects named by code but left in the data blob", "ORPHAN-LEFT"),
                    ("(A9, owner ruling Q80) objects named by a pointer in asm data, defined by layout", "A9 "),
                    ("Arrays sized from the original's object boundary", "SIZED-FROM-GAP"),
-                   ("(K2) externs of the new statics removed from other files", "EXTERN-REMOVED"),
+                   ("(K2) externs of the new statics removed (own file and other files)", "EXTERN-REMOVED"),
                    ("(K2) header externs removed", "HEADER"),
                    ("Held / blocked blocks", "HELD"), ("Blocked", "BLOCKED"), ("K2 violations", "K2-VIOLATION"),
                    ("K1 non-zero", "K1-NONZERO"), ("Aliases", "ALIAS"), ("Overlaps", "OVERLAP")):
