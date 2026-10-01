@@ -707,6 +707,94 @@ class MaspsxProcessor:
                             )
                         self.sdata_entries[current_symbol] += size
 
+    _DATA_DIRECTIVES = (".word", ".half", ".short", ".byte", ".space", ".ascii", ".asciz", ".string")
+    _OBJECT_HEAD = (".globl", ".align", ".type", ".size")
+    _LABEL_RE = re.compile(r"^([A-Za-z_][\w.$]*):$")
+
+    @staticmethod
+    def _string_bytes(arg: str) -> int:
+        """byte length of an assembler string literal: an escape (\\n, \\", \\\\, \\NNN octal, \\xHH)
+        is one byte"""
+        s = arg.strip()
+        assert s.startswith('"') and s.endswith('"'), arg
+        s, n, i = s[1:-1], 0, 0
+        while i < len(s):
+            if s[i] == "\\":
+                i += 1
+                if i < len(s) and s[i] in "01234567":
+                    j = i
+                    while j < len(s) and j < i + 3 and s[j] in "01234567":
+                        j += 1
+                    i = j
+                elif i < len(s) and s[i] == "x":
+                    i += 1
+                    while i < len(s) and s[i] in "0123456789abcdefABCDEF":
+                        i += 1
+                else:
+                    i += 1
+            else:
+                i += 1
+            n += 1
+        return n
+
+    def _data_size(self, line: str) -> int:
+        op, _, arg = line.partition("\t") if "\t" in line else line.partition(" ")
+        op, arg = op.strip(), arg.strip()
+        if op == ".space":
+            return int(arg, 0)
+        if op == ".word":
+            return 4 * (arg.count(",") + 1)
+        if op in (".half", ".short"):
+            return 2 * (arg.count(",") + 1)
+        if op == ".byte":
+            return arg.count(",") + 1
+        if op in (".asciz", ".string"):
+            return self._string_bytes(arg) + 1
+        if op == ".ascii":
+            return self._string_bytes(arg)
+        raise Exception(f"Unable to size data directive: {line}")
+
+    def _small_data_to_sdata(self, lines):
+        """cc1psx -G<n> emits an initialized object of <= n bytes in `.sdata`; our cc1 emits it in
+        `.data` (owner rulings Q65/Q68, amendment A3). Move each such `.data` object as a unit - its
+        `.globl`/`.align`/`.type`/`.size` head, label and data directives - into `.sdata`, then
+        return to `.data`."""
+        out, sec, i, n = [], None, 0, len(lines)
+        while i < n:
+            s = lines[i].strip()
+            if s.startswith(".data"):
+                sec = "data"
+            elif s.startswith((".sdata", ".rdata", ".text", ".section", ".bss", ".sbss")):
+                sec = "other"
+            if sec == "data":
+                j = i
+                while j < n and lines[j].strip().startswith(self._OBJECT_HEAD):
+                    j += 1
+                m = self._LABEL_RE.match(lines[j].strip()) if j < n else None
+                if m and not m.group(1).startswith(("$", ".")):
+                    name, declared = m.group(1), None
+                    heads = [lines[x].strip() for x in range(i, j)]
+                    # every head line names this object (an `.align` names none)
+                    if all(h.startswith(".align") or re.split(r"[\s,]+", h)[1] == name for h in heads):
+                        for h in heads:
+                            if h.startswith(".size"):
+                                declared = int(re.split(r"[\s,]+", h)[2], 0)
+                        k, size = j + 1, 0
+                        while k < n and lines[k].strip().startswith(self._DATA_DIRECTIVES):
+                            size += self._data_size(lines[k].strip())
+                            k += 1
+                        if declared is not None:
+                            size = declared
+                        if 0 < size <= self.sdata_limit:
+                            out += [".sdata"] + lines[i:k] + [".data"]
+                        else:
+                            out += lines[i:k]
+                        i = k
+                        continue
+            out.append(lines[i])
+            i += 1
+        return out
+
     def process_lines(self):
         self.is_reorder = True
         self.skip_instructions = 0
@@ -716,6 +804,8 @@ class MaspsxProcessor:
         self.sbss_entries = {}
         self.sdata_entries = {}
 
+        if self.sdata_limit > 0:
+            self.lines = self._small_data_to_sdata(self.lines)
         self.preprocess_lines()
 
         # Prefill-label gate (per-function, keyed on `.ent`; inert otherwise).

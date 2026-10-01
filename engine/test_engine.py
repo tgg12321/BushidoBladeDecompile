@@ -5096,6 +5096,33 @@ def test_maspsx_static_lcomm() -> None:
        [res2[res2.index("a1:") - 1], res2[res2.index("b8:") - 1]], [".align 2", ".align 2"])
 
 
+def test_maspsx_small_data_sdata() -> None:
+    """Owner rulings Q65/Q68 (amendment A3): under -G8 a <= 8-byte initialized object (global or static) our cc1
+    put in `.data` moves to `.sdata` as a unit (its .align/.type/.size/label/data; cc1psx -G8's choice) and is gp;
+    two 3-byte arrays keep their own alignment; without -G nothing moves (byte-neutral today). Input: our cc1's
+    real output shape."""
+    import sys
+    sys.path.insert(0, str(Path("tools/maspsx").resolve()))
+    try:
+        from maspsx import MaspsxProcessor
+    finally:
+        sys.path.pop(0)
+    sd = [".data", ".align\t2", ".type\t a,@object", ".size\t a,3", "a:", ".byte\t1", ".byte\t2", ".byte\t3",
+          ".align\t2", ".type\t b,@object", ".size\t b,3", "b:", ".byte\t4", ".byte\t5", ".byte\t6",
+          ".align\t2", ".type\t s8,@object", ".size\t s8,8", "s8:", '.string\t"abcdefg"',
+          ".text", ".ent\tf", "lbu\t$4,b+1", "lbu\t$5,s8+3", ".end\tf"]
+
+    def run(g):
+        return [l.split("#")[0].strip() for l in MaspsxProcessor(sd, sdata_limit=g).process_lines() if l.split("#")[0].strip()]
+    r8 = run(8)
+    kb = r8.index("b:")
+    check("maspsx -G8: static 3-byte arrays and an 8-byte .string move to .sdata as units and are gp",
+          ".section .sdata" in r8 and r8[kb - 3] == ".align\t2" and "lbu\t$4,%gp_rel(b+1)($gp)" in r8
+          and "lbu\t$5,%gp_rel(s8+3)($gp)" in r8)
+    check("maspsx without -G: no .sdata move, no gp",
+          ".section .sdata" not in run(0) and "lbu\t$4,%gp_rel(b+1)($gp)" not in run(0))
+
+
 def test_maspsx_fingerprint() -> None:
     """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
     HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
@@ -5336,6 +5363,7 @@ def main() -> int:
     test_queue_remeasure_source_integrity()
     test_maspsx_indexed_operand_not_gp()
     test_maspsx_static_lcomm()
+    test_maspsx_small_data_sdata()
     test_maspsx_fingerprint()
     test_objdump_failure_is_loud()
     test_prologue_config_fingerprint()
