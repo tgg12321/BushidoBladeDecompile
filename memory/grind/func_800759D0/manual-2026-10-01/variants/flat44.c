@@ -11,12 +11,6 @@
  * f65+3 slot sprites, and closes with two DR_MODE/AddPrim pairs. */
 void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     S_80074488 s;
-    /* table holds three values, each a sprite-sheet pointer table read from the
-     * root at arg0[0]: the page table at +0x14 (the head; read by the head and
-     * loops 1-2), the slot table at +0x20 + f65 * 4 (reloaded every loop-3
-     * iteration), and the page table at +0x14 again for the closing DR_MODE
-     * pair.  One local, not three: ordinary-c-judge-decidable.md Ruling 11;
-     * (A)-(H) record memory/grind/func_800759D0/manual-2026-10-01/r11.md. */
     s32 *table;
     s32 color;
     /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
@@ -77,20 +71,13 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = arg1 * 10; i < arg1 * 10 + 10; i++) {
         /* i indexes the whole table flat (arg1 * 10 + cell), from the first record. */
         /* SOTN: src/dra/62DEC.c:1091 @aa53500 */
-        /* FAKE: pointer form of the flat read (Q53).  `&D_8009BCF8[0][0] + i`
-         * forms the address as its own value, so cse reuses it for the second
-         * read and loop.c hoists the table base into $s6 (the target's
-         * `lui/addiu $s6` and 2-byte step); D_8009BCF8[0][i].unk0 at the three
-         * sites folds the symbol into each load (`lui $at; addu; lbu %lo`) and
-         * scores 44 (365 insns).  Ledger:
-         * memory/grind/func_800759D0/manual-2026-10-01/r11.md */
-        u8 entry = (&D_8009BCF8[0][0] + i)->unk0;
+        u8 entry = D_8009BCF8[0][i].unk0;
 
         if (D_8009BCE4[entry] & 1) {
             s.sp18 = table[entry + 1];
             cells = s.sp18 + 0x24;
             s.sp1C = cells;
-            if (D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
+            if (D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0 == D_8009BCF8[0][i].unk0) {
                 s.sp40 = 1;
                 s.sp18 = s.sp18 + 12 + arg3 * 12;
             } else {
@@ -99,7 +86,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.sp34 = 0;
             s.sp20 = arg0[4];
             arg0[4] = func_8007352C((s32)&s);
-            if (D_8009BCE4[(&D_8009BCF8[0][0] + i)->unk0] & (4 << arg3)) {
+            if (D_8009BCE4[D_8009BCF8[0][i].unk0] & (4 << arg3)) {
                 func_80075830(arg0, i, arg3, 1);
             }
         } else {

@@ -400,3 +400,11 @@ declarations, the SELWORK f48 view) re-land unchanged once 1-4 are in, each with
   test is `f3C[0] != 0 || f3C[1] != 0`, which fold_truthop merges into the one word load, so no f3C union and no
   respell of the other f3C users. Remaining device: the placeholder tail duplicated in both arms (FAKE,
   duplicated-statement-into-arms + Q47; shared tail 6). Case 2 stores in each arm like case 1 (natural; `next` 7).
+
+## laneA 2026-10-01 — round-1 FAIL (rev-759D0) and the Ruling 11 package for `table`
+Split from the func_80075F80 landing (f79e2153c). rev-759D0 FAILed 56305667e7030c02 on `s32 *table` (three
+writes, no Ruling 5-12/Q51 cover) and asked for the Q53 FAKE + receipt on the flat read. Package:
+manual-2026-10-01/r11.md (values, (A)-(H), dumps/, variants/, permuter.txt). Key fact: the target holds all
+three loads (head, every loop-3 iteration, tail) in $s4; as its own local the loop-3 value is block-local and
+local-alloc gives it $v1, and the split head local drops to priority 568 behind pseudo 161 for $s4 (split 32,
+ablations 11 / 2 / 27, permuter from the split body only re-merges the locals). Flat read: FAKE, 44 receipt.

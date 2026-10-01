@@ -1,0 +1,33 @@
+;; Function func_800759D0
+;; Register dispositions:
+72 in 16  73 in 19  75 in 18  76 in 20  78 in 30  79 in 17  
+80 in 5  81 in 2  82 in 3  84 in 2  85 in 2  86 in 2  
+87 in 2  88 in 2  90 in 2  91 in 2  92 in 2  94 in 2  
+96 in 2  97 in 3  98 in 3  99 in 2  102 in 4  104 in 4  
+105 in 2  107 in 2  108 in 2  109 in 3  110 in 4  112 in 4  
+113 in 4  116 in 2  117 in 2  118 in 2  120 in 2  121 in 2  
+123 in 2  124 in 2  125 in 2  128 in 2  129 in 3  130 in 3  
+131 in 3  133 in 7  134 in 2  135 in 2  136 in 2  137 in 3  
+139 in 5  140 in 2  141 in 22  143 in 2  144 in 8  145 in 3  
+147 in 2  149 in 2  152 in 2  153 in 2  155 in 6  157 in 2  
+159 in 21  160 in 2  163 in 4  166 in 3  167 in 3  174 in 2  
+176 in 3  178 in 3  181 in 2  182 in 2  183 in 3  194 in 3  
+195 in 2  196 in 2  199 in 2  200 in 2  201 in 23  203 in 2  
+204 in 2  206 in 5  207 in 2  210 in 2  211 in 2  213 in 3  
+216 in 3  217 in 2  218 in 2  219 in 3  224 in 3  225 in 2  
+226 in 2  227 in 5  229 in 4  230 in 3  233 in 3  235 in 3  
+236 in 2  237 in 6  238 in 2  240 in 2  241 in 2  243 in 2  
+254 in 2  255 in 2  257 in 3  262 in 2  267 in 2  269 in 2  
+272 in 2  273 in 2  274 in 2  276 in 2  277 in 3  278 in 3  
+280 in 2  281 in 2  282 in 4  284 in 2  286 in 2  288 in 2  
+289 in 2  291 in 2  292 in 3  293 in 3  294 in 5  296 in 2  
+297 in 2  298 in 3  301 in 2  302 in 3  304 in 2  305 in 2  
+307 in 4  308 in 2  310 in 2  311 in 2  312 in 3  316 in 19  
+317 in 2  322 in 2  326 in 2  327 in 2  328 in 22  330 in 2  
+332 in 2  333 in 2  334 in 21  338 in 2  339 in 2  340 in 2  
+341 in 2  342 in 2  344 in 3  345 in 2  346 in 4  348 in 4  
+350 in 4  351 in 2  353 in 2  354 in 2  356 in 2  358 in 2  
+359 in 4  360 in 4  362 in 2  363 in 2  364 in 2  365 in 2  
+370 in 3  371 in 2  377 in 2  381 in 2  382 in 2  388 in 2  
+389 in 2  
+
