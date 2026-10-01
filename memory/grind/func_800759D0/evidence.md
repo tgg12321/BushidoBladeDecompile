@@ -408,3 +408,9 @@ manual-2026-10-01/r11.md (values, (A)-(H), dumps/, variants/, permuter.txt). Key
 three loads (head, every loop-3 iteration, tail) in $s4; as its own local the loop-3 value is block-local and
 local-alloc gives it $v1, and the split head local drops to priority 568 behind pseudo 161 for $s4 (split 32,
 ablations 11 / 2 / 27, permuter from the split body only re-merges the locals). Flat read: FAKE, 44 receipt.
+
+## LANDED 2026-10-01 — COMPLETED-C (Match 5cdd33b7d)
+Round 2 PASS rev-759D0-r2 on 56305667e7030c02 (same hash as the round-1 FAIL; only annotations changed):
+Ruling 11 `table` package verified against fresh dumps (f65 is u8, loop 3 always runs, no tail re-store);
+Q53 flat-read FAKE + flat44 receipt; reviewer split spellings rv_idx / rv_scoped (32 each) banked.
+SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa.
