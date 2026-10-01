@@ -130,3 +130,9 @@ Loop dump (probes-2026-09-30/loopdump_22F34.txt, `cc1 <CC_FLAGS> -dL`): the do-w
 offset register (reg 121) while the table base symbol stays a separate never-incremented value re-added each
 pass — the target's s1 += 0x44C / addu with &D_80101EC8. The goto-loop index form (l1c3) has no loop notes, so
 loop.c never runs on it and the i * 0x44C shift/add chain is recomputed (the 3 extra instructions).
+Plan update (orchestrator, 2026-09-30): L1 lands with three disclosed call-boundary pointer casts
+(`func_800324D0((u8 *)s0)`, `func_8001FB34((s32 *)rec, ...)`, `func_8001FAE4((s32 *)rec->unk_50)`).
+func_8001FB34 joins L2 (parameter retyped to PracticeMenuRec *, new member s16 unk_26C; its 7 field reads become
+members). Separate follow-up debt, outside the record-table plan: func_8001FAE4 (walks the motion/sound entry held
+in unk_50 as integers: `(s32 *)((s32)arg0 + 0xA)`, +8/+4 steps) and func_800324D0 (code6cac_b_tu2.c, `u8 *pad`
+parameter read ~25 times; prototypes in code6cac.c / code6cac_tu2.c match its definition).
