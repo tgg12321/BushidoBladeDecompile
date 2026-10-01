@@ -33,8 +33,8 @@ s15_msg.txt (generated; full generator log s15_log.txt). Commit ids: q56/adopt/s
 makes the reviewed patches stale even where they would still apply: step 14's A8 respelling, step 15's
 definitions, extern removal and blob cut are generated from the base tree, and steps 14 / 16 edit
 `engine/queue.json`, which every `queue done` rewrites (textual conflict). The pending landings:
-- func_80058580 and func_8005C8A8 (text1b.c; both stay in text1b after step 03's boundary move, which ends
-  text1b at func_80060768) - affects steps 08/09 (text1b's declarations, the M3 merge), 14 (any new use of
+- func_80058580 (text1b.c; it stays in text1b after step 03's boundary move, which ends text1b at
+  func_80060768; func_8005C8A8 is banked, not landing - owner Q77) - affects steps 08/09 (text1b's declarations, the M3 merge), 14 (any new use of
   D_800A33E8/EA, D_800A345C/5E, D_800A350C..12, g_anim_*, D_800A344C/50/54/58 gets respelled; a new
   declaration of one of them with a different type is a compile error the regeneration surfaces) and 15
   (text1b's sdata/static block typing takes each name's first declaration; new gp uses change nothing if
