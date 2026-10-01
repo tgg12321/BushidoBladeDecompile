@@ -12,3 +12,10 @@
   5. Resolve the func_80057E84 prototype conflict (below).
 - DEPENDS [F]: candidate has `extern void func_80057E84(u8 *, u8 *, s32, s32)` (:21, call :346) but func_80057E84's body takes `PathWalker *` and sits earlier in text1b.c (2959 vs 2997) -> land func_80057E84 first and adopt PathWalker here. Landing deletes the transcribed jtbl arrays just before line 2997. Shares the D_80099D8F alias with func_80055B60 and the record with func_80023F08.
 - ODDS/LANE: manual, 3+ sessions (mostly Ruling 11 paperwork), ~35% [I].
+
+## 2026-10-01 laneB (s4) — re-baseline 30, banked
+Re-measured 30 (unchanged). Dumps of the case-2 temp: local-alloc lowest-free-reg (no MIPS REG_ALLOC_ORDER),
+so the target's a1 needs v0..a0 busy in that block (evidence.md [s4]). Not attempted this session (context
+budget): Ruling 11 value audit for work1..work4 (plan step 3), D_8009A838 array spelling (needs
+func_80056FE8's raw `(s32)&D_8009A838 + …` read respelled in the same landing), func_80057E84 prototype
+(still rotated; candidate's extern is the only declaration in text1b.c, no conflict today).
