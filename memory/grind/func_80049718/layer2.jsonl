@@ -1,0 +1,1 @@
+{"func": "func_80049718", "addr": "80049718", "verdict": "FAIL", "body_hash": "1c739c42cf71ae14", "body_kind": "c", "file": "text1b", "reviewer": "rev-49718", "scope": "match", "date": "2026-10-01T09:18:38Z", "head": "f7c97d752", "notes": "SOTN tag form names symbol; geo_01.c:10 does not admit the second post-read |= 0x8000 write; all other constructs PASS"}

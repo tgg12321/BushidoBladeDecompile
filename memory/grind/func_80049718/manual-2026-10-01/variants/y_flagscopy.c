@@ -13,9 +13,10 @@ extern MATRIX *MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
  * position, and the matrix is copied back into the part.  The second object
  * (type 3, parent = the first) follows unless flags is still 1.  Objects and
  * parts are walked by byte offset, as func_80049A2C below does. */
-void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
+void func_80049718(s32 arg0, s32 arg1, s32 *pos, s16 *rot_in) {
     SVECTOR ofs;
     s32 val58;
+    s32 flags;
     u8 *vehicle;
     u8 *obj;
     u8 *part;
@@ -25,6 +26,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
      * inside the part expression or after the call it follows the copy and
      * takes $v0 (5).  Ledger: memory/grind/func_80049718/manual-2026-10-01/scores.txt */
     s32 side;
+    flags = arg1;
     if (D_800EF980[arg0] < 0) {
         func_80052C10();
     }
@@ -41,8 +43,8 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     *(s16 *)(obj + 8) = 0;
     *(s32 *)(obj + 0xC) = 0;
     *(s16 *)(obj + 0xA) = 4;
-    if (flags != 0) {
-        if (flags == 1) {
+    if (arg1 != 0) {
+        if (arg1 == 1) {
             *(s16 *)(obj + 0x10) = rot_in[0];
             *(s16 *)(obj + 0x12) = rot_in[1];
             *(s16 *)(obj + 0x14) = rot_in[2];
@@ -53,13 +55,11 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
         } else {
             /* FAKE: flags is rewritten in place - compound-assigned, read (>> 1, & 1),
              * compound-assigned again, read (!= 1) - as SOTN reuses a parameter
-             * (Q51).  Copied into a local instead, global.c's allocno order flips:
-             * rot_in's pseudo (priority 3333) outranks the table-address pseudo
-             * (3000) for $s0, against 2962 / 3333 in place (BB2_ALLOC_DEBUG; 9).
-             * Ledger:
+             * (Q51).  Copied into a local instead, the copy's pseudo outranks the
+             * table pointer for $s0 (9).  Ledger:
              * memory/grind/func_80049718/manual-2026-10-01/scores.txt */
             /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
-            flags &= 0x7FFF;
+            flags = arg1 & 0x7FFF;
             side = flags & 1;
             vehicle = (u8 *)func_8004153C(flags >> 1);
             part = vehicle + (side * 0x68 + 0x7E4);

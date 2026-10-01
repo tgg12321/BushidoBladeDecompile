@@ -43,16 +43,22 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     *(s16 *)(obj + 0xA) = 4;
     if (flags != 0) {
         if (flags == 1) {
-            *(u16 *)(obj + 0x10) = rot_in[0];
-            *(u16 *)(obj + 0x12) = rot_in[1];
-            *(u16 *)(obj + 0x14) = rot_in[2];
+            *(s16 *)(obj + 0x10) = rot_in[0];
+            *(s16 *)(obj + 0x12) = rot_in[1];
+            *(s16 *)(obj + 0x14) = rot_in[2];
             ((void (*)(SVECTOR *, MATRIX *))g_anim_func_table[0])((SVECTOR *)(obj + 0x10), (MATRIX *)(obj + 0x18));
             *(s32 *)(obj + 0x2C) = pos[0];
             *(s32 *)(obj + 0x30) = pos[1];
             *(s32 *)(obj + 0x34) = pos[2];
         } else {
-            /* flags is rewritten in place (SOTN: src/main/psxsdk/libgte/geo_01.c:10 @aa53500,
-             * rcos's `a &= 0xFFF;` on its parameter). */
+            /* FAKE: flags is rewritten in place - compound-assigned, read (>> 1, & 1),
+             * compound-assigned again, read (!= 1) - as SOTN reuses a parameter
+             * (Q51).  Copied into a local instead, global.c's allocno order flips:
+             * rot_in's pseudo (priority 3333) outranks the table-address pseudo
+             * (3000) for $s0, against 2962 / 3333 in place (BB2_ALLOC_DEBUG; 9).
+             * Ledger:
+             * memory/grind/func_80049718/manual-2026-10-01/scores.txt */
+            /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
             flags &= 0x7FFF;
             side = flags & 1;
             vehicle = (u8 *)func_8004153C(flags >> 1);
@@ -68,6 +74,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             *(s32 *)(obj + 0x2C) = *(s32 *)(obj + 0x2C) + *(s32 *)(*(u8 **)(part + 0xC) + 0x2C);
             *(s32 *)(obj + 0x30) = *(s32 *)(obj + 0x30) + *(s32 *)(*(u8 **)(part + 0xC) + 0x30);
             *(s32 *)(obj + 0x34) = *(s32 *)(obj + 0x34) + *(s32 *)(*(u8 **)(part + 0xC) + 0x34);
+            /* SOTN: src/st/lib/e_shop.c:4625 @aa53500 */
             flags |= 0x8000;
             *(MATRIX *)(part + 0x18) = *(MATRIX *)(obj + 0x18);
             val58 = *(s16 *)(vehicle + 0x1A84);

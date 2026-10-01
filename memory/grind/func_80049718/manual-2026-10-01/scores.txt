@@ -54,3 +54,11 @@ r-series (2026-10-01 later; permuter campaign `clean-noFAKE` from clean.c, its 2
   r_frame_first   r2 with the +2 store moved first                                   10
   r_noinit        r2 without val58 = 0                                               1
 Permuter: permuter.txt.
+
+Round-1 layer-2 FAIL (rev-49718, body 1c739c42cf71ae14): SOTN tag form, and geo_01.c:10 did not admit the
+second in-place write. Fix (landing body variants/final2.c, rot_in stores now s16):
+  flags in place, cited as Q51 reuse of a parameter: src/st/lib/e_shop.c:4621 / :4625 @aa53500
+  (itemId -= 0x80; read; itemId -= NUM_HAND_ITEMS; read; splat.us.stlib.yaml:112 c, no INCLUDE_ASM in file).
+  y_flagscopy  final2 with flags copied into a local                                 9
+               (alloc_flags.txt: rot_in pri 3333 > table address 3000 for $s0; in place 2962 < 3333)
+  final2 (s16 stores)                                                                 0
