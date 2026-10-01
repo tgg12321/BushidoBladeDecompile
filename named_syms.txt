@@ -905,22 +905,8 @@ g_char_pos_centroid_x                                   = 0x80102054;  /* +0x18C
 g_char_pos_centroid_y                                   = 0x80102058;  /* +0x190 -- centroid Y */
 g_char_pos_centroid_z                                   = 0x8010205C;  /* +0x194 -- centroid Z */
 
-/* === Per-char struct sub-fields part 2 (2026-05-17) -- vec3 pair blocks === */
-/* Found via Vec3i cast pattern: `(Vec3i *)&D_801020D8` and */
-/* `(Vec3i *)((u8 *)&D_801020D8 + 0x44C)` -- confirms vec3 spans across records. */
-/* Two pairs of (position, delta) vec3s at +0x210 and +0x234. */
-g_char_vec3_a_pos_x                                     = 0x801020D8;  /* +0x210 -- vec3 A position X (record 0) */
-g_char_vec3_a_pos_y                                     = 0x801020DC;  /* +0x214 -- vec3 A position Y */
-g_char_vec3_a_pos_z                                     = 0x801020E0;  /* +0x218 -- vec3 A position Z */
-g_char_vec3_a_delta_x                                   = 0x801020E4;  /* +0x21C -- vec3 A delta X (added to pos_x in scratchpad write) */
-g_char_vec3_a_delta_y                                   = 0x801020E8;  /* +0x220 -- vec3 A delta Y */
-g_char_vec3_a_delta_z                                   = 0x801020EC;  /* +0x224 -- vec3 A delta Z */
-g_char_vec3_b_pos_x                                     = 0x801020FC;  /* +0x234 -- vec3 B position X */
-g_char_vec3_b_pos_y                                     = 0x80102100;  /* +0x238 -- vec3 B position Y */
-g_char_vec3_b_pos_z                                     = 0x80102104;  /* +0x23C -- vec3 B position Z */
-g_char_vec3_b_delta_x                                   = 0x80102108;  /* +0x240 -- vec3 B delta X */
-g_char_vec3_b_delta_y                                   = 0x8010210C;  /* +0x244 -- vec3 B delta Y */
-g_char_vec3_b_delta_z                                   = 0x80102110;  /* +0x248 -- vec3 B delta Z */
+/* === Per-char struct sub-fields part 2 (2026-05-17) === */
+/* +0x210 / +0x234 are PracticeMenuRec.unk_210 / unk_234 (include/code6cac.h). */
 g_char_vec3_b_w_or_alpha                                = 0x80102114;  /* +0x24C -- separately-accessed 7th word, likely W or alpha */
 
 /* World-position vec3 at +0xD8 -- delta'd between players for 2D distance via g_sqrt_table_u8 */
@@ -2400,7 +2386,6 @@ g_active_slot_flags_12_plus_2                           = 0x80106A82;  /* +2 fro
 /* === Tier 2 batch: cross-character P2..PN paired fields (2026-05-17) === */
 /* 4 P2..PN addresses for already-named P1 fields in */
 /* g_practice_menu_table (0x44C stride per char, 28 chars). */
-g_practice_menu_table_p2                                = 0x80102314;  /* P2 of g_practice_menu_table (P1 = 0x80101EC8) */
 g_char_world_pos_x_p2                                   = 0x801023EC;  /* P2 of g_char_world_pos_x (P1 = 0x80101FA0) */
 g_char_world_pos_z_p2                                   = 0x801023F4;  /* P2 of g_char_world_pos_z (P1 = 0x80101FA8) */
 _snd_openflag                             = 0x801027E4;  /* P3 of g_char_curr_keyframe_idx (P1 = 0x80101F4C) */  /* data-wave 2026-09-07: was g_char_curr_keyframe_idx_p3 */
@@ -2699,7 +2684,6 @@ D_800FF6A8                                   = 0x800FF6A8;  /* data-wave 2026-09
 _svm_vh                                         = 0x80101BC4;  /* data-wave 2026-09-07: was g_main_value_101BC4 */
 g_slot_array_16x256_80101BF0                               = 0x80101BF0;
 g_char_prev_keyframe_idx_plus_16                             = 0x80101F5E;
-g_char_p1_field_AD                                           = 0x80101F75;
 g_char_p1_field_B3                                           = 0x80101F7B;
 g_char_world_pos_z_plus_8_plus_4                             = 0x80101FB4;
 g_char_world_pos_z_plus_8_plus_8                             = 0x80101FB8;
@@ -2724,7 +2708,6 @@ g_char_p1_field_168                                          = 0x80102030;
 g_char_p1_field_31A                                          = 0x801021E2;
 g_practice_menu_table_p2_plus_6                              = 0x8010231A;
 g_char_p2_field_96                                           = 0x801023AA;
-g_char_p2_field_AD                                           = 0x801023C1;
 g_char_p2_field_31A                                          = 0x8010262E;
 g_practice_halfword_table_plus_8_plus_8                      = 0x80102770;
 g_char_p3_field_74                                           = 0x801027D4;

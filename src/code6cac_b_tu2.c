@@ -43,8 +43,6 @@ extern void func_8002AB08(s32 a0);
 extern void func_800288C8(void);
 extern s32 func_80029454(void);
 extern void func_80031B24(void);
-extern s32 D_801020D8;
-extern s32 D_801020FC;
 void func_80026DA4(void);
 
 INCLUDE_RODATA("asm/rodata", D_80010478);
@@ -1730,21 +1728,130 @@ void func_8002C0DC(void) {
 }
 /* kengo:MED  |  am_rmd/PutRobShadow  |  252i */
 /* Accumulates a character's shadow vectors in PSX scratchpad RAM.  Everything
- * this function writes lives in the one record at 0x1F8002B8: two 3-word
- * vectors at +0xA8 and +0xB8, and the 3-word result at +0x13C.  Record 0 of
- * the 2 x 0x44C table at g_practice_menu_table feeds the first vector sums and record 1
- * (base 0x80102314) the second.  Back to assembly per owner Q37: the landed C
- * reached record 1 by indexing past a scalar symbol, and no spelling without
- * that reaches 0; memory/grind/func_8002C22C/evidence.md. */
-void func_8002C22C(void);
-INCLUDE_ASM("asm/funcs", func_8002C22C);
+ * this function writes lives in the one record at 0x1F8002B8 that `scr` points
+ * at (an s32 view; each index is the byte offset / 4): two 3-word vectors at
+ * +0xA8 and +0xB8 (the +0xB4 and +0xC4 words are not touched, so both are
+ * 16-byte-strided like a PsyQ VECTOR), and the 3-word result at +0x13C.
+ * +0xA8 sums two of the scratchpad points SPAD holds per character (unk48[k]
+ * when bit k of D_800A3824 is set, else unk00[k]); +0xB8 sums the matching
+ * pair func_8002C61C copied into g_practice_menu_table[k] (unk_234 / unk_210).
+ *
+ * The first block's accesses come out absolute (`lui $at; sw $x,off($at)`)
+ * while the second block's identical spelling comes out as register+
+ * displacement (`sw $x,off($scr)`) - what the target does in both places.
+ * cse decides that, not the source: find_best_addr
+ * (tools/gcc-2.7.2/cse.c:2622) folds a `(plus reg const)` address to an
+ * absolute one when that register's constant value is in cse's table, and
+ * cse clears the table at the head of every extended-basic-block path it
+ * processes (new_basic_block, cse.c:766).  scr and rec1 are set to their
+ * constants at the top of the function, and no path reaching the second
+ * if/else begins there, so the first block's references fold and the
+ * second block's do not.
+ *
+ * Both if/else blocks are uniform per-arm statement runs.  The stores that
+ * appear after each join in the target are jump.c cross-jumping merging the
+ * arms' instruction-identical tails, not source-level statements.
+ */
+void func_8002C22C(void) {
+    s32 *scr = (s32 *)0x1F8002B8;
+    /* FAKE: pointer alias to g_practice_menu_table[1] (pointer-alias-fake-exception).
+     * The target holds record 1's base in a register from entry (lui/addiu $t1)
+     * and reads its unk_210 / unk_234 words at displacements off it, while
+     * record 0's words are absolute.  Without the pointer every access is a
+     * symbol+offset constant address, which GO_IF_LEGITIMATE_ADDRESS
+     * (tools/gcc-2.7.2/config/mips/mips.h:2286) accepts as is, so no base
+     * register exists: direct g_practice_menu_table[1] form 26 (+10 insns),
+     * one table-base pointer for both records 13.  Ledger:
+     * memory/grind/func_8002C22C/manual-2026-10-01/scores.txt */
+    PracticeMenuRec *rec1 = &g_practice_menu_table[1];
 
-/* func_8002C61C candidate - s1b (recon, 2026-09-06). Loop-3 destinations spelled against the
-   record base g_practice_menu_table + off + field offset per the 2026-09-06 06:44 Judge ruling (off = i * 0x44C
-   is the record stride; +0x174 midpoint, +0x18C centroid). */
+    scr[0xA8/4] = 0;
+    scr[0xAC/4] = 0;
+    scr[0xB0/4] = 0;
+    scr[0xB8/4] = 0;
+    scr[0xBC/4] = 0;
+    scr[0xC0/4] = 0;
+
+    if (D_800A3824 & 1) {
+        scr[0xA8/4] = SPAD->unk48[0][0].x;
+        scr[0xAC/4] = SPAD->unk48[0][0].y;
+        scr[0xB0/4] = SPAD->unk48[0][0].z;
+        scr[0xA8/4] += SPAD->unk48[0][1].x;
+        scr[0xAC/4] += SPAD->unk48[0][1].y;
+        scr[0xB0/4] += SPAD->unk48[0][1].z;
+        scr[0xB8/4] = g_practice_menu_table[0].unk_234[0].x;
+        scr[0xBC/4] = g_practice_menu_table[0].unk_234[0].y;
+        scr[0xC0/4] = g_practice_menu_table[0].unk_234[0].z;
+        scr[0xB8/4] += g_practice_menu_table[0].unk_234[1].x;
+        scr[0xBC/4] += g_practice_menu_table[0].unk_234[1].y;
+        scr[0xC0/4] += g_practice_menu_table[0].unk_234[1].z;
+    } else {
+        scr[0xA8/4] = SPAD->unk00[0][0].x;
+        scr[0xAC/4] = SPAD->unk00[0][0].y;
+        scr[0xB0/4] = SPAD->unk00[0][0].z;
+        scr[0xA8/4] += SPAD->unk00[0][1].x;
+        scr[0xAC/4] += SPAD->unk00[0][1].y;
+        scr[0xB0/4] += SPAD->unk00[0][1].z;
+        scr[0xB8/4] = g_practice_menu_table[0].unk_210[0].x;
+        scr[0xBC/4] = g_practice_menu_table[0].unk_210[0].y;
+        scr[0xC0/4] = g_practice_menu_table[0].unk_210[0].z;
+        scr[0xB8/4] += g_practice_menu_table[0].unk_210[1].x;
+        scr[0xBC/4] += g_practice_menu_table[0].unk_210[1].y;
+        scr[0xC0/4] += g_practice_menu_table[0].unk_210[1].z;
+    }
+    if (D_800A3824 & 2) {
+        scr[0xA8/4] += SPAD->unk48[1][0].x;
+        scr[0xAC/4] += SPAD->unk48[1][0].y;
+        scr[0xB0/4] += SPAD->unk48[1][0].z;
+        scr[0xB8/4] += rec1->unk_234[0].x;
+        scr[0xBC/4] += rec1->unk_234[0].y;
+        scr[0xC0/4] += rec1->unk_234[0].z;
+        scr[0xA8/4] += SPAD->unk48[1][1].x;
+        scr[0xAC/4] += SPAD->unk48[1][1].y;
+        scr[0xB0/4] += SPAD->unk48[1][1].z;
+        scr[0xB8/4] += rec1->unk_234[1].x;
+        scr[0xBC/4] += rec1->unk_234[1].y;
+        scr[0xC0/4] += rec1->unk_234[1].z;
+    } else {
+        scr[0xA8/4] += SPAD->unk00[1][0].x;
+        scr[0xAC/4] += SPAD->unk00[1][0].y;
+        scr[0xB0/4] += SPAD->unk00[1][0].z;
+        scr[0xB8/4] += rec1->unk_210[0].x;
+        scr[0xBC/4] += rec1->unk_210[0].y;
+        scr[0xC0/4] += rec1->unk_210[0].z;
+        scr[0xA8/4] += SPAD->unk00[1][1].x;
+        scr[0xAC/4] += SPAD->unk00[1][1].y;
+        scr[0xB0/4] += SPAD->unk00[1][1].z;
+        scr[0xB8/4] += rec1->unk_210[1].x;
+        scr[0xBC/4] += rec1->unk_210[1].y;
+        scr[0xC0/4] += rec1->unk_210[1].z;
+    }
+    scr[0x13C/4] = ((scr[0xA8/4] * 3) + scr[0xB8/4]) >> 4;
+    scr[0x140/4] = ((scr[0xAC/4] * 3) + scr[0xBC/4]) >> 4;
+    scr[0x144/4] = ((scr[0xB0/4] * 3) + scr[0xC0/4]) >> 4;
+}
+
+/* Per-frame update of the two g_practice_menu_table records.  The three
+ * scratchpad points per character at SPAD->unk00 and the two at SPAD->unk48
+ * are copied into each record's unk_210 / unk_234 (func_8002C22C reads them
+ * back); unk_18C is the centroid of SPAD->unkA8[k][1..3] and unk_174 the
+ * midpoint of SPAD->unkA8[k][4..5]. */
 void func_8002C61C(void) {
-    u8 *s1 = (u8 *)g_practice_menu_table;
-    u8 *s0 = s1 + 0x44C;
+    /* FAKE: pointer aliases to g_practice_menu_table[0] / [1]
+     * (pointer-alias-fake-exception).  The target keeps both record bases in
+     * $s1 / $s0 from the prologue (lui/addiu s1, addiu s0,s1,0x44C) and reads
+     * unk_3C / unk_286 / unk_0C / unk_F4 / unk_28C at displacements off them.
+     * Without the pointers every access is a symbol+offset constant address,
+     * which GO_IF_LEGITIMATE_ADDRESS (tools/gcc-2.7.2/config/mips/mips.h:2286)
+     * accepts as is, so no base register exists (all-direct form 38).  Which
+     * accesses go through them is measured per site: unk_AD through the
+     * global 2 (the forced address pseudo of the record-0 load is shared by
+     * the record-0 store along cse's skip-blocks path, cse.c:8150, so the load
+     * keeps its s1-relative form, final .s banked), unk_6A through the
+     * pointers 4, the unk_210 / unk_234 copy loops through the pointers 30.
+     * Ledger: memory/grind/func_8002C22C/manual-2026-10-01/scores.txt */
+    PracticeMenuRec *s1 = &g_practice_menu_table[0];
+    PracticeMenuRec *s0 = &g_practice_menu_table[1];
     s32 i;
     u16 mode;
 
@@ -1762,28 +1869,28 @@ void func_8002C61C(void) {
         if (D_800A3824 < 0) goto do_calc;
         func_8002C22C();
         if (D_800A3824 < 0) goto do_calc;
-        if (D_80101F75 != 0 || D_801023C1 != 0) {
-            func_800283D0(s1, (u8 *)0x1F8003F4);
-            func_800283D0(s0, (u8 *)0x1F8003F4);
-            D_801023C1 = 0;
-            D_80101F75 = 0;
+        if (s1->unk_AD != 0 || s0->unk_AD != 0) {
+            func_800283D0((u8 *)s1, (u8 *)0x1F8003F4);
+            func_800283D0((u8 *)s0, (u8 *)0x1F8003F4);
+            s0->unk_AD = 0;
+            s1->unk_AD = 0;
             goto after_calc;
         }
     do_calc:
         func_8002AB08(0);
     after_calc:
 
-        if (*(s32 *)(s1 + 0x3C) >= 3 && *(s32 *)(s0 + 0x3C) >= 3 &&
-            D_800A38A8 != 0 && *(s16 *)(s1 + 0x286) == -1 &&
-            *(s16 *)(s0 + 0x286) == -1 && *(s16 *)(s1 + 0xC) != 0x1F &&
-            *(s16 *)(s0 + 0xC) != 0x1F) {
-            s32 diff = *(s32 *)(s1 + 0xF8) - *(s32 *)(s0 + 0xF8);
+        if (s1->unk_3C >= 3 && s0->unk_3C >= 3 &&
+            D_800A38A8 != 0 && s1->unk_286 == -1 &&
+            s0->unk_286 == -1 && s1->unk_0C != 0x1F &&
+            s0->unk_0C != 0x1F) {
+            s32 diff = s1->unk_F4.y - s0->unk_F4.y;
             if (diff < 0) diff = -diff;
             if (diff < 0x3E8) {
-                *(s16 *)(s1 + 0x286) = 0xA;
-                *(s16 *)(s0 + 0x286) = 0xA;
-                *(s32 *)(s0 + 0x28C) = 0;
-                *(s32 *)(s1 + 0x28C) = 0;
+                s1->unk_286 = 0xA;
+                s0->unk_286 = 0xA;
+                s0->unk_28C = 0;
+                s1->unk_28C = 0;
                 D_800A3910 = 0;
                 D_800A389C = 0;
             }
@@ -1799,44 +1906,30 @@ void func_8002C61C(void) {
         D_800A3834 = 0x1C;
     }
 
-    {
-        Vec3i *dst_a = (Vec3i *)&D_801020D8;
-        Vec3i *dst_b = (Vec3i *)((u8 *)&D_801020D8 + 0x44C);
-        Vec3i *src = (Vec3i *)0x1F800000;
-        for (i = 0; i < 3; i++) {
-            dst_a[i] = src[i];
-            dst_b[i] = src[i + 3];
-        }
+    for (i = 0; i < 3; i++) {
+        g_practice_menu_table[0].unk_210[i] = SPAD->unk00[0][i];
+        g_practice_menu_table[1].unk_210[i] = SPAD->unk00[1][i];
+    }
+
+    for (i = 0; i < 2; i++) {
+        g_practice_menu_table[0].unk_234[i] = SPAD->unk48[0][i];
+        g_practice_menu_table[1].unk_234[i] = SPAD->unk48[1][i];
+    }
+
+    for (i = 0; i < 2; i++) {
+        g_practice_menu_table[i].unk_18C.x = (SPAD->unkA8[i][1].x + SPAD->unkA8[i][2].x + SPAD->unkA8[i][3].x) / 3;
+        g_practice_menu_table[i].unk_18C.y = (SPAD->unkA8[i][1].y + SPAD->unkA8[i][2].y + SPAD->unkA8[i][3].y) / 3;
+        g_practice_menu_table[i].unk_18C.z = (SPAD->unkA8[i][1].z + SPAD->unkA8[i][2].z + SPAD->unkA8[i][3].z) / 3;
+        g_practice_menu_table[i].unk_174.x = (SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2;
+        g_practice_menu_table[i].unk_174.y = (SPAD->unkA8[i][4].y + SPAD->unkA8[i][5].y) / 2;
+        g_practice_menu_table[i].unk_174.z = (SPAD->unkA8[i][4].z + SPAD->unkA8[i][5].z) / 2;
     }
 
     {
-        Vec3i *dst_a = (Vec3i *)&D_801020FC;
-        Vec3i *dst_b = (Vec3i *)((u8 *)&D_801020FC + 0x44C);
-        Vec3i *src = (Vec3i *)0x1F800000;
-        for (i = 0; i < 2; i++) {
-            dst_a[i] = src[i + 6];
-            dst_b[i] = src[i + 8];
-        }
-    }
-
-    {
-        s32 off;
-        for (i = 0; i < 2; i++) {
-            off = i * 0x44C;
-            *(s32 *)((u8 *)g_practice_menu_table + off + 0x18C) = (SPAD->unkA8[i][1].x + SPAD->unkA8[i][2].x + SPAD->unkA8[i][3].x) / 3;
-            *(s32 *)((u8 *)g_practice_menu_table + off + 0x190) = (SPAD->unkA8[i][1].y + SPAD->unkA8[i][2].y + SPAD->unkA8[i][3].y) / 3;
-            *(s32 *)((u8 *)g_practice_menu_table + off + 0x194) = (SPAD->unkA8[i][1].z + SPAD->unkA8[i][2].z + SPAD->unkA8[i][3].z) / 3;
-            *(s32 *)((u8 *)g_practice_menu_table + off + 0x174) = (SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2;
-            *(s32 *)((u8 *)g_practice_menu_table + off + 0x178) = (SPAD->unkA8[i][4].y + SPAD->unkA8[i][5].y) / 2;
-            *(s32 *)((u8 *)g_practice_menu_table + off + 0x17C) = (SPAD->unkA8[i][4].z + SPAD->unkA8[i][5].z) / 2;
-        }
-    }
-
-    {
-        s16 saved = *(s16 *)(s1 + 0x286);
+        s16 saved = s1->unk_286;
         if (saved == -1) {
             func_80031B24();
-            if (*(s16 *)(s1 + 0x286) == saved) {
+            if (s1->unk_286 == saved) {
                 func_80032314();
             }
         }

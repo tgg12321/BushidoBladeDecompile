@@ -45,6 +45,13 @@ typedef struct {
  * whole 12-byte objects (func_80022580), and func_80021DB0 writes one through
  * its out parameter. */
 typedef struct { s32 x, y, z; } Vec3i32;
+/* 12-byte per-leaf record table (named_syms.txt: g_leaf_position_table,
+   "12-byte stride per leaf, 6 entries = 72-byte position array"). */
+typedef struct {
+    s32 x;
+    s32 y;
+    s32 z;
+} LeafPos;
 /* PsyQ VECTOR / SVECTOR layouts (include/gte.h), spelled with local tags for
  * the same reason as Unk80101DF0Rot below.  func_80022580 copies
  * PracticeMenuRec's +0xB8 and +0x104 as whole 16-byte VECTORs (pad included)
@@ -99,7 +106,9 @@ typedef struct PracticeMenuRec {
     s16 unk_96;
     u8  unk_98[0xA0 - 0x98];
     u8  unk_A0;
-    u8  unk_A1[0xB1 - 0xA1];
+    u8  unk_A1[0xAD - 0xA1];
+    u8  unk_AD;                    /* != 0: func_8002C61C re-runs func_800283D0 for both records */
+    u8  unk_AE[0xB1 - 0xAE];
     u8  unk_B1;
     u8  unk_B2;
     u8  unk_B3[0xB8 - 0xB3];
@@ -145,7 +154,9 @@ typedef struct PracticeMenuRec {
     s16 unk_1EA;
     u8  unk_1EC[0x1F8 - 0x1EC];
     Vec3i32 unk_1F8;
-    u8  unk_204[0x24C - 0x204];
+    u8  unk_204[0x210 - 0x204];
+    LeafPos unk_210[3];            /* func_8002C61C: copy of scratchpad points 0x1F800000 + idx * 0x24 */
+    LeafPos unk_234[2];            /* func_8002C61C: copy of scratchpad points 0x1F800048 + idx * 0x18 */
     Vec4i32 unk_24C;
     u8  unk_25C[0x268 - 0x25C];
     s32 unk_268;
@@ -664,7 +675,6 @@ extern s16 D_80101F42;
 extern s16 D_80101F4C;
 extern s16 D_80101F4E;
 extern s16 D_80101F5E;
-extern u8 D_80101F75;
 extern u8 D_80101F79;
 extern u8 D_80101F7A;
 extern u8 D_80101F7B;
@@ -702,18 +712,6 @@ extern s32 D_80102044;
 extern s32 D_80102054;
 extern s32 D_80102058;
 extern s32 D_8010205C;
-extern s32 D_801020D8;
-extern s32 D_801020DC;
-extern s32 D_801020E0;
-extern s32 D_801020E4;
-extern s32 D_801020E8;
-extern s32 D_801020EC;
-extern s32 D_801020FC;
-extern s32 D_80102100;
-extern s32 D_80102104;
-extern s32 D_80102108;
-extern s32 D_8010210C;
-extern s32 D_80102110;
 
 extern s16 D_801021E2;
 extern s16 D_8010231A;
@@ -723,7 +721,6 @@ extern s16 D_8010235C;
 
 extern s16 D_8010238E;
 extern s16 D_801023AA;
-extern u8 D_801023C1;
 extern u8 D_801023C5;
 extern s32 D_80102408;
 extern s32 D_80102410;
@@ -769,13 +766,6 @@ extern u8 D_80106A82;
 extern u8 D_801077AF;
 extern u8 D_801077B0;
 extern u8 D_801077BA;
-/* 12-byte per-leaf record table (named_syms.txt: g_leaf_position_table,
-   "12-byte stride per leaf, 6 entries = 72-byte position array"). */
-typedef struct {
-    s32 x;
-    s32 y;
-    s32 z;
-} LeafPos;
 
 extern LeafPos D_80107850[6];
 
