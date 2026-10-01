@@ -1,6 +1,6 @@
 ---
 name: per-file-gp-model
-paths: ["sdata_*.txt", "Makefile", "engine/buildconfig.py", "engine/pipeline.py", "tools/maspsx/**", "bb2.ld"]
+paths: ["Makefile", "engine/buildconfig.py", "engine/pipeline.py", "tools/maspsx/**", "bb2.ld"]
 description: "Owner ruling Q65 (2026-09-30): gp addressing follows ASPSX 2.34's per-file rule (gp only for a <=8-byte symbol the file defines), replacing the sdata lists. Definitions/file boundaries from evidence only."
 metadata:
   type: rule
@@ -9,8 +9,8 @@ metadata:
 # Per-file gp model (owner rulings Q65, Q67-Q72, Q79-Q81)
 
 Records: docs/grind/decisions.md OWNER RULING entries;
-evidence `docs/grind/gp-model-2026-09-30.md` (+ § Addendum). Until the adoption lands the three `sdata_*.txt`
-lists stay in force; it retires every row.
+evidence `docs/grind/gp-model-2026-09-30.md` (+ § Addendum). Adopted 2026-10-01 (b6c0c0d24..4fca9a4dd); the three
+`sdata_*.txt` lists are deleted.
 
 ## The rule (Sony ASPSX 2.34, measured: 6,337 accesses, 0 disagreements)
 

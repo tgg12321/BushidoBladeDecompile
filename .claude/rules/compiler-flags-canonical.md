@@ -43,8 +43,9 @@ RULING — per-file -G8 by proof; Q16 split/respelling order; -G8 screening scop
 - **(ii)** cc1psx (`tools/cc1psx_wrapper.sh`, calibration only) on the TU's preprocessed source emits the
   listed gp accesses at `-G8` and none at `-G0`; both outputs banked.
 - **(iii)** The TU holds only functions meeting (i)+(ii), contiguous in address order; no file-scope `__asm__`,
-  `INCLUDE_ASM` or `INCLUDE_RODATA`. **Screening:** every <=8-byte extern it references is in gp range
-  (`sdata_syms.txt`) or honestly typed > 8 bytes — unless a both-ways build (full per-file pipeline at `-G8`
+  `INCLUDE_ASM` or `INCLUDE_RODATA`. **Screening:** every <=8-byte extern it references is a small-data
+  object in gp range (a K1/K2/K3 object under [[per-file-gp-model]]: the `.sdata` range or an (A1) static or COMMON block)
+  or honestly typed > 8 bytes — unless a both-ways build (full per-file pipeline at `-G8`
   and `-G0`) shows every access to it byte- and relocation-identical, banked in the ledger. It keeps the
   source file's `NO_SR_FILES`, `EXPAND_LB_FILES`, `EXPAND_LH_FILES` memberships.
 - **(iv)** Every other function moves to the remaining file or a new adjacent `-G0` TU in original order, as

@@ -27,9 +27,10 @@ target bytes have that shape (the oracle enforces it). Additions to `multu_funcs
 are forbidden outright — fix the C. A commit adding to a fidelity list carries its tag + a one-line
 justification citing the target-site evidence (convention: no hook enforces this today).
 
-`sdata_syms.txt`, `sdata_funcs.txt` and `sdata_exclude.txt` stay in force until the per-file gp model lands,
-which deletes them ([[per-file-gp-model]]); until then rows required by existing rules may be added with their
-usual evidence.
+`sdata_syms.txt`, `sdata_funcs.txt` and `sdata_exclude.txt` are deleted: the per-file gp model
+([[per-file-gp-model]], adopted 2026-10-01, b6c0c0d24..4fca9a4dd) decides gp per file from that file's own
+definition of the symbol, per its rule table (gp only for a <= 8-byte definition in the file; `.comm` at the
+base offset only; an indexed `S($reg)` operand never). No gp list rows exist to add.
 
 ## The global COMMON model — tentative definitions, every file (owner ruling 2026-09-30, Q62)
 

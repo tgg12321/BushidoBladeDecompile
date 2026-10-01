@@ -14,8 +14,9 @@ Only for a function the `canonical` gate / grant path qualifies (`tools/scan_han
 ## 1. Symbol form for globals, never `%gp_rel(X)($gp)`
 
 splat's `asm/funcs/*.s` disassembly form `lw $v0, %gp_rel(D_xxx)($gp)` does not assemble inside `__asm__`.
-Write `lw $v0, D_xxx` — maspsx converts it to gp-relative when the symbol is gp for that file (today
-`sdata_syms.txt`; under [[per-file-gp-model]], the file's own definition). For a non-gp symbol use
+Write `lw $v0, D_xxx` — maspsx converts it to gp-relative when the symbol is gp for that file (under
+[[per-file-gp-model]], per its rule table: only for a <= 8-byte symbol the file defines; a `.comm` symbol
+at offset 0 only; never an indexed operand). For a non-gp symbol use
 `lui $at, %hi(D_xxx); lw $v0, %lo(D_xxx)($at)`. Check per symbol before writing.
 
 ## 2. Named labels for intra-function branch targets
