@@ -58,3 +58,9 @@ Every variable written once per value: `ot_idx` only by the area select. The TIL
 the split body). Mechanism: work's second value is a copy of the $s1-seated `ot_idx << 2`, so its pseudo
 prefers $s1, and prim (allocated first, conflicting) is pushed to $s2 as in the target. Any spelling with
 a separate TILE variable scores 18-38 (r11/scores.txt); second permuter (13,362 iterations) best 545.
+
+## 2026-10-01 LANDED — COMPLETED-C
+Layer-2 round 2 rev-74E08-r2 PASS, body_hash eaf449c7900cc44e (= candidate.c): ot_idx/rect_x written once
+per path; `work` Ruling 11 (A)-(F) with Q20 for value 1 (func_8001CE60 precedent), dumps re-run, three new
+reviewer spellings 22/22/36; `cells` Ruling 9 / EnvA / DRAWENV / SelWork unchanged from round 1.
+Match f5186d8ba, queue (next commit). Full-build SHA1 == oracle.
