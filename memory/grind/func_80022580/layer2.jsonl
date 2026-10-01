@@ -1,0 +1,1 @@
+{"func": "func_80022580", "addr": "80022580", "verdict": "PASS", "body_hash": "6715ae64d158047e", "body_kind": "c", "file": "code6cac_tu2", "reviewer": "rev-2AB08-r2", "scope": "cheat-cleanup", "date": "2026-10-01T19:11:20Z", "head": "400a37b9e", "notes": "r1 split (dm PASS / r11 FAIL); Q85 9cdb9cd08 + 918b32f6e; r2 PASS 2026-10-01"}

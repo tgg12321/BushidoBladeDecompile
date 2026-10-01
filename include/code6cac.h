@@ -112,10 +112,11 @@ typedef struct PracticeMenuRec {
     s16 unk_86;                    /* row of unk_3A8 / unk_3F8 / unk_3FE / unk_404 */
     s16 unk_88;
     s16 unk_8A;
-    u8  unk_8C[0x8E - 0x8C];
+    s16 unk_8C;                    /* != 0: the second blade (unk_234 / SPAD unk48 points) is live */
     s16 unk_8E;
     s16 unk_90;
-    u8  unk_92[0x96 - 0x92];
+    s16 unk_92;
+    u8  unk_94[0x96 - 0x94];
     s16 unk_96;
     u8  unk_98[0xA0 - 0x98];
     u8  unk_A0;
@@ -137,8 +138,7 @@ typedef struct PracticeMenuRec {
     Vec3i32 unk_F4;
     u8  unk_100[0x104 - 0x100];
     Vec4i32 unk_104;
-    Vec4i32 unk_114;
-    Vec4i32 unk_124;
+    Vec4i32 unk_114[2];            /* per blade; func_8002AB08 indexes it with its 0/1 blade flag */
     Vec4i32 unk_134;
     s32 unk_144;
     s32 unk_148;
