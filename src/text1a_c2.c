@@ -12,7 +12,7 @@ extern s32 *func_800455AC(s32);
 extern void func_80044F30(s32, s32);
 extern void func_80045824(s32, s32, s32);
 extern void func_80045230(s32);
-extern void func_80044010(s32, s32);
+extern void func_80044010(s32 *, s16);
 extern void func_8003EDC0(s32, s32);
 extern s32 func_80044670(s32, s32, s32);
 extern void func_800477DC(s32);
@@ -23,7 +23,7 @@ extern void func_80045600(s32, s32);
 extern void func_80045694(s32, s32);
 extern void stage_ExecInitFunc(void);
 extern void func_8004659C(s32);
-extern void func_800466C0(void);
+extern void func_800466C0(s32, s32);
 extern void func_80045510(s32, s32);
 extern void func_80044098(s32);
 
@@ -136,7 +136,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     case 7:
     case 18:
         s1 = s2;
-        func_80044010(PTR_OFF(s0, ALIGN4(s0[5])), 8);
+        func_80044010((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
         s1 = (s32 *)func_80044670(PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
         break;
     case 11:
@@ -147,7 +147,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         s1 = s2;
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
-        func_80044010(PTR_OFF(s0, ALIGN4(s0[5])), 8);
+        func_80044010((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
         g_stage_variant = 1;
         break;
     case 34:
@@ -157,7 +157,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         break;
     }
 
-    func_80044010((s32)s6, 7);
+    func_80044010(s6, 7);
     func_800481E8((s32)fp_ptr, 0);
     func_8003EDC0((s32)s4, 7);
     func_80054410((s32)sp10);

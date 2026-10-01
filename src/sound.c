@@ -18,14 +18,14 @@ extern void func_8004473C(void);
 extern void func_80044800(void);
 extern void func_80048F58(s32, s32);
 extern void func_80048FFC(s32);
-extern void *func_8004153C(void);
+extern s32 *func_8004153C();
 extern s32 func_800477E8(void);
 extern void func_80047A90(void);
 extern void func_80048B8C(s32);
-extern void func_80044100(s32, s32);
+extern void func_80044100();
 extern void func_80045600(s32, s32);
-extern void func_80045694(s32, void (*)(void));
-extern void func_800460E4(s32);
+extern void func_80045694(s32, s32);
+extern void func_800460E4(s32, s32);
 extern void func_800421C8(s32);
 extern void func_8003E0E0(void);
 extern void func_8003E6D8(s32);
@@ -36,16 +36,16 @@ extern void func_80046020(void);
 extern void func_80049E1C(void);
 
 extern void math_RotMatrixYXZ(s32 *, s32 *);
-extern void ApplyMatrix(s32 *, s16 *, s32 *);
-extern s16 ratan2(s32, s32);
+extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
+extern s32 ratan2(s32, s32);
 extern s16 Judge[];
 extern s16 D_800A33C8;
 extern s16 D_800A33CA;
-extern s32 D_800A3708;
+extern Unk80101DF0Record *D_800A3708;
 extern void func_8004211C(void);
 extern void func_800444BC(void);
-extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
-extern void func_80044FA0(s32, s32 *);
+extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
+extern s32 func_80044FA0(s32, s32);
 extern s16 D_800A324A;
 
 /* Externs for globals */
@@ -77,7 +77,7 @@ extern void func_800451A0(void);
 extern void func_800451D0(void);
 extern void ApplyMatrixLV(void *, void *, void *);
 extern void func_800418D0(s32 *);
-extern void func_8004A1FC(void *);
+extern void func_8004A1FC();
 extern void func_800420D0(void);
 extern void stage_ClearLighting(void);
 extern void stage_ApplyLighting(void);
@@ -87,7 +87,7 @@ extern u16 D_800A38D6;
 extern s32 g_gpu_ot_ptr;
 extern s32 D_800A3808;
 extern s32 D_800A378C;
-extern s32 D_800F62E0;
+extern u8 D_800F62E0[8][0x60];
 extern s32 g_anim_func_table[];
 extern void func_80042E90(void);
 extern void func_80044498(void);
@@ -104,7 +104,7 @@ extern s32 D_800A33BC;
 extern s32 func_800486FC(void);
 extern s32 *func_8004574C(s32);
 extern void func_80044F80(s32, s32 *);
-extern void func_80044010(s32 *, s32);
+extern void func_80044010(s32 *, s16);
 extern s16 D_800A3248;
 
 void func_800468DC(s32 a0, s32 a1);
@@ -155,7 +155,7 @@ s32 *func_800467B8(s32 a0) {
             D_800A3248 = arg;
         }
     }
-    func_80045694(chan, func_800468DC);
+    func_80045694(chan, (s32)func_800468DC);
     return s2;
 }
 
@@ -183,7 +183,7 @@ void snd_SeNullCallback(void) {
 void func_8004695C(s32 a0) {
     func_80045230(a0);
     func_80045600(9, a0);
-    func_80045694(9, snd_SeNullCallback);
+    func_80045694(9, (s32)snd_SeNullCallback);
 }
 
 void func_800469A0(s32 a0) {
@@ -197,7 +197,7 @@ s32 *func_800469C4(s32 a0) {
     s32 offset;
 
     v0 = func_800455AC(0xA);
-    func_80044FA0(a0, v0);
+    func_80044FA0(a0, (s32)v0);
     offset = (u32)v0[v0[0] + 1] >> 2 << 2;
     {
         s32 *s0 = (s32 *)((u8 *)v0 + offset);
@@ -205,7 +205,7 @@ s32 *func_800469C4(s32 a0) {
         func_80045600(0xA, (s32)s0);
     }
     D_800A324A = (s16)a0;
-    func_80045694(0xA, func_80046A80);
+    func_80045694(0xA, (s32)func_80046A80);
     return v0;
 }
 
@@ -321,7 +321,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
         D_800A33C0 = a2;
     }
 
-    base = (u8 *)&D_800F62E0;
+    base = D_800F62E0[0];
     func_8004A1FC(base);
     func_8004A1FC(base + 0x60);
     func_8004A1FC(base + 0x180);
@@ -341,8 +341,8 @@ s32 game_GetDummyFlag(void) {
     return 0;
 }
 
-void *game_GetPlayerData(void) {
-    void *v0 = func_8004153C();
+void *game_GetPlayerData(s32 a0) {
+    void *v0 = func_8004153C(a0);
     if (v0) {
         return (u8 *)v0 + 0x1994;
     }
@@ -385,8 +385,8 @@ void func_80046EA0(s32 a0) {
     }
 }
 
-void game_StageCleanup(s32 a0) {
-    func_800460E4(a0);
+void game_StageCleanup(s32 a0, s32 a1) {
+    func_800460E4(a0, a1);
     func_800421C8(a0);
     func_8003E0E0();
 }
@@ -417,7 +417,7 @@ void func_80046F24(void) {
 void func_8004700C(s32 *a0, s32 *a1, s32 a2) {
     s32 new_var;
     s32 diff, prod;
-    gte_MulMatrix0ClearTrans(&D_800EEDB0, a0, a1);
+    gte_MulMatrix0ClearTrans((MATRIX *)&D_800EEDB0, (MATRIX *)a0, (MATRIX *)a1);
     new_var = a0[5];
     diff = a0[6] - a2;
     prod = diff * D_800EEDB2;
@@ -443,7 +443,7 @@ void func_800470B0(s32 arg0, s32 *arg1, s32 *arg2, s32 arg3) {
     sp10.m[2][0] = 0;
     sp10.m[2][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62FC + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
     sp10.m[2][2] = 0x1000;
-    gte_MulMatrix0ClearTrans(&sp10, var_s0, arg2);
+    gte_MulMatrix0ClearTrans(&sp10, (MATRIX *)var_s0, (MATRIX *)arg2);
     arg2[5] = var_s0[5] + (((var_s0[6] - arg3) * sp10.m[0][1]) >> 12);
     arg2[6] = arg3;
     arg2[7] = var_s0[7] + (((var_s0[6] - arg3) * sp10.m[2][1]) >> 12);
@@ -505,20 +505,20 @@ void camera_InitRotation(u8 *a0) {
 }
 
 s16 *camera_CalcAngles(void) {
-    s16 rot[3];
-    s32 sp18[3];
-    s32 pos[8];
+    SVECTOR rot;
+    VECTOR sp18;
+    MATRIX pos;
     s16 s0;
 
-    math_RotMatrixYXZ((s32 *)((u8 *)*(s32 **)&D_800A3708 + 0x10), pos);
-    rot[0] = 0;
-    rot[1] = 0;
-    rot[2] = 0x1000;
-    ApplyMatrix(pos, rot, sp18);
-    s0 = ratan2(sp18[0], sp18[2]);
-    sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
-              + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
-    D_800A33C8 = -ratan2(sp18[1], sp18[2]);
+    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, (s32 *)&pos);
+    rot.vx = 0;
+    rot.vy = 0;
+    rot.vz = 0x1000;
+    ApplyMatrix(&pos, &rot, &sp18);
+    s0 = ratan2(sp18.vx, sp18.vz);
+    sp18.vz = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18.vz
+              + (s32)Judge[s0 & 0xFFF] * sp18.vx) >> 12;
+    D_800A33C8 = -ratan2(sp18.vy, sp18.vz);
     D_800A33CA = s0;
     return &D_800A33C8;
 }
@@ -565,12 +565,12 @@ extern s32 D_800EEE1C;
 extern s32 D_800EEE20;
 extern s32 D_800EEE24;
 extern s32 D_800F66B0;
-extern void MulMatrix0(s32 *, s32 *, s32 *);
+extern MATRIX *MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
 void func_800475A4(void) {
-    s16 rot[3];
-    s32 result[4];
-    s32 buf1[8];
-    s32 buf2[8];
+    SVECTOR rot;
+    VECTOR result;
+    MATRIX buf1;
+    MATRIX buf2;
     s16 angle;
     s32 computed;
     u8 *base;
@@ -579,18 +579,18 @@ void func_800475A4(void) {
         return;
     }
 
-    rot[0] = 0;
-    rot[1] = 0;
-    rot[2] = 0x6590;
-    ApplyMatrix((s32 *)&D_80101DF0.xf.mat, rot, result);
+    rot.vx = 0;
+    rot.vy = 0;
+    rot.vz = 0x6590;
+    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, &rot, &result);
 
-    angle = ratan2(result[0], result[2]);
+    angle = ratan2(result.vx, result.vz);
 
-    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
-    result[2] = computed;
+    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz + (s32)Judge[angle & 0xFFF] * result.vx) >> 12;
+    result.vz = computed;
 
     {
-        s16 neg = -ratan2(result[1], computed);
+        s16 neg = -ratan2(result.vy, computed);
         base = &g_cam_bone_data2;
         D_800EEE00 = neg;
     }
@@ -598,9 +598,9 @@ void func_800475A4(void) {
     D_800EEE1C = D_80101DF0.xf.mat.t[0];
     D_800EEE20 = D_80101DF0.xf.mat.t[1];
     D_800EEE24 = D_80101DF0.xf.mat.t[2] + 0x6590;
-    ((void (*)(u8 *, s32 *))D_800F66B0)(base + 0x10, buf1);
-    ((void (*)(u8 *, s32 *))g_anim_func_table[0])((u8 *)&D_80101DF0.xf.rot, buf2);
-    MulMatrix0(buf2, buf1, (s32 *)(base + 0x18));
+    ((void (*)(u8 *, MATRIX *))D_800F66B0)(base + 0x10, &buf1);
+    ((void (*)(u8 *, MATRIX *))g_anim_func_table[0])((u8 *)&D_80101DF0.xf.rot, &buf2);
+    MulMatrix0(&buf2, &buf1, (MATRIX *)(base + 0x18));
 
     {
         s32 *temp = (s32 *)D_800A3820;

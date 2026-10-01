@@ -7,20 +7,18 @@
 
 /* Auto-extracted from asm/data/101C.rodata_text1a_b_pre.s */
 
-/* D_800153F0: 11 words (44B) @ 0x800153F0 */
-const u32 D_800153F0[11] = {
-    0x0E000E00,
-    0x00000E00,
-    0x00000000,
-    0x00000000,
-    0x0E000000,
-    0x00010A00,
-    0x00000000,
-    0x00000000,
-    0x00000000,
-    0x00300030,
-    0x10000030,
-};
+/* D_800153F0: 22 halfwords (44B) @ 0x800153F0 */
+/* 0x800153F0: the 22-halfword record func_8004A09C unpacks (it walks it as u16). func_80049F4C copies
+   it whole by assignment: the copy's run-time alignment test in the target bytes is the halfword
+   type's alignment. */
+typedef struct {
+    u16 v[22];
+} Unk800153F0Record;
+const Unk800153F0Record D_800153F0 = {{
+    0x0E00, 0x0E00, 0x0E00, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x0E00, 0x0A00, 0x0001, 0x0000, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x0000, 0x0030, 0x0030, 0x0030, 0x1000,
+}};
 
 /* jtbl_8001541C: 16 words (64B) @ 0x8001541C */
 const u32 jtbl_8001541C[16] = {

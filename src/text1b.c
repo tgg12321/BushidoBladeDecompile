@@ -411,7 +411,7 @@ typedef struct {
     /* 0x1C */ u32 *clutdata;
 } TimHdr485;
 extern u32 GetTPage(s32, s32, s32, s32);
-extern u16 GetClut(s32, s32);
+extern u32 GetClut(s32, s32);
 void func_800485EC(tim, spr, x, y, cx, cy)
 u32 *tim;
 TimHdr485 *spr;
@@ -470,7 +470,7 @@ u16 cx, cy;
 }
 extern s16 g_color_mode;
 s32 file_GetFlag0(void);
-s16 func_800486FC(void) {
+s32 func_800486FC(void) {
     if (file_GetFlag0()) {
         g_color_mode = 1;
     } else {
@@ -583,11 +583,11 @@ void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
 extern s32 *func_800467B8(s32); /* corrected to the definition (src/sound.c:134) — owner ruling 2026-08-24, escalation packet func_80048AD0 */
-extern s32 func_800468B0(s32);
+extern void func_800468B0(s32);
 extern u8 D_80099BCC;
 extern s32 D_800A33E0;
 extern s32 D_800A33E4;
-extern s32 func_8004153C(s32);
+extern s32 *func_8004153C();
 s32 func_80048AD0(s32 arg0) {
     s32 temp_v0;
     s32 sound;
@@ -597,7 +597,7 @@ s32 func_80048AD0(s32 arg0) {
     u8 *p;
     u8 *q;
 
-    temp_v0 = func_8004153C(arg0);
+    temp_v0 = (s32)func_8004153C(arg0);
     if (temp_v0 == 0) return 0;
     idx = *(s16 *)(temp_v0 + 8);
     D_800A33E0 = arg0;
@@ -841,7 +841,7 @@ extern s16 D_800A33E8;
 extern s16 D_800A33EA;
 extern s32 D_800A324C;
 extern s32 func_8004954C(s32, s32, s32);
-extern s32 func_80046020();
+extern void func_80046020(void);
 extern void func_80045B68(s32, s32, s16 *, s32);
 extern s32 func_8003E120();
 void func_80049584(s32 arg0) {
@@ -1270,9 +1270,9 @@ void func_80049E1C(void) {
     } while (i >= 0);
     D_800A324C = -1;
 }
-extern s32 func_800418D0();
+extern void func_800418D0(s32 *);
 
-extern void *D_800A3708;
+extern Unk80101DF0Record *D_800A3708;
 extern void *D_800A370C;
 void func_80049E4C(void) {
     Unk80101DF0Record *p1 = &D_80101DF0;
@@ -1287,7 +1287,7 @@ void func_80049E4C(void) {
     D_80101DF0.work.t[2] = 0;
     D_80101DF0.unkC = 0;
     D_80101DF0.unk8 = 5;
-    func_800418D0(p1);
+    func_800418D0((s32 *)p1);
     p2->unk0 = 0x65;
     D_800FF638.unk1 = 0;
     D_800FF638.xf.rot.vx = 0;
@@ -1298,12 +1298,18 @@ void func_80049E4C(void) {
     D_800FF638.work.t[2] = 0;
     D_800FF638.unkC = 0;
     D_800FF638.unk8 = 2;
-    func_800418D0(p2);
+    func_800418D0((s32 *)p2);
     D_800A3708 = p1;
     D_800A370C = p2;
 }
-extern u8 D_800153F0;
-extern u8 D_800F62E0;
+/* 0x800153F0: the 22-halfword record func_8004A09C unpacks (it walks it as u16). func_80049F4C copies
+   it whole by assignment: the copy's run-time alignment test in the target bytes is the halfword
+   type's alignment. */
+typedef struct {
+    u16 v[22];
+} Unk800153F0Record;
+extern const Unk800153F0Record D_800153F0;
+extern u8 D_800F62E0[8][0x60];
 extern s32 g_gte_color_matrix_data;
 extern u8 g_gte_back_color_r;
 extern u8 g_gte_back_color_g;
@@ -1313,14 +1319,14 @@ extern void SetColorMatrix(s32 *);
 extern void SetBackColor(s32, s32, s32);
 
 void func_80049F4C(void) {
-    s32 sp10[11];
+    Unk800153F0Record sp10;
     s32 i;
     u8 *base;
-    __builtin_memcpy(sp10, &D_800153F0, 44);
+    sp10 = D_800153F0;
     i = 0;
-    base = &D_800F62E0;
+    base = D_800F62E0[0];
     do {
-        func_8004A09C((s32)base, (u16 *)sp10);
+        func_8004A09C((s32)base, sp10.v);
         i++;
         base += 0x60;
     } while (i < 8);
@@ -2088,7 +2094,7 @@ extern s32 func_80044FA0(s32, s32);
 extern s32 func_80045080(s32);
 extern void func_80046914(void);
 extern s32 *func_800469C4(s32);
-extern s16 *stage_GetDataPtr(void);
+extern void *stage_GetDataPtr(void);
 extern s32 stage_GetId(void);
 
 extern void func_8003FFC4(s32);
@@ -2148,11 +2154,11 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     if (!(s->unk4 & 0x40000000)) {
         s->unk44[1] = -1;
     }
-    v = func_8004153C(0);
+    v = (s32)func_8004153C(0);
     if (v != 0) {
         func_8003FFC4(v);
     }
-    v = func_8004153C(1);
+    v = (s32)func_8004153C(1);
     if (v != 0) {
         func_8003FFC4(v);
     }
@@ -2187,7 +2193,7 @@ void func_800548DC(void) {
     func_80046A60();
 }
 INCLUDE_ASM("asm/funcs", func_8005490C);
-extern u32 D_80102C00;
+extern s32 D_80102C00;
 extern u16 D_800A38D6;
 extern s32 g_gpu_ot_ptr;
 extern s32 D_800A3808;
@@ -2197,7 +2203,7 @@ extern void func_800444E0(void);
 s32 func_80054F68(void) {
     s32 v3;
     s32 s0;
-    D_800A3820 = &D_80102C00;
+    D_800A3820 = (s32)&D_80102C00;
     v3 = g_gpu_ot_ptr;
     D_800A38D6 = D_800A38D6 + 1;
     D_800A3808 = v3;

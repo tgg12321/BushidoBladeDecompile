@@ -1,6 +1,6 @@
 #include "common.h"
 
-extern void func_80044100(s32, ...);
+extern void func_80044100();
 extern void func_80044C70(s32);
 extern s32 D_800A33B0;
 extern s32 D_800A33B4;
