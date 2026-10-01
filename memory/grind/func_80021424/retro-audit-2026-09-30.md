@@ -160,3 +160,8 @@ func_8001B294 and func_8001B3C0 (PracticeMenuRec read through a pointer paramete
 retype the parameter as PracticeMenuRec * and read members); func_8001A538 (called as `func_8001A538((s32 *)cam, ...)`,
 walks Rec44 at +0x10/12/14 and arg0[6]: retype as Rec44 * with members and drop the cast in func_8001A820; note
 func_8001E404 also calls it with `&local.w0`, which becomes `&local` once the prototype is Rec44 *).
+Follow-ups added (orchestrator, from rev-tables-r5): func_8001A820 (arg2/arg3 are practice records read at +0x6A x15 and
++0xB8; arg0/arg1 are &rec[k].unk_168: retype to PracticeMenuRec * / Vec3i32 *; interacts with the func_8001A538 cast
+item, and func_8001E878's `(s32)&...` call-boundary casts go with it); func_800283D0 (called with record pointers;
+reads unk_00, +0x6A, +0x4, +0xC, +0x8C: retype); possibly func_80032064 (`src + 0xF4 / 0xBC / 0x1CA`; laneH checking).
+laneH's full scan output is to be added here when it arrives.
