@@ -155,3 +155,8 @@ vx/vy/vz/pad0/rx/ry/rz/pad1/dist/tail are Rec44's w0/w4/w8/wC/h10/h12/h14/h16/w1
 Measured 0/184 on both bases (HEAD scratch; current tree with laneH's staged edits). func_8001E878's `(s32)&...`
 arguments to func_8001A820 / func_8001B478 (s32-typed prototypes) stay disclosed call-boundary debt, as do
 `(s32 *)&local.h10` to func_80046BF4 / func_80061064 in func_8001E404.
+Follow-ups added (orchestrator, from rev-tables-r4; disclosed in laneH's landing until then), L3 or later:
+func_8001B294 and func_8001B3C0 (PracticeMenuRec read through a pointer parameter at +0xF4/F8/FC and +0x180/184/188:
+retype the parameter as PracticeMenuRec * and read members); func_8001A538 (called as `func_8001A538((s32 *)cam, ...)`,
+walks Rec44 at +0x10/12/14 and arg0[6]: retype as Rec44 * with members and drop the cast in func_8001A820; note
+func_8001E404 also calls it with `&local.w0`, which becomes `&local` once the prototype is Rec44 *).
