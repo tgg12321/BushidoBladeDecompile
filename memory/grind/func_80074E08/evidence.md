@@ -41,3 +41,13 @@ Reverted to INCLUDE_ASM (no jump table / rodata of its own) and reopened, 2026-0
 - No reuse-free spelling reaches 0: 10 respellings on the new chassis (12 / 16 / 30 / 31), r9/scores.txt.
   Mechanism (r9/alloc_dump.txt): shared `cells` is multi-block -> global.c -> $v1; per-write values are
   local-allocated to $v0 after the header value dies.
+
+## 2026-10-01 layer-2 rev-74E08 — FAIL (body_hash 9744972d75c03fec)
+Blocking: `ot_idx` is written `= 4; if (arg1) = 0xE;` for the TILE AddPrim and again in the later
+`if (arg1) { ot_idx = 0xE; rect_x = 0x14E; } else { ot_idx = 4; rect_x = 0x5E; }`; arg1 is never written,
+so the second select re-stores the held value on every path (Ruling 5 2(c), 1(e); Q66 kind), undisclosed
+and load-bearing (reviewer: drop it 26 / 279 insns, separate `area_ot` 22). Passed: `cells` under Ruling 9,
+the EnvA s32 retype (DescF97C / S_80074488 precedent), DRAWENV casts, SelWork reads, gpu.h. Next time
+disclose the single-handle byte-offset casts (TILE field stores prim+4..0xE, `*(s32 **)(arg0[0] + 0x18)`,
+`s.header + 2`). Banked: rejected/r9-ot-idx-restore-fail-0.c; reviewer variants rejected/rev74e08/.
+Frontier: a truthful spelling of the two selects with each variable written once per value.
