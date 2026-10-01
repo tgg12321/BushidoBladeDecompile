@@ -37,17 +37,6 @@
       "addr": "8002CD58"
     },
     {
-      "func": "func_8002F770",
-      "file": "code6cac_b_tu2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (Q37/Q38, 803d0fea1): grant row operator-added (974ce052c) without owner record; islands not inline_o.h-exact (audit-q38). Banked: memory/grind/func_8002F770/rejected/retro-audit-2026-09-29.c",
-      "addr": "8002F770"
-    },
-    {
       "func": "func_80049718",
       "file": "text1b",
       "distance": 0,
@@ -324,14 +313,14 @@
     }
   ],
   "counts": {
-    "total": 26,
-    "active": 14,
+    "total": 25,
+    "active": 13,
     "by_status": {
-      "active": 14,
+      "active": 13,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 14
+      "C": 13
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
