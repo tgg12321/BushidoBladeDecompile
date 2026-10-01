@@ -36,3 +36,16 @@ folding only the first block — stay valid for any future body); src back to
 (same TU); the now-unused `extern s32 D_80102314;` removed (the symbol stays in undefined_syms_auto.txt for
 the assembly). Rebuild SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa.
 Next worker: start from the table declaration (record struct, 0x44C stride), not from the alias.
+
+## laneA manual 2026-10-01 — table model, 0 (manual-2026-10-01/scores.txt)
+Data model: PracticeMenuRec gains `LeafPos unk_210[3]` and `LeafPos unk_234[2]` (func_8002C61C copies
+SPAD->unk00[k][0..2] / SPAD->unk48[k][0..1] there; LeafPos moved above the struct) and `u8 unk_AD`
+(func_8002C61C's flag pair, target lbu/sb). The per-word externs D_801020D8..D_80102110 (include/code6cac.h,
+src/code6cac_b_tu2.c, src/code6cac_b.c), D_80101F75 / D_801023C1 and their undefined_syms_auto.txt rows
+(plus D_80102314) retire: after the landing no INCLUDE_ASM .s names them (asm/6CAC.s is not built).
+func_8002C22C: record 0 through g_practice_menu_table[0], record 1 through `rec1` (pointer-alias FAKE:
+direct 26, one table-base alias 13), scratch reads as SPAD members, the 0x1F8002B8 record as an s32 view.
+The 2026-09-22 doc note 1 (u8 *scr needed against MEM_IN_STRUCT_P scheduling) no longer holds: with
+SPAD member reads the s32-indexed and u8-displaced spellings both score 0 (p1s_s32 / p1s), so the
+cast-free one lands. func_8002C61C respelled in the same landing (it held the last C uses of the
+retired externs): s1/s0 FAKE aliases, per-site measurements in scores.txt.

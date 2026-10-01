@@ -1,0 +1,90 @@
+;; tmp/rtl/c61a (variant c61c_a = c61c_final with unk_AD read/written through g_practice_menu_table) — cse1 (in.i.cse):
+    (expr_list:REG_EQUAL (sign_extend:SI (reg:HI 94))
+        (nil)))
+
+(jump_insn 96 94 102 (set (pc)
+        (if_then_else (lt:SI (reg:SI 95)
+                (const_int 0))
+            (label_ref 148)
+            (pc))) 221 {branch_zero} (nil)
+    (nil))
+
+(insn 102 96 104 (set (reg:SI 97)
+        (plus:SI (reg/v:SI 72)
+            (const_int 173))) 3 {addsi3_internal} (nil)
+    (expr_list:REG_EQUAL (const:SI (plus:SI (symbol_ref:SI ("g_practice_menu_table"))
+                (const_int 173)))
+        (nil)))
+
+(insn 104 102 105 (set (reg:QI 98)
+        (mem/s:QI (plus:SI (reg/v:SI 72)
+                (const_int 173)))) 166 {movqi_internal2} (nil)
+    (nil))
+
+(insn 105 104 107 (set (reg:SI 99)
+        (zero_extend:SI (reg:QI 98))) 118 {zero_extendqisi2} (nil)
+    (nil))
+
+(jump_insn 107 105 111 (set (pc)
+        (if_then_else (ne:SI (reg:SI 99)
+                (const_int 0))
+            (label_ref 117)
+            (pc))) 221 {branch_zero} (nil)
+    (nil))
+
+(insn 111 107 112 (set (reg:QI 101)
+        (mem/s:QI (plus:SI (reg/v:SI 72)
+                (const_int 1273)))) 166 {movqi_internal2} (nil)
+    (nil))
+
+(insn 112 111 114 (set (reg:SI 102)
+;; ... store of record 0's unk_AD in the skip-blocks path:
+        (expr_list (use (reg:SI 4 a0))
+            (nil))))
+
+(insn 137 132 142 (set (mem/s:QI (plus:SI (reg/v:SI 72)
+                (const_int 1273)))
+        (const_int 0)) 166 {movqi_internal2} (nil)
+    (nil))
+
+(insn 142 137 144 (set (mem/s:QI (reg:SI 97))
+        (const_int 0)) 166 {movqi_internal2} (nil)
+    (nil))
+
+(jump_insn 144 142 145 (set (pc)
+        (label_ref 154)) -1 (nil)
+    (nil))
+
+;; cse2 (in.i.cse2) — insn 102 survives because reg 97 feeds insn 142, so insn 104 keeps (plus reg72 173); insn 111 folds back to the constant:
+    (nil))
+
+(insn 102 96 104 (set (reg:SI 97)
+        (plus:SI (reg/v:SI 72)
+            (const_int 173))) 3 {addsi3_internal} (nil)
+    (expr_list:REG_EQUAL (const:SI (plus:SI (symbol_ref:SI ("g_practice_menu_table"))
+                (const_int 173)))
+        (nil)))
+
+(insn 104 102 105 (set (reg:QI 98)
+        (mem/s:QI (plus:SI (reg/v:SI 72)
+                (const_int 173)))) 166 {movqi_internal2} (nil)
+    (nil))
+
+(insn 105 104 107 (set (reg:SI 99)
+        (zero_extend:SI (reg:QI 98))) 118 {zero_extendqisi2} (nil)
+    (nil))
+
+(jump_insn 107 105 111 (set (pc)
+        (if_then_else (ne:SI (reg:SI 99)
+                (const_int 0))
+            (label_ref 117)
+            (pc))) 221 {branch_zero} (nil)
+    (nil))
+
+(insn 111 107 112 (set (reg:QI 101)
+        (mem/s:QI (const:SI (plus:SI (symbol_ref:SI ("g_practice_menu_table"))
+                    (const_int 1273))))) 166 {movqi_internal2} (nil)
+    (nil))
+
+(insn 112 111 114 (set (reg:SI 102)
+        (zero_extend:SI (reg:QI 101))) 118 {zero_extendqisi2} (nil)
