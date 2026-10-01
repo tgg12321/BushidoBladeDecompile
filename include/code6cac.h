@@ -59,6 +59,20 @@ typedef struct {
 typedef struct { s32 vx, vy, vz, pad; } Vec4i32;
 typedef struct { s16 vx, vy, vz, pad; } SVec4i16;
 
+/* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
+ * frame from the two pads (one u16 half per player in each word):
+ * held = current bits, pressed = held & ~previous, released = ~held & previous,
+ * unheld = ~held; func_800194F4 resets it (4, 4, 0, 0, 0, -1).  func_8001BE20
+ * copies the whole record to its caller's buffer, and func_8001BE08 clears the
+ * four bit words of such a buffer. */
+typedef struct PadState {
+    s16 unk_00[4];                 /* [0..1] and [2..3] filled pairwise by func_80019568 */
+    u32 held;                      /* 0x08 */
+    u32 pressed;                   /* 0x0C */
+    u32 released;                  /* 0x10 */
+    u32 unheld;                    /* 0x14 */
+} PadState;                        /* sizeof == 0x18 */
+
 /* Per-character / practice-menu record table (base 0x80101EC8, stride 0x44C,
  * 4 records).  Schema: docs/naming/CHAR_STRUCT_SCHEMA.md; base symbol:
  * named_syms.txt:345 (g_practice_menu_table).  Only the fields reached by C so
@@ -99,11 +113,12 @@ typedef struct PracticeMenuRec {
     u8 *unk_50;                    /* entry whose byte 8 bounds unk_40 (func_80058580) */
     u8  unk_54[0x58 - 0x54];
     u8 *unk_58;                    /* byte 3 read by func_80056FE8 */
-    u8  unk_5C[0x5E - 0x5C];
+    u16 unk_5C;
     s16 unk_5E;                    /* 0/1, set alongside func_80021A98 */
     u8  unk_60[0x6A - 0x60];
     u16 unk_6A;                    /* SEQ state code; CHAR_STRUCT_SCHEMA.md +0x06A */
-    u8  unk_6C[0x72 - 0x6C];
+    s16 unk_6C;
+    u8  unk_6E[0x72 - 0x6E];
     s16 unk_72;
     u8  unk_74[0x7C - 0x74];
     s32 unk_7C;
@@ -225,11 +240,7 @@ typedef struct PracticeMenuRec {
     s32 unk_3C4;
     s32 unk_3C8;
     s32 unk_3CC;
-    u8  unk_3D0[0x3D8 - 0x3D0];
-    s32 unk_3D8;
-    s32 unk_3DC;
-    s32 unk_3E0;
-    s32 unk_3E4;
+    PadState unk_3D0;              /* the pad record func_80055B60 builds for func_8001BE20 */
     u16 unk_3E8;
     u8  unk_3EA[0x3EE - 0x3EA];
     s16 unk_3EE;
@@ -249,7 +260,7 @@ typedef struct PracticeMenuRec {
     s16 unk_40E;
     s16 unk_410;
     s16 unk_412;
-    u8  unk_414[0x424 - 0x414];
+    u8  unk_414[8][2];             /* func_80055B60: 8 (target id, count) pairs */
     u8  unk_424;
     u8  unk_425;
     u8  unk_426;
@@ -263,27 +274,13 @@ typedef struct PracticeMenuRec {
     s16 unk_438;
     s16 unk_43A;
     s16 unk_43C;
-    u8  unk_43E[0x440 - 0x43E];
+    s16 unk_43E;
     u8  unk_440;
     u8  unk_441;
     u8  unk_442;
     u8  unk_443;
     u8  unk_444[8];                /* func_80056CB8's per-direction results */
 } PracticeMenuRec;                 /* sizeof == 0x44C */
-
-/* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
- * frame from the two pads (one u16 half per player in each word):
- * held = current bits, pressed = held & ~previous, released = ~held & previous,
- * unheld = ~held; func_800194F4 resets it (4, 4, 0, 0, 0, -1).  func_8001BE20
- * copies the whole record to its caller's buffer, and func_8001BE08 clears the
- * four bit words of such a buffer. */
-typedef struct PadState {
-    s16 unk_00[4];                 /* [0..1] and [2..3] filled pairwise by func_80019568 */
-    u32 held;                      /* 0x08 */
-    u32 pressed;                   /* 0x0C */
-    u32 released;                  /* 0x10 */
-    u32 unheld;                    /* 0x14 */
-} PadState;                        /* sizeof == 0x18 */
 
 extern PracticeMenuRec g_practice_menu_table[];
 
