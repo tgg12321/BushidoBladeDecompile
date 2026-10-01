@@ -1,6 +1,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "game.h"
+#include "code6cac.h"
 
 /* Rodata owned by config.c per func_8003FA24's reference at asm/funcs/func_8003FA24.s:240-241.
  * Re-attributed from asm/data/101C.rodata_c2_post.s 2026-06-09 (rodata-cleanup project,
@@ -11,7 +12,7 @@ const char D_80010D8C[16] = "Multipul Model";
 /* Forward declarations */
 extern s32 stage_GetId(void);
 extern void sys_StubEmpty3(s32, s32, s32);
-extern void *func_8004153C(void);
+extern s32 *func_8004153C();
 extern void obj_ClearAll(void);
 extern void sys_StubEmpty2(void);
 extern void obj_Clear(s32);
@@ -31,7 +32,7 @@ extern u8 g_char_data;
 extern s16 D_800F6656;
 extern u8 g_stage_collision[];
 extern s32 D_80094A6C[];
-extern u8 *D_800A3708;
+extern Unk80101DF0Record *D_800A3708;
 extern s32 g_stage_light_pos;
 extern s32 D_800A93B4;
 extern s32 D_800A93B8;
@@ -96,8 +97,8 @@ void stage_InitCollision(void) {
 
     func_8003F268();
 
-    col_center = (*(s32 *)(D_800A3708 + 0x4C) + 0x7D00) / 2000;
-    row_center = (*(s32 *)(D_800A3708 + 0x54) + 0x7D00) / 2000;
+    col_center = (D_800A3708->work.t[0] + 0x7D00) / 2000;
+    row_center = (D_800A3708->work.t[2] + 0x7D00) / 2000;
 
     for (i = 0; i < 16; i++) {
         adj_i = i - 8;

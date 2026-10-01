@@ -59,7 +59,7 @@ extern s16 D_800A7FE0[32][32];
 extern u16 D_800A87E0[];
 extern u8 D_800A8FB0[];
 extern s32 D_800A3820;
-extern s32 *func_8004153C(s32);
+extern s32 *func_8004153C();
 extern void func_800432A0(s32, s32, s32, s32, s32);
 
 
