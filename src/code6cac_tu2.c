@@ -3862,10 +3862,10 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_B2 = 0;
     p->unk_34C = 0;
     func_8003047C(p);
-    p->unk_14 = p->unk_332;
+    p->unk_14 = p->unk_332[0];
     if (D_800A38DC == 5 || (D_800A38DC == 2 && D_800A389A == 0)) {
         if (p->unk_0A == 1 || p->unk_0A == 3 || p->unk_0A == 4 || p->unk_0A == 9 || p->unk_0A == 0x11) {
-            p->unk_332 = p->unk_14 = 0x11;
+            p->unk_332[0] = p->unk_14 = 0x11;
         } else {
             p->unk_14 = -1;
             p->unk_330 = 0;
@@ -3876,7 +3876,7 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     } else if (D_800A38DC == 3 && idx == 1 && D_800A384C == 4) {
         if (p->unk_00->unk_0A == 1 || p->unk_00->unk_0A == 3 || p->unk_00->unk_0A == 4 ||
             p->unk_00->unk_0A == 9 || p->unk_00->unk_0A == 0x11) {
-            p->unk_332 = p->unk_14 = p->unk_00->unk_14;
+            p->unk_332[0] = p->unk_14 = p->unk_00->unk_14;
             p->unk_330 = 1;
         }
     } else {

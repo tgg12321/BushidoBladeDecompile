@@ -28,13 +28,11 @@ extern void RotMatrixX(s32, s32 *);
 extern void RotMatrixY(s32, s32 *);
 extern void RotMatrixZ(s32, s32 *);
 extern s32 stage_GetDataPtr(void);
-extern u16 D_8008EBA0;
 extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
 extern u8 D_800A38AB;
 extern u8 D_800F65F8;
-extern u8 D_80106A78;
 extern s16 D_800A3824;
 extern s16 D_800A3876;
 extern s16 D_800A38A8;
@@ -4421,39 +4419,39 @@ s32 func_8002FDB0(s32 *arg0) {
  * Load-bearing: `vec` is ONE named local used by both the gte_ldv0 and gte_stlvnl operands so
  * cse.c materializes `addiu $v0,$s0,0x2C` once and island 3 reuses $v0 (.s L84).
  * Full ledger: memory/grind/func_8002FF20/. */
-void func_8002FF20(u8 *arg0, s16 arg1) {
+void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     s32 mat_local[8];
     s32 *playerData;
     s32 *s2_ptr;
     s32 *rot_mat;
-    s32 *vec;
+    Vec3i32 *vec;
 
-    arg0[8] = 1;
-    arg0[9] = arg1;
-    playerData = (s32 *)game_GetPlayerData(arg0[6] < 1);
-    rot_mat = (s32 *)((u8 *)arg0 + 0xC);
-    s2_ptr = (s32 *)playerData[arg0[9]];
+    arg0->unk_08 = 1;
+    arg0->unk_09 = arg1;
+    playerData = (s32 *)game_GetPlayerData(arg0->unk_06 < 1);
+    rot_mat = (s32 *)&arg0->unk_0C;
+    s2_ptr = (s32 *)playerData[arg0->unk_09];
 
-    /* 3x3 identity matrix at arg0+0xC..arg0+0x1D (9 s16 entries). */
-    *(s16 *)((u8 *)arg0 + 0xC) = 0x1000;
-    *(s16 *)((u8 *)arg0 + 0xE) = 0;
-    *(s16 *)((u8 *)arg0 + 0x10) = 0;
-    *(s16 *)((u8 *)arg0 + 0x12) = 0;
-    *(s16 *)((u8 *)arg0 + 0x14) = 0x1000;
-    *(s16 *)((u8 *)arg0 + 0x16) = 0;
-    *(s16 *)((u8 *)arg0 + 0x18) = 0;
-    *(s16 *)((u8 *)arg0 + 0x1A) = 0;
-    *(s16 *)((u8 *)arg0 + 0x1C) = 0x1000;
-    RotMatrixX(*(s16 *)((u8 *)arg0 + 0x54), rot_mat);
-    RotMatrixY(*(s16 *)((u8 *)arg0 + 0x56), rot_mat);
-    RotMatrixZ(*(s16 *)((u8 *)arg0 + 0x58), rot_mat);
+    /* 3x3 identity rotation in the record's matrix. */
+    arg0->unk_0C.m[0][0] = 0x1000;
+    arg0->unk_0C.m[0][1] = 0;
+    arg0->unk_0C.m[0][2] = 0;
+    arg0->unk_0C.m[1][0] = 0;
+    arg0->unk_0C.m[1][1] = 0x1000;
+    arg0->unk_0C.m[1][2] = 0;
+    arg0->unk_0C.m[2][0] = 0;
+    arg0->unk_0C.m[2][1] = 0;
+    arg0->unk_0C.m[2][2] = 0x1000;
+    RotMatrixX(arg0->unk_54[0], rot_mat);
+    RotMatrixY(arg0->unk_54[1], rot_mat);
+    RotMatrixZ(arg0->unk_54[2], rot_mat);
     func_8002EECC(s2_ptr, mat_local);
     MulMatrix0(mat_local, rot_mat, rot_mat);
 
     /* Subtract opponent reference position from self position. */
-    *(s32 *)((u8 *)arg0 + 0x2C) -= s2_ptr[5];
-    *(s32 *)((u8 *)arg0 + 0x30) -= s2_ptr[6];
-    *(s32 *)((u8 *)arg0 + 0x34) -= s2_ptr[7];
+    arg0->unk_2C.x -= s2_ptr[5];
+    arg0->unk_2C.y -= s2_ptr[6];
+    arg0->unk_2C.z -= s2_ptr[7];
 
     /* PsyQ 4.5 inline_c.h macro gte_SetRotMatrix(r0) --- verbatim macro body:
      * copies the operand into $12, loads the 5 packed rotation-matrix words
@@ -4471,7 +4469,7 @@ void func_8002FF20(u8 *arg0, s16 arg1) {
         "ctc2   $14, $3\n"
         "ctc2   $15, $4\n"
         :: "r"(mat_local) : "$12", "$13", "$14", "$15");
-    vec = (s32 *)((u8 *)arg0 + 0x2C);
+    vec = &arg0->unk_2C;
     /* PsyQ 4.5 inline_c.h:101-110 macro gte_ldlv0(r0) --- verbatim macro body:
      * lhu/lhu/sll/or packs VX0/VY0 (s32 x,y) into one word, mtc2 to $0, lwc2 VZ0
      * into $1; the 2-cycle GTE load delay is carried as explicit nops (maspsx does
@@ -4500,9 +4498,9 @@ void func_8002FF20(u8 *arg0, s16 arg1) {
         :: "r"(vec) : "$12");
 
     /* Halve x, y, z (signed arithmetic shift). */
-    *(s32 *)((u8 *)arg0 + 0x2C) >>= 1;
-    *(s32 *)((u8 *)arg0 + 0x30) >>= 1;
-    *(s32 *)((u8 *)arg0 + 0x34) >>= 1;
+    arg0->unk_2C.x >>= 1;
+    arg0->unk_2C.y >>= 1;
+    arg0->unk_2C.z >>= 1;
 }
 
 /* func_800300B4 -- pure-C body (GTE rotate+translate of the object's local vector, then
@@ -4510,7 +4508,7 @@ void func_8002FF20(u8 *arg0, s16 arg1) {
  * gte_rtv0 = cop2 MVMVA .word 0x4A486012, gte_stlvnl) in the older-SDK `move $12,%0`
  * materialize-then-copy spelling, character-identical to the func_800203B4
  * (src/code6cac.c:1860-1872, inline_asm_canonical.txt:367) authorized islands -- only the
- * operand expression differs (arg0 + 0x2C vs vec). Each island is the verbatim body of the
+ * operand expression differs (&arg0->unk_2C vs vec). Each island is the verbatim body of the
  * named Sony PsyQ GTE macro (PsyQ Run-time Library Release 4.5 inline_c.h): cluster
  * condition 3 as CLARIFIED by owner Ruling A 2026-09-02
  * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:163) -- "GPR instructions that are the
@@ -4527,7 +4525,7 @@ void func_8002FF20(u8 *arg0, s16 arg1) {
  * One FAKE: do-while(0) wrap around gte_stlvnl (see the annotation).
  * Full ledger: memory/grind/func_800300B4/. */
 /* kengo:?  |  GTE rotate+translate of the object's local vector, then dispatch */
-void func_800300B4(u8 *arg0) {
+void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
     s32 dir[2];
     s32 mtx[8];
@@ -4535,8 +4533,8 @@ void func_800300B4(u8 *arg0) {
     s32 *mat;
     s32 lookup;
 
-    playerData = (s32 *)game_GetPlayerData(arg0[6] < 1);
-    mat = (s32 *)playerData[arg0[9]];
+    playerData = (s32 *)game_GetPlayerData(arg0->unk_06 < 1);
+    mat = (s32 *)playerData[arg0->unk_09];
 
     /* PsyQ libgte inline macro gte_SetRotMatrix(r) (PsyQ 4.5 inline_c.h) - loads the 5
      * packed rotation-matrix words at r into cop2 control regs R11R12..R33.
@@ -4569,7 +4567,7 @@ void func_800300B4(u8 *arg0) {
         "lwc2   $1, 8($12)\n"
         "nop\n"
         "nop\n"
-        :: "r"(arg0 + 0x2C) : "$12", "$13", "$14");
+        :: "r"(&arg0->unk_2C) : "$12", "$13", "$14");
     /* PsyQ libgte inline macro gte_rtv0() (PsyQ 4.5 inline_c.h) - GTE MVMVA sf=1,
      * mx=rotation matrix, v=V0, cv=none --- cop2 command 0x0486012. */
     __asm__ volatile(".word 0x4A486012");
@@ -4589,62 +4587,40 @@ void func_800300B4(u8 *arg0) {
     mac[1] += mat[6];
     mac[2] += mat[7];
 
-    MulMatrix0(mat, (s32 *)(arg0 + 0xC), mtx);
+    MulMatrix0(mat, &arg0->unk_0C, mtx);
     func_8002F2D0(mtx, dir);
 
-    lookup = D_8008EB80[*(s16 *)(arg0 + 2)];
+    lookup = D_8008EB80[arg0->unk_02];
     func_80049718(lookup, 1, mac, dir);
-    func_800393C8(arg0[10], lookup, mac, dir);
+    func_800393C8(arg0->unk_0A, lookup, mac, dir);
 }
 void func_80030208(void) {
-    u8 *base;
+    Obj80106A78 *obj;
     s32 i;
-    u8 *p;
-    s16 v1;
+    s16 kind;
     s32 lookup;
-    u8 *ptr1;
-    u8 *ptr0;
 
-    base = (u8 *)&D_80106A78;
-    i = 0;
-    p = base + 0xA;
-loop:
-    v1 = *(s16 *)(p - 8);
-    if (v1 == -1) goto increment;
-    if (*(u8 *)(p - 2) != 0) {
-        func_800300B4(base);
-        i++;
-        goto next;
+    for (obj = D_80106A78, i = 0; i < 12; i++, obj++) {
+        kind = obj->unk_02;
+        if (kind == -1) {
+            continue;
+        }
+        if (obj->unk_08 != 0) {
+            func_800300B4(obj);
+            continue;
+        }
+        if (obj->unk_00 < 2) {
+            continue;
+        }
+        lookup = D_8008EB80[kind];
+        if (kind >= 0x12 && kind < 0x1E) {
+            lookup = obj->unk_0B;
+        } else if (kind == 0xE && obj->unk_05 == 2) {
+            lookup += 3;
+        }
+        func_80049718(lookup, 1, &obj->unk_2C, obj->unk_54);
+        func_800393C8(obj->unk_0A, lookup, &obj->unk_2C, obj->unk_54);
     }
-    if (*(s16 *)base < 2) goto increment;
-
-    lookup = D_8008EB80[v1];
-    if ((u16)(v1 - 0x12) < 0xC) {
-        lookup = *(u8 *)(p + 1);
-        goto call_funcs;
-    }
-    if (v1 != 0xE) {
-        goto call_funcs;
-    }
-    if (*(u8 *)(p - 5) != 2) {
-        goto call_with_a1;
-    }
-    lookup += 3;
-
-call_funcs:
-    ;
-call_with_a1:
-    ptr1 = base + 0x2C;
-    ptr0 = base + 0x54;
-    func_80049718(lookup, 1, ptr1, ptr0);
-    func_800393C8(*(u8 *)p, lookup, ptr1, ptr0);
-
-increment:
-    i++;
-next:
-    p += 0x64;
-    base += 0x64;
-    if (i < 12) goto loop;
 }
 void func_8003032C(s32 *a0, s16 *a1) {
     s32 angle;
@@ -4676,210 +4652,180 @@ void func_8003032C(s32 *a0, s16 *a1) {
     *((s32 *)(((u8 *)a0) + 0x48)) = v48 >> 2;
 }
 void func_8003043C(void) {
-    s32 i = 0;
-    s16 neg = -1;
-    u8 val = 0xFF;
-    s32 off = 0;
-    do {
-        *(s16 *)((u8 *)&D_80106A7A + off) = neg;
-        *(u8 *)((u8 *)&D_80106A82 + off) = val;
-        off += 0x64;
-    } while (++i < 12);
+    s32 i;
+
+    for (i = 0; i < 12; i++) {
+        D_80106A78[i].unk_02 = -1;
+        D_80106A78[i].unk_0A = 0xFF;
+    }
 }
 
-void func_8003047C(u8 *a0) {
+void func_8003047C(PracticeMenuRec *a0) {
     s32 i;
-    u8 *table;
     s16 val;
-    s16 idx;
 
-    *(u16 *)(a0 + 0x330) = 0;
+    a0->unk_330 = 0;
     i = 0;
-    table = &D_8008E338;
     do {
-        idx = *(s16 *)(a0 + 0xA);
-        val = (s8)*(table + idx * 5 + i);
-        *(s16 *)(a0 + 0x332 + i * 2) = val;
+        val = D_8008E338[a0->unk_0A][i];
+        a0->unk_332[i] = val;
         if (val != -1) {
-            u16 cnt = *(u16 *)(a0 + 0x330);
-            *(u16 *)(a0 + 0x330) = cnt + 1;
+            a0->unk_330++;
         }
         i++;
     } while (i < 5);
-
-    idx = *(s16 *)(a0 + 0xA);
-    {
-        s16 idx2 = *(s16 *)(a0 + 0x4);
-        *(&D_800A36F2 + idx2) = *(&D_8008E338 + idx * 5);
-    }
+    D_800A36F2[a0->unk_04] = D_8008E338[a0->unk_0A][0];
 }
 
 
 void func_80030524(void) {
     s32 i = 0;
-    s32 neg = -1;
-    s16 *p = &D_80106A7A;
-    s32 off = 0;
     do {
-        if (*p != neg) {
-            if (*(u8 *)((u8 *)&D_80106A80 + off) != 0) {
-                *p = neg;
+        if (D_80106A78[i].unk_02 != -1) {
+            if (D_80106A78[i].unk_08 != 0) {
+                D_80106A78[i].unk_02 = -1;
             }
         }
-        p = (s16 *)((u8 *)p + 0x64);
-        off += 0x64;
     } while (++i < 12);
 }
-s32 *func_80030580(s32 *arg0, s32 arg1) {
+Obj80106A78 *func_80030580(PracticeMenuRec *arg0, s32 arg1) {
     /* FAKE: unwritten leading pad (phantom-frame-slot volatile pad local family, owner ruling 2026-08-18; row granted by owner ruling 2026-09-02, docs/grind/decisions.md "foreclosed-bucket disposition"): reserves the 16 untouched locals bytes the target frame holds beyond our single combine-orphan slot (target vars=24, ours 8; zero ($sp) references in asm/funcs/func_80030580.s). Mechanism: reload alter_reg / get_frame_size counts the never-accessed volatile object and emits no instruction. Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80030580/hypotheses.md (s1-s9, 44 structural respellings + 31 frame-producer shapes, all measured inert). SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. */
     volatile u32 pre_pad[4]; /* !FAKE */
-    u8 *obj;
-    u8 *src = (u8 *)arg0;
+    Obj80106A78 *obj;
     Tbl8008E194 *tbl;
     s32 i;
 
-    obj = (u8 *)&D_80106A78;
-    for (i = 0; i < 12; i++, obj += 0x64) {
-        if (*(s16 *)(obj + 2) == -1 && *(u8 *)(obj + 0xA) == 0xFF) break;
+    obj = D_80106A78;
+    for (i = 0; i < 12; i++, obj++) {
+        if (obj->unk_02 == -1 && obj->unk_0A == 0xFF) break;
     }
-    *(u8 *)(obj + 0xA) = i;
-    *(s16 *)(obj + 2) = arg1;
-    *(u8 *)(obj + 7) = 0;
-    *(u8 *)(obj + 8) = 0;
-    *(u8 *)(obj + 4) = 1;
-    *(u8 *)(obj + 6) = *(u16 *)(src + 4);
-    *(s32 *)(obj + 0x2C) = *(s32 *)(src + 0xF4);
-    *(s32 *)(obj + 0x30) = *(s32 *)(src + 0xF8) - *(s16 *)(src + 0x1A) / 32;
-    *(s32 *)(obj + 0x34) = *(s32 *)(src + 0xFC);
+    obj->unk_0A = i;
+    obj->unk_02 = arg1;
+    obj->unk_07 = 0;
+    obj->unk_08 = 0;
+    obj->unk_04 = 1;
+    obj->unk_06 = arg0->unk_04;
+    obj->unk_2C.x = arg0->unk_F4.x;
+    obj->unk_2C.y = arg0->unk_F4.y - arg0->unk_1A / 32;
+    obj->unk_2C.z = arg0->unk_F4.z;
     tbl = &D_8008E194[arg1];
-    *(s32 *)(obj + 0x44) = (Judge[*(u16 *)(src + 0x1CA) & 0xFFF] * tbl->unk4) >> 12;
-    *(s32 *)(obj + 0x48) = tbl->unk6;
-    *(s32 *)(obj + 0x4C) = (Judge[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * tbl->unk4) >> 12;
-    *(s32 *)(obj + 0x2C) += *(s32 *)(obj + 0x44);
-    *(s32 *)(obj + 0x30) += *(s32 *)(obj + 0x48);
-    *(s32 *)(obj + 0x34) += *(s32 *)(obj + 0x4C);
-    *(s32 *)(obj + 0x2C) += *(s32 *)(obj + 0x44) / 2;
-    *(s32 *)(obj + 0x30) += *(s32 *)(obj + 0x48) / 2;
-    *(s32 *)(obj + 0x34) += *(s32 *)(obj + 0x4C) / 2;
-    *(Vec3i *)(obj + 0x38) = *(Vec3i *)(obj + 0x2C);
-    *(s16 *)(obj + 0x54) = 0;
-    *(u16 *)(obj + 0x56) = *(u16 *)(src + 0x1CA);
-    *(s16 *)(obj + 0x58) = 0;
+    obj->unk_44.x = (Judge[arg0->unk_1C8.vy & 0xFFF] * tbl->unk4) >> 12;
+    obj->unk_44.y = tbl->unk6;
+    obj->unk_44.z = (Judge[(arg0->unk_1C8.vy + 0x400) & 0xFFF] * tbl->unk4) >> 12;
+    obj->unk_2C.x += obj->unk_44.x;
+    obj->unk_2C.y += obj->unk_44.y;
+    obj->unk_2C.z += obj->unk_44.z;
+    obj->unk_2C.x += obj->unk_44.x / 2;
+    obj->unk_2C.y += obj->unk_44.y / 2;
+    obj->unk_2C.z += obj->unk_44.z / 2;
+    obj->unk_38 = obj->unk_2C;
+    obj->unk_54[0] = 0;
+    obj->unk_54[1] = arg0->unk_1C8.vy;
+    obj->unk_54[2] = 0;
     if (tbl->unk0 == 1) {
-        *(s16 *)(obj + 0x5C) = 0;
-        *(u16 *)(obj + 0x5E) = tbl->unk8;
-        *(s16 *)(obj + 0x60) = 0;
+        obj->unk_5C[0] = 0;
+        obj->unk_5C[1] = tbl->unk8;
+        obj->unk_5C[2] = 0;
     } else if (tbl->unk0 == 2) {
-        *(u16 *)(obj + 0x5C) = tbl->unk8;
-        *(s16 *)(obj + 0x5E) = 0;
-        *(s16 *)(obj + 0x60) = 0;
+        obj->unk_5C[0] = tbl->unk8;
+        obj->unk_5C[1] = 0;
+        obj->unk_5C[2] = 0;
     } else if (tbl->unk0 == 3) {
-        *(s16 *)(obj + 0x5C) = 0;
-        *(u16 *)(obj + 0x5E) = tbl->unk8;
-        *(s16 *)(obj + 0x60) = 0;
+        obj->unk_5C[0] = 0;
+        obj->unk_5C[1] = tbl->unk8;
+        obj->unk_5C[2] = 0;
     } else {
-        *(s16 *)(obj + 0x5C) = 0;
-        *(s16 *)(obj + 0x5E) = 0;
-        *(s16 *)(obj + 0x60) = 0;
+        obj->unk_5C[0] = 0;
+        obj->unk_5C[1] = 0;
+        obj->unk_5C[2] = 0;
     }
-    *(s32 *)(obj + 0x50) = 1;
-    *(u8 *)(obj + 5) = 0;
-    *(s16 *)obj = 0;
-    return (s32 *)obj;
+    obj->unk_50 = 1;
+    obj->unk_05 = 0;
+    obj->unk_00 = 0;
+    return obj;
 }
 /* kengo:HIGH  |  is_coli/coli_hit_body_weapon  |  148i */
-/* TABLED: -4 bytes, beqz delay slot scheduling (GCC fills with move v1,s2 instead of move a2,v0) */
-extern s32 *func_80030580(s32 *, s32);
+extern Obj80106A78 *func_80030580(PracticeMenuRec *, s32);
 extern void func_80032854(s32, s32, u8 *, s16 *);
-s32 func_800307D0(u8 *a0) {
+s32 func_800307D0(PracticeMenuRec *a0) {
     s32 count;
     s32 idx;
-    s32 top;
-    s32 cur;
     s32 kind;
     s32 id;
-    s32 *obj;
+    Obj80106A78 *obj;
     s32 i;
 
-    count = *(s16 *)(a0 + 0x330);
+    count = a0->unk_330;
     if (count == 0) {
         return -1;
     }
     idx = 0;
-    if (count < 2) {
-        goto pick_index;
+    if (count >= 2 && a0->unk_88 != -1) {
+        idx = a0->unk_332[0] == a0->unk_14;
     }
-    if (*(s16 *)(a0 + 0x88) == -1) {
-        goto pick_index;
-    }
-    top = *(s16 *)(a0 + 0x332);
-    cur = *(s16 *)(a0 + 0x14);
-    top = top ^ cur;
-    idx = (u32)top < 1;
-pick_index:
-    id = *(s16 *)(a0 + idx * 2 + 0x332);
-    obj = func_80030580((s32 *)a0, id);
-    for (i = idx; i < *(s16 *)(a0 + 0x330) - 1; i++) {
-        *(u16 *)(a0 + 0x332 + i * 2) = *(u16 *)(a0 + 0x334 + i * 2);
+    id = a0->unk_332[idx];
+    obj = func_80030580(a0, id);
+    for (i = idx; i < a0->unk_330 - 1; i++) {
+        a0->unk_332[i] = a0->unk_332[i + 1];
     }
 
-    *(u16 *)(a0 + 0x330) = *(u16 *)(a0 + 0x330) - 1;
-    kind = *(s16 *)((u8 *)obj + 2);
+    a0->unk_330--;
+    kind = obj->unk_02;
     if (kind == 0xE) {
-        func_80032854((D_800A36F2 ^ 0xE) != 0, 0x2F, (u8 *)obj + 0x2C, 0);
+        func_80032854((D_800A36F2[0] ^ 0xE) != 0, 0x2F, (u8 *)&obj->unk_2C, 0);
     } else {
-        func_80032854((kind ^ D_800A36F2) != 0, 0x2A, (u8 *)obj + 0x2C, 0);
+        func_80032854((kind ^ D_800A36F2[0]) != 0, 0x2A, (u8 *)&obj->unk_2C, 0);
     }
     return id;
 }
 typedef struct { s32 x, y, z; } Vec3_copy;
 extern s32 rng_Next(void);
-extern s32 *func_80030580(s32 *, s32);
-void func_80030900(u8 *a0, s32 *a1) {
-    s32 *p;
+extern Obj80106A78 *func_80030580(PracticeMenuRec *, s32);
+void func_80030900(PracticeMenuRec *a0, Vec3i32 *a1) {
+    Obj80106A78 *p;
     s32 rnd;
     s32 i;
 
-    p = func_80030580((s32 *)a0, *(s16 *)(a0 + 0x332));
-    *((u8 *)p + 4) = 0;
-    *(Vec3_copy *)((u8 *)p + 0x2C) = *(Vec3_copy *)a1;
-    *(s32 *)((u8 *)p + 0x44) = (rng_Next() & 0xFF) - 0x80;
-    *(s32 *)((u8 *)p + 0x48) = -(rng_Next() & 0x3F) - 0x80;
-    *(s32 *)((u8 *)p + 0x4C) = (rng_Next() & 0xFF) - 0x80;
+    p = func_80030580(a0, a0->unk_332[0]);
+    p->unk_04 = 0;
+    p->unk_2C = *a1;
+    p->unk_44.x = (rng_Next() & 0xFF) - 0x80;
+    p->unk_44.y = -(rng_Next() & 0x3F) - 0x80;
+    p->unk_44.z = (rng_Next() & 0xFF) - 0x80;
     rnd = rng_Next();
     if (rnd & 0x1000) {
-        *(s16 *)((u8 *)p + 0x5C) = (rnd & 0x3FF) + 0x200;
+        p->unk_5C[0] = (rnd & 0x3FF) + 0x200;
     } else {
-        *(s16 *)((u8 *)p + 0x5C) = -(rnd & 0x3FF) - 0x200;
+        p->unk_5C[0] = -(rnd & 0x3FF) - 0x200;
     }
-    *(s16 *)((u8 *)p + 0x5E) = (rng_Next() & 0x7FF) - 0x400;
-    *(s16 *)((u8 *)p + 0x60) = 0;
-    *((u8 *)p + 7) = 1;
-    for (i = 0; i < *(s16 *)(a0 + 0x330) - 1; i++) {
-        *(u16 *)(a0 + 0x332 + i * 2) = *(u16 *)(a0 + 0x334 + i * 2);
+    p->unk_5C[1] = (rng_Next() & 0x7FF) - 0x400;
+    p->unk_5C[2] = 0;
+    p->unk_07 = 1;
+    for (i = 0; i < a0->unk_330 - 1; i++) {
+        a0->unk_332[i] = a0->unk_332[i + 1];
     }
-    *(s16 *)(a0 + 0x330) = (s16)(*(u16 *)(a0 + 0x330) - 1);
+    a0->unk_330--;
 }
-void cpu_set_move_command_and_dir(s32 *a0, s32 a1, s32 *a2) {
-    s32 *p;
+void cpu_set_move_command_and_dir(PracticeMenuRec *a0, s32 a1, Vec3i32 *a2) {
+    Obj80106A78 *p;
     s32 rnd;
 
     p = func_80030580(a0, a1);
-    *((u8 *)p + 4) = 0;
-    *(Vec3_copy *)((u8 *)p + 0x2C) = *(Vec3_copy *)a2;
-    *(s32 *)((u8 *)p + 0x44) = (rng_Next() & 0xFF) - 0x80;
-    *(s32 *)((u8 *)p + 0x48) = -(rng_Next() & 0x3F) - 0x80;
-    *(s32 *)((u8 *)p + 0x4C) = (rng_Next() & 0xFF) - 0x80;
+    p->unk_04 = 0;
+    p->unk_2C = *a2;
+    p->unk_44.x = (rng_Next() & 0xFF) - 0x80;
+    p->unk_44.y = -(rng_Next() & 0x3F) - 0x80;
+    p->unk_44.z = (rng_Next() & 0xFF) - 0x80;
     rnd = rng_Next();
     if (rnd & 0x1000) {
-        *(s16 *)((u8 *)p + 0x5C) = (rnd & 0x3FF) + 0x200;
+        p->unk_5C[0] = (rnd & 0x3FF) + 0x200;
     } else {
-        *(s16 *)((u8 *)p + 0x5C) = -(rnd & 0x3FF) - 0x200;
+        p->unk_5C[0] = -(rnd & 0x3FF) - 0x200;
     }
-    *(s16 *)((u8 *)p + 0x5E) = (rng_Next() & 0x7FF) - 0x400;
-    *(s16 *)((u8 *)p + 0x60) = 0;
-    *((u8 *)p + 7) = 1;
-    *((u8 *)p + 0xB) = *(u16 *)((u8 *)a0 + 0x12);
+    p->unk_5C[1] = (rng_Next() & 0x7FF) - 0x400;
+    p->unk_5C[2] = 0;
+    p->unk_07 = 1;
+    p->unk_0B = a0->unk_12;
 }
 
 
@@ -4916,76 +4862,59 @@ done:
     return 1;
 }
 
-s32 func_80030BA8(u8 *arg0) {
-    s32 i = 0;
-    s32 empty_slot = -1;
-    u8 *p = (u8 *)&D_80106A7A;
+s32 func_80030BA8(PracticeMenuRec *arg0) {
+    Obj80106A78 *p;
+    s32 i;
     s32 old_val;
 
-    loop:;
-    {
-        u16 val = *(u16 *)p;
-        s32 sval;
-        if ((unsigned)(val - 0x12) < 12u) {
-            goto next;
+    for (i = 0, p = D_80106A78; i < 12; i++, p++) {
+        s16 kind = p->unk_02;
+        if (kind >= 0x12 && kind < 0x1E) {
+            continue;
         }
-        sval = (s16)val;
-        if (sval == empty_slot) {
-            goto next;
+        if (kind == -1) {
+            continue;
         }
-        if (*(s32 *)(p + 0x4E) != 0) {
-            goto next;
+        if (p->unk_50 != 0) {
+            continue;
         }
         {
-            s32 bc = *(s32 *)(arg0 + 0xBC);
-            s32 pos2e = *(s32 *)(p + 0x2E);
-            if (bc - 0x64 >= pos2e) {
-                goto next;
+            s32 bc = arg0->unk_B8.vy;
+            s32 py = p->unk_2C.y;
+            if (bc - 0x64 >= py) {
+                continue;
             }
-            if (pos2e >= bc + 0x64) {
-                goto next;
+            if (py >= bc + 0x64) {
+                continue;
             }
         }
         {
-            s32 dx = *(s32 *)(arg0 + 0xF4) - *(s32 *)(p + 0x2A);
-            s32 dz = *(s32 *)(arg0 + 0xFC) - *(s32 *)(p + 0x32);
-            s32 range_sq = 0xF423F;
-            i++;
-            if (dx * dx + dz * dz > range_sq) {
-                goto loop_test;
+            s32 dx = arg0->unk_F4.x - p->unk_2C.x;
+            s32 dz = arg0->unk_F4.z - p->unk_2C.z;
+            if (dx * dx + dz * dz > 0xF423F) {
+                continue;
             }
         }
-        if (func_80030B10(arg0, sval) == 0) {
+        if (func_80030B10((u8 *)arg0, kind) == 0) {
             return -1;
         }
-        old_val = (s32)(*(s16 *)p);
-        *(s16 *)p = (s16)empty_slot;
+        old_val = p->unk_02;
+        p->unk_02 = -1;
         if (old_val == 0xE) {
-            s32 a0val = D_800A36F2 ^ 0xE;
-            func_80032854(a0val != 0, 0x2F, arg0 + 0xF4, 0);
+            func_80032854((D_800A36F2[0] ^ 0xE) != 0, 0x2F, (u8 *)&arg0->unk_F4, 0);
         } else {
-            func_80032854(*(s16 *)(arg0 + 4), 0x11, arg0 + 0xF4, 0);
+            func_80032854(arg0->unk_04, 0x11, (u8 *)&arg0->unk_F4, 0);
         }
         return old_val;
-    }
-    next:
-    i++;
-    loop_test:
-    if (i < 12) {
-        p += 0x64;
-        goto loop;
     }
     return -1;
 }
 void func_80030D04(void) {
     s32 i = 0;
-    s32 neg = -1;
-    u16 *p = (u16 *)&D_80106A7A;
     do {
-        if ((u32)(*p - 0x12) < 12u) {
-            *p = neg;
+        if (D_80106A78[i].unk_02 >= 0x12 && D_80106A78[i].unk_02 < 0x1E) {
+            D_80106A78[i].unk_02 = -1;
         }
-        p = (u16 *)((u8 *)p + 0x64);
     } while (++i < 12);
 }
 void func_80030D48(void) {
@@ -5003,7 +4932,7 @@ s32 math_LerpAngle(s32 arg0, s32 arg1, s32 arg2) {
  * vectors live in the scratchpad record at 0x1F8002B8. */
 void func_80030D7C(void) {
     u8 *scr;
-    u8 *obj;
+    Obj80106A78 *obj;
     s32 i;
     s32 half;
     s32 dot;
@@ -5012,8 +4941,8 @@ void func_80030D7C(void) {
     s16 *nrm;
 
     scr = (u8 *)0x1F8002B8;
-    obj = (u8 *)&D_80106A78;
-    for (i = 0; i < 12; i++, obj += 0x64) {
+    obj = D_80106A78;
+    for (i = 0; i < 12; i++, obj++) {
         /* work holds two values: the clamped turn amount (turn block) and the
          * bounce restitution factor D_8008E194[state].unkA. One local, not two:
          * ordinary-c-judge-decidable.md Ruling 11; (D) record in
@@ -5025,191 +4954,191 @@ void func_80030D7C(void) {
          * pre-slim-2026-10-01:memory/grind/func_80030D7C/evidence.md (s2) and d_proof_dumps.txt. */
         s32 temp;
 
-        if (*(s16 *)(obj + 2) == -1) {
-            *(u8 *)(obj + 0xA) = 0xFF;
+        if (obj->unk_02 == -1) {
+            obj->unk_0A = 0xFF;
             continue;
         }
-        if (*(u8 *)(obj + 8) != 0) {
+        if (obj->unk_08 != 0) {
             continue;
         }
-        *(Vec3i32 *)(obj + 0x38) = *(Vec3i32 *)(obj + 0x2C);
-        if (*(s32 *)(obj + 0x50) != 0) {
-            (*(s16 *)obj)++;
+        obj->unk_38 = obj->unk_2C;
+        if (obj->unk_50 != 0) {
+            obj->unk_00++;
         }
-        if (*(s16 *)(obj + 2) == 0x10 && *(s32 *)(obj + 0x50) != 0 && *(u8 *)(obj + 5) == 0
-            && *(s16 *)obj >= 14) {
-            temp = ratan2(*(s32 *)(obj + 0x44), *(s32 *)(obj + 0x4C));
-            work = (0x4E - *(s16 *)obj) * 96 / 64;
+        if (obj->unk_02 == 0x10 && obj->unk_50 != 0 && obj->unk_05 == 0
+            && obj->unk_00 >= 14) {
+            temp = ratan2(obj->unk_44.x, obj->unk_44.z);
+            work = (0x4E - obj->unk_00) * 96 / 64;
             if (work < 0) {
                 work = 0;
             } else if (work > 0x42) {
                 work = 0x42;
             }
-            *(s32 *)(scr + 0x10) = (Judge[(temp + 0x400) & 0xFFF] * *(s32 *)(obj + 0x44)
-                                    - Judge[temp & 0xFFF] * *(s32 *)(obj + 0x4C)) >> 12;
-            *(s32 *)(scr + 0x14) = *(s32 *)(obj + 0x48);
-            *(s32 *)(scr + 0x18) = (Judge[temp & 0xFFF] * *(s32 *)(obj + 0x44)
-                                    + Judge[(temp + 0x400) & 0xFFF] * *(s32 *)(obj + 0x4C)) >> 12;
+            *(s32 *)(scr + 0x10) = (Judge[(temp + 0x400) & 0xFFF] * obj->unk_44.x
+                                    - Judge[temp & 0xFFF] * obj->unk_44.z) >> 12;
+            *(s32 *)(scr + 0x14) = obj->unk_44.y;
+            *(s32 *)(scr + 0x18) = (Judge[temp & 0xFFF] * obj->unk_44.x
+                                    + Judge[(temp + 0x400) & 0xFFF] * obj->unk_44.z) >> 12;
             *(s32 *)(scr + 0x20) = *(s32 *)(scr + 0x10);
             half = work / 2;
             *(s32 *)(scr + 0x24) = (Judge[(half + 0x400) & 0xFFF] * *(s32 *)(scr + 0x14)
                                     - Judge[half & 0xFFF] * *(s32 *)(scr + 0x18)) >> 12;
             *(s32 *)(scr + 0x28) = (Judge[half & 0xFFF] * *(s32 *)(scr + 0x14)
                                     + Judge[(half + 0x400) & 0xFFF] * *(s32 *)(scr + 0x18)) >> 12;
-            *(s32 *)(obj + 0x44) = (Judge[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x20)
+            obj->unk_44.x = (Judge[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x20)
                                     - Judge[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
-            *(s32 *)(obj + 0x48) = *(s32 *)(scr + 0x24);
-            *(s32 *)(obj + 0x4C) = (Judge[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x20)
+            obj->unk_44.y = *(s32 *)(scr + 0x24);
+            obj->unk_44.z = (Judge[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x20)
                                     + Judge[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
-            *(s16 *)(obj + 0x5C) = *(s16 *)(obj + 0x5C) * 63 / 64;
-            *(s16 *)(obj + 0x5E) = *(s16 *)(obj + 0x5E) * 63 / 64;
-            *(s16 *)(obj + 0x60) = *(s16 *)(obj + 0x60) * 63 / 64;
+            obj->unk_5C[0] = obj->unk_5C[0] * 63 / 64;
+            obj->unk_5C[1] = obj->unk_5C[1] * 63 / 64;
+            obj->unk_5C[2] = obj->unk_5C[2] * 63 / 64;
         } else {
-            *(s16 *)(obj + 0x5C) = *(s16 *)(obj + 0x5C) * 15 / 16;
-            *(s16 *)(obj + 0x5E) = *(s16 *)(obj + 0x5E) * 15 / 16;
-            *(s16 *)(obj + 0x60) = *(s16 *)(obj + 0x60) * 15 / 16;
+            obj->unk_5C[0] = obj->unk_5C[0] * 15 / 16;
+            obj->unk_5C[1] = obj->unk_5C[1] * 15 / 16;
+            obj->unk_5C[2] = obj->unk_5C[2] * 15 / 16;
         }
-        *(s16 *)(obj + 0x54) += *(s16 *)(obj + 0x5C);
-        *(s16 *)(obj + 0x56) += *(s16 *)(obj + 0x5E);
-        *(s16 *)(obj + 0x58) += *(s16 *)(obj + 0x60);
-        *(s32 *)(obj + 0x48) += 13;
-        *(s32 *)(scr + 0x0) = *(s32 *)(obj + 0x2C) + *(s32 *)(obj + 0x44);
-        *(s32 *)(scr + 0x4) = *(s32 *)(obj + 0x30) + *(s32 *)(obj + 0x48);
-        *(s32 *)(scr + 0x8) = *(s32 *)(obj + 0x34) + *(s32 *)(obj + 0x4C);
-        *(s32 *)(obj + 0x30) -= 8;
+        obj->unk_54[0] += obj->unk_5C[0];
+        obj->unk_54[1] += obj->unk_5C[1];
+        obj->unk_54[2] += obj->unk_5C[2];
+        obj->unk_44.y += 13;
+        *(s32 *)(scr + 0x0) = obj->unk_2C.x + obj->unk_44.x;
+        *(s32 *)(scr + 0x4) = obj->unk_2C.y + obj->unk_44.y;
+        *(s32 *)(scr + 0x8) = obj->unk_2C.z + obj->unk_44.z;
+        obj->unk_2C.y -= 8;
         nrm = (s16 *)(scr + 0x30);
-        temp = func_8005344C((s32 *)(obj + 0x2C), (s32 *)scr, (s32 *)(scr + 0x10), (s32 *)nrm, (s32)(scr + 0x38));
+        temp = func_8005344C((s32 *)&obj->unk_2C, (s32 *)scr, (s32 *)(scr + 0x10), (s32 *)nrm, (s32)(scr + 0x38));
         if (temp != 0 && func_80054434() == 7) {
             temp = 0;
         }
         if (temp != 0) {
-            if (*(s16 *)(obj + 2) == 0xF) {
-                func_80032854(*(u8 *)(obj + 6), 0xE, scr + 0x10, nrm);
-                *(s16 *)(obj + 2) = -1;
+            if (obj->unk_02 == 0xF) {
+                func_80032854(obj->unk_06, 0xE, scr + 0x10, nrm);
+                obj->unk_02 = -1;
                 continue;
             }
-            dot = (*(s32 *)(obj + 0x44) * nrm[0]
-                   + *(s32 *)(obj + 0x48) * nrm[1]
-                   + *(s32 *)(obj + 0x4C) * nrm[2]) / 2048;
-            *(s32 *)(obj + 0x44) -= nrm[0] * dot / 4096;
-            *(s32 *)(obj + 0x48) -= nrm[1] * dot / 4096;
-            *(s32 *)(obj + 0x4C) -= nrm[2] * dot / 4096;
-            *(Vec3i32 *)(obj + 0x2C) = *(Vec3i32 *)(scr + 0x10);
-            state = *(s16 *)(obj + 2);
+            dot = (obj->unk_44.x * nrm[0]
+                   + obj->unk_44.y * nrm[1]
+                   + obj->unk_44.z * nrm[2]) / 2048;
+            obj->unk_44.x -= nrm[0] * dot / 4096;
+            obj->unk_44.y -= nrm[1] * dot / 4096;
+            obj->unk_44.z -= nrm[2] * dot / 4096;
+            obj->unk_2C = *(Vec3i32 *)(scr + 0x10);
+            state = obj->unk_02;
             work = D_8008E194[state].unkA;
-            if (*(s32 *)(obj + 0x50) != 0) {
-                *(s32 *)(obj + 0x44) = *(s32 *)(obj + 0x44) * work / 4096;
-                *(s32 *)(obj + 0x48) = *(s32 *)(obj + 0x48) * work / 4096;
-                *(s32 *)(obj + 0x4C) = *(s32 *)(obj + 0x4C) * work / 4096;
-                spd = *(s32 *)(obj + 0x44) * *(s32 *)(obj + 0x44)
-                    + *(s32 *)(obj + 0x4C) * *(s32 *)(obj + 0x4C);
+            if (obj->unk_50 != 0) {
+                obj->unk_44.x = obj->unk_44.x * work / 4096;
+                obj->unk_44.y = obj->unk_44.y * work / 4096;
+                obj->unk_44.z = obj->unk_44.z * work / 4096;
+                spd = obj->unk_44.x * obj->unk_44.x
+                    + obj->unk_44.z * obj->unk_44.z;
                 if (*(s16 *)(scr + 0x32) >= -0x7FF) {
-                    *(s16 *)(obj + 0x5E) += (rng_Next() & 1) ? spd / 64 : -spd / 64;
-                    if (*(s16 *)(obj + 2) != 0xE && *(u8 *)(obj + 4) != 0) {
-                        func_80032854(*(u8 *)(obj + 6), 1, obj + 0x2C, 0);
+                    obj->unk_5C[1] += (rng_Next() & 1) ? spd / 64 : -spd / 64;
+                    if (obj->unk_02 != 0xE && obj->unk_04 != 0) {
+                        func_80032854(obj->unk_06, 1, (u8 *)&obj->unk_2C, 0);
                     }
                 }
-                if (*(s16 *)(obj + 2) == 0xE) {
-                    if (*(u8 *)(obj + 4) != 0) {
-                        func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2F, obj + 0x2C, 0);
+                if (obj->unk_02 == 0xE) {
+                    if (obj->unk_04 != 0) {
+                        func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2F, (u8 *)&obj->unk_2C, 0);
                     }
-                } else if (*(s16 *)(obj + 2) < 0x12) {
+                } else if (obj->unk_02 < 0x12) {
                     if (spd > 0x10) {
-                        func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2C, obj + 0x2C, 0);
+                        func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2C, (u8 *)&obj->unk_2C, 0);
                     }
-                } else if ((u16)(*(s16 *)(obj + 2) - 0x12) < 12) {
+                } else if (obj->unk_02 >= 0x12 && obj->unk_02 < 0x1E) {
                     if (spd > 0x10) {
-                        func_80032854(*(u8 *)(obj + 6), 0x29, obj + 0x2C, 0);
+                        func_80032854(obj->unk_06, 0x29, (u8 *)&obj->unk_2C, 0);
                     }
                 }
             } else if (*(s16 *)(scr + 0x32) >= -0x7FF && state == 0xE) {
-                if (*(u8 *)(obj + 5) == 1) {
-                    *(s32 *)(obj + 0x50) = 1;
-                    *(s16 *)(obj + 0x56) += 0x780 + (rng_Next() & 0xFF);
-                    *(s32 *)(obj + 0x44) = Judge[*(s16 *)(obj + 0x56) & 0xFFF] / 64;
-                    *(s32 *)(obj + 0x48) = -150;
-                    *(s32 *)(obj + 0x4C) = Judge[(*(s16 *)(obj + 0x56) + 0x400) & 0xFFF] / 64;
-                    *(u8 *)(obj + 5) = 2;
-                    func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2F, obj + 0x2C, 0);
+                if (obj->unk_05 == 1) {
+                    obj->unk_50 = 1;
+                    obj->unk_54[1] += 0x780 + (rng_Next() & 0xFF);
+                    obj->unk_44.x = Judge[obj->unk_54[1] & 0xFFF] / 64;
+                    obj->unk_44.y = -150;
+                    obj->unk_44.z = Judge[(obj->unk_54[1] + 0x400) & 0xFFF] / 64;
+                    obj->unk_05 = 2;
+                    func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2F, (u8 *)&obj->unk_2C, 0);
                 }
             }
-            *(u8 *)(obj + 4) = 0;
-            if (*(u8 *)(obj + 7) == 1) {
-                *(u8 *)(obj + 7) = 2;
+            obj->unk_04 = 0;
+            if (obj->unk_07 == 1) {
+                obj->unk_07 = 2;
             }
-            if (*(u8 *)(obj + 5) == 2) {
-                *(u8 *)(obj + 5) = 3;
+            if (obj->unk_05 == 2) {
+                obj->unk_05 = 3;
             }
         } else {
-            *(Vec3i32 *)(obj + 0x2C) = *(Vec3i32 *)scr;
+            obj->unk_2C = *(Vec3i32 *)scr;
         }
-        if ((u32)(*(s32 *)(obj + 0x48) + 15) < 31 && (u32)(*(s32 *)(obj + 0x44) + 3) < 7
-            && (u32)(*(s32 *)(obj + 0x4C) + 3) < 7) {
+        if (obj->unk_44.y >= -15 && obj->unk_44.y <= 15 && obj->unk_44.x >= -3 && obj->unk_44.x <= 3
+            && obj->unk_44.z >= -3 && obj->unk_44.z <= 3) {
             if (temp != 0) {
                 if (D_800A38DC == 3) {
-                    *(s16 *)(obj + 2) = -1;
+                    obj->unk_02 = -1;
                 } else {
-                    *(s32 *)(obj + 0x50) = 0;
-                    *(u8 *)(obj + 5) = 1;
-                    *(s32 *)(obj + 0x44) = 0;
-                    *(s32 *)(obj + 0x48) = 0;
-                    *(s32 *)(obj + 0x4C) = 0;
+                    obj->unk_50 = 0;
+                    obj->unk_05 = 1;
+                    obj->unk_44.x = 0;
+                    obj->unk_44.y = 0;
+                    obj->unk_44.z = 0;
                 }
             }
         } else {
-            *(s32 *)(obj + 0x50) = 1;
+            obj->unk_50 = 1;
         }
-        if (*(s16 *)(obj + 2) == 0xE) {
-            if (*(u8 *)(obj + 5) == 1 && !(rng_Next() & 0x133)) {
-                *(s32 *)(obj + 0x50) = 1;
-                *(s16 *)(obj + 0x5E) += (rng_Next() & 0x7F) - 0x40;
-                *(s32 *)(obj + 0x44) = Judge[*(s16 *)(obj + 0x56) & 0xFFF] / 64;
-                *(s32 *)(obj + 0x48) = -150;
-                *(s32 *)(obj + 0x4C) = Judge[(*(s16 *)(obj + 0x56) + 0x400) & 0xFFF] / 64;
-                *(u8 *)(obj + 5) = 2;
-                func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2F, obj + 0x2C, 0);
+        if (obj->unk_02 == 0xE) {
+            if (obj->unk_05 == 1 && !(rng_Next() & 0x133)) {
+                obj->unk_50 = 1;
+                obj->unk_5C[1] += (rng_Next() & 0x7F) - 0x40;
+                obj->unk_44.x = Judge[obj->unk_54[1] & 0xFFF] / 64;
+                obj->unk_44.y = -150;
+                obj->unk_44.z = Judge[(obj->unk_54[1] + 0x400) & 0xFFF] / 64;
+                obj->unk_05 = 2;
+                func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2F, (u8 *)&obj->unk_2C, 0);
             }
         }
-        if (*(u8 *)(obj + 7) == 2) {
-            *(s16 *)(obj + 0x56) = math_LerpAngle(*(s16 *)(obj + 0x56), 0, 0x800);
-            *(s16 *)(obj + 0x58) = math_LerpAngle(*(s16 *)(obj + 0x58), 0x400, 0xE00);
-            *(s16 *)(obj + 0x5E) = *(s16 *)(obj + 0x5E) * 3 / 4;
-        } else if (*(u8 *)(obj + 4) == 0 && D_8008E194[*(s16 *)(obj + 2)].unk0 == 2) {
-            *(s16 *)(obj + 0x54) = math_LerpAngle(*(s16 *)(obj + 0x54), 0, 0xE00);
-            *(s16 *)(obj + 0x56) = math_LerpAngle(*(s16 *)(obj + 0x56), 0, 0x600);
-            *(s16 *)(obj + 0x58) = math_LerpAngle(*(s16 *)(obj + 0x58), -0x400, 0xE00);
+        if (obj->unk_07 == 2) {
+            obj->unk_54[1] = math_LerpAngle(obj->unk_54[1], 0, 0x800);
+            obj->unk_54[2] = math_LerpAngle(obj->unk_54[2], 0x400, 0xE00);
+            obj->unk_5C[1] = obj->unk_5C[1] * 3 / 4;
+        } else if (obj->unk_04 == 0 && D_8008E194[obj->unk_02].unk0 == 2) {
+            obj->unk_54[0] = math_LerpAngle(obj->unk_54[0], 0, 0xE00);
+            obj->unk_54[1] = math_LerpAngle(obj->unk_54[1], 0, 0x600);
+            obj->unk_54[2] = math_LerpAngle(obj->unk_54[2], -0x400, 0xE00);
         }
-        if (*(s32 *)(obj + 0x30) > 0x3A98) {
-            *(s16 *)(obj + 2) = -1;
+        if (obj->unk_2C.y > 0x3A98) {
+            obj->unk_02 = -1;
         }
     }
     func_80030208();
 }
 /* kengo:?  |  s1 recon  |  GTE rotate-velocity-by-table-angle (sibling of func_8002E838) */
-void func_80031890(u8 *obj, u8 *ent, s32 idx) {
+void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
     s32 *mat;
-    s32 *vec;
+    Vec3i32 *vec;
     s32 angle1;
     s32 angle2;
     s32 sum_sq;
     s32 adj;
 
-    if (*(s16 *)(ent + 0x2) != 0xE) {
-        s32 vx = *(s32 *)(ent + 0x44);
-        s32 vz = *(s32 *)(ent + 0x4C);
-        s32 av = *(s16 *)(ent + 0x5E);
+    if (ent->unk_02 != 0xE) {
+        s32 vx = ent->unk_44.x;
+        s32 vz = ent->unk_44.z;
+        s32 av = ent->unk_5C[1];
         sum_sq = vx * vx + vz * vz;
         if (rng_Next() & 1) {
             adj = sum_sq / 64;
         } else {
             adj = -sum_sq / 64;
         }
-        *(s16 *)(ent + 0x5E) = av + adj;
+        ent->unk_5C[1] = av + adj;
     }
 
     mat = (s32 *)(obj + 0xD8);
-    angle1 = (&D_8008EBA0)[idx] & 0xFFF;
-    angle2 = (((*(s32 *)(ent + 0x2C) * 16) + *(s32 *)(ent + 0x30) + (*(s32 *)(ent + 0x34) * 8)) & 0x7FF) - 0x400;
+    angle1 = D_8008EBA0[idx] & 0xFFF;
+    angle2 = (((ent->unk_2C.x * 16) + ent->unk_2C.y + (ent->unk_2C.z * 8)) & 0x7FF) - 0x400;
     /* identity 3x3 rotation matrix at obj+0xD8 */
     *(s16 *)(obj + 0xD8) = 0x1000;
     *(s16 *)(obj + 0xDA) = 0;
@@ -5239,7 +5168,7 @@ void func_80031890(u8 *obj, u8 *ent, s32 idx) {
         "ctc2   $14, $3\n"
         "ctc2   $15, $4\n"
         :: "r"(mat) : "$12", "$13", "$14", "$15");
-    vec = (s32 *)(ent + 0x44);
+    vec = &ent->unk_44;
     /* PsyQ libgte inline macro gte_ldv0(r) --- pack VX0/VY0 into one word,
      * mtc2 to $0, lwc2 VZ0 into $1, then the 2-cycle GTE load delay. */
     __asm__ volatile(
@@ -5265,26 +5194,26 @@ void func_80031890(u8 *obj, u8 *ent, s32 idx) {
         :: "r"(vec) : "$12", "memory");
 
     if ((u32)(angle1 - 0x401) < 0x7FFU) {
-        *(s32 *)(ent + 0x44) /= 8;
-        *(s32 *)(ent + 0x48) /= 8;
-        *(s32 *)(ent + 0x4C) /= 8;
+        ent->unk_44.x /= 8;
+        ent->unk_44.y /= 8;
+        ent->unk_44.z /= 8;
     } else {
-        *(s32 *)(ent + 0x44) /= 4;
-        *(s32 *)(ent + 0x48) /= 4;
-        *(s32 *)(ent + 0x4C) /= 4;
+        ent->unk_44.x /= 4;
+        ent->unk_44.y /= 4;
+        ent->unk_44.z /= 4;
     }
-    *(s32 *)(ent + 0x2C) += *(s32 *)(ent + 0x44) / 2;
-    *(s32 *)(ent + 0x30) += *(s32 *)(ent + 0x48) / 2;
-    *(s32 *)(ent + 0x34) += *(s32 *)(ent + 0x4C) / 2;
+    ent->unk_2C.x += ent->unk_44.x / 2;
+    ent->unk_2C.y += ent->unk_44.y / 2;
+    ent->unk_2C.z += ent->unk_44.z / 2;
 }
 extern s32 func_80027AD8(s32, u8 *, s32, s32, s32, Tbl8008E194 *, s32, s32 *);
 void func_80031B24(void) {
     u8 *scr = (u8 *)0x1F8002B8;
     s32 i;
     s32 deep;
-    u8 *obj;
-    Vec3i *seg = (Vec3i *)scr;
-    u8 *ch;
+    Obj80106A78 *obj;
+    Vec3i32 *seg = (Vec3i32 *)scr;
+    PracticeMenuRec *ch;
     s32 other;
     u16 st;
     u8 *rec;
@@ -5295,35 +5224,35 @@ void func_80031B24(void) {
     s32 kind;
     s32 flag;
 
-    obj = (u8 *)&D_80106A78;
-    for (i = 0; i < 12; i++, obj += 0x64) {
-        if (*(s16 *)(obj + 2) == -1) continue;
-        if (obj[4] == 0) continue;
-        if (*(s32 *)(obj + 0x50) == 0) continue;
-        other = obj[6] == 0;
-        ch = (u8 *)g_practice_menu_table + other * 0x44C;
-        st = *(u16 *)(ch + 0x6A);
+    obj = D_80106A78;
+    for (i = 0; i < 12; i++, obj++) {
+        if (obj->unk_02 == -1) continue;
+        if (obj->unk_04 == 0) continue;
+        if (obj->unk_50 == 0) continue;
+        other = obj->unk_06 == 0;
+        ch = &g_practice_menu_table[other];
+        st = ch->unk_6A;
         if (st == 4 || st == 0x14 || st == 0xF || st == 0x1C || st == 0x1D || st == 0x1E ||
             st == 0x1F || st == 0x20 || st == 0x21 || st == 0x11) {
             continue;
         }
 
-        seg[0] = *(Vec3i *)(obj + 0x38);
-        seg[1] = *(Vec3i *)(obj + 0x2C);
-        *(Vec3i **)(scr + 0x60) = &seg[0];
-        *(Vec3i **)(scr + 0x64) = &seg[1];
+        seg[0] = obj->unk_38;
+        seg[1] = obj->unk_2C;
+        *(Vec3i32 **)(scr + 0x60) = &seg[0];
+        *(Vec3i32 **)(scr + 0x64) = &seg[1];
         func_8002E838(scr);
 
         hit = 0;
         rec = &D_800F5F68[other * 0x1B8];
         for (j = 0; j < 22; j++, rec += 0x14) {
             s32 *pos;
-            if (*(s16 *)(ch + 0x26C) == 0 && j >= 6 && j <= 9) continue;
+            if (ch->unk_26C == 0 && j >= 6 && j <= 9) continue;
             pos = (s32 *)&SPAD->unkA8[other][j];
             hit = func_8002EA24(scr, pos, *(u16 *)(rec + 0xC), *(u16 *)(rec + 0xE));
             if (hit != 0) {
                 deep = 0;
-                if (*(s16 *)rec != 0 && D_8008E194[*(s16 *)(obj + 2)].unkD == 0) {
+                if (*(s16 *)rec != 0 && D_8008E194[obj->unk_02].unkD == 0) {
                     deep = func_8002EA24(scr, pos, *(u16 *)(rec + 0x10), *(u16 *)(rec + 0x12)) != 0;
                 }
                 break;
@@ -5331,37 +5260,37 @@ void func_80031B24(void) {
         }
         if (hit == 0) continue;
 
-        diff = (*(s16 *)(ch + 0x1CA) - ratan2(*(s32 *)(obj + 0x44), *(s32 *)(obj + 0x4C))) & 0xFFF;
+        diff = (ch->unk_1C8.vy - ratan2(obj->unk_44.x, obj->unk_44.z)) & 0xFFF;
         if (diff >= 0x800) diff = 0x1000 - diff;
-        func_800274BC((s32 *)(obj + 0x44), &D_800A37E8);
-        *(s32 *)(obj + 0x2C) -= *(s32 *)(obj + 0x44) / 2;
-        *(s32 *)(obj + 0x30) -= *(s32 *)(obj + 0x48) / 2;
-        *(s32 *)(obj + 0x34) -= *(s32 *)(obj + 0x4C) / 2;
-        r = func_80027AD8(1, ch, j, diff, deep, &D_8008E194[*(s16 *)(obj + 2)], 0, &flag);
+        func_800274BC((s32 *)&obj->unk_44, &D_800A37E8);
+        obj->unk_2C.x -= obj->unk_44.x / 2;
+        obj->unk_2C.y -= obj->unk_44.y / 2;
+        obj->unk_2C.z -= obj->unk_44.z / 2;
+        r = func_80027AD8(1, (u8 *)ch, j, diff, deep, &D_8008E194[obj->unk_02], 0, &flag);
         if (r == 2) continue;
         if (r != 0) {
-            func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2B, (u8 *)&SPAD->unkA8[other][j], 0);
+            func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2B, (u8 *)&SPAD->unkA8[other][j], 0);
             func_8002FF20(obj, *(s16 *)(rec + 2));
-            obj[4] = 0;
-            st = *(u16 *)(ch + 0x6A);
+            obj->unk_04 = 0;
+            st = ch->unk_6A;
             if (st == 8 || st == 0x23) {
                 g_disp_fade = 1;
             }
             continue;
         }
-        kind = *(s16 *)(obj + 2);
+        kind = obj->unk_02;
         if (kind == 0xF) {
             func_80032854(other ^ 1, 0xE, (u8 *)&SPAD->unkA8[other][j], &D_800A37E8);
-            *(s16 *)(obj + 2) = -1;
+            obj->unk_02 = -1;
             continue;
         }
         if (kind == 0xE) {
-            func_80032854((D_800A36F2 ^ 0xE) != 0, 0x2F, obj + 0x2C, 0);
+            func_80032854((D_800A36F2[0] ^ 0xE) != 0, 0x2F, (u8 *)&obj->unk_2C, 0);
         } else if (flag == 0) {
-            func_80032854((kind ^ D_800A36F2) != 0, 0x2B, (u8 *)&SPAD->unkA8[other][j], 0);
+            func_80032854((kind ^ D_800A36F2[0]) != 0, 0x2B, (u8 *)&SPAD->unkA8[other][j], 0);
         }
         func_80031890(scr, obj, j);
-        obj[4] = 0;
+        obj->unk_04 = 0;
     }
 }
 void func_80032040(void) {

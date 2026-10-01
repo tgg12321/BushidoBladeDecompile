@@ -191,8 +191,7 @@ typedef struct PracticeMenuRec {
     s16 unk_31A;
     u8  unk_31C[0x330 - 0x31C];
     s16 unk_330;
-    s16 unk_332;
-    u8  unk_334[0x34A - 0x334];
+    s16 unk_332[12];               /* queued kinds, unk_330 of them (func_8003047C / func_80030B10) */
     u8  unk_34A;
     u8  unk_34B;
     u8  unk_34C;
@@ -322,7 +321,39 @@ typedef struct {
     u8 unkD;
 } Tbl8008E194;
 extern Tbl8008E194 D_8008E194[];
-extern u8 D_8008E338;
+/* PsyQ MATRIX layout (include/gte.h), spelled with a local tag for the same
+ * reason as Unk80101DF0Mat below (several TUs typedef MATRIX themselves). */
+typedef struct { s16 m[3][3]; u16 pad; s32 t[3]; } Obj80106A78Mat;
+/* The twelve 0x64-byte object records at 0x80106A78. func_80030580 spawns one
+ * (kind unk_02 indexes D_8008E194 / D_8008EB80), func_80030D7C moves them,
+ * func_80031B24 tests them against both fighters, func_80030208 hands them to
+ * the effect calls; unk_02 == -1 marks a free record. Field widths are the
+ * consumers' loads and stores (asm/funcs/func_80030580.s, func_80030D7C.s). */
+typedef struct {
+    s16 unk_00;                    /* frames since spawn */
+    s16 unk_02;                    /* kind; -1 = free */
+    u8  unk_04;
+    u8  unk_05;
+    u8  unk_06;                    /* owner: PracticeMenuRec index */
+    u8  unk_07;
+    u8  unk_08;
+    u8  unk_09;                    /* index into the owner's matrix table (func_800300B4) */
+    u8  unk_0A;                    /* slot number; 0xFF = never used */
+    u8  unk_0B;
+    Obj80106A78Mat unk_0C;         /* func_8002FF20 builds it (identity, RotMatrixX/Y/Z,
+                                      MulMatrix0); func_800300B4 reads it */
+    Vec3i32 unk_2C;                /* position */
+    Vec3i32 unk_38;                /* previous position */
+    Vec3i32 unk_44;                /* velocity */
+    s32 unk_50;                    /* != 0: moving */
+    s16 unk_54[3];                 /* rotation angles */
+    u8  unk_5A[0x5C - 0x5A];
+    s16 unk_5C[3];                 /* angular speeds */
+    u8  unk_62[0x64 - 0x62];
+} Obj80106A78;                     /* sizeof == 0x64 */
+extern Obj80106A78 D_80106A78[12];
+extern s8 D_8008E338[27][5];        /* [unk_0A][i] -> PracticeMenuRec.unk_332[i] (func_8003047C);
+                                       0x8008E338..0x8008E3BE, then one alignment byte */
 extern u16 D_8008E3C0[28];          /* [unk_0A] -> PracticeMenuRec.unk_274 */
 extern u16 D_8008E3F8[27][4];       /* [unk_0A][i] -> PracticeMenuRec.unk_276[i] */
 extern u16 D_8008E4D0[27][4];       /* [unk_0A][i] -> PracticeMenuRec.unk_27E[i] */
@@ -363,7 +394,7 @@ typedef struct {
 extern Tbl8008EB54Entry D_8008EB54[6];
 extern u8 D_8008EB6C[6];
 extern u8 D_8008EB80[];
-extern u16 D_8008EBA0;
+extern u16 D_8008EBA0[22];          /* per-limb angle (func_80031890: [j], j < 22) */
 extern s32 D_8008EBCC[];
 extern s32 D_8008EBE0[];
 extern u8 D_8008EBF4[6];
@@ -459,7 +490,7 @@ extern s32 D_800A36D8;
 extern u8 D_800A36E8;
 extern u8 D_800A36F0;
 extern u8 D_800A36F1;
-extern u8 D_800A36F2;
+extern u8 D_800A36F2[2];             /* per-player byte, [unk_04] (func_8003047C) */
 extern u8 D_800A36F4;
 extern s16 D_800A36F6;
 extern u8 D_800A36F9;
@@ -854,9 +885,6 @@ extern s32 D_801027C0;
 extern s32 D_801027D4;
 extern u8 D_80104E88;
 extern s32 MotDataBaseAddress;
-extern s16 D_80106A7A;
-extern u8 D_80106A80;
-extern u8 D_80106A82;
 extern u8 D_801077AF;
 extern u8 D_801077B0;
 extern u8 D_801077BA;

@@ -25,7 +25,7 @@ g_str_sio = 0x800164A8;
 g_str_bios_id = 0x80016274;
 g_str_intr_id = 0x80016328;
 /* RETIRED 0x800164F8 (naming sweep 2026-09-25b): alias 'syscall_wrapper_break_800164F8' removed — body is a counted loop of `break` instrs, no syscall, no calls; breakpoint_trap_loop_800164F8 below is the live alias */
-/* RESET 0x8003043C: retired name 'psyq_memset_8003043C' — preserved note: MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A7A and 0xFF (u8) to D_80106A82 at stride 0x64 */
+/* RESET 0x8003043C: retired name 'psyq_memset_8003043C' — preserved note: MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A78[i].unk_02 and 0xFF (u8) to D_80106A78[i].unk_0A */
 /* RESET 0x80038148: retired name 'psyq_memset_80038148' — preserved note: MISNAMED: clears g_disp_state_buf (D_800F33D8, 512 bytes) — specific buffer clear, not generic memset; see also pad_clear_buffer_80038148 sibling */
 /* RESET 0x8005509C: retired name 'psyq_memset_8005509C' — preserved note: MISNAMED: clears 16 bytes at offset 0x414 of g_practice_menu_table per-record (indexed by a0, stride 0x44C) — not generic memset */
 replay_camera_check_stage_80060758 = 0x80060758;  /* MISNAMED: 2-halfword clear of g_text_render_cursor_a/b — Kengo name-unique size collision, not a stage check */
@@ -1622,8 +1622,6 @@ g_match_round_byte_a_paired                             = 0x800F65F9;  /* siblin
 
 /* === Misc state arrays in code6cac_b.c (2026-05-17) -- 4 highs === */
 g_char_class_state_array                                = 0x800A36F2;  /* per-char class state array; entries copied from D_8008E338 (5-byte stride); XOR'd with 0xE for state check */
-g_active_slot_table_12                                  = 0x80106A7A;  /* 12 entries x 0x64 bytes; first s16 = id (-1 = empty); cleared when paired flag is set */
-g_active_slot_flags_12                                  = 0x80106A80;  /* per-slot u8 flag; if non-zero, paired slot in g_active_slot_table_12 is cleared (set to -1) */
 g_effect_slot_table_4                                   = 0x80104E88;  /* 4 entries x 0x2C bytes; flag byte at offset 0 (== 0 = empty slot); allocated by func_80032064 */
 
 /* === Result-screen state machine (2026-05-17) -- 3 highs === */
@@ -2380,8 +2378,7 @@ _svm_sreg_buf_plus_0x6                            = 0x80102A7E;  /* +4 from g_vo
 _svm_sreg_buf_plus_0x8                            = 0x80102A80;  /* +6 from g_voice_slot_24_arr_b (0x80102A7A) */  /* data-wave 2026-09-24: was g_voice_slot_24_arr_b_plus_6 */
 _svm_sreg_buf_plus_0xA                            = 0x80102A82;  /* +8 from g_voice_slot_24_arr_b (0x80102A7A) */  /* data-wave 2026-09-24: was g_voice_slot_24_arr_b_plus_8 */
 _que_plus_0x8                        = 0x80103688;  /* +4 from g_gpu_packet_buffer_64x96 (0x80103684); alias of D_80103680+0x8 (GpuQueueItem.count, include/gpu.h); retire with _exeque */  /* data-wave 2026-09-07: was g_gpu_packet_buffer_64x96_plus_4 */
-D_80106A78                                     = 0x80106A78;  /* +5 from g_file_flags (0x80106A73) */  /* data-wave 2026-09-29: was g_file_flags_plus_5 */
-g_active_slot_flags_12_plus_2                           = 0x80106A82;  /* +2 from g_active_slot_flags_12 (0x80106A80) */
+D_80106A78                                     = 0x80106A78;  /* Obj80106A78[12], the 0x64-byte object records (include/code6cac.h) */  /* data-wave 2026-09-29: was g_file_flags_plus_5 */
 
 /* === Tier 2 batch: cross-character P2..PN paired fields (2026-05-17) === */
 /* 4 P2..PN addresses for already-named P1 fields in */
@@ -3303,7 +3300,7 @@ rob_genei_draw_check_80027A58                          = 0x80027A58;  /* gated p
 /* RESET 0x8003D478: retired name 'memcard_access_section_list_8003D478' — preserved note: iterates directive byte-list, calls _McAccessSection per non-skip entry (stride-8 data); 0x20/0x0A control codes */
 coli_calc_motion_slots_8003D7B4                        = 0x8003D7B4;  /* indexes D_800A3D40 (stride 0x18) by arg; 6-slot loop calling coli_calc_motion, accumulates bits into field 0xC */
 battle_switch_reinit_800342A0                          = 0x800342A0;  /* on battle-switch-data change (D_800A3874!=D_800A389B): reset state flags, reload config tables, gpu_InitDisplay */
-check_dodge_kawashi_80030BA8                           = 0x80030BA8;  /* scan 12-entry table D_80106A7A (stride0x64) for in-range valid object near fighter; trigger motion_shift_check_e_kawashi dodge + event dispatch */
+check_dodge_kawashi_80030BA8                           = 0x80030BA8;  /* scan the 12 D_80106A78 records for in-range valid object near fighter; trigger motion_shift_check_e_kawashi dodge + event dispatch */
 /* RESET 0x800451A0: retired name 'special_camera_check_pos_outside_ground_wrap_800451A0' — preserved note: thin wrapper: calls special_camera_check_pos_outside_ground_80036E34 */
 /* RESET 0x8005B58C: retired name 'title_mv_exec2_wrapper_8005B58C' — preserved note: thin pass-through wrapper for title_mv_exec2 */
 /* RENAME 0x80089A24: retired name 'coli_HitPauseKatana_2_wrapper_80089A24' — preserved note: thin pass-through wrapper for coli_HitPauseKatana_2 */

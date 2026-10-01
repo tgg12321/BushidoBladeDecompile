@@ -102,7 +102,6 @@ extern s32 stage_GetDataPtr(void);
 
 
 
-extern u16 D_8008EBA0;
 
 
 
@@ -130,7 +129,6 @@ extern u8 D_800F65F8;
 
 
 
-extern u8 D_80106A78;
 
 
 extern s16 D_800A3824;
