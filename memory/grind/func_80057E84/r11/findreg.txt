@@ -1,0 +1,126 @@
+=== reuse: 132 vtx, 133 node, 103 route
+FINDREGDBG func=func_80057E84 pseudo=132 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 5 6 7 16 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 16 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 6 7 16 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+FINDREGDBG func=func_80057E84 pseudo=133 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs: 30
+FINDREGDBG  pass1_used: 0 1 2 3 4 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+FINDREGDBG func=func_80057E84 pseudo=103 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 5 6 7 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs: 30
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 6 7 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+=== pv_route: 103 route_dn, 104 route_up, 105 route_pick
+FINDREGDBG func=func_80057E84 pseudo=103 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs: 30
+FINDREGDBG  pass1_used: 0 1 2 3 4 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+FINDREGDBG func=func_80057E84 pseudo=104 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs: 30
+FINDREGDBG  pass1_used: 0 1 2 3 4 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+FINDREGDBG func=func_80057E84 pseudo=105 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 5 6 7 18 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 18 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs: 30
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 6 7 18 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+=== r_route_pick: 103 route (dn/up), 104 route_pick
+FINDREGDBG func=func_80057E84 pseudo=103 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs: 30
+FINDREGDBG  pass1_used: 0 1 2 3 4 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+FINDREGDBG func=func_80057E84 pseudo=104 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 5 6 7 18 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 18 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs: 30
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 6 7 18 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+=== r_route_dn: 104 route_dn, 103 route (up/pick)
+FINDREGDBG func=func_80057E84 pseudo=104 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs: 30
+FINDREGDBG  pass1_used: 0 1 2 3 4 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+FINDREGDBG func=func_80057E84 pseudo=103 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 5 6 7 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs: 30
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 6 7 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+=== r_vtx_a: 132 vtx (b/dn/up)
+FINDREGDBG func=func_80057E84 pseudo=132 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 5 6 7 16 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 16 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 6 7 16 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+=== r_vtx_dn: 132 vtx (a/b/up)
+FINDREGDBG func=func_80057E84 pseudo=132 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 5 6 7 16 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 16 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 6 7 16 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1

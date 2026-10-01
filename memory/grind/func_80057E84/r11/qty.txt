@@ -1,0 +1,21 @@
+pv_vtx (132 vtx_a, 133 vtx_b, 134 vtx_dn, 135 vtx_up):
+QTYDBG blk=10 ord=5 qty=1 reg1=132 birth=16 death=24 refs=15 got=3
+QTYDBG blk=10 ord=6 qty=4 reg1=133 birth=40 death=48 refs=15 got=3
+QTYDBG blk=31 ord=7 qty=1 reg1=134 birth=6 death=20 refs=10 got=4
+QTYDBG blk=40 ord=7 qty=1 reg1=135 birth=6 death=20 refs=10 got=4
+pv_node (133 node_dn, 134 node_up):
+QTYDBG blk=33 ord=0 qty=0 reg1=133 birth=4 death=28 refs=24 got=2
+QTYDBG blk=42 ord=1 qty=0 reg1=134 birth=4 death=28 refs=24 got=3
+pv_all:
+QTYDBG blk=3 ord=0 qty=0 reg1=136 birth=4 death=16 refs=20 got=2
+QTYDBG blk=4 ord=0 qty=0 reg1=140 birth=4 death=14 refs=18 got=2
+QTYDBG blk=8 ord=1 qty=1 reg1=149 birth=10 death=14 refs=6 got=3
+QTYDBG blk=10 ord=5 qty=1 reg1=134 birth=16 death=24 refs=15 got=3
+QTYDBG blk=10 ord=6 qty=4 reg1=135 birth=40 death=48 refs=15 got=3
+QTYDBG blk=28 ord=0 qty=1 reg1=142 birth=12 death=16 refs=12 got=2
+QTYDBG blk=28 ord=1 qty=0 reg1=144 birth=4 death=18 refs=27 got=3
+QTYDBG blk=31 ord=7 qty=1 reg1=136 birth=6 death=20 refs=10 got=4
+QTYDBG blk=33 ord=0 qty=0 reg1=138 birth=4 death=28 refs=24 got=2
+QTYDBG blk=40 ord=7 qty=1 reg1=137 birth=6 death=20 refs=10 got=4
+QTYDBG blk=42 ord=1 qty=0 reg1=139 birth=4 death=28 refs=24 got=3
+QTYDBG blk=49 ord=0 qty=0 reg1=133 birth=4 death=14 refs=14 got=2

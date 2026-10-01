@@ -1,0 +1,25 @@
+--- before
++++ after
+@@ -1638,6 +1638,7 @@
+   s16 dn_z;
+   s16 up_x;
+   s16 up_z;
++  s16 (*new_var)[2];
+   u8 go_dn;
+   s8 idx_dn;
+   s8 idx_up;
+@@ -1736,12 +1737,13 @@
+       }
+     }
+ 
++    new_var = poly->vtx;
+     if (go_dn)
+     {
+       if (hit_dn)
+       {
+         s32 c;
+-        vtx_dn = poly->vtx[idx_dn];
++        vtx_dn = new_var[idx_dn];
+         dist_dn += SquareRoot0(((vtx_dn[0] - dn_x) * (vtx_dn[0] - dn_x)) + ((vtx_dn[1] - dn_z) * (vtx_dn[1] - dn_z)));
+         func_80057CC8((u8 *) poly, idx_dn, &dn_x, &dn_z);
+         route_dn = &path[0];

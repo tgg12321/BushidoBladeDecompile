@@ -1,0 +1,140 @@
+== reuse
+  vtx_a       pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_b       pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_dn      pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_dn    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_dn     pseudo  133 -> a1   | Register 133 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=133 hardreg=5 nrefs=16 livelen=14 pri=45714
+  vtx_up      pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_up    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_up     pseudo  133 -> a1   | Register 133 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=133 hardreg=5 nrefs=16 livelen=14 pri=45714
+  route_pick  pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+== pv_vtx
+  vtx_a       pseudo  132 -> v1   | Register 132 used 9 times across 3 insns in block 10; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  vtx_b       pseudo  133 -> v1   | Register 133 used 9 times across 3 insns in block 10; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  vtx_dn      pseudo  134 -> a0   | Register 134 used 6 times across 6 insns in block 31; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  route_dn    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_dn     pseudo  136 -> a1   | Register 136 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=0 pseudo=136 hardreg=5 nrefs=16 livelen=14 pri=45714
+  vtx_up      pseudo  135 -> a0   | Register 135 used 6 times across 6 insns in block 40; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  route_up    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_up     pseudo  136 -> a1   | Register 136 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=0 pseudo=136 hardreg=5 nrefs=16 livelen=14 pri=45714
+  route_pick  pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+== pv_node
+  vtx_a       pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_b       pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_dn      pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_dn    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_dn     pseudo  133 -> v0   | Register 133 used 8 times across 7 insns in block 33; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  vtx_up      pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_up    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_up     pseudo  134 -> v1   | Register 134 used 8 times across 7 insns in block 42; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  route_pick  pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+== pv_route
+  vtx_a       pseudo  134 -> t0   | Register 134 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=134 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_b       pseudo  134 -> t0   | Register 134 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=134 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_dn      pseudo  134 -> t0   | Register 134 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=134 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_dn    pseudo  103 -> a1   | Register 103 used 4 times across 11 insns; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=5 nrefs=4 livelen=11 pri=7272
+  node_dn     pseudo  135 -> a1   | Register 135 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=135 hardreg=5 nrefs=16 livelen=14 pri=45714
+  vtx_up      pseudo  134 -> t0   | Register 134 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=134 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_up    pseudo  104 -> a1   | Register 104 used 4 times across 11 insns; GR_REGS or none; pointer. | ord=17 pseudo=104 hardreg=5 nrefs=4 livelen=11 pri=7272
+  node_up     pseudo  135 -> a1   | Register 135 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=135 hardreg=5 nrefs=16 livelen=14 pri=45714
+  route_pick  pseudo  105 -> t0   | Register 105 used 5 times across 26 insns; dies in 0 places; GR_REGS or none; pointer. | ord=22 pseudo=105 hardreg=8 nrefs=5 livelen=26 pri=3846
+== pv_all
+  vtx_a       pseudo  134 -> v1   | Register 134 used 9 times across 3 insns in block 10; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  vtx_b       pseudo  135 -> v1   | Register 135 used 9 times across 3 insns in block 10; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  vtx_dn      pseudo  136 -> a0   | Register 136 used 6 times across 6 insns in block 31; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  route_dn    pseudo  103 -> a1   | Register 103 used 4 times across 11 insns; GR_REGS or none; pointer. | ord=14 pseudo=103 hardreg=5 nrefs=4 livelen=11 pri=7272
+  node_dn     pseudo  138 -> v0   | Register 138 used 8 times across 7 insns in block 33; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  vtx_up      pseudo  137 -> a0   | Register 137 used 6 times across 6 insns in block 40; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  route_up    pseudo  104 -> a1   | Register 104 used 4 times across 11 insns; GR_REGS or none; pointer. | ord=15 pseudo=104 hardreg=5 nrefs=4 livelen=11 pri=7272
+  node_up     pseudo  139 -> v1   | Register 139 used 8 times across 7 insns in block 42; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  route_pick  pseudo  105 -> t0   | Register 105 used 5 times across 26 insns; dies in 0 places; GR_REGS or none; pointer. | ord=20 pseudo=105 hardreg=8 nrefs=5 livelen=26 pri=3846
+== r_vtx_a
+  vtx_a       pseudo  133 -> v1   | Register 133 used 9 times across 3 insns in block 10; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  vtx_b       pseudo  132 -> t0   | Register 132 used 21 times across 15 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=21 livelen=15 pri=56000
+  vtx_dn      pseudo  132 -> t0   | Register 132 used 21 times across 15 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=21 livelen=15 pri=56000
+  route_dn    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_dn     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  vtx_up      pseudo  132 -> t0   | Register 132 used 21 times across 15 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=21 livelen=15 pri=56000
+  route_up    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_up     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  route_pick  pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+== r_vtx_b
+  vtx_a       pseudo  132 -> t0   | Register 132 used 21 times across 15 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=21 livelen=15 pri=56000
+  vtx_b       pseudo  133 -> v1   | Register 133 used 9 times across 3 insns in block 10; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  vtx_dn      pseudo  132 -> t0   | Register 132 used 21 times across 15 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=21 livelen=15 pri=56000
+  route_dn    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_dn     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  vtx_up      pseudo  132 -> t0   | Register 132 used 21 times across 15 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=21 livelen=15 pri=56000
+  route_up    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_up     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  route_pick  pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+== r_vtx_dn
+  vtx_a       pseudo  132 -> t0   | Register 132 used 24 times across 12 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=24 livelen=12 pri=80000
+  vtx_b       pseudo  132 -> t0   | Register 132 used 24 times across 12 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=24 livelen=12 pri=80000
+  vtx_dn      pseudo  133 -> a0   | Register 133 used 6 times across 6 insns in block 31; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  route_dn    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_dn     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  vtx_up      pseudo  132 -> t0   | Register 132 used 24 times across 12 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=24 livelen=12 pri=80000
+  route_up    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_up     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  route_pick  pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+== r_vtx_up
+  vtx_a       pseudo  132 -> t0   | Register 132 used 24 times across 12 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=24 livelen=12 pri=80000
+  vtx_b       pseudo  132 -> t0   | Register 132 used 24 times across 12 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=24 livelen=12 pri=80000
+  vtx_dn      pseudo  132 -> t0   | Register 132 used 24 times across 12 insns; dies in 3 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=24 livelen=12 pri=80000
+  route_dn    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_dn     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  vtx_up      pseudo  133 -> a0   | Register 133 used 6 times across 6 insns in block 40; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  route_up    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_up     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  route_pick  pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+== r_node_dn
+  vtx_a       pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_b       pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_dn      pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_dn    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_dn     pseudo  134 -> v0   | Register 134 used 8 times across 7 insns in block 33; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  vtx_up      pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_up    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_up     pseudo  133 -> v1   | Register 133 used 8 times across 7 insns in block 42; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  route_pick  pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+== r_node_up
+  vtx_a       pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_b       pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_dn      pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_dn    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_dn     pseudo  133 -> v0   | Register 133 used 8 times across 7 insns in block 33; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  vtx_up      pseudo  132 -> t0   | Register 132 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=132 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_up    pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+  node_up     pseudo  134 -> v1   | Register 134 used 8 times across 7 insns in block 42; GR_REGS or none; pointer. | local-alloc (no ALLOCDBG)
+  route_pick  pseudo  103 -> t0   | Register 103 used 13 times across 52 insns; dies in 2 places; GR_REGS or none; pointer. | ord=15 pseudo=103 hardreg=8 nrefs=13 livelen=52 pri=7500
+== r_route_dn
+  vtx_a       pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_b       pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_dn      pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_dn    pseudo  104 -> a1   | Register 104 used 4 times across 11 insns; GR_REGS or none; pointer. | ord=16 pseudo=104 hardreg=5 nrefs=4 livelen=11 pri=7272
+  node_dn     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  vtx_up      pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_up    pseudo  103 -> t0   | Register 103 used 9 times across 39 insns; GR_REGS or none; pointer. | ord=17 pseudo=103 hardreg=8 nrefs=9 livelen=39 pri=6923
+  node_up     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  route_pick  pseudo  103 -> t0   | Register 103 used 9 times across 39 insns; GR_REGS or none; pointer. | ord=17 pseudo=103 hardreg=8 nrefs=9 livelen=39 pri=6923
+== r_route_up
+  vtx_a       pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_b       pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_dn      pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_dn    pseudo  103 -> t0   | Register 103 used 9 times across 39 insns; GR_REGS or none; pointer. | ord=17 pseudo=103 hardreg=8 nrefs=9 livelen=39 pri=6923
+  node_dn     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  vtx_up      pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_up    pseudo  104 -> a1   | Register 104 used 4 times across 11 insns; GR_REGS or none; pointer. | ord=16 pseudo=104 hardreg=5 nrefs=4 livelen=11 pri=7272
+  node_up     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  route_pick  pseudo  103 -> t0   | Register 103 used 9 times across 39 insns; GR_REGS or none; pointer. | ord=17 pseudo=103 hardreg=8 nrefs=9 livelen=39 pri=6923
+== r_route_pick
+  vtx_a       pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_b       pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  vtx_dn      pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_dn    pseudo  103 -> a1   | Register 103 used 8 times across 26 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=5 nrefs=8 livelen=26 pri=9230
+  node_dn     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  vtx_up      pseudo  133 -> t0   | Register 133 used 30 times across 18 insns; dies in 4 places; GR_REGS or none; pointer. | ord=0 pseudo=133 hardreg=8 nrefs=30 livelen=18 pri=66666
+  route_up    pseudo  103 -> a1   | Register 103 used 8 times across 26 insns; dies in 2 places; GR_REGS or none; pointer. | ord=16 pseudo=103 hardreg=5 nrefs=8 livelen=26 pri=9230
+  node_up     pseudo  134 -> a1   | Register 134 used 16 times across 14 insns; dies in 2 places; GR_REGS or none; pointer. | ord=1 pseudo=134 hardreg=5 nrefs=16 livelen=14 pri=45714
+  route_pick  pseudo  104 -> t0   | Register 104 used 5 times across 26 insns; dies in 0 places; GR_REGS or none; pointer. | ord=21 pseudo=104 hardreg=8 nrefs=5 livelen=26 pri=3846

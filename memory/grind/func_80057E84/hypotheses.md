@@ -147,3 +147,17 @@ site. So each target register needs ONE pseudo across several sites:
   5. Operator returns it with `queue auto-return`/`unpark` (not an owner ruling).
 - DEPENDS: PathWalker typedef must be visible to func_80058580's call - land this before func_80058580.
 - ODDS/LANE: manual, ~1 session of paperwork, ~65% [I].
+
+## Session 3 (laneB, 2026-10-01) — re-baselined on main 632e2fe2c; Ruling 11 route
+- Data model: arg0 is `PracticeMenuRec *` (the prototype func_80058580 already declares,
+  text1b.c extern); +0x360/+0x361 split out of `unk_352` as `u8 unk_360` / `u8 unk_361` (the bytes
+  func_80057ACC writes); waypoints are `CpuWaypoint` (kind <- poly byte 1); the polygon record is
+  `NavPoly` {flags, kind, margin, nvtx, s16 (*vtx)[2]} reached through `NavPolySet` (the D_8009A658
+  row: count, polygon array) — no `*(s16 **)(poly + 4)` / s32-held pointers left; `(u8 *)poly` only at
+  the func_80057CC8 calls (its completed prototype). The local route buffers are `RouteBuf`.
+- Scores (sandbox --disable all): 0-body re-typed 0 (tmp v0/v1/v2); vtx/node declared in the iter-loop
+  body (Ruling 11 (A)) 0; annotated candidate.c 0 (447/447).
+- `buf` renamed `route` (no-semantic-purpose name list); `i` kept under Q51 (SOTN DebugCaptureScreen,
+  src/dra/42398.c:75 @aa53500), fresh copy counter 79.
+- Ruling 11 package for vtx/node/route: r11/README.md (twins, ablations, structural respellings,
+  dumps, find_reg traces, permuter from the full split).

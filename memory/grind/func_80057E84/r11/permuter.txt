@@ -1,0 +1,14 @@
+Permuter campaign from the full split body (func_80057E84, laneB 2026-10-01)
+
+Setup: perm_setup.sh -> tmp/func_80057E84/r11/perm (base.c = dumps/pv_all/t.i, the preprocessed
+text1b.c with every other function stripped; compile.sh = build cc1 with the build's text1b flags |
+prologue_fix | maspsx | as, function extracted; target.o = asm/funcs/func_80057E84.s assembled alone).
+Run: perm_run.sh 1500 (decomp-permuter randomization, -j 2, ~25 min).
+
+Control (perm_control.sh): the reuse body (candidate.c) through the same scorer: base score 0.
+Split base score: 700. Iterations: 6445 (117 compile errors). Best finds (perm-finds/):
+- 440: `vtx_up = poly->vtx[next]; vtx_b = vtx_up;` -- the edge-end vertex staged through the up-corner
+  value's local (a re-share of one vertex pointer across sites: the reuse mechanism, evidence only).
+- 610 / 650: the vertex table loaded into a fresh `new_var` before a corner block (pvs_vtab family).
+- 655: the same hoist plus `(c + 1) >= (7 + 1)` (junk).
+No find reaches 0; none is a one-variable-per-value spelling of the reuse body.
