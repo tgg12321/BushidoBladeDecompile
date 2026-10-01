@@ -148,7 +148,6 @@ g_anim_func_table = 0x800F66A0;
 g_anim_hit_flags = 0x800A3380;
 g_anim_hit_data = 0x800A3384;
 g_anim_select = 0x800A3238;
-g_anim_counter = 0x800A3382;
 g_char_data = 0x800A6690;
 g_char_setup_tbl = 0x80094E48;
 _svm_stereo_mono = 0x800FF578;  /* data-wave 2026-09-07: was g_memcard_busy */

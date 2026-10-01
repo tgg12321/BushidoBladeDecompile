@@ -47,9 +47,9 @@ extern s32 cdrom_StartRead(s32, s32);
  * declared shape.  src/text1b.c's own COMMITTED, MATCHED C is the evidence, independently of any
  * codegen observation (line numbers below are against the INCLUDE_ASM tree, i.e. src/text1b.c as
  * committed at s29):
- *   - :3358 `extern s32 *D_800A3468;` -- the matched sibling func_80061064 ALREADY declares this
- *     exact global with a pointer type.  The pointer typing is not this session's invention; it is
- *     the file's existing, accepted declaration for the same symbol.
+ *   - :3358 (then) `extern s32 *D_800A3468;` -- the matched sibling func_80061064 declared this global
+ *     with a pointer type at the time.  Since the Q65 adoption (step 14) the file declares it once, as
+ *     the `s32` its other users read and write, and this function reaches the object through the OB view.
  *   - Sixteen sites assign a POINTER into it: `D_800A3468 = (s32)v1;` where v1 is a callee's
  *     returned pointer (:3406, :3423, :3457, :3472, :3492, :3506, :3521, :3562, :3599, :3628,
  *     :3659, :3694, :3709, :3722), plus :3315 `= 0x1F800000` (the scratchpad base) and :3740
@@ -96,6 +96,8 @@ extern s32 cdrom_StartRead(s32, s32);
  * Also measured 0/66 with the tables spelled through the address of their first word rather than
  * as array declarations; the array declarations are kept because they put the object model at the
  * declaration instead of at each use site. */
+extern s32 D_800A3468;
+#define OB ((struct Ob *)D_800A3468)
 void func_80060A68(void) {
     struct Ob {
         union { s32 w; u16 h; } id;
@@ -112,7 +114,6 @@ void func_80060A68(void) {
         s32 m24;
         s32 m28;
     };
-    extern struct Ob *D_800A3468;
     extern s32 D_800A3478;
     extern s32 D_800A347C;
     extern s32 D_800A32BC;
@@ -121,25 +122,26 @@ void func_80060A68(void) {
 
     s32 result;
 
-    D_800F10D0[D_800A3468->id.h] = 0;
-    D_800A3468->m20 = D_800A3468->p0C[0];
-    D_800A3468->m24 = D_800A3468->p0C[1];
-    D_800A3468->m28 = D_800A3468->p0C[2];
-    D_800A3468->m18 = D_800A3468->p10[0];
-    D_800A3468->m1A = D_800A3468->p10[1];
-    D_800A3478 = (s32)&D_800A3468->m18;
-    D_800A3468->m1C = D_800A3468->p10[2];
-    D_800A347C = (s32)&D_800A3468->m20;
+    D_800F10D0[OB->id.h] = 0;
+    OB->m20 = OB->p0C[0];
+    OB->m24 = OB->p0C[1];
+    OB->m28 = OB->p0C[2];
+    OB->m18 = OB->p10[0];
+    OB->m1A = OB->p10[1];
+    D_800A3478 = (s32)&OB->m18;
+    OB->m1C = OB->p10[2];
+    D_800A347C = (s32)&OB->m20;
 
     result = ((s32 (*)(void)) chractar_use_pset_combo_id_table[
-                  D_8009BA60[D_800A3468->id.h]
-                  + D_800F10D0[D_800A3468->id.h]])();
-    *D_800A3468->p14 = result;
+                  D_8009BA60[OB->id.h]
+                  + D_800F10D0[OB->id.h]])();
+    *OB->p14 = result;
 
-    if (D_800A3468->id.w & 0x200000) {
+    if (OB->id.w & 0x200000) {
         D_800A32BC = 0xA;
     }
 }
+#undef OB
 void func_80060B70(void) {
     extern s32 D_800A3468;
     extern s32 D_800A346C;
@@ -178,12 +180,9 @@ void func_80060B70(void) {
 }
 
 extern u8 D_800F1150[];
-extern s16 D_800A345E;
-extern s16 D_800A345C;
-extern s32 D_800A3458;
-extern s32 D_800A3454[];
-extern s32 D_800A3450;
-extern u32 D_800A344C[];
+extern s16 D_800A345C[2];
+extern s32 D_800A3454[2];
+extern u32 D_800A344C[2];
 extern s32 D_800A3460;
 extern s32 D_800A3444;
 extern s32 D_800A3448;
@@ -196,11 +195,11 @@ void func_80060C60(void) {
         i++;
         p++;
     } while (i < 0x1C);
-    D_800A345E = 0;
-    D_800A345C = 0;
-    D_800A3458 = 0;
+    D_800A345C[1] = 0;
+    D_800A345C[0] = 0;
+    D_800A3454[1] = 0;
     D_800A3454[0] = 0;
-    D_800A3450 = 0;
+    D_800A344C[1] = 0;
     D_800A344C[0] = 0;
     D_800A3460 = 0;
     D_800A3444 = 0;
@@ -1602,23 +1601,23 @@ u8 func_80063BD0(s32);
 u8 func_80063AF0(void) {
     s32 *v1 = (s32 *)D_800A3468;
     D_800F10D0[0] = 1;
-    D_800A345C = (*v1 >> 17) & 3;
+    D_800A345C[0] = (*v1 >> 17) & 3;
     return func_80063BD0(0);
 }
 extern s32 D_800F10D4;
 u8 func_80063B34(void) {
     s32 *v1 = (s32 *)D_800A3468;
     D_800F10D4 = 1;
-    D_800A345E = (*v1 >> 17) & 3;
+    D_800A345C[1] = (*v1 >> 17) & 3;
     return func_80063BD0(1);
 }
 s32 func_80063E10(s32);
 u8 func_80063B78(void) {
-    *(s32 *)D_800A3480 = D_800A345C;
+    *(s32 *)D_800A3480 = D_800A345C[0];
     return func_80063E10(0);
 }
 u8 func_80063BA4(void) {
-    *(s32 *)D_800A3480 = D_800A345E;
+    *(s32 *)D_800A3480 = D_800A345C[1];
     return func_80063E10(1);
 }
 extern s32 D_800A3478;
@@ -3847,10 +3846,8 @@ extern s32 D_800A372C;
 extern s32 D_800A3518;
 extern s32 D_800A34F8;
 extern s16 D_800A3528;
-extern s16 D_800A3512;
-extern s16 D_800A3510;
-extern s16 D_800A350E;
-extern s16 D_800A350C;
+extern s16 D_800A3510[2];
+extern s16 D_800A350C[2];
 extern u8 D_800A32C0[8];
 extern s32 snd_StopAll(void);
 
@@ -3927,10 +3924,10 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
             *(s16 *)(p_34fc + 0x2A) = value;
             *(s16 *)(p_34fc + 0x28) = value;
             flags = D_800A34F8 & ~0x1C00;
-            D_800A3512 = 0;
-            D_800A3510 = 0;
-            D_800A350E = 0;
-            D_800A350C = 0;
+            D_800A3510[1] = 0;
+            D_800A3510[0] = 0;
+            D_800A350C[1] = 0;
+            D_800A350C[0] = 0;
             flags |= 0x1000;
             D_800A34F8 = flags;
             *(s16 *)(p_34fc + 0x12) = 0;
@@ -5123,7 +5120,7 @@ s32 func_8006B578(s32 *arg0, s32 *arg1) {
 
     v = *(u32 *)arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
-    ret = func_800692C0((u32 *)&sp10, 0, (s16 *)(D_800A34FC + 0xC), &D_800A350C);
+    ret = func_800692C0((u32 *)&sp10, 0, (s16 *)(D_800A34FC + 0xC), D_800A350C);
     hi = ret >> 16;
     switch (hi) {
     case 1: {
@@ -5261,7 +5258,7 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
     u32 a0;
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
-    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
+    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, D_800A350C);
     ret >>= 16;
     switch (ret) {
     case 1:
@@ -6130,7 +6127,7 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
     s32 sval;
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
-    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
+    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, D_800A350C);
     if ((ret >> 16) == 1) {
         D_800A3528 = D_800A3528 + 1;
         func_8005C650(0, 0x7F, 0x7F);
@@ -6411,7 +6408,7 @@ s32 func_8006DF68(s32 arg0, u32 arg1) {
     s32 result = 0;
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
-    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, &D_800A350C);
+    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, D_800A350C);
     if (((ret >> 16) & 0xFF) != 0) {
         D_800A352C += 1;
         func_8005C650(0, 0x7F, 0x7F);

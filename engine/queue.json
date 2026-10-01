@@ -4,6 +4,17 @@
   "build_failures": [],
   "items": [
     {
+      "func": "camera_CalcAngles",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "owner ruling Q84 (rules: 215f2d11a; Q65 step 14, A8): D_800A33C8/D_800A33CA join into s16 D_800A33C8[2]; as an array our cc1 -G0 spends one more instruction in every spelling measured - memory/grind/camera_CalcAngles/",
+      "addr": "80047384"
+    },
+    {
       "func": "func_80057E84",
       "file": "text1b",
       "distance": 44,
@@ -182,14 +193,14 @@
     }
   ],
   "counts": {
-    "total": 14,
-    "active": 3,
+    "total": 15,
+    "active": 4,
     "by_status": {
-      "active": 3,
+      "active": 4,
       "rotated": 11
     },
     "by_verdict": {
-      "C": 3
+      "C": 4
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"

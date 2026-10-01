@@ -625,8 +625,7 @@ extern void math_RotMatrixYXZ(s32 *, s32 *);
 extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
 extern s32 ratan2(s32, s32);
 extern s16 Judge[];
-extern s16 D_800A33C8;
-extern s16 D_800A33CA;
+extern s16 D_800A33C8[2];
 extern Unk80101DF0Record *D_800A3708;
 extern void func_8004211C(void);
 extern void func_800444BC(void);
@@ -1088,24 +1087,7 @@ void camera_InitRotation(u8 *a0) {
     *(Block32 *)(s0 + 0x18) = *(Block32 *)(s0 + 0x38);
 }
 
-s16 *camera_CalcAngles(void) {
-    SVECTOR rot;
-    VECTOR sp18;
-    MATRIX pos;
-    s16 s0;
-
-    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, (s32 *)&pos);
-    rot.vx = 0;
-    rot.vy = 0;
-    rot.vz = 0x1000;
-    ApplyMatrix(&pos, &rot, &sp18);
-    s0 = ratan2(sp18.vx, sp18.vz);
-    sp18.vz = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18.vz
-              + (s32)Judge[s0 & 0xFFF] * sp18.vx) >> 12;
-    D_800A33C8 = -ratan2(sp18.vy, sp18.vz);
-    D_800A33CA = s0;
-    return &D_800A33C8;
-}
+INCLUDE_ASM("asm/funcs", camera_CalcAngles);
 
 void game_EffInit(void) {
     func_8004473C();
@@ -2309,8 +2291,7 @@ void func_80048F58(s32 a0, s32 a1) {
 INCLUDE_ASM("asm/funcs", func_80048FFC);
 extern s16 D_800EF9F2;
 extern s16 D_800EF9F4;
-extern s16 D_800A33EA;
-extern s16 D_800A33E8;
+extern s16 D_800A33E8[2];
 extern s32 D_800A33EC;
 void func_8004939C(void) {
     s16 val = -1;
@@ -2322,8 +2303,8 @@ void func_8004939C(void) {
         p--;
     } while (i >= 0);
     D_800EF9F4 = -2;
-    D_800A33EA = -1;
-    D_800A33E8 = -1;
+    D_800A33E8[1] = -1;
+    D_800A33E8[0] = -1;
     D_800A33EC = -1;
 }
 
@@ -2373,7 +2354,7 @@ void func_800494D4(s32 idx, s32 val) {
     if (((u32)idx) >= 2U) {
         func_80052C10();
     }
-    (&D_800A33E8)[idx] = (s16)val;
+    D_800A33E8[idx] = (s16)val;
 }
 s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2)
 {
@@ -2437,9 +2418,9 @@ void func_80049584(s32 arg0) {
     if (D_800A33EC == 0) {
         step = 0x10;
     }
-    hi = D_800A33E8;
+    hi = D_800A33E8[0];
     if (hi == -1) {
-        lo = D_800A33EA;
+        lo = D_800A33E8[1];
         if (lo == hi) {
             i = 0x24;
             if (D_800A33EC == 0) {
@@ -2450,11 +2431,11 @@ void func_80049584(s32 arg0) {
         hi = lo;
     } else {
         lo = hi;
-        if ((D_800A33EA != (-1)) && (hi != D_800A33EA)) {
-            if (hi < D_800A33EA) {
-                hi = D_800A33EA;
+        if ((D_800A33E8[1] != (-1)) && (hi != D_800A33E8[1])) {
+            if (hi < D_800A33E8[1]) {
+                hi = D_800A33E8[1];
             } else {
-                lo = D_800A33EA;
+                lo = D_800A33E8[1];
             }
         }
     }
@@ -2737,8 +2718,8 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
         var_s4 = 0;
     }
 
-    var_s0 = D_800A33E8;
-    var_s2 = D_800A33EA;
+    var_s0 = D_800A33E8[0];
+    var_s2 = D_800A33E8[1];
     var_s1 = var_s3 + 0xC;
 
     if (var_s0 == -1) {

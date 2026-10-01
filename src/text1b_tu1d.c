@@ -546,7 +546,7 @@ void func_8006F038(s32 arg0) {
     *((s32 *)(((s32)arg0) + 0x18)) = (s32)(*((s32 *)(((s32)arg0) + 0x18)) + 0xC);
 }
 extern s16 D_800A355C;
-extern s16 D_800A35C8[];
+extern s16 D_800A35C8[2];
 extern s16 D_800A3590[];
 extern void func_80072E10(s32);
 extern void func_80073200(s32);

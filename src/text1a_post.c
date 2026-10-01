@@ -553,34 +553,31 @@ void func_80041EB0(s32 a0, s32 a1)
     func_8004A1FC((s32)fp_ptr);
     func_8004A1FC((s32)D_800F6340);
 }
-extern s16 g_anim_counter;
 extern s16 g_anim_select[3];
+extern s16 g_anim_hit_flags[2];
 void func_800420D0(void) {
-    extern s16 g_anim_hit_flags;
-    g_anim_counter = 0;
-    g_anim_hit_flags = 0;
+    g_anim_hit_flags[1] = 0;
+    g_anim_hit_flags[0] = 0;
     g_anim_select[0] = -1;
 }
-extern s16 g_anim_hit_flags[];
-extern s32 g_anim_hit_data[];
+extern s32 g_anim_hit_data[2];
 void func_800420E8(s32 a0, s32 a1) {
     if (a0 < 2) {
         g_anim_hit_flags[a0] = 1;
         g_anim_hit_data[a0] = a1;
     }
 }
-extern s32 D_800A3388;
 void func_8004211C(void) {
-    s32 val = g_anim_hit_flags[0] * 2 + g_anim_counter;
+    s32 val = g_anim_hit_flags[0] * 2 + g_anim_hit_flags[1];
     switch (val) {
     case 1:
-        func_80041EB0(0, D_800A3388);
+        func_80041EB0(0, g_anim_hit_data[1]);
         break;
     case 2:
         func_80041EB0(g_anim_hit_data[0], 0);
         break;
     case 3:
-        func_80041EB0(g_anim_hit_data[0], D_800A3388);
+        func_80041EB0(g_anim_hit_data[0], g_anim_hit_data[1]);
         break;
     }
 }
