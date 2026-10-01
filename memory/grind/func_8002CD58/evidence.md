@@ -151,7 +151,13 @@ Carry-forward for the next worker:
 - Mechanisms named from dumps (r11/dumps_table.txt): `len` gets $a1 only as the pseudo copied
   into $a1 for ratan2 (set_preference copy pref 5, find_reg copy pass); `temp` gets $a0 only as
   the first operand of the `<< 16` whose result local-alloc puts in $a0.
-- No reuse-free spelling reaches 0: 19 landing-chassis spellings (r11/variants/, 3 / 6 / 9), an
+- No reuse-free spelling reaches 0: 18 landing-chassis spellings (r11/variants/ minus reuse.c, 3 / 6 / 9), an
   inline sqrt helper (21 / 24), the ff-b and 2026-09-25 sets. Permuter: r11/proof.md (D)(4).
 - Doc comment: the islands' header citation now names github.com/Xeeynamo/croc@f30ff1ee (the
   old text cited gitignored tmp/croc-ref/).
+
+## 2026-10-01 LANDED — COMPLETED-INLINE-ASM-CANONICAL
+Layer-2 round 1, body_hash d016f9e45918ab3e (= candidate.c): rev-CD58-c PASS (match; re-ran
+r11/tools/dumps_all.sh and reproduced r11/dumps_table.txt; Ruling 11 (A)-(F) for len/temp) and
+rev-CD58-auth PASS (auth; 2026-09-25 grant standing, 121 island insns vs header copies, DMPSX words,
+region hashes). Commits: auth 180f4789c, Match cac5378ed, queue 09149048d. Full-build SHA1 == oracle.
