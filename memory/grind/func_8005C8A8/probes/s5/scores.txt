@@ -1,0 +1,20 @@
+# s5 probe (laneA 2026-10-01): engine sandbox --disable all --diff --candidate <file> on the current
+# src/text1b.c, with include/game.h + the game.h hunk of fix1-merges.patch placed ahead of include/
+# (setup.py writes tmp/c8a8A/inc/include/game.h; sbx.py prefixes that -I). Every file is candidate.c
+# with ONLY the size lines changed. Dumps: dump.sh <name> (build cc1 -da, function-only sections).
+candidate.c (literal size = 0x4F0)          33  (re-baseline; 2 source-level, 11 operand-only)
+a1  running offset: size = 0xF0; cur = arg2 + size; size += 0x3E8; mode_off = arg2 + size; size += 0x18   33
+a2  size = 0x4D8; mode_off = arg2 + size; size += 0x18                                                    33
+a3  as a1, the += 0x3E8 before y_base                                                                     33
+    (a2 dump: cse substitutes 1240 into mode_off's add, the first set becomes dead and flow deletes it,
+     f.flow `(note 35 32 38 "" NOTE_INSN_DELETED)`; "Register 81 used 2 times" -> reg_n_sets 1 ->
+     REG_EQUAL 1264 becomes REG_EQUIV in update_equiv_regs -> li $2,0x4f0 at the return, frame 176)
+e1  sibling-faithful: end_off = arg2 + 0x4F0 at entry, `return end_off - arg2;` (func_8005D814 shape)  110
+    (arg2 must stay live to the return: a2 spilled to 0x50, frame 192, 21 source-level hunks)
+e2  end_off = arg2 + 0x4F0; size = end_off - arg2; at entry (layer-2 r1 FAIL form)                      0
+u3  struct { s32 n; } size = { 0x4F0 };  (static constructor: move 0 then store, first set dead)      33
+u2  union { s32 n; } size = { 0x4F0 };   (union constructor emits (clobber (reg)) -> reg_n_sets 2)     4
+u4  union { s32 n; } size; size = (typeof(size)) 0x4F0;  same clobber; d_u4 f.flow insn 37
+    `(clobber (reg/v:SI 81))`, f.lreg keeps REG_EQUAL (not EQUIV), li/sw 112($sp) + lw at return,
+    frame 184; the only diff is the li/sw scheduled to the top of the prologue                          4
+d1  s64 size                                                                                             88

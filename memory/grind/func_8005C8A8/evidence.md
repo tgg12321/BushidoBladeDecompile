@@ -276,3 +276,28 @@ None of these is a citation for keeping a constant out of cse by cancelling a li
 Frontier (unchanged in substance): a once-set 0x4F0 whose source cse cannot evaluate,
 without the Q45-refused cancellation. The tree-level evidence above leaves no ordinary
 C form in the families measured; the item stays active (no rotation).
+
+## s5 (2026-10-01, laneA) — re-baseline 33; the two remaining mechanisms measured; owner question filed
+
+Receipts: probes/s5/scores.txt (+ the variant files, setup.py / sbx.py / dump.sh harness). Re-baseline on the
+current tree (function back in src/text1b.c since 5c543ce1d): candidate.c + the fix1 game.h hunk = 33, as banked.
+
+The slot needs a size pseudo with no REG_EQUIV constant (s4). Two ways a once-stored value escapes it:
+1. A set whose constant cse cannot see and combine folds. Every such source is the constant computed by
+   cancellation (`(s32)tile + 0x4F0 - arg2`, `end_off - arg2` at entry = probes/s5/e2.c, 0) or a bit trick;
+   Q45 refused the class ("a fancy way of writing 0x4F0").
+2. reg_n_sets >= 2 with one emitted store. (a) A running offset accumulator (a1/a2/a3, a real
+   buffer-layout reading: 0xF0 tiles, +0x3E8 sprites, +0x18 modes) does not do it: cse substitutes each
+   intermediate constant into its user, the earlier sets go dead, flow deletes them before counting (a2 dump:
+   f.flow `(note 35 ... NOTE_INSN_DELETED)`, "Register 81 used 2 times"), 33. (b) A union constructor's
+   `(clobber (reg))` counts as a set (tools/gcc-2.7.2/flow.c:1930 -> 2079; expr.c:2996) and leaves REG_EQUAL un-promoted: u2/u4 keep
+   the slot (frame 184), 4 off on placement only. A one-member union wrapper has no semantic purpose and is in
+   no frozen-list family: inadmissible, banked as mechanism evidence only.
+Sibling evidence (new since Q45): eight finished functions in src/text1b.c (func_8005D814, func_8005E098,
+func_8005E54C, func_8005F1C8, func_8005FC9C, func_800600C8, func_80060414, func_80060768) set
+`end_off = <buffer start> + K` at entry and `return end_off - <start>;`, and every one of their targets
+computes it at the return (`subu $v0, ...` before `jr $ra`). The sibling-faithful spelling here
+(probes/s5/e1.c) scores 110: func_8005C8A8's original did the subtraction at entry, not at the return, so the
+idiom supports an end-pointer local but not by itself the entry-time subtraction.
+Status: every admissible spelling found is at 33; the closing forms (e2 / the tile cancellation) need an owner
+ruling. Question: docs/grind/borderline.md 2026-10-01 func_8005C8A8. Item stays active, no rotation.

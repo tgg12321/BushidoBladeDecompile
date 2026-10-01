@@ -54,3 +54,8 @@ H2. The target's value that nv2 approximates (a pseudo equal to mode near the fi
   5. If refused again: rotate with this mechanism proof.
 - DEPENDS: fix1-merges.patch edits include/game.h (coordinate). `Env5C8A8` duplicates `Env5E54C` (`text1b.c:4462`) - unify on landing; same descriptor type as func_8005D554 and finished func_8005D46C / func_8005FA98. named_syms misnomers in evidence.md s3b need a naming_wave reset.
 - ODDS/LANE: manual only (owner question + layer-2). ~10% to 0 without a new ruling.
+
+## s5 (2026-10-01, laneA) — floor 33 confirmed; QUESTION filed (borderline.md 2026-10-01)
+KILLED: running-offset accumulator (a1-a3, 33: flow deletes the dead earlier sets, reg_n_sets 1); sibling-faithful
+return-site `end_off - arg2` (e1, 110); struct constructor (u3, 33); s64 (d1, 88). Union constructor (u2/u4) keeps the
+slot via a clobber (4) but is a no-purpose wrapper. state.json synced. See evidence.md s5, probes/s5/scores.txt.
