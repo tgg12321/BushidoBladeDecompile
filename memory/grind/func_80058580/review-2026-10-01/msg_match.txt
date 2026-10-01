@@ -1,0 +1,53 @@
+Match: func_80058580 — COMPLETED-C (manual); CPU think routine, five Ruling 11 work locals, D_8009A8C8 entry table
+
+func_80058580 (2991 insns) lands as pure C. sandbox --disable all on the spliced src: 0 (2991/2991,
+0 source-level, 0 operand-only hunks); full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+The transcribed jtbl_8001585C/80015884/8001589C arrays are deleted: the compiled switch tables land at
+0x8001585C with the same bytes (rodata-object-alignment ruling, docs/grind/rodata-align-2026-09-30.md).
+
+Data model fixes in the same landing (all other consumers byte-identical, full-build SHA1 above):
+- D_8009A838 is `extern s8 D_8009A838[];` (was a scalar read through `(s32)&D_8009A838 + idx`);
+  func_80056FE8 now reads `D_8009A838[*((s16 *)(a2 + 0xE))]`.
+- The D_8009A8CA alias is retired. The table at 0x8009A8C8 (rows of eight 4-byte entries, each row
+  ending with a zero entry; the word at 0x8009A8C4 is the 0x80 terminator of the script D_8009A8C0,
+  asm/data/7D920.data.s) is `CpuLevelEntry D_8009A8C8[][8]` in include/code6cac.h, replacing
+  `u8 D_8009A8C4[][8][4]`. Both readers index the column 1-based: func_80058580
+  `D_8009A8C8[p[0x440]][D_800A37A0 - 1].mask` (target `addiu -1`, %lo(0x8009A8CA)); func_80055138
+  `src = &D_8009A8C8[*(s16 *)(p + 0x86)][D_800A37A0 - 1]` (GCC folds the -1 into %lo(0x8009A8C4);
+  its `row` local is gone). undefined_syms_auto.txt: D_8009A8CA row retired, D_8009A8C8 row added.
+
+Constructs a reviewer should check (ledger: memory/grind/func_80058580/evidence.md [s5]-[s5e]):
+- work1..work5 are reused locals admitted under Ruling 11; proof package in
+  memory/grind/func_80058580/r11/README.md (values with the target write of each, (A)-(F) walk,
+  allocation dumps and command lines, mechanism by pass/location, the one-variable-per-value twins
+  pv_work1..5 / pv_all (7706 / 7676 / 7652 / 7636 / 6789 / 7703 differing .text words), every
+  single-value ablation (all fail), typed and structural respellings, a permuter campaign from the full
+  split). Q34 copy values: work2 = score, work4 = work3, work5 = et (target moves 0x8005A350,
+  0x800596DC, 0x8005AA94). work3's 0x394 slot is read uninitialized on one path in the original
+  (target 0x80059D18-0x80059DB0), which only the shared variable reproduces.
+- `do { et = e[0] & 7; } while (0);` — FAKE (do-while-zero-exception): loop-depth weighting of et's
+  defining reference orders et (priority 2177) before ep (2147) in global.c, giving et $s5 / ep $s6 as
+  in the target; plain spellings tried in evidence.md [s5].
+- `!(wtype == 1 && (...) && wtype == 1)` — !FAKE redundant condition (no-new-park-categories entry
+  16); the target re-tests $s2 at 0x80059210; without it two instructions short.
+- `0x200 - ((CPU_S16(0x438) * 0x100) >> 12)` at two sites: 0x438 times the 4.12 factor 0x100 (1/16),
+  the same `* k >> 12` scaling the function applies to 0x438 elsewhere. The `>> 4` spelling is merged
+  by cse.c fold_rtx's associative-shift fold into the extendhisi2 shift pair (lhu/sll/sra 20 instead of
+  the target's lh/sra 4); evidence.md [s5].
+- `goto record;` and `goto pick2;` jump into blocks (shared tails): the waypoint-script pick's
+  `goto pick2` reproduces the target's branch targets 0x80059638/0x8005966C (the sandbox score masks
+  branch targets; checked by memory/grind/func_80058580/probes/s5/linkcheck.py, 0 differing words).
+- State 0x11 is one else-if condition (`else if (state == 0x11 && CPU_S16(4) != D_800A38AE && ...)`):
+  when the inner tests fail the target runs the final else (the distance test), 0x80058D3C/0x80058D58.
+
+Casts, all single-handle byte-offset walks on the robot record or call-boundary/value casts, in the
+convention of the text1b.c siblings (func_800571C0 `e = obj + nl * 6`, func_80055138): the CPU_S16 /
+CPU_U16 / CPU_S32 / CPU_OARR / CPU_SARR macros (`*(T *)(p + o)` on the record p and on the opponent
+record `*(u8 **)p`), `*(u8 **)(p + 0x50)`, `*(u8 **)(p + 0x3A4)`, `*(u16 **)(p + idx * 4 + 0x3A8)`,
+`*(s8 *)(p + 0x40C/0x40D)`; the waypoint handles wp/wp2/wp3/a/b = `p + i * 6` read at +0x364/0x366/
+0x368 (index-expression spellings cost 1-11 words, evidence.md [s5d]); `(s32)p` / `(s32)script` at the
+func_80057ACC / func_800571C0 / func_80055B44 calls (s32 parameters in their text1b.c declarations) and the script
+addresses stored into work3 for that s32 argument; `(u32)work3 &` bit tests; value casts `(u8)`,
+`(s8)besti`, `(s16)work2`.
+
+Ledger: memory/grind/func_80058580/ (evidence.md [s5]-[s5e], r11/, probes/s5/).

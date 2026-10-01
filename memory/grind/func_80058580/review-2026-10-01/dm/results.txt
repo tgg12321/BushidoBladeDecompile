@@ -1,0 +1,20 @@
+
+v00_base.c score=0 build_insns=2991
+vA_st2_nocast.c score=3 build_insns=2990
+vB_dec_nocast.c score=0 build_insns=2991
+vC_s16_nocast.c score=8 build_insns=2989
+vD_s8_nocast.c score=3 build_insns=2990
+vE_u8div3_nocast.c score=0 build_insns=2991
+vF_u8div10_nocast.c score=0 build_insns=2991
+vG_u8mod10_nocast.c score=0 build_insns=2991
+vH_shift4.c score=6 build_insns=2993
+vI_noretest.c score=5 build_insns=2989
+vJ_nodowhile.c score=10 build_insns=2991
+vK_vava.c score=29 build_insns=2974
+vL_ternary.c score=0 build_insns=2991
+vM_noq.c score=58 build_insns=2990
+vMJ_noq_nodowhile.c score=58 build_insns=2990
+vN_opp6A_u16.c score=1 build_insns=2991
+vO_u32_nocast.c score=11 build_insns=2991
+vQ_noob.c score=0 build_insns=2991
+DONE

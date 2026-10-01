@@ -178,3 +178,42 @@
   pv_work1..5 / pv_all 7706 / 7676 / 7652 / 7636 / 6789 / 7703 differing words; every single-value
   ablation fails (3..7802 words); typed and structural respellings fail; permuter from pv_all: best
   3585 vs the reuse body's 180 on the same scorer.
+- [s6 2026-10-01] LAYER-2 FAIL, round 1, body e5799063f1d7abd7 (rejected/l2-fail-2026-10-01-e5799063.c; staged
+  patch review-2026-10-01/landing.patch, message review-2026-10-01/msg_match.txt). Bytes were fine: sandbox 0,
+  full build SHA1 == oracle. Reverted; tree rebuilt to the oracle. Verdicts recorded in layer2.jsonl here and
+  in memory/grind/func_80056FE8/ and memory/grind/func_80055138/ (cheat-cleanup scope).
+  rev-58580-r11 (Ruling 11), FAIL:
+  * work3: `switch (work3)` (the 0x394 slot) reads $s3 with no write on the p[0x39C] == 1, opponent state not
+    0x19/0x1A path (0x80059D6C -> 0x80059DB0). Under Ruling 11's value definition (writes that can reach a
+    common read) side/n447/ang/prod/force/farflag/dang/coin/sel3 are therefore ONE merged value, so the 16-value
+    split, the twins and the ablations are not true one-variable-per-value spellings. Faithful to the target
+    (UB only if nothing wrote it), but admitting the merged stale-read value needs an owner ruling.
+  * work2 `best` (-1, then `= score`): Q34 admits exactly one copy write and nothing else in that value; Q20
+    needs two different constants. No clause admits it.
+  * work5: must be declared at the innermost scope, inside `while (off != 0)` (scores 0 there).
+  * Verified OK: (B)(2) walks for work1/2/4/5; every single and subset split nonzero
+    (review-2026-10-01/r11/gen.py, run.ps1).
+  rev-58580-dm (declarations / casts / message), FAIL (measurements review-2026-10-01/dm/results*.txt):
+  * Redundant width/sign casts that move bytes: `(u8)(st2 = ..) == 0xFF` (removing: 3), `(s16)work2` (8),
+    `(s8)besti` (3), `(u32)work3 &` x2 (11), `work4 < 8U` (1).
+  * Byte-neutral cast artifacts to remove: `(u8)--p[0x362]`, `(u8)(p[0x3F2] / 3)`, `(u8)(D_800A38E2 / 10)` and
+    `% 10`, `mode & 0xFF`; `-(et < 5) & 100000` -> `et < 5 ? 100000 : 0` (both 0).
+  * `q = ep;` is an unannotated second handle (without it 58); the do-while(0) only undoes its side effect.
+  * Record access through `u8 *p` + CPU_* byte macros over the typed PracticeMenuRec (include/code6cac.h:67)
+    conflicts with member types: unk_6A read as u16 and as a byte (lbu at 0x80059018, undisclosed); unk_00 read
+    as `u8 *`; s16 reads inside fillers unk_86 / unk_26C / unk_6C; 0x3A4 is `u8 **` here but `u16 *` in
+    func_80055138.
+  * named_syms.txt:2466 `g_text1b_addr_8009A8CA` row must be retired with the alias.
+  * `(CPU_S16(0x438) * 0x100) >> 12` was picked among equivalent rescalings only to dodge the cse fold (`>> 4`
+    is 6): close to Q45 (constant cancellation refused) -> policy question.
+  * Message must disclose every construct, incl. the contradictory nested `OARR(0x404) < 387C && 387C <
+    OARR(0x404)` compare (comment it or `!FAKE`) and the named intermediates a/b/c, rnd/row, ok4, ob.
+  * Accepted: do-while(0) paperwork, the wtype `!FAKE` (entry 16), the CpuLevelEntry model, the memcpy tables
+    (rename buf/buf2), goto record / pick2, the func_80057E84 prototype.
+  func_80056FE8 (15084bf1945e9141) FAIL: D_8009A830 / D_8009A840 still scalar externs read via integer-address
+  puns, inconsistent with D_8009A838[]; named_syms 887/2233/2461 model ONE 3x8 table at 0x8009A830; its FAKE
+  comment cites a deleted ledger path (cite `ffd7fef75^:<path>`).
+  func_80055138 (3e7a86a73383b11b) FAIL: `u8 *p = (u8 *)g_practice_menu_table + arg0 * 0x44C` is a byte pun
+  with member-type conflicts (respell onto PracticeMenuRec members together with func_80058580); width casts
+  (`% 5`, `/ 10`, `% 10`); the list/cursor second handle.
+  Policy questions filed in docs/grind/borderline.md (2026-10-01, func_80058580 a/b/c).

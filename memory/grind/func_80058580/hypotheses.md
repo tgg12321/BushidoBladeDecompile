@@ -19,3 +19,30 @@ so the target's a1 needs v0..a0 busy in that block (evidence.md [s4]). Not attem
 budget): Ruling 11 value audit for work1..work4 (plan step 3), D_8009A838 array spelling (needs
 func_80056FE8's raw `(s32)&D_8009A838 + …` read respelled in the same landing), func_80057E84 prototype
 (still rotated; candidate's extern is the only declaration in text1b.c, no conflict today).
+
+## 2026-10-01 FIX PLAN after layer-2 FAIL round 1 (evidence.md [s6]); ordered
+Bytes are solved (rejected/l2-fail-2026-10-01-e5799063.c links byte-identical); everything left is policy.
+1. Owner answers on docs/grind/borderline.md func_80058580 (a) work3 merged stale-read value, (b) Q34 with a
+   constant init (work2 best), (c) the 0x438 `* 0x100 >> 12` rescale vs Q45. (a) decides whether work3 can
+   land at all; (b)/(c) each need a ruling or a new spelling search (b: e.g. best kept as s16 local again
+   with a different init form; c: rescale alternatives or a data-model reason for the >> 4 site).
+2. PracticeMenuRec typing (the big one): retype `p` as `PracticeMenuRec *` and read members, adding members
+   where this function proves them (0x6A u16 vs byte read at 0x80059018, 0x86, 0x26C, 0x6C, 0x3A4, 0x3A8..,
+   0x364 waypoints, 0x425..0x44B bytes, 0x438/0x43A/0x43C halfwords). This overlaps
+   memory/grind/func_80055B60/cluster-plan-2026-10-01.md and memory/grind/func_80021424/HANDOFF.md (L1 member
+   adds): land those member additions first or jointly; func_80055138 must move to members in the same landing
+   (its 0x3A4 is `u16 *`: settle one type). Re-measure the whole body after typing (register effects likely).
+3. D_8009A830 table model: one `u8 [3][8]` (or a 3-record struct) at 0x8009A830 per named_syms 887/2233/2461;
+   respell func_80056FE8 onto it (keep its duplicated-arm FAKE, fix the cited path to `ffd7fef75^:...`) and
+   this function's read; retire the 838/840 scalar externs.
+4. Cast cleanup (dm results): drop the byte-neutral casts now; for the byte-moving casts find typed spellings
+   (st2 u8 local, best s16 local, besti s8, mask locals u32 within the Ruling 11 package, `work4 < 8`).
+   `-(et < 5) & 100000` -> ternary.
+5. `q = ep`: without it 58; either annotate as the pointer-alias / named-intermediate family with exhaustion
+   or find a structure where q is not a second handle (q is read only for the 0x40 header); re-check the
+   do-while(0) need afterwards.
+6. work5 declared inside `while (off != 0)`; rename buf/buf2; retire named_syms.txt:2466 with the alias;
+   annotate the contradictory OARR(0x404) compare (`!FAKE` or comment) and disclose the named intermediates
+   a/b/c, rnd/row, ok4, ob.
+7. Redo r11/ for the new body (only if (a) is admitted; otherwise work3 needs a different spelling) and
+   rewrite the message to list every construct.
