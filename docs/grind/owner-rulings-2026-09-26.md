@@ -788,3 +788,13 @@ Question, verbatim: "func_8005C8A8 returns a fixed size, 0x4F0, which the origin
 Owner chose: **"B: keep refused (Recommended)"** — option text: "Q45 stands; the function stays open at 33 instructions off, and work continues only if a new mechanism turns up."
 Other options offered: "A: sibling end-pointer" — "`end_off = arg2 + 0x4F0; size = end_off - arg2;` at entry, annotated with a citation of the eight siblings, plus a fresh review."; "C: struct end-minus-start" — "`size = (u8*)((Buf*)arg2 + 1) - (u8*)arg2;` with the struct built from the function's own accesses, annotated, plus a fresh review."
 The rule text is .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on constant spellings (Q77).
+
+# Owner exchange 2026-10-01 (thirty-sixth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: Q66 (2026-09-30) refused func_800770B8's restore store "for now", to be re-measured after Q65. laneA
+re-measured on the regenerated Q65 series (borderline.md 2026-10-01 func_800770B8 entry; ledger 6ebd4e654).
+
+## Q78 — func_800770B8 p_old restore store (Q66 re-ask after Q65)
+Question, verbatim: "func_800770B8 (SelWork setup) still matches only with the form you refused in Q66: one variable holds the list pointer, then the new work-area pointer, then is set back to the list pointer with a store whose value is never used. You asked to re-check after the gp change (Q65). Lane A did, on the regenerated series: it changes nothing (still 2 instructions off without the store). The compiler dumps show why: the shipped code needs that variable overwritten right at that point with a value that never becomes an instruction. In C that means a dead store; the only alternative, a pointer increment, costs one extra load. So the original source very likely had such a store. A 36,000-try permuter run and 39 earlier sessions found no other route. Allow it now, narrowly?"
+Owner chose: **"Allow narrowly (Recommended)"** — option text: "p_old lands as a reused variable (list pointer, then work pointer) plus the restore store marked FAKE, with the compiler-dump proof, the full reused-variable paperwork, and a fresh review. For this function only."
+Other option offered: "Keep refused" — "func_800770B8 stays assembly and active; no allowed C spelling is known, so the lane moves on."
+The rule text is .claude/rules/reused-local-necessity.md § Owner ruling Q78.

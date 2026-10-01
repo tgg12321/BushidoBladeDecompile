@@ -1086,3 +1086,12 @@ Q34 receipts. Q76 "Allow": at func_80058580's two `lh; sra 4` sites (0x8005AB34,
 fixed-point C, commented. Q77 "keep refused": Q45 covers the sibling end-pointer and layout-struct end-minus-start
 forms for func_8005C8A8; it stays INCLUDE_ASM/active at 33 and is worked for a new mechanism. Rule text:
 .claude/rules/reused-local-necessity.md (Q74, Q75), .claude/rules/ordinary-c-judge-decidable.md (Q76, Q77).
+
+## 2026-10-01 — OWNER RULING — Q78: func_800770B8 p_old restore store GRANTED narrowly (reverses Q66 after the Q65 re-measure)
+
+Thirty-sixth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 36). Owner chose "Allow narrowly":
+in func_800770B8 only, `p_old` may carry the list pointer then the work-area pointer under Ruling 11, plus one
+FAKE-annotated dead restore store `p_old = prev;` after the +4 store (0x80077140) and before the 0x30/0x34
+clears, despite Ruling 11 (B)(1) and the Ruling 4 dead-carrier ban; the annotation names the cse mechanism, `.cse`
+dumps for both bodies are banked, plus every dead-store-fake-exception prerequisite, the Ruling 11 package (incl.
+an (E) name) and a fresh layer-2. Any other dead write in the function is judged under its own rule. Rule text: .claude/rules/reused-local-necessity.md § Owner ruling Q78.

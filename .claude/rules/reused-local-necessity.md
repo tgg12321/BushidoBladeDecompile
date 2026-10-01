@@ -74,6 +74,18 @@ path); values are grouped by Ruling 11's definition with that one read excluded,
 (C)(1)/(C)(3)/(D) are met on that grouping (no other read may be excluded); every other prong
 applies unchanged; fresh layer-2. Not a precedent for any other read or function.
 
+**Owner ruling Q78 (2026-10-01) — func_800770B8 only: the `p_old` restore store** (reverses
+Q66's "refuse for now" after the post-Q65 re-measure). One local (`p_old`; the name may change
+under (E)) may hold the list pointer, then the new work-area pointer, under Ruling 11, plus ONE
+dead restore store `p_old = prev;` placed after the +4 store (`sw` 0x80077140) and before the
+0x30/0x34 clears (0x80077144/48), although (B)(1) and Ruling 4 ban a dead write. Conditions:
+the store is `/* FAKE: */`-annotated with every [[dead-store-fake-exception]] prerequisite and
+names the cse mechanism (cse make_regs_eqv puts p_old and the call's $v0 in one class with
+p_old canonical, so the D_800A36A0 reloads become p_old); `.cse` dumps for the body with and
+without the store are banked with command lines; the full Ruling 11 package covers the two
+real values; fresh layer-2. Q78 admits only this store: any other dead write in the function
+is judged under its own rule, neither banned nor admitted by Q78. Not a precedent elsewhere.
+
 ## Ruling 12 — a local copy of a stack-passed parameter (2026-09-26)
 
 Each copy, ALL of: (A) the parameter is stack-passed and never written, address never taken.
