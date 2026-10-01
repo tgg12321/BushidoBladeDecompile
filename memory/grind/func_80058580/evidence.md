@@ -226,3 +226,31 @@
   with the `(u8)` cast dropped -> jtbl targets shift by 4 (score 11, 2990 insns): st2's width cast is still
   load-bearing. Still open: `(s16)work2`, `(u32)work3 &` x2, `work4 < 8U`, `q = ep`, the PracticeMenuRec
   typing (item 2), the D_8009A830 3x8 table (item 3), r11/ redo (item 7) once Q74-Q76 land as rules.
+- [s8 2026-10-01 laneB] Data model (fix plan items 2, 3, 4, 5). Harness typed/ (run.sh <dir>: splice the dir's
+  f58580.c / f55138.c / f56fe8.c / src_edits.py / hdr_edits.py into current src, full Makefile pipeline,
+  standalone link of text1b.o vs build/bb2.bin; fd.sh = per-function disasm diff; tuc.sh = every other TU
+  rebuilt with the edited header vs build/src). candidate.c + typed/* = 0 differing .text/.rodata words.
+  * `p` is `PracticeMenuRec *`; every access is a member (typed/hdr_edits.py adds unk_50/unk_58 `u8 *`, u16
+    unk_6C, s16 unk_86, unk_A3, unk_AF, s16 unk_26C..272, and 0x362..0x44B incl. `CpuWaypoint unk_364[8]`,
+    s16 unk_3F8/3FE/404[3] indexed by unk_86, `u16 *unk_3A4`, `u16 *unk_3A8[3]`, `u8 *unk_3B4`, s8
+    unk_40C/40D, `u8 unk_444[8]`; unk_6A s16 -> u16). All 32 other code6cac.h TUs byte-identical (tuc.sh).
+  * Waypoints: direct `p->unk_364[i].x` matches (wp/wp2/wp3/a/b gone); `&p->unk_364[i]` pointers put 0x364
+    into the pointer (157 words). Leg loop: `[work4] - [work4 - 1]` then `work4--` (target `addiu a2,s4,-1;
+    move s4,a2`); decrementing first lets loop.c reduce the index (19 lines).
+  * `u8 st2` with no cast: `(st2 = D_8009A850[work4][1]) == 0xFF || st2 == p->unk_00->unk_6A` matches;
+    GCC narrows the u8-vs-u16 compare to the target's lbu (0x80059018) and the u8 local gives the andi.
+    `(u8)` on the opponent read, `& 0xFF`, `*(u8 *)&` all match too; not needed.
+  * `work4 < sizeof(D_8009A850) / sizeof(D_8009A850[0])` with `extern u8 D_8009A850[8][4]` (unsigned
+    bound, no 8U literal); plain `< 8` 1 word.
+  * Still load-bearing: `(s16)work2 <` (no cast 8 lines; `s16 best` split 23 words, either scope; work2 s16
+    222 lines) — the target sign-extends $s2 at 0x8005A338; `(u32)work3 &` x2 (`1U <<` 11 words: fold-const.c
+    4437 rewrites `(x & (1 << n)) == 0` whenever the shift is a bare operand; a `u32 mask` split 3-8 words,
+    the target keeps both masks in $s3). script4 split out of work3 16 words, so the script address stays an
+    integer value of work3 (`(s32)D_8009A8xx`, `(u8 *)work3` at the call).
+  * func_80055B44 retyped `(PracticeMenuRec *, u8 *script, s32, s32)` (only caller is this function): the
+    `(s32)scriptN` casts go. func_80056FE8 on `PracticeMenuRec *` with three arrays D_8009A830 u8[] /
+    D_8009A838 s8[] / D_8009A840 u8[] (dlabels are 8, 8, 16 bytes; 838 is read lb, the others lbu, so not one
+    3x8 table); FAKE paths now `ffd7fef75^:memory/grind/func_80056FE8/hypotheses.md`. func_80055138 on
+    `PracticeMenuRec *` members, `list` typed u16 * (`(u8 *)list + *cursor`), its three width casts removed,
+    `idx < sizeof(p->unk_444)`; `temp = base * 2` for `(u8)(D_800A38E2 / 10) * 2` is NOT byte-neutral.
+  * `ob` removed (byte-neutral). q kept with a pointer-alias FAKE annotation (SOTN e_stone_rose.c:611).
