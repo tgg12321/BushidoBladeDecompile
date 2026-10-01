@@ -1117,3 +1117,11 @@ ledger 200e065b9), so nothing changes in GP_FILES. Q84 "Land Q65, reopen 1 fn": 
 camera_CalcAngles reverts to INCLUDE_ASM at the step that joins D_800A33C8[2] (C body and its 1-instruction residual
 to be banked in its ledger) and is re-queued active (Q37-style fallback). Rule text: .claude/rules/ordinary-c-judge-decidable.md
 (Q82); Q83/Q84 are records only.
+
+## 2026-10-01 — OWNER RULING — Q85: func_8002AB08 per-arm re-stores allowed narrowly
+
+Thirty-ninth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 39). Owner chose "Allow narrowly":
+in func_8002AB08's blade-pass loop only, `temp1 = 0; temp2 = 1; c = 1;` in the unk_8C arm (0x8002AEF0..0x8002AEFC) and
+`alt = 0;` in the 4/5 arm (`move $fp,$zero` 0x8002AF18) may re-store values the variables always hold there, despite
+Ruling 11 (B)(2) / Ruling 5 2(c); each variable's comment cites the address; rest of the Ruling 11 package and a fresh
+layer-2. Rule text: .claude/rules/reused-local-necessity.md § Owner ruling Q85.

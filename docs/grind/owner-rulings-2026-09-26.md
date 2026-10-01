@@ -846,3 +846,13 @@ Other options offered: "Exempt small statics" — "Align only statics of 4+ byte
 Record only (a one-time action in the adoption series, no rule text): the series reverts camera_CalcAngles to
 INCLUDE_ASM at the step that joins D_800A33C8[2] (its pre-revert C body banked in its ledger with the measured
 1-instruction residual) and re-queues it active; A8 is applied unchanged.
+
+# Owner exchange 2026-10-01 (thirty-ninth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: borderline.md 2026-10-01 "func_8002AB08 — reused locals whose original code re-stores a value they already
+hold" (laneC, after layer-2 round 1: rev-2AB08-dm PASS, rev-2AB08-r11 FAIL; ledger 2522ffe97).
+
+## Q85 — func_8002AB08 per-arm re-stores
+Question, verbatim: "func_8002AB08 (collision/contact routine) is byte-exact. A loop sets up two points each pass in one of three branches, and each branch writes the full set of values. In two branches the original writes values that are always already there: one rewrites 'point 0 / point 1 / flag', the other rewrites 'alt = 0'. The compiler kept those stores, so the shipped bytes contain them (addresses cited). The reused-variable rule refuses a write that only re-stores a value it already holds. Dropping the writes costs 1 to 13 instructions, and every other review item passed. Allow these re-stores for this function?"
+Owner chose: **"Allow narrowly (Recommended)"** — option text: "Only those writes in func_8002AB08 (`temp1 = 0; temp2 = 1; c = 1;` in one branch, `alt = 0;` in the other), each with its target address in the variable's comment; rest of the reused-variable package and a fresh review. The function then lands."
+Other option offered: "Refuse" — "func_8002AB08 stays assembly and active; no spelling without the stores matches."
+The rule text is .claude/rules/reused-local-necessity.md § Owner ruling Q85.

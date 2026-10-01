@@ -292,3 +292,8 @@ disposition taken: not landed; func_8002AB08 stays INCLUDE_ASM/active; candidate
 Question for the owner (plain language): "In this function each pass of a loop sets up its two points in one of three branches. The original writes the same 'point 0 / point 1' values again in one branch and 'alt = 0' again in another, values the variables always already hold there (the compiler kept those stores; the bytes show them). The reused-variable rule refuses a write that only re-stores a value. Allow these re-stores for func_8002AB08 because the shipped code contains them (addresses cited), or keep the function open?"
 options: (A, recommended) Allow narrowly for func_8002AB08: the re-store writes (`temp1 = 0; temp2 = 1; c = 1;` in the unk_8C arm, `alt = 0;` in the 4/5 arm; `c` is the arm's flag for func_8002CA8C, one role), each with its target address in the variable's comment, under the rest of the Ruling 11 package and a fresh layer-2. (B) Do not allow: the function stays INCLUDE_ASM/active; no spelling without the stores matches.
 recommendation: (A). Each arm sets the full pass state, the stores are in the target, and nothing is hidden.
+
+## 2026-10-01 — func_8002AB08 — owner ruling Q85 — resolution
+category: resolution
+evidence: docs/grind/owner-rulings-2026-09-26.md batch 39; docs/grind/decisions.md 2026-10-01 OWNER RULING Q85.
+disposition taken: the 2026-10-01 func_8002AB08 policy-question (per-arm re-stores) is SPENT: option (A) allowed narrowly. The landing still needs its own fresh layer-2.
