@@ -22,3 +22,9 @@
   combine.sh dumps the guard's `-1` (pseudo 81, `(set (reg:SI 81) (const_int -1))` feeding the `i == -1`
   test before the loop) is folded by combine into `beqz $a2`; its refs survive, it never gets a hard
   register, and reload gives it the 8-byte slot no instruction touches.
+
+## 2026-10-01 layer-2 rev-svc — FAIL (e7ef9f5c3a696974)
+1. `VcCtrl *rec = (VcCtrl *)recs;` is a do-nothing parameter alias; the parameter typed `VcCtrl *rec`
+   scores 0 (16/16). 2. The file comment's "as in func_8001F938" was false (that frame comes from its
+   `short dmg` local). Loop form, mechanism and layout verified clean. Fix: typed parameter, comment
+   cites gpu_SetDrawMoveArray. Banked: rejected/param-alias-fail-0.c.

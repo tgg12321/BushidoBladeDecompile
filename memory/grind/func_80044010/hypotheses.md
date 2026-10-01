@@ -22,3 +22,8 @@
 - Frame: producer 1 (rotated guard). The loop's entry test `slt i, n` (pseudo 101, i = 0) is folded by
   combine into `blez n`; its REG_DEAD note is left as a bare `(use (reg:SI 101))` (.lreg insn 112),
   reload slots it: `.frame $sp,8 ... vars= 8` (save_vc_ctrl/m1001/frame.sh + combine.sh).
+
+## 2026-10-01 LANDED — COMPLETED-C
+rev-44010 PASS (match, 2769855f24690a46): producer-1 frame reproduced, base/cursor split real, store and
+u16 count alternatives measured (2 / 4), prototype honest; func_80045B68 PASS (cheat-cleanup,
+9cbbd1b947ee6aeb). Match ac4977d00. Pre-existing debt (disclosed): sound.c:107 / text1a_c2.c:15 externs.
