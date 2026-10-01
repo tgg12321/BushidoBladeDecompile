@@ -33,3 +33,17 @@ question is filed for the owner: docs/grind/borderline.md 2026-09-30 (commit 106
 
 ## 2026-09-30 — laneB: Ruling 11 package for det/sum started (r11/)
 Mechanisms named from dumps (r11/proof.md, r11/dumps_table.txt): work/det = local-alloc.c:472 admission (split -> block-0 pseudo local-allocated to $v0; reuse -> global, $t2 as target); temp/sum = global.c set_preference (:1484, :1671-1760) giving temp's allocno the $a0 preference only when it is the `<< 16` source (split -> $s0). Renamed/annotated body: candidate_r11.c (0). Per-value spellings: 41 / 41 / 41; singles 6 and 35. Permuter: 37,248 iterations, best 30 (re-creates the reuse). Status: banked, not submitted.
+
+## 2026-10-01 — laneA: landing prep on main — Ruling 11 package completed on the landing body
+candidate.c is now the landing body (0/270): laneB's renamed `work`/`temp` + annotations (was
+candidate_r11.c, removed), plus three byte-neutral changes: the normalized cofactors in fresh `i0`/`i1`
+like `i2` (was in-place `c0 = c0 / det; c1 = c1 / det;`, which made c0/c1 hold two values each);
+sqrt-table reads spelled `(&g_sqrt_table_u8)[i]`; island comments as func_8002EBDC (gte_Lzc unit name,
+gte_rtv0 placeholder + post-DMPSX word). r11/proof.md rewritten on this chassis: the per-value family
+re-derived (r11/variants_landing/: 41 x5, work alone 35, temp alone 6) and re-dumped
+(r11/dumps_table_landing.txt: same two decisions, sum = pseudo 91 here); first-chassis extras banked
+(variants/pv_cdiv.c, pv_detblock.c, pv_detblock_cdiv.c: 41 each). Fresh-seed permuter on the landing
+per-value body (12,583 iterations, best 30): every low find re-creates a variable holding the
+determinant plus a second value. `d0` (the m00 cofactor-expansion term, computed right after c0, where
+the target multiplies it) inlined into the determinant = 53 (rejected/d0-inlined-into-determinant-53.c);
+kept as the ordinary-C named term the previous landing carried.

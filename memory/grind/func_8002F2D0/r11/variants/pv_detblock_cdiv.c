@@ -4,18 +4,12 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
     s32 *mat;
     s32 *vec;
     s32 c0, c1, c2;
-    /* work holds two values (Ruling 11, owner 2026-09-26; proof: memory/grind/func_8002F2D0/r11/proof.md): the
-     * 3x3 determinant (the divisor of the six cofactors) and then the square root of
-     * i0*i0 + i1*i1 (the ratan2 length). */
-    s32 work;
     s32 d0;
-    s32 i0, i1, i2;
+    s32 i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* temp holds two values (Ruling 11; proof: memory/grind/func_8002F2D0/r11/proof.md): i0*i0 + i1*i1 (the
-     * squared length fed to the table lookup and the leading-zero count) and then the
-     * square-root table byte. */
-    s32 temp;
+    s32 sum;
+    s32 dist;
     s32 sp_tmp;
 
     m = (MATRIX *)0x1F800390;
@@ -25,24 +19,26 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
     d0 = m->m[0][0] * (c0 >> 12);
     c1 = m->m[0][1] * m->m[2][2] - m->m[0][2] * m->m[2][1];
     c2 = m->m[0][2] * m->m[1][1] - m->m[0][1] * m->m[1][2];
-    work = (d0 + m->m[1][0] * (c1 >> 12) + m->m[2][0] * (c2 >> 12)) >> 12;
-    i0 = c0 / work;
-    i1 = c1 / work;
-    i2 = c2 / work;
-    r0 = (m->m[1][0] * m->m[2][2] - m->m[1][2] * m->m[2][0]) / work;
-    r1 = (m->m[0][2] * m->m[2][0] - m->m[0][0] * m->m[2][2]) / work;
-    r2 = (m->m[0][0] * m->m[1][2] - m->m[0][2] * m->m[1][0]) / work;
+    {
+        s32 det = (d0 + m->m[1][0] * (c1 >> 12) + m->m[2][0] * (c2 >> 12)) >> 12;
+        c0 /= det;
+        c1 /= det;
+        i2 = c2 / det;
+        r0 = (m->m[1][0] * m->m[2][2] - m->m[1][2] * m->m[2][0]) / det;
+        r1 = (m->m[0][2] * m->m[2][0] - m->m[0][0] * m->m[2][2]) / det;
+        r2 = (m->m[0][0] * m->m[1][2] - m->m[0][2] * m->m[1][0]) / det;
+    }
 
-    ang_z = -ratan2(i1, i0);
+    ang_z = -ratan2(c1, c0);
     scr = (u8 *)0x1F8002B8;
-    temp = i0 * i0 + i1 * i1;
-    if ((u32)temp < 0x400) {
-        work = (u32)(&g_sqrt_table_u8)[temp] >> 3;
+    sum = c0 * c0 + c1 * c1;
+    if ((u32)sum < 0x400) {
+        dist = (u32)*(((u8 *)&g_sqrt_table_u8) + sum) >> 3;
     } else {
         s32 lzcr = 0;
-        if (temp >= 0) {
-            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210, gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
-            __asm__ volatile ("move  $12,%0": :"r"(temp):"$12","$13","$14","$15","memory");
+        if (sum >= 0) {
+            /* inline_o.h: gte_ldlzc :207-210, gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
+            __asm__ volatile ("move  $12,%0": :"r"(sum):"$12","$13","$14","$15","memory");
             __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -52,12 +48,12 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
         }
         {
             s32 shift = 0x16 - (lzcr & ~1);
-            temp = (&g_sqrt_table_u8)[(u32)temp >> shift];
-            work = (u32)(temp << 16) >> (0x13 - ((u32)shift >> 1));
+            s32 tb = *(((u8 *)&g_sqrt_table_u8) + ((u32)sum >> shift));
+            dist = (u32)(tb << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
 
-    ang_y = ratan2(i2, work);
+    ang_y = ratan2(i2, dist);
     mat = (s32 *)(scr + 0xD8);
     *(s16 *)(scr + 0xD8) = 0x1000;
     *(s16 *)(scr + 0xDA) = 0;
@@ -87,9 +83,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
     vec[0] = r0;
     vec[1] = r1;
     vec[2] = r2;
-    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word is the
-     * post-DMPSX word .word 0x4A486012 in place of the header's DMPSX placeholder
-     * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner Q61 per-function grant) */
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430 */
     __asm__ volatile ("move  $12,%0": :"r"(vec):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");

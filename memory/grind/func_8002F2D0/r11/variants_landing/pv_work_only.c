@@ -4,17 +4,12 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
     s32 *mat;
     s32 *vec;
     s32 c0, c1, c2;
-    /* work holds two values (Ruling 11, owner 2026-09-26; proof: memory/grind/func_8002F2D0/r11/proof.md): the
-     * 3x3 determinant (the divisor of the six cofactors) and then the square root of
-     * i0*i0 + i1*i1 (the ratan2 length). */
     s32 work;
+    s32 dist;
     s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* temp holds two values (Ruling 11; proof: memory/grind/func_8002F2D0/r11/proof.md): i0*i0 + i1*i1 (the
-     * squared length fed to the table lookup and the leading-zero count) and then the
-     * square-root table byte. */
     s32 temp;
     s32 sp_tmp;
 
@@ -37,7 +32,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
     scr = (u8 *)0x1F8002B8;
     temp = i0 * i0 + i1 * i1;
     if ((u32)temp < 0x400) {
-        work = (u32)(&g_sqrt_table_u8)[temp] >> 3;
+        dist = (u32)(&g_sqrt_table_u8)[temp] >> 3;
     } else {
         s32 lzcr = 0;
         if (temp >= 0) {
@@ -53,11 +48,11 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
         {
             s32 shift = 0x16 - (lzcr & ~1);
             temp = (&g_sqrt_table_u8)[(u32)temp >> shift];
-            work = (u32)(temp << 16) >> (0x13 - ((u32)shift >> 1));
+            dist = (u32)(temp << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
 
-    ang_y = ratan2(i2, work);
+    ang_y = ratan2(i2, dist);
     mat = (s32 *)(scr + 0xD8);
     *(s16 *)(scr + 0xD8) = 0x1000;
     *(s16 *)(scr + 0xDA) = 0;
