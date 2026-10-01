@@ -92,3 +92,15 @@ loops (:173, :183). Per-loop counters measured: slot 43, flag 5, objects 31, ret
   (4) disclose/respell the second handle D_80101F4E (code6cac.h:724) over unk_86 (func_800218C8/func_80021904).
   (5) type unk_3B4 as a pointer (func_80055948 loads/stores one) or disclose.
   Rejected body: rejected/layer2-r1-datamodel-fail-0.c. Tree reverted; rebuild == oracle.
+
+## s4 (2026-10-01, laneA) — preparatory landing for dm item 1: D_80106A78 / D_800A36F2 typed
+Obj80106A78 (0x64-byte record) + `extern Obj80106A78 D_80106A78[12]` and `extern u8 D_800A36F2[2]` in
+include/code6cac.h; 12 consumer bodies in src/code6cac_b_tu2.c respelled (func_80030208, func_8003043C,
+func_8003047C, func_80030524, func_80030580, func_800307D0, func_80030900, cpu_set_move_command_and_dir,
+func_80030BA8, func_80030D04, func_80030D7C, func_80031B24); per-word labels D_80106A7A/80/82 retired from
+undefined_syms_auto.txt and named_syms.txt. Harness: probes/prep_d6a78/ (conv.py automatic obj-walk respelling,
+manual.py hand bodies f_*.c, hdr.py, land_p1.py; tucheck.py scores every function of a modified TU against
+build/src). Measured: func_80030208 goto+members 33, index `for` 51, pointer `for` 4, init order swapped 0;
+func_80030BA8 goto+members 8 (f_80030BA8_goto.c), index `for` 34, pointer `for` 0; func_80030D7C members with
+scalar D_800A36F2 20 (sched.c true_dependence 834-836 escape lets the D_800A36F2 load pass an in-struct velocity
+store), D_800A36F2[2] array read 0. Whole TU: 81/81 functions 0; full build == oracle.
