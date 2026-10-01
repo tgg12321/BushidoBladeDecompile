@@ -1,40 +1,10 @@
-/* One polygon of a stage's navigation set (8 bytes; func_80057ACC and
- * func_80057CC8 read the same layout): flags (0x80 = open chain, the last
- * vertex does not close back to the first), a kind byte that tags the route
- * waypoints built around it, a corner margin (func_80057CC8 scales it by 40),
- * the vertex count and the vertex table of x/z pairs. */
-typedef struct {
-    u8 flags;
-    u8 kind;
-    u8 margin;
-    u8 nvtx;
-    s16 (*vtx)[2];
-} NavPoly;
-
-/* A row of D_8009A658 (12 bytes): the polygon count and the polygon array. */
-typedef struct {
-    u8 npolys;
-    u8 unk1[3];
-    NavPoly *polys;
-    u8 unk8[4];
-} NavPolySet;
-
-/* A route under construction, laid out like PracticeMenuRec's route record at
- * +0x360 (polygon index, vertex index, waypoint count, waypoints). */
-typedef struct {
-    u8 poly;
-    u8 vtx;
-    u8 count;
-    CpuWaypoint node[8];
-} RouteBuf;
-
 /* Route arg0 around the edges of its current polygon toward (goal_x, goal_z):
  * walk the vertex ring both ways from the vertex arg0 stands at, stepping to
  * the next corner while the segment to the goal is blocked by an edge, and
  * append the cheaper of the two corner chains (up to 8 corners) to arg0's
  * route. */
-void func_80057E84(PracticeMenuRec *arg0, u8 *arg1, s32 goal_x, s32 goal_z) {
-    RouteBuf path[2];
+void func_80057E84(PracticeMenuRec *arg0, NavPolySet *arg1, s32 goal_x, s32 goal_z) {
+    CpuRoute path[2];
     s16 ofs0_x;
     s16 ofs0_z;
     s16 ofs1_x;
@@ -71,18 +41,18 @@ void func_80057E84(PracticeMenuRec *arg0, u8 *arg1, s32 goal_x, s32 goal_z) {
      * the two for the copy loop. One local, not three: Ruling 11
      * (.claude/rules/reused-local-necessity.md); proof:
      * memory/grind/func_80057E84/r11/README.md. */
-    RouteBuf *route;
+    CpuRoute *route;
 
     go_dn = 1;
     go_up = 1;
-    poly = &((NavPolySet *)arg1)->polys[arg0->unk_360];
+    poly = &arg1->polys[arg0->cpu_route.poly];
     dn_x = up_x = arg0->unk_F4.x;
     dn_z = up_z = arg0->unk_F4.z;
     path[1].count = 0;
     path[0].count = 0;
     dist_up = 0;
     dist_dn = 0;
-    idx_dn = arg0->unk_361;
+    idx_dn = arg0->cpu_route.vtx;
     idx_up = idx_dn + 1;
     if (!(idx_up < poly->nvtx)) {
         if (poly->flags & 0x80) {
@@ -118,11 +88,11 @@ void func_80057E84(PracticeMenuRec *arg0, u8 *arg1, s32 goal_x, s32 goal_z) {
             vtx = poly->vtx[i];
             ax = vtx[0];
             az = vtx[1];
-            func_80057CC8((u8 *)poly, i, &ofs0_x, &ofs0_z);
+            func_80057CC8(poly, i, &ofs0_x, &ofs0_z);
             vtx = poly->vtx[next];
             bx = vtx[0];
             bz = vtx[1];
-            func_80057CC8((u8 *)poly, next, &ofs1_x, &ofs1_z);
+            func_80057CC8(poly, next, &ofs1_x, &ofs1_z);
             if (go_dn && !hit_dn) {
                 if ((dn_x != ofs0_x || dn_z != ofs0_z) && (dn_x != ofs1_x || dn_z != ofs1_z)) {
                     if (func_8005763C(dn_x, dn_z, goal_x, goal_z, ax, az, bx, bz, &hit_x, &hit_z)) {
@@ -147,7 +117,7 @@ void func_80057E84(PracticeMenuRec *arg0, u8 *arg1, s32 goal_x, s32 goal_z) {
 
                 vtx = poly->vtx[idx_dn];
                 dist_dn += SquareRoot0((vtx[0] - dn_x) * (vtx[0] - dn_x) + (vtx[1] - dn_z) * (vtx[1] - dn_z));
-                func_80057CC8((u8 *)poly, idx_dn, &dn_x, &dn_z);
+                func_80057CC8(poly, idx_dn, &dn_x, &dn_z);
                 route = &path[0];
                 c = route->count;
                 route->count = c + 1;
@@ -177,7 +147,7 @@ void func_80057E84(PracticeMenuRec *arg0, u8 *arg1, s32 goal_x, s32 goal_z) {
 
                 vtx = poly->vtx[idx_up];
                 dist_up += SquareRoot0((vtx[0] - up_x) * (vtx[0] - up_x) + (vtx[1] - up_z) * (vtx[1] - up_z));
-                func_80057CC8((u8 *)poly, idx_up, &up_x, &up_z);
+                func_80057CC8(poly, idx_up, &up_x, &up_z);
                 route = &path[1];
                 c = route->count;
                 route->count = c + 1;
@@ -211,7 +181,7 @@ void func_80057E84(PracticeMenuRec *arg0, u8 *arg1, s32 goal_x, s32 goal_z) {
         route = &path[1];
     }
     for (i = route->count - 1; i >= 0; i--) {
-        arg0->unk_364[arg0->unk_362] = route->node[i];
-        arg0->unk_362++;
+        arg0->cpu_route.node[arg0->cpu_route.count] = route->node[i];
+        arg0->cpu_route.count++;
     }
 }

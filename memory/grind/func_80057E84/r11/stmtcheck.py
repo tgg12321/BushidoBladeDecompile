@@ -16,7 +16,7 @@ names = "|".join(list(back) + list(gen.VALUES))
 def norm(path):
     s = open(path).read()
     s = re.sub(r"/\*.*?\*/", " ", s, flags=re.S)
-    s = re.sub(r"\b(s16 \*|CpuWaypoint \*|RouteBuf \*)(%s);" % names, " ", s)
+    s = re.sub(r"\b(s16 \*|CpuWaypoint \*|CpuRoute \*)(%s);" % names, " ", s)
     toks = re.findall(r"[A-Za-z_]\w*|0x[0-9A-Fa-f]+|\d+|->|\S", s)
     return [back.get(t, t) for t in toks]
 

@@ -47,7 +47,7 @@ def noptr_route(s):
         s = re.sub(r"\n\s*%s = &path\[%s\];" % (v, k), "", s)
         s = re.sub(r"\b%s->" % v, "path[%s]." % k, s)
         s = re.sub(r"\b%s(?=[^\w])" % v, "(&path[%s])" % k, s)
-        s = re.sub(r"\n\s*RouteBuf \*\(&path\[%s\]\);" % k, "", s)
+        s = re.sub(r"\n\s*CpuRoute \*\(&path\[%s\]\);" % k, "", s)
     return s
 
 
@@ -65,11 +65,11 @@ def node_early(s):
 
 
 def vtx_struct(s):
-    s = sub(s, "typedef struct {\n    u8 flags;", "typedef struct {\n    s16 x;\n    s16 z;\n} NavVtx;\n\ntypedef struct {\n    u8 flags;")
-    s = sub(s, "    s16 (*vtx)[2];\n} NavPoly;", "    NavVtx *vtx;\n} NavPoly;")
+    # NavPoly is a header type now: the vertex struct view goes through a cast (evidence only)
+    s = "typedef struct {\n    s16 x;\n    s16 z;\n} NavVtx;\n\n" + s
     for v in ("vtx_a", "vtx_b", "vtx_dn", "vtx_up"):
         s = re.sub(r"s16 \*%s;" % v, "NavVtx *%s;" % v, s)
-        s = re.sub(r"%s = poly->vtx\[(\w+)\];" % v, r"%s = &poly->vtx[\1];" % v, s)
+        s = re.sub(r"%s = poly->vtx\[(\w+)\];" % v, r"%s = (NavVtx *)poly->vtx[\1];" % v, s)
         s = s.replace("%s[0]" % v, "%s->x" % v).replace("%s[1]" % v, "%s->z" % v)
     return s
 
@@ -81,7 +81,7 @@ def vtab(s):
 
 
 def register(s):
-    return re.sub(r"(?m)^(\s*)(s16 \*|CpuWaypoint \*|RouteBuf \*)(vtx_|node_|route_)", r"\1register \2\3", s)
+    return re.sub(r"(?m)^(\s*)(s16 \*|CpuWaypoint \*|CpuRoute \*)(vtx_|node_|route_)", r"\1register \2\3", s)
 
 
 def copy_k(s):

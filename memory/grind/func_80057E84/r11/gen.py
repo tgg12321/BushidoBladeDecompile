@@ -24,7 +24,7 @@ VALUES = {
     "node": ["node_dn", "node_up"],
     "route": ["route_dn", "route_up", "route_pick"],
 }
-TYPES = {"vtx": "s16 *", "node": "CpuWaypoint *", "route": "RouteBuf *"}
+TYPES = {"vtx": "s16 *", "node": "CpuWaypoint *", "route": "CpuRoute *"}
 
 # region anchors (in the comment-stripped body)
 A_EDGE = "        for (i = 0; i < nedges; i++) {\n"
@@ -49,7 +49,7 @@ BS_ANCHOR = {
 DECL = {
     "vtx": "        s16 *vtx;\n",
     "node": "        CpuWaypoint *node;\n",
-    "route": "    RouteBuf *route;\n",
+    "route": "    CpuRoute *route;\n",
 }
 
 

@@ -11,7 +11,9 @@ new = ("    u8  unk_352[0x360 - 0x352];\n"
        "    u8  unk_361;                   /* vertex index in that polygon (func_80057ACC) */\n")
 out = Path(sys.argv[1] if len(sys.argv) > 1 else "tmp/sandbox/func_80057E84/src")
 out.mkdir(parents=True, exist_ok=True)
-if src.count(old) == 1:
+if "cpu_route" in src:  # the data-model landing (A) is on main: nothing to stage
+    pass
+elif src.count(old) == 1:
     src = src.replace(old, new)
 else:
     assert "u8  unk_360;" in src, "anchor missing"  # header edit already applied
