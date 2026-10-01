@@ -29,6 +29,20 @@ an engine test. It completes the adoption with no lists left." Evidence: `docs/g
 § Addendum 2026-09-30 (the Sony PSYLINK 2.37 layout probes, the BB2 bss survey and the cc1psx section-choice
 calibration). The conditions below are the author's narrowing, not the owner's words.
 
+**Amendment 2026-09-30 (owner rulings Q69-Q72, thirty-third batch).** The clauses marked (A4), (A5), (A6) and
+(A7) below rest on owner rulings Q69, Q70, Q71 and Q72 (verbatim in docs/grind/owner-rulings-2026-09-26.md,
+thirty-third batch). Q69: the owner chose **"Everywhere, Sony libs off (Recommended)"**: "On for every file,
+like a project-wide build flag. Sony's library code stays off, as it was compiled originally. Only one library
+file (libcd's system.c) is measured to actually need this. No per-file list: one rule plus the library
+exception." Q70: **"Accept all three (Recommended)"**: "Keep existing types where nothing contradicts them, use
+the proven struct for D_800153F0, and defer the func_8004153C tidy-up. Nothing new is claimed." Q71:
+**"Smallest aligned pieces (Recommended)"**: "Split each run into the fewest aligned filler variables (named
+D_<addr>), as the series does now and proven byte-identical. Later, code6cac_c_mid's repeating 4-byte pattern
+may be re-expressed as one array of small records, with its own proof." Q72: **"Include it (Recommended)"**:
+"Clarify that a data-only file lying between members of an approved group joins that group. Its bytes are
+already in the right place; this just puts them in the right source file." The conditions below are the
+author's narrowing, not the owner's words.
+
 ## The rule (Sony ASPSX 2.34, measured; evidence doc § 1)
 
 For a load or store in file F naming symbol S directly (`S` or `S+k`, no base register):
@@ -71,6 +85,34 @@ disagreements, and its negative controls show that with no definitions ASPSX giv
    Makefile verbatim. `sdata_syms.txt`, `sdata_funcs.txt` and `sdata_exclude.txt` are deleted. This `-G8` is
    the maspsx option (`tools/maspsx/maspsx.py`, `-G<n>`). cc1's per-file `-G8` (`GP_FILES`) is a different
    switch and stays governed by [[compiler-flags-canonical]], unchanged.
+   **(A4) Which files get maspsx `-G8` (owner ruling Q69).** maspsx's `-G8` is on for every C file except Sony
+   library code, which keeps `-G0` as it was originally compiled. A file in `src/` is Sony library code when its link-map `.text` input section is non-empty and lies entirely
+   within the census's contiguous library span (`memory/closer/psyq-library-census.md` line 14:
+   0x80078948..0x8008D070). Any other file, including one with no `.text`, gets `-G8`. The exception is
+   exactly the set of files that pass this test: however the build spells it, every file in it passes and every
+   file that passes is in it. The landing commit adds the implementing tool as `tools/psyq_library_files.py`
+   (the auditor's `tmp/q56/adopt/psyq_library_files.py`), with an `engine test` case covering it, and records
+   the classification of every `src/*.c` file with its `.text` range. Measured classification (survey, Q56
+   auditor): `system`, `gpu`, `display`, `comb`, `text1b_b_tu2` (prnt), `text1b_b_tu3` (sprintf), `ings2` and
+   `main` are library. Two files are not:
+   - `main_post` holds data labels plus the LIBAPI A71/A72 stubs `AddDrv`/`DelDrv` (census rows at
+     0x8008D050..0x8008D070); its `.text` ends at 0x8008D120, past the span.
+   - `text1b_b` holds game code (from 0x80077B30) followed by compiled Sony library modules from 0x80078948
+     to 0x80079244: the LIBAPI BIOS-call stubs and the LIBAPI COUNTER (SetRCnt...), PAD (PAD_init, InitPAD,
+     _Pad1...), PATCH, SENDPAD and CHCLRPAD modules, plus LIBC2 memcpy, rand/srand, strcpy, strlen and printf
+     (`build/bb2.map`:1804-1857; `memory/closer/psyq-library-census.md`:23-57). Its `.text` starts before
+     the span.
+
+   The SN Systems runtime needs no separate prong: `PCclose`, `__SN_ENTRY_POINT` and `__main` already lie
+   inside the span. The test is per file. A Sony module that shares a file with game code (`text1b_b`,
+   `main_post`) therefore gets `-G8`. `text1b_b` must be `-G8` because its game code reaches gp-defined
+   statics; its `-G8` object reproduces the oracle, so the Sony modules inside it are byte-unaffected in this
+   build. `tmp/q56/adopt/g8_test.sh` proves `-G8`/`-G0` neutrality only for files outside the gp-reach set
+   (`main_post` among them: identical object 301f4b3b at `-G0` and `-G8`); `system.c` is the one library file
+   measured to differ (evidence doc § Addendum A.7-A.8). Splitting
+   such files at their PsyQ module boundaries, as was done for prnt and sprintf, is recorded as follow-up
+   debt, not part of this adoption. The landing tool's GPREL16 check reads our own build objects, not the
+   shipped code, and its docstring must say so. The landing commit is byte-identical, as every commit is.
 3. **Definitions, file splits and merges** in the C, and initialized data moved from
    `asm/data/91C98.data.s` into the C file that owns it, per the two sections below.
 
@@ -104,7 +146,17 @@ are defined as one object per maximal unreferenced run, at its exact size, named
 address, and listed in the ledger. Bytes that the build's own alignment of the next object already produces
 are padding, not an object, and are not defined (shown by building without them: the next object's address
 is unchanged). An unreferenced run longer than 8 bytes cannot be one object there (the size condition of
-(A1)); it goes to `docs/grind/borderline.md`. E1's (A2) route allows exactly this.
+(A1)); it is split under (A6). E1's (A2) route allows exactly this.
+
+**(A6) Runs no single object can occupy (owner ruling Q71).** An unreferenced run that no single object can
+occupy at its address is split into the fewest aligned pieces. That is the case when the run is longer than 8
+bytes (the size condition of (A1): an object over 8 bytes cannot sit in the small-data block, evidence doc
+§ Addendum A.4), or when a build shows that an object of the run's size is placed at a different, aligned
+address. The split is deterministic: in address order, each piece is the largest size of 8 bytes or less that
+the build places exactly at its start address and that still fits in the rest of the run. Each piece is named `D_<addr>` after its start, defined at its exact size, and listed in the ledger,
+and the commit is byte-identical. A later re-expression of such pieces (for example code6cac_c_mid's repeating
+4-byte pattern as one array of small records) needs its own proof under the aggregate-merge entry of
+[[no-new-park-categories]].
 
 **Explicit-relocation asm.** The gp rule governs macro-form symbol accesses (the form cc1 emits and ASPSX
 expands). An access written with an explicit `%hi`/`%lo`/`%gp_rel` operator in canonical hand-written asm text
@@ -118,7 +170,7 @@ kind is fixed by (K1)-(K3). Its F goes to the file-boundary test below.
 
 **(A1) Which bss objects are K1 and which are K2 (owner ruling Q67).** Sony PSYLINK lays out each file's `.lcomm` statics as one
 per-file block, the blocks in link order, then every `.comm` tentative after all of them (evidence doc
-§ Addendum A.1). BB2's bss has that shape (§ Addendum A.2). The static region is the longest run from the bss start in which the files reaching each object gp, taken in address order, never step back in bb2.ld .bss link order (each of the four groups named in the Merge bullet counts as one file, at its link position; a group must be contiguous in bb2.ld .bss link order, files with no .bss line in bb2.ld being skipped, otherwise the case goes to borderline.md); it ends at the end of the last gp-reached object before the first object that steps back. The COMMON block runs from there to the end of the highest bss object that any file reaches gp. (Survey result only: on
+§ Addendum A.1). BB2's bss has that shape (§ Addendum A.2). The static region is the longest run from the bss start in which the files reaching each object gp, taken in address order, never step back in bb2.ld .bss link order (each of the four groups named in the Merge bullet counts as one file, at its link position; a group must be contiguous in bb2.ld .bss link order, files with no .bss line in bb2.ld, or whose .bss input section is empty (0 bytes in the link map), being skipped, otherwise the case goes to borderline.md); it ends at the end of the last gp-reached object before the first object that steps back. The COMMON block runs from there to the end of the highest bss object that any file reaches gp. (Survey result only: on
 the scratch reference build at base f777bdddd (evidence doc § Addendum A.2) the first object that steps back is 0x800A3688 (code6cac_c_mid), which gives a static region
 0x800A3308-0x800A3618 and a COMMON block from 0x800A3618; the addresses are recomputed by this test at
 adoption.)
@@ -175,6 +227,13 @@ aggregate-merge entry of [[no-new-park-categories]] as before. No definition goe
 keep `extern` declarations, except that a (K2) object's header `extern` is deleted. A symbol reached gp only from INCLUDE_ASM text needs no definition until that
 function becomes C (evidence doc § 4).
 
+**(A5) Three typing defaults (owner ruling Q70).** For exactly these three symbols the type is decided by the
+owner, not by evidence, and nothing new is claimed about them: (1) `D_80102C00`, whose address is its only use,
+keeps its existing `s32` type; (2) `D_800153F0`, 44 bytes read as 22 halfwords, is declared as a struct of 22
+halfwords copied in one assignment, with that form's byte-identity proof banked in its landing commit; (3)
+`func_8004153C`, which some callers call with no argument, keeps its current declaration, and its tidy-up is
+deferred. No other symbol may cite this clause. Each landing is byte-identical and gets its own layer-2.
+
 ## File boundaries come from evidence only
 
 These are tests, not an inventory: which files they split, merge or move is computed at adoption. The evidence
@@ -209,13 +268,23 @@ bss survey on the scratch reference build at base `f777bdddd`) and are recompute
   commit does not land. When (i) moves a boundary, its record in
   `docs/grind/rodata-align-2026-09-30.md` is updated in the same commit.
 - **Merge.** Adjacent files are built as one file only when a (K2) static or (K3) initialized object (A1) is
-  reached gp from each of them and they are contiguous in link order. Any merge other than the two Q65 groups
+  reached gp from each of them and they are contiguous in `bb2.ld` link order in every section (for each
+  section, a file with no line for it in `bb2.ld`, or whose input section for it is empty, 0 bytes in the link
+  map, is skipped; evidence doc § Addendum A.6b). Any merge other than the two Q65 groups
   (`code6cac_b2_pre` + `replay_camera_rob_back_loose2` + `code6cac_b2_post`; `code6cac_c2` + `config`) and the
-  two Q67 groups (`text1a_c2` + `text1a_b` + `sound` + `text1b`; `text1b_tu2` + `text1b_b`) goes to
-  `docs/grind/borderline.md`. Whether the tail of `text1a_c` (after the Q65 split before `func_80044800`) joins
-  the first Q67 group is decided by the merge test on the evidence doc's record; the survey (§ Addendum A.2)
-  records no object that tail shares, so a merge that includes it goes to `docs/grind/borderline.md` until
-  the evidence doc records one. The merge moves source text verbatim, in link order, and changes
+  two Q67 groups (`text1a_c2` + `text1a_b` + `sound` + `text1b`; `text1b_tu2` + `text1b_b`), each with the
+  data-only files (A7) admits, goes to `docs/grind/borderline.md`. The tail of `text1a_c` (after the Q65 split
+  before `func_80044800`) shares no gp object with the first Q67 group (evidence doc § Addendum A.6,
+  2026-09-30), so it stays its own file; a merge that includes it goes to `docs/grind/borderline.md`.
+  **(A7) Data-only files (owner ruling Q72).** A data-only file (one that defines no function and contributes
+  no `.text`, `.data`, `.sdata` or `.bss` section, only `.rodata`) joins an owner-approved merge group when, in
+  `bb2.ld`'s `.rodata` link order, the nearest file before it and the nearest file after it that are not
+  data-only files are both members of that group. A data-only file that the test places in no group stays its
+  own file. A file with no `.rodata` bytes is not data-only under this definition, and joins no group under
+  (A7). (Survey, § Addendum A.6-A.6b: `text1a_b_pre_rodata` sits between `text1a_b` and `text1b` and joins
+  the first Q67 group; `text1a_b_mid_rodata` is empty, with no `.rodata` input section in `build/bb2.map`, so
+  it is not data-only and stays its own file, and the second group's `.rodata` is contiguous through the
+  empty-section skip.) The merge moves source text verbatim, in link order, and changes
   nothing else. If the verbatim merged text does not compile because the parts declare the same symbol
   differently, the declarations are reconciled FIRST in a separate byte-identical commit. That commit gives
   each symbol its one truthful type, chosen by evidence from the target bytes (its accesses) and each

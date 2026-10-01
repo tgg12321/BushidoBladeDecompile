@@ -30677,3 +30677,57 @@ only, an initialized object of 8 bytes or less that our cc1 emits into .data goe
 measured placement (calibration only; the fork switched it off in feeaecf); global objects as calibrated, a static
 only with its own added calibration; global, names no symbol; its landing commit is byte-proven and adds an
 engine test. Nothing is pre-decided for any function.
+
+## 2026-09-30 — OWNER RULING — Q69: maspsx -G8 for every C file, Sony library code -G0 (per-file gp model A4)
+
+Thirty-third batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 33, Q69). Owner chose "Everywhere,
+Sony libs off (Recommended)": "On for every file, like a project-wide build flag. Sony's library code stays off, as
+it was compiled originally. Only one library file (libcd's system.c) is measured to actually need this. No per-file
+list: one rule plus the library exception." Rule text: .claude/rules/per-file-gp-model.md (A4). A file is Sony library code when its link-map .text input section is non-empty and lies entirely within the census's contiguous library span (memory/closer/psyq-library-census.md line 14: 0x80078948..0x8008D070).
+Any other file, including one with no .text, gets -G8. Measured (Q56 auditor): system, gpu, display, comb,
+text1b_b_tu2 (prnt), text1b_b_tu3 (sprintf), ings2 and main are library. main_post (data labels plus the LIBAPI
+A71/A72 stubs AddDrv/DelDrv; .text ends at 0x8008D120) is not, nor is text1b_b (game code from 0x80077B30 followed
+by compiled Sony library modules from 0x80078948 to 0x80079244: LIBAPI BIOS-call stubs, COUNTER, PAD, PATCH,
+SENDPAD, CHCLRPAD, and LIBC2 memcpy, rand/srand, strcpy, strlen, printf; build/bb2.map:1804-1857, census rows
+23-57). The test is per file, so a Sony module sharing a file with game code (text1b_b, main_post) gets -G8.
+text1b_b must be -G8 because its game code reaches gp-defined statics; its -G8 object reproduces the oracle, so the Sony modules inside it are byte-unaffected in this build. tmp/q56/adopt/g8_test.sh proves -G8/-G0 neutrality only for files outside the gp-reach set (main_post among them: identical object 301f4b3b at -G0 and -G8); system.c is the one library file measured to differ. (Evidence doc § Addendum A.7-A.8.) The SN runtime needs no separate prong (PCclose, __SN_ENTRY_POINT
+and __main lie inside the span).
+The landing commit adds the tool (tmp/q56/adopt/psyq_library_files.py, landing as tools/psyq_library_files.py)
+with an engine test and records every src/*.c file's classification; its GPREL16 check reads our own build
+objects, not the shipped code, and its docstring must say so. cc1's GP_FILES is unchanged. Follow-up debt (not
+part of this adoption): split text1b_b and main_post at their PsyQ module boundaries, as was done for prnt
+(text1b_b_tu2) and sprintf (text1b_b_tu3), so the Sony modules in them build at -G0. Nothing is pre-decided for
+any function.
+
+## 2026-09-30 — OWNER RULING — Q70: three typing defaults (per-file gp model A5)
+
+Thirty-third batch, Q70. Owner chose "Accept all three (Recommended)": "Keep existing types where nothing
+contradicts them, use the proven struct for D_800153F0, and defer the func_8004153C tidy-up. Nothing new is
+claimed." Rule text: per-file-gp-model.md (A5): owner-decided, not evidence-decided, for exactly D_80102C00 (keeps
+s32), D_800153F0 (a 22-halfword struct copied in one assignment, byte-identity proof banked) and func_8004153C
+(current declaration kept, tidy-up deferred). No other symbol may cite it.
+
+## 2026-09-30 — OWNER RULING — Q71: fewest aligned pieces for runs no single object can occupy (A6)
+
+Thirty-third batch, Q71. Owner chose "Smallest aligned pieces (Recommended)": "Split each run into the fewest aligned
+filler variables (named D_<addr>), as the series does now and proven byte-identical. Later, code6cac_c_mid's
+repeating 4-byte pattern may be re-expressed as one array of small records, with its own proof." Rule text:
+per-file-gp-model.md (A6): an unreferenced run that no single object can occupy at its address (a run longer than
+8 bytes, which the A.4 evidence keeps out of the small-data block, or one a build shows is misplaced by alignment)
+is split, in address order, into the largest pieces of 8 bytes or less the build places exactly at their start
+addresses, each named D_<addr>, listed in the ledger, byte-identical; a later array re-expression needs its own
+aggregate-merge proof. Q71 covered all 20 runs, including the 16-byte run at 0x800A3428. This supersedes the
+earlier "a run longer than 8 bytes goes to borderline.md" (amendment A2, 7679f31f4).
+
+## 2026-09-30 — OWNER RULING — Q72: a data-only file between members of an approved merge group joins it (A7)
+
+Thirty-third batch, Q72. Owner chose "Include it (Recommended)": "Clarify that a data-only file lying between
+members of an approved group joins that group. Its bytes are already in the right place; this just puts them in
+the right source file." Rule text: per-file-gp-model.md (A7): a file that defines no function and contributes
+only .rodata joins an owner-approved merge group when its nearest non-data-only neighbours in bb2.ld's .rodata
+link order are both members of that group (text1a_b_pre_rodata joins the first Q67 group; text1a_b_mid_rodata
+is empty, build/bb2.map:683-684, so it is not data-only and stays its own file). Merge
+contiguity is checked in every section, skipping a file with no bb2.ld line or an empty (0-byte) input section
+for that section: sound has no .rodata, so the first Q67 group's .rodata is one unbroken run 0x800152B4-0x800158B4
+(evidence doc § Addendum A.6b, build/bb2.map). Also recorded (evidence doc § Addendum A.6, from tmp/q56/adopt/m34_evidence.md
+§ 2): text1a_c's tail (text1a_c_tu2) shares no gp object with the first Q67 group, so it stays its own file.

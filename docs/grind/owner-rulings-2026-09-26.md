@@ -720,3 +720,32 @@ Question, verbatim: "Q68 (Q65 scope, part 2). The original PsyQ compiler put sma
 Owner chose: **"Allow, as a model (Recommended)"** — option text: "Treat it like -msoft-float and -mel: a global change that reproduces the original compiler's measured behaviour, proven byte-identical, with an engine test. It completes the adoption with no lists left."
 Other option offered: "Refuse" — "Don't change how compiler output is placed. Those ~50 initialized variables keep today's list-based handling, so a small list survives as known debt."
 The rule text is .claude/rules/per-file-gp-model.md (A3); pointer in .claude/rules/no-compiler-divergence.md.
+
+# Owner exchange 2026-09-30 (thirty-third batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: the Q65 adoption scratch series (docs/grind/gp-model-2026-09-30.md § Addendum A.5) raised four questions
+the per-file gp rule (amendments A1-A3) does not decide. The orchestrator put them to the owner with a
+recommendation each.
+
+## Q69 — which files the gp rule applies to
+Question, verbatim: "Q69: which files does the gp rule apply to? The rule only gives fast addressing to variables a file defines, so turning it on for a file with no small variables changes nothing. Two ways to switch it on:"
+Owner chose: **"Everywhere, Sony libs off (Recommended)"** — option text: "On for every file, like a project-wide build flag. Sony's library code stays off, as it was compiled originally. Only one library file (libcd's system.c) is measured to actually need this. No per-file list: one rule plus the library exception."
+Other option offered: "Per-file list of 22" — "On only for the 22 files whose original code shows fast addressing. Each entry is backed by evidence, but it's a list of files, separate from our existing compiler -G8 list (GP_FILES), and the two don't line up."
+The rule text is .claude/rules/per-file-gp-model.md (A4).
+
+## Q70 — three typing defaults
+Question, verbatim: "Q70: three small typing cases where the original code doesn't reveal the answer. (1) D_80102C00: only its address is ever used, so its size is unknown; keep the existing 's32' type. (2) D_800153F0: 44 bytes read as 22 halfwords; declare it as a 22-halfword struct copied in one go (proven byte-identical), instead of moving other data around. (3) func_8004153C: some callers pass no argument; keep today's loose declaration and tidy it later. Accept these defaults?"
+Owner chose: **"Accept all three (Recommended)"** — option text: "Keep existing types where nothing contradicts them, use the proven struct for D_800153F0, and defer the func_8004153C tidy-up. Nothing new is claimed."
+Other option offered: "Mark them unresolved" — "Leave all three in borderline.md. The big text1b merge (which needs item 2) waits."
+The rule text is .claude/rules/per-file-gp-model.md (A5).
+
+## Q71 — gap runs no single object can occupy
+Question, verbatim: "Q71: 20 runs of unused bytes in the original data sit where no single variable can, because of alignment rules. For example, 15 runs of 3 bytes at odd addresses in code6cac_c_mid, each right after a 1-byte variable every 4 bytes. The evidence rule wants one object per run, but that's impossible here. What should we do?"
+Owner chose: **"Smallest aligned pieces (Recommended)"** — option text: "Split each run into the fewest aligned filler variables (named D_<addr>), as the series does now and proven byte-identical. Later, code6cac_c_mid's repeating 4-byte pattern may be re-expressed as one array of small records, with its own proof."
+Other option offered: "Leave as borderline" — "Don't define them. The final switch commit can't land, so the three lists stay until these are resolved."
+The rule text is .claude/rules/per-file-gp-model.md (A6).
+
+## Q72 — a data-only file inside a merge group
+Question, verbatim: "Q72: the big text1b merge (Q67's four files) also has to absorb text1a_b_pre_rodata.c. That file only holds hand-copied read-only data that sits physically between two of the four files. It has no variables and no code. Q67 named only the four files. Include it?"
+Owner chose: **"Include it (Recommended)"** — option text: "Clarify that a data-only file lying between members of an approved group joins that group. Its bytes are already in the right place; this just puts them in the right source file."
+Other option offered: "Don't include" — "Then that merge can't land, and the related statics stay as they are today."
+The rule text is .claude/rules/per-file-gp-model.md (A7).
