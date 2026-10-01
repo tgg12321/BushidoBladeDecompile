@@ -6,7 +6,7 @@ truthful declarations for five tables, Rec44, and the practice-table reads in 36
 The g_sqrt_table_u8 part is also summarized in memory/grind/sqrt-table-decl-cleanup/evidence.md.
 
 ## What landed
-Landing commit: LANDING_COMMIT (subject "cheat-cleanup: Judge, g_sqrt_table_u8, D_8008EB40, ...").
+Landing commit: 8e007927d (subject "cheat-cleanup: Judge, g_sqrt_table_u8, D_8008EB40, ...").
 The full commit message is in git and in tmp/laneH/msg_final.txt at landing time.
 - **include/code6cac.h:**
   - `extern s16 Judge[0x1000];` (sine table)
@@ -71,7 +71,7 @@ Per-function layer2.jsonl rows:
 - r2 rev-tables 25/5;
 - r3 rev-tables-r3 32/7;
 - r4, r5, r6 and r7: message-only FAILs;
-- final: FINAL_ROUND.
+- final: r8 rev-tables-r8 PASS (36 functions, 2026-10-01).
 
 ## Not-certified debt (verbatim from the landing message)
 NOT certified by this commit: remaining debt, out of scope.

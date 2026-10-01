@@ -41,3 +41,8 @@ tmp/laneH/harness.py (see memory/grind/judge-decl-cleanup/evidence.md), measured
 Judge stage:
 - `@judge sqrt`: 33 TUs, 0 differing.
 - `@judge @sqrt probe_sqrt_noalias`: 0 differing.
+
+## Landed (2026-10-01)
+Landed in the combined cheat-cleanup 8e007927d (layer-2 rev-tables-r8 PASS on all 36 changed functions).
+The full record is in memory/grind/judge-decl-cleanup/README.md: what landed, the not-certified debt list
+(scan-2026-09-30/disposition.tsv), the D_8008EB40 pointer-alias evidence and the Q73 lapse.
