@@ -150,4 +150,5 @@ call-saved registers; reload1.c alter_reg gives each unallocated pseudo its own 
   pass 0 jumping in with `move $fp,$zero` in the delay slot 0x8002AED0); the 4/5 arm has `move $fp,$zero`
   0x8002AF18. Spellings without them (round2/rs_v*.c): no unk_8C-arm stores and no 4/5 alt store 13; no
   unk_8C-arm stores 12; no 4/5 alt store 1 (the missing `move $fp,$zero`); pass-0 / unk_8C merged with
-  `alt = pass != 0` 4. Owner question: docs/grind/borderline.md 2026-10-01 func_8002AB08.
+  `alt = pass != 0` 4. Owner question docs/grind/borderline.md 2026-10-01 func_8002AB08: GRANTED as Q85
+  (allow narrowly; each address cited in the variable's comment).
