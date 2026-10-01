@@ -59,7 +59,7 @@ in an `authorize` bucket and take the Judge-gated canonical-grant path ([[judge-
 - Every manual completion-class commit (`Match:` / `cheat-cleanup:` / `auth:` / rule additions)
   needs a fresh adversarial `cheat-reviewer` PASS first ([[review-discipline-before-commit]]).
   GTE leaf wrappers and jtbl-infra parks are handled without escalation
-  ([[gte-wrapper-misroute-park]]).
+  ([[inline-asm-policy]]).
 
 ## Standing warnings
 
@@ -71,6 +71,26 @@ in an `authorize` bucket and take the Judge-gated canonical-grant path ([[judge-
 - Metrics capture (`metrics/events.jsonl`) is silent and best-effort — see `metrics/README.md`.
 - Commit conventions: `docs/COMMIT_CONVENTIONS.md` (engine work uses `engine:`).
 
-## Documentation budget
+## Documentation budget (owner directive 2026-10-01)
 
-TODO: policy to be filled in by the orchestrator.
+Files hold **current state**; **history lives in git** (commit-message bodies, tag
+`pre-slim-2026-10-01`). The repo once held 16 MB of markdown, and reading one `src/*.c` file
+auto-loaded ~100K tokens of rules. Don't rebuild that.
+- **No new .md for an action.** Session reports, handoffs, audits, plans, campaign write-ups
+  and investigation notes go in the commit message body, or a few lines in an EXISTING doc.
+  A new file needs `[new-doc]` + a justification in the commit body.
+- **Rules (`.claude/rules/`) hold the operative rule only:** what to do, the test, at most one
+  short example. ≤ 8 KB each (the four policy authorities ≤ 24 KB). No Q&A transcripts, dated
+  amendment chains, or case histories — edit the rule in place; the diff is the history.
+  Rules matching `src/*.c` must total ≤ 60 KB; give new technique rules self-only `paths:` and an
+  index line in `codegen-technique-index`.
+- **Owner rulings:** record the operative change in the rule; put the verbatim exchange in the
+  commit body, not a new doc.
+- **Grind ledgers** ≤ 64 KB per file (`grindlib.py compact-ledger <func>`; the driver
+  auto-compacts) and closed on completion. **Logs** are rotated: `tools/rotate_grind_logs.py`
+  (decisions/journal), `tools/metrics/rotate.py` (events.jsonl).
+- **Harness memory** ≤ 10 notes of ≤ 6 KB: non-obvious, still-true facts the repo can't tell
+  you. Add a bullet to an existing note; never duplicate a rule or doc.
+- Cite with `path:line`; content that's gone resolves at a tag or commit (`<tag>:path:line`).
+Enforced by `tools/hooks/doc_budget_guard.py` (commit-msg) and `memory_write_guard.py`
+(PreToolUse). Override with `[skip-doc-budget]` and a reason.

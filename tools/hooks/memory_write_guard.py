@@ -30,7 +30,20 @@ MEMORY_DIRS = {
     "project": "project",
     "user": "user",
     "history": "history",
+    "feedback": "feedback",
 }
+
+# Harness auto-memory budget (owner directive 2026-10-01: the dir had grown to
+# 123 notes / 750 KB, mostly duplicates of repo rules and incident write-ups).
+# Memory holds only non-obvious facts the repo can't tell you; extend an existing
+# note rather than adding one.
+HARNESS_MARK = "/.claude/projects/"
+HARNESS_NOTE_MAX = 6144
+HARNESS_MAX_NOTES = 10
+RULE_MAX = 8 * 1024
+RULE_AUTHORITY_MAX = 24 * 1024
+RULE_AUTHORITIES = {"no-new-park-categories.md", "ordinary-c-judge-decidable.md",
+                    "codegen-technique-index.md", "inline-asm-policy.md"}
 
 MAX_DESC_LEN = 500  # description max chars. MEMORY.md stays compact regardless:
                     # regen_memory_index.py shows only the first sentence (<=130 chars).
@@ -131,8 +144,28 @@ def validate_content(file_path: str, content: str) -> list[str]:
                 errors.append(f"frontmatter `metadata.type:` is required; expected `{expected}` for files in memory/{memory_dir}/")
             elif type_ != expected:
                 errors.append(f"frontmatter `metadata.type: {type_}` does not match directory memory/{memory_dir}/ (expected `{expected}`)")
+        if HARNESS_MARK in path_str:
+            size = len(content.encode("utf-8"))
+            if size > HARNESS_NOTE_MAX:
+                errors.append(f"memory note is {size} B > {HARNESS_NOTE_MAX} B budget — keep only the "
+                              "non-obvious fact + Why/How; history belongs in commit messages")
+            if not p.exists():
+                root = Path(path_str[: path_str.index(f"/memory/{memory_dir}/") + len("/memory")])
+                notes = [n for n in root.rglob("*.md") if n.name != "MEMORY.md"]
+                if len(notes) >= HARNESS_MAX_NOTES:
+                    errors.append(f"memory already holds {len(notes)} notes (budget {HARNESS_MAX_NOTES}) — "
+                                  "add a bullet to an existing note (e.g. project/operator-gotchas.md) "
+                                  "or delete a stale one; never duplicate a repo rule/doc")
 
     if is_rules:
+        # Documentation budget (CLAUDE.md): block growth past the cap; shrinking edits
+        # of an over-cap file stay allowed. Mirrors tools/hooks/doc_budget_guard.py.
+        cap = RULE_AUTHORITY_MAX if name in RULE_AUTHORITIES else RULE_MAX
+        size = len(content.encode("utf-8"))
+        old = p.stat().st_size if p.exists() else 0
+        if size > cap and size > old:
+            errors.append(f"rule would be {size} B > {cap} B budget — keep only the operative rule; "
+                          "rulings/case history go in the commit message")
         # .claude/rules/ files need paths: frontmatter
         paths_field = fm.get("paths", "")
         if not paths_field:
