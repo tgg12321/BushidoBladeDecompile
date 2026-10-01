@@ -94,7 +94,6 @@ ALLOWED_DIRS = {
     "asm", "build", "disc", "docs", "engine", "include", "memory",
     "metrics", "oracle", "permuter", "src", "tmp", "tools", "logs",
     "Kengo",    # sister-engine (PS2) debug-symbol reference — see README
-    "archive",  # retired-workflow storage (archive_read_guard-gated)
     "movovl",   # MOVOVL.EXE (FMV overlay) decomp sub-project — own Makefile/splat/sha1
 }
 

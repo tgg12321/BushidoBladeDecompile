@@ -45,15 +45,6 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/main_reintegration_lock.py\""
           }
         ]
-      },
-      {
-        "matcher": "Read|Glob|Grep|Bash|PowerShell",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/archive_read_guard.py\""
-          }
-        ]
       }
     ],
     "PostToolUse": [
