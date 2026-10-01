@@ -4,17 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002CD58",
-      "file": "code6cac_b_tu2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit 2026-09-29 FAIL (c1efaa556): dist shared across guard + ratan2-arg sites with no admitting ruling; Q51 citation (SOTN 4B758.c:71) failed layer-2 rev-2cd58; angle reuse unnecessary (0); dist split = 3; owner 2026-09-25 GTE island approval stands; memory/grind/func_8002CD58/evidence.md",
-      "addr": "8002CD58"
-    },
-    {
       "func": "func_80049718",
       "file": "text1b",
       "distance": 0,
@@ -324,14 +313,14 @@
     }
   ],
   "counts": {
-    "total": 26,
-    "active": 14,
+    "total": 25,
+    "active": 13,
     "by_status": {
-      "active": 14,
+      "active": 13,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 14
+      "C": 13
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
