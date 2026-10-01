@@ -77,3 +77,8 @@ PracticeMenuRec at +0x360 (replacing unk_352's tail, unk_362/363, unk_364[8]), u
 (E84, ACC, 58580, func_800571C0) respelled byte-neutrally; (4) func_80057CC8's arg0 retyped NavPoly *,
 the four `(u8 *)poly` casts dropped. Landing order after Q65: (A) data-model cheat-cleanup, (B) Match.
 src/include reverted, build/ back to the oracle.
+## Round 2 landing prepared (2026-10-01, post-Q65)
+(A) data model landed bdd726a8f (rev-57E84-A PASS on 5 bodies). (B) body = candidate.c spliced over the
+INCLUDE_ASM line; full build SHA1 == oracle; sandbox 0 (447/447, 0 source-level / operand-only); layer2
+hash 18f12977fa847c9f; precheck clean; Ruling 11 package re-run on this body (r11/README.md, round 2);
+lane_checklist_1001c run (no casts, no int-held pointers, header types, Q51 tag form).
