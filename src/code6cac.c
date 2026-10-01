@@ -180,7 +180,7 @@ extern void func_80023F08(s32, s32);
  *     delay slot / `addiu sp,sp,8`) while `i` lives entirely in a register, so
  *     no frame store is ever emitted - exactly the target's zero-store frame.
  *     This is producer #1 ("Folded loop-guard compare") of
- *     .claude/rules/phantom-slot-frame-lever.md:37-41 (exhibit func_8003DBE4);
+ *     pre-slim-2026-10-01:.claude/rules/phantom-slot-frame-lever.md:37-41 (exhibit func_8003DBE4);
  *     the same spelling already ships in-tree at src/code6cac_c2.c:1325. The
  *     2026-08-20 Judge verified this lever independently and ruled it fine.
  *
@@ -219,7 +219,7 @@ extern void func_80023F08(s32, s32);
  * review PASSED the rotated guard and did NOT dispute the goto loop's honesty;
  * it FAILed on paperwork only - the goto-formed loop is a purely-for-matching
  * spelling choice among semantically-true C, and
- * `.claude/rules/do-while-zero-exception.md:46-51` (owner ruling 2026-07-06)
+ * `pre-slim-2026-10-01:.claude/rules/do-while-zero-exception.md:46-51` (owner ruling 2026-07-06)
  * requires such a spelling to carry an inline FAKE annotation at the construct
  * site. That annotation is now present on the `inner:` label below, and
  * self_vet.md carries the matching SANCTIONED-FAMILY-CLAIMS block. Nothing else
@@ -304,7 +304,7 @@ end:
  * ruling docs/grind/decisions.md 2026-09-15 "OWNER RULING -- the candidate-path
  * no-progress tripwire + a registry row for func_80018094", Ruling 3: func_80018094 is
  * enumerated BY NAME in the 2026-08-17 owner cluster ruling's census
- * (.claude/rules/cop2-addressing-preamble-cluster.md:60, SetRotMatrix/long-vector
+ * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:60, SetRotMatrix/long-vector
  * sub-family) and bytes are proven on main, so "the honest finished bucket stays
  * COMPLETED-INLINE-ASM-CANONICAL, not COMPLETED-C." This body is NOT pure C: it carries
  * three PsyQ GTE inline-asm islands (gte_SetRotMatrix, gte_SetTransMatrix, gte_Lzc),
@@ -546,7 +546,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
  * `sandbox func_80018300 --disable all` = 0 (307/307).
  *
  * GTE ISLANDS: census member of the 2026-08-17 owner cluster ruling
- * (.claude/rules/cop2-addressing-preamble-cluster.md:61; registry row eeda6664b,
+ * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:61; registry row eeda6664b,
  * owner-instructed 2026-09-24, this function only). Each island is one PsyQ GTE
  * macro as spelled in PsyQ inline_o.h, the "DMPSX version 3" macro header
  * (Xeeynamo/croc@f30ff1ee include/psyq/inline_o.h, sha256 27a4abd6...81a9d6;
@@ -1228,7 +1228,7 @@ void func_8001924C(s16 *arg0, s32 arg1) {
  * gte_rtv0()-class operation encoded directly. The islands use the same `move $12, %0`
  * macro-body spelling as func_800203B4 (owner grant 2026-09-01, widened cop2
  * materialize-then-copy anchor; func_80019310 is named in that grant record,
- * docs/grind/decisions.md:17921 and .claude/rules/cop2-addressing-preamble-cluster.md:154).
+ * docs/grind/decisions.md:17921 and pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:154).
  *
  * CLOBBER PROVENANCE (do not read the "memory" clobbers as SDK text): of the four macros
  * above, ONLY gte_stlvnl publishes "memory" in its own clobber list (inline_c.h:1116);

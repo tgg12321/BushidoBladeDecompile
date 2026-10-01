@@ -1,134 +1,60 @@
 ---
 name: rotation-not-foreclosure
-paths: ["engine/queue.py", "tools/grinder/**", ".claude/rules/*.md", "docs/grind/*.md"]
-description: "Owner rulings 2026-09-08/09-26: foreclosure is RETIRED; a truly stuck function is ROTATED to the back of the worklist and returns automatically. Rotate ONLY after multiple flat sessions with the instruments run (cc1psx check, no repeated rungs) — never after one session, one layer-2 FAIL, or when the item is close (register-seat-only diff)."
+paths: ["engine/queue.py", "tools/grinder/**", "docs/grind/*.md"]
+description: "Owner rulings 2026-09-08/09-26: foreclosure is RETIRED; a truly stuck function is ROTATED to the back of the worklist and returns automatically. Rotate ONLY after multiple flat sessions with the instruments run — never after one session, one layer-2 FAIL, or when close."
 metadata:
   type: rules
 ---
 
-# Owner ruling 2026-09-08 — rotation replaces foreclosure
+# Rotation replaces foreclosure (owner rulings 2026-09-08, 2026-09-26)
 
-Owner (Trenton), verbatim, 2026-09-08:
+Owner: *"everything has to be decompiled eventually. In my ideal world, we just work an item
+until it is complete. Though I don't want an agent just looping infinitely ... making no
+progress."* No function is ever parked, foreclosed, escalated, or "accepted incomplete".
+Every incomplete function is ACTIVE or ROTATED.
 
-> "I don't want the endgame lock to fire earlier, kind of the opposite. I
-> want little to no foreclosures at all. It's just delaying the inevitable,
-> everything has to be decompiled eventually. In my ideal world, we just work
-> an item until it is complete. Though I don't want an agent just looping
-> infinitely and eating tokens overnight, making no progress because it feels
-> it is deadlocked by policies somehow."
+## Ruling 1 — `rotated`, with automatic return
 
-Approved as a package ("Alright go ahead with all your recommendations on
-this") after the operator laid out the evidence below.
+- An exhausted function gets status `rotated` (reason pointer, `rotated_at`). It stays in the
+  worklist. Legacy `foreclosed` / `parked` / `escalated` items read as `rotated`.
+- `queue auto-return` (driver, every session boundary; also `queue next` on an empty active
+  list) returns items on: (a) **queue drain** (oldest rotated first); (b) **toolchain change**
+  (fingerprint of CC_FLAGS, cc1, maspsx sources, gate lists, prologue_fix moves ⇒ rotated
+  candidates re-measured; moved floors return); (c) **sibling movement** (a coupled ledger's
+  floor drop or completion after `rotated_at`).
+- Every return resets the exhaustion window (`exhaustion_base`), so it buys a full ladder.
+- Record: `docs/grind/decisions.md` (`ROTATED` in the heading) + journal line. `queue unpark`
+  is an early return.
 
-## The evidence the ruling rests on
+## Ruling 2 — cc1psx self-disproof before exhaustion
 
-1. **Foreclosure was never terminal in practice.** Of 36 functions the
-   journal ever foreclosed, 26 later reached COMPLETED-C (median 5 sessions
-   after the first foreclosure). What unblocked them was almost never another
-   session of the same ladder: it was a systemic change (the `-msoft-float`
-   adoption closed four in one evening), an owner unpark with new guidance,
-   or a sibling's solution. Foreclosure had been functioning as
-   *rotate-to-back-until-the-world-changes* under a terminal-sounding name,
-   with the return step manual.
-2. **"Deadlocked by policy" was a misdiagnosis at least once.**
-   func_8002D780 was foreclosed at floor 2/202 with a record saying only a
-   policy grant or a toolchain change could reopen it. The original PsyQ
-   compiler (cc1psx), which no session had run in 14 sessions, produces the
-   same residual order from the same source: the gap is a SPELLING not yet
-   found, and a pure-C preimage exists by construction (the original was C).
-   A policy exit gives a hard search an incentive to declare exhaustion.
-3. **Flat sessions repeated instruments.** At floor 2 the ladder re-ran
-   synthesis, forensics and rederive twice each with no new tool; the
-   diagnosis sharpened but the floor did not move. Half of one night's
-   tokens went to two functions that ended foreclosed.
+Before declaring exhaustion the driver runs `engine cc1psx-check <func>` on the current
+candidate. If cc1psx lands strictly closer than our cc1, it is a fidelity lead: record it,
+force a `rederive` session, do NOT rotate. Banked in `state.json` (`cc1psx_check`) by
+candidate hash.
 
-## Ruling 1 — `rotated` replaces `foreclosed`; the return is automatic
+## Ruling 3 — no rung repeats at a flat floor without a new instrument
 
-- The queue status `foreclosed` is retired. A function whose ladder is
-  exhausted is **ROTATED**: status `rotated`, reason pointer, `rotated_at`
-  stamp. It stays in the worklist; it is never "done", "accepted incomplete",
-  or parked. Legacy `foreclosed` / `parked` / `escalated` items are read as
-  `rotated`.
-- **Automatic return** (`queue auto-return`, run by the driver at every
-  session boundary; also `queue next` when the active list is empty):
-  (a) **queue drain** — when no active item remains, the oldest rotated item
-      returns to active;
-  (b) **toolchain change** — when the toolchain fingerprint (CC_FLAGS lines,
-      cc1 binary, maspsx sources, the maspsx gate lists, prologue_fix) moves,
-      every rotated candidate is re-measured; any whose honest floor moved
-      returns with the new floor recorded;
-  (c) **sibling movement** — a coupled ledger's floor drop or completion
-      stamped after `rotated_at` returns the item (the transplant session
-      is forced, as for active siblings).
-- Every return resets the exhaustion window (`exhaustion_base`), exactly as
-  an owner unpark does, so a return buys a full fresh ladder, never one
-  session.
-- The record is `docs/grind/decisions.md` (`ROTATED` in the heading) plus the
-  journal line; no owner question, no packet. An owner `queue unpark` still
-  works and is now just an early return.
+After two flat sessions, the driver assigns the first ladder rung not yet run since the floor
+went flat (including `enumerate`, `tools/spelling_enum.py`). A rung repeats only after every
+rung has run in the window. Exhaustion means "every instrument ran in the flat window".
 
-## Ruling 2 — the cc1psx self-disproof is mandatory before rotation
+## Ruling 4 — rotate only when truly stuck across multiple sessions
 
-Before the driver may declare exhaustion (assign `escalation` modality) it
-runs the original compiler on the current candidate out of tree
-(`engine cc1psx-check <func>`): if cc1psx lands strictly closer to the target
-than our cc1, the residual is a compiler-fidelity lead, not a spelling
-problem — the driver records it in the ledger, constrains the next session to
-the fidelity investigation (`rederive`), and does NOT rotate. The result is
-banked in `state.json` (`cc1psx_check`) keyed by the candidate's hash, so it
-reruns only when the candidate changes.
+Owner: *"I dont want things rotated if they are close, i only want items rotated if agents are
+truly stuck and we feel we are burning multiple sessions wasting time on it."*
 
-## Ruling 3 — no modality repeats at the same floor without a new instrument
+- Rotation needs several sessions with a flat honest floor AND the instruments run (Ruling 3).
+  This binds hand-run `queue rotate` (manual lane, any agent) as fully as the driver.
+- Never grounds on their own: one session without a match; one layer-2/Judge FAIL (it bans a
+  construct, not the function; the objection is the next frontier); an open borderline
+  question.
+- **Close means stay**: a small remaining diff, or an all-operand-only diff (0 source-level
+  hunks), stays at the top however the last session ended.
+- Instead of rotating: bank the ledger (floor, ruled-out forms, frontier) and leave it active.
+- A rotation commit states the session count and flat-floor history it rests on.
 
-Once the honest floor has been flat for two sessions, the driver assigns the
-first ladder rung that has NOT run since the floor went flat, in ladder
-order. A rung may repeat at the same floor only when every rung has run in
-the window. The `enumerate` rung (`tools/spelling_enum.py` — exhaustive
-name/inline × declaration-order × operand-order sweep of a marked region,
-scored with the engine's metric) joins the ladder so that a residual that
-lives in one block is searched systematically before any human-style
-re-derivation repeats. Exhaustion therefore means "every instrument ran in
-the flat window", not "eight sessions passed".
+The anti-cheat wall, the frozen construct list and the default-FAIL Judge are unchanged; no
+completion category is added.
 
-## Ruling 4 (owner, 2026-09-26) — rotate only when truly stuck across multiple sessions
-
-Owner (Trenton), verbatim, 2026-09-26: "I dont want things rotated if they
-are close, i only want items rotated if agents are truly stuck and we feel we
-are burning multiple sessions wasting time on it."
-
-Trigger: func_80043454 was rotated by hand after ONE manual session, at
-57/479 with every instruction correct (0 source-level hunks; register seats
-only), because layer-2 FAILed the one construct that closed it. The owner
-reversed it (3a91e7322).
-
-- **Rotation needs multi-session stuckness.** Only rotate an item that has
-  burned several sessions without real progress: its honest floor has been
-  flat across them AND the instruments have run (Ruling 3). The driver's
-  mechanical exhaustion path already meets this bar. It applies with full
-  force to a hand-run `queue rotate` (manual lane, fleet workers, any agent).
-- **Never grounds on their own:** one session ending without a match; one
-  layer-2 / Judge FAIL (a FAIL bans a construct, not the function; the next
-  session's frontier is the reviewer's objection); an open owner question in
-  borderline.md (the ordinary-C search continues while it waits).
-- **Close means stay.** An item whose remaining diff is small, or is all
-  operand-only (register seats / scheduling, 0 source-level hunks), stays at
-  the top however the last session ended.
-- **Instead of rotating:** bank the ledger (floor, what was ruled out, the
-  frontier) and end the session with the item still active at the top.
-- A rotation commit states the session count and flat-floor history it rests
-  on. Rotation reasons like "layer-2 FAIL" or "best floor N" alone are not
-  sufficient.
-
-## What this does NOT change
-
-The anti-cheat wall is untouched: no pins, no asm outside the canonical
-grant, no scheduling barriers, the frozen construct list, the default-FAIL
-Judge, the two endgame-lock AND-gates as the STANDARD (they now decide the
-record's wording, not whether the function leaves the worklist). No new
-completion category exists. "Difficult" is still not "impossible"
-([[difficult-not-impossible]]); this ruling makes the pipeline act on it.
-
-Supersedes the disposition shape in [[escalation-not-parked]] and the
-`foreclosed` mechanics in [[ordinary-c-judge-decidable]] § exhaustion; the
-2026-07-27 standing ruling and its 2026-09-02 amendment survive as the
-wording rule for the rotation record.
+Related: [[judge-sole-gate]] · [[no-compiler-divergence]] · [[asm-until-matched]]

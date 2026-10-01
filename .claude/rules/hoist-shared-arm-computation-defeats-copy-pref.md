@@ -1,239 +1,79 @@
 ---
 name: hoist-shared-arm-computation-defeats-copy-pref
-description: When two branches duplicate the same `sum = X + Y` expression and residual is register-choice ($v1 vs $a0) on the sum, hoist the shared computation OUT of both arms. GCC's jump2 duplicates it back into arms during codegen, but the single-pseudo RA now picks the right register. Includes the feasibility test — a hard-reg preference exists only from a reg<->hard-reg copy, and a pseudo live from entry cannot keep a preference for an argument register (prune_preferences strips it).
+description: "Both if/else arms compute the same `z = x + y` and the residual is its register ($a0 vs $v1): hoist it out of the arms (jump2 re-duplicates it). Includes the hard-reg preference feasibility test."
 paths: [".claude/rules/hoist-shared-arm-computation-defeats-copy-pref.md"]
+metadata:
+  type: reference
 ---
 
-# Hoist a shared computation out of two branches — single-pseudo RA breaks copy-preference propagation
-
-> **Historical framing note (2026-08-30):** this rule predates the removal of the
-> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
-> symptom text says a function "carries a rule", read it as "the honest build shows
-> this diff shape vs target". The technique itself is unchanged.
+# Hoist a shared computation out of two branches — break copy-preference propagation
 
 ## Symptom
 
-An `if/else` pair computes the SAME expression in each branch, feeding a common
-downstream compare:
-
 ```c
 if (cond) {
-    x = func(y);     /* y flows in as an arg -> gets $a0 copy-pref */
-    if (x == -1) { return -1; }
-    z = x + y;       /* branch-1: z inherits y's $a0-pref via expand_preferences */
+    x = func(y);             /* y gets an $a0 copy-pref */
+    if (x == -1) return -1;
+    z = x + y;
 } else {
     x = k;
-    z = x + y;       /* branch-2: same z assignment */
+    z = x + y;
 }
 if (z > BOUND) { ... }
 ```
 
-The cheat-free `sandbox --disable all` distance is small (3-5 words). The
-target computes the sum expression per-arm at physically separate addresses
-(e.g. `addu $v1, $a3, $s0` in the taken-arm's delay slot + a second copy at
-the else-arm's join label). Yours matches structurally BUT the residual is
-register-choice: target has sum in `$v1`, yours has it in `$a0`, with matching
-delay-slot fill and compare-source diffs.
+Small distance; target computes the sum per-arm (e.g. `addu $v1,$a3,$s0` in a delay slot + a copy at
+the join), yours matches structurally but the sum lands in `$a0` instead of `$v1`.
 
-## Mechanism (measured 2026-07-12, saTan2Main = _SsVabOpenHeadWithMode)
+## Mechanism
 
-Two separate `z = x + y` expressions in the source generate TWO sum pseudos
-in RTL, both carrying `REG_DEAD y` at their add insn. GCC 2.7.2's
-`global.c:expand_preferences` merges preferences: `y`'s `$a0`-pref (from an
-earlier arg-copy call, e.g. `func(y)` in the same branch) propagates to sum
-because they don't conflict (y dies at the add). `find_reg`'s preference pass
-then picks `$a0` for sum. MIPS has no `REG_ALLOC_ORDER` to break the tie.
+Each `z = x + y` is its own pseudo with `REG_DEAD y`; `global.c:expand_preferences` merges `y`'s
+`$a0` preference into the sum (no conflict, y dies at the add) and `find_reg` honours it (MIPS has
+no `REG_ALLOC_ORDER`). Measured dead: split-init (`sum = X; sum += Y;`, refolded), declaration
+position, a do-while(0) wrap (blocks the cross-jump merge).
 
-The forbidden variants (verified negative, session 8): split-init
-(`sum = X; sum += Y;`) combine-refolds; declaration-position (inert);
-`do {...} while (0)` wrap (worse, blocks cross-jump merge).
-
-## The fix — hoist the shared computation
+## The fix
 
 ```c
 if (cond) {
     x = func(y);
-    if (x == -1) { return -1; }
+    if (x == -1) return -1;
 } else {
     x = k;
 }
-z = x + y;                 /* SINGLE expression, single pseudo */
+z = x + y;                 /* one expression, one pseudo */
 if (z > BOUND) { ... }
 ```
 
-With one sum pseudo, RA determines its register from its ONE use (the compare).
-The a0-pref chain no longer propagates from a branch-local y-use into sum.
-GCC picks `$v1`.
+One pseudo, no inherited preference; jump2 duplicates the simple assignment back into the arms at
+codegen, so the bytes keep the per-arm layout. Plain DRY refactoring — no FAKE annotation needed
+(the inverse of [[duplicated-statement-into-arms]]). Owner-adjudicated as a sanctioned pure-C lever
+(saTan2Main = SsVabOpenHeadWithMode, 5 → 0).
 
-**Bytes at codegen time still match target's per-arm structure** because
-GCC's `jump2` pass duplicates the simple assignment back into both branches
-when doing so eliminates a jump. The residual `addu $v1, $a3, $s0` insns
-appear per-arm in the emitted code — exactly like target.
-
-## Why this is not a "cheats by any spelling" violation
-
-The C form is textbook DRY refactoring. Applied to unrelated code:
-
-```c
-/* Before: */
-if (cond) { x = f(y); z = x + y; }
-else      { x = k;    z = x + y; }
-
-/* After: */
-if (cond) x = f(y); else x = k;
-z = x + y;
-```
-
-Any programmer reading a code review would extract the duplicate. The
-construct has:
-
-1. **Real semantic purpose.** The sum IS the merged-flow value; it doesn't
-   diverge between arms, so one expression models the flow correctly.
-2. **Human-programmer plausibility.** SOTN's psxsdk source ships the
-   equivalent shape (though with the sum inlined into the compare rather
-   than a named temporary). Either is idiomatic.
-3. **A justification that doesn't reference GCC internals.** "Compute once,
-   compare once" is the argument; the RA side-effect is what makes it match
-   target bytes, but the C shape stands on its own merits.
-4. **No dead code, no unused declarations, no naming-announces-intent, no
-   permuter-only find.** Derived by direct reasoning from the banked
-   mechanism.
-
-Contrast with forbidden families:
-- **`duplicated-statement-into-arms`** (SANCTIONED 2026-07-01) is the
-  INVERSE — deliberately duplicating a real statement into arms with
-  `/* FAKE */` annotation and byte-neutrality verification. This rule is
-  the honest merge direction; no FAKE annotation needed.
-- **`dead-store-fake-exception`** — bearing a dead store to bias RA. This
-  rule involves no dead stores.
-- **`split-read-defeats-hoist`** — duplicating a real load into branch
-  arms to control materialization. Sanctioned; this rule is its structural
-  cousin in the other direction.
-
-## When this applies
-
-- The residual is REGISTER-CHOICE ($v1 vs $a0 or similar) on a value fed
-  by an argument-passing chain into a downstream compare.
-- The offending expression is DUPLICATED in the source's if/else arms.
-- The variable feeding the sum has a copy-preference from an earlier call
-  (`greg` dump shows `expand_preferences` propagating).
-- The hoist is byte-neutral for everything else in the function (only the
-  offending register-choice cluster changes).
-
-## When this does NOT apply
-
-- The two branches compute DIFFERENT expressions (not truly shared) — the
-  duplication reflects real semantic divergence.
-- The shared expression has SIDE EFFECTS that must fire per-arm (a call
-  with mutation, a volatile access). Hoisting changes semantics.
-- Combine already unified the branches (measure: sandbox score doesn't
-  drop when you hoist — that means the expressions weren't distinct at
-  RTL time). Look elsewhere for the lever.
-- The target's per-arm bytes come from a source that TRULY duplicated the
-  expression (verify via other tells — e.g. presence of dead per-arm work,
-  arm-specific naming, a semantic asymmetry). If Sony's source really did
-  duplicate, session 8's per-arm form is the right shape; this rule
-  doesn't apply.
-
-## Diagnosis recipe
-
-1. `greg` dump the current form (`cc1 -da base.i`), read
-   `;; Register dispositions:` — confirm sum's pseudo (call it N) is
-   allocated to `$a0` and `y`'s pseudo carries an `$a0` copy-pref.
-2. Check `;; N conflicts:` — if N doesn't conflict with `y`'s pseudo, the
-   `expand_preferences` merge fires; the lever will help.
-3. Apply the hoist; re-measure. Score should drop.
-4. If oracle-clean via `retire`: the jump2 duplicate-into-arms fires at
-   codegen — no source-level indication needed of the byte-level per-arm
-   structure.
-
-## Confirmed case — saTan2Main (main.c, 2026-07-12)
-
-Queue item `saTan2Main` = PsyQ 4.0 LIBSND vs_vh `SsVabOpenHeadWithMode`,
-dist 245 at session start. Session 8 (2026-07-10) applied the SOTN psxsdk
-transcription to floor 5 (245/247 insns) with the per-arm sum form.
-Residual: 4 real words at malloc-fail/overflow join (sum in `$a0` not
-`$v1`). Session 8 named hypothesis #1: "find an honest spelling that makes
-sum conflict var_s0".
-
-Session 13 (2026-07-12) applied the hoist: single `sum = spuAllocMem +
-var_s0;` after the if/else. Sandbox 5 → 0 first try. `retire` dropped the
-whole-body asmfix splice (asmfix:124). SHA1 == oracle. Layer-1
-cheat-reviewer FAILed on "novel unsanctioned shape" grounds; user
-adjudicated 2026-07-12: the C is textbook DRY; jump2's arm-duplication is
-standard codegen; the RA-mechanism is post-hoc explanation of why the
-natural form happens to match, not the primary justification. SANCTIONED
-as a project pure-C lever.
+Applies when the residual is register choice on a value fed by an argument chain, the expression is
+duplicated in both arms, and the hoist is byte-neutral elsewhere. Does NOT apply when the arms'
+expressions differ, have per-arm side effects, combine already unified them (score doesn't move), or
+other tells show the original truly duplicated.
 
 ## Feasibility test — can this pseudo hold that preference at all?
 
-Two structural facts decide it, and both are cheap to check before you write any
-C. Measured with the `BB2_FINDREG_DEBUG` / ALLOCDBG hooks in the instrumented cc1
-(`tools/gcc-2.7.2/cc1` — see [[instrumented-cc1-location]]).
+Check before writing C (the instrumented cc1 is `tools/gcc-2.7.2/cc1`, not `build/cc1`;
+`BB2_FINDREG_DEBUG`):
 
-**1. A hard-register preference is created ONLY by a reg<->hard-reg COPY insn.**
-`set_preference` (global.c:1671) is called from `mark_reg_store` on every SET
-during `global_conflicts`; when `SET_SRC` is an expression it walks
-`src = XEXP (src, 0)` — the FIRST operand only — and sets `copy = 0`. So a pseudo
-defined by an `sll` and consumed by an `addu` has **no** hard-reg preference and
-no C rewrite gives it one. If the register you want has no ABI anchor in the
-function (not an argument, not a return value, no copy to/from it), the
-preference you are trying to create **does not exist as an object**.
-`func_80056FE8`: `$a1` has no anchor in that 1-argument leaf; FINDREGDBG confirms
-neither contended pseudo carries any preference at all. KILLED.
+1. **A hard-reg preference is created ONLY by a reg<->hard-reg COPY insn** (`set_preference`,
+   global.c:1671, walks only the first operand of an expression source). A pseudo defined by `sll`
+   and used by `addu` has no preference; if the wanted register has no ABI anchor (argument, return
+   value, copy) in the function, the preference cannot be created.
+2. **A pseudo live from function entry conflicts with the argument registers and cannot KEEP a
+   preference for one** — `prune_preferences` (global.c:896-907) strips registers the allocno
+   conflicts with.
 
-**2. Any pseudo live from function entry conflicts with the argument registers,
-and therefore cannot KEEP a preference for one.** `prune_preferences`
-(global.c:882 ff.) first strips from every allocno's preference set the registers
-that allocno itself conflicts with (the strip at global.c:896-907). `func_8002EA24`: the `obj` pseudo
-*does* start with an `$a0` copy preference from the prologue
-`addu $t0,$a0,$zero`, and pruning deletes it because `obj`'s conflicts include
-`$a0`. Any long-lived pointer-to-argument is in this position. KILLED.
+Also: `find_reg` (global.c:952 ff.) pass 0 excludes `regs_someone_prefers[allocno]` (built from
+lower-priority conflicting allocnos' preferences — an indirect lever only via a REAL
+preference-carrying pseudo), and after the scan overrides `best_reg` with a free preferred register
+(global.c:1057-1080). `expand_preferences` (global.c:798-841) runs before pruning across any
+`single_set` with a `REG_DEAD` note. Allocno priority: `floor_log2(n_refs) * n_refs / live_length *
+10000 * size` — cutting refs can RAISE priority by shrinking live_length; compute before editing.
 
-Two more facts worth knowing when you read a `.greg` dump against this rule:
-
-- **`find_reg` is not plain first-fit.** `find_reg` (global.c:952 ff.) runs two passes;
-  pass 0 additionally excludes `regs_someone_prefers[allocno]`, and
-  `regs_used_so_far` is vacuous on MIPS because `global.c:353-355` pre-marks every
-  call-used register. With no `REG_ALLOC_ORDER` the scan is ascending regno. After
-  the pass loop, `find_reg` **overrides** `best_reg` with a free same-class
-  register from the allocno's own copy/full preferences (`global.c:1057-1080`) —
-  that override is the only route by which a preference beats the ascending scan.
-- **`prune_preferences` propagates preferences you did not ask for.**
-  `regs_someone_prefers[A]` is built from the full preferences of allocnos that
-  CONFLICT with A and are **lower priority** than A. So giving a low-priority
-  neighbour a preference for `$aN` **excludes** `$aN` from the higher-priority
-  allocno in pass 0. That is the indirect lever, and it needs a real
-  preference-carrying pseudo that both conflicts with the target allocno and
-  ranks below it — not a construct invented for the purpose.
-  `expand_preferences` (global.c:798-841) runs BEFORE pruning and spreads
-  preferences across **any** `single_set` insn carrying a `REG_DEAD` note for a
-  non-conflicting allocno — not only reg-reg copies — which is how an inherited
-  preference can survive on a pseudo where the original owner's conflict would
-  have killed it. That is the mechanism this rule's hoist lever rides.
-
-**The allocno priority formula**, for the coloring-order half of the question
-(`allocno_compare`): `floor_log2(n_refs) * n_refs / live_length * 10000 * size`.
-`func_80056FE8` measured a2local at 8571 (6 refs / length 14) against base at 3809
-(4 refs / length 21). Note the trap it also measured: cutting refs can RAISE
-priority by shrinking live_length more than it shrinks the numerator
-(refs 6->5 but length 14->11 took priority 8571 -> 9090). Compute before you edit.
-
-*(Citations verified/corrected against tools/gcc-2.7.2 source by the layer-2
-review, 2026-08-18.)*
-
-## Related
-
-- [[register-alloc-pure-c]] — the parent RA-lever playbook; this is a
-  new leaf under Lever B/C (structural respelling to alter conflict sets).
-- [[duplicated-statement-into-arms]] — INVERSE lever (sanctioned 2026-07-01);
-  deliberately duplicate a real statement across arms to influence RA
-  priority. This rule is the honest-merge direction.
-- [[split-read-defeats-hoist]] — sibling structural-cousin lever
-  (duplicate-into-arms for a load); both operate on the interaction
-  between source-level duplication and RTL-level RA.
-- [[compare-operand-order-register]] — sibling register-choice lever
-  (RTL operand-order steering); this rule is source-structure-level, that
-  one is expression-level.
-- [[local-alloc-death-count-class-wall]] — if one of your contended pseudos never
-  reaches global alloc at all, none of the preference machinery above applies.
+Related: [[register-alloc-pure-c]] · [[split-read-defeats-hoist]] · [[compare-operand-order-register]] ·
+[[local-alloc-death-count-class-wall]]

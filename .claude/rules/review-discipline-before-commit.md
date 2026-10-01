@@ -1,247 +1,73 @@
 ---
 name: review-discipline-before-commit
 paths: [".claude/rules/*.md", "CLAUDE.md", "AGENTS.md", "engine/queue.py", "engine/cheats.py"]
-description: "Standing policy 2026-06-02: every COMPLETED-C / cheat-cleanup / canonical-asm-authorization commit MUST pass an independent adversarial review by the cheat-reviewer agent BEFORE it lands. The orchestrator does not perform this review — it is a separately-defined agent (.claude/agents/cheat-reviewer.md) designed to be critical and adversarial by default. The mechanical gates (sandbox==0, SHA1==oracle, retire succeeded) are necessary but NOT sufficient."
+description: "Every COMPLETED-C / cheat-cleanup / canonical-asm-authorization commit (and every rule doc that sanctions a technique) MUST pass a fresh default-FAIL cheat-reviewer (layer-2), recorded with `layer2 record`, BEFORE it lands. Mechanical gates are necessary, not sufficient."
 metadata:
   type: rules
 ---
 
 # Independent adversarial review BEFORE commit
 
-> **Historical framing note (2026-08-30):** this rule predates the removal of the
-> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
-> symptom text says a function "carries a rule", read it as "the honest build shows
-> this diff shape vs target". The technique itself is unchanged.
+Owner (2026-06-02): *"Before an item can be considered complete it needs to pass an
+independent audit from a review agent designed to be critical and adversarial."* Detectors
+catch only the syntax they were built for; sandbox 0 + SHA1 == oracle cannot see a cheat that
+uses ordinary C. The semantic layer is a separate agent.
 
-> **Standing policy (user, 2026-06-02):** *"Before an item can be considered
-> complete it needs to pass an independent audit from a review agent
-> designed to be critical and adversarial. I don't even want the
-> orchestrator handling that necessarily — I want a separately defined
-> agent we can kickoff to evaluate any given work."*
+## The reviewer: `cheat-reviewer` (`.claude/agents/cheat-reviewer.md`)
 
-## What this addresses
+Default-FAIL, independent (not the worker, not the orchestrator), read-only, returns JSON
+`decision` (PASS | FAIL | NEEDS_USER), `function`, `summary`, `evidence`, `next_action`, and the
+`body_hash` it reviewed. It walks the 6-test checklist against [[no-new-park-categories]].
 
-The 2026-06-02 techniques audit found that 3 catalog rules were themselves
-cheats — including 2 rules the orchestrator added that same day, after
-the worker reported COMPLETED-C and the mechanical gates (sandbox==0,
-SHA1==oracle, retire succeeded, queue done accepted) all passed. The
-post-mortem traced the failure to:
+## When
 
-1. **Detectors only catch syntactic patterns they were designed to catch.**
-   They are a backstop, NOT the standard. Today's two forbidden techniques
-   used entirely normal C syntax (`goto end;`, return-value accumulator,
-   local variable declarations); they passed every detector mechanically.
-2. **The "vet before surfacing" discipline was scoped to permuter output**,
-   not to worker-derived techniques. Workers vetted auto-search proposals
-   but did not apply the same checklist to their own derivations.
-3. **The orchestrator celebrated and committed without a semantic review
-   step.** No agent in the workflow asked "does this C body have semantic
-   purpose, or is it codegen-driven?"
+MUST, before: `Match:` (COMPLETED-C), `cheat-cleanup:`, `auth:` (canonical-asm row) commits; any
+addition to `.claude/rules/` that sanctions a technique; any reclassification of a function's
+completion state. SHOULD, before: detector/engine changes that could weaken enforcement, and
+rule edits that relax a FORBIDDEN classification. MAY, any time (spot checks, retro-audits,
+vetting permuter output).
 
-The fix codified by this rule: a separately-defined adversarial reviewer
-that the orchestrator (or any agent) invokes for every COMPLETED-C class
-commit. The reviewer is independent: a different agent, with a different
-system prompt, with explicit instructions to default to FAIL.
+Brief it with: the function; the current and proposed bodies (or paths/refs); the technique
+and how it was derived; every rule/precedent cited; the mechanical detector output.
 
-## The reviewer is `cheat-reviewer` (`.claude/agents/cheat-reviewer.md`)
+## Layer 2 is what accepts (owner directive 2026-06-10)
 
-System prompt is in the agent definition. Key properties:
+An in-session review by the worker is layer 1 and provisional. Acceptance needs a FRESH
+`cheat-reviewer` spawned by the orchestrator with an adversarial brief (worker's verdict not
+credited; rule-doc changes in the commit audited too). Split verdicts are FAIL; wait for every
+reviewer you started.
 
-- **Adversarial by default.** Assumes the work has a cheat until proven
-  otherwise. Walks a 6-test checklist (semantic purpose, human-programmer
-  test, GCC-internals justification test, "necessary only because
-  permuter said so" test, family check, naming-announces-intent test).
-  When torn between PASS and FAIL, chooses FAIL.
-- **Independent.** A separate agent, not the worker, not the orchestrator.
-- **Read-only tools.** Read / Grep / Glob / Bash / PowerShell. Cannot
-  modify source; cannot commit. The reviewer surfaces a verdict, never
-  bypasses the gate.
-- **Structured output.** Returns JSON: `decision` (PASS | FAIL |
-  NEEDS_USER), `function`, `summary`, `evidence` array, `next_action`.
+**Recorded and enforced (owner ruling Q39, 2026-09-29).** Record every layer-2 verdict:
+`python3 -m engine.cli layer2 record <func> --reviewer <id> --scope <match|cheat-cleanup|auth>
+--verdict-file <json>` (or `--verdict <V> --expect-hash <h>`; `<h>` = the reviewer's
+`body_hash`, from `layer2 hash <func>`). A PASS is refused if `src/` no longer hashes to it.
+Appends to `memory/grind/<func>/layer2.jsonl`; commit it with the landing. `queue done` refuses
+unless the LATEST record is a PASS on the CURRENT definition: re-review after any change to
+the function's definition (comment/layout edits inside it keep the hash). Renaming a callee or
+global changes the key of every function referencing it and voids their PENDING PASSes;
+completed functions are judged by `engine/departures.py` against the body that left the queue.
+No override flag. The Grinder records the Judge's final call (`grinder-final-call` scope).
 
-## When to invoke
+## Verdicts
 
-The reviewer MUST be invoked before any of:
+- **PASS** — commit may proceed.
+- **FAIL** — do not commit; follow `next_action` (another lever, or log a genuine policy
+  question to the borderline ledger). Never bypass, never override.
+- **NEEDS_USER** — FAIL + a `needs-user-downgrade` entry in `docs/grind/borderline.md`
+  ([[judge-sole-gate]] rule 5). Re-invoke only with genuinely NEW evidence; never
+  re-adjudicate the recorded question against a precedent of your own choosing.
 
-- `Match:` commit (COMPLETED-C pure-C match)
-- `cheat-cleanup:` commit (rule retirement + COMPLETED-C)
-- `auth:` commit (canonical-asm authorization via `inline_asm_canonical.txt`)
-- Any commit that drops regfix / asmfix rules for a function
-- Any addition to `.claude/rules/` documenting a new "technique"
-- Any reclassification of a parked function
+## No self-sanctioning rule docs
 
-The reviewer SHOULD be invoked (judgment call) before:
+A `.claude/rules/` addition that sanctions a technique used by the same commit is reviewed
+independently (reviewer told the doc author is the technique's author). A rule for a genuinely
+new technique family NEVER ships in the match commit that uses it: describe the finding in the
+commit message or ledger and register the rule separately after its own layer-2 and a landed
+owner ruling.
 
-- `park:` commits with NEW evidence — to vet that the parking decision
-  isn't covering for an undocumented cheat
-- Engine changes to detector logic — to vet that the change doesn't
-  weaken policy enforcement
-- Rule edits that relax existing FORBIDDEN classifications
+The orchestrator never performs the review itself and never overrides it. Mechanical detectors
+(`engine/volatile_cheats.py`, `engine/inlineasm.py`) and the permuter vetting checklist still
+run first; the reviewer is the semantic layer on top. Periodic retro-audits of landed
+COMPLETED-C functions are encouraged.
 
-The reviewer MAY be invoked anytime — for spot-checks, for retroactive
-audits of historical commits, for vetting permuter output, for vetting a
-worker's draft before they commit. It is a tool, not a barrier; the
-adversarial design means "more reviews" is "more safety."
-
-## Invocation pattern
-
-The orchestrator (or any agent) invokes the reviewer via the `Agent` tool
-with `subagent_type: "cheat-reviewer"`. The brief should include:
-
-1. The function name being reviewed
-2. The current HEAD's body (for diff context) — or pointer to the path
-3. The PROPOSED new body — or pointer to the path / git ref
-4. The worker's technique description (what they derived + how)
-5. Any rule references the worker cited as justification
-6. The output of mechanical detectors (so reviewer can see what they
-   missed, not just what they caught)
-
-The reviewer reads the source, applies the 6-test checklist, optionally
-invokes mechanical detectors as backstop, and outputs the JSON verdict.
-
-## What each verdict means
-
-- **PASS** — the reviewer affirmatively walked the checklist and ruled
-  out cheat patterns for every construct in the proposed change. The
-  worker / orchestrator may commit.
-- **FAIL** — the reviewer identified one or more constructs that fail
-  the checklist (with evidence). The work MUST NOT be committed. The
-  worker reverts their src changes, addresses the specific evidence
-  (find a non-cheat lever, re-park with the audit-derived reason, or
-  surface a policy question to the user). The reviewer's `next_action`
-  field is the path forward.
-- **NEEDS_USER** — the reviewer found a borderline construct that
-  requires owner policy judgment. **Per owner ruling 2026-08-18
-  ([[judge-sole-gate]]) this is no longer a blocking wait: it maps to
-  FAIL + a `needs-user-downgrade` entry in `docs/grind/borderline.md`.**
-  The work is NOT committed; the reviewer's specific question is recorded
-  in the ledger for the owner's later batch review. The agent may re-invoke
-  the reviewer with genuinely NEW evidence, but may never re-adjudicate the
-  recorded question itself — the ledger entry is the disposition.
-
-## Two hard process rules (added 2026-06-10, from the fable retro-audit)
-
-1. **No self-resolved NEEDS_USER.** If the reviewer returns NEEDS_USER, the
-   question goes to the borderline ledger and the work is treated as FAIL
-   (owner ruling 2026-08-18, [[judge-sole-gate]]; previously the question
-   went to the user live). The worker/orchestrator may add evidence and
-   re-invoke the reviewer with NEW facts, but may not re-adjudicate the same
-   question against a counter-precedent of their own choosing and proceed.
-   (Violation case: `func_80052754`, commit `14d99d6e` -- worker revised
-   NEEDS_USER -> PASS against a factually-inapt precedent; the retro-audit
-   caught it; the user approved the authorization after the fact, but the
-   pathway was wrong.)
-
-2. **No self-sanctioning rule docs.** A `.claude/rules/` addition that
-   sanctions a technique used by the SAME commit must be reviewed
-   independently (cheat-reviewer on the rule doc itself, with the reviewer
-   told the doc author is the technique's author) -- and for genuinely new
-   technique families, held for user sign-off with SOTN evidence, NOT
-   committed alongside the match. (Violation case: `saFidLoad`, commit
-   `478e489d` -- the worker authored narrow-carrier-shared-sext-tail.md in
-   the match commit; the retro-audit FAILed the technique; the user ordered
-   the revert. The exact failure shape the 2026-06-02 techniques audit
-   documented. SECOND violation: `func_80037F40`, commit `89bfc882`,
-   2026-06-11 — ONE DAY after the rule landed, with the rule in the worker
-   prompt. The worker ran an extra in-session review on its own doc and
-   self-asserted compliance; layer-2 FAILed the commit on this ground; the
-   user sanctioned the technique after the fact but the pathway was wrong.
-   The rule means: a rules/ addition for a new technique family NEVER
-   ships in the match commit — describe the finding in the commit message
-   or WIP notes and let the orchestrator register the rule after layer-2 +
-   user sign-off.)
-
-## The orchestrator's role
-
-The orchestrator does NOT perform the review. Per user directive
-2026-06-02: *"I don't even want the orchestrator handling that necessarily.
-I want a separately defined agent we can kickoff to evaluate any given
-work."* The orchestrator's role is:
-
-1. Invoke the reviewer at the right moment (per the "when to invoke" list).
-2. Record the verdict (NEEDS_USER cases go to the borderline ledger per
-   [[judge-sole-gate]]; the owner reads the ledger later, not live).
-3. On FAIL: never bypass. Follow `next_action`, or log the evidence to the
-   borderline ledger if it raises a genuine policy question.
-4. On PASS: proceed with commit as normal.
-
-The orchestrator does not get to override the reviewer. The reviewer's
-adversarial framing exists precisely so that the orchestrator's
-incentive to celebrate progress is checked by an independent process.
-
-## What this does NOT replace
-
-- **Mechanical detectors** (`engine/volatile_cheats.py`,
-  `engine/inlineasm.py`, etc.) still run as the first-line backstop.
-  The reviewer is the SEMANTIC layer on top.
-- **The cheat-by-any-spelling vetting checklist for permuter finds**
-  (in [[no-new-park-categories]]) still applies. The reviewer handles
-  the worker-derived-technique case the original checklist scoped out.
-- **Worker discipline** (the persistence contract, the playbook, the
-  catalog rules) still applies. The reviewer is end-of-pipeline; the
-  worker doing good work upstream is still the primary mechanism.
-
-## The second layer is MANDATORY for acceptance (user directive 2026-06-10)
-
-The in-session reviewer (invoked by the worker before its commit) is the
-FIRST layer and is provisional. The SECOND layer — a fresh `cheat-reviewer`
-agent spawned by the orchestrator with an adversarial brief (default-FAIL,
-worker's claimed verdict explicitly not credited, rule-doc additions audited
-as part of the commit) — is what ACCEPTS the work. No completion-class
-commit is accepted on the first layer alone. Rationale: the 2026-06-10
-fable-5 retro-audit measured the first layer leaning PASS on borderline
-constructs (2/7 overturned), one self-resolved NEEDS_USER, and one
-self-sanctioning rule doc. Verdict handling: see the `decomp-manual`
-skill §4 (Landing it).
-
-**Recorded and enforced (owner ruling Q39, 2026-09-29).** Every layer-2
-verdict — PASS, FAIL or NEEDS_USER — is recorded with
-`python3 -m engine.cli layer2 record <func> --reviewer <id>
---scope <match|cheat-cleanup|auth> --verdict-file <the reviewer's JSON>` (or
-`--verdict <V> --expect-hash <h>`), where `<h>` is the `body_hash` the reviewer
-reported (`layer2 hash <func>` on the body it reviewed — required in its
-verdict). The record is refused without `<h>`; a PASS is also refused when
-`src/` no longer hashes to it (a FAIL/NEEDS_USER is not — it can only close
-the gate). It appends to `memory/grind/<func>/layer2.jsonl`; commit it with
-the landing. `queue done` (and regen's drop of a listed item) refuses unless
-the LATEST record is a PASS on the CURRENT body: re-review after any change to
-the definition (comment/layout edits inside it keep the hash). The key covers
-the function's definition ONLY — file-scope macros, typedefs, globals and
-helpers it depends on can change without moving it. Conversely, renaming a
-callee or global (a naming wave) changes the key of EVERY function whose
-definition references it and voids their PENDING PASSes (not yet landed) —
-fail-closed by design; expect re-review before those land. Completed
-functions are not affected: the integrity check's departures audit
-(engine/departures.py) judges a committed departure against the body that
-left the queue, so a later naming wave does not send them back to review.
-No override flag exists.
-For the grinder, the driver records the Judge's FINAL CALL verdict (PASS or
-FAIL, scope `grinder-final-call`) against the hash taken just before the Judge
-saw the body.
-
-## Periodic re-audits
-
-The reviewer can be invoked retroactively to audit COMPLETED-C functions
-already committed. This is recommended periodically (e.g. monthly) to
-catch:
-
-- New cheat families the catalog has been extended to cover (the
-  policy/lens evolves; some historical commits may be cheats under the
-  new lens)
-- Detector additions that surface previously-undetected patterns
-
-The thorough cheat audit (2026-06-02) and techniques audit (2026-06-02)
-are precedents — both ran the reviewer's spiritual checklist over
-existing commits and found 25 + 3 affected items respectively. A scheduled
-re-audit is the next step.
-
-## Related
-
-- `.claude/agents/cheat-reviewer.md` — the reviewer's full system prompt
-- [[no-new-park-categories]] — the policy the reviewer enforces
-- [[completion-standard]] — the COMPLETED-C bar
-- [[inline-asm-policy]] — the expanded cheat catalog
-- `memory/project/techniques-audit-2026-06-02.md` — the audit that
-  surfaced the need for this review step
-- `memory/project/thorough-cheat-audit-2026-06-02.md` — the audit that
-  surfaced the broader scope
+Related: [[no-new-park-categories]] · [[judge-sole-gate]] · [[inline-asm-policy]]

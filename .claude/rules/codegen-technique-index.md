@@ -1,137 +1,99 @@
 ---
 name: codegen-technique-index
 paths: ["src/*.c", "include/*.h"]
-description: "Symptom-keyed index of the on-demand codegen-technique rules. Technique rules no longer auto-load on src reads (token cost); when a symptom below matches your diff or rule cluster, Read .claude/rules/<slug>.md BEFORE grinding."
+description: "Symptom-keyed index of the on-demand codegen-technique rules. When a symptom matches your diff, Read .claude/rules/<slug>.md BEFORE grinding."
 metadata:
   type: reference
 ---
 
-# Codegen-technique index (rules are ON-DEMAND — Read the file when a symptom matches)
+# Codegen-technique index (rules are ON-DEMAND)
 
-The technique rules in `.claude/rules/` do NOT auto-load anymore (they cost
-~200k tokens/session; re-scoped 2026-06-11). This index is what auto-loads.
-**Contract:** when a symptom below matches the diff shape or
-construct you're facing, `Read .claude/rules/<slug>.md` FIRST — these rules
-encode measured, often multi-session findings; re-deriving them wastes a
-session. Never use a sanctioned-exception or forbidden-family construct
-without reading its rule. (Policy rules — no-new-park-categories,
-review-discipline-before-commit, inline-asm-policy, no-compiler-divergence,
-difficult-is-not-impossible, asm-until-matched, decomp-loop,
-verify-claims-against-main — auto-load on their own
-globs and are not listed here. Two 2026-08-18/19 escalation-policy rules
-have NO auto-load glob and must be read directly when relevant:
-**judge-sole-gate** and **integration-handoff-self-serve**.)
+When a symptom below matches, `Read .claude/rules/<slug>.md` first. Never use or judge a
+`(FAKE)` (sanctioned last-resort, annotation mandatory) or `(FORBIDDEN)` construct without
+reading its rule. Policy that auto-loads on `src/*.c`: no-new-park-categories (the frozen
+family list), inline-asm-policy, no-compiler-divergence, asm-until-matched. Read directly when
+relevant: ordinary-c-judge-decidable, review-discipline-before-commit, judge-sole-gate,
+rotation-not-foreclosure, decomp-loop.
 
-## Register-allocation / register-rename diffs
+## Register allocation / renames
+- **register-alloc-pure-c** — register diff vs target or a pin temptation → `-da` diagnosis; block-local split / narrow type / precompute
+- **compare-operand-order-register** — local/global reg pair swapped across a compare block → write `local > GLOBAL` not `GLOBAL < local`
+- **call-return-if-result-reuse-v0** — 2-constant select on a call result lands in $v1, branch flipped → init result from the call, test ==0
+- **restore-discarded-return-displaces-v0** — post-call global copy in $v0 vs target $v1 and a caller captures the return → restore `return ret;`
+- **drop-param-alias-local** — param→local alias keeps $a0 busy so a short local misses it → drop the alias, use the param directly
+- **exit-path-return-set-cse-join** — op after `move v0,sN` at a shared end reads $sN → set the return value in each exit path
+- **hoist-shared-arm-computation-defeats-copy-pref** — duplicated arm sum gets $a0 via copy-pref → hoist it after the if/else (jump2 re-duplicates it)
+- **param-reuse-base-copy-cse-canon** — target has a param→callee-save copy plus a base copy we fold → walk with the param itself, name the call arg early
+- **local-alloc-death-count-class-wall** — pure $v0<->$v1 swap, multi-load temp vs constant → death-count class wall; diagnose with .lreg, not a priority lever
+- **reload-spill-reg-reveals-asm-clobbers** — reload scratch reg differs next to an authorized asm island → widen that island's clobbers to $12-$15
+- **staged-value-reused-variable** (FAKE) — once-set pseudo's sched birthing boost misorders a load → stage the value through an existing dead local
+- **named-local-fake-exception** (FAKE) — constant-holder / dead scalar local biases RA → FAKE-annotated scalar local, last resort; no dummy subscripts (Q22)
+- **duplicated-statement-into-arms** (FAKE) — global-RA priority wall / need a ref-lift → duplicate a REAL statement into arms, byte-neutral via cross-jump
+- **dead-store-fake-exception** (FAKE) — last-resort RA/sched lever after exhaustion → annotated dead store/self-assign to a local/param
+- **pointer-alias-fake-exception** (FAKE) — redundant pointer handle to a global/param changes codegen → FAKE-annotated alias, last resort; pointer-RMW allowed
+- **register-asm-pins** (FORBIDDEN) — `register T x asm("$N")` → diagnostic only; strip it and find the C structure that picks the register
 
-- **register-alloc-pure-c** — tempted to add a `register asm("$N")` pin, or a reg-rename plateau; Step-0 anomaly diagnosis (`-da` greg dump) + Levers A/B/C; confirmed limits for cpu_side_move_dir_4 / marionation_Exec.
-- **register-asm-pins** — pins are DIAGNOSTIC-ONLY (never committable); why GCC sometimes ignores them.
-- **compare-operand-order-register** — `$X <-> $Y` rename cluster over paired comparisons → reverse the comparison's operand order.
-- **call-return-if-result-reuse-v0** — mirror-image rename cluster (branch sense + if/else const loads + subu on one reg) → init the if-else result var from the call return so it lands in `$v0`.
-- **restore-discarded-return-displaces-v0** — `$v0`→`$v1` subst on a post-call lw/sw pair → capture the return value the void impl discards.
-- **drop-param-alias-local** — param→local alias pins → drop the alias so the param register frees up for reuse.
-- **exit-path-return-set-cse-join** — shared finish label where a copy into `$v0` feeds an op → set the return value in EACH exit path, not at the join.
-- **hoist-shared-arm-computation-defeats-copy-pref** (saTan2Main, 2026-07-12) — two if/else branches duplicate the same `z = x + y` where a downstream compare's residual is register-choice ($v1 vs $a0); the duplicated sum pseudo inherits `y`'s arg-copy-pref via `expand_preferences` → hoist the shared expression OUT of both arms into a single post-if/else statement; single-pseudo RA picks the natural register; jump2 duplicates the assignment back into arms at codegen.
-- **divmod-coalesce-reuse-var** (AUTO-MEMORY `reference/` — harness memory, not a repo file) — GCC's quotient→move→var divmod allocation.
-- **staged-value-reused-variable** — SANCTIONED 2026-07-03: a load places too LATE (fresh single-set dest gets the scheduler's load-late LAUNCH priority) → stage the value through an EXISTING currently-dead local (`v0 = idx[1]; arg5 = tbl[v0];`), FAKE-annotated + lever-exhaustion; live code only (zero dead stores); SOTN ships the shape ("fake reuse of i", 6 files).
+## Cross-jump / merged tails (target has MORE instructions)
+- **cross-jump-call-merge** — target has more jalr sites than build → give each fn-ptr its real arg COUNT
+- **cross-jump-store-tail-merge** — target has more `sw GLOBAL` error tails → mix exit forms (distinct goto endK + one inline return)
+- **shared-end-label** — per-case `s2 = 0;` dropped by constant-fold → route cases through `goto end; end: return s2;`
 
-- **local-alloc-death-count-class-wall** — a clean `$v0`<->`$v1` swap between a variable reused across several loads and a short constant/mask beside it; every reorder / decl-order / split measured flat or worse. NOT a priority tie: `local-alloc.c:472` gates local allocation on `reg_n_deaths == 1`, so the multi-death temp is unconditionally punted to global and the single-death constant takes `$v0` by ascending first-free. Read the `.lreg` "dies in D places" line BEFORE applying any lever from register-alloc-pure-c. Three exits, all measured dead; the only flip is an invented staging local (a cheat).
-- **reload-spill-reg-reveals-asm-clobbers** — target emits a compiler-generated scratch at an unexpected regno near an asm island (`mfhi $t8` where you get `mfhi $13`) → `reload1.c` puts explicitly-mentioned hard regs into `bad_spill_regs` and picks spill regs ascending, so the skipped registers PROVE the original source named them in an asm block. Reconstruct as a clobber list on the already-authorized island. Carries the UNSPENT 2026-07-28 grant for `func_8002BEA0`.
-## Cross-jump / merged-tail diffs (target has MORE instructions than you)
+## Scheduling / delay slots
+- **sched-rank-class-tie-wall** — operand/decl reorders can't move a load (equal sched priority) → class-compare wall; refactor the expression tree
+- **switch-break-shared-return-sched-hoist** — per-case `return 0;` gives wrong RMW register / flipped branch → `break;` + one shared `return 0;`
+- **loop-exit-work-inside-loop-sched-fence** — next loop's inits hoisted into a post-loop store region → move exit work inside the loop
+- **loop-note-fixes-delay-slot-steal** — single-insn op at a forward branch target stolen into its delay slot in a goto loop → write a real while/do loop
+- **walking-pointer-serializes-parallel-loads** — parallel-array element loads hoisted into delay slots → post-increment walking pointers (needs intervening stores)
+- **hoist-call-arg-local-flips-jal-delay** — pre-call store not in jal delay slot + load-delay nops → hoist the global arg into a local declared first in a block
+- **store-before-jal** — target stores in the jal delay slot and reloads after → store in its own statement, reload from memory inside the call expression
+- **defer-store-past-later-compute-into-jal-delay** — one sw early, target has it in a later jal delay slot → compute into a local, store after the later compute
+- **fake-varargs-explicit-homing** — printf wrapper's arg homes are body-scheduled in target → named args + explicit stores through `&fmt`, not `...`
+- **legitimate-volatile-interrupt-touched** — volatile on a game-state global or local → only with cited IRQ writer + use-site shape; locals via SOTN cite or byte proof
+- **mmio-volatile-type-level** — access to 0x1F801000-0x1F802FFF registers → volatile at declaration, any shape, no FAKE needed
+- *loop-counter-fills-load-delay* (no file) — accumulator loop leaves a nop in the `lw` delay slot → `s32 val = *(p+off); off += 0x10; i++; sum += val;`
+- **do-while-zero-exception** (FAKE) — any codegen effect where natural geometry fails → `do { } while (0)` wrap, inline FAKE annotation
 
-- **cross-jump-call-merge** — target has more call sites than your build (jump2 merged identical CALL suffixes) → vary the arg counts.
-- **cross-jump-store-tail-merge** — target has more `sw GLOBAL` stores / `j END` tails → MIX the exit forms (distinct `goto endK` labels + one inline `return`); saEft00Add residual is a documented coupled fixpoint — read before re-attempting.
-- **shared-end-label** — the INVERSE: per-case `return s2;` constant-folds and DROPS `s2 = N;` stores → restructure to `goto end; ... end: return s2;`.
+## Optimizer folds (CSE / combine / LICM)
+- **defeat-licm-hoist-var-reuse** (FAKE) — target recomputes an invariant inline but GCC hoists it → reuse one var for a used variant + the invariant
+- **defeat-combine-symbol-fold** — displaced access emits lui+sym-K form, delay slot lost → pre-compute the displaced pointer into a local before a call
+- **hoist-flag-load-defeat-add-combine** — two `p += K` merged into one addiu → hoist the test's flag load into a local before the first add
+- **split-read-defeats-hoist** — register-rename plateau from offsets hoisted across a switch → duplicate the read into the flag arms, symbol direct
+- **store-const-reload-cse** — ours `li N` where target reloads the global after storing N → drop the saved-local reload, re-read the global
+- **explicit-rejection-set-defeats-range-fold** — u16 range exclusion: wrong reg / andi missing → write `a != K && a != K+1`
+- **cse-block-extension-controls-fold-span** — CSE merges/forwards across a join the target keeps separate → real if/else (jump+BARRIER arm)
+- **loop-rotation-two-shift** — target has the loop shift twice (peeled + bottom delay slot) → natural for-loop + opaque `one`
+- **or-tree-shape-shift** (FORBIDDEN) — enumerated operand orders in an assoc/comm expression → natural order only; one FAKE mechanism-derived order
+- **proven-spelling-class-reconstruction** — same-bytes respelling needed → only with mechanism proof the original used another spelling class
 
-## Scheduling / delay-slot diffs
+## Width / addressing / layout / declarations
+- **split-scalars-hide-aggregate** — adjacent D_ scalars written via pointer local / `p - N` / wrong pointer home → declare the real array/struct (aggregate merge, no-new-park-categories)
+- **header-type-correction-from-use-sites** — signedness casts compensating a mistyped global → fix the one header extern under the 4 prongs
+- **phantom-slot-frame-lever** — target frame reserves untouched 8/16/24 bytes → unallocated-pseudo producers + `.frame` gradient (diagnosis, not a sanction)
+- **dead-vars-local-array** (FAKE) — unused-array/(void)& frame coercion is FORBIDDEN → only the written-never-read / pad / Q35 sibling carve-outs
+- **halfword-index-srl-sra** — masked s16[] index emits srl, target sra → index a byte pointer with the byte offset directly
+- **u16-global-lhu-lbu-low-byte** — ours lhu vs target lbu on a u16 global → read `*(u8 *)&G` at the dispatch site
+- **narrow-stack-param-subword-offset** — narrow 5th+ stack param loaded at slot+2 vs target +0 → declare it s32, read `*(u16 *)&arg`
+- **narrow-byte-args-packed-call** — byte-masked args packed into one call slot → declare them `u8`; const-OR pack: named `hi`/`lo`, hi first
+- **switch-vs-ifchain-branch-sense** — one dispatch case has inverted bne/beq → rewrite the if-goto chain as a real switch
 
-- **fake-varargs-explicit-homing** — printf-wrapper arg-register homes are bulk pre-subu in your build but body-SCHEDULED in target (delay slot / copy-reg home) → the original was NOT `...`-variadic; write 4 named args + explicit stores through the va pointer (`ap[1]=a; ...`), pass `ap+1`.
-- **switch-break-shared-return-sched-hoist** — per-case `return 0;` lets sched1 hoist the v0-set into a load-delay slot → `break;` + shared trailing `return 0;`.
-- **loop-exit-work-inside-loop-sched-fence** — post-loop inits hoisted above a tail-store region → move the loop's exit work INSIDE the loop (`if (cond) continue; tail; break;`).
-- **loop-note-fixes-delay-slot-steal** — a memory-clobber barrier that only blocks a delay-slot steal → write the loop as a real `while`/`do`.
-- **loop-counter-fills-load-delay** (INLINE — no rule file; full recipe here) (func_80045294, 2026-06-14) — accumulator loop `sum += *(p+off); i++; off+=0x10;` leaves a maspsx nop in the `lw` load-delay slot (your build hoists `i++` to the loop top) → split the load into a named temp and reorder so the address-advance comes BETWEEN load and use, `i++` just before the consume: `s32 val = *(p+off); off+=0x10; i++; sum+=val;`. cc1's first-pass scheduler then drops `i++` into the lw delay slot (no nop). NB: `i++` BEFORE `sum+=` matters — the 4 forms keeping `i++` ahead of the load all failed; the `off+=` between load and use is the lever. Pure C, no dead store.
-- **walking-pointer-serializes-parallel-loads** — memory-clobber barriers OR per-load `register asm("$N")` pins between independent parallel-array element stores (`G0=r[0]+a[0]; ...` or `Gi=a0[i]`) → walk the array(s) with post-increment pointers (`*ap++`); the pointer dependence serializes the loads so GCC keeps the per-element lw/sw and stops stealing later loads into delay slots. An interleaved independent constant/global store whose `lui` GCC hoists too early: move that store PAST the loads so it schedules into the freed delay slots.
-- **hoist-call-arg-local-flips-jal-delay** — pre-call store belongs in the jal delay slot but the arg-setup load schedules late → hoist the late-loaded arg into a local declared FIRST in the block.
-- **store-before-jal** — arg saved into a callee-save between a table load and its call; ordering recipe.
-- **defer-store-past-later-compute-into-jal-delay** — a `reorder` rule over a pre-call store cluster + the lone diff is a `sw` (global/field) emitted EARLY where target defers it into a following jal's delay slot → hoist the stored value into a local and move the `GLOBAL = val;` store statement AFTER a later independent compute; GCC then schedules the sw into the delay slot.
-- **legitimate-volatile-interrupt-touched** (§Confirmed cases, sys_VSync 2026-06-12) — target block looks UNSCHEDULED (strictly source-ordered, genuine load-delay nop) around reads of an IRQ-touched counter while your build interleaves the chains → sched.c `read_dependence` needs BOTH reads volatile; check whether the second read's symbol qualifies for (or already has, under another C handle) a carve-out grant.
-- **split-scalars-hide-aggregate** (MoveImage, 2026-08-17) — an unrelated global READ sinks several slots below a run of stores, and the body carries a pointer local into adjacent splat scalars with an unmotivated `- N` (and a size literal equal to the whole run) → the scalars are ONE array/struct splat never merged; the varying pointer store takes a false alias edge against every fixed-address global read (canon_rtx can't resolve it). Declare the aggregate — NOT `const` (which deletes the same edge at sched.c:828 and is refused). **Second face (func_80033550, 2026-09-03):** a pointer homed in the WRONG argument register feeding N loads/stores at consecutive offsets to/from adjacent splat scalars (`D_x`, `D_x_plus_4`…) → the pointer dies at the last scalar access; a record copy (`table[i] = *p`) keeps it live across GCC's block-move and homes it where the target has it. When the brief's DATA MODEL section flags SPLIT-AGGREGATE / INDEXED-ACCESS / CENSUS-VS-DECL, the declaration merge is hypothesis #1 — before any RA/scheduler lever.
-- **goto-end-prologue-delay-slot** — ARCHIVED/FORBIDDEN tombstone.
-- **dead-branch-scheduling** — ARCHIVED/FORBIDDEN tombstone (manufactured dead-branch insns).
+## Asm / build infrastructure
+- **canonical-asm-authorization-recipe** — writing a whole-body `__asm__("glabel ...")` canonical form (authorized routes only)
+- **canonical-gate-distance-not-evidence** — a big distance is NOT evidence for ASM routing
+- **cop2-addressing-preamble-cluster** — `addu $t4,$aN,$zero` feeding cop2 ops in the 0x8001-0x8003 band → the owner cluster ruling's conditions
+- **packed-multiply-cluster** — display.c packed Q12 multiply → S8 redundant mask means canonical asm; else the u64 multiply recipe
+- **fork-divergence-inline-asm** — our cc1 SIGSEGVs on the C cc1psx compiled → region-only asm island after the 4-gate evidence
+- **maspsx-gate-lists** / **maspsx-noreorder-stripping** / **per-file-gp-model** / **rodata-object-alignment** — assembler gates, glabel `.set` duplication, gp model, rodata alignment
+- **compiler-flags-canonical** — "maybe it's the flags" → no; flags are frozen; GP_FILES only by the -G8 proof
+- **permuter-directives** — plateau or a rule offering 2+ spellings → PERM_* macros via permuter_campaign.py; vet every find
 
-- **sched-rank-class-tie-wall** — a load lands one slot off and the whole downstream allocation shifts; operand-order / association-order / decl-order sweeps all score identical. If the two contended insns are the two inputs of the SAME nearest successor, `priority()` gives them EQUAL height, so `rank_for_schedule` (sched.c:2399-2456) decides on dependence CLASS and the independent insn always wins. Read `priority = N` in the `.sched` dump: equal priority means the compare-operand-order lever class is structurally closed for that pair. Also: `schedule_block` is a BACKWARD scheduler — reason about the trace in that direction.
-## Optimizer-fold diffs (CSE / combine / LICM / strength-reduce)
-
-- **defeat-licm-hoist-var-reuse** — GCC hoists a loop-invariant the target recomputes inline → reuse a scratch variable.
-- **defeat-combine-symbol-fold** — displaced store/load folded into `%lo(sym+K)` addressing → pre-compute a displaced pointer.
-- **hoist-flag-load-defeat-add-combine** — two `pN += K` adds combine-merged into one → hoist a flag-word load between them.
-- **split-read-defeats-hoist** — shared read through a flag-selected base gets hoisted → duplicate the read into the branch arms (SOTN-sanctioned).
-- **store-const-reload-cse** — store-then-reload folded to `li` → re-read the GLOBAL instead of caching a local.
-- **explicit-rejection-set-defeats-range-fold** — subtract-then-unsigned-compare range exclusion vs target's explicit `!= K1 && != K2`.
-- **loop-rotation-two-shift** — two `sllv` from loop rotation; opaque-`one` arithmetic (SOTN-sanctioned) replaces the initial-mask asm.
-- **strength-reduce-defeat** — ARCHIVED/FORBIDDEN tombstone.
-- **or-tree-shape-shift** — FORBIDDEN: parenthesization-axis mutations in associative/commutative expressions.
-- **cse-block-extension-controls-fold-span** — the target rematerializes an address in each arm while your build forwards one copy (or the reverse). A join label does NOT end cse1's basic block: `cse_end_of_basic_block` (cse.c:8102-8184) follows any conditional branch whose target has `LABEL_NUSES == 1`. Exactly three escapes; the only free one is a real `if/else` whose arm ends in jump+BARRIER (closed a 7-insn shortfall on func_8003B9D0). The `&&` boundary and `thread_jumps` are measured net-negative; carrier copies are reverted by `canon_reg` before combine.
-
-## Canonical-asm cluster dispositions
-
-- **cop2-addressing-preamble-cluster** — you are on a function in the 0x8001-0x8003 band whose tail carries `addu $t4,$aN,$zero` feeding `mtc2`/`ctc2`/`lwc2`/`swc2`. The 2026-08-17 owner cluster ruling covers 28 such functions; the membership list (never enumerated in the ruling itself) is in this file, with the four mechanical inheritance conditions. NOTE: membership is not a shortcut — most members are hundreds of instructions from `sandbox --disable all == 0`, and the grant only settles the tail island.
-
-## Width / addressing / layout diffs
-
-- **phantom-slot-frame-lever** (2026-08-04) — target frame reserves 8/16/24 untouched bytes (or ours reserves too many): unallocated pseudos paid off by reload's alter_reg; three measured honest producers (folded real loop-guard compare, combine orphan-USE via a genuinely-consumed narrow HImode value, live named locals on multi-read fields) + the `.frame vars=` gradient instrument. Diagnosis recipe, NOT a sanction. Closed func_8003D9A0 / func_8003DBE4; frame-census locates candidates.
-
-- **bitfield-direction-divergence** — bitfield access compiles to the OPPOSITE half of the word (srl vs sra direction): our fork allocates bitfields HIGH-first; header-level field-order is the fix surface.
-- **header-type-correction-from-use-sites** (func_8001B138, 2026-07-13) — a global's declared signedness (u16 vs s16 etc.) may be corrected at its single canonical `extern` in a shared header when: (a) codebase-wide grep shows all use sites consistent with the new type AND at least one exhibits signed-specific semantics dead under the old type; (b) the OLD type required *functionally necessary* compensating casts (removing them changes runtime behavior) that PREDATE the residual-chasing session; (c) fix is one extern edit — never alias-rename / pointer-pun / macro-hidden coercion; (d) casts are eliminated at every use site, no residual site keeps the old-type behavior. Same GCC-fold-escape as a banned local-holder coercion is NOT disqualifying — the test is the four prongs, not the mechanism. Layer-2 verifies grep + cast-necessity table against the tree, not the author's summary.
-- **halfword-index-srl-sra** — `subst srl→sra` on a halfword array index → direct byte-offset cast.
-- **u16-global-lhu-lbu-low-byte** — `subst lhu→lbu` on a u16 global dispatch read → read the low byte explicitly.
-- **narrow-stack-param-subword-offset** — sub-word stack-param load at offset ±2 → read the low half explicitly (SOTN-sanctioned cast).
-- **narrow-byte-args-packed-call** — byte-packed-arg GPU/SPU call wrappers → declare the params `u8`.
-- **param-reuse-base-copy-cse-canon** — list-walker carrying copy pins → param-reuse walker + early-named call arg.
-- **switch-vs-ifchain-branch-sense** — branch-sense-swap rules on ONE case of a dispatch → write a real `switch`, not an if-goto chain.
-
-## Forbidden families & narrow sanctions (READ THE RULE before using or judging)
-
-- **dead-vars-local-array** — FORBIDDEN: frame coercion via unused arrays/scalars. **CARVE-OUT 2026-07-01:** a WRITTEN-never-read local array IS sanctioned (SOTN dra/62DEC.c sp70[4] ×2) when the target bytes contain the dead stores — last-resort, FAKE-annotated, dual-reviewed. Symptom: target has dead `sw` stores into a frame the clean C never allocates.
-- **inline-asm-injection** — FORBIDDEN: hardcoded-`$N` single-instruction `__asm__`; also `asm("Sym")` alias renames.
-- **inline-move-aliasing** — ARCHIVED/FORBIDDEN tombstone (placeholder-move recipe).
-- **param-local-alias-prologue-pair-flip** — ARCHIVED/FORBIDDEN tombstone.
-- **do-while-zero-exception** — the ONE sanctioned no-semantic-purpose wrapper; sanctioned for ANY codegen effect incl. register allocation (owner ruling 2026-07-06); FAKE-annotated; natural geometry first (exhaustion is not a hard gate for single-level wraps); nested wraps need a single-level-insufficient justification; READ BEFORE using `do {...} while (0);`.
-- **legitimate-volatile-interrupt-touched** — narrow `extern volatile` carve-out (IRQ-touched globals only); two-prong test; READ BEFORE adding any volatile. A `volatile` LOCAL holding a used value: admitted only on a verifiable SOTN precedent (author's reading: PSX-build file:line of matched code, same behaviour when read; Q50/Q55, Q53 prerequisites owed; Q55: such a citation overrides older volatile refusals) OR target-byte proof that every access is a stack round-trip only volatile produces, banked in the ledger (Q48); layer-2 either way (owner 2026-09-30). NB (func_80078B04, 2026-06-12): `*(volatile T *)(computed MMIO address)` is a DIFFERENT, legitimate category (hardware-register access; detector distinguishes it from `&D_xxx` casts) — a single-read of an MMIO-pointer table plateauing 1-2 regs off target allocation is the symptom that the original access was volatile.
-- **pointer-rmw-global-sanctioned** — narrow zero-displacement pointer-RMW spelling sanction.
-- **proven-spelling-class-reconstruction** — same-bytes respelling exception; ALL conditions must hold.
-- **chained-accumulation-fake-exception** — SANCTIONED 2026-08-11 (owner ruling cff7f1f5, rule doc registered 2026-09-04): target keeps an UNFOLDED arithmetic chain (`addiu -1; sll 8; addiu 0x80`) that every single-expression / fresh-variable spelling folded to `sll; addiu -128` ONLY under the retired no-rewrite compiler (tools/cc1-no-plus-to-ior.patch, retired in 9bc64b751; the narrow-patch adoption 9bc64b751 is itself SUPERSEDED by owner ruling Q17, 2026-09-26, a compiler patch is a cheat — no-compiler-divergence.md; under the unpatched compiler the natural spelling matches, per the 2026-09-26 census — see `main`, commit 89a3bc8aa) → stage the RELATED computation through ONE live local, each step reading the previous (`lim = x; lim = lim - 1; lim = lim << 8; lim = lim + 0x80;`); combine's 2->2 split gate (combine.c:1836 `reg_referenced_p` on I2DEST) refuses the merge. `/* FAKE */`-annotated with the mechanism named; every intermediate must be read; NOT the zero-bytes chain-extender (that clause requires the fold to emit nothing). READ BEFORE using.
-- **dead-store-fake-exception** — SANCTIONED 2026-07-01 (last-resort): dead store / self-assign to a LOCAL or PARAM, `/* FAKE */`-annotated, after documented lever-exhaustion; READ BEFORE writing one. Un-annotated = still forbidden; pins still forbidden. **Confirmed closure:** target keeps an unfolded 0/1 diamond (`bnez; li v0,1` delay; `move v0,zero`) that your build folds to `return X;` → dead `ret = 1;` INSIDE the else arm (two-set arm breaks jump.c's store-flag single-set precondition); detached placement does NOT work (func_80078EC0).
-- **named-local-fake-exception** — SANCTIONED 2026-07-01 (last-resort): constant-holder locals across calls + dead SCALAR local decls biasing RA, `/* FAKE */`-annotated; arrays/frame coercion still forbidden.
-- **pointer-alias-fake-exception** — SANCTIONED 2026-07-01 (last-resort): C-level local pointer alias / typed re-view of a global, `/* FAKE */`-annotated; `asm("Sym")` alias-RENAMES still forbidden.
-- **mmio-volatile-type-level** — RULING 2026-07-01: volatile on hardware-MMIO-range (0x1F801000-0x1F802FFF) declarations is legitimate TYPE-LEVEL semantics — all shapes incl. single-read probes; no shape test, no FAKE annotation; game-state globals keep the two-prong gate.
-- **duplicated-statement-into-arms** — SANCTIONED 2026-07-01: a REAL statement duplicated into 2+ arms (vs label-sharing), incl. when cross-jump re-merges it to identical bytes and the effect is a reg_n_refs priority lift; label placement steers merge direction. Prereqs: byte-neutrality verified + exhaustion + FAKE annotation. Duplicated CALLS too when cross-jump merges them to byte-identical output (Q47, owner 2026-09-30); a surviving extra call is not sanctioned. **The proven byte-free ref-lift for global-RA priority walls** (motion_SetMotion pins retired; dead stores measured INERT for this — flow deletes before counting).
-- **fork-divergence-inline-asm** (Ruling-2 2026-07-13, first case _spu_FiDMA) — SANCTIONED sibling "no-C-form" carve-out to [[jtbl-rodata-split-infrastructure]] + [[gte-wrapper-misroute-park]]: narrow authorized inline-asm ISLAND (not whole-function canonical) when our decompals GCC 2.7.2 cc1 SIGSEGVs on the exact C source cc1psx compiled to target bytes, AND every crash-avoiding rewrite deterministically emits a structurally-different loop (missing loop notes → missing delay-slot fill + reorg compensation). FOUR-GATE evidence bar (all mandatory, reviewer runs each): (1) reproducible crash file, (2) cc1psx counter-exhibit compiles it clean, (3) cc1psx output byte-matches target in region, (4) probe grid ≥5 alternatives all crash or emit structurally-different form. Disposition is region-scoped only (surrounding fn stays pure C); asm uses %N placeholders + register asm() pins, never hardcoded $N; retire drops rules to zero. Closes function to COMPLETED-INLINE-ASM-CANONICAL. NOT a wand for reg-alloc/scheduling divergence — crash is load-bearing.
-
-## Engine / pipeline gotchas (also fire on their own narrow paths)
-
-- **sandbox-zero-retire-fails** — sandbox 0 but `retire` rolls back: masked-0 hides a real register diff; keep editing.
-- **global-label-drift-sibling-cheat** — a pure-C retire that changes the `.L` label count can break a LATER sibling's hardcoded-label rule.
-- **canonical-asm-authorization-recipe** — writing whole-body `__asm__("glabel ...")` (user-authorized only).
-- **canonical-gate-distance-not-evidence** — a big distance is NOT evidence for ASM routing.
-- **jtbl-rodata-split-infrastructure** — historical rodata-split jump-table carve-out (cluster resolved 2026-06-09).
-- **maspsx-label-nop-gate** — RETIRED 2026-09-14 (gate is global; the per-function list is deleted). Read only as a retirement record if a `.L`-label load-delay nop looks wrong.
-- **maspsx-noreorder-stripping** — glabel-form asm MUST duplicate TAB-form `.set` directives with SPACE-form.
-- **compiler-flags-canonical** — do not flag-hunt; flags were settled project-wide 2026-05-20.
-- **permuter-directives** — bridge from a technique-index rule to PERM_* macros (decomp-permuter manual mutations); use when a rule lists 2+ alternative spellings, when you need to sweep candidate registers / orderings, or after you've measurably lowered the floor and want exhaustive cross-product validation. Closing forms are PROPOSALS and must clear the cheat-vetting checklist + layer-2 cheat-reviewer.
+## Retired / forbidden (no file; history at tag `pre-slim-2026-10-01`)
+Never revive: inline-move-aliasing (`move %0,%1` + pins), inline-asm-injection (hardcoded `$N`;
+now in inline-asm-policy), strength-reduce-defeat (`negu` asm), goto-end-prologue-delay-slot
+(`ret_val` + `goto end` accumulator), dead-branch-scheduling, param-local-alias reversed-pair
+renames, the gte-3x3 and scratchpad-gte pin/barrier recipes, chained-accumulation (superseded by
+Q17), bitfield-order flipping (moot since `-mel`), the jtbl rodata-split carve-out (resolved).
 
 ## Registering a NEW technique rule
-
-Per the loop's step 6: add the rule file with `paths:
-[".claude/rules/<slug>.md"]` (on-demand) AND add a one-line symptom entry to
-the section above that fits. Only enforcement-critical POLICY rules get a
-broad `src/*.c` glob — never technique recipes. New-technique-family rule
-docs additionally need layer-2 review + user sign-off per
-[[review-discipline-before-commit]].
-
-## TU-scoped / config-gate rules (auto-load only on their own files — listed here so other TUs can find them)
-
-- **gte-3x3** (`src/display.c`, `src/text1b.c`) — ARCHIVED/forbidden recipe pointer: routes the display.c GTE mvmva wrapper cluster to canonical-asm instead of the old pin/barrier recipe.
-- **packed-multiply-cluster** (`src/display.c`, `src/text1b.c`) — S8 redundant-mask signal (hand-coded vs C) + the u64 widening-multiply H-structure for the genuinely-C members.
-- **scratchpad-gte** (`src/text1b.c`, `src/display.c`) — ARCHIVED/forbidden recipe pointer: scratchpad+GTE cluster; restructure in C or canonical-asm, never the old pin/volatile-cast recipe.
-- **maspsx-gate-lists** (the `*_funcs.txt` gate files) — what each maspsx fidelity gate list does and when adding a function is legitimate.
+Add `.claude/rules/<slug>.md` with `paths: [".claude/rules/<slug>.md"]` and one line here. A new
+technique family needs its own layer-2 and a landed owner ruling, never inside the match commit
+([[review-discipline-before-commit]]).

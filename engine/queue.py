@@ -364,7 +364,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # The stripped build is missing this function — typically because
                 # a SIBLING function's index-anchored regfix-reorder rule crashed
                 # the pipeline after cheat-asm/volatile strip shifted maspsx
-                # indices (see [[jtbl-rodata-split-infrastructure]]). Do NOT
+                # indices (pre-slim-2026-10-01:.claude/rules/jtbl-rodata-split-infrastructure.md). Do NOT
                 # silently drop — if the function carries cheats (rules > 0 OR
                 # detected cheat-asm/volatile cheats), it is STILL outstanding
                 # and must stay in the queue, even though we can't measure

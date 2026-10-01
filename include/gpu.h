@@ -16,7 +16,7 @@
  * which forced a reversed (len-first) declaration as compensation
  * (probe-verified 2026-06-11). With -mel in CC_FLAGS the fork allocates
  * LOW-first exactly like cc1psx, so the ORIGINAL PsyQ field order is
- * restored below; see .claude/rules/bitfield-direction-divergence.md. */
+ * restored below; see pre-slim-2026-10-01:.claude/rules/bitfield-direction-divergence.md. */
 typedef struct {
     u32 addr : 24; /* LOW 24 bits: next-packet address */
     u32 len : 8;   /* HIGH 8 bits: packet word count */

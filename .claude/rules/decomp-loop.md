@@ -1,111 +1,71 @@
 ---
 name: decomp-loop
 paths: [".claude/rules/decomp-loop.md"]
-description: "The manual-path per-function decomp loop (queue → canonical → sandbox → edit → verify → done), WIP checkpoints (memory/wip/<func>/), the near-duplicate-lead shortcut, and the sandbox-vs-build/ reference gotcha. Condensed spine lives in CLAUDE.md; full detail here."
+description: "Manual-path per-function loop (dossier → queue → canonical → sandbox → edit → verify → done), WIP checkpoints, findings registration, the sandbox-vs-build/ reference gotcha, and the full-picture-first dossier mandate."
 metadata:
   type: rule
 ---
 
 # The per-function decomp loop (manual path)
 
-The condensed spine and load-bearing invariants live in CLAUDE.md (`## The per-function
-loop + WIP checkpoints`). This file is the full procedural detail — the engine measures,
-routes, and gates; the agent writes the C.
+The Grinder (default autonomous path) uses its own ledgers (`memory/grind/<func>/`) and
+seeds them from any WIP entry. This is the MANUAL path (`decomp-manual` skill, one agent on
+`main`). Engine commands: `& tools/wteng.ps1 main <cmd>`.
 
-The GRINDER is the DEFAULT autonomous workflow and uses its own richer ledgers
-(`memory/grind/<func>/`, append-only, driver-managed) rather than this loop; it converts
-any existing WIP entry into a seed ledger on first contact. The steps below are the MANUAL
-path (the `decomp-manual` skill, one focused agent on `main`).
+## Full picture first (owner directive 2026-08-24)
+
+Any session, investigation or review that touches a specific function STARTS with
+`dossier <func>`: aliases (rulings often live under old names), queue item + directive,
+verified src representation, rule/gate/config memberships, ledger digest, record-trail
+headings and a cross-surface consistency audit. `dossier --audit-all` is the standing drift
+detector: run it before a Grinder launch and after any bulk operation; a warning is work.
+
+Write discipline: anchor current-state claims ("HEAD carries X") to a commit or date;
+prefer pointers to commands over counts in prose; a rename updates the borderline alias
+table in the same change; a bulk tool updates EVERY coupled surface (queue, src, ledger,
+docs) in one commit.
 
 ## The loop
 
-0. **Take the top of the queue** — `queue next` (also surfaced by the SessionStart hook). Work THAT
-   function to completion before taking another; don't cherry-pick. (Override only if the user names
-   a specific function.) **If the top function has a WIP checkpoint** (banner in the SessionStart
-   hook + `wip` block in `queue next`'s output), READ `memory/wip/<func>/meta.json` + `notes.md`
-   FIRST — apply `candidate.c` to `src/<file>.c`, confirm the documented floor with `sandbox`,
-   and continue from there instead of starting from HEAD. The `rejected_forms` field lists
-   constructs the prior agent ruled out; don't re-derive them.
-   **If the SessionStart hook surfaces a NEAR-DUPLICATE LEAD** for this function — or you find one
-   yourself in `tmp/duplicates_leads.txt` — the RHS is an already-COMPLETED-C analog. Read its `src/`
-   body BEFORE writing anything; it's the most efficient starting template. Tool:
-   `tools/find_duplicates.py`. Regenerate after big completion batches.
-1. **`verify-oracle --rebuild`** once at session start. This makes `build/` the clean canonical
-   reference the sandbox scores against. (Skip if `build/` is already clean.)
-2. **`canonical <func>`** — route. ASM-region / ASM-STRUCTURAL ⇒ stop the pure-C effort
-   (authorized inline asm only; never grind it or inject `$N` asm). `C` ⇒ continue.
-3. **`sandbox <func> --disable all`** — the honest cheat-free pure-C distance (`0` = already
-   matchable in pure C; just write/keep that C).
-4. **Edit `src/<file>.c`** toward the target in pure C, then re-run step 3 — the score is your
-   gradient. `diagnose <func>` explains a stuck gap (matchable / control-flow / canonical / plateau).
-   Exploring >3 candidate forms? Sweep them in ONE call: `python3 tools/sweep_variants.py --func
-   <f> --file <stem> --variants tmp/<f>_variants/` (scores each form via the sandbox, restores src;
-   low scores are PROPOSALS — vet against the cheat catalog).
-   **Stuck on a recognised rule pattern** (e.g. `shared-end-label`, `register-asm-pins`,
-   `loop-rotation-two-shift`)? `python3 tools/permuter_annotate.py --func <f> --hint <rule-slug>`
-   writes a PERM_*-annotated candidate to `tmp/permuter_candidates/<f>.c` — feed it to permuter to
-   validate the maneuver instead of hand-iterating. `--list-hints` for the catalog. Rule:
-   `.claude/rules/permuter-directives.md`. **Closing forms from permuter are PROPOSALS — vet against
-   [[no-new-park-categories]] before committing; layer-2 cheat-reviewer still mandatory.**
-   **Still stuck after the local levers?** `python3 tools/decomp_me_scrape.py search --asm-file
-   asm/funcs/<func>.s` queries the downloaded decomp.me corpus (the BB2 toolchain class:
-   gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5) for scratches whose target asm overlaps yours. Coarse
-   pre-filter; manual inspect the top hits for an analogous C shape.
-5. **Score 0 ⇒ finish.** `verify-oracle --rebuild` confirms the byte+link match.
-   **Note (masked-0 caveat):** the sandbox distance is masked (register names normalised out), so a
-   `0` can hide a real register diff — `verify-oracle` (full SHA1) is the only proof. If the full
-   build mismatches, the gap is genuine reg-alloc work (or a source cheat-asm barrier —
-   [[sandbox-zero-retire-fails]]); keep editing.
-   Then `queue done <func>` records completion (it re-verifies zero cheat-asm + SHA1 == oracle), AND
-   delete `memory/wip/<func>/` if one existed (the checkpoint's purpose is served on close-out). If
-   the item is genuinely stuck on a decidable policy question,
-   `queue escalate <func> --reason "…"` with a decision packet so the queue advances.
-5b. **Score lowered but not 0 ⇒ checkpoint.** If you measurably lowered the floor below HEAD's but
-   couldn't close, do NOT modify `src/` (oracle stays green). Save the progress as a WIP entry under
-   `memory/wip/<func>/`: candidate.c + meta.json (append to `sessions[]`, update
-   `scores.candidate_floor`, record any rejected forms) + notes.md. **Invoke `cheat-reviewer` on the
-   candidate FIRST** — record the verdict in `meta.json.reviewer`. Commit under `wip: <func>`.
-   Next session resumes from your checkpoint instead of from HEAD. The next agent reads `meta.json`,
-   applies `candidate.c`, confirms the documented floor, iterates from there.
-6. **Register findings.** Before committing, ask: did this match reveal a *reusable* codegen
-   pattern or a non-obvious gotcha that the next agent would benefit from? If yes, record it where
-   future agents will actually see it:
-   - **reusable pattern** ⇒ add/update a doc in `.claude/rules/<slug>.md` with `paths:
-     [".claude/rules/<slug>.md"]` (ON-DEMAND — technique rules do NOT get a broad `src/*.c`
-     glob; that cost ~200k tokens/session pre-2026-06-11) **AND add a one-line symptom entry
-     to `.claude/rules/codegen-technique-index.md`** (the index is what auto-loads). The
-     metrics layer fingerprints the `slug`. Link related rules with `[[other-slug]]`. Only
-     enforcement-critical POLICY rules keep a broad glob.
-   - **function-specific fact** ⇒ a `memory/` entry (per the memory rules in CLAUDE.md).
-   - **routine / no-op match** ⇒ skip; don't manufacture a finding.
-7. **Commit** (`cheat-cleanup:` / `Match` / `engine:` prefix per docs/COMMIT_CONVENTIONS.md).
+0. **Take the queue top** (`queue next`); work it to completion, no cherry-picking (unless
+   the owner names a function). If it has a WIP checkpoint or ledger, resume from it:
+   apply `candidate.c`, confirm the documented floor with `sandbox`, don't re-derive
+   `rejected_forms`. A near-duplicate lead (`tmp/duplicates_leads.txt`,
+   `tools/find_duplicates.py`) is a COMPLETED-C analog: read its body first.
+1. **`verify-oracle --rebuild`** once at session start so `build/` is the clean reference.
+2. **`canonical <func>`**: ASM-region / ASM-STRUCTURAL ⇒ stop pure-C work (authorized
+   inline asm only, never `$N` injection). `C` ⇒ continue.
+3. **`sandbox <func> --disable all`** (add `--diff` to see WHERE): the honest distance.
+4. **Edit `src/<file>.c`** in pure C; re-run step 3 as your gradient. `diagnose <func>`
+   classifies a stuck gap. Multiple forms: `python3 tools/sweep_variants.py --func <f>
+   --file <stem> --variants tmp/<f>_variants/`. Rule-pattern maneuvers:
+   `python3 tools/permuter_annotate.py --func <f> --hint <slug>` ([[permuter-directives]]).
+   Corpus search: `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/<f>.s`.
+   Every auto-search closing form is a PROPOSAL: vet it against [[no-new-park-categories]].
+5. **Score 0 ⇒ finish.** The masked score can hide a register diff; `verify-oracle
+   --rebuild` (full SHA1) is the only proof. Then the layer-2 `cheat-reviewer`
+   ([[review-discipline-before-commit]]), `layer2 record`, `queue done <func>`, and delete
+   `memory/wip/<func>/` if present.
+5b. **Lowered but not 0 ⇒ checkpoint.** Do not leave `src/` modified (oracle stays green).
+   Save `memory/wip/<func>/` (candidate.c + meta.json + notes.md); run `cheat-reviewer` on
+   the candidate FIRST (FAIL ⇒ `rejected/<slug>.c`). Commit as `wip: <func>`.
+6. **Register findings** only if reusable: a technique ⇒ `.claude/rules/<slug>.md` with
+   `paths: [".claude/rules/<slug>.md"]` (on-demand) plus one line in
+   `codegen-technique-index.md`; a function fact ⇒ the ledger. A new technique-family rule
+   never ships in the match commit that uses it.
+7. **Commit** per docs/COMMIT_CONVENTIONS.md.
 
-**Reference gotcha:** the sandbox scores your edited, cheat-stripped `.o` against
-`build/src/<file>.o`, which must stay the *pristine* canonical build (= the target bytes). During
-the edit loop use only `sandbox` — it builds into `tmp/` and never touches `build/`. **Enforced
-2026-06-12:** `verify-oracle --rebuild` REFUSES (exit 3) while build-input files have uncommitted
-edits — that refusal means you're misusing it as an iteration tool; `--allow-dirty` overrides for
-legitimate cases (e.g. mid-revert restoration). The final SHA1 gate is always honest.
+**Reference gotcha:** the sandbox scores against `build/src/<file>.o`, which must stay the
+pristine canonical build. Iterate only with `sandbox` (builds in `tmp/`).
+`verify-oracle --rebuild` refuses (exit 3) while build inputs are dirty; `--allow-dirty`
+is for legitimate cases (e.g. mid-revert).
 
-## WIP checkpoints (`memory/wip/<func>/`) — manual path
+## WIP checkpoints (`memory/wip/<func>/`)
 
-The GRINDER uses its own richer ledgers (`memory/grind/<func>/`, append-only, driver-managed)
-and converts any existing WIP entry into a seed ledger on first contact. MANUAL multi-session
-work still checkpoints here: best candidate + measured floor + hypotheses + cheat-reviewer
-verdict in `memory/wip/<func>/` (candidate.c + meta.json + notes.md + rejected/) — tracked in
-git, OUTSIDE the build pipeline, surfaced by the SessionStart hook and `queue next`'s `wip`
-block. Full schema + usage: `memory/wip/README.md`. Load-bearing rules:
-- **Resume from the checkpoint, not HEAD** — apply candidate.c, confirm the documented floor
-  with `sandbox`, don't re-derive `rejected_forms`.
-- **Cheat discipline:** invoke `cheat-reviewer` on the candidate BEFORE saving; FAIL ⇒ save
-  under `rejected/<slug>.c` (named violated rule), not as candidate.c.
-- **Compaction contract (ENFORCED by `wip_compaction_guard.py`, 2026-06-12):** WIP files are
-  CURRENT-STATE docs — notes.md ≤120 lines (ONE TL;DR, rewritten in place), meta.json
-  sessions[] ≤3 (fold older into `prior_sessions_summary`, one line each). History lives in git.
-- On COMPLETED-C, **delete `memory/wip/<func>/`**; generalizable lessons → `.claude/rules/`.
+Schema: `memory/wip/README.md`. CURRENT-STATE docs, enforced by `wip_compaction_guard.py`:
+notes.md ≤120 lines (one TL;DR, rewritten in place), meta.json `sessions[]` ≤3 (older folded
+into `prior_sessions_summary`). History lives in git. Verify file/line claims against current
+`main` before recording them.
 
-## Related
-- [[completion-standard]] — the three function states this loop drives toward
-- [[review-discipline-before-commit]] — the mandatory layer-2 cheat-reviewer gate
-- [[no-new-park-categories]] — vet permuter/auto-search closing forms against this
-- [[metrics-system]] — the `slug` fingerprinting referenced in step 6
+Related: [[review-discipline-before-commit]] ·
+[[no-new-park-categories]] · [[rotation-not-foreclosure]]

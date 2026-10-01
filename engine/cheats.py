@@ -141,7 +141,7 @@ def is_lost_codegen(line: str) -> bool:
 # own .rodata without a global rodata reorder). The asmfix rules wire the
 # function's table reference to the external `jtbl_<addr>` symbol and delete the
 # duplicate table GCC emits. These are canonical infrastructure, NOT register/
-# codegen cheats — see .claude/rules/jtbl-rodata-split-infrastructure.md.
+# codegen cheats — see pre-slim-2026-10-01:.claude/rules/jtbl-rodata-split-infrastructure.md.
 _JTBL_RULE_TYPES = {"rename", "replace_first", "delete_between"}
 _RULETYPE_RE = re.compile(r"^\S+\s*:\s*(\w+)")
 

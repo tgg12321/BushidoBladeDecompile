@@ -1,82 +1,40 @@
 ---
 name: narrow-stack-param-subword-offset
 paths: [".claude/rules/narrow-stack-param-subword-offset.md"]
-description: "A single regfix `subst` correcting a sub-word stack-parameter load offset by ±2 (e.g. `lhu $18,1090($sp)`→`1088`). Cause: this GCC-2.7.2 fork right-justifies a narrow (u16/s16) 5th+ stack parameter (lhu reads slot+2); cc1psx used slot+0. Fix: declare the param as a 4-byte type (home at offset 0) and read its low half explicitly — `u16 lo = *(u16*)&arg;` — emitting lhu from slot+0 with no ABI change."
+description: "A narrow (u16/s16) 5th+ stack parameter loaded from slot+2 where target reads slot+0: declare it as a 4-byte type and read the low half explicitly (`u16 lo = *(u16 *)&arg;`)."
 metadata:
   type: reference
 ---
 
-# Narrow stack parameter loaded at the wrong sub-word offset — read the low half explicitly
-
-> **Historical framing note (2026-08-30):** this rule predates the removal of the
-> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
-> symptom text says a function "carries a rule", read it as "the honest build shows
-> this diff shape vs target". The technique itself is unchanged.
+# Narrow stack parameter loaded at the wrong sub-word offset
 
 ## Symptom
 
-A function carries a single regfix `subst` that corrects the **offset** of a
-sub-word stack-parameter load by ±2:
-
-```
-func_XXX: subst "lhu\t\$18,1090\(\$sp\)" "lhu\t$18,1088($sp)" @ 10
-```
-
-The function takes a narrow (`u16`/`s16`) parameter **beyond the 4 register args**
-(the 5th+ argument, passed on the stack). Target loads it from the **low** half of
-its 4-byte home slot (`lhu $s2, 0x440($sp)`); the cheat-free build loads from the
-**high** half (`lhu $s2, 0x442($sp)`) — off by 2.
+A function takes a narrow (`u16`/`s16`) parameter beyond the 4 register args. Target loads it from the low half
+of its 4-byte home slot (`lhu $s2, 0x440($sp)`); our build loads `slot+2` (`0x442`) — off by 2. (Measured
+2026-05, before the `-mel` adoption; confirm the offset in the honest build first.)
 
 ## Cause
 
-This GCC-2.7.2 fork **right-justifies** a narrow (HImode/QImode) parameter passed
-on the stack: it places the value in the high bytes of its word slot, so the
-`lhu` reads `slot+2` on little-endian. The original PsyQ `cc1psx` left-justified
-it (offset 0). `FUNCTION_ARG_PADDING` is not overridden in the fork's `mips.h`,
-so this is a deterministic placement quirk for the narrow-stack-param case — not
-something any register pin / scheduling lever can move while the parameter stays
-HImode. (Confirmed via the GCC source: a HImode stack parm is passed in memory at
-the padded offset; only an SImode parm stays at offset 0.)
+This cc1 places a HImode/QImode stack parameter at the padded (high) end of its word slot; only an SImode parm
+stays at offset 0. No pin or scheduling lever moves it while the parameter stays narrow. Declaring it `s32`
+alone fixes the offset but turns the load into `lw` and reshuffles registers (measured 1 → 4).
 
-## Why the obvious type change fails
-
-- Declaring the param `s32`/`int` fixes the **offset** (SImode home at `slot+0`)
-  but changes the **opcode** to `lw` (full-word load) and shuffles the
-  register allocation — because the value must survive a call, it is loaded once
-  into a callee-save reg up front, so `combine` can't narrow the `lw` back to
-  `lhu`. Net: same-or-worse distance, different diffs (measured: 1 → 4).
-
-## The fix — 4-byte param + explicit low-half read
-
-Declare the parameter as a **4-byte type** (so its stack home is at offset 0)
-and read its **low halfword explicitly** via a pointer cast:
+## Fix — 4-byte param + explicit low-half read
 
 ```c
 void f(u8 *a0, s16 a1, s16 a2, s16 a3, s32 arg4) {  /* was u16 arg4 */
-    u16 arg4_lo = *(u16 *)&arg4;   /* lhu from slot+0 (low half of the SImode home) */
+    u16 arg4_lo = *(u16 *)&arg4;                       /* lhu from slot+0 */
     ...
-    rect[1] = arg4_lo;             /* was rect[1] = arg4; */
+    rect[1] = arg4_lo;
 }
 ```
 
-Taking `&arg4` makes the parameter addressable, so GCC keeps it in its incoming
-SImode slot (no extra store) at offset 0; `*(u16 *)&arg4` is then a plain HImode
-load = `lhu $sN, 0x440($sp)` — the target opcode AND offset, into the target
-register. The caller passes a full promoted `int` either way (default arg
-promotion of the narrow value), so widening the declared type does **not** change
-any call site or the ABI.
-
-Use `s16`/`*(s16*)` if the target load is `lh` (signed); `u16`/`*(u16*)` for `lhu`.
-
-## Confirmed case — efc_buki_draw_zanzou (text1b.c, 2026-05-26)
-
-Queue top, verdict C, distance 1, one regfix `subst "lhu\t$18,1090($sp)"
-"lhu\t$18,1088($sp)" @ 10`. The 5th param `u16 arg4` loaded at `0x442`; target
-`0x440`. `s32 arg4` alone → distance 4 (`lw`@0x440 + s2/s3 reg swap). `s32 arg4`
-+ `u16 arg4_lo = *(u16 *)&arg4;` → `sandbox --disable all` 1→0; `retire` dropped
-the rule; SHA1 == oracle. 100% pure C.
+Taking `&arg4` keeps the parameter in its SImode home at offset 0, and `*(u16 *)&arg4` is a plain halfword
+load at the target offset. Callers pass a promoted int either way, so no ABI or call-site change. Use
+`s16`/`*(s16 *)` for `lh`. Sub-word param reads are a frozen-list SOTN-accepted entry
+([[no-new-park-categories]]). Example: efc_buki_draw_zanzou, 1 → 0.
 
 ## Related
-- [[halfword-index-srl-sra]] — another single-`subst` opcode/offset fork quirk
-  closed by a direct byte-offset cast (sibling lever: index the bytes you want)
-- [[register-alloc-pure-c]] — when an off-by-N is a register diff, not an offset
+
+[[halfword-index-srl-sra]] · [[register-alloc-pure-c]]

@@ -825,7 +825,7 @@ def _is_sanctioned_pad(fname: str | None, text: str, s: int, e: int,
 # Owner ruling 2026-08-21 (docs/grind/decisions.md, "OWNER RULING —
 # find_empty_if_dead_reads gains a strictly-keyed F6 allowlist"): the F6
 # empty-if redundant-condition family is ESTABLISHED
-# (.claude/rules/no-new-park-categories.md:370-380), but this detector predates
+# (pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:370-380), but this detector predates
 # the sanction and had no allowlist hook, so a sanctioned construct could never
 # reach `sandbox --disable all` == 0. Rows are keyed on function name AND exact
 # condition text, and the span must carry the `!FAKE` annotation — the same

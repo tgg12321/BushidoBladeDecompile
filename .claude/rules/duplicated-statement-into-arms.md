@@ -1,137 +1,61 @@
 ---
 name: duplicated-statement-into-arms
 paths: [".claude/rules/duplicated-statement-into-arms.md"]
-# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
-description: "NARROW SANCTIONED EXCEPTION (owner ruling 2026-07-01): duplicating a REAL statement into 2+ arms (instead of label-sharing) is legitimate — incl. when cross-jump re-merges the copies to identical bytes and the effect is a reg_n_refs priority lift. SOTN duplicates assignments across arms routinely (7-arm, 11-arm instances). Prerequisites: byte-neutrality verified, lever-exhaustion, FAKE annotation when match-motivated. Calls too, if byte-identical (Q47)."
+description: "SANCTIONED (owner 2026-07-01): duplicating a REAL statement into 2+ arms instead of label-sharing, incl. when cross-jump re-merges it byte-neutrally (reg_n_refs lift). Byte-neutral, exhaustion, FAKE annotation, review."
 metadata:
   type: rule
 ---
 
 # Duplicated statement into arms — the sanctioned spelling
 
-**Owner ruling 2026-07-01** (issued after a layer-2 cheat-reviewer FAIL
-was appealed with fresh direct evidence). Writing the SAME real
-statement in two or more control-flow arms — instead of sharing one
-copy via a label/goto — is a legitimate matching technique,
-**including** when:
+**Owner ruling 2026-07-01.** Writing the SAME real statement in two or more control-flow arms —
+instead of sharing one copy via a label/goto — is a legitimate matching technique, **including**
+when:
 
-- GCC's jump2 cross-jump re-merges the copies so the final bytes are
-  identical to the shared-label form, and
-- the duplication's surviving effect is the extra `reg_n_refs` count
-  flow.c records (allocno-priority lift for global RA), and
-- the label placement among the copies is chosen to steer the merge
-  DIRECTION (which copy survives inline vs becomes the jump).
+- GCC's jump2 cross-jump re-merges the copies so the final bytes are identical to the shared-label
+  form, and
+- the duplication's surviving effect is the extra `reg_n_refs` count flow.c records
+  (allocno-priority lift for global RA), and
+- the label placement among the copies is chosen to steer the merge DIRECTION.
 
-## Why (the evidence)
-
-- **Cross-arm duplication is routine SOTN committed style** (matched
-  PSX-era code, capped scan found 30+ instances immediately):
-  `DOPPLEGANGER.animSet = ANIMSET_OVL(1)` identical across **7 arms**
-  and `D_us_801D3D24 = THINK_STEP_0` across **11 arms**
-  (`src/boss/bo4/doppleganger.c`); identical multi-statement blocks
-  across arms (`src/boss/bo4/doors.c`, `unk_365FC.c`). Whether
-  cross-jump merges them is invisible to the author; both merged and
-  unmerged instances ship.
-- **Redundant duplicated stores, match-annotated, in SOTN master:**
-  `color_fake = color;` written twice with `color` unchanged between
-  (`src/dra/42398.c`); `j = menu->unk1D; // FAKE?` at three sites
-  (`src/dra/menu.c:1993,2009,2017`).
-- **MGS** (`source/weapon/socom.c:89-91`): "no reason to assign these
-  again but no match if we don't."
-- **Reconstruction logic:** the duplicated and label-shared spellings
-  compile to IDENTICAL bytes, so the binary cannot distinguish them —
-  but when only the duplicated spelling reproduces the target's
-  register allocation pin-free, that is evidence the ORIGINAL source
-  was the duplicated form.
+Evidence: routine SOTN style (`src/boss/bo4/doppleganger.c` — one assignment across 7 and 11 arms);
+match-annotated redundant duplicates (`src/dra/42398.c`, `src/dra/menu.c:1993,2009,2017`). The
+duplicated and shared spellings compile to identical bytes, so when only the duplicated one
+reproduces the target's allocation pin-free, that is evidence the original was duplicated.
 
 ## Prerequisites (cheat-reviewer FAILs if any is missing)
 
-1. **The statement is REAL on its path** (a genuine def/effect the
-   path needs — not a dead store; dead stores are governed by
-   [[dead-store-fake-exception]]).
-2. **Byte-neutrality verified**: the emitted function is byte-identical
-   vs the canonical reference (objdump diff and/or full SHA1) — the
-   duplication must NOT materialize extra instructions.
-3. **Lever-exhaustion documented** when used as a last-resort RA lever
-   (WIP ledger / commit body).
-4. **`/* FAKE: <reason> */` annotation** on the duplicated copy when
-   the duplication is match-motivated (SOTN's convention).
+1. **The statement is REAL on its path** (a genuine def/effect the path needs — dead stores are
+   governed by [[dead-store-fake-exception]]).
+2. **Byte-neutrality verified**: the emitted function is byte-identical vs the canonical reference
+   (objdump diff and/or full SHA1) — the duplication must NOT materialize extra instructions.
+3. **Lever-exhaustion documented** when used as a last-resort RA lever (ledger / commit body).
+4. **`/* FAKE: <reason> */` annotation** on the duplicated copy when the duplication is
+   match-motivated.
 5. **Layer-1 + layer-2 review** per [[review-discipline-before-commit]].
 
-## Confirmed closures
+## Scope clarifications
 
-- **motion_SetMotion** (code6cac_c_mid.c, 2026-07-01): load_sel2's
-  `sel2 = D_800A3350;` duplicated into case 0, label moved to case
-  13/17's copy → sel2 reg_n_refs 3→4 (pri 851 > result's 412) → RA
-  lands sel2→$s2 / result→$s3 (target) with BOTH pins retired;
-  cross-jump re-merges the tails (function byte-diff empty; full SHA1
-  == oracle). Label placement was load-bearing: the mirror labeling
-  emitted a 4-diff flipped layout. Also measured: dead stores are
-  INERT for global RA in 2.7.2 (flow deletes without counting) — real
-  duplication is the working spelling of the ref-lift.
+- **Control-transfer tails (owner ruling 2026-08-06):** covers duplicating a multi-statement tail
+  ending in a control transfer — including a loop tail with its conditional branch — when every
+  prerequisite holds (SOTN: e_shop.c:986-1009, vs_vh.c:69-128).
+- **Calls, byte-identical only (owner ruling 2026-09-30, Q47):** a statement containing a call may be
+  duplicated only when (1) the call is real on each path — the callee and arguments the target has
+  there (a never-executed or fabricated call stays REFUSED, absent a Q55 citation of matched SOTN
+  code; [[no-new-park-categories]] "Fabricated dead call site"), (2) cross-jump merges the copies so
+  the function is byte-identical (an extra `jal` the target lacks fails), (4) FAKE annotation when
+  match-motivated; (3) and (5) unchanged. Record: docs/grind/decisions.md 2026-09-30 OWNER RULING —
+  duplicated calls into arms, byte-identical only.
+- **Non-extension:** not dead stores, not any duplication that survives into the final bytes (a real
+  code change). Other spellings need their own evidence.
+- Measured: dead stores are INERT for a global-RA ref-lift (flow deletes them before counting) —
+  real duplication is the working spelling.
 
-## Non-extension
+## Example (motion_SetMotion)
 
-Does NOT sanction: dead stores (see [[dead-store-fake-exception]]),
-a duplicated CALL that survives into the final bytes, or any duplication
-that survives to the final bytes (fails prerequisite 2 — that's a real
-code change). A duplicated call whose copies cross-jump merges, leaving
-byte-identical output, IS covered (owner ruling 2026-09-30, Q47, below).
-Per [[no-new-park-categories]], other spellings need their own evidence.
+`sel2 = D_800A3350;` duplicated into case 0, label moved to case 13/17's copy → sel2 reg_n_refs 3→4
+→ RA seats sel2→`$s2` / result→`$s3` as the target; cross-jump re-merges the tails (byte-diff
+empty). Label placement was load-bearing: the mirror labeling flipped the layout.
 
-## Clarified scope — control-transfer tails (owner ruling 2026-08-06)
-
-The family DOES cover duplicating a multi-statement tail that ends in a
-control transfer — including a loop tail with its conditional branch —
-when every prerequisite holds (byte-neutral via cross-jump re-merge,
-exhaustion documented, FAKE-annotated, dual review). Evidence pass
-(docs/grind/sotn-evidence-2026-08-06.md): matched SOTN duplicates
-transfer-terminated tails into arms routinely — counter-bump + backward
-goto across 2 arms (e_shop.c:986-1009), 4-statement return-tails
-written out 3× (vs_vh.c:69-128), instances in base file doors.c
-(:222-224, :437-439, :678-680). SOTN's instances end in UNCONDITIONAL
-transfers; the owner ruled the conditional-branch tail a difference of
-DEGREE, not kind (func_80021280, first accepted instance — the
-mechanism record lives in that function's preamble comment).
-
-## Duplicated calls — byte-identical only (owner ruling 2026-09-30, Q47)
-
-The recommendation put to the owner (twenty-third batch), verbatim:
-"Allow when the bytes don't change, with a FAKE comment. [...] The rule
-bans duplicated calls because they normally add code. Here the compiler
-merges the copies, so the reason doesn't apply. Keep the FAKE comment
-when the duplication exists to get the match, as the rule already
-requires for statements." The owner adopted it, verbatim: "Go ahead with
-all your recommendations. Just know my highest priority is avoiding
-regressions, cheats or workarounds being introduced. And weeding out any
-remaining cheats that might be lurking in our project. SOTN is the gold
-standard when in doubt" (Record: docs/grind/owner-rulings-2026-09-26.md,
-twenty-third batch, commit d023686ea.)
-
-What follows is the author's narrowing, not the owner's words. A
-statement that contains a call may be duplicated into 2+ arms under this
-rule only when every prerequisite above holds, as for any statement:
-
-- **(1) The call is real on each path**: a call the path genuinely
-  makes, to the callee and with the arguments of the call the target
-  has there. A never-executed or fabricated call stays REFUSED
-  (absent a Q55 citation of matched SOTN code)
-  ([[no-new-park-categories]], "Fabricated dead call site").
-- **(2) Byte-neutral**: jump2's cross-jump merges the copies, so the
-  emitted function is byte-identical to the reference (objdump diff
-  and/or full SHA1). A duplicated call that survives into the final
-  bytes (an extra `jal` the target lacks) fails (2) and is NOT
-  sanctioned.
-- **(4) `/* FAKE: <reason> */`** on the duplicated copy when the
-  duplication is match-motivated.
-- (3) and (5) apply unchanged.
-
-Record: docs/grind/decisions.md 2026-09-30 OWNER RULING — duplicated
-calls into arms, byte-identical only.
-
-## Related
-
-- [[sotn-family-research-2026-07-01]] — the evidence framework.
-- [[split-read-defeats-hoist]] — the sibling READ-duplication family.
-- [[register-alloc-pure-c]] — the RA-priority context; this is the
-  proven byte-free ref-lift for global-alloc walls.
+Related: [[split-read-defeats-hoist]] (READ-duplication sibling) · [[register-alloc-pure-c]] ·
+`pre-slim-2026-10-01:memory/project/sotn-family-research-2026-07-01.md`

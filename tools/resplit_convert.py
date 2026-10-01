@@ -438,8 +438,8 @@ def ledger(func: str, body: str) -> Path:
             f" * !! WARNING — FORBIDDEN CONSTRUCTS BELOW: {', '.join(bits)}.\n"
             f" * These are NOT sanctioned and must NOT be carried back into src/.\n"
             f" * See .claude/rules/register-asm-pins.md (diagnostic-only, never\n"
-            f" * committable), inline-asm-injection.md (hardcoded-$N) and\n"
-            f" * inline-move-aliasing.md (archived tombstone). This file is outside\n"
+            f" * committable) and inline-asm-policy.md (hardcoded-$N injection,\n"
+            f" * placeholder-move aliasing). This file is outside\n"
             f" * every detector's scope, so nothing will flag them for you.\n"
             f" * Resume from the C SHAPE only — control flow, field offsets, the\n"
             f" * algorithm — and re-derive in PURE C.\n")

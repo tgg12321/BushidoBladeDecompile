@@ -2034,7 +2034,7 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                       * move v0,zero delay; addiu v0,1) instead of folding the
                       * pair to `slt` + `xori v0,v0,1`.  Family:
                       * dead-store-fake-exception (confirmed closure
-                      * func_80078EC0, .claude/rules/dead-store-fake-exception.md:107-128).
+                      * func_80078EC0, pre-slim-2026-10-01:.claude/rules/dead-store-fake-exception.md:107-128).
                       * Lever-exhaustion: memory/grind/func_8002D320/hypotheses.md
                       * sessions 1-2 (five pure-C tail shapes measured: plain
                       * early-return 3/118, result-carrier nest 4/119,
@@ -2061,7 +2061,7 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
  * (docs/grind/decisions.md:6419) narrowed the ban to that citation alone,
  * ordering re-derivation under dead-store-fake-exception. Both the in-source
  * /* FAKE *\/ annotation and memory/grind/func_8002D518/self_vet.md now cite
- * dead-store-fake-exception (.claude/rules/dead-store-fake-exception.md:24, the
+ * dead-store-fake-exception (pre-slim-2026-10-01:.claude/rules/dead-store-fake-exception.md:24, the
  * `x = x;` self-assignment sub-scope at :28) and make NO arms-family claim.
  *
  *  EDIT 1 - the `ud` copy (3 slots, the frontier head from s1 to s7).
@@ -2100,7 +2100,7 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
  *   - s3's named numerator `num1` assigned BEFORE `denom`;
  *   - the canonical GTE LZCS island in the func_800274BC-accepted form
  *     (single __asm__ volatile, "=m"(sp_tmp), "r"(ud), "$12" clobber);
- *     cluster .claude/rules/cop2-addressing-preamble-cluster.md:74;
+ *     cluster pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:74;
  *   - the outer `if (disc < 0) { result = 0; } else { ... }` join shape.
  */
 s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
@@ -2414,7 +2414,7 @@ s32 func_8002DAD0(u8 *obj) {
      * `ctc2 $13,$0` · `lw $15,8($12)` · `ctc2 $14,$2` · `ctc2 $15,$4`).
      * Loads the OP diagonal (RT11/RT22/RT33) into cop2 control regs
      * $0/$2/$4 from vecA. Table: memory/grind/func_8002DAD0/psyq_inline_o_provenance.md
-     * Cluster membership: .claude/rules/cop2-addressing-preamble-cluster.md:76 */
+     * Cluster membership: pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:76 */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -3612,7 +3612,7 @@ s32 func_8002FDB0(s32 *arg0) {
  * inline_asm_canonical.txt:367), func_8002E838 (:373) and func_80031890 (:374) authorized
  * spellings. Each island is the verbatim body of the named Sony PsyQ GTE macro (PsyQ 4.5
  * inline_c.h) -- cluster condition 3 as clarified by owner Ruling A 2026-09-02
- * (.claude/rules/cop2-addressing-preamble-cluster.md:163). Confirmed carrier under the
+ * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:163). Confirmed carrier under the
  * 2026-09-01 widened cop2 materialize-then-copy owner GRANT (docs/grind/decisions.md:17921;
  * registry row tools/grinder/owner_cluster_grants.txt:29): the three $t4 copy sources here are
  * $v0/$v0/$v0 (.s L60, L72, L84). Honest bucket: COMPLETED-INLINE-ASM-CANONICAL (allowlist
@@ -3713,7 +3713,7 @@ void func_8002FF20(u8 *arg0, s16 arg1) {
  * operand expression differs (arg0 + 0x2C vs vec). Each island is the verbatim body of the
  * named Sony PsyQ GTE macro (PsyQ Run-time Library Release 4.5 inline_c.h): cluster
  * condition 3 as CLARIFIED by owner Ruling A 2026-09-02
- * (.claude/rules/cop2-addressing-preamble-cluster.md:163) -- "GPR instructions that are the
+ * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:163) -- "GPR instructions that are the
  * macro's own published text -- e.g. `gte_ldlv0`'s `lhu/lhu/sll/or` VX0/VY0 pack (PsyQ 4.5
  * `inline_c.h:101-110`) -- are part of the template and ADMITTED."  Enumerated carrier under
  * the owner cluster grant (registry row tools/grinder/owner_cluster_grants.txt:23).

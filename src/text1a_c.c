@@ -1760,7 +1760,7 @@ void func_80045294(s32 a0, s32 a1) {
     s32 s5;
 
     /* !FAKE: `i++; i--;` cancellation pair (F6 family, semantically-null
-       statement pair, .claude/rules/no-new-park-categories.md:402).
+       statement pair, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:402).
        what: keeps the loop counter `i` out of the parameter's cse quantity
        while the `a0 << 4` offset below is processed, so the shift reads the
        parameter register ($s2) as the target does; without the pair cse

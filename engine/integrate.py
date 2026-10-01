@@ -74,7 +74,7 @@ def retire_function(func: str) -> dict:
             # Common cause: the dropped rules were compensating for a cheat-asm
             # barrier still in the C source (retire strips rules, not source
             # __asm__). If so, the honest fix is to strip the asm too. See
-            # .claude/rules/sandbox-zero-retire-fails.md.
+            # pre-slim-2026-10-01:.claude/rules/sandbox-zero-retire-fails.md.
             n = inlineasm.file_func_cheat_asm_count(stem, func)
             if n > 0:
                 result["hint"] = (
@@ -82,7 +82,7 @@ def retire_function(func: str) -> dict:
                     "retire drops regfix/asmfix rules but NOT source __asm__; if those "
                     "rules were compensating for a cheat-asm barrier, strip the asm from "
                     f"src/{stem}.c and retry. If `sandbox {func} --disable all` scores 0, "
-                    "that's exactly this case (see .claude/rules/sandbox-zero-retire-fails.md)."
+                    "that's exactly this case."
                 )
         return result
     except Exception:

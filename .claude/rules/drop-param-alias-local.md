@@ -1,112 +1,52 @@
 ---
 name: drop-param-alias-local
-description: Removing an explicit T *local = paramN; alias can free the param register for reuse by another local — retires register-asm pin clusters
+description: "A param->local alias (T *t0 = a0;) keeps $a0 busy so a short local misses it: drop the alias and use the param directly; the long chain promotes the param itself and frees $a0."
 paths: [".claude/rules/drop-param-alias-local.md"]
-# on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
+metadata:
+  type: reference
 ---
 
 # Removing an explicit param→local alias frees the param register for reuse
 
 ## Symptom
 
-A short function carries 2 register-asm pins:
-
 ```c
 void func(u32 *a0, ...) {
-    register u32 *t0 asm("t0") = a0;          /* alias param to a callee-save */
-    register s32 size asm("a0") = 5;          /* reuse $a0 for an unrelated local */
+    u32 *t0 = a0;        /* explicit alias */
+    s32 size = 5;        /* target puts this in $a0; yours lands in $t1 */
     ...
-    t0[N] = ...;                              /* body uses t0 */
+    t0[N] = ...;
 }
 ```
 
-Sandbox `--disable all` distance is small (≤ 4). objdump (stripped vs target)
-shows the body is identical EXCEPT one local lands in a higher-numbered
-register ($t1 in mine, $a0 in target) AND the prologue scheduling is swapped
-(`li size,5` first in mine vs `move t0,a0` first in target). Pin #1 (the
-param alias) "holds" but pin #2 (size→$a0) appears to be load-bearing — it's
-the cheat the function depends on.
+Small distance; body identical except one short local in a higher register, and the prologue order
+swapped (`li size,5` first in yours vs `move t0,a0` first in target). Historically "held" by a pin
+`register s32 size asm("a0")` — forbidden ([[register-asm-pins]]).
 
 ## Cause
 
-The explicit `T *t0 = a0;` local creates a separate pseudo for the alias.
-At RTL expand, GCC sees:
-- pseudo for `a0` param (live from entry until the copy)
-- pseudo for `t0` local (live from the copy through all `t0[...]` uses)
-- pseudo for `size` (live from init through the byte store)
+The alias makes a separate pseudo; `size = 5` is scheduled first while param `$a0` is still live, so
+it cannot take `$a0`.
 
-Param `a0` and `size` both want a low-numbered register. GCC's scheduler
-puts `size = 5` FIRST (it's a cheap constant) and `move t0,a0` SECOND in
-the prologue's delay slot. At the moment `size = 5` is emitted, param `$a0`
-is still live (the alias copy hasn't happened yet) — so `size` cannot land
-in `$a0`, it goes to `$t1`.
-
-Pin #2 forces `size → $a0` despite this. The pin is acting as a cheat: it
-papers over a scheduling decision that prevents the natural register reuse.
-
-## The fix — drop the explicit alias, use the param directly
+## Fix — use the param directly
 
 ```c
 void func(u32 *a0, ...) {
-    s32 size = 5;                             /* no pins */
+    s32 size = 5;
     ...
-    a0[N] = ...;                              /* body uses a0 directly */
+    a0[N] = ...;
 }
 ```
 
-With no explicit `t0` local, GCC sees `a0` as having a long live range
-(through all the `a0[...]` uses). The RA promotes `a0` to a callee-save
-register ($t0) on its own, AND it schedules that promotion-move FIRST in
-the prologue (because the long downstream chain gives it higher
-INSN_PRIORITY than the cheap `li size,5`). With the move first, `$a0`
-dies at insn 0, and `size = 5` naturally lands in `$a0` (lowest free
-register per default ascending preference).
+`a0` now has a long live range; RA promotes it to `$t0` itself and schedules that move first (higher
+INSN_PRIORITY from the long chain), `$a0` dies at insn 0 and `size` takes it. Example:
+initLoadImage (gpu.c), 4 → 0, pin-free. This is the inverse of [[register-alloc-pure-c]] Lever A:
+remove a local to lengthen a chain.
 
-Both pins retire; zero source asm; pure C.
+## Does NOT apply when
 
-## When this applies
+- the param is reassigned elsewhere (dropping the alias changes semantics);
+- the other local is long-lived (priorities comparable);
+- there is no second register conflict (the alias may be load-bearing for another reason).
 
-Look for the cluster:
-1. A function with a `register T *<name> asm("$tN") = paramN;` pin aliasing
-   a parameter to a callee-save.
-2. PLUS a second pin `register T <other> asm("$paramN") = ...;` reusing the
-   paramN register for an unrelated local (often a constant or short-lived
-   value).
-3. The body uses the aliased pointer in many places (the long chain that
-   would naturally promote the param to a callee-save).
-4. Sandbox `--disable all` distance is small (the only diff is the
-   reused-register slot).
-
-Drop BOTH pins and the alias local; the body uses the parameter name
-directly. Verify with sandbox 0 + SHA1 == oracle.
-
-## When this does NOT apply
-
-- The body actually needs a separate alias because the param is reassigned
-  elsewhere (mutating writes to the original `a0`). Then dropping the alias
-  changes semantics.
-- The other "reused-register" local has a *long* live range — its priority
-  is comparable to the param's, so the natural ordering doesn't favor
-  promote-first. May need additional levers.
-- The function has only 1 pin (just the param alias). Then this isn't the
-  pattern — the alias may be benign / load-bearing for some other reason.
-
-## Confirmed case — initLoadImage (gpu.c, 2026-06-07)
-
-Queue top, verdict C, distance 4, 0 rules, 2 register-asm pins (`u32 *t0
-asm("t0") = a0;` + `s32 size asm("a0") = 5;`). Target asm: `move t0,a0` at
-prologue head, `li a0,5` in beqz delay slot, size → $a0. My build (pins
-stripped): `li t1,5` at prologue head, `move t0,a0` in delay slot,
-size → $t1. Dropping the `t0` alias and using `a0` directly → sandbox 4 → 0;
-SHA1 == oracle; 100% pure C, 0 pins.
-
-## Related
-
-- [[register-alloc-pure-c]] — the parent playbook. This is the INVERSE of
-  Lever A (block-local var split): there you ADD a local to shrink a live
-  range; here you REMOVE a local to LENGTHEN a chain so GCC promotes the
-  param naturally.
-- [[register-asm-pins]] — pins are diagnostic-only; this rule is one route
-  to retiring them.
-- [[inline-asm-policy]] — pins as committed source are cheat-asm; the
-  function is INCOMPLETE until they're removed.
+Related: [[register-alloc-pure-c]] · [[register-asm-pins]] · [[pointer-alias-fake-exception]]

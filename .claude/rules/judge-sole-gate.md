@@ -1,122 +1,74 @@
 ---
 name: judge-sole-gate
-description: "OWNER RULING 2026-08-18 — user-escalation/approval is REMOVED from the workflow. The default-FAIL Judge (frozen static policy) is the sole acceptance gate; borderline material is LOGGED to docs/grind/borderline.md for later owner review, never parked pending a decision. The bar itself is unchanged: no cheats, SOTN standard, 100% C or hard evidence for inline asm."
-paths: [".claude/rules/*.md", "tools/grinder/**", "engine/queue.py", "engine/cheats.py", "inline_asm_canonical.txt", "docs/grind/*.md"]
+paths: ["tools/grinder/**", "engine/queue.py", "engine/cheats.py", "inline_asm_canonical.txt", "docs/grind/*.md"]
+description: "Owner ruling 2026-08-18: no owner-wait states; the default-FAIL Judge is the sole autonomous acceptance gate; canonical-asm grants are driver-executed on STRONG scanner evidence; borderline questions are logged, never waited on. Includes the endgame-lock AND-gates."
 metadata:
   type: rules
 ---
 
-# Owner ruling 2026-08-18 — no user-escalation/approval; Judge is the sole gate
+# No owner-wait states; the Judge is the sole gate (owner ruling 2026-08-18)
 
-Owner (Trenton), verbatim, 2026-08-18:
+Owner: *"I want to remove the concept of a user-escalation/approval ... Anything borderline
+can be logged somewhere that we can evaluate later down the line, but i dont want work to
+just pile up or be 'parked' pending my decisions anymore."* The standards are unchanged and
+permanent ("No cheats, SOTN standard, 100% C or hard evidence for inline asm"); the pipeline
+executes them.
 
-> *"I want to remove the concept of a user-escalation/approval. Our workflow
-> should be mature enough now that we can prevent anything egregious from
-> slipping through by relying on the Judge to reject anything that isnt SOTN
-> standard. Anything borderline can be logged somewhere that we can evaluate
-> later down the line, but i dont want work to just pile up or be 'parked'
-> pending my decisions anymore."*
+## Rules
 
-This generalizes the 2026-07-27 standing auto-ruling
-([[endgame-lock-disposition]]) to the FULL escalation surface: the two
-residual owner-wait paths (canonical-asm sign-off, family-sanction requests)
-and the reviewer's blocking NEEDS_USER verdict are retired. **The standards
-are unchanged and permanent** ("No cheats, SOTN standard, 100% C or hard
-evidence for inline asm") — what changes is WHO executes them: the pipeline,
-never a wait on the owner.
+1. **No pending-owner states.** No "awaiting owner ruling" filings, park-and-wait ESCALATE
+   routing, or decision packets. Every disposition is terminal when made; an item that does
+   not close stays in the worklist ([[rotation-not-foreclosure]]). A would-be question whose
+   YES would lower a standard (sanction a cheat, a family with no in-hand precedent, waive the
+   canonical-asm evidence bar, "accept the debt") is a plain FAIL, never filed.
+2. **The Judge is the sole acceptance gate for autonomous work**: default-FAIL, read-only,
+   bound to the frozen static policy (`tools/grinder/roles/judge.md`). Its only ESCALATE
+   kinds are the driver-executed mechanical paths: integration handoff / scope grant
+   ([[integration-handoff-self-serve]]) and rule 3. The manual path keeps the layer-2
+   `cheat-reviewer` ([[review-discipline-before-commit]]).
+3. **Canonical-asm authorization is pipeline-executed.** With STRONG
+   `tools/scan_hand_coded.py` evidence (S1/S2/S6 class) and a Judge PASS, the DRIVER (never
+   the Judge) writes the `inline_asm_canonical.txt` entry citing this ruling + the scanner
+   evidence and appends a borderline entry for later audit. Without STRONG evidence asm stays
+   refused, except the GTE macro classes in [[inline-asm-policy]].
+4. **The frozen SOTN family list stays OWNER-ONLY to extend**, and extension requests never
+   wait: a candidate family is logged to the borderline ledger with its evidence and the
+   function keeps the CURRENT-list disposition (refused; keeps grinding). Exception (owner
+   Q50, 2026-09-30): a construct with a verified SOTN citation
+   ([[no-new-park-categories]] § SOTN precedent suffices) is admissible on it with Q53's
+   prerequisites, and lands only through the manual path's layer-2, never on a Judge PASS.
+5. **Reviewer NEEDS_USER = FAIL + a `needs-user-downgrade` borderline entry.** The agent may
+   re-invoke with genuinely NEW evidence but may never re-adjudicate the recorded question.
 
-## The five operative rules
+## Endgame-lock gates (owner policy 2026-07-20, standing 2026-07-27)
 
-1. **No pending-owner states, anywhere.** The park reason "pending owner
-   ruling", decisions.md filings titled "awaiting owner ruling — do not
-   self-resolve", and the Judge's park-and-wait ESCALATE routing are all
-   retired. Every disposition is terminal when made. Terminal
-   OWNER-ACCEPTED INCOMPLETE parks (standing ruling 2026-07-27) remain —
-   they are dispositions, not pending decisions.
+For a function a few instructions short in honest C with its sanctioned levers exhausted
+(usually an RA/scheduling tiebreak), the only non-C exits are two AND-gates, default refuse:
 
-2. **The Judge is the sole acceptance gate for autonomous work.** It stays
-   default-FAIL, read-only, and bound to the FROZEN static policy
-   (`tools/grinder/roles/judge.md`). Its ESCALATE verdict is redefined:
-   "sound work, grant above my authority" no longer exists as a wait —
-   see rules 3 and 4 for the two cases it used to cover. The manual path
-   keeps the layer-2 `cheat-reviewer` gate ([[review-discipline-before-commit]]).
+- **Gate 1 — canonical asm** only with STRONG `scan_hand_coded --single <fn>` signals. A LOW
+  tier is dispositive: a compiler-scheduling/RA artifact is ordinary GCC output, never a
+  hand-coded signature. Passing ⇒ rule 3's grant path.
+- **Gate 2 — a coercion/spelling family** only with exhibited, in-hand precedent (file:line or
+  commit; "believed viable", "the only lever left", "measured to work" do not count). Passing
+  ⇒ rule 4 (logged; the Q50 SOTN-citation route on the manual path).
 
-3. **Canonical-asm authorization is pipeline-executed.** When
-   `tools/scan_hand_coded.py` shows STRONG (S1/S2/S6-class) evidence and
-   the candidate passes the Judge, the DRIVER (not the Judge — the Judge
-   never mutates) writes the `inline_asm_canonical.txt` entry citing this
-   ruling + the scanner evidence, and appends a borderline-ledger entry so
-   the owner can audit the grant later. This formalizes the owner's
-   2026-06-13 directive ([[self-authorize-within-parameters]]) and the
-   GTE-wrapper auto-authorize precedent ([[gte-wrapper-misroute-park]]).
-   Without STRONG evidence, asm remains refused — nothing here lowers the
-   evidence bar.
-   (Exception: verbatim PsyQ GTE macro islands, inline-asm-policy.md § Owner ruling 2026-09-23,
-   and verbatim inline_o.h GTE macro blocks, § Owner ruling 2026-09-26.)
-
-4. **The frozen SOTN family list remains OWNER-ONLY to extend — but
-   extension requests never wait.** A candidate family extension, even
-   with exhibited SOTN-master precedent, is NOT granted by any agent or by
-   the Judge (a Judge that extends its own policy source is no longer
-   default-FAIL). It is logged to the borderline ledger with the exhibited
-   evidence, and the function takes the standing disposition under the
-   CURRENT list (refusal / terminal OWNER-ACCEPTED INCOMPLETE park per
-   [[endgame-lock-disposition]]). The owner reviews the ledger in batches;
-   a later ruling can unfreeze specific entries and the function becomes
-   re-attemptable. Exception, owner ruling 2026-09-30 (Q50): a construct with a verified SOTN citation ([[no-new-park-categories]] § Owner ruling 2026-09-30 — SOTN precedent suffices) is admissible on that citation, with Q53's prerequisites. Author's narrowing, not the owner's words (flag to the owner): it lands only through the manual path's layer-2, never on a Judge PASS; it is not a frozen-list extension; VS/ESA or other non-SOTN precedent, and any construct without a verified citation, keep the disposition above.
-
-5. **Reviewer NEEDS_USER is retired as a blocking state.** A
-   `cheat-reviewer` NEEDS_USER verdict maps to **FAIL + borderline-ledger
-   entry** (the work is not committed; the question is recorded, not
-   answered by the agent). The no-self-resolution rule stands in stronger
-   form: the agent may not re-adjudicate — the ledger entry IS the
-   disposition.
+Both fail ⇒ the function stays `INCLUDE_ASM` and in the worklist ([[asm-until-matched]]);
+nothing is asked of the owner. Owner: "My standards will never change."
 
 ## The borderline ledger — `docs/grind/borderline.md`
 
-Informational (nothing in it is pending). New entries are appended; outdated
-entries (answered, superseded or moot) may be DELETED by an owner-directed
-cleanup (owner ruling 2026-09-28, decisions.md "outdated ledger entries are
-deleted"). Deleted entries stay in git history: the ledger header names the
-pin commit, and a citation of an entry that is no longer present resolves
-against that commit (`git show <pin>:docs/grind/borderline.md`). Entry schema:
+Informational; nothing in it is pending. Entries are appended; outdated ones may be deleted by
+an owner-directed cleanup (cite a deleted entry via the pin commit named in the ledger header).
 
 ```
 ## YYYY-MM-DD — <function or scope> — <category>
 category: canonical-asm-grant | family-candidate | needs-user-downgrade | policy-question
-evidence: <scanner output / SOTN citation / reviewer question — pointers, not prose dumps>
-disposition taken: <what the pipeline actually did under current policy>
+evidence: <pointers, not prose dumps>
+disposition taken: <what the pipeline did under current policy>
 ```
 
-The owner evaluates entries later at their own cadence. An entry never
-authorizes anything by itself; only a subsequent owner ruling (landed per
-[[ruling-record-lands-before-code]]) spends it.
+An entry authorizes nothing. Only a later owner ruling does, landed as its own `rules:` commit
+before any code spends it.
 
-## What this does NOT change
-
-- The completion bar ([[completion-standard]]), the cheat catalog and
-  cheats-by-any-spelling posture ([[no-new-park-categories]]), the frozen
-  family list contents, the two-layer adversarial acceptance for manual
-  work, the oracle, and the no-deferral queue discipline.
-- New conversational owner rulings still land per
-  [[ruling-record-lands-before-code]] before code spends them.
-- Project-architecture decisions that are genuinely substrate-wide (e.g.
-  the global rodata reorder behind JTBL-INFRA) are logged as
-  `policy-question` entries — they proceed only on a landed owner ruling,
-  but no function sits blocked on them (JTBL-INFRA's queue bucket is empty).
-
-## Migration notes
-
-- Pre-existing "awaiting owner ruling" filings in docs/grind/decisions.md
-  are re-processed under this ruling as they are next touched: STRONG-
-  evidence canonical-asm requests take the rule-3 grant path; family
-  candidates take the rule-4 log-and-refuse path.
-- The engine queue's `authorize` bucket no longer means "needs user
-  sign-off"; it means "needs the pipeline grant path" (currently empty).
-
-## Related
-
-[[endgame-lock-disposition]] · [[review-discipline-before-commit]] ·
-[[self-authorize-within-parameters]] · [[no-park-permanently]] ·
-[[ruling-record-lands-before-code]] · [[hand-coded-asm-recognition]] ·
-[[canonical-asm-authorization-recipe]]
+Related: [[review-discipline-before-commit]] · [[integration-handoff-self-serve]] ·
+[[rotation-not-foreclosure]] · [[canonical-asm-authorization-recipe]] · [[inline-asm-policy]]

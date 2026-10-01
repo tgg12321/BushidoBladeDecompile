@@ -24,7 +24,7 @@ void func_80047ED0(s32 a0) {
 void func_80047EE8(s32 arg0, s32 arg1)
 {
     /* FAKE: unwritten leading frame pad (phantom-frame-slot volatile pad local
-     * family, owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md:390).
+     * family, owner ruling 2026-08-18, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:390).
      * Mechanism: GCC 2.7.2 function.c assign_stack_local reserves the array slot at
      * RTL-expand from the source DECL and never reclaims frame_offset after DCE, so a
      * declared-but-untouched local aggregate reproduces target's allocated-but-unwritten
@@ -133,7 +133,7 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 }
 void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
 {
-    volatile u32 pre_pad[8]; // !FAKE: phantom-frame-slot volatile filler (owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md:422-434; grant row engine/volatile_cheats.py:779, commit 661c01ef): the target reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction in asm/funcs/func_800480C0.s reads or writes; mechanism: GCC 2.7.2 get_frame_size/expand_decl reserves declared locals (config/mips/mips.c:4443-4475); lever-exhaustion: memory/grind/func_800480C0/hypotheses.md s1-s23, 104 rejected forms, every referenced producer costs >=1 store (flow.c:1740-1741 never deletes the last store to a frame object)
+    volatile u32 pre_pad[8]; // !FAKE: phantom-frame-slot volatile filler (owner ruling 2026-08-18, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:422-434; grant row engine/volatile_cheats.py:779, commit 661c01ef): the target reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction in asm/funcs/func_800480C0.s reads or writes; mechanism: GCC 2.7.2 get_frame_size/expand_decl reserves declared locals (config/mips/mips.c:4443-4475); lever-exhaustion: memory/grind/func_800480C0/hypotheses.md s1-s23, 104 rejected forms, every referenced producer costs >=1 store (flow.c:1740-1741 never deletes the last store to a frame object)
     u32 *p;
     s32 base_addr;
     s32 count;
@@ -201,7 +201,7 @@ void func_800481E8(s32 arg0, s32 arg1)
      * binds to base in $s2 — matching target.
      */
     /* FAKE: unwritten leading frame pad (phantom-frame-slot volatile pad local
-     * family, owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md:390).
+     * family, owner ruling 2026-08-18, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:390).
      * Mechanism: GCC 2.7.2 function.c assign_stack_local reserves the array slot at
      * RTL-expand from the source DECL and never reclaims frame_offset after DCE, so a
      * declared-but-untouched local aggregate reproduces target's allocated-but-unwritten
@@ -442,7 +442,7 @@ u16 cx, cy;
         }
         p = tim + 2;
         /* !FAKE: cancellation pair (sanctioned family: semantically-null
-         * fabricated statement pair, .claude/rules/no-new-park-categories.md:370-382,
+         * fabricated statement pair, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:370-382,
          * owner ruling 2026-08-18, F6 ESTABLISHED — exact `i++; i--;` shape).
          * What: net-zero adjacent same-variable inc/dec of tim, byte-free
          * (survives cse1/cse2, then flow.c dead-store elimination deletes both:
@@ -945,7 +945,7 @@ extern void func_800417D0(s32 *);
  * The ONLY non-ordinary construct is the first declaration:
  *   volatile u32 pre_pad[2]; // !FAKE ...
  * - the phantom-frame-slot volatile pad family, owner ruling 2026-08-18
- * (.claude/rules/no-new-park-categories.md:390): ARRAY form, first-decl
+ * (pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:390): ARRAY form, first-decl
  * position, no (void) shim, volatile-qualified, FAKE-annotated. SOTN-master
  * PSX precedent: docs/reference/sotn-construct-index.md L620/L626/L627
  * (volatile char pad[8] //! FAKE; volatile u32 pad; volatile u32 pad[4]).
@@ -2552,7 +2552,7 @@ extern u8 D_8009A840;
  *
  * MATCH-HACK FAMILY: duplicated-statement-into-arms
  * (.claude/rules/duplicated-statement-into-arms.md; frozen SOTN entry
- *  .claude/rules/no-new-park-categories.md:285-293).
+ *  pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:285-293).
  * The single real statement "add this arm's angle adjustment into `base`" is
  * written once PER DISPATCH ARM instead of being cached in a temp and added
  * once after the join. Each copy is REAL on its path (prereq 1) and the copies
@@ -2881,7 +2881,7 @@ extern s32 ratan2(s32, s32);
  *
  * FAKE: the vertex-table base expression *(s16 **)(arg0 + 4) is written out at each
  * of its five use sites rather than bound to one pointer local (F3
- * compound-address duplication across call arg-lists, .claude/rules/no-new-park-categories.md:377,
+ * compound-address duplication across call arg-lists, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:377,
  * owner ruling 2026-08-18; re-adjudication granted for this function by owner ruling
  * 6b of the 2026-08-30 escalation batch, docs/grind/decisions.md:14685).
  * mechanism: cse1 (cse.c:1948 hash_arg_in_memory / cse.c:7241-7246
@@ -2933,7 +2933,7 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     if (ang_next < ang_prev) {
         /* FAKE: `base` and `half` are fresh once-written/once-read named
          * intermediates for the antipode of ang_prev and half the angular gap
-         * (named-intermediate family, .claude/rules/no-new-park-categories.md:204
+         * (named-intermediate family, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:204
          * + the 2026-08-17 clarification at :208-229; both values are real and
          * appear in the target's own bytes, build_insns == target_insns == 111).
          * mechanism: local-alloc.c block_alloc -- they become BLOCK-LOCAL allocnos

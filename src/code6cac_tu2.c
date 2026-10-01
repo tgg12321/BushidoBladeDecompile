@@ -2601,7 +2601,7 @@ s32 func_8001F888(void) {
  * shift. The second `lhu` and the `sll 16 ; sra 15` in the target are GCC 2.7.2's own
  * lowering of a signed `short` local (extendhisi2, tools/gcc-2.7.2/config/mips/mips.md:2340),
  * i.e. compiler behaviour, not source content. Under the owner ruling of 2026-08-31
- * (.claude/rules/ordinary-c-judge-decidable.md:51, Ruling 1(3) "the rename test replaces
+ * (pre-slim-2026-10-01:.claude/rules/ordinary-c-judge-decidable.md:51, Ruling 1(3) "the rename test replaces
  * motive-testing"), which POSTDATES both the ban and the 2026-08-25 layer-1 FAILs and
  * therefore governs per the dated-rulings clause, the test is the C text: "short dmg =
  * damage counter; clamp it to 3; index a table of shorts by dmg*2" is a truthful semantic

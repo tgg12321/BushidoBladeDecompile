@@ -108,7 +108,7 @@ def sandbox_score(func: str, disable: str = "lost-codegen",
         # (b) The whole-file build got truncated — typically a SIBLING's
         #     index-based regfix `reorder` rule crashed the pipeline after
         #     stripping shifted maspsx indices (see
-        #     .claude/rules/jtbl-rodata-split-infrastructure.md). Unscorable.
+        #     pre-slim-2026-10-01:.claude/rules/jtbl-rodata-split-infrastructure.md). Unscorable.
         no_c_body = False
         # With a candidate substituted the function DOES have C — reading
         # src/<stem>.c here would see main's INCLUDE_ASM and wrongly report the

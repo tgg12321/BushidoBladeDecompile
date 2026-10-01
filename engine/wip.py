@@ -94,7 +94,7 @@ def head_sha(short: bool = True) -> str | None:
     `sessions[]` entries to the repo state at measurement time, so future
     agents can detect drift and re-measure if cited files have changed.
 
-    Per `.claude/rules/verify-claims-against-main.md`: every WIP session
+    Per pre-slim-2026-10-01:.claude/rules/verify-claims-against-main.md: every WIP session
     entry that cites file/line numbers SHOULD include `git_head_at_measurement`.
 
     Returns None on any error (no git, detached HEAD failure, etc.) — never

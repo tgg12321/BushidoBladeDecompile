@@ -344,7 +344,7 @@ LEVERS = {
 FORBIDDEN_FAMILIES = [
     ("register-asm-pins",
      "`register T x asm(\"$N\")` — DIAGNOSTIC-ONLY, never committable."),
-    ("inline-asm-injection",
+    ("inline-asm-policy",
      "hardcoded-`$N` single-instruction `__asm__`, and `asm(\"Sym\")` alias "
      "renames — the same cheat as a regfix rule, in a different file."),
     ("lost-codegen-insert-cheat",
@@ -357,9 +357,10 @@ FORBIDDEN_FAMILIES = [
     ("legitimate-volatile-interrupt-touched",
      "volatile as a codegen coercion.  Only the IRQ-touched two-prong "
      "carve-out and type-level MMIO (0x1F801000-0x1F802FFF) qualify."),
-    ("or-tree-shape-shift / strength-reduce-defeat / dead-branch-scheduling / "
-     "goto-end-prologue-delay-slot",
-     "archived FORBIDDEN tombstones — do not revive."),
+    ("or-tree-shape-shift",
+     "enumerating operand orders of an associative/commutative expression."),
+    ("strength-reduce-defeat / dead-branch-scheduling / goto-end-prologue-delay-slot",
+     "retired FORBIDDEN tombstones (codegen-technique-index § Retired) — do not revive."),
 ]
 
 # --------------------------------------------------------------------------

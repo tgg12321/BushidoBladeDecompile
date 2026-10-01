@@ -1,183 +1,57 @@
 ---
 name: narrow-byte-args-packed-call
 paths: [".claude/rules/narrow-byte-args-packed-call.md"]
-description: "GPU/SPU command-wrapper function with 4+ s32 args where 3 are byte-truncated (`arg & 0xFF`) and packed into one 32-bit slot for a function-pointer call, carrying a pin+regfix cluster (4 register-asm pins + 4 `$a3→$s0` regfix substs on the packing accumulator). Fix: declare the 3 byte-packed params as `u8` and drop the `& 0xFF` masks — the pins, regfix, AND masks all retire."
+description: "Call wrapper packing 3 byte-masked s32 args (`arg & 0xFF`) into one slot: declare those params `u8` and drop the masks; for a const-ORed pack, split into named `hi`/`lo` intermediates, `hi` first."
 metadata:
   type: reference
 ---
 
-# Narrow `u8` parameters retire pin+regfix cluster on byte-packed-arg call wrappers
-
-> **Historical framing note (2026-08-30):** this rule predates the removal of the
-> regfix/asmfix rule system (retired at zero rules; machinery deleted). Where the
-> symptom text says a function "carries a rule", read it as "the honest build shows
-> this diff shape vs target". The technique itself is unchanged.
+# Narrow `u8` parameters for byte-packed-arg call wrappers
 
 ## Symptom
 
-A "GPU/SPU command wrapper" function that:
-1. Takes 4+ s32 args, 3 of which are byte-truncated (`arg & 0xFF`) and packed
-   into one 32-bit slot for a downstream function-pointer call.
-2. Carries a `register T x asm("$N")` pin cluster forcing a specific callee-save
-   allocation, PLUS a regfix `subst` cluster renaming `$a3` (GCC's target-reg-
-   propagation pick for the packing accumulator) to `$s0` (target's choice —
-   the arg3-holding callee-save).
+A GPU/SPU command wrapper that takes 4+ `s32` args, 3 of which are only used as `arg & 0xFF` and packed into
+one 32-bit slot for a downstream (often function-pointer) call:
+`((a3 & 0xFF) << 16) | ((a2 & 0xFF) << 8) | (a1 & 0xFF)`. The honest build shows the args in natural
+ascending callee-saves while the target has them reversed (`arg0→$s3 … arg3→$s0`), the packing accumulator
+lands in `$a3` instead of `$s0`, and prologue scheduling diverges.
 
-The pin cluster typically pins all 4 args to consecutive callee-saves IN
-REVERSE of natural ascending: `arg0 asm("$19")`, `arg1 asm("$18")`, `arg2
-asm("$17")`, `arg3 asm("$16")`. That order is unnatural per
-[[register-alloc-pure-c]] Step 0 — target uses HIGHER-numbered regs than
-natural ascending would pick — so the pins are doing real allocation work
-that's score-inert under the sandbox.
-
-## The fix — declare the byte-packed params as `u8`, drop the `& 0xFF` masks
+## The fix — declare the byte-packed params `u8`, drop the masks
 
 ```c
-/* before: pins + masks + 4 regfix substs */
-void func(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    register s32 a asm("$19") = arg0;
-    register s32 b asm("$18") = arg1;
-    register s32 c asm("$17") = arg2;
-    register s32 d asm("$16") = arg3;
-    s32 packed;
-    func_helper(&str, a);
-    packed = ((d & 0xFF) << 16) | ((c & 0xFF) << 8);
-    fn(p[3], a, 8, packed | (b & 0xFF));
-}
-
-/* after: pure C — pins + masks gone, regfix retires */
 void func(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
     func_helper(&str, arg0);
     fn(p[3], arg0, 8, ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
 }
 ```
 
-## Why both the pins AND the masks were debt
+With `u8` params, `PROMOTE_ARGS` treats the args as already narrowed at entry: no `andi`, the `(u32)` widens
+are no-ops, and RA/scheduling fall out as the target (func_8007B4D0: 7 → 0 first try). The original C almost
+certainly declared them `u8`; m2c's `s32 + (x & 0xFF)` is semantically right but byte-noisy. Callers and
+externs keep working (ABI promotion); updating externs is optional.
 
-The pins forced target's reverse-ascending callee-save allocation
-(arg0→$s3, arg3→$s0). With **`u8` typed params**, GCC's `PROMOTE_ARGS` ABI
-treats the args as already-narrowed at function entry — no `andi
-$rN,$rN,0xFF` instructions are needed in the body. The widening cast `(u32)`
-is a no-op (the value is already in a wider reg). The natural code is
-shorter AND naturally schedules the way the target wants.
+Does NOT apply if any packed arg has a non-byte use elsewhere (`arg3 + 1`, `arg3 == 5`) — then the mask is
+load-bearing; fall back to [[register-alloc-pure-c]].
 
-The original regfix's `$a3→$s0` rename — GCC's "target reg propagation"
-picking `$a3` (the call's 4th-arg slot) for the OR-chain accumulator — also
-goes away: with the `andi` removed, GCC's RA recognises that the
-intermediate OR can stay in arg3's already-allocated reg ($s0) until the
-final OR targets $a3.
+## Const-OR variant — named `hi`/`lo` intermediates (the named-intermediate sub-trick)
 
-In short: target was compiled from C where the 3 packed args were declared
-**`u8` (or `unsigned char`)**, NOT `s32` with byte masks. The decompilation's
-`s32 + (x & 0xFF)` form is m2c's faithful but byte-noisy reconstruction —
-correct semantics, wrong type signatures.
-
-## Confirmed case — func_8007B4D0 (display.c, 2026-05-31)
-
-Queue top, verdict C, distance 7 (pin+rule-stripped). 4 pins on
-$s3/$s2/$s1/$s0 + 4 regfix substs ($a3→$s0 in packing region). Body is a
-`gpu_ClearImage`-style wrapper:
-
-```
-func_8007B3A8(&g_str_clearimage, arg0);
-fn(p[3], arg0, 8, ((arg3 & 0xFF) << 16) | ((arg2 & 0xFF) << 8) | (arg1 & 0xFF));
-```
-
-Pure-C grind with `s32` params + explicit `& 0xFF` masks: bottomed at score 7
-(packing region matched naturally in $s0, but prologue scheduling diverged —
-lui/addiu materialisation order + jal delay-slot fill). No structural lever
-(in-place writeback, single-expression form, statement reordering,
-block-local var split) closed the 7-diff prologue scheduling.
-
-Changing the 3 packed params to `u8`: **sandbox 7 → 0 first try.** `retire`
-dropped all 4 regfix rules; SHA1 == oracle; 100% pure C. The pins AND the
-rules AND the masks were all simultaneously retired by one type change.
-
-## The signature change is safe (caller-side)
-
-Existing externs (`extern void func(void *, s32, s32, s32)`) and call sites
-(`func(&base, 0, 0, 0)`) work without modification — K&R-style ABI promotion
-passes the s32 args, callee sees the lower 8 bits. Build still matches oracle.
-Updating the externs for clarity is optional but recommended.
-
-## When this lever applies
-
-Look for the cluster of preconditions together:
-- A function-pointer or direct call where ONE of the args is computed as
-  `((a3 & 0xFF) << 16) | ((a2 & 0xFF) << 8) | (a1 & 0xFF)` (or a permutation
-  thereof — RGBA-style packed bytes).
-- The function takes 4+ s32 args where 3+ of them are only used via
-  `arg & 0xFF` (the byte masks ARE the only uses).
-- Existing cheats: 4-pin `register asm` cluster + 4-rule `$a3→$s0` regfix
-  cluster (or similar register-rename cheats around the packed-arg
-  computation).
-
-If any of the "byte-packed" args ALSO has a non-byte use elsewhere in the
-function (e.g. `arg3 + 1` or a comparison `arg3 == 5`), you cannot declare
-it `u8` — the wider arithmetic / comparison form needs the full s32. In
-that case the masks are load-bearing and this lever does not apply; fall
-back to the broader [[register-alloc-pure-c]] playbook.
-
-The sibling `func_8007B564` (same display.c cluster, identical shape +
-`| 0x80000000` set bit) is a candidate for the same lever.
-
-## Confirmed sibling — func_8007B564 (display.c, 2026-05-31)
-
-Same display.c cluster as `func_8007B4D0` but with the GPU "set" bit
-`| 0x80000000` ORed into the packed byte. 6 regfix rules (vs B4D0's 4)
-+ 4 register-asm pins ($s3/$s2/$s1/$s0). The `u8` type change alone
-landed the lever's PROLOGUE alloc but residual 4 diffs remained: the
-`andi/sll` chain for arg3 needed to schedule BEFORE arg2's `andi/sll +
-lui + or const` chain (in target, arg3's `sll 16` comes first; in mine
-arg2's `sll 8` came first).
-
-**Why the const-OR case needs an extra step.** The 0x80000000 OR
-extends arg2's RTL chain by +1 hop (`s0 |= v0` adds an insn between
-arg2's shifts and the final OR). That makes arg2's INSN_PRIORITY
-(longest chain to fn exit) STRICTLY HIGHER than arg3's, so sched.c
-picks arg2's andi/sll first regardless of LUID. The plain-byte-pack
-case (no const, like B4D0) has equal chain lengths so the LUID
-tie-break decides — and natural source order puts arg3 first in the
-OR, so arg3 wins the tie.
-
-**The fix — separate `hi = arg3<<16;` and `lo = (arg2<<8)|const;`
-statements with `hi` FIRST.** This makes arg3's andi/sll get LOWER
-LUIDs at expand AND keeps arg2's chain at its full length. With
-priorities tied (after factoring in extension), LUID tie-break gives
-arg3 the early schedule:
+When a constant is ORed into the pack (e.g. GPU set bit `| 0x80000000`), arg2's chain is one hop longer, so
+its INSN_PRIORITY beats arg3's and sched picks it first regardless of LUID. Split into two named
+intermediates with `hi` FIRST so arg3's shift gets the lower LUID while arg2's chain keeps its length:
 
 ```c
-void func_8007B564(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
-    s32 *p;
-    void (*fn)();
-    u32 hi, lo;
-    func_8007B3A8(&g_str_clearimage, arg0);
-    hi = (u32)arg3 << 16;                     /* expanded first -> low LUID */
-    lo = ((u32)arg2 << 8) | 0x80000000;       /* arg2's chain stays at +1 hop */
-    p = (s32 *)g_gpu_dev_table;
-    fn = (void (*)())p[2];
-    fn(p[3], arg0, 8, (hi | lo) | (u32)arg1);
-}
+hi = (u32)arg3 << 16;                 /* expanded first -> low LUID */
+lo = ((u32)arg2 << 8) | 0x80000000;
+fn(p[3], arg0, 8, (hi | lo) | (u32)arg1);
 ```
 
-Sandbox 15 → 0; `retire` dropped all 6 regfix rules; SHA1 == oracle;
-100% pure C. The pin cluster + rule cluster + masks all retired by one
-type-change + statement-split.
-
-**The trap to avoid here.** Naively writing the OR as a single inline
-expression (no `hi`/`lo` locals) bottoms out at distance 6 (regs swap:
-arg2 → s1, arg3 → s0 — opposite of target). The two-local form is
-load-bearing for the priority/LUID balance. Putting both into ONE
-local first (e.g. `lo = ... | const; packed = ((arg3<<16) | lo);`)
-gets to distance 4 (regs match but scheduling wrong). Splitting into
-`hi` + `lo` with `hi` first hits 0.
+(func_8007B564: 15 → 0. One inline expression: distance 6; one local: 4.) This is the frozen-list
+"named-intermediate declaration order" entry ([[no-new-park-categories]] § SOTN-accepted): each named
+intermediate is once-written, holds a real consumed value, is byte-neutral, and the entry's prerequisites
+(dump-proven named mechanism, documented lever exhaustion, `/* FAKE: ... */` annotation, layer-1 + layer-2
+review) apply in full.
 
 ## Related
-- [[register-alloc-pure-c]] — the parent playbook; this is Lever B (narrow
-  integer type) applied to the byte-packed-arg-call pattern specifically.
-- [[narrow-stack-param-subword-offset]] — sibling sub-word param technique,
-  there for stack-passed params at offset confusion.
-- [[u16-global-lhu-lbu-low-byte]] — sibling "read the narrow half explicitly"
-  lever for globals.
-- [[inline-asm-policy]] — pins + regfix renames are cheat-asm / regfix
-  cheats; this rule retires both via type change.
+
+[[register-alloc-pure-c]] (Lever B, narrow integer type) · [[narrow-stack-param-subword-offset]] ·
+[[u16-global-lhu-lbu-low-byte]] · [[inline-asm-policy]] (pins are cheats)
