@@ -78,7 +78,7 @@ typedef struct PadState {
  * named_syms.txt:345 (g_practice_menu_table).  Only the fields reached by C so
  * far are named; the rest is reserved padding.  func_80022580 initializes
  * record [idx] (every field it writes is declared at its offset). */
-/* One CPU path waypoint (PracticeMenuRec.unk_364[]): func_800571C0 writes x/z from the
+/* One CPU path waypoint (CpuRoute.node[]): func_800571C0 writes x/z from the
  * opponent's position and kind 2; func_80058580 walks them back to front. */
 typedef struct CpuWaypoint {
     s16 x;
@@ -86,6 +86,36 @@ typedef struct CpuWaypoint {
     u8 kind;
     u8 unk5;
 } CpuWaypoint;
+
+/* A CPU route: the polygon and vertex the walker stands at (func_80057ACC), the waypoint
+ * count and the waypoints. PracticeMenuRec carries one at +0x360; func_80057E84 builds two
+ * candidates of the same layout on its stack and appends the cheaper one. */
+typedef struct CpuRoute {
+    u8 poly;                       /* index into the stage's NavPolySet.polys */
+    u8 vtx;                        /* vertex index in that polygon */
+    u8 count;                      /* number of waypoints in node[] */
+    CpuWaypoint node[8];
+} CpuRoute;                        /* sizeof == 0x34 */
+
+/* One polygon of a stage's navigation set (8 bytes): flags (0x80 = open chain, the last vertex
+ * does not close back to the first), a kind byte copied into the route waypoints built around
+ * it, a corner margin (func_80057CC8 scales it by 40), the vertex count and the vertex table of
+ * x/z pairs. */
+typedef struct NavPoly {
+    u8 flags;
+    u8 kind;
+    u8 margin;
+    u8 nvtx;
+    s16 (*vtx)[2];
+} NavPoly;
+
+/* A stage's navigation set: a D_8009A658 row (12 bytes: count word, polygon array, zero word). */
+typedef struct NavPolySet {
+    u8 npolys;
+    u8 unk1[3];
+    NavPoly *polys;
+    u8 unk8[4];
+} NavPolySet;
 
 typedef struct PracticeMenuRec {
     struct PracticeMenuRec *unk_00; /* the other record: [1] for record 0, else [0] (func_80022580) */
@@ -214,10 +244,8 @@ typedef struct PracticeMenuRec {
     u8  unk_34E;                   /* written by func_8001BE20 for the OTHER record */
     u8  unk_34F[0x350 - 0x34F];
     s16 unk_350;
-    u8  unk_352[0x362 - 0x352];
-    u8  unk_362;                   /* number of waypoints in unk_364 */
-    u8  unk_363;
-    CpuWaypoint unk_364[8];
+    u8  unk_352[0x360 - 0x352];
+    CpuRoute cpu_route;            /* 0x360 */
     s32 unk_394;
     s16 unk_398;
     s16 unk_39A;

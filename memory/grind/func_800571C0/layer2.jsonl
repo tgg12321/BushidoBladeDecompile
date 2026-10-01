@@ -1,0 +1,1 @@
+{"func": "func_800571C0", "addr": "800571C0", "verdict": "PASS", "body_hash": "d915480d76ac6fa2", "body_kind": "c", "file": "text1b", "reviewer": "rev-57E84-A", "scope": "cheat-cleanup", "date": "2026-10-01T23:05:14Z", "head": "3570306f5", "notes": "data-model cleanup for func_80057E84 (CpuRoute/NavPoly/NavPolySet); CC8 index-first line accepted as pre-existing (a5659295d)"}
