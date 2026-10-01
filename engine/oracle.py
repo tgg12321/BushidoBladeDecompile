@@ -34,7 +34,6 @@ MANIFEST = ORACLE_DIR / "manifest.json"
 # Pipeline-config files whose contents affect codegen. Drift here means the
 # build inputs changed since the oracle was locked.
 CONFIG_FILES = [
-    "sdata_syms.txt", "sdata_funcs.txt", "sdata_exclude.txt",
     "expand_lb_funcs.txt", "multu_funcs.txt", "multu_pad_funcs.txt",
     "expand_dest_funcs.txt", "named_syms.txt",
     "undefined_funcs_auto.txt", "undefined_syms_auto.txt",

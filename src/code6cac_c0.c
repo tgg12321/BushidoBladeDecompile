@@ -106,3 +106,11 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
     }
     return D_800A3890;
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s32 D_800A31E8 = 0;
+s32 D_800A31EC = 0;
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+s32 D_800A37F4;
+s32 D_800A3890;
+s32 D_800A3924;

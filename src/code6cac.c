@@ -52,7 +52,6 @@ extern void func_8005B868(void);
 
 
 
-extern u16 D_800A3310;
 
 
 

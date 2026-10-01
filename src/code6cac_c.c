@@ -405,3 +405,16 @@ s32 memcard_WriteFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5
     write(temp_v0, arg3, arg5);
     return -(memcard_WaitHwEvent() != 1);
 }
+
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+s32 g_memcard_fd;
+s32 g_memcard_sw_event_ioe;
+s32 g_memcard_sw_event_err;
+s32 g_memcard_sw_event_timeout;
+s32 g_memcard_sw_event_new;
+s32 g_memcard_hw_event_ioe;
+s32 g_memcard_hw_event_err;
+s32 g_memcard_hw_event_timeout;
+s32 g_memcard_hw_event_new;
+s32 g_memcard_file_count;
+s32 D_800A3924;

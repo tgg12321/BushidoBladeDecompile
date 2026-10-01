@@ -783,7 +783,7 @@ _LEGACY_FINGERPRINT_INPUTS = (
     "tools/maspsx/maspsx.py", "tools/prologue_fix.py", "tools/multu_pad.py",
     "maspsx_prefill_label_funcs.txt",
     "expand_lb_funcs.txt", "expand_dest_funcs.txt", "multu_funcs.txt",
-    "multu_pad_funcs.txt", "sdata_syms.txt", "sdata_funcs.txt", "sdata_exclude.txt",
+    "multu_pad_funcs.txt", 
 )
 
 

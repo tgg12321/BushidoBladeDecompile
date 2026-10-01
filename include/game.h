@@ -356,7 +356,6 @@ extern Unk800EFAE8Ctrl D_800EFAE8;
  * func_800677F4), and asm/funcs/func_80067D14.s forms the same folded base with
  * %hi/%lo. func_80061C00 writes slot 0 or slot 1 with the same value. Replaces
  * the splat per-word scalars D_800A34F0 / D_800A34F2. */
-extern s16 D_800A34F0[2];
 
 /* 0x800A3560: two 3-byte records, one per selection slot i (slot i at
  * 0x800A3560 + i * 3; 0x800A3566/7 pad before D_800A3568). Object model evidence
@@ -387,7 +386,6 @@ typedef union {
     s32 word;
 } Unk800A3560Slots;
 
-extern Unk800A3560Slots D_800A3560;
 
 /* Record table at 0x800F0C10 (0x90 bytes, ends at D_800F0CA0): 4 rows of 3
  * records of 3 s32 words. Object model evidence (the original binary):

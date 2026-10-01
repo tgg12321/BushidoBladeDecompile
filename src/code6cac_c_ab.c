@@ -633,3 +633,12 @@ void func_8003B8E4(void) {
         D_800A390D = 1;
     }
 }
+
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+u16 D_800A37C4;
+s32 D_800A37D8;
+u8 D_800A38AC;
+s32 D_800A38D0;
+s32 D_800A38FC;
+s32 D_800A3908;
+u8 D_800A3916;

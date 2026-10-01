@@ -113,29 +113,17 @@ g_stage_collision = 0x800A8FB0;
 g_stage_light_pos = 0x800A93B0;
 g_stage_light_dir = 0x800A93BC;
 g_stage_init_tbl = 0x800948BC;
-D_800A336C = 0x800A336C;  /* data-wave 2026-09-25: was g_game_mode */
-D_800A322C = 0x800A322C;  /* data-wave 2026-09-25: was g_game_player_count */
 g_game_mirror_mode = 0x800F665C;
 D_800F6656 = 0x800F6656;  /* data-wave 2026-09-25: was g_game_p1_ctrl */
 D_800F6658 = 0x800F6658;  /* data-wave 2026-09-25: was g_game_p2_ctrl */
-g_game_flag_a = 0x800A3370;
-g_game_flag_b = 0x800A3374;
 D_800F6654 = 0x800F6654;  /* data-wave 2026-09-25: was g_game_pause */
 D_800A3790 = 0x800A3790;  /* data-wave 2026-09-25: was g_game_timer */
-D_800A33B0 = 0x800A33B0;  /* data-wave 2026-09-25: was g_snd_bgm_id */
-D_800A33B4 = 0x800A33B4;  /* data-wave 2026-09-25: was g_snd_se_id */
-D_800A33C0 = 0x800A33C0;  /* data-wave 2026-09-25: was g_snd_stage_bgm */
-D_800A33D0 = 0x800A33D0;  /* data-wave 2026-09-25: was g_snd_volume */
-D_800A33D4 = 0x800A33D4;  /* data-wave 2026-09-25: was g_snd_fade_pos */
-D_800A33D8 = 0x800A33D8;  /* data-wave 2026-09-25: was g_snd_fade_amt */
-D_800A33E4 = 0x800A33E4;  /* data-wave 2026-09-25: was g_snd_play_count */
 D_80099C34 = 0x80099C34;  /* data-wave 2026-09-29: was g_snd_se_bank */
 D_800EF848 = 0x800EF848;  /* data-wave 2026-09-29: was g_snd_ch_data */
 D_800EF800 = 0x800EF800;  /* data-wave 2026-09-25: was g_snd_fade_curve */
 D_800EF7BC = 0x800EF7BC;  /* data-wave 2026-09-25: was g_snd_config_tbl */
 g_color_mode = 0x800F6652;
 g_pad_buf = 0x800FF580;  /* data-wave 2026-09-24: was g_pad_data */
-D_800A324A = 0x800A324A;  /* data-wave 2026-09-25: was g_pad_selection */
 g_gpu_db = 0x800F7438;  /* data-wave 2026-09-24: was g_disp_fb_base */
 g_gpu_db_plus_0x18 = 0x800F7450;  /* data-wave 2026-09-24: was g_disp_fb_flag */
 /* data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined */
@@ -145,9 +133,6 @@ D_800A3710 = 0x800A3710;  /* data-wave 2026-09-25: was g_file_vram_timer */
 g_file_dma_flag = 0x800A3716;
 g_file_data_buf = 0x800F6740;
 g_anim_func_table = 0x800F66A0;
-g_anim_hit_flags = 0x800A3380;
-g_anim_hit_data = 0x800A3384;
-g_anim_select = 0x800A3238;
 g_char_data = 0x800A6690;
 g_char_setup_tbl = 0x80094E48;
 _svm_stereo_mono = 0x800FF578;  /* data-wave 2026-09-07: was g_memcard_busy */
@@ -167,9 +152,6 @@ g_str_bbm_s123 = 0x800103C0;
 /* RESET 0x80037F40: retired name 'camera_SetMatrix' — preserved note: MISNAMED: not a camera fn; see file_disc_checksum_copy_80037F40 in pass-5 replacement section */
 
 /* Reverse aliases: C files call old func_ names for renamed stubs */
-D_800A3205 = 0x800A3205;
-D_800A3207 = 0x800A3207;
-D_800A3206 = 0x800A3206;
 
 /* === Kengo-derived names (apply_kengo_names.py) === */
 efc_buki_get_vertex_color = 0x8003F568;
@@ -1530,7 +1512,6 @@ g_cam_bone_data_h1                                      = 0x800EEDD8;  /* s16 fi
 /* From sound.c around line 542: a helper computes 3D-sound-positioning */
 /* angles using single_game_getEnemyCharId and stores them as a paired */
 /* {s16, s16} returned via &D_800A33C8 to the caller. */
-D_800A33C8                                      = 0x800A33C8;  /* horizontal angle (-single_game_getEnemyCharId(y, dist)) */  /* data-wave 2026-09-29: was g_sound_3d_angle_h */
 D_800A33CA                                      = 0x800A33CA;  /* vertical angle (single_game_getEnemyCharId(x, z) result) */  /* data-wave 2026-09-29: was g_sound_3d_angle_v */
 
 /* === ings.c main-loop state names (2026-05-17) -- 8 highs === */
@@ -1558,7 +1539,6 @@ _spu_rev_reserve_wa                            = 0x800A2880;  /* current allocat
 _spu_rev_offsetaddr                                = 0x800A2884;  /* offset for voice-address calc; (0x10000 - D) << g_spu_addr_shift */  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset */
 
 /* === Sound subsystem misc state (2026-05-17) -- 6 highs === */
-D_800A3248                                    = 0x800A3248;  /* memoization cache for snd_PlayBgm helper -- skip re-init if arg matches */  /* data-wave 2026-09-25: was g_snd_cached_bgm_arg */
 D_800EEE00                                      = 0x800EEE00;  /* sibling pair to D_800A33C8/D_800A33CA but for the bone-data2 context */  /* data-wave 2026-09-25: was g_snd_3d_angle_h_b */
 D_800EEE02                                      = 0x800EEE02;  /* sibling pair */  /* data-wave 2026-09-25: was g_snd_3d_angle_v_b */
 D_800EEE1C                                          = 0x800EEE1C;  /* position triple X (from D_80101DF0.xf.mat.t[0], 0x80101E1C) */  /* data-wave 2026-09-25: was g_snd_3d_pos_x */
@@ -1695,7 +1675,6 @@ g_menuctl_effect_handle                                  = 0x800A372C;  /* effec
 g_vab_vb_sbaddr                                      = 0x800EFB38;  /* 16-entry s32 array; cleared in sync with g_effect_struct_b */  /* data-wave 2026-09-24: was g_effect_pool_a_16 */
 g_effect_pool_b_24                                      = 0x800EFB78;  /* 24-entry x 8-byte struct array; +0..3 = s32 (cleared to 0), +4..5 = u8 (set to 0x7F) */
 g_effect_pool_b_24_field_4                              = 0x800EFB7C;  /* u8 field at offset +4 of each 8-byte entry of g_effect_pool_b_24 (init = 0x7F) */
-D_800A3408                                      = 0x800A3408;  /* flag reset to 0 at end of pool-init flow */  /* data-wave 2026-09-25: was g_effect_init_flag */
 
 /* === text1b post-render + menu state (2026-05-17) -- 2 highs === */
 g_text1b_post_render_countdown                          = 0x800A32BC;  /* set to 0xA (10) when text1b render-state +0x0 bit 0x200000 is set; decremented per frame; tested >= 2 and == 1 in main loop */
@@ -2032,7 +2011,6 @@ g_input_idle_flag                                       = 0x800A3804;  /* bool (
 
 /* === Replay camera init + buki pre-hit args (2026-05-17) -- 3 highs === */
 g_replay_camera_init_flag                               = 0x800A3400;  /* reset to 0 in replay_camera_Init setup */
-g_vab_sticky_sbaddr                                      = 0x800A3404;  /* = 0x1010 default; passed to coli_CheckBukiPreHit_80088088 */  /* data-wave 2026-09-24: was g_buki_pre_hit_arg */
 g_buki_pre_hit_arg_alt                                  = 0x800A340C;  /* paired with _arg (init to same value, later set to _arg) */
 
 /* === Ground fog state pair (2026-05-17) -- 4 highs === */
@@ -2241,7 +2219,6 @@ g_damage_debug_enabled_plus_4                           = 0x800A3200;  /* +4 fro
 g_damage_debug_enabled_plus_5                           = 0x800A3201;  /* +5 from g_damage_debug_enabled (0x800A31FC) */
 g_input_pause_pending_clear_plus_4                      = 0x800A3208;  /* +4 from g_input_pause_pending_clear (0x800A3204) */
 g_input_pause_pending_clear_plus_5                      = 0x800A3209;  /* +5 from g_input_pause_pending_clear (0x800A3204) */
-D_800A3220                             = 0x800A3220;  /* +4 from g_shadow_tex_state_b (0x800A321C) */  /* data-wave 2026-09-29: was g_shadow_tex_state_b_plus_4 */
 g_text1a_color_blue_plus_4                              = 0x800A3240;  /* +4 from g_text1a_color_blue (0x800A323C) */
 g_eff_particle_remaining_plus_4                         = 0x800A3270;  /* +4 from g_eff_particle_remaining (0x800A326C) */
 g_text1b_byte_pair_table_8x7_plus_8                     = 0x800A3284;  /* +8 from g_text1b_byte_pair_table_8x7 (0x800A327C) */
@@ -2253,8 +2230,6 @@ g_input_retry_counter_b_plus_8                          = 0x800A3328;  /* +8 fro
 g_pad_press_countdown_plus_4                            = 0x800A3334;  /* +4 from g_pad_press_countdown (0x800A3330) */
 g_result_timer_complete_flag_plus_4                     = 0x800A3340;  /* +4 from g_result_timer_complete_flag (0x800A333C) */
 g_result_timer_complete_flag_plus_8                     = 0x800A3344;  /* +8 from g_result_timer_complete_flag (0x800A333C) */
-D_800A33BC                                      = 0x800A33BC;  /* +8 from g_snd_se_id (0x800A33B4) */  /* data-wave 2026-09-25: was g_snd_se_id_plus_8 */
-D_800A33E0                                   = 0x800A33E0;  /* +8 from g_snd_fade_amt (0x800A33D8) */  /* data-wave 2026-09-25: was g_snd_fade_amt_plus_8 */
 g_particle_slot_bitmap_plus_4                           = 0x800A3448;  /* +4 from g_particle_slot_bitmap (0x800A3444) */
 g_scratchpad_ptr_b8_plus_4                              = 0x800A34F0;  /* +4 from g_scratchpad_ptr_b8 (0x800A34EC) */
 g_scratchpad_ptr_b8_plus_6                              = 0x800A34F2;  /* +6 from g_scratchpad_ptr_b8 (0x800A34EC) */

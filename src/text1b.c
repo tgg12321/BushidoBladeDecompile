@@ -7,8 +7,6 @@
 #include "gte.h"
 
 /* ---- merged from text1a_c2.c (owner ruling Q67: one original file) ---- */
-extern s32 D_800A33B0;
-extern s32 D_800A33B4;
 extern s32 *func_800457A0(s32);
 extern s32 *func_800455AC(s32);
 extern void func_80044F30(s32, s32);
@@ -32,6 +30,34 @@ extern void func_80044098(s32);
 
 #define ALIGN4(x) (((u32)(x) >> 2) << 2)
 #define PTR_OFF(base, off) ((s32)((u8 *)(base) + (off)))
+
+/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+static s32 D_800A33B0;
+static s32 D_800A33B4;
+static s32 D_800A33B8;  /* not named by any code or data: size from the gap */
+static s32 D_800A33BC;
+static s32 D_800A33C0;
+static s32 D_800A33C4;  /* not named by any code or data: size from the gap */
+static s16 D_800A33C8[2];
+static s32 D_800A33CC;  /* not named by any code or data: size from the gap */
+static s16 * D_800A33D0;
+static s32 D_800A33D4;
+static s32 D_800A33D8;
+static s32 D_800A33DC;  /* not named by any code or data: size from the gap */
+static s32 D_800A33E0;
+static s32 D_800A33E4;
+static s16 D_800A33E8[2];
+static s32 D_800A33EC;
+static s32 D_800A33F0;
+static s32 D_800A33F4;
+static u16 D_800A33F8;
+static s32 D_800A33FC;  /* not named by any code or data: size from the gap */
+static s16 D_800A3400;
+static s32 g_vab_sticky_sbaddr;
+static s32 D_800A3408;
+static s32 D_800A340C;
+static s32 D_800A3410[2];  /* not named by any code or data: size from the gap */
+static s32 D_800A3418;
 
 void func_800460E4(s32 stage_id, s32 arg1) {
     s32 *s0;
@@ -625,7 +651,6 @@ extern void math_RotMatrixYXZ(s32 *, s32 *);
 extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
 extern s32 ratan2(s32, s32);
 extern s16 Judge[];
-extern s16 D_800A33C8[2];
 extern Unk80101DF0Record *D_800A3708;
 extern void func_8004211C(void);
 extern void func_800444BC(void);
@@ -637,9 +662,6 @@ extern s16 D_800A324A;
 extern s16 D_800EEDB0;
 extern s16 D_800EEDB2;
 extern s16 D_800EEDBE;
-extern s32 D_800A33C0;
-extern s32 D_800A33D4;
-extern s32 D_800A33D8;
 
 extern s32 D_800EF800[];
 extern u8 g_stage_data;
@@ -685,7 +707,6 @@ extern s16 D_800F6650;
 extern s16 g_color_mode;
 extern s16 D_800F6656;
 extern s16 D_800F665A;
-extern s32 D_800A33BC;
 extern s32 func_800486FC(void);
 extern s32 *func_8004574C(s32);
 extern void func_80044F80(s32, s32 *);
@@ -1209,7 +1230,6 @@ void func_800477DC(s32 a0) {
 extern u32 GetTPage(s32, s32, s32, s32);
 extern u32 GetClut(s32, s32);
 extern void func_800417D0(s32 *);
-extern s16 *D_800A33D0;
 extern s8 D_800EF070;
 extern s8 D_800EF071;
 extern s16 D_800EF076;
@@ -2127,8 +2147,6 @@ void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
 extern s32 *func_800467B8(s32); /* corrected to the definition (src/sound.c:134) — owner ruling 2026-08-24, escalation packet func_80048AD0 */
 extern void func_800468B0(s32);
 extern u8 D_80099BCC;
-extern s32 D_800A33E0;
-extern s32 D_800A33E4;
 s32 func_80048AD0(s32 arg0) {
     s32 temp_v0;
     s32 sound;
@@ -2291,8 +2309,6 @@ void func_80048F58(s32 a0, s32 a1) {
 INCLUDE_ASM("asm/funcs", func_80048FFC);
 extern s16 D_800EF9F2;
 extern s16 D_800EF9F4;
-extern s16 D_800A33E8[2];
-extern s32 D_800A33EC;
 void func_8004939C(void) {
     s16 val = -1;
     s32 i = 0x39;
@@ -3044,7 +3060,6 @@ INCLUDE_ASM("asm/funcs", func_80052C28);
 INCLUDE_ASM("asm/funcs", func_80052C4C);
 INCLUDE_ASM("asm/funcs", gte_ReadIR1IR2Sra2);
 PAD_NOPS_3; /* padding after func_80052CD4 */
-extern s32 D_800A33F4;
 extern s32 func_80053694(s32 *, s16 *);
 
 typedef struct {
@@ -3321,7 +3336,6 @@ s32 func_80053614(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     return func_80052D00(arg2, arg3);
 }
 
-extern u16 D_800A33F8;
 s32 func_80053694(s32 *arg0, s16 *arg1) {
     u8 *p = D_800A33F4;
     s32 t;
@@ -3339,7 +3353,6 @@ s32 func_80053694(s32 *arg0, s16 *arg1) {
     }
     return 0;
 }
-extern s32 D_800A33F0;
 extern void func_80052C4C(s32, s32, s32, s32);
 extern void gte_ReadIR1IR2Sra2(s32 *, s32 *);
 
@@ -5900,8 +5913,6 @@ s32 func_80058580(PracticeMenuRec *p) {
 
 
 #undef CPU_SQ
-extern s16 D_800A3400;
-extern s32 D_800A3408;
 extern s32 g_vab_vb_sbaddr[];
 extern u32 D_800EFB78[];
 extern u8 D_800EFB7C[];
@@ -6367,8 +6378,6 @@ s32 game_FrameLoop();                           /* extern */
 s32 cdrom_StartRead(s32, s32);               /* extern */
 
 extern s32 D_800158B4;
-extern s32 g_vab_sticky_sbaddr;
-extern s32 D_800A340C;
 
 s32 snd_LoadCommonVab(s32 arg0) {
     s32 temp_v0;
@@ -8452,3 +8461,28 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     sp1C += 0xC;
     return end_off - arg0;
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s16 D_800A3248 = -1;
+s16 D_800A324A = -1;
+s32 D_800A324C = -1;
+s32 D_800A3250[2] = { 0x4c4c554e, 0 };  /* reached gp-relative by func_8005490C (declared in no C file): size from the blob label */
+PadBitTable D_800A3258 = { { 0xd, 0xf, 0xc, 0xe } };
+u8 D_800A325C[4] = { 1, 0, 2, 3 };
+u8 D_800A3260[4] = { 5, 4, 6, 7 };
+s32 D_800A3264[2] = { 0x4e00b3, 0xc180000 };  /* named by the pointer word at 0X8009B0D8 (7D920.data.s) (A9, owner ruling Q80, rules: 8c57bc4ab: this file's K3 global by layout - it lies between this file's gp-reached objects; the pointer table's owning file is open): size from the blob label */
+s32 D_800A326C = 0;
+u8 D_800A3270[8] = { 0, 1, 2, 3, 4, 0, 0, 0 };
+s32 D_800A3278 = 0;
+u8 D_800A327C[8] = { 0x80, 3, 0, 0, 0x40, 0, 0, 1 };
+u8 D_800A3284[8] = { 0xe0, 3, 0xff, 1, 0x10, 0, 1, 0 };
+s32 D_800A328C = 0;
+s32 D_800A3290 = 0xe140000;  /* the second word of the 8-byte record at D_800A328C (text1b stores &D_800A328C as a descriptor's p_static for func_8007352C; its neighbours D_800A327C/3284/3294 are 8-byte records); text1b declares D_800A328C s32; not named by code - logged (s15 DATA-MODEL) */
+u8 D_800A3294[8] = { 0xc0, 3, 0x80, 1, 0x40, 0, 0x16, 0 };
+u8 D_800A329C[8] = { 0xc0, 3, 0xff, 1, 0x10, 0, 1, 0 };
+u8 D_800A32A4[8] = { 0x80, 3, 0x7f, 1, 0x40, 0, 0x7f, 0 };
+u8 D_800A32AC[8] = { 0x80, 3, 0xff, 1, 0x20, 0, 1, 0 };
+u16 D_800A32B4 = 0;
+u16 D_800A32B6 = 0;
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+s32 g_gpu_ot256_ptr;

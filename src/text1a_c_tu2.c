@@ -12,14 +12,9 @@ extern s32 D_800EED1C[];
 extern s32 D_800EED18;
 extern s32 D_800EED14;
 extern s32 D_800EED00[];
-extern s32 D_800A33AC;
-extern s32 D_800A33A0;
-extern s32 D_800A33A4;
-extern s32 D_800A33A8;
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
 extern void func_80052C10(void);
-extern s32 D_800A3398;
 extern s32 D_800A3244;
 extern s16 D_800963EE;
 extern void func_80041430(s32, s32);
@@ -325,6 +320,14 @@ s32 func_80045080(s32 a0) {
     s32 val = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
     return func_800457DC() - val;
 }
+/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+static s32 D_800A3398;
+static s32 D_800A339C;  /* not named by any code or data: size from the gap */
+static s32 D_800A33A0;
+static s32 D_800A33A4;
+static s32 D_800A33A8;
+static s32 D_800A33AC;
+
 void seq_Start(s32 a0, s32 a1) {
     func_80044E74(a0 + 0x25, a1);
     D_800A3398 = a1;
@@ -578,7 +581,6 @@ not_found:
 }
 extern s16 D_800EED10[];
 extern s32 D_800EED1C[];
-extern s32 D_800A33AC;
 void func_80045694(s32 a0, s32 a1) {
     s32 i;
     s32 count = D_800A33AC;
@@ -633,15 +635,12 @@ s32 func_800457A0(s32 a0) {
 }
 void func_800457D4(void) {
 }
-extern s32 D_800A33A4;
 s32 func_800457DC(void) {
     return D_800A33A4;
 }
-extern s32 D_800A33A8;
 s32 func_800457E8(void) {
     return 0x45000 - D_800A33A8;
 }
-extern s32 D_800A33A0;
 s32 func_800457FC(void) {
     return D_800A33A0;
 }
@@ -930,3 +929,7 @@ void func_80046048(s32 a0, s32 a1) {
         count--;
     } while (count != -1);
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s32 D_800A3240 = 1;
+s32 D_800A3244 = 0;

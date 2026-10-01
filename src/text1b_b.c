@@ -132,8 +132,25 @@ void func_80074488(s32 *arg0);
 /* 0x800A35D0: one {s16, s16} pair per player (two words,
  * asm/data/91C98.data.s:4279-4282), passed to func_800692C0 beside SelWork
  * f40[player]; func_800768DC indexes it by player * 4 (0x80076948/5C). */
-extern s16 D_800A35D0[2][2];
-extern s8 D_800A35DC;
+
+/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+static s16 D_800A35D0[2][2];
+static s32 D_800A35D8;
+static s8 D_800A35DC;
+static s32 D_800A35E0;
+static s32 D_800A35E4;
+static s32 D_800A35E8;
+static s32 D_800A35EC;  /* not named by any code or data: size from the gap */
+static s32 D_800A35F0;
+static s32 D_800A35F4;
+static s32 D_800A35F8;
+static s32 D_800A35FC;
+static s32 D_800A3600;
+static s32 D_800A3604;  /* not named by any code or data: size from the gap */
+static s32 D_800A3608;
+static s32 D_800A360C;
+static s32 * D_800A3610;
+static s32 D_800A3614;
 
 s32 func_800747D8(u32 input) {
     SelWork *base;
@@ -1247,7 +1264,6 @@ s32 func_80076FF8(s32 *a0) {
     func_8006920C(a0, a0[14]);
     return a0[1];
 }
-extern s32 D_800A35D8;
 s32 func_80077098(s32 a0) {
     return D_800A35D8 + a0 * 44;
 }
@@ -1476,7 +1492,6 @@ void func_80077724(s32 arg0, s32 arg1) {
     s.sp34 = p[8];
     func_80077374(arg1, &s.sp10);
 }
-extern s32 D_800A35E4;
 
 
 void gpu_SetDrawEnvBg(s32, s32, s32, s32);
@@ -1510,7 +1525,6 @@ s32 func_80077894(void) {
     }
     return ret;
 }
-extern s32 D_800A35E0;
 s32 func_80077904(void) {
     s32 i;
 
@@ -1519,7 +1533,6 @@ s32 func_80077904(void) {
     D_800A35E0 = *((u8 *)&D_8009BD59 + i);
     return *((u8 *)&D_8009BD58 + i);
 }
-extern s32 D_800A35E8;
 void func_80077940(s32 arg0) {
     D_800A35E8 = (arg0 & 0x3FF) + ((u32) (arg0 & 0x3FF000) >> 2) + ((u32) (arg0 & 0x01000000) >> 4) + ((u32) (arg0 & 0x04000000) >> 5);
 }
@@ -1988,7 +2001,6 @@ extern s32 column;
     extern s32 D_8009B388;
     extern s32 D_8009B390;
     extern s32 D_800A326C;
-    extern s32 D_800A3418;
 
 
 
@@ -2039,13 +2051,7 @@ extern s32 column;
 
 
 
-    extern s32 D_800A3468;
-    extern s32 D_800A3478;
-    extern s32 D_800A347C;
     extern s32 D_800A32BC;
-    extern s32 D_800A346C;
-    extern s32 D_800A3470;
-    extern s32 D_800A3474;
     extern void func_80061FAC(s32, s32, s32);
 
 
@@ -2054,7 +2060,6 @@ extern s32 column;
 
 
 
-extern s32 D_800A3460;
 
 
 
@@ -2090,9 +2095,6 @@ extern s32 D_800A3460;
 
 
 
-extern s32 D_800A34E4;
-extern s32 D_800A34E8;
-extern s32 D_800A34EC;
 
 
 
@@ -2119,8 +2121,6 @@ extern s32 D_800A37D4;
 
 
 
-    extern volatile s32 D_800A347C;
-    extern volatile s32 D_800A3478;
     extern s16 D_800F0C04;
 
 
@@ -2409,11 +2409,6 @@ s32 func_80077D10(s32 *a0) {
     func_8006920C(a0, a0[10]);
     return a0[1];
 }
-extern s32 D_800A35F4;
-extern s32 D_800A35F0;
-extern s32 D_800A35F8;
-extern s32 D_800A35FC;
-extern s32 D_800A3600;
 s32 func_80077D74(s32 a0) {
     return D_800A35F4 + a0 * 44;
 }
@@ -2703,12 +2698,9 @@ s32 func_8007855C(s32 arg0) {
 s32 func_80078628(s32 *a0) {
     return a0[1];
 }
-extern s32 D_800A360C;
 s32 func_80078634(s32 a0) {
     return D_800A360C + a0 * 44;
 }
-extern s32 D_800A3608;
-extern s32 *D_800A3610;
 
 typedef struct {
     s32 a;       /* sp18 - 0x00 */
@@ -2798,7 +2790,6 @@ check:
     if (var_s0[1] != -1) goto loop;
 }
 
-extern s32 D_800A3614;
 extern s32 D_800A3304;
 
 s32 func_80078824(s32 arg0) {
@@ -3113,3 +3104,8 @@ void printf(s32 fmt, s32 a, s32 b, s32 c) {
     ap[3] = c;
     prnt(1, fmt, ap + 1);
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s32 D_800A3304 = 0;
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+u8 * D_800A36A0;

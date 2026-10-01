@@ -554,13 +554,15 @@ void func_80041EB0(s32 a0, s32 a1)
     func_8004A1FC((s32)D_800F6340);
 }
 extern s16 g_anim_select[3];
-extern s16 g_anim_hit_flags[2];
+/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+static s16 g_anim_hit_flags[2];
+static s32 g_anim_hit_data[2];
+
 void func_800420D0(void) {
     g_anim_hit_flags[1] = 0;
     g_anim_hit_flags[0] = 0;
     g_anim_select[0] = -1;
 }
-extern s32 g_anim_hit_data[2];
 void func_800420E8(s32 a0, s32 a1) {
     if (a0 < 2) {
         g_anim_hit_flags[a0] = 1;
@@ -706,3 +708,6 @@ void func_80042478(s32 a0) {
     gpu_SetDrawEnvBg(1, r, g, b);
     SetFarColor(r, g, b);
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s16 g_anim_select[3] = { 0, 0, 0 };

@@ -76,3 +76,6 @@ do_stop:
     CdReadyCallback(0);
     CdControlF(9, 0);
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+u8 D_800A31E4 = 0;

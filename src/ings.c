@@ -978,3 +978,38 @@ void sys_StubEmpty2(void) {
 
 void sys_StubEmpty3(void) {
 }
+
+extern const char D_8001004C[];
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s32 D_800A30DC = 0x13400;
+s32 D_800A30E0[2] = { (s32)D_8001004C, 0x190 };  /* not named by any code or data: size from the gap */
+u8 D_800A30E8 = 0;
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+u8 D_800A3690;
+u8 g_disp_fade;
+s32 D_800A36AC;
+u8 D_800A36B0;
+u8 D_800A36F1;
+u8 D_800A36F9;
+s16 D_800A3710;
+u8 D_800A3713;
+u8 g_file_dma_flag;
+u8 D_800A3744;
+u8 * g_gpu_ot_ptr;
+u8 D_800A3768;
+u8 g_disp_enable;
+u32 D_800A3770;
+s32 D_800A3784;
+u8 D_800A3788;
+u32 D_800A3798;
+u8 D_800A37A0;
+s32 D_800A37C0;
+s16 D_800A3834;
+u8 D_800A389A;
+u32 D_800A38B4;
+s32 g_rng_state;
+s16 D_800A38DC;
+u8 D_800A38F8;
+u8 D_800A3906;
+u8 D_800A390D;
+u8 D_800A3928;

@@ -677,9 +677,26 @@ s32 func_8003880C(void) {
     }
     return s0;
 }
+/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+static u8 D_800A3318;
+static u8 D_800A331C;
+static u8 D_800A3320;
+static u8 D_800A3324;
+static u8 D_800A3328;
+static u8 D_800A332C;
+static u8 D_800A3330;
+static u8 D_800A3334;
+static u8 D_800A3338;
+static u8 D_800A333C;
+static u8 D_800A3340;
+static u8 D_800A3344;
+static u8 D_800A3348;
+static u8 D_800A334C;
+static u8 D_800A3350;
+static u8 D_800A3354;
+
 s32 func_800388A8(void) {
     extern u8 D_800A3204;
-    extern u8 D_800A3318;
     s32 result = 0;
     u32 buttons;
     if (D_800A3204 != 0) {
@@ -709,15 +726,6 @@ s32 func_800388A8(void) {
 }
 s32 func_80038988(void) {
     extern u8 D_800A3205;
-    extern u8 D_800A331C;
-    extern u8 D_800A3320;
-    extern u8 D_800A3324;
-    extern u8 D_800A3328;
-    extern u8 D_800A332C;
-    extern u8 D_800A3330;
-    extern u8 D_800A3334;
-    extern u8 D_800A3338;
-    extern u8 D_800A333C;
     s32 result = 0;
     s32 v0;
     s32 sel;
@@ -862,13 +870,7 @@ end:
 
 s32 func_80038C70(void) {
     extern u8 D_800A3207;
-    extern u8 D_800A334C;
-    extern u8 D_800A3350;
-    extern u8 D_800A3354;
     extern u8 D_800A3206;
-    extern u8 D_800A3340;
-    extern u8 D_800A3344;
-    extern u8 D_800A3348;
     extern void func_8006BEC4(s32, s32);
     extern void func_8005C650(s32, s32, s32);
     extern void func_8003877C(void);
@@ -1992,3 +1994,50 @@ end:
     func_8003AA48();
     VSync(2);
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s32 D_800A31F0 = (s32)D_80010AAC;
+s32 D_800A31F4 = 0;
+s32 D_800A31F8 = 0;
+u8 D_800A31FC = 0;
+u8 D_800A31FD = 0;  /* not named by any code or data: size from the gap */
+s16 D_800A31FE = 0;  /* not named by any code or data: size from the gap */
+u8 D_800A3200 = 0x81;
+u8 D_800A3201 = 0x7b;
+u8 D_800A3202 = 0;  /* not named by any code or data: size from the gap */
+u8 D_800A3203 = 1;
+u8 D_800A3204 = 1;
+u8 D_800A3205 = 1;
+u8 D_800A3206 = 0;
+u8 D_800A3207 = 0;
+u8 D_800A3208 = 0;
+u8 D_800A3209 = 0;
+s16 D_800A320A = 0;  /* not named by any code or data: size from the gap */
+u8 D_800A320C = 0;
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+s32 g_comb_recv_buf;
+s32 g_comb_send_buf;
+s32 D_800A36C0;
+s32 D_800A36D0;
+s32 D_800A36EC;
+u8 D_800A36F8;
+s16 D_800A3714;
+s32 D_800A3730;
+s32 g_comb_read_fd;
+s32 g_comb_event_ioer;
+s32 g_comb_write_fd;
+u8 D_800A3782;
+u8 D_800A379C;
+s16 D_800A379E;
+u16 D_800A37C4;
+s16 D_800A37C8;
+u8 D_800A37D0;
+s32 g_comb_event_error;
+s16 D_800A3814;
+u8 D_800A382C;
+s32 D_800A3870;
+u8 D_800A38CC;
+s32 D_800A38D0;
+s32 D_800A38FC;
+s32 D_800A3908;
+u8 D_800A3916;

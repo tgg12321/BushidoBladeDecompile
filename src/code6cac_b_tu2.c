@@ -6582,3 +6582,10 @@ loop:
         D_800A3834 = 0;
     }
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s32 D_800A3140 = 0;
+s32 D_800A3144[2] = { 0x15e, 0x172 };  /* address taken (lui/addiu) in func_800288C8: size from the blob label */
+s32 D_800A314C = 0;
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+u8 D_800A36F2[2];

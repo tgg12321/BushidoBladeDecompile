@@ -110,26 +110,6 @@ extern u8 D_8009BC7C[];
 extern u8 D_800A32E8;
 extern u8 D_800A32E9;
 extern u8 D_800A32EC[8];
-extern s16 D_800A3554;
-extern s16 D_800A3558;
-extern s32 D_800A3568;
-extern s32 D_800A356C;
-extern s16 D_800A3570;
-extern s16 D_800A3578; /* s16: func_80070188, func_80070F78 and func_800720FC read it with lh; func_8006EC0C reads its halves through u8/u16 values. */
-extern s16 D_800A357C;
-extern s16 D_800A3580;
-extern s16 D_800A3588[];
-extern s16 D_800A358C[];
-extern s16 D_800A3598;
-extern s16 D_800A359C;
-extern s32 D_800A35A0;
-extern s32 D_800A35A8;
-extern s32 D_800A35AC;
-extern s32 D_800A35B0;
-extern s16 D_800A35B4;
-extern s16 D_800A35B8;
-extern s32 D_800A35BC;
-extern void *D_800A35C4;
 extern s32 g_gpu_ot_ptr;
 
 typedef struct RectE534 {
@@ -138,6 +118,42 @@ typedef struct RectE534 {
     s16 w;
     s16 h;
 } RectE534;
+
+/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+static s16 D_800A3540[2];
+static s16 D_800A3544[2];
+static s32 D_800A3548;
+static s32 D_800A354C;
+static s16 D_800A3550;
+static s16 D_800A3554;
+static s16 D_800A3558;
+static s16 D_800A355C;
+static Unk800A3560Slots D_800A3560;
+static s32 D_800A3568;
+static s32 D_800A356C;
+static s16 D_800A3570;
+static s32 D_800A3574;  /* not named by any code or data: size from the gap */
+static s16 D_800A3578;
+static s16 D_800A357C;
+static s16 D_800A3580;
+static s16 D_800A3584;
+static s16 D_800A3588[2];
+static s16 D_800A358C[2];
+static s16 D_800A3590[2];
+static s16 D_800A3594[2];
+static s16 D_800A3598;
+static s16 D_800A359C;
+static s32 D_800A35A0;
+static void * D_800A35A4;
+static s32 D_800A35A8;
+static s32 D_800A35AC;
+static s32 D_800A35B0;
+static s16 D_800A35B4;
+static s16 D_800A35B8;
+static s32 D_800A35BC;
+static s32 D_800A35C0;
+static void * D_800A35C4;
+static s16 D_800A35C8[2];
 
 s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
     RectE534 rect;
@@ -233,7 +249,6 @@ s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
     return 1;
 }
 
-extern s32 D_800A35AC;
 s32 func_8006E8AC(s32 a0) {
     return D_800A35AC + a0 * 44;
 }
@@ -310,15 +325,6 @@ s32 func_8006EA28(s32 *a0) {
     return a0[1];
 }
 extern s32 D_8009BC1C;
-extern s32 D_800A3548;
-extern s32 D_800A354C;
-extern s16 D_800A3580;
-extern s32 D_800A35A0;
-extern void *D_800A35A4;
-extern s32 D_800A35A8;
-extern s32 D_800A35BC;
-extern s32 D_800A35C0;
-extern void *D_800A35C4;
 void func_8006EC0C(void);
 void func_8006F528(s32 *);
 s32 func_8006EACC(s32 arg0, s32 arg1) {
@@ -353,9 +359,6 @@ s32 func_8006EACC(s32 arg0, s32 arg1) {
     ((void (*)(s32 *))(&D_8009BC1C)[D_800A3580])(sp10);
     return D_800A35A0;
 }
-extern s16 D_800A3570;
-extern s16 D_800A3578;
-extern s16 D_800A3584;
 void func_8006EC0C(void) {
     s32 state = *(u8 *)&D_800A3578;  /* entry dispatch reads low byte only -> lbu */
 
@@ -392,18 +395,10 @@ fade_out:
 
 done: ;
 }
-extern s16 D_800A3554;
-extern s32 D_800A35B0;
 extern u8 D_8009BC7C[];
 extern SelectEntryE534 D_8009BC40[][6];
-extern s16 D_800A3588[];
-extern s16 D_800A358C[];
 extern u8 D_800A32E8;
 extern u8 D_800A32E9;
-extern s32 D_800A3568;
-extern s32 D_800A35A8;
-extern s32 D_800A35BC;
-extern void *D_800A35C4;
 typedef struct {
     s16 x;
     s16 y;
@@ -516,7 +511,6 @@ void func_8006ECF4(s32 arg0) {
         }
     }
 }
-extern s16 D_800A3550;
 
 
 void func_8006F038(s32 arg0) {
@@ -545,9 +539,6 @@ void func_8006F038(s32 arg0) {
     AddPrim(g_gpu_ot_ptr, *((s32 *)(((s32)arg0) + 0x18)));
     *((s32 *)(((s32)arg0) + 0x18)) = (s32)(*((s32 *)(((s32)arg0) + 0x18)) + 0xC);
 }
-extern s16 D_800A355C;
-extern s16 D_800A35C8[2];
-extern s16 D_800A3590[];
 extern void func_80072E10(s32);
 extern void func_80073200(s32);
 extern s32 func_80073C78();
@@ -1223,11 +1214,6 @@ void func_80070188(s32 arg0) {
     }
     func_8005C6D0();
 }
-extern s16 D_800A3558;
-extern s16 D_800A3590[];
-extern s32 D_800A35A8;
-extern s32 D_800A35B0;
-extern s32 D_800A35BC;
 extern s32 g_gpu_ot_ptr;
 
 
@@ -1330,10 +1316,7 @@ void func_80070C70(s32 arg0) {
     func_80072E10(arg0);
     func_80073200(arg0);
 }
-extern s16 D_800A3540[];
-extern s16 D_800A3544[];
 extern u8 D_8009BC38[];
-extern s16 D_800A3594[];
 void func_80070F78(s32 arg0, DescF97C *s) {
     s32 *sheets; /* several values of one kind, a sprite-sheet header table:
                   * *(D_800A35A8 + 0x74) (loaded at entry and again in the
@@ -1712,7 +1695,6 @@ void func_80071C4C(s32 arg0) {
     }
     func_8006F038(arg0);
 }
-extern s32 D_800A35A8;
 void func_800720FC(s32, s32, s32);
 void func_80072084(s32 a0) {
     s32 *v0 = (s32 *)D_800A35A8;
@@ -2006,7 +1988,6 @@ extern s32 g_gpu_ot_ptr;
 
 extern s32 SetPolyG4(GameObj *);
 
-extern void *D_800A35C4;
 s32 func_80072BC4(s32 arg0, GameObj *arg1) {
     u8 var_v0;
     int fc_const;
@@ -2100,7 +2081,6 @@ s32 func_80072CD4(s32 arg0, GameObj *arg1) {
 }
 
 extern s32 func_80072CD4(s32, GameObj *);
-extern s16 D_800A3580;
 /* BEGIN func_80072E10 */
 typedef struct PolyG4Xy {
     s32 tag;
@@ -2176,7 +2156,6 @@ s32 *func_80072F30(s32 a0, u8 *a1) {
     AddPrim(g_gpu_ot_ptr + 0x5C, (s32)a1);
     return (s32 *)(a1 + 0x10);
 }
-extern s16 D_800A3580;
 s32 *func_80072FCC(s32 ignored, u8 *a1) {
     SetTile((s32)a1);
     if (D_800A3580 < 4) {
@@ -2418,3 +2397,7 @@ void func_80073200(s32 arg0) {
         *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     }
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+u8 D_800A32E8 = 0;
+u8 D_800A32E9 = 0;

@@ -173,3 +173,6 @@ void func_80034708(void) {
         func_800344B4();
     }
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s16 D_800A3174[2] = { 0, 0 };

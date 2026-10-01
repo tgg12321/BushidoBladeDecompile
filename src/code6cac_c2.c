@@ -53,7 +53,6 @@ extern u32 D_800A3D30;
 extern s32 D_800A3894;
 
 
-extern s32 D_800A3368;
 extern u8 D_800A4750[];
 extern u8 D_800A6690[];
 extern s16 D_800A7FE0[32][32];
@@ -966,12 +965,18 @@ void func_8003CF84(void) {
 void func_8003D2C4(void) {
     LoadImage((s32)&D_800A3220, (s32)&D_80090178);
 }
-extern s32 D_800A3364;
 extern s32 D_800A3218;
 extern s32 D_800A321C;
-extern s32 D_800A3358;
-extern s32 D_800A335C;
-extern s32 D_800A3360;
+/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+static s32 D_800A3358;
+static s32 D_800A335C;
+static s32 D_800A3360;
+static s32 D_800A3364;
+static s32 D_800A3368;
+static s32 D_800A336C;
+static s32 g_game_flag_a;
+static s32 g_game_flag_b;
+
 void func_8003D2F4(void) {
     s32 v0;
     s32 v1;
@@ -1795,7 +1800,6 @@ void func_8003E6A0(s32 arg0, s32 arg1) {
     func_8003E2D8(D_80101DF0.work.t[0], D_80101DF0.work.t[2], arg0, arg1);
 }
 extern Unk80101DF0Record *D_800A3708;
-extern s32 D_800A336C;
 extern s32 D_800A322C;
 extern s32 D_800927C0[64][32];
 extern s32 D_80090740[64][32];
@@ -2108,8 +2112,6 @@ extern void sys_StubEmpty2(void);
 extern void obj_Clear(s32);
 
 /* Externs for globals */
-extern s32 g_game_flag_b;
-extern s32 g_game_flag_a;
 extern void func_8001924C(s32 *, s32);
 extern void func_80045A28(s32, s32);
 extern void gte_SetMatrixRotTransIR(s32 *, s32 *, s16 *);
@@ -2722,3 +2724,14 @@ void func_8004019C(s32 *a0, s32 a1) {
         *(s16 *)((s32)v1 + 6) = 1;
     }
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s32 D_800A3218 = 0;
+s32 D_800A321C = 1;
+u32 D_800A3220 = 0x1dc03f0;
+s32 D_800A3224 = 0x240010;  /* the w/h halves of the 8-byte RECT at D_800A3220 (code6cac_c2 passes &D_800A3220 to LoadImage, whose callee reads x/y/w/h); include/code6cac.h declares D_800A3220 u32; not named by code - logged (s15 DATA-MODEL) */
+s32 D_800A3228 = -1;
+s32 D_800A322C = 0;
+s32 D_800A3230 = 0;  /* reached gp-relative by func_8003EDC0 (declared in no C file): size from the blob label */
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+s32 D_800A3818;

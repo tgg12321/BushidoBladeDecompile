@@ -26,7 +26,6 @@ extern void func_8005B5AC(void);
 extern void func_8005BF3C(void);
 extern void func_8005B9C4(void);
 extern void func_8005B868(void);
-extern u16 D_800A3310;
 extern s32 file_GetFlag2(void);
 extern void func_800324D0(u8 *);
 extern void sys_Panic(void);
@@ -970,6 +969,9 @@ void func_8001B6F4(void) {
     D_800F5328.b1F = 0;
     func_8003F1E4(0);
 }
+/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+static u16 D_800A3310;
+
 void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 val) {
     s32 inv_frac = 0x1000 - frac;
     s32 inv_s1 = 0x1000 - frac_s1;
@@ -4505,3 +4507,10 @@ INCLUDE_ASM("asm/funcs", func_80023F08);
 
 /* Tail word after func_80021424's five-entry compiler-generated switch table. */
 const u32 D_80010428[1] = { 0x00000000 };
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s32 D_800A30EC = 0;
+u8 D_800A30F0[4] = { 0, 0, 0, 0 };
+s32 D_800A30F4[2] = { 0, 0 };
+s8 D_800A30FC = -1;
+s8 D_800A30FD = -1;

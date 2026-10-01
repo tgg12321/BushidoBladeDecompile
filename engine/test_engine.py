@@ -5123,6 +5123,22 @@ def test_maspsx_small_data_sdata() -> None:
           ".section .sdata" not in run(0) and "lbu\t$4,%gp_rel(b+1)($gp)" not in run(0))
 
 
+def test_psyq_library_files() -> None:
+    """Owner ruling Q69: maspsx runs -G8 for every file except Sony PsyQ library code (compiled -G0). The
+    Makefile and buildconfig carry the same set; with a linked build it equals the evidence-derived set
+    (tools/psyq_library_files.py: the census library span over the link map), with no gp access inside it."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("plf", "tools/psyq_library_files.py")
+    plf = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(plf)
+    mk, bc = plf.declared(".")
+    check("PSYQ_LIBRARY_FILES: Makefile == engine/buildconfig.py", mk == bc and len(mk) > 0)
+    if Path("build/bb2.map").exists():
+        lib, gp = plf.library_files(".")
+        check("PSYQ_LIBRARY_FILES == the census library span over the link map", lib == mk)
+        check("no gp-relative access in Sony library code", not gp)
+
+
 def test_maspsx_fingerprint() -> None:
     """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
     HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
@@ -5364,6 +5380,7 @@ def main() -> int:
     test_maspsx_indexed_operand_not_gp()
     test_maspsx_static_lcomm()
     test_maspsx_small_data_sdata()
+    test_psyq_library_files()
     test_maspsx_fingerprint()
     test_objdump_failure_is_loud()
     test_prologue_config_fingerprint()

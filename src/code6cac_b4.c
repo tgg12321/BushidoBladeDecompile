@@ -38,3 +38,9 @@ void func_80035F78(s16 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     D_800A3840 = 0;
     D_800A36B8.val3 = (u8)arg4;
 }
+
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+CdlATV D_800A36B8;
+CdlATV g_cd_atv;
+s16 D_800A3840;
+s16 D_800A3854;

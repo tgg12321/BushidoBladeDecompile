@@ -13,17 +13,12 @@ extern s32 D_800EED1C[];
 extern s32 D_800EED18;
 extern s32 D_800EED14;
 extern s32 D_800EED00[];
-extern s32 D_800A33AC;
-extern s32 D_800A33A0;
-extern s32 D_800A33A4;
-extern s32 D_800A33A8;
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
 extern void func_80052C10(void);
 
 
 
-extern s32 D_800A3398;
 extern s32 D_800A3244;
 extern s16 D_800963EE;
 
@@ -1438,3 +1433,10 @@ void func_8004473C(void)
     }
 }
 extern void func_800417D0(s32 *);
+
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+s32 D_800A3708;
+s32 D_800A378C;
+s32 D_800A3790;
+s32 D_800A3820;
+s32 D_800A3828;

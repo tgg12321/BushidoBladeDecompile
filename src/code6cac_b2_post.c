@@ -667,3 +667,10 @@ s32 bits_DepositMask3F83F8(s32 a0) {
     } while (i < 0x1B);
     return result;
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+u8 D_800A31D8 = 1;
+u8 D_800A31D9 = 1;
+u8 D_800A31DA = 0;
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+u8 D_800A3740;

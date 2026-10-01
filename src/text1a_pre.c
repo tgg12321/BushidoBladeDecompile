@@ -34,13 +34,15 @@ extern void func_80044010(s32 *, s16);
 
 extern s32 D_800A378C;
 extern s32 D_800A3234;
-extern s32 D_800A3378;
 extern u8 D_800A9830;
 extern u8 D_800A9920;
 extern u16 D_80094AF4;
 extern u8 D_80094B48[];
 
 extern void SetDrawMove(s32, s16 *, s32, s32);
+
+/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+static s32 D_800A3378;
 
 void gpu_AddDrawMove(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
@@ -548,3 +550,6 @@ void func_80040CB8(void *arg0) {
     } while (0);
     *(s16 *)((s32)slot + 2) = -1;
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s32 D_800A3234 = -1;

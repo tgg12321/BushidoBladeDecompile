@@ -35,6 +35,70 @@ s32 cdrom_StartRead(s32, s32);
 extern s32 game_FrameLoop(void);
 extern s32 cdrom_StartRead(s32, s32);
 
+/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+static s32 D_800A3420;
+static s32 D_800A3424;
+static s32 D_800A3428[2];  /* not named by any code or data: size from the gap */
+static s32 D_800A3430[2];  /* not named by any code or data: size from the gap */
+static s16 D_800A3438[4];
+static s16 D_800A3440;
+static s32 D_800A3444;
+static s32 D_800A3448;
+static u32 D_800A344C[2];
+static s32 D_800A3454[2];
+static s16 D_800A345C[2];
+static s32 D_800A3460;
+static s32 D_800A3464;
+static s32 D_800A3468;
+static s32 D_800A346C;
+static s32 D_800A3470;
+static s32 D_800A3474;
+static s32 D_800A3478;
+static s32 D_800A347C;
+static s32 D_800A3480;
+static s32 D_800A3484;
+static s32 D_800A3488;
+static s32 D_800A348C;
+static s32 D_800A3490;
+static s32 D_800A3494;
+static s32 D_800A3498;
+static s32 D_800A349C;
+static s32 D_800A34A0;
+static s32 D_800A34A4;
+static s32 D_800A34A8;
+static s32 D_800A34AC;
+static s32 D_800A34B0;
+static s32 D_800A34B4;
+static s32 D_800A34B8;
+static s32 D_800A34BC;
+static s32 D_800A34C0;
+static s32 D_800A34C4;
+static s32 D_800A34C8;
+static s32 D_800A34CC;
+static s32 D_800A34D0;
+static s32 D_800A34D4;
+static s32 D_800A34D8;
+static s32 D_800A34DC;
+static s32 D_800A34E0;
+static s32 D_800A34E4;
+static s32 D_800A34E8;
+static s32 D_800A34EC;
+static s16 D_800A34F0[2];
+static s32 D_800A34F4;  /* not named by any code or data: size from the gap */
+static s32 D_800A34F8;
+static s32 D_800A34FC;
+static s32 D_800A3500;
+static s32 D_800A3504[2];  /* not named by any code or data: size from the gap */
+static s16 D_800A350C[2];
+static s16 D_800A3510[2];
+static s32 D_800A3514;
+static s32 D_800A3518;
+static s32 D_800A351C;
+static s32 D_800A3520;
+static s32 D_800A3524;
+static s16 D_800A3528;
+static s32 D_800A352C;
+
 /* [s29 2026-09-05 - synthesis modality.  MATCH: `sandbox func_80060A68 --disable all` = score 0,
  * build_insns 66 / target_insns 66; `verify-oracle` = build_sha1
  * 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, build_matches true.
@@ -96,7 +160,6 @@ extern s32 cdrom_StartRead(s32, s32);
  * Also measured 0/66 with the tables spelled through the address of their first word rather than
  * as array declarations; the array declarations are kept because they put the object model at the
  * declaration instead of at each use site. */
-extern s32 D_800A3468;
 #define OB ((struct Ob *)D_800A3468)
 void func_80060A68(void) {
     struct Ob {
@@ -114,8 +177,6 @@ void func_80060A68(void) {
         s32 m24;
         s32 m28;
     };
-    extern s32 D_800A3478;
-    extern s32 D_800A347C;
     extern s32 D_800A32BC;
 
 
@@ -143,10 +204,6 @@ void func_80060A68(void) {
 }
 #undef OB
 void func_80060B70(void) {
-    extern s32 D_800A3468;
-    extern s32 D_800A346C;
-    extern s32 D_800A3470;
-    extern s32 D_800A3474;
 
 
 
@@ -180,12 +237,6 @@ void func_80060B70(void) {
 }
 
 extern u8 D_800F1150[];
-extern s16 D_800A345C[2];
-extern s32 D_800A3454[2];
-extern u32 D_800A344C[2];
-extern s32 D_800A3460;
-extern s32 D_800A3444;
-extern s32 D_800A3448;
 void func_80060C60(void) {
     s32 i = 0;
     s32 *p = D_800F10D0;
@@ -206,8 +257,6 @@ void func_80060C60(void) {
     D_800A3448 = 0;
 }
 
-extern s32 D_800A3420;
-extern s32 D_800A3424;
 
 s32 func_80060CB8(s32 arg0, s32 arg1)
 {
@@ -279,38 +328,6 @@ void func_80060E04(s32 arg0) {
     D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
     D_800A3720 = D_800A37D4;
 }
-extern s32 D_800A3468;
-extern s32 D_800A346C;
-extern s32 D_800A3470;
-extern s32 D_800A3474;
-extern s32 D_800A3480;
-extern s32 D_800A3484;
-extern s32 D_800A3488;
-extern s32 D_800A348C;
-extern s32 D_800A3490;
-extern s32 D_800A3494;
-extern s32 D_800A3498;
-extern s32 D_800A349C;
-extern s32 D_800A34A0;
-extern s32 D_800A34A4;
-extern s32 D_800A34A8;
-extern s32 D_800A34AC;
-extern s32 D_800A34B0;
-extern s32 D_800A34B4;
-extern s32 D_800A34B8;
-extern s32 D_800A34BC;
-extern s32 D_800A34C0;
-extern s32 D_800A34C4;
-extern s32 D_800A34C8;
-extern s32 D_800A34CC;
-extern s32 D_800A34D0;
-extern s32 D_800A34D4;
-extern s32 D_800A34D8;
-extern s32 D_800A34DC;
-extern s32 D_800A34E0;
-extern s32 D_800A34E4;
-extern s32 D_800A34E8;
-extern s32 D_800A34EC;
 void func_80060E38(s32 arg0, s32 arg1) {
     D_800A3468 = 0x1F800000;
     D_800A346C = 0x1F800018;
@@ -434,7 +451,6 @@ extern s32 func_800421A4();
 /* D_800158E0: 24B @ 0x800158E0 — "eff prim over :%d \n" + alignment + empty trailing string */
 const char D_800158E0[24] = "eff prim over :%d \n";
 extern s32 D_800A32BC;
-extern s32 D_800A3464;
 
 extern s32 D_800F1140;
 
@@ -1187,9 +1203,6 @@ void func_800620B8(s16 *pos, s32 *trans) {
     D_800A37D4 = (s32)prim;
 }
 s32 func_8006288C(void) {
-    extern s32 D_800A3460;
-    extern s32 D_800A347C;
-    extern s32 D_800A3478;
     extern s16 D_800F0C04;
     extern s32 D_800F0FB8;
     extern s32 D_800F0FBC;
@@ -1398,7 +1411,6 @@ s32 func_8006295C(void) {
     }
     return D_800A3460;
 }
-extern s32 D_800A347C;
 
 /* Spawn a flare: claim the first free slot bit in D_800A3448 (of 12), copy
    the position at *D_800A347C into its D_800F0E38 record and reset its age.
@@ -1620,7 +1632,6 @@ u8 func_80063BA4(void) {
     *(s32 *)D_800A3480 = D_800A345C[1];
     return func_80063E10(1);
 }
-extern s32 D_800A3478;
 extern SVECTOR D_800F1000[][10];
 /* func_80063BD0 (src/text1b.c) -- MATCHING FORM.  Honest distance 0 / 144
  * (sandbox --disable all, zero cheat-asm, zero rules) measured in grind
@@ -2338,7 +2349,6 @@ s32 func_80064FB4(void) {
 }
 
 extern s32 D_800F10FC;
-extern s16 D_800A3440;
 s32 func_80065000(void) {
     void *p = D_800A347C;
     void *q = D_800A3468;
@@ -3170,7 +3180,6 @@ u8 func_800671CC(void) {
     D_800F1134 = 2;
     return ret;
 }
-extern s16 D_800A3438[];
 extern SVECTOR D_800F0B78[];
 /* 20-byte record table at 0x800EFC78: 4 rows (arg1) of 48 records. Object
  * model evidence: asm/funcs/func_80067200.s addresses it as
@@ -3370,7 +3379,6 @@ extern u16 D_8009B8B0[];
 extern u16 D_8009B998[];
 extern u16 D_8009B9B8[];
 u8 func_800678A8(s32 arg0, s32 arg1) {
-    extern s32 D_800A34EC;
     extern s32 D_800A37D4;
     extern s32 D_800A3724;
     s32 outer = D_800A34EC;
@@ -3769,11 +3777,8 @@ void func_80067D14(s32 arg0, s32 arg1) {
     }
 }
 u8 func_80068D88(s32 arg0, s32 arg1) {
-    extern s32 D_800A34EC;
     extern s32 D_800A37D4;
     extern s32 D_800A3724;
-    extern s32 D_800A34E4;
-    extern s32 D_800A34E8;
     extern s32 g_gpu_ot_ptr;
     s32 outer = D_800A34EC;
     s16 *p_idx = (s16 *)(outer + 0x6E);
@@ -3838,16 +3843,7 @@ void func_80068ECC(s32 arg0) {
     v &= ~0x80; v |= arg0 & 0x80;
     *p = v;
 }
-extern s32 D_800A3500;
-extern s32 D_800A351C;
-extern s32 D_800A3524;
-extern s32 D_800A34FC;
 extern s32 D_800A372C;
-extern s32 D_800A3518;
-extern s32 D_800A34F8;
-extern s16 D_800A3528;
-extern s16 D_800A3510[2];
-extern s16 D_800A350C[2];
 extern u8 D_800A32C0[8];
 extern s32 snd_StopAll(void);
 
@@ -3982,7 +3978,6 @@ void func_8006920C(s32 *a0, s32 a1) {
 
 
 extern void func_8006E390();
-extern s32 D_800A3514;
 s32 func_80069250(s32 arg0, s32 arg1) {
     s32 sp10[10];
     D_800A3514 = 0;
@@ -6175,7 +6170,6 @@ s32 func_8006D74C(s32 arg0, s32 arg1) {
     func_8005C6D0();
     return result;
 }
-extern s32 D_800A352C;
 s32 func_8006D7FC(void) {
     D_800A352C = 0;
     return 1;
@@ -6518,7 +6512,6 @@ s32 func_8006E2A8(void) {
     SetDispMask(1);
     return 1;
 }
-extern s32 D_800A3520;
 s32 *func_80069120(s32);
 void func_8006E390(s32 *a0, s32 *a1) {
     s32 *s0 = a0;
@@ -6584,3 +6577,16 @@ s32 func_8006E49C(s32 arg0, s32 *arg1) {
     arg1[0xF] = base4;
     return base4 + tail;
 }
+
+/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+s32 D_800A32B8 = 0;
+s32 D_800A32BC = 0;
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+Tile * D_800A36DC;
+u8 * D_800A36E0;
+u8 * D_800A36E4;
+s32 D_800A3720;
+s32 D_800A3724;
+s32 D_800A372C;
+s32 D_800A37D4;
+s32 D_800A3900;

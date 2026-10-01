@@ -17,8 +17,7 @@ from . import buildconfig as cfg
 
 STAMP = Path('build/verified-inputs.json')
 CONFIGS = (
-    'Makefile', 'bb2.ld', 'bb2.sha1', 'sdata_syms.txt', 'sdata_funcs.txt',
-    'sdata_exclude.txt', 'expand_lb_funcs.txt', 'expand_dest_funcs.txt',
+    'Makefile', 'bb2.ld', 'bb2.sha1', 'expand_lb_funcs.txt', 'expand_dest_funcs.txt',
     'multu_funcs.txt', 'multu_pad_funcs.txt', 'maspsx_prefill_label_funcs.txt',
     'maspsx_comm_syms.txt',
     'undefined_funcs_auto.txt', 'undefined_syms_auto.txt', 'named_syms.txt',

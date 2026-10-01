@@ -361,3 +361,10 @@ void func_80036940(void) {
     }
 }
 /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
+
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+CdlATV D_800A36B8;
+CdlATV g_cd_atv;
+u8 g_cd_result[8];
+s16 D_800A3840;
+s16 D_800A3854;

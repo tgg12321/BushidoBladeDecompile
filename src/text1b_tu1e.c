@@ -628,3 +628,6 @@ void func_80074488(s32 *arg0) {
     rect[3] = 1;
     func_80069898((GameObj *)arg0, (u16 *)rect, 2);
 }
+
+/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+u8 * D_800A36A0;
