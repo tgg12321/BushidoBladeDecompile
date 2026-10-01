@@ -20,3 +20,6 @@
 - Plan steps 2-5 resolved: arg2 typed `S_6A880 *` (already declared above; caller retyped, byte-neutral);
   frame skew was allocation, not a missing pad (giv j*8 unreduced + `arg0*8` hoisted -> 0x58 naturally);
   two FAKE constructs with receipts in rejected/ (cells named intermediate; `(sheets + i) + arg0 * 2` grouping).
+- LANDED 2026-10-01: Match 202479d24 (body == candidate.c, body_hash 44e0bb0bb49f6baf), layer-2 round 1 PASS
+  rev-6BD28 (scope match; cells entry-6 FAKE and the `+` grouping carve-out confirmed, casts disclosed);
+  caller func_8006BEC4 retype PASS rev-6BD28 (cheat-cleanup, 2a84989477d822df); queue done 48a467114. Ledger closed.
