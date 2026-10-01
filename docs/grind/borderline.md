@@ -321,3 +321,8 @@ disposition taken: unprototyped in step 08 (the round-2 step-08 reviewer flagged
 Question for the owner (plain language): "One function is called once with two arguments and once with only one (the shipped code really passes just one there). To keep both calls exactly as the game has them in the merged file, its declaration has no argument list, the old-C way, like func_8004153C, which you already approved. Allow the same for this function?"
 options: (A, recommended) Allow: `extern void func_80044100();` in the merged file, recorded next to A5's func_8004153C. (B) Refuse: keep the varargs declaration `void (s32, ...)` (also byte-identical, but a varargs prototype asserts a variable argument list the definition does not have). (C) Hold step 08 until a different evidence-based declaration is found.
 recommendation: (A).
+
+## 2026-10-01 — q65-adoption step 15 small rodata items, D_800A3224 / D_800A3290, step 08 func_80044100 — owner rulings Q86-Q88 — resolution
+category: resolution
+evidence: docs/grind/owner-rulings-2026-09-26.md batch 40; docs/grind/decisions.md 2026-10-01 OWNER RULING Q86-Q88.
+disposition taken: all three 2026-10-01 entries SPENT with option (A): record only (Q86); later aggregate-merge cleanup for the two half-records (Q87, follow-up owed); func_80044100 unprototyped, listed in A5 (Q88). Each series step still needs its own layer-2.

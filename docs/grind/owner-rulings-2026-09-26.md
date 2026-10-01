@@ -856,3 +856,26 @@ Question, verbatim: "func_8002AB08 (collision/contact routine) is byte-exact. A 
 Owner chose: **"Allow narrowly (Recommended)"** — option text: "Only those writes in func_8002AB08 (`temp1 = 0; temp2 = 1; c = 1;` in one branch, `alt = 0;` in the other), each with its target address in the variable's comment; rest of the reused-variable package and a fresh review. The function then lands."
 Other option offered: "Refuse" — "func_8002AB08 stays assembly and active; no spelling without the stores matches."
 The rule text is .claude/rules/reused-local-necessity.md § Owner ruling Q85.
+
+# Owner exchange 2026-10-01 (fortieth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: Q65 adoption round 2 (step-08 and step-15 reviewers); borderline.md 2026-10-01 entries "q65-adoption step 15 —
+eight small read-only data items", "q65-adoption step 15 — D_800A3224 / D_800A3290" and "q65-adoption step 08 —
+func_80044100 left unprototyped" (ledger d688fc1e5).
+
+## Q86 — eight small read-only items in -G8 files
+Question, verbatim: "Q65, small read-only data: eight tiny read-only items (format strings used by Sony library code, plus alignment pads) sit in files the adoption compiles with the small-data option, because the library test only looks at code and these files have none. Sony's compiler would have put tiny constants in small data, but the shipped game has them in normal read-only data, so their files probably weren't compiled with that option. Our build already puts them exactly where the game has them; nothing changes in the bytes. Is recording this enough?"
+Owner chose: **"Record only (Recommended)"** — option text: "Byte-neutral; the items stay where the shipped bytes have them; revisit when those data-only files are folded into their owners."
+Other option offered: "Extend library test" — "Also classify data-only files by who reads them, so these three get the library treatment. A rule change needing its own proof."
+Record only; no rule text.
+
+## Q87 — D_800A3224 / D_800A3290, second halves of 8-byte records
+Question, verbatim: "Q65, two half-records: two small pieces of data are really the second halves of 8-byte records (a screen rectangle passed to LoadImage, and a drawing descriptor). The code currently declares their first halves as plain 4-byte numbers. The adoption keeps those declarations and defines each second half separately, with a comment stating the evidence. Fixing the types properly means changing those declarations and the code that uses them. Leave that for a later data-model cleanup?"
+Owner chose: **"Later cleanup (Recommended)"** — option text: "Land the adoption as is; retype both as their real 8-byte records in a later reviewed cleanup."
+Other option offered: "Retype in adoption" — "Add a header change and an extra reconciliation step before the gp switch; more work now, delays the adoption."
+Record only; no rule text. Follow-up owed: retype D_800A3220 as a RECT and D_800A328C as its 8-byte record (aggregate-merge cleanup, own layer-2).
+
+## Q88 — func_80044100 unprototyped
+Question, verbatim: "Q65, one declaration: func_80044100 is called once with two arguments and once with only one; the shipped code really passes just one there. Once two files merge they need one shared declaration. A normal two-argument prototype would change that call's bytes. The adoption declares it with no argument list (old-style C), the same treatment you approved for func_8004153C in Q70. Allow it?"
+Owner chose: **"Allow (Recommended)"** — option text: "`extern void func_80044100();`, recorded next to func_8004153C in the owner-decided list."
+Other options offered: "Use varargs instead" — "`void (s32, ...)`, also byte-identical, but it claims a variable argument list the function doesn't have."; "Hold step 08" — "Wait for a different evidence-based declaration; the adoption waits."
+The rule text is .claude/rules/per-file-gp-model.md (A5).

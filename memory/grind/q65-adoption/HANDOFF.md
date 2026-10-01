@@ -173,6 +173,9 @@ body hash, so record each verdict on the exact body.
 - **WSL / hooks.** Commands containing `git checkout`/`commit`/`reset` or `python3 -m engine.cli` are blocked
   inline; put them in script files (`atstep.sh`, `trial_seq.sh`). `/tmp` in Git Bash is not WSL's `/tmp`.
 - **After adoption, re-measure func_800770B8** (its distance depends on the gp model).
+- **After adoption, Q87 cleanup (owed):** retype D_800A3220 as a RECT and D_800A328C as its 8-byte record,
+  folding in step 15's separate D_800A3224 / D_800A3290 (aggregate-merge, own layer-2; decisions.md 2026-10-01
+  Q86-Q88).
 
 ## Files here
 

@@ -9,8 +9,8 @@ metadata:
 # Per-file gp model (owner rulings Q65, Q67-Q72, Q79-Q81)
 
 Records: docs/grind/decisions.md OWNER RULING entries;
-evidence `docs/grind/gp-model-2026-09-30.md` (+ § Addendum). Until the adoption lands, `sdata_syms.txt`,
-`sdata_funcs.txt`, `sdata_exclude.txt` stay in force; the adoption retires every row.
+evidence `docs/grind/gp-model-2026-09-30.md` (+ § Addendum). Until the adoption lands the three `sdata_*.txt`
+lists stay in force; it retires every row.
 
 ## The rule (Sony ASPSX 2.34, measured: 6,337 accesses, 0 disagreements)
 
@@ -79,7 +79,8 @@ Kinds:
 
 No definition in a shared header. Types follow existing declarations/evidence (aggregate-merge entry of
 [[no-new-park-categories]]). **(A5, Q70)** only `D_80102C00` (keeps `s32`), `D_800153F0` (struct of 22
-halfwords) and `func_8004153C` (declaration unchanged) take owner-decided types. **(A9)** `D_800A3264` is
+halfwords), `func_8004153C` (declaration unchanged) and (Q88) `func_80044100` (unprototyped) take
+owner-decided types. **(A9)** `D_800A3264` is
 text1b's K3 global, evidence in its comment (Q80; table owner open); `D_800A3530`/`D_800A3534` stay in asm/data,
 logged (Q81).
 

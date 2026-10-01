@@ -1125,3 +1125,12 @@ in func_8002AB08's blade-pass loop only, `temp1 = 0; temp2 = 1; c = 1;` in the u
 `alt = 0;` in the 4/5 arm (`move $fp,$zero` 0x8002AF18) may re-store values the variables always hold there, despite
 Ruling 11 (B)(2) / Ruling 5 2(c); each variable's comment cites the address; rest of the Ruling 11 package and a fresh
 layer-2. Rule text: .claude/rules/reused-local-necessity.md § Owner ruling Q85.
+
+## 2026-10-01 — OWNER RULING — Q86-Q88: Q65 adoption — small rodata items recorded; half-records left for a later cleanup; func_80044100 unprototyped
+
+Fortieth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 40). Q86 "Record only": the eight small
+const items in rodata-only / -G8 files stay in .rodata (byte-neutral; revisit when those files fold into their owners).
+Q87 "Later cleanup": the adoption keeps D_800A3220 / D_800A328C as declared and defines D_800A3224 / D_800A3290 with
+evidence comments; a later aggregate-merge cleanup retypes them as their 8-byte records (own layer-2). Q88 "Allow":
+`extern void func_80044100();` (unprototyped), added to A5's owner-decided list. Rule text: .claude/rules/per-file-gp-model.md
+(A5, Q88); Q86/Q87 are records only.
