@@ -5050,6 +5050,31 @@ def test_queue_remeasure_source_integrity() -> None:
             Q.QUEUE_PATH = orig_path
 
 
+def test_maspsx_indexed_operand_not_gp() -> None:
+    """Owner ruling Q65 (2026-09-30), step 1: maspsx's load-delay helper `_uses_gp`
+    treated an INDEXED operand `sym($reg)` of a gp-eligible symbol as gp-relative, so
+    `lbu $2,..; sb $2,sym($3)` got a spurious nop (the expansion itself goes through
+    $at). Sony ASPSX 2.34 emits no nop there; a direct `sb $2,sym` stays gp with the nop.
+    Byte-neutral under the sdata lists (verify-oracle); load-bearing under Q65's
+    per-file model (func_8003047C)."""
+    import sys
+    sys.path.insert(0, str(Path("tools/maspsx").resolve()))
+    try:
+        from maspsx import MaspsxProcessor
+    finally:
+        sys.path.pop(0)
+
+    def run(store):
+        mp = MaspsxProcessor([".ent\tf", "lbu\t$2,0($4)", store, ".end\tf"], sdata_sym_list=["sym"])
+        return [l.split("#")[0].strip() for l in mp.process_lines()
+                if l.split("#")[0].strip() and not l.lstrip().startswith(("#", "."))]
+
+    eq("maspsx: indexed store of a gp-eligible symbol takes no load-delay nop",
+       "nop" in run("sb\t$2,sym($3)"), False)
+    eq("maspsx: direct store stays gp-relative with its nop",
+       run("sb\t$2,sym"), ["lbu\t$2,0($4)", "nop", "sb\t$2,%gp_rel(sym)($gp)"])
+
+
 def test_maspsx_fingerprint() -> None:
     """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
     HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
@@ -5288,6 +5313,7 @@ def main() -> int:
     test_queue_write_serialization()
     test_queue_rotation()
     test_queue_remeasure_source_integrity()
+    test_maspsx_indexed_operand_not_gp()
     test_maspsx_fingerprint()
     test_objdump_failure_is_loud()
     test_prologue_config_fingerprint()

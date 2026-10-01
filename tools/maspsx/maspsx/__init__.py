@@ -810,12 +810,21 @@ class MaspsxProcessor:
             op, *rest = line.split("\t")
             if op in load_mnemonics or op in store_mnemonics:
                 (
-                    _,
+                    r_source,
                     _,
                     operand,
                     _,
                     _,
                 ) = parse_load_or_store(" ".join(rest))
+
+                # An indexed operand `sym($reg)` is expanded through $at
+                # (lui $at; addu $at,$at,$reg; op 0($at)), never gp-relative,
+                # so it never makes the preceding load need a delay nop. Sony
+                # ASPSX 2.34 agrees: `lbu $2,0($4); sb $2,sym($3)` with `sym`
+                # small data defined in the file assembles with no nop
+                # (tmp/q56/aspsx_probe_results.txt, owner ruling Q65).
+                if r_source is not None:
+                    return False
 
                 if operand.count("+") == 1:
                     symbol, _ = operand.split("+")
