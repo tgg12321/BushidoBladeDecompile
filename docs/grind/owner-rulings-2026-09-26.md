@@ -798,3 +798,26 @@ Question, verbatim: "func_800770B8 (SelWork setup) still matches only with the f
 Owner chose: **"Allow narrowly (Recommended)"** — option text: "p_old lands as a reused variable (list pointer, then work pointer) plus the restore store marked FAKE, with the compiler-dump proof, the full reused-variable paperwork, and a fresh review. For this function only."
 Other option offered: "Keep refused" — "func_800770B8 stays assembly and active; no allowed C spelling is known, so the lane moves on."
 The rule text is .claude/rules/reused-local-necessity.md § Owner ruling Q78.
+
+# Owner exchange 2026-10-01 (thirty-seventh batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: the regenerated Q65 adoption series failed layer-2 round 1 (steps 08/13/15); laneA fixed the generators
+and raised three questions the per-file gp rule does not decide (borderline.md 2026-10-01 q65-adoption entries;
+ledger 3717bfd7a; probe memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.sh + .out).
+
+## Q79 — how maspsx aligns `static` storage
+Question, verbatim: "Q65 adoption (gp model), alignment: Sony's own assembler and linker put every 'static' variable on a 4-byte boundary, whatever its size; a probe of the real tools showed this for 20 statics of 1–16 bytes. Our assembler layer (maspsx) lines them up by size instead: 8-byte ones on 8, 2-byte ones on 2. That difference now matters. The reviewer required three 2-element arrays that only fit Sony's way. Sony's way also means 46 small statics we currently define separately are really parts of bigger objects, or just padding. Should maspsx follow Sony's measured rule?"
+Owner chose: **"Model Sony fully (Recommended)"** — option text: "Every static 4-aligned, with the probe as calibration and an engine test. The three arrays land as reviewed; filler pieces become padding; small halfword names join their 4-byte object in one more byte-identical step, each changed body reviewed."
+Other options offered: "Only 8-byte statics" — "Unblocks the series now, byte-identical end to end, but models only half of the measured behaviour; smaller statics stay as recorded debt."; "Keep current model" — "The three pairs stay two names each, which review refused; step 15 and the whole adoption stay blocked."
+The rule text is .claude/rules/per-file-gp-model.md (A8).
+
+## Q80 — D_800A3264 owned by text1b
+Question, verbatim: "Q65 adoption, ownership: one 8-byte variable (D_800A3264) sits in the middle of text1b's small initialized data, so by layout it must belong to text1b. The rule also asks that no other file refers to it. Its only other reference is a pointer inside a data table whose source file we haven't identified, although only text1b's code uses that table. Accept it as text1b's variable?"
+Owner chose: **"Accept in text1b (Recommended)"** — option text: "Defined in text1b as a normal global, so a pointer from any file still links; evidence in its comment; the table's owner is recorded as an open question."
+Other option offered: "Hold the adoption" — "The series can't land until the table's owning file is established; no layout keeps this variable out of text1b's block."
+The rule text is .claude/rules/per-file-gp-model.md (A9).
+
+## Q81 — D_800A3530 / D_800A3534 left as raw data
+Question, verbatim: "Q65 adoption, leftovers: two pieces of data just in front of text1b_tu1d's block can't join it under the rule. One is 12 bytes, too big for a small static, so it was probably several smaller variables we can't tell apart yet. Leave both as raw assembly data for now? The adoption can land either way."
+Owner chose: **"Leave as raw data (Recommended)"** — option text: "Logged; revisit once text1b_tu1d's code reveals the real object sizes."
+Other option offered: "Split by best guess" — "Define small objects now from a guess at the sizes. Not backed by evidence, which the rules normally refuse."
+The rule text is .claude/rules/per-file-gp-model.md (A9).

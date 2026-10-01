@@ -259,3 +259,8 @@ disposition taken: left in asm/data (a blob piece between text1b_tu1c's and text
 Question for the owner (plain language): "Two pieces of text1b_tu1d data sit just in front of its block but cannot join it under the rule: one is 12 bytes, too big for a small static, so it was probably several smaller variables we cannot tell apart yet. Leave them as raw data for now?"
 options: (A, recommended) Leave them in asm/data, logged; revisit when text1b_tu1d's accesses show the real object sizes. (B) Split the 12 bytes into small objects by guess (refused: not evidence).
 recommendation: (A).
+
+## 2026-10-01 — q65-adoption step 12/14/15 questions — owner rulings Q79-Q81 — resolution
+category: resolution
+evidence: docs/grind/owner-rulings-2026-09-26.md batch 37; docs/grind/decisions.md 2026-10-01 OWNER RULING Q79-Q81.
+disposition taken: the three 2026-10-01 q65-adoption policy-questions are SPENT: static alignment option (A) Sony model (Q79); D_800A3264 option (A) text1b K3 global, table owner open (Q80); D_800A3530/D_800A3534 option (A) left in asm/data, logged (Q81). Each series step still needs its own layer-2.

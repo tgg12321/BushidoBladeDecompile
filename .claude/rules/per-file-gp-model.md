@@ -6,9 +6,9 @@ metadata:
   type: rule
 ---
 
-# Per-file gp model (owner rulings Q65, Q67-Q72, 2026-09-30)
+# Per-file gp model (owner rulings Q65, Q67-Q72, Q79-Q81)
 
-Records: docs/grind/decisions.md 2026-09-30 OWNER RULING — the per-file gp model (and the Q67-Q72 entries);
+Records: docs/grind/decisions.md OWNER RULING entries;
 evidence `docs/grind/gp-model-2026-09-30.md` (+ § Addendum). Until the adoption lands, `sdata_syms.txt`,
 `sdata_funcs.txt`, `sdata_exclude.txt` stay in force; the adoption retires every row.
 
@@ -31,7 +31,10 @@ An indexed operand `S($reg)` is never gp. The answer is per FILE, identical for 
 1. **maspsx, global only:** `_uses_gp` is False for a base-register operand; `.local`+`.comm` is modelled as
    `.lcomm`; (A3, Q68) under maspsx `-G8` only, an initialized object cc1 emits into `.data` with total size
    <= 8 bytes goes to `.sdata` (models cc1psx; cc1 stays unpatched). A `static` initialized object moves only
-   with a cc1psx calibration showing it. Landing commit adds an `engine test` case.
+   with a cc1psx calibration showing it. (A8, Q79) every `.lcomm` static is 4-aligned whatever its size,
+   calibrated by Sony probe `memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.*`; a static's tail to
+   the next 4-byte boundary is padding; a gp-reached name in another static's 4-byte slot joins that object
+   in a byte-identical commit, layer-2 on each changed body. Landing commit adds an `engine test` case.
 2. **Flags:** `--sdata-syms/--sdata-funcs/--sdata-exclude` removed, maspsx `-G8` added; buildconfig mirrors
    the Makefile; the three lists are deleted. (A4, Q69) maspsx `-G8` is on for every C file except Sony
    library code (`.text` non-empty and entirely within 0x80078948..0x8008D070,
@@ -76,7 +79,9 @@ Kinds:
 
 No definition in a shared header. Types follow existing declarations/evidence (aggregate-merge entry of
 [[no-new-park-categories]]). **(A5, Q70)** only `D_80102C00` (keeps `s32`), `D_800153F0` (struct of 22
-halfwords) and `func_8004153C` (declaration unchanged) take owner-decided types.
+halfwords) and `func_8004153C` (declaration unchanged) take owner-decided types. **(A9)** `D_800A3264` is
+text1b's K3 global, evidence in its comment (Q80; table owner open); `D_800A3530`/`D_800A3534` stay in asm/data,
+logged (Q81).
 
 ## File boundaries come from evidence only
 
@@ -107,7 +112,6 @@ option naming functions or symbols selects gp; `maspsx_comm_syms.txt` stays reti
 
 ## How it lands
 
-A series of commits, each: byte-identical (full-build SHA1 == oracle; every touched `src/*.c` object — every
-object for a maspsx/flag change — built both ways and compared); `engine test` green; a fresh default-FAIL
-layer-2 `cheat-reviewer` PASS checking E1, E2, K1-K3 and the split/merge tests. The commit deleting the lists
-updates every rule/doc that tells agents to use them.
+A series of commits, each byte-identical (full-build SHA1 == oracle; every touched object, every object for a
+maspsx/flag change, built both ways and compared), `engine test` green, and a fresh layer-2 PASS checking E1,
+E2, K1-K3 and the split/merge tests. The commit deleting the lists updates every rule/doc that uses them.

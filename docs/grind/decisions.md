@@ -1095,3 +1095,14 @@ FAKE-annotated dead restore store `p_old = prev;` after the +4 store (0x80077140
 clears, despite Ruling 11 (B)(1) and the Ruling 4 dead-carrier ban; the annotation names the cse mechanism, `.cse`
 dumps for both bodies are banked, plus every dead-store-fake-exception prerequisite, the Ruling 11 package (incl.
 an (E) name) and a fresh layer-2. Any other dead write in the function is judged under its own rule. Rule text: .claude/rules/reused-local-necessity.md § Owner ruling Q78.
+
+## 2026-10-01 — OWNER RULING — Q79-Q81: Q65 adoption — statics 4-aligned (Sony model), D_800A3264 in text1b, D_800A3530/3534 left as data
+
+Thirty-seventh batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 37). Q79 "Model Sony fully":
+maspsx places every uninitialized (`.lcomm`) static 4-aligned whatever its size, calibrated by the ASPSX 2.34 + PSYLINK 2.37 probe
+(memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.*) with an engine test; resulting gaps are padding; a gp-reached
+name inside another static's 4-byte slot becomes part of that object in a byte-identical reconciliation commit with
+layer-2 on each changed body. Q80 "Accept in text1b": D_800A3264 is text1b's K3 global; the owner of its pointer
+table D_8009B0C0 stays an open record. Q81 "Leave as raw data": D_800A3530 / D_800A3534 stay in asm/data, logged; revisit once
+text1b_tu1d's code reveals the real object sizes.
+Rule text: .claude/rules/per-file-gp-model.md (A8, A9).
