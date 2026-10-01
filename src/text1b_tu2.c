@@ -566,7 +566,134 @@ extern u8 D_8009BCE4[20];
 
 INCLUDE_ASM("asm/funcs", func_800759D0);
 
-INCLUDE_ASM("asm/funcs", func_80075F80);
+/* Character-select cursor / pick handler; called once per player per frame.
+ *   arg0 = this frame's pad bits, both players packed (player N in bits N*16)
+ *   arg1 = select page into D_8009BCF8 (2 rows x 5 columns per page)
+ *   arg2 = this player's pick list (character ids, -1 = cleared slot)
+ *   arg3 = player index (0/1)
+ * SELWORK is the shared select work area (per-player pairs); D_8009BCE4[] is
+ * the per-character flag byte (bit 0 = selectable, bit 4<<player = already
+ * taken by that player). */
+void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
+    u8 *flag;
+    s32 result;
+    s32 bit;
+    s32 i;
+
+    if (SELWORK->f10.half[arg3] != 0) {
+        return;
+    }
+
+    if (arg0 & (0x10 << (arg3 * 16))) {
+        func_8005C650(2, 0x7F, 0x7F);
+        if (SELWORK->f3C[arg3] != 0) {
+            arg2[SELWORK->f3C[arg3]] = -1;
+            SELWORK->f3C[arg3]--;
+            D_8009BCE4[arg2[SELWORK->f3C[arg3]]] &= ~(4 << arg3);
+            return;
+        }
+        /* Neither player has a pick yet.  fold merges the two adjacent halfword
+         * tests into the one `lw 0x3C` word test the target has at 0x80076060
+         * (tools/gcc-2.7.2/fold-const.c:2687 fold_truthop). */
+        if (SELWORK->f3C[0] != 0 || SELWORK->f3C[1] != 0) {
+            return;
+        }
+        if (SELWORK->f14.half[(arg3 != 0) ? 0 : 1] == 2) {
+            SELWORK->f10.half[1] = 3;
+            SELWORK->f10.half[0] = 3;
+            SELWORK->f18[1] = 1;
+            SELWORK->f18[0] = 1;
+        }
+        return;
+    }
+
+    result = func_800692C0(&arg0, arg3, SELWORK->f40[arg3], D_800A35D0[arg3]);
+    if (arg0 & (0xF000 << (arg3 * 16))) {
+        func_8005C650(0, 0x7F, 0x7F);
+    }
+    {
+        s32 low;
+
+        low = result & 0xFF;
+        if (low < 3 && low != 0) {
+            SELWORK->f1C[arg3] = (SELWORK->f1C[arg3] + 1) & 1;
+        }
+    }
+
+    switch (result >> 16) {
+    case 1: {
+        s16 value;
+
+        value = SELWORK->f20[arg3];
+        if (value == 4) {
+            SELWORK->f20[arg3] = 0;
+        } else {
+            SELWORK->f20[arg3] = value + 1;
+        }
+    } break;
+    case 2: {
+        s16 value;
+
+        value = SELWORK->f20[arg3];
+        if (value == 0) {
+            SELWORK->f20[arg3] = 4;
+        } else {
+            SELWORK->f20[arg3] = value - 1;
+        }
+    } break;
+    }
+
+    {
+        u8 entry;
+
+        entry = D_8009BCF8[arg1][SELWORK->f1C[arg3] * 5 + SELWORK->f20[arg3]].unk0;
+        flag = &D_8009BCE4[entry];
+        if ((*flag & 1) != 0) {
+            bit = 4 << arg3;
+            if ((*flag & bit) == 0) {
+                u16 count;
+
+                arg2[SELWORK->f3C[arg3]] = entry;
+                if (arg0 & (0x40 << (arg3 * 16))) {
+                    func_8005C650(1, 0x7F, 0x7F);
+                    *flag |= bit;
+                    count = SELWORK->f3C[arg3];
+                    SELWORK->f3C[arg3] = count + 1;
+                    if (SELWORK->f3C[arg3] == SELWORK->f65 + 3) {
+                        SELWORK->f10.half[arg3] = 1;
+                        SELWORK->f3C[arg3] = count;
+                        SELWORK->f38[arg3] = 0;
+                        SELWORK->f18[arg3] = 3;
+                        for (i = 0; i < SELWORK->f60[arg3]; i++) {
+                            SELWORK->f48[arg3][i] = i;
+                        }
+                        if (arg1 != 0) {
+                            SELWORK->f48[arg3][4] = 5;
+                        }
+                    }
+                }
+                return;
+            }
+            arg2[SELWORK->f3C[arg3]] = 0x14;
+            if (arg0 & (0x40 << (arg3 * 16))) {
+                func_8005C650(4, 0x7F, 0x7F);
+            }
+        } else {
+            /* FAKE: the placeholder tail is written in both arms (duplicated-
+             * statement-into-arms, calls per Q47: the store and the call are real on
+             * both paths).  Each arm is then reached by one path, so cse carries the
+             * work-area address it formed for the cursor read into the 0x3C load;
+             * jump2's cross-jump (tools/gcc-2.7.2/jump.c find_cross_jump) merges the two
+             * tails back into the target's one copy (`lh v0,0x3C($a1)` at 0x8007630C,
+             * 0x14 set in each predecessor).  One shared tail after the if recomputes
+             * the address (6).  Ledger: memory/grind/func_80075F80/manual-2026-10-01/scores.txt */
+            arg2[SELWORK->f3C[arg3]] = 0x14;
+            if (arg0 & (0x40 << (arg3 * 16))) {
+                func_8005C650(4, 0x7F, 0x7F);
+            }
+        }
+    }
+}
 void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     S_80074488 s;
     s32 ot;
@@ -756,32 +883,14 @@ void func_800768DC(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         SELWORK->f3C[arg3]--;
     }
 }
-/* func_80076D74 - Judge-CLEARED body (decisions.md 2026-09-15 13:47 ruling PASS, review-ledger hash ffd478b35c7a6afd). Submit VERBATIM.
- * s3 (permuter, 2026-09-15): re-measured sandbox --disable all = 0 on HEAD, and BYTES PROVEN ON MAIN - a full clean link with this body
- * in src/text1b.c (record-table declaration TU-local at text1b.c:2227-2235 for the measurement) gives SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa
- * == oracle (tmp/grind/func_80076D74/s3/fullbuild.log). Declaration placement is byte-neutral.
- *
- * FINAL FORM per the 13:47 Judge ruling (operator-applied, outside the grind surface; see docs/grind/decisions.md s3 INTEGRATION HANDOFF entry):
- *   include/game.h (after the Unk800F0EC8Record decl):  typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record;  extern Unk8009BCF8Record D_8009BCF8[20];
- *   src/text1b.c:2227-2228 and src/text1b_b.c:237-238: delete `extern u8 D_8009BCF8;` / `extern u8 D_8009BCF9;`
- *   undefined_syms_auto.txt:79: DELETE the `D_8009BCF9 = 0x8009BCF9;` row (not suffix); keep line 1252 `D_8009BCF8 = 0x8009BCF8;`
- *   memory/grind/func_80076D74/record_table_decl.patch carries all three hunks (game.h add, text1b_b.c delete, undefined_syms_auto.txt:79 DELETE) - corrected per the ruling.
- * s2-rerun (2026-09-15, driver session 2, third dispatch): bytes RE-PROVEN from clean HEAD 493ad9e97 - sandbox 0 at 161/161 (tmp/grind/func_80076D74/s2/handoff/
- * candidate_head.sandbox.txt) and full tmp-only link SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (s2/handoff/fullbuild.log). Filed as
- * OWNER-ESCALATION - INTEGRATION HANDOFF in docs/grind/decisions.md (scope grant: include/game.h src/text1b_b.c undefined_syms_auto.txt).
- * Object-model evidence (Judge-verified): asm/data/7D920.data.s:23762-23808 = 0x28 bytes = 20 two-byte records; func_800759D0.s:107-108 base in $s6,
- * :142-144 column 0 at 2-byte stride; func_80075F80.s:165-167 column 0 at 2-byte stride; func_80076D74.s:91-93 column 1 at 2-byte stride.
- * The BANNED `extern u8 D_8009BCF8[][2]` pair table is NOT used; the S_80076D74 typedef is emitted exactly ONCE (apply with tmp/grind/func_80076D74/s2/apply2.py).
- *
- * Tail (s1 residual 5, epilogue) closed by a single-level do { } while (0) wrap of the final arg0[6] += 0xC statement (sanctioned family,
- * .claude/rules/do-while-zero-exception.md, FAKE-annotated inline; layer-1 PASSED 2026-09-15 12:46, Judge PASS 13:47).
- * Mechanism: sched.c loop_notes attach NOTE_INSN_LOOP_END to the next insn (the return copy), which then depends on every earlier
- * set/use in the block, so it cannot be hoisted into the lw load-delay slot; the increment temp takes $v0; tail = lw/nop/addiu/sw/move.
- * Lever exhaustion (ordinary C, all 5 unless noted): u8 ret two-copy chain (s2); s32 arg0 + cast offsets (s1); slot pointer `s32 *dm` (s3);
- * packet-pointer round trip (s3, 21); branch-on-ret return (s3); permuter campaigns on s32-ret (34.7k), u8-ret (43.3k) and branch-on-ret
- * (31.6k) no-FAKE chassis find only do-while(0) forms (s2, s3). FAKE ablation this session (wrap removed, nothing else) = 5.
- * See evidence.md / hypotheses.md.
- */
+/* func_80076D74: select-screen fade-out.  Raises SELWORK->f36 by 8 per frame
+ * (capped at 0xFF) and, once it reaches 0xFF, fills the result record at
+ * SELWORK->f00 (f65, f66, f67, f68 packed into bitfields; per player and pick,
+ * the picked entry's D_8009BCF8 column 1 and its f7E value).  Every frame it
+ * draws the full-screen TILE with f36 as its colour.  The record and
+ * bitfield layout, the do-while(0) tail and their measurements:
+ * 3e35ec719^:memory/grind/func_80076D74/hypotheses.md (ledger closed at
+ * 3e35ec719). */
 typedef struct {
     u8 cells[2][5][2];  /* 0x00: [row][col][{glyph, attr}] */
     u32 pad10 : 10;     /* 0x14 */
@@ -820,7 +929,9 @@ s32 func_80076D74(s32 *arg0) {
         hdr->f15 = SELWORK->f68[0] + SELWORK->f68[1] * 2;
         for (i = 0; i < 2; i++) {
             for (j = 0; j < SELWORK->f65 + 3; j++) {
-                hdr->cells[i][j][0] = D_8009BCF8[SELWORK->f6A[i][j]].unk1;
+                /* flat character index into both pages, through row 0. */
+                /* SOTN: src/st/e_grave_keeper.h:534 @aa53500 */
+                hdr->cells[i][j][0] = D_8009BCF8[0][SELWORK->f6A[i][j]].unk1;
                 hdr->cells[i][j][1] = SELWORK->f7E[i][j];
             }
         }
@@ -840,7 +951,7 @@ s32 func_80076D74(s32 *arg0) {
     arg0[5] = (s32)p;
     SetDrawMode(arg0[6], 1, 0, 0x40, 0);
     AddPrim(g_gpu_ot_ptr, (GameObj *)arg0[6]);
-    do { /* FAKE: do-while(0) wrap, loop-end note pins the return copy after the sw so the increment temp takes v0; mechanism: sched.c loop_notes dependence on the first insn after NOTE_INSN_LOOP_END; lever-exhaustion: memory/grind/func_80076D74/hypotheses.md s1-s2 */
+    do { /* FAKE: do-while(0) wrap, loop-end note pins the return copy after the sw so the increment temp takes v0; mechanism: sched.c loop_notes dependence on the first insn after NOTE_INSN_LOOP_END; lever-exhaustion: 3e35ec719^:memory/grind/func_80076D74/hypotheses.md s1-s2 */
         arg0[6] += 0xC;
     } while (0);
     return ret;
