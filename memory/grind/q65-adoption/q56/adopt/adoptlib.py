@@ -10,6 +10,28 @@ def run(*a):
     assert r.returncode == 0, r.stderr
 
 
+_DECL = re.compile(r"^(extern\b.*;|typedef\b.*|#include\b.*|#define\b.*|[A-Za-z_][\w \t\*]*\([^)]*\)\s*;.*)$")
+
+
+def decl_lines(text):
+    """column-0 declaration lines (extern / typedef / #include / #define / prototype), whitespace-normalized"""
+    return [" ".join(l.split()) for l in text.split(NL) if _DECL.match(l)]
+
+
+def added_decls(before, after):
+    """declaration lines `after` has that `before` does not (multiset difference, first-seen order)"""
+    have = {}
+    for l in decl_lines(before):
+        have[l] = have.get(l, 0) + 1
+    out = []
+    for l in decl_lines(after):
+        if have.get(l, 0):
+            have[l] -= 1
+        else:
+            out.append(l)
+    return out
+
+
 def merge_msg(nn, intro, out, *parts):
     """run mergec.py and write the step's commit body (tmp/q56/adopt/sNN_msg.txt): the intro, then every
     verbatim-identical re-declaration the merge dropped, grouped by text with its count (layer-2 round 2)"""

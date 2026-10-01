@@ -24,7 +24,7 @@ steps=(
  "11|merge-text1b_b|src: text1b_tu2 + text1b_b are one file (owner rulings Q65/Q67, step 11)"
  "12|maspsx-static-lcomm|substrate: maspsx models .local+.comm (an uninitialized static) as .lcomm (owner ruling Q65, step 12)"
  "13|maspsx-small-data-sdata|substrate: maspsx models cc1psx -G8's .sdata choice for small initialized objects (owner ruling Q68, step 13)"
- "14|reconcile-static-decls|src: one declaration each for D_800A3468 (text1b_tu1c) and g_anim_hit_flags (text1a_post) (owner ruling Q65, step 14)"
+ "14|reconcile-static-decls|src: one declaration per static - element names, A8 slot joins, the memory-card name; camera_CalcAngles to INCLUDE_ASM (owner rulings Q65/Q79/Q84, step 14)"
  "15|per-file-gp-switch|src/build: per-file gp model - definitions follow the evidence, data blob cut, maspsx -G8 per file, sdata lists retired (owner rulings Q65/Q67, step 15)"
  "16|tooling-records|tools/records: follow the retired sdata lists and the moved functions (owner ruling Q65, step 16)"
 )

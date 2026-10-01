@@ -870,8 +870,16 @@ for lo, hi in pieces:
         labs = [x for x in _LABEL_ADDRS if lo <= x < hi]
         desc = ", ".join(f"{BLOB_LABELS[x]}" + (f" (named by {sorted({r[0] for r in REFS.get(BLOB_LABELS[x], set())})})"
                          if REFS.get(BLOB_LABELS[x]) else "") for x in labs[:10]) + (f" and {len(labs) - 10} more labels" if len(labs) > 10 else "") or "no label"
-        log(f"BLOB-PIECE {nm} [{hex(lo)}, {hex(hi)}): {desc} - outside every file's block (no file reaches it "
-            f"gp-relative and no block's contiguity covers it), so it stays data")
+        k1 = sorted({(a, n) for fl in tentative.values() for a, n in fl if lo <= a < hi})
+        if k1:
+            k1f = sorted({f for f, fl in tentative.items() for a, n in fl if lo <= a < hi})
+            log(f"BLOB-PIECE {nm} [{hex(lo)}, {hex(hi)}): overlaps the COMMON block - {len(k1)} K1 tentative "
+                f"definitions ({', '.join(n for _, n in k1[:6])}{', ...' if len(k1) > 6 else ''}) that {len(k1f)} files "
+                f"reach gp-relative take their addresses here from symbol-file rows (owner ruling Q62); the piece "
+                f"keeps the original bytes of the range (labels: {desc})")
+        else:
+            log(f"BLOB-PIECE {nm} [{hex(lo)}, {hex(hi)}): {desc} - outside every file's block (no file reaches it "
+                f"gp-relative and no block's contiguity covers it), so it stays data")
     names.append((lo, nm))
 ld = open("bb2.ld").read()
 seq = []

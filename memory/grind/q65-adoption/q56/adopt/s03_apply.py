@@ -24,8 +24,10 @@ funcs = [re.match(r"^[\w\s\*]*\b(func_\w+|snd_\w+)\s*\(", l).group(1) for l in L
          if re.match(r"^[A-Za-z_][\w\s\*]*\b(func_\w+|snd_\w+)\s*\([^;]*$", l)]
 assert funcs[-1] == "func_80060E38", funcs[-4:]
 prev = funcs[funcs.index("func_80060A68") - 1]
-run(f"{H}/splitc.py", "src/text1b.c", str(defline("src/text1b.c", "func_80060A68")), "/tmp/q56/s03/tail.c")
+defline_before = defline("src/text1b.c", "func_80060A68")
+run(f"{H}/splitc.py", "src/text1b.c", str(defline_before), "/tmp/q56/s03/tail.c")
 import subprocess, io, contextlib
+BEFORE_TU1C = rd("src/text1b_tu1c.c")
 _r = subprocess.run([sys.executable, f"{H}/mergec.py", "src/text1b_tu1c.c", "/tmp/q56/s03/tail.c", "src/text1b_tu1c.c"],
                     capture_output=True, text=True)
 print(_r.stdout.strip()); assert _r.returncode == 0, _r.stderr
@@ -41,6 +43,27 @@ print(_buf.getvalue().strip())
 HDR = [l.split(": dropped verbatim repeat of a header definition: ")[1] for l in _buf.getvalue().splitlines()
        if ": dropped verbatim repeat of a header definition: " in l]
 INC_ADDED = [l for l in rd("src/text1b_tu1c.c").split(NL)[:12] if l.startswith("#include")]
+NEW = added_decls(BEFORE_TU1C, rd("src/text1b_tu1c.c"))
+CUT = defline_before
+TAIL = rd("/tmp/q56/s03/tail.c").split(NL)
+OFF = len(TAIL) - (len(L) - (CUT - 1))   # tail.c = carried header (OFF lines) + text1b.c lines CUT..
+
+
+def where(loc):
+    """a mergec location as a line of the files this commit's parent has: tail.c lines map back to text1b.c"""
+    f, n = loc.rsplit(":", 1)
+    if f != "tail.c":
+        return f"text1b_tu1c.c:{n}"
+    n = int(n)
+    txt = " ".join(TAIL[n - 1].split())
+    if n > OFF:
+        k = n - OFF + CUT - 1
+        assert " ".join(L[k - 1].split()) == txt, (n, k)
+        return f"text1b.c:{k}, moved"
+    k = next(i + 1 for i, l in enumerate(L[:CUT - 1]) if " ".join(l.split()) == txt)
+    return f"text1b.c:{k}, carried"
+
+
 D = "docs/grind/rodata-align-2026-09-30.md"
 sub1(D, "| text1b.c | unchanged head, then snd_Init .. func_80060E38 |",
      f"| text1b.c | unchanged head, then snd_Init .. {prev} |")
@@ -58,15 +81,19 @@ msg = [
     "64c69153a, dropped by the slim commit ffec95a08, restored in rules: commit e5317cbf9). The text1b / text1b_tu1c",
     f"boundary moves from func_80061064 to func_80060A68: func_80060A68 .. func_80060E38 move verbatim from the end of",
     f"text1b.c (which now ends with {prev}) to the start of text1b_tu1c.c; the section 9 record of",
-    "docs/grind/rodata-align-2026-09-30.md is updated. Evidence: s03_apply.py docstring (cutsearch.py).",
+    "docs/grind/rodata-align-2026-09-30.md is updated. Evidence: memory/grind/q65-adoption/q56/adopt/s03_apply.py docstring (cutsearch.py).",
     "",
     "Besides the move, text1b_tu1c.c changes only in its declarations (mergec.py / drop_header_duplicates):",
     "- the include block is the union of both parts' includes: " + ", ".join(INC_ADDED) + ";",
+    "- the moved part carries text1b.c's file-scope declarations its functions use (splitc.py); the lines",
+    "  text1b_tu1c.c did not already have:",
+] + ["    " + l for l in NEW] + [
     "- typedef -> gte.h: text1b_tu1c.c's own one-line typedefs, verbatim repeats of include/gte.h's definitions now",
     "  that the moved part brings `#include \"gte.h\"`, are dropped (a repeat is a redefinition error):",
 ] + ["    " + h for h in HDR] + [
     f"- duplicate-declaration dedup: {len(DUPS)} file-scope declarations repeated verbatim (normalized text identical to",
-    "  one already emitted earlier in the merged file) are dropped; each named object keeps its first declaration:",
-] + ["    " + d.split("): ", 1)[1] + "  (" + d.split("(", 1)[1].split(")")[0] + ")" for d in DUPS]
+    "  one already emitted earlier in the merged file) are dropped; each named object keeps its first declaration",
+    "  (line numbers in this commit's parent; \"carried\" = a text1b.c declaration splitc.py carried with the move):",
+] + ["    " + d.split("): ", 1)[1] + "  (" + where(d.split("(", 1)[1].split(")")[0]) + ")" for d in DUPS]
 wr(f"{H}/s03_msg.txt", NL.join(msg) + NL)
 print(f"step 3 applied (text1b.c now ends with {prev})")

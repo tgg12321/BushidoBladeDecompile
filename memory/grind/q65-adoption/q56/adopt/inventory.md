@@ -1,4 +1,4 @@
-# Small-data inventory (2026-10-01, pre-switch tree step14 = 1fa4751b8)
+# Small-data inventory (2026-10-01, pre-switch tree step14 = 207c4af25)
 
 Blocks per file in link order (s04_spans.json); every object and every gap.
 
@@ -84,10 +84,11 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | text1a_post | static | 0x800a3384 | 8 | object g_anim_hit_data | gp | - |  |
 | text1a_pre | sdata | 0x800a3234 | 4 | object D_800A3234 | gp | - |  |
 | text1a_pre | static | 0x800a3378 | 4 | object D_800A3378 | gp | - |  |
-| text1b | sdata | 0x800a3248 | 2 | object D_800A3248 | (A2) between gp objects | - |  |
-| text1b | sdata | 0x800a324a | 2 | object D_800A324A | (A2) between gp objects | - |  |
+| text1b | sdata | 0x800a3248 | 2 | object D_800A3248 | gp | - |  |
+| text1b | sdata | 0x800a324a | 2 | object D_800A324A | gp | - |  |
 | text1b | sdata | 0x800a324c | 4 | object D_800A324C | gp | - |  |
-| text1b | sdata | 0x800a3250 | 32 | gap | - | - | objects named by the blob's labels, referenced from text1b: D_800A3258, D_800A325C, D_800A3260, D_800A326C, ptr-word@0x8009b0d8 |
+| text1b | sdata | 0x800a3250 | 28 | gap | - | - | objects named by the blob's labels, referenced from text1b: D_800A3258, D_800A325C, D_800A3260, ptr-word@0x8009b0d8 |
+| text1b | sdata | 0x800a326c | 4 | object D_800A326C | gp | - |  |
 | text1b | sdata | 0x800a3270 | 8 | object D_800A3270 | (A2) between gp objects | - |  |
 | text1b | sdata | 0x800a3278 | 4 | object D_800A3278 | gp | - |  |
 | text1b | sdata | 0x800a327c | 8 | object D_800A327C | (A2) between gp objects | - |  |
@@ -100,17 +101,17 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | text1b | sdata | 0x800a32ac | 8 | object D_800A32AC | (A2) between gp objects | - |  |
 | text1b | sdata | 0x800a32b4 | 2 | object D_800A32B4 | gp | - |  |
 | text1b | sdata | 0x800a32b6 | 2 | object D_800A32B6 | gp | - |  |
-| text1b | static | 0x800a33b0 | 4 | object D_800A33B0 | (A2) between gp objects | - |  |
-| text1b | static | 0x800a33b4 | 4 | object D_800A33B4 | (A2) between gp objects | - |  |
+| text1b | static | 0x800a33b0 | 4 | object D_800A33B0 | gp | - |  |
+| text1b | static | 0x800a33b4 | 4 | object D_800A33B4 | gp | - |  |
 | text1b | static | 0x800a33b8 | 4 | gap | - | - | one object D_800A33B8 (4 B) |
-| text1b | static | 0x800a33bc | 4 | object D_800A33BC | (A2) between gp objects | - |  |
-| text1b | static | 0x800a33c0 | 4 | object D_800A33C0 | (A2) between gp objects | - |  |
+| text1b | static | 0x800a33bc | 4 | object D_800A33BC | gp | - |  |
+| text1b | static | 0x800a33c0 | 4 | object D_800A33C0 | gp | - |  |
 | text1b | static | 0x800a33c4 | 4 | gap | - | - | one object D_800A33C4 (4 B) |
-| text1b | static | 0x800a33c8 | 4 | object D_800A33C8 | (A2) between gp objects | - |  |
+| text1b | static | 0x800a33c8 | 4 | object D_800A33C8 | gp | - |  |
 | text1b | static | 0x800a33cc | 4 | gap | - | - | one object D_800A33CC (4 B) |
 | text1b | static | 0x800a33d0 | 4 | object D_800A33D0 | gp | - |  |
-| text1b | static | 0x800a33d4 | 4 | object D_800A33D4 | (A2) between gp objects | - |  |
-| text1b | static | 0x800a33d8 | 4 | object D_800A33D8 | (A2) between gp objects | - |  |
+| text1b | static | 0x800a33d4 | 4 | object D_800A33D4 | gp | - |  |
+| text1b | static | 0x800a33d8 | 4 | object D_800A33D8 | gp | - |  |
 | text1b | static | 0x800a33dc | 4 | gap | - | - | one object D_800A33DC (4 B) |
 | text1b | static | 0x800a33e0 | 4 | object D_800A33E0 | gp | - |  |
 | text1b | static | 0x800a33e4 | 4 | object D_800A33E4 | gp | - |  |
@@ -124,14 +125,15 @@ Blocks per file in link order (s04_spans.json); every object and every gap.
 | text1b | static | 0x800a3404 | 4 | object g_vab_sticky_sbaddr | gp | - |  |
 | text1b | static | 0x800a3408 | 4 | object D_800A3408 | gp | - |  |
 | text1b | static | 0x800a340c | 4 | object D_800A340C | gp | - |  |
-| text1b | static | 0x800a3410 | 16 | gap | - | - | objects named by the blob's labels, referenced from text1b: D_800A3418 |
+| text1b | static | 0x800a3410 | 8 | gap | - | - | one object D_800A3410 (8 B) |
+| text1b | static | 0x800a3418 | 4 | object D_800A3418 | gp | - |  |
 | text1b_b | sdata | 0x800a3304 | 4 | object D_800A3304 | gp | - |  |
 | text1b_b | static | 0x800a35d0 | 8 | object D_800A35D0 | (A2) between gp objects | - |  |
-| text1b_b | static | 0x800a35d8 | 4 | object D_800A35D8 | (A2) between gp objects | - |  |
-| text1b_b | static | 0x800a35dc | 1 | object D_800A35DC | (A2) between gp objects | - |  |
-| text1b_b | static | 0x800a35e0 | 4 | object D_800A35E0 | (A2) between gp objects | - |  |
+| text1b_b | static | 0x800a35d8 | 4 | object D_800A35D8 | gp | - |  |
+| text1b_b | static | 0x800a35dc | 1 | object D_800A35DC | gp | - |  |
+| text1b_b | static | 0x800a35e0 | 4 | object D_800A35E0 | gp | - |  |
 | text1b_b | static | 0x800a35e4 | 4 | object D_800A35E4 | gp | - |  |
-| text1b_b | static | 0x800a35e8 | 4 | object D_800A35E8 | (A2) between gp objects | - |  |
+| text1b_b | static | 0x800a35e8 | 4 | object D_800A35E8 | gp | - |  |
 | text1b_b | static | 0x800a35ec | 4 | gap | - | - | one object D_800A35EC (4 B) |
 | text1b_b | static | 0x800a35f0 | 4 | object D_800A35F0 | gp | - |  |
 | text1b_b | static | 0x800a35f4 | 4 | object D_800A35F4 | gp | - |  |
@@ -248,7 +250,7 @@ Held blocks: none
 ## Items the rule does not decide or refuses (3)
 
 - code6cac_c_mid | sdata | 0x800a31fd | 3B | NO single 3-byte object fits at 0x800a31fd (needs 4-alignment)
-- text1b | sdata | 0x800a3250 | 32B | objects named by the blob's labels, referenced from text1b: D_800A3258, D_800A325C, D_800A3260, D_800A326C, ptr-word@0x8009b0d8 - a pointer word in asm data names it
+- text1b | sdata | 0x800a3250 | 28B | objects named by the blob's labels, referenced from text1b: D_800A3258, D_800A325C, D_800A3260, ptr-word@0x8009b0d8 - a pointer word in asm data names it
 - text1b_tu1c | static | 0x800a3428 | 16B | run > 8 bytes -> borderline
 
 ## COMMON tentatives (K1) per file

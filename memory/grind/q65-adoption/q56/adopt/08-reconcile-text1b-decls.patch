@@ -1,6 +1,6 @@
-From fd1fe448aebfebd313b3ac75c414ae02c15f7d02 Mon Sep 17 00:00:00 2001
+From 915d52add54c691dee4a85947634f8a04c5209a3 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 13:13:22 -0500
+Date: Thu, 1 Oct 2026 14:31:14 -0500
 Subject: [PATCH] src: text1a_c2 / text1a_b / text1a_b_pre_rodata / sound /
  text1b declarations reconciled by evidence (owner rulings Q65/Q67, step 8)
 
@@ -13,6 +13,10 @@ Owner-decided types (per-file-gp-model.md (A5), owner ruling Q70):
 - D_80102C00 keeps s32. Its only use is taking its address.
 - func_8004153C keeps the unprototyped `extern s32 *func_8004153C();`. The tidy-up is deferred.
 - D_800153F0 is a 22-halfword struct, copied in one assignment.
+- func_80044100 is declared unprototyped, `extern void func_80044100();` (owner ruling Q88, rules: a17a2c144,
+  added to A5): text1a_b calls it with one argument ($a1 unset in the target), sound with two.
+- sound's func_800475A4 / camera_CalcAngles hand SVECTOR / VECTOR / MATRIX locals to the libgte calls
+  (layer-2 round 2): no casts on s16[3] / s32[3..8] buffers; byte-identical.
 
 Byte-identity proof for D_800153F0 (A5 requires it banked here):
 - func_8004A09C reads the 44 bytes as u16.
@@ -35,15 +39,15 @@ Body changes, each needing its own layer-2:
 - func_80049F4C uses the struct assignment.
 - Cast-only call-site edits in sound, text1a_c2 and text1b.
 ---
- src/sound.c               | 64 +++++++++++++++++++--------------------
- src/text1a_b.c            |  2 +-
- src/text1a_b_pre_rodata.c | 26 ++++++++--------
- src/text1a_c2.c           | 10 +++---
- src/text1b.c              | 48 ++++++++++++++++-------------
- 5 files changed, 77 insertions(+), 73 deletions(-)
+ src/sound.c               | 102 +++++++++++++++++++-------------------
+ src/text1a_b.c            |   2 +-
+ src/text1a_b_pre_rodata.c |  26 +++++-----
+ src/text1a_c2.c           |  10 ++--
+ src/text1b.c              |  48 ++++++++++--------
+ 5 files changed, 96 insertions(+), 92 deletions(-)
 
 diff --git a/src/sound.c b/src/sound.c
-index 4e6446d42..817a54c81 100644
+index 4e6446d42..ddc3471ac 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -18,14 +18,14 @@ extern void func_8004473C(void);
@@ -199,20 +203,39 @@ index 4e6446d42..817a54c81 100644
      arg2[5] = var_s0[5] + (((var_s0[6] - arg3) * sp10.m[0][1]) >> 12);
      arg2[6] = arg3;
      arg2[7] = var_s0[7] + (((var_s0[6] - arg3) * sp10.m[2][1]) >> 12);
-@@ -510,11 +510,11 @@ s16 *camera_CalcAngles(void) {
-     s32 pos[8];
+@@ -505,20 +505,20 @@ void camera_InitRotation(u8 *a0) {
+ }
+ 
+ s16 *camera_CalcAngles(void) {
+-    s16 rot[3];
+-    s32 sp18[3];
+-    s32 pos[8];
++    SVECTOR rot;
++    VECTOR sp18;
++    MATRIX pos;
      s16 s0;
  
 -    math_RotMatrixYXZ((s32 *)((u8 *)*(s32 **)&D_800A3708 + 0x10), pos);
-+    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, pos);
-     rot[0] = 0;
-     rot[1] = 0;
-     rot[2] = 0x1000;
+-    rot[0] = 0;
+-    rot[1] = 0;
+-    rot[2] = 0x1000;
 -    ApplyMatrix(pos, rot, sp18);
-+    ApplyMatrix((MATRIX *)pos, (SVECTOR *)rot, (VECTOR *)sp18);
-     s0 = ratan2(sp18[0], sp18[2]);
-     sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
-               + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
+-    s0 = ratan2(sp18[0], sp18[2]);
+-    sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
+-              + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
+-    D_800A33C8 = -ratan2(sp18[1], sp18[2]);
++    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, (s32 *)&pos);
++    rot.vx = 0;
++    rot.vy = 0;
++    rot.vz = 0x1000;
++    ApplyMatrix(&pos, &rot, &sp18);
++    s0 = ratan2(sp18.vx, sp18.vz);
++    sp18.vz = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18.vz
++              + (s32)Judge[s0 & 0xFFF] * sp18.vx) >> 12;
++    D_800A33C8 = -ratan2(sp18.vy, sp18.vz);
+     D_800A33CA = s0;
+     return &D_800A33C8;
+ }
 @@ -565,12 +565,12 @@ extern s32 D_800EEE1C;
  extern s32 D_800EEE20;
  extern s32 D_800EEE24;
@@ -220,24 +243,44 @@ index 4e6446d42..817a54c81 100644
 -extern void MulMatrix0(s32 *, s32 *, s32 *);
 +extern MATRIX *MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
  void func_800475A4(void) {
-     s16 rot[3];
-     s32 result[4];
+-    s16 rot[3];
+-    s32 result[4];
 -    s32 buf1[8];
 -    s32 buf2[8];
++    SVECTOR rot;
++    VECTOR result;
 +    MATRIX buf1;
 +    MATRIX buf2;
      s16 angle;
      s32 computed;
      u8 *base;
-@@ -582,7 +582,7 @@ void func_800475A4(void) {
-     rot[0] = 0;
-     rot[1] = 0;
-     rot[2] = 0x6590;
+@@ -579,18 +579,18 @@ void func_800475A4(void) {
+         return;
+     }
+ 
+-    rot[0] = 0;
+-    rot[1] = 0;
+-    rot[2] = 0x6590;
 -    ApplyMatrix((s32 *)&D_80101DF0.xf.mat, rot, result);
-+    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, (SVECTOR *)rot, (VECTOR *)result);
++    rot.vx = 0;
++    rot.vy = 0;
++    rot.vz = 0x6590;
++    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, &rot, &result);
  
-     angle = ratan2(result[0], result[2]);
+-    angle = ratan2(result[0], result[2]);
++    angle = ratan2(result.vx, result.vz);
  
+-    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
+-    result[2] = computed;
++    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz + (s32)Judge[angle & 0xFFF] * result.vx) >> 12;
++    result.vz = computed;
+ 
+     {
+-        s16 neg = -ratan2(result[1], computed);
++        s16 neg = -ratan2(result.vy, computed);
+         base = &g_cam_bone_data2;
+         D_800EEE00 = neg;
+     }
 @@ -598,9 +598,9 @@ void func_800475A4(void) {
      D_800EEE1C = D_80101DF0.xf.mat.t[0];
      D_800EEE20 = D_80101DF0.xf.mat.t[1];

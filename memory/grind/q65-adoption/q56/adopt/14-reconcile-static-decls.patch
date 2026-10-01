@@ -1,6 +1,6 @@
-From 1fa4751b89f7f479a8085662b77d775ef7f5ac39 Mon Sep 17 00:00:00 2001
+From 207c4af259bfb7b32aed61a43139724bed73fa0e Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 13:16:30 -0500
+Date: Thu, 1 Oct 2026 14:34:12 -0500
 Subject: [PATCH] src: one declaration each for D_800A3468 (text1b_tu1c) and
  g_anim_hit_flags (text1a_post) (owner ruling Q65, step 14)
 
@@ -24,15 +24,16 @@ identical; layer-2 on every changed body, listed in memory/grind/q65-adoption/q5
   one more instruction in every spelling measured, memory/grind/camera_CalcAngles/) and is re-queued active
   (engine queue reopen); the D_800A33CA row stays for its asm.
 ---
- asm/funcs/camera_CalcAngles.s | 60 +++++++++++++++++++++++++++
- engine/queue.json             | 19 +++++++--
+ asm/funcs/camera_CalcAngles.s | 60 +++++++++++++++++++++++++
+ engine/queue.json             | 19 ++++++--
  named_syms.txt                |  1 -
- src/text1a_post.c             | 17 ++++----
- src/text1b.c                  | 47 +++++++--------------
- src/text1b_tu1c.c             | 77 +++++++++++++++++------------------
+ src/code6cac_c_mid.c          | 10 ++---
+ src/text1a_post.c             | 17 +++----
+ src/text1b.c                  | 47 ++++++--------------
+ src/text1b_tu1c.c             | 83 +++++++++++++++++------------------
  src/text1b_tu1d.c             |  2 +-
  undefined_syms_auto.txt       |  9 ----
- 8 files changed, 134 insertions(+), 98 deletions(-)
+ 9 files changed, 142 insertions(+), 106 deletions(-)
  create mode 100644 asm/funcs/camera_CalcAngles.s
 
 diff --git a/asm/funcs/camera_CalcAngles.s b/asm/funcs/camera_CalcAngles.s
@@ -102,7 +103,7 @@ index 000000000..ef47fbc7a
 +    /* 37C68 80047468 00000000 */   nop
 +endlabel camera_CalcAngles
 diff --git a/engine/queue.json b/engine/queue.json
-index 5f5216ba4..3d99a3b26 100644
+index 6b3e1fe55..d5944a0af 100644
 --- a/engine/queue.json
 +++ b/engine/queue.json
 @@ -3,6 +3,17 @@
@@ -123,22 +124,22 @@ index 5f5216ba4..3d99a3b26 100644
      {
        "func": "func_80058580",
        "file": "text1b",
-@@ -225,14 +236,14 @@
+@@ -211,14 +222,14 @@
      }
    ],
    "counts": {
--    "total": 17,
--    "active": 5,
-+    "total": 18,
-+    "active": 6,
+-    "total": 16,
+-    "active": 4,
++    "total": 17,
++    "active": 5,
      "by_status": {
--      "active": 5,
-+      "active": 6,
+-      "active": 4,
++      "active": 5,
        "rotated": 12
      },
      "by_verdict": {
--      "C": 5
-+      "C": 6
+-      "C": 4
++      "C": 5
      }
    },
    "toolchain_fingerprint": "85cd2a73ee7a8972"
@@ -154,6 +155,40 @@ index 9af8e4bde..5ba6a633e 100644
  g_char_data = 0x800A6690;
  g_char_setup_tbl = 0x80094E48;
  _svm_stereo_mono = 0x800FF578;  /* data-wave 2026-09-07: was g_memcard_busy */
+diff --git a/src/code6cac_c_mid.c b/src/code6cac_c_mid.c
+index bd2f33fd6..b1d0e47a5 100644
+--- a/src/code6cac_c_mid.c
++++ b/src/code6cac_c_mid.c
+@@ -297,14 +297,15 @@ extern u8 D_8008F1C0[];
+ /* Rodata moved from asm/data/101C.rodata_pre_post.s (rodata-cleanup project,
+  * docs/rodata-cleanup-project.md, 2026-06-09). func_80038170 (this file) is the
+  * sole owner — uses these as &-addressed byte/word lookups. Declared as u32
+- * arrays since the content is word-aligned. D_80010A2C ends with the literal
+- * save-file id "BASLUS-00663BUSHIDO2" (per the asm/data block's content). */
++ * arrays since the content is word-aligned. D_80010A2C is the 128 bytes func_80038170 copies
++ * (0x40 halfwords); the save-file id after it is its own object, D_80010AAC, whose address
++ * D_800A31F0 holds. */
+ const u32 D_800109EC[16] = {
+     0x77DF7FFF, 0x635E6B9F, 0x56FD5B1E, 0x427C4ABD,
+     0x2DFB323C, 0x199B21BB, 0x0D3A115A, 0x8000051A,
+     0, 0, 0, 0, 0, 0, 0, 0,
+ };
+-const u32 D_80010A2C[38] = {
++const u32 D_80010A2C[32] = {
+     0x00000000, 0x00055110, 0x00000000, 0x003EC5A3,
+     0x38531000, 0x002958EA, 0x7DBA8400, 0x00038DDC,
+     0xB7411000, 0x001CBBDD, 0xCDDB9400, 0x000111AD,
+@@ -313,9 +314,8 @@ const u32 D_80010A2C[38] = {
+     0x38500000, 0x006B08EB, 0x06D93000, 0x006B5DE7,
+     0x006CE500, 0x006DCD91, 0x0009C300, 0x007EEA20,
+     0x00001000, 0x008EB200, 0x00000000, 0x00020000,
+-    0x4C534142, 0x302D5355, 0x33363630, 0x48535542,
+-    0x324F4449, 0x00000000,
+ };
++const char D_80010AAC[24] = "BASLUS-00663BUSHIDO2";
+ extern u8 D_800A3200;
+ extern u8 D_800A3201;
+ extern u8 *strcpy(u8 *, u8 *);
 diff --git a/src/text1a_post.c b/src/text1a_post.c
 index 5095ad6b3..61524fcaf 100644
 --- a/src/text1a_post.c
@@ -201,7 +236,7 @@ index 5095ad6b3..61524fcaf 100644
      }
  }
 diff --git a/src/text1b.c b/src/text1b.c
-index 3468a7533..4a5b588d6 100644
+index 10af34a73..27b818047 100644
 --- a/src/text1b.c
 +++ b/src/text1b.c
 @@ -625,8 +625,7 @@ extern void math_RotMatrixYXZ(s32 *, s32 *);
@@ -219,20 +254,20 @@ index 3468a7533..4a5b588d6 100644
  }
  
 -s16 *camera_CalcAngles(void) {
--    s16 rot[3];
--    s32 sp18[3];
--    s32 pos[8];
+-    SVECTOR rot;
+-    VECTOR sp18;
+-    MATRIX pos;
 -    s16 s0;
 -
--    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, pos);
--    rot[0] = 0;
--    rot[1] = 0;
--    rot[2] = 0x1000;
--    ApplyMatrix((MATRIX *)pos, (SVECTOR *)rot, (VECTOR *)sp18);
--    s0 = ratan2(sp18[0], sp18[2]);
--    sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
--              + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
--    D_800A33C8 = -ratan2(sp18[1], sp18[2]);
+-    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, (s32 *)&pos);
+-    rot.vx = 0;
+-    rot.vy = 0;
+-    rot.vz = 0x1000;
+-    ApplyMatrix(&pos, &rot, &sp18);
+-    s0 = ratan2(sp18.vx, sp18.vz);
+-    sp18.vz = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18.vz
+-              + (s32)Judge[s0 & 0xFFF] * sp18.vx) >> 12;
+-    D_800A33C8 = -ratan2(sp18.vy, sp18.vz);
 -    D_800A33CA = s0;
 -    return &D_800A33C8;
 -}
@@ -310,9 +345,22 @@ index 3468a7533..4a5b588d6 100644
  
      if (var_s0 == -1) {
 diff --git a/src/text1b_tu1c.c b/src/text1b_tu1c.c
-index c14b59a44..be5faca3f 100644
+index c14b59a44..9cd69fdfa 100644
 --- a/src/text1b_tu1c.c
 +++ b/src/text1b_tu1c.c
+@@ -47,9 +47,9 @@ extern s32 cdrom_StartRead(s32, s32);
+  * declared shape.  src/text1b.c's own COMMITTED, MATCHED C is the evidence, independently of any
+  * codegen observation (line numbers below are against the INCLUDE_ASM tree, i.e. src/text1b.c as
+  * committed at s29):
+- *   - :3358 `extern s32 *D_800A3468;` -- the matched sibling func_80061064 ALREADY declares this
+- *     exact global with a pointer type.  The pointer typing is not this session's invention; it is
+- *     the file's existing, accepted declaration for the same symbol.
++ *   - :3358 (then) `extern s32 *D_800A3468;` -- the matched sibling func_80061064 declared this global
++ *     with a pointer type at the time.  Since the Q65 adoption (step 14) the file declares it once, as
++ *     the `s32` its other users read and write, and this function reaches the object through the OB view.
+  *   - Sixteen sites assign a POINTER into it: `D_800A3468 = (s32)v1;` where v1 is a callee's
+  *     returned pointer (:3406, :3423, :3457, :3472, :3492, :3506, :3521, :3562, :3599, :3628,
+  *     :3659, :3694, :3709, :3722), plus :3315 `= 0x1F800000` (the scratchpad base) and :3740
 @@ -96,6 +96,8 @@ extern s32 cdrom_StartRead(s32, s32);
   * Also measured 0/66 with the tables spelled through the address of their first word rather than
   * as array declarations; the array declarations are kept because they put the object model at the
@@ -508,7 +556,7 @@ index a072debc4..883e85d31 100644
  extern void func_80072E10(s32);
  extern void func_80073200(s32);
 diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
-index f7dd2b2ae..583619190 100644
+index 2fdd2ff0f..c414e251a 100644
 --- a/undefined_syms_auto.txt
 +++ b/undefined_syms_auto.txt
 @@ -92,14 +92,9 @@ D_800A32B6 = 0x800A32B6;

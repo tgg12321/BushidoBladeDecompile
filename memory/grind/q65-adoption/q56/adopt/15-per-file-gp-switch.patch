@@ -1,6 +1,6 @@
-From 81929adf7234635e8668db4d9ae952f91d1cc0bd Mon Sep 17 00:00:00 2001
+From 974e66e2a3ffb8e7b24d0b3a6574040d7fd57247 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 13:17:12 -0500
+Date: Thu, 1 Oct 2026 14:34:51 -0500
 Subject: [PATCH] src/build: per-file gp model - definitions follow the
  evidence, data blob cut, maspsx -G8 per file, sdata lists retired (owner
  rulings Q65/Q67, step 15)
@@ -8,10 +8,250 @@ Subject: [PATCH] src/build: per-file gp model - definitions follow the
 Rule: .claude/rules/per-file-gp-model.md (Q65, Q67-Q72; A8/A9 = Q79-Q81, rules: 8c57bc4ab). Generator: s15_apply.py (docstring); evidence
 docs/grind/gp-model-2026-09-30.md; full generator log banked as memory/grind/q65-adoption/q56/adopt/s15_log.txt.
 Explicit-relocation asm excluded from E1/E2/split: memory/grind/q65-adoption/q56/adopt/explicit_exclusions.md.
+Owner rulings Q86/Q87 (rules: a17a2c144): the eight small read-only items in files that get -G8 stay in
+.rodata (record only, byte-neutral); D_800A3224 / D_800A3290 stay defined as declared with their evidence
+comments (the RECT / 8-byte record retype is owed after the adoption).
 
-Blocks extended to their last gp-reached object (no C declaration yet) (2):
-- BLOCK-END code6cac_c2 sdata: extends to 0x800a3234 (last gp-reached object 0x800a3230 has no C declaration)
-- BLOCK-END text1b static: extends to 0x800a3420 (last gp-reached object 0x800a3418 has no C declaration)
+Blocks extended to their last gp-reached object, declared in no C file (1):
+- BLOCK-END code6cac_c2 sdata: extends to 0x800a3234 (last gp-reached object 0x800a3230 is declared in no C file; its extent is the original's label)
+
+gp-reached objects typed by another file's declaration (2):
+- TYPED-ELSEWHERE text1b D_800A326C: extern s32 D_800A326C; (src/text1b_b.c; text1b reaches it gp-relative without a declaration)
+- TYPED-ELSEWHERE text1b D_800A3418: extern s32 D_800A3418; (src/text1b_b.c; text1b reaches it gp-relative without a declaration)
+
+Bytes after a block's last object inside the original's label run, left in the data blob (3):
+- BLOCK-TAIL code6cac_tu2 static 0x800a3312 (6 B): after the last object of the block (inside the original's label run ending 0x800a3318), left in the data blob
+- BLOCK-TAIL text1a_pre static 0x800a337c (4 B): after the last object of the block (inside the original's label run ending 0x800a3380), left in the data blob
+- BLOCK-TAIL text1b static 0x800a341c (4 B): after the last object of the block (inside the original's label run ending 0x800a3420), left in the data blob
+
+Small-data words whose original value is a C object's address, spelled as that address (2):
+- ADDRESS code6cac_c_mid value 0x80010aac spelled (s32)D_80010AAC (src/code6cac_c_mid.c)
+- ADDRESS ings value 0x8001004c spelled (s32)D_8001004C (src/ings_strings.c)
+
+Object-model notes (evidence for a later type; defined here as declared) (2):
+- DATA-MODEL code6cac_c2 D_800A3224: the w/h halves of the 8-byte RECT at D_800A3220 (code6cac_c2 passes &D_800A3220 to LoadImage, whose callee reads x/y/w/h); include/code6cac.h declares D_800A3220 u32 - defined as its own object, retype later
+- DATA-MODEL text1b D_800A3290: the second word of the 8-byte record at D_800A328C (text1b stores &D_800A328C as a descriptor's p_static for func_8007352C; its neighbours D_800A327C/3284/3294 are 8-byte records); text1b declares D_800A328C s32 - defined as its own object, retype later
+
+Symbol-file rows removed (objects now defined in C) (198):
+- ROW-REMOVED undefined_syms_auto.txt D_800A30FD: defined in C by code6cac_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A31DA: defined in C by code6cac_b2_post
+- ROW-REMOVED undefined_syms_auto.txt D_800A3201: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3203: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3209: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A324A: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A32B6: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A32E9: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A31D9: defined in C by code6cac_b2_post
+- ROW-REMOVED undefined_syms_auto.txt D_800A30F0: defined in C by code6cac_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A30F4: defined in C by code6cac_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3140: defined in C by code6cac_b_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3144: defined in C by code6cac_b_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3174: defined in C by code6cac_b3
+- ROW-REMOVED undefined_syms_auto.txt D_800A3258: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A325C: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3260: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3270: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A327C: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3284: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A328C: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3294: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A329C: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A32A4: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A32AC: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33E8: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3438: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A344C: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3454: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A34E8: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A350C: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3518: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3540: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A3544: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A3560: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A3588: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A358C: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A3590: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A3594: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A35C8: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A35D0: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33C8: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A30DC: defined in C by ings
+- ROW-REMOVED undefined_syms_auto.txt D_800A30E8: defined in C by ings
+- ROW-REMOVED undefined_syms_auto.txt D_800A30FC: defined in C by code6cac_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A31D8: defined in C by code6cac_b2_post
+- ROW-REMOVED undefined_syms_auto.txt D_800A31E4: defined in C by code6cac_b4_post
+- ROW-REMOVED undefined_syms_auto.txt D_800A31E8: defined in C by code6cac_c0
+- ROW-REMOVED undefined_syms_auto.txt D_800A31EC: defined in C by code6cac_c0
+- ROW-REMOVED undefined_syms_auto.txt D_800A31F0: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A31F4: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A31F8: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A31FC: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3200: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3204: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3205: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3206: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3207: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3208: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A320C: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3218: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A321C: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3228: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3234: defined in C by text1a_pre
+- ROW-REMOVED undefined_syms_auto.txt D_800A3240: defined in C by text1a_c_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3244: defined in C by text1a_c_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3248: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A324C: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A32B4: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A32B8: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A32BC: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3304: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3310: defined in C by code6cac_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3318: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A331C: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3320: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3324: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3328: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A332C: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3330: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3334: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3338: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A333C: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3340: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3344: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3348: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A334C: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3350: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3354: defined in C by code6cac_c_mid
+- ROW-REMOVED undefined_syms_auto.txt D_800A3358: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A335C: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3360: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3364: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3368: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A3378: defined in C by text1a_pre
+- ROW-REMOVED undefined_syms_auto.txt D_800A3398: defined in C by text1a_c_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A33A0: defined in C by text1a_c_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A33A4: defined in C by text1a_c_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A33A8: defined in C by text1a_c_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A33AC: defined in C by text1a_c_tu2
+- ROW-REMOVED undefined_syms_auto.txt D_800A33B0: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33B4: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33BC: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33D0: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33E0: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33E4: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33EC: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33F0: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33F4: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33F8: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3400: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt g_vab_sticky_sbaddr: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3408: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A340C: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3420: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3424: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3440: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3444: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3448: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A345C: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3460: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3464: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3468: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A347C: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3480: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3484: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A34EC: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A34F8: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A34FC: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3500: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3510: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3514: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A351C: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3520: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3524: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3528: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A352C: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3550: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A3580: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A35A8: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A35AC: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A35C4: defined in C by text1b_tu1d
+- ROW-REMOVED undefined_syms_auto.txt D_800A35D8: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A35E0: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A35E4: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A35E8: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A35F0: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A35F4: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A35F8: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A35FC: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3600: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3608: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A360C: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3610: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3614: defined in C by text1b_b
+- ROW-REMOVED undefined_syms_auto.txt g_anim_hit_data: defined in C by text1a_post
+- ROW-REMOVED undefined_syms_auto.txt g_anim_hit_flags: defined in C by text1a_post
+- ROW-REMOVED undefined_syms_auto.txt g_anim_select: defined in C by text1a_post
+- ROW-REMOVED undefined_syms_auto.txt g_game_flag_a: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt g_game_flag_b: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A336C: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A322C: defined in C by code6cac_c2
+- ROW-REMOVED undefined_syms_auto.txt D_800A324A: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33D8: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33D4: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33E4: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A33C0: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A346C: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3470: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3474: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A3478: defined in C by text1b_tu1c
+- ROW-REMOVED undefined_syms_auto.txt D_800A326C: defined in C by text1b
+- ROW-REMOVED undefined_syms_auto.txt D_800A3418: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A336C: defined in C by code6cac_c2
+- ROW-REMOVED named_syms.txt D_800A322C: defined in C by code6cac_c2
+- ROW-REMOVED named_syms.txt g_game_flag_a: defined in C by code6cac_c2
+- ROW-REMOVED named_syms.txt g_game_flag_b: defined in C by code6cac_c2
+- ROW-REMOVED named_syms.txt D_800A33B0: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A33B4: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A33C0: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A33D0: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A33D4: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A33D8: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A33E4: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A324A: defined in C by text1b
+- ROW-REMOVED named_syms.txt g_anim_hit_flags: defined in C by text1a_post
+- ROW-REMOVED named_syms.txt g_anim_hit_data: defined in C by text1a_post
+- ROW-REMOVED named_syms.txt g_anim_select: defined in C by text1a_post
+- ROW-REMOVED named_syms.txt D_800A3205: defined in C by code6cac_c_mid
+- ROW-REMOVED named_syms.txt D_800A3207: defined in C by code6cac_c_mid
+- ROW-REMOVED named_syms.txt D_800A3206: defined in C by code6cac_c_mid
+- ROW-REMOVED named_syms.txt D_800A33C8: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A3248: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A3408: defined in C by text1b
+- ROW-REMOVED named_syms.txt g_vab_sticky_sbaddr: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A3220: defined in C by code6cac_c2
+- ROW-REMOVED named_syms.txt D_800A33BC: defined in C by text1b
+- ROW-REMOVED named_syms.txt D_800A33E0: defined in C by text1b
+
+Data-blob pieces between the C blocks (19):
+- BLOB-PIECE 938EA [0x800a30ea, 0x800a30ec): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 938FE [0x800a30fe, 0x800a3140): D_800A3100 (named by ['code6cac_tu2']), D_800A310C (named by ['code6cac_tu2']), D_800A3114, D_800A311C, D_800A3124, D_800A312C (named by ['code6cac_c2']), D_800A3134 (named by ['code6cac_b_tu2']), D_800A3138 (named by ['code6cac_tu2']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93950 [0x800a3150, 0x800a3174): D_800A3150, D_800A3158, D_800A3160, D_800A3164, D_800A316C - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93978 [0x800a3178, 0x800a31d8): D_800A3178 (named by ['code6cac_b3']), D_800A3180 (named by ['code6cac_b3']), D_800A3188 (named by ['code6cac_b3']), D_800A3190 (named by ['code6cac_b3']), D_800A3198 (named by ['code6cac_b3']), D_800A31A0 (named by ['code6cac_b3']), D_800A31A8 (named by ['code6cac_b3']), D_800A31B0 (named by ['code6cac_b3']), D_800A31B8 (named by ['code6cac_b3']), D_800A31C0 (named by ['code6cac_b3']) and 2 more labels - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 939DC [0x800a31dc, 0x800a31e4): D_800A31DC - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 939E6 [0x800a31e6, 0x800a31e8): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93A0E [0x800a320e, 0x800a3218): g_str_sio_800A3210 (named by ['code6cac_c_mid']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93A3E [0x800a323e, 0x800a3240): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93AC0 [0x800a32c0, 0x800a32e8): D_800A32C0 (named by ['text1b_tu1c']), D_800A32C8 (named by ['text1b_tu1c']), D_800A32D0 (named by ['text1b_tu1c']), D_800A32D8 (named by ['text1b_tu1c']), D_800A32E0 (named by ['text1b_tu1c']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93AEA [0x800a32ea, 0x800a3304): D_800A32EC (named by ['text1b_tu1d']), D_800A32F4 (named by ['text1b_tu1d']), D_800A32FC (named by ['text1b_b']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93B08 [0x800a3308, 0x800a3310): D_800A3308 (named by ['ings2']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93B12 [0x800a3312, 0x800a3318): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93B56 [0x800a3356, 0x800a3358): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93B7C [0x800a337c, 0x800a3380): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93B8C [0x800a338c, 0x800a3398): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93C1C [0x800a341c, 0x800a3420): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93D30 [0x800a3530, 0x800a3540): D_800A3530 (named by ['text1b_tu1d']), D_800A3534 (named by ['text1b_tu1d']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93DCC [0x800a35cc, 0x800a35d0): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
+- BLOB-PIECE 93E18 [0x800a3618, 0x800a3800): D_800A3618 (named by ['text1b_b']), jtbl_800A3620 (named by ['text1b_b']), jtbl_800A3624 (named by ['text1b_b']), D_800A3628 (named by ['text1b_b']), D_800A362C (named by ['text1b_b']), D_800A3638 (named by ['text1b_b']), D_800A3648 (named by ['gpu']), D_800A3658 (named by ['display']), D_800A3668 (named by ['ings2']), D_800A3670 (named by ['code6cac_c2', 'code6cac_tu2']) and 119 more labels - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
 
 Alignment padding inside a block (no object: the next object's alignment produces it) (33):
 - PADDING code6cac_c_mid static 0x800a3319 (3 B): the tail of the static before it to the next 4-byte boundary (A8)
@@ -85,23 +325,180 @@ Arrays sized from the original's object boundary (8):
 - SIZED-FROM-GAP text1b_tu1d D_800A3590: incomplete array -> [2] (next object at 0x800a3594)
 - SIZED-FROM-GAP text1b_tu1d D_800A3594: incomplete array -> [2] (next object at 0x800a3598)
 
-(K2) externs of the new statics removed from other files (16):
+(K2) externs of the new statics removed (own file and other files) (173):
+- EXTERN-REMOVED src/code6cac_c2.c: 1 extern line(s) of D_800A3358 (its own static now)
+- EXTERN-REMOVED src/code6cac_c2.c: 1 extern line(s) of D_800A335C (its own static now)
+- EXTERN-REMOVED src/code6cac_c2.c: 1 extern line(s) of D_800A3360 (its own static now)
+- EXTERN-REMOVED src/code6cac_c2.c: 1 extern line(s) of D_800A3364 (its own static now)
+- EXTERN-REMOVED src/code6cac_c2.c: 1 extern line(s) of D_800A3368 (its own static now)
+- EXTERN-REMOVED src/code6cac_c2.c: 1 extern line(s) of D_800A336C (its own static now)
+- EXTERN-REMOVED src/code6cac_c2.c: 1 extern line(s) of g_game_flag_a (its own static now)
+- EXTERN-REMOVED src/code6cac_c2.c: 1 extern line(s) of g_game_flag_b (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3318 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A331C (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3320 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3324 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3328 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A332C (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3330 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3334 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3338 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A333C (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3340 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3344 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3348 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A334C (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3350 (its own static now)
+- EXTERN-REMOVED src/code6cac_c_mid.c: 1 extern line(s) of D_800A3354 (its own static now)
+- EXTERN-REMOVED src/code6cac_tu2.c: 1 extern line(s) of D_800A3310 (its own static now)
 - EXTERN-REMOVED src/code6cac.c: 1 extern line(s) of D_800A3310 (now a static of code6cac_tu2)
+- EXTERN-REMOVED src/text1a_c_tu2.c: 1 extern line(s) of D_800A3398 (its own static now)
 - EXTERN-REMOVED src/text1a_c.c: 1 extern line(s) of D_800A3398 (now a static of text1a_c_tu2)
+- EXTERN-REMOVED src/text1a_c_tu2.c: 2 extern line(s) of D_800A33A0 (its own static now)
 - EXTERN-REMOVED src/text1a_c.c: 1 extern line(s) of D_800A33A0 (now a static of text1a_c_tu2)
+- EXTERN-REMOVED src/text1a_c_tu2.c: 2 extern line(s) of D_800A33A4 (its own static now)
 - EXTERN-REMOVED src/text1a_c.c: 1 extern line(s) of D_800A33A4 (now a static of text1a_c_tu2)
+- EXTERN-REMOVED src/text1a_c_tu2.c: 2 extern line(s) of D_800A33A8 (its own static now)
 - EXTERN-REMOVED src/text1a_c.c: 1 extern line(s) of D_800A33A8 (now a static of text1a_c_tu2)
+- EXTERN-REMOVED src/text1a_c_tu2.c: 2 extern line(s) of D_800A33AC (its own static now)
 - EXTERN-REMOVED src/text1a_c.c: 1 extern line(s) of D_800A33AC (now a static of text1a_c_tu2)
+- EXTERN-REMOVED src/text1a_post.c: 1 extern line(s) of g_anim_hit_flags (its own static now)
+- EXTERN-REMOVED src/text1a_post.c: 1 extern line(s) of g_anim_hit_data (its own static now)
+- EXTERN-REMOVED src/text1a_pre.c: 1 extern line(s) of D_800A3378 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33B0 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33B4 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33BC (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33C0 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33C8 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33D0 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33D4 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33D8 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33E0 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33E4 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33E8 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33EC (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33F0 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33F4 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A33F8 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A3400 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of g_vab_sticky_sbaddr (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A3408 (its own static now)
+- EXTERN-REMOVED src/text1b.c: 1 extern line(s) of D_800A340C (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3418 (now a static of text1b)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A35D0 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A35D8 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A35DC (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A35E0 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A35E4 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A35E8 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A35F0 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A35F4 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A35F8 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A35FC (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3600 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3608 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A360C (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3610 (its own static now)
+- EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3614 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3420 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3424 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3438 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3440 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3444 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3448 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A344C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3454 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A345C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 2 extern line(s) of D_800A3460 (its own static now)
 - EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3460 (now a static of text1b_tu1c)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3464 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 3 extern line(s) of D_800A3468 (its own static now)
 - EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3468 (now a static of text1b_tu1c)
+- EXTERN-REMOVED src/text1b_tu1c.c: 2 extern line(s) of D_800A346C (its own static now)
 - EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A346C (now a static of text1b_tu1c)
+- EXTERN-REMOVED src/text1b_tu1c.c: 2 extern line(s) of D_800A3470 (its own static now)
 - EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3470 (now a static of text1b_tu1c)
+- EXTERN-REMOVED src/text1b_tu1c.c: 2 extern line(s) of D_800A3474 (its own static now)
 - EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A3474 (now a static of text1b_tu1c)
+- EXTERN-REMOVED src/text1b_tu1c.c: 3 extern line(s) of D_800A3478 (its own static now)
 - EXTERN-REMOVED src/text1b_b.c: 2 extern line(s) of D_800A3478 (now a static of text1b_tu1c)
+- EXTERN-REMOVED src/text1b_tu1c.c: 3 extern line(s) of D_800A347C (its own static now)
 - EXTERN-REMOVED src/text1b_b.c: 2 extern line(s) of D_800A347C (now a static of text1b_tu1c)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3480 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3484 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3488 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A348C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3490 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3494 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3498 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A349C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34A0 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34A4 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34A8 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34AC (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34B0 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34B4 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34B8 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34BC (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34C0 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34C4 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34C8 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34CC (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34D0 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34D4 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34D8 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34DC (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34E0 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 2 extern line(s) of D_800A34E4 (its own static now)
 - EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A34E4 (now a static of text1b_tu1c)
+- EXTERN-REMOVED src/text1b_tu1c.c: 2 extern line(s) of D_800A34E8 (its own static now)
 - EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A34E8 (now a static of text1b_tu1c)
+- EXTERN-REMOVED src/text1b_tu1c.c: 3 extern line(s) of D_800A34EC (its own static now)
 - EXTERN-REMOVED src/text1b_b.c: 1 extern line(s) of D_800A34EC (now a static of text1b_tu1c)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34F8 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A34FC (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3500 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A350C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3510 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3514 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3518 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A351C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3520 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3524 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A3528 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1c.c: 1 extern line(s) of D_800A352C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A3540 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A3544 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A3548 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A354C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A3550 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 2 extern line(s) of D_800A3554 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 2 extern line(s) of D_800A3558 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A355C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 2 extern line(s) of D_800A3568 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A356C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 2 extern line(s) of D_800A3570 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 2 extern line(s) of D_800A3578 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A357C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 4 extern line(s) of D_800A3580 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A3584 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 2 extern line(s) of D_800A3588 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 2 extern line(s) of D_800A358C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 2 extern line(s) of D_800A3590 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A3594 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A3598 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A359C (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 2 extern line(s) of D_800A35A0 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A35A4 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 5 extern line(s) of D_800A35A8 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 2 extern line(s) of D_800A35AC (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 3 extern line(s) of D_800A35B0 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A35B4 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A35B8 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 4 extern line(s) of D_800A35BC (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A35C0 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 4 extern line(s) of D_800A35C4 (its own static now)
+- EXTERN-REMOVED src/text1b_tu1d.c: 1 extern line(s) of D_800A35C8 (its own static now)
 
 (K2) header externs removed (5):
 - HEADER include/sound.h: extern D_800A33B0 removed (now a static of text1b)
@@ -122,7 +519,7 @@ defined in code6cac_c2: 9 static lines, 10 sdata/tentative lines
 defined in code6cac_c_ab: 0 static lines, 8 sdata/tentative lines
 defined in code6cac_c_mid: 17 static lines, 46 sdata/tentative lines
 defined in code6cac_tu2: 2 static lines, 6 sdata/tentative lines
-defined in ings: 0 static lines, 33 sdata/tentative lines
+defined in ings: 0 static lines, 34 sdata/tentative lines
 defined in text1a_c: 0 static lines, 6 sdata/tentative lines
 defined in text1a_c_tu2: 7 static lines, 3 sdata/tentative lines
 defined in text1a_post: 3 static lines, 2 sdata/tentative lines
@@ -132,8 +529,8 @@ defined in text1b_b: 18 static lines, 4 sdata/tentative lines
 defined in text1b_tu1c: 63 static lines, 12 sdata/tentative lines
 defined in text1b_tu1d: 35 static lines, 3 sdata/tentative lines
 defined in text1b_tu1e: 0 static lines, 2 sdata/tentative lines
-symbol-file rows removed for C-defined objects: 192
-blob cut into 19 pieces around 26 C blocks
+symbol-file rows removed for C-defined objects: 198
+blob cut into 20 pieces around 26 C blocks
 PSYQ_LIBRARY_FILES (Q69): comb display gpu ings2 main system text1b_b_tu2 text1b_b_tu3
 ---
  Makefile                          |   20 +-
@@ -153,10 +550,11 @@ PSYQ_LIBRARY_FILES (Q69): comb display gpu ings2 main system text1b_b_tu2 text1b
  asm/data/93B56.data.s             |    5 +
  asm/data/93B7C.data.s             |    5 +
  asm/data/93B8C.data.s             |    7 +
+ asm/data/93C1C.data.s             |    5 +
  asm/data/93D30.data.s             |   22 +
  asm/data/93DCC.data.s             |    6 +
  asm/data/93E18.data.s             |  913 ++++++++++
- bb2.ld                            |   44 +
+ bb2.ld                            |   45 +
  docs/grind/gp-model-2026-09-30.md |   54 +
  engine/buildconfig.py             |    9 +-
  engine/buildstamp.py              |    3 +-
@@ -181,21 +579,21 @@ PSYQ_LIBRARY_FILES (Q69): comb display gpu ings2 main system text1b_b_tu2 text1b
  src/code6cac_c0.c                 |    8 +
  src/code6cac_c2.c                 |   29 +-
  src/code6cac_c_ab.c               |    9 +
- src/code6cac_c_mid.c              |   65 +
+ src/code6cac_c_mid.c              |   81 +-
  src/code6cac_tu2.c                |   11 +-
- src/ings.c                        |   34 +
+ src/ings.c                        |   35 +
  src/text1a_c.c                    |   12 +-
  src/text1a_c_tu2.c                |   21 +-
  src/text1a_post.c                 |    9 +-
  src/text1a_pre.c                  |    7 +-
  src/text1b.c                      |   72 +-
- src/text1b_b.c                    |   51 +-
- src/text1b_tu1c.c                 |  135 +-
+ src/text1b_b.c                    |   52 +-
+ src/text1b_tu1c.c                 |  148 +-
  src/text1b_tu1d.c                 |   97 +-
  src/text1b_tu1e.c                 |    3 +
  tools/psyq_library_files.py       |   81 +
- undefined_syms_auto.txt           |  167 --
- 59 files changed, 1908 insertions(+), 3933 deletions(-)
+ undefined_syms_auto.txt           |  173 --
+ 60 files changed, 1915 insertions(+), 3969 deletions(-)
  create mode 100644 asm/data/938EA.data.s
  create mode 100644 asm/data/938FE.data.s
  create mode 100644 asm/data/93950.data.s
@@ -211,6 +609,7 @@ PSYQ_LIBRARY_FILES (Q69): comb display gpu ings2 main system text1b_b_tu2 text1b
  create mode 100644 asm/data/93B56.data.s
  create mode 100644 asm/data/93B7C.data.s
  create mode 100644 asm/data/93B8C.data.s
+ create mode 100644 asm/data/93C1C.data.s
  create mode 100644 asm/data/93D30.data.s
  create mode 100644 asm/data/93DCC.data.s
  create mode 100644 asm/data/93E18.data.s
@@ -3491,6 +3890,17 @@ index 000000000..280fde922
 +    /* 93B8C 800A338C 00000000 */ .word 0x00000000
 +    /* 93B90 800A3390 00000000 */ .word 0x00000000
 +    /* 93B94 800A3394 00000000 */ .word 0x00000000
+diff --git a/asm/data/93C1C.data.s b/asm/data/93C1C.data.s
+new file mode 100644
+index 000000000..b3265c199
+--- /dev/null
++++ b/asm/data/93C1C.data.s
+@@ -0,0 +1,5 @@
++.include "macro.inc"
++
++.section .data, "wa"
++    .align 0
++    /* 93C1C 800A341C 00000000 */ .word 0x00000000
 diff --git a/asm/data/93D30.data.s b/asm/data/93D30.data.s
 new file mode 100644
 index 000000000..ba635c371
@@ -4451,10 +4861,10 @@ index 000000000..f22ed3d92
 +    /* 93FFC 800A37FC 00000000 */ .word 0x00000000
 +enddlabel g_memcard_sw_event_timeout
 diff --git a/bb2.ld b/bb2.ld
-index 0e71d8935..20670abff 100644
+index 0e71d8935..af365195b 100644
 --- a/bb2.ld
 +++ b/bb2.ld
-@@ -166,6 +166,50 @@ SECTIONS
+@@ -166,6 +166,51 @@ SECTIONS
          /* libcd bios.c: Intr (static volatile CD_intr, defined in src/system.c) at 0x800A1494 */
          build/src/system.o(.data);
          build/asm/data/91C98.data.o(.data);
@@ -4496,6 +4906,7 @@ index 0e71d8935..20670abff 100644
 +        build/asm/data/93B8C.data.o(.data);
 +        build/src/text1a_c_tu2.o(.sbss);
 +        build/src/text1b.o(.sbss);
++        build/asm/data/93C1C.data.o(.data);
 +        build/src/text1b_tu1c.o(.sbss);
 +        build/asm/data/93D30.data.o(.data);
 +        build/src/text1b_tu1d.o(.sbss);
@@ -4506,7 +4917,7 @@ index 0e71d8935..20670abff 100644
          main_DATA_SIZE = ABSOLUTE(main_DATA_END - main_DATA_START);
          main_BSS_START = .;
 diff --git a/docs/grind/gp-model-2026-09-30.md b/docs/grind/gp-model-2026-09-30.md
-index c620d9182..ff93ae9c7 100644
+index fd766b9ef..8eb377da2 100644
 --- a/docs/grind/gp-model-2026-09-30.md
 +++ b/docs/grind/gp-model-2026-09-30.md
 @@ -703,3 +703,57 @@ d6df27259bd21ec03f52f1067cb9b364aeb653b4  /tmp/q56/g8obj_A/text1b_b.o
@@ -5676,10 +6087,10 @@ index 289f2d155..2ea8b9c7b 100644
 +s16 D_800A3840;
 +s16 D_800A3854;
 diff --git a/src/code6cac_b_tu2.c b/src/code6cac_b_tu2.c
-index 7b16a73ce..75530b0c3 100644
+index 77b168c9c..a46e5ca05 100644
 --- a/src/code6cac_b_tu2.c
 +++ b/src/code6cac_b_tu2.c
-@@ -6276,3 +6276,10 @@ loop:
+@@ -6653,3 +6653,10 @@ loop:
          D_800A3834 = 0;
      }
  }
@@ -5728,7 +6139,7 @@ index 0e380bb90..a10af24dc 100644
 +s32 D_800A3890;
 +s32 D_800A3924;
 diff --git a/src/code6cac_c2.c b/src/code6cac_c2.c
-index a9749c231..3b59178ec 100644
+index a9749c231..be91ffddf 100644
 --- a/src/code6cac_c2.c
 +++ b/src/code6cac_c2.c
 @@ -53,7 +53,6 @@ extern u32 D_800A3D30;
@@ -5788,10 +6199,10 @@ index a9749c231..3b59178ec 100644
 +s32 D_800A3218 = 0;
 +s32 D_800A321C = 1;
 +u32 D_800A3220 = 0x1dc03f0;
-+s32 D_800A3224 = 0x240010;  /* not named by any code or data: size from the gap */
++s32 D_800A3224 = 0x240010;  /* the w/h halves of the 8-byte RECT at D_800A3220 (code6cac_c2 passes &D_800A3220 to LoadImage, whose callee reads x/y/w/h); include/code6cac.h declares D_800A3220 u32; not named by code - logged (s15 DATA-MODEL) */
 +s32 D_800A3228 = -1;
 +s32 D_800A322C = 0;
-+s32 D_800A3230 = 0;  /* reached gp-relative by func_8003EDC0 (no C declaration yet): size from the blob label */
++s32 D_800A3230 = 0;  /* reached gp-relative by func_8003EDC0 (declared in no C file): size from the blob label */
 +/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
 +s32 D_800A3818;
 diff --git a/src/code6cac_c_ab.c b/src/code6cac_c_ab.c
@@ -5812,10 +6223,10 @@ index 126ce2caa..f14c43c7f 100644
 +s32 D_800A3908;
 +u8 D_800A3916;
 diff --git a/src/code6cac_c_mid.c b/src/code6cac_c_mid.c
-index bd2f33fd6..3d70f1ccc 100644
+index b1d0e47a5..770b908c7 100644
 --- a/src/code6cac_c_mid.c
 +++ b/src/code6cac_c_mid.c
-@@ -677,6 +677,24 @@ s32 func_8003880C(void) {
+@@ -677,9 +677,26 @@ s32 func_8003880C(void) {
      }
      return s0;
  }
@@ -5839,14 +6250,47 @@ index bd2f33fd6..3d70f1ccc 100644
 +
  s32 func_800388A8(void) {
      extern u8 D_800A3204;
-     extern u8 D_800A3318;
-@@ -1992,3 +2010,50 @@ end:
+-    extern u8 D_800A3318;
+     s32 result = 0;
+     u32 buttons;
+     if (D_800A3204 != 0) {
+@@ -709,15 +726,6 @@ s32 func_800388A8(void) {
+ }
+ s32 func_80038988(void) {
+     extern u8 D_800A3205;
+-    extern u8 D_800A331C;
+-    extern u8 D_800A3320;
+-    extern u8 D_800A3324;
+-    extern u8 D_800A3328;
+-    extern u8 D_800A332C;
+-    extern u8 D_800A3330;
+-    extern u8 D_800A3334;
+-    extern u8 D_800A3338;
+-    extern u8 D_800A333C;
+     s32 result = 0;
+     s32 v0;
+     s32 sel;
+@@ -862,13 +870,7 @@ end:
+ 
+ s32 func_80038C70(void) {
+     extern u8 D_800A3207;
+-    extern u8 D_800A334C;
+-    extern u8 D_800A3350;
+-    extern u8 D_800A3354;
+     extern u8 D_800A3206;
+-    extern u8 D_800A3340;
+-    extern u8 D_800A3344;
+-    extern u8 D_800A3348;
+     extern void func_8006BEC4(s32, s32);
+     extern void func_8005C650(s32, s32, s32);
+     extern void func_8003877C(void);
+@@ -1992,3 +1994,50 @@ end:
      func_8003AA48();
      VSync(2);
  }
 +
 +/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
-+s32 D_800A31F0 = -2147415380;
++s32 D_800A31F0 = (s32)D_80010AAC;
 +s32 D_800A31F4 = 0;
 +s32 D_800A31F8 = 0;
 +u8 D_800A31FC = 0;
@@ -5892,7 +6336,7 @@ index bd2f33fd6..3d70f1ccc 100644
 +s32 D_800A3908;
 +u8 D_800A3916;
 diff --git a/src/code6cac_tu2.c b/src/code6cac_tu2.c
-index bdfa143e1..5a8e6464b 100644
+index 308acd0db..72d4742dd 100644
 --- a/src/code6cac_tu2.c
 +++ b/src/code6cac_tu2.c
 @@ -26,7 +26,6 @@ extern void func_8005B5AC(void);
@@ -5925,17 +6369,18 @@ index bdfa143e1..5a8e6464b 100644
 +s8 D_800A30FC = -1;
 +s8 D_800A30FD = -1;
 diff --git a/src/ings.c b/src/ings.c
-index e31627dec..034b2f5ab 100644
+index e31627dec..de34f77f2 100644
 --- a/src/ings.c
 +++ b/src/ings.c
-@@ -978,3 +978,37 @@ void sys_StubEmpty2(void) {
+@@ -978,3 +978,38 @@ void sys_StubEmpty2(void) {
  
  void sys_StubEmpty3(void) {
  }
 +
++extern const char D_8001004C[];
 +/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
 +s32 D_800A30DC = 0x13400;
-+s32 D_800A30E0[2] = { -2147418036, 0x190 };  /* not named by any code or data: size from the gap */
++s32 D_800A30E0[2] = { (s32)D_8001004C, 0x190 };  /* not named by any code or data: size from the gap */
 +u8 D_800A30E8 = 0;
 +/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
 +u8 D_800A3690;
@@ -6124,7 +6569,7 @@ index 60bf69f7a..5b6286b38 100644
 +/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
 +s32 D_800A3234 = -1;
 diff --git a/src/text1b.c b/src/text1b.c
-index 4a5b588d6..b01ead006 100644
+index 27b818047..84b0b58d5 100644
 --- a/src/text1b.c
 +++ b/src/text1b.c
 @@ -7,8 +7,6 @@
@@ -6166,7 +6611,7 @@ index 4a5b588d6..b01ead006 100644
 +static s32 D_800A3408;
 +static s32 D_800A340C;
 +static s32 D_800A3410[2];  /* not named by any code or data: size from the gap */
-+static s32 D_800A3418[2];  /* reached gp-relative by func_8005D554 (no C declaration yet): size from the blob label */
++static s32 D_800A3418;
 +
  void func_800460E4(s32 stage_id, s32 arg1) {
      s32 *s0;
@@ -6274,18 +6719,18 @@ index 4a5b588d6..b01ead006 100644
 +s16 D_800A3248 = -1;
 +s16 D_800A324A = -1;
 +s32 D_800A324C = -1;
-+s32 D_800A3250[2] = { 0x4c4c554e, 0 };  /* reached gp-relative by func_8005490C (no C declaration yet): size from the blob label */
++s32 D_800A3250[2] = { 0x4c4c554e, 0 };  /* reached gp-relative by func_8005490C (declared in no C file): size from the blob label */
 +s32 D_800A3258 = 0xe0c0f0d;  /* address taken (lui/addiu) in func_80055B60: size from the blob label */
 +s32 D_800A325C = 0x3020001;  /* address taken (lui/addiu) in func_80058580: size from the blob label */
 +s32 D_800A3260 = 0x7060405;  /* address taken (lui/addiu) in func_80058580: size from the blob label */
 +s32 D_800A3264[2] = { 0x4e00b3, 0xc180000 };  /* named by the pointer word at 0X8009B0D8 (7D920.data.s) (A9, owner ruling Q80, rules: 8c57bc4ab: this file's K3 global by layout - it lies between this file's gp-reached objects; the pointer table's owning file is open): size from the blob label */
-+s32 D_800A326C = 0;  /* reached gp-relative by func_8005D554 (no C declaration yet): size from the blob label */
++s32 D_800A326C = 0;
 +u8 D_800A3270[8] = { 0, 1, 2, 3, 4, 0, 0, 0 };
 +s32 D_800A3278 = 0;
 +u8 D_800A327C[8] = { 0x80, 3, 0, 0, 0x40, 0, 0, 1 };
 +u8 D_800A3284[8] = { 0xe0, 3, 0xff, 1, 0x10, 0, 1, 0 };
 +s32 D_800A328C = 0;
-+s32 D_800A3290 = 0xe140000;  /* not named by any code or data: size from the gap */
++s32 D_800A3290 = 0xe140000;  /* the second word of the 8-byte record at D_800A328C (text1b stores &D_800A328C as a descriptor's p_static for func_8007352C; its neighbours D_800A327C/3284/3294 are 8-byte records); text1b declares D_800A328C s32; not named by code - logged (s15 DATA-MODEL) */
 +u8 D_800A3294[8] = { 0xc0, 3, 0x80, 1, 0x40, 0, 0x16, 0 };
 +u8 D_800A329C[8] = { 0xc0, 3, 0xff, 1, 0x10, 0, 1, 0 };
 +u8 D_800A32A4[8] = { 0x80, 3, 0x7f, 1, 0x40, 0, 0x7f, 0 };
@@ -6295,7 +6740,7 @@ index 4a5b588d6..b01ead006 100644
 +/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
 +s32 g_gpu_ot256_ptr;
 diff --git a/src/text1b_b.c b/src/text1b_b.c
-index 015ecc5f1..a7c1297ef 100644
+index 015ecc5f1..5eadc7d39 100644
 --- a/src/text1b_b.c
 +++ b/src/text1b_b.c
 @@ -132,8 +132,25 @@ void func_80074488(s32 *arg0);
@@ -6358,7 +6803,15 @@ index 015ecc5f1..a7c1297ef 100644
  void func_80077940(s32 arg0) {
      D_800A35E8 = (arg0 & 0x3FF) + ((u32) (arg0 & 0x3FF000) >> 2) + ((u32) (arg0 & 0x01000000) >> 4) + ((u32) (arg0 & 0x04000000) >> 5);
  }
-@@ -2039,13 +2052,7 @@ extern s32 column;
+@@ -1988,7 +2001,6 @@ extern s32 column;
+     extern s32 D_8009B388;
+     extern s32 D_8009B390;
+     extern s32 D_800A326C;
+-    extern s32 D_800A3418;
+ 
+ 
+ 
+@@ -2039,13 +2051,7 @@ extern s32 column;
  
  
  
@@ -6372,7 +6825,7 @@ index 015ecc5f1..a7c1297ef 100644
      extern void func_80061FAC(s32, s32, s32);
  
  
-@@ -2054,7 +2061,6 @@ extern s32 column;
+@@ -2054,7 +2060,6 @@ extern s32 column;
  
  
  
@@ -6380,7 +6833,7 @@ index 015ecc5f1..a7c1297ef 100644
  
  
  
-@@ -2090,9 +2096,6 @@ extern s32 D_800A3460;
+@@ -2090,9 +2095,6 @@ extern s32 D_800A3460;
  
  
  
@@ -6390,7 +6843,7 @@ index 015ecc5f1..a7c1297ef 100644
  
  
  
-@@ -2119,8 +2122,6 @@ extern s32 D_800A37D4;
+@@ -2119,8 +2121,6 @@ extern s32 D_800A37D4;
  
  
  
@@ -6399,7 +6852,7 @@ index 015ecc5f1..a7c1297ef 100644
      extern s16 D_800F0C04;
  
  
-@@ -2409,11 +2410,6 @@ s32 func_80077D10(s32 *a0) {
+@@ -2409,11 +2409,6 @@ s32 func_80077D10(s32 *a0) {
      func_8006920C(a0, a0[10]);
      return a0[1];
  }
@@ -6411,7 +6864,7 @@ index 015ecc5f1..a7c1297ef 100644
  s32 func_80077D74(s32 a0) {
      return D_800A35F4 + a0 * 44;
  }
-@@ -2703,12 +2699,9 @@ s32 func_8007855C(s32 arg0) {
+@@ -2703,12 +2698,9 @@ s32 func_8007855C(s32 arg0) {
  s32 func_80078628(s32 *a0) {
      return a0[1];
  }
@@ -6424,7 +6877,7 @@ index 015ecc5f1..a7c1297ef 100644
  
  typedef struct {
      s32 a;       /* sp18 - 0x00 */
-@@ -2798,7 +2791,6 @@ check:
+@@ -2798,7 +2790,6 @@ check:
      if (var_s0[1] != -1) goto loop;
  }
  
@@ -6432,7 +6885,7 @@ index 015ecc5f1..a7c1297ef 100644
  extern s32 D_800A3304;
  
  s32 func_80078824(s32 arg0) {
-@@ -3113,3 +3105,8 @@ void printf(s32 fmt, s32 a, s32 b, s32 c) {
+@@ -3113,3 +3104,8 @@ void printf(s32 fmt, s32 a, s32 b, s32 c) {
      ap[3] = c;
      prnt(1, fmt, ap + 1);
  }
@@ -6442,7 +6895,7 @@ index 015ecc5f1..a7c1297ef 100644
 +/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
 +u8 * D_800A36A0;
 diff --git a/src/text1b_tu1c.c b/src/text1b_tu1c.c
-index be5faca3f..94693c4c0 100644
+index 9cd69fdfa..909f7bcb1 100644
 --- a/src/text1b_tu1c.c
 +++ b/src/text1b_tu1c.c
 @@ -35,6 +35,70 @@ s32 cdrom_StartRead(s32, s32);
@@ -6524,7 +6977,27 @@ index be5faca3f..94693c4c0 100644
  #define OB ((struct Ob *)D_800A3468)
  void func_80060A68(void) {
      struct Ob {
-@@ -180,12 +243,6 @@ void func_80060B70(void) {
+@@ -114,8 +177,6 @@ void func_80060A68(void) {
+         s32 m24;
+         s32 m28;
+     };
+-    extern s32 D_800A3478;
+-    extern s32 D_800A347C;
+     extern s32 D_800A32BC;
+ 
+ 
+@@ -143,10 +204,6 @@ void func_80060A68(void) {
+ }
+ #undef OB
+ void func_80060B70(void) {
+-    extern s32 D_800A3468;
+-    extern s32 D_800A346C;
+-    extern s32 D_800A3470;
+-    extern s32 D_800A3474;
+ 
+ 
+ 
+@@ -180,12 +237,6 @@ void func_80060B70(void) {
  }
  
  extern u8 D_800F1150[];
@@ -6537,7 +7010,7 @@ index be5faca3f..94693c4c0 100644
  void func_80060C60(void) {
      s32 i = 0;
      s32 *p = D_800F10D0;
-@@ -206,8 +263,6 @@ void func_80060C60(void) {
+@@ -206,8 +257,6 @@ void func_80060C60(void) {
      D_800A3448 = 0;
  }
  
@@ -6546,7 +7019,7 @@ index be5faca3f..94693c4c0 100644
  
  s32 func_80060CB8(s32 arg0, s32 arg1)
  {
-@@ -279,38 +334,6 @@ void func_80060E04(s32 arg0) {
+@@ -279,38 +328,6 @@ void func_80060E04(s32 arg0) {
      D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
      D_800A3720 = D_800A37D4;
  }
@@ -6585,7 +7058,7 @@ index be5faca3f..94693c4c0 100644
  void func_80060E38(s32 arg0, s32 arg1) {
      D_800A3468 = 0x1F800000;
      D_800A346C = 0x1F800018;
-@@ -434,7 +457,6 @@ extern s32 func_800421A4();
+@@ -434,7 +451,6 @@ extern s32 func_800421A4();
  /* D_800158E0: 24B @ 0x800158E0 — "eff prim over :%d \n" + alignment + empty trailing string */
  const char D_800158E0[24] = "eff prim over :%d \n";
  extern s32 D_800A32BC;
@@ -6593,7 +7066,17 @@ index be5faca3f..94693c4c0 100644
  
  extern s32 D_800F1140;
  
-@@ -1398,7 +1420,6 @@ s32 func_8006295C(void) {
+@@ -1187,9 +1203,6 @@ void func_800620B8(s16 *pos, s32 *trans) {
+     D_800A37D4 = (s32)prim;
+ }
+ s32 func_8006288C(void) {
+-    extern s32 D_800A3460;
+-    extern s32 D_800A347C;
+-    extern s32 D_800A3478;
+     extern s16 D_800F0C04;
+     extern s32 D_800F0FB8;
+     extern s32 D_800F0FBC;
+@@ -1398,7 +1411,6 @@ s32 func_8006295C(void) {
      }
      return D_800A3460;
  }
@@ -6601,7 +7084,7 @@ index be5faca3f..94693c4c0 100644
  
  /* Spawn a flare: claim the first free slot bit in D_800A3448 (of 12), copy
     the position at *D_800A347C into its D_800F0E38 record and reset its age.
-@@ -1620,7 +1641,6 @@ u8 func_80063BA4(void) {
+@@ -1620,7 +1632,6 @@ u8 func_80063BA4(void) {
      *(s32 *)D_800A3480 = D_800A345C[1];
      return func_80063E10(1);
  }
@@ -6609,7 +7092,7 @@ index be5faca3f..94693c4c0 100644
  extern SVECTOR D_800F1000[][10];
  /* func_80063BD0 (src/text1b.c) -- MATCHING FORM.  Honest distance 0 / 144
   * (sandbox --disable all, zero cheat-asm, zero rules) measured in grind
-@@ -2338,7 +2358,6 @@ s32 func_80064FB4(void) {
+@@ -2338,7 +2349,6 @@ s32 func_80064FB4(void) {
  }
  
  extern s32 D_800F10FC;
@@ -6617,7 +7100,7 @@ index be5faca3f..94693c4c0 100644
  s32 func_80065000(void) {
      void *p = D_800A347C;
      void *q = D_800A3468;
-@@ -3170,7 +3189,6 @@ u8 func_800671CC(void) {
+@@ -3170,7 +3180,6 @@ u8 func_800671CC(void) {
      D_800F1134 = 2;
      return ret;
  }
@@ -6625,7 +7108,27 @@ index be5faca3f..94693c4c0 100644
  extern SVECTOR D_800F0B78[];
  /* 20-byte record table at 0x800EFC78: 4 rows (arg1) of 48 records. Object
   * model evidence: asm/funcs/func_80067200.s addresses it as
-@@ -3838,16 +3856,7 @@ void func_80068ECC(s32 arg0) {
+@@ -3370,7 +3379,6 @@ extern u16 D_8009B8B0[];
+ extern u16 D_8009B998[];
+ extern u16 D_8009B9B8[];
+ u8 func_800678A8(s32 arg0, s32 arg1) {
+-    extern s32 D_800A34EC;
+     extern s32 D_800A37D4;
+     extern s32 D_800A3724;
+     s32 outer = D_800A34EC;
+@@ -3769,11 +3777,8 @@ void func_80067D14(s32 arg0, s32 arg1) {
+     }
+ }
+ u8 func_80068D88(s32 arg0, s32 arg1) {
+-    extern s32 D_800A34EC;
+     extern s32 D_800A37D4;
+     extern s32 D_800A3724;
+-    extern s32 D_800A34E4;
+-    extern s32 D_800A34E8;
+     extern s32 g_gpu_ot_ptr;
+     s32 outer = D_800A34EC;
+     s16 *p_idx = (s16 *)(outer + 0x6E);
+@@ -3838,16 +3843,7 @@ void func_80068ECC(s32 arg0) {
      v &= ~0x80; v |= arg0 & 0x80;
      *p = v;
  }
@@ -6642,7 +7145,7 @@ index be5faca3f..94693c4c0 100644
  extern u8 D_800A32C0[8];
  extern s32 snd_StopAll(void);
  
-@@ -3982,7 +3991,6 @@ void func_8006920C(s32 *a0, s32 a1) {
+@@ -3982,7 +3978,6 @@ void func_8006920C(s32 *a0, s32 a1) {
  
  
  extern void func_8006E390();
@@ -6650,7 +7153,7 @@ index be5faca3f..94693c4c0 100644
  s32 func_80069250(s32 arg0, s32 arg1) {
      s32 sp10[10];
      D_800A3514 = 0;
-@@ -6175,7 +6183,6 @@ s32 func_8006D74C(s32 arg0, s32 arg1) {
+@@ -6175,7 +6170,6 @@ s32 func_8006D74C(s32 arg0, s32 arg1) {
      func_8005C6D0();
      return result;
  }
@@ -6658,7 +7161,7 @@ index be5faca3f..94693c4c0 100644
  s32 func_8006D7FC(void) {
      D_800A352C = 0;
      return 1;
-@@ -6518,7 +6525,6 @@ s32 func_8006E2A8(void) {
+@@ -6518,7 +6512,6 @@ s32 func_8006E2A8(void) {
      SetDispMask(1);
      return 1;
  }
@@ -6666,7 +7169,7 @@ index be5faca3f..94693c4c0 100644
  s32 *func_80069120(s32);
  void func_8006E390(s32 *a0, s32 *a1) {
      s32 *s0 = a0;
-@@ -6584,3 +6590,16 @@ s32 func_8006E49C(s32 arg0, s32 *arg1) {
+@@ -6584,3 +6577,16 @@ s32 func_8006E49C(s32 arg0, s32 *arg1) {
      arg1[0xF] = base4;
      return base4 + tail;
  }
@@ -6990,7 +7493,7 @@ index 000000000..13baec6f2
 +            print(f"MISMATCH: Makefile {mk} / buildconfig {bc} / evidence {lib}", file=sys.stderr)
 +            sys.exit(1)
 diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
-index 583619190..cc380b8fd 100644
+index c414e251a..862d337e5 100644
 --- a/undefined_syms_auto.txt
 +++ b/undefined_syms_auto.txt
 @@ -81,15 +81,7 @@ _snd_seq_tick_env_plus_0x11 = 0x800A26DD;  /* data-wave 2026-09-07: was D_800A26
@@ -7009,7 +7512,7 @@ index 583619190..cc380b8fd 100644
  D_800A3382 = 0x800A3382;
  D_800A33CA = 0x800A33CA;
  D_800A358A = 0x800A358A;
-@@ -740,18 +732,13 @@ _svm_envx_hist = 0x80107898;  /* data-wave 2026-09-24: was D_80107898 */
+@@ -740,18 +732,12 @@ _svm_envx_hist = 0x80107898;  /* data-wave 2026-09-24: was D_80107898 */
  _svm_okof1 = 0x801078D8;  /* data-wave 2026-09-24: was D_801078D8 */
  _svm_okof2 = 0x801078DA;  /* data-wave 2026-09-24: was D_801078DA */
  D_801078E0 = 0x801078E0;
@@ -7023,15 +7526,18 @@ index 583619190..cc380b8fd 100644
  D_800A3134 = 0x800A3134;
  D_800A3138 = 0x800A3138;
 -D_800A3140 = 0x800A3140;
- D_800A3144 = 0x800A3144;
+-D_800A3144 = 0x800A3144;
 -D_800A3174 = 0x800A3174;
  D_800A3178 = 0x800A3178;
  D_800A3180 = 0x800A3180;
  D_800A3188 = 0x800A3188;
-@@ -768,14 +755,6 @@ g_str_sio_800A3210 = 0x800A3210;  /* data-wave 2026-09-24: was D_800A3210 */
- D_800A3258 = 0x800A3258;
- D_800A325C = 0x800A325C;
- D_800A3260 = 0x800A3260;
+@@ -765,17 +751,6 @@ D_800A31C0 = 0x800A31C0;
+ D_800A31C8 = 0x800A31C8;
+ D_800A31D0 = 0x800A31D0;
+ g_str_sio_800A3210 = 0x800A3210;  /* data-wave 2026-09-24: was D_800A3210 */
+-D_800A3258 = 0x800A3258;
+-D_800A325C = 0x800A325C;
+-D_800A3260 = 0x800A3260;
 -D_800A3270 = 0x800A3270;
 -D_800A327C = 0x800A327C;
 -D_800A3284 = 0x800A3284;
@@ -7043,7 +7549,7 @@ index 583619190..cc380b8fd 100644
  D_800A32C0 = 0x800A32C0;
  D_800A32C8 = 0x800A32C8;
  D_800A32D0 = 0x800A32D0;
-@@ -784,24 +763,8 @@ D_800A32E0 = 0x800A32E0;
+@@ -784,24 +759,8 @@ D_800A32E0 = 0x800A32E0;
  D_800A32EC = 0x800A32EC;
  D_800A32F4 = 0x800A32F4;
  D_800A32FC = 0x800A32FC;
@@ -7068,7 +7574,7 @@ index 583619190..cc380b8fd 100644
  D_800A3618 = 0x800A3618;
  D_800A3628 = 0x800A3628;
  D_800A362C = 0x800A362C;
-@@ -908,7 +871,6 @@ _spu_memList = 0x800A2D40;  /* data-wave 2026-09-07: was D_800A2D40 */
+@@ -908,7 +867,6 @@ _spu_memList = 0x800A2D40;  /* data-wave 2026-09-07: was D_800A2D40 */
  D_800A3074 = 0x800A3074;
  D_800A307C = 0x800A307C;
  _spu_trans_mode = 0x800A2878;  /* data-wave 2026-09-07: was D_800A2878 */
@@ -7076,7 +7582,7 @@ index 583619190..cc380b8fd 100644
  D_00000000 = 0x00000000;
  D_80094B48 = 0x80094B48;
  D_80094CFC = 0x80094CFC;
-@@ -1092,120 +1054,7 @@ D_800A2D1C = 0x800A2D1C;
+@@ -1092,120 +1050,7 @@ D_800A2D1C = 0x800A2D1C;
  _spu_rev_startaddr = 0x800A2D44;  /* data-wave 2026-09-07: was D_800A2D44 */
  D_800A3044 = 0x800A3044;
  D_800A30D4 = 0x800A30D4;
@@ -7197,7 +7703,7 @@ index 583619190..cc380b8fd 100644
  D_800A36A0 = 0x800A36A0;
  D_800A36B0 = 0x800A36B0;
  D_800A36C0 = 0x800A36C0;
-@@ -1240,9 +1089,6 @@ file_GetFlag2 = 0x800167D4;
+@@ -1240,9 +1085,6 @@ file_GetFlag2 = 0x800167D4;
  file_LoadSoundData = 0x80016CF8;
  file_ResetDmaFlag = 0x80016C74;
  g_anim_func_table = 0x800F66A0;
@@ -7207,7 +7713,7 @@ index 583619190..cc380b8fd 100644
  g_cam_bone_data = 0x800EEDD0;
  g_cam_bone_data2 = 0x800EEDF0;
  D_800F62FA = 0x800F62FA;  /* data-wave 2026-09-29: was g_cam_fov_div */
-@@ -1274,12 +1120,8 @@ g_cos_lut_q4 = 0x8009A794;
+@@ -1274,12 +1116,8 @@ g_cos_lut_q4 = 0x8009A794;
  /* data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined */
  g_file_data_buf = 0x800F6740;
  g_file_dma_flag = 0x800A3716;
@@ -7220,7 +7726,7 @@ index 583619190..cc380b8fd 100644
  g_gpu_data_reg = 0x8009BF44;
  g_gpu_dev_table = 0x8009BE6C;
  g_gpu_dma_bcr = 0x8009BF50;
-@@ -1290,7 +1132,6 @@ g_gpu_ot_end = 0x8009BF30;
+@@ -1290,7 +1128,6 @@ g_gpu_ot_end = 0x8009BF30;
  g_gpu_stat_reg = 0x8009BF48;
  g_gpu_vcount = 0x8009BF8C;
  g_module_func_tbl = 0x8008D090;
@@ -7228,7 +7734,7 @@ index 583619190..cc380b8fd 100644
  g_player_char_ids = 0x80094B88;
  g_player_ptrs = 0x800A9A10;
  /* data-wave 2026-09-07: g_sin_lut_q1 = 0x8009BF94 retired; rsin_tbl is now object-defined */
-@@ -1298,12 +1139,8 @@ g_sin_lut_q3 = 0x8009AF94;
+@@ -1298,12 +1135,8 @@ g_sin_lut_q3 = 0x8009AF94;
  D_800A307C = 0x800A307C;  /* data-wave 2026-09-29: was g_snd_callback */
  D_800EF848 = 0x800EF848;  /* data-wave 2026-09-29: was g_snd_ch_data */
  D_800EF7BC = 0x800EF7BC;  /* data-wave 2026-09-25: was g_snd_config_tbl */
@@ -7241,7 +7747,7 @@ index 583619190..cc380b8fd 100644
  g_spu_busy = 0x800A2D10;
  g_spu_dma_ctrl = 0x800A2CF0;
  g_spu_init_flag = 0x800A2D14;
-@@ -1347,10 +1184,6 @@ D_80015F74 = 0x80015F74;
+@@ -1347,12 +1180,6 @@ D_80015F74 = 0x80015F74;
  D_8009BF24 = 0x8009BF24;
  D_8009BF28 = 0x8009BF28;
  D_8009BF2C = 0x8009BF2C;
@@ -7249,9 +7755,11 @@ index 583619190..cc380b8fd 100644
 -D_800A3470 = 0x800A3470;
 -D_800A3474 = 0x800A3474;
 -D_800A3478 = 0x800A3478;
- D_800A326C = 0x800A326C;
- D_800A3418 = 0x800A3418;
+-D_800A326C = 0x800A326C;
+-D_800A3418 = 0x800A3418;
  D_8009B2E0 = 0x8009B2E0;
+ D_8009B388 = 0x8009B388;
+ D_8009B390 = 0x8009B390;
 -- 
 2.43.0
 

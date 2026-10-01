@@ -1,0 +1,17 @@
+Rule: per-file-gp-model.md Merge (owner ruling Q65 group): code6cac_c2 + config are one original file; declarations reconciled in step 06 (evidence: s07_apply.py docstring).
+
+Besides concatenating the parts in link order (union of their include blocks), the merge drops 16 file-scope declarations that repeat, verbatim, one already emitted earlier in the merged file (each object keeps its first declaration):
+- extern void cdrom_StartAudio(s32, s32);  x2 (code6cac_c2.c:298, code6cac_c2.c:396)
+- extern s32 D_800A3228;  x2 (code6cac_c2.c:1641, code6cac_c2.c:1657)
+- extern void snd_SerialMixOn(void);  x1 (code6cac_c2.c:297)
+- extern void func_80037260(void);  x1 (code6cac_c2.c:299)
+- extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);  x1 (code6cac_c2.c:519)
+- extern void func_8001DA2C(void);  x1 (code6cac_c2.c:839)
+- extern s32 func_80022408(s32 *);  x1 (code6cac_c2.c:844)
+- extern void func_80054884(s32, s32, s32, s32, s32, s32, s32, s32);  x1 (code6cac_c2.c:845)
+- extern s32 stage_GetId(void);  x1 (config.c:13)
+- extern s32 *func_8004153C();  x1 (config.c:15)
+- extern s32 D_800A336C;  x1 (config.c:21)
+- extern s32 D_800A322C;  x1 (config.c:22)
+- extern s16 D_800F6656;  x1 (config.c:32)
+- extern Unk80101DF0Record *D_800A3708;  x1 (config.c:35)

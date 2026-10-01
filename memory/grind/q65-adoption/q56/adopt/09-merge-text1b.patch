@@ -1,9 +1,84 @@
-From 80af51ad1164f3a8c296bedd86da44a3880286d9 Mon Sep 17 00:00:00 2001
+From 663b1485a7c7e77d1604a5b82170840a71e2e2b2 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 13:13:53 -0500
+Date: Thu, 1 Oct 2026 14:31:44 -0500
 Subject: [PATCH] src: text1a_c2 + text1a_b + text1a_b_pre_rodata + sound +
  text1b are one file (owner rulings Q65/Q67, step 9)
 
+Rule: per-file-gp-model.md Merge (owner ruling Q67 group, A7 data-only join): text1a_c2 + text1a_b + text1a_b_pre_rodata + sound + text1b are one original file; declarations reconciled in step 08 (evidence: s09_apply.py docstring, m34_evidence.md).
+
+Besides concatenating the parts in link order (union of their include blocks), the merge drops 118 file-scope declarations that repeat, verbatim, one already emitted earlier in the merged file (each object keeps its first declaration):
+- void func_800858D0(s32);  x7 (text1b.c:3202, text1b.c:3230, text1b.c:3501, text1b.c:3520, ...)
+- extern void func_800858D0(s32);  x7 (text1b.c:3206, text1b.c:3634, text1b.c:3703, text1b.c:3769, ...)
+- extern s32 D_800A3408;  x4 (text1b.c:3178, text1b.c:3528, text1b.c:3593, text1b.c:3966)
+- extern s32 D_800A33EC;  x3 (text1b.c:777, text1b.c:808, text1b.c:839)
+- extern s32 g_gpu_ot_ptr;  x3 (text1b.c:2198, text1b.c:5157, text1b.c:5626)
+- extern s32 ratan2(s32, s32);  x3 (text1b.c:2562, text1b.c:2717, text1b.c:2995)
+- extern s32 SetDrawMode(s32, s32, s32, s32, s32);  x3 (text1b.c:4459, text1b.c:5164, text1b.c:5418)
+- extern s32 AddPrim(s32, s32);  x3 (text1b.c:4460, text1b.c:5165, text1b.c:5419)
+- extern s32 SetSemiTrans(void *, s32);  x3 (text1b.c:4461, text1b.c:5177, text1b.c:5628)
+- extern s32 g_anim_func_table[];  x2 (sound.c:481, text1b.c:930)
+- extern s16 g_color_mode;  x2 (text1b.c:471, text1b.c:481)
+- extern s32 D_800A378C;  x2 (text1b.c:638, text1b.c:2200)
+- extern s16 D_800A33E8;  x2 (text1b.c:809, text1b.c:840)
+- extern s16 D_800EF980[];  x2 (text1b.c:838, text1b.c:1044)
+- extern s32 D_800A33F4;  x2 (text1b.c:1733, text1b.c:1836)
+- extern s32 gte_SumSquares3(s32, s32, s32);  x2 (text1b.c:1762, text1b.c:1837)
+- extern s32 func_80052D00(s32, s32);  x2 (text1b.c:1763, text1b.c:1795)
+- extern s32 func_80053E9C();  x2 (text1b.c:1765, text1b.c:1796)
+- void SsVabClose(s16);  x2 (text1b.c:3514, text1b.c:3665)
+- extern s32 func_8005C2A8(s32 *, s16, s32);  x2 (text1b.c:3585, text1b.c:3632)
+- extern s32 g_vab_rec_ptr_plus_0x18;  x2 (text1b.c:3771, text1b.c:4093)
+- extern s32 g_vab_rec_ptr_plus_0xC;  x2 (text1b.c:3772, text1b.c:4092)
+- extern s32 *g_vab_rec_ptr[];  x2 (text1b.c:3791, text1b.c:3963)
+- extern s32 g_vab_vb_sbaddr[];  x2 (text1b.c:3792, text1b.c:3964)
+- extern s32 g_vab_sticky_sbaddr;  x2 (text1b.c:3965, text1b.c:4049)
+- extern s32 func_8007352C(s32);  x2 (text1b.c:4457, text1b.c:5167)
+- extern s32 func_8006E480(s32, s32);  x2 (text1b.c:4458, text1b.c:5168)
+- extern s32 SetTile(void *);  x2 (text1b.c:4462, text1b.c:5630)
+- extern s32 D_800A33B0;  x1 (text1a_b.c:5)
+- extern s32 D_800A33B4;  x1 (text1a_b.c:6)
+- extern void func_800453E0(s32);  x1 (sound.c:9)
+- extern s32 *func_800455AC(s32);  x1 (sound.c:10)
+- extern void func_80045510(s32, s32);  x1 (sound.c:11)
+- extern void func_80045230(s32);  x1 (sound.c:12)
+- extern void func_80044100();  x1 (sound.c:25)
+- extern void func_80045600(s32, s32);  x1 (sound.c:26)
+- extern void func_80045694(s32, s32);  x1 (sound.c:27)
+- extern void func_80044010(s32 *, s16);  x1 (sound.c:107)
+- extern s16 Judge[];  x1 (text1b.c:9)
+- extern u32 GetTPage(s32, s32, s32, s32);  x1 (text1b.c:413)
+- extern u32 GetClut(s32, s32);  x1 (text1b.c:414)
+- extern s32 *func_8004153C();  x1 (text1b.c:590)
+- extern s32 D_800A33E4;  x1 (text1b.c:628)
+- extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);  x1 (text1b.c:633)
+- extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);  x1 (text1b.c:635)
+- extern s16 D_800A33EA;  x1 (text1b.c:841)
+- extern void func_80046020(void);  x1 (text1b.c:844)
+- extern MATRIX *MulMatrix0(MATRIX *, MATRIX *, MATRIX *);  x1 (text1b.c:931)
+- extern u8 D_80099CC8[];  x1 (text1b.c:1042)
+- extern void func_800417D0(s32 *);  x1 (text1b.c:1045)
+- extern s32 D_800A324C;  x1 (text1b.c:1261)
+- extern void func_800418D0(s32 *);  x1 (text1b.c:1273)
+- extern Unk80101DF0Record *D_800A3708;  x1 (text1b.c:1275)
+- typedef struct { u16 v[22]; } Unk800153F0Record;  x1 (text1b.c:1308)
+- extern u8 D_800F62E0[8][0x60];  x1 (text1b.c:1312)
+- extern s32 func_80053754();  x1 (text1b.c:1764)
+- extern u8 D_800EFA00;  x1 (text1b.c:1797)
+- extern u8 D_800EF9F8;  x1 (text1b.c:1798)
+- extern s32 D_800A33F0;  x1 (text1b.c:2078)
+- extern s32 func_80044FA0(s32, s32);  x1 (text1b.c:2093)
+- extern void func_8004659C(s32);  x1 (text1b.c:2106)
+- extern s32 D_80102C00;  x1 (text1b.c:2196)
+- extern u16 D_800A38D6;  x1 (text1b.c:2197)
+- extern s32 D_800A3808;  x1 (text1b.c:2199)
+- extern s32 rand(void);  x1 (text1b.c:2757)
+- s32 snd_VabFakeOpen(s32, s16);  x1 (text1b.c:3688)
+- extern s32 func_80036EA8(s32, s32);  x1 (text1b.c:3705)
+- extern s32 func_80036F28(s32);  x1 (text1b.c:3708)
+- extern void SsVabClose(s16);  x1 (text1b.c:3794)
+- extern s32 D_800A340C;  x1 (text1b.c:3967)
+- extern s32 D_800A36AC;  x1 (text1b.c:5170)
+- extern s32 D_800A3278;  x1 (text1b.c:5172)
 ---
  bb2.ld                                |   13 -
  docs/grind/rodata-align-2026-09-30.md |    2 +-
@@ -71,10 +146,10 @@ index 8106d368b..6cf657feb 100644
          build/src/text1b_tu1c.o(.bss);
          build/src/text1b_tu1d.o(.bss);
 diff --git a/docs/grind/rodata-align-2026-09-30.md b/docs/grind/rodata-align-2026-09-30.md
-index cccd86b8a..5a4ef6412 100644
+index 49c2b2ae5..5305f7603 100644
 --- a/docs/grind/rodata-align-2026-09-30.md
 +++ b/docs/grind/rodata-align-2026-09-30.md
-@@ -268,7 +268,7 @@ rodata) it sits at func_80061064's extern block.
+@@ -271,7 +271,7 @@ position that puts every gp user of text1b_tu1c's per-file objects on one side;
  
  | File | Text | Rodata |
  |---|---|---|
@@ -85,7 +160,7 @@ index cccd86b8a..5a4ef6412 100644
  
 diff --git a/src/sound.c b/src/sound.c
 deleted file mode 100644
-index 817a54c81..000000000
+index ddc3471ac..000000000
 --- a/src/sound.c
 +++ /dev/null
 @@ -1,988 +0,0 @@
@@ -596,20 +671,20 @@ index 817a54c81..000000000
 -}
 -
 -s16 *camera_CalcAngles(void) {
--    s16 rot[3];
--    s32 sp18[3];
--    s32 pos[8];
+-    SVECTOR rot;
+-    VECTOR sp18;
+-    MATRIX pos;
 -    s16 s0;
 -
--    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, pos);
--    rot[0] = 0;
--    rot[1] = 0;
--    rot[2] = 0x1000;
--    ApplyMatrix((MATRIX *)pos, (SVECTOR *)rot, (VECTOR *)sp18);
--    s0 = ratan2(sp18[0], sp18[2]);
--    sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
--              + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
--    D_800A33C8 = -ratan2(sp18[1], sp18[2]);
+-    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, (s32 *)&pos);
+-    rot.vx = 0;
+-    rot.vy = 0;
+-    rot.vz = 0x1000;
+-    ApplyMatrix(&pos, &rot, &sp18);
+-    s0 = ratan2(sp18.vx, sp18.vz);
+-    sp18.vz = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18.vz
+-              + (s32)Judge[s0 & 0xFFF] * sp18.vx) >> 12;
+-    D_800A33C8 = -ratan2(sp18.vy, sp18.vz);
 -    D_800A33CA = s0;
 -    return &D_800A33C8;
 -}
@@ -658,8 +733,8 @@ index 817a54c81..000000000
 -extern s32 D_800F66B0;
 -extern MATRIX *MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
 -void func_800475A4(void) {
--    s16 rot[3];
--    s32 result[4];
+-    SVECTOR rot;
+-    VECTOR result;
 -    MATRIX buf1;
 -    MATRIX buf2;
 -    s16 angle;
@@ -670,18 +745,18 @@ index 817a54c81..000000000
 -        return;
 -    }
 -
--    rot[0] = 0;
--    rot[1] = 0;
--    rot[2] = 0x6590;
--    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, (SVECTOR *)rot, (VECTOR *)result);
+-    rot.vx = 0;
+-    rot.vy = 0;
+-    rot.vz = 0x6590;
+-    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, &rot, &result);
 -
--    angle = ratan2(result[0], result[2]);
+-    angle = ratan2(result.vx, result.vz);
 -
--    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
--    result[2] = computed;
+-    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz + (s32)Judge[angle & 0xFFF] * result.vx) >> 12;
+-    result.vz = computed;
 -
 -    {
--        s16 neg = -ratan2(result[1], computed);
+-        s16 neg = -ratan2(result.vy, computed);
 -        base = &g_cam_bone_data2;
 -        D_800EEE00 = neg;
 -    }
@@ -1692,7 +1767,7 @@ index 9ec8c5147..000000000
 -    g_stage_variant = 0;
 -}
 diff --git a/src/text1b.c b/src/text1b.c
-index 061b26d6b..3468a7533 100644
+index 061b26d6b..10af34a73 100644
 --- a/src/text1b.c
 +++ b/src/text1b.c
 @@ -6,8 +6,1572 @@
@@ -2751,7 +2826,7 @@ index 061b26d6b..3468a7533 100644
 +        ((CamHalves *)&D_800EEDD8)->hi = ((CamHalves *)&D_800EEDD8)->hi >> 1;
 +    }
 +}
- 
++
 +void *camera_GetBoneData(void) {
 +    return &g_cam_bone_data;
 +}
@@ -2782,20 +2857,20 @@ index 061b26d6b..3468a7533 100644
 +}
 +
 +s16 *camera_CalcAngles(void) {
-+    s16 rot[3];
-+    s32 sp18[3];
-+    s32 pos[8];
++    SVECTOR rot;
++    VECTOR sp18;
++    MATRIX pos;
 +    s16 s0;
 +
-+    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, pos);
-+    rot[0] = 0;
-+    rot[1] = 0;
-+    rot[2] = 0x1000;
-+    ApplyMatrix((MATRIX *)pos, (SVECTOR *)rot, (VECTOR *)sp18);
-+    s0 = ratan2(sp18[0], sp18[2]);
-+    sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
-+              + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
-+    D_800A33C8 = -ratan2(sp18[1], sp18[2]);
++    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, (s32 *)&pos);
++    rot.vx = 0;
++    rot.vy = 0;
++    rot.vz = 0x1000;
++    ApplyMatrix(&pos, &rot, &sp18);
++    s0 = ratan2(sp18.vx, sp18.vz);
++    sp18.vz = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18.vz
++              + (s32)Judge[s0 & 0xFFF] * sp18.vx) >> 12;
++    D_800A33C8 = -ratan2(sp18.vy, sp18.vz);
 +    D_800A33CA = s0;
 +    return &D_800A33C8;
 +}
@@ -2844,8 +2919,8 @@ index 061b26d6b..3468a7533 100644
 +extern s32 D_800F66B0;
 +extern MATRIX *MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
 +void func_800475A4(void) {
-+    s16 rot[3];
-+    s32 result[4];
++    SVECTOR rot;
++    VECTOR result;
 +    MATRIX buf1;
 +    MATRIX buf2;
 +    s16 angle;
@@ -2856,18 +2931,18 @@ index 061b26d6b..3468a7533 100644
 +        return;
 +    }
 +
-+    rot[0] = 0;
-+    rot[1] = 0;
-+    rot[2] = 0x6590;
-+    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, (SVECTOR *)rot, (VECTOR *)result);
++    rot.vx = 0;
++    rot.vy = 0;
++    rot.vz = 0x6590;
++    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, &rot, &result);
 +
-+    angle = ratan2(result[0], result[2]);
++    angle = ratan2(result.vx, result.vz);
 +
-+    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
-+    result[2] = computed;
++    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz + (s32)Judge[angle & 0xFFF] * result.vx) >> 12;
++    result.vz = computed;
 +
 +    {
-+        s16 neg = -ratan2(result[1], computed);
++        s16 neg = -ratan2(result.vy, computed);
 +        base = &g_cam_bone_data2;
 +        D_800EEE00 = neg;
 +    }
@@ -3259,7 +3334,7 @@ index 061b26d6b..3468a7533 100644
 +        return (val1 + val2) >> 12;
 +    }
 +}
-+
+ 
 +s32 func_80047EC8(void) {
 +    return 0xD00;
 +}

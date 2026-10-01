@@ -1,9 +1,17 @@
-From 829d1b89272e4f06b53ff1986cc55edeabb1027b Mon Sep 17 00:00:00 2001
+From 143996c42beb6dfcc9890be99e5284098378dd49 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 13:15:57 -0500
+Date: Thu, 1 Oct 2026 14:33:42 -0500
 Subject: [PATCH] substrate: maspsx models cc1psx -G8's .sdata choice for small
  initialized objects (owner ruling Q68, step 13)
 
+Owner rulings Q65/Q68 (amendment A3): under maspsx -G<n> an initialized object of <= n bytes that our cc1 put
+in `.data` moves to `.sdata` as a unit (its .globl/.align/.type/.size head, label and data), as cc1psx -G8
+emits it. Calibration: docs/grind/gp-model-2026-09-30.md A.3 (global objects) and A.3b, added here
+(initialized statics, 3-byte arrays at +0/+4, an 8-byte .string array; cc1psx_static_probe.sh). Layer-2 round 2
+also calibrated function-scope initialized statics (cc1 names like fl.4 / fc.5): cc1psx -G8 puts them in .sdata
+in source order and ours matches (none exist in the tree). Sizes come from .size; .string/.asciz count the
+decoded bytes + 1, .ascii escape-aware. Tests: tools/maspsx/tests/test_small_data_sdata.py (our cc1's real
+output for the probe, cc1psx's sections as expectations), engine test. Inert without -G (byte-neutral here).
 ---
  docs/grind/gp-model-2026-09-30.md           |  81 +++++++++
  engine/test_engine.py                       |  28 +++
@@ -13,7 +21,7 @@ Subject: [PATCH] substrate: maspsx models cc1psx -G8's .sdata choice for small
  create mode 100644 tools/maspsx/tests/test_small_data_sdata.py
 
 diff --git a/docs/grind/gp-model-2026-09-30.md b/docs/grind/gp-model-2026-09-30.md
-index 07b59ecc3..c620d9182 100644
+index 07b59ecc3..fd766b9ef 100644
 --- a/docs/grind/gp-model-2026-09-30.md
 +++ b/docs/grind/gp-model-2026-09-30.md
 @@ -352,6 +352,87 @@ Reading: at `-G8` the original cc1psx emits the global initialized objects of 8
@@ -99,7 +107,7 @@ index 07b59ecc3..c620d9182 100644
 +	.text
 +```
 +
-+Reading: every initialized object of 8 bytes or less - the statics `si`, `sc`, `sd`, `sz`, `s8`, `s4`, `q2`, `hs`, `sp8` and the global `gi` - is in `.sdata`, each behind its own `.align` (so the 3-byte `sd` sits 4 bytes after the 3-byte `sc`); the 16-byte `big` stays in `.data`. Our cc1 emits all of them in `.data` with `.type`/`.size` heads and `.string` for the char arrays. maspsx -G8 (step 13) moves each object with its whole head; `tools/maspsx/tests/test_small_data_sdata.py` runs our cc1's real output for this probe against these sections. Not modelled: cc1psx -G8 also puts the 3-byte literal `$LC0` ("xy") in `.sdata`, where our cc1 puts it in `.rodata`; A3 covers `.data` only, so a game file with such a literal is a borderline case, not a silent widening.
++Reading: every initialized object of 8 bytes or less - the statics `si`, `sc`, `sd`, `sz`, `s8`, `s4`, `q2`, `hs`, `sp8` and the global `gi` - is in `.sdata`, each behind its own `.align` (so the 3-byte `sd` sits 4 bytes after the 3-byte `sc`); the 16-byte `big` stays in `.data`. Our cc1 emits all of them in `.data` with `.type`/`.size` heads and `.string` for the char arrays. maspsx -G8 (step 13) moves each object with its whole head; `tools/maspsx/tests/test_small_data_sdata.py` runs our cc1's real output for this probe against these sections. Function-scope initialized statics (cc1 names them like `fl.4` / `fc.5`) were calibrated the same way in layer-2 round 2: cc1psx -G8 puts them in `.sdata` in source order and maspsx -G8 reproduces it (the tree has none). Not modelled: cc1psx -G8 also puts the 3-byte literal `$LC0` ("xy") in `.sdata`, where our cc1 puts it in `.rodata`; A3 covers `.data` only, so a game file with such a literal is a borderline case, not a silent widening.
 +
  ### A.4 Statics and tentatives larger than 8 bytes (`psylink_probe_big.sh`)
  

@@ -1,20 +1,12 @@
-# M3 / M4 merge evidence (tree 3fa5971fb, 2026-10-01)
+# M3 / M4 merge evidence (tree ab8b147ca, 2026-10-01)
 
 ## 1. Link order
 
 - M3 .rodata: text1a_c2 text1a_b text1a_b_pre_rodata text1b text1a_b_pre_rodata_b text1b_tu1c text1b_tu1d text1b_tu1e text1b_tu2 text1a_b_mid_rodata text1b_b text1b_b_tu2 text1b_b_tu3 text1a_b_post_rodata system text1a_b_tail_rodata main sound -> NOT contiguous
-  - The "NOT contiguous" is sound's empty `.rodata` line (bb2.ld `sound.o(.rodata)`; the map has no input
-    section for it: 0 bytes). M3's rodata bytes are one run in link order (main build/bb2.map at 0107288ac):
-    text1a_c2 0x800152B4 (0x100), text1a_b 0x800153B4 (0x3C), text1a_b_pre_rodata 0x800153F0 (0x46C), text1b
-    0x8001585C (0x58), ending at 0x800158B4 where text1a_b_pre_rodata_b (not in M3) begins. The merged object
-    emits the same items in the same order: no rodata byte moves (step 09's build is the oracle).
 - M3 .text: text1a_c2 text1a_b sound text1b -> contiguous
 - M3 .data: text1a_c2 text1a_b sound text1b -> contiguous
 - M3 .bss: text1a_c2 text1a_b sound text1b -> contiguous
 - M4 .rodata: text1b_tu2 text1a_b_mid_rodata text1b_b -> NOT contiguous
-  - The "NOT contiguous" is text1a_b_mid_rodata's empty `.rodata` line between the two members (the map
-    has no input section for it: 0 bytes; the file is empty and stays, HANDOFF step 11). text1b_tu2's rodata
-    (0x80015A0C, 0x30) ends at 0x80015A3C where text1b_b's (0x2C) begins: one run (step 11's build is the oracle).
 - M4 .text: text1b_tu2 text1b_b -> contiguous
 - M4 .data: text1b_tu2 text1b_b -> contiguous
 - M4 .bss: text1b_tu2 text1b_b -> contiguous

@@ -1,32 +1,64 @@
-step 01 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:08:49Z
+step 01 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:27:45Z
 step 01 objects vs step 00: 54 compared, 0 differ; none
-step 02 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:09:35Z
+step 01 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 01 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 02 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:28:15Z
 step 02 objects vs step 01: 54 compared, 2 differ; code6cac_b_tu2.o code6cac_b_tu3.o
-step 03 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:10:18Z
+step 02 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 02 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 03 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:28:45Z
 step 03 objects vs step 02: 54 compared, 2 differ; text1b.o text1b_tu1c.o
-step 04 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:11:02Z
+step 03 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 03 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 04 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:29:14Z
 step 04 objects vs step 03: 54 compared, 1 differ; text1a_c.o +text1a_c_tu2.o
-step 05 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:11:44Z
+step 04 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 04 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 05 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:29:43Z
 step 05 objects vs step 04: 53 compared, 1 differ; code6cac_b2_post.o -code6cac_b2_pre.o -replay_camera_rob_back_loose2.o
-step 06 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:12:18Z
+step 05 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 05 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 06 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:30:13Z
 step 06 objects vs step 05: 53 compared, 0 differ; none
-step 07 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:12:49Z
+step 06 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 06 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 07 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:30:43Z
 step 07 objects vs step 06: 52 compared, 1 differ; code6cac_c2.o -config.o
-step 08 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:13:21Z
+step 07 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 07 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 08 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:31:13Z
 step 08 objects vs step 07: 52 compared, 0 differ; none
-step 09 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:13:52Z
+step 08 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 08 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 09 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:31:43Z
 step 09 objects vs step 08: 48 compared, 1 differ; text1b.o -sound.o -text1a_b.o -text1a_b_pre_rodata.o -text1a_c2.o
-step 10 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:14:23Z
+step 09 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 09 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 10 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:32:13Z
 step 10 objects vs step 09: 48 compared, 0 differ; none
-step 11 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:14:53Z
+step 10 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 10 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 11 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:32:42Z
 step 11 objects vs step 10: 47 compared, 1 differ; text1b_b.o -text1b_tu2.o
-step 12 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:15:24Z
+step 11 engine test rc=0; 1096 passed, 0 failed, 0 skipped
+step 11 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 12 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:33:12Z
 step 12 objects vs step 11: 47 compared, 0 differ; none
-step 13 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:15:56Z
+step 12 engine test rc=0; 1098 passed, 0 failed, 0 skipped
+step 12 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 13 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:33:41Z
 step 13 objects vs step 12: 47 compared, 0 differ; none
-step 14 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:16:29Z
-step 14 objects vs step 13: 47 compared, 4 differ; text1a_post.o text1b.o text1b_tu1c.o text1b_tu1d.o
-step 15 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:17:11Z
+step 13 engine test rc=0; 1100 passed, 0 failed, 0 skipped
+step 13 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 14 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:34:11Z
+step 14 objects vs step 13: 47 compared, 5 differ; code6cac_c_mid.o text1a_post.o text1b.o text1b_tu1c.o text1b_tu1d.o
+step 14 engine test rc=0; 1100 passed, 0 failed, 0 skipped
+step 14 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 15 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:34:50Z
 step 15 objects vs step 14: 47 compared, 22 differ; code6cac_b2_post.o code6cac_b3.o code6cac_b4.o code6cac_b4_post.o code6cac_b5.o code6cac_b_tu2.o code6cac_c.o code6cac_c0.o code6cac_c2.o code6cac_c_ab.o code6cac_c_mid.o code6cac_tu2.o ings.o text1a_c.o text1a_c_tu2.o text1a_post.o text1a_pre.o text1b.o text1b_b.o text1b_tu1c.o text1b_tu1d.o text1b_tu1e.o
-step 16 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T18:17:40Z
+step 15 engine test rc=0; 1103 passed, 0 failed, 0 skipped
+step 15 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)
+step 16 build rc=0 exe_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa 2026-10-01T19:35:26Z
 step 16 objects vs step 15: 47 compared, 0 differ; none
+step 16 engine test rc=0; 1103 passed, 0 failed, 0 skipped
+step 16 maspsx unittest failures: test_div_expand_li_nop test_expand_li_0x1 (baseline: test_div_expand_li_nop test_expand_li_0x1)

@@ -1,0 +1,9 @@
+Tooling and records follow the retired lists and the moved functions (owner ruling Q65). Byte-neutral.
+- gate / key / root lists drop sdata_syms.txt / sdata_funcs.txt / sdata_exclude.txt: tools/grinder/grindlib.py,
+  tools/check_root_cleanliness.py, tools/naming_wave.py, tools/data_wave.py, tools/desync_audit.py; the research
+  scripts tools/ra_solver/mkasm_honest.sh, tools/sched_solver/mkasm.sh (per-file -G8 as the Makefile),
+  tools/mar_perm_compile.sh, tools/mar_perm_workspace.sh (marionation_Exec is Sony library code: no -G8);
+  tools/sched_solver/validate.py's default stems name code6cac_c2 for the merged config.
+- records: relocate_records.py over the files steps 02-11 split, merged or cut (text1a_c, code6cac_b_tu2, text1b, code6cac_b2_pre, replay_camera_rob_back_loose2, config, text1a_c2, text1a_b, text1a_b_pre_rodata, sound, text1b_tu2):
+  relocated 0 function record(s).
+- dead small-data rows (no C file, header, INCLUDE_ASM .s or asm data names them): undefined_syms_auto.txt D_800A323A, undefined_syms_auto.txt D_800A3382, undefined_syms_auto.txt D_800A358A, undefined_syms_auto.txt D_800A358E, undefined_syms_auto.txt D_800A3592, undefined_syms_auto.txt D_800A323C.

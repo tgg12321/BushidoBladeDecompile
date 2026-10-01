@@ -1,9 +1,18 @@
-From 0b083ce3140493cfbfc8ab79e0d7fcaa13653f4c Mon Sep 17 00:00:00 2001
+From b2873b4fbd14486963c2c3f4b55de617226dd535 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 13:17:41 -0500
+Date: Thu, 1 Oct 2026 14:35:27 -0500
 Subject: [PATCH] tools/records: follow the retired sdata lists and the moved
  functions (owner ruling Q65, step 16)
 
+Tooling and records follow the retired lists and the moved functions (owner ruling Q65). Byte-neutral.
+- gate / key / root lists drop sdata_syms.txt / sdata_funcs.txt / sdata_exclude.txt: tools/grinder/grindlib.py,
+  tools/check_root_cleanliness.py, tools/naming_wave.py, tools/data_wave.py, tools/desync_audit.py; the research
+  scripts tools/ra_solver/mkasm_honest.sh, tools/sched_solver/mkasm.sh (per-file -G8 as the Makefile),
+  tools/mar_perm_compile.sh, tools/mar_perm_workspace.sh (marionation_Exec is Sony library code: no -G8);
+  tools/sched_solver/validate.py's default stems name code6cac_c2 for the merged config.
+- records: relocate_records.py over the files steps 02-11 split, merged or cut (text1a_c, code6cac_b_tu2, text1b, code6cac_b2_pre, replay_camera_rob_back_loose2, config, text1a_c2, text1a_b, text1a_b_pre_rodata, sound, text1b_tu2):
+  relocated 0 function record(s).
+- dead small-data rows (no C file, header, INCLUDE_ASM .s or asm data names them): undefined_syms_auto.txt D_800A323A, undefined_syms_auto.txt D_800A3382, undefined_syms_auto.txt D_800A358A, undefined_syms_auto.txt D_800A358E, undefined_syms_auto.txt D_800A3592, undefined_syms_auto.txt D_800A323C.
 ---
  tools/check_root_cleanliness.py | 1 -
  tools/data_wave.py              | 7 +++----
@@ -14,7 +23,9 @@ Subject: [PATCH] tools/records: follow the retired sdata lists and the moved
  tools/naming_wave.py            | 2 --
  tools/ra_solver/mkasm_honest.sh | 4 +++-
  tools/sched_solver/mkasm.sh     | 4 +++-
- 9 files changed, 11 insertions(+), 16 deletions(-)
+ tools/sched_solver/validate.py  | 2 +-
+ undefined_syms_auto.txt         | 6 ------
+ 11 files changed, 12 insertions(+), 23 deletions(-)
 
 diff --git a/tools/check_root_cleanliness.py b/tools/check_root_cleanliness.py
 index 35e6b0d80..d7b127707 100644
@@ -142,6 +153,44 @@ index 7ed2755e2..e75130714 100644
  
  $CPP "src/$STEM.c" 2>/dev/null > "$OUT/$STEM.i"
  $CC1 $CC1F "$OUT/$STEM.i" -o "$OUT/$STEM.cc1.s" 2>/dev/null
+diff --git a/tools/sched_solver/validate.py b/tools/sched_solver/validate.py
+index 50e1a4157..528cbfe81 100644
+--- a/tools/sched_solver/validate.py
++++ b/tools/sched_solver/validate.py
+@@ -26,7 +26,7 @@ WORK = ROOT / "tmp" / "sched_solver_work"
+ sys.path.insert(0, str(HERE))
+ import simulate as S  # noqa: E402
+ 
+-DEFAULT_STEMS = ["config", "main", "code6cac", "display", "text1a", "text1b"]
++DEFAULT_STEMS = ["code6cac_c2", "main", "code6cac", "display", "text1a", "text1b"]
+ 
+ 
+ def load(stem, do_extract):
+diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
+index 862d337e5..9f183dac3 100644
+--- a/undefined_syms_auto.txt
++++ b/undefined_syms_auto.txt
+@@ -81,12 +81,7 @@ _snd_seq_tick_env_plus_0x11 = 0x800A26DD;  /* data-wave 2026-09-07: was D_800A26
+ _snd_seq_tick_env_plus_0x12 = 0x800A26DE;  /* data-wave 2026-09-07: was D_800A26DE */
+ _spu_rev_attr_plus_0xA = 0x800A2892;  /* data-wave 2026-09-07: was D_800A2892 */
+ _spu_voice_centerNote_plus_0x2E = 0x800A28D2;  /* data-wave 2026-09-29: was D_800A28D2 */
+-D_800A323A = 0x800A323A;
+-D_800A3382 = 0x800A3382;
+ D_800A33CA = 0x800A33CA;
+-D_800A358A = 0x800A358A;
+-D_800A358E = 0x800A358E;
+-D_800A3592 = 0x800A3592;
+ D_800A3671 = 0x800A3671;
+ D_800A367A = 0x800A367A;
+ D_800A36C2 = 0x800A36C2;
+@@ -1050,7 +1045,6 @@ D_800A2D1C = 0x800A2D1C;
+ _spu_rev_startaddr = 0x800A2D44;  /* data-wave 2026-09-07: was D_800A2D44 */
+ D_800A3044 = 0x800A3044;
+ D_800A30D4 = 0x800A30D4;
+-D_800A323C = 0x800A323C;
+ D_800A36A0 = 0x800A36A0;
+ D_800A36B0 = 0x800A36B0;
+ D_800A36C0 = 0x800A36C0;
 -- 
 2.43.0
 

@@ -1,6 +1,6 @@
-From 68083720048024cb5bfdd07e50f98cd6b5d7e1a5 Mon Sep 17 00:00:00 2001
+From e0eab0a5e4747732da1db426bf82fa4b2138d28f Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 13:10:17 -0500
+Date: Thu, 1 Oct 2026 14:28:46 -0500
 Subject: [PATCH] src: text1b / text1b_tu1c boundary moves to func_80060A68
  (owner ruling Q65, step 3, boundary move in the recorded window)
 
@@ -233,16 +233,37 @@ Besides the move, text1b_tu1c.c changes only in its declarations (mergec.py / dr
     extern void SetDispMask(s32);  (text1b_tu1c.c:6374)
     extern s32 D_800A34FC;  (text1b_tu1c.c:6393)
 ---
- docs/grind/rodata-align-2026-09-30.md |   4 +-
+ docs/grind/rodata-align-2026-09-30.md |  11 +-
  src/text1b.c                          | 315 ---------------
  src/text1b_tu1c.c                     | 558 ++++++++++++++++----------
- 3 files changed, 346 insertions(+), 531 deletions(-)
+ 3 files changed, 351 insertions(+), 533 deletions(-)
 
 diff --git a/docs/grind/rodata-align-2026-09-30.md b/docs/grind/rodata-align-2026-09-30.md
-index 44c029848..cccd86b8a 100644
+index 44c029848..49c2b2ae5 100644
 --- a/docs/grind/rodata-align-2026-09-30.md
 +++ b/docs/grind/rodata-align-2026-09-30.md
-@@ -268,9 +268,9 @@ rodata) it sits at func_80061064's extern block.
+@@ -213,7 +213,7 @@ arrays, text1b.o's compiled .rodata is 0x58 bytes at 0x8001585C with zero words
+ the original's layout (jtbl_8001585C[9], jtbl_80015884[5]). The pads come from the object-relative
+ `.align 3`; nothing hand-written.
+ 
+-## 9. The text1b / text1b_tu1c boundary moves to func_80061064 (2026-09-30, closes section 8's caveat)
++## 9. The text1b / text1b_tu1c boundary moves to func_80061064 (2026-09-30, closes section 8's caveat; moved again to func_80060A68 by the Q65 adoption, step 03)
+ 
+ Section 8 placed the one boundary the bytes prove between func_80058580 and func_80065800 at
+ snd_Init, with text1b_tu1c.c's rodata starting at 0x800158B4, and noted that this position fails
+@@ -249,7 +249,10 @@ one (the convention of sites 1 and 3 in section 7); 0x800158F8 is the recorded a
+ func_80061064 (owner of 0x800158E0) and not func_8005C2A8 (owner of 0x800158CC). The window is
+ after func_8005C2A8 up to func_80061064; the functions in between own no rodata, so the cut is
+ byte-neutral anywhere inside it. By the convention (cut at the item that begins the new file's
+-rodata) it sits at func_80061064's extern block.
++rodata) it sits at func_80061064's extern block. The Q65 adoption (step 03, per-file-gp-model.md
++"Boundary move instead of a merge") moves the cut inside this window to func_80060A68, the one
++position that puts every gp user of text1b_tu1c's per-file objects on one side; the rodata start
++0x800158E0 is unchanged (func_80060A68 .. func_80060E38 own no rodata).
+ 
+ **Moves only (condition 4).** Done by pre-slim-2026-10-01:memory/grind/func_80065800/tools/move.py:
+ - snd_Init's extern block .. func_80060E38 (2927 lines, 51 functions) move verbatim from
+@@ -268,9 +271,9 @@ rodata) it sits at func_80061064's extern block.
  
  | File | Text | Rodata |
  |---|---|---|

@@ -65,20 +65,26 @@ assert rest.count("extern s16 g_anim_hit_flags[];\n") == 1
 wr(p, t[:k] + rest.replace("extern s16 g_anim_hit_flags[];\n", "", 1))
 # ---- the memory-card file name is its own object (layer-2 round 2, step-15 finding 5): D_800A31F0 holds its
 # address (0x80010AAC). func_80038170 copies exactly 0x40 halfwords (128 bytes = 32 words) of D_80010A2C; the
-# six words after them are the string "BASLUS-00663BUSHIDO2" and its zero padding. Same bytes, same place.
+# bytes after them are the string "BASLUS-00663BUSHIDO2" (21 bytes with its terminator), then the 3 zero bytes of
+# the file's rodata padding. Same bytes, same place (the string's size is its initializer's: no evidence for more).
 p = "src/code6cac_c_mid.c"
 sub1(p, """ * arrays since the content is word-aligned. D_80010A2C ends with the literal
  * save-file id "BASLUS-00663BUSHIDO2" (per the asm/data block's content). */""",
      """ * arrays since the content is word-aligned. D_80010A2C is the 128 bytes func_80038170 copies
- * (0x40 halfwords); the save-file id after it is its own object, D_80010AAC, whose address
- * D_800A31F0 holds. */""")
+ * (0x40 halfwords); the save-file id after it is its own object, D_80010AAC (D_800A31F0 holds
+ * its address); the 3 zero bytes after its terminator are rodata padding. */""")
 sub1(p, """const u32 D_80010A2C[38] = {""", """const u32 D_80010A2C[32] = {""")
 sub1(p, """    0x00001000, 0x008EB200, 0x00000000, 0x00020000,
     0x4C534142, 0x302D5355, 0x33363630, 0x48535542,
     0x324F4449, 0x00000000,
 };""", """    0x00001000, 0x008EB200, 0x00000000, 0x00020000,
 };
-const char D_80010AAC[24] = "BASLUS-00663BUSHIDO2";""")
+const char D_80010AAC[] = "BASLUS-00663BUSHIDO2";""")
+# the symbol-file row that pinned D_80010A2C's address over its C definition goes (layer-2 round 3)
+L = rd("undefined_syms_auto.txt").split(NL)
+K = [l for l in L if not l.startswith("D_80010A2C = 0x80010A2C;")]
+assert len(L) - len(K) == 1
+wr("undefined_syms_auto.txt", NL.join(K))
 # ---- per-word names of array elements -> the array's elements
 p = "src/text1a_post.c"
 sub1(p, "extern s16 g_anim_counter;\n", "")

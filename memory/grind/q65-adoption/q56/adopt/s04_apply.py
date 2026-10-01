@@ -16,4 +16,15 @@ from adoptlib import *
 os.chdir(sys.argv[1])
 run(f"{H}/splitc.py", "src/text1a_c.c", str(defline("src/text1a_c.c", "func_80044800")), "src/text1a_c_tu2.c")
 ld_follow("text1a_c_tu2", "text1a_c")
+new = added_decls("", rd("src/text1a_c_tu2.c"))
+msg = ["Rule: per-file-gp-model.md \"Split\", cut outcome (ii) (owner ruling Q65): text1a_c.c splits before func_80044800",
+       "into the new file text1a_c_tu2.c (D_800A3820 is reached gp by func_80044504 and by direct lui/%lo in",
+       "func_80044800: no single definition in one file produces both). Evidence and the window: s04_apply.py",
+       "docstring (memory/grind/q65-adoption/q56/adopt/). The functions from func_80044800 on move verbatim; the new",
+       f"file opens with text1a_c.c's include block and carries the {len(new)} declaration lines its functions use",
+       "(splitc.py: the parent's earlier declarations, verbatim and in order, plus externs for the parent's",
+       "definitions it calls):"] + ["- " + l for l in new] + [
+       "bb2.ld places text1a_c_tu2.o after text1a_c.o in every section list. Byte-identical: full build SHA1 ==",
+       "oracle, every object compared."]
+wr(f"{H}/s04_msg.txt", NL.join(msg) + NL)
 print("step 4 applied")

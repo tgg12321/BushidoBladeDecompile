@@ -1,9 +1,16 @@
-From 255333a40fcf6bb85feacdf30cec5f8f7481c5b5 Mon Sep 17 00:00:00 2001
+From fb7dcb0a4878ef1268f1cb236837cae21508899a Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 13:08:50 -0500
+Date: Thu, 1 Oct 2026 14:27:46 -0500
 Subject: [PATCH] substrate: maspsx _uses_gp - an indexed sym($reg) operand is
  never gp (owner ruling Q65, step 1)
 
+Owner ruling Q65, adoption change 1 (a global maspsx fix; per-file-gp-model.md "What the adoption changes" 1):
+an indexed operand `sym($reg)` is never gp-relative. Sony ASPSX 2.34 evidence (dosemu2 probes,
+memory/grind/q65-adoption/q56/aspsx_probe_results.txt): `indexed_after_load_comm` and
+`indexed_after_load_extern` emit `lui $at / addu $at,$at,$reg / sb %%lo(sym)($at)` for a .comm symbol and
+for an extern alike, while the direct access of the same .comm symbol is gp (`direct_after_load_comm`). maspsx's
+_uses_gp now returns False for a base-register operand. Tests: tools/maspsx/tests/test_indexed_gp_nop.py,
+engine test. Byte-neutral at this step: full build SHA1 == oracle, every object compared.
 ---
  engine/test_engine.py                     | 26 +++++++++++++++++++
  tools/maspsx/maspsx/__init__.py           | 11 +++++++-
