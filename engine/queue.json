@@ -37,17 +37,6 @@
       "addr": "8002CD58"
     },
     {
-      "func": "func_8002F2D0",
-      "file": "code6cac_b_tu2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "retro-audit FAIL (Q41, a67c58486): grant row 789ce34d7 not owner-approved; islands identical to the Q38 reopens (not inline_o.h-exact). Banked: memory/grind/func_8002F2D0/rejected/retro-audit-2026-09-30.c",
-      "addr": "8002F2D0"
-    },
-    {
       "func": "func_8002F770",
       "file": "code6cac_b_tu2",
       "distance": 0,
@@ -335,14 +324,14 @@
     }
   ],
   "counts": {
-    "total": 27,
-    "active": 15,
+    "total": 26,
+    "active": 14,
     "by_status": {
-      "active": 15,
+      "active": 14,
       "rotated": 12
     },
     "by_verdict": {
-      "C": 15
+      "C": 14
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
