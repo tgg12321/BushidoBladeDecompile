@@ -18,16 +18,13 @@ void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     if (arg0 & (0x10 << (arg3 * 16))) {
         func_8005C650(2, 0x7F, 0x7F);
-        if (SELWORK->f3C[arg3] != 0) {
-            arg2[SELWORK->f3C[arg3]] = -1;
-            SELWORK->f3C[arg3]--;
-            D_8009BCE4[arg2[SELWORK->f3C[arg3]]] &= ~(4 << arg3);
+        if (SELWORK->f3C.half[arg3] != 0) {
+            arg2[SELWORK->f3C.half[arg3]] = -1;
+            SELWORK->f3C.half[arg3]--;
+            D_8009BCE4[arg2[SELWORK->f3C.half[arg3]]] &= ~(4 << arg3);
             return;
         }
-        /* Neither player has a pick yet.  fold merges the two adjacent halfword
-         * tests into the one `lw 0x3C` word test the target has at 0x80076060
-         * (tools/gcc-2.7.2/fold-const.c:2687 fold_truthop). */
-        if (SELWORK->f3C[0] != 0 || SELWORK->f3C[1] != 0) {
+        if (SELWORK->f3C.word != 0) {
             return;
         }
         if (SELWORK->f14.half[(arg3 != 0) ? 0 : 1] == 2) {
@@ -85,15 +82,15 @@ void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
             if ((*flag & bit) == 0) {
                 u16 count;
 
-                arg2[SELWORK->f3C[arg3]] = entry;
+                arg2[SELWORK->f3C.half[arg3]] = entry;
                 if (arg0 & (0x40 << (arg3 * 16))) {
                     func_8005C650(1, 0x7F, 0x7F);
                     *flag |= bit;
-                    count = SELWORK->f3C[arg3];
-                    SELWORK->f3C[arg3] = count + 1;
-                    if (SELWORK->f3C[arg3] == SELWORK->f65 + 3) {
+                    count = SELWORK->f3C.half[arg3];
+                    SELWORK->f3C.half[arg3] = count + 1;
+                    if (SELWORK->f3C.half[arg3] == SELWORK->f65 + 3) {
                         SELWORK->f10.half[arg3] = 1;
-                        SELWORK->f3C[arg3] = count;
+                        SELWORK->f3C.half[arg3] = count;
                         SELWORK->f38[arg3] = 0;
                         SELWORK->f18[arg3] = 3;
                         for (i = 0; i < SELWORK->f60[arg3]; i++) {
@@ -106,7 +103,7 @@ void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
                 }
                 return;
             }
-            arg2[SELWORK->f3C[arg3]] = 0x14;
+            arg2[SELWORK->f3C.half[arg3]] = 0x14;
             if (arg0 & (0x40 << (arg3 * 16))) {
                 func_8005C650(4, 0x7F, 0x7F);
             }
@@ -119,7 +116,7 @@ void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
              * tails back into the target's one copy (`lh v0,0x3C($a1)` at 0x8007630C,
              * 0x14 set in each predecessor).  One shared tail after the if recomputes
              * the address (6).  Ledger: memory/grind/func_80075F80/manual-2026-10-01/scores.txt */
-            arg2[SELWORK->f3C[arg3]] = 0x14;
+            arg2[SELWORK->f3C.half[arg3]] = 0x14;
             if (arg0 & (0x40 << (arg3 * 16))) {
                 func_8005C650(4, 0x7F, 0x7F);
             }

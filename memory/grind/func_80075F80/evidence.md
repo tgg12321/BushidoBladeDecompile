@@ -80,3 +80,14 @@ These are consumers of the same TU's objects; func_800768DC and func_800770B8 ar
 functions carrying the defects on main today (retro-audit-class), fixed together with this landing.
 The PASSed forms (func_800759D0's body, func_80076D74's `[0][slot]`, the [2][10] + D_8009BCE4[20]
 declarations, the SELWORK f48 view) re-land unchanged once 1-4 are in, each with a fresh layer-2.
+
+## laneA manual 2026-10-01 — joint landing at 0, no union (memory/grind/func_80075F80/manual-2026-10-01/scores.txt)
+- D_8009BCF8 declared `Unk8009BCF8Record [2][10]` (the joint-l2-r1 PASSed declaration); func_80076D74 reads
+  `D_8009BCF8[0][f6A[i][j]]` (PASSed form; bare SOTN tag e_grave_keeper.h:534, use site src/st/cat/e_grave_keeper.c,
+  splat.us.stcat.yaml:145 c); its stale integration-handoff header comment replaced by a current description, FAKE ledger path fixed to
+  3e35ec719^ (ledger closed there).
+- func_800759D0: joint-l2-r1 body with SelWork members (f34, f1C/f20/f3C[arg3], f65); `state` pointer gone; 0.
+- func_80075F80: SelWork members throughout (no state pointers, no byte offsets). The `lw 0x3C` both-players
+  test is `f3C[0] != 0 || f3C[1] != 0`, which fold_truthop merges into the one word load, so no f3C union and no
+  respell of the other f3C users. Remaining device: the placeholder tail duplicated in both arms (FAKE,
+  duplicated-statement-into-arms + Q47; shared tail 6). Case 2 stores in each arm like case 1 (natural; `next` 7).

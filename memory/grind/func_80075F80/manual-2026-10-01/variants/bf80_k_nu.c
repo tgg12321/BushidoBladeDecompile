@@ -24,9 +24,6 @@ void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
             D_8009BCE4[arg2[SELWORK->f3C[arg3]]] &= ~(4 << arg3);
             return;
         }
-        /* Neither player has a pick yet.  fold merges the two adjacent halfword
-         * tests into the one `lw 0x3C` word test the target has at 0x80076060
-         * (tools/gcc-2.7.2/fold-const.c:2687 fold_truthop). */
         if (SELWORK->f3C[0] != 0 || SELWORK->f3C[1] != 0) {
             return;
         }
@@ -106,23 +103,10 @@ void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
                 }
                 return;
             }
-            arg2[SELWORK->f3C[arg3]] = 0x14;
-            if (arg0 & (0x40 << (arg3 * 16))) {
-                func_8005C650(4, 0x7F, 0x7F);
-            }
-        } else {
-            /* FAKE: the placeholder tail is written in both arms (duplicated-
-             * statement-into-arms, calls per Q47: the store and the call are real on
-             * both paths).  Each arm is then reached by one path, so cse carries the
-             * work-area address it formed for the cursor read into the 0x3C load;
-             * jump2's cross-jump (tools/gcc-2.7.2/jump.c find_cross_jump) merges the two
-             * tails back into the target's one copy (`lh v0,0x3C($a1)` at 0x8007630C,
-             * 0x14 set in each predecessor).  One shared tail after the if recomputes
-             * the address (6).  Ledger: memory/grind/func_80075F80/manual-2026-10-01/scores.txt */
-            arg2[SELWORK->f3C[arg3]] = 0x14;
-            if (arg0 & (0x40 << (arg3 * 16))) {
-                func_8005C650(4, 0x7F, 0x7F);
-            }
+        }
+        arg2[SELWORK->f3C[arg3]] = 0x14;
+        if (arg0 & (0x40 << (arg3 * 16))) {
+            func_8005C650(4, 0x7F, 0x7F);
         }
     }
 }

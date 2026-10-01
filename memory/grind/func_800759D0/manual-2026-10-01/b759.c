@@ -94,11 +94,11 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         }
     }
 
-    for (i = 0; i < SELWORK->f3C[arg3] + 1; i++) {
+    for (i = 0; i < SELWORK->f3C.half[arg3] + 1; i++) {
         if (arg2[i] >= 0) {
             s.sp18 = table[arg2[i] + 1];
             cells = s.sp18 + 0x24;
-            if (i != SELWORK->f3C[arg3]) {
+            if (i != SELWORK->f3C.half[arg3]) {
                 s.sp40 = 0;
             } else {
                 s.sp40 = 1;
@@ -117,7 +117,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         table = *(s32 **)(arg0[0] + SELWORK->f65 * 4 + 0x20);
         s.sp18 = table[i];
         cells = s.sp18 + 0x24;
-        if (i == SELWORK->f3C[arg3]) {
+        if (i == SELWORK->f3C.half[arg3]) {
             s.sp18 = s.sp18 + 12 + arg3 * 12;
         }
         s.sp1C = cells;
