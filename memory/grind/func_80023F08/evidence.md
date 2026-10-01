@@ -98,3 +98,6 @@
   u16 state 1. Site 2 `state` before the 8/0x22 test: direct reads score 11: the second test compares
   against the first test's constant pseudos in .cse (fake/site2_cse.txt); target li 8 / li 0x22 at
   0x80025780 / 0x80025788.
+- [s3b] Cast / goto pass (orchestrator review list): (u16)rec->unk_0E < 2 -> (unk_0E == 0 || unk_0E == 1),
+  byte-identical; (u32)ent[3] << 16 kept (no cast 3); the two interface casts and the gotos kept with
+  measured alternatives — casts/receipts.txt. candidate.c updated (bytes == the s3 body).

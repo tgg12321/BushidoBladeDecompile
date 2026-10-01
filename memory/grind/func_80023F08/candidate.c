@@ -155,7 +155,9 @@ void func_80023F08(s32 arg0, PadState *pad) {
     } else if (rec->unk_50->unk_08 >= rec->unk_40) {
         ent = rec->unk_50->unk_0A;
         while ((cmd = ent[0]) != 0) {
-            /* the entry's 32-bit class mask, high half shifted in unsigned */
+            /* the entry's 32-bit class mask; the high half is widened to u32
+             * before the shift (hi << 16 is not representable in int once bit
+             * 15 of hi is set) */
             if (!(cmd & 0x8000) || ((ent[2] | ((u32)ent[3] << 16)) & (1 << rec->unk_0A))) {
                 switch (cmd & 0x30) {
                 case 0x00:
@@ -551,7 +553,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     if (rec->unk_0C != 0x1F && rec->unk_96 == 0 && rec->unk_92 != 0) {
         rec->unk_62 = 1;
     }
-    if ((D_800A38DC != 3 || arg0 != 1 || D_800A384C == 4) && (u16)rec->unk_0E < 2 && (D_800A38DC != 2 || D_800A389A != 0) && D_800A38DC != 5) {
+    if ((D_800A38DC != 3 || arg0 != 1 || D_800A384C == 4) && (rec->unk_0E == 0 || rec->unk_0E == 1) && (D_800A38DC != 2 || D_800A389A != 0) && D_800A38DC != 5) {
         rec->unk_62 |= 2;
     }
     if (rec->unk_86 == rec->unk_88 && rec->unk_8A != 0) {
@@ -590,7 +592,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     }
 skip_62:
     if ((D_800A38DC == 2 && D_800A389A == 0) || D_800A38DC == 5) {
-        if ((u16)rec->unk_0E < 2 && rec->unk_6A != 4 && rec->unk_6A != 0x14 && rec->unk_92 == 0) {
+        if ((rec->unk_0E == 0 || rec->unk_0E == 1) && rec->unk_6A != 4 && rec->unk_6A != 0x14 && rec->unk_92 == 0) {
             rec->unk_62 = (rec->unk_62 | 2) & ~0x10;
         }
         if (rec->unk_330 > 0 && rec->unk_332[0] == rec->unk_14 && rec->unk_8C == 0) {
