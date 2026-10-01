@@ -49,3 +49,13 @@ The 2026-09-22 doc note 1 (u8 *scr needed against MEM_IN_STRUCT_P scheduling) no
 SPAD member reads the s32-indexed and u8-displaced spellings both score 0 (p1s_s32 / p1s), so the
 cast-free one lands. func_8002C61C respelled in the same landing (it held the last C uses of the
 retired externs): s1/s0 FAKE aliases, per-site measurements in scores.txt.
+
+## LANDED 2026-10-01 — COMPLETED-C (Match 18cb49eea, queue 1afc6ce98)
+Layer-2 round 1 FAIL rev-C22C (body 0dd69c0386ac246b): prong (c) — 15 named_syms.txt census rows over the
+merged addresses (g_char_vec3_*, g_practice_menu_table_p2, g_char_p1/p2_field_AD) were left; retired, message
+fixed. Round 2 PASS rev-C22C-r2 on the same body (no surviving alias rows/addresses; rec1 pointer-alias FAKE
+complete; data-model prongs a/b/d hold). func_8002C61C's respelled body: PASS rev-C61C (6a997acd5282edc7,
+cheat-cleanup). Non-blocking notes left for later: C61C annotation wording / s1,s0 names; `(u16)...unk_6A`
+on the s16 member is a header type-correction candidate. Not changed: func_80029454 (L4) and func_80021A98
+(L1) still walk +0x210..+0x248 / +0xAD by byte offset (memory/grind/func_80021424/HANDOFF.md series).
+check_completion_integrity OK; SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa.
