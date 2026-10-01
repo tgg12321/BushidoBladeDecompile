@@ -1,11 +1,11 @@
-cand: alt(86)=fp calls=9, temp1(87)=mem calls=12, temp2(88)=mem calls=12, idx(91)=s5 calls=13, dx(92)=s0 calls=2, dy(93)=a3 calls=0, dz(94)=s1 calls=2, temp3(96)=s4 calls=2, work(104)=a1 calls=0
-pv_dx: dx_seg_(107)=local-alloc calls=0 local, dx_hit_(108)=local-alloc calls=0 local, dx_off0_(109)=v1 calls=0, dx_off1_(110)=a1 calls=0, dx_dir_(111)=s3 calls=2, dx_push_(112)=a3 calls=0
-pv_dy: dy_seg_(107)=local-alloc calls=0 local, dy_hit_(108)=local-alloc calls=0 local
-pv_dz: dz_seg_(107)=local-alloc calls=0 local, dz_hit_(108)=local-alloc calls=0 local, dz_off0_(109)=v1 calls=0, dz_off1_(110)=a0 calls=0, dz_dir_(111)=s3 calls=2, dz_push_(112)=a0 calls=0
-pv_temp1: pt0_(107)=mem calls=12, dsq0_(108)=v1 calls=0
-pv_temp2: pt1_(107)=mem calls=12, dsq1_(108)=v1 calls=0
-pv_temp3: hn_(107)=a2 calls=0, side_(108)=s6 calls=2
-pv_idx: seg_(107)=s0 calls=2, nearest_(108)=mem calls=13
-pv_alt: blade_(107)=mem calls=12, hitalt_(108)=s0 calls=1
-pv_work: lensq_(107)=local-alloc calls=0 local, dist_(108)=v1 calls=0, ang_(109)=v1 calls=0, weight_(110)=a1 calls=0
-pv_all: dx_seg_(107)=local-alloc calls=0 local, dx_hit_(108)=local-alloc calls=0 local, dx_off0_(109)=v1 calls=0, dx_off1_(110)=a1 calls=0, dx_dir_(111)=s1 calls=2, dx_push_(112)=a3 calls=0, dy_seg_(113)=local-alloc calls=0 local, dy_hit_(114)=local-alloc calls=0 local, dz_seg_(115)=local-alloc calls=0 local, dz_hit_(116)=local-alloc calls=0 local, dz_off0_(117)=v1 calls=0, dz_off1_(118)=a0 calls=0, dz_dir_(119)=s3 calls=2, dz_push_(120)=a0 calls=0, pt0_(121)=mem calls=12, dsq0_(122)=a2 calls=0, pt1_(123)=mem calls=12, dsq1_(124)=a0 calls=0, hn_(125)=a2 calls=0, side_(126)=s4 calls=2, seg_(127)=s1 calls=2, nearest_(128)=mem calls=13, blade_(129)=mem calls=12, hitalt_(130)=s1 calls=1, lensq_(131)=local-alloc calls=0 local, dist_(132)=v1 calls=0, ang_(133)=v1 calls=0, weight_(134)=a2 calls=0
+cand: alt(86)=fp calls=9, temp1(87)=mem calls=12, temp2(88)=mem calls=12, idx(90)=s5 calls=13, dx(91)=s0 calls=2, dy(92)=a3 calls=0, dz(93)=s1 calls=2, temp3(95)=s4 calls=2, work(103)=a1 calls=0
+pv_dx: dx_seg_(106)=local-alloc calls=0 local, dx_hit_(107)=local-alloc calls=0 local, dx_off0_(108)=v1 calls=0, dx_off1_(109)=a1 calls=0, dx_dir_(110)=s3 calls=2, dx_push_(111)=a3 calls=0
+pv_dy: dy_seg_(106)=local-alloc calls=0 local, dy_hit_(107)=local-alloc calls=0 local
+pv_dz: dz_seg_(106)=local-alloc calls=0 local, dz_hit_(107)=local-alloc calls=0 local, dz_off0_(108)=v1 calls=0, dz_off1_(109)=a0 calls=0, dz_dir_(110)=s3 calls=2, dz_push_(111)=a0 calls=0
+pv_temp1: pt0_(106)=mem calls=12, dsq0_(107)=v1 calls=0
+pv_temp2: pt1_(106)=mem calls=12, dsq1_(107)=v1 calls=0
+pv_temp3: hn_(106)=a2 calls=0, side_(107)=s6 calls=2
+pv_idx: seg_(106)=s0 calls=2, nearest_(107)=mem calls=13
+pv_alt: blade_(106)=mem calls=12, hitalt_(107)=s0 calls=1
+pv_work: lensq_(106)=local-alloc calls=0 local, dist_(107)=v1 calls=0, ang_(108)=v1 calls=0, weight_(109)=a1 calls=0
+pv_all: dx_seg_(106)=local-alloc calls=0 local, dx_hit_(107)=local-alloc calls=0 local, dx_off0_(108)=v1 calls=0, dx_off1_(109)=a1 calls=0, dx_dir_(110)=s1 calls=2, dx_push_(111)=a3 calls=0, dy_seg_(112)=local-alloc calls=0 local, dy_hit_(113)=local-alloc calls=0 local, dz_seg_(114)=local-alloc calls=0 local, dz_hit_(115)=local-alloc calls=0 local, dz_off0_(116)=v1 calls=0, dz_off1_(117)=a0 calls=0, dz_dir_(118)=s3 calls=2, dz_push_(119)=a0 calls=0, pt0_(120)=mem calls=12, dsq0_(121)=a2 calls=0, pt1_(122)=mem calls=12, dsq1_(123)=a0 calls=0, hn_(124)=a2 calls=0, side_(125)=s4 calls=2, seg_(126)=s1 calls=2, nearest_(127)=mem calls=13, blade_(128)=mem calls=12, hitalt_(129)=s1 calls=1, lensq_(130)=local-alloc calls=0 local, dist_(131)=v1 calls=0, ang_(132)=v1 calls=0, weight_(133)=a2 calls=0

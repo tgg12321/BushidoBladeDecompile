@@ -1,6 +1,6 @@
 # func_8002AB08 — Ruling 11 package (laneC, 2026-10-01)
 
-Ruling: `.claude/rules/reused-local-necessity.md` � Ruling 11. Body measured = the landing body,
+Ruling: `.claude/rules/reused-local-necessity.md` § Ruling 11. Body measured = the landing body,
 `memory/grind/func_8002AB08/candidate.c`: records typed `PracticeMenuRec *` (members this landing adds:
 s16 unk_8C, s16 unk_92, Vec4i32 unk_114[2]; `typed/hdr.py` builds the header overlay
 tmp/func_8002AB08/typed/inc/include/code6cac.h on laneB's PracticeMenuRec), every per-player local declared in
@@ -53,9 +53,9 @@ Value table (writes and the target instruction each one is; addresses in asm/fun
 
 **Copy-clause value (Q34, one in the function): idx `nearest`** = `idx = temp3;` (temp3, a named local,
 is read again by the loop's `temp3++` / `temp3 < 22`; no cast; target `addu $s5,$s4,$zero` 0x8002B538). Every
-other value of idx (`seg`) is a counter. Banked and measured: the fresh local (ab/r_nearest.c 131) and the
+other value of idx (`seg`) is a counter. Banked and measured: the fresh local (fab/r_nearest.c 134) and the
 no-copy body (round2/nocopy_ptr.c: the nearest slot kept as a `LeafPos *` and the index recovered after the
-loop, 223).
+loop, 225).
 
 ## (C)(2) statement lists
 `stmtcheck.py <cand> <twin>`: every twin (single-value ablations `roles.py <cand> one`, per-variable splits
@@ -65,17 +65,18 @@ body (stmtcheck.txt, 38/38).
 ## (D)(4) measurements (scores_final.txt; landing body = 0)
 | split | score | | single value | score |
 |---|---|---|---|---|
-| pv_all (every value fresh) | 524 | | dx seg/hit/off0/off1/dir/push | 14/4/180/180/393/12 |
+| pv_all (every value fresh) | 528 | | dx seg/hit/off0/off1/dir/push | 14/4/180/180/393/12 |
 | pv_dx | 266 | | dy seg/hit | 51/51 |
 | pv_dy | 51 | | dz seg/hit/off0/off1/dir/push | 108/153/152/153/381/6 |
-| pv_dz | 255 | | temp1 pt0/dsq0, temp2 pt1/dsq1 | 22/8, 16/9 |
-| pv_temp1 / pv_temp2 | 22 / 16 | | temp3 hn/side | 192/192 |
-| pv_temp3 | 192 | | idx seg/nearest | 131/131 |
-| pv_idx | 131 | | alt blade/hitalt | 118/107 |
-| pv_alt / pv_work | 118 / 9 | | work lensq/dist/ang/weight | 2/3/4/9 |
+| pv_dz | 255 | | temp1 pt0/dsq0, temp2 pt1/dsq1 | 19/8, 9/9 |
+| pv_temp1 / pv_temp2 | 19 / 9 | | temp3 hn/side | 192/192 |
+| pv_temp3 | 192 | | idx seg/nearest | 134/134 |
+| pv_idx | 134 | | alt blade/hitalt | 117/107 |
+| pv_alt / pv_work | 117 / 9 | | work lensq/dist/ang/weight | 2/3/4/9 |
 Structural respellings (fst_*.c, scores_final.txt): side tested inline 197; hitalt inline 123; point indices
-u8 36; weight s16 20; nearest u8 129. Permuter campaign from fpv_all of the landing body (perm_setup.sh workspace with the
-header overlay, -j2, ~20 min, 451 iterations, permuter_harvest_final.json): base 14699, best find 12713. The
+u8 33; weight s16 20; nearest u8 132. Permuter campaign from fpv_all of the landing body (perm_setup.sh workspace with the
+header overlay, -j2, ~20 min, 704 iterations, permuter_harvest_r2.json): base 14559, best find 12594. Round 1
+(`c` not yet renamed / scoped): 451 iterations, base 14699, best 12713 (permuter_harvest_final.json). The
 previous body's split (identical but for two casts at the func_8002A458 call): 433 iterations, best 11653, a
 stale copy of the hit mask into dy_seg_ reused for mask_c (permuter_harvest_typed.json); the landing body scores 30 on the same scorer
 (relocation/sdata residue; 0 in the engine sandbox). The untyped round: 370 iterations, best 12734
@@ -87,8 +88,8 @@ stale copy of the hit mask into dy_seg_ reused for mask_c (permuter_harvest_type
 -mno-abicalls -fno-builtin -w -mel -msoft-float -dr -dl -dg`, then the instrumented `tools/gcc-2.7.2/cc1`
 with `BB2_ALLOC_DEBUG=1`; the two compilers' asm is compared (IDENTITY OK for all 11). Banked:
 `alloc_<tag>.txt` (ALLOCDBG), `regs_<tag>.txt` (.lreg Register lines); `table.txt` (table.py) maps each
-value to its allocation. Pseudo map (landing body): 86 alt, 87 temp1, 88 temp2, 91 idx, 92 dx, 93 dy,
-94 dz, 96 temp3, 104 work; in a twin the fresh values are 107.. in `roles.py` order.
+value to its allocation. Pseudo map (landing body): 86 alt, 87 temp1, 88 temp2, 90 idx, 91 dx, 92 dy,
+93 dz, 95 temp3, 103 work; in a twin the fresh values are 106.. in `roles.py` order.
 Mechanism (tools/gcc-2.7.2): flow.c counts refs / live length / calls crossed (flow.c:2081);
 local-alloc.c:472-475 gives single-block, single-death pseudos to local allocation; global.c:575 sorts the
 rest by allocno_compare; global.c find_reg :970-975 lets an allocno that crosses a call take only
@@ -158,8 +159,8 @@ func_8002CA8C's third argument (it runs the deep-hit test only when set: `*(s16 
 one value written per arm as per-branch constants 1 / 1 / 0 (Q20; target `li $t4,1; sw $t4,0x60($sp)` in the
 tail shared by pass 0 and the unk_8C arm, 0x8002AEFC, and `sw $zero,0x60($sp)` 0x8002AF2C), read once by the
 call (`lw $a2,0x60($sp)` 0x8002B3A4). The unk_8C arm's write re-stores the held 1 (Q85). Renamed from the
-single letter and declared in the pass-loop block (the innermost scope enclosing its writes): sandbox 0
-(round2/c_scoped.c). Single-write spellings miss: the argument computed at the call as `temp1 == 0` 75,
+single letter and declared in the pass-loop block (the innermost scope enclosing its writes): the landing
+body, sandbox 0. Single-write spellings miss: the argument computed at the call as `temp1 == 0` 75,
 `temp2 == 1` 75, `alt != 0 || pass == 0` 75 (round2/c_v1..v3.c); one write `deep_on = temp1 == 0;` before the
 copies 29 (round2/c_v4.c). Mechanism (round2/dump_deep.sh, deep_cand.fn.s / deep_single.fn.s, IDENTITY OK):
 expand emits each arm's constant move into the variable; with one computed write the value is an `sltu` on

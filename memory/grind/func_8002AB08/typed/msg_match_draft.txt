@@ -8,7 +8,7 @@ func_80027AD8 resolves the hit. Body: sandbox --disable all on the spliced src 0
 source-level, 0 operand-only hunks); full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
 Ledger: memory/grind/func_8002AB08/ (evidence.md s2-s3, r11/README.md). Other completed bodies whose text
 changes (byte-identical, reviewed with this landing): func_80022580 (layer-2 key 6715ae64d158047e) and
-func_8002A458 (e01e18d75bfb581c); func_8002AB08's key c18bdc0cf44756a9.
+func_8002A458 (e01e18d75bfb581c); func_8002AB08's key 4091d3e87958285b.
 
 Data model:
 - include/code6cac.h PracticeMenuRec: `s16 unk_8C` and `s16 unk_92` (+ `u8 unk_94[2]`) replace filler
@@ -32,16 +32,16 @@ Data model:
 Constructs to scrutinize:
 1. Ruling 11 (reused-local-necessity.md), nine locals, each annotated at its declaration in the
    player-loop block: dx / dy / dz, temp1 / temp2, temp3, idx, alt, work. Package:
-   memory/grind/func_8002AB08/r11/README.md (value table with the target instruction of every write) —
+   memory/grind/func_8002AB08/r11/README.md (value table with the target instruction of every write);
    38/38 twins with identical statement lists; every value split, variable split and the full split
-   (524) miss; structural respellings miss; permuter from the full split 451 iterations, best 12713
+   (528) miss; structural respellings miss; permuter from the full split 704 iterations, base 14559, best 12594
    (landing body 30 on that scorer); allocation dumps with both compilers (IDENTITY OK), mechanism per
    variable (call-crossing allocno -> call-saved register / unallocated slot vs split values in
    call-clobbered registers).
    - idx's nearest value is the Q34 plain copy `idx = temp3;` (target `addu $s5,$s4,$zero` 0x8002B538;
-     temp3 is read again by the loop); fresh local 131, no-copy body (nearest slot kept as a pointer,
-     index recovered after the loop) 223.
-   - Owner Q85 (rules Q85HASH): the unk_8C arm's `temp1 = 0; temp2 = 1; deep_on = 1;` (0x8002AEF0..0x8002AEFC,
+     temp3 is read again by the loop); fresh local 134, no-copy body (nearest slot kept as a pointer,
+     index recovered after the loop) 225.
+   - Owner Q85 (rules 9cdb9cd08): the unk_8C arm's `temp1 = 0; temp2 = 1; deep_on = 1;` (0x8002AEF0..0x8002AEFC,
      the stores that arm shares with pass 0) and the 4/5 arm's `alt = 0;` (0x8002AF18) re-store held values
      on every feasible path (the pass-loop callees never write other->unk_8C: r11/round2/writeset_8c.txt);
      each address is in the variable's comment. Spellings without them 1-13 (r11/round2/rs_v*.c).

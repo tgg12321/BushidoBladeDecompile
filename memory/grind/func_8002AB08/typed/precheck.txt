@@ -1,0 +1,17 @@
+=== reviewer precheck: func_8002AB08 ===
+{
+  "rules": {
+    "count": 0,
+    "hits": {}
+  },
+  "body": {
+    "file": "src/code6cac_b_tu2.c",
+    "register_asm_pins": 0,
+    "asm_blocks": 0,
+    "hardcoded_dollarN_asm": 0
+  },
+  "claude_rules_in_diff": [],
+  "canonical_registry_additions": [],
+  "new_extern_volatile": []
+}
+mechanical checks clean — brief the reviewer on SEMANTICS only (6-test checklist); cite this output so it skips re-derivation.

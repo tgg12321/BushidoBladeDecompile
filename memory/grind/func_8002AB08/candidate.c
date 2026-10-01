@@ -25,13 +25,13 @@ void func_8002AB08(s32 mode) {
         /* alt: two values -- the pass's blade (0: the unk00 / unk_210 points, 1: the unk48 / unk_234
          * points; also read by the knockback's velocity index, the last pass's blade, as the target
          * does at 0x8002B8C0), then whether the nearest hit came from that blade. The 4/5 arm's
-         * `alt = 0;` re-stores the held 0 (target `move $fp,$zero` 0x8002AF18), owner Q85 (rules Q85HASH).
+         * `alt = 0;` re-stores the held 0 (target `move $fp,$zero` 0x8002AF18), owner Q85 (rules 9cdb9cd08).
          * Ruling 11 (reused-local-necessity.md); (D): memory/grind/func_8002AB08/r11/README.md. */
         s32 alt;
         /* temp1 / temp2: two values each -- the indices of the pass's two points (per-branch constants,
          * Q20), then the squared distance of the opponent to the blade's first / second point. The
          * unk_8C arm's `temp1 = 0; temp2 = 1;` re-store the held values (target 0x8002AEF0 /
-         * 0x8002AEF4, the stores that arm shares with pass 0), owner Q85 (rules Q85HASH). Ruling 11;
+         * 0x8002AEF4, the stores that arm shares with pass 0), owner Q85 (rules 9cdb9cd08). Ruling 11;
          * (D): memory/grind/func_8002AB08/r11/README.md. */
         s32 temp1;
         s32 temp2;
@@ -115,7 +115,7 @@ void func_8002AB08(s32 mode) {
         for (pass = 0; pass < npass; pass++) {
             /* deep_on: func_8002CA8C's third argument (it runs the deep-hit test only when set): one
              * value, written per arm as per-branch constants 1 / 1 / 0 (Q20); the unk_8C arm's
-             * `deep_on = 1;` re-stores the held 1 (target 0x8002AEFC), owner Q85 (rules Q85HASH).
+             * `deep_on = 1;` re-stores the held 1 (target 0x8002AEFC), owner Q85 (rules 9cdb9cd08).
              * Ruling 11; (D): memory/grind/func_8002AB08/r11/README.md (deep_on). */
             s32 deep_on;
 

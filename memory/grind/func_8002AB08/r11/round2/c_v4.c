@@ -25,19 +25,16 @@ void func_8002AB08(s32 mode) {
         /* alt: two values -- the pass's blade (0: the unk00 / unk_210 points, 1: the unk48 / unk_234
          * points; also read by the knockback's velocity index, the last pass's blade, as the target
          * does at 0x8002B8C0), then whether the nearest hit came from that blade. The 4/5 arm's
-         * `alt = 0;` re-stores the held 0 (target `move $fp,$zero` 0x8002AF18), owner Q85 (rules Q85HASH).
+         * `alt = 0;` re-stores the held 0 (target `move $fp,$zero` 0x8002AF18), owner Q85 (rules 9cdb9cd08).
          * Ruling 11 (reused-local-necessity.md); (D): memory/grind/func_8002AB08/r11/README.md. */
         s32 alt;
         /* temp1 / temp2: two values each -- the indices of the pass's two points (per-branch constants,
          * Q20), then the squared distance of the opponent to the blade's first / second point. The
          * unk_8C arm's `temp1 = 0; temp2 = 1;` re-store the held values (target 0x8002AEF0 /
-         * 0x8002AEF4, the stores that arm shares with pass 0), owner Q85 (rules Q85HASH). Ruling 11;
+         * 0x8002AEF4, the stores that arm shares with pass 0), owner Q85 (rules 9cdb9cd08). Ruling 11;
          * (D): memory/grind/func_8002AB08/r11/README.md. */
         s32 temp1;
         s32 temp2;
-        /* c: the pass's flag for func_8002CA8C; the unk_8C arm's `c = 1;` re-stores the held 1 (target
-         * 0x8002AEFC), owner Q85 (rules Q85HASH). */
-        s32 c;
         s32 nseg;
         /* idx: two values -- the triangle index of the segment loop, then the index of the nearest
          * hit, the Q34 plain copy `idx = temp3;` (target `addu $s5,$s4,$zero` 0x8002B538). Ruling 11;
@@ -116,6 +113,12 @@ void func_8002AB08(s32 mode) {
             mask_a |= hit;
         }
         for (pass = 0; pass < npass; pass++) {
+            /* deep_on: func_8002CA8C's third argument (it runs the deep-hit test only when set): one
+             * value, written per arm as per-branch constants 1 / 1 / 0 (Q20); the unk_8C arm's
+             * `deep_on = 1;` re-stores the held 1 (target 0x8002AEFC), owner Q85 (rules 9cdb9cd08).
+             * Ruling 11; (D): memory/grind/func_8002AB08/r11/README.md (deep_on). */
+            s32 deep_on;
+
             if (pass == 0) {
                 alt = 0;
                 temp1 = 0;
@@ -129,7 +132,7 @@ void func_8002AB08(s32 mode) {
                 temp1 = 1;
                 temp2 = 2;
             }
-            c = temp1 == 0;
+            deep_on = temp1 == 0;
             if (alt == 0) {
                 *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][temp1];
                 *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][temp2];
@@ -209,7 +212,7 @@ void func_8002AB08(s32 mode) {
                         *(s32 *)(scr + 0x8C) = (*(s32 **)(scr + 0x60 + j * 4))[2];
                     }
                 }
-                func_8002CA8C((u8 *)self, func_8002CD58(scr), c);
+                func_8002CA8C((u8 *)self, func_8002CD58(scr), deep_on);
                 hit |= *(s32 *)(scr + 0xB4);
                 deep |= *(s32 *)(scr + 0xC4);
                 if (alt != 0) {

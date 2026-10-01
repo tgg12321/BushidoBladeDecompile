@@ -8,7 +8,8 @@ tag=$1; body=$2
 D=tmp/func_8002AB08/r11/dumps/$tag; rm -rf $D; mkdir -p $D
 python3 - "$body" "$D/tu.c" <<'PY'
 import sys
-src = open('src/code6cac_b_tu2.c').read()
+import subprocess
+src = subprocess.run(['git', 'show', 'HEAD:src/code6cac_b_tu2.c'], capture_output=True, text=True).stdout
 line = 'INCLUDE_ASM("asm/funcs", func_8002AB08);'
 assert src.count(line) == 1
 open(sys.argv[2], 'w').write(src.replace(line, open(sys.argv[1]).read()))

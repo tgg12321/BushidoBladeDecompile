@@ -12,76 +12,76 @@ Register 84 used 21 times across 343 insns; dies in 0 places; crosses 5 calls; G
 Register 85 used 20 times across 245 insns; dies in 0 places; crosses 2 calls; GR_REGS or none.
 Register 86 used 36 times across 627 insns; crosses 9 calls; GR_REGS or none.
 Register 87 used 29 times across 677 insns; dies in 0 places; crosses 12 calls; GR_REGS or none.
-Register 89 used 13 times across 733 insns; dies in 0 places; crosses 12 calls; GR_REGS or none.
-Register 90 used 17 times across 171 insns; dies in 0 places; crosses 2 calls; GR_REGS or none.
-Register 91 used 61 times across 618 insns; crosses 13 calls; GR_REGS or none.
-Register 92 used 80 times across 103 insns; dies in 11 places; crosses 2 calls; GR_REGS or none.
-Register 93 used 18 times across 27 insns; dies in 2 places; GR_REGS or none.
-Register 94 used 80 times across 128 insns; dies in 11 places; crosses 2 calls; GR_REGS or none.
-Register 95 used 8 times across 39 insns; dies in 0 places; GR_REGS or none.
-Register 96 used 27 times across 149 insns; crosses 2 calls; GR_REGS or none.
-Register 98 used 11 times across 40 insns; dies in 0 places; GR_REGS or none; pointer.
-Register 99 used 6 times across 39 insns; GR_REGS or none.
-Register 100 used 6 times across 14 insns; GR_REGS or none.
-Register 101 used 6 times across 5 insns; GR_REGS or none.
-Register 102 used 10 times across 6 insns; GR_REGS or none.
-Register 103 used 10 times across 55 insns; crosses 1 call; GR_REGS or none.
-Register 104 used 35 times across 32 insns; dies in 3 places; GR_REGS or none.
-Register 105 used 6 times across 37 insns; crosses 1 call; GR_REGS or none.
-Register 106 used 8 times across 14 insns; GR_REGS or none.
-Register 107 used 21 times across 736 insns; dies in 0 places; crosses 12 calls; GR_REGS or none.
-Register 108 used 8 times across 13 insns; GR_REGS or none.
-Register 109 used 28 times across 1476 insns; dies in 0 places; crosses 12 calls; GR_REGS or none.
-Register 111 used 4 times across 2 insns in block 2; GR_REGS or none.
+Register 89 used 17 times across 171 insns; dies in 0 places; crosses 2 calls; GR_REGS or none.
+Register 90 used 61 times across 618 insns; crosses 13 calls; GR_REGS or none.
+Register 91 used 80 times across 103 insns; dies in 11 places; crosses 2 calls; GR_REGS or none.
+Register 92 used 18 times across 27 insns; dies in 2 places; GR_REGS or none.
+Register 93 used 80 times across 128 insns; dies in 11 places; crosses 2 calls; GR_REGS or none.
+Register 94 used 8 times across 39 insns; dies in 0 places; GR_REGS or none.
+Register 95 used 27 times across 149 insns; crosses 2 calls; GR_REGS or none.
+Register 97 used 11 times across 40 insns; dies in 0 places; GR_REGS or none; pointer.
+Register 98 used 6 times across 39 insns; GR_REGS or none.
+Register 99 used 6 times across 14 insns; GR_REGS or none.
+Register 100 used 6 times across 5 insns; GR_REGS or none.
+Register 101 used 10 times across 6 insns; GR_REGS or none.
+Register 102 used 10 times across 55 insns; crosses 1 call; GR_REGS or none.
+Register 103 used 35 times across 32 insns; dies in 3 places; GR_REGS or none.
+Register 104 used 6 times across 37 insns; crosses 1 call; GR_REGS or none.
+Register 105 used 8 times across 14 insns; GR_REGS or none.
+Register 106 used 21 times across 736 insns; dies in 0 places; crosses 12 calls; GR_REGS or none.
+Register 107 used 8 times across 13 insns; GR_REGS or none.
+Register 108 used 28 times across 1476 insns; dies in 0 places; crosses 12 calls; GR_REGS or none.
+Register 110 used 4 times across 2 insns in block 2; GR_REGS or none.
+Register 113 used 4 times across 2 insns in block 3; GR_REGS or none.
 Register 114 used 4 times across 2 insns in block 3; GR_REGS or none.
 Register 115 used 4 times across 2 insns in block 3; GR_REGS or none.
 Register 116 used 4 times across 2 insns in block 3; GR_REGS or none.
 Register 117 used 4 times across 2 insns in block 3; GR_REGS or none.
 Register 118 used 4 times across 2 insns in block 3; GR_REGS or none.
 Register 119 used 4 times across 2 insns in block 3; GR_REGS or none.
-Register 120 used 4 times across 2 insns in block 3; GR_REGS or none.
-Register 121 used 4 times across 12 insns in block 3; GR_REGS or none; pointer.
-Register 123 used 4 times across 5 insns in block 5; GR_REGS or none.
-Register 126 used 4 times across 2 insns in block 6; GR_REGS or none.
-Register 128 used 4 times across 4 insns in block 7; GR_REGS or none.
-Register 130 used 4 times across 2 insns in block 8; GR_REGS or none.
-Register 133 used 4 times across 2 insns in block 8; GR_REGS or none.
-Register 135 used 4 times across 2 insns in block 9; GR_REGS or none.
-Register 137 used 4 times across 4 insns in block 12; 2 bytes; GR_REGS or none.
+Register 120 used 4 times across 12 insns in block 3; GR_REGS or none; pointer.
+Register 122 used 4 times across 5 insns in block 5; GR_REGS or none.
+Register 125 used 4 times across 2 insns in block 6; GR_REGS or none.
+Register 127 used 4 times across 4 insns in block 7; GR_REGS or none.
+Register 129 used 4 times across 2 insns in block 8; GR_REGS or none.
+Register 132 used 4 times across 2 insns in block 8; GR_REGS or none.
+Register 134 used 4 times across 2 insns in block 9; GR_REGS or none.
+Register 136 used 4 times across 4 insns in block 12; 2 bytes; GR_REGS or none.
+Register 138 used 4 times across 2 insns in block 12; GR_REGS or none.
 Register 139 used 4 times across 2 insns in block 12; GR_REGS or none.
-Register 140 used 4 times across 2 insns in block 12; GR_REGS or none.
-Register 141 used 4 times across 4 insns in block 14; 2 bytes; GR_REGS or none.
+Register 140 used 4 times across 4 insns in block 14; 2 bytes; GR_REGS or none.
+Register 142 used 4 times across 2 insns in block 14; GR_REGS or none.
 Register 143 used 4 times across 2 insns in block 14; GR_REGS or none.
-Register 144 used 4 times across 2 insns in block 14; GR_REGS or none.
-Register 146 used 10 times across 8 insns; GR_REGS or none.
-Register 147 used 15 times across 1474 insns; dies in 0 places; crosses 12 calls; GR_REGS or none.
-Register 150 used 4 times across 4 insns in block 16; GR_REGS or none.
-Register 153 used 4 times across 4 insns in block 17; GR_REGS or none.
-Register 156 used 4 times across 4 insns in block 18; GR_REGS or none.
-Register 158 used 4 times across 3 insns in block 19; GR_REGS or none.
-Register 161 used 4 times across 2 insns in block 19; GR_REGS or none.
-Register 162 used 6 times across 3 insns; 1 bytes; GR_REGS or none.
-Register 165 used 4 times across 2 insns in block 21; GR_REGS or none.
-Register 181 used 4 times across 4 insns in block 21; GR_REGS or none.
-Register 183 used 4 times across 5 insns; GR_REGS or none.
-Register 185 used 6 times across 9 insns; GR_REGS or none.
-Register 188 used 6 times across 5 insns; GR_REGS or none.
-Register 190 used 4 times across 4 insns in block 25; GR_REGS or none.
-Register 194 used 4 times across 4 insns in block 26; GR_REGS or none.
-Register 196 used 4 times across 2 insns in block 27; GR_REGS or none.
-Register 199 used 10 times across 8 insns; GR_REGS or none.
-Register 203 used 4 times across 4 insns in block 29; GR_REGS or none.
-Register 206 used 4 times across 4 insns in block 30; GR_REGS or none.
-Register 209 used 4 times across 4 insns in block 31; GR_REGS or none.
-Register 211 used 4 times across 3 insns in block 32; GR_REGS or none.
-Register 214 used 4 times across 2 insns in block 32; GR_REGS or none.
-Register 215 used 6 times across 3 insns; 1 bytes; GR_REGS or none.
-Register 218 used 4 times across 2 insns in block 34; GR_REGS or none.
-Register 234 used 4 times across 3 insns in block 34; GR_REGS or none.
-Register 237 used 4 times across 2 insns in block 34; GR_REGS or none.
-Register 241 used 6 times across 8 insns; GR_REGS or none.
-Register 243 used 4 times across 4 insns in block 36; GR_REGS or none.
-Register 244 used 6 times across 2 insns in block 95; GR_REGS or none.
+Register 145 used 10 times across 8 insns; GR_REGS or none.
+Register 146 used 15 times across 1474 insns; dies in 0 places; crosses 12 calls; GR_REGS or none.
+Register 149 used 4 times across 4 insns in block 16; GR_REGS or none.
+Register 152 used 4 times across 4 insns in block 17; GR_REGS or none.
+Register 155 used 4 times across 4 insns in block 18; GR_REGS or none.
+Register 157 used 4 times across 3 insns in block 19; GR_REGS or none.
+Register 160 used 4 times across 2 insns in block 19; GR_REGS or none.
+Register 161 used 6 times across 3 insns; 1 bytes; GR_REGS or none.
+Register 164 used 4 times across 2 insns in block 21; GR_REGS or none.
+Register 180 used 4 times across 4 insns in block 21; GR_REGS or none.
+Register 182 used 4 times across 5 insns; GR_REGS or none.
+Register 184 used 6 times across 9 insns; GR_REGS or none.
+Register 187 used 6 times across 5 insns; GR_REGS or none.
+Register 189 used 4 times across 4 insns in block 25; GR_REGS or none.
+Register 193 used 4 times across 4 insns in block 26; GR_REGS or none.
+Register 195 used 4 times across 2 insns in block 27; GR_REGS or none.
+Register 198 used 10 times across 8 insns; GR_REGS or none.
+Register 202 used 4 times across 4 insns in block 29; GR_REGS or none.
+Register 205 used 4 times across 4 insns in block 30; GR_REGS or none.
+Register 208 used 4 times across 4 insns in block 31; GR_REGS or none.
+Register 210 used 4 times across 3 insns in block 32; GR_REGS or none.
+Register 213 used 4 times across 2 insns in block 32; GR_REGS or none.
+Register 214 used 6 times across 3 insns; 1 bytes; GR_REGS or none.
+Register 217 used 4 times across 2 insns in block 34; GR_REGS or none.
+Register 233 used 4 times across 3 insns in block 34; GR_REGS or none.
+Register 236 used 4 times across 2 insns in block 34; GR_REGS or none.
+Register 240 used 6 times across 8 insns; GR_REGS or none.
+Register 242 used 4 times across 4 insns in block 36; GR_REGS or none.
+Register 243 used 6 times across 2 insns in block 95; GR_REGS or none.
+Register 244 used 13 times across 733 insns; dies in 0 places; crosses 12 calls; GR_REGS or none.
 Register 246 used 6 times across 2 insns in block 40; GR_REGS or none.
 Register 248 used 6 times across 4 insns in block 42; 2 bytes; GR_REGS or none.
 Register 250 used 6 times across 2 insns in block 42; GR_REGS or none.

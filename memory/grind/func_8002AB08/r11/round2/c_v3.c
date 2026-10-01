@@ -25,19 +25,16 @@ void func_8002AB08(s32 mode) {
         /* alt: two values -- the pass's blade (0: the unk00 / unk_210 points, 1: the unk48 / unk_234
          * points; also read by the knockback's velocity index, the last pass's blade, as the target
          * does at 0x8002B8C0), then whether the nearest hit came from that blade. The 4/5 arm's
-         * `alt = 0;` re-stores the held 0 (target `move $fp,$zero` 0x8002AF18), owner Q85 (rules Q85HASH).
+         * `alt = 0;` re-stores the held 0 (target `move $fp,$zero` 0x8002AF18), owner Q85 (rules 9cdb9cd08).
          * Ruling 11 (reused-local-necessity.md); (D): memory/grind/func_8002AB08/r11/README.md. */
         s32 alt;
         /* temp1 / temp2: two values each -- the indices of the pass's two points (per-branch constants,
          * Q20), then the squared distance of the opponent to the blade's first / second point. The
          * unk_8C arm's `temp1 = 0; temp2 = 1;` re-store the held values (target 0x8002AEF0 /
-         * 0x8002AEF4, the stores that arm shares with pass 0), owner Q85 (rules Q85HASH). Ruling 11;
+         * 0x8002AEF4, the stores that arm shares with pass 0), owner Q85 (rules 9cdb9cd08). Ruling 11;
          * (D): memory/grind/func_8002AB08/r11/README.md. */
         s32 temp1;
         s32 temp2;
-        /* c: the pass's flag for func_8002CA8C; the unk_8C arm's `c = 1;` re-stores the held 1 (target
-         * 0x8002AEFC), owner Q85 (rules Q85HASH). */
-        s32 c;
         s32 nseg;
         /* idx: two values -- the triangle index of the segment loop, then the index of the nearest
          * hit, the Q34 plain copy `idx = temp3;` (target `addu $s5,$s4,$zero` 0x8002B538). Ruling 11;
