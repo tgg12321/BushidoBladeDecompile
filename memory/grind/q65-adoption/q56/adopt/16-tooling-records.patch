@@ -1,6 +1,6 @@
-From 80c6a3ab12fc3275b38e0eb147db58b674da44f4 Mon Sep 17 00:00:00 2001
+From a07ec08df5868b44d52284dc1e560449acf8a77b Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 16:20:17 -0500
+Date: Thu, 1 Oct 2026 16:49:20 -0500
 Subject: [PATCH] tools/records: follow the retired sdata lists and the moved
  functions (owner ruling Q65, step 16)
 
@@ -167,7 +167,7 @@ index 50e1a4157..528cbfe81 100644
  
  def load(stem, do_extract):
 diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
-index 567149322..c8592023d 100644
+index c41dd614b..bddb1671f 100644
 --- a/undefined_syms_auto.txt
 +++ b/undefined_syms_auto.txt
 @@ -71,12 +71,7 @@ _snd_seq_tick_env_plus_0x11 = 0x800A26DD;  /* data-wave 2026-09-07: was D_800A26

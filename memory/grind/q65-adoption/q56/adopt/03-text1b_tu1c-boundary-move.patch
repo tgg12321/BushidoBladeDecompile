@@ -1,6 +1,6 @@
-From 8ceb076229cda4c4b9c08eb25313da364e551daa Mon Sep 17 00:00:00 2001
+From 78bd0f6288413c96931118b8ca6b87b7360e0066 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 16:11:13 -0500
+Date: Thu, 1 Oct 2026 16:42:11 -0500
 Subject: [PATCH] src: text1b / text1b_tu1c boundary moves to func_80060A68
  (owner ruling Q65, step 3, boundary move in the recorded window)
 

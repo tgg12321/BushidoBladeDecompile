@@ -466,6 +466,10 @@ ROW-REMOVED named_syms.txt D_800A3220: defined in C by code6cac_c2
 ROW-REMOVED named_syms.txt D_800A33BC: defined in C by text1b
 ROW-REMOVED named_syms.txt D_800A33E0: defined in C by text1b
 symbol-file rows removed for C-defined objects: 198
+ROW-ADDED undefined_syms_auto.txt D_800A36DC = 0x800A36DC: K1 tentative definition in ['text1b_tu1c'] had no symbol-file row (its address came only from the data blob's label)
+ROW-ADDED undefined_syms_auto.txt D_800A36E0 = 0x800A36E0: K1 tentative definition in ['text1b_tu1c'] had no symbol-file row (its address came only from the data blob's label)
+ROW-ADDED undefined_syms_auto.txt D_800A36E4 = 0x800A36E4: K1 tentative definition in ['text1b_tu1c'] had no symbol-file row (its address came only from the data blob's label)
+ROW-ADDED undefined_syms_auto.txt D_800A3724 = 0x800A3724: K1 tentative definition in ['text1b_tu1c'] had no symbol-file row (its address came only from the data blob's label)
 BLOB-PIECE 938EA [0x800a30ea, 0x800a30ec): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
 BLOB-PIECE 938FE [0x800a30fe, 0x800a3140): D_800A3100 (named by ['code6cac_tu2']), D_800A310C (named by ['code6cac_tu2']), D_800A3114, D_800A311C, D_800A3124, D_800A312C (named by ['code6cac_c2']), D_800A3134 (named by ['code6cac_b_tu2']), D_800A3138 (named by ['code6cac_tu2']) - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
 BLOB-PIECE 93950 [0x800a3150, 0x800a3174): D_800A3150, D_800A3158, D_800A3160, D_800A3164, D_800A316C - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data

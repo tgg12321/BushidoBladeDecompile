@@ -1,6 +1,6 @@
-From 7815a3a96b4c72cfb6881fbb723fc77403d0d1b1 Mon Sep 17 00:00:00 2001
+From 231ca77cb58ddb80e28886b861c0a783241746ae Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 16:10:11 -0500
+Date: Thu, 1 Oct 2026 16:41:08 -0500
 Subject: [PATCH] substrate: maspsx _uses_gp - an indexed sym($reg) operand is
  never gp (owner ruling Q65, step 1)
 

@@ -4,7 +4,7 @@ merge in link order (mergec.py); the declarations were reconciled in step 5.
 
 Evidence: the initialized small-data object D_800A322C is a (K3) object reached gp-relative from both parts
 (and the bss object D_800A336C too); the two are contiguous in link order (text 0x8003B9D0..0x800401CC); no
-rodata-align boundary lies between them; no contradiction inside the merged file (tmp/q56/mergecheck2.py).
+rodata-align boundary lies between them; no contradiction inside the merged file (memory/grind/q65-adoption/q56/mergecheck2.py).
 usage: s07_apply.py <tree>"""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

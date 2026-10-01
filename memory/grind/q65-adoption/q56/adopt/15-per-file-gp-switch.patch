@@ -1,6 +1,6 @@
-From 6c82196baa471e5bad5aba414cf4457dd537cb96 Mon Sep 17 00:00:00 2001
+From bd12e8619c06e085286f0ed40e9b2f9c7a7989a4 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 16:19:40 -0500
+Date: Thu, 1 Oct 2026 16:48:47 -0500
 Subject: [PATCH] src/build: per-file gp model - definitions follow the
  evidence, data blob cut, maspsx -G8 per file, sdata lists retired (owner
  rulings Q65/Q67, step 15)
@@ -233,6 +233,12 @@ Symbol-file rows removed (objects now defined in C) (198):
 - ROW-REMOVED named_syms.txt D_800A3220: defined in C by code6cac_c2
 - ROW-REMOVED named_syms.txt D_800A33BC: defined in C by text1b
 - ROW-REMOVED named_syms.txt D_800A33E0: defined in C by text1b
+
+Symbol-file rows added (K1 tentative definitions, owner ruling Q62) (4):
+- ROW-ADDED undefined_syms_auto.txt D_800A36DC = 0x800A36DC: K1 tentative definition in ['text1b_tu1c'] had no symbol-file row (its address came only from the data blob's label)
+- ROW-ADDED undefined_syms_auto.txt D_800A36E0 = 0x800A36E0: K1 tentative definition in ['text1b_tu1c'] had no symbol-file row (its address came only from the data blob's label)
+- ROW-ADDED undefined_syms_auto.txt D_800A36E4 = 0x800A36E4: K1 tentative definition in ['text1b_tu1c'] had no symbol-file row (its address came only from the data blob's label)
+- ROW-ADDED undefined_syms_auto.txt D_800A3724 = 0x800A3724: K1 tentative definition in ['text1b_tu1c'] had no symbol-file row (its address came only from the data blob's label)
 
 Data-blob pieces between the C blocks (19):
 - BLOB-PIECE 938EA [0x800a30ea, 0x800a30ec): no label - outside every file's block (no file reaches it gp-relative and no block's contiguity covers it), so it stays data
@@ -597,8 +603,8 @@ PSYQ_LIBRARY_FILES (Q69): comb display gpu ings2 main system text1b_b_tu2 text1b
  src/text1b_tu1d.c                 |   97 +-
  src/text1b_tu1e.c                 |    3 +
  tools/psyq_library_files.py       |   81 +
- undefined_syms_auto.txt           |  173 --
- 60 files changed, 1915 insertions(+), 3969 deletions(-)
+ undefined_syms_auto.txt           |  177 +-
+ 60 files changed, 1919 insertions(+), 3969 deletions(-)
  create mode 100644 asm/data/938EA.data.s
  create mode 100644 asm/data/938FE.data.s
  create mode 100644 asm/data/93950.data.s
@@ -7498,7 +7504,7 @@ index 000000000..13baec6f2
 +            print(f"MISMATCH: Makefile {mk} / buildconfig {bc} / evidence {lib}", file=sys.stderr)
 +            sys.exit(1)
 diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
-index 573acddf7..567149322 100644
+index 573acddf7..c41dd614b 100644
 --- a/undefined_syms_auto.txt
 +++ b/undefined_syms_auto.txt
 @@ -71,15 +71,7 @@ _snd_seq_tick_env_plus_0x11 = 0x800A26DD;  /* data-wave 2026-09-07: was D_800A26
@@ -7752,7 +7758,7 @@ index 573acddf7..567149322 100644
  g_spu_busy = 0x800A2D10;
  g_spu_dma_ctrl = 0x800A2CF0;
  g_spu_init_flag = 0x800A2D14;
-@@ -1329,12 +1162,6 @@ D_80015F74 = 0x80015F74;
+@@ -1329,12 +1162,10 @@ D_80015F74 = 0x80015F74;
  D_8009BF24 = 0x8009BF24;
  D_8009BF28 = 0x8009BF28;
  D_8009BF2C = 0x8009BF2C;
@@ -7765,6 +7771,10 @@ index 573acddf7..567149322 100644
  D_8009B2E0 = 0x8009B2E0;
  D_8009B388 = 0x8009B388;
  D_8009B390 = 0x8009B390;
++D_800A36DC = 0x800A36DC;
++D_800A36E0 = 0x800A36E0;
++D_800A36E4 = 0x800A36E4;
++D_800A3724 = 0x800A3724;
 -- 
 2.43.0
 

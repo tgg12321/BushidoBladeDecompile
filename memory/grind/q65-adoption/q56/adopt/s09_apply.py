@@ -3,7 +3,7 @@
 are one file, text1b.c. Verbatim merge in link order (mergec.py; verbatim-identical re-declarations dropped);
 the declarations were reconciled in the previous step.
 
-Evidence (per-file-gp-model.md, recorded as rodata-object-alignment section 7; tmp/q56/adopt/m34_evidence.md):
+Evidence (per-file-gp-model.md, recorded as rodata-object-alignment section 7; memory/grind/q65-adoption/q56/adopt/m34_evidence.md):
 the PSYLINK probe (a file's statics are one contiguous .lcomm block in link order), the static-region gp
 reach per group, mergecheck2 (no contradiction inside the merged file), and the jump-table phase check (all
 members phase 4: no rodata-align boundary is removed).

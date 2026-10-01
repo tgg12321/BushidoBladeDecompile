@@ -1,6 +1,12 @@
 # Q65 adoption (per-file gp model): handoff, 2026-10-01
 
-**State (round 4 run banked, 2026-10-01, laneA).** Ready for the round-4 review, NOT applied. Base `43e73e46b`
+**State (round 5, 2026-10-01, laneA).** Round 4 review: 09, 14 and all bodies PASS; step 15 FAIL on one item, fixed:
+s15 now adds a symbol-file row for every K1 tentative definition that had none (ROW-ADDED: D_800A36DC, D_800A36E0,
+D_800A36E4, D_800A3724, all text1b_tu1c; byte-neutral, owner ruling Q62), and the struct alignment model is
+cc1's DATA_ALIGNMENT word (4). Regenerated on the same base: only step 15 differs from round 4 (r5diff/15.diff),
+bodies identical, all steps oracle, integrity OK; step16 a07ec08df. Round 4 below.
+
+**Round 4 (2026-10-01).** Base `43e73e46b`
 (func_80058580 and func_80055B60 landed; no build input changed after it). Scratch clone `/tmp/q56/adopt tree`
 frozen with tags step0..step16 (step16 80c6a3ab1). Every step: full build SHA1 == oracle (series_run.txt);
 verify-oracle + check_completion_integrity OK at step16; changed completed bodies identical to round 3

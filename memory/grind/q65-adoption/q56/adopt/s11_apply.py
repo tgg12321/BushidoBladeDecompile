@@ -4,7 +4,7 @@
 section, no .bss line) and stays as it is. Verbatim merge in link order (mergec.py; verbatim-identical re-declarations dropped); the
 declarations were reconciled in the previous step.
 
-Evidence (recorded as rodata-object-alignment section 7; tmp/q56/adopt/m34_evidence.md): the PSYLINK probe,
+Evidence (recorded as rodata-object-alignment section 7; memory/grind/q65-adoption/q56/adopt/m34_evidence.md): the PSYLINK probe,
 the static-region gp reach per group, mergecheck2, and the jump-table phase check (text1b_tu2 and text1b_b
 both phase 4: no rodata-align boundary is removed).
 usage: s11_apply.py <tree>"""

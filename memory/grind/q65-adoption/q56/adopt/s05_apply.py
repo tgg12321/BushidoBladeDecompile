@@ -6,7 +6,7 @@ include blocks, identical re-declarations dropped, nothing else); the parts decl
 Evidence: the initialized small-data objects D_800A31D8 (gp in code6cac_b2_pre, code6cac_b2_post) and
 D_800A31DA (gp in all three) are (K3) objects: one defining file, and only that file gets gp for them. The
 three objects are contiguous in link order (text 0x80035438..0x80035F30). No rodata-align boundary lies between
-them (legacy splits). No contradiction inside the merged file (tmp/q56/mergecheck2.py).
+them (legacy splits). No contradiction inside the merged file (memory/grind/q65-adoption/q56/mergecheck2.py).
 usage: s05_apply.py <tree>"""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

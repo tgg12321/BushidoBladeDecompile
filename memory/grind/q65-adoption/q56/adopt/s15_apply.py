@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Step 15 (Q65 adoption): the switch to the per-file gp model. Byte-identical by construction + check.
 
-Evidence and rule: tmp/q56/MODEL.md, PLAN.md. Sony ASPSX 2.34 gives a file gp for a small symbol only if
+Evidence and rule: memory/grind/q65-adoption/q56/MODEL.md, memory/grind/q65-adoption/q56/adopt/PLAN.md. Sony ASPSX 2.34 gives a file gp for a small symbol only if
 the file DEFINES it; Sony PSYLINK lays out each file's initialized small data (.sdata) and statics (.lcomm
 -> .sbss) in link order, then the COMMON (tentative) block. BB2's small-data area has exactly that shape:
   0x800A30CC..0x800A3308  per-file .sdata blocks (initialized definitions),
@@ -238,7 +238,8 @@ def lcomm_align(n):
 
 def obj_align(reg, size, dims, e):
     """the alignment the build gives an object: maspsx's .lcomm model aligns a static by its size; an
-    initialized object takes cc1's alignment (an array is word-aligned by DATA_ALIGNMENT, a scalar its size)."""
+    initialized object takes cc1's alignment (an array or a record is word-aligned by DATA_ALIGNMENT, a scalar
+    its size)."""
     if reg == "static":
         return lcomm_align(size)
     return 4 if dims else (e[0] if e else 4)
@@ -414,8 +415,6 @@ for f, uses in sorted(P.items()):
             if it[0] == "fill" and k + 1 < len(items) and items[k + 1][0] == "obj":
                 nx = items[k + 1]
                 al = obj_align(reg, nx[2], nx[3][2], nx[3][3])
-                if reg == "sdata" and nx[3][3] is None and not nx[3][2]:   # a struct: its widest member
-                    al = max(m[1] for m in struct_layout(f, nx[3][1]))
                 if ((it[1] + al - 1) // al) * al == it[1] + it[2]:
                     log(f"PADDING {f} {reg} {hex(it[1])} ({it[2]} B): the next object's {al}-alignment produces it")
                     continue
@@ -849,6 +848,23 @@ for sf in ("undefined_syms_auto.txt", "named_syms.txt"):
         keep.append(l)
     open(sf, "w", newline=NL).write(NL.join(keep))
 log(f"symbol-file rows removed for C-defined objects: {len(rows_removed)}")
+# (K1, owner ruling Q62) a tentative definition takes its address from a symbol-file row; one the files reach
+# gp-relative that has none (its address came only from the data blob's label) gets one
+_have = set()
+for sf in ("undefined_syms_auto.txt", "named_syms.txt"):
+    _have |= {m.group(1) for m in re.finditer(r"^\s*(\w+)\s*=\s*0x[0-9A-Fa-f]+\s*;", open(sf).read(), re.M)}
+_k1 = {}
+for f, lst in tentative.items():
+    for a, nm in lst:
+        _k1.setdefault((a, nm), set()).add(f)
+_add = [(a, nm) for a, nm in sorted(_k1) if nm not in _have]
+if _add:
+    t = open("undefined_syms_auto.txt").read()
+    t = t + ("" if t.endswith(NL) else NL) + "".join(f"{nm} = 0x{a:08X};{NL}" for a, nm in _add)
+    open("undefined_syms_auto.txt", "w", newline=NL).write(t)
+for a, nm in _add:
+    log(f"ROW-ADDED undefined_syms_auto.txt {nm} = 0x{a:08X}: K1 tentative definition in {sorted(_k1[(a, nm)])} "
+        f"had no symbol-file row (its address came only from the data blob's label)")
 
 # ---- 3. cut the data blob around the C blocks ---------------------------------------------------------
 blob = open("asm/data/91C98.data.s").read().split(NL)
@@ -1029,6 +1045,7 @@ for title, pfx in (("Blocks extended to their last gp-reached object, declared i
                    ("Small-data words whose original value is a C object's address, spelled as that address", "ADDRESS"),
                    ("Object-model notes (evidence for a later type; defined here as declared)", "DATA-MODEL"),
                    ("Symbol-file rows removed (objects now defined in C)", "ROW-REMOVED"),
+                   ("Symbol-file rows added (K1 tentative definitions, owner ruling Q62)", "ROW-ADDED"),
                    ("Data-blob pieces between the C blocks", "BLOB-PIECE"),
                    ("Alignment padding inside a block (no object: the next object's alignment produces it)", "PADDING"),
                    ("Block ends on an odd byte (linker SUBALIGN(2) padding, no object)", "END-PAD"),

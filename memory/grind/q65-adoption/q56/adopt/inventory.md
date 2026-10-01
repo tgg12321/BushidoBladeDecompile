@@ -1,4 +1,4 @@
-# Small-data inventory (2026-10-01, pre-switch tree step14 = 6da099a11)
+# Small-data inventory (2026-10-01, pre-switch tree step14 = 80d116185)
 
 Blocks per file in link order (s04_spans.json); every object and every gap.
 

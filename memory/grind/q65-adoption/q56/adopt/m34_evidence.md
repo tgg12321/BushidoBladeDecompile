@@ -1,4 +1,4 @@
-# M3 / M4 merge evidence (tree 518c06296, 2026-10-01)
+# M3 / M4 merge evidence (tree 567d9f2a9, 2026-10-01)
 
 ## 1. Link order
 

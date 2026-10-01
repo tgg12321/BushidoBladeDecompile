@@ -1,6 +1,6 @@
-From 6da099a11762884b70693d56cd0403df0dad87a9 Mon Sep 17 00:00:00 2001
+From 80d116185b152670b23c8a68dad1b430c4e40cc0 Mon Sep 17 00:00:00 2001
 From: q56-scratch <q56@scratch>
-Date: Thu, 1 Oct 2026 16:17:16 -0500
+Date: Thu, 1 Oct 2026 16:48:07 -0500
 Subject: [PATCH] src: one declaration per static - element names, A8 slot
  joins, the memory-card name; camera_CalcAngles to INCLUDE_ASM (owner rulings
  Q65/Q79/Q84, step 14)
