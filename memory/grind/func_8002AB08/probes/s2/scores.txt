@@ -21,3 +21,6 @@ n_dxzkb.c 317  dx/dz vs knockback deltas/direction
 # init order: probes/s2/permfast.py brute-forces the six per-player zeroings on raw cc1 output.
 # with u8* casts no order puts the 0x96 load above the hit/deep stores (init_order_perms_casts.txt);
 # with struct-member reads 15 orders do, incl. the natural one (init_order_perms_struct.txt).
+split.c   414  full one-variable-per-value spelling (len, n, ex/ey/ez, dist, hk, kx/kz, d0/d1, fa all fresh)
+# permuter workspace: probes/s2/perm_setup.sh <dir> <cand> (minimal TU prelude); candidate.c scores 30 there
+# (relocation/sdata noise floor of the workspace, = 0 in the engine sandbox). Campaign from split.c not yet run.

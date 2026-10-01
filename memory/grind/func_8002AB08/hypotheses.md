@@ -14,3 +14,9 @@
 
 ## s2 (2026-10-01, laneC): CONFIRMED byte-exact body (sandbox 0) = candidate.c; see evidence.md s2. Frontier is
 landing admissibility: data model (PracticeMenuRec), Ruling 11 packages, vec alias, copy_pt, casts.
+NEXT (ordered): 1) PracticeMenuRec members (asked orchestrator 2026-10-01: s16 +0x8C/+0x92/+0x26C, Vec4i32
+unk_114[2]; +0xE/+0x6A stay s16 with (u16) reads) -> respell candidate on PracticeMenuRec *other/*self, re-verify 0.
+2) Ruling 11 (D) per reused local on that exact body: .lreg/.greg dumps reuse vs split (probes/s2/split.c = 414),
+per-value ablations for dx/dz/j/k, structural respelling, permuter campaign from split.c (perm_setup.sh, -j2,
+noise floor 30). 3) vec: pointer-alias FAKE paperwork (direct form 11 vs alias 5 measured; in-file precedent
+func_80027AD8 `vec = &D_800A37E8;` src/code6cac_b_tu2.c:395). 4) copy_pt helper note (fold-const distribution).
