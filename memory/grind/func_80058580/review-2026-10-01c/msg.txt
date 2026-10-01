@@ -8,7 +8,7 @@ consumer byte-identical (full build above; also typed/tuc.sh per TU).
 
 include/code6cac.h:
 - PracticeMenuRec: filler ranges split into the members these bodies and func_80058580 read:
-  unk_50 / unk_58 `u8 *`, u16 unk_6C, s16 unk_86, `u8 unk_A1[2]; u8 unk_A3[2];` (two start/end byte
+  unk_50 / unk_58 `u8 *`, s16 unk_86, `u8 unk_A1[2]; u8 unk_A3[2];` (two start/end byte
   pairs read with a runtime 0/1 index by func_8002AB08 / func_80029454; func_80056FE8 reads
   unk_A3[0]), u8 unk_AE / unk_AF / unk_B0, s16 unk_26C..unk_272, and 0x362..0x44B: unk_362 waypoint
   count, `CpuWaypoint unk_364[8]` {s16 x, z; u8 kind, unk5} (func_800571C0 writes them), s32
@@ -22,8 +22,9 @@ include/code6cac.h:
   code6cac_b_tu2.c, code6cac_tu2.c) are now redundant, their text unchanged (header-type-correction
   prong (d) is not claimed for them).
 - `CpuLevelEntry { u8 unk0, unk1; u16 mask; } D_8009A8C8[][8]` replaces `u8 D_8009A8C4[][8][4]`:
-  rows of eight 4-byte entries at 0x8009A8C8, each row ending in a zero entry; 0x8009A8C4 is the 0x80
-  terminator of script D_8009A8C0 (asm/data/7D920.data.s). Readers index the column 1-based.
+  rows of eight 4-byte entries at 0x8009A8C8, each 0x20-byte row ending in a zero entry (0x8009A8E4 /
+  0x8009A904 / 0x8009A924, asm/data/7D920.data.s); both readers index the column 1-based
+  ([row][D_800A37A0 - 1]), so the table starts at 0x8009A8C8, not at the word 0x8009A8C4.
 
 Bodies (src/text1b.c):
 - func_80055138: `PracticeMenuRec *p = &g_practice_menu_table[arg0]`, members throughout; `src =
@@ -40,6 +41,12 @@ Bodies (src/text1b.c):
   ffd7fef75^:memory/grind/func_80056FE8/hypotheses.md.
 - func_80055B44: `(PracticeMenuRec *a0, u8 *a1, s32 a2, s32 a3)`, member stores (its only caller is
   func_80058580, still INCLUDE_ASM).
+
+Member widths/signedness checked against every lb/lbu/lh/lhu/lw on a PracticeMenuRec base in
+asm/funcs and the C bodies (the reviewer's tmp/rev_split/widths.py): every s16 member has lh reads
+(the lhu hits are 16-bit moves/truncations), u16 unk_6A has only lhu (plus func_80058580's narrowed
+lbu compare), func_80029454's lw/sw at +0x6C/+0xA4 are on a different object ($s0, not the record
+$s1). +0x6C stays filler (original lh reads; no landed body uses it).
 
 Symbol files: undefined_syms_auto.txt adds D_8009A8C8 (the C table); D_8009A8CA stays (re-noted as
 the alias of D_8009A8C8[0][0].mask) with the other func_80058580-only alias rows, which retire when

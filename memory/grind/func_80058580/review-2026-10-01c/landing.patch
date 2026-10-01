@@ -1,5 +1,5 @@
 diff --git a/include/code6cac.h b/include/code6cac.h
-index 30578afac..d621c1f3c 100644
+index 30578afac..adcdc9e96 100644
 --- a/include/code6cac.h
 +++ b/include/code6cac.h
 @@ -64,6 +64,15 @@ typedef struct { s16 vx, vy, vz, pad; } SVec4i16;
@@ -18,7 +18,7 @@ index 30578afac..d621c1f3c 100644
  typedef struct PracticeMenuRec {
      struct PracticeMenuRec *unk_00; /* the other record: [1] for record 0, else [0] (func_80022580) */
      s16 unk_04;                    /* this record's own index (func_80022580) */
-@@ -86,17 +95,22 @@ typedef struct PracticeMenuRec {
+@@ -86,17 +95,21 @@ typedef struct PracticeMenuRec {
      u8  unk_34[0x3C - 0x34];
      s32 unk_3C;
      s16 unk_40;
@@ -31,10 +31,8 @@ index 30578afac..d621c1f3c 100644
      s16 unk_5E;                    /* 0/1, set alongside func_80021A98 */
      u8  unk_60[0x6A - 0x60];
 -    s16 unk_6A;                    /* SEQ state code; CHAR_STRUCT_SCHEMA.md +0x06A */
--    u8  unk_6C[0x72 - 0x6C];
 +    u16 unk_6A;                    /* SEQ state code; CHAR_STRUCT_SCHEMA.md +0x06A */
-+    u16 unk_6C;
-+    u8  unk_6E[0x72 - 0x6E];
+     u8  unk_6C[0x72 - 0x6C];
      s16 unk_72;
      u8  unk_74[0x7C - 0x74];
      s32 unk_7C;
@@ -45,7 +43,7 @@ index 30578afac..d621c1f3c 100644
      s16 unk_88;
      s16 unk_8A;
      u8  unk_8C[0x8E - 0x8C];
-@@ -106,9 +120,13 @@ typedef struct PracticeMenuRec {
+@@ -106,9 +119,13 @@ typedef struct PracticeMenuRec {
      s16 unk_96;
      u8  unk_98[0xA0 - 0x98];
      u8  unk_A0;
@@ -61,7 +59,7 @@ index 30578afac..d621c1f3c 100644
      u8  unk_B1;
      u8  unk_B2;
      u8  unk_B3[0xB8 - 0xB3];
-@@ -160,7 +178,10 @@ typedef struct PracticeMenuRec {
+@@ -160,7 +177,10 @@ typedef struct PracticeMenuRec {
      Vec4i32 unk_24C;
      u8  unk_25C[0x268 - 0x25C];
      s32 unk_268;
@@ -73,7 +71,7 @@ index 30578afac..d621c1f3c 100644
      s16 unk_274;
      s16 unk_276[4];
      s16 unk_27E[4];
-@@ -180,7 +201,76 @@ typedef struct PracticeMenuRec {
+@@ -180,7 +200,76 @@ typedef struct PracticeMenuRec {
      u8  unk_34E;                   /* written by func_8001BE20 for the OTHER record */
      u8  unk_34F[0x350 - 0x34F];
      s16 unk_350;
@@ -151,7 +149,7 @@ index 30578afac..d621c1f3c 100644
  } PracticeMenuRec;                 /* sizeof == 0x44C */
  
  /* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
-@@ -314,11 +404,16 @@ typedef struct StatusFlagRec {
+@@ -314,11 +403,16 @@ typedef struct StatusFlagRec {
      u8 unk17;
  } StatusFlagRec; /* size 0x18 */
  extern StatusFlagRec D_80099D88[];
@@ -160,8 +158,8 @@ index 30578afac..d621c1f3c 100644
 - * (col-1)*4 = D_8009A8C4 + row*0x20 + col*4 + 2, 0x8005A854-78; D_8009A8CA is the alias
 - * row D_8009A8C4+6). */
 -extern u8 D_8009A8C4[][8][4];
-+/* Rows of eight 4-byte entries starting at 0x8009A8C8 (each row ends with a zero entry; the
-+ * word at 0x8009A8C4 is the 0x80 terminator of the script D_8009A8C0). Both readers index the
++/* Rows of eight 4-byte entries starting at 0x8009A8C8: each 0x20-byte row ends with a zero
++ * entry (0x8009A8E4 / 0x8009A904 / 0x8009A924, asm/data/7D920.data.s). Both readers index the
 + * column 1-based, [row][D_800A37A0 - 1]: func_80055138 reads unk0/unk1 (GCC folds the -1
 + * into the address, %lo(0x8009A8C4)), func_80058580 the mask halfword (%lo(0x8009A8CA)). */
 +typedef struct CpuLevelEntry {
