@@ -65,4 +65,11 @@ write spelling each value is a single-block, single-death pseudo (`used 4 times 
 3`), local-alloc seats it in $v0 after the header value dies, and the add moves after the header
 store: the 12 instructions of the residual.
 
-Permuter: campaign record appended below.
+Permuter: campaign `e08-nolocal` (laneB, launched 2026-10-01T08:30Z) from the carrier-free body
+r9/variants/nolocal.c (workspace r9/tools/mkperm.sh, copy r9/perm_finds/base.c; its base.o shows exactly
+the 12-instruction residual), r9/tools/camp.sh, -j2, --stack-diffs, --stop-on-zero. Stopped after
+1,300 s, 13,930 iterations, base 820 (permuter scale; target = 0), best 615. Every improving find routes
+the +0xC value through a variable that is live across blocks again: 615 (output-615-1) borrows `rect_x`
+for it, 625 borrows `ot_idx` (`s.table = ot_idx = s.header + 0xC`), 638 adds one `new_var2` that
+stores records[2]'s value at a later site too (a different computation), 640 borrows `ot_idx` for the
+header. Kept finds: r9/perm_finds/. No find reaches the target.
