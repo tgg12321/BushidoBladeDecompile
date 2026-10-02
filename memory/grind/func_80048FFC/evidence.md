@@ -215,3 +215,26 @@ Not tried yet:
 - a permuter campaign seeded with variants-oct2/x_*.c.
 Q89 depends on this function; the policy question about a cut before it is in docs/grind/borderline.md
 2026-10-02.
+
+## 2026-10-02 — oct2-a2: MATCH 0/232 (plain chassis, no F6 pairs)
+
+candidate.c: `for (i = 0; i < 3; i++)`, every halving (incl. `phase >>= 1`) at the END of the body,
+strip two's height captured as `s16 h2 = phase;` at the top of the level. Mini-TU (variants-oct2a2/mini.sh)
+and full text1b TU at -G0 and -G8: 0 diff lines; engine `sandbox --disable all`: score 0 (9 masked
+branch-displacement hunks only).
+
+Mechanism (instrumented cc1, BB2_SCHED_DEBUG/PRIO_DEBUG traces):
+- The shift written after call two has the highest LUID of the priority-1 group, so sched1 picks it first
+  and places it right below call two's a1-a3 moves (it has no dependence on call two: phase crosses calls).
+- The copy only survives if CSE cannot equate it with phase. An s32 copy (or `rect.h = phase`, or a
+  `(s16)` cast at the store) is merged by cse/cse2 into the store, so no copy is left (231 insns).
+  An s16 local taken BEFORE call one is not merged. Combine cannot fold it across the call, and sched1
+  sinks it past call one, because it does not cross a call. The copy is a single-set birthing insn, so
+  adjust_priority launches it right above the shift. Sched2 keeps that order: a1, a2, a3, move t1,s7,
+  sra s7,s7,1. The copy gets t1 after sched clears its calls-crossed count (block-local pseudo).
+- The same placement fixes the register allocation: the F6 nx/ny pairs are no longer needed.
+Ablations on the landed body (variants-oct2a2/abl_*.c), each 231 insns, 57 diff lines: `rect.h = phase`
+direct; `s32 h2`; `(s16)phase` cast at the store. The capture taken AFTER call one gives 231 insns.
+Position before call one is free: the top, before each rect store, or right before the call all give 0.
+`u16` also gives 0 (F6 chassis). do-while and for loop both give 0. An s32 copy kept with the shift between the
+calls (the old chassis) stays at 4 (old frontier).
