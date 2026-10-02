@@ -112,3 +112,10 @@
   same find_reg decision, temp $a1 / lim $v1 / gap $a0 / turn local-alloc $a0 / side $a2); the permuter
   campaign ran from the s3 split (same split up to the byte-identical unk_0E / mask respellings). Uninitialized
   reads: r11/uninit.md (keys only; infeasible path).
+- [s5] 2026-10-01 run closed by the owner; (B) NOT landed. Layer-2 on (B) body d310797af659667d: rev-23F08-B-dm PASS
+  (data model; after fake/mask_jump.txt was committed af6b5f5ba); rev-23F08-B-r11 FAIL. (B) reverted from src/ and
+  undefined_syms_auto.txt (git apply -R), rebuild == oracle 62efab4f, landing lock released. The exact (B) diff is
+  banked as landB_staged.patch (src/code6cac_tu2.c body splice + undefined_syms_auto.txt D_80101EC8 drop / D_80101ED2
+  re-note) and the body as candidate.c; (A) df7f419ef stays landed. Owner ruling Q90 (rule commit b884a2527,
+  .claude/rules/ordinary-c-judge-decidable.md § narrow spellings) grants the `u32 mask` class bit-set narrowly: comment
+  must name the fold-const.c:4437 rewrite and the measurements (casts/receipts.txt, fake/mask_jump.txt); fresh layer-2.

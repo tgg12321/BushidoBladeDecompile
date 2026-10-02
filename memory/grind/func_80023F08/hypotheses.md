@@ -23,3 +23,21 @@
    unk_50/unk_7C byte+halfword header; u16 * for dispatch indexing) — text1b.c uses `unk_50[8]` (laneB).
 3. Multi-write locals to eliminate or package (Ruling 11 / Q51): d (split), state (split), t (ternary?),
    add / nf (ternary?), a (angle then angle+0x400), bits (switch + zeroing), flags (loop + normalisation).
+
+## [s5] 2026-10-01 laneC — FRONTIER: re-land (B) after the rev-23F08-B-r11 fix list (do these, then fresh layer-2)
+Start: `git apply memory/grind/func_80023F08/landB_staged.patch` on main (re-check it applies; rebuild == oracle,
+sandbox 0), then apply the fixes below to the body and to candidate.c. Every fix changes the layer-2 hash.
+1. `u32 mask` — now GRANTED by owner ruling Q90 (cite b884a2527, ordinary-c-judge-decidable.md § narrow spellings
+   (Q90)). Rewrite its comment to the Q90 form: names the fold-const.c:4437 `(X&(1<<N))!=0 -> ((X>>N)&1)!=0` rewrite
+   for int X, int form 3 off, refs casts/receipts.txt + fake/mask_jump.txt. Claim Q90, not FAKE family 6.
+2. Delete the dead `s32 r;` in the rot block (byte-neutral, measured in s4; re-measure).
+3. Ruling 11 package on the FINAL body (after 1-2): re-run the permuter campaign from the final split (not the s3 split);
+   re-run split_all / per-value ablations / all 14 partitions / split_block; BANK every generated source (split,
+   partition, ablation .c files) and the d_proof inputs (tu.i, command lines) under r11/ — not tmp/. Fix
+   d_proof_landing.txt's header (it names tmp/ paths).
+4. Ruling 5 2(c) record for gap's re-store `temp = 0x1000 - temp`: the value is unchanged only at temp == 0x800 and
+   differs on 0x801..0xFFF (feasible path) — add the line to the Ruling 11 comment / r11 record.
+5. Optional (strengthens the two block-scoped `state` FAKE sites): more exhaustion, e.g. a switch spelling, a u16/s16
+   direct-read variant per site; bank under fake/.
+Then checklist 1001c (all 9 items) on the exact body, `layer2 hash`, fresh cheat-reviewer (orchestrator-spawned),
+`layer2 record`, Match: commit with explicit pathspecs, `queue done`.
