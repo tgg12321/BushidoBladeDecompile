@@ -1,5 +1,0 @@
-functions: G0 103, G8 103; only-G0 [] only-G8 []
-same function order: True
-differing functions: ['camera_CalcAngles']
-data sections: identical
-data relocations: identical

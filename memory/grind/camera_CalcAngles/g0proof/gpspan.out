@@ -1,6 +1,0 @@
-functions in text1b: 254; cut index 101 (before math_RotMatrixZYX); head part func_800460E4 .. func_8004A09C
-gp symbols reached on BOTH sides of the cut: none
-head-part gp symbols: ['D_800A3248', 'D_800A324A', 'D_800A324C', 'D_800A33B0', 'D_800A33B4', 'D_800A33BC', 'D_800A33C0', 'D_800A33C8', 'D_800A33CA', 'D_800A33D0', 'D_800A33D4', 'D_800A33D8', 'D_800A33E0', 'D_800A33E4', 'D_800A33E8', 'D_800A33EA', 'D_800A33EC', 'g_gpu_ot256_ptr']
-functions without an asm/funcs file (unchecked): ['stage_GetId', 'snd_AllocSe', 'snd_SeNullCallback']
-# by hand (legacy names not resolvable through named_syms.txt): stage_GetId = asm/funcs/func_80046798.s,
-# snd_AllocSe = asm/funcs/func_80046934.s, snd_SeNullCallback = asm/funcs/func_80046954.s: 0 %gp_rel each.
