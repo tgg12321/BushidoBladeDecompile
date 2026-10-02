@@ -371,3 +371,34 @@ CONCLUSION (formal, from the compiler source, not a measurement): a plain memory
 - [s12] s11 fresh m2c --target=mipsel-ido-c rederive produced 3 structurally distinct spellings of the top-level guard and final block; all 3 transplanted onto the s4-s10 chassis measured WORSE (7/187, 5/187, 5/187) than the banked 2/187 candidate.
 
 - [s12] docs/grind/decisions.md carries the full 2026-09-16 OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): ROTATED entry with both gates' evidence, the exhaustion accounting, and the re-activation triggers.
+
+## [s13] 2026-10-02 manual lane oct2-b6 — Q91 re-judge: honest 0/187 (1 FAKE wrap + volatile unk08 field)
+
+Re-baselined on current names (the s4 chassis predates the _qin/_qout/_qlog/g_gpu_ctx naming):
+D_8009BE7C = g_gpu_ctx.unk08 (+0x08), D_8009BE80 = g_gpu_ctx.drawsync_cb (+0x0C) (include/gpu.h
+GpuCtx at 0x8009BE74). Scorer: tmp/_exeque/score.py (engine sandbox recipe, empty cheat overrides,
+plus the two `void _exeque();` forward decls -> `s32` and `extern s32 D_8009BF84;`; `--hdr` swaps
+gpu.h; `--others` checks every other display.c function stays 0).
+
+- Plain if+do-while body, member access, no pointer local: 12 (rejected/s13-ifdo-plain-nonvolatile-score12.c).
+  The struct member access alone reproduces the target's `lui v1/addiu v1,+8/lw 0(v1)/.../sw $zero,0(v1)`
+  address CSE — the s2 `s32 *p = &D_8009BE7C` local is no longer needed.
+- Residual A (10 of it): the D_8009BF6C / D_8009BF70 log stores sink to the loop test (sched; both
+  non-volatile, see the _qlog allowlist row for the get_alarm evidence that they are non-volatile).
+  Swept every 1- and 2-interval do-while(0) placement over [call, _qlog[0], BF6C, BF70, _qout++]
+  (tmp/_exeque/gen_wraps.py, 105 variants, with the volatile header): the ONLY single wrap reaching 0
+  is the one around the BF70 store alone (w_34); every other single wrap scores 5 or 10. So one wrap
+  (not s4's nested two) suffices.
+- Residual B (2): reorg fill_simple_delay_slots moves `g_gpu_ctx.unk08 = 0` into the drawsync_cb
+  jalr delay slot. Field `volatile s32 unk08` closes it (resource_conflicts_p, reorg.c:760, refuses
+  a volatile trial). final body: volatile header 0/187, plain header 2/187; `--others` = none changed.
+- `while` loop instead of if+do-while: same 0 (simpler, adopted). Without the wrap: 10
+  (rejected/s13-while-no-wrap-score10.c).
+- Volatile grounds: closer Ruling 4 class (census Sony module state, codegen unreachable without
+  volatile; cd19d7a2^:docs/closer/rulings.md:68-83) — unk08's only consumers are _addque2 (sets 1) and
+  _exeque (test-and-clear; also runs as the DMA-2 IRQ callback via DMACallback(2, _exeque) in _addque2),
+  both verbatim LIBGPU/SYS. Same module rows: _que, _qin, _qlog. Corroboration: SOTN libcd
+  src/main/psxsdk/libcd/bios.c:80 `static volatile CD_intr Intr` with CD_ready's test-and-clear
+  bios.c:273-276 @aa53500 (splat.us.main.yaml:169, matched C).
+- SOTN sys.c:797 reference (v1.83) not scored: different control flow (null-func _reset/printf path,
+  CheckCallback tail) that this build does not have.
