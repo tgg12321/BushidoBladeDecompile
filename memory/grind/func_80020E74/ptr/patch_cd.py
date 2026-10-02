@@ -14,7 +14,7 @@ OLD_CDC = """void func_80020CDC(void) {
     D_800A38C4[0] = 0;
 """
 NEW_CDC = """void func_80020CDC(void) {
-    u16 *p = D_800A38C4;
+    u16 *p = D_800A38C4; /* FAKE: direct D_800A38C4[1] puts the constant address in a pseudo that CSE keeps live across seq_Reset (score 10, +3 insns); memory/grind/func_80020E74/evidence.md */
 
     if (p[1] == 0xFFFF) {
         seq_Reset();
@@ -31,7 +31,7 @@ OLD_D38 = """void func_80020D38(void) {
 }
 """
 NEW_D38 = """void func_80020D38(void) {
-    u16 *p = D_800A38C4;
+    u16 *p = D_800A38C4; /* FAKE: direct D_800A38C4[1] puts the constant address in a pseudo that CSE keeps live across seq_Reset (score 9, +3 insns); memory/grind/func_80020E74/evidence.md */
 
     if (p[1] == 0xFFFF) {
         seq_Reset();

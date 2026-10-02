@@ -1,11 +1,12 @@
+/* sandbox --disable all under the landed data model (u16 D_800A38C4[2] etc.), 2026-10-02 oct2-a6 */
 extern s32 cdrom_StartReadAt(s32, s32, s32, s32);
 
 /* Loads the motion sets and models for the two characters about to fight:
  * slot i gets character chr0 / chr1 in costume costume0 / costume1. */
 void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
-    u16 loads[130]; /* FAKE: frame layout -- only loads[0..1] are used; the target frame (0x140) reserves 0x100 untouched bytes after them (sp+0x14..0x113), N = 129..132; loads[2]: score 20, memory/grind/func_80020E74/rejected/loads2-frame.c */
+    u16 loads[2]; /* FAKE: frame layout -- only loads[0..1] are used; the target frame (0x140) reserves 0x100 untouched bytes after them (sp+0x14..0x113), N = 129..132 */
     s32 i;
-    s32 j; /* FAKE: one local for loop 1's character and loop 2's menuDat index; separate locals seat the index in $a1, the target keeps both in $s0 (separate locals: score 3, memory/grind/func_80020E74/rejected/separate-locals-score3.c) */
+    s32 j; /* FAKE: one local for loop 1's character and loop 2's menuDat index; separate locals seat the index in $a1, the target keeps both in $s0 (score 5, memory/grind/func_80020E74/rejected/separate-n-a1-score5.c) */
 
     if (D_800A3880 == 0) {
         func_80020DDC();
