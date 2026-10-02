@@ -1,6 +1,0 @@
-direct_bytes                 score=26 build=262 target=252
-direct_idx                   score=26 build=262 target=252
-ec8_direct                   score=26 build=262 target=252
-ec8_ptr                      score=0 build=252 target=252
-ec8_s32ptr                   score=0 build=252 target=252
-landed                       score=0 build=252 target=252

@@ -1,6 +1,0 @@
-decomp-permuter campaign r11-split3 (tools/permuter_campaign.py, -j 2, --stop-on-zero), base variants/split3.c
-(page / sheets / page2, sandbox 32; workspace from mkperm.sh: full-TU cpp, other functions stripped, build cc1 +
-prologue_fix + maspsx + multu_pad + as). 2026-10-01 10:03-10:27 UTC, 15268 iterations, base score 720
-(permuter metric). Finds 720..390, none at 0. The best (390/430/490/510, perm_finds/) all re-merge the
-per-value locals: `page2 = page;` at the head (430), `sheets = page;` before loop 1 (510), `sheets = ...;
-page2 = sheets;` at the tail (490), or `if (1)` wrappers (390) - i.e. back toward one shared pointer.

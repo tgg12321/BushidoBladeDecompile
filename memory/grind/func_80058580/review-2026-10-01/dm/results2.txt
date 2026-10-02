@@ -1,7 +1,0 @@
-
-w1_st2_u8decl.c score=3 build_insns=2990
-w2_8U.c score=1 build_insns=2991
-w3_abc_inline.c score=15 build_insns=2999
-w4_ok4_inline.c score=12 build_insns=2983
-w5_all_neutral_casts.c score=0 build_insns=2991
-DONE

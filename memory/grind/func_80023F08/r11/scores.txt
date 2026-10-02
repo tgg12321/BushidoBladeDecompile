@@ -1,7 +1,0 @@
-body5: FOCUS func_80023F08 {'score': 0, 'target_insns': 2983, 'build_insns': 2983}
-split_all: FOCUS func_80023F08 {'score': 25, 'target_insns': 2983, 'build_insns': 2982}
-split_lim: FOCUS func_80023F08 {'score': 6, 'target_insns': 2983, 'build_insns': 2982}
-split_gap: FOCUS func_80023F08 {'score': 7, 'target_insns': 2983, 'build_insns': 2983}
-split_turn: FOCUS func_80023F08 {'score': 3, 'target_insns': 2983, 'build_insns': 2983}
-split_side: FOCUS func_80023F08 {'score': 25, 'target_insns': 2983, 'build_insns': 2983}
-split_block: FOCUS func_80023F08 {'score': 25, 'target_insns': 2983, 'build_insns': 2982}

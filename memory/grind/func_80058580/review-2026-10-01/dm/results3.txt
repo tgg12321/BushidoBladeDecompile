@@ -1,3 +1,0 @@
-
-w6_mode_nomask.c score=0 build_insns=2991
-DONE

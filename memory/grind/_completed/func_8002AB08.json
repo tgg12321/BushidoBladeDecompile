@@ -1,0 +1,16 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-10-02T05:23:18-05:00",
+ "file": "code6cac_b_tu2",
+ "func": "func_8002AB08",
+ "headline": "",
+ "mentions": [
+  "func_80055B60",
+  "func_80058580"
+ ],
+ "names": [
+  "func_8002AB08",
+  "calc_loc_mat_fw"
+ ],
+ "sessions": 3
+}

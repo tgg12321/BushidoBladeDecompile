@@ -1,3 +1,0 @@
-# in a clone of main with include/game.h's SelWork f1C/f20 unions (memory/grind/func_800770B8/probes/s41/unions.py; the candidate files are in probes/s41/)
-mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C x.c > x.i   # x.c = src/text1b_tu2.c with the INCLUDE_ASM line replaced by F_split0.c
-tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -da -dumpbase x x.i -o x.s

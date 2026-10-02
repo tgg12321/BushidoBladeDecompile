@@ -1,7 +1,0 @@
-ordinary0 {'score': 3, 'target_insns': 133, 'build_insns': 133}
-ordinary1 {'score': 4, 'target_insns': 133, 'build_insns': 133}
-ordinary2 {'score': 3, 'target_insns': 133, 'build_insns': 133}
-ordinary3 {'score': 4, 'target_insns': 133, 'build_insns': 133}
-ordinary4 {'score': 13, 'target_insns': 133, 'build_insns': 133}
-ordinary5 {'score': 13, 'target_insns': 133, 'build_insns': 133}
-ordinary6 {'score': 3, 'target_insns': 133, 'build_insns': 133}

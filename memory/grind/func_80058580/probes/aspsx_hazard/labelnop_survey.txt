@@ -1,6 +1,0 @@
-  33  load-delay (handled globally since 2026-09-14)
-      in queue: func_800207C8, func_80020E74, func_80023F08, func_8002AB08, func_80055B60, func_80058580, func_80063084, func_80065800, func_8006C21C
-      e.g. SpuFree@800899D4, _spu_gcSPU@8008977C, _spu_gcSPU@8008979C, _spu_init@800888F0
-   2  mflo/mfhi -> mult/div (NOT handled for .L labels)
-      in queue: func_80058580
-      e.g. func_80058580@8005972C, func_80058580@80059840

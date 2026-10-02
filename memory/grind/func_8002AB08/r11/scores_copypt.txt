@@ -1,3 +1,0 @@
-cp_arith.c: score=217 ours 1149 insns | 32 source-level · 22 operand-only (1s)
-cp_array.c: score=0 ours 1112 insns | 0 source-level · 0 operand-only (3s)
-cp_ternary.c: score=217 ours 1149 insns | 32 source-level · 22 operand-only (3s)

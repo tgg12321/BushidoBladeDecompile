@@ -1,9 +1,0 @@
-# s6 probe (laneC 2026-10-01, main eb1c75fca): engine sandbox --disable all --diff --candidate <file>, fix1 game.h
-# via the probes/s5 harness (setup.py writes tmp/c8a8C/inc/include/game.h; sbx.py prefixes it). run.sh = the loop.
-# Every variant is candidate.c with only the size lines changed.
-candidate.c (literal size = 0x4F0)              33  (re-baseline; 2 source-level, 11 operand-only)
-n1  size = 0x4F0; size = size;  (at entry)      33  no-op copy gone before flow: reg_n_sets 1
-n2  size = size; before `return size;`          33  same
-c1  const s32 size = 0x4F0; (decl init)         33  decl_constant_value -> literal at tree level
-# cc1psx calibration (psx.sh base; the original PsyQ compiler, calibration only): psx_literal.txt.
-# Literal body: cc1psx frame 176 (vars 112), `li $2,0x4f0` at the return -- identical to our cc1 (frame 176).

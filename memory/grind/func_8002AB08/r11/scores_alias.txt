@@ -1,3 +1,0 @@
-al_block.c: score=6 ours 1111 insns | 3 source-level · 0 operand-only (3s)
-al_direct.c: score=6 ours 1111 insns | 3 source-level · 0 operand-only (3s)
-al_inloop.c: score=0 ours 1112 insns | 0 source-level · 0 operand-only (3s)
