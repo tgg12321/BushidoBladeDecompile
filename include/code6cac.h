@@ -799,6 +799,28 @@ extern Unk80101DF0Record D_80101DF0;
 extern Unk80101DF0Record D_800FF638;
 extern Unk80101DF0Record g_cam_bone_data2;
 extern Unk80101DF0Record D_800EF070;
+/* The 0x68-byte records of the table game_GetCharData returns: a transform
+ * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
+ * fills them from a stream and calls g_anim_func_table[unk8] on &xf.rot /
+ * &xf.mat (func_800418D0's call); func_8003E6D8 and func_8003EB84 queue each
+ * one on the D_800A3820 list at most once, guarded by unk58. */
+typedef struct {
+    Unk80101DF0Record node; /* +0x00 */
+    u8 unk58;               /* +0x58 */
+    u8 unk59[0xF];          /* +0x59 */
+} Unk800A6690Rec;           /* 0x68 */
+/* The 16-byte records func_8003EDC0 fills ahead of those (unk8 / unkC = the
+ * grid cell's column / row * 2000 - 32000); func_8003E6D8 and func_8003EB84
+ * set unk6 and the unk7 bits and queue them on the D_800A3820 list. */
+typedef struct {
+    s16 unk0;  /* +0x00 */
+    s16 unk2;  /* +0x02 */
+    u16 unk4;  /* +0x04 */
+    u8 unk6;   /* +0x06 */
+    u8 unk7;   /* +0x07 */
+    s32 unk8;  /* +0x08 */
+    s32 unkC;  /* +0x0C */
+} Unk800A4750Rec;          /* 0x10 */
 typedef struct {
     s32 a;
     s32 b;

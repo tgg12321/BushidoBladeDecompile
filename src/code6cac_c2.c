@@ -52,8 +52,8 @@ extern u32 D_800A3D30;
 extern s32 D_800A3894;
 
 
-extern u8 D_800A4750[];
-extern u8 D_800A6690[];
+extern Unk800A4750Rec D_800A4750[];
+extern Unk800A6690Rec D_800A6690[];
 extern s16 D_800A7FE0[32][32];
 extern u16 D_800A87E0[];
 extern u8 D_800A8FB0[];
@@ -1838,8 +1838,8 @@ void func_8003E6D8(s32 arg0) {
     u16 t0;
     s32 v1;
     s32 a3;
-    u8 *e;
-    u8 *e2;
+    Unk800A4750Rec *e;
+    Unk800A6690Rec *e2;
     s32 *list;
     s32 ang;
     s32 idx;
@@ -1950,21 +1950,21 @@ void func_8003E6D8(s32 arg0) {
                         t0 = D_800A87E0[vidx++];
                         v1 = t0 & 0x7FFF;
                         if (v1 < D_800A3368) {
-                            e = &D_800A4750[v1 * 0x10];
-                            e[6] = a3 & 3;
-                            if ((a3 & 8) || ((a3 & 4) && (e[7] & 8))) {
-                                e[7] |= 1;
+                            e = &D_800A4750[v1];
+                            e->unk6 = a3 & 3;
+                            if ((a3 & 8) || ((a3 & 4) && (e->unk7 & 8))) {
+                                e->unk7 |= 1;
                             } else {
-                                e[7] &= 0xFE;
+                                e->unk7 &= 0xFE;
                             }
                             list = (s32 *)D_800A3820;
                             D_800A3820 = (s32)(list + 1);
                             *list = (s32)e;
                         } else {
-                            e2 = &D_800A6690[(v1 - D_800A3368) * 0x68];
-                            if (e2[0x58] == 0) {
+                            e2 = &D_800A6690[v1 - D_800A3368];
+                            if (e2->unk58 == 0) {
                                 *out++ = (s32)e2;
-                                e2[0x58] = 1;
+                                e2->unk58 = 1;
                             }
                         }
                     } while (!(t0 & 0x8000));
@@ -1980,7 +1980,7 @@ void func_8003E6D8(s32 arg0) {
     while (out != D_800A7EF0) {
         out--;
         *(s32 *)D_800A3820 = *out;
-        (*(u8 **)D_800A3820)[0x58] = 0;
+        (*(Unk800A6690Rec **)D_800A3820)->unk58 = 0;
         D_800A3820 += 4;
     }
     if (g_stage_init_tbl[stage_GetId()].unk4 != 0) {
@@ -2007,8 +2007,8 @@ s32 *func_8003EB84(s32 a0, s32 a1, s32 *out) {
     u16 t0;
     s32 v1;
     s32 a3;
-    u8 *e;
-    u8 *e2;
+    Unk800A4750Rec *e;
+    Unk800A6690Rec *e2;
     s32 *list;
 
     if (a0 >= 0) {
@@ -2052,22 +2052,22 @@ skip:
                             t0 = D_800A87E0[vidx++];
                             v1 = t0 & 0x7FFF;
                             if (v1 < D_800A3368) {
-                                e = &D_800A4750[v1 * 0x10];
-                                e[6] = a3 & 3;
-                                if ((a3 & 8) || ((a3 & 4) && (e[7] & 8))) {
-                                    e[7] |= 1;
+                                e = &D_800A4750[v1];
+                                e->unk6 = a3 & 3;
+                                if ((a3 & 8) || ((a3 & 4) && (e->unk7 & 8))) {
+                                    e->unk7 |= 1;
                                 } else {
-                                    e[7] &= 0xFE;
+                                    e->unk7 &= 0xFE;
                                 }
                                 list = (s32 *)D_800A3820;
                                 D_800A3820 = (s32)(list + 1);
                                 *list = (s32)e;
                             } else {
-                                e2 = &D_800A6690[(v1 - D_800A3368) * 0x68];
-                                if (e2[0x58] == 0) {
+                                e2 = &D_800A6690[v1 - D_800A3368];
+                                if (e2->unk58 == 0) {
                                     *out = (s32)e2;
                                     out += 1;
-                                    e2[0x58] = 1;
+                                    e2->unk58 = 1;
                                 }
                             }
                         } while (!(t0 & 0x8000));
@@ -2103,7 +2103,6 @@ extern void gte_SetMatrixRotTransIR(s32 *, s32 *, s16 *);
 extern void func_80052C10();
 
 /* Externs for globals */
-extern u8 g_char_data;
 extern u8 g_stage_collision[];
 extern s32 D_80094A6C[];
 extern s32 g_stage_light_pos;
@@ -2124,7 +2123,7 @@ s32 func_8003F1C8(void) {
 }
 
 void *game_GetCharData(void) {
-    return &g_char_data;
+    return D_800A6690;
 }
 
 void func_8003F1E4(s32 a0) {

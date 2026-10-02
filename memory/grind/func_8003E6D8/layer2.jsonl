@@ -1,0 +1,1 @@
+{"func": "func_8003E6D8", "addr": "8003E6D8", "verdict": "PASS", "body_hash": "71220950c72facef", "body_kind": "c", "file": "code6cac_c2", "reviewer": "rv2-3EDC0-1", "scope": "cheat-cleanup", "date": "2026-10-02T09:29:44Z", "head": "99c35067c", "notes": "A: record tables typed (Unk800A6690Rec/Unk800A4750Rec); body respelled to members; oracle SHA1 match; no required fixes"}
