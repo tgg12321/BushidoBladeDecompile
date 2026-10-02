@@ -29,18 +29,6 @@
       "returned_at": "2026-10-01T23:06:24+00:00"
     },
     {
-      "func": "func_8005D554",
-      "file": "text1b",
-      "distance": 65,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "ROTATED (ladder exhausted, non-endgame residual \u2014 owner ruling 2026-09-02 wording; 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md:26067 \u2014 2026-09-09 \u2014 func_8005D554 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 LADDER EXHAUSTED (non-endgame residual, floor 6): ROTATED",
-      "rotated_at": "2026-09-10T00:33:37+00:00",
-      "rotation_count": 1,
-      "addr": "8005D554"
-    },
-    {
       "func": "_exeque",
       "file": "display",
       "distance": 187,
@@ -114,11 +102,11 @@
     }
   ],
   "counts": {
-    "total": 9,
+    "total": 8,
     "active": 2,
     "by_status": {
       "active": 2,
-      "rotated": 7
+      "rotated": 6
     },
     "by_verdict": {
       "C": 2
