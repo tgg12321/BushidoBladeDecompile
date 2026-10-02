@@ -238,3 +238,11 @@ direct; `s32 h2`; `(s16)phase` cast at the store. The capture taken AFTER call o
 Position before call one is free: the top, before each rect store, or right before the call all give 0.
 `u16` also gives 0 (F6 chassis). do-while and for loop both give 0. An s32 copy kept with the shift between the
 calls (the old chassis) stays at 4 (old frontier).
+
+## 2026-10-02 — LANDED (COMPLETED-C)
+Layer-2 PASS round 1 by rv2-48FFC-1: scope match, body_hash f856d474c5f09196, == candidate.c. The PASS
+is recorded in layer2.jsonl. The match commit is e43b1f03b (Match: func_80048FFC — COMPLETED-C (manual)),
+followed by the queue done commit. Reviewer findings:
+- items 1-5 PASS; the h2 FAKE ablations were spot-checked at 57 / 231 insns.
+- Hygiene debt: the second OT link has no annotation of its own.
+- Hygiene debt: the reviewer did not re-measure the -G8 full-TU 0 (worker-measured).
