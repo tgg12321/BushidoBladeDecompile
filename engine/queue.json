@@ -37,26 +37,14 @@
       "rotated_at": "2026-09-21T00:35:35+00:00",
       "rotation_count": 1,
       "addr": "80020E74"
-    },
-    {
-      "func": "func_800207C8",
-      "file": "code6cac_tu2",
-      "distance": 317,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "memory/grind/func_800207C8/evidence.md",
-      "rotated_at": "2026-09-24T21:09:08+00:00",
-      "rotation_count": 1,
-      "addr": "800207C8"
     }
   ],
   "counts": {
-    "total": 4,
+    "total": 3,
     "active": 1,
     "by_status": {
       "active": 1,
-      "rotated": 3
+      "rotated": 2
     },
     "by_verdict": {
       "C": 1
