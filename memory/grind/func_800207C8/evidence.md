@@ -1,6 +1,13 @@
 # func_800207C8 evidence
 
-## State (lane oct2-b8, 2026-10-02)
+## LANDED 2026-10-02 (lane oct2-b8) — COMPLETED-INLINE-ASM-CANONICAL; ledger closed
+- cheat-cleanup 5493ecebd (part A, BoneHitRec tables; rv2-207C8-A PASS on six bodies), auth 7af6d7cf5 and
+  Match e7aa28e43 (rv2-207C8-B PASS, body_hash 4ab10331f96d031c, scopes auth + match, layer2.jsonl), queue
+  6a7774151. Oracle SHA1 match; check_completion_integrity.py OK.
+- Reviewer hygiene notes: splat D_8008D59E / D_800F5F6C rows remain; BoneHitRec unk_0C..unk_12 are
+  radius / radius-squared pairs (could be named).
+
+## State at landing (lane oct2-b8, 2026-10-02)
 - `candidate.c` + `header.patch` (include/code6cac.h): byte-exact. Private harness
   (tools/h.py, run from tmp/func_800207C8/: src copy + patched header beside it, faithful pipeline): score 0, 317/317;
   the only residual is the not-scored `%lo(D_800F5F68+4)` vs splat's `D_800F5F6C` addend.
