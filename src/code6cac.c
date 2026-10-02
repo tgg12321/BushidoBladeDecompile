@@ -123,7 +123,6 @@ extern void *RotMatrixX(s32, s32);
 extern void *RotMatrixY(s32, s32);
 extern void *RotMatrixZ(s32, s32);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
-extern u16 D_8008D59C;
 
 
 extern void func_8003F218(s32);

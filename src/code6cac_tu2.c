@@ -57,7 +57,6 @@ extern void *RotMatrixX(s32, s32);
 extern void *RotMatrixY(s32, s32);
 extern void *RotMatrixZ(s32, s32);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
-extern u16 D_8008D59C;
 extern void func_8003F218(s32);
 extern s32 math_FovToScreenDist(s32);
 extern void SetGeomScreen(s32);
@@ -2958,7 +2957,7 @@ void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
     s32 src;
 
     *(s16 *)(arg0 + 0x350) = 1;
-    *(s16 *)(arg0 + 0x352) = *(u16 *)((u8 *)&D_8008D59E + arg1 * 20);
+    *(s16 *)(arg0 + 0x352) = D_8008D59C[arg1].bone;
     src = *(s32 *)((((s32)*(s16 *)(arg0 + 0x352)) << 2) +
                    game_GetPlayerData(*(s16 *)(arg0 + 4)));
     func_8002EECC(src, mat);
@@ -3079,31 +3078,21 @@ void func_800204C0(PracticeMenuRec *rec) {
 
 /* kengo:HIGH  |  nm_single_game/single_game_SetAbilityData  |  124i */
 void func_800206B0(s32 arg0, s32 arg1) {
-    u8 *a3 = (u8 *)&D_8008D59C;
-    u8 *a2 = (u8 *)&D_800F5F68 + arg0 * 0x1B8;
-    s32 t0 = 0;
-    u8 *a0 = a2 + 0x12;
-    u8 *v1 = a3 + 0x12;
+    BoneHitRec *src = D_8008D59C;
+    BoneHitRec *dst = D_800F5F68[arg0];
+    s32 i;
 
-loop:
-    *(u16 *)a2 = *(u16 *)a3;
-    *(u16 *)(a0 - 0x10) = *(u16 *)(v1 - 0x10);
-    *(s16 *)(a0 - 0xE) = (s32)(*(s16 *)(v1 - 0xE) * arg1) >> 0xC;
-    *(s16 *)(a0 - 0xC) = (s32)(*(s16 *)(v1 - 0xC) * arg1) >> 0xC;
-    *(s16 *)(a0 - 0xA) = (s32)(*(s16 *)(v1 - 0xA) * arg1) >> 0xC;
-    *(s16 *)(a0 - 6) = (s32)(*(u16 *)(v1 - 6) * arg1) >> 0xC;
-    *(s16 *)(a0 - 4) = (s32)(*(u16 *)(v1 - 4) * arg1) >> 0xC;
-    *(s16 *)(a0 - 2) = (s32)(*(u16 *)(v1 - 2) * arg1) >> 0xC;
-    {
-        s32 temp_lo = *(u16 *)v1 * arg1;
-        t0 += 1;
-        a3 += 0x14;
-        a2 += 0x14;
-        v1 += 0x14;
-        *(s16 *)a0 = temp_lo >> 0xC;
-        a0 += 0x14;
+    for (i = 0; i < 22; i++, src++, dst++) {
+        dst->unk_00 = src->unk_00;
+        dst->bone = src->bone;
+        dst->ofs.vx = (src->ofs.vx * arg1) >> 12;
+        dst->ofs.vy = (src->ofs.vy * arg1) >> 12;
+        dst->ofs.vz = (src->ofs.vz * arg1) >> 12;
+        dst->unk_0C = (src->unk_0C * arg1) >> 12;
+        dst->unk_0E = (src->unk_0E * arg1) >> 12;
+        dst->unk_10 = (src->unk_10 * arg1) >> 12;
+        dst->unk_12 = (src->unk_12 * arg1) >> 12;
     }
-    if (t0 < 0x16) goto loop;
 }
 INCLUDE_ASM("asm/funcs", func_800207C8);
 void func_80020CDC(void) {

@@ -1583,7 +1583,7 @@ void func_8002A458(u8 *obj, u32 *hit, u32 *deep, s32 quiet) {
     s32 qy;
     s32 qz;
     s32 *p;
-    u8 *rec;
+    BoneHitRec *rec;
     s32 i;
 
     *(u8 **)(scr + 0x60) = scr;
@@ -1666,19 +1666,19 @@ void func_8002A458(u8 *obj, u32 *hit, u32 *deep, s32 quiet) {
          * seats rec in $s4 / scr in $s5 and id in $s7 / obj in $fp, as in
          * the target. Unwrapped: the four seats swap pairwise. */
         do {
-            rec = &D_800F5F68[id * 0x1B8];
+            rec = D_800F5F68[id];
         } while (0);
-        for (i = 0; i < 22; i++, rec += 0x14) {
+        for (i = 0; i < 22; i++, rec++) {
             s32 *pos;
             if (*(s16 *)(obj + 0x26C) == 0 && i >= 6 && i <= 9) {
                 continue;
             }
             pos = (s32 *)((u8 *)0x1F8000A8 + id * 0x108 + i * 0xC);
-            if (func_8002EA24(scr, pos, *(u16 *)(rec + 0xC), *(u16 *)(rec + 0xE)) != 0) {
+            if (func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E) != 0) {
                 s32 bit = 1 << i;
                 *hit |= bit;
-                if (*(s16 *)rec != 0
-                    && func_8002EA24(scr, pos, *(u16 *)(rec + 0x10), *(u16 *)(rec + 0x12)) != 0) {
+                if (rec->unk_00 != 0
+                    && func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0) {
                     *deep |= bit;
                 }
             }
@@ -1767,7 +1767,7 @@ void func_8002AB08(s32 mode) {
          * nearest hit came from the alternate blade. Ruling 11; (D): memory/grind/func_8002AB08/r11/README.md. */
         s32 temp3;
         s32 j;
-        u8 *rec;
+        BoneHitRec *rec;
         s32 near;
         s32 guard;
         s32 bit;
@@ -1946,17 +1946,17 @@ void func_8002AB08(s32 mode) {
         if (hit == 0) {
             continue;
         }
-        rec = &D_800F5F68[i * 0x1B8];
+        rec = D_800F5F68[i];
         best = 0x7FFFFFFF;
         *(s32 *)(scr + 0xC8) = other->unk_210[1].x;
         *(s32 *)(scr + 0xCC) = other->unk_210[1].y;
         *(s32 *)(scr + 0xD0) = other->unk_210[1].z;
-        for (temp3 = 0; temp3 < 22; temp3++, rec += 0x14) {
+        for (temp3 = 0; temp3 < 22; temp3++, rec++) {
             if (hit & (1 << temp3)) {
                 dx = SPAD->unkA8[i][temp3].x - *(s32 *)(scr + 0xC8);
                 dy = SPAD->unkA8[i][temp3].y - *(s32 *)(scr + 0xCC);
                 dz = SPAD->unkA8[i][temp3].z - *(s32 *)(scr + 0xD0);
-                work = dx * dx + dy * dy + dz * dz - *(u16 *)(rec + 0xE);
+                work = dx * dx + dy * dy + dz * dz - rec->unk_0E;
                 if (work < best) {
                     best = work;
                     idx = temp3;
@@ -2498,14 +2498,14 @@ extern s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq);
 void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
     u8 *scr = (u8 *)0x1F8002B8;
     s32 id = *(s16 *)(a0 + 4);
-    u8 *recbase = &D_800F5F68[id * 0x1B8];
-    u8 *rec;
+    BoneHitRec *recbase = D_800F5F68[id];
+    BoneHitRec *rec;
     s32 base = id * 0x108;
     s32 hitMask = 0;
     s32 seenMask = 0;
     s32 i;
 
-    for (i = 0, rec = recbase; i < 0x16; i++, rec += 0x14) {
+    for (i = 0, rec = recbase; i < 0x16; i++, rec++) {
         s32 off = base + i * 0xC;
         s32 x;
         s32 y;
@@ -2517,7 +2517,7 @@ void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
             continue;
         }
 
-        r = *(u16 *)(rec + 0xC);
+        r = rec->unk_0C;
         /* FAKE: the AABB reject flag is staged through the existing `hit`
          * status local (hit = 1 on reject, read once by the `continue` test
          * below, then overwritten by the callee result), mechanism: global.c
@@ -2546,24 +2546,24 @@ void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
 
         if (a1 != 0) {
             hit = func_8002D780(0, scr, (s32 *)&SPAD->unkA8[id][i],
-                                r, *(u16 *)(rec + 0xE));
+                                r, rec->unk_0E);
             if (hit != 0) {
-                if (*(s16 *)rec != 0 && a2 != 0) {
+                if (rec->unk_00 != 0 && a2 != 0) {
                     if (func_8002D780(1, scr, (s32 *)0,
-                                      *(u16 *)(rec + 0x10),
-                                      *(u16 *)(rec + 0x12)) != 0) {
+                                      rec->unk_10,
+                                      rec->unk_12) != 0) {
                         hitMask |= 1 << i;
                     }
                 }
             }
         } else {
             hit = func_8002D320(0, scr, (s32 *)&SPAD->unkA8[id][i],
-                                r, *(u16 *)(rec + 0xE));
+                                r, rec->unk_0E);
             if (hit != 0) {
-                if (*(s16 *)rec != 0 && a2 != 0) {
+                if (rec->unk_00 != 0 && a2 != 0) {
                     if (func_8002D320(1, scr, (s32 *)0,
-                                      *(u16 *)(rec + 0x10),
-                                      *(u16 *)(rec + 0x12)) != 0) {
+                                      rec->unk_10,
+                                      rec->unk_12) != 0) {
                         hitMask |= 1 << i;
                     }
                 }
@@ -5398,7 +5398,7 @@ void func_80031B24(void) {
     PracticeMenuRec *ch;
     s32 other;
     u16 st;
-    u8 *rec;
+    BoneHitRec *rec;
     s32 j;
     s32 hit;
     s32 diff;
@@ -5426,16 +5426,16 @@ void func_80031B24(void) {
         func_8002E838(scr);
 
         hit = 0;
-        rec = &D_800F5F68[other * 0x1B8];
-        for (j = 0; j < 22; j++, rec += 0x14) {
+        rec = D_800F5F68[other];
+        for (j = 0; j < 22; j++, rec++) {
             s32 *pos;
             if (ch->unk_26C == 0 && j >= 6 && j <= 9) continue;
             pos = (s32 *)&SPAD->unkA8[other][j];
-            hit = func_8002EA24(scr, pos, *(u16 *)(rec + 0xC), *(u16 *)(rec + 0xE));
+            hit = func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E);
             if (hit != 0) {
                 deep = 0;
-                if (*(s16 *)rec != 0 && D_8008E194[obj->unk_02].unkD == 0) {
-                    deep = func_8002EA24(scr, pos, *(u16 *)(rec + 0x10), *(u16 *)(rec + 0x12)) != 0;
+                if (rec->unk_00 != 0 && D_8008E194[obj->unk_02].unkD == 0) {
+                    deep = func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0;
                 }
                 break;
             }
@@ -5452,7 +5452,7 @@ void func_80031B24(void) {
         if (r == 2) continue;
         if (r != 0) {
             func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2B, (u8 *)&SPAD->unkA8[other][j], 0);
-            func_8002FF20(obj, *(s16 *)(rec + 2));
+            func_8002FF20(obj, rec->bone);
             obj->unk_04 = 0;
             st = ch->unk_6A;
             if (st == 8 || st == 0x23) {

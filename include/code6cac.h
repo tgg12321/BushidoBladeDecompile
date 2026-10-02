@@ -13,8 +13,6 @@ extern u8 cpu_practice_honmokuroku_data_tbl[][4];
  * the rest asm/data/7D920.data.s dlabel D_8008D120). */
 extern u8 g_sqrt_table_u8[0x400];
 extern s32 menuDat;
-/* 0x1B8-byte per-character records (func_8002A458 / func_800206B0 walk them by byte offset). */
-extern u8 D_800F5F68[];
 /* D_8008EB40: 3 rows x 3 s16 angle offsets, read as [row][col] with row, col
  * in 0..2 from the pad bits (func_800233AC, func_80023648); 0x8008EB40..0x8008EB51,
  * then 2 bytes of word-alignment padding before D_8008EB54 (dlabel 0x14 bytes,
@@ -58,6 +56,25 @@ typedef struct {
  * and +0x1C8 as a whole 8-byte SVECTOR. */
 typedef struct { s32 vx, vy, vz, pad; } Vec4i32;
 typedef struct { s16 vx, vy, vz, pad; } SVec4i16;
+
+/* A hit record: one of the 22 test points of a character.  func_800207C8 places
+ * point i at SPAD->unkA8[ch][i] (`ofs` rotated by game_GetPlayerData()'s matrix
+ * `bone`, plus that matrix's translation); the hit tests (func_8002A458,
+ * func_8002CA8C, func_80031B24) take unk_0C / unk_0E as the first test's limits
+ * and, when unk_00 != 0, unk_10 / unk_12 as a second test's. */
+typedef struct BoneHitRec {
+    s16 unk_00;
+    s16 bone;
+    SVec4i16 ofs;
+    u16 unk_0C;
+    u16 unk_0E;
+    u16 unk_10;
+    u16 unk_12;
+} BoneHitRec;                      /* sizeof == 0x14 */
+/* The two characters' hit records (0x800F5F68..0x800F62D7): func_800206B0 fills
+ * D_800F5F68[ch] from the template D_8008D59C, offsets and limits scaled. */
+extern BoneHitRec D_800F5F68[2][22];
+extern BoneHitRec D_8008D59C[22];
 
 /* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
  * frame from the two pads (one u16 half per player in each word):
@@ -397,7 +414,6 @@ extern u8 D_8008D518;
 extern u8 D_8008D538[];
 extern u8 D_8008D55C;
 extern u8 D_8008D578[];
-extern u16 D_8008D59E;
 extern u8 D_8008D864;
 extern s32 D_8008D86C;
 extern s32 D_8008D88C;
