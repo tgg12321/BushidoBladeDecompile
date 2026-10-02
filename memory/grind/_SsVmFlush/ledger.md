@@ -106,7 +106,16 @@
 - Landing note: candidate uses a stand-in typedef name; at landing the existing
   `SpuVoiceAttr` typedef (main.c, above func_8008B488) moves above `_SsVmFlush`.
 
-## Adversarial review checkpoint
+## LANDED 2026-10-02 — COMPLETED-C (ledger closed)
+
+- Match 499459e5a (body = candidate.c v3 with the real `SpuVoiceAttr` typedef moved above
+  the function); queue 38828c469. Layer-2 PASS round 1 by rv2-ssvm-1, scope match,
+  body_hash cdc1b0770bbecc1f, no required fixes (layer2.jsonl). Sandbox 0, 271/271, 0 hunks;
+  SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa; check_completion_integrity OK.
+- Hygiene debt (in the commit body): repeated same-type externs, splat names
+  (D_80103604 etc.), splat sub-symbol retirement, SpuVoiceAttr not in a shared header.
+
+## Adversarial review checkpoint (2026-09-22, v6 — superseded)
 
 - Fresh reviewer verdict on the v6 score-0 form: **FAIL**. The typed access through
   `D_800F4E18` and reload through `D_800F4E1E` name the same storage twice, exactly the
