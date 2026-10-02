@@ -1,6 +1,8 @@
 # Hypothesis ledger — func_80020E74
 
-## CURRENT (oct2-a6, 2026-10-02)
+## LANDED 2026-10-02 (860dd811e cleanup + 40c63a962 Match) — ledger closed
+
+## oct2-a6, 2026-10-02
 - Admissible route found: `u16 D_800A38C4[2]` in code6cac.h; func_80020CDC / func_80020D38 access the pair
   through `u16 *p = D_800A38C4;` (FAKE: one local, measured 10/9 -> 0/0, evidence.md 2026-10-02 oct2-a6);
   func_80020E74 then uses `D_800A38C4[i]` (no cross-symbol index). Landing: A = cheat-cleanup (data model +

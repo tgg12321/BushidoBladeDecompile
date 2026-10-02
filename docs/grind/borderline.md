@@ -536,3 +536,9 @@ options:
   func_80020D38 is found.
 
 recommendation: (A). It is the same compiler evidence Q63 rested on, measured on both compilers, and one site.
+
+resolution (2026-10-02, lane oct2-a6): RESOLVED without the cross-symbol admission, so the question is moot.
+Option (B)'s frontier closed: func_80020CDC / func_80020D38 are byte-exact under `u16 D_800A38C4[2]`. Each
+reaches the pair through one FAKE-labelled pointer local, which keeps CSE from sharing the constant address
+across seq_Reset. Commits: cheat-cleanup 860dd811e (rv2-20E74-A3 PASS) and Match 40c63a962 (rv2-20E74-B PASS);
+func_80020E74 is COMPLETED-C (queue 1f4459b0e).

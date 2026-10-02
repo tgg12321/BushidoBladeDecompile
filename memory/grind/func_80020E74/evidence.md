@@ -91,3 +91,11 @@
   `ptr/r280/final.c` (separate `mode` and `k`, no reused locals; every codegen-only local FAKE-labelled with
   the scores in `ptr/r280/SCORES.txt`), hash 831cede43c9eb64e; func_800224E0 `(s32)p < (s32)end` labelled
   (score 1); func_8001DB9C `(u16)` cast dropped (hash 4939420842307ef4). A alone / A+B rebuild == oracle.
+
+## LANDED 2026-10-02 (lane oct2-a6) — ledger closed
+- cheat-cleanup 860dd811e: layer-2 rv2-20E74-A3 PASS (round 3) on the nine A bodies. Earlier rounds: A FAIL item 4
+  (func_80021280 byte offsets), A2 FAIL item 3 (unlabelled func_80021280 locals).
+- Match 40c63a962: layer-2 rv2-20E74-B PASS (round 1), body_hash f82ccae3e0bffb29 == candidate.c; queue 1f4459b0e
+  COMPLETED-C; check_completion_integrity OK; oracle SHA1 match.
+- Reviewer hygiene notes: func_80021280 `(u32)` cast byte-neutral; c2.c D_801027C0/D4 aliases; D_801027B0 per-word
+  aliases; cdrom_StartReadAt file-scope decl (return type differs across TUs).
