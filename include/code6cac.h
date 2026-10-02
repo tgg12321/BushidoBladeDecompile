@@ -12,7 +12,14 @@ extern u8 cpu_practice_honmokuroku_data_tbl[][4];
  * (0x400 bytes; the first 8 are the words after DelDrv in src/main_post.c,
  * the rest asm/data/7D920.data.s dlabel D_8008D120). */
 extern u8 g_sqrt_table_u8[0x400];
-extern s32 menuDat;
+/* menuDat: model id -> BBM file name, ended by a zero id (0x8008DCCC..0x8008DD5B,
+ * asm/data/7D920.data.s dlabel menuDat). func_80020E74 loads the model of entry n
+ * from CD file n + 2. */
+typedef struct {
+    s32 id;
+    char *name;
+} MenuDatEntry;
+extern MenuDatEntry menuDat[18];
 /* D_8008EB40: 3 rows x 3 s16 angle offsets, read as [row][col] with row, col
  * in 0..2 from the pad bits (func_800233AC, func_80023648); 0x8008EB40..0x8008EB51,
  * then 2 bytes of word-alignment padding before D_8008EB54 (dlabel 0x14 bytes,
@@ -31,7 +38,9 @@ extern s16 Judge[0x1000];
  * f54[rec+0x86][t] (id 0x7FF3), and
  * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). */
 typedef struct {
-    u8 pad00[0x14];
+    u8 pad00[3];
+    u8 unk_03;                     /* D_801027B0[ch][0] = record + 0x6C + (unk_03 - 1) * 6 (func_80020E74) */
+    s32 unk_04[4];                 /* D_801027B0[ch][1 + k] = record + unk_04[k] (func_80020E74) */
     s16 f14;
     u8 pad16[0x4E - 0x16];
     u16 f4E[3];
@@ -204,7 +213,7 @@ typedef struct PracticeMenuRec {
     s16 unk_42;                    /* frame fraction, 0x1000 = one frame */
     s16 unk_44;                    /* frame-fraction step */
     s16 unk_46;
-    u8  unk_48[0x4A - 0x48];
+    u16 unk_48;                    /* model id (func_80020E74); func_80021280 finds it in D_800A38C4 */
     s16 unk_4A;
     s16 unk_4C;
     u8  unk_4E[0x50 - 0x4E];
@@ -432,7 +441,7 @@ extern u8 D_8008DA08[0x48];         /* 0x8008DA08..0x8008DA4F (asm/data/7D920.da
 extern s16 D_8008DA50[];          /* [unk_0A] (func_80023F08) */
 extern s16 D_8008DA94[];          /* [unk_0A] (func_80023F08) */
 extern s16 D_8008DAD8[];          /* [unk_0A] (func_80023F08) */
-extern u8 D_8008DB1C;
+extern u16 D_8008DB1C[27][8];      /* [unk_0A][unk_0E] -> PracticeMenuRec.unk_48 model id (func_80020E74) */
 extern u8 D_8008DD5C[27][8];        /* [unk_0A][unk_0E] -> PracticeMenuRec.unk_84 */
 extern u16 D_8008DE34[27][6];       /* [unk_0A][unk_0E] -> PracticeMenuRec.unk_1C */
 extern u16 D_8008DF78[27][6];       /* [unk_0A][unk_0E] -> PracticeMenuRec.unk_1E / unk_20 */
@@ -510,7 +519,7 @@ extern s16 D_8008EB0C;
 extern s32 D_8008EB10;
 extern s32 D_8008EB14;
 extern s32 D_8008EB18;
-extern u8 D_8008EB1C;
+extern u8 D_8008EB1C[][2];
 extern u8 D_8008EB28[8][2];         /* [unk_0E][flag] -> PracticeMenuRec.unk_12 */
 extern u8 D_8008EB38[8];            /* [unk_0E] -> PracticeMenuRec.unk_12 */
 /* 6-row tables func_80026DA4 selects by g_practice_menu_table[0].unk_6A mode (row 0..5): unk0
@@ -692,7 +701,6 @@ extern s32 D_800A3844;
 extern s32 D_800A3858;
 extern u8 *D_800A385C;
 extern Tbl800A3860Entry *D_800A3860[];
-extern s32 D_800A3864;
 extern u8 D_800A3874;
 extern s16 D_800A3876;
 extern s32 D_800A3878;
@@ -709,9 +717,8 @@ extern s16 D_800A38AE;
 extern u8 D_800A38B0;
 extern u8 D_800A38B8;
 extern s16 D_800A38BA;
-extern u8 D_800A38C0;
-extern u8 D_800A38C1;
-extern u16 D_800A38C6;
+extern u8 D_800A38C0[2];          /* per player: character of the D_800A3888 motion set (0xFF = none) */
+extern u16 D_800A38C4[2];         /* per slot: model id in the D_800A3860[i] buffer (func_80020E74); [1] = 0xFFFF: func_8001DB9C started a sequence at 0x80190800 (D_800A3860[1]'s buffer); func_80020D38 calls seq_Reset for it */
 extern u8 D_800A38D4;
 extern s16 D_800A38DC;
 extern u8 D_800A38DE;
@@ -953,7 +960,6 @@ extern CdState D_80101E58;
 extern s16 D_80101EE8;
 extern s32 D_80101F04;
 
-extern s16 D_80101F10;
 extern s16 D_80101F12;
 extern s16 D_80101F14;
 extern s16 D_80101F42;
@@ -1002,7 +1008,6 @@ extern s16 D_801021E2;
 extern s16 D_8010231A;
 extern s16 D_80102334;
 extern s32 D_80102350;
-extern s16 D_8010235C;
 
 extern s16 D_8010238E;
 extern s16 D_801023AA;

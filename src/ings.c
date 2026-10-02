@@ -412,7 +412,7 @@ void sys_GameInit(void) {
     D_800A3746 = 0;
     game_Init();
     D_800A36F1 = 2;
-    D_800A38C6 = 0;
+    D_800A38C4[1] = 0;
     D_800A36B0 = 0;
     D_800A3928 = 0;
 }

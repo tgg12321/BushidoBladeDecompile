@@ -20,7 +20,6 @@ extern void snd_SerialMixOn(void);
 extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
 extern void seq_Start(s32, s32);
-extern u16 D_800A38C4;
 
 extern void func_8005B5AC(void);
 extern void func_8005BF3C(void);
@@ -1786,7 +1785,7 @@ s32 func_8001DB58(void) {
 }
 void func_8001DB9C(void) {
     seq_Start(D_8008D9EC[g_practice_menu_table[0].unk_0A] < 1, (s32)0x80190800);
-    D_800A38C6 = (u16)0xFFFF;
+    D_800A38C4[1] = 0xFFFF;
 }
 void func_8001DBE4(void) {
     s32 i;
@@ -3284,20 +3283,24 @@ void func_800207C8(PracticeMenuRec *rec, LeafPos *bone_out, LeafPos *att_out, Le
     rec->unk_1C2 = ratan2(m->m[0][2], m->m[2][2]) + 0x800;
 }
 void func_80020CDC(void) {
-    if (D_800A38C6 == 0xFFFF) {
+    u16 *p = D_800A38C4; /* FAKE: direct D_800A38C4[1] puts the constant address in a pseudo that CSE keeps live across seq_Reset (score 10, +3 insns); memory/grind/func_80020E74/evidence.md */
+
+    if (p[1] == 0xFFFF) {
         seq_Reset();
     }
     D_800A3880 = 0;
-    D_800A38C6 = 0;
-    D_800A38C4 = 0;
-    D_800A38C1 = 0xFF;
-    D_800A38C0 = 0xFF;
+    p[1] = 0;
+    p[0] = 0;
+    D_800A38C0[1] = 0xFF;
+    D_800A38C0[0] = 0xFF;
 }
 void func_80020D38(void) {
-    if (D_800A38C6 == 0xFFFF) {
+    u16 *p = D_800A38C4; /* FAKE: direct D_800A38C4[1] puts the constant address in a pseudo that CSE keeps live across seq_Reset (score 9, +3 insns); memory/grind/func_80020E74/evidence.md */
+
+    if (p[1] == 0xFFFF) {
         seq_Reset();
     }
-    D_800A38C6 = 0;
+    p[1] = 0;
 }
 
 void func_80020D70(void) {
@@ -3305,7 +3308,7 @@ void func_80020D70(void) {
     D_800A3888[1] = (MotionFrame *)0x8011C400;
     D_800A3830 = (s32)0x80120000;
     D_800A3860[0] = (Tbl800A3860Entry *)0x80148800;
-    D_800A3864 = (s32)0x80190800;
+    D_800A3860[1] = (Tbl800A3860Entry *)0x80190800;
     func_80020CDC();
 }
 void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    cdrom_StartRead(v0, D_800A3830);    game_FrameLoop();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
@@ -3313,49 +3316,27 @@ INCLUDE_ASM("asm/funcs", func_80020E74);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 void func_80021210(void) {
     func_8001979C(0, D_80102770);
-    if (D_800A38C4) {
-        func_8001979C(1, D_801027C0);
+    if (D_800A38C4[0]) {
+        func_8001979C(1, D_801027B0[0][4]);
     }
-    if (D_800A38C6) {
-        func_8001979C(2, D_801027D4);
+    if (D_800A38C4[1]) {
+        func_8001979C(2, D_801027B0[1][4]);
     }
 }
 /*
- * func_80021280 — BYTES PROVEN: sandbox --disable all = 0 (72/72), s2
- * (2026-08-04). ACCEPTED by owner ruling 2026-08-06 (docs/grind/decisions.md;
- * SOTN evidence: docs/grind/sotn-evidence-2026-08-06.md — family covers
- * multi-statement tails ending in control transfers, difference of
- * degree; e_shop.c:986-1009 counter-bump+goto, doors.c, vs_vh.c): the closing construct duplicates the loop tail
- * (control-transfer statements) into the if (a0 == 0) arm, which layer-1
- * cheat-reviewer ruled an EXTENSION of [[duplicated-statement-into-arms]]
- * (whose SOTN evidence base is assignment statements only).
- *
- * Structure vs the s1 form C:
- *  - Preamble in TARGET textual order: a1 = 0 FIRST, then t1, t4, t3, t2,
- *    mode, t0. (s1 measured this order alone = 19: the counter loses $a1.)
- *  - `a3` (s32) reused for `mode` — target keeps mode in $a3; lhu vs lh
- *    fall out of the assignment types. Floor-neutral, faithful spelling.
- *  - THE CLOSING LEVER: /* FAKE * / loop-tail duplication into the a0==0
- *    arm. Mechanism (ALLOCDBG-measured, tmp/grind/func_80021280/s2/):
- *    global.c allocno_compare pri = floor_log2(nrefs)*nrefs/livelen*10000;
- *    with a1 first the counter (12 refs / len 50 = 7200) loses $a1 to the
- *    pointer (11 refs / len 45 = 7333). The duplicate lifts counter refs
- *    to 15 (pri 9000) pre-RA; jump2 cross-jump re-merges it to IDENTICAL
- *    bytes (emitted branch is exactly target's beqz a0,.L80021388; single
- *    shared tail; lhu/nop/sh delay nop preserved).
- *  - Placement is load-bearing: the same duplicate in the store5
- *    fall-through arm leaves build 73 (sched1 hoists addiu into the lhu
- *    load-delay slot, breaking the cross-jump suffix) — the arm must
- *    contain no loads. See rejected/tail-dup-store5-arm-sched1-hoist.c.
- *
- * If the ruling refuses the construct: fall back to s1 form C (floor 2,
- * git history of this file) and the post-RA-scheduling forensics frontier.
+ * func_80021280: the record's model id (unk_48) -> its slot in D_800A38C4 (unk_4A); for ids below
+ * 0x2000, the nibble positions of 4 and 5 (unk_88 / unk_8E), copying unk_26C into unk_8A / unk_90
+ * under mode-dependent conditions.
+ * The loop-tail duplication below is the construct accepted by owner ruling 2026-08-06
+ * (docs/grind/decisions.md; SOTN evidence docs/grind/sotn-evidence-2026-08-06.md).
+ * Every codegen-only local is FAKE-labelled with its measured score
+ * (memory/grind/func_80020E74/ptr/r280/).
  */
 void func_80021280(s32 a0) {
     s32 a1 = 0;
-    u8 *a2 = (u8 *)g_practice_menu_table + a0 * 1100;
-    s32 a3 = *(u16 *)(a2 + 0x48);
-    u16 *v1 = (u16 *)&D_800A38C4;
+    PracticeMenuRec *a2 = &g_practice_menu_table[a0];
+    s32 a3 = a2->unk_48;
+    u16 *v1 = D_800A38C4;
 
 loop1_21280:
     if (a3 == *v1) goto done1_21280;
@@ -3365,54 +3346,56 @@ loop1_21280:
 done1_21280:
 
     {
-        u16 val = *(u16 *)(a2 + 0x48);
-        *(s16 *)(a2 + 0x4A) = a1;
-        *(s16 *)(a2 + 0x4C) = 0;
+        u16 val = a2->unk_48;
+        a2->unk_4A = a1;
+        a2->unk_4C = 0;
 
         if ((u32)(val >> 12) < 2) {
-            u16 t1;
-            s32 t4;
-            s32 t3;
-            s32 t2;
-            u8 t0;
+            u16 t1;   /* FAKE: copy of val (val >> directly: score 7) */
+            s32 t4;   /* FAKE: holds the constant 4 (literal: score 16) */
+            s32 t3;   /* FAKE: holds the constant 3 (literal: score 20) */
+            s32 t2;   /* FAKE: holds the constant 1 (literal: score 20; all three literals: 24) */
+            u8 t0;    /* FAKE: D_800A384C read once before the loop (read in place: score 24) */
+            s32 mode; /* FAKE: D_800A38DC read once before the loop (read in place: score 20) */
+            s32 k;
 
-            a1 = 0;
+            k = 0;
             t1 = val;
             t4 = 4;
             t3 = 3;
             t2 = 1;
-            a3 = D_800A38DC;
+            mode = D_800A38DC;
             t0 = D_800A384C;
         loop2_21280:
             {
-                u16 nibble = (t1 >> (a1 << 2)) & 0xF;
+                u16 nibble = (t1 >> (k << 2)) & 0xF;
                 if (nibble != t4) goto not4_21280;
-                *(s16 *)(a2 + 0x88) = a1;
-                if (a3 != t3) goto store4_21280;
+                a2->unk_88 = k;
+                if (mode != t3) goto store4_21280;
                 if (a0 != t2) goto store4_21280;
                 if (t0 != nibble) goto next_21280;
             store4_21280:
-                *(u16 *)(a2 + 0x8A) = *(u16 *)(a2 + 0x26C);
+                a2->unk_8A = a2->unk_26C;
                 goto next_21280;
             not4_21280:
                 if (nibble != 5) goto next_21280;
-                *(s16 *)(a2 + 0x8E) = a1;
-                if (a3 != 0) goto store5_21280;
+                a2->unk_8E = k;
+                if (mode != 0) goto store5_21280;
                 if (D_800A385C == 0) goto store5_21280;
                 if (a0 == 0) {
-                    /* FAKE: loop tail duplicated into this arm (cross-jump
-                       re-merges to identical bytes; lifts the counter's
-                       reg_n_refs so it beats the pointer for $a1) */
-                    a1++;
-                    if (a1 < 3) goto loop2_21280;
+                    /* FAKE: loop tail duplicated into this arm (jump2 cross-jump
+                       re-merges it to identical bytes); without it, `goto next_21280`:
+                       score 19, the counters and the record pointer swap $a1 / $a2 */
+                    k++;
+                    if (k < 3) goto loop2_21280;
                     return;
                 }
             store5_21280:
-                *(u16 *)(a2 + 0x90) = *(u16 *)(a2 + 0x26C);
+                a2->unk_90 = a2->unk_26C;
             }
         next_21280:
-            a1++;
-            if (a1 < 3) goto loop2_21280;
+            k++;
+            if (k < 3) goto loop2_21280;
         }
     }
 }
@@ -3902,21 +3885,15 @@ loop:
     }
     return best;
 }
-s32 func_800224E0(s32 *arg0) {
+s32 func_800224E0(PracticeMenuRec *arg0) {
     u8 *p;
     u8 *end;
-    u8 *base;
-    s32 *ptr;
     s32 val;
     s32 i;
-    u8 *db1c;
 
-    p = (&D_8008EB1C) + (D_800A384C * 2);
+    p = D_8008EB1C[D_800A384C];
     end = p + 2;
-    ptr = (s32 *)(*arg0);
-    db1c = &D_8008DB1C;
-    base = db1c + (*(s16 *)((u8 *)ptr + 0xA) * 16);
-    val = *(u16 *)(base + *(s16 *)((u8 *)ptr + 0xE) * 2);
+    val = D_8008DB1C[arg0->unk_00->unk_0A][arg0->unk_00->unk_0E];
     do {
         for (i = 0; i < 3; i++) {
             if (*p == ((val >> (i * 4)) & 0xF)) {
@@ -3924,7 +3901,7 @@ s32 func_800224E0(s32 *arg0) {
             }
         }
         p++;
-    } while ((s32)p < (s32)end);
+    } while ((s32)p < (s32)end); /* FAKE: signed compare (slt); `p < end` gives sltu, score 1 */
     return 0;
 }
 void func_80022568(s16 *arg0) {
@@ -3973,7 +3950,7 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_08 = 0x1000;
 
     if (D_800A38DC == 3 && idx == 1) {
-        p->unk_84 = func_800224E0((s32 *)p);
+        p->unk_84 = func_800224E0(p);
         level = (D_800A38E2 - 1) / 10 + 1;
         p->unk_1C = level * 96 + ((level == 9) ? 0xA00 : 0x800);
         if (level == 9) {
