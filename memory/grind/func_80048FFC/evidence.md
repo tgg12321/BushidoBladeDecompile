@@ -38,3 +38,24 @@ Open data-model debts for the landing: D_800A378C is `s32` in text1b (and define
 is the OT pointer; this body needs it as a pointer (`(OTag *)D_800A378C` is the int->pointer pun the
 checklist refuses). The `(s16)(ctl[i] & ~0x3F)` / `(s16)(ctl[i] % 64)` forms reproduce the target's
 lhu/and/sll/sra but are value-preserving casts on s16 data; with u16 ctl the mask becomes andi (27).
+
+### Why the residual is a reference count, not an order (sched1 / local-alloc, BB2_RANK_DEBUG + BB2_QTY_DEBUG)
+- Lengths cannot flip it: sched1 (bottom-up) ties call 1's a0-a3 setups with the rect stores (same priority,
+  class 3) and breaks the tie by LUID, so the setups (emitted at the call, highest LUIDs) always land at the
+  block top and nx/ny are born first (birth 8/12). Every statement order measured gives the same quantities.
+  With cy's tied quantity at refs 10, nx/ny would need lives under 27 units — not reachable.
+- cy cannot drop: the sum ties to cy (cy dies there), so cy's quantity is 5 weighted occurrences in every
+  spelling with a register sum; without the tie the sum takes a call-clobbered register, not s2.
+- So the original source references nx and ny once more each (4 in-loop occurrences, weighted 8) with no
+  extra code, by a construct not yet identified. Only the diagnostic empty asm use supplies it; a dead
+  pre-loop initializer plus call-1 expression args with nx/ny assigned after the call (probe, a dead-store
+  device) does not (13: cse still keeps the argument temporary canonical).
+- cc1psx on candidate_region.c allocates exactly like ours (cy s0, ny s1, nx s2): source-side.
+- do-while(0) (sanctioned family 7, loop-note ref weighting): every single-level wrap of a contiguous
+  statement range of the loop body (378 ranges, tools/sweep_dowhile0.py) — best 15 (233 insns); the loop
+  notes act as sched1 barriers and cost instructions before they can reweight nx/ny. s16 cy/dy/old: 13-15.
+
+Frontier: identify the construct that gives nx and ny one more in-loop reference without code (the target's
+own allocation proves it exists: tools/diag_refs.py). Also owed before any landing: D_800A378C as a real
+pointer type in text1b (and its other consumers), and a decision on the `(s16)(...)` value-preserving
+casts (checklist item 1: disclose with the u16-ctl measurement, 27).
