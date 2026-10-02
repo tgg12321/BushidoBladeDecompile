@@ -10,7 +10,13 @@
   (84 statements, all recognized by engine/gtemacro.py unit_spans). The four gte_rtv0 units carry the
   post-DMPSX `.word 0x4A486012` (targets 0x80020898, 0x80020998, 0x80020A88, 0x80020B34) — needs a
   per-function grant like Q92 (func_800204C0). `canonical`: ASM-PARTIAL, 44/317 cop2.
-- Blocked only on that grant (orchestrator QUESTION 2026-10-02).
+- Q93 granted (fed205ca7). Orchestrator ruled the `(BoneHitRec *)&D_800F5F68[ch * 0x1B8]` view item-4
+  blocking -> part A (landing/msg_A.txt): D_800F5F68 `BoneHitRec [2][22]`, template D_8008D59C
+  `BoneHitRec [22]` (D_8008D59E extern dropped), six consumer bodies respelled to members; every
+  code6cac.h consumer instruction-identical, oracle SHA1 match with A alone and with A+B.
+- Landing prepared under the lock (landing/: mine_A.patch staged, mine_auth.patch + mine_B.patch in the
+  working tree; tools/apply.py regenerates A / B from the tree). sandbox --disable all 0 (317/317),
+  verify-oracle --rebuild SHA1 match. layer2 hash func_800207C8 4ab10331f96d031c.
 
 ## What closed it (the 2026-09-24 Codex draft sat at 99)
 1. Walking pointers, not indexed arrays. Target's `a1 = out + 8` with y at -4(a1): loop.c express_from
@@ -37,8 +43,9 @@
   dlabels: pointer words to the D_8008D754.. SVECTOR sets), D_8008D774 SVec4i16[2], D_800A3138 SVec4i16
   ((0, 0x1000, 0), asm/data/938FE.data.s). No other C consumer of these five symbols.
 - `typedef Vec3i32 LeafPos;` (was a separate identical struct).
-- Hygiene debt: D_800F5F68 stays `u8[]` (five byte-offset consumers in code6cac_b_tu2.c + func_800206B0);
-  this body views a character's records with one `(BoneHitRec *)&D_800F5F68[ch * 0x1B8]` cast.
+- Part A: BoneHitRec (s16 unk_00, s16 bone, SVec4i16 ofs, u16 unk_0C/0E/10/12), D_800F5F68[2][22]
+  (next symbol D_800F62E0), D_8008D59C[22] (0x8008D59C..0x8008D753). func_800206B0 respelled as a
+  walking-pointer for loop (same giv mechanism) - byte-identical.
 
 ## Earlier record
 - 2026-09-24 Codex session: semantic draft 320/317, score 99 (body not saved); rotated.

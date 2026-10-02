@@ -25,7 +25,7 @@ void func_800207C8(PracticeMenuRec *rec, LeafPos *bone_out, LeafPos *att_out, Le
     s32 i;
 
     bones = (MATRIX **)game_GetPlayerData(rec->unk_04);
-    hr = (BoneHitRec *)&D_800F5F68[rec->unk_04 * 0x1B8];
+    hr = D_800F5F68[rec->unk_04];
     o = bone_out;
     for (i = 0; i < 22; i++, hr++, o++) {
         m = bones[hr->bone];

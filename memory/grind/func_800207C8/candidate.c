@@ -11,7 +11,7 @@
  * GTE islands: PsyQ Run-time Library Release 4.3 inline_o.h statements, character for
  * character (engine/gtemacro.py PINNED); each gte_rtv0 carries the post-DMPSX word
  * .word 0x4A486012 in place of the header's DMPSX placeholder .word 0x0000013f (MVMVA sf=1
- * mx=rot v=V0 cv=none lm=0; per-function grant GRANT_REF). */
+ * mx=rot v=V0 cv=none lm=0; per-function grant Q93, fed205ca7). */
 void func_800207C8(PracticeMenuRec *rec, LeafPos *bone_out, LeafPos *att_out, LeafPos *extra_out) {
     /* the func_80053614 probe in scratchpad: from (words 0..2), to (4..6), hit (8..10),
      * normal (12..13), work area (14..) */
@@ -25,7 +25,7 @@ void func_800207C8(PracticeMenuRec *rec, LeafPos *bone_out, LeafPos *att_out, Le
     s32 i;
 
     bones = (MATRIX **)game_GetPlayerData(rec->unk_04);
-    hr = (BoneHitRec *)&D_800F5F68[rec->unk_04 * 0x1B8];
+    hr = D_800F5F68[rec->unk_04];
     o = bone_out;
     for (i = 0; i < 22; i++, hr++, o++) {
         m = bones[hr->bone];
