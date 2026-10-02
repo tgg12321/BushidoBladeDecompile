@@ -471,3 +471,45 @@ re-activation triggers in `pre-slim-2026-10-01:docs/grind/decisions.md:26067`).
 - [s23] Disposition entry filed this session at pre-slim-2026-10-01:docs/grind/decisions.md:26067, titled '2026-09-09 - func_8005D554 (src/text1b.c) - OWNER-ESCALATION - LADDER EXHAUSTED (non-endgame residual, floor 6): ROTATED' (floor 6 > ENDGAME_LOCK_MAX_FLOOR 5, so the 2026-07-27 standing ruling is not this function's subject, per owner ruling 2026-09-02).
 
 - [s23] src/text1b.c was restored to its pristine INCLUDE_ASM state at the end of the session; the only modified surfaces are docs/grind/decisions.md and memory/grind/func_8005D554/.
+
+## s24 (manual lane oct2-b5, 2026-10-02, HEAD main @ 926ed40c9) — Q91 re-judge, distance 0
+
+Q91 (`.claude/rules/completion-bar.md`) re-opens the 2026-09-08 refusal of the nv/nw carrier: it
+rested on "outside the frozen list", and under item 3 a reused local with no semantic reading is
+simply an annotated FAKE. Item 3 still refuses cross-symbol address derivation, which the old
+score-0 body also had (`p_b390 = p_b388 + 2` reaching D_8009B390 from D_8009B388's address).
+
+Re-baseline: `rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c` = 0/176 on this HEAD.
+
+Cross-symbol removal (old-body chassis): `p_b390 = &D_8009B390` 37/174; `s.p1 = &D_8009B390`
+direct 39/174; both tables direct 40/174; p_b390 first / p_b390 set in the loop 37/174, 39/174.
+The two lost insns are the hdr1_row spill (sp+0x40): the D_8009B388 base loses $s7.
+FIX: one object `extern Unk8009B400Record D_8009B388[2]` (two adjacent 8-byte cells) and
+`s.table = &D_8009B388[0]` / `&D_8009B388[1]` directly — 0/176, no pointer locals needed.
+Same body with two separate symbols (`&D_8009B388`, `&D_8009B390`): 40/174.
+
+Simplifications that keep 0/176: `D_800A326C %= 4;` for the v0/v3 bias sequence; `i += 1` at the
+end of the loop body; `y = tmpN + rnd` as one expression (the y side needs no split); block
+`extern rand` / `extern D_800A3418` dropped (file scope already declares them); Env5E54C
+(honest field names, same 0x2C layout as S46C) instead of S46C (zero18/zero1C would be false names).
+
+Ablation table on the landed body (memory/grind/func_8005D554/candidate.c; each row
+removes one construct, score/insns):
+| construct | removed spelling | score |
+|---|---|---|
+| scale = 0x100 holder | literal at both scale stores | 15/176 |
+| ot = 1 holder | literal | 2/176 |
+| scale + ot together | literals | 17/176 |
+| x split init (both halves) | one expression | 8/178 |
+| hdr0 (D_8009B2E0 alias) | D_8009B2E0 direct | 41/174 |
+| hdr1 (hdr0 + 0xC) | folded into hdr1_row | 2/176 |
+| hdr1_row (hoisted row address) | hdr1 + row_off inline | 24/176 |
+| hdr0+hdr1+hdr1_row together | D_8009B2E0 direct everywhere | 34/175 |
+| integer sum row_off + (s32)hdr0 | pointer sum hdr0 + row_off | 1/176 |
+| tmp second write (tmpN = ft4) | s.ft4_out = ft4 | 54/178 |
+| tmp early y base | y = base_y - K + rnd | 15/176 |
+| both tmp writes together | no carriers | 15/176 |
+| one carrier for both halves | tmp1 everywhere | 30/178 |
+| table pointer locals (cell0/cell1 = cell0 + 1) | — (not needed with [0]/[1]) | 0/176 |
+
+All rows nonzero except the last, so every remaining FAKE is load-bearing (item 5).
