@@ -36,20 +36,6 @@ s32 func_8005490C(void) {
     s16 frame[0x42];
     s16 *v;
     s32 i;
-    /* Ruling 11 (.claude/rules/reused-local-necessity.md): holds three
-       values, the player objects func_8004153C(0) and func_8004153C(1) on the
-       first frame and func_8004153C(i) in the player loop.  Shared, it is one
-       allocno that crosses the loop's func_800198D0 call and takes $s0 for
-       all three (move s0,v0 at 0x80054A50, 0x80054A6C, 0x80054CF8); split,
-       the first-frame values take $v0 and both moves vanish (9).  Record:
-       memory/grind/func_8005490C/r11/. */
-    s32 *player;
-    /* Ruling 11 (.claude/rules/reused-local-necessity.md): holds two values,
-       the camera-rotated z of the camera position and of player i's root
-       offset.  Read in two blocks it is not a local-alloc quantity, so
-       combine_regs does not tie it to the subtraction and it takes $t0
-       (sra t0 at 0x80054B30 and 0x80054E0C); one local per block is tied to
-       the subtraction (41).  Record: memory/grind/func_8005490C/r11/. */
     s32 rot_z;
 
     if (s->unk0 < 0) {
@@ -80,13 +66,17 @@ s32 func_8005490C(void) {
         if (s->unk4 & 0x40) {
             s->unk3C[1] = *(s32 *)(s->unk2C + 0x1C) + s->unk2C;
         }
-        player = func_8004153C(0);
-        if (player != 0) {
-            func_8003FFC4(player);
+        {
+            s32 *player0 = func_8004153C(0);
+            if (player0 != 0) {
+                func_8003FFC4(player0);
+            }
         }
-        player = func_8004153C(1);
-        if (player != 0) {
-            func_8003FFC4(player);
+        {
+            s32 *player1 = func_8004153C(1);
+            if (player1 != 0) {
+                func_8003FFC4(player1);
+            }
         }
     }
     v = func_8003D7B4(0);
@@ -135,11 +125,12 @@ s32 func_8005490C(void) {
     func_8004A1FC(D_800F62E0[4]);
     for (i = 0; i < 2; i++) {
         if (s->unk34[i] != 0) {
+            s32 *player2;
             s32 ang;
-            player = func_8004153C(i);
+            player2 = func_8004153C(i);
             func_800198D0(i, s->unk0, (u32 *)frame, (u16 *)0x1F800000);
             vec.vy = frame[0];
-            vec.vy = (vec.vy * *(s16 *)((u8 *)player + 0x12)) >> 12;
+            vec.vy = (vec.vy * *(s16 *)((u8 *)player2 + 0x12)) >> 12;
             ang = frame[1];
             vec.vx = (Judge[ang & 0xFFF] * frame[2]) >> 12;
             vec.vz = (Judge[(ang + 0x400) & 0xFFF] * frame[2]) >> 12;

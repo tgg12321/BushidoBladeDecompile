@@ -59,3 +59,8 @@ Frontier (2026-09-25):
   5. On landing retire the 11 undefined_syms rows marked "retire with func_8005490C".
 - DEPENDS: `g_anim_func_table[]` declaration shared with func_80049718.
 - ODDS/LANE: manual, ~1 session, ~65% [I].
+
+## [s2] 2026-10-01 laneB
+- Landing body candidate.c = 0/399 on post-Q65 main (scratch TU, minimal (A) applied). Package: evidence.md [s2].
+- Open: g_anim_func_table cast spelling vs a 5-TU function-pointer retype (asked the orchestrator); frame typed
+  `s16 frame[0x42]` vs MotionFrame + (s16) casts (both 0; reviewer to decide).

@@ -1,0 +1,100 @@
+# Ruling 11 (D) record, func_8005490C (laneB 2026-10-01). Dumps: memory/grind/func_8005490C/r11/scripts/dumps.sh (run from tmp/func_8005490C/; TU copies built by scripts/mk.py)
+# (cpp build flags -DPERMUTER | strip_other_fns | tools/gcc-2.7.2/cc1 <build flags> -dr -ds -dc -df -dl -dg;
+#  the instrumented cc1's .s equals tools/gcc-2.7.2/build/cc1's except the options comment).
+# Spellings: reuse = landing body (Ruling 11 comments stripped, r11/bodies/landing_nocomment.c); zsplit = rot_z split per block (player shared);
+#            psplit = player split per write (rot_z shared); split = both split.
+
+## rot_z — local-alloc.c:470-477 (reg_qty -2 only for reg_basic_block >= 0 && reg_n_deaths == 1)
+##         and combine_regs local-alloc.c:1836 (no tie when the SET reg has reg_qty == -1)
+-- reuse pseudo 76 (rot_z)
+Register 76 used 9 times across 22 insns; dies in 2 places; GR_REGS or none.
+   greg:  76 in 8
+-- reuse pseudo 163 (subtract_blk1)
+Register 163 used 2 times across 2 insns in block 17; GR_REGS or none.
+;; Register 163 in 3.
+   greg:  163 in 3
+-- reuse pseudo 301 (subtract_loop)
+Register 301 used 4 times across 2 insns in block 22; GR_REGS or none.
+;; Register 301 in 2.
+   greg:  301 in 2
+-- zsplit pseudo 160 (rot_z0)
+Register 160 used 3 times across 8 insns in block 17; GR_REGS or none.
+;; Register 160 in 3.
+   greg:  160 in 3
+-- zsplit pseudo 163 (subtract_blk1)
+Register 163 used 2 times across 2 insns in block 17; GR_REGS or none.
+;; Register 163 in 3.
+   greg:  163 in 3
+-- zsplit pseudo 299 (rot_z1)
+Register 299 used 6 times across 7 insns in block 22; GR_REGS or none.
+;; Register 299 in 3.
+   greg:  299 in 3
+-- zsplit pseudo 302 (subtract_loop)
+Register 302 used 4 times across 3 insns in block 22; GR_REGS or none.
+;; Register 302 in 3.
+   greg:  302 in 3
+
+## player — global.c find_reg (global.c:952): the loop value crosses the func_800198D0 call, so the one shared allocno
+##          takes call-saved reg 16 (s0) for all three values; init-only allocnos take $v0 (copy preference)
+-- reuse pseudo 75 (player)
+Register 75 used 10 times across 15 insns; dies in 3 places; crosses 1 call; GR_REGS or none; pointer.
+   greg:  75 in 16
+FINDREGDBG func=func_8005490C pseudo=75 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 3 4 5 6 7 29
+FINDREGDBG  someone_prefers: 30
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 19 20 21 22 23 24 25 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+-- psplit pseudo 82 (player0_init0)
+Register 82 used 3 times across 3 insns; GR_REGS or none; pointer.
+   greg:  82 in 2
+FINDREGDBG func=func_8005490C pseudo=82 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs: 2 4
+FINDREGDBG  own_full_prefs: 2 4
+-- psplit pseudo 83 (player1_init1)
+Register 83 used 3 times across 3 insns; GR_REGS or none; pointer.
+   greg: 83 in 2
+FINDREGDBG func=func_8005490C pseudo=83 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs: 2 4
+FINDREGDBG  own_full_prefs: 2 4
+-- psplit pseudo 228 (player2_loop)
+Register 228 used 4 times across 5 insns in block 22; crosses 1 call; GR_REGS or none; pointer.
+;; Register 228 in 16.
+   greg: 228 in 16
+
+## target (asm/funcs/func_8005490C.s): 0x80054B24 subu v1,t1,t2 / 0x80054B30 sra t0,v1,12;
+##   0x80054E04 subu v0,t2,t4 / 0x80054E0C sra t0,v0,12; 0x80054A50 / 0x80054A6C move s0,v0 after func_8004153C(0/1),
+##   0x80054CF8 move s0,v0 after func_8004153C(i).
+-- reuse f.s (func_8005490C): subu feeding the >>12 of each rotation; the copy after each func_8004153C call
+    jal func_8004153C | move $4,$0 | move $16,$2 | beq $16,$0,.L25
+    jal func_8004153C | li $4,0x00000001  # 1 | move $16,$2 | beq $16,$0,.L15
+    subu $3,$9,$10 | sra $8,$3,12
+    jal func_8004153C | move $4,$17 | move $16,$2 | move $4,$17
+    subu $2,$10,$12 | sra $8,$2,12
+-- zsplit f.s (func_8005490C): subu feeding the >>12 of each rotation; the copy after each func_8004153C call
+    jal func_8004153C | move $4,$0 | move $16,$2 | beq $16,$0,.L25
+    jal func_8004153C | li $4,0x00000001  # 1 | move $16,$2 | beq $16,$0,.L15
+    subu $3,$9,$5 | sra $3,$3,12
+    jal func_8004153C | move $4,$17 | move $16,$2 | move $4,$17
+    subu $3,$10,$9 | sra $3,$3,12
+-- psplit f.s (func_8005490C): subu feeding the >>12 of each rotation; the copy after each func_8004153C call
+    jal func_8004153C | move $4,$0 | beq $2,$0,.L25 | jal func_8003FFC4
+    jal func_8004153C | li $4,0x00000001  # 1 | beq $2,$0,.L15 | jal func_8003FFC4
+    subu $3,$9,$10 | sra $8,$3,12
+    jal func_8004153C | move $4,$17 | move $4,$17 | move $6,$22
+    subu $2,$10,$12 | sra $8,$2,12
+-- split f.s (func_8005490C): subu feeding the >>12 of each rotation; the copy after each func_8004153C call
+    jal func_8004153C | move $4,$0 | beq $2,$0,.L25 | jal func_8003FFC4
+    jal func_8004153C | li $4,0x00000001  # 1 | beq $2,$0,.L15 | jal func_8003FFC4
+    subu $3,$9,$5 | sra $3,$3,12
+    jal func_8004153C | move $4,$17 | move $4,$17 | move $6,$22
+    subu $3,$10,$9 | sra $3,$3,12

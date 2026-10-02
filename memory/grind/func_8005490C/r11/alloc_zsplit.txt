@@ -1,0 +1,301 @@
+# zsplit: func_8005490C allocation summary from tmp/func_8005490C/dumps/zsplit/tu.i.lreg / .greg (r11/scripts/dumps.sh)
+Register 72 used 42 times across 584 insns; crosses 28 calls; GR_REGS or none; pointer.
+Register 73 used 7 times across 43 insns in block 17; GR_REGS or none; pointer.
+Register 74 used 17 times across 141 insns; dies in 0 places; crosses 14 calls; GR_REGS or none.
+Register 75 used 10 times across 15 insns; dies in 3 places; crosses 1 call; GR_REGS or none; pointer.
+Register 77 used 3 times across 3 insns; GR_REGS or none.
+Register 82 used 7 times across 26 insns in block 3; GR_REGS or none.
+Register 83 used 9 times across 26 insns; dies in 0 places; crosses 2 calls; GR_REGS or none.
+Register 84 used 2 times across 6 insns in block 3; GR_REGS or none.
+Register 85 used 3 times across 8 insns in block 3; GR_REGS or none.
+Register 86 used 2 times across 6 insns in block 3; GR_REGS or none.
+Register 87 used 2 times across 2 insns in block 3; GR_REGS or none.
+Register 88 used 2 times across 6 insns in block 3; GR_REGS or none.
+Register 89 used 2 times across 2 insns in block 3; GR_REGS or none.
+Register 90 used 4 times across 2 insns in block 8; GR_REGS or none.
+Register 95 used 4 times across 4 insns in block 4; GR_REGS or none; pointer.
+Register 97 used 4 times across 3 insns in block 4; GR_REGS or none.
+Register 98 used 4 times across 4 insns in block 4; GR_REGS or none.
+Register 107 used 6 times across 4 insns; GR_REGS or none.
+Register 112 used 2 times across 8 insns in block 9; GR_REGS or none.
+Register 113 used 2 times across 2 insns in block 9; GR_REGS or none.
+Register 114 used 3 times across 6 insns in block 10; GR_REGS or none; pointer.
+Register 115 used 2 times across 4 insns in block 10; GR_REGS or none.
+Register 117 used 2 times across 2 insns in block 10; GR_REGS or none.
+Register 118 used 2 times across 4 insns in block 11; GR_REGS or none.
+Register 119 used 2 times across 2 insns in block 11; GR_REGS or none.
+Register 120 used 3 times across 6 insns in block 12; GR_REGS or none; pointer.
+Register 121 used 2 times across 4 insns in block 12; GR_REGS or none.
+Register 123 used 2 times across 2 insns in block 12; GR_REGS or none.
+Register 125 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 127 used 4 times across 19 insns in block 17; GR_REGS or none.
+Register 129 used 3 times across 19 insns in block 17; GR_REGS or none.
+Register 132 used 2 times across 3 insns in block 17; GR_REGS or none.
+Register 134 used 4 times across 11 insns in block 17; GR_REGS or none.
+Register 135 used 3 times across 7 insns in block 17; GR_REGS or none.
+Register 137 used 2 times across 9 insns in block 17; GR_REGS or none.
+Register 138 used 2 times across 2 insns in block 17; ST_REGS or none.
+Register 139 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 140 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 143 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 144 used 2 times across 1 insns in block 17; ST_REGS or none; pointer.
+Register 147 used 3 times across 4 insns in block 17; GR_REGS or none.
+Register 150 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 154 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 160 used 3 times across 8 insns in block 17; GR_REGS or none.
+Register 161 used 2 times across 14 insns in block 17; pref LO_REG, else GR_REGS.
+Register 162 used 2 times across 8 insns in block 17; pref LO_REG, else GR_REGS.
+Register 163 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 164 used 2 times across 7 insns in block 17; pref LO_REG, else GR_REGS.
+Register 165 used 2 times across 6 insns in block 17; pref LO_REG, else GR_REGS.
+Register 166 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 167 used 3 times across 9 insns in block 17; GR_REGS or none.
+Register 168 used 7 times across 84 insns; dies in 2 places; crosses 5 calls; GR_REGS or none; pointer.
+Register 170 used 2 times across 6 insns in block 17; GR_REGS or none.
+Register 171 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 174 used 2 times across 4 insns in block 17; GR_REGS or none.
+Register 175 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 178 used 2 times across 8 insns in block 17; GR_REGS or none.
+Register 179 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 180 used 3 times across 44 insns; crosses 3 calls; GR_REGS or none; pointer.
+Register 181 used 2 times across 4 insns in block 17; 2 bytes; GR_REGS or none.
+Register 183 used 2 times across 4 insns in block 17; 2 bytes; GR_REGS or none.
+Register 184 used 2 times across 2 insns in block 17; GR_REGS or none.
+Register 186 used 2 times across 2 insns in block 17; 2 bytes; GR_REGS or none.
+Register 188 used 2 times across 3 insns in block 17; GR_REGS or none.
+Register 190 used 2 times across 12 insns in block 18; 2 bytes; GR_REGS or none.
+Register 191 used 3 times across 24 insns in block 18; crosses 1 call; GR_REGS or none; pointer.
+Register 193 used 3 times across 14 insns in block 18; crosses 2 calls; GR_REGS or none; pointer.
+Register 194 used 2 times across 12 insns in block 18; GR_REGS or none; pointer.
+Register 197 used 5 times across 22 insns in block 18; crosses 3 calls; GR_REGS or none; pointer.
+Register 198 used 2 times across 3 insns in block 18; GR_REGS or none; pointer.
+Register 210 used 2 times across 6 insns in block 20; 2 bytes; GR_REGS or none.
+Register 211 used 2 times across 2 insns in block 20; GR_REGS or none.
+Register 213 used 2 times across 6 insns in block 20; 2 bytes; GR_REGS or none.
+Register 214 used 2 times across 2 insns in block 20; GR_REGS or none.
+Register 216 used 2 times across 8 insns in block 20; 2 bytes; GR_REGS or none.
+Register 217 used 2 times across 2 insns in block 20; GR_REGS or none.
+Register 218 used 4 times across 12 insns in block 20; crosses 2 calls; GR_REGS or none; pointer.
+Register 221 used 4 times across 2 insns in block 30; GR_REGS or none.
+Register 226 used 4 times across 4 insns in block 21; GR_REGS or none.
+Register 227 used 6 times across 12 insns in block 22; GR_REGS or none.
+Register 231 used 5 times across 140 insns; dies in 0 places; crosses 14 calls; GR_REGS or none; pointer.
+Register 233 used 6 times across 4 insns in block 22; GR_REGS or none.
+Register 236 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 239 used 4 times across 3 insns in block 22; pref LO_REG, else GR_REGS.
+Register 240 used 6 times across 17 insns in block 22; GR_REGS or none.
+Register 243 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 244 used 9 times across 278 insns; dies in 0 places; crosses 14 calls; GR_REGS or none; pointer.
+Register 246 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 247 used 4 times across 2 insns in block 22; GR_REGS or none; pointer.
+Register 249 used 4 times across 3 insns in block 22; GR_REGS or none.
+Register 252 used 6 times across 10 insns in block 22; GR_REGS or none.
+Register 254 used 4 times across 2 insns in block 22; pref LO_REG, else GR_REGS.
+Register 255 used 8 times across 28 insns in block 22; GR_REGS or none.
+Register 256 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 257 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 260 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 261 used 4 times across 2 insns in block 22; GR_REGS or none; pointer.
+Register 263 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 268 used 4 times across 4 insns in block 22; pref LO_REG, else GR_REGS.
+Register 269 used 6 times across 4 insns in block 22; GR_REGS or none.
+Register 271 used 6 times across 26 insns in block 22; GR_REGS or none.
+Register 273 used 8 times across 13 insns in block 22; GR_REGS or none.
+Register 274 used 6 times across 8 insns in block 22; GR_REGS or none.
+Register 276 used 4 times across 10 insns in block 22; GR_REGS or none.
+Register 277 used 4 times across 1 insns in block 22; ST_REGS or none.
+Register 278 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 279 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 282 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 283 used 4 times across 2 insns in block 22; GR_REGS or none; pointer.
+Register 286 used 6 times across 4 insns in block 22; GR_REGS or none.
+Register 289 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 293 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 294 used 4 times across 2 insns in block 22; GR_REGS or none; pointer.
+Register 299 used 6 times across 7 insns in block 22; GR_REGS or none.
+Register 300 used 4 times across 19 insns in block 22; pref LO_REG, else GR_REGS.
+Register 301 used 4 times across 12 insns in block 22; pref LO_REG, else GR_REGS.
+Register 302 used 4 times across 3 insns in block 22; GR_REGS or none.
+Register 303 used 4 times across 11 insns in block 22; pref LO_REG, else GR_REGS.
+Register 304 used 4 times across 10 insns in block 22; pref LO_REG, else GR_REGS.
+Register 305 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 306 used 6 times across 7 insns in block 22; GR_REGS or none.
+Register 308 used 4 times across 6 insns in block 22; GR_REGS or none.
+Register 309 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 311 used 4 times across 8 insns in block 22; GR_REGS or none.
+Register 312 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 314 used 4 times across 6 insns in block 22; GR_REGS or none.
+Register 315 used 4 times across 2 insns in block 22; GR_REGS or none.
+Register 318 used 4 times across 10 insns in block 22; GR_REGS or none.
+Register 320 used 8 times across 15 insns; crosses 2 calls; GR_REGS or none.
+Register 324 used 6 times across 4 insns; GR_REGS or none.
+Register 350 used 6 times across 3 insns; GR_REGS or none.
+Register 366 used 6 times across 10 insns; GR_REGS or none.
+Register 371 used 6 times across 4 insns in block 29; GR_REGS or none.
+Register 372 used 10 times across 10 insns; GR_REGS or none.
+Register 375 used 6 times across 5 insns; GR_REGS or none.
+Register 380 used 4 times across 2 insns in block 29; GR_REGS or none.
+Register 381 used 4 times across 5 insns in block 29; GR_REGS or none; pointer.
+Register 388 used 4 times across 2 insns in block 29; GR_REGS or none.
+Register 389 used 4 times across 2 insns in block 29; GR_REGS or none.
+Register 391 used 4 times across 3 insns in block 29; GR_REGS or none.
+Register 393 used 4 times across 2 insns in block 29; GR_REGS or none.
+Register 394 used 4 times across 3 insns in block 29; GR_REGS or none.
+Register 395 used 4 times across 2 insns in block 29; GR_REGS or none.
+Register 397 used 2 times across 4 insns in block 31; 2 bytes; GR_REGS or none.
+Register 398 used 3 times across 3 insns in block 31; GR_REGS or none.
+Register 402 used 2 times across 2 insns in block 31; GR_REGS or none.
+Register 403 used 2 times across 3 insns in block 31; GR_REGS or none.
+Register 404 used 2 times across 3 insns in block 31; GR_REGS or none.
+Register 406 used 2 times across 2 insns in block 31; GR_REGS or none.
+Register 407 used 2 times across 4 insns in block 32; 2 bytes; GR_REGS or none.
+Register 419 used 11 times across 138 insns; dies in 0 places; crosses 14 calls; GR_REGS or none; pointer.
+Register 420 used 9 times across 136 insns; dies in 0 places; crosses 14 calls; GR_REGS or none; pointer.
+Register 422 used 11 times across 22 insns; dies in 0 places; crosses 2 calls; GR_REGS or none; pointer.
+;; Register 73 in 2.
+;; Register 82 in 3.
+;; Register 84 in 4.
+;; Register 85 in 4.
+;; Register 86 in 2.
+;; Register 87 in 2.
+;; Register 88 in 2.
+;; Register 89 in 2.
+;; Register 90 in 2.
+;; Register 95 in 2.
+;; Register 97 in 3.
+;; Register 98 in 2.
+;; Register 112 in 2.
+;; Register 113 in 2.
+;; Register 114 in 3.
+;; Register 115 in 2.
+;; Register 117 in 2.
+;; Register 118 in 2.
+;; Register 119 in 2.
+;; Register 120 in 3.
+;; Register 121 in 2.
+;; Register 123 in 2.
+;; Register 125 in 6.
+;; Register 127 in 6.
+;; Register 129 in 7.
+;; Register 132 in 5.
+;; Register 134 in 5.
+;; Register 135 in 8.
+;; Register 137 in 4.
+;; Register 139 in 3.
+;; Register 140 in 3.
+;; Register 143 in 3.
+;; Register 147 in 3.
+;; Register 150 in 4.
+;; Register 154 in 4.
+;; Register 160 in 3.
+;; Register 163 in 3.
+;; Register 166 in 4.
+;; Register 167 in 4.
+;; Register 170 in 5.
+;; Register 171 in 4.
+;; Register 174 in 3.
+;; Register 175 in 7.
+;; Register 178 in 6.
+;; Register 179 in 3.
+;; Register 181 in 3.
+;; Register 183 in 3.
+;; Register 184 in 3.
+;; Register 186 in 2.
+;; Register 188 in 2.
+;; Register 190 in 2.
+;; Register 191 in 17.
+;; Register 193 in 18.
+;; Register 194 in 3.
+;; Register 197 in 16.
+;; Register 198 in 2.
+;; Register 210 in 2.
+;; Register 211 in 2.
+;; Register 213 in 2.
+;; Register 214 in 2.
+;; Register 216 in 3.
+;; Register 217 in 3.
+;; Register 218 in 16.
+;; Register 221 in 2.
+;; Register 226 in 2.
+;; Register 227 in 3.
+;; Register 233 in 3.
+;; Register 236 in 2.
+;; Register 240 in 8.
+;; Register 243 in 2.
+;; Register 246 in 2.
+;; Register 247 in 2.
+;; Register 249 in 2.
+;; Register 252 in 4.
+;; Register 255 in 6.
+;; Register 256 in 3.
+;; Register 257 in 3.
+;; Register 260 in 3.
+;; Register 261 in 3.
+;; Register 263 in 2.
+;; Register 269 in 4.
+;; Register 271 in 8.
+;; Register 273 in 4.
+;; Register 274 in 5.
+;; Register 276 in 3.
+;; Register 278 in 2.
+;; Register 279 in 2.
+;; Register 282 in 2.
+;; Register 283 in 2.
+;; Register 286 in 2.
+;; Register 289 in 3.
+;; Register 293 in 3.
+;; Register 294 in 3.
+;; Register 299 in 3.
+;; Register 302 in 3.
+;; Register 305 in 2.
+;; Register 306 in 2.
+;; Register 308 in 2.
+;; Register 309 in 8.
+;; Register 311 in 8.
+;; Register 312 in 2.
+;; Register 314 in 2.
+;; Register 315 in 3.
+;; Register 318 in 8.
+;; Register 371 in 2.
+;; Register 380 in 3.
+;; Register 381 in 3.
+;; Register 388 in 2.
+;; Register 389 in 2.
+;; Register 391 in 2.
+;; Register 393 in 2.
+;; Register 394 in 5.
+;; Register 395 in 5.
+;; Register 397 in 2.
+;; Register 398 in 2.
+;; Register 402 in 2.
+;; Register 403 in 2.
+;; Register 404 in 3.
+;; Register 406 in 2.
+;; Register 407 in 2.
+;; Register dispositions:
+72 in 19  73 in 2  74 in 17  75 in 16  77 in 2  82 in 3  
+83 in 17  84 in 4  85 in 4  86 in 2  87 in 2  88 in 2  
+89 in 2  90 in 2  95 in 2  97 in 3  98 in 2  107 in 5  
+112 in 2  113 in 2  114 in 3  115 in 2  117 in 2  118 in 2  
+119 in 2  120 in 3  121 in 2  123 in 2  125 in 6  127 in 6  
+129 in 7  132 in 5  134 in 5  135 in 8  137 in 4  139 in 3  
+140 in 3  143 in 3  147 in 3  150 in 4  154 in 4  160 in 3  
+161 in 9  162 in 5  163 in 3  164 in 4  165 in 8  166 in 4  
+167 in 4  168 in 20  170 in 5  171 in 4  174 in 3  175 in 7  
+178 in 6  179 in 3  180 in 21  181 in 3  183 in 3  184 in 3  
+186 in 2  188 in 2  190 in 2  191 in 17  193 in 18  194 in 3  
+197 in 16  198 in 2  210 in 2  211 in 2  213 in 2  214 in 2  
+216 in 3  217 in 3  218 in 16  221 in 2  226 in 2  227 in 3  
+231 in 22  233 in 3  236 in 2  239 in 8  240 in 8  243 in 2  
+244 in 21  246 in 2  247 in 2  249 in 2  252 in 4  254 in 9  
+255 in 6  256 in 3  257 in 3  260 in 3  261 in 3  263 in 2  
+268 in 3  269 in 4  271 in 8  273 in 4  274 in 5  276 in 3  
+278 in 2  279 in 2  282 in 2  283 in 2  286 in 2  289 in 3  
+293 in 3  294 in 3  299 in 3  300 in 10  301 in 9  302 in 3  
+303 in 3  304 in 12  305 in 2  306 in 2  308 in 2  309 in 8  
+311 in 8  312 in 2  314 in 2  315 in 3  318 in 8  320 in 16  
+324 in 4  350 in 4  366 in 6  371 in 2  372 in 5  375 in 2  
+380 in 3  381 in 3  388 in 2  389 in 2  391 in 2  393 in 2  
+394 in 5  395 in 5  397 in 2  398 in 2  402 in 2  403 in 2  
+404 in 3  406 in 2  407 in 2  419 in 18  420 in 20  422 in 16  
+

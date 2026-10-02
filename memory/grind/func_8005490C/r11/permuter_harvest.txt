@@ -1,0 +1,103 @@
+# Permuter campaign from the one-variable-per-value body (r11/bodies/P_split_Zsplit.c, landing-body generator g6 equivalent)
+# workspace tools/decomp-permuter/nonmatchings/func_8005490C_r11split (r11/scripts/mkperm.sh), label r11-split-postq65,
+# -j 2, 2026-10-02 00:03-00:29 UTC, iteration 17692 iterations; base 3241; calibration: the reuse (landing) body scores 140 in the same harness.
+# Best 1566. Every find below 2000 makes a rot_z local multi-write inside its block, chains vec.vz = rot_z, or adds empty if / inline-fn noise. None reaches 140.
+=== output-1566-1
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
++        rot_z1 = z * c;
++        rot_z1 = (rot_z1 - (x * sn)) >> 12;
+=== output-1818-1
+-    rot_z0 = ((z * c) - (x * sn)) >> 12;
++    rot_z0 = (z * c) - (x * sn);
++    rot_z0 = rot_z0 >> 12;
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
++        rot_z1 = (vec.vz = ((z * c) - (x * sn)) >> 12);
+-        vec.vz = rot_z1;
+=== output-1828-1
+-    s->unk3C[1] = 0;
+-    s->unk3C[0] = 0;
++    s->unk3C[0] = (s->unk3C[1] = 0);
+-    rot_z0 = ((z * c) - (x * sn)) >> 12;
+-    vec.vx = ((z * sn) + (x * c)) >> 12;
+-    vec.vz = rot_z0;
++    rot_z0 = (vec.vz = ((z * c) - (x * sn)) >> 12);
++    vec.vx = ((sn * z) + (x * c)) >> 12;
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
++        rot_z1 = (vec.vz = ((z * c) - (x * sn)) >> 12);
+=== output-1868-1
++    s->unk34[0] = (*((s32 *) (p + 0x10))) + p;
+-    s->unk34[0] = (*((s32 *) (p + 0x10))) + p;
++ if (0) { }
+-    rot_z0 = ((z * c) - (x * sn)) >> 12;
++    vec.vz = (rot_z0 = ((z * c) - (x * sn)) >> 12);
+-    vec.vz = rot_z0;
+-      vec.vz = (Judge[(ang + 0x400) & 0xFFF] * frame[2]) >> 12;
++      vec.vz = (Judge[(frame[1] + 0x400) & 0xFFF] * frame[2]) >> 12;
++      ang = i;
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
+=== output-1945-1
++  return arg0->unkC;
++ dummy_label_127255: ;
+-    rot_z0 = ((z * c) - (x * sn)) >> 12;
++    rot_z0 = (vec.vz = ((z * c) - (x * sn)) >> 12);
+-    vec.vz = rot_z0;
+-  D_80101DF0.work.t[0] = vec.vx + s->unkC;
++  D_80101DF0.work.t[0] = vec.vx + inline_fn(s);
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
++        rot_z1 = x * sn;
++        rot_z1 = ((z * c) - rot_z1) >> 12;
+=== output-1976-1
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
++        rot_z1 = x * sn;
++        rot_z1 = ((z * c) - rot_z1) >> 12;
+=== output-1978-1
++    s->unk34[0] = (*((s32 *) (p + 0x10))) + p;
+-    s->unk34[0] = (*((s32 *) (p + 0x10))) + p;
++ if (0) { }
+-    rot_z0 = ((z * c) - (x * sn)) >> 12;
++    vec.vz = (rot_z0 = ((z * c) - (x * sn)) >> 12);
+-    vec.vz = rot_z0;
+-      vec.vz = (Judge[(ang + 0x400) & 0xFFF] * frame[2]) >> 12;
++      vec.vz = (Judge[(frame[1] + 0x400) & 0xFFF] * frame[2]) >> 12;
++      ang = i;
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
+=== output-1984-1
++    rot.vz = 0;
+-    rot.vz = 0;
++    if (1)
++    {
++    }
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
++        rot_z1 = x * sn;
++        rot_z1 = ((z * c) - rot_z1) >> 12;
+=== output-1990-1
++  volatile int pad;
+-    rot_z0 = ((z * c) - (x * sn)) >> 12;
++    rot_z0 = (vec.vz = ((z * c) - (x * sn)) >> 12);
+-    vec.vz = rot_z0;
+-    rot.vx = 0;
+-    rot.vz = 0;
++    rot.vx = (rot.vz = 0);
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
++        vec.vz = (rot_z1 = ((z * c) - (x * sn)) >> 12);
+-        vec.vz = rot_z1;
+=== output-2019-1
++  volatile unsigned int new_var;
+-    rot_z0 = ((z * c) - (x * sn)) >> 12;
++    vec.vz = (rot_z0 = ((z * c) - (x * sn)) >> 12);
+-    vec.vz = rot_z0;
++  ;
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
++        rot_z1 = (vec.vz = ((z * c) - (x * sn)) >> 12);
+-        vec.vz = rot_z1;
+=== output-2041-1
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
++        rot_z1 = z * c;
++        rot_z1 = (rot_z1 - (x * sn)) >> 12;
++        if (i)
++        {
++        }
+=== output-2089-1
+-        rot_z1 = ((z * c) - (x * sn)) >> 12;
++        rot_z1 = (z * c) - (x * sn);
++        rot_z1 = rot_z1 >> 12;

@@ -1,0 +1,57 @@
+# mk.py <body> <dir> --ptr : include/game.h Unk800EFAE8Ctrl unk2C/unk30/unk34[2]/unk3C[2] -> u8 *,
+# func_80054604 a6 / func_80054884 a7 / code6cac_c2.c magic -> u8 *, func_80054FDC p -> u8 **, interface casts (s32) added.
+# xbuild.py compiles the TU copies with the build pipeline and compares every function with build/src/<stem>.o.
+Traceback (most recent call last):
+  File "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/func_8005490C/xbuild.py", line 34, in <module>
+    if score.func_byte_signature(ref, fn) != score.func_byte_signature(out, fn):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/engine/score.py", line 307, in func_byte_signature
+    tbl = _o_func_table(o_path)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/engine/score.py", line 209, in _o_func_table
+    out = _objdump("-t", o_path)
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/engine/score.py", line 61, in _objdump
+    raise RuntimeError(
+RuntimeError: objdump failed (-t build/src/text1b.o): exit 1, empty output; stderr: ''
+code6cac_c2: 75 funcs, 0 differ
+
+## func_80054FDC (ref < vs u8 * typing >)
+8c8
+< addu	v1,a0,v1
+---
+> addu	v1,v1,a0
+18c18
+< addu	v0,a0,v0
+---
+> addu	v0,v0,a0
+24c24
+< addu	v0,a0,v1
+---
+> addu	v0,v1,a0
+35c35
+< addu	v0,a0,v0
+---
+> addu	v0,v0,a0
+46c46
+< addu	v0,a0,v0
+---
+> addu	v0,v0,a0
+57c57
+< addu	v0,a0,v0
+---
+> addu	v0,v0,a0
+## func_80054604
+63c63
+< addu	v0,v0,v1
+---
+> addu	v0,v1,v0
+69c69
+< addu	v0,v0,v1
+---
+> addu	v0,v1,v0
+
+# minimal (A) only (func_8003FFC4 extern (s32 *), func_80054604 v -> s32 *, its two (s32) casts dropped):
+text1b: 263 funcs, 0 differ
+FOCUS func_8005490C {'score': 0, 'target_insns': 399, 'build_insns': 399}
+code6cac_c2: 75 funcs, 0 differ
