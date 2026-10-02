@@ -483,3 +483,45 @@ options:
 
 recommendation: (A). It restores a July owner ruling that the module's existing rows already rely on. It is
 narrow (Sony census state only), and the evidence is a named compiler decision, not a score chase.
+
+## 2026-10-02 — func_80020E74 — may D_800A38C6 be reached by indexing past D_800A38C4 (a third Q63-style pair)? — policy-question
+category: policy-question
+
+Evidence: memory/grind/func_80020E74/evidence.md (measurements, mechanism), candidate.c (byte-exact body),
+dm/ (data-model script, private full-link harness), d38/ (failing single-object spellings).
+- With an honest data model (D_800A38C0[2], D_8008DB1C[27][8], menuDat[18], typed Tbl800A3860Entry /
+  PracticeMenuRec.unk_48), candidate.c relinks to the oracle SHA1 (private link with build/ objects).
+- Its one blocked construct: `(&D_800A38C4)[i] = loads[i]; /* FAKE */` in the per-slot loop. The target
+  stores to D_800A38C4 + 2*i (`addu $at,$at,$s4; sh %lo(D_800A38C4)($at)`), so the site is a real loop index.
+- Every other function reads and writes 0x800A38C6 by its own name. Declaring the pair as `u16 D_800A38C4[2]`
+  or as a two-member struct, with every consumer converted, fails twice: func_80020CDC and func_80020D38
+  each gain 3 instructions (scratch SHA1 a067d75a..., EXE +24 bytes). func_80020E74 itself is exact under the
+  array.
+- Cause, from RTL dumps: `D_800A38C4[1]` is a constant offset from a symbol. It is forced into a pseudo at
+  expand, and CSE reuses that pseudo for the store after the seq_Reset call, so it lives in $s0. The first
+  CSE pass stops at a loop-end note, but the rerun after loop.c ignores loop notes. 17 spellings of
+  func_80020D38 (do-while(0) at every position, goto, switch, value local, pointer after the call, store in
+  both arms) all score 9. The original compiler gives the same 9 (engine cc1psx-check), so the original
+  source accessed 0x800A38C6 by name there.
+- func_80021280 (COMPLETED) already walks `(u16 *)&D_800A38C4` past into D_800A38C6. SOTN @aa53500 has no
+  `(&sym)[i]` indexing to cite (Q55).
+- The orchestrator declined under its delegation: item 3 refuses cross-symbol derivation, and
+  aggregate-merge-family.md keeps the Q63/Q73 exceptions to their own symbols.
+
+disposition taken: func_80020E74 stays INCLUDE_ASM and is not unparked. The byte-exact body (3 FAKEs: frame
+layout `loads[130]`, the shared `j` local, this index) and every measurement are banked in its ledger.
+
+Question for the owner (plain language): "func_80020E74 records which character model is loaded in each of two
+slots. It writes slot i with an index from the first slot's variable. Every other function uses the second
+slot's variable by its own name. Making the two one array is the SOTN fix, but then two small functions that
+clear slot 2 around a call get 3 extra instructions each, in our compiler and in Sony's original one. So the
+original code most likely had two variables and indexed past the first, as with the D_800A37D2/D3 pair you
+allowed in Q63. May this pair get the same narrow admission?"
+
+options:
+- (A) Admit it for D_800A38C4 / D_800A38C6 in func_80020E74 only, Q63-style: two scalars, one indexed store
+  FAKE-annotated with the evidence, rule text added to aggregate-merge-family.md.
+- (B) Refuse. func_80020E74 stays INCLUDE_ASM until a byte-exact array spelling of func_80020CDC /
+  func_80020D38 is found.
+
+recommendation: (A). It is the same compiler evidence Q63 rested on, measured on both compilers, and one site.

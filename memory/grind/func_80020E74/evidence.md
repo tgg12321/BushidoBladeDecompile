@@ -47,10 +47,19 @@
 - Mechanism (`.rtl`, dm/dumpf.sh): a non-zero constant offset from a symbol (`D_800A38C4[1]`, `.slot1`) is
   forced into a pseudo at expand (explow memory_address); CSE (skip-blocks path over the seq_Reset call)
   reuses it for the later store, so it lives in $s0 across the call. A bare symbol (`D_800A38C6`) is a
-  legitimate address and gets lui+lhu / lui+sh, as the target. Six D38 spellings (d38/v1-v6: do-while(0)
-  around read or store, goto form, store in both arms, value local, pointer-arith store): all 9.
+  legitimate address and gets lui+lhu / lui+sh, as the target. d38/v1-v16 (do-while(0) around read,
+  store, call, both, or empty between; goto; switch; store in both arms; value local; pointer after the call;
+  2-trip loop over i=1): all 9 (v9 23). A loop-end note stops the first CSE pass's path (v12 .cse keeps a
+  separate pseudo) but the rerun after loop.c ignores loop notes and shares it again (v12 .lreg).
+  v17 (static helper) adds a call: refused.
 - Original compiler: `engine cc1psx-check func_80020D38` with the [1] spelling: cc1psx 9, ours 9 (the scalar
   spelling: ours 0, cc1psx 2). The original source therefore read/wrote 0x800A38C6 by its own name in
   func_80020D38, while func_80020E74 indexes `D_800A38C4 + 2*i` — the Q63 pattern (D_800A37D2/D3).
 - Pre-existing on main: func_80021280 already walks `(u16 *)&D_800A38C4` past into D_800A38C6.
 - SOTN (tmp/sotn-decomp @aa53500): no `(&sym)[i]` indexing in src/ — no Q55 citation.
+
+## 2026-10-02 — orchestrator ruling
+- Q63-style admission NOT granted under the delegation (item 3; aggregate-merge-family.md keeps Q63/Q73 to
+  their symbols). Owner policy-question: docs/grind/borderline.md 2026-10-02 func_80020E74 entry.
+- func_80020E74 stays INCLUDE_ASM, not unparked. Frontier if refused: a byte-exact func_80020CDC /
+  func_80020D38 under `u16 D_800A38C4[2]` (needs something that ends the CSE2 path at the join label).
