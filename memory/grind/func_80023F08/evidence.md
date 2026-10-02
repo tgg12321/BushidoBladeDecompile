@@ -125,3 +125,8 @@
   (0); `temp` comment is now a FAKE label (no-new-park-categories.md entry 1, scores_landing.txt numbers); `u32 mask`
   comment in the Q90 form; new FAKE labels with measured reasons at the twist spelling (new - old = 7), the second
   range test (identical spelling = 11) and the 0x8C gotos (goto-free = 2, casts/receipts.txt). Bytes unchanged.
+- [s6] LANDED 2026-10-02: Match 69df18820 (body 2bca8a383bec29c2 == candidate.c), queue done eebea4519
+  (COMPLETED-C), check_completion_integrity OK. Layer-2 rv2-23F08-1 PASS (completion-bar items 1-6; verdict in
+  layer2_verdicts/616d2cc0...json). Its one hygiene finding (D_80101ED2 note named func_8003C714, already C) was
+  fixed before commit: both D_80101EC8 / D_80101ED2 rows dropped (no src/ or linked-asm referrer), rebuild ==
+  oracle. Ledger closed.
