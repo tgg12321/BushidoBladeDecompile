@@ -126,3 +126,7 @@
     full rebuild SHA1 == oracle; sandbox --disable all on spliced src 0/122; source_issues []; 25 region
     hashes; queue unpark (orchestrator-authorized); layer2 hash a0b4f6a9d30d5d20. Staged: auth rows +
     Match body (tmp/func_800204C0/msg_auth.txt, msg_match.txt).
+22. LANDED 2026-10-02: layer-2 rv2-204C0-1 PASS (round 1) on body a0b4f6a9d30d5d20 (auth + match scopes,
+    layer2.jsonl); auth 0c2c719e7, Match 80ac4c678, queue done 734611b3e (COMPLETED-INLINE-ASM-CANONICAL,
+    SHA1 == oracle); check_completion_integrity OK. Hygiene debt carried: func_800203B4 raw +0x350..+0x35C
+    offsets and its joined islands. Ledger closed.
