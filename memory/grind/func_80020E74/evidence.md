@@ -75,5 +75,11 @@
   (`(set (mem (reg 72)) 0)`), live across the call. Via `p`, the address is `(plus p 2)`; CSE folds it to a
   constant address inside each MEM and no pseudo ever holds `D_800A38C4+2`, so nothing is shared.
 - Full TU (apply_dm.py --c4 array on HEAD 6433bb595 files + `ptr/patch_cd.py` p2 form + the array-model
-  func_80020E74 body): dm.py 0 differing functions in code6cac_tu2 / code6cac / ings. Private link pending
-  (build/ was mid-rebuild by the other lane).
+  func_80020E74 body): dm.py 0 differing functions in code6cac_tu2 / code6cac / ings; private link MATCH.
+- Landing prepared (`ptr/build_flat.py` A|B = apply_dm --c4 array + patch_cd + patch_4e0 + patch_extra).
+  Beyond the oct2-a3 model: func_800224E0 typed (PracticeMenuRec *, `D_8008EB1C[][2]`), its caller
+  drops the cast; `D_800A3864` -> `D_800A3860[1]` (func_80020D70). Part A alone and A+B:
+  lock.ps1 rebuild SHA1 == oracle; sandbox 0 for func_8001DB9C, 80020CDC, 80020D38, 80020D70, 80021210,
+  80021280, 800224E0, 80022580, sys_GameInit, 80020E74 (231/231).
+- FAKE remeasures under the landed model: separate chr / j locals 3 (rejected/separate-locals-score3.c);
+  loads[2] 20 (rejected/loads2-frame.c).
