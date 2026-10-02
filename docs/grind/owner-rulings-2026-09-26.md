@@ -889,3 +889,16 @@ Question, verbatim: "camera_CalcAngles (the one function reopened by Q65): under
 Owner chose: **"Allow, staged (Recommended)"** — option text: "Lanes do the prerequisites (func_80048FFC, real types), then propose the split + -G8 for the first part with its proof; it lands only if the oracle matches and a fresh review passes."
 Other option offered: "Refuse" — "No new file boundary for this; camera_CalcAngles stays assembly and active, one instruction off."
 The rule text is .claude/rules/compiler-flags-canonical.md § Owner ruling Q89.
+
+# Owner exchange 2026-10-01 (forty-second batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: layer-2 round 1 of func_80023F08's Match (B) (body d310797af659667d): rev-23F08-B-dm PASS; rev-23F08-B-r11 FAILed
+the `u32 mask` FAKE family-6 intermediate as the refused fold-const cast in a declaration (its only effect is the int->u32
+conversion; `s32 mask` = 3, same as the int spelling). Evidence: memory/grind/func_80023F08/casts/receipts.txt,
+fake/mask_jump.txt, evidence.md [s3c].
+
+## Q90 — func_80023F08's u32 move-class bit-set
+Question, verbatim: "func_80023F08 (the largest remaining function, 2,983 instructions) matches except for one spot. It tests one bit of a 27-bit 'move class' set: `mask & (1 << cls)`. Written with a plain signed int, our compiler rewrites the test into a different instruction sequence, 3 instructions off. The original code shows the unsigned form. Writing the set as unsigned (`u32 mask = ...`) matches exactly. But the reviewer points out the variable exists only to make the value unsigned, which is a type chosen to steer the compiler; that's the same family as the casts we refuse. Unlike func_8002AB08's masks, it isn't a variable the code would have anyway. In June you allowed a similar one-site exception for func_80058580's 16-bit compare (Q82). Allow this one unsigned bit-set at this one test?"
+(Correction: Q82 was granted 2026-10-01, earlier the same day, not in June as the question said.)
+Owner chose: **"Allow narrowly (Recommended)"** — option text: "Only this `u32 mask` class bit-set in func_80023F08, with a comment naming the compiler rewrite it avoids and the measurements; fresh review. The function can then land."
+Other option offered: "Refuse" — "Write it as plain int and leave the 3-instruction gap; func_80023F08 stays assembly and active until another spelling turns up."
+The rule text is .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on narrow spellings (Q90).

@@ -1147,3 +1147,11 @@ inheritance), a both-ways build (every other function byte- and relocation-ident
 fresh layer-2. It is an added evidence class replacing only (iii)'s 'only functions meeting (i)+(ii)' for that part;
 the rest of the per-file -G8-by-proof conditions (i)-(vi) still apply. Until then camera_CalcAngles stays INCLUDE_ASM/active. Rule text: .claude/rules/compiler-flags-canonical.md
 § Owner ruling Q89.
+
+## 2026-10-01 — OWNER RULING — Q90: func_80023F08's u32 move-class bit-set allowed narrowly
+
+Forty-second batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 42). Owner chose "Allow narrowly": at
+func_80023F08's move-class test `(mask = ent[2] | (ent[3] << 16)) & (1 << rec->unk_0A)`, `mask` may be a u32 local whose
+only effect is the int->u32 conversion that keeps fold-const.c:4437 from rewriting the bit test (int form 3 off),
+commented with that rewrite and the measurements; fresh layer-2; no other unsigned-widening device, local or site.
+Rule text: .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on narrow spellings (Q90).

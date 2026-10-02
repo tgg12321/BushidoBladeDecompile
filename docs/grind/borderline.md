@@ -339,3 +339,8 @@ recommendation: (A) as the evidence-consistent model, staged: real types for the
 category: resolution
 evidence: docs/grind/owner-rulings-2026-09-26.md batch 41; docs/grind/decisions.md 2026-10-01 OWNER RULING Q89.
 disposition taken: the 2026-10-01 camera_CalcAngles policy-question is SPENT with option (A), staged: prerequisites first (func_80048FFC in C; real types for the small-declared objects), then the split + -G8 proof; camera_CalcAngles stays INCLUDE_ASM/active until it lands.
+
+## 2026-10-01 — func_80023F08 — u32 move-class bit-set — owner ruling Q90 — resolution
+category: resolution
+evidence: docs/grind/owner-rulings-2026-09-26.md batch 42; docs/grind/decisions.md 2026-10-01 OWNER RULING Q90; layer-2 rev-23F08-B-r11 FAIL item 1.
+disposition taken: asked directly by the orchestrator after the layer-2 FAIL (no separate policy-question entry); SPENT, allowed narrowly (Q90). The landing still needs its own fresh layer-2.
