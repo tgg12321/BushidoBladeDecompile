@@ -99,3 +99,26 @@
 - [s1] Precedent chain for the remedy: func_80019310 refused 12427b10 -> handoff entry pre-slim-2026-10-01:docs/grind/decisions.md:24517 -> owner-gated 2aed243e -> operator row 2cef233c -> unpark 0bb257ca -> Judge PASS pre-slim-2026-10-01:docs/grind/decisions.md:24842 -> merged 3869ca31 COMPLETED-INLINE-ASM-CANONICAL.
 
 - [s1] Integration handoff filed: pre-slim-2026-10-01:docs/grind/decisions.md:25395 with the exact one-line registry row the operator appends; src/code6cac.c restored to INCLUDE_ASM (asm-until-matched); candidate.c unchanged and ready to submit EXACTLY once the row lands.
+
+## s2 (2026-10-02, lane oct2-b4, Q91 re-judge)
+17. Route re-judged: the 2026-09-26 inline_o.h class (inline-asm-policy.md) is the route; the old
+    joined-statement `addu $t4` islands (rejected/joined-islands-judge-pass-8655cc28.c) are not
+    header-exact units. Every island in candidate.c is now the PsyQ 4.3 inline_o.h statements of
+    engine/gtemacro.py PINNED (gte_SetRotMatrix :272-284, gte_ldlv0 :95-103, gte_rtv0 :426-430,
+    gte_stlvnl :904-909; 26 statements, "$12".."$15","memory" clobbers, `($12)` verbatim).
+    One deviation: gte_rtv0's placeholder `.word 0x0000013f` carried as `.word 0x4A486012`
+    (target 0x80020570 `1260484A`) -> needs a per-function grant like Q61 (class prong (C)).
+18. Data model: arg0 is PracticeMenuRec * (caller func_80023F08 passes rec, src/code6cac_tu2.c).
+    Fields used: unk_04 (pid), unk_350 (counter), +0x352 s16 index into game_GetPlayerData()'s
+    MATRIX * table (same `(MATRIX **)game_GetPlayerData` idiom as the sibling in code6cac_tu2.c)
+    and SPAD->unkA8[pid][], +0x354 a Vec3i32 (func_800203B4 gte_stlvnl-stores MAC1..3 there;
+    gte_ldlv0 here reads it as a long vector). Landing splits header `u8 unk_352[0x360-0x352]`
+    into `s16 unk_352; Vec3i32 unk_354;` (0x360 = cpu_route unchanged).
+19. Sandbox --disable all (tmp/orch/sbx.ps1, raw-offset stand-ins for the two new fields, same
+    addresses): v1 (tx/ty/tz locals, `(s16)ty >= 0x801`) 0/122; v2 (`out[1] > 0x800`) 0/122;
+    v3 (no tx/ty/tz, negate out[] in place) 0/122 = candidate.c shape. Zero FAKE constructs.
+    canonical = ASM-PARTIAL 11/122 cop2.
+20. Pure-C attempts for the auth row: [1] joined-statement islands (score 0, not header-exact,
+    rejected/joined-islands-judge-pass-8655cc28.c); [2] gte_SetRotMatrix as C word loads + ctc2-only
+    islands, 0/12 region insns (rejected/thin-island-c-loads-seat-t0-a0-v0-not-t5-t7.c);
+    [3] inline_o.h verbatim = candidate.c, 0/122. GCC 2.7.2 has no cop2 emitter.

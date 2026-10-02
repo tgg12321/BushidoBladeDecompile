@@ -57,3 +57,10 @@
   5. `auth:` commit, fresh layer-2, `verify-oracle --rebuild`, `queue done`.
 - DEPENDS: PracticeMenuRec header shared with the L1/L2 cleanup series (`memory/grind/func_80021424/HANDOFF.md`).
 - ODDS/LANE: 1 manual session + 1 owner question; bytes ~85% [I].
+
+## s2 (2026-10-02, lane oct2-b4)
+- H7 CONFIRMED: inline_o.h header-exact islands (PINNED statements, "memory" clobbers) + PracticeMenuRec
+  member access reproduce 122/122 (sandbox 0); the "memory" clobbers do not move the `lh 0x350` / magic
+  sequence because the `mul` statement sits between gte_rtv0 and gte_stlvnl, where the target has it.
+- Open: per-function owner grant for gte_rtv0's post-DMPSX word 0x4A486012 (Q61 shape) -> STATUS: QUESTION
+  to the orchestrator; then auth: row + Match: landing (header split of unk_352 under the landing lock).
