@@ -4,9 +4,12 @@ paths: [".claude/rules/dead-store-fake-exception.md"]
 description: "SANCTIONED LAST RESORT (owner 2026-07-01): a dead store / self-assignment to a LOCAL or PARAMETER, annotated /* FAKE: ... */, after documented lever exhaustion. Un-annotated dead stores and pins stay forbidden."
 metadata:
   type: rule
+  tier: hygiene
 ---
 
 # Dead stores / self-assignments — the FAKE-annotated exception
+
+> **Tier (owner ruling Q91):** the `/* FAKE */` label with its measured reason and the family's shape (store-level deadness, locals/params only) are blocking (completion-bar item 3); lever exhaustion and the named GCC pass are hygiene.
 
 **Owner ruling 2026-07-01** (`pre-slim-2026-10-01:memory/project/sotn-family-research-2026-07-01.md`): a dead store or self-assignment
 written as ordinary C, targeting a **local variable or function parameter**, is a sanctioned

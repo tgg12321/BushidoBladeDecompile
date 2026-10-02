@@ -10,7 +10,8 @@ metadata:
 
 When a symptom matches, `Read .claude/rules/<slug>.md` first. Never use or judge a `(FAKE)`
 (last resort, annotation mandatory) or `(FORBIDDEN)` construct without reading its rule.
-Auto-loaded policy: no-new-park-categories (frozen family list), inline-asm-policy,
+Auto-loaded policy: completion-bar (the whole blocking tier, Q91), no-new-park-categories
+(pre-cleared FAKE shapes), inline-asm-policy,
 no-compiler-divergence, asm-until-matched. Read when relevant: ordinary-c-judge-decidable
 (+ reused-local-one-role, reused-local-meaning-source, reused-local-necessity),
 sotn-precedent-suffices, aggregate-merge-family, aggregate-declaration-views,

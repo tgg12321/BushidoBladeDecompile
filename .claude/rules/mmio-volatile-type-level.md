@@ -4,6 +4,7 @@ paths: [".claude/rules/mmio-volatile-type-level.md"]
 description: "Owner ruling 2026-07-01: volatile on PSX I/O-register addresses (0x1F801000-0x1F802FFF) is type-level hardware semantics — any access shape, no FAKE annotation. Game-state globals keep the two-prong gate."
 metadata:
   type: rule
+  tier: blocking
 ---
 
 # Hardware-MMIO volatile is TYPE-LEVEL

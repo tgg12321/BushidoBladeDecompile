@@ -4,9 +4,12 @@ paths: [".claude/rules/staged-value-reused-variable.md"]
 description: "SANCTIONED 2026-07-03 — a real, immediately-used value staged through an existing (currently-dead) local to fix instruction order; FAKE-annotated, lever-exhaustion required; zero dead code"
 metadata:
   type: rule
+  tier: hygiene
 ---
 
 # Staged value through a reused variable — SANCTIONED (owner ruling 2026-07-03)
+
+> **Tier (owner ruling Q91):** the family's shape and, where its value has no semantic reading, a `/* FAKE */` label are blocking (completion-bar item 3); lever exhaustion is hygiene.
 
 ```c
 /* natural (wrong instruction ORDER): */

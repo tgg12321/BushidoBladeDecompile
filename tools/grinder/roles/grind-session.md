@@ -24,11 +24,12 @@ exceptions require documented lever-exhaustion + a named GCC-pass mechanism +
 a /* FAKE */ annotation — if you think you are in one, emit `ruling-request`
 and ask; never self-approve.
 
-## THE STANDARDS YOU ARE HELD TO (verbatim — read before you write any C)
-These are copied unchanged from the Judge's policy (tools/grinder/roles/judge.md),
-the cheat-reviewer's catalog (.claude/agents/cheat-reviewer.md) and the frozen
-SOTN list (.claude/rules/no-new-park-categories.md). They are the exact text you
-will be judged against. Nothing here is a paraphrase, and nothing here is new.
+## THE STANDARDS YOU ARE HELD TO (read before you write any C)
+PRE-Q91 TEXT, PENDING REWRITE: the sections below were copied from the pre-Q91
+Judge policy and frozen list. Owner ruling Q91 (.claude/rules/completion-bar.md)
+supersedes them wherever they differ; the self-vet template stays as-is only
+because the driver's validator (tools/grinder/grindlib.py) still parses it, and
+both are rewritten before any owner-approved Grinder restart.
 
 **FIRST REACH OF AN UNSANCTIONED FAMILY IS A CHEAT REGARDLESS OF SPELLING — IF NO
 FAMILY BELOW COVERS YOUR CONSTRUCT, THE ANSWER IS A RULING REQUEST, NOT A
@@ -80,7 +81,14 @@ bump `reg_n_refs` was moved to the sanctioned F1 family by owner ruling
 2026-07-01 — FAKE-annotated last-resort; un-annotated or byte-materializing
 instances remain FAIL.)
 
-### The FROZEN SOTN-accepted list (the ONLY sanctioned families)
+> **Owner ruling Q91 (2026-10-02) supersedes this section where they differ.** The
+> completion bar is `.claude/rules/completion-bar.md`: a construct outside the list below is
+> admissible as a labelled `/* FAKE: <measured reason> */` hack when it asserts nothing false
+> and is the simplest known form; the refusals below that rest only on "outside the list" are
+> re-opened (clause D); the wall (pins, `$N` asm, barriers, build-time rewriting, alias
+> renames, volatile outside its catalog, fabricated calls) stands.
+
+### The pre-cleared SOTN shapes (examples since Q91, not the boundary)
 Variable reuse for codegen control · opaque arithmetic variables · sub-word param
 reads (`*(u16 *)&local`) · mixed exit forms (`goto endK` + inline `return`) ·
 duplicate-read into branch arms · named-intermediate declaration order ·
@@ -138,11 +146,10 @@ Citation hygiene (mechanically enforced by the self-vet validator):
 
 ### The FAKE annotation template + its prerequisites
     /* FAKE: <what>, mechanism: <named GCC pass>, lever-exhaustion: <where> */
-Owner policy, verbatim: "Any /* FAKE */ construct requires all three: (a) the full
-modality ladder demonstrably spent — verify against the ledger's hypotheses.md,
-not the agent's claim; (b) a named GCC-pass mechanism; (c) the annotation present.
-Even then it must sit inside a sanctioned family." First-reach = FAIL.
-Un-annotated = FAIL. Sanctioned family but no exhaustion ledger = FAIL.
+Pre-Q91 policy (superseded by completion-bar.md item 3, kept for the driver's
+validator until the Grinder rewrite): exhaustion + named mechanism + annotation,
+inside a sanctioned family. Since Q91 only the annotation with its measured
+reason, honesty and simplest form block; un-annotated = FAIL.
 
 ## MANDATORY SELF-VET before any `candidate-ready`
 A `candidate-ready` outcome is REJECTED BY THE DRIVER as an invalid session

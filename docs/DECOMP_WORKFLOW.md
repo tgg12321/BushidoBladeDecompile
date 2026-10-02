@@ -137,12 +137,11 @@ The line, stated by the project owner: *materially-irrelevant minor tricks that 
 compiler are fine; what is not fine is making something look decompiled when it really
 isn't.* (`.claude/rules/do-while-zero-exception.md`)
 
-That resolves into three tiers. **Tier 2 is not a judgement call you make from first
-principles** — it is membership in a frozen list that only the project owner extends. The
-authorities are `.claude/rules/no-new-park-categories.md` (the frozen SOTN-accepted list,
-its prerequisites, and the explicit refusals) and `.claude/rules/ordinary-c-judge-decidable.md`
-(owner ruling 2026-08-31, the two-tier test). This section is a map of them, not a
-replacement — read the rule files before relying on any of it.
+The authority is `.claude/rules/completion-bar.md` (owner ruling Q91, 2026-10-02): the
+whole blocking tier, SOTN-equivalent — bytes match, the wall holds, the code is honest with
+every hack labelled, existing types are used, the simplest known form lands. Rules it does
+not list as blocking are hygiene (good practice, recorded as debt when skipped) or technique
+(how-to). This section is a map of the bar, not a replacement for it.
 
 ### Tier 0 — forbidden outright: bytes or register outcomes imposed from outside compiled C
 
@@ -150,17 +149,17 @@ replacement — read the rule files before relying on any of it.
    retired at zero rules; do not reintroduce it in any form).
 2. Register pins — `register T x asm("$4")`.
 3. `__asm__` in any form **except** the canonical GTE / hand-written-asm category, and
-   only where the `canonical` gate has authorized it.
+   only where the `canonical` gate has authorized it (or the Q55 SOTN-citation route below).
 4. Compiler or toolchain divergence — do not change flags, patch the compiler, or swap
    `cc1` to close a function.
 5. **Semantic-lie C**: legal C that asserts false facts about the program. Cross-symbol
-   address derivation, alias second-handles, struct declarations that misdescribe the
+   address derivation, second extern / alias symbols for declared bytes (a labelled local
+   pointer alias is a pre-cleared FAKE shape), struct declarations that misdescribe the
    object, prototypes that misdescribe the parameter, and `volatile` applied to coerce
-   codegen. (Two carve-outs, both ruled 2026-07-01: `volatile` on declarations in the
-   hardware I/O range 0x1F801000–0x1F802FFF is legitimate type-level semantics with no
-   shape test and no annotation — `.claude/rules/mmio-volatile-type-level.md`; and the
-   interrupt-touched `extern volatile` allowlist —
-   `.claude/rules/legitimate-volatile-interrupt-touched.md`.)
+   codegen. (`volatile` is admitted only through its catalog, completion-bar item 3: the
+   hardware range — `.claude/rules/mmio-volatile-type-level.md`; the IRQ extern allowlist and
+   the volatile-locals Routes A/B — `.claude/rules/legitimate-volatile-interrupt-touched.md`;
+   the phantom-frame pad — `.claude/rules/phantom-frame-pad-family.md`.)
 
 This tier is mechanically enforced: the sandbox scores with cheat-asm stripped, so these
 cannot help, and the completion gate audits the source.
@@ -171,8 +170,8 @@ Judged on the **C text**, not on your motive. Choosing among semantically-truthf
 spellings after observing codegen is the *method* of matching decompilation —
 "scheduling-motivated respelling" is not a FAIL ground when the spelling is truthful
 (ordinary-c-judge-decidable Ruling 1(3)). Named intermediates holding a real consumed
-value — **written once**; a multi-write carrier is not this class and stays under the
-frozen list (`no-new-park-categories.md`, the named-intermediate entry) — plus statement
+value — **written once**; a multi-write carrier is ordinary only in a Ruling 5-12 shape
+(`ordinary-c-judge-decidable.md`), otherwise it is a labelled FAKE (Tier 2) — plus statement
 order, variable reuse, mixed exit forms, and split arithmetic that computes the real
 value: all ordinary, no annotation required.
 
@@ -183,33 +182,29 @@ Two constraints still bind:
 - **Simplest known form.** When several byte-exact forms are known, the one carrying the
   fewest no-semantic-purpose constructs is the one that lands.
 
-### Tier 2 — constructs with NO semantic purpose: frozen list only
+### Tier 2 — constructs with NO semantic purpose: labelled hacks (Q91)
 
-A construct that exists only to move codegen and asserts nothing must be a **member of the
-frozen SOTN-accepted list with that entry's own prerequisites met**. Non-membership is a
-clean FAIL plus a borderline-ledger entry — not a judgement call, not an escalation, and
-not something a reviewer may reason its way past. The list is owner-only to extend; since
-owner ruling 2026-09-30 (Q50) a construct carried by matched SOTN code is precedent enough, with the
-family's prerequisites still owed (`no-new-park-categories.md` § SOTN precedent suffices).
-
-The standard prerequisites on the last-resort entries are all four of:
-
-1. documented lever-exhaustion (what you tried, with measurements),
-2. a named GCC-pass mechanism,
-3. a mandatory `/* FAKE: ... */` annotation at the construct site naming the observed
-   effect and the mechanism,
-4. layer-1 *and* layer-2 (fresh adversarial) review.
+A construct that exists only to move codegen is admissible as a **labelled hack**:
+`/* FAKE: <measured reason> */` at the site ("direct read hoists the load; score 5"),
+nothing false asserted around it, and no byte-exact spelling with fewer FAKEs known. The
+shapes in `no-new-park-categories.md` are pre-cleared examples, not the boundary. Exhaustion
+dossiers and named-GCC-pass write-ups beyond that one-line reason are hygiene: good to bank in
+the ledger, never a completion gate. Layer-2 review is still mandatory.
 
 `do { ... } while (0)` is the one wrapper sanctioned generally, at a single level (nested
 wraps need a written, *measured* single-level-insufficient justification). Its syntactic
-equivalents are **not** sanctioned by its existence: `if (1) { }`, `for (i = 0; i < 1; i++)`
-and `while (1) { ...; break; }` each have to clear the SOTN-evidence bar on their own.
+equivalents are **not** pre-cleared by its existence: `for (i = 0; i < 1; i++)` and
+`while (1) { ...; break; }` are judged on completion-bar item 3; `if (1) { }` is
+detector-stripped and cannot satisfy item 1.
 
-Explicitly refused — do not re-propose in any spelling: fabricated dead call sites
-(`if (0) { f(); }`, refused 2026-08-17), the `+= 2 / -= 1` respelling, dead conditional
-stores, dead parameter assignments, `(void)&local`, dead local arrays, lost-codegen
-inserts, register pins, scheduling barriers, `asm("sym")` alias renames, redundant width
-casts.
+Refused even when labelled — exactly completion-bar items 2-3: the wall (pins, `$N` or
+non-canonical asm in any spelling, scheduling barriers, build-time rewriting, alias renames);
+fabricated calls or side effects (`if (0) { f(); }`); cross-symbol address derivation;
+`volatile` outside its catalog; detector-stripped frame coercion (`(void)&local`,
+lost-codegen inserts, unreferenced local arrays without their allowlist row).
+The one exception (owner ruling Q55, unchanged by Q91): a verified SOTN citation
+(`sotn-precedent-suffices.md` conditions (1)-(4) plus its `/* SOTN: */` tag) can admit an item
+2-3 refusal — manual path only, `/* FAKE */`-labelled, simplest known form, fresh layer-2.
 
 ---
 
@@ -322,10 +317,11 @@ lines above. One storage location gets exactly one C handle.
 
 A completion is a claim. These are the receipts:
 
+- **Inline `/* FAKE: ... */`** at every match-motivated construct, with its measured reason
+  (blocking, completion-bar item 3).
 - **A ledger** in `memory/grind/<func>/` recording what you tried and what it measured —
-  including the forms you rejected and why. "I tried things" is not a record.
-- **Inline `/* FAKE: ... */`** at every match-motivated construct, naming effect and
-  mechanism.
+  including the forms you rejected and why (hygiene tier: expected, recorded as debt when
+  thin, never a completion gate).
 - **Ablation results** for anything you claim is load-bearing, per §7 — cluster removal,
   not single-piece.
 - **A commit message that matches reality.** State the commands you ran and their output.
@@ -396,7 +392,7 @@ file. Everything in the diff should be explainable from the message.
 
 | Need | Go to |
 |---|---|
-| **Is this construct allowed?** | `../.claude/rules/no-new-park-categories.md` (frozen list, owner-only) + `../.claude/rules/ordinary-c-judge-decidable.md` |
+| **Is this construct allowed?** | `../.claude/rules/completion-bar.md` (the whole blocking tier, Q91) |
 | Toolchain, build pipeline, disc layout | [`../AGENTS.md`](../AGENTS.md) |
 | Matching techniques, symptom → recipe | [`MATCHING.md`](MATCHING.md) |
 | Current build state and worklist top | [`STATUS.md`](STATUS.md) |

@@ -4,6 +4,7 @@ paths: [".claude/rules/legitimate-volatile-interrupt-touched.md"]
 description: "NARROW CARVE-OUT: `extern volatile T G;` only for a game-state global with a cited IRQ writer AND a spin-wait / double-read / IRQ-mutated-loop-bound use site. Volatile LOCALS: SOTN citation or target-byte proof."
 metadata:
   type: rule
+  tier: blocking
 ---
 
 # `extern volatile T G;` — IRQ-touched globals (narrow exception)
@@ -61,8 +62,9 @@ target-byte proof.
 
 - **Route A — SOTN precedent (Q50).** A citation meeting conditions (1)-(4) of [[sotn-precedent-suffices]]
   (PS1-build file, the same thing when read, matched SOTN code), recorded in the
-  ledger and an inline `/* SOTN: <file>:<line> @<commit> */` tag, with Q53's prerequisites (`/* FAKE: ... */`
-  where match-motivated; simpler spellings tried). Only SOTN counts.
+  ledger and an inline `/* SOTN: <file>:<line> @<commit> */` tag, with Q53 as tiered by Q91
+  ([[sotn-precedent-suffices]]): `/* FAKE: ... */`-labelled, simplest known form, fresh layer-2; the
+  ledger record and simpler-spelling write-ups are hygiene. Only SOTN counts.
 - **Route B — target-byte proof (Q48).** All of:
   1. every access to the local in the original instructions is a store to / load from its `$sp` slot (none
      served from a register), listed by address and opcode;

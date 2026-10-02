@@ -4,6 +4,7 @@ paths: [".claude/rules/*.md", "CLAUDE.md", "AGENTS.md", "engine/queue.py", "engi
 description: "Every COMPLETED-C / cheat-cleanup / canonical-asm-authorization commit (and every rule doc that sanctions a technique) MUST pass a fresh default-FAIL cheat-reviewer (layer-2), recorded with `layer2 record`, BEFORE it lands. Mechanical gates are necessary, not sufficient."
 metadata:
   type: rules
+  tier: blocking
 ---
 
 # Independent adversarial review BEFORE commit
@@ -17,7 +18,8 @@ uses ordinary C. The semantic layer is a separate agent.
 
 Default-FAIL, independent (not the worker, not the orchestrator), read-only, returns JSON
 `decision` (PASS | FAIL | NEEDS_USER), `function`, `summary`, `evidence`, `next_action`, and the
-`body_hash` it reviewed. It walks the 6-test checklist against [[no-new-park-categories]].
+`body_hash` it reviewed. Its rubric is [[completion-bar]] (owner ruling Q91): every FAIL cites
+one of its items; hygiene gaps are reported as `hygiene_debt`, never as a FAIL.
 
 ## When
 
@@ -70,4 +72,4 @@ The orchestrator never performs the review itself and never overrides it. Mechan
 run first; the reviewer is the semantic layer on top. Periodic retro-audits of landed
 COMPLETED-C functions are encouraged.
 
-Related: [[no-new-park-categories]] · [[judge-sole-gate]] · [[inline-asm-policy]]
+Related: [[completion-bar]] · [[no-new-park-categories]] · [[judge-sole-gate]] · [[inline-asm-policy]]

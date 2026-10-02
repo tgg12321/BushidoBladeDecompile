@@ -4,9 +4,12 @@ paths: [".claude/rules/duplicated-statement-into-arms.md"]
 description: "SANCTIONED (owner 2026-07-01): duplicating a REAL statement into 2+ arms instead of label-sharing, incl. when cross-jump re-merges it byte-neutrally (reg_n_refs lift). Byte-neutral, exhaustion, FAKE annotation, review."
 metadata:
   type: rule
+  tier: hygiene
 ---
 
 # Duplicated statement into arms — the sanctioned spelling
+
+> **Tier (owner ruling Q91):** the `/* FAKE */` label, a copy that is real on its path, and simplest form are blocking (completion-bar items 3, 5); lever exhaustion and byte-neutrality write-ups are hygiene.
 
 **Owner ruling 2026-07-01.** Writing the SAME real statement in two or more control-flow arms —
 instead of sharing one copy via a label/goto — is a legitimate matching technique, **including**

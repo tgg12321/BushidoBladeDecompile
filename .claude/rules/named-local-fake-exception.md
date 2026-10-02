@@ -4,9 +4,12 @@ paths: [".claude/rules/named-local-fake-exception.md"]
 description: "SANCTIONED LAST-RESORT (owner 2026-07-01): constant-holder locals and dead/unused SCALAR locals biasing RA, with /* FAKE */ + lever exhaustion. Arrays, frame coercion, dummy-subscript locals stay forbidden."
 metadata:
   type: rule
+  tier: hygiene
 ---
 
 # Constant-holder / dead scalar locals — the FAKE-annotated exception
+
+> **Tier (owner ruling Q91):** the `/* FAKE */` label with its measured reason and an honest name (no purpose claimed) are blocking (completion-bar item 3); lever exhaustion and the named GCC pass are hygiene.
 
 **Owner ruling 2026-07-01** (evidence: `pre-slim-2026-10-01:memory/project/sotn-family-research-2026-07-01.md`): a local variable whose only
 purpose is codegen influence — holding a constant in a register across calls/statements, or existing as a

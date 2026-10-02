@@ -1,12 +1,13 @@
 ---
 name: no-new-park-categories
 paths: ["src/*.c", "engine/queue.py", "engine/cheats.py"]
-description: "Anti-cheat policy and the single authority for the FROZEN SOTN-accepted family list: no new cheat-tolerant categories, cheats by any spelling are cheats, auto-search finds are proposals."
+description: "Anti-cheat policy: no new park categories, no build-time rewriting, auto-search finds are proposals; the pre-cleared FAKE shapes (examples under completion-bar item 3, owner ruling Q91)."
 metadata:
   type: rules
+  tier: blocking
 ---
 
-# No cheat-tolerant categories; the frozen SOTN family list
+# No cheat-tolerant categories; the pre-cleared FAKE shapes
 
 Owner (2026-06-01): *"If it's a cheat, it will not be accepted. Full stop."* Bar: SOTN
 standard: pure C, or canonical-body asm only for code that was originally hand-written asm.
@@ -23,8 +24,7 @@ standard: pure C, or canonical-body asm only for code that was originally hand-w
   legitimate).
 
 A stuck function gets more search, the canonical-asm grant path if hand-coded signals support
-it ([[judge-sole-gate]]), or rotation ([[rotation-not-foreclosure]]). A proposed frozen-list
-extension is FAIL(CONSTRUCT) + a borderline entry.
+it ([[judge-sole-gate]]), or rotation ([[rotation-not-foreclosure]]).
 
 ## Cheats by any spelling
 
@@ -32,21 +32,30 @@ The detectors (`engine/volatile_cheats.py`, `engine/inlineasm.py`) catch literal
 are a backstop, the standard is intent. Cheat signals: no semantic purpose (names like `pad`,
 `buf`, `dummy`, `spill`, `slack`, `_unused`, `_tmp`); dead in the output while changing
 decisions upstream of DCE; "necessary" only because removing it raises the score; justified
-only by GCC internals. Outside the list below (and [[ordinary-c-judge-decidable]]) it is refused.
+only by GCC internals. Since owner ruling Q91 such a construct is admissible only as a labelled
+hack: `/* FAKE: <measured reason> */` at the site, nothing false asserted, simplest known form
+([[completion-bar]] item 3). Unlabelled, or dressed up with a purpose it lacks, it is refused.
 
 ## Auto-search output is a PROPOSAL
 
 Vet every permuter/sweep/enumerator closing form before surfacing it: (1) a catalog construct,
 directly or by analogy? (2) code with no semantic purpose? (3) would a programmer write it from
 a specification? (4) is it justified by GCC internals rather than program logic? Any yes ⇒
-reject it yourself and bank it as rejected. Layer-2 is still mandatory.
+reject it unless it is kept as a labelled FAKE that meets [[completion-bar]] items 2-5 (and is
+the simplest known form); bank the rest as rejected. Layer-2 is still mandatory.
 
-## The FROZEN SOTN-accepted family list (owner-only to extend)
+## The pre-cleared FAKE shapes (owner ruling Q91: examples, not the boundary)
 
-Every entry below is the whole list. Its prerequisites live in the linked rule and are
-mandatory; "standard prerequisites" = documented lever exhaustion, a named GCC-pass mechanism,
-the stated `/* FAKE: ... */` annotation, layer-1 + layer-2. Read the rule before using or
-judging an entry; never generalize from one entry.
+These shapes are known SOTN-accepted forms. Under [[completion-bar]], when an entry's
+construct is used with no semantic purpose, its BLOCKING part is the `/* FAKE: ... */` label
+with its measured reason, honesty (item 3) and the wall (item 2); its linked rule's other
+prerequisites (exhaustion dossier, named GCC pass, frame proofs, symbol retirement) are
+HYGIENE. No label where the construct is truthful: entry 12 (MMIO typing, per
+[[mmio-volatile-type-level]]); entry 8's real merge (the Q63/Q73 admissions and second-view
+exceptions keep the labels their own terms require: [[aggregate-merge-family]],
+[[aggregate-declaration-views]]); entries 1, 4, 6 with a truthful reading (Ruling 1(3)). A construct not listed here is judged directly
+on completion-bar item 3. "Standard prerequisites" below means: the label (when the construct
+has no semantic purpose) and honesty (blocking); exhaustion, named mechanism (hygiene).
 
 1. **Variable reuse for codegen control** — [[defeat-licm-hoist-var-reuse]].
 2. **Opaque arithmetic variable** (`s32 one = 1;`) — [[loop-rotation-two-shift]]; never a
@@ -63,7 +72,8 @@ judging an entry; never generalize from one entry.
    (5) destination not live-pre-initialized; (6) standard prerequisites. No extra handles to
    one object.
 7. **`do { } while (0)` wrap**, any codegen effect — [[do-while-zero-exception]]; the ONE
-   no-semantic-purpose wrapper (`for(i=0;i<1;i++)`, `while(1){..break;}`, `if (1)` are not).
+   pre-cleared wrapper. Other wrappers are judged on [[completion-bar]] item 3; `if (1) { }`
+   is detector-stripped (`find_always_true_if_scaffolds`), so it cannot satisfy item 1.
 8. **Per-word splat symbol → aggregate merge**, with its second-view exceptions —
    [[aggregate-merge-family]], [[aggregate-declaration-views]].
 9. **Dead store / self-assign to a local or param** — [[dead-store-fake-exception]]
@@ -79,7 +89,7 @@ judging an entry; never generalize from one entry.
     argument instead of a pointer local): value consumed at each site; annotation at the site.
 16. **F6 cancellation pair / redundant condition**: exactly `i++; i--;` adjacent, or an
     empty-if / redundant condition (`if (!i) { }`, `if (p && p)`); `!FAKE` annotation;
-    exhaustion ledger. The `+= 2 / -= 1` respelling stays banned.
+    exhaustion ledger (hygiene since Q91).
 17. **F7 common store duplicated into both arms**: values real and required; annotation.
 18. **Phantom-frame-slot volatile pad** (+ Q35 trailing sibling array) —
     [[phantom-frame-pad-family]].
@@ -88,17 +98,25 @@ Entries 1-7: 2026-06-02 research; 8: 2026-08-17; 9-14: 2026-07-01; 15-18: 2026-0
 surveys @8bd7c777). Narrow per-function rulings (sprintf, vmNoiseOn) live in
 [[ordinary-c-judge-decidable]].
 
-**Refused (stand):** fabricated dead call site `if (0) { call(); }` (2026-08-17); F1
-constant→local→local staging; F2 signedness-split dual read; F4 cross-symbol arithmetic
-(except the two named Q63/Q73 cases in [[aggregate-merge-family]]); F5 union-constructor
-CLOBBER; register pins; hardcoded-`$N` asm; build-time rewriting; alias renames; redundant
-width casts (except the Q82 s16 compare and the Q90 u32 bit-set in [[ordinary-c-judge-decidable]]).
+**Refused (stand):** the wall ([[completion-bar]] item 2) — register pins; hardcoded-`$N` asm;
+build-time rewriting; alias renames. Semantic lies and fabrications (items 3-4) — fabricated
+dead call site `if (0) { call(); }` (2026-08-17); F4 cross-symbol arithmetic (one symbol's bytes
+reached through another's address; the per-function Q63/Q73 admissions in
+[[aggregate-merge-family]] stand); F5 union-constructor CLOBBER (an invented object model);
+volatile outside its catalog.
+**Re-judged under Q91** (formerly refused as no-semantic-purpose shapes outside the list): F1
+constant→local→local staging, F2 signedness-split dual read, redundant width casts and the
+`+= 2 / -= 1` respelling are judged on [[completion-bar]] items 2-5 — labelled, nothing false,
+existing types used, simplest known form.
 
 ## Owner ruling 2026-09-30 — SOTN precedent suffices
 
 A construct verifiably present in matched PS1-build SOTN code is admissible on that citation,
-even over an older refusal (Q55), with its family's paperwork still owed (Q53); manual-path
-layer-2 only. Conditions and Q51/Q52: [[sotn-precedent-suffices]].
+even over an older refusal (Q55): manual path only (never on a Judge PASS), `/* FAKE */`-
+labelled, simplest known form, fresh layer-2 (Q53 as tiered by Q91: exhaustion and
+byte-neutrality write-ups are hygiene). For constructs [[completion-bar]] item 3 already
+admits, a citation is supporting evidence, not a requirement. Conditions:
+[[sotn-precedent-suffices]] (1)-(4) and its `/* SOTN: */` tag.
 
-Related: [[ordinary-c-judge-decidable]] · [[review-discipline-before-commit]] ·
+Related: [[completion-bar]] · [[ordinary-c-judge-decidable]] · [[review-discipline-before-commit]] ·
 [[judge-sole-gate]] · [[register-alloc-pure-c]]

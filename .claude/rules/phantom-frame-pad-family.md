@@ -4,9 +4,12 @@ paths: [".claude/rules/phantom-frame-pad-family.md"]
 description: "Frozen-list family (2026-08-18): an unreferenced `volatile` pad array reserving target-untouched frame bytes — first-local form, plus the Q35 trailing sibling-evidence array. FAKE-annotated, engine allowlist row, layer-2."
 metadata:
   type: rules
+  tier: hygiene
 ---
 
 # Phantom-frame-slot volatile pad (owner ruling 2026-08-18)
+
+> **Tier (owner ruling Q91):** the `_SANCTIONED_UNWRITTEN_PADS` row (the detector needs it) and the `!FAKE` label are blocking (completion-bar item 3); frame forensics, sibling evidence and exhaustion are hygiene.
 
 Frozen-list entry of [[no-new-park-categories]] (SOTN `src/st/sel/2C048.c:564`
 `volatile u32 pad; // !FAKE:`). Standard prerequisites (exhaustion, named mechanism,

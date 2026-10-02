@@ -1,12 +1,17 @@
 ---
 name: sotn-precedent-suffices
 paths: [".claude/rules/sotn-precedent-suffices.md"]
-description: "Owner ruling Q50 (2026-09-30): a construct that verifiably exists in matched PS1-build SOTN code is admissible on that citation (Q55 precedence over older refusals; Q51 reuse; Q52 self-marked fakes; Q53 paperwork still owed). Manual-path layer-2 only."
+description: "Owner ruling Q50 (2026-09-30): a construct that verifiably exists in matched PS1-build SOTN code is admissible on that citation (Q55 precedence over older refusals; Q51 reuse; Q52 self-marked fakes; Q53: annotation blocking, other paperwork hygiene since Q91). Supporting evidence since Q91, not a requirement."
 metadata:
   type: rules
+  tier: hygiene
 ---
 
 # SOTN precedent suffices (owner ruling 2026-09-30, Q50; Q51-Q53, Q55)
+
+> **Tier (owner ruling Q91):** hygiene, except that conditions (1)-(4) below and the
+> `/* SOTN: */` tag are blocking whenever a citation admits an item 2-3 refusal (Q55,
+> [[completion-bar]] item 3).
 
 Owner: *"SOTN precedent is good enough for any constructs if they verifiably exist in the
 SOTN repo"*. "Verifiably" (author's reading):
@@ -32,9 +37,9 @@ Psyz and other decompilations are not evidence. Every SOTN-admitted construct ca
 - **Q52 self-marked fakes:** a construct SOTN marks as hack/debt (any `FAKE`/`fake`/`hack`/
   `TODO`/`FIXME` comment, hack-named label/identifier/macro, `HACKS`-only code) counts, and
   ours carries `/* FAKE: ... */`.
-- **Q53 paperwork:** the family's annotation, exhaustion, byte-neutrality and review
-  prerequisites are still owed (not its "is this kind allowed" test); match-motivated ⇒
-  `/* FAKE */` plus ledger proof that simpler spellings were tried.
+- **Q53 paperwork (tiered by Q91):** match-motivated ⇒ `/* FAKE */` annotation and layer-2
+  review are blocking ([[completion-bar]] items 3, 6); exhaustion and byte-neutrality write-ups
+  are hygiene. Simplest known form (item 5) still applies.
 
 A Q50 admission is not a frozen-list extension. Records: docs/grind/decisions.md 2026-09-30
 OWNER RULING — SOTN precedent suffices, and the Q51-Q53, Q55 entries.

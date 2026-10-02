@@ -19,10 +19,10 @@ executes them.
 1. **No pending-owner states.** No "awaiting owner ruling" filings, park-and-wait ESCALATE
    routing, or decision packets. Every disposition is terminal when made; an item that does
    not close stays in the worklist ([[rotation-not-foreclosure]]). A would-be question whose
-   YES would lower a standard (sanction a cheat, a family with no in-hand precedent, waive the
-   canonical-asm evidence bar, "accept the debt") is a plain FAIL, never filed.
+   YES would lower a standard (breach [[completion-bar]] items 2-4, waive the canonical-asm
+   evidence bar) is a plain FAIL, never filed.
 2. **The Judge is the sole acceptance gate for autonomous work**: default-FAIL, read-only,
-   bound to the frozen static policy (`tools/grinder/roles/judge.md`). Its only ESCALATE
+   bound to the static policy (`tools/grinder/roles/judge.md`, rubric [[completion-bar]]). Its only ESCALATE
    kinds are the driver-executed mechanical paths: integration handoff / scope grant
    ([[integration-handoff-self-serve]]) and rule 3. The manual path keeps the layer-2
    `cheat-reviewer` ([[review-discipline-before-commit]]).
@@ -31,12 +31,12 @@ executes them.
    the Judge) writes the `inline_asm_canonical.txt` entry citing this ruling + the scanner
    evidence and appends a borderline entry for later audit. Without STRONG evidence asm stays
    refused, except the GTE macro classes in [[inline-asm-policy]].
-4. **The frozen SOTN family list stays OWNER-ONLY to extend**, and extension requests never
-   wait: a candidate family is logged to the borderline ledger with its evidence and the
-   function keeps the CURRENT-list disposition (refused; keeps grinding). Exception (owner
-   Q50, 2026-09-30): a construct with a verified SOTN citation
-   ([[sotn-precedent-suffices]]) is admissible on it with Q53's
-   prerequisites, and lands only through the manual path's layer-2, never on a Judge PASS.
+4. **No extension requests exist (owner ruling Q91).** A construct outside the pre-cleared
+   shapes in [[no-new-park-categories]] is decided directly on [[completion-bar]] item 3:
+   labelled, honest, not on item 3's refused list, existing types used and the simplest
+   known form ⇒ admissible (items 3-5); lying, a refused construct, a second extern / alias symbol / raw-offset cast for declared bytes (item 4),
+   a heavier form, or behind the wall ⇒ FAIL. A SOTN citation
+   ([[sotn-precedent-suffices]]) is supporting evidence, not a requirement.
 5. **Reviewer NEEDS_USER = FAIL + a `needs-user-downgrade` borderline entry.** The agent may
    re-invoke with genuinely NEW evidence but may never re-adjudicate the recorded question.
 
@@ -48,9 +48,9 @@ For a function a few instructions short in honest C with its sanctioned levers e
 - **Gate 1 — canonical asm** only with STRONG `scan_hand_coded --single <fn>` signals. A LOW
   tier is dispositive: a compiler-scheduling/RA artifact is ordinary GCC output, never a
   hand-coded signature. Passing ⇒ rule 3's grant path.
-- **Gate 2 — a coercion/spelling family** only with exhibited, in-hand precedent (file:line or
-  commit; "believed viable", "the only lever left", "measured to work" do not count). Passing
-  ⇒ rule 4 (logged; the Q50 SOTN-citation route on the manual path).
+- **Gate 2 — a labelled FAKE spelling** under [[completion-bar]] item 3 (Q91): honest,
+  annotated with its measured reason, simplest known form. Coercions that breach items 2-4
+  (pins, volatile outside its catalog, invented object models) stay refused.
 
 Both fail ⇒ the function stays `INCLUDE_ASM` and in the worklist ([[asm-until-matched]]);
 nothing is asked of the owner. Owner: "My standards will never change."

@@ -4,10 +4,13 @@ paths: [".claude/rules/dead-vars-local-array.md"]
 description: "FORBIDDEN: unused local arrays and (void)&scalar frame coercion. Narrow carve-outs (written-never-read array; OVERSIZED-LOCALS frame-proven tail; Q35 trailing sibling array) each need exhaustion, FAKE annotation, dual review."
 metadata:
   type: reference
+  tier: hygiene
   status: forbidden
 ---
 
 # FORBIDDEN — frame coercion (array AND scalar variants), with three narrow carve-outs
+
+> **Tier (owner ruling Q91):** the ban on unreferenced arrays without an allowlist row, and the `/* FAKE */` label on a written-never-read array, are blocking (completion-bar item 3); the carve-outs' frame-math proofs, range annotations and sibling evidence are hygiene.
 
 ## The ban
 

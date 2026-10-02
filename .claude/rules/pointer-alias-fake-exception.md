@@ -4,9 +4,12 @@ paths: [".claude/rules/pointer-alias-fake-exception.md"]
 description: "SANCTIONED LAST-RESORT (owner 2026-07-01): a C-level local pointer alias to a global (or one forward-order param alias, 2026-07-17) with /* FAKE */ + exhaustion; pointer-RMW on a global allowed. asm(\"sym\") renames forbidden."
 metadata:
   type: rule
+  tier: hygiene
 ---
 
 # C-level pointer aliases — the FAKE-annotated exception
+
+> **Tier (owner ruling Q91):** the `/* FAKE: <measured reason> */` label and the ban on `asm("Sym")` renames are blocking (completion-bar items 2-3); the exhaustion dossier and named-GCC-pass write-up are hygiene.
 
 **Owner ruling 2026-07-01** (evidence: `pre-slim-2026-10-01:memory/project/sotn-family-research-2026-07-01.md`): a local pointer that provides a
 second C handle to a global — where using the global directly would be semantically identical — is a

@@ -94,8 +94,8 @@ instrumented cc1 (`tools/gcc-2.7.2/cc1`, `BB2_*_DEBUG`) for pass-level dumps.
 3. `python3 tools/reviewer_precheck.py --func <f> --staged [--msg-file tmp/msg_<f>.txt]` — settles
    the procedural facts so the reviewer spends its effort on semantics.
 4. **Spawn a fresh `cheat-reviewer`.** Paste the precheck output; brief it adversarially (default
-   FAIL, your verdict not credited, the 6-test checklist on this diff, audit any rule doc the commit
-   adds). Point it at `.claude/rules/no-new-park-categories.md` for any family claim, and give it
+   FAIL, your verdict not credited, `.claude/rules/completion-bar.md` items 2-5 on this diff, audit
+   any rule doc the commit adds; hygiene gaps go in its `hygiene_debt`, not a FAIL), and give it
    the landed `rules:` commit hash for any owner ruling the body relies on. Its verdict must carry
    `body_hash` (`layer2 hash <func>`). Wait for every reviewer you started; a split verdict is a FAIL.
 5. **Canonical-asm verdict:** before `queue done`, record the region grant in

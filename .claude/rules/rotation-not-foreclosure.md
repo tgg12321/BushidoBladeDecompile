@@ -54,7 +54,7 @@ truly stuck and we feel we are burning multiple sessions wasting time on it."*
 - Instead of rotating: bank the ledger (floor, ruled-out forms, frontier) and leave it active.
 - A rotation commit states the session count and flat-floor history it rests on.
 
-The anti-cheat wall, the frozen construct list and the default-FAIL Judge are unchanged; no
+The anti-cheat wall, the completion bar ([[completion-bar]]) and the default-FAIL Judge stand; no
 completion category is added.
 
 Related: [[judge-sole-gate]] · [[no-compiler-divergence]] · [[asm-until-matched]]

@@ -902,3 +902,16 @@ Question, verbatim: "func_80023F08 (the largest remaining function, 2,983 instru
 Owner chose: **"Allow narrowly (Recommended)"** — option text: "Only this `u32 mask` class bit-set in func_80023F08, with a comment naming the compiler rewrite it avoids and the measurements; fresh review. The function can then land."
 Other option offered: "Refuse" — "Write it as plain int and leave the 3-instruction gap; func_80023F08 stays assembly and active until another spelling turns up."
 The rule text is .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on narrow spellings (Q90).
+
+# Owner exchange 2026-10-01/02 (forty-third batch, conversation) — VERBATIM RECORD — GRANTED
+Context: func_800693CC's branch match (0cf578443, never ported) re-reviewed on main: bytes still 0/307, layer-2 FAILed it
+on frame-object paperwork, an always-true `state >= 0`, two alias symbols and a block-scope aggregate.
+
+## Q91 — the completion bar is SOTN-equivalent; hygiene and technique rules are non-blocking
+Owner, verbatim: "I feel like we raised our standards dramatically recently and im not sure it entirely makes sense. Im certain we have existing functions marked complete that would not pass our standards here. What are your thoughts on the function as it is now? Would you consider it adequate and up to the SOTN standard? or is the reviewer correct and it needs a lot of work"
+Proposal put to the owner: completion = byte match + the wall + honest code (every no-semantic-purpose construct `/* FAKE: <measured reason> */`, nothing false asserted) + existing types + simplest form + one layer-2; the stricter paperwork becomes a non-blocking hygiene track; uniform from now, no re-audit; clause D re-opens per-function refusals that rested only on hygiene or "outside the frozen list" (func_8005C8A8 Q45/Q77, func_800770B8 Q66, camera_CalcAngles Q84, func_80020E74, _SsVmFlush), wall refusals stand.
+Owner, verbatim: "yes go ahead and draft that ruling then do the fixes once main is free"
+Owner, verbatim, on the draft including clause D: "Yes, and should we reorganize our rules into blocking, decompilation rules and looser, non-blocking hygiene rules?"
+Granted, with clause D. On the tiering question the agent recommended three tiers (blocking / hygiene / technique, as `tier:` frontmatter; only blocking files decide a completion) and folded the scheme into the Q91 rules commit, as no looser than draft A.6; the owner asked the question and has not separately answered the recommendation.
+The rule text is .claude/rules/completion-bar.md; edits in no-new-park-categories.md, ordinary-c-judge-decidable.md,
+.claude/agents/cheat-reviewer.md, tools/grinder/roles/{judge,grind-session}.md, docs/DECOMP_WORKFLOW.md §6, §9, §13.

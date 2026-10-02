@@ -35,6 +35,9 @@ guards block those).
   original was hand-written; listed in `inline_asm_canonical.txt`. The `canonical` gate decides, not
   the agent.
 
+The completion bar is `.claude/rules/completion-bar.md` (owner ruling Q91, SOTN-equivalent: match,
+honest, every hack `/* FAKE */`-labelled; rules it does not list as blocking are hygiene or
+technique tier).
 Cheats (register pins, hardcoded-`$N` `__asm__`, scheduling barriers, build-time output rewriting)
 are never an end state, by any spelling ([[no-new-park-categories]]). The sandbox scores with them
 stripped and `queue done` audits the source, so they can't help. **The oracle is the only truth:**

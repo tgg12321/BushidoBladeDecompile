@@ -4,9 +4,12 @@ paths: [".claude/rules/aggregate-merge-family.md"]
 description: "Frozen-list family: merging per-word splat D_ scalars into one aggregate — prongs (a)-(e), compiler-necessity evidence (a1)-(a4′), forced-in bytes (Q13/Q14), and the two narrow F4 exceptions (Q63, Q73)."
 metadata:
   type: rules
+  tier: hygiene
 ---
 
 # Per-word splat symbol → aggregate merge (owner ruling 2026-08-17)
+
+> **Tier (owner ruling Q91):** merging per-word splat symbols into the real aggregate, declared in the shared header and used as the one handle, is blocking (completion-bar item 4); retiring the old rows in `named_syms.txt` / `undefined_syms_auto.txt` is hygiene.
 
 Frozen-list entry of [[no-new-park-categories]] (SOTN `Vram`-style merges). Two or more splat
 `D_<addr>` scalars may become one aggregate when ALL hold:

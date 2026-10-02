@@ -42,8 +42,7 @@ or any surface outside their scope. On a Judge ESCALATE the DRIVER acts:
 
 ## What still pends the owner
 
-Extensions to the frozen family list ([[no-new-park-categories]]; logged, refused meanwhile);
-any change to the oracle, substrate or build flags ([[no-compiler-divergence]]); retiring or
+Changes to the completion bar ([[completion-bar]]); any change to the oracle, substrate or build flags ([[no-compiler-divergence]]); retiring or
 weakening a guard, gate or the Judge's policy; disc assets or the original EXE.
 
 Related: [[judge-sole-gate]] · [[rotation-not-foreclosure]]
