@@ -1,0 +1,78 @@
+{
+ "verdict": "PASS",
+ "decision": "PASS",
+ "function": "func_80023F08",
+ "body_hash": "2bca8a383bec29c2",
+ "reviewer": "rv2-23F08-1",
+ "scope": "match",
+ "summary": "Staged body meets completion-bar items 1-5: sandbox 0/2983, fresh build SHA1 == oracle, no wall constructs, every codegen-shaping construct FAKE-labelled with a ledger-verified reason, Q90 used exactly in scope, existing types used; one false note in undefined_syms_auto.txt (hygiene tier) should be corrected before commit.",
+ "findings": [
+  {
+   "construct": "item 1",
+   "result": "ok",
+   "explanation": "layer2 hash 2bca8a383bec29c2 on the staged index (worktree == index for src/code6cac_tu2.c; memory/grind/func_80023F08/candidate.c == staged body); sandbox --disable all score 0, 2983/2983 (cheat_asm_stripped 3 = canonical GTE islands of other functions in the TU); build/bb2.exe (02:03:06) newer than staged src/undefined_syms (02:01:58), sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa."
+  },
+  {
+   "construct": "item 2",
+   "result": "ok",
+   "explanation": "No pins, no __asm__/asm in the body, no barriers, no volatile, no Makefile/ld/config change; staged files are only src/code6cac_tu2.c and undefined_syms_auto.txt. Dropping D_80101EC8 is byte-neutral: no linked object references it (build/bb2.map; only the unlinked build/asm/6CAC.o, text1b.o), and the rebuild links and matches."
+  },
+  {
+   "construct": "s32 temp (four values)",
+   "result": "ok (item 3)",
+   "explanation": "FAKE-labelled at the declaration; name claims nothing; r11/scores_landing.txt shows split_all 25 and every partition 3..25, none 0. Each value is written before read in its block, so semantics hold."
+  },
+  {
+   "construct": "u32 mask",
+   "result": "ok (Q90)",
+   "explanation": "Exactly the Q90 expression `(mask = ent[2] | (ent[3] << 16)) & (1 << rec->unk_0A)` at the move-class test, comment names fold-const.c:4437 and casts/receipts.txt + fake/mask_jump.txt (both exist); no other unsigned-widening device in the body."
+  },
+  {
+   "construct": "two block-scoped `s32 state = rec->unk_6A`",
+   "result": "ok (item 3)",
+   "explanation": "Each FAKE-labelled with a measured reason matching fake/site1_final_s.txt (direct read 3) and fake/site2_cse.txt (11); cited target addresses 0x80024C14 / 0x80025780 / 0x80025788 are the beqz and li 8 / li 0x22 in asm/funcs/func_80023F08.s. unk_6A is the header's 'SEQ state code', so the name is truthful; the unconditional read of a non-volatile field adds no side effect."
+  },
+  {
+   "construct": "twist = -ratan2(old) + ratan2(new)",
+   "result": "ok (item 3)",
+   "explanation": "Same value as new - old (ratan2 is pure); asm/funcs/func_80023F08.s:1228-1234 calls ratan2 on sp+0x178 (m1, old) first; q91/variants.txt v_twist scores 7. Labelled. Reviewer measured `prev = ratan2(old); twist = ratan2(new) - prev;` also 0 (tmp/func_80023F08/rv2_twist_prev.c) but it is the same one named-intermediate device, not a fewer-FAKE form."
+  },
+  {
+   "construct": "rec->unk_A6 >= rec->unk_40",
+   "result": "ok (item 3)",
+   "explanation": "u8 vs s16, both promote to int: identical to unk_40 <= unk_A6 at every value (boundary inclusive, no sign/width change). Labelled; q91/variants.txt v_range scores 11."
+  },
+  {
+   "construct": "goto clear_8c / set_8c",
+   "result": "ok",
+   "explanation": "Labelled; receipts.txt: goto-free ternary 2, inverted 7. Control flow equals the original (func_8002798C decides when unk_86 == unk_88 && unk_8A != 0, else the range tests)."
+  },
+  {
+   "construct": "goto skip_62 (unlabelled)",
+   "result": "ok (ordinary C)",
+   "explanation": "A truthful early exit for the third arm of the B / C / else chain: the 0x10/0x20 parts run iff A && (B || C), as the target's failure branch to .L800260E0. The only other byte-exact form duplicates the 0x10/0x20 statements into both arms (a FAKE family 13 device), so the goto is the fewer-FAKE form; Ruling 1(3)."
+  },
+  {
+   "construct": "if (rec->unk_46 == 0 && ...) inside the unk_46 == 0 block",
+   "result": "ok",
+   "explanation": "Real re-read: rec is passed to func_800307D0 / func_80030BA8 / func_80032064 / func_80032854 in between, and the target reloads lh 0x46($s1) at asm line 3141."
+  },
+  {
+   "construct": "casts / offsets (item 4)",
+   "result": "ok",
+   "explanation": "All accesses go through PracticeMenuRec / MoveScript / MotionFrame / PadState / ScrPad (SPAD->unk00/unk48/unkA8) members; no raw rec+0xNN offset, no alias symbol (D_80101EC8/ED2 respelled g_practice_menu_table[...]), no cross-symbol derivation. Every new file-scope prototype matches its definition (code6cac_b_tu2.c, text1b.c, text1a_pre*.c, ings.c, code6cac_c_mid.c); the call-site casts are into those existing prototypes. New externs D_8008D90C[28][8] (ends at D_8008D9EC) and D_8008E0BC[27][4] (starts at the end of D_8008DF78, ends at D_8008E194) overlap no declared object. `table` (u16 *) and `move` (MoveScript *) type func_80021424's void * per use; the only consumers of MoveScript.unk_00 (this body) index its record as a u16 table, as the comment says."
+  }
+ ],
+ "hygiene_debt": [
+  "FIX BEFORE COMMIT (byte-neutral, body hash unchanged): undefined_syms_auto.txt's new D_80101ED2 note 'retire with func_8003C714 (its .s is the only live referrer)' is false: func_8003C714 is C (src/code6cac_c2.c:657, reads g_practice_menu_table[0].unk_0A), func_8001CE60 is C too, and after this landing no linked object references D_80101ED2 (only the unlinked build/asm/6CAC.o). Drop the row as with D_80101EC8 (re-verify link) or state that it has no live referrer, and correct the msg_match.txt line 'its last live asm referrer'.",
+  "D_8008E0BC / D_8008D90C externs and the callee prototypes are file-scope in src/code6cac_tu2.c rather than include/code6cac.h beside D_8008DD5C / D_8008DE34 / D_8008DF78.",
+  "(u16 *)/(s32 *)0x1F8001B0 is SPAD->unkA8[1] (time-shared scratchpad work buffer for func_800198D0 / func_80041188); a ScrPad union member would model it (already declared in the message).",
+  "Pre-existing prototype mismatches forcing casts: game_GetPlayerData declared s32 in this TU (void * in text1b.c) -> (MATRIX **); func_80023D08(s32) -> (s32)rec.",
+  "Ruling 11 (D) package / Ruling 5 2(c) record not re-run on this exact body (already declared).",
+  "include/code6cac.h MoveScript comment calls unk_00 a 'follow-up move id'; its only consumer resolves it to the u16 event-dispatch table - sharpen the header comment.",
+  "The twist and range-test FAKE labels annotate truthful respellings (Ruling 1(3)); harmless over-labelling."
+ ],
+ "required_fixes": [],
+ "evidence": [],
+ "next_action": ""
+}
