@@ -49,26 +49,14 @@
       "rotated_at": "2026-09-24T21:09:08+00:00",
       "rotation_count": 1,
       "addr": "800207C8"
-    },
-    {
-      "func": "func_800288C8",
-      "file": "code6cac_b_tu2",
-      "distance": 465,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "sandbox 90 from scorer-stripped header GPR stmts (owner question, borderline 2026-09-25) + tbl copy FAIL; oracle-green body banked in memory/grind/func_800288C8",
-      "rotated_at": "2026-09-25T16:23:47+00:00",
-      "rotation_count": 1,
-      "addr": "800288C8"
     }
   ],
   "counts": {
-    "total": 5,
+    "total": 4,
     "active": 1,
     "by_status": {
       "active": 1,
-      "rotated": 4
+      "rotated": 3
     },
     "by_verdict": {
       "C": 1
