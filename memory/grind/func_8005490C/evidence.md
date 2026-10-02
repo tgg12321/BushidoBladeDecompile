@@ -159,3 +159,11 @@ pipeline (r11/scripts/mk.py, xbuild.py, xbm.sh); every other function in both TU
   (body spliced at the INCLUDE_ASM line, 11 undefined_syms rows retired, D_800A3250 definition comment
   corrected). Spliced src: func_8005490C 0/399, func_80054604 0/160, full build SHA1 == oracle.
   layer2 hash: func_8005490C 27c6d9cf207af95e, func_80054604 b97c4f8f5486cce0.
+
+## [s3] 2026-10-02 oct2-b1 — LANDED, COMPLETED-C (ledger closed)
+- Layer-2 rv2-490C-1 round 1 PASS for both parts, no required fixes: (A) func_80054604 body
+  b97c4f8f5486cce0 scope cheat-cleanup -> 366adb180; (B) func_8005490C body 27c6d9cf207af95e
+  (== candidate.c) scope match -> 54d875f1d; queue done 32c25b28d. Integrity audit OK.
+- Key findings: FAKEs s (157) / player (split 9) / rot_z (split 41) labelled with verified target
+  insns; g_anim_func_table[0] cast is truthful (math_RotMatrixZYX); prototypes match definitions.
+  Hygiene debt as listed in the two commit bodies.
