@@ -105,3 +105,31 @@ debts for func_80048FFC. That function is still at 4/232 (see its evidence.md fo
 mechanism and what was killed). Q89 order still owed: func_80048FFC in C; real types for
 g_cam_bone_data2 and D_800EF070's record; the split tests; the -G8 head-part TU.
 camera_CalcAngles stays INCLUDE_ASM and active, not rotated.
+
+## 2026-10-02 (oct2-a1, Q91 clause D re-judgment) — the route, func_80048FFC's wall, the node typing
+
+Re-measured on main: -G0 the A8 array body is still 59/58 (+1, cse shares the forced store address with the
+return); text1b at cc1 -G8 the same body is exact (tmp-free harness: types/cmpall.sh, g8 runs). No -G0 spelling;
+Q91 changes nothing here (the obstacle is the compiler's cost model, not a paperwork refusal). Route = Q89.
+
+func_80048FFC (Q89 prerequisite) is unchanged at 4/232 at -G0 AND at -G8 (measured both ways; the head part's
+-G8 does not help it). Mechanism of its one hunk, from sched.c and the dumps: in sched1 the copy `old = phase`,
+the shift and call two's a1/a2/a3 moves all have priority = prio(call one) (MIPS ADJUST_COST makes anti/output
+deps free, and nothing before call one is a load at sched1); `old` is single-set so adjust_priority launches it
+the moment the shift is placed; ties go to the higher LUID, and calls.c emits the arg moves after all argument
+evaluation, so the shift (which must sit between the copy and the rect.h store for cse/combine to keep the copy;
+`old = phase` with the shift after call two collapses to 231 insns, w1/w3/v2 variants) is always placed above
+the arg moves. sched2 ties again at prio(call one) and keeps sched1's LUID order. Orchestrator asked
+(2026-10-02) whether the Q89 head part may end before func_80048FFC instead (gp-span: no shared gp symbol at
+that cut either, tmp/camera_CalcAngles/gpspan2.py).
+
+Q89 "real types" prerequisite — the two small-declared objects in the head part are both 0x58-byte transform
+nodes of the Unk80101DF0Record layout: g_cam_bone_data2 (camera_InitRotation fills +0x00..+0x54; g_cam_interp
+0x800EEDF8 is its unk8; func_800475A4's D_800EEE00/02/1C/20/24 are its xf.rot.vx/vy and xf.mat.t[0..2]) and
+D_800EF070 (func_800477E8 sets unk0/1/6/8/A/C, rot, work.t; func_800417D0 reads +6 as the s16 state;
+func_80047A90 queues it). The +0x02..+0x07 bytes are three s16 (stores at +2/+4 in camera_InitRotation, +6 in
+func_800477E8). types/final.py: both typed, 20 alias externs removed, all four consumers member-access; full
+text1b compare = 0 functions differing at -G0, and the head part is identical at -G8. func_800475A4 needs an
+s16 temporary for the negated pitch (FAKE): without it the negu moves one slot (vb_te/th/tp/tq); spellings
+that store rot.vx through the record name instead of the node pointer let cse fold the store onto the base
+register or reuse the forced address (+1 insn: va, va_tb, vb_td, vb_tf). Receipts: types/receipts.txt.
