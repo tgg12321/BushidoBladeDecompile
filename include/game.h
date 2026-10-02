@@ -96,6 +96,21 @@ typedef struct {
 
 extern Unk800F0E38Record D_800F0E38[12];
 
+/* 0x8009BC0C: the eight option rows of the list menu func_800693CC drives, one
+ * {state, mode} byte pair per row (0x8009BC0C..0x8009BC1B). Object model evidence
+ * from the original binary: func_800693CC indexes the row as (D_800A34F8 & 0xF) << 1
+ * and reads `lbu %lo(D_8009BC0C)($at)` (state: accept / reject / return value) and
+ * `lbu %lo(D_8009BC0D)($at)` (mode: passed to the three render calls, 1/2/3 select
+ * the D_800A3524 bit-3 action) through that same index -- stride-2 records.
+ * Replaces the splat per-word symbols D_8009BC0C / D_8009BC0D (per-word splat
+ * symbol -> aggregate merge family). */
+typedef struct {
+    u8 state;
+    u8 mode;
+} MenuOption;
+
+extern MenuOption D_8009BC0C[8];
+
 /* 0x8009BCC4: the three scroll pages' origins, s16 (x, y) pairs for pages 4..6
  * (0x8009BCC4..0x8009BCCF). Object model evidence from the original binary:
  * func_800720FC reads (x, y) of entry `mode` through ONE index register

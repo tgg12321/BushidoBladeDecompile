@@ -73,7 +73,7 @@ void func_8006920C(s32 *, s32);
 void func_8006920C(s32 *a0, s32 a1);
 s32 func_80069250(s32 arg0, s32 arg1);
 s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3);
-s32 func_800693CC(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+s32 func_800693CC(s32 held, s32 pressed);
 extern void SetDrawOffset();
 /* func_8007352C's draw descriptor: .header = the sprite sheet's SprtHdrA, .table = its
    SprtEntA cell array (the s32 form of S_80074488 / DescF97C). */
@@ -1510,12 +1510,12 @@ s32 func_80077860(void) {
     }
     return 0;
 }
-s32 func_80077894(void) {
+s32 func_80077894(s32 held, s32 pressed) {
     s32 ret;
     s32 result;
 
     ret = 0;
-    result = ((s32 (*)())func_800693CC)();
+    result = func_800693CC(held, pressed);
     if (result >= 0) {
         ret = 1;
         D_800A35E4 = 0;
