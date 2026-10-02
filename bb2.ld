@@ -66,6 +66,8 @@ SECTIONS
         build/src/text1a_c_tu2.o(.rodata);
         build/src/text1a_filepaths.o(.rodata);
         build/src/text1b.o(.rodata);
+        build/src/text1a_b_pre_rodata.o(.rodata);
+        build/src/text1b_tu1b.o(.rodata);
         build/src/text1a_b_pre_rodata_b.o(.rodata);
         build/src/text1b_tu1c.o(.rodata);
         build/src/text1b_tu1d.o(.rodata);
@@ -110,6 +112,7 @@ SECTIONS
         build/src/text1a_c.o(.text);
         build/src/text1a_c_tu2.o(.text);
         build/src/text1b.o(.text);
+        build/src/text1b_tu1b.o(.text);
         build/src/text1b_tu1c.o(.text);
         build/src/text1b_tu1d.o(.text);
         build/src/text1b_tu1e.o(.text);
@@ -150,6 +153,7 @@ SECTIONS
         build/src/text1a_c.o(.data);
         build/src/text1a_c_tu2.o(.data);
         build/src/text1b.o(.data);
+        build/src/text1b_tu1b.o(.data);
         build/src/text1b_tu1c.o(.data);
         build/src/text1b_tu1d.o(.data);
         build/src/text1b_tu1e.o(.data);
@@ -187,6 +191,7 @@ SECTIONS
         build/asm/data/93A3E.data.o(.data);
         build/src/text1a_c_tu2.o(.sdata);
         build/src/text1b.o(.sdata);
+        build/src/text1b_tu1b.o(.sdata);
         build/src/text1b_tu1c.o(.sdata);
         build/asm/data/93AC0.data.o(.data);
         build/src/text1b_tu1d.o(.sdata);
@@ -204,6 +209,7 @@ SECTIONS
         build/asm/data/93B8C.data.o(.data);
         build/src/text1a_c_tu2.o(.sbss);
         build/src/text1b.o(.sbss);
+        build/src/text1b_tu1b.o(.sbss);
         build/asm/data/93C1C.data.o(.data);
         build/src/text1b_tu1c.o(.sbss);
         build/asm/data/93D30.data.o(.data);
@@ -238,6 +244,7 @@ SECTIONS
         build/src/text1a_c.o(.bss);
         build/src/text1a_c_tu2.o(.bss);
         build/src/text1b.o(.bss);
+        build/src/text1b_tu1b.o(.bss);
         build/src/text1b_tu1c.o(.bss);
         build/src/text1b_tu1d.o(.bss);
         build/src/text1b_tu1e.o(.bss);
