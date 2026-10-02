@@ -60,7 +60,31 @@ Frontier (2026-09-25):
 - DEPENDS: `g_anim_func_table[]` declaration shared with func_80049718.
 - ODDS/LANE: manual, ~1 session, ~65% [I].
 
-## [s2] 2026-10-01 laneB
-- Landing body candidate.c = 0/399 on post-Q65 main (scratch TU, minimal (A) applied). Package: evidence.md [s2].
-- Open: g_anim_func_table cast spelling vs a 5-TU function-pointer retype (asked the orchestrator); frame typed
-  `s16 frame[0x42]` vs MotionFrame + (s16) casts (both 0; reviewer to decide).
+## [s2] 2026-10-01 laneB — BANKED at run close (src/include clean; unpark f78231287 stays committed)
+- Floor: candidate.c = 0/399 on post-Q65 main (scratch-TU build with the (A) below; every other text1b /
+  code6cac_c2 function byte-identical). Full Ruling 11 package for `player` / `rot_z` measured on that exact
+  body: evidence.md [s2], r11/ (scores, d_proof, alloc_*, permuter 16094 it. best 1335 vs 140 calibration).
+- (A) plan, byte-neutral, was staged and reverted at close: text1b.c `extern void func_8003FFC4(s32)` ->
+  `(s32 *)`; func_80054604 `s32 v` -> `s32 *v`, drop its two `(s32)func_8004153C(n)` casts. SHA1 == oracle
+  and func_80054604 sandbox 0 were verified; layer2 hash b97c4f8f5486cce0; message draft:
+  cleanup_A_msg_draft.txt. Land (A), then the Match.
+- Ctrl-block integer evidence: typing unk2C/unk30/unk34[]/unk3C[] as `u8 *` swaps addu operands,
+  func_80054FDC 6 and func_80054604 2 (datamodel/ptr_typing.txt); the members stay s32, casts at uses.
+- OPEN DECISION (orchestrator/owner) — `g_anim_func_table` (extern s32 g_anim_func_table[], D_800F66A0):
+  (1) cast-and-disclose: call `((void (*)(SVECTOR *, MATRIX *))g_anim_func_table[0])(...)` as the 6
+      landed consumers do (text1b.c func_80046BF4, the 0x80047xxx bone/camera bodies, func_80049718
+      (68dfe8107, PASS today), text1a_post.c func_800417D0 / func_800418D0). Checklist item 2 bans
+      (T *)int, so this needs an explicit acceptance.
+  (2) pointer retype in an (A): no byte evidence for the integer model here (a function-pointer table type
+      is byte-neutral for every call site measured: lw 0($s1); jalr). Scope: 5 TUs (text1a_c.c store
+      `(s32)math_RotMatrixZYX`, text1a_post.c x2, text1b.c x4, text1b_b.c scalar decl
+      `s32 (*g_anim_func_table)(s16 *, s16 *)`), 8 consumers, and the table's other slots D_800F66A8 /
+      D_800F66B0 / D_800F66B4 are separate splat symbols (text1a_c.c stores, text1b.c D_800F66B0 call), so
+      an aggregate merge with its consumer paperwork follows. Unprototyped `void (*[])()` avoids
+      per-consumer arg casts; `(SVECTOR *, MATRIX *)` needs SVECTOR/MATRIX views in consumers with
+      mistyped locals (func_80046BF4's s16 rot[3] / s32 matrix_buf[8]).
+- Other reviewer points (decided, measured): frame as `s16 frame[0x42]` (MotionFrame u16 unk_02/unk_04
+  give lhu; MotionFrame + (s16) casts also 0); FAKE `s` (direct global 157); simplest form (no p local, no
+  x/z copies, block-scoped `j`). Match message draft: match_msg_draft.txt
+  (fill the (A) commit and the review line).
+- Retire on the Match: 11 undefined_syms_auto.txt rows "retire with func_8005490C".
