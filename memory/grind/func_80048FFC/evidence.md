@@ -21,8 +21,9 @@ Deciding pass (BB2_QTY_DEBUG, tools/dump.sh): local-alloc of the loop block (blk
 floor_log2(refs)*refs/(death-birth): cy+sum (tied) refs 10 len 66 = .4545 beats ny 6/42 = .286 and
 nx 6/44 = .273, so cy takes s0. Diagnostic (tools/diag_refs.py, `diag_use_after`, NOT a candidate): one extra
 reference to nx and ny after the first call (empty asm use) gives ny/nx refs 8 (.571/.545) and the exact
-target allocation; only the `move t1,s7; sra s7` order hunk is left (score 4). So the original source
-references nx and ny once more each (weighted refs 8) without extra code — or gives them shorter lives.
+target allocation; only the `move t1,s7; sra s7` order hunk is left (score 4). The extra-reference
+diagnostic establishes one allocation mechanism; it does not prove that the original
+source contained those references. A different source structure could yield the same allocation.
 cc1psx on the same body makes the same allocation as ours (source-side, not a compiler divergence).
 
 Measured without effect (all 13 unless noted): order of the four temporaries' definitions (24 perms) and
@@ -36,8 +37,8 @@ passes, base 175, no improvement).
 
 Open data-model debts for the landing: D_800A378C is `s32` in text1b (and defined `s32` in text1a_c) but
 is the OT pointer; this body needs it as a pointer (`(OTag *)D_800A378C` is the int->pointer pun the
-checklist refuses). The `(s16)(ctl[i] & ~0x3F)` / `(s16)(ctl[i] % 64)` forms reproduce the target's
-lhu/and/sll/sra but are value-preserving casts on s16 data; with u16 ctl the mask becomes andi (27).
+checklist refuses). All eight value-preserving `(s16)` casts on ctl arithmetic were removed in the manual session below;
+the same 13/232 floor remains. The u16-ctl alternative was previously measured at 27.
 
 ### Why the residual is a reference count, not an order (sched1 / local-alloc, BB2_RANK_DEBUG + BB2_QTY_DEBUG)
 - Lengths cannot flip it: sched1 (bottom-up) ties call 1's a0-a3 setups with the rect stores (same priority,
@@ -46,8 +47,8 @@ lhu/and/sll/sra but are value-preserving casts on s16 data; with u16 ctl the mas
   With cy's tied quantity at refs 10, nx/ny would need lives under 27 units — not reachable.
 - cy cannot drop: the sum ties to cy (cy dies there), so cy's quantity is 5 weighted occurrences in every
   spelling with a register sum; without the tie the sum takes a call-clobbered register, not s2.
-- So the original source references nx and ny once more each (4 in-loop occurrences, weighted 8) with no
-  extra code, by a construct not yet identified. Only the diagnostic empty asm use supplies it; a dead
+- Extra references are one demonstrated route to the target allocation, not proof of the original source
+  spelling. The diagnostic empty asm use supplies the measured 8-reference quantities; a dead
   pre-loop initializer plus call-1 expression args with nx/ny assigned after the call (probe, a dead-store
   device) does not (13: cse still keeps the argument temporary canonical).
 - cc1psx on candidate_region.c allocates exactly like ours (cy s0, ny s1, nx s2): source-side.
@@ -55,7 +56,46 @@ lhu/and/sll/sra but are value-preserving casts on s16 data; with u16 ctl the mas
   statement range of the loop body (378 ranges, tools/sweep_dowhile0.py) — best 15 (233 insns); the loop
   notes act as sched1 barriers and cost instructions before they can reweight nx/ny. s16 cy/dy/old: 13-15.
 
-Frontier: identify the construct that gives nx and ny one more in-loop reference without code (the target's
-own allocation proves it exists: tools/diag_refs.py). Also owed before any landing: D_800A378C as a real
-pointer type in text1b (and its other consumers), and a decision on the `(s16)(...)` value-preserving
-casts (checklist item 1: disclose with the u16-ctl measurement, 27).
+Frontier: identify a truthful source shape or an admissible annotated construct reaching the target
+allocation and schedule. The diagnostic reference counts do not prove the original source spelling.
+Also owed before landing: a truthful shared D_800A378C pointer and SetDrawMove interface. The redundant
+width casts are avoidable without changing the floor, as measured below.
+
+## 2026-10-01 — Codex manual dependency session (checkpoint only)
+
+Main stayed at INCLUDE_ASM. Re-baseline: plain region 13/232; deleting all eight ctl result casts
+preserves 13/232. rejected/castfree-plain-floor13.c carries the simpler form; it remains rejected
+on the shared-interface debts. The 256 selective s16-local
+combinations (casts absent) did not beat 13; all named measurements are in tools/codex-probe-receipts.json.
+
+Frozen-family F6: one exact adjacent nx++/nx-- pair and two separate adjacent ny++/ny-- pairs after
+call one reduce the codegen score to 4/232. Zero pairs: 13; one pair each: 9; x1/y2: 4; x1/y3: 4;
+x2/y2: 9; x2/y3: 4. Thus x1/y2 is the smallest measured pair cluster with this floor. The entire
+cluster ablates to 13. tools/plain-qty.txt and f6-qty.txt (instrumented diagnostic cc1, commands in
+tools/dump.sh) show loop local-alloc: plain cy refs10->s0, ny6->s1, nx6->s2; F6 ny22->s0,
+nx14->s1, cy10->s2. No instruction is added (232 each). Bounds of these s32 coordinate sums
+are within [-33023,33022], so each adjacent ++/-- pair is value-neutral without signed overflow.
+
+This is NOT a completion or an accepted checkpoint: rejected/f6-scheduling-floor4.c still has the
+integer-to-OT pointer debt and a TU-local SetDrawMove signature inconsistent with its definition
+and other callers. Fresh read-only checkpoint review is banked there. The remaining scored hunk is
+the phase move/shift before, rather than after, call-two's a1/a2/a3 setup. Moving the pair cluster,
+delaying the shift, computing next_phase, using a real first_y intermediate, and omitting old did
+not close it. Completed sweep counts/results are in the receipts; compiler-error variants are
+excluded from counts. The single-level loop-wrapper sweep is recorded there too.
+
+No asm pins, empty-asm diagnostic candidates, output rewriting, flag change, source landing,
+queue rotation, or completion record was made. Frontier: fix the shared packet/RECT/OT interfaces
+truthfully and resolve the phase/call scheduling gap; Q89's file split remains staged behind this.
+
+One type-repair lead is measured: tools/gpu-typed-proposal.c uses DR_MOVE/RECT fields in
+SetDrawMove, with the two packed RECT reads citing matched PS1 SOTN src/main/psxsdk/libgpu/sys.c
+at db41b28eee52969244a52cc269c8163d1ed8826a (MoveImage uses LOW(rect->x)/LOW(rect->w), common.h
+defines LOW as a signed word read; config/splat.us.main.yaml includes that C file). It scores
+0/24, only masked branch-position hunks (tools/gpu-typed-proposal.out). This is a scratch proposal,
+not a shared-interface migration, not a full oracle proof, and not reviewed for landing.
+
+Reproduction (run from repo root under WSL with .venv active):
+`python3 memory/grind/func_80048FFC/tools/codex_probe.py` remeasured plain 13/232,
+F6 4/232 and typed SetDrawMove 0/24 from the banked files after their annotations were finalized.
+All 465 contiguous single-level wrapper ranges on the F6 body were measured; none beat 4.

@@ -1,0 +1,13 @@
+{'score': 0, 'target_insns': 24, 'build_insns': 24}
+
+── insn diff vs target — SetDrawMove (operands UNMASKED; the score masks some of these) ──
+target 24 insns · ours 24 insns · 2 hunk(s)
+  0 source-level · 0 operand-only (reg-alloc/scheduling) · 2 not-scored (masked cascade artifact)
+
+@ hunk 1/2  replace  target[3] ours[3]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  beqz v0,950
+    ours    beqz v0,860
+
+@ hunk 2/2  replace  target[7] ours[7]  — not-scored  [masked — the score does not count this; do NOT chase it]
+    target  bnez v0,958
+    ours    bnez v0,868

@@ -1,0 +1,37 @@
+{
+  "reviewer": "/root/checkpoint_review",
+  "scope": "checkpoint only; no completion review or layer2 PASS",
+  "candidate": "tmp/codex_cam/shift/castfree.region.c",
+  "decision": "FAIL",
+  "function": "func_80048FFC",
+  "body_hash": "",
+  "summary": "Store the cast-free F6 body as rejected diagnostic evidence pending type repairs; it is not an accepted checkpoint or completion.",
+  "evidence": [
+    {
+      "construct": "((OTag *)D_800A378C)[0xFFF].addr",
+      "test_failed": "Truthful object model",
+      "explanation": "D_800A378C remains declared/defined as an integer in text1b.c, text1a_c.c and code6cac_c2.c. Original pointer dereferences support an ordering-table pointer. Correct the definition and all consumers consistently."
+    },
+    {
+      "construct": "extern void SetDrawMove(DR_MOVE *, RECT *, u32, u32)",
+      "test_failed": "Compatible declarations and truthful callee signature",
+      "explanation": "gpu.c actually defines SetDrawMove(u32 *, s16 *, u32, u32); other callers have additional incompatible signatures. Establish a shared signature and migrate definition/callers with byte-neutral checks."
+    },
+    {
+      "construct": "One adjacent nx++/nx-- pair and two separate ny++/ny-- pairs",
+      "test_failed": "No exact-shape/repetition failure; completion prerequisites outstanding",
+      "explanation": "Frozen entry 16 admits adjacent pairs without a count cap. The coordinate bounds avoid s32 overflow; quantity logs support ny22->s0, nx14->s1, cy10->s2. The repaired typed body still requires renewed exhaustion and whole-cluster ablation."
+    },
+    {
+      "construct": "Cast deletion and real loop work",
+      "test_failed": "No residual ctl width-cast or loop semantic-purpose failure",
+      "explanation": "The exact function omits all former redundant ctl casts. Its three-level two-strip copy, preserved old phase, halved quantities, packet links, phase increment and remainder agree with the target. The enclosing func_80048F58 region still has an unnecessary source-pointer cast to remove before landing."
+    },
+    {
+      "construct": "Current result 4/232",
+      "test_failed": "Completion requirements",
+      "explanation": "There is no exact match, full oracle proof of this candidate, or review of a repaired final body. This scratch review records no layer2 PASS."
+    }
+  ],
+  "next_action": "Repair the shared OT and packet/RECT interfaces, then remeasure the typed plain form and full F6 cluster. Resolve the old-phase scheduling gap with truthful C. Keep both queue items incomplete and obtain fresh adversarial review of any eventual exact final body."
+}

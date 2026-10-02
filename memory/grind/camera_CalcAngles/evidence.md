@@ -77,3 +77,21 @@ func_8004A09C): NO gp symbol is reached from both sides. Head-part gp symbols: D
 the statics D_800A33B0..D_800A33EC, g_gpu_ot256_ptr (COMMON). Still owed for the split: the rodata-object-
 alignment conditions 2-4 and section contiguity at the cut, func_80048FFC in C, real types for the
 small-declared objects (g_cam_bone_data2, D_800EF070's record), the extern screening, the both-ways build.
+
+## 2026-10-01 — Codex manual session (not completed)
+
+Manual handshake on clean main at 50fab5d5a; canonical routes camera_CalcAngles and its Q89
+prerequisite func_80048FFC to C. Full verify-oracle --rebuild passed the oracle SHA1. Camera
+candidate remeasures 6/59 versus 58 target instructions; deleting redundant ((s16)s0) preserves
+that floor; the simpler body is in rejected/castfree-floor6.c pending the inherited rotation API
+declaration debt. The queue's saved distance 0 is not a live C match.
+
+Q89 prerequisite progress: func_80048FFC's cast-free plain region remains 13/232; exact frozen-F6
+adjacent cancellation pairs give a provisional codegen floor 4/232, rejected pending shared-type
+repairs and the remaining phase/call scheduling hunk. See that ledger's evidence.md and
+tools/codex-probe-receipts.json. Independent adversarial checkpoint review identified the type
+debts; no completion PASS was recorded. Q89's prerequisite order was honored: no split or flag
+membership change was attempted. Both items remain INCLUDE_ASM and active; no rotation.
+
+Standing checks ran under WSL: check_completion_integrity.py passed all category invariants;
+audit_asm_cheats.py --check-new was silent with exit 0. Grinder remains stopped.
