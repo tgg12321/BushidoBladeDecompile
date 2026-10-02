@@ -149,3 +149,28 @@ register or reuse the forced address (+1 insn: va, va_tb, vb_td, vb_tf). Receipt
 - The orchestrator REFUSED the alternate cut before func_80048FFC. It is logged for the owner in
   docs/grind/borderline.md (2026-10-02 policy-question).
 - camera_CalcAngles stays INCLUDE_ASM, active, not rotated.
+
+## 2026-10-02 — oct2-a2: Q89 split measured; Q89 as written cannot reach the oracle (QUESTION)
+
+func_80048FFC landed in C (e43b1f03b). Tools are in q89split/. mksplit.py makes the cut before
+INCLUDE_ASM math_RotMatrixZYX: head text1b.c, tail text1b_tu1b.c. Moves:
+- statics D_800A33F0..3418 go to the tail;
+- K3 D_800A3248/4A/4C and COMMON g_gpu_ot256_ptr go to the head;
+- the PAD_NOPS defines go to the tail.
+
+bld.sh builds a private full link (tree untouched); `cam.c` is the body.
+- Split at -G0 (camera still INCLUDE_ASM): oracle SHA1.
+- gpspan2.py on the parts' objects: no gp symbol on both sides. Every gp symbol each part reaches is
+  defined in that part.
+- Head at cc1 -G8 + camera C body: MISMATCH. The head's .rodata grows by 4 bytes. Under -G8 cc1
+  emits file-scope data before every deferred function. So the merged text1a_b_pre_rodata block
+  (D_800153F0 .. D_80015840, file-scope const) lands BEFORE the head's three compiler jump tables
+  .L10/.L26/.L55. The original has them after (roseq.py, -G0 vs -G8 sequence).
+- That block at the top of the tail fails at -G0 as well. The tail object would start at
+  0x800153F0 (phase 0), and func_80058580's first jump table at 0x8001585C has phase 4.
+- Survivors, each oracle at -G8 head + camera C (mks23.py): the block as its own rodata-only object
+  between the parts (S1); or the tail starting at jtbl_8001541C or jtbl_8001545C with the earlier
+  items in their own object. The tail starting at D_80015470 or D_80015840 fails.
+- So every survivor needs a rodata-only object holding at least D_800153F0. That is a second
+  boundary beyond Q89's "only this cut". Asked the orchestrator. Recommendation: S1, which restores
+  the pre-Q67 text1a_b_pre_rodata block verbatim as its own TU.
