@@ -767,7 +767,13 @@ extern u8 D_80101BF0;
  * func_80046BF4 writes work.t (+0x4C/+0x50/+0x54) just before that call.
  * func_800475A4 passes &xf.rot to g_anim_func_table[0] and &xf.mat to
  * ApplyMatrix; func_8003E6D8 forms one base at &xf (0x80101E00) and passes
- * base+0x1C (xf.mat.t). Rot / Mat are the PsyQ SVECTOR / MATRIX layouts
+ * base+0x1C (xf.mat.t). g_cam_bone_data2 (0x800EEDF0) and D_800EF070 are
+ * two more records of this layout: camera_InitRotation initialises the
+ * first (u8/s8 stores at +0x00/+0x01, s16 stores at +0x02/+0x04/+0x08/+0x0A,
+ * s32 at +0x0C, rot, work.t, then xf.mat = work; it does not write +0x06),
+ * func_800477E8 sets up the second (+0x06 as s16) and passes it to
+ * func_800417D0, which reads +0x06 as an s16 state.
+ * Rot / Mat are the PsyQ SVECTOR / MATRIX layouts
  * (include/gte.h), spelled with local tags because several TUs typedef
  * SVECTOR/MATRIX themselves. */
 typedef struct { s16 vx, vy, vz, pad; } Unk80101DF0Rot;
@@ -779,7 +785,9 @@ typedef struct {
 typedef struct {
     u8 unk0;               /* +0x00 */
     s8 unk1;               /* +0x01 */
-    u8 unk2[6];            /* +0x02 */
+    s16 unk2;              /* +0x02 */
+    s16 unk4;              /* +0x04 */
+    s16 unk6;              /* +0x06 */
     s16 unk8;              /* +0x08 g_anim_func_table index */
     s16 unkA;              /* +0x0A */
     s32 unkC;              /* +0x0C */
@@ -788,6 +796,8 @@ typedef struct {
 } Unk80101DF0Record;      /* 0x58 */
 extern Unk80101DF0Record D_80101DF0;
 extern Unk80101DF0Record D_800FF638;
+extern Unk80101DF0Record g_cam_bone_data2;
+extern Unk80101DF0Record D_800EF070;
 typedef struct {
     s32 a;
     s32 b;

@@ -16,10 +16,11 @@ def rep(s, a, b, n=1):
 h = open("include/code6cac.h", encoding="utf-8", newline="").read()
 h = rep(h, " * base+0x1C (xf.mat.t). Rot / Mat are the PsyQ SVECTOR / MATRIX layouts\n",
         " * base+0x1C (xf.mat.t). g_cam_bone_data2 (0x800EEDF0) and D_800EF070 are\n"
-        " * two more records of this layout: camera_InitRotation fills every field of\n"
-        " * the first (s16 stores at +0x02/+0x04/+0x08/+0x0A, rot, work, then\n"
-        " * xf.mat = work), func_800477E8 sets up the second (+0x06 as s16) and\n"
-        " * passes it to func_800417D0, which reads +0x06 as an s16 state.\n"
+        " * two more records of this layout: camera_InitRotation initialises the\n"
+        " * first (u8/s8 stores at +0x00/+0x01, s16 stores at +0x02/+0x04/+0x08/+0x0A,\n"
+        " * s32 at +0x0C, rot, work.t, then xf.mat = work; it does not write +0x06),\n"
+        " * func_800477E8 sets up the second (+0x06 as s16) and passes it to\n"
+        " * func_800417D0, which reads +0x06 as an s16 state.\n"
         " * Rot / Mat are the PsyQ SVECTOR / MATRIX layouts\n")
 h = rep(h, "    u8 unk2[6];            /* +0x02 */\n",
         "    s16 unk2;              /* +0x02 */\n"
@@ -68,7 +69,8 @@ b = s.index("void game_AnimStart(void) {")
 s = s[:a] + '''    base = &g_cam_bone_data2;
     {
         /* FAKE: s16 temporary for the negated pitch: storing -ratan2() straight
-         * into the field moves its negu one slot (vb_tp in
+         * into the field sinks its negu 8 slots to just before the sh and
+         * lifts `addiu s2,sp,0x28` 5 slots (vb_tp in
          * memory/grind/camera_CalcAngles/types/receipts.txt) */
         s16 neg = -ratan2(result.vy, computed);
         base->xf.rot.vx = neg;

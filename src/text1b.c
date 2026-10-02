@@ -668,9 +668,7 @@ extern s32 D_800EF800[];
 extern u8 g_stage_data;
 extern s16 D_800F6654;
 extern u8 g_cam_bone_data;
-extern u8 g_cam_bone_data2;
 
-extern s16 g_cam_interp;
 extern s16 D_800F62F8;
 extern s16 D_800F62FA;
 extern s16 D_800F62FC;
@@ -1083,29 +1081,22 @@ void *camera_GetBoneData(void) {
     return &g_cam_bone_data;
 }
 
-void camera_InitRotation(u8 *a0) {
-    u8 *s0 = a0;
-    *(s16 *)(s0 + 4) = 8;
-    {
-        s16 v0 = 4;
-        *(s16 *)(s0 + 8) = 0;
-        {
-            u8 *a0_arg = s0 + 0x10;
-            *(s16 *)(s0 + 2) = 0;
-            s0[0] = 0;
-            s0[1] = 0;
-            *(s32 *)(s0 + 0xC) = 0;
-            *(s16 *)(s0 + 0xA) = v0;
-            *(s16 *)(s0 + 0x10) = 0;
-            *(s16 *)(s0 + 0x12) = 0;
-            *(s16 *)(s0 + 0x14) = 0;
-            ((void (*)(u8 *, u8 *))g_anim_func_table[*(s16 *)(s0 + 8)])(a0_arg, s0 + 0x38);
-        }
-    }
-    *(s32 *)(s0 + 0x54) = 0;
-    *(s32 *)(s0 + 0x50) = 0;
-    *(s32 *)(s0 + 0x4C) = 0;
-    *(Block32 *)(s0 + 0x18) = *(Block32 *)(s0 + 0x38);
+void camera_InitRotation(Unk80101DF0Record *node) {
+    node->unk4 = 8;
+    node->unk8 = 0;
+    node->unk2 = 0;
+    node->unk0 = 0;
+    node->unk1 = 0;
+    node->unkC = 0;
+    node->unkA = 4;
+    node->xf.rot.vx = 0;
+    node->xf.rot.vy = 0;
+    node->xf.rot.vz = 0;
+    ((void (*)(Unk80101DF0Rot *, Unk80101DF0Mat *))g_anim_func_table[node->unk8])(&node->xf.rot, &node->work);
+    node->work.t[2] = 0;
+    node->work.t[1] = 0;
+    node->work.t[0] = 0;
+    node->xf.mat = node->work;
 }
 
 INCLUDE_ASM("asm/funcs", camera_CalcAngles);
@@ -1144,14 +1135,8 @@ void func_80047550(void) {
 
 void camera_InitBone2(void) {
     camera_InitRotation(&g_cam_bone_data2);
-    g_cam_interp = 4;
+    g_cam_bone_data2.unk8 = 4;
 }
-extern s16 D_800EEE00;
-extern s16 D_800EEE02;
-extern s32 D_800EEE1C;
-extern s32 D_800EEE20;
-extern s32 D_800EEE24;
-extern s32 D_800F66B0;
 extern MATRIX *MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
 void func_800475A4(void) {
     SVECTOR rot;
@@ -1160,7 +1145,7 @@ void func_800475A4(void) {
     MATRIX buf2;
     s16 angle;
     s32 computed;
-    u8 *base;
+    Unk80101DF0Record *base;
 
     if (stage_GetVariant() != 0) {
         return;
@@ -1176,18 +1161,22 @@ void func_800475A4(void) {
     computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz + (s32)Judge[angle & 0xFFF] * result.vx) >> 12;
     result.vz = computed;
 
+    base = &g_cam_bone_data2;
     {
+        /* FAKE: s16 temporary for the negated pitch: storing -ratan2() straight
+         * into the field sinks its negu 8 slots to just before the sh and
+         * lifts `addiu s2,sp,0x28` 5 slots (vb_tp in
+         * memory/grind/camera_CalcAngles/types/receipts.txt) */
         s16 neg = -ratan2(result.vy, computed);
-        base = &g_cam_bone_data2;
-        D_800EEE00 = neg;
+        base->xf.rot.vx = neg;
     }
-    D_800EEE02 = angle;
-    D_800EEE1C = D_80101DF0.xf.mat.t[0];
-    D_800EEE20 = D_80101DF0.xf.mat.t[1];
-    D_800EEE24 = D_80101DF0.xf.mat.t[2] + 0x6590;
-    ((void (*)(u8 *, MATRIX *))D_800F66B0)(base + 0x10, &buf1);
-    ((void (*)(u8 *, MATRIX *))g_anim_func_table[0])((u8 *)&D_80101DF0.xf.rot, &buf2);
-    MulMatrix0(&buf2, &buf1, (MATRIX *)(base + 0x18));
+    base->xf.rot.vy = angle;
+    base->xf.mat.t[0] = D_80101DF0.xf.mat.t[0];
+    base->xf.mat.t[1] = D_80101DF0.xf.mat.t[1];
+    base->xf.mat.t[2] = D_80101DF0.xf.mat.t[2] + 0x6590;
+    ((void (*)(Unk80101DF0Rot *, MATRIX *))g_anim_func_table[4])(&base->xf.rot, &buf1);
+    ((void (*)(Unk80101DF0Rot *, MATRIX *))g_anim_func_table[0])(&D_80101DF0.xf.rot, &buf2);
+    MulMatrix0(&buf2, &buf1, (MATRIX *)&base->xf.mat);
 
     {
         s32 *temp = (s32 *)D_800A3820;
@@ -1230,18 +1219,6 @@ void func_800477DC(s32 a0) {
 extern u32 GetTPage(s32, s32, s32, s32);
 extern u32 GetClut(s32, s32);
 extern void func_800417D0(s32 *);
-extern s8 D_800EF070;
-extern s8 D_800EF071;
-extern s16 D_800EF076;
-extern s16 D_800EF078;
-extern s16 D_800EF07A;
-extern s32 D_800EF07C;
-extern s16 D_800EF080;
-extern s16 D_800EF082;
-extern s16 D_800EF084;
-extern s32 D_800EF0BC;
-extern s32 D_800EF0C0;
-extern s32 D_800EF0C4;
 extern s32 D_800EF558[];
 extern s32 D_800EF59C[];
 s32 func_800477E8(void) {
@@ -1351,21 +1328,20 @@ inner:
     } while (a3 < 8);
 
     {
-        s32 *a0p;
-        a0p = (s32 *)&D_800EF070;
-        *(s8 *)a0p = 0xE;
-        D_800EF07A = 4;
-        D_800EF0BC = -0x2EE0;
-        D_800EF071 = 0;
-        D_800EF0C0 = 0;
-        D_800EF0C4 = -0xFA0;
-        D_800EF080 = 0;
-        D_800EF082 = 0;
-        D_800EF084 = 0;
-        D_800EF078 = 0;
-        D_800EF07C = 0;
-        D_800EF076 = 0;
-        func_800417D0(a0p);
+        Unk80101DF0Record *node = &D_800EF070;
+        node->unk0 = 0xE;
+        node->unkA = 4;
+        node->work.t[0] = -0x2EE0;
+        node->unk1 = 0;
+        node->work.t[1] = 0;
+        node->work.t[2] = -0xFA0;
+        node->xf.rot.vx = 0;
+        node->xf.rot.vy = 0;
+        node->xf.rot.vz = 0;
+        node->unk8 = 0;
+        node->unkC = 0;
+        node->unk6 = 0;
+        func_800417D0((s32 *)node);
     }
 
     a3 = 0;
