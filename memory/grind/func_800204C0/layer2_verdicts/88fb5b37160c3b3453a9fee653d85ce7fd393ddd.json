@@ -1,0 +1,31 @@
+{
+  "verdict": "PASS",
+  "decision": "PASS",
+  "function": "func_800204C0",
+  "body_hash": "a0b4f6a9d30d5d20",
+  "reviewer": "rv2-204C0-1",
+  "verdicts": [
+    {"scope": "auth", "verdict": "PASS"},
+    {"scope": "match", "verdict": "PASS"}
+  ],
+  "summary": "Byte-exact (sandbox --disable all 0/122, fresh build SHA1 == oracle from the staged inputs); 25 statements are header-exact PINNED inline_o.h units, the only respelling is the Q92-granted gte_rtv0 word; the C and the header split are truthful; zero FAKEs.",
+  "findings": [
+    {"item": 1, "result": "PASS", "detail": "layer2 hash a0b4f6a9d30d5d20. sandbox --disable all: score 0, 122/122, cheat_asm_stripped 2 = the INCLUDE_ASM lines of func_800207C8/func_80020E74 (outside this function). build/bb2.exe SHA1 62EFAB4F73F992798C43E8C730AA43BAA10BB4FA, built 02:38:42 after the 02:37:32 source edit; build/verified-inputs.json sha256 of src/code6cac_tu2.c and include/code6cac.h equal the current files. No unstaged edits to src/include/tools."},
+    {"item": 2, "result": "PASS", "detail": "Every statement compared to engine/gtemacro.py PINNED: gte_SetRotMatrix :272-284 (11), gte_ldlv0 :95-103 (7), gte_rtv0 :426-430 (3), gte_stlvnl :904-909 (4), character-identical incl. `move  $12,%0`, `($12)`, `nop   ` and the \"$12\",\"$13\",\"$14\",\"$15\",\"memory\" clobbers. engine.gtemacro.unit_spans puts all 25 in units; all 14 GPR spans in the function are kept units. No pins, no barriers, no other asm. Only deviation: `.word 0x4A486012` for `.word 0x0000013f`. Decode: opcode 010010 COP2, bit25=1, cmd(20-24)=0x04, sf(19)=1, mx(17-18)=0 rot, v(15-16)=0 V0, cv(13-14)=3 none, lm(10)=0, funct(0-5)=0x12 MVMVA; equals target 1260484A at 0x80020570 (asm/funcs/func_800204C0.s:46, `mvmva 1,0,0,3,0`) and the Extension's cited nugget/PSn00bSDK 'cop2 0x0486012'. Island comment, canonical row and grants row each give both words (Extension (C)). Q92 is a landed rules commit (ded098133) naming exactly this unit in inline-asm-policy.md § Per-function grants."},
+    {"item": 2, "result": "PASS", "detail": "owner_cluster_grants.txt row: needed. Class prong (C) excludes any DMPSX word swap and sends it to the per-function owner-row route, the same shape as Q11/Q29/Q61 rows. The row is limited to 1 statement, 1 word, this function, target 0x80020570, so it widens nothing. Its census-member claim is true (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:162)."},
+    {"item": 2, "result": "PASS", "detail": "Region hashes: engine.completion.region_hashes(src, func_800204C0) returns 25 hashes identical to the staged tools/canonical_asm_regions.json entry. engine.completion.source_issues == []. canonical gate ASM-PARTIAL 11/122."},
+    {"item": 3, "result": "PASS", "detail": "Counter: `rec->unk_350 += 1; if ((rec->unk_350 & 7) == 2)` is a plain RMW plus re-read, matching sh then andi on the new value. Tail: the target has both stores (`sh $zero,0x350` at 0x80020690 under slti>=0x96, and again at 0x80020694 unconditionally). The C transcribes stores the program really performs, not a fabricated side effect or a codegen device, and the function comment discloses it. `(MATRIX **)game_GetPlayerData(pid)` is the same idiom as func_80023F08 (code6cac_tu2.c:5298, `bones[0x12]->t`) and matches func_800203B4's index-times-4 table read; gte_SetRotMatrix reading 5 words is consistent with MATRIX. `&SPAD->unkA8[pid][rec->unk_352].x` decodes to 0x1F8000A8 + pid*0x108 + idx*0xC (ScrPad LeafPos[2][22]), and `.x` gives the s32* the prototype at :2753 takes. The function comment, the field comments and the local names (mac, out, mul, bones, pid) are all borne out."},
+    {"item": 4, "result": "PASS", "detail": "The landed function reaches every byte through PracticeMenuRec / ScrPad declarations. The header split only replaces reserved padding. s16 unk_352 matches the lh/sh at +0x352 in func_800203B4.s and func_800204C0.s. Vec3i32 unk_354 matches func_800203B4's 3-word gte_stlvnl store and this function's gte_ldlv0 (VECTOR) load. cpu_route stays at 0x360. The other asm hits at +0x354..+0x35C (func_8004DDB4) are on scratchpad base 0x1F800020 and func_8003993C's are $sp, so neither is PracticeMenuRec; there are no absolute-address hits. func_800203B4's raw u8* offsets belong to a different, already-completed function this landing does not change, so they are disclosed hygiene debt, not blocking here."},
+    {"item": 5, "result": "PASS", "detail": "There are zero FAKE constructs and nothing to ablate. The `cnt`-local form is 10 off (rejected/head-local-cnt-frame24.c)."},
+    {"item": "messages", "result": "PASS", "detail": "Every cited path exists: rejected/{joined-islands-judge-pass-8655cc28.c, thin-island-c-loads-seat-t0-a0-v0-not-t5-t7.c, head-local-cnt-frame24.c}, memory/grind/func_80021424/HANDOFF.md, asm/funcs/func_800204C0.s:46. Every cited commit exists: ded098133, maspsx 56d7fba01. candidate.c contains the landed body verbatim. Pure-C attempts blocks have 3 entries on both."}
+  ],
+  "evidence": [],
+  "hygiene_debt": [
+    "func_800203B4 (completed) still writes PracticeMenuRec +0x350/+0x352/+0x354 through raw `u8 *arg0` offsets; retype to PracticeMenuRec * (disclosed in msg_match.txt).",
+    "func_800203B4's islands are joined/non-header-exact with \"$12\"-only clobbers (pre-existing authorization; not re-audited here)."
+  ],
+  "required_fixes": [
+    "None blocking. Procedural: land as two commits as the messages describe. Commit A (auth:) holds only inline_asm_canonical.txt and tools/grinder/owner_cluster_grants.txt. Commit B (Match:) holds src/code6cac_tu2.c, include/code6cac.h, tools/canonical_asm_regions.json and the layer2.jsonl record."
+  ],
+  "next_action": ""
+}

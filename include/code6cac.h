@@ -319,7 +319,8 @@ typedef struct PracticeMenuRec {
     u8  unk_34E;                   /* written by func_8001BE20 for the OTHER record */
     u8  unk_34F[0x350 - 0x34F];
     s16 unk_350;
-    u8  unk_352[0x360 - 0x352];
+    s16 unk_352;                   /* index into game_GetPlayerData()'s MATRIX * table and SPAD->unkA8[] (func_800204C0) */
+    Vec3i32 unk_354;               /* func_800203B4's gte_stlvnl output; func_800204C0's gte_ldlv0 input */
     CpuRoute cpu_route;            /* 0x360 */
     s32 unk_394;
     s16 unk_398;
