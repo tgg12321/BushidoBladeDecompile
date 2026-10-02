@@ -136,3 +136,36 @@ Prerequisite type repair, not completion of func_80048FFC or camera_CalcAngles (
   {old=phase, phase>>=1, other halvings, i++, addPrim 1, rect.y, rect.h} between the calls (halvings
   and i++ also after call two): best 4 (168 orders), none lower. Halvings written after call two are
   hoisted above it by sched1 (the post-call addPrim chain outranks them): also 4.
+
+## 2026-10-02 — after the interface landing (e558afab7); manual session (Claude)
+
+Interface step landed (e558afab7, fourth layer-2 PASS on 22 bodies). Candidate on the landed types:
+rejected/f6-typed-floor4.c (F6 cluster, OT link `ot = (OTag *)&D_800A378C[0xFFF]` + setaddr views),
+4/232; plain 13. The one scored hunk is `move t1,s7; sra s7,s7,1` above, not below, call two's
+a1/a2/a3 setup.
+
+Mechanism (dumps of the instrumented cc1, `.sched`/`.sched2`, RANKDBG): in sched1 the copy (old =
+phase), the shift and the three arg setups are all priority 1 (no in-block load feeds them), so
+rank_for_schedule falls to LUID and the arg setups (born at the call) are placed lowest. In sched2
+they are all priority 6 and LUID again keeps sched1's order. For the target order, the copy/shift
+must be deeper than the arg setups in sched1, or have a higher LUID. Neither holds for any source
+shape measured so far.
+
+Killed (all on the F6 chassis unless noted):
+- Order sweep, tmp-side generator (perm.py, receipts not banked): every order of {old=phase,
+  phase>>=1, other halvings, i++, addPrim 1, rect.y, rect.h} between the calls, with halvings and
+  i++ also after call two, 2240 orders: best 4 (168 orders tie).
+- Birth/shape: `phase = old >> 1`; `s16 old`; old at the loop top; old outside the loop; shift last
+  among the halvings; shift after call two (no copy: 52-53, 231 insns); `next = phase >> 1` with
+  `phase = next` before or after call two (53); `rect.h = phase` early or late (53-54); F6 pair on
+  phase (21) or on old (4); `cy += dy` (17); rect.h before rect.y (6).
+- OT link spellings (addPrim views with and without a local; `((OTag *)D_800A378C)[0xFFF]`): 4
+  with F6, 13 plain.
+- decomp-permuter, campaign f6c-typed (typed base, -j 8, 60k iterations, ~28 min): no find below
+  base.
+- cc1psx on the same body: also emits the copy before the arg setup (and schedules the halvings
+  worse), so the gap is on the source side.
+
+Frontier: a source structure that makes the copy and shift deeper than the call-two argument
+setups in sched1. One option is a true dependence on an in-block load. Another is a different
+basic-block or loop-note structure around the second strip. Neither is identified yet.
