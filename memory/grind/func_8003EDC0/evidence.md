@@ -22,8 +22,9 @@ Siblings respelled onto the record types score 0 (func_8003EB84 0/143, func_8003
 - func_80052C10() with no argument: 5 (rejected/noarg-call-5.c, chassis w0). The target keeps
   the max in $a0 across `slti`/jal; without the call argument it lands in $v1 / $v0.
 - fresh s16 counter for P2 instead of re-zeroing n: 7 (rejected/fresh-p2-counter-7.c).
-- fresh u16 token local in P4's inner loop (vs the stream word w): 21
-  (rejected/fresh-p4-token-21.c, chassis y3); on the older k-separate chassis 13.
+- fresh token local in P4's inner loop (vs the stream word w): 21
+  (rejected/fresh-p4-token-21.c = s16 token, chassis y3; the u16 token and the no-local
+  `D_800A87E0[i]` re-read forms are also 21); on the older k-separate chassis 13.
 - fresh P4 index k instead of reusing i (P3 row counter): 5 (rejected/fresh-p4-index-5.c);
   the target's P3 row counter shares $a3 with the P4 index.
 - x/z locals in P1 too: 4 (rejected/p1-xz-locals-4.c). P4 indexing grid[pos/32][pos%32]
@@ -32,3 +33,14 @@ Siblings respelled onto the record types score 0 (func_8003EB84 0/143, func_8003
   expression 55; `if (vz != (vx == vy)) 1 else 0` is the target's branch shape.
 - max: (D >= i) ? D : i is the best; (D < i) ? i : D +1, (i < D) ? D : i +2 (chassis m*);
   `if (D < i) D = i;` stores conditionally and reloads (6 vs 5 on the no-argument chassis w1/w2).
+
+## LANDED (2026-10-02, lane oct2-b7) — ledger closed
+- A cheat-cleanup a3b491f9a (record types in include/code6cac.h; func_8003E6D8 / func_8003EB84 /
+  game_GetCharData respelled), B Match 2134795df (body = tmp chassis s1 with the retyped arrays,
+  i.e. no casts; body_hash a5cccb049462ad0d), queue 490eee2c3. Oracle SHA1 for A alone and A+B.
+- Layer-2 PASS rv2-3EDC0-1 on both parts (A scope cheat-cleanup, B scope match), no required fixes.
+  Key findings: the func_80052C10 argument is admissible as a labelled FAKE (the call is real and the
+  target holds the count in $a0; the reviewer's own argument-free forms all scored 5); the i reuse is
+  a labelled FAKE; w / n reuse have one semantic reading each; vz != (vx == vy) is exact semantics.
+- Hygiene debt carried in the commit bodies (text1b.c prototype, D_800A3678 SVECTOR split,
+  g_anim_func_table declarations, Rec4473C not unified, g_char_data symbol rows).
