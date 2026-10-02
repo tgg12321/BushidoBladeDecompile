@@ -29,18 +29,6 @@
       "returned_at": "2026-10-01T23:06:24+00:00"
     },
     {
-      "func": "func_800204C0",
-      "file": "code6cac_tu2",
-      "distance": 52,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "FORECLOSED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-08-31): 2026-09-08 \u2014 func_800204C0 \u2014 JUDGE ESCALATE on ruling request (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
-      "rotated_from_legacy": "foreclosed",
-      "rotated_at": "2026-09-08T16:33:08+00:00",
-      "addr": "800204C0"
-    },
-    {
       "func": "func_8005D554",
       "file": "text1b",
       "distance": 65,
@@ -126,11 +114,11 @@
     }
   ],
   "counts": {
-    "total": 10,
+    "total": 9,
     "active": 2,
     "by_status": {
       "active": 2,
-      "rotated": 8
+      "rotated": 7
     },
     "by_verdict": {
       "C": 2
