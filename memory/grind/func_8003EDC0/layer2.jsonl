@@ -1,0 +1,1 @@
+{"func": "func_8003EDC0", "addr": "8003EDC0", "verdict": "PASS", "body_hash": "a5cccb049462ad0d", "body_kind": "c", "file": "code6cac_c2", "reviewer": "rv2-3EDC0-1", "scope": "match", "date": "2026-10-02T09:30:08Z", "head": "99c35067c", "notes": "B: sandbox 0 + oracle; FAKEs (i reuse, ignored func_80052C10 argument) admissible under item 3; w/n reuse semantic; no required fixes"}
