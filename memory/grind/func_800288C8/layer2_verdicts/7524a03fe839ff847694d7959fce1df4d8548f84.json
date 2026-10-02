@@ -1,0 +1,61 @@
+{
+  "verdict": "PASS",
+  "decision": "PASS",
+  "function": "func_800288C8",
+  "body_hash": "af249c4625ddc8cb",
+  "reviewer": "rv2-288C8-1",
+  "summary": "Header-exact gte_Lzc island plus ordinary C with three measured, truthful FAKE locals; byte match verified; one false sentence in msg_auth must be corrected before commit.",
+  "scope": [
+    {
+      "part": "A auth (inline_asm_canonical.txt row)",
+      "verdict": "PASS",
+      "note": "Row truthful: 6 statements == PINNED gte_ldlzc/gte_nop x2/gte_stlzc char-for-char (only whitespace differs), no DMPSX word, no respelling; canonical gate ASM-PARTIAL 2/465 [130,130] [133,133] reproduced; provenance shas match engine/gtemacro.py PINNED (inline_o.h 76f28032..., gtemac.h 9fe028fd...). Commit message needs the fix below."
+    },
+    {
+      "part": "B Match (src/code6cac_b_tu2.c, include/code6cac.h, tools/canonical_asm_regions.json)",
+      "verdict": "PASS",
+      "note": "Items 1-5 hold on body af249c4625ddc8cb."
+    }
+  ],
+  "findings": [
+    {
+      "item": "1",
+      "result": "pass",
+      "detail": "layer2 hash af249c4625ddc8cb (matches briefed); sandbox --disable all 0 (465/465, 0 stripped); verify-oracle build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, fresh; region_hashes(src) == staged json (6); source_issues == []; staged == worktree for all four files."
+    },
+    {
+      "item": "2",
+      "result": "pass",
+      "detail": "Only asm is the 6-statement island; no register pins, no other __asm__/asm, no barriers, no build/Makefile change. Island is one contiguous run, first statement opens the else block."
+    },
+    {
+      "item": "3",
+      "result": "pass",
+      "detail": "dist/tbl/shift each carry FAKE with measured reason. Spot-measured: shift one-expression = 4 (tmp/rv2_288c8/shift1.c), candidate = 0. tbl satisfies Q28 (docs/grind/owner-rulings-2026-09-26.md:236, option text names func_800288C8): sole reader is the gte_Lzc input operand, src named local dist, no cast, dist read again after, later holds the lbu table byte, target copy `addu $a0,$a3,$zero` in the beqz delay slot at 0x80028ACC. Function and header comments checked against asm (unk78 at 0x78+c*0x18, unkA8 joints 1/15/19 at 0xB4/0x15C/0x18C, radii D_800A3144[i]+[j]) - true. Callee casts are conversions to existing prototypes (file-local func_80032854(s32,s32,u8*,s16*), func_80027A58(s32*), same as line 455), not second views of bytes."
+    },
+    {
+      "item": "4",
+      "result": "pass",
+      "detail": "LeafPos is declared on HEAD (include/code6cac.h:50-54) and already types unk00/unk48/unkA8; this landing does not introduce it. unk78 retype keeps 0x30 bytes/offsets. No other C reaches 0x78..0xA7 through ScrPad; text1b_tu1c.c:346-359 and asm func_800187F4/8002C22C/80060E38 use that scratch range under other modules' time-shared layouts (pre-existing, not this body). D_800A3144 forward extern matches its same-TU definition (line 6770); D_800A3876 is a pre-existing non-overlapping s16 extern."
+    },
+    {
+      "item": "5",
+      "result": "pass",
+      "detail": "Ledger ablations (rad alias, decl order dropped; no-copy 13, fresh copy 12, separate dist_sq 7). s1 `lz = ~1; lz &= lzc_out` form also 0 (measured) but needs its own FAKE (split form; single-expression variants 4-5) - same FAKE count, not simpler."
+    },
+    {
+      "item": "message",
+      "result": "defect (non-body)",
+      "detail": "msg_auth.txt says the six statements have 'identical region hashes' to func_8002A458's; false - statements 1 and 5 (`move $12,%0` with operands tbl / &lzc_out vs temp2 / &sp_tmp) hash differently (d8d5.../5f58... vs 21c1.../4c31...); only 2,3,4,6 are identical. review_brief's 'identical region hashes 2-6' is also off (2,3,4,6)."
+    }
+  ],
+  "required_fixes": [
+    "Before committing A: change msg_auth.txt 'The same six statements (identical region hashes)' to state that the statement text is identical and region hashes 2, 3, 4 and 6 match func_8002A458's (1 and 5 differ only by operand). Text-only; body_hash unaffected."
+  ],
+  "hygiene_debt": [
+    "As declared in msg_match (D_800A3876 sub-symbol, D_800A3144 census name, splat per-field aliases).",
+    "Overlap: lane oct2-b8 plans `typedef Vec3i32 LeafPos;` in include/code6cac.h; this landing only adds a LeafPos use in ScrPad, so expect a textual header conflict, not a type conflict.",
+    "rejected/s2-shift-one-expression-4.c carries a stray unused `s32 lz;` (receipt hygiene; reviewer re-measured cleanly at 4)."
+  ],
+  "next_action": ""
+}

@@ -75,13 +75,15 @@ typedef struct PadState {
 
 /* Scratchpad point tables at 0x1F800000.  unk00: three points per character
  * (func_8002C61C copies [0][0..2] and [1][0..2] to the two records' +0x210);
- * unk48: two more per character (copied to +0x234); unkA8: 22 points per
+ * unk48: two more per character (copied to +0x234); unk78: two body points
+ * per character (func_800288C8 builds them from unkA8 joint 1 and the
+ * midpoint of joints 15 and 19); unkA8: 22 points per
  * character (func_8002A458 reads 0x1F8000A8 + id * 0x108 + i * 0xC, i < 22).
  * func_80023F08 hands func_800207C8 its character's unkA8 / unk00 / unk48. */
 typedef struct {
     LeafPos unk00[2][3];
     LeafPos unk48[2][2];
-    u8 unk78[0xA8 - 0x78];
+    LeafPos unk78[2][2];
     LeafPos unkA8[2][22];
 } ScrPad;
 #define SPAD ((ScrPad *)0x1F800000)
