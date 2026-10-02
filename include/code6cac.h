@@ -44,12 +44,10 @@ typedef struct {
  * its out parameter. */
 typedef struct { s32 x, y, z; } Vec3i32;
 /* 12-byte per-leaf record table (named_syms.txt: g_leaf_position_table,
-   "12-byte stride per leaf, 6 entries = 72-byte position array"). */
-typedef struct {
-    s32 x;
-    s32 y;
-    s32 z;
-} LeafPos;
+   "12-byte stride per leaf, 6 entries = 72-byte position array").  The same
+   s32 x/y/z triple as Vec3i32: func_800207C8 copies a scratchpad point
+   (SPAD->unkA8) into PracticeMenuRec.unk_180 as one 12-byte object. */
+typedef Vec3i32 LeafPos;
 /* PsyQ VECTOR / SVECTOR layouts (include/gte.h), spelled with local tags for
  * the same reason as Unk80101DF0Rot below.  func_80022580 copies
  * PracticeMenuRec's +0xB8 and +0x104 as whole 16-byte VECTORs (pad included)
@@ -292,7 +290,13 @@ typedef struct PracticeMenuRec {
     Vec3i32 unk_174;
     Vec3i32 unk_180;
     Vec3i32 unk_18C;
-    u8  unk_198[0x1C8 - 0x198];
+    Vec3i32 unk_198[2];            /* func_800207C8: translations of bones 17 / 14, y + ((unk_1A * 71) >> 11) */
+    s32 unk_1B0[2];                /* func_800207C8: floor y under unk_198[i] (func_80053614 probe) */
+    u8  unk_1B8[0x1BA - 0x1B8];
+    s16 unk_1BA;                   /* func_800207C8: ratan2 heading of bone 17's matrix column 2, + 0x800 */
+    u8  unk_1BC[0x1C2 - 0x1BC];
+    s16 unk_1C2;                   /* the same for bone 14 */
+    u8  unk_1C4[0x1C8 - 0x1C4];
     SVec4i16 unk_1C8;
     SVec4i16 unk_1D0;
     s16 unk_1D8;
@@ -302,7 +306,7 @@ typedef struct PracticeMenuRec {
     s16 unk_1E6;
     s16 unk_1E8;
     s16 unk_1EA;
-    u8  unk_1EC[0x1F8 - 0x1EC];
+    Vec3i32 unk_1EC;               /* func_800207C8: bone 11's matrix applied to D_800A3138 (0, 0x1000, 0) */
     Vec3i32 unk_1F8;
     u8  unk_204[0x210 - 0x204];
     LeafPos unk_210[3];            /* func_8002C61C: copy of scratchpad points 0x1F800000 + idx * 0x24 */
@@ -414,9 +418,15 @@ extern u8 D_8008D518;
 extern u8 D_8008D538[];
 extern u8 D_8008D55C;
 extern u8 D_8008D578[];
-extern u8 D_8008D864;
-extern s32 D_8008D86C;
-extern s32 D_8008D88C;
+/* Attachment point sets func_800207C8 rotates by a character's bone matrices:
+ * D_8008D86C[unk_0E] (D_8008D864[unk_0E] points; D_8008D774 when unk_12 == 50)
+ * and D_8008D88C[unk_14] (two points, when unk_8C != 0).  D_800A3138 is the
+ * unit y vector (0, 0x1000, 0). */
+extern u8 D_8008D864[8];
+extern SVec4i16 *D_8008D86C[8];
+extern SVec4i16 *D_8008D88C[32];
+extern SVec4i16 D_8008D774[2];
+extern SVec4i16 D_800A3138;
 extern u8 D_8008D9EC[];
 extern u8 D_8008DA08[0x48];         /* 0x8008DA08..0x8008DA4F (asm/data/7D920.data.s dlabel D_8008DA08) */
 extern s16 D_8008DA50[];          /* [unk_0A] (func_80023F08) */
