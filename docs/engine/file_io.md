@@ -124,7 +124,7 @@ naming collision. The actual function bodies are 3-retry loops over
 The memory card is accessed via libapi (cards are pad-port devices). BB2
 wraps it in `LWCard_*` helpers (Kengo name suggests "LightWeight Card"):
 
-- `LWCard_SetAccessData` (`code6cac.c:1329`) — set up an access struct
+- `LWCard_SetAccessData` (`code6cac_tu2.c:1114`) — set up an access struct
   (4 fields, mostly zero/-1)
 - `_McAccessSection` (asm-only at 0x8003D39C) — perform a memory card
   access section
@@ -152,10 +152,10 @@ trampolines into PS1 BIOS calls A(34h) / A(35h):
 
 Other BIOS-call trampolines:
 - `func_80083698` — file-open BIOS call (returns fd or -1)
-- `ang_hosei_800836C8` (`asm/funcs/ang_hosei.s`) — the BIOS file-lseek
+- `ang_hosei_800836C8` (now `PClseek`, `asm/funcs/PClseek.s`) — the BIOS file-lseek
   trampoline. NB the Kengo name `ang_hosei` covers THREE unrelated
   functions in-tree: this lseek trampoline (0x800836C8), the real
-  angle-correction orchestrator (`ang_hosei_8003F62C`, src/config.c),
+  angle-correction orchestrator (`ang_hosei_8003F62C`, src/code6cac_c2.c),
   and `char_disp_offset_80056FE8` (a character display-offset lookup —
   neither rotation nor file-seek). See docs/naming/MISNOMERS.md.
 - `func_80078A18` — `BIOS_close` for file descriptors
@@ -169,7 +169,7 @@ with the BIOS table index in the upper bits).
 
 When file I/O catastrophically fails:
 
-1. `sys_Panic` (`ings.c:360`) — print "OVER FLOW" via debug_printf
+1. `sys_Panic` (`ings.c:336`) — print "OVER FLOW" via debug_printf
 2. Infinite loop on `func_800164F8()` — `break` instruction to halt CPU
 
 `file_LoadSoundData` calls `sys_Panic` if the loaded SE bank exceeds
@@ -241,7 +241,7 @@ bits = (*g_irq_cdrom_ctrl_reg_ptr >> 24) & 0x7F;
 
 `irq_cdrom_register_callback` (`0x8008359C`) — registrar companion.
 
-**MISNOMER**: `conv_matrix_rotation` (`ings2.c:372`) is actually
+**MISNOMER**: `conv_matrix_rotation` (`ings2.c:425`) is actually
 `irq_cdrom_init` — clears callback slots, clears CD-ROM IRQ control reg,
 hooks IRQ 3 to `irq_cdrom_handler`.  Body has nothing to do with matrix
 rotation; see `docs/naming/MISNOMERS.md`.

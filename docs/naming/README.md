@@ -62,15 +62,20 @@ a key, oracle-verified per batch, never hand-applied. Applied so far:
 
 ## The universe: what counts as a function
 
-**1,429 unique functions** (corrected 2026-08-07 by the task-#19 duplicate survey —
-`docs/TASK19-PROTO-ANALYSIS.md`). Derivation, because the number is quoted
-inconsistently elsewhere:
+**1,483 functions** = 1,260 COMPLETED-C + 223 COMPLETED-INLINE-ASM-CANONICAL
+(`tools/check_completion_integrity.py`, 2026-10-02 reconciliation). The authoritative source is
+the C objects' function symbols (one per distinct linked address; no aliases or labels), not
+`asm/funcs/`, which under-enumerates. Derivation from the file census:
 
 | Source | Count | Note |
 |---|---|---|
-| `asm/funcs/*.s` files | 1,437 (2026-08-07 census; 1,438 on 2026-10-02 after the duplicate deletions and later splits — regenerate the census before quoting) | splat's per-function split — the authoritative enumeration (post-wave count) |
-| minus `D_8007E08C.s` | 1,436 | data-as-code blob, not a function |
-| minus 7 stale duplicate pairs | **1,429** | 2 same-glabel pairs (`cdrom_FramesToBcd.s`/`func_800806A4.s`, `stage_InitCollision.s`/`func_8003F274.s`) **plus 5 same-address pairs invisible to glabel scans** (`cpu_get_dist`/`func_8003032C`, `cpu_set_move_command_and_dir`/`func_80030A2C`, `cpu_check_same_dir_timer`/`func_8003339C`, `replay_camera_Init`/`func_80036D98`, `special_camera_get_rot_dir`/`func_80037348`). All 7 pairs instruction-identical, none INCLUDE_ASM-referenced; the stale halves were deleted in 5a02fc789. |
+| `asm/funcs/*.s` files | 1,437 | after the stale-duplicate deletions (7 pairs in 5a02fc789, `func_80047384.s` in 6e6e29489) |
+| minus `D_8007E08C.s`, `jtbl_comb_control.s` | 1,435 | data-as-code blob; a jump table in `.rodata` (`0x800164AC`) — not functions. Each remaining file is one function at a distinct address (file stem may differ from the C name, e.g. `func_800167AC.s` = `file_GetFlag0`) |
+| plus 45 functions inside a neighbour's listing | 1,480 | splat did not split statics / pointer-only entries: e.g. `setIntr`/`stopIntr`/`restartIntr` inside `trapIntr.s`, `r_sio*`/`HandleSio`/`__nulldev` inside `_comb_control.s`, `SsSeqCalledTbyT` inside `SsStart.s`, `cdrom_IrqHandler` inside `func_80081E1C.s` |
+| plus 3 functions with no listing | **1,483** | `func_8001C624`, `func_80037D14` (`.s` deleted on match, 2026-04-14), `SetVideoMode` (never listed) |
+
+Excluded: the 11 data-as-code symbols the integrity script lists. Two canonical entries,
+`func_800790A4` and `func_800545F4`, are no-`jr $ra` fragments counted as functions.
 
 `engine/queue.json` is *not* a universe source: it lists only INCOMPLETE functions
 (empty since 2026-10-02).

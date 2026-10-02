@@ -140,7 +140,8 @@ Each record packages:
 
 The specific binary layout of "stage geometry" beyond the VAB is engine-
 specific (Marionation stage format) and not exhaustively decoded here — see
-`code6cac_b2.c` (`marionation_camera_*`, `special_camera_*` functions) for the
+`code6cac_b4_post.c`..`code6cac_b5_post.c` (the former `marionation_camera_*`,
+`special_camera_*` functions) for the
 runtime interpretation.
 
 ### Why six records?
@@ -166,7 +167,8 @@ strong hypothesis backed by the structural evidence above.
 
 ### Naming caveat — `marionation_camera_*` / `special_camera_*` are not loaders
 
-The auto-generated function names in `src/code6cac_b2.c` that look like
+The auto-generated function names (formerly in `src/code6cac_b2.c`, now
+`src/code6cac_b4_post.c`..`code6cac_b5_post.c`) that look like
 stage-loader entry points are misnomers from an early symbol pass:
 
 * `marionation_camera_Init_80036064` is actually a **CD streaming
@@ -296,8 +298,9 @@ records with `--dump` and feed the VAB to `inspect_bnk.py` and any TIMs to
   the embedded TIMs decode to valid 256x22 and 256x127 4-bit indexed images.
 * Verified all 32 `STG*.BIN` files are exactly 19,240 bytes with identical
   wrapper bytes at offsets 0..7.
-* Cross-referenced with `src/code6cac_b2.c:380` `marionation_camera_Init_*`
-  and `:448` `special_camera_check_pos_outside_ground_80036E34` — these are
+* Cross-referenced with `marionation_camera_Init_80036064` (now `cdrom_ReadyCallback`,
+  `src/code6cac_b4_post.c`) and `special_camera_check_pos_outside_ground_80036E34`
+  (now `cdrom_StartReadAt`, `src/code6cac_b5_post.c`) — these are
   the runtime loaders that consume the records.
 
 ## Unverified / TODO

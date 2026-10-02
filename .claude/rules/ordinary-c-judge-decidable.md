@@ -102,8 +102,8 @@ re-opened by Q91 clause D.
 - **Q90 — one u32 class bit-set, func_80023F08 only.** At its move-class test
   `(mask = ent[2] | (ent[3] << 16)) & (1 << rec->unk_0A)`, `mask` may be a `u32` local although its only
   effect is the int->u32 conversion that keeps fold-const.c:4437 from rewriting the bit test (int form 3
-  off). The comment names that rewrite and the measurements (`memory/grind/func_80023F08/casts/receipts.txt`,
-  `fake/mask_jump.txt`); fresh layer-2. No other unsigned-widening device, local or site.
+  off). The comment names that rewrite and the measurements (`c8a67edaf:memory/grind/func_80023F08/casts/receipts.txt`,
+  `c8a67edaf:memory/grind/func_80023F08/fake/mask_jump.txt`); fresh layer-2. No other unsigned-widening device, local or site.
 
 Related: [[no-new-park-categories]] · [[dead-store-fake-exception]] · [[judge-sole-gate]] ·
 [[review-discipline-before-commit]] · [[staged-value-reused-variable]]

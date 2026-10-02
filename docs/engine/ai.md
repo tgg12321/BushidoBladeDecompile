@@ -32,7 +32,7 @@ queue at offset `0x330..0x33B` of the fighter struct.
 
 ## Key entry points
 
-### `cpu_set_move_command_and_dir` (`code6cac_b.c:2540`)
+### `cpu_set_move_command_and_dir` (`code6cac_b_tu2.c:4863`)
 
 The "commit a chosen move" function — see [combat.md](combat.md). The AI
 calls this with `(fighter, move_id, vec3 velocity)` to:
@@ -46,7 +46,7 @@ calls this with `(fighter, move_id, vec3 velocity)` to:
 This is the boundary between "AI decision" and "engine execution". Once
 committed, the move runs to completion under the per-frame pipeline.
 
-### `cpu_set_move_command_and_dir_for_no_action` (`code6cac_b.c:3510`)
+### `cpu_set_move_command_and_dir_for_no_action` (`code6cac_b_tu2.c:6219`)
 
 "No action" = AI is between moves. Builds a shuffled list of which moves
 are currently legal, starting from the global waza-enable constant
@@ -77,7 +77,7 @@ fresh from the legal moves).
 DIFFERENT FUNCTION — same name due to Kengo collision. This is the main
 loop entry point, NOT AI code. See [main_loop.md](main_loop.md).
 
-### `cpu_get_dist` (`code6cac_b.c:2287`)
+### `cpu_get_dist` (`code6cac_b_tu2.c:4680`)
 
 Per-frame "look at the opponent" calculation. Given the AI fighter `a0` and
 the opponent's reference position `a1`, rotates `a0`'s velocity vector into
@@ -95,12 +95,12 @@ local coordinates, where +X is "toward opponent" and +Z is "their right".
 This is what the AI's tactical comparisons against `D_8008E194` waza-tables
 are evaluated in.
 
-### `cpu_get_dist_2` (`code6cac_b.c:2975`)
+### `cpu_get_dist_2` (`code6cac_b_tu2.c:5519`)
 
 Per-frame bytecode interpreter that decodes the AI's command stream — see
 [combat.md](combat.md) for the opcode table.
 
-### `cpu_check_same_dir_timer` (`code6cac_b.c:3262`)
+### `cpu_check_same_dir_timer` (`code6cac_b_tu2.c:6005`)
 
 Per-frame "should I change my mind about this move" check — see
 [combat.md](combat.md).
@@ -109,7 +109,7 @@ Per-frame "should I change my mind about this move" check — see
 
 Sword-clash detection — see [combat.md](combat.md).
 
-### `cpu_check_run_attack` (`code6cac.c:332`)
+### `cpu_check_run_attack` (`code6cac.c:460`)
 
 After `marionation_camera_Exec` updates the camera, this function tests
 whether the AI fighter should commit to a charging "run attack". It walks
@@ -118,7 +118,7 @@ list of (radius, angle, threshold) triples from `0x1F8000BC` in the
 scratchpad to decide. Uses the GTE scratchpad set up by
 `marionation_camera_Exec`.
 
-### `cpu_side_move_dir` (`code6cac_b.c:311`)
+### `cpu_side_move_dir` (`code6cac_b_tu2.c:202`)
 
 Handles the "side-move" tactical retreat or sidestep. Reads the fighter's
 side-move cooldown counter (offset 0x34C, capped at 0x40), computes a target
@@ -134,7 +134,7 @@ current stage/arena id, not a stance:
   — per-stage, per-fighter-index lookup, where
   `stage_ptr = stage_GetDataPtr()`.
 
-### `cpu_check_move_dir_pattern_enemy_attack` (`code6cac.c:1293`)
+### `cpu_check_move_dir_pattern_enemy_attack` (`code6cac_tu2.c:1078`)
 
 "Set up a fixed camera shot of the enemy's attack" — called from the
 practice/replay modes. Copies fighter offset 0x174 (the head bone position)
@@ -144,7 +144,7 @@ parameters at `D_800F661A..D_800F6620` to a fixed `(0x120, arg1, 0, 0x1162)`.
 This is the "watch the enemy do their move" replay-camera helper, not an
 attack decision.
 
-### `cpu_get_move_pattern_table_number` (`code6cac.c:1816`)
+### `cpu_get_move_pattern_table_number` (`code6cac_tu2.c:2152`)
 
 The per-frame "practice mode" handler — runs the move-pattern table
 selection for the practice/tutorial mode. Increments `g_practice_loop_frame` (D_800A37B8) (a frame
@@ -156,7 +156,7 @@ through it.
 This function is also where many of the `D_800A3834` transitions out of
 practice mode are decided — selections 0/1/2 each set a different next mode.
 
-## Move-selection logic — `func_8003047C` (`code6cac_b.c:2326`)
+## Move-selection logic — `func_8003047C` (`code6cac_b_tu2.c:4718`)
 
 Despite its `func_` name, this is "load the waza queue for the current
 stance". For fighter `a0`:
@@ -204,11 +204,11 @@ is a research item.
 When an AI fighter is removed from play (e.g., dies, leaves screen), several
 functions blank fields:
 
-- `func_8003043C` (`code6cac_b.c:2314`) — clears the 12-slot `D_80106A78`
+- `func_8003043C` (`code6cac_b_tu2.c:4709`) — clears the 12-slot `D_80106A78`
   active-move array.
-- `func_80030524` (`code6cac_b.c:2362`) — selectively clears slots that have
+- `func_80030524` (`code6cac_b_tu2.c:4736`) — selectively clears slots that have
   their "consumed" flag set.
-- `func_80030D04` (`code6cac_b.c:2658`) — selectively retires move-IDs in
+- `func_80030D04` (`code6cac_b_tu2.c:4966`) — selectively retires move-IDs in
   range 0x12..0x1D from the queue.
 
 These run during scene transitions to keep the AI from carrying stale state

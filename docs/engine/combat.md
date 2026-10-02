@@ -60,7 +60,7 @@ Each move is described by an opcode-stream stored in the character's data
 plain animation timelines — they're tiny bytecode programs the AI/move
 selector advances each frame.
 
-The decoder is `cpu_get_dist_2(u8 *a0)` (`code6cac_b.c:2975`). It walks the
+The decoder is `cpu_get_dist_2(u8 *a0)` (`code6cac_b_tu2.c:5519`). It walks the
 stream pointed at by `a0[0x58] + 5` and dispatches:
 
 | Byte range | Meaning |
@@ -96,7 +96,7 @@ overwrites the `0x58`-stream pointer and resets the field bag.
 
 ## AI/CPU command-stream advance
 
-`cpu_check_same_dir_timer` (`code6cac_b.c:3262`) is the same kind of decoder
+`cpu_check_same_dir_timer` (`code6cac_b_tu2.c:6005`) is the same kind of decoder
 but executes a different bytecode form found at `fighter[0x58]+5`:
 
 | Byte | Meaning |
@@ -117,7 +117,7 @@ different move" (`cpu_check_same_dir_timer`).
 ## Move queue / commit (`coli_hit_body_weapon` and `cpu_set_move_command_and_dir`)
 
 When the AI or pad input decides on a move, `cpu_set_move_command_and_dir`
-(`code6cac_b.c:2540`) commits it:
+(`code6cac_b_tu2.c:4863`) commits it:
 
 1. Calls `coli_hit_body_weapon(a0, move_id)` — allocates a slot in the
    12-entry active-move array at `D_80106A78`, populates the fighter's
@@ -153,7 +153,7 @@ tests against.
 
 The main hit-test loop runs once per frame per fighter pair. The primitives:
 
-### `cpu_check_tubazeri` (`code6cac_b.c:1907`) — sword clash
+### `cpu_check_tubazeri` (`code6cac_b_tu2.c:4325`) — sword clash
 
 Tubazeri is the "blade-lock" state when two weapons cross. The function takes
 three fighter pointers (`a0`, `a1`, `a2`) — your fighter, your weapon-target,
@@ -177,20 +177,20 @@ the two weapon vectors:
 This is the "are these two blades crossing in 3D" test, used to enter
 blade-lock state.
 
-### `coli_check_circle_hit_line` (`code6cac_b.c:1992`)
+### `coli_check_circle_hit_line` (`code6cac_b_tu2.c:4398`)
 
 A variant that tests a circle (a weapon arc swept over a frame) against a
 line segment (the opposing weapon's reach over the same frame). Uses the same
 scratchpad scheme to compute deltas, runs the GTE cross product, and returns
 which limb/axis intersected.
 
-### `gnd_land_hit_char_tsuba` (`text1b.c:12577`)
+### `gnd_land_hit_char_tsuba` (`text1b_tu1b.c:4733`)
 
 Ground/weapon-vs-body test. Called from the main loop's gameplay handler.
 Returns the new active fighter struct pointer if a hit was detected; the
 caller uses this to start the hit-reaction animation.
 
-### `gnd_land_hit_char_die_main` (`text1a.c:1373`)
+### `gnd_land_hit_char_die_main` (now `func_800422BC`, `text1a_post.c`)
 
 Death/death-blow handler — runs when a hit damages the fighter past their
 hitpoints. Triggers the "katinuki" finisher animation if appropriate.
@@ -217,13 +217,13 @@ with independent HP, but this is not yet fully traced.
 
 BB2's gauge HUD is an in-house particle/UI system that uses functions named
 `saTan<N>...` (apparently "samurai tanren" — "samurai training"). These live
-mostly in `text1b.c` and `sound.c`:
+mostly in the `text1b*.c` files (`sound.c` was merged into `text1b.c`):
 
 - `saTan0Init`, `saTan1GaugeInit`, `saTan2GaugeInit_80077B20` —
   initialization functions for the various gauge bar variants.
 - `saTan3GaugeMain_8006A564`, `saTan4GaugeMain`, `saTan1GaugeMain` — per-frame
   update functions.
-- `saTan5TakeAnim2_2` (`main.c:109`) — handles the volume/SE pacing during
+- `saTan5TakeAnim2_2` (`main.c:143`) — handles the volume/SE pacing during
   certain animations; uses irq-set-alarm to wait between sound events.
 - `saTanMainDispGnd_80046020` — gauge rendering against the ground.
 
@@ -243,9 +243,9 @@ strike. The mechanic is implemented across several functions all named
   katinuki finishes for the current game mode.
 - `katinuki_game_setData_8003D2C4` (called from `sys_GameInit`) — initializes
   the katinuki state at boot.
-- `katinuki_game_getMyWeaponId` (`code6cac_b.c:1986`) — looks up the
+- `katinuki_game_getMyWeaponId` (`code6cac_b_tu2.c:63`) — looks up the
   fighter's weapon id for katinuki damage calculation.
-- `md_game_check_change_main_mode_katinuki` (`main.c:2240`) — checks
+- `md_game_check_change_main_mode_katinuki` (`main.c:3152`) — checks
   whether the player has triggered katinuki conditions this frame to
   transition out of the normal game-mode dispatch.
 
@@ -254,8 +254,8 @@ different game modes (Single, Slash, Story, Practice, VS).
 
 ## Hit-pause helpers — `coli_HitPauseKatana`
 
-`coli_HitPauseKatana` (`main.c:1693`) and `coli_HitPauseKatana_2`
-(`main.c:1983`) are the misnamed "Hit Pause" functions — they're actually
+`coli_HitPauseKatana` (`main.c:2597`) and `coli_HitPauseKatana_2`
+(`main.c:2787`) are the misnamed "Hit Pause" functions — they're actually
 the **SPU voice-key allocator** (despite the `coli_` name). The Kengo
 rename collided two functions; the real implementation manages SPU voice
 slots for sound effects during hit pauses (the engine slows down the SPU
@@ -273,8 +273,8 @@ globals. See [sound.md](sound.md) for details.
   `obj_InitChars` during character setup; its inverse getter
   `func_80086080` divides by 129. Not a combat function — see
   `named_syms.txt` supersede note.)
-- `action_CheckHitZangeki` (`asm/funcs/action_CheckHitZangeki.s`) — slash-hit
-  test.
+- `action_CheckHitZangeki` (0x800863DC) — slash-hit test per its Kengo name;
+  the address is now `_SsVmFlush` (PsyQ libsnd, `main.c`).
 - `coli_calc_motion` (`0x8003D888`, `_2` at `0x8008ACD0`) — motion vs collision
   resolver.
 - `damage_CalcHitDamage` / `damage_CalcHitDamage2` (`0x8003880C`, `0x80082A14`)
@@ -284,7 +284,7 @@ globals. See [sound.md](sound.md) for details.
 
 ## Ground / arena init (2026-05-17)
 
-`gnd_init_8001B294(p1_char_ptr, p2_char_ptr)` (`code6cac.c:1067`) sets
+`gnd_init_8001B294(p1_char_ptr, p2_char_ptr)` (`code6cac_tu2.c:841`) sets
 up the per-round arena state when a fight starts.  It builds:
 
 - **Camera midpoint** (X/Y/Z averages of P1/P2 positions, +0xF4/+0xF8/+0xFC)

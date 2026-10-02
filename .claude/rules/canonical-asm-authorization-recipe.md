@@ -28,7 +28,7 @@ cc1 numbers `.L<N>` per TU in source order; a literal `.L987:` can collide. Use 
 
 Removing a C body drops its auto `.L<N>` labels and shifts every later function's numbers in that `.c` file.
 After writing the block, run `verify-oracle --rebuild`; if SHA1 mismatches, diff `build/src/<file>.o` to find
-the drifted sibling (`python3 tools/probe_func_labels.py <sibling>`). Never commit a broken oracle — fix or
+the drifted sibling (compare the cc1 `.L<N>` labels each function emits against the oracle build's). Never commit a broken oracle — fix or
 revert.
 
 ## Supporting rules

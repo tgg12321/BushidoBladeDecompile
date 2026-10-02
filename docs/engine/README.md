@@ -80,8 +80,11 @@ boundaries; several files are one original file split at a jump-table, rodata or
 per-file gp (`-G8`) boundary. `.text` ranges are from the link map
 (`build/bb2.map`; link order in `bb2.ld`). Descriptions summarise the names in
 each file (`named_syms.txt` aliases included); many game-side names are inferred,
-so treat them as hints. The subsystem docs below predate the file splits and
-may cite old file names (`sound.c`, `config.c`, `code6cac_b2.c`).
+so treat them as hints. The subsystem docs below predate the file splits; their
+file citations point at the current files (old `sound.c` is now in `text1b.c`,
+`config.c` in `code6cac_c2.c`, `code6cac_b2.c` in `code6cac_b2_post.c`..`b5_post.c`),
+but many function names they use were since reset to `func_<addr>` — the
+address is the stable key.
 
 | File | `.text` range | Contents |
 | --- | --- | --- |

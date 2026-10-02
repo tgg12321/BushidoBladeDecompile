@@ -3,7 +3,8 @@
 BB2's menu and mode-transition logic is a state machine driven by
 `D_800A3834` (the main game-mode value) and a set of per-mode sub-state
 variables. The transitions are scattered across `code6cac_c2.c`,
-`code6cac_c_ab.c`, `code6cac_c_mid.c`, and `config.c`.
+`code6cac_c_ab.c`, and `code6cac_c_mid.c` (the former `config.c` is now the
+tail of `code6cac_c2.c`).
 
 ## Mode dispatch recap
 
@@ -20,7 +21,7 @@ See [main_loop.md](main_loop.md) for the mode value table.
 
 ## Menu transition: a typical mode handler
 
-`md_game_check_change_sub_mode` (`code6cac_c2.c:252`) is a model
+`md_game_check_change_sub_mode` (`code6cac_c2.c:234`) is a model
 sub-mode handler. Annotated:
 
 ```c
@@ -97,9 +98,10 @@ Helpers:
 `g_disp_fade` is checked at the start of most menu handlers; the menu is
 not interactive while a fade is in progress.
 
-## Configuration / options — `config.c`
+## Configuration / options — tail of `code6cac_c2.c`
 
-`config.c` (`0x8003F168..0x800401CC`) handles game options:
+The former `config.c` (`0x8003F168..0x800401CC`, now the tail of
+`code6cac_c2.c`) handles game options:
 
 - `game_GetMode` / `game_SetControllerPorts` / `game_SetPlayerCount` —
   basic options.
@@ -151,7 +153,7 @@ dispatches the per-stage initialization via `g_stage_init_tbl`.
 
 ## Mode entries (handlers that set up modes)
 
-`func_8003BE10` (`code6cac_c2.c:315`) — "enter mode 0xB" handler:
+`func_8003BE10` (`code6cac_c2.c:294`) — "enter mode 0xB" handler:
 1. Enable display, init display
 2. Reset players, file DMA, all objects
 3. Bring in setup table (`func_80078824(0x80118800)`)
@@ -160,7 +162,7 @@ dispatches the per-stage initialization via `g_stage_init_tbl`.
 6. `D_800A3834 = 0xB` (transition complete)
 7. Disable display (for next frame's fade-in)
 
-`func_8003BFC4` (`code6cac_c2.c:397`) — "go to mode 8" handler:
+`func_8003BFC4` (`code6cac_c2.c:376`) — "go to mode 8" handler:
 1. Enable display
 2. Reset players, file DMA
 3. `func_80045814()` — get next-stage param
@@ -195,7 +197,7 @@ the mode-select menu.
 `title_mv_exec` / `title_mv_exec2` (referenced) handle the title FMV
 (plays OPENING.STR via the MOVOVL.EXE overlay).
 
-`game_FrameLoop` (`code6cac_b2.c:471`) is a smaller per-frame "play a
+`game_FrameLoop` (`code6cac_b5_post.c`) is a smaller per-frame "play a
 canned animation" loop used by title and demo modes — it spins until
 either a fixed frame count or a button press.
 
@@ -258,7 +260,7 @@ Several menu-related mode handlers exist in `g_module_func_tbl`
 
 ## Fade / transition state machine (2026-05-17)
 
-The fade-in/fade-out state machine at `func_8006EC0C` (`text1b.c:16108`)
+The fade-in/fade-out state machine at `func_8006EC0C` (`text1b_tu1d.c:362`)
 ramps a value (0..0x1E8 in 0x20 steps) under control of a dispatch
 table:
 

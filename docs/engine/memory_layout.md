@@ -22,7 +22,7 @@ in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
 |   GTE sqrt table @ 0x8009_C7A8               |
 +----------------------------------------------+ 0x8001_6CAC  <- splat: .text
 | .text: 1,410 functions, ends ~0x8008_D070    |
-|   Entry point @ 0x8008_36EC (in ang_hosei.s) |
+|   Entry @ 0x8008_36EC (__SN_ENTRY_POINT)     |
 +----------------------------------------------+ 0x8008_D070  <- g_data_start
 | .data: initialized globals                   |
 |   g_module_func_tbl @ 0x8008_D090 (mode      |
@@ -61,7 +61,7 @@ in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
 |   - MOVOVL.EXE FMV overlay load target       |
 |     (file_LoadOverlay; ings.c:370)           |
 |   - sound-data scratch during                |
-|     file_LoadSoundData (ings.c:388)          |
+|     file_LoadSoundData (ings.c:364)          |
 | D_800A3774 = 0x801EBC00 (second scratch)     |
 | D_800A3798 = 0x13400 (size of region)        |
 +----------------------------------------------+ 0x801F_F000
@@ -151,7 +151,7 @@ Per-buffer overhead is `0x4090` bytes (`g_disp_fb_base`-relative). This holds
 the libgpu DRAWENV (0x5C bytes) + DISPENV (0x14 bytes) + the OT (Ordering
 Table) chain + a sprite primitive pool. The frame-flip pointer
 `D_800A36AC & 1` toggles which slot the renderer fills (`ings.c:605`,
-`code6cac_b2.c` similar).
+`code6cac_b2_post.c` similar).
 
 The right half of VRAM (and the lower half below the buffers) holds packed
 textures, palettes (CLUTs), and motion-sprite (zanzou) tile pages. BB2 loads
@@ -163,14 +163,14 @@ them via `gpu_LoadTexture`, `gpu_LoadClut256`, `gpu_LoadClut16` (`gpu.c:267,
 SPU RAM is reached only via DMA. BB2's layout:
 
 - Voice 0..23 used as standard sample voices.
-- Sound effect bank loaded by `snd_LoadSe` (`sound.c:187`) — uses channel
+- Sound effect bank loaded by `snd_LoadSe` (now `func_8004695C`, `text1b.c`) — uses channel
   index 9 (`SND_CHANNEL_SE`) — sample data DMA'd from the .SE files in
   `disc/LOADSE/`.
 - BGM channel uses channel 8 (`SND_CHANNEL_BGM`); BGM is streamed from XA
   sectors in `disc/XA_0/`, `disc/XA_1/` via CD-XA hardware — does NOT
   consume SPU RAM beyond the small XA reception buffers.
 - UI/selection sounds on channel `0xA` (`SND_CHANNEL_UI`) — see
-  `snd_LoadSelection`, `sound.c:199`.
+  `snd_LoadSelection` (now `func_800469C4`, `text1b.c`).
 
 Globals tracking SPU state:
 
@@ -198,7 +198,7 @@ Examples (from `named_syms.txt`):
 
 | Address | Symbol | $gp offset |
 | --- | --- | --- |
-| 0x800A3308 | (BSS clear start, see ang_hosei.s) | +0x023C |
+| 0x800A3308 | (BSS clear start, see `__SN_ENTRY_POINT.s`) | +0x023C |
 | 0x800A336C | `g_game_mode` | +0x02A0 |
 | 0x800A3768 | `g_disp_enable` | +0x069C |
 | 0x800A3790 | `g_game_timer` | +0x06C4 |

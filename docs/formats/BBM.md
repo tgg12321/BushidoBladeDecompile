@@ -76,8 +76,9 @@ Two outliers:
 The 17 character-specific bundles encode (character_id, secondary_set) in the
 basename. The hundreds-digit identifies the character and the trailing digits
 list per-character variants. Character mapping (matched against the source-side
-string pool at `D_8001036C..D_80010410` in `asm/data/800.rodata.s:337..410`,
-where each string is wrapped in its own `g_str_bbm_*` label):
+string pool at `D_8001036C..D_80010410`, now string literals in
+`src/code6cac_tu2.c`; each string has its own `g_str_bbm_*` label in
+`symbol_addrs.txt`):
 
 ```
 prefix   referenced as          character / role            file set
@@ -303,8 +304,8 @@ python tools/inspect_windat.py disc/MOTION/WIN.DAT --csv      # all values as CS
 * `src/ings2.c:525`  — `motion_Open` — initialises the motion subsystem (runs a
   vector of init thunks from `D_8008D070`).
 
-The strings `Y123.BBM`, `K123.BBM`, etc. live as discrete labels in
-`asm/data/800.rodata.s:335..414` (one `g_str_bbm_*` per string).
+The strings `Y123.BBM`, `K123.BBM`, etc. live as string literals in
+`src/code6cac_tu2.c` (one `g_str_bbm_*` label per string in `symbol_addrs.txt`).
 
 ## Inspector tool
 
@@ -326,7 +327,7 @@ python tools/inspect_bbm.py <dir>/                       # iterate every BBM in 
 * Section end-offsets validate: `0x14 < end1 < end2 < end3 ≤ end4 < EOF`
   for every file.
 * Filename cross-reference: every `*.BBM` on disc has a matching
-  `g_str_bbm_*` label in `asm/data/800.rodata.s` lines 335–414.
+  `g_str_bbm_*` label (`symbol_addrs.txt`; strings in `src/code6cac_tu2.c`).
 * Related motion-runtime functions cross-referenced (`motion_Open`,
   `motion_SetMotion`, `motion_LoadPreCalcData_*`) — these all read packed
   records that match the section 5 layout.

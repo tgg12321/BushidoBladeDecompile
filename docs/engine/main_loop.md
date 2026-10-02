@@ -6,12 +6,12 @@ This document traces what happens from power-on through one frame of gameplay.
 
 The PS1 BIOS hands control to BB2 at address `0x8008_36EC`. This is declared
 in the PS-EXE header (`asm/header.s:6`) and corresponds to the entry point
-labelled `ang_hosei` in `asm/funcs/ang_hosei.s` — the label is just whatever
-came first in the address range; the entry code is NOT actually `ang_hosei`
-the rotation-correction helper. The two share an asm file because they were
-adjacent in the binary.
+`__SN_ENTRY_POINT` (`asm/funcs/__SN_ENTRY_POINT.s`, `INCLUDE_ASM` in `ings2.c`).
+It was once mislabelled `ang_hosei` because it shared an asm file with the
+adjacent lseek trampoline (now `PClseek`); it is NOT the rotation-correction
+helper.
 
-Annotated entry-point code (from `asm/funcs/ang_hosei.s:12-55`):
+Annotated entry-point code (from `asm/funcs/__SN_ENTRY_POINT.s`):
 
 ```
 ; ------- ENTRY @ 0x800836EC -------
@@ -174,13 +174,13 @@ moves between title screen, character select, gameplay, replay, etc.
 
 ## Boot subsystems
 
-### `sys_Init` (`ings.c:300`)
+### `sys_Init` (`ings.c:276`)
 Disables interrupts, initializes the pad buffer (`func_80078C9C` — libapi
 `InitPAD`), sets up the controllers (`func_80078D38` — `StartPAD`), the VSync
 event (`func_80078A58`), the display (`disp_Init`), camera state
 (`func_80035FE0`), pad-press state, then `sys_InitSound`.
 
-### `sys_GameInit` (`ings.c:414`)
+### `sys_GameInit` (`ings.c:390`)
 - Prints `"LIMIT:%08x"` debug
 - `kgm_clamp_patch_init` — zero file/disc flags
 - `func_80020D70` — early game data init
@@ -189,15 +189,15 @@ event (`func_80078A58`), the display (`disp_Init`), camera state
 - `file_LoadSoundData` — loads SE bank from disc to RAM
 - `func_80019534`, `katinuki_game_setData_8003D2C4`, `func_8001C444` —
   game-data tables setup
-- `game_Init` (`sound.c:242`) — initializes effect, gauge, character, and
+- `game_Init` (`text1b.c`) — initializes effect, gauge, character, and
   pause state. Default state: `g_game_pause = 1`, `g_game_p1_ctrl = 0`,
   `g_game_p2_ctrl = 2`, `g_game_timer = 0x23`.
 
-### `motion_Open` (`ings2.c:525`)
+### `motion_Open` (`ings2.c:501`)
 Runs an array of "constructor" function pointers stored at `D_8008D070`
 through the end-marker `D_00000000`. The loop is hand-coded asm because it
 modifies `$s1` (the counter) as a side effect of each call. See also
-`motion_Close` (`ings2.c:543`), which is the symmetric tear-down.
+`motion_Close` (`ings2.c:502`), which is the symmetric tear-down.
 
 This is the engine's module init/cleanup mechanism — every subsystem that
 needs early initialization adds itself to the `D_8008D070`-rooted array at
@@ -410,7 +410,7 @@ Three clusters from the placeholder-refinement pass interact with the main loop:
 - §12 Sound data buffer pointer cluster
   — `g_snd_data_buf_base` + `g_snd_data_subblock_0_ptr..4_ptr` at
   `0x800EFB14`.  Not main-loop ticked — relocated when the sound buffer
-  moves via `func_80054FDC(delta)` (text1b.c:11363).  Owned by the
+  moves via `func_80054FDC(delta)` (text1b_tu1b.c:1017).  Owned by the
   sound subsystem.
 - §22 IRQ-callback trampolines
   — `g_irq_handler_entry_no_pri` (0x80083EDC) fires the pending primary

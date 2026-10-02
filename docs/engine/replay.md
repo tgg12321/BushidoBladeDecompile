@@ -3,8 +3,8 @@
 BB2's replay and "special camera" (the cinematic kill-cam that triggers on
 finishing blows) are interconnected: the replay system reuses the camera
 data infrastructure that drives the kill-cams. Both are implemented
-across `code6cac_b2.c` (camera plumbing, 0x80035438..0x800375EC) and
-`text1b.c` (replay-specific helpers, lines 15644-16266).
+across `code6cac_b2_post.c`..`code6cac_b5_post.c` (camera plumbing,
+0x80035438..0x800375EC) and `text1b_tu1d.c` (replay-specific helpers).
 
 ## What "replay" means in BB2
 
@@ -42,7 +42,7 @@ needed (via CD seek to the BCD address, read for length bytes).
 
 ## Camera-data load — `special_camera_get_rot_dir`
 
-`special_camera_get_rot_dir(dest)` (`code6cac_b2.c:612`) loads a camera
+`special_camera_get_rot_dir(dest)` (0x80037348, now `cdrom_LoadExec`, `code6cac_b5_post.c`) loads a camera
 animation entry from disc:
 
 1. Compute table index via `func_80036EA8(6, 0)`.
@@ -68,7 +68,7 @@ PsyQ asm output.
 
 ## Replay camera init — `replay_camera_Init`
 
-`replay_camera_Init(a0, a1)` (`code6cac_b2.c:417`) starts a replay
+`replay_camera_Init(a0, a1)` (0x80036D98, now `cdrom_StartRead`, `code6cac_b5_post.c`) starts a replay
 camera sequence:
 
 1. If a replay is already running (`D_80101E62 != 0`), bail.
@@ -95,7 +95,7 @@ State machine variables in the `D_80101E5C..D_80101EA0` range:
 
 ## Replay camera attack — `replay_camera_attack`
 
-`replay_camera_attack(arg0..arg3)` (`text1b.c:16187`) is the slow-motion
+`replay_camera_attack(arg0..arg3)` (`text1b_tu1d.c:1040`) is the slow-motion
 attack camera handler. Currently asmfix-bridged.
 
 `replay_camera_get_attack_number(a0..a3)` (`code6cac_c2.c:1552`) is its
@@ -103,21 +103,21 @@ companion — looks up the attack number for the current replay.
 
 ## Special camera
 
-`special_camera_Exec()` (`code6cac_b2.c:412`) is the per-frame special-cam
+`special_camera_Exec()` (now `func_80036940`, `code6cac_b5.c`) is the per-frame special-cam
 ticker. Currently empty in C — bridged.
 
-`special_camera_set_win_cam()` (`code6cac_b2.c:410`) — set up the win
+`special_camera_set_win_cam()` (now `func_80036140`, `code6cac_b5.c`) — set up the win
 camera. Currently empty.
 
-`special_camera_check_pos_outside_ground_80036E34` (`code6cac_b2.c:448`) —
+`special_camera_check_pos_outside_ground_80036E34` (now `cdrom_StartReadAt`, `code6cac_b5_post.c`) —
 guard against the special cam going outside the stage bounds. Calls
 `replay_camera_Init` to set up a stage-bound cam, then `cdrom_FramesToBcd`
 to advance the read pointer by `arg2`.
 
-`marionation_camera_Init_80036064` (`code6cac_b2.c:380`) — XA stream
+`marionation_camera_Init_80036064` (now `cdrom_ReadyCallback`, `code6cac_b4_post.c`) — XA stream
 controller for in-engine cinematics. See [sound.md](sound.md).
 
-`marionation_camera_Init_80037468` (`code6cac_b2.c:651`) — the
+`marionation_camera_Init_80037468` (now `sys_Exec`, `code6cac_b5_post.c`) — the
 "enter cinematic mode" handler:
 
 1. `sys_VSync(0)` — sync first
@@ -134,12 +134,12 @@ controller for in-engine cinematics. See [sound.md](sound.md).
 This is essentially "tear down gameplay, set up cinematic" — a full
 state reset.
 
-`marionation_camera_GetMaxFrame()` (`code6cac_b2.c:575`) — returns the
+`marionation_camera_GetMaxFrame()` (now `func_80037260`, `code6cac_b5_post.c`) — returns the
 max frame count of the currently-loaded cinematic sequence.
 
 ## `marionation_camera_Exec` — the active-cam runner
 
-`marionation_camera_Exec(arg0, arg1)` (`code6cac.c:226`) is the per-frame
+`marionation_camera_Exec(arg0, arg1)` (`code6cac.c:264`) is the per-frame
 camera update for the special/replay system. Currently has heavy use of
 scratchpad `0x1F800024..0x1F80002C` for distance vectors and inline GTE
 ops:
@@ -164,7 +164,7 @@ in step 8.
 
 ## game_FrameLoop / game_FrameInit
 
-`game_FrameInit` (`code6cac_b2.c:459`) sets up the "demo frame" mode
+`game_FrameInit` (0x80036EC0, now `cdrom_Pause`, `code6cac_b5_post.c`) sets up the "demo frame" mode
 (replay or title-screen demo):
 
 - `cdrom_SetCallbackB(0)` — clear CD streaming callback
@@ -173,7 +173,7 @@ in step 8.
 - `func_80080390(9, 0)` — stop SE channel XA
 - Set state values for "demo mode active"
 
-`game_FrameLoop` (`code6cac_b2.c:471`) is the demo-mode per-frame loop:
+`game_FrameLoop` (`code6cac_b5_post.c`) is the demo-mode per-frame loop:
 
 ```c
 while (1) {
@@ -194,8 +194,8 @@ the abort flag).
 ## Win-camera variants — `replay_camera_rob_back_*`
 
 Multiple variants exist for the "rob falls back, win pose" cinematic:
-- `replay_camera_rob_back_loose2` (`code6cac_b2.c:192`)
-- `replay_camera_rob_back_loose3` (`text1a_c.c:269`)
+- `replay_camera_rob_back_loose2` (now `func_80035618`, `code6cac_b2_post.c`)
+- `replay_camera_rob_back_loose3` (`text1a_c.c:289`)
 - `replay_camera_rob_back_win_near` (asm-only at 0x80046BF4)
 
 Each is a parameterization for a different cinematic angle (loser's POV,

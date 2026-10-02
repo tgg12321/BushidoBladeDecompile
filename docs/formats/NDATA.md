@@ -169,7 +169,7 @@ corresponding INF entry — they were never copied into NDATA.DAT.
 
 The mapping from filename to file-ID is NOT a pointer table at runtime — it
 is fixed at build time by the *order* in which the path-string pool appears
-in rodata. Code paths like `seq_Start(0x25, ...)` (`src/text1a_c.c:1480`)
+in rodata. Code paths like `seq_Start(0x25, ...)` (`src/text1a_c_tu2.c:330`)
 pass hard-coded numeric IDs that correspond to specific slots in the on-disc
 directory. The string pool exists only for debug / build identification —
 the shipped game does not perform name-based lookup.
@@ -386,7 +386,7 @@ the mapping greppable, but it is reproducibly regenerable.
   `D_800963EC[id*4]` and `D_800963EE[id*4]` as (start_sector, length_sector)
   and passes them to the disc scheduler.
 * Filename pool `D_80010DEC..D_80015294` (label `D_80010DEC` in
-  `asm/data/101C.rodata_text1a_a.s:8..3604`) — 899 `DATA<n>\<NAME>.DAT`
+  `src/text1a_filepaths.c`) — 899 `DATA<n>\<NAME>.DAT`
   strings whose order (after dropping the 137 `DATA8\*` placeholders)
   matches the 762 active INF entries 1:1. Independently verified by
   walking both lists with the alignment rule described above.

@@ -32,7 +32,7 @@ array of state blocks. The "currently active count" is tracked at
 (`0x80102A68`). Per-channel SPU memory addresses at `g_snd_ch_addr`
 (`0x80107810`).
 
-## High-level API — `snd_*` in `sound.c`
+## High-level API — `snd_*` in `text1b.c` (formerly `sound.c`)
 
 The main user-facing sound API:
 
@@ -62,15 +62,15 @@ samples. The XA files are in `disc/XA_0/` and `disc/XA_1/`. The PS1
 hardware can decode CD-XA ADPCM directly into the SPU's CD audio input,
 so the CPU only needs to start/stop the stream.
 
-`marionation_camera_Init_80036064` (`code6cac_b2.c:380`) is the XA-stream
+`marionation_camera_Init_80036064` (now `cdrom_ReadyCallback`, `code6cac_b4_post.c`) is the XA-stream
 controller — despite its name (Kengo naming collision), it manages the
 CD callback-B mechanism that polls the CD for XA-stream progress and
 calls back at frame boundaries.
 
 XA loading sequence:
-1. `cdrom_SetCallbackB(callback)` (`system.c:129`) installs the
+1. `cdrom_SetCallbackB(callback)` (`system.c:116`) installs the
    per-sector callback
-2. `func_80080390(9, 0)` (called frequently in `code6cac_b2.c:408`) sets
+2. `func_80080390(9, 0)` (now `CdControlF`; called from `code6cac_b4_post.c` / `code6cac_b5.c`) sets
    the SPU SE channel into XA-receive mode
 3. The CD spins up at sector address `D_80101E6C` (BCD form), reading
    each sector's XA-ADPCM payload directly into SPU CD-input
@@ -84,7 +84,7 @@ SPU RAM data.
 ## SE bank — `.SE` files
 
 `.SE` files in `disc/LOADSE/` and `disc/LOADSE1/` are raw SPU sample banks.
-`file_LoadSoundData` (`ings.c:388`) loads them at boot:
+`file_LoadSoundData` (`ings.c:364`) loads them at boot:
 
 1. `func_8005B43C()` — claim sound-data load
 2. `func_8005B7C4(0x801D8800)` — read SE bank into the overlay scratch
@@ -117,8 +117,8 @@ sample banks to SPU RAM via channel 4 DMA.
 
 ## Voice-key allocator — `coli_HitPauseKatana`
 
-`coli_HitPauseKatana` (`main.c:1693`), `coli_HitPauseKatana_2`
-(`main.c:1983`), and `exec_game` (`main.c:1798`) are the misnamed **SPU
+`coli_HitPauseKatana` (`main.c:2597`), `coli_HitPauseKatana_2`
+(`main.c:2787`), and `exec_game` (`main.c:2693`) are the misnamed **SPU
 voice allocator**. Despite the `coli_` prefix (Kengo collision), they
 manage the assignment of SPU voices to sounds.
 
@@ -258,8 +258,8 @@ sin/cos table with per-channel phase counters.
 | `g_snd_wave_output_table` | `0x800EF59C` | 9 × 17 s32 | Audio wave-synthesis output: `(Judge[phase_idx] * 0x271) >> 10` |
 
 The output is 9 audio channels × 17 samples = 153 entries (stride 0x44).
-Each channel runs its own phase counter through `Judge[]`. See `sound.c:780-860`
-(`func_80047A90`).
+Each channel runs its own phase counter through `Judge[]`. See `func_80047A90`
+(`text1b.c`).
 
 ## Voice-control state cluster (2026-05-17)
 
@@ -278,7 +278,7 @@ init/reset path via `func_8001B138`):
 
 ## Sound-channel texture metadata (2026-05-17)
 
-`AddTbpOfst` (`main.c:1181`) looks up texture metadata for an animated sprite
+`AddTbpOfst` (`main.c:1843`) looks up texture metadata for an animated sprite
 associated with each sound channel. There are 3 parallel per-channel tables
 indexed by `g_snd_ch_status[idx]`:
 

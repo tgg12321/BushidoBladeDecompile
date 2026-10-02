@@ -13,7 +13,7 @@ divergence is always in C source structure (scheduling, RA, cross-jump; [[cross-
 
 **Proof (2026-05-20).** GCC 2.7.2 has per-TU flags only (no per-function mechanism). Every `.c` file with
 remaining work also holds many byte-exact `-O2` matches, so each file is flag-uniform at `-O2`. A 24-flag
-sweep on saTan0Main (`tmp/flag_sweep.sh`) showed no flag produces its partial cross-jump merge.
+sweep on saTan0Main showed no flag produces its partial cross-jump merge.
 
 ## The canonical flag set (frozen)
 
@@ -67,7 +67,7 @@ immediately before its first whole-body hand-written asm function (the inline_as
 starting at math_RotMatrixZYX), the part before the cut joining `GP_FILES` (cc1 `-G8`). Evidence class:
 under `-G8` cc1 emits every function after all file-scope asm, so a mid-file hand-written block cannot sit
 inside one `-G8` file; camera_CalcAngles's A8 array store needs `-G8` (cc1psx and our cc1 alike; `-G0`
-proof in `memory/grind/camera_CalcAngles/g0proof/`). Staged, ALL required: func_80048FFC lands in C first;
+proof in `faa2ebb06^:memory/grind/camera_CalcAngles/g0proof/`). Staged, ALL required: func_80048FFC lands in C first;
 the small-declared objects in that part get their real types first (each its own reviewed landing); the cut
 passes [[per-file-gp-model]]'s split tests in full (no shared gp symbol of any kind across the cut, so no Q67
 merge object's gp users are separated; [[rodata-object-alignment]] conditions 2-4; parts inherit
@@ -82,7 +82,7 @@ the `-G8` part; the extern screening); (iv); (v); (vi) incl. manual path only. O
 [[per-file-gp-model]] A7) is restored verbatim as its own `.rodata`-only `-G0` file linked between Q89's head
 and tail. Evidence: under `-G8` cc1 emits every file-scope data object before every function's jump tables, so
 inside the head the block lands ahead of `.L10/.L26/.L55`; at the tail's top the tail starts at phase 0, not
-func_80058580's table phase 4 (`memory/grind/camera_CalcAngles/q89split/`). A7 does not apply to this block.
+func_80058580's table phase 4 (`faa2ebb06^:memory/grind/camera_CalcAngles/q89split/`). A7 does not apply to this block.
 Q89's other conditions are unchanged; split and `-G8` opt-in each land oracle-green with a layer-2.
 
 ## Related

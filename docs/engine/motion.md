@@ -109,10 +109,10 @@ re-used the same crt mechanism for both). What they actually do:
 Neither actually touches motion data. The real motion-init for the engine
 runs during `file_LoadAll` of the per-character BBMs.
 
-### `motion_SetMotion` (code6cac_c_mid.c:883)
+### `motion_SetMotion` (code6cac_c_mid.c:867)
 
 The "set/transition motion" decision function. Run by `saRobDraw`
-(`code6cac_b2.c:296`) — the gameplay-loop body. It examines:
+(now `func_80035E38`, `code6cac_b2_post.c`) — the gameplay-loop body. It examines:
 
 - `D_800A3207` — current motion-system state (1..4 represent boot, normal,
   hit-stop, special, reset)
@@ -158,7 +158,7 @@ different stage of the load pipeline:
 - `motion_LoadPreCalcData_80037F08` (`code6cac_c_mid.c:184`) — wraps a
   generic file-load helper for `D_800109C8`. Calls `func_80079A30` and
   `func_80078A28` (libcd file I/O).
-- `motion_LoadPreCalcData_8005B98C` (`text1b.c:12292`) — calls
+- `motion_LoadPreCalcData_8005B98C` (`text1b_tu1b.c:3886`) — calls
   `saFidLoad(a0, 8)` then `saFidLoad(a0, 4)`. "Fid" probably means "file
   index" — these load motion-tables 8 and 4 from a specific FID.
 - `motion_LoadPreCalcData_8007DC68` (`display.c:1013`) — display-side
@@ -177,11 +177,11 @@ stubs (1-2 lines).
 
 ### `motion_shift_check_*` family
 
-`motion_shift_check_m_hit_stop` (`code6cac_c_mid.c:607`) — "should the
+`motion_shift_check_m_hit_stop` (`code6cac_c_mid.c:586`) — "should the
 motion shift due to mid-hit-stop?" One of several per-frame "should I
 interrupt the current motion?" checks. Other variants:
 - `motion_shift_check_e_kawashi` (asm only, 0x80030B10) — "should I evade"
-- `motion_ShiftControl` (text1b.c:16317) — the main shift dispatcher
+- `motion_ShiftControl` (text1b_tu1d.c:1317) — the main shift dispatcher
 
 `motion_ShiftControl` is what fires when the engine needs to switch motions
 mid-frame (e.g., a sword clash interrupts an attack).
@@ -210,7 +210,7 @@ attached to three UNRELATED BB2 functions, none of which is a per-bone
 matrix builder (MISNOMERS.md pass-6; `named_syms.txt` MISNAMED flags;
 verified against the bodies 2026-07-13):
 
-- `calc_loc_mat_fw` (0x8002AB08, `asm/funcs/calc_loc_mat_fw.s`, ~1074
+- `calc_loc_mat_fw` (0x8002AB08, now `func_8002AB08` in `code6cac_b_tu2.c`, ~1074
   insns) — a scratchpad-staged per-frame fighter/camera state processor
   (walks the `D_80101EC8` fighter table at stride 0x44C, stages rows
   through scratchpad 0x1F8000xx, computes midpoints and bounding min/max,
@@ -363,7 +363,7 @@ data model:
 - §20 Motion-ex pool B (12-slot effect-spawn pool)
   — `g_motion_ex_pool_b_xyz_x/y/z` at `0x800F0E38` (12 slots × 12 bytes
   column-major XYZ) + `g_motion_ex_pool_b_flag` at `0x800F0BEC` (12 ×
-  s16). Allocated by `func_80062FEC` (text1b.c:14112) via the
+  s16). Allocated by `func_80062FEC` (text1b_tu1c.c:1366) via the
   `g_particle_slot_bitmap_plus_4` busy bitmap. Pool A (32 slots at
   `0x800F0D78` with random spread, used by text1b.c:14236) and Pool B
   (12 slots, no spread, precision effects) are two parallel substrates

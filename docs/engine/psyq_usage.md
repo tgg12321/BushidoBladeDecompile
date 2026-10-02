@@ -93,7 +93,7 @@ Timer / IRQ globals:
 ## libspu — Sound Processing Unit
 
 PsyQ's SPU library. BB2 uses it via `spu_*` (in `main.c`) and the channel
-allocator in `sound.c`. The CVS Id tag is not visible in the bin (libspu's
+allocator in `text1b.c`. The CVS Id tag is not visible in the bin (libspu's
 source isn't tagged), but the linked functions are unambiguous:
 
 | BB2 wrapper / direct | PsyQ original | Notes |
@@ -102,7 +102,7 @@ source isn't tagged), but the linked functions are unambiguous:
 | `spu_TransferData`, `spu_TransferDirect` | `SpuWrite0`, `SpuWriteRaw` | Sample upload |
 | `spu_SetVolume` | `SpuSetCommonMasterVolume` | Master volume |
 | `spu_WriteReg`, `spu_WriteReg16` | (low-level register access) | Direct SPU register writes |
-| `spu_NotifyChannel` (`main.c:1148`) | (BB2-custom) | Per-channel notify (not PsyQ) |
+| `spu_NotifyChannel` (`main.c:1823`) | (BB2-custom) | Per-channel notify (not PsyQ) |
 | `func_80078A68` | `SpuMalloc` / channel-alloc | SPU RAM management |
 
 Globals:
@@ -116,7 +116,7 @@ on top of libspu — see [sound.md](sound.md).
 ## libgte — Geometry Transformation Engine
 
 PsyQ's GTE wrappers. BB2 doesn't use the inline-asm macros from
-`include/inline_n.h` directly — instead, it uses raw `.word` encodings via
+PsyQ's `inline_n.h` directly — instead, it uses raw `.word` encodings via
 the project's own `include/gte.h` macros (`gte_rtps()`, `gte_rtpt()`, etc.).
 This matches PsyQ's `LIBGTE.LIB` output bytes but lets the project build
 without PsyQ-specific headers.
@@ -174,12 +174,12 @@ top of the BIOS A0/B0/C0 jump tables. BB2 calls these as:
 - `func_80083698` = `open` (BIOS A(36h) or wrapper)
 - `bios_FileRead` = `read` (chunked over BIOS A(34h))
 - `func_80078A18` = `close` (BIOS A(33h))
-- `ang_hosei_800836C8` (`asm/funcs/ang_hosei.s:1-11`) = `lseek`
+- `ang_hosei_800836C8` (now `PClseek`, `asm/funcs/PClseek.s`) = `lseek`
   (BIOS A(35h))
 
 The naming collision is a Kengo-name-table artifact and is THREE-way:
 `ang_hosei` attaches to this file-seek trampoline (0x800836C8), to the
-real angle-correction orchestrator (`ang_hosei_8003F62C`, src/config.c),
+real angle-correction orchestrator (`ang_hosei_8003F62C`, src/code6cac_c2.c),
 and to `char_disp_offset_80056FE8` (character display-offset lookup via
 the D_8009A830/38/40 byte tables — neither rotation nor file-seek; see
 docs/naming/MISNOMERS.md §ang_hosei). BB2 originally had distinct

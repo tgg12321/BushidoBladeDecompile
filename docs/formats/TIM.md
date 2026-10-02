@@ -9,7 +9,7 @@ Files:
 
 TIM is the PlayStation SDK standard texture format. The PsyQ SDK ships `tim.h`
 and matching loaders; BB2 uses the unmodified format throughout — see
-`tslTm2LoadImage` (`src/system.c:639`).
+`tslTm2LoadImage` (`src/system.c:615`).
 
 The byte layout below is the standard one (cross-referenced against
 [PSX/TIM format on FF8 Modding Wiki][1] and the
@@ -119,7 +119,7 @@ authoring tool used to generate the title image.
 
 ## Loader
 
-`tslTm2LoadImage` (`src/system.c:639`) wraps the PsyQ helpers — `OpenTIM`,
+`tslTm2LoadImage` (`src/system.c:615`) wraps the PsyQ helpers — `OpenTIM`,
 `ReadTIM`, `LoadImage`, `LoadClut`. None of the BB2 source inspects the magic
 or flags directly; the runtime is content to feed the file pointer to the
 SDK loader.

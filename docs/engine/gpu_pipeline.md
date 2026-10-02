@@ -103,7 +103,7 @@ include a syntax checker; the released BB2 build uses the production
 back-end.
 
 Examples:
-- `gpu_LoadImage(rect, source)` (`display.c:145`) calls
+- `gpu_LoadImage(rect, source)` (`display.c:127`) calls
   `g_gpu_dev_table[2](g_gpu_dev_table[8], rect, 8, source)` — i.e., send
   the LoadImage command (index 8) using the generic sender (index 2).
 
@@ -170,14 +170,14 @@ The camera rotation matrix lives in a small struct starting at
 | 0x40.. | bone data | per-frame view bone |
 | 0x48.. | bone data 2 | secondary view bone (special camera) |
 
-`camera_InitMatrix` (`sound.c:396`) builds an identity rotation with
-FOV-scaled X/Z. `camera_Transform` (`sound.c:415`) applies the camera
+`camera_InitMatrix` (now `func_80046F24`, `text1b.c`) builds an identity rotation with
+FOV-scaled X/Z. `camera_Transform` (now `func_8004700C`, `text1b.c`) applies the camera
 matrix to a point (using `func_80052930` — the GTE matrix-multiply
 wrapper).
 
 ## Display setup at boot — `disp_Init`
 
-`disp_Init` (`ings.c:276`) sets up the GPU at boot:
+`disp_Init` (`ings.c:252`) sets up the GPU at boot:
 
 1. `gpu_SetMode(0)` — initialize PsyQ libgpu
 2. `gpu_SetDebugLevel(0)` — disable verbose debug
@@ -200,7 +200,7 @@ turn on the display.
 
 ### Zanzou (afterimage)
 
-`efc_buki_draw_zanzou` (`text1b.c:189`) draws the weapon's afterimage trail
+`efc_buki_draw_zanzou` (`text1b.c:1461`) draws the weapon's afterimage trail
 — a sequence of fading silhouettes of recent weapon positions. Inputs:
 weapon mesh pointer, three rotation params, alpha.
 
@@ -221,7 +221,7 @@ color/distance for the stage. The actual data is in two helper functions
 
 ### UI / Life Gauge
 
-`game_2d_CheckLifeGaugeNoDisp` (`text1b.c:10798`) and the `saTan*Gauge*`
+`game_2d_CheckLifeGaugeNoDisp` (`text1b_tu1b.c:166`) and the `saTan*Gauge*`
 family render the in-game HUD. Each gauge has init / main pair functions
 (see [combat.md](combat.md) under "Mental gauge").
 
@@ -323,7 +323,7 @@ data more directly:
   text1b.c:2359 (thresholds 0x4A00 / 0xA500 = LOD-cutoff distances).
 - §19 HUD sprite size packed lookup
   — `g_text1b_sprite_size_packed_lookup` at `0x8009B850`. u16-per-entry
-  packed dimensions; consumed by `func_80060414` (text1b.c:12963), the
+  packed dimensions; consumed by `func_80060414` (text1b_tu1b.c:6013), the
   HUD per-character sprite renderer called from `ings.c:759`. arg0
   bit 15 = highlight/active-slot flag (selects `D_8009B7AC` geometry),
   bits 14..0 = size table index. Width 55..566, height 42..169 ranges.

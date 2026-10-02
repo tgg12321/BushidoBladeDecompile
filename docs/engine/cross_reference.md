@@ -72,7 +72,7 @@ know which subsystem owns it, look here.
 - **Doc:** [gpu_pipeline.md](gpu_pipeline.md)
 
 ### Sound / SPU
-- **File:** `sound.c` (snd_* API + game state), `main.c` (spu_*
+- **File:** `text1b.c` (snd_* API + game state), `main.c` (spu_*
   low-level + voice allocator), `text1a_c.c` (seq_*)
 - **Key functions:** `snd_LoadBgm`, `snd_PlayBgm`, `snd_LoadSe`,
   `snd_PlaySe`, `snd_LoadSelection`, `snd_StopAll`, `snd_SetVolume`,
@@ -101,7 +101,7 @@ know which subsystem owns it, look here.
 
 ### Menus / UI / Fades
 - **File:** `code6cac_c2.c`, `code6cac_c_ab.c`, `code6cac_c_mid.c`,
-  `config.c` (options), `text1a.c` (mental gauge / `efc_*`)
+  `code6cac_c2.c` tail (options), `text1a_*.c` (mental gauge / `efc_*`)
 - **Key functions:** `md_game_check_change_sub_mode`,
   `md_menu_logo_exec` (asm-only), `game_SetControllerPorts`,
   `game_SetPlayerCount`, `stage_ExecInitFunc`, `stage_InitCollision`,
@@ -115,8 +115,8 @@ know which subsystem owns it, look here.
 - **Doc:** [menus.md](menus.md)
 
 ### Replay / Special Camera
-- **File:** `code6cac_b2.c` (replay_camera_Init etc.), `text1b.c`
-  (replay_camera_attack etc.), `code6cac_c2.c`
+- **File:** `code6cac_b2_post.c`..`code6cac_b5_post.c` (replay_camera_Init etc.),
+  `text1b_tu1d.c` (replay_camera_attack etc.), `code6cac_c2.c`
   (replay_camera_get_attack_number), `text1a_c.c`
   (replay_camera_rob_back_loose3)
 - **Key functions:** `replay_camera_Init`, `replay_camera_attack`,
@@ -132,7 +132,7 @@ know which subsystem owns it, look here.
 - **Doc:** [replay.md](replay.md)
 
 ### Stage / World
-- **File:** `config.c` (stage_*), `code6cac_c2.c` (stage open),
+- **File:** `code6cac_c2.c` (stage_*, stage open),
   `text1a*.c` (gnd_* helpers)
 - **Key functions:** `stage_GetId`, `stage_GetVariant`,
   `stage_GetDataPtr`, `stage_InitCollision`, `stage_ApplyLighting`,
