@@ -241,7 +241,6 @@ func_800523E0  # handwritten_overflow_op; also signals: cop2_function; see known
 func_8004BCC0  # handwritten_overflow_op; also signals: cop2_function; see known_blocked.txt (renamed from func_8004BCC0); auto-added 2026-05-17
 
 # --- break_instruction: break with custom (non-div-guard) code (1 funcs) ---
-_SN_read  # break_instruction; also signals: bios_trampoline; no known_blocked entry (rename drift or new); auto-added 2026-05-17
 
 # --- sp_manipulation: $sp swap / context save / restore (no C escape hatch) (1 funcs) ---
 setjmp  # (= func_80083220, Sony LIBC2/SETJMP) sp_manipulation; see known_blocked.txt; auto-added 2026-05-17
