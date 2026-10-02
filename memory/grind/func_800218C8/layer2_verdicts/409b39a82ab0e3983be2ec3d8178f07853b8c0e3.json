@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800218C8",
+  "body_hash": "a605fed42ec3eb1a",
+  "summary": "Item 1: sandbox --disable all = 0 (re-run by reviewer); build/bb2.exe SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa and build/verified-inputs.json sha256 of src/code6cac_tu2.c, src/code6cac_c2.c, include/code6cac.h, undefined_syms_auto.txt equals the staged files. Item 2: no asm, pins, barriers or build changes (only undefined_syms_auto.txt row deletions, none named by an INCLUDE_ASM .s; asm/6CAC.s is assembled but not linked). g_practice_menu_table[a0].unk_86 = .unk_84 replaces the D_80101F4E/D_80101F4C + a0 * 1100 puns rev-21424 failed. Clean on items 2-5."
+}

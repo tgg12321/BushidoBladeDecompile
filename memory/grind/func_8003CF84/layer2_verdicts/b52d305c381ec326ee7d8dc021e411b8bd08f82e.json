@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8003CF84",
+  "body_hash": "594b735aeefb2b98",
+  "summary": "Item 1: sandbox --disable all = 0 (re-run by reviewer); build/bb2.exe SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa and build/verified-inputs.json sha256 of src/code6cac_tu2.c, src/code6cac_c2.c, include/code6cac.h, undefined_syms_auto.txt equals the staged files. Item 2: no asm, pins, barriers or build changes (only undefined_syms_auto.txt row deletions, none named by an INCLUDE_ASM .s; asm/6CAC.s is assembled but not linked). Only change: (u32 *)D_801027C0 / D_801027D4 become (u32 *)D_801027B0[0][4] / [1][4], removing two second externs over D_801027B0's bytes (item 4 improvement); the cast converts the stored address value. Whole body re-read: the volatile pre_pad[4] / pad2[2] carry FAKE labels and their _SANCTIONED_UNWRITTEN_PADS row (engine/volatile_cheats.py:769, phantom-frame-pad-family grants); the (&D_800A37D2)[D_800A3748] site is the Q63 per-function admission, FAKE-labelled; D_8008EAC0[34] spans its dlabel. (u8)D_800A3836 is a byte-neutral redundant cast of a u8 (measured 0 without it): hygiene. rev-21424's FAIL on this same hash rested on other bodies' puns, now fixed."
+}

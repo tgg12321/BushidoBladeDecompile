@@ -36,13 +36,18 @@ extern s16 Judge[0x1000];
  * fields at +0x4E are indices into D_801027B0[ch][0], as func_80021424 reads
  * them: f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids 0x7FF1/2/4),
  * f54[rec+0x86][t] (id 0x7FF3), and
- * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). */
+ * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16 (func_800219E4) and
+ * f18[class] (func_80021A3C; class = PracticeMenuRec.unk_0A, 0..26 as D_8008D538
+ * holds and as the [27][6] class tables D_8008DE34 / D_8008DF78 are sized; 27
+ * halfwords end exactly at f4E) are indices into D_80102760; both readers load
+ * them with lhu. */
 typedef struct {
     u8 pad00[3];
     u8 unk_03;                     /* D_801027B0[ch][0] = record + 0x6C + (unk_03 - 1) * 6 (func_80020E74) */
     s32 unk_04[4];                 /* D_801027B0[ch][1 + k] = record + unk_04[k] (func_80020E74) */
     s16 f14;
-    u8 pad16[0x4E - 0x16];
+    u16 f16;
+    u16 f18[27];
     u16 f4E[3];
     u16 f54[3][3];
     u16 f66[11][3];
@@ -183,7 +188,8 @@ typedef struct MotionFrame {
 typedef struct MoveScript {
     u16 unk_00;
     u16 unk_02;
-    u8  unk_04[0x07 - 0x04];
+    u16 unk_04;                    /* row of the bank's 4-byte entry table (func_80021A98) */
+    u8  unk_06;                    /* first frame: PracticeMenuRec.unk_40 starts here (func_80021A98) */
     u8  unk_07;
     u8  unk_08;
     u8  unk_09;
@@ -222,7 +228,8 @@ typedef struct PracticeMenuRec {
     u8 *unk_58;                    /* byte 3 read by func_80056FE8 */
     u16 unk_5C;
     s16 unk_5E;                    /* 0/1, set alongside func_80021A98 */
-    u8  unk_60[0x62 - 0x60];
+    u8  unk_60;
+    u8  unk_61;
     u8  unk_62;
     u8  unk_63;
     u16 unk_64;
@@ -230,7 +237,7 @@ typedef struct PracticeMenuRec {
     s16 unk_68;
     u16 unk_6A;                    /* SEQ state code; CHAR_STRUCT_SCHEMA.md +0x06A */
     s16 unk_6C;
-    u8  unk_6E[0x70 - 0x6E];
+    s16 unk_6E;
     s16 unk_70;
     s16 unk_72;
     s32 unk_74;
@@ -950,12 +957,6 @@ extern CdState D_80101E58;
 
 extern s16 D_80101EE8;
 extern s32 D_80101F04;
-
-extern s16 D_80101F12;
-extern s16 D_80101F14;
-extern s16 D_80101F42;
-extern s16 D_80101F4C;
-extern s16 D_80101F4E;
 extern s16 D_80101F5E;
 extern u8 D_80101F79;
 extern u8 D_80101F7A;
@@ -1000,7 +1001,6 @@ extern s16 D_8010231A;
 extern s16 D_80102334;
 extern s32 D_80102350;
 
-extern s16 D_8010238E;
 extern s16 D_801023AA;
 extern u8 D_801023C5;
 extern s32 D_80102408;
@@ -1034,11 +1034,6 @@ typedef struct {
 extern PracticeParams D_80102778;
 extern PadState D_80102788;
 extern s32 D_801027B0[][5];
-extern s32 D_801027B4;
-extern s32 D_801027B8;
-extern s32 D_801027BC[][5];
-extern s32 D_801027C0;
-extern s32 D_801027D4;
 extern u8 D_80104E88;
 extern s32 MotDataBaseAddress;
 extern u8 D_801077AF;

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800213A0",
+  "body_hash": "2730a8dd768b56bc",
+  "summary": "Item 1: sandbox --disable all = 0 (re-run by reviewer); build/bb2.exe SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa and build/verified-inputs.json sha256 of src/code6cac_tu2.c, src/code6cac_c2.c, include/code6cac.h, undefined_syms_auto.txt equals the staged files. Item 2: no asm, pins, barriers or build changes (only undefined_syms_auto.txt row deletions, none named by an INCLUDE_ASM .s; asm/6CAC.s is assembled but not linked). Parameter retyped to PracticeMenuRec * (its only caller, func_80021424, passes a record); reads unk_86/unk_88/unk_8E/unk_4A and the existing Tbl800A3860Entry.f14 instead of the (s16 *)D_800A3860[...] re-view and arg0[0x86/2] offsets. The (s16) on the store spells the implicit conversion to the destination type. No defects on items 2-5."
+}

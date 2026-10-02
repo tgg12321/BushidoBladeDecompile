@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80022F34",
+  "body_hash": "8146c4a68c5895a2",
+  "summary": "Item 1: sandbox --disable all = 0 (re-run by reviewer); build/bb2.exe SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa and build/verified-inputs.json sha256 of src/code6cac_tu2.c, src/code6cac_c2.c, include/code6cac.h, undefined_syms_auto.txt equals the staged files. Item 2: no asm, pins, barriers or build changes (only undefined_syms_auto.txt row deletions, none named by an INCLUDE_ASM .s; asm/6CAC.s is assembled but not linked). Plain do-while over i with rec = &g_practice_menu_table[i] (natural loop for a two-record walk), D_801027BC[idx][0] replaced by D_801027B0[idx][3], the other record reached as rec->unk_00->unk_4A instead of reassigning rec. No FAKEs, no handles, no casts. Clean on items 2-5."
+}

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80023F08",
+  "body_hash": "7b74e2f13e1b1f1f",
+  "summary": "Item 1: sandbox --disable all = 0 (re-run by reviewer); build/bb2.exe SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa and build/verified-inputs.json sha256 of src/code6cac_tu2.c, src/code6cac_c2.c, include/code6cac.h, undefined_syms_auto.txt equals the staged files. Item 2: no asm, pins, barriers or build changes (only undefined_syms_auto.txt row deletions, none named by an INCLUDE_ASM .s; asm/6CAC.s is assembled but not linked). Differs from the body rv2-23F08-1 PASSed under Q91 on 2026-10-02 (2bca8a383bec29c2, then comment-only edits) only at its 13 func_80021424 call sites, which drop the (u8 *)rec / (u8 *)&rec->unk_5E / (u8 *)&alt casts now that the definition takes PracticeMenuRec * and s16 *. Its FAKE labels (Q90 mask, named intermediates, reused local, -old + new, goto form) are present with reasons. Remaining (u8 *)/(s16 *) rec casts into func_8001F938/800233AC/80023DB8/8001F860/80021A98 are callee-prototype adaptors (hygiene). Clean on items 2-5."
+}
