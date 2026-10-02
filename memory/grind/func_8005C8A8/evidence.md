@@ -394,3 +394,11 @@ spelling of the size is none of those. Item 5 then wants the fewest-FAKE byte-ex
   `u8 *` in text1b.c): byte-neutral (0).
 - Literal size on this body: 33, frame 168 (both slots gone).
 candidate.c = v2 (sandbox 0 with fix1's game.h hunk).
+
+## LANDED (2026-10-02, oct2-b2) — COMPLETED-C; ledger closed
+Layer-2 round 3 (Q91 rubric): cheat-reviewer rv2-5C8A8-1 PASS, scope match, body_hash a2903df592e9960a, no
+required fixes (both FAKEs labelled, measured and load-bearing; nothing false; merged tables via game.h;
+fewest-FAKE known form). Recorded in layer2.jsonl. Landed body == candidate.c (s7 v2) in Match commit ddeda2901
+(src/text1b.c + include/game.h fix1 hunk + six undefined_syms_auto.txt rows); queue done e3f1bb1ed. Oracle SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa; check_completion_integrity OK. Hygiene debt is listed in the Match
+commit body (shared TILE/descriptor types, libgpu extern prototypes, asm/text1b.s labels, named_syms misnomers).

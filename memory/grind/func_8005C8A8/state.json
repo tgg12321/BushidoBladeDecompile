@@ -26,16 +26,10 @@
    "session": 7,
    "floor": 0,
    "modality": "mechanism",
-   "headline": "Q91 clause D re-judgment: size = mode_off + 0x18 - arg2 (FAKE) gives both frame slots; xpos retired; sandbox 0 with one size FAKE (+ sel label)"
+   "headline": "Q91 clause D re-judgment: size = mode_off + 0x18 - arg2 (FAKE) gives both frame slots; xpos retired; sandbox 0 with one size FAKE (+ sel label) -- LANDED COMPLETED-C (layer-2 rv2-5C8A8-1 PASS)"
   }
  ],
- "frontier": [
-  {
-   "hypothesis": "LANDING: candidate.c (v2) + fix1 game.h hunk + 6 undefined_syms rows",
-   "mechanism": "evidence.md s7",
-   "next_probe": "splice, oracle rebuild, layer-2"
-  }
- ],
+ "frontier": [],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T20:28:33.753149+00:00",
@@ -48,5 +42,6 @@
    "headline": "func_8007352C COMPLETED-C",
    "consumed": null
   }
- ]
+ ],
+ "status": "closed"
 }
