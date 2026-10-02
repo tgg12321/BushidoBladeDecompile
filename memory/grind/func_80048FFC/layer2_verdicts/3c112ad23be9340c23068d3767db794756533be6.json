@@ -1,0 +1,24 @@
+{
+  "verdict": "PASS",
+  "decision": "PASS",
+  "function": "func_80048FFC",
+  "body_hash": "f856d474c5f09196",
+  "reviewer": "rv2-48FFC-1",
+  "scope": "match",
+  "summary": "Staged src/text1b.c body (== ledger candidate.c) is an honest, byte-exact C match; both FAKEs labelled with true measured reasons; no wall constructs.",
+  "findings": [
+    {"item": 1, "result": "PASS", "explanation": "layer2 hash f856d474c5f09196 (matches brief). sandbox --disable all = 0, 232/232 insns; all 9 hunks are not-scored branch displacements with a constant 0xE8 section offset. build/bb2.exe (built 03:25 from the staged text1b.c, no unstaged diff) SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa. Rebuild not re-run: the orch lock was held by oct2-a2."},
+    {"item": 2, "result": "PASS", "explanation": "The staged index touches only src/text1b.c. No asm, register pins, barriers, or pipeline/list edits; func_80048FFC appears in no maspsx/pipeline .txt list."},
+    {"item": 3, "construct": "s16 h2 = phase;", "result": "PASS", "explanation": "h2's only use is the s16 store rect.h, so narrowing to s16 first gives the same stored value for every phase. No semantics change and no false claim. The name is truthful: it is strip two's height (asm: t1 = s7 before the sra, then sh t1,0x16(sp)). FAKE label present. Measured reason spot-checked: abl_direct.c and abl_cast.c each give sandbox score 57 with 231 insns."},
+    {"item": 3, "construct": "halvings moved to end of loop body", "result": "PASS", "explanation": "Matches the asm. Strip two uses only values computed before the halving: nx=s1, ny=s0, sy+h1=s2+s3, old phase=t1. rect.x/rect.w are not re-stored. x/y/dx/dy are never halved; xf/yf/dxf/dyf/w/period/phase are. The trailing phase update and modulo match 0x80049308-0x80049364."},
+    {"item": 3, "construct": "addPrim via OTag casts", "result": "PASS", "explanation": "Literal expansion of the SDK addPrim/setaddr/getaddr P_TAG view onto DR_MOVE.tag and the u32 OT entry; it is real behaviour and is FAKE-labelled anyway. The SOTN tag is verified: libgpu.h:88 setaddr at db41b28; sys.c is a c member of config/splat.us.main.yaml; ClearOTag at sys.c:288 is matched C with no INCLUDE_ASM/NON_MATCHING. It is supporting evidence only, since the construct is not on the refused list. Same form as the completed func_8003DBE4 (src/code6cac_c2.c:1338)."},
+    {"item": 3, "construct": "control names x/xf, y/yf, w, period, dx/dxf, dy/dyf, nx, ny, sy, h1", "result": "PASS", "explanation": "The names follow the code: each value splits into a 64- or 256-aligned base plus an in-level offset. w goes to rect.w. period is the strip height base and the phase modulus (ctl[3]). dx/dy feed SetDrawMove's destination. None of them claims more than the code shows."},
+    {"item": 4, "result": "PASS", "explanation": "Uses the existing include/gpu.h MoveChannel / D_800EF848[] / DR_MOVE / SetDrawMove / u32 *D_800A378C / OTag (e558afab7). No new extern, alias or raw-offset cast; ch->ctl is the declared s16 ctl[7] at +0x124 (asm addiu t2,s6,0x124)."},
+    {"item": 5, "result": "PASS", "explanation": "The ablations of the h2 FAKE (direct, s32 copy, cast) all score 57. The old 4/232 floor carried more FAKEs. No byte-exact form with fewer FAKEs is known."}
+  ],
+  "hygiene_debt": [
+    "The addPrim FAKE/SOTN comment is placed only on the first of the two identical OT links; the second link (strip two) carries no comment of its own.",
+    "The commit-message claim 'full text1b TU at cc1 -G8 also gives 0 diff lines' was not independently re-measured by the reviewer."
+  ],
+  "required_fixes": []
+}
