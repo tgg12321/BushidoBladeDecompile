@@ -45,7 +45,7 @@ void func_800207C8(PracticeMenuRec *rec, LeafPos *bone_out, LeafPos *att_out, Le
         __asm__ volatile ("move  $12,%0": :"r"(&hr->ofs):"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-        /* inline_o.h: gte_rtv0 :426-430, post-DMPSX command word (see above) */
+        /* inline_o.h: gte_rtv0 :426-430; .word 0x0000013f -> post-DMPSX .word 0x4A486012 (Q93, fed205ca7) */
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
         __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
@@ -83,7 +83,7 @@ void func_800207C8(PracticeMenuRec *rec, LeafPos *bone_out, LeafPos *att_out, Le
         __asm__ volatile ("move  $12,%0": :"r"(v):"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-        /* inline_o.h: gte_rtv0 :426-430, post-DMPSX command word (see above) */
+        /* inline_o.h: gte_rtv0 :426-430; .word 0x0000013f -> post-DMPSX .word 0x4A486012 (Q93, fed205ca7) */
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
         __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
@@ -118,7 +118,7 @@ void func_800207C8(PracticeMenuRec *rec, LeafPos *bone_out, LeafPos *att_out, Le
             __asm__ volatile ("move  $12,%0": :"r"(v):"$12","$13","$14","$15","memory");
             __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-            /* inline_o.h: gte_rtv0 :426-430, post-DMPSX command word (see above) */
+            /* inline_o.h: gte_rtv0 :426-430; .word 0x0000013f -> post-DMPSX .word 0x4A486012 (Q93, fed205ca7) */
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
             __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
@@ -150,7 +150,7 @@ void func_800207C8(PracticeMenuRec *rec, LeafPos *bone_out, LeafPos *att_out, Le
     __asm__ volatile ("move  $12,%0": :"r"(&D_800A3138):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-    /* inline_o.h: gte_rtv0 :426-430, post-DMPSX command word (see above) */
+    /* inline_o.h: gte_rtv0 :426-430; .word 0x0000013f -> post-DMPSX .word 0x4A486012 (Q93, fed205ca7) */
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
