@@ -1,0 +1,11 @@
+# func_80023F08 Q91 re-judgment (lane oct2-b3, 2026-10-02). Scores: `sandbox func_80023F08 --disable all
+# --candidate` (tools/sandbox_sweep.ps1) against main at 383395d7d. Base = the (B) body banked in
+# landB_staged.patch with the dead `s32 r;` removed (v_nor). Each variant is a one-site edit of v_nor
+# (q91/v_*.diff). Comment-only edits do not change bytes; candidate.c (final) re-measured 0 / 2983.
+landB body (as banked)                                         0   2983/2983
+v_nor   dead `s32 r;` in the rot block deleted                 0   2983/2983
+v_range second range test spelled like the first
+        (rec->unk_40 <= rec->unk_A6)                           11  2972/2983  (fold-const factors the identical tests)
+v_twist twist = ratan2(new) - ratan2(old)                      7   2984/2983  (target calls ratan2 on m1 (old, sp+0x178)
+                                                                               first: asm/funcs/func_80023F08.s:1228-1234)
+final   candidate.c (v_nor + Q91 FAKE labels)                  0   2983/2983, 0 source-level / 0 operand-only hunks

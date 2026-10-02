@@ -40,11 +40,13 @@ void func_80023F08(s32 arg0, PadState *pad) {
     u16 keys;
     u16 *ent;
     MoveScript *move;
-    /* temp holds four values: the unk_14C clamp limit, the unk_1D8 / unk_1C8.vy
-     * angle gap (folded to 0..0x800), the unk_14C turn step and the -1/0/1
-     * stick side. One local, not four:
-     * ordinary-c-judge-decidable.md Ruling 11; (D) record in
-     * memory/grind/func_80023F08/r11/ (evidence.md [s3]). */
+    /* FAKE: one local reused for four values (no-new-park-categories.md
+     * entry 1): the unk_14C clamp limit, the unk_1D8 / unk_1C8.vy angle gap
+     * (folded to 0..0x800), the unk_14C turn step and the -1/0/1 stick side.
+     * The target keeps all four in $a1; a local per value scores 25 and every
+     * partial split 3..25 (global.c find_reg gives the split values other
+     * registers): memory/grind/func_80023F08/r11/scores_landing.txt,
+     * memory/grind/func_80023F08/r11/d_proof_landing.txt */
     s32 temp;
     s32 face;
     s32 face90;
@@ -155,16 +157,14 @@ void func_80023F08(s32 arg0, PadState *pad) {
     } else if (rec->unk_50->unk_08 >= rec->unk_40) {
         ent = rec->unk_50->unk_0A;
         while ((cmd = ent[0]) != 0) {
-            /* FAKE: named intermediate (no-new-park-categories.md family 6): the
-             * entry's class mask, a 32-bit set with one bit per character class
-             * (unk_0A, 27 classes; bit set = the entry applies), held as a u32
-             * bitset as func_8002AB08 holds its mask_a / mask_b / mask_c (layer-2
-             * rev-2AB08-dm PASS). Tested directly as an int,
-             * fold-const.c:4437 turns (mask & (1 << cls)) != 0 into
-             * ((mask >> cls) & 1) != 0 (srav / andi; score 3); against an unsigned
-             * mask the int (1 << cls) is converted, the rewrite does not apply and
-             * the target's li 1 / sllv / and stays (0x800244E0..E8). Receipts:
-             * memory/grind/func_80023F08/casts/receipts.txt */
+            /* FAKE (owner ruling Q90, .claude/rules/ordinary-c-judge-decidable.md):
+             * the entry's class mask (one bit per character class unk_0A; bit set =
+             * the entry applies) is a u32 local only for the int->u32 conversion.
+             * With an int mask, fold-const.c:4437 rewrites (mask & (1 << cls)) != 0
+             * into ((mask >> cls) & 1) != 0 (srav / andi, score 3); converted, the
+             * rewrite does not apply and the target's li 1 / sllv / and stays
+             * (0x800244E0..E8). Measured: memory/grind/func_80023F08/casts/receipts.txt,
+             * memory/grind/func_80023F08/fake/mask_jump.txt */
             u32 mask;
 
             if (!(cmd & 0x8000) || ((mask = ent[2] | (ent[3] << 16)) & (1 << rec->unk_0A))) {
@@ -305,7 +305,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_1F8.y += 0x898;
     }
     {
-        /* FAKE: named intermediate (no-new-park-categories.md family 6): unk_6A
+        /* FAKE: named intermediate (no-new-park-categories.md entry 6): unk_6A
          * is read into `state` before the unk_7A test, as the target loads it
          * (lhu 0x6A ahead of the beqz at 0x80024C14). Spelled with two direct
          * reads, the 6A load follows the branch and jump.c thread_jumps sends
@@ -377,12 +377,13 @@ void func_80023F08(s32 arg0, PadState *pad) {
     if (rec->unk_7A != 0 && (rec->unk_6A == 6 || rec->unk_6A == 0x14) && rec->unk_6C == 6) {
         MATRIX m1;
         MATRIX m2;
-        s32 r;
         s32 twist;
 
         math_RotMatrixZYXAngles(rec->unk_290.unk_06, rec->unk_290.unk_08, rec->unk_290.unk_0A, m1.m[0]);
         math_RotMatrixZYXAngles(pose[0].unk_06, pose[0].unk_08, pose[0].unk_0A, m2.m[0]);
-        /* new frame's heading minus the previous frame's (old one computed first) */
+        /* new frame's heading minus the previous frame's.  FAKE: spelled
+         * -old + new so the old heading is computed first, as the target
+         * does; new - old scores 7 (memory/grind/func_80023F08/q91/variants.txt) */
         twist = -ratan2(m1.m[0][0], m1.m[2][0]) + ratan2(m2.m[0][0], m2.m[2][0]);
 
         rec->unk_1C8.vy += twist;
@@ -465,7 +466,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_104.vy += 0x15;
     }
     {
-        /* FAKE: named intermediate (no-new-park-categories.md family 6): with
+        /* FAKE: named intermediate (no-new-park-categories.md entry 6): with
          * `state`, cse.c keeps this test's own li 8 / li 0x22 (the target
          * re-materialises them at 0x80025780 / 0x80025788); with direct rec->unk_6A
          * reads cse substitutes the previous test's constant pseudos (score 11).
@@ -571,6 +572,12 @@ void func_80023F08(s32 arg0, PadState *pad) {
         }
         goto set_8c;
     }
+    /* FAKE (gotos): the goto-free spelling
+     * (cond ? func_8002798C(rec) != 0 : (A || B)) scores 2
+     * (memory/grind/func_80023F08/casts/receipts.txt).  FAKE: the second range
+     * test is written unk_A6 >= unk_40; spelled like the first (unk_40 <= unk_A6)
+     * fold-const factors the two identical tests out of the || (score 11,
+     * memory/grind/func_80023F08/q91/variants.txt) */
     if (((rec->unk_0C == 0x1D || rec->unk_0C == 0xE) && (rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 || rec->unk_6A == 0x26) && rec->unk_A1[1] < 0xFF && rec->unk_26C != 0 && rec->unk_40 >= rec->unk_A5 && rec->unk_40 <= rec->unk_A6)
         || (rec->unk_0A == 0xE && rec->unk_6A == 0x11 && D_800A38AE == arg0 && rec->unk_40 >= rec->unk_A5 && rec->unk_A6 >= rec->unk_40)) {
     set_8c:

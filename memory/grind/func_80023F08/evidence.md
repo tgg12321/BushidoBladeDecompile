@@ -119,3 +119,9 @@
   re-note) and the body as candidate.c; (A) df7f419ef stays landed. Owner ruling Q90 (rule commit b884a2527,
   .claude/rules/ordinary-c-judge-decidable.md § narrow spellings) grants the `u32 mask` class bit-set narrowly: comment
   must name the fold-const.c:4437 rewrite and the measurements (casts/receipts.txt, fake/mask_jump.txt); fresh layer-2.
+- [s6] 2026-10-02 lane oct2-b3 — Q91 re-judgment of the rev-23F08-B-r11 fix list (completion-bar.md items 1-6):
+  Ruling 11 package / permuter re-run / Ruling 5 2(c) / extra `state` exhaustion are hygiene under Q91 (not done;
+  `Hygiene debt:` in the Match commit). Fixes made (candidate.c, 0 / 2983, q91/variants.txt): dead `s32 r;` deleted
+  (0); `temp` comment is now a FAKE label (no-new-park-categories.md entry 1, scores_landing.txt numbers); `u32 mask`
+  comment in the Q90 form; new FAKE labels with measured reasons at the twist spelling (new - old = 7), the second
+  range test (identical spelling = 11) and the 0x8C gotos (goto-free = 2, casts/receipts.txt). Bytes unchanged.

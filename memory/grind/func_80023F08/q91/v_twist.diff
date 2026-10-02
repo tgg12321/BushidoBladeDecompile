@@ -1,0 +1,11 @@
+--- tmp/f23f08b/v_nor.c	2026-10-02 01:59:13.812159100 -0500
++++ tmp/f23f08b/v_twist.c	2026-10-02 01:59:13.812159100 -0500
+@@ -382,7 +382,7 @@
+         math_RotMatrixZYXAngles(rec->unk_290.unk_06, rec->unk_290.unk_08, rec->unk_290.unk_0A, m1.m[0]);
+         math_RotMatrixZYXAngles(pose[0].unk_06, pose[0].unk_08, pose[0].unk_0A, m2.m[0]);
+         /* new frame's heading minus the previous frame's (old one computed first) */
+-        twist = -ratan2(m1.m[0][0], m1.m[2][0]) + ratan2(m2.m[0][0], m2.m[2][0]);
++        twist = ratan2(m2.m[0][0], m2.m[2][0]) - ratan2(m1.m[0][0], m1.m[2][0]);
+ 
+         rec->unk_1C8.vy += twist;
+         func_8001B690(arg0, twist);
