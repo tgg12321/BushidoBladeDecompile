@@ -498,3 +498,17 @@ splat.us.main.yaml:66) declares this module's queue state volatile (sys.c:58, 96
 member of it and later clears it (sys.c:817, 821). A Q55 claim would have to argue that this is "the same
 thing" as GpuCtx.unk08, which is a different object of the same module. rv2-exeque-1 judged only the libcd
 citation. This lane does not rely on it.
+
+[s14b] Q55 route checked (orchestrator request): the mapping fails, and the construct is not the same.
+SOTN sys.c is identical at @db41b28 and @aa53500. It is a splat.us.main.yaml:66 `c` member with no
+INCLUDE_ASM or NON_MATCHING in the file. Its volatile objects are the packet queue `D_80037F54[0x40]`
+(sys.c:58) and `_qin`/`_qout` (sys.c:96-97). The member that _exeque tests and clears is the queue
+item's function pointer (`.unk0`, sys.c:817 test, 821 clear). In BB2 that is `_que[_qout].func`, which
+is already `extern volatile GpuQueueItem _que[64]`, and BB2's _exeque neither tests nor clears it.
+GpuCtx, the object that holds unk08, corresponds to SOTN's info statics: log level D_8002C268, graph
+type D_8002C26C, reverse D_8002C270, queue mode D_8002C274 and the drawsync callback D_8002C278
+(sys.c:82-86). These are BB2's debug_level / type / reverse / queue_mode / drawsync_cb, and SOTN declares
+them plain, non-volatile. SOTN has no pending-flag counterpart; its tail gates the callback with
+CheckCallback() (sys.c:832-841). So SOTN puts volatile on the queue, which BB2 already has. It
+declares the object holding unk08 non-volatile, so it is evidence against this volatile, not for it.
+Q55 condition (2) fails. Stays BANKED at 2/187.

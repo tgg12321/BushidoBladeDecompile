@@ -491,6 +491,9 @@ the same non-volatile source, also fills the slot. So the original source differ
 a compiler-fidelity gap. Also noted, not used: SOTN sys.c @aa53500 (matched) declares this module's queue
 state volatile (sys.c:58, 96-97), and its _exeque tests and later clears a member of it (sys.c:817, 821).
 That is a possible Q55 citation, but it concerns a different object of the same module.
+Q55 checked (evidence.md [s14b]): the citation fails condition (2). SOTN's volatile object is the
+packet queue, which is BB2's `_que` and is already volatile. SOTN declares the counterpart of GpuCtx
+non-volatile (sys.c:82-86, including the drawsync callback) and has no pending flag.
 
 ## 2026-10-02 — func_80020E74 — may D_800A38C6 be reached by indexing past D_800A38C4 (a third Q63-style pair)? — policy-question
 category: policy-question
