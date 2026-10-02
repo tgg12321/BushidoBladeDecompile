@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_80023F08",
+ "body_hash": "a1b7340f6bf028c8",
+ "summary": "Only change: func_80032064(rec, ...) drops the (u8 *) cast. The rest matches the body layer-2 PASSed at f311358bb, and a scan finds no unlabelled redundant masks or casts; sandbox 0. Hygiene: call-boundary (u8 *)/(s16 *)/(s32) casts to callees that are not yet typed."
+}

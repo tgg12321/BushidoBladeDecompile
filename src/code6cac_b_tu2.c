@@ -611,17 +611,18 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
         return 0;
     }
 }
-s32 func_800283D0(u8 *arg0, u8 *arg1) {
+s32 func_800283D0(PracticeMenuRec *arg0, u8 *arg1) {
     s32 temp_a1;
-    u8 *temp_s4;
+    PracticeMenuRec *temp_s4;
     s32 temp_v1;
     s32 var_s1;
     s16 var_v0;
     s32 ret;
 
-    temp_s4 = *(u8 **)(arg0);
+    temp_s4 = arg0->unk_00;
     ret = 1;
-    temp_a1 = *(u16 *)(arg0 + 0x6A);
+    temp_a1 = arg0->unk_6A;
+    /* FAKE: redundant mask of the u16 state code, reproduces the target's andi $v1,$a1,0xFFFF; without it score 9 */
     temp_v1 = temp_a1 & 0xFFFF;
     if (temp_v1 == 4) {
         goto ret_one;
@@ -630,7 +631,7 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
         return ret;
     }
     {
-        u16 temp_v0 = *(u16 *)(temp_s4 + 0x6A);
+        u16 temp_v0 = temp_s4->unk_6A;
             if (temp_v0 == 4) {
                 goto ret_one;
             }
@@ -647,19 +648,16 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                     ret_one:
                         return 1;
                     }
-                    var_s1 = 0;
-                    goto block_15;
                 }
                 var_s1 = 0;
-            block_15:
                 d_val = D_800A3824;
-                temp_a1_2 = (d_val >> *(s16 *)(arg0 + 4)) & 1;
-                temp_s5 = (d_val >> *(s16 *)(temp_s4 + 4)) & 1;
-                if (*(s16 *)(arg0 + 0x8C) != 0) {
+                temp_a1_2 = (d_val >> arg0->unk_04) & 1;
+                temp_s5 = (d_val >> temp_s4->unk_04) & 1;
+                if (arg0->unk_8C != 0) {
                     var_s1 = temp_a1_2 == 0;
                 }
                 if (var_s1 != 0) {
-                    s16 temp_v1_2 = *(s16 *)(arg0 + 0xC);
+                    s16 temp_v1_2 = arg0->unk_0C;
                     if (temp_v1_2 != 0x1D) {
                         if (temp_v1_2 != 0xE) {
                             goto block_20;
@@ -670,33 +668,35 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                 }
             block_20:
                 {
-                    s16 temp_v1_3 = *(s16 *)(temp_s4 + temp_s5 * 2 + 0x288);
+                    s16 temp_v1_3 = temp_s4->unk_288[temp_s5];
                     if (temp_v1_3 == 0) {
-                        if (*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288) > 0) {
+                        /* the target tests unk_288 signed here (lh + blez), against its u16 declaration */
+                        if ((s16)arg0->unk_288[temp_a1_2] > 0) {
                             var_v0 = 0x19;
                             if (var_s1 == 0) {
                             set_0xB:
                                 var_v0 = 0xB;
                             }
                         do_store_calls:
-                            *(s16 *)(arg0 + 0x286) = var_v0;
+                            arg0->unk_286 = var_v0;
                         do_calls:
-                            func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
-                            func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
+                            func_80032854(arg0->unk_04, 1, arg1, (s16 *)0);
+                            func_80032854(arg0->unk_04, 0x25, arg1, (s16 *)0);
                             return ret;
                         }
                         goto block_49;
                     }
                     {
-                        s16 temp_v0_3 = *(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288);
+                        s16 temp_v0_3 = arg0->unk_288[temp_a1_2];
                         s16 var_v0_2;
                         if (temp_v0_3 == temp_v1_3) {
                             do { /* FAKE: do-while(0) loop-note ref weighting, mechanism: flow.c REG_N_REFS += loop_depth feeding global.c allocno_compare. */
-                                func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
-                                func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
+                                func_80032854(arg0->unk_04, 1, arg1, (s16 *)0);
+                                func_80032854(arg0->unk_04, 0x25, arg1, (s16 *)0);
                             } while (0);
-                            if (*(s16 *)(arg0 + (temp_a1_2 * 2) + 0x288) == 5) {
-                                if (((u32)(*(u16 *)(arg0 + 0xE) - 6) < 2U) || ((u32)(*(u16 *)(temp_s4 + 0xE) - 6) < 2U)) {
+                            /* FAKE: (s16) view of the u16 unk_288: the target reloads it with lh here; without the cast lhu, score 1 */
+                            if ((s16)arg0->unk_288[temp_a1_2] == 5) {
+                                if (arg0->unk_0E == 6 || arg0->unk_0E == 7 || temp_s4->unk_0E == 6 || temp_s4->unk_0E == 7) {
                                     if (var_s1 != 0) {
                                         goto sel19;
                                     }
@@ -704,7 +704,7 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                                     goto block_48;
                                 sel19:
                                     /* FAKE: store duplicated into this arm instead of sharing block_48's copy, mechanism: jump2 cross-jump tail merge (jump.c find_cross_jump) chooses which copy survives inline. */
-                                    *(s16 *)(arg0 + 0x286) = 0x19;
+                                    arg0->unk_286 = 0x19;
                                     goto block_49;
                                 }
                                 D_800A38A8 = 1;
@@ -724,20 +724,16 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                                 goto set_0xB;
                             }
                             /* FAKE: store duplicated into the `<` arm instead of sharing do_store_calls's copy, mechanism: jump2 cross-jump tail merge (jump.c find_cross_jump). */
-                            *(s16 *)(arg0 + 0x286) = var_v0_4;
+                            arg0->unk_286 = var_v0_4;
                             goto do_calls;
                         }
-                        func_80032854(*(s16 *)(arg0 + 4), 0x26, arg1, (s16 *)0);
-                        func_80032854(*(s16 *)(arg0 + 4), 0x2D, arg1, (s16 *)0);
+                        func_80032854(arg0->unk_04, 0x26, arg1, (s16 *)0);
+                        func_80032854(arg0->unk_04, 0x2D, arg1, (s16 *)0);
                         var_v0_2 = 0x1A;
                         if (var_s1 == 0) {
-                            s32 temp_v1_4 = -*(s16 *)(arg0 + 0x1CA);
-                            /* FAKE: idx0/idx1 named intermediates declared before `tail`, mechanism: local-alloc quantity BIRTH order (local-alloc.c qty_births feeding global.c allocno_compare priority floor_log2(refs)*refs*10000/span). */
-                            s32 idx0 = (temp_v1_4 + 0x400) & 0xFFF;
-                            s32 idx1 = temp_v1_4 & 0xFFF;
-                            s32 *tail = (s32 *)(temp_s4 + (temp_s5 * 0x10));
-                            s32 temp_v1_5 = (s32)(Judge[idx0] * tail[0x45] + Judge[idx1] * tail[0x47]) >> 0xC;
-                            s32 temp_a0_2 = tail[0x46];
+                            s32 temp_v1_4 = -arg0->unk_1C8.vy;
+                            s32 temp_v1_5 = (s32)(Judge[(temp_v1_4 + 0x400) & 0xFFF] * temp_s4->unk_114[temp_s5].vx + Judge[temp_v1_4 & 0xFFF] * temp_s4->unk_114[temp_s5].vz) >> 0xC;
+                            s32 temp_a0_2 = temp_s4->unk_114[temp_s5].vy;
                             s32 var_a1 = temp_a0_2;
                             s32 var_v0_3;
                             if (temp_a0_2 < 0) {
@@ -760,7 +756,7 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
                             }
                         }
                     block_48:
-                        *(s16 *)(arg0 + 0x286) = var_v0_2;
+                        arg0->unk_286 = var_v0_2;
                     }
                 }
             block_49:
@@ -2403,8 +2399,8 @@ void func_8002C61C(void) {
         func_8002C22C();
         if (D_800A3824 < 0) goto do_calc;
         if (s1->unk_AD != 0 || s0->unk_AD != 0) {
-            func_800283D0((u8 *)s1, (u8 *)0x1F8003F4);
-            func_800283D0((u8 *)s0, (u8 *)0x1F8003F4);
+            func_800283D0(s1, (u8 *)0x1F8003F4);
+            func_800283D0(s0, (u8 *)0x1F8003F4);
             s0->unk_AD = 0;
             s1->unk_AD = 0;
             goto after_calc;
@@ -5348,13 +5344,13 @@ void func_80032040(void) {
     }
 }
 
-u8 *func_80032064(u8 *src, s32 type) {
+u8 *func_80032064(PracticeMenuRec *src, s32 type) {
     s32 speed = 0x50;
     s32 vel_y = -0xC8;
     s32 i = 0;
     u8 *ptr = &D_80104E88;
     u8 *s0;
-    s16 sp_area[2];
+    s16 sp_area[3];
 
     for (; i < 4; i++) {
         s0 = ptr;
@@ -5366,22 +5362,22 @@ u8 *func_80032064(u8 *src, s32 type) {
     *s0 = type;
     *(s0 + 1) = 1;
     *(s0 + 2) = 0;
-    *(s0 + 3) = *(u16 *)(src + 4);
-    *(s32 *)(s0 + 4) = *(s32 *)(src + 0xF4);
+    *(s0 + 3) = src->unk_04;
+    *(s32 *)(s0 + 4) = src->unk_F4.x;
     {
-        s32 v1 = *(s16 *)(src + 0x1A);
+        s32 v1 = src->unk_1A;
         if (v1 < 0) v1 += 0x1F;
-        *(s32 *)(s0 + 8) = *(s32 *)(src + 0xBC) - (v1 >> 5);
+        *(s32 *)(s0 + 8) = src->unk_B8.vy - (v1 >> 5);
     }
-    *(s32 *)(s0 + 0xC) = *(s32 *)(src + 0xFC);
-    *(s32 *)(s0 + 0x1C) = ((s32)Judge[*(u16 *)(src + 0x1CA) & 0xFFF] * speed) >> 12;
+    *(s32 *)(s0 + 0xC) = src->unk_F4.z;
+    *(s32 *)(s0 + 0x1C) = ((s32)Judge[src->unk_1C8.vy & 0xFFF] * speed) >> 12;
     *(s32 *)(s0 + 0x20) = vel_y;
-    *(s32 *)(s0 + 0x24) = ((s32)Judge[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * speed) >> 12;
+    *(s32 *)(s0 + 0x24) = ((s32)Judge[(src->unk_1C8.vy + 0x400) & 0xFFF] * speed) >> 12;
     *(Vec3_copy *)(s0 + 0x10) = *(Vec3_copy *)(s0 + 4);
-    *(s32 *)(s0 + 0x28) = *(s32 *)(src + 0xBC);
-    sp_area[1] = *(u16 *)(src + 0x1CA);
+    *(s32 *)(s0 + 0x28) = src->unk_B8.vy;
+    sp_area[1] = src->unk_1C8.vy;
     {
-        s32 a0_arg = *(u8 *)(src + 0xB2);
+        s32 a0_arg = src->unk_B2;
         s32 cmd = 0xD;
         u8 *v1 = s0 + 4;
         if (type == 1) cmd = 0xC;
@@ -5512,23 +5508,23 @@ next:
     t0 += 0x2C;
     if (t1 < 4) goto loop;
 }
-void func_800324D0(u8 *pad) {
+void func_800324D0(PracticeMenuRec *rec) {
     u8 *ptr;
     u8 c;
     u8 val;
 
-    ptr = *(u8 **)(pad + 0x58);
-    pad[0xA1] = 0xFF;
-    pad[0xA3] = 0xFF;
-    pad[0xA2] = 0xFF;
-    pad[0xA4] = 0xFF;
-    pad[0xAA] = 0;
-    pad[0xA7] = 0;
-    pad[0xA8] = 0;
-    pad[0xA5] = 0;
-    pad[0xA6] = 0xFF;
-    pad[0xAB] = 0xFF;
-    pad[0xAC] = 0xFF;
+    ptr = rec->unk_58;
+    rec->unk_A1[0] = 0xFF;
+    rec->unk_A3[0] = 0xFF;
+    rec->unk_A1[1] = 0xFF;
+    rec->unk_A3[1] = 0xFF;
+    rec->unk_AA = 0;
+    rec->unk_A7 = 0;
+    rec->unk_A8 = 0;
+    rec->unk_A5 = 0;
+    rec->unk_A6 = 0xFF;
+    rec->unk_AB = 0xFF;
+    rec->unk_AC = 0xFF;
 
     c = ptr[4];
     /* FAKE: the header advance `ptr += 5` is spelled as a four-step chain,
@@ -5563,18 +5559,18 @@ void func_800324D0(u8 *pad) {
              * pass (after reload) re-merges the identical tails so not one
              * duplicated instruction materialises. */
             switch (c - 0x80) {
-                case 0: pad[0xA1] = val; c = *ptr; ptr++; continue;
-                case 1: pad[0xA3] = val; c = *ptr; ptr++; continue;
-                case 2: pad[0xA7] = val; c = *ptr; ptr++; continue;
-                case 3: pad[0xA8] = val; c = *ptr; ptr++; continue;
-                case 4: pad[0xA9] = val; c = *ptr; ptr++; continue;
-                case 5: pad[0xA5] = val; break;
-                case 6: pad[0xA6] = val; break;
-                case 7: pad[0xA2] = val; break;
-                case 8: pad[0xA4] = val; break;
-                case 9: pad[0xAA] = val; break;
-                case 10: pad[0xAB] = val; break;
-                case 11: pad[0xAC] = val; break;
+                case 0: rec->unk_A1[0] = val; c = *ptr; ptr++; continue;
+                case 1: rec->unk_A3[0] = val; c = *ptr; ptr++; continue;
+                case 2: rec->unk_A7 = val; c = *ptr; ptr++; continue;
+                case 3: rec->unk_A8 = val; c = *ptr; ptr++; continue;
+                case 4: rec->unk_A9 = val; c = *ptr; ptr++; continue;
+                case 5: rec->unk_A5 = val; break;
+                case 6: rec->unk_A6 = val; break;
+                case 7: rec->unk_A1[1] = val; break;
+                case 8: rec->unk_A3[1] = val; break;
+                case 9: rec->unk_AA = val; break;
+                case 10: rec->unk_AB = val; break;
+                case 11: rec->unk_AC = val; break;
             }
         }
         c = *ptr;

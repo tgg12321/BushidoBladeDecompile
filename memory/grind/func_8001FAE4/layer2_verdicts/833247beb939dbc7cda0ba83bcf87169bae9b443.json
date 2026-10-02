@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_8001FAE4",
+ "body_hash": "7c09607f284259d6",
+ "summary": "Walks MoveScript.unk_0A as u16 entries of 2 or 4 halfwords, as the header documents. It returns the 0x4000 entry, which is always a 4-halfword entry, as StatusEvt (the 8-byte record its only caller reads). This replaces integer pointer arithmetic; sandbox 0. Hygiene: StatusEvt is TU-local, not in code6cac.h."
+}

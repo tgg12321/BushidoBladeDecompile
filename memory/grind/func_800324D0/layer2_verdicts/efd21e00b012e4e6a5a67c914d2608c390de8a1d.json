@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_800324D0",
+ "body_hash": "a6d4ab0f3df6adf3",
+ "summary": "rec->unk_58 / unk_A1[] / unk_A3[] / unk_A5..unk_AC are at the right offsets (static-asserted). The rename from `pad` is truthful. All three FAKEs re-ablated and still needed (21 / 21 / 27); sandbox 0."
+}

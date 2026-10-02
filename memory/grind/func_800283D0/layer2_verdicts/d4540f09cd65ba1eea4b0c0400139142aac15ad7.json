@@ -1,0 +1,13 @@
+{
+ "decision": "PASS",
+ "function": "func_800283D0",
+ "body_hash": "57afb1e4f12b36f5",
+ "summary": "Landed body == cand/283D0_final.c; sandbox 0. Every no-purpose construct is labelled and load-bearing (removal scores: mask 9, (s16) ==5 view 1, do-while 12, sel 2, dup stores 2/4, all-FAKE cluster 22/31); the new labels' numbers (9, 1) and asm claims (andi $v1,$a1,0xFFFF; lh+blez; lh reload) are true. The (s16) >0 test is semantic and its plain comment is truthful; unk_0E == 6||7 is uncast; all reads go through PracticeMenuRec. No item 2-5 defect.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": [
+  "unk_288 is declared u16 but its only value-reading loads anywhere (the four in this body) are lh; func_80023F08's lhu are increment RMWs, which GCC emits for s16 too. Retyping to s16 would likely retire the line-85 FAKE and the line-61 cast (header change, not measured here)",
+  "do-while / sel / dup-store FAKE labels give a mechanism but no score; measured removal costs: do-while 12, sel 2, sel19 store 2, '<' store 4",
+  "(s32)(...) >> 0xC identity cast and the u8 *arg1 scratchpad position pointer (func_800395B4 reads it as s32[3]) are weakly typed"
+ ]
+}

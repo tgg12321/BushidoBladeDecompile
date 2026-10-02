@@ -1,0 +1,13 @@
+{
+ "decision": "PASS",
+ "function": "func_80032064",
+ "body_hash": "6c0f2a02e5a2bde2",
+ "summary": "Landed body == cand/32064_sp3.c; sandbox 0. s16 sp_area[3] matches func_800395B4's arg3[0..2] read; member reads are correct (unk_F4.x/.z, unk_B8.vy, unk_1C8.vy, unk_1A, unk_B2, unk_04); speed/vel_y are truthful named quantities; no wall construct, no unlabelled no-purpose construct.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": [
+  "`if (v1 < 0) v1 += 0x1F; ... v1 >> 5` is a hand-expanded signed /32; `src->unk_1A / 32` is byte-exact (tmp/l2v/P3r2/cand/32064_div.c, score 0) and reads better",
+  "sp_area is a vague name for the angle triple handed to func_800395B4 (slot+0xA..0xE); e.g. `rot`",
+  "Vec3_copy (file-scope typedef in code6cac_b_tu2.c:4827) duplicates include/code6cac.h Vec3i32; D_80104E88's 0x2C-byte entries have no struct and are written by raw offset"
+ ]
+}

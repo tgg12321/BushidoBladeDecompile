@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_8001B3C0",
+ "body_hash": "246a43012286a917",
+ "summary": "Reads unk_180.x/.y/.z through PracticeMenuRec (offsets verified); the a0 = a1 selection is semantic; no FAKEs needed; sandbox 0."
+}

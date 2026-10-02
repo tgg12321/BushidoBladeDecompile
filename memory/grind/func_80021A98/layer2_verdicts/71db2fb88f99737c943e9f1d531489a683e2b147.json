@@ -1,0 +1,14 @@
+{
+ "decision": "PASS",
+ "function": "func_80021A98",
+ "body_hash": "31ea744d13084bfc",
+ "summary": "The working-tree body hashes to 31ea744d13084bfc and scores sandbox --disable all 0 (158/158). All three FAKE labels now match their re-measured ablations. do1 removed: score 2, lbu bases a0/v1 swap at target[68]/[71]. do2 removed: score 4, a0_58/a1_val swap between $a0 and $a1 at [56]/[59]/[67]. Mask removed: score 6, the target's andi is lost; unk_6A is u16, so the mask really is redundant. Removing any cluster is worse (do1+do2 5, all three 11), and the merged re-reads score 14 and 6. No item-2 construct, no volatile, no fabricated call, and every access goes through PracticeMenuRec/MoveScript members.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": [
+  "arg1 is declared u8 * (include/code6cac.h:1040 and the definition) but is a MoveScript * in the body (two casts) and at its callers. func_8001C4C0 and func_8001C51C pass the s32 return of func_80021974 straight in. Retype it in a later header cleanup.",
+  "The (u8) arg2 / (u8) a3 narrowing casts on the u8 stores make no byte difference (nou8 scores 0). They are truthful and could be dropped.",
+  "src/code6cac_tu2.c is MM: the index still holds the old first FAKE label. Stage the working tree, which is the reviewed text, before committing.",
+  "This reviewer did not re-run verify-oracle --rebuild; it relies on the orchestrator's run (SHA1 == oracle with these edits)."
+ ]
+}

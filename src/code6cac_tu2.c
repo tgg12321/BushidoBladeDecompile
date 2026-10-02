@@ -26,7 +26,7 @@ extern void func_8005BF3C(void);
 extern void func_8005B9C4(void);
 extern void func_8005B868(void);
 extern s32 file_GetFlag2(void);
-extern void func_800324D0(u8 *);
+extern void func_800324D0(PracticeMenuRec *);
 extern void sys_Panic(void);
 extern s32 func_8005B9FC(s32);
 extern s32 D_800A38B4;
@@ -837,8 +837,8 @@ void func_8001B138(s32 *arg0) {
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
-void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30[0][0] = 0x64;    D_800F6608.h30[0][1] = 0;    D_800F6608.h30[0][2] = 0x64;    D_800F6608.h30[1][0] = 0x64;    D_800F6608.h30[1][1] = 0;    D_800F6608.h30[1][2] = 0x64;    func_8003F1E4(0);    D_800F6608.w0 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F6608.w4 = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = ratan2(dx, dy);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
-void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5328.h30[0][0] = 0x64;    D_800F5328.h30[0][1] = 0;    D_800F5328.h30[0][2] = 0x64;    D_800F5328.h30[1][0] = 0x64;    D_800F5328.h30[1][1] = 0;    D_800F5328.h30[1][2] = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5328.w8 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
+void func_8001B294(PracticeMenuRec *a0, PracticeMenuRec *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30[0][0] = 0x64;    D_800F6608.h30[0][1] = 0;    D_800F6608.h30[0][2] = 0x64;    D_800F6608.h30[1][0] = 0x64;    D_800F6608.h30[1][1] = 0;    D_800F6608.h30[1][2] = 0x64;    func_8003F1E4(0);    D_800F6608.w0 = (a0->unk_F4.x + a1->unk_F4.x) / 2;    D_800F6608.w4 = (a0->unk_F4.y + a1->unk_F4.y) / 2;    {        s32 t1 = a0->unk_F4.z;        s32 t2 = a1->unk_F4.z;        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = a1->unk_F4.x - a0->unk_F4.x;        s32 dz = a1->unk_F4.z - a0->unk_F4.z;        v0 = ratan2(dx, dz);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
+void func_8001B3C0(PracticeMenuRec *a0, PracticeMenuRec *a1) {    D_800A36FA = 0;    D_800F5328.h30[0][0] = 0x64;    D_800F5328.h30[0][1] = 0;    D_800F5328.h30[0][2] = 0x64;    D_800F5328.h30[1][0] = 0x64;    D_800F5328.h30[1][1] = 0;    D_800F5328.h30[1][2] = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = a0->unk_180.x;    D_800F5328.w8 = a0->unk_180.z;    {        s32 v = a0->unk_180.y;        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
 void func_8001B478(s32 arg0) {
     u8 *obj = (u8 *)arg0;
     u8 *s2 = (u8 *)&D_800F5328;
@@ -1232,7 +1232,6 @@ void func_8001C4C0(void) {
     }
 }
 void func_8001C51C(void) {
-    s16 *s0;
     s32 v0;
     func_8001C4C0();
     if (D_800A38DC == 3 && D_800A3728 != 0) {
@@ -1243,14 +1242,13 @@ void func_8001C51C(void) {
     func_80022F34();
     func_800218C8(1);
     v0 = func_80021974(1);
-    s0 = &g_practice_menu_table[1].unk_5E;
-    *s0 = 0;
+    g_practice_menu_table[1].unk_5E = 0;
     func_80021A98(1, v0, 0);
     D_800A382E = 0;
     D_800A3748 = -1;
     func_80030524();
     func_80030D04();
-    func_8001B294((s32)((u8 *)s0 - 0x4AA), (s32)((u8 *)s0 - 0x5E));
+    func_8001B294(&g_practice_menu_table[0], &g_practice_menu_table[1]);
     func_800392C8();
     func_80021280(1);
 }
@@ -1807,8 +1805,8 @@ extern void func_800218C8(s32);
 extern s32 func_80021974(s32);
 extern s32 func_80021904(s32);
 extern s32 func_800219E4(s32);
-extern void func_8001B294(s32 *, s32 *);
-extern void func_8001B3C0(s32 *, s32 *);
+extern void func_8001B294(PracticeMenuRec *, PracticeMenuRec *);
+extern void func_8001B3C0(PracticeMenuRec *, PracticeMenuRec *);
 extern void func_80033510(void);
 extern s32 func_8005BE84(s32);
 extern void rng_SetSeed(s32);
@@ -1947,9 +1945,9 @@ void func_8001DCB0(void) {
     }
     D_800A382E = 0;
     D_800A3748 = -1;
-    func_8001B294((s32 *)&g_practice_menu_table[0], (s32 *)&g_practice_menu_table[1]);
+    func_8001B294(&g_practice_menu_table[0], &g_practice_menu_table[1]);
     if (D_800A38BA != 0) {
-        func_8001B3C0((s32 *)&g_practice_menu_table[0], (s32 *)&g_practice_menu_table[1]);
+        func_8001B3C0(&g_practice_menu_table[0], &g_practice_menu_table[1]);
     }
     func_800392C8();
     game_Cleanup();
@@ -2623,22 +2621,28 @@ defaultpath:
     *((s16 *)(arg0 + 0x44)) = (s16)a2;
 }
 
-s32 func_8001FAE4(s32 *arg0) {
-    u16 v1;
-    s32 *a0;
+typedef struct {
+    u16 flags;
+    u16 id;
+    u8 b[4];
+} StatusEvt;
 
-    a0 = (s32 *)((s32)arg0 + 0xA);
-    v1 = *(u16 *)a0;
+StatusEvt *func_8001FAE4(MoveScript *arg0) {
+    u16 v1;
+    u16 *a0;
+
+    a0 = arg0->unk_0A;
+    v1 = *a0;
     while (v1 != 0) {
         if ((v1 & 0x4000) != 0) {
-            return (s32)a0;
+            return (StatusEvt *)a0;
         }
         if ((v1 & 0xC000) != 0) {
-            a0 = (s32 *)((s32)a0 + 8);
+            a0 += 4;
         } else {
-            a0 = (s32 *)((s32)a0 + 4);
+            a0 += 2;
         }
-        v1 = *(u16 *)a0;
+        v1 = *a0;
     }
     return 0;
 }
@@ -2670,11 +2674,6 @@ check3:
     return v0;
 }
 void func_8001FBE8(void);
-typedef struct {
-    u16 flags;
-    u16 id;
-    u8 b[4];
-} StatusEvt;
 
 extern void *func_80021424(PracticeMenuRec *, s32, s16 *);
 extern void func_80032854(s32, s32, s32 *, s16 *);
@@ -2742,7 +2741,7 @@ void func_8001FBE8(void) {
         if (rec->unk_7A == 0) {
             continue;
         }
-        ent = (StatusEvt *)func_8001FAE4((s32 *)rec->unk_50);
+        ent = func_8001FAE4(rec->unk_50);
         if (ent == 0) {
             continue;
         }
@@ -3579,13 +3578,11 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
         if (arg2 != 0) {
             u16 *v0 = (u16 *)(D_80102764 + (v1 * 4));
             s0->unk_54 = v0;
-            v1 = v0[1];
-            s0->unk_58 = (u8 *)(D_80102768 + v1);
+            s0->unk_58 = (u8 *)(D_80102768 + v0[1]);
         } else {
             u16 *v0 = (u16 *)(D_801027B0[a3][1] + (v1 * 4));
             s0->unk_54 = v0;
-            v1 = v0[1];
-            s0->unk_58 = (u8 *)(D_801027B0[a3][2] + v1);
+            s0->unk_58 = (u8 *)(D_801027B0[a3][2] + v0[1]);
         }
     }
     {
@@ -3593,9 +3590,9 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
         u16 old_kind = s0->unk_6A;
         u8 *a0_58 = s0->unk_58;
         s0->unk_60 = (u8) arg2;
-        /* FAKE: empty do-while(0) -- its loop notes change the seating of
-         * the surrounding byte stores; without it the body no longer
-         * matches (do-while-zero-exception.md). */
+        /* FAKE: empty do-while(0) -- its loop note puts a0_58 in $a0 and
+         * v1_58 in $v1 (the two unk_58 lbu bases); without it they swap,
+         * score 2. */
         do { } while (0);
         s0->unk_61 = (u8) a3;
         {
@@ -3609,7 +3606,7 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
                 s0->unk_46 = 0;
                 s0->unk_40 = a1_val;
                 /* FAKE: the do-while(0) wrap's loop-depth weighting seats a0_58
-                 * in $a0 and a1_val in $a1 as in target. */
+                 * in $a0 and a1_val in $a1 as in target; without it they swap, score 4. */
                 do { s0->unk_6A = *a0_58; } while (0);
                 s0->unk_6E = v1_58[2];
             }
@@ -3625,19 +3622,20 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
                 }
                 s0->unk_AD = a0_flag;
             }
-            func_800324D0((u8 *)s0);
+            func_800324D0(s0);
             {
                 s32 kind2 = s0->unk_6A;
+                /* FAKE: redundant mask of the u16 state code, reproduces the target's andi; without it score 6 */
                 s32 v1k = kind2 & 0xFFFF;
                 if (v1k == 9) {
                     s0->unk_152 = 1;
-                    s0->unk_154 = (u16)s0->unk_1C8.vy;
+                    s0->unk_154 = s0->unk_1C8.vy;
                     goto end;
                 }
                 if (v1k == 2) {
                     if ((s0->unk_152) != 0) goto clear_152;
                     if ((s0->unk_6C) == 0x13) goto clear_152;
-                    s0->unk_154 = (u16)s0->unk_1D8;
+                    s0->unk_154 = s0->unk_1D8;
                     goto clear_152;
                 }
                 if (((u32) (kind2 - 0x19)) >= 2U) goto not_in_range;
@@ -3646,7 +3644,7 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
                 if ((s0->unk_6C) != v1k) goto set_152;
                 goto set_154;
                 set_154:
-                s0->unk_154 = (u16)s0->unk_1D8;
+                s0->unk_154 = s0->unk_1D8;
                 goto set_152;
                 not_in_range:
                 if (v1k != 0x11) goto clear_152;
@@ -4686,7 +4684,7 @@ extern s32 func_8002798C(u8 *);
 extern s32 func_8002FDB0(s32 *);
 extern s32 func_800307D0(PracticeMenuRec *);
 extern s32 func_80030BA8(PracticeMenuRec *);
-extern u8 *func_80032064(u8 *, s32);
+extern u8 *func_80032064(PracticeMenuRec *, s32);
 extern void func_80039680(u8 *);
 extern void func_80040304(s32, s32);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
@@ -5432,7 +5430,7 @@ skip_62:
             rec->unk_8A = 1;
         }
         if (rec->unk_6A == 0x12 && rec->unk_40 == rec->unk_A7 && ((0x78 >> rec->unk_B1) & 1) && rec->unk_26C != 0) {
-            func_80032064((u8 *)rec, ((0x18 >> rec->unk_B1) & 1) ? 1 : 2);
+            func_80032064(rec, ((0x18 >> rec->unk_B1) & 1) ? 1 : 2);
         }
         if (rec->unk_6A == 0x10 && rec->unk_40 == rec->unk_AC && rec->unk_26C != 0 && rec->unk_34B != 0) {
             rec->unk_34A = 0xA;

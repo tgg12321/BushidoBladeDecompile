@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_8001DCB0",
+ "body_hash": "2b1fae6481bc2786",
+ "summary": "Only change: func_8001B294 / func_8001B3C0 get &g_practice_menu_table[0]/[1] without casts. The rest of the body is ordinary C; the (s8) casts are real sign conversions (lb); sandbox 0. Hygiene: (u8 *)v call-boundary casts from the s32-returning func_80021974 / 80021904 / 800219E4 prototypes."
+}

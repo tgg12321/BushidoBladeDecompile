@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_8001FBE8",
+ "body_hash": "aa5646c5d67d3395",
+ "summary": "Only change: `ent = func_8001FAE4(rec->unk_50)` drops both casts now the callee is typed. The body otherwise matches the one layer-2 PASSed at aa17a964e; sandbox 0."
+}

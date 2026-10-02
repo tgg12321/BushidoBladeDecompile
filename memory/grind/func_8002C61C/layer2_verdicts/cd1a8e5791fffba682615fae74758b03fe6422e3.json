@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_8002C61C",
+ "body_hash": "462b95e99637e77f",
+ "summary": "Only change: the two func_800283D0 calls drop their (u8 *) casts. Pointer-alias FAKE labelled; 0x1F8003F4 lies past ScrPad (ends 0x2B8), so it is not a second view; sandbox 0. Hygiene: the (u16) casts on the u16 unk_6A are byte-neutral identity casts."
+}

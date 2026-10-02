@@ -1,0 +1,11 @@
+{
+ "decision": "PASS",
+ "function": "func_8001C51C",
+ "body_hash": "20eeb0d48b712e22",
+ "summary": "Landed body == cand/1C51C_nos0.c; sandbox 0. The single-use alias and the cross-field address derivation are gone: unk_5E is written directly and func_8001B294 gets &g_practice_menu_table[0]/[1]. The (s8) casts on u8 PracticeParams bytes are semantic sign extensions. No item 2-5 defect.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": [
+  "`s32 v0 = func_80021974(1)` is passed to func_80021A98's u8 * parameter with no cast: func_80021974 is declared s32 but returns a MoveScript address (D_801027B0 rows are typed s32)"
+ ]
+}

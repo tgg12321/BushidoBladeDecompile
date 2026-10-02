@@ -56,7 +56,7 @@ extern void func_8005B868(void);
 
 extern s32 file_GetFlag2(void);
 
-extern void func_800324D0(u8 *);
+extern void func_800324D0(PracticeMenuRec *);
 
 
 
