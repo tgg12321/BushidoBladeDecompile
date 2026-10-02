@@ -200,3 +200,18 @@ x_f 4, x_g 56, x_h 4, x_j 4, x_k 4, x_l 53.
 The policy question (the Q89 cut before this function) is logged in docs/grind/borderline.md 2026-10-02;
 the orchestrator refused it under its delegation. Frontier: a source construct that emits the copy or the
 shift after call two's argument moves — none is known in GCC 2.7.2 beyond queued post-increments.
+
+## 2026-10-02 — oct2-a1 BANKED: frontier
+
+Floor 4/232 (F6 chassis, rejected/f6-typed-floor4.c); plain 13. The one hunk is decided by a sched1 LUID tie,
+mechanism above. Every spelling found so far emits the copy/shift before call two's argument moves.
+The frontier is a construct whose copy or shift is emitted after those moves. In GCC 2.7.2 the only known
+emitter there is emit_queue (queued post-increments), and neither insn is an increment. A second route
+would give the copy a costly true predecessor in sched1, without an extra instruction or a register
+shared with addPrim's temporaries.
+Not tried yet:
+- a different loop skeleton: the two strips as separate loops, or a peeled first iteration;
+- typing the call two arguments through a struct;
+- a permuter campaign seeded with variants-oct2/x_*.c.
+Q89 depends on this function; the policy question about a cut before it is in docs/grind/borderline.md
+2026-10-02.

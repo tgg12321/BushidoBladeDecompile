@@ -133,3 +133,19 @@ text1b compare = 0 functions differing at -G0, and the head part is identical at
 s16 temporary for the negated pitch (FAKE): without it the negu moves one slot (vb_te/th/tp/tq); spellings
 that store rot.vx through the record name instead of the node pointer let cse fold the store onto the base
 register or reuse the forced address (+1 insn: va, va_tb, vb_td, vb_tf). Receipts: types/receipts.txt.
+
+## 2026-10-02 — oct2-a1 BANKED: state and frontier
+
+- Landed 3ddc8c295 (cheat-cleanup, layer-2 rv2-camtypes-2 PASS, round 2 after rv2-camtypes-1 FAIL on two
+  comments). g_cam_bone_data2 and D_800EF070 are now typed as Unk80101DF0Record, and 20 aliases are gone.
+  Q89's "real types" prerequisite is met for this function: the head part is identical at -G8 apart from
+  whole-file rodata addends (types/receipts.txt).
+- Still owed for Q89, in order:
+  - func_80048FFC in C (4/232; frontier in its evidence.md);
+  - the split tests at the math_RotMatrixZYX cut (rodata-object-alignment 2-4, section contiguity,
+    extern screening);
+  - the split + head-part -G8 landing with a both-ways proof.
+- Floor here is unchanged: -G0 59 vs 58 insns (score 6); exact at -G8.
+- The orchestrator REFUSED the alternate cut before func_80048FFC. It is logged for the owner in
+  docs/grind/borderline.md (2026-10-02 policy-question).
+- camera_CalcAngles stays INCLUDE_ASM, active, not rotated.
