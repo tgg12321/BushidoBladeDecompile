@@ -99,3 +99,40 @@ Reproduction (run from repo root under WSL with .venv active):
 `python3 memory/grind/func_80048FFC/tools/codex_probe.py` remeasured plain 13/232,
 F6 4/232 and typed SetDrawMove 0/24 from the banked files after their annotations were finalized.
 All 465 contiguous single-level wrapper ranges on the F6 body were measured; none beat 4.
+
+## 2026-10-02 — shared GPU interfaces, manual continuation
+
+Prerequisite type repair, not completion of func_80048FFC or camera_CalcAngles (both INCLUDE_ASM).
+
+- DR_MOVE is the PsyQ layout `{ u32 tag; u32 code[5]; }` (0x18). SetDrawMove(DR_MOVE *, RECT *, u32,
+  u32) writes the length through the SDK setlen P_TAG view (SOTN include/psxsdk/libgpu.h:87, PS1 use
+  sys.c:287) and packs the RECT as MoveImage does (LOW(rect->x)/LOW(rect->w), sys.c:275/277, all
+  @db41b28). Component-wise packing measured 23/31.
+- Strides from the code: light_effect_col[31][2] (0x5D0 from 0x800A3D70), D_800A4340[19][2],
+  D_800A9830[2][10] (two 0xF0 banks). D_800A9920 (= D_800A9830+0xF0) was a second handle; it is
+  removed and gpu_AddDrawMove tests the bank's one-past bound.
+- D_800A378C is the SDK OT pointer (u32 *, OT_TYPE); definition and consumers agree. g_gpu_ot_ptr is
+  `u8 *` in text1b only (its definition, ings.c); other TUs keep their older `s32` externs.
+- First layer-2 (2026-10-02) FAILed five bodies; fixes, each re-measured 0: func_8003DBE4 walks a
+  `DR_MOVE *` cursor (`pkt = *arg2; pkt += parity; ... pkt += 2`) instead of a FAKE u32 storage view
+  with integer stepping; gpu_AddDrawMove has its real two parameters (callers pass two; the
+  `(void (*)())` call casts are gone); gpu_SetDrawMoveArray walks a2 (no parameter copy);
+  func_8003D91C uses literals (no constant holders); SetDrawMove's SOTN lines corrected.
+- Second layer-2 FAILed func_8003DBE4 (integer OT-entry address kept only for its `+` operand
+  order; constant holder rgb_mask; no-op (s32) casts) and SetDrawMove (duplicated `size = 0` arm).
+  Fixed: SetDrawMove `if (w == 0 || h == 0)` 0/24. func_8003DBE4 now links with the SDK addPrim
+  shape, `setaddr(pkt, getaddr(&ot[idx])); setaddr(&ot[idx], pkt)` written out on OTag views
+  (libgpu.h:88), literal masks from the bitfield: 0/133. Same with an `OTag *ot = &...[idx]` local
+  3 (a0/v0 swap at target[75]); `ot = (OTag *)D_800A378C; ot[idx]` 0; integer forms 3; literal-mask
+  u32 forms 5. Third layer-2: on this body the F6 pair is no longer needed. The two-arm
+  `step = 0x6590 - arg0;` / `step = 0x55F0 - arg0;` (and the ternary) score 0/133 with an empty
+  unmasked diff, so the pair is gone. The 3/4/13 ordinary-form receipts in tools/interfaces/
+  (ordinary_consumer.*, ablations.json) were measured on the pre-cursor body and are stale. The
+  inherited dead conditional store to step and the tmp/limit-1 reuse are removed.
+- func_80048FFC on the repaired types: F6 cluster 4/232 (spelling the OT entry `ot =
+  (OTag *)&D_800A378C[0xFFF]`); plain 13. Residual unchanged: the old-phase copy/shift is scheduled
+  before call two's a1-a3 setup. sched1 (bottom-up, LUID tie-break, all priority 1) keeps the
+  arg setups below the copy/shift, so sched2 inherits that order. Swept all 2240 orders of
+  {old=phase, phase>>=1, other halvings, i++, addPrim 1, rect.y, rect.h} between the calls (halvings
+  and i++ also after call two): best 4 (168 orders), none lower. Halvings written after call two are
+  hoisted above it by sched1 (the post-call addPrim chain outranks them): also 4.

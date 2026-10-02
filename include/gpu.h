@@ -155,4 +155,24 @@ typedef struct GpuDrEnv {
 
 extern GpuDrEnv D_800F1858;
 
+
+/* PsyQ DR_MOVE: DMA tag word, then five GPU command words. */
+typedef struct { u32 tag; u32 code[5]; } DR_MOVE;
+/* One VRAM-scroll channel at D_800EF848 (0x134 bytes each). */
+typedef struct {
+    s32 phase;          /* +0x000 */
+    DR_MOVE move[2][6]; /* +0x004: one bank per frame parity, two packets per level */
+    s16 ctl[7];         /* +0x124: filled from D_80099C34 by func_80048F58 */
+} MoveChannel;
+
+extern MoveChannel D_800EF848[];
+extern u16 D_80099C34[][7];
+
+extern void SetDrawMove(DR_MOVE *, RECT *, u32, u32);
+/* SDK OT_TYPE: one DMA tag word per table entry. */
+extern u32 *D_800A378C;
+extern DR_MOVE light_effect_col[31][2];
+extern DR_MOVE D_800A4340[19][2];
+extern DR_MOVE D_800A9830[2][10];
+
 #endif /* GPU_H */

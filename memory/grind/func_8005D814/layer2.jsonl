@@ -1,0 +1,1 @@
+{"func": "func_8005D814", "addr": "8005D814", "verdict": "PASS", "body_hash": "0c9852f0de423f9e", "body_kind": "c", "file": "text1b", "reviewer": "rev-gpu-iface-4", "scope": "cheat-cleanup", "date": "2026-10-02T04:59:28Z", "head": "1ec2f5088", "notes": "Shared GPU interface repair (DR_MOVE/OT pointer typing, Q89 prerequisite); fourth fresh layer-2 PASS after three FAILs fixed."}

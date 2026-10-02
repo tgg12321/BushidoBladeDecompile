@@ -377,20 +377,26 @@ void SetDrawTPage(u8 *a0, s32 a1, s32 a2, u32 a3) {
     }
     *(u32 *)(a0 + 4) = cmd | val;
 }
-void SetDrawMove(u32 *a0, s16 *a1, u32 a2, u32 a3) {
+/* Copy packet: tag followed by five GPU command words. */
+void SetDrawMove(DR_MOVE *a0, RECT *a1, u32 a2, u32 a3) {
     s32 size = 5;
-    if (a1[2] == 0) {
-        size = 0;
-    } else if (a1[3] == 0) {
+    if (a1->w == 0 || a1->h == 0) {
         size = 0;
     }
-    a0[1] = OT_TERMINATOR;
-    a0[2] = OT_TAG_BASE;
-    ((u8 *)a0)[3] = size;
-    a0[3] = *(u32 *)a1;
-    a0[4] = (a3 << 16) | (a2 & 0xFFFF);
-    a0[5] = *(u32 *)&a1[2];
+    a0->code[0] = OT_TERMINATOR;
+    a0->code[1] = OT_TAG_BASE;
+    /* FAKE: SDK setlen view of the packet's tag word. */
+    /* SOTN: include/psxsdk/libgpu.h:87 @db41b28eee52969244a52cc269c8163d1ed8826a (PS1 use: src/main/psxsdk/libgpu/sys.c:287) */
+    ((OTag *)a0)->len = size;
+    /* FAKE: packed RECT word read follows matched Sony-library precedent. */
+    /* SOTN: src/main/psxsdk/libgpu/sys.c:275 @db41b28eee52969244a52cc269c8163d1ed8826a */
+    a0->code[2] = *(s32 *)&a1->x;
+    a0->code[3] = (a3 << 16) | (a2 & 0xFFFF);
+    /* FAKE: packed RECT word read follows matched Sony-library precedent. */
+    /* SOTN: src/main/psxsdk/libgpu/sys.c:277 @db41b28eee52969244a52cc269c8163d1ed8826a */
+    a0->code[4] = *(s32 *)&a1->w;
 }
+
 void SetDrawLoad(u32 *a0, s16 *a1) {
     u32 nwords;
     s32 size;

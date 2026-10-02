@@ -1,0 +1,20 @@
+index {'score': 67, 'target_insns': 133, 'build_insns': 145}
+packet {'score': 46, 'target_insns': 133, 'build_insns': 139}
+packet_inc {'score': 47, 'target_insns': 133, 'build_insns': 140}
+physical_end {'score': 67, 'target_insns': 133, 'build_insns': 143}
+bank_u8 {'score': 69, 'target_insns': 133, 'build_insns': 147}
+bank_inline {'score': 85, 'target_insns': 133, 'build_insns': 146}
+func_80048BA4 {'score': 0, 'target_insns': 237, 'build_insns': 237}
+func_80044504 {'score': 0, 'target_insns': 83, 'build_insns': 83}
+Traceback (most recent call last):
+  File "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/codex_cam/union_cursor.py", line 27, in <module>
+    p=wd/(stem+'.c');p.write_text(s,newline='\n');clean,_=inlineasm.strip_cheat_asm_file(s);p2=wd/(stem+'.build.c');p2.write_text(clean,newline='\n');ov=cheats.empty_overrides(str(wd/'cfg'));ov['src_override']=str(p2);o=str(wd/(stem+'.o'));pipeline.build_c_object(stem,o,cheat_overrides=ov)
+                                                                                                                                                                                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/engine/pipeline.py", line 107, in build_c_object
+    raise RuntimeError(f"C build failed for {stem}\nCMD: {cmd}\nSTDERR:\n{r.stderr}")
+RuntimeError: C build failed for text1a_pre
+CMD: mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Isrc -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C tmp/codex_cam/union_cursor/text1a_pre.build.c | tools/gcc-2.7.2/build/cc1 -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float | PROLOGUE_CONFIG=tmp/codex_cam/union_cursor/cfg/prologue_config.json DELAY_SLOT_RA_FUNCS=tmp/codex_cam/union_cursor/cfg/delay_slot_ra_funcs.txt FRAME_FIX_FUNCS=tmp/codex_cam/union_cursor/cfg/frame_fix_funcs.txt python3 tools/prologue_fix.py | python3 tools/maspsx/maspsx.py --expand-div --aspsx-version=2.34 --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --comm-syms=maspsx_comm_syms.txt --use-comm-section -G8 | python3 tools/multu_pad.py --funcs multu_pad_funcs.txt | mipsel-linux-gnu-as -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0 -o tmp/codex_cam/union_cursor/text1a_pre.o && mipsel-linux-gnu-objcopy --set-section-alignment .rodata=4 tmp/codex_cam/union_cursor/text1a_pre.o
+STDERR:
+tmp/codex_cam/union_cursor/text1a_pre.build.c: In function `gpu_AddDrawMove':
+tmp/codex_cam/union_cursor/text1a_pre.build.c:71: structure has no member named `addr'
+

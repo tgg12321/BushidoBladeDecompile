@@ -1,0 +1,1 @@
+{"func": "SetDrawMove", "addr": "8007ABB8", "verdict": "PASS", "body_hash": "4517caf05d9cee33", "body_kind": "c", "file": "gpu", "reviewer": "rev-gpu-iface-4", "scope": "cheat-cleanup", "date": "2026-10-02T04:53:36Z", "head": "1ec2f5088", "notes": "Shared GPU interface repair (DR_MOVE/OT pointer typing, Q89 prerequisite); fourth fresh layer-2 PASS after three FAILs fixed."}

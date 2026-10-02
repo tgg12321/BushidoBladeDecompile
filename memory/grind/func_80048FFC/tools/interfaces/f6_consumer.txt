@@ -1,0 +1,29 @@
+plain {'score': 3, 'target_insns': 133, 'build_insns': 133}
+split {'score': 3, 'target_insns': 133, 'build_insns': 133}
+direct {'score': 4, 'target_insns': 133, 'build_insns': 133}
+pair3 {'score': 3, 'target_insns': 133, 'build_insns': 133}
+pair4 {'score': 0, 'target_insns': 133, 'build_insns': 133}
+ZERO pair4
+pair5 {'score': 0, 'target_insns': 133, 'build_insns': 133}
+ZERO pair5
+pair6 {'score': 3, 'target_insns': 133, 'build_insns': 133}
+pair7 {'score': 0, 'target_insns': 133, 'build_insns': 133}
+ZERO pair7
+pair8 {'score': 0, 'target_insns': 133, 'build_insns': 133}
+ZERO pair8
+pair9 {'score': 3, 'target_insns': 133, 'build_insns': 133}
+pair10 {'score': 0, 'target_insns': 133, 'build_insns': 133}
+ZERO pair10
+pair11 {'score': 0, 'target_insns': 133, 'build_insns': 133}
+ZERO pair11
+pair12 {'score': 3, 'target_insns': 133, 'build_insns': 133}
+pair13 {'score': 0, 'target_insns': 133, 'build_insns': 133}
+ZERO pair13
+pair14 {'score': 0, 'target_insns': 133, 'build_insns': 133}
+ZERO pair14
+pair15 {'score': 3, 'target_insns': 133, 'build_insns': 133}
+pair16 {'score': 0, 'target_insns': 133, 'build_insns': 133}
+ZERO pair16
+pair17 {'score': 0, 'target_insns': 133, 'build_insns': 133}
+ZERO pair17
+unconddead {'score': 3, 'target_insns': 133, 'build_insns': 133}

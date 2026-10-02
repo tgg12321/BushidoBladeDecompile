@@ -1,4 +1,5 @@
 #include "common.h"
+#include "gpu.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include "sound.h"
@@ -1277,7 +1278,6 @@ void func_80044498(void) {
         *p-- = 0;
     }
 }
-extern s32 D_800A378C;
 void func_800444BC(void) {
     func_80044504(D_800A378C);
 }
@@ -1300,7 +1300,7 @@ extern s32 func_8003F268(void);
 extern s32 func_80046E7C(void);
 extern void func_8004A4E0(void);
 extern void func_80046E54(s32);
-void func_80044504(s32 a0) {
+void func_80044504(u32 *a0) {
     s32 *s0 = &D_80101BD0;
     math_RotMatrixZXY(&D_800A3678, s0);
     MulMatrix(s0, (s32 *)(D_800A3708 + 0x18));
@@ -1313,7 +1313,7 @@ void func_80044504(s32 a0) {
     }
     func_80046F24();
     *(s32 *)0x1F80001C = (s32)&D_80095328;
-    *(s32 *)0x1F80000C = a0;
+    *(s32 *)0x1F80000C = (s32)a0;
     {
         s32 v1;
         if (D_800A3790 & 8) {
@@ -1436,7 +1436,7 @@ extern void func_800417D0(s32 *);
 
 /* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
 s32 D_800A3708;
-s32 D_800A378C;
+u32 *D_800A378C;
 s32 D_800A3790;
 s32 D_800A3820;
 s32 D_800A3828;

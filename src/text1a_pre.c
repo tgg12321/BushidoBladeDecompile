@@ -32,48 +32,49 @@ extern void func_80044010(s32 *, s16);
 
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
-extern s32 D_800A378C;
 extern s32 D_800A3234;
-extern u8 D_800A9830;
-extern u8 D_800A9920;
-extern u16 D_80094AF4;
+extern u16 D_80094AF4[];
 extern u8 D_80094B48[];
 
-extern void SetDrawMove(s32, s16 *, s32, s32);
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
-static s32 D_800A3378;
+/* Cursor in the 10-packet bank selected by frame parity. */
+static DR_MOVE *D_800A3378;
 
-void gpu_AddDrawMove(s32 a0, s32 a1, s32 a2) {
-    s16 buf[4];
+void gpu_AddDrawMove(s32 a0, s32 a1) {
+    s32 parity;
+    RECT buf;
     u16 *tbl;
     s16 u, v;
     OTag *pkt;
     OTag *ot;
 
-    a2 = D_800A36AC & 1;
-    if (a2 != D_800A3234) {
-        D_800A3378 = (s32)(&D_800A9830 + a2 * 240);
-        D_800A3234 = a2;
+    parity = D_800A36AC & 1;
+    if (parity != D_800A3234) {
+        D_800A3378 = D_800A9830[parity];
+        D_800A3234 = parity;
     }
-    if ((s32 *)D_800A3378 != (s32 *)(&D_800A9920 + D_800A3234 * 240)) {
-        tbl = &D_80094AF4 + a1 * 6;
-        buf[0] = *tbl++;
-        buf[1] = *tbl++;
-        buf[2] = *tbl++;
-        buf[3] = *tbl++;
+    if (D_800A3378 != D_800A9830[D_800A3234] + 10) {
+        tbl = D_80094AF4 + a1 * 6;
+        buf.x = *tbl++;
+        buf.y = *tbl++;
+        buf.w = *tbl++;
+        buf.h = *tbl++;
         u = *tbl++;
         v = *tbl;
         if (a0 != 0) {
-            buf[0] = buf[0] + 0x80;
+            buf.x = buf.x + 0x80;
             u = u + 0x80;
         }
-        SetDrawMove((s32)(s32 *)D_800A3378, buf, (s16)u, (s16)v);
+        SetDrawMove(D_800A3378, &buf, u, v);
         pkt = (OTag *)D_800A3378;
+        /* FAKE: SDK bitfield view of an OT word retains tag length;
+         * PS1 use: src/main/psxsdk/libgpu/sys.c:288; see interface ledger. */
+        /* SOTN: include/psxsdk/libgpu.h:88 @db41b28eee52969244a52cc269c8163d1ed8826a */
         ot = (OTag *)D_800A378C;
         pkt->addr = ot[0x3FFC / 4].addr;
         ot[0x3FFC / 4].addr = (u32)pkt;
-        D_800A3378 = (s32)(pkt + 6);
+        D_800A3378++;
     }
 }
 void func_80040304(s32 a0, s32 a1) {
@@ -103,8 +104,8 @@ void func_80040304(s32 a0, s32 a1) {
             mask = 0x12;
             break;
         case 6:
-            ((void (*)())gpu_AddDrawMove)(a0, 5);
-            ((void (*)())gpu_AddDrawMove)(a0, 6);
+            gpu_AddDrawMove(a0, 5);
+            gpu_AddDrawMove(a0, 6);
             mask = 0;
             break;
         }
@@ -112,7 +113,7 @@ void func_80040304(s32 a0, s32 a1) {
         i = 0;
         do {
             if (mask & 1) {
-                ((void (*)())gpu_AddDrawMove)(a0, 4 - i);
+                gpu_AddDrawMove(a0, 4 - i);
             }
             i++;
             mask >>= 1;

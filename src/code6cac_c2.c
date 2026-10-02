@@ -15,7 +15,6 @@
 
 /* Extern data declarations */
 
-extern u32 D_800A378C;
 
 /* Extern function declarations */
 
@@ -91,7 +90,6 @@ extern void func_800174F4(void);
 
 
 
-extern void SetDrawMove(u32 *, s16 *, s32, s32);
 extern s32 func_8003F268(void);
 extern s32 func_80052C28(s32, s32);
 extern s32 func_800788B0(void);
@@ -1210,50 +1208,45 @@ s32 bitstream_ReadBits(u32 *s, s32 n)
     }
     return r;
 }
-extern s32 light_effect_col;
-extern s32 D_800A4340;
+void gpu_SetDrawMoveArray(RECT *, s32, DR_MOVE (*)[2]);
 void func_8003D91C(void) {
-    s16 buf[4];
-    s16 s1 = 0x1E0;
-    s16 s0 = 0x140;
-    buf[0] = 0;
-    buf[1] = s1;
-    buf[2] = s0;
-    buf[3] = 1;
-    gpu_SetDrawMoveArray(buf, 0x1F, &light_effect_col);
-    buf[2] = 0x40;
-    buf[0] = s0;
-    buf[1] = s1;
-    buf[3] = 8;
-    gpu_SetDrawMoveArray(buf, 0x13, &D_800A4340);
+    RECT buf;
+    buf.x = 0;
+    buf.y = 0x1E0;
+    buf.w = 0x140;
+    buf.h = 1;
+    gpu_SetDrawMoveArray(&buf, 0x1F, light_effect_col);
+    buf.w = 0x40;
+    buf.x = 0x140;
+    buf.y = 0x1E0;
+    buf.h = 8;
+    gpu_SetDrawMoveArray(&buf, 0x13, D_800A4340);
 }
-typedef struct { s32 w[6]; } Copy24;
-void gpu_SetDrawMoveArray(s16 *a0, s32 a1, u32 *a2) {
-    u32 *s1 = a2;
+void gpu_SetDrawMoveArray(RECT *a0, s32 a1, DR_MOVE (*a2)[2]) {
     s32 s4, s3;
     s32 s2;
 
-    s4 = a0[0];
-    s3 = a0[1];
+    s4 = a0->x;
+    s3 = a0->y;
 
     s2 = a1 - 1;
     if (s2 != -1) {
         do {
             s16 v0;
-            v0 = (u16)a0[1] + (u16)a0[3];
-            a0[1] = v0;
+            v0 = a0->y + a0->h;
+            a0->y = v0;
             if (v0 >= 0x200) {
-                a0[1] = s3;
-                a0[0] = (u16)a0[0] + (u16)a0[2];
+                a0->y = s3;
+                a0->x = a0->x + a0->w;
             }
-            SetDrawMove(s1, a0, s4, s3);
-            *(Copy24 *)((u8 *)s1 + 0x18) = *(Copy24 *)s1;
-            s1 = (u32 *)((u8 *)s1 + 0x30);
+            SetDrawMove(&(*a2)[0], a0, s4, s3);
+            (*a2)[1] = (*a2)[0];
+            a2++;
         } while (--s2 != -1);
     }
 }
 extern s16 D_800F6656;
-extern void func_8003DBE4(s32, s32, s32 *, s32, s32);
+extern void func_8003DBE4(s32, s32, DR_MOVE (*)[2], s32, s32);
 void func_8003DA8C(s32 arg0, s32 arg1) {
     s32 dist;
     s16 *new_var2;
@@ -1297,18 +1290,18 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
             s32 idx = arg0 * 4;
             D_80090608 = (u16)D_800F6656;
             ptr = (s32 *)((u8 *)&D_8009060C + idx);
-            func_8003DBE4(arg1, 0x1F, &light_effect_col, *ptr, *(s16 *)((u8 *)&StatusUpBuf + idx));
-            func_8003DBE4(arg1, 0x13, &D_800A4340, *ptr, *(s16 *)((u8 *)&StatusUpBuf + idx));
+            func_8003DBE4(arg1, 0x1F, light_effect_col, *ptr, *(s16 *)((u8 *)&StatusUpBuf + idx));
+            func_8003DBE4(arg1, 0x13, D_800A4340, *ptr, *(s16 *)((u8 *)&StatusUpBuf + idx));
         }
     }
 }
-void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
+void func_8003DBE4(s32 arg0, s32 arg1, DR_MOVE (*arg2)[2], s32 arg3, s32 arg4) {
     s32 limit;
     s32 step;
-    s32 *colors;
+    DR_MOVE *pkt;
     s32 i;
 
-    colors = arg2;
+    pkt = *arg2;
 
     if (arg4 != 0) {
         limit = arg1;
@@ -1319,14 +1312,11 @@ void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
     if (D_800F6656 & 1) {
         step = D_80090600;
     } else {
-        s32 base_val;
         if (func_8003F268() == 0) {
-            base_val = 0x6590;
+            step = 0x6590 - arg0;
         } else {
-            base_val = 0x55F0;
-            step = base_val - arg0; /* FAKE: steers base_val into v0 to match target reg-alloc */
+            step = 0x55F0 - arg0;
         }
-        step = base_val - arg0;
     }
 
     if (step < 0) {
@@ -1340,22 +1330,18 @@ void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
     }
 
     i = 0;
-    colors = (s32 *)((u8 *)colors + (D_800A36AC & 1) * 24);
+    pkt += D_800A36AC & 1;
 
     if (i < limit) {
-        u32 rgb_mask = 0xFFFFFF;
-
         do {
             s32 idx = func_80052C28((u32)arg0 >> 2, 2);
             if (idx < 0x1000) {
-                s32 *pal = (s32 *)((u32)idx * 4 + D_800A378C);
-                s32 tmp;
-                *colors = (*colors & 0xFF000000) | (*pal & rgb_mask);
-                tmp = (*pal & 0xFF000000) | ((u32)colors & rgb_mask);
-                *pal = tmp;
-                colors = (s32 *)((u8 *)colors + 0x30);
-                tmp = limit - 1; /* reuse tmp (multi-set) so limit-1 isn't a loop.c movable -> recomputed inline, not hoisted (see rule defeat-licm-hoist-var-reuse) */
-                if (i == tmp) {
+                /* FAKE: SDK addPrim (setaddr/getaddr P_TAG views) on OT entry idx. */
+                /* SOTN: include/psxsdk/libgpu.h:88 @db41b28eee52969244a52cc269c8163d1ed8826a (PS1 use: src/main/psxsdk/libgpu/sys.c:288) */
+                ((OTag *)pkt)->addr = ((OTag *)&D_800A378C[idx])->addr;
+                ((OTag *)&D_800A378C[idx])->addr = (u32)pkt;
+                pkt += 2;
+                if (i == limit - 1) {
                     D_800905F8 = idx;
                 }
             }
@@ -1365,15 +1351,14 @@ void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
     }
 
     if (arg4 != 0) {
-        func_8003DDF8((u32)colors);
+        func_8003DDF8((u32)pkt);
     } else {
-        s32 *pal = (s32 *)D_800A378C;
-        *colors = (*colors & (s32)0xFF000000) | (*(s32 *)((u8 *)pal + 0x3FEC) & 0xFFFFFF);
-        *(s32 *)((u8 *)pal + 0x3FEC) = (*(s32 *)((u8 *)pal + 0x3FEC) & (s32)0xFF000000) | ((u32)colors & 0xFFFFFF);
+        ((OTag *)pkt)->addr = ((OTag *)&D_800A378C[0xFFB])->addr;
+        ((OTag *)&D_800A378C[0xFFB])->addr = (u32)pkt;
     }
 }
 void func_8003DDF8(u32 arg0) {
-    u32 *ptr = (u32 *)D_800A378C;
+    u32 *ptr = D_800A378C;
     arg0 &= 0xFFFFFF;
     ptr[0x3FFC / 4] = arg0;
 }

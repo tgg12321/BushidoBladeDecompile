@@ -1,0 +1,22 @@
+{
+  "final": {
+    "score": 0,
+    "target_insns": 133,
+    "build_insns": 133
+  },
+  "without_pair": {
+    "score": 3,
+    "target_insns": 133,
+    "build_insns": 133
+  },
+  "without_reuse": {
+    "score": 0,
+    "target_insns": 133,
+    "build_insns": 133
+  },
+  "plain_control": {
+    "score": 3,
+    "target_insns": 133,
+    "build_insns": 133
+  }
+}
