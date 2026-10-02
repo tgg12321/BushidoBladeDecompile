@@ -95,3 +95,13 @@ membership change was attempted. Both items remain INCLUDE_ASM and active; no ro
 
 Standing checks ran under WSL: check_completion_integrity.py passed all category invariants;
 audit_asm_cheats.py --check-new was silent with exit 0. Grinder remains stopped.
+
+## 2026-10-02 — manual session (Claude), Q89 prerequisite progress
+
+Codex's staged interface repair was finished and landed as e558afab7. It needed four layer-2 rounds, and
+all objections were fixed. D_800A378C is now the u32 * OT pointer, DR_MOVE / MoveChannel / RECT are
+typed, and SetDrawMove's prototype agrees everywhere. That clears the checkpoint review's two type
+debts for func_80048FFC. That function is still at 4/232 (see its evidence.md for the sched1 LUID
+mechanism and what was killed). Q89 order still owed: func_80048FFC in C; real types for
+g_cam_bone_data2 and D_800EF070's record; the split tests; the -G8 head-part TU.
+camera_CalcAngles stays INCLUDE_ASM and active, not rotated.
