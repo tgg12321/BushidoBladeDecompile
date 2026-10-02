@@ -1997,9 +1997,6 @@ extern s32 column;
 
 
     extern s32 rand(void);
-    extern u8 D_8009B2E0;
-    extern s32 D_8009B388;
-    extern s32 D_8009B390;
     extern s32 D_800A326C;
 
 

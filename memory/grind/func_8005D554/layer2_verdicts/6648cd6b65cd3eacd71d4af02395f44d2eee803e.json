@@ -1,0 +1,29 @@
+{
+  "verdict": "PASS",
+  "decision": "PASS",
+  "function": "func_8005D554",
+  "body_hash": "f707f183e6c8477f",
+  "reviewer": "rv2-5D554-2",
+  "scope": "match",
+  "summary": "Byte-exact, no wall constructs, every codegen-only construct FAKE-labelled with a reproduced measurement, D_8009B388[2] merge declared in include/game.h with a truthful object model; no simpler byte-exact form found.",
+  "findings": [
+    {"construct": "item 1", "test_failed": "none (PASS)", "explanation": "layer2 hash f707f183e6c8477f (worktree == index for all three staged files); sandbox --disable all 0, 176/176; build/bb2.exe (03:12:42) newer than staged src/text1b.c and include/game.h (03:12:13) and src/text1b_b.c (03:03:16), SHA1 62EFAB4F73F992798C43E8C730AA43BAA10BB4FA == oracle. No rebuild (lock held by oct2-b5)."},
+    {"construct": "item 2", "test_failed": "none (PASS)", "explanation": "Staged diff is only src/text1b.c, src/text1b_b.c, include/game.h; no __asm__, pins, barriers, volatile, build/Makefile/linker/config edits (precheck clean, confirmed by reading the diff)."},
+    {"construct": "D_8009B388[2] merge (items 3/4)", "test_failed": "none (PASS)", "explanation": "asm/data/7D920.data.s:22368-22378: 0x8009B388..0x8009B397 = two 8-byte cells of the existing Unk8009B400Record shape; only func_8005D554 (asm/funcs + asm/text1b.s) references either label; declared once in include/game.h:313 next to the sibling merges; no C declaration of D_8009B390 remains (text1b_b.c stray externs removed, unused there). One declared object indexed [0]/[1], not one symbol reached through another's address. The original's fresh lui/addiu for 0x8009B390 is exactly what &D_8009B388[1] emits; separate symbols reproduce at 40/174 (re-measured). game.h comment checked: under the 5-record row model starting at D_8009B2C8 (row 0x3C, shared with func_8005D46C) the row's records 2/3/4 are 0x2E0/0x2EC/0x2F8 and 0x31C/0x328/0x334, all count 1 - true."},
+    {"construct": "tmp1/tmp2 double writes, scale/ot holders, split x init, hdr0/hdr1/hdr1_row, integer sum (item 3)", "test_failed": "none (PASS)", "explanation": "Each carries /* FAKE: */ at the site with a measured reason; names generic or truthful (scale -> scale_x/y, ot -> ot_idx). Field offsets of Env5E54C checked against every sw/sb at sp+0x10..0x38 in the target. No fabricated calls, no out-of-catalog volatile, no cross-symbol derivation. D_800A326C %= 4 and the rotated if/do-while are ordinary C."},
+    {"construct": "D_8009B2E0 as u8[] (item 4)", "test_failed": "none (PASS)", "explanation": "No header or other TU declares D_8009B2E0 typed (text1b_b.c's unused scalar u8 extern removed); accesses stay within the label for non-negative rows. Byte view plus cast is truthful; typed model is hygiene. extern s32 D_800A326C matches its same-TU definition text1b.c:9220."},
+    {"construct": "item 5 (reviewer re-measured via sandbox --candidate, tmp/func_8005D554/rv2/)", "test_failed": "none (PASS)", "explanation": "base 0/176; two symbols 40/174; ot literal 2/176; no second write 54/178; pointer sum 1/176; new spellings `row_off + hdr0` (pointer arithmetic, no int cast) 1/176 and `&hdr0[row_off]` 1/176, so the integer-sum FAKE is load-bearing; every FAKE removed together 63/177. Matches evidence.md s24."},
+    {"construct": "commit message cites", "test_failed": "none (PASS)", "explanation": "093ae1db8 exists (Q91 rules commit); undefined_syms_auto.txt:1140 and named_syms.txt:2439 hold the cited D_8009B390 rows; src/ings.c:95 holds the cited prototype; evidence.md s24 exists with the quoted table."}
+  ],
+  "evidence": [],
+  "required_fixes": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "undefined_syms_auto.txt:1140 D_8009B390 / named_syms.txt:2439 g_text1b_draw_p1_b390 not retired or suffixed as alias of D_8009B388+8.",
+    "D_8009B2E0 remains a u8[] byte view with 0x3C/0xC magic strides; the [2][5] Unk8009B398Record model of 0x8009B2C8..0x8009B33F (shared with func_8005D46C) is deferred. The game.h 'record 2 / 3/4' wording only reads true under that unstated row model.",
+    "src/ings.c:95 prototype `u8 *func_8005D554(u8 *, u8)` disagrees with the definition `s32 func_8005D554(s32, s32)` (pre-existing, outside this landing).",
+    "0x2C draw descriptor declared per-TU under five names (EnvA, EnvF, S_6A880, S46C, Env5E54C).",
+    "The sched1 mechanism claim in the tmp1 FAKE comment has no pass-level dump write-up (measured scores only).",
+    "Commit message line 6 'D_8009B2E0 + arg1 * 0x3C' omits the arg1>0 decrement."
+  ]
+}

@@ -301,6 +301,17 @@ typedef struct {
 
 extern Unk8009B450Record D_8009B450[2];
 
+/* 0x8009B388: two adjacent 8-byte sprite cells (Unk8009B400Record),
+ * 0x8009B388..0x8009B397, the cell table func_8005D554 hands func_80073728 for
+ * the row's header record 2 (cell 0) and records 3/4 (cell 1); each of those
+ * D_8009B2E0 header records has cell count 1. No other function or asm file
+ * references either label. One object: spelled &D_8009B388[0] / [1]
+ * func_8005D554 matches, with the base kept in $s7 as the original does
+ * (asm/funcs/func_8005D554.s); spelled as two separate symbols the same body
+ * measures 40 at 174 insns (memory/grind/func_8005D554/evidence.md, s24).
+ * Replaces the splat per-cell scalars D_8009B388 / D_8009B390 in C. */
+extern Unk8009B400Record D_8009B388[2];
+
 /* 0x8009B5F0: 2 x 2 table of 8-byte sprite records (Unk8009B400Record),
  * 0x8009B5F0..0x8009B60F. Object model evidence from the original binary,
  * independent of the byte-chasing session: asm/funcs/func_8005F1C8.s forms ONE
