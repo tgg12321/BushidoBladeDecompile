@@ -1,0 +1,9 @@
+func_80021280 sandbox --disable all (2026-10-02, oct2-a6, data model of the D_800A38C4[2] cleanup)
+round-2 body (base.c = reviewer r280_typed.c, a1/a3 reused): 0
+  mode_local.c (separate `mode` local, no a3 reuse): 0     no_mode.c: 20
+  sep_k.c (mode_local + separate loop-2 counter k, no a1 reuse): 0
+in the sep_k form (s3/, s4/):
+  lit_t4 16, lit_t3 20, lit_t2 20, lit_t4_t3 21, lit_t4_t2 21, lit_t3_t2 23, lit_t4_t3_t2 24
+  no_t1 7, no_t0 24, s4/no_mode 20, s4/no_dup (`if (a0 == 0) goto next_21280;`) 19
+final.c (= sep_k + FAKE labels; landed): 0
+s5/ (round 3 scan): r280_val_a3 (val = a3 instead of re-reading unk_48) 3; func_800224E0 e0_ptrcmp (p < end) 1 -> FAKE label; func_8001DB9C db9c_nocast 0 -> cast dropped

@@ -87,3 +87,7 @@
   re-landed func_80021280 read PracticeMenuRec (incl. the newly typed unk_48) via u8* offsets. Fix: the
   reviewer's typed spelling `ptr/r280_typed.c` (PracticeMenuRec *a2), sandbox 0; A alone and A+B rebuild
   == oracle; func_80021280 hash e2a47bdeb8d93ed4; other eight A hashes and B's unchanged.
+- Layer-2 round 2: A FAIL rv2-20E74-A2, item 3: func_80021280's t4/t3/t2/t1 unlabelled. Round 3: body
+  `ptr/r280/final.c` (separate `mode` and `k`, no reused locals; every codegen-only local FAKE-labelled with
+  the scores in `ptr/r280/SCORES.txt`), hash 831cede43c9eb64e; func_800224E0 `(s32)p < (s32)end` labelled
+  (score 1); func_8001DB9C `(u16)` cast dropped (hash 4939420842307ef4). A alone / A+B rebuild == oracle.
