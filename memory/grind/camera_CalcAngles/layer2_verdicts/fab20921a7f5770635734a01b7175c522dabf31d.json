@@ -1,0 +1,25 @@
+{
+  "decision": "PASS",
+  "function": "camera_CalcAngles",
+  "body_hash": "8ee530d8e1abdeb5",
+  "summary": "Staged camera_CalcAngles C body plus text1b head joining GP_FILES is exactly the Q89/Q94 grant; byte-exact (sandbox 0, oracle SHA1), no FAKEs needed, nothing false, existing declarations used.",
+  "evidence": [
+    {"construct": "Makefile GP_FILES += text1b; engine/buildconfig.py mirror", "test_failed": "none (item 2 checked)", "explanation": "Q89 (133afdab8) and Q94 (9d67f1aa7) are landed rules: commits that change compiler-flags-canonical.md. The staged diff touches only Makefile GP_FILES, its buildconfig mirror, and src/text1b.c. bb2.ld is unchanged, there is no LINKED_ASM_FUNCS entry, and all files are LF. MASPSX_FLAGS_GP == MASPSX_FLAGS, so membership changes only cc1 -G0 -> -G8. text1b is in no NO_SR/EXPAND_LB/EXPAND_LH/PSYQ list. Prerequisites landed first: func_80048FFC in C (e43b1f03b), real node types (3ddc8c295), split + Q94 rodata file (2f836d919)."},
+    {"construct": "Q89 (iii) both-ways build", "test_failed": "none (item 2 checked)", "explanation": "I re-ran bothways.sh: 103 functions in the same order, only camera_CalcAngles differs, data sections and data relocations identical. The worker's cmp.py drops intra-function branch offsets, so I also compared with my own stricter script (tmp/cam/rv/strict.py, keeps func+offset targets). It also finds only camera_CalcAngles differing. The head has no INCLUDE_ASM, INCLUDE_RODATA or other file-scope __asm__ beyond include_asm.h's .include macro.inc directive, which every other GP_FILES member carries."},
+    {"construct": "Q89 (i)/(ii)", "test_failed": "none", "explanation": "I re-ran psxtu.sh. cc1psx -G0 emits la/subu/move/sh 0($2), which is +1 instruction. cc1psx -G8 emits subu/la/sh D_800A33C8/sh D_800A33C8+2, which matches asm/funcs/camera_CalcAngles.s. D_800A33C8/CA have no reference outside this function (grep of asm/funcs and src). The evidence.md g0proof section records the -G0 floor (59/58) and the cse/memory_address mechanism."},
+    {"construct": "item 1", "test_failed": "none", "explanation": "sandbox --disable all = 0 (58/58, 0 cheat-asm stripped). verify-oracle --rebuild --allow-dirty: build_matches true, SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa. engine test: 1102 passed, 0 failed, 1 skipped (dirty-tree departures clone)."},
+    {"construct": "body: dir.vz = (cos(yaw)*vz + sin(yaw)*vx) >> 12; pitch = -ratan2(dir.vy, dir.vz)", "test_failed": "none (item 3 checked)", "explanation": "This is the z component of dir rotated by -yaw about y, so the field write is a truthful reading and not a disguised scratch reuse. Target bytes hold the matching sw $a1,0x20($sp). The return type s16 * matches the target (v0 = &D_800A33C8) and the caller's extern in code6cac_c2.c:1794. yaw = ratan2(x,z) is the horizontal heading and [0] the negated pitch, so the names are accurate."},
+    {"construct": "extern void math_RotMatrixYXZ(Unk80101DF0Rot *, MATRIX *)", "test_failed": "none (items 3/4 checked)", "explanation": "No header declares it, so a file-local prototype is existing practice and not a second declaration of a header object. It replaces, rather than adds to, the file's old (s32 *, s32 *) extern and has one user. The definition (text1a_c.c:338) reads a0[0..2] as three angles and writes s16 matrix elements through a1 (a1[5] = -sinA). Unk80101DF0Rot (vx,vy,vz,pad) and MATRIX describe those arguments truthfully."},
+    {"construct": "(s32)Judge[...] casts", "test_failed": "none", "explanation": "Byte-neutral: removing them still scores 0 (tmp/cam/rv/nocast.c). They are not codegen-shaping and not FAKEs, and they claim nothing false. The landed sibling at text1b.c:851 uses the same spelling. Item 5's byte-neutral-FAKE clause does not apply."},
+    {"construct": "Judge / D_800A33C8 / D_800A3708 access", "test_failed": "none (item 4 checked)", "explanation": "The code goes through existing declarations: the file-scope Q65 A8 static s16 D_800A33C8[2] (text1b.c:42), extern Judge, and the typed Unk80101DF0Record *D_800A3708. It adds no alias, no raw-offset cast and no block-scope aggregate."}
+  ],
+  "next_action": "",
+  "hygiene_debt": [
+    "src/text1b.c:328 `extern s16 Judge[];` duplicates include/code6cac.h:32 `extern s16 Judge[0x1000];` (pre-existing and compatible; drop the file-local extern).",
+    "math_RotMatrixYXZ prototypes disagree across files: definition (u16 *, s16 *) in text1a_c.c:338, (Unk80101DF0Rot *, s32 *) in code6cac_c2.c:1795, (Unk80101DF0Rot *, MATRIX *) here. Put one shared prototype in a header.",
+    "named_syms.txt:1513 comment calls D_800A33CA the 'vertical angle', but camera_CalcAngles stores the horizontal heading (yaw) there and the pitch in D_800A33C8.",
+    "Makefile:77 comment ('text1a is the project's sole -G8 file') is stale.",
+    "Local `rot` holds the unit forward vector fed to ApplyMatrix, not a rotation; `fwd` would be clearer (same naming already in the sibling at text1b.c:847).",
+    "q89split/cmp.py strips intra-function branch offsets; a stricter compare (tmp/cam/rv/strict.py) agrees, but the banked script should keep func+offset targets."
+  ]
+}

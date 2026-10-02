@@ -1,18 +1,17 @@
 s16 *camera_CalcAngles(void) {
     SVECTOR rot;
-    VECTOR sp18;
-    MATRIX pos;
-    s16 s0;
+    VECTOR dir;
+    MATRIX mtx;
+    s16 yaw;
 
-    math_RotMatrixYXZ((s32 *)&D_800A3708->xf.rot, (s32 *)&pos);
+    math_RotMatrixYXZ(&D_800A3708->xf.rot, &mtx);
     rot.vx = 0;
     rot.vy = 0;
     rot.vz = 0x1000;
-    ApplyMatrix(&pos, &rot, &sp18);
-    s0 = ratan2(sp18.vx, sp18.vz);
-    sp18.vz = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18.vz
-              + (s32)Judge[s0 & 0xFFF] * sp18.vx) >> 12;
-    D_800A33C8[0] = -ratan2(sp18.vy, sp18.vz);
-    D_800A33C8[1] = s0;
+    ApplyMatrix(&mtx, &rot, &dir);
+    yaw = ratan2(dir.vx, dir.vz);
+    dir.vz = ((s32)Judge[(yaw + 0x400) & 0xFFF] * dir.vz + (s32)Judge[yaw & 0xFFF] * dir.vx) >> 12;
+    D_800A33C8[0] = -ratan2(dir.vy, dir.vz);
+    D_800A33C8[1] = yaw;
     return D_800A33C8;
 }

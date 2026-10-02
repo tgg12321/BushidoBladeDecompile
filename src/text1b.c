@@ -322,7 +322,7 @@ extern void func_8004668C(void);
 extern void func_80046020(void);
 extern void func_80049E1C(void);
 
-extern void math_RotMatrixYXZ(s32 *, s32 *);
+extern void math_RotMatrixYXZ(Unk80101DF0Rot *, MATRIX *);
 extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
 extern s32 ratan2(s32, s32);
 extern s16 Judge[];
@@ -773,7 +773,23 @@ void camera_InitRotation(Unk80101DF0Record *node) {
     node->xf.mat = node->work;
 }
 
-INCLUDE_ASM("asm/funcs", camera_CalcAngles);
+s16 *camera_CalcAngles(void) {
+    SVECTOR rot;
+    VECTOR dir;
+    MATRIX mtx;
+    s16 yaw;
+
+    math_RotMatrixYXZ(&D_800A3708->xf.rot, &mtx);
+    rot.vx = 0;
+    rot.vy = 0;
+    rot.vz = 0x1000;
+    ApplyMatrix(&mtx, &rot, &dir);
+    yaw = ratan2(dir.vx, dir.vz);
+    dir.vz = ((s32)Judge[(yaw + 0x400) & 0xFFF] * dir.vz + (s32)Judge[yaw & 0xFFF] * dir.vx) >> 12;
+    D_800A33C8[0] = -ratan2(dir.vy, dir.vz);
+    D_800A33C8[1] = yaw;
+    return D_800A33C8;
+}
 
 void game_EffInit(void) {
     func_8004473C();

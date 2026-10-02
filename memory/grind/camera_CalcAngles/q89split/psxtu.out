@@ -1,0 +1,133 @@
+=== cc1psx -G0: camera_CalcAngles
+camera_CalcAngles:
+	lw	$4,D_800A3708
+	subu	$sp,$sp,88
+	sw	$16,80($sp)
+	addu	$16,$sp,40
+	move	$5,$16
+	sw	$31,84($sp)
+	.set	noreorder
+	.set	nomacro
+	jal	math_RotMatrixYXZ
+	addu	$4,$4,16
+	.set	macro
+	.set	reorder
+
+	move	$4,$16
+	addu	$5,$sp,16
+	li	$2,0x00001000		# 4096
+	addu	$6,$sp,24
+	sh	$0,16($sp)
+	sh	$0,18($sp)
+	.set	noreorder
+	.set	nomacro
+	jal	ApplyMatrix
+	sh	$2,20($sp)
+	.set	macro
+	.set	reorder
+
+	lw	$4,24($sp)
+	lw	$5,32($sp)
+	jal	ratan2
+	move	$16,$2
+	sll	$2,$16,16
+	sra	$2,$2,16
+	addu	$2,$2,1024
+	andi	$2,$2,0x0fff
+	sll	$2,$2,1
+	lh	$3,Judge($2)
+	lw	$2,32($sp)
+	mult	$3,$2
+	andi	$2,$16,0x0fff
+	sll	$2,$2,1
+	lh	$3,Judge($2)
+	lw	$2,24($sp)
+	mflo	$5
+	mult	$3,$2
+	lw	$4,28($sp)
+	mflo	$3
+	addu	$5,$5,$3
+	sra	$5,$5,12
+	.set	noreorder
+	.set	nomacro
+	jal	ratan2
+	sw	$5,32($sp)
+	.set	macro
+	.set	reorder
+
+	la	$3,D_800A33C8
+	subu	$4,$0,$2
+	move	$2,$3
+	sh	$4,0($2)
+	sh	$16,D_800A33C8+2
+	lw	$31,84($sp)
+	lw	$16,80($sp)
+	addu	$sp,$sp,88
+	j	$31
+	.end	camera_CalcAngles
+=== cc1psx -G8: camera_CalcAngles
+camera_CalcAngles:
+	lw	$4,D_800A3708
+	subu	$sp,$sp,88
+	sw	$16,80($sp)
+	addu	$16,$sp,40
+	move	$5,$16
+	sw	$31,84($sp)
+	.set	noreorder
+	.set	nomacro
+	jal	math_RotMatrixYXZ
+	addu	$4,$4,16
+	.set	macro
+	.set	reorder
+
+	move	$4,$16
+	addu	$5,$sp,16
+	li	$2,0x00001000		# 4096
+	addu	$6,$sp,24
+	sh	$0,16($sp)
+	sh	$0,18($sp)
+	.set	noreorder
+	.set	nomacro
+	jal	ApplyMatrix
+	sh	$2,20($sp)
+	.set	macro
+	.set	reorder
+
+	lw	$4,24($sp)
+	lw	$5,32($sp)
+	jal	ratan2
+	move	$16,$2
+	sll	$2,$16,16
+	sra	$2,$2,16
+	addu	$2,$2,1024
+	andi	$2,$2,0x0fff
+	sll	$2,$2,1
+	lh	$3,Judge($2)
+	lw	$2,32($sp)
+	mult	$3,$2
+	andi	$2,$16,0x0fff
+	sll	$2,$2,1
+	lh	$3,Judge($2)
+	lw	$2,24($sp)
+	mflo	$5
+	mult	$3,$2
+	lw	$4,28($sp)
+	mflo	$3
+	addu	$5,$5,$3
+	sra	$5,$5,12
+	.set	noreorder
+	.set	nomacro
+	jal	ratan2
+	sw	$5,32($sp)
+	.set	macro
+	.set	reorder
+
+	subu	$3,$0,$2
+	la	$2,D_800A33C8
+	sh	$3,D_800A33C8
+	sh	$16,D_800A33C8+2
+	lw	$31,84($sp)
+	lw	$16,80($sp)
+	addu	$sp,$sp,88
+	j	$31
+	.end	camera_CalcAngles

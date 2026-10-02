@@ -186,3 +186,16 @@ bld.sh builds a private full link (tree untouched); `cam.c` is the body.
 - Owner policy-question: docs/grind/borderline.md 2026-10-02 camera_CalcAngles entry.
 - Floor is unchanged: -G0 body 59/58 (score 6); exact at -G8 once the block is its own object.
 - camera_CalcAngles stays INCLUDE_ASM and active.
+
+## 2026-10-02 — owner ruling Q94 (S1 granted); landing proofs
+
+Owner granted S1 (Q94, batch 44). Re-measured on main at f280ded41 before asking: S1 (c_own) at head -G8 +
+camera C == oracle; tail-top and -G0 head both mismatch. Landing files regenerated from current src/text1b.c
+with mksplit.py --cluster own (identical to s_own), the rodata file's header rewritten by mkro.py (comments only).
+- Stage A (split, all -G0, camera INCLUDE_ASM): private full link == oracle.
+- Stage B (head in GP_FILES, camera = cam.c, typed math_RotMatrixYXZ extern): private full link == oracle.
+- Q89 both-ways (bothways.sh -> bothways.out): head at cc1 -G0 vs -G8, 103 functions, same order, only
+  camera_CalcAngles differs; data sections and data relocations identical.
+- Q89 (ii) on the real TU (psxtu.sh -> psxtu.out, cc1psx calibration only): -G0 emits `la/subu/move/sh 0($2)`
+  (+1), -G8 emits `subu/la/sh D_800A33C8/sh D_800A33C8+2` (target shape).
+candidate.c = cam.c (the landing body).
