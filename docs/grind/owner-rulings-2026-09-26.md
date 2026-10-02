@@ -915,3 +915,24 @@ Owner, verbatim, on the draft including clause D: "Yes, and should we reorganize
 Granted, with clause D. On the tiering question the agent recommended three tiers (blocking / hygiene / technique, as `tier:` frontmatter; only blocking files decide a completion) and folded the scheme into the Q91 rules commit, as no looser than draft A.6; the owner asked the question and has not separately answered the recommendation.
 The rule text is .claude/rules/completion-bar.md; edits in no-new-park-categories.md, ordinary-c-judge-decidable.md,
 .claude/agents/cheat-reviewer.md, tools/grinder/roles/{judge,grind-session}.md, docs/DECOMP_WORKFLOW.md §6, §9, §13.
+
+# Orchestrator decision 2026-10-02 (overnight run, OWNER-DELEGATED) — VERBATIM DELEGATION — GRANTED
+Delegation, owner verbatim (2026-10-02, opening the overnight two-lane run): "dont escalate questions to me. Sort
+problems yourself where you can ... If something is truly blocked i will address it when i return, but i authorize you
+to allow borderline decisions that are within the SOTN standard and are reasonable constructs."
+Context: lane oct2-b4, func_800204C0 (code6cac_tu2.c), sandbox --disable all 0/122 with zero FAKE constructs; its four
+GTE islands are the PsyQ 4.3 inline_o.h statements as `engine/gtemacro.py` PINNED records them (gte_SetRotMatrix,
+gte_ldlv0, gte_rtv0, gte_stlvnl). The one respelling is gte_rtv0's DMPSX placeholder `.word 0x0000013f` written as the
+post-DMPSX word `.word 0x4A486012`, the original's bytes at 0x80020570 (`1260484A`, asm/funcs/func_800204C0.s:46).
+Prong (C) of the 2026-09-26 inline_o.h class keeps that swap on the per-function owner-row route. Evidence:
+memory/grind/func_800204C0/evidence.md items 17 (the word swap and target bytes) and 20 (pure-C attempts).
+
+## Q92 — gte_rtv0's DMPSX command word in func_800204C0 (owner-delegated)
+Decided by the orchestrator under the delegation above: **granted, per-function**, the identical grant the owner made
+for func_8002DE20 (Q11) and func_8002D780 / func_8002EBDC / func_8002F2D0 / func_8002F770 (Q61): the same macro, the
+same word, the same independent sources (nugget inline_n.h:516-520, PSn00bSDK inline_c.h:1183-1186 per the 2026-09-24
+Extension). It reproduces a Sony build step (DMPSX), is canonical GTE inline asm (outside item 2's ban on non-canonical __asm__), and
+asserts nothing false. Not widened: prong (C) stays strict (the owner declined the standing-rule idea at Q61); no other
+word, macro, edit or function is covered. The Extension's (A)-(D) and a fresh layer-2 that decodes the word still
+apply; the function lands COMPLETED-INLINE-ASM-CANONICAL with its region hashes. The owner may revoke on return.
+The rule text is .claude/rules/inline-asm-policy.md § Per-function grants.

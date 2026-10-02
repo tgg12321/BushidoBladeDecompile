@@ -1155,3 +1155,10 @@ func_80023F08's move-class test `(mask = ent[2] | (ent[3] << 16)) & (1 << rec->u
 only effect is the int->u32 conversion that keeps fold-const.c:4437 from rewriting the bit test (int form 3 off),
 commented with that rewrite and the measurements; fresh layer-2; no other unsigned-widening device, local or site.
 Rule text: .claude/rules/ordinary-c-judge-decidable.md § Owner rulings on narrow spellings (Q90).
+
+## 2026-10-02 — ORCHESTRATOR DECISION (owner-delegated) — Q92: func_800204C0's gte_rtv0 DMPSX word
+
+Overnight-run delegation (verbatim record docs/grind/owner-rulings-2026-09-26.md, Q92). Per-function grant identical to
+Q11 / Q61: func_800204C0's single `gte_rtv0()` unit may carry `.word 0x4A486012` (target 0x80020570) in place of the
+header's `0x0000013f`; the 2026-09-24 Extension (A)-(D) and a fresh layer-2 apply; prong (C) not widened.
+Rule text: .claude/rules/inline-asm-policy.md § Per-function grants.
