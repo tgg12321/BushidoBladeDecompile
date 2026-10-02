@@ -43,6 +43,18 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     s16 sel;
     u16 y_base;
     s32 mode_off;
+    /* FAKE: constant-holder (named-local-fake-exception) -- the 0x4F0 bytes
+       of the prim buffer this call fills, returned at the end. The target
+       sets it once at entry and keeps it in a frame slot across every call
+       (`li $t0,0x4F0; sw $t0,0x70($sp)`, `lw $v0,0x70($sp)` at the return).
+       Written as the literal, cse gives the set a REG_EQUAL constant and
+       local-alloc.c update_equiv_regs (1024-1032, 1078-1110) turns it into
+       REG_EQUIV and, the value being read once, rewrites the return to
+       `li $v0,0x4F0` and deletes the set (no slot). Spelled as the buffer's
+       end minus its start, the constant only appears when combine folds the
+       subtraction, without a REG_EQUAL note, so size stays an ordinary
+       spilled pseudo. Receipts:
+       memory/grind/func_8005C8A8/evidence.md s3b and probes/s3b/. */
     s32 size;
     s16 top;
     s16 i;
@@ -53,18 +65,9 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     tile = (Tile5C8A8 *)arg2;
     cur = arg2 + 0xF0;
     y_base = 0;
-    /* FAKE: the low half read from arg1's stack home, which keeps arg1 in
-       memory for the in-loop `lw 0xBC($sp)` too; (s16)arg1 scores 58. */
     sel = *(s16 *)&arg1;
     mode_off = arg2 + 0x4D8;
-    /* FAKE: the chunk's 0x4F0 bytes (the draw-mode area ends 0x18 past
-       mode_off), spelled from mode_off. The RTL becomes mode_off - (arg2 -
-       0x18), which cse leaves alone and combine folds to 0x4F0 with no
-       REG_EQUAL note: size keeps the target's frame slot (sp+0x70) to the
-       return, and the deleted temp's stale count gets the target's one
-       untouched slot (sp+0x78). The literal is rematerialised at the return
-       (frame 0x10 short, score 33). memory/grind/func_8005C8A8/evidence.md s7. */
-    size = mode_off + 0x18 - arg2;
+    size = cur + 0x400 - arg2;
     top = (0xF0 - D_8009B2BC[mode].h) / 2;
     s.col_b = 0x40;
     s.col_g = 0x40;
@@ -135,7 +138,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = D_8009B2BC[mode].w;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim((s32)g_gpu_ot_ptr + ot * 4, (s32)tile);
+            AddPrim(g_gpu_ot_ptr + ot * 4, (s32)tile);
             tile++;
         }
         /* fallthrough */
@@ -188,7 +191,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = D_8009B2BC[mode].w;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim((s32)g_gpu_ot_ptr + ot * 4, (s32)tile);
+            AddPrim(g_gpu_ot_ptr + ot * 4, (s32)tile);
             tile++;
         }
         break;
@@ -266,7 +269,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = D_8009B2BC[mode].w;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim((s32)g_gpu_ot_ptr + ot * 4, (s32)tile);
+            AddPrim(g_gpu_ot_ptr + ot * 4, (s32)tile);
             tile++;
         }
         if (j != 0) {
@@ -303,7 +306,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = 2;
             tile->h = D_8009B2BC[mode].h + 2;
             SetSemiTrans(tile, 0);
-            AddPrim((s32)g_gpu_ot_ptr + ot * 4, (s32)tile);
+            AddPrim(g_gpu_ot_ptr + ot * 4, (s32)tile);
             tile++;
         }
     }
@@ -317,8 +320,8 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     tile->w = D_8009B2BC[mode].w;
     tile->h = D_8009B2BC[mode].h;
     SetSemiTrans(tile, 1);
-    AddPrim((s32)g_gpu_ot_ptr + ot * 4, (s32)tile);
+    AddPrim(g_gpu_ot_ptr + ot * 4, (s32)tile);
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B0E0[0], 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + ot * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + ot * 4, mode_off);
     return size;
 }

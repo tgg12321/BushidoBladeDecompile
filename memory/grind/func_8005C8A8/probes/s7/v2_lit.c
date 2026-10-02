@@ -64,7 +64,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
        return, and the deleted temp's stale count gets the target's one
        untouched slot (sp+0x78). The literal is rematerialised at the return
        (frame 0x10 short, score 33). memory/grind/func_8005C8A8/evidence.md s7. */
-    size = mode_off + 0x18 - arg2;
+    size = 0x4F0;
     top = (0xF0 - D_8009B2BC[mode].h) / 2;
     s.col_b = 0x40;
     s.col_g = 0x40;

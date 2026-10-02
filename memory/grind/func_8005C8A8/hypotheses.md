@@ -1,5 +1,9 @@
 # Hypothesis ledger - func_8005C8A8
 
+## s7 (2026-10-02, oct2-b2) — CONFIRMED floor 0 under Q91: `size = mode_off + 0x18 - arg2;` (FAKE) without xpos
+One construct supplies both the 0x70 size slot and the 0x78 untouched slot (evidence.md s7, probes/s7). The Q45/Q77
+refusals are re-opened by Q91 clause D; the FAKE label is the item-3 route. Next: land (fix1 game.h + rows).
+
 ## OPEN (floor 33, 2026-09-30): the `size` 0x4F0 stack slot. Owner Q45 option B REFUSED the cancellation spelling
 (`size = (s32)tile + 0x4F0 - arg2` and every cancel-against-a-second-name variant). See evidence.md s3c + s3d. Look
 for another source form that keeps the once-set constant out of update_equiv_regs' REG_EQUIV rewrite.

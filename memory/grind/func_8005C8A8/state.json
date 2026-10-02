@@ -1,7 +1,7 @@
 {
  "func": "func_8005C8A8",
  "file": "text1b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "mechanism",
  "floor_history": [
   {
@@ -21,13 +21,19 @@
    "floor": 33,
    "modality": "mechanism",
    "headline": "Q77 refused A/C; re-baselined 33; cc1psx calibration (literal rematerialized by the original compiler too); no-op copy / const measured; pass-level closure of the slot's mechanism space (evidence.md s6)"
+  },
+  {
+   "session": 7,
+   "floor": 0,
+   "modality": "mechanism",
+   "headline": "Q91 clause D re-judgment: size = mode_off + 0x18 - arg2 (FAKE) gives both frame slots; xpos retired; sandbox 0 with one size FAKE (+ sel label)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "OPEN: keep the 0x70 slot for the once-set 0x4F0 in a form outside the Q45/Q77-refused cancellation class",
-   "mechanism": "evidence.md s6: only combine-only identities (refused) or counted sets without a store (clobber/no-op/REG_UNUSED, no semantic reading) reach it",
-   "next_probe": "none under current rulings; reopen on a ruling change or evidence of the original construct (e.g. a PsyQ/Square macro computing the size)"
+   "hypothesis": "LANDING: candidate.c (v2) + fix1 game.h hunk + 6 undefined_syms rows",
+   "mechanism": "evidence.md s7",
+   "next_probe": "splice, oracle rebuild, layer-2"
   }
  ],
  "judge_constraints": [],

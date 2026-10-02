@@ -373,3 +373,24 @@ So, under Q45/Q77 and the no-no-op / no-purpose-wrapper rules, no spelling of th
 slot; the admissible floor is 33 and it is a true floor for the current rulings, not an unexplored gap.
 The item stays INCLUDE_ASM/active (no rotation). Re-open trigger: a ruling change, or new evidence that the
 original wrote a different construct (e.g. a PsyQ/Square header macro computing the size).
+
+## s7 (2026-10-02, oct2-b2) — Q91 clause D re-judgment; 33 -> 0 with ONE FAKE (xpos retired)
+
+Q91 (`.claude/rules/completion-bar.md`, item 3 + §Application clause D) re-opens Q45/Q77: a codegen-only
+construct with a measured `/* FAKE */` label is admissible unless the wall or item 3's refused list (fabricated
+calls/side effects, cross-symbol address derivation, volatile outside its catalog) covers it. A cancellation
+spelling of the size is none of those. Item 5 then wants the fewest-FAKE byte-exact form. Receipts: probes/s7/.
+- `size = mode_off + 0x18 - arg2;` (the draw-mode area ends 0x18 past mode_off; the same 0x18 tail as the
+  completed siblings' end_off minus draw-mode offset in src/text1b.c func_80060414 (`dist_off = new_var +
+  0x14; end_off = new_var + 0x2C;`) and func_80060544 (`arg0 + 0x5DC` / `arg0 + 0x5F4`))
+  scores 0 WITHOUT the Q27 (A) xpos local: one construct gives both slots. Dump (probes/s7/scores.txt): the tree
+  becomes mode_off - (arg2 - 0x18); cse writes no note; combine folds size to 1264 with no REG_EQUAL and deletes
+  the temp's set, leaving r88's stale count, so size spills to 0x70 and r88 takes 0x78 (frame 184).
+- With xpos kept, the same line scores 30 (one slot too many); the s3b tile form without xpos scores 30 (0x78
+  missing). The tile form needs two FAKEs (size + xpos), the mode_off form one: item 5 picks mode_off.
+- `cur + 0x400 - arg2` also scores 0 without xpos; 0x400 names nothing in the layout, so not chosen.
+- `sel = *(s16 *)&arg1;` is load-bearing ((s16)arg1 / plain arg1: 58); now carries a FAKE label.
+- AddPrim's OT argument spelled `(s32)g_gpu_ot_ptr + ot * 4` like the completed siblings (g_gpu_ot_ptr is
+  `u8 *` in text1b.c): byte-neutral (0).
+- Literal size on this body: 33, frame 168 (both slots gone).
+candidate.c = v2 (sandbox 0 with fix1's game.h hunk).

@@ -53,17 +53,14 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     tile = (Tile5C8A8 *)arg2;
     cur = arg2 + 0xF0;
     y_base = 0;
-    /* FAKE: the low half read from arg1's stack home, which keeps arg1 in
-       memory for the in-loop `lw 0xBC($sp)` too; (s16)arg1 scores 58. */
-    sel = *(s16 *)&arg1;
+    sel = (s16)arg1;
     mode_off = arg2 + 0x4D8;
-    /* FAKE: the chunk's 0x4F0 bytes (the draw-mode area ends 0x18 past
-       mode_off), spelled from mode_off. The RTL becomes mode_off - (arg2 -
-       0x18), which cse leaves alone and combine folds to 0x4F0 with no
-       REG_EQUAL note: size keeps the target's frame slot (sp+0x70) to the
-       return, and the deleted temp's stale count gets the target's one
-       untouched slot (sp+0x78). The literal is rematerialised at the return
-       (frame 0x10 short, score 33). memory/grind/func_8005C8A8/evidence.md s7. */
+    /* FAKE: the chunk size 0x4F0 (mode_off + 0x18 is the end of the draw-mode
+       area), spelled from mode_off so the constant only appears in combine:
+       the target keeps it in a frame slot to the return, and the folded add
+       leaves the frame's one untouched slot (sp+0x78). The literal 0x4F0 is
+       rematerialised at the return, frame 0x10 short: score 33.
+       memory/grind/func_8005C8A8/evidence.md s7. */
     size = mode_off + 0x18 - arg2;
     top = (0xF0 - D_8009B2BC[mode].h) / 2;
     s.col_b = 0x40;
