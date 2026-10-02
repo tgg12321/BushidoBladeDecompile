@@ -513,3 +513,10 @@ removes one construct, score/insns):
 | table pointer locals (cell0/cell1 = cell0 + 1) | — (not needed with [0]/[1]) | 0/176 |
 
 All rows nonzero except the last, so every remaining FAKE is load-bearing (item 5).
+
+## LANDED (2026-10-02, lane oct2-b5)
+COMPLETED-C in ecafb6b5e (Match), queue done ff7983083. Body = memory/grind/func_8005D554/candidate.c
+(s24), body_hash f707f183e6c8477f. Layer-2 round 1 rv2-5D554-1 FAIL, item 4 only (D_8009B388[2] merge
+declared at file scope in src/text1b.c) -> moved to include/game.h, body unchanged. Round 2 rv2-5D554-2
+PASS: byte-exact, no wall constructs, every FAKE labelled with a reproduced measurement, merge object
+model truthful, no simpler byte-exact form. Hygiene debt (6 rows) is in the Match commit body. Ledger closed.
