@@ -1,0 +1,14 @@
+{
+  "decision": "PASS",
+  "function": "func_8001E404",
+  "body_hash": "cc9f8233bbef5ac8",
+  "summary": "The camera copy now uses the existing Rec44, which has the same 0x44 layout as the retired TU-local CamBuf duplicate. s2 is a Rec44 *, and h30[0]/h30[1] reach the limit vectors. The frame pad is the granted per-function phantom pad: allowlist row volatile_cheats.py:764, FAKE-labelled, and load-bearing (scores 23 without it).",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "the file-scope prototype func_80046BF4(s32 *, s32 *, s32) at code6cac_tu2.c:50 differs from the definition (s32 *, u16 *, s32) at text1b.c:548, which is why (s32 *)&local.h10 is needed",
+    "func_80061064 is called with (s32 *, s32 *) but defined void(void) at text1b_tu1c.c:412",
+    "func_8001A538(s32 *) walks a Rec44 by byte offset (HANDOFF follow-up)",
+    "extern s32 D_800A36B4 holds a Rec44 * (the readers at code6cac_b_tu2.c:5605-5659 use it as one)"
+  ]
+}

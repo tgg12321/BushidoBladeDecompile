@@ -1194,14 +1194,14 @@ s32 func_80029454(void) {
     s32 k;
     s32 *p;
     /* rec holds two values: the record pointer of the first record loop and
-     * the record pointer of the second (each (u8 *)g_practice_menu_table record i). One local,
+     * the record pointer of the second (each &g_practice_menu_table[i]). One local,
      * not two: ordinary-c-judge-decidable.md Ruling 11, (E)(ii) name. */
-    u8 *rec;
+    PracticeMenuRec *rec;
 
-    if (D_80101F04 < 4) {
+    if (g_practice_menu_table[0].unk_3C < 4) {
         return -1;
     }
-    if (D_80102350 < 4) {
+    if (g_practice_menu_table[1].unk_3C < 4) {
         return -1;
     }
     for (k = 0; k < 16; k++) {
@@ -1209,71 +1209,71 @@ s32 func_80029454(void) {
     }
 
     for (i = 0; i < 2; i++) {
-        rec = (u8 *)g_practice_menu_table + i * 0x44C;
-        if (*(u16 *)(rec + 0xE) == 6 || *(u16 *)(rec + 0xE) == 7) {
+        rec = &g_practice_menu_table[i];
+        if (rec->unk_0E == 6 || rec->unk_0E == 7) {
             continue;
         }
-        if (!(*(u16 *)(rec + 0x6A) == 2 || *(u16 *)(rec + 0x6A) == 0x1B || *(u16 *)(rec + 0x6A) == 0x28
-              || *(u16 *)(rec + 0x6A) == 0x26)) {
+        if (!(rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28
+              || rec->unk_6A == 0x26)) {
             continue;
         }
-        if (*(u16 *)(rec + 0xE) == 4 || *(u16 *)(rec + 0xE) == 5) {
+        if (rec->unk_0E == 4 || rec->unk_0E == 5) {
             ws[0] = SPAD->unk00[i][0];
             ws[1] = SPAD->unk00[i][2];
-            ws[2] = *(LeafPos *)(rec + 0x210);
-            ws[3] = *(LeafPos *)(rec + 0x228);
+            ws[2] = rec->unk_210[0];
+            ws[3] = rec->unk_210[2];
             ws[4] = SPAD->unk00[i][0];
             ws[5] = SPAD->unk00[i][1];
-            ws[6] = *(LeafPos *)(rec + 0x210);
-            ws[7] = *(LeafPos *)(rec + 0x21C);
+            ws[6] = rec->unk_210[0];
+            ws[7] = rec->unk_210[1];
         } else {
             ws[0] = SPAD->unk00[i][0];
             ws[1] = SPAD->unk00[i][1];
-            ws[2] = *(LeafPos *)(rec + 0x210);
-            ws[3] = *(LeafPos *)(rec + 0x21C);
-            if (*(s16 *)(rec + 0x8C) != 0) {
+            ws[2] = rec->unk_210[0];
+            ws[3] = rec->unk_210[1];
+            if (rec->unk_8C != 0) {
                 ws[4] = SPAD->unk48[i][0];
                 ws[5] = SPAD->unk48[i][1];
-                ws[6] = *(LeafPos *)(rec + 0x234);
-                ws[7] = *(LeafPos *)(rec + 0x240);
+                ws[6] = rec->unk_234[0];
+                ws[7] = rec->unk_234[1];
             }
         }
-        if (*(s16 *)(rec + 0x40) >= *(u8 *)(rec + 0xA1) && *(s16 *)(rec + 0x40) <= *(u8 *)(rec + 0xA3)
-            && func_800290B8(0, *(u16 *)(rec + 0xE) == 4 || *(u16 *)(rec + 0xE) == 5, ws) != 0) {
+        if (rec->unk_40 >= rec->unk_A1[0] && rec->unk_40 <= rec->unk_A3[0]
+            && func_800290B8(0, rec->unk_0E == 4 || rec->unk_0E == 5, ws) != 0) {
             func_80032854(i, 1, scr + 0x100, 0);
             func_80032854(i, 0x26, scr + 0x100, 0);
             func_80032854(i, 0x2D, scr + 0x100, 0);
-            *(s16 *)(rec + 0x286) = *(s16 *)(rec + 0x8C) != 0 ? 0x19 : 0xB;
-            *(u8 *)(rec + 0xAD) = 0;
-        } else if (*(s16 *)(rec + 0x8C) != 0 && *(s16 *)(rec + 0x40) >= *(u8 *)(rec + 0xA2)
-                   && *(s16 *)(rec + 0x40) <= *(u8 *)(rec + 0xA4) && func_800290B8(1, 0, ws) != 0) {
+            rec->unk_286 = rec->unk_8C != 0 ? 0x19 : 0xB;
+            rec->unk_AD = 0;
+        } else if (rec->unk_8C != 0 && rec->unk_40 >= rec->unk_A1[1]
+                   && rec->unk_40 <= rec->unk_A3[1] && func_800290B8(1, 0, ws) != 0) {
             func_80032854(i, 1, scr + 0x100, 0);
             func_80032854(i, 0x26, scr + 0x100, 0);
             func_80032854(i, 0x2D, scr + 0x100, 0);
-            *(s16 *)(rec + 0x286) = 0xB;
-            *(u8 *)(rec + 0xAD) = 0;
+            rec->unk_286 = 0xB;
+            rec->unk_AD = 0;
         }
     }
 
     for (i = 0; i < 2; i++) {
         LeafPos *dst = &ws[i * 8];
-        rec = (u8 *)g_practice_menu_table + i * 0x44C;
+        rec = &g_practice_menu_table[i];
         dst[0] = SPAD->unk00[i][0];
         dst[1] = SPAD->unk00[i][1];
-        dst[2] = *(LeafPos *)(rec + 0x210);
-        dst[3] = *(LeafPos *)(rec + 0x21C);
+        dst[2] = rec->unk_210[0];
+        dst[3] = rec->unk_210[1];
         count[i] = 2;
-        if (*(s16 *)(rec + 0x96) != 0 || *(s16 *)(rec + 0x92) == 0 || *(s16 *)(rec + 0xC) == 0x1F) {
+        if (rec->unk_96 != 0 || rec->unk_92 == 0 || rec->unk_0C == 0x1F) {
             dst[0].y = 100000;
             dst[1].y = 100000;
             dst[2].y = 100000;
             dst[3].y = 100000;
         }
-        if (*(s16 *)(rec + 0x8C) != 0) {
+        if (rec->unk_8C != 0) {
             dst[4] = SPAD->unk48[i][0];
             dst[5] = SPAD->unk48[i][1];
-            dst[6] = *(LeafPos *)(rec + 0x234);
-            dst[7] = *(LeafPos *)(rec + 0x240);
+            dst[6] = rec->unk_234[0];
+            dst[7] = rec->unk_234[1];
             count[i] += 2;
         }
     }

@@ -1,0 +1,13 @@
+{
+  "decision": "PASS",
+  "function": "func_8001E878",
+  "body_hash": "d90d6b0d3a231b85",
+  "summary": "The cross-symbol base (&D_80102030 - 0x168) is gone: every argument is &g_practice_menu_table[k] or its unk_168 / unk_F4 member (offsets verified; rebuild == oracle). The remaining (s32) casts are forced by callee prototypes; none is a handle.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "func_8001A820(s32, GameObj *, s32, s32) misdescribes its params (positions / PracticeMenuRec *); arg 2 passes an int into a pointer param (cc1 warning at code6cac_tu2.c:2098)",
+    "func_8001B478(s32) reads a PracticeMenuRec by offset",
+    "s32 v0 is vestigial: D_800A3778 = camera_GetBoneData(); scores 0 (tmp/l2v/P2/cand/func_8001E878_nov0.c)"
+  ]
+}

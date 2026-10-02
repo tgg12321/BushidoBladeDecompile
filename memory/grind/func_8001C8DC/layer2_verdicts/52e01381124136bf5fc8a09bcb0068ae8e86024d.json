@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "func_8001C8DC",
+  "body_hash": "2a79f7ae35cfc2a8",
+  "summary": "Member reads of unk_96/unk_B2/unk_F4 replace the per-word handles (offsets verified). The labelled Q63 D_800A37D2 FAKE pair is the per-function exception admitted at aggregate-merge-family.md:65-69. No wall construct.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "func_80022408(s32 *) reads arg0[0]/arg0[2] of a Vec3i32 and is called with &...unk_F4.x (retype it to Vec3i32 *)",
+    "func_80021A98(0, (u8 *)snd, 0): the s32 snd is a MoveScript * (L1 debt)"
+  ]
+}

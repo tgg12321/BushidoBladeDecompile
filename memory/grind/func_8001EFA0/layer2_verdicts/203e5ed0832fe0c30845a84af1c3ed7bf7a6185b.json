@@ -1,0 +1,11 @@
+{
+  "decision": "PASS",
+  "function": "func_8001EFA0",
+  "body_hash": "3c0977ccd33b9045",
+  "summary": "&g_practice_menu_table[D_800A3748] and its unk_96 replace the 1100-byte arithmetic and the s16-pointer handle D_80101F5E + idx * 550. No FAKE, no wall construct.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "func_8001BCF0(u8 *) reads PracticeMenuRec +0xB8 / +0x1CA by offset; retyping it removes the (u8 *) cast"
+  ]
+}

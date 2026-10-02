@@ -963,11 +963,6 @@ typedef struct {
 extern CdState D_80101E58;
 
 extern s16 D_80101EE8;
-extern s32 D_80101F04;
-extern s16 D_80101F5E;
-extern u8 D_80101F79;
-extern u8 D_80101F7A;
-extern u8 D_80101F7B;
 extern s32 D_80101F80;
 extern s32 D_80101F84;
 extern s32 D_80101F88;
@@ -975,9 +970,7 @@ extern s32 D_80101FA4;
 extern s32 D_80101FB0;
 extern s32 D_80101FB4;
 extern s32 D_80101FB8;
-extern s32 D_80101FBC;
 extern s32 D_80101FC0;
-extern s32 D_80101FC4;
 extern s32 D_80101FCC;
 extern s32 D_80101FD0;
 extern s32 D_80101FD4;
@@ -1003,21 +996,13 @@ extern s32 D_80102054;
 extern s32 D_80102058;
 extern s32 D_8010205C;
 
-extern s16 D_801021E2;
-extern s16 D_8010231A;
 extern s16 D_80102334;
-extern s32 D_80102350;
 
-extern s16 D_801023AA;
-extern u8 D_801023C5;
-extern s32 D_80102408;
-extern s32 D_80102410;
 extern s32 D_80102448;
 extern s32 D_80102450;
 extern s16 D_80102462;
 extern s16 D_801024DE;
 
-extern s16 D_8010262E;
 extern s32 D_80102760;
 extern s32 D_80102764;
 extern s32 D_80102768;

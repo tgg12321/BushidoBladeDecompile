@@ -69,7 +69,6 @@ extern void func_80030D7C(void);
 extern void func_800397A0(void);
 extern void func_8003E6A0(s32, s32);
 extern void func_80046DA8(s32);
-extern s32 D_80102030;
 extern s8 D_800A3768;
 extern void func_800321E8(void);
 extern void func_800335D8(void);
@@ -1335,16 +1334,16 @@ void func_8001C8DC(void) {
     u8 prev;
     s32 snd;
 
-    if (D_80101F5E != 0 || D_801023AA != 0) {
+    if (g_practice_menu_table[0].unk_96 != 0 || g_practice_menu_table[1].unk_96 != 0) {
         D_800A382E++;
-    } else if (D_800A38DC == 0 && D_800A385C != 0 && D_80101F7A == 1) {
+    } else if (D_800A38DC == 0 && D_800A385C != 0 && g_practice_menu_table[0].unk_B2 == 1) {
         func_8003B56C(3);
     }
     if (D_800A382E < 0x3D) goto end;
 
     switch (D_800A38DC) {
     case 0:
-        if (D_80101F5E != 0) break;
+        if (g_practice_menu_table[0].unk_96 != 0) break;
         if (D_800A3680 != 0) {
             if (--D_800A3680 == 0) {
                 func_8005B58C();
@@ -1372,7 +1371,7 @@ void func_8001C8DC(void) {
         func_8003B56C(2);
         goto end;
     case 3:
-        if (D_80101F5E != 0) break;
+        if (g_practice_menu_table[0].unk_96 != 0) break;
         if (func_80033DF4() == 0) goto end;
         D_800A390D = 1;
         gpu_ResetGraphMode1();
@@ -1407,7 +1406,7 @@ void func_8001C8DC(void) {
         {
             s16 t;
             u8 *p;
-            if ((t = D_80101F5E) == 0 || D_801023AA == 0) {
+            if ((t = g_practice_menu_table[0].unk_96) == 0 || g_practice_menu_table[1].unk_96 == 0) {
                 /* FAKE: second handle to D_800A37D2 (pointer-alias-fake-exception, owner Q63): the
                  * target sets the pair's base in its own register before the index (v0 base, v1
                  * index); the index written without p computes the index first and loses that
@@ -1420,7 +1419,7 @@ void func_8001C8DC(void) {
             }
         }
         D_800A3670 = 1;
-        D_800A38DF = func_80022408((s32 *)((u8 *)&D_80101FBC + (s32)D_800A3748 * 0x44C));
+        D_800A38DF = func_80022408(&g_practice_menu_table[D_800A3748].unk_F4.x);
         D_800A3834 = 0;
         goto end;
     case 4:
@@ -1428,7 +1427,7 @@ void func_8001C8DC(void) {
         {
             s16 t;
             u8 *p;
-            if ((t = D_80101F5E) == 0 || D_801023AA == 0) {
+            if ((t = g_practice_menu_table[0].unk_96) == 0 || g_practice_menu_table[1].unk_96 == 0) {
                 /* FAKE: second handle, as above (owner Q63). */
                 p = &D_800A37D2;
                 /* FAKE: indexes past D_800A37D2 into D_800A37D3, as above (owner Q63). */
@@ -1496,7 +1495,7 @@ void func_8001CE60(void) {
     if (D_800A38DC == 1) {
         D_800A38B4 += func_8005E51C(D_800A3783, D_800A38B4, 1) / 4 * 4;
     } else if (D_800A38DC == 3) {
-        if (D_80101F5E == 0 && (D_801023AA == 0 || D_800A38E2 != 100)) {
+        if (g_practice_menu_table[0].unk_96 == 0 && (g_practice_menu_table[1].unk_96 == 0 || D_800A38E2 != 100)) {
             D_800A3858++;
             if (D_800A3858 > 0x2BF20) {
                 D_800A3858 = 0x2BF20;
@@ -1596,19 +1595,19 @@ void func_8001CE60(void) {
                 D_800A36E8 = 0;
                 func_800342A0();
             }
-        } else if (D_80101F5E != 0 && D_801023AA != 0) {
+        } else if (g_practice_menu_table[0].unk_96 != 0 && g_practice_menu_table[1].unk_96 != 0) {
             D_800A3816 = 1;
-        } else if (D_801023AA != 0) {
+        } else if (g_practice_menu_table[1].unk_96 != 0) {
             D_800A38B0 = 1;
             D_800A3920 = 1;
             D_800A3898[D_800A38B0 ^ 1]++;
-        } else if (D_80101F5E != 0) {
+        } else if (g_practice_menu_table[0].unk_96 != 0) {
             D_800A38B0 = 0;
             D_800A3920 = 1;
             D_800A3898[D_800A38B0 ^ 1]++;
         } else if ((u16)g_practice_menu_table->unk_6A == 6 || (u16)g_practice_menu_table[1].unk_6A == 6) {
             D_800A3816 = 0x3C;
-        } else if (D_80101F79 == 2) {
+        } else if (g_practice_menu_table[0].unk_B1 == 2) {
             u16 id;
 
             func_8005C650(0x9F, 0x7F, 0x7F);
@@ -1619,7 +1618,7 @@ void func_8001CE60(void) {
             } else {
                 D_800A38B0 = 2;
             }
-        } else if (D_801023C5 == 2) {
+        } else if (g_practice_menu_table[1].unk_B1 == 2) {
             u16 id;
 
             func_8005C650(0x9F, 0x7F, 0x7F);
@@ -1968,39 +1967,31 @@ void func_8001DCB0(void) {
         rng_SetSeed(D_800A3904);
     }
 }
-typedef struct {
-    s32 vx, vy, vz;
-    s32 pad0;
-    u16 rx, ry, rz;
-    u16 pad1;
-    s32 dist;
-    s32 tail[10];
-} CamBuf;
 
 void func_8001E404(void) {
     /* FAKE: frame layout -- unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16); SOTN precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
     volatile u32 pre_pad[2];
-    CamBuf local;
-    s32 *s2;
+    Rec44 local;
+    Rec44 *s2;
 
     if (D_800A38BA != 0) {
         s32 v3 = D_800A36FA;
         if (v3 == 1) {
-            if (D_80101F5E != 0 || D_801023AA != 0) {
+            if (g_practice_menu_table[0].unk_96 != 0 || g_practice_menu_table[1].unk_96 != 0) {
                 D_800A36FA = 2;
             }
         }
         if (D_800A36FA == 2) goto s2_default;
         if ((u16)g_practice_menu_table[0].unk_6A == 0x11 || (u16)g_practice_menu_table[1].unk_6A == 0x11) {
-            s2 = (s32 *)&D_800F6608;
+            s2 = &D_800F6608;
             D_800A36FA = 1;
         } else {
-            s2 = (s32 *)&D_800F5328;
+            s2 = &D_800F5328;
             D_800A36FA = 0;
         }
         goto done_s2;
     s2_default:
-        s2 = (s32 *)&D_800F6608;
+        s2 = &D_800F6608;
     done_s2:
 
         func_8003F218(D_800A36FA < 1);
@@ -2022,29 +2013,29 @@ void func_8001E404(void) {
         }
         goto common_tail;
     }
-    s2 = (s32 *)&D_800F6608;
+    s2 = &D_800F6608;
 common_tail:
 
     if (D_800A3834 == 1) {
-        local.vx = s2[0] + D_800FF5C8;
-        local.vy = s2[1] + D_800FF5CC;
-        local.vz = s2[2] + D_800FF5D0;
-        local.rx = *(u16 *)((u8 *)s2 + 0x10) + (u16)D_800FF5D8;
-        local.ry = *(u16 *)((u8 *)s2 + 0x12) + (u16)D_800FF5DA;
-        local.rz = *(u16 *)((u8 *)s2 + 0x14) + (u16)D_800FF5DC;
-        local.dist = *(s32 *)((u8 *)s2 + 0x18) + D_800FF5E0;
+        local.w0 = s2->w0 + D_800FF5C8;
+        local.w4 = s2->w4 + D_800FF5CC;
+        local.w8 = s2->w8 + D_800FF5D0;
+        local.h10 = s2->h10 + (u16)D_800FF5D8;
+        local.h12 = s2->h12 + (u16)D_800FF5DA;
+        local.h14 = s2->h14 + (u16)D_800FF5DC;
+        local.w18 = s2->w18 + D_800FF5E0;
     } else {
-        local = *(CamBuf *)s2;
+        local = *s2;
     }
 
-    func_80046BF4((s32 *)&local, (s32 *)&local.rx, local.dist);
+    func_80046BF4(&local.w0, (s32 *)&local.h10, local.w18);
     {
-        s32 *p20 = (s32 *)((u8 *)s2 + 0x20);
-        func_8001A538((s32 *)&local, p20);
-        func_80061064((s32 *)&local.rx, p20);
+        s32 *p20 = &s2->w20;
+        func_8001A538(&local.w0, p20);
+        func_80061064((s32 *)&local.h10, p20);
     }
-    func_8003F3D4((s16 *)((u8 *)s2 + 0x30));
-    func_8003F3D4((s16 *)((u8 *)s2 + 0x38));
+    func_8003F3D4(s2->h30[0]);
+    func_8003F3D4(s2->h30[1]);
     D_800A36B4 = (s32)s2;
 }
 typedef struct {
@@ -2102,14 +2093,11 @@ void func_8001E800(void) {
 void func_8001E878(void) {
     PadState buf;
     s32 v0;
-    s32 *a0 = &D_80102030;
-    u8 *s0;
     v0 = camera_GetBoneData();
-    s0 = (u8 *)a0 - 0x168;
     D_800A3778 = v0;
-    func_8001A820((s32)a0, (s32)((u8 *)a0 + 0x44C), (s32)s0, (s32)((u8 *)a0 + 0x2E4));
+    func_8001A820((s32)&g_practice_menu_table[0].unk_168, (s32)&g_practice_menu_table[1].unk_168, (s32)&g_practice_menu_table[0], (s32)&g_practice_menu_table[1]);
     if (D_800A38BA != 0) {
-        func_8001B478((s32)(s0 + D_800A36F6 * 1100));
+        func_8001B478((s32)&g_practice_menu_table[D_800A36F6]);
     }
     func_8001E404();
     func_80039320();
@@ -2125,8 +2113,8 @@ void func_8001E878(void) {
     if (D_800A38BA != 0 && D_800A36FA == 0) {
         func_8001E800();
     } else {
-        func_8003E6A0(D_80101FBC, D_80101FC4);
-        func_8003E6A0(D_80102408, D_80102410);
+        func_8003E6A0(g_practice_menu_table[0].unk_F4.x, g_practice_menu_table[0].unk_F4.z);
+        func_8003E6A0(g_practice_menu_table[1].unk_F4.x, g_practice_menu_table[1].unk_F4.z);
     }
     func_80046DA8((D_800A3690 ^ 1) != 0);
     func_8001CE60();
@@ -2139,8 +2127,8 @@ void func_8001EA04(void) {
     func_80041688(1, 0);
     game_Cleanup();
     v = D_800A38D4;
-    D_8010262E = 0;
-    D_801021E2 = 0;
+    g_practice_menu_table[1].unk_31A = 0;
+    g_practice_menu_table[0].unk_31A = 0;
     D_800A37B8 = 0;
     D_800A3929 = 0;
     D_800A3834 = 0xD;
@@ -2151,15 +2139,15 @@ void func_8001EA84(void) {
     PadState sp10;
     s16 buf[4];
     s32 ret;
-    u8 *base;
+    PracticeMenuRec *base;
 
     D_800A37B8 += 1;
     D_800A3778 = camera_GetBoneData();
-    base = (u8 *)g_practice_menu_table;
+    base = &g_practice_menu_table[0];
     if (D_800A3748 == 0) {
-        base += 0x44C;
+        base++;
     }
-    func_8001BC70(base, D_800A37B8 << 3);
+    func_8001BC70((u8 *)base, D_800A37B8 << 3);
     func_8001E404();
     func_80039320();
     func_8002006C();
@@ -2197,7 +2185,7 @@ void func_8001EA84(void) {
             func_8005C650(1, 0x7F, 0x7F);
             D_800A3929 = (D_800A3817 == 0) ? 1 : 0x3C;
             if (D_800A3817 != 0) return;
-            (&D_80101F7B)[ret = (D_800A3748 == 0) * 0x44C] = 0;
+            g_practice_menu_table[D_800A3748 == 0].unk_B3 = 0;
             if (D_800A38DC == 3) {
                 D_800A3858 = D_800A3858 + 0x384;
                 if (D_800A3858 > 0x2BF20) {
@@ -2216,8 +2204,8 @@ void func_8001EA84(void) {
     if (D_800A3817 == 0) {
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;
-        D_800A38DF = func_80022408((s32 *)((u8 *)&D_80101FBC + (s32)D_800A3748 * 0x44C));
-        if (D_8010231A != 0) {
+        D_800A38DF = func_80022408(&g_practice_menu_table[D_800A3748].unk_F4.x);
+        if (g_practice_menu_table[1].unk_06 != 0) {
             func_800550E8(1);
         }
         D_800A3834 = 0;
@@ -2263,7 +2251,7 @@ void func_8001EFA0(void) {
 
     D_800A37B8 += 1;
     D_800A3778 = camera_GetBoneData();
-    func_8001BCF0((u8 *)g_practice_menu_table + D_800A3748 * 1100, (D_800A37B8 << 12) / 105);
+    func_8001BCF0((u8 *)&g_practice_menu_table[D_800A3748], (D_800A37B8 << 12) / 105);
     func_8001E404();
     func_80039320();
     func_8002006C();
@@ -2277,7 +2265,7 @@ void func_8001EFA0(void) {
     func_80046DA8(1);
     func_800335D8();
 
-    if (*(&D_80101F5E + D_800A3748 * 550) != 0 && D_800A38DC == 1) {
+    if (g_practice_menu_table[D_800A3748].unk_96 != 0 && D_800A38DC == 1) {
         D_800A37B8 = 0x69;
     }
 
@@ -2654,7 +2642,7 @@ s32 func_8001FAE4(s32 *arg0) {
     }
     return 0;
 }
-s32 func_8001FB34(s32 *arg0, s32 arg1) {
+s32 func_8001FB34(PracticeMenuRec *arg0, s32 arg1) {
     s16 v1;
     s32 v0;
     v1 = D_800A38DC;
@@ -2664,20 +2652,19 @@ s32 func_8001FB34(s32 *arg0, s32 arg1) {
     if (v1 != 0) goto check2;
     if (D_800A385C != 0) return 0;
 check2:
-    v0 = *(s32 *)arg0;
-    v1 = *(s16 *)(v0 + 0xC);
+    v1 = arg0->unk_00->unk_0C;
     if (v1 == 0xD) return 0;
     if (v1 == 0x1C) return 0;
-    v1 = *(s16 *)((u8 *)arg0 + 0xA);
+    v1 = arg0->unk_0A;
     if (v1 != 0xE) goto check3;
-    if (*(s16 *)((u8 *)arg0 + 0x330) == 0) return 0;
-    v1 = *(s16 *)((u8 *)arg0 + 0x332);
+    if (arg0->unk_330 == 0) return 0;
+    v1 = arg0->unk_332[0];
     if (v1 == 0xA) goto check3;
     return 0;
 check3:
     v0 = 1;
     if (arg1 != 0) {
-        v0 = *(s16 *)((u8 *)arg0 + 0x26C);
+        v0 = arg0->unk_26C;
         v0 = (v0 != 0);
     }
     return v0;
@@ -2763,7 +2750,7 @@ void func_8001FBE8(void) {
         lo = data[0] * 20;
         hi = data[1] * 20;
         dz = rec->unk_B8.vy - rec->unk_00->unk_B8.vy;
-        if (func_8001FB34((s32 *)rec, data[3] & 0x80) == 0) {
+        if (func_8001FB34(rec, data[3] & 0x80) == 0) {
             continue;
         }
         if (D_800A387C < lo) {

@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "func_8001EA04",
+  "body_hash": "911d021031a8233a",
+  "summary": "D_8010262E / D_801021E2 become g_practice_menu_table[1] / [0].unk_31A (0x766 / 0x31A verified) and the store order is kept. Nothing else changes.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}

@@ -1393,7 +1393,7 @@ void func_800397D4(void) {
 }
 extern s32 func_80053584(s32 *, s32 *, s32 *, s32 *);
 extern s32 func_80054434(void);
-void func_8003984C(s32 *arg0, s32 *arg1, s32 *arg2) {
+void func_8003984C(PracticeMenuRec *arg0, s32 *arg1, s32 *arg2) {
     s32 sp10[3];
     s32 sp20[3];
     s32 sp30[4];
@@ -1401,11 +1401,11 @@ void func_8003984C(s32 *arg0, s32 *arg1, s32 *arg2) {
     s32 mid_x, mid_y, mid_z;
     s32 result;
 
-    mid_x = (s32)(arg0[0x198 / 4] + arg0[0x1A4 / 4]) / 2;
+    mid_x = (s32)(arg0->unk_198[0].x + arg0->unk_198[1].x) / 2;
     sp10[0] = mid_x;
-    mid_y = (s32)(arg0[0x19C / 4] + arg0[0x1A8 / 4]) / 2;
+    mid_y = (s32)(arg0->unk_198[0].y + arg0->unk_198[1].y) / 2;
     sp10[1] = mid_y - 0x190;
-    mid_z = (s32)(arg0[0x1A0 / 4] + arg0[0x1AC / 4]) / 2;
+    mid_z = (s32)(arg0->unk_198[0].z + arg0->unk_198[1].z) / 2;
     sp20[0] = mid_x;
     sp20[1] = mid_y + 0x190;
     sp10[2] = mid_z;
@@ -1430,6 +1430,7 @@ extern s32 camera_GetBoneData(void);
 extern u8 D_800A3208;
 extern u8 *D_800A3894;
 
+extern void func_800207C8(PracticeMenuRec *, LeafPos *, LeafPos *, LeafPos *);
 void func_8003993C(void) {
     s32 work[2][33];
     s32 sp120[34];
@@ -1448,7 +1449,7 @@ void func_8003993C(void) {
      * selector (flags >> 1) & 1 in the per-player loop and the replay window of the event loop. */
     s32 temp;
     u8 save40;
-    s32 save58;
+    u8 *save58;
 
     if (D_800A3782 != 0) {
         idx = (D_800A36F8 + D_800A37D0) % 120;
@@ -1497,30 +1498,30 @@ void func_8003993C(void) {
         if (*(u8 *)(p + 0x18) & 8) {
             func_80049A2C(D_8008EB80[rob->unk_14], i * 2 | 1, (*(u8 *)(p + 0x18) >> 5) & 1);
         }
-        func_800207C8(rob, 0x1F8000A8 + i * 0x108, 0x1F800000 + i * 36, 0x1F800048 + i * 24);
-        func_8003984C((s32 *)rob, &out_b1, &out_b2);
+        func_800207C8(rob, SPAD->unkA8[i], SPAD->unk00[i], SPAD->unk48[i]);
+        func_8003984C(rob, &out_b1, &out_b2);
         if (out_b1 != 1) {
-            *(u8 *)((u8 *)rob + 0xB1) = out_b1;
+            rob->unk_B1 = out_b1;
             if (out_b2 != -1) {
-                *(u8 *)((u8 *)rob + 0xB2) = out_b2;
+                rob->unk_B2 = out_b2;
             }
         }
-        save40 = *(u16 *)((u8 *)rob + 0x40);
-        *(u16 *)((u8 *)rob + 0x40) = *(u8 *)(p + 0x19);
-        save58 = *(s32 *)((u8 *)rob + 0x58);
+        save40 = rob->unk_40;
+        rob->unk_40 = *(u8 *)(p + 0x19);
+        save58 = rob->unk_58;
         if (*(u8 *)(p + 0x17) & 1) {
             entry = D_80102764 + *(u16 *)(*(s32 *)p + 4) * 4;
-            *(s32 *)((u8 *)rob + 0x58) = D_80102768 + *(u16 *)(entry + 2);
+            rob->unk_58 = (u8 *)(D_80102768 + *(u16 *)(entry + 2));
         } else {
             temp = (*(u8 *)(p + 0x17) >> 1) & 1;
             entry = D_801027B0[temp][1] + *(u16 *)(*(s32 *)p + 4) * 4;
-            *(s32 *)((u8 *)rob + 0x58) = D_801027B0[temp][2] + *(u16 *)(entry + 2);
+            rob->unk_58 = (u8 *)(D_801027B0[temp][2] + *(u16 *)(entry + 2));
         }
         if (*(u8 *)(p + 0x18) & 0x40) {
             cpu_check_same_dir_timer(rob);
         }
-        *(u16 *)((u8 *)rob + 0x40) = save40;
-        *(s32 *)((u8 *)rob + 0x58) = save58;
+        rob->unk_40 = save40;
+        rob->unk_58 = save58;
         func_80040304(i, (*(u16 *)(p + 0xA) >> 12) & 7);
     }
 
@@ -1567,7 +1568,7 @@ void func_8003993C(void) {
     if ((D_800A3782 != 0 ? D_800A37D0 == 0x78 : D_800A37D0 == D_800A36F8) || (D_80102788.pressed & 0x400040)) {
         switch (D_800A38DC) {
         case 0:
-            if (D_80101F5E == 0) {
+            if (g_practice_menu_table[0].unk_96 == 0) {
                 s32 valid = D_800A3836 != 0xFF;
                 if (D_800A3712 != 0) {
                     D_800A38D4 = 2;
@@ -1600,21 +1601,21 @@ void func_8003993C(void) {
             func_8003B328();
             func_8003AF40(0);
             func_8003AFFC();
-            if (D_800A3712 != 0 && D_801023AA != 0) {
+            if (D_800A3712 != 0 && g_practice_menu_table[1].unk_96 != 0) {
                 func_8003B534(6);
             } else {
                 func_8003B534(4);
             }
             return;
         case 3:
-            if (D_80101F5E == 0) {
+            if (g_practice_menu_table[0].unk_96 == 0) {
                 D_800A3834 = 0x1E;
             } else {
                 D_800A3834 = 0xC;
             }
             break;
         default:
-            if (D_80101F5E == 0 || D_801023AA == 0) {
+            if (g_practice_menu_table[0].unk_96 == 0 || g_practice_menu_table[1].unk_96 == 0) {
                 D_800A3834 = 0x10;
             } else {
                 D_800A3834 = 0xC;

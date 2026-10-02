@@ -1,0 +1,11 @@
+{
+  "decision": "PASS",
+  "function": "func_8001CE60",
+  "body_hash": "3dd0913ea3e84a5a",
+  "summary": "The unk_96 / unk_B1 members of [0]/[1] replace D_80101F5E/D_801023AA/D_80101F79/D_801023C5 (offsets verified). No FAKE added, no wall construct.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "the (u16) casts on the already-u16 unk_6A reads are byte-neutral no-ops"
+  ]
+}

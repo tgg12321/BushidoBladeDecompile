@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "func_8001EA84",
+  "body_hash": "868fd7cc28172eda",
+  "summary": "base is a PracticeMenuRec * (base++ selects the other record). unk_B3, unk_F4 and [1].unk_06 replace D_80101F7B, D_80101FBC and D_8010231A (offsets verified), and the dead ret= side effect is gone. No FAKE, no wall construct.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "func_8001BC70(u8 *) reads PracticeMenuRec.unk_174 at arg0 + 0x174; retyping it removes the (u8 *)base cast",
+    "func_80022408 takes s32 * for a Vec3i32 (see func_8001C8DC)"
+  ]
+}

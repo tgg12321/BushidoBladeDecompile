@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "func_8003984C",
+  "body_hash": "2aee6109e886c628",
+  "summary": "Takes the PracticeMenuRec * its only caller passes and averages unk_198[0]/[1] (the two bone translations; offsets 0x198/0x1A4 verified) instead of indexing words. Honest, no FAKE, no wall construct.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "the (s32)(a + b) casts on s32 + s32 sums are redundant no-ops",
+    "include/m2c_context.h:449 still declares func_8003984C(s32 *, s32 *, s32 *) (not compiled)"
+  ]
+}
