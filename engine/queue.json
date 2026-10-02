@@ -143,18 +143,6 @@
       "addr": "800863DC"
     },
     {
-      "func": "func_800693CC",
-      "file": "text1b_tu1c",
-      "distance": 307,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "memory/grind/func_800693CC/evidence.md",
-      "rotated_at": "2026-09-24T21:03:51+00:00",
-      "rotation_count": 1,
-      "addr": "800693CC"
-    },
-    {
       "func": "func_800207C8",
       "file": "code6cac_tu2",
       "distance": 317,
@@ -180,11 +168,11 @@
     }
   ],
   "counts": {
-    "total": 14,
+    "total": 13,
     "active": 5,
     "by_status": {
       "active": 5,
-      "rotated": 9
+      "rotated": 8
     },
     "by_verdict": {
       "C": 5
