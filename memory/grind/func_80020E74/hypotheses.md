@@ -1,6 +1,12 @@
 # Hypothesis ledger — func_80020E74
 
-## CURRENT (oct2-a3, 2026-10-02)
+## CURRENT (oct2-a6, 2026-10-02)
+- Admissible route found: `u16 D_800A38C4[2]` in code6cac.h; func_80020CDC / func_80020D38 access the pair
+  through `u16 *p = D_800A38C4;` (FAKE: one local, measured 10/9 -> 0/0, evidence.md 2026-10-02 oct2-a6);
+  func_80020E74 then uses `D_800A38C4[i]` (no cross-symbol index). Landing: A = cheat-cleanup (data model +
+  consumers), B = Match.
+
+## oct2-a3, 2026-10-02
 - candidate.c is byte-exact with the data model in evidence.md (private full link == oracle).
 - FAKEs in the body: `loads[130]` (frame layout), shared `j` (loop-1 character + loop-2 menu index),
   `(&D_800A38C4)[i]` (index past D_800A38C4 into D_800A38C6). The last needs a Q63-style per-function

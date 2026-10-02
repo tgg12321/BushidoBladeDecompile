@@ -40,21 +40,21 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
         g_practice_menu_table[1].unk_48 = id1;
 
         if (id0 == id1) {
-            if (D_800A38C4 == id1 || D_800A38C6 == id1) {
+            if (D_800A38C4[0] == id1 || D_800A38C4[1] == id1) {
                 return;
             }
             loads[0] = id0;
-        } else if (D_800A38C4 == id0) {
-            if (D_800A38C6 == id1) {
+        } else if (D_800A38C4[0] == id0) {
+            if (D_800A38C4[1] == id1) {
                 return;
             }
             loads[1] = id1;
-        } else if (D_800A38C4 == id1) {
-            if (D_800A38C6 == id0) {
+        } else if (D_800A38C4[0] == id1) {
+            if (D_800A38C4[1] == id0) {
                 return;
             }
             loads[1] = id0;
-        } else if (D_800A38C6 == id1) {
+        } else if (D_800A38C4[1] == id1) {
             loads[0] = id0;
         } else {
             loads[0] = id0;
@@ -76,7 +76,7 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
             D_801027B0[i][2] = (s32)D_800A3860[i] + D_800A3860[i]->unk_04[1];
             D_801027B0[i][3] = (s32)D_800A3860[i] + D_800A3860[i]->unk_04[2];
             D_801027B0[i][4] = (s32)D_800A3860[i] + D_800A3860[i]->unk_04[3];
-            (&D_800A38C4)[i] = loads[i]; /* FAKE: D_800A38C6 reached by indexing past D_800A38C4 (Q63-style pair) */
+            D_800A38C4[i] = loads[i];
         }
     }
 }

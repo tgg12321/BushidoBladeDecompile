@@ -63,3 +63,17 @@
   their symbols). Owner policy-question: docs/grind/borderline.md 2026-10-02 func_80020E74 entry.
 - func_80020E74 stays INCLUDE_ASM, not unparked. Frontier if refused: a byte-exact func_80020CDC /
   func_80020D38 under `u16 D_800A38C4[2]` (needs something that ends the CSE2 path at the join label).
+
+## 2026-10-02 (lane oct2-a6) — func_80020CDC / func_80020D38 exact under `u16 D_800A38C4[2]`
+- Harness `ptr/` (mini TU = `ptr/prelude.h` + variant, stem code6cac_tu2, vs build/src/code6cac_tu2.o):
+  base (direct `D_800A38C4[1]`) CDC 10 / D38 9; p4 `p = &D_800A38C4[1]` and p5 `p = D_800A38C4 + 1`: 10 / 9;
+  **p1 (load via `p[1]`, stores direct), p2 (every access via `u16 *p = D_800A38C4`), p3 (`D_800A38C4[i]`,
+  i = 1): 0 / 0.**
+- Mechanism (`.cse` of base vs p2, `ptr/` + tmp dumpf.sh): direct `D_800A38C4[1]` goes through change_address
+  -> explow memory_address -> force_reg, so insn 8 `(set (reg 72) (const (plus D_800A38C4 2)))` exists and
+  CSE's skip-blocks path (jump around the seq_Reset block, LABEL_NUSES 1) reuses reg 72 for the store
+  (`(set (mem (reg 72)) 0)`), live across the call. Via `p`, the address is `(plus p 2)`; CSE folds it to a
+  constant address inside each MEM and no pseudo ever holds `D_800A38C4+2`, so nothing is shared.
+- Full TU (apply_dm.py --c4 array on HEAD 6433bb595 files + `ptr/patch_cd.py` p2 form + the array-model
+  func_80020E74 body): dm.py 0 differing functions in code6cac_tu2 / code6cac / ings. Private link pending
+  (build/ was mid-rebuild by the other lane).
