@@ -246,7 +246,7 @@ s32 GetDrawEnv(s32 a0) {
 extern const char D_80015FF8[];
 extern s32 GetVideoMode(void);
 s32 get_dx(s16 *arg0);
-/* PsyQ 4.0 LIBGPU SYS: PutDispEnv (verbatim-linked Sony object, census 2026-07-09);
+/* PsyQ 4.0 LIBGPU SYS: PutDispEnv (verbatim-linked Sony object);
    C ref: SOTN src/main/psxsdk/libgpu/sys.c:336 @aa53500 (a PsyQ 3.3 build; structure only) */
 DISPENV *PutDispEnv(DISPENV *env) {
     s32 h_start, h_end;
@@ -570,7 +570,7 @@ s32 get_mode(s32 arg0, s32 arg1, s32 arg2) {
     }
     return var_v1 | var_v0;
 }
-/* PsyQ libgpu get_cs (verbatim-linked Sony object, census 2026-07-09).
+/* PsyQ libgpu get_cs (verbatim-linked Sony object).
  * Body: the published psxsdk clamp idiom (sotn-decomp
  * src/main/psxsdk/libgpu/sys.c house style) with THIS library build's limits
  * and dispatch — clamping both axes against the halfword globals
@@ -945,7 +945,7 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
     return (_qin - _qout) & 0x3F;
 }
 /* ADDQUE2-END */
-/* PsyQ 4.0 LIBGPU SYS: _exeque — verbatim-linked Sony object (census 2026-07-09); C ref:
+/* PsyQ 4.0 LIBGPU SYS: _exeque — verbatim-linked Sony object; C ref:
  * sotn-decomp src/main/psxsdk/libgpu/sys.c:797 is an older revision (null-func reset path,
  * CheckCallback tail) and was not adopted. Drains the packet queue; when it is empty and a
  * draw is pending, clears the pending flag and calls the DrawSyncCallback. */
@@ -1161,13 +1161,13 @@ PAD_NOPS_2; /* 2 NOPs after func_8007E094 */
 INCLUDE_ASM("asm/funcs", SquareRoot0);
 PAD_NOPS_3; /* 3 NOPs after func_8007E11C */
 /* func_8007E1AC = LIBGTE MSC06 LoadAverage12 â€” verbatim-linked Sony PsyQ 4.0
- * object (census 2026-07-09). Hand-written GTE asm; disassembler tags every
+ * object. Hand-written GTE asm; disassembler tags every
  * cop2 op "handwritten instruction". No pure-C form (mtc2/lwc2/gpf/gpl/mfc2/
  * swc2 have no C analog). Canonical body (cluster corroboration: siblings
  * MulMatrix2 and ApplyRotMatrix are hand-written asm too). */
 INCLUDE_ASM("asm/funcs", LoadAverage12);
 /* func_8007E1FC = LIBGTE MSC06 LoadAverage0 â€” verbatim-linked Sony PsyQ 4.0
- * object (census 2026-07-09). Twin of func_8007E1AC differing only in the
+ * object. Twin of func_8007E1AC differing only in the
  * gpf/gpl sf parameter (0 vs 1). Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", LoadAverage0);
 __asm__(
@@ -1204,7 +1204,7 @@ PAD_NOPS_1; /* 1 NOP after func_8007E1AC */
 INCLUDE_ASM("asm/funcs", SquareRoot12);
 PAD_NOPS_3; /* 3 NOPs after func_8007E43C */
 /* func_8007E4DC = LIBGTE MTX_000 MulMatrix0 â€” verbatim-linked Sony PsyQ 4.0
- * object (census 2026-07-09). 3x3-mvmva matrix transform sibling of
+ * object. 3x3-mvmva matrix transform sibling of
  * MulMatrix2 (calc_fc_frame_8007EC5C). All the same hand-coded
  * signals: splat-tagged every cop2 op "handwritten instruction", hardcoded
  * `swc2 $11, 16($a2)` source reg, hand-scheduled cycle-N+1-mfc2 during
@@ -1214,7 +1214,7 @@ INCLUDE_ASM("asm/funcs", MulMatrix0);
 PAD_NOPS_1; /* 1 NOP after func_8007E4DC */
 INCLUDE_ASM("asm/funcs", CompMatrix);
 /* func_8007E74C = LIBGTE MTX_004 ApplyMatrixLV â€” verbatim-linked Sony PsyQ 4.0
- * object (census 2026-07-09). Local-vector transform with pre-scaling via sign-
+ * object. Local-vector transform with pre-scaling via sign-
  * split (hi=x>>15, lo=x&0x7FFF), two mvmva cycles (hi 0,0,3,3,0 then lo
  * 1,0,3,3,0), post-scale hi result by 8 via signed <<3, sum + store. Hand-
  * coded evidence: the `sra $tN,$tM,15` split idiom and branch forms that
@@ -1230,7 +1230,7 @@ INCLUDE_ASM("asm/funcs", ApplyMatrixLV);
  * "handwritten instruction". */
 INCLUDE_ASM("asm/funcs", ApplyRotMatrix);
 /* func_8007E8DC = LIBGTE MTX_00A ScaleMatrixL â€” verbatim-linked Sony PsyQ 4.0
- * object (census 2026-07-09). In-place Q12 fixed-point column scale of a 3x3
+ * object. In-place Q12 fixed-point column scale of a 3x3
  * matrix by 3 scalars (columns 0,1,2 x scalars *arg1[0/1/2]). Splat tags the
  * body handwritten; hardcoded $t0..$t5 packed register cadence + hand-scheduled
  * multu/mflo pairing + sw in jr delay slot are hand-coded signatures. Sibling
@@ -1239,7 +1239,7 @@ INCLUDE_ASM("asm/funcs", ApplyRotMatrix);
 INCLUDE_ASM("asm/funcs", ScaleMatrixL);
 PAD_NOPS_3; /* 3 NOPs after func_8007E8DC */
 /* func_8007EA0C = LIBGTE MTX_01 ApplyRotMatrixLV - verbatim-linked Sony PsyQ
- * 4.0 object (census 2026-07-09). Sibling of ApplyMatrixLV (func_8007E74C):
+ * 4.0 object. Sibling of ApplyMatrixLV (func_8007E74C):
  * sign-splits input vec into hi/lo halves (arithmetic split), runs mvmva
  * twice (hi 0,0,3,3,0 then lo 1,0,3,3,0), post-scales hi by <<3 with signed
  * preservation, sums and stores. No pure-C form reaches these bytes without
@@ -1247,7 +1247,7 @@ PAD_NOPS_3; /* 3 NOPs after func_8007E8DC */
 INCLUDE_ASM("asm/funcs", ApplyRotMatrixLV);
 PAD_NOPS_2; /* 2 NOPs after func_8007EA0C */
 /* func_8007EB4C = LIBGTE MTX_03 MulMatrix â€” verbatim-linked Sony PsyQ 4.0
- * object (census 2026-07-09). In-place variant of the same 3-cycle mvmva
+ * object. In-place variant of the same 3-cycle mvmva
  * transform as func_8007E4DC / calc_fc_frame_8007EC5C: reads matrix + vec
  * from $a0 (out doubles as matrix-input buffer), writes result back to $a0.
  * All the calc_fc_frame (MulMatrix2) hand-coded signals hold. Canonical body. */
@@ -1264,7 +1264,7 @@ PAD_NOPS_1; /* 1 NOP after func_8007EB4C */
 INCLUDE_ASM("asm/funcs", MulMatrix2);
 PAD_NOPS_1; /* 1 NOP after calc_fc_frame_8007EC5C */
 /* func_8007ED6C = LIBGTE MTX_05 ApplyMatrix â€” verbatim-linked Sony PsyQ 4.0
- * object (census 2026-07-09). Loads a 3x3 R matrix (5 packed s32 words) into
+ * object. Loads a 3x3 R matrix (5 packed s32 words) into
  * cop2 controls 0-4, transforms *a1 vec by RT matrix (mvmva 1,0,0,3,0),
  * writes result to *a2. Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", ApplyMatrix);
@@ -1361,7 +1361,7 @@ PAD_NOPS_1; /* 1 NOP after func_8007F200 */
 INCLUDE_ASM("asm/funcs", RotTransPers);
 PAD_NOPS_1; /* 1 NOP after func_8007F21C */
 /* func_8007F24C = LIBGTE SMP_03 RotTransPers3 â€” verbatim-linked Sony PsyQ 4.0
- * object (census 2026-07-09). Triple perspective transform: lwc2 3 SXY0/SXY1/SXY2
+ * object. Triple perspective transform: lwc2 3 SXY0/SXY1/SXY2
  * pairs from *a0/*a1/*a2 -> rtpt -> swc2 SZ/SXY0/SXY1/SXY2 to *a3 & sp-loaded
  * pointers -> cfc2 FLAG to *(sp+0x1C) -> return mfc2 SZ3 >> 2 (folded into jr
  * delay slot). Hand-written GTE asm; canonical body. */
@@ -1371,7 +1371,7 @@ PAD_NOPS_3; /* 3 NOPs after func_8007F24C */
 INCLUDE_ASM("asm/funcs", RotTrans);
 PAD_NOPS_2; /* 2 NOPs after func_8007F2AC */
 /* func_8007F2DC = LIBGTE CMB_00 RotTransPers4 â€” verbatim-linked Sony PsyQ 4.0
- * object (census 2026-07-09). Triple perspective transform PLUS a 4th vertex
+ * object. Triple perspective transform PLUS a 4th vertex
  * via rtps: rtpt on 3 SXY pairs, then rtps on the 4th (*a3). Combined FLAGs
  * OR'd; returns SZ3 >> 2. Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", RotTransPers4);

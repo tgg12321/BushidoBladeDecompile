@@ -440,8 +440,8 @@ void DumpDispEnv(s16 *a0) {
     GPU_printf(&D_80015E10, ((u8 *)a0)[0x10]);
     GPU_printf(&D_80015E1C, ((u8 *)a0)[0x11]);
 }
-/* PsyQ LIBGPU sys.c v1.129: ResetGraph — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c */
+/* PsyQ LIBGPU sys.c v1.129: ResetGraph — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c */
 u32 ResetGraph(s32 a0) {
     switch (a0 & 7) {
     case 0:

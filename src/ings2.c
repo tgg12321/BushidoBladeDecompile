@@ -109,8 +109,8 @@ extern s32 D_80016318;
 extern void puts(void *);
 extern void ChangeClearPAD(s32);
 extern void ChangeClearRCnt(s32, s32);
-/* PsyQ 4.0 LIBETC VSYNC: v_wait (static) — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libetc/vsync.c.
+/* PsyQ 4.0 LIBETC VSYNC: v_wait (static) — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libetc/vsync.c.
    FAKE(partial-use volatile array, Ruling 3): only [0] is
    referenced — SOTN ships the identical `volatile s32 timeout[2]` shape;
    original author idiom. */
@@ -160,7 +160,7 @@ u32 GetIntrMask(void) {
     return *g_sys_irq_counter;
 }
 /* PsyQ 4.0 LIBETC INTR: intr.c v1.76 module state — verbatim-linked Sony
-   object (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libetc/
+   object; C ref: sotn-decomp src/main/psxsdk/libetc/
    intr.c (intrEnv_t). D_800A1578 = intrEnv; D_800A15B4 = intrEnv.buf[1]
    (JB_SP); D_800A2604/g_sys_irq_counter/D_800A260C = the module's
    i_stat/i_mask/d_pcr MMIO pointer statics (0x1F801070/74/F0). */
@@ -221,7 +221,7 @@ u16 *startIntr(void) {
     return (u16 *)&D_800A1578;
 }
 /* PsyQ 4.0 LIBETC INTR: trapIntr + setIntr + stopIntr + restartIntr + memclr
-   — verbatim-linked Sony object intr.c v1.76 (census 2026-07-09); C ref:
+   — verbatim-linked Sony object intr.c v1.76; C ref:
    sotn-decomp src/main/psxsdk/libetc/intr.c (v1.73; v1.76 deltas measured).
    setIntr/stopIntr/restartIntr are statics referenced only through the
    callbacks vtable raw words at 0x800A25E8/F0/F8 (7D920.data.s). */
@@ -404,8 +404,8 @@ void setIntrVSync(s32 a0, s32 a1) {
     }
 }
 extern s32 D_800A2640[8];
-/* PsyQ 4.0 LIBETC intr_dma.c module state (verbatim-linked Sony object,
-   census 2026-07-09; C ref: sotn-decomp src/main/psxsdk/libetc/intr_dma.c).
+/* PsyQ 4.0 LIBETC intr_dma.c module state (verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libetc/intr_dma.c).
    D_800A263C holds 0x1F8010F4 (DMA Interrupt Register) — Sony declares it
    `static volatile u_long *` (pointer-to-volatile-MMIO, type-level). */
 extern volatile u32 *D_800A263C;
@@ -430,7 +430,7 @@ s32 startIntrDMA(void) {
 }
 
 /* PsyQ 4.0 LIBETC INTR_DMA: trapIntrDMA (static) — verbatim-linked Sony
-   object (census 2026-07-09); C ref: sotn-decomp libetc/intr_dma.c */
+   object; C ref: sotn-decomp libetc/intr_dma.c */
 void trapIntrDMA(void) {
     u32 mask;
     s32 i;
@@ -455,7 +455,7 @@ void trapIntrDMA(void) {
 }
 
 /* PsyQ 4.0 LIBETC INTR_DMA: setIntrDMA (static) — verbatim-linked Sony
-   object (census 2026-07-09); C ref: sotn-decomp libetc/intr_dma.c */
+   object; C ref: sotn-decomp libetc/intr_dma.c */
 s32 setIntrDMA(s32 a0, s32 a1) {
     s32 prev = D_800A2640[a0];
     if (a1 != prev) {
@@ -492,7 +492,6 @@ INCLUDE_ASM("asm/funcs", PCclose);
 extern s32 PClseek(s32, s32, s32);
 INCLUDE_ASM("asm/funcs", PClseek);
 INCLUDE_ASM("asm/funcs", __SN_ENTRY_POINT);
-/* kengo:MED  |  common/ang_hosei  |  47i  |  +4 8.5% */
 /* 0x80083794 = libgcc __main / crt0 ctor-walker — COMPLETED-INLINE-ASM-CANONICAL
    (owner routing ruling: provably prebuilt PsyQ object; our cc1 cannot produce
    the 16-byte frame from any C — REG_PARM_STACK_SPACE; entry in
@@ -501,7 +500,6 @@ INCLUDE_ASM("asm/funcs", __SN_ENTRY_POINT);
    prebuilt crt0/libgcc object; entry in inline_asm_canonical.txt). */
 INCLUDE_ASM("asm/funcs", __main);
 INCLUDE_ASM("asm/funcs", __do_global_dtors);
-/* kengo:HIGH  |  is_motion/motion_Open  |  54i */
 BIOS_A_FUNCTION(InitHeap, 0x39);
 extern s32 _SN_read(s32, s32, s32, s32);
 

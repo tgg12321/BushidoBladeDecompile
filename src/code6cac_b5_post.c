@@ -50,7 +50,6 @@ s32 cdrom_StartRead(s32 a0, s32 a1) {
     D_80101E58.rec.unk18 = (u32)(reloaded + 0x7FF) >> 11;
     return 1;
 }
-/* kengo:HIGH  |  nm_replay_cam/replay_camera_Init  |  39i */
 s32 cdrom_StartReadAt(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (cdrom_StartRead(arg0, arg1) == 0) {
         return 0;
@@ -236,7 +235,6 @@ void cdrom_LoadExec(s32 *dest) {
         if (v0 == 0) break;
     }
 }
-/* kengo:MED  |  nm_special_cam/special_camera_get_rot_dir  |  66i  |  +6 9.1% */
 void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     s32 sp[16];
     VSync(0);

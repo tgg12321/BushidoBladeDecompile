@@ -281,7 +281,6 @@ s32 func_8003800C(s32 *arg0) {
 
     return 1;
 }
-/* kengo:HIGH  |  is_damage_calc/damage_DebugDisp  |  79i */
 
 void func_80038148(void) {
     u8 *p = D_800F33D8;
@@ -526,7 +525,6 @@ finish:
     D_800A31F4 = 0;
 }
 
-/* kengo:HIGH  |  is_pad/pad_FuncAnalog  |  173i */
 extern s32 func_8003800C(s32 *);
 /* func_80038658 — CD-load/save state-machine completion handler: dispatches
  * on D_800A31F4 (state 4 = post-read, state 6 = post-write), reaps
@@ -1166,7 +1164,6 @@ end:
     }
     return result;
 }
-/* kengo:MED  |  is_motion/motion_SetMotion  |  425i  |  -23 5.4% */
 s32 *func_800392B8(void) {
     return (s32 *)D_800F33D8;
 }
@@ -1296,7 +1293,6 @@ void func_800393C8(s32 arg0, s32 arg1, s32 *arg2, u16 *arg3) {
     *(u16 *)(slot + 0xC) = arg3[1];
     *(u16 *)(slot + 0xE) = arg3[2];
 }
-/* kengo:MED  |  sa_se/saSeInit_2  |  123i  |  x2 size collision */
 void func_800395B4(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
     extern u8 D_800A3208;
     extern u8 D_800A379C;
@@ -1809,7 +1805,6 @@ match:
     D_800A36C4 = a0;
     return 1;
 }
-/* kengo:HIGH  |  is_pad/pad_ClearAppliBuffer  |  87i */
 s32 math_Popcount32(u32 arg0) {
     s32 count = 0;
     s32 i;

@@ -215,7 +215,6 @@ void _SsStart(s32 arg0) {
     }
     ExitCriticalSection();
 }
-/* kengo:MED  |  sa_tan5/saTan5TakeAnim2_2  |  154i  |  x2 size collision */
 /* PsyQ 4.0 LIBSND ssstart: SsStart / SsStart2 / _SsTrapIntrVSync /
    _SsSeqCalledTbyT_1per2 + sscall: SsSeqCalledTbyT — verbatim-linked Sony
    objects; C ref: sotn-decomp
@@ -306,7 +305,6 @@ static void SsSeqCalledTbyT(void) {
         _snd_ev_flag = 0;
     }
 }
-/* kengo:LOW  |  su_menu_ending/_DispStuff  |  209i  |  PS2 UI — reverted */
 void _SsSndCrescendo(s16 a0, s16 a1) {
     struct SeqStruct *score = &_ss_score[a0][a1];
     u16 voll, volr;
@@ -444,7 +442,6 @@ void _SsSeqPlay(s16 a0, s16 a1) {
         score->delta_value = var_s0 - score->unk54;
     }
 }
-/* kengo:MED  |  sa_tan4/saTan4GaugeInit  |  66i */
 void _SsSeqGetEof(s16 a0, s16 a1) {
     struct SeqStruct *score = &_ss_score[a0][a1];
 
@@ -657,7 +654,6 @@ s32 func_80084CC0(s16 a0, s16 a1)
   return ret;
 
 }
-/* kengo:MED  |  sa_tan0/saTan0Main  |  233i */
 s32 _SsReadDeltaValue(s16 arg0, s16 arg1) {
     s32 result;
     u8 *ptr;
@@ -868,7 +864,6 @@ void SsSetTickMode(s32 arg) {
 big_v:
     VBLANK_MINUS = v;
 }
-/* kengo:MED  |  am_rmd/SetBloodSpot  |  91i */
 /* PsyQ 4.0 LIBSND TEMPO: _SsSndTempo — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libsnd/tempo.c (interim
    4.0 build adds the counter<0 early clear-and-return). */
@@ -1062,7 +1057,6 @@ s16 SsUtKeyOffV(s16 voice) {
     _snd_ev_flag = 0;
     return -1;
 }
-/* kengo:MED  |  am_rmd/AllocBukiRmd  |  259i */
 extern s32 _svm_rattr;
 extern s16 _svm_rattr_plus_0x8;
 extern s16 _svm_rattr_plus_0xA;
@@ -1328,7 +1322,6 @@ void _SsVmFlush(void)
     _svm_okon1 = 0;
     _svm_okon2 = 0;
 }
-/* kengo:HIGH  |  is_action/action_CheckHitZangeki  |  271i */
 /* _SsVmInit - libsnd voice-manager init (SLUS-00663). */
 extern s32 D_800F19D0[2];
 extern s16 kMaxPrograms;
@@ -1423,7 +1416,6 @@ void _SsVmInit(s32 a0) {
     kMaxPrograms = 0x80;
     _SsVmFlush();
 }
-/* kengo:HIGH  |  md_game/md_game_end  |  249i */
 extern u16 D_800A26E4[];
 
 /* PsyQ LIBSND VM_N2P: note2pitch — a second exported entry point that splat
@@ -1883,7 +1875,6 @@ ok:
     _svm_cur.field_7_fake_program = (u8)entry;
     return 0;
 }
-/* kengo:MED  |  am_rmd/AddTbpOfst  |  49i */
 extern u8 _svm_auto_kof_mode;
 void SsSetAutoKeyOffMode(u8 a0) {
     _svm_auto_kof_mode = a0;
@@ -2079,7 +2070,6 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
     }
     return vabId_2;
 }
-/* kengo:MED  |  sa_tan2/saTan2Main  |  247i */
 extern u8 _svm_vab_used[];
 extern s32 _svm_vab_start[];
 extern s32 _svm_vab_total[];
@@ -2478,7 +2468,6 @@ s32 _spu_t(s32 mode, ...) {
     }
     return 0;
 }
-/* kengo:MED  |  sa_tan0/saTan0GaugeDraw  |  164i */
 s32 _spu_Fw(s32 a0, s32 a1) {
     if (_spu_transMode == 0) {
         _spu_t(2, _spu_tsa << _spu_mem_mode_plus);
@@ -2687,7 +2676,6 @@ s32 SpuMalloc(s32 size) {
     }
     return -1;
 }
-/* kengo:HIGH  |  is_coli/coli_HitPauseKatana  |  178i  |  x2 size collision */
 /* Shape note: phase 1's inner scan exits by `goto`, not `break`.
    stmt.c:expand_end_loop rolls a leading conditional exit to the bottom of the
    loop only when that exit jumps to the loop's own end_label/alt_end_label
@@ -2773,7 +2761,6 @@ void _spu_gcSPU(void) {
         _spu_AllocLastNum = i;
     }
 }
-/* kengo:HIGH  |  md_game/exec_game  |  194i */
 extern s32 _spu_AllocBlockNum;
 extern void _spu_gcSPU(void);
 /* PsyQ 4.0 LIBSPU s_m_f: SpuFree — verbatim-linked Sony object;
@@ -2843,7 +2830,6 @@ s32 _SpuSetAnyVoice(s32 on_off, u32 bits, s32 addr1, s32 addr2)
     }
     return var_t0 & 0xFFFFFF;
 }
-/* kengo:HIGH  |  is_coli/coli_HitPauseKatana_2  |  178i  |  x2 size collision */
 s32 SpuSetNoiseClock(s32 a0) {
     s32 val;
     if (a0 < 0) {
@@ -3884,7 +3870,6 @@ void func_8008B488(SpuVoiceAttr *attr) {
         v *= 13;
     }
 }
-/* kengo:MED  |  sa_tan1/saTan1MainJump  |  413i  |  -10 */
 /* PsyQ LIBSPU S_N2P: _spu_2pitch — a second exported entry point that splat
    merged into func_8008B488 (docs/naming/libscan/
    boundary_fixes.md); must stay immediately after its former host so the

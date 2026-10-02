@@ -224,7 +224,6 @@ void func_80036140(void) {
     }
     }
 }
-/* kengo:MED  |  nm_special_cam/special_camera_set_win_cam  |  502i  |  -10 */
 void func_80036940(void);
 extern s32 CdSync(s32, u8 *);
 extern void CdControl(s32, s32, s32);
@@ -360,7 +359,6 @@ void func_80036940(void) {
     }
     }
 }
-/* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
 
 /* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
 CdlATV D_800A36B8;

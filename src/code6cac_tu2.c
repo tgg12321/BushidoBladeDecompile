@@ -938,7 +938,6 @@ void func_8001B478(s32 arg0) {
     *(s32 *)(s2 + 0x18) = 0;
 }
 
-/* kengo:MED  |  my_eff/myRobGeneiMove  |  134i */
 void func_8001B690(s32 arg0, s32 arg1) {
     if (D_800A38BA == 0) {
         return;
@@ -1048,7 +1047,6 @@ void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 va
     dst->h30[1][1] = 0;
     dst->h30[1][2] = 0x64;
 }
-/* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
     s32 temp_a2;
     s32 var_s3;
@@ -1649,7 +1647,6 @@ void func_8001CE60(void) {
         D_800A38B4 += func_8005F1C8(buf, D_800A3898[0] | (D_800A38AA[0] << 8) | (D_800A3898[1] << 4) | (D_800A38AA[1] << 12), D_800A38B4, 1) / 4 * 4;
     }
 }
-/* kengo:MED  |  nm_camera/camera_set_target_zoom  |  593i  |  +5 */
 extern s8 D_800A30FC;
 extern s8 D_800A30FD;
 extern s32 D_800FF6A8;
@@ -1691,7 +1688,6 @@ void func_8001D790(void) {
         func_8005BD30((s32)s0 - s2);
     }
 }
-/* kengo:HIGH  |  md_game/se_data_set  |  93i */
 void func_8001D904(void) {
     s32 s2 = (s32)0x80190800;
     s32 s1;
@@ -1974,7 +1970,6 @@ void func_8001DCB0(void) {
         rng_SetSeed(D_800A3904);
     }
 }
-/* kengo:MED  |  nm_mario_test/mario_test_Exec  |  450i  |  -19 */
 typedef struct {
     s32 vx, vy, vz;
     s32 pad0;
@@ -2243,7 +2238,6 @@ void func_8001EA84(void) {
         D_800A3834 = 8;
     }
 }
-/* kengo:HIGH  |  nm_cpu/cpu_get_move_pattern_table_number  |  265i  |  -3 near-exact */
 void func_8001EEB4(void) {
     s8 idx = D_800A3748;
     u8 *entry = (u8 *)g_practice_menu_table + idx * 0x44C;
@@ -2532,7 +2526,6 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
         *(u16 *)(b + 0x26) -= temp;
     }
 }
-/* kengo:HIGH  |  md_game/md_game_rob_data_init  |  351i */
 void func_8001F860(s16 *arg0, s32 arg1) {
     arg1 = (arg1 - *(s16 *)((u8 *)arg0 + 0x1CA)) & 0xFFF;
     if (arg1 >= 0x800) {
@@ -2810,7 +2803,6 @@ void func_8001FBE8(void) {
         return;
     }
 }
-/* kengo:HIGH  |  nm_single_game/single_game_CheckStatusUpDataTotalOver  |  289i */
 s32 func_8002006C(void) {
     s32 s0 = D_800A387C;
     s32 v0 = func_8001F888();
@@ -3024,7 +3016,6 @@ void func_800204C0(PracticeMenuRec *rec) {
     }
 }
 
-/* kengo:HIGH  |  nm_single_game/single_game_SetAbilityData  |  124i */
 void func_800206B0(s32 arg0, s32 arg1) {
     BoneHitRec *src = D_8008D59C;
     BoneHitRec *dst = D_800F5F68[arg0];
@@ -3343,7 +3334,6 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
         }
     }
 }
-/* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 void func_80021210(void) {
     func_8001979C(0, D_80102770);
     if (D_800A38C4[0]) {
@@ -4657,7 +4647,6 @@ void func_800238C4(u8 *arg0)
     *((s32 *) (arg0 + 0x104)) += dx_delta;
     *((s32 *) (arg0 + 0x10C)) += dz_delta;
 }
-/* kengo:HIGH  |  nm_camera/camera_set_zoom  |  219i */
 void math_RotMatrixZYXAngles(s32 arg0, s32 arg1, s32 arg2, s16 *arg3) {
     arg3[0] = 0x1000;
     arg3[1] = 0;

@@ -87,7 +87,6 @@ out:
     rgb[1] = g;
     rgb[2] = b;
 }
-/* kengo:MED  |  my_rob/rob_life_ctrl_2  |  96i  |  x2 size collision */
 /* RGB -> HSV (4.12 fixed point). Inverse of rob_life_ctrl_2 above.
  * Outputs a1[] = { hue, sat, val }; val (V) = max(r,g,b) is the third
  * output channel, held separately from the max used for the chroma
@@ -173,7 +172,6 @@ void math_RgbToHsv(s32 *a0, s32 *a1) {
     a1[1] = sat;
     a1[2] = val;
 }
-/* kengo:MED  |  se_fc/mot_data_set  |  110i */
 extern s16 D_800F6650;
 void func_8004283C(s32 a0) {
     if (a0) {
@@ -415,7 +413,6 @@ void math_RotMatrixXYZ(u16 *a0, s16 *a1) {
     a1[6] = (cab12_cosC + sinA_sinC) >> 12;
     a1[7] = (csb12_sinC + sinA_cosC) >> 12;
 }
-/* kengo:MED  |  my_hirahira/hirahira_w_ctrl_2  |  132i  |  x2 size collision */
 extern void math_RotMatrixZYX(s16 *, s32 *);
 
 
@@ -1154,7 +1151,6 @@ done:
     *slots = v1;
     return ret;
 }
-/* kengo:MED  |  my_hirahira/hirahira_w_frie  |  59i */
 extern void func_800520B8(s32, s32, s32);
 s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
     s16 *fp;

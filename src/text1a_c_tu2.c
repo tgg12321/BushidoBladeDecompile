@@ -144,7 +144,6 @@ void func_80044800(void) {
         *list = (s32)rec;
     }
 }
-/* kengo:HIGH  |  is_efc_rob/efc_rob_set_type_flash  |  204i */
 extern s32 D_800F66A0[];
 typedef void (*FuncPtr44B30)(s16 *, s16 *);
 typedef struct { s32 f0, f1, f2; } Vec3_44B30;

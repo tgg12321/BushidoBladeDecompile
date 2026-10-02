@@ -230,7 +230,6 @@ void func_8003B9D0(void) {
     D_800A3834 = 7;
     gpu_SetDispMaskOn();
 }
-/* kengo:HIGH  |  md_game/md_game_check_change_sub_mode  |  87i */
 
 void func_8003BCB4(void) {
     D_800A37B8++;
@@ -467,7 +466,6 @@ void func_8003C040(void) {
     D_800A3834 = 0x13;
     gpu_SetDispMaskOn();
 }
-/* kengo:HIGH  |  nm_cpu/cpu_side_move_dir_2  |  160i  |  x4 size collision */
 void func_8003C2C0(void) {
     s32 ret;
 
@@ -656,6 +654,10 @@ void func_8003C714(void) {
         v = src->unk_0;
         dst[0x24] = v;
         i += 1;
+        /* FAKE: the call is spelled inside the loop on its exit path; the natural
+         * spelling is a counted loop followed by the call (the target places the
+         * jal right after the back-branch, asm/funcs/func_8003C714.s:77-79). Inside
+         * the loop it sets loop_has_call, which keeps the /1800 magic in the loop. */
         if (i >= 3) {
             func_8001CD68(buf);
             break;
@@ -670,7 +672,6 @@ void func_8003C714(void) {
     D_800A3834 = 0x1F;
     gpu_SetDispMaskOn();
 }
-/* kengo:LOW  |  su_menu_edit/_SetCurrentCursor  |  104i  |  PS2 UI â€” reverted */
 void func_8003C8B4(void) {
     s32 ret;
 
@@ -1089,7 +1090,6 @@ void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
     }
 }
 
-/* kengo:LOW  |  su_menu_home/_DispSleepMenuTex  |  146i  |  PS2 UI â€” reverted */
 void func_8003D774(s32 arg0, s32 arg1) {
     s32 *ptr = (s32 *)((u8 *)&D_800A3D40 + arg1 * 24);
     ptr[0] = arg0;
@@ -1681,7 +1681,6 @@ loop_16:
         }
     }
 }
-/* kengo:HIGH  |  nm_replay_cam/replay_camera_get_attack_number  |  242i */
 void func_8003E6A0(s32 arg0, s32 arg1) {
     func_8003E2D8(D_80101DF0.work.t[0], D_80101DF0.work.t[2], arg0, arg1);
 }
@@ -1895,7 +1894,6 @@ void func_8003E6D8(s32 arg0) {
         func_800620B8(pos, cam->mat.t);
     }
 }
-/* kengo:MED  |  am_rmd/DispHira  |  299i */
 s32 *func_8003EB84(s32 a0, s32 a1, s32 *out) {
     s32 sp[0x20];
     s32 mask;
@@ -2074,7 +2072,6 @@ void func_8003EDC0(u16 *p, s32 arg1) {
     D_800A367A = 0;
     D_800A367C = 0;
 }
-/* kengo:HIGH  |  md_game/md_game_check_mode  |  234i */
 
 /* ---- merged from config.c (owner ruling Q65: one original file) ---- */
 /* Rodata owned by config.c per func_8003FA24's reference at asm/funcs/func_8003FA24.s:240-241.

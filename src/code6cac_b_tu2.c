@@ -259,7 +259,6 @@ void func_80027640(s32 arg0)
     func_80021A98(idx, r2, *(s16 *)(arg0 + 0x5E));
     func_80032854(*(s16 *)(arg0 + 4), 0x30, (s32 *)(arg0 + 0xF4), 0);
 }
-/* kengo:HIGH  |  nm_cpu/cpu_side_move_dir  |  160i  |  x4 size collision */
 
 void func_800278C0(s32 a0, s32 *ptr, s32 cmd, s32 a3, u8 *stack_a2, s32 stack_v1) {
     s32 chk_obj;
@@ -770,7 +769,6 @@ s32 func_800283D0(u8 *arg0, u8 *arg1) {
     }
 }
 
-/* kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i */
 void func_8002872C(void) {
     s32 i = 0;
     s32 offset = 0;
@@ -1027,7 +1025,6 @@ void func_800288C8(void) {
         g_practice_menu_table[1].unk_134.vz += push2_z;
     }
 }
-/* kengo:HIGH  |  sa_tan3/saTan3MainJump  |  492i  |  +3 near-exact */
 void func_8002906C(void) {
     s16 *ptr = func_8004678C();
     while (*(s16 *)ptr != 0) {
@@ -1140,7 +1137,6 @@ s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
     }
     return 0;
 }
-/* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 
 /* 1 when the box at scr+0x78 (min) / +0x84 (max) and the box at scr+0x90 (min)
  * / +0x9C (max) overlap on all three axes. */
@@ -2081,7 +2077,6 @@ void func_8002AB08(s32 mode) {
         other->unk_AD = 0;
     }
 }
-/* kengo:MED  |  se_fc/calc_loc_mat_fw  |  1074i  |  -38 3.5% no-affinity fallback */
 s32 func_8002BC68(s32 arg0) {
     s32 temp_a3;
     s32 temp_t1;
@@ -2270,7 +2265,6 @@ void func_8002C0DC(void) {
         }
     }
 }
-/* kengo:MED  |  am_rmd/PutRobShadow  |  252i */
 /* Accumulates a character's shadow vectors in PSX scratchpad RAM.  Everything
  * this function writes lives in the one record at 0x1F8002B8 that `scr` points
  * at (an s32 view; each index is the byte offset / 4): two 3-word vectors at
@@ -2900,7 +2894,6 @@ s32 func_8002CD58(u8 *obj) {
         :: "r"(obj + 0xB8) : "$12", "memory");
     return 1;
 }
-/* kengo:HIGH  |  nm_special_cam/special_camera_Init  |  370i */
 s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
@@ -3144,7 +3137,6 @@ dist_calc:
 
 
 
-/* kengo:MED  |  sa_tan5/saTan5TakeAnim2  |  154i  |  x2 size collision */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
@@ -3276,7 +3268,6 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         return 0;
     }
 }
-/* kengo:MED  |  sa_tan0/saTan0KiWareMoveA  |  212i  |  x2 size collision */
 /* func_8002DAD0 -- canonical GTE islands and C body.
  * Owner cluster grant: tools/grinder/owner_cluster_grants.txt.
  * The LZC load and store are separate Sony macro statements. GCC supplies
@@ -3494,7 +3485,6 @@ s32 func_8002DAD0(u8 *obj) {
     return 1;
 }
 
-/* kengo:MED  |  sa_tan0/saTan0KiWareMoveB  |  212i  |  x2 size collision */
 /* func_8002DE20 - ordinary C plus GTE islands,
  * each the separate header statements of a PsyQ Run-time Library Release 4.3
  * macro, character for character (engine/gtemacro.py PINNED): inline_o.h
@@ -3754,7 +3744,6 @@ s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3)
     }
     return 0;
 }
-/* kengo:HIGH  |  is_pad/pad_main_control  |  98i */
 void func_8002E838(u8 *obj) {
     s32 sp_tmp;
     s32 *mat;
@@ -3857,7 +3846,6 @@ void func_8002E838(u8 *obj) {
         "swc2   $27, 8($12)\n"
         :: "r"(vec) : "$12", "memory");
 }
-/* kengo:HIGH  |  sa_tan2/saTan2LinePrimInit  |  110i */
 s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     s32 *vin;
     s32 *vout;
@@ -4069,7 +4057,6 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
 }
-/* kengo:LOW  |  su_menu_single/_DispSchoolBG  |  188i  |  PS2 UI — reverted */
 void func_8002EECC(void *arg0, void *arg1) {
     s16 temp_a3;
     s16 temp_t0;
@@ -4408,7 +4395,6 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
     }
     return ret;
 }
-/* kengo:HIGH  |  nm_cpu/cpu_check_tubazeri  |  76i  |  x2 size collision */
 s32 func_8002FDB0(s32 *arg0) {
     s32 stride;
     s32 v1, v2;
@@ -4484,7 +4470,6 @@ s32 func_8002FDB0(s32 *arg0) {
 }
 
 
-/* kengo:HIGH  |  is_coli/coli_check_circle_hit_line  |  92i */
 /* func_8002FF20 -- pure-C head + four PsyQ SDK GTE macro islands (gte_SetRotMatrix,
  * gte_ldlv0, gte_rtv0 = cop2 MVMVA .word 0x4A486012, gte_stlvnl), character-identical to
  * the func_800203B4 (src/code6cac.c, inline_asm_canonical.txt:367), func_8002E838 (:373)
@@ -4594,7 +4579,7 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
  * cluster grant (registry row tools/grinder/owner_cluster_grants.txt:23);
  * COMPLETED-INLINE-ASM-CANONICAL (inline_asm_canonical.txt).
  * One FAKE: do-while(0) wrap around gte_stlvnl (see the annotation). */
-/* kengo:?  |  GTE rotate+translate of the object's local vector, then dispatch */
+/* GTE rotate+translate of the object's local vector, then dispatch */
 void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
     s32 dir[2];
@@ -4814,7 +4799,6 @@ Obj80106A78 *func_80030580(PracticeMenuRec *arg0, s32 arg1) {
     obj->unk_00 = 0;
     return obj;
 }
-/* kengo:HIGH  |  is_coli/coli_hit_body_weapon  |  148i */
 extern Obj80106A78 *func_80030580(PracticeMenuRec *, s32);
 extern void func_80032854(s32, s32, u8 *, s16 *);
 s32 func_800307D0(PracticeMenuRec *a0) {
@@ -5182,7 +5166,7 @@ void func_80030D7C(void) {
     }
     func_80030208();
 }
-/* kengo:?  |  GTE rotate-velocity-by-table-angle (sibling of func_8002E838) */
+/* GTE rotate-velocity-by-table-angle (sibling of func_8002E838) */
 void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
     s32 *mat;
     Vec3i32 *vec;
@@ -5532,7 +5516,6 @@ next:
     t0 += 0x2C;
     if (t1 < 4) goto loop;
 }
-/* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
 void func_800324D0(u8 *pad) {
     u8 *ptr;
     u8 c;
@@ -6086,7 +6069,6 @@ loop:
 done:
     return;
 }
-/* kengo:HIGH  |  nm_cpu/cpu_check_same_dir_timer  |  63i */
 s32 func_80033498(void) {
     s16 idx = D_800A36A4 - 2;
     switch (idx) {
@@ -6348,7 +6330,6 @@ set_count:
     D_800A3783 = 0;
     D_800A37BC = 0;
 }
-/* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action  |  189i  |  x2 size collision */
 void func_80033BC0(void) {
     u8 a0 = D_800A3783;
     u8 b = D_800A391F;

@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBCOMB COMB (link-cable SIO driver) — verbatim-linked Sony object
- * (census 2026-07-09). This file is that one object: its .text
+/* PsyQ 4.0 LIBCOMB COMB (link-cable SIO driver) — verbatim-linked Sony object.
+ * This file is that one object: its .text
  * (0x8008BE04-0x8008D050: AddCOMB .. __nulldev, in Sony's order) and its
  * .rdata (0x8001649C-0x800164F8: the two driver strings, then
  * _comb_control's three switch tables), placed after main.o by bb2.ld.

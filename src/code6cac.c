@@ -419,7 +419,6 @@ void func_80018094(s32 *arg0, s32 *arg1) {
     *(MATRIX *)(dst + 5) = *(MATRIX *)arg0[1];
     func_80018300(dst);
 }
-/* kengo:MED  |  nm_mario_cam/marionation_camera_Exec  |  155i */
 /* func_80018300 -- COMPLETED-INLINE-ASM-CANONICAL.
  * Distance-constraint pass over a chain of 64-byte nodes. arg0+6 is the link
  * count, arg0+0xC the node array, arg0+0x10 a table of 16-byte links (word 0 =
@@ -695,7 +694,6 @@ void func_80018300(s32 *arg0) {
         "swc2   $11, 8($12)\n"
         : : "r"(out) : "$12", "$13", "$14", "$15", "memory");
 }
-/* kengo:HIGH  |  nm_cpu/cpu_check_run_attack  |  322i  |  +5 near-exact */
 void func_800187F4(s16 *arg0, s32 *arg1);
 void func_80019310(s16 *arg0, s32 *arg1);
 /* func_800187F4 -- COMPLETED-INLINE-ASM-CANONICAL.
@@ -1068,7 +1066,6 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         node[2] = SCR->pos[2] + SCR->dpos[2] + node[5];
     }
 }
-/* kengo:HIGH  |  nm_single_game/single_game_setModeRequest  |  663i  |  +1 near-exact */
 extern s32 g_file_data_buf;
 void func_8001924C(s16 *arg0, s32 arg1) {
     s32 i = 0;

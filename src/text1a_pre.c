@@ -305,7 +305,6 @@ done_cases:
 }
 
 
-/* kengo:HIGH  |  am_rmd/AllocRobRmd  |  220i  |  +3 near-exact */
 extern s16 D_80094B96[];
 extern s16 D_80094B98[];
 extern s16 D_80094B9A[];
@@ -365,7 +364,6 @@ void func_800408F8(s32 *a0) {
 
     func_80040A78((s32)a0);
 }
-/* kengo:MED  |  my_rob/rob_life_ctrl  |  96i  |  x2 size collision */
 void func_80040A78(s32 arg0) {
     s32 var_a1;
     s32 var_v1;
@@ -483,7 +481,6 @@ void func_80040B44(s32 *arg0) {
 done:
     *(s32 *)((u8 *)t5 + 0x58) = 0;
 }
-/* kengo:MED  |  my_rob/rob_calc_2d_position  |  93i */
 extern s16 D_80094B9E[];
 void func_80040CB8(void *arg0) {
     s16 id;

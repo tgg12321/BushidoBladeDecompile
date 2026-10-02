@@ -270,7 +270,6 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     }
 }
 
-/* kengo:MED  |  my_hirahira/hirahira_w_ctrl  |  132i  |  x2 size collision */
 extern s32 *D_80015820[];
 extern s32 func_800545F4;
 extern s32 D_800545F8;

@@ -275,7 +275,6 @@ done:
         return (u32)r < 1;
     }
 }
-/* kengo:MED  |  tsl_pkt/tslPolyF4Init  |  81i */
 
 s32 CdMix(void) {
     CD_vol();
@@ -283,7 +282,7 @@ s32 CdMix(void) {
 }
 
 /* PsyQ 4.0 LIBCD sys: CdGetSector / CdGetSector2 — verbatim-linked Sony
-   objects (census 2026-07-09); both forward (madr, size) to the CD_ helper. */
+   objects; both forward (madr, size) to the CD_ helper. */
 s32 CdGetSector(s32 madr, s32 size) {
     return CD_getsector(madr, size) == 0;
 }
@@ -360,7 +359,7 @@ static inline void _memcpy(void *_dst, void *_src, u32 _size)
     }
 }
 
-/* PsyQ 4.0 LIBCD BIOS: getintr — verbatim-linked Sony object (census 2026-07-09);
+/* PsyQ 4.0 LIBCD BIOS: getintr — verbatim-linked Sony object;
  * C ref: SOTN src/main/psxsdk/libcd/bios.c (v1.77; @8bd7c77). BB2 links
  * v1.86, whose bytes differ in two places: the DiskError report is two
  * CD_debug-gated printf()s (not puts + one gated printf), and the error mask
@@ -572,7 +571,6 @@ s32 CD_sync(s32 mode, u8 *result)
         }
     }
 }
-/* kengo:HIGH  |  nm_cpu/cpu_side_move_dir_4  |  160i  |  x4 size collision */
 /* SOTN: src/main/psxsdk/libcd/bios.c:260 @aa53500 */
 s32 CD_ready(s32 mode, u8 *result)
 {
@@ -604,8 +602,7 @@ s32 CD_ready(s32 mode, u8 *result)
         }
     }
 }
-/* kengo:HIGH  |  nm_mario/marionation_Exec  |  180i  |  +1 near-exact */
-/* PsyQ 4.0 LIBCD BIOS: CD_cw — verbatim-linked Sony object (census 2026-07-09);
+/* PsyQ 4.0 LIBCD BIOS: CD_cw — verbatim-linked Sony object;
  * C ref: SOTN src/main/psxsdk/libcd/bios.c (v1.77; BB2 links v1.86, which sets
  * CD_mode before issuing the command and copies the result unconditionally). */
 
@@ -673,7 +670,6 @@ s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
     _memcpy(result, &Result, 8);
     return -(Intr.sync == 5);
 }
-/* kengo:MED  |  tsl_tm2/tslTm2LoadImage  |  253i  |  -10 x2 size collision */
 
 s32 CD_vol(u8 *a0) {
     *g_cd_index_reg = 2;
@@ -706,8 +702,8 @@ void CD_flush(void) {
     *g_cd_dma_madr = 0x1325;
 }
 extern volatile u16 *g_cd_spu_voice;
-/* PsyQ 4.0 LIBCD bios.c v1.86: CD_initvol — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/bios.c */
+/* PsyQ 4.0 LIBCD bios.c v1.86: CD_initvol — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libcd/bios.c */
 s32 CD_initvol(void) {
     u8 vol[4];
 
@@ -835,7 +831,6 @@ s32 CD_datasync(s32 mode)
     return ret;
 }
 
-/* kengo:MED  |  sa_eft/saEft01Init  |  91i */
 extern volatile u32 *g_cd_dma_madr;
 extern volatile u32 *g_cd_dma_bcr;
 extern volatile u32 *g_cd_dma_ctrl_b4;
@@ -950,7 +945,6 @@ void puts(void *a0) {
         putchar(c);
     }
 }
-/* kengo:MED  |  tsl_tm2/tslTm2LoadImage_2  |  253i  |  -10 x2 size collision */
 extern s32 D_800162EC;
 extern s32 D_80016304;
 
@@ -960,7 +954,7 @@ void cb_data(void);
 
 /* PsyQ 4.0 LIBCD cdread.c module .data block — CD_ReadCallbackFunc followed
    by the volatile cdread state struct (SOTN psxsdk names it D_80032DBC); BB2
-   links Sony's CDREAD object verbatim (census 2026-07-09), so
+   links Sony's CDREAD object verbatim, so
    D_800A14D0..D_800A1500 are one Sony data block (preceded by
    CD_ReadCallbackFunc at D_800A14CC), not separate globals. Member map
    recorded in memory/closer/sony-naming-map.md. */
@@ -991,7 +985,7 @@ typedef struct {
    citations at each decl. */
 
 /* PsyQ 4.0 LIBCD cdread.c: cd_read_retry (static) — verbatim-linked Sony
-   object (census 2026-07-09). The per-member externs below name the same
+   object. The per-member externs below name the same
    Sony data block the CdlREAD struct spans. */
 /* Per-member view of the same volatile Sony cdread block (CdlREAD above):
    zero-offset symbol accesses are what Sony's cdread.c v1.86 compiles to
@@ -1015,8 +1009,8 @@ extern s32 g_CdReadCallback_func;   /* CD_ReadCallbackFunc */
 extern s32 D_800162D4;   /* "CdRead: sector error\n" */
 extern s32 CdControlF(u8, s32); /* CdControlF */
 
-/* PsyQ 4.0 LIBCD cdread: cb_read (static) — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c
+/* PsyQ 4.0 LIBCD cdread: cb_read (static) — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c
    cb_read() (v1.86 deltas: saved result ptr D_800A1504, tsl-mode DMA-chain
    split with deferred advance via the cb_data callback below). */
 static void cb_read(u8 intr, u8 *result) {
@@ -1163,8 +1157,8 @@ s32 cd_read_retry(s32 arg0) {
     return D_800A14E4;
 }
 
-/* PsyQ 4.0 LIBCD cdread.c: CdReadBreak — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp psxsdk shape + v1.86 hooks */
+/* PsyQ 4.0 LIBCD cdread.c: CdReadBreak — verbatim-linked Sony object;
+   C ref: sotn-decomp psxsdk shape + v1.86 hooks */
 void CdReadBreak(void) {
     volatile s32 *tsl = &g_CdReadMode_value; /* target caches &tslmode in $s0
         (0x80082638 lui/addiu) and re-reads 0($s0) twice */
