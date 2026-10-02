@@ -86,6 +86,26 @@
   score-0 spelling was found. Rotate under the 2026-09-08 rule; retain this ledger and
   candidate for the next source-shape pass.
 
+## 2026-10-02 re-baseline (lane oct2-a4, Q91 clause D re-open)
+
+- The v12 "one-handle floor 8" did not survive re-measurement. Against today's tree
+  (`include/sound.h` `struct SpuVoice _svm_voice[24]`, `unk6` u16; main.c's
+  `_svm_sreg_buf` s16[] / `_svm_sreg_dirty` u8[] / `_svm_envx_hist` s32[]), the plain
+  SOTN-shaped body (`sotn-decomp src/main/psxsdk/libsnd/vmanager.c:830-898 @aa53500`,
+  with BB2's `SpuGetVoiceEnvelope(i, &_svm_voice[i].unk6)` call in place of SOTN's
+  register read and LIBSPU calls in place of SOTN's register writes) scores
+  **0 / 271-271** with no FAKE construct and one handle (`_svm_voice`) per object.
+  The loop-1 two-giv shape (call-arg pointer giv + i*54 reload) falls out of plain
+  `&_svm_voice[i].unk6` / `_svm_voice[i].unk6`; the old floor was an artifact of the
+  per-field scalar declarations of the time.
+- Variants measured: `tmp/_SsVmFlush/base.c` (implicit callee decls, `(u8)` high-half
+  truncation) 0; `v2.c` (+ prototypes) 0; `v3.c` (+ `& 0xFF` like vmNoiseOn) 0 ->
+  banked as `candidate.c`. Sandbox shows only not-scored relocation-addend hunks
+  (splat sub-symbols `_svm_voice_plus_0x6` / `_plus_0x1D` / `D_800F4E36` / `D_800F4E42`
+  / `D_80102A7C` / `_svm_sreg_buf_plus_0x6` vs `_svm_voice+K` / `_svm_sreg_buf+K`).
+- Landing note: candidate uses a stand-in typedef name; at landing the existing
+  `SpuVoiceAttr` typedef (main.c, above func_8008B488) moves above `_SsVmFlush`.
+
 ## Adversarial review checkpoint
 
 - Fresh reviewer verdict on the v6 score-0 form: **FAIL**. The typed access through

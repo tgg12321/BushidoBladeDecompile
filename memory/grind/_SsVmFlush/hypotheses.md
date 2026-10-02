@@ -1,5 +1,8 @@
 # Hypothesis ledger — _SsVmFlush
 
+- 2026-10-02 (oct2-a4): CONFIRMED-CLOSED. Plain SOTN-shaped body on today's declarations
+  scores 0/271 with no FAKE (ledger.md "2026-10-02 re-baseline"); the plan below is moot.
+
 ## WARM-START PLAN (queue review 2026-10-01; read-only review, no engine runs - scores are from this ledger, [I] = inference, unmeasured; re-baseline before trusting. Any 'owner ruling/question' step = a borderline.md entry per judge-sole-gate, never a wait state: keep working the function)
 - STATE: rotated 2026-09-22; INCLUDE_ASM (`src/main.c:1210`). One session, 13 variants. Best honest v12 (one handle) 8/270; cc1psx 34/270 (gap is in the source). v6 = 0/271 but used two handles (D_800F4E18 + D_800F4E1E) - reviewer FAIL. On-disk candidate.c is v13 (7/269) with a rejected FAKE alias. Stale: `include/sound.h:30-70` now has `struct SpuVoice _svm_voice[24]` (unk6, unk1b, auto_vol, auto_pan); use `_svm_envx_hist`, `_svm_okon1/2`, `_svm_okof1/2`, `_svm_sreg_buf`, `_svm_sreg_dirty` (main.c:1122-1221 already does). [I, from SOTN label names] D_80107898=_svm_envx_hist, D_800F1B10/12=_svm_okon1/2, D_801078D8/DA=_svm_okof1/2, D_800F65E0=_svm_sreg_dirty, D_80102A78=_svm_sreg_buf, D_800F1B14/D_800F2B68=_svm_orev1/2.
 - CONSTRAINTS: one object, one handle (v6 rejection, ledger.md:89-94). psyz is not admissible evidence (sotn-precedent-suffices.md). SOTN's matched SpuVmFlush (`src/main/psxsdk/libsnd/vmanager.c:830-899` @db41b28) is a newer revision reading SPU regs directly (no SpuGetVoiceEnvelope) - no precedent for loop 1, but loops 2-3 match BB2's shape (spelling guide). Flags canonical (compiler-flags-canonical.md).

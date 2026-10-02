@@ -1,15 +1,9 @@
-/* Sony PsyQ LIBSND VM_F: flush pending voice-manager state to LIBSPU. */
-typedef struct {
-    s16 left;
-    s16 right;
-} VmSpuVolume;
-
 typedef struct {
     u32 voice;
     u32 mask;
-    VmSpuVolume volume;
-    VmSpuVolume volmode;
-    VmSpuVolume volumex;
+    SpuVolume volume;
+    SpuVolume volmode;
+    SpuVolume volumex;
     u16 pitch;
     u16 note;
     u16 sample_note;
@@ -26,104 +20,61 @@ typedef struct {
     u16 sl;
     u16 adsr1;
     u16 adsr2;
-} VmSpuVoiceAttr;
-
-typedef struct {
-    s16 field_00;
-    s16 field_02;
-    s16 field_04;
-    u16 envx;
-    s16 field_08;
-    u8 field_0a;
-    u8 field_0b;
-    s16 note;
-    s16 field_0e;
-    s16 field_10;
-    s16 program;
-    s16 tone;
-    s16 vab_id;
-    s16 field_18;
-    u8 field_1a;
-    u8 noise_mode;
-    s16 auto_vol;
-    s16 field_1e;
-    s16 field_20;
-    s16 field_22;
-    s16 start_vol;
-    s16 end_vol;
-    s16 auto_pan;
-    s16 field_2a;
-    s16 field_2c;
-    s16 field_2e;
-    s16 start_pan;
-    s16 end_pan;
-    s16 field_34;
-} VmVoice;
+} TmpVoiceAttr;
 
 extern s32 D_80103604;
-extern s32 D_80107898[];
-extern u8 _SsVmMaxVoice;
 extern u8 _svm_auto_kof_mode;
-extern s8 D_800F4E35;
-extern s16 D_800F4E36;
-extern s16 D_800F4E42;
-extern s16 D_800F4E18;
 extern void (*D_80102BF8)(s32);
 extern void (*D_801027E8)(s32);
-extern u16 D_801078D8;
-extern u16 D_801078DA;
-extern u16 D_800F1B10;
-extern u16 D_800F1B12;
+extern u16 _svm_okon1;
+extern u16 _svm_okon2;
+extern u16 _svm_okof1;
+extern u16 _svm_okof2;
 extern u16 D_800F1B14;
 extern u16 D_800F2B68;
-extern void func_8008B488(VmSpuVoiceAttr *);
+extern u8 _SsVmMaxVoice;
+extern void SpuGetVoiceEnvelope(s32, u16 *);
+extern void SpuSetNoiseVoice(s32, s32);
+extern void SpuSetKey(s32, u32);
+extern void SpuSetReverbVoice(s32, s32);
 
 void _SsVmFlush(void)
 {
     s32 i;
-    u32 silent;
-    s32 offset;
-    VmVoice *voices;
-    VmSpuVoiceAttr attr;
+    u32 env_mask;
+    TmpVoiceAttr attr;
 
     D_80103604 = (D_80103604 + 1) & 0xF;
-    D_80107898[D_80103604] = 0;
+    _svm_envx_hist[D_80103604] = 0;
 
-    /* FAKE: typed local alias tests address-materialization/CSE separation
-       between the call output pointer and the post-call global reload. */
-    voices = (VmVoice *)&D_800F4E18;
     for (i = 0; i < _SsVmMaxVoice; i++) {
-        SpuGetVoiceEnvelope(i, &voices[i].envx);
-        if (((VmVoice *)&D_800F4E18)[i].envx == 0) {
-            D_80107898[D_80103604] |= 1 << i;
+        SpuGetVoiceEnvelope(i, &_svm_voice[i].unk6);
+        if (_svm_voice[i].unk6 == 0) {
+            _svm_envx_hist[D_80103604] |= 1 << i;
         }
     }
-
     if (_svm_auto_kof_mode == 0) {
-        silent = -1;
-        for (i = 0; i < 15; i++) {
-            silent &= D_80107898[i];
+        env_mask = 0xFFFFFFFF;
+        for (i = 0; i < 0xF; i++) {
+            env_mask &= _svm_envx_hist[i];
         }
         for (i = 0; i < _SsVmMaxVoice; i++) {
-            offset = i * 54;
-            if (silent & (1 << i)) {
-                if (*(u8 *)((u8 *)&D_800F4E35 + offset) == 2) {
+            if (env_mask & (1 << i)) {
+                if (_svm_voice[i].unk1b == 2) {
                     SpuSetNoiseVoice(0, 0xFFFFFF);
                 }
-                *(u8 *)((u8 *)&D_800F4E35 + offset) = 0;
+                _svm_voice[i].unk1b = 0;
             }
         }
     }
 
-    D_800F1B10 &= ~D_801078D8;
-    D_800F1B12 &= ~D_801078DA;
-
+    _svm_okon1 &= ~_svm_okof1;
+    _svm_okon2 &= ~_svm_okof2;
     for (i = 0; i < 24; i++) {
-        offset = i * 54;
-        if (*(s16 *)((u8 *)&D_800F4E36 + offset) != 0) {
+        if (_svm_voice[i].auto_vol != 0) {
             D_80102BF8(i);
         }
-        if (*(s16 *)((u8 *)&D_800F4E42 + offset) != 0) {
+        if (_svm_voice[i].auto_pan != 0) {
             D_801027E8(i);
         }
     }
@@ -131,36 +82,36 @@ void _SsVmFlush(void)
     for (i = 0; i < 24; i++) {
         attr.mask = 0;
         attr.voice = 1 << i;
-        if (D_800F65E0[i] & 1) {
+        if (_svm_sreg_dirty[i] & 1) {
             attr.mask = 3;
-            attr.volume.left = D_80102A78[i * 8];
-            attr.volume.right = D_80102A78[i * 8 + 1];
+            attr.volume.left = _svm_sreg_buf[i * 8 + 0];
+            attr.volume.right = _svm_sreg_buf[i * 8 + 1];
         }
-        if (D_800F65E0[i] & 4) {
+        if (_svm_sreg_dirty[i] & 4) {
             attr.mask |= 0x10;
-            attr.pitch = D_80102A78[i * 8 + 2];
+            attr.pitch = _svm_sreg_buf[i * 8 + 2];
         }
-        if (D_800F65E0[i] & 8) {
+        if (_svm_sreg_dirty[i] & 8) {
             attr.mask |= 0x80;
-            attr.addr = (u16)D_80102A78[i * 8 + 3] << 3;
+            attr.addr = (u16)_svm_sreg_buf[i * 8 + 3] << 3;
         }
-        if (D_800F65E0[i] & 0x10) {
+        if (_svm_sreg_dirty[i] & 0x10) {
             attr.mask |= 0x60000;
-            attr.adsr1 = D_80102A78[i * 8 + 4];
-            attr.adsr2 = D_80102A78[i * 8 + 5];
+            attr.adsr1 = _svm_sreg_buf[i * 8 + 4];
+            attr.adsr2 = _svm_sreg_buf[i * 8 + 5];
         }
         if (attr.mask != 0) {
             func_8008B488(&attr);
         }
-        D_800F65E0[i] = 0;
+        _svm_sreg_dirty[i] = 0;
     }
 
-    SpuSetKey(0, ((u32)(u8)D_801078DA << 16) | D_801078D8);
-    SpuSetKey(1, ((u32)(u8)D_800F1B12 << 16) | D_800F1B10);
-    SpuSetReverbVoice(8, ((u32)(u8)D_800F2B68 << 16) | D_800F1B14);
+    SpuSetKey(0, ((_svm_okof2 & 0xFF) << 16) | _svm_okof1);
+    SpuSetKey(1, ((_svm_okon2 & 0xFF) << 16) | _svm_okon1);
+    SpuSetReverbVoice(8, ((D_800F2B68 & 0xFF) << 16) | D_800F1B14);
 
-    D_801078D8 = 0;
-    D_801078DA = 0;
-    D_800F1B10 = 0;
-    D_800F1B12 = 0;
+    _svm_okof1 = 0;
+    _svm_okof2 = 0;
+    _svm_okon1 = 0;
+    _svm_okon2 = 0;
 }
