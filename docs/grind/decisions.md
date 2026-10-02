@@ -1162,3 +1162,10 @@ Overnight-run delegation (verbatim record docs/grind/owner-rulings-2026-09-26.md
 Q11 / Q61: func_800204C0's single `gte_rtv0()` unit may carry `.word 0x4A486012` (target 0x80020570) in place of the
 header's `0x0000013f`; the 2026-09-24 Extension (A)-(D) and a fresh layer-2 apply; prong (C) not widened.
 Rule text: .claude/rules/inline-asm-policy.md § Per-function grants.
+
+## 2026-10-02 — ORCHESTRATOR DECISION (owner-delegated) — Q93: func_800207C8's gte_rtv0 DMPSX word
+
+Same delegation and shape as Q92 (verbatim record docs/grind/owner-rulings-2026-09-26.md, Q93): func_800207C8's four
+`gte_rtv0()` units may carry `.word 0x4A486012` (targets 0x80020898, 0x80020998, 0x80020A88, 0x80020B34) in place of
+the header's `0x0000013f`; the 2026-09-24 Extension (A)-(D) and a fresh layer-2 apply; prong (C) not widened.
+Rule text: .claude/rules/inline-asm-policy.md § Per-function grants.

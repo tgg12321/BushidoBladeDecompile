@@ -936,3 +936,16 @@ asserts nothing false. Not widened: prong (C) stays strict (the owner declined t
 word, macro, edit or function is covered. The Extension's (A)-(D) and a fresh layer-2 that decodes the word still
 apply; the function lands COMPLETED-INLINE-ASM-CANONICAL with its region hashes. The owner may revoke on return.
 The rule text is .claude/rules/inline-asm-policy.md § Per-function grants.
+
+## Q93 — gte_rtv0's DMPSX command word in func_800207C8 (owner-delegated)
+Decided by the orchestrator under the 2026-10-02 overnight delegation recorded above Q92: **granted, per-function**,
+the same grant as Q92 / Q61 / Q11. Context: lane oct2-b8, func_800207C8 (code6cac_tu2.c), byte-exact (private harness
+0/317, private full link == oracle) with zero FAKE constructs; its four gte_rtv0() units are the PsyQ 4.3 inline_o.h
+statements as `engine/gtemacro.py` PINNED records them, the only respelling being the DMPSX placeholder
+`.word 0x0000013f` written as `.word 0x4A486012`, the original's bytes (`1260484A`) at 0x80020898, 0x80020998,
+0x80020A88 and 0x80020B34 (asm/funcs/func_800207C8.s:55, :122, :184, :228). Evidence:
+memory/grind/func_800207C8/evidence.md § State, bullet 2. It reproduces a Sony build step (DMPSX), is canonical GTE inline asm (outside
+item 2's ban on non-canonical __asm__), and asserts nothing false. Not widened: prong (C) stays strict; no other word,
+macro, edit or function. The 2026-09-24 Extension's (A)-(D) and a fresh layer-2 that decodes the word still apply;
+the function lands COMPLETED-INLINE-ASM-CANONICAL with its region hashes. The owner may revoke on return.
+The rule text is .claude/rules/inline-asm-policy.md § Per-function grants.

@@ -118,7 +118,7 @@ terms in docs/grind/decisions.md.
   `gte_sqr0` `0x4AA00428`, `gte_gpf0` `0x4B90003D`, `gte_gpl12` `0x4BA8003E`.
 - **Per-function grants: func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770** (Q61,
   2026-09-30): their `gte_rtv0()` units with `0x4A486012`.
-- **Per-function grant: func_800204C0** (Q92, 2026-10-02, owner-delegated): its one
-  `gte_rtv0()` unit with `0x4A486012` (target 0x80020570).
+- **Per-function grants: func_800204C0, func_800207C8** (Q92, Q93, 2026-10-02,
+  owner-delegated): their `gte_rtv0()` units with `0x4A486012`.
 
 Related: [[cop2-addressing-preamble-cluster]] · [[no-new-park-categories]]
