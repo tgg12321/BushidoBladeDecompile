@@ -31,6 +31,12 @@ Q53's prerequisites ([[sotn-precedent-suffices]] Q55).
 
 A grant is PER SYMBOL: once one consumer qualifies, other consumers of the same symbol inherit the declaration.
 
+**Owner ruling Q95 (2026-10-02) — one field-level row, `GpuCtx.unk08`.** The LIBGPU SYS draw-pending flag
+(`include/gpu.h` GpuCtx +0x08) may be `volatile s32` though its use site (_exeque's test-then-clear before
+the drawsync callback) is none of the three shapes. Grounds: _exeque is also the DMA-2 IRQ callback; non-volatile,
+reorg fills the callback's `jalr` delay slot with the clear (2/187), and only volatile, asm or extra jumps keep
+it out (`memory/grind/_exeque/evidence.md` [s13b], [s14]). Only this field; other GpuCtx members stay plain.
+
 **Not covered:** non-IRQ globals; uncited "might be IRQ-touched"; other use-site shapes; `*(volatile T *)&G`
 casts on non-qualifying globals; alias renames (`extern volatile T G_v asm("G");`); macro-hidden `__asm__`.
 

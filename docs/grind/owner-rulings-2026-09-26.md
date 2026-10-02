@@ -949,3 +949,38 @@ item 2's ban on non-canonical __asm__), and asserts nothing false. Not widened: 
 macro, edit or function. The 2026-09-24 Extension's (A)-(D) and a fresh layer-2 that decodes the word still apply;
 the function lands COMPLETED-INLINE-ASM-CANONICAL with its region hashes. The owner may revoke on return.
 The rule text is .claude/rules/inline-asm-policy.md § Per-function grants.
+
+# Owner exchange 2026-10-02 (forty-fourth batch, AskUserQuestion, owner present) — VERBATIM RECORD — GRANTED
+Context: the two open policy-questions in docs/grind/borderline.md of 2026-10-02 (camera_CalcAngles S1; _exeque
+volatile unk08), re-measured on main at f280ded41 before asking (S1 private full link == oracle with the head at cc1
+-G8 and camera_CalcAngles in C; the tail-top placement and the -G0 head both mismatch; _exeque body
+rejected/volatile-unk08.c scores 2/187 plain and 0/187 with the volatile field).
+
+## Q94 — the text1a_b_pre_rodata block as its own rodata-only file between Q89's parts
+Question, verbatim: "camera_CalcAngles: it only compiles to the original bytes with the small-data option (-G8), which your Q89 already allows for the first part of text1b. But with that option on, the compiler writes a block of read-only lookup tables (the old text1a_b_pre_rodata block, merged into text1b by Q67) in front of three jump tables, where the original has them after. No C wording changes that. If that block becomes its own small data-only file between the two halves (exactly how it was before the Q67 merge — a verbatim move, no new code), the full build matches the original EXE (I just re-ran it: SHA1 matches). May it be its own file?"
+Options offered: "Yes, own file (Recommended)" — "Restore the block as its own data-only file between text1b's two
+halves; land the split, then camera_CalcAngles in C with the -G8 head, each build-verified and adversarially
+reviewed."; "No" — "camera_CalcAngles stays in assembly and text1b stays one file; I'd keep hunting for another route."
+Owner, verbatim (free text): "This just feels like a strange solution. Does SOTN do this? Have we done it before in this project?"
+Answer given: SOTN has code-free C files holding only tables (src/dra/lba_stage.c and config_us.c: .data + .rodata
+segments, no code, config/splat.us.dra.yaml:61-62, 159-160) and many data-only d_*.c files; BB2's src/ has 9
+code-free data/rodata files today, including text1a_b_pre_rodata_b.c (the second half of this same block, split out
+2026-09-30 for func_80058580's jump tables), text1a_b_mid_rodata.c and text1a_b_post_rodata.c; this block was its own
+file until Q72 (A7) merged it by a default rule, not byte evidence.
+Follow-up, verbatim: "With that context: may the old text1a_b_pre_rodata table block go back to being its own data-only file between text1b's two halves, so camera_CalcAngles can land in C?"
+Owner chose: **"Yes, restore it (Recommended)"** — option text: "Undo the A7 merge for this one file. Steps: split,
+then -G8 for the head half, then camera_CalcAngles in C. Each step must match the original EXE byte-for-byte and get
+its own adversarial review."
+Other option offered: "No" — "camera_CalcAngles stays in assembly; text1b stays one file."
+The rule text is .claude/rules/compiler-flags-canonical.md § Owner ruling Q94.
+
+## Q95 — volatile on the one field GpuCtx.unk08 (_exeque)
+Question, verbatim: "_exeque (Sony's graphics library): one flag in the GPU state record (GpuCtx.unk08, set by _addque2, tested-and-cleared by _exeque, which also runs from the DMA interrupt) is cleared right before a function-pointer call. Our compiler always tucks that clear into the call's 'delay slot' (the instruction after a jump); the original leaves the slot empty. Marking the field `volatile` gives an exact match (re-measured: 0 vs 2 without). I traced the compiler: only volatile, inline asm, or extra jumps (which add bytes) prevent it, and Sony's own compiler does the same thing on non-volatile code. The reviewer failed it because the volatile allowlist requires the variable be touched from both an interrupt and a busy-wait loop, and this is a single test-then-clear. Allow `volatile` on this one field?"
+Owner chose: **"Yes, allow this field"** — option text: "Add a narrow rule entry for GpuCtx.unk08 (interrupt-reachable
+Sony library flag, compiler-proven necessary), then land _exeque in C via review."
+Other option offered: "No" — "_exeque stays in assembly at 2/187 until another route turns up."
+Not in the question, recorded here: SOTN's sys.c has no counterpart of this flag (its _exeque tail gates the callback
+with CheckCallback()), and declares this module's info statics (BB2's GpuCtx neighbours) plain
+(memory/grind/_exeque/evidence.md [s14b]). The question's "Sony's own compiler does the same thing" refers to cc1psx
+filling the slot on the non-volatile source ([s14]).
+The rule text is .claude/rules/legitimate-volatile-interrupt-touched.md § Owner ruling Q95.

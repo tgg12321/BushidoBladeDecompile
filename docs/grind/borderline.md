@@ -542,3 +542,15 @@ Option (B)'s frontier closed: func_80020CDC / func_80020D38 are byte-exact under
 reaches the pair through one FAKE-labelled pointer local, which keeps CSE from sharing the constant address
 across seq_Reset. Commits: cheat-cleanup 860dd811e (rv2-20E74-A3 PASS) and Match 40c63a962 (rv2-20E74-B PASS);
 func_80020E74 is COMPLETED-C (queue 1f4459b0e).
+
+## 2026-10-02 — camera_CalcAngles — owner ruling Q94 — resolution
+category: resolution
+evidence: docs/grind/owner-rulings-2026-09-26.md batch 44; docs/grind/decisions.md 2026-10-02 OWNER RULING Q94.
+disposition taken: the 2026-10-02 camera_CalcAngles S1 policy-question is SPENT with option (A): the pre_rodata block
+is its own rodata-only -G0 file between the Q89 parts.
+
+## 2026-10-02 — _exeque — owner ruling Q95 — resolution
+category: resolution
+evidence: docs/grind/owner-rulings-2026-09-26.md batch 44; docs/grind/decisions.md 2026-10-02 OWNER RULING Q95.
+disposition taken: the 2026-10-02 _exeque policy-question is SPENT: the field-level volatile on GpuCtx.unk08 is
+allowed (this field only). The landing still needs its own fresh layer-2.

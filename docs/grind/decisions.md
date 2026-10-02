@@ -1169,3 +1169,21 @@ Same delegation and shape as Q92 (verbatim record docs/grind/owner-rulings-2026-
 `gte_rtv0()` units may carry `.word 0x4A486012` (targets 0x80020898, 0x80020998, 0x80020A88, 0x80020B34) in place of
 the header's `0x0000013f`; the 2026-09-24 Extension (A)-(D) and a fresh layer-2 apply; prong (C) not widened.
 Rule text: .claude/rules/inline-asm-policy.md § Per-function grants.
+
+## 2026-10-02 — OWNER RULING — Q94: the text1a_b_pre_rodata block is its own rodata-only file between Q89's parts
+
+Forty-fourth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 44). Owner chose "Yes, restore it":
+the former text1a_b_pre_rodata.c block (D_800153F0..D_80015840) is restored verbatim as its own .rodata-only -G0
+file linked between text1b's Q89 head (-G8) and tail; A7 does not apply to it. Evidence: memory/grind/camera_CalcAngles/
+q89split/ (cc1 -G8 emits all file-scope data before every jump table; the tail-top placement breaks
+func_80058580's table phase). Split and the -G8 opt-in each land oracle-green with a layer-2. Resolves the 2026-10-02
+camera_CalcAngles policy-question. Rule text: .claude/rules/compiler-flags-canonical.md § Owner ruling Q94.
+
+## 2026-10-02 — OWNER RULING — Q95: GpuCtx.unk08 may be volatile (_exeque)
+
+Forty-fourth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 44). Owner chose "Yes, allow this
+field": a field-level `volatile s32 unk08` in include/gpu.h GpuCtx, the LIBGPU SYS draw-pending flag that _exeque
+(also the DMA-2 IRQ callback) tests and clears before calling drawsync_cb. Non-volatile, reorg fills the callback's
+jalr delay slot with the clear (2/187; evidence.md [s13b], [s14]). Only this field. Resolves the 2026-10-02 _exeque
+policy-question (rv2-exeque-1 FAIL item 3). Rule text: .claude/rules/legitimate-volatile-interrupt-touched.md
+§ Owner ruling Q95.
