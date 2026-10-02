@@ -68,12 +68,12 @@ inconsistently elsewhere:
 
 | Source | Count | Note |
 |---|---|---|
-| `asm/funcs/*.s` files | 1,437 (2026-08-07 snapshot — the duplicate pairs were subsequently deleted and asm-until-matched moves the file count both ways; regenerate the census before quoting) | splat's per-function split — the authoritative enumeration (post-wave count) |
+| `asm/funcs/*.s` files | 1,437 (2026-08-07 census; 1,438 on 2026-10-02 after the duplicate deletions and later splits — regenerate the census before quoting) | splat's per-function split — the authoritative enumeration (post-wave count) |
 | minus `D_8007E08C.s` | 1,436 | data-as-code blob, not a function |
-| minus 7 stale duplicate pairs | **1,429** | 2 same-glabel pairs (`cdrom_FramesToBcd.s`/`func_800806A4.s`, `stage_InitCollision.s`/`func_8003F274.s`) **plus 5 same-address pairs invisible to glabel scans** (`cpu_get_dist`/`func_8003032C`, `cpu_set_move_command_and_dir`/`func_80030A2C`, `cpu_check_same_dir_timer`/`func_8003339C`, `replay_camera_Init`/`func_80036D98`, `special_camera_get_rot_dir`/`func_80037348`). All 7 pairs instruction-identical, none INCLUDE_ASM-referenced; worth deleting separately. |
+| minus 7 stale duplicate pairs | **1,429** | 2 same-glabel pairs (`cdrom_FramesToBcd.s`/`func_800806A4.s`, `stage_InitCollision.s`/`func_8003F274.s`) **plus 5 same-address pairs invisible to glabel scans** (`cpu_get_dist`/`func_8003032C`, `cpu_set_move_command_and_dir`/`func_80030A2C`, `cpu_check_same_dir_timer`/`func_8003339C`, `replay_camera_Init`/`func_80036D98`, `special_camera_get_rot_dir`/`func_80037348`). All 7 pairs instruction-identical, none INCLUDE_ASM-referenced; the stale halves were deleted in 5a02fc789. |
 
-`engine/queue.json` is *not* a universe source: it lists only functions still
-carrying a cheat (incomplete-only).
+`engine/queue.json` is *not* a universe source: it lists only INCOMPLETE functions
+(empty since 2026-10-02).
 
 ### A name lives in up to three layers
 
@@ -255,19 +255,18 @@ A reset wave touching the remaining 304 rows (295 distinct names) hits every one
 | Surface | SUSPECT names referenced | Why it breaks |
 |---|---:|---|
 | `named_syms.txt` | 187 | the alias registry itself |
-| `engine/queue.json` | 92 | the worklist keys on function name |
-| `regfix.txt` | 67 | **rules are keyed by function name** — a desync silently drops the rule |
-| **`sdata_funcs.txt`** | **51** | **GP-relative addressing breaks if these desync** (`tools/rename_funcs.py` documents this explicitly) |
-| `asmfix.txt` | 18 | as regfix |
-| `sdata_exclude.txt` | 17 | as sdata |
+| `engine/queue.json` | 92 | the worklist keys on function name (empty since 2026-10-02) |
 | `inline_asm_canonical.txt` | 11 | canonical-asm authorizations are name-keyed; a desync un-authorizes a function |
 | `undefined_syms_auto.txt` | 9 | splat symbol resolution |
-| `maspsx_label_nop_funcs.txt`, `regfix_stage2.txt` | 3 each | pipeline gate lists |
 | `bb2.ld`, `volatile_extern_allowlist.txt` | 2 each | `bb2.ld` is **hand-maintained** — see below |
 | `src/*.c` | 244 | definitions and call sites |
 | `include/*.h` | 139 | declarations |
 | `asm/funcs/*.s` | 281 | `glabel` / `endlabel` — **and the filename must match the `INCLUDE_ASM` argument** |
-| `memory/` (719 files) | — | 227 `grind/` + 89 `wip/` per-function ledgers, directory-named by function |
+| `memory/` (1,334 files, 2026-10-02) | — | grind ledgers named by function (or campaign): 3 open under `grind/`, closed ones under `grind/_completed/` |
+
+The census also counted `regfix.txt` (67), `sdata_funcs.txt` (51), `asmfix.txt` (18), `sdata_exclude.txt` (17),
+`maspsx_label_nop_funcs.txt` and `regfix_stage2.txt` (3 each). Those files are retired and no longer exist
+(regfix/asmfix removed 2026-08-30; the sdata lists retired by the Q65 per-file gp adoption).
 
 Non-negotiables for the phase-2 tool:
 

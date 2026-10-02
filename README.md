@@ -7,18 +7,20 @@ Matching decompilation rebuilds the original program from human-written C that c
 
 ## Status
 
-The build verifies SHA1 against the original. Every function is in one of three states: **COMPLETED-C**
-(pure C, zero cheats, byte-identical), **COMPLETED-INLINE-ASM-CANONICAL** (genuinely hand-written original
-assembly — BIOS trampolines, GTE primitives, custom calling conventions — listed in
-[`inline_asm_canonical.txt`](inline_asm_canonical.txt)), or **INCOMPLETE** (queued in
-[`engine/queue.json`](engine/queue.json) and committed as `INCLUDE_ASM("asm/funcs", <func>);` — the original
-bytes, honestly labeled, since the 2026-08-19 asm-until-matched ruling). In-progress candidates live in
-`memory/grind/<func>/`. Live counts: `& tools/wteng.ps1 main queue status` and
-`python3 tools/check_completion_integrity.py`; dated snapshot in [`docs/STATUS.md`](docs/STATUS.md).
+The build verifies SHA1 against the original. **Every function is complete** (the worklist reached zero on
+2026-10-02): 1260 are **COMPLETED-C** (pure C, zero cheats, byte-identical) and 223 are
+**COMPLETED-INLINE-ASM-CANONICAL** (genuinely hand-written original assembly — BIOS trampolines, GTE
+primitives, PsyQ library asm, custom calling conventions — listed in
+[`inline_asm_canonical.txt`](inline_asm_canonical.txt)). 135 of the canonical ones stay as
+`INCLUDE_ASM("asm/funcs", <func>);`, their final form. A function that is not yet matched would be
+**INCOMPLETE**: queued in [`engine/queue.json`](engine/queue.json) (now empty) and committed as
+`INCLUDE_ASM` until it matches (asm-until-matched ruling, 2026-08-19). The project is now in its
+cleanup / readability phase. Counts: `python3 tools/check_completion_integrity.py`; dated snapshot in
+[`docs/STATUS.md`](docs/STATUS.md).
 
 ## Project goals (1.0 release criteria)
 
-1. **Pure C source.** Every function compiled from C in `src/*.c` — no build-rule rewrites, no `INCLUDE_ASM` stubs. (Until 1.0, `INCLUDE_ASM` stubs are the MANDATED interim representation of not-yet-matched functions — asm-until-matched ruling 2026-08-19 — so their presence is progress-honesty, not debt to paper over.) The only inline `__asm__()` permitted is for genuinely hand-coded original assembly (BIOS calling conventions, GTE coprocessor ops, a handful of custom-ABI math kernels). Authorized list: [`inline_asm_canonical.txt`](inline_asm_canonical.txt).
+1. **Pure C source.** Every function compiled from C in `src/*.c` — no build-rule rewrites. (`INCLUDE_ASM` is the mandated representation of a not-yet-matched function — asm-until-matched ruling 2026-08-19 — and the final form of canonical hand-written asm; since 2026-10-02 no function is unmatched.) The only inline `__asm__()` permitted is for genuinely hand-coded original assembly (BIOS calling conventions, GTE coprocessor ops, a handful of custom-ABI math kernels). Authorized list: [`inline_asm_canonical.txt`](inline_asm_canonical.txt).
 2. **Byte-identical to original.** Every commit must rebuild to SHA1 `62efab4f…`. The match is preserved by a per-function build pipeline (see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)).
 3. **Named and organized.** Functions, globals, structs, and constants given semantic names where evidence supports it. Subsystem boundaries clear enough to navigate.
 4. **Mod-ready foundation.** Once 1.0 lands, this source tree should be usable as the starting point for translation patches, gameplay mods, ports, and engine research.
@@ -69,7 +71,7 @@ If the final line is `OK: bb2 matches!`, you have a byte-identical rebuild.
 ```
 .
 |-- asm/                       # Disassembly. .text in 6CAC.s + asm/funcs/<name>.s; data in asm/data/
-|-- asm/funcs/                 # Per-function .s files (~1,434); count moves BOTH ways (INCLUDE_ASM migration adds, COMPLETED-C removes)
+|-- asm/funcs/                 # Per-function .s files (~1,438): reference target listing for every function, kept after completion
 |-- build/                     # All build artifacts (gitignored)
 |-- disc/                      # Extracted disc filesystem (gitignored; reproduced by extract_iso.py)
 |-- docs/                      # Contributor / maintainer documentation

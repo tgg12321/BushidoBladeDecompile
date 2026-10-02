@@ -152,7 +152,7 @@ naming*. The Grinder ran continuously underneath it all.
 | 2026-08-19 | **The self-serve + asm-until-matched day.** (1) Three overnight bytes-proven INTEGRATION HANDOFFs (SioSyncroWrite, func_8001B748, func_8002D518) operator-integrated to COMPLETED-C under two-layer review — then made pipeline-executable forever ([[integration-handoff-self-serve]]: driver widens scope / clears Judge-superseded bans on Judge verdicts; `grindlib unban`, `queue unpark` added). (2) Stale-park re-audit: 6 of 33 parks reclaimed under post-park family rulings. (3) Modality-effectiveness report (`docs/grind/modality-effectiveness-2026-08-19.md`) → ladder retune (synthesis to s6, permuter cap 2, closing-modality instrumentation) + paperwork-FAIL fixes (family-selection table, citation prechecks, CITATION fix-up ground). (4) **asm-until-matched migration** ([[asm-until-matched]]): 191 INCOMPLETE functions converted to `INCLUDE_ASM`, 865 rules retired, oracle-verified per batch; 68 byte-coupling deferred (wave-2 mechanical retirement measured a dead end). Queue distances now pin to ledger honest floors. |
 
 
-## Phase 10 — Zero rules, the Judge's rule book, build-model fidelity (2026-08-25 to 2026-10-01)
+## Phase 10 — Zero rules, the Judge's rule book, build-model fidelity (2026-08-25 to 2026-10-02)
 
 | Date | Milestone |
 |---|---|
@@ -167,6 +167,7 @@ naming*. The Grinder ran continuously underneath it all.
 | 2026-09-29 | Retro-audit of landed completions ([`audits/RETRO-AUDIT-2026-09-29.md`](audits/RETRO-AUDIT-2026-09-29.md)); owner Q37 set the remediation route for the ~20 FAILed landings. |
 | 2026-09-30 | **Per-file gp model** (`.claude/rules/per-file-gp-model.md`) and **object-relative rodata alignment** adopted; the per-function maspsx COMMON gate ruled a cheat. |
 | 2026-10-01 | Inline-asm audit ([`audits/INLINE-ASM-AUDIT-2026-10-01.md`](audits/INLINE-ASM-AUDIT-2026-10-01.md)) de-authorized three canonical entries and re-queued them. **Docs/ledger slim-down**: Grinder records rotated to the queued functions, finished plans/campaigns/handoffs/forensics deleted; everything resolves at git tag `pre-slim-2026-10-01`. |
+| 2026-10-02 | **The queue reaches zero.** Every function complete: 1260 COMPLETED-C + 223 COMPLETED-INLINE-ASM-CANONICAL, 0 INCOMPLETE (11 data-as-code symbols excluded); 90.8% of C-object `.text` bytes in C; build == oracle. The 135 remaining `INCLUDE_ASM` functions are canonical hand-written / PsyQ-library asm. Grinder stopped; completed grind ledgers closed (47e48bc74). Next phase: audits, cleanup, readability. |
 
 Current counts: [`STATUS.md`](STATUS.md). Retired work streams: `dc.sh` workflow and named-recipe library
 (2026-05-26), multi-agent fleet and GitHub board (2026-07-06), Closer Phase 3 (2026-07-13), regfix/asmfix

@@ -1,12 +1,15 @@
-# Project Status (snapshot 2026-10-01)
+# Project Status (snapshot 2026-10-02)
 
 - **Build:** `main` byte-matches the oracle (`62efab4f73f992798c43e8c730aa43baa10bb4fa`); check with
   `& tools/wteng.ps1 main verify-oracle`.
-- **Worklist:** `engine/queue.json` held 27 INCOMPLETE items (15 active, 12 rotated) on 2026-10-01, three of
-  them re-queued by the 2026-10-01 inline-asm audit ([`audits/INLINE-ASM-AUDIT-2026-10-01.md`](audits/INLINE-ASM-AUDIT-2026-10-01.md)).
-  Live: `queue status` / `queue next`. Completion counts: `python3 tools/check_completion_integrity.py`.
+- **Worklist:** `engine/queue.json` is **empty** (reached zero 2026-10-02). Every function is complete:
+  1260 COMPLETED-C + 223 COMPLETED-INLINE-ASM-CANONICAL, 0 INCOMPLETE (11 data-as-code symbols excluded).
+  90.8% of C-object `.text` bytes are C; the rest is canonical hand-written / PsyQ-library asm.
+  Recount: `python3 tools/check_completion_integrity.py`.
+- **Representation:** 135 functions remain `INCLUDE_ASM("asm/funcs", <func>);`, all listed in
+  `inline_asm_canonical.txt` (hand-written original asm) — that is their final form. `asm/funcs/*.s`
+  (~1438 files) is kept as the reference target listing for every function.
 - **Grinder:** stopped; restart only on the owner's explicit approval.
-- **Open work and debt:** [`grind/handoff-2026-09-30.md`](grind/handoff-2026-09-30.md).
-- **Representation:** an INCOMPLETE function is `INCLUDE_ASM("asm/funcs", <func>);` (asm-until-matched,
-  2026-08-19); candidates live in `memory/grind/<func>/`. No post-pass rule machinery exists.
+- **Open work:** the cleanup / audit / readability phase. Recorded debt and its remaining items:
+  [`grind/handoff-2026-09-30.md`](grind/handoff-2026-09-30.md) ("Open work").
 - Timeline: [`HISTORY.md`](HISTORY.md). Workflow: [`../CLAUDE.md`](../CLAUDE.md) / [`../AGENTS.md`](../AGENTS.md).
