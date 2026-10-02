@@ -5,7 +5,7 @@ Why (token-usage audit 2026-06-12): a layer-1 reviewer burned ~117k tokens
 re-deriving procedural facts (allowlist coverage, rule counts, commit-field
 presence) that are mechanically checkable. This tool computes those facts in
 one call; paste its output into the reviewer brief so reviewer tokens go to
-the SEMANTIC judgment (the 6-test checklist) only.
+the SEMANTIC judgment (completion-bar.md items 2-5, owner ruling Q91) only.
 
 This is a BRIEFING AID, not a gate, and emphatically NOT a replacement for
 the reviewer: per review-discipline-before-commit.md the detectors/checklists
@@ -253,7 +253,7 @@ def main() -> int:
                 print(f"  - {f}")
         else:
             print("mechanical checks clean — brief the reviewer on SEMANTICS only "
-                  "(6-test checklist); cite this output so it skips re-derivation.")
+                  "(completion-bar.md items 2-5); cite this output so it skips re-derivation.")
     return 0
 
 

@@ -15,7 +15,11 @@ pipeline; this lane is for what it is structurally bad at — the long-tail func
 restarts keep re-deriving what is already on disk. The CLAUDE.md non-negotiables apply unchanged
 (two completion states, oracle SHA1 is the only truth, no cheats on main, INCOMPLETE =
 `INCLUDE_ASM`, no deferral). The Grinder's Judge does not run here: **the fresh layer-2
-`cheat-reviewer` IS the gate.**
+`cheat-reviewer` IS the gate.** **The bar is `.claude/rules/completion-bar.md` (owner ruling Q91,
+SOTN-equivalent) — read it before you start.** A construct that only shapes codegen is fine
+with a `/* FAKE: <measured reason> */` label, nothing false asserted, the simplest known form;
+exhaustion dossiers, frame proofs and symbol retirement are hygiene (record as debt, never a
+blocker). Older ledger notes that a construct is "outside the frozen list" no longer bind.
 
 ## 0. Handshake — always start here
 
