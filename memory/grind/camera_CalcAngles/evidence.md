@@ -174,3 +174,15 @@ bld.sh builds a private full link (tree untouched); `cam.c` is the body.
 - So every survivor needs a rodata-only object holding at least D_800153F0. That is a second
   boundary beyond Q89's "only this cut". Asked the orchestrator. Recommendation: S1, which restores
   the pre-Q67 text1a_b_pre_rodata block verbatim as its own TU.
+
+## 2026-10-02 — oct2-a2 BANKED
+- The orchestrator refused S1 under its delegation: it is item-2 build structure beyond "only this cut".
+- Tried as directed: D_800153F0 made function-scope in its only C user func_80049F4C, either as a
+  `static const` local (fs_a) or an initialized local record (fs_b). The rest of the block went to the
+  tail top, so the tail starts at the passing jtbl_8001541C. Both MISMATCH. 2.7.2 cc1 -G8 emits a local
+  static or initializer constant at parse time, before the deferred function bodies, so it still
+  precedes .L10/.L26/.L55 (q89split/mkfs.py). Declaration or first-use order cannot help: under -G8
+  every data object of the TU precedes every function's jump tables.
+- Owner policy-question: docs/grind/borderline.md 2026-10-02 camera_CalcAngles entry.
+- Floor is unchanged: -G0 body 59/58 (score 6); exact at -G8 once the block is its own object.
+- camera_CalcAngles stays INCLUDE_ASM and active.

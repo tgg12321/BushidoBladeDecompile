@@ -379,3 +379,58 @@ options:
 - (B) Keep camera_CalcAngles and func_80048FFC in assembly (active) until someone finds a func_80048FFC spelling.
 
 recommendation: (B) unless you are comfortable with a boundary placed only by our toolchain's limits; (A) is byte-neutral and reversible, but it is scaffolding, not evidence.
+
+update 2026-10-02 (oct2-a2): the entry above is moot. func_80048FFC landed in C (e43b1f03b), with every halving
+at the loop end and an s16 strip-two height. Q89's first prerequisite is met; the next entry is the new blocker.
+
+## 2026-10-02 — camera_CalcAngles — Q89's single cut cannot reach the oracle at -G8; may the pre_rodata block be its own rodata-only TU? — policy-question
+category: policy-question
+
+Evidence: memory/grind/camera_CalcAngles/evidence.md (2026-10-02 oct2-a2 sections) and q89split/ (private full links,
+tree untouched).
+- The cut before INCLUDE_ASM math_RotMatrixZYX at -G0 gives the oracle. No gp symbol is reached from both
+  parts, and each part defines every gp symbol it reaches. Head-only K3/K1 objects and tail-only statics
+  move to their part.
+- With the head part at cc1 -G8 plus camera_CalcAngles in C, the build MISMATCHES: the head's .rodata grows
+  by 4 bytes.
+- Cause: under -G8, cc1 emits every data object as it parses and every function body at the end of the file.
+  So the merged text1a_b_pre_rodata block (D_800153F0..D_80015840, src/text1b.c "merged from
+  text1a_b_pre_rodata.c") is emitted before the head's three compiler jump tables. The original has the
+  tables first.
+- Function-scope forms give the same result: D_800153F0 as a `static const` local of its only C user
+  func_80049F4C, or as an initialized local record. Both are emitted at parse time, ahead of the tables
+  (q89split/mkfs.py). The other block items are used by tail code, mostly hand-written asm, so they
+  cannot be function-local.
+- The block at the top of the tail fails even at -G0: func_80058580's table at 0x8001585C needs phase 4,
+  and the tail object would start at 0x800153F0 (phase 0).
+- Passing placements (oracle at -G8 head + camera C; q89split/mks23.py):
+  - S1: the whole block as its own rodata-only -G0 object between the parts;
+  - the tail starting at jtbl_8001541C, with only D_800153F0 in its own object;
+  - the tail starting at jtbl_8001545C, with D_800153F0 and jtbl_8001541C in their own object.
+
+  Tail starts at D_80015470 or D_80015840 fail. Every passing placement needs a rodata-only object beyond
+  Q89's "only this cut".
+- Tension:
+  - Q67/A7 merged this rodata-only file into the group.
+  - The orchestrator notes the bytes do not locate the boundary (three placements pass).
+  - The orchestrator refused it under its delegation as item-2 build-structure territory.
+
+disposition taken: camera_CalcAngles stays INCLUDE_ASM and active (not rotated). Nothing landed beyond the
+ledger.
+
+Question for the owner (plain language): "Your Q89 lets text1b split once so camera_CalcAngles can be compiled
+the -G8 way. That split is clean, but the -G8 part then puts one block of read-only tables in front of three
+jump tables. The original has them after. No C spelling inside that part changes this: the compiler always
+writes tables like that first. The block reaches the original bytes only if it is its own small data-only
+file between the two parts, as it was before the Q67 merge. Three slightly different cut points inside it
+all work. May it be its own file?"
+
+options:
+- (A) Grant S1: restore the text1a_b_pre_rodata block verbatim as its own -G0 rodata-only TU between
+  text1b (head, -G8) and text1b_tu1b (tail).
+  - Record the two other passing placements.
+  - Land the split, then the -G8 opt-in with the camera_CalcAngles Match, each oracle-green and with its
+    own layer-2.
+- (B) Keep camera_CalcAngles in assembly; text1b stays one -G0 file.
+
+recommendation: (A). It is a move of existing text with no new code, and it is reversible.
