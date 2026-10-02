@@ -1,5 +1,10 @@
 # Hypothesis ledger — func_8003EDC0
 
+## STATE (oct2-b7, 2026-10-02): 0/234 reached — see evidence.md. Landing = two parts:
+A cheat-cleanup (record types in include/code6cac.h, D_800A4750/D_800A6690 retyped, siblings
+func_8003EB84/func_8003E6D8 respelled to members, game_GetCharData's g_char_data alias retired),
+then B Match. Two FAKEs: the func_80052C10 argument, i reused as P4's index.
+
 ## WARM-START PLAN (queue review 2026-10-01; read-only review, no engine runs - scores are from this ledger, [I] = inference, unmeasured; re-baseline before trusting. Any 'owner ruling/question' step = a borderline.md entry per judge-sole-gate, never a wait state: keep working the function)
 - STATE: rotated after recon only; INCLUDE_ASM (`src/code6cac_c2.c:2103`); banked body is a placeholder, no attempt. Callers `text1a_c2.c:56,162,200,236` as `(u16 stream ptr, 7)`. Listed in `sdata_funcs.txt:91` (D_800A3368, D_800A3230 gp-relative).
 - DECODE [asm read; C shape I]: four phases over an s16 stream with -1 terminators.
