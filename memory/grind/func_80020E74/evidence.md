@@ -83,3 +83,7 @@
   80021280, 800224E0, 80022580, sys_GameInit, 80020E74 (231/231).
 - FAKE remeasures under the landed model: separate chr / j locals 3 (rejected/separate-locals-score3.c);
   loads[2] 20 (rejected/loads2-frame.c).
+- Layer-2 round 1 (2026-10-02): B PASS rv2-20E74-B (f82ccae3e0bffb29). A FAIL rv2-20E74-A, item 4 only:
+  re-landed func_80021280 read PracticeMenuRec (incl. the newly typed unk_48) via u8* offsets. Fix: the
+  reviewer's typed spelling `ptr/r280_typed.c` (PracticeMenuRec *a2), sandbox 0; A alone and A+B rebuild
+  == oracle; func_80021280 hash e2a47bdeb8d93ed4; other eight A hashes and B's unchanged.
