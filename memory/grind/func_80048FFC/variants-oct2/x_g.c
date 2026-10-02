@@ -1,0 +1,74 @@
+void func_80048FFC(s32 arg0) {
+    RECT rect;
+    s16 *ctl;
+    s32 x;
+    s32 y;
+    s32 xf;
+    s32 yf;
+    s32 x2;
+    s32 y2;
+    s32 x2f;
+    s32 y2f;
+    s32 h;
+    s32 end;
+    s32 i;
+    MoveChannel *ch;
+    DR_MOVE *p;
+    OTag *ot;
+    s32 phase;
+
+    ch = &D_800EF848[arg0];
+    phase = ch->phase;
+    ctl = ch->ctl;
+    p = ch->move[D_800A36AC & 1];
+    x = ctl[0] & ~0x3F;
+    y = ctl[1] & ~0xFF;
+    xf = ctl[0] % 64;
+    yf = ctl[1] % 256;
+    h = ctl[2];
+    end = ctl[3];
+    x2 = ctl[4] & ~0x3F;
+    y2 = ctl[5] & ~0xFF;
+    x2f = ctl[4] % 64;
+    y2f = ctl[5] % 256;
+    i = 0;
+    do {
+        s32 nx = x2 + x2f;
+        s32 ny = y2 + y2f;
+        s32 cy = y + yf;
+        s32 dy = end - phase;
+        s32 old;
+        rect.x = x + xf;
+        rect.y = cy;
+        rect.w = h;
+        rect.h = dy;
+        SetDrawMove(p, &rect, nx, ny + phase);
+        nx++; nx--;
+        ny++; ny--;
+        ny++; ny--;
+        old = phase;
+        phase >>= 1;
+        xf >>= 1;
+        yf >>= 1;
+        x2f >>= 1;
+        y2f >>= 1;
+        h >>= 1;
+        end >>= 1;
+        i++;
+        rect.y = cy + dy;
+        rect.h = old;
+        ot = (OTag *)&D_800A378C[0xFFF];
+        ((OTag *)p)->addr = ot->addr;
+        ot->addr = (u32)p;
+        p++;
+        SetDrawMove(p, &rect, nx, ny);
+        ot = (OTag *)&D_800A378C[0xFFF];
+        ((OTag *)p)->addr = ot->addr;
+        ot->addr = (u32)p;
+        p++;
+    } while (i < 3);
+    ch->phase += ctl[6];
+    if (ch->phase >= ctl[3]) {
+        ch->phase %= ctl[3];
+    }
+}

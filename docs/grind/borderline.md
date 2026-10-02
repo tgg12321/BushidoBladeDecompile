@@ -344,3 +344,38 @@ disposition taken: the 2026-10-01 camera_CalcAngles policy-question is SPENT wit
 category: resolution
 evidence: docs/grind/owner-rulings-2026-09-26.md batch 42; docs/grind/decisions.md 2026-10-01 OWNER RULING Q90; layer-2 rev-23F08-B-r11 FAIL item 1.
 disposition taken: asked directly by the orchestrator after the layer-2 FAIL (no separate policy-question entry); SPENT, allowed narrowly (Q90). The landing still needs its own fresh layer-2.
+
+## 2026-10-02 — camera_CalcAngles / func_80048FFC — Q89's first prerequisite cannot be met in C; may the -G8 head part end before func_80048FFC? — policy-question
+category: policy-question
+evidence:
+- memory/grind/camera_CalcAngles/evidence.md (2026-10-02 oct2-a1 section); memory/grind/func_80048FFC/evidence.md.
+- func_80048FFC is 4/232 at -G0 AND at -G8. Its one hunk is the copy `old = phase` and the shift `phase >>= 1`, which sit above call two's a1/a2/a3 setup instead of below it.
+- Mechanism, from sched.c and the dumps:
+  - The copy, the shift and the arg moves always tie on priority, in both sched passes (anti/output deps are cost-free on MIPS; nothing before call one is a load at sched1).
+  - Ties go by original insn order.
+  - calls.c emits the arg moves after every argument expression.
+  - The copy only survives cse/combine when the shift sits between it and the rect.h store; with the shift after call two it collapses to 231 insns.
+  - So every admissible spelling puts the copy and the shift first.
+- Measured and killed:
+  - 2240 statement orders and a 60k-iteration permuter (earlier lanes);
+  - 465 do-while(0) wrappers;
+  - comma/argument placements of the shift; a RECT pointer; recomputed destination args; halvings/i++ after call two; pre-increment p in the call; an s16 copy; copy+shift right before call two; `phase = old >> 1` (tmp/camera_CalcAngles/g8 x_a..x_l: 4, 53, 93, 78, 4, 56, 4, 4, 4, 53).
+- The gp-span test passes for a cut before func_80048FFC as well (no gp symbol on both sides). The head statics split cleanly: D_800A33B0..E4 are used only before func_80048FFC.
+- There is no independent positive evidence of an original file boundary at func_80048FFC.
+
+disposition taken:
+- The orchestrator refused the alternate cut under its delegation (it changes an owner ruling's scope; there is no boundary evidence).
+- The real-types prerequisite was done separately (cheat-cleanup landing: g_cam_bone_data2 and D_800EF070 typed as transform nodes).
+- camera_CalcAngles and func_80048FFC stay INCLUDE_ASM and active, not rotated.
+
+Question for the owner (plain language): "camera_CalcAngles is waiting on func_80048FFC, as your Q89 requires, because an assembly function inside a -G8 file gets moved to the top of the file. func_80048FFC is one instruction pair from matching, and I can show why our compiler can never put that pair in the original order from any C we're allowed to write. The original programmers' code clearly did something we can't see; it is not a flag. Two ways forward: let the -G8 part end just before func_80048FFC for now, a boundary with no evidence of its own that is undone once func_80048FFC lands; or leave both functions in assembly."
+
+options:
+- (A) Stage Q89 with the cut before func_80048FFC:
+  - head part func_800460E4..func_80048F58 at -G8 with camera_CalcAngles in C;
+  - func_80048FFC..func_8004A09C as their own -G0 TU with today's flags;
+  - the TUs merge back under Q89 as written once func_80048FFC is in C;
+  - same split tests and both-ways proof.
+- (B) Keep camera_CalcAngles and func_80048FFC in assembly (active) until someone finds a func_80048FFC spelling.
+
+recommendation: (B) unless you are comfortable with a boundary placed only by our toolchain's limits; (A) is byte-neutral and reversible, but it is scaffolding, not evidence.

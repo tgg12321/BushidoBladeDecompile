@@ -169,3 +169,34 @@ Killed (all on the F6 chassis unless noted):
 Frontier: a source structure that makes the copy and shift deeper than the call-two argument
 setups in sched1. One option is a true dependence on an in-block load. Another is a different
 basic-block or loop-note structure around the second strip. Neither is identified yet.
+
+## 2026-10-02 — oct2-a1 (camera_CalcAngles's Q89 prerequisite) — the sched tie, and the next batch of variants
+
+Re-baseline on main (typed interfaces): F6 chassis 4/232, plain 13 at -G0; the same at -G8 (variants-oct2/
+g8fn.sh with G=8: the head part's -G8 does not touch this function). Mechanism (sched.c 2.7.2):
+- priority() runs over LOG_LINKS (predecessors), and mips ADJUST_COST makes anti/output deps cost-free.
+- In sched1, the copy (prio(call one)), the shift (max of its anti preds: the pre-call phase readers and the
+  copy) and the arg moves (output deps on call one) all equal prio(call one) = 1. Nothing before call one is
+  a load at sched1.
+- rank_for_schedule falls through to LUID, and the higher LUID is placed lower.
+- calls.c emits the hard-reg moves after all argument expressions (emit_queue only adds post-increments
+  after them).
+- So the shift, which must sit between the copy and the rect.h store or cse/combine kills the copy
+  (231 insns), always lands above the moves.
+- The copy is single-set, so adjust_priority launches it right above the shift.
+- sched2 ties again at prio(call one) = 6 (the loop's spill chains) and keeps sched1's order.
+Variants (variants-oct2/gen48.py on ffc_f6.c), with diff lines vs the target: x_a 4, x_b 53, x_d 93, x_e 78,
+x_f 4, x_g 56, x_h 4, x_j 4, x_k 4, x_l 53.
+- x_a: copy+shift inside the rect.h store (comma expression).
+- x_b: shift inside the call's argument.
+- x_d: RECT pointer for the second strip.
+- x_e: destination recomputed from x2/x2f, y2/y2f, halved after call two.
+- x_f: halvings and i++ after call two.
+- x_g: second strip's rect stores before addPrim one.
+- x_h: pre-increment p in the call.
+- x_j: s16 copy.
+- x_k: copy+shift right before call two.
+- x_l: `phase = old >> 1` after the store.
+The policy question (the Q89 cut before this function) is logged in docs/grind/borderline.md 2026-10-02;
+the orchestrator refused it under its delegation. Frontier: a source construct that emits the copy or the
+shift after call two's argument moves — none is known in GCC 2.7.2 beyond queued post-increments.
