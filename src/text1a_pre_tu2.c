@@ -11,12 +11,10 @@ void func_800404A0(s16 *a0, s32 a1);
 extern s32 g_player_ptrs[];
 void func_80040A78(s32 arg0);
 
-typedef void (*FuncPtr_40D48)(s16 *, s16 *);
 typedef struct { s32 a, b, c, d, e, f, g, h; } Copy8_40D48;
 extern s32 D_800A9A10[];
 extern s32 D_80094CFC[];
 extern s32 D_800A3820;
-extern FuncPtr_40D48 D_800F66A0[];
 extern void func_800417D0(s32 *);
 extern void func_800400B0(s32 *, s32);
 extern void func_8003F62C(s32 *);
@@ -34,6 +32,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     if (ent == 0) {
         return;
     }
+    /* FAKE: s4 copies ent as a byte pointer; using ent directly scores 4. */
     s4 = (u8 *)ent;
 
     *(s16 *)(s4 + 0x3C) = a3[0];
@@ -41,6 +40,8 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     *(s16 *)(s4 + 0x40) = a3[2];
 
     *(s32 *)(s4 + 0x78) = a2[0];
+    /* FAKE: s5 holds s4 + 0x2C here and the linked record pointer in the copy loop below;
+     * a fresh loop local scores 35, dropping this first role 46. */
     s5 = s4 + 0x2C;
     *(s32 *)(s4 + 0x7C) = a2[1];
     s3 = s4 + 0x94;
@@ -52,9 +53,11 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     case 0: {
         s32 *tbl;
         u8 *p;
-        FuncPtr_40D48 *s0_fn;
+        /* FAKE: s0 is the counter of all four loops in this function; a counter per loop
+         * scores 15. */
         s0 = 1;
         tbl = D_80094CFC;
+        /* FAKE: s1 copies the parameter arg4; using arg4 directly scores 78. */
         s1 = arg4;
 
         *(s32 *)(s3 + 0x4C) = 0;
@@ -90,11 +93,10 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         *(s32 *)(s2 + 0x50) = -(s32)*(s16 *)((u8 *)s1 + 0x6E);
         *(s32 *)(s2 + 0x54) = -(s32)*(s16 *)((u8 *)s1 + 0x70);
         *(s16 *)(s2 + 0x10) = *(u16 *)((u8 *)s1 + 0x72);
-        s0_fn = D_800F66A0;
         *(s16 *)(s2 + 0x12) = -(s16)*(u16 *)((u8 *)s1 + 0x74);
         *(s16 *)(s2 + 0x14) = -(s16)*(u16 *)((u8 *)s1 + 0x76);
 
-        (*s0_fn)((s16 *)(s2 + 0x10), (s16 *)(s2 + 0x38));
+        g_anim_func_table[0]((Unk80101DF0Rot *)(s2 + 0x10), (Unk80101DF0Mat *)(s2 + 0x38));
 
         *(s32 *)(s2 + 0xB4) = *(s16 *)((u8 *)s1 + 0x78);
         *(s32 *)(s2 + 0xB8) = -(s32)*(s16 *)((u8 *)s1 + 0x7A);
@@ -103,7 +105,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         *(s16 *)(s2 + 0x7A) = -(s16)*(u16 *)((u8 *)s1 + 0x80);
         *(s16 *)(s2 + 0x7C) = -(s16)*(u16 *)((u8 *)s1 + 0x82);
 
-        (*s0_fn)((s16 *)(s2 + 0x78), (s16 *)(s2 + 0xA0));
+        g_anim_func_table[0]((Unk80101DF0Rot *)(s2 + 0x78), (Unk80101DF0Mat *)(s2 + 0xA0));
         break;
     }
     case 1:

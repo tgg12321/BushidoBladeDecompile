@@ -1616,7 +1616,6 @@ s32 _Pad1(void);
 
 
 
-extern s32 (*g_anim_func_table)(s16 *, s16 *);
 
 
 

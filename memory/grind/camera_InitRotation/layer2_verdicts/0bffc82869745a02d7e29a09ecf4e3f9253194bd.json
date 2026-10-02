@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "camera_InitRotation",
+ "body_hash": "8acf5539ad04853c",
+ "summary": "Whole body reviewed (text1b.c). Typed Unk80101DF0Record *node, field stores, g_anim_func_table[node->unk8](&node->xf.rot, &node->work) with no cast (types now agree), work.t zeroed, xf.mat = work. Nothing codegen-only, nothing false, table reached through its one header declaration. sandbox = 0 per orchestrator; body hash confirmed."
+}

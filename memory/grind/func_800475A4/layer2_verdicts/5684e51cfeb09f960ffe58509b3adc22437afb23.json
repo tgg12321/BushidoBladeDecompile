@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_800475A4",
+ "body_hash": "c7883930229fdab9",
+ "summary": "PASS. The round-1 fix is present: `base = &g_cam_bone_data2;` carries `/* FAKE: second C handle ... the direct spelling scores 6 */`, and the reason re-measures (tmp/l2v/Q2/cand/vNoBase_475A4.c = 6, 100/101 insns). The older `s16 neg` FAKE is load-bearing (removed = 3, tmp/l2v/Q2r2/cand/vNoNeg_475A4.c). Ablating the whole cluster (no base, no neg) scores 9 (vNoBaseNoNeg_475A4.c), so no lighter byte-exact form is known (item 5). Other constructs are truthful: `angle`/`computed` named intermediates; the result.vz store is in the target. g_anim_func_table[4]/[0] are uncast through the header declaration, and (Unk80101DF0Mat *)&buf1/&buf2 are layout-identical views of SDK MATRIX locals that also feed MulMatrix0 (header comment code6cac.h:818-820). No asm, volatile, fabricated calls or second externs. sandbox --disable all = 0 (101/101)."
+}

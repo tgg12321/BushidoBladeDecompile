@@ -14,7 +14,7 @@ extern void func_80044F30(s32, s32);
 extern void func_80045824(s32, s32, s32);
 extern void func_80045230(s32);
 extern void func_80044010(s32 *, s16);
-extern void func_8003EDC0(s32, s32);
+extern void func_8003EDC0(u16 *, s32);
 extern s32 func_80044670(s32, s32, s32);
 extern void func_800477DC(s32);
 extern s32 func_80047EC8(void);
@@ -72,7 +72,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
                 s3 = s0[0];
                 {
                     s32 off = ALIGN4(s0[s3 - 1]);
-                    func_8003EDC0(PTR_OFF(s0, off), 7);
+                    func_8003EDC0((u16 *)PTR_OFF(s0, off), 7);
                 }
                 break;
             case 34:
@@ -87,6 +87,8 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     }
 
     g_stage_id = (s16)stage_id;
+    /* FAKE: s7 (the early-return flag above) reused as slot id 7 for func_80045600 /
+     * func_80045694; the literal or a separate local scores 37. */
     s7 = 7;
     s0 = func_800455AC(7);
 
@@ -97,6 +99,8 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     }
 
     if (arg1 != 0) {
+        /* FAKE: s3 (the slot buffer's word count) reused for arg1's word count; a separate
+         * local or the inline read scores 2. */
         s3 = *(s32 *)arg1;
         func_80045824(arg1, (s32)s0, ((s32 *)arg1)[s3]);
     }
@@ -176,7 +180,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
 
     func_80044010(s6, 7);
     func_800481E8((s32)fp_ptr, 0);
-    func_8003EDC0((s32)s4, 7);
+    func_8003EDC0((u16 *)s4, 7);
     func_80054410((s32)sp10);
     D_800A33B0 = (s32)sp18;
     D_800A33B4 = (s32)sp20;
@@ -214,7 +218,7 @@ void func_800464C4(void) {
         break;
     }
     func_80044010(a0, 7);
-    func_8003EDC0(s1, 7);
+    func_8003EDC0((u16 *)s1, 7);
     func_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
     g_stage_variant = 0;
 }
@@ -250,7 +254,7 @@ void func_8004659C(s32 a0) {
     func_80054410(s3);
     D_800A33B0 = (s32)s4p;
     D_800A33B4 = (s32)s1p;
-    func_8003EDC0(s0p, 7);
+    func_8003EDC0((u16 *)s0p, 7);
 }
 extern void func_800453E0(s32);
 void func_8004668C(void) {
@@ -365,7 +369,6 @@ extern u16 D_800A38D6;
 extern u8 *g_gpu_ot_ptr;
 extern s32 D_800A3808;
 extern u8 D_800F62E0[8][0x60];
-extern s32 g_anim_func_table[];
 extern void func_80042E90(void);
 extern void func_80044498(void);
 extern void func_80049E4C(void);
@@ -544,42 +547,37 @@ void game_Init(void) {
 }
 void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
     s32 result[3];
-    u16 *new_var;
     u16 new_var2;
     s32 trans[3];
-    s16 rot[3];
-    s32 matrix_buf[8];
-    s16 *rot_base;
+    Unk80101DF0Rot rot;
+    Unk80101DF0Mat matrix_buf;
     u8 *base;
 
     D_800A3820 = (s32)&D_80102C00;
     {
         u16 cnt = D_800A38D6;
         s32 old_ptr = (s32)g_gpu_ot_ptr;
-        new_var2 = cnt - -1;
+        new_var2 = cnt + 1;
         D_800A3808 = old_ptr;
         D_800A38D6 = new_var2;
         D_800A378C = (u32 *)(old_ptr + 0x10);
     }
 
-    new_var = &a1[2];
     if (a0 != 0) {
-        rot_base = &D_80101DF0.xf.rot.vx;
-
-        *rot_base = -(s16)a1[0];
+        D_80101DF0.xf.rot.vx = -(s16)a1[0];
         D_80101DF0.xf.rot.vy = -(s16)a1[1];
-        D_80101DF0.xf.rot.vz = -(s16)(*new_var);
+        D_80101DF0.xf.rot.vz = -(s16)a1[2];
 
         trans[1] = (trans[0] = 0);
         trans[2] = -a2;
 
-        rot[0] = -(s16)a1[0];
-        rot[1] = -(s16)a1[1];
-        rot[2] = -(s16)(*new_var);
+        rot.vx = -(s16)a1[0];
+        rot.vy = -(s16)a1[1];
+        rot.vz = -(s16)a1[2];
 
-        ((void (*)(s16 *, s32 *))g_anim_func_table[0])(rot, matrix_buf);
+        g_anim_func_table[0](&rot, &matrix_buf);
 
-        ApplyMatrixLV(matrix_buf, trans, result);
+        ApplyMatrixLV(&matrix_buf, trans, result);
 
         {
             s32 *rp = result;
@@ -764,7 +762,7 @@ void camera_InitRotation(Unk80101DF0Record *node) {
     node->xf.rot.vx = 0;
     node->xf.rot.vy = 0;
     node->xf.rot.vz = 0;
-    ((void (*)(Unk80101DF0Rot *, Unk80101DF0Mat *))g_anim_func_table[node->unk8])(&node->xf.rot, &node->work);
+    g_anim_func_table[node->unk8](&node->xf.rot, &node->work);
     node->work.t[2] = 0;
     node->work.t[1] = 0;
     node->work.t[0] = 0;
@@ -849,6 +847,8 @@ void func_800475A4(void) {
     computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz + (s32)Judge[angle & 0xFFF] * result.vx) >> 12;
     result.vz = computed;
 
+    /* FAKE: second C handle to g_cam_bone_data2 (pointer-alias-fake-exception); the direct
+     * spelling scores 6. */
     base = &g_cam_bone_data2;
     {
         /* FAKE: s16 temporary for the negated pitch: storing -ratan2() straight
@@ -861,8 +861,8 @@ void func_800475A4(void) {
     base->xf.mat.t[0] = D_80101DF0.xf.mat.t[0];
     base->xf.mat.t[1] = D_80101DF0.xf.mat.t[1];
     base->xf.mat.t[2] = D_80101DF0.xf.mat.t[2] + 0x6590;
-    ((void (*)(Unk80101DF0Rot *, MATRIX *))g_anim_func_table[4])(&base->xf.rot, &buf1);
-    ((void (*)(Unk80101DF0Rot *, MATRIX *))g_anim_func_table[0])(&D_80101DF0.xf.rot, &buf2);
+    g_anim_func_table[4](&base->xf.rot, (Unk80101DF0Mat *)&buf1);
+    g_anim_func_table[0](&D_80101DF0.xf.rot, (Unk80101DF0Mat *)&buf2);
     MulMatrix0(&buf2, &buf1, (MATRIX *)&base->xf.mat);
 
     {
@@ -2199,7 +2199,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             *(s16 *)(obj + 0x10) = rot_in[0];
             *(s16 *)(obj + 0x12) = rot_in[1];
             *(s16 *)(obj + 0x14) = rot_in[2];
-            ((void (*)(SVECTOR *, MATRIX *))g_anim_func_table[0])((SVECTOR *)(obj + 0x10), (MATRIX *)(obj + 0x18));
+            g_anim_func_table[0]((Unk80101DF0Rot *)(obj + 0x10), (Unk80101DF0Mat *)(obj + 0x18));
             *(s32 *)(obj + 0x2C) = pos[0];
             *(s32 *)(obj + 0x30) = pos[1];
             *(s32 *)(obj + 0x34) = pos[2];

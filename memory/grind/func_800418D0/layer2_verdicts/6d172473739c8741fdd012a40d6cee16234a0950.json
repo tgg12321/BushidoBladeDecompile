@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_800418D0",
+ "body_hash": "f8d1059d82668c08",
+ "summary": "Whole body reviewed (text1a_post.c). sp10 retyped s16[4] -> Unk80101DF0Rot (the negated copy of xf.rot, truthful); func typed AnimRotFunc; (Unk80101DF0Mat *)(a0 + 14) is the true view of work (+0x38) on a raw s32 * param. sandbox = 0. No item 2-5 defect. Hygiene only: raw s32 * parameter for an Unk80101DF0Record; Block16 split copy is byte-identical (measured, 0 hunks) to a single Unk80101DF0Mat copy."
+}

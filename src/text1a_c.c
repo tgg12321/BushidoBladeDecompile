@@ -41,7 +41,6 @@ extern s32 func_8004019C(s32 *, s32);
 
 
 extern s32 func_800486FC(s32 *);
-extern s32 g_anim_func_table[];
 extern u8 D_800F62E0[8][0x60];
 
 void func_80042504(s32 *hsv, s32 *rgb) {
@@ -413,18 +412,16 @@ void math_RotMatrixXYZ(u16 *a0, s16 *a1) {
     a1[6] = (cab12_cosC + sinA_sinC) >> 12;
     a1[7] = (csb12_sinC + sinA_cosC) >> 12;
 }
-extern void math_RotMatrixZYX(s16 *, s32 *);
+extern void math_RotMatrixZYX(Unk80101DF0Rot *, Unk80101DF0Mat *);
 
 
 extern void math_RotMatrixXYZ();
-extern s32 D_800F66A8;
-extern s32 D_800F66B0;
-extern s32 D_800F66B4;
 void func_80042E90(void) {
-    g_anim_func_table[0] = (s32)math_RotMatrixZYX;
-    D_800F66A8 = (s32)math_RotMatrixZXY;
-    D_800F66B0 = (s32)math_RotMatrixYXZ;
-    D_800F66B4 = (s32)math_RotMatrixXYZ;
+    g_anim_func_table[0] = math_RotMatrixZYX;
+    /* the three below are defined above on the angle / matrix element arrays */
+    g_anim_func_table[2] = (AnimRotFunc)math_RotMatrixZXY;
+    g_anim_func_table[4] = (AnimRotFunc)math_RotMatrixYXZ;
+    g_anim_func_table[5] = (AnimRotFunc)math_RotMatrixXYZ;
 }
 void math_TransposeMatrixInPlace(u16 *a0) {
     /* FAKE: statement staging — saving one

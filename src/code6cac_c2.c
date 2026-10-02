@@ -1979,7 +1979,6 @@ skip:
 
     return out;
 }
-extern void (*g_anim_func_table[])(Unk80101DF0Rot *, Unk80101DF0Mat *);
 extern s16 D_800A3678;
 extern s32 D_800A3230;
 extern void func_80052C10();

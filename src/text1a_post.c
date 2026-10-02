@@ -159,18 +159,17 @@ after2:
     }
 }
 typedef struct { s32 w[4]; } Block16;
-extern s32 g_anim_func_table[];
 extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
 extern void gte_SetMatrixRotTransIRVec(void *, void *, void *);
 void func_800417D0(s32 *a0) {
-    void (*func)(s32 *, s32 *);
+    AnimRotFunc func;
 
     if (((s16 *)a0)[3] == 1) {
         return;
     }
     if (((s16 *)a0)[3] != 2) {
-        func = (void (*)(s32 *, s32 *))g_anim_func_table[((s16 *)a0)[4]];
-        func(a0 + 4, a0 + 14);
+        func = g_anim_func_table[((s16 *)a0)[4]];
+        func((Unk80101DF0Rot *)(a0 + 4), (Unk80101DF0Mat *)(a0 + 14));
     }
     if ((s32 *)a0[3] != 0) {
         if (((s16 *)a0[3])[3] == 0) {
@@ -184,15 +183,14 @@ void func_800417D0(s32 *a0) {
     }
     ((s16 *)a0)[3] = 1;
 }
-extern s32 g_anim_func_table[];
 void func_800418D0(s32 *a0) {
-    s16 sp10[4];
-    void (*func)(s16 *, s32 *);
-    sp10[0] = -(u16)((u16 *)a0)[8];
-    sp10[1] = -(u16)((u16 *)a0)[9];
-    sp10[2] = -(u16)((u16 *)a0)[10];
-    func = (void (*)(s16 *, s32 *))g_anim_func_table[((s16 *)a0)[4]];
-    func(sp10, a0 + 14);
+    Unk80101DF0Rot sp10;
+    AnimRotFunc func;
+    sp10.vx = -(u16)((u16 *)a0)[8];
+    sp10.vy = -(u16)((u16 *)a0)[9];
+    sp10.vz = -(u16)((u16 *)a0)[10];
+    func = g_anim_func_table[((s16 *)a0)[4]];
+    func(&sp10, (Unk80101DF0Mat *)(a0 + 14));
     ((Block16 *)(a0 + 6))[0] = ((Block16 *)(a0 + 14))[0];
     ((Block16 *)(a0 + 6))[1] = ((Block16 *)(a0 + 14))[1];
 }

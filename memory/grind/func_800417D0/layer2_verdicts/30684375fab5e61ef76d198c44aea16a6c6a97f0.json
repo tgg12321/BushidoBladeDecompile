@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_800417D0",
+ "body_hash": "b9576506588f7323",
+ "summary": "Whole body reviewed (text1a_post.c). The handler call now goes through the typed table (local `func` is an honest once-written AnimRotFunc); (Unk80101DF0Rot *)(a0 + 4) / (Unk80101DF0Mat *)(a0 + 14) are true views of the node's xf.rot (+0x10) and work (+0x38) on a raw s32 * parameter (no declared object is aliased, so not item 4). sandbox = 0. No asm/pins/barriers (item 2), nothing false or unlabelled (item 3). Hygiene only: the parameter is still s32 * for an Unk80101DF0Record, and the Block16 two-half copy is byte-identical (measured, 0 hunks) to `*(Unk80101DF0Mat *)(a0 + 6) = *(Unk80101DF0Mat *)(a0 + 14);`."
+}

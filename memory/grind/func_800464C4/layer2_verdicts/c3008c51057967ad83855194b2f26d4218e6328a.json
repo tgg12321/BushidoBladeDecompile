@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_800464C4",
+ "body_hash": "ad9e34e38380d7d1",
+ "summary": "Whole body reviewed (text1b.c). Only change: func_8003EDC0((u16 *)s1, 7) matching the definition void func_8003EDC0(u16 *, s32) in code6cac_c2.c. v0 holds one meaning (the aligned offset of a header entry) at several entries (Ruling 9 shape, ordinary C). Nothing codegen-only unlabelled, nothing false, no item 2/4/5 defect."
+}

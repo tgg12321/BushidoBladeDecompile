@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_8004659C",
+ "body_hash": "e3d3b4bb52370f57",
+ "summary": "Whole body reviewed (text1b.c). Only change: func_8003EDC0((u16 *)s0p, 7) matching the definition. v0 is one walking cursor over the stage header table (base, then +4 / +a0*20 / +4 ...), s0 the base: truthful. No item 2-5 defect. Hygiene: v0 is an s32 holding func_800457A0's s32 * result (implicit pointer->int)."
+}

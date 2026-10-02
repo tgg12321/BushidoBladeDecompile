@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "func_80049718",
+ "body_hash": "5fe1c47fd5bbde12",
+ "summary": "Whole body reviewed (text1b.c). Only change: the handler call is uncast through the typed table, with (Unk80101DF0Rot *)(obj + 0x10) / (Unk80101DF0Mat *)(obj + 0x18) true views on the raw u8 * draw-object buffer (D_800A38B4 is a byte pointer, not a declared aggregate, so not item 4). Existing constructs are labelled with measured reasons (side named intermediate, val58 dead store, in-place flags reuse with SOTN e_shop.c:4621/4625 @aa53500 tags, frame intermediate). The header comment's claim (g_anim_func_table[0] turns rot_in into the matrix at +0x18) is true. No item 2-5 defect."
+}

@@ -28,7 +28,6 @@ extern u16 D_800A38D6;
 extern u8 *g_gpu_ot_ptr;
 extern s32 D_800A3808;
 extern u8 D_800F62E0[8][0x60];
-extern s32 g_anim_func_table[];
 s32 stage_GetId(void);
 void func_80046914(void);
 s32 *func_800469C4(s32 a0);
@@ -935,12 +934,12 @@ s32 func_8005490C(void) {
     D_80101DF0.xf.rot.vz = v[5];
     if (s->unk1E != 0) {
         MATRIX m;
-        SVECTOR rot;
+        Unk80101DF0Rot rot;
         rot.vx = 0;
         rot.vz = 0;
         rot.vy = s->unk1E;
-        ((void (*)(SVECTOR *, MATRIX *))g_anim_func_table[0])(&rot, &m);
-        ((void (*)(SVECTOR *, MATRIX *))g_anim_func_table[0])((SVECTOR *)&D_80101DF0.xf.rot, (MATRIX *)&D_80101DF0.work);
+        g_anim_func_table[0](&rot, (Unk80101DF0Mat *)&m);
+        g_anim_func_table[0](&D_80101DF0.xf.rot, &D_80101DF0.work);
         MulMatrix2(&m, (MATRIX *)&D_80101DF0.work);
         math_MatrixToAnglesYXZ((s32 *)&D_80101DF0.work, &D_80101DF0.xf.rot.vx);
         math_TransposeMatrixInPlace((u16 *)&D_80101DF0.work);

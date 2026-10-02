@@ -522,7 +522,6 @@ game_EffStart_8004777C          = 0x8004777C;  /* same body as game_EffInit (cal
 /* game_SndCleanup_80047550 (body calls saEft03Start) -- names don't match bodies. */
 
 /* === Data names landed by the final sound.c sweep (4) === */
-g_camera_rotation_data          = 0x800F66A0;  /* camera_InitRotation state */
 
 /* === Data-symbol batch 6 (2026-05-17) -- ranks 61-90 === */
 /* 5 high-confidence + 22 medium proposals (full evidence in */
@@ -2086,7 +2085,6 @@ D_800EF076                                 = 0x800EF076;  /* +6 */  /* data-wave
 D_800EF078                                 = 0x800EF078;  /* +8 */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_8 */
 D_800EF07A                                 = 0x800EF07A;  /* +A (init = 4) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_A */
 D_800EF07C                                 = 0x800EF07C;  /* +C */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C */
-D_800F66B0                                 = 0x800F66B0;  /* callback function pointer (void(*)(u8*, s32*)) for sound subsystem */  /* data-wave 2026-09-25: was g_snd_callback_func_ptr */
 
 /* === Sound stream stage + camera sector data (2026-05-17) -- 5 highs === */
 g_scratchpad_cached_data_ptr                            = 0x80095328;  /* pointer stashed into scratchpad 0x1F80001C for fast access */
@@ -2324,8 +2322,6 @@ g_gte_back_color_c_r_plus_1                             = 0x800F64B9;  /* +1 fro
 g_gte_back_color_c_r_plus_2                             = 0x800F64BA;  /* +2 from g_gte_back_color_c_r (0x800F64B8) */
 g_gnd_init_complete_flag_plus_1                         = 0x800F6627;  /* +1 from g_gnd_init_complete_flag (0x800F6626) */
 D_800F665A                                   = 0x800F665A;  /* +2 from g_game_p2_ctrl (0x800F6658) */  /* data-wave 2026-09-25: was g_game_p2_ctrl_plus_2 */
-g_anim_func_table_plus_8                                = 0x800F66A8;  /* +8 from g_anim_func_table (0x800F66A0) */
-D_800F66B4                          = 0x800F66B4;  /* +4 from g_snd_callback_func_ptr (0x800F66B0) */  /* data-wave 2026-09-25: was g_snd_callback_func_ptr_plus_4 */
 D_80101BD0                                   = 0x80101BD0;  /* +4 from g_memcard_slot (0x80101BCC) */  /* data-wave 2026-09-29: was g_memcard_slot_plus_4 */
 g_char_struct_p1_field_BC_plus_4                        = 0x80101F88;  /* +4 from g_char_struct_p1_field_BC (0x80101F84) */
 g_char_world_pos_z_plus_8                               = 0x80101FB0;  /* +8 from g_char_world_pos_z (0x80101FA8) */

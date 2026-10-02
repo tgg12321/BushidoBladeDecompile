@@ -840,6 +840,13 @@ extern Unk80101DF0Record D_80101DF0;
 extern Unk80101DF0Record D_800FF638;
 extern Unk80101DF0Record g_cam_bone_data2;
 extern Unk80101DF0Record D_800EF070;
+/* 0x800F66A0: the rotation-to-matrix handlers a transform node's unk8 selects
+ * (rot -> matrix, PsyQ RotMatrix shape).  func_80042E90 fills [0] ZYX, [2] ZXY,
+ * [4] YXZ, [5] XYZ ([1] and [3] are never written); the nodes set unk8 to 0, 2,
+ * 4 and 5, and func_8003EDC0 / func_800417D0 / func_800418D0 / camera_InitRotation
+ * index it by unk8 (4-byte stride).  _svm_vab_vh follows at 0x800F66B8. */
+typedef void (*AnimRotFunc)(Unk80101DF0Rot *, Unk80101DF0Mat *);
+extern AnimRotFunc g_anim_func_table[6];
 /* The 0x68-byte records of the table game_GetCharData returns: a transform
  * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
  * fills them from a stream and calls g_anim_func_table[unk8] on &xf.rot /
