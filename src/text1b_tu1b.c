@@ -5995,17 +5995,16 @@ extern s32 func_8007352C();
 extern s32 D_8009B7AC;
 extern s32 D_8009B7B8;
 extern s32 D_8009B7C4;
-extern u16 D_8009B850;
-extern s32 D_800A328C;
+extern u16 D_8009B850[]; /* packed screen positions: x = (v >> 7) + 0x37, y = (v & 0x7F) + 0x2A */
 typedef struct {
-    s32 *p_geom;
-    s32 *p_static;
+    s32 *header;  /* the sprite-sheet header func_8007352C reads */
+    Unk8009B400Record *p_static;
     s32 arg1_field;
     s32 pad0C;
     s32 zero10;
     s32 arg2_field;
-    s32 width;
-    s32 height;
+    s32 x;  /* screen position func_8007352C adds to the cell's x/y */
+    s32 y;
     s32 pad20;
     s32 pad24;
     s8 byte28;
@@ -6014,26 +6013,27 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     S414 s;
     s32 dist_off;
     s32 end_off;
-    s32 new_var;
-    new_var = arg1;
-    dist_off = new_var + 0x14;
-    end_off = new_var + 0x2C;
+    /* FAKE: param copy; reading arg1 directly scores 6 (75 vs 76 insns). */
+    s32 arg1_copy;
+    arg1_copy = arg1;
+    dist_off = arg1_copy + 0x14;
+    end_off = arg1_copy + 0x2C;
     s.byte28 = 0;
     s.zero10 = 0;
     s.arg2_field = arg2;
-    s.width = (((u16)(*((&D_8009B850) + (arg0 & 0x7FFF)))) >> 7) + 0x37;
-    s.height = ((*((&D_8009B850) + (arg0 & 0x7FFF))) & 0x7F) + 0x2A;
+    s.x = (D_8009B850[arg0 & 0x7FFF] >> 7) + 0x37;
+    s.y = (D_8009B850[arg0 & 0x7FFF] & 0x7F) + 0x2A;
     if (arg0 & 0x8000) {
-        s.p_geom = &D_8009B7AC;
+        s.header = &D_8009B7AC;
     } else if (D_8009BD24[0][0].chr < 0xC) {
-        s.p_geom = &D_8009B7B8;
+        s.header = &D_8009B7B8;
     } else {
-        s.p_geom = &D_8009B7C4;
+        s.header = &D_8009B7C4;
     }
     s.p_static = &D_800A328C;
-    s.arg1_field = new_var;
+    s.arg1_field = arg1_copy;
     func_8007352C((s32)(&s));
-    SetDrawMode(dist_off, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
+    SetDrawMode(dist_off, 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim((s32)g_gpu_ot_ptr + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
@@ -6299,8 +6299,7 @@ u8 D_800A3270[8] = { 0, 1, 2, 3, 4, 0, 0, 0 };
 s32 D_800A3278 = 0;
 u8 D_800A327C[8] = { 0x80, 3, 0, 0, 0x40, 0, 0, 1 };
 u8 D_800A3284[8] = { 0xe0, 3, 0xff, 1, 0x10, 0, 1, 0 };
-s32 D_800A328C = 0;
-s32 D_800A3290 = 0xe140000;  /* the second word of the 8-byte record at D_800A328C (text1b stores &D_800A328C as a descriptor's p_static for func_8007352C; its neighbours D_800A327C/3284/3294 are 8-byte records); text1b declares D_800A328C s32; not named by code */
+Unk8009B400Record D_800A328C = { 0, 0, 0, 0, 0x14, 0xE };
 u8 D_800A3294[8] = { 0xc0, 3, 0x80, 1, 0x40, 0, 0x16, 0 };
 u8 D_800A329C[8] = { 0xc0, 3, 0xff, 1, 0x10, 0, 1, 0 };
 u8 D_800A32A4[8] = { 0x80, 3, 0x7f, 1, 0x40, 0, 0x7f, 0 };

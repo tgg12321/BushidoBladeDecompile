@@ -588,7 +588,6 @@ extern s16 D_800A310C[4];          /* 0x800A310C..0x800A3113 (asm/data/91C98.dat
 extern s32 D_800A3134;
 extern s32 D_800A3140;
 extern u8 D_800A31DA;
-extern u32 D_800A3220;
 extern u8 D_800A3670;
 extern u8 D_800A3671;
 extern s16 D_800A367A;

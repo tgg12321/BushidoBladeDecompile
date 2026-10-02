@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8002F770",
+  "body_hash": "0ef606b96cf33286",
+  "summary": "The second handle `init_scr` is removed. The identity-matrix stores now go through the function's own `scr = (u8 *)0x1F8002B8`, which is assigned once, earlier (the same constant, so the semantics are unchanged). The literal 0x1F800390 became `scr + 0xD8`, the same bytes (0x1F8002B8 + 0xD8 = 0x1F800390). This is honest: one base handle, and the offset names the matrix's position in the record. The 0x1F8002B8 record has no struct type in any header (grep of include/ for 1F8002B8/1F800390/0x2B8 is empty), so item 4 is not engaged. Typing that record is hygiene debt; it is already listed under the judge-decl-cleanup 'Scratchpad views' debt. The GTE islands (Lzc, SetRotMatrix, ldlv0/rtv0 with the Q61-granted 0x4A486012 word, stlvnl) are untouched by this diff. work/temp keep their true Ruling 11 comments. No wall constructs and no missing FAKE labels."
+}

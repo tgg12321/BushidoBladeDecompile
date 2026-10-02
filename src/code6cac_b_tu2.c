@@ -1512,8 +1512,8 @@ typedef struct { s32 x, y, z; } Vec3i;
  * takes the old tip and the tip is pushed out by q*4. If the yaw
  * difference is under 0x400, func_8002E838 sets up the segment frame and each
  * of the 22 hit records of character `id` (D_800F5F68, 0x14 bytes each; 6..9
- * skipped unless obj+0x26C) is tested against its scratch point 0x1F8000A8 +
- * id*0x108 + i*0xC with the record's +0xC/+0xE limits: a hit sets bit i in
+ * skipped unless obj+0x26C) is tested against its scratch point
+ * SPAD->unkA8[id][i] with the record's +0xC/+0xE limits: a hit sets bit i in
  * *hit, and, when the record's first halfword is nonzero, a second test
  * with its +0x10/+0x12 limits also sets it in *deep.
  * Finally the base is pulled back by q/4 into +0xA8, func_80053614 casts the
@@ -1661,7 +1661,7 @@ void func_8002A458(u8 *obj, u32 *hit, u32 *deep, s32 quiet) {
             if (*(s16 *)(obj + 0x26C) == 0 && i >= 6 && i <= 9) {
                 continue;
             }
-            pos = (s32 *)((u8 *)0x1F8000A8 + id * 0x108 + i * 0xC);
+            pos = (s32 *)&SPAD->unkA8[id][i];
             if (func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E) != 0) {
                 s32 bit = 1 << i;
                 *hit |= bit;
@@ -2476,13 +2476,11 @@ void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
     s32 id = *(s16 *)(a0 + 4);
     BoneHitRec *recbase = D_800F5F68[id];
     BoneHitRec *rec;
-    s32 base = id * 0x108;
     s32 hitMask = 0;
     s32 seenMask = 0;
     s32 i;
 
     for (i = 0, rec = recbase; i < 0x16; i++, rec++) {
-        s32 off = base + i * 0xC;
         s32 x;
         s32 y;
         s32 z;
@@ -2501,15 +2499,15 @@ void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
          * the lowest free already-used caller-saved reg ($a1), while the
          * target seats it in $s0 = the call-crossing `hit` pseudo. */
         hit = 0;
-        x = *(s32 *)((u8 *)0x1F8000A8 + off);
+        x = SPAD->unkA8[id][i].x;
         if (*(s32 *)(scr + 0x84) < x - r || x + r < *(s32 *)(scr + 0x78)) {
             hit = 1;
         } else {
-            y = *(s32 *)((u8 *)0x1F8000AC + off);
+            y = SPAD->unkA8[id][i].y;
             if (*(s32 *)(scr + 0x88) < y - r || y + r < *(s32 *)(scr + 0x7C)) {
                 hit = 1;
             } else {
-                z = *(s32 *)((u8 *)0x1F8000B0 + off);
+                z = SPAD->unkA8[id][i].z;
                 if (*(s32 *)(scr + 0x8C) < z - r || z + r < *(s32 *)(scr + 0x80)) {
                     hit = 1;
                 }
@@ -4198,7 +4196,6 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
 }
 void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     MATRIX *m;
-    u8 *init_scr;
     u8 *scr;
     s32 *mat;
     s32 *vec;
@@ -4215,24 +4212,24 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     s32 temp;
     s32 sp_tmp;
 
-    init_scr = (u8 *)0x1F8002B8;
-    *(s16 *)(init_scr + 0xD8) = 0x1000;
-    *(s16 *)(init_scr + 0xDA) = 0;
-    *(s16 *)(init_scr + 0xDC) = 0;
-    *(s16 *)(init_scr + 0xDE) = 0;
-    *(s16 *)(init_scr + 0xE0) = 0x1000;
-    *(s16 *)(init_scr + 0xE2) = 0;
-    *(s16 *)(init_scr + 0xE4) = 0;
-    *(s16 *)(init_scr + 0xE6) = 0;
-    *(s16 *)(init_scr + 0xE8) = 0x1000;
-    RotMatrixX(x, (s32 *)0x1F800390);
-    RotMatrixY(y, (s32 *)0x1F800390);
-    RotMatrixZ(-z, (s32 *)0x1F800390);
-    RotMatrixX(angles[0], (s32 *)0x1F800390);
-    RotMatrixY(angles[1], (s32 *)0x1F800390);
-    RotMatrixZ(angles[2], (s32 *)0x1F800390);
+    scr = (u8 *)0x1F8002B8;
+    *(s16 *)(scr + 0xD8) = 0x1000;
+    *(s16 *)(scr + 0xDA) = 0;
+    *(s16 *)(scr + 0xDC) = 0;
+    *(s16 *)(scr + 0xDE) = 0;
+    *(s16 *)(scr + 0xE0) = 0x1000;
+    *(s16 *)(scr + 0xE2) = 0;
+    *(s16 *)(scr + 0xE4) = 0;
+    *(s16 *)(scr + 0xE6) = 0;
+    *(s16 *)(scr + 0xE8) = 0x1000;
+    RotMatrixX(x, (s32 *)(scr + 0xD8));
+    RotMatrixY(y, (s32 *)(scr + 0xD8));
+    RotMatrixZ(-z, (s32 *)(scr + 0xD8));
+    RotMatrixX(angles[0], (s32 *)(scr + 0xD8));
+    RotMatrixY(angles[1], (s32 *)(scr + 0xD8));
+    RotMatrixZ(angles[2], (s32 *)(scr + 0xD8));
 
-    m = (MATRIX *)0x1F800390;
+    m = (MATRIX *)(scr + 0xD8);
     c0 = m->m[1][2] * m->m[2][1] - m->m[1][1] * m->m[2][2];
     d0 = m->m[0][0] * (c0 >> 12);
     c1 = m->m[0][1] * m->m[2][2] - m->m[0][2] * m->m[2][1];
@@ -4246,7 +4243,6 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     r2 = (m->m[0][0] * m->m[1][2] - m->m[0][2] * m->m[1][0]) / work;
 
     ang_z = -ratan2(i1, i0);
-    scr = (u8 *)0x1F8002B8;
     temp = i0 * i0 + i1 * i1;
     if ((u32)temp < 0x400) {
         work = (u32)g_sqrt_table_u8[temp] >> 3;

@@ -2699,8 +2699,7 @@ void func_8004019C(s32 *a0, s32 a1) {
 /* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
 s32 D_800A3218 = 0;
 s32 D_800A321C = 1;
-u32 D_800A3220 = 0x1dc03f0;
-s32 D_800A3224 = 0x240010;  /* the w/h halves of the 8-byte RECT at D_800A3220 (code6cac_c2 passes &D_800A3220 to LoadImage, whose callee reads x/y/w/h); include/code6cac.h declares D_800A3220 u32; not named by code */
+RECT D_800A3220 = { 0x3F0, 0x1DC, 0x10, 0x24 };
 s32 D_800A3228 = -1;
 s32 D_800A322C = 0;
 s32 D_800A3230 = 0;  /* reached gp-relative by func_8003EDC0: size from the blob label */
