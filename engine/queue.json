@@ -39,18 +39,6 @@
       "addr": "80020E74"
     },
     {
-      "func": "func_8003EDC0",
-      "file": "code6cac_c2",
-      "distance": 234,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "Recon shows a multi-phase packed-stream parser with four loops, dynamic dispatch, and several global table initializations; choosing a narrower candidate for a clean exact completion.",
-      "rotated_at": "2026-09-21T01:02:54+00:00",
-      "rotation_count": 1,
-      "addr": "8003EDC0"
-    },
-    {
       "func": "_SsVmFlush",
       "file": "main",
       "distance": 271,
@@ -88,11 +76,11 @@
     }
   ],
   "counts": {
-    "total": 7,
+    "total": 6,
     "active": 1,
     "by_status": {
       "active": 1,
-      "rotated": 6
+      "rotated": 5
     },
     "by_verdict": {
       "C": 1
