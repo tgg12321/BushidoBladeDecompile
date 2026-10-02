@@ -25,26 +25,14 @@
       "rotated_at": "2026-09-16T07:19:10+00:00",
       "rotation_count": 1,
       "addr": "8007D6D8"
-    },
-    {
-      "func": "func_80020E74",
-      "file": "code6cac_tu2",
-      "distance": 231,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "Target frame requires an untouched 256-byte local; byte-zero also needs a do-while(0) RA wrapper. Both are forbidden families under standing rulings; no independently attested workspace contract found.",
-      "rotated_at": "2026-09-21T00:35:35+00:00",
-      "rotation_count": 1,
-      "addr": "80020E74"
     }
   ],
   "counts": {
-    "total": 3,
+    "total": 2,
     "active": 1,
     "by_status": {
       "active": 1,
-      "rotated": 2
+      "rotated": 1
     },
     "by_verdict": {
       "C": 1
