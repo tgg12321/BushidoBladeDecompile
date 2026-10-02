@@ -904,7 +904,7 @@ extern volatile s32 _qin;
 extern volatile s32 _qout;
 
 
-void _exeque();                           /* extern */
+s32 _exeque();                            /* extern */
 s32 get_alarm();                                /* extern */
 s32 DMACallback(s32, s32 (*)()); /* extern */
 s32 SetIntrMask(s32);                         /* extern */
@@ -913,6 +913,7 @@ extern volatile s32 _qlog[];
 extern s32 *D_8009BF6C;
 extern s32 D_8009BF70;
 extern s32 D_8009BF80;
+extern s32 D_8009BF84;
 
 /* ADDQUE2-BEGIN */
 /* LIBGPU/SYS `_addque2` — reference sotn-decomp src/main/psxsdk/libgpu/sys.c:744
@@ -961,7 +962,40 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
     return (_qin - _qout) & 0x3F;
 }
 /* ADDQUE2-END */
-INCLUDE_ASM("asm/funcs", _exeque);
+/* PsyQ 4.0 LIBGPU SYS: _exeque — verbatim-linked Sony object (census 2026-07-09); C ref:
+ * sotn-decomp src/main/psxsdk/libgpu/sys.c:797 is an older revision (null-func reset path,
+ * CheckCallback tail) and was not adopted. Drains the packet queue; when it is empty and a
+ * draw is pending, clears the pending flag and calls the DrawSyncCallback. */
+s32 _exeque(void) {
+    if (*D_8009BF54 & 0x01000000) {
+        return 1;
+    }
+    D_8009BF84 = SetIntrMask(0);
+    while (_qin != _qout && !(*D_8009BF54 & 0x01000000)) {
+        if (((_qout + 1) & 0x3F) == _qin && g_gpu_ctx.drawsync_cb == 0) {
+            DMACallback(2, NULL);
+        }
+        while (!(*D_8009BF48 & 0x04000000)) {
+        }
+        _que[_qout].func(_que[_qout].arg, _que[_qout].count);
+        _qlog[0] = (s32)_que[_qout].func;
+        D_8009BF6C = _que[_qout].arg;
+        /* FAKE: do-while(0) — its loop notes keep this log store between the arg log store
+         * and the _qout advance; without it sched sinks both log stores to the loop test
+         * (score 10; memory/grind/_exeque/evidence.md [s13]) */
+        do {
+            D_8009BF70 = _que[_qout].count;
+        } while (0);
+        _qout = (_qout + 1) & 0x3F;
+    }
+    SetIntrMask(D_8009BF84);
+    if (_qin == _qout && !(*D_8009BF54 & 0x01000000) && g_gpu_ctx.unk08 != 0 &&
+        g_gpu_ctx.drawsync_cb != 0) {
+        g_gpu_ctx.unk08 = 0;
+        ((void (*)(void))g_gpu_ctx.drawsync_cb)();
+    }
+    return (_qin - _qout) & 0x3F;
+}
 extern void memset(u8 *a0, u8 a1, s32 a2);
 extern s32 SetIntrMask(s32);
 extern s32 _version(s32);
@@ -1006,7 +1040,7 @@ s32 _reset(s32 arg0) {
     }
     return _version(arg0);
 }
-extern void _exeque();
+extern s32 _exeque();
 s32 _sync(s32 arg0) {
     s32 temp_s0;
     s32 ret;

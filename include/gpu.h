@@ -98,7 +98,8 @@ typedef struct {
  * (debug_level), SetGraphReverse (reverse; get_dx mirrors x when set),
  * ResetGraph's per-type limit tables + the clamps in checkRECT/get_cs/_clr
  * (width/height), DrawSyncCallback (drawsync_cb), GetDrawEnv/PutDrawEnv
- * (draw_env), GetDispEnv/PutDispEnv (disp_env). unk08 is set to 1 by _addque2. */
+ * (draw_env), GetDispEnv/PutDispEnv (disp_env). unk08 is set to 1 by _addque2 and
+ * test-and-cleared by _exeque (also the DMA-2 IRQ callback) before it calls drawsync_cb. */
 typedef struct {
     u8 type;         /* +0x00 */
     u8 queue_mode;   /* +0x01 */
@@ -106,7 +107,7 @@ typedef struct {
     u8 reverse;      /* +0x03 */
     s16 width;       /* +0x04 */
     s16 height;      /* +0x06 */
-    s32 unk08;       /* +0x08 */
+    volatile s32 unk08; /* +0x08 volatile: grant in volatile_extern_allowlist.txt */
     u32 drawsync_cb; /* +0x0C */
     DRAWENV draw_env; /* +0x10 */
     DISPENV disp_env; /* +0x6C */
