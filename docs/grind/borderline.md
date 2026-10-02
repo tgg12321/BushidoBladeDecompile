@@ -484,6 +484,14 @@ options:
 recommendation: (A). It restores a July owner ruling that the module's existing rows already rely on. It is
 narrow (Sony census state only), and the evidence is a named compiler decision, not a score chase.
 
+addendum 2026-10-02 (fresh lane oct2-b9, memory/grind/_exeque/evidence.md [s14]): a fresh re-derivation
+reached the same result. Every reorg.c / jump.c route was re-checked from source, and 13 new tail
+spellings were measured; none goes below 2 without volatile. New evidence: the original PsyQ cc1psx, given
+the same non-volatile source, also fills the slot. So the original source differed at this site; this is not
+a compiler-fidelity gap. Also noted, not used: SOTN sys.c @aa53500 (matched) declares this module's queue
+state volatile (sys.c:58, 96-97), and its _exeque tests and later clears a member of it (sys.c:817, 821).
+That is a possible Q55 citation, but it concerns a different object of the same module.
+
 ## 2026-10-02 — func_80020E74 — may D_800A38C6 be reached by indexing past D_800A38C4 (a third Q63-style pair)? — policy-question
 category: policy-question
 

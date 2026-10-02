@@ -446,3 +446,55 @@ So the target's unfilled slot is reachable only through volatile, a label/jump, 
 one route that is not item 2, and the bar refuses it outside the catalog. A permuter cannot help, because
 the search space has no non-volatile preimage. (Earlier s4/s5 campaigns of >20k iterations found none.)
 Disposition: policy-question in docs/grind/borderline.md (2026-10-02 _exeque). _exeque stays INCLUDE_ASM.
+
+## [s14] 2026-10-02 oct2-b9 — fresh-eyes re-derivation (no volatile): residual 2 confirmed closed; cc1psx gap closed
+
+Re-baselined: rejected/volatile-unk08.c body, plain gpu.h = 2/187 (186 insns). Diagnostic only (wall,
+not landable): an empty `__asm__ volatile("")` between the clear and the call = 0/187, so the jalr slot
+is the whole residual.
+Target check: 0x8007D988 `sw $zero,0($v1)`, 0x8007D98C `jalr $v0`, 0x8007D990 `nop`. No branch in the
+function targets 0x8007D988/D98C (targets: D750 D78C D7B0 D7C4 D910 D994 D9B0). Filled jalr slots,
+stores included, are normal in this library (93 of 114 jalr in 0x8007AE7C-0x8007DF10, e.g. checkRECT
+0x8007B4B8 `sw $v0,0x10($sp)`), so the assembler does not unfill slots.
+
+New evidence — original compiler, same source: cc1psx (PsyQ GCC 2.7.2.SN.1, tools/cc1psx_wrapper.sh,
+calibration only) on the exact sandbox TU emits the same `.set noreorder` / `jal $31,$2` / `sw $0,0($3)`
+pair (score 8; its other 6 are the queue-call region, the tail equals ours). The s11/s12 "cc1psx produced
+no scorable object" gap came from the `void _exeque();` forward decls; with them made `s32` it builds.
+So the original source differs from every non-volatile spelling at this site, not the compiler.
+
+Every reorg route checked against tools/gcc-2.7.2 source, for a zero-byte way to keep the store out:
+- fill_simple_delay_slots (reorg.c:2861) runs first in each of the 2 passes (MAX_REORG_PASSES,
+  reorg.c:1133; loop reorg.c:4430-4433). The backward scan stops only per stop_search_p (reorg.c:719):
+  CODE_LABEL, JUMP_INSN, BARRIER, SEQUENCE, asm. The trial is refused only by resource_conflicts_p
+  (reorg.c:755) or eligible_for_delay (mips.md:135, dslot no + length 1).
+- Labels. Compiler labels with 0 uses are deleted (jump.c:261-270; jump2 runs after sched2,
+  toplev.c:3142). Unused user labels become NOTE_INSN_DELETED_LABEL (jump.c:3494). Preserved labels
+  come only from `&&L` in a static initializer (expr.c:4136, data bytes), nested-function references
+  (expr.c:4121) or nonlocal/handler labels (stmt.c:665, 3085). All of these are barriers or add bytes.
+- Jumps. A jump to the next insn is deleted by jump2 (jump.c:690) and by relax_delay_slots. Any live
+  jump or label needs a second path to the jalr, which the target lacks. Cross-jumping (jump2 cross_jump=1)
+  only builds such a label from two real call paths.
+- Zero-length insns. blockage (unspec_volatile, length 0, mips.md:6045) is emitted only by
+  untyped_call (__builtin_apply, mips.md:6428) and the profiling prologue (mips.c:5063).
+- Resources. The call (include_delayed_effects=0) sets {ra} and references {v0}. A store sets
+  {memory}. Only MEM_VOLATILE_P (set only from volatile-qualified types or -fvolatile, expr.c:2538,
+  4578, 4832, 4889, 4905) or an address in $ra conflicts.
+- Unfill. delete_from_delay_slot is reached only through redundant_insn, which returns 0 for a CALL
+  target (reorg.c:2079-2080: the call, with delayed effects, sets memory and v1). So even duplicate
+  stores could not empty the slot.
+
+New tail spellings (plain header, rest = rejected/volatile-unk08.c; generator rejected/s14-tail/gen_variants.py):
+| variant | score |
+|---|---|
+| v01 comma expr, v02 `?:` call, v03 return in arm, v04 switch on flag, v05 for(;;)+break, v06 while+break, v07 `(*fp)()`, v08 cb assigned in condition, v09 goto chain, v10 `!(flag = 0)` in condition, v11 return local | 2 each |
+| v12 static inline call helper | 6 |
+| v13 static inline clear helper | 9 |
+
+Conclusion: s13b holds. With no volatile and no asm, no C spelling keeps the store out of the slot.
+Floor 2/187.
+For the orchestrator, not used: SOTN @aa53500 src/main/psxsdk/libgpu/sys.c (matched C,
+splat.us.main.yaml:66) declares this module's queue state volatile (sys.c:58, 96-97). Its _exeque tests a
+member of it and later clears it (sys.c:817, 821). A Q55 claim would have to argue that this is "the same
+thing" as GpuCtx.unk08, which is a different object of the same module. rv2-exeque-1 judged only the libcd
+citation. This lane does not rely on it.
