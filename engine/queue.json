@@ -2,28 +2,12 @@
   "generated_at": "2026-09-07T23:06:07",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
-  "items": [
-    {
-      "func": "camera_CalcAngles",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "owner ruling Q84 (rules: 215f2d11a; Q65 step 14, A8): D_800A33C8/D_800A33CA join into s16 D_800A33C8[2]; as an array our cc1 -G0 spends one more instruction in every spelling measured - memory/grind/camera_CalcAngles/",
-      "addr": "80047384"
-    }
-  ],
+  "items": [],
   "counts": {
-    "total": 1,
-    "active": 1,
-    "by_status": {
-      "active": 1
-    },
-    "by_verdict": {
-      "C": 1
-    }
+    "total": 0,
+    "active": 0,
+    "by_status": {},
+    "by_verdict": {}
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
 }
