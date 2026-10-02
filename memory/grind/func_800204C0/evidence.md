@@ -105,7 +105,7 @@
     joined-statement `addu $t4` islands (rejected/joined-islands-judge-pass-8655cc28.c) are not
     header-exact units. Every island in candidate.c is now the PsyQ 4.3 inline_o.h statements of
     engine/gtemacro.py PINNED (gte_SetRotMatrix :272-284, gte_ldlv0 :95-103, gte_rtv0 :426-430,
-    gte_stlvnl :904-909; 26 statements, "$12".."$15","memory" clobbers, `($12)` verbatim).
+    gte_stlvnl :904-909; 25 statements, "$12".."$15","memory" clobbers, `($12)` verbatim).
     One deviation: gte_rtv0's placeholder `.word 0x0000013f` carried as `.word 0x4A486012`
     (target 0x80020570 `1260484A`) -> needs a per-function grant like Q61 (class prong (C)).
 18. Data model: arg0 is PracticeMenuRec * (caller func_80023F08 passes rec, src/code6cac_tu2.c).
@@ -122,3 +122,7 @@
     rejected/joined-islands-judge-pass-8655cc28.c); [2] gte_SetRotMatrix as C word loads + ctc2-only
     islands, 0/12 region insns (rejected/thin-island-c-loads-seat-t0-a0-v0-not-t5-t7.c);
     [3] inline_o.h verbatim = candidate.c, 0/122. GCC 2.7.2 has no cop2 emitter.
+21. Landing prep (2026-10-02, Q92 ded098133): spliced candidate.c + header split under the landing lock;
+    full rebuild SHA1 == oracle; sandbox --disable all on spliced src 0/122; source_issues []; 25 region
+    hashes; queue unpark (orchestrator-authorized); layer2 hash a0b4f6a9d30d5d20. Staged: auth rows +
+    Match body (tmp/func_800204C0/msg_auth.txt, msg_match.txt).

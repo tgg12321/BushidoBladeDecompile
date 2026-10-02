@@ -32,7 +32,7 @@ void func_800204C0(PracticeMenuRec *rec) {
             __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
             /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word is the
              * post-DMPSX word .word 0x4A486012 in place of the header's DMPSX placeholder
-             * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner per-function grant) */
+             * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; per-function grant Q92, ded098133) */
             __asm__ volatile ("move  $12,%0": :"r"(&rec->unk_354):"$12","$13","$14","$15","memory");
             __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
