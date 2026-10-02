@@ -323,6 +323,66 @@ extern Unk8009B400Record D_8009B5F0[2][2];
  * -> aggregate merge family, owner ruling 2026-08-17). */
 extern Unk8009B400Record D_8009B490[2][2];
 
+/* 0x8009B0E0: table of 9 twelve-byte sprite-sheet headers (0x8009B0E0..0x8009B14B),
+ * the record func_8007352C reads through EnvA.header (cell count at +2). Object
+ * model evidence from the original binary, independent of the byte-chasing
+ * session: asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B0F8) in $s0
+ * and reaches record 8 as `addiu $s0,$s0,0x48`; forms %hi/%lo(D_8009B110) in $s1
+ * and reaches records 2 and 1 as `addiu $v1,$s1,-0xC` / `addiu $s1,$s1,-0x18`;
+ * forms it again in $s2 and reaches records 0 and 1 as -0x30 / -0x24; its tail
+ * loop indexes the table by `(j * 3) << 2` added to that base -- base+offset
+ * and 12-byte-stride addressing of one object. Replaces the splat per-word
+ * labels D_8009B0E0 / D_8009B0F8 / D_8009B110 / D_8009B11C in C (per-word splat
+ * symbol -> aggregate merge family, owner ruling 2026-08-17); the dlabels stay
+ * in asm/data as data labels. D_8009B14C and D_8009B158 are two more headers of
+ * the same shape (func_8005C8A8 passes &D_8009B14C as a header and reads its
+ * +2 count byte, the splat label D_8009B14E, which this declaration retires). */
+typedef struct {
+    u16 unk0;
+    u8 count;
+    u8 unk3;
+    s32 unk4;
+    s32 unk8;
+} Unk8009B0E0Record;
+
+extern Unk8009B0E0Record D_8009B0E0[9];
+extern Unk8009B0E0Record D_8009B14C;
+extern Unk8009B0E0Record D_8009B158;
+
+/* 0x8009B164: 2 x 2 table of 8-byte sprite records (Unk8009B400Record),
+ * 0x8009B164..0x8009B183. Object model evidence from the original binary:
+ * asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B164) in $s1 and passes
+ * `addiu $v1,$s1,0x10` (row 1) as the second draw's cell table, and stores the
+ * x of column 1 of each row through the splat labels D_8009B16C (row 0) and
+ * D_8009B17C (row 1). Replaces the splat per-word labels D_8009B164 /
+ * D_8009B16C / D_8009B17C in C (per-word splat symbol -> aggregate merge
+ * family). */
+extern Unk8009B400Record D_8009B164[2][2];
+
+/* 0x8009B184: 2 x 8-byte sprite records (Unk8009B400Record), 0x8009B184..
+ * 0x8009B193. Object model evidence from the original binary:
+ * asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B184) in $a2, passes it
+ * as a cell table (the sheet header's count is 2) and stores record 0's x
+ * through it (`sh $v0,0x0($a2)`); record 1's x is the splat label D_8009B18C.
+ * Replaces the splat per-word labels D_8009B184 / D_8009B18C in C (per-word
+ * splat symbol -> aggregate merge family). */
+extern Unk8009B400Record D_8009B184[2];
+
+/* 0x8009B2BC: three {w, h} menu-frame sizes, one per mode (0x8009B2BC..
+ * 0x8009B2C7; D_8009B2C8 follows, different data). Object model evidence from
+ * the original binary: asm/funcs/func_8005C8A8.s forms ONE index `sll $a1,$t0,2`
+ * (mode * 4) and reads both %lo(D_8009B2BC)($at) and %lo(D_8009B2BE)($at)
+ * through it -- 4-byte records with halfword fields at +0 and +2 (the
+ * D_8009B450 shape); the mode-2 arm reads record 2's w through the splat label
+ * D_8009B2C4. Replaces the splat per-word labels D_8009B2BC / D_8009B2BE /
+ * D_8009B2C4 in C (per-word splat symbol -> aggregate merge family). */
+typedef struct {
+    s16 w;
+    s16 h;
+} Unk8009B2BCRecord;
+
+extern Unk8009B2BCRecord D_8009B2BC[3];
+
 /* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence
  * (independent of and predating any byte-chasing): the original binary
  * addresses the whole block through ONE base register -- asm/funcs/func_80054604.s

@@ -1,0 +1,69 @@
+{
+ "decision": "PASS",
+ "verdict": "PASS",
+ "function": "func_8005C8A8",
+ "body_hash": "a2903df592e9960a",
+ "reviewer": "rv2-5C8A8-1",
+ "scope": "match",
+ "summary": "Staged body meets completion-bar items 1-6: byte match verified, no wall constructs, both FAKEs labelled with measured reasons and load-bearing, nothing false, merged tables via game.h, fewest-FAKE known form.",
+ "findings": [
+  {
+   "item": 1,
+   "construct": "byte match",
+   "result": "pass",
+   "explanation": "layer2 hash a2903df592e9960a on src/text1b.c == staged (working tree == index for the 3 staged files). sandbox --disable all 0 (753/753). build/bb2.exe (01:40:47, after the staged inputs at 01:39:40; build/verified-inputs.json sha256 of src/text1b.c, include/game.h, undefined_syms_auto.txt == current files) SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa. Not rebuilt: lock held by oct2-b2."
+  },
+  {
+   "item": 2,
+   "construct": "wall",
+   "result": "pass",
+   "explanation": "No asm, register pins, barriers or volatile in the body. Staged diff touches only src/text1b.c, include/game.h, undefined_syms_auto.txt; func_8005C8A8 is in no pipeline list/config (prologue/frame-fix/maspsx/multu lists). undefined_syms row removal is byte-neutral (SHA1 above is on the staged state)."
+  },
+  {
+   "item": 3,
+   "construct": "size = mode_off + 0x18 - arg2; /* FAKE */",
+   "result": "pass",
+   "explanation": "Value is truthfully 0x4F0, the chunk size callers advance D_800A38B4 by (code6cac_c2.c:741, code6cac_tu2.c:2198). The 0x18 tail past the draw-mode offset is borne out by the completed siblings func_80060414 (dist_off +0x14 / end_off +0x2C) and func_80060544 (+0x5DC / +0x5F4). Labelled at the site with a measured reason; I re-measured the literal: 33. The target's 0x70 slot and untouched 0x78 slot (asm/funcs/func_8005C8A8.s:28,777; no 0x78($sp) access) match the comment. Not in item 3's refused list: no fabricated call or side effect, no second symbol (mode_off and arg2 are the same buffer), no volatile, not detector-stripped (sandbox 0 with stripping). Q45/Q77 are re-opened by Q91 clause D and rested on 'exists only to hide the constant', i.e. codegen-only, which item 3 now admits when labelled. no-new-park-categories entry 16 (F6 cancellation pair) is the same class."
+  },
+  {
+   "item": 3,
+   "construct": "sel = *(s16 *)&arg1; /* FAKE */",
+   "result": "pass",
+   "explanation": "Not a false object model: arg1 really is a packed s32, with the selection in the low half and per-row flags at bit 16+j (ings.c:470 passes `select | (D_800A3788 << 16)`; the body reads `(arg1 >> (j + 16)) & 1`). The s32 prototype is truthful. Same object, so not cross-symbol. Pre-cleared shape (no-new-park-categories entry 3, sub-word param read). Target confirms `sw a1,0xBC($sp); lhu 0xBC($sp)` and the in-loop `lw 0xBC($sp)`. Labelled; I re-measured (s16)arg1: 58."
+  },
+  {
+   "item": 3,
+   "construct": "unlabelled constructs",
+   "result": "pass",
+   "explanation": "case 2 -> case 0 fallthrough is real control flow. `&D_8009B23C[j * s.header->count]` reads D_8009B14C's count byte (4), which is the true stride of D_8009B23C (12 records = 3 x 4). D_8009B2BC[2] in the mode-2 arm reflects the target's direct D_8009B2C4 read. Repeated `s.has_color = 0` / field stores follow calls that receive &s, so they are real stores. Env5C8A8 matches EnvA (text1b_b.c:80-94) at 0x2C bytes. Tile5C8A8 is the PsyQ TILE layout. Data checked against asm/data/7D920.data.s: each header's +2 count equals the cell count of the table it is paired with (2/2/2/3/2/2/4/4/6; D_8009B14C 4; D_8009B158 1). D_8009B2AC[2..3] -> D_8009B1CC / D_8009B1EC. D_8009B2BC is {0x102,0x41},{0x102,0x33},{0x148,0x9B}."
+  },
+  {
+   "item": 4,
+   "construct": "include/game.h merges + TU-local types/externs",
+   "result": "pass",
+   "explanation": "The five merges cover their dlabel ranges with no overlap (D_8009B0E0[9] ends 0x14B; D_8009B14C, D_8009B158, D_8009B164[2][2], D_8009B184[2], D_8009B2BC[3]). No other src/ or include/ consumer names any merged or retired symbol, and no C code uses the named_syms aliases g_cpu_no_action_table_* / g_text1b_addr_*. So no completed body changes and none needs its own layer-2 record. Env5C8A8 / Tile5C8A8 and the D_8009B194..D_8009B2AC externs are at file scope, not block scope, and no header declares a TILE, descriptor or those tables, so item 4 does not fire."
+  },
+  {
+   "item": 5,
+   "construct": "whole-cluster ablation",
+   "result": "pass",
+   "explanation": "Measured with sandbox --candidate: literal size 33, (s16)arg1 58, both removed 61, so both FAKEs are load-bearing. The ledger's other 0-forms need more FAKEs: the tile cancellation needs xpos (2 for size). I measured the end_off entry form without xpos at 30, so it also needs xpos. cur + 0x400 - arg2 ties at one FAKE but names nothing. No known form has fewer FAKEs."
+  },
+  {
+   "item": 6,
+   "construct": "this review",
+   "result": "pass",
+   "explanation": "Fresh adversarial layer-2 on body a2903df592e9960a."
+  }
+ ],
+ "evidence": [],
+ "next_action": "",
+ "required_fixes": [],
+ "hygiene_debt": [
+  "Commit message says no 'assembled asm consumer' names the retired labels, but asm/text1b.s (assembled to build/asm/text1b.o, not linked by bb2.ld) still references D_8009B14E etc. Reword to 'linked'.",
+  "Tile5C8A8 duplicates Tile5D814 in the same TU, and Env5C8A8 / Env5D814 / EnvA duplicate one descriptor. Move one TILE type to include/gpu.h and one descriptor type to a shared header.",
+  "The TU-wide libgpu externs (s32 return, s32 pointer params) differ from the definitions in src/gpu.c and src/display.c (void; OTag* / u8*). They are identical to text1b.c:7678-7681, which this landing must stay compatible with. Fix in a codebase-wide prototype pass.",
+  "Caller prototypes are inconsistent: ings.c:75 types arg2 as u32, and include/m2c_context.h:806 says void / GameObj*.",
+  "named_syms.txt g_cpu_no_action_table_24x3 / _16x3 misdescribe 0x8009B0E0 / 0x8009B1AC; Unk8009B0E0Record and Unk8009B398Record are two shapes of one sheet-header kind (already listed in the message)."
+ ]
+}
