@@ -15,20 +15,6 @@
       "addr": "80047384"
     },
     {
-      "func": "func_8005490C",
-      "file": "text1b",
-      "distance": 47,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-26T01:27:18+00:00",
-      "rotation_count": 2,
-      "unparked_from": "restore rotation: the 2026-09-25 return was the engine None->47 bounce (floor unchanged at 47/399; fixed 07e77ac51). Prior rotation stands: needs multi-write vz/obj, obj named banned in Ruling 9 list. See memory/grind/func_8005490C/hypotheses.md",
-      "unpark_reason": "early return (active list drained, 2026-10-01 run); rebased 0-body re-measured on post-Q65 main, Ruling 11 package in progress (memory/grind/func_8005490C/)",
-      "returned_at": "2026-10-02T00:18:02+00:00",
-      "addr": "8005490C"
-    },
-    {
       "func": "func_80048FFC",
       "file": "text1b",
       "distance": 232,
@@ -168,14 +154,14 @@
     }
   ],
   "counts": {
-    "total": 13,
-    "active": 5,
+    "total": 12,
+    "active": 4,
     "by_status": {
-      "active": 5,
+      "active": 4,
       "rotated": 8
     },
     "by_verdict": {
-      "C": 5
+      "C": 4
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
