@@ -288,11 +288,10 @@ s32 func_80037AA4(void) {
     s32 var_a2;
     s32 var_a0;
     s32 var_v0;
-    s32 sh; /* FAKE: shift-amount constant-holder (SOTN cd.c new_var2 shape) — survives
-               cse past the guard join, lifts var_a0 to 11 refs/17 len (pri 19411 < 20000)
-               so global-alloc assigns a0/v1 in target order; reload's constant-equivalence
-               (update_equiv_regs) then substitutes 13 and deletes the li: zero extra bytes.
-               Sanctioned per Judge ruling 2026-07-28 06:28 (docs/grind/decisions.md). */
+    s32 sh; /* FAKE: shift-amount constant-holder (SOTN cd.c new_var2 shape) -- survives
+               cse past the guard join and raises var_a0's allocation priority so
+               global-alloc assigns a0/v1 in target order; reload's constant-equivalence
+               (update_equiv_regs) then substitutes 13 and deletes the li: zero extra bytes. */
 
     sh = 0xD;
     var_a1 = 0;

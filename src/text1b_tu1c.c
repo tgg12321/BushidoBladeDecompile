@@ -7,7 +7,7 @@
 #include "gte.h"
 
 /* func_80060A68 .. func_80060E38 moved here from text1b.c: the file boundary follows the per-file gp evidence
- * (owner ruling Q65; docs/grind/rodata-align-2026-09-30.md section 9 record). */
+ * (owner ruling Q65). */
 /* Declarations from the file this TU was split from (text1b.c). */
 void DrawSync(s32);
 extern s32 rand(void);
@@ -99,67 +99,24 @@ static s32 D_800A3524;
 static s16 D_800A3528;
 static s32 D_800A352C;
 
-/* [s29 2026-09-05 - synthesis modality.  MATCH: `sandbox func_80060A68 --disable all` = score 0,
- * build_insns 66 / target_insns 66; `verify-oracle` = build_sha1
- * 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, build_matches true.
- * Zero FAKE constructs, zero named intermediates, zero staged locals, zero volatile, zero inline
- * asm, and no local declared for codegen reasons at all - `result`, the dispatch call's return
- * value, is the function's only local.
+/* D_800A3468 holds a pointer to the current object (every store into it is an address: a
+ * callee's returned pointer, the scratchpad base 0x1F800000, or &D_800F116C), so this function
+ * reaches the object through the struct Ob view below.
+ *   - +0x14 always receives a pointer to a byte buffer; this function stores one byte through it
+ *     (`sb`), hence `s8 *p14`.
+ *   - Offset 0 is written whole as one constant at its other sites (0x210009, 0x210005, 0x210010,
+ *     0x210002, 0x210014): the low halfword is the character index loaded here with `lhu`, and
+ *     bit 21 (0x200000) is the flag tested at the tail.  One word written whole and read at two
+ *     widths is what the union at offset 0 declares.
+ * The three tables are the arrays they are (24-entry flag table; per-index offset table;
+ * per-character combo-id table), so every access is a member reference or an array subscript.
  *
- * WHAT CHANGED after 28 sessions of cast-through-integer geometry: the global at 0x800A3468 is a
- * POINTER, not an integer that happens to hold an address, and the object it points at gets a
- * declared shape.  src/text1b.c's own COMMITTED, MATCHED C is the evidence, independently of any
- * codegen observation (line numbers below are against the INCLUDE_ASM tree, i.e. src/text1b.c as
- * committed at s29):
- *   - :3358 (then) `extern s32 *D_800A3468;` -- the matched sibling func_80061064 declared this global
- *     with a pointer type at the time.  Since the Q65 adoption (step 14) the file declares it once, as
- *     the `s32` its other users read and write, and this function reaches the object through the OB view.
- *   - Sixteen sites assign a POINTER into it: `D_800A3468 = (s32)v1;` where v1 is a callee's
- *     returned pointer (:3406, :3423, :3457, :3472, :3492, :3506, :3521, :3562, :3599, :3628,
- *     :3659, :3694, :3709, :3722), plus :3315 `= 0x1F800000` (the scratchpad base) and :3740
- *     `= (s32)&D_800F116C`.  Nothing ever stores a non-address into it.
- *   - :3369 `*(s32 **)((s32)D_800A3468 + 0x14) = ...` and :3432 / :3530 / :3637 / :3670 / :3750 --
- *     the member at +0x14 always receives a pointer to a byte buffer; this function stores one byte
- *     through it (`sb`), which is what `s8 *p14` declares.
- *   - :3433, :3531, :3638, :3671, :3751 write the WHOLE 32-bit word at offset 0 as a single
- *     constant -- 0x210009, 0x210005, 0x210010, 0x210002, 0x210014.  In every one of the five the
- *     low halfword is the character index this function loads with `lhu`, and bit 21 (0x200000) is
- *     the flag this function tests at the tail.  :3371 writes the same word as a bare loop index.
- *     One storage location written whole at five sites and read at two widths here is what the
- *     union at offset 0 declares.
- * The three tables are declared as the arrays the naming census already documents them to be
- * (24-entry flag table; per-index offset table; per-character combo-id table), so every access in
- * the body is a member reference or an array subscript and nothing is spelled as pointer
- * arithmetic through a cast.
- *
- * ROBUSTNESS OF THE MODEL (s29, measured on today's HEAD chassis).  The object model, not a swept
- * spelling, determines the bytes: FOUR structurally distinct faithful spellings of this same model
- * all measure 0/66 -- this body; the tables spelled through the address of their first word
- * (alt-s29-score0-tables-through-address-of-first-word.c); offset 0 declared as two u16 members
- * with the flag test cast instead of a union
- * (alt-s29-score0-two-halfwords-plus-cast-flag-read.c); and a FILE-scope struct with every member
- * renamed and the unused words typed u32 (alt-s29-score0-file-scope-struct-renamed-members.c).
- * The spelling that regresses (11/66) is the one that CONTRADICTS :3358's committed pointer
- * declaration by reading offset 0 through an integer cast.
- *
- * WHY THAT REACHES THE TARGET STREAM (observation, recorded for the next reader - not the reason
- * any construct is here):
- *  1. The three `lw ?,0x10($v1)` loads, and the two reloads of the object pointer after the call,
- *     are cse's doing rather than the source's.  Each store made through the pointer invalidates
- *     cse's memory table (tools/gcc-2.7.2/cse.c:1703-1719), so the read preceding each of the
- *     0x18 / 0x1A / 0x1C stores becomes its own load; the `jalr` and the byte store invalidate it
- *     again in the tail.  The source writes each of those statements exactly once.
- *  2. Member references set MEM_IN_STRUCT_P, which is what lets the offset-0 read and the two
- *     scalar stores at 0x800A3478 / 0x800A347C be disambiguated in `true_dependence`
- *     (tools/gcc-2.7.2/sched.c:826-841): that escape needs the read to be MEM_IN_STRUCT_P with a
- *     varying address and the store to be neither.  A bare-MEM spelling of the same read does not
- *     fire it, which is what stranded the read window on every previous chassis.  Measured this
- *     session on otherwise identical bodies: bare-MEM offset-0 read = 11/66
- *     (tmp/grind/func_80060A68/s29/B.c), member = 0/66.
- *
- * Also measured 0/66 with the tables spelled through the address of their first word rather than
- * as array declarations; the array declarations are kept because they put the object model at the
- * declaration instead of at each use site. */
+ * Codegen note: the repeated `lw ?,0x10($v1)` loads and the object-pointer reloads after the call
+ * come from cse (each store through the pointer invalidates its memory table,
+ * tools/gcc-2.7.2/cse.c:1703-1719), not from the source.  Member references set MEM_IN_STRUCT_P,
+ * which lets sched.c `true_dependence` (tools/gcc-2.7.2/sched.c:826-841) disambiguate the
+ * offset-0 read from the scalar stores to 0x800A3478 / 0x800A347C; a bare-MEM read of offset 0
+ * through an integer cast does not match. */
 #define OB ((struct Ob *)D_800A3468)
 void func_80060A68(void) {
     struct Ob {
@@ -260,12 +217,10 @@ void func_80060C60(void) {
 
 s32 func_80060CB8(s32 arg0, s32 arg1)
 {
-  unsigned int new_var; /* FAKE: single forward-order param alias — prologue pair order.
-                           Sanctioned per owner ruling 2026-07-17 (docs/grind/decisions.md,
-                           param-local-alias-prologue-pair-flip NARROWED). Mechanism: cse
+  unsigned int new_var; /* FAKE: single forward-order param alias -- prologue pair order
+                           (owner ruling, param-local-alias-prologue-pair-flip). Mechanism: cse
                            unifies arg0/new_var, combine sinks the single-use a0 entry copy
-                           below a1's, flipping the s2/s1 save+copy pair order to target.
-                           Exhaustion dossier: memory/grind/func_80060CB8/evidence.md (s2). */
+                           below a1's, flipping the s2/s1 save+copy pair order to target. */
   typedef struct
   {
     s16 sp10;
@@ -627,10 +582,8 @@ void func_80061658(s32 *arg0, s32 arg1) {
     /* FAKE: local pointer alias to D_800F116C, mechanism: base-register
      * allocation / address-materialization caching in local-alloc (the alias
      * gives GCC one pseudo holding &D_800F116C, kept live in $a0 across the
-     * switch instead of being re-materialized per use), lever-exhaustion:
-     * memory/grind/func_80061658/hypotheses.md (s1-s3 structural + s4/s4b
-     * permuter all measured dead on the direct-global form; identical alias
-     * carried by the COMPLETED-C sibling func_80061710, src/text1b.c:3366). */
+     * switch instead of being re-materialized per use); the direct-global
+     * form does not match.  Same alias as the sibling func_80061710. */
     s32 *v1 = (s32 *)&D_800F116C;
     s32 *p;
     u8 *q;
@@ -664,10 +617,8 @@ void func_80061710(s32 *arg0, s32 arg1) {
     /* FAKE: local pointer alias to D_800F116C, mechanism: base-register
      * allocation / address-materialization caching in local-alloc (the alias
      * gives GCC one pseudo holding &D_800F116C, kept live in $a0 across the
-     * switch instead of being re-materialized per use), lever-exhaustion:
-     * memory/grind/func_80061710/hypotheses.md (s1-s4: structural, mask-position
-     * sweep, native permuter all measured dead) + s5 direct-global form
-     * (tmp/grind/func_80061710/s5/v9e_noalias.c) measured sandbox 5. */
+     * switch instead of being re-materialized per use); the direct-global
+     * form does not match. */
     s32 *v1 = (s32 *)&D_800F116C;
     s32 *p;
     u8 *q;
@@ -1215,10 +1166,8 @@ s32 func_8006288C(void) {
        `1 << i`; mechanism: with a literal the shift base is loop-invariant and
        loop.c hoists its `(set reg 1)` into the preheader TAIL, so sched.c's
        first pass parks `addiu $t3,$zero,1` at init-block slot 6 instead of the
-       target's slot 2. Lever-exhaustion: memory/grind/func_8006288C/
-       hypotheses.md H6 (s1) + H7/H8 (s2) — every literal-1 init-block ordering
-       and every scalar-type permutation measured, all leave the constant at
-       slot 6. */
+       target's slot 2. No literal-1 init-block ordering or scalar-type choice
+       moves the constant off slot 6. */
     s32 one;
     s16 *flag_p;
     s32 *src_a;
@@ -1298,8 +1247,7 @@ s32 func_8006295C(void) {
     /* FAKE: the work-area base (D_800A34EC) is staged through `prim` before
        prim takes its real job as the quad cursor; mechanism: the second write
        to prim's pseudo keeps combine from folding `mats = base + 0x78` into
-       the loop's giv init (target keeps `move s4,v0`) and puts base in s1;
-       lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_8006295C/hypotheses.md H1. */
+       the loop's giv init (target keeps `move s4,v0`) and puts base in s1. */
     prim = (POLY_FT4 *)D_800A34EC;
     count = 0;
     mats = (MATRIX *)((u8 *)prim + 0x78);
@@ -1396,8 +1344,7 @@ s32 func_8006295C(void) {
            walks the same POLY_FT4 buffer again from its start to link each
            quad; mechanism: global.c priority -- a fresh cursor local
            (nrefs 10 / livelen 15) outranks the zbuf[k] giv and takes s0,
-           while prim's pseudo is already seated in s1 as in the target;
-           lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_8006295C/hypotheses.md H2. */
+           while prim's pseudo is already seated in s1 as in the target. */
         end = prim;
         for (prim = (POLY_FT4 *)D_800A37D4, k = 0; prim < end; prim++, k++) {
             AddPrim(g_gpu_ot_ptr + zbuf[k] * 4, (s32)prim);
@@ -1633,34 +1580,25 @@ u8 func_80063BA4(void) {
     return func_80063E10(1);
 }
 extern SVECTOR D_800F1000[][10];
-/* func_80063BD0 (src/text1b.c) -- MATCHING FORM.  Honest distance 0 / 144
- * (sandbox --disable all, zero cheat-asm, zero rules) measured in grind
- * session s1 (2026-09-15, recon modality) with this exact body in place, and
- * re-measured 0/144 + full-tree oracle SHA1 in the 2026-09-15 re-dispatch with
- * the record table declared header-canonically (include/game.h
- * Unk800F0EC8Record D_800F0EC8[][10]; the TU-local flat `[][10][3]` spelling
- * was layer-1 FAILed 2026-09-15 02:51 and is banned for this function).
+/* func_80063BD0 -- slot allocator for lane `idx`: D_800A344C[idx] counts live
+ * entries, and D_800A3454[idx] is the per-slot in-use bitmask.  While fewer
+ * than 10 entries are live, take the lowest free bit, mark it, and fill that
+ * slot's SVECTOR (D_800F1000[idx][slot]) and 3-word record
+ * (D_800F0EC8[idx][slot], Unk800F0EC8Record in include/game.h) from the source
+ * pointers D_800A3478 / D_800A347C.  Once the lane is full, the counter wraps
+ * through 10..19 and the slot is overwritten in rotation.
  *
- * Slot allocator for lane `idx`: D_800A344C[idx] counts live entries, and
- * D_800A3454[idx] is the per-slot in-use bitmask.  While fewer than 10
- * entries are live, take the lowest free bit, mark it, and fill that slot's
- * SVECTOR (D_800F1000[idx][slot]) and 3-word record (D_800F0EC8[idx][slot])
- * from the source pointers D_800A3478 / D_800A347C.  Once the lane is full,
- * the counter wraps through 10..19 and the slot is overwritten in rotation.
- *
- * Shape notes (each alternative was measured, see
- * memory/grind/func_80063BD0/hypotheses.md):
+ * Shape notes:
  *  - `for` loop with the found-arm INSIDE the loop and `break`: the loop's
  *    duplicated exit test (jump.c duplicate_loop_exit_test) plus the arm's
  *    skip label is what keeps the D_800A344C base copy in the preheader
  *    (cse.c cse_around_loop stops scanning at the first CODE_LABEL); a
- *    `goto found` arm after the loop measured 4 (base coalesced).
+ *    `goto found` arm after the loop coalesces the base.
  *  - `bits`/`mask` read before the test: the array read must be expanded
  *    before the `1 << i` so loop.c hoists the D_800A3454 address ahead of
  *    the constant 1 (their preheader order is the loop-body order).
- *  - `|= mask` (not `= bits | mask` -- both measure 0; `|=` is the natural
- *    spelling).  A single trailing `return 1` that the else-arm falls into
- *    keeps `li v0,1` out of the else-arm block, which frees v0 there.
+ *  - A single trailing `return 1` that the else-arm falls into keeps
+ *    `li v0,1` out of the else-arm block, which frees v0 there.
  */
 u8 func_80063BD0(s32 idx) {
     s32 bits;
@@ -1737,8 +1675,7 @@ s32 func_80063E10(s32 lane) {
        local is a single-block pseudo (used 6 times in block 0) that
        local-alloc seats in v0, while prim's pseudo lives across the calls and
        global.c seats it in s2, which is where the target holds the base
-       (`lw s2,%gp_rel(D_800A34EC)` ... `lw s2,%gp_rel(D_800A37D4)`);
-       lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80063E10/hypotheses.md H1. */
+       (`lw s2,%gp_rel(D_800A34EC)` ... `lw s2,%gp_rel(D_800A37D4)`). */
     prim = (POLY_FT4 *)D_800A34EC;
     mats =(MATRIX *)((u8 *)prim + 0x28);
     cm = (MATRIX *)((u8 *)prim + 0x168);
@@ -1773,8 +1710,7 @@ s32 func_80063E10(s32 lane) {
            the D_800A3454[lane] address pseudo's life so loop.c move_movables
            (threshold * savings * lifetime >= 141 insns) hoists it to the
            preheader (target spills it to 32(sp)); as a user variable bit also
-           keeps combine from turning the test into srav/andi;
-           lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80063E10/hypotheses.md H2. */
+           keeps combine from turning the test into srav/andi. */
         if (!(D_800A3454[lane] & (bit = 1 << i))) {
             continue;
         }
@@ -1987,8 +1923,7 @@ s32 func_80063E10(s32 lane) {
        the same POLY_FT4 buffer again from its start to link each quad;
        mechanism: global.c priority -- with a fresh tail cursor prim loses the
        tail refs and sxy outranks it (sxy s2 / prim s3, swapped vs the
-       target, 24 operand-only hunks); lever-exhaustion:
-       pre-slim-2026-10-01:memory/grind/func_80063E10/hypotheses.md H3. */
+       target). */
     end = prim;
     for (prim = (POLY_FT4 *)D_800A37D4, k = 0; prim < end; prim++, k++) {
         D_800A34E8 = (s32)prim;
@@ -1999,15 +1934,10 @@ s32 func_80063E10(s32 lane) {
     D_800A37D4 = (s32)end;
     return 1;
 }
-/* func_800644FC (src/text1b.c) -- MATCHING FORM.  Honest distance 0 / 45
- * (sandbox --disable all, zero cheat-asm) measured in grind session s1
- * (2026-09-06, recon modality) with this exact body in src/text1b.c.
+/* func_800644FC -- rotates one matrix per enabled bit: for every i < *count
+ * whose bit is set in D_800A3454[idx], RotMatrix(&D_800F1000[idx][i], &m[i]).
  *
- * Rotates one matrix per enabled bit: for every i < *count whose bit is set
- * in D_800A3454[idx], RotMatrix(&D_800F1000[idx][i], &m[i]).
- *
- * Shape notes (each ordinary alternative was measured -- see
- * memory/grind/func_800644FC/hypotheses.md):
+ * Shape notes:
  *  - goto loop, not for/do/while: with a loop note present, loop.c
  *    move_movables hoists the `1` of `1 << i` and the D_800F1000 address
  *    out of the loop and strength-reduces the i*8 giv; the target keeps all
@@ -2023,7 +1953,7 @@ void func_800644FC(s32 *count, MATRIX *m, s32 idx) {
     MATRIX *ptr;
     s32 *bits;
     s32 vec_off;
-    s32 *base; /* FAKE: second handle to D_800A3454 so its address is materialized (la) before the idx<<2 shift, mechanism: expr.c expand_binop force_reg emits the symbol_ref la AFTER the index shift for every single-expression spelling and sched.c rank_for_schedule breaks the equal-priority tie by INSN_LUID, lever-exhaustion: memory/grind/func_800644FC/hypotheses.md H4 (direct-global forms D/F/G/H/I/K/N measured 4..22) */
+    s32 *base; /* FAKE: second handle to D_800A3454 so its address is materialized (la) before the idx<<2 shift, mechanism: expr.c expand_binop force_reg emits the symbol_ref la AFTER the index shift for every single-expression spelling and sched.c rank_for_schedule breaks the equal-priority tie by INSN_LUID; no direct-global form matches */
     i = 0;
     if (i < *count) {
         base = D_800A3454;
@@ -2043,52 +1973,23 @@ void func_800644FC(s32 *count, MATRIX *m, s32 idx) {
     }
 }
 
-/* func_800645B0 (src/text1b.c) -- MATCHING FORM.  Honest distance 0 / 78
- * (target_insns 78, build_insns 78, rules_dropped 0, zero cheat-asm), and the
- * full clean-driver build SHA1 == the oracle 62efab4f73f992798c43e8c730aa43baa10bb4fa,
- * both measured in grind session s19 (2026-09-02, synthesis modality) with this
- * exact body in src/text1b.c.
+/* func_800645B0 -- for each group of four slots (bits of D_800A3444), claim
+ * the first free slot: set its 3-word record at D_800F0D78 / D_800F0D7C /
+ * videoDec to the position at D_800A347C jittered by (rand() & 0xFF) - 0x7F
+ * per axis, give it a random 0..7 in D_800F0BCC, and mark its bit.
  *
- * WHAT CLOSED IT.  Two independent changes off the s18 frontier, neither of
- * which had been combined before:
- *
- *  1. `idx = idx * 12;` (the s18 "a2" chassis).  The *3 word index written as
- *     `idx = idx2 + idx;` can never emit the target's `addu $s0,$s1,$s0`,
- *     because optabs.c expand_binop (tools/gcc-2.7.2/optabs.c:409-420) swaps a
- *     commutative binop's operands whenever the expansion target rtx IS op1 --
- *     and for `idx = <anything> + idx` the target rtx is idx.  Routing the add
- *     through expand_mult gives it a fresh temp as its target, so no swap
- *     happens and stream index 20 is exact.  `idx * 12` is also the natural
- *     spelling: D_800F0D78 / D_800F0D7C / videoDec are one 3-word record, so
- *     the byte offset for slot `idx` is idx * 12, and `idx2 = idx << 1` is the
- *     halfword record's byte offset.  On its own this chassis measured 3/78:
- *     it lost the inner-loop head (stream 11/12) and the back-edge delay slot
- *     (65), because with the sum in a temp `idx` is left single-set and
- *     sched.c birthing_insn_p (sched.c:2526) lifts the loop-top addu to
- *     max_priority.
- *
- *  2. The const-1 LICM-defeat carrier moved from `val` to `last`.  Sessions
- *     1-18 all carried the loop-invariant `1` in `val`; that defeats loop.c's
- *     hoist either way (both locals are set in two basic blocks of the loop, so
- *     count_loop_regs_set at loop.c:3040 marks them may_not_move), but it also
- *     decides WHICH of the two scratch locals is block-local and therefore
- *     handled by local-alloc rather than global-alloc.  With `last` carrying
- *     the constant, `val` is confined to the D_800A3444 read-modify-write
- *     inside the `if`, and the whole allocation -- including the loop head and
- *     the delay slot the a2 chassis had lost -- lands exactly on the target.
- *     Measured this session: a2 + `val` carrier = 3/78, a2 + `last` carrier =
- *     0/78.  The same carrier swap also closes two other chassis to 0/78 (the
- *     s17 WD fresh-dest chassis, and WD with the byte offset folded into
- *     `wid`), so the lever is chassis-independent; this body is the one that
- *     needs no invented local at all -- it uses only the target's own seven.
- *
- * CONSTRUCTS.  One FAKE-annotated construct: the const-1 staged through `last`
- * (sanctioned family: .claude/rules/defeat-licm-hoist-var-reuse.md, borrow
- * gated by .claude/rules/staged-value-reused-variable.md).  Everything else is
- * ordinary C: the byte-offset multiply, the halfword shift, and the
- * read-modify-write through `val` (layer-1 ruled the RMW spelling legitimate on
- * 2026-08-12).  No dead stores, no wraps, no statement reordering, no invented
- * locals, no pins, no asm.  Self-vet: memory/grind/func_800645B0/self_vet.md.
+ * Shape notes:
+ *  - `idx = idx * 12`: D_800F0D78 / D_800F0D7C / videoDec are one 3-word
+ *    record, so the byte offset for slot `idx` is idx * 12, and
+ *    `idx2 = idx << 1` is the halfword record's byte offset.  Written as
+ *    `idx = idx2 + idx`, optabs.c expand_binop (tools/gcc-2.7.2/optabs.c:409-420)
+ *    swaps the commutative operands because the expansion target IS op1, so the
+ *    target's `addu $s0,$s1,$s0` cannot be emitted; expand_mult gives the add a
+ *    fresh temp.
+ *  - The loop-invariant `1` is carried in `last` (FAKE, below), which leaves
+ *    `val` confined to the D_800A3444 read-modify-write inside the `if`; with
+ *    `val` as the carrier the local-alloc / global-alloc split differs and the
+ *    loop head and back-edge delay slot do not match.
  */
 s32 func_800645B0(void) {
     s32 i;
@@ -2110,9 +2011,8 @@ s32 func_800645B0(void) {
              * basic blocks of the loop `may_not_move`, so scan_loop never
              * admits the const-1 as a movable and move_movables cannot hoist
              * it; written with a single-set carrier the `li` is hoisted into a
-             * fresh callee-save and the function costs two extra instructions
-             * (measured 12/80).  lever-exhaustion:
-             * memory/grind/func_800645B0/hypotheses.md, sessions s1-s19. */
+             * fresh callee-save and the function costs two extra
+             * instructions. */
             last = 1;
             mask = last << idx;
             if (!(D_800A3444 & mask)) {
@@ -2684,18 +2584,13 @@ u8 func_80065800(s32 arg0) {
     s16 *p_th;
     VECTOR *dst;
     s32 n;
-    s32 w; /* FAKE: named intermediate - *p_w read once before the corner sign test
-            * (pre-slim-2026-10-01:memory/grind/func_80065800/evidence/named-locals.txt) */
-    s32 sw; /* FAKE: named intermediate - the width scale multiplied into *p_w whole
-             * (pre-slim-2026-10-01:memory/grind/func_80065800/evidence/named-locals.txt) */
-    s32 sh; /* FAKE: named intermediate - the height scale multiplied into *p_h whole
-             * (pre-slim-2026-10-01:memory/grind/func_80065800/evidence/named-locals.txt) */
-    s32 h; /* FAKE: named intermediate - *p_h read once before the corner sign test
-            * (pre-slim-2026-10-01:memory/grind/func_80065800/evidence/named-locals.txt) */
+    s32 w; /* FAKE: named intermediate - *p_w read once before the corner sign test */
+    s32 sw; /* FAKE: named intermediate - the width scale multiplied into *p_w whole */
+    s32 sh; /* FAKE: named intermediate - the height scale multiplied into *p_h whole */
+    s32 h; /* FAKE: named intermediate - *p_h read once before the corner sign test */
     s16 *t;
     s16 *tbl; /* FAKE: pointer alias of D_800F0BA8 - case 10/11's base address in its own
-               * register ahead of the index shift
-               * (pre-slim-2026-10-01:memory/grind/func_80065800/evidence/case10-base-register.txt) */
+               * register ahead of the index shift */
     s32 i;
 
     outer = D_800A34EC;
@@ -4011,7 +3906,7 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
      * sum in $t2 and bitpos in $t1 (target's allocno tie), flipping the RA the
      * clean loop otherwise inverts. The `one` constant-holder materializes the
      * shift operand `1` at the preheader (schedules `li $t6,1` early, target's
-     * slot). Pure-C match device (permuter s4). */
+     * slot). */
     do {
         a3_off = 0;
         bitpos = 0;
@@ -4073,8 +3968,7 @@ s32 func_800693CC(s32 held, s32 pressed) {
     /* FAKE: frame layout. The draw context func_8006E390 fills is ten words
      * (siblings: s32 sp10[10]); the decoded input sits at word 12 and the
      * saved row mask at word 14 only to reproduce the target's 0x60 frame
-     * (sp+0x40 / sp+0x48). Separate locals: score 11-21, wrong frame
-     * (memory/grind/func_800693CC/rejected/). */
+     * (sp+0x40 / sp+0x48); separate locals give the wrong frame. */
     s32 context[15];
     s32 result;
     s32 render_base;
@@ -4089,10 +3983,10 @@ s32 func_800693CC(s32 held, s32 pressed) {
 increment:
     {
         /* FAKE: the index-field clear mask, named so its load sits ahead of
-         * the alias (the literal moves `li -16` two slots; score 2). */
+         * the alias (the literal moves `li -16` two slots). */
         s32 clear_mask = ~0xF;
         /* FAKE: keep the availability address across the loop so GCC reloads
-         * its word each iteration; direct global reads hoist the word (score 5). */
+         * its word each iteration; direct global reads hoist the word. */
         s32 *available = &D_8009BC04;
         do {
             s32 flags = D_800A34F8;
@@ -4107,7 +4001,7 @@ increment:
 decrement:
     {
         /* FAKE: keep the availability address across the loop so GCC reloads
-         * its word each iteration; direct global reads hoist the word (score 5). */
+         * its word each iteration; direct global reads hoist the word. */
         s32 *available = &D_8009BC04;
         do {
             s32 flags = D_800A34F8;
@@ -4138,7 +4032,7 @@ after_move:
     if ((D_800A34F8 & 0xF) != 7) {
         if (((D_800A34F8 & 0xF) - 6) >= 0) {
             /* FAKE: one handle for the mask read-modify-write; the direct
-             * global form re-addresses D_8009BC08 (score 9). */
+             * global form re-addresses D_8009BC08. */
             s32 *mask_ptr = &D_8009BC08;
             context[14] = *mask_ptr & 0x80;
             *mask_ptr = context[14] | (0x1F << ((D_800A34F8 & 0xF) - 5));
@@ -4478,33 +4372,23 @@ void func_80069F80(s32 *arg0, s32 arg1) {
        passed to func_80073728 and func_8007352C (addiu $a0,$sp,0x18 at three
        sites); sp44/sp48/sp4C/sp50 are this call site's UNWRITTEN PADDING tail.
        They are NOT asserted to be fields of a shared descriptor type: nothing in
-       this function or its callees' asm reads them (the session-1 evidence.md
-       claim that they are members of a shared 0x3C type is withdrawn).
+       this function or its callees' asm reads them.
        mechanism: mips.c compute_frame_size / get_frame_size -
-       frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  Frame-math proof
-       from the TARGET BYTES ALONE (asm/funcs/func_80069F80.s): target frame is
-       0x70 with five callee-saves ($s0-$s3,$ra at sp+0x58..0x68 => ALIGN8(20) =
-       0x18) and a 0x18 outgoing-args area (the 5-arg SetDrawMode call stores at
-       sp+0x10), so the locals region is 0x70 - 0x18 - 0x18 = 0x40 = 64 bytes,
-       while the only bytes ever read, written or addressed in that region are
-       sp+0x18..0x43 (the 0x2C-byte descriptor; sp+0x44..0x57 is untouched
-       anywhere in the target).  The fully-written form (a 0x2C descriptor) gives
-       ALIGN8(44)+0x18+0x18 = 0x60 != 0x70 (measured: 24 -> 12 when the tail was
-       added, hypotheses.md s1 H2), so no fully-written locals set can produce the
-       target frame.
+       frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  From the target
+       bytes (asm/funcs/func_80069F80.s): frame 0x70 with five callee-saves
+       ($s0-$s3,$ra at sp+0x58..0x68 => ALIGN8(20) = 0x18) and a 0x18
+       outgoing-args area (the 5-arg SetDrawMode call stores at sp+0x10), so the
+       locals region is 0x70 - 0x18 - 0x18 = 0x40 bytes, while only sp+0x18..0x43
+       (the 0x2C-byte descriptor) is ever touched.  The fully-written form (a 0x2C
+       descriptor) gives ALIGN8(44)+0x18+0x18 = 0x60 != 0x70, so no fully-written
+       locals set can produce the target frame.
        n.b.! ALIGN8 makes the declared descriptor size recoverable only as a
        RANGE: 0x39..0x40 bytes all give vars = 0x40; 0x3C is the smallest whole-word
        (s32-member) size in that range and is the one declared here.
-       Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out
-       (owner ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object
-       (`s`, address passed to both descriptor callees) rather than adding a dead
-       pad local.  In-tree precedent for this carve-out: func_8006DD94 in this TU
-       (same callee func_8007352C; Judge PASS pre-slim-2026-10-01:docs/grind/decisions.md:26471) and
-       src/text1a_post.c:387-400 (func_80041BF4, accepted on main).
-       Lever-exhaustion: memory/grind/func_80069F80/hypotheses.md - s1 H2 (0x2C
-       form scores 12, every save/restore offset wrong), s3 180-variant sweep of
-       the join block with the 0x3C descriptor held fixed, frame equation
-       re-derived by the Judge (decisions.md 2026-09-15 01:39 ruling). */
+       Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out;
+       the LIVE object (`s`, address passed to both descriptor callees) is
+       extended rather than adding a dead pad local, as in func_8006DD94 (this
+       TU) and func_80041BF4 (src/text1a_post.c). */
     S_69F80 s;
     s32 *ptr;
     s32 x0;
@@ -4584,29 +4468,22 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
        callees' asm reads it; it is NOT asserted to be a field of a shared
        descriptor type.
        mechanism: mips.c compute_frame_size / get_frame_size -
-       frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  Frame-math proof
-       from the TARGET BYTES ALONE (asm/funcs/func_8006A1A0.s): target frame is
-       0x70 with six callee-saves ($s0-$s4,$ra at sp+0x58..0x6C => ALIGN8(24) =
-       0x18) and a 0x18 outgoing-args area (the 5-arg SetDrawMode call stores at
-       sp+0x10), so the locals region is 0x70 - 0x18 - 0x18 = 0x40 = 64 bytes,
-       while the only bytes ever read, written or addressed in that region are
-       sp+0x18..0x43 (the 0x2C-byte descriptor; sp+0x44..0x57 is untouched
-       anywhere in the target).  The fully-written form (a 0x2C descriptor) gives
-       ALIGN8(44)+0x18+0x18 = 0x60 != 0x70 (measured this function: score 14, all
-       14 diffs are the prologue/epilogue frame and save-slot offsets shifted by
-       0x10 - memory/grind/func_8006A1A0/hypotheses.md s1 H2), so no fully-written
-       locals set can produce the target frame.
+       frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  From the target
+       bytes (asm/funcs/func_8006A1A0.s): frame 0x70 with six callee-saves
+       ($s0-$s4,$ra at sp+0x58..0x6C => ALIGN8(24) = 0x18) and a 0x18
+       outgoing-args area (the 5-arg SetDrawMode call stores at sp+0x10), so the
+       locals region is 0x70 - 0x18 - 0x18 = 0x40 bytes, while only sp+0x18..0x43
+       (the 0x2C-byte descriptor) is ever touched.  The fully-written form (a 0x2C
+       descriptor) gives ALIGN8(44)+0x18+0x18 = 0x60 != 0x70 (every frame and
+       save-slot offset shifts by 0x10), so no fully-written locals set can
+       produce the target frame.
        n.b.! ALIGN8 makes the declared descriptor size recoverable only as a
        RANGE: 0x39..0x40 bytes all give vars = 0x40; 0x3C is the smallest whole-word
        (s32-member) size in that range and is the one declared (S_69F80, shared
        with the sibling func_80069F80 whose frame equation is identical).
-       Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out
-       (owner ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object
-       rather than adding a dead pad local.  In-tree precedent: func_80069F80
-       (this TU, Judge PASS pre-slim-2026-10-01:docs/grind/decisions.md:26892) and func_8006DD94
-       (this TU, Judge PASS pre-slim-2026-10-01:docs/grind/decisions.md:26471).
-       Lever-exhaustion: memory/grind/func_8006A1A0/hypotheses.md - s1 H2 (0x2C
-       form scores 14, every save/restore offset wrong; no other residual). */
+       Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out;
+       the LIVE object is extended rather than adding a dead pad local, as in
+       func_80069F80 and func_8006DD94 (this TU). */
     S_69F80 s;
     s32 *ptr;
     s32 x0;
@@ -4867,16 +4744,15 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     /* Ruling 11 (ordinary-c-judge-decidable.md): holds five values, each a
        sprite-sheet table of the MOD.BIN root: +0x18 (option rows; first sheet,
        the row loop and row 7), +0x40 (counter frames), +0x24 twice (icon
-       frames at [8 + frame], then FT4 frames at [frame]). Necessity proof
-       (allocator dumps): pre-slim-2026-10-01:memory/grind/func_8006A880/ruling11.md. */
+       frames at [8 + frame], then FT4 frames at [frame]). */
     s32 *sheets;
     /* Ruling 11: holds two values, each a mask with one bit per option row:
        D_8009BC08 (scanned for the first row drawn) and D_8009BC04 (rows
-       switched on). Necessity proof: pre-slim-2026-10-01:memory/grind/func_8006A880/ruling11.md. */
+       switched on). */
     u32 row_mask;
     /* Ruling 9: the sheet's cell array. Every sheet drawn here is one 12-byte
        header followed by its 8-byte cells, so the cells always start at
-       +0xC (MOD.BIN census: pre-slim-2026-10-01:memory/grind/func_8006A880/evidence.md). */
+       +0xC (MOD.BIN census). */
     s32 cells;
     s32 yofs;
     s32 bit;
@@ -5068,8 +4944,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr, *(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 }
-/* One argument: the caller's s32[10] draw context (asm reads a0 only; see
- * pre-slim-2026-10-01:memory/grind/func_8006B120/hypotheses.md). */
+/* One argument: the caller's s32[10] draw context (asm reads a0 only). */
 void func_8006B120(s32 *arg0);
 typedef struct {
     s32 p0;
@@ -5223,10 +5098,8 @@ void func_8006B120(s32 *arg0) {
     func_80069898((GameObj *)arg0, r, 0x11);
 }
 /* func_8006B578 — menu/config input dispatch. The second `switch` makes GCC
- * synthesize a 6-entry jump table into this TU's .rodata; bb2.ld places
- * build/src/text1b.o(.rodata) at 0x80015988 so that table lands at its original
- * address. It replaces the hand-extracted jtbl_80015988 that formerly sat in
- * src/text1a_b_pre_rodata.c (deleted 2026-09-16 when this function reached C). */
+ * synthesize a 6-entry jump table into this TU's .rodata; bb2.ld places this
+ * TU's .rodata so that table lands at its original address, 0x80015988. */
 s32 func_8006B578(s32 *arg0, s32 *arg1) {
     u32 v;
     s32 sp10;
@@ -5501,8 +5374,7 @@ void func_8006BD28(s32 arg0, s32 arg1, S_6A880 *arg2, s32 arg3) {
        (tools/gcc-2.7.2/fold-const.c:3685-3737) reassociates header + 0xC + j * 8
        into header + (j * 8 + 0xC) and loop.c strength-reduces that giv into its
        own callee-saved register; the target adds 0xC first and recomputes
-       j << 3 each iteration.
-       Receipts: memory/grind/func_8006BD28/evidence.md */
+       j << 3 each iteration. */
     s32 cells;
     s32 i, j, n;
 
@@ -5516,9 +5388,8 @@ void func_8006BD28(s32 arg0, s32 arg1, S_6A880 *arg2, s32 arg3) {
         /* FAKE: operand grouping (or-tree-shape-shift carve-out): with
            (sheets + i) + arg0 * 2, loop.c hoists arg0 * 8 alone (the target's
            prologue sll + spill at sp+0x20) and keeps i * 4 + sheets per
-           iteration; sheets[arg0 * 2 + i] and (sheets + arg0 * 2)[i] measured
-           33 and 51.
-           Receipts: memory/grind/func_8006BD28/evidence.md */
+           iteration; sheets[arg0 * 2 + i] and (sheets + arg0 * 2)[i] do not
+           match. */
         arg2->header = *(sheets + i + arg0 * 2);
         if (arg2->header == -1) return;
 
@@ -5684,34 +5555,32 @@ void func_8006C21C(s32 *arg0) {
        live across every call, so global.c gives the once-set constant pseudo
        callee-save $s5 (target: `addu $s5,$zero,$zero`, then `addu $a1,$s5,$zero`
        at the phase-3 and phase-5 calls; cse folds the phase-1 read to 0 inside
-       the entry block). Literal 0 at every call measured worse; receipts in
-       pre-slim-2026-10-01:memory/grind/func_8006C21C/admission.md "mode". Same shape as the
-       siblings func_800753D8 (`zero`) and func_8007636C (`mode`). */
+       the entry block); a literal 0 at every call does not match. Same shape as
+       the siblings func_800753D8 (`zero`) and func_8007636C (`mode`). */
     s32 mode;
     /* Holds several values (Ruling 11, ordinary-c-judge-decidable.md): the
        phase-2 unlock-bit index, the phase-4 sprite index, the phase-6 tile
        row, and the phase-8 gauge level read per player. One variable is what
        the target's allocation requires (global.c: the merged pseudo outranks
-       `j` for $fp); proof in pre-slim-2026-10-01:memory/grind/func_8006C21C/admission.md "work". */
+       `j` for $fp). */
     s32 work;
     /* FAKE: per-branch constant holder (named-local-fake-exception, owner
-       ruling 2026-09-28 Q27 (B)) -- the bar's far-corner red, 0 on the
+       ruling Q27 (B)) -- the bar's far-corner red, 0 on the
        pulsing bar and 0x80 otherwise, set and read inside each arm. Set in
        four arms, it is not a loop.c movable, so the else-arm 0x80 is not
        matched with its twin and hoisted out of the row loop; the target
-       loads `li $v0,0x80` in each else arm. Literal and chained forms
-       measured worse: pre-slim-2026-10-01:memory/grind/func_8006C21C/evidence.md s2, s5, s8. */
+       loads `li $v0,0x80` in each else arm. Literal and chained forms do not
+       match. */
     s32 col;
     /* FAKE: always-zero narrow locals (named-local-fake-exception, owner
-       ruling 2026-09-28 Q27 (A)) -- SetDrawMode's dither and texture-window
+       ruling Q27 (A)) -- SetDrawMode's dither and texture-window
        arguments and the descriptor position, read up to the phase-4 head.
        combine folds the sign extension of each known-zero read after a label
        and distribute_notes leaves a `(use)` of the dead extension temp; the
        four never-allocated temps take the target's four untouched frame
        slots (0x60-0x78, frame 0xC0). A read from phase 5 on keeps the local
        live across the phase-4 calls (callee-saved reg, +insns), so later
-       sites write a literal 0. Receipts: pre-slim-2026-10-01:memory/grind/func_8006C21C/
-       evidence.md s5, s6, s8, s9 and probes/s9. */
+       sites write a literal 0. */
     s16 dtd;
     s16 xpos;
     s16 ypos;
@@ -5723,8 +5592,7 @@ void func_8006C21C(s32 *arg0) {
     /* the sprite sheet's 8-byte cell array, which starts just past the sheet's
        12-byte header (SprtHdrA / SprtEntA, read by func_8007352C); every
        MOD.BIN sheet these four sites reach has one header (census). Ruling 9:
-       one meaning, header + 0xC at every write; pre-slim-2026-10-01:memory/grind/func_8006C21C/
-       admission.md "cells". */
+       one meaning, header + 0xC at every write. */
     u8 *cells;
 
     mode = 0;
@@ -6043,9 +5911,8 @@ typedef struct {
 
 /* The two per-row sprite counters. The target clears both with one word
  * store (0x8006D018 `sw $zero,0x48($sp)`), so the storage is declared as
- * the counter array plus one word view (owner ruling Q33, 2026-09-29);
- * every other access goes through count[]. Evidence:
- * pre-slim-2026-10-01:memory/grind/func_8006CFBC/evidence.md "Q33 union". */
+ * the counter array plus one word view (owner ruling Q33);
+ * every other access goes through count[]. */
 typedef union {
     s16 count[2];
     s32 word;
@@ -6062,8 +5929,7 @@ s32 func_8006CFBC(s32 *arg0) {
     /* Ruling 11 (ordinary-c-judge-decidable.md): holds three values, each
      * s.header + 0xC stored to s.table -- for table[column + 8] in the
      * column loop, for table[12] when a row drew nothing, and for
-     * table[17], [18] or [19] in the last loop. (D) proof in
-     * pre-slim-2026-10-01:memory/grind/func_8006CFBC/r11/proof.md. */
+     * table[17], [18] or [19] in the last loop. */
     s8 *temp;
 
     result = 0;
@@ -6298,25 +6164,23 @@ s32 func_8006D7FC(void) {
 void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
     EnvA s;
     /* FAKE: oversized digit array (dead-vars-local-array.md OVERSIZED-LOCALS
-       carve-out, owner ruling 2026-07-13) - only d[0]/d[1] are used; d[2..] is
-       the unwritten tail of a LIVE object.  Frame-math proof from the TARGET
-       BYTES ALONE: frame 0x88; ten callee-saves ($s0-$s7,$fp,$ra at
+       carve-out) - only d[0]/d[1] are used; d[2..] is the unwritten tail of a
+       LIVE object.  From the target bytes: frame 0x88; ten callee-saves ($s0-$s7,$fp,$ra at
        sp+0x60..0x87 => 40 bytes) and a 0x18 outgoing-args area (the 5-arg
        SetDrawMode stores its 5th arg at sp+0x10), so the locals region is
        0x88 - 0x28 - 0x18 = 72 bytes.  The only bytes it ever touches are the
        0x2C EnvA descriptor (sp+0x18..0x43), d[0..1] (sp+0x48..0x4B) and the
        reload spill of the hoisted `0 < n` inner-loop guard (sp+0x58);
        sp+0x4C..0x57 is never read, written or addressed in
-       asm/funcs/func_8006D808.s.  The fully-written form (s16 d[2]) measures
+       asm/funcs/func_8006D808.s.  The fully-written form (s16 d[2]) gives
        vars= 64 => 0x80 != 0x88, so no fully-written locals set gives the
        target frame.  n.b.! d's slot is 8-aligned (stmt.c:3419 clamps a BLKmode
        automatic to BIGGEST_ALIGNMENT), so the declared length is recoverable
-       only as a RANGE: s16 d[5]..d[8] (10..16 bytes) are byte-identical
-       (d[5] and d[8] both sandbox 0); d[4] and below give vars= 64.  d[5] is
+       only as a RANGE: s16 d[5]..d[8] (10..16 bytes) are byte-identical;
+       d[4] and below give vars= 64.  d[5] is
        the smallest member.  The live-object choice follows the family model:
        EnvA + a separate 8-aligned s16 array at sp+0x48, as in func_8006D3DC
-       (u16 rect[4]); same carve-out as the caller func_8006DD94.
-       Lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_8006D808/hypotheses.md. */
+       (u16 rect[4]); same carve-out as the caller func_8006DD94. */
     s16 d[5];
     s16 i;
     s16 k;
@@ -6441,35 +6305,27 @@ void func_8006DD94(s32 *arg0) {
     /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address is
        passed to func_8007352C every iteration; pad2C/pad30 are its unwritten tail.
        mechanism: mips.c compute_frame_size / get_frame_size -
-       frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  Frame-math proof from
-       the TARGET BYTES ALONE: target frame is 0x78 with seven callee-saves
+       frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  From the target
+       bytes: frame 0x78 with seven callee-saves
        ($s0-$s5,$ra at sp+0x58..0x70 => ALIGN8(28) = 0x20) and a 0x18 outgoing-args
        area (the 5-arg func_8006D808 call stores at sp+0x10), so the locals region is
        0x78 - 0x20 - 0x18 = 0x40 = 64 bytes, while the only stores into it are the
        0x2C-byte descriptor at sp+0x18..0x43 and the 8-byte rect at sp+0x50..0x57
        (52 bytes; sp+0x44..0x4F is never read, written or addressed anywhere in
        asm/funcs/func_8006DD94.s).  The fully-written form (EnvB = 0x2C + u16 rect[4])
-       measures vars= 56 => ALIGN8(56)+0x18+0x20 = 0x70 != 0x78, so no fully-written
+       gives vars= 56 => ALIGN8(56)+0x18+0x20 = 0x70 != 0x78, so no fully-written
        locals set can produce the target frame.
        n.b.! the rect's slot is 8-aligned (stmt.c:3419 clamps a BLKmode automatic to
        BIGGEST_ALIGNMENT = 64 bits, mips.h:1082), so the declared descriptor size is
        recoverable only as a RANGE: 0x34 (pad2C, pad30) and 0x38 (pad2C, pad30, pad34)
-       are byte-identical (both sandbox 0, s5 probes B_desc34/C_desc38); 0x30 (pad2C
-       alone) puts the rect back at sp+0x48 and scores 21 (probe E_desc30).  0x34 is
+       are byte-identical; 0x30 (pad2C alone) puts the rect back at sp+0x48.  0x34 is
        chosen as the smallest member of the range.
-       Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out
-       (owner ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object -
-       `s`'s address is passed to func_8007352C - rather than adding a dead pad, and
-       extending the OTHER live object instead (u16 rect[8], the func_80041BF4
-       exemplar's exact shape) is measured wrong here: it reaches the target frame but
-       leaves the rect base at sp+0x48 and scores 5 (probe D_rect8).
-       In-tree precedent for this carve-out: src/text1a_post.c:387-400 (func_80041BF4,
-       `s16 rect[8]`, accepted on main).
-       Lever-exhaustion: memory/grind/func_8006DD94/hypotheses.md - 5 sessions,
-       1,080 enumerated spellings (973 loop-tail + 65 rect-block + 42 declaration
-       orders), 56k permuter iterations over 2 campaigns, 4 class kills (spill homes
-       cannot land below the rect, function.c:724; alignment capped, stmt.c:3419;
-       no BLKmode keep-temp carrier; declaration-order space has exactly 2 points). */
+       Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out;
+       the LIVE object (`s`, whose address is passed to func_8007352C) is extended
+       rather than adding a dead pad.  Extending the OTHER live object instead
+       (u16 rect[8], the shape of func_80041BF4 in src/text1a_post.c) reaches the
+       target frame but leaves the rect base at sp+0x48.  Spill homes cannot land
+       below the rect (function.c:724). */
     EnvB s;
     u16 rect[4];
     s16 i;

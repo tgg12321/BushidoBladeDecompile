@@ -274,65 +274,18 @@ void math_RotMatrixZXY(u16 *a0, s16 *a1) {
     sinB_sinC = sinB * sinC;
     a1[5] = (negSinAxcosB_12_cosC + sinB_sinC) >> 12;
 }
-/* candidate.c - replay_camera_rob_back_loose3, session 3 (structural).
+/* Euler angles (a0[0..2], 12-bit) -> 3x3 rotation matrix a1[9], Y-X-Z order.
  *
- * CHEAT-FREE.  engine `sandbox --disable all` = 12  (s2 banked 13; s1's honest
- * cheat-free baseline was 26; HEAD's cheat-carrying form scored 17 only via a
- * register pin + a volatile coercion, both absent here).
- * build_insns 114 == target_insns 114.  Zero rules, zero pins, zero volatile,
- * zero inline asm.
+ * cosA is read through a `u16 rawA` staging local and sign-extended with an
+ * explicit (s16) cast, with the `a1[5] = -sinA;` store placed between the load
+ * and the cast: combine will not merge a MEM load into a later user across a
+ * store, so the target's lhu + sll 16 + sra 16 shape survives (sched1 then
+ * hoists the store back out at no instruction cost).  Both halves matter: the
+ * store after the cast, or the same interleave without the u16 local, is inert.
  *
- * ------------------------------------------------------------------ HISTORY
- * s2's form (score 13) = the two changes that closed MECHANISM A:
- *   1. cosA is read through a `u16 rawA` staging local and sign-extended with
- *      an explicit (s16) cast (the sanctioned narrow-view spelling), and
- *   2. `a1[5] = -sinA;` is MOVED to sit BETWEEN the rawA load and that cast.
- *      Combine's can_combine_p refuses to combine a MEM load into a later user
- *      across an insn that may WRITE memory, so simplify_shift_const never
- *      sees the ashiftrt(ashift(zero_extend(mem),16),16) chain it would fold
- *      into sign_extend(mem) = `lh`.  Target's three-insn shape
- *      (lui at,%hi(Judge); addu at,at,a3; lhu v0,%lo(Judge)(at); sll 16; sra 16)
- *      therefore survives, at zero instruction cost, because sched1 runs after
- *      combine and hoists the store back out.
- *      Both halves are load-bearing: the store after the cast is inert, and the
- *      same interleave without the u16 staging local is inert (that load is
- *      already a sign_extend MEM, so there is no zero_extend to protect).
- *
- * ------------------------------------------------------- WHAT s3 ADDED (13 -> 12)
- * THE ONE CHANGE vs s2's candidate:  `angC = a0[2]; sinC = Judge[angC & 0xFFF];`
- * is moved from BEFORE the `sinAxsinB_12 = (sinA * sinB) >> 12;` statement to
- * AFTER it.
- *
- * Mechanism.  `a0[2]` is the LAST use of the parameter pointer `a0`, so its
- * position decides where the hard register $a0 dies.  Reading it after the
- * sinA*sinB statement keeps $a0 live across the multiply and, more importantly,
- * puts the angC load AFTER the mult in the pre-allocation insn stream.  Local
- * alloc then hands angC target's $v1 and its `& 0xFFF`/`<< 1` cos-index temp
- * target's $v0 -- the mirror-image swap that s1 and s2 both recorded as
- * unreachable is CLOSED, and the build now reproduces target's
- * `lhu v1,0x4(a0)` at insn 18 verbatim.
- *
- * s2 had only ever moved this read EARLIER (hoisting it next to angA/angB, which
- * measured 26 flat / 43 when the index chain went with it).  Moving it LATER was
- * the untried direction.  Reading it later still (after the whole cosA block,
- * variant m3) is much worse (90), and the equivalent delay applied to a0[1]
- * instead is inert (13) -- it is specifically a0[2]-as-last-use that matters.
- *
- * ------------------------------------------------------------ REMAINING GAP (12)
- * The residual is `sinAxsinB_12`: target keeps it in $v0, our build puts it in
- * $a0 (the parameter register, free once a0 dies).  It is a SCHEDULING-coupled
- * allocation, and s3 measured the coupling precisely:
- *   - target's stream is  `mult t2,t3` @17 ... `mflo t0` @22 ... `sra v0,t0,12` @26,
- *     i.e. mflo/sra are delayed past the cosC index chain, which occupies $v0 at
- *     insns 20-24 and DIES at 24; $v0 is then free for sinAxsinB_12 from 26 on.
- *   - this form schedules `mflo v0` @19 / `sra a0,v0,12` @20, i.e. BEFORE the
- *     index chain, so sinAxsinB_12's live range overlaps the temp's and $v0 is
- *     unavailable; local-alloc gives it the leftover $a0.
- *   - splitting the multiply from the shift (`sinAxsinB = sinA * sinB;` ... then
- *     `sinAxsinB_12 = sinAxsinB >> 12;` after the sinC read) reproduces target's
- *     SCHEDULE exactly (mflo t0 @22, sra @26) but flips angC back to $v0 and
- *     idxC to $v1, scoring 13.  The two halves have not been obtained together
- *     by any of the 30 spellings measured across s2+s3.
+ * `angC = a0[2]` is read after the sinA*sinB statement: it is the last use of
+ * `a0`, so its position decides where $a0 dies; reading it here gives angC
+ * $v1 and its cos-index temp $v0, as in the target.
  */
 extern s16 Judge[];
 void math_RotMatrixYXZ(u16 *a0, s16 *a1) {
@@ -477,7 +430,7 @@ void func_80042E90(void) {
     D_800F66B4 = (s32)math_RotMatrixXYZ;
 }
 void math_TransposeMatrixInPlace(u16 *a0) {
-    /* FAKE: statement staging (2026-07-06 ALLOWED list) — saving one
+    /* FAKE: statement staging — saving one
        side of all three pairs up front seats x/y/z in $a1/$v1/$v0 for
        the whole body with the scratch reloads sharing $a2, and keeps
        the load-delay nop at +0x18 unfilled, as in the target. */
@@ -631,7 +584,7 @@ void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
         u16 *cntPtr = countPtr; /* load-bearing named intermediate: countPtr's
            caller-save home ($a1) must die before the loop's jal; this rebind
            gives the loop reads their own callee-save home ($s1), reproducing
-           the target's addu $s1,$a1,$zero copy (removal measured +5) */
+           the target's addu $s1,$a1,$zero copy */
     loop:
         *(s32 *)0x1F800000 = (*basePtr)[(s16)i];
         func_80043454((s16)arg1, (s16)arg2, (s16)arg3, (s16)arg4_lo);
@@ -798,7 +751,7 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                                re-merges the copies (bytes identical to `case 0: case 2:`),
                                but flow.c counts them before global RA: the extra refs and
                                live length seat count/base/kind in s3/s4/s5 as the target
-                               does (ledger: pre-slim-2026-10-01:memory/grind/func_80043454/evidence.md). */
+                               does. */
                             b[1] += arg1;
                             b[5] += arg1;
                             b[9] += arg1;
@@ -1073,20 +1026,15 @@ void func_80044098(s16 a0) {
             do {
                 *v1 -= (s32)a6;
                 /* FAKE: semantically-null cancellation pair `v1++; v1--;`
-                   adjacent to the real `v1++` (owner ruling 2026-08-18, F6
-                   survey; .claude/rules/no-new-park-categories.md, SOTN-
-                   accepted techniques). what: the pair nets zero and emits no
-                   bytes. mechanism: flow.c reg_n_refs counts the extra
-                   loop-weighted pointer refs before combine.c re-merges the
-                   chain into the single target addiu (combine.c:52-57 -
+                   adjacent to the real `v1++` (F6 cancellation pair,
+                   .claude/rules/no-new-park-categories.md) -- the pair nets
+                   zero and emits no bytes, but flow.c reg_n_refs counts the
+                   extra loop-weighted pointer refs before combine.c re-merges
+                   the chain into the single target addiu (combine.c:52-57 -
                    reg_n_refs is never adjusted afterwards), so global.c's
                    allocno priority for the pointer overtakes the counter's
                    and the pointer lands $v1 / the counter $a0 as target has
-                   them. lever-exhaustion: memory/grind/func_80044098
-                   evidence.md + hypotheses.md s1-s4 (counter-split guard-fold,
-                   8/8 same-path decorations cse-folded pre-flow, peel+holder
-                   family proven 3-locked from sched.c/flow.c source, ~105k
-                   permuter iterations over 4 basins). */
+                   them. */
                 v1++;
                 v1--;
                 v1++;
@@ -1155,10 +1103,9 @@ s32 func_80044170(s32 *a0, ...) {
 }
 extern void func_800520B8(s32, s32, s32);
 s32 func_8004428C(s32 *base, s16 *offsets) {
-    s32 *b = base; /* FAKE: prologue pair order — owner ruling 2026-07-17
-                      (decisions.md 10:35, tombstone narrowed): single
-                      forward-order param alias sanctioned under
-                      pointer-alias-fake-exception; combine merges the
+    s32 *b = base; /* FAKE: prologue pair order -- single forward-order
+                      param alias (pointer-alias-fake-exception);
+                      combine merges the
                       single-use param's entry copy into this init at the
                       later insn position, yielding target's s3-pair-first
                       prologue */

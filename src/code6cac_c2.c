@@ -612,47 +612,16 @@ void func_8003C560(void) {
     }
 }
 /*
- * CANDIDATE -- func_8003C714 (src/code6cac_c2.c) -- s19 (2026-09-05, rederive)
+ * Copies the three clock records (D_80106A50.times, frame counts at 30 fps)
+ * into the record at func_80077D00(): minutes (/1800), seconds ((/30) % 60),
+ * hundredths ((% 30) * 100 / 30) and the record's unk_0 byte at +0x21 + i*4;
+ * then three bytes from func_8001CD68 at +0x2D..+0x2F and the stage at +0x30.
  *
- * MEASURED THIS SESSION on the shipped chassis: this exact body, dropped over
- * the `INCLUDE_ASM("asm/funcs", func_8003C714);` line at src/code6cac_c2.c:629
- * with NO other edit anywhere in the tree, scores
- *   sandbox func_8003C714 --disable all = 15  (target_insns 104, build_insns 105)
- *
- * WHY THIS BODY REPLACES THE s18b CANDIDATE. The s18b candidate reached
- * distance 0 but only by carrying (a) a FAKE-annotated DImode dead store whose
- * sole purpose was to summon __divdi3, and (b) a retype of D_80106A58 to
- * `extern u8 D_80106A58[24]`. BOTH are on this function's banned_constructs
- * list, so that body can never be submitted. This session proved that NEITHER
- * is load-bearing: the same distance 0 is reachable from THIS body plus pure
- * insn_count padding, without retyping the clock records. (Since 2026-09-26
- * they are D_80106A50.times of the FileRecord in include/system.h, read through
- * a FileTimeRec pointer.)
- * The two "declaration puns" the brief listed as a hard submission blocker are
- * therefore NOT part of the residual at all -- they were artefacts of the s18b
- * carrier, not of the match. See hypotheses.md s19 (H35/K57) and evidence.md s19.
- *
- * WHAT THE RESIDUAL IS, EXACTLY (all numbers measured this session from the
- * -dL loop dump, tmp/grind/func_8003C714/dumps/code6cac_c2.loop):
- *   Loop from 28 to 170: 62 real insns.
- *   Insn 48: regno 87 (life 1), move-insn savings 1  moved to 225   <- 0x91A2B3C5
- *   Insn 66: regno 93 (life 35), move-insn savings 1 moved to 227   <- 0x88888889
- * The target hoists reg 93 (lui/ori in the preheader at 8003C740) and does NOT
- * hoist reg 87 (lui/ori materialised in-loop at 8003C754/8003C75C). All 15
- * residual instructions are that one difference. loop.c:1631 moves a movable
- * iff `threshold * savings * m->lifetime >= insn_count`, and loop.c:532 sets
- * `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` = 122 with no
- * call in the loop, 61 with one. reg 87 sits at savings 1 / lifetime 1, both
- * already at their floor, so the ONLY two ways to leave it in the loop are
- *   (A) loop_has_call = 1  -> need insn_count >= 62, and the baseline is
- *       ALREADY 62, so a single byte-free CALL_INSN in the loop is sufficient
- *       on its own (margin is exactly one insn); or
- *   (B) no call             -> need insn_count >= 123, i.e. +61 RTL insns in
- *       the loop that emit no bytes.
- * Route (B) was believed capped at insn_count 64 by s18. It is NOT: see the two
- * new rejected/ forms, which reach 123 and measure sandbox 0. What blocks (B)
- * is admissibility, not reachability -- the padding has to be something a
- * programmer would actually write.
+ * func_8001CD68 is called on the loop's exit path rather than after the loop:
+ * a call inside the loop sets loop.c's loop_has_call, halving the
+ * move_movables threshold (loop.c:532, loop.c:1631), so the 0x91A2B3C5 (/1800)
+ * magic stays materialised in the loop while 0x88888889 (/30) is hoisted to
+ * the preheader, as in the target.
  */
 void func_8003C714(void) {
     u8 buf[4];
@@ -890,10 +859,10 @@ extern void func_8003B328(void);
 extern void func_8003B534(s32);
 extern s32 D_800A312C;
 void func_8003CF84(void) {
-    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner rulings 2026-08-17 + 2026-08-18): reconstructs the original frame's 16-byte allocated-but-untouched leading region (compiled-out >=7-word call, frame forensics in memory/wip/func_8003CF84/notes.md). SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. */
+    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner rulings 2026-08-17 + 2026-08-18): reconstructs the original frame's 16-byte allocated-but-untouched leading region (compiled-out >=7-word call). SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. */
     volatile u32 pre_pad[4];
     s32 vec[3];
-    /* FAKE: unwritten TRAILING pad (owner ruling 2026-08-18, this function only): the target frame's census shows a second 8-byte allocated-but-untouched object above vec; 14 honest spellings + all 3 phantom-slot producers measured inert (notes.md). */
+    /* FAKE: unwritten TRAILING pad (owner ruling 2026-08-18, this function only): the target frame has a second 8-byte allocated-but-untouched object above vec, which no phantom-slot producer reproduces. */
     volatile u32 pad2[2];
     s32 *a;
     s32 *b;
@@ -941,8 +910,7 @@ void func_8003CF84(void) {
         if (D_800A38DC == 4 || D_800A38DC == 6) {
             /* FAKE: indexes past D_800A37D2 into D_800A37D3 by player number (owner Q63, this
              * byte pair only): the target also reaches each byte through its own symbol, which
-             * no single array or struct gives (proof: pre-slim-2026-10-01:memory/grind/func_8001C8DC/evidence.md
-             * s1, s2-struct). */
+             * no single array or struct gives. */
             (&D_800A37D2)[D_800A3748] = (&D_800A37D2)[D_800A3748] + 1;
         }
         func_8001979C(0, (u32 *)D_80102770);
@@ -1164,9 +1132,8 @@ s16 *func_8003D7B4(s32 arg0) {
 /* Bitstream reader.  State through `u32 *s`: s[0]=word pointer, s[1]=current word,
    s[2]=bits still available in s[1].  Returns the next `n` bits.
    `m1 = 1 << avail; m1 -= 1;` is the user-sanctioned same-variable split-init
-   accumulation family (owner ruling 2026-06-13; Judge PASS precedent rob_life_ctrl_2,
-   pre-slim-2026-10-01:docs/grind/decisions.md:1075) -- both statements are live and the pair folds back
-   into one emitted `addiu v0,v0,-1`. */
+   accumulation family (owner ruling 2026-06-13) -- both statements are live and the pair
+   folds back into one emitted `addiu v0,v0,-1`. */
 s32 bitstream_ReadBits(u32 *s, s32 n)
 {
     s32 avail = s[2];
@@ -1181,12 +1148,9 @@ s32 bitstream_ReadBits(u32 *s, s32 n)
            source-operand order from the C expression tree and combine preserves it --
            naming the slice moves it to operand 1 (`or v1,v1,v0`, target) without
            touching statement order, so sched1's order and the greg allocation are
-           byte-identical to the un-named form (dumps diffed:
-           tmp/grind/func_8003D888/s4/dumps_v0 vs dumps_w3), whereas swapping the
-           operands in the source expression itself also moves the LUID and regresses
-           the allocation (score 17), lever-exhaustion: memory/grind/func_8003D888/
-           hypotheses.md s4 (7 operand-order spellings measured 1/17/18/18/18/19/29)
-           + evidence.md s1-s4. */
+           byte-identical to the un-named form, whereas swapping the operands in the
+           source expression itself also moves the LUID and regresses the
+           allocation. */
         u32 hi;
 
         n -= avail;
@@ -1362,57 +1326,17 @@ void func_8003DDF8(u32 arg0) {
     arg0 &= 0xFFFFFF;
     ptr[0x3FFC / 4] = arg0;
 }
-/* func_8003DE14 - MATCHING form (grind session 38 second run, STRUCTURAL modality).
+/* func_8003DE14 - builds count-1 progressively fogged copies of the VRAM
+ * rectangle `rect`. The original is first copied one rect height up; each
+ * pass then blends every non-zero pixel toward the GTE far colour by
+ * (i + 1) / count (the last pass writes the far colour itself) and uploads
+ * the result one rect height below the previous one, wrapping to the next
+ * column at y 0x200.
  *
- * SCORE 0 / 173 build insns on HEAD 2026-09-11, `sandbox func_8003DE14
- * --disable all`, rules_dropped 0.  BODY UNCHANGED from the body layer-1 FAILed
- * at 2026-09-11 05:42 (review verdicts are keyed by body; comments are ignored).
- * What this run adds is the ONE thing that review asked for and the ledger
- * lacked: a NECESSITY MEASUREMENT for the s21 `((s32)dst_buf + j) - j` chain
- * extender on this no-carrier chassis, the closed-form arithmetic that explains
- * it, and a 56-spelling exhaustion sweep of the alternatives.
- *
- * THE MEASUREMENT (tmp/grind/func_8003DE14/s38/v2/, one sweep, all 173 insns):
- *   b1 = this body                                   ->  0 / 173
- *   b2 = this body with ONLY the s21 detour removed  ->  7 / 173
- *   b3 = this body with ONLY `gm` removed            -> 17 / 173
- *   b4 = both removed                                -> 22 / 173
- * The s37 `u1` measurement layer-1 relied on ("the extender is inert") was taken
- * on the h-carrier chassis, which this body no longer uses.
- *
- * WHY IT IS WORTH EXACTLY 7 (dumped, not inferred).  b2's residual is a pure
- * $t4 <-> $t5 exchange between `j` and `complement` (rowdiff rows 71, 95, 103,
- * 111, 137, 139).  global.c's allocno_compare key is
- * floor_log2(n_refs) * n_refs / live_length * 10000:
- *   b2:  j 11 refs / livelen 59 -> 5593 ;  complement 11 / 54 -> 6111  (wrong)
- *   b1:  j 15 refs / livelen 73 -> 6164 ;  complement 11 / 54 -> 6111  (target)
- * Artifacts s38/qty_b1.log and s38/qty_b2.log, ord=15/16.  Margin 0.87%.  The
- * detour's two extra reads of `j` sit in the OUTER row loop, so flow weights
- * them x2 (11 -> 15 refs) and they also extend j's live range across the
- * LoadImage call (59 -> 73); the ratio still rises because the ref term wins.
- *
- * WHY NO ORDINARY-C SPELLING REACHES IT (56 bodies measured, banked as
- * rejected/s38b-*.c).  `j`'s initialiser must be emitted before the inner loop's
- * guarding `blez`: reorg.c:2963's backward delay-slot scan takes the nearest
- * non-conflicting insn, and when `j = 0` is not there it reaches the
- * `dst = dst_buf` init and hoists it out of the row-top block (BB2_DBR_DEBUG
- * trace s38/dbr_c2.log:2185-2191; that body scores 3 with the seats CORRECT -
- * it only moves the defect).  With `j` initialised there, livelen(j) >
- * livelen(complement) for every spelling, so at equal refs `complement` always
- * wins, and 12 refs is still short (3*12/59 = 6101 < 6111).  Swept and failed:
- * 23 declaration-order permutations (all inert at 3), 8 declaration placements
- * (7-58), 7 `complement` hoists/splits (23-29), 7 `complement` bookkeeping forms
- * (7-11), 5 duplicated-statement-into-arms spellings of `j++` (13-25; the two
- * that stay at 173 insns overshoot a floor_log2 step), 6 in-latch `j` detours
- * (3-12, so the two detours cannot be merged into one construct).
- *
- * FAKE CONSTRUCTS PRESENT (3, all inside frozen SOTN-sanctioned families):
- *   (1) the bound's `+ rect[2] - rect[2]` detour - combine-foldable
- *       chain-extender (owner ruling 2026-07-01); zero emitted bytes.  Layer-1
- *       2026-09-11 05:42 verified this one clean.
- *   (2) the s21 `((s32)dst_buf + j) - j` extender on the LoadImage argument -
- *       SAME family, same mechanism, now with the necessity measurement above.
- *   (3) `gm` - a named intermediate for the green mask (worth 17 points).
+ * FAKE constructs (each labelled at its site): the `gm` named green mask, the
+ * inner bound's `+ rect[2] - rect[2]` detour and the `((s32)dst_buf + j) - j`
+ * LoadImage argument. The two detours are combine-foldable chain extenders
+ * ([[dead-store-fake-exception]]) with zero emitted bytes.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -1481,17 +1405,12 @@ void func_8003DE14(s16 *rect, s32 count) {
                             s32 gp;
                             /* FAKE: `gm` names the green channel's masked result so that
                              * g_src dies at the mask instead of at the store; mechanism:
-                             * global.c allocno priority (prio = nrefs*40000/live_length,
-                             * dumped via BB2_ALLOC_DEBUG) - naming gm takes green from
-                             * 18 refs/livelen 18 to 18/16 and red from 24/21 to 24/22, so
-                             * pri(px)=44444 > pri(red)=43636 and px is allocated $a0 with
-                             * red $a1 and green $v1, the target's seat map; without the
-                             * name red is 24/21=45714, outranks px, steals $a0 and the body
-                             * scores 17.  lever-exhaustion:
-                             * memory/grind/func_8003DE14/hypotheses.md s29-s35 (seat
-                             * inequality, OR re-association, cross-block hoist, red-tail
-                             * splits) + s36 waves x (borrowed carriers gp/sum/rp and the
-                             * in-place `g_src = g_src & 0x3E0;` split all measured 17-43). */
+                             * global.c allocno priority (prio = nrefs*40000/live_length)
+                             * - naming gm takes green from 18 refs/livelen 18 to 18/16 and
+                             * red from 24/21 to 24/22, so pri(px)=44444 > pri(red)=43636
+                             * and px is allocated $a0 with red $a1 and green $v1, the
+                             * target's seat map; without the name red is 24/21=45714,
+                             * outranks px and steals $a0. */
                             s32 gm;
                             src++;
                             rp = r_src * complement;
@@ -1516,8 +1435,7 @@ void func_8003DE14(s16 *rect, s32 count) {
                     j++;
                 /* FAKE: the inner loop's bound is routed through the algebraically
                  * equivalent detour `+ rect[2] - rect[2]`, which combine folds back to the
-                 * direct `rect[2] * rect[3]` with ZERO emitted bytes (173 build insns with
-                 * and without it; verified against the target's 173).  Its only surviving
+                 * direct `rect[2] * rect[3]` with ZERO emitted bytes.  Its only surviving
                  * effect is the extra reg_n_refs that flow.c records BEFORE the fold.
                  * Mechanism: local-alloc.c:1669-1684 `qty_compare_1` ranks the two
                  * block-local halfword loads of the bound by
@@ -1529,21 +1447,10 @@ void func_8003DE14(s16 *rect, s32 count) {
                  * target's $v0.  The detour's two extra reads CSE onto the same pseudo, so
                  * flow counts 4 refs (weighted 12) and it scores floor_log2(12)*12/4 = 9 >
                  * 6, sorts first and takes $v0 - the target's map `lh $v0,4($s0)` /
-                 * `lh $v1,6($s0)` / `mult $v0,$v1`.  MEASURED, not inferred:
-                 * tmp/grind/func_8003DE14/s38/qty_win.log:623-624 prints
-                 * `blk=11 ord=0 qty=0 reg1=147 birth=4 death=8 refs=12 got=2` and
-                 * `ord=1 qty=1 reg1=150 birth=6 death=8 refs=6 got=3`; the same dump on the
-                 * detour-free body (s37/qty_g6.log) prints refs=6/got=3 for reg1=147.  Same family and same
-                 * mechanism as the s21 `((s32)dst_buf + j) - j` extender below
+                 * `lh $v1,6($s0)` / `mult $v0,$v1`.  Same family and same mechanism as
+                 * the `((s32)dst_buf + j) - j` extender below
                  * ([[dead-store-fake-exception]] combine-foldable chain-extender clause,
-                 * owner ruling 2026-07-01).  Lever-exhaustion:
-                 * memory/grind/func_8003DE14/hypotheses.md s24-s37 - the latch's order and
-                 * seats were driven to a closed form over 14 sessions (s32 block-locality,
-                 * s33-s35 allocno-priority inequality, s36 the escaped-carrier rules, s37
-                 * birthing_insn_p + the qty_compare_1 class kill that this detour is the
-                 * measured answer to), across ~200 rejected spellings including every
-                 * operand order, declaration order, for/while/do-while chassis, staged
-                 * carrier and cross-block read site. */
+                 * owner ruling 2026-07-01). */
                 } while (j < rect[2] * rect[3] + rect[2] - rect[2]);
             }
 
@@ -1555,17 +1462,11 @@ void func_8003DE14(s16 *rect, s32 count) {
                     ((u16 *)rect)[0] += ((u16 *)rect)[2];
                 }
             }
-            /* FAKE: j chain extender on the dst_buf argument (s21); mechanism:
+            /* FAKE: j chain extender on the dst_buf argument; mechanism:
              * combine.c folds the +j/-j pair away but flow.c's reg_n_refs for j is
-             * counted before it, lifting j's allocno priority so the $t4/$t5 seat
-             * pair matches; lever-exhaustion: memory/grind/func_8003DE14/
-             * hypotheses.md s21-s38b - on THIS no-carrier chassis the
-             * extender-free body measures 7/173 against this body's 0/173
-             * (tmp/grind/func_8003DE14/s38/v2/b1.c vs b2.c, one sweep, both at
-             * 173 build insns), and the s38b sweep of 56 ordinary-C and
-             * sanctioned-family alternatives (declaration order/placement,
-             * `complement` hoists and bookkeeping, duplicated-statement-into-arms
-             * `j++`, in-latch detours) bottoms out at 3/173. */
+             * counted before it, lifting j's allocno priority (global.c
+             * allocno_compare) above `complement`'s so the $t4/$t5 seat pair
+             * matches; without it j and complement swap registers. */
             LoadImage((s32)rect, ((s32)dst_buf + j) - j);
             DrawSync(0);
             i++;
@@ -1817,7 +1718,7 @@ extern void func_800620B8(s16 *, s32 *);
  *                           :809-814); its two leading nops ride at the
  *                           tail of the gte_ldv0 island, as in func_80019310
  *   gte_stlvnl(r0)       -- inline_c.h:1111-1117; "memory" is its own clobber
- * Ledger: pre-slim-2026-10-01:memory/grind/func_8003E6D8/. */
+ */
 void func_8003E6D8(s32 arg0) {
     s32 mat[8];
     s16 vec[4];
@@ -2151,8 +2052,7 @@ void func_8003EDC0(u16 *p, s32 arg1) {
         }
     }
     /* FAKE: the grid row counter i is reused as the run-table fill index; a
-     * fresh index local moves the row counter from $a3 to $a1 (score 5,
-     * memory/grind/func_8003EDC0/rejected/fresh-p4-index-5.c) */
+     * fresh index local moves the row counter from $a3 to $a1. */
     i = 0;
     while ((w = *p++) != -1) {
         x = w % 32;
@@ -2167,8 +2067,7 @@ void func_8003EDC0(u16 *p, s32 arg1) {
     if (D_800A3230 >= 1000) {
         /* FAKE: the argument is unproven -- the halt stub ignores its
          * arguments (func_8003FA24 passes it a string). The target holds the
-         * count in $a0 at this jal; without the argument it is given $v1
-         * (score 5, memory/grind/func_8003EDC0/rejected/noarg-call-5.c) */
+         * count in $a0 at this jal; without the argument it is given $v1. */
         func_80052C10(D_800A3230);
     }
     D_800A3678 = 0;
@@ -2179,8 +2078,7 @@ void func_8003EDC0(u16 *p, s32 arg1) {
 
 /* ---- merged from config.c (owner ruling Q65: one original file) ---- */
 /* Rodata owned by config.c per func_8003FA24's reference at asm/funcs/func_8003FA24.s:240-241.
- * Re-attributed from asm/data/101C.rodata_c2_post.s 2026-06-09 (rodata-cleanup project,
- * docs/rodata-cleanup-project.md). Named per named_syms.txt alias g_str_multipul_model_80010D8C.
+ * Re-attributed from asm/data/101C.rodata_c2_post.s. Named per named_syms.txt alias g_str_multipul_model_80010D8C.
  * Fixed [16] to match the asm/data block's exact byte content (14 chars + null + 1 pad). */
 const char D_80010D8C[16] = "Multipul Model";
 
@@ -2763,8 +2661,7 @@ void func_800400B0(s32 *a0, s32 a1) {
         }
     }
 }
-/* Judge-ruled form (s2 grind, 2026-07-14): the variable compare `s2[0] > s0`
- * is load-bearing — target's 0x28 frame is the combine-leftover of the folded
+/* The variable compare `s2[0] > s0` is load-bearing — target's 0x28 frame is the combine-leftover of the folded
  * guard (phantom slot sp+20); a literal `> 0` compare yields frame 0x20 + RA
  * swap. Every statement here is live. Do not respell. */
 void func_800400F8(s32 *a0) {
@@ -2806,7 +2703,7 @@ void func_8004019C(s32 *a0, s32 a1) {
 s32 D_800A3218 = 0;
 s32 D_800A321C = 1;
 u32 D_800A3220 = 0x1dc03f0;
-s32 D_800A3224 = 0x240010;  /* the w/h halves of the 8-byte RECT at D_800A3220 (code6cac_c2 passes &D_800A3220 to LoadImage, whose callee reads x/y/w/h); include/code6cac.h declares D_800A3220 u32; not named by code - logged (s15 DATA-MODEL) */
+s32 D_800A3224 = 0x240010;  /* the w/h halves of the 8-byte RECT at D_800A3220 (code6cac_c2 passes &D_800A3220 to LoadImage, whose callee reads x/y/w/h); include/code6cac.h declares D_800A3220 u32; not named by code */
 s32 D_800A3228 = -1;
 s32 D_800A322C = 0;
 s32 D_800A3230 = 0;  /* reached gp-relative by func_8003EDC0: size from the blob label */

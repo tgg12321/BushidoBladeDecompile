@@ -99,12 +99,9 @@ extern void func_80060414(s32, u8 *, s32);
 
 
 
-/* --- Non-decompiled functions (INCLUDE_ASM) --- */
 /* func_800164F8 -- spins 10000 times executing `break 1` (0x0001000D). The loop
  * is ordinary C; only the break has no C form, so it is a one-instruction island
- * (spelled as its word: maspsx cannot assemble `break` with a code operand).
- * Re-expressed 2026-10-01 from a whole-body .word block (inline-asm audit A7):
- * this C compiles to the target's 7 words exactly. */
+ * (spelled as its word: maspsx cannot assemble `break` with a code operand). */
 void func_800164F8(void) {
     s32 i;
 
@@ -205,12 +202,10 @@ u32 file_GetFlag2(void) {
 
 void func_800167EC(void) {
     s32 i;
-    /* FAKE: pointer to the record, admitted on SOTN precedent (Q50, Q53; that function also
-     * writes its global directly beside the pointer); mechanism: cse addresses the header
+    /* FAKE: pointer to the record, admitted on SOTN precedent (owner rulings Q50, Q53; that
+     * function also writes its global directly beside the pointer) -- cse addresses the header
      * stores off rec's register and loop.c strength-reduces rec->times[i] into a pointer
-     * copied from it, so unk_00 is stored at 0(base) and the loop walks base by 8;
-     * exhaustion: direct only 19, rec only 10, times-array pointer 8, per-element pointer 10,
-     * rec set after the header stores 15; pre-slim-2026-10-01:memory/grind/func_80034708/evidence.md [s10] */
+     * copied from it, so unk_00 is stored at 0(base) and the loop walks base by 8. */
     FileRecord *rec = &D_80106A50; /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
 
     D_800A3710 = 0;
@@ -442,9 +437,7 @@ void func_80016E60(u8 *arg0, s32 arg1) {
        and leaves it at the LATER position, so sched.c:3256's parameter-copy pin
        (leading run of hard-register-source SETs) no longer applies, sched1's
        birthing_insn_p boost (sched.c:2504) emits it after the two init insns,
-       and sched2's INSN_LUID tie-break (sched.c:2462) orders the groups s1,s2,s5.
-       lever-exhaustion: memory/grind/func_80016E60/hypotheses.md (s1-s5 bare-
-       parameter forms, [s6] E-s6-4 hard mechanism, [s6] E-s6-7 honest env route). */
+       and sched2's INSN_LUID tie-break (sched.c:2462) orders the groups s1,s2,s5. */
     ot_base = arg0;
     if (D_800A38DC == 2) {
         special = D_800A389A < 1;
@@ -480,9 +473,7 @@ void func_80016E60(u8 *arg0, s32 arg1) {
            effect: env is seated in $s0 and select in $s1, the target's assignment.
            mechanism: the wrap's loop notes make flow.c weight env's three in-loop
            references at loop_depth 3 instead of 2, lifting its global.c
-           allocno_compare priority above select's.
-           lever-exhaustion: memory/grind/func_80016E60/hypotheses.md ([s2] H6 and
-           [s6] E-s6-7/E-s6-8 - the honest env split-init routes measure 22 vs 21). */
+           allocno_compare priority above select's. */
         do {
             PutDispEnv(env + 0x5C);
             PutDrawEnv((DrawEnv *)env);
@@ -660,14 +651,11 @@ void func_800174F4(void) {
     u32 ot[2];
     DrawEnv env;
     /* temp: holds two values, the case-1/2 fade loop's iteration count and
-     * the case-20 D_800A37A8[] code passed to func_80060414. Ruling 11
-     * (ordinary-c-judge-decidable.md); (D) proof in
-     * pre-slim-2026-10-01:memory/grind/func_800174F4/evidence.md "Ruling 11 proof". */
+     * the case-20 D_800A37A8[] code passed to func_80060414 (owner ruling 11). */
     s32 temp;
     u8 *prim;
     /* temp2: holds two values, the g_disp_enable switch selector and the
-     * case-20 D_800A37A0 limit. Ruling 11; (D) proof in
-     * pre-slim-2026-10-01:memory/grind/func_800174F4/evidence.md "Ruling 11 proof". */
+     * case-20 D_800A37A0 limit (owner ruling 11). */
     s32 temp2;
 
     prim = &D_800F33D8;
@@ -710,10 +698,9 @@ void func_800174F4(void) {
             break;
         }
         /* FAKE: the common `D_800A38F8 = cur + 1` store is written in both
-         * arms (unconditional-common-store duplication, F7, no-new-park-
-         * categories.md 2026-08-18). Target computes `addiu v0,a2,1` in each
-         * arm; one store hoisted above the `if` measures 6 (131 insns),
-         * `next` hoisted with a store per arm measures 1 (135). */
+         * arms (unconditional-common-store duplication, F7) -- target computes
+         * `addiu v0,a2,1` in each arm; a single store hoisted above the `if`
+         * (131 insns) or a hoisted `next` (135) does not reproduce that. */
         if (cur == temp2) {
             D_800A38F8 = cur + 1;
         } else {

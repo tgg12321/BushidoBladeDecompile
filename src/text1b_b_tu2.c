@@ -25,7 +25,7 @@ const char D_80015A84[20] =
     "0123456789ABCDEF\0\0\0\0"
     ;
 
-/* PsyQ 4.0 LIBC2 PRNT: prnt — verbatim-linked Sony object (census 2026-07-09);
+/* PsyQ 4.0 LIBC2 PRNT: prnt — verbatim-linked Sony object;
  * C ref: 4.3BSD-Tahoe _doprnt, lib/libc/stdio/doprnt.c
  * "@(#)doprnt.c 5.35 (Berkeley) 6/27/88", with the FILE buffering replaced by
  * putchar and the floating-point conversions removed. The version is fixed by
@@ -65,13 +65,13 @@ s32 prnt(s32 fd, u8 *fmt0, char *argp) {
     s32 ch;
     s32 cnt;
     /* n is the original source's own variable, reused verbatim (owner
-     * Ruling 10, .claude/rules/ordinary-c-judge-decidable.md, c3e7a0b9e):
+     * Ruling 10):
      * 4.3BSD-Tahoe doprnt.c 5.35 :64 "register int n; random handy integer",
      * https://github.com/dspinellis/unix-history-repo/blob/b98826995697c37ced684813f008619460bd7ff8/usr/src/lib/libc/stdio/doprnt.c
      * Written/read at :148 :150 :152 :155 (precision digits), :167 :169 :171
      * (width digits), :359 :370 :373 :390 (padding loops), :377 :383 (string
      * length); its FILE-buffer uses (:92-107, :379-381) are absent with the
-     * FILE code. Evidence: pre-slim-2026-10-01:memory/grind/prnt/evidence.md. */
+     * FILE code. */
     s32 n;
     char *t;
     u32 _ulong;

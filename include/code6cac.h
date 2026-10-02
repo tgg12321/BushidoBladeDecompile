@@ -607,7 +607,7 @@ extern s32 D_800A36B4;
  * Both were tentative definitions in the CD module's file: ASPSX 2.34 gives such
  * a COMMON symbol gp only at its base, so byte 0 is gp-relative and bytes 1..3
  * are lui/%lo in all three accessors. Modelled by maspsx for every file from the
- * declarations (owner Q62, 2026-09-30); the tentative definitions are in
+ * declarations (owner Q62); the tentative definitions are in
  * the CD module's two -G8 units, src/code6cac_b4.c and src/code6cac_b5.c. */
 typedef struct {
     u8 val0;
@@ -874,19 +874,15 @@ typedef struct {
  * 0x80101EA4 keep the address in a register (la; lX 0(r); sX 0(r)) only for
  * a variable larger than 8 bytes -- a smaller one is small data, and cse
  * folds any pointer back to the symbol; the original compiler agrees.
- * Scratch whole-file scores: separate variables 18, block-local pointers 18,
- * function-scope pointers 43, the object ending at 0x80101E9F or 0x80101EA3
- * (0x80101EA4 separate) 8, a separate 12-byte record at 0x80101E9C 8 (and
- * cdrom_ReadyCallback 12), this object 2 (the jump-table operand only, which
- * the link settles); linked, this object scores 0.  unk3E and expected_pos
+ * Separate variables, block- or function-scope pointers, an object ending at
+ * 0x80101E9F or 0x80101EA3, and a separate 12-byte record at 0x80101E9C all
+ * miss func_80036140's bytes; only this object matches.  unk3E and expected_pos
  * lie inside that span but func_80036140 never touches them: they are typed
- * by their other users' original accesses (owner rulings 2026-09-26
- * Q13/Q14): unk3E by game_FrameLoop / cdrom_StartRead (u16, the lhu at
- * 80036F9C); expected_pos by cdrom_ReadyCallback / func_80036940 (s32: no
- * access reveals its signedness, and s32 / u32 build byte-identical).
- * Measurements and dumps: pre-slim-2026-10-01:memory/grind/func_80036140/evidence.md; scratch
- * rows pre-slim-2026-10-01:memory/grind/func_80036140/q62/runs.txt, linked
- * pre-slim-2026-10-01:memory/grind/func_80036140/q62/landed_sandbox.txt.
+ * by their other users' original accesses (owner rulings Q13/Q14): unk3E by
+ * game_FrameLoop / cdrom_StartRead (u16, the lhu at 80036F9C); expected_pos
+ * by cdrom_ReadyCallback / func_80036940 (s32: no access reveals its
+ * signedness, and s32 / u32 build byte-identical).
+ * Evidence: pre-slim-2026-10-01:memory/grind/func_80036140/evidence.md.
  *
  * The 8-byte `pair` is also one CamPair by the table it is copied from: the
  * source is indexed `&g_cd_file_table + i*8` and copied as a whole CamPair
@@ -919,14 +915,10 @@ typedef struct {
 } ReplayCamRec;
 
 /* The CD module's state block, ONE object of 0x50 bytes at 0x80101E58.  Owner
- * ruling Q43 (2026-09-30, docs/grind/owner-rulings-2026-09-26.md) bounds it to
- * the span proven: 0x80101E58..0x80101E99 by the original binary's addressing,
- * through 0x80101EA7 by func_80036140's compiler necessity (ReplayCamRec
- * above).  Q43 dropped 0x80101E9C..0x80101EA7 because that part "lost its
- * proof when func_80036140 went back to assembly"; with func_80036140 in C
- * the proof is re-made on its own body (aggregate-merge prong (a)), the case
- * Q43 anticipated, not a reversal of it.  The first span is proven by three
- * links:
+ * ruling Q43 bounds it to the span proven: 0x80101E58..0x80101E99 by the
+ * original binary's addressing, through 0x80101EA7 by func_80036140's compiler
+ * necessity (ReplayCamRec above; aggregate-merge prong (a)).  The first span
+ * is proven by three links:
  *   - 0x80101E58..0x80101E62 is one object: cdrom_StartAudio forms the
  *     CdlSetfilter parameter (file, chan) at 0x80101E58 as &0x80101E62 - 0xA
  *     (800370AC addiu a1,s0,-0xA; 800370B0 sb v0,-0xA(s0)).  Only those two
@@ -944,9 +936,9 @@ typedef struct {
  *     aggregate store conflicts with the halfword load only when both
  *     addresses share one base symbol_ref (sched.c:777).  As separate objects
  *     there is no dependence and the load is hoisted above the copy.  One
- *     object: cdrom_StartAudio 0 under both cc1 and the original cc1psx; cut
- *     at 0x80101E64, 0x80101E68 or 0x80101E6C: 8 (cc1) / 12 (cc1psx).
- *     Dumps and runs: pre-slim-2026-10-01:memory/grind/cdrom_StartAudio/evidence.md.
+ *     object matches cdrom_StartAudio under both cc1 and the original cc1psx;
+ *     a cut at 0x80101E64, 0x80101E68 or 0x80101E6C misses under both.
+ *     Evidence: pre-slim-2026-10-01:memory/grind/cdrom_StartAudio/evidence.md.
  */
 typedef struct {
     u8 file; /* 0x80101E58 */
@@ -1030,7 +1022,7 @@ extern s32 D_80102770;
  * fourth per-player pair only other functions touch (unk_A, indexed by player
  * in func_80022F34) and four single bytes. One object: func_80034708 reaches
  * unk_4 and unk_E as offsets from the address of unk_C (layout evidence:
- * pre-slim-2026-10-01:memory/grind/func_80034708/evidence.md [s4]-[s5]). */
+ * pre-slim-2026-10-01:memory/grind/func_80034708/evidence.md). */
 typedef struct {
     u16 unk_0[2];
     u8 unk_4[6];

@@ -111,7 +111,7 @@ extern void ChangeClearPAD(s32);
 extern void ChangeClearRCnt(s32, s32);
 /* PsyQ 4.0 LIBETC VSYNC: v_wait (static) — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libetc/vsync.c.
-   FAKE(partial-use volatile array, Ruling 3 2026-07-10): only [0] is
+   FAKE(partial-use volatile array, Ruling 3): only [0] is
    referenced — SOTN ships the identical `volatile s32 timeout[2]` shape;
    original author idiom. */
 void v_wait(s32 a0, s32 a1) {
@@ -210,7 +210,7 @@ u16 *startIntr(void) {
     {
         /* v1.76 evidence: the compiled Sony object keeps pCallbacks live in
            $a0 INTO the _96_remove call (v1.73's plain `_96_remove();` compiles
-           to $v1 here — measured, tmp/closer/intr_test.c); the v1.76 source
+           to $v1 here); the v1.76 source
            passed the pointer through. */
         s32 r = startIntrDMA();
         s32 *cb = g_sys_irq_vtable;
@@ -346,7 +346,7 @@ __asm__(
     "    .set noreorder\n"
     /* The two data words below are the first 8 bytes of Sony's hand-written
        LIBAPI C114 object (.text+0x0; _96_remove entry is at .text+0x8 —
-       proven vs tmp/libscan/psyq40/LIBAPI.LIB C114, zero relocs). They are
+       matches PsyQ 4.0 LIBAPI.LIB C114, zero relocs). They are
        object data, not compiler output, and belong to this canonical
        trampoline's module. */
     "    .word 0x15007350\n"
@@ -493,14 +493,12 @@ extern s32 PClseek(s32, s32, s32);
 INCLUDE_ASM("asm/funcs", PClseek);
 INCLUDE_ASM("asm/funcs", __SN_ENTRY_POINT);
 /* kengo:MED  |  common/ang_hosei  |  47i  |  +4 8.5% */
-/* motion_Open + motion_Close (paired open/close functions) */
 /* 0x80083794 = libgcc __main / crt0 ctor-walker — COMPLETED-INLINE-ASM-CANONICAL
-   (owner routing ruling 2026-08-24: provably prebuilt PsyQ object; our cc1 cannot
-   produce the 16-byte frame from any C — REG_PARM_STACK_SPACE proof, decisions.md
-   2026-08-13; entry in inline_asm_canonical.txt). Split from the fused splat file
-   that also carried motion_Close @0x80083804 (below — its dtor-side twin,
-   COMPLETED-INLINE-ASM-CANONICAL per owner ruling 2026-08-30, same prebuilt
-   crt0/libgcc object; entry in inline_asm_canonical.txt). */
+   (owner routing ruling: provably prebuilt PsyQ object; our cc1 cannot produce
+   the 16-byte frame from any C — REG_PARM_STACK_SPACE; entry in
+   inline_asm_canonical.txt). __do_global_dtors @0x80083804 (below) is its
+   dtor-side twin, COMPLETED-INLINE-ASM-CANONICAL on the same grounds (same
+   prebuilt crt0/libgcc object; entry in inline_asm_canonical.txt). */
 INCLUDE_ASM("asm/funcs", __main);
 INCLUDE_ASM("asm/funcs", __do_global_dtors);
 /* kengo:HIGH  |  is_motion/motion_Open  |  54i */

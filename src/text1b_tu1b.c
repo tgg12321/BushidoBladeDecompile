@@ -124,7 +124,7 @@ INCLUDE_ASM("asm/funcs", func_800520B8);
 INCLUDE_ASM("asm/funcs", func_800523E0);
 INCLUDE_ASM("asm/funcs", func_800525D8);
 /* func_800526A0: hand-coded asm in original PSY-Q source.
- * Evidence (see memory/feedback_hand_coded_asm_recognition.md):
+ * Evidence:
  *   - 5 trapping arithmetic ops (add/addi/sub) GCC 2.7.2 cannot
  *     emit from pure C (opcode 0x20/0x22 vs natural 0x21/0x23)
  *   - Dead delay-slot init: addiu $t0,$zero,0x1F before beqz,
@@ -132,10 +132,7 @@ INCLUDE_ASM("asm/funcs", func_800525D8);
  *   - multi_jr_ra: 3 separate jr $ra blocks (small/large/zero
  *     cases), no shared epilogue (GCC -O2 always CSEs)
  *   - GTE LZCS/LZCR fast leading-zero-count math primitive
- *   - Classifier auto-verdict: permanently_blocked:handwritten_overflow_op
- *   - Pure-C+§6.1 attempt reached 27/30 insns; remaining 3 are
- *     GCC-impossible structural patterns.
- * User-authorized 2026-05-16. */
+ * Owner-authorized canonical asm; see inline_asm_canonical.txt. */
 INCLUDE_ASM("asm/funcs", math_SquareRoot0);
 PAD_NOPS_2; /* padding after func_800526A0 */
 /* func_80052720: GTE sqr tail-call wrapper — mtc2 IR1-3 -> sqr -> sum
@@ -144,8 +141,7 @@ PAD_NOPS_2; /* padding after func_800526A0 */
  * results land in $t0/$t1/$t2 (natural cc1 allocation picks $v0/$v1/$a0),
  * hand-scheduled GTE pipeline nops, and no sibling-call TCO exists in
  * GCC 2.7.2 for the frameless j. Tail-call variant of the authorized
- * sibling func_80052754 below. Canonical-asm; see inline_asm_canonical.txt.
- * User-authorized 2026-06-12. */
+ * sibling func_80052754 below. Canonical-asm; see inline_asm_canonical.txt. */
 INCLUDE_ASM("asm/funcs", math_Length3D);
 /* GTE sqr (squared-vector-length) leaf wrapper: mtc2 IR1-3 -> sqr -> sum MAC1-3.
  * Hand-written asm — mfc2 results land in $t0/$t1/$t2, which natural cc1
@@ -164,8 +160,8 @@ INCLUDE_ASM("asm/funcs", math_LerpMatrix3x3);
  * a delay slot with asm (reorg.c stop_search_p halts at ASM_INPUT) and the
  * per-cycle mask re-materialization + latency interleave are hand-scheduling,
  * so the bytes are unreachable from any C. Last member of the text1b.c LIBGTE
- * leaf run (siblings func_80052A20/A88/B00/B44/B7C, authorized 2026-08-06).
- * Canonical-asm; see inline_asm_canonical.txt. Owner-authorized 2026-08-11. */
+ * leaf run (siblings func_80052A20/A88/B00/B44/B7C).
+ * Canonical-asm; see inline_asm_canonical.txt. */
 INCLUDE_ASM("asm/funcs", gte_MulMatrix0ClearTrans);
 INCLUDE_ASM("asm/funcs", gte_SetMatrixRotTransIR);
 INCLUDE_ASM("asm/funcs", gte_SetMatrixRotTransIRVec);
@@ -175,14 +171,14 @@ INCLUDE_ASM("asm/funcs", gte_SetRotTransMatrix);
  * zeroes the translation vector CR5-CR7 (TRX/TRY/TRZ), the last ctc2 in the
  * jr-ra delay slot. All cop2 + mechanical load packaging; hand-written GTE asm
  * (prologue instruction-identical to canonical-body func_8007ED6C, display.c).
- * Canonical-body authorized 2026-07-27 (judge PASS, docs/grind/decisions.md). */
+ * Canonical-body; see inline_asm_canonical.txt. */
 INCLUDE_ASM("asm/funcs", gte_SetRotMatrixClearTrans);
 INCLUDE_ASM("asm/funcs", func_80052B7C);
 /* func_80052BE4: GTE far-color read wrapper — cfc2 RFC/GFC/BFC (cop2 ctrl
  * 21/22/23) -> srl 4 -> sb to *a0[0..2]. Hand-written asm: cfc2 results land
  * in $t0/$t1/$t2 (natural cc1 allocation picks $v0/$v1/$a1), and the jr $ra
  * delay slot holds a canonical nop where GCC's reorg would fill the last sb.
- * Canonical-asm; see inline_asm_canonical.txt. User-authorized 2026-06-12. */
+ * Canonical-asm; see inline_asm_canonical.txt. */
 INCLUDE_ASM("asm/funcs", gte_ReadFarColor);
 INCLUDE_ASM("asm/funcs", func_80052C10);
 PAD_NOPS_1; /* padding after InitFadePanel */
@@ -754,9 +750,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
        mechanism: expand/cse address materialisation -- the pointer local seats
        %hi/%lo(D_800EFAE8) in one callee-saved base register ($s1) for the whole
        body, whereas the direct D_800EFAE8.field form re-materialises the address
-       per extended basic block; lever-exhaustion: direct-global form measured 82
-       vs 26 (memory/grind/func_80054604/evidence.md s1,
-       rejected/direct-global-no-pointer-local-82.c). */
+       per extended basic block. */
     Unk800EFAE8Ctrl *s = &D_800EFAE8;
     s32 id = a0 + 0x131;
     s32 ret;
@@ -855,15 +849,13 @@ extern void func_80040304(s32, s32);
  * unk1E, plus the stage offset unkC..unk14), then decodes and places each
  * player's motion frame.  The block holds those addresses as integers: typed
  * as pointers, the relocation sums in func_80054FDC and func_80054604 swap
- * their addu operands (memory/grind/func_8005490C/evidence.md [s2]). */
+ * their addu operands. */
 s32 func_8005490C(void) {
     /* FAKE: second C handle to the global ctrl block (pointer-alias family),
        as in func_80054604 above; mechanism: expand/cse address
        materialisation -- the pointer local seats %hi/%lo(D_800EFAE8) in one
-       callee-saved base register ($s3) for the whole body; lever-exhaustion:
-       the direct D_800EFAE8.field form re-materialises the address and
-       measures 157 (420 insns) vs 0 (memory/grind/func_8005490C/evidence.md
-       [s2], rejected/direct-global-no-pointer-local-157.c). */
+       callee-saved base register ($s3) for the whole body; the direct
+       D_800EFAE8.field form re-materialises the address per use. */
     Unk800EFAE8Ctrl *s = &D_800EFAE8;
     VECTOR vec;
     /* The 0x84-byte motion frame func_800198D0 decodes (func_80023F08 keeps
@@ -879,16 +871,14 @@ s32 func_8005490C(void) {
        func_8004153C(1) on the first frame and func_8004153C(i) in the player
        loop.  Shared, it is one allocno that crosses the loop's func_800198D0
        call and takes $s0 for all three (move s0,v0 at 0x80054A50,
-       0x80054A6C, 0x80054CF8); one local per value: 9 (the first-frame
-       values take $v0 and both moves vanish).  Record:
-       memory/grind/func_8005490C/r11/ (scores.txt, d_proof.txt). */
+       0x80054A6C, 0x80054CF8); with one local per value the first-frame
+       values take $v0 and both moves vanish. */
     s32 *player;
     /* FAKE: one variable for two values, the camera-rotated z of the camera
        position and of player i's root offset.  Read in two blocks it is not
        a local-alloc quantity, so combine_regs does not tie it to the
        subtraction and it takes $t0 (sra t0 at 0x80054B30 and 0x80054E0C);
-       one local per block is tied to the subtraction: 41.  Record:
-       memory/grind/func_8005490C/r11/ (scores.txt, d_proof.txt). */
+       one local per block is tied to the subtraction. */
     s32 rot_z;
 
     if (s->unk0 < 0) {
@@ -1076,8 +1066,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     u8 base;
     /* idx counts two loops: the eight bytes cleared at 0x444, then the two
      * players (0 = this record, 1 = the opponent's). Admitted under Ruling 11
-     * (.claude/rules/ordinary-c-judge-decidable.md); allocator-dump proof in
-     * pre-slim-2026-10-01:memory/grind/func_80055138/ruling11.md. */
+     * (.claude/rules/ordinary-c-judge-decidable.md). */
     s32 idx;
     s32 sec;
     PracticeMenuRec *rec;
@@ -1090,8 +1079,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
      * case 2's level D_800A37D2 / 5; case 2's practice level D_800A37D2 / 3
      * (0 once it reaches 3); case 3's row in D_8009A9B4; a move entry's
      * byte-assembled character mask; the entry's stat bytes e[1] and e[2].
-     * Admitted under Ruling 11 (.claude/rules/ordinary-c-judge-decidable.md);
-     * allocator-dump proof in pre-slim-2026-10-01:memory/grind/func_80055138/ruling11.md. */
+     * Admitted under Ruling 11 (.claude/rules/ordinary-c-judge-decidable.md). */
     s32 temp;
     u32 cat;
     s32 lo_val, hi1_val, hi2_val;
@@ -1236,8 +1224,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                  * local-alloc.c combine_regs ties it to the dying lh result
                  * (lh v1; addiu v1,v1,100); hi2_val is set in both arms and
                  * read after the join, so it is global-allocated and untied
-                 * (target: lh v0; addiu v1,v0,100). Lever exhaustion:
-                 * pre-slim-2026-10-01:memory/grind/func_80055138/ruling11.md. */
+                 * (target: lh v0; addiu v1,v0,100). */
                 hi2_val = rec->unk_40A + 100;
                 lo_val = hi2_val + lo * 40;
                 hi1_val = hi2_val + hi1 * 40;
@@ -1390,23 +1377,19 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     PadBitTable bits;
     s32 lo, hi;
     /* work holds two values: D_800A387C - unk_43E, then its sign (work >> 31).
-       One local, not two: ordinary-c-judge-decidable.md Ruling 11; (D) record in
-       memory/grind/func_80055B60/evidence.md s5 (probes/r11b/ there). */
+       One local, not two: ordinary-c-judge-decidable.md Ruling 11. */
     s32 work;
     /* temp holds six values: the unk_148 distance, a slot count minus one
        (clamped at 0), the slot increment (4 or 8, then plus the old count,
        clamped at 0xFF), the 0x20/0x60 flag, the wrapped ratan2() angle
        difference and the poll result of func_80055948/func_80058580.
-       One local, not six: Ruling 11 (per-branch constants: Q20); (D) record in
-       memory/grind/func_80055B60/evidence.md s5 (probes/r11b/ there). */
+       One local, not six: Ruling 11 (per-branch constants: Q20). */
     s32 temp;
     /* temp2 holds three values: the unk7 * 25 >> 3 limit, the func_80056FE8()
-       result and the SquareRoot0() distance. One local, not three: Ruling 11;
-       (D) record in memory/grind/func_80055B60/evidence.md s5 (probes/r11b/ there). */
+       result and the SquareRoot0() distance. One local, not three: Ruling 11. */
     s32 temp2;
     /* temp3 holds two values: the least slot count seen (starting at 0x100) and
-       the func_80056FE8() result plus 800. One local, not two: Ruling 11; (D)
-       record in memory/grind/func_80055B60/evidence.md s5 (probes/r11b/ there). */
+       the func_80056FE8() result plus 800. One local, not two: Ruling 11. */
     s32 temp3;
     /* the counter of each of the four loops, reused loop to loop the way
        SOTN's AddToInventory reuses i for its two loops (Q51) */
@@ -1704,8 +1687,7 @@ void func_80056CB8(s32 arg0) {
         s32 idx;
 
         /* FAKE: idx names the byte-table index for the first lookup only, mechanism:
-           loop.c strength_reduce giv-worth test (lifetime * threshold * benefit >= insn_count),
-           lever-exhaustion: memory/grind/func_80056CB8/hypotheses.md [s72] + rejected/ */
+           loop.c strength_reduce giv-worth test (lifetime * threshold * benefit >= insn_count). */
         idx = i * 2;
         obj = arg0;
         flags = D_8009A821[idx] << 8;
@@ -1788,22 +1770,13 @@ extern s8 D_8009A838[];
 extern u8 D_8009A840[];
 /* ang_hosei_80056FE8 / func_80056FE8 -- angle-correction table lookup.
  *
- * MATCH-HACK FAMILY: duplicated-statement-into-arms
- * (.claude/rules/duplicated-statement-into-arms.md; frozen SOTN entry
- *  pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:285-293).
+ * FAKE family: duplicated-statement-into-arms
+ * (.claude/rules/duplicated-statement-into-arms.md, a SOTN-accepted shape).
  * The single real statement "add this arm's angle adjustment into `base`" is
  * written once PER DISPATCH ARM instead of being cached in a temp and added
- * once after the join. Each copy is REAL on its path (prereq 1) and the copies
- * are re-merged byte-neutrally by post-reload cross-jumping (prereq 2).
- *
- * Lever-exhaustion (prereq 3): ffd7fef75^:memory/grind/func_80056FE8/hypotheses.md +
- * evidence.md, sessions s1-s7b -- structural reassociation (21 forms, s2/s3),
- * permuter (4 chassis, ~150k iters, s4/s5), copy-preference (s6: $a1 has no
- * ABI anchor in this 1-argument leaf, set_preference/global.c:1591 cannot
- * create one), scheduling wrappers (s6: do-while(0) at 3 placements never
- * shrinks base's live length), live-range shortening (s6: backfires -- raises
- * priority), register pins (s6: reschedule to 41 insns, 2 load-delay nops
- * lost). All measured dead.
+ * once after the join. Each copy is REAL on its path and the copies are
+ * re-merged byte-neutrally by post-reload cross-jumping.  ($a1 has no ABI
+ * anchor in this 1-argument leaf, so copy-preference cannot seat `base`.)
  */
 s32 func_80056FE8(PracticeMenuRec *arg0) {
     PracticeMenuRec *a2 = arg0->unk_00;
@@ -1812,14 +1785,12 @@ s32 func_80056FE8(PracticeMenuRec *arg0) {
     /* FAKE: `base += <arm value>` duplicated into all three dispatch arms
      * instead of a post-join combine; mechanism: GCC 2.7.2 jump2 post-reload
      * cross-jumping tail-merges the three copies into the target's single join
-     * `addu $a1,$a1,$v0` (byte-neutral, build 43 == target 43), while the
+     * `addu $a1,$a1,$v0` (byte-neutral), while the
      * reference-count lift flow.c records (reg_n_refs 4 -> 8) raises `base`'s
      * global.c allocno priority above the struct pointer's so global_alloc
      * colours `base` first (.greg `;; 3 regs to allocate: 77 73 72` ->
      * `77 in 5  73 in 6`) -- which the post-join spelling provably cannot
-     * (`;; 4 regs to allocate: 82 73 77 72` -> `73 in 5  77 in 6`);
-     * lever-exhaustion: see the ladder in this function's preamble comment and
-     * ffd7fef75^:memory/grind/func_80056FE8/hypotheses.md s1-s7b. */
+     * (`;; 4 regs to allocate: 82 73 77 72` -> `73 in 5  77 in 6`). */
     if (a2->unk_A3[0] != 0xFF) {
         if (arg0->unk_5E == 0) {
             /* FAKE: duplicated copy (see above) */
@@ -1884,8 +1855,7 @@ s32 func_800571C0(PracticeMenuRec *obj) {
     s32 ret;
     s8 nl;
     /* Ruling 11 (ordinary-c-judge-decidable.md): holds two values -- the count of clear probe steps on
-     * the right-hand side, then which side was chosen (0 right, 1 left; per-branch constants, Q20).
-     * Proof: pre-slim-2026-10-01:memory/grind/func_800571C0/r11/proof.md */
+     * the right-hand side, then which side was chosen (0 right, 1 left; per-branch constants, Q20). */
     s8 temp;
     u8 goL;
     u8 goR;
@@ -2113,18 +2083,14 @@ s32 func_80057ACC(PracticeMenuRec *arg0, NavPolySet *arg1, s32 arg2, s32 arg3) {
  *
  * FAKE: the vertex-table base expression arg0->vtx is written out at each
  * of its five use sites rather than bound to one pointer local (F3
- * compound-address duplication across call arg-lists, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:377,
- * owner ruling 2026-08-18; re-adjudication granted for this function by owner ruling
- * 6b of the 2026-08-30 escalation batch, pre-slim-2026-10-01:docs/grind/decisions.md:14685).
+ * compound-address duplication across call arg-lists, no-new-park-categories.md
+ * entry 15; owner ruling 6b admits it for this function).
  * mechanism: cse1 (cse.c:1948 hash_arg_in_memory / cse.c:7241-7246
  * `if (! CONST_CALL_P (insn)) invalidate_memory (&everything);`) folds the five
  * front-end loads down to the target's two, the intervening ratan2 CALL_INSN being
  * the only thing that stops the fold; a single cached local instead asserts the
  * call cannot write arg0->vtx, which C does not guarantee and which folds
- * to one load (s40 probe pA/pB/pC/pD, tmp/grind/func_80057CC8/s40/probe.c).
- * lever-exhaustion: memory/grind/func_80057CC8/hypotheses.md (46 sessions, 133
- * rejected forms, three ban-compliant regimes foreclosed in closed form at honest
- * floor 16; evidence.md s40-s45).
+ * to one load.
  */
 void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
@@ -2159,29 +2125,23 @@ void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     pi = (s16) prev_idx;
     ang_prev = ratan2(arg0->vtx[pi][0] - (s16) cx,
                       arg0->vtx[pi][1] - (s16) cy) & 0xFFF;
-    /* The next vertex's address stays the integer sum, index first, that this line held before
-     * arg0 was typed: every pointer spelling (vtx[k], *(k + vtx), &vtx[k][0], (u8 *)vtx + k * 4,
-     * *(vtx + k), vtx[(s32)(k << 16) >> 16]) expands base first, and local-alloc ties the sum to
-     * the dying table load (lw a1 / addu a1,a1,v1) instead of the shifted index (target lw a0 /
-     * addu v1,v1,a0 at 0x80057D80 / 0x80057D88): score 4 each,
-     * memory/grind/func_80057E84/dm/README.md. */
+    /* The next vertex's address is spelled as the integer sum, index first: every pointer
+     * spelling (vtx[k], *(k + vtx), &vtx[k][0], (u8 *)vtx + k * 4, *(vtx + k),
+     * vtx[(s32)(k << 16) >> 16]) expands base first, and local-alloc ties the sum to the dying
+     * table load (lw a1 / addu a1,a1,v1) instead of the shifted index (target lw a0 /
+     * addu v1,v1,a0 at 0x80057D80 / 0x80057D88). */
     p = (s16 *)((((s32)(next_idx << 16) >> 16) << 2) + (s32)arg0->vtx);
     ang_next = ratan2(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
 
     if (ang_next < ang_prev) {
         /* FAKE: `base` and `half` are fresh once-written/once-read named
          * intermediates for the antipode of ang_prev and half the angular gap
-         * (named-intermediate family, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:204
-         * + the 2026-08-17 clarification at :208-229; both values are real and
-         * appear in the target's own bytes, build_insns == target_insns == 111).
+         * (named-intermediate family, no-new-park-categories.md entry 6; both
+         * values are real and appear in the target's own bytes, byte-neutral).
          * mechanism: local-alloc.c block_alloc -- they become BLOCK-LOCAL allocnos
-         * (pseudos 82 and 83, "in block 5", tmp/grind/func_80057CC8/dumps/text1b.lreg
-         * at the func_80057CC8 heading) that local-alloc seats before global.c runs;
-         * collapsing them into one expression instead yields a single combine-folded
-         * tree whose scratch is allocated globally and measures score 6.
-         * lever-exhaustion: memory/grind/func_80057CC8/hypotheses.md (46 sessions);
-         * both collapse spellings banked in
-         * rejected/s46-collapse-base-half-splitinit-score6.c. */
+         * that local-alloc seats before global.c runs; collapsing them into one
+         * expression instead yields a single combine-folded tree whose scratch is
+         * allocated globally. */
         base = ang_prev + 0x800;
         half = (s32)(ang_prev - ang_next) / 2;
         ang_mid = base - half;
@@ -2223,8 +2183,7 @@ void func_80057E84(PracticeMenuRec *arg0, NavPolySet *arg1, s32 goal_x, s32 goal
     u8 hit_up;
     /* FAKE: one counter for the edge scan and the route copy, reused the way
      * SOTN's DebugCaptureScreen reuses its i for its file-search loop and its
-     * row countdown (Q51, Q53); lever-exhaustion: a separate copy counter,
-     * memory/grind/func_80057E84/r11/README.md */
+     * row countdown (Q51, Q53); a separate copy counter does not match. */
     s16 i; /* SOTN: src/dra/42398.c:75 @aa53500 */
     s16 next;
     s16 ax;
@@ -2235,8 +2194,7 @@ void func_80057E84(PracticeMenuRec *arg0, NavPolySet *arg1, s32 goal_x, s32 goal
     /* route holds three values: the down route (&path[0]) in the down corner
      * block, the up route (&path[1]) in the up corner block, and the cheaper of
      * the two for the copy loop. One local, not three: Ruling 11
-     * (.claude/rules/reused-local-necessity.md); proof:
-     * memory/grind/func_80057E84/r11/README.md. */
+     * (.claude/rules/reused-local-necessity.md). */
     CpuRoute *route;
 
     go_dn = 1;
@@ -2265,13 +2223,11 @@ void func_80057E84(PracticeMenuRec *arg0, NavPolySet *arg1, s32 goal_x, s32 goal
         /* vtx holds four values, each the address of one vertex's x/z pair:
          * the edge's start (i) and end (next) in the edge scan, then the down
          * corner (idx_dn) and the up corner (idx_up). One local, not four:
-         * Ruling 11 (.claude/rules/reused-local-necessity.md); proof:
-         * memory/grind/func_80057E84/r11/README.md. */
+         * Ruling 11 (.claude/rules/reused-local-necessity.md). */
         s16 *vtx;
         /* node holds two values: the waypoint appended to the down route,
          * then the one appended to the up route. One local, not two: Ruling 11
-         * (.claude/rules/reused-local-necessity.md); proof:
-         * memory/grind/func_80057E84/r11/README.md. */
+         * (.claude/rules/reused-local-necessity.md). */
         CpuWaypoint *node;
 
         hit_up = 0;
@@ -2425,15 +2381,15 @@ s32 func_80058580(PracticeMenuRec *p) {
      * distance bound (e[1] * 40, then adjusted); the state-0x15 script's near bound (the
      * opponent's unk_3F8 entry, or its unk_404 entry + 300; `lh $s1` 0x8005ADD8 / `addiu $s1`
      * 0x8005AE24).
-     * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+     * Ruling 11 (.claude/rules/reused-local-necessity.md). */
     s32 work1;
     /* work2 holds seven values in turn, each read before work2 is written again: the
      * unk_444[1] == 0 flag of the state-0x15 script choice; a D_8009A850 entry's distance; the
      * pace byte unk_444[0]; the z of waypoint 1; the unk_444[5] == 0 flag of the 0x394 action
-     * pick; the best random pick score so far (Q75 constant start + copy, rules 30a3e2d2d:
+     * pick; the best random pick score so far (Q75 constant start + copy:
      * `li $s2,-1` at 0x8005A108 / 0x8005A118, `addu $s2,$s3,$zero` at 0x8005A350; compared as
      * an s16, `sll; sra 16` at 0x8005A338, owner ruling Q82); case 2's nibble count, counted down.
-     * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+     * Ruling 11 (.claude/rules/reused-local-necessity.md). */
     s32 work2;
     /* work3 holds thirteen values in turn, each read before work3 is written again: the
      * script side bit (opponent unk_AF & 1, possibly inverted); unk_444[3] == 0; the unk_43A
@@ -2444,18 +2400,18 @@ s32 func_80058580(PracticeMenuRec *p) {
      * (unk_394, or a D_800A325C / D_800A3260 entry); case 3's column in D_8009A928; the
      * entry-type mask (case 3 / case 2 / default); a script entry's character mask; the
      * entry's accept flag (0 or 1).
-     * Read-before-write kept from the original (owner ruling Q74, rules 30a3e2d2d): the 0x394
+     * Read-before-write kept from the original (owner ruling Q74): the 0x394
      * slot switch below reads work3 with no write on the path unk_39C == 1, opponent state
      * neither 0x19 nor 0x1A (target 0x80059D18 -> 0x80059D6C -> 0x80059DB0; $s3 read by the
      * `sltiu` at 0x80059D70 and the `sll` at 0x80059DB4), i.e. it switches on whatever value
      * earlier work left in work3. That read is excluded from the value grouping above.
-     * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+     * Ruling 11 (.claude/rules/reused-local-necessity.md). */
     s32 work3;
     /* work4 holds three values in turn, each read before work4 is written again: the
      * D_8009A850 scan index; the waypoint walk index (a copy of the waypoint index wi taken in
      * the walk branch, Q34: `addu $s4,$s3,$zero` in the branch delay slot at 0x800596DC, counted
      * down); the script-list entry index.
-     * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+     * Ruling 11 (.claude/rules/reused-local-necessity.md). */
     s32 work4;
     s32 pick;
     s32 hi;
@@ -2711,7 +2667,7 @@ s32 func_80058580(PracticeMenuRec *p) {
         /* !FAKE: the trailing `&& wtype == 1` repeats the first test (redundant condition,
          * .claude/rules/no-new-park-categories.md entry 16). The target re-tests $s2 after the
          * || chain (`beq $s2,$v0` at 0x80059210); without it the chain is two instructions
-         * shorter. Measurements: memory/grind/func_80058580/evidence.md [s5e]. */
+         * shorter. */
         if (!(wtype == 1 &&
               (p->unk_00->unk_6A == 0xA || p->unk_443 == 0xA || (p->unk_0E >= 6 && p->unk_34A == 0)) &&
               wtype == 1)) {
@@ -2793,7 +2749,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                             /* !FAKE: the inner test contradicts the outer one, so pick2's body runs only by the
                              * goto above; the target compares twice (0x80059638 / 0x8005966C), and failing
                              * either compare here still reaches the script2 call test (redundant condition,
-                             * .claude/rules/no-new-park-categories.md entry 16; memory/grind/func_80058580/evidence.md [s5]). */
+                             * .claude/rules/no-new-park-categories.md entry 16). */
                             if (work2 == 5 && p->unk_00->unk_404[p->unk_00->unk_86] < D_800A387C) {
                                 if (D_800A387C < p->unk_00->unk_404[p->unk_00->unk_86]) {
                                 pick2:
@@ -3006,7 +2962,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                     /* FAKE: named intermediates (.claude/rules/no-new-park-categories.md entry 6): with the
                      * row named, the symbol is added to the row offset before the pick index, so combine
                      * cannot fold `la D_80099D90` into the lbu offset (target `la; addu row; addu pick;
-                     * lbu 0`); 13 expression-level spellings fold (evidence.md [s3] 50 -> 40). */
+                     * lbu 0`); every expression-level spelling folds. */
                     s32 rnd;
                     u8 *row;
                     rnd = rand() & 0xFFF;
@@ -3058,10 +3014,9 @@ s32 func_80058580(PracticeMenuRec *p) {
                             }
                             break;
                         }
-                        /* Owner ruling Q82 (rules 215f2d11a): work2's best score (the Q75 value) is compared as
+                        /* Owner ruling Q82: work2's best score (the Q75 value) is compared as
                          * an s16, as the target does (`sll $v0,$s2,16; sra $v0,$v0,16; slt` at 0x8005A338).
-                         * Measured alternatives, all off: no cast 8 words, an `s16 best` local 23, `s16 score`
-                         * 12, both 26, work2 as s16 222 (memory/grind/func_80058580/evidence.md [s10]). */
+                         * No cast, an `s16 best` local, an `s16 score`, or work2 as s16 all differ. */
                         if ((s16)work2 < score) {
                             besti = pick;
                             work2 = score;
@@ -3140,16 +3095,15 @@ s32 func_80058580(PracticeMenuRec *p) {
                         /* work5 holds three values in turn, each read before work5 is written again: case 2's
                          * pattern-word top bits (work1 >> 27); the skill offset ((0x1000 - lv) * 625 >> 10) - 400;
                          * a copy of the entry type et for the et < 5 and et == 5 / 6 tests (Q34: `addu $a1,$s5,$zero` at 0x8005AA94).
-                         * Ruling 11 (.claude/rules/reused-local-necessity.md); proof: memory/grind/func_80058580/r11/README.md. */
+                         * Ruling 11 (.claude/rules/reused-local-necessity.md). */
                         s32 work5;
                         /* FAKE: opaque arithmetic variable (.claude/rules/no-new-park-categories.md entry 2;
                          * .claude/rules/loop-rotation-two-shift.md, companion lever 1). With a literal 1,
                          * fold-const.c (~4437) rewrites the mask tests `(x & (1 << n)) == 0` into
                          * `((x >> n) & 1) == 0` (srav; andi); the target tests `sllv $v0,$fp,n; and` with
                          * the 1 in $fp, set once before the loop (0x8005A63C) and shared with case 2's
-                         * mask shifts. Measured alternatives: `1U << n` 11 words, a u32 mask local 3, `one`
-                         * at function scope 47 / 91 lines, the `(u32)` operand cast (refused, layer-2
-                         * 2026-10-01): memory/grind/func_80058580/evidence.md [s10]. */
+                         * mask shifts. `1U << n`, a u32 mask local and `one` at function scope all
+                         * differ. */
                         s32 one = 1;
                         ep = off + (u8 *)p->unk_3A4;
                         e = ep;
@@ -3159,8 +3113,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                          * target copies the script start into its own register (`addu $a2,$s6,$zero` at
                          * 0x8005A67C) and reads the 0x40 character-mask header through it while ep stays in
                          * $s6; read through ep the header loads use $s6 and global.c's allocno order shifts
-                         * (58 words off, memory/grind/func_80058580/review-2026-10-01/dm/results.txt
-                         * vM_noq; respellings q = e + 4, e-first, `q = ep += 4`: evidence.md [s3] / [s5]). */
+                         * (the respellings q = e + 4, e-first and `q = ep += 4` also differ). */
                         /* SOTN: src/st/no0/e_stone_rose.c:611 @aa53500 */
                         q = ep;
                         if (D_80099D88[p->unk_443].flags & 0xFF00) {
@@ -3229,8 +3182,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                          * make flow.c weight et's defining reference by loop depth 3 instead of 2
                          * (reg_n_refs 8 -> 9), so global.c allocno_compare orders et (priority 2177)
                          * ahead of ep (2147): et takes $s5 and ep $s6, as in the target. Unwrapped,
-                         * ep is allocated first and the two swap. Measurements and the plain
-                         * spellings tried: memory/grind/func_80058580/evidence.md [s5]. */
+                         * ep is allocated first and the two swap. */
                         do {
                             et = e[0] & 7;
                         } while (0);
@@ -3262,7 +3214,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                                 }
                             } else if (work1 < D_800A387C && D_800A387C < hi &&
                                        p->unk_43C < 0x200 - ((p->unk_438 * 0x100) >> 12) &&
-                                       /* Q76 (rules 30a3e2d2d): unk_438 / 16 as the 4.12 multiply by 0x100 (1/16); `>> 4`
+                                       /* Q76: unk_438 / 16 as the 4.12 multiply by 0x100 (1/16); `>> 4`
                                         * lets cse.c fold_rtx merge the shift into the halfword sign extension
                                         * (lhu; sll 16; sra 20), the target has lh; sra 4 at 0x8005AB34. */
                                        (p->unk_430 & 0x280) != 0x280) {
@@ -3314,7 +3266,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                     }
                 }
             } else if (state == 0x15 && p->unk_26C != 0 && p->unk_440 != 4 &&
-                       /* Q76 (rules 30a3e2d2d): as above, 4.12 factor 0x100; target lh; sra 4 at 0x8005ACCC. */
+                       /* Q76: as above, 4.12 factor 0x100; target lh; sra 4 at 0x8005ACCC. */
                        p->unk_43C < 0x200 - ((p->unk_438 * 0x100) >> 12) &&
                        !(D_800A38DC == 2 || D_800A38DC == 3)) {
                 script4 = 0;
@@ -4134,17 +4086,14 @@ s32 snd_MoveVabBody(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     g_vab_vb_sbaddr[arg1] = arg2;
     return arg2 + g_vab_rec_ptr[arg1][3];
 }
-/* func_8005C074 (text1b.c) - SPU VAB compaction: sorts the resident VAB slots
+/* func_8005C074 - SPU VAB compaction: sorts the resident VAB slots
  * 1..15 by SPU address (selection order into order[]), then walks them from the
  * end of slot 0; the first slot that is not already contiguous, and every slot
- * after it, is moved down with func_8005BF78. Ordinary C: no FAKE, no volatile,
- * no asm, no pin, no dead store, no pad, no alias local. `vabid` is passed by
+ * after it, is moved down with func_8005BF78. `vabid` is passed by
  * the caller (func_8005C2A8) but the target never reads it.
- * Grinder s1/recon 2026-09-15: sandbox --disable all = 0.
  * The loop-invariant `addr` assignment inside the first (otherwise empty) loop
  * is what the bytes say: the target computes addr in that loop's preheader,
- * AFTER its `count > 0` guard. Assigning addr before the loop instead measures
- * 43 / 142 insns (banked under rejected/).
+ * AFTER its `count > 0` guard; assigning addr before the loop does not match.
  */
 s32 func_8005C074(s16 vabid, s32 base) {
     s16 order[16];
@@ -4189,28 +4138,16 @@ s32 func_8005C074(s16 vabid, s32 base) {
     }
     return 0;
 }
-/* func_8005C2A8 (text1b.c) - MATCHED: sandbox --disable all = 0 and full-build
- * SHA1 == oracle (s2/recon, 2026-09-15). Ordinary C; no FAKE, no volatile, no
- * asm, no pin, no dead store, no pad, no alias local, no sanctioned-family
- * exception claimed or needed.
+/* func_8005C2A8 - load a VAB: close whatever occupies slot `vabid`, recompute
+ * the sticky SPU address from the resident banks (compacting them with
+ * func_8005C074 for vabid != 0), relocate the header's three offsets, open it
+ * with snd_VabOpen and record its slot and SPU address. Returns the third
+ * header offset (unrelocated), or 0 on failure.
  *
- * This body supersedes the 2026-09-14 form that layer-1 FAILed. Both banned
- * constructs are GONE and neither is respelled:
- *   - the second local bound to the unmodified parameter is deleted; every use
- *     site reads the parameter directly (measured: still score 0).
- *   - the forward prototype no longer contradicts anything: the in-TU callee's
- *     DEFINITION (src/text1b.c, the VAB-open wrapper at 0x8005C5A8) is changed
- *     in the same diff from `s16` to `s32` return, keeping its body's explicit
- *     `(s16)` cast on the SsVabTransBody result. That callee's own bytes are
- *     unchanged (measured: sandbox snd_VabOpen --disable all = 0 before and
- *     after), because the sll/sra at 0x8005C5F4 is emitted by the cast in its
- *     body, not by its return type. The return type is therefore not decidable
- *     from that function's own bytes; it IS decidable from this call site's
- *     bytes, and they say s32. Prototype and definition agree.
- *
- * Apply: replace `INCLUDE_ASM("asm/funcs", func_8005C2A8);` (src/text1b.c:2662)
- * with everything below, AND change the callee definition's return type as
- * described above.
+ * snd_VabOpen (the VAB-open wrapper at 0x8005C5A8) returns s32: the sll/sra at
+ * 0x8005C5F4 is emitted by the explicit (s16) cast in its body, not by its
+ * return type, so its own bytes do not decide the type; this call site's bytes
+ * do, and they say s32.
  */
 extern s32 *func_80077D00(void);
 
@@ -4267,9 +4204,8 @@ s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
 
 /* saFidLoad tail: s16 result-carrier + single trailing return — the target
  * CFG (li -1 in its own block; shared sll/sra sext join) is only producible
- * from this spelling class (direct-return floors at 4, s32 carrier at 8).
- * Structured single-exit representative sanctioned by user 2026-06-10; the
- * goto-end spelling remains REJECTED. See
+ * from this spelling class (a direct return or an s32 carrier does not match).
+ * Structured single-exit representative (owner-sanctioned); see
  * .claude/rules/proven-spelling-class-reconstruction.md. */
 s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
     s32 idx;
@@ -4374,11 +4310,7 @@ void func_8005C6D0(void) {
                  * callee-saved copy of the offset that survives the SpuGetKeyStatus
                  * call (`addu $s2,$v1,$zero`, asm/funcs/func_8005C6D0.s:41,
                  * 0x8005C768); loop.c LICM hoists this copy into the scan preheader
-                 * exactly where the target emits it;
-                 * lever-exhaustion: memory/grind/func_8005C6D0/hypotheses.md H9 +
-                 * evidence.md s2 - nine single-name spellings (8..39, all short of
-                 * 118 insns), fifteen guard-free arrangements, and a 6,562-iteration
-                 * decomp-permuter campaign that converged independently on this form. */
+                 * exactly where the target emits it. */
                 nv = off;
                 if (SpuGetKeyStatus(1 << voice) != 1) {
                     vab = *p;
@@ -4457,7 +4389,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     cur = arg2 + 0xF0;
     y_base = 0;
     /* FAKE: the low half read from arg1's stack home, which keeps arg1 in
-       memory for the in-loop `lw 0xBC($sp)` too; (s16)arg1 scores 58. */
+       memory for the in-loop `lw 0xBC($sp)` too; (s16)arg1 does not. */
     sel = *(s16 *)&arg1;
     mode_off = arg2 + 0x4D8;
     /* FAKE: the chunk's 0x4F0 bytes (the draw-mode area ends 0x18 past
@@ -4466,7 +4398,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
        REG_EQUAL note: size keeps the target's frame slot (sp+0x70) to the
        return, and the deleted temp's stale count gets the target's one
        untouched slot (sp+0x78). The literal is rematerialised at the return
-       (frame 0x10 short, score 33). memory/grind/func_8005C8A8/evidence.md s7. */
+       (frame 0x10 short). */
     size = mode_off + 0x18 - arg2;
     top = (0xF0 - D_8009B2BC[mode].h) / 2;
     s.col_b = 0x40;
@@ -4798,7 +4730,6 @@ typedef struct {
 } Env5E54C;
 extern u8 D_8009B2E0[];
 extern s32 D_800A326C;
-/* (s24) = the ablation table in memory/grind/func_8005D554/evidence.md, s24. */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     Env5E54C s;
     s32 i;
@@ -4808,13 +4739,13 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
     s32 row_off;
     s32 x;
     s32 y;
-    s32 tmp1;  /* FAKE: carrier, see the y sites (s24: 15 without it) */
-    s32 tmp2;  /* FAKE: carrier, see the y sites (s24: 15 without it) */
-    s32 scale; /* FAKE: constant 0x100 in a local; the literal scores 15 (s24) */
-    s32 ot;    /* FAKE: constant 1 in a local; the literal scores 2 (s24) */
-    u8 *hdr0;     /* FAKE: pointer alias of D_8009B2E0; direct use scores 41 (s24) */
-    u8 *hdr1;     /* FAKE: hdr0 + 0xC named; folding it scores 2 (s24) */
-    u8 *hdr1_row; /* FAKE: hoisted row address; inlining it scores 24 (s24) */
+    s32 tmp1;  /* FAKE: carrier, see the y sites */
+    s32 tmp2;  /* FAKE: carrier, see the y sites */
+    s32 scale; /* FAKE: constant 0x100 in a local; the literal does not match */
+    s32 ot;    /* FAKE: constant 1 in a local; the literal does not match */
+    u8 *hdr0;     /* FAKE: pointer alias of D_8009B2E0; direct use does not match */
+    u8 *hdr1;     /* FAKE: hdr0 + 0xC named; folding it does not match */
+    u8 *hdr1_row; /* FAKE: hoisted row address; inlining it does not match */
 
     D_800A326C %= 4;
 
@@ -4836,20 +4767,20 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
         hdr1_row = hdr1 + row_off;
         do {
             s.has_color = 0;
-            /* FAKE: integer sum keeps `addu v0,s0,fp`; the pointer sum scores 1 (s24) */
+            /* FAKE: integer sum keeps `addu v0,s0,fp`; the pointer sum swaps it */
             s.header = (Unk8009B398Record *)(row_off + (s32)hdr0);
             s.table = &D_8009B388[0];
             D_800A3418 ^= rand();
             s.scale_y = scale;
             s.scale_x = scale;
             D_800A3418 ^= rand();
-            /* FAKE: split init; one expression scores 8 at 178 insns (s24) */
+            /* FAKE: split init; one expression does not match */
             x = (s32)base_x - 0x19;
             x += ((u32)(D_800A3418 * 0x32) >> 0xF);
             /* FAKE: tmp1 is written twice (y base, then a copy of ft4) only so
-               sched1 places the y base after the argument setup; without the
-               early base 15, without the second write 54, one carrier for both
-               halves 30 (s24) */
+               sched1 places the y base after the argument setup; dropping the
+               early base or the second write, or one carrier for both halves,
+               does not match */
             tmp1 = (s32)base_y - 0xC;
             s.x = x;
             D_800A3418 ^= rand();
@@ -5048,7 +4979,7 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
      * spilled and rematerialized inside the tile loop; set outside the tile
      * loop, header[3] is also not related to header[2] by cse
      * (use_related_value), which would give header[2] a fourth ref and
-     * reverse the $s6/$s7 order. pre-slim-2026-10-01:memory/grind/func_8005D814/evidence.md. */
+     * reverse the $s6/$s7 order. */
     hdr3 = &D_8009B398[3]; /* FAKE: pointer alias */
     cell3 = &D_8009B3F8;   /* FAKE: pointer alias */
     shown = 0;
@@ -5090,7 +5021,7 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
          * named a few insns before their stores so loop.c hoists them
          * (lifetime >= 3 at loop.c:1631), header then cell; the cell's
          * shorter live range ranks it first in global.c ($s6), the header
-         * second ($s7). pre-slim-2026-10-01:memory/grind/func_8005D814/evidence.md. */
+         * second ($s7). */
         hdr2 = &D_8009B398[2]; /* FAKE: pointer alias */
         cell2 = &D_8009B3F0;   /* FAKE: pointer alias */
         s.y = D_8009B450[j].y;
@@ -5277,17 +5208,15 @@ extern u8 D_800A3270[];
 s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     /* The per-player points pair: each round's points in the round rows,
        then the per-player totals under them. The target addresses both
-       through the one frame slot sp+0x18 (a separate totals array measured
-       13-204: pre-slim-2026-10-01:memory/grind/func_8005E54C/evidence.md [s4 cont.]). */
+       through the one frame slot sp+0x18 (a separate totals array does not
+       match). */
     s16 points[2];
     s16 wins[2];
     Env5E54C s;
     /* FAKE: unused here. The frame keeps the 8 untouched bytes at
-       sp+0x58 = descriptor + 0x30 where the COMPLETED siblings keep a real
-       s16[3] digit array: func_8005D814 `s16 digit[3];` (src/text1b.c:4231,
-       copied here) and func_8005F1C8 `s16 d[3];` (src/text1b.c:4911).
-       Census and measurements: pre-slim-2026-10-01:memory/grind/func_8005E54C/frame_census.txt,
-       evidence.md [s4]/[s5]. Owner ruling 2026-09-29 Q35
+       sp+0x58 = descriptor + 0x30 where the sibling functions in this file
+       keep a real s16[3] digit array: func_8005D814 `s16 digit[3];` (copied
+       here) and func_8005F1C8 `s16 d[3];`. Owner ruling Q35
        (no-new-park-categories.md, phantom-frame-slot pad family, trailing
        unused array with sibling evidence). */
     volatile s16 digit[3];
@@ -5299,7 +5228,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     /* i counts the players (first loop) and then the rounds; j is the
        player and k the mark; each phase restarts them as plain loop indices,
        the counter reuse of func_8005E098 / func_8005F1C8. Separate counters
-       per phase measured 8-77 (pre-slim-2026-10-01:memory/grind/func_8005E54C/evidence.md [s3]). */
+       per phase do not match. */
     s16 i;
     s16 j;
     s16 k;
@@ -5404,9 +5333,8 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s.sprt_out = cur;
     cur = func_8007352C((s32)&s);
     /* One 32-bit store clears the whole pair (target 0x8005EA44
-       `sw $zero,0x18($sp)`); the union spelling measured 197
-       (pre-slim-2026-10-01:memory/grind/func_8005E54C/evidence.md [s5]). Owner ruling
-       2026-09-29 Q36 (no-new-park-categories.md, one cast store on a
+       `sw $zero,0x18($sp)`); the union spelling does not match. Owner
+       ruling Q36 (no-new-park-categories.md, one cast store on a
        local array). */
     *(s32 *)points = 0;
     for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
@@ -5545,7 +5473,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->b0 = 0x10;
     /* Each arm sets the whole (x0, y0) position: the target stores x0 once
        per arm (0x8005F0E0, 0x8005F0F8, 0x8005F104); one x0 store above the
-       if/else measured 10 (pre-slim-2026-10-01:memory/grind/func_8005E54C/probes/x0h.c). */
+       if/else does not match. */
     if (D_8009BD38.unk10 == 2) {
         tile->x0 = 0x5E;
         tile->y0 = 0xC1;
@@ -5595,8 +5523,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* i/row count the win-mark pips' players and rows; k and j are reused
      * as plain loop indices by the later phases (tile strip k/j, timer j/k),
      * the same counter reuse as func_8005E098 and the func_8003800C
-     * single-counter shape. Separate counters per phase measured 38-73
-     * (pre-slim-2026-10-01:memory/grind/func_8005F1C8/evidence.md s2). */
+     * single-counter shape. Separate counters per phase do not match. */
     s16 i;
     s16 j;
     s16 k;
@@ -6165,8 +6092,7 @@ s32 func_80060544(s32 arg0, s32 arg1) {
     /* FAKE: dead store.  THE VALUE STORED HERE IS ARBITRARY AND IS NEVER READ —
      * it is not "the Case3 handle" and it is not the i == 0 table being set up
      * early; any value would do, and flow.c deletes the store outright, so this
-     * line contributes NO instruction to the output (the build is 133 insns,
-     * exactly target's count).  The line exists solely to give the pseudo an
+     * line contributes NO instruction to the output.  The line exists solely to give the pseudo an
      * earlier reference than its real assignment in the Case3 arm, before
      * loop.c runs: that moves `regno_first_uid[c3]` off the `la`, which makes
      * `reg_in_basic_block_p` return 0 at loop.c:700 and disqualifies
@@ -6177,12 +6103,8 @@ s32 func_80060544(s32 arg0, s32 arg1) {
      * reg_n_sets == 1 (this store having been deleted), and
      * adjust_priority()/birthing_insn_p() promote it to LAUNCH_PRIORITY
      * (sched.c:2496/2531/2601), which is what puts `addu $a1,$zero,$zero` first
-     * in that block exactly as target has it.
-     * Lever exhaustion: hypotheses.md s1-s8 — every C-level restructuring of the
-     * block (s2/s3), ~97,000 permuter samples across three chassis (s4/s5), the
-     * instrumented-compiler case analysis (s5/s6/s7), the s8 route table
-     * (A/B/C), and the s8b re-measurement showing every LIVE hoist-blocking
-     * mention costs +2/+3 instructions or lands the address in a callee-save.
+     * in that block exactly as target has it.  Every LIVE hoist-blocking
+     * mention costs extra instructions or lands the address in a callee-save.
      * Family: [[dead-store-fake-exception]]; mechanism family
      * [[defeat-licm-hoist-var-reuse]]. */
     c3 = (s32)(&D_8009B7D8);
@@ -6190,13 +6112,12 @@ s32 func_80060544(s32 arg0, s32 arg1) {
     /* FAKE: constant-holder for the special-cased last index.  It must sit
      * BETWEEN `i = 0;` and `idx = 0;` — that source position is what reproduces
      * target's prologue init order `$s0 = 0 / $s5 = 3 / $s1 = 0`
-     * (asm/funcs/func_80060544.s prologue; hypotheses.md s1 H3: a loop.c-hoisted
-     * CSE constant provably cannot land there, because move_movables emits
-     * preheader movables immediately before the loop start, i.e. AFTER both
-     * inits — which is exactly what the literal-3 spelling produced).  It is
-     * read twice (`i == last`, `i != last`), so it is live, but it is still a
-     * constant-holder and therefore carries this annotation per the 13:11 and
-     * 15:57 rulings.  Lever exhaustion: hypotheses.md s1-s8.
+     * (asm/funcs/func_80060544.s prologue; a loop.c-hoisted CSE constant
+     * cannot land there, because move_movables emits preheader movables
+     * immediately before the loop start, i.e. AFTER both inits -- which is
+     * exactly what the literal-3 spelling produces).  It is read twice
+     * (`i == last`, `i != last`), so it is live, but it is still a
+     * constant-holder.
      * Family: [[named-local-fake-exception]]. */
     last = 3;
     idx = 0;
@@ -6301,7 +6222,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
            then reused for the product), family staged-value-reused-variable,
            mechanism: GCC 2.7.2 cse.c - reassignment clobbers the increment
            pseudo, invalidating the mem==reg equivalence so the clamp re-read
-           emits lh, lever-exhaustion: memory/grind/func_80060768/evidence.md [s2] */
+           emits lh. */
         t1 = cur1 + 1;
         D_800A32B4 = t1;
         t1 = (s32)((s16)cur1) * 0x1AA;
@@ -6325,7 +6246,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
        then reused for the product), family staged-value-reused-variable,
        mechanism: GCC 2.7.2 cse.c - reassignment clobbers the increment
        pseudo, invalidating the mem==reg equivalence so the clamp re-read
-       emits lh, lever-exhaustion: memory/grind/func_80060768/evidence.md [s2] */
+       emits lh. */
     t2 = cur2 + 1;
     D_800A32B6 = t2;
     t2 = (s32)((s16)cur2) * 0x144;
@@ -6372,14 +6293,14 @@ s32 D_800A3250[2] = { 0x4c4c554e, 0 };  /* "NULL" tag func_8005490C compares the
 PadBitTable D_800A3258 = { { 0xd, 0xf, 0xc, 0xe } };
 u8 D_800A325C[4] = { 1, 0, 2, 3 };
 u8 D_800A3260[4] = { 5, 4, 6, 7 };
-s32 D_800A3264[2] = { 0x4e00b3, 0xc180000 };  /* named by the pointer word at 0X8009B0D8 (7D920.data.s) (A9, owner ruling Q80, rules: 8c57bc4ab: this file's K3 global by layout - it lies between this file's gp-reached objects; the pointer table's owning file is open): size from the blob label */
+s32 D_800A3264[2] = { 0x4e00b3, 0xc180000 };  /* named by the pointer word at 0X8009B0D8 (7D920.data.s); this file's global by layout - it lies between this file's gp-reached objects (owner ruling Q80): size from the blob label */
 s32 D_800A326C = 0;
 u8 D_800A3270[8] = { 0, 1, 2, 3, 4, 0, 0, 0 };
 s32 D_800A3278 = 0;
 u8 D_800A327C[8] = { 0x80, 3, 0, 0, 0x40, 0, 0, 1 };
 u8 D_800A3284[8] = { 0xe0, 3, 0xff, 1, 0x10, 0, 1, 0 };
 s32 D_800A328C = 0;
-s32 D_800A3290 = 0xe140000;  /* the second word of the 8-byte record at D_800A328C (text1b stores &D_800A328C as a descriptor's p_static for func_8007352C; its neighbours D_800A327C/3284/3294 are 8-byte records); text1b declares D_800A328C s32; not named by code - logged (s15 DATA-MODEL) */
+s32 D_800A3290 = 0xe140000;  /* the second word of the 8-byte record at D_800A328C (text1b stores &D_800A328C as a descriptor's p_static for func_8007352C; its neighbours D_800A327C/3284/3294 are 8-byte records); text1b declares D_800A328C s32; not named by code */
 u8 D_800A3294[8] = { 0xc0, 3, 0x80, 1, 0x40, 0, 0x16, 0 };
 u8 D_800A329C[8] = { 0xc0, 3, 0xff, 1, 0x10, 0, 1, 0 };
 u8 D_800A32A4[8] = { 0x80, 3, 0x7f, 1, 0x40, 0, 0x7f, 0 };

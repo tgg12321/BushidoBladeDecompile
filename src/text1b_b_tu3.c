@@ -11,7 +11,7 @@ s32 strlen(u8 *a0);
 u8 *memchr(u8 *buf, s32 ch, s32 len);
 
 /* PsyQ LIBC SPRINTF: sprintf — verbatim-linked Sony object; C ref: SOTN
- * src/main/psxsdk/libc/sprintf.c (tmp/sotn @8bd7c77). Two differences for
+ * src/main/psxsdk/libc/sprintf.c (sotn-decomp @8bd7c77). Two differences for
  * BB2's build: %c reads its slot as s32 (target `lw`), and the '+' flag
  * is a plain else-if (SOTN's do-while(0) FAKE is not needed here). */
 #define __va_rounded_size(TYPE) (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
@@ -107,9 +107,8 @@ s32 sprintf(char* out, char* f, ...) {
         /* SOTN-verbatim (psxsdk/libc/sprintf.c:90): sets the digit cursor to
          * &buf[sizeof(buf)] through the frame layout (buf, info, args are
          * adjacent), which keeps args in its stack slot as in the target.
-         * Admitted for sprintf only by owner Ruling 7 (2026-09-23,
-         * ordinary-c-judge-decidable.md); the truthful &buf[sizeof(buf)]
-         * spelling measures 96/535 (pre-slim-2026-10-01:memory/grind/sprintf/evidence.md). */
+         * Admitted for sprintf only by owner Ruling 7; the truthful
+         * &buf[sizeof(buf)] spelling does not reproduce the target. */
         bufPtr = (char*)&args - sizeof(printf_info) - 4;
 
         if (info.leftJustified) {
@@ -138,7 +137,7 @@ s32 sprintf(char* out, char* f, ...) {
             num = va_arg(args, s32);
             /* FAKE: do-while(0) kept from SOTN (single level); without it the
              * va_arg load and the isHalf flag test before it swap v0/v1 and
-             * reorder (this wrap alone dropped: 5/535 vs 0; evidence.md) */
+             * reorder. */
             do {
                 if (info.isHalf) {
                     num = (s16)num;
@@ -156,7 +155,7 @@ s32 sprintf(char* out, char* f, ...) {
             num = va_arg(args, u32);
             /* FAKE: do-while(0) kept from SOTN (single level); without it the
              * va_arg load and the isHalf flag test before it swap v0/v1 and
-             * reorder (this wrap alone dropped: 8/535 vs 0; evidence.md) */
+             * reorder. */
             do {
                 if (info.isHalf) {
                     num = (u16)num;
@@ -195,7 +194,7 @@ s32 sprintf(char* out, char* f, ...) {
             num = va_arg(args, u32);
             /* FAKE: do-while(0) kept from SOTN (single level); without it the
              * va_arg load and the isHalf flag test before it swap v0/v1 and
-             * reorder (this wrap alone dropped: 5/535 vs 0; evidence.md) */
+             * reorder. */
             do {
                 if (info.isHalf) {
                     num = (u16)num;
@@ -239,7 +238,7 @@ s32 sprintf(char* out, char* f, ...) {
             num = va_arg(args, u32);
             /* FAKE: do-while(0) kept from SOTN (single level); without it the
              * va_arg load and the isHalf flag test before it swap v0/v1 and
-             * reorder (this wrap alone dropped: 5/535 vs 0; evidence.md) */
+             * reorder. */
             do {
                 if (info.isHalf) {
                     num = (u16)num;

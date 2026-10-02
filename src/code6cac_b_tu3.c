@@ -9,8 +9,8 @@
 #include "code6cac.h"
 #include "bb2_const.h"
 
-/* func_800343F0 moved here from code6cac_b_tu2.c: the file boundary follows the per-file gp evidence
- * (owner ruling Q65; docs/grind/rodata-align-2026-09-30.md section 7, site 3 record). */
+/* func_800343F0 lives here, not in code6cac_b_tu2.c: the file boundary follows the per-file gp
+ * evidence (owner ruling Q65; docs/grind/rodata-align-2026-09-30.md section 7). */
 /* Declarations from the file this TU was split from (code6cac_b_tu2.c). */
 extern void player_SetCharId(s32, s32);
 

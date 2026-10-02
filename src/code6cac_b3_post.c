@@ -15,46 +15,11 @@ extern u8 D_801027A0;
 extern u8 D_801027D8;
 extern void func_800344B4(void);
 
-/* TABLED: -4 bytes, score 1980. Target alternates v1/a0 for D_80106A50.flags address — unreproducible register allocation pattern */
-/* s66 (solver, 2026-09-05) -- FLOOR 2 -> 0, and the whole body is confined to
- * src/code6cac_b.c.  49/49 instructions, byte-identical to
- * asm/funcs/func_80034F88.s; full clean-driver build SHA1
- * 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle with ONLY this file edited.
- *
- * WHAT CLOSED THE BYTES.  s65 fitted GCC 2.7.2's global.c allocation priority
- * exactly (pri = floor_log2(nrefs) * nrefs * 10000 / live_length) and reduced
- * the residual to two arithmetic branches.  Branch (A): block 0's address
- * object reaches the target seating iff it is allocated before block 0's value
- * (pri 17500), i.e. iff floor_log2(n)*n > 49, i.e. n >= 16 references; its own
- * five references at live length 28 price at 3571.  s65 measured every obvious
- * byte-neutral reference lift dead (duplicated store into arms, split reads,
- * merged mask).  The lift that is free is a variable reuse: block 0's address
- * object and the copy loop's counter are ONE variable, so the loop's eleven
- * counter references (flow.c weights by loop depth) land on the address
- * allocno, AFTER its last pointer use, so the live length rises only 14 -> 21.
- * Measured model (tmp/grind/func_80034F88/s66/z2.model.json):
- *
- *   ord0 p74 c (flag/result)      19 refs / len 21 / pri 36190 -> $v0  TARGET
- *   ord1 p76 q (address + index)  16 refs / len 21 / pri 30476 -> $v1  TARGET
- *   ord2 p75 u (block-0 value)     7 refs / len  8 / pri 17500 -> $a0  TARGET
- *   ord3 p73 v (blocks-1/2 value)  6 refs / len 10 / pri 12000 -> $v1  TARGET
- *   ord4 p80 r (blocks-1/2 addr)   6 refs / len 19 / pri  6315 -> $a0  TARGET
- *   ord5 p72 p                     6 refs / len 34 / pri  3529 -> $a1  TARGET
- *
- * Block 0's value is no longer blocked out of $v1 by a conflict (the s64 route,
- * capped at score 2 because global.c:1275 gives one allocno one hard register):
- * $v1 is simply already held by the higher-priority address/counter allocno, so
- * find_reg scans on to $a0 -- the target register -- and the loop's byte temp
- * stays a plain block-local that local-alloc seats at $v0, also as the target.
- *
- * INTEGRATION (s62-s66 history). The copy loop's indexed store
- * `lui $at,%hi(..); addu $at,$at,$v1; sb $v0,%lo(..)($at)` targets the three
- * colour bytes 0x80106A70..72; since 2026-09-26 they are D_80106A50.color[3]
- * and the flags byte is D_80106A50.flags, members of the 0x24-byte FileRecord
- * declared in include/system.h.
- * Measured s66: sandbox score 0 (49/49) AND full clean-driver build SHA1
- * 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
- */
+/* Copies the record at func_80077D00() into the FileRecord D_80106A50
+ * (include/system.h): flags bits 0-2 are cleared and re-set from p[8] bits 0-2,
+ * then the three colour bytes at p+0x17 are copied to D_80106A50.color.
+ * The register allocation is a global.c priority fit
+ * (floor_log2(nrefs) * nrefs * 10000 / live_length); see the FAKEs below. */
 void func_80034F88(void) {
     s32 *p;
     s32 v;
@@ -67,8 +32,7 @@ void func_80034F88(void) {
          * D_80106A50.flags), mechanism: global.c allocation priority
          * floor_log2(nrefs)*nrefs*10000/live_length -- blocks 1 and 2 cannot be
          * reached from this handle because global.c:1275 assigns exactly one
-         * hard register per allocno and GCC 2.7.2 does no live-range splitting.
-         * lever-exhaustion: memory/grind/func_80034F88/hypotheses.md s53-s65. */
+         * hard register per allocno and GCC 2.7.2 does no live-range splitting. */
         u8 *q = &D_80106A50.flags;
 
         u = *q;
@@ -76,7 +40,7 @@ void func_80034F88(void) {
         *q = u;
         u = 0; /* FAKE: cse2 value invalidator, mechanism: cse2 (cse.c) forwards
                 * the sb into the following lbu only while the stored value's
-                * pseudo still holds it. lever-exhaustion: hypotheses.md s57-s62. */
+                * pseudo still holds it. */
         u = *q;
         c = p[8] & 1;
         if (c) {
@@ -89,7 +53,7 @@ void func_80034F88(void) {
             /* FAKE: the address object for flag blocks 1 and 2, mechanism:
              * global.c:1275 assigns exactly one hard register per allocno and
              * GCC 2.7.2 does no live-range splitting, so blocks 1/2 cannot be
-             * reached from the block-0 object. lever-exhaustion: as above. */
+             * reached from the block-0 object. */
             u8 *r = &D_80106A50.flags;
 
             v = *r;
@@ -119,10 +83,9 @@ void func_80034F88(void) {
          * 5 refs / pri 3571 to 16 refs / pri 30476 and global.c seats it in $v1
          * before block 0's value allocno (pri 17500) is considered, which sends
          * that value to $a0 as the target has it.  Both values are real and
-         * used; the loop adds no instruction anywhere in the function.
-         * lever-exhaustion: hypotheses.md s53-s65 -- s65's branch (A), whose
-         * other byte-neutral spellings (duplicated store into arms, split
-         * reads, merged mask) are all banked dead. */
+         * used; the loop adds no instruction anywhere in the function. Other
+         * byte-neutral reference lifts (duplicated store into arms, split
+         * reads, merged mask) do not reach the target seating. */
         for (q = 0; (s32)q < 3; q++) {
             c = *((u8 *)p + (s32)q + 0x17);
             D_80106A50.color[(s32)q] = c;
@@ -138,8 +101,7 @@ void func_8003504C(void) {
        rank_for_schedule's INSN_LUID tie-break inside sched1's backward list
        schedule (written as literals they are loop.c movables, and move_movables
        inserts every movable after ALL pre-loop statements, which emits them
-       behind the two p-copies); lever-exhaustion: sessions 1-9 of
-       memory/grind/func_8003504C/hypotheses.md. */
+       behind the two p-copies). */
     s32 new_var;
     s32 new_var2;
     s32 *q;
@@ -228,9 +190,7 @@ void func_80035280(void) {
      * use; mechanism: loop.c move_movables hoists the
      * address-materialisation movable into the loop-2 preheader exactly once,
      * giving the target's single $a2 record cursor -- writing the symbol inline
-     * at the use sites creates a second address movable and measures 39 diffs
-     * (tmp/grind/func_80035280/s5/xB.c),
-     * lever-exhaustion: memory/grind/func_80035280/hypotheses.md s1-s5 */
+     * at the use sites creates a second address movable. */
     FileTimeRec *base;
     s32 i;
     s32 flags;
@@ -238,9 +198,7 @@ void func_80035280(void) {
      * merged bit instead of re-using a single accumulator; mechanism:
      * local-alloc.c:472's `reg_n_deaths == 1` eligibility test -- one death per
      * pseudo makes each merge result eligible for the target's seat, where a
-     * single re-used accumulator has three deaths and is refused (single
-     * accumulator measures 44 diffs, tmp/grind/func_80035280/s5/m4.c),
-     * lever-exhaustion: memory/grind/func_80035280/hypotheses.md s3 + s5 */
+     * single re-used accumulator has three deaths and is refused. */
     s32 flags0;
     s32 flags1;
     s32 flags2;
@@ -271,13 +229,11 @@ void func_80035280(void) {
          * (1 + n_non_fixed_regs)` = 58 on this -msoft-float configuration, so
          * the constant is hoisted into the loop-2 preheader for any
          * insn_count <= 58. These four intermediates raise loop 2's real-insn
-         * count from 55 to 59 (measured in the -dL dump,
-         * tmp/grind/func_80035280/s5/last.loop), which is the first count that
+         * count from 55 to 59 (-dL dump), which is the first count that
          * refuses the hoist and leaves the lui/ori inside the loop exactly as
          * the target carries it. Every one of them holds a real value that is
          * stored to the target's own bytes, and combine folds the copies away
-         * (build_insns 108 == target_insns 108),
-         * lever-exhaustion: memory/grind/func_80035280/hypotheses.md s1-s5 */
+         * (no instruction is added). */
         u8 mn;
         u8 sc;
         u8 hs;

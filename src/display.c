@@ -266,8 +266,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
        compares). The shipped bytes load every one of these fields as lhu + sll 16 +
        sra 16 -- the un-folded extend GCC keeps only for a volatile halfword -- while
        the env-> side of the same compares is a plain lh; the non-volatile spelling
-       folds to lh and scores 75 (pre-slim-2026-10-01:memory/grind/PutDispEnv/evidence.md).
-       SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @aa53500 (a use-site
+       folds to lh. SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @aa53500 (a use-site
        `*(volatile int *)&` read of a struct member in non-IRQ RAM). */
     if (!(*(volatile s16 *)&g_gpu_ctx.disp_env.screen.x == env->screen.x &&
           *(volatile s16 *)&g_gpu_ctx.disp_env.screen.y == env->screen.y &&
@@ -327,7 +326,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
             }
         }
         /* FAKE: empty then-arm; the direct `if (env->disp.h > ...) mode |= 0x24;`
-           and its respellings add 4 insns (pre-slim-2026-10-01:memory/grind/PutDispEnv/evidence.md).
+           and its respellings add 4 insns.
            SOTN: src/main/psxsdk/libgpu/sys.c:394 @aa53500 (same statement, same form). */
         if (env->disp.h <= (env->pad0 ? 288 : 256)) {
         } else {
@@ -398,19 +397,14 @@ typedef struct {
 } Rect;
 void SetDrawEnv(s32 *out, Rect *r)
 {
-  s32 *o = out; /* FAKE: prologue pair order — owner ruling 2026-07-17
-                   (decisions.md 10:35), tombstone narrowed to sanction a
-                   single forward-order param alias under
-                   pointer-alias-fake-exception for the twins func_8007C2A0
-                   / func_8007C4B8. cc1 combine's single-use entry-copy
-                   merge relocates arg0's `move s1,a0` past arg1's
+  s32 *o = out; /* FAKE: prologue pair order — single forward-order param
+                   alias (pointer-alias-fake-exception; owner ruling for the
+                   twins SetDrawEnv / SetDrawEnv2). cc1 combine's single-use
+                   entry-copy merge relocates arg0's `move s1,a0` past arg1's
                    `move s0,a1`, flipping the prologue save+def pair
-                   emit order to match target (s0-pair first). Per-function
-                   exhaustion measured s1 (grind ledger): arg1-alias (=4,
-                   pair unchanged), K&R decl-block reversal (=4),
-                   do-while(0) entry wrap (=4, byte-neutral), var_a3
-                   init-at-decl (=26), var_a3 hoist-early (=26). Twin
-                   func_8007C4B8 final PASS 2026-07-19 (decisions.md). */
+                   emit order to match target (s0-pair first). An arg1
+                   alias, K&R decl-block reversal or do-while(0) entry wrap
+                   leaves the pair order unchanged. */
   u16 buf[4];
   s16 var_v0;
   s16 var_v0_2;
@@ -474,19 +468,12 @@ void SetDrawEnv(s32 *out, Rect *r)
 }
 void SetDrawEnv2(s32 *out, Rect *r)
 {
-  s32 *o = out; /* FAKE: prologue pair order — owner ruling 2026-07-17
-                   (decisions.md 10:35), tombstone narrowed to sanction a
-                   single forward-order param alias under
-                   pointer-alias-fake-exception for the twins func_8007C2A0
-                   / func_8007C4B8. cc1 combine's single-use entry-copy
-                   merge relocates arg0's `move s1,a0` past arg1's
-                   `move s0,a1`, flipping the prologue save+def pair
-                   emit order to match target (s0-pair first). Structural
-                   exhaustion measured s2: K&R decl-block reversal (=4),
-                   do-while(0) entry wrap (=27), var_a3 init-at-decl (=35),
-                   var_a3 hoist-early (=35, s3); arg1-alias (=4, s3, pair
-                   unchanged). Twin verified byte-exact on hirahira_w_frie
-                   (src/text1a_c.c:955, sandbox 0, 2026-07-17 11:25). */
+  s32 *o = out; /* FAKE: prologue pair order — same param alias and
+                   mechanism as SetDrawEnv above (owner ruling for the twins):
+                   cc1 combine's single-use entry-copy merge relocates arg0's
+                   `move s1,a0` past arg1's `move s0,a1`, flipping the
+                   prologue save+def pair emit order to match target
+                   (s0-pair first). */
   u16 buf[4];
   s16 var_v0;
   s16 var_v0_2;
@@ -589,9 +576,7 @@ s32 get_mode(s32 arg0, s32 arg1, s32 arg2) {
  * and dispatch — clamping both axes against the halfword globals
  * g_gpu_ctx.width/g_gpu_ctx.height and dispatching on the g_gpu_ctx.type range check.
  * It is NOT SOTN's get_cs verbatim: that build clamps against constants and
- * dispatches on a boolean global (different library build, per ledger H2).
- * Adopted under the 2026-08-10 owner ruling because it uniquely measures
- * 0/51. */
+ * dispatches on a boolean global (different library build). */
 s32 get_cs(s16 x, s16 y)
 {
     x = x < 0 ? 0 : (x > g_gpu_ctx.width - 1 ? g_gpu_ctx.width - 1 : x);
@@ -603,13 +588,11 @@ s32 get_cs(s16 x, s16 y)
     }
 }
 /* PsyQ libgpu get_ce, the get_cs twin (verbatim-linked Sony object, census
- * 2026-07-09). Same published psxsdk clamp idiom as func_8007C7A0 above, with
+ * 2026-07-09). Same published psxsdk clamp idiom as get_cs above, with
  * the packet constant 0xE4000000; the limits (g_gpu_ctx.width/g_gpu_ctx.height), the
  * dispatch (g_gpu_ctx.type range check) and both arms' masks/shifts were read off
- * THIS function's own target bytes (asm/funcs/func_8007C86C.s), not assumed
- * symmetric. Not SOTN's get_ce verbatim — different library build, per ledger
- * H2. Adopted under the 2026-08-10 owner ruling because it uniquely measures
- * 0/51. */
+ * THIS function's own target bytes (asm/funcs/get_ce.s), not assumed
+ * symmetric. Not SOTN's get_ce verbatim — different library build. */
 s32 get_ce(s16 x, s16 y)
 {
     x = x < 0 ? 0 : (x > g_gpu_ctx.width - 1 ? g_gpu_ctx.width - 1 : x);
@@ -640,7 +623,7 @@ s32 get_ofs(s32 arg0, s32 arg1) {
 s32 get_tw(u8 *arg0) {
     if (arg0 != 0) {
         u32 tmp[4]; /* FAKE: written-never-read scratch (SOTN dra/62DEC.c sp70[4] family;
-                       dead-vars-local-array carve-out 2026-07-01) */
+                       dead-vars-local-array carve-out) */
         u8 r, b1;
         s32 g, b2;
         u32 b15, re2, ret;
@@ -981,8 +964,7 @@ s32 _exeque(void) {
         _qlog[0] = (s32)_que[_qout].func;
         D_8009BF6C = _que[_qout].arg;
         /* FAKE: do-while(0) — its loop notes keep this log store between the arg log store
-         * and the _qout advance; without it sched sinks both log stores to the loop test
-         * (score 10; memory/grind/_exeque/evidence.md [s13]) */
+         * and the _qout advance; without it sched sinks both log stores to the loop test. */
         do {
             D_8009BF70 = _que[_qout].count;
         } while (0);
@@ -1181,14 +1163,12 @@ PAD_NOPS_3; /* 3 NOPs after func_8007E11C */
 /* func_8007E1AC = LIBGTE MSC06 LoadAverage12 â€” verbatim-linked Sony PsyQ 4.0
  * object (census 2026-07-09). Hand-written GTE asm; disassembler tags every
  * cop2 op "handwritten instruction". No pure-C form (mtc2/lwc2/gpf/gpl/mfc2/
- * swc2 have no C analog). Canonical-body authorization 2026-07-11 per
- * canonical-asm-retirement (STRONG cluster corroboration: sibling
- * calc_fc_frame_8007EC5C ASM-WHOLE, func_8007E8AC canonical-body). */
+ * swc2 have no C analog). Canonical body (cluster corroboration: siblings
+ * MulMatrix2 and ApplyRotMatrix are hand-written asm too). */
 INCLUDE_ASM("asm/funcs", LoadAverage12);
 /* func_8007E1FC = LIBGTE MSC06 LoadAverage0 â€” verbatim-linked Sony PsyQ 4.0
  * object (census 2026-07-09). Twin of func_8007E1AC differing only in the
- * gpf/gpl sf parameter (0 vs 1). Hand-written GTE asm; canonical-body
- * authorization 2026-07-11. */
+ * gpf/gpl sf parameter (0 vs 1). Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", LoadAverage0);
 __asm__(
     ".section .text\n"
@@ -1225,12 +1205,11 @@ INCLUDE_ASM("asm/funcs", SquareRoot12);
 PAD_NOPS_3; /* 3 NOPs after func_8007E43C */
 /* func_8007E4DC = LIBGTE MTX_000 MulMatrix0 â€” verbatim-linked Sony PsyQ 4.0
  * object (census 2026-07-09). 3x3-mvmva matrix transform sibling of
- * calc_fc_frame_8007EC5C (ASM-WHOLE 2026-05-31). All the same hand-coded
+ * MulMatrix2 (calc_fc_frame_8007EC5C). All the same hand-coded
  * signals: splat-tagged every cop2 op "handwritten instruction", hardcoded
  * `swc2 $11, 16($a2)` source reg, hand-scheduled cycle-N+1-mfc2 during
  * cycle-N-mvmva latency, per-cycle `lui $at, 0xFFFF` re-materialization,
- * addu $v0,$a2 pass-through-at-end. Canonical-body 2026-07-11 per gte-3x3
- * (archived) explicit sibling-follow directive. */
+ * addu $v0,$a2 pass-through-at-end. Canonical body. */
 INCLUDE_ASM("asm/funcs", MulMatrix0);
 PAD_NOPS_1; /* 1 NOP after func_8007E4DC */
 INCLUDE_ASM("asm/funcs", CompMatrix);
@@ -1238,16 +1217,13 @@ INCLUDE_ASM("asm/funcs", CompMatrix);
  * object (census 2026-07-09). Local-vector transform with pre-scaling via sign-
  * split (hi=x>>15, lo=x&0x7FFF), two mvmva cycles (hi 0,0,3,3,0 then lo
  * 1,0,3,3,0), post-scale hi result by 8 via signed <<3, sum + store. Hand-
- * coded evidence: uses the archived dead-branch-scheduling insert_after
- * `sra $tN,$tM,15` idiom (bytes came from regfix rule text, not compilation)
- * + subst jâ†’b branch-family rewrites. No compiled C reaches these bytes
- * under the 2026-05-31 cheat catalog. Canonical-body 2026-07-11; all 13
- * regfix rules retired alongside. */
+ * coded evidence: the `sra $tN,$tM,15` split idiom and branch forms that
+ * compiled C reaches only with register pins or asm rewriting. Canonical
+ * body. */
 INCLUDE_ASM("asm/funcs", ApplyMatrixLV);
 /* func_8007E8AC â€” hand-written GTE mvmva vector-transform wrapper
- * (8007Exxx hand-asm cluster, sibling of calc_fc_frame_8007EC5C, ASM-WHOLE
- * authorized 2026-05-31; this sibling user-authorized 2026-06-11 per
- * gte-3x3 / canonical-asm-authorization-recipe). Hand-coded evidence: the
+ * (8007Exxx hand-asm cluster, sibling of MulMatrix2 / calc_fc_frame_8007EC5C;
+ * owner-authorized per canonical-asm-authorization-recipe). Hand-coded evidence: the
  * lw encodings target $t0/$t1 (unreachable from compiled C without
  * forbidden pins), hand-placed GTE load-delay nop, return-pinned-at-end
  * addu $v0,$a2 pass-through, unfilled jr delay slot. cop2 ops splat-tagged
@@ -1258,42 +1234,39 @@ INCLUDE_ASM("asm/funcs", ApplyRotMatrix);
  * matrix by 3 scalars (columns 0,1,2 x scalars *arg1[0/1/2]). Splat tags the
  * body handwritten; hardcoded $t0..$t5 packed register cadence + hand-scheduled
  * multu/mflo pairing + sw in jr delay slot are hand-coded signatures. Sibling
- * of func_8007EDBC (canonical-body 2026-05-21 per packed-multiply-cluster).
- * Canonical-body 2026-07-11 with the 1 fill_delay regfix rule stripped. */
+ * of ScaleMatrix (func_8007EDBC, canonical body per packed-multiply-cluster).
+ * Canonical body. */
 INCLUDE_ASM("asm/funcs", ScaleMatrixL);
 PAD_NOPS_3; /* 3 NOPs after func_8007E8DC */
 /* func_8007EA0C = LIBGTE MTX_01 ApplyRotMatrixLV - verbatim-linked Sony PsyQ
  * 4.0 object (census 2026-07-09). Sibling of ApplyMatrixLV (func_8007E74C):
  * sign-splits input vec into hi/lo halves (arithmetic split), runs mvmva
  * twice (hi 0,0,3,3,0 then lo 1,0,3,3,0), post-scales hi by <<3 with signed
- * preservation, sums and stores. Uses archived dead-branch-scheduling regfix
- * cheats + inline-move-aliasing + register asm pins. No pure-C form under
- * the 2026-05-31 cheat catalog. Canonical-body 2026-07-11; all 13 regfix
- * rules retired alongside. */
+ * preservation, sums and stores. No pure-C form reaches these bytes without
+ * register pins or asm rewriting. Canonical body. */
 INCLUDE_ASM("asm/funcs", ApplyRotMatrixLV);
 PAD_NOPS_2; /* 2 NOPs after func_8007EA0C */
 /* func_8007EB4C = LIBGTE MTX_03 MulMatrix â€” verbatim-linked Sony PsyQ 4.0
  * object (census 2026-07-09). In-place variant of the same 3-cycle mvmva
  * transform as func_8007E4DC / calc_fc_frame_8007EC5C: reads matrix + vec
  * from $a0 (out doubles as matrix-input buffer), writes result back to $a0.
- * archived gte-3x3.md explicitly names this as cluster sibling. All the
- * calc_fc_frame hand-coded signals hold. Canonical-body 2026-07-11. */
+ * All the calc_fc_frame (MulMatrix2) hand-coded signals hold. Canonical body. */
 INCLUDE_ASM("asm/funcs", MulMatrix);
 PAD_NOPS_1; /* 1 NOP after func_8007EB4C */
 /* calc_fc_frame_8007EC5C: hand-coded GTE 3x3-mvmva matrix transform.
- * Authorized 2026-05-31 as COMPLETED-INLINE-ASM-CANONICAL -- see
+ * COMPLETED-INLINE-ASM-CANONICAL -- see
  * inline_asm_canonical.txt for justification. Disassembler annotates
  * every cop2 op as a handwritten instruction; final swc2 $11 uses a
  * hardcoded source reg; mvmva/mfc2/mtc2/nop pipeline is hand-scheduled
  * (cycle N+1 setup interleaves with cycle N latency); per-cycle lui $at
  * re-materialization is a hand-coded choice. No pure-C form reaches
- * these bytes under the 2026-05-31 cheat catalog. */
+ * these bytes. */
 INCLUDE_ASM("asm/funcs", MulMatrix2);
 PAD_NOPS_1; /* 1 NOP after calc_fc_frame_8007EC5C */
 /* func_8007ED6C = LIBGTE MTX_05 ApplyMatrix â€” verbatim-linked Sony PsyQ 4.0
  * object (census 2026-07-09). Loads a 3x3 R matrix (5 packed s32 words) into
  * cop2 controls 0-4, transforms *a1 vec by RT matrix (mvmva 1,0,0,3,0),
- * writes result to *a2. Hand-written GTE asm; canonical-body 2026-07-11. */
+ * writes result to *a2. Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", ApplyMatrix);
 
 /* func_8007EDBC: hand-coded asm in the original PSY-Q source (display.c packed
@@ -1309,7 +1282,7 @@ INCLUDE_ASM("asm/funcs", ApplyMatrix);
  *    elide it) -- so the original was not compiled from C.
  *  - Cluster: sibling func_8007E8DC (jaccard=0.58) is inline asm; the 8007Exxx
  *    /8007Fxxx display.c region is documented hand-coded asm.
- * User-authorized 2026-05-21 (cc1psx-proof + combine.c + cluster).
+ * Owner-authorized on that evidence (cc1psx proof + combine.c + cluster).
  */
 INCLUDE_ASM("asm/funcs", ScaleMatrix);
 PAD_NOPS_3; /* 3 NOPs after func_8007EDBC */
@@ -1353,14 +1326,13 @@ INCLUDE_ASM("asm/funcs", DpqColorLight);
 INCLUDE_ASM("asm/funcs", DpqColor3);
 INCLUDE_ASM("asm/funcs", Intpl);
 /* func_8007F0BC / func_8007F0E4 â€” hand-written GTE sqr leaf wrappers
- * (8007Fxxx cluster, same shape as user-authorized func_8007E8AC
+ * (8007Fxxx cluster, same shape as ApplyRotMatrix / func_8007E8AC,
  * f980d67b): lwc2 x3 -> GTE delay nop -> sqr -> swc2 x3 -> jr with
  * hand-pinned `addu $v0,$a1,$zero` return in the delay slot. The return
  * pin is unreachable from compiled C (local-alloc copy-suggestion scan is
  * ascending, so the arg copy always wins the qty and the return copy
  * materializes at function head â€” measured across volatile/return-local
- * variants; the fill_delay regfix rules bridged exactly this). swc2 ops
- * splat-tagged "handwritten instruction". User authorized 2026-06-11. */
+ * variants). swc2 ops splat-tagged "handwritten instruction". Owner-authorized. */
 INCLUDE_ASM("asm/funcs", Square12);
 INCLUDE_ASM("asm/funcs", Square0);
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
@@ -1392,7 +1364,7 @@ PAD_NOPS_1; /* 1 NOP after func_8007F21C */
  * object (census 2026-07-09). Triple perspective transform: lwc2 3 SXY0/SXY1/SXY2
  * pairs from *a0/*a1/*a2 -> rtpt -> swc2 SZ/SXY0/SXY1/SXY2 to *a3 & sp-loaded
  * pointers -> cfc2 FLAG to *(sp+0x1C) -> return mfc2 SZ3 >> 2 (folded into jr
- * delay slot). Hand-written GTE asm; canonical-body 2026-07-11. */
+ * delay slot). Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", RotTransPers3);
 PAD_NOPS_3; /* 3 NOPs after func_8007F24C */
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
@@ -1401,7 +1373,7 @@ PAD_NOPS_2; /* 2 NOPs after func_8007F2AC */
 /* func_8007F2DC = LIBGTE CMB_00 RotTransPers4 â€” verbatim-linked Sony PsyQ 4.0
  * object (census 2026-07-09). Triple perspective transform PLUS a 4th vertex
  * via rtps: rtpt on 3 SXY pairs, then rtps on the 4th (*a3). Combined FLAGs
- * OR'd; returns SZ3 >> 2. Hand-written GTE asm; canonical-body 2026-07-11. */
+ * OR'd; returns SZ3 >> 2. Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", RotTransPers4);
 PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
 /* motutil_GetWalkDir: hand-coded asm in original PSY-Q source.
@@ -1409,31 +1381,29 @@ PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
  * rotation skeleton, different rotation-matrix coefficient signs
  * and different output-byte layout. 163 insns, zero spills, three
  * INT_MIN-guard idioms in succession. Scanner STRONG 3/5 (S2+S3+S5);
- * manual review confirmed hand-coded. Same cluster authorization
- * scope per memory/feedback_hand_coded_asm_recognition.md. 2026-05-13. */
+ * manual review confirmed hand-coded. Same cluster authorization. */
 INCLUDE_ASM("asm/funcs", RotMatrix);
 PAD_NOPS_1; /* 1 NOP after motutil_GetWalkDir */
 /* func_8007F5EC: hand-coded asm in original PSY-Q source.
  * 3-axis Euler rotation: reads X/Y/Z angles from arg0 (s16[3]),
  * looks up cos/sin for each, applies a 9-element 3D rotation chain
- * to arg1[0..0x10]. Manual signal review 2026-05-13 (scanner 3/5
+ * to arg1[0..0x10]. Manual signal review (scanner 3/5
  * but verified hand-coded): three INT_MIN-guard idioms, 163 insns
  * with zero spills despite 10+ live registers, hand-scheduled
  * multu/mflo where a 3-cycle gap holds a bgez+andi pair in the
  * pipeline stall window. Same cluster authorization scope as
- * func_8007F87C per memory/feedback_hand_coded_asm_recognition.md. */
+ * func_8007F87C (RotMatrixX). */
 INCLUDE_ASM("asm/funcs", RotMatrixZYX);
 PAD_NOPS_1; /* 1 NOP after func_8007F5EC */
 /* func_8007F87C: hand-coded asm in original PSY-Q source.
- * Evidence for the hand-coded classification (see
- * memory/feedback_hand_coded_asm_recognition.md):
+ * Evidence for the hand-coded classification:
  *   - Uniform 2-cycle multu/mflo pacing on EVERY mult/mflo pair
  *   - Front-loaded loads (6 args loaded interleaved with first 2 multus)
  *   - Tight register packing across 75-instruction kernel, no spills
  *   - INT_MIN-guard idiom: empty `if (a<0){}` body at .L8007F898
  *   - Cluster behavior: motutil_GetWalkDir, func_8007F5EC, func_8007FA1C,
  *     func_8007FBBC share the same skeletal shape.
- * User-authorized 2026-05-13 for this cluster. */
+ * Owner-authorized for this cluster. */
 INCLUDE_ASM("asm/funcs", RotMatrixX);
 PAD_NOPS_2; /* 2 NOPs after func_8007F87C */
 /* func_8007FA1C: hand-coded asm in original PSY-Q source.
@@ -1441,8 +1411,7 @@ PAD_NOPS_2; /* 2 NOPs after func_8007F87C */
  * shifted to 0..0x10 (vs 6..0x10 for func_8007F87C). All 5 strong
  * signals confirmed (uniform multu pacing, front-loaded loads, tight
  * register packing, INT_MIN-guard idiom at .L8007FA38, cluster). Same
- * authorization scope per memory/feedback_hand_coded_asm_recognition.md
- * and commit 39e9bf0. */
+ * cluster authorization (commit 39e9bf0). */
 INCLUDE_ASM("asm/funcs", RotMatrixY);
 PAD_NOPS_2; /* 2 NOPs after func_8007FA1C */
 /* func_8007FBBC: hand-coded asm in original PSY-Q source.
@@ -1451,7 +1420,7 @@ PAD_NOPS_2; /* 2 NOPs after func_8007FA1C */
  * signals confirmed by scan_hand_coded: uniform 2-cycle multu pacing,
  * empty-body INT_MIN-guard branch, 0 spills in 102 insns, 6-load burst
  * at insn 25, cluster sibling of two already-authorized functions.
- * Same authorization scope per memory/feedback_hand_coded_asm_recognition.md. */
+ * Same cluster authorization. */
 INCLUDE_ASM("asm/funcs", RotMatrixZ);
 PAD_NOPS_2; /* 2 NOPs after func_8007FBBC */
 #define NULL ((void *)0)

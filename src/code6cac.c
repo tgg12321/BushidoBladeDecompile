@@ -160,79 +160,20 @@ extern void func_80023F08(s32, PadState *);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-/* func_80017FA0 (code6cac.c) - MATCHED IN PURE C, s5 (2026-08-20, permuter modality).
- *
- * `sandbox func_80017FA0 --disable all` = 0; objdump of the built object is
- * instruction-for-instruction identical to asm/funcs/func_80017FA0.s (61/61).
- * Zero regfix/asmfix rules, zero inline asm, zero volatile, no dead locals,
- * no aliases. Exactly ONE FAKE-annotated construct: the goto-formed spelling of
- * the inner counted loop (annotated inline at the `inner:` label below).
- *
- * TWO LEVERS, both ordinary C control flow / ordinary C expressions:
- *
- *  1. (s4) The outer loop's entry guard is spelled against the LIVE counter,
- *     `if (i < ptr[1])`, not `if (ptr[1] > 0)`. `i` therefore survives to frame
- *     layout, so get_frame_size() reports vars=8 and mips.c:compute_frame_size
- *     emits the target's empty 8-byte leaf frame (`addiu sp,sp,-8` in the beqz
- *     delay slot / `addiu sp,sp,8`) while `i` lives entirely in a register, so
- *     no frame store is ever emitted - exactly the target's zero-store frame.
- *     This is producer #1 ("Folded loop-guard compare") of
- *     pre-slim-2026-10-01:.claude/rules/phantom-slot-frame-lever.md:37-41 (exhibit func_8003DBE4);
- *     the same spelling already ships in-tree at src/code6cac_c2.c:1325. The
- *     2026-08-20 Judge verified this lever independently and ruled it fine.
- *
- *  2. (s5, THE CLOSER) The INNER loop is written as a goto-formed loop
- *     (`inner: ... if (j < 2) goto inner;`) instead of `do { } while (j < 2)`.
- *     Measured mechanism (read out of the cc1 .loop dump, not guessed - see
- *     tmp/grind/func_80017FA0/s5/vNV.loop): the C front end emits
- *     NOTE_INSN_LOOP_BEG / NOTE_INSN_LOOP_END only for for/while/do
- *     statements, never for a loop built from goto, and loop.c only analyses
- *     note-delimited loops. With the do-while spelling the dump reads:
- *
- *         Insn 76: dest address src reg 86 ... mult 1 add 528482404
- *         Insn 85: dest address src reg 86 ... mult 1 add 528482408
- *         Insn 94: dest address src reg 86 ... mult 1 add 528482412
- *         giv at 85 combined with giv at 94 / giv at 76 combined with giv at 94
- *         giv at 94 reduced to (reg:SI 102)
- *
- *     i.e. loop.c forms the three scratchpad stores' addresses as DEST_ADDR
- *     general induction variables of the biv sp_inner, combine_givs merges them
- *     (each singly is worth benefit 2 - add_cost 2 = 0 and would be left alone;
- *     merged they are worth 6 - 2 = 4), and strength_reduce hoists one biased
- *     base `lui;ori;addu a1,t2,v0` out of the loop, collapsing the three stores
- *     to `sw v0,-8(a1)/-4(a1)/0(a1)` - 57 insns against the target's 61.
- *     Written as a goto loop there is no NOTE_INSN_LOOP_BEG, loop.c never
- *     analyses the inner loop, the three stores keep their full absolute
- *     addresses, and maspsx expands each `sw $2,528482404($5)` (numeric operand
- *     > 32767) to the target's `lui $at,%hi ; addu $at,$a1,$at ; sw $2,%lo($at)`
- *     - tools/maspsx/maspsx/__init__.py:1183. That is the target's exact
- *     three-instruction store shape, three times over.
- *
- *     The outer loop is left as a real do-while: it MUST keep its loop notes,
- *     because target's `ac_base` store (`sw v0,0xAC(t3)` with `addiu t3,t3,4`)
- *     is the reduced form.
- *
- * ANNOTATION (s6, 2026-08-20, synthesis modality). The 2026-08-20 03:31 layer-1
- * review PASSED the rotated guard and did NOT dispute the goto loop's honesty;
- * it FAILed on paperwork only - the goto-formed loop is a purely-for-matching
- * spelling choice among semantically-true C, and
- * `pre-slim-2026-10-01:.claude/rules/do-while-zero-exception.md:46-51` (owner ruling 2026-07-06)
- * requires such a spelling to carry an inline FAKE annotation at the construct
- * site. That annotation is now present on the `inner:` label below, and
- * self_vet.md carries the matching SANCTIONED-FAMILY-CLAIMS block. Nothing else
- * about the form changed; sandbox re-measured 0 (61/61, rules_dropped 0) at the
- * 2026-08-20 chassis with this body in src/code6cac.c.
- *
- * This supersedes the s4 volatile form (Judge FAIL 2026-08-20 02:54, construct
- * BANNED: volatile on scratchpad 0x1F800000-0x1F8003FF) and the s5 extern-symbol
- * form (58/61; GNU as expands symbol-addend stores as `addu at,at,base`, the
- * wrong operand order - banked in rejected/). Neither is needed: the residual
- * was never an assembler-surface question, it was loop.c.
- *
- * Copies scaled fields out of the block at a0[3] into scratchpad RAM
- * (0x1F800000). ptr[0] is written scaled by 128; ptr[1] is the group count, and
+/* func_80017FA0 - copies scaled fields out of the block at a0[3] into scratchpad
+ * RAM (0x1F800000). ptr[0] is written scaled by 128; ptr[1] is the group count, and
  * each group writes three words scaled by 4 at a 0x18 stride plus one word
- * taken from the 0x68 array. Nothing happens when a0[3] is null. */
+ * taken from the 0x68 array. Nothing happens when a0[3] is null.
+ *
+ * The outer loop's entry guard is spelled against the live counter,
+ * `if (i < ptr[1])`, not `if (ptr[1] > 0)`: `i` then survives to frame layout,
+ * so mips.c:compute_frame_size emits the target's empty 8-byte leaf frame
+ * (`addiu sp,sp,-8` in the beqz delay slot / `addiu sp,sp,8`) while `i` lives
+ * entirely in a register (the "folded loop-guard compare" producer of
+ * .claude/rules/phantom-slot-frame-lever.md; same spelling as
+ * src/code6cac_c2.c func_8003DBE4). The outer loop stays a real do-while: it
+ * must keep its loop notes, because the target's `ac_base` store
+ * (`sw v0,0xAC(t3)` with `addiu t3,t3,4`) is loop.c's reduced form. */
 void func_80017FA0(s32 *a0) {
     s32 *scr = (s32 *)0x1F800000;
     s32 temp;
@@ -256,20 +197,16 @@ void func_80017FA0(s32 *a0) {
                 s32 j = 0;
                 s32 data_off = i << 5;
                 s32 sp_inner = sp_off;
-            /* FAKE: this inner counted loop is spelled goto-formed rather than
-             * `do { ... } while (j < 2);` purely for matching, mechanism: GCC
-             * 2.7.2 loop.c (strength_reduce/find_mem_givs/combine_givs) analyses
-             * only NOTE_INSN_LOOP_BEG-delimited loops, which the front end emits
-             * for for/while/do statements only; under the do-while spelling
-             * loop.c forms the three scratchpad stores' addresses as DEST_ADDR
-             * givs of the biv `sp_inner`, merges them (benefit 6 - add_cost 2)
-             * and hoists one biased base, giving 57 insns against the target's
-             * 61 (measured: tmp/grind/func_80017FA0/s5/vNV.loop). The loop's
-             * semantics are identical either way. lever-exhaustion:
-             * memory/grind/func_80017FA0/hypotheses.md (H1-H14) +
-             * evidence.md - the numeric-address, extern-symbol and volatile
-             * spellings of "stop the giv" are all measured dead or BANNED, and
-             * the s1-s3 dead-local frame family was owner-REFUSED. */
+            /* FAKE: inner counted loop spelled goto-formed rather than
+             * `do { ... } while (j < 2);` -- GCC 2.7.2 loop.c only analyses
+             * NOTE_INSN_LOOP_BEG-delimited loops, which the front end emits for
+             * for/while/do statements only. Under the do-while spelling
+             * strength_reduce combines the three scratchpad stores' addresses
+             * as DEST_ADDR givs of `sp_inner` and hoists one biased base (57
+             * insns against the target's 61); as a goto loop each store keeps
+             * its absolute address and maspsx expands it to the target's
+             * `lui $at ; addu $at,$a1,$at ; sw $2,%lo($at)` shape
+             * (tools/maspsx/maspsx/__init__.py:1183). */
             inner:
                 {
                     s32 *dp = (s32 *)((u8 *)ptr + data_off);
@@ -296,71 +233,45 @@ void func_80017FA0(s32 *a0) {
 end:
     ;
 }
-/* func_80018094 -- COMPLETED-INLINE-ASM-CANONICAL, s10 (forensics, 2026-09-09),
- * annotation fix-up s (annotation-fix, 2026-09-20). Honest bucket per the dated owner
- * ruling docs/grind/decisions.md 2026-09-15 "OWNER RULING -- the candidate-path
- * no-progress tripwire + a registry row for func_80018094", Ruling 3: func_80018094 is
- * enumerated BY NAME in the 2026-08-17 owner cluster ruling's census
- * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:60, SetRotMatrix/long-vector
- * sub-family) and bytes are proven on main, so "the honest finished bucket stays
- * COMPLETED-INLINE-ASM-CANONICAL, not COMPLETED-C." This body is NOT pure C: it carries
- * three PsyQ GTE inline-asm islands (gte_SetRotMatrix, gte_SetTransMatrix, gte_Lzc),
- * each owner-granted for this function by the cluster ruling above; only the pure-C
- * SURROUND (the do-while(0) wraps, the oversized locals, the staged copy) is a "matched
- * pure C" result in the sense that no non-C mechanism was used to force any byte the
- * three canonical islands do not already produce.
- * `sandbox func_80018094 --disable all` = 0 (target_insns 153, build_insns 153,
- * rules_dropped 0, cheat_asm_stripped 20 -- the two PsyQ gte_Set*Matrix islands and the
- * LZC island, stripped on BOTH sides).  Chassis: -mel -msoft-float.
- * NO asm-operand device: the LZC island's operand list is exactly the granted form
- * `: "=m"(sp_tmp[0]) : "r"(lut) : "$2", "$12"` (the Judge's binding constraint from the
- * 2026-09-09 23:11 ruling in docs/grind/decisions.md).
+/* func_80018094 -- loads the GTE rotation/translation from the MATRIX at arg0[1],
+ * runs func_80017FA0, writes that MATRIX's translation minus arg1[10..12] to
+ * scratchpad, scales it by a factor derived from its length (byte-LUT integer
+ * sqrt, GTE LZC above 0x400; 0x100 beyond 250000), copies the MATRIX to arg1+5 and
+ * runs func_80018300.
  *
- * THE TWO RESIDUALS THAT CLOSED, AND WHY.
- * (1) s9b closed the pre-island `move $a0,$a1` (target parks it in the `beqz` delay slot):
- *     an honest `lut = sum_sq;` copy survives cse only if a NOTE_INSN_LOOP_END sits between
+ * COMPLETED-INLINE-ASM-CANONICAL: three PsyQ GTE inline-asm islands
+ * (gte_SetRotMatrix, gte_SetTransMatrix, gte_Lzc), granted for this function by
+ * the owner cop2 cluster ruling (.claude/rules/cop2-addressing-preamble-cluster.md,
+ * SetRotMatrix/long-vector sub-family); everything around them is C. The LZC
+ * island's operand list is exactly the granted form
+ * `: "=m"(sp_tmp[0]) : "r"(lut) : "$2", "$12"`.
+ *
+ * Two register details shape the C around the LZC island:
+ * (1) the pre-island `move $a0,$a1` (target parks it in the `beqz` delay slot):
+ *     the `lut = sum_sq;` copy survives cse only if a NOTE_INSN_LOOP_END sits between
  *     the small arm's terminating BARRIER and the LZC arm's label, which is what an `if`
- *     with NO else whose body is `do { ...; goto lzc_done; } while (0);` emits
+ *     with no else whose body is `do { ...; goto lzc_done; } while (0);` emits
  *     (tools/gcc-2.7.2/cse.c:8100-8125, the follow-jumps gate's backward walk).
- * (2) s10 closes the last two insns (the small arm's LUT byte: target `lbu $v0,0($at)`,
- *     ours `lbu $a0,0($at)`).  `lut` and `sum_sq` have IDENTICAL conflict sets and both
- *     prefer $4, so global.c's allocno_compare priority sort alone decides which takes $a0.
- *     s9b bought the sort by parking the small arm's byte in `lut` (n_refs 8 -> 14) -- which
- *     is exactly what put that byte in $a0 and cost the last two insns.  s10 buys the same
- *     sort from the DENOMINATOR/weight side instead: a third do-while(0) wrap around the LZC
- *     arm raises that region's flow.c loop depth, so the SAME references count for more
- *     (n_refs 8 -> 11 at unchanged live_length 7, pri 34285 -> 47142 versus sum_sq's 40000),
- *     and the small arm's byte stays in its own short-lived pseudo at $v0.
- *     Measured: pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/e1.allocdbg.txt (BB2_ALLOC_DEBUG on the
- *     instrumented cc1) -- the priorities were PREDICTED from the m1/candidate arrays before
- *     the form was written and came out exact.
- *
- * EVERY CONSTRUCT IS ABLATION-MEASURED THIS SESSION (all still 153 build insns; the s10/
- *   files are in pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/):
- *   drop the outer do-while(0)        -> 13  (s10/f1.c)
- *   drop the small-arm do-while(0)    -> 10  (s10/f3.c)
- *   drop the LZC-arm do-while(0)      -> 13  (s10/a0.c)
- *   s32 sp_tmp scalar instead of [4]  ->  8  (s10/f2.c)
- * Self-vet: pre-slim-2026-10-01:memory/grind/func_80018094/self_vet.md.
+ * (2) the small arm's LUT byte in $v0 (not $a0): `lut` and `sum_sq` have identical
+ *     conflict sets and both prefer $4, so global.c's allocno_compare priority alone
+ *     decides which takes $a0. A do-while(0) around the LZC arm raises that region's
+ *     flow.c loop depth, so the same references count for more and `lut` wins the
+ *     sort (BB2_ALLOC_DEBUG on the instrumented cc1).
+ * Each of the three do-while(0) wraps and the 16-byte sp_tmp is load-bearing.
  */
 typedef struct { s32 pad[9]; s32 x, y, z; } ScrV;
 #define SCRV ((ScrV *)0x1F800000)
 void func_80018094(s32 *arg0, s32 *arg1) {
-    /* n.b.! sp_tmp must be 9-16 bytes (inclusive): s32[3] and s32[4] are byte-identical (measured,
-     * pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s4/v20g.s == v20h.s). Frame derivation from the target bytes alone
-     * (asm/funcs/func_80018094.s): frame 0x30 = outgoing args 0x10 + locals 0x10 + callee-saves 0x10
-     * (s0/s1/ra at 0x20/0x24/0x28); the ONLY locals traffic in the whole target is the island's
-     * `swc2 $31,0($t4)` with $t4 = $sp+0x10 and the matching `lw $v1,0x10($sp)`, i.e. 4 bytes written
-     * of a 16-byte locals region. A fully-written 4-byte locals set yields ALIGN8(4)+16+16 = 0x28 != 0x30,
-     * so the original declared this object strictly larger than the bytes it writes. OVERSIZED-LOCALS
-     * carve-out (.claude/rules/dead-vars-local-array.md, owner ruling 2026-07-13), prerequisite 2
-     * (extend the LIVE locals object, not a dead pad): sp_tmp[0] is the live LZC output.
-     * FAKE: unwritten tail sp_tmp[1..3] on the live LZC-output locals object, mechanism:
-     * function.c assign_stack_local / mips.c compute_frame_size (get_frame_size raw 16 -> MIPS_STACK_ALIGN
-     * keeps 16 where the scalar form rounds 4 -> 8), lever-exhaustion:
-     * pre-slim-2026-10-01:memory/grind/func_80018094/hypotheses.md s2 H15 (declaration scope/order/hoisting), s3 H19-H22
-     * (HImode narrowing, named-intermediate scalar splits, live 8-byte aggregate, BLKmode-only FRAMEDBG
-     * census) and s4 (8,906 permuter iterations on the scalar chassis, 0 novel finds). */
+    /* FAKE: frame layout -- unwritten tail sp_tmp[1..3] on the live LZC-output object;
+     * sp_tmp must be 9-16 bytes (s32[3] and s32[4] are byte-identical). From
+     * asm/funcs/func_80018094.s: frame 0x30 = outgoing args 0x10 + locals 0x10 +
+     * callee-saves 0x10 (s0/s1/ra at 0x20/0x24/0x28); the only locals traffic in the
+     * whole target is the island's `swc2 $31,0($t4)` with $t4 = $sp+0x10 and the
+     * matching `lw $v1,0x10($sp)`, i.e. 4 bytes written of a 16-byte locals region. A
+     * 4-byte locals set yields ALIGN8(4)+16+16 = 0x28 != 0x30 (function.c
+     * assign_stack_local / mips.c compute_frame_size). OVERSIZED-LOCALS carve-out of
+     * .claude/rules/dead-vars-local-array.md (extend the live locals object, not a
+     * dead pad): sp_tmp[0] is the live LZC output. */
     s32 sp_tmp[4];
     s32 dx, dy, dz;
     s32 sum_sq;
@@ -372,8 +283,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
      * as func_80019310 / func_800300B4; "memory" clobber ADDED, not SDK text -- precedent
      * src/code6cac_b.c:1116-1123 (func_8002D320's lwc2-read island: `"r"(vin) : "$12", "memory"`),
      * the same committed precedent FUNCTION that func_80019310's own CLOBBER PROVENANCE
-     * paragraph cites in this file -- search that heading rather than a line number, which
-     * this body's own 226 lines shift. */
+     * paragraph cites in this file. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -415,15 +325,12 @@ void func_80018094(s32 *arg0, s32 *arg1) {
         scale = 0;
     } else {
         {
-            /* FAKE: do{...}while(0) around the whole else-arm body, mechanism: flow.c
-             * life_analysis / basic_block_loop_depth (tools/gcc-2.7.2/flow.c:440-471) --
+            /* FAKE: do{...}while(0) around the whole else-arm body -- flow.c
+             * life_analysis / basic_block_loop_depth (tools/gcc-2.7.2/flow.c:440-471):
              * NOTE_INSN_LOOP_BEG/END raise the block's loop depth, and every reference in
              * the region is then weighted by that depth in `reg_n_refs[regno] += loop_depth`
-             * (flow.c:2081), which is the numerator of global.c's allocno_compare priority.
-             * Ablation: dropping this wrap scores 13 (pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/f1.c).
-             * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80018094/hypotheses.md s5 H26-H28,
-             * s6 H29-H32, s7 H31-H37, s8, s9 H42-H49.
-             * Family: do-while-zero-exception (owner ruling 2026-07-06). */
+             * (flow.c:2081), the numerator of global.c's allocno_compare priority.
+             * Family: do-while-zero-exception. */
             do {
             /* FAKE: the LZC island's input operand staged through `lut`, the local the LZC arm
              * already owns for its LUT byte, mechanism: cse.c cse_end_of_basic_block's
@@ -432,10 +339,8 @@ void func_80018094(s32 *arg0, s32 *arg1) {
              * -- reproducing the target's pre-island `move $a0,$a1` with no asm-operand device.
              * Liveness (bound 3): `lut` holds nothing at this point (its LZC-arm write comes
              * later), and the staged value is consumed by the island BEFORE that write, so the
-             * borrow is safe in both directions.  lever-exhaustion:
-             * pre-slim-2026-10-01:memory/grind/func_80018094/hypotheses.md s5 H26-H28, s6 H29-H32, s7 H31-H37, s8,
-             * s9 H42-H46 (every fresh-local and every declaration-scope spelling measured).
-             * Family: staged-value-reused-variable (owner ruling 2026-07-03). */
+             * borrow is safe in both directions.
+             * Family: staged-value-reused-variable. */
             lut = sum_sq;
             if (sum_sq < 0x400) {
                 /* FAKE: do{...}while(0) around the small arm's body, with the arm exited by
@@ -445,9 +350,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                  * label, and the gate's backward walk (tools/gcc-2.7.2/cse.c:8112-8118)
                  * stops on a LOOP_END note, so cse1 AND cse2 refuse to extend the block into
                  * the LZC arm and the `lut = sum_sq;` island-input copy survives.
-                 * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80018094/hypotheses.md s5 H26-H28,
-                 * s6 H29-H32, s7 H31-H37, s8, s9 H42 (cse class kill), s9b H44-H46.
-                 * Family: do-while-zero-exception (owner ruling 2026-07-06). */
+                 * Family: do-while-zero-exception. */
                 do {
                     sum_sq = (u8)(g_sqrt_table_u8[sum_sq]) >> 3;
                     goto lzc_done;
@@ -455,27 +358,17 @@ void func_80018094(s32 *arg0, s32 *arg1) {
             }
             {
                 s32 shift_a, shift_b;
-                /* FAKE: third do{...}while(0), around the LZC arm's body, mechanism: the same
-                 * flow.c loop-depth weighting -- it lifts `lut`'s three in-arm references
+                /* FAKE: third do{...}while(0), around the LZC arm's body -- the same
+                 * flow.c loop-depth weighting lifts `lut`'s three in-arm references
                  * (the island operand, the LUT byte set, the <<16 use) from weight 2 to
                  * weight 3, so allocno_n_refs[lut] goes 8 -> 11 while sum_sq's goes 19 -> 21,
                  * and global.c's allocno_compare priority
                  * (floor_log2(n_refs)*n_refs/live_length*10000) becomes 47142 for `lut` versus
-                 * 40000 for `sum_sq` -- measured, pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/e1.allocdbg.txt.
-                 * `lut` is then allocated FIRST and takes $a0, sum_sq $a1, exactly as the
-                 * target seats them, and the small arm's LUT byte is free to stay in its own
-                 * short-lived pseudo at $v0.
-                 * SINGLE LEVEL IS INSUFFICIENT (nested-wrap prerequisite, measured this
-                 * session): with only the outer wrap and the small-arm wrap the body scores
-                 * 13 (pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/a0.c); dropping the outer wrap instead
-                 * scores 13 (pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/f1.c); dropping the small-arm
-                 * wrap scores 10 (pre-slim-2026-10-01:memory/grind/func_80018094/tmp-evidence/s10/f3.c).
-                 * Each of the three wraps is load-bearing and none subsumes another.
-                 * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80018094/hypotheses.md s9b H46-H49 (the
-                 * numerator side is spelled out -- eight reference-site spellings measured at
-                 * 4/5/8/13) and s10 H50-H52 (the two denominator-side and the
-                 * assignment-in-condition levers, all measured dead).
-                 * Family: do-while-zero-exception (owner ruling 2026-07-06). */
+                 * 40000 for `sum_sq`. `lut` is then allocated first and takes $a0, sum_sq $a1,
+                 * exactly as the target seats them, and the small arm's LUT byte is free to
+                 * stay in its own short-lived pseudo at $v0. One wrap level is not enough:
+                 * each of the three wraps is load-bearing and none subsumes another.
+                 * Family: do-while-zero-exception. */
                 /* PsyQ libgte inline macro gte_Lzc(r1,r2) --- gtemac.h:174-178, which
                  * expands to gte_ldlzc(r1) (inline_c.h:228-231, `mtc2 %0,$30`), two
                  * gte_nop() (inline_c.h:1346-1347), then gte_stlzc(r2)
@@ -485,11 +378,11 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                  * preamble the original build inline expansion emitted around them (the
                  * `addu $t4,$aN,$zero` + cop2 idiom of the 28-function cluster in
                  * .claude/rules/cop2-addressing-preamble-cluster.md, of which this function
-                 * is an enumerated member, line 60).  They are written literally here because
+                 * is an enumerated member).  They are written literally here because
                  * the island must reproduce those bytes; `"=m"(sp_tmp[0])` names the frame
                  * slot the `addiu $v0,$sp,0x10` computes, and `"r"(lut)` the ldlzc input.
                  * The operand list is exactly the granted form -- no extra output, tied, or
-                 * clobber operand (Judge constraint, docs/grind/decisions.md 2026-09-09 23:11). */
+                 * clobber operand. */
                 do {
                 __asm__ volatile(
                     "addu   $t4, %1, $zero\n"
@@ -527,7 +420,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
     func_80018300(dst);
 }
 /* kengo:MED  |  nm_mario_cam/marionation_camera_Exec  |  155i */
-/* func_80018300 -- COMPLETED-INLINE-ASM-CANONICAL (manual lane, 2026-09-24).
+/* func_80018300 -- COMPLETED-INLINE-ASM-CANONICAL.
  * Distance-constraint pass over a chain of 64-byte nodes. arg0+6 is the link
  * count, arg0+0xC the node array, arg0+0x10 a table of 16-byte links (word 0 =
  * rest length, word 1 = two packed node indices). For each link the node pair is
@@ -540,11 +433,10 @@ void func_80018094(s32 *arg0, s32 *arg1) {
  * f = ((len - rest) << 14) / len (GPF sf=1: (f * d) >> 12) into
  * the 0x1F8000BC output array. The last link is emitted after the loop without
  * the bisection.
- * `sandbox func_80018300 --disable all` = 0 (307/307).
  *
- * GTE ISLANDS: census member of the 2026-08-17 owner cluster ruling
- * (pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:61; registry row eeda6664b,
- * owner-instructed 2026-09-24, this function only). Each island is one PsyQ GTE
+ * GTE ISLANDS: census member of the owner cop2 cluster ruling
+ * (.claude/rules/cop2-addressing-preamble-cluster.md; per-function registry row,
+ * commit eeda6664b). Each island is one PsyQ GTE
  * macro as spelled in PsyQ inline_o.h, the "DMPSX version 3" macro header
  * (Xeeynamo/croc@f30ff1ee include/psyq/inline_o.h, sha256 27a4abd6...81a9d6;
  * its $PSLibId$ is unexpanded, so no release is pinned), in three classes:
@@ -559,8 +451,8 @@ void func_80018094(s32 *arg0, s32 *arg1) {
  * footprint shows: $t5-$t7 carry no value anywhere in the function,
  * count/out/data/radius sit in $s0/$s1/$t8/$t9 (with "$12","memory" they land
  * in $t7/$t8/$t5/$t6), and reload spills the constant island operands to $s2
- * (reload1.c bad_spill_regs <- regs_explicitly_used; measured on this body:
- * "$12","memory" alone scores 44 at 301 insns). Here each macro's statements
+ * (reload1.c bad_spill_regs <- regs_explicitly_used; "$12","memory" alone does
+ * not match). Here each macro's statements
  * are joined into one __asm__ with the macro's own operand and clobber list,
  * and the header's `($12)` addressing is written `0($12)` (same encoding).
  * gte_sqr0 / gte_gpf12 carry the real cop2 words (0x4AA00428 SQR sf=0 lm=1,
@@ -578,20 +470,15 @@ void func_80018300(s32 *arg0) {
     s32 dx, dy, dz;
     u32 sum;
     u32 len;
-    /* FAKE: n.b.! must be 17-24 bytes (s32 [5] and [6] are byte-identical).
-     * OVERSIZED-LOCALS carve-out (.claude/rules/dead-vars-local-array.md, owner
-     * ruling 2026-07-13), prong 2 (extend the LIVE locals object): lz[0] is the
-     * GTE LZC output, written by gte_stlzc and read back. Frame math from
-     * asm/funcs/func_80018300.s alone: frame 0x28, three saves $s0-$s2 at
+    /* FAKE: frame layout -- lz must be 17-24 bytes (s32 [5] and [6] are
+     * byte-identical; [1], [4] and [7] are not). OVERSIZED-LOCALS carve-out
+     * (.claude/rules/dead-vars-local-array.md), extending the LIVE locals object:
+     * lz[0] is the GTE LZC output, written by gte_stlzc and read back. Frame math
+     * from asm/funcs/func_80018300.s alone: frame 0x28, three saves $s0-$s2 at
      * 0x18/0x1C/0x20 (ALIGN8(12) = 16), no calls so no outgoing-args area, locals
      * region 0x00-0x17 = 24 bytes; the ONLY $sp traffic in it is the island's
      * `swc2 $31,0($t4)` ($t4 = $sp) and `lw $v1,0($sp)` -- 4 bytes. A fully
-     * written 4-byte object gives ALIGN8(4)+16 = 0x18 != 0x28 (measured: lz[1]
-     * and lz[4] score 8, lz[5] and lz[6] score 0, lz[7] scores 8).
-     * lever-exhaustion:
-     * pre-slim-2026-10-01:memory/grind/func_80018300/hypotheses.md (phantom-slot probes: 19
-     * single spelling swaps (14 instruction-neutral, 5 not) +
-     * assignment-as-value + store-base forms, none move `vars=`). */
+     * written 4-byte object gives ALIGN8(4)+16 = 0x18 != 0x28. */
     s32 lz[6];
     s32 f;
 
@@ -605,9 +492,8 @@ void func_80018300(s32 *arg0) {
      * two node-pointer statements before `thresh = radius * 3` overwrites it.
      * mechanism: global.c find_reg -- as its own pseudo the word has no conflict
      * with dx/dy/p2 and takes the lowest free reg ($a1); sharing thresh's pseudo
-     * seats it in $t1 as the target does (measured: own `pair` variable 8).
-     * Family: staged-value-reused-variable (owner ruling 2026-07-03).
-     * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_80018300/hypotheses.md. */
+     * seats it in $t1 as the target does.
+     * Family: staged-value-reused-variable. */
     thresh = data[1];
     radius = data[0];
     p1 = (s32 *)(base + ((thresh >> 16) << 6));
@@ -693,12 +579,10 @@ void func_80018300(s32 *arg0) {
              * by the next statement and each variable's old value is dead at
              * the write. mechanism: local-alloc.c/global.c seat order -- the
              * target keeps the count, the shift and the root in $v1 and the
-             * byte in sum's $a0 (ablations on this body: fresh shift local
-             * 36, fresh byte expression 38, no len = lz[0] copy 6).
-             * Family: staged-value-reused-variable (owner ruling 2026-07-03);
-             * same sum-for-byte reuse as func_8002F2D0 (src/code6cac_b.c).
-             * lever-exhaustion:
-             * pre-slim-2026-10-01:memory/grind/func_80018300/hypotheses.md. */
+             * byte in sum's $a0 (a fresh shift local, a fresh byte expression
+             * or dropping the len = lz[0] copy each break the match).
+             * Family: staged-value-reused-variable; same sum-for-byte reuse
+             * as func_8002F2D0 (src/code6cac_b.c). */
             len = lz[0];
             len = 0x16 - (len & ~1);
             sum = g_sqrt_table_u8[sum >> len];
@@ -814,7 +698,7 @@ void func_80018300(s32 *arg0) {
 /* kengo:HIGH  |  nm_cpu/cpu_check_run_attack  |  322i  |  +5 near-exact */
 void func_800187F4(s16 *arg0, s32 *arg1);
 void func_80019310(s16 *arg0, s32 *arg1);
-/* func_800187F4 -- COMPLETED-INLINE-ASM-CANONICAL (manual lane, 2026-09-28).
+/* func_800187F4 -- COMPLETED-INLINE-ASM-CANONICAL.
  * Node-chain integrator. func_8001924C calls it for each 16-byte record (arg0;
  * +0xC enables collision) whose flag bit 0 is clear, with the record's descriptor
  * (arg1: +0 table of 8-byte anchor vectors, +4 s16 node count, +0xC the 64-byte
@@ -828,7 +712,6 @@ void func_80019310(s16 *arg0, s32 *arg1);
  * bound; lengths via the D_8008D118 byte-LUT integer sqrt, with the GTE
  * leading-zero count above 0x400; the push applied on the GTE with GPF/GPL), and
  * the velocity is damped by 7/8 with 0x190 added to Y.
- * `sandbox func_800187F4 --disable all` = 0 (644/644).
  *
  * GTE ISLANDS: each island is one PsyQ Run-time Library 4.3 inline_o.h macro
  * (or gtemac.h gte_Lzc), written statement for statement as the header writes
@@ -837,7 +720,7 @@ void func_80019310(s16 *arg0, s32 *arg1);
  * inline-asm-policy.md § Owner ruling 2026-09-26. The seven gte_rtv0tr / gte_sqr0 /
  * gte_gpf0 / gte_gpl12 units carry the post-DMPSX command word in place of the
  * header's DMPSX placeholder, under § Per-function grant: func_800187F4 (owner
- * ruling 2026-09-28, Q29): 0x0000027f -> 0x4A480012, 0x00000f3f -> 0x4AA00428,
+ * ruling Q29): 0x0000027f -> 0x4A480012, 0x00000f3f -> 0x4AA00428,
  * 0x000012ff -> 0x4B90003D, 0x0000133f -> 0x4BA8003E. */
 typedef struct {
     s32 d0[3];      /* 0x00 delta to focus 0 (GTE input) */
@@ -864,21 +747,19 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
     s32 r;
     s32 vy_new;
     s32 tot, pen;
-    /* FAKE: n.b.! must be 17-24 bytes (s32 [5] and [6] are byte-identical).
-     * OVERSIZED-LOCALS carve-out (.claude/rules/dead-vars-local-array.md, owner
-     * ruling 2026-07-13), prong 2 (extend the LIVE locals object): lz[0] and lz[1]
-     * are the two GTE leading-zero-count outputs, written by gte_stlzc and read
-     * back. Frame from asm/funcs/func_800187F4.s alone: frame 0x78 = outgoing args
+    /* FAKE: frame layout -- lz must be 17-24 bytes (s32 [5] and [6] are
+     * byte-identical). OVERSIZED-LOCALS carve-out
+     * (.claude/rules/dead-vars-local-array.md), extending the LIVE locals object:
+     * lz[0] and lz[1] are the two GTE leading-zero-count outputs, written by
+     * gte_stlzc and read back. Frame from asm/funcs/func_800187F4.s alone: frame 0x78 = outgoing args
      * 0x10 + locals 0x40 + ten saves $s0-$s7/$fp/$ra at 0x50-0x74; the only locals
      * traffic is lz[0]/lz[1] at sp+0x10/0x14 and the count spill at sp+0x48.
      * Of the 0x40, 8 are the spill slot and 32 (0x28-0x47) are the four 8-byte
      * phantom slots of the combine orphan-USE loop-guard pseudos (the frame of the
      * lz[2] form: 0x68); the 24 bytes left (sp+0x10-0x27) are this object's:
      * lz[0]/lz[1] written by gte_stlzc, then a 16-byte unwritten tail.
-     * Measured: lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
-     * lz[7]/lz[8] 0x80.
-     * lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_800187F4/evidence.md [s2] item 7 and
-     * r11/proof.md section 7 (the phantom-slot producer census). */
+     * lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
+     * lz[7]/lz[8] 0x80. */
     s32 lz[6];
 
     func_80018094((s32 *)arg0, arg1);
@@ -886,11 +767,10 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
     node = (s32 *)arg1[3];
 
     for (i = 0; i < count; i++, node += 16) {
-        /* Ruling 11 (reused local, proof pre-slim-2026-10-01:memory/grind/func_800187F4/r11/proof.md):
-         * three values, all loop indices -- the add-force loop's, the
-         * subtract-force loop's and the ellipsoid loop's. */
+        /* Ruling 11 (reused local): three values, all loop indices -- the
+         * add-force loop's, the subtract-force loop's and the ellipsoid loop's. */
         s32 idx;
-        /* Ruling 11 (proof r11/proof.md): two values, both force counts -- node
+        /* Ruling 11 (reused local): two values, both force counts -- node
          * word 7 (forces added) and node word 8 (forces subtracted). */
         s32 nforce;
 
@@ -985,7 +865,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         SCR->vel[1] = vy;
         SCR->vel[2] = vz;
         if (*(s32 *)((u8 *)arg0 + 0xC) != 0) {
-            /* Ruling 11 (proof r11/proof.md): two values, both Y deltas -- the
+            /* Ruling 11 (reused local): two values, both Y deltas -- the
              * node's depth below the ground, then the Y delta to focus 0. */
             s32 delta;
 
@@ -1004,12 +884,12 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
             for (idx = 0; idx < SCR->nsph; idx++) {
                 s32 dx0, dz0, dy1, dx1, dz1;
                 s32 sq2, dist2;
-                /* Ruling 11 (proof r11/proof.md): three values -- a copy of the
-                 * squared length for the leading-zero-count macro (a value under
-                 * (C)(3)'s GTE-macro input copy clause, owner ruling 2026-09-28
-                 * Q28), then the focus-0 table byte, then the focus-1 table byte. */
+                /* Ruling 11 (reused local): three values -- a copy of the
+                 * squared length for the leading-zero-count macro (a GTE-macro
+                 * input copy, owner ruling Q28), then the focus-0 table byte,
+                 * then the focus-1 table byte. */
                 s32 temp;
-                /* Ruling 11 (proof r11/proof.md): two values -- the focus-0 squared
+                /* Ruling 11 (reused local): two values -- the focus-0 squared
                  * distance, then the distance (scaled to its push factor below). */
                 s32 work;
 
@@ -1049,7 +929,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 if (work < 0x400) {
                     work = g_sqrt_table_u8[work] >> 3;
                 } else {
-                    /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
+                    /* Ruling 11 (reused local): two values, both bit counts --
                      * the leading-zero count, then the table shift. */
                     s32 nbits;
 
@@ -1103,7 +983,7 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
                 if (sq2 < 0x400) {
                     dist2 = g_sqrt_table_u8[sq2] >> 3;
                 } else {
-                    /* Ruling 11 (proof r11/proof.md): two values, both bit counts --
+                    /* Ruling 11 (reused local): two values, both bit counts --
                      * the leading-zero count, then the table shift. */
                     s32 nbits2;
 
@@ -1214,33 +1094,30 @@ void func_8001924C(s16 *arg0, s32 arg1) {
 /* func_80019310 - GTE rotate-and-scale of an SVECTOR array into a 0x40-stride VECTOR
  * table, then a 32-byte MATRIX copy into the descriptor. Pure-C body plus four PsyQ SDK
  * GTE macro islands, each cited to its Sony libgte macro NAME and its header line range
- * in inline_c.h (the PsyQ inline-GTE header; copy on this machine at
- * tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/inline_c.h, the same path
- * the 2026-09-02 13:41 func_800325E0 ruling cited):
+ * in inline_c.h (the PsyQ inline-GTE header; the copy cited is rood-reverse's
+ * include/psx/inline_c.h):
  *   gte_SetRotMatrix(r0)   -- inline_c.h:297-310
  *   gte_SetTransMatrix(r0) -- inline_c.h:360-369
  *   gte_ldv0(r0)           -- inline_c.h:16-20
  *   gte_stlvnl(r0)         -- inline_c.h:1111-1117
  * plus the raw cop2 MVMVA sf=1/mx=rot/v=V0/cv=TR command (.word 0x4A480012), which is the
  * gte_rtv0()-class operation encoded directly. The islands use the same `move $12, %0`
- * macro-body spelling as func_800203B4 (owner grant 2026-09-01, widened cop2
+ * macro-body spelling as func_800203B4 (owner grant, widened cop2
  * materialize-then-copy anchor; func_80019310 is named in that grant record,
- * pre-slim-2026-10-01:docs/grind/decisions.md:17921 and pre-slim-2026-10-01:.claude/rules/cop2-addressing-preamble-cluster.md:154).
+ * pre-slim-2026-10-01:docs/grind/decisions.md:17921).
  *
  * CLOBBER PROVENANCE (do not read the "memory" clobbers as SDK text): of the four macros
  * above, ONLY gte_stlvnl publishes "memory" in its own clobber list (inline_c.h:1116);
  * gte_SetRotMatrix, gte_SetTransMatrix and gte_ldv0 publish only "$12","$13","$14" (or no
  * clobber list at all, for gte_ldv0). The "memory" clobber on those three islands is ADDED
  * here, and is cited to the committed same-file precedent func_8002D320
- * (src/code6cac_b.c:935), whose lwc2 read island carries exactly that added truthful
- * clobber; func_800300B4's Judge PASS (pre-slim-2026-10-01:docs/grind/decisions.md:20489) accepted the same
- * addition. It is truthful in each case: islands 1-2 read the MATRIX through $12, island 3
+ * (src/code6cac_b.c), whose lwc2 read island carries exactly that added truthful
+ * clobber; func_800300B4 carries the same addition. It is truthful in each case: islands 1-2 read the MATRIX through $12, island 3
  * reads the SVECTOR through $12, island 4 writes out[] which the C below reads. Its
  * byte-visible effect is on island 1, where it makes GCC re-read the MATRIX pointer before
  * the SetTransMatrix island (target 0x8001934C).
  *
- * Honest bucket is COMPLETED-INLINE-ASM-CANONICAL (allowlist line required). Full ledger:
- * memory/grind/func_80019310/ (s1: sandbox --disable all == 0, 81/81). */
+ * COMPLETED-INLINE-ASM-CANONICAL (listed in inline_asm_canonical.txt). */
 void func_80019310(s16 *arg0, s32 *arg1) {
     s32 out[3];
     s32 i;
@@ -1385,17 +1262,14 @@ void func_80019568(s32 arg0) {
             enable = 1;
             /* FAKE: the `o[2] = enable;` store is written into BOTH arms rather
              * than once after the join (family: duplicated-statement-into-arms,
-             * .claude/rules/duplicated-statement-into-arms.md; owner ruling
-             * 2026-08-25 13:45, docs/grind/decisions.md).  mechanism: loop.c scan_loop
-             * (loop.c:695-716) only creates a movable for the `1`-holding
-             * pseudo when it has a single set or consecutive sets; the
-             * loop-top default plus this in-arm set are non-consecutive, so no
-             * movable exists and the `addiu $v0,$zero,1` stays in the loop
-             * filling target's lhu load-delay slot.
-             * lever-exhaustion: memory/grind/func_80019568/hypotheses.md
-             * H6/H10/H12 + s3 H14-H17 (bare literal 8/142, `bits` carrier
-             * reuse 6/141, computed `enable = (rec[0] == 0)` 10/142,
-             * single store after the join 21/136). */
+             * .claude/rules/duplicated-statement-into-arms.md).  mechanism:
+             * loop.c scan_loop (loop.c:695-716) only creates a movable for the
+             * `1`-holding pseudo when it has a single set or consecutive sets;
+             * the loop-top default plus this in-arm set are non-consecutive, so
+             * no movable exists and the `addiu $v0,$zero,1` stays in the loop
+             * filling target's lhu load-delay slot. A bare literal, a computed
+             * `enable = (rec[0] == 0)` or a single store after the join do not
+             * match. */
             o[2] = enable;
             voice2 = (s16)((u16)o[0] - 1);
 

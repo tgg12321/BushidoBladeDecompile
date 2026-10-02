@@ -12,7 +12,7 @@
    original binary addresses its fields off a single base (func_800861BC:
    `addiu $t1, $v1, -2` from &voiceOffset to &voice). Replaces the splat
    per-word scalars D_801027F1/F6/F7/FC and D_80102806/08/0A/0C/0E
-   (per-word splat symbol -> aggregate merge family, owner ruling 2026-08-17).
+   (per-word splat symbol -> aggregate merge family, owner ruling).
    Field names follow psyz; `char` fields are u8 under -funsigned-char. */
 struct struct_svm {
     u8 prog_tones; u8 vabId; u8 note; u8 fine; u8 volume; u8 pan;
@@ -32,7 +32,7 @@ extern struct struct_svm _svm_cur; /* _svm_cur */
    one base in _SsVmInit/_SsVmKeyOffNow/SsUtKeyOnV/_SsVmSeqKeyOff and the
    asm-only _SsVmFlush. Field names follow psyz. Replaces the splat per-word
    scalars _svm_voice_plus_0x2..0x1D and D_800F4E20..4A (per-word splat
-   symbol -> aggregate merge family, owner ruling 2026-08-17). */
+   symbol -> aggregate merge family, owner ruling). */
 struct SpuVoice {
     s16 unk0;      /* 0x00 */
     s16 unk2;      /* 0x02 */
@@ -176,8 +176,7 @@ extern struct SeqStruct *_ss_score[32]; /* _ss_score */
    MEDIUM, so the object keeps its splat name D_800F3340. It is one object,
    not five scalars. func_80084CC0's target code keeps each handler load
    behind the score-block store before it, and GCC 2.7.2's scheduler only
-   draws that dependence when the handler load is an in-struct access too
-   (evidence: pre-slim-2026-10-01:memory/grind/func_80084CC0/cleanup-ss-score/evidence.md).
+   draws that dependence when the handler load is an in-struct access too.
    Replaces the per-word splat scalars D_800F3340/44/48/4C/50. */
 typedef struct {
 	void (*noteon) ();

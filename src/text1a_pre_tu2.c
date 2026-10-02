@@ -215,7 +215,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     s32 offset;
     u16 *p;
     s32 stptr2;
-    s16 two;   /* FAKE: constant-holder carrying loop1's record-flag value; mechanism: gives loop.c's scan_loop a user pseudo it can count sets on. lever-exhaustion: memory/grind/func_80041188/hypotheses.md s36 (five literal/holder spellings A,C,E,F,G all measure 2) */
+    s16 two;   /* FAKE: constant-holder carrying loop1's record-flag value; mechanism: gives loop.c's scan_loop a user pseudo it can count sets on. */
     ents = base + 0x94;
     out2 = (s32 *) (((u8 *) a4) + 0x20);
     do {
@@ -235,7 +235,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
         func_800523E0(a4, out2, a3, ents + i * 0x68 + 0x38);
         two = 2;
         *((s16 *) (ents + i * 0x68 + 6)) = two;
-        two = 3; /* FAKE: dead store, never read; mechanism: loop.c count_loop_regs_set sees n_times_set == 2 so scan_loop builds no movable and move_movables cannot hoist the constant out of loop1 (flow.c propagate_block then deletes this store, zero emitted bytes). lever-exhaustion: memory/grind/func_80041188/hypotheses.md s32-s36 */
+        two = 3; /* FAKE: dead store, never read; mechanism: loop.c count_loop_regs_set sees n_times_set == 2 so scan_loop builds no movable and move_movables cannot hoist the constant out of loop1 (flow.c propagate_block then deletes this store, zero emitted bytes). */
         i++;
     } while (i < 0x12);
     a1 += 0x6C;

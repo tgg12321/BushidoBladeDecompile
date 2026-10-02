@@ -69,7 +69,7 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
         SetDrawMove(D_800A3378, &buf, u, v);
         pkt = (OTag *)D_800A3378;
         /* FAKE: SDK bitfield view of an OT word retains tag length;
-         * PS1 use: src/main/psxsdk/libgpu/sys.c:288; see interface ledger. */
+         * PS1 use: src/main/psxsdk/libgpu/sys.c:288. */
         /* SOTN: include/psxsdk/libgpu.h:88 @db41b28eee52969244a52cc269c8163d1ed8826a */
         ot = (OTag *)D_800A378C;
         pkt->addr = ot[0x3FFC / 4].addr;
@@ -492,8 +492,7 @@ void func_80040CB8(void *arg0) {
     // FAKE (none/kind/one): the three loop-invariant constants must be held in
     // registers across the loop, as target holds them in $t4/$t3/$t2. The
     // goto-loop body carries no LICM (its loop region is rejected as phony), so
-    // writing -1/3/1 as literals cannot reproduce them: measured 35 insns /
-    // score 23 in grind s1 (rejected/literal-constants-no-licm-in-goto-form.c).
+    // writing -1/3/1 as literals cannot reproduce them.
     s32 none;
     s32 kind;
     s32 one;
@@ -505,8 +504,7 @@ void func_80040CB8(void *arg0) {
     // Both notes act as cc1 first-pass-scheduler barriers, which keeps the
     // three single-set constant loads ahead of the link/tbl cursor
     // initialisers instead of being sunk below them (target's prologue order).
-    // Natural geometry was tried first: with plain declaration order the
-    // scheduler sinks all three (measured score 6, s2/p4.txt).
+    // With plain declaration order the scheduler sinks all three.
     do {
         none = -1;
         kind = 3;
@@ -518,12 +516,11 @@ void func_80040CB8(void *arg0) {
     // reference inside it by loop_depth 2. That weighting is what seats the
     // id copy in $v1 and the 0x90C cursor in $a1 (and the rest on target);
     // without it the id copy loses its allocno-priority race and the whole
-    // register assignment rotates (measured score 13, s1/build4.txt).
+    // register assignment rotates.
     // `ent` is initialised INSIDE the region on purpose: that makes the region
     // start on a non-label insn, so loop.c rejects it as phony and its
     // strength reduction cannot invent a third induction pointer for the
-    // -0x57..-0x4C displacement cluster (measured 38 insns / score 25 with a
-    // real for-loop, s2/p2.txt).
+    // -0x57..-0x4C displacement cluster (as a real for-loop does).
     do {
         ent = (s32)arg0 + 0x90C;
     loop:

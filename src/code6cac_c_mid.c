@@ -228,8 +228,7 @@ s32 func_8003800C(s32 *arg0) {
     /* FAKE: one counter 'j' serves both the per-record checksum loop and the
        0x16-entry fixup loop (C89 counter reuse), mechanism: global.c
        allocno_compare -- the merged live range lifts reg_live_length(j) so j's
-       allocno priority falls below sum's and sum takes $a0 (target's seat),
-       lever-exhaustion: memory/grind/func_8003800C/hypotheses.md s1-s15 */
+       allocno priority falls below sum's and sum takes $a0 (target's seat). */
     s32 j;
 
     i = 0;
@@ -294,8 +293,7 @@ void func_80038148(void) {
     } while ((u32)i < 0x200);
 }
 extern u8 D_8008F1C0[];
-/* Rodata moved from asm/data/101C.rodata_pre_post.s (rodata-cleanup project,
- * docs/rodata-cleanup-project.md, 2026-06-09). func_80038170 (this file) is the
+/* Rodata moved from asm/data/101C.rodata_pre_post.s. func_80038170 (this file) is the
  * sole owner — uses these as &-addressed byte/word lookups. Declared as u32
  * arrays since the content is word-aligned. D_80010A2C is the 128 bytes func_80038170 copies
  * (0x40 halfwords); the save-file id after it is its own object, D_80010AAC (D_800A31F0 holds
@@ -1451,8 +1449,7 @@ void func_8003993C(void) {
     PracticeMenuRec *rob;
     u8 *e;
     /* Ruling 11 (ordinary-c-judge-decidable.md): `temp` holds two values, the 0/1 weapon-set
-     * selector (flags >> 1) & 1 in the per-player loop and the replay window of the event loop.
-     * Allocator-necessity proof: pre-slim-2026-10-01:memory/grind/func_8003993C/ruling11.md. */
+     * selector (flags >> 1) & 1 in the per-player loop and the replay window of the event loop. */
     s32 temp;
     u8 save40;
     s32 save58;
@@ -1466,7 +1463,7 @@ void func_8003993C(void) {
     }
     D_800A3778 = camera_GetBoneData();
     /* The frame record's address is written out at each argument (compound-address duplication,
-     * no-new-park-categories 2026-08-18 F3): binding it to a `rec` local measures 20/526. */
+     * no-new-park-categories F3): binding it to a `rec` local does not match. */
     func_8001BAE4((u8 *)(D_800A36EC + idx * 56) + D_800A3748 * 28,
                   D_800A3748 == 0 ? (u8 *)(D_800A36EC + idx * 56) + 0x1C : (u8 *)(D_800A36EC + idx * 56), prog);
     func_8001BBD8((u8 *)(D_800A36EC + idx * 56) + D_800A3748 * 28,
@@ -1476,7 +1473,7 @@ void func_8003993C(void) {
     for (i = 0; i < 2; i++) {
         /* Ruling 11 (ordinary-c-judge-decidable.md): `entry` holds two values, the address of the
          * frame's 4-byte entry in the practice weapon table (if arm) and in the character's weapon
-         * table (else arm). Allocator-necessity proof: pre-slim-2026-10-01:memory/grind/func_8003993C/ruling11.md. */
+         * table (else arm). */
         s32 entry;
 
         p = (u8 *)(D_800A36EC + idx * 56) + i * 28;
@@ -1551,7 +1548,7 @@ void func_8003993C(void) {
     } else {
         /* FAKE: named intermediate (Ruling 1, once-written). Unnamed, fold-const.c `associate`
          * (split_tree) rewrites D_800A36F8 - (D_800A37D0 + 1) as (D_800A36F8 - 1) - D_800A37D0 at
-         * tree level; the target adds 1 to the counter first (addiu; subu). Without it: 2/526. */
+         * tree level; the target adds 1 to the counter first (addiu; subu). */
         s32 next = D_800A37D0 + 1;
         temp = D_800A36F8 - next;
     }
@@ -1834,31 +1831,14 @@ extern s32 D_800A38FC;
 
 typedef s32 (*FuncBufType)(void *);
 
-/* func_8003A728 candidate - s2 (2026-09-02, structural), sandbox --disable all = 3 (from 38).
- * SHAPE CHANGED COMPLETELY vs the s1 candidate (v2) even though the score is the same 3:
- * every register seat in block 1 is now the target's, and the ONLY residual is that sched1
- * places the D_800A3916 lbu one slot too early (before the `or a0,a0,v0` instead of after),
- * which also costs the beqz its v0 seat. Target tail:  or a0,a0,v0 / lbu v0 / lui at / sw a0 /
- * beqz v0.  Ours:  lbu v1 / or a0,a0,v0 / lui at / sw a0 / beqz v1.  (3 differing insns.)
- *
- * The three structural moves that got here from s1's v2 (each measured, see evidence.md s2):
- *   1. `flag` is a FRESH local holding the D_800A3916 read (s1's v3b reused `packed` for it,
- *      which gave reg 74 two REG_DEAD notes -> local-alloc.c:472 refuses it -> global alloc ->
- *      a0 instead of v0, and that single fact is the whole 24-insn v3b/v7a/x1/x3/x4 rotation).
- *   2. `hi16 = hi16 | packed;` in place (not a fresh temp): the or's dest is then hi16's own
- *      pseudo, so it inherits a0 and prints `or a0,a0,v0` exactly as the target does.
- *   3. `hi16 = D_800A37C4 << 16;` sits between `D_800A3698 = packed;` and the first hash step,
- *      which is what puts `lhu a0` early and `sll a0,a0,0x10` before `sra v1,v0,0x10`.
- * Constructs still carried from s1: s32 c0lo; multi-set s32 t staging for the &0xF loads; the
- * u16 low-half loads written into the existing buf8 local (variable reuse -> FAKE decision at
- * candidate time). `flag`, `hi16 |= packed` and the statement order are ordinary C.
- *
- * s3 (2026-09-02, structural) KEPT this body unchanged at 3 and closed the block-1 dependence
- * space around it: the sched1 trace was read directly from the instrumented cc1, the store to
- * D_800A369C is the ONLY insn ready at T-2 so the flag lbu can never occupy T-3 (memory-unit
- * load-after-store hazard, sched.c:2685 + mips.md:153-161), and all five ways of making the hash
- * `or` unready at T-3 (anti dep on packed / on hi16 in three placements, output dep on the or's
- * dest) are now measured dead. See evidence.md s3 for the table. */
+/* func_8003A728: one link-cable exchange. Packs the vsync/state bits, the record's first
+ * halfword and the low half of its word at +8 into g_comb_send_buf, appends a 16-bit xor check (with D_800A37C4 in the high
+ * half), then sends/receives through comb_Write8 / comb_Read8 (order set by D_800A3916).
+ * On success it folds the partner's word back into the record at a0 and clears the
+ * D_800A3870 handshake state once both sides report state 2.
+ * `hi16 = hi16 | packed;` updates hi16 in place so the or prints `or a0,a0,v0` as in the
+ * target. FAKE: the u16 low-half loads in the tail reuse the buf8 local (variable reuse
+ * for codegen control). */
 void func_8003A728(s32 a0) {
     s32 buf8;
     s32 packed;
@@ -1869,8 +1849,7 @@ void func_8003A728(s32 a0) {
     s32 t;
     /* FAKE: constant-holder local; mechanism: the (set (reg) (const_int 0)) survives into
      * sched1's block-1 ready lists and displaces the D_800A369C store from the slot before the
-     * branch, then local-alloc.c update_equiv_regs deletes it (no insn emitted);
-     * lever-exhaustion: memory/grind/func_8003A728/hypotheses.md s1-s4 */
+     * branch, then local-alloc.c update_equiv_regs deletes it (no insn emitted). */
     s32 zero;
 
     if (D_800A320C != 0) {

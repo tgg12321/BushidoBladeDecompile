@@ -1,9 +1,8 @@
 /* Rodata continuation of the text1a_b_pre cluster (split out of
- * src/text1a_b_pre_rodata.c on 2026-09-30 so that text1b.o (since the Q89 split, text1b_tu1b.o) can supply func_80058580's
+ * src/text1a_b_pre_rodata.c so that text1b_tu1b.o can supply func_80058580's
  * jump tables at 0x8001585C between the two halves).
  * 0x800158B4..0x800158DF: the sound-bank loader's strings (snd_LoadCommonVab,
- * func_8005C2A8), rodata of text1b_tu1b.c's TU (docs/grind/rodata-align-2026-09-30.md
- * section 9). */
+ * func_8005C2A8), rodata of text1b_tu1b.c's TU. */
 #include "common.h"
 /* D_800158B4: 1 string, 24B @ 0x800158B4 */
 const char D_800158B4[24] = "common_vab start:%08x\n";

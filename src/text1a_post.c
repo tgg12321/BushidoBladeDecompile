@@ -93,55 +93,14 @@ extern s32 func_800486FC();
 extern s32 math_Grayscale3(s32, s32, s32);
 extern void func_80041398(s32);
 
-/* func_80041688 (gnd_init_80041688) — s17 closing candidate (text1a_post
- * chassis, 2026-08-20).
- *
- * STATUS: honest floor 6, measured s17 (sandbox --disable all = 6,
- * 82==82, staged-guard form in place, zero cheat constructs stripped).
- * The 6 is EXACTLY the frame immediates (sp -0x18 vs -0x38, ra/s0
- * save+restore offsets): target carries a 0x20-byte allocated-but-
- * untouched LEADING local region (zero sp accesses in 0x10..0x2F; saves
- * at 0x30/0x34 — independently verified by the Judge, pre-slim-2026-10-01:docs/grind/decisions.md:9074).
- *
- * GATE 1 RESOLVED: the staged loop1 guard (`b = *(s16 *)(p+2) >= 0;
- * if (b)`) was GRANTED by the Judge 2026-08-20 12:41 (pre-slim-2026-10-01:docs/grind/decisions.md:9070)
- * under [[staged-value-reused-variable]] — all five bounds hold; the
- * s4/s5/s7 rejected-bank entry (loop1-boolean-stage-b-reuse.c) is
- * SUPERSEDED (its dead-store premise ignored the same-iteration if(b)
- * read).
- *
- * GATE 2 NOW RIPE: the Judge's ripeness prerequisite for the pad row
- * (pre-slim-2026-10-01:docs/grind/decisions.md:9072 — "honest producers measured inert FIRST") was
- * discharged in s17: the full [[phantom-slot-frame-lever]] recipe was
- * run on the honest staged-guard baseline — .frame gradient (vars=0
- * honest vs 32 target), orphan detector (0 unallocated pseudos, 0 bare
- * (use (reg)) in greg/combine dumps), and all three producer classes
- * measured (P1 folded guard-compare x3 spellings: all vars=0, one
- * regresses score 6->7; P2 orphan-USE: single-narrow-consumer folds
- * clean, target's own bytes contain exactly ONE lh so no second HImode
- * use exists; P3 named locals: no multi-read field exists, loop2-field
- * naming vars=0). Evidence: memory/grind/func_80041688/evidence.md [s17]
- * + tmp/grind/func_80041688/s17/. The remaining step is the owner-only
- * allowlist row:
- *   engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS
- *   "func_80041688": frozenset({("pre_pad", 8)}),
- * (identical in form to the b734618d sibling rows). With the row granted
- * this form should measure sandbox 0.
- *
- * INTEGRATION WARNING (Judge-corrected line numbers, pre-slim-2026-10-01:docs/grind/decisions.md:9074):
- * do NOT place this form in src while regfix.txt lines 212-214 (the 3
- * lbu-operand subst rules) still apply — the staged form already emits
- * target's [b,r,g] order and the substs would corrupt the stream. Retire
- * the rules in the same integration step.
- */
+/* func_80041688 (gnd_init_80041688): sets or clears bit 0 of the flag byte
+ * in every bone record of player arg0, then pushes the player's colour
+ * (greyscaled when func_800486FC() is set) through func_80041398. */
 void func_80041688(s32 arg0, s32 arg1) {
     volatile u32 pre_pad[8]; /* !FAKE: target frame 0x38 keeps 0x20 leading
-        bytes allocated-but-untouched (word-diff s16: only sp/ra/s0 offset
-        immediates differ; Judge-verified pre-slim-2026-10-01:docs/grind/decisions.md:9074);
-        phantom-frame-slot family (no-new-park-categories.md 2026-08-18);
-        honest producers measured inert s17 (all 3 classes + both
-        instruments, evidence.md [s17]); needs owner allowlist row. No
-        (void) shim per family form constraint. */
+        bytes allocated-but-untouched (only the sp/ra/s0 offset immediates
+        depend on it); phantom-frame-slot family, owner-sanctioned pad row
+        (engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS). */
     s32 *player;
     s32 i;
     u8 *p;
@@ -167,9 +126,7 @@ loop1:
        this staged value is dead before it), mechanism: sched.c
        adjust_priority -> birthing_insn_p reg_n_sets==1 launch-boost gate
        (second live set of b turns off the FALSE-arm lbu's LAUNCH_PRIORITY
-       so it is picked last = emitted first, matching target [b,r,g]),
-       lever-exhaustion: memory/grind/func_80041688/ s1-s17. GRANTED by
-       Judge 2026-08-20 (pre-slim-2026-10-01:docs/grind/decisions.md:9070) under
+       so it is picked last = emitted first, matching target [b,r,g]);
        staged-value-reused-variable. */
     b = *(s16 *)(p + 2) >= 0;
     if (b) {
@@ -261,8 +218,8 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
          * hoists to the preheader; reload then rematerializes it in-loop as $v1.
          * A named local (REG_USERVAR_P) is not movable, stays in-loop, and global
          * RA assigns $v0 — matching target's in-loop `addiu v0,zero,1`. The store
-         * is live (feeds the compare). Measured exhaustion (memory/grind/func_80041988/):
-         * literal if-chain = 2, switch(a0) = 2, holder = 0. */
+         * is live (feeds the compare). A literal if-chain or switch(a0) does
+         * not reproduce it. */
         one = 1;
         if (a0 == 0) {
             goto case0;
@@ -315,7 +272,7 @@ void func_80041AC8(s16 *arg0)
    * lh arg0[4]) is only producible when the reload is NOT spelled as plain
    * pointer-indexing (GCC 2.7.2 MEM_IN_STRUCT_P /s flag + sched.c escape
    * clause) — the original source provably used a non-indexed spelling.
-   * One representative spelling sanctioned by user policy 2026-06-10; see
+   * One representative spelling sanctioned by owner policy; see
    * .claude/rules/proven-spelling-class-reconstruction.md. */
   id_ptr = &arg0[4];
   D_800A9A20 = arg0[4];
@@ -375,13 +332,9 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   /* FAKE: opaque constant-holder for the trailing `== 1` test, mechanism:
      local-alloc.c block_alloc / find_free_reg - the bare literal is
      rematerialized by reload into $v1, while a live pseudo carrying it is
-     allocated $t0 exactly as target does, lever-exhaustion:
-     memory/grind/func_80041BF4/hypotheses.md [s4] and [s10] (ten ordinary-C
-     spellings of the test measured inert) plus [s11] (six more re-measured in
-     the NEW basin: subtract-compare-zero 12, double-negated 12, switch/case 12,
-     named call result in a fresh local 12, in reused `x` 12, in reused `idx`
-     20, in reused `outer` 9 - none reaches 0).  Family:
-     .claude/rules/named-local-fake-exception.md (owner ruling 2026-07-01). */
+     allocated $t0 exactly as target does; ordinary-C spellings of the test
+     (subtract-compare-zero, double negation, switch, named call result) do
+     not.  Family: .claude/rules/named-local-fake-exception.md (owner ruling). */
   int one;
   /* FAKE: oversized locals object - rect[0..3] is the live LoadImage RECT and
      rect[4..7] is the unwritten tail, mechanism: mips.c compute_frame_size /
@@ -390,16 +343,13 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
      ($s0-$s7,$fp,$ra = 40 bytes) and a 24-byte outgoing-args area (the 6-arg
      func_80048A7C call), so the locals region is 88-40-24 = 24 bytes while the
      only stores into it are the 8 bytes of the RECT at sp+0x18.  The
-     fully-written form (rect[4]) measures frame 80, so no fully-written locals
-     set can produce target's 88.  n.b.! ALIGN8 plus this frame's fixed 8-byte
-     phantom slot make the declared size recoverable only as a RANGE: rect[5],
-     rect[6], rect[7] and rect[8] are all byte-identical here (all measured 0
-     this session; rect[4] 22 and rect[9] 22) - [8] is chosen.  Family:
+     fully-written form (rect[4]) gives frame 80, so no fully-written locals
+     set can produce target's 88.  ALIGN8 plus this frame's fixed 8-byte
+     phantom slot make the declared size recoverable only as a RANGE: rect[5]
+     through rect[8] are all byte-identical here - [8] is chosen.  Family:
      .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out (owner
-     ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object -
-     rect's address is passed to LoadImage - rather than adding a dead pad.
-     Lever-exhaustion: memory/grind/func_80041BF4/hypotheses.md [s10] frame
-     sweep + [s11] re-measured in the new basin. */
+     ruling); prong 2 is satisfied by extending the LIVE object - rect's
+     address is passed to LoadImage - rather than adding a dead pad. */
   s16 rect[8];
   extern s32 func_800486FC();
   fp_ptr = (s32 *)func_8004153C(1);
@@ -422,17 +372,13 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
     xoff = -0x140;
     yoff = 0xF0;
   } else {
-    /* FAKE: single-level do-while(0) wrap on the else-arm offset defs;
-       observed effect - it lifts xoff's and yoff's weighted reference counts
-       (flow.c weights REG_N_REFS by loop_depth) so global.c's allocno order
-       matches target's and the two offsets land in $s5/$s4; without the wrap
-       this form scores 18 instead of 0.  Natural geometry was tried first:
-       arm swap (20), defs hoisted above the if (20), ternary (33), block-local
-       and nested-block declaration scopes (18), duplicated real statement into
-       both arms (18), plain assignment (18) - all measured this session.
-       Family: .claude/rules/do-while-zero-exception.md (owner ruling
-       2026-07-06, sanctioned for ANY codegen effect incl. register
-       allocation). */
+    /* FAKE: single-level do-while(0) wrap on the else-arm offset defs --
+       it lifts xoff's and yoff's weighted reference counts (flow.c weights
+       REG_N_REFS by loop_depth) so global.c's allocno order matches target's
+       and the two offsets land in $s5/$s4.  Arm swap, hoisted defs, a
+       ternary, narrower declaration scopes and plain assignment do not.
+       Family: .claude/rules/do-while-zero-exception.md (owner ruling,
+       sanctioned for any codegen effect incl. register allocation). */
     do { xoff = 0x80; yoff = 0; } while (0);
   }
   tbl = *(s16 **)((u8 *) D_80094DF0 + (D_80094E08[*(((s16 *) fp_ptr) + 4)] << 2));

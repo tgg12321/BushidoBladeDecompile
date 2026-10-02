@@ -126,9 +126,8 @@ typedef struct {
 } S_80074488;
 void func_80074488(s32 *arg0);
 
-/* func_800747D8: the duplicated `sound = 4;` below is claimed under
- * .claude/rules/duplicated-statement-into-arms.md and carries its FAKE
- * annotation inline; self-vet: pre-slim-2026-10-01:memory/grind/func_800747D8/self_vet.md. */
+/* func_800747D8: the duplicated `sound = 4;` below is the
+ * duplicated-statement-into-arms shape and carries its FAKE annotation inline. */
 /* 0x800A35D0: one {s16, s16} pair per player (two words,
  * asm/data/91C98.data.s:4279-4282), passed to func_800692C0 beside SelWork
  * f40[player]; func_800768DC indexes it by player * 4 (0x80076948/5C). */
@@ -197,14 +196,12 @@ s32 func_800747D8(u32 input) {
                 SELWORK->f65 += 1;
             }
             /* FAKE: `sound = 4;` is written into BOTH inner-switch arms instead of one
-             * shared copy after `selection_sound:`; mechanism: reg_set_last
+             * shared copy after `selection_sound:` -- reg_set_last
              * (tools/gcc-2.7.2/rtlanal.c:886-888) stops scanning at the
              * `selection_sound:` CODE_LABEL, so the store-flag gate at
              * tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather than a
              * CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
-             * sltiu/sll fold; lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_800747D8/
-             * hypotheses.md s1-s9 (20 measured kills, incl. the s9
-             * break-converged single-assignment control at score 10/205). */
+             * sltiu/sll fold. */
             sound = 4;
             goto selection_sound;
         case 2:
@@ -214,14 +211,12 @@ s32 func_800747D8(u32 input) {
                 SELWORK->f65 -= 1;
             }
             /* FAKE: `sound = 4;` is written into BOTH inner-switch arms instead of one
-             * shared copy after `selection_sound:`; mechanism: reg_set_last
+             * shared copy after `selection_sound:` -- reg_set_last
              * (tools/gcc-2.7.2/rtlanal.c:886-888) stops scanning at the
              * `selection_sound:` CODE_LABEL, so the store-flag gate at
              * tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather than a
              * CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
-             * sltiu/sll fold; lever-exhaustion: pre-slim-2026-10-01:memory/grind/func_800747D8/
-             * hypotheses.md s1-s9 (20 measured kills, incl. the s9
-             * break-converged single-assignment control at score 10/205). */
+             * sltiu/sll fold. */
             sound = 4;
             goto selection_sound;
         }
@@ -359,17 +354,16 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     s32 *records;
     s32 prim;
     s32 ot_idx;
-    /* work holds two values (Ruling 11, owner 2026-09-26; the first under its
-       Q20 per-branch-constant clause): the backdrop TILE's OT index (0xE for
+    /* work holds two values (owner Ruling 11; the first under its Q20
+       per-branch-constant clause): the backdrop TILE's OT index (0xE for
        player 1, 4 for player 0), then ot_idx * 4, the OT byte offset the last
-       three AddPrim calls add. Proof: memory/grind/func_80074E08/r11/proof.md. */
+       three AddPrim calls add. */
     s32 work;
     s32 rect_x;
     /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts
        just past the sheet's one 12-byte SprtHdrA header (+0xC) on each of
        the four root+0x18 sheets this function draws: one meaning at one
-       constant offset, written once per sheet (Ruling 9, owner 2026-09-25).
-       D_SEL.BIN census and receipts: memory/grind/func_80074E08/r9/. */
+       constant offset, written once per sheet (owner Ruling 9). */
     s32 cells;
     s16 i;
 
@@ -557,10 +551,7 @@ void func_800753D8(s32 *arg0, s32 arg1) {
        prologue, `addu $a1,$s5,$zero` at both call sites) instead of being
        re-materialized as `li $a1,0`; mechanism: global.c allocates the
        once-set constant pseudo a callee-save because it crosses calls and
-       cse.c only folds the constant within the entry extended basic block;
-       lever-exhaustion: memory/grind/func_800753D8/hypotheses.md H2
-       (inline literal 0 measured 70 vs 61,
-       rejected/literal-zero-arg-no-holder-score70.c).
+       cse.c only folds the constant within the entry extended basic block.
        SOTN ships this exact shape: src/dra/7879C.c:2067 `s32 zero = 0;`. */
     s32 zero;
     SelWork *base;
@@ -721,8 +712,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
      * root at arg0[0]: the page table at +0x14 (the head; read by the head and
      * loops 1-2), the slot table at +0x20 + f65 * 4 (reloaded every loop-3
      * iteration), and the page table at +0x14 again for the closing DR_MODE
-     * pair.  One local, not three: ordinary-c-judge-decidable.md Ruling 11;
-     * (A)-(H) record memory/grind/func_800759D0/manual-2026-10-01/r11.md. */
+     * pair.  One local, not three (owner Ruling 11). */
     s32 *table;
     s32 color;
     /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
@@ -731,8 +721,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        `addu $a1,$fp,$zero` at each call) instead of being re-materialized;
        global.c gives the once-set constant pseudo a callee-save because it
        crosses every call, and cse only folds a constant within the entry
-       extended basic block. A literal 0 measures 30/364 (362 insns); see
-       memory/grind/func_800759D0/hypotheses.md. Same shape as the siblings
+       extended basic block. Same shape as the siblings
        func_800753D8 (`zero`) and func_8007636C (`mode`). */
     s32 zero;
     s16 i;
@@ -744,9 +733,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        three-header view to every pick slot, including the 0x14 placeholder
        func_80075F80 stores for an unavailable cell, whose sheet the code
        elsewhere draws as one header (func_80075830); there the +0x24 runs
-       past the sheet into bytes nothing references. Assumed layout, path
-       census, that anomaly path and the unreferenced-address search:
-       memory/grind/func_800759D0/evidence.md "Ruling 9 (b')". */
+       past the sheet into bytes nothing references (owner Ruling 9). */
     s32 cells;
 
     zero = 0;
@@ -787,9 +774,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
          * forms the address as its own value, so cse reuses it for the second
          * read and loop.c hoists the table base into $s6 (the target's
          * `lui/addiu $s6` and 2-byte step); D_8009BCF8[0][i].unk0 at the three
-         * sites folds the symbol into each load (`lui $at; addu; lbu %lo`) and
-         * scores 44 (365 insns).  Ledger:
-         * memory/grind/func_800759D0/manual-2026-10-01/r11.md */
+         * sites folds the symbol into each load (`lui $at; addu; lbu %lo`). */
         u8 entry = (&D_8009BCF8[0][0] + i)->unk0;
 
         if (D_8009BCE4[entry] & 1) {
@@ -981,7 +966,7 @@ void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
              * jump2's cross-jump (tools/gcc-2.7.2/jump.c find_cross_jump) merges the two
              * tails back into the target's one copy (`lh v0,0x3C($a1)` at 0x8007630C,
              * 0x14 set in each predecessor).  One shared tail after the if recomputes
-             * the address (6).  Ledger: memory/grind/func_80075F80/manual-2026-10-01/scores.txt */
+             * the address. */
             arg2[SELWORK->f3C[arg3]] = 0x14;
             if (arg0 & (0x40 << (arg3 * 16))) {
                 func_8005C650(4, 0x7F, 0x7F);
@@ -996,8 +981,7 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts
        just past the sheet's 12-byte SprtHdrA headers: one header on the
        single-state sheets (+0xC), three (normal, then one cursor highlight
-       per player) on the highlightable ones (+0x24). D_SEL.BIN layout:
-       pre-slim-2026-10-01:memory/grind/func_8007636C/evidence.md "Ruling 9 re-audit". */
+       per player) on the highlightable ones (+0x24). */
     s32 cells;
     s32 color;
     s16 i;
@@ -1006,9 +990,9 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
      * past the first loop, so cse substitutes its pseudo into that loop's
      * `(s16)i < f65 + 3` entry guard (slt needs a register operand) and reload
      * rematerializes it as the target's `move t0,zero; slt` (0x800764A0); a
-     * literal 0 lets combine fold the guard to a beqz (3/348). The case-2
+     * literal 0 lets combine fold the guard to a beqz. The case-2
      * sibling func_800759D0 holds this same argument's zero in $fp (asm lines
-     * 20/56/334/356). Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_8007636C/hypotheses.md. */
+     * 20/56/334/356). */
     s32 mode;
     u16 idx;
 
@@ -1182,10 +1166,7 @@ void func_800768DC(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
  * (capped at 0xFF) and, once it reaches 0xFF, fills the result record at
  * SELWORK->f00 (f65, f66, f67, f68 packed into bitfields; per player and pick,
  * the picked entry's D_8009BCF8 column 1 and its f7E value).  Every frame it
- * draws the full-screen TILE with f36 as its colour.  The record and
- * bitfield layout, the do-while(0) tail and their measurements:
- * 3e35ec719^:memory/grind/func_80076D74/hypotheses.md (ledger closed at
- * 3e35ec719). */
+ * draws the full-screen TILE with f36 as its colour. */
 typedef struct {
     u8 cells[2][5][2];  /* 0x00: [row][col][{glyph, attr}] */
     u32 pad10 : 10;     /* 0x14 */
@@ -1246,7 +1227,7 @@ s32 func_80076D74(s32 *arg0) {
     arg0[5] = (s32)p;
     SetDrawMode(arg0[6], 1, 0, 0x40, 0);
     AddPrim(g_gpu_ot_ptr, (GameObj *)arg0[6]);
-    do { /* FAKE: do-while(0) wrap, loop-end note pins the return copy after the sw so the increment temp takes v0; mechanism: sched.c loop_notes dependence on the first insn after NOTE_INSN_LOOP_END; lever-exhaustion: 3e35ec719^:memory/grind/func_80076D74/hypotheses.md s1-s2 */
+    do { /* FAKE: do-while(0) wrap, loop-end note pins the return copy after the sw so the increment temp takes v0; mechanism: sched.c loop_notes dependence on the first insn after NOTE_INSN_LOOP_END */
         arg0[6] += 0xC;
     } while (0);
     return ret;
@@ -1275,8 +1256,7 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     s16 sp[2];
     /* work holds two values: the entry list pointer (arg0 + 0x58, passed to func_8006E950 /
        func_80076FF8 and stored as the work area's f04), then the work area func_8006E49C returns
-       (stored to D_800A36A0). Owner Ruling 11 (reused-local-necessity.md) with owner ruling Q78
-       (rules: 6c8c276c3); package: memory/grind/func_800770B8/evidence.md (s41). */
+       (stored to D_800A36A0). Owner Ruling 11 with owner ruling Q78. */
     void *work;
     s32 r;
     s16 t0;
@@ -1284,8 +1264,7 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
 
     /* FAKE: empty do-while(0) wrap (do-while-zero-exception). Effect: its NOTE_INSN_LOOP_BEG/END
        pair bounds sched2's region at this point, so the five frame-save stores are not interleaved
-       with the first body insns as in the target's prologue order. Measured without it (5) and
-       the prior search: memory/grind/func_800770B8/evidence.md (s41). */
+       with the first body insns as in the target's prologue order. */
     do { } while (0);
     sp[0] = 0;
     sp[1] = 0;
@@ -1300,14 +1279,12 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         work = (void *)func_8006E49C(r, (s32 *)D_800A35D8);
         D_800A36A0 = work;
         SELWORK->f04 = list;
-        /* FAKE: dead store (dead-store-fake-exception; owner ruling Q78, rules: 6c8c276c3): work's
+        /* FAKE: dead store (dead-store-fake-exception; owner ruling Q78): work's
            restored value is never read. Effect: cse.c make_regs_eqv puts work and the call's $v0 in
            one quantity with work canonical, so the D_800A36A0 reloads for the 0x30/0x34 clears below
            would become work ($s1); this store takes work out of that class first (cse.c
            delete_reg_equiv), the reloads resolve to the f04 store's reload copy of the call result
-           instead, and the clears use $v0 as in the target (0x80077144/48). Dumps (.cse with and
-           without it, command lines) and lever exhaustion: memory/grind/func_800770B8/evidence.md (s40,
-           s41). */
+           instead, and the clears use $v0 as in the target (0x80077144/48). */
         work = list;
         SELWORK->f30 = 0;
         SELWORK->f34 = 0;
@@ -1317,8 +1294,7 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         SelWork *base = SELWORK;
         /* FAKE: typed row pointer to D_800A35D0 (pointer-alias-fake-exception, the
            `s16 (*p)[] = &D_xxx` re-view), kept so the same-value re-set below has a pseudo to re-set
-           (loop.c keeps its lui/addiu inside the outer loop). Measured without it:
-           memory/grind/func_800770B8/evidence.md (s41). */
+           (loop.c keeps its lui/addiu inside the outer loop). */
         s16 (*row)[2];
         a2 = 0;
         base->f10.half[t0] = 0;
@@ -1350,8 +1326,7 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
                    this. Effect: a second set of row's pseudo in another basic block makes loop.c
                    count_loop_regs_set mark it may_not_move (loop.c:3040-3041), so the lui/addiu of
                    D_800A35D0 stays inside the outer loop where the target builds it instead of
-                   being hoisted to the pre-header. Measured without it and lever exhaustion:
-                   memory/grind/func_800770B8/evidence.md (s41). */
+                   being hoisted to the pre-header. */
                 row = D_800A35D0;
             }
         }
@@ -2462,9 +2437,8 @@ void func_80077D94(s32 *arg0) {
        Mechanism: a pseudo live across the draw calls is seated once in
        callee-saved $s7 (`addiu s7,zero,0x20` in the prologue branch's
        delay slot, then `addu a1,s7,zero` at all 5 call sites). The inline
-       literal re-materializes `li a1,0x20` per call: 12/465 vs 0/468.
-       Same shape as func_80078654's `zero` and func_80070C70's `c60`.
-       Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80077D94/evidence.md. */
+       literal re-materializes `li a1,0x20` per call.
+       Same shape as func_80078654's `zero` and func_80070C70's `c60`. */
     s32 abr;
     s32 *hp;
     s32 i;
@@ -2483,8 +2457,7 @@ void func_80077D94(s32 *arg0) {
     /* FAKE (duplicated-statement-into-arms): both fade arms store their own
        has_color/r/g/b; the compiler cross-jumps the identical tails. The
        shared-tail spelling (arms set v only, the else skips the stores with
-       a goto) measures 23/470 vs 0/468.
-       Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80077D94/evidence.md. */
+       a goto) does not match. */
     if (D_800A35F0 < in[D_800A3600] + 60 && D_800A35F0 >= in[D_800A3600]) {
         v = ((D_800A35F0 - in[D_800A3600]) << 7) / 60;
         s.has_color = 1;
@@ -2564,8 +2537,7 @@ void func_80077D94(s32 *arg0) {
                    the target's giv ($s1 = 0x38, += 4). Written inline
                    (`((Ctx77D94 *)D_800A35F8)->img38[i]` or
                    `D_800A35F8 + i * 4 + 0x38`), fold moves 0x38 into the
-                   load displacement and the giv is not reduced: 9/467.
-                   Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80077D94/evidence.md. */
+                   load displacement and the giv is not reduced. */
                 j = i * 4 + 0x38;
                 LoadImage((s32)&rect, *(s32 *)(D_800A35F8 + j) + 0x220);
                 DrawSync(0);
@@ -2601,8 +2573,7 @@ void func_80077D94(s32 *arg0) {
             /* FAKE (duplicated-statement-into-arms): each arm stores its own
                r/g/b chain; the compiler cross-jumps the identical tails back
                into one. One shared chain after the if/else puts the value in
-               a separate pseudo and costs a `move` at the join: 26/467 vs
-               0/468. Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80077D94/evidence.md. */
+               a separate pseudo and costs a `move` at the join. */
             if (D_800A35F0 < w->on + 60) {
                 s.has_color = 1;
                 v = ((D_800A35F0 - w->on) * 112) / 60;
@@ -2612,9 +2583,8 @@ void func_80077D94(s32 *arg0) {
                 /* FAKE: named intermediate for the frame 60 ticks back.
                    Mechanism: inline, fold reassociates off - (cnt - 60)
                    into (off + 60) - cnt; the target computes cnt - 60
-                   first (`addiu v0,a1,-60`). Inline: 16/469;
-                   60 - (cnt - off): 16/469.
-                   Lever exhaustion: pre-slim-2026-10-01:memory/grind/func_80077D94/evidence.md. */
+                   first (`addiu v0,a1,-60`); neither the inline form nor
+                   60 - (cnt - off) matches. */
                 s32 t = D_800A35F0 - 60;
                 s.has_color = 1;
                 v = ((w->off - t) * 112) / 60;
@@ -2723,11 +2693,8 @@ void func_80078654(s32 *arg0) {
        func_8006E480 / AddPrim call sequence so the 0 argument comes out of a
        register instead of being re-materialized at each use.  Mechanism:
        local-alloc/global-alloc seat the constant in a call-saved quantity;
-       replacing it with the literal 0 was measured this session at 113 insns
-       vs the target's 116 (tmp/grind/func_80078654/s5/s11_w25/, chassis
-       tmp/grind/func_80078654/s11/w25_nozero.c), so the holder is
-       load-bearing.  Lever-exhaustion: memory/grind/func_80078654/hypotheses.md
-       s1-s11. */
+       with the literal 0 the function comes out 3 instructions short of
+       the target. */
     s32 zero;
 
     zero = 0;
@@ -2765,13 +2732,9 @@ loop:
        references, so the wrap multiplies var_s0's reg_n_refs without
        emitting an instruction; global.c's allocno priority then ranks
        var_s0 (13 refs / 91 live, pri 4285) above arg0 (13 / 98, pri 3979).
-       Single level measured INSUFFICIENT (prerequisite 3 of
-       .claude/rules/do-while-zero-exception.md): depth 1 yields 6 of the 13
+       A single level is insufficient: depth 1 yields 6 of the 13
        references the priority inversion requires; depth 8 is the minimum
-       that reaches 13 at the only wrap site that costs no delay slot.
-       Lever-exhaustion: memory/grind/func_80078654/hypotheses.md s1-s11
-       (11 sessions, 8 modalities, 129k permuter iterations, 14 banked
-       rejected forms). */
+       that reaches 13 at the only wrap site that costs no delay slot. */
     do { do { do { do { do { do { do { do {
     s.a = var_s0[0];
     s.b = s.a + 0xC;
@@ -2996,10 +2959,10 @@ s32 RemovePatchPad(void) {
     ExitCriticalSection();
     return 1;
 }
-/* PsyQ 4.0 LIBAPI PAD: _Pad1 (static) — verbatim-linked Sony object
-   (census 2026-07-09). FAKE(partial-use volatile array, Ruling 3
-   2026-07-10): volatile delay-counter array, only [0] used (frame 16 =
-   i[3]) — SOTN vsync.c precedent; original author idiom. */
+/* PsyQ 4.0 LIBAPI PAD: _Pad1 (static) — verbatim-linked Sony object.
+   FAKE(partial-use volatile array, owner Ruling 3): volatile delay-counter
+   array, only [0] used (frame 16 = i[3]) — SOTN vsync.c precedent; original
+   author idiom. */
 s32 _Pad1(void) {
     volatile s32 i[3];
     *(s16 *)((u8 *)D_8009BD84 + 0xA) = 0;
@@ -3037,7 +3000,7 @@ extern void (*jtbl_800A3624)(void);
    pointers that the Pad-init wrapper func_80078F88 installs at runtime. GCC
    2.7.2 has no MIPS sibling-call optimization, so no pure-C `(*fp)()` form
    emits a frameless `jr $t1` (it always builds a stack frame + jalr + jr $ra).
-   Hand-coded canonical asm; user-authorized 2026-06-12. */
+   Hand-coded canonical asm (owner-authorized). */
 INCLUDE_ASM("asm/funcs", EnablePAD);
 INCLUDE_ASM("asm/funcs", DisablePAD);
 INCLUDE_ASM("asm/funcs", _patch_pad);

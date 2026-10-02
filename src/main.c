@@ -125,7 +125,7 @@ static void _SsTrapIntrVSync(void); /* _SsTrapIntrVSync (ssstart.c static) */
 static void _SsSeqCalledTbyT_1per2(void); /* _SsSeqCalledTbyT_1per2 (ssstart.c static) */
 
 /* PsyQ 4.0 LIBSND ssstart: _SsStart + SndSeqTickEnv (_snd_seq_tick_env @
-   D_800A26CC) — verbatim-linked Sony object (census 2026-07-09); C ref:
+   D_800A26CC) — verbatim-linked Sony object; C ref:
    sotn-decomp src/main/psxsdk/libsnd/ssstart.c (BB2's 4.0 rev uses 0x7F for
    the case-0 sentinel where SOTN's rev uses 0xFF) */
 typedef struct {
@@ -218,7 +218,7 @@ void _SsStart(s32 arg0) {
 /* kengo:MED  |  sa_tan5/saTan5TakeAnim2_2  |  154i  |  x2 size collision */
 /* PsyQ 4.0 LIBSND ssstart: SsStart / SsStart2 / _SsTrapIntrVSync /
    _SsSeqCalledTbyT_1per2 + sscall: SsSeqCalledTbyT — verbatim-linked Sony
-   objects (census 2026-07-09); C ref: sotn-decomp
+   objects; C ref: sotn-decomp
    src/main/psxsdk/libsnd/{ssstart.c,sscall.c}. Only SsStart (=DispStuff)
    has a glabel: SsStart2 + the tick trampolines are statics inside the
    splat extent; SsSeqCalledTbyT is address-referenced only by the
@@ -419,10 +419,7 @@ void _SsSndPlay(s16 a0, s16 a1) {
  * Body: the published psxsdk reference control flow (sotn-decomp
  * src/main/psxsdk/libsnd/seqread.c _SsSeqPlay) over BB2's own SeqStruct
  * layout (include/sound.h: SOTN's delta_value / unk70 / unk6E are BB2's
- * delta_value / unk54 / unk52; _SsGetSeqData == func_80084CC0). Adopted per the
- * reference-adoption path because it measures 0 (2026-08-11 campaign;
- * the prior goto-loop spelling needed 15 regfix rules the nested
- * do/while + if/else-if ladder makes unnecessary). */
+ * delta_value / unk54 / unk52; _SsGetSeqData == func_80084CC0). */
 void _SsSeqPlay(s16 a0, s16 a1) {
     struct SeqStruct *score = &_ss_score[a0][a1];
     s32 var_s0;
@@ -516,10 +513,9 @@ s32 func_80084CC0(s16 a0, s16 a1)
   u8 b;
   u8 prev;
   /* SOTN: src/main/psxsdk/libsnd/seqread.c:57 @aa53500 */
-  /* FAKE: Q51 reused variable, match-motivated (Q53). One local per 0x90
-     arm scores 40 in either arm alone or in both (allocator order,
-     operand-only): variants v6/v6b/v6d/v6e in
-     pre-slim-2026-10-01:memory/grind/func_80084CC0/cleanup-ss-score/evidence.md §6. */
+  /* FAKE: Q51 reused variable, match-motivated (Q53) -- a separate local per
+     0x90 arm (in either arm alone or in both) changes the register
+     allocation order. */
   u8 velocity;
   s32 ret;
   state = &_ss_score[a0][a1];
@@ -689,8 +685,8 @@ s32 _SsReadDeltaValue(s16 arg0, s16 arg1) {
     score->unk88 += result;
     return result;
 }
-/* PsyQ LIBSND next.c: _SsSndNextSep — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/next.c (mixed
+/* PsyQ LIBSND next.c: _SsSndNextSep — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libsnd/next.c (mixed
    score-pointer / full-index accesses are the original's spelling) */
 void _SsSndNextSep(s16 a0, s16 a1) {
     struct SeqStruct *score = &_ss_score[a0][a1];
@@ -705,15 +701,15 @@ void _SsSndNextSep(s16 a0, s16 a1) {
     score->unk14 = 1;
     _ss_score[a0][a1].unk98 |= 1;
 }
-/* PsyQ 4.0 LIBSND replay: _SsSndReplay — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/replay.c */
+/* PsyQ 4.0 LIBSND replay: _SsSndReplay — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libsnd/replay.c */
 void _SsSndReplay(s16 a0, s16 a1) {
     struct SeqStruct *score = &_ss_score[a0][a1];
     score->unk14 = 1;
     _ss_score[a0][a1].unk98 &= ~8;
 }
-/* PsyQ 4.0 LIBSND SSSTOP: _SsSndStop — verbatim-linked Sony object (LIBSND
-   hunt 2026-07-10: bit-verbatim vs the Jun-06-1997 4.0 build, 118 words);
+/* PsyQ 4.0 LIBSND SSSTOP: _SsSndStop — verbatim-linked Sony object
+   (bit-verbatim vs the Jun-06-1997 4.0 build, 118 words);
    C ref: sotn-decomp src/main/psxsdk/libsnd/stop.c (interim 4.0 build adds
    the ~0x400 flag clear + NotifyChannel/ResetCounter pair). */
 void _SsSndStop(s16 a0, s16 a1) {
@@ -767,8 +763,8 @@ void SsSeqStop(s16 a0) {
 void SsSepStop(s16 a0, s16 a1) {
     _SsSndStop(a0, a1);
 }
-/* PsyQ LIBSND ssvol: SsSetSerialVol — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/scssvol.c.
+/* PsyQ LIBSND ssvol: SsSetSerialVol — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libsnd/scssvol.c.
    SpuCommonAttr per PsyQ libspu.h (sizeof = 0x28 — matches the frame). */
 typedef struct {
     s16 left, right;
@@ -873,8 +869,8 @@ big_v:
     VBLANK_MINUS = v;
 }
 /* kengo:MED  |  am_rmd/SetBloodSpot  |  91i */
-/* PsyQ 4.0 LIBSND TEMPO: _SsSndTempo — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/tempo.c (interim
+/* PsyQ 4.0 LIBSND TEMPO: _SsSndTempo — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libsnd/tempo.c (interim
    4.0 build adds the counter<0 early clear-and-return). */
 void _SsSndTempo(s16 a0, s16 a1) {
     struct SeqStruct *score = &_ss_score[a0][a1];
@@ -920,10 +916,7 @@ extern u8 _SsVmMaxVoice;
 
 /* func_800858D0: reset the per-voice state record (_svm_voice) of every
  * voice up to _SsVmMaxVoice and key each one off (func_8008B488 with a
- * one-voice mask, then _SsVmKeyOffNow). Plain C since the 2026-09-24
- * _svm_voice aggregate merge: with the stores spelled as record-field
- * writes, the former empty-if (F6) closer and the u/offset carrier locals
- * are no longer needed (pre-slim-2026-10-01:memory/grind/vmNoiseOn/evidence.md). */
+ * one-voice mask, then _SsVmKeyOffNow). */
 void func_800858D0(void) {
     s32 buf[16];
     s16 var_s0;
@@ -1052,7 +1045,7 @@ s16 SsUtKeyOnV(s16 voice, s16 vabId, s16 prog, s16 tone, s16 note, s16 fine,
 }
 
 /* PsyQ LIBSND UT_KEYV: SsUtKeyOffV — the module's second exported entry point, which
-   splat merged into SsUtKeyOnV. Split out 2026-09-07 (docs/naming/libscan/
+   splat merged into SsUtKeyOnV (docs/naming/libscan/
    near-tier-ruling-2026-09-07.md; XDEF +0x394, follows a real jr $ra); must stay
    immediately after its former host so the link order reproduces the byte layout. */
 s16 SsUtKeyOffV(s16 voice) {
@@ -1434,7 +1427,7 @@ void _SsVmInit(s32 a0) {
 extern u16 D_800A26E4[];
 
 /* PsyQ LIBSND VM_N2P: note2pitch — a second exported entry point that splat
-   merged into func_80086818. Split out 2026-08-10 (docs/naming/libscan/
+   merged into func_80086818 (docs/naming/libscan/
    boundary_fixes.md); must stay immediately after its former host so the
    link order reproduces the original byte layout. C ref: psyz
    decomp/src/libsnd/vm_n2p.c (PsyQ 4.0). */
@@ -1472,7 +1465,7 @@ u16 note2pitch(void) {
 }
 
 /* PsyQ 4.0 LIBSND vmanager (VM_N2P): note2pitch2 — verbatim-linked Sony
-   object (census 2026-07-09); C ref: sotn-decomp
+   object; C ref: sotn-decomp
    src/main/psxsdk/libsnd/vmanager.c */
 s32 note2pitch2(u16 arg0, u16 arg1) {
     s16 octave;
@@ -1528,7 +1521,7 @@ void vmNoiseOn(u8 vc) {
     u32 voll, volr;
     /* SOTN-verbatim (sotn-decomp src/main/psxsdk/libsnd/vmanager.c
        vmNoiseOn): temp holds the tone pan, then the program pan, then the
-       voice pan, one per pan stage below. Owner Ruling 8, 2026-09-24
+       voice pan, one per pan stage below. Owner Ruling 8
        (ordinary-c-judge-decidable.md), vmNoiseOn only. */
     u32 temp;
     u32 idx;
@@ -1579,10 +1572,10 @@ void vmNoiseOn(u8 vc) {
        Ruling 1) - idx is the voice index, bound before the SpuSetNoiseClock
        call so its pseudo is live across that call and global.c seats it in
        call-saved $s0 as the target does (sched1 still places the zero-extend
-       after the jal: no dependence ties it to the call). Measured on this
-       final body (pre-slim-2026-10-01:memory/grind/vmNoiseOn/evidence.md): vc at each use puts
-       the index in $a0 and drops $s3 from the frame; idx also at the two
-       _svm_voice[] uses differs too (the target zero-extends vc again there). */
+       after the jal: no dependence ties it to the call). Using vc at each use
+       instead puts the index in $a0 and drops $s3 from the frame; idx also at
+       the two _svm_voice[] uses differs too (the target zero-extends vc again
+       there). */
     idx = vc;
     SpuSetNoiseClock((_svm_cur.note - _svm_cur.tone_center) & 0x3F);
 
@@ -1954,8 +1947,8 @@ extern u16 _svm_vab_count;
 extern s32 _svm_vab_start[];
 extern s32 _svm_vab_total[];
 extern s32 SpuMalloc(s32);
-/* PsyQ 4.0 LIBSND vs_vh: SsVabOpenHeadWithMode — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/vs_vh.c */
+/* PsyQ 4.0 LIBSND vs_vh: SsVabOpenHeadWithMode — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libsnd/vs_vh.c */
 s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
     int vagLens[256];
     s32 i;
@@ -2181,8 +2174,8 @@ const char D_800163E8[16] = "wait (reset)";
 const char D_800163F8[20] = "wait (wrdy H -> L)";
 const char D_8001640C[20] = "wait (dmaf clear/W)";
 
-/* PsyQ 4.0 LIBSPU spu.c: _spu_init — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_init) */
+/* PsyQ 4.0 LIBSPU spu.c: _spu_init — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_init) */
 s32 _spu_init(s32 a0) {
     u32 i;
     s32 channel;
@@ -2275,8 +2268,8 @@ s32 _spu_init(s32 a0) {
     _spu_IRQCallback = 0;
     return 0;
 }
-/* PsyQ LIBSPU spu.c: `_spu_FwriteByIO` (static) — verbatim-linked Sony object
-   (census 2026-07-09).  C refs: Xeeynamo/psyz decomp/src/libspu/spu.c:111 and
+/* PsyQ LIBSPU spu.c: `_spu_FwriteByIO` (static) — verbatim-linked Sony object.
+   C refs: Xeeynamo/psyz decomp/src/libspu/spu.c:111 and
    sotn-decomp psxsdk/libspu/spu.c (_spu_writeByIO).
 
    `_spu_RXX` (0x800A2CDC) holds the SPU register-file base (0x1F801C00), so
@@ -2285,11 +2278,7 @@ s32 _spu_init(s32 a0) {
    consecutive 16-bit hardware registers.  Sony's own libspu reaches them
    through `union SpuUnion *_spu_RXX` with the SPUR()/SPUW() field macros; the
    struct below is that same register block, and every access in this function
-   goes through it, exactly as the original source does.
-
-   Applying this body also deletes the redundant forward declaration
-   `extern void _spu_FwriteByIO(s32, s32);` (HEAD src/main.c:1898); both call
-   sites (src/main.c:1719, :1905) pass s32 values and compile unchanged. */
+   goes through it, exactly as the original source does. */
 typedef struct {
     u16 trans_addr;  /* 0x1DA6 */
     u16 trans_fifo;  /* 0x1DA8 */
@@ -2349,15 +2338,14 @@ void _spu_FwriteByIO(u8 *addr, u32 size) {
     }
 }
 /* PsyQ LIBSPU spu.c: _spu_FiDMA + _spu_Fr_ — two further exported entry
-   points that splat merged into func_800889D4. Split out 2026-08-10
+   points that splat merged into func_800889D4
    (docs/naming/libscan/boundary_fixes.md); both must stay immediately after
    their former host, in address order, so the link order reproduces the
    original byte layout. _spu_FiDMA.s also keeps the address label that marks
    its entry point, since that address is referenced as data elsewhere.
    Do NOT spell that label's symbol name in this file: engine/queue.py's
-   not_a_c_function_text() word-searches the raw .c text (comments included),
-   so naming it here makes it read as a C function and flood the queue as an
-   unscorable distance -1 item, which sorts to the very top. */
+   not_a_c_function_text() word-searches the raw .c text (comments included)
+   and would misread it as a C function. */
 /* PsyQ LIBSPU spu.c `_spu_FiDMA` (C ref: Xeeynamo/psyz decomp/src/libspu/spu.c:161).
    SPU DMA-completion interrupt handler: waits for the transfer-mode bits
    (0x30) in SPUCNT (_spu_RXX + 0x1AA) to clear with a bounded spin, then
@@ -2398,8 +2386,8 @@ void _spu_Fr_(s32 addr, u16 mode, s32 size) {
     D_800A2D2C = 1;
     *D_800A2CE8 = 0x1000200;
 }
-/* PsyQ 4.0 LIBSPU spu.c: _spu_t — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_t) */
+/* PsyQ 4.0 LIBSPU spu.c: _spu_t — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_t) */
 typedef char *va_list;
 #define va_start(ap, parmN) ((ap) = (va_list)(&(parmN) + 1))
 #define va_arg(ap, T) ((ap) += sizeof(T), *(T *)((ap) - sizeof(T)))
@@ -2565,8 +2553,8 @@ void _spu_Fw1ts(void) {
 void _SpuDataCallback(s32 a0) {
     DMACallback(4, a0);
 }
-/* PsyQ LIBSPU s_q.c: SpuQuit — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_q.c.
+/* PsyQ LIBSPU s_q.c: SpuQuit — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/s_q.c.
    g_spu_init_flag = _spu_transferCallback, g_spu_timer = _spu_IRQCallback
    (both volatile fn ptrs per Sony's header), g_snd_init_flag =
    _spu_isCalled. */
@@ -2593,8 +2581,8 @@ extern s32 _spu_AllocBlockNum;
 extern s32 _spu_AllocLastNum;
 extern s32 _spu_memList;
 
-/* PsyQ LIBSPU s_m_init.c: SpuInitMalloc — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/
+/* PsyQ LIBSPU s_m_init.c: SpuInitMalloc — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/
    s_m_init.c */
 s32 SpuInitMalloc(s32 num, s32 *top) {
     s32 size;
@@ -2611,12 +2599,11 @@ s32 SpuInitMalloc(s32 num, s32 *top) {
     return 0;
 }
 extern void _spu_gcSPU(void);
-/* PsyQ 4.0 LIBSPU s_m_m: SpuMalloc — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_m_m.c */
+/* PsyQ 4.0 LIBSPU s_m_m: SpuMalloc — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/s_m_m.c */
 /* Self-referential on purpose: the object `_spu_memList` (Sony's SPU_MALLOC list pointer,
    declared s32 here) is viewed as SpuMemRec* through this macro; a macro name inside its
-   own replacement list is not re-expanded (C90 6.8.3.4). Data wave 2026-09-07 renamed the
-   symbol from g_spu_voice_key_c. */
+   own replacement list is not re-expanded (C90 6.8.3.4). */
 #define _spu_memList ((SpuMemRec *)_spu_memList)
 s32 SpuMalloc(s32 size) {
     s32 var_s2;
@@ -2710,12 +2697,11 @@ s32 SpuMalloc(s32 size) {
    last_test_insn stays 0, no rotation happens, and the emitted loop has the
    target's shape: test at top, unconditional `j` back-edge, `j++` in its delay
    slot.
-   Depends on the maspsx .L-label load-delay nop gate
-   (maspsx_label_nop_funcs.txt) for two hazard nops the assembler emits and
-   maspsx's $L-only is_label() misses — as for siblings SpuFree and _spu_init
-   in this same translation unit. */
-/* PsyQ 4.0 LIBSPU s_m_int.c: _spu_gcSPU -- verbatim-linked Sony object
-   (census 2026-07-09); C ref: Xeeynamo/psyz decomp/src/libspu/s_m_int.c */
+   Two load-delay hazard nops across .L merge labels come from maspsx's
+   .L-label nop handling, as for siblings SpuFree and _spu_init in this
+   same translation unit. */
+/* PsyQ 4.0 LIBSPU s_m_int.c: _spu_gcSPU -- verbatim-linked Sony object;
+   C ref: Xeeynamo/psyz decomp/src/libspu/s_m_int.c */
 void _spu_gcSPU(void) {
     s32 i;
     s32 j;
@@ -2790,8 +2776,8 @@ void _spu_gcSPU(void) {
 /* kengo:HIGH  |  md_game/exec_game  |  194i */
 extern s32 _spu_AllocBlockNum;
 extern void _spu_gcSPU(void);
-/* PsyQ 4.0 LIBSPU s_m_f: SpuFree — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_m_f.c */
+/* PsyQ 4.0 LIBSPU s_m_f: SpuFree — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/s_m_f.c */
 void SpuFree(u32 arg0) {
     s32 i;
 
@@ -2874,8 +2860,8 @@ s32 SpuSetNoiseClock(s32 a0) {
     }
     return val;
 }
-/* PsyQ 4.0 LIBSPU s_sr: SpuSetReverb — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_sr.c */
+/* PsyQ 4.0 LIBSPU s_sr: SpuSetReverb — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/s_sr.c */
 s32 SpuSetReverb(s32 on_off) {
     u16 cnt;
     switch (on_off) {
@@ -2904,7 +2890,7 @@ s32 SpuSetReverb(s32 on_off) {
     return _spu_rev_flag;
 }
 /* PsyQ 4.0 LIBSPU s_m_util: _SpuIsInAllocateArea / _SpuIsInAllocateArea_ —
-   verbatim-linked Sony object (census 2026-07-09); C ref: sotn-decomp
+   verbatim-linked Sony object; C ref: sotn-decomp
    src/main/psxsdk/libspu/s_m_util.c (4.0 adds the NULL list guard) */
 s32 _SpuIsInAllocateArea(u32 arg0) {
     SpuMemRec *list = (SpuMemRec *)_spu_memList;
@@ -2954,8 +2940,8 @@ s32 _SpuIsInAllocateArea_(u32 arg0) {
     }
     return 0;
 }
-/* PsyQ 4.0 LIBSPU s_srmp: SpuSetReverbModeParam — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_srmp.c.
+/* PsyQ 4.0 LIBSPU s_srmp: SpuSetReverbModeParam — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/s_srmp.c.
    4.0 deltas vs the SOTN revision: the DELAYTIME/FEEDBACK gates are range
    compares (mode >= ECHO && mode <= DELAY) with no default-arm clears, and
    the depth/zero split threads off the var_s4 flag. Reverb preset table:
@@ -2986,7 +2972,7 @@ extern RevParamEntry _spu_rev_param[]; /* rev_param preset table */
 /* Sony _spu_rev_attr — ONE struct (sotn libspu_internal.h:87 struct
    SpuRevAttr), base 0x800A2888. Members == the split splat symbols
    D_800A288C (mode) / D_800A2890/92 (depth L/R) / D_800A2894 (delay) /
-   D_800A2898 (feedback), which other already-matched functions in this TU
+   D_800A2898 (feedback), which other functions in this TU
    still reference by their per-member names (same linked bytes). */
 typedef struct {
     /* 0x00 */ u32 unk0;
@@ -3175,7 +3161,7 @@ void SpuSetReverbVoice(s32 a0, s32 a1) {
 }
 
 /* PsyQ 4.0 LIBSPU s_crwa: SpuClearReverbWorkArea — verbatim-linked Sony
-   object (census 2026-07-09); C ref: sotn-decomp
+   object; C ref: sotn-decomp
    src/main/psxsdk/libspu/s_crwa.c */
 s32 SpuClearReverbWorkArea(u32 rev_mode) {
     volatile s32 callback;
@@ -3232,8 +3218,8 @@ s32 SpuClearReverbWorkArea(u32 rev_mode) {
     return 0;
 }
 BIOS_B_FUNCTION(WaitEvent, 0xA);
-/* PsyQ 4.0 LIBSPU s_sk: SpuSetKey — verbatim-linked Sony object (census
- * 2026-07-09); C ref: sotn-decomp src/psxsdk/libspu/s_sk.c shape + PsyQ 4.0
+/* PsyQ 4.0 LIBSPU s_sk: SpuSetKey — verbatim-linked Sony object;
+ * C ref: sotn-decomp src/psxsdk/libspu/s_sk.c shape + PsyQ 4.0
  * S_SK object relocs (_spu_RQ = one u16[4]). Volatile decls are Ruling-4
  * ground-truth-codegen grants (volatile_extern_allowlist.txt:40-44). */
 
@@ -3356,8 +3342,8 @@ s32 SpuSetTransferStartAddr(s32 a0) {
     _spu_tsa = (u16)v0;
     return (u32)(u16)v0 << _spu_mem_mode_plus;
 }
-/* PsyQ LIBSPU s_stm.c: SpuSetTransferMode — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_stm.c */
+/* PsyQ LIBSPU s_stm.c: SpuSetTransferMode — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/s_stm.c */
 s32 SpuSetTransferMode(s32 mode) {
     s32 transMode;
 
@@ -3409,8 +3395,8 @@ s32 _spu_getInTransfer(void) {
     return g_spu_busy != 1;
 }
 
-/* PsyQ 4.0 LIBSPU s_sca: SpuSetCommonAttr — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_sca.c
+/* PsyQ 4.0 LIBSPU s_sca: SpuSetCommonAttr — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/s_sca.c
    (4.0 block order: mvol L/R, cd vol L/R, ext vol L/R, cd rev/mix,
    ext rev/mix). */
 void SpuSetCommonAttr(void *arg0) {
@@ -3595,7 +3581,7 @@ void SpuSetCommonAttr(void *arg0) {
     }
 }
 /* PsyQ 4.0 LIBSPU sr_gaks: SpuRGetAllKeysStatus — verbatim-linked Sony object
-   (census 2026-07-09; module SR_GAKS spans 0x8008B330..0x8008B488). This
+   (module SR_GAKS spans 0x8008B330..0x8008B488). This
    entry point is UNREFERENCED in BB2 (dead code pulled in by whole-object
    linking) — no glabel exists at 0x8008B330, so it shares func_8008AF9C's
    splat extent. C ref: sotn-decomp src/main/psxsdk/libspu/sr_gaks.c. */
@@ -3639,8 +3625,8 @@ static s32 SpuRGetAllKeysStatus(s32 min, s32 max, s8 *status) {
 
     return 0;
 }
-/* PsyQ LIBSPU sr_gaks.c: SpuGetAllKeysStatus — verbatim-linked Sony object
-   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/sr_gaks.c
+/* PsyQ LIBSPU sr_gaks.c: SpuGetAllKeysStatus — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libspu/sr_gaks.c
    (SpuRGetAllKeysStatus inlined with min=0, max=NUM_SPU_CHANNELS) */
 void SpuGetAllKeysStatus(u8 *status) {
     s32 limit = 24;
@@ -3688,8 +3674,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
     bSetAll = mask == 0;
     for (voice = 0; voice < 24; voice++) {
         u16 temp; /* two values: the clamped sustain rate (SR block), then the
-                   * clamped sustain level (SL block); Ruling 11, proof in
-                   * pre-slim-2026-10-01:memory/grind/func_8008B488/r11/proof.md */
+                   * clamped sustain level (SL block); Ruling 11 */
 
         if ((attr->voice & (1 << voice)) == 0) {
             continue;
@@ -3901,13 +3886,12 @@ void func_8008B488(SpuVoiceAttr *attr) {
 }
 /* kengo:MED  |  sa_tan1/saTan1MainJump  |  413i  |  -10 */
 /* PsyQ LIBSPU S_N2P: _spu_2pitch — a second exported entry point that splat
-   merged into func_8008B488. Split out 2026-08-10 (docs/naming/libscan/
+   merged into func_8008B488 (docs/naming/libscan/
    boundary_fixes.md); must stay immediately after its former host so the
    link order reproduces the original byte layout. */
 /* Pitch interpolation helper: scales `atten` (12.12 fixed) by the 48th-root-
    of-two step 0x103B/0x1000 once per 32 cents (rem >> 5), then linearly
-   interpolates the remaining 0..31 cents between the two adjacent steps.
-   COMPLETED-C 2026-09-02 (grinder s1, pure C, no FAKE constructs). */
+   interpolates the remaining 0..31 cents between the two adjacent steps. */
 inline u32 _spu_2pitch(u32 atten, u32 rem) {
     u32 ratio = 0x103B;
     u32 lower = atten << 12;
@@ -3925,39 +3909,13 @@ inline u32 _spu_2pitch(u32 atten, u32 rem) {
     }
     return (lower + (((upper - lower) >> 5) * frac)) >> 12;
 }
-/* CANDIDATE — _spu_note2pitch (src/main.c)  sandbox --disable all = 0  (s2b, 2026-09-06)
- * Supersedes the s2 body (per-arm `(u16)` casts) that layer-1 FAILed and whose
- * casts are now on this function's BANNED list. No cast, no per-arm narrowing.
- *
- * CHASSIS (both required, unchanged from s1/s2):
- *  1. The sibling `_spu_2pitch` (COMPLETED-C, defined immediately above in
- *     src/main.c) must carry the GNU89 `inline` keyword:
- *         inline u32 _spu_2pitch(u32 atten, u32 rem) { ... }
- *     GCC 2.7.2 integrates it here AND still emits the out-of-line body;
- *     sandbox _spu_2pitch --disable all = 0 with the keyword in place. The
- *     target's tail (0x103B curve walk, `upper` spilled to 0x8($sp), the
- *     16-byte frame) IS that inlined copy.  Measured 2026-09-06 (s2b): making
- *     the sibling's first parameter `u16` instead breaks it (sibling 1,
- *     _spu_note2pitch 22) — the parameter stays u32.
- *  2. include/m2c_context.h:1184 prototype `u16 _spu_note2pitch(u16,u16,u16,u16);`
- *     (already so at HEAD; the sole caller is func_8008B488).
- *
- * WHAT CLOSES THE LAST 2 INSNS (residual: `andi $a2,$v0,0xFFFF` vs
- *  `addiu $a0,$zero,0x103B` at .L8008BBB0):
- *  the u16->u32 widening of the octave attenuation must land in a pseudo that
- *  is NOT single-set at sched1 time, otherwise sched.c adjust_priority ->
- *  birthing_insn_p (reg_n_sets[i]==1) boosts the andi to LAUNCH_PRIORITY, the
- *  backward list scheduler picks it first and therefore EMITS it last (after
- *  the li).  Staging the value through `diff` — a local the function already
- *  owns, dead from the `if (diff >= 0)` test onward — makes that pseudo
- *  two-set, the boost does not fire, the pair falls to the LUID tie-break and
- *  comes out in the target's order.  `diff` is also the variable the target
- *  keeps in $a2, so the seats match too (`andi $a2,$v0,0xFFFF`).
- *  Measured this session: staging through `diff` = 0; through `absdiff` = 5;
- *  `tgt` = 8; `cen` = 28; `oct` = 28; a FRESH u32 receiver = 2 (single-set,
- *  boost still fires); no staging at all (widen at the call) = 2.
- *  Family: staged-value-reused-variable (.claude/rules/staged-value-reused-variable.md).
- */
+/* _spu_note2pitch: pitch of note/fine relative to the centre note/fine
+ * (128 fine steps per semitone, 0x600 per octave): 0x1000 shifted by the
+ * whole octaves, then the remaining steps walked through the inlined
+ * _spu_2pitch curve; clamped to 0x3FFF. The sole caller is func_8008B488.
+ * _spu_2pitch above carries the GNU89 `inline` keyword: GCC 2.7.2 integrates
+ * it here (the target's 0x103B curve walk, `upper` spilled to 0x8($sp), the
+ * 16-byte frame) and still emits the out-of-line body. */
 u16 _spu_note2pitch(u16 cen_note, u16 cen_fine, u16 note, u16 fine) {
     s32 cen;
     s32 tgt;
@@ -3983,13 +3941,11 @@ u16 _spu_note2pitch(u16 cen_note, u16 cen_fine, u16 note, u16 fine) {
         atten = 0x1000 >> oct;
     }
     /* FAKE: the octave attenuation is staged through `diff` (dead from the
-       `diff >= 0` test above onward; nothing reads it after this point) and
-       consumed on the very next line, mechanism: GCC 2.7.2 sched.c
-       adjust_priority -> birthing_insn_p (reg_n_sets[regno]==1) — a two-set
-       pseudo is not boosted to LAUNCH_PRIORITY, so the widening `andi` is
-       emitted before the inlinee's `li 0x103B` as in the target,
-       lever-exhaustion: memory/grind/_spu_note2pitch/hypotheses.md s1 H1/H5/H6
-       and s2b (24 measured spellings, all >= 2 without this staging) */
+       `diff >= 0` test above onward) -- GCC 2.7.2 sched.c adjust_priority ->
+       birthing_insn_p (reg_n_sets[regno]==1) does not boost a two-set pseudo
+       to LAUNCH_PRIORITY, so the widening `andi` is emitted before the
+       inlinee's `li 0x103B` as in the target; a fresh single-set local or no
+       staging leaves the pair reversed (.claude/rules/staged-value-reused-variable.md). */
     diff = atten;
     pitch = _spu_2pitch(diff, (rem < 0) ? -rem : rem);
     if (pitch >= 0x4000) {
@@ -4088,26 +4044,12 @@ void SpuGetVoiceEnvelope(s32 a0, u16 *a1) {
     *a1 = *(u16 *)(a0 + 0xC);
 }
 
-/* Rodata moved from asm/data/101C.rodata_main_post.s (rodata-cleanup project,
- * docs/rodata-cleanup-project.md, 2026-06-09). All 10 symbols are owned by
- * main.c functions (4 debug-printf strings + 4 switch jtbls + 2 SIO debug
- * strings); per the inventory CSV every owner has file=main. Placed at
- * end-of-file so the existing 24 bytes of main.o(.rodata) (from earlier
- * inline-asm rodata) stay at the original offsets (0..24 = 0x800163C0..
- * 0x800163D8) and the new declarations land at the retired block's slot
- * (0x800163D8..0x800164AC). Jtbl entries use literal addresses because the
- * referenced `.L<n>` labels live inside the asmfile-bridged stub function
- * bodies (saTan1MainJump, func_8008AF9C) and aren't visible to C source —
- * the linker produces identical bytes for either form. */
-/* jtbl_80016420/jtbl_80016440 (the two SpuSetCommonAttr switch tables) are
- * now COMPILER-EMITTED by func_8008AF9C's switches (they emit into .rodata
- * at that function's file position, right after the four SPU debug strings
- * below, which moved up beside their owner functions for the same reason —
- * see the comment above D_800163D8). jtbl_80016460/jtbl_80016480 are likewise
- * compiler-emitted, by func_8008B488's two volume-mode switches (2026-09-28);
- * the zero word between them at 0x8001647C is the `.align 3` the compiler
- * puts before the second table, which is why main is not in
- * RODATA_ALIGN2_FILES. */
-/* The 2 SIO strings (D_8001649C "SIO console", D_800164A8 "sio") belong to
- * the PsyQ LIBCOMB COMB object and moved with it to src/comb.c (2026-09-29),
+/* main.c's rodata: the four SPU debug strings are defined beside their first
+ * user (see the comment above D_800163D8). jtbl_80016420/jtbl_80016440 (the
+ * two SpuSetCommonAttr switch tables) are compiler-emitted by func_8008AF9C's
+ * switches, and jtbl_80016460/jtbl_80016480 by func_8008B488's two
+ * volume-mode switches; the zero word between them at 0x8001647C is the
+ * `.align 3` the compiler puts before the second table, which is why main is
+ * not in RODATA_ALIGN2_FILES. The 2 SIO strings (D_8001649C "SIO console",
+ * D_800164A8 "sio") belong to the PsyQ LIBCOMB COMB object in src/comb.c,
  * whose .rodata bb2.ld places right after this file's. */

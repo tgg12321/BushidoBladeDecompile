@@ -107,17 +107,15 @@ extern s32 stage_GetDataPtr(void);
 
 /* P1/P2 round scores and tiebreakers (per-file declarations: owner rulings Q21-Q25,
  * .claude/rules/no-new-park-categories.md aggregate-merge exception). Declared here
- * as single u8s: every measured counting aggregate spelling of func_800340A0
- * misses the shipped code (constant subscripts put element 0 behind a base
- * register; the index-variable and regrouped-condition spellings that avoid that
- * miss its round-result stores or compares; dummy-index and pointer-alias
- * spellings that match are refused/set aside, Q22/Q23). src/code6cac.c:2135
- * declares the same bytes as D_800A3898[2] / D_800A38AA[2] for func_8001CE60,
- * which indexes them by player and does not produce those accesses from single
- * bytes. The mismatch is kept because no single declaration compiles both files
- * with a counting spelling (Q22/Q23 set-asides excluded).
- * Evidence: pre-slim-2026-10-01:memory/grind/func_8001CE60/evidence.md (s3),
- * probes/calib_800340A0/ (Q24-AGREEMENT*.txt). */
+ * as single u8s: every counting aggregate spelling of func_800340A0 misses the
+ * shipped code (constant subscripts put element 0 behind a base register; the
+ * index-variable and regrouped-condition spellings that avoid that miss its
+ * round-result stores or compares; dummy-index and pointer-alias spellings are
+ * refused, Q22/Q23). src/code6cac.c declares the same bytes as D_800A3898[2] /
+ * D_800A38AA[2] for func_8001CE60, which indexes them by player and does not
+ * produce those accesses from single bytes. The mismatch is kept because no single
+ * declaration compiles both files with a counting spelling.
+ * Evidence: pre-slim-2026-10-01:memory/grind/func_8001CE60/evidence.md. */
 extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
@@ -156,8 +154,7 @@ extern void func_80031B24(void);
  * caller below. Their unused implicit-int call_value results make v0 have
  * multiple sets, removing sched.c's birthing boost from the timer call and
  * keeping the record-base load after it. Correct void declarations miss 7
- * instructions; the typed record rewrite and simpler forms are measured in
- * pre-slim-2026-10-01:memory/grind/func_80026DA4/session-2026-10-01.md.
+ * instructions.
  * SOTN: src/main/psxsdk/libsnd/ssclose.c:8 and
  * src/main/psxsdk/libsnd/vmanager.c:1107 @db41b28eee52969244a52cc269c8163d1ed8826a */
 void func_80026DA4(void) {

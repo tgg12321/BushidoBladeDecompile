@@ -410,20 +410,16 @@ void func_80045294(s32 a0, s32 a1) {
     s32 s5;
 
     /* !FAKE: `i++; i--;` cancellation pair (F6 family, semantically-null
-       statement pair, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:402).
-       what: keeps the loop counter `i` out of the parameter's cse quantity
-       while the `a0 << 4` offset below is processed, so the shift reads the
-       parameter register ($s2) as the target does; without the pair cse
-       canonicalises the shift to the copy `i` ($s0) (make_regs_eqv,
-       tools/gcc-2.7.2/cse.c:842-857), the single residual of 61 sessions.
+       statement pair) -- keeps the loop counter `i` out of the parameter's
+       cse quantity while the `a0 << 4` offset below is processed, so the
+       shift reads the parameter register ($s2) as the target does; without
+       the pair cse canonicalises the shift to the copy `i` ($s0)
+       (make_regs_eqv, tools/gcc-2.7.2/cse.c:842-857).
        mechanism: cse_insn invalidates the destination of the self-referencing
        `i = i + 1` and remove_invalid_refs drops its table entry, so cse1 and
        cse2 both keep the pair and the copy; combine.c cancels the pair back
        into the plain copy in the same insn slot, keeping copy-before-shift
-       order for the sched.c:2464 LUID tiebreak.
-       lever-exhaustion: memory/grind/func_80045294/hypotheses.md (s1-s63,
-       87 banked rejected forms; s62 D1-D10 show every constant or
-       negation chain is re-folded by cse.c:5020/5497 and scores 1). */
+       order for the sched.c:2464 LUID tiebreak. */
     i++;
     i--;
     v1 = a0 << 4;

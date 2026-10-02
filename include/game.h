@@ -17,8 +17,7 @@ extern s16 g_stage_variant;
 
 
 /* 3-word record table at 0x800F1198, terminated by an all-zero record.
- * Object model evidence (independent of and predating any byte-chasing):
- * the original binary walks this table with a 12-byte-stride induction
+ * Object model evidence: the original binary walks this table with a 12-byte-stride induction
  * register (asm/funcs/func_80062020.s:.L80062038, `addiu $v1, $v1, 0xC`)
  * and addresses the record members through one base register at
  * displacements 0/4/8 (`sw $zero, 0x8($v0)` / `sw $zero, 0x4($v0)`), i.e.
@@ -56,9 +55,8 @@ typedef struct {
 extern Unk800A9CF8Header D_800A9CF8;
 
 /* Per-lane slot record table at 0x800F0EC8: 2 lanes x 10 slots x one
- * 3-word record (12 bytes; lane stride 120). Object model evidence
- * (independent of and predating any byte-chasing): the original binary
- * addresses all three words through ONE offset register per access site --
+ * 3-word record (12 bytes; lane stride 120). Object model evidence:
+ * the original binary addresses all three words through ONE offset register per access site --
  * asm/funcs/func_80063E10.s computes lane*120 (`sll $a0,$s7,4; subu $a0,$a0,$s7;
  * sll $a0,$a0,3`), adds the slot offset held in $s6, and reads
  * %lo(D_800F0EC8/ECC/ED0)($at) with that same $a0 added to each base; the
@@ -78,8 +76,7 @@ extern Unk800F0EC8Record D_800F0EC8[][10];
 
 /* Flare-slot position table at 0x800F0E38: 12 slots x one 3-word {x, y, z}
  * record (12 bytes; 0x800F0E38 + 12 * 12 == 0x800F0EC8, the table above).
- * Object model evidence (independent of and predating any byte-chasing): the
- * original binary addresses all three words through ONE offset register per
+ * Object model evidence: the original binary addresses all three words through ONE offset register per
  * access site -- the spawner asm/funcs/func_80062FEC.s forms slot*12
  * (`addu $v1,$a1,$a2; sll $v1,$v1,2` with $a1 = slot*2) and stores
  * %lo(D_800F0E38/E3C/E40)($at) with that same $v1 added to each base; the
@@ -119,7 +116,7 @@ extern MenuOption D_8009BC0C[8];
  * 0x8009BCB4 + p * 4 for p = 4..6 (asm lines 220-233), i.e. entries 0..2 of
  * this table. Replaces the splat
  * per-word symbols D_8009BCC4 / D_8009BCC6 (per-word splat symbol -> aggregate
- * merge family, owner ruling 2026-08-17). */
+ * merge family, owner ruling). */
 extern s16 D_8009BCC4[3][2];
 
 /* 0x8009BCD0: the current scroll offset, one s16 per axis. func_800720FC walks
@@ -138,7 +135,7 @@ extern s16 D_8009BCD0[2];
  * a 2-byte step), and func_80076D74 reads byte 1 (`lbu %lo(D_8009BCF9)($at)`)
  * through a flat shift-1 index. Data: the unk1 column is 0x00..0x09 (page 0) then
  * 0x0C..0x15 (page 1). Replaces the splat per-word scalars D_8009BCF8 / D_8009BCF9
- * (per-word splat symbol -> aggregate merge family, owner ruling 2026-08-17). */
+ * (per-word splat symbol -> aggregate merge family, owner ruling). */
 typedef struct {
     u8 unk0;
     u8 unk1;
@@ -171,7 +168,7 @@ extern u8 D_8009BD20[2][2];
  * `sw $zero` each by func_800770B8 (0x800772C0 / 0x800772BC), their halves read and written by
  * func_80075F80 (`lhu`/`sh` 0x1C / 0x20). The s32 members make the
  * struct 4-aligned, so sizeof is 0x94 (the members end at 0x92; owner ruling
- * Q57, layout search in pre-slim-2026-10-01:memory/grind/func_800768DC/q57-layout-search-2026-09-30.md). */
+ * Q57). */
 typedef struct {
     void *f00;
     s32 *f04;
@@ -230,14 +227,13 @@ extern u8 *D_800A36A0;
 extern struct MATRIX D_800FF558;
 
 /* 0x8009BC94: table of {x, y} s16 position records, 6 records (24 bytes) per
- * row. Object model evidence, independent of and predating any byte-chasing
- * session, from the original binary: func_8006F100 and func_80071C4C form ONE
+ * row. Object model evidence from the original binary: func_8006F100 and func_80071C4C form ONE
  * offset per access (row*24 held in a strength-reduced register plus
  * D_800A3590[row]*4) and read `lh %lo(D_8009BC94)($at)` and
  * `lh %lo(D_8009BC96)($at)` through that same offset -- record stride 4,
  * row stride 24, base+offset addressing. Replaces the splat per-word scalars
  * D_8009BC94 / D_8009BC96 (per-word splat symbol -> aggregate merge family,
- * owner ruling 2026-08-17). */
+ * owner ruling). */
 typedef struct {
     s16 x;
     s16 y;
@@ -247,14 +243,14 @@ extern Unk8009BC94Record D_8009BC94[][6];
 
 /* 0x8009B398: table of 4 twelve-byte records (0x8009B398..0x8009B3C7;
  * D_8009B3C8 follows, different data). Object model evidence from the original
- * binary, independent of the byte-chasing session: asm/funcs/func_8005E098.s
+ * binary: asm/funcs/func_8005E098.s
  * forms ONE base `lui $s7,%hi(D_8009B3B0); addiu $s7,$s7,%lo(D_8009B3B0)`
  * (record 2) and reaches record 3 as `addiu $v1,$s7,0xC` and record 0 as
  * `addiu $a0,$s7,-0x18` -- base+offset addressing of one object at a 12-byte
  * stride. Data: all four records share one shape (word 0 = 0x0001001F,
  * word 2 = 0). Replaces the splat per-word scalars D_8009B398 / D_8009B3A4 /
  * D_8009B3B0 / D_8009B3BC in C (per-word splat symbol -> aggregate merge family,
- * owner ruling 2026-08-17); the dlabels stay in asm/data as data labels (no C
+ * owner ruling); the dlabels stay in asm/data as data labels (no C
  * handle; func_8005E54C reaches record 2 as &D_8009B398[j + 2]). */
 typedef struct {
     s32 unk0;
@@ -265,7 +261,7 @@ typedef struct {
 extern Unk8009B398Record D_8009B398[4];
 
 /* 8-byte sprite records {s16, s16, u8 x4}. Object model evidence from the
- * original binary, independent of the byte-chasing session:
+ * original binary:
  * asm/funcs/func_8005E098.s and asm/funcs/func_8005D814.s index 0x8009B400 by a
  * digit value through a shift-3 (8-byte-stride) index, and func_8005E098 stores
  * an s16 to offset 0 of the indexed record (`sh $v0,0x0($v1)`); it indexes 0x8009B458 by `sra 13` of an
@@ -274,7 +270,7 @@ extern Unk8009B398Record D_8009B398[4];
  * 0x8009B458..0x8009B487 is 6 records of the same shape; D_8009B450 and
  * D_8009B488 follow. Replaces the splat per-word scalars D_8009B458 /
  * D_8009B468 / D_8009B470 in C (per-word splat symbol -> aggregate merge
- * family, owner ruling 2026-08-17). */
+ * family, owner ruling). */
 typedef struct {
     s16 unk0;
     s16 unk2;
@@ -305,23 +301,22 @@ extern Unk8009B450Record D_8009B450[2];
  * 0x8009B388..0x8009B397, the cell table func_8005D554 hands func_80073728 for
  * the row's header record 2 (cell 0) and records 3/4 (cell 1); each of those
  * D_8009B2E0 header records has cell count 1. No other function or asm file
- * references either label. One object: spelled &D_8009B388[0] / [1]
- * func_8005D554 matches, with the base kept in $s7 as the original does
- * (asm/funcs/func_8005D554.s); spelled as two separate symbols the same body
- * measures 40 at 174 insns (memory/grind/func_8005D554/evidence.md, s24).
+ * references either label. One object: spelled &D_8009B388[0] / [1],
+ * func_8005D554 keeps the base in $s7 as the original does
+ * (asm/funcs/func_8005D554.s); two separate symbols do not.
  * Replaces the splat per-cell scalars D_8009B388 / D_8009B390 in C. */
 extern Unk8009B400Record D_8009B388[2];
 
 /* 0x8009B5F0: 2 x 2 table of 8-byte sprite records (Unk8009B400Record),
- * 0x8009B5F0..0x8009B60F. Object model evidence from the original binary,
- * independent of the byte-chasing session: asm/funcs/func_8005F1C8.s forms ONE
+ * 0x8009B5F0..0x8009B60F. Object model evidence from the original binary:
+ * asm/funcs/func_8005F1C8.s forms ONE
  * stride `sll $s0,$s0,4` (row counter * 16) and adds it to both
  * %lo(D_8009B5F0) (column 0: 0x8009B5F0 / 0x8009B600) and %lo(D_8009B5F8)
  * (column 1: 0x8009B5F8 / 0x8009B608) -- rows of two 8-byte records. Data:
  * all four records share the {s16, s16, u8 x4} shape (u8 [3] = 0x01 in each);
  * D_8009B610 (a 12-byte sheet header) follows. Replaces the splat per-word
  * scalars D_8009B5F0 / D_8009B5F8 in C (per-word splat symbol -> aggregate
- * merge family, owner ruling 2026-08-17). */
+ * merge family, owner ruling). */
 extern Unk8009B400Record D_8009B5F0[2][2];
 
 /* 0x8009B490: 2 x 2 table of 8-byte sprite records (Unk8009B400Record),
@@ -331,20 +326,19 @@ extern Unk8009B400Record D_8009B5F0[2][2];
  * the same shape as D_8009B5F0 above. Data: all four records share the
  * {s16, s16, u8 x4} shape; D_8009B4B0 (a 12-byte sheet header) follows. Replaces
  * the splat per-word labels D_8009B490 / D_8009B498 in C (per-word splat symbol
- * -> aggregate merge family, owner ruling 2026-08-17). */
+ * -> aggregate merge family, owner ruling). */
 extern Unk8009B400Record D_8009B490[2][2];
 
 /* 0x8009B0E0: table of 9 twelve-byte sprite-sheet headers (0x8009B0E0..0x8009B14B),
  * the record func_8007352C reads through EnvA.header (cell count at +2). Object
- * model evidence from the original binary, independent of the byte-chasing
- * session: asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B0F8) in $s0
+ * model evidence from the original binary: asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B0F8) in $s0
  * and reaches record 8 as `addiu $s0,$s0,0x48`; forms %hi/%lo(D_8009B110) in $s1
  * and reaches records 2 and 1 as `addiu $v1,$s1,-0xC` / `addiu $s1,$s1,-0x18`;
  * forms it again in $s2 and reaches records 0 and 1 as -0x30 / -0x24; its tail
  * loop indexes the table by `(j * 3) << 2` added to that base -- base+offset
  * and 12-byte-stride addressing of one object. Replaces the splat per-word
  * labels D_8009B0E0 / D_8009B0F8 / D_8009B110 / D_8009B11C in C (per-word splat
- * symbol -> aggregate merge family, owner ruling 2026-08-17); the dlabels stay
+ * symbol -> aggregate merge family, owner ruling); the dlabels stay
  * in asm/data as data labels. D_8009B14C and D_8009B158 are two more headers of
  * the same shape (func_8005C8A8 passes &D_8009B14C as a header and reads its
  * +2 count byte, the splat label D_8009B14E, which this declaration retires). */
@@ -394,9 +388,8 @@ typedef struct {
 
 extern Unk8009B2BCRecord D_8009B2BC[3];
 
-/* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence
- * (independent of and predating any byte-chasing): the original binary
- * addresses the whole block through ONE base register -- asm/funcs/func_80054604.s
+/* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence:
+ * the original binary addresses the whole block through ONE base register -- asm/funcs/func_80054604.s
  * forms $s1 = %hi/%lo(D_800EFAE8) once in its prologue and reaches offsets
  * 0x00/0x02/0x04/0x08/0x0C/0x10/0x14/0x1C/0x1E/0x20/0x2C/0x44/0x46/0x48/0x4A as
  * displacements off that single register (`lw $v1, 0x2C($s1)`, `sh $s5, 0x44($s1)`,
@@ -436,7 +429,7 @@ typedef struct {
 extern Unk800EFAE8Ctrl D_800EFAE8;
 
 /* Two s16 slots at 0x800A34F0, indexed as one array. Object model evidence
- * (the original binary, independent of any byte-chasing): asm/funcs/func_800678A8.s
+ * (the original binary): asm/funcs/func_800678A8.s
  * reads the pair through ONE indexed access, `lh %lo(sym)(base + arg0*2)` with the
  * base folded to 0x800A34F0 - 8 for arg0 = 4/5 (callers func_800677B8 /
  * func_800677F4), and asm/funcs/func_80067D14.s forms the same folded base with
@@ -445,7 +438,7 @@ extern Unk800EFAE8Ctrl D_800EFAE8;
 
 /* 0x800A3560: two 3-byte records, one per selection slot i (slot i at
  * 0x800A3560 + i * 3; 0x800A3566/7 pad before D_800A3568). Object model evidence
- * from the original binary, independent of the byte-chasing: func_8006F100 reads
+ * from the original binary: func_8006F100 reads
  * bytes +2 and +1 through ONE offset register stepped by 3 per slot
  * (asm/funcs/func_8006F100.s:73-75 `lbu %lo(D_800A3562)($at)` and :100-102
  * `lbu %lo(D_800A3561)($at)` with $s3, `addiu $s3,$s3,0x3` at :267);
@@ -454,13 +447,13 @@ extern Unk800EFAE8Ctrl D_800EFAE8;
  * +0, +1 and +2 through it (func_80070188.s:58-76, 386-419); func_8006E534 stores
  * byte +1 of both records (func_8006E534.s:96-97, D_800A3561 / D_800A3564).
  * Replaces the splat per-byte symbols D_800A3560..D_800A3565 in C (per-word splat
- * symbol -> aggregate merge family, owner ruling 2026-08-17); their
+ * symbol -> aggregate merge family, owner ruling); their
  * undefined_syms_auto.txt rows are retired (no assembled referrer is left).
- * `word`: Q33 union word view (owner ruling 2026-09-29), named only at
+ * `word`: Q33 union word view (owner ruling), named only at
  * func_8006E534's one word store over bytes 0..3, `sw $v0,%gp_rel(D_800A3560)($gp)`
  * with $v0 = -1 (func_8006E534.s:85, 0x8006E668). Every other access goes
  * through rec[]. Owner rulings Q44/Q54: every consumer is in the -G8 file
- * src/text1b_tu1d.c (proof: pre-slim-2026-10-01:memory/grind/func_80070F78/g8-evidence.md). */
+ * src/text1b_tu1d.c. */
 typedef struct {
     u8 unk0;
     u8 unk1;
@@ -477,7 +470,7 @@ typedef union {
  * records of 3 s32 words. Object model evidence (the original binary):
  * asm/funcs/func_800678A8.s addresses it as base + arg1*36 + idx*12 (+0/+4/+8),
  * i.e. a row stride of 36 bytes and a record stride of 12; arg1 ranges 0..3
- * (callers func_800676C8..func_8006786C). The still-asm func_80067200 and
+ * (callers func_800676C8..func_8006786C). func_80067200 and
  * func_80067D14 reach the same words. Replaces the splat per-word scalars
  * D_800F0C10 / D_800F0C14 / D_800F0C18. */
 typedef struct {

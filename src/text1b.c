@@ -131,19 +131,17 @@ void func_800460E4(s32 stage_id, s32 arg1) {
 
     g_stage_variant = 0;
     /* FAKE: live default init of s1 routed through a delta-rebase detour that
-       combine folds back to s1 = s4 with zero emitted bytes, mechanism: flow.c
+       combine folds back to s1 = s4 with zero emitted bytes -- flow.c
        reg_n_refs (+2 on s1's pseudo) lifts its global.c allocno_compare
-       priority above the s2 pointer so allocation order matches target,
-       lever-exhaustion: this function's grind ledger evidence.md [s1]+[s3] */
+       priority above the s2 pointer so allocation order matches target. */
     s1 = (s32 *)((s32)s4 - (s32)s0);
     s1 = (s32 *)((s32)s1 + (s32)s0);
     switch (stage_id) {
     case 3: {
         /* FAKE: fresh once-written/once-read pointer intermediate naming the
-         * address of the stage header's last word, mechanism: expand-time
+         * address of the stage header's last word -- expand-time
          * MEM_IN_STRUCT_P (expr.c:4567-4577) -> sched.c anti_dependence
-         * exemption -> sched1 load/store order, lever-exhaustion:
-         * memory/grind/func_800460E4/hypotheses.md + evidence.md [s1]-[s8r] */
+         * exemption -> sched1 load/store order. */
         s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;
         s1 = s2;
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
@@ -736,7 +734,7 @@ void camera_InitBoneData(void) {
        above the block copy (renaming the copy's regs). D_800EEDD6/D_800EEDD8
        physically live INSIDE g_cam_bone_data (+6/+8), so the dependency is
        real, but the split extern symbols hide it from GCC's alias analysis;
-       no distinct-symbol spelling can express it (measured s2). */
+       no distinct-symbol spelling can express it. */
     do { *(Unk80101DF0Mat *)&g_cam_bone_data = D_80101DF0.xf.mat; } while (0);
     {
         s16 h0 = D_800EEDD6;
@@ -855,8 +853,7 @@ void func_800475A4(void) {
     {
         /* FAKE: s16 temporary for the negated pitch: storing -ratan2() straight
          * into the field sinks its negu 8 slots to just before the sh and
-         * lifts `addiu s2,sp,0x28` 5 slots (vb_tp in
-         * memory/grind/camera_CalcAngles/types/receipts.txt) */
+         * lifts `addiu s2,sp,0x28` 5 slots. */
         s16 neg = -ratan2(result.vy, computed);
         base->xf.rot.vx = neg;
     }
@@ -1250,17 +1247,12 @@ void func_80047ED0(s32 a0) {
 
 void func_80047EE8(s32 arg0, s32 arg1)
 {
-    /* FAKE: unwritten leading frame pad (phantom-frame-slot volatile pad local
-     * family, owner ruling 2026-08-18, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:390).
-     * Mechanism: GCC 2.7.2 function.c assign_stack_local reserves the array slot at
+    /* FAKE: unwritten leading frame pad (phantom-frame-slot volatile pad family)
+     * -- GCC 2.7.2 function.c assign_stack_local reserves the array slot at
      * RTL-expand from the source DECL and never reclaims frame_offset after DCE, so a
      * declared-but-untouched local aggregate reproduces target's allocated-but-unwritten
      * 32-byte vars region (.frame $sp,72 - args 0x00-0x17, vars 0x18-0x37, regs
-     * 0x38-0x47; ZERO sw/lw in 0x18-0x37 - frame forensics in
-     * memory/grind/func_80047EE8/evidence.md [s6]/[s7], cc1 size-pin puts the original
-     * aggregate at 7-8 words). Lever-exhaustion: 9 structural .frame variants (s3),
-     * ~26,500 permuter iters across two distinct basins (s4/s5), forensics (s6/s7),
-     * rederive (s8/s9) - every honest producer measured inert; see hypotheses.md.
+     * 0x38-0x47; ZERO sw/lw in 0x18-0x37).
      * SOTN-master precedent: volatile u32 pad; // !FAKE: at src/st/sel/2C048.c:564
      * (docs/reference/sotn-construct-index.md:101); volatile u32 pad[4]; // FAKE at
      * src/st/sel/stream.c:80 (sotn-construct-index.md:103). */
@@ -1273,12 +1265,10 @@ void func_80047EE8(s32 arg0, s32 arg1)
     unsigned int new_var2;
     p = (u32 *) arg0;
     saved = (s32) p;
-    arg0 = 0; /* FAKE: dead store to a PARAM (dead-store-fake-exception family,
-               * .claude/rules/dead-store-fake-exception.md). Mechanism: defeats cse2's
-               * canonical-register substitution over the {arg0, p, saved} equivalence
-               * class so the second pointer binds addu $s0,$s2,$v0 rather than $a0.
-               * Lever-exhaustion: 6 pure spellings of this init chain measured dead on
-               * this body at s2 (rejected/pure-*.c). */
+    arg0 = 0; /* FAKE: dead store to a PARAM (dead-store-fake-exception family)
+               * -- defeats cse2's canonical-register substitution over the
+               * {arg0, p, saved} equivalence class so the second pointer binds
+               * addu $s0,$s2,$v0 rather than $a0. */
     p = (u32 *) ((s32) p + (((s32) (arg1 << 16)) >> 14));
     v_off = *p;
     p = (u32 *) (saved + ((v_off >> 2) << 2));
@@ -1314,7 +1304,7 @@ void func_80047EE8(s32 arg0, s32 arg1)
 }
 void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 {
-    volatile u32 pre_pad[8]; // !FAKE: phantom-frame-slot volatile filler (owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md): target reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction touches; mechanism: GCC 2.7.2 get_frame_size reserves declared locals
+    volatile u32 pre_pad[8]; // !FAKE: phantom-frame-slot volatile filler (.claude/rules/no-new-park-categories.md): target reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction touches; mechanism: GCC 2.7.2 get_frame_size reserves declared locals
     u32 *p;
     s32 base_addr;
     s32 count;
@@ -1323,7 +1313,7 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
     p = (u32 *)arg0;
     arg0 = 0; /* FAKE: defeats cse2 canonical-reg substitution
                  that folds {reg 72 arg0, reg 78 p, reg 79 base_addr}
-                 equivalence class at insn 36 - RTL-proven s6 */
+                 equivalence class at insn 36 */
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
     count = *(p++);
@@ -1360,14 +1350,14 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 }
 void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
 {
-    volatile u32 pre_pad[8]; // !FAKE: phantom-frame-slot volatile filler (owner ruling 2026-08-18, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:422-434; grant row engine/volatile_cheats.py:779, commit 661c01ef): the target reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction in asm/funcs/func_800480C0.s reads or writes; mechanism: GCC 2.7.2 get_frame_size/expand_decl reserves declared locals (config/mips/mips.c:4443-4475); lever-exhaustion: memory/grind/func_800480C0/hypotheses.md s1-s23, 104 rejected forms, every referenced producer costs >=1 store (flow.c:1740-1741 never deletes the last store to a frame object)
+    volatile u32 pre_pad[8]; // !FAKE: phantom-frame-slot volatile filler -- the target reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction in asm/funcs/func_800480C0.s reads or writes; GCC 2.7.2 get_frame_size/expand_decl reserves declared locals (config/mips/mips.c:4443-4475), while any referenced producer costs >=1 store (flow.c:1740-1741 never deletes the last store to a frame object)
     u32 *p;
     s32 base_addr;
     s32 count;
     s32 new_var;
     base_addr = arg0;
     p = (u32 *)arg0;
-    arg0 = 0; // !FAKE: dead store to a PARAMETER (sanctioned dead-store family, .claude/rules/dead-store-fake-exception.md; identical construct in the matched sibling func_80047FBC at src/text1b.c:91). It defeats cse2's canonical-register substitution, which otherwise folds the {arg0, p, base_addr} equivalence class and emits one base copy instead of two; mechanism: GCC 2.7.2 cse.c canonical-reg substitution; lever-exhaustion: hypotheses.md s1-s3
+    arg0 = 0; // !FAKE: dead store to a PARAMETER (dead-store family; same construct as sibling func_80047FBC) -- defeats GCC 2.7.2 cse.c canonical-register substitution, which otherwise folds the {arg0, p, base_addr} equivalence class and emits one base copy instead of two
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
     count = *(p++);
@@ -1406,39 +1396,20 @@ void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
         } while ((count--) != 0);
     }
 }
-/* func_800481E8 — COMPLETED-C 2026-08-22 (commit 272e47c4, layer-2 PASS;
- * allowlist row granted per the parked-but-proven audit, ruling cbcfda04).
- * Two annotated constructs, both in sanctioned families:
- *  - `volatile u32 pre_pad[8];` — phantom-frame-slot volatile pad (owner
- *    ruling 2026-08-18), ARRAY form, first-decl, engine allowlist row in
- *    engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS.
- *  - `arg0 = 0;` — dead-store-fake-exception (dead store to a param), same
- *    lever Judge-PASSed on the in-file sibling func_80047EE8.
- * Full derivation: docs/grind/decisions.md 2026-08-20/22 entries + this
- * block's pre-completion history in git (272e47c4^). */
 void func_800481E8(s32 arg0, s32 arg1)
 {
-    /* Pure C (s1 recon): the sibling InitHiraRmd_80047FBC prologue technique
-     * transfers — base-copy staging + function-scope precompute makes GCC
-     * stage arg0 through $s0 first ($s0=$a0; $s2=$s0), replacing the former
-     * INLINE_MOVE_ALIASING __asm__ + $16 pin. The `arg0 = 0;` dead store is
-     * load-bearing FAKE-family (dead-store-fake-exception, sibling
-     * precedent in-file): without it GCC keeps arg0 live in $a0 and emits
-     * `addu $s0,$a0,$v0` (measured, s1 probe); with it the second pointer
-     * binds to base in $s2 — matching target.
-     */
-    /* FAKE: unwritten leading frame pad (phantom-frame-slot volatile pad local
-     * family, owner ruling 2026-08-18, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:390).
-     * Mechanism: GCC 2.7.2 function.c assign_stack_local reserves the array slot at
+    /* Base-copy staging + function-scope precompute (with the `arg0 = 0;`
+     * FAKE below) make GCC stage arg0 through $s0 first ($s0=$a0; $s2=$s0),
+     * as in the target. */
+    /* FAKE: unwritten leading frame pad (phantom-frame-slot volatile pad family;
+     * engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS row)
+     * -- GCC 2.7.2 function.c assign_stack_local reserves the array slot at
      * RTL-expand from the source DECL and never reclaims frame_offset after DCE, so a
      * declared-but-untouched local aggregate reproduces target's allocated-but-unwritten
      * 32-byte vars region (.frame $sp,72 - args 0x00-0x17 incl the 5th-arg slot
      * sw $v0,0x10($sp); vars 0x18-0x37 with ZERO sw/lw; regs 0x38-0x47). Identical
-     * shape and size to the two granted siblings in this file (func_80047EE8 /
-     * func_80047FBC, owner ruling 2026-08-20). Lever-exhaustion: recon (s1),
-     * structural entry-condition bisection + 11-variant .frame grid (s2), AND-gate
-     * re-evaluation (s3), ~152k permuter iterations across three independent seeds
-     * (s2/s4) - every honest producer measured inert; see hypotheses.md.
+     * shape and size to the FAKE pads of the two siblings in this file (func_80047EE8 /
+     * func_80047FBC).
      * SOTN-master precedent: volatile u32 pad; // !FAKE: at src/st/sel/2C048.c:564
      * (docs/reference/sotn-construct-index.md:101); volatile u32 pad[4]; // FAKE at
      * src/st/sel/stream.c:80 (sotn-construct-index.md:103). */
@@ -1449,7 +1420,9 @@ void func_800481E8(s32 arg0, s32 arg1)
     s32 a0_for_call;
     p = (u32 *)arg0;
     base = p;
-    arg0 = 0; /* FAKE: breaks $a0==base association, see block comment */
+    arg0 = 0; /* FAKE: dead store to a param -- breaks the $a0==base association:
+               * without it GCC keeps arg0 live in $a0 and emits `addu $s0,$a0,$v0`;
+               * with it the second pointer binds to base in $s2, as in the target. */
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     p = (u32 *)((s32)base + (((*p) >> 2) << 2));
     count = *(p++);
@@ -1596,14 +1569,9 @@ s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
      * mechanism: RTL expansion's commutative-operand canonicalization
      * (expand_binop) keeps two equal-precedence pseudos in source order, and
      * no later pass (combine/sched) reorders the addu operands — so only the
-     * off-first source spelling emits target's `addu $v1,$v0,$v1`;
-     * lever-exhaustion: memory/grind/func_80048530/ s1-s4 — every natural
-     * ordering and every non-swap off-first spelling measured dead
-     * (natural base+off = 1 insn off; off+=base / mem-inline / fresh-walker
-     * misroute the walker, scores 22/20/12; cc1psx also emits base-first from
-     * the natural order); sanctioned by the 2026-08-20 owner ruling in
-     * .claude/rules/or-tree-shape-shift.md (single justified target-matching
-     * operand order). */
+     * off-first source spelling emits target's `addu $v1,$v0,$v1` (natural
+     * base+off is 1 insn off; cc1psx also emits base-first from it); the
+     * single-order carve-out in .claude/rules/or-tree-shape-shift.md. */
     arg0 = off + base;
     count = *(s32 *)arg0;
     arg0 += 4;
@@ -1666,23 +1634,16 @@ u16 cx, cy;
             spr->clut = 0;
         }
         p = tim + 2;
-        /* !FAKE: cancellation pair (sanctioned family: semantically-null
-         * fabricated statement pair, pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:370-382,
-         * owner ruling 2026-08-18, F6 ESTABLISHED — exact `i++; i--;` shape).
+        /* !FAKE: cancellation pair (F6 family, exact `i++; i--;` shape).
          * What: net-zero adjacent same-variable inc/dec of tim, byte-free
-         * (survives cse1/cse2, then flow.c dead-store elimination deletes both:
-         * NOTE_INSN_DELETED in .flow dump, tmp/grind/func_800485EC/dumps/).
+         * (survives cse1/cse2, then flow.c dead-store elimination deletes both).
          * Mechanism: cse.c fold_rtx PLUS-association (cse.c:5589-5666, applied
          * uncosted to addresses via find_best_addr, cse.c:2663) rewrites the
          * pixel-block reads onto tim whenever p's recorded equivalent
          * (plus tim 8) is valid; the pair bumps reg_tick(tim) so exp_equiv_p
          * invalidates that equivalence and the reads keep p as base, matching
-         * target's addiu v1,s1,8 + lhu 2(v1)/lw 0(v1)/addiu v1,v1,4.
-         * Lever-exhaustion: memory/grind/func_800485EC/hypotheses.md s1-s2 —
-         * natural fresh-def folds (7), tim-walker misallocates to s1 (39),
-         * live tim->pixdata routing cascades (22), def-in-arms leaves two
-         * unmergeable addius (3), full-tail duplication into arms (16); the
-         * cse.c mechanism proof shows every join-local p==tim+K chain folds. */
+         * target's addiu v1,s1,8 + lhu 2(v1)/lw 0(v1)/addiu v1,v1,4;
+         * every join-local p==tim+K chain folds otherwise. */
         tim++;
         tim--;
         spr->x = x;
@@ -1805,7 +1766,7 @@ void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 
 void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
-extern s32 *func_800467B8(s32); /* corrected to the definition (src/sound.c:134) — owner ruling 2026-08-24, escalation packet func_80048AD0 */
+extern s32 *func_800467B8(s32); /* matches the definition above */
 extern void func_800468B0(s32);
 extern u8 D_80099BCC;
 s32 func_80048AD0(s32 arg0) {
@@ -1833,8 +1794,7 @@ s32 func_80048AD0(s32 arg0) {
        global.c expand_preferences propagates it to the counter, which stops
        prune_preferences making the counter yield $a0 to `delta`. With a
        separate counter the pair allocates $a2/$a0 instead of target's
-       $a0/$a2. Measured exhaustion: ~60 variants over 8 sweeps + kills in
-       grind s1/s2 — see memory/grind/func_80048AD0/evidence.md. */
+       $a0/$a2. */
     for (sound = 0; sound < 0x11; sound++) {
         *(s16 *)(q - 8 + sound * 0x68) = sound;
         *(s16 *)(q - 6 + sound * 0x68) = 9;
@@ -2000,8 +1960,7 @@ void func_80048FFC(s32 arg0) {
         s32 sy = y + yf;
         s32 h1 = period - phase;
         /* FAKE: strip two's height taken as an s16 at the top of the level; rect.h = phase
-         * directly, an s32 copy or a (s16) cast drops the t1 copy (231 insns, 57 diff lines;
-         * memory/grind/func_80048FFC/evidence.md 2026-10-02 oct2-a2). */
+         * directly, an s32 copy or a (s16) cast drops the t1 copy. */
         s16 h2 = phase;
         rect.x = x + xf;
         rect.y = sy;
@@ -2121,8 +2080,7 @@ void func_80049584(s32 arg0) {
        mechanism: global.c allocno allocation — only a pseudo that crosses a
        CALL is eligible for a call-saved hard reg, so sharing one variable is
        what puts the loop counter in $s0 (target); with a separate `total` the
-       counter takes a call-clobbered reg and 12 insns diverge.
-       lever-exhaustion: memory/grind/func_80049584/hypotheses.md (H1/H3). */
+       counter takes a call-clobbered reg and 12 insns diverge. */
     s32 i;
     s32 unchanged;
     s32 rank;
@@ -2218,7 +2176,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
      * the call, sched1 moves the andi past func_8004153C but ahead of the copy
      * of its result (`andi v1,s3,1; move s1,v0`, as in the target); written
      * inside the part expression or after the call it follows the copy and
-     * takes $v0 (5).  Ledger: memory/grind/func_80049718/manual-2026-10-01/scores.txt */
+     * takes $v0. */
     s32 side;
     if (D_800EF980[arg0] < 0) {
         func_80052C10();
@@ -2227,7 +2185,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     /* FAKE: dead store (dead-store-fake-exception).  The 0 is never read: the
      * flags == 1 path skips the second object.  Flow cannot tell, so the store
      * stays as the target's `move s5,zero`; without it that instruction is
-     * missing (1).  Ledger: memory/grind/func_80049718/manual-2026-10-01/scores.txt */
+     * missing. */
     val58 = 0;
     obj[0] = 0;
     obj[1] = 0;
@@ -2250,9 +2208,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
              * compound-assigned again, read (!= 1) - as SOTN reuses a parameter
              * (Q51).  Copied into a local instead, global.c's allocno order flips:
              * rot_in's pseudo (priority 3333) outranks the table-address pseudo
-             * (3000) for $s0, against 2962 / 3333 in place (BB2_ALLOC_DEBUG; 9).
-             * Ledger:
-             * memory/grind/func_80049718/manual-2026-10-01/scores.txt */
+             * (3000) for $s0, against 2962 / 3333 in place. */
             /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
             flags &= 0x7FFF;
             side = flags & 1;
@@ -2284,9 +2240,8 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             /* FAKE: named intermediate (no-new-park-categories entry 6).  The
              * table is read before the object's fields are written, as in the
              * target (lh first); storing D_800EF980[arg0] * 2 + 1 directly at
-             * the +2 store reads it last (17), and moving that store first
-             * reorders the stores (10).  Ledger:
-             * memory/grind/func_80049718/manual-2026-10-01/scores.txt */
+             * the +2 store reads it last, and moving that store first
+             * reorders the stores. */
             s32 frame = D_800EF980[arg0];
             u8 *ot;
             obj[0] = 3;
@@ -2307,51 +2262,22 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     }
 }
 extern s16 D_80099D3C[];
-/* func_80049A2C - session s10 (rederive) INTEGRATION-HANDOFF FORM - BYTES PROVEN.
- *
- * FULL DRIVER BUILD with this body applied over src/text1b.c:868's
- * INCLUDE_ASM gives SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
- * (tmp/grind/func_80049A2C/s10/build_P1_oracle_match.log). Object-level
- * word diff vs asm/funcs/func_80049A2C.s: 0 real diffs of 126 instructions
- * (relocation fields masked; tmp/grind/func_80049A2C/s10/bytediff_P1.log).
- * cc1 frame: .frame $sp,48 # vars= 8, regs= 5/0 - target's exact signature,
- * the first time in ten sessions vars=8 and regs=5/0 have coexisted.
- *
- * The ONLY non-ordinary construct is the first declaration:
- *   volatile u32 pre_pad[2]; // !FAKE ...
- * - the phantom-frame-slot volatile pad family, owner ruling 2026-08-18
- * (pre-slim-2026-10-01:.claude/rules/no-new-park-categories.md:390): ARRAY form, first-decl
- * position, no (void) shim, volatile-qualified, FAKE-annotated. SOTN-master
- * PSX precedent: docs/reference/sotn-construct-index.md L620/L626/L627
+/* func_80049A2C: the only non-ordinary construct is the first declaration,
+ * `volatile u32 pre_pad[2];`, a labelled FAKE (phantom-frame-slot volatile pad family; row
+ * ("pre_pad", 2) in engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS). It
+ * gives target's frame signature, .frame $sp,48 # vars= 8, regs= 5/0.
+ * Target's +8 vars region is reachable from ordinary C only via a
+ * combine-orphaned pseudo (reload1.c:2404 alter_reg), and the only
+ * fold-capable symbol (D_80099D3C) cannot host it: the fold that creates the
+ * orphan shortens the arg1 index chain, flips sched1's hoist, and costs a
+ * SIXTH callee-saved register (target saves five). D_800EF980/D_80099CC8 are
+ * single-index (CSE merges every respelling), and the function is loopless,
+ * so no back-edge carrier exists; hence the FAKE pad. SOTN-master PSX precedent:
+ * docs/reference/sotn-construct-index.md L620/L626/L627
  * (volatile char pad[8] //! FAKE; volatile u32 pad; volatile u32 pad[4]).
- * Working integration precedent: the 2026-08-20 OWNER RULING granting
- * ("pre_pad", 8) rows to text1b.c siblings func_80047EE8 / func_80047FBC,
- * and the same-day func_800481E8 INTEGRATION HANDOFF.
- *
- * Lever-exhaustion (why the pad is unavoidable, measured not argued):
- * s7-s9 proved target's +8 vars region is a phantom slot REACHABLE from
- * ordinary C only via a combine-orphaned pseudo (reload1.c:2404 alter_reg),
- * and s9's exclusion law shows the only fold-capable symbol (D_80099D3C)
- * cannot host it: the fold that creates the orphan shortens the arg1 index
- * chain, flips sched1's hoist, and costs a SIXTH callee-saved register
- * (target saves five). D_800EF980/D_80099CC8 are single-index (CSE merges
- * every respelling). s10 measured the five remaining non-array carriers
- * (H-S9C a-e: vehicle+0x50C, prev-obj across the jal, ot+4 hoist, temp_v1*2
- * across the beq, a1_val+1 intermediate) - all vars=0. The function is
- * loopless, so no back-edge carrier exists. No honest producer of the slot
- * is compatible with target's instruction stream; the sanctioned pad is the
- * documented FAKE carve-out the 2026-07-19/20 Judge constraints anticipated.
- *
- * Sandbox note: scores 12 (frame delta) until the operator adds
- *   "func_80049A2C": frozenset({("pre_pad", 2)}),
- * to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS (owner-class
- * surface). With the pad honoured the build is byte-identical (SHA1 proof
- * above). Prior Judge-FAILed constructs (dummy[2], new_var4, empty if,
- * inline-assign, new_var3 holder) are all retired from this body.
- * Full record: memory/grind/func_80049A2C/evidence.md + hypotheses.md [s10].
  */
 void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
-    volatile u32 pre_pad[2]; // !FAKE: phantom-frame-slot volatile filler (owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md): target reserves 8 locals bytes at sp+0x10..sp+0x17 that no instruction touches; mechanism: GCC 2.7.2 get_frame_size reserves declared locals
+    volatile u32 pre_pad[2]; // !FAKE: phantom-frame-slot volatile filler (.claude/rules/no-new-park-categories.md): target reserves 8 locals bytes at sp+0x10..sp+0x17 that no instruction touches; mechanism: GCC 2.7.2 get_frame_size reserves declared locals
     u8 *new_var6;
     u8 *new_var5;
     s16 *new_var7;
