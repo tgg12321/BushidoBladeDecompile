@@ -1,0 +1,26 @@
+{
+  "verdict": "PASS",
+  "decision": "PASS",
+  "function": "_SsVmFlush",
+  "body_hash": "cdc1b0770bbecc1f",
+  "reviewer": "rv2-ssvm-1",
+  "scope": "match",
+  "summary": "Plain SOTN-SpuVmFlush-shaped body on the existing typed declarations; no codegen-only constructs, no false claims, no wall items; byte match verified.",
+  "findings": [
+    {"item": 1, "result": "PASS", "detail": "layer2 hash cdc1b0770bbecc1f (staged == working tree, sha1 6ee930cf...); sandbox --disable all score 0, 271/271; build/bb2.exe (built 04:41:06, after src/main.c 04:40:35) SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa; rebuild2.txt build_matches true. Not rebuilt by reviewer (lock held by oct2-a4)."},
+    {"item": 2, "result": "PASS", "detail": "No __asm__/asm, no register pins, no barriers, no volatile in the body; only src/main.c staged, no Makefile/rule/pipeline/canonical-list changes."},
+    {"item": 3, "result": "PASS", "detail": "Every statement maps to the SOTN vmanager.c:830-898 @aa53500 SpuVmFlush or to the target's LIBSPU-call path. SpuVoiceAttr offsets checked against target stack stores (volume 0x18/0x1A, pitch 0x24, addr 0x2C, adsr1/2 0x4A/0x4C off attr@sp+0x10); mask bits 3/0x10/0x80/0x60000 are the libspu VOLL|VOLR/PITCH/WDSA/ADSR1|ADSR2 bits. `(u16)sreg_buf[i*8+3] << 3` is the truthful unsigned 8-byte-unit start address (target lhu+sll 3). `(x & 0xFF) << 16 | y` is the semantic upper-8-voice merge, same spelling as vmNoiseOn main.c:1619. `if (attr.mask != 0)` is semantic. Four new prototypes match definitions main.c:2810/3173/3240/4086 exactly. psyz-name comments consistent with use sites (_autovol/_autopan called on auto_vol/auto_pan; orev1/2 passed to SpuSetReverbVoice, already stated main.c:1520; envx_ptr is the 0..15 history cursor). Moved typedef is textually identical; moved externs keep their types. Function comment claims verified against body."},
+    {"item": 4, "result": "PASS", "detail": "All voice fields through include/sound.h struct SpuVoice _svm_voice[24]; _svm_sreg_buf (s16[] main.c:1122), _svm_sreg_dirty, _svm_envx_hist through their existing single declarations with the same i*8+n indexing the completed siblings use (main.c:1141,1179,1200,1589). No splat sub-symbol (_svm_voice_plus_0x6/0x1D, D_800F4E36/42, D_80102A7C, _svm_sreg_buf_plus_0x6) referenced in any C. No header declares SpuVoiceAttr; the existing file-scope typedef is moved, not duplicated."},
+    {"item": 5, "result": "PASS", "detail": "Zero FAKE constructs; nothing to ablate."},
+    {"item": 6, "result": "PASS", "detail": "This review."}
+  ],
+  "hygiene_debt": [
+    "Redundant same-type redeclarations now exist in main.c: _svm_okof2 (1244 and 1509), _svm_okof1 (1243 and 1623), SpuSetNoiseVoice (1248 and 1506) — consolidate.",
+    "D_80103604 / D_80102BF8 / D_801027E8 / D_800F1B14 / D_800F2B68 keep splat names (psyz names in comments only); D_80103604 declared s32 where psyz has unsigned int.",
+    "Retired-asm-only splat sub-symbols (_svm_voice_plus_0x6, _svm_voice_plus_0x1D, D_800F4E36, D_800F4E42, D_80102A7C, _svm_sreg_buf_plus_0x6) not retired from symbol lists (already in the commit's Hygiene debt line).",
+    "SpuVoiceAttr is a libspu type still defined at file scope in main.c rather than a shared header (pre-existing; moved, not introduced).",
+    "func_8008B488 still called through an implicit declaration ahead of its void definition (pre-existing pattern)."
+  ],
+  "required_fixes": [],
+  "next_action": ""
+}
