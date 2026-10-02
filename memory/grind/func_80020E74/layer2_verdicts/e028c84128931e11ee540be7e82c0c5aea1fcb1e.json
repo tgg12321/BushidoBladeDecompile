@@ -1,0 +1,27 @@
+{
+  "decision": "PASS",
+  "verdict": "PASS",
+  "function": "func_80020E74",
+  "body_hash": "f82ccae3e0bffb29",
+  "reviewer": "rv2-20E74-B",
+  "scope": "match",
+  "summary": "Pure-C body on the part-A types; byte-exact (sandbox --disable all 0/231, fresh build SHA1 == oracle); two FAKEs, both annotated with measured, re-verified reasons; no cross-symbol access, no wall construct.",
+  "findings": [
+    {"construct": "item 1", "result": "pass", "explanation": "layer2 hash f82ccae3e0bffb29 (src/ body == memory/grind/func_80020E74/candidate.c). sandbox --disable all: score 0, 231/231, cheat_asm_stripped 0. build/bb2.exe (05:29:58) postdates every modified input (latest src/code6cac_tu2.c 05:29:32), sha1sum 62efab4f73f992798c43e8c730aa43baa10bb4fa; rebuildAB.txt fresh:true. No rebuild run (lock held by oct2-a6)."},
+    {"construct": "item 2", "result": "pass", "explanation": "No asm, register pins, barriers, or build/Makefile/rule/config change; staged+unstaged diff touches only include/code6cac.h, src/code6cac.c, src/code6cac_tu2.c, src/ings.c (metrics excluded)."},
+    {"construct": "u16 loads[130] /* FAKE: frame layout */", "result": "pass (item 3)", "explanation": "Referenced live object, not a detector-stripped pad, so the _SANCTIONED_UNWRITTEN_PADS row / phantom-frame-pad family (unreferenced volatile pads) does not govern it; it is the dead-vars-local-array carve-out 2 shape (extend a live object with an unwritten tail), whose blocking part under Q91 is only the FAKE label. Target asm forces the slack: frame 0x140, saves at 0x118..0x13B, args 0x10, locals 0x10..0x117 with only sh at 0x10/0x12 ($s3 = sp+0x10 walks [0..1]). Re-measured: loads[2] = score 20."},
+    {"construct": "s32 j shared by loop 1 (character) and loop 2 (menuDat index)", "result": "pass (item 3)", "explanation": "Annotated FAKE with measured reason; target keeps both in $s0 (asm L80020EF8 / L800210A4). Re-measured separate locals = 3. Neutral name claims no purpose."},
+    {"construct": "cross-symbol access", "result": "none (item 3)", "explanation": "D_800A38C4[0]/[1]/[i] on u16 D_800A38C4[2]; D_800A38C0[i] on u8[2]; D_800A3888[i] on [2]; D_801027B0[i][0..4] on s32[][5] (no D_801027B4..C0 alias used); menuDat[j].id on MenuDatEntry[18]. Target's indexed sh %lo(D_800A38C4)($at+$s4) bears out the single-object array."},
+    {"construct": "item 4 types/casts", "result": "pass", "explanation": "All accesses through header declarations (D_8008DB1C[27][8], g_practice_menu_table[].unk_48 u16, Tbl800A3860Entry unk_03/unk_04[4], menuDat). Casts are value casts only: (s32)D_800A3888[i] as an s32 argument, (s32)D_800A3860[i] + offset into s32 D_801027B0. cdrom_StartReadAt prototype matches its definition (src/code6cac_b5_post.c:54)."},
+    {"construct": "item 5 simplest form", "result": "pass", "explanation": "Whole-cluster ablation re-measured: loads[2] 20, separate locals 3, both removed 23. No known byte-exact spelling with fewer FAKEs in the ledger/rejected/."},
+    {"construct": "comments and message", "result": "pass", "explanation": "Function comment (motion sets into D_800A3888, models via menuDat) matches the body; chr/costume naming consistent with D_8008DB1C[chr][costume] and the caller at src/code6cac_tu2.c:1908, not shown false. Message numbers (231 -> 0/231, scores 20/3, SHA1) and paths (rejected/loads2-frame.c, separate-locals-score3.c, evidence.md 'rotation reason') verified."}
+  ],
+  "evidence": [],
+  "next_action": "",
+  "required_fixes": [],
+  "hygiene_debt": [
+    "extern s32 cdrom_StartReadAt(s32, s32, s32, s32) is file-scope in src/code6cac_tu2.c:3315, not in a header; src/text1a_c_tu2.c:250 declares it returning void (prototype disagreement across TUs).",
+    "include/code6cac.h:1046-1049 still carries per-word aliases of D_801027B0 (D_801027B4..D_801027C0) used elsewhere (e.g. src/code6cac_tu2.c:3708 (&D_801027B4)[idx]); not in this body.",
+    "loads[130] frame derivation/range noted inline only (carve-out 2 frame-math proof is hygiene); the comment says 0x100 untouched bytes, the region past loads[1] is 0x104 incl. alignment."
+  ]
+}
