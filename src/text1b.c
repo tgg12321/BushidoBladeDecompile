@@ -3608,7 +3608,7 @@ extern s32 *func_800469C4(s32);
 extern void *stage_GetDataPtr(void);
 extern s32 stage_GetId(void);
 
-extern void func_8003FFC4(s32);
+extern void func_8003FFC4(s32 *);
 extern void func_8003F218(s32);
 extern s32 math_FovToScreenDist(s32);
 extern void SetGeomScreen(s32);
@@ -3627,7 +3627,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     s32 ret;
     s16 *t;
     s32 p;
-    s32 v;
+    s32 *v;
     s32 n;
 
     if (a6 != 0) {
@@ -3664,11 +3664,11 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     if (!(s->unk4 & 0x40000000)) {
         s->unk44[1] = -1;
     }
-    v = (s32)func_8004153C(0);
+    v = func_8004153C(0);
     if (v != 0) {
         func_8003FFC4(v);
     }
-    v = (s32)func_8004153C(1);
+    v = func_8004153C(1);
     if (v != 0) {
         func_8003FFC4(v);
     }
