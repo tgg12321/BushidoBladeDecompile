@@ -68,3 +68,12 @@ byte measured; one -G8 or -G0 TU for all of text1b is not (camera_CalcAngles at 
 That needs a file boundary the split rule (gp test only) does not admit - an owner question
 (docs/grind/borderline.md 2026-10-01 camera_CalcAngles entry). Also blocking that route in our build:
 func_80048FFC (rotated, INCLUDE_ASM in that part) would float under -G8 until it lands in C.
+
+## 2026-10-01 — owner ruling Q89 (rules 133afdab8): split-test input for the cut before math_RotMatrixZYX
+
+g0proof/gpspan.py -> gpspan.out: every function of src/text1b.c in file order (254), the %gp_rel symbols of
+its shipped code (asm/funcs), any kind (statics, .sdata, COMMON). Cut index 101 (head part func_800460E4 ..
+func_8004A09C): NO gp symbol is reached from both sides. Head-part gp symbols: D_800A3248/4A/4C (.sdata),
+the statics D_800A33B0..D_800A33EC, g_gpu_ot256_ptr (COMMON). Still owed for the split: the rodata-object-
+alignment conditions 2-4 and section contiguity at the cut, func_80048FFC in C, real types for the
+small-declared objects (g_cam_bone_data2, D_800EF070's record), the extern screening, the both-ways build.
