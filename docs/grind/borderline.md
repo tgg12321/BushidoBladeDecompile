@@ -434,3 +434,52 @@ options:
 - (B) Keep camera_CalcAngles in assembly; text1b stays one -G0 file.
 
 recommendation: (A). It is a move of existing text with no new code, and it is reversible.
+
+## 2026-10-02 — _exeque — does closer Ruling 4 still admit a NEW volatile row (field-level GpuCtx.unk08) after Q91? — policy-question
+category: policy-question
+
+Evidence: memory/grind/_exeque/evidence.md [s13], [s13b]; rejected/volatile-unk08.c (body_hash e2745fa88ffbd7c1);
+layer-2 rv2-exeque-1 FAIL (memory/grind/_exeque/layer2.jsonl, item 3).
+- Score is 0/187 (oracle green) with `volatile s32 unk08` on GpuCtx +0x08 (the old D_8009BE7C). It is 2/187
+  with any non-volatile spelling.
+- Cause, named from a reorg dump: fill_simple_delay_slots moves `g_gpu_ctx.unk08 = 0` into the drawsync_cb
+  `jalr` delay slot. The target keeps `sw $zero,0($v1); jalr $v0; nop` (0x8007D988).
+- This is formally the only route. A non-volatile store never conflicts with the call's resources. Only
+  volatile, a label/jump, or asm keeps it out of the slot (evidence.md [s13b], with reorg.c and jump.c line
+  cites).
+- unk08's only consumers are _addque2 (sets 1) and _exeque (test-and-clear; _exeque is also the DMA-2 IRQ
+  callback). Both are verbatim PsyQ 4.0 LIBGPU/SYS.
+- The reviewer's ground: the use site is none of legitimate-volatile-interrupt-touched's three shapes.
+  Closer Ruling 4 (c80d976e, 2026-07-10, ground-truth-codegen volatile for census-proven Sony module state,
+  no IRQ prong; text at cd19d7a2^:docs/closer/rulings.md:68-83) is in no current catalog file. Its existing
+  rows (_que, _qin, _qlog in this module) are grandfathered, not a route for new rows.
+- Reviewer's question, verbatim: "Does closer Ruling 4 (2026-07-10; ground-truth-codegen volatile for
+  census-proven Sony library module state, no IRQ prong) survive owner ruling Q91 as a route of the IRQ-touched
+  extern allowlist for NEW rows, including a field-level qualifier on a struct member (GpuCtx.unk08), given that
+  legitimate-volatile-interrupt-touched.md now states the two prongs as BOTH required and does not mention
+  Ruling 4?"
+- The orchestrator declined to grant it under its delegation (Q91 item 3 refuses volatile outside the catalog
+  even when annotated).
+
+disposition taken: _exeque stays INCLUDE_ASM and is not unparked. The passing body and measurements are banked
+in its ledger. A grant needs a rules: commit that writes the route into a catalog file, then a fresh layer-2.
+After that, the banked body (1 FAKE do-while(0)) is the landing candidate.
+
+Question for the owner (plain language): "Sony's library code for _exeque reaches the original bytes only if one
+flag in the graphics library's state is declared volatile. The compiler then cannot tuck the flag's clear
+into the next call's delay slot. No other C spelling can produce those bytes, and that is proven from the
+compiler source. The flag is shared between the DMA interrupt handler and the main code. The volatile rule's
+three listed use shapes do not include 'test the flag, clear it, call the callback'. In July you allowed
+volatile on Sony library state when the code is unreachable without it (closer Ruling 4); three rows of this
+same module use that. May that route still add a new row, here for one struct field?"
+
+options:
+- (A) Write closer Ruling 4 into legitimate-volatile-interrupt-touched.md as a third route: census-proven Sony
+  library module state, codegen measured unreachable without volatile, per-symbol or per-field allowlist row.
+  Land _exeque with the field-level row.
+- (B) Add "test-and-clear of an IRQ-shared flag" as a fourth use-site shape. The handler-side clear in
+  _exeque, running from DMA-2 IRQ context, versus _addque2's set qualifies.
+- (C) Refuse. _exeque stays INCLUDE_ASM permanently at 2/187.
+
+recommendation: (A). It restores a July owner ruling that the module's existing rows already rely on. It is
+narrow (Sony census state only), and the evidence is a named compiler decision, not a score chase.

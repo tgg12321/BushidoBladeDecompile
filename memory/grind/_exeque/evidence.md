@@ -402,3 +402,47 @@ gpu.h; `--others` checks every other display.c function stays 0).
   bios.c:273-276 @aa53500 (splat.us.main.yaml:169, matched C).
 - SOTN sys.c:797 reference (v1.83) not scored: different control flow (null-func _reset/printf path,
   CheckCallback tail) that this build does not have.
+
+## [s13b] 2026-10-02 oct2-b6 — layer-2 rv2-exeque-1 FAIL (item 3) on body e2745fa88ffbd7c1; volatile-free residual 2 formally closed
+
+FAIL: `volatile s32 unk08` is outside the item-3 volatile catalog. The use site is one test-then-clear,
+so the two-prong rule's prong 2 fails. Closer Ruling 4 is in no current catalog file; the rows that use
+it are grandfathered completions, not a route for a new row. The rest of the body passed: do-while(0)
+FAKE, drawsync_cb cast, s32 forward decls, item 4, item 2. Body banked at rejected/volatile-unk08.c.
+Tree reverted to INCLUDE_ASM, oracle re-verified.
+
+Volatile-free search on the final block (plain gpu.h, rest of body = rejected/volatile-unk08.c), all in
+rejected/s13-tail/:
+| variant | score |
+|---|---|
+| t03 nested ifs | 2 |
+| t04 inner cb local | 2 |
+| t05 pointer local | 2 |
+| t06 goto skeleton | 2 |
+| t07 do-while(0) around the clear | 2 |
+| t08 cb local, then clear | 2 |
+| t11 GpuCtx* local | 5 |
+| t09 ret local | 6 |
+| t01 cb local | 10 |
+| t02 flag local | 10 |
+| t10 flag tested first | 14 |
+
+Pass named (instrumented cc1 BB2_DBR_DEBUG, dumps tmp/_exeque/dbr_{plain,vol}/):
+- fill_simple_delay_slots for call_insn 288 (`jalr v0`); its first backward trial is insn 281
+  `(set (mem/s:SI (reg v1)) (const_int 0))`.
+- plain: refset=0 setset=0 setneed=0, elig=1, so the store is filled into the slot.
+- volatile: setset=1 setneed=1 from res.volatil alone (reorg.c:756-760 resource_conflicts_p), so the
+  store is not filled.
+Why no volatile-free spelling exists:
+- The store sets only memory. The call pattern references only v0 (the CALL case skips its MEM) and
+  sets only ra. So refset/setset/setneed are 0 for any non-volatile `sw $zero,0(reg)`.
+- The store is length 1 and dslot no, so it is eligible (mips.md:135).
+- Only a CODE_LABEL, a jump or an asm/unspec_volatile insn between the store and the call can stop the
+  scan (stop_search_p, reorg.c:719). The target has no branch target there.
+- An unreferenced user label becomes NOTE_INSN_DELETED_LABEL (jump.c:3494), and notes do not stop the
+  scan.
+- Any other intervening insn would emit bytes the target does not have.
+So the target's unfilled slot is reachable only through volatile, a label/jump, or asm. Volatile is the
+one route that is not item 2, and the bar refuses it outside the catalog. A permuter cannot help, because
+the search space has no non-volatile preimage. (Earlier s4/s5 campaigns of >20k iterations found none.)
+Disposition: policy-question in docs/grind/borderline.md (2026-10-02 _exeque). _exeque stays INCLUDE_ASM.

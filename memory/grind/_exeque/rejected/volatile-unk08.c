@@ -1,6 +1,7 @@
-/* _exeque candidate (s13). 0/187 ONLY with include/gpu.h GpuCtx.unk08 declared `volatile s32`; that
- * volatile FAILed layer-2 (rv2-exeque-1, item 3). Pending policy-question docs/grind/borderline.md
- * 2026-10-02 _exeque. Plain header: 2/187 (proven floor without volatile, evidence.md [s13b]). */
+/* REJECTED (layer-2 rv2-exeque-1 FAIL, item 3, 2026-10-02): body_hash e2745fa88ffbd7c1, scored 0/187
+ * ONLY with include/gpu.h GpuCtx.unk08 declared `volatile s32` (volatile outside the catalog:
+ * test-then-clear is none of the three use-site shapes; closer Ruling 4 is not a current route).
+ * Without the volatile field this exact body scores 2 (unk08 = 0 fills the jalr delay slot). */
 /* PsyQ 4.0 LIBGPU SYS: _exeque — verbatim-linked Sony object (census 2026-07-09); C ref:
  * sotn-decomp src/main/psxsdk/libgpu/sys.c:797 is an older revision (null-func reset path,
  * CheckCallback tail) and was not adopted. Drains the packet queue; when it is empty and a
