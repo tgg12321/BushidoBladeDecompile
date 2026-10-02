@@ -36,20 +36,20 @@ s32 func_8005490C(void) {
     s16 frame[0x42];
     s16 *v;
     s32 i;
-    /* Ruling 11 (.claude/rules/reused-local-necessity.md): holds three
-       values, the player objects func_8004153C(0) and func_8004153C(1) on the
-       first frame and func_8004153C(i) in the player loop.  Shared, it is one
-       allocno that crosses the loop's func_800198D0 call and takes $s0 for
-       all three (move s0,v0 at 0x80054A50, 0x80054A6C, 0x80054CF8); split,
-       the first-frame values take $v0 and both moves vanish (9).  Record:
-       memory/grind/func_8005490C/r11/. */
+    /* FAKE: one variable for the three player objects, func_8004153C(0) and
+       func_8004153C(1) on the first frame and func_8004153C(i) in the player
+       loop.  Shared, it is one allocno that crosses the loop's func_800198D0
+       call and takes $s0 for all three (move s0,v0 at 0x80054A50,
+       0x80054A6C, 0x80054CF8); one local per value: 9 (the first-frame
+       values take $v0 and both moves vanish).  Record:
+       memory/grind/func_8005490C/r11/ (scores.txt, d_proof.txt). */
     s32 *player;
-    /* Ruling 11 (.claude/rules/reused-local-necessity.md): holds two values,
-       the camera-rotated z of the camera position and of player i's root
-       offset.  Read in two blocks it is not a local-alloc quantity, so
-       combine_regs does not tie it to the subtraction and it takes $t0
-       (sra t0 at 0x80054B30 and 0x80054E0C); one local per block is tied to
-       the subtraction (41).  Record: memory/grind/func_8005490C/r11/. */
+    /* FAKE: one variable for two values, the camera-rotated z of the camera
+       position and of player i's root offset.  Read in two blocks it is not
+       a local-alloc quantity, so combine_regs does not tie it to the
+       subtraction and it takes $t0 (sra t0 at 0x80054B30 and 0x80054E0C);
+       one local per block is tied to the subtraction: 41.  Record:
+       memory/grind/func_8005490C/r11/ (scores.txt, d_proof.txt). */
     s32 rot_z;
 
     if (s->unk0 < 0) {

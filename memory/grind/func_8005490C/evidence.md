@@ -146,3 +146,16 @@ pipeline (r11/scripts/mk.py, xbuild.py, xbm.sh); every other function in both TU
 - Retire with the Match: the 11 undefined_syms_auto.txt rows marked "retire with func_8005490C"
   (D_800EFB14..20, D_80101E00/02/04/08/3C/40/44); every other referrer is completed C or the unlinked
   asm/6CAC.s.
+
+## [s3] 2026-10-02 oct2-b1 — re-judged under Q91 (093ae1db8); landing prepared
+- Re-baseline on main (sbx.ps1, candidate.c as banked): 0/399. Under Q91 the two reused locals are
+  item-3 FAKEs: `player` / `rot_z` declaration comments now read `FAKE:` with the measured reason
+  (split 9 / 41, r11/scores.txt); the Ruling 11 package stays as the record. The `s` alias FAKE is
+  unchanged.
+- The open `g_anim_func_table` decision resolves to option (1): the TU's existing
+  `extern s32 g_anim_func_table[]` is the declaration (item 4), called through a function-pointer
+  cast as its other landed consumers do; retyping is recorded as hygiene debt, not a blocker.
+- Landing: (A) cheat-cleanup (func_8003FFC4 extern `s32 *`, func_80054604 `s32 *v`), then the Match
+  (body spliced at the INCLUDE_ASM line, 11 undefined_syms rows retired, D_800A3250 definition comment
+  corrected). Spliced src: func_8005490C 0/399, func_80054604 0/160, full build SHA1 == oracle.
+  layer2 hash: func_8005490C 27c6d9cf207af95e, func_80054604 b97c4f8f5486cce0.

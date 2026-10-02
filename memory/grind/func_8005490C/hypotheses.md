@@ -88,3 +88,6 @@ Frontier (2026-09-25):
   x/z copies, block-scoped `j`). Match message draft: match_msg_draft.txt
   (fill the (A) commit and the review line).
 - Retire on the Match: 11 undefined_syms_auto.txt rows "retire with func_8005490C".
+
+## [s3] 2026-10-02 oct2-b1 — READY_FOR_REVIEW
+- Frontier closed pending layer-2: candidate.c (FAKE-relabelled) is the staged body; see evidence.md [s3].
