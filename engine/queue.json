@@ -39,18 +39,6 @@
       "addr": "80020E74"
     },
     {
-      "func": "_SsVmFlush",
-      "file": "main",
-      "distance": 271,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "source-side first-loop address-rematerialization floor: best honest one-handle score 8/270; cc1psx 34/270; score-0 two-symbol form rejected by fresh review (memory/grind/_SsVmFlush/ledger.md)",
-      "rotated_at": "2026-09-23T03:59:40+00:00",
-      "rotation_count": 1,
-      "addr": "800863DC"
-    },
-    {
       "func": "func_800207C8",
       "file": "code6cac_tu2",
       "distance": 317,
@@ -76,11 +64,11 @@
     }
   ],
   "counts": {
-    "total": 6,
+    "total": 5,
     "active": 1,
     "by_status": {
       "active": 1,
-      "rotated": 5
+      "rotated": 4
     },
     "by_verdict": {
       "C": 1
