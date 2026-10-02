@@ -37,18 +37,17 @@ s32 func_8005490C(void) {
     s16 *v;
     s32 i;
     s32 *player;
+    s32 rot_z;
 
     if (s->unk0 < 0) {
         return 0;
     }
     if (s->unk0 == 0) {
-        s32 p;
         s32 j;
 
-        p = s->unk2C;
-        s->unk30 = *(s32 *)(p + 0xC) + p;
-        s->unk34[0] = *(s32 *)(p + 0x10) + p;
-        s->unk34[1] = *(s32 *)(p + 0x14) + p;
+        s->unk30 = *(s32 *)(s->unk2C + 0xC) + s->unk2C;
+        s->unk34[0] = *(s32 *)(s->unk2C + 0x10) + s->unk2C;
+        s->unk34[1] = *(s32 *)(s->unk2C + 0x14) + s->unk2C;
         func_8003D774(s->unk30, 0);
         for (j = 0; j < 2; j++) {
             if (*(s32 *)s->unk34[j] == D_800A3250[0]) {
@@ -82,11 +81,11 @@ s32 func_8005490C(void) {
     {
         s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
         s32 sn = Judge[s->unk1E & 0xFFF];
-        s32 rot_z0;
-
-        rot_z0 = (vec.vz * c - vec.vx * sn) >> 12;
-        vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
-        vec.vz = rot_z0;
+        s32 x = vec.vx;
+        s32 z = vec.vz;
+        rot_z = (z * c - x * sn) >> 12;
+        vec.vx = (z * sn + x * c) >> 12;
+        vec.vz = rot_z;
     }
     D_80101DF0.work.t[0] = vec.vx + s->unkC;
     D_80101DF0.work.t[1] = vec.vy + s->unk10;
@@ -134,11 +133,11 @@ s32 func_8005490C(void) {
             {
                 s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
                 s32 sn = Judge[s->unk1E & 0xFFF];
-                s32 rot_z1;
-
-                rot_z1 = (vec.vz * c - vec.vx * sn) >> 12;
-                vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
-                vec.vz = rot_z1;
+                s32 x = vec.vx;
+                s32 z = vec.vz;
+                rot_z = (z * c - x * sn) >> 12;
+                vec.vx = (z * sn + x * c) >> 12;
+                vec.vz = rot_z;
             }
             vec.vy += s->unk10;
             vec.vx += s->unkC;

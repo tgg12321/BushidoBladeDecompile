@@ -23,8 +23,8 @@ s32 func_8005490C(void) {
        materialisation -- the pointer local seats %hi/%lo(D_800EFAE8) in one
        callee-saved base register ($s3) for the whole body; lever-exhaustion:
        the direct D_800EFAE8.field form re-materialises the address and
-       measures 161 (420 insns) vs 0 (memory/grind/func_8005490C/evidence.md
-       [s2], rejected/direct-global-no-pointer-local-161.c). */
+       measures 157 (420 insns) vs 0 (memory/grind/func_8005490C/evidence.md
+       [s2], rejected/direct-global-no-pointer-local-157.c). */
     Unk800EFAE8Ctrl *s = &D_800EFAE8;
     VECTOR vec;
     /* The 0x84-byte motion frame func_800198D0 decodes (func_80023F08 keeps
@@ -56,13 +56,11 @@ s32 func_8005490C(void) {
         return 0;
     }
     if (s->unk0 == 0) {
-        s32 p;
         s32 j;
 
-        p = s->unk2C;
-        s->unk30 = *(s32 *)(p + 0xC) + p;
-        s->unk34[0] = *(s32 *)(p + 0x10) + p;
-        s->unk34[1] = *(s32 *)(p + 0x14) + p;
+        s->unk30 = *(s32 *)(s->unk2C + 0xC) + s->unk2C;
+        s->unk34[0] = *(s32 *)(s->unk2C + 0x10) + s->unk2C;
+        s->unk34[1] = *(s32 *)(s->unk2C + 0x14) + s->unk2C;
         func_8003D774(s->unk30, 0);
         for (j = 0; j < 2; j++) {
             if (*(s32 *)s->unk34[j] == D_800A3250[0]) {
@@ -96,10 +94,8 @@ s32 func_8005490C(void) {
     {
         s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
         s32 sn = Judge[s->unk1E & 0xFFF];
-        s32 x = vec.vx;
-        s32 z = vec.vz;
-        rot_z = (z * c - x * sn) >> 12;
-        vec.vx = (z * sn + x * c) >> 12;
+        rot_z = (vec.vz * c - vec.vx * sn) >> 12;
+        vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
         vec.vz = rot_z;
     }
     D_80101DF0.work.t[0] = vec.vx + s->unkC;
@@ -148,10 +144,8 @@ s32 func_8005490C(void) {
             {
                 s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
                 s32 sn = Judge[s->unk1E & 0xFFF];
-                s32 x = vec.vx;
-                s32 z = vec.vz;
-                rot_z = (z * c - x * sn) >> 12;
-                vec.vx = (z * sn + x * c) >> 12;
+                rot_z = (vec.vz * c - vec.vx * sn) >> 12;
+                vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
                 vec.vz = rot_z;
             }
             vec.vy += s->unk10;

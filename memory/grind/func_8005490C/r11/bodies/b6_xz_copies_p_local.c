@@ -36,17 +36,33 @@ s32 func_8005490C(void) {
     s16 frame[0x42];
     s16 *v;
     s32 i;
+    /* Ruling 11 (.claude/rules/reused-local-necessity.md): holds three
+       values, the player objects func_8004153C(0) and func_8004153C(1) on the
+       first frame and func_8004153C(i) in the player loop.  Shared, it is one
+       allocno that crosses the loop's func_800198D0 call and takes $s0 for
+       all three (move s0,v0 at 0x80054A50, 0x80054A6C, 0x80054CF8); split,
+       the first-frame values take $v0 and both moves vanish (9).  Record:
+       memory/grind/func_8005490C/r11/. */
     s32 *player;
+    /* Ruling 11 (.claude/rules/reused-local-necessity.md): holds two values,
+       the camera-rotated z of the camera position and of player i's root
+       offset.  Read in two blocks it is not a local-alloc quantity, so
+       combine_regs does not tie it to the subtraction and it takes $t0
+       (sra t0 at 0x80054B30 and 0x80054E0C); one local per block is tied to
+       the subtraction (41).  Record: memory/grind/func_8005490C/r11/. */
+    s32 rot_z;
 
     if (s->unk0 < 0) {
         return 0;
     }
     if (s->unk0 == 0) {
+        s32 p;
         s32 j;
 
-        s->unk30 = *(s32 *)(s->unk2C + 0xC) + s->unk2C;
-        s->unk34[0] = *(s32 *)(s->unk2C + 0x10) + s->unk2C;
-        s->unk34[1] = *(s32 *)(s->unk2C + 0x14) + s->unk2C;
+        p = s->unk2C;
+        s->unk30 = *(s32 *)(p + 0xC) + p;
+        s->unk34[0] = *(s32 *)(p + 0x10) + p;
+        s->unk34[1] = *(s32 *)(p + 0x14) + p;
         func_8003D774(s->unk30, 0);
         for (j = 0; j < 2; j++) {
             if (*(s32 *)s->unk34[j] == D_800A3250[0]) {
@@ -80,12 +96,11 @@ s32 func_8005490C(void) {
     {
         s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
         s32 sn = Judge[s->unk1E & 0xFFF];
-        s32 rot_z0;
-
-        rot_z0 = vec.vz * c;
-        rot_z0 = (rot_z0 - vec.vx * sn) >> 12;
-        vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
-        vec.vz = rot_z0;
+        s32 x = vec.vx;
+        s32 z = vec.vz;
+        rot_z = (z * c - x * sn) >> 12;
+        vec.vx = (z * sn + x * c) >> 12;
+        vec.vz = rot_z;
     }
     D_80101DF0.work.t[0] = vec.vx + s->unkC;
     D_80101DF0.work.t[1] = vec.vy + s->unk10;
@@ -133,12 +148,11 @@ s32 func_8005490C(void) {
             {
                 s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
                 s32 sn = Judge[s->unk1E & 0xFFF];
-                s32 rot_z1;
-
-                rot_z1 = vec.vz * c;
-                rot_z1 = (rot_z1 - vec.vx * sn) >> 12;
-                vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
-                vec.vz = rot_z1;
+                s32 x = vec.vx;
+                s32 z = vec.vz;
+                rot_z = (z * c - x * sn) >> 12;
+                vec.vx = (z * sn + x * c) >> 12;
+                vec.vz = rot_z;
             }
             vec.vy += s->unk10;
             vec.vx += s->unkC;

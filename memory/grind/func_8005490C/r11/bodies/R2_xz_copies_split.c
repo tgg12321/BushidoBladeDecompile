@@ -1,4 +1,4 @@
-extern s32 D_800A3250[];
+extern s32 D_800A3250[2];
 extern s16 *func_8003D7B4(s32);
 extern void func_8001979C(s32, u32 *);
 extern void func_8003D774(s32, s32);
@@ -8,31 +8,54 @@ extern void math_TransposeMatrixInPlace(u16 *);
 extern void func_800198D0(s32, s32, u32 *, u16 *);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
 extern void func_80040304(s32, s32);
+/* Per-frame stage handler on the ctrl block D_800EFAE8.  On the first frame
+ * (unk0 == 0) it resolves the loaded data's offset table (unk2C) into the
+ * camera stream (unk30), the per-player motion streams (unk34[], dropped
+ * when they start with the "NULL" tag D_800A3250) and the per-player nibble
+ * tables (unk3C[]).  Every frame it places the camera (rotated about y by
+ * unk1E, plus the stage offset unkC..unk14), then decodes and places each
+ * player's motion frame.  The block holds those addresses as integers: typed
+ * as pointers, the relocation sums in func_80054FDC and func_80054604 swap
+ * their addu operands (memory/grind/func_8005490C/evidence.md [s2]). */
 s32 func_8005490C(void) {
+    /* FAKE: second C handle to the global ctrl block (pointer-alias family),
+       as in func_80054604 above; mechanism: expand/cse address
+       materialisation -- the pointer local seats %hi/%lo(D_800EFAE8) in one
+       callee-saved base register ($s3) for the whole body; lever-exhaustion:
+       the direct D_800EFAE8.field form re-materialises the address and
+       measures 161 (420 insns) vs 0 (memory/grind/func_8005490C/evidence.md
+       [s2], rejected/direct-global-no-pointer-local-161.c). */
     Unk800EFAE8Ctrl *s = &D_800EFAE8;
     VECTOR vec;
+    /* The 0x84-byte motion frame func_800198D0 decodes (func_80023F08 keeps
+       its pair as MotionFrame).  Here the root offset, heading and distance
+       are read as signed halfwords (lh at 0x80054D10, 0x80054D28,
+       0x80054D2C) and the frame goes to func_80040D48's s16 * parameter, so
+       it is the s16 channel array; MotionFrame's u16 unk_02 / unk_04 (lhu in
+       func_80023F08) would load lhu here. */
     s16 frame[0x42];
     s16 *v;
-    s32 p;
     s32 i;
-    s32 *player;
-    s32 rot_z;
 
     if (s->unk0 < 0) {
         return 0;
     }
     if (s->unk0 == 0) {
-        p = s->unk2C;
-        s->unk30 = *(s32 *)(p + 0xC) + p;
-        s->unk34[0] = *(s32 *)(p + 0x10) + p;
-        s->unk34[1] = *(s32 *)(p + 0x14) + p;
+        s32 *player0;
+        s32 *player1;
+
+        s32 j;
+
+        s->unk30 = *(s32 *)(s->unk2C + 0xC) + s->unk2C;
+        s->unk34[0] = *(s32 *)(s->unk2C + 0x10) + s->unk2C;
+        s->unk34[1] = *(s32 *)(s->unk2C + 0x14) + s->unk2C;
         func_8003D774(s->unk30, 0);
-        for (i = 0; i < 2; i++) {
-            if (*(s32 *)s->unk34[i] == D_800A3250[0]) {
-                s->unk34[i] = 0;
+        for (j = 0; j < 2; j++) {
+            if (*(s32 *)s->unk34[j] == D_800A3250[0]) {
+                s->unk34[j] = 0;
             }
-            if (s->unk34[i] != 0) {
-                func_8001979C(i, (u32 *)s->unk34[i]);
+            if (s->unk34[j] != 0) {
+                func_8001979C(j, (u32 *)s->unk34[j]);
             }
         }
         s->unk3C[1] = 0;
@@ -43,13 +66,13 @@ s32 func_8005490C(void) {
         if (s->unk4 & 0x40) {
             s->unk3C[1] = *(s32 *)(s->unk2C + 0x1C) + s->unk2C;
         }
-        player = func_8004153C(0);
-        if (player != 0) {
-            func_8003FFC4(player);
+        player0 = func_8004153C(0);
+        if (player0 != 0) {
+            func_8003FFC4(player0);
         }
-        player = func_8004153C(1);
-        if (player != 0) {
-            func_8003FFC4(player);
+        player1 = func_8004153C(1);
+        if (player1 != 0) {
+            func_8003FFC4(player1);
         }
     }
     v = func_8003D7B4(0);
@@ -61,9 +84,11 @@ s32 func_8005490C(void) {
         s32 sn = Judge[s->unk1E & 0xFFF];
         s32 x = vec.vx;
         s32 z = vec.vz;
-        rot_z = (z * c - x * sn) >> 12;
+        s32 rot_z0;
+
+        rot_z0 = (z * c - x * sn) >> 12;
         vec.vx = (z * sn + x * c) >> 12;
-        vec.vz = rot_z;
+        vec.vz = rot_z0;
     }
     D_80101DF0.work.t[0] = vec.vx + s->unkC;
     D_80101DF0.work.t[1] = vec.vy + s->unk10;
@@ -98,11 +123,12 @@ s32 func_8005490C(void) {
     func_8004A1FC(D_800F62E0[4]);
     for (i = 0; i < 2; i++) {
         if (s->unk34[i] != 0) {
+            s32 *player2;
             s32 ang;
-            player = func_8004153C(i);
+            player2 = func_8004153C(i);
             func_800198D0(i, s->unk0, (u32 *)frame, (u16 *)0x1F800000);
             vec.vy = frame[0];
-            vec.vy = (vec.vy * *(s16 *)((u8 *)player + 0x12)) >> 12;
+            vec.vy = (vec.vy * *(s16 *)((u8 *)player2 + 0x12)) >> 12;
             ang = frame[1];
             vec.vx = (Judge[ang & 0xFFF] * frame[2]) >> 12;
             vec.vz = (Judge[(ang + 0x400) & 0xFFF] * frame[2]) >> 12;
@@ -113,9 +139,11 @@ s32 func_8005490C(void) {
                 s32 sn = Judge[s->unk1E & 0xFFF];
                 s32 x = vec.vx;
                 s32 z = vec.vz;
-                rot_z = (z * c - x * sn) >> 12;
+                s32 rot_z1;
+
+                rot_z1 = (z * c - x * sn) >> 12;
                 vec.vx = (z * sn + x * c) >> 12;
-                vec.vz = rot_z;
+                vec.vz = rot_z1;
             }
             vec.vy += s->unk10;
             vec.vx += s->unkC;
