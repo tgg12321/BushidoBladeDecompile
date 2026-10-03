@@ -393,3 +393,13 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   +0x30, phase 0 of an object that still starts at 0x80015A68); CTYPE, MEMCHR and PUTCHAR have none (CTYPE's
   `_ctype_` table is in asm/data .data). No position to choose, no survivors; the table's phase is
   unchanged (R1 does not arise). All four parts were already `-G0`.
+- **4d gpu.c + display.c → `psxsdk/libgpu/prim.c` (ex gpu.c), `sys.c` (ex display.c), `ext.c`,
+  `psxsdk/libc2/memmove.c` and 10 `psxsdk/libcard/` files.** Cuts at every module start from LIBC2 MEMMOVE
+  (0x8007A28C) through LIBGPU SYS (0x8007AE7C). The old gpu|display cut at 0x8007B244 was mid-SYS: SYS's head
+  (ResetGraph..GetGraphDebug) moves in front of sys.c, which now holds all of SYS 0x8007AE7C..0x8007DF10 (D3
+  re-cut) and, until the next 4d commit, still carries C73/LIBGTE/LIBCD EVENT to 0x8008008C.
+  Neither old object had `.rodata`, data or a jump table (the switches in LoadTPage/ResetGraph compile to
+  branches), so no position to choose, no survivors, no R1 phase. All parts `-G0` as both files were. No
+  `static` in either file; no string literal (every string is a named array in text1a_b_post_rodata.c).
+  Compare: old gpu.o+display.o vs the 14 parts (splitcmp.py with a joined BEFORE): `.text` 0x5E00 identical
+  bar 88 `j`/`jal` encodings against the `.text` section symbol re-basing, 986 relocations, 174 globals.

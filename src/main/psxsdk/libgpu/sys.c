@@ -1,9 +1,14 @@
+/* PsyQ 4.0 LIBGPU SYS: the GPU system layer (ResetGraph .. memset; $Id: sys.c,v 1.129). .text
+ * 0x8007AE7C..0x8007DF10, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
+ * D3. */
+/* One file across the old gpu.c|display.c cut at 0x8007B244, which was mid-module (Q106 D3).
+ * Until the next step-4d commit the file also carries LIBAPI C73, LIBGTE GEO_00..PATCHGTE and LIBCD
+ * EVENT (.text 0x8007DF10..0x8008008C), the rest of the old display.c. */
 #include "common.h"
 #include "include_asm.h"
 #include "bios.h"
 #include "gpu.h"
 #include "psx.h"
-
 
 /* Forward declarations */
 extern s32 VSync(s32);
@@ -30,7 +35,97 @@ extern const char D_80015F2C[];
 extern const char D_80015F38[];
 extern const char D_80015F4C[];
 
-/* --- Functions 0x8007B244 - 0x8007FF7C (text2 segment) --- */
+/* Declarations from the file ResetGraph .. GetGraphDebug were split from (gpu.c). */
+extern s32 D_80015EA8;
+extern s32 D_80015ED4;
+extern s32 D_80015E90;
+extern s32 D_80015E5C;
+extern s32 D_80015E7C;
+extern s32 D_8009BE2C;
+extern s32 D_8009BEF4[];
+extern s32 D_8009BF08[];
+
+/* PsyQ LIBGPU sys.c v1.129: ResetGraph — verbatim-linked Sony object;
+   C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c */
+u32 ResetGraph(s32 a0) {
+    switch (a0 & 7) {
+    case 0:
+    case 3:
+        printf(&D_80015E5C, &D_8009BE2C, &g_gpu_ctx);
+        /* fallthrough */
+    case 5:
+        memset(&g_gpu_ctx, 0, sizeof(g_gpu_ctx));
+        ResetCallback();
+        GPU_cw((u32)g_gpu_dev_table & 0xFFFFFF);
+        g_gpu_ctx.type = _reset(a0);
+        g_gpu_ctx.queue_mode = 1;
+        g_gpu_ctx.width = D_8009BEF4[g_gpu_ctx.type];
+        g_gpu_ctx.height = D_8009BF08[g_gpu_ctx.type];
+        memset(&g_gpu_ctx.draw_env, -1, sizeof(DRAWENV));
+        memset(&g_gpu_ctx.disp_env, -1, sizeof(DISPENV));
+        return g_gpu_ctx.type;
+    default:
+        if (g_gpu_ctx.debug_level >= 2) {
+            GPU_printf(&D_80015E7C, a0);
+        }
+        ((void (*)(s32))((u32 *)g_gpu_dev_table)[0x34 / 4])(1);
+        break;
+    }
+}
+u32 SetGraphReverse(s32 a0) {
+    u32 old = g_gpu_ctx.reverse;
+    u32 val;
+    if (g_gpu_ctx.debug_level >= 2) {
+        GPU_printf(&D_80015E90, a0);
+    }
+    g_gpu_ctx.reverse = a0;
+    val = ((u32 (*)(s32))((u32 *)g_gpu_dev_table)[0x28 / 4])(8);
+    if (g_gpu_ctx.reverse) {
+        val |= 0x8000080;
+    } else {
+        val |= 0x8000000;
+    }
+    ((void (*)(u32))((u32 *)g_gpu_dev_table)[0x10 / 4])(val);
+    if (g_gpu_ctx.type == 2) {
+        u32 *tbl = (u32 *)g_gpu_dev_table;
+        val = 0x20000504;
+        if (g_gpu_ctx.reverse) {
+            val = 0x20000501;
+        }
+        ((void (*)(u32))tbl[0x10 / 4])(val);
+    }
+    return old;
+}
+
+u32 SetGraphDebug(s32 a0) {
+    u32 old = g_gpu_ctx.debug_level;
+    g_gpu_ctx.debug_level = a0;
+    if (g_gpu_ctx.debug_level) {
+        GPU_printf(&D_80015EA8, g_gpu_ctx.debug_level, g_gpu_ctx.type,
+                   g_gpu_ctx.reverse);
+    }
+    return old;
+}
+u32 SetGraphQueue(s32 a0) {
+    u32 old = g_gpu_ctx.queue_mode;
+    if (g_gpu_ctx.debug_level >= 2) {
+        GPU_printf(&D_80015ED4, a0);
+    }
+    if (a0 != g_gpu_ctx.queue_mode) {
+        ((void (*)(s32))((u32 *)g_gpu_dev_table)[0x34 / 4])(1);
+        g_gpu_ctx.queue_mode = a0;
+        DMACallback(2, 0);
+    }
+    return old;
+}
+
+u32 GetGraphType(void) {
+    return g_gpu_ctx.type;
+}
+
+u32 GetGraphDebug(void) {
+    return g_gpu_ctx.debug_level;
+}
 
 u32 DrawSyncCallback(s32 a0) {
     u32 old;
