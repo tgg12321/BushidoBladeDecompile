@@ -1,0 +1,137 @@
+== code6cac.c lines=1352 funcs=12 named=1 INCLUDE_ASM=0 extern=70 (block-scope 19)
+   80017FA0 func_80017FA0 .. 80019568 func_80019568
+   names: pad_ResetState
+== code6cac_b.c lines=304 funcs=1 named=0 INCLUDE_ASM=0 extern=28 (block-scope 8)
+   80026DA4 func_80026DA4 .. 80026DA4 func_80026DA4
+   names: 
+== code6cac_b2_post.c lines=676 funcs=10 named=2 INCLUDE_ASM=0 extern=54 (block-scope 8)
+   80035438 func_80035438 .. 80035EDC bits_DepositMask3F83F8
+   names: bits_ExtractMask3F83F8 bits_DepositMask3F83F8
+== code6cac_b3.c lines=178 funcs=1 named=0 INCLUDE_ASM=0 extern=18 (block-scope 1)
+   80034708 func_80034708 .. 80034708 func_80034708
+   names: 
+== code6cac_b3_post.c lines=253 funcs=4 named=0 INCLUDE_ASM=0 extern=4 (block-scope 1)
+   80034F88 func_80034F88 .. 80035430 func_80035430
+   names: 
+== code6cac_b4.c lines=46 funcs=2 named=1 INCLUDE_ASM=0 extern=3 (block-scope 1)
+   80035F30 cdrom_SetMix .. 80035F78 func_80035F78
+   names: cdrom_SetMix
+== code6cac_b4_post.c lines=81 funcs=4 named=4 INCLUDE_ASM=0 extern=16 (block-scope 1)
+   80035FA8 snd_SerialMixOn .. 80036064 cdrom_ReadyCallback
+   names: snd_SerialMixOn cdrom_Init cdrom_FlushInit cdrom_ReadyCallback
+== code6cac_b5.c lines=367 funcs=2 named=0 INCLUDE_ASM=0 extern=11 (block-scope 2)
+   80036140 func_80036140 .. 80036940 func_80036940
+   names: 
+== code6cac_b5_post.c lines=269 funcs=20 named=10 INCLUDE_ASM=0 extern=19 (block-scope 2)
+   80036D88 cdrom_IsIdle .. 80037540 func_80037540
+   names: cdrom_IsIdle cdrom_StartRead cdrom_StartReadAt cdrom_Pause cdrom_GetFileSize game_FrameLoop cdrom_StartAudio cdrom_ReadWait cdrom_LoadExec sys_Exec
+== code6cac_b_rodata_post.c lines=5 funcs=0 named=0 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   names: 
+== code6cac_b_rodata_pre.c lines=3 funcs=0 named=0 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   names: 
+== code6cac_b_tu2.c lines=6627 funcs=80 named=1 INCLUDE_ASM=0 extern=59 (block-scope 3)
+   800272FC func_800272FC .. 800342A0 func_800342A0
+   names: math_LerpAngle
+== code6cac_b_tu3.c lines=133 funcs=2 named=0 INCLUDE_ASM=0 extern=5 (block-scope 1)
+   800343F0 func_800343F0 .. 800344B4 func_800344B4
+   names: 
+== code6cac_c.c lines=419 funcs=12 named=10 INCLUDE_ASM=0 extern=25 (block-scope 7)
+   800375EC memcard_Init .. 80037C34 memcard_WriteFile
+   names: memcard_Init memcard_Quit memcard_PollSwEventsTimeout memcard_PollSwEvents memcard_AckSwEvents memcard_WaitHwEvent memcard_AckHwEvents memcard_CountFiles memcard_ReadFile memcard_WriteFile
+== code6cac_c0.c lines=116 funcs=1 named=0 INCLUDE_ASM=0 extern=12 (block-scope 2)
+   80037D14 func_80037D14 .. 80037D14 func_80037D14
+   names: 
+== code6cac_c2.c lines=2703 funcs=75 named=11 INCLUDE_ASM=0 extern=122 (block-scope 18)
+   8003B9D0 func_8003B9D0 .. 8004019C func_8004019C
+   names: bitstream_ReadBits gpu_SetDrawMoveArray stage_ExecInitFunc game_GetCharData stage_InitCollision stage_SetCollision stage_GetCollision stage_ClearLighting stage_SetLightPosDir stage_ApplyLighting math_AlignUp4
+== code6cac_c_ab.c lines=644 funcs=17 named=0 INCLUDE_ASM=0 extern=30 (block-scope 11)
+   8003AB44 func_8003AB44 .. 8003B8E4 func_8003B8E4
+   names: 
+== code6cac_c_ab_pad.c lines=24 funcs=0 named=0 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   names: 
+== code6cac_c_mid.c lines=2018 funcs=43 named=12 INCLUDE_ASM=0 extern=93 (block-scope 30)
+   80037F08 memcard_Format .. 8003AAB0 func_8003AAB0
+   names: memcard_Format comb_Init comb_Close comb_IsCtsDsrClear comb_ReadCtsSetRts comb_EnableEvents comb_ResetClose comb_WriteWaitCallback comb_Write8 comb_Read8 comb_WaitRead8 math_Popcount32
+== code6cac_tu2.c lines=5466 funcs=94 named=4 INCLUDE_ASM=0 extern=123 (block-scope 2)
+   8001979C func_8001979C .. 80023F08 func_80023F08
+   names: math_SignExt12Div math_FloorDiv2000 pad_ClearStateBits math_RotMatrixZYXAngles
+== comb.c lines=503 funcs=16 named=16 INCLUDE_ASM=0 extern=20 (block-scope 2)
+   8008BE04 AddCOMB .. 8008D048 __nulldev
+   names: AddCOMB DelCOMB ChangeClearSIO SioAnsyncRead SioSyncroRead SioAnsyncWrite SioSyncroWrite _comb_control EvalpSio HandleSio r_sioinit r_sioopen r_sioclose r_sioremove r_siostrategy __nulldev
+== display.c lines=1563 funcs=112 named=112 INCLUDE_ASM=43 extern=70 (block-scope 5)
+   8007B244 DrawSyncCallback .. 80080064 def_cbread
+   names: DrawSyncCallback SetDispMask DrawSync checkRECT ClearImage ClearImage2 LoadImage StoreImage MoveImage ClearOTag ClearOTagR DrawPrim DrawOTag PutDrawEnv DrawOTagEnv GetDrawEnv PutDispEnv GetDispEnv GetODE SetTexWindow SetDrawArea SetDrawOffset SetPriority SetDrawMode SetDrawEnv SetDrawEnv2 get_mode get_cs get_ce get_ofs get_tw get_dx _status _otc _clr _dws _drs _ctl _getctl _cwb ...
+== gpu.c lines=523 funcs=63 named=63 INCLUDE_ASM=1 extern=21 (block-scope 0)
+   8007A28C memmove .. 8007B234 GetGraphDebug
+   names: memmove _card_info _card_load _card_clear _card_write _new_card InitCARD StartCARD StopCARD InitCARD2 StartCARD2 StopCARD2 _ExitCard LoadTPage LoadClut LoadClut2 SetDefDrawEnv SetDefDispEnv GetTPage GetClut DumpTPage DumpClut NextPrim IsEndPrim AddPrim AddPrims CatPrim TermPrim SetSemiTrans SetShadeTex SetPolyF3 SetPolyFT3 SetPolyG3 SetPolyGT3 SetPolyF4 SetPolyFT4 SetPolyG4 SetPolyGT4 SetSprt8 SetSprt16 ...
+== ings.c lines=970 funcs=42 named=34 INCLUDE_ASM=0 extern=86 (block-scope 8)
+   800164F8 func_800164F8 .. 80017F98 sys_StubEmpty3
+   names: pcdrv_LoadFile pcdrv_LoadSectors math_FovToScreenDist gpu_SetDrawEnvBg file_GetFlag0 file_GetFlag1 file_GetFlag2 gpu_ResetGraphMode1 gpu_InitDisplay gpu_SetDispMaskOn sys_StubEmpty rcnt_StartCnt1Wrapper disp_Init sys_Init sys_Panic file_ResetDmaFlag eff_Init file_LoadSoundData sys_GameInit gpu_WaitDrawSync rng_SetSeed rng_Next main obj_ClearAll obj_CalcOffset math_Distance3D math_Distance3D_16 obj_Clear obj_UpdatePosition obj_AddValue scratchpad_Save scratchpad_Restore sys_StubEmpty2 sys_StubEmpty3
+== ings2.c lines=611 funcs=50 named=49 INCLUDE_ASM=8 extern=51 (block-scope 4)
+   8008289C CdReadCallback .. 80083B50 SsSetSerialAttr
+   names: CdReadCallback CdReadMode VSync v_wait ChangeClearRCnt ResetCallback InterruptCallback DMACallback VSyncCallback VSyncCallbacks StopCallback RestartCallback CheckCallback GetIntrMask SetIntrMask startIntr trapIntr setIntr stopIntr restartIntr _96_remove ReturnFromException ResetEntryInt HookEntryInt setjmp startIntrVSync trapIntrVSync setIntrVSync sys_MemClear startIntrDMA trapIntrDMA setIntrDMA sys_MemClear2 SetVideoMode GetVideoMode PCopen PCclose PClseek __SN_ENTRY_POINT __main ...
+== ings_strings.c lines=26 funcs=0 named=0 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   names: 
+== main.c lines=4035 funcs=116 named=107 INCLUDE_ASM=0 extern=144 (block-scope 16)
+   80083BE4 SsSetMVol .. 8008BDE8 SpuGetVoiceEnvelope
+   names: SsSetMVol _SsStart SsStart SsStart2 _SsTrapIntrVSync _SsSeqCalledTbyT_1per2 SsSeqCalledTbyT _SsSndCrescendo _SsSndDecrescendo _SsSndPause _SsSndPlay _SsSeqPlay _SsSeqGetEof _SsReadDeltaValue _SsSndNextSep _SsSndReplay _SsSndStop SsSeqStop SsSepStop SsSetSerialVol SsSetTickMode _SsSndTempo SsUtGetVBaddrInSB SsUtKeyOnV SsUtKeyOffV SsUtSetReverbDepth SsUtSetReverbType SsUtGetReverbType SsUtReverbOff SsUtReverbOn SsUtSetDetVVol _SsVmDoAllocate _SsVmDamperOff _SsVmFlush _SsVmInit note2pitch note2pitch2 vmNoiseOn _SsVmKeyOffNow _SsVmKeyOnNow ...
+== main_post.c lines=80 funcs=5 named=5 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   8008D050 AddDrv .. 8008D118 g_sqrt_table_u8
+   names: AddDrv DelDrv g_data_start g_module_func_tbl g_sqrt_table_u8
+== system.c lines=1130 funcs=45 named=45 INCLUDE_ASM=0 extern=98 (block-scope 11)
+   8008008C DeliverEvent .. 800827D0 CdReadSync
+   names: DeliverEvent CdStatus CdMode CdLastCom CdLastPos CdReset CdFlush CdSetDebug CdComstr CdIntstr CdSync CdReady CdSyncCallback CdReadyCallback CdControl CdControlF CdControlB CdMix CdGetSector CdGetSector2 CdDataCallback CdDataSync CdIntToPos CdPosToInt getintr CD_sync CD_ready CD_cw CD_vol CD_flush CD_initvol CD_initintr CD_init CD_datasync CD_getsector CD_getsector2 CD_set_test_parmnum cdrom_IrqHandler puts cb_read ...
+== text1a_b_mid_rodata.c lines=4 funcs=0 named=0 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   names: 
+== text1a_b_post_rodata.c lines=240 funcs=0 named=0 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   names: 
+== text1a_b_pre_rodata.c lines=325 funcs=0 named=0 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   names: 
+== text1a_b_pre_rodata_b.c lines=18 funcs=0 named=0 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   names: 
+== text1a_b_tail_rodata.c lines=94 funcs=0 named=0 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   names: 
+== text1a_c.c lines=1347 funcs=39 named=15 INCLUDE_ASM=0 extern=59 (block-scope 8)
+   80042504 func_80042504 .. 8004473C func_8004473C
+   names: math_RgbToHsv math_RotMatrixZXY math_RotMatrixYXZ math_RotMatrixXYZ math_TransposeMatrixInPlace math_Rotate2D math_MatrixToAnglesYXZ gpu_OffsetTexPolyFT3 gpu_OffsetTexPolyFT4 gpu_OffsetTexPolyGT3 gpu_OffsetTexPolyGT4 gpu_OffsetTPageClutAt0And4 gpu_OffsetTPageClutAt6And2 gpu_OffsetTPage gpu_OffsetClut
+== text1a_c_tu2.c lines=820 funcs=44 named=3 INCLUDE_ASM=0 extern=56 (block-scope 1)
+   80044800 func_80044800 .. 80046048 func_80046048
+   names: seq_Start seq_Reset seq_GetState
+== text1a_filepaths.c lines=574 funcs=0 named=0 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   names: 
+== text1a_post.c lines=628 funcs=21 named=2 INCLUDE_ASM=0 extern=36 (block-scope 6)
+   8004153C func_8004153C .. 80042478 func_80042478
+   names: player_Destroy player_SetCharId
+== text1a_pre.c lines=549 funcs=12 named=1 INCLUDE_ASM=0 extern=19 (block-scope 4)
+   800401CC gpu_AddDrawMove .. 80040CB8 func_80040CB8
+   names: gpu_AddDrawMove
+== text1a_pre_tu2.c lines=331 funcs=4 named=0 INCLUDE_ASM=0 extern=16 (block-scope 2)
+   80040D48 func_80040D48 .. 80041430 func_80041430
+   names: 
+== text1a_svc.c lines=32 funcs=1 named=1 INCLUDE_ASM=0 extern=0 (block-scope 0)
+   800414FC save_vc_ctrl .. 800414FC save_vc_ctrl
+   names: save_vc_ctrl
+== text1b.c lines=2550 funcs=103 named=29 INCLUDE_ASM=0 extern=136 (block-scope 8)
+   800460E4 func_800460E4 .. 8004A1FC func_8004A1FC
+   names: stage_GetId stage_GetVariant snd_AllocSe snd_SeNullCallback snd_StopAll rcnt_StartCnt1 rcnt_GetCnt1 game_Init game_GetDummyFlag game_GetPlayerData game_GetPlayerBase game_StageCleanup stage_GetDataPtr camera_InitBoneData camera_GetBoneData camera_InitRotation camera_CalcAngles game_EffInit game_AnimInit game_EffInit2 camera_InitBone2 game_AnimStart game_EffStart game_Stub1 game_Stub2 game_Stub3 game_Stub4 math_GrayscaleRgb555 math_Grayscale3
+== text1b_b.c lines=3059 funcs=97 named=51 INCLUDE_ASM=10 extern=68 (block-scope 24)
+   800747D8 func_800747D8 .. 80079208 printf
+   names: Exec _bu_init SetMem OpenEvent CloseEvent TestEvent EnableEvent EnterCriticalSection ExitCriticalSection SetSp open read write close format firstfile nextfile ChangeClearPAD SetRCnt GetRCnt StartRCnt StopRCnt ResetRCnt SetInitPadFlag ReadInitPadFlag PAD_init InitPAD StartPAD StopPAD SetPatchPad RemovePatchPad _Pad1 _IsVSync InitPAD2 StartPAD2 StopPAD2 PAD_init2 SysEnqIntRP SysDeqIntRP EnablePAD ...
+== text1b_b_tu2.c lines=363 funcs=5 named=5 INCLUDE_ASM=0 extern=4 (block-scope 1)
+   80079244 prnt .. 8007997C putchar
+   names: prnt toupper tolower memchr putchar
+== text1b_b_tu3.c lines=337 funcs=1 named=1 INCLUDE_ASM=0 extern=2 (block-scope 1)
+   80079A30 sprintf .. 80079A30 sprintf
+   names: sprintf
+== text1b_tu1b.c lines=6233 funcs=160 named=31 INCLUDE_ASM=71 extern=259 (block-scope 19)
+   8004A348 math_RotMatrixZYX .. 80060768 func_80060768
+   names: math_RotMatrixZYX math_MidpointS16x3U8x2 D_800521AC D_800521FC D_80052344 D_80052394 math_SquareRoot0 math_Length3D gte_SumSquares3 math_LerpSVector math_LerpMatrix3x3 gte_MulMatrix0ClearTrans gte_SetMatrixRotTransIR gte_SetMatrixRotTransIRVec gte_SetRotTransMatrix gte_SetRotMatrixClearTrans gte_ReadFarColor gte_ReadIR1IR2Sra2 D_800545F8 D_800545FC D_80054600 snd_Init snd_Quit snd_CloseVab1 snd_LoadCommonVab snd_VabFakeOpen8And4 snd_VabFakeOpen9 snd_CloseListedVabs snd_MoveVabBody snd_VabFakeOpen snd_VabOpen
+== text1b_tu1c.c lines=6487 funcs=147 named=1 INCLUDE_ASM=0 extern=209 (block-scope 87)
+   80060A68 func_80060A68 .. 8006E49C func_8006E49C
+   names: game_Cleanup
+== text1b_tu1d.c lines=2331 funcs=28 named=0 INCLUDE_ASM=0 extern=58 (block-scope 6)
+   8006E534 func_8006E534 .. 80073200 func_80073200
+   names: 
+== text1b_tu1e.c lines=633 funcs=5 named=0 INCLUDE_ASM=0 extern=25 (block-scope 3)
+   8007352C func_8007352C .. 80074488 func_80074488
+   names: 

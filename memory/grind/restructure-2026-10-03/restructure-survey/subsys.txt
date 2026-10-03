@@ -1,0 +1,30 @@
+code6cac: prefixes={'pad': 1} sony={}
+code6cac_b: prefixes={} sony={}
+code6cac_b2_post: prefixes={'bits': 2} sony={'SetPolyG4': 1, 'AddPrim': 1, 'rand': 1}
+code6cac_b3: prefixes={} sony={'rand': 1}
+code6cac_b3_post: prefixes={} sony={}
+code6cac_b4: prefixes={'cdrom': 1} sony={'CdMix': 1}
+code6cac_b4_post: prefixes={'cdrom': 3, 'snd': 1} sony={'CdInit': 2, 'CdGetSector': 2, 'SsSetSerialAttr': 1, 'SsSetSerialVol': 1, 'CdSetDebug': 1, 'CdFlush': 1, 'VSync': 1, 'CdPosToInt': 1}
+code6cac_b5: prefixes={} sony={'CdControlF': 13, 'CdSync': 13, 'CdReadyCallback': 4, 'VSync': 4, 'CdPosToInt': 3, 'CdFlush': 3, 'CdMix': 1, 'CdReady': 1}
+code6cac_b5_post: prefixes={'cdrom': 8, 'game': 1, 'sys': 1} sony={'VSync': 5, 'CdPosToInt': 4, 'CdIntToPos': 2, 'CdControl': 2, 'SetDispMask': 2, 'CdReadyCallback': 1, 'CdFlush': 1, 'CdControlF': 1}
+code6cac_b_tu2: prefixes={'box': 1} sony={'ratan2': 28, 'RotMatrixY': 12, 'RotMatrixX': 10, 'RotMatrixZ': 5, 'rand': 3, 'MulMatrix0': 2, 'printf': 1}
+code6cac_b_tu3: prefixes={} sony={}
+code6cac_c: prefixes={'memcard': 10} sony={'TestEvent': 20, 'OpenEvent': 8, 'EnableEvent': 8, 'CloseEvent': 8, 'open': 3, 'EnterCriticalSection': 2, 'ExitCriticalSection': 2, 'InitCARD': 1}
+code6cac_c0: prefixes={} sony={'_card_info': 1, '_card_clear': 1, '_card_load': 1}
+code6cac_c2: prefixes={'stage': 7, 'bitstream': 1, 'gpu': 1, 'game': 1, 'math': 1} sony={'DrawSync': 4, 'LoadImage': 3, 'strlen': 3, 'sprintf': 2, 'SetGeomScreen': 1, 'SetDrawMove': 1, 'StoreImage': 1, 'MoveImage': 1}
+code6cac_c_ab: prefixes={} sony={'VSync': 8, 'SetDispMask': 3, '_comb_control': 3, 'rand': 1, 'ResetRCnt': 1, 'DrawSync': 1}
+code6cac_c_mid: prefixes={'comb': 10, 'memcard': 1, 'math': 1} sony={'_comb_control': 17, 'VSync': 7, 'close': 6, 'GetRCnt': 5, 'ResetRCnt': 4, 'EnterCriticalSection': 2, 'OpenEvent': 2, 'ExitCriticalSection': 2}
+code6cac_tu2: prefixes={'math': 3, 'pad': 1} sony={'ratan2': 16, 'rand': 4, 'memcpy': 3, 'SquareRoot0': 3, 'RotMatrixX': 2, 'RotMatrixY': 2, 'RotMatrixZ': 2, 'VSync': 2}
+ings: prefixes={'gpu': 5, 'file': 5, 'sys': 5, 'obj': 5, 'math': 3, 'pcdrv': 2} sony={'DrawSync': 10, 'SetDispMask': 8, 'SetDefDispEnv': 4, 'VSync': 4, 'printf': 4, 'DrawOTag': 4, 'ResetGraph': 3, 'SetDefDrawEnv': 3}
+text1a_c: prefixes={'gpu': 8, 'math': 7} sony={'ratan2': 3, 'ApplyMatrix': 2, 'MulMatrix': 2, 'rcos': 1, 'rsin': 1, 'MulMatrix2': 1, 'MulMatrix0': 1}
+text1a_c_tu2: prefixes={'seq': 3} sony={'rsin': 2, 'rcos': 2, 'LoadAverage12': 2, 'DrawSync': 2, 'MulMatrix2': 1, 'printf': 1}
+text1a_post: prefixes={'player': 2} sony={'DrawSync': 2, 'ratan2': 2, 'StoreImage': 1, 'LoadImage': 1, 'rcos': 1, 'rsin': 1, 'SetFarColor': 1}
+text1a_pre: prefixes={'gpu': 1} sony={'DrawSync': 2, 'SetDrawMove': 1}
+text1a_pre_tu2: prefixes={} sony={}
+text1a_svc: prefixes={'save': 1} sony={}
+text1b: prefixes={'game': 11, 'camera': 5, 'stage': 3, 'snd': 3, 'rcnt': 2, 'math': 2} sony={'LoadImage': 6, 'DrawSync': 5, 'ApplyMatrix': 4, 'ratan2': 4, 'GetTPage': 3, 'GetClut': 3, 'MulMatrix0': 2, 'SetDrawMove': 2}
+text1b_b: prefixes={} sony={'AddPrim': 24, 'SetDrawMode': 17, 'EnterCriticalSection': 5, 'ExitCriticalSection': 5, 'rsin': 4, 'ChangeClearPAD': 4, 'SetPatchPad': 4, 'SetTile': 3}
+text1b_tu1b: prefixes={'snd': 10} sony={'AddPrim': 30, 'rand': 26, 'SetSemiTrans': 16, 'SsVabClose': 15, 'SetTile': 15, 'SquareRoot0': 13, 'SetDrawMode': 12, 'ratan2': 9}
+text1b_tu1c: prefixes={'game': 1} sony={'AddPrim': 57, 'SetDrawMode': 30, 'SetSemiTrans': 27, 'rsin': 27, 'rand': 18, 'SetTile': 15, 'DrawSync': 11, 'rcos': 9}
+text1b_tu1d: prefixes={} sony={'AddPrim': 29, 'SetDrawMode': 15, 'DrawSync': 12, 'SetSemiTrans': 8, 'rsin': 8, 'LoadImage': 7, 'SetTile': 4, 'SetDrawArea': 4}
+text1b_tu1e: prefixes={} sony={'AddPrim': 9, 'SetSemiTrans': 7, 'SetShadeTex': 6, 'rsin': 4, 'SetRotMatrix': 3, 'GetClut': 3, 'SetPolyF4': 3, 'RotMatrix': 2}

@@ -137,13 +137,13 @@ against its class test (default refute) before applying.
   - `memcard_HasFileNamePrefix` 0x80037B00 (about 22 statements).
   Both names describe the bodies correctly.
 - T5, noun not on the closed relation-noun list: PadState `type[2]` / `valid[2]` and Obj80106A78
-  `kind`. These were refused under the closed T5 list. They are to be re-checked under Q105, which
-  is pending and replaces the list with a principle.
+  `kind`. These were refused under the closed T5 list. They are to be re-checked under Q105 (adopted 2026-10-03),
+  which replaces the list with a principle.
 - T5, relation does not hold for every writer. These two refusals are final:
   - Obj80106A78 `age`: it counts only while unk_50 != 0.
   - Record `pad` (+0x24): it is not a VERIFIED API argument, and the CPU-side writer's source is the
     func_80055B60 synthesized record.
-- `pad_ResetStateMarkValid` 0x80019534 falls with `valid[2]`. It is to be re-checked under Q105, which is pending.
+- `pad_ResetStateMarkValid` 0x80019534 falls with `valid[2]`. It is to be re-checked under Q105 (adopted 2026-10-03).
 - basis-withdrawn, 3 aliases: the parents of `cpu_helper_80026DA4` / `cpu_helper_80029454`
   (`cpu_exec_main_game_loop_frame` 0x8002C61C) and `cpu_helper_8003F3D4`
   (`cpu_init_stage_and_camera_setup` 0x8001E404) are MEDIUM v3 rows that were never reset, so their basis
@@ -170,8 +170,10 @@ against its class test (default refute) before applying.
    Verbs (fixed meanings): Get (return a member, no store), Set (store args), Clear (zero/neutral
    constants to exactly the named members), Reset (the full store list), Copy, Swap, Find (linear
    search returning an entry or NULL), Has (0/1), Count/Sum, Open/Close (a VERIFIED Sony call
-   restated); literal ids go in the name. Relation nouns, each proven over every writer:
-   `other`/`index`/`slot`/`owner`; `pos`/`prev_pos`/`vel`/`rot`/`rot_vel`/`age`;
+   restated); literal ids go in the name. **T5 as amended by owner ruling Q105 (2026-10-03):** a
+   member or data name may use any generic, non-game noun whose meaning holds in every write and
+   read of the field in the matched code; game nouns still need an accepted class. Examples (the
+   former closed list): `other`/`index`/`slot`/`owner`; `pos`/`prev_pos`/`vel`/`rot`/`rot_vel`/`age`;
    `size`/`count`/`list`/`id` (as passed to an admitted callee); a Sony type noun for a VERIFIED
    API argument. C identifiers and comments are never evidence, only the matched operations.
    Each row lists the admitting rows it depends on; if one is later reset, its dependants are

@@ -1016,3 +1016,23 @@ direction ("retile" read as "retire"). Rule text: .claude/rules/aggregate-merge-
 exceptions (Q96-Q99); completion-bar.md items 3-4 and § Application "Direction"; sotn-precedent-suffices.md
 condition (2) (Q100); rodata-object-alignment.md § Inter-object padding (Q101, Q102);
 docs/naming/sweep-2026-10-03/README.md § Owner ruling Q103.
+
+# Owner rulings 2026-10-03 (forty-sixth batch) — VERBATIM RECORD
+
+## Q104 — LIBGTE REG09/REG12/REG13 as whole-body asm
+Question, verbatim: "Three small Sony math-library functions (ReadGeomScreen, SetGeomOffset, SetGeomScreen) are written in C today, with the filler instructions after them kept as a hidden-asm macro. The evidence says Sony wrote these three in assembly: only Sony's hand-written assembly modules get padded to 16 bytes, Sony's C modules never do, and all 74 assembly modules in the game show that padding. The only place the filler can go without the macro is inside the function's own assembly file, which means turning these three from C back into whole-function assembly (byte-identical, already tested). Two are pure 3D-chip register reads; SetGeomOffset also does two shifts. Yes: they become Sony's original assembly and the macro goes away completely. No: they stay C, and the 3 macro uses stay as recorded layout debt. Convert them?"
+Owner chose: **"Yes, convert to asm (Recommended)"** — option text: "Matches what Sony shipped (hand-written asm modules); retires the last 3 PAD_NOPS uses. Each lands with a byte check and adversarial review."
+Other option offered: "No, keep them C" — "The three stay C; 3 PAD_NOPS uses remain as recorded layout debt."
+Correction recorded after the answer (census re-run, memory/grind/restructure-2026-10-03/pad-survey/census.py/.tsv): 77 asm-supplied modules, all
+multiples of 16 (the question said 74). "Sony's C modules never get padded" rests on no C module except REG09/12/13 being followed
+by a gap; 64 of 105 C modules are not multiples of 16, and 41 are by size alone. "Two are pure 3D-chip register reads": ReadGeomScreen
+is a cfc2 read, SetGeomScreen a ctc2 write. The conclusion is unchanged.
+
+## Q105 — typed-restatement: a principle instead of the closed noun list
+Context: the owner asked "What exactly is the approved noun list?" and then "Should we extend this list or have this kind of rule at all?". The orchestrator recommended keeping the evidence requirement but replacing T5's closed relation-noun list with one principle: "a member or data name may use a generic, non-game noun if its meaning holds in every write and read of the field in the matched code; game nouns still need proof from an accepted class", with the current list kept as examples; `kind`, `type`, `valid` to be re-checked; `age` and `pad` still fail on their facts.
+Owner, verbatim: "Go ahead and make that change if you think it makes sense. I want this codebase to slowly move towards being human readable, not just canonically accurate"
+
+## Q106 — Phase 1 restructure decisions D1-D10
+Context: the owner asked how to make the codebase human readable and organized like SOTN; the orchestrator recommended a phased restructure (layout, then types, then names) and ran a read-only Phase 1 survey, presenting decisions D1-D10 with recommendations, amending the survey on D6 (subsystem file names where the file's functions already carry accepted names, address names otherwise).
+Owner, verbatim: "This looks good. Save the plan and get it ready as a handoff. So I can provide it to an agent with fresh context to work through"
+Recorded as Q106 with the decisions as presented (table in docs/grind/handoff-2026-10-03-restructure.md § 1).

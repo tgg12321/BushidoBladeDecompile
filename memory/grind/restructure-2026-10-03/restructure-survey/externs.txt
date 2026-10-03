@@ -1,0 +1,103 @@
+total src decls 2339 extern 2129 block-scope 97 fake-labelled 1
+header decls 372
+
+# per file: file-scope extern / prototypes / block-scope / FAKE / already-in-header
+code6cac.c                   fs_ext=  70 proto=  2 block=  0 fake=  0 dup_hdr=  0
+code6cac_b.c                 fs_ext=  28 proto=  0 block=  0 fake=  0 dup_hdr=  3
+code6cac_b2_post.c           fs_ext=  54 proto=  0 block=  0 fake=  0 dup_hdr=  0
+code6cac_b3.c                fs_ext=  18 proto=  0 block=  0 fake=  0 dup_hdr=  0
+code6cac_b3_post.c           fs_ext=   4 proto=  0 block=  0 fake=  0 dup_hdr=  0
+code6cac_b4.c                fs_ext=   3 proto=  0 block=  0 fake=  0 dup_hdr=  0
+code6cac_b4_post.c           fs_ext=  16 proto=  0 block=  0 fake=  0 dup_hdr=  0
+code6cac_b5.c                fs_ext=  11 proto=  1 block=  0 fake=  0 dup_hdr=  1
+code6cac_b5_post.c           fs_ext=  18 proto=  0 block=  1 fake=  0 dup_hdr=  1
+code6cac_b_rodata_post.c     fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+code6cac_b_rodata_pre.c      fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+code6cac_b_tu2.c             fs_ext=  59 proto=  5 block=  0 fake=  0 dup_hdr=  3
+code6cac_b_tu3.c             fs_ext=   5 proto=  5 block=  0 fake=  0 dup_hdr=  0
+code6cac_c.c                 fs_ext=  24 proto=  0 block=  1 fake=  0 dup_hdr=  0
+code6cac_c0.c                fs_ext=  12 proto=  0 block=  0 fake=  0 dup_hdr=  0
+code6cac_c2.c                fs_ext= 122 proto=  4 block=  0 fake=  0 dup_hdr= 13
+code6cac_c_ab.c              fs_ext=  30 proto=  0 block=  0 fake=  0 dup_hdr=  0
+code6cac_c_ab_pad.c          fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+code6cac_c_mid.c             fs_ext=  77 proto=  0 block= 16 fake=  0 dup_hdr=  6
+code6cac_tu2.c               fs_ext= 123 proto=  4 block=  0 fake=  0 dup_hdr=  0
+comb.c                       fs_ext=  20 proto=  0 block=  0 fake=  0 dup_hdr=  1
+display.c                    fs_ext=  70 proto= 10 block=  0 fake=  0 dup_hdr=  0
+gpu.c                        fs_ext=  21 proto=  0 block=  0 fake=  0 dup_hdr=  0
+ings.c                       fs_ext=  86 proto=  0 block=  0 fake=  0 dup_hdr=  1
+ings2.c                      fs_ext=  51 proto=  5 block=  0 fake=  1 dup_hdr=  0
+ings_strings.c               fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+main.c                       fs_ext= 144 proto= 10 block=  0 fake=  0 dup_hdr=  0
+main_post.c                  fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+system.c                     fs_ext=  97 proto=  2 block=  1 fake=  0 dup_hdr=  0
+text1a_b_mid_rodata.c        fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+text1a_b_post_rodata.c       fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+text1a_b_pre_rodata.c        fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+text1a_b_pre_rodata_b.c      fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+text1a_b_tail_rodata.c       fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+text1a_c.c                   fs_ext=  59 proto=  2 block=  0 fake=  0 dup_hdr=  4
+text1a_c_tu2.c               fs_ext=  56 proto=  5 block=  0 fake=  0 dup_hdr=  1
+text1a_filepaths.c           fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+text1a_post.c                fs_ext=  35 proto=  0 block=  1 fake=  0 dup_hdr=  0
+text1a_pre.c                 fs_ext=  19 proto=  0 block=  0 fake=  0 dup_hdr=  0
+text1a_pre_tu2.c             fs_ext=  16 proto=  2 block=  0 fake=  0 dup_hdr=  1
+text1a_svc.c                 fs_ext=   0 proto=  0 block=  0 fake=  0 dup_hdr=  0
+text1b.c                     fs_ext= 136 proto=  3 block=  0 fake=  0 dup_hdr=  3
+text1b_b.c                   fs_ext=  65 proto= 42 block=  3 fake=  0 dup_hdr=  1
+text1b_b_tu2.c               fs_ext=   4 proto=  2 block=  0 fake=  0 dup_hdr=  0
+text1b_b_tu3.c               fs_ext=   2 proto=  2 block=  0 fake=  0 dup_hdr=  0
+text1b_tu1b.c                fs_ext= 259 proto= 39 block=  0 fake=  0 dup_hdr=  8
+text1b_tu1c.c                fs_ext= 135 proto= 33 block= 74 fake=  0 dup_hdr=  9
+text1b_tu1d.c                fs_ext=  58 proto= 24 block=  0 fake=  0 dup_hdr=  8
+text1b_tu1e.c                fs_ext=  25 proto=  8 block=  0 fake=  0 dup_hdr=  0
+
+symbols declared in >1 src file: 294
+symbols with >1 distinct spelling (incl. headers): 108
+  of which also declared in a header: 3
+src decls that duplicate a header declaration: 64
+
+# sample conflicts (name: spellings @file:line)
+g_gpu_ot_ptr: s32g_gpu_ot_ptr @code6cac_b2_post.c:104,code6cac_c2.c:138,text1b_b.c:15,text1b_tu1c.c:329.. | u8*g_gpu_ot_ptr @ings.c:44,text1b.c:355,text1b_tu1b.c:28
+func_8006E480: s32func_8006E480(s32,s32) @text1b_b.c:59,text1b_tu1b.c:4303,text1b_tu1b.c:4785,text1b_tu1c.c:377.. | s32func_8006E480() @text1b_b.c:65,text1b_tu1b.c:5918,text1b_tu1c.c:384,text1b_tu1d.c:87.. | s32func_8006E480(s32a0_addr,s32a1) @text1b_b.c:99,text1b_tu1d.c:99,text1b_tu1e.c:87
+game_FrameLoop: voidgame_FrameLoop(void) @code6cac.c:30,code6cac_tu2.c:15,ings.c:52,text1a_c_tu2.c:215 | s32game_FrameLoop() @text1b_tu1b.c:3771,text1b_tu1c.c:30,text1b_tu1d.c:49 | s32game_FrameLoop(void) @text1b_tu1b.c:3850,text1b_tu1b.c:3879,text1b_tu1c.c:34,text1b_tu1c.c:36..
+VSync: voidVSync(s32) @code6cac.c:33,code6cac_b2_post.c:314,code6cac_b4_post.c:14,code6cac_b5.c:20.. | s32VSync(s32) @display.c:14,system.c:479,system.c:789
+cdrom_StartRead: s32cdrom_StartRead(s32,s32) @code6cac.c:112,code6cac_tu2.c:46,text1b_tu1b.c:3772,text1b_tu1b.c:3851.. | voidcdrom_StartRead(s32,s32) @ings.c:51
+rand: s32rand() @code6cac.c:113,code6cac_tu2.c:47 | s32rand(void) @code6cac_b.c:81,code6cac_b2_post.c:391,code6cac_b3.c:17,code6cac_b_tu2.c:24.. | u16rand(void) @code6cac_c_ab.c:175
+func_8007352C: s32func_8007352C(s32) @text1b_b.c:58,text1b_tu1b.c:4302,text1b_tu1b.c:4784,text1b_tu1c.c:376.. | s32func_8007352C() @text1b_b.c:66,text1b_tu1b.c:5919,text1b_tu1c.c:385,text1b_tu1d.c:88.. | s32func_8007352C(s32env_addr) @text1b_b.c:104
+func_8005C650: voidfunc_8005C650(s32,s32,s32) @code6cac.c:148,code6cac_b3.c:18,code6cac_b_tu2.c:5422,code6cac_c2.c:104.. | voidfunc_8005C650(s32a0,s32a1,s32a2) @text1b_b.c:56,text1b_tu1c.c:373,text1b_tu1d.c:60
+func_80036EA8: s32func_80036EA8(s32,s32) @code6cac_c2.c:164,text1b_tu1b.c:3810,text1b_tu1b.c:3849,text1b_tu1c.c:32.. | s32func_80036EA8() @text1b_tu1b.c:3767,text1b_tu1c.c:29,text1b_tu1d.c:48
+EnterCriticalSection: s32EnterCriticalSection(void) @code6cac_b2_post.c:365,code6cac_b4_post.c:23,code6cac_b5_post.c:23,comb.c:44.. | voidEnterCriticalSection(void) @code6cac_c.c:152,code6cac_c_mid.c:149,ings2.c:513,text1b_b.c:2870..
+rsin: s32rsin(s32) @text1a_c.c:458,text1a_c_tu2.c:20,text1a_c_tu2.c:169,text1a_post.c:417.. | s32rsin() @text1b.c:2518,text1b_b.c:14,text1b_tu1c.c:328,text1b_tu1d.c:22..
+func_8005C2A8: s32func_8005C2A8(s32*,s16,s32) @text1b.c:1210,text1b_tu1b.c:39,text1b_tu1b.c:3853,text1b_tu1c.c:325.. | s32func_8005C2A8(s32*hdr,s16vabid,s32arg2) @text1b_tu1c.c:372,text1b_tu1d.c:59
+ratan2: s32ratan2(s32,s32) @code6cac.c:80,code6cac_b.c:80,code6cac_b_tu2.c:23,code6cac_c2.c:1700.. | s16ratan2(s32,s32) @text1a_c.c:456
+printf: voidprintf() @code6cac_b_tu2.c:1540,ings.c:32,system.c:382,system.c:481.. | s32printf() @display.c:953 | voidprintf(s32*,s32*) @main.c:85 | s32printf(s32*,s32) @text1b_tu1b.c:3770,text1b_tu1c.c:367
+Judge: s16Judge[] @ings.c:34,text1a_c.c:180,text1a_c.c:281,text1a_c.c:352.. | s16Judge[0x1000] @code6cac.h:32
+D_800A38B4: s32D_800A38B4 @code6cac.c:66,code6cac_c2.c:74,code6cac_c_ab.c:67,code6cac_tu2.c:31 | void*D_800A38B4 @code6cac_b2_post.c:74 | u32D_800A38B4 @ings.c:45 | u8*D_800A38B4 @text1b.c:2126
+AddPrim: voidAddPrim(u32*a0,u32*a1) @code6cac_b2_post.c:107 | s32AddPrim(s32,s32) @text1b_b.c:61,text1b_tu1b.c:4305,text1b_tu1b.c:4787,text1b_tu1c.c:379..
+func_80052C10: voidfunc_80052C10() @code6cac_c2.c:1988 | voidfunc_80052C10(void) @text1a_c.c:14,text1a_c.c:1278,text1a_c_tu2.c:12,text1a_pre.c:21..
+rcos: s32rcos(s32) @text1a_c.c:457,text1a_c_tu2.c:19,text1a_c_tu2.c:170,text1a_post.c:416 | s32rcos() @text1b.c:2517,text1b_tu1c.c:327,text1b_tu1d.c:21
+func_8006920C: voidfunc_8006920C(s32*,s32) @text1b_b.c:69,text1b_b.c:2360,text1b_tu1c.c:3780,text1b_tu1d.c:91.. | voidfunc_8006920C(s32*a0,s32a1) @text1b_b.c:70,text1b_tu1d.c:92
+stage_GetDataPtr: s32stage_GetDataPtr(void) @code6cac.c:85,code6cac_b.c:90,code6cac_b_tu2.c:28,code6cac_tu2.c:44 | void*stage_GetDataPtr(void) @text1b_tu1b.c:36,text1b_tu1b.c:736
+LoadImage: voidLoadImage(s32,s32) @code6cac_c2.c:29,text1a_post.c:314,text1b_b.c:2372 | voidLoadImage(u8*,u8*) @ings.c:54 | voidLoadImage(u8*,s32) @text1b_tu1c.c:6348,text1b_tu1d.c:96
+func_80073728: s32func_80073728(s32,s32) @text1b_b.c:57,text1b_tu1b.c:4594,text1b_tu1c.c:375,text1b_tu1d.c:62.. | s32func_80073728(s32env_addr,s32mode) @text1b_b.c:105
+cdrom_GetFileSize: s32cdrom_GetFileSize() @text1b_tu1b.c:3768,text1b_tu1c.c:366 | s32cdrom_GetFileSize(s32) @text1b_tu1b.c:3811,text1b_tu1b.c:3852,text1b_tu1c.c:368,text1b_tu1c.c:369
+SetPolyG4: voidSetPolyG4(u8*p) @code6cac_b2_post.c:106 | s32SetPolyG4() @text1b_tu1b.c:5687,text1b_tu1c.c:383,text1b_tu1d.c:86 | s32SetPolyG4(GameObj*) @text1b_tu1d.c:1979
+D_800A3894: s32D_800A3894 @code6cac_c2.c:53 | u8*D_800A3894 @code6cac_c_ab.c:38,code6cac_c_ab.c:412,code6cac_c_mid.c:1431,code6cac_tu2.c:1325
+func_8004659C: voidfunc_8004659C(s32) @code6cac_c2.c:162,text1b.c:26,text1b_tu1b.c:12,text1b_tu1b.c:824 | voidfunc_8004659C(s32a0) @text1b_tu1b.c:13
+snd_VabFakeOpen: voidsnd_VabFakeOpen(u32,s32) @ings.c:328 | voidsnd_VabFakeOpen(s32,s32) @text1a_c_tu2.c:615,text1a_c_tu2.c:790 | s32snd_VabFakeOpen(s32,s16) @text1b_tu1b.c:3835,text1b_tu1b.c:3883
+SetRotMatrix: voidSetRotMatrix(MATRIX*) @ings.c:794 | voidSetRotMatrix(u8*) @text1b_tu1c.c:833,text1b_tu1c.c:913,text1b_tu1e.c:45,text1b_tu1e.c:47
+func_800486FC: s32func_800486FC(s32*) @text1a_c.c:38 | s32func_800486FC() @text1a_post.c:92,text1a_post.c:352B,text1a_post.c:610 | s32func_800486FC(void) @text1b.c:368
+math_RotMatrixZYX: voidmath_RotMatrixZYX(Unk80101DF0Rot*,Unk80101DF0Mat*) @text1a_c.c:409 | voidmath_RotMatrixZYX(s16*,s32*) @text1a_c_tu2.c:18,text1a_pre_tu2.c:203 | voidmath_RotMatrixZYX(SVECTOR*,MATRIX*) @text1b.c:1782,text1b_tu1b.c:43
+memcpy: s32memcpy(s32*,s32,s32) @code6cac.c:67,code6cac_tu2.c:32 | s32memcpy(s32,void*,s32) @display.c:15 | voidmemcpy(u32,u32,s32) @ings.c:327
+game_GetPlayerData: s32game_GetPlayerData(s32) @code6cac.c:116,code6cac_b_tu2.c:357,code6cac_tu2.c:50 | void*game_GetPlayerData() @text1b.c:1781
+RotMatrixX: void*RotMatrixX(s32,s32) @code6cac.c:121,code6cac_tu2.c:54 | voidRotMatrixX(s32,s32*) @code6cac_b.c:82,code6cac_b_tu2.c:25
+RotMatrixY: void*RotMatrixY(s32,s32) @code6cac.c:122,code6cac_tu2.c:55 | voidRotMatrixY(s32,s32*) @code6cac_b.c:83,code6cac_b_tu2.c:26
+RotMatrixZ: void*RotMatrixZ(s32,s32) @code6cac.c:123,code6cac_tu2.c:56 | voidRotMatrixZ(s32,s32*) @code6cac_b.c:84,code6cac_b_tu2.c:27
+func_8005C8A8: s32func_8005C8A8(s32,s32,s32,s32) @code6cac.c:149,code6cac_c2.c:118,code6cac_tu2.c:75 | s32func_8005C8A8(s32,s32,u32,s32) @ings.c:58
+ResetRCnt: voidResetRCnt(s32) @code6cac_c_ab.c:153,code6cac_c_mid.c:155,main.c:114 | voidResetRCnt(u32) @ings.c:62
+ClearOTagR: u32*ClearOTagR(u32*,s32) @ings.c:56 | s32ClearOTagR(s32,s32) @text1b.c:1783,text1b_b.c:12,text1b_tu1d.c:19
+puts: voidputs(void*) @ings2.c:95,system.c:480,system.c:790 | voidputs() @system.c:381
+
+# FAKE-labelled declarations
+  src\ings2.c:173 file void _96_remove(s32 *)

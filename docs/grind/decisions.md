@@ -1229,3 +1229,27 @@ padding.
 Forty-fifth batch. `typed-restatement` (CORROBORATED; tests T1-T6) and `basis-withdrawn` (RESET) are accepted
 classes; g_practice_menu_table / PracticeMenuRec and 0x800194F4 RESET. Resolves cheat-sweep question 8. Rule text:
 docs/naming/sweep-2026-10-03/README.md § Owner ruling Q103.
+
+## 2026-10-03 — OWNER RULING — Q104: LIBGTE REG09/REG12/REG13 become whole-body canonical asm
+
+Forty-sixth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 46). ReadGeomScreen, SetGeomOffset and
+SetGeomScreen are Sony LIBGTE modules whose LIBSCAN spans carry the 16-byte asm-module padding (all 77 asm-supplied modules
+multiples of 16; 64 of 105 C modules not, and no C module but these three is followed by a gap; memory/grind/restructure-2026-10-03/pad-survey/). Their C bodies become INCLUDE_ASM
+canonical bodies with the module pad nops in their .s; this retires display.c's last PAD_NOPS uses. Lands via `auth:`
++ layer-2 per function. Rule text: rodata-object-alignment.md § Inter-object padding item 1.
+
+## 2026-10-03 — OWNER RULING — Q105: typed-restatement T5 is a principle, not a closed noun list
+
+Forty-sixth batch. The owner wants the code to become human readable, not only canonically accurate. A member or data
+name may use a generic, non-game noun whose meaning holds in every write and read of the field in the matched code;
+game nouns still need an accepted class; the former list is examples. Refusals of `kind`, `type[2]`, `valid[2]` and
+pad_ResetStateMarkValid are re-checked under it; `age` and `.pad` stay refused on their facts. Rule text:
+docs/naming/sweep-2026-10-03/README.md § Owner ruling Q103 (T5 as amended by Q105).
+
+## 2026-10-03 — OWNER RULING — Q106: Phase 1 restructure (layout) decisions D1-D10
+
+Forty-sixth batch. The SOTN-model layout plan in docs/grind/handoff-2026-10-03-restructure.md is adopted with
+decisions D1-D10 as tabled there (D6 amended: subsystem file names where the file's functions carry accepted names,
+otherwise ROM-offset names). D3 (LIBSCAN module span is TU-boundary evidence for library code) and D4 (data-only
+rodata folds into its proven owner) are rule text in rodata-object-alignment.md § New TU boundaries; D8 keeps bb2.ld
+hand-maintained (plus a checker).

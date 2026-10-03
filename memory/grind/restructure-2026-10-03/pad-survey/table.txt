@@ -1,0 +1,35 @@
+| # | site | n | preceding | addr..end | next @ | mod16/mod8 | PsyQ module (span) | body | representation |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | display.c:1116 | 2 | InitGeom | 8007E094..8007E114 | 8007E11C | C/4 | LIBGTE MSC00 8007E08C..8007E11C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 2 | display.c:1118 | 3 | SquareRoot0 | 8007E11C..8007E1A0 | 8007E1AC | C/4 | LIBGTE MSC01 8007E11C..8007E1AC (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 3 | display.c:1159 | 1 | LoadAverageCol | 8007E3BC..8007E438 | 8007E43C | C/4 | LIBGTE MSC06 8007E1AC..8007E43C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 4 | display.c:1161 | 3 | SquareRoot12 | 8007E43C..8007E4D0 | 8007E4DC | C/4 | LIBGTE MSC09 8007E43C..8007E4DC (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 5 | display.c:1170 | 1 | MulMatrix0 | 8007E4DC..8007E5E8 | 8007E5EC | C/4 | LIBGTE MTX_000 8007E4DC..8007E5EC (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 6 | display.c:1196 | 3 | ScaleMatrixL | 8007E8DC..8007EA00 | 8007EA0C | C/4 | LIBGTE MTX_00A 8007E8DC..8007EA0C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 7 | display.c:1204 | 2 | ApplyRotMatrixLV | 8007EA0C..8007EB44 | 8007EB4C | C/4 | LIBGTE MTX_01 8007EA0C..8007EB4C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 8 | display.c:1211 | 1 | MulMatrix | 8007EB4C..8007EC58 | 8007EC5C | C/4 | LIBGTE MTX_03 8007EB4C..8007EC5C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 9 | display.c:1221 | 1 | MulMatrix2 | 8007EC5C..8007ED68 | 8007ED6C | C/4 | LIBGTE MTX_04 8007EC5C..8007ED6C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 10 | display.c:1244 | 3 | ScaleMatrix | 8007EDBC..8007EEE0 | 8007EEEC | C/4 | LIBGTE MTX_08 8007EDBC..8007EEEC (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 11 | display.c:1249 | 3 | ReadSZfifo3 | 8007EF6C..8007EF80 | 8007EF8C | C/4 | LIBGTE REG04 8007EF6C..8007EF8C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 12 | display.c:1251 | 1 | ReadGeomScreen | 8007EF8C..8007EF98 | 8007EF9C | C/4 | LIBGTE REG09 8007EF8C..8007EF9C (ends at gap end) | C + GTE island (canonical) | OWNER Q: whole-body .s (orig. asm module) incl. pad |
+| 13 | display.c:1274 | 2 | SetGeomOffset | 8007EFDC..8007EFF4 | 8007EFFC | C/4 | LIBGTE REG12 8007EFDC..8007EFFC (ends at gap end) | C + GTE island (canonical) | OWNER Q: whole-body .s (orig. asm module) incl. pad |
+| 14 | display.c:1278 | 1 | SetGeomScreen | 8007EFFC..8007F008 | 8007F00C | C/4 | LIBGTE REG13 8007EFFC..8007F00C (ends at gap end) | C + GTE island (canonical) | OWNER Q: whole-body .s (orig. asm module) incl. pad |
+| 15 | display.c:1315 | 1 | Lzc | 8007F200..8007F218 | 8007F21C | C/4 | LIBGTE SMP_00 8007F00C..8007F21C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 16 | display.c:1318 | 1 | RotTransPers | 8007F21C..8007F248 | 8007F24C | C/4 | LIBGTE SMP_02 8007F21C..8007F24C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 17 | display.c:1325 | 3 | RotTransPers3 | 8007F24C..8007F2A0 | 8007F2AC | C/4 | LIBGTE SMP_03 8007F24C..8007F2AC (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 18 | display.c:1328 | 2 | RotTrans | 8007F2AC..8007F2D4 | 8007F2DC | C/4 | LIBGTE SMP_04 8007F2AC..8007F2DC (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 19 | display.c:1334 | 2 | RotTransPers4 | 8007F2DC..8007F354 | 8007F35C | C/4 | LIBGTE CMB_00 8007F2DC..8007F35C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 20 | display.c:1342 | 1 | RotMatrix | 8007F35C..8007F5E8 | 8007F5EC | C/4 | LIBGTE FGO_01 8007F35C..8007F5EC (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 21 | display.c:1353 | 1 | RotMatrixZYX | 8007F5EC..8007F878 | 8007F87C | C/4 | LIBGTE FGO_03 8007F5EC..8007F87C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 22 | display.c:1364 | 2 | RotMatrixX | 8007F87C..8007FA14 | 8007FA1C | C/4 | LIBGTE FGO_04 8007F87C..8007FA1C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 23 | display.c:1372 | 2 | RotMatrixY | 8007FA1C..8007FBB4 | 8007FBBC | C/4 | LIBGTE FGO_05 8007FA1C..8007FBBC (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 24 | display.c:1381 | 2 | RotMatrixZ | 8007FBBC..8007FD54 | 8007FD5C | C/4 | LIBGTE FGO_06 8007FBBC..8007FD5C (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 25 | display.c:1524 | 1 | _patch_gte | 8007FEDC..8007FF78 | 8007FF7C | C/4 | LIBGTE PATCHGTE 8007FEDC..8007FF7C (ends at gap end) | file-scope glabel block (canonical) | nop into the block |
+| 26 | text1b_tu1b.c:74 | 1 | math_MidpointS16x3U8x2 | 8004C388..8004C400 | 8004C404 | 4/4 | none (game code) | INCLUDE_ASM (canonical) | item 2: move nops to end of its .s |
+| 27 | text1b_tu1b.c:86 | 1 | func_8004DDB4 | 8004DDB4..8004E560 | 8004E564 | 4/4 | none (game code) | INCLUDE_ASM (canonical) | item 2: move nops to end of its .s |
+| 28 | text1b_tu1b.c:135 | 2 | math_SquareRoot0 | 800526A0..80052718 | 80052720 | 0/0 | none (game code) | INCLUDE_ASM (canonical) | item 2: move nops to end of its .s |
+| 29 | text1b_tu1b.c:182 | 1 | func_80052C10 | 80052C10..80052C24 | 80052C28 | 8/0 | none (game code) | INCLUDE_ASM (canonical) | item 2: move nops to end of its .s |
+| 30 | text1b_tu1b.c:186 | 3 | gte_ReadIR1IR2Sra2 | 80052CD4..80052CF4 | 80052D00 | 0/0 | none (game code) | INCLUDE_ASM (canonical) | item 2: move nops to end of its .s |
+| 31 | text1b_b.c:2786 | 1 | SetSp | 800789D8..800789E4 | 800789E8 | 8/0 | LIBAPI A39 800789D8..800789E8 (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 32 | text1b_b.c:2998 | 6 | func_800790A4 | 800790A4..800790A8 | 800790C0 | 0/0 | LIBAPI SENDPAD 80079000..800790C0 (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
+| 33 | text1b_b.c:3001 | 1 | _remove_ChgclrPAD | 800790C0..8007911C | 80079120 | 0/0 | LIBAPI CHCLRPAD 800790C0..80079120 (ends at gap end) | INCLUDE_ASM (canonical) | move nops to end of its .s |
