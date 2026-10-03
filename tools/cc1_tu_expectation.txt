@@ -5,7 +5,7 @@
 # Refresh with: bash tools/build_oracle_cc1.sh --record-manifest
 # src-digest 62497add7f03c88573dfa5c1b146ff579281e000
 # recorded 2026-10-03T15:58:50Z
-aebf2779ad36e65eb2f400092840ec864004abf1  ings2
+aebf2779ad36e65eb2f400092840ec864004abf1  main/psxsdk/libetc/intr
 5b828f665c4fc844dd8703832dd96567f9b01ef7  main
 f0794ea2848865ef42396f92b2d3fc6f0ad4b195  main/175A4
 6a1c6ea83dda1d73abf31706c06badd606a89a30  main/17AFC

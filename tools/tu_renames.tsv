@@ -48,3 +48,4 @@ text1b_b_tu2	main/psxsdk/libc2/prnt	after:191f7cb0f272
 display	main/psxsdk/libgpu/sys	after:c803c2d33902
 gpu	main/psxsdk/libgpu/prim	after:6011f1eb377d
 system	main/psxsdk/libcd/bios	after:7b44d1cbb554
+ings2	main/psxsdk/libetc/intr	after:e32c75e8158c
