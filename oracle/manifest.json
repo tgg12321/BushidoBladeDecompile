@@ -6,7 +6,7 @@
     "size": 606208
   },
   "expected_build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
-  "git_commit": "cb0a98f633371cf3bf62efa30020c9e23fbfc081",
+  "git_commit": "d31fd693b05049b4e3e356e331a52fd64a575813",
   "toolchain": {
     "cc1_sha1": "ac80146bf50af58f719868de74c860fcdf617d30",
     "maspsx_sources_sha1": "25d24165d44a17a5f5b867617139267a4a847560",
@@ -82,9 +82,12 @@
     "src/main/psxsdk/libapi/l03.c": "677fb1858b4acccab6aa2240d18612c80c0fc8a3",
     "src/main/psxsdk/libapi/pad.c": "42050dec0518c00726dc3c3e509573af9caad4a5",
     "src/main/psxsdk/libapi/patch.c": "1f7aa7190c873f59d1837838b41c02d7f490665f",
+    "src/main/psxsdk/libc2/ctype.c": "c049d4a03957411f791807a70cae3d2c76d5a1dd",
+    "src/main/psxsdk/libc2/memchr.c": "2d48a3b670f9613be97059160822bb70bca6cde7",
     "src/main/psxsdk/libc2/memcpy.c": "3f22ed72740b10dfbb239a9fdc9b77f6bb0b8b5c",
     "src/main/psxsdk/libc2/printf.c": "1eb04515844be5e0c7b1bd8ad41689f0480714bc",
-    "src/main/psxsdk/libc2/prnt.c": "9f8d81f5725831f142366dd1c757f4e4f641906d",
+    "src/main/psxsdk/libc2/prnt.c": "177a67eaebe6001f3d21687fe85c54cdda4e94fe",
+    "src/main/psxsdk/libc2/putchar.c": "0cccf50c7d3fa9cf99d5a463dd2de5161bd1582f",
     "src/main/psxsdk/libc2/rand.c": "89ee11c86d01eb89f92325050f5f4fd43d1f684f",
     "src/main/psxsdk/libc2/sprintf.c": "05d6efdf06e46721b435ce369bbf58888fdcc714",
     "src/main/psxsdk/libc2/strcpy.c": "ea7ccf798f96eb911b74e6972c2e3f2541a00265",
@@ -102,7 +105,7 @@
     "named_syms.txt": "f12f5bf8931fbff7f82c01483cb4c6175f5c89f9",
     "undefined_funcs_auto.txt": "faba42cf9a3ff26d97d608dadebac645aa24a4dc",
     "undefined_syms_auto.txt": "b0dbfea10f6a95c0acb3139b9f22571dc8d4ebaf",
-    "bb2.ld": "f84d6d986885c38ab41bb1507aad62df1094cb10",
+    "bb2.ld": "58b3f602ffedd544967f40c86e6697f2798d04ce",
     "tools/prologue_config.json": "5f36b2ea290645ee34d943220a14b54ee5ea5be5",
     "maspsx_prefill_label_funcs.txt": "fbcfc22e701730f655212397f3d19bfd43884f1b",
     "maspsx_comm_syms.txt": "68bf36ddc83edce4182ccdfa29360063a27414f2"

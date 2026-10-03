@@ -3,8 +3,8 @@
 # tools/cc1-reorg-negate-rtx-decl.patch (no codegen patch; owner Q17).
 # Keyed to the source tree: they change whenever src/ or include/ does.
 # Refresh with: bash tools/build_oracle_cc1.sh --record-manifest
-# src-digest be7eff9862548a8f5b82283022d28d217beb45a5
-# recorded 2026-10-03T14:17:21Z
+# src-digest 4dcb871b6c47cf77cc497a28d0857a54ea6b235c
+# recorded 2026-10-03T14:29:19Z
 684727a226ea1d212aa6d5f04a7ded04b4aaa4fa  display
 bc60c54aa5534f3e039cc0a020e57bad8be781d0  gpu
 aebf2779ad36e65eb2f400092840ec864004abf1  ings2
@@ -73,8 +73,12 @@ d646673a0b64dce77d00508883b17383c6827497  main/psxsdk/libapi/l02
 d54384e8c9acebade159ff1339eb4db2bbf615a5  main/psxsdk/libapi/l03
 087d593abd87f6bfa3a02c1e4367f14bc0b8cde1  main/psxsdk/libapi/pad
 e29f7fc72bedad2c1bfba82a0db8eed854390533  main/psxsdk/libapi/patch
+9986023d65554c7883a7f744c953a18f75c7a68a  main/psxsdk/libc2/ctype
+774ab28efa54ad7844db2e7300d24122266d0973  main/psxsdk/libc2/memchr
 2ea2a2606452fbcb8787d863c219a85f11e13e05  main/psxsdk/libc2/memcpy
 c685440348be40389fae84f14dea169406b4f439  main/psxsdk/libc2/printf
+21d45eac49f691488b6462fc8f46d56c076980c8  main/psxsdk/libc2/prnt
+d935e7cd4a58d74959fab2671d29ffc0f16164c3  main/psxsdk/libc2/putchar
 5ed1af9888898787b1b4d251378702a4e3a9c83d  main/psxsdk/libc2/rand
 d5ba30ed992eb95d361c050c944b196b621c0764  main/psxsdk/libc2/sprintf
 26d43c0cd9d105c3e00c58d186d0e759d2d9d078  main/psxsdk/libc2/strcpy
@@ -83,4 +87,3 @@ efdf0fcf172eee0d831821e60b91e3027a6b1ed1  main/psxsdk/libc2/strlen
 d63cb1a187b36abde5fc44fce44df32c5e41219d  system
 aa02790aa1818dba03e44205bfe56e20639ccfb0  text1a_b_post_rodata
 254886b14b7223202b20d1d6517c66eacf97beb8  text1a_b_tail_rodata
-7e851213390972ef265a57547f7a5f47bac9b220  main/psxsdk/libc2/prnt
