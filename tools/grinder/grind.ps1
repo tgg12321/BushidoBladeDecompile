@@ -1759,7 +1759,7 @@ while ($true) {
                 # ESCALATE(integration-handoff) verdict the driver widens scope /
                 # clears the superseded ban and the function STAYS ACTIVE.
                 Invoke-JudgeRuling $func ("INTEGRATION HANDOFF filed for $func : $escRef`n" +
-                    "Read the escalation entry in docs/grind/decisions.md and the ledger, and verify its bytes claim yourself (the banked form + measurements). If the claim is sound and the remedy is a scope widening and/or a superseded-ban clearance per .claude/rules/integration-handoff-self-serve.md, return ESCALATE with escalate_kind=integration-handoff plus scope_paths=[...] (allowed classes: include/*.h, src/*.c, root-level rule/allowlist *.txt; the denylist is refused mechanically) and/or unban_construct=<substring>. If the claim does not hold, FAIL with the defect.")
+                    "Read the escalation entry in docs/grind/decisions.md and the ledger, and verify its bytes claim yourself (the banked form + measurements). If the claim is sound and the remedy is a scope widening and/or a superseded-ban clearance per .claude/rules/integration-handoff-self-serve.md, return ESCALATE with escalate_kind=integration-handoff plus scope_paths=[...] (allowed classes: include/*.h, src/**/*.c, root-level rule/allowlist *.txt; the denylist is refused mechanically) and/or unban_construct=<substring>. If the claim does not hold, FAIL with the defect.")
             } else {
                 # Legacy pending-shaped ref (pre-2026-08-18). No pending states exist
                 # anymore: log to the borderline ledger and foreclose silently.

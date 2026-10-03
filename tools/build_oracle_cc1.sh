@@ -38,6 +38,10 @@
 #     manifest in docs/ORACLE-COMPILER.md.
 #   * Building never installs. Installing never skips the self-check.
 set -uo pipefail
+# TU ids: path under src/ without .c, recursive (engine/tus.py); globstar keeps
+# the flat tree's order identical to the old `src/*.c`.
+shopt -s globstar
+tu_ids() { local f s; for f in src/**/*.c; do s=${f#src/}; echo "${s%.c}"; done; }
 
 cd "$(git rev-parse --show-toplevel)" || exit 1
 LIVE=tools/gcc-2.7.2
@@ -200,11 +204,11 @@ for c in "${REF_CC1:-}" \
   [ -n "$c" ] && [ -x "$c" ] && { REF="$c"; break; }
 done
 
-# Manifest expectation is keyed to the source tree: src/*.c + include/*.h.
-SRCDIG=$( (sha1sum src/*.c include/*.h 2>/dev/null | sha1sum) | cut -d' ' -f1 )
+# Manifest expectation is keyed to the source tree: src/**/*.c + include/*.h.
+SRCDIG=$( (sha1sum src/**/*.c include/*.h 2>/dev/null | sha1sum) | cut -d' ' -f1 )
 : > $W/digests.txt
 n=0
-for stem in $(ls src/*.c | sed 's|src/||; s|\.c$||'); do
+for stem in $(tu_ids); do
   $CPP src/$stem.c > $W/t.i 2>/dev/null
   case "$stem" in text1a_pre|text1a_post) FL="$FG8";; *) FL="$F";; esac
   "$SCRATCH/cc1" $FL $W/t.i -o $W/new.s 2>/dev/null
@@ -217,7 +221,7 @@ rc=0
 if [ -n "$REF" ]; then
   echo "== self-check: asm over $n TUs vs preserved reference $REF"
   bad=""; lines=0
-  for stem in $(ls src/*.c | sed 's|src/||; s|\.c$||'); do
+  for stem in $(tu_ids); do
     $CPP src/$stem.c > $W/t.i 2>/dev/null
     case "$stem" in text1a_pre|text1a_post) FL="$FG8";; *) FL="$F";; esac
     "$SCRATCH/cc1" $FL $W/t.i -o $W/new.s 2>/dev/null

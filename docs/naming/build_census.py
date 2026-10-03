@@ -61,9 +61,8 @@ if _need:
 # ---------------------------------------------------------------- src definitions
 src_def = {}
 INCASM = re.compile(r'INCLUDE_ASM\([^,]+,\s*([A-Za-z_]\w*)\s*\)')
-for f in sorted(os.listdir(J("src"))):
-    if not f.endswith(".c"):
-        continue
+for f in sorted(os.path.relpath(os.path.join(d, c), J("src")).replace(os.sep, "/")
+                for d, _, cs in os.walk(J("src")) for c in cs if c.endswith(".c")):
     with open(J("src", f), encoding="utf-8", errors="replace") as fh:
         for i, ln in enumerate(fh, 1):
             m = INCASM.search(ln)

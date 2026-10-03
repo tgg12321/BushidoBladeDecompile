@@ -5266,6 +5266,107 @@ def test_tus() -> None:
            (mk_ids, bc_ids), (["gpu", "main/psxsdk/libcomb/comb"], ["gpu", "main/psxsdk/libcomb/comb"]))
 
 
+def test_move_tu() -> None:
+    """tools/move_tu.py on a scratch git repo: dry run writes nothing, a dirty
+    tree refuses, --apply moves every keyed surface, and moving back restores
+    every file byte-for-byte (the rename map keeps both rows)."""
+    import importlib.util
+    import shutil
+    import subprocess
+    spec = importlib.util.spec_from_file_location("move_tu", "tools/move_tu.py")
+    mt = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mt)
+    repo_root = Path.cwd()
+
+    def git(*a):
+        return subprocess.run(["git", "-c", "user.email=t@e", "-c", "user.name=t",
+                               "-c", "core.hooksPath=/dev/null", *a], cwd=td,
+                              check=True, capture_output=True, text=True).stdout
+
+    with tempfile.TemporaryDirectory() as td:
+        R = Path(td)
+        files = {
+            "src/comb.c": "int comb;\n",
+            "src/gpu.c": "int gpu;\n",
+            "bb2.ld": ("SECTIONS {\n        build/src/gpu.o(.rodata);\n        build/src/comb.o(.rodata);\n"
+                       "        build/src/gpu.o(.text);\n        build/src/comb.o(.text);\n"
+                       "        build/src/comb.o(.bss);\n}\n"),
+            "Makefile": ("GP_FILES := gpu\nPSYQ_LIBRARY_FILES := comb gpu\nEXPAND_LB_FILES :=\n"
+                         "EXPAND_LH_FILES :=\nNO_SR_FILES :=\n"),
+            "engine/buildconfig.py": ('GP_FILES = {"gpu"}\nEXPAND_LB_FILES = set()\nEXPAND_LH_FILES = set()\n'
+                                      'PSYQ_LIBRARY_FILES = {"comb", "gpu"}\nNO_SR_FILES = set()\n'),
+            "oracle/manifest.json": json.dumps({"corpus": {"src/comb.c": "h1", "src/gpu.c": "h2"},
+                                                "golden_fixtures": [{"name": "f", "file": "src/comb.c"}]},
+                                               indent=2) + "\n",
+            "tools/cc1_tu_expectation.txt": "# src-digest x\n" + "a" * 40 + "  comb\n" + "b" * 40 + "  gpu\n",
+            "tools/canonical_asm_regions.json": json.dumps({"schema": 1, "functions": {}}, indent=2) + "\n",
+            "engine/queue.json": json.dumps({"items": [{"func": "f", "file": "comb"}]}, indent=2) + "\n",
+            ".claude/rules/r.md": '---\nname: r\npaths: ["src/comb.c", "src/**/*.c"]\n---\nbody src/comb.c\n',
+            "tools/other.sh": "case $stem in comb) ;; esac\n",
+        }
+        for rel, t in files.items():
+            Path(R, rel).parent.mkdir(parents=True, exist_ok=True)
+            Path(R, rel).write_bytes(t.encode())
+        git("init", "-q")
+        git("add", "-A")
+        git("commit", "-qm", "base")
+        snapshot = {rel: Path(R, rel).read_bytes() for rel in files}
+        new = "main/psxsdk/libcomb/comb"
+        cwd = os.getcwd()
+        os.chdir(repo_root)          # move_tu imports engine.* from the real tree
+        try:
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = mt.main(["comb", new, "--root", td])
+            eq("move_tu: dry run exits 0", rc, 0)
+            check("move_tu: dry run changes nothing",
+                  all(Path(R, rel).read_bytes() == b for rel, b in snapshot.items())
+                  and not Path(R, "tools/tu_renames.tsv").exists())
+            check("move_tu: dry run lists a hand-review leftover", "tools/other.sh" in out.getvalue())
+            Path(R, "src/gpu.c").write_text("int gpu2;\n")
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                eq("move_tu: a dirty tree refuses", mt.main(["comb", new, "--root", td, "--apply"]), 1)
+            git("checkout", "--", "src/gpu.c")
+            with contextlib.redirect_stdout(io.StringIO()):
+                eq("move_tu: apply exits 0", mt.main(["comb", new, "--root", td, "--apply"]), 0)
+            check("move_tu: the source moved", Path(R, f"src/{new}.c").read_text() == "int comb;\n"
+                  and not Path(R, "src/comb.c").exists())
+            ld = Path(R, "bb2.ld").read_text()
+            check("move_tu: every bb2.ld section line moved in place",
+                  ld == files["bb2.ld"].replace("build/src/comb.o", f"build/src/{new}.o"))
+            check("move_tu: the flag list follows the file",
+                  f"PSYQ_LIBRARY_FILES := {new} gpu" in Path(R, "Makefile").read_text()
+                  and f'"{new}"' in Path(R, "engine/buildconfig.py").read_text())
+            man = json.loads(Path(R, "oracle/manifest.json").read_text())
+            eq("move_tu: oracle corpus key + fixture file follow (hash kept)",
+               (man["corpus"].get(f"src/{new}.c"), man["golden_fixtures"][0]["file"]),
+               ("h1", f"src/{new}.c"))
+            check("move_tu: cc1 expectation, queue item and rule paths follow",
+                  f"  {new}\n" in Path(R, "tools/cc1_tu_expectation.txt").read_text()
+                  and json.loads(Path(R, "engine/queue.json").read_text())["items"][0]["file"] == new
+                  and f'"src/{new}.c"' in Path(R, ".claude/rules/r.md").read_text()
+                  and "body src/comb.c" in Path(R, ".claude/rules/r.md").read_text())
+            check("move_tu: the rename map gains a row",
+                  f"comb\t{new}\tafter:" in Path(R, "tools/tu_renames.tsv").read_text())
+            check("move_tu: everything is staged", git("status", "--porcelain").count("\n")
+                  == len(git("diff", "--cached", "--name-only").splitlines()))
+            git("commit", "-qm", "move")
+            with contextlib.redirect_stdout(io.StringIO()):
+                eq("move_tu: moving back exits 0", mt.main([new, "comb", "--root", td, "--apply"]), 0)
+            check("move_tu: the round trip restores every keyed file byte-for-byte",
+                  all(Path(R, rel).read_bytes() == b for rel, b in snapshot.items()))
+            check("move_tu: the round trip removes the emptied directories",
+                  not Path(R, "src/main").exists())
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                git("commit", "-qm", "back")
+                eq("move_tu: an existing target refuses", mt.main(["comb", "gpu", "--root", td]), 1)
+                eq("move_tu: a missing source refuses", mt.main(["nope", "x", "--root", td]), 1)
+                eq("move_tu: a non-id target refuses", mt.main(["comb", "../x", "--root", td]), 1)
+        finally:
+            os.chdir(cwd)
+        shutil.rmtree(Path(R, ".git"), ignore_errors=True)
+
+
 def test_maspsx_fingerprint() -> None:
     """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
     HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
@@ -5509,6 +5610,7 @@ def main() -> int:
     test_maspsx_small_data_sdata()
     test_psyq_library_files()
     test_tus()
+    test_move_tu()
     test_maspsx_fingerprint()
     test_objdump_failure_is_loud()
     test_prologue_config_fingerprint()

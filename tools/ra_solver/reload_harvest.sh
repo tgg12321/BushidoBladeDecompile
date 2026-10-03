@@ -21,12 +21,13 @@ mkdir -p "$OUT"
 
 stems="$*"
 if [ -z "$stems" ]; then
-  stems=$(ls src/*.c | sed 's|src/||; s|\.c$||')
+  stems=$(cd src && find . -name '*.c' | sed 's|^\./||; s|\.c$||' | sort)
 fi
 
 for stem in $stems; do
   g="-G0"
   for gp in $GP_FILES; do [ "$stem" = "$gp" ] && g="-G8"; done
+  mkdir -p "$(dirname "$OUT/$stem.i")"
   $CPP "src/$stem.c" > "$OUT/$stem.i" 2>/dev/null
   BB2_RELOAD_DEBUG=1 "$CC1" $BASE $g "$OUT/$stem.i" -o /dev/null \
       2> "$OUT/$stem.reload.log"

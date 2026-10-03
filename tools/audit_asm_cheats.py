@@ -393,6 +393,15 @@ INLINE_MOVE_BULLET = re.compile(
 )
 
 
+def _head_key_path(path):
+    """A HEAD src path as the current tree names it: a TU moved since HEAD
+    (tools/tu_renames.tsv) keeps its grandfathered counts under the new path."""
+    from engine import tus
+    if not (path.startswith("src/") and path.endswith(".c")):
+        return path
+    return tus.src_path(tus.resolve(path[4:-2]))
+
+
 def _line_to_pos(content, line_1based):
     """Convert a 1-based line number into a character offset in `content`
     pointing at the start of that line (or 0 if line_1based < 1)."""
@@ -984,7 +993,7 @@ def get_current_cheats(auth):
     except OSError:
         pass
 
-    for src in sorted(Path("src").glob("*.c")):
+    for src in sorted(Path("src").rglob("*.c")):
         text = src.read_text(encoding="utf-8")
         for f, l, n, fname, is_bios in scan_inline_asm_bodies(text, src.name):
             if n < GLABEL_BODY_LINES:
@@ -1175,7 +1184,7 @@ def cmd_all():
     print()
     print(f"=== Inline __asm__ glabel function bodies in src/*.c ===")
     inline_all = []
-    for src in sorted(Path("src").glob("*.c")):
+    for src in sorted(Path("src").rglob("*.c")):
         inline_all.extend(
             scan_inline_asm_bodies(src.read_text(encoding="utf-8"), src.name)
         )
@@ -1195,7 +1204,7 @@ def cmd_all():
     print()
     print(f"=== Multi-instruction __asm__ inside C function bodies ===")
     c_body_all = []
-    for src in sorted(Path("src").glob("*.c")):
+    for src in sorted(Path("src").rglob("*.c")):
         c_body_all.extend(
             scan_c_body_smuggled_work(src.read_text(encoding="utf-8"), src.name)
         )
@@ -1214,7 +1223,7 @@ def cmd_all():
     print(f"  codegen cheat migrated from regfix.txt into the C source. Bytes still")
     print(f"  don't come from compilation; GCC has no view into the operation.")
     asm_inj_all = []
-    for src in sorted(Path("src").glob("*.c")):
+    for src in sorted(Path("src").rglob("*.c")):
         asm_inj_all.extend(
             scan_inline_asm_lost_codegen_injection(src.read_text(encoding="utf-8"), src.name)
         )
@@ -1303,7 +1312,7 @@ def cmd_func(name):
               f"inline_asm_canonical.txt or rewrite the C to defeat the optimizer "
               f"(register pinning, structure change, etc.).", file=sys.stderr)
         return 1
-    for src in sorted(Path("src").glob("*.c")):
+    for src in sorted(Path("src").rglob("*.c")):
         text = src.read_text(encoding="utf-8")
         for f, l, n, fname, is_bios in scan_inline_asm_bodies(text, src.name):
             if fname == name and n >= GLABEL_BODY_LINES and not is_bios:
@@ -1477,8 +1486,8 @@ def cmd_check_new(commit_msg=None):
                     encoding="utf-8", errors="replace").stdout
             except subprocess.CalledProcessError:
                 continue
-            basename = path.split("/")[-1]
-            for key, n in barriers_by_func(head_content, basename).items():
+            # keyed by the repo path: two TUs may share a basename (libgpu/sys, libcd/sys)
+            for key, n in barriers_by_func(head_content, _head_key_path(path)).items():
                 head_barriers_by_func[key] = head_barriers_by_func.get(key, 0) + n
     except subprocess.CalledProcessError:
         pass
@@ -1488,10 +1497,10 @@ def cmd_check_new(commit_msg=None):
     # barrier regardless of documentation (the old INLINE_MOVE_ALIASING: doc
     # escape valve is retired). Existing barriers are grandfathered via head_n.
     new_barriers = []
-    for src_path in sorted(Path("src").glob("*.c")):
+    for src_path in sorted(Path("src").rglob("*.c")):
         content = src_path.read_text(encoding="utf-8", errors="replace")
         # Iterate scan results in order so reports identify the actual file:line.
-        cur_barriers = list(scan_aliasing_barriers(content, src_path.name))
+        cur_barriers = list(scan_aliasing_barriers(content, src_path.as_posix()))
         for src_name, line_no, has_doc, reason in cur_barriers:
             fname = _enclosing_func_name(content, _line_to_pos(content, line_no))
             key = (src_name, fname)
@@ -1579,11 +1588,11 @@ def cmd_check_new(commit_msg=None):
                     encoding="utf-8", errors="replace").stdout
             except subprocess.CalledProcessError:
                 continue
-            for key, n in pins_by_func(head_content, path.split("/")[-1]).items():
+            for key, n in pins_by_func(head_content, _head_key_path(path)).items():
                 head_pins_by_func[key] = head_pins_by_func.get(key, 0) + n
-        for src_path in sorted(Path("src").glob("*.c")):
+        for src_path in sorted(Path("src").rglob("*.c")):
             content = src_path.read_text(encoding="utf-8", errors="replace")
-            for key, n in pins_by_func(content, src_path.name).items():
+            for key, n in pins_by_func(content, src_path.as_posix()).items():
                 sname, fname = key
                 if fname in cur_auth:   # canonical-asm bodies are exempt
                     continue
@@ -1629,11 +1638,11 @@ def cmd_check_new(commit_msg=None):
                     encoding="utf-8", errors="replace").stdout
             except subprocess.CalledProcessError:
                 continue
-            for key, n in plain_register_hints_by_func(head_content, path.split("/")[-1]).items():
+            for key, n in plain_register_hints_by_func(head_content, _head_key_path(path)).items():
                 head_hints_by_func[key] = head_hints_by_func.get(key, 0) + n
-        for src_path in sorted(Path("src").glob("*.c")):
+        for src_path in sorted(Path("src").rglob("*.c")):
             content = src_path.read_text(encoding="utf-8", errors="replace")
-            for key, n in plain_register_hints_by_func(content, src_path.name).items():
+            for key, n in plain_register_hints_by_func(content, src_path.as_posix()).items():
                 sname, fname = key
                 if fname in cur_auth:
                     continue

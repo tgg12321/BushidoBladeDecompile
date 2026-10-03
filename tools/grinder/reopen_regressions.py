@@ -43,11 +43,12 @@ def find_file_stem(func):
     is terminated by ';' and is NOT the defining file)."""
     pat = re.compile(DEF_PAT_TEMPLATE.format(func=re.escape(func)), re.M)
     hits = []
-    for path in glob.glob("src/*.c"):
+    for path in sorted(glob.glob("src/**/*.c", recursive=True)):
         text = open(path, encoding="utf-8", errors="replace").read()
         for m in pat.finditer(text):
             if m.group(1) == "{":
-                hits.append(os.path.splitext(os.path.basename(path))[0])
+                # TU id: path under src/ without .c
+                hits.append(os.path.relpath(path, "src")[:-2].replace(os.sep, "/"))
                 break
     if len(hits) == 1:
         return hits[0]

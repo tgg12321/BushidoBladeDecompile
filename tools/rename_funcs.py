@@ -446,7 +446,7 @@ def process_asm_file(path, text):
 total_files = 0
 total_replacements = 0
 
-c_files = list((root / "src").glob("*.c")) + list((root / "include").glob("*.h"))
+c_files = list((root / "src").rglob("*.c")) + list((root / "include").glob("*.h"))
 asm_files = (
     list((root / "asm" / "funcs").glob("*.s")) +
     list((root / "asm").glob("*.s"))
@@ -490,7 +490,7 @@ glabel_pattern = re.compile(r"^(glabel|endlabel) (func_[0-9A-Fa-f]{8})\b", re.MU
 # Build set of new names that appear in INCLUDE_ASM calls
 include_asm_re = re.compile(r'INCLUDE_ASM\s*\(\s*"[^"]+"\s*,\s*(\w+)\s*\)')
 active_stubs = set()
-for c_path in (root / "src").glob("*.c"):
+for c_path in (root / "src").rglob("*.c"):
     c_text = c_path.read_text(encoding="utf-8", errors="replace")
     for m in include_asm_re.finditer(c_text):
         active_stubs.add(m.group(1))

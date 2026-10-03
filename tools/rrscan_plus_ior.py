@@ -258,7 +258,7 @@ class Func:
 
 def main():
     asm = set()
-    for c in glob.glob("src/*.c"):
+    for c in glob.glob("src/**/*.c", recursive=True):
         asm |= set(re.findall(r'INCLUDE_ASM\("asm/funcs", (\w+)\);', open(c, encoding="utf-8", errors="replace").read()))
     rows = []
     for path in sorted(glob.glob("asm/funcs/*.s")):

@@ -181,8 +181,9 @@ def _is_repo_shaped_citation(path):
     """True only for paths that are unambiguously THIS repo's — never for
     external-project precedents (SOTN cites like src/main/psxsdk/... or
     src/dra/42398.c are legitimate and must not be existence-checked).
-    BB2's src/ and include/ are FLAT, so a src|include path counts as
-    repo-shaped only with exactly one path segment after the topdir."""
+    A src|include path counts as repo-shaped only with exactly one path
+    segment after the topdir: BB2's own nested TUs (src/main/...) share
+    SOTN's layout, so a nested src citation is not existence-checked."""
     parts = path.split("/")
     top = parts[0]
     if top in _REPO_TOPDIRS:
@@ -2253,8 +2254,8 @@ def _module_mates(root, func, proven):
         return []
     src_dir = os.path.join(root, "src")
     try:
-        srcs = {f: open(os.path.join(src_dir, f), encoding="utf-8", errors="replace").read()
-                for f in os.listdir(src_dir) if f.endswith(".c")}
+        srcs = {tid + ".c": open(os.path.join(src_dir, tid + ".c"), encoding="utf-8", errors="replace").read()
+                for tid in _src_ids(src_dir)}
     except Exception:
         srcs = {}
     for r in rows:
@@ -2941,18 +2942,26 @@ def ledger_close_refusal(root, func):
 _SRC_CACHE = {}
 
 
+def _src_ids(src):
+    """Sorted TU ids (path under src/ without .c, posix) of every C source in
+    the src directory `src`, recursively (engine/tus.py's definition)."""
+    if not os.path.isdir(src):
+        return []
+    return sorted(os.path.relpath(os.path.join(d, f), src)[:-2].replace(os.sep, "/")
+                  for d, _, fs in os.walk(src) for f in fs if f.endswith(".c"))
+
+
 def _src_texts(root):
-    """{stem: text} of src/*.c, cached per root for a sweep's lifetime."""
+    """{TU id: text} of src/**/*.c, cached per root for a sweep's lifetime."""
     if root not in _SRC_CACHE:
         out = {}
         src = os.path.join(root, "src")
-        for fn in sorted(os.listdir(src)) if os.path.isdir(src) else []:
-            if fn.endswith(".c"):
-                try:
-                    with open(os.path.join(src, fn), encoding="utf-8", errors="replace") as fh:
-                        out[fn[:-2]] = fh.read()
-                except OSError:
-                    pass
+        for tid in _src_ids(src):
+            try:
+                with open(os.path.join(src, tid + ".c"), encoding="utf-8", errors="replace") as fh:
+                    out[tid] = fh.read()
+            except OSError:
+                pass
         _SRC_CACHE[root] = out
     return _SRC_CACHE[root]
 

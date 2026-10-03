@@ -202,7 +202,7 @@ def substitute_in_sources(to_apply: list[dict]) -> dict[str, int]:
     pat = re.compile(rf"\b({keys})\b")
 
     candidates: list[Path] = []
-    candidates.extend(sorted(SRC_DIR.glob("*.c")))
+    candidates.extend(sorted(SRC_DIR.rglob("*.c")))
     candidates.extend(sorted((ROOT / "include").glob("*.h")))
     for name in ("regfix.txt", "asmfix.txt", "expand_lb_funcs.txt",
                  "sdata_funcs.txt", "sdata_exclude.txt"):
@@ -316,7 +316,7 @@ def cmd_revert(args) -> int:
 
     edits: dict[str, int] = {}
     files: list[Path] = []
-    files.extend(sorted(SRC_DIR.glob("*.c")))
+    files.extend(sorted(SRC_DIR.rglob("*.c")))
     files.extend(sorted((ROOT / "include").glob("*.h")))
     for name in ("regfix.txt", "asmfix.txt", "sdata_funcs.txt",
                   "sdata_exclude.txt", "expand_lb_funcs.txt"):

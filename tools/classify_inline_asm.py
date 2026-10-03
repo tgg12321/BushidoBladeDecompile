@@ -713,7 +713,7 @@ def main() -> int:
         if not files[0].is_absolute():
             files[0] = ROOT / args.src
     else:
-        files = sorted(SRC_DIR.glob("*.c"))
+        files = sorted(SRC_DIR.rglob("*.c"))
 
     records: list[dict] = []
     for f in files:

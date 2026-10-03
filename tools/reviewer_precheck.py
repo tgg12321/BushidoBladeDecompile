@@ -50,7 +50,7 @@ def read_text_at_commit(rel_path: str, commit: str) -> str | None:
 
 
 def list_src_files_at_commit(commit: str) -> list[str]:
-    """src/*.c files present at <commit> (repo-relative paths)."""
+    """src/**/*.c files present at <commit> (repo-relative paths)."""
     r = subprocess.run(["git", "ls-tree", "-r", "--name-only", commit, "src/"],
                        capture_output=True, text=True, cwd=ROOT)
     if r.returncode != 0:
@@ -126,7 +126,7 @@ def function_body(func: str, file_stem: str | None,
         return None
     # working-tree path (CLI default; no --commit)
     candidates = ([ROOT / "src" / f"{file_stem}.c"] if file_stem
-                  else sorted((ROOT / "src").glob("*.c")))
+                  else sorted((ROOT / "src").rglob("*.c")))
     for src in candidates:
         if not src.exists():
             continue

@@ -277,10 +277,10 @@ def parse_bb2_functions() -> list[dict]:
     """
     name_index: dict[str, set[str]] = defaultdict(set)
     name_re = re.compile(r"\b(func_[0-9A-Fa-f]{8}|[A-Za-z_][A-Za-z0-9_]+)\b")
-    for c in sorted((ROOT / "src").glob("*.c")):
+    for c in sorted((ROOT / "src").rglob("*.c")):
         text = c.read_text(errors="replace")
         for m in name_re.finditer(text):
-            name_index[m.group(1)].add(c.name)
+            name_index[m.group(1)].add(c.relative_to(ROOT / "src").as_posix())
 
     funcs: list[dict] = []
     callers_of: dict[str, set[str]] = defaultdict(set)

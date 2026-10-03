@@ -47,7 +47,7 @@ make clean
 
 - **Never run `make setup`.** `bb2.ld` is hand-maintained and `asm/data/*.rodata*.s` are
   deliberately deleted; re-running splat breaks the build (recovery procedure in `splat.yaml`).
-- **Build files** (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, pipeline `*.txt`) **must be LF.**
+- **Build files** (`src/**/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, pipeline `*.txt`) **must be LF.**
   Windows-side editors and Windows Python text-mode writes produce CRLF and silently break the
   GNU toolchain.
 
@@ -67,6 +67,9 @@ hand-escaped quotes.
   constructs and no draft C on `main`; C lands once, when it byte-matches honestly. In-progress
   candidates live in `memory/grind/<func>/`.
 - GTE (cop2) ops and BIOS/syscall trampolines have no C form — inline `__asm__` for those is canonical.
+- C sources may sit in subdirectories of `src/`. A TU id is the path under `src/` without `.c`;
+  `bb2.ld` links `build/src/<id>.o` (`engine/tus.py`, `engine tus-check`) and the per-file flag lists
+  hold ids. Move or rename a TU only with `tools/move_tu.py` (renames: `tools/tu_renames.tsv`).
 - Addresses are KSEG0 (`0x80000000`+); `0x1F800000`–`0x1F8003FF` is scratchpad RAM.
 - Scratch goes in `tmp/` (gitignored); don't add files at the repo root
   (`tools/check_root_cleanliness.py`).

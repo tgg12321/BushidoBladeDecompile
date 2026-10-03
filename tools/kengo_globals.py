@@ -345,7 +345,7 @@ def substitute_in_files(accepted: list[dict]) -> dict[str, int]:
     pat = re.compile(rf"\b({keys})\b")
 
     files: list[Path] = []
-    files.extend(sorted(SRC_DIR.glob("*.c")))
+    files.extend(sorted(SRC_DIR.rglob("*.c")))
     files.extend(sorted((ROOT / "include").glob("*.h")))
     for name in ("regfix.txt", "asmfix.txt", "sdata_funcs.txt",
                  "sdata_exclude.txt", "expand_lb_funcs.txt"):

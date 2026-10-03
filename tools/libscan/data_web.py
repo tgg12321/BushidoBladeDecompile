@@ -72,8 +72,8 @@ for f in ("named_syms.txt", "symbol_addrs.txt", "undefined_syms_auto.txt"):
             SYMS[int(mm.group(2), 16)].append((mm.group(1), f))
 def refcount(name):
     n = 0
-    for pat in ("src/*.c", "include/*.h", "asm/funcs/*.s"):
-        for fp in glob.glob(os.path.join(REPO, pat)):
+    for pat in ("src/**/*.c", "include/*.h", "asm/funcs/*.s"):
+        for fp in glob.glob(os.path.join(REPO, pat), recursive=True):
             n += len(re.findall(r"\b" + re.escape(name) + r"\b", open(fp, encoding="utf-8", errors="replace").read()))
     return n
 

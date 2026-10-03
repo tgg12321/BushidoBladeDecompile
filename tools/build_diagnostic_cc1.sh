@@ -21,6 +21,10 @@
 # Unlike the oracle build this one KEEPS the hooks — that is the whole point —
 # so it deliberately does NOT revert the scratch tree to pristine.
 set -uo pipefail
+# TU ids: path under src/ without .c, recursive (engine/tus.py); globstar keeps
+# the flat tree's order identical to the old `src/*.c`.
+shopt -s globstar
+tu_ids() { local f s; for f in src/**/*.c; do s=${f#src/}; echo "${s%.c}"; done; }
 cd "$(git rev-parse --show-toplevel)" || exit 1
 LIVE=tools/gcc-2.7.2
 SCRATCH=tmp/cc1diag
@@ -74,7 +78,7 @@ FG8="-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin
 CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
 W=tmp/cc1diag_check; mkdir -p $W
 n=0; bad=""; lines=0
-for stem in $(ls src/*.c | sed 's|src/||; s|\.c$||'); do
+for stem in $(tu_ids); do
   $CPP src/$stem.c > $W/t.i 2>/dev/null
   case "$stem" in text1a_pre|text1a_post) FL="$FG8";; *) FL="$F";; esac
   "$SCRATCH/cc1" $FL $W/t.i -o $W/new.s 2>/dev/null
@@ -87,7 +91,7 @@ echo "   $n TUs; divergent stems: ${bad:-none}${bad:+  ($lines line(s))}"
 # For reference: what the CURRENT installed diagnostic cc1 scores on the same test.
 if [ -x "$LIVE/cc1" ]; then
   obad=""
-  for stem in $(ls src/*.c | sed 's|src/||; s|\.c$||'); do
+  for stem in $(tu_ids); do
     $CPP src/$stem.c > $W/t.i 2>/dev/null
     case "$stem" in text1a_pre|text1a_post) FL="$FG8";; *) FL="$F";; esac
     "$LIVE/cc1" $FL $W/t.i -o $W/old.s 2>/dev/null

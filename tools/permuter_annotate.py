@@ -67,7 +67,7 @@ FUNC_RE_TEMPLATE = (
 def find_source_file(func: str) -> Path | None:
     """Grep src/ for the function definition; return the file path."""
     pattern = re.compile(FUNC_RE_TEMPLATE.format(name=re.escape(func)), re.MULTILINE)
-    for path in SRC_DIR.glob("*.c"):
+    for path in sorted(SRC_DIR.rglob("*.c")):
         try:
             text = path.read_text(encoding="utf-8", errors="replace")
         except OSError:

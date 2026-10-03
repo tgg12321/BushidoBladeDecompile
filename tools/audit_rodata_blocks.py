@@ -196,7 +196,7 @@ def collect_owners() -> dict[str, set[str]]:
     else:
         alias_re = None
 
-    for sf in SRC.glob("*.c"):
+    for sf in SRC.rglob("*.c"):
         try:
             text = sf.read_text(errors="replace")
         except Exception:
@@ -291,16 +291,16 @@ def collect_queue_status() -> dict[str, tuple[str, str]]:
 
 
 def build_src_func_index() -> dict[str, str]:
-    """Map function name -> .c file stem by extracting every brace-balanced
+    """Map function name -> TU id (path under src/ without .c) by extracting every brace-balanced
     top-level function from each src/*.c file."""
     idx: dict[str, str] = {}
-    for sf in SRC.glob("*.c"):
+    for sf in SRC.rglob("*.c"):
         try:
             text = sf.read_text(errors="replace")
         except Exception:
             continue
         for func, _body in iter_c_functions(text):
-            idx.setdefault(func, sf.stem)
+            idx.setdefault(func, sf.relative_to(SRC).with_suffix("").as_posix())
     return idx
 
 

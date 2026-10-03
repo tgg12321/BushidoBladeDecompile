@@ -33,8 +33,10 @@ if (-not $Stem) {
 }
 if (-not $Stem) {
     # fall back to grepping src for the definition
-    $hit = Select-String -Path 'src/*.c' -Pattern "^[A-Za-z].*\b$Func\s*\(" | Select-Object -First 1
-    if ($hit) { $Stem = [IO.Path]::GetFileNameWithoutExtension($hit.Path) }
+    $hit = Get-ChildItem src -Recurse -Filter *.c | Sort-Object FullName |
+        Select-String -Pattern "^[A-Za-z].*\b$Func\s*\(" | Select-Object -First 1
+    # TU id: the path under src/ without .c, posix slashes
+    if ($hit) { $Stem = ([IO.Path]::GetRelativePath((Resolve-Path src).Path, $hit.Path) -replace '\\', '/') -replace '\.c$', '' }
 }
 if (-not $Stem) { Write-Error "cannot resolve TU stem for $Func (not in queue.json, no definition found)"; exit 1 }
 

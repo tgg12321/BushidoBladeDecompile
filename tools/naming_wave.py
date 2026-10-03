@@ -704,7 +704,7 @@ def asm_file_referenced(stem: str) -> bool:
     if _ASM_REF_CACHE is None:
         refs: set[str] = set()
         ia = re.compile(r'INCLUDE_ASM\s*\(\s*"[^"]+"\s*,\s*(\w+)\s*\)')
-        for p in sorted((ROOT / "src").glob("*.c")):
+        for p in sorted((ROOT / "src").rglob("*.c")):
             refs |= {m.group(1) for m in ia.finditer(read(p))}
         mk = read(ROOT / "Makefile")
         m = re.search(r"^LINKED_ASM_FUNCS\s*:=\s*(.*)$", mk, re.M)
@@ -724,7 +724,7 @@ def _defined_in_src(name: str) -> bool:
         return _SRC_DEF_CACHE[name]
     pat = re.compile(r"^[A-Za-z_][\w \t\*]*\b" + re.escape(name) + r"\s*\(", re.M)
     found = False
-    for p in sorted((ROOT / "src").glob("*.c")):
+    for p in sorted((ROOT / "src").rglob("*.c")):
         t = read(p)
         for m in pat.finditer(t):
             line = t[t.rfind("\n", 0, m.start()) + 1: m.end()]
@@ -782,7 +782,7 @@ def plan_wave(wave: Wave) -> Plan:
     pat, repl = wave.pattern, wave.repl
 
     # --- C sources and headers -------------------------------------------
-    for p in sorted((ROOT / "src").glob("*.c")) + sorted((ROOT / "include").glob("*.h")):
+    for p in sorted((ROOT / "src").rglob("*.c")) + sorted((ROOT / "include").glob("*.h")):
         t = read(p)
         new, n = sub_c(pat, repl, t)
         plan.note_edit(str(p.relative_to(ROOT)).replace("\\", "/"), new, n, t)
@@ -942,7 +942,7 @@ def map_freshness() -> tuple[bool, str]:
         return False, "build/bb2.map is MISSING — build once before running the wave"
     mt = mp.stat().st_mtime
     newest, newest_p = 0.0, ""
-    for pat_ in ("src/*.c", "include/*.h", "asm/funcs/*.s", "*.txt", "bb2.ld", "Makefile"):
+    for pat_ in ("src/**/*.c", "include/*.h", "asm/funcs/*.s", "*.txt", "bb2.ld", "Makefile"):
         for p in ROOT.glob(pat_):
             try:
                 t = p.stat().st_mtime
@@ -1264,7 +1264,7 @@ def residual_audit(wave: Wave) -> dict[str, list[str]]:
         for h in hits:
             out[h].append(rel)
 
-    for p in sorted((ROOT / "src").glob("*.c")) + sorted((ROOT / "include").glob("*.h")):
+    for p in sorted((ROOT / "src").rglob("*.c")) + sorted((ROOT / "include").glob("*.h")):
         scan(str(p.relative_to(ROOT)), read(p), "c")
     for d in ("asm/funcs", "asm", "asm/data"):
         for p in sorted((ROOT / d).glob("*.s")):

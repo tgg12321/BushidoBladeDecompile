@@ -55,7 +55,7 @@ print("glabels:", len(glabels))
 # C-level definitions / INCLUDE_ASM targets. The macro's OWN definition line matches the
 # call pattern and yields its parameter name `NAME`, so `#define` lines are dropped first.
 csrc = "".join(open(f, encoding="utf-8", errors="replace").read()
-               for f in sorted(glob.glob("src/*.c")) + sorted(glob.glob("include/*.h")))
+               for f in sorted(glob.glob("src/**/*.c", recursive=True)) + sorted(glob.glob("include/*.h")))
 csrc_calls = "\n".join(ln for ln in csrc.split("\n") if not ln.lstrip().startswith("#define"))
 incasm = set(re.findall(r"INCLUDE_ASM\([^,]+,\s*([A-Za-z_]\w*)\s*\)", csrc_calls))
 
