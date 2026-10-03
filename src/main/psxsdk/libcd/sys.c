@@ -4,6 +4,14 @@
 #include "common.h"
 #include "libcd.h"
 
+/* .rodata 0x80016074..0x8001607C: CdComstr's and CdIntstr's out-of-range name (moved from
+ * src/text1a_b_post_rodata.c, Q106 D4: every reader is in this file, in link order). */
+
+/* g_str_none: 1 string(s), 8B @ 0x80016074 (CdComstr / CdIntstr out-of-range name) */
+const char g_str_none[8] =
+    "none\0\0\0"
+    ;
+
 /* Forward declarations */
 extern void CD_flush(void);
 extern s32 CD_sync(s32, u8 *);
@@ -64,7 +72,6 @@ void CdFlush(void) {
 extern s32 CD_debug;
 extern s32 CD_comstr[];
 extern s32 CD_intstr[];
-extern const char g_str_none[];
 
 s32 CdSetDebug(s32 a0) {
     s32 old = CD_debug;

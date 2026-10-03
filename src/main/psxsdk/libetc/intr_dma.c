@@ -3,6 +3,19 @@
  * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 
+/* .rodata 0x80016394..0x800163C0: trapIntrDMA's bus-error report (moved from
+ * src/text1a_b_tail_rodata.c, Q106 D4: every reader is in this file, in link order). */
+
+/* D_80016394: 1 string(s), 28B @ 0x80016394 */
+const char D_80016394[28] =
+    "DMA bus error: code=%08x\n\0\0\0"
+    ;
+
+/* D_800163B0: 1 string(s), 16B @ 0x800163B0 */
+const char D_800163B0[16] =
+    "MADR[%d]=%08x\n\0\0"
+    ;
+
 /* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
 void InterruptCallback(void);
 
@@ -13,8 +26,6 @@ extern s32 D_800A2640[8];
    `static volatile u_long *` (pointer-to-volatile-MMIO, type-level). */
 extern volatile u32 *D_800A263C;
 extern u32 *D_800A2660;
-extern u8 D_80016394;
-extern u8 D_800163B0;
 
 void trapIntrDMA(void);
 s32 setIntrDMA(s32, s32);

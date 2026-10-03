@@ -6,7 +6,58 @@
 #include "psx.h"
 #include "libcd.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libcd/bios.c, ex system.c). */
+/* .rodata 0x8001607C..0x8001622C: the module's strings in front of getintr's jump table
+ * (0x8001622C..0x80016240, emitted with getintr below): the CD_comstr / CD_intstr command and
+ * interrupt names (read through those .data tables, asm/data/7D920.data.s), then get_alarm's and
+ * getintr's messages (moved from src/text1a_b_post_rodata.c, Q106 D4: every C reader is in this
+ * file, in link order). */
+
+/* D_8001607C: 29 string(s), 316B @ 0x8001607C (the CD_comstr / CD_intstr names) */
+const char D_8001607C[316] =
+    "CdlReadS\0\0\0\0CdlSeekP\0\0\0\0"
+    "CdlSeekL\0\0\0\0CdlGetTD\0\0\0\0CdlGetTN"
+    "\0\0\0\0CdlGetlocP\0\0CdlGetlocL\0\0?\0\0\0"
+    "CdlSetmode\0\0CdlSetfilter\0\0\0\0CdlD"
+    "emute\0\0\0CdlMute\0CdlReset\0\0\0\0CdlP"
+    "ause\0\0\0\0CdlStop\0CdlStandby\0\0CdlR"
+    "eadN\0\0\0\0CdlBackward\0CdlForward\0\0"
+    "CdlPlay\0CdlSetloc\0\0\0CdlNop\0\0CdlS"
+    "ync\0DiskError\0\0\0DataEnd\0Acknowle"
+    "dge\0Complete\0\0\0\0DataReady\0\0\0NoIn"
+    "tr\0\0"
+    ;
+
+/* D_800161B8: 1 string(s), 16B @ 0x800161B8 */
+const char D_800161B8[16] =
+    "CD timeout: \0\0\0\0"
+    ;
+
+/* D_800161C8: 1 string(s), 28B @ 0x800161C8 */
+const char D_800161C8[28] =
+    "%s:(%s) Sync=%s, Ready=%s\n\0\0"
+    ;
+
+/* D_800161E4: 1 string(s), 12B @ 0x800161E4 */
+const char D_800161E4[12] =
+    "DiskError: \0"
+    ;
+
+/* D_800161F0: 1 string(s), 28B @ 0x800161F0 */
+const char D_800161F0[28] =
+    "com=%s,code=(%02x:%02x)\n\0\0\0\0"
+    ;
+
+/* D_8001620C: 1 string(s), 20B @ 0x8001620C */
+const char D_8001620C[20] =
+    "CDROM: unknown intr\0"
+    ;
+
+/* D_80016220: 2 string(s), 12B @ 0x80016220 */
+const char D_80016220[12] =
+    "(%d)\n\0\0\0\0\0\0\0"
+    ;
+
+/* Declarations from the head of the old system.c (now in libcd/sys.c) that this module uses. */
 extern void CD_flush(void);
 extern u8 CD_status;
 extern u8 CD_pos[4]; /* Sony's u_char CD_pos[4] (SOTN: src/main/psxsdk/libcd/bios.c:42 @aa53500) */
@@ -59,10 +110,6 @@ extern s32 D_800A137C[];   /* per-command "status valid" flags */
 extern void Result;    /* Result_t result buffers */
 extern void Result_plus_0x8;
 extern void Result_plus_0x10;
-extern char D_800161E4[]; /* "DiskError: " */
-extern char D_800161F0[]; /* "com=%s,code=(%02x:%02x)\n" */
-extern char D_8001620C[]; /* "CDROM: unknown intr" */
-extern char D_80016220[]; /* "(%d)\n" */
 extern volatile u8 *g_cd_reg0;
 extern volatile u8 *g_cd_reg1;
 extern volatile u8 *g_cd_reg2;
@@ -165,6 +212,53 @@ s32 getintr(void) {
         return 0;
     }
 }
+
+/* .rodata 0x80016240..0x800162CC: the rest of the module's strings, after getintr's jump table:
+ * CD_sync, CD_ready, CD_cw (with the rcsid "$Id: bios.c,v 1.86 ...", which the module's .data block
+ * D_800A1498 points at), CD_init and CD_datasync's (moved from src/text1a_b_tail_rodata.c, Q106 D4:
+ * every C reader is in this file, in link order). */
+
+/* D_80016240: 1 string(s), 8B @ 0x80016240 */
+const char D_80016240[8] =
+    "CD_sync\0"
+    ;
+
+/* D_80016248: 1 string(s), 12B @ 0x80016248 */
+const char D_80016248[12] =
+    "CD_ready\0\0\0\0"
+    ;
+
+/* D_80016254: 1 string(s), 8B @ 0x80016254 */
+const char D_80016254[8] =
+    "%s...\n\0\0"
+    ;
+
+/* D_8001625C: 1 string(s), 16B @ 0x8001625C */
+const char D_8001625C[16] =
+    "%s: no param\n\0\0\0"
+    ;
+
+/* D_8001626C: 2 string(s), 60B @ 0x8001626C */
+const char D_8001626C[60] =
+    "CD_cw\0\0\0$Id: bios.c,v 1.86 1997/"
+    "03/28 07:42:42 makoto Exp $\0"
+    ;
+
+/* D_800162A8: 1 string(s), 12B @ 0x800162A8 */
+const char D_800162A8[12] =
+    "CD_init:\0\0\0\0"
+    ;
+
+/* D_800162B4: 1 string(s), 12B @ 0x800162B4 */
+const char D_800162B4[12] =
+    "addr=%08x\n\0\0"
+    ;
+
+/* D_800162C0: 1 string(s), 12B @ 0x800162C0 */
+const char D_800162C0[12] =
+    "CD_datasync\0"
+    ;
+
 extern s32 VSync(s32);
 extern void puts(void *);
 extern void printf();
@@ -175,15 +269,11 @@ extern s32 CD_cbready;
 extern void Result;
 extern void Result_plus_0x8;
 extern void Result_plus_0x10;
-extern char D_80016240[]; /* "CD_sync" */
-extern s32 D_800161B8;
-extern s32 D_800161C8;
 extern u8 CD_com;
 extern s32 CD_comstr[];
 extern s32 CD_intstr[];
 
 
-extern char D_80016248[]; /* "CD_ready" */
 
 /* bios.c's alarm helpers, as in Sony's source (SOTN: src/main/psxsdk/libcd/bios.c:95 @aa53500).
  * SOTN reaches its `volatile Alarm_t Alarm` only through the non-volatile view
@@ -292,9 +382,6 @@ s32 CD_ready(s32 mode, u8 *result)
 
 extern s32 D_800A12FC[];  /* per-command "clears ready" flags; [com + 0x40] = param count */
 extern s32 D_800A13FC[];  /* per-command "needs param" flags (= D_800A12FC + 0x40) */
-extern char D_80016254[]; /* "%s...\n" */
-extern char D_8001625C[]; /* "%s: no param\n" */
-extern char D_8001626C[]; /* "CD_cw" */
 
 s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
 {
@@ -421,8 +508,6 @@ void CD_initintr(void) {
     ResetCallback();
     InterruptCallback(2, cdrom_IrqHandler);
 }
-extern void D_800162A8;
-extern void D_800162B4;
 extern void D_800A1498;
 
 s32 CD_init(void) {
@@ -478,8 +563,6 @@ s32 CD_init(void) {
 extern s32 VSync(s32);
 extern void puts(void *);
 extern void printf();
-extern s32 D_800161C8;
-extern char D_800162C0[]; /* "CD_datasync" */
 extern u8 CD_com;
 extern s32 CD_comstr[];
 extern s32 CD_intstr[];

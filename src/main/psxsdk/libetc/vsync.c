@@ -2,6 +2,14 @@
  * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 
+/* .rodata 0x80016318..0x80016328: v_wait's timeout message (moved from src/text1a_b_tail_rodata.c,
+ * Q106 D4: every reader is in this file, in link order). */
+
+/* D_80016318: 1 string(s), 16B @ 0x80016318 */
+const char D_80016318[16] =
+    "VSync: timeout\n\0"
+    ;
+
 /* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
 extern volatile s32 Vcount;
 
@@ -59,7 +67,6 @@ s32 VSync(s32 a0) {
     return s1_val;
 }
 
-extern s32 D_80016318;
 extern void puts(void *);
 extern void ChangeClearPAD(s32);
 extern void ChangeClearRCnt(s32, s32);

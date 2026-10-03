@@ -100,9 +100,9 @@ def main():
         same = old == cat
         note = ""
         if not same and len(cat) == len(old):
-            # REL addends live in the word: a relocation against the .text SECTION symbol encodes an
-            # object-relative .text offset, so it shifts by (the part's .text base - the old object's
-            # .text base). Accepted only for the exact shift: J/JAL (R_MIPS_26), R_MIPS_32 (jump-table
+            # REL addends live in the word: a relocation against a SECTION symbol (.text, .rodata, ...)
+            # encodes an object-relative offset in that section, so it shifts by (the part's base in
+            # that section - the old object's base in it). Accepted only for the exact shift: J/JAL (R_MIPS_26), R_MIPS_32 (jump-table
             # words), R_MIPS_LO16 (low half) and R_MIPS_HI16 (high half, with or without the carry).
             def owner(i, bb):  # the part whose non-empty section holds offset i
                 return [q for b0, q in sorted((b0, q) for q, b0 in bb.items()
@@ -115,8 +115,8 @@ def main():
                 ta, sa = prel[pa].get(sec, {}).get(i - base[sec][pa], ("", ""))
                 tb, sb = prel[pb].get(sec, {}).get(i - bbase[sec][pb], ("", ""))
                 wo, wn = int.from_bytes(old[i:i+4], "little"), int.from_bytes(cat[i:i+4], "little")
-                d = base[".text"][pa] - bbase[".text"][pb]
-                good = ta == tb and sa == sb == ".text"
+                good = ta == tb and sa == sb and sa in SECS
+                d = base[sa][pa] - bbase[sa][pb] if good else 0
                 if good and ta == "R_MIPS_26":
                     good = wo >> 26 == wn >> 26 and ((wo & 0x3FFFFFF) - (wn & 0x3FFFFFF)) * 4 == d
                 elif good and ta == "R_MIPS_32":
@@ -132,7 +132,7 @@ def main():
                     continue
                 bad.append((hex(i), pa, ta, sa))
             same = not bad
-            note = f"; {shifted} .text-section addends re-based by their part's offset, others: {bad[:5]}"
+            note = f"; {shifted} section-symbol addends re-based by their part's offset, others: {bad[:5]}"
         ok &= same
         print(f"{sec:8s} {'identical' if same else 'DIFFER'} ({len(old):#x} vs {len(cat):#x}){note}")
     for sec in sorted(set(brel) | set(arel)):

@@ -136,5 +136,3 @@ ccbd663bb072814d8623dd4c7600a2b4a67179cb  main/psxsdk/libgte/reg13
 ffc04e222684142be136f716a6377b73099da9bb  main/psxsdk/libgte/smp_03
 46712049b7bb9d64443f8be61f6cfe4d1f6797ad  main/psxsdk/libgte/smp_04
 d63cb1a187b36abde5fc44fce44df32c5e41219d  main/psxsdk/libcd/bios
-15134bef28dddd0bb809e410d6487a0feb277ca7  text1a_b_post_rodata
-254886b14b7223202b20d1d6517c66eacf97beb8  text1a_b_tail_rodata

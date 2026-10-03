@@ -753,6 +753,17 @@ g_str_none / D_8001607C (CD_comstr/intstr names, read through .data pointer tabl
 Scripts: memory/grind/restructure-2026-10-03/step4/ (splitcmp.py takes a '+'-joined BEFORE for re-cuts;
 ldins.py --before/--after/--move; l2all.py batches layer-2 keys; regions.py relocates canonical-asm grants).
 
+**Status step 4e (2026-10-03):** done: e32c75e81 (system -> main/psxsdk/libcd/bios) and eef81d4af (ings2 ->
+main/psxsdk/libetc/intr), renames; c13e49ca8 (24 files: libapi/a07, l10, c114, a23, a24, a25, c57; libcd/sys,
+bios, cdread (CDREAD rejoined across the old mid-module cut 0x8008289C); libc2/puts, setjmp; libetc/vsync, intr,
+intr_vb, intr_dma, vmode; libsn/73E98.c and 7407C.c, one per SN-runtime gap; libsnd/ssend, ssinit_c, ssinit,
+ssquit, scssattr); then the rodata commit (text1a_b_post_rodata.c and text1a_b_tail_rodata.c folded into sys,
+bios, puts, cdread, vsync, intr, intr_dma and deleted). Nothing left merged: no static or helper crosses a
+module (no libcd_internal.h needed). R1: getintr's table lands at bios.o+0x1B0, 8-aligned, so Sony's LIBCD
+BIOS fits the object-relative model. New scripts: jtphase.py (jump-table phase checker), implicit.py
+(implicit-declaration set, cc1 -Wimplicit), split4e_a.py, split4e_b.py, owners4e.py; splitcmp.py re-bases every
+section-symbol addend kind.
+
 Total: about 25 to 30 commits, 5 to 8 focused sessions. Step 4 (library rodata placement per
 module) and step 5 (per-file header proofs) dominate.
 

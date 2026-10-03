@@ -3,7 +3,26 @@
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
+/* .rodata 0x80016328..0x80016394: the module's rcsid "$Id: intr.c,v 1.76 ..." (pointed at only by
+ * INTR's callbacks table, asm/data/91C98.data.s:1271) and trapIntr's two messages (moved from
+ * src/text1a_b_tail_rodata.c, Q106 D4: every C reader is in this file, in link order). */
+
+/* D_80016328: 1 string(s), 52B @ 0x80016328 (the rcsid; only INTR's callbacks table, asm/data/91C98.data.s:1271, points here) */
+const char D_80016328[52] =
+    "$Id: intr.c,v 1.76 1997/02/12 12:45:05 makoto Exp $\0"
+    ;
+
+/* D_8001635C: 1 string(s), 28B @ 0x8001635C */
+const char D_8001635C[28] =
+    "unexpected interrupt(%04x)\n\0"
+    ;
+
+/* D_80016378: 1 string(s), 28B @ 0x80016378 */
+const char D_80016378[28] =
+    "intr timeout(%04x:%04x)\n\0\0\0\0"
+    ;
+
+/* Declarations from the old ings2.c (its head and its VSYNC module) that this module uses. */
 extern u16 g_sys_vblank_count;
 extern volatile u16 *i_mask; /* libetc intr.c i_mask = (u16 *)0x1F801074, I_MASK (MMIO) */
 extern s32 *g_sys_irq_vtable;
@@ -102,8 +121,6 @@ intrEnv_t *startIntr(void) {
    setIntr/stopIntr/restartIntr are statics referenced only through the
    callbacks vtable raw words at 0x800A25E8/F0/F8 (7D920.data.s). */
 typedef void (*IntrCallback)(void);
-extern u8 D_8001635C;  /* "unexpected interrupt(%04x)\n" */
-extern u8 D_80016378;  /* "intr timeout(%04x:%04x)\n" */
 extern s32 D_800A2610; /* trapMissedCount */
 extern void ReturnFromException(void);
 extern void ResetEntryInt(void);

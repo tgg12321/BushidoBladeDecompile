@@ -437,3 +437,22 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   system.o+ings2.o vs the 24 parts: `.text` 0x3B58 identical bar 44 `.text`-section addends re-based (43
   `j`/`jal`, cb_read's `%lo`), `.rodata` 0x14 identical bar the table's 5 words re-based, 1184 relocations, 91
   globals at the same offsets.
+  Rodata (D4): text1a_b_post_rodata.c's last strings and all of text1a_b_tail_rodata.c move to their sole
+  readers (step4/owners4e.py), in link order, and both files are deleted: 0x80016074..0x8001607C → libcd/sys.c
+  (g_str_none, CdComstr/CdIntstr); 0x8001607C..0x8001622C → bios.c in front of getintr (the CD_comstr /
+  CD_intstr names, read through those BIOS .data tables, then get_alarm's and getintr's strings);
+  0x80016240..0x800162CC → bios.c right after getintr (CD_sync..CD_datasync's strings with the bios.c rcsid
+  that D_800A1498 points at); 0x800162CC → libc2/puts.c; 0x800162D4..0x80016318 → libcd/cdread.c;
+  0x80016318 → libetc/vsync.c; 0x80016328..0x80016394 → libetc/intr.c (the intr.c rcsid, pointed at by
+  INTR's callbacks table, then trapIntr's strings); 0x80016394..0x800163C0 → libetc/intr_dma.c.
+  R1: bios.o's .rodata now starts at 0x8001607C (phase 4) and getintr's table, emitted between the two
+  blocks, sits at offset 0x1B0 (8-aligned), its original address 0x8001622C: the object-relative model
+  holds for this Sony module (step4/jtphase.py, 38 tables OK). Survivors: g_str_none could also open
+  bios.o's object (the table would sit at offset 0x1B8, also 8-aligned: identical bytes); it goes to SYS, the
+  module of its only readers; the intr.c rcsid could also end vsync.o's object (identical bytes), it goes to
+  INTR on its text and the callbacks-table pointer, as the sys.c rcsid did in 4d. D_80016318[68] ("VSync:
+  timeout\n" + that rcsid) is cut at VSYNC|INTR into D_80016318[16] + D_80016328[52], same bytes. Compare:
+  old post_rodata.o + the 24 parts + tail_rodata.o (in .rodata link order) vs the 24 parts: `.text` 0x3B58
+  identical bar getintr's table address (%lo of the `.rodata` section symbol, +0x1B0), `.rodata` 0x34C
+  identical, 1184 + 5 relocations identical, 116 globals at the same offsets bar the cut (D_80016318 size
+  68 → 16, new D_80016328).

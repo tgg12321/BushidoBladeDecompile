@@ -74,10 +74,13 @@ SECTIONS
         build/src/main/psxsdk/libgpu/prim.o(.rodata);
         build/src/main/psxsdk/libgpu/sys.o(.rodata);
         build/src/main/psxsdk/libcd/event.o(.rodata);
-        build/src/text1a_b_post_rodata.o(.rodata);
+        build/src/main/psxsdk/libcd/sys.o(.rodata);
         build/src/main/psxsdk/libcd/bios.o(.rodata);
-        build/src/text1a_b_tail_rodata.o(.rodata);
+        build/src/main/psxsdk/libc2/puts.o(.rodata);
+        build/src/main/psxsdk/libcd/cdread.o(.rodata);
+        build/src/main/psxsdk/libetc/vsync.o(.rodata);
         build/src/main/psxsdk/libetc/intr.o(.rodata);
+        build/src/main/psxsdk/libetc/intr_dma.o(.rodata);
         build/src/main.o(.rodata);
         build/src/main/psxsdk/libcomb/comb.o(.rodata);
         main_RODATA_END = .;

@@ -5,6 +5,24 @@
 #include "common.h"
 #include "libcd.h"
 
+/* .rodata 0x800162D4..0x80016318: cb_read's and cd_read_retry's messages (moved from
+ * src/text1a_b_tail_rodata.c, Q106 D4: every reader is in this file, in link order). */
+
+/* D_800162D4: 1 string(s), 24B @ 0x800162D4 */
+const char D_800162D4[24] =
+    "CdRead: sector error\n\0\0\0"
+    ;
+
+/* D_800162EC: 1 string(s), 24B @ 0x800162EC */
+const char D_800162EC[24] =
+    "CdRead: Shell open...\n\0\0"
+    ;
+
+/* D_80016304: 1 string(s), 20B @ 0x80016304 */
+const char D_80016304[20] =
+    "CdRead: retry...\n\0\0\0"
+    ;
+
 /* Declarations from the file this module was split from (src/main/psxsdk/libcd/bios.c, ex system.c): the
  * LIBCD SYS and BIOS functions CDREAD calls, declared as their definitions declare them (the old file
  * defined them above this module). */
@@ -23,8 +41,6 @@ s32 CdDataCallback(s32 a0);
 void CdDataSync(s32 a0);
 s32 CdPosToInt(u8 *a0);
 
-extern s32 D_800162EC;
-extern s32 D_80016304;
 
 /* External linkage (Sony's cdread.c had cb_data static): the linked bytes
    are identical either way. */
@@ -33,7 +49,6 @@ void cb_data(void);
 /* The cdread module state is D_800A14D0 (CdlREAD, include/libcd.h). */
 extern u8 *D_800A1504;   /* cdread.c v1.86: saved result ptr for cb dispatch */
 extern s32 g_CdReadCallback_func;   /* CD_ReadCallbackFunc */
-extern s32 D_800162D4;   /* "CdRead: sector error\n" */
 
 /* PsyQ 4.0 LIBCD cdread: cb_read (static) — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c
