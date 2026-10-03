@@ -10,7 +10,6 @@
 
 /* Declarations from the file this TU was split from (code6cac.c). */
 typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
-typedef struct GameObj GameObj;
 extern s32 func_80037110(s32);
 extern void func_8002F770(s16 *, s32, s32, s32);
 extern void game_FrameLoop(void);
@@ -545,10 +544,10 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
     arg0[0] = (s16)math_FloorDiv2000(arg2[0] + ((dx << 10) / ((s32)log2_val)));
     arg0[2] = (s16)math_FloorDiv2000(arg2[2] + ((dz << 10) / ((s32)log2_val)));
 }
-void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3);
+void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, PracticeMenuRec *arg2, PracticeMenuRec *arg3);
 extern u8 D_800A30F0[];
 extern s32 D_800A30F4[];
-typedef struct { s32 vx, vy, vz, pad; } CamVec;
+typedef Vec4i32 CamVec;
 /* Scratchpad work area (0x1F800000) used by func_8001A820: the target yaw/roll
  * that D_800F6608's h12/h14 ease toward, the camera focus, the eye position
  * func_8001A538 computes, a fighter's head position, and the hit position,
@@ -584,7 +583,7 @@ typedef struct {
  * against engine/gtemacro.py PINNED: gte_ldlzc(r1) :207-210, gte_nop() :1095-1097
  * twice, gte_stlzc(r2) :1074-1077 (the header's `($12)` verbatim). No other
  * asm; operand seats chosen by cc1. */
-void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
+void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, PracticeMenuRec *arg2, PracticeMenuRec *arg3) {
     s32 lzc_out;
     CamScratch *scr;
     Rec44 *cam;
@@ -613,13 +612,13 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     cam->h30[1][0] = 0x64;
     cam->h30[1][1] = 0;
     cam->h30[1][2] = 0x64;
-    dx = ((s32 *)arg1)[0] - ((s32 *)arg0)[0];
-    dy = ((s32 *)arg1)[1] - ((s32 *)arg0)[1];
-    dz = ((s32 *)arg1)[2] - ((s32 *)arg0)[2];
+    dx = arg1->x - arg0->x;
+    dy = arg1->y - arg0->y;
+    dz = arg1->z - arg0->z;
     if (D_800A3690 == 0) {
-        scr->focus.vx = (((s32 *)arg0)[0] + ((s32 *)arg1)[0]) / 2;
-        scr->focus.vy = (((s32 *)arg0)[1] + ((s32 *)arg1)[1]) / 2;
-        scr->focus.vz = (((s32 *)arg0)[2] + ((s32 *)arg1)[2]) / 2;
+        scr->focus.vx = (arg0->x + arg1->x) / 2;
+        scr->focus.vy = (arg0->y + arg1->y) / 2;
+        scr->focus.vz = (arg0->z + arg1->z) / 2;
     } else {
         scr->focus = *(CamVec *)arg0;
     }
@@ -661,8 +660,8 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     }
     dist <<= shift;
     q = 0x2000000U / (dist + 0x4000) + 0x400;
-    if (*(u16 *)(arg2 + 0x6A) == 0x13 || *(u16 *)(arg2 + 0x6A) == 0x1B || *(u16 *)(arg2 + 0x6A) == 0x30 ||
-        *(u16 *)(arg3 + 0x6A) == 0x13 || *(u16 *)(arg3 + 0x6A) == 0x1B || *(u16 *)(arg3 + 0x6A) == 0x30) {
+    if (arg2->unk_6A == 0x13 || arg2->unk_6A == 0x1B || arg2->unk_6A == 0x30 ||
+        arg3->unk_6A == 0x13 || arg3->unk_6A == 0x1B || arg3->unk_6A == 0x30) {
         q += 0x1000;
     }
     zoom = ((dist + q) << 7) / 100;
@@ -670,15 +669,15 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
         dy = -dy;
     }
     zoom += dy;
-    if (*(u16 *)(arg2 + 0x6A) == 0xF || *(u16 *)(arg2 + 0x6A) == 0x1C || *(u16 *)(arg2 + 0x6A) == 0x1D ||
-        *(u16 *)(arg2 + 0x6A) == 0x1E || *(u16 *)(arg2 + 0x6A) == 0x1F || *(u16 *)(arg2 + 0x6A) == 0x20 ||
-        *(u16 *)(arg2 + 0x6A) == 0x21) {
+    if (arg2->unk_6A == 0xF || arg2->unk_6A == 0x1C || arg2->unk_6A == 0x1D ||
+        arg2->unk_6A == 0x1E || arg2->unk_6A == 0x1F || arg2->unk_6A == 0x20 ||
+        arg2->unk_6A == 0x21) {
         zoom = 0xBB8;
     }
     cam->w18 += (zoom - cam->w18) / 12;
-    if (!(*(u16 *)(arg2 + 0x6A) == 0xF || *(u16 *)(arg2 + 0x6A) == 0x1C || *(u16 *)(arg2 + 0x6A) == 0x1D ||
-          *(u16 *)(arg2 + 0x6A) == 0x1E || *(u16 *)(arg2 + 0x6A) == 0x1F || *(u16 *)(arg2 + 0x6A) == 0x20 ||
-          *(u16 *)(arg2 + 0x6A) == 0x21) && cam->w18 < 0x1770) {
+    if (!(arg2->unk_6A == 0xF || arg2->unk_6A == 0x1C || arg2->unk_6A == 0x1D ||
+          arg2->unk_6A == 0x1E || arg2->unk_6A == 0x1F || arg2->unk_6A == 0x20 ||
+          arg2->unk_6A == 0x21) && cam->w18 < 0x1770) {
         cam->w18 = 0x1770;
     }
     if (cam->w18 > 100000) {
@@ -691,7 +690,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     }
     func_8003F1E4(cam->b1E);
 
-    if (*(u16 *)(arg2 + 0x6A) == 0x11) {
+    if (arg2->unk_6A == 0x11) {
         scr->yaw = cam->h12;
     } else {
         scr->yaw = (0x400 - ratan2(dx, dz)) & 0xFFF;
@@ -708,9 +707,9 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
         cam->h10 = work;
         func_8001A538((s32 *)cam, (s32 *)&scr->eye);
         if (p != 0) {
-            scr->head = *(CamVec *)(arg3 + 0xB8);
+            scr->head = arg3->unk_B8;
         } else {
-            scr->head = *(CamVec *)(arg2 + 0xB8);
+            scr->head = arg2->unk_B8;
         }
         scr->head.vy -= 0xC8;
         if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm, (s32)&scr->unk60) &&
@@ -1393,7 +1392,7 @@ void func_8001C8DC(void) {
             func_8001C624();
             snd = func_80021904(0);
             g_practice_menu_table[0].unk_5E = 0;
-            func_80021A98(0, (u8 *)snd, 0);
+            func_80021A98(0, (MoveScript *)snd, 0);
         }
         func_8001C51C();
         if (D_800A384C < 4) {
@@ -1902,18 +1901,18 @@ void func_8001DCB0(void) {
             {
                 s32 v = func_80021974(0);
                 g_practice_menu_table[0].unk_5E = 0;
-                func_80021A98(0, (u8 *)v, 0);
+                func_80021A98(0, (MoveScript *)v, 0);
             }
             if (D_800A38DC == 2 && D_800A389A == 0) {
                 s32 v = func_80021904(1);
                 g_practice_menu_table[1].unk_5E = 0;
-                func_80021A98(1, (u8 *)v, 0);
+                func_80021A98(1, (MoveScript *)v, 0);
             } else {
                 s32 v;
                 func_800218C8(1);
                 v = func_80021974(1);
                 g_practice_menu_table[1].unk_5E = 0;
-                func_80021A98(1, (u8 *)v, 0);
+                func_80021A98(1, (MoveScript *)v, 0);
             }
         } else {
             func_800218C8(0);
@@ -1921,12 +1920,12 @@ void func_8001DCB0(void) {
             {
                 s32 v = func_800219E4(0);
                 g_practice_menu_table[0].unk_5E = 1;
-                func_80021A98(0, (u8 *)v, 1);
+                func_80021A98(0, (MoveScript *)v, 1);
             }
             {
                 s32 v = func_800219E4(1);
                 g_practice_menu_table[1].unk_5E = 1;
-                func_80021A98(1, (u8 *)v, 1);
+                func_80021A98(1, (MoveScript *)v, 1);
             }
         }
     } else {
@@ -1935,12 +1934,12 @@ void func_8001DCB0(void) {
         {
             s32 v = func_80021974(0);
             g_practice_menu_table[0].unk_5E = 0;
-            func_80021A98(0, (u8 *)v, 0);
+            func_80021A98(0, (MoveScript *)v, 0);
         }
         {
             s32 v = func_80021974(1);
             g_practice_menu_table[1].unk_5E = 0;
-            func_80021A98(1, (u8 *)v, 0);
+            func_80021A98(1, (MoveScript *)v, 0);
         }
     }
     D_800A382E = 0;
@@ -2093,7 +2092,7 @@ void func_8001E878(void) {
     s32 v0;
     v0 = camera_GetBoneData();
     D_800A3778 = v0;
-    func_8001A820((s32)&g_practice_menu_table[0].unk_168, (s32)&g_practice_menu_table[1].unk_168, (s32)&g_practice_menu_table[0], (s32)&g_practice_menu_table[1]);
+    func_8001A820(&g_practice_menu_table[0].unk_168, &g_practice_menu_table[1].unk_168, &g_practice_menu_table[0], &g_practice_menu_table[1]);
     if (D_800A38BA != 0) {
         func_8001B478((s32)&g_practice_menu_table[D_800A36F6]);
     }
@@ -2682,7 +2681,7 @@ void func_8001FBE8(void) {
     PracticeMenuRec *rec;
     StatusEvt *ent;
     u8 *data;
-    u8 *snd;
+    MoveScript *snd;
     s32 lo;
     s32 hi;
     s32 dz;
@@ -2699,11 +2698,11 @@ void func_8001FBE8(void) {
         if (g_practice_menu_table[1].unk_96 != 0) {
             return;
         }
-        func_80021A98(D_800A38AE, (u8 *)D_800A36D8, D_800A381C);
+        func_80021A98(D_800A38AE, D_800A36D8, D_800A381C);
         if (D_800A36CA & 0x1000) {
             g_practice_menu_table[D_800A38AE == 0].unk_4C = 1;
         }
-        func_80021A98(D_800A38AE == 0, (u8 *)D_800A36D8, D_800A381C);
+        func_80021A98(D_800A38AE == 0, D_800A36D8, D_800A381C);
         g_practice_menu_table[1].unk_7A = 2;
         g_practice_menu_table[0].unk_7A = 2;
         return;
@@ -3562,7 +3561,7 @@ s32 func_800219E4(s32 a0) {
 s32 func_80021A3C(s32 a0, s32 a1) {
     return D_80102760 + D_800A3860[g_practice_menu_table[a0].unk_4A]->f18[a1] * 2;
 }
-void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
+void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
     PracticeMenuRec *s0 = &g_practice_menu_table[arg0];
     s32 a3;
     if ((s0->unk_4C) != 0) {
@@ -3571,9 +3570,9 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
         a3 = s0->unk_4A;
     }
     s0->unk_4C = 0;
-    s0->unk_50 = (MoveScript *)arg1;
+    s0->unk_50 = arg1;
     {
-        u16 v1 = ((MoveScript *)arg1)->unk_04;
+        u16 v1 = arg1->unk_04;
         s0->unk_5C = v1;
         if (arg2 != 0) {
             u16 *v0 = (u16 *)(D_80102764 + (v1 * 4));
@@ -4798,7 +4797,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
             if (rec->unk_82 & 0x1000) {
                 rec->unk_4C = 1;
             }
-            func_80021A98(arg0, (u8 *)rec->unk_7C, rec->unk_80);
+            func_80021A98(arg0, rec->unk_7C, rec->unk_80);
         } else {
             if ((rec->unk_50->unk_0A[0] & 0x2000) && D_800A38AE != arg0) {
                 if (rec->unk_50->unk_0A[0] & 0x1000) {
@@ -4825,7 +4824,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
                 if (rec->unk_82 & 0x1000) {
                     rec->unk_4C = 1;
                 }
-                func_80021A98(arg0, (u8 *)rec->unk_7C, rec->unk_80);
+                func_80021A98(arg0, rec->unk_7C, rec->unk_80);
             }
         }
     } else if (rec->unk_50->unk_08 >= rec->unk_40) {
@@ -4890,7 +4889,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
                         D_800A381C = alt;
                     } else {
                         rec->unk_5E = alt;
-                        func_80021A98(arg0, (u8 *)move, alt);
+                        func_80021A98(arg0, move, alt);
                     }
                     break;
                 }

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8001DCB0",
+  "body_hash": "b465a1a007fe0f22",
+  "summary": "The only change is seven (u8 *)v -> (MoveScript *)v casts on s32 move-bank addresses from func_80021974/904/9E4 passed to func_80021A98. The rest of the body is unchanged ordinary C. sandbox 0."
+}

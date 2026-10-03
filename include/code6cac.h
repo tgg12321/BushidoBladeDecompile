@@ -962,47 +962,6 @@ typedef struct {
 
 extern CdState D_80101E58;
 
-extern s16 D_80101EE8;
-extern s32 D_80101F80;
-extern s32 D_80101F84;
-extern s32 D_80101F88;
-extern s32 D_80101FA4;
-extern s32 D_80101FB0;
-extern s32 D_80101FB4;
-extern s32 D_80101FB8;
-extern s32 D_80101FC0;
-extern s32 D_80101FCC;
-extern s32 D_80101FD0;
-extern s32 D_80101FD4;
-extern s32 D_80101FDC;
-extern s32 D_80101FE0;
-extern s32 D_80101FE4;
-extern s32 D_80101FEC;
-extern s32 D_80101FF0;
-extern s32 D_80101FF4;
-extern s32 D_80101FFC;
-extern s32 D_80102000;
-extern s32 D_80102004;
-extern s32 D_8010200C;
-extern s32 D_80102010;
-extern s16 D_80102014;
-extern s16 D_80102016;
-extern s16 D_80102018;
-extern s16 D_8010201A;
-extern s32 D_8010203C;
-extern s32 D_80102040;
-extern s32 D_80102044;
-extern s32 D_80102054;
-extern s32 D_80102058;
-extern s32 D_8010205C;
-
-extern s16 D_80102334;
-
-extern s32 D_80102448;
-extern s32 D_80102450;
-extern s16 D_80102462;
-extern s16 D_801024DE;
-
 extern s32 D_80102760;
 extern s32 D_80102764;
 extern s32 D_80102768;
@@ -1037,7 +996,7 @@ extern LeafPos D_80107850[6];
 /* Functions */
 extern void func_8001B748(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
 extern void func_8003D52C(u8 *, s32, ...);
-extern void func_80021A98(s32, u8 *, s32);
+extern void func_80021A98(s32, MoveScript *, s32);
 extern void func_80022580(s32, s32, s32, s32, s32);
 extern s32 func_80036EA8(s32, s32);
 extern void func_8003A728(s32);

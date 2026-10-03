@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8001FBE8",
+  "body_hash": "7a1c2f99bdc9b578",
+  "summary": "D_800A36D8 (declared MoveScript *) is passed uncast, and snd is retyped to MoveScript *, which is the value func_80021424 returns and func_80021A98 stores to unk_50. The body is otherwise the one PASSed at 8a63e13ea. sandbox 0."
+}

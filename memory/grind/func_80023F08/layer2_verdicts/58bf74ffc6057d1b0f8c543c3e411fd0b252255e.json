@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80023F08",
+  "body_hash": "4d27880c5f0963b9",
+  "summary": "The only change is three (u8 *) casts dropped: rec->unk_7C x2 and move, both declared MoveScript *. The labelled FAKEs and the call-boundary casts to untyped callees are unchanged from the PASSed body. sandbox 0 (2983/2983)."
+}

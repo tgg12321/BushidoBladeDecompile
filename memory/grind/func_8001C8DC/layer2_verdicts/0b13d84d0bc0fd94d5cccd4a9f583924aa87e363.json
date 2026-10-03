@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8001C8DC",
+  "body_hash": "ad149beb0f9ac349",
+  "summary": "The only change is (u8 *)snd -> (MoveScript *)snd at the func_80021A98 call. The value is the move-bank address that func_80021904 returns as s32. The Q63 D_800A37D2 FAKE pair is the admitted per-function exception (aggregate-merge-family.md:65-69). sandbox 0."
+}
