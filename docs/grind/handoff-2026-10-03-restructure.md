@@ -72,6 +72,12 @@ a fresh adversarial `cheat-reviewer` PASS where a function body, rule or gate fi
 
 - **Owner question (pending):** should typed-restatement's T4 verb list become a principle like Q105's
   nouns? It blocks only 0x80019534 → pad_ResetStateMarkValid ("Mark" is not a listed verb; refused 0c813f2d7).
+- **Owner question (pending, restructure 4a):** two Sony library pieces, FlushCache and the pad-sending
+  routine `_SendPAD` that follows it, sit in one assembly file (`asm/funcs/FlushCache.s`) because the original
+  split tool merged them. May we cut that file in two and give the second piece its own name and its own entry
+  in the approved-assembly list (same evidence as FlushCache's)? Yes: `libapi/c68.c` (FlushCache) and
+  `libapi/sendpad.c` become separate files like every other module. No: both stay in `libapi/c68.c`, whose top
+  comment says why.
 - func_80031B24 hands `&D_800A37E8` to func_800274BC / func_80032854 unlabelled (outside Q96).
 - Q97's struct form is unmeasured; Q96-Q99 retire as soon as a one-object spelling matches.
 - Hygiene rows in the 2026-10-03 commit bodies (`git log --grep="Hygiene debt" --since=2026-10-03`).
@@ -720,6 +726,11 @@ Open: the mixed game/Sony files (text1b_b, main_post, gpu, display, system, ings
 rodata files (text1a_b_post_rodata, text1a_b_tail_rodata, text1b_b_tu2) keep their old ids for step 4;
 `build_oracle_cc1.sh`'s self-check vs cc1.PRE-RECIPE-aa04d761 reports main/9F9C (28 lines; also at
 6e606ac0f, pre-existing); src/ comments still cite pre-move file names (history, D9).
+
+**Status step 4a (2026-10-03):** done: 59272fc29 (text1b_b -> main/64FD8, rename) and the split commit after
+it: the library tail is 29 `main/psxsdk/libapi/` files (one per LIBSCAN module; C68 + SENDPAD share `c68.c`,
+owner question in § 3) and 5 `main/psxsdk/libc2/` files (memcpy, rand, strcpy, strlen, printf), all in
+PSYQ_LIBRARY_FILES (maspsx -G0, proven by object compare + oracle); evidence in rodata-align doc §13.
 
 Total: about 25 to 30 commits, 5 to 8 focused sessions. Step 4 (library rodata placement per
 module) and step 5 (per-file header proofs) dominate.

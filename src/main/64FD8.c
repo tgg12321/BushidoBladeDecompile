@@ -1,3 +1,6 @@
+/* Game functions func_800747D8 .. func_800788B0. .text 0x800747D8 (ROM 0x64FD8). Start boundary:
+ * PHASE (site 5). Ends where the PsyQ 4.0 LIBAPI C67 module starts (0x80078948, LIBSCAN, Q106
+ * D3); the library modules that followed are in src/main/psxsdk/libapi/ and libc2/. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -5,7 +8,6 @@
 #include "game.h"
 #include "code6cac.h"
 #include "gpu.h"
-#include "bios.h"
 
 /* ---- merged from text1b_tu2.c (owner ruling Q67: one original file) ---- */
 /* Declarations from the file this TU was split from (text1b.c). */
@@ -1573,7 +1575,6 @@ typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
 /* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
  * field layout is the union of all observed accesses; m2c picks the type
  * that best fits each access site. Mirroring smart_match.py's layout. */
-s32 _Pad1(void);
 
 
 
@@ -1755,11 +1756,6 @@ extern s32 chractar_use_pset_combo_id_table;
 
 
 
-extern s32 D_8009BD68;
-extern s32 D_8009BD6C;
-extern s32 D_8009BD70;
-extern s32 D_8009BD84;
-extern s32 D_8009BD88;
 
 
 
@@ -2766,282 +2762,6 @@ s32 func_800788B0(void) {
     func_80078654(buf);
     D_800A3608++;
     return D_800A3608 >= 0xB40;
-}
-
-BIOS_A_FUNCTION(Exec, 0x43);
-BIOS_A_FUNCTION(_bu_init, 0x70);
-BIOS_A_FUNCTION(SetMem, 0x9F);
-BIOS_B_FUNCTION(OpenEvent, 0x8);
-BIOS_B_FUNCTION(CloseEvent, 0x9);
-BIOS_B_FUNCTION(TestEvent, 0xB);
-BIOS_B_FUNCTION(EnableEvent, 0xC);
-INCLUDE_ASM("asm/funcs", EnterCriticalSection);
-INCLUDE_ASM("asm/funcs", ExitCriticalSection);
-INCLUDE_ASM("asm/funcs", SetSp);
-BIOS_B_FUNCTION(open, 0x32);
-BIOS_B_FUNCTION(read, 0x34);
-BIOS_B_FUNCTION(write, 0x35);
-BIOS_B_FUNCTION(close, 0x36);
-BIOS_B_FUNCTION(format, 0x41);
-BIOS_B_FUNCTION(firstfile, 0x42);
-BIOS_B_FUNCTION(nextfile, 0x43);
-BIOS_B_FUNCTION(ChangeClearPAD, 0x5B);
-s32 SetRCnt(s32 arg0, s32 arg1, s32 arg2) {
-    s32 a3;
-    s32 t0;
-    s32 v0;
-    s32 base;
-    t0 = arg0 & 0xFFFF;
-    a3 = 0x48;
-    if (t0 >= 3) {
-        return 0;
-    }
-    base = (t0 * 0x10) + D_8009BD6C;
-    *(volatile u16 *) (base + 4) = 0;
-    *(volatile u16 *) (base + 8) = arg1;
-    if (((u32) t0) < 2U) {
-        if (arg2 & 0x10) {
-            a3 = 0x49;
-        }
-        v0 = arg2 & 0x1000;
-        if (!(arg2 & 1)) {
-            a3 |= 0x100;
-        }
-    } else {
-        v0 = arg2 & 0x1000;
-        if (t0 == 2) {
-            ;
-            if (!(arg2 & 1)) {
-                a3 = 0x248;
-            }
-        }
-    }
-    if ((arg2 & 0x1000) != 0) {
-        a3 |= 0x10;
-    }
-    *(volatile u16 *) (((t0 * 0x10) + D_8009BD6C) + 4) = a3;
-    return 1;
-}
-s32 GetRCnt(s32 arg0) {
-    s32 v = arg0 & 0xFFFF;
-    if (v >= 3) {
-        return 0;
-    }
-    return *(volatile u16 *)(D_8009BD6C + v * 0x10);
-}
-s32 StartRCnt(s32 arg0) {
-    s32 v;
-    volatile s32 *base;
-    v = arg0 & 0xFFFF;
-    base = (volatile s32 *)D_8009BD68;
-    base[1] = base[1] | (&D_8009BD70)[v];
-    return v < 3;
-}
-s32 StopRCnt(s32 arg0) {
-    s32 v;
-    volatile s32 *base;
-    v = arg0 & 0xFFFF;
-    base = (volatile s32 *)D_8009BD68;
-    base[1] = base[1] & ~(&D_8009BD70)[v];
-    return 1;
-}
-s32 ResetRCnt(s32 arg0) {
-    s32 v = arg0 & 0xFFFF;
-    if (v >= 3) {
-        return 0;
-    }
-    *(volatile u16 *)(D_8009BD6C + v * 0x10) = 0;
-    return 1;
-}
-extern s32 D_8009BD80;
-void SetInitPadFlag(s32 a0) {
-    D_8009BD80 = a0;
-}
-s32 ReadInitPadFlag(void) {
-    return D_8009BD80;
-}
-void _remove_ChgclrPAD(void);
-void EnterCriticalSection(void);
-void _patch_pad(void);
-void ExitCriticalSection(void);
-void ChangeClearPAD(s32);
-s32 SetPatchPad(void);
-void PAD_init2(s32, s32, s32, s32);
-void _send_pad(void);
-void PAD_init(s32 a0, s32 a1, s32 a2, s32 a3) {
-    _remove_ChgclrPAD();
-    EnterCriticalSection();
-    _patch_pad();
-    ExitCriticalSection();
-    ChangeClearPAD(0);
-    SetPatchPad();
-    PAD_init2(a0, a1, a2, a3);
-    _send_pad();
-    D_8009BD80 = 1;
-}
-void InitPAD2(s32, s32, s32, s32);
-void InitPAD(s32 a0, s32 a1, s32 a2, s32 a3) {
-    _remove_ChgclrPAD();
-    EnterCriticalSection();
-    _patch_pad();
-    ExitCriticalSection();
-    ChangeClearPAD(0);
-    SetPatchPad();
-    InitPAD2(a0, a1, a2, a3);
-    _send_pad();
-    D_8009BD80 = 1;
-}
-void StartPAD2(void);
-void EnablePAD(void);
-void StartPAD(void) {
-    StartPAD2();
-    ChangeClearPAD(0);
-    EnablePAD();
-}
-void DisablePAD(void);
-void StopPAD2(void);
-s32 RemovePatchPad(void);
-void StopPAD(void) {
-    DisablePAD();
-    StopPAD2();
-    RemovePatchPad();
-    D_8009BD80 = 0;
-}
-extern void EnterCriticalSection(void);
-extern void ExitCriticalSection(void);
-extern void SysDeqIntRP(s32, u32 *);
-extern void SysEnqIntRP(s32, u32 *);
-
-extern s32 _IsVSync(void);
-extern u32 patch0_plus_0x4;
-extern u32 patch0_plus_0x8;
-extern u32 patch0;
-extern u32 patch0_plus_0xC;
-s32 SetPatchPad(void) {
-    u32 *v1 = &patch0_plus_0x4;
-    u32 *s0 = v1 - 1;
-    EnterCriticalSection();
-    *v1 = (u32)_Pad1;
-    patch0_plus_0x8 = (u32)_IsVSync;
-    patch0 = 0;
-    patch0_plus_0xC = 0;
-    SysDeqIntRP(1, s0);
-    SysEnqIntRP(1, s0);
-    ExitCriticalSection();
-    return 1;
-}
-
-
-s32 RemovePatchPad(void) {
-    EnterCriticalSection();
-    SysDeqIntRP(1, &patch0);
-    ExitCriticalSection();
-    return 1;
-}
-/* PsyQ 4.0 LIBAPI PAD: _Pad1 (static) — verbatim-linked Sony object. */
-s32 _Pad1(void) {
-    /* FAKE: volatile delay counter, only i[0] used. volatile (owner rulings
-       Q50 route A / Q48 route B, Q53): every access to the counter is a
-       $sp-slot round-trip in the target; a plain local runs the loop in a
-       register (score 15). [3]: frame layout -- the target frame is 16 bytes,
-       a scalar counter gives 8 (score 2). SOTN's v_wait counts down element
-       0 of a volatile array the same way. */
-    volatile s32 i[3]; /* SOTN: src/main/psxsdk/libetc/vsync.c:52 @db41b28 */
-    *(s16 *)((u8 *)D_8009BD84 + 0xA) = 0;
-    i[0] = 10;
-    i[0] = i[0] - 1;
-    if (i[0] != -1) {
-        do {
-            i[0] = i[0] - 1;
-        } while (i[0] != -1);
-    }
-    return 0;
-}
-s32 _IsVSync(void) {
-    s32 *p = (s32 *)D_8009BD88;
-    s32 ret;
-    if ((p[1] & 1) == 0) return 0;
-    if ((p[0] & 1) != 0) {
-        ret = 1;
-    } else {
-        ret = 1; /* FAKE: two-set else arm defeats jump.c store-flag fold (dead-store-fake-exception) */
-        ret = 0;
-    }
-    return ret;
-}
-BIOS_B_FUNCTION(InitPAD2, 0x12);
-BIOS_B_FUNCTION(StartPAD2, 0x13);
-BIOS_B_FUNCTION(StopPAD2, 0x14);
-BIOS_B_FUNCTION(PAD_init2, 0x15);
-BIOS_C_FUNCTION(SysEnqIntRP, 0x2);
-BIOS_C_FUNCTION(SysDeqIntRP, 0x3);
-
-extern void (*jtbl_800A3624)(void);
-/* func_80078F60 / func_80078F74: 5-insn bare tail-jump trampolines
-   (lui/lw/nop/jr/nop) through the jtbl_800A3620 / jtbl_800A3624 function
-   pointers that the Pad-init wrapper func_80078F88 installs at runtime. GCC
-   2.7.2 has no MIPS sibling-call optimization, so no pure-C `(*fp)()` form
-   emits a frameless `jr $t1` (it always builds a stack frame + jalr + jr $ra).
-   Hand-coded canonical asm (owner-authorized). */
-INCLUDE_ASM("asm/funcs", EnablePAD);
-INCLUDE_ASM("asm/funcs", DisablePAD);
-INCLUDE_ASM("asm/funcs", _patch_pad);
-INCLUDE_ASM("asm/funcs", FlushCache);
-INCLUDE_ASM("asm/funcs", _send_pad);
-INCLUDE_ASM("asm/funcs", func_800790A4);
-INCLUDE_ASM("asm/funcs", _remove_ChgclrPAD);
-u8* memcpy(u8 *dst, u8 *src, s32 len) {
-    u8 *ret;
-    if (!dst) {
-        return 0;
-    }
-    ret = dst;
-    while (len > 0) {
-        *dst = *src;
-        src++;
-        len--;
-        dst++;
-    }
-    return ret;
-}
-extern u32 D_800F1848;
-s32 rand(void) {
-    D_800F1848 = D_800F1848 * 0x41C64E6D + 0x3039;
-    return (D_800F1848 >> 16) & 0x7FFF;
-}
-
-void srand(s32 a0) {
-    D_800F1848 = a0;
-}
-u8 *strcpy(u8 *a0, u8 *a1) {
-    u8 *v1;
-    if (!a0) {
-        return 0;
-    }
-    if (!a1) {
-        return 0;
-    }
-    v1 = a0;
-    while ((*a0++ = *a1++) != 0) {
-    }
-    return v1;
-}
-s32 strlen(u8 *a0) {
-    s32 v1 = 0;
-    if (!a0) {
-        return 0;
-    }
-    while (*a0++ != 0) {
-        v1++;
-    }
-    return v1;
-}
-void printf(s32 fmt, s32 a, s32 b, s32 c) {
-    s32 *ap = &fmt;
-    ap[1] = a;
-    ap[2] = b;
-    ap[3] = c;
-    prnt(1, fmt, ap + 1);
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */

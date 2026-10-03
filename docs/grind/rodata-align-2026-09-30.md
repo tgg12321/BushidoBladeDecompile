@@ -365,3 +365,18 @@ Object compare `memory/grind/restructure-2026-10-03/step3/objcmp.py` (sections, 
 - **code6cac_b_rodata_pre.c (now main/d_1068.c) not folded:** its zero word at 0x80010868 is the `.align 3` pad of
   24F08.c's first table only in one object holding 24BF0.o's and 24F08.o's rodata (0x4C → 0x50), but 24F08.c is
   cc1 -G8 by proof and 24BF0.c is not; a 4-byte const in the -G8 file would sit in .sdata under cc1psx.
+
+## 13. Mixed files split at their PsyQ module starts (restructure step 4, Q106 D3, 2026-10-03)
+
+Object compare `memory/grind/restructure-2026-10-03/step4/splitcmp.py` (the parts' sections concatenated in
+link order vs the unsplit object: bytes, every relocation at its shifted offset, every global at the same
+offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/libscan/matches.json).
+- **4a text1b_b.c → main/64FD8.c + 29 `psxsdk/libapi/` + 5 `psxsdk/libc2/` files.** Cuts at 0x80078948 (game |
+  LIBAPI C67) and every module start through LIBC2 PRINTF (0x80079208..0x80079244, ending where PRNT starts).
+  Rodata: the object's 0x5C bytes are the game functions' jump tables (`.rel.rodata` targets all below
+  0x80078948); no library part has `.rodata`, `.data`, `.sdata` or `.sbss`, so no position to choose and no
+  survivors. gp: the library parts define no data and reach only extern symbols, which are never gp under
+  maspsx `-G8` or `-G0`; their `-G0` (PSYQ_LIBRARY_FILES) form is proven identical by the compare (only the
+  5 `j` targets against the `.text` section symbol re-base) and the oracle. Kept in one file: C68 + SENDPAD
+  (`libapi/c68.c`), because asm/funcs/FlushCache.s runs from 0x80078FF0 across SENDPAD's start 0x80079000
+  to 0x80079028 (the `_SendPAD` mid-function XDEF, docs/naming/libscan/boundary_fixes.md).
