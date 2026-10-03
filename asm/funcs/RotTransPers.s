@@ -10,4 +10,5 @@ glabel RotTransPers
     /* 6FA3C 8007F23C 0000E3AC */  sw         $v1, 0x0($a3)
     /* 6FA40 8007F240 0800E003 */  jr         $ra
     /* 6FA44 8007F244 83100200 */   sra       $v0, $v0, 2
+    /* 6FA48 8007F248 00000000 */  nop
 endlabel RotTransPers

@@ -1,0 +1,1 @@
+{"func": "LoadAverageCol", "addr": "8007E3BC", "verdict": "PASS", "body_hash": "0f2580686177e031", "body_kind": "asm", "file": "display", "reviewer": "cheat-reviewer-af92e94e", "scope": "cheat-cleanup", "date": "2026-10-03T09:54:25Z", "head": "d384bd32c", "notes": ""}

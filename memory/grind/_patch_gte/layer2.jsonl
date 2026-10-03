@@ -1,0 +1,1 @@
+{"func": "_patch_gte", "addr": "8007FEDC", "verdict": "PASS", "body_hash": "b6e388bd93cb3c3a", "body_kind": "asm", "file": "display", "reviewer": "cheat-reviewer-af92e94e", "scope": "cheat-cleanup", "date": "2026-10-03T09:57:41Z", "head": "d384bd32c", "notes": ""}

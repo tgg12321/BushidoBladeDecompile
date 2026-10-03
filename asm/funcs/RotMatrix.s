@@ -171,4 +171,5 @@ glabel RotMatrix
     /* 6FDDC 8007F5DC 0E00AEA4 */  sh         $t6, 0xE($a1)
     /* 6FDE0 8007F5E0 0800E003 */  jr         $ra
     /* 6FDE4 8007F5E4 00000000 */   nop
+    /* 6FDE8 8007F5E8 00000000 */  nop
 endlabel RotMatrix

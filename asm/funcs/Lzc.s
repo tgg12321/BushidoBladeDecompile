@@ -5,4 +5,5 @@ glabel Lzc
     /* 6FA0C 8007F20C 00F80248 */  mfc2       $v0, $31 /* handwritten instruction */
     /* 6FA10 8007F210 0800E003 */  jr         $ra
     /* 6FA14 8007F214 00000000 */   nop
+    /* 6FA18 8007F218 00000000 */  nop
 endlabel Lzc

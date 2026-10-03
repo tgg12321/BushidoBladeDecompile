@@ -30,4 +30,5 @@ glabel LoadAverageCol
     /* 6EC2C 8007E42C 0200AAA1 */  sb         $t2, 0x2($t5)
     /* 6EC30 8007E430 0800E003 */  jr         $ra
     /* 6EC34 8007E434 00000000 */   nop
+    /* 6EC38 8007E438 00000000 */  nop
 endlabel LoadAverageCol

@@ -29,4 +29,6 @@ glabel RotTransPers4
     sw     $t0, 0($t2)
     jr     $ra
     sra    $v0, $v0, 2
+    nop
+    nop
 endlabel RotTransPers4

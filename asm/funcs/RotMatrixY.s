@@ -104,4 +104,6 @@ glabel RotMatrixY
     /* 703A8 8007FBA8 1000B8A4 */  sh         $t8, 0x10($a1)
     /* 703AC 8007FBAC 0800E003 */  jr         $ra
     /* 703B0 8007FBB0 00000000 */   nop
+    /* 703B4 8007FBB4 00000000 */  nop
+    /* 703B8 8007FBB8 00000000 */  nop
 endlabel RotMatrixY

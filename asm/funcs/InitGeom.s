@@ -31,4 +31,6 @@ glabel InitGeom
     /* 6E908 8007E108 00000000 */  nop
     /* 6E90C 8007E10C 0800E003 */  jr         $ra
     /* 6E910 8007E110 00000000 */   nop
+    /* 6E914 8007E114 00000000 */  nop
+    /* 6E918 8007E118 00000000 */  nop
 endlabel InitGeom

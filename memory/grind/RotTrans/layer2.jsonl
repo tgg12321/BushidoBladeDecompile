@@ -1,0 +1,1 @@
+{"func": "RotTrans", "addr": "8007F2AC", "verdict": "PASS", "body_hash": "20da428c0336c283", "body_kind": "asm", "file": "display", "reviewer": "cheat-reviewer-af92e94e", "scope": "cheat-cleanup", "date": "2026-10-03T09:56:28Z", "head": "d384bd32c", "notes": ""}

@@ -4,4 +4,7 @@ glabel ReadSZfifo3
     /* 6F774 8007EF74 0000D3E8 */  swc2       $19, 0x0($a2)
     /* 6F778 8007EF78 0800E003 */  jr         $ra
     /* 6F77C 8007EF7C 00000000 */   nop
+    /* 6F780 8007EF80 00000000 */  nop
+    /* 6F784 8007EF84 00000000 */  nop
+    /* 6F788 8007EF88 00000000 */  nop
 endlabel ReadSZfifo3

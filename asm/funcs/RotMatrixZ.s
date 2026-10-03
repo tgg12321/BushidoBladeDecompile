@@ -104,4 +104,6 @@ glabel RotMatrixZ
     /* 70548 8007FD48 0A00B8A4 */  sh         $t8, 0xA($a1)
     /* 7054C 8007FD4C 0800E003 */  jr         $ra
     /* 70550 8007FD50 00000000 */   nop
+    /* 70554 8007FD54 00000000 */  nop
+    /* 70558 8007FD58 00000000 */  nop
 endlabel RotMatrixZ

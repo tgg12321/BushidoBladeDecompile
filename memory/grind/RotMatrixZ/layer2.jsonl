@@ -1,0 +1,1 @@
+{"func": "RotMatrixZ", "addr": "8007FBBC", "verdict": "PASS", "body_hash": "faa09a0edb0b50f7", "body_kind": "asm", "file": "display", "reviewer": "cheat-reviewer-af92e94e", "scope": "cheat-cleanup", "date": "2026-10-03T09:57:31Z", "head": "d384bd32c", "notes": ""}

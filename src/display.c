@@ -1113,9 +1113,7 @@ __asm__(
 );
 
 INCLUDE_ASM("asm/funcs", InitGeom);
-PAD_NOPS_2; /* 2 NOPs after func_8007E094 */
 INCLUDE_ASM("asm/funcs", SquareRoot0);
-PAD_NOPS_3; /* 3 NOPs after func_8007E11C */
 /* func_8007E1AC = LIBGTE MSC06 LoadAverage12 â€” verbatim-linked Sony PsyQ 4.0
  * object. Hand-written GTE asm; disassembler tags every
  * cop2 op "handwritten instruction". No pure-C form (mtc2/lwc2/gpf/gpl/mfc2/
@@ -1156,9 +1154,7 @@ INCLUDE_ASM("asm/funcs", LoadAverageShort0);
 INCLUDE_ASM("asm/funcs", LoadAverageByte);
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
 INCLUDE_ASM("asm/funcs", LoadAverageCol);
-PAD_NOPS_1; /* 1 NOP after func_8007E1AC */
 INCLUDE_ASM("asm/funcs", SquareRoot12);
-PAD_NOPS_3; /* 3 NOPs after func_8007E43C */
 /* func_8007E4DC = LIBGTE MTX_000 MulMatrix0 â€” verbatim-linked Sony PsyQ 4.0
  * object. 3x3-mvmva matrix transform sibling of
  * MulMatrix2 (calc_fc_frame_8007EC5C). All the same hand-coded
@@ -1167,7 +1163,6 @@ PAD_NOPS_3; /* 3 NOPs after func_8007E43C */
  * cycle-N-mvmva latency, per-cycle `lui $at, 0xFFFF` re-materialization,
  * addu $v0,$a2 pass-through-at-end. Canonical body. */
 INCLUDE_ASM("asm/funcs", MulMatrix0);
-PAD_NOPS_1; /* 1 NOP after func_8007E4DC */
 INCLUDE_ASM("asm/funcs", CompMatrix);
 /* func_8007E74C = LIBGTE MTX_004 ApplyMatrixLV â€” verbatim-linked Sony PsyQ 4.0
  * object. Local-vector transform with pre-scaling via sign-
@@ -1193,7 +1188,6 @@ INCLUDE_ASM("asm/funcs", ApplyRotMatrix);
  * of ScaleMatrix (func_8007EDBC, canonical body per packed-multiply-cluster).
  * Canonical body. */
 INCLUDE_ASM("asm/funcs", ScaleMatrixL);
-PAD_NOPS_3; /* 3 NOPs after func_8007E8DC */
 /* func_8007EA0C = LIBGTE MTX_01 ApplyRotMatrixLV - verbatim-linked Sony PsyQ
  * 4.0 object. Sibling of ApplyMatrixLV (func_8007E74C):
  * sign-splits input vec into hi/lo halves (arithmetic split), runs mvmva
@@ -1201,14 +1195,12 @@ PAD_NOPS_3; /* 3 NOPs after func_8007E8DC */
  * preservation, sums and stores. No pure-C form reaches these bytes without
  * register pins or asm rewriting. Canonical body. */
 INCLUDE_ASM("asm/funcs", ApplyRotMatrixLV);
-PAD_NOPS_2; /* 2 NOPs after func_8007EA0C */
 /* func_8007EB4C = LIBGTE MTX_03 MulMatrix â€” verbatim-linked Sony PsyQ 4.0
  * object. In-place variant of the same 3-cycle mvmva
  * transform as func_8007E4DC / calc_fc_frame_8007EC5C: reads matrix + vec
  * from $a0 (out doubles as matrix-input buffer), writes result back to $a0.
  * All the calc_fc_frame (MulMatrix2) hand-coded signals hold. Canonical body. */
 INCLUDE_ASM("asm/funcs", MulMatrix);
-PAD_NOPS_1; /* 1 NOP after func_8007EB4C */
 /* calc_fc_frame_8007EC5C: hand-coded GTE 3x3-mvmva matrix transform.
  * COMPLETED-INLINE-ASM-CANONICAL -- see
  * inline_asm_canonical.txt for justification. Disassembler annotates
@@ -1218,7 +1210,6 @@ PAD_NOPS_1; /* 1 NOP after func_8007EB4C */
  * re-materialization is a hand-coded choice. No pure-C form reaches
  * these bytes. */
 INCLUDE_ASM("asm/funcs", MulMatrix2);
-PAD_NOPS_1; /* 1 NOP after calc_fc_frame_8007EC5C */
 /* func_8007ED6C = LIBGTE MTX_05 ApplyMatrix â€” verbatim-linked Sony PsyQ 4.0
  * object. Loads a 3x3 R matrix (5 packed s32 words) into
  * cop2 controls 0-4, transforms *a1 vec by RT matrix (mvmva 1,0,0,3,0),
@@ -1241,12 +1232,10 @@ INCLUDE_ASM("asm/funcs", ApplyMatrix);
  * Owner-authorized on that evidence (cc1psx proof + combine.c + cluster).
  */
 INCLUDE_ASM("asm/funcs", ScaleMatrix);
-PAD_NOPS_3; /* 3 NOPs after func_8007EDBC */
 INCLUDE_ASM("asm/funcs", SetRotMatrix);
 INCLUDE_ASM("asm/funcs", SetColorMatrix);
 INCLUDE_ASM("asm/funcs", SetTransMatrix);
 INCLUDE_ASM("asm/funcs", ReadSZfifo3);
-PAD_NOPS_3; /* 3 NOPs after gte_GetScreenXY */
 s32 ReadGeomScreen(void) { s32 ret; __asm__ volatile ("cfc2 %0, $26" : "=r" (ret)); return ret; }
 PAD_NOPS_1; /* 1 NOP after gte_GetH */
 void SetBackColor(s32 a0, s32 a1, s32 a2) {
@@ -1312,26 +1301,21 @@ INCLUDE_ASM("asm/funcs", OuterProduct12);
 INCLUDE_ASM("asm/funcs", OuterProduct0);
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
 INCLUDE_ASM("asm/funcs", Lzc);
-PAD_NOPS_1; /* 1 NOP after func_8007F200 */
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
 INCLUDE_ASM("asm/funcs", RotTransPers);
-PAD_NOPS_1; /* 1 NOP after func_8007F21C */
 /* func_8007F24C = LIBGTE SMP_03 RotTransPers3 â€” verbatim-linked Sony PsyQ 4.0
  * object. Triple perspective transform: lwc2 3 SXY0/SXY1/SXY2
  * pairs from *a0/*a1/*a2 -> rtpt -> swc2 SZ/SXY0/SXY1/SXY2 to *a3 & sp-loaded
  * pointers -> cfc2 FLAG to *(sp+0x1C) -> return mfc2 SZ3 >> 2 (folded into jr
  * delay slot). Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", RotTransPers3);
-PAD_NOPS_3; /* 3 NOPs after func_8007F24C */
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
 INCLUDE_ASM("asm/funcs", RotTrans);
-PAD_NOPS_2; /* 2 NOPs after func_8007F2AC */
 /* func_8007F2DC = LIBGTE CMB_00 RotTransPers4 â€” verbatim-linked Sony PsyQ 4.0
  * object. Triple perspective transform PLUS a 4th vertex
  * via rtps: rtpt on 3 SXY pairs, then rtps on the 4th (*a3). Combined FLAGs
  * OR'd; returns SZ3 >> 2. Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", RotTransPers4);
-PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
 /* motutil_GetWalkDir: hand-coded asm in original PSY-Q source.
  * Cluster sibling of func_8007F5EC (jaccard=0.68): same 3-axis Euler
  * rotation skeleton, different rotation-matrix coefficient signs
@@ -1339,7 +1323,6 @@ PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
  * INT_MIN-guard idioms in succession. Scanner STRONG 3/5 (S2+S3+S5);
  * manual review confirmed hand-coded. Same cluster authorization. */
 INCLUDE_ASM("asm/funcs", RotMatrix);
-PAD_NOPS_1; /* 1 NOP after motutil_GetWalkDir */
 /* func_8007F5EC: hand-coded asm in original PSY-Q source.
  * 3-axis Euler rotation: reads X/Y/Z angles from arg0 (s16[3]),
  * looks up cos/sin for each, applies a 9-element 3D rotation chain
@@ -1350,7 +1333,6 @@ PAD_NOPS_1; /* 1 NOP after motutil_GetWalkDir */
  * pipeline stall window. Same cluster authorization scope as
  * func_8007F87C (RotMatrixX). */
 INCLUDE_ASM("asm/funcs", RotMatrixZYX);
-PAD_NOPS_1; /* 1 NOP after func_8007F5EC */
 /* func_8007F87C: hand-coded asm in original PSY-Q source.
  * Evidence for the hand-coded classification:
  *   - Uniform 2-cycle multu/mflo pacing on EVERY mult/mflo pair
@@ -1361,7 +1343,6 @@ PAD_NOPS_1; /* 1 NOP after func_8007F5EC */
  *     func_8007FBBC share the same skeletal shape.
  * Owner-authorized for this cluster. */
 INCLUDE_ASM("asm/funcs", RotMatrixX);
-PAD_NOPS_2; /* 2 NOPs after func_8007F87C */
 /* func_8007FA1C: hand-coded asm in original PSY-Q source.
  * Sibling of func_8007F87C with mirrored sin negation and offsets
  * shifted to 0..0x10 (vs 6..0x10 for func_8007F87C). All 5 strong
@@ -1369,7 +1350,6 @@ PAD_NOPS_2; /* 2 NOPs after func_8007F87C */
  * register packing, INT_MIN-guard idiom at .L8007FA38, cluster). Same
  * cluster authorization (commit 39e9bf0). */
 INCLUDE_ASM("asm/funcs", RotMatrixY);
-PAD_NOPS_2; /* 2 NOPs after func_8007FA1C */
 /* func_8007FBBC: hand-coded asm in original PSY-Q source.
  * Cluster sibling of func_8007F87C (jaccard=1.00 â€” structurally
  * identical, just different stride offsets 0..0xA). All 5 strong
@@ -1378,7 +1358,6 @@ PAD_NOPS_2; /* 2 NOPs after func_8007FA1C */
  * at insn 25, cluster sibling of two already-authorized functions.
  * Same cluster authorization. */
 INCLUDE_ASM("asm/funcs", RotMatrixZ);
-PAD_NOPS_2; /* 2 NOPs after func_8007FBBC */
 #define NULL ((void *)0)
 
 typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
@@ -1516,12 +1495,12 @@ __asm__(
     "    sw $v1, 12($k0)\n"
     "    sw $ra, 124($k0)\n"
     "    .word 0x40026800\n"
+    "    nop\n"
     "    .set\treorder\n"
     "    .set\tat\n"
     "    .set reorder\n"
     "    .set at\n"
 );
-PAD_NOPS_1; /* 1 NOP after func_8007FEDC */
 extern s32 CdReset(s32);
 extern s32 CdSyncCallback(s32);
 extern s32 CdReadCallback(s32);

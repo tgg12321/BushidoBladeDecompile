@@ -285,3 +285,42 @@ implicitly before the move. Records relocated (file field only, section 7 proced
 pre-slim-2026-10-01:memory/grind/func_80065800/tools/relocate.py): the queue items func_8005C8A8 and func_8005D554,
 and the grind state.json of func_8005C8A8, func_8005D554, func_8005D814, func_8005E54C and
 func_8005F1C8. No canonical_asm_regions entry or scope_allow line names a moved function.
+
+## 10. Inter-object padding: module-end pads in their module's asm (owner rulings Q101/Q102/Q104, 2026-10-03)
+
+Rule: rodata-object-alignment.md § Inter-object padding. Sony's assembler padded each hand-written asm
+module's `.text` to 16 bytes; PSYLINK concatenated modules at 4-byte granularity, so the pad words are
+module bytes (LIBSCAN word counts include them) and sit at the end of the module's last asm. Spans are
+from docs/naming/libscan/libsyms.json; each pad ends exactly at its module's end. Survey and byte proofs:
+docs/grind/handoff-2026-10-03-restructure.md Part A.
+
+| Module | Span | Pad words | Where the pad lives |
+|---|---|---|---|
+| LIBAPI A39 | 800789D8..800789E8 | 1 | asm/funcs/SetSp.s |
+| LIBAPI SENDPAD | 80079000..800790C0 | 3 | asm/funcs/func_800790A4.s, after the 4-word stub, under `dlabel D_800790B4` |
+| LIBAPI CHCLRPAD | 800790C0..80079120 | 1 | asm/funcs/_remove_ChgclrPAD.s |
+| LIBGTE MSC00 | 8007E08C..8007E11C | 2 | asm/funcs/InitGeom.s |
+| LIBGTE MSC01 | 8007E11C..8007E1AC | 3 | asm/funcs/SquareRoot0.s |
+| LIBGTE MSC06 | 8007E1AC..8007E43C | 1 | asm/funcs/LoadAverageCol.s |
+| LIBGTE MSC09 | 8007E43C..8007E4DC | 3 | asm/funcs/SquareRoot12.s |
+| LIBGTE MTX_000 | 8007E4DC..8007E5EC | 1 | asm/funcs/MulMatrix0.s |
+| LIBGTE MTX_00A | 8007E8DC..8007EA0C | 3 | asm/funcs/ScaleMatrixL.s |
+| LIBGTE MTX_01 | 8007EA0C..8007EB4C | 2 | asm/funcs/ApplyRotMatrixLV.s |
+| LIBGTE MTX_03 | 8007EB4C..8007EC5C | 1 | asm/funcs/MulMatrix.s |
+| LIBGTE MTX_04 | 8007EC5C..8007ED6C | 1 | asm/funcs/MulMatrix2.s |
+| LIBGTE MTX_08 | 8007EDBC..8007EEEC | 3 | asm/funcs/ScaleMatrix.s |
+| LIBGTE REG04 | 8007EF6C..8007EF8C | 3 | asm/funcs/ReadSZfifo3.s |
+| LIBGTE REG09 | 8007EF8C..8007EF9C | 1 | ReadGeomScreen (Q104, Part A step 6) |
+| LIBGTE REG12 | 8007EFDC..8007EFFC | 2 | SetGeomOffset (Q104, Part A step 6) |
+| LIBGTE REG13 | 8007EFFC..8007F00C | 1 | SetGeomScreen (Q104, Part A step 6) |
+| LIBGTE SMP_00 | 8007F00C..8007F21C | 1 | asm/funcs/Lzc.s |
+| LIBGTE SMP_02 | 8007F21C..8007F24C | 1 | asm/funcs/RotTransPers.s |
+| LIBGTE SMP_03 | 8007F24C..8007F2AC | 3 | asm/funcs/RotTransPers3.s |
+| LIBGTE SMP_04 | 8007F2AC..8007F2DC | 2 | asm/funcs/RotTrans.s |
+| LIBGTE CMB_00 | 8007F2DC..8007F35C | 2 | asm/funcs/RotTransPers4.s |
+| LIBGTE FGO_01 | 8007F35C..8007F5EC | 1 | asm/funcs/RotMatrix.s |
+| LIBGTE FGO_03 | 8007F5EC..8007F87C | 1 | asm/funcs/RotMatrixZYX.s |
+| LIBGTE FGO_04 | 8007F87C..8007FA1C | 2 | asm/funcs/RotMatrixX.s |
+| LIBGTE FGO_05 | 8007FA1C..8007FBBC | 2 | asm/funcs/RotMatrixY.s |
+| LIBGTE FGO_06 | 8007FBBC..8007FD5C | 2 | asm/funcs/RotMatrixZ.s |
+| LIBGTE PATCHGTE | 8007FEDC..8007FF7C | 1 | display.c's file-scope `_patch_gte` block, after `.word 0x40026800` |

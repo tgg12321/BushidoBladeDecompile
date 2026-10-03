@@ -35,4 +35,7 @@ glabel SquareRoot0
   .L8007E198:
     /* 6E998 8007E198 0800E003 */  jr         $ra
     /* 6E99C 8007E19C 00000224 */   addiu     $v0, $zero, 0x0
+    /* 6E9A0 8007E1A0 00000000 */  nop
+    /* 6E9A4 8007E1A4 00000000 */  nop
+    /* 6E9A8 8007E1A8 00000000 */  nop
 endlabel SquareRoot0

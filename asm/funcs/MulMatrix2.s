@@ -66,4 +66,5 @@ glabel MulMatrix2
     /* 6F55C 8007ED5C 2110A000 */  addu       $v0, $a1, $zero
     /* 6F560 8007ED60 0800E003 */  jr         $ra
     /* 6F564 8007ED64 00000000 */   nop
+    /* 6F568 8007ED68 00000000 */  nop
 endlabel MulMatrix2

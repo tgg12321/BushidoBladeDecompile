@@ -171,4 +171,5 @@ glabel RotMatrixZYX
     /* 7006C 8007F86C 0A00AEA4 */  sh         $t6, 0xA($a1)
     /* 70070 8007F870 0800E003 */  jr         $ra
     /* 70074 8007F874 00000000 */   nop
+    /* 70078 8007F878 00000000 */  nop
 endlabel RotMatrixZYX

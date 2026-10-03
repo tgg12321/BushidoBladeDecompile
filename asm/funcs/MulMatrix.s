@@ -66,4 +66,5 @@ glabel MulMatrix
     /* 6F44C 8007EC4C 21108000 */  addu       $v0, $a0, $zero
     /* 6F450 8007EC50 0800E003 */  jr         $ra
     /* 6F454 8007EC54 00000000 */   nop
+    /* 6F458 8007EC58 00000000 */  nop
 endlabel MulMatrix

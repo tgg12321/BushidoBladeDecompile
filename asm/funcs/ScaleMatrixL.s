@@ -72,4 +72,7 @@ glabel ScaleMatrixL
     /* 6F1F4 8007E9F4 034B0900 */  sra        $t1, $t1, 12
     /* 6F1F8 8007E9F8 0800E003 */  jr         $ra
     /* 6F1FC 8007E9FC 100089AC */   sw        $t1, 0x10($a0)
+    /* 6F200 8007EA00 00000000 */  nop
+    /* 6F204 8007EA04 00000000 */  nop
+    /* 6F208 8007EA08 00000000 */  nop
 endlabel ScaleMatrixL

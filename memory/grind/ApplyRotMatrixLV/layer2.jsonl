@@ -1,0 +1,1 @@
+{"func": "ApplyRotMatrixLV", "addr": "8007EA0C", "verdict": "PASS", "body_hash": "29df967f69c1fd60", "body_kind": "asm", "file": "display", "reviewer": "cheat-reviewer-af92e94e", "scope": "cheat-cleanup", "date": "2026-10-03T09:55:06Z", "head": "d384bd32c", "notes": ""}

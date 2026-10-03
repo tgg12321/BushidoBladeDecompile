@@ -9,4 +9,6 @@ glabel RotTrans
     /* 6FAC8 8007F2C8 00F84248 */  cfc2       $v0, $31 /* handwritten instruction */
     /* 6FACC 8007F2CC 0800E003 */  jr         $ra
     /* 6FAD0 8007F2D0 0000C2AC */   sw        $v0, 0x0($a2)
+    /* 6FAD4 8007F2D4 00000000 */  nop
+    /* 6FAD8 8007F2D8 00000000 */  nop
 endlabel RotTrans

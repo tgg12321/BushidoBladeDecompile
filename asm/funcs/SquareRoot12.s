@@ -40,4 +40,7 @@ glabel SquareRoot12
   .L8007E4C8:
     /* 6ECC8 8007E4C8 0800E003 */  jr         $ra
     /* 6ECCC 8007E4CC 00000224 */   addiu     $v0, $zero, 0x0
+    /* 6ECD0 8007E4D0 00000000 */  nop
+    /* 6ECD4 8007E4D4 00000000 */  nop
+    /* 6ECD8 8007E4D8 00000000 */  nop
 endlabel SquareRoot12

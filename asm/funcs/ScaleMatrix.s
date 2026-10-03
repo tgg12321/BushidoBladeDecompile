@@ -72,4 +72,7 @@ glabel ScaleMatrix
     /* 6F6D4 8007EED4 034B0900 */  sra        $t1, $t1, 12
     /* 6F6D8 8007EED8 0800E003 */  jr         $ra
     /* 6F6DC 8007EEDC 100089AC */   sw        $t1, 0x10($a0)
+    /* 6F6E0 8007EEE0 00000000 */  nop
+    /* 6F6E4 8007EEE4 00000000 */  nop
+    /* 6F6E8 8007EEE8 00000000 */  nop
 endlabel ScaleMatrix

@@ -89,4 +89,6 @@ glabel ApplyRotMatrixLV
     /* 6F338 8007EB38 0800AAAC */  sw         $t2, 0x8($a1)
     /* 6F33C 8007EB3C 0800E003 */  jr         $ra
     /* 6F340 8007EB40 2110A000 */   addu      $v0, $a1, $zero
+    /* 6F344 8007EB44 00000000 */  nop
+    /* 6F348 8007EB48 00000000 */  nop
 endlabel ApplyRotMatrixLV
