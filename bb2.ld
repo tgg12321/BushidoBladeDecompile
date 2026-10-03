@@ -260,7 +260,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/vm_doff.o(.text);
         build/src/main/psxsdk/libsnd/vm_f.o(.text);
         build/src/main/psxsdk/libsnd/vm_n2p.o(.text);
-        build/src/main/psxsdk/libsnd/774F8.o(.text);
+        build/src/main/psxsdk/libsnd/vm_no1.o(.text);
         build/src/main/psxsdk/libsnd/vm_vsu.o(.text);
         build/src/main/psxsdk/libsnd/vs_auto.o(.text);
         build/src/main/psxsdk/libsnd/vs_mono.o(.text);
@@ -483,7 +483,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/vm_doff.o(.data);
         build/src/main/psxsdk/libsnd/vm_f.o(.data);
         build/src/main/psxsdk/libsnd/vm_n2p.o(.data);
-        build/src/main/psxsdk/libsnd/774F8.o(.data);
+        build/src/main/psxsdk/libsnd/vm_no1.o(.data);
         build/src/main/psxsdk/libsnd/vm_vsu.o(.data);
         build/src/main/psxsdk/libsnd/vs_auto.o(.data);
         build/src/main/psxsdk/libsnd/vs_mono.o(.data);
@@ -752,7 +752,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/vm_doff.o(.bss);
         build/src/main/psxsdk/libsnd/vm_f.o(.bss);
         build/src/main/psxsdk/libsnd/vm_n2p.o(.bss);
-        build/src/main/psxsdk/libsnd/774F8.o(.bss);
+        build/src/main/psxsdk/libsnd/vm_no1.o(.bss);
         build/src/main/psxsdk/libsnd/vm_vsu.o(.bss);
         build/src/main/psxsdk/libsnd/vs_auto.o(.bss);
         build/src/main/psxsdk/libsnd/vs_mono.o(.bss);
