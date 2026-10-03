@@ -75,7 +75,7 @@ extern Vec3i32 D_800F0D78[16];
 typedef struct { s32 vx, vy, vz, pad; } Vec4i32;
 typedef struct { s16 vx, vy, vz, pad; } SVec4i16;
 /* The 10-entry block table over the 0x45000-byte buffer at D_800A9D10
- * (text1a_c_tu2.c func_800451D0 .. func_8004574C; D_800A33AC live entries).
+ * (main/35000.c func_800451D0 .. func_8004574C; D_800A33AC live entries).
  * func_800451D0 clears id in all 10 (offset 0x90 down to 0 in steps of 0x10,
  * asm/funcs/func_800451D0.s); the walkers index base + i*16.  func_80045294(a0,
  * a1) hands func_800520B8 entry a0's unk4, unk4 + a1 and the summed amt of
@@ -139,7 +139,7 @@ typedef struct PadState {
     u32 unheld;                    /* 0x14 */
 } PadState;                        /* sizeof == 0x18 */
 
-/* The 24-entry pending-sound pool (text1b_tu1b.c): func_8005C650 queues a
+/* The 24-entry pending-sound pool (main/3AB48.c): func_8005C650 queues a
  * request (an entry of D_8009AA70) with its volumes in the first free entry;
  * func_8005C6D0 keys each queued note on via SsUtKeyOnV(.., voll, volr) and
  * clears the entry; snd_Init / func_8005B5AC reset all 24.  Every user indexes
@@ -703,7 +703,7 @@ extern u8 D_800A3758;
  * position) to CdPosToInt. A tentative definition in the CD module's file, like
  * the CdlATV blocks: result[0] is read gp-relative, result[4] with lui/%lo
  * (the owner Q62 global COMMON model; the tentative definition is in
- * src/code6cac_b5.c). */
+ * src/main/26940.c). */
 extern u8 g_cd_result[8];
 extern u8 D_800A3769;
 extern u8 D_800A376A;

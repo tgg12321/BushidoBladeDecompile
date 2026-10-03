@@ -179,13 +179,13 @@ fi
 #           same change, so it expects NO divergence.
 #   cc1.PRE-RECIPE-0f438e42 — the retired NO-REWRITE compiler with the crash
 #           fix (operative 2026-08-24 .. 2026-09-25). Expects:
-#     text1b: func_80073C78's `+` UV stores — stock emits the target `ori`
+#     main/63D2C: func_80073C78's `+` UV stores — stock emits the target `ori`
 #             pair, no-rewrite `addu`.
-#     ings:   `main`'s natural `((D_800A36F1 - 1) << 8) + 0x80` (site C) —
+#     main/6CF8: `main`'s natural `((D_800A36F1 - 1) << 8) + 0x80` (site C) —
 #             stock keeps the unfolded `addiu -1; sll 8; addiu 0x80`,
 #             no-rewrite folds to `sll; addiu -128`.
 NARROW_REF_EXPECT_DIFF=""
-NOREWRITE_REF_EXPECT_DIFF="ings text1b"
+NOREWRITE_REF_EXPECT_DIFF="main/6CF8 main/63D2C"
 F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 FG8="-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
@@ -210,7 +210,7 @@ SRCDIG=$( (sha1sum src/**/*.c include/*.h 2>/dev/null | sha1sum) | cut -d' ' -f1
 n=0
 for stem in $(tu_ids); do
   $CPP src/$stem.c > $W/t.i 2>/dev/null
-  case "$stem" in text1a_pre|text1a_post) FL="$FG8";; *) FL="$F";; esac
+  case "$stem" in main/309CC|main/31D3C) FL="$FG8";; *) FL="$F";; esac
   "$SCRATCH/cc1" $FL $W/t.i -o $W/new.s 2>/dev/null
   # Drop the .file directive: it carries the input path, not codegen.
   grep -v '^\t\.file' $W/new.s | sha1sum | sed "s|-|$stem|" >> $W/digests.txt
@@ -223,7 +223,7 @@ if [ -n "$REF" ]; then
   bad=""; lines=0
   for stem in $(tu_ids); do
     $CPP src/$stem.c > $W/t.i 2>/dev/null
-    case "$stem" in text1a_pre|text1a_post) FL="$FG8";; *) FL="$F";; esac
+    case "$stem" in main/309CC|main/31D3C) FL="$FG8";; *) FL="$F";; esac
     "$SCRATCH/cc1" $FL $W/t.i -o $W/new.s 2>/dev/null
     "$REF"         $FL $W/t.i -o $W/ref.s 2>/dev/null
     cmp -s $W/new.s $W/ref.s || { bad="$bad $stem"; lines=$((lines + $(diff $W/ref.s $W/new.s | grep -c '^[<>]'))); }

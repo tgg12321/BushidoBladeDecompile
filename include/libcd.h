@@ -11,7 +11,7 @@
  * a COMMON symbol gp only at its base, so byte 0 is gp-relative and bytes 1..3
  * are lui/%lo in all three accessors. Modelled by maspsx for every file from the
  * declarations (owner Q62); the tentative definitions are in
- * the CD module's two -G8 units, src/code6cac_b4.c and src/code6cac_b5.c. */
+ * the CD module's two -G8 units, src/main/26730.c and src/main/26940.c. */
 typedef struct {
     u8 val0;
     u8 val1;

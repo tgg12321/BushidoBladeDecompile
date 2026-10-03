@@ -190,7 +190,7 @@ extern DR_MOVE light_effect_col[31][2];
 extern DR_MOVE D_800A4340[19][2];
 extern DR_MOVE D_800A9830[2][10];
 /* 0x800A3220: the VRAM rectangle func_8003D2C4 passes to LoadImage with the
- * image at D_80090178 (x 0x3F0, y 0x1DC, 16 x 36); defined in code6cac_c2.c. */
+ * image at D_80090178 (x 0x3F0, y 0x1DC, 16 x 36); defined in main/2B344.c. */
 extern RECT D_800A3220;
 
 #endif /* GPU_H */

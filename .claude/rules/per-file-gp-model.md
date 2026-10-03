@@ -81,7 +81,7 @@ No definition in a shared header. Types follow existing declarations/evidence (a
 [[no-new-park-categories]]). **(A5, Q70)** only `D_80102C00` (keeps `s32`), `D_800153F0` (struct of 22
 halfwords), `func_8004153C` (declaration unchanged) and (Q88) `func_80044100` (unprototyped) take
 owner-decided types. **(A9)** `D_800A3264` is
-text1b's K3 global, evidence in its comment (Q80; table owner open); `D_800A3530`/`D_800A3534` stay in asm/data,
+main/368E4.c's K3 global, evidence in its comment (Q80; table owner open); `D_800A3530`/`D_800A3534` stay in asm/data,
 logged (Q81).
 
 ## File boundaries come from evidence only

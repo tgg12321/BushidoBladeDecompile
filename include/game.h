@@ -458,7 +458,7 @@ extern Unk800EFAE8Ctrl D_800EFAE8;
  * func_8006E534's one word store over bytes 0..3, `sw $v0,%gp_rel(D_800A3560)($gp)`
  * with $v0 = -1 (func_8006E534.s:85, 0x8006E668). Every other access goes
  * through rec[]. Owner rulings Q44/Q54: every consumer is in the -G8 file
- * src/text1b_tu1d.c. */
+ * src/main/5ED34.c. */
 typedef struct {
     u8 unk0;
     u8 unk1;

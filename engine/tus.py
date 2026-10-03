@@ -1,6 +1,6 @@
 """Translation-unit discovery: the one place that knows where C sources live.
 
-A TU id is the path under src/ without `.c`, in posix form (`text1b`,
+A TU id is the path under src/ without `.c`, in posix form (`main/368E4`,
 `main/psxsdk/libcomb/comb`). `src/<id>.c` and `build/src/<id>.o` are its source
 and object; flat ids are just ids without a slash. Bare basenames are never an
 identity: two modules may share one (`libgpu/sys`, `libcd/sys`).
@@ -42,7 +42,7 @@ def obj_path(tid: str, build_dir: str = "build") -> str:
 
 
 def arg_id(value: str) -> str:
-    """argparse type for a TU argument: `text1b`, `src/text1b.c` or a nested
+    """argparse type for a TU argument: `main/368E4`, `src/main/368E4.c` or a nested
     id; must name an existing src/<id>.c ('' passes through as "unset")."""
     if not value:
         return value

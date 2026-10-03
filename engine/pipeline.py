@@ -43,7 +43,7 @@ def c_stems() -> list[str]:
 
 def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
     """Construct the exact per-file shell pipeline for src/<stem>.c -> out_o
-    (`stem` is a TU id, e.g. `text1b` or `main/psxsdk/libcomb/comb`).
+    (`stem` is a TU id, e.g. `main/368E4` or `main/psxsdk/libcomb/comb`).
 
     `cheat_overrides` is the Phase 1 seam: a spec describing which cheat stages
     (regfix / regfix_stage2 / asmfix) to neutralize for a given function so the

@@ -80,7 +80,7 @@ W=tmp/cc1diag_check; mkdir -p $W
 n=0; bad=""; lines=0
 for stem in $(tu_ids); do
   $CPP src/$stem.c > $W/t.i 2>/dev/null
-  case "$stem" in text1a_pre|text1a_post) FL="$FG8";; *) FL="$F";; esac
+  case "$stem" in main/309CC|main/31D3C) FL="$FG8";; *) FL="$F";; esac
   "$SCRATCH/cc1" $FL $W/t.i -o $W/new.s 2>/dev/null
   "$ORACLE"      $FL $W/t.i -o $W/ref.s 2>/dev/null
   n=$((n+1))
@@ -93,7 +93,7 @@ if [ -x "$LIVE/cc1" ]; then
   obad=""
   for stem in $(tu_ids); do
     $CPP src/$stem.c > $W/t.i 2>/dev/null
-    case "$stem" in text1a_pre|text1a_post) FL="$FG8";; *) FL="$F";; esac
+    case "$stem" in main/309CC|main/31D3C) FL="$FG8";; *) FL="$F";; esac
     "$LIVE/cc1" $FL $W/t.i -o $W/old.s 2>/dev/null
     "$ORACLE"   $FL $W/t.i -o $W/ref.s 2>/dev/null
     cmp -s $W/old.s $W/ref.s || obad="$obad $stem"

@@ -62,7 +62,7 @@ RULING — per-file -G8 by proof; Q16 split/respelling order; -G8 screening scop
 
 `-G8` is never admitted for a measured score improvement alone.
 
-**Owner ruling Q89 (2026-10-01) — text1b's -G8 head part (camera_CalcAngles).** text1b may be split
+**Owner ruling Q89 (2026-10-01) — text1b's -G8 head part (camera_CalcAngles).** text1b (now src/main/368E4.c) may be split
 immediately before its first whole-body hand-written asm function (the inline_asm_canonical.txt block
 starting at math_RotMatrixZYX), the part before the cut joining `GP_FILES` (cc1 `-G8`). Evidence class:
 under `-G8` cc1 emits every function after all file-scope asm, so a mid-file hand-written block cannot sit
@@ -78,7 +78,7 @@ banked for camera_CalcAngles; the rest of (iii) (no file-scope `__asm__`, `INCLU
 the `-G8` part; the extern screening); (iv); (v); (vi) incl. manual path only. Only this cut, only this file.
 
 **Owner ruling Q94 (2026-10-02) — the pre_rodata block between Q89's parts.** The former
-`text1a_b_pre_rodata.c` block (D_800153F0..D_80015840, merged into text1b by Q67 under
+`text1a_b_pre_rodata.c` block (now src/main/d_5BF0.c; D_800153F0..D_80015840, merged into text1b by Q67 under
 [[per-file-gp-model]] A7) is restored verbatim as its own `.rodata`-only `-G0` file linked between Q89's head
 and tail. Evidence: under `-G8` cc1 emits every file-scope data object before every function's jump tables, so
 inside the head the block lands ahead of `.L10/.L26/.L55`; at the tail's top the tail starts at phase 0, not
