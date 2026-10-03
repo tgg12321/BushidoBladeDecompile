@@ -60,6 +60,7 @@ a fresh adversarial `cheat-reviewer` PASS where a function body, rule or gate fi
   the pads sit on module boundaries.
 - **B. Q105 re-check** of the four refused naming rows (naming lane; `tools/naming_wave.py` for functions,
   data_wave / scripted C edits for members; layer-2 on changed bodies).
+  **Status: done** (37d769472 type[2]/valid[2]/kind; 0c813f2d7 0x80019534 refused on T4).
 - **C. Phase 1 restructure** (Part C below). Tag `pre-restructure-<date>` first, then freeze the tree for
   the moves.
 - **Later:** Phase 2 types (make Unk80101EC8Record / Obj80106A78 the "Entity"; ~1,238 raw-offset casts;
@@ -69,6 +70,8 @@ a fresh adversarial `cheat-reviewer` PASS where a function body, rule or gate fi
 
 ## 3. Open debt carried (not in A-C)
 
+- **Owner question (pending):** should typed-restatement's T4 verb list become a principle like Q105's
+  nouns? It blocks only 0x80019534 → pad_ResetStateMarkValid ("Mark" is not a listed verb; refused 0c813f2d7).
 - func_80031B24 hands `&D_800A37E8` to func_800274BC / func_80032854 unlabelled (outside Q96).
 - Q97's struct form is unmeasured; Q96-Q99 retire as soon as a one-object spelling matches.
 - Hygiene rows in the 2026-10-03 commit bodies (`git log --grep="Hygiene debt" --since=2026-10-03`).
