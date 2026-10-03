@@ -54,7 +54,7 @@ SECTIONS
         build/src/code6cac_b_rodata_post.o(.rodata);
         build/src/main/memcard.o(.rodata);
         build/src/main/28514.o(.rodata);
-        build/src/code6cac_c_mid.o(.rodata);
+        build/src/main/28708.o(.rodata);
         build/src/code6cac_c2.o(.rodata);
         build/src/text1a_pre.o(.rodata);
         build/src/text1a_pre_tu2.o(.rodata);
@@ -100,7 +100,7 @@ SECTIONS
         build/src/main/cdrom.o(.text);
         build/src/main/memcard.o(.text);
         build/src/main/28514.o(.text);
-        build/src/code6cac_c_mid.o(.text);
+        build/src/main/28708.o(.text);
         build/src/code6cac_c2.o(.text);
         build/src/text1a_pre.o(.text);
         build/src/text1a_pre_tu2.o(.text);
@@ -140,7 +140,7 @@ SECTIONS
         build/src/main/cdrom.o(.data);
         build/src/main/memcard.o(.data);
         build/src/main/28514.o(.data);
-        build/src/code6cac_c_mid.o(.data);
+        build/src/main/28708.o(.data);
         build/src/code6cac_c2.o(.data);
         build/src/text1a_pre.o(.data);
         build/src/text1a_pre_tu2.o(.data);
@@ -179,7 +179,7 @@ SECTIONS
         build/src/main/267A8.o(.sdata);
         build/asm/data/939E6.data.o(.data);
         build/src/main/28514.o(.sdata);
-        build/src/code6cac_c_mid.o(.sdata);
+        build/src/main/28708.o(.sdata);
         build/asm/data/93A0E.data.o(.data);
         build/src/code6cac_c2.o(.sdata);
         build/src/text1a_pre.o(.sdata);
@@ -196,7 +196,7 @@ SECTIONS
         build/asm/data/93B08.data.o(.data);
         build/src/main/9F9C.o(.sbss);
         build/asm/data/93B12.data.o(.data);
-        build/src/code6cac_c_mid.o(.sbss);
+        build/src/main/28708.o(.sbss);
         build/asm/data/93B56.data.o(.data);
         build/src/code6cac_c2.o(.sbss);
         build/src/text1a_pre.o(.sbss);
@@ -230,7 +230,7 @@ SECTIONS
         build/src/main/cdrom.o(.bss);
         build/src/main/memcard.o(.bss);
         build/src/main/28514.o(.bss);
-        build/src/code6cac_c_mid.o(.bss);
+        build/src/main/28708.o(.bss);
         build/src/code6cac_c2.o(.bss);
         build/src/text1a_pre.o(.bss);
         build/src/text1a_pre_tu2.o(.bss);
