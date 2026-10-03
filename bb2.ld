@@ -62,7 +62,7 @@ SECTIONS
         build/src/main/31D3C.o(.rodata);
         build/src/main/32D04.o(.rodata);
         build/src/main/35000.o(.rodata);
-        build/src/text1a_filepaths.o(.rodata);
+        build/src/main/d_15EC.o(.rodata);
         build/src/text1b.o(.rodata);
         build/src/text1a_b_pre_rodata.o(.rodata);
         build/src/text1b_tu1b.o(.rodata);
