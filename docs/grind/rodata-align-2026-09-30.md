@@ -480,3 +480,13 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   or table has a second position. Compare: old main.o vs the 69 parts: `.text` 0x8220 and `.rodata` 0xDC
   identical bar 219 + 36 section-symbol addends re-based, 1933 + 36 relocations identical, 115 globals at the
   same offsets.
+
+## 14. Hand-off work item D (owner rulings Q108, Q109), 2026-10-03
+
+- **libapi/c68.c → c68.c + sendpad.c (Q108).** Cut at LIBAPI SENDPAD's start 0x80079000 (LIBSCAN verbatim,
+  48 words, single placement), the splat boundary fix boundary_fixes.md recorded: asm/funcs/FlushCache.s keeps
+  C68's four words (the BIOS A(0x44) stub and the module's trailing nop), asm/funcs/_SendPAD.s takes the ten
+  from 0x80079000 verbatim (only glabel/endlabel lines added). sendpad.c holds _SendPAD, _send_pad and
+  func_800790A4. No `.rodata` or data in either part; both `-G0` (PSYQ_LIBRARY_FILES). Compare (splitcmp.py):
+  `.text` 0xD0 identical, 17 relocations identical, globals at the same offsets; FlushCache's st_size 0x38 →
+  0x10 and the new global _SendPAD are the only symbol differences.

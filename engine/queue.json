@@ -2,12 +2,27 @@
   "generated_at": "2026-09-07T23:06:07",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
-  "items": [],
+  "items": [
+    {
+      "func": "_SendPAD",
+      "file": "main/psxsdk/libapi/sendpad",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "addr": "80079000",
+      "reopen_reason": "Q108 split (hand-off work item D): canonical gate C; best honest C floor 4 (candidates memory/grind/_SendPAD/): GCC allocates $v0 and saves $ra at 0x10, the original uses $t1 and 0x14; cc1psx gives the same 4. No asm grant without its own evidence."
+    }
+  ],
   "counts": {
-    "total": 0,
-    "active": 0,
-    "by_status": {},
-    "by_verdict": {}
+    "total": 1,
+    "active": 1,
+    "by_status": {
+      "active": 1
+    },
+    "by_verdict": {
+      "C": 1
+    }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
 }

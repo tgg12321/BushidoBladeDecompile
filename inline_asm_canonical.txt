@@ -64,7 +64,7 @@ StopPAD2      # BIOS B(0x14) trampoline (StopPAD)
 PAD_init2      # BIOS B(0x15) trampoline
 SysEnqIntRP      # BIOS C(0x02) trampoline (SysEnqIntRP)
 SysDeqIntRP      # BIOS C(0x03) trampoline (SysDeqIntRP)
-FlushCache      # BIOS A(0x44) trampoline + tail routine that jalrs through D_800A362C. Dual-block hand-coded asm: the tail is unreachable from the jr, so this cannot be expressed in C.
+FlushCache      # BIOS A(0x44) trampoline (LIBAPI C68, 0x80078FF0..0x80079000; the 4th word is the module's trailing nop). The routine after it is LIBAPI SENDPAD's _SendPAD (0x80079000), split into its own file by owner ruling Q108; it is not part of this grant.
 
 # gpu.c — A/B-vector card/GPU trampolines
 _card_info      # BIOS A(0xAB) trampoline

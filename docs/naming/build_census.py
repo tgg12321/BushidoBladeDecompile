@@ -61,6 +61,8 @@ if _need:
 # ---------------------------------------------------------------- src definitions
 src_def = {}
 INCASM = re.compile(r'INCLUDE_ASM\([^,]+,\s*([A-Za-z_]\w*)\s*\)')
+BIOSDEF = re.compile(r'^BIOS_[ABC]_FUNCTION\(\s*([A-Za-z_]\w*)\s*,')
+ASMGLABEL = re.compile(r'^\s*"\s*glabel\s+([A-Za-z_]\w*)\\n"')
 for f in sorted(os.path.relpath(os.path.join(d, c), J("src")).replace(os.sep, "/")
                 for d, _, cs in os.walk(J("src")) for c in cs if c.endswith(".c")):
     with open(J("src", f), encoding="utf-8", errors="replace") as fh:
@@ -69,8 +71,16 @@ for f in sorted(os.path.relpath(os.path.join(d, c), J("src")).replace(os.sep, "/
             if m:
                 src_def.setdefault(m.group(1), f"src/{f}:{i}(INCLUDE_ASM)")
                 continue
+            # BIOS trampoline macros and file-scope __asm__ glabel blocks define functions too
+            m = BIOSDEF.match(ln) or ASMGLABEL.match(ln)
+            if m:
+                src_def.setdefault(m.group(1), f"src/{f}:{i}")
+                continue
             m = re.match(r"^[A-Za-z_][\w \t\*]*?\**\s*([A-Za-z_]\w*)\s*\(", ln)
-            if m and not ln.startswith(("if", "for", "while", "switch", "return", "else")):
+            # a line ending in ';' (comments removed) is a prototype or declaration, not the definition
+            code = re.sub(r"/\*.*?\*/", "", ln).split("//")[0].rstrip()
+            if m and not ln.startswith(("if", "for", "while", "switch", "return", "else", "extern")) \
+                    and not code.endswith(";"):
                 src_def.setdefault(m.group(1), f"src/{f}:{i}")
 
 # ---------------------------------------------------------------- symbol files
@@ -364,7 +374,9 @@ MANIFESTS = [(J("docs", "naming", "apiscan", "rename_manifest.csv"), "apiscan-re
              # owner ruling Q103: typed-restatement names + basis-withdrawn cpu_helper_* resets
              (J("docs", "naming", "sweep-2026-10-03", "func_manifest_q103.csv"), None, None),
              # owner ruling Q107: T4 verb principle (pad_ResetStateMarkValid)
-             (J("docs", "naming", "sweep-2026-10-03", "func_manifest_q107.csv"), None, None)]
+             (J("docs", "naming", "sweep-2026-10-03", "func_manifest_q107.csv"), None, None),
+             # owner ruling Q108: _SendPAD split out of FlushCache.s (libscan-verbatim UPGRADE)
+             (J("docs", "naming", "sweep-2026-10-03", "func_manifest_q108.csv"), None, None)]
 CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "libscan-xref": ("libscan-xref", "VERIFIED"),
               "libscan-near": ("libscan-near", "CORROBORATED"),

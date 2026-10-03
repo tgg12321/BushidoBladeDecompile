@@ -59,6 +59,9 @@ first four are the trampoline — `addiu $t2,$zero,0xA0` / `jr $t2` / `addiu $t1
 that is `_SendPAD`, the mid-function XDEF listed in the table above. So after the wave the
 name `FlushCache` sits on a file that also contains `_SendPAD`. The rename is still right —
 the linker's symbol at `0x80078FF0` was `FlushCache` — but the file is two functions.
+Split 2026-10-03 (owner ruling Q108): `asm/funcs/FlushCache.s` holds the four words
+(`src/main/psxsdk/libapi/c68.c`), `asm/funcs/_SendPAD.s` the ten from `0x80079000`
+(`src/main/psxsdk/libapi/sendpad.c`).
 
 **`0x8008D060` -> `DelDrv`** (LIBAPI/A72, BIOS `B0:0x48`, indexed as `RemoveDevice`). Same
 trampoline shape, three instructions plus a `nop`; everything from `0x8008D070` is the

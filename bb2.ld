@@ -146,6 +146,7 @@ SECTIONS
         build/src/main/psxsdk/libapi/l03.o(.text);
         build/src/main/psxsdk/libapi/patch.o(.text);
         build/src/main/psxsdk/libapi/c68.o(.text);
+        build/src/main/psxsdk/libapi/sendpad.o(.text);
         build/src/main/psxsdk/libapi/chclrpad.o(.text);
         build/src/main/psxsdk/libc2/memcpy.o(.text);
         build/src/main/psxsdk/libc2/rand.o(.text);
@@ -366,6 +367,7 @@ SECTIONS
         build/src/main/psxsdk/libapi/l03.o(.data);
         build/src/main/psxsdk/libapi/patch.o(.data);
         build/src/main/psxsdk/libapi/c68.o(.data);
+        build/src/main/psxsdk/libapi/sendpad.o(.data);
         build/src/main/psxsdk/libapi/chclrpad.o(.data);
         build/src/main/psxsdk/libc2/memcpy.o(.data);
         build/src/main/psxsdk/libc2/rand.o(.data);
@@ -636,6 +638,7 @@ SECTIONS
         build/src/main/psxsdk/libapi/l03.o(.bss);
         build/src/main/psxsdk/libapi/patch.o(.bss);
         build/src/main/psxsdk/libapi/c68.o(.bss);
+        build/src/main/psxsdk/libapi/sendpad.o(.bss);
         build/src/main/psxsdk/libapi/chclrpad.o(.bss);
         build/src/main/psxsdk/libc2/memcpy.o(.bss);
         build/src/main/psxsdk/libc2/rand.o(.bss);
