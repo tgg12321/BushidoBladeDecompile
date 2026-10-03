@@ -9,7 +9,7 @@
 /* Named globals */
 extern u8 cpu_practice_honmokuroku_data_tbl[][4];
 /* g_sqrt_table_u8[i] = floor(8 * sqrt(i)), i = 0..0x3FF: 0x8008D118..0x8008D517
- * (0x400 bytes; the first 8 are the words after DelDrv in src/main_post.c,
+ * (0x400 bytes; the first 8 are the last words of .text, src/main/d_7D870.c,
  * the rest asm/data/7D920.data.s dlabel D_8008D120). */
 extern u8 g_sqrt_table_u8[0x400];
 /* menuDat: model id -> BBM file name, ended by a zero id (0x8008DCCC..0x8008DD5B,

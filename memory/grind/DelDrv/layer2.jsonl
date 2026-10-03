@@ -1,0 +1,1 @@
+{"func": "DelDrv", "addr": "8008D060", "verdict": "PASS", "body_hash": "150ce87e17b29832", "body_kind": "asm", "file": "main/psxsdk/libapi/a72", "reviewer": "cheat-reviewer-abb04c88", "scope": "auth", "date": "2026-10-03T14:13:51Z", "head": "c5213ba04", "notes": ""}

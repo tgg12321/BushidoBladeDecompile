@@ -732,6 +732,11 @@ it: the library tail is 29 `main/psxsdk/libapi/` files (one per LIBSCAN module; 
 owner question in § 3) and 5 `main/psxsdk/libc2/` files (memcpy, rand, strcpy, strlen, printf), all in
 PSYQ_LIBRARY_FILES (maspsx -G0, proven by object compare + oracle); evidence in rodata-align doc §13.
 
+**Status step 4b (2026-10-03):** done: c5213ba04 (main_post -> main/d_7D870, rename) and the split commit
+after it: `main/psxsdk/libapi/a71.c` (AddDrv), `a72.c` (DelDrv), and `main/d_7D870.c` holding only the game data
+at the end of .text (0x8008D070..0x8008D120); DelDrv's asm block was cut at its module end (layer-2 key moved,
+reviewed and recorded). No mixed game/Sony file remains among text1b_b's and main_post's successors.
+
 Total: about 25 to 30 commits, 5 to 8 focused sessions. Step 4 (library rodata placement per
 module) and step 5 (per-file header proofs) dominate.
 

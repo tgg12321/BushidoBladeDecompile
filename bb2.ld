@@ -153,6 +153,8 @@ SECTIONS
         build/src/ings2.o(.text);
         build/src/main.o(.text);
         build/src/main/psxsdk/libcomb/comb.o(.text);
+        build/src/main/psxsdk/libapi/a71.o(.text);
+        build/src/main/psxsdk/libapi/a72.o(.text);
         build/src/main/d_7D870.o(.text);
         main_TEXT_END = .;
         main_TEXT_SIZE = ABSOLUTE(main_TEXT_END - main_TEXT_START);
@@ -229,6 +231,8 @@ SECTIONS
         build/src/ings2.o(.data);
         build/src/main.o(.data);
         build/src/main/psxsdk/libcomb/comb.o(.data);
+        build/src/main/psxsdk/libapi/a71.o(.data);
+        build/src/main/psxsdk/libapi/a72.o(.data);
         build/src/main/d_7D870.o(.data);
         build/asm/data/91C98.data.o(.data);
         build/src/main/6CF8.o(.sdata);
@@ -351,6 +355,8 @@ SECTIONS
         build/src/ings2.o(.bss);
         build/src/main.o(.bss);
         build/src/main/psxsdk/libcomb/comb.o(.bss);
+        build/src/main/psxsdk/libapi/a71.o(.bss);
+        build/src/main/psxsdk/libapi/a72.o(.bss);
         build/src/main/d_7D870.o(.bss);
         main_BSS_END = .;
         main_BSS_SIZE = ABSOLUTE(main_BSS_END - main_BSS_START);

@@ -1,23 +1,10 @@
-/* The text after the PsyQ LIBCOMB COMB object (src/comb.c): PsyQ 4.0 LIBAPI
- * A71 AddDrv and A72 DelDrv (BIOS B(0x47)/B(0x48) trampolines, verbatim-linked
- * library modules) and the data words that follow DelDrv to the end of .text.
- * Moved verbatim from the end of src/main.c when the COMB module became its
- * own translation unit (bb2.ld links this object after comb.o). */
-#include "common.h"
-#define INCLUDE_ASM_USE_MACRO_INC 1
-#include "include_asm.h"
-#include "bios.h"
-
-BIOS_B_FUNCTION(AddDrv, 0x47);
-
+/* Game data at the end of .text (0x8008D070..0x8008D120, ROM 0x7D870), after the last PsyQ module
+ * (LIBAPI A72 ends at 0x8008D070; LIBSCAN, Q106 D3): g_data_start (8 zero words), g_module_func_tbl
+ * (34 game function pointers) and the first 8 bytes of g_sqrt_table_u8, whose rest opens
+ * asm/data/7D920.data.s. The labels keep the .aent form they had inside DelDrv's asm block. */
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel DelDrv\n"
-    "    addiu $t2, $zero, 0xB0\n"
-    "    jr    $t2\n"
-    "    addiu $t1, $zero, 0x48\n"
-    "    nop\n"
     ".global g_data_start\n"
     ".type g_data_start, @function\n"
     "g_data_start:\n"
@@ -74,7 +61,6 @@ __asm__(
     "    .aent g_sqrt_table_u8\n"
     "    .word 0x0D0B0800\n"
     "    .word 0x15131110\n"
-    "endlabel DelDrv\n"
     ".set reorder\n"
     ".set at\n"
 );

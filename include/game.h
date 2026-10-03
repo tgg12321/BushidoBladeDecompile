@@ -506,7 +506,7 @@ typedef struct {
 } StageFuncEntry;
 extern StageFuncEntry g_stage_init_tbl[];
 
-/* 0x8008D090: the per-mode main-loop handlers, indexed by D_800A3834 (defined in main_post.c). */
+/* 0x8008D090: the per-mode main-loop handlers, indexed by D_800A3834 (defined in src/main/d_7D870.c). */
 extern void (*g_module_func_tbl[])(void);
 
 #endif /* GAME_H */

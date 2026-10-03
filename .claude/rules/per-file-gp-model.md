@@ -39,7 +39,7 @@ An indexed operand `S($reg)` is never gp. The answer is per FILE, identical for 
    the Makefile; the three lists are deleted. (A4, Q69) maspsx `-G8` is on for every C file except Sony
    library code (`.text` non-empty and entirely within 0x80078948..0x8008D070,
    `memory/closer/psyq-library-census.md`), implemented by `tools/psyq_library_files.py` with an engine test.
-   Mixed files (`text1b_b`, `main_post`) get `-G8`. cc1's per-file `-G8` (`GP_FILES`) is a different switch,
+   No file mixes the two (restructure 4a/4b). cc1's per-file `-G8` (`GP_FILES`) is a different switch,
    governed by [[compiler-flags-canonical]].
 3. **Definitions, file splits/merges** in the C per the tests below; initialized data moves from
    `asm/data/91C98.data.s` into its owning C file.
