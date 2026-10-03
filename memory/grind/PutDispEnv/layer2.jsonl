@@ -1,0 +1,1 @@
+{"func": "PutDispEnv", "addr": "8007BC08", "verdict": "PASS", "body_hash": "c3bdafaa317ef86f", "body_kind": "c", "file": "display", "reviewer": "rv2-q100-putdispenv", "scope": "cheat-cleanup", "date": "2026-10-03T07:52:12Z", "head": "f0abd598b", "notes": "Q100 cross-function SOTN citation s_m_m.c:48 @db41b28 verified (1)-(4); ablation drop-any 6-7, all 71"}

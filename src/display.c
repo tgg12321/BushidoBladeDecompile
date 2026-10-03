@@ -236,8 +236,11 @@ DISPENV *PutDispEnv(DISPENV *env) {
        compares). The shipped bytes load every one of these fields as lhu + sll 16 +
        sra 16 -- the un-folded extend GCC keeps only for a volatile halfword -- while
        the env-> side of the same compares is a plain lh; the non-volatile spelling
-       folds to lh. SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @aa53500 (a use-site
-       `*(volatile int *)&` read of a struct member in non-IRQ RAM). */
+       folds to lh. Admitted on a cross-function citation (owner ruling Q100): the
+       same use-site `*(volatile T *)&` read of a plain-RAM struct member, matched and
+       self-marked in SOTN ("Why the volatile?"); SOTN's own PutDispEnv (3.3) compares
+       words and has none.
+       SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @db41b28 */
     if (!(*(volatile s16 *)&g_gpu_ctx.disp_env.screen.x == env->screen.x &&
           *(volatile s16 *)&g_gpu_ctx.disp_env.screen.y == env->screen.y &&
           *(volatile s16 *)&g_gpu_ctx.disp_env.screen.w == env->screen.w &&
