@@ -9,7 +9,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "gpu.h"
-#include "sound.h"
+#include <psxsdk/libsnd.h>
 #include "game.h"
 #include "system.h"
 #include "gte.h"

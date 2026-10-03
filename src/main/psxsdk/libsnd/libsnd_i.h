@@ -1,11 +1,11 @@
-#ifndef SOUND_H
-#define SOUND_H
+#ifndef LIBSND_I_H
+#define LIBSND_I_H
 
-/* Sound/SPU subsystem - BGM, SE, SPU control */
+/* PsyQ LIBSND library-internal state and helpers shared by the modules in this directory
+ * (SOTN src/main/psxsdk/libsnd/libsnd_i.h). */
 
-#include "common.h"
-
-/* Named globals */
+#include <psxsdk/libspu.h>
+#include <psxsdk/libsnd.h>
 
 /* Sony LIBSND `_svm_cur` (vmanager current-voice state; psyz
    libsnd_private.h `struct struct_svm`), base 0x801027F0. One object: the
@@ -66,38 +66,6 @@ struct SpuVoice {
 };
 extern struct SpuVoice _svm_voice[24]; /* _svm_voice */
 
-/* PsyQ ProgAtr (libsnd.h) - program attribute record, 16 bytes; BB2 reads
-   reserved2 as two u16 halves (VAG start-address pair). _svm_pg table. */
-typedef struct {
-    u8 tones;
-    u8 mvol;
-    u8 prior;
-    u8 mode;
-    u8 mpan;
-    s8 reserved0;
-    s16 attr;
-    u32 reserved1;
-    u16 reserved2;
-    u16 reserved3;
-} ProgAtr;
-
-/* PsyQ VabHdr (libsnd) — VAB bank header */
-typedef struct {
-    s32 form;
-    s32 ver;
-    s32 id;
-    u32 fsize;
-    u16 reserved0;
-    u16 ps;
-    u16 ts;
-    u8 vs;
-    u8 vspad;
-    u8 mvol;
-    u8 pan;
-    u8 attr1;
-    u8 attr2;
-    u32 reserved1;
-} VabHdr;
 extern VabHdr *_svm_vh; /* _svm_vh: current VAB header */
 
 /* Sony LIBSND `_ss_score` (per-SEP score table), declared as SOTN declares
@@ -207,7 +175,63 @@ typedef struct {
 } SndSeqTickEnv;
 extern SndSeqTickEnv _snd_seq_tick_env;
 
-/* Functions */
-extern void SsSetSerialAttr(s32, s32, s32);
+/* Voice-manager and sequencer state (one declaration per object; splat names kept). */
+extern u8 _SsVmMaxVoice;
+extern s16 kMaxPrograms;
+extern s32 VBLANK_MINUS;
+extern s32 _snd_ev_flag;
+extern s32 _snd_openflag;
+extern ProgAtr *_svm_pg;
+extern VagAtr *_svm_tn;
+extern s16 _svm_damper;
+extern s16 _svm_stereo_mono;
+extern u8 _svm_auto_kof_mode;
+extern s16 _svm_sreg_buf[];
+extern u8 _svm_sreg_dirty[];
+extern s32 _svm_envx_hist[];
+extern u16 _svm_okon1;
+extern u16 _svm_okon2;
+extern u16 _svm_okof1;
+extern u16 _svm_okof2;
+extern u16 D_800F1B14;              /* psyz _svm_orev1 */
+extern u16 D_800F2B68;              /* psyz _svm_orev2 */
+extern u16 _svm_vab_count;
+extern u8 _svm_vab_used[];
+extern s32 _svm_vab_start[];
+extern s32 _svm_vab_total[];
+extern s32 _svm_vab_vh[];
+extern s32 _svm_vab_pg[];
+extern s32 _svm_vab_tn[];
+/* _svm_rattr: the voice manager's reverb attribute block, declared by its splat per-field
+   names (a typed SpuReverbAttr declaration is Phase 2 work). */
+extern s32 _svm_rattr;
+extern s32 _svm_rattr_plus_0x4;
+extern s16 _svm_rattr_plus_0x8;
+extern s16 _svm_rattr_plus_0xA;
 
-#endif /* SOUND_H */
+extern void _SsInit(void);
+extern void _SsVmInit(s32);
+extern void _SsVmFlush(void);
+extern void _SsVmKeyOnNow(s32, u16);
+extern void _SsVmKeyOffNow(s32);
+extern void _SsVmSeqKeyOff(s16);
+extern void _SsVmDoAllocate(void);
+extern s32 _SsVmVSetUp(s32, s32);
+extern void _SsVmDamperOff(void);
+extern s16 _SsVmGetSeqVol(s32, s16 *, s16 *);
+extern s16 func_80087770(s16, u16, u16, s16);
+extern void vmNoiseOn(u8);
+extern s32 note2pitch2(u16, u16);
+extern s32 _SsReadDeltaValue(s16, s16);
+extern void _SsSeqPlay(s16, s16);
+extern s32 func_80084CC0(s16, s16);
+extern void _SsSndNextSep(s16, s16);
+extern void _SsSndPlay(s16, s16);
+extern void _SsSndCrescendo(s16, s16);
+extern void _SsSndDecrescendo(s16, s16);
+extern void _SsSndTempo(s16, s16);
+extern void _SsSndPause(s16, s16);
+extern void _SsSndReplay(s16, s16);
+extern void _SsSndStop(s16, s16);
+
+#endif /* LIBSND_I_H */

@@ -1,11 +1,8 @@
 /* PsyQ 4.0 LIBSND UT_REV: SsUtSetReverbType and SsUtGetReverbType. .text 0x80085EE4..0x80085F98, a
  * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include <psxsdk/libspu.h>
+#include "libsnd_i.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 _svm_rattr;
-extern s32 _svm_rattr_plus_0x4;
 s16 SsUtSetReverbType(s16 a0) {
     s32 neg = 0;
     s16 v1 = a0;

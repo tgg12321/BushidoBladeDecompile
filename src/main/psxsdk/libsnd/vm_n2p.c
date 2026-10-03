@@ -1,17 +1,7 @@
 /* PsyQ 4.0 LIBSND VM_N2P: note2pitch and note2pitch2. .text 0x80086B38..0x80086CF8, a verbatim
  * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-typedef struct {
-    u8 prior, mode, vol, pan, center, shift, min, max;
-    u8 vibW, vibT, porW, porT, pbmin, pbmax, reserved1, reserved2;
-    u16 adsr1, adsr2;
-    s16 prog, vag;
-    s16 reserved[4];
-} VagAtr;
-extern VagAtr *_svm_tn;
+#include "libsnd_i.h"
 
 extern u16 D_800A26E4[];
 

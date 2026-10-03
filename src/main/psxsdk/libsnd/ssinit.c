@@ -1,14 +1,11 @@
 /* PsyQ 4.0 LIBSND SSINIT: _SsInit (SOTN libsnd/ssinit.c). .text 0x80083A48..0x80083B30, a verbatim
  * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
+#include "libsnd_i.h"
 
 extern u16 D_800A269C;
 extern u16 D_800A26AC;
 extern s32 _SsMarkCallback[32][16];
-extern s32 VBLANK_MINUS;
-extern s32 _snd_openflag;
-extern s32 _snd_ev_flag;
-extern void _SsVmInit(s32);
 
 /* PsyQ 4.0 LIBSND ssinit: _SsInit — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/ssinit.c */

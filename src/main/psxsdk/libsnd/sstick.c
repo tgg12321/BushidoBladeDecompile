@@ -1,9 +1,8 @@
 /* PsyQ 4.0 LIBSND SSTICK: SsSetTickMode. .text 0x80085544..0x800856B0, a verbatim LIBSCAN module
  * span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
+#include "libsnd_i.h"
 
-extern s32 VBLANK_MINUS;
 void SsSetTickMode(s32 arg) {
     s32 mode;
     s32 v;

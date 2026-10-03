@@ -1,7 +1,7 @@
 /* PsyQ 4.0 LIBSND SSEND: SsEnd (SOTN libsnd/ssend.c). .text 0x80083954..0x80083A18, a verbatim
  * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
+#include "libsnd_i.h"
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
 void VSyncCallback(s32 a0);

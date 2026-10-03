@@ -1,7 +1,6 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
-#include "sound.h"
 #include "game.h"
 #include "code6cac.h"
 

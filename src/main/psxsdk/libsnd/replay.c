@@ -1,7 +1,7 @@
 /* PsyQ 4.0 LIBSND REPLAY: _SsSndReplay. .text 0x80085210..0x80085270, a verbatim LIBSCAN module
  * span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
+#include "libsnd_i.h"
 
 /* PsyQ 4.0 LIBSND replay: _SsSndReplay — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libsnd/replay.c */

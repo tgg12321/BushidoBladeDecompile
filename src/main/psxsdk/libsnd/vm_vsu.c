@@ -1,24 +1,8 @@
 /* PsyQ 4.0 LIBSND VM_VSU: _SsVmVSetUp. .text 0x80087E3C..0x80087F00, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
+#include "libsnd_i.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-typedef struct {
-    u8 prior, mode, vol, pan, center, shift, min, max;
-    u8 vibW, vibT, porW, porT, pbmin, pbmax, reserved1, reserved2;
-    u16 adsr1, adsr2;
-    s16 prog, vag;
-    s16 reserved[4];
-} VagAtr;
-extern ProgAtr *_svm_pg;
-extern VagAtr *_svm_tn;
-
-extern u8 _svm_vab_used[];
-extern s16 kMaxPrograms;
-extern s32 _svm_vab_vh[];
-extern s32 _svm_vab_pg[];
-extern s32 _svm_vab_tn[];
 s32 _SsVmVSetUp(s32 a0, s32 a1) {
     u16 a0h;
     s16 a1h;

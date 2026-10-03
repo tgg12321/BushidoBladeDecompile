@@ -3,11 +3,7 @@
  * (docs/naming/libscan/matches.json; memory/closer/libsnd-hunt-report.md lists the probable
  * newer-build modules), one file per gap (Q106 D3), named by its ROM offset. */
 #include "common.h"
-#include "sound.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s16 func_80087770(s16, u16, u16, s16);
-extern s16 _SsVmGetSeqVol(s32, s16 *, s16 *);
+#include "libsnd_i.h"
 
 void _SsSndCrescendo(s16 a0, s16 a1) {
     struct SeqStruct *score = &_ss_score[a0][a1];

@@ -5,7 +5,7 @@
 #include "common.h"
 #include "gpu.h"
 #include "include_asm.h"
-#include "sound.h"
+#include <psxsdk/libsnd.h>
 #include "game.h"
 #include "code6cac.h"
 #include "gte.h"
@@ -3338,9 +3338,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
 #undef CPU_SQ
 extern s32 g_vab_vb_sbaddr[];
 extern s32 *g_vab_rec_ptr[];
-extern void SsStart(void);
 extern s32 SsSetTickMode(s32);
-extern s32 SsSetReservedVoice(s32);
 extern s32 SsInit(void);
 extern void func_800858D0(s32);
 extern s32 SsUtSetReverbDepth(s32, s32);
@@ -3381,10 +3379,6 @@ void func_800858D0(s32);
 
 
 
-void SsEnd(void);
-void SsQuit(void);
-
-
 void snd_Quit(void) {
     s32 i;
     s32 *a0;
@@ -3423,43 +3417,6 @@ void func_8005B5AC(void) {
         func_80086130((s16)i, 0, 0);
     }
 }
-void SsVabClose(s16);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 extern u8 D_8009BA60[];
 extern s32 chractar_use_pset_combo_id_table[];
@@ -3871,7 +3828,6 @@ typedef struct {
 
 
 extern u8 g_vab_id_list[];
-extern void SsVabClose(s16);
 extern s32 game_FrameLoop(void);
 extern s32 cdrom_StartRead(s32, s32);
 
@@ -4094,8 +4050,6 @@ s32 func_8005C074(s16 vabid, s32 base) {
 extern s32 *func_80077D00(void);
 
 
-extern s16 SsVabTransCompleted(s16);
-extern s32 SsUtGetVBaddrInSB(s16);
 extern s32 snd_VabOpen(s32 *, s16);
 
 const char D_800158CC[20] = "vab id:%d mistake\n";
@@ -4189,7 +4143,6 @@ s32 snd_VabOpen(s32 *a0, s16 a1) {
     return (s16)SsVabTransBody(a0[2], a1);
 }
 void SsSetMVol(s32, s32);
-void SsSetStereo(void);
 void SsSetAutoKeyOffMode(s32);
 void func_8005C614(void) {
     SsSetMVol(0x7F, 0x7F);

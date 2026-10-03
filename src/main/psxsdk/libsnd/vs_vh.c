@@ -2,16 +2,7 @@
  * SsVabOpenHeadWithMode. .text 0x80088058..0x800884C4, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
-#include <psxsdk/libspu.h>
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s16 SsVabOpenHeadWithMode(u8 *, s16, s16, u32);
-extern s16 kMaxPrograms;
-extern s32 _svm_vab_vh[];
-extern s32 _svm_vab_pg[];
-extern s32 _svm_vab_tn[];
-extern u8 _svm_vab_used[];
+#include "libsnd_i.h"
 
 s16 SsVabOpenHead(s32 a0, s16 a1) {
     return SsVabOpenHeadWithMode((u8 *)a0, a1, 0, 0);
@@ -24,9 +15,6 @@ s16 SsVabOpenHeadSticky(s32 a0, s16 a1, s32 a2) {
 s16 SsVabFakeHead(s32 a0, s16 a1, s32 a2) {
     return SsVabOpenHeadWithMode((u8 *)a0, a1, 1, (u32)a2);
 }
-extern u16 _svm_vab_count;
-extern s32 _svm_vab_start[];
-extern s32 _svm_vab_total[];
 /* PsyQ 4.0 LIBSND vs_vh: SsVabOpenHeadWithMode — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libsnd/vs_vh.c */
 s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {

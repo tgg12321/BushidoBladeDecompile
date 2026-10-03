@@ -5,7 +5,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "gpu.h"
-#include "sound.h"
+#include <psxsdk/libsnd.h>
 #include "game.h"
 #include "system.h"
 #include "code6cac.h"
@@ -18,7 +18,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "gpu.h"
-#include "sound.h"
+#include <psxsdk/libsnd.h>
 #include "game.h"
 #include "system.h"
 #include "code6cac.h"
@@ -198,7 +198,7 @@ void func_800355E8(void) {
 #include "common.h"
 #include "include_asm.h"
 #include "gpu.h"
-#include "sound.h"
+#include <psxsdk/libsnd.h>
 #include "game.h"
 #include "system.h"
 #include "code6cac.h"

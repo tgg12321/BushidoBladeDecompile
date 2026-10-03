@@ -3,9 +3,7 @@
  * memory/closer/libsnd-hunt-report.md lists the probable newer-build modules), one file per gap
  * (Q106 D3), named by its ROM offset. */
 #include "common.h"
-#include "sound.h"
-
-extern u8 _SsVmMaxVoice;
+#include "libsnd_i.h"
 
 /* func_800858D0: reset the per-voice state record (_svm_voice) of every
  * voice up to _SsVmMaxVoice and key each one off (func_8008B488 with a

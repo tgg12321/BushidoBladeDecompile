@@ -1,10 +1,7 @@
 /* PsyQ 4.0 LIBSND TEMPO: _SsSndTempo. .text 0x800856B0..0x800858D0, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 VBLANK_MINUS;
+#include "libsnd_i.h"
 
 /* PsyQ 4.0 LIBSND TEMPO: _SsSndTempo — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libsnd/tempo.c (interim

@@ -2,7 +2,7 @@
  * 0x80085270..0x80085448, a bit-verbatim module span (memory/closer/libsnd-hunt-report.md "New
  * verbatim result"; docs/naming/libscan/ambiguous_resolutions.md), Q106 D3. */
 #include "common.h"
-#include "sound.h"
+#include "libsnd_i.h"
 
 /* PsyQ 4.0 LIBSND SSSTOP: _SsSndStop — verbatim-linked Sony object
    (bit-verbatim vs the Jun-06-1997 4.0 build, 118 words);

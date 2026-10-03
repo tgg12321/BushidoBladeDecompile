@@ -12,7 +12,7 @@
  * 2026-09-30, global COMMON model), not per function. */
 #include "common.h"
 #include "gpu.h"
-#include "sound.h"
+#include <psxsdk/libsnd.h>
 #include "game.h"
 #include "system.h"
 #include "code6cac.h"

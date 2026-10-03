@@ -1,22 +1,11 @@
 /* PsyQ 4.0 LIBSND SSCALL: SsSeqCalledTbyT. .text 0x80083F6C..0x800841E0, a verbatim LIBSCAN module
  * span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
-#include <psxsdk/libspu.h>
+#include "libsnd_i.h"
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 _snd_ev_flag;  /* _snd_ev_flag */
 extern s16 _snd_seq_s_max;  /* _snd_seq_s_max */
 extern s16 _snd_seq_t_max;  /* _snd_seq_t_max */
-extern s32 _snd_openflag;  /* _snd_openflag */
-extern void _SsVmFlush(void);   /* SpuVmFlush */
-void _SsSndPlay(s16 a0, s16 a1); /* _SsSndPlay */
-void _SsSndCrescendo(s16 arg0, s16 arg1);     /* _SsSndCrescendo */
-void _SsSndDecrescendo(s16 arg0, s16 arg1);     /* _SsSndDecrescendo */
-void _SsSndTempo(s16 a0, s16 a1);         /* _SsSndTempo */
-void _SsSndPause(s16 a0, s16 a1);    /* _SsSndPause */
-void _SsSndReplay(s16 a0, s16 a1);   /* _SsSndReplay */
-void _SsSndStop(s16 a0, s16 a1);         /* _SsSndStop */
 
 static void SsSeqCalledTbyT(void) {
     int i;

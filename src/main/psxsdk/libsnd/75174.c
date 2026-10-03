@@ -3,12 +3,12 @@
  * (docs/naming/libscan/matches.json; memory/closer/libsnd-hunt-report.md lists the probable
  * newer-build modules), one file per gap (Q106 D3), named by its ROM offset. */
 #include "common.h"
-#include "sound.h"
+#include "libsnd_i.h"
 
 /* PsyQ LIBSND/MIDIREAD: _SsSeqPlay — census-matched Sony library object.
  * Body: the published psxsdk reference control flow (sotn-decomp
  * src/main/psxsdk/libsnd/seqread.c _SsSeqPlay) over BB2's own SeqStruct
- * layout (include/sound.h: SOTN's delta_value / unk70 / unk6E are BB2's
+ * layout (libsnd_i.h: SOTN's delta_value / unk70 / unk6E are BB2's
  * delta_value / unk54 / unk52; _SsGetSeqData == func_80084CC0). */
 void _SsSeqPlay(s16 a0, s16 a1) {
     struct SeqStruct *score = &_ss_score[a0][a1];
@@ -85,7 +85,6 @@ void _SsSeqGetEof(s16 a0, s16 a1) {
     _SsVmSeqKeyOff((s16)(a0 | (a1 << 8)));
     score->delta_value = score->unk54;
 }
-extern s32 _SsReadDeltaValue(s16, s16);
 
 s32 func_80084CC0(s16 a0, s16 a1)
 {

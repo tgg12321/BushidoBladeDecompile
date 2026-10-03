@@ -4,30 +4,8 @@
  * memory/closer/libsnd-hunt-report.md lists the probable newer-build modules), one file per gap
  * (Q106 D3), named by its ROM offset. */
 #include "common.h"
-#include "sound.h"
-#include <psxsdk/libspu.h>
+#include "libsnd_i.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s16 _svm_stereo_mono;
-extern u8 _SsVmMaxVoice;
-typedef struct {
-    u8 prior, mode, vol, pan, center, shift, min, max;
-    u8 vibW, vibT, porW, porT, pbmin, pbmax, reserved1, reserved2;
-    u16 adsr1, adsr2;
-    s16 prog, vag;
-    s16 reserved[4];
-} VagAtr;
-extern ProgAtr *_svm_pg;
-extern VagAtr *_svm_tn;
-extern s16 _svm_sreg_buf[];
-extern u8 _svm_sreg_dirty[];
-extern u16 _svm_okon1;
-extern u16 _svm_okof1;
-extern u16 D_800F1B14;              /* psyz _svm_orev1 */
-extern u16 D_800F2B68;              /* psyz _svm_orev2 */
-
-extern u16 _svm_okon2;
-extern u16 _svm_okof2;
 /* Sony LIBSND `vmNoiseOn` (vm_no1.c): compute the noise voice's L/R volume
    (score channel volume x program volume x tone volume, then three pan
    stages and the optional mono fold), set the SPU noise clock from the
@@ -139,10 +117,6 @@ void vmNoiseOn(u8 vc) {
 
     SpuSetNoiseVoice(1, ((bitsUpper & 0xFF) << 16) | bitsLower);
 }
-extern u16 _svm_okon1;
-extern u16 _svm_okon2;
-extern u16 _svm_okof1;
-extern u16 _svm_okof2;
 /* Sony LIBSND `_SsVmKeyOffNow` (probable): mark the current voice's pending
    key-off bit, release the voice slot, and drop the matching key-on bit.
    Body is psyz vm_nowof.c verbatim (with BB2's _svm_voice record layout).
@@ -355,7 +329,6 @@ s16 func_80087D58(s32 a0) {
     _svm_cur.seq_sep_no = a0;
     return score->unk5A;
 }
-extern u8 _SsVmMaxVoice;
 void _SsVmSeqKeyOff(s16 a0) {
     s32 s0 = 0;
     s16 s1;

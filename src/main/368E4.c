@@ -5,7 +5,7 @@
 #include "common.h"
 #include "gpu.h"
 #include "include_asm.h"
-#include "sound.h"
+#include <psxsdk/libsnd.h>
 #include "game.h"
 #include "code6cac.h"
 #include "gte.h"

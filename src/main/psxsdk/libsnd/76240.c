@@ -3,27 +3,10 @@
  * memory/closer/libsnd-hunt-report.md lists the probable newer-build modules), one file per gap
  * (Q106 D3), named by its ROM offset. */
 #include "common.h"
-#include "sound.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 _snd_ev_flag;  /* _snd_ev_flag */
+#include "libsnd_i.h"
 
 /* PsyQ LIBSND UT_KEYV. BB2 keeps the 4.0 routine's source shape but uses the
    later 54-byte voice-state stride (rather than 4.0's 52-byte layout). */
-typedef struct {
-    u8 prior, mode, vol, pan, center, shift, min, max;
-    u8 vibW, vibT, porW, porT, pbmin, pbmax, reserved1, reserved2;
-    u16 adsr1, adsr2;
-    s16 prog, vag;
-    s16 reserved[4];
-} VagAtr;
-
-extern ProgAtr *_svm_pg;
-extern VagAtr *_svm_tn;
-extern void vmNoiseOn(u8);
-extern s32 note2pitch2(u16, u16);
-extern void _SsVmKeyOnNow(s32, u16);
-
 s16 SsUtKeyOnV(s16 voice, s16 vabId, s16 prog, s16 tone, s16 note, s16 fine,
                 s16 voll, s16 volr) {
     s32 toneIndex;

@@ -3,22 +3,7 @@
  * LIBSCAN modules (docs/naming/libscan/matches.json; memory/closer/libsnd-hunt-report.md lists the
  * probable newer-build modules), one file per gap (Q106 D3), named by its ROM offset. */
 #include "common.h"
-#include "sound.h"
-#include <psxsdk/libspu.h>
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s16 _svm_damper;
-typedef struct {
-    u8 prior, mode, vol, pan, center, shift, min, max;
-    u8 vibW, vibT, porW, porT, pbmin, pbmax, reserved1, reserved2;
-    u16 adsr1, adsr2;
-    s16 prog, vag;
-    s16 reserved[4];
-} VagAtr;
-extern ProgAtr *_svm_pg;
-extern VagAtr *_svm_tn;
-extern s16 _svm_sreg_buf[];
-extern u8 _svm_sreg_dirty[];
+#include "libsnd_i.h"
 
 s32 func_80085FD8(s16 a0) {
     if ((u16)a0 < 0x18) {
@@ -63,7 +48,6 @@ s32 func_80086130(s16 idx, s16 x, s16 y)
     }
     return -1;
 }
-extern s32 _svm_envx_hist[];
 /* Sony LIBSND `_SsVmDoAllocate` (psyz vm_aloc2.c analog): set up the
    allocated voice's SPU shadow registers (start address, ADSR) and mark the
    voice's dirty bits. BB2 deltas vs psyz: _svm_voice stride 54, ADSR indexed

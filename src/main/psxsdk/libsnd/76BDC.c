@@ -3,32 +3,11 @@
  * memory/closer/libsnd-hunt-report.md lists the probable newer-build modules), one file per gap
  * (Q106 D3), named by its ROM offset. */
 #include "common.h"
-#include "sound.h"
-#include <psxsdk/libspu.h>
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s16 _svm_damper;
-extern s16 _svm_stereo_mono;
-extern u8 _SsVmMaxVoice;
-extern u8 _svm_vab_used[];
-extern s32 _svm_rattr;
-extern s16 _svm_rattr_plus_0x8;
-extern s16 _svm_rattr_plus_0xA;
-extern s32 _svm_rattr_plus_0x4;
-extern s16 _svm_sreg_buf[];
-extern u8 _svm_sreg_dirty[];
-extern s32 _svm_envx_hist[];
+#include "libsnd_i.h"
 
 extern s32 D_80103604;              /* psyz _svm_envx_ptr */
-extern u8  _svm_auto_kof_mode;
 extern void (*D_80102BF8)(s32);     /* psyz _autovol */
 extern void (*D_801027E8)(s32);     /* psyz _autopan */
-extern u16 _svm_okon1;
-extern u16 _svm_okon2;
-extern u16 _svm_okof1;
-extern u16 _svm_okof2;
-extern u16 D_800F1B14;              /* psyz _svm_orev1 */
-extern u16 D_800F2B68;              /* psyz _svm_orev2 */
 
 /* Sony LIBSND `_SsVmFlush` (VM_F): sample every voice's envelope into
    _svm_voice[].unk6 and the 16-slot silence history ring, release the
@@ -118,8 +97,6 @@ void _SsVmFlush(void)
 }
 /* _SsVmInit - libsnd voice-manager init (SLUS-00663). */
 extern s32 D_800F19D0[2];
-extern s16 kMaxPrograms;
-extern u16 _svm_vab_count;
 
 void _SsVmInit(s32 a0) {
     s32 buf[16];

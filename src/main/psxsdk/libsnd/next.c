@@ -1,7 +1,7 @@
 /* PsyQ 4.0 LIBSND NEXT: _SsSndNextSep. .text 0x80085114..0x80085210, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
+#include "libsnd_i.h"
 
 /* PsyQ LIBSND next.c: _SsSndNextSep — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libsnd/next.c (mixed

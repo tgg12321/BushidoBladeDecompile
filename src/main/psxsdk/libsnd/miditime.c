@@ -1,7 +1,7 @@
 /* PsyQ 4.0 LIBSND MIDITIME: _SsReadDeltaValue. .text 0x80085064..0x80085114, a verbatim LIBSCAN
  * module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
+#include "libsnd_i.h"
 
 s32 _SsReadDeltaValue(s16 arg0, s16 arg1) {
     s32 result;

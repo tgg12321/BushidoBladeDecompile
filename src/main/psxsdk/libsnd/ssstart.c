@@ -2,7 +2,7 @@
  * _SsSeqCalledTbyT_1per2. .text 0x80083C34..0x80083F6C, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "sound.h"
+#include "libsnd_i.h"
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
 extern s32 EnterCriticalSection(void);
@@ -15,7 +15,7 @@ extern void SetRCnt(s32, s32, s32);
 static void _SsTrapIntrVSync(void); /* _SsTrapIntrVSync (ssstart.c static) */
 static void _SsSeqCalledTbyT_1per2(void); /* _SsSeqCalledTbyT_1per2 (ssstart.c static) */
 
-/* PsyQ 4.0 LIBSND ssstart: _SsStart (SndSeqTickEnv in sound.h) —
+/* PsyQ 4.0 LIBSND ssstart: _SsStart (SndSeqTickEnv in libsnd_i.h) —
    verbatim-linked Sony object; C ref: sotn-decomp
    src/main/psxsdk/libsnd/ssstart.c (BB2's 4.0 rev uses 0x7F for the case-0
    sentinel where SOTN's rev uses 0xFF) */
