@@ -509,4 +509,5 @@ glabel func_8004DDB4
     /* 3ED54 8004E554 6400B08F */  lw         $s0, 0x64($sp)
     /* 3ED58 8004E558 0800E003 */  jr         $ra
     /* 3ED5C 8004E55C 8C00BD27 */   addiu     $sp, $sp, 0x8C
+    /* 3ED60 8004E560 00000000 */  nop
 endlabel func_8004DDB4

@@ -29,4 +29,5 @@ glabel math_MidpointS16x3U8x2
     /* 3CBF4 8004C3F4 25586801 */  or         $t3, $t3, $t0
     /* 3CBF8 8004C3F8 0800E003 */  jr         $ra
     /* 3CBFC 8004C3FC 0600CBA4 */   sh        $t3, 0x6($a2)
+    /* 3CC00 8004C400 00000000 */  nop
 endlabel math_MidpointS16x3U8x2

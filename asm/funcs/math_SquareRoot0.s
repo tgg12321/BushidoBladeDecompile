@@ -31,4 +31,6 @@ glabel math_SquareRoot0
   .L80052710:
     /* 42F10 80052710 0800E003 */  jr         $ra
     /* 42F14 80052714 21100000 */   addu      $v0, $zero, $zero
+    /* 42F18 80052718 00000000 */  nop
+    /* 42F1C 8005271C 00000000 */  nop
 endlabel math_SquareRoot0

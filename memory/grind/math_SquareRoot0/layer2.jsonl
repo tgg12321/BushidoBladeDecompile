@@ -1,0 +1,1 @@
+{"func": "math_SquareRoot0", "addr": "800526A0", "verdict": "PASS", "body_hash": "d297fbf4363b7e0e", "body_kind": "asm", "file": "text1b_tu1b", "reviewer": "cheat-reviewer-ae62bfe8", "scope": "cheat-cleanup", "date": "2026-10-03T10:03:00Z", "head": "5558a0dac", "notes": ""}

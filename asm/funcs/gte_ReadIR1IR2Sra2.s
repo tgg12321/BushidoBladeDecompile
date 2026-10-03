@@ -7,3 +7,6 @@ glabel gte_ReadIR1IR2Sra2
     sw     $t1, 0($a1)
     jr     $ra
     nop
+    nop
+    nop
+    nop

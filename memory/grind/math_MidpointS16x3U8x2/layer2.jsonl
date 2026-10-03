@@ -1,0 +1,1 @@
+{"func": "math_MidpointS16x3U8x2", "addr": "8004C388", "verdict": "PASS", "body_hash": "61ed09dd9d9dc42b", "body_kind": "asm", "file": "text1b_tu1b", "reviewer": "cheat-reviewer-ae62bfe8", "scope": "cheat-cleanup", "date": "2026-10-03T10:02:39Z", "head": "5558a0dac", "notes": ""}

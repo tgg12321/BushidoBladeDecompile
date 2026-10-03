@@ -37,9 +37,6 @@ void *stage_GetDataPtr(void);
 void camera_InitBoneData(void);
 extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
 extern s32 func_8005C2A8(s32 *, s16, s32);
-#define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
-#define PAD_NOPS_2 __asm__(".section .text\n    nop\n    nop\n")
-#define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
 extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern s32 D_800A36AC;
 extern s32 D_800A3820;
@@ -71,7 +68,6 @@ INCLUDE_ASM("asm/funcs", func_8004BB68);
 INCLUDE_ASM("asm/funcs", func_8004BCC0);
 INCLUDE_ASM("asm/funcs", func_8004C1F4);
 INCLUDE_ASM("asm/funcs", math_MidpointS16x3U8x2);
-PAD_NOPS_1; /* padding after func_8004C388 */
 INCLUDE_ASM("asm/funcs", func_8004C404);
 INCLUDE_ASM("asm/funcs", func_8004C994);
 INCLUDE_ASM("asm/funcs", func_8004CB8C);
@@ -83,7 +79,6 @@ INCLUDE_ASM("asm/funcs", func_8004D634);
 INCLUDE_ASM("asm/funcs", func_8004D838);
 INCLUDE_ASM("asm/funcs", func_8004DA74);
 INCLUDE_ASM("asm/funcs", func_8004DDB4);
-PAD_NOPS_1; /* padding after func_8004DDB4 */
 void func_8004E564(void) {
 }
 void func_8004E56C(void) {
@@ -132,7 +127,6 @@ INCLUDE_ASM("asm/funcs", func_800525D8);
  *   - GTE LZCS/LZCR fast leading-zero-count math primitive
  * Owner-authorized canonical asm; see inline_asm_canonical.txt. */
 INCLUDE_ASM("asm/funcs", math_SquareRoot0);
-PAD_NOPS_2; /* padding after func_800526A0 */
 /* func_80052720: GTE sqr tail-call wrapper — mtc2 IR1-3 -> sqr -> sum
  * MAC1-3 into $a0 -> frameless `j func_800526A0` tail-call.
  * Hand-written asm: trapping `add` ops (GCC 2.7.2 emits addu), mfc2
@@ -179,11 +173,9 @@ INCLUDE_ASM("asm/funcs", func_80052B7C);
  * Canonical-asm; see inline_asm_canonical.txt. */
 INCLUDE_ASM("asm/funcs", gte_ReadFarColor);
 INCLUDE_ASM("asm/funcs", func_80052C10);
-PAD_NOPS_1; /* padding after InitFadePanel */
 INCLUDE_ASM("asm/funcs", func_80052C28);
 INCLUDE_ASM("asm/funcs", func_80052C4C);
 INCLUDE_ASM("asm/funcs", gte_ReadIR1IR2Sra2);
-PAD_NOPS_3; /* padding after func_80052CD4 */
 extern s32 func_80053694(s32 *, s16 *);
 
 typedef struct {
