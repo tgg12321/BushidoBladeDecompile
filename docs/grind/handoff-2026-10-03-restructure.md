@@ -77,6 +77,14 @@ a fresh adversarial `cheat-reviewer` PASS where a function body, rule or gate fi
 
 # Part A: PAD_NOPS / rodata padding retirement (survey 2026-10-03)
 
+**Status: LANDED 2026-10-03** (no PAD_NOPS or rodata `.word 0` pad left in src/; per-site record in
+docs/grind/rodata-align-2026-09-30.md §§ 10-11). Step 0 e5d16f841; 1 844536803; 2 d384bd32c (also defines
+D_800790B4 in func_800790A4.s); 3 5558a0dac; 4 54fdd38ea; 5 8ba809bed + rules 4907fca49; 6 d6f8170cf (auth);
+adjacent: `.set` blocks 191f39673, D_8007E08C `nonmatching` marker e38643786; oracle re-lock 7398e90f1.
+Not done: folding D_8007E08C into InitGeom.s (tools read a function's address from the first address column
+of its .s; see e38643786). Open: build_oracle_cc1.sh's narrow-patch self-check expectation is stale
+(code6cac_tu2 differs; 8ba809bed); engine test "a queued item with no record to drop" fails while the queue is empty.
+
 Read-only survey. All experiments are in `tmp/pad-survey/` (objects built with `cc.sh`, a copy of the
 Makefile C pipeline, and linked with `link.sh` into `tmp/` only; `build/` untouched). Baseline relink of
 the existing `build/` objects = oracle `62efab4f…` (control `base2`, `ctllink`).
