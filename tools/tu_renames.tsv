@@ -6,3 +6,4 @@ comb	main/psxsdk/libcomb/comb	after:a38713186312
 text1b_b_tu3	main/psxsdk/libc2/sprintf	after:2c35cbd7d6f8
 ings	main/6CF8	after:86e7e79983b4
 code6cac	main/87A0	after:2b19da32c0e4
+code6cac_tu2	main/9F9C	after:643690fddc7f

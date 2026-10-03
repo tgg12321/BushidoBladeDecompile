@@ -36,13 +36,13 @@
       ]
     },
     "func_8001A67C": {
-      "file": "code6cac_tu2",
+      "file": "main/9F9C",
       "sha256": [
         "347d3f4de724019b89413acc2d7fb0a6b23deb94b0268e86aea05ee1156046b9"
       ]
     },
     "func_800203B4": {
-      "file": "code6cac_tu2",
+      "file": "main/9F9C",
       "sha256": [
         "612a5623f061a75d1e7337b7380941aac2509287bc296a8c5c378469dbad5247",
         "55291e7be15df7cf65129d6d3830c05fcc84c63c0e4693121d1abeeded39b6fd",
@@ -308,7 +308,7 @@
       ]
     },
     "func_8001A820": {
-      "file": "code6cac_tu2",
+      "file": "main/9F9C",
       "sha256": [
         "519851e905b3761253c9a9a42e29158b612432c11af33e1500d506f6ece64876",
         "a03db2d43fbe7342d2681140c79a573aa990b54f4cd503701f921000df6cce65",
@@ -544,7 +544,7 @@
       ]
     },
     "func_8001F2E4": {
-      "file": "code6cac_tu2",
+      "file": "main/9F9C",
       "sha256": [
         "519851e905b3761253c9a9a42e29158b612432c11af33e1500d506f6ece64876",
         "a03db2d43fbe7342d2681140c79a573aa990b54f4cd503701f921000df6cce65",
@@ -670,7 +670,7 @@
       ]
     },
     "func_800204C0": {
-      "file": "code6cac_tu2",
+      "file": "main/9F9C",
       "sha256": [
         "cb6813297188a1c3f4378d690302587fae711b3a408a821f80e6421e46f57dc2",
         "fc3aface3d3ac351c3962ae963036c6ecd0692efd86ed768cb0c5e71272215be",
@@ -711,7 +711,7 @@
       ]
     },
     "func_800207C8": {
-      "file": "code6cac_tu2",
+      "file": "main/9F9C",
       "sha256": [
         "32fad78e24b9fab0a1c1f2584598cf57242254d15cbef8ff621ff9cd233c1b42",
         "fc3aface3d3ac351c3962ae963036c6ecd0692efd86ed768cb0c5e71272215be",

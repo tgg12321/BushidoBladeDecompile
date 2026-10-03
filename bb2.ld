@@ -39,7 +39,7 @@ SECTIONS
         main_RODATA_START = .;
         build/src/ings_strings.o(.rodata);
         build/src/main/87A0.o(.rodata);
-        build/src/code6cac_tu2.o(.rodata);
+        build/src/main/9F9C.o(.rodata);
         build/src/code6cac_b.o(.rodata);
         build/src/code6cac_b_tu2.o(.rodata);
         build/src/code6cac_b_tu3.o(.rodata);
@@ -87,7 +87,7 @@ SECTIONS
         main_TEXT_START = .;
         build/src/main/6CF8.o(.text);
         build/src/main/87A0.o(.text);
-        build/src/code6cac_tu2.o(.text);
+        build/src/main/9F9C.o(.text);
         build/src/code6cac_b.o(.text);
         build/src/code6cac_b_tu2.o(.text);
         build/src/code6cac_b_tu3.o(.text);
@@ -127,7 +127,7 @@ SECTIONS
         main_TEXT_SIZE = ABSOLUTE(main_TEXT_END - main_TEXT_START);
         main_DATA_START = .;
         build/src/main/87A0.o(.data);
-        build/src/code6cac_tu2.o(.data);
+        build/src/main/9F9C.o(.data);
         build/src/code6cac_b.o(.data);
         build/src/code6cac_b_tu2.o(.data);
         build/src/code6cac_b_tu3.o(.data);
@@ -168,7 +168,7 @@ SECTIONS
         build/asm/data/91C98.data.o(.data);
         build/src/main/6CF8.o(.sdata);
         build/asm/data/938EA.data.o(.data);
-        build/src/code6cac_tu2.o(.sdata);
+        build/src/main/9F9C.o(.sdata);
         build/asm/data/938FE.data.o(.data);
         build/src/code6cac_b_tu2.o(.sdata);
         build/asm/data/93950.data.o(.data);
@@ -194,7 +194,7 @@ SECTIONS
         build/asm/data/93AEA.data.o(.data);
         build/src/text1b_b.o(.sdata);
         build/asm/data/93B08.data.o(.data);
-        build/src/code6cac_tu2.o(.sbss);
+        build/src/main/9F9C.o(.sbss);
         build/asm/data/93B12.data.o(.data);
         build/src/code6cac_c_mid.o(.sbss);
         build/asm/data/93B56.data.o(.data);
@@ -217,7 +217,7 @@ SECTIONS
         main_DATA_SIZE = ABSOLUTE(main_DATA_END - main_DATA_START);
         main_BSS_START = .;
         build/src/main/87A0.o(.bss);
-        build/src/code6cac_tu2.o(.bss);
+        build/src/main/9F9C.o(.bss);
         build/src/code6cac_b.o(.bss);
         build/src/code6cac_b_tu2.o(.bss);
         build/src/code6cac_b_tu3.o(.bss);
