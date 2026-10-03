@@ -56,15 +56,21 @@ def _func_table() -> dict[str, tuple[int, int]]:
 
 
 def _file_index() -> dict[str, str]:
-    """function name -> source file stem, derived from each object's symbols."""
+    """function name -> TU id, derived from the symbols of the objects bb2.ld
+    LINKS. build/src also holds objects of retired TUs; globbing it let a stale
+    one shadow the live owner (restructure plan R5)."""
+    from . import tus
     idx = {}
-    for o in sorted(Path("build/src").glob("*.o")):
+    for tid in tus.linked_tus():
+        o = Path(tus.obj_path(tid))
+        if not o.exists():
+            continue
         out = subprocess.run([cfg.NM, str(o)],
                              capture_output=True, text=True).stdout
         for line in out.splitlines():
             parts = line.split()
             if len(parts) == 3 and parts[1] in ("t", "T"):
-                idx[parts[2]] = o.stem
+                idx[parts[2]] = tid
     return idx
 
 

@@ -21,6 +21,7 @@ from . import orchestrator as ORCH
 from . import pipeline as P
 from . import queue as Q
 from . import sandbox as SB
+from . import tus
 
 
 def _print_finish_nudge(func: str) -> None:
@@ -85,8 +86,10 @@ def main() -> int:
                          "(default: refused — rebuilding from dirty src corrupts "
                          "the canonical reference the sandbox scores against)")
     sub.add_parser("build", help="full clean-driver build -> SHA1 check")
+    sub.add_parser("tus-check", help="bb2.ld consistency: every src TU linked, every linked TU present, "
+                                     "one object order across sections; per-file flag lists name live TUs")
     bp = sub.add_parser("build-c", help="build one C object")
-    bp.add_argument("stem")
+    bp.add_argument("stem", type=tus.arg_id)
     pp = sub.add_parser("parity", help="byte-compare driver C objects vs a reference build")
     pp.add_argument("--out", default="tmp/parity")
     pp.add_argument("--ref", default="build")
@@ -111,13 +114,13 @@ def main() -> int:
                           "source-level. Read this before choosing the next lever")
     scp = sub.add_parser("scan-redundant", help="find functions whose rules are redundant (exact byte-identity)")
     g = scp.add_mutually_exclusive_group(required=True)
-    g.add_argument("--file", help="scan one src file stem")
+    g.add_argument("--file", type=tus.arg_id, help="scan one TU (id: path under src/ without .c)")
     g.add_argument("--all", action="store_true", help="scan every file with rules")
     scp.add_argument("--no-rebuild", action="store_true", help="reuse existing stripped .o (fast re-eval)")
     rtp = sub.add_parser("retire", help="retire a function's rules (delete + full-build SHA1 verify)")
     rtp.add_argument("func")
     rrp = sub.add_parser("retire-redundant", help="scan a file + auto-retire its distance-0 functions")
-    rrp.add_argument("--file", required=True)
+    rrp.add_argument("--file", type=tus.arg_id, required=True)
     dgp = sub.add_parser("diagnose", help="classify gap(s) vs immutable-plateau patterns (triage before permuting)")
     dgp.add_argument("funcs", nargs="+")
     dgp.add_argument("--detail", action="store_true", help="show the per-instruction diff")
@@ -134,7 +137,7 @@ def main() -> int:
     qp.add_argument("action", choices=["next", "done", "rotate", "foreclose", "escalate", "park", "unpark", "auto-return", "status", "regen", "reopen"])
     qp.add_argument("func", nargs="?", help="function name (required for done/rotate/unpark/reopen)")
     qp.add_argument("--reason", default="", help="reason / record pointer (for rotate/unpark/reopen; foreclose, escalate and park are legacy aliases for rotate — owner ruling 2026-09-08)")
-    qp.add_argument("--file", default="", help="src file stem (required for reopen)")
+    qp.add_argument("--file", type=tus.arg_id, default="", help="TU id, path under src/ without .c (required for reopen)")
     qp.add_argument("--no-rescan", action="store_true", help="auto-return: skip the toolchain-fingerprint re-measure")
     qp.add_argument("--force-rescan", action="store_true",
                     help="auto-return: re-measure every rotated candidate even though the "
@@ -146,7 +149,7 @@ def main() -> int:
     l2p.add_argument("--reviewer", default="", help="record: who ruled (agent id / name)")
     l2p.add_argument("--scope", choices=list(L2.SCOPES), help="record: completion-class kind being landed")
     l2p.add_argument("--notes", default="", help="record: key findings / required fixes")
-    l2p.add_argument("--file", default="", help="src file stem (default: the queue item's file, else a src/ scan)")
+    l2p.add_argument("--file", type=tus.arg_id, default="", help="TU id, path under src/ without .c (default: the queue item's file, else a src/ scan)")
     l2p.add_argument("--expect-hash", default="", help="record (REQUIRED unless --verdict-file carries it): the `layer2 hash` the reviewer reported for the body it ruled on; a PASS is refused unless src/ still hashes to it")
     l2p.add_argument("--verdict-file", default="", help="record: the reviewer's JSON verdict; supplies verdict + body_hash (+ notes from its summary) and its path/sha1 are recorded")
     ccp = sub.add_parser("cc1psx-check", help="self-disproof: score a function's candidate under our cc1 AND the original cc1psx (out of tree); a closer cc1psx = fidelity lead")
@@ -197,6 +200,9 @@ def main() -> int:
         print(f"built {exe}\n  sha1 {got}\n  want {cfg.ORACLE_SHA1}\n  {'MATCH' if ok else 'MISMATCH'}")
         MET.record_event("build", None, {"sha1": got, "ok": ok}, exit_code=0 if ok else 1)
         return 0 if ok else 1
+
+    if a.cmd == "tus-check":
+        return tus.main(["check"])
 
     if a.cmd == "build-c":
         out_o = f"build/src/{a.stem}.o"

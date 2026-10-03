@@ -293,10 +293,11 @@ def locate_stem(func: str) -> str | None:
                 return it["file"]
     except (OSError, ValueError):
         pass
-    for p in sorted(Path("src").glob("*.c")):
-        text = _read_text(p)
+    from . import tus
+    for tid in tus.src_tus():
+        text = _read_text(Path(tus.src_path(tid)))
         if text and func in text and body_key(text, func) is not None:
-            return p.stem
+            return tid
     return None
 
 

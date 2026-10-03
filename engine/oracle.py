@@ -186,9 +186,13 @@ def verify(rebuild: bool = False) -> dict:
     build_matches = (artifact_matches and freshness['fresh']
                      and man['expected_build_sha1'] == cfg.ORACLE_SHA1
                      and P.sha1(cfg.TARGET_EXE) == cfg.ORACLE_SHA1)
+    # bb2.ld is hand-maintained (Q106 D8): every TU linked, one object order
+    from . import tus
+    layout = tus.check()
 
     return {
-        "ok": build_matches,
+        "ok": build_matches and not layout,
+        "layout_problems": layout,
         "build_sha1": build_sha1,
         "expected": man["expected_build_sha1"],
         "build_matches": build_matches,

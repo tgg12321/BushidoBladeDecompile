@@ -3900,7 +3900,12 @@ def test_departures() -> None:
                 gone = next((it for it in q["items"]
                              if layer2.current_key(it["func"], it.get("file", ""))
                              and not layer2.addr_dates(it["addr"])), None)
-                if gone is None:
+                if gone is None and not q["items"]:
+                    # a drained queue has nothing real to drop; the hand-drop
+                    # shape itself is proven on the throwaway repos above
+                    skip("departures (real history): a synthetic hand-drop is caught",
+                         "the queue is empty: no real item to drop")
+                elif gone is None:
                     check("departures (real history): a queued item with no record to drop",
                           False)
                 else:
@@ -5139,6 +5144,128 @@ def test_psyq_library_files() -> None:
         check("no gp-relative access in Sony library code", not gp)
 
 
+def test_tus() -> None:
+    """Restructure step 0 (Q106 D1/D8): TU ids are paths under src/ without .c;
+    the linked set comes from bb2.ld; tus.check is the bb2.ld consistency audit."""
+    import re
+    import subprocess
+    from engine import tus, fixtures
+
+    # the live tree: consistent, and every flag list of the Makefile mirrors buildconfig
+    eq("tus: the live bb2.ld / flag lists are consistent", tus.check(), [])
+    mk = Path("Makefile").read_text()
+    for name in tus.FLAG_LISTS:
+        m = re.search(r"^" + name + r" :=(.*)$", mk, re.M)
+        eq(f"tus: Makefile {name} == engine/buildconfig.py", sorted(m.group(1).split()) if m else None,
+           sorted(getattr(cfg, name)))
+
+    # a nested id builds from its nested path with its own flags; a same-basename
+    # sibling in another directory gets none of them
+    saved = (cfg.GP_FILES, cfg.PSYQ_LIBRARY_FILES)
+    try:
+        cfg.GP_FILES, cfg.PSYQ_LIBRARY_FILES = {"main/libgpu/sys"}, {"main/libcd/sys"}
+        gpu = P.c_pipeline_cmd("main/libgpu/sys", "o/a.o")
+        cd = P.c_pipeline_cmd("main/libcd/sys", "o/b.o")
+        check("tus: a nested id compiles src/<id>.c", " src/main/libgpu/sys.c " in gpu)
+        check("tus: GP_FILES applies by id, not basename", "-G8 " in gpu.split("|")[1]
+              and "-G8 " not in cd.split("|")[1])
+        check("tus: PSYQ_LIBRARY_FILES applies by id, not basename",
+              cd.split("|")[3].rstrip().endswith("--use-comm-section")
+              and gpu.split("|")[3].rstrip().endswith("-G8"))
+    finally:
+        cfg.GP_FILES, cfg.PSYQ_LIBRARY_FILES = saved
+
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        try:
+            for rel in ("src/a.c", "src/main/libgpu/sys.c", "src/main/libcd/sys.c", "src/z.c"):
+                Path(rel).parent.mkdir(parents=True, exist_ok=True)
+                Path(rel).write_text("int x;\n")
+            eq("tus: src_tus is recursive, ids keep their directories", tus.src_tus(),
+               ["a", "main/libcd/sys", "main/libgpu/sys", "z"])
+            lines = lambda sec, ids: "".join(f"        build/src/{i}.o({sec});\n" for i in ids)
+            good = (lines(".rodata", ["a", "main/libcd/sys", "z"])
+                    + lines(".text", ["a", "main/libgpu/sys", "main/libcd/sys", "z"])
+                    + lines(".data", ["main/libgpu/sys", "z"]))
+            nolists = {n: set() for n in tus.FLAG_LISTS}
+            eq("tus: a consistent layout passes", tus.check(text=good, lists=nolists), [])
+            eq("tus: linked_tus keeps first-appearance order", tus.linked_tus(text=good),
+               ["a", "main/libcd/sys", "z", "main/libgpu/sys"])
+            probs = tus.check(text=good.replace("build/src/z.o(.text)", "build/src/y.o(.text)"),
+                              lists=nolists)
+            check("tus: a linked TU with no source is caught",
+                  any("build/src/y.o but src/y.c does not exist" in p for p in probs))
+            check("tus: a source bb2.ld does not link is caught",
+                  any("src/z.c is not linked" in p for p in tus.check(
+                      text=good.replace("build/src/z.o", "build/src/a.o").replace(
+                          lines(".text", ["a"]), ""), lists=nolists)))
+            swapped = good.replace(lines(".rodata", ["a", "main/libcd/sys", "z"]),
+                                   lines(".rodata", ["main/libcd/sys", "a", "z"]))
+            check("tus: one object order across sections",
+                  any("order differs" in p and ".rodata: main/libcd/sys before a" in p
+                      for p in tus.check(text=swapped, lists=nolists)))
+            check("tus: a TU twice in one section is caught",
+                  any("more than once" in p for p in tus.check(
+                      text=good + lines(".data", ["z"]), lists=nolists)))
+            check("tus: an unparseable build/src line is caught",
+                  any("not of the form" in p for p in tus.check(
+                      text=good + "        KEEP(build/src/a.o(.text))\n", lists=nolists)))
+            eq("tus: a flag-list entry that is no TU is caught",
+               tus.flag_list_problems(lists={"GP_FILES": {"main/libgpu/sys", "sys"}}),
+               ["engine/buildconfig.py GP_FILES names 'sys', which is not a TU (no src/sys.c)"])
+
+            # _file_index reads only LINKED objects: a stale build/src object that
+            # sorts last can no longer shadow the live owner (plan R5)
+            Path("bb2.ld").write_text(good)
+            for i in ("a", "main/libgpu/sys", "main/libcd/sys", "z", "zz_stale"):
+                Path(f"build/src/{i}.o").parent.mkdir(parents=True, exist_ok=True)
+                Path(f"build/src/{i}.o").write_text("")
+            owner = {"build/src/a.o": "f_a", "build/src/main/libgpu/sys.o": "f_gpu",
+                     "build/src/main/libcd/sys.o": "f_cd", "build/src/z.o": "f_z",
+                     "build/src/zz_stale.o": "f_a"}
+            real_run = fixtures.subprocess.run
+
+            def fake_nm(cmd, **kw):
+                return subprocess.CompletedProcess(cmd, 0, f"00000000 T {owner[cmd[-1]]}\n", "")
+            fixtures.subprocess.run = fake_nm
+            try:
+                idx = fixtures._file_index()
+            finally:
+                fixtures.subprocess.run = real_run
+            eq("tus: _file_index ignores a stale unlinked object", idx.get("f_a"), "a")
+            eq("tus: _file_index maps same-basename TUs to distinct ids",
+               (idx.get("f_gpu"), idx.get("f_cd")), ("main/libgpu/sys", "main/libcd/sys"))
+
+            import argparse
+            eq("tus: arg_id accepts src/<id>.c", tus.arg_id("src/main/libcd/sys.c"), "main/libcd/sys")
+            try:
+                tus.arg_id("sys")
+                check("tus: arg_id refuses a bare basename", False)
+            except argparse.ArgumentTypeError as e:
+                check("tus: arg_id refuses a bare basename and names the candidates",
+                      "main/libcd/sys" in str(e) and "main/libgpu/sys" in str(e))
+            Path("tools").mkdir()
+            Path("tools/tu_renames.tsv").write_text("# header\nold\tmid\tafter:1\nmid\tmain/new\tafter:2\n")
+            eq("tus: resolve follows the rename chain", tus.resolve("old"), "main/new")
+        finally:
+            os.chdir(cwd)
+
+    # psyq_library_files parses nested ids from both declarations
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("plf", "tools/psyq_library_files.py")
+    plf = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(plf)
+    with tempfile.TemporaryDirectory() as td:
+        Path(td, "engine").mkdir()
+        Path(td, "Makefile").write_text("PSYQ_LIBRARY_FILES := main/psxsdk/libcomb/comb gpu\n")
+        Path(td, "engine/buildconfig.py").write_text(
+            'PSYQ_LIBRARY_FILES = {"gpu", "main/psxsdk/libcomb/comb"}\n')
+        mk_ids, bc_ids = plf.declared(td)
+        eq("psyq_library_files: nested ids parse from Makefile and buildconfig",
+           (mk_ids, bc_ids), (["gpu", "main/psxsdk/libcomb/comb"], ["gpu", "main/psxsdk/libcomb/comb"]))
+
+
 def test_maspsx_fingerprint() -> None:
     """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
     HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
@@ -5381,6 +5508,7 @@ def main() -> int:
     test_maspsx_static_lcomm()
     test_maspsx_small_data_sdata()
     test_psyq_library_files()
+    test_tus()
     test_maspsx_fingerprint()
     test_objdump_failure_is_loud()
     test_prologue_config_fingerprint()

@@ -11,9 +11,9 @@ of it": 177 verbatim PsyQ 4.0 module placements plus the newer-build LIBSND/LIBS
 The rule is per-file-gp-model.md (A4): a file is library code when its link-map .text input section is
 non-empty and lies entirely within the span; any other file, including one with no .text, gets -G8.
 
-The GPREL16 check reads OUR OWN build objects (build/src/*.o), not the shipped code: a gp-relative relocation
+Files are TU ids (path under src/ without .c, engine/tus.py). The GPREL16 check reads OUR OWN build objects (build/src/<id>.o), not the shipped code: a gp-relative relocation
 in a library file's object would contradict -G0, and the tool reports it. Prints the set; --table prints every
-src/*.c file with its .text range and class; --check compares the set with the Makefile and
+src/**/*.c file with its .text range and class; --check compares the set with the Makefile and
 engine/buildconfig.py and exits 1 on any difference. Needs a linked build (build/bb2.map)."""
 import os, re, subprocess, sys
 
@@ -26,7 +26,7 @@ def library_files(root=ROOT):
     s0, s1 = int(m.group(1), 16), int(m.group(2), 16)
     out, gp = [], []
     mp = open(os.path.join(root, "build/bb2.map")).read()
-    for mm in re.finditer(r"^ \.text\s+0x([0-9a-f]+)\s+0x([0-9a-f]+) build/src/(\w+)\.o", mp, re.M):
+    for mm in re.finditer(r"^ \.text\s+0x([0-9a-f]+)\s+0x([0-9a-f]+) build/src/(\S+)\.o$", mp, re.M):
         a, n, f = int(mm.group(1), 16), int(mm.group(2), 16), mm.group(3)
         if n and s0 <= a and a + n <= s1:
             out.append(f)
@@ -41,23 +41,23 @@ def declared(root=ROOT):
     mk = open(os.path.join(root, "Makefile")).read()
     a = sorted(re.search(r"^PSYQ_LIBRARY_FILES :=(.*)$", mk, re.M).group(1).split())
     bc = open(os.path.join(root, "engine/buildconfig.py")).read()
-    b = sorted(re.findall(r'"(\w+)"', re.search(r"^PSYQ_LIBRARY_FILES = \{(.*)\}$", bc, re.M).group(1)))
+    b = sorted(re.findall(r'"([\w/.-]+)"', re.search(r"^PSYQ_LIBRARY_FILES = \{(.*)\}$", bc, re.M).group(1)))
     return a, b
 
 
 def table(root=ROOT):
-    """every src/*.c file: (stem, .text start, .text end or None, class)."""
+    """every src/**/*.c file: (TU id, .text start, .text end or None, class)."""
     cen = open(os.path.join(root, "memory/closer/psyq-library-census.md"), encoding="utf-8").read()
     m = re.search(r"Contiguous span (0x[0-9A-Fa-f]+)\.\.(0x[0-9A-Fa-f]+)", cen)
     s0, s1 = int(m.group(1), 16), int(m.group(2), 16)
     mp = open(os.path.join(root, "build/bb2.map")).read()
     txt = {f: (int(a, 16), int(n, 16)) for a, n, f in
-           re.findall(r"^ \.text\s+0x([0-9a-f]+)\s+0x([0-9a-f]+) build/src/(\w+)\.o", mp, re.M)}
+           re.findall(r"^ \.text\s+0x([0-9a-f]+)\s+0x([0-9a-f]+) build/src/(\S+)\.o$", mp, re.M)}
     rows = []
-    for c in sorted(os.listdir(os.path.join(root, "src"))):
-        if not c.endswith(".c"):
-            continue
-        f = c[:-2]
+    src = os.path.join(root, "src")
+    ids = sorted(os.path.relpath(os.path.join(d, c), src)[:-2].replace(os.sep, "/")
+                 for d, _, cs in os.walk(src) for c in cs if c.endswith(".c"))
+    for f in ids:
         a, n = txt.get(f, (None, 0))
         lib = bool(n) and s0 <= a and a + n <= s1
         rows.append((f, a if n else None, a + n if n else None, "library (-G0)" if lib else "-G8"))

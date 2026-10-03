@@ -69,8 +69,8 @@ def cc1psx_check(func: str, candidate: str | None = None,
     body_sha = hashlib.sha1(body.encode("utf-8")).hexdigest()[:12]
     tu = Path(f"src/{stem}.c").read_text(encoding="utf-8", errors="replace")
     wd = Path(workdir) / func
-    (wd / "src").mkdir(parents=True, exist_ok=True)
     src_ovr = wd / "src" / f"{stem}.c"
+    src_ovr.parent.mkdir(parents=True, exist_ok=True)
     src_ovr.write_text(_splice(tu, func, body), encoding="utf-8", newline="\n")
     ref_o = f"build/src/{stem}.o"
     if not Path(ref_o).exists():

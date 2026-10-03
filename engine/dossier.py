@@ -63,7 +63,7 @@ def _src_representation(func: str, stem: str | None) -> tuple[str, str]:
     func_800481E8 false-escape lesson, 2026-08-24)."""
     inc = re.compile(r'^INCLUDE_ASM\("asm/funcs", ' + re.escape(func) + r"\);", re.M)
     body = re.compile(r"^[A-Za-z_][\w \t\*]*\b" + re.escape(func) + r"\s*\(", re.M)
-    paths = [f"src/{stem}.c"] if stem else sorted(str(p) for p in Path("src").glob("*.c"))
+    paths = [f"src/{stem}.c"] if stem else sorted(str(p) for p in Path("src").rglob("*.c"))
     for p in paths:
         t = _read(p)
         if inc.search(t):

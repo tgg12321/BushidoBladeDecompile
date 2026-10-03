@@ -1743,7 +1743,7 @@ def audit_project(src_dir: str = "src") -> dict:
     by_file: dict[str, list[dict]] = {}
     by_func: dict[str, int] = {}
     # All .c files
-    for p in sorted(Path(src_dir).glob("*.c")):
+    for p in sorted(Path(src_dir).rglob("*.c")):
         text = p.read_text(encoding="utf-8")
         cheats_ = find_all_cheats(text)
         if not cheats_:

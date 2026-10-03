@@ -36,11 +36,14 @@ def sha1(path: str | Path) -> str:
 
 
 def c_stems() -> list[str]:
-    return sorted(p.stem for p in Path("src").glob("*.c"))
+    """Every C TU id (path under src/ without .c; engine/tus.py)."""
+    from . import tus
+    return tus.src_tus()
 
 
 def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
-    """Construct the exact per-file shell pipeline for src/<stem>.c -> out_o.
+    """Construct the exact per-file shell pipeline for src/<stem>.c -> out_o
+    (`stem` is a TU id, e.g. `text1b` or `main/psxsdk/libcomb/comb`).
 
     `cheat_overrides` is the Phase 1 seam: a spec describing which cheat stages
     (regfix / regfix_stage2 / asmfix) to neutralize for a given function so the
@@ -64,11 +67,11 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
         maspsx_flags += " --expand-lh"
 
     # src_override: a modified copy of the .c (e.g. cheat-asm stripped) for the
-    # cheat-invisible sandbox. -Isrc is added so the override's includes resolve
-    # as if it were in src/ (cpp normally searches the source file's dir).
+    # cheat-invisible sandbox. -I<the TU's own src dir> is added so the override's
+    # includes resolve as if it were in place (cpp searches the source file's dir).
     src_override = (cheat_overrides or {}).get("src_override")
     src_file = src_override or f"src/{stem}.c"
-    cpp_extra = " -Isrc" if src_override else ""
+    cpp_extra = f" -I{Path(f'src/{stem}.c').parent.as_posix()}" if src_override else ""
     # prologue_fix is a TRACKED cheat: when the sandbox passes FILTERED prologue
     # configs (a function's entry / all entries removed), point prologue_fix at
     # them via env so its reorder/frame/delay fix is stripped and the honest

@@ -105,7 +105,8 @@ def asm_refs(func: str) -> tuple[list[str], set[str]]:
 
 def _src_texts() -> dict[str, str]:
     if "csrc" not in _cache:
-        _cache["csrc"] = {p.stem: _read(p) for p in sorted(Path("src").glob("*.c"))}
+        from . import tus
+        _cache["csrc"] = {t: _read(Path(tus.src_path(t))) for t in tus.src_tus()}
     return _cache["csrc"]
 
 
@@ -127,7 +128,7 @@ def xref_index() -> dict[str, list[str]]:
 
 
 def c_refs(sym: str) -> list[str]:
-    """src/*.c stems whose text names the symbol."""
+    """TU ids (src/**/*.c) whose text names the symbol."""
     pat = re.compile(r"\b" + re.escape(sym) + r"\b")
     return sorted(k for k, t in _src_texts().items() if pat.search(t))
 

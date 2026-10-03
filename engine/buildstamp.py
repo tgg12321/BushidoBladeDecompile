@@ -23,7 +23,7 @@ CONFIGS = (
     'undefined_funcs_auto.txt', 'undefined_syms_auto.txt', 'named_syms.txt',
     'tools/prologue_config.json', 'delay_slot_ra_funcs.txt', 'frame_fix_funcs.txt',
     'tools/prologue_fix.py', 'tools/multu_pad.py', 'tools/make_psexe.py',
-    'engine/pipeline.py', 'engine/buildconfig.py', 'engine/buildstamp.py',
+    'engine/pipeline.py', 'engine/buildconfig.py', 'engine/buildstamp.py', 'engine/tus.py',
     cfg.TARGET_EXE, cfg.CC1,
 )
 
@@ -51,7 +51,7 @@ def inputs() -> dict[str, str | None]:
 
 def artifacts() -> dict[str, str]:
     required = [Path('build/bb2.exe'), Path('build/bb2.elf'), Path('build/bb2.bin')]
-    required += [Path('build') / p.with_suffix('.o') for p in Path('src').glob('*.c')]
+    required += [Path('build') / p.with_suffix('.o') for p in Path('src').rglob('*.c')]
     required += [Path('build') / p.with_suffix('.o') for d in ('asm', 'asm/data')
                  for p in Path(d).glob('*.s')]
     required += [Path(f'build/asm/funcs/{name}.o') for name in cfg.LINKED_ASM_FUNCS]
