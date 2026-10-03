@@ -1119,30 +1119,8 @@ INCLUDE_ASM("asm/funcs", LoadAverage12);
  * object. Twin of func_8007E1AC differing only in the
  * gpf/gpl sf parameter (0 vs 1). Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", LoadAverage0);
-__asm__(
-    ".section .text\n"
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
 INCLUDE_ASM("asm/funcs", LoadAverageShort12);
-__asm__(
-    ".section .text\n"
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
 INCLUDE_ASM("asm/funcs", LoadAverageShort0);
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
@@ -1269,17 +1247,6 @@ INCLUDE_ASM("asm/funcs", Square12);
 INCLUDE_ASM("asm/funcs", Square0);
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
 INCLUDE_ASM("asm/funcs", AverageZ3);
-__asm__(
-    ".section .text\n"
-    "    .set\tnoat\n"
-    "    .set\tnoreorder\n"
-    "    .set noat\n"
-    "    .set noreorder\n"
-    "    .set\treorder\n"
-    "    .set\tat\n"
-    "    .set reorder\n"
-    "    .set at\n"
-);
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
 INCLUDE_ASM("asm/funcs", AverageZ4);
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
