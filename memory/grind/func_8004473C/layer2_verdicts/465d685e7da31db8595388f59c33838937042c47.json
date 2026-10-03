@@ -1,0 +1,13 @@
+{
+  "decision": "PASS",
+  "function": "func_8004473C",
+  "body_hash": "946a1b1641d42837",
+  "summary": "Pure member-level respell through Unk800A9CF8Entry (dst) and Unk800A6690Rec (src); no FAKEs, no codegen-only constructs, sandbox 0, isolated full build SHA1 == oracle; every field matches its lw/sw/lh/sh width and the header comment's claims check out against func_80044670/80044800/80044B30 and func_8003E6D8/8003EB84.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "named_syms.txt:513 comment and include/m2c_context.h:286 still name D_800F66A0 (symbol retirement)",
+    "D_800A9CF8.unkC / .unk10 stay s32 in include/game.h, so every use site casts; .unk10 only ever holds the D_800A6690 pointer and could be typed Unk800A6690Rec * (per-site cast certification)",
+    "game_GetCharData is prototyped void * and redeclared TU-locally (text1a_c.c:1319); it returns D_800A6690 (Unk800A6690Rec *) and has no header prototype"
+  ]
+}

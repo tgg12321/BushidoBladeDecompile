@@ -1,0 +1,14 @@
+{
+  "decision": "PASS",
+  "function": "func_80044800",
+  "body_hash": "c8047179d5f3f426",
+  "summary": "One FAKE (rec saved in ent, pointed at the paired Unk800A6690Rec entry, restored), labelled with its measured cost; a separate local scores 70 whether typed Unk800A6690Rec * or Unk80101DF0Record *, declared first or in an inner block. Inside the swap only node members are accessed (xf.rot, unk6, func_800417D0, xf.mat.t), so no field whose type differs between the two records is reached through the wrong type. Sandbox 0, SHA1 == oracle, no wall constructs, no second externs.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "named_syms.txt:513 comment and include/m2c_context.h:286 still name D_800F66A0 (symbol retirement)",
+    "D_800A9CF8.unkC / .unk10 stay s32 in include/game.h, so every use site casts; .unk10 only ever holds the D_800A6690 pointer and could be typed Unk800A6690Rec * (per-site cast certification)",
+    "game_GetCharData is prototyped void * and redeclared TU-locally (text1a_c.c:1319); it returns D_800A6690 (Unk800A6690Rec *) and has no header prototype",
+    "TU-local prototypes MulMatrix2(s32 *, s32 *), math_RotMatrixZYX(s16 *, s32 *), func_800417D0(s32 *) and extern s16 Judge[] in text1a_c_tu2.c disagree with other TUs (text1b_tu1b.c MATRIX *, text1a_c.c Unk80101DF0Rot/Mat) and with code6cac.h's Judge[0x1000]; one shared prototype per function would retire the (s32 *) casts"
+  ]
+}

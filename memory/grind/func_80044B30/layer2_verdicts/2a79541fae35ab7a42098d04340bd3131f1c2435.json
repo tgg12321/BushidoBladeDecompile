@@ -1,0 +1,13 @@
+{
+  "decision": "PASS",
+  "function": "func_80044B30",
+  "body_hash": "c070a69435a35f68",
+  "summary": "The round-1 item-5 defect is fixed: the body is bV1.c word for word, the unk4 store sits in plain store order and there is no unk0 local. The one remaining FAKE (p reused for the paired game_GetCharData entry) is labelled and still needed. A separate Unk800A6690Rec * local scores 4, and so does the reversed declaration order: --diff shows only a $s0->$a2 rename of the first pointer, because the target keeps both pointers in $s0. An if-chain instead of the switch scores 13. Its comment is true: both records start with Unk80101DF0Record node, and only node fields are touched after the reuse. g_anim_func_table (0x800F66A0) is used with its typed AnimRotFunc prototype. The new Unk800A9CF8Entry is in the shared code6cac.h, and its claims check out against the asm (Unk800A6690Rec +0x58 is lbu/sb in func_8003E6D8/func_8003EB84; game_GetCharData returns D_800A6690). The switch matches the target branch structure. sandbox --disable all = 0 (80/80). An out-of-tree full build of the current tree gives SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa. In-tree verify-oracle --rebuild refused because the tree is dirty.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "named_syms.txt:513 comment and include/m2c_context.h:286 still name D_800F66A0 (symbol retirement)",
+    "D_800A9CF8.unkC / .unk10 stay s32 in include/game.h, so every use site casts to Unk800A9CF8Entry * / Unk800A6690Rec * (per-site cast certification)",
+    "in-tree verify-oracle --rebuild has not run (refused: dirty-build-inputs); run it after commit"
+  ]
+}

@@ -492,7 +492,6 @@ D_800F6658 = 0x800F6658;
 D_800F665A = 0x800F665A;
 D_800F665C = 0x800F665C;
 _svm_vab_pg = 0x800F6660;  /* data-wave 2026-09-07: was D_800F6660 */
-D_800F66A0 = 0x800F66A0;
 _svm_vab_vh = 0x800F66B8;  /* data-wave 2026-09-07: was D_800F66B8 */
 _svm_damper = 0x800F66F8;  /* data-wave 2026-09-24: was D_800F66F8 */
 _svm_vab_tn = 0x800F6700;  /* data-wave 2026-09-07: was D_800F6700 */

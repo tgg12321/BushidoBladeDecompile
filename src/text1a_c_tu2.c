@@ -30,39 +30,13 @@ extern void func_800520B8(s32, s32, s32);
 s32 func_8004428C(s32 *base, s16 *offsets);
 s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *frame_offsets);
 extern void MulMatrix2(s32 *, s32 *);
-typedef struct {
-    s8 unk0;
-    s8 unk1;
-    s16 unk2;
-    u16 unk4;
-    s16 unk6;
-    s16 unk8;
-    s16 unkA;
-    s32 unkC;
-    s16 unk10;
-    s16 unk12;
-    s16 unk14;
-    s16 unk16;
-    s8 pad18[0x14];
-    s32 unk2C;
-    s32 unk30;
-    s32 unk34;
-    s8 pad38[0x14];
-    s32 unk4C;
-    s32 unk50;
-    s32 unk54;
-    s32 unk58;
-    s32 unk5C;
-    s16 unk60;
-    s8 pad62[6];
-} Rec4473C;
 extern void func_800417D0(s32 *);
 
 void func_80044800(void) {
     s16 sv[4];
     s32 mat[8];
-    Rec4473C *rec;
-    Rec4473C *ent;
+    Unk800A9CF8Entry *rec;
+    Unk800A9CF8Entry *ent;
     s32 i;
     s32 frame;
     s32 angle;
@@ -77,7 +51,7 @@ void func_80044800(void) {
     s32 fade;
     s32 *list;
 
-    rec = (Rec4473C *)D_800A9CF8.unkC;
+    rec = (Unk800A9CF8Entry *)D_800A9CF8.unkC;
     for (i = 0; i < D_800A9CF8.unk6; rec++, i++) {
         frame = rec->unk58;
         if (frame < 0) continue;
@@ -91,42 +65,46 @@ void func_80044800(void) {
             sv[0] = *scan++;
             sv[1] = *scan++;
             sv[2] = *scan++;
-            rec->unk10 = *scan++;
-            rec->unk12 = *scan++;
-            rec->unk14 = *scan++;
-            rec->unk6 = 0;
+            rec->node.xf.rot.vx = *scan++;
+            rec->node.xf.rot.vy = *scan++;
+            rec->node.xf.rot.vz = *scan++;
+            rec->node.unk6 = 0;
             func_800417D0((s32 *)rec);
-            MulMatrix2(mat, (s32 *)rec->pad18);
+            MulMatrix2(mat, (s32 *)&rec->node.xf.mat);
             cos_val = Judge[(angle + 0x400) & 0xFFF];
             cz = cos_val * sv[2];
             sin_val = Judge[angle & 0xFFF];
             sz = sin_val * sv[2];
             cx = cos_val * sv[0];
             sx = sin_val * sv[0];
-            rec->unk2C += (sz + cx) >> 12;
-            rec->unk30 += sv[1];
-            rec->unk34 += (cz - sx) >> 12;
+            rec->node.xf.mat.t[0] += (sz + cx) >> 12;
+            rec->node.xf.mat.t[1] += sv[1];
+            rec->node.xf.mat.t[2] += (cz - sx) >> 12;
             frame++;
             if (frame >= D_800A9CF8.unk2) {
                 rec->unk60 = 0x1000;
             }
             rec->unk58 = frame;
             if (D_800A9CF8.unk4 == 0x12) {
+                /* FAKE: rec is reused (restored from ent below) for the paired
+                 * game_GetCharData entry, an Unk800A6690Rec reached only through its
+                 * node member (both records start with the node); a separate
+                 * Unk80101DF0Record * local scores 70. */
                 ent = rec;
-                rec = (Rec4473C *)D_800A9CF8.unk10 + i;
+                rec = (Unk800A9CF8Entry *)((Unk800A6690Rec *)D_800A9CF8.unk10 + i);
                 last = D_800A9CF8.unk2 - 1;
                 scan = (s16 *)(D_800A9CF8.unk8 + (frame + last) * 12);
                 sv[0] = *scan++;
                 sv[1] = *scan++;
                 sv[2] = *scan++;
-                rec->unk10 = *scan++;
-                rec->unk12 = *scan++;
-                rec->unk14 = *scan++;
-                rec->unk6 = 0;
+                rec->node.xf.rot.vx = *scan++;
+                rec->node.xf.rot.vy = *scan++;
+                rec->node.xf.rot.vz = *scan++;
+                rec->node.unk6 = 0;
                 func_800417D0((s32 *)rec);
-                rec->unk2C += sv[0];
-                rec->unk30 += sv[1];
-                rec->unk34 += sv[2];
+                rec->node.xf.mat.t[0] += sv[0];
+                rec->node.xf.mat.t[1] += sv[1];
+                rec->node.xf.mat.t[2] += sv[2];
                 rec = ent;
             }
         } else {
@@ -144,53 +122,47 @@ void func_80044800(void) {
         *list = (s32)rec;
     }
 }
-extern s32 D_800F66A0[];
-typedef void (*FuncPtr44B30)(s16 *, s16 *);
-typedef struct { s32 f0, f1, f2; } Vec3_44B30;
 
 void func_80044B30(s32 a0, s32 a1) {
-    s8 *p;
-    s16 stage;
+    Unk800A9CF8Entry *p;
 
     if (a0 >= D_800A9CF8.unk6) return;
 
-    p = (s8 *)(D_800A9CF8.unkC + a0 * 0x68);
-    if (*(s32 *)(p + 0x58) != -1) return;
+    p = (Unk800A9CF8Entry *)D_800A9CF8.unkC + a0;
+    if (p->unk58 != -1) return;
 
-    stage = D_800A9CF8.unk4;
-    if (stage == 4) goto case4;
-    if (stage == 0x12) goto set_zero;
-    goto do_store;
-
-case4:
-    if (a0 == 0) {
-        a1 = 0x800;
+    switch (D_800A9CF8.unk4) {
+    case 4:
+        if (a0 == 0) {
+            a1 = 0x800;
+        }
+        if (a0 == 1) {
+            a1 = 0;
+        }
+        break;
+    case 0x12:
+        a1 = 0;
+        break;
     }
-    if (a0 != 1) {
-        goto do_store;
-    }
-set_zero:
-    a1 = 0;
-
-do_store:
-    *(s32 *)(p + 0x5C) = a1;
-    *(s32 *)(p + 0x58) = 0;
-    p = (s8 *)(D_800A9CF8.unk10 + a0 * 0x68);
-    *(s16 *)(p + 0x2) = 1;
-    {
-        u16 cf8 = D_800A9CF8.unk0;
-        s32 idx = *(s16 *)(p + 0x8);
-        *(s16 *)(p + 0x12) = (s16)a1;
-        *(s8 *)(p + 0x0) = 0;
-        *(s32 *)(p + 0xC) = 0;
-        *(s16 *)(p + 0x10) = 0;
-        *(s16 *)(p + 0x14) = 0;
-        *(s16 *)(p + 0x6) = 1;
-        *(u16 *)(p + 0x4) = cf8;
-        ((FuncPtr44B30)D_800F66A0[idx])((s16 *)(p + 0x10), (s16 *)(p + 0x18));
-    }
+    p->unk5C = a1;
+    p->unk58 = 0;
+    /* FAKE: p is reused for the paired game_GetCharData entry, an
+     * Unk800A6690Rec reached only through its node member (both records start
+     * with the node); a separate Unk80101DF0Record * local scores 4. */
+    p = (Unk800A9CF8Entry *)((Unk800A6690Rec *)D_800A9CF8.unk10 + a0);
+    p->node.unk2 = 1;
+    p->node.unk4 = D_800A9CF8.unk0;
+    p->node.xf.rot.vy = a1;
+    p->node.unk0 = 0;
+    p->node.unkC = 0;
+    p->node.xf.rot.vx = 0;
+    p->node.xf.rot.vz = 0;
+    p->node.unk6 = 1;
+    g_anim_func_table[p->node.unk8](&p->node.xf.rot, &p->node.xf.mat);
     if (D_800A9CF8.unk4 == 0x12) {
-        *(Vec3_44B30 *)(p + 0x4C) = *(Vec3_44B30 *)(p + 0x2C);
+        p->node.work.t[0] = p->node.xf.mat.t[0];
+        p->node.work.t[1] = p->node.xf.mat.t[1];
+        p->node.work.t[2] = p->node.xf.mat.t[2];
     }
 }
 extern void func_80044100(s32, s32);
