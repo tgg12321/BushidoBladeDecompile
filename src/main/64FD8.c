@@ -11,46 +11,8 @@
 extern s32 ClearOTagR(s32, s32);
 extern s32 rsin();
 extern s32 g_gpu_ot_ptr;
-typedef struct {
-    u8 chr;
-    u8 unk1;
-} Unk8009BD24Record;
-extern Unk8009BD24Record D_8009BD24[2][5];
-typedef struct {
-    u32 unk0 : 4;
-    u32 unk4 : 6;
-    u32 unk10 : 2;
-    u32 unk12 : 2;
-    u32 unk14 : 1;
-    u32 unk15 : 2;
-    u32 unk17 : 1;
-    u32 unk18 : 6;
-} Unk8009BD38Flags;
 extern Unk8009BD38Flags D_8009BD38;
 void snd_CloseVab1(void);
-typedef struct GameObj {
-    u8 field_00; u8 field_01; s16 field_02;
-    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
-    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
-    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
-    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
-    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
-    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
-    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
-    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
-    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
-    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
-    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
-    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
-    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
-    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
-    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
-    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
-    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
-    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
-    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
-    s16 field_FA; s32 field_FC;
-} GameObj;
 void func_8005C650(s32 a0, s32 a1, s32 a2);
 extern s32 func_80073728(s32, s32);
 extern s32 func_8007352C(s32);
@@ -92,7 +54,6 @@ s32 func_8006D7FC(void);
 extern s32 func_800692C0();
 void func_8006E068(s32 arg0, s32 arg1);
 s32 func_8006E10C(void);
-extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 s32 func_8006E2A8(void);
 s32 func_8006E480(s32 a0_addr, s32 a1);
 s32 func_8006E49C(s32 arg0, s32 *arg1);
@@ -102,22 +63,6 @@ s32 func_8006EACC(s32 arg0, s32 arg1);
 s32 func_8007352C(s32 env_addr);
 s32 func_80073728(s32 env_addr, s32 mode);
 void func_80074220(s32 *arg0, s32 arg1);
-typedef struct {
-    s32 sp18;
-    s32 sp1C;
-    s32 sp20;
-    s32 sp24;
-    s32 sp28;
-    s32 sp2C;
-    s32 sp30;
-    s32 sp34;
-    s32 sp38;
-    s32 sp3C;
-    s8 sp40;
-    u8 sp41;
-    u8 sp42;
-    u8 sp43;
-} S_80074488;
 void func_80074488(s32 *arg0);
 
 /* func_800747D8: the duplicated `sound = 4;` below is the
@@ -1463,7 +1408,6 @@ void func_80077724(s32 arg0, s32 arg1) {
 }
 
 
-void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 s32 func_80077820(s32 a0) {
     func_80068F70(a0, (s32 *)&D_8009BD24);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -1558,167 +1502,9 @@ void func_80077B20(void) {
 /* ---- merged from text1b_b.c (owner ruling Q67: one original file) ---- */
 #define NULL ((void *)0)
 
-typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
 typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
 typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
 typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
-
-/* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
- * field layout is the union of all observed accesses; m2c picks the type
- * that best fits each access site. Mirroring smart_match.py's layout. */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 extern u8 D_8009BA60;
 extern s32 chractar_use_pset_combo_id_table;
@@ -1860,14 +1646,6 @@ extern s32 D_800F10D0;
 
 
 
-extern s32 D_800F1138;
-
-
-
-
-
-
-
 extern s32 column;
 
 
@@ -1945,160 +1723,8 @@ extern s32 column;
 
 
     extern s32 rand(void);
-    extern s32 D_800A326C;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    extern s32 D_800A32BC;
     extern void func_80061FAC(s32, s32, s32);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-extern s32 D_800A37D4;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

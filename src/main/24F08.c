@@ -14,7 +14,6 @@
 
 extern s32 rand(void);
 extern void func_8005C650(s32, s32, s32);
-extern void func_800344B4(void);
 
 /* This menu's two cursors ([0] = P1 row 0..11, [1] = P2 row 0..3) and its
  * colour / format strings. */

@@ -12,7 +12,6 @@ extern s32 *func_800457A0(s32);
 extern s32 *func_800455AC(s32);
 extern void func_80044F30(s32, s32);
 extern void func_80045824(s32, s32, s32);
-extern void func_80045230(s32);
 extern void func_80044010(s32 *, s16);
 extern void func_8003EDC0(u16 *, s32);
 extern s32 func_80044670(s32, s32, s32);
@@ -20,8 +19,6 @@ extern void func_800477DC(s32);
 extern s32 func_80047EC8(void);
 extern void func_800481E8(s32, s32);
 extern void func_80054410(s32);
-extern void func_80045600(s32, s32);
-extern void func_80045694(s32, s32);
 extern void stage_ExecInitFunc(void);
 extern void func_8004659C(s32);
 extern void func_800466C0(s32, s32);
@@ -316,7 +313,6 @@ extern void func_800421C8(s32);
 extern void func_8003E0E0(void);
 extern void func_8003E6D8(s32);
 extern void func_8003DA8C(s32, s32);
-extern void player_Destroy(s32);
 extern void func_8004668C(void);
 extern void func_80046020(void);
 extern void func_80049E1C(void);
@@ -348,11 +344,7 @@ extern void func_8004A1FC();
 extern void func_800420D0(void);
 extern void stage_ClearLighting(void);
 extern void stage_ApplyLighting(void);
-extern void stage_InitCollision(void);
-extern s32 D_80102C00;
-extern u16 D_800A38D6;
 extern u8 *g_gpu_ot_ptr;
-extern s32 D_800A3808;
 extern void func_80042E90(void);
 extern void func_80044498(void);
 extern void func_80049E4C(void);
@@ -360,12 +352,9 @@ extern void func_80049F4C(void);
 extern void func_8003D91C(void);
 extern void func_800404D8(void);
 extern void func_8003F7F4(void);
-extern s16 D_800F6650;
 extern s16 g_color_mode;
-extern s16 D_800F6656;
 extern s16 D_800F665A;
 extern s32 func_800486FC(void);
-extern s32 *func_8004574C(s32);
 extern void func_80044F80(s32, s32 *);
 extern s16 D_800A3248;
 
@@ -1105,7 +1094,6 @@ void func_80047A90(void) {
 }
 
 
-extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
 extern SVECTOR D_800EF0D8[17];
 extern SVECTOR D_800EF168[17];
 void func_80047BE0(void) {

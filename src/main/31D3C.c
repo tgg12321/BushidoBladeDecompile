@@ -41,7 +41,6 @@
 extern u8 D_80094D40[];
 
 
-extern s32 g_player_ptrs[];
 s32 func_8004153C(s32 a0) {
     return g_player_ptrs[a0];
 }
@@ -70,7 +69,6 @@ void player_Destroy(s32 a0) {
     func_80045A50(a0);
     g_player_ptrs[a0] = 0;
 }
-extern s32 g_player_char_ids[];
 void player_SetCharId(s32 a0, s32 a1) {
     s16 *ptr = (s16 *)g_player_ptrs[a0];
     if (ptr) {
@@ -411,7 +409,6 @@ void func_80041E10(Block16 *a0, s32 a1) {
     g_anim_select[2] = (s16)(((a1 & 0xFF) << 12) / 255);
     D_800A9B28 = *a0;
 }
-extern s32 gte_SumSquares3(s32, s32, s32);
 extern s32 ratan2(s32, s32);
 extern s32 rcos(s32);
 extern s32 rsin(s32);
@@ -609,7 +606,6 @@ out:;
 }
 extern s32 func_800486FC();
 extern s32 math_Grayscale3(s32, s32, s32);
-extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 void func_80042478(s32 a0) {
     s32 r = (a0 >> 16) & 0xFF;
     s32 g = (a0 >> 8) & 0xFF;

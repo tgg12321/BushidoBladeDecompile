@@ -9,8 +9,6 @@
 
 /* func_800343F0 lives here, not in code6cac_b_tu2.c: the file boundary follows the per-file gp
  * evidence (owner ruling Q65; docs/grind/rodata-align-2026-09-30.md section 7). */
-/* Declarations from the file this TU was split from (code6cac_b_tu2.c). */
-extern void player_SetCharId(s32, s32);
 
 void func_800343F0(void) {
     s8 val_85 = (s8)D_80102778.unk_D;
@@ -34,15 +32,12 @@ void func_800343F0(void) {
 }
 
 /* Declarations from the file this TU was split from (code6cac_b.c). */
-extern void eff_Init(void);
 void func_800338CC(void);
-void func_80033BC0(void);
 s32 func_80033DF4(void);
 void func_800342A0(void);
 void func_800343F0(void);
 
 extern void func_8003B20C(s32);
-extern void func_8003B5A4(void);
 extern s32 func_8005509C(s32);
 INCLUDE_RODATA("asm/rodata", jtbl_8001084C);
 

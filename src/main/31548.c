@@ -6,7 +6,6 @@
 
 /* Declarations from the file this TU was split from (text1a_pre.c). */
 void func_800404A0(s16 *a0, s32 a1);
-extern s32 g_player_ptrs[];
 void func_80040A78(s32 arg0);
 
 typedef struct { s32 a, b, c, d, e, f, g, h; } Copy8_40D48;

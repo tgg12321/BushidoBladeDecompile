@@ -7,47 +7,7 @@
 #include "gte.h"
 #include "bb2_const.h"
 
-/* Extern data declarations */
-extern u8 D_8008E914[][8];
-extern s32 D_8008EA00[][4];
-extern s32 func_8001DB58(void);
-
-
-
-
-
 /* Extern function declarations */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-extern void player_SetCharId(s32, s32);
-
-
-
-
-
-
-
-
-
-
-
 extern s16 *func_8004678C(void);
 
 
@@ -67,9 +27,6 @@ extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 
 
 
-extern u8 D_800A384C;
-extern u8 D_8008E908[][5];
-extern u8 D_8008EC24[][5];
 extern s32 ratan2(s32, s32);
 extern s32 rand(void);
 extern void RotMatrixX(s32, s32 *);
@@ -77,8 +34,6 @@ extern void RotMatrixY(s32, s32 *);
 extern void RotMatrixZ(s32, s32 *);
 
 
-
-extern void eff_Init(void);
 
 extern s32 stage_GetDataPtr(void);
 
@@ -119,10 +74,6 @@ extern u8 D_800A38AB;
 
 
 
-extern void func_8001F860(s16 *arg0, s32 arg1);
-extern void func_8002AB08(s32 a0);
-
-extern void func_800288C8(void);
 extern s32 func_80029454(void);
 extern void func_80031B24(void);
 

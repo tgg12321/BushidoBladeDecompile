@@ -14,35 +14,7 @@
 #include "common.h"
 #include "include_asm.h"
 
-/* Extern data declarations */
-
-
-
-
-
 /* Extern function declarations */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-extern void player_Destroy(s32);
-extern void file_ResetDmaFlag(void);
-extern void func_8005B72C(void);
 extern void func_80077820(s32);
 
 
@@ -122,7 +94,6 @@ void func_80035438(void) {
 }
 extern u8 D_800A31D8;
 extern void func_8003A41C(void);
-extern void func_80020CDC(void);
 void func_80035480(void) {
     gpu_ResetGraphMode1();
     gpu_InitDisplay();
@@ -273,17 +244,7 @@ void func_80035618(s32 arg0) {
 /* ---- merged from code6cac_b2_post.c (owner ruling Q65: one original file) ---- */
 /* Padding NOP macro */
 
-/* Extern data declarations */
-
-
-
-
-
 /* Extern function declarations */
-
-
-
-
 extern void VSync(s32);
 
 
@@ -322,7 +283,6 @@ extern void VSync(s32);
 
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
-extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 
 
@@ -331,29 +291,7 @@ extern void func_8003AAB0(void);
 
 
 
-extern void snd_Quit(void);
-extern void memcard_Quit(void);
 extern s32 EnterCriticalSection(void);
-extern void sys_Init(void);
-extern void file_LoadSoundData(void);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* Continuation of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup -
  * replay_camera_rob_back_loose2 extracted to its own .c file, requiring this

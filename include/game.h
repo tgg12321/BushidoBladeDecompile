@@ -1173,4 +1173,96 @@ typedef struct {
     u8 unk_F;
 } PracticeParams;
 
+typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
+
+typedef struct { s32 f0, f1, f2, f3; } Copy16;
+
+typedef struct {
+    void *p0;
+    s32 *p1;
+    s32 pad08;
+    s32 ret;
+    s32 zero10;
+    s32 one14;
+    s32 zero18;
+    s32 zero1C;
+    s32 c20;
+    s32 c24;
+    s8 byte28;
+    u8 byte29;
+    u8 byte2A;
+    u8 byte2B;
+} S46C;
+
+typedef struct {
+    s32 sp18;
+    s32 sp1C;
+    s32 sp20;
+    s32 sp24;
+    s32 sp28;
+    s32 sp2C;
+    s32 sp30;
+    s32 sp34;
+    s32 sp38;
+    s32 sp3C;
+    s8 sp40;
+    u8 sp41;
+    u8 sp42;
+    u8 sp43;
+} S_80074488;
+
+/* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is the
+   character the round was fought with (func_8005E54C reads it at
+   j * 10 + i * 2 and picks UesrWorkDef / D_8009B58C by it; func_80060414 reads
+   player 0 round 0). 0x14 bytes, ending at the flag word below. */
+typedef struct {
+    u8 chr;
+    u8 unk1;
+} Unk8009BD24Record;
+
+/* 0x8009BD38: the match-settings flag word, bit fields named by bit offset.
+   Its C readers extract it by field: unk0 (`& 0xF`), unk10 (the round count
+   - 3; also picks the results-screen layout), unk12 (`== 2` tests), unk14
+   (1 bit), unk15 (one bit per player); func_80077894 stores unk0. Byte 3 is
+   not named here (main/64FD8.c reads it as D_8009BD3B). */
+typedef struct {
+    u32 unk0 : 4;
+    u32 unk4 : 6;
+    u32 unk10 : 2;
+    u32 unk12 : 2;
+    u32 unk14 : 1;
+    u32 unk15 : 2;
+    u32 unk17 : 1;
+    u32 unk18 : 6;
+} Unk8009BD38Flags;
+
+/* GameObj: a generic 0x100-byte layout, fields named by offset (field_XX), from the early m2c
+ * context tooling (feaa560b2) rather than from the game's objects. In C the only member used by
+ * name is field_18, a GPU primitive write cursor (func_80069898 and func_80070C70 build primitives
+ * at it and advance it); func_80072BC4 / func_80072CD4 take a GameObj * but write a POLY_G4
+ * through byte casts. Retyping these users is Phase 2 work. */
+typedef struct GameObj {
+    u8 field_00; u8 field_01; s16 field_02;
+    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
+    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
+    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
+    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
+    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
+    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
+    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
+    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
+    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
+    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
+    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
+    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
+    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
+    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
+    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
+    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
+    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
+    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
+    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
+    s16 field_FA; s32 field_FC;
+} GameObj;
+
 #endif /* GAME_H */

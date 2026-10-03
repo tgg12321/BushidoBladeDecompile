@@ -6,13 +6,7 @@
 #include "bb2.h"
 #include "bb2_const.h"
 
-typedef struct GameObj GameObj;
-
 /* Extern data declarations */
-
-
-
-
 extern s32 g_pad_buf;
 
 /* Extern function declarations */
@@ -20,55 +14,25 @@ extern s32 func_80037110(s32);
 extern void func_8002F770(s16 *, s32, s32, s32);
 
 extern void game_FrameLoop(void);
-extern void seq_Reset(void);
 
 extern void VSync(s32);
 
 
 extern void snd_SerialMixOn(void);
-extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
-extern void seq_Start(s32, s32);
-
-
-
-extern void func_8005B5AC(void);
-extern void func_8005BF3C(void);
-extern void func_8005B9C4(void);
-extern void func_8005B868(void);
-
-
-
-
-
-
-
-
-
 
 extern s32 file_GetFlag2(void);
 
-extern void func_800324D0(Unk80101EC8Record *);
-
-
-
-
-extern void sys_Panic(void);
 extern s32 func_8005B9FC(s32);
 extern s32 D_800A38B4;
 extern s32 memcpy(s32 *, s32, s32);
-extern void snd_VabFakeOpen9(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 func_80054434(void);
-extern void func_8002EBDC(s16 *, s16 *, s32 *, s32, s32);
 
-extern void snd_VabFakeOpen8And4(s32);
 extern void func_8003AA78(void);
 
 extern void func_8003AA48(void);
-extern void func_800174F4(void);
 extern void func_8003AAB0(void);
-extern u8 D_800A384C;
 extern s32 ratan2(s32, s32);
 
 
@@ -99,8 +63,6 @@ extern s32 stage_GetDataPtr(void);
 
 
 
-extern u8 D_800F1B18[];
-
 extern s32 cdrom_StartRead(s32, s32);
 extern s32 rand();
 extern void func_800325E0(s32, s32);
@@ -115,8 +77,6 @@ extern void *RotMatrixZ(s32, s32);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 
 
-extern void func_8003F218(s32);
-extern s32 math_FovToScreenDist(s32);
 extern void func_8003F3D4(s16 *);
 extern void func_80055138(s32, s32, s32);
 extern void func_8003FFE0(s32);
@@ -130,17 +90,12 @@ extern void func_80030D7C(void);
 
 extern void func_800397A0(void);
 extern void func_8003E6A0(s32, s32);
-extern void func_80046DA8(s32);
 
-extern void func_800321E8(void);
-extern void func_800335D8(void);
-extern void func_80033BC0(void);
 extern void func_8005C650(s32, s32, s32);
 extern s32 func_8005C8A8(s32, s32, s32, s32);
 extern s32 func_8005FA98(s32, s32, s32);
 extern s32 func_8005D814(s16 *, s32, s32, s32);
 extern void func_800550E8(s32);
-typedef struct { s32 f0, f1, f2, f3; } Copy16;
 
 extern void func_80018300(s32 *);
 extern void func_800372C0(void);
@@ -1054,7 +1009,6 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         node[2] = SCR->pos[2] + SCR->dpos[2] + node[5];
     }
 }
-extern u8 g_file_data_buf[];
 void func_8001924C(s16 *arg0, s32 arg1) {
     s32 i = 0;
     s16 *s0;

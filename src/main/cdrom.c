@@ -10,13 +10,8 @@
 extern void VSync(s32);
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
-extern void func_800174F4(void);
 extern void func_8003AAB0(void);
-extern void snd_Quit(void);
-extern void memcard_Quit(void);
 extern s32 EnterCriticalSection(void);
-extern void sys_Init(void);
-extern void file_LoadSoundData(void);
 extern void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 extern s32 CdPosToInt(s32);
 

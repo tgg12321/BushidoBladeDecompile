@@ -9,13 +9,11 @@
 
 
 
-extern u8 D_800A9D10;
 extern void func_80049E1C(void);
 extern void func_80052C10(void);
 
 
 
-extern s32 D_800A3244;
 extern s16 D_800963EE;
 
 
@@ -165,7 +163,6 @@ void math_RgbToHsv(s32 *a0, s32 *a1) {
     a1[1] = sat;
     a1[2] = val;
 }
-extern s16 D_800F6650;
 void func_8004283C(s32 a0) {
     if (a0) {
         D_800F6650 = 1;
@@ -173,7 +170,6 @@ void func_8004283C(s32 a0) {
         D_800F6650 = 0;
     }
 }
-extern s16 D_800F6650;
 s32 func_80042864(void) {
     return D_800F6650;
 }
@@ -1147,13 +1143,10 @@ extern s32 D_80101BD0;
 extern s32 D_800A3708;
 extern s32 D_800A370C;
 
-extern s32 D_80102C00;
-
 extern void MulMatrix2(s32 *, s32 *);
 extern void MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
 extern void func_80046F24(void);
 extern s32 func_8003E2C8(void);
-extern s32 func_8003F268(void);
 extern s32 func_80046E7C(void);
 extern void func_8004A4E0(void);
 extern void func_80046E54(s32);
@@ -1202,7 +1195,6 @@ extern void func_80052C10(void);
 void func_80044650(void) {
     func_80052C10();
 }
-extern s32 stage_GetId(void);
 s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     s32 v0;
     /* FAKE: keeps reorg.c relax_delay_slots from inverting the two default-path

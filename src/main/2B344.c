@@ -7,17 +7,7 @@
 #include "bb2.h"
 #include "bb2_const.h"
 
-/* Extern data declarations */
-
-
-
-
-
 /* Extern function declarations */
-
-
-
-
 extern void pad_ResetState(void);
 
 extern void VSync(s32);
@@ -29,32 +19,6 @@ extern void VSync(s32);
 
 
 
-extern u8 *D_800A3894;
-
-
-
-extern void func_8005B5AC(void);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-extern void func_80020D38(void);
 extern void func_800602AC(s32, s32);
 
 
@@ -70,7 +34,6 @@ extern s32 D_800A38B4;
 
 
 
-extern void eff_Init(void);
 extern void func_80040510(s32, s32, s32);
 
 
@@ -170,11 +133,6 @@ extern u16 rand(void);
 extern void func_80019568(s32);
 extern u8 D_800A38AC;
 extern s32 D_800A37D8;
-extern u8 D_800A3916;
-extern s32 D_800A38D0;
-extern s32 D_800A3908;
-extern s32 D_800A38FC;
-extern u16 D_800A37C4;
 
 s32 func_8003AB44(void) {
     D_800A37B8++;
@@ -400,8 +358,6 @@ void func_8003B20C(s32 arg0) {
     func_8003AF40(0);
     D_800A376C = D_8008D538[(s8)D_80102778.unk_4[0]];
 }
-extern u8 *D_800A3894;
-extern void player_SetCharId(s32, s32);
 void func_8003B2C8(void) {
     u8 *p = &D_80102778.unk_4[0];
     D_800A3836 = *p;
@@ -635,24 +591,10 @@ s32 D_800A3908;
 u8 D_800A3916;
 
 /* ---- merged from code6cac_c2.c (owner ruling Q65: one original file) ---- */
-/* Extern data declarations */
 
 
 /* Extern function declarations */
-
-
-
-
-
-
-
-
 extern void LoadImage(s32, s32);
-
-
-
-extern void game_Cleanup(void);
-
 
 
 
@@ -699,33 +641,17 @@ extern s32 D_800A38B4;
 
 
 
-extern void func_800174F4(void);
-
-
-
-
-
-
-
-
-
-
-extern s32 func_8003F268(void);
 extern s32 func_80052C28(s32, s32);
 extern s32 func_800788B0(void);
 extern void func_800372C0(void);
 extern void func_800548DC(void);
 extern s32 func_8005FC9C(s32, s32);
 extern s32 func_80054F68(void);
-extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
-extern void func_8003B5A4(void);
 extern s32 func_8005E54C(s32, s32, s32);
 extern void func_8005C650(s32, s32, s32);
-extern s32 *func_80077D00(void);
 extern void func_80060758(void);
 extern void func_8001CD68(u8 *);
 
-extern void func_80046DA8(s32);
 extern s32 func_800600C8(s32, s32, s32);
 extern void func_8001DA2C(void);
 
@@ -765,13 +691,10 @@ extern s32 g_gpu_ot_ptr;
 
 
 extern void func_8003AFFC(void);
-extern void func_80020CDC(void);
-extern void func_80020D38(void);
 extern void func_8004659C(s32);
 extern void snd_SerialMixOn(void);
 extern void cdrom_StartAudio(s32, s32);
 extern void func_80037260(void);
-extern void func_80041BF4(s32, s32, s32);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 void func_8003B9D0(void) {
@@ -892,9 +815,6 @@ call_bar:
     func_8003B5A4();
 }
 
-extern void player_Destroy(s32);
-extern void file_ResetDmaFlag(void);
-extern void func_8005B72C(void);
 extern void func_80078824(s32);
 void func_8003BE10(void) {
     gpu_ResetGraphMode1();
@@ -1402,9 +1322,6 @@ void func_8003CD10(void) {
     }
 }
 extern s32 D_800A3818;
-extern s32 math_FovToScreenDist(s32);
-extern void func_8003E22C(void);
-extern void func_8003F218(s32);
 void func_8003CE18(void) {
     s32 s0;
     s32 v0;
@@ -1451,13 +1368,11 @@ void func_8003CE18(void) {
     D_800A3834 = 0x1D;
     gpu_SetDispMaskOn();
 }
-extern void func_800335D8(void);
 extern void func_80021D10(s32, s32 *, s32);
 extern void func_800618B4(s32 *, s32 *);
 extern s32 *func_8005507C(void);
 extern s32 *func_8005508C(void);
 extern void func_80061064(s32 *, s32 *);
-extern void func_8001979C(s32, u32 *);
 extern void func_8003B328(void);
 extern void func_8003B534(s32);
 extern s32 D_800A312C;
@@ -1808,7 +1723,6 @@ void gpu_SetDrawMoveArray(RECT *a0, s32 a1, DR_MOVE (*a2)[2]) {
         } while (--s2 != -1);
     }
 }
-extern s16 D_800F6656;
 extern void func_8003DBE4(s32, s32, DR_MOVE (*)[2], s32, s32);
 void func_8003DA8C(s32 arg0, s32 arg1) {
     s16 *rec;
@@ -2301,7 +2215,6 @@ extern s32 *func_8003EB84(s32, s32, s32 *);
 extern s16 *camera_CalcAngles(void);
 extern void math_RotMatrixYXZ(Unk80101DF0Rot *, s32 *);
 extern s32 ratan2(s32, s32);
-extern s32 stage_GetId(void);
 extern void func_800620B8(s16 *, s32 *);
 /* func_8003E6D8 - grid pass. D_800A3708's xf.rot is turned into a matrix
  * (func_80042A88) and applied to {0,0,0x1000}; ratan2 of the result, stored
@@ -2977,7 +2890,6 @@ void func_8003F824(u8 *arg0, s32 arg1) {
 }
 extern s32 obj_CalcOffset(s32, s32);
 extern s32 func_80017D84(u8 *);
-extern void func_80045230(s32);
 extern u16 **D_80103608[];
 extern s16 D_80094AEC[];
 s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2);

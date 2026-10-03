@@ -14,66 +14,7 @@ extern u8 D_800F33D8[];
 
 
 /* Extern function declarations */
-
-
-
-
-
-
 extern void VSync(s32);
-
-
-
-
-extern void game_Cleanup(void);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -135,9 +76,6 @@ extern void EnterCriticalSection(void);
 extern void ResetRCnt(s32);
 extern s32 GetRCnt(s32);
 
-extern void func_8003E22C(void);
-extern void func_8003F218(s32);
-extern s32 math_FovToScreenDist(s32);
 extern void func_8001B6F4(void);
 
 
@@ -1403,7 +1341,6 @@ neg:
 }
 extern s32 camera_GetBoneData(void);
 extern u8 D_800A3208;
-extern u8 *D_800A3894;
 
 extern void func_800207C8(Unk80101EC8Record *, LeafPos *, LeafPos *, LeafPos *);
 void func_8003993C(void) {
@@ -1719,7 +1656,6 @@ s32 comb_Write8(void) {
 void comb_Read8(void) {
     read(g_comb_read_fd, &g_comb_recv_buf, 8);
 }
-extern s32 D_800A38D0;
 s32 comb_WaitRead8(void) {
     s32 s0;
     s32 s1;
@@ -1790,10 +1726,6 @@ s32 math_Popcount32(u32 arg0) {
     return count;
 }
 extern s32 D_800A36D0;
-extern u16 D_800A37C4;
-extern u8 D_800A3916;
-extern s32 D_800A3908;
-extern s32 D_800A38FC;
 
 typedef s32 (*FuncBufType)(void *);
 

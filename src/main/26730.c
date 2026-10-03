@@ -14,7 +14,6 @@
 #include "bb2.h"
 
 extern void CdMix(CdlATV *);
-extern s16 D_800A3854;
 CdlATV g_cd_atv;
 void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     g_cd_atv.val0 = (u8)arg0;
@@ -24,7 +23,6 @@ void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     CdMix(&g_cd_atv);
     D_800A3854 = 0;
 }
-extern s16 D_800A3840;
 CdlATV D_800A36B8;
 void func_80035F78(s16 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     D_800A36B8.val0 = (u8)arg1;

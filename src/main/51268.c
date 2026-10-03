@@ -12,16 +12,6 @@
 extern s32 rand(void);
 extern u8 D_8009BA60[];
 extern s32 chractar_use_pset_combo_id_table[];
-typedef struct {
-    u32 unk0 : 4;
-    u32 unk4 : 6;
-    u32 unk10 : 2;
-    u32 unk12 : 2;
-    u32 unk14 : 1;
-    u32 unk15 : 2;
-    u32 unk17 : 1;
-    u32 unk18 : 6;
-} Unk8009BD38Flags;
 extern Unk8009BD38Flags D_8009BD38;
 extern s32 D_800F10D0[];
 extern s32 func_80036EA8();
@@ -281,7 +271,6 @@ s32 func_80060CB8(s32 arg0, s32 arg1)
   D_800A3424 = ret;
   return ret + 0x4650;
 }
-extern s32 D_800A37D4;
 extern s32 D_800A3720;
 void func_80060E04(s32 arg0) {
     D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
@@ -329,48 +318,12 @@ extern s32 func_8005C2A8(s32 *, s16, s32);
 extern s32 rcos();
 extern s32 rsin();
 extern s32 g_gpu_ot_ptr;
-extern s32 D_8009BC04;
-extern s32 D_800A32C8;
-extern s16 D_800F0BCC[];
-extern s16 D_800F0BEC[];
-extern s32 D_800F10EC;
-extern s32 D_800F10F0;
-extern s32 D_800F1138;
-extern s32 D_800F1144;
-extern s32 D_800F1148;
-extern s32 D_800F1178;
-extern s32 D_800F117C;
 extern s32 D_800F1180;
-typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
-typedef struct GameObj {
-    u8 field_00; u8 field_01; s16 field_02;
-    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
-    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
-    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
-    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
-    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
-    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
-    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
-    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
-    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
-    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
-    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
-    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
-    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
-    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
-    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
-    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
-    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
-    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
-    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
-    s16 field_FA; s32 field_FC;
-} GameObj;
 extern s32 cdrom_GetFileSize();
 s32 printf(s32 *, s32);               /* extern */
 extern s32 cdrom_GetFileSize(s32);
 s32 cdrom_GetFileSize(s32);
 s32 func_8005C2A8(s32 *, s16, s32);
-extern s32 *func_80077D00(void);
 s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2);
 void func_8005C650(s32 a0, s32 a1, s32 a2);
 extern s32 func_80073728(s32, s32);
@@ -397,7 +350,6 @@ extern s32 func_800421A4();
 
 /* D_800158E0: 24B @ 0x800158E0 — "eff prim over :%d \n" + alignment + empty trailing string */
 const char D_800158E0[24] = "eff prim over :%d \n";
-extern s32 D_800A32BC;
 
 extern s32 D_800F1140;
 
@@ -4038,7 +3990,6 @@ void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
 
     arg0->field_18 = (s32) p;
 }
-s32 *func_80077D00(void);
 void func_80069A30(u8 *a0) {
     s32 *p = func_80077D00();
     s32 v0;
@@ -6366,7 +6317,6 @@ s32 func_8006E10C(void) {
     return 1;
 }
 extern u8 D_800A32E0[8];
-extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 s32 func_8006E2A8(void) {
     u8 rect[8];
     SetDispMask(0);

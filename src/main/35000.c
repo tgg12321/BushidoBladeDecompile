@@ -7,10 +7,8 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1a_c.c). */
-extern u8 D_800A9D10;
 extern void func_80049E1C(void);
 extern void func_80052C10(void);
-extern s32 D_800A3244;
 extern s16 D_800963EE;
 extern void func_80041430(s32, s32);
 extern s32 func_8004019C(s32 *, s32);
@@ -328,7 +326,6 @@ s32 func_800450F4(s32 a0, s32 a1) {
     }
     return 1;
 }
-extern s32 D_800A3244;
 void seq_Reset(void) {
     D_800A3244 = 0;
 }
@@ -531,7 +528,6 @@ s32 func_800457FC(void) {
 s32 func_80045808(void) {
     return 0x45000;
 }
-extern u8 D_800A9D10;
 void *func_80045814(void) {
     return &D_800A9D10;
 }
@@ -540,13 +536,9 @@ void func_80045824(s32 a0, s32 a1, s32 a2) {
     func_80045230(a1 + a2);
     func_800520B8(a0, a1, a2);
 }
-extern void func_80045230(s32);
-extern void func_80045694(s32, s32);
 extern void func_800400F8(s32);
 extern void func_80044ED8(s32, s32);
-extern s32 *func_8004574C(s32);
 extern s32 *func_800455AC(s32);
-extern void func_80045600(s32, s32);
 extern void func_80045AA4(s32, s32);
 
 s16 *func_80045878(s32 a0, s32 a1, s32 a2) {
@@ -640,9 +632,6 @@ extern void func_80044010(s32 *, s16);
 extern s32 func_80049C24(s32, s32);
 extern void func_80044F50(s32, s32, s32);
 extern s32 *func_800455AC(s32);
-extern void func_80045230(s32);
-extern void func_80045600(s32, s32);
-extern void func_80045694(s32, s32);
 extern void func_80046048(s32, s32);
 
 void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {

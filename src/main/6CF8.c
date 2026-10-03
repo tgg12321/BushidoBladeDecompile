@@ -25,7 +25,6 @@ extern void rcnt_StartCnt1(void);
 extern u8 g_file_dma_flag;
 extern s32 g_rng_state;
 extern u32 g_gpu_clear_rect;
-extern u8 g_file_data_buf[];
 extern u32 g_scratchpad_save;
 /* This file's .rodata: debug format strings, and the build date that D_800A30E0
  * (below) points at. */

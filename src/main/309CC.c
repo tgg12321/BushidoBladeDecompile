@@ -160,8 +160,6 @@ void func_800404A0(s16 *a0, s32 a1) {
         a0 = (s16 *)((u8 *)a0 + 0x68);
     } while (a0[1] != -1);
 }
-extern s32 g_player_ptrs[];
-extern s32 g_player_char_ids[];
 void func_800404D8(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
@@ -174,7 +172,6 @@ extern void func_800408F8(s32 *);
 extern void func_80040B44(s32 *);
 extern s32 *func_80045878(s32);
 extern void func_8003F824(s32 *, s32);
-extern void func_8003FFC4(s32 *);
 extern void func_8003E120(void);
 s32 *func_80040510(s32 a0) {
     s32 *ptr;
@@ -397,7 +394,6 @@ void func_80040A78(s32 arg0) {
         arg0 += 4;
     } while (var_a1 < 0x14);
 }
-typedef struct { s32 f0, f1, f2, f3; } Copy16;
 typedef struct { s32 f0, f1; } Copy8;
 void func_80040B44(s32 *arg0) {
     s32 seen[18];

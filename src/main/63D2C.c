@@ -9,29 +9,6 @@
 extern u16 GetClut(s32, s32);
 extern s32 rsin();
 extern s32 g_gpu_ot_ptr;
-typedef struct GameObj {
-    u8 field_00; u8 field_01; s16 field_02;
-    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
-    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
-    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
-    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
-    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
-    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
-    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
-    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
-    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
-    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
-    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
-    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
-    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
-    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
-    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
-    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
-    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
-    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
-    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
-    s16 field_FA; s32 field_FC;
-} GameObj;
 extern s32 func_80073728(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
@@ -498,23 +475,6 @@ skip_init:
 
     arg0[2] = q;
 }
-
-typedef struct {
-    s32 sp18;
-    s32 sp1C;
-    s32 sp20;
-    s32 sp24;
-    s32 sp28;
-    s32 sp2C;
-    s32 sp30;
-    s32 sp34;
-    s32 sp38;
-    s32 sp3C;
-    s8 sp40;
-    u8 sp41;
-    u8 sp42;
-    u8 sp43;
-} S_80074488;
 
 void func_80074488(s32 *arg0) {
     S_80074488 s;

@@ -8,16 +8,8 @@
 #include "bb2_const.h"
 
 /* Declarations from the file this TU was split from (code6cac_b.c). */
-extern u8 D_8008E914[][8];
-extern s32 D_8008EA00[][4];
-extern s32 func_8001DB58(void);
-
-extern void player_SetCharId(s32, s32);
 extern s16 *func_8004678C(void);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
-extern u8 D_800A384C;
-extern u8 D_8008E908[][5];
-extern u8 D_8008EC24[][5];
 extern s32 ratan2(s32, s32);
 extern s32 rand(void);
 extern void RotMatrixX(s32, s32 *);
@@ -28,9 +20,6 @@ extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
 extern u8 D_800A38AB;
-extern void func_8001F860(s16 *arg0, s32 arg1);
-extern void func_8002AB08(s32 a0);
-extern void func_800288C8(void);
 extern s32 func_80029454(void);
 extern void func_80031B24(void);
 void func_80026DA4(void);
@@ -4825,7 +4814,6 @@ s32 func_800307D0(Unk80101EC8Record *a0) {
     return id;
 }
 typedef struct { s32 x, y, z; } Vec3_copy;
-extern s32 rng_Next(void);
 extern Obj80106A78 *func_80030580(Unk80101EC8Record *, s32);
 void func_80030900(Unk80101EC8Record *a0, Vec3i32 *a1) {
     Obj80106A78 *p;
@@ -6566,8 +6554,6 @@ void func_80034200(void) {
 }
 extern void func_80034200(void);
 extern void func_800372C0(void);
-extern u8 D_801027A0;
-extern u8 D_801027D8;
 void func_800342A0(void) {
     func_80034200();
     if (D_800A3874 == D_800A389B) {

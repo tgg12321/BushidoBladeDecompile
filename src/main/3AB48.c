@@ -22,12 +22,7 @@ extern s32 func_80044FA0(s32, s32);
 extern void func_800418D0(s32 *);
 extern void func_8004A1FC();
 extern void func_800420D0(void);
-extern void stage_InitCollision(void);
-extern s32 D_80102C00;
-extern u16 D_800A38D6;
 extern u8 *g_gpu_ot_ptr;
-extern s32 D_800A3808;
-s32 stage_GetId(void);
 void func_80046914(void);
 s32 *func_800469C4(s32 a0);
 void func_80046A60(void);
@@ -35,7 +30,6 @@ void func_80046EA0(s32 a0);
 void game_StageCleanup(s32 a0, s32 a1);
 void *stage_GetDataPtr(void);
 void camera_InitBoneData(void);
-extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
 extern s32 func_8005C2A8(s32 *, s16, s32);
 extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern void func_80052C10(void);
@@ -369,7 +363,6 @@ s32 func_80052D00(s32 arg0, s32 arg1) {
     }
     return func_80053694((s32 *)arg0, (s16 *)arg1);
 }
-extern s32 gte_SumSquares3(s32, s32, s32);
 extern s32 func_80052D00(s32, s32);
 extern s32 func_80053754();
 extern s32 func_80053E9C();
@@ -724,11 +717,7 @@ extern s32 func_80045080(s32);
 extern void func_80046914(void);
 extern s32 *func_800469C4(s32);
 extern void *stage_GetDataPtr(void);
-extern s32 stage_GetId(void);
 
-extern void func_8003FFC4(s32 *);
-extern void func_8003F218(s32);
-extern s32 math_FovToScreenDist(s32);
 extern void game_StageCleanup(s32, s32);
 s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     /* FAKE: second C handle to the global ctrl block (pointer-alias family);
@@ -817,14 +806,12 @@ void func_800548DC(void) {
 }
 extern s32 D_800A3250[2];
 extern s16 *func_8003D7B4(s32);
-extern void func_8001979C(s32, u32 *);
 extern void func_8003D774(s32, s32);
 extern void MulMatrix2(MATRIX *, MATRIX *);
 extern void math_MatrixToAnglesYXZ(s32 *, s16 *);
 extern void math_TransposeMatrixInPlace(u16 *);
 extern void func_800198D0(s32, s32, u32 *, u16 *);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
-extern void func_80040304(s32, s32);
 /* Per-frame stage handler on the ctrl block D_800EFAE8.  On the first frame
  * (unk0 == 0) it resolves the loaded data's offset table (unk2C) into the
  * camera stream (unk30), the per-player motion streams (unk34[], dropped
@@ -3410,138 +3397,8 @@ void func_8005B5AC(void) {
 
 extern u8 D_8009BA60[];
 extern s32 chractar_use_pset_combo_id_table[];
-extern s32 D_8009BC04;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is the
-   character the round was fought with (func_8005E54C reads it at
-   j * 10 + i * 2 and picks UesrWorkDef / D_8009B58C by it; func_80060414 reads
-   player 0 round 0). 0x14 bytes, ending at the flag word below. */
-typedef struct {
-    u8 chr;
-    u8 unk1;
-} Unk8009BD24Record;
-extern Unk8009BD24Record D_8009BD24[2][5];
-/* 0x8009BD38: the match-settings flag word, bit fields named by bit offset.
-   Every reader in this file extracts it by field: unk0 (`& 0xF`), unk10 (the
-   round count - 3; also picks the results-screen layout), unk12 (`== 2`
-   tests), unk14 (1 bit), unk15 (one bit per player); func_80077894 stores
-   unk0. Byte 3 is not named here (text1b_b.c reads it as D_8009BD3B). */
-typedef struct {
-    u32 unk0 : 4;
-    u32 unk4 : 6;
-    u32 unk10 : 2;
-    u32 unk12 : 2;
-    u32 unk14 : 1;
-    u32 unk15 : 2;
-    u32 unk17 : 1;
-    u32 unk18 : 6;
-} Unk8009BD38Flags;
 extern Unk8009BD38Flags D_8009BD38;
-
-
-
-
-
-
-
-
-
-
-extern s32 D_800A32C8;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-extern s16 D_800F0BCC[];
-extern s16 D_800F0BEC[];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -3557,26 +3414,6 @@ extern s32 D_800F10D0[];
 
 
 
-extern s32 D_800F10EC;
-extern s32 D_800F10F0;
-
-
-
-
-
-
-
-
-
-
-
-extern s32 D_800F1138;
-
-extern s32 D_800F1144;
-extern s32 D_800F1148;
-
-extern s32 D_800F1178;
-extern s32 D_800F117C;
 extern s32 D_800F1180;
 
 
@@ -3650,9 +3487,6 @@ s32 SsUtReverbOff(void);
 s32 SsUtSetReverbType(s32);
 s32 SsUtSetReverbDepth(s32, s32);
 
-void func_8005B5AC(void);
-
-
 void func_8005B72C(void) {
     s32 s0;
     s32 *s2;
@@ -3676,37 +3510,10 @@ void func_8005B72C(void) {
 
 #define NULL ((void *)0)
 
-typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
 typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
 typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
 typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
 
-/* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
- * field layout is the union of all observed accesses; m2c picks the type
- * that best fits each access site. Mirroring smart_match.py's layout. */
-typedef struct GameObj {
-    u8 field_00; u8 field_01; s16 field_02;
-    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
-    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
-    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
-    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
-    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
-    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
-    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
-    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
-    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
-    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
-    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
-    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
-    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
-    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
-    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
-    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
-    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
-    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
-    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
-    s16 field_FA; s32 field_FC;
-} GameObj;
 extern s32 func_80036EA8();
 extern s32 cdrom_GetFileSize();
 
@@ -3751,7 +3558,6 @@ void func_8005B868(void) {
     g_vab_vb_sbaddr_plus_0x10 = 0;
 }
 extern s32 cdrom_GetFileSize(s32);
-extern void func_8005B868(void);
 
 s32 func_8005B8B8(s32 arg0) {
     s32 t0;
@@ -3787,7 +3593,6 @@ void func_8005B9C4(void) {
     g_vab_rec_ptr_plus_0x24 = 0;
     g_vab_vb_sbaddr_plus_0x24 = 0;
 }
-void func_8005B9C4(void);
 s32 game_FrameLoop(void);
 s32 cdrom_StartRead(s32, s32);
 s32 cdrom_GetFileSize(s32);
@@ -4035,8 +3840,6 @@ s32 func_8005C074(s16 vabid, s32 base) {
  * return type, so its own bytes do not decide the type; this call site's bytes
  * do, and they say s32.
  */
-extern s32 *func_80077D00(void);
-
 
 extern s32 snd_VabOpen(s32 *, s16);
 
@@ -4526,22 +4329,6 @@ extern s32 func_80073728(s32, s32);
 extern s32 D_8009B2C8;
 extern s32 D_8009B340;
 extern s32 D_8009B358;
-typedef struct {
-    void *p0;
-    s32 *p1;
-    s32 pad08;
-    s32 ret;
-    s32 zero10;
-    s32 one14;
-    s32 zero18;
-    s32 zero1C;
-    s32 c20;
-    s32 c24;
-    s8 byte28;
-    u8 byte29;
-    u8 byte2A;
-    u8 byte2B;
-} S46C;
 void func_8005D46C(s32 arg0, s32 arg1) {
     S46C s;
     s32 stride;
@@ -4594,7 +4381,6 @@ typedef struct {
     u8 col_b;
 } Env5E54C;
 extern u8 D_8009B2E0[];
-extern s32 D_800A326C;
 s32 func_8005D554(s32 arg0, s32 arg1) {
     Env5E54C s;
     s32 i;

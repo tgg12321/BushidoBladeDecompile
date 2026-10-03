@@ -6,11 +6,6 @@
 #include "gte.h"
 #include "bb2_const.h"
 
-extern s32 *func_80077D00(void);
-extern u8 D_801027A0;
-extern u8 D_801027D8;
-extern void func_800344B4(void);
-
 /* Copies the record at func_80077D00() into the FileRecord D_80106A50
  * (include/game.h): flags bits 0-2 are cleared and re-set from p[8] bits 0-2,
  * then the three colour bytes at p+0x17 are copied to D_80106A50.color.

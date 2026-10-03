@@ -18,8 +18,6 @@ extern s32 CdPosToInt(s32);
 extern void cdrom_ReadyCallback(u8 arg0);
 
 extern void CdMix(CdlATV *);
-extern s16 D_800A3854;
-extern s16 D_800A3840;
 extern void cdrom_SetMix(s32, s32, s32, s32);
 CdlATV g_cd_atv;
 CdlATV D_800A36B8;
