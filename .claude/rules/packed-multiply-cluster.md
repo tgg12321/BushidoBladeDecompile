@@ -1,12 +1,12 @@
 ---
 name: packed-multiply-cluster
-paths: ["src/main/psxsdk/libgpu/sys.c", "src/main/368E4.c"]
-description: "Packed fixed-point multiply (8007Exxx display.c): a redundant mask before a discarding shift = S8/STRONG = hand-coded (canonical asm); otherwise use the H-structure pure-C recipe."
+paths: ["src/main/psxsdk/libgte/*.c", "src/main/368E4.c"]
+description: "Packed fixed-point multiply (8007Exxx LIBGTE, ex display.c): a redundant mask before a discarding shift = S8/STRONG = hand-coded (canonical asm); otherwise use the H-structure pure-C recipe."
 metadata:
   type: recipe
 ---
 
-# Packed fixed-point multiply functions (8007Exxx display.c cluster)
+# Packed fixed-point multiply functions (8007Exxx LIBGTE cluster, src/main/psxsdk/libgte/)
 
 Leaf functions that load packed s16 values, multiply by Q12/Q16 coefficients, shift, and repack. **Run
 `python3 tools/scan_hand_coded.py --single <func>` FIRST.**

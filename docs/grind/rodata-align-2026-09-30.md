@@ -403,3 +403,8 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   `static` in either file; no string literal (every string is a named array in text1a_b_post_rodata.c).
   Compare: old gpu.o+display.o vs the 14 parts (splitcmp.py with a joined BEFORE): `.text` 0x5E00 identical
   bar 88 `j`/`jal` encodings against the `.text` section symbol re-basing, 986 relocations, 174 globals.
+  Then sys.c's tail → `psxsdk/libapi/c73.c`, 37 `psxsdk/libgte/` files (GEO_00..PATCHGTE, LIBSCAN names
+  lowercased) and `psxsdk/libcd/event.c`, cut at every module start 0x8007DF10..0x8007FF7C; sys.c is then
+  exactly SYS. No `.rodata` or data in the range; each module-end pad already sits in its module's own asm
+  (§10), so every part ends at its module end. Compare: old gpu.o+display.o vs all 53 parts: identical as
+  above (`.text` 0x5E00, 986 relocations, 174 globals).

@@ -2,7 +2,7 @@
   "schema": 1,
   "functions": {
     "SetBackColor": {
-      "file": "main/psxsdk/libgpu/sys",
+      "file": "main/psxsdk/libgte/reg10",
       "sha256": [
         "c849f62fe5ea93c8203a7b17c32a5bc8b3579cce5f1a9c96532389c5f13b1a63",
         "b49381c90bb282f49ea6560f4ad4e83d6b6c263329b9f01a0a5b52269ea111ea",
@@ -10,7 +10,7 @@
       ]
     },
     "SetFarColor": {
-      "file": "main/psxsdk/libgpu/sys",
+      "file": "main/psxsdk/libgte/reg11",
       "sha256": [
         "8906cfbb45953103c74e6868b5825db656a1897a09defbe6f3e789e8fc3b3cd5",
         "3d75c4c221677f91cc2ee92f1e345f871a99fd4d40cfde59f4d6e16da7b1d284",
