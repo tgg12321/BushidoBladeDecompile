@@ -140,7 +140,7 @@ against its class test (default refute) before applying.
   `kind`. **Applied after the Q105 re-check (2026-10-03).** Each holds in every write and read of
   the matched code. `type`: the InitPAD byte-1 nibble (5/7 folded to 4; 4 when the status byte != 0;
   4 from pad_ResetState / func_80055B60; func_8003A728 can replace it with link-exchange nibbles).
-  `valid`: 1 iff the status byte == 0 (and 1, 1 from func_80019534); func_80019568 / func_800693CC
+  `valid`: 1 iff the status byte == 0 (and 1, 1 from pad_ResetStateMarkValid); func_80019568 / func_800693CC
   treat 0 as no pad. `kind`: a spawn id, -1 when free, and an index into D_8008E194 / D_8008EB80.
   func_80019568 now uses a local `PadState` and copies the two members by index, so no walk crosses
   a member.
@@ -151,8 +151,7 @@ against its class test (default refute) before applying.
     func_80055B60 synthesized record.
 - `pad_ResetStateMarkValid` 0x80019534: refused after the Q105 re-check on the then-closed T4 list
   ("Mark" was not listed; "Set" means storing arguments, and "Reset ... Valid" reads as clearing the flags).
-  Owner ruling Q107 made T4 a principle; the rename is to be applied in hand-off work item D. Until then
-  the function is `func_80019534`, and the PadState header comment records its store.
+  Owner ruling Q107 made T4 a principle; applied in the Q107 naming wave (func_manifest_q107.csv).
 - basis-withdrawn, 3 aliases: the parents of `cpu_helper_80026DA4` / `cpu_helper_80029454`
   (`cpu_exec_main_game_loop_frame` 0x8002C61C) and `cpu_helper_8003F3D4`
   (`cpu_init_stage_and_camera_setup` 0x8001E404) are MEDIUM v3 rows that were never reset, so their basis

@@ -489,7 +489,7 @@ typedef struct PadState {
                                       4 from pad_ResetState (both) and func_80055B60
                                       (entry arg0 of its own record) */
     s16 valid[2];                  /* per pad: 1 iff the InitPAD buffer status byte == 0
-                                      (func_80019568); 1, 1 from func_80019534 */
+                                      (func_80019568); 1, 1 from pad_ResetStateMarkValid */
     u32 held;                      /* 0x08 */
     u32 pressed;                   /* 0x0C */
     u32 released;                  /* 0x10 */

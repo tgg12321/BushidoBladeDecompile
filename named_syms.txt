@@ -1815,7 +1815,7 @@ g_char_pose_id_p2                                       = 0x800A30FD;  /* P2 cha
 g_cam_bone_data_cached                                  = 0x800A3778;  /* cached camera_GetBoneData() return; reread once per frame */
 g_char_struct_p1_field_6A                               = 0x80101F32;  /* per-char field +0x6A (u16; mode == 0x11 check) */
 g_char_struct_p1_field_FC                               = 0x80101FC4;  /* per-char field +0xFC; set to a0_val + passed to func_8003E6A0 */
-g_pad_state_plus_0x4                             = 0x8010278C;  /* g_pad_state.valid[0] (set to 1 by func_80019534) */  /* data-wave 2026-10-03: was g_practice_lesson_init_done */
+g_pad_state_plus_0x4                             = 0x8010278C;  /* g_pad_state.valid[0] (set to 1 by pad_ResetStateMarkValid) */  /* data-wave 2026-10-03: was g_practice_lesson_init_done */
 
 /* === Attack-angle offset table + char field paired (2026-05-17) -- 2 highs === */
 g_attack_angle_offset_table                             = 0x8008EB40;  /* s16 2D table; rows 3-wide indexed by attack-dir, cols by sub-dir; values added to char angle (BAM) for attack direction offset */
@@ -2820,7 +2820,7 @@ efc_helper_80017A44                                = 0x80017A44;  /* first-pass 
 ang_helper_8001924C                                = 0x8001924C;  /* first-pass subsystem tag (ang); <-ang_hosei_8003F62C */
 replay_camera_helper_800194C0                      = 0x800194C0;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
 /* RENAME 0x800194F4: retired name 'replay_camera_helper_800194F4' — preserved note: first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
-sys_helper_80019534                                = 0x80019534;  /* first-pass subsystem tag (sys); <-sys_GameInit_80016D78 */
+/* RENAME 0x80019534: retired name 'sys_helper_80019534' — preserved note: first-pass subsystem tag (sys); <-sys_GameInit_80016D78 */
 mode_helper_8001A820                               = 0x8001A820;  /* first-pass subsystem tag (mode); <-mode_handler_01_GameFrameUpdate */
 /* RESET 0x8001B690: retired name 'cpu_helper_8001B690' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
 mode_helper_8001B6F4                               = 0x8001B6F4;  /* first-pass subsystem tag (mode); <-mode_handler_04_GameSetup */

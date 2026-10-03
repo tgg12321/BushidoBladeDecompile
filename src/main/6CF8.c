@@ -337,7 +337,7 @@ extern u8 D_800A3746;
 extern void func_80020D70(void);
 extern void game_Init(void);
 extern u8 D_800A36B0;
-extern void func_80019534(void);
+extern void pad_ResetStateMarkValid(void);
 extern void func_8003D2C4(void);
 extern void func_8001C444(void);
 void sys_GameInit(void) {
@@ -350,7 +350,7 @@ void sys_GameInit(void) {
     g_file_dma_flag = 0;
     D_800A3906 = 0;
     file_LoadSoundData();
-    func_80019534();
+    pad_ResetStateMarkValid();
     func_8003D2C4();
     func_8001C444();
     D_800A36F9 = 0;

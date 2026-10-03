@@ -1,4 +1,4 @@
-glabel func_80019534
+glabel pad_ResetStateMarkValid
     /* 9D34 80019534 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 9D38 80019538 1000BFAF */  sw         $ra, 0x10($sp)
     /* 9D3C 8001953C 3D65000C */  jal        pad_ResetState
@@ -12,4 +12,4 @@ glabel func_80019534
     /* 9D5C 8001955C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 9D60 80019560 0800E003 */  jr         $ra
     /* 9D64 80019564 00000000 */   nop
-endlabel func_80019534
+endlabel pad_ResetStateMarkValid

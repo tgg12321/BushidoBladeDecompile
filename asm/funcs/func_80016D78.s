@@ -24,7 +24,7 @@ glabel func_80016D78
     /* 75D0 80016DD0 3A0880A3 */  sb         $zero, %gp_rel(D_800A3906)($gp)
     /* 75D4 80016DD4 3E5B000C */  jal        file_LoadSoundData
     /* 75D8 80016DD8 00000000 */   nop
-    /* 75DC 80016DDC 4D65000C */  jal        func_80019534
+    /* 75DC 80016DDC 4D65000C */  jal        pad_ResetStateMarkValid
     /* 75E0 80016DE0 00000000 */   nop
     /* 75E4 80016DE4 B1F4000C */  jal        func_8003D2C4
     /* 75E8 80016DE8 00000000 */   nop

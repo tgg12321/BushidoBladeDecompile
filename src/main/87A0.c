@@ -1158,7 +1158,7 @@ void pad_ResetState(void) {
     g_pad_state.released = 0;
     g_pad_state.unheld = -1;
 }
-void func_80019534(void) {
+void pad_ResetStateMarkValid(void) {
     pad_ResetState();
     g_pad_state.valid[0] = 1;
     g_pad_state.valid[1] = 1;
