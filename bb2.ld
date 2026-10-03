@@ -251,7 +251,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/tempo.o(.text);
         build/src/main/psxsdk/libsnd/760D0.o(.text);
         build/src/main/psxsdk/libsnd/ut_gvba.o(.text);
-        build/src/main/psxsdk/libsnd/76240.o(.text);
+        build/src/main/psxsdk/libsnd/ut_keyv.o(.text);
         build/src/main/psxsdk/libsnd/ut_rdep.o(.text);
         build/src/main/psxsdk/libsnd/ut_rev.o(.text);
         build/src/main/psxsdk/libsnd/ut_roff.o(.text);
@@ -474,7 +474,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/tempo.o(.data);
         build/src/main/psxsdk/libsnd/760D0.o(.data);
         build/src/main/psxsdk/libsnd/ut_gvba.o(.data);
-        build/src/main/psxsdk/libsnd/76240.o(.data);
+        build/src/main/psxsdk/libsnd/ut_keyv.o(.data);
         build/src/main/psxsdk/libsnd/ut_rdep.o(.data);
         build/src/main/psxsdk/libsnd/ut_rev.o(.data);
         build/src/main/psxsdk/libsnd/ut_roff.o(.data);
@@ -743,7 +743,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/tempo.o(.bss);
         build/src/main/psxsdk/libsnd/760D0.o(.bss);
         build/src/main/psxsdk/libsnd/ut_gvba.o(.bss);
-        build/src/main/psxsdk/libsnd/76240.o(.bss);
+        build/src/main/psxsdk/libsnd/ut_keyv.o(.bss);
         build/src/main/psxsdk/libsnd/ut_rdep.o(.bss);
         build/src/main/psxsdk/libsnd/ut_rev.o(.bss);
         build/src/main/psxsdk/libsnd/ut_roff.o(.bss);
