@@ -72,7 +72,7 @@ SECTIONS
         build/src/main/psxsdk/libc2/prnt.o(.rodata);
         build/src/main/psxsdk/libc2/sprintf.o(.rodata);
         build/src/text1a_b_post_rodata.o(.rodata);
-        build/src/gpu.o(.rodata);
+        build/src/main/psxsdk/libgpu/prim.o(.rodata);
         build/src/main/psxsdk/libgpu/sys.o(.rodata);
         build/src/system.o(.rodata);
         build/src/text1a_b_tail_rodata.o(.rodata);
@@ -150,7 +150,7 @@ SECTIONS
         build/src/main/psxsdk/libc2/memchr.o(.text);
         build/src/main/psxsdk/libc2/putchar.o(.text);
         build/src/main/psxsdk/libc2/sprintf.o(.text);
-        build/src/gpu.o(.text);
+        build/src/main/psxsdk/libgpu/prim.o(.text);
         build/src/main/psxsdk/libgpu/sys.o(.text);
         build/src/system.o(.text);
         build/src/ings2.o(.text);
@@ -229,7 +229,7 @@ SECTIONS
         build/src/main/psxsdk/libc2/memchr.o(.data);
         build/src/main/psxsdk/libc2/putchar.o(.data);
         build/src/main/psxsdk/libc2/sprintf.o(.data);
-        build/src/gpu.o(.data);
+        build/src/main/psxsdk/libgpu/prim.o(.data);
         build/src/main/psxsdk/libgpu/sys.o(.data);
         build/asm/data/7D920.data.o(.data);
         /* libcd bios.c: Intr (static volatile CD_intr, defined in src/system.c) at 0x800A1494 */
@@ -358,7 +358,7 @@ SECTIONS
         build/src/main/psxsdk/libc2/memchr.o(.bss);
         build/src/main/psxsdk/libc2/putchar.o(.bss);
         build/src/main/psxsdk/libc2/sprintf.o(.bss);
-        build/src/gpu.o(.bss);
+        build/src/main/psxsdk/libgpu/prim.o(.bss);
         build/src/main/psxsdk/libgpu/sys.o(.bss);
         build/src/system.o(.bss);
         build/src/ings2.o(.bss);

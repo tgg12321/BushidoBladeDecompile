@@ -6,7 +6,7 @@
 # src-digest 4dcb871b6c47cf77cc497a28d0857a54ea6b235c
 # recorded 2026-10-03T14:29:19Z
 684727a226ea1d212aa6d5f04a7ded04b4aaa4fa  main/psxsdk/libgpu/sys
-bc60c54aa5534f3e039cc0a020e57bad8be781d0  gpu
+bc60c54aa5534f3e039cc0a020e57bad8be781d0  main/psxsdk/libgpu/prim
 aebf2779ad36e65eb2f400092840ec864004abf1  ings2
 5b828f665c4fc844dd8703832dd96567f9b01ef7  main
 f0794ea2848865ef42396f92b2d3fc6f0ad4b195  main/175A4
