@@ -16,7 +16,6 @@
   "corpus": {
     "src/code6cac_b_rodata_post.c": "6c74f7ad2f923b092da816a02c1077d11b01d665",
     "src/code6cac_b_rodata_pre.c": "437c9b503d7acc0b4e090397afaf6c04df4b4954",
-    "src/code6cac_c0.c": "6ae573ce7472edacddd0370e56b76c09f52f9d4b",
     "src/code6cac_c2.c": "057bddd53469c769fc5c9027a94f30a8aebcd549",
     "src/code6cac_c_mid.c": "d2c9d20806141de4025bc34d7cc8d7e5ee7ff905",
     "src/display.c": "be23bd83b5b7603101e99201b1a897da7e3c47e7",
@@ -33,6 +32,7 @@
     "src/main/26730.c": "cc3e9e6eea4e667d98f224b735d2772a2fbb53b6",
     "src/main/267A8.c": "44d8d5ba9f263f7f6824d246e669175b44d76da7",
     "src/main/26940.c": "950b329b7d14326b8f2297d3135d9917e45e533d",
+    "src/main/28514.c": "6ae573ce7472edacddd0370e56b76c09f52f9d4b",
     "src/main/6CF8.c": "80cc8ef398d815d0d4c87fd293ab16ecdcc42d86",
     "src/main/87A0.c": "f0557ab7851a393cb4ddc8d4601e9c12b711c799",
     "src/main/9F9C.c": "3f00bd868c9289c7a2f1fdf95af04abdc79a5ebf",

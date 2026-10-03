@@ -53,7 +53,7 @@ SECTIONS
         build/src/main/cdrom.o(.rodata);
         build/src/code6cac_b_rodata_post.o(.rodata);
         build/src/main/memcard.o(.rodata);
-        build/src/code6cac_c0.o(.rodata);
+        build/src/main/28514.o(.rodata);
         build/src/code6cac_c_mid.o(.rodata);
         build/src/code6cac_c2.o(.rodata);
         build/src/text1a_pre.o(.rodata);
@@ -99,7 +99,7 @@ SECTIONS
         build/src/main/26940.o(.text);
         build/src/main/cdrom.o(.text);
         build/src/main/memcard.o(.text);
-        build/src/code6cac_c0.o(.text);
+        build/src/main/28514.o(.text);
         build/src/code6cac_c_mid.o(.text);
         build/src/code6cac_c2.o(.text);
         build/src/text1a_pre.o(.text);
@@ -139,7 +139,7 @@ SECTIONS
         build/src/main/26940.o(.data);
         build/src/main/cdrom.o(.data);
         build/src/main/memcard.o(.data);
-        build/src/code6cac_c0.o(.data);
+        build/src/main/28514.o(.data);
         build/src/code6cac_c_mid.o(.data);
         build/src/code6cac_c2.o(.data);
         build/src/text1a_pre.o(.data);
@@ -178,7 +178,7 @@ SECTIONS
         build/asm/data/939DC.data.o(.data);
         build/src/main/267A8.o(.sdata);
         build/asm/data/939E6.data.o(.data);
-        build/src/code6cac_c0.o(.sdata);
+        build/src/main/28514.o(.sdata);
         build/src/code6cac_c_mid.o(.sdata);
         build/asm/data/93A0E.data.o(.data);
         build/src/code6cac_c2.o(.sdata);
@@ -229,7 +229,7 @@ SECTIONS
         build/src/main/26940.o(.bss);
         build/src/main/cdrom.o(.bss);
         build/src/main/memcard.o(.bss);
-        build/src/code6cac_c0.o(.bss);
+        build/src/main/28514.o(.bss);
         build/src/code6cac_c_mid.o(.bss);
         build/src/code6cac_c2.o(.bss);
         build/src/text1a_pre.o(.bss);
