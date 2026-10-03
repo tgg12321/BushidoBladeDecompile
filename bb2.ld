@@ -40,7 +40,7 @@ SECTIONS
         build/src/ings_strings.o(.rodata);
         build/src/main/87A0.o(.rodata);
         build/src/main/9F9C.o(.rodata);
-        build/src/code6cac_b.o(.rodata);
+        build/src/main/175A4.o(.rodata);
         build/src/code6cac_b_tu2.o(.rodata);
         build/src/code6cac_b_tu3.o(.rodata);
         build/src/code6cac_b_rodata_pre.o(.rodata);
@@ -88,7 +88,7 @@ SECTIONS
         build/src/main/6CF8.o(.text);
         build/src/main/87A0.o(.text);
         build/src/main/9F9C.o(.text);
-        build/src/code6cac_b.o(.text);
+        build/src/main/175A4.o(.text);
         build/src/code6cac_b_tu2.o(.text);
         build/src/code6cac_b_tu3.o(.text);
         build/src/code6cac_b3.o(.text);
@@ -128,7 +128,7 @@ SECTIONS
         main_DATA_START = .;
         build/src/main/87A0.o(.data);
         build/src/main/9F9C.o(.data);
-        build/src/code6cac_b.o(.data);
+        build/src/main/175A4.o(.data);
         build/src/code6cac_b_tu2.o(.data);
         build/src/code6cac_b_tu3.o(.data);
         build/src/code6cac_b3.o(.data);
@@ -218,7 +218,7 @@ SECTIONS
         main_BSS_START = .;
         build/src/main/87A0.o(.bss);
         build/src/main/9F9C.o(.bss);
-        build/src/code6cac_b.o(.bss);
+        build/src/main/175A4.o(.bss);
         build/src/code6cac_b_tu2.o(.bss);
         build/src/code6cac_b_tu3.o(.bss);
         build/src/code6cac_b3.o(.bss);
