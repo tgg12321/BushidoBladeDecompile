@@ -46,7 +46,7 @@ SECTIONS
         build/src/code6cac_b_rodata_pre.o(.rodata);
         build/src/main/24F08.o(.rodata);
         build/src/main/25788.o(.rodata);
-        build/src/code6cac_b2_post.o(.rodata);
+        build/src/main/25C38.o(.rodata);
         build/src/code6cac_b4.o(.rodata);
         build/src/code6cac_b4_post.o(.rodata);
         build/src/code6cac_b5.o(.rodata);
@@ -93,7 +93,7 @@ SECTIONS
         build/src/main/24BF0.o(.text);
         build/src/main/24F08.o(.text);
         build/src/main/25788.o(.text);
-        build/src/code6cac_b2_post.o(.text);
+        build/src/main/25C38.o(.text);
         build/src/code6cac_b4.o(.text);
         build/src/code6cac_b4_post.o(.text);
         build/src/code6cac_b5.o(.text);
@@ -133,7 +133,7 @@ SECTIONS
         build/src/main/24BF0.o(.data);
         build/src/main/24F08.o(.data);
         build/src/main/25788.o(.data);
-        build/src/code6cac_b2_post.o(.data);
+        build/src/main/25C38.o(.data);
         build/src/code6cac_b4.o(.data);
         build/src/code6cac_b4_post.o(.data);
         build/src/code6cac_b5.o(.data);
@@ -174,7 +174,7 @@ SECTIONS
         build/asm/data/93950.data.o(.data);
         build/src/main/24F08.o(.sdata);
         build/asm/data/93978.data.o(.data);
-        build/src/code6cac_b2_post.o(.sdata);
+        build/src/main/25C38.o(.sdata);
         build/asm/data/939DC.data.o(.data);
         build/src/code6cac_b4_post.o(.sdata);
         build/asm/data/939E6.data.o(.data);
@@ -223,7 +223,7 @@ SECTIONS
         build/src/main/24BF0.o(.bss);
         build/src/main/24F08.o(.bss);
         build/src/main/25788.o(.bss);
-        build/src/code6cac_b2_post.o(.bss);
+        build/src/main/25C38.o(.bss);
         build/src/code6cac_b4.o(.bss);
         build/src/code6cac_b4_post.o(.bss);
         build/src/code6cac_b5.o(.bss);
