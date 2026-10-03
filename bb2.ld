@@ -64,7 +64,7 @@ SECTIONS
         build/src/main/35000.o(.rodata);
         build/src/main/d_15EC.o(.rodata);
         build/src/main/368E4.o(.rodata);
-        build/src/text1a_b_pre_rodata.o(.rodata);
+        build/src/main/d_5BF0.o(.rodata);
         build/src/text1b_tu1b.o(.rodata);
         build/src/text1a_b_pre_rodata_b.o(.rodata);
         build/src/text1b_tu1c.o(.rodata);
