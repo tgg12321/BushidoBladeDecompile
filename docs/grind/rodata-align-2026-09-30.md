@@ -456,3 +456,27 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   identical bar getintr's table address (%lo of the `.rodata` section symbol, +0x1B0), `.rodata` 0x34C
   identical, 1184 + 5 relocations identical, 116 globals at the same offsets bar the cut (D_80016318 size
   68 → 16, new D_80016328).
+- **4f main.c → `psxsdk/libspu/spu.c` (ex main.c) and 68 more files.** Cuts at every verbatim module start
+  0x80083BE4..0x8008BDE8 (27 LIBSND and 30 LIBSPU modules, LIBAPI A13/A10; SOTN file names where SOTN has the module's
+  file, else the LIBSCAN name lowercased), plus SSSTOP (`libsnd/stop.c`, 0x80085270..0x80085448, bit-verbatim
+  in the Jun-06-1997 4.0 build: memory/closer/libsnd-hunt-report.md). The 9 unplaced regions stay one file each,
+  named by ROM offset: libsnd/749E0, 75174, 760D0, 76240, 767D8, 76BDC, 774F8; libspu/7A248, 7BC88 (functions
+  named there by xref/near tier are not cut out; owner question in the hand-off § 3). Mechanics
+  (step4/split4f.py + citems.py + modules4f.py): every top-level item moves verbatim to the module of the
+  function that follows it; each part gets copies of the declarations it needs, chosen mechanically (a header
+  the old file included when the part names one of its declarations; typedefs/#defines before it by name;
+  for each identifier cc1 reports undeclared, the latest declaration before the part; for each call cc1
+  reports implicit where the old file had an explicit declaration before that function, the same; a function
+  defined above becomes its header as a prototype). step4/implchk.py: no call changed declaration state (11
+  calls now warn in a new file but were implicit in the old file too). No `static` crosses a module
+  (SsSeqCalledTbyT is SSCALL-only: SSSTART reaches it only through the raw `.word` in SndSeqTickEnv's .data;
+  _SsTrapIntrVSync/_SsSeqCalledTbyT_1per2/get20 are SSSTART's, vmSetStartAddr the 767D8 gap's, _memcpy
+  S_SRMP's, SpuRGetAllKeysStatus SR_GAKS's), so nothing stays merged. Rodata (R1): main.o's 0xDC bytes split
+  by owner, each object starting at its first item: SSTICK 0x800163C0 (SsSetTickMode's 6-entry table, offset
+  0), SPU 0x800163D8 (the four "SPU:T/O"/"wait" strings, defined before _spu_init as before), S_SCA 0x80016420
+  (SpuSetCommonAttr's two 8-entry tables, offsets 0 and 0x20), gap 7BC88 0x80016460 (func_8008B488's two
+  7-entry tables at offsets 0 and 0x20 with the `.align 3` zero word between): every table 8-aligned in its own
+  object (step4/jtphase.py: 4 runs, 5 tables here; 39 runs build-wide, all OK), so Sony's LIBSND/LIBSPU fit the object-relative model too. No string
+  or table has a second position. Compare: old main.o vs the 69 parts: `.text` 0x8220 and `.rodata` 0xDC
+  identical bar 219 + 36 section-symbol addends re-based, 1933 + 36 relocations identical, 115 globals at the
+  same offsets.

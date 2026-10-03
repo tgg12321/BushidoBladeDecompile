@@ -78,6 +78,15 @@ a fresh adversarial `cheat-reviewer` PASS where a function body, rule or gate fi
   in the approved-assembly list (same evidence as FlushCache's)? Yes: `libapi/c68.c` (FlushCache) and
   `libapi/sendpad.c` become separate files like every other module. No: both stay in `libapi/c68.c`, whose top
   comment says why.
+- **Owner question (pending, restructure 4f):** Bushido Blade 2 uses an in-between build of Sony's sound
+  library (newer than our PsyQ 4.0 copies, older than 4.1), so nine stretches of it (in `libsnd/` and
+  `libspu/`) match none of our reference copies module by module, and each sits in one file named by its
+  address. For many functions in those stretches we already
+  know the Sony name and module from calls made by matched modules (e.g. `_SsSndCrescendo` and
+  `_SsSndDecrescendo`, which Sony ships as two modules, CRES and DECRES). May we split those stretches at the
+  functions whose Sony module is known this way? Yes: e.g. `libsnd/749E0.c` becomes `cres.c` and `decre.c`,
+  and similarly for the other stretches (each file's top comment states the naming evidence). No: each
+  stretch stays one address-named file, as now (owner ruling Q106 D3 as written).
 - func_80031B24 hands `&D_800A37E8` to func_800274BC / func_80032854 unlabelled (outside Q96).
 - Q97's struct form is unmeasured; Q96-Q99 retire as soon as a one-object spelling matches.
 - Hygiene rows in the 2026-10-03 commit bodies (`git log --grep="Hygiene debt" --since=2026-10-03`).
@@ -763,6 +772,15 @@ module (no libcd_internal.h needed). R1: getintr's table lands at bios.o+0x1B0, 
 BIOS fits the object-relative model. New scripts: jtphase.py (jump-table phase checker), implicit.py
 (implicit-declaration set, cc1 -Wimplicit), split4e_a.py, split4e_b.py, owners4e.py; splitcmp.py re-bases every
 section-symbol addend kind.
+
+**Status step 4f (2026-10-03):** done: caf277120 (main -> main/psxsdk/libspu/spu, rename) and the split commit
+after it: 69 files: one per module (27 verbatim LIBSND plus SSSTOP as libsnd/stop.c, bit-verbatim in the
+Jun-06 4.0 build; 30 LIBSPU incl. spu.c; libapi/a13, a10) and one per unplaced region (libsnd/749E0, 75174, 760D0,
+76240, 767D8, 76BDC, 774F8; libspu/7A248, 7BC88). Nothing left merged: SsSeqCalledTbyT is only reached
+through SndSeqTickEnv's raw .data word, not by SSSTART's C, so the SSSTART|SSCALL cut changes no linkage. R1:
+every LIBSND/LIBSPU jump table is 8-aligned in its own object. Declarations per part are chosen mechanically
+(step4/split4f.py, citems.py) and checked (implchk.py, l2cmp.py). No file named system.c, ings2.c, main.c or
+text1a_b_*_rodata.c remains. Open: the gap files' xref/near-tier module starts (§ 3 owner question).
 
 Total: about 25 to 30 commits, 5 to 8 focused sessions. Step 4 (library rodata placement per
 module) and step 5 (per-file header proofs) dominate.

@@ -2255,9 +2255,9 @@ def test_score_object_paths() -> None:
     shell-interpolated command the path word-split into an empty symbol table
     and surfaced as a bogus '<func> not found in <obj>'."""
     import shutil
-    objs = sorted(Path("build/src").glob("*.o"))
+    objs = sorted(Path("build/src").rglob("*.o"))
     if not objs:
-        skip("score: absolute object path with spaces", "no build/src/*.o — run build first")
+        skip("score: absolute object path with spaces", "no build/src/**/*.o — run build first")
         return
     if shutil.which(cfg.OBJDUMP) is None:
         skip("score: absolute object path with spaces", f"{cfg.OBJDUMP} not on PATH")
