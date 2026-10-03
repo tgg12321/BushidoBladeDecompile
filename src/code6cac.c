@@ -8,11 +8,6 @@
 #include "code6cac.h"
 #include "bb2_const.h"
 
-/* Padding NOP macro */
-#define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
-#define PAD_NOPS_2 __asm__(".section .text\n    nop\n    nop\n")
-#define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
-
 typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
 typedef struct GameObj GameObj;
 

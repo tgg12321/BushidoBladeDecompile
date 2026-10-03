@@ -9,11 +9,6 @@
 #include "code6cac.h"
 
 /* ---- merged from code6cac_c2.c (owner ruling Q65: one original file) ---- */
-/* Padding NOP macro */
-#define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
-#define PAD_NOPS_2 __asm__(".section .text\n    nop\n    nop\n")
-#define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
-
 /* Extern data declarations */
 
 

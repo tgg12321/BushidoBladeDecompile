@@ -20,11 +20,6 @@
 #include "system.h"
 #include "code6cac.h"
 
-/* Padding NOP macro */
-#define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
-#define PAD_NOPS_2 __asm__(".section .text\n    nop\n    nop\n")
-#define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
-
 /* Extern data declarations */
 
 
