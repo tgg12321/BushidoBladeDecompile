@@ -69,7 +69,7 @@ SECTIONS
         build/src/text1a_b_pre_rodata_b.o(.rodata);
         build/src/main/51268.o(.rodata);
         build/src/main/5ED34.o(.rodata);
-        build/src/text1b_tu1e.o(.rodata);
+        build/src/main/63D2C.o(.rodata);
         build/src/text1b_b.o(.rodata);
         build/src/text1a_b_mid_rodata.o(.rodata);
         build/src/text1b_b_tu2.o(.rodata);
@@ -112,7 +112,7 @@ SECTIONS
         build/src/main/3AB48.o(.text);
         build/src/main/51268.o(.text);
         build/src/main/5ED34.o(.text);
-        build/src/text1b_tu1e.o(.text);
+        build/src/main/63D2C.o(.text);
         build/src/text1b_b.o(.text);
         build/src/text1b_b_tu2.o(.text);
         build/src/main/psxsdk/libc2/sprintf.o(.text);
@@ -152,7 +152,7 @@ SECTIONS
         build/src/main/3AB48.o(.data);
         build/src/main/51268.o(.data);
         build/src/main/5ED34.o(.data);
-        build/src/text1b_tu1e.o(.data);
+        build/src/main/63D2C.o(.data);
         build/src/text1b_b.o(.data);
         build/src/text1b_b_tu2.o(.data);
         build/src/main/psxsdk/libc2/sprintf.o(.data);
@@ -242,7 +242,7 @@ SECTIONS
         build/src/main/3AB48.o(.bss);
         build/src/main/51268.o(.bss);
         build/src/main/5ED34.o(.bss);
-        build/src/text1b_tu1e.o(.bss);
+        build/src/main/63D2C.o(.bss);
         build/src/text1b_b.o(.bss);
         build/src/text1b_b_tu2.o(.bss);
         build/src/main/psxsdk/libc2/sprintf.o(.bss);

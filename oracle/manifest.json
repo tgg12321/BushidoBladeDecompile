@@ -43,6 +43,7 @@
     "src/main/3AB48.c": "5897d0a287025044f8d1d22854cfd9611764636e",
     "src/main/51268.c": "79c030219ce1af8f9601c8a6a162d466914413ff",
     "src/main/5ED34.c": "d8eb13d00d661d68094b6d279ad0f64fe77caaf3",
+    "src/main/63D2C.c": "b1f8c981c51efc9658c2f3e256afef36e3ef0e6f",
     "src/main/6CF8.c": "80cc8ef398d815d0d4c87fd293ab16ecdcc42d86",
     "src/main/87A0.c": "f0557ab7851a393cb4ddc8d4601e9c12b711c799",
     "src/main/9F9C.c": "3f00bd868c9289c7a2f1fdf95af04abdc79a5ebf",
@@ -59,8 +60,7 @@
     "src/text1a_b_pre_rodata_b.c": "f97fc80408ddfec97b569877a3a72b8016d7f275",
     "src/text1a_b_tail_rodata.c": "57e9ca03fc577d75a6f564e0c01213857beb1dcb",
     "src/text1b_b.c": "132c87e32f62f64b2a906e545f47650d5433d42e",
-    "src/text1b_b_tu2.c": "9f8d81f5725831f142366dd1c757f4e4f641906d",
-    "src/text1b_tu1e.c": "b1f8c981c51efc9658c2f3e256afef36e3ef0e6f"
+    "src/text1b_b_tu2.c": "9f8d81f5725831f142366dd1c757f4e4f641906d"
   },
   "config_files": {
     "expand_lb_funcs.txt": "3e4c205282278d136b49d910beffca5402a6fad3",
