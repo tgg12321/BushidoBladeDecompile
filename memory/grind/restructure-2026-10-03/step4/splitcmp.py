@@ -93,15 +93,18 @@ def main():
         ok = False
         print("defined twice:", d)
     allp = befores + parts
-    prel = {p: {o: (t, s) for o, t, s in relocs(p).get(".text", [])} for p in allp}
+    prel = {p: {sec: {o: (t, s) for o, t, s in lst} for sec, lst in relocs(p).items()} for p in allp}
+    tsize = {p: shdrs(p).get(".text", (0, 0))[1] for p in allp}
     for sec in SECS:
         old, cat = bdata[sec], adata[sec]
         same = old == cat
         note = ""
-        if not same and len(cat) == len(old) and sec == ".text":
-            # REL addends live in the instruction: a J/JAL against the .text SECTION symbol
-            # encodes the object-relative target, so it shifts by the part's base.
-            def owner(i, bb):  # the part whose non-empty .text holds offset i
+        if not same and len(cat) == len(old):
+            # REL addends live in the word: a relocation against the .text SECTION symbol encodes an
+            # object-relative .text offset, so it shifts by (the part's .text base - the old object's
+            # .text base). Accepted only for the exact shift: J/JAL (R_MIPS_26), R_MIPS_32 (jump-table
+            # words), R_MIPS_LO16 (low half) and R_MIPS_HI16 (high half, with or without the carry).
+            def owner(i, bb):  # the part whose non-empty section holds offset i
                 return [q for b0, q in sorted((b0, q) for q, b0 in bb.items()
                                               if shdrs(q).get(sec, (0, 0))[1]) if b0 <= i][-1]
             bad, shifted = [], 0
@@ -109,15 +112,27 @@ def main():
                 if old[i:i+4] == cat[i:i+4]:
                     continue
                 pa, pb = owner(i, base[sec]), owner(i, bbase[sec])
-                ta, sa = prel[pa].get(i - base[sec][pa], ("", ""))
-                tb, sb = prel[pb].get(i - bbase[sec][pb], ("", ""))
+                ta, sa = prel[pa].get(sec, {}).get(i - base[sec][pa], ("", ""))
+                tb, sb = prel[pb].get(sec, {}).get(i - bbase[sec][pb], ("", ""))
                 wo, wn = int.from_bytes(old[i:i+4], "little"), int.from_bytes(cat[i:i+4], "little")
-                if ta == tb == "R_MIPS_26" and sa == sb == ".text" and wo >> 26 == wn >> 26                         and ((wo & 0x3FFFFFF) - (wn & 0x3FFFFFF)) * 4 == base[sec][pa] - bbase[sec][pb]:
+                d = base[".text"][pa] - bbase[".text"][pb]
+                good = ta == tb and sa == sb == ".text"
+                if good and ta == "R_MIPS_26":
+                    good = wo >> 26 == wn >> 26 and ((wo & 0x3FFFFFF) - (wn & 0x3FFFFFF)) * 4 == d
+                elif good and ta == "R_MIPS_32":
+                    good = (wo - wn) & 0xFFFFFFFF == d & 0xFFFFFFFF
+                elif good and ta == "R_MIPS_LO16":
+                    good = wo >> 16 == wn >> 16 and (wo - wn) & 0xFFFF == d & 0xFFFF
+                elif good and ta == "R_MIPS_HI16":
+                    good = wo >> 16 == wn >> 16 and (wo - wn) & 0xFFFF in ((d >> 16) & 0xFFFF, ((d >> 16) + 1) & 0xFFFF)
+                else:
+                    good = False
+                if good:
                     shifted += 1
                     continue
                 bad.append((hex(i), pa, ta, sa))
             same = not bad
-            note = f"; {shifted} J/JAL .text-section addends re-based by their part's offset, others: {bad[:5]}"
+            note = f"; {shifted} .text-section addends re-based by their part's offset, others: {bad[:5]}"
         ok &= same
         print(f"{sec:8s} {'identical' if same else 'DIFFER'} ({len(old):#x} vs {len(cat):#x}){note}")
     for sec in sorted(set(brel) | set(arel)):

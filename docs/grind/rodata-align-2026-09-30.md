@@ -419,3 +419,21 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   table pointer and SOTN's libgpu/sys.c rcsid; every other array has one position. Compare: old post_rodata.o+gpu.o+display.o vs the 54 parts: `.text` 0x5E00 and
   `.rodata` 0x4D4 identical, 986 relocations identical, 217 globals at the same offsets; the only symbol
   differences are that cut (D_80015E1C's size 64 → 12, new D_80015E28).
+- **4e system.c + ings2.c → `psxsdk/libcd/bios.c` (ex system.c), `psxsdk/libetc/intr.c` (ex ings2.c) and 22
+  more files.** Cuts at every module start from LIBAPI A07 (0x8008008C) through LIBSND SSSATTR
+  (0x80083B50..0x80083BE4): libapi/a07, libcd/sys, bios, libc2/puts, libcd/cdread, libetc/vsync, libapi/l10,
+  intr, libapi/c114, a23, a24, a25, libc2/setjmp, libetc/intr_vb, intr_dma, vmode, libapi/c57, libsnd/ssend,
+  ssinit_c, ssinit, ssquit, scssattr (SOTN's name for SSSATTR). The old system|ings2 cut at 0x8008289C was
+  mid-CDREAD: CdReadCallback/CdReadMode join cb_read..CdReadSync in cdread.c (D3 re-cut). The two unplaced
+  regions, 0x80083698..0x8008386C (PCopen..__do_global_dtors) and 0x8008387C..0x80083954 (PCread, _SN_read),
+  are one file each, `psxsdk/libsn/73E98.c` and `7407C.c` (ROM-offset names). No `static` object or helper
+  crosses a module boundary (Intr, _memcpy, set_alarm, get_alarm, callback are BIOS-only; cb_read is
+  CDREAD-only; setIntr/stopIntr/restartIntr are INTR-only), so no shared header is needed. In this commit
+  only bios.o has `.rodata` (getintr's 5-entry table, where system.o's sat) and `.data` (Intr), so nothing
+  moves in either. Declarations (condition 4): each part takes copies of the old file's declarations it uses;
+  cdread.c declares the SYS functions it calls as their definitions declare them (the old file defined them
+  above it), so every call keeps its declaration state (cc1 -Wimplicit, step4/implicit.py: the same implicit callees;
+  printf, implicit in both, now also warns in intr_dma.c, its own file). Compare: old
+  system.o+ings2.o vs the 24 parts: `.text` 0x3B58 identical bar 44 `.text`-section addends re-based (43
+  `j`/`jal`, cb_read's `%lo`), `.rodata` 0x14 identical bar the table's 5 words re-based, 1184 relocations, 91
+  globals at the same offsets.
