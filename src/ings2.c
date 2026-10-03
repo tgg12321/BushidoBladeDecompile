@@ -52,8 +52,8 @@ s32 CdReadMode(s32 a0) {
     return old;
 }
 
-extern volatile s32 *D_800A1510;
-extern volatile s32 *D_800A1514;
+extern volatile s32 *g_vsync_gpu_stat_reg;
+extern volatile s32 *g_vsync_rcnt1_count_reg;
 extern s32 Hcount;
 extern s32 D_800A151C;
 void v_wait(s32 a0, s32 a1);
@@ -62,8 +62,8 @@ s32 VSync(s32 a0) {
     s32 s0_val;
     s32 s1_val;
 
-    s0_val = *D_800A1510;
-    s1_val = (*D_800A1514 - Hcount) & 0xFFFF;
+    s0_val = *g_vsync_gpu_stat_reg;
+    s1_val = (*g_vsync_rcnt1_count_reg - Hcount) & 0xFFFF;
 
     if (a0 < 0) {
         return Vcount;
@@ -89,11 +89,11 @@ s32 VSync(s32 a0) {
         v_wait(frame, count);
     }
 
-    s0_val = *D_800A1510;
+    s0_val = *g_vsync_gpu_stat_reg;
     v_wait(Vcount + 1, 1);
 
     if (s0_val & 0x400000) {
-        volatile s32 *ptr = D_800A1510;
+        volatile s32 *ptr = g_vsync_gpu_stat_reg;
         if ((s32)(s0_val ^ *ptr) >= 0) {
             do {
             } while (!((s0_val ^ *ptr) & 0x80000000));
@@ -101,7 +101,7 @@ s32 VSync(s32 a0) {
     }
 
     D_800A151C = Vcount;
-    Hcount = *D_800A1514;
+    Hcount = *g_vsync_rcnt1_count_reg;
 
     return s1_val;
 }
@@ -163,8 +163,8 @@ u32 GetIntrMask(void) {
 /* PsyQ 4.0 LIBETC INTR: intr.c v1.76 module state — verbatim-linked Sony
    object; C ref: sotn-decomp src/main/psxsdk/libetc/
    intr.c (intrEnv_t). D_800A1578 = intrEnv; D_800A15B4 = intrEnv.buf[1]
-   (JB_SP); D_800A2604/i_mask/D_800A260C = the module's
-   i_stat/i_mask/d_pcr MMIO pointer statics (0x1F801070/74/F0). */
+   (JB_SP); i_stat/i_mask/d_pcr (0x800A2604/08/0C) = the module's
+   MMIO pointer statics (0x1F801070/74/F0). */
 typedef struct {
     u16 interruptsInitialized;   /* +0x00 = D_800A1578 */
     u16 inInterrupt;             /* +0x02 */
@@ -175,8 +175,8 @@ typedef struct {
     s32 buf[12];                 /* +0x38 jmp_buf; [1] = JB_SP = D_800A15B4 */
     s32 stack[1024];             /* +0x68 */
 } intrEnv_t;                     /* sizeof 0x1068; memclr count 0x41A words */
-extern volatile u16 *D_800A2604;   /* i_stat = (u16 *)0x1F801070 (MMIO) */
-extern volatile s32 *D_800A260C;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
+extern volatile u16 *i_stat;   /* i_stat = (u16 *)0x1F801070 (MMIO) */
+extern volatile s32 *d_pcr;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
 extern intrEnv_t D_800A1578;
 
 extern s32 setjmp(s32 *);
@@ -198,8 +198,8 @@ intrEnv_t *startIntr(void) {
         return 0;
     }
     /* i_mask deref is MMIO (0x1F801074) — volatile is hardware semantics */
-    *D_800A2604 = (*i_mask = 0);
-    *D_800A260C = 0x33333333;
+    *i_stat = (*i_mask = 0);
+    *d_pcr = 0x33333333;
     func_800831A4(&D_800A1578, 0x41A);
     if (setjmp(D_800A1578.buf) != 0) {
         trapIntr();
@@ -233,27 +233,27 @@ void trapIntr(void) {
     u16 mask;
 
     if (!D_800A1578.interruptsInitialized) {
-        printf(&D_8001635C, *D_800A2604);
+        printf(&D_8001635C, *i_stat);
         ReturnFromException();
     }
     D_800A1578.inInterrupt = 1;
-    while ((mask = (D_800A1578.enabledInterruptsMask & *D_800A2604) &
+    while ((mask = (D_800A1578.enabledInterruptsMask & *i_stat) &
                    *i_mask) != 0) {
         for (i = 0; mask && i < 11; ++i, mask >>= 1) {
             if (mask & 1) {
-                *D_800A2604 = ~(1 << i);
+                *i_stat = ~(1 << i);
                 if (D_800A1578.handlers[i] != 0) {
                     D_800A1578.handlers[i]();
                 }
             }
         }
     }
-    if (*D_800A2604 & *i_mask) {
+    if (*i_stat & *i_mask) {
         if (D_800A2610++ > 0x800) {
-            printf(&D_80016378, *D_800A2604,
+            printf(&D_80016378, *i_stat,
                          *i_mask);
             D_800A2610 = 0;
-            *D_800A2604 = 0;
+            *i_stat = 0;
         }
     } else {
         D_800A2610 = 0;
@@ -305,9 +305,9 @@ static intrEnv_t *stopIntr(void) {
     }
     EnterCriticalSection();
     D_800A1578.savedMask = *i_mask;
-    D_800A1578.savedPcr = *D_800A260C;
-    *D_800A2604 = (*i_mask = 0);
-    *D_800A260C &= 0x77777777;
+    D_800A1578.savedPcr = *d_pcr;
+    *i_stat = (*i_mask = 0);
+    *d_pcr &= 0x77777777;
     ResetEntryInt();
     D_800A1578.interruptsInitialized = 0;
     return &D_800A1578;
@@ -321,7 +321,7 @@ static intrEnv_t *restartIntr(void) {
     HookEntryInt(D_800A1578.buf);
     D_800A1578.interruptsInitialized = 1;
     *i_mask = D_800A1578.savedMask;
-    *D_800A260C = D_800A1578.savedPcr;
+    *d_pcr = D_800A1578.savedPcr;
     ExitCriticalSection();
     return &D_800A1578;
 }

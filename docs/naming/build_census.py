@@ -359,7 +359,9 @@ MANIFESTS = [(J("docs", "naming", "apiscan", "rename_manifest.csv"), "apiscan-re
              # owner ruling 2026-09-25 (docs/naming/sweep-2026-09-25b/ruling-2026-09-25.md)
              (J("docs", "naming", "sweep-2026-09-25b", "func_manifest_ruling.csv"), None, None),
              # third sweep 2026-09-29: new names under admitted classes + INFERRED re-audit
-             (J("docs", "naming", "sweep-2026-09-29", "func_manifest.csv"), None, None)]
+             (J("docs", "naming", "sweep-2026-09-29", "func_manifest.csv"), None, None),
+             # 2026-10-03 batch: naming3 verifier ACCEPTs (cpu_*/mario_test_* RESETs, one compute)
+             (J("docs", "naming", "sweep-2026-10-03", "func_manifest.csv"), None, None)]
 CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "libscan-xref": ("libscan-xref", "VERIFIED"),
               "libscan-near": ("libscan-near", "CORROBORATED"),

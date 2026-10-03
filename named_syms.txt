@@ -472,8 +472,6 @@ SsSetReservedVoice                         = 0x80087F34;
 /* SPU (1) */
 SpuInit                                = 0x800885AC;
 /* Kengo CPU/camera misc (6) */
-cpu_set_move_command_and_dir_80030A2C            = 0x80030A2C;
-cpu_check_same_dir_timer_8003339C                = 0x8003339C;
 /* Kengo Item 7 cross-ref (36) */
 /* RESET 0x80037F40: retired name 'camera_SetMatrix_80037F40' — preserved note: MISNAMED: not a camera fn; checksums g_file_disc_size (0x24 bytes) and copies Quad records */
 /* RESET 0x80080258: retired name '_DispCharacterName_80080258' — preserved note: legacy name; the canonical alias is tslTm2_command_with_retry_80080258 (already in named_syms; _DispCharacterName is a known misnomer documented in MISNOMERS.md) */
@@ -851,7 +849,7 @@ g_text1b_const_pair_table_12                            = 0x8009B940;  /* 12 x 8
 _spu_addrMode                                     = 0x800A2CFC;  /* 9 x 4-byte SPU state cells; consumed by main.c func_80088740 (SPU helper) */  /* data-wave 2026-09-29: was g_spu_state_table_9 */
 g_display_state_table_a_7                               = 0x8009BF58;  /* 7 x 4-byte display.c state cells (consumed by func_8007CAC8) */
 /* data-wave 2026-09-25: g_display_state_table_b_7 = 0x8009BF78 retired; _qin is now object-defined */
-g_cpu_no_action_table_24x3                              = 0x8009B0E0;  /* 3 x 24-byte records consumed by cpu_set_move_command_and_dir helper */
+g_cpu_no_action_table_24x3                              = 0x8009B0E0;  /* 3 x 24-byte records consumed by func_80030A2C (ex cpu_set_move_command_and_dir) */
 g_cpu_no_action_table_16x3                              = 0x8009B1AC;  /* 3 x 16-byte records, sibling consumer (func_8005C8A8) */
 g_cpu_attack_arc_table_12x4                             = 0x8009B530;  /* 4 x 12-byte records consumed by func_8005E54C (CPU attack-arc helper) */
 g_text1b_motion_byte_table_8x3                          = 0x8009A830;  /* u8[8] (dlabel D_8009A830); func_80056FE8. 0x8009A838 (s8[8]) and 0x8009A840 (u8[16]) are separate tables, not rows of one 3x8 record */
@@ -1127,7 +1125,7 @@ g_irq_vsync_ctrl_reg_ptr                                = 0x800A2638;  /* pointe
 g_irq_cdrom_callbacks                                   = 0x800A2640;  /* 8 x s32 callback slots for CD-ROM IRQ; cleared by sys_MemClear2(&D, 8) */
 g_irq_cdrom_ctrl_reg_ptr                                = 0x800A263C;  /* pointer to CD-ROM IRQ control/status register */
 D_800A2668                                 = 0x800A2668;  /* boolean: 0 = not init, then set to 1 */  /* data-wave 2026-09-25: was g_irq_cdrom_initialized */
-g_ings2_vsync_block_ptr                                 = 0x800A1510;  /* pointer to a vsync timing block; *p read for timing calculations */
+g_vsync_gpu_stat_reg                                 = 0x800A1510;  /* libetc VSync static: .word 0x1F801814 (GPUSTAT pointer; SOTN vsync.c leaves it unnamed) */  /* data-wave 2026-10-03: was g_ings2_vsync_block_ptr */
 
 /* === Intro/video framebuffer + render state (2026-05-17) -- 6 highs === */
 /* From ings.c: sys_GameInit (line 414) sets up the FMV overlay region; */
@@ -1616,9 +1614,9 @@ _svm_sreg_buf_plus_0x2                                   = 0x80102A7A;  /* s16 a
 /* === sys_VSync state cluster (2026-05-17) -- 3 highs === */
 /* From ings2.c sys_VSync (line 41).  Hardware vblank counter access + */
 /* delta calculation between calls.  Companions to */
-/* g_ings2_vsync_block_ptr (0x800A1510). */
-g_vsync_counter_ptr                                     = 0x800A1514;  /* pointer to hardware vblank counter register */
-Hcount                                = 0x800A1518;  /* snapshot of *g_vsync_counter_ptr from prev call (for delta calc) */  /* data-wave 2026-09-29: was g_vsync_counter_snapshot */
+/* g_vsync_gpu_stat_reg (0x800A1510). */
+g_vsync_rcnt1_count_reg                                     = 0x800A1514;  /* libetc VSync static: .word 0x1F801110 (root counter 1 count pointer) */  /* data-wave 2026-10-03: was g_vsync_counter_ptr */
+Hcount                                = 0x800A1518;  /* snapshot of *g_vsync_rcnt1_count_reg from prev call (for delta calc) */  /* data-wave 2026-09-29: was g_vsync_counter_snapshot */
 g_vsync_dma_region_snapshot                             = 0x800A151C;  /* snapshot of g_sys_dma_region at end of last sys_VSync */
 
 /* === Menuctl state cluster extension (2026-05-17) -- 8 highs === */
@@ -1933,7 +1931,7 @@ g_motion_table_arg1_saved                               = 0x800A9CF8;  /* a1 sav
 g_motion_table_arg0_saved                               = 0x800A9D00;  /* a0 saved; used as base of 12-byte stride array */
 g_motion_table_flag                                     = 0x800F6650;  /* motion table init flag (1 = init done, 0 = needs init) */
 g_snd_stream_slot_field_8                               = 0x800EED18;  /* offset +8 of each g_snd_stream_slot_table entry (sum accumulator / data ptr) */
-g_gte_vector_template                                   = 0x800FF610;  /* 28-byte struct used as vector template for func_8007E4DC */
+D_800FF610                                   = 0x800FF610;  /* MATRIX: output of MulMatrix0 (0x8007E4DC); old 'vector template' claim refuted, sweep 2026-10-03 */  /* data-wave 2026-10-03: was g_gte_vector_template */
 
 /* === Effect vertex buffer (2026-05-17) -- 1 high === */
 g_eff_vertex_buffer                                     = 0x800F1198;  /* 3-s32-per-vertex buffer; src a0 loop copies xyz triples (stride 12); terminator = bit 0 of first s32 set */
@@ -2170,7 +2168,7 @@ D_8009BC04                                 = 0x8009BC04;  /* +8 from g_str_r_800
 g_menu_screen_live_byte_c_plus_1                        = 0x8009BD44;  /* +1 from g_menu_screen_live_byte_c (0x8009BD43) */
 g_intro_get_set_value_plus_4                            = 0x8009BD84;  /* +4 from g_intro_get_set_value (0x8009BD80) */
 g_intro_get_set_value_plus_8                            = 0x8009BD88;  /* +8 from g_intro_get_set_value (0x8009BD80) */
-g_sys_irq_vtable_plus_4                                 = 0x800A2604;  /* +4 from g_sys_irq_vtable (0x800A2600) */
+i_stat                                 = 0x800A2604;  /* libetc intr.c i_stat: .word 0x1F801070 (I_STAT pointer; SOTN src/main/psxsdk/libetc/intr.c:42) */  /* data-wave 2026-10-03: was g_sys_irq_vtable_plus_4 */
 _snd_seq_tick_env_plus_0x8                               = 0x800A26D4;  /* +4 from g_alarm_armed_flag (0x800A26D0) */  /* data-wave 2026-09-24: was g_alarm_secondary_cb_ptr */
 _snd_seq_tick_env_plus_0x11                         = 0x800A26DD;  /* data-wave 2026-09-07: was g_alarm_callback_pending_plus_1 */
 /* data-wave 2026-09-24: g_alarm_pending_priority_flag = 0x800A26E0 retired; _snd_seq_tick_env_plus_0x14 is now object-defined */
@@ -2649,16 +2647,11 @@ cpu_exec_match_round_stage_select_80016E60 = 0x80016E60;
 cpu_init_stage_and_camera_setup_8001E404 = 0x8001E404;
 mario_test_init_characters_80021210 = 0x80021210;
 mario_test_move_to_inventory_800218C8 = 0x800218C8;
-mario_test_get_guard_power_80021974 = 0x80021974;
-mario_test_get_charm_bonus_800219E4 = 0x800219E4;
 cpu_find_closest_hotspot_80022408 = 0x80022408;
 mario_test_initialize_match_80022580 = 0x80022580;
 mario_test_apply_status_updates_80022F34 = 0x80022F34;
-cpu_calc_move_pattern_trajectory_80023F08 = 0x80023F08;
 cpu_exec_main_game_loop_frame_8002C61C = 0x8002C61C;
-cpu_ai_pick_move_for_situation_80030D7C = 0x80030D7C;
 mario_test_clear_movement_buffer_80032040 = 0x80032040;
-cpu_check_special_move_input_80032C50 = 0x80032C50;
 mario_test_clear_state_flags_80033510 = 0x80033510;
 mario_test_init_dialog_memory_800392C8 = 0x800392C8;
 cpu_clear_move_buffers_80039320 = 0x80039320;
@@ -2676,7 +2669,6 @@ cpu_load_replay_images_and_init_8005FBC8 = 0x8005FBC8;
 /* derived from body inspection + dominant-caller-prefix context. */
 replay_camera_check_bounds_and_set_flag_8003F388 = 0x8003F388;
 efc_effect_dispatch_child_recursive_800417D0 = 0x800417D0;
-efc_particle_queue_entry_800455AC = 0x800455AC;
 satan_fire_disp_wrapper_80048A7C = 0x80048A7C;
 efc_ptr_array_offset_apply_8006920C = 0x8006920C;
 motion_draw_tilemap_8006BEC4 = 0x8006BEC4;
@@ -2921,7 +2913,7 @@ efc_helper_8004954C                                = 0x8004954C;  /* first-pass 
 snd_helper_80049E1C                                = 0x80049E1C;  /* first-pass subsystem tag (snd); <-snd_StopAll_80046AA0 */
 game_helper_80049E4C                               = 0x80049E4C;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
 game_helper_80049F4C                               = 0x80049F4C;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
-satan_helper_8004C388                              = 0x8004C388;  /* first-pass subsystem tag (satan); <-satan_line_draw_recursive_8004C1F4 */
+/* RENAME 0x8004C388: retired name 'satan_helper_8004C388' — preserved note: first-pass subsystem tag (satan); <-satan_line_draw_recursive_8004C1F4 */
 camera_helper_80053694                             = 0x80053694;  /* first-pass subsystem tag (camera); <-camera_compute_fixed_point_matrices_80052D00 */
 /* RESET 0x80054FDC: retired name 'snd_helper_80054FDC' — preserved note: first-pass subsystem tag (snd); <-snd_SelectionCallback_80046A80 */
 calc_helper_80055948                               = 0x80055948;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_80055B60 */
@@ -3204,7 +3196,7 @@ rob_genei_draw_check_80027A58                          = 0x80027A58;  /* gated p
 /* RESET 0x8003D478: retired name 'memcard_access_section_list_8003D478' — preserved note: iterates directive byte-list, calls _McAccessSection per non-skip entry (stride-8 data); 0x20/0x0A control codes */
 coli_calc_motion_slots_8003D7B4                        = 0x8003D7B4;  /* indexes D_800A3D40 (stride 0x18) by arg; 6-slot loop calling coli_calc_motion, accumulates bits into field 0xC */
 battle_switch_reinit_800342A0                          = 0x800342A0;  /* on battle-switch-data change (D_800A3874!=D_800A389B): reset state flags, reload config tables, gpu_InitDisplay */
-check_dodge_kawashi_80030BA8                           = 0x80030BA8;  /* scan the 12 D_80106A78 records for in-range valid object near fighter; trigger motion_shift_check_e_kawashi dodge + event dispatch */
+/* RESET 0x80030BA8: retired name 'check_dodge_kawashi_80030BA8' — preserved note: scan the 12 D_80106A78 records for in-range valid object near fighter; trigger motion_shift_check_e_kawashi dodge + event dispatch */
 /* RESET 0x800451A0: retired name 'special_camera_check_pos_outside_ground_wrap_800451A0' — preserved note: thin wrapper: calls special_camera_check_pos_outside_ground_80036E34 */
 /* RESET 0x8005B58C: retired name 'title_mv_exec2_wrapper_8005B58C' — preserved note: thin pass-through wrapper for title_mv_exec2 */
 /* RENAME 0x80089A24: retired name 'coli_HitPauseKatana_2_wrapper_80089A24' — preserved note: thin pass-through wrapper for coli_HitPauseKatana_2 */

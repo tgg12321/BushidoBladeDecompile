@@ -1,9 +1,35 @@
-# Naming sweep 2026-10-02 (read-only research): proposals
+# Naming sweep 2026-10-03 (research 2026-10-02 "naming3")
 
-Scratch output, not applied. Every row still needs a fresh default-refute verifier before
-`tools/naming_wave.py` / `tools/data_wave.py` touch anything (docs/naming/README.md policy). Nothing tracked was edited.
+## Applied (2026-10-03)
+
+An independent default-refute verifier re-derived the HIGH accepted-class rows. Its verdicts are
+in `verify-verdicts.tsv` (16 ACCEPT). The 0x8004C388 emulation harness it cites
+(`tmp/naming3/verify/emu_c388.py`) is untracked scratch. Applied through the tools:
+
+- `func_manifest.csv` via `tools/naming_wave.py --from-census --only-file`. build_census.py
+  consumes it.
+  - 9 RESETs (reset-contradicted): `cpu_ai_pick_move_for_situation`, `cpu_set_move_command_and_dir`,
+    `check_dodge_kawashi`, `cpu_check_same_dir_timer`, `cpu_check_special_move_input`,
+    `cpu_calc_move_pattern_trajectory`, `efc_particle_queue_entry`, `mario_test_get_guard_power`,
+    `mario_test_get_charm_bonus`.
+  - 1 RENAME (computation-restatement): 0x8004C388 `satan_helper` -> `math_MidpointS16x3U8x2`.
+- `data_manifest.csv` via `tools/data_wave.py --manifest-csv`.
+  - 0x800A2604 -> `i_stat` and 0x800A260C -> `d_pcr`. These are Sony's static names, as spelled in
+    SOTN `src/main/psxsdk/libetc/intr.c:42,44`. They replace the verifier's `g_intr_i_stat_reg` /
+    `g_intr_dpcr_reg`, the same way 0x800A2608 became `i_mask` in 78838a969.
+  - 0x800A1510 -> `g_vsync_gpu_stat_reg` and 0x800A1514 -> `g_vsync_rcnt1_count_reg`. SOTN's
+    `vsync.c` leaves both unnamed (`D_8002C2A8/AC`).
+  - 0x800FF610 `g_gte_vector_template` -> RESET to `D_800FF610`.
+- Skipped: 0x800A2608 (already `i_mask`).
+- Census: INFERRED 522 -> 512, AUTO 396 -> 405, CORROBORATED 118 -> 119.
+
+Everything below is the research write-up as it stood before the apply. Its 0x800A2604/0C names are
+superseded by the list above. Rows not listed above were not applied (MEDIUM, new-class or held).
+
+## Research write-up (2026-10-02)
+
 The working tree was dirty from another lane during the run (src/system.c, include/*, registries).
-Line citations are against that tree as of 2026-10-02 evening.
+Line citations are against that tree as of 2026-10-02 evening. `tmp/naming3/` paths are untracked scratch.
 
 ## Method
 

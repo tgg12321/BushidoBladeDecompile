@@ -1,8 +1,8 @@
 glabel VSync
-    /* 730CC 800828CC 0A80023C */  lui        $v0, %hi(D_800A1510)
-    /* 730D0 800828D0 1015428C */  lw         $v0, %lo(D_800A1510)($v0)
-    /* 730D4 800828D4 0A80033C */  lui        $v1, %hi(D_800A1514)
-    /* 730D8 800828D8 1415638C */  lw         $v1, %lo(D_800A1514)($v1)
+    /* 730CC 800828CC 0A80023C */  lui        $v0, %hi(g_vsync_gpu_stat_reg)
+    /* 730D0 800828D0 1015428C */  lw         $v0, %lo(g_vsync_gpu_stat_reg)($v0)
+    /* 730D4 800828D4 0A80033C */  lui        $v1, %hi(g_vsync_rcnt1_count_reg)
+    /* 730D8 800828D8 1415638C */  lw         $v1, %lo(g_vsync_rcnt1_count_reg)($v1)
     /* 730DC 800828DC E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 730E0 800828E0 1800BFAF */  sw         $ra, 0x18($sp)
     /* 730E4 800828E4 1400B1AF */  sw         $s1, 0x14($sp)
@@ -41,8 +41,8 @@ glabel VSync
   .L8008295C:
     /* 7315C 8008295C 850A020C */  jal        v_wait
     /* 73160 80082960 21204000 */   addu      $a0, $v0, $zero
-    /* 73164 80082964 0A80023C */  lui        $v0, %hi(D_800A1510)
-    /* 73168 80082968 1015428C */  lw         $v0, %lo(D_800A1510)($v0)
+    /* 73164 80082964 0A80023C */  lui        $v0, %hi(g_vsync_gpu_stat_reg)
+    /* 73168 80082968 1015428C */  lw         $v0, %lo(g_vsync_gpu_stat_reg)($v0)
     /* 7316C 8008296C 00000000 */  nop
     /* 73170 80082970 0000508C */  lw         $s0, 0x0($v0)
     /* 73174 80082974 0A80043C */  lui        $a0, %hi(Vcount)
@@ -54,8 +54,8 @@ glabel VSync
     /* 7318C 8008298C 24100202 */  and        $v0, $s0, $v0
     /* 73190 80082990 10004010 */  beqz       $v0, .L800829D4
     /* 73194 80082994 00000000 */   nop
-    /* 73198 80082998 0A80033C */  lui        $v1, %hi(D_800A1510)
-    /* 7319C 8008299C 1015638C */  lw         $v1, %lo(D_800A1510)($v1)
+    /* 73198 80082998 0A80033C */  lui        $v1, %hi(g_vsync_gpu_stat_reg)
+    /* 7319C 8008299C 1015638C */  lw         $v1, %lo(g_vsync_gpu_stat_reg)($v1)
     /* 731A0 800829A0 00000000 */  nop
     /* 731A4 800829A4 0000628C */  lw         $v0, 0x0($v1)
     /* 731A8 800829A8 00000000 */  nop
@@ -73,8 +73,8 @@ glabel VSync
   .L800829D4:
     /* 731D4 800829D4 0A80023C */  lui        $v0, %hi(Vcount)
     /* 731D8 800829D8 3426428C */  lw         $v0, %lo(Vcount)($v0)
-    /* 731DC 800829DC 0A80033C */  lui        $v1, %hi(D_800A1514)
-    /* 731E0 800829E0 1415638C */  lw         $v1, %lo(D_800A1514)($v1)
+    /* 731DC 800829DC 0A80033C */  lui        $v1, %hi(g_vsync_rcnt1_count_reg)
+    /* 731E0 800829E0 1415638C */  lw         $v1, %lo(g_vsync_rcnt1_count_reg)($v1)
     /* 731E4 800829E4 0A80013C */  lui        $at, %hi(D_800A151C)
     /* 731E8 800829E8 1C1522AC */  sw         $v0, %lo(D_800A151C)($at)
     /* 731EC 800829EC 0000638C */  lw         $v1, 0x0($v1)

@@ -70,7 +70,7 @@ INCLUDE_ASM("asm/funcs", func_8004A940);
 INCLUDE_ASM("asm/funcs", func_8004BB68);
 INCLUDE_ASM("asm/funcs", func_8004BCC0);
 INCLUDE_ASM("asm/funcs", func_8004C1F4);
-INCLUDE_ASM("asm/funcs", func_8004C388);
+INCLUDE_ASM("asm/funcs", math_MidpointS16x3U8x2);
 PAD_NOPS_1; /* padding after func_8004C388 */
 INCLUDE_ASM("asm/funcs", func_8004C404);
 INCLUDE_ASM("asm/funcs", func_8004C994);

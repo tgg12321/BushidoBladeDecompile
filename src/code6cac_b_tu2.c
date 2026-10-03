@@ -4849,7 +4849,7 @@ void func_80030900(PracticeMenuRec *a0, Vec3i32 *a1) {
     }
     a0->unk_330--;
 }
-void cpu_set_move_command_and_dir(PracticeMenuRec *a0, s32 a1, Vec3i32 *a2) {
+void func_80030A2C(PracticeMenuRec *a0, s32 a1, Vec3i32 *a2) {
     Obj80106A78 *p;
     s32 rnd;
 
@@ -5991,7 +5991,7 @@ void func_80032C50(s32 obj, s32 kind) {
 /* Tail word after func_80032C50's 73-entry compiler-generated switch table. */
 const u32 D_800107BC[1] = { 0x00000000 };
 
-void cpu_check_same_dir_timer(s32 *base) {
+void func_8003339C(s32 *base) {
     u8 *s0;
     s32 a1val;
     s32 *p;

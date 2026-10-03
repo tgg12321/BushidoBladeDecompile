@@ -4292,18 +4292,18 @@ glabel func_8004BB68
     /* 3C40C 8004BC0C 0C0069AE */  sw         $t1, 0xC($s3)
     /* 3C410 8004BC10 E0FF6422 */  addi       $a0, $s3, -0x20 /* handwritten instruction */
     /* 3C414 8004BC14 E8FF6522 */  addi       $a1, $s3, -0x18 /* handwritten instruction */
-    /* 3C418 8004BC18 E230010C */  jal        func_8004C388
+    /* 3C418 8004BC18 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3C41C 8004BC1C 10006622 */   addi      $a2, $s3, 0x10 /* handwritten instruction */
     /* 3C420 8004BC20 E0FF6422 */  addi       $a0, $s3, -0x20 /* handwritten instruction */
     /* 3C424 8004BC24 F0FF6522 */  addi       $a1, $s3, -0x10 /* handwritten instruction */
-    /* 3C428 8004BC28 E230010C */  jal        func_8004C388
+    /* 3C428 8004BC28 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3C42C 8004BC2C 18006622 */   addi      $a2, $s3, 0x18 /* handwritten instruction */
     /* 3C430 8004BC30 04006486 */  lh         $a0, 0x4($s3)
     /* 3C434 8004BC34 DA2E010C */  jal        func_8004BB68
     /* 3C438 8004BC38 00000000 */   nop
     /* 3C43C 8004BC3C E8FF6422 */  addi       $a0, $s3, -0x18 /* handwritten instruction */
     /* 3C440 8004BC40 F0FF6522 */  addi       $a1, $s3, -0x10 /* handwritten instruction */
-    /* 3C444 8004BC44 E230010C */  jal        func_8004C388
+    /* 3C444 8004BC44 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3C448 8004BC48 08006622 */   addi      $a2, $s3, 0x8 /* handwritten instruction */
     /* 3C44C 8004BC4C 04006486 */  lh         $a0, 0x4($s3)
     /* 3C450 8004BC50 DA2E010C */  jal        func_8004BB68
@@ -4745,15 +4745,15 @@ glabel func_8004C1F4
     /* 3CAB4 8004C2B4 0C0069AE */  sw         $t1, 0xC($s3)
     /* 3CAB8 8004C2B8 E0FF6422 */  addi       $a0, $s3, -0x20 /* handwritten instruction */
     /* 3CABC 8004C2BC E8FF6522 */  addi       $a1, $s3, -0x18 /* handwritten instruction */
-    /* 3CAC0 8004C2C0 E230010C */  jal        func_8004C388
+    /* 3CAC0 8004C2C0 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3CAC4 8004C2C4 10006622 */   addi      $a2, $s3, 0x10 /* handwritten instruction */
     /* 3CAC8 8004C2C8 E0FF6422 */  addi       $a0, $s3, -0x20 /* handwritten instruction */
     /* 3CACC 8004C2CC F0FF6522 */  addi       $a1, $s3, -0x10 /* handwritten instruction */
-    /* 3CAD0 8004C2D0 E230010C */  jal        func_8004C388
+    /* 3CAD0 8004C2D0 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3CAD4 8004C2D4 18006622 */   addi      $a2, $s3, 0x18 /* handwritten instruction */
     /* 3CAD8 8004C2D8 E0FF6422 */  addi       $a0, $s3, -0x20 /* handwritten instruction */
     /* 3CADC 8004C2DC F8FF6522 */  addi       $a1, $s3, -0x8 /* handwritten instruction */
-    /* 3CAE0 8004C2E0 E230010C */  jal        func_8004C388
+    /* 3CAE0 8004C2E0 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3CAE4 8004C2E4 20006622 */   addi      $a2, $s3, 0x20 /* handwritten instruction */
     /* 3CAE8 8004C2E8 04006486 */  lh         $a0, 0x4($s3)
     /* 3CAEC 8004C2EC 7D30010C */  jal        func_8004C1F4
@@ -4764,7 +4764,7 @@ glabel func_8004C1F4
     /* 3CB00 8004C300 0C0069AE */  sw         $t1, 0xC($s3)
     /* 3CB04 8004C304 E8FF6422 */  addi       $a0, $s3, -0x18 /* handwritten instruction */
     /* 3CB08 8004C308 F8FF6522 */  addi       $a1, $s3, -0x8 /* handwritten instruction */
-    /* 3CB0C 8004C30C E230010C */  jal        func_8004C388
+    /* 3CB0C 8004C30C E230010C */  jal        math_MidpointS16x3U8x2
     /* 3CB10 8004C310 18006622 */   addi      $a2, $s3, 0x18 /* handwritten instruction */
     /* 3CB14 8004C314 04006486 */  lh         $a0, 0x4($s3)
     /* 3CB18 8004C318 7D30010C */  jal        func_8004C1F4
@@ -4775,7 +4775,7 @@ glabel func_8004C1F4
     /* 3CB2C 8004C32C 0C0069AE */  sw         $t1, 0xC($s3)
     /* 3CB30 8004C330 F0FF6422 */  addi       $a0, $s3, -0x10 /* handwritten instruction */
     /* 3CB34 8004C334 F8FF6522 */  addi       $a1, $s3, -0x8 /* handwritten instruction */
-    /* 3CB38 8004C338 E230010C */  jal        func_8004C388
+    /* 3CB38 8004C338 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3CB3C 8004C33C 10006622 */   addi      $a2, $s3, 0x10 /* handwritten instruction */
     /* 3CB40 8004C340 04006486 */  lh         $a0, 0x4($s3)
     /* 3CB44 8004C344 7D30010C */  jal        func_8004C1F4
@@ -4786,7 +4786,7 @@ glabel func_8004C1F4
     /* 3CB58 8004C358 0C0069AE */  sw         $t1, 0xC($s3)
     /* 3CB5C 8004C35C E0FF6422 */  addi       $a0, $s3, -0x20 /* handwritten instruction */
     /* 3CB60 8004C360 F0FF6522 */  addi       $a1, $s3, -0x10 /* handwritten instruction */
-    /* 3CB64 8004C364 E230010C */  jal        func_8004C388
+    /* 3CB64 8004C364 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3CB68 8004C368 18006622 */   addi      $a2, $s3, 0x18 /* handwritten instruction */
     /* 3CB6C 8004C36C 04006486 */  lh         $a0, 0x4($s3)
     /* 3CB70 8004C370 7D30010C */  jal        func_8004C1F4
@@ -4798,9 +4798,9 @@ glabel func_8004C1F4
 endlabel func_8004C1F4
 
 /* Handwritten function */
-nonmatching func_8004C388, 0x78
+nonmatching math_MidpointS16x3U8x2, 0x78
 
-glabel func_8004C388
+glabel math_MidpointS16x3U8x2
     /* 3CB88 8004C388 00008884 */  lh         $t0, 0x0($a0)
     /* 3CB8C 8004C38C 02008984 */  lh         $t1, 0x2($a0)
     /* 3CB90 8004C390 04008A84 */  lh         $t2, 0x4($a0)
@@ -4831,7 +4831,7 @@ glabel func_8004C388
     /* 3CBF4 8004C3F4 25586801 */  or         $t3, $t3, $t0
     /* 3CBF8 8004C3F8 0800E003 */  jr         $ra
     /* 3CBFC 8004C3FC 0600CBA4 */   sh        $t3, 0x6($a2)
-endlabel func_8004C388
+endlabel math_MidpointS16x3U8x2
     /* 3CC00 8004C400 00000000 */  nop
 
 /* Handwritten function */

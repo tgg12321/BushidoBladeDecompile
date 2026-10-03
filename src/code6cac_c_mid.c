@@ -1518,7 +1518,7 @@ void func_8003993C(void) {
             rob->unk_58 = (u8 *)(D_801027B0[temp][2] + *(u16 *)(entry + 2));
         }
         if (*(u8 *)(p + 0x18) & 0x40) {
-            cpu_check_same_dir_timer(rob);
+            func_8003339C(rob);
         }
         rob->unk_40 = save40;
         rob->unk_58 = save58;

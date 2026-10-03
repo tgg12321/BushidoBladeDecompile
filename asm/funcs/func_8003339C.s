@@ -1,4 +1,4 @@
-glabel cpu_check_same_dir_timer
+glabel func_8003339C
     /* 23B9C 8003339C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 23BA0 800333A0 1400B1AF */  sw         $s1, 0x14($sp)
     /* 23BA4 800333A4 21888000 */  addu       $s1, $a0, $zero
@@ -69,4 +69,4 @@ glabel cpu_check_same_dir_timer
     /* 23C8C 8003348C 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 23C90 80033490 0800E003 */  jr         $ra
     /* 23C94 80033494 00000000 */   nop
-endlabel cpu_check_same_dir_timer
+endlabel func_8003339C

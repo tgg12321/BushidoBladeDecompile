@@ -281,7 +281,7 @@ glabel func_8003993C
     /* 2A560 80039D60 40004230 */  andi       $v0, $v0, 0x40
     /* 2A564 80039D64 04004010 */  beqz       $v0, .L80039D78
     /* 2A568 80039D68 21206002 */   addu      $a0, $s3, $zero
-    /* 2A56C 80039D6C E7CC000C */  jal        cpu_check_same_dir_timer
+    /* 2A56C 80039D6C E7CC000C */  jal        func_8003339C
     /* 2A570 80039D70 21202002 */   addu      $a0, $s1, $zero
     /* 2A574 80039D74 21206002 */  addu       $a0, $s3, $zero
   .L80039D78:

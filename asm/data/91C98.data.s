@@ -138,17 +138,17 @@ dlabel D_800A1504
     /* 91D0C 800A150C 9C884000 */ .word 0x0040889C
 enddlabel D_800A1504
 
-nonmatching D_800A1510
+nonmatching g_vsync_gpu_stat_reg
 
-dlabel D_800A1510
+dlabel g_vsync_gpu_stat_reg
     /* 91D10 800A1510 1418801F */ .word 0x1F801814
-enddlabel D_800A1510
+enddlabel g_vsync_gpu_stat_reg
 
-nonmatching D_800A1514
+nonmatching g_vsync_rcnt1_count_reg
 
-dlabel D_800A1514
+dlabel g_vsync_rcnt1_count_reg
     /* 91D14 800A1514 1011801F */ .word 0x1F801110
-enddlabel D_800A1514
+enddlabel g_vsync_rcnt1_count_reg
 
 nonmatching Hcount
 
@@ -1284,11 +1284,11 @@ dlabel D_800A2600
     /* 92E00 800A2600 E0250A80 */ .word D_800A25E0
 enddlabel D_800A2600
 
-nonmatching D_800A2604
+nonmatching i_stat
 
-dlabel D_800A2604
+dlabel i_stat
     /* 92E04 800A2604 7010801F */ .word 0x1F801070
-enddlabel D_800A2604
+enddlabel i_stat
 
 nonmatching D_800A2608
 
@@ -1296,11 +1296,11 @@ dlabel D_800A2608
     /* 92E08 800A2608 7410801F */ .word 0x1F801074
 enddlabel D_800A2608
 
-nonmatching D_800A260C
+nonmatching d_pcr
 
-dlabel D_800A260C
+dlabel d_pcr
     /* 92E0C 800A260C F010801F */ .word 0x1F8010F0
-enddlabel D_800A260C
+enddlabel d_pcr
 
 nonmatching D_800A2610
 

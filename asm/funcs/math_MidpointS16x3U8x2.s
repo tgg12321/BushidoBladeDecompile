@@ -1,4 +1,4 @@
-glabel func_8004C388
+glabel math_MidpointS16x3U8x2
     /* 3CB88 8004C388 00008884 */  lh         $t0, 0x0($a0)
     /* 3CB8C 8004C38C 02008984 */  lh         $t1, 0x2($a0)
     /* 3CB90 8004C390 04008A84 */  lh         $t2, 0x4($a0)
@@ -29,4 +29,4 @@ glabel func_8004C388
     /* 3CBF4 8004C3F4 25586801 */  or         $t3, $t3, $t0
     /* 3CBF8 8004C3F8 0800E003 */  jr         $ra
     /* 3CBFC 8004C3FC 0600CBA4 */   sh        $t3, 0x6($a2)
-endlabel func_8004C388
+endlabel math_MidpointS16x3U8x2

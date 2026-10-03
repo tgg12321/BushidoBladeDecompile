@@ -1,4 +1,4 @@
-glabel cpu_set_move_command_and_dir
+glabel func_80030A2C
     /* 2122C 80030A2C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 21230 80030A30 1800B2AF */  sw         $s2, 0x18($sp)
     /* 21234 80030A34 21908000 */  addu       $s2, $a0, $zero
@@ -58,4 +58,4 @@ glabel cpu_set_move_command_and_dir
     /* 21304 80030B04 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 21308 80030B08 0800E003 */  jr         $ra
     /* 2130C 80030B0C 00000000 */   nop
-endlabel cpu_set_move_command_and_dir
+endlabel func_80030A2C

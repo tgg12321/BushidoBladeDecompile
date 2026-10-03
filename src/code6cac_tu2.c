@@ -4668,10 +4668,10 @@ done:;
 /* [unk_0A][min(unk_272, 3)]: 4.12 scale of unk_1E into unk_20 (func_80023F08). */
 extern s16 D_8008E0BC[27][4];
 /* [D_8008D9EC[unk_0A]][unk_0E]: the move command func_80023F08 hands
- * cpu_set_move_command_and_dir. */
+ * func_80030A2C (ex cpu_set_move_command_and_dir, RESET sweep 2026-10-03). */
 extern u8 D_8008D90C[28][8];
-extern void cpu_check_same_dir_timer(s32 *);
-extern void cpu_set_move_command_and_dir(PracticeMenuRec *, s32, Vec3i32 *);
+extern void func_8003339C(s32 *);
+extern void func_80030A2C(PracticeMenuRec *, s32, Vec3i32 *);
 extern s32 func_8002798C(u8 *);
 extern s32 func_8002FDB0(s32 *);
 extern s32 func_800307D0(PracticeMenuRec *);
@@ -5392,7 +5392,7 @@ skip_62:
             func_80032854(arg0, 0x2E, (s32 *)&rec->unk_F4, 0);
         }
         if (rec->unk_0C != 0x1F) {
-            cpu_set_move_command_and_dir(rec, D_8008D90C[D_8008D9EC[rec->unk_0A]][rec->unk_0E], (Vec3i32 *)bones[0x12]->t);
+            func_80030A2C(rec, D_8008D90C[D_8008D9EC[rec->unk_0A]][rec->unk_0E], (Vec3i32 *)bones[0x12]->t);
         }
         rec->unk_96 = 1;
         if (D_800A3748 == -1) {
@@ -5431,7 +5431,7 @@ skip_62:
         }
         if (rec->unk_46 == 0 && (rec->unk_6A != 0x11 || arg0 == D_800A38AE)) {
             rec->unk_62 |= 0x40;
-            cpu_check_same_dir_timer((s32 *)rec);
+            func_8003339C((s32 *)rec);
         }
     }
     if (rec->unk_26C != 0) {
