@@ -57,3 +57,4 @@ text1a_b_post_rodata	main/psxsdk/libcd/bios	after:c13e49ca8439
 text1a_b_tail_rodata	main/psxsdk/libcd/bios	after:c13e49ca8439
 main	main/psxsdk/libspu/spu	after:3467622c018e
 main/psxsdk/libsnd/749E0	main/psxsdk/libsnd/cres	after:2cc9d7eb5019
+main/psxsdk/libsnd/767D8	main/psxsdk/libsnd/ut_vvol	after:a6f20ee2e441

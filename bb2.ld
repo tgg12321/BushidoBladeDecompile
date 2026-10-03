@@ -256,7 +256,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/ut_rev.o(.text);
         build/src/main/psxsdk/libsnd/ut_roff.o(.text);
         build/src/main/psxsdk/libsnd/ut_ron.o(.text);
-        build/src/main/psxsdk/libsnd/767D8.o(.text);
+        build/src/main/psxsdk/libsnd/ut_vvol.o(.text);
         build/src/main/psxsdk/libsnd/vm_doff.o(.text);
         build/src/main/psxsdk/libsnd/76BDC.o(.text);
         build/src/main/psxsdk/libsnd/vm_n2p.o(.text);
@@ -479,7 +479,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/ut_rev.o(.data);
         build/src/main/psxsdk/libsnd/ut_roff.o(.data);
         build/src/main/psxsdk/libsnd/ut_ron.o(.data);
-        build/src/main/psxsdk/libsnd/767D8.o(.data);
+        build/src/main/psxsdk/libsnd/ut_vvol.o(.data);
         build/src/main/psxsdk/libsnd/vm_doff.o(.data);
         build/src/main/psxsdk/libsnd/76BDC.o(.data);
         build/src/main/psxsdk/libsnd/vm_n2p.o(.data);
@@ -748,7 +748,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/ut_rev.o(.bss);
         build/src/main/psxsdk/libsnd/ut_roff.o(.bss);
         build/src/main/psxsdk/libsnd/ut_ron.o(.bss);
-        build/src/main/psxsdk/libsnd/767D8.o(.bss);
+        build/src/main/psxsdk/libsnd/ut_vvol.o(.bss);
         build/src/main/psxsdk/libsnd/vm_doff.o(.bss);
         build/src/main/psxsdk/libsnd/76BDC.o(.bss);
         build/src/main/psxsdk/libsnd/vm_n2p.o(.bss);
