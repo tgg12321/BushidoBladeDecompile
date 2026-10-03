@@ -204,8 +204,8 @@ for c in "${REF_CC1:-}" \
   [ -n "$c" ] && [ -x "$c" ] && { REF="$c"; break; }
 done
 
-# Manifest expectation is keyed to the source tree: src/**/*.c + include/*.h.
-SRCDIG=$( (sha1sum src/**/*.c include/*.h 2>/dev/null | sha1sum) | cut -d' ' -f1 )
+# Manifest expectation is keyed to the source tree: src/**/*.[ch] + include/**/*.h.
+SRCDIG=$( (sha1sum src/**/*.[ch] include/**/*.h 2>/dev/null | sha1sum) | cut -d' ' -f1 )
 : > $W/digests.txt
 n=0
 for stem in $(tu_ids); do

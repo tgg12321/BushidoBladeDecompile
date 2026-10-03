@@ -446,7 +446,7 @@ def process_asm_file(path, text):
 total_files = 0
 total_replacements = 0
 
-c_files = list((root / "src").rglob("*.c")) + list((root / "include").glob("*.h"))
+c_files = list((root / "src").rglob("*.[ch]")) + list((root / "include").rglob("*.h"))
 asm_files = (
     list((root / "asm" / "funcs").glob("*.s")) +
     list((root / "asm").glob("*.s"))

@@ -8,7 +8,7 @@ verdict CONFIRM only), it retires EVERY symbol currently defined at that address
 `D_<ADDR>` auto name and any `g_*` aliases in the three linker-script registries) in favour
 of the proposed name, across every surface where a data name is a key:
 
-  src/**/*.c, include/*.h          whole-word substitution outside comments (string literals in
+  src/**/*.[ch], include/**/*.h   whole-word substitution outside comments (string literals in
                                   scope — INCLUDE_ASM / __asm__ bodies), via naming_wave.sub_c
   asm/**/*.s                      same (%hi/%lo operands, .word references)
   bb2.ld                          same
@@ -124,7 +124,7 @@ def main() -> int:
         if n:
             edits[rel] = (new_text, n)
 
-    for pattern in ("src/**/*.c", "include/*.h", "asm/*.s", "asm/funcs/*.s", "asm/data/*.s", "bb2.ld"):
+    for pattern in ("src/**/*.c", "src/**/*.h", "include/**/*.h", "asm/*.s", "asm/funcs/*.s", "asm/data/*.s", "bb2.ld"):
         for p in sorted(glob.glob(str(ROOT / pattern), recursive=True)):
             plan_file(os.path.relpath(p, ROOT).replace("\\", "/"), lambda t: nw.sub_c(pat, repl, t))
     for rel in LIST_FILES:

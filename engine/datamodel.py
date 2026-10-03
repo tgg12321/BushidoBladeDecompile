@@ -136,7 +136,8 @@ def c_refs(sym: str) -> list[str]:
 def header_decl(sym: str) -> tuple[str, str]:
     """(extern declaration line, header file) or ('', '')."""
     if "hdrs" not in _cache:
-        _cache["hdrs"] = {p.name: _read(p).split("\n") for p in sorted(Path("include").glob("*.h"))}
+        _cache["hdrs"] = {p.relative_to("include").as_posix(): _read(p).split("\n")
+                          for p in sorted(Path("include").rglob("*.h"))}
     pat = re.compile(r"^\s*extern\b.*\b" + re.escape(sym) + r"\b")
     for name, lines in _cache["hdrs"].items():
         for ln in lines:
@@ -182,7 +183,7 @@ def data_model(func: str) -> tuple[list[str], list[str]]:
             elif a in census:
                 nm, c = census[a]
                 row += f"  census {nm}" + (f' "{c}"' if c else "")
-            row += (f"  decl `{decl}` ({hdr})" if decl else "  decl: NONE in include/*.h") + f"  xref {xr}"
+            row += (f"  decl `{decl}` ({hdr})" if decl else "  decl: NONE in include/**/*.h") + f"  xref {xr}"
             rows.append(row)
             if s in indexed and is_scalar_decl(decl):
                 flags.append(f"!! INDEXED-ACCESS: the target indexes {s} with a computed register "

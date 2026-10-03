@@ -174,7 +174,7 @@ PIPELINE_DEPS := Makefile \
 	expand_lb_funcs.txt multu_funcs.txt multu_pad_funcs.txt expand_dest_funcs.txt maspsx_prefill_label_funcs.txt maspsx_comm_syms.txt \
 	tools/prologue_fix.py tools/multu_pad.py \
 	$(wildcard tools/maspsx/*.py tools/maspsx/maspsx/*.py) \
-	$(wildcard include/* asm/funcs/*.s) $(shell find $(SRC_DIR) -name '*.h')
+	$(shell find $(INCLUDE_DIR) -type f) $(wildcard asm/funcs/*.s) $(shell find $(SRC_DIR) -name '*.h')
 
 # -- Compile C source (decompiled functions) --
 # Pipeline: cpp | cc1 | prologue_fix | maspsx | multu_pad | as -> .o, then objcopy (.rodata alignment 4)
@@ -184,11 +184,11 @@ $(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c $(PIPELINE_DEPS)
 	$(OBJCOPY) $(RODATA_OBJ_ALIGN) $@
 
 # -- Assemble .s files (non-decompiled asm) --
-$(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s $(wildcard include/*)
+$(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s $(shell find $(INCLUDE_DIR) -type f)
 	@mkdir -p $(dir $@)
 	$(AS) $(AS_FLAGS) $< -o $@
 
-$(BUILD_DIR)/$(ASM_DIR)/data/%.o: $(ASM_DIR)/data/%.s $(wildcard include/*)
+$(BUILD_DIR)/$(ASM_DIR)/data/%.o: $(ASM_DIR)/data/%.s $(shell find $(INCLUDE_DIR) -type f)
 	@mkdir -p $(dir $@)
 	$(AS) $(AS_FLAGS) $< -o $@
 

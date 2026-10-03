@@ -190,7 +190,7 @@ def append_named_syms(to_apply: list[dict]) -> None:
 
 def substitute_in_sources(to_apply: list[dict]) -> dict[str, int]:
     """Word-boundary replace `func_XXXXXXXX` -> `<kengo_name>` across
-    every file that names BB2 functions: src/*.c, include/*.h,
+    every file that names BB2 functions: src/**/*.[ch], include/**/*.h,
     regfix.txt, asmfix.txt, expand_lb_funcs.txt, sdata*.txt. Returns
     {file: count_replacements}.
 
@@ -203,7 +203,8 @@ def substitute_in_sources(to_apply: list[dict]) -> dict[str, int]:
 
     candidates: list[Path] = []
     candidates.extend(sorted(SRC_DIR.rglob("*.c")))
-    candidates.extend(sorted((ROOT / "include").glob("*.h")))
+    candidates.extend(sorted(SRC_DIR.rglob("*.h")))
+    candidates.extend(sorted((ROOT / "include").rglob("*.h")))
     for name in ("regfix.txt", "asmfix.txt", "expand_lb_funcs.txt",
                  "sdata_funcs.txt", "sdata_exclude.txt"):
         p = ROOT / name
@@ -317,7 +318,8 @@ def cmd_revert(args) -> int:
     edits: dict[str, int] = {}
     files: list[Path] = []
     files.extend(sorted(SRC_DIR.rglob("*.c")))
-    files.extend(sorted((ROOT / "include").glob("*.h")))
+    files.extend(sorted(SRC_DIR.rglob("*.h")))
+    files.extend(sorted((ROOT / "include").rglob("*.h")))
     for name in ("regfix.txt", "asmfix.txt", "sdata_funcs.txt",
                   "sdata_exclude.txt", "expand_lb_funcs.txt"):
         pp = ROOT / name

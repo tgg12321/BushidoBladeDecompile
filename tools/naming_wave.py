@@ -782,7 +782,7 @@ def plan_wave(wave: Wave) -> Plan:
     pat, repl = wave.pattern, wave.repl
 
     # --- C sources and headers -------------------------------------------
-    for p in sorted((ROOT / "src").rglob("*.c")) + sorted((ROOT / "include").glob("*.h")):
+    for p in sorted((ROOT / "src").rglob("*.[ch]")) + sorted((ROOT / "include").rglob("*.h")):
         t = read(p)
         new, n = sub_c(pat, repl, t)
         plan.note_edit(str(p.relative_to(ROOT)).replace("\\", "/"), new, n, t)
@@ -942,7 +942,7 @@ def map_freshness() -> tuple[bool, str]:
         return False, "build/bb2.map is MISSING — build once before running the wave"
     mt = mp.stat().st_mtime
     newest, newest_p = 0.0, ""
-    for pat_ in ("src/**/*.c", "include/*.h", "asm/funcs/*.s", "*.txt", "bb2.ld", "Makefile"):
+    for pat_ in ("src/**/*.[ch]", "include/**/*.h", "asm/funcs/*.s", "*.txt", "bb2.ld", "Makefile"):
         for p in ROOT.glob(pat_):
             try:
                 t = p.stat().st_mtime
@@ -1264,7 +1264,7 @@ def residual_audit(wave: Wave) -> dict[str, list[str]]:
         for h in hits:
             out[h].append(rel)
 
-    for p in sorted((ROOT / "src").rglob("*.c")) + sorted((ROOT / "include").glob("*.h")):
+    for p in sorted((ROOT / "src").rglob("*.[ch]")) + sorted((ROOT / "include").rglob("*.h")):
         scan(str(p.relative_to(ROOT)), read(p), "c")
     for d in ("asm/funcs", "asm", "asm/data"):
         for p in sorted((ROOT / d).glob("*.s")):
