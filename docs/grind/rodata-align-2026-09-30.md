@@ -345,3 +345,23 @@ docs/grind/handoff-2026-10-03-restructure.md Part A.
 - **Chosen:** the full merge (removes a boundary, adds none). code6cac_c2.c = c_ab's text verbatim, then
   c2's after its include block. Two declarations reconciled: `func_80020D38` is `void` (its definition,
   src/code6cac_tu2.c), `D_800A3894` is `u8 *` (as in c_ab, c_mid and tu2; c2's `s32` extern dropped).
+
+## 12. Data-only rodata files folded into their owners (restructure step 3, Q106 D4, 2026-10-03)
+
+Object compare `memory/grind/restructure-2026-10-03/step3/objcmp.py` (sections, relocations, globals vs the pre-fold objects) plus the oracle link.
+- **ings_strings.c → main/6CF8.c** (0x80010000+0x68): the 5 strings' only referrers are 6CF8.c (printf sites; the
+  build date via D_800A30E0); 6CF8.o had no other .rodata and links first. Any position in the file gives the same
+  bytes; definitions at the top.
+- **code6cac_b_rodata_post.c** (0x800109B0+0x28), split by referrer and alignment: `g_str_memcard_fmt`, `D_800109BC`
+  → main/memcard.c (sole referrers memcard_CountFiles/ReadFile/WriteFile; memcard.o's .rodata slot). `D_800109C8`
+  (read only by memcard_Format, 28708.c, whose rodata starts after 28514.o's) → the top of main/28514.c as
+  `[] = "bu%1d%1d:"`: its 6 trailing zero bytes are the `.align 3` of func_80037D14's jump table at 0x800109D8 when
+  both share one object. Survivor, also oracle-identical: all three in memcard.c with `D_800109C8[16]`, the pad
+  spelled into the array, which also needs code6cac.h's `extern s32 D_800109C8` retyped (Phase 2 conflict list).
+- **text1a_b_pre_rodata_b.c → main/3AB48.c** (0x800158B4+0x2C): referrers snd_LoadCommonVab and func_8005C2A8
+  (3AB48.c); contiguous after func_80058580's tables, 3AB48.o's only other .rodata. Every position after
+  func_80058580 gives the same bytes; each string replaces its user's extern.
+- **text1a_b_mid_rodata.c** (0 bytes) deleted.
+- **code6cac_b_rodata_pre.c (now main/d_1068.c) not folded:** its zero word at 0x80010868 is the `.align 3` pad of
+  24F08.c's first table only in one object holding 24BF0.o's and 24F08.o's rodata (0x4C → 0x50), but 24F08.c is
+  cc1 -G8 by proof and 24BF0.c is not; a 4-byte const in the -G8 file would sit in .sdata under cc1psx.

@@ -30,8 +30,13 @@ extern s32 g_rng_state;
 extern u32 g_gpu_clear_rect;
 extern u8 g_file_data_buf[];
 extern u32 g_scratchpad_save;
-extern const char g_str_overflow[];
-extern const char g_str_eff_init[];
+/* This file's .rodata: debug format strings, and the build date that D_800A30E0
+ * (below) points at. */
+const char g_str_overflow[12] = "OVER FLOW\n";
+const char g_str_eff_init[28] = "eff_init:%08x size:%08x\n";
+const char g_str_limit[12] = "LIMIT:%08x\n";
+const char g_str_prim_overflow[24] = "common prim over flow\n";
+const char g_str_build_date[28] = "Fri Aug  7 22:26:32 1998\n";
 
 extern void printf();
 extern void func_800164F8(void);
@@ -74,7 +79,6 @@ extern void func_80060E04(s32);
 extern void func_8003D2F4(void);
 
 extern void func_80019568();
-extern const char g_str_prim_overflow[];
 extern void func_8003D330(void);
 extern u8 *func_8005D46C(u8 *);
 extern u8 *func_8005D554(u8 *, u8);
@@ -344,7 +348,6 @@ void file_LoadSoundData(void) {
     func_8005C614();
     D_800A3906 = 1;
 }
-extern const char g_str_limit[];
 extern u32 D_800A3798;
 extern u8 D_800A3744;
 extern u8 D_800A3745;
@@ -939,7 +942,6 @@ void sys_StubEmpty2(void) {
 void sys_StubEmpty3(void) {
 }
 
-extern const char g_str_build_date[];
 /* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
 s32 D_800A30DC = 0x13400;
 s32 D_800A30E0[2] = { (s32)g_str_build_date, 0x190 };  /* not named by any code or data: size from the gap */

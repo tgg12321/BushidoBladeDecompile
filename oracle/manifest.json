@@ -18,7 +18,6 @@
     "src/display.c": "be23bd83b5b7603101e99201b1a897da7e3c47e7",
     "src/gpu.c": "adc620436841fc0c0af929c56f0a721cb945d624",
     "src/ings2.c": "e2c57e5c95a04ffda54759cd583b3b84c4d0e6ff",
-    "src/ings_strings.c": "663f7bdad3ad63e12eb2da6c109f314618883110",
     "src/main.c": "9d41dcc3d51df51202ababdb32e29b42169fc9e2",
     "src/main/175A4.c": "471ff9b73f0d57cd29a1c3ece735a608c105e6bf",
     "src/main/17AFC.c": "3b387fb14145da40a057694fa6648618f0c31599",

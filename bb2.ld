@@ -37,7 +37,7 @@ SECTIONS
     {
         FILL(0x00000000);
         main_RODATA_START = .;
-        build/src/ings_strings.o(.rodata);
+        build/src/main/6CF8.o(.rodata);
         build/src/main/87A0.o(.rodata);
         build/src/main/9F9C.o(.rodata);
         build/src/main/175A4.o(.rodata);
