@@ -4,7 +4,7 @@
 /* Shared declarations for the code6cac module family */
 
 #include "common.h"
-#include "libcd.h"
+#include <psxsdk/libcd.h>
 
 /* Named globals */
 extern u8 cpu_practice_honmokuroku_data_tbl[][4];
@@ -1135,11 +1135,8 @@ extern void ResetGraph(s32);
 extern void SetDispMask(s32);
 extern void DrawSync(s32);
 extern void CdInit(void);
-extern void CdFlush(void);
 extern void CdSetDebug(s32);
 extern void CdReadyCallback(s32);
-extern s32 CdRead(s32, s32, s32);
-extern s32 CdReadSync(s32, s32);
 extern void SsSetSerialVol(s32, s32, s32);
 extern s32 _comb_control(s32, s32, s32);
 extern s32 func_80038C70(void);

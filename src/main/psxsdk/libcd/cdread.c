@@ -3,7 +3,7 @@
  * Q106 D3. One file across the old system.c|ings2.c cut at 0x8008289C, which was mid-module (Q106
  * D3). */
 #include "common.h"
-#include "libcd.h"
+#include "libcd_internal.h"
 
 /* .rodata 0x800162D4..0x80016318: cb_read's and cd_read_retry's messages (moved from
  * src/text1a_b_tail_rodata.c, Q106 D4: every reader is in this file, in link order). */
@@ -28,17 +28,8 @@ const char D_80016304[20] =
  * defined them above this module). */
 extern s32 VSync(s32);
 extern void puts(void *);
-u32 CdStatus(void);
-u32 CdMode(void);
-void *CdLastPos(void);
-void CdFlush(void);
-s32 CdReady(s32 mode, u8 *result);
-s32 CdSyncCallback(s32 a0);
 s32 CdReadyCallback(s32 a0);
 s32 CdGetSector(s32 madr, s32 size);
-s32 CdGetSector2(s32 madr, s32 size);
-s32 CdDataCallback(s32 a0);
-void CdDataSync(s32 a0);
 s32 CdPosToInt(u8 *a0);
 
 
@@ -46,7 +37,7 @@ s32 CdPosToInt(u8 *a0);
    are identical either way. */
 void cb_data(void);
 
-/* The cdread module state is D_800A14D0 (CdlREAD, include/libcd.h). */
+/* The cdread module state is D_800A14D0 (CdlREAD, include/psxsdk/libcd.h). */
 extern u8 *D_800A1504;   /* cdread.c v1.86: saved result ptr for cb dispatch */
 extern s32 g_CdReadCallback_func;   /* CD_ReadCallbackFunc */
 
@@ -261,7 +252,7 @@ s32 CdReadCallback(s32 a0) {
 
 /* PsyQ 4.0 LIBCD cdread.c: CdReadMode — verbatim-linked Sony object (census
    2026-07-09); the "timer" word (0x800A1500) is the +0x30 mode-flag member
-   of the volatile cdread module state block (CdlREAD, include/libcd.h). */
+   of the volatile cdread module state block (CdlREAD, include/psxsdk/libcd.h). */
 
 s32 CdReadMode(s32 a0) {
     s32 old = D_800A14D0.tslmode;

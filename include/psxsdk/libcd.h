@@ -1,5 +1,9 @@
-#ifndef LIBCD_H
-#define LIBCD_H
+#ifndef PSXSDK_LIBCD_H
+#define PSXSDK_LIBCD_H
+
+/* PsyQ LIBCD types and entry points (Sony's libcd.h; SOTN include/psxsdk/libcd.h), spelled as
+ * BB2's code uses them (the module definitions in src/main/psxsdk/libcd/). Library-internal
+ * state shared by the modules: src/main/psxsdk/libcd/libcd_internal.h. */
 
 #include "common.h"
 
@@ -34,7 +38,8 @@ typedef struct {
  * saved result pointer D_800A1504. Evidence it is one object: CdReadSync caches &t1 in $s1
  * and reads cnt / t2 / sectors at -0x8 / -0x4 / -0x1C off it (0x800827E8), and the la-form
  * member reads in cd_read_retry / CdReadBreak / CdRead / cb_read are cse's related-value
- * addressing of one symbol. All its users are in src/main/psxsdk/libcd/cdread.c. */
+ * addressing of one symbol. All its users are in src/main/psxsdk/libcd/cdread.c (the Q99
+ * admission in .claude/rules/aggregate-merge-family.md names this declaration). */
 typedef struct {
     /* 0x00 */ s32 sectors; /* D_800A14D0 */
     /* 0x04 */ s32 buf;     /* D_800A14D4 */
@@ -57,4 +62,24 @@ s32 CdControl(u8 com, u8 *param, u8 *result);
 s32 CdControlB(u8 com, u8 *param, u8 *result);
 s32 CdControlF(u8 com, u8 *param);
 
-#endif /* LIBCD_H */
+extern s32 CdReset(s32);
+extern void CdFlush(void);
+extern u32 CdStatus(void);
+extern u32 CdMode(void);
+extern u32 CdLastCom(void);
+extern void *CdLastPos(void);
+extern void *CdComstr(u8);
+extern void *CdIntstr(u8);
+extern s32 CdSync(s32, u8 *);
+extern s32 CdReady(s32, u8 *);
+extern s32 CdSyncCallback(s32);
+extern s32 CdDataCallback(s32);
+extern void CdDataSync(s32);
+extern s32 CdGetSector2(s32, s32);
+extern s32 CdRead(s32, s32, s32);
+extern s32 CdReadSync(s32, s32);
+extern s32 CdReadCallback(s32);
+extern s32 CdReadMode(s32);
+extern void CdReadBreak(void);
+
+#endif /* PSXSDK_LIBCD_H */

@@ -25,8 +25,6 @@ extern void CdMix(CdlATV *);
 extern s16 D_800A3854;
 extern s16 D_800A3840;
 extern void cdrom_SetMix(s32, s32, s32, s32);
-extern s32 CdSync(s32, u8 *);
-extern s32 CdReady(s32, u8 *);
 CdlATV g_cd_atv;
 CdlATV D_800A36B8;
 u8 g_cd_result[8];
@@ -225,7 +223,6 @@ void func_80036140(void) {
     }
 }
 void func_80036940(void);
-extern s32 CdSync(s32, u8 *);
 extern void func_80036140(void);
 void func_80036940(void) {
     u8 param[4];

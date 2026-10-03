@@ -2,6 +2,7 @@
  * 0x8007FF7C..0x8008008C, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
  * D3. */
 #include "common.h"
+#include "libcd_internal.h"
 
 /* .rodata 0x8001605C..0x80016074: this module's strings (moved from src/text1a_b_post_rodata.c, Q106 D4:
  * every reader is in this file, in link order). */
@@ -15,10 +16,6 @@ const char g_str_cdinit_fail[24] =
 extern void DeliverEvent(s32, s32);
 extern s32 printf();
 
-extern s32 CdReset(s32);
-extern s32 CdSyncCallback(s32);
-extern s32 CdReadCallback(s32);
-extern s32 CdReadMode(s32);
 void def_cbsync(void);
 void def_cbready(void);
 void def_cbread(void);

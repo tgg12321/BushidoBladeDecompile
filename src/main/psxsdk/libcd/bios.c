@@ -4,7 +4,7 @@
 #include "common.h"
 #include "system.h"
 #include "psx.h"
-#include "libcd.h"
+#include "libcd_internal.h"
 
 /* .rodata 0x8001607C..0x8001622C: the module's strings in front of getintr's jump table
  * (0x8001622C..0x80016240, emitted with getintr below): the CD_comstr / CD_intstr command and
@@ -56,18 +56,6 @@ const char D_8001620C[20] =
 const char D_80016220[12] =
     "(%d)\n\0\0\0\0\0\0\0"
     ;
-
-/* Declarations from the head of the old system.c (now in libcd/sys.c) that this module uses. */
-extern void CD_flush(void);
-extern u8 CD_status;
-extern u8 CD_pos[4]; /* Sony's u_char CD_pos[4] (SOTN: src/main/psxsdk/libcd/bios.c:42 @aa53500) */
-extern u8 CD_mode;
-extern u8 CD_com;
-extern s32 CD_cbsync;
-extern s32 CD_cbready;
-extern s32 CD_debug;
-extern s32 CD_comstr[];
-extern s32 CD_intstr[];
 
 /* libcd bios.c module types/helpers, hoisted above getintr (their first
  * user). */
@@ -264,16 +252,9 @@ extern void puts(void *);
 extern void printf();
 extern s32 CheckCallback(void);
 extern s32 getintr(void);
-extern s32 CD_cbsync;
-extern s32 CD_cbready;
 extern void Result;
 extern void Result_plus_0x8;
 extern void Result_plus_0x10;
-extern u8 CD_com;
-extern s32 CD_comstr[];
-extern s32 CD_intstr[];
-
-
 
 /* bios.c's alarm helpers, as in Sony's source (SOTN: src/main/psxsdk/libcd/bios.c:95 @aa53500).
  * SOTN reaches its `volatile Alarm_t Alarm` only through the non-volatile view
@@ -563,11 +544,6 @@ s32 CD_init(void) {
 extern s32 VSync(s32);
 extern void puts(void *);
 extern void printf();
-extern u8 CD_com;
-extern s32 CD_comstr[];
-extern s32 CD_intstr[];
-
-
 
 extern volatile u32 *g_cd_dma_ctrl;
 
@@ -646,8 +622,6 @@ void CD_set_test_parmnum(s32 a0) {
 }
 
 
-extern s32 CD_cbsync;
-extern s32 CD_cbready;
 extern void Result_plus_0x8;
 extern void Result;
 extern s32 getintr(void);

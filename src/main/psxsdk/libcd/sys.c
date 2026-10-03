@@ -2,7 +2,7 @@
  * 0x8008009C..0x80080828, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
  * D3. */
 #include "common.h"
-#include "libcd.h"
+#include "libcd_internal.h"
 
 /* .rodata 0x80016074..0x8001607C: CdComstr's and CdIntstr's out-of-range name (moved from
  * src/text1a_b_post_rodata.c, Q106 D4: every reader is in this file, in link order). */
@@ -13,22 +13,7 @@ const char g_str_none[8] =
     ;
 
 /* Forward declarations */
-extern void CD_flush(void);
-extern s32 CD_sync(s32, u8 *);
-extern s32 CD_ready(s32, u8 *);
-extern s32 CD_vol(CdlATV *vol);
-extern s32 CD_getsector();
-extern s32 CD_getsector2();
 extern s32 DMACallback(s32, s32);
-extern s32 CD_datasync(s32);
-
-/* Externs for globals */
-extern u8 CD_status;
-extern u8 CD_pos[4]; /* Sony's u_char CD_pos[4] (SOTN: src/main/psxsdk/libcd/bios.c:42 @aa53500) */
-extern u8 CD_mode;
-extern u8 CD_com;
-extern s32 CD_cbsync;
-extern s32 CD_cbready;
 
 u32 CdStatus(void) {
     return CD_status;
@@ -46,9 +31,6 @@ void *CdLastPos(void) {
     return CD_pos;
 }
 
-extern void CD_initintr(void);
-extern s32 CD_init(void);
-extern s32 CD_initvol(void);
 s32 CdReset(s32 a0) {
     if (a0 == 2) {
         CD_initintr();
@@ -68,10 +50,6 @@ s32 CdReset(s32 a0) {
 void CdFlush(void) {
     CD_flush();
 }
-
-extern s32 CD_debug;
-extern s32 CD_comstr[];
-extern s32 CD_intstr[];
 
 s32 CdSetDebug(s32 a0) {
     s32 old = CD_debug;
@@ -122,7 +100,6 @@ s32 CdReadyCallback(s32 a0) {
 }
 
 extern s32 g_cd_setloc_flags[];
-extern s32 CD_cw(u8, u8 *, u8 *, s32);
 
 s32 CdControl(u8 a0, u8 *a1, u8 *a2) {
     s32 result;
@@ -310,8 +287,6 @@ u8 *CdIntToPos(s32 i, u8 *p) {
     return p;
 }
 
-
-extern s32 CD_cw(u8, u8 *, u8 *, s32);
 
 s32 CdPosToInt(u8 *a0) {
     u8 b0 = a0[0];
