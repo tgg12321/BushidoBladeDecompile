@@ -139,7 +139,7 @@ PSYQ_LIBRARY_FILES := main/psxsdk/libcomb/comb display gpu ings2 main system tex
 # -- Per-file lb/lh expansion opt-in --
 # ASPSX expands lb→lbu+sll+sra and lh→lhu+sll+sra in certain contexts.
 # These flags replicate that behavior via maspsx for files that need it.
-EXPAND_LB_FILES := main/175A4 code6cac_b_tu2 code6cac_b_tu3 code6cac_b3 code6cac_b3_post
+EXPAND_LB_FILES := main/175A4 main/17AFC code6cac_b_tu3 code6cac_b3 code6cac_b3_post
 EXPAND_LH_FILES :=
 
 # -- Rodata alignment: object-relative, one rule for every C object --
