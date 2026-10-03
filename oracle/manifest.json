@@ -102,6 +102,7 @@
     "src/main/psxsdk/libcard/card.c": "9f8a3b2a2cce71b00c887f8a2a81cb936fbec4d0",
     "src/main/psxsdk/libcard/end.c": "b38de7559c4cdd27302e55040effbcc9292962b8",
     "src/main/psxsdk/libcard/init.c": "d0743c96fc2dd273e61fd0d345cc887db272f980",
+    "src/main/psxsdk/libcd/bios.c": "7c69496f3689a677744269ccc4864360e6714eaa",
     "src/main/psxsdk/libcd/event.c": "5b1e6d7de05d0b649239c5389c0d659f525566ab",
     "src/main/psxsdk/libcomb/comb.c": "2728d5de33911e26efdf79bb66d9e0968a865177",
     "src/main/psxsdk/libgpu/ext.c": "e2da5f295e2947209aeffabd1ab56bd8e0991fb6",
@@ -144,7 +145,6 @@
     "src/main/psxsdk/libgte/smp_02.c": "40ea9d170ae82cbc0fdde168c74df50214647edd",
     "src/main/psxsdk/libgte/smp_03.c": "b1358ca8a765fb9f662cd6578fb973e5bc823186",
     "src/main/psxsdk/libgte/smp_04.c": "60458a3cf1e833ae101e908c968f768a9d22b0d4",
-    "src/system.c": "7c69496f3689a677744269ccc4864360e6714eaa",
     "src/text1a_b_post_rodata.c": "66580542dfcff14fa78440461c32f4ab844eb1a9",
     "src/text1a_b_tail_rodata.c": "57e9ca03fc577d75a6f564e0c01213857beb1dcb"
   },

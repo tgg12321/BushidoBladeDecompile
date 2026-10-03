@@ -75,7 +75,7 @@ SECTIONS
         build/src/main/psxsdk/libgpu/sys.o(.rodata);
         build/src/main/psxsdk/libcd/event.o(.rodata);
         build/src/text1a_b_post_rodata.o(.rodata);
-        build/src/system.o(.rodata);
+        build/src/main/psxsdk/libcd/bios.o(.rodata);
         build/src/text1a_b_tail_rodata.o(.rodata);
         build/src/ings2.o(.rodata);
         build/src/main.o(.rodata);
@@ -204,7 +204,7 @@ SECTIONS
         build/src/main/psxsdk/libgte/ratan.o(.text);
         build/src/main/psxsdk/libgte/patchgte.o(.text);
         build/src/main/psxsdk/libcd/event.o(.text);
-        build/src/system.o(.text);
+        build/src/main/psxsdk/libcd/bios.o(.text);
         build/src/ings2.o(.text);
         build/src/main.o(.text);
         build/src/main/psxsdk/libcomb/comb.o(.text);
@@ -336,7 +336,7 @@ SECTIONS
         build/src/main/psxsdk/libcd/event.o(.data);
         build/asm/data/7D920.data.o(.data);
         /* libcd bios.c: Intr (static volatile CD_intr, defined in src/system.c) at 0x800A1494 */
-        build/src/system.o(.data);
+        build/src/main/psxsdk/libcd/bios.o(.data);
         build/src/ings2.o(.data);
         build/src/main.o(.data);
         build/src/main/psxsdk/libcomb/comb.o(.data);
@@ -514,7 +514,7 @@ SECTIONS
         build/src/main/psxsdk/libgte/ratan.o(.bss);
         build/src/main/psxsdk/libgte/patchgte.o(.bss);
         build/src/main/psxsdk/libcd/event.o(.bss);
-        build/src/system.o(.bss);
+        build/src/main/psxsdk/libcd/bios.o(.bss);
         build/src/ings2.o(.bss);
         build/src/main.o(.bss);
         build/src/main/psxsdk/libcomb/comb.o(.bss);

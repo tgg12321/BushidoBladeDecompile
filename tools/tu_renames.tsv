@@ -47,3 +47,4 @@ main_post	main/d_7D870	after:aef789b9158a
 text1b_b_tu2	main/psxsdk/libc2/prnt	after:191f7cb0f272
 display	main/psxsdk/libgpu/sys	after:c803c2d33902
 gpu	main/psxsdk/libgpu/prim	after:6011f1eb377d
+system	main/psxsdk/libcd/bios	after:7b44d1cbb554

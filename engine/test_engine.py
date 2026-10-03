@@ -2499,7 +2499,7 @@ def test_include_asm_whole_body() -> None:
     unknown = '__asm__(\n    "glabel bar\\n"\n    "    .quad 0x1\\n"\n);\n'
     check("include_asm: unrecognised directive counts as a body",
           "bar" not in inlineasm.symbol_marker_funcs(unknown))
-    for stem in ("main/6CF8", "ings2", "system", "main", "main/368E4",
+    for stem in ("main/6CF8", "ings2", "main/psxsdk/libcd/bios", "main", "main/368E4",
                  "main/psxsdk/libgte/msc00", "main/psxsdk/libgte/patchgte"):
         t = Path(f"src/{stem}.c").read_text(encoding="utf-8")
         eq(f"include_asm: body/marker sets disjoint in {stem}.c",
