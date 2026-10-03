@@ -52,9 +52,9 @@ SECTIONS
         build/src/code6cac_b5.o(.rodata);
         build/src/code6cac_b5_post.o(.rodata);
         build/src/code6cac_b_rodata_post.o(.rodata);
+        build/src/code6cac_c.o(.rodata);
         build/src/code6cac_c0.o(.rodata);
         build/src/code6cac_c_mid.o(.rodata);
-        build/src/code6cac_c.o(.rodata);
         build/src/code6cac_c2.o(.rodata);
         build/src/text1a_pre.o(.rodata);
         build/src/text1a_pre_tu2.o(.rodata);
@@ -75,12 +75,12 @@ SECTIONS
         build/src/text1b_b_tu2.o(.rodata);
         build/src/text1b_b_tu3.o(.rodata);
         build/src/text1a_b_post_rodata.o(.rodata);
-        build/src/system.o(.rodata);
-        build/src/text1a_b_tail_rodata.o(.rodata);
-        build/src/main.o(.rodata);
         build/src/gpu.o(.rodata);
         build/src/display.o(.rodata);
+        build/src/system.o(.rodata);
+        build/src/text1a_b_tail_rodata.o(.rodata);
         build/src/ings2.o(.rodata);
+        build/src/main.o(.rodata);
         build/src/comb.o(.rodata);
         main_RODATA_END = .;
         main_RODATA_SIZE = ABSOLUTE(main_RODATA_END - main_RODATA_START);
@@ -158,13 +158,13 @@ SECTIONS
         build/src/text1b_b_tu3.o(.data);
         build/src/gpu.o(.data);
         build/src/display.o(.data);
+        build/asm/data/7D920.data.o(.data);
+        /* libcd bios.c: Intr (static volatile CD_intr, defined in src/system.c) at 0x800A1494 */
+        build/src/system.o(.data);
         build/src/ings2.o(.data);
         build/src/main.o(.data);
         build/src/comb.o(.data);
         build/src/main_post.o(.data);
-        build/asm/data/7D920.data.o(.data);
-        /* libcd bios.c: Intr (static volatile CD_intr, defined in src/system.c) at 0x800A1494 */
-        build/src/system.o(.data);
         build/asm/data/91C98.data.o(.data);
         build/src/ings.o(.sdata);
         build/asm/data/938EA.data.o(.data);
