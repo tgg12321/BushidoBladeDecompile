@@ -36,7 +36,7 @@ glabel func_8006E10C
     /* 5E98C 8006E18C 21200002 */   addu      $a0, $s0, $zero
     /* 5E990 8006E190 D0DB000C */  jal        game_FrameLoop
     /* 5E994 8006E194 00000000 */   nop
-    /* 5E998 8006E198 CADB000C */  jal        func_80036F28
+    /* 5E998 8006E198 CADB000C */  jal        cdrom_GetFileSize
     /* 5E99C 8006E19C 21200002 */   addu      $a0, $s0, $zero
     /* 5E9A0 8006E1A0 A8EC010C */  jal        SetDispMask
     /* 5E9A4 8006E1A4 21200000 */   addu      $a0, $zero, $zero

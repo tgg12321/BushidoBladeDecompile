@@ -29,7 +29,7 @@ typedef struct {
     u32 unk18 : 6;
 } Unk8009BD38Flags;
 extern Unk8009BD38Flags D_8009BD38;
-void func_8005B6FC(void);
+void snd_CloseVab1(void);
 typedef struct GameObj {
     u8 field_00; u8 field_01; s16 field_02;
     s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
@@ -1515,7 +1515,7 @@ s32 func_80077984(s32 a0) {
 s32 func_800779C8(void) {
     s32 ret = ((s32 (*)())func_8006EACC)();
     if (ret) {
-        func_8005B6FC();
+        snd_CloseVab1();
     }
     return ret;
 }

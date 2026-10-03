@@ -29,7 +29,7 @@ glabel func_8001EA84
     /* F2EC 8001EAEC 00000000 */   nop
     /* F2F0 8001EAF0 1B80000C */  jal        func_8002006C
     /* F2F4 8001EAF4 00000000 */   nop
-    /* F2F8 8001EAF8 826F000C */  jal        func_8001BE08
+    /* F2F8 8001EAF8 826F000C */  jal        pad_ClearStateBits
     /* F2FC 8001EAFC 1000A427 */   addiu     $a0, $sp, 0x10
     /* F300 8001EB00 21200000 */  addu       $a0, $zero, $zero
     /* F304 8001EB04 C28F000C */  jal        func_80023F08

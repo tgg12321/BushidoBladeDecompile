@@ -30,11 +30,11 @@ extern void sys_Panic(void);
 extern s32 func_8005B9FC(s32);
 extern s32 D_800A38B4;
 extern s32 memcpy(s32 *, s32, s32);
-extern void func_8005BA6C(s32);
+extern void snd_VabFakeOpen9(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 func_80054434(void);
 extern void func_8002EBDC(s16 *, s16 *, s32 *, s32, s32);
-extern void func_8005B98C(s32);
+extern void snd_VabFakeOpen8And4(s32);
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
 extern void func_800174F4(void);
@@ -1108,7 +1108,7 @@ void func_8001BCF0(u8 *arg0, s32 arg1) {
         D_800F6608.h12 = val - lhu_val;
     }
 }
-void func_8001BE08(PadState *arg0) {
+void pad_ClearStateBits(PadState *arg0) {
     arg0->held = 0;
     arg0->pressed = 0;
     arg0->released = 0;
@@ -1195,7 +1195,7 @@ void func_8001BE20(s32 arg0, PadState *arg1) {
     arg1->released = buf[2];
     arg1->unheld = buf[3];
     if (D_800A38DC == 5 && (D_800A381E != 0 || D_800A3816 != 0 || D_800A37E1 != 0 || D_800A38B8 != 0 || D_800A3920 != 0 || D_800A36E8 != 0)) {
-        func_8001BE08(arg1);
+        pad_ClearStateBits(arg1);
     }
     if (arg0 == 1 && D_800A38DC != 6) {
         arg1->held = (arg1->held & 0xFFF) | ((arg1->held & 0x8000) >> 2) | ((arg1->held & 0x2000) << 2) | ((arg1->held & 0x4000) >> 2) | ((arg1->held & 0x1000) << 2);
@@ -1664,7 +1664,7 @@ void func_8001D790(void) {
         func_80020D38();
         game_StageCleanup(D_800A36A4, s2);
         func_8002906C();
-        func_8005BDF0();
+        snd_CloseListedVabs();
 
         s1 = func_8005BA8C(s2, D_800A36A4, D_8008E5A8[(s8)*p], D_8008E5A8[(s8)D_80102778.unk_4[1]]);
 
@@ -1694,7 +1694,7 @@ void func_8001D904(void) {
     }
     s0 = &MotDataBaseAddress;
     memcpy(s0, (s32)0x80190800, s1);
-    func_8005BA6C((s32)s0 - s2);
+    snd_VabFakeOpen9((s32)s0 - s2);
 }
 void func_8001D998(void) {
     s32 s2 = (s32)0x80190800;
@@ -1709,7 +1709,7 @@ void func_8001D998(void) {
     }
     s0 = &MotDataBaseAddress;
     memcpy(s0, (s32)0x80190800, s1);
-    func_8005B98C((s32)s0 - s2);
+    snd_VabFakeOpen8And4((s32)s0 - s2);
 }
 void func_8001DA2C(void) {
     func_8005B5AC();
@@ -2147,7 +2147,7 @@ void func_8001EA84(void) {
     func_8001E404();
     func_80039320();
     func_8002006C();
-    func_8001BE08(&sp10);
+    pad_ClearStateBits(&sp10);
     func_80023F08(0, &sp10);
     func_80023F08(1, &sp10);
     func_8002C61C();
@@ -2251,7 +2251,7 @@ void func_8001EFA0(void) {
     func_8001E404();
     func_80039320();
     func_8002006C();
-    func_8001BE08(&sp10);
+    pad_ClearStateBits(&sp10);
     func_80023F08(0, &sp10);
     func_80023F08(1, &sp10);
     func_8002C61C();

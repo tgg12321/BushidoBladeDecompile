@@ -48,7 +48,7 @@ glabel func_8005BA8C
     /* 4C340 8005BB40 21200002 */  addu       $a0, $s0, $zero
     /* 4C344 8005BB44 66DB000C */  jal        cdrom_StartRead
     /* 4C348 8005BB48 21286002 */   addu      $a1, $s3, $zero
-    /* 4C34C 8005BB4C CADB000C */  jal        func_80036F28
+    /* 4C34C 8005BB4C CADB000C */  jal        cdrom_GetFileSize
     /* 4C350 8005BB50 21200002 */   addu      $a0, $s0, $zero
     /* 4C354 8005BB54 D0DB000C */  jal        game_FrameLoop
     /* 4C358 8005BB58 21A84000 */   addu      $s5, $v0, $zero

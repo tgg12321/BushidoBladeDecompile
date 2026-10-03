@@ -27,7 +27,7 @@ glabel func_8003ACB8
     /* 2B518 8003AD18 00000000 */   nop
     /* 2B51C 8003AD1C C0DE010C */  jal        func_80077B00
     /* 2B520 8003AD20 00000000 */   nop
-    /* 2B524 8003AD24 3D65000C */  jal        func_800194F4
+    /* 2B524 8003AD24 3D65000C */  jal        pad_ResetState
     /* 2B528 8003AD28 00000000 */   nop
     /* 2B52C 8003AD2C 1080043C */  lui        $a0, %hi(D_80106A50)
     /* 2B530 8003AD30 506A848C */  lw         $a0, %lo(D_80106A50)($a0)

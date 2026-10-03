@@ -101,12 +101,39 @@ types make provable, plus rows that depend on the proposed new class.
 
 ## Owner ruling Q103 (2026-10-03): all four items below adopted as recommended
 
-Applied by the follow-up naming commit. Items 1 and 2 are accepted classes from this date; 3 and 4 are RESETs.
+Items 1 and 2 are accepted classes from this date; 3 and 4 are RESETs. Every row was re-verified
+against its class test (default refute) before applying.
+
+**Applied, function wave** (`func_manifest_q103.csv` via `naming_wave.py --from-census --only-file`):
+- typed-restatement, 7 RENAMEs: `cdrom_GetFileSize` 0x80036F28, `pad_ClearStateBits` 0x8001BE08,
+  `pad_ResetState` 0x800194F4 (item 4), `snd_CloseVab1` 0x8005B6FC, `snd_CloseListedVabs` 0x8005BDF0,
+  `snd_VabFakeOpen9` 0x8005BA6C, `snd_VabFakeOpen8And4` 0x8005B98C.
+- basis-withdrawn, 17 `cpu_helper_<ADDR>` RESETs. These are the aliases whose parent names were all reset in
+  c934e38db.
+- Census: INFERRED 512 -> 494, CORROBORATED 119 -> 126, AUTO 405 -> 416.
+
+**Refused on re-verification** (not applied):
+- T2, more than 12 statements in the matched C:
+  - `memcard_CountFreeBlocks` 0x80037AA4 (16 statements);
+  - `memcard_HasFileNamePrefix` 0x80037B00 (about 22 statements).
+  Both names describe the bodies correctly.
+- T5, noun not on the closed relation-noun list:
+  - PadState `type[2]` / `valid[2]`;
+  - Obj80106A78 `kind`.
+- T5, relation does not hold for every writer:
+  - Obj80106A78 `age`: it counts only while unk_50 != 0.
+  - Record `pad` (+0x24): it is not a VERIFIED API argument, and the CPU-side writer's source is the
+    func_80055B60 synthesized record.
+- `pad_ResetStateMarkValid` 0x80019534 falls with `valid[2]`.
+- basis-withdrawn, 3 aliases: the parents of `cpu_helper_80026DA4` / `cpu_helper_80029454`
+  (`cpu_exec_main_game_loop_frame` 0x8002C61C) and `cpu_helper_8003F3D4`
+  (`cpu_init_stage_and_camera_setup` 0x8001E404) are MEDIUM v3 rows that were never reset, so their basis
+  stands.
 
 1. **New class `typed-restatement`** (CORROBORATED tier). A name may restate a matched C body
    built only from admitted objects, using a closed verb list. The class has six tests:
    - T1: the function is matched.
-   - T2: at most 12 statements, and all callees are VERIFIED or CORROBORATED.
+   - T2: at most 12 statements, no `jalr`, and all callees are VERIFIED or CORROBORATED.
    - T3: every touched object is admitted by an accepted row.
    - T4: the name accounts for every store and the return value.
    - T5: each member or data role is pinned by an exhaustive access scan.

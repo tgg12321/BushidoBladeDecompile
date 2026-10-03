@@ -2134,7 +2134,7 @@ func_8001C820                        = 0x8001C820;  /* MISNAMED: not voice data;
 func_80048AD0                        = 0x80048AD0;  /* MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at offset 0x68 */
 func_8005BE84                        = 0x8005BE84;  /* MISNAMED: not voice data; calls title_mv_exec2 + md_game_check_change_main_mode_katinuki */
 memcard_Format                         = 0x80037F08;  /* MISNAMED: not motion-pre-calc; calls func_80079A30 then bios_FormatDevice_B() */
-func_8005B98C                         = 0x8005B98C;  /* MISNAMED: not motion-pre-calc; calls saFidLoad(a0, 8) then saFidLoad(a0, 4) */
+snd_VabFakeOpen8And4                         = 0x8005B98C;  /* typed-restatement (Q103): snd_VabFakeOpen(a0, 8) then snd_VabFakeOpen(a0, 4); the old motion-pre-calc reading was wrong */
 set_alarm                         = 0x8007DC68;  /* MISNAMED: not motion-pre-calc; sets g_gpu_vcount = sys_VSync(-1) + 0xF0 */
 func_8003A3F0                         = 0x8003A3F0;  /* MISNAMED: not motion-pre-calc; calls func_8003A39C then sets D_800A3928 = 1 */
 comb_Read8                         = 0x8003A574;  /* MISNAMED: not motion-pre-calc; calls bios_FileRead_B with buffer */
@@ -2819,10 +2819,10 @@ set_D_800A33F0_80054410                        = 0x80054410;  /* D_800A33F0 = ar
 efc_helper_80017A44                                = 0x80017A44;  /* first-pass subsystem tag (efc); <-efc_rob_ougi_control */
 ang_helper_8001924C                                = 0x8001924C;  /* first-pass subsystem tag (ang); <-ang_hosei_8003F62C */
 replay_camera_helper_800194C0                      = 0x800194C0;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
-replay_camera_helper_800194F4                      = 0x800194F4;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+/* RENAME 0x800194F4: retired name 'replay_camera_helper_800194F4' — preserved note: first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
 sys_helper_80019534                                = 0x80019534;  /* first-pass subsystem tag (sys); <-sys_GameInit_80016D78 */
 mode_helper_8001A820                               = 0x8001A820;  /* first-pass subsystem tag (mode); <-mode_handler_01_GameFrameUpdate */
-cpu_helper_8001B690                                = 0x8001B690;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x8001B690: retired name 'cpu_helper_8001B690' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
 mode_helper_8001B6F4                               = 0x8001B6F4;  /* first-pass subsystem tag (mode); <-mode_handler_04_GameSetup */
 mode_helper_8001BAE4                               = 0x8001BAE4;  /* first-pass subsystem tag (mode); <-mode_handler_05_NoOp */
 mode_helper_8001BBD8                               = 0x8001BBD8;  /* first-pass subsystem tag (mode); <-mode_handler_05_NoOp */
@@ -2834,32 +2834,32 @@ mode_helper_8001C8DC                               = 0x8001C8DC;  /* first-pass 
 mode_helper_8001E800                               = 0x8001E800;  /* first-pass subsystem tag (mode); <-mode_handler_01_GameFrameUpdate */
 mode_helper_8001F1C4                               = 0x8001F1C4;  /* first-pass subsystem tag (mode); <-mode_handler_05_NoOp */
 cpu_helper_8001F888                                = 0x8001F888;  /* first-pass subsystem tag (cpu); <-cpu_update_frame_timing_stats_8002006C */
-cpu_helper_8001F938                                = 0x8001F938;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
-cpu_helper_800200DC                                = 0x800200DC;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x8001F938: retired name 'cpu_helper_8001F938' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x800200DC: retired name 'cpu_helper_800200DC' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
 mario_helper_800206B0                              = 0x800206B0;  /* first-pass subsystem tag (mario); <-mario_test_initialize_match_80022580 */
 sys_helper_80020D70                                = 0x80020D70;  /* first-pass subsystem tag (sys); <-sys_GameInit_80016D78 */
-cpu_helper_80021424                                = 0x80021424;  /* first-pass subsystem tag (cpu); <-cpu_side_move_dir;<-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x80021424: retired name 'cpu_helper_80021424' — preserved note: first-pass subsystem tag (cpu); <-cpu_side_move_dir;<-cpu_calc_move_pattern_trajectory_80023F08 */
 hirahira_helper_80021A3C                           = 0x80021A3C;  /* first-pass subsystem tag (hirahira); <-hirahira_w_frie2 */
-cpu_helper_80021A98                                = 0x80021A98;  /* first-pass subsystem tag (cpu); <-cpu_side_move_dir;<-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x80021A98: retired name 'cpu_helper_80021A98' — preserved note: first-pass subsystem tag (cpu); <-cpu_side_move_dir;<-cpu_calc_move_pattern_trajectory_80023F08 */
 mario_helper_80021DB0                              = 0x80021DB0;  /* first-pass subsystem tag (mario); <-mario_test_initialize_match_80022580 */
 mario_helper_800224E0                              = 0x800224E0;  /* first-pass subsystem tag (mario); <-mario_test_initialize_match_80022580 */
-cpu_helper_8002304C                                = 0x8002304C;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
-cpu_helper_80023648                                = 0x80023648;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x8002304C: retired name 'cpu_helper_8002304C' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x80023648: retired name 'cpu_helper_80023648' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
 /* RENAME 0x80023C30: retired name 'cpu_helper_80023C30' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
-cpu_helper_80023CB4                                = 0x80023CB4;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
-cpu_helper_80023D08                                = 0x80023D08;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
-cpu_helper_80023D28                                = 0x80023D28;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
-cpu_helper_80023DB8                                = 0x80023DB8;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
-cpu_helper_80023E40                                = 0x80023E40;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x80023CB4: retired name 'cpu_helper_80023CB4' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x80023D08: retired name 'cpu_helper_80023D08' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x80023D28: retired name 'cpu_helper_80023D28' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x80023DB8: retired name 'cpu_helper_80023DB8' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x80023E40: retired name 'cpu_helper_80023E40' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
 cpu_helper_80026DA4                                = 0x80026DA4;  /* first-pass subsystem tag (cpu); <-cpu_exec_main_game_loop_frame_8002C61C */
-cpu_helper_8002798C                                = 0x8002798C;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x8002798C: retired name 'cpu_helper_8002798C' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
 cpu_helper_80029454                                = 0x80029454;  /* first-pass subsystem tag (cpu); <-cpu_exec_main_game_loop_frame_8002C61C */
 calc_helper_8002C0DC                               = 0x8002C0DC;  /* first-pass subsystem tag (calc); ->calc_loc_mat_fw;->calc_AngleDelta_8001F860;->calc_fighter_separation_vec_8002BC68 */
 calc_helper_8002EECC                               = 0x8002EECC;  /* first-pass subsystem tag (calc); <-calc_fc_frame_800203B4 */
-cpu_helper_80030208                                = 0x80030208;  /* first-pass subsystem tag (cpu); <-cpu_ai_pick_move_for_situation_80030D7C */
+/* RESET 0x80030208: retired name 'cpu_helper_80030208' — preserved note: first-pass subsystem tag (cpu); <-cpu_ai_pick_move_for_situation_80030D7C */
 mario_helper_8003047C                              = 0x8003047C;  /* first-pass subsystem tag (mario); <-mario_test_initialize_match_80022580 */
 /* RENAME 0x80030D50: retired name 'cpu_helper_80030D50' — preserved note: first-pass subsystem tag (cpu); <-cpu_ai_pick_move_for_situation_80030D7C */
-cpu_helper_80032064                                = 0x80032064;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x80032064: retired name 'cpu_helper_80032064' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
 dispsamnailwindow_helper_80033DF4                  = 0x80033DF4;  /* first-pass subsystem tag (dispsamnailwindow); <-DispSamnailWindow */
 mode_helper_80033FE4                               = 0x80033FE4;  /* first-pass subsystem tag (mode); <-mode_handler_31_TimerLoop */
 mode_helper_80034F88                               = 0x80034F88;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
@@ -2871,7 +2871,7 @@ mode_helper_80035F78                               = 0x80035F78;  /* first-pass 
 /* RENAME 0x80035FE0: retired name 'sys_helper_80035FE0' — preserved note: first-pass subsystem tag (sys); <-sys_Init_80016A18 */
 mode_helper_80037540                               = 0x80037540;  /* first-pass subsystem tag (mode); <-mode_handler_15_TeardownVariant */
 motion_helper_800395B4                             = 0x800395B4;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
-cpu_helper_80039680                                = 0x80039680;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
+/* RESET 0x80039680: retired name 'cpu_helper_80039680' — preserved note: first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
 /* RENAME 0x8003A264: retired name 'bios_helper_8003A264' — preserved note: first-pass subsystem tag (bios); ->bios_CloseEvent;->bios_FileClose_B */
 /* RENAME 0x8003A6FC: retired name 'single_game_helper_8003A6FC' — preserved note: first-pass subsystem tag (single_game); <-single_game_HashAndStoreData_8003A728 */
 game_helper_8003AA48                               = 0x8003AA48;  /* first-pass subsystem tag (game); <-game_FrameLoop;<-game_exec_display_dma_loop_8003AAB0;<-game_exec_display_sync_8003AA78 */
@@ -2937,7 +2937,7 @@ motion_helper_80061710                             = 0x80061710;  /* first-pass 
 motion_helper_800617C8                             = 0x800617C8;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
 motion_helper_800619A4                             = 0x800619A4;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
 motion_helper_800619F0                             = 0x800619F0;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
-cpu_helper_80061A3C                                = 0x80061A3C;  /* first-pass subsystem tag (cpu); <-cpu_check_special_move_input_80032C50 */
+/* RESET 0x80061A3C: retired name 'cpu_helper_80061A3C' — preserved note: first-pass subsystem tag (cpu); <-cpu_check_special_move_input_80032C50 */
 motion_helper_80061ACC                             = 0x80061ACC;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
 motion_helper_80061C00                             = 0x80061C00;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
 motion_helper_80061D74                             = 0x80061D74;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */

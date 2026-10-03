@@ -120,8 +120,8 @@ extern s16 D_800F0C04[6];
 /* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
  * frame from the two pads (one u16 half per player in each word):
  * held = current bits, pressed = held & ~previous, released = ~held & previous,
- * unheld = ~held; func_800194F4 resets it (4, 4, 0, 0, 0, -1).  func_8001BE20
- * copies the whole record to its caller's buffer, and func_8001BE08 clears the
+ * unheld = ~held; pad_ResetState resets it (4, 4, 0, 0, 0, -1).  func_8001BE20
+ * copies the whole record to its caller's buffer, and pad_ClearStateBits clears the
  * four bit words of such a buffer. */
 typedef struct PadState {
     s16 unk_00[4];                 /* [0..1] and [2..3] filled pairwise by func_80019568 */
@@ -975,7 +975,7 @@ typedef struct {
  * file numbers func_80036EA8 forms. `a` holds the file's CdlLOC position (cdrom_StartRead
  * copies the record into D_80101E58.rec.pair, whose position is sought; cdrom_LoadExec
  * seeks to it directly), `b` its size in bytes (cdrom_StartRead's sector count,
- * func_80036F28, cdrom_StartAudio's end position). */
+ * cdrom_GetFileSize, cdrom_StartAudio's end position). */
 extern CamPair g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
 
 /* The replay-camera / CD-read words at 0x80101E60..0x80101EA7: the tail of

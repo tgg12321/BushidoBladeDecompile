@@ -1,4 +1,4 @@
-glabel func_8005BDF0
+glabel snd_CloseListedVabs
     /* 4C5F0 8005BDF0 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 4C5F4 8005BDF4 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 4C5F8 8005BDF8 0F80133C */  lui        $s3, %hi(g_vab_rec_ptr)
@@ -37,4 +37,4 @@ glabel func_8005BDF0
     /* 4C678 8005BE78 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 4C67C 8005BE7C 0800E003 */  jr         $ra
     /* 4C680 8005BE80 00000000 */   nop
-endlabel func_8005BDF0
+endlabel snd_CloseListedVabs

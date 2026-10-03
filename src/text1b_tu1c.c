@@ -363,10 +363,10 @@ typedef struct GameObj {
     s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
     s16 field_FA; s32 field_FC;
 } GameObj;
-extern s32 func_80036F28();
+extern s32 cdrom_GetFileSize();
 s32 printf(s32 *, s32);               /* extern */
-extern s32 func_80036F28(s32);
-s32 func_80036F28(s32);
+extern s32 cdrom_GetFileSize(s32);
+s32 cdrom_GetFileSize(s32);
 s32 func_8005C2A8(s32 *, s16, s32);
 extern s32 *func_80077D00(void);
 s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2);
@@ -4000,7 +4000,7 @@ reject:
 accept:
         func_8005C650(1, 0x7F, 0x7F);
         if (D_8009BC0C[D_800A34F8 & 0xF].state != 7) {
-            func_8005B6FC();
+            snd_CloseVab1();
         }
         return D_8009BC0C[D_800A34F8 & 0xF].state;
     }
@@ -6371,7 +6371,7 @@ s32 func_8006E10C(void) {
     v0 = func_80036EA8(a0v, a1v);
     cdrom_StartRead(v0, D_800A3500);
     game_FrameLoop();
-    func_80036F28(v0);
+    cdrom_GetFileSize(v0);
     SetDispMask(0);
     SetDefDrawEnv(&g_gpu_db[0].draw, 0, 0, 0x280, ff0);
     SetDefDrawEnv(&g_gpu_db[1].draw, 0, ff0, 0x280, ff0);

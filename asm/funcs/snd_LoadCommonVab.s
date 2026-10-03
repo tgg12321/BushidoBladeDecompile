@@ -19,7 +19,7 @@ glabel snd_LoadCommonVab
     /* 4C008 8005B808 21200002 */  addu       $a0, $s0, $zero
     /* 4C00C 8005B80C 66DB000C */  jal        cdrom_StartRead
     /* 4C010 8005B810 21282002 */   addu      $a1, $s1, $zero
-    /* 4C014 8005B814 CADB000C */  jal        func_80036F28
+    /* 4C014 8005B814 CADB000C */  jal        cdrom_GetFileSize
     /* 4C018 8005B818 21200002 */   addu      $a0, $s0, $zero
     /* 4C01C 8005B81C D0DB000C */  jal        game_FrameLoop
     /* 4C020 8005B820 21804000 */   addu      $s0, $v0, $zero

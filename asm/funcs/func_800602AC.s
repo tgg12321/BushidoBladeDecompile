@@ -13,7 +13,7 @@ glabel func_800602AC
     /* 50AD8 800602D8 21280002 */   addu      $a1, $s0, $zero
     /* 50ADC 800602DC D0DB000C */  jal        game_FrameLoop
     /* 50AE0 800602E0 00000000 */   nop
-    /* 50AE4 800602E4 CADB000C */  jal        func_80036F28
+    /* 50AE4 800602E4 CADB000C */  jal        cdrom_GetFileSize
     /* 50AE8 800602E8 21202002 */   addu      $a0, $s1, $zero
     /* 50AEC 800602EC 0000028E */  lw         $v0, 0x0($s0)
     /* 50AF0 800602F0 0400038E */  lw         $v1, 0x4($s0)

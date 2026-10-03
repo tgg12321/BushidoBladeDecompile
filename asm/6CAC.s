@@ -1486,9 +1486,9 @@ glabel func_800194C0
     /* 9CF0 800194F0 00000000 */   nop
 endlabel func_800194C0
 
-nonmatching func_800194F4, 0x40
+nonmatching pad_ResetState, 0x40
 
-glabel func_800194F4
+glabel pad_ResetState
     /* 9CF4 800194F4 04000224 */  addiu      $v0, $zero, 0x4
     /* 9CF8 800194F8 1080013C */  lui        $at, %hi(D_80102788)
     /* 9CFC 800194FC 882722A4 */  sh         $v0, %lo(D_80102788)($at)
@@ -1505,14 +1505,14 @@ glabel func_800194F4
     /* 9D28 80019528 9C2722AC */  sw         $v0, %lo(D_8010279C)($at)
     /* 9D2C 8001952C 0800E003 */  jr         $ra
     /* 9D30 80019530 00000000 */   nop
-endlabel func_800194F4
+endlabel pad_ResetState
 
 nonmatching func_80019534, 0x34
 
 glabel func_80019534
     /* 9D34 80019534 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 9D38 80019538 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 9D3C 8001953C 3D65000C */  jal        func_800194F4
+    /* 9D3C 8001953C 3D65000C */  jal        pad_ResetState
     /* 9D40 80019540 00000000 */   nop
     /* 9D44 80019544 01000224 */  addiu      $v0, $zero, 0x1
     /* 9D48 80019548 1080013C */  lui        $at, %hi(D_8010278C)
@@ -4428,16 +4428,16 @@ glabel func_8001BCF0
     /* C604 8001BE04 00000000 */   nop
 endlabel func_8001BCF0
 
-nonmatching func_8001BE08, 0x18
+nonmatching pad_ClearStateBits, 0x18
 
-glabel func_8001BE08
+glabel pad_ClearStateBits
     /* C608 8001BE08 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* C60C 8001BE0C 080080AC */  sw         $zero, 0x8($a0)
     /* C610 8001BE10 0C0080AC */  sw         $zero, 0xC($a0)
     /* C614 8001BE14 100080AC */  sw         $zero, 0x10($a0)
     /* C618 8001BE18 0800E003 */  jr         $ra
     /* C61C 8001BE1C 140082AC */   sw        $v0, 0x14($a0)
-endlabel func_8001BE08
+endlabel pad_ClearStateBits
 
 nonmatching func_8001BE20, 0x624
 
@@ -4795,7 +4795,7 @@ glabel func_8001BE20
     /* CB0C 8001C30C 04004010 */  beqz       $v0, .L8001C320
     /* CB10 8001C310 01000224 */   addiu     $v0, $zero, 0x1
   .L8001C314:
-    /* CB14 8001C314 826F000C */  jal        func_8001BE08
+    /* CB14 8001C314 826F000C */  jal        pad_ClearStateBits
     /* CB18 8001C318 21200002 */   addu      $a0, $s0, $zero
     /* CB1C 8001C31C 01000224 */  addiu      $v0, $zero, 0x1
   .L8001C320:
@@ -6275,7 +6275,7 @@ glabel func_8001D790
     /* E024 8001D824 21284002 */   addu      $a1, $s2, $zero
     /* E028 8001D828 1BA4000C */  jal        func_8002906C
     /* E02C 8001D82C 00000000 */   nop
-    /* E030 8001D830 7C6F010C */  jal        func_8005BDF0
+    /* E030 8001D830 7C6F010C */  jal        snd_CloseListedVabs
     /* E034 8001D834 00000000 */   nop
     /* E038 8001D838 1080103C */  lui        $s0, %hi(D_8010277C)
     /* E03C 8001D83C 7C271026 */  addiu      $s0, $s0, %lo(D_8010277C)
@@ -6364,7 +6364,7 @@ glabel func_8001D904
     /* E168 8001D968 0008A534 */  ori        $a1, $a1, (0x80190800 & 0xFFFF)
     /* E16C 8001D96C 48E4010C */  jal        memcpy
     /* E170 8001D970 21302002 */   addu      $a2, $s1, $zero
-    /* E174 8001D974 9B6E010C */  jal        func_8005BA6C
+    /* E174 8001D974 9B6E010C */  jal        snd_VabFakeOpen9
     /* E178 8001D978 23201202 */   subu      $a0, $s0, $s2
     /* E17C 8001D97C 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* E180 8001D980 1800B28F */  lw         $s2, 0x18($sp)
@@ -6407,7 +6407,7 @@ glabel func_8001D998
     /* E1FC 8001D9FC 0008A534 */  ori        $a1, $a1, (0x80190800 & 0xFFFF)
     /* E200 8001DA00 48E4010C */  jal        memcpy
     /* E204 8001DA04 21302002 */   addu      $a2, $s1, $zero
-    /* E208 8001DA08 636E010C */  jal        func_8005B98C
+    /* E208 8001DA08 636E010C */  jal        snd_VabFakeOpen8And4
     /* E20C 8001DA0C 23201202 */   subu      $a0, $s0, $s2
     /* E210 8001DA10 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* E214 8001DA14 1800B28F */  lw         $s2, 0x18($sp)
@@ -7618,7 +7618,7 @@ glabel func_8001EA84
     /* F2EC 8001EAEC 00000000 */   nop
     /* F2F0 8001EAF0 1B80000C */  jal        func_8002006C
     /* F2F4 8001EAF4 00000000 */   nop
-    /* F2F8 8001EAF8 826F000C */  jal        func_8001BE08
+    /* F2F8 8001EAF8 826F000C */  jal        pad_ClearStateBits
     /* F2FC 8001EAFC 1000A427 */   addiu     $a0, $sp, 0x10
     /* F300 8001EB00 21200000 */  addu       $a0, $zero, $zero
     /* F304 8001EB04 C28F000C */  jal        func_80023F08
@@ -7983,7 +7983,7 @@ glabel func_8001EFA0
     /* F838 8001F038 00000000 */   nop
     /* F83C 8001F03C 1B80000C */  jal        func_8002006C
     /* F840 8001F040 00000000 */   nop
-    /* F844 8001F044 826F000C */  jal        func_8001BE08
+    /* F844 8001F044 826F000C */  jal        pad_ClearStateBits
     /* F848 8001F048 1000A427 */   addiu     $a0, $sp, 0x10
     /* F84C 8001F04C 21200000 */  addu       $a0, $zero, $zero
     /* F850 8001F050 C28F000C */  jal        func_80023F08
@@ -35093,16 +35093,16 @@ glabel cdrom_Pause
     /* 27724 80036F24 00000000 */   nop
 endlabel cdrom_Pause
 
-nonmatching func_80036F28, 0x18
+nonmatching cdrom_GetFileSize, 0x18
 
-glabel func_80036F28
+glabel cdrom_GetFileSize
     /* 27728 80036F28 C0200400 */  sll        $a0, $a0, 3
     /* 2772C 80036F2C 0980013C */  lui        $at, %hi(g_cd_file_table_plus_0x4)
     /* 27730 80036F30 21082400 */  addu       $at, $at, $a0
     /* 27734 80036F34 38EC228C */  lw         $v0, %lo(g_cd_file_table_plus_0x4)($at)
     /* 27738 80036F38 0800E003 */  jr         $ra
     /* 2773C 80036F3C 00000000 */   nop
-endlabel func_80036F28
+endlabel cdrom_GetFileSize
 
 nonmatching game_FrameLoop, 0x94
 
@@ -39740,7 +39740,7 @@ glabel func_8003ACB8
     /* 2B518 8003AD18 00000000 */   nop
     /* 2B51C 8003AD1C C0DE010C */  jal        func_80077B00
     /* 2B520 8003AD20 00000000 */   nop
-    /* 2B524 8003AD24 3D65000C */  jal        func_800194F4
+    /* 2B524 8003AD24 3D65000C */  jal        pad_ResetState
     /* 2B528 8003AD28 00000000 */   nop
     /* 2B52C 8003AD2C 1080043C */  lui        $a0, %hi(D_80106A50)
     /* 2B530 8003AD30 506A848C */  lw         $a0, %lo(D_80106A50)($a0)

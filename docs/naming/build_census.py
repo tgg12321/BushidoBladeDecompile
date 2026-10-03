@@ -361,7 +361,9 @@ MANIFESTS = [(J("docs", "naming", "apiscan", "rename_manifest.csv"), "apiscan-re
              # third sweep 2026-09-29: new names under admitted classes + INFERRED re-audit
              (J("docs", "naming", "sweep-2026-09-29", "func_manifest.csv"), None, None),
              # 2026-10-03 batch: naming3 verifier ACCEPTs (cpu_*/mario_test_* RESETs, one compute)
-             (J("docs", "naming", "sweep-2026-10-03", "func_manifest.csv"), None, None)]
+             (J("docs", "naming", "sweep-2026-10-03", "func_manifest.csv"), None, None),
+             # owner ruling Q103: typed-restatement names + basis-withdrawn cpu_helper_* resets
+             (J("docs", "naming", "sweep-2026-10-03", "func_manifest_q103.csv"), None, None)]
 CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "libscan-xref": ("libscan-xref", "VERIFIED"),
               "libscan-near": ("libscan-near", "CORROBORATED"),
@@ -374,6 +376,8 @@ CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "libsn-pcdrv-protocol": ("libsn-pcdrv-protocol", "CORROBORATED"),
               # owner ruling 2026-09-25 (docs/naming/sweep-2026-09-25b/ruling-2026-09-25.md)
               "sony-struct-restatement": ("sony-struct-restatement", "CORROBORATED"),
+              # owner ruling Q103 2026-10-03 (docs/naming/sweep-2026-10-03/README.md)
+              "typed-restatement": ("typed-restatement", "CORROBORATED"),
               # __main: sole first call of main(), where cc1psx inserts `jal __main` (probe)
               "crt0-convention": ("hardware-role", "VERIFIED")}
 # RESET rows from a verified manifest (evidence_class reset-contradicted, proposed_name =
@@ -393,8 +397,10 @@ for ap, dorigin, dtier in MANIFESTS:
             cls = (r.get("evidence_class") or "").strip()
             if cls == "libscan-desync":
                 continue
-            if cls == "reset-contradicted":
-                manifest_resets[a] = dict(evidence=(r.get("evidence") or "").strip(),
+            # basis-withdrawn (owner ruling Q103): the name's only recorded basis was a name
+            # since RESET; consumed exactly like a verified contradiction.
+            if cls in ("reset-contradicted", "basis-withdrawn"):
+                manifest_resets[a] = dict(cls=cls, evidence=(r.get("evidence") or "").strip(),
                                           note=(r.get("verifier_note") or "").strip(),
                                           sweep=os.path.basename(os.path.dirname(ap)))
                 continue
@@ -558,8 +564,11 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
     # contradicted name (LINK-MAP DESYNC) — the RESET then retires the C name (sweep 2026-09-25b).
     if addr in manifest_resets and (not AUTOPAT.match(nm) or desync):
         e = manifest_resets[addr]
-        rows.append(dict(common, origin="contradicted-by-body", tier="SUSPECT",
-                         evidence=("RECORDED CONTRADICTION (verified %s): " % e.get("sweep", "sweep")
+        withdrawn = e.get("cls") == "basis-withdrawn"
+        rows.append(dict(common, origin="basis-withdrawn" if withdrawn else "contradicted-by-body",
+                         tier="SUSPECT",
+                         evidence=(("BASIS WITHDRAWN (verified %s): " if withdrawn
+                                    else "RECORDED CONTRADICTION (verified %s): ") % e.get("sweep", "sweep")
                                    + e["note"][:500] + " | " + e["evidence"][:300])[:1000],
                          action="RESET", proposed_name=""))
         continue

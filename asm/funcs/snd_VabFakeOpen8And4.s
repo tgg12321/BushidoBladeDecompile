@@ -1,4 +1,4 @@
-glabel func_8005B98C
+glabel snd_VabFakeOpen8And4
     /* 4C18C 8005B98C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 4C190 8005B990 1000B0AF */  sw         $s0, 0x10($sp)
     /* 4C194 8005B994 21808000 */  addu       $s0, $a0, $zero
@@ -13,4 +13,4 @@ glabel func_8005B98C
     /* 4C1B8 8005B9B8 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 4C1BC 8005B9BC 0800E003 */  jr         $ra
     /* 4C1C0 8005B9C0 00000000 */   nop
-endlabel func_8005B98C
+endlabel snd_VabFakeOpen8And4

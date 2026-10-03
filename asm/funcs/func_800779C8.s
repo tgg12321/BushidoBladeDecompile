@@ -6,7 +6,7 @@ glabel func_800779C8
     /* 681D8 800779D8 21804000 */  addu       $s0, $v0, $zero
     /* 681DC 800779DC 04000012 */  beqz       $s0, .L800779F0
     /* 681E0 800779E0 21100002 */   addu      $v0, $s0, $zero
-    /* 681E4 800779E4 BF6D010C */  jal        func_8005B6FC
+    /* 681E4 800779E4 BF6D010C */  jal        snd_CloseVab1
     /* 681E8 800779E8 00000000 */   nop
     /* 681EC 800779EC 21100002 */  addu       $v0, $s0, $zero
   .L800779F0:

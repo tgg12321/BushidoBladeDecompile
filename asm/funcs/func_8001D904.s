@@ -28,7 +28,7 @@ glabel func_8001D904
     /* E168 8001D968 0008A534 */  ori        $a1, $a1, (0x80190800 & 0xFFFF)
     /* E16C 8001D96C 48E4010C */  jal        memcpy
     /* E170 8001D970 21302002 */   addu      $a2, $s1, $zero
-    /* E174 8001D974 9B6E010C */  jal        func_8005BA6C
+    /* E174 8001D974 9B6E010C */  jal        snd_VabFakeOpen9
     /* E178 8001D978 23201202 */   subu      $a0, $s0, $s2
     /* E17C 8001D97C 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* E180 8001D980 1800B28F */  lw         $s2, 0x18($sp)

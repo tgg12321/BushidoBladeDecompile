@@ -67,7 +67,7 @@ void cdrom_Pause(void) {
     D_80101E58.rec.unk02 = 0xB;
     D_80101E58.unk04 = 0;
 }
-u32 func_80036F28(s32 arg0) {
+u32 cdrom_GetFileSize(s32 arg0) {
     return g_cd_file_table[arg0].b;
 }
 void game_FrameLoop(void) {

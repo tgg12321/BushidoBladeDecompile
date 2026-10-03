@@ -1,4 +1,4 @@
-glabel func_8005B6FC
+glabel snd_CloseVab1
     /* 4BEFC 8005B6FC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 4BF00 8005B700 1000BFAF */  sw         $ra, 0x10($sp)
     /* 4BF04 8005B704 D91F020C */  jal        SsVabClose
@@ -11,4 +11,4 @@ glabel func_8005B6FC
     /* 4BF20 8005B720 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 4BF24 8005B724 0800E003 */  jr         $ra
     /* 4BF28 8005B728 00000000 */   nop
-endlabel func_8005B6FC
+endlabel snd_CloseVab1

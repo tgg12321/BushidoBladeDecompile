@@ -65,12 +65,12 @@ extern void sys_Panic(void);
 extern s32 func_8005B9FC(s32);
 extern s32 D_800A38B4;
 extern s32 memcpy(s32 *, s32, s32);
-extern void func_8005BA6C(s32);
+extern void snd_VabFakeOpen9(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 func_80054434(void);
 extern void func_8002EBDC(s16 *, s16 *, s32 *, s32, s32);
 
-extern void func_8005B98C(s32);
+extern void snd_VabFakeOpen8And4(s32);
 extern void func_8003AA78(void);
 
 extern void func_8003AA48(void);
@@ -1206,7 +1206,7 @@ void func_800194C0(s32 arg0) {
     D_800A3913 = (arg0 >> 4) & 0xF;
     D_800A3914 = (arg0 >> 8) & 0xF;
 }
-void func_800194F4(void) {
+void pad_ResetState(void) {
     D_80102788.unk_00[0] = 4;
     D_80102788.unk_00[1] = 4;
     D_80102788.held = 0;
@@ -1215,7 +1215,7 @@ void func_800194F4(void) {
     D_80102788.unheld = -1;
 }
 void func_80019534(void) {
-    func_800194F4();
+    pad_ResetState();
     D_80102788.unk_00[2] = 1;
     D_80102788.unk_00[3] = 1;
 }

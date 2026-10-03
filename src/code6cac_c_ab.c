@@ -24,7 +24,7 @@
 
 
 
-extern void func_800194F4(void);
+extern void pad_ResetState(void);
 
 extern void VSync(s32);
 
@@ -255,7 +255,7 @@ s32 func_8003ACB8(void) {
         VSync(2);
     } while (temp_s0 == 0);
     func_80077B00();
-    func_800194F4();
+    pad_ResetState();
     D_800A37C4 = bits_ExtractMask3F83F8(D_80106A50.unk_00);
     func_8003AA48();
     VSync(1);

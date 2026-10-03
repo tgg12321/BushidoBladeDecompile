@@ -17,7 +17,7 @@ glabel func_8005B8B8
     /* 4C0F4 8005B8F4 21200002 */  addu       $a0, $s0, $zero
     /* 4C0F8 8005B8F8 66DB000C */  jal        cdrom_StartRead
     /* 4C0FC 8005B8FC 21286002 */   addu      $a1, $s3, $zero
-    /* 4C100 8005B900 CADB000C */  jal        func_80036F28
+    /* 4C100 8005B900 CADB000C */  jal        cdrom_GetFileSize
     /* 4C104 8005B904 21200002 */   addu      $a0, $s0, $zero
     /* 4C108 8005B908 D0DB000C */  jal        game_FrameLoop
     /* 4C10C 8005B90C 21884000 */   addu      $s1, $v0, $zero
@@ -35,7 +35,7 @@ glabel func_8005B8B8
     /* 4C13C 8005B93C 21907002 */  addu       $s2, $s3, $s0
     /* 4C140 8005B940 66DB000C */  jal        cdrom_StartRead
     /* 4C144 8005B944 21284002 */   addu      $a1, $s2, $zero
-    /* 4C148 8005B948 CADB000C */  jal        func_80036F28
+    /* 4C148 8005B948 CADB000C */  jal        cdrom_GetFileSize
     /* 4C14C 8005B94C 21202002 */   addu      $a0, $s1, $zero
     /* 4C150 8005B950 D0DB000C */  jal        game_FrameLoop
     /* 4C154 8005B954 21885000 */   addu      $s1, $v0, $s0

@@ -1,4 +1,4 @@
-glabel func_800194F4
+glabel pad_ResetState
     /* 9CF4 800194F4 04000224 */  addiu      $v0, $zero, 0x4
     /* 9CF8 800194F8 1080013C */  lui        $at, %hi(D_80102788)
     /* 9CFC 800194FC 882722A4 */  sh         $v0, %lo(D_80102788)($at)
@@ -15,4 +15,4 @@ glabel func_800194F4
     /* 9D28 80019528 9C2722AC */  sw         $v0, %lo(D_8010279C)($at)
     /* 9D2C 8001952C 0800E003 */  jr         $ra
     /* 9D30 80019530 00000000 */   nop
-endlabel func_800194F4
+endlabel pad_ResetState

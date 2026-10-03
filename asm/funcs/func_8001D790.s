@@ -40,7 +40,7 @@ glabel func_8001D790
     /* E024 8001D824 21284002 */   addu      $a1, $s2, $zero
     /* E028 8001D828 1BA4000C */  jal        func_8002906C
     /* E02C 8001D82C 00000000 */   nop
-    /* E030 8001D830 7C6F010C */  jal        func_8005BDF0
+    /* E030 8001D830 7C6F010C */  jal        snd_CloseListedVabs
     /* E034 8001D834 00000000 */   nop
     /* E038 8001D838 1080103C */  lui        $s0, %hi(D_8010277C)
     /* E03C 8001D83C 7C271026 */  addiu      $s0, $s0, %lo(D_8010277C)

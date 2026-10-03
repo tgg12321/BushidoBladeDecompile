@@ -1,7 +1,7 @@
 glabel func_80019534
     /* 9D34 80019534 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 9D38 80019538 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 9D3C 8001953C 3D65000C */  jal        func_800194F4
+    /* 9D3C 8001953C 3D65000C */  jal        pad_ResetState
     /* 9D40 80019540 00000000 */   nop
     /* 9D44 80019544 01000224 */  addiu      $v0, $zero, 0x1
     /* 9D48 80019548 1080013C */  lui        $at, %hi(D_8010278C)
