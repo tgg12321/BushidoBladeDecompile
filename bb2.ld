@@ -68,7 +68,7 @@ SECTIONS
         build/src/main/51268.o(.rodata);
         build/src/main/5ED34.o(.rodata);
         build/src/main/63D2C.o(.rodata);
-        build/src/text1b_b.o(.rodata);
+        build/src/main/64FD8.o(.rodata);
         build/src/text1b_b_tu2.o(.rodata);
         build/src/main/psxsdk/libc2/sprintf.o(.rodata);
         build/src/text1a_b_post_rodata.o(.rodata);
@@ -110,7 +110,7 @@ SECTIONS
         build/src/main/51268.o(.text);
         build/src/main/5ED34.o(.text);
         build/src/main/63D2C.o(.text);
-        build/src/text1b_b.o(.text);
+        build/src/main/64FD8.o(.text);
         build/src/text1b_b_tu2.o(.text);
         build/src/main/psxsdk/libc2/sprintf.o(.text);
         build/src/gpu.o(.text);
@@ -150,7 +150,7 @@ SECTIONS
         build/src/main/51268.o(.data);
         build/src/main/5ED34.o(.data);
         build/src/main/63D2C.o(.data);
-        build/src/text1b_b.o(.data);
+        build/src/main/64FD8.o(.data);
         build/src/text1b_b_tu2.o(.data);
         build/src/main/psxsdk/libc2/sprintf.o(.data);
         build/src/gpu.o(.data);
@@ -189,7 +189,7 @@ SECTIONS
         build/asm/data/93AC0.data.o(.data);
         build/src/main/5ED34.o(.sdata);
         build/asm/data/93AEA.data.o(.data);
-        build/src/text1b_b.o(.sdata);
+        build/src/main/64FD8.o(.sdata);
         build/asm/data/93B08.data.o(.data);
         build/src/main/9F9C.o(.sbss);
         build/asm/data/93B12.data.o(.data);
@@ -208,7 +208,7 @@ SECTIONS
         build/asm/data/93D30.data.o(.data);
         build/src/main/5ED34.o(.sbss);
         build/asm/data/93DCC.data.o(.data);
-        build/src/text1b_b.o(.sbss);
+        build/src/main/64FD8.o(.sbss);
         build/asm/data/93E18.data.o(.data);
         main_DATA_END = .;
         main_DATA_SIZE = ABSOLUTE(main_DATA_END - main_DATA_START);
@@ -240,7 +240,7 @@ SECTIONS
         build/src/main/51268.o(.bss);
         build/src/main/5ED34.o(.bss);
         build/src/main/63D2C.o(.bss);
-        build/src/text1b_b.o(.bss);
+        build/src/main/64FD8.o(.bss);
         build/src/text1b_b_tu2.o(.bss);
         build/src/main/psxsdk/libc2/sprintf.o(.bss);
         build/src/gpu.o(.bss);
