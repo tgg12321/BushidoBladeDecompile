@@ -3,8 +3,8 @@
 # tools/cc1-reorg-negate-rtx-decl.patch (no codegen patch; owner Q17).
 # Keyed to the source tree: they change whenever src/ or include/ does.
 # Refresh with: bash tools/build_oracle_cc1.sh --record-manifest
-# src-digest 6555d475f8ebe1f94ecd652b5fa9efe64df0a66b
-# recorded 2026-10-03T13:26:12Z
+# src-digest 330d10ce7c21524ef99eb1d6d35eb9861ee8e092
+# recorded 2026-10-03T13:58:41Z
 684727a226ea1d212aa6d5f04a7ded04b4aaa4fa  display
 bc60c54aa5534f3e039cc0a020e57bad8be781d0  gpu
 aebf2779ad36e65eb2f400092840ec864004abf1  ings2
@@ -32,6 +32,7 @@ d0cb48d0ae6af04534acadad7104b5df7dea2ce2  main/31CFC
 3cf8cecec09faca11e0fe2dd8ed9e60c6a159490  main/51268
 aa429195bfc3bad2185c9191d37d2a3327ab3839  main/5ED34
 0d148bc9b445be0ef0d0ef2778621d251e3cddb0  main/63D2C
+931edf336d7f24483e39c81dba8f8e6a95347ae6  main/64FD8
 689659a46eb9d360f313503647dccfa8c34c7542  main/6CF8
 d28bb08439e60b85ef5ca0fd9d7b8dbc24ee8b71  main/87A0
 3eaed26ae2e955ce63b34eca20e340c9a0c91a0f  main/9F9C
@@ -40,11 +41,44 @@ d28bb08439e60b85ef5ca0fd9d7b8dbc24ee8b71  main/87A0
 03e6d546770a3bd338da0d7425803b19c0d6c50b  main/d_15EC
 8207ae8f2f3158113bdf3e3e6f1a63f280ba1aed  main/d_5BF0
 fba08034c5a90ac9504ab27d1d9344f197c01999  main/memcard
+7a17777e1d634d4799fb346d6a3a896e86b53ae1  main/psxsdk/libapi/a08
+afdbec649bcb475db650c2199609bee3fb96f68b  main/psxsdk/libapi/a09
+01f1edf769832c28895590bedb7512298cb7b742  main/psxsdk/libapi/a11
+3863c965ad15ca7c6deed16723e79c3881fceaa4  main/psxsdk/libapi/a12
+3b80d0de673b0abcbf3be307fc657277d479cc3b  main/psxsdk/libapi/a18
+0e9f3a0b340a5978e1e52cd2c63298d4767d2b78  main/psxsdk/libapi/a19
+42f974f2b94cd7018183928dac5232069bf1830a  main/psxsdk/libapi/a20
+a18ec1a6c7aa8ee8b131fd0728138dbb4500eff4  main/psxsdk/libapi/a21
+9288d590939d4df8fc851fc556b2c8d89fd5e8ba  main/psxsdk/libapi/a36
+44997d51124189c77079e525b41910c2e2f4918f  main/psxsdk/libapi/a37
+c840fae677689275eccc6fccbbe024437e95d1d4  main/psxsdk/libapi/a39
+7b4c66a54b896918240a3947972938e024099a80  main/psxsdk/libapi/a50
+cc1cec215acce42c1f5a5f826c6315e47cbb85f2  main/psxsdk/libapi/a52
+0db782653bf311320734a3b36b60370f2ebd3145  main/psxsdk/libapi/a53
+202fcb01c87e630002f1218c03f589f7672a4d4e  main/psxsdk/libapi/a54
+6d3fbcdcd4dc86fd2d6c175c7fffaeab7352aac3  main/psxsdk/libapi/a65
+d89db6339a3edf39e642326b829ced6ea013ecc1  main/psxsdk/libapi/a66
+436bef94d61612e87cb2f70581eed767370e9d4a  main/psxsdk/libapi/a67
+e12d246e98693633bae82965bfc236865e2685c9  main/psxsdk/libapi/a91
+6444719057eade8cf609f51ccd6852a9a4d58f32  main/psxsdk/libapi/c112
+84f55e9aa5543474bf25002d941df2c53ae2f233  main/psxsdk/libapi/c159
+2275fadc326491693b0757605c7ccf3040a2b9bd  main/psxsdk/libapi/c67
+1e68cffe9cffbc0c9d194db2d11f57667cb8e28e  main/psxsdk/libapi/c68
+c5eeffdc323606a6622ca71ea374085a00d53e39  main/psxsdk/libapi/chclrpad
+c4c0abaa608351c8185ad6f26d7e89af75b6501c  main/psxsdk/libapi/counter
+d646673a0b64dce77d00508883b17383c6827497  main/psxsdk/libapi/l02
+d54384e8c9acebade159ff1339eb4db2bbf615a5  main/psxsdk/libapi/l03
+087d593abd87f6bfa3a02c1e4367f14bc0b8cde1  main/psxsdk/libapi/pad
+e29f7fc72bedad2c1bfba82a0db8eed854390533  main/psxsdk/libapi/patch
+2ea2a2606452fbcb8787d863c219a85f11e13e05  main/psxsdk/libc2/memcpy
+c685440348be40389fae84f14dea169406b4f439  main/psxsdk/libc2/printf
+5ed1af9888898787b1b4d251378702a4e3a9c83d  main/psxsdk/libc2/rand
 d5ba30ed992eb95d361c050c944b196b621c0764  main/psxsdk/libc2/sprintf
+26d43c0cd9d105c3e00c58d186d0e759d2d9d078  main/psxsdk/libc2/strcpy
+efdf0fcf172eee0d831821e60b91e3027a6b1ed1  main/psxsdk/libc2/strlen
 8bfd42dad3fafef19985d51b9025ead5270376fc  main/psxsdk/libcomb/comb
 831b3a4202ada242956cea66d21119c0ca50ba7d  main_post
 d63cb1a187b36abde5fc44fce44df32c5e41219d  system
 aa02790aa1818dba03e44205bfe56e20639ccfb0  text1a_b_post_rodata
 254886b14b7223202b20d1d6517c66eacf97beb8  text1a_b_tail_rodata
-a601330557e75be91273d077b1157f9404e56a96  main/64FD8
 7e851213390972ef265a57547f7a5f47bac9b220  text1b_b_tu2
