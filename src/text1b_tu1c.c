@@ -3979,7 +3979,7 @@ after_move:
         switch (D_8009BC0C[D_800A34F8 & 0xF].state) {
         case 4:
         case 5:
-            if (g_pad_state.unk_00[3] == 0) {
+            if (g_pad_state.valid[1] == 0) {
                 func_8005C650(2, 0x7F, 0x7F);
                 func_8005C6D0();
                 goto cancel;
@@ -3992,7 +3992,7 @@ after_move:
         case 0: case 1: case 2: case 3: case 6:
             goto reject;
         }
-        if (g_pad_state.unk_00[2] == 0) {
+        if (g_pad_state.valid[0] == 0) {
 reject:
             func_8005C650(2, 0x7F, 0x7F);
             goto cancel;

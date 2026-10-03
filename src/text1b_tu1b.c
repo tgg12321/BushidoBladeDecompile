@@ -1569,7 +1569,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
 
             temp2 = SquareRoot0((rec->unk_F4.x - obj->pos.x) * (rec->unk_F4.x - obj->pos.x) +
                                 (rec->unk_F4.z - obj->pos.z) * (rec->unk_F4.z - obj->pos.z));
-            if (obj->unk_02 != -1 && obj->unk_04 != 0 && obj->owner != rec->index) {
+            if (obj->kind != -1 && obj->unk_04 != 0 && obj->owner != rec->index) {
                 temp = (ratan2(rec->unk_F4.x - obj->pos.x, rec->unk_F4.z - obj->pos.z) -
                         ratan2(obj->pos.x - obj->prev_pos.x, obj->pos.z - obj->prev_pos.z)) & 0xFFF;
                 if (temp > 0x800) {
@@ -1647,7 +1647,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     pad.pressed = pad.held & ~rec->unk_3D0.held;
     pad.unheld = ~pad.held & 0xFFFF;
     pad.released = ~pad.held & rec->unk_3D0.held;
-    pad.unk_00[arg0] = 4;
+    pad.type[arg0] = 4;
     rec->unk_3D0 = pad;
     *arg1 = rec->unk_3D0;
 }

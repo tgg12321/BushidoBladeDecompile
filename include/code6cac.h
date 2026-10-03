@@ -120,11 +120,19 @@ extern s16 D_800F0C04[6];
 /* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
  * frame from the two pads (one u16 half per player in each word):
  * held = current bits, pressed = held & ~previous, released = ~held & previous,
- * unheld = ~held; pad_ResetState resets it (4, 4, 0, 0, 0, -1).  func_8001BE20
+ * unheld = ~held; pad_ResetState sets type[] and the four bit words to
+ * (4, 4, 0, 0, 0, -1) and leaves valid[] alone.  func_8001BE20
  * copies the whole record to its caller's buffer, and pad_ClearStateBits clears the
  * four bit words of such a buffer. */
 typedef struct PadState {
-    s16 unk_00[4];                 /* [0..1] and [2..3] filled pairwise by func_80019568 */
+    s16 type[2];                   /* per pad: InitPAD buffer byte 1 >> 4, 5 and 7 folded
+                                      to 4, 4 when the status byte != 0 (func_80019568,
+                                      where func_8003A728 can first replace them with
+                                      nibbles from the link-cable exchange words);
+                                      4 from pad_ResetState (both) and func_80055B60
+                                      (entry arg0 of its own record) */
+    s16 valid[2];                  /* per pad: 1 iff the InitPAD buffer status byte == 0
+                                      (func_80019568); 1, 1 from func_80019534 */
     u32 held;                      /* 0x08 */
     u32 pressed;                   /* 0x0C */
     u32 released;                  /* 0x10 */
@@ -517,20 +525,20 @@ extern u8 D_8009BD58[8][2];
  * reason as Unk80101DF0Mat below (several TUs typedef MATRIX themselves). */
 typedef struct { s16 m[3][3]; u16 pad; s32 t[3]; } Obj80106A78Mat;
 /* The twelve 0x64-byte object records at 0x80106A78. func_80030580 spawns one
- * (kind unk_02 indexes D_8008E194 / D_8008EB80), func_80030D7C moves them,
+ * (its kind indexes D_8008E194 / D_8008EB80), func_80030D7C moves them,
  * func_80031B24 tests them against both fighters, func_80030208 hands them to
- * the effect calls; unk_02 == -1 marks a free record. Field widths are the
+ * the effect calls; kind == -1 marks a free record. Field widths are the
  * consumers' loads and stores (asm/funcs/func_80030580.s, func_80030D7C.s). */
 typedef struct {
-    s16 unk_00;                    /* frames since spawn */
-    s16 unk_02;                    /* kind; -1 = free */
+    s16 unk_00;                    /* 0 at spawn; func_80030D7C adds 1 per step while unk_50 != 0 */
+    s16 kind;                      /* -1 = free */
     u8  unk_04;
     u8  unk_05;
     u8  owner;                     /* .index of the spawning record (func_80030580) */
     u8  unk_07;
     u8  unk_08;
     u8  unk_09;                    /* index into the owner's matrix table (func_800300B4) */
-    u8  slot;                      /* own index in D_80106A78 once allocated; 0xFF = free (set by func_8003043C at init and by func_80030D7C once unk_02 == -1) */
+    u8  slot;                      /* own index in D_80106A78 once allocated; 0xFF = free (set by func_8003043C at init and by func_80030D7C once kind == -1) */
     u8  unk_0B;
     Obj80106A78Mat mtx;            /* func_8002FF20 builds it (identity, RotMatrixX/Y/Z,
                                       MulMatrix0); func_800300B4 reads it */

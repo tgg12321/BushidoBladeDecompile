@@ -137,9 +137,15 @@ against its class test (default refute) before applying.
   - `memcard_HasFileNamePrefix` 0x80037B00 (about 22 statements).
   Both names describe the bodies correctly.
 - T5, noun not on the closed relation-noun list: PadState `type[2]` / `valid[2]` and Obj80106A78
-  `kind`. These were refused under the closed T5 list. They are to be re-checked under Q105 (adopted 2026-10-03),
-  which replaces the list with a principle.
-- T5, relation does not hold for every writer. These two refusals are final:
+  `kind`. **Applied after the Q105 re-check (2026-10-03).** Each holds in every write and read of
+  the matched code. `type`: the InitPAD byte-1 nibble (5/7 folded to 4; 4 when the status byte != 0;
+  4 from pad_ResetState / func_80055B60; func_8003A728 can replace it with link-exchange nibbles).
+  `valid`: 1 iff the status byte == 0 (and 1, 1 from func_80019534); func_80019568 / func_800693CC
+  treat 0 as no pad. `kind`: a spawn id, -1 when free, and an index into D_8008E194 / D_8008EB80.
+  func_80019568 now uses a local `PadState` and copies the two members by index, so no walk crosses
+  a member.
+- T5, relation does not hold for every writer. These two refusals are final (re-checked under Q105:
+  the facts stand):
   - Obj80106A78 `age`: it counts only while unk_50 != 0.
   - Record `pad` (+0x24): it is not a VERIFIED API argument, and the CPU-side writer's source is the
     func_80055B60 synthesized record.

@@ -1815,7 +1815,7 @@ g_char_pose_id_p2                                       = 0x800A30FD;  /* P2 cha
 g_cam_bone_data_cached                                  = 0x800A3778;  /* cached camera_GetBoneData() return; reread once per frame */
 g_char_struct_p1_field_6A                               = 0x80101F32;  /* per-char field +0x6A (u16; mode == 0x11 check) */
 g_char_struct_p1_field_FC                               = 0x80101FC4;  /* per-char field +0xFC; set to a0_val + passed to func_8003E6A0 */
-g_pad_state_plus_0x4                             = 0x8010278C;  /* g_pad_state.unk_00[2] (set to 1 by func_80019534) */  /* data-wave 2026-10-03: was g_practice_lesson_init_done */
+g_pad_state_plus_0x4                             = 0x8010278C;  /* g_pad_state.valid[0] (set to 1 by func_80019534) */  /* data-wave 2026-10-03: was g_practice_lesson_init_done */
 
 /* === Attack-angle offset table + char field paired (2026-05-17) -- 2 highs === */
 g_attack_angle_offset_table                             = 0x8008EB40;  /* s16 2D table; rows 3-wide indexed by attack-dir, cols by sub-dir; values added to char angle (BAM) for attack direction offset */
@@ -2285,8 +2285,8 @@ g_char_struct_p1_field_FC_plus_8                        = 0x80101FCC;  /* +8 fro
 g_practice_halfword_table_plus_4                        = 0x80102764;  /* +4 from g_practice_halfword_table (0x80102760) */
 g_practice_halfword_table_plus_8                        = 0x80102768;  /* +8 from g_practice_halfword_table (0x80102760) */
 g_pad_state                         = 0x80102788;  /* PadState (include/code6cac.h), built by func_80019568 from the InitPAD buffers g_pad_buf */  /* data-wave 2026-10-03: was D_80102788 (2026-09-29: g_practice_lesson_flag_b_plus_1) */
-g_pad_state_plus_0x2                         = 0x8010278A;  /* g_pad_state.unk_00[1] */  /* data-wave 2026-10-03: was D_8010278A (2026-09-29: g_practice_lesson_flag_b_plus_3) */
-g_pad_state_plus_0x6                      = 0x8010278E;  /* g_pad_state.unk_00[3] */  /* data-wave 2026-10-03: was g_practice_lesson_init_done_plus_2 */
+g_pad_state_plus_0x2                         = 0x8010278A;  /* g_pad_state.type[1] */  /* data-wave 2026-10-03: was D_8010278A (2026-09-29: g_practice_lesson_flag_b_plus_3) */
+g_pad_state_plus_0x6                      = 0x8010278E;  /* g_pad_state.valid[1] */  /* data-wave 2026-10-03: was g_practice_lesson_init_done_plus_2 */
 g_pad_state_plus_0x10                             = 0x80102798;  /* g_pad_state.released */  /* data-wave 2026-10-03: was g_pad_input_combined_plus_4 */
 g_pad_state_plus_0x14                             = 0x8010279C;  /* g_pad_state.unheld */  /* data-wave 2026-10-03: was g_pad_input_combined_plus_8 */
 g_motion_keyframe_table_ptr_plus_4                      = 0x801027B4;  /* +4 from g_motion_keyframe_table_ptr (0x801027B0) */

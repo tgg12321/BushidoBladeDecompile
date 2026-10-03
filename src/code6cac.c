@@ -1202,8 +1202,8 @@ void func_800194C0(s32 arg0) {
     D_800A3914 = (arg0 >> 8) & 0xF;
 }
 void pad_ResetState(void) {
-    g_pad_state.unk_00[0] = 4;
-    g_pad_state.unk_00[1] = 4;
+    g_pad_state.type[0] = 4;
+    g_pad_state.type[1] = 4;
     g_pad_state.held = 0;
     g_pad_state.pressed = 0;
     g_pad_state.released = 0;
@@ -1211,48 +1211,35 @@ void pad_ResetState(void) {
 }
 void func_80019534(void) {
     pad_ResetState();
-    g_pad_state.unk_00[2] = 1;
-    g_pad_state.unk_00[3] = 1;
+    g_pad_state.valid[0] = 1;
+    g_pad_state.valid[1] = 1;
 }
 void func_80019568(s32 arg0) {
-    struct {
-        s16 output[4];
-        s32 voice_mask;
-        s32 unk_1C;
-        s32 unk_20;
-        s32 unk_24;
-        s32 packets[4];
-    } sp;
+    PadState pad;
+    s32 pkts[4];
     u8 *packets;
-    s16 *output;
     s32 i;
-    s32 voice_mask;
-    s32 old_mask;
-    u32 *p;
-    s16 *base_addr;
-    s16 *dst1;
-    s16 *dst0;
-    s16 *src;
+    s32 held;
+    s32 old_held;
 
-    voice_mask = 0;
+    held = 0;
     i = 0;
-    packets = (u8 *)&sp.packets[0];
-    sp.packets[0] = g_pad_buf;
-    sp.packets[1] = g_pad_buf_plus_0x4;
-    sp.packets[2] = g_pad_buf_plus_0x24;
-    sp.packets[3] = g_pad_buf_plus_0x28;
+    packets = (u8 *)&pkts[0];
+    pkts[0] = g_pad_buf;
+    pkts[1] = g_pad_buf_plus_0x4;
+    pkts[2] = g_pad_buf_plus_0x24;
+    pkts[3] = g_pad_buf_plus_0x28;
     do {
         u8 *rec = &packets[i * 8];
-        s16 *o = &sp.output[i];
-        s32 enable = 0;
+        s32 valid = 0;
         s32 bits;
 
         if (rec[0] == 0) {
-            s32 voice2;
+            s32 type_m1;
 
-            o[0] = rec[1] >> 4;
-            enable = 1;
-            /* FAKE: the `o[2] = enable;` store is written into BOTH arms rather
+            pad.type[i] = rec[1] >> 4;
+            valid = 1;
+            /* FAKE: the `pad.valid[i] = valid;` store is written into BOTH arms rather
              * than once after the join (family: duplicated-statement-into-arms,
              * .claude/rules/duplicated-statement-into-arms.md).  mechanism:
              * loop.c scan_loop (loop.c:695-716) only creates a movable for the
@@ -1260,88 +1247,73 @@ void func_80019568(s32 arg0) {
              * the loop-top default plus this in-arm set are non-consecutive, so
              * no movable exists and the `addiu $v0,$zero,1` stays in the loop
              * filling target's lhu load-delay slot. A bare literal, a computed
-             * `enable = (rec[0] == 0)` or a single store after the join do not
+             * `valid = (rec[0] == 0)` or a single store after the join do not
              * match. */
-            o[2] = enable;
-            voice2 = (s16)((u16)o[0] - 1);
+            pad.valid[i] = valid;
+            type_m1 = (s16)((u16)pad.type[i] - 1);
 
-            if ((u32)voice2 < 8) {
-                switch (voice2) {
-                case 4:
-                case 6:
-                    o[0] = 4;
-                case 1:
-                case 2:
-                case 3:
-                    bits = ~((rec[2] << 8) | rec[3]);
-                    break;
-                case 0:
-                case 5:
-                case 7:
-                default:
-                    bits = 0;
-                    break;
-                }
-            } else {
-                bits = 0;
-            }
-        } else {
-            o[0] = 4;
-            o[2] = enable;
-            bits = 0;
-        }
-
-        voice_mask = ((u32)voice_mask >> 16) | (bits << 16);
-        i++;
-    } while (i < 2);
-
-    sp.voice_mask = voice_mask;
-    func_8001B138(&sp.voice_mask);
-
-    if (D_800A3834 == 1 && arg0 == 0) {
-        s32 voice_state = D_800A38DC;
-
-        if ((u32)voice_state < 7) {
-            switch (voice_state) {
+            switch (type_m1) {
             case 4:
-            case 5:
-                if (g_pad_state.unk_00[3] == 0) {
-                    sp.voice_mask |= 0x08000800;
-                }
-            case 0:
+            case 6:
+                pad.type[i] = 4;
             case 1:
             case 2:
             case 3:
-            case 6:
-                if (g_pad_state.unk_00[2] == 0) {
-                    sp.voice_mask |= 0x08000800;
-                }
+                bits = ~((rec[2] << 8) | rec[3]);
+                break;
+            case 0:
+            case 5:
+            case 7:
+            default:
+                bits = 0;
                 break;
             }
+        } else {
+            pad.type[i] = 4;
+            pad.valid[i] = valid;
+            bits = 0;
+        }
+
+        held = ((u32)held >> 16) | (bits << 16);
+        i++;
+    } while (i < 2);
+
+    pad.held = held;
+    func_8001B138(&pad.held);
+
+    if (D_800A3834 == 1 && arg0 == 0) {
+        s32 mode = D_800A38DC;
+
+        switch (mode) {
+        case 4:
+        case 5:
+            if (g_pad_state.valid[1] == 0) {
+                pad.held |= 0x08000800;
+            }
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 6:
+            if (g_pad_state.valid[0] == 0) {
+                pad.held |= 0x08000800;
+            }
+            break;
         }
     }
 
-    func_8003A728((s32)&sp.output[0]);
+    func_8003A728((s32)&pad);
 
     i = 0;
-    base_addr = g_pad_state.unk_00;
-    dst1 = base_addr + 2;
-    dst0 = base_addr;
-    src = &sp.output[0];
-
     do {
-        dst0[0] = src[0];
-        dst0++;
-        dst1[0] = src[2];
-        src++;
+        g_pad_state.type[i] = pad.type[i];
+        g_pad_state.valid[i] = pad.valid[i];
         i++;
-        dst1++;
     } while (i < 2);
 
-    p = &g_pad_state.held;
-    old_mask = *p;
-    *p = sp.voice_mask;
-    g_pad_state.pressed = sp.voice_mask & ~old_mask;
-    g_pad_state.unheld = ~sp.voice_mask;
-    g_pad_state.released = ~sp.voice_mask & old_mask;
+    old_held = g_pad_state.held;
+    g_pad_state.held = pad.held;
+    g_pad_state.pressed = pad.held & ~old_held;
+    g_pad_state.unheld = ~pad.held;
+    g_pad_state.released = ~pad.held & old_held;
 }

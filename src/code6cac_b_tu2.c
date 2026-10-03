@@ -4642,7 +4642,7 @@ void func_800300B4(Obj80106A78 *arg0) {
     MulMatrix0(mat, &arg0->mtx, mtx);
     func_8002F2D0(mtx, dir);
 
-    lookup = D_8008EB80[arg0->unk_02];
+    lookup = D_8008EB80[arg0->kind];
     func_80049718(lookup, 1, mac, dir);
     func_800393C8(arg0->slot, lookup, mac, dir);
 }
@@ -4653,7 +4653,7 @@ void func_80030208(void) {
     s32 lookup;
 
     for (obj = D_80106A78, i = 0; i < 12; i++, obj++) {
-        kind = obj->unk_02;
+        kind = obj->kind;
         if (kind == -1) {
             continue;
         }
@@ -4707,7 +4707,7 @@ void func_8003043C(void) {
     s32 i;
 
     for (i = 0; i < 12; i++) {
-        D_80106A78[i].unk_02 = -1;
+        D_80106A78[i].kind = -1;
         D_80106A78[i].slot = 0xFF;
     }
 }
@@ -4733,9 +4733,9 @@ void func_8003047C(Unk80101EC8Record *a0) {
 void func_80030524(void) {
     s32 i = 0;
     do {
-        if (D_80106A78[i].unk_02 != -1) {
+        if (D_80106A78[i].kind != -1) {
             if (D_80106A78[i].unk_08 != 0) {
-                D_80106A78[i].unk_02 = -1;
+                D_80106A78[i].kind = -1;
             }
         }
     } while (++i < 12);
@@ -4749,10 +4749,10 @@ Obj80106A78 *func_80030580(Unk80101EC8Record *arg0, s32 arg1) {
 
     obj = D_80106A78;
     for (i = 0; i < 12; i++, obj++) {
-        if (obj->unk_02 == -1 && obj->slot == 0xFF) break;
+        if (obj->kind == -1 && obj->slot == 0xFF) break;
     }
     obj->slot = i;
-    obj->unk_02 = arg1;
+    obj->kind = arg1;
     obj->unk_07 = 0;
     obj->unk_08 = 0;
     obj->unk_04 = 1;
@@ -4821,7 +4821,7 @@ s32 func_800307D0(Unk80101EC8Record *a0) {
     }
 
     a0->unk_330--;
-    kind = obj->unk_02;
+    kind = obj->kind;
     if (kind == 0xE) {
         func_80032854((D_800A36F2[0] ^ 0xE) != 0, 0x2F, (u8 *)&obj->pos, 0);
     } else {
@@ -4919,7 +4919,7 @@ s32 func_80030BA8(Unk80101EC8Record *arg0) {
     s32 old_val;
 
     for (i = 0, p = D_80106A78; i < 12; i++, p++) {
-        s16 kind = p->unk_02;
+        s16 kind = p->kind;
         if (kind >= 0x12 && kind < 0x1E) {
             continue;
         }
@@ -4949,8 +4949,8 @@ s32 func_80030BA8(Unk80101EC8Record *arg0) {
         if (func_80030B10((u8 *)arg0, kind) == 0) {
             return -1;
         }
-        old_val = p->unk_02;
-        p->unk_02 = -1;
+        old_val = p->kind;
+        p->kind = -1;
         if (old_val == 0xE) {
             func_80032854((D_800A36F2[0] ^ 0xE) != 0, 0x2F, (u8 *)&arg0->unk_F4, 0);
         } else {
@@ -4963,8 +4963,8 @@ s32 func_80030BA8(Unk80101EC8Record *arg0) {
 void func_80030D04(void) {
     s32 i = 0;
     do {
-        if (D_80106A78[i].unk_02 >= 0x12 && D_80106A78[i].unk_02 < 0x1E) {
-            D_80106A78[i].unk_02 = -1;
+        if (D_80106A78[i].kind >= 0x12 && D_80106A78[i].kind < 0x1E) {
+            D_80106A78[i].kind = -1;
         }
     } while (++i < 12);
 }
@@ -4988,14 +4988,14 @@ void func_80030D7C(void) {
     s32 half;
     s32 dot;
     s32 spd;
-    s16 state;
+    s16 kind;
     s16 *nrm;
 
     scr = (u8 *)0x1F8002B8;
     obj = D_80106A78;
     for (i = 0; i < 12; i++, obj++) {
         /* work holds two values: the clamped turn amount (turn block) and the
-         * bounce restitution factor D_8008E194[state].unkA. One local, not two:
+         * bounce restitution factor D_8008E194[kind].unkA. One local, not two:
          * ordinary-c-judge-decidable.md Ruling 11. */
         s32 work;
         /* temp holds two values: the ratan2() heading of the velocity (turn block) and
@@ -5003,7 +5003,7 @@ void func_80030D7C(void) {
          * One local, not two: ordinary-c-judge-decidable.md Ruling 11. */
         s32 temp;
 
-        if (obj->unk_02 == -1) {
+        if (obj->kind == -1) {
             obj->slot = 0xFF;
             continue;
         }
@@ -5014,7 +5014,7 @@ void func_80030D7C(void) {
         if (obj->unk_50 != 0) {
             obj->unk_00++;
         }
-        if (obj->unk_02 == 0x10 && obj->unk_50 != 0 && obj->unk_05 == 0
+        if (obj->kind == 0x10 && obj->unk_50 != 0 && obj->unk_05 == 0
             && obj->unk_00 >= 14) {
             temp = ratan2(obj->vel.x, obj->vel.z);
             work = (0x4E - obj->unk_00) * 96 / 64;
@@ -5061,9 +5061,9 @@ void func_80030D7C(void) {
             temp = 0;
         }
         if (temp != 0) {
-            if (obj->unk_02 == 0xF) {
+            if (obj->kind == 0xF) {
                 func_80032854(obj->owner, 0xE, scr + 0x10, nrm);
-                obj->unk_02 = -1;
+                obj->kind = -1;
                 continue;
             }
             dot = (obj->vel.x * nrm[0]
@@ -5073,8 +5073,8 @@ void func_80030D7C(void) {
             obj->vel.y -= nrm[1] * dot / 4096;
             obj->vel.z -= nrm[2] * dot / 4096;
             obj->pos = *(Vec3i32 *)(scr + 0x10);
-            state = obj->unk_02;
-            work = D_8008E194[state].unkA;
+            kind = obj->kind;
+            work = D_8008E194[kind].unkA;
             if (obj->unk_50 != 0) {
                 obj->vel.x = obj->vel.x * work / 4096;
                 obj->vel.y = obj->vel.y * work / 4096;
@@ -5083,24 +5083,24 @@ void func_80030D7C(void) {
                     + obj->vel.z * obj->vel.z;
                 if (*(s16 *)(scr + 0x32) >= -0x7FF) {
                     obj->rot_vel[1] += (rng_Next() & 1) ? spd / 64 : -spd / 64;
-                    if (obj->unk_02 != 0xE && obj->unk_04 != 0) {
+                    if (obj->kind != 0xE && obj->unk_04 != 0) {
                         func_80032854(obj->owner, 1, (u8 *)&obj->pos, 0);
                     }
                 }
-                if (obj->unk_02 == 0xE) {
+                if (obj->kind == 0xE) {
                     if (obj->unk_04 != 0) {
-                        func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2F, (u8 *)&obj->pos, 0);
+                        func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2F, (u8 *)&obj->pos, 0);
                     }
-                } else if (obj->unk_02 < 0x12) {
+                } else if (obj->kind < 0x12) {
                     if (spd > 0x10) {
-                        func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2C, (u8 *)&obj->pos, 0);
+                        func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2C, (u8 *)&obj->pos, 0);
                     }
-                } else if (obj->unk_02 >= 0x12 && obj->unk_02 < 0x1E) {
+                } else if (obj->kind >= 0x12 && obj->kind < 0x1E) {
                     if (spd > 0x10) {
                         func_80032854(obj->owner, 0x29, (u8 *)&obj->pos, 0);
                     }
                 }
-            } else if (*(s16 *)(scr + 0x32) >= -0x7FF && state == 0xE) {
+            } else if (*(s16 *)(scr + 0x32) >= -0x7FF && kind == 0xE) {
                 if (obj->unk_05 == 1) {
                     obj->unk_50 = 1;
                     obj->rot[1] += 0x780 + (rng_Next() & 0xFF);
@@ -5108,7 +5108,7 @@ void func_80030D7C(void) {
                     obj->vel.y = -150;
                     obj->vel.z = Judge[(obj->rot[1] + 0x400) & 0xFFF] / 64;
                     obj->unk_05 = 2;
-                    func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2F, (u8 *)&obj->pos, 0);
+                    func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2F, (u8 *)&obj->pos, 0);
                 }
             }
             obj->unk_04 = 0;
@@ -5125,7 +5125,7 @@ void func_80030D7C(void) {
             && obj->vel.z >= -3 && obj->vel.z <= 3) {
             if (temp != 0) {
                 if (D_800A38DC == 3) {
-                    obj->unk_02 = -1;
+                    obj->kind = -1;
                 } else {
                     obj->unk_50 = 0;
                     obj->unk_05 = 1;
@@ -5137,7 +5137,7 @@ void func_80030D7C(void) {
         } else {
             obj->unk_50 = 1;
         }
-        if (obj->unk_02 == 0xE) {
+        if (obj->kind == 0xE) {
             if (obj->unk_05 == 1 && !(rng_Next() & 0x133)) {
                 obj->unk_50 = 1;
                 obj->rot_vel[1] += (rng_Next() & 0x7F) - 0x40;
@@ -5145,20 +5145,20 @@ void func_80030D7C(void) {
                 obj->vel.y = -150;
                 obj->vel.z = Judge[(obj->rot[1] + 0x400) & 0xFFF] / 64;
                 obj->unk_05 = 2;
-                func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2F, (u8 *)&obj->pos, 0);
+                func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2F, (u8 *)&obj->pos, 0);
             }
         }
         if (obj->unk_07 == 2) {
             obj->rot[1] = math_LerpAngle(obj->rot[1], 0, 0x800);
             obj->rot[2] = math_LerpAngle(obj->rot[2], 0x400, 0xE00);
             obj->rot_vel[1] = obj->rot_vel[1] * 3 / 4;
-        } else if (obj->unk_04 == 0 && D_8008E194[obj->unk_02].unk0 == 2) {
+        } else if (obj->unk_04 == 0 && D_8008E194[obj->kind].unk0 == 2) {
             obj->rot[0] = math_LerpAngle(obj->rot[0], 0, 0xE00);
             obj->rot[1] = math_LerpAngle(obj->rot[1], 0, 0x600);
             obj->rot[2] = math_LerpAngle(obj->rot[2], -0x400, 0xE00);
         }
         if (obj->pos.y > 0x3A98) {
-            obj->unk_02 = -1;
+            obj->kind = -1;
         }
     }
     func_80030208();
@@ -5172,7 +5172,7 @@ void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
     s32 sum_sq;
     s32 adj;
 
-    if (ent->unk_02 != 0xE) {
+    if (ent->kind != 0xE) {
         s32 vx = ent->vel.x;
         s32 vz = ent->vel.z;
         s32 av = ent->rot_vel[1];
@@ -5275,7 +5275,7 @@ void func_80031B24(void) {
 
     obj = D_80106A78;
     for (i = 0; i < 12; i++, obj++) {
-        if (obj->unk_02 == -1) continue;
+        if (obj->kind == -1) continue;
         if (obj->unk_04 == 0) continue;
         if (obj->unk_50 == 0) continue;
         other = obj->owner == 0;
@@ -5301,7 +5301,7 @@ void func_80031B24(void) {
             hit = func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E);
             if (hit != 0) {
                 deep = 0;
-                if (rec->unk_00 != 0 && D_8008E194[obj->unk_02].unkD == 0) {
+                if (rec->unk_00 != 0 && D_8008E194[obj->kind].unkD == 0) {
                     deep = func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0;
                 }
                 break;
@@ -5315,10 +5315,10 @@ void func_80031B24(void) {
         obj->pos.x -= obj->vel.x / 2;
         obj->pos.y -= obj->vel.y / 2;
         obj->pos.z -= obj->vel.z / 2;
-        r = func_80027AD8(1, ch, j, diff, deep, &D_8008E194[obj->unk_02], 0, &flag);
+        r = func_80027AD8(1, ch, j, diff, deep, &D_8008E194[obj->kind], 0, &flag);
         if (r == 2) continue;
         if (r != 0) {
-            func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2B, (u8 *)&SPAD->unkA8[other][j], 0);
+            func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2B, (u8 *)&SPAD->unkA8[other][j], 0);
             func_8002FF20(obj, rec->bone);
             obj->unk_04 = 0;
             st = ch->unk_6A;
@@ -5327,10 +5327,10 @@ void func_80031B24(void) {
             }
             continue;
         }
-        kind = obj->unk_02;
+        kind = obj->kind;
         if (kind == 0xF) {
             func_80032854(other ^ 1, 0xE, (u8 *)&SPAD->unkA8[other][j], &D_800A37E8);
-            obj->unk_02 = -1;
+            obj->kind = -1;
             continue;
         }
         if (kind == 0xE) {

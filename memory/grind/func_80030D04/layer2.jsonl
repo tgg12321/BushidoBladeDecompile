@@ -1,0 +1,1 @@
+{"func": "func_80030D04", "addr": "80030D04", "verdict": "PASS", "body_hash": "48f1378e8af070cc", "body_kind": "c", "file": "code6cac_b_tu2", "reviewer": "cheat-reviewer:aed782f0f1dca4601", "scope": "cheat-cleanup", "date": "2026-10-03T11:17:49Z", "head": "8dbf80521", "notes": "Q105 naming re-check: PadState type[2]/valid[2], Obj80106A78 kind; byte-neutral, SHA1==oracle"}
