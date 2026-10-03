@@ -19,7 +19,6 @@ extern void sys_Init(void);
 extern void file_LoadSoundData(void);
 extern void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 extern s32 CdPosToInt(s32);
-extern void func_80036940(void);
 
 s32 cdrom_IsIdle(void) {
     return D_80101E58.rec.unk02 == 0;

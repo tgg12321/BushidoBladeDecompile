@@ -678,7 +678,6 @@ extern Unk800A6690Rec D_800A6690[];
 extern s16 D_800A7FE0[32][32];
 extern u16 D_800A87E0[];
 extern u8 g_stage_collision[];
-extern s32 D_800A3820;
 extern s32 *func_8004153C();
 extern void func_800432A0(s32, s32, s32, s32, s32);
 
@@ -765,23 +764,11 @@ extern s32 g_gpu_ot_ptr;
 
 
 
-extern u8 D_800A376C;
-extern u8 D_800A37B4;
-extern u8 D_800A37B5;
-extern u8 D_800A37B6;
-extern s32 D_800A37B8;
-extern u8 D_800A390F;
-extern s16 D_800A3834;
-extern void gpu_InitDisplay(void);
-extern void gpu_SetDispMaskOn(void);
-extern void gpu_ResetGraphMode1(void);
 extern void func_8003AFFC(void);
 extern void func_80020CDC(void);
 extern void func_80020D38(void);
-extern void func_80041688(s32, s32);
 extern void func_8004659C(s32);
 extern void snd_SerialMixOn(void);
-extern s32 func_80036EA8(s32, s32);
 extern void cdrom_StartAudio(s32, s32);
 extern void func_80037260(void);
 extern void func_80041BF4(s32, s32, s32);

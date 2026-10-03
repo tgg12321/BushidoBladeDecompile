@@ -144,7 +144,6 @@ extern void func_8001B6F4(void);
 
 extern s32 D_800F34D8;
 extern s32 D_800A31F0;
-extern s32 g_memcard_fd;
 extern s32 memcard_CountFiles(s32, s32);
 
 extern s32 func_80037AA4(void);
@@ -1790,12 +1789,7 @@ s32 math_Popcount32(u32 arg0) {
     }
     return count;
 }
-extern s32 D_800A38A0;
-extern s16 D_800A36C2;
 extern s32 D_800A36D0;
-extern s16 D_800A36D2;
-extern s32 D_800A36D4;
-extern s32 g_comb_send_buf_plus_0x4;
 extern u16 D_800A37C4;
 extern u8 D_800A3916;
 extern s32 D_800A3908;

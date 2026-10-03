@@ -14,7 +14,6 @@
 /* Declarations from the file this TU was split from (text1b_tu1c.c). */
 extern s32 func_8005C2A8(s32 *, s16, s32);
 extern s32 ClearOTagR(s32, s32);
-extern s32 D_800A36AC;
 extern s32 rcos();
 extern s32 rsin();
 extern s32 g_gpu_ot_ptr;
@@ -44,8 +43,6 @@ typedef struct GameObj {
 extern s32 func_80036EA8();
 s32 game_FrameLoop();                           /* extern */
 s32 cdrom_StartRead(s32, s32);               /* extern */
-extern s32 func_80036EA8(s32, s32);
-s32 func_80036EA8(s32, s32);
 s32 game_FrameLoop(void);
 s32 cdrom_StartRead(s32, s32);
 s32 func_8005C2A8(s32 *, s16, s32);
@@ -54,7 +51,6 @@ extern s32 cdrom_StartRead(s32, s32);
 extern s32 *func_80077D00(void);
 s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2);
 void func_8005C650(s32 a0, s32 a1, s32 a2);
-void func_8005C6D0(void);
 extern s32 func_80073728(s32, s32);
 typedef struct {
     void *p0;

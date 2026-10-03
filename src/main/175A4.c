@@ -119,9 +119,6 @@ extern u8 D_800A38AB;
 
 
 
-extern s16 D_800A3824;
-extern s16 D_800A3876;
-extern s16 D_800A38A8;
 extern void func_8001F860(s16 *arg0, s32 arg1);
 extern void func_8002AB08(s32 a0);
 

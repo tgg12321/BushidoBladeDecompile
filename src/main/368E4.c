@@ -1777,8 +1777,6 @@ void func_80048B8C(s32 a0) {
 extern void *game_GetPlayerData();
 extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern s32 ClearOTagR(s32, s32);
-extern s32 D_800A36AC;
-extern s32 D_800A3820;
 extern s32 g_gpu_ot256_ptr;
 extern u8 g_gpu_ot256_db[];
 extern s16 D_80099C14[];

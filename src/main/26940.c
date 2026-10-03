@@ -218,7 +218,6 @@ void func_80036140(void) {
     }
     }
 }
-void func_80036940(void);
 extern void func_80036140(void);
 void func_80036940(void) {
     u8 param[4];

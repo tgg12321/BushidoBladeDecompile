@@ -38,8 +38,6 @@ void camera_InitBoneData(void);
 extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
 extern s32 func_8005C2A8(s32 *, s16, s32);
 extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
-extern s32 D_800A36AC;
-extern s32 D_800A3820;
 extern void func_80052C10(void);
 void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in);
 void func_80049A2C(s32 arg0, s32 arg1, s32 arg2);
@@ -731,7 +729,6 @@ extern s32 stage_GetId(void);
 extern void func_8003FFC4(s32 *);
 extern void func_8003F218(s32);
 extern s32 math_FovToScreenDist(s32);
-extern void gpu_ResetGraphMode1(void);
 extern void game_StageCleanup(s32, s32);
 s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     /* FAKE: second C handle to the global ctrl block (pointer-alias family);
@@ -3753,7 +3750,6 @@ void func_8005B868(void) {
     g_vab_rec_ptr_plus_0x10 = 0;
     g_vab_vb_sbaddr_plus_0x10 = 0;
 }
-extern s32 func_80036EA8(s32, s32);
 extern s32 cdrom_GetFileSize(s32);
 extern void func_8005B868(void);
 
@@ -3792,7 +3788,6 @@ void func_8005B9C4(void) {
     g_vab_vb_sbaddr_plus_0x24 = 0;
 }
 void func_8005B9C4(void);
-s32 func_80036EA8(s32, s32);
 s32 game_FrameLoop(void);
 s32 cdrom_StartRead(s32, s32);
 s32 cdrom_GetFileSize(s32);
