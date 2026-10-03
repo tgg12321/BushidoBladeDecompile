@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8005FC9C",
+  "body_hash": "4443c209bf910e7a",
+  "summary": "Local RectFC9C/EnvFC9C views retired for RECT/GpuDb; env->draw.clip is the DRAWENV clip at +0; sandbox 0."
+}

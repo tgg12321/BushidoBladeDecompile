@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "CdIntstr",
+  "body_hash": "b589262a15d4eaf3",
+  "summary": "PASS: as CdComstr - g_str_none alias retired. Debt: CD_intstr typed s32[], return void *."
+}

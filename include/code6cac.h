@@ -593,7 +593,6 @@ extern s32 D_8008EBE0[];
 extern u8 D_8008EBF4[6];
 extern LeafThreshold D_8008EBFC[6];
 extern u8 D_8008EC30;
-extern u32 g_cd_file_table_plus_0x4;
 extern s16 D_8008F12C;
 extern u8 D_8008F13C;
 extern u8 D_8008F19C[];
@@ -700,6 +699,10 @@ extern s16 D_800A376E;
 extern s32 D_800A3778;
 extern u8 D_800A377B;
 extern u8 D_800A377C[]; /* round-result table: 0/1/2 per round, indexed by round */
+/* Two buffer addresses selected by frame parity: sys_GameInit sets 0x801D8800 /
+ * 0x801EBC00, func_80016E60 and main read [D_800A36AC & 1] (base + i*4).
+ * Replaces the splat per-word scalar D_800A3774 ([1]). */
+extern u32 D_800A3770[2];
 extern u8 D_800A3781;
 extern u8 D_800A3783;
 extern s32 D_800A3784;
@@ -962,6 +965,13 @@ typedef struct {
     s32 b;
 } CamPair;
 
+/* The CD file table at 0x8008EC34: one 8-byte record per disc file, indexed by the
+ * file numbers func_80036EA8 forms. `a` holds the file's CdlLOC position (cdrom_StartRead
+ * copies the record into D_80101E58.rec.pair, whose position is sought; cdrom_LoadExec
+ * seeks to it directly), `b` its size in bytes (cdrom_StartRead's sector count,
+ * func_80036F28, cdrom_StartAudio's end position). */
+extern CamPair g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
+
 /* The replay-camera / CD-read words at 0x80101E60..0x80101EA7: the tail of
  * CdState D_80101E58 below, where the evidence that they are one object with
  * its head is set out.  Member widths follow the original accesses;
@@ -986,9 +996,8 @@ typedef struct {
  * Evidence: pre-slim-2026-10-01:memory/grind/func_80036140/evidence.md.
  *
  * The 8-byte `pair` is also one CamPair by the table it is copied from: the
- * source is indexed `&g_cd_file_table + i*8` and copied as a whole CamPair
- * aggregate (cdrom_StartRead, cdrom_StartAudio), so the table is an array of
- * this same 8-byte record.  The CdPosToInt/CdIntToPos calls on it evidence
+ * source is an element of g_cd_file_table, copied as a whole CamPair
+ * aggregate (cdrom_StartRead, cdrom_StartAudio).  The CdPosToInt/CdIntToPos calls on it evidence
  * only `pair.a`: CdIntToPos (src/system.c) writes just p[0..2]. */
 typedef struct {
     s16 unk00; /* 0x80101E60 */

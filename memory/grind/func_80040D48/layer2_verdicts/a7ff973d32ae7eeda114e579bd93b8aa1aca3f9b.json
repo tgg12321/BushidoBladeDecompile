@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80040D48",
+  "body_hash": "2311695e2cdaefdc",
+  "summary": "g_player_ptrs replaces D_800A9A10; four FAKEs labelled, reviewer-measured s4=4, s1=78, s5 first role=46 (labels true); sandbox 0."
+}

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8006D74C",
+  "body_hash": "4e1b76745fb96f17",
+  "summary": "GpuDb *db = &g_gpu_db[parity] replaces the s32 byte-offset sum; sandbox 0."
+}

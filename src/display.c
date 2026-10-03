@@ -24,16 +24,16 @@ extern volatile u32 *g_gpu_dma_chcr;
 extern u8 ctlbuf[];
 extern s32 g_gpu_vcount;
 extern s32 g_gpu_draw_count;
-extern u32 g_str_drawotag;
-extern u32 g_str_drawsync;
+extern const char g_str_drawotag[];
+extern const char g_str_drawsync[];
 extern u32 D_80015EE8;
 extern u32 D_80015FDC;
 
-extern u32 g_str_setdispmask;
+extern const char g_str_setdispmask[];
 
-extern u8 D_80015F2C;
-extern u8 D_80015F38;
-extern u8 D_80015F4C;
+extern const char D_80015F2C[];
+extern const char D_80015F38[];
+extern const char D_80015F4C[];
 
 /* --- Functions 0x8007B244 - 0x8007FF7C (text2 segment) --- */
 
@@ -49,119 +49,95 @@ u32 DrawSyncCallback(s32 a0) {
 
 void SetDispMask(s32 a0) {
     if (g_gpu_ctx.debug_level >= 2) {
-        GPU_printf(&g_str_setdispmask, a0);
+        GPU_printf(g_str_setdispmask, a0);
     }
     if (!a0) {
         memset(&g_gpu_ctx.disp_env, -1, 0x14);
     }
-    {
-        u32 cmd = GP1_DISP_ENABLE;
-        u32 *v0 = (u32 *)g_gpu_dev_table;
-        if (a0) {
-            cmd = 0x03000000;
-        }
-        ((void (*)(u32))v0[4])(cmd);
-    }
+    g_gpu_dev_table->ctl(a0 ? 0x03000000 : 0x03000001);
 }
 void DrawSync(s32 a0) {
     if (g_gpu_ctx.debug_level >= 2) {
-        GPU_printf(&g_str_drawsync, a0);
+        GPU_printf(g_str_drawsync, a0);
     }
-    {
-        u32 *v0 = (u32 *)g_gpu_dev_table;
-        ((void (*)(s32))v0[15])(a0);
-    }
+    g_gpu_dev_table->sync(a0);
 }
-void checkRECT(u8 *str, s16 *rect) {
+void checkRECT(const char *str, RECT *rect) {
     s16 w, x, y, h;
     if (g_gpu_ctx.debug_level == 1) goto level_1;
     if (g_gpu_ctx.debug_level == 2) goto level_2;
     goto end;
 level_1:
-    w = rect[2];
+    w = rect->w;
     if (w > g_gpu_ctx.width) goto bad;
-    x = rect[0];
+    x = rect->x;
     if (w + x > g_gpu_ctx.width) goto bad;
-    y = rect[1];
+    y = rect->y;
     if (y > g_gpu_ctx.height) goto bad;
-    h = rect[3];
+    h = rect->h;
     if (y + h > g_gpu_ctx.height) goto bad;
     if (w <= 0) goto bad;
     if (x < 0) goto bad;
     if (y < 0) goto bad;
     if (h > 0) goto end;
 bad:
-    GPU_printf(&D_80015F2C, str);
-    GPU_printf(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
+    GPU_printf(D_80015F2C, str);
+    GPU_printf(D_80015F38, rect->x, rect->y, rect->w, rect->h);
     goto end;
 level_2:
-    GPU_printf(&D_80015F4C, str);
-    GPU_printf(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
+    GPU_printf(D_80015F4C, str);
+    GPU_printf(D_80015F38, rect->x, rect->y, rect->w, rect->h);
 end:
     ;
 }
-extern u8 g_str_clearimage;
-extern void checkRECT(u8 *, s16 *);
+extern const char g_str_clearimage[];
+extern void checkRECT(const char *, RECT *);
 
-void ClearImage(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
-    s32 *p;
-    void (*fn)();
-    checkRECT(&g_str_clearimage, arg0);
-    p = (s32 *)g_gpu_dev_table;
-    fn = (void (*)())p[2];
-    fn(p[3], arg0, 8, ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
+void ClearImage(RECT *arg0, u8 arg1, u8 arg2, u8 arg3) {
+    checkRECT(g_str_clearimage, arg0);
+    g_gpu_dev_table->addque2(g_gpu_dev_table->clr, arg0, 8, ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
 }
-void ClearImage2(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
-    s32 *p;
-    void (*fn)();
-    u32 hi, lo;
-    checkRECT(&g_str_clearimage, arg0);
-    hi = (u32)arg3 << 16;
-    lo = ((u32)arg2 << 8) | 0x80000000;
-    p = (s32 *)g_gpu_dev_table;
-    fn = (void (*)())p[2];
-    fn(p[3], arg0, 8, (hi | lo) | (u32)arg1);
+void ClearImage2(RECT *arg0, u8 arg1, u8 arg2, u8 arg3) {
+    checkRECT(g_str_clearimage, arg0);
+    g_gpu_dev_table->addque2(g_gpu_dev_table->clr, arg0, 8,
+                             0x80000000 | ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
 }
-extern u32 g_str_loadimage;
+extern const char g_str_loadimage[];
 
-void LoadImage(s32 a0, s32 a1) {
-    u32 *v0;
-    checkRECT(&g_str_loadimage, a0);
-    v0 = (u32 *)g_gpu_dev_table;
-    ((void (*)(u32, s32, s32, s32))v0[2])(v0[8], a0, 8, a1);
+void LoadImage(RECT *a0, u32 *a1) {
+    checkRECT(g_str_loadimage, a0);
+    g_gpu_dev_table->addque2(g_gpu_dev_table->dws, a0, 8, a1);
 }
-extern u32 g_str_storeimage;
+extern const char g_str_storeimage[];
 
-void StoreImage(s32 a0, s32 a1) {
-    u32 *v0;
-    checkRECT(&g_str_storeimage, a0);
-    v0 = (u32 *)g_gpu_dev_table;
-    ((void (*)(u32, s32, s32, s32))v0[2])(v0[7], a0, 8, a1);
+void StoreImage(RECT *a0, u32 *a1) {
+    checkRECT(g_str_storeimage, a0);
+    g_gpu_dev_table->addque2(g_gpu_dev_table->drs, a0, 8, a1);
 }
-extern u8 D_80015F74;
+extern const char D_80015F74[];
 extern u32 g_gpu_move_param[5];
 
-s32 MoveImage(s32 *arg0, s16 arg1, s16 arg2) {
+s32 MoveImage(RECT *rect, int x, int y) {
     s32 packed;
 
-    checkRECT(&D_80015F74, (s32)arg0);
-    if (((s16 *)arg0)[2] == 0 || ((s16 *)arg0)[3] == 0) {
+    checkRECT(D_80015F74, rect);
+    if (rect->w == 0 || rect->h == 0) {
         return -1;
     }
-    packed = ((s32)arg2 << 16) | ((u32)arg1 & 0xFFFF);
-    g_gpu_move_param[2] = arg0[0];
+    packed = (u16)y << 16 | (u16)x;
+    g_gpu_move_param[2] = *(u32 *)&rect->x;
     g_gpu_move_param[3] = packed;
-    g_gpu_move_param[4] = arg0[1];
+    g_gpu_move_param[4] = *(u32 *)&rect->w;
     return g_gpu_dev_table->addque2(g_gpu_dev_table->cwc, g_gpu_move_param,
                                     sizeof(g_gpu_move_param), 0);
 }
 
-extern u32 g_str_clearotag;
+extern const char g_str_clearotag[];
 extern u32 g_gpu_ot_end;
 
 u32 *ClearOTag(u32 *a0, s32 a1) {
     if (g_gpu_ctx.debug_level >= 2) {
-        GPU_printf(&g_str_clearotag, a0, a1);
+        GPU_printf(g_str_clearotag, a0, a1);
     }
     a1--;
     if (a1) {
@@ -202,28 +178,22 @@ void DrawPrim(u8 *a0) {
     dev = (u32 *)g_gpu_dev_table;
     ((void (*)(u32 *, u32))dev[5])(a0 + 4, size);
 }
-void DrawOTag(s32 a0) {
+void DrawOTag(u32 *a0) {
     if (g_gpu_ctx.debug_level >= 2) {
-        GPU_printf(&g_str_drawotag, a0);
+        GPU_printf(g_str_drawotag, a0);
     }
-    {
-        u32 *v0 = (u32 *)g_gpu_dev_table;
-        ((void (*)(u32, s32, s32, s32))v0[2])(v0[6], a0, 0, 0);
-    }
+    g_gpu_dev_table->addque2(g_gpu_dev_table->cwc, a0, 0, 0);
 }
-extern u32 g_str_putdrawenv;
+extern const char g_str_putdrawenv[];
 
 
 DRAWENV *PutDrawEnv(DRAWENV *env) {
-    u32 *dev;
-
     if (g_gpu_ctx.debug_level >= 2) {
-        GPU_printf(&g_str_putdrawenv, env);
+        GPU_printf(g_str_putdrawenv, env);
     }
     SetDrawEnv2(&env->dr_env, env);
     env->dr_env.tag |= 0xFFFFFF;
-    dev = (u32 *)g_gpu_dev_table;
-    ((s32 (*)(u32, DR_ENV *, s32, s32))dev[2])(dev[6], &env->dr_env, 0x40, 0);
+    g_gpu_dev_table->addque2(g_gpu_dev_table->cwc, &env->dr_env, 0x40, 0);
     g_gpu_ctx.draw_env = *env;
     return env;
 }
@@ -698,19 +668,7 @@ s32 _otc(s32 arg0, s32 arg1) {
     }
     return arg1;
 }
-/* The GPU rectangle Sony's libgpu passes to _clr / _dws / _drs.  Evidence:
- * the target loads/stores halfwords at +0x4 (w) and +0x6 (h) and reads the
- * two packed 32-bit GPU packet words at +0x0 (x,y) and +0x4 (w,h). */
-typedef struct {
-    /* 0x0 */ s16 x;
-    /* 0x2 */ s16 y;
-    /* 0x4 */ s16 w;
-    /* 0x6 */ s16 h;
-} GpuRect;
 
-/* 0x8009BF48 (= g_gpu_stat_reg, display.c:18) spelled by its splat name here,
- * as _addque2/_reset (display.c:773/842) already do for the same word. */
-extern volatile s32 *D_8009BF48;
 void _cwc(u32 a0);
 u32 _param(u32 a0);
 
@@ -718,7 +676,7 @@ u32 _param(u32 a0);
  * rect to the VRAM page, build either a 12-word unaligned (mono rectangle)
  * or 5-word aligned (VRAM fill) packet in the DR_ENV buffer, and DMA it.
  * Spelling follows psyz decomp/src/libgpu/sys.c:706-741 (PsyQ 4.0). */
-s32 _clr(GpuRect *rect, u32 color) {
+s32 _clr(RECT *rect, u32 color) {
     u32 ptr;
 
     rect->w = rect->w < 0 ? 0 : (rect->w > g_gpu_ctx.width - 1 ? g_gpu_ctx.width - 1 : rect->w);
@@ -731,7 +689,7 @@ s32 _clr(GpuRect *rect, u32 color) {
         D_800F1858.code[1] = 0xE4FFFFFF;
         D_800F1858.code[2] = 0xE5000000;
         D_800F1858.code[3] = 0xE6000000;
-        D_800F1858.code[4] = 0xE1000000 | *D_8009BF48 & 0x7FF | (color >> 0x1F) << 10;
+        D_800F1858.code[4] = 0xE1000000 | *g_gpu_stat_reg & 0x7FF | (color >> 0x1F) << 10;
         D_800F1858.code[5] = (color & 0xFFFFFF) | 0x60000000;
         D_800F1858.code[6] = *(s32 *)&rect->x;
         D_800F1858.code[7] = *(s32 *)&rect->w;
@@ -743,7 +701,7 @@ s32 _clr(GpuRect *rect, u32 color) {
         /* aligned clear */
         D_800F1858.tag = 0xFFFFFF | 0x05000000;
         D_800F1858.code[0] = 0xE6000000;
-        D_800F1858.code[1] = 0xE1000000 | *D_8009BF48 & 0x7FF | (color >> 0x1F) << 10;
+        D_800F1858.code[1] = 0xE1000000 | *g_gpu_stat_reg & 0x7FF | (color >> 0x1F) << 10;
         D_800F1858.code[2] = (color & 0xFFFFFF) | 0x02000000;
         D_800F1858.code[3] = *(s32 *)&rect->x;
         D_800F1858.code[4] = *(s32 *)&rect->w;
@@ -761,7 +719,7 @@ s32 _clr(GpuRect *rect, u32 color) {
  * GCC 2.7.2) and psyz decomp/src/libgpu/sys.c:745-785 (PsyQ 4.0).  Both ship
  * the same `var_s4` transfer-direction selector and the same `% 16` / `/ 16`
  * split; the spelling here follows them. */
-s32 _dws(GpuRect *rect, s32 *data) {
+s32 _dws(RECT *rect, s32 *data) {
     s32 to_write;
     s32 size;
     s32 var_s0;
@@ -809,7 +767,7 @@ s32 _dws(GpuRect *rect, s32 *data) {
  * odd (non-multiple-of-16) leading words through GP0, then hand the
  * 16-word-aligned bulk to DMA channel 2.  Same shape as _dws above; spelling
  * follows psyz decomp/src/libgpu/sys.c:787-833 (PsyQ 4.0). */
-s32 _drs(GpuRect *rect, s32 *data) {
+s32 _drs(RECT *rect, s32 *data) {
     s32 to_read;
     s32 size;
     s32 var_s0;
@@ -882,7 +840,6 @@ u32 _param(u32 a0) {
 void _addque(s32 a0, s32 a1, s32 a2) {
     _addque2(a0, a1, 0, a2);
 }
-extern volatile s32 *D_8009BF48;
 extern volatile s32 _qin;
 extern volatile s32 _qout;
 
@@ -891,7 +848,6 @@ s32 _exeque();                            /* extern */
 s32 get_alarm();                                /* extern */
 s32 DMACallback(s32, s32 (*)()); /* extern */
 s32 SetIntrMask(s32);                         /* extern */
-extern volatile s32 *D_8009BF54;
 extern volatile s32 _qlog[];
 extern s32 *D_8009BF6C;
 extern s32 D_8009BF70;
@@ -901,11 +857,10 @@ extern s32 D_8009BF84;
 /* ADDQUE2-BEGIN */
 /* LIBGPU/SYS `_addque2` — reference sotn-decomp src/main/psxsdk/libgpu/sys.c:744
  * (older library revision: per-store re-index of the volatile queue head,
- * 0x60-byte slots = func / arg / count / 21 data words). */
-/* GpuQueueItem + `extern volatile GpuQueueItem D_80103680[64];` live in
- * include/gpu.h (aggregate-merge prong (d): header-canonical). */
+ * 0x60-byte slots = func / arg / cb_arg / 21 data words). */
+/* GpuQueueItem and `extern volatile GpuQueueItem _que[64];` are declared in include/gpu.h. */
 
-s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
+s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 cb_arg) {
     s32 i;
 
     set_alarm();
@@ -918,13 +873,13 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
     D_8009BF80 = SetIntrMask(0);
     g_gpu_ctx.unk08 = 1;
     if (g_gpu_ctx.queue_mode == 0 ||
-        (_qin == _qout && !(*D_8009BF54 & 0x01000000) && g_gpu_ctx.drawsync_cb == 0)) {
-        while (!(*D_8009BF48 & 0x04000000)) {
+        (_qin == _qout && !(*g_gpu_dma_chcr & 0x01000000) && g_gpu_ctx.drawsync_cb == 0)) {
+        while (!(*g_gpu_stat_reg & 0x04000000)) {
         }
-        func(arg, count);
+        func(arg, cb_arg);
         _qlog[0] = (s32)func;
-        D_8009BF6C = (s32)arg;
-        D_8009BF70 = count;
+        D_8009BF6C = arg;
+        D_8009BF70 = cb_arg;
         SetIntrMask(D_8009BF80);
         return 0;
     }
@@ -937,7 +892,7 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
     } else {
         _que[_qin].arg = arg;
     }
-    _que[_qin].count = count;
+    _que[_qin].cb_arg = cb_arg;
     _que[_qin].func = func;
     _qin = (_qin + 1) & 0x3F;
     SetIntrMask(D_8009BF80);
@@ -950,28 +905,28 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
  * CheckCallback tail) and was not adopted. Drains the packet queue; when it is empty and a
  * draw is pending, clears the pending flag and calls the DrawSyncCallback. */
 s32 _exeque(void) {
-    if (*D_8009BF54 & 0x01000000) {
+    if (*g_gpu_dma_chcr & 0x01000000) {
         return 1;
     }
     D_8009BF84 = SetIntrMask(0);
-    while (_qin != _qout && !(*D_8009BF54 & 0x01000000)) {
+    while (_qin != _qout && !(*g_gpu_dma_chcr & 0x01000000)) {
         if (((_qout + 1) & 0x3F) == _qin && g_gpu_ctx.drawsync_cb == 0) {
             DMACallback(2, NULL);
         }
-        while (!(*D_8009BF48 & 0x04000000)) {
+        while (!(*g_gpu_stat_reg & 0x04000000)) {
         }
-        _que[_qout].func(_que[_qout].arg, _que[_qout].count);
+        _que[_qout].func(_que[_qout].arg, _que[_qout].cb_arg);
         _qlog[0] = (s32)_que[_qout].func;
         D_8009BF6C = _que[_qout].arg;
         /* FAKE: do-while(0) — its loop notes keep this log store between the arg log store
          * and the _qout advance; without it sched sinks both log stores to the loop test. */
         do {
-            D_8009BF70 = _que[_qout].count;
+            D_8009BF70 = _que[_qout].cb_arg;
         } while (0);
         _qout = (_qout + 1) & 0x3F;
     }
     SetIntrMask(D_8009BF84);
-    if (_qin == _qout && !(*D_8009BF54 & 0x01000000) && g_gpu_ctx.unk08 != 0 &&
+    if (_qin == _qout && !(*g_gpu_dma_chcr & 0x01000000) && g_gpu_ctx.unk08 != 0 &&
         g_gpu_ctx.drawsync_cb != 0) {
         g_gpu_ctx.unk08 = 0;
         ((void (*)(void))g_gpu_ctx.drawsync_cb)();
@@ -981,14 +936,12 @@ s32 _exeque(void) {
 extern void memset(u8 *a0, u8 a1, s32 a2);
 extern s32 SetIntrMask(s32);
 extern s32 _version(s32);
-extern volatile s32 *D_8009BF48;
-extern volatile s32 *D_8009BF54;
 extern volatile s32 _qout;
 extern volatile s32 _qin;
 extern s32 D_8009BF88;
 extern u8 ctlbuf[];
-extern s32 g_str_gpu_timeout;
-extern s32 D_80016044;
+extern const char g_str_gpu_timeout[];
+extern const char D_80016044[];
 extern volatile u32 *g_gpu_dma_madr;
 extern volatile int *D_8009BF64;
 extern volatile s32 _qlog[];
@@ -1002,18 +955,18 @@ s32 _reset(s32 arg0) {
     switch (arg0 & 7) {
     case 5:
     case 0:
-        *D_8009BF54 = 0x401;
+        *g_gpu_dma_chcr = 0x401;
         *D_8009BF64 |= 0x800;
-        *D_8009BF48 = 0;
+        *g_gpu_stat_reg = 0;
         memset(ctlbuf, 0, 0x100);
         memset((u8 *)_que, 0, 0x1800);
         break;
     case 1:
     case 3:
-        *D_8009BF54 = 0x401;
+        *g_gpu_dma_chcr = 0x401;
         *D_8009BF64 |= 0x800;
-        *D_8009BF48 = 0x02000000;
-        *D_8009BF48 = 0x01000000;
+        *g_gpu_stat_reg = 0x02000000;
+        *g_gpu_stat_reg = 0x01000000;
         break;
     }
     SetIntrMask(D_8009BF88);
@@ -1061,8 +1014,8 @@ s32 get_alarm(void) {
     s32 temp_v0;
     if (g_gpu_vcount < VSync(-1) || g_gpu_draw_count++ > 0xF0000) {
         *g_gpu_stat_reg;
-        printf(&g_str_gpu_timeout, (_qin - _qout) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
-        printf(&D_80016044, _qlog[0], D_8009BF6C, D_8009BF70);
+        printf(g_str_gpu_timeout, (_qin - _qout) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
+        printf(D_80016044, _qlog[0], D_8009BF6C, D_8009BF70);
         temp_v0 = SetIntrMask(0);
         _qout = 0;
         D_8009BF88 = temp_v0;
@@ -1576,7 +1529,7 @@ void def_cbread(void);
 
 
 
-extern u32 g_str_cdinit_fail;
+extern const char g_str_cdinit_fail[];
 
 s32 CdInit(void) {
     s32 retries = 4;
@@ -1584,7 +1537,7 @@ loop:
     if (CdReset(1) != 1) {
         retries--;
         if (retries != -1) goto loop;
-        printf(&g_str_cdinit_fail);
+        printf(g_str_cdinit_fail);
         return 0;
     }
     CdSyncCallback((s32)&def_cbsync);

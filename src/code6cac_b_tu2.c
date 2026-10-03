@@ -15,8 +15,6 @@ extern s32 D_8008EA00[][4];
 extern s32 func_8001DB58(void);
 
 extern void player_SetCharId(s32, s32);
-extern u8 D_800A3768;
-extern u8 D_800A36A8;
 extern s16 *func_8004678C(void);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern u8 D_800A384C;
@@ -6329,8 +6327,8 @@ void func_80033BC0(void) {
     u8 b = D_800A391F;
 
     if (a0 == b) {
-        D_800A3768 = 0xFF;
-        D_800A36A8 = 0;
+        g_disp_enable = DISP_DISABLED;
+        g_disp_fade = 0;
         if (a0 == 0x14) {
             u8 z = D_8008D9EC[g_practice_menu_table[0].unk_0A];
             s32 val = 2;

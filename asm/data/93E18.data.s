@@ -610,13 +610,8 @@ nonmatching D_800A3770
 
 dlabel D_800A3770
     /* 93F70 800A3770 00000000 */ .word 0x00000000
-enddlabel D_800A3770
-
-nonmatching D_800A3774
-
-dlabel D_800A3774
     /* 93F74 800A3774 00000000 */ .word 0x00000000
-enddlabel D_800A3774
+enddlabel D_800A3770
 
 nonmatching D_800A3778
 

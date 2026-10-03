@@ -189,7 +189,6 @@ s32 *func_80040510(s32 a0) {
     func_8003E120();
     return ptr;
 }
-extern s32 D_80094B88[];
 void func_80040594(s32 *a0)
 {
     s32 *rmd;
@@ -290,13 +289,13 @@ after_select:
 
 done_cases:
     DrawSync(0);
-    func_80041988(((s16 *)a0)[2], ((s16 *)a0)[4], D_80094B88[((s16 *)a0)[2]], (s32)sec);
+    func_80041988(((s16 *)a0)[2], ((s16 *)a0)[4], g_player_char_ids[((s16 *)a0)[2]], (s32)sec);
 
     {
         s32 flags = a0[0] & (s32)0xFFE0FFFF;
-        s32 bits = (D_80094B88[((s16 *)a0)[2]] & 0x1F) << 16;
+        s32 bits = (g_player_char_ids[((s16 *)a0)[2]] & 0x1F) << 16;
         a0[0] = flags | bits;
-        D_80094B88[((s16 *)a0)[2]] = 0;
+        g_player_char_ids[((s16 *)a0)[2]] = 0;
     }
 
     DrawSync(0);

@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "DrawSync",
+  "body_hash": "0ef3eeba42205766",
+  "summary": "Clean: debug printf with a const char[] format, then g_gpu_dev_table->sync(a0) through the header member (SOTN sys.c:229-233 form).",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}

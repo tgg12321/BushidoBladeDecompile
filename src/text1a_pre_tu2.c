@@ -12,7 +12,6 @@ extern s32 g_player_ptrs[];
 void func_80040A78(s32 arg0);
 
 typedef struct { s32 a, b, c, d, e, f, g, h; } Copy8_40D48;
-extern s32 D_800A9A10[];
 extern s32 D_80094CFC[];
 extern s32 D_800A3820;
 extern void func_800417D0(s32 *);
@@ -28,7 +27,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     s16 *s1;
     s32 ent;
 
-    ent = D_800A9A10[a0];
+    ent = g_player_ptrs[a0];
     if (ent == 0) {
         return;
     }
@@ -201,7 +200,6 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 }
 
 extern s32 D_80094CFC[];
-extern s32 D_800A9A10[];
 extern void math_RotMatrixZYX(s16 *, s32 *);
 extern void func_800523E0(s32 *, s32 *, s32, s32);
 extern void func_80044DE4(s16 *, s16 *, s32, s32);
@@ -209,7 +207,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
     s32 i = 1;
     s32 *tbl = D_80094CFC;
-    s32 base = D_800A9A10[a0];
+    s32 base = g_player_ptrs[a0];
     s16 buf[3];
     s32 ents;
     s32 *out2;
@@ -217,7 +215,6 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     s32 offset;
     u16 *p;
     s32 stptr2;
-    s16 two;   /* FAKE: constant-holder carrying loop1's record-flag value; mechanism: gives loop.c's scan_loop a user pseudo it can count sets on. */
     ents = base + 0x94;
     out2 = (s32 *) (((u8 *) a4) + 0x20);
     do {
@@ -235,9 +232,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
         buf[2] = -p[2];
         math_RotMatrixZYX(buf, out2);
         func_800523E0(a4, out2, a3, ents + i * 0x68 + 0x38);
-        two = 2;
-        *((s16 *) (ents + i * 0x68 + 6)) = two;
-        two = 3; /* FAKE: dead store, never read; mechanism: loop.c count_loop_regs_set sees n_times_set == 2 so scan_loop builds no movable and move_movables cannot hoist the constant out of loop1 (flow.c propagate_block then deletes this store, zero emitted bytes). */
+        *((s16 *) (ents + i * 0x68 + 6)) = 2;
         i++;
     } while (i < 0x12);
     a1 += 0x6C;
@@ -306,7 +301,7 @@ void func_80041430(s32 a0, s32 a1) {
     s32 *base;
     s32 *s0;
     s32 i;
-    base = (s32 *)((u8 *)g_player_ptrs + a0 * 4);
+    base = &g_player_ptrs[a0];
     s0 = (s32 *)(*base + a1);
     *base = (s32)s0;
     save_vc_ctrl(a1, (s16 *)((u8 *)s0 + 0x2C), 0x15);

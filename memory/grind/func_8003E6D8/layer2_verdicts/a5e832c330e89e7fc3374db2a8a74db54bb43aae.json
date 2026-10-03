@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "func_8003E6D8",
+ "body_hash": "a6bc4a88a3cc85c0",
+ "summary": "The grid read is g_stage_collision[row*0x20+col]; the D_800A8FB0 second extern is retired. The GTE islands are unchanged under the existing owner-cluster grant (inline_asm_canonical.txt:387). The bits<<=1 FAKE is labelled with its measured mechanism. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

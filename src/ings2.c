@@ -13,7 +13,7 @@ extern void SpuQuit(void);
 extern s32 g_CdReadCallback_func;
 extern s32 g_sys_video_mode;
 extern u16 g_sys_vblank_count;
-extern u16 *g_sys_irq_counter;
+extern volatile u16 *i_mask; /* libetc intr.c i_mask = (u16 *)0x1F801074, I_MASK (MMIO) */
 extern s32 *g_sys_irq_vtable;
 extern volatile s32 Vcount;
 extern void SpuSetCommonAttr(s32 *);
@@ -158,12 +158,12 @@ u32 CheckCallback(void) {
 }
 
 u32 GetIntrMask(void) {
-    return *g_sys_irq_counter;
+    return *i_mask;
 }
 /* PsyQ 4.0 LIBETC INTR: intr.c v1.76 module state — verbatim-linked Sony
    object; C ref: sotn-decomp src/main/psxsdk/libetc/
    intr.c (intrEnv_t). D_800A1578 = intrEnv; D_800A15B4 = intrEnv.buf[1]
-   (JB_SP); D_800A2604/g_sys_irq_counter/D_800A260C = the module's
+   (JB_SP); D_800A2604/i_mask/D_800A260C = the module's
    i_stat/i_mask/d_pcr MMIO pointer statics (0x1F801070/74/F0). */
 typedef struct {
     u16 interruptsInitialized;   /* +0x00 = D_800A1578 */
@@ -179,47 +179,41 @@ extern volatile u16 *D_800A2604;   /* i_stat = (u16 *)0x1F801070 (MMIO) */
 extern volatile s32 *D_800A260C;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
 extern intrEnv_t D_800A1578;
 
-extern s32 setjmp(u16 *);
+extern s32 setjmp(s32 *);
 extern void trapIntr(void);
 extern void HookEntryInt(s32 *);
 extern s32 startIntrVSync();
 extern s32 startIntrDMA();
+/* FAKE: the BIOS call takes no argument; declared with one for startIntr (see there). */
 extern void _96_remove(s32 *);
 u16 SetIntrMask(u16 arg0) {
-    u16 *ptr = g_sys_irq_counter;
-    u16 old = *ptr;
-    *(volatile u16 *)ptr = arg0;
+    u16 old = *i_mask;
+    *i_mask = arg0;
     return old;
 }
 
 /* startIntr (LIBETC intr.c static) */
-u16 *startIntr(void) {
+intrEnv_t *startIntr(void) {
     if (D_800A1578.interruptsInitialized) {
         return 0;
     }
     /* i_mask deref is MMIO (0x1F801074) — volatile is hardware semantics */
-    *D_800A2604 = (*(volatile u16 *)g_sys_irq_counter = 0);
+    *D_800A2604 = (*i_mask = 0);
     *D_800A260C = 0x33333333;
-    func_800831A4((u16 *)&D_800A1578, 0x41A);
-    if (setjmp((u16 *)D_800A1578.buf) != 0) {
+    func_800831A4(&D_800A1578, 0x41A);
+    if (setjmp(D_800A1578.buf) != 0) {
         trapIntr();
     }
     D_800A1578.buf[1] = (s32)&D_800A1578.stack[1004];
     HookEntryInt(D_800A1578.buf);
     D_800A1578.interruptsInitialized = 1;
     g_sys_irq_vtable[5] = startIntrVSync();
-    {
-        /* v1.76 evidence: the compiled Sony object keeps pCallbacks live in
-           $a0 INTO the _96_remove call (v1.73's plain `_96_remove();` compiles
-           to $v1 here); the v1.76 source
-           passed the pointer through. */
-        s32 r = startIntrDMA();
-        s32 *cb = g_sys_irq_vtable;
-        cb[1] = r;
-        _96_remove(cb);
-    }
+    g_sys_irq_vtable[1] = startIntrDMA();
+    /* FAKE: _96_remove (BIOS A(72h)) takes no argument; passing g_sys_irq_vtable keeps the
+     * table pointer live in $a0 into the call as the target does; `_96_remove()` scores 3. */
+    _96_remove(g_sys_irq_vtable);
     ExitCriticalSection();
-    return (u16 *)&D_800A1578;
+    return &D_800A1578;
 }
 /* PsyQ 4.0 LIBETC INTR: trapIntr + setIntr + stopIntr + restartIntr + memclr
    — verbatim-linked Sony object intr.c v1.76; C ref:
@@ -244,7 +238,7 @@ void trapIntr(void) {
     }
     D_800A1578.inInterrupt = 1;
     while ((mask = (D_800A1578.enabledInterruptsMask & *D_800A2604) &
-                   *(volatile u16 *)g_sys_irq_counter) != 0) {
+                   *i_mask) != 0) {
         for (i = 0; mask && i < 11; ++i, mask >>= 1) {
             if (mask & 1) {
                 *D_800A2604 = ~(1 << i);
@@ -254,10 +248,10 @@ void trapIntr(void) {
             }
         }
     }
-    if (*D_800A2604 & *(volatile u16 *)g_sys_irq_counter) {
+    if (*D_800A2604 & *i_mask) {
         if (D_800A2610++ > 0x800) {
             printf(&D_80016378, *D_800A2604,
-                         *(volatile u16 *)g_sys_irq_counter);
+                         *i_mask);
             D_800A2610 = 0;
             *D_800A2604 = 0;
         }
@@ -275,8 +269,8 @@ static IntrCallback setIntr(s32 irq, IntrCallback handler) {
 
     prevHandler = D_800A1578.handlers[irq];
     if (handler != prevHandler && D_800A1578.interruptsInitialized) {
-        mask = *(volatile u16 *)g_sys_irq_counter;
-        *(volatile u16 *)g_sys_irq_counter = 0;
+        mask = *i_mask;
+        *i_mask = 0;
         if (handler != 0) {
             D_800A1578.handlers[irq] = handler;
             mask = mask | (1 << irq);
@@ -299,7 +293,7 @@ static IntrCallback setIntr(s32 irq, IntrCallback handler) {
         if (irq == 6) {
             ChangeClearRCnt(2, handler == 0);
         }
-        *(volatile u16 *)g_sys_irq_counter = mask;
+        *i_mask = mask;
     }
     return prevHandler;
 }
@@ -310,9 +304,9 @@ static intrEnv_t *stopIntr(void) {
         return 0;
     }
     EnterCriticalSection();
-    D_800A1578.savedMask = *(volatile u16 *)g_sys_irq_counter;
+    D_800A1578.savedMask = *i_mask;
     D_800A1578.savedPcr = *D_800A260C;
-    *D_800A2604 = (*(volatile u16 *)g_sys_irq_counter = 0);
+    *D_800A2604 = (*i_mask = 0);
     *D_800A260C &= 0x77777777;
     ResetEntryInt();
     D_800A1578.interruptsInitialized = 0;
@@ -326,7 +320,7 @@ static intrEnv_t *restartIntr(void) {
     }
     HookEntryInt(D_800A1578.buf);
     D_800A1578.interruptsInitialized = 1;
-    *(volatile u16 *)g_sys_irq_counter = D_800A1578.savedMask;
+    *i_mask = D_800A1578.savedMask;
     *D_800A260C = D_800A1578.savedPcr;
     ExitCriticalSection();
     return &D_800A1578;

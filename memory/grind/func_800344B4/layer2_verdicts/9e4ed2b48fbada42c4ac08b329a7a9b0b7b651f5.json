@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "func_800344B4",
+ "body_hash": "42a70f2c0ed1b5e2",
+ "summary": "Four g_disp_enable = 1 stores through the game.h declaration. The second extern D_800A3768 is gone. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

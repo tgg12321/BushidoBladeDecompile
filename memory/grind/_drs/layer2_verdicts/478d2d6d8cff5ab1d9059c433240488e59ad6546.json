@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "_drs",
+  "body_hash": "a5bad0ff73bf66b6",
+  "summary": "Clean: RECT * parameter, SOTN/psyz shape, MMIO pointers, nothing unlabelled or false.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}

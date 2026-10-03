@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "gpu_SetDrawEnvBg",
+ "body_hash": "69528838a0ba1b06",
+ "summary": "for-loop over g_gpu_db[i].draw.isbg plus the verbatim PsyQ setRGB0 macro. The goto loop, the cross-symbol g_gpu_db_plus_0x18 offset walk and the u8 base are gone. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80040594",
+  "body_hash": "3424399aed601986",
+  "summary": "g_player_char_ids replaces the D_80094B88 second extern at all three sites; no FAKEs; raw a0 offsets have no header type; sandbox 0, OOB full build SHA1 == oracle."
+}

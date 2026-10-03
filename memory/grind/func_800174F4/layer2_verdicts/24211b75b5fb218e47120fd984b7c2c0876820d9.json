@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "func_800174F4",
+ "body_hash": "cfa7ddc0d6e4ddc1",
+ "summary": "Only change: the private DrawEnv copy becomes the gpu.h DRAWENV (same layout). Nothing else in the body changed and nothing in it is false. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

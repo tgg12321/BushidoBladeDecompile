@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8006E068",
+  "body_hash": "2e552448339f175f",
+  "summary": "GpuDb *t = &g_gpu_db[parity] replaces the byte-offset u8* arithmetic; sandbox 0."
+}

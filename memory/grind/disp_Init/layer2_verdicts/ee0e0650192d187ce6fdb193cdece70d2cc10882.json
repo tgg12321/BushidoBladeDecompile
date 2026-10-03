@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "disp_Init",
+ "body_hash": "682d48c71b5ee778",
+ "summary": "SetDefDrawEnv(&g_gpu_db[i].draw) / SetDefDispEnv(&g_gpu_db[i].disp) on GpuDb[2] (gpu.h). The u8 base and the +0x4090/+0x5C/+0x40EC offsets are gone. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

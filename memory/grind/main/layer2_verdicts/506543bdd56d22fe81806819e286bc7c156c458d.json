@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "main",
+  "body_hash": "26ac086d87b1d7c7",
+  "summary": "Clean: dispatch is g_module_func_tbl[D_800A3834]() through the typed array in game.h. The alias D_8008D090 is gone from C and the linker script. The tbl FAKE is labelled and load-bearing (removing it changes main heavily, tmp/l2v/B5/v/m_notbl.c). prim_base names the per-parity primitive-buffer base truthfully, and the uninitialised env/idx arguments match the target's $s2/$s1 moves at 0x80017254-5C."
+}

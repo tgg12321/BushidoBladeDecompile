@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8006E10C",
+  "body_hash": "2018543090831e5e",
+  "summary": "g_gpu_db_plus_0x6C/0x6D/0x40FC/0x40FD handles and base/base2 arithmetic retired for [0|1].draw/.disp/.isinter/.isrgb24 (offsets verified); PsyQ-true libgpu prototypes; ff0 fence FAKE labelled, measured 13; sandbox 0."
+}

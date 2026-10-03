@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "trapIntr",
+  "body_hash": "176deb965893164c",
+  "summary": "PASS: SOTN trapIntr shape; i_stat/i_mask MMIO pointers verified (0x1F801070/74)."
+}

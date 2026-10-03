@@ -11,17 +11,16 @@
  * rodata too, breaking their fixed addresses. The sub-TU isolates the
  * strings so only they land at the 0x80010000 slot.
  *
- * Evidence (§8.1): grep across src/ shows these symbols (and their friendly
- * aliases g_str_overflow / g_str_eff_init / g_str_limit / g_str_prim_overflow)
- * are referenced ONLY from ings.c. The build-date string at D_8001004C is
- * referenced indirectly via the .data table D_800A30DC.
+ * Evidence (§8.1): grep across src/ shows these strings are referenced ONLY
+ * from ings.c. The build-date string g_str_build_date is referenced
+ * indirectly via the .data table D_800A30E0.
  *
  * Bracket-sized to match the asm/data block's exact byte content including
  * alignment padding (104 bytes total). */
 #include "common.h"
 
-const char D_80010000[12] = "OVER FLOW\n";
-const char D_8001000C[28] = "eff_init:%08x size:%08x\n";
-const char D_80010028[12] = "LIMIT:%08x\n";
-const char D_80010034[24] = "common prim over flow\n";
-const char D_8001004C[28] = "Fri Aug  7 22:26:32 1998\n";
+const char g_str_overflow[12] = "OVER FLOW\n";
+const char g_str_eff_init[28] = "eff_init:%08x size:%08x\n";
+const char g_str_limit[12] = "LIMIT:%08x\n";
+const char g_str_prim_overflow[24] = "common prim over flow\n";
+const char g_str_build_date[28] = "Fri Aug  7 22:26:32 1998\n";

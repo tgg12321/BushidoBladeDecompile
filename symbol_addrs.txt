@@ -112,7 +112,7 @@ _svm_vab_count = 0x80107808; // active sound channel count  // data-wave 2026-09
 
 // === System / IRQ ===
 g_sys_irq_vtable = 0x800A2600; // interrupt handler vtable
-g_sys_irq_counter = 0x800A2608; // interrupt counter register
+i_mask = 0x800A2608; // libetc intr.c I_MASK register pointer (0x1F801074); was g_sys_irq_counter
 g_sys_vblank_count = 0x800A157A; // VBlank counter
 // data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined
 g_CdReadMode_value = 0x800A1500; // system timer value  // data-wave 2026-09-24: was g_sys_timer
@@ -170,8 +170,7 @@ g_pad_buf = 0x800FF580; // pad data buffer  // data-wave 2026-09-24: was g_pad_d
 D_800A324A = 0x800A324A; // active pad/selection  // data-wave 2026-09-25: was g_pad_selection
 
 // === Display ===
-g_gpu_db = 0x800F7438; // framebuffer base  // data-wave 2026-09-24: was g_disp_fb_base
-g_gpu_db_plus_0x18 = 0x800F7450; // framebuffer flag  // data-wave 2026-09-24: was g_disp_fb_flag
+g_gpu_db = 0x800F7438; // GpuDb[2] display double buffer (DRAWENV, DISPENV, OT per frame)  // data-wave 2026-09-24: was g_disp_fb_base
 // data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined
 g_disp_enable = 0x800A3768; // display enable
 g_disp_fade = 0x800A36A8; // display fade
@@ -218,7 +217,7 @@ g_str_bbm_s123 = 0x800103C0; // S123.BBM
 // === Kengo-derived data symbol names ===
 menuDat = 0x8008DCCC;
 cpu_practice_honmokuroku_data_tbl = 0x8008E778;
-g_cd_file_table = 0x8008EC34;  // data-wave 2026-09-24: was SpecialCam
+g_cd_file_table = 0x8008EC34;  // CD file table CamPair[159]  // data-wave 2026-09-24: was SpecialCam
 StatusUpBuf = 0x800906A6;
 InfoPosYTbl1 = 0x80099D54;
 UesrWorkDef = 0x8009ADD8;

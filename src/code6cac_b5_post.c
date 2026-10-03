@@ -31,17 +31,14 @@ s32 cdrom_IsIdle(void) {
     return D_80101E58.rec.unk02 == 0;
 }
 s32 cdrom_StartRead(s32 a0, s32 a1) {
-    extern u8 g_cd_file_table;
-    s32 sval;
     s32 reloaded;
 
     if (D_80101E58.rec.unk02 != 0) {
         return 0;
     }
 
-    sval = ((s32)(a0 << 16)) >> 13;
     D_80101E58.rec.unk00 = a0;
-    D_80101E58.rec.pair = *(CamPair *)((u8 *)&g_cd_file_table + sval);
+    D_80101E58.rec.pair = g_cd_file_table[(s16)a0];
     D_80101E58.rec.unk1C = a1;
     D_80101E58.rec.unk08 = 0;
     D_80101E58.rec.unk02 = 2;
@@ -71,7 +68,7 @@ void cdrom_Pause(void) {
     D_80101E58.unk04 = 0;
 }
 u32 func_80036F28(s32 arg0) {
-    return (&g_cd_file_table_plus_0x4)[arg0 * 2];
+    return g_cd_file_table[arg0].b;
 }
 void game_FrameLoop(void) {
     u16 *p;
@@ -97,16 +94,10 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
         return 0;
     }
 
-    {
-        extern u8 g_cd_file_table;
-        D_80101E58.rec.unk00 = arg0;
-        D_80101E58.rec.pair = *(CamPair *)(&g_cd_file_table + D_80101E58.rec.unk00 * 8);
-    }
-
-    {
-        extern u8 g_cd_file_table;
-        D_80101E58.rec.unk14 = CdPosToInt((s32)(&g_cd_file_table + D_80101E58.rec.unk00 * 8)) + (*(u32 *)((u8 *)&g_cd_file_table_plus_0x4 + (D_80101E58.rec.unk00 << 3)) >> 11) - 0x96;
-    }
+    D_80101E58.rec.unk00 = arg0;
+    D_80101E58.rec.pair = g_cd_file_table[D_80101E58.rec.unk00];
+    D_80101E58.rec.unk14 = CdPosToInt((s32)&g_cd_file_table[D_80101E58.rec.unk00]) +
+                           ((u32)g_cd_file_table[D_80101E58.rec.unk00].b >> 11) - 0x96;
 
     if (arg1 < 0) {
         D_80101E58.rec.unk34 = 0;
@@ -133,7 +124,7 @@ s32 func_80037110(s32 arg0) {
     v0 = cdrom_StartAudio(v0, s0[1]);
     if (v0 != 0) {
         if (*(s32 *)(s0 + 4) != -1) {
-            v0 = CdPosToInt((s32)&g_cd_file_table + (s32)D_80101E58.rec.unk00 * 8);
+            v0 = CdPosToInt((s32)&g_cd_file_table[D_80101E58.rec.unk00]);
             D_80101E58.rec.unk14 = v0 + *(s32 *)(s0 + 4);
         }
         return 1;
@@ -208,23 +199,21 @@ void cdrom_LoadExec(EXEC *dest) {
     u8 sp_buf[0x800];
     u8 sp_buf2[8];
     s32 index;
-    s32 table_base;
     s32 v0;
     s32 pos;
     s32 mode;
 
     mode = 0x80; /* CdlModeSpeed - double-speed transfer */
-    index = func_80036EA8(6, 0) << 3;
-    table_base = (s32)&g_cd_file_table;
+    index = func_80036EA8(6, 0);
 
     for (;;) {
-        CdControl(2, (u8 *)(index + table_base), 0);
+        CdControl(2, (u8 *)&g_cd_file_table[index], 0);
         v0 = cdrom_ReadWait(0x800, (s32)sp_buf, mode);
         if (v0 != 0) continue;
 
         *dest = *(EXEC *)&sp_buf[0x10];
 
-        pos = CdPosToInt(index + table_base);
+        pos = CdPosToInt((s32)&g_cd_file_table[index]);
         CdIntToPos(pos + 1, (s32)sp_buf2);
         CdControl(2, sp_buf2, 0);
         v0 = cdrom_ReadWait(dest->t_size, dest->t_addr, mode);
@@ -268,12 +257,12 @@ void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     s32 v0;
 
     v0 = func_80036EA8(6, a2);
-    sp[0] = (s32)&g_cd_file_table + v0 * 8;
+    sp[0] = (s32)&g_cd_file_table[v0];
     sp[1] = a3;
     sp[2] = a0;
     sp[3] = a1;
     v0 = func_80036EA8(6, 2);
-    sp[4] = (s32)&g_cd_file_table + v0 * 8;
+    sp[4] = (s32)&g_cd_file_table[v0];
     sp[5] = a4;
     v0 = func_800392B8();
     sys_Exec(6, sp, v0 + 0x7FC);

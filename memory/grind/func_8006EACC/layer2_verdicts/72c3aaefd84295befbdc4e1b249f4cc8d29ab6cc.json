@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8006EACC",
+  "body_hash": "5753878dbb4cd83a",
+  "summary": "D_800A35C0 = (s32)&g_gpu_db[parity] (the static is s32-typed) replaces the byte-offset sum; sandbox 0."
+}

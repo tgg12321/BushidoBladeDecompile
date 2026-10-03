@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "CdInit",
+  "body_hash": "4fcacf5a876b2b82",
+  "summary": "PASS: only the string extern changed; retry loop truthful. Debt: under-typed CdSyncCallback/CdReadCallback (s32) prototypes, CdReadyCallback implicitly declared, code6cac.h declares CdInit void."
+}

@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "func_80036F28",
+ "body_hash": "84bd61800e4bf86d",
+ "summary": "Returns g_cd_file_table[arg0].b, the file size, through the declaration. The per-word g_cd_file_table_plus_0x4 handle is retired. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800466C0",
+  "body_hash": "a1222964032a01e8",
+  "summary": "switch on the declared s16 g_stage_id with true case values 4/7/18/13/11 replaces the u16 D_80099478 second extern and the (s16)(x-4) rebasing; sandbox 0."
+}

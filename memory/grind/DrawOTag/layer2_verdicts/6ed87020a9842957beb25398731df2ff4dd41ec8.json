@@ -1,0 +1,11 @@
+{
+  "decision": "PASS",
+  "function": "DrawOTag",
+  "body_hash": "0c07ee6a5fadbb03",
+  "summary": "Clean: printf with a const char[] format, then addque2(cwc, p, 0, 0) through the header members. The s32 parameter under-types the OT pointer (debt; u32 * is byte-identical).",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "Parameter s32 a0 is an OT pointer; ings.c declares extern void DrawOTag(u32 *). void DrawOTag(u32 *a0) measured identical (tmp/l2v/B4/v/vE.c)."
+  ]
+}

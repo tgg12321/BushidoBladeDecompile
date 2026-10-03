@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "SetDispMask",
+  "body_hash": "fcf8e702be147ddc",
+  "summary": "Clean: debug printf, memset of disp_env on mask 0, then g_gpu_dev_table->ctl(a0 ? 0x03000000 : 0x03000001). Both GP1(03h) values are spelled literally and truthfully. psx.h's renamed GP1_DISP_OFF is accurate and unused."
+}

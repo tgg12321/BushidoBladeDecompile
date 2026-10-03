@@ -15,7 +15,7 @@
 
 /* GP1 Commands (sent to GPU status/control port) */
 #define GP1_RESET_GPU       0x00000000  /* GP1(00h) - Reset GPU */
-#define GP1_DISP_ENABLE     0x03000001  /* GP1(03h) - Display enable (mask=1) */
+#define GP1_DISP_OFF        0x03000001  /* GP1(03h) bit0=1: display off (0x03000000 turns it on) */
 #define GP1_DMA_DIR         0x04000000  /* GP1(04h) - DMA direction / data request */
 #define GP1_DMA_DIR_FIFO    0x04000002  /* GP1(04h) - DMA direction: FIFO (linked list) */
 #define GP1_GPU_INFO        0x10000000  /* GP1(10h) - Get GPU info */

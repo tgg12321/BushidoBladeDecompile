@@ -166,7 +166,7 @@ extern void StopCARD(void);
 
 
 
-extern s32 g_str_memcard_fmt;
+extern const char g_str_memcard_fmt[];
 extern s32 g_memcard_file_list;
 
 
@@ -271,7 +271,7 @@ s32 memcard_CountFiles(s32 arg0, s32 arg1) {
     s32 sp10[8];
 
     var_s0 = (s32 *)&g_memcard_file_list;
-    sprintf(sp10, (s32)(&g_str_memcard_fmt), arg0, arg1);
+    sprintf(sp10, g_str_memcard_fmt, arg0, arg1);
     var_s1 = 0;
     if (firstfile(sp10, var_s0) != 0) {
         do {

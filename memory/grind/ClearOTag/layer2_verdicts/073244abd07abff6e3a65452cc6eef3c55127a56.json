@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "ClearOTag",
+  "body_hash": "36e6423b083710fa",
+  "summary": "PASS: g_str_clearotag const char[]; manual setlen/setaddr on the u32 OT entry is a truthful spelling; no FAKE needed."
+}

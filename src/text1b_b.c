@@ -61,7 +61,6 @@ extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 extern s32 SetSemiTrans(void *, s32);
 extern s32 SetTile(void *);
-extern u8 g_gpu_db;
 extern s32 SetDrawArea();
 extern s32 func_8006E480();
 extern s32 func_8007352C();
@@ -90,7 +89,6 @@ typedef struct EnvA {
     u8   col_g;
     u8   col_b;
 } EnvA;
-extern u8 g_gpu_db;  /* one type per TU: all uses here take (s32)&g_gpu_db */
 s32 func_8006D74C(s32 arg0, s32 arg1);
 s32 func_8006D7FC(void);
 extern s32 func_800692C0();
@@ -1447,7 +1445,7 @@ void func_80077724(s32 arg0, s32 arg1) {
     S7724 s;
     s32 *p;
     s32 temp_v1;
-    SELWORK->f24 = &g_gpu_db + (D_800A36AC & 1) * 0x4090;
+    SELWORK->f24 = &g_gpu_db[D_800A36AC & 1];
     temp_v1 = SELWORK->f30 + 1;
     SELWORK->f34 = SELWORK->f34 + 1;
     SELWORK->f30 = temp_v1;

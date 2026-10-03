@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "get_alarm",
+  "body_hash": "2471f241a4fb6148",
+  "summary": "Clean: const char[] formats, SOTN get_alarm shape (the bare *GPU_STATUS read is Sony's), _reset(1) body inline, volatile _qin/_qout/_qlog allowlisted. temp_v0 holds a real value.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "D_80016044 keeps its splat name (the func=(%08x)(%08x,%08x) string).",
+    "temp_v0 is a register-derived name; a neutral name such as old_mask would read better."
+  ]
+}

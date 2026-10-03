@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "cdrom_StartAudio",
+ "body_hash": "ac1d1029428d61a7",
+ "summary": "Element copy, &g_cd_file_table[i] to CdPosToInt and (u32)[i].b >> 11 all go through the one declaration. The block-scope u8 externs and the g_cd_file_table_plus_0x4 alias are retired. The (u32) cast is the real logical shift of the size. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

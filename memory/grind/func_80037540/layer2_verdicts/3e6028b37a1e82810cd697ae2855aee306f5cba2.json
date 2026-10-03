@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "func_80037540",
+ "body_hash": "cf8b343e5533c67e",
+ "summary": "argv entries are (s32)&g_cd_file_table[v0]. sp[8] is the carve-out-2 oversized argv buffer, already annotated with its frame derivation. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

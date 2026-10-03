@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80077724",
+  "body_hash": "c85f8d64c97d1694",
+  "summary": "SELWORK->f24 = &g_gpu_db[D_800A36AC & 1] via the GpuDb[2] header type (layout 0x5C+0x14+0x4020 = 0x4090, verified); sandbox 0."
+}

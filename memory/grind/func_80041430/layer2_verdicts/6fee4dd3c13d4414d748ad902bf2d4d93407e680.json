@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80041430",
+  "body_hash": "93110ad0fb550503",
+  "summary": "`&g_player_ptrs[a0]` replaces the (u8*)g_player_ptrs + a0*4 byte-offset cast; no FAKEs; sandbox 0."
+}

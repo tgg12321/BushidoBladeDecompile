@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "eff_Init",
+ "body_hash": "192c53d7c6ed9f59",
+ "summary": "printf(g_str_eff_init, ...) uses the defined const char[] (ings_strings.c); the u8 alias extern is retired. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

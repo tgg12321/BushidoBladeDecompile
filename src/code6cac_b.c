@@ -51,8 +51,6 @@ extern void player_SetCharId(s32, s32);
 
 
 
-extern u8 D_800A3768;
-extern u8 D_800A36A8;
 
 
 

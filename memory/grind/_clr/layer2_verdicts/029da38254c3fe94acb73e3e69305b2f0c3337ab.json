@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "_clr",
+  "body_hash": "e8ec188c63a66257",
+  "summary": "Clean: RECT * (header type), in-place clamp, DR_ENV packet built through the GpuDrEnv aggregate, MMIO status pointer, word reads of x|y and w|h as in SOTN/psyz LOW().",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}

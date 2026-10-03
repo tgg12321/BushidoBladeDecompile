@@ -36,7 +36,6 @@ void func_800343F0(void) {
 }
 
 /* Declarations from the file this TU was split from (code6cac_b.c). */
-extern u8 D_800A3768;
 extern void eff_Init(void);
 void func_800338CC(void);
 void func_80033BC0(void);
@@ -55,7 +54,7 @@ void func_800344B4(void) {
     switch (D_800A38DC) {
     case 6:
         D_80102778.unk_E = 1;
-        D_800A3768 = 1;
+        g_disp_enable = 1;
         D_800A3834 = 0;
         D_800A36F6 = (D_800A38A0 != 0);
         goto skip_clear;
@@ -70,7 +69,7 @@ void func_800344B4(void) {
     case 1:
         D_80102778.unk_4[5] = 1;
         func_800338CC();
-        D_800A3768 = 1;
+        g_disp_enable = 1;
         func_80033BC0();
         goto skip_clear;
 
@@ -84,7 +83,7 @@ void func_800344B4(void) {
         D_800A3728 = 0;
         D_800A36A4 = 0x22;
         func_80033DF4();
-        D_800A3768 = 1;
+        g_disp_enable = 1;
         break;
 
     case 5:
@@ -121,7 +120,7 @@ void func_800344B4(void) {
         break;
 
     case 4:
-        D_800A3768 = 1;
+        g_disp_enable = 1;
         break;
     }
 

@@ -3118,11 +3118,6 @@ nonmatching g_cd_file_table
 
 dlabel g_cd_file_table
     /* 7F434 8008EC34 01086800 */ .word 0x00680801
-enddlabel g_cd_file_table
-
-nonmatching g_cd_file_table_plus_0x4
-
-dlabel g_cd_file_table_plus_0x4
     /* 7F438 8008EC38 00C07603 */ .word 0x0376C000
     /* 7F43C 8008EC3C 07271900 */ .word 0x00192707
     /* 7F440 8008EC40 140E0000 */ .word 0x00000E14
@@ -3440,7 +3435,7 @@ dlabel g_cd_file_table_plus_0x4
     /* 7F920 8008F120 00B86102 */ .word 0x0261B800
     /* 7F924 8008F124 61566100 */ .word 0x00615661
     /* 7F928 8008F128 14580200 */ .word 0x00025814
-enddlabel g_cd_file_table_plus_0x4
+enddlabel g_cd_file_table
 
 nonmatching D_8008F12C
 

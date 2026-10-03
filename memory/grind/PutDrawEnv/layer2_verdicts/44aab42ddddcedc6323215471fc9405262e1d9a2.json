@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "PutDrawEnv",
+  "body_hash": "1d2efc433a28097e",
+  "summary": "Clean: the unused dev local is gone. This is the SOTN PutDrawEnv shape: SetDrawEnv2, tag |= 0xFFFFFF, addque2(cwc, &dr_env, 0x40, 0), then the draw_env copy."
+}

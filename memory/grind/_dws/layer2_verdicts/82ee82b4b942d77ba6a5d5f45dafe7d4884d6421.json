@@ -1,0 +1,11 @@
+{
+  "decision": "PASS",
+  "function": "_dws",
+  "body_hash": "77464c60c63a59d7",
+  "summary": "Clean: RECT * parameter. var_s4 reproduces real target logic (the target tests $s5 and selects 0xB0000000 vs 0xA0000000 at run time, asm/funcs/_dws.s 0x8007CF68). SOTN sys.c:608-655 matches the same shape. Removing it drops target instructions (score 15).",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "The header comment calls var_s4 a 'transfer-direction selector'. It could add that it is constant 0 here (the 0xB0000000 arm never runs)."
+  ]
+}

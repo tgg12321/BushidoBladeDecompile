@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "cdrom_LoadExec",
+ "body_hash": "d1bc962142667347",
+ "summary": "index is the file number; both uses are &g_cd_file_table[index] on the one CamPair[159] declaration. table_base, the <<3 byte offset and the cross-symbol +4 handle are gone. No asm, volatile or FAKE. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

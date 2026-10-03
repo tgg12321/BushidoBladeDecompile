@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "func_8003EB84",
+ "body_hash": "a26d4b459574c9d7",
+ "summary": "The grid read is g_stage_collision[t4*0x20+t1] through the single file-scope extern; the D_800A8FB0 duplicate is gone. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

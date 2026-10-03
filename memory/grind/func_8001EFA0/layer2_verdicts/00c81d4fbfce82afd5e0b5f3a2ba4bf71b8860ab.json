@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "func_8001EFA0",
+ "body_hash": "0d41a3f57d8f2069",
+ "summary": "Only change: g_disp_enable = 2 through game.h. The s8 D_800A3768 second extern is gone. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

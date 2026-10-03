@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "startIntr",
+  "body_hash": "6a2b1c110633b1ec",
+  "summary": "Clean: intrEnv_t * return, setjmp(s32 *) with D_800A1578.buf, memclr(&intrEnv, 0x41A), callbacks [5]/[1]. This is SOTN intr.c:79-96. The _96_remove(g_sys_irq_vtable) argument is FAKE-labelled at both the prototype and the call, and it is load-bearing: _96_remove() gives 3 instruction diffs (tmp/l2v/B5/v/i_noarg.c)."
+}

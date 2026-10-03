@@ -1,0 +1,13 @@
+{
+  "decision": "PASS",
+  "function": "_addque2",
+  "body_hash": "11a91dc4123d0c79",
+  "summary": "Items 1-5 met. sandbox --disable all = 0 (184/184). Round 3's only defect, the false 'count' slot claim, is fixed: the header comment now reads func / arg / cb_arg / 21 data words, which matches GpuQueueItem in include/gpu.h:148-153 (3 + 21 words = 0x60). The parameter name cb_arg and the D_8009BF6C = arg / D_8009BF70 = cb_arg logs are truthful. MMIO goes through the typed g_gpu_stat_reg/g_gpu_dma_chcr handles (the splat aliases D_8009BF48/54 are retired). The volatile _que/_qin/_qlog are allowlist rows backed by dated Judge grants, and _que/_qin match Sony's own qualifiers in SOTN sys.c:58/96 (static volatile). No FAKEs, no asm, no second declaration of the same bytes.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "Header comment cites sotn sys.c:744; the definition is at :745.",
+    "display.c declares `extern volatile s32 _qlog[]` and `extern s32 D_8009BF70` twice (lines ~851 and ~947). _qlog is an incomplete array, but its object is one word, with D_8009BF6C/D_8009BF70 as separate splat-named words.",
+    "The caller _addque (display.c:841) calls _addque2 before any prototype is in scope, passing s32 where a function pointer is expected."
+  ]
+}

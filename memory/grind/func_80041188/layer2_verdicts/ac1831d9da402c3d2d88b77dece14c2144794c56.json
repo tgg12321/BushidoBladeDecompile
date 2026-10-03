@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80041188",
+  "body_hash": "f4405129f9c38564",
+  "summary": "Clean: the 'two' cluster and both orphan FAKE comments are gone, and the flag is stored as the literal 2. out3 is a once-written local holding a real, consumed value (loop 2's output-matrix pointer), which is ordinary C under ordinary-c-judge-decidable's once-written relaxation."
+}

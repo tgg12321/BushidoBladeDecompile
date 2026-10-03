@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "checkRECT",
+  "body_hash": "3859cf44a57edb46",
+  "summary": "Clean: checkRECT(const char *, RECT *) reads rect->x/y/w/h, and its format strings are now typed const char[]. The goto ladder is a truthful spelling of SOTN sys.c:236's switch, with limits from g_gpu_ctx.width/height."
+}

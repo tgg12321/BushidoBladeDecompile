@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "_exeque",
+  "body_hash": "18061890fa4c0361",
+  "summary": "Clean: drains _que through the header aggregate (cb_arg field), with allowlisted volatile _que/_qin/_qout/_qlog and the Q95 field-level unk08. The do-while(0) FAKE is annotated and load-bearing: unwrapped, _exeque differs at 117 of 263 instructions (tmp/l2v/B5/v/exNoDo.c)."
+}

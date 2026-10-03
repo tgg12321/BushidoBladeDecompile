@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "get_alarm",
+  "body_hash": "3c255a3002bee045",
+  "summary": "PASS: string now const char[]; bare `*g_gpu_stat_reg;` read is Sony's (SOTN libgpu sys.c get_alarm); _qlog allowlisted; temp_v0 ordering byte-neutral but truthful. Debt: `extern s32 D_80016044` (a 24-byte string) under-typed."
+}

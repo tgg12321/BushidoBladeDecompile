@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "sys_Panic",
+ "body_hash": "6eafccabd55c7351",
+ "summary": "printf(g_str_overflow) uses the defined const char[]; the u8 alias extern is retired. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

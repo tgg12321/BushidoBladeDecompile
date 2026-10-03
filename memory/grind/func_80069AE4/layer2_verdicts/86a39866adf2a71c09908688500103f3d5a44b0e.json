@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80069AE4",
+  "body_hash": "b40a865f26ee4455",
+  "summary": "Third parameter typed GpuDb * to match its callers' argument and truthfully named unused_arg (body never reads it); sandbox 0."
+}

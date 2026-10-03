@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "func_80016E60",
+  "body_hash": "021cb24f1bf281ef",
+  "summary": "prim_base is truthful. Both FAKE labels are accurate: removing ot_base scores 4, unwrapping the do-while scores 21 (re-measured, tmp/l2v/B4/v/e60_noot.c / e60_nodo.c). GpuDb is reached through the header aggregate.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "Local u8 *ot[2] holds two 1-entry ordering tables (tag words) and is cast to u32 * through g_gpu_ot_ptr.",
+    "func_80019568() is called with no argument through an unprototyped extern (the target leaves $a0 unset)."
+  ]
+}

@@ -5,6 +5,7 @@
 #include "game.h"
 #include "code6cac.h"
 #include "gte.h"
+#include "gpu.h"
 
 /* func_80060A68 .. func_80060E38 moved here from text1b.c: the file boundary follows the per-file gp evidence
  * (owner ruling Q65). */
@@ -378,7 +379,6 @@ extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 extern s32 SetSemiTrans(void *, s32);
 extern s32 SetTile(void *);
-extern u8 g_gpu_db;
 extern s32 SetDrawArea();
 extern s32 SetPolyG4();
 extern s32 func_8006E480();
@@ -3891,7 +3891,7 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
 }
 s32 func_800693CC(s32 held, s32 pressed) {
     extern s32 D_8009BC08;
-    extern void func_80069AE4(s32 *, s32, s32);
+    extern void func_80069AE4(s32 *, s32, GpuDb *);
     extern void func_8006A880(u8 *, u16 *, s32);
     extern void func_80069F80(s32 *, s32);
     extern void func_8006A1A0(s32 *, s32);
@@ -3901,8 +3901,8 @@ s32 func_800693CC(s32 held, s32 pressed) {
      * (sp+0x40 / sp+0x48); separate locals give the wrong frame. */
     s32 context[15];
     s32 result;
-    s32 render_base;
-    render_base = ((D_800A36AC & 1) * 0x4090) + (s32)&g_gpu_db;
+    GpuDb *render_base;
+    render_base = &g_gpu_db[D_800A36AC & 1];
     func_8006E390(context, &D_800A3518);
     context[12] = (pressed & 0xFFFF) | ((u32)pressed >> 16);
     result = func_800692C0((u32 *)&context[12], 0,
@@ -4100,7 +4100,7 @@ typedef struct {
 extern void SetPolyF4(u8 *p);
 extern void func_80069A8C(u8 *p);
 
-void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
+void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
     u8 *p;
     u8 *poly;
     s32 *qbase;
@@ -5158,9 +5158,9 @@ const u8 D_800159A0[16] = "warning\n";
 
 void func_8006B898(s32 arg0, s32 arg1) {
     s32 sp10[10];
-    u8 *t;
+    GpuDb *t;
     D_800A3514 += 1;
-    t = ((D_800A36AC & 1) * 0x4090) + &g_gpu_db;
+    t = &g_gpu_db[D_800A36AC & 1];
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
     ((void (*)())func_8006B120)(sp10);
@@ -5423,9 +5423,9 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
 extern s32 func_8006B92C();
 s32 func_8006C168(s32 arg0, s32 arg1) {
     s32 sp10[22];
-    u8 *t;
+    GpuDb *t;
     D_800A3514 += 1;
-    t = ((D_800A36AC & 1) * 0x4090) + &g_gpu_db;
+    t = &g_gpu_db[D_800A36AC & 1];
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
     func_8006BB68(sp10);
@@ -5947,10 +5947,10 @@ extern void func_8006C21C(s32 *);
 extern s32 func_8006CFBC(s32 *);
 void func_8006D338(s32 arg0, s32 arg1) {
     s32 sp10[22];
-    u8 *t;
+    GpuDb *t;
     s32 r;
     D_800A3514 += 1;
-    t = ((D_800A36AC & 1) * 0x4090) + &g_gpu_db;
+    t = &g_gpu_db[D_800A36AC & 1];
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 2, t);
     func_8006C21C(sp10);
@@ -6068,7 +6068,6 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
     }
     return result;
 }
-extern u8 g_gpu_db;  /* one type per TU: all uses here take (s32)&g_gpu_db */
 
 
 
@@ -6077,11 +6076,11 @@ extern s32 func_8006D5D4(s32, u32);
 s32 func_8006D74C(s32 arg0, s32 arg1) {
     s32 sp_buf[22];
     s32 result;
-    s32 ptr_offset;
+    GpuDb *db;
     D_800A3514 += 1;
-    ptr_offset = ((D_800A36AC & 1) * 0x4090) + (s32)&g_gpu_db;
+    db = &g_gpu_db[D_800A36AC & 1];
     func_8006E390((s32)&sp_buf[0], (s32)&D_800A3518);
-    func_80069AE4((s32)&sp_buf[0], 1, ptr_offset);
+    func_80069AE4((s32)&sp_buf[0], 1, db);
     func_8006D3DC((s32)&sp_buf[0]);
     result = func_8006D5D4(arg0, arg1);
     func_8005C6D0();
@@ -6333,27 +6332,23 @@ s32 func_8006DF68(s32 arg0, u32 arg1) {
 extern s32 func_8006DF68();
 void func_8006E068(s32 arg0, s32 arg1) {
     s32 sp10[22];
-    u8 *t;
+    GpuDb *t;
     D_800A3514 += 1;
-    t = ((D_800A36AC & 1) * 0x4090) + &g_gpu_db;
+    t = &g_gpu_db[D_800A36AC & 1];
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
     func_8006DD94(sp10);
     func_8006DF68(arg0, arg1);
 }
 extern u8 D_800A32D8[8];
-extern u8 g_gpu_db_plus_0x6C;
-extern u8 g_gpu_db_plus_0x6D;
-extern u8 g_gpu_db_plus_0x40FC;
-extern u8 g_gpu_db_plus_0x40FD;
 
 
-extern void SetDefDrawEnv(s32, s32, s32, s32, s32);
-extern void SetDefDispEnv(s32, s32, s32, s32, s32);
+extern DRAWENV *SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
+extern DISPENV *SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
 extern void LoadImage(u8 *, s32);
 extern void ClearImage(s32, s32, s32, s32);
-extern void PutDrawEnv(s32);
-extern void PutDispEnv(s32);
+extern DRAWENV *PutDrawEnv(DRAWENV *);
+extern DISPENV *PutDispEnv(DISPENV *);
 extern void SetDispMask(s32);
 
 s32 func_8006E10C(void) {
@@ -6363,8 +6358,6 @@ s32 func_8006E10C(void) {
     s32 v0;
     s32 a0v;
     s32 a1v;
-    s32 base;
-    s32 base2;
 
     __builtin_memcpy(rect, D_800A32D8, 8);
     if (((s32 *)D_800A3524)[8] & 1) {
@@ -6380,23 +6373,21 @@ s32 func_8006E10C(void) {
     game_FrameLoop();
     func_80036F28(v0);
     SetDispMask(0);
-    base = (s32)&g_gpu_db;
-    SetDefDrawEnv(base, 0, 0, 0x280, ff0);
-    SetDefDrawEnv(base + 0x4090, 0, ff0, 0x280, ff0);
-    SetDefDispEnv(base + 0x5C, 0, ff0, 0x280, ff0);
-    base2 = base + 0x40EC;
-    SetDefDispEnv(base2, 0, 0, 0x280, ff0);
-    g_gpu_db_plus_0x6C = 0;
-    g_gpu_db_plus_0x40FC = 0;
-    g_gpu_db_plus_0x6D = 0;
-    g_gpu_db_plus_0x40FD = 0;
+    SetDefDrawEnv(&g_gpu_db[0].draw, 0, 0, 0x280, ff0);
+    SetDefDrawEnv(&g_gpu_db[1].draw, 0, ff0, 0x280, ff0);
+    SetDefDispEnv(&g_gpu_db[0].disp, 0, ff0, 0x280, ff0);
+    SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x280, ff0);
+    g_gpu_db[0].disp.isinter = 0;
+    g_gpu_db[1].disp.isinter = 0;
+    g_gpu_db[0].disp.isrgb24 = 0;
+    g_gpu_db[1].disp.isrgb24 = 0;
     DrawSync(0);
     ClearImage((s32)rect, 0, 0, 0);
     DrawSync(0);
     LoadImage(rect, temp_s3 + 0x14);
     DrawSync(0);
-    PutDrawEnv(base);
-    PutDispEnv(base2);
+    PutDrawEnv(&g_gpu_db[0].draw);
+    PutDispEnv(&g_gpu_db[1].disp);
     SetDispMask(1);
     return 1;
 }
@@ -6405,12 +6396,9 @@ extern void DrawSync(s32);
 extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 s32 func_8006E2A8(void) {
     u8 rect[8];
-    s32 base;
     SetDispMask(0);
-    base = ((D_800A3518 & 1) * 0x4090) + (s32)&g_gpu_db;
-    PutDrawEnv(base);
-    base = ((D_800A3518 & 1) * 0x4090) + (s32)&g_gpu_db + 0x5C;
-    PutDispEnv(base);
+    PutDrawEnv(&g_gpu_db[D_800A3518 & 1].draw);
+    PutDispEnv(&g_gpu_db[D_800A3518 & 1].disp);
     DrawSync(0);
     __builtin_memcpy(rect, D_800A32E0, 8);
     ClearImage((s32)rect, 0, 0, 0);

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "checkRECT",
+  "body_hash": "b7caa8f4a9556873",
+  "summary": "PASS: const char *str truthful; debt only: rect typed s16 * (RECT * + members measured byte-identical) and the three D_80015F2C/38/4C strings declared u8."
+}

@@ -4,6 +4,7 @@
 #include "gpu.h"
 #include "sound.h"
 #include "game.h"
+#include "bb2_const.h"
 #include "system.h"
 #include "code6cac.h"
 
@@ -56,7 +57,7 @@ extern Unk800A4750Rec D_800A4750[];
 extern Unk800A6690Rec D_800A6690[];
 extern s16 D_800A7FE0[32][32];
 extern u16 D_800A87E0[];
-extern u8 D_800A8FB0[];
+extern u8 g_stage_collision[];
 extern s32 D_800A3820;
 extern s32 *func_8004153C();
 extern void func_800432A0(s32, s32, s32, s32, s32);
@@ -145,8 +146,6 @@ extern s32 g_gpu_ot_ptr;
 
 
 
-extern u8 D_800A3768;
-extern u8 D_800A36A8;
 extern u8 D_800A376C;
 extern u8 D_800A37B4;
 extern u8 D_800A37B5;
@@ -182,8 +181,8 @@ void func_8003B9D0(void) {
     magic = 0x80190800;
     func_8001DA2C();
     game_Cleanup();
-    if (D_800A3768 != 0x14) gpu_InitDisplay();
-    if (D_800A3768 != 0xFF) gpu_SetDispMaskOn();
+    if (g_disp_enable != DISP_ACTIVE) gpu_InitDisplay();
+    if (g_disp_enable != DISP_DISABLED) gpu_SetDispMaskOn();
     func_800174F4();
     gpu_ResetGraphMode1();
     func_80020D38();
@@ -220,8 +219,8 @@ void func_8003B9D0(void) {
         func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
     }
     func_8001DBE4();
-    D_800A3768 = 0xFF;
-    D_800A36A8 = 0;
+    g_disp_enable = DISP_DISABLED;
+    g_disp_fade = 0;
     snd_SerialMixOn();
     v0 = func_80036EA8(5, ((u8 *)D_800A3878)[1]);
     cdrom_StartAudio(v0, ((u8 *)D_800A3878)[2]);
@@ -1844,7 +1843,7 @@ void func_8003E6D8(s32 arg0) {
             if (bits < 0) {
                 vidx = D_800A7FE0[row][col];
                 if (vidx >= 0) {
-                    a3 = D_800A8FB0[row * 0x20 + col];
+                    a3 = g_stage_collision[row * 0x20 + col];
                     do {
                         t0 = D_800A87E0[vidx++];
                         v1 = t0 & 0x7FFF;
@@ -1945,7 +1944,7 @@ skip:
                     temp_v0 = D_800A7FE0[t4][t1];
                     vidx = temp_v0;
                     if (temp_v0 >= 0) {
-                        a3 = D_800A8FB0[t4 * 0x20 + t1];
+                        a3 = g_stage_collision[t4 * 0x20 + t1];
                         do {
                             t0 = D_800A87E0[vidx++];
                             v1 = t0 & 0x7FFF;
@@ -2089,7 +2088,6 @@ extern void func_80045A28(s32, s32);
 extern void gte_SetMatrixRotTransIR(s32 *, s32 *, s16 *);
 
 /* Externs for globals */
-extern u8 g_stage_collision[];
 extern s32 D_80094A6C[];
 
 /* --- Functions 0x8003F168 - 0x8004019C --- */

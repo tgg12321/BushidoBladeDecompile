@@ -98,13 +98,13 @@ const char D_80015EE8[28] =
     "DrawSyncCallback(%08x)...\n\0\0"
     ;
 
-/* D_80015F04: 1 string(s), 20B @ 0x80015F04 */
-const char D_80015F04[20] =
+/* g_str_setdispmask: 1 string(s), 20B @ 0x80015F04 */
+const char g_str_setdispmask[20] =
     "SetDispMask(%d)...\n\0"
     ;
 
-/* D_80015F18: 1 string(s), 20B @ 0x80015F18 */
-const char D_80015F18[20] =
+/* g_str_drawsync: 1 string(s), 20B @ 0x80015F18 */
+const char g_str_drawsync[20] =
     "DrawSync(%d)...\n\0\0\0\0"
     ;
 
@@ -123,18 +123,18 @@ const char D_80015F4C[4] =
     "%s:\0"
     ;
 
-/* D_80015F50: 1 string(s), 12B @ 0x80015F50 */
-const char D_80015F50[12] =
+/* g_str_clearimage: 1 string(s), 12B @ 0x80015F50 */
+const char g_str_clearimage[12] =
     "ClearImage\0\0"
     ;
 
-/* D_80015F5C: 1 string(s), 12B @ 0x80015F5C */
-const char D_80015F5C[12] =
+/* g_str_loadimage: 1 string(s), 12B @ 0x80015F5C */
+const char g_str_loadimage[12] =
     "LoadImage\0\0\0"
     ;
 
-/* D_80015F68: 1 string(s), 12B @ 0x80015F68 */
-const char D_80015F68[12] =
+/* g_str_storeimage: 1 string(s), 12B @ 0x80015F68 */
+const char g_str_storeimage[12] =
     "StoreImage\0\0"
     ;
 
@@ -143,8 +143,8 @@ const char D_80015F74[12] =
     "MoveImage\0\0\0"
     ;
 
-/* D_80015F80: 1 string(s), 24B @ 0x80015F80 */
-const char D_80015F80[24] =
+/* g_str_clearotag: 1 string(s), 24B @ 0x80015F80 */
+const char g_str_clearotag[24] =
     "ClearOTag(%08x,%d)...\n\0\0"
     ;
 
@@ -153,13 +153,13 @@ const char D_80015F98[24] =
     "ClearOTagR(%08x,%d)...\n\0"
     ;
 
-/* D_80015FB0: 1 string(s), 20B @ 0x80015FB0 */
-const char D_80015FB0[20] =
+/* g_str_drawotag: 1 string(s), 20B @ 0x80015FB0 */
+const char g_str_drawotag[20] =
     "DrawOTag(%08x)...\n\0\0"
     ;
 
-/* D_80015FC4: 1 string(s), 24B @ 0x80015FC4 */
-const char D_80015FC4[24] =
+/* g_str_putdrawenv: 1 string(s), 24B @ 0x80015FC4 */
+const char g_str_putdrawenv[24] =
     "PutDrawEnv(%08x)...\n\0\0\0\0"
     ;
 
@@ -173,8 +173,8 @@ const char D_80015FF8[24] =
     "PutDispEnv(%08x)...\n\0\0\0\0"
     ;
 
-/* D_80016010: 1 string(s), 52B @ 0x80016010 */
-const char D_80016010[52] =
+/* g_str_gpu_timeout: 1 string(s), 52B @ 0x80016010 */
+const char g_str_gpu_timeout[52] =
     "GPU timeout:que=%d,stat=%08x,chc"
     "r=%08x,madr=%08x,\0\0\0"
     ;
@@ -184,14 +184,19 @@ const char D_80016044[24] =
     "func=(%08x)(%08x,%08x)\n\0"
     ;
 
-/* D_8001605C: 1 string(s), 24B @ 0x8001605C */
-const char D_8001605C[24] =
+/* g_str_cdinit_fail: 1 string(s), 24B @ 0x8001605C */
+const char g_str_cdinit_fail[24] =
     "CdInit: Init failed\n\0\0\0\0"
     ;
 
-/* D_80016074: 30 string(s), 324B @ 0x80016074 */
-const char D_80016074[324] =
-    "none\0\0\0\0CdlReadS\0\0\0\0CdlSeekP\0\0\0\0"
+/* g_str_none: 1 string(s), 8B @ 0x80016074 (CdComstr / CdIntstr out-of-range name) */
+const char g_str_none[8] =
+    "none\0\0\0"
+    ;
+
+/* D_8001607C: 29 string(s), 316B @ 0x8001607C (the CD_comstr / CD_intstr names) */
+const char D_8001607C[316] =
+    "CdlReadS\0\0\0\0CdlSeekP\0\0\0\0"
     "CdlSeekL\0\0\0\0CdlGetTD\0\0\0\0CdlGetTN"
     "\0\0\0\0CdlGetlocP\0\0CdlGetlocL\0\0?\0\0\0"
     "CdlSetmode\0\0CdlSetfilter\0\0\0\0CdlD"

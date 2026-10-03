@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "ClearImage2",
+  "body_hash": "a965dd4906a76c14",
+  "summary": "Clean: same as ClearImage with the 0x80000000 flag ORed into the colour word, through the header members. No casts and nothing unlabelled."
+}

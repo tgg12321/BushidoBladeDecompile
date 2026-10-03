@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "sys_GameInit",
+ "body_hash": "78ad7bdd9c2dd875",
+ "summary": "D_800A3770[0]/[1] on the u32[2] (code6cac.h declaration, ings.c COMMON definition); printf(g_str_limit). The D_800A3774 per-word scalar is retired. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

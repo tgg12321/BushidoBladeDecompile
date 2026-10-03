@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "ClearImage",
+  "body_hash": "0c47a631d4001492",
+  "summary": "Clean: RECT * parameter, typed checkRECT, addque2(clr, rect, 8, b<<16|g<<8|r) through the header members. This is the SOTN sys.c:253-257 shape."
+}

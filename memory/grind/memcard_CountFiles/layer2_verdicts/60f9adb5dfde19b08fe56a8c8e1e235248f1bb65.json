@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "memcard_CountFiles",
+ "body_hash": "c3d1c492e5c149a6",
+ "summary": "sprintf takes the defined string g_str_memcard_fmt (const char[]); the s32 alias extern of the D_800109B0 bytes is retired. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

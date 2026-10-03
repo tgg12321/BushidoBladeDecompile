@@ -89,7 +89,7 @@ _svm_vab_used = 0x80102A68;  /* data-wave 2026-09-07: was g_snd_ch_status */
 _svm_vab_start = 0x80107810;  /* data-wave 2026-09-07: was g_snd_ch_addr */
 _svm_vab_count = 0x80107808;  /* data-wave 2026-09-07: was g_snd_ch_count */
 g_sys_irq_vtable = 0x800A2600;
-g_sys_irq_counter = 0x800A2608;
+i_mask = 0x800A2608;  /* libetc intr.c i_mask: .word 0x1F801074 (I_MASK pointer); was g_sys_irq_counter */
 g_sys_vblank_count = 0x800A157A;
 /* data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined */
 g_CdReadMode_value = 0x800A1500;  /* data-wave 2026-09-24: was g_sys_timer */
@@ -119,8 +119,7 @@ D_800EF800 = 0x800EF800;  /* data-wave 2026-09-25: was g_snd_fade_curve */
 D_800EF7BC = 0x800EF7BC;  /* data-wave 2026-09-25: was g_snd_config_tbl */
 g_color_mode = 0x800F6652;
 g_pad_buf = 0x800FF580;  /* data-wave 2026-09-24: was g_pad_data */
-g_gpu_db = 0x800F7438;  /* data-wave 2026-09-24: was g_disp_fb_base */
-g_gpu_db_plus_0x18 = 0x800F7450;  /* data-wave 2026-09-24: was g_disp_fb_flag */
+g_gpu_db = 0x800F7438;  /* GpuDb[2] display double buffer (include/gpu.h); data-wave 2026-09-24: was g_disp_fb_base */
 /* data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined */
 g_disp_enable = 0x800A3768;
 g_disp_fade = 0x800A36A8;
@@ -925,7 +924,6 @@ g_comb_send_buf                                = 0x800A3698;  /* 8-byte link-cab
 patch0                                      = 0x800F1838;  /* passed to bios_SysDeqIntRP; interrupt routine pointer table */  /* data-wave 2026-09-25: was g_sys_int_rp_table */
 /* g_pad_analog_state at 0x800F33D8 already named in batch 5; ALSO passed to camera_SetMatrix in code6cac_c_mid (shared state buffer) */
 g_damage_debug_disp_buf                                 = 0x800F34D8;  /* passed to damage_DebugDisp; damage debug display buffer */
-g_gpu_db_plus_0x40EC                                   = 0x800FB524;  /* passed to gpu_InitDispEnv; display environment init data */  /* data-wave 2026-09-24: was g_disp_env_init_block */
 g_status_up_data_buf                                    = 0x801027BC;  /* passed to single_game_SetStatusUpData; status-up data buffer */
 
 /* === Motion-ex per-id state arrays (2026-05-17) === */
@@ -942,7 +940,7 @@ g_data_start                                            = 0x8008D070;  /* start 
 g_module_func_tbl                                       = 0x8008D090;  /* mode dispatch table (D_800A3834 indexes into this) */
 menuDat                                                 = 0x8008DCCC;  /* menu data block */
 cpu_practice_honmokuroku_data_tbl                       = 0x8008E778;  /* CPU practice exercise list ("honmokuroku") */
-g_cd_file_table                                              = 0x8008EC34;  /* special camera data block (referenced by replay-camera) */  /* data-wave 2026-09-24: was SpecialCam */
+g_cd_file_table                                              = 0x8008EC34;  /* CD file table: CamPair[159] {CdlLOC position, byte size} per disc file */  /* data-wave 2026-09-24: was SpecialCam */
 StatusUpBuf                                             = 0x800906A6;  /* status-up display buffer */
 InfoPosYTbl1                                            = 0x80099D54;  /* info Y-position table */
 UesrWorkDef                                             = 0x8009ADD8;  /* user work def (sic: original spelling) */
@@ -1134,9 +1132,8 @@ g_ings2_vsync_block_ptr                                 = 0x800A1510;  /* pointe
 /* === Intro/video framebuffer + render state (2026-05-17) -- 6 highs === */
 /* From ings.c: sys_GameInit (line 414) sets up the FMV overlay region; */
 /* func_80016E60 is the intro render loop that double-buffers between */
-/* D_800A3770 and D_800A3774 (toggled by D_800A36AC & 1). */
+/* D_800A3770[0] and [1] (toggled by D_800A36AC & 1). */
 g_video_fb_a                                            = 0x800A3770;  /* FMV overlay framebuffer A (= 0x801D8800 in sys_GameInit) */
-g_video_fb_b                                            = 0x800A3774;  /* FMV overlay framebuffer B (= 0x801EBC00); paired with _a, indexed by vsync parity */
 g_video_fb_size                                         = 0x800A3798;  /* = 0x13400 (78848 bytes) -- FMV region total size */
 g_intro_render_active                                   = 0x800A36B0;  /* flag: 0/1; set to 1 during intro render loop */
 g_intro_render_busy                                     = 0x800A3906;  /* flag: 0 init, set during intro/video render */
@@ -1862,8 +1859,8 @@ g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base p
 /* === CD-ROM stream reader state (2026-05-17) -- 4 highs === */
 /* From code6cac_b2.c around line 388-408: CD-ROM streaming callback */
 /* reads sectors into a buffer, checking BCD position for sync. */
-/* data-wave 2026-09-24: g_event_class_lookup_table = 0x8008EC38 retired; g_cd_file_table_plus_0x4 is now object-defined */
-/* data-wave 2026-09-24: g_special_cam_lengths = 0x8008EC38 retired; g_cd_file_table_plus_0x4 is now object-defined */
+/* data-wave 2026-09-24: g_event_class_lookup_table = 0x8008EC38 retired; now g_cd_file_table[0].b */
+/* data-wave 2026-09-24: g_special_cam_lengths = 0x8008EC38 retired; now g_cd_file_table[0].b */
 
 /* === Mottest (motion test mode) sequencer (2026-05-17) -- 5 highs === */
 /* From code6cac_b.c mottest_disp (line 3622): walks through test slots */
@@ -2174,7 +2171,6 @@ g_menu_screen_live_byte_c_plus_1                        = 0x8009BD44;  /* +1 fro
 g_intro_get_set_value_plus_4                            = 0x8009BD84;  /* +4 from g_intro_get_set_value (0x8009BD80) */
 g_intro_get_set_value_plus_8                            = 0x8009BD88;  /* +8 from g_intro_get_set_value (0x8009BD80) */
 g_sys_irq_vtable_plus_4                                 = 0x800A2604;  /* +4 from g_sys_irq_vtable (0x800A2600) */
-g_sys_irq_counter_plus_4                                = 0x800A260C;  /* +4 from g_sys_irq_counter (0x800A2608) */
 _snd_seq_tick_env_plus_0x8                               = 0x800A26D4;  /* +4 from g_alarm_armed_flag (0x800A26D0) */  /* data-wave 2026-09-24: was g_alarm_secondary_cb_ptr */
 _snd_seq_tick_env_plus_0x11                         = 0x800A26DD;  /* data-wave 2026-09-07: was g_alarm_callback_pending_plus_1 */
 /* data-wave 2026-09-24: g_alarm_pending_priority_flag = 0x800A26E0 retired; _snd_seq_tick_env_plus_0x14 is now object-defined */
@@ -2494,10 +2490,6 @@ g_motion_ex_flag_id3_plus_8_plus_4                           = 0x800F10F8;
 g_motion_state_flag_at_15_plus_4                             = 0x800F1110;
 g_motion_state_flag_at_15_plus_8                             = 0x800F1114;
 patch0_plus_0xC                             = 0x800F1844;  /* data-wave 2026-09-25: was g_sys_int_rp_table_plus_8_plus_4 */
-g_gpu_db_plus_0x6C                                       = 0x800F74A4;  /* data-wave 2026-09-24: was g_text1b_state_byte_F74A4 */
-g_gpu_db_plus_0x6D                                       = 0x800F74A5;  /* data-wave 2026-09-24: was g_text1b_state_byte_F74A5 */
-g_gpu_db_plus_0x40FC                                = 0x800FB534;  /* data-wave 2026-09-24: was g_disp_env_init_block_plus_16 */
-g_gpu_db_plus_0x40FD                                       = 0x800FB535;  /* data-wave 2026-09-24: was g_text1b_state_byte_FB535 */
 g_char_p6_field_1E0                                          = 0x80103624;
 
 /* === Final cleanup batch: remaining 154 unnamed (2026-05-17) === */

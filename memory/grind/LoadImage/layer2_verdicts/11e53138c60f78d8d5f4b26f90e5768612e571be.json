@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "LoadImage",
+  "body_hash": "66d1d781abe15262",
+  "summary": "Clean: LoadImage(RECT *, u32 *) calls checkRECT, then addque2(dws, rect, 8, p). This is SOTN sys.c:259-262."
+}

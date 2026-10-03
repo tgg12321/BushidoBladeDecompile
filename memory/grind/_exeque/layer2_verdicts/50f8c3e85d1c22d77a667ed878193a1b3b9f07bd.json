@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "_exeque",
+  "body_hash": "9be8a7b5127e1f68",
+  "summary": "PASS: one FAKE do-while(0), labelled, removal measured 10/187; volatiles allowlisted (_qin/_qout/_que/_qlog) and unk08 under Q95; g_gpu_stat_reg/g_gpu_dma_chcr verified MMIO pointers; no second handle."
+}

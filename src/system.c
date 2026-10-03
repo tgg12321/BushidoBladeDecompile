@@ -70,7 +70,7 @@ void CdFlush(void) {
 extern s32 CD_debug;
 extern s32 CD_comstr[];
 extern s32 CD_intstr[];
-extern char g_str_none;
+extern const char g_str_none[];
 
 s32 CdSetDebug(s32 a0) {
     s32 old = CD_debug;
@@ -82,7 +82,7 @@ s32 CdSetDebug(s32 a0) {
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
 void *CdComstr(u8 com) {
     if (com > 0x1B) {
-        return &g_str_none;
+        return (void *)g_str_none;
     }
     return (void *)CD_comstr[com];
 }
@@ -91,7 +91,7 @@ void *CdComstr(u8 com) {
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
 void *CdIntstr(u8 intr) {
     if (intr > 6) {
-        return &g_str_none;
+        return (void *)g_str_none;
     }
     return (void *)CD_intstr[intr];
 }

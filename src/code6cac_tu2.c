@@ -68,7 +68,6 @@ extern void func_80030D7C(void);
 extern void func_800397A0(void);
 extern void func_8003E6A0(s32, s32);
 extern void func_80046DA8(s32);
-extern s8 D_800A3768;
 extern void func_800321E8(void);
 extern void func_800335D8(void);
 extern void func_80033BC0(void);
@@ -2274,7 +2273,7 @@ void func_8001EFA0(void) {
         case 1:
             if (D_800A3748 == 0) {
                 func_8001DA2C();
-                D_800A3768 = 2;
+                g_disp_enable = 2;
                 func_80033BC0();
                 return;
             }

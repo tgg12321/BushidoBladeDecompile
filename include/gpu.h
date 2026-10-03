@@ -31,11 +31,10 @@ extern void (*GPU_printf)();
  * p[5]=cwb, p[6]=cwc, p[7]=drs, p[8]=dws, p[0xB]=otc, p[0xD]=reset,
  * p[0xE]=status, p[0xF]=sync, 0x28/4=getctl, 0x10/4=ctl).
  *
- * The other call sites in display.c/gpu.c keep a `(u32 *)` word view of the
- * same pointer ON PURPOSE: a COMPONENT_REF sets MEM_IN_STRUCT_P (expr.c:4888)
- * where an INDIRECT_REF over a PLUS does not (expr.c:4567), which changes the
- * scheduler's alias classes -- respelling those already-matched bodies as member
- * accesses is a codegen change, not a cosmetic one. */
+ * SetDispMask, DrawSync, ClearImage(2), LoadImage, StoreImage, DrawOTag and
+ * PutDrawEnv call through the members (measured byte-identical). A few other
+ * call sites in display.c / gpu.c still use a `(u32 *)` word view of the same
+ * pointer; that is recorded debt, not a codegen requirement. */
 typedef struct GpuDevTable {
     /* 0x00 */ const char *rcsid;
     /* 0x04 */ void (*addque)();
@@ -79,6 +78,9 @@ typedef struct {
     DR_ENV dr_env; /* +0x1C */
 } DRAWENV; /* 0x5C */
 
+/* PsyQ LIBGPU.H primitive/environment colour macro (verbatim SDK definition). */
+#define setRGB0(p, _r0, _g0, _b0) (p)->r0 = _r0, (p)->g0 = _g0, (p)->b0 = _b0
+
 typedef struct {
     RECT disp;   /* +0x00 */
     RECT screen; /* +0x08 */
@@ -87,6 +89,19 @@ typedef struct {
     u8 pad0;     /* +0x12 */
     u8 pad1;     /* +0x13 */
 } DISPENV; /* 0x14 */
+
+/* The game's display double buffer at 0x800F7438: two 0x4090-byte records, one per
+ * frame parity (D_800A36AC & 1). disp_Init / func_8006E10C pass +0x00 to
+ * SetDefDrawEnv and +0x5C to SetDefDispEnv for each record; main clears +0x70 with
+ * ClearOTagR(ot, 0x1008) (0x1008 words = 0x4020 bytes, which ends the record) and
+ * draws it from its last entry, DrawOTag(+0x408C). */
+typedef struct {
+    DRAWENV draw;   /* +0x00 */
+    DISPENV disp;   /* +0x5C */
+    u32 ot[0x1008]; /* +0x70 ordering table */
+} GpuDb; /* 0x4090 */
+
+extern GpuDb g_gpu_db[2];
 
 /* libgpu SYS state block: one 0x80-byte object at 0x8009BE74 (the one C handle
  * for these bytes). Evidence that it is one object: ResetGraph clears 0x80 bytes
@@ -121,20 +136,19 @@ extern void gpu_ResetGraphMode1(void);
 extern void gpu_InitDisplay(void);
 
 /* PsyQ libgpu packet queue (sys.c `static volatile struct QueueItem`): 64
- * records of 0x60 bytes {callback, argument pointer, word count, 21 data
- * words}. Evidence for the aggregate: the original code of _addque2 and
+ * records of 0x60 bytes {callback, argument pointer, the callback's second
+ * argument (a colour, a pixel pointer or 0), 21 data words}. Evidence for the aggregate: the original code of _addque2 and
  * _exeque scales the queue index by 0x60 (x3 then sll 5) and adds it to
  * these addresses, and the copy loop parks &D_8010368C in a base register
  * and stores through base + i*4 + slot*0x60 -- one object addressed by
  * base + offset, not symbol adjacency. Replaces the splat per-word scalars
- * D_80103680 / D_80103684 / D_80103688 / D_8010368C (the +4/+8/+C rows stay
- * in the symbol config as aliases until _exeque leaves INCLUDE_ASM).
+ * D_80103680 / D_80103684 / D_80103688 / D_8010368C.
  * volatile: Sony's own qualifier on this object (the queue is drained by
  * _exeque from DMA-IRQ context); grant in volatile_extern_allowlist.txt. */
 typedef struct GpuQueueItem {
     /* 0x00 */ s32 (*func)(s32 *, s32);
     /* 0x04 */ s32 *arg;
-    /* 0x08 */ s32 count;
+    /* 0x08 */ s32 cb_arg;  /* the callback's second argument */
     /* 0x0C */ s32 data[21];
 } GpuQueueItem; /* size 0x60 */
 

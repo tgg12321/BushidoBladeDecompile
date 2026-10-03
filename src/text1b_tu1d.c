@@ -12,6 +12,7 @@
 #include "sound.h"
 #include "game.h"
 #include "code6cac.h"
+#include "gpu.h"
 
 /* Declarations from the file this TU was split from (text1b_tu1c.c). */
 extern s32 func_8005C2A8(s32 *, s16, s32);
@@ -81,7 +82,6 @@ extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 extern s32 SetSemiTrans(void *, s32);
 extern s32 SetTile(void *);
-extern u8 g_gpu_db;
 extern s32 SetDrawArea();
 extern s32 SetPolyG4();
 extern s32 func_8006E480();
@@ -93,7 +93,6 @@ void func_8006920C(s32 *a0, s32 a1);
 void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2);
 s32 *func_80077D00(void);
 extern void SetDrawOffset();
-extern u8 g_gpu_db;  /* one type per TU: all uses here take (s32)&g_gpu_db */
 extern void LoadImage(u8 *, s32);
 extern void DrawSync(s32);
 void func_8006E440(s32 *a0);
@@ -332,7 +331,7 @@ s32 func_8006EACC(s32 arg0, s32 arg1) {
     s32 *temp_v0;
     s32 temp_v1;
 
-    D_800A35C0 = ((D_800A36AC & 1) * 0x4090) + (s32)&g_gpu_db;
+    D_800A35C0 = (s32)&g_gpu_db[D_800A36AC & 1];
     D_800A3548 = arg0;
     D_800A354C = arg1;
     if (D_800A35BC == 2) {

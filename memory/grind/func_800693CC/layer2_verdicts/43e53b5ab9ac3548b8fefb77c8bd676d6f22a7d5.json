@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800693CC",
+  "body_hash": "d75334437ff429e4",
+  "summary": "GpuDb *render_base via &g_gpu_db[parity]; FAKEs labelled, reviewer-measured clear_mask=2 (label true), available=5, mask_ptr=9; sandbox 0."
+}

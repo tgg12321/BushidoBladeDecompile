@@ -1,0 +1,9 @@
+{
+ "decision": "PASS",
+ "function": "func_80016A8C",
+ "body_hash": "5d3fd28fb2005c4b",
+ "summary": "SetDefDispEnv/PutDispEnv take &g_gpu_db[1].disp; the g_gpu_db_plus_0x40EC handle is retired. arg1 is void * and unused, and main passes its (uninitialised) env exactly as the target's $s2 does. sandbox 0.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": []
+}

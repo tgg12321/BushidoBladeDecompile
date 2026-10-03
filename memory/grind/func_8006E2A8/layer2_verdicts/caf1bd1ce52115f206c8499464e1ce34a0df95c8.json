@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8006E2A8",
+  "body_hash": "1fcef34e2d83e841",
+  "summary": "PutDrawEnv/PutDispEnv take &g_gpu_db[D_800A3518 & 1].draw/.disp, replacing the base / base+0x5C arithmetic; sandbox 0."
+}

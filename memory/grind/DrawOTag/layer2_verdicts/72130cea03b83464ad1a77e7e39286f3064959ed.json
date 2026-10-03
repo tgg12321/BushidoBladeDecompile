@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "DrawOTag",
+  "body_hash": "84a91c94c6fb918b",
+  "summary": "Clean: DrawOTag(u32 *ot) prints a debug line, then calls addque2(cwc, ot, 0, 0) through the header members."
+}

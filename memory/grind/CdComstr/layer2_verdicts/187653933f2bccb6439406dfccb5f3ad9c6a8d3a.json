@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "CdComstr",
+  "body_hash": "75a374ce3ecb4f55",
+  "summary": "PASS: g_str_none is its own 8-byte \"none\" string at 0x80016074 (split at a string boundary); no alias remains. Debt: CD_comstr typed s32[] and return void * (Sony: char *)."
+}

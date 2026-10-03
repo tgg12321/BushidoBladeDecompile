@@ -5,6 +5,7 @@
 #include "code6cac.h"
 #include "bb2_const.h"
 #include "gte.h"
+#include "gpu.h"
 
 typedef struct {
     s16 x;
@@ -13,20 +14,6 @@ typedef struct {
     s16 h;
 } Rect;
 
-/* PsyQ libgpu DRAWENV (libgpu.h): 0x5C bytes, isbg at +0x18. */
-typedef struct {
-    Rect clip;
-    s16 ofs[2];
-    Rect tw;
-    u16 tpage;
-    u8 dtd;
-    u8 dfe;
-    u8 isbg;
-    u8 r0;
-    u8 g0;
-    u8 b0;
-    u32 dr_env[16];
-} DrawEnv;
 
 /* Forward declarations for called functions */
 extern void func_8001945C(void);
@@ -38,11 +25,9 @@ extern u8 g_file_dma_flag;
 extern s32 g_rng_state;
 extern u32 g_gpu_clear_rect;
 extern u8 g_file_data_buf[];
-extern u8 g_gpu_db;
-extern u8 g_gpu_db_plus_0x18;
 extern u32 g_scratchpad_save;
-extern u8 g_str_overflow;
-extern u8 g_str_eff_init;
+extern const char g_str_overflow[];
+extern const char g_str_eff_init[];
 
 extern void printf();
 extern void func_800164F8(void);
@@ -56,25 +41,23 @@ extern void PCclose(s32);
 
 extern u8 D_800A30E8;
 extern u8 D_800A30D4;
-extern u8 g_gpu_db_plus_0x40EC;
 extern u8 *g_gpu_ot_ptr;
 extern u32 D_800A38B4;
 extern s32 D_800A30DC;
 
 
 extern u8 D_800F33D8;
-extern u8 g_gpu_db;
 extern u8 D_800A37A8[];
 extern void cdrom_StartRead(s32, s32);
 extern void game_FrameLoop(void);
-extern void PutDispEnv(u8 *);
+extern void PutDispEnv(DISPENV *);
 extern void LoadImage(u8 *, u8 *);
 extern void VSync(s32);
 extern u32 *ClearOTagR(u32 *, s32);
 
 extern s32 func_8005C8A8(s32, s32, u32, s32);
 extern void func_8005C650(s32, s32, s32);
-extern DrawEnv *PutDrawEnv(DrawEnv *);
+extern DRAWENV *PutDrawEnv(DRAWENV *);
 extern void DrawOTag(u32 *);
 extern void ResetRCnt(u32);
 extern s32 GetRCnt(u32);
@@ -87,9 +70,7 @@ extern void func_80060E04(s32);
 extern void func_8003D2F4(void);
 
 extern void func_80019568();
-extern u8 D_800A3768;
-extern u32 D_8008D090;
-extern u8 D_80010034;
+extern const char g_str_prim_overflow[];
 extern void func_8003D330(void);
 extern u8 *func_8005D46C(u8 *);
 extern u8 *func_8005D554(u8 *, u8);
@@ -167,22 +148,10 @@ s32 math_FovToScreenDist(s32 a0) {
 }
 void gpu_SetDrawEnvBg(s32 a0, s32 a1, s32 a2, s32 a3) {
     s32 i;
-    u8 *ptr;
-    s32 offset;
 
-    i = 0;
-    ptr = (u8 *)&g_gpu_db;
-    offset = 0;
-loop:
-    *((u8 *)&g_gpu_db_plus_0x18 + offset) = a0;
-    *(ptr + 0x19) = a1;
-    *(ptr + 0x1A) = a2;
-    *(ptr + 0x1B) = a3;
-    ptr += 0x4090;
-    offset += 0x4090;
-    i++;
-    if (i < 2) {
-        goto loop;
+    for (i = 0; i < 2; i++) {
+        g_gpu_db[i].draw.isbg = a0;
+        setRGB0(&g_gpu_db[i].draw, a1, a2, a3);
     }
 }
 
@@ -247,22 +216,19 @@ extern void SetGraphDebug(s32);
 extern void InitGeom(void);
 extern void SetGeomOffset(s32, s32);
 extern void SetGeomScreen(s32);
-extern DrawEnv *SetDefDrawEnv(DrawEnv *, s32, s32, s32, s32);
-extern void SetDefDispEnv(u8 *, s32, s32, s32, s32);
+extern DRAWENV *SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
+extern void SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
 void disp_Init(void) {
-    u8 *base;
-
     ResetGraph(0);
     SetGraphDebug(0);
     SetDispMask(0);
     InitGeom();
     SetGeomOffset(0x140, 0x78);
     SetGeomScreen(math_FovToScreenDist(0x2D));
-    base = &g_gpu_db;
-    SetDefDrawEnv((DrawEnv *)base, 0, 0, 0x280, 0xF0);
-    SetDefDrawEnv((DrawEnv *)(base + 0x4090), 0, 0xF0, 0x280, 0xF0);
-    SetDefDispEnv(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
-    SetDefDispEnv(base + 0x40EC, 0, 0, 0x280, 0xF0);
+    SetDefDrawEnv(&g_gpu_db[0].draw, 0, 0, 0x280, 0xF0);
+    SetDefDrawEnv(&g_gpu_db[1].draw, 0, 0xF0, 0x280, 0xF0);
+    SetDefDispEnv(&g_gpu_db[0].disp, 0, 0xF0, 0x280, 0xF0);
+    SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x280, 0xF0);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     ClearImage(&g_gpu_clear_rect, 0, 0, 0);
     DrawSync(0);
@@ -286,18 +252,18 @@ void sys_Init(void) {
     memcard_Init();
     rcnt_StartCnt1Wrapper();
 }
-void func_80016A8C(u8 *arg0, u8 *arg1, s32 arg2) {
+void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
     Rect rect;
     s32 i;
 
     rect = *(Rect *)&D_800A30D4;
 
     SetDispMask(0);
-    SetDefDispEnv(&g_gpu_db_plus_0x40EC, 0, 0, 0x140, 0xF0);
+    SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x140, 0xF0);
     game_FrameLoop();
     cdrom_StartRead(func_80036EA8(2, 0x61), (s32)arg0);
     game_FrameLoop();
-    PutDispEnv(&g_gpu_db_plus_0x40EC);
+    PutDispEnv(&g_gpu_db[1].disp);
     DrawSync(0);
     LoadImage((u8 *)&rect, arg0 + 0x14);
     DrawSync(0);
@@ -330,11 +296,11 @@ void func_80016A8C(u8 *arg0, u8 *arg1, s32 arg2) {
     }
 
     SetDispMask(0);
-    SetDefDispEnv(&g_gpu_db_plus_0x40EC, 0, 0, 0x280, 0xF0);
+    SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x280, 0xF0);
     SetDispMask(1);
 }
 void sys_Panic(void) {
-    printf((s32)&g_str_overflow);
+    printf(g_str_overflow);
     while (1) {
         func_800164F8();
     }
@@ -350,7 +316,7 @@ void eff_Init(void) {
         return;
     }
     size = func_80060CB8(0x801D8800, 0x8010E800);
-    printf((s32)&g_str_eff_init, 0x8010E800, size);
+    printf(g_str_eff_init, 0x8010E800, size);
     if (0xA000 < size) {
         sys_Panic();
     }
@@ -374,9 +340,7 @@ void file_LoadSoundData(void) {
     func_8005C614();
     D_800A3906 = 1;
 }
-extern u8 g_str_limit;
-extern u32 D_800A3770;
-extern u32 D_800A3774;
+extern const char g_str_limit[];
 extern u32 D_800A3798;
 extern u8 D_800A3744;
 extern u8 D_800A3745;
@@ -388,11 +352,11 @@ extern void func_80019534(void);
 extern void func_8003D2C4(void);
 extern void func_8001C444(void);
 void sys_GameInit(void) {
-    printf((s32)&g_str_limit, 0x8010DB00);
+    printf(g_str_limit, 0x8010DB00);
     func_800167EC();
     func_80020D70();
-    D_800A3770 = 0x801D8800;
-    D_800A3774 = 0x801EBC00;
+    D_800A3770[0] = 0x801D8800;
+    D_800A3770[1] = 0x801EBC00;
     D_800A3798 = 0x13400;
     g_file_dma_flag = 0;
     D_800A3906 = 0;
@@ -416,16 +380,16 @@ void gpu_WaitDrawSync(void) {
     DrawSync(0);
 }
 
-void func_80016E60(u8 *arg0, s32 arg1) {
+void func_80016E60(GpuDb *arg0, s32 arg1) {
     u8 *ot[2];
-    u8 *env;
+    GpuDb *env;
     s32 select;
     s32 special;
     s32 limit;
-    u32 fb_base;
+    u32 prim_base;
     s32 idx;
     u32 padbits;
-    u8 *ot_base;
+    GpuDb *ot_base;
 
     select = 0;
     special = 0;
@@ -437,7 +401,7 @@ void func_80016E60(u8 *arg0, s32 arg1) {
        and leaves it at the LATER position, so sched.c:3256's parameter-copy pin
        (leading run of hard-register-source SETs) no longer applies, sched1's
        birthing_insn_p boost (sched.c:2504) emits it after the two init insns,
-       and sched2's INSN_LUID tie-break (sched.c:2462) orders the groups s1,s2,s5. */
+       and sched2's INSN_LUID tie-break (sched.c:2462) orders the groups s1,s2,s5. Removing it scores 4. */
     ot_base = arg0;
     if (D_800A38DC == 2) {
         special = D_800A389A < 1;
@@ -449,13 +413,13 @@ void func_80016E60(u8 *arg0, s32 arg1) {
 
     D_800A36B0 = 1;
     func_8005C650(3, 0x7F, 0x7F);
-    fb_base = (&D_800A3770)[D_800A36AC & 1];
+    prim_base = D_800A3770[D_800A36AC & 1];
 
     while (1) {
         idx = D_800A36AC & 1;
-        D_800A38B4 = fb_base + (idx * 0x9A00);
+        D_800A38B4 = prim_base + (idx * 0x9A00);
         g_gpu_ot_ptr = (u8 *)&ot[idx];
-        env = &g_gpu_db + (idx * 0x4090);
+        env = &g_gpu_db[idx];
 
         ClearOTagR((u32 *)g_gpu_ot_ptr, 1);
         func_80019568();
@@ -473,12 +437,12 @@ void func_80016E60(u8 *arg0, s32 arg1) {
            effect: env is seated in $s0 and select in $s1, the target's assignment.
            mechanism: the wrap's loop notes make flow.c weight env's three in-loop
            references at loop_depth 3 instead of 2, lifting its global.c
-           allocno_compare priority above select's. */
+           allocno_compare priority above select's. Unwrapped, score 21. */
         do {
-            PutDispEnv(env + 0x5C);
-            PutDrawEnv((DrawEnv *)env);
+            PutDispEnv(&env->disp);
+            PutDrawEnv(&env->draw);
         } while (0);
-        DrawOTag((u32 *)(ot_base + 0x408C));
+        DrawOTag(&ot_base->ot[0x1007]);
         DrawOTag((u32 *)g_gpu_ot_ptr);
         D_800A36AC++;
 
@@ -554,9 +518,14 @@ s32 rng_Next(void) {
 }
 void main(void) {
     s32 idx;
-    u8 *env;
-    u8 *ot;
-    s32 voice;
+    GpuDb *env;
+    u32 *ot;
+    /* D_800A390D (frames left to skip presenting) as read this frame; the next frame
+     * passes it to func_80019568. */
+    s32 skip;
+    /* FAKE: second handle on D_800A3770 - the target keeps &D_800A3770 in $s4 for the
+     * whole loop (lui/addiu at 0x80017260); D_800A3770[idx] at both uses re-forms the
+     * address there and scores 14. */
     u32 *tbl;
 
     __main();
@@ -567,33 +536,33 @@ void main(void) {
     SetDispMask(1);
     func_80016A8C((u8 *)0x80118800, env, idx);
 
-    tbl = &D_800A3770;
+    tbl = D_800A3770;
     D_800A3834 = 0xF;
     D_800A390D = 0;
     D_800A36AC = 0;
 
 loop:
     idx = D_800A36AC & 1;
-    env = &g_gpu_db + idx * 0x4090;
-    ot = env + 0x70;
-    ClearOTagR((u32 *)ot, 0x1008);
-    g_gpu_ot_ptr = ot;
+    env = &g_gpu_db[idx];
+    ot = env->ot;
+    ClearOTagR(ot, 0x1008);
+    g_gpu_ot_ptr = (u8 *)ot;
     D_800A38B4 = tbl[idx];
     func_80060E04(idx);
     func_8003D2F4();
-    func_80019568(voice);
+    func_80019568(skip);
     func_80036940();
     func_8005C6D0();
 
     if (D_800A3928 != 0) {
         func_800372C0();
-        D_800A3768 = 0xFF;
+        g_disp_enable = DISP_DISABLED;
         D_800A3928 = 0;
         D_800A31DA = 0;
         D_800A3834 = 8;
     }
 
-    ((void (*)(void))(&D_8008D090)[D_800A3834])();
+    g_module_func_tbl[D_800A3834]();
     func_8003D330();
 
     do {
@@ -607,21 +576,21 @@ loop:
     VSync(0);
     ResetRCnt(0xF2000001u);
 
-    voice = D_800A390D;
-    if (voice == 0) {
-        PutDispEnv(env + 0x5C);
-        PutDrawEnv((DrawEnv *)env);
+    skip = D_800A390D;
+    if (skip == 0) {
+        PutDispEnv(&env->disp);
+        PutDrawEnv(&env->draw);
     }
 
     {
-        s32 cnt = (s32)tbl[idx];
+        s32 prim_base = (s32)tbl[idx];
         s32 adj = D_800A38B4 + 0xFFFECC00u;
-        s32 remaining = cnt - adj;
+        s32 remaining = prim_base - adj;
         if (remaining < D_800A30DC) {
             D_800A30DC = remaining;
         }
         if (remaining < 0) {
-            printf(&D_80010034);
+            printf(g_str_prim_overflow);
             while (1) {
                 func_800164F8();
             }
@@ -631,12 +600,12 @@ loop:
     if (D_800A390D != 0) {
         D_800A390D--;
     } else {
-        DrawOTag((u32 *)(env + 0x408C));
+        DrawOTag(&env->ot[0x1007]);
         D_800A36AC++;
     }
 
     if (D_800A3834 != 1) goto loop;
-    if (voice != 0) goto loop;
+    if (skip != 0) goto loop;
     if (D_80102788.pressed & 0x08000800u) goto call_func;
     if (D_800A38DC != 2) goto loop;
     if (D_800A3713 == 0) goto loop;
@@ -649,7 +618,7 @@ call_func:
 
 void func_800174F4(void) {
     u32 ot[2];
-    DrawEnv env;
+    DRAWENV env;
     /* temp: holds two values, the case-1/2 fade loop's iteration count and
      * the case-20 D_800A37A8[] code passed to func_80060414 (owner ruling 11). */
     s32 temp;
@@ -966,10 +935,10 @@ void sys_StubEmpty2(void) {
 void sys_StubEmpty3(void) {
 }
 
-extern const char D_8001004C[];
+extern const char g_str_build_date[];
 /* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
 s32 D_800A30DC = 0x13400;
-s32 D_800A30E0[2] = { (s32)D_8001004C, 0x190 };  /* not named by any code or data: size from the gap */
+s32 D_800A30E0[2] = { (s32)g_str_build_date, 0x190 };  /* not named by any code or data: size from the gap */
 u8 D_800A30E8 = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
 u8 D_800A3690;
@@ -983,9 +952,8 @@ u8 D_800A3713;
 u8 g_file_dma_flag;
 u8 D_800A3744;
 u8 * g_gpu_ot_ptr;
-u8 D_800A3768;
 u8 g_disp_enable;
-u32 D_800A3770;
+u32 D_800A3770[2];
 s32 D_800A3784;
 u8 D_800A3788;
 u32 D_800A3798;

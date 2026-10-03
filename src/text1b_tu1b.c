@@ -729,7 +729,6 @@ s16 func_80054434(void) {
 }
 INCLUDE_ASM("asm/funcs", func_80054440);
 INCLUDE_ASM("asm/funcs", func_800545F4);
-extern s32 D_800A3770;
 extern const char D_80015840[];
 extern s32 func_80045080(s32);
 extern void func_80046914(void);
@@ -809,7 +808,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
             game_StageCleanup(n, a6);
         } else {
             gpu_ResetGraphMode1();
-            game_StageCleanup(n, (s32)&D_800A3770);
+            game_StageCleanup(n, (s32)D_800A3770);
         }
     }
     if (s->unk4 & 0x8000) {
@@ -5682,19 +5681,10 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
 
 
 
-extern u8 g_gpu_db;
 extern s32 D_8009B698;
 extern s32 D_8009B6B0;
 extern s32 SetDrawArea();
 extern s32 SetPolyG4();
-
-typedef struct {
-    s16 x, y, w, h;
-} RectFC9C;
-
-typedef struct {
-    RectFC9C clip;
-} EnvFC9C;
 
 typedef struct {
     u32 tag;
@@ -5725,9 +5715,9 @@ typedef struct {
 s32 func_8005FC9C(s32 arg0, s32 arg1)
 {
     SFC9C s;
-    RectFC9C r;
-    RectFC9C *clip;
-    EnvFC9C *env;
+    RECT r;
+    RECT *clip;
+    GpuDb *env;
     s32 cur_tex;
     s32 mode_off;
     PolyG4FC9C *poly;
@@ -5745,12 +5735,12 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
     area = arg0 + 0x2D4;
     end_off = arg0 + 0x2F8;
     j = 0;
-    env = (EnvFC9C *)(&g_gpu_db + (D_800A36AC & 1) * 0x4090);
-    r.x = env->clip.x;
-    r.y = env->clip.y;
-    r.w = env->clip.w;
-    r.h = env->clip.h;
-    clip = &env->clip;
+    env = &g_gpu_db[D_800A36AC & 1];
+    r.x = env->draw.clip.x;
+    r.y = env->draw.clip.y;
+    r.w = env->draw.clip.w;
+    r.h = env->draw.clip.h;
+    clip = &env->draw.clip;
     SetDrawArea(area, &r);
     AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, area);
     area = arg0 + 0x2E0;

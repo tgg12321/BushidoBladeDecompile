@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "SetIntrMask",
+  "body_hash": "d5f578d9de9028a5",
+  "summary": "PASS: SOTN libetc intr.c SetIntrMask shape; i_mask MMIO pointer verified; per-site casts and pointer local gone."
+}

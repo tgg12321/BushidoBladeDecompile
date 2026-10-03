@@ -6,7 +6,6 @@
 #include "common.h"
 
 /* Named globals */
-extern u8 g_cd_file_table;
 extern u8 g_disp_enable;
 extern u8 g_disp_fade;
 extern s16 g_game_mirror_mode;
@@ -506,5 +505,8 @@ typedef struct {
     void (*unk4)(void);
 } StageFuncEntry;
 extern StageFuncEntry g_stage_init_tbl[];
+
+/* 0x8008D090: the per-mode main-loop handlers, indexed by D_800A3834 (defined in main_post.c). */
+extern void (*g_module_func_tbl[])(void);
 
 #endif /* GAME_H */

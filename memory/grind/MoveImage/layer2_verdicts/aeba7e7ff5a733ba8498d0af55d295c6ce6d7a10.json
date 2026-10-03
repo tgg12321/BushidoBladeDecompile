@@ -1,0 +1,14 @@
+{
+  "decision": "PASS",
+  "function": "MoveImage",
+  "body_hash": "e3259d0741a7a09e",
+  "summary": "Items 1-5 met. sandbox --disable all = 0 (49/49). Typed RECT* parameter with rect->w/rect->h tests; checkRECT(const char *, RECT *) matches its definition; D_80015F74 is declared const char[] to match its definition (text1a_b_post_rodata.c:142). g_gpu_move_param is the single declaration of the 20-byte packet at 0x8009BF1C: sizeof = 0x14, and the target passes the base address. No FAKEs and no volatile/asm. The *(u32 *)&rect->x and *(u32 *)&rect->w reads are SOTN's LOW(rect->x)/LOW(rect->w) (sotn include/common.h:73 = *(s32*)&(x); src/main/psxsdk/libgpu/sys.c:275-277, splat.us.main member). They are semantic: they copy the packed (x,y)/(w,h) halfword pair into a GPU packet word. Both reads stay within one RECT object, are not cross-symbol, and need no FAKE label.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "Caller prototypes disagree with the RECT* definition: code6cac_c2.c:1491 `extern void MoveImage(s16 *, s32, s32)`, text1b_tu1c.c:3678 and text1b_tu1d.c:90 `extern s32 MoveImage(u8 *, s32, s32)`. Move one prototype into gpu.h.",
+    "asm/data/7D920.data.s:24172 `dlabel g_gpu_move_param` has no enddlabel, and splat labels D_8009BF24/28/2C (plus their undefined_syms_auto.txt:975-977 rows) still subdivide the 5-word packet. Merge them the way g_cd_file_table_plus_0x4 was merged.",
+    "D_80015F74 keeps its splat name while the sibling format strings are g_str_*.",
+    "`extern u32 g_gpu_move_param[5]` sits at file scope in display.c, not in include/gpu.h."
+  ]
+}

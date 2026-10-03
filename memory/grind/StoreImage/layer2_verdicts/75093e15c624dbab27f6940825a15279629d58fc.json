@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "StoreImage",
+  "body_hash": "bd08a8bc56d2a535",
+  "summary": "Clean: StoreImage(RECT *, u32 *) calls checkRECT, then addque2(drs, rect, 8, p). This is SOTN sys.c:264-267."
+}
