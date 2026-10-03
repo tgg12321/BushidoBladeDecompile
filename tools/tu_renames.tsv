@@ -60,3 +60,4 @@ main/psxsdk/libsnd/749E0	main/psxsdk/libsnd/cres	after:2cc9d7eb5019
 main/psxsdk/libsnd/767D8	main/psxsdk/libsnd/ut_vvol	after:a6f20ee2e441
 main/psxsdk/libsnd/76BDC	main/psxsdk/libsnd/vm_f	after:438478208bb8
 main/psxsdk/libsnd/774F8	main/psxsdk/libsnd/vm_no1	after:36f21b9424fc
+main/psxsdk/libsnd/75174	main/psxsdk/libsnd/midiread	after:11f552960c68

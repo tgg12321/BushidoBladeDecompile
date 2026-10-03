@@ -241,7 +241,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/cres.o(.text);
         build/src/main/psxsdk/libsnd/pause.o(.text);
         build/src/main/psxsdk/libsnd/play.o(.text);
-        build/src/main/psxsdk/libsnd/75174.o(.text);
+        build/src/main/psxsdk/libsnd/midiread.o(.text);
         build/src/main/psxsdk/libsnd/miditime.o(.text);
         build/src/main/psxsdk/libsnd/next.o(.text);
         build/src/main/psxsdk/libsnd/replay.o(.text);
@@ -464,7 +464,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/cres.o(.data);
         build/src/main/psxsdk/libsnd/pause.o(.data);
         build/src/main/psxsdk/libsnd/play.o(.data);
-        build/src/main/psxsdk/libsnd/75174.o(.data);
+        build/src/main/psxsdk/libsnd/midiread.o(.data);
         build/src/main/psxsdk/libsnd/miditime.o(.data);
         build/src/main/psxsdk/libsnd/next.o(.data);
         build/src/main/psxsdk/libsnd/replay.o(.data);
@@ -733,7 +733,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/cres.o(.bss);
         build/src/main/psxsdk/libsnd/pause.o(.bss);
         build/src/main/psxsdk/libsnd/play.o(.bss);
-        build/src/main/psxsdk/libsnd/75174.o(.bss);
+        build/src/main/psxsdk/libsnd/midiread.o(.bss);
         build/src/main/psxsdk/libsnd/miditime.o(.bss);
         build/src/main/psxsdk/libsnd/next.o(.bss);
         build/src/main/psxsdk/libsnd/replay.o(.bss);
