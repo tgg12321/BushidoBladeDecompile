@@ -408,3 +408,14 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   exactly SYS. No `.rodata` or data in the range; each module-end pad already sits in its module's own asm
   (§10), so every part ends at its module end. Compare: old gpu.o+display.o vs all 53 parts: identical as
   above (`.text` 0x5E00, 986 relocations, 174 globals).
+  Rodata (D4): text1a_b_post_rodata.c's LIBGPU and LIBCD EVENT strings move to their sole readers, in link
+  order: 0x80015D58..0x80015E28 → prim.c (DumpTPage/DumpClut/DumpDrawEnv/DumpDispEnv), 0x80015E28..0x8001605C
+  → sys.c (first the rcsid "$Id: sys.c,v 1.129 …", which SYS's device table D_8009BE2C points at by address,
+  then the SYS functions' strings), 0x8001605C..0x80016074 → event.c (CdInit). bb2.ld .rodata: prim, sys,
+  event, then the data file, which keeps the LIBCD SYS/BIOS strings 0x80016074..0x8001622C for step 4e. Each
+  receiving object starts where its first string sits; no jump table, so no phase. The one array spanning a
+  module boundary, D_80015E1C[64], is cut into D_80015E1C[12] (PRIM) + D_80015E28[52] (SYS), same bytes.
+  Survivor: the rcsid could also end PRIM's object (identical bytes); it goes to SYS on its text, the device
+  table pointer and SOTN's libgpu/sys.c rcsid; every other array has one position. Compare: old post_rodata.o+gpu.o+display.o vs the 54 parts: `.text` 0x5E00 and
+  `.rodata` 0x4D4 identical, 986 relocations identical, 217 globals at the same offsets; the only symbol
+  differences are that cut (D_80015E1C's size 64 → 12, new D_80015E28).

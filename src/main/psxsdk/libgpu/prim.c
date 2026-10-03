@@ -5,18 +5,63 @@
 #include "gpu.h"
 #include "psx.h"
 
-/* Externs for globals */
-extern s32 D_80015D58;
-extern s32 D_80015D70;
-extern s32 D_80015DD8;
-extern s32 D_80015DF4;
-extern s32 D_80015E10;
-extern s32 D_80015E1C;
-extern s32 D_80015D80;
-extern s32 D_80015D98;
-extern s32 D_80015DA8;
-extern s32 D_80015DC0;
-extern s32 D_80015DCC;
+/* .rodata 0x80015D58..0x80015E28: this module's strings (moved from src/text1a_b_post_rodata.c, Q106 D4:
+ * every reader is in this file, in link order). */
+
+/* D_80015D58: 1 string(s), 24B @ 0x80015D58 */
+const char D_80015D58[24] =
+    "tpage: (%d,%d,%d,%d)\n\0\0\0"
+    ;
+
+/* D_80015D70: 1 string(s), 16B @ 0x80015D70 */
+const char D_80015D70[16] =
+    "clut: (%d,%d)\n\0\0"
+    ;
+
+/* D_80015D80: 1 string(s), 24B @ 0x80015D80 */
+const char D_80015D80[24] =
+    "clip (%3d,%3d)-(%d,%d)\n\0"
+    ;
+
+/* D_80015D98: 1 string(s), 16B @ 0x80015D98 */
+const char D_80015D98[16] =
+    "ofs  (%3d,%3d)\n\0"
+    ;
+
+/* D_80015DA8: 1 string(s), 24B @ 0x80015DA8 */
+const char D_80015DA8[24] =
+    "tw   (%d,%d)-(%d,%d)\n\0\0\0"
+    ;
+
+/* D_80015DC0: 1 string(s), 12B @ 0x80015DC0 */
+const char D_80015DC0[12] =
+    "dtd   %d\n\0\0\0"
+    ;
+
+/* D_80015DCC: 1 string(s), 12B @ 0x80015DCC */
+const char D_80015DCC[12] =
+    "dfe   %d\n\0\0\0"
+    ;
+
+/* D_80015DD8: 1 string(s), 28B @ 0x80015DD8 */
+const char D_80015DD8[28] =
+    "disp   (%3d,%3d)-(%d,%d)\n\0\0\0"
+    ;
+
+/* D_80015DF4: 1 string(s), 28B @ 0x80015DF4 */
+const char D_80015DF4[28] =
+    "screen (%3d,%3d)-(%d,%d)\n\0\0\0"
+    ;
+
+/* D_80015E10: 1 string(s), 12B @ 0x80015E10 */
+const char D_80015E10[12] =
+    "isinter %d\n\0"
+    ;
+
+/* D_80015E1C: 1 string(s), 12B @ 0x80015E1C */
+const char D_80015E1C[12] =
+    "isrgb24 %d\n\0"
+    ;
 
 u32 GetTPage(s32 a0, s32 a1, s32 a2, s32 a3) {
     return ((a0 & 3) << 7) | ((a1 & 3) << 5) | ((a3 & 0x100) >> 4) | ((a2 & 0x3FF) >> 6) | ((a3 & 0x200) << 2);

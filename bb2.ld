@@ -71,9 +71,10 @@ SECTIONS
         build/src/main/64FD8.o(.rodata);
         build/src/main/psxsdk/libc2/prnt.o(.rodata);
         build/src/main/psxsdk/libc2/sprintf.o(.rodata);
-        build/src/text1a_b_post_rodata.o(.rodata);
         build/src/main/psxsdk/libgpu/prim.o(.rodata);
         build/src/main/psxsdk/libgpu/sys.o(.rodata);
+        build/src/main/psxsdk/libcd/event.o(.rodata);
+        build/src/text1a_b_post_rodata.o(.rodata);
         build/src/system.o(.rodata);
         build/src/text1a_b_tail_rodata.o(.rodata);
         build/src/ings2.o(.rodata);

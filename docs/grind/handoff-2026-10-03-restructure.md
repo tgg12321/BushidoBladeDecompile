@@ -742,6 +742,17 @@ split commit after it: `libc2/ctype.c`, `memchr.c`, `putchar.c`; prnt.c keeps al
 and jump table, phase unchanged). Library files still on old ids for 4d-4f: gpu, display, system, ings2, main,
 text1a_b_post_rodata, text1a_b_tail_rodata.
 
+**Status step 4d (2026-10-03):** done: 6011f1eb3 (display -> main/psxsdk/libgpu/sys) and 1be68857c (gpu ->
+libgpu/prim), renames; 2e14ce027 (libc2/memmove, 10 libcard files, libgpu/ext; SYS head joins sys.c across
+the old mid-SYS cut 0x8007B244); 60a56f5e6 (libapi/c73, 37 libgte files, libcd/event; sys.c = SYS); then the
+rodata commit (post_rodata's LIBGPU/EVENT strings into prim, sys, event; D_80015E1C cut at PRIM|SYS). Nothing
+left merged. For 4e: text1a_b_post_rodata.c now holds only LIBCD SYS/BIOS strings 0x80016074..0x8001622C
+(readers in system.c; linked after libcd/event.o), the natural first fold; check SYS vs BIOS ownership of
+g_str_none / D_8001607C (CD_comstr/intstr names, read through .data pointer tables) and of the "CD timeout"
+/ DiskError strings before cutting, and getintr's jump table at 0x8001622C (phase 4) behind them (R1).
+Scripts: memory/grind/restructure-2026-10-03/step4/ (splitcmp.py takes a '+'-joined BEFORE for re-cuts;
+ldins.py --before/--after/--move; l2all.py batches layer-2 keys; regions.py relocates canonical-asm grants).
+
 Total: about 25 to 30 commits, 5 to 8 focused sessions. Step 4 (library rodata placement per
 module) and step 5 (per-file header proofs) dominate.
 

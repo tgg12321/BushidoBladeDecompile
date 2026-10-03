@@ -6,6 +6,132 @@
 #include "gpu.h"
 #include "psx.h"
 
+/* .rodata 0x80015E28..0x8001605C: this module's strings (moved from src/text1a_b_post_rodata.c, Q106
+ * D4: every C reader is in this file, in link order; the leading rcsid is referenced only by SYS's
+ * device table D_8009BE2C, asm/data/7D920.data.s). */
+
+/* D_80015E28: 1 string(s), 52B @ 0x80015E28 (the rcsid; only the device table D_8009BE2C points here) */
+const char D_80015E28[52] =
+    "$Id: sys.c,v 1.129 1996/12/25 03:36:20 noda Exp $\0\0\0"
+    ;
+
+/* D_80015E5C: 1 string(s), 32B @ 0x80015E5C */
+const char D_80015E5C[32] =
+    "ResetGraph:jtb=%08x,env=%08x\n\0\0\0"
+    ;
+
+/* D_80015E7C: 1 string(s), 20B @ 0x80015E7C */
+const char D_80015E7C[20] =
+    "ResetGraph(%d)...\n\0\0"
+    ;
+
+/* D_80015E90: 1 string(s), 24B @ 0x80015E90 */
+const char D_80015E90[24] =
+    "SetGraphReverse(%d)...\n\0"
+    ;
+
+/* D_80015EA8: 1 string(s), 44B @ 0x80015EA8 */
+const char D_80015EA8[44] =
+    "SetGraphDebug:level:%d,type:%d r"
+    "everse:%d\n\0\0"
+    ;
+
+/* D_80015ED4: 1 string(s), 20B @ 0x80015ED4 */
+const char D_80015ED4[20] =
+    "SetGrapQue(%d)...\n\0\0"
+    ;
+
+/* D_80015EE8: 1 string(s), 28B @ 0x80015EE8 */
+const char D_80015EE8[28] =
+    "DrawSyncCallback(%08x)...\n\0\0"
+    ;
+
+/* g_str_setdispmask: 1 string(s), 20B @ 0x80015F04 */
+const char g_str_setdispmask[20] =
+    "SetDispMask(%d)...\n\0"
+    ;
+
+/* g_str_drawsync: 1 string(s), 20B @ 0x80015F18 */
+const char g_str_drawsync[20] =
+    "DrawSync(%d)...\n\0\0\0\0"
+    ;
+
+/* D_80015F2C: 1 string(s), 12B @ 0x80015F2C */
+const char D_80015F2C[12] =
+    "%s:bad RECT\0"
+    ;
+
+/* D_80015F38: 1 string(s), 20B @ 0x80015F38 */
+const char D_80015F38[20] =
+    "(%d,%d)-(%d,%d)\n\0\0\0\0"
+    ;
+
+/* D_80015F4C: 1 string(s), 4B @ 0x80015F4C */
+const char D_80015F4C[4] =
+    "%s:\0"
+    ;
+
+/* g_str_clearimage: 1 string(s), 12B @ 0x80015F50 */
+const char g_str_clearimage[12] =
+    "ClearImage\0\0"
+    ;
+
+/* g_str_loadimage: 1 string(s), 12B @ 0x80015F5C */
+const char g_str_loadimage[12] =
+    "LoadImage\0\0\0"
+    ;
+
+/* g_str_storeimage: 1 string(s), 12B @ 0x80015F68 */
+const char g_str_storeimage[12] =
+    "StoreImage\0\0"
+    ;
+
+/* D_80015F74: 1 string(s), 12B @ 0x80015F74 */
+const char D_80015F74[12] =
+    "MoveImage\0\0\0"
+    ;
+
+/* g_str_clearotag: 1 string(s), 24B @ 0x80015F80 */
+const char g_str_clearotag[24] =
+    "ClearOTag(%08x,%d)...\n\0\0"
+    ;
+
+/* D_80015F98: 1 string(s), 24B @ 0x80015F98 */
+const char D_80015F98[24] =
+    "ClearOTagR(%08x,%d)...\n\0"
+    ;
+
+/* g_str_drawotag: 1 string(s), 20B @ 0x80015FB0 */
+const char g_str_drawotag[20] =
+    "DrawOTag(%08x)...\n\0\0"
+    ;
+
+/* g_str_putdrawenv: 1 string(s), 24B @ 0x80015FC4 */
+const char g_str_putdrawenv[24] =
+    "PutDrawEnv(%08x)...\n\0\0\0\0"
+    ;
+
+/* D_80015FDC: 1 string(s), 28B @ 0x80015FDC */
+const char D_80015FDC[28] =
+    "DrawOTagEnv(%08x,&08x)...\n\0\0"
+    ;
+
+/* D_80015FF8: 1 string(s), 24B @ 0x80015FF8 */
+const char D_80015FF8[24] =
+    "PutDispEnv(%08x)...\n\0\0\0\0"
+    ;
+
+/* g_str_gpu_timeout: 1 string(s), 52B @ 0x80016010 */
+const char g_str_gpu_timeout[52] =
+    "GPU timeout:que=%d,stat=%08x,chc"
+    "r=%08x,madr=%08x,\0\0\0"
+    ;
+
+/* D_80016044: 1 string(s), 24B @ 0x80016044 */
+const char D_80016044[24] =
+    "func=(%08x)(%08x,%08x)\n\0"
+    ;
+
 /* Forward declarations */
 extern s32 VSync(s32);
 extern s32 memcpy(s32, void *, s32);
@@ -19,23 +145,8 @@ extern volatile u32 *g_gpu_dma_chcr;
 extern u8 ctlbuf[];
 extern s32 g_gpu_vcount;
 extern s32 g_gpu_draw_count;
-extern const char g_str_drawotag[];
-extern const char g_str_drawsync[];
-extern u32 D_80015EE8;
-extern u32 D_80015FDC;
-
-extern const char g_str_setdispmask[];
-
-extern const char D_80015F2C[];
-extern const char D_80015F38[];
-extern const char D_80015F4C[];
 
 /* Declarations from the file ResetGraph .. GetGraphDebug were split from (gpu.c). */
-extern s32 D_80015EA8;
-extern s32 D_80015ED4;
-extern s32 D_80015E90;
-extern s32 D_80015E5C;
-extern s32 D_80015E7C;
 extern s32 D_8009BE2C;
 extern s32 D_8009BEF4[];
 extern s32 D_8009BF08[];
@@ -175,7 +286,6 @@ level_2:
 end:
     ;
 }
-extern const char g_str_clearimage[];
 extern void checkRECT(const char *, RECT *);
 
 void ClearImage(RECT *arg0, u8 arg1, u8 arg2, u8 arg3) {
@@ -187,19 +297,16 @@ void ClearImage2(RECT *arg0, u8 arg1, u8 arg2, u8 arg3) {
     g_gpu_dev_table->addque2(g_gpu_dev_table->clr, arg0, 8,
                              0x80000000 | ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
 }
-extern const char g_str_loadimage[];
 
 void LoadImage(RECT *a0, u32 *a1) {
     checkRECT(g_str_loadimage, a0);
     g_gpu_dev_table->addque2(g_gpu_dev_table->dws, a0, 8, a1);
 }
-extern const char g_str_storeimage[];
 
 void StoreImage(RECT *a0, u32 *a1) {
     checkRECT(g_str_storeimage, a0);
     g_gpu_dev_table->addque2(g_gpu_dev_table->drs, a0, 8, a1);
 }
-extern const char D_80015F74[];
 extern u32 g_gpu_move_param[5];
 
 s32 MoveImage(RECT *rect, int x, int y) {
@@ -217,7 +324,6 @@ s32 MoveImage(RECT *rect, int x, int y) {
                                     sizeof(g_gpu_move_param), 0);
 }
 
-extern const char g_str_clearotag[];
 extern u32 g_gpu_ot_end;
 
 u32 *ClearOTag(u32 *a0, s32 a1) {
@@ -240,7 +346,6 @@ u32 *ClearOTag(u32 *a0, s32 a1) {
     *a0 = (u32)&g_gpu_ot_end & 0xFFFFFF;
     return a0;
 }
-extern u32 D_80015F98;
 
 u32 *ClearOTagR(u32 *ot, s32 n) {
     u32 *new_var;
@@ -269,7 +374,6 @@ void DrawOTag(u32 *a0) {
     }
     g_gpu_dev_table->addque2(g_gpu_dev_table->cwc, a0, 0, 0);
 }
-extern const char g_str_putdrawenv[];
 
 
 DRAWENV *PutDrawEnv(DRAWENV *env) {
@@ -298,7 +402,6 @@ s32 GetDrawEnv(s32 a0) {
     memcpy(a0, &g_gpu_ctx.draw_env, 0x5C);
     return a0;
 }
-extern const char D_80015FF8[];
 extern s32 GetVideoMode(void);
 s32 get_dx(s16 *arg0);
 /* PsyQ 4.0 LIBGPU SYS: PutDispEnv (verbatim-linked Sony object);
@@ -1028,8 +1131,6 @@ extern volatile s32 _qout;
 extern volatile s32 _qin;
 extern s32 D_8009BF88;
 extern u8 ctlbuf[];
-extern const char g_str_gpu_timeout[];
-extern const char D_80016044[];
 extern volatile u32 *g_gpu_dma_madr;
 extern volatile int *D_8009BF64;
 extern volatile s32 _qlog[];

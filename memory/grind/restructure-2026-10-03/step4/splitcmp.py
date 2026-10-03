@@ -101,8 +101,9 @@ def main():
         if not same and len(cat) == len(old) and sec == ".text":
             # REL addends live in the instruction: a J/JAL against the .text SECTION symbol
             # encodes the object-relative target, so it shifts by the part's base.
-            def owner(i, bb):
-                return [q for b0, q in sorted((b0, q) for q, b0 in bb.items()) if b0 <= i][-1]
+            def owner(i, bb):  # the part whose non-empty .text holds offset i
+                return [q for b0, q in sorted((b0, q) for q, b0 in bb.items()
+                                              if shdrs(q).get(sec, (0, 0))[1]) if b0 <= i][-1]
             bad, shifted = [], 0
             for i in range(0, len(old), 4):
                 if old[i:i+4] == cat[i:i+4]:
