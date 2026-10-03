@@ -3,8 +3,8 @@
 # tools/cc1-reorg-negate-rtx-decl.patch (no codegen patch; owner Q17).
 # Keyed to the source tree: they change whenever src/ or include/ does.
 # Refresh with: bash tools/build_oracle_cc1.sh --record-manifest
-# src-digest 330d10ce7c21524ef99eb1d6d35eb9861ee8e092
-# recorded 2026-10-03T13:58:41Z
+# src-digest be7eff9862548a8f5b82283022d28d217beb45a5
+# recorded 2026-10-03T14:17:21Z
 684727a226ea1d212aa6d5f04a7ded04b4aaa4fa  display
 bc60c54aa5534f3e039cc0a020e57bad8be781d0  gpu
 aebf2779ad36e65eb2f400092840ec864004abf1  ings2
@@ -40,6 +40,7 @@ d28bb08439e60b85ef5ca0fd9d7b8dbc24ee8b71  main/87A0
 73e0c389a4c7fbfef9a371e68c2dfe495907cb8b  main/d_1068
 03e6d546770a3bd338da0d7425803b19c0d6c50b  main/d_15EC
 8207ae8f2f3158113bdf3e3e6f1a63f280ba1aed  main/d_5BF0
+4f398904b80aef57be48c5aeffa9fcaa775a2808  main/d_7D870
 fba08034c5a90ac9504ab27d1d9344f197c01999  main/memcard
 7a17777e1d634d4799fb346d6a3a896e86b53ae1  main/psxsdk/libapi/a08
 afdbec649bcb475db650c2199609bee3fb96f68b  main/psxsdk/libapi/a09
@@ -59,6 +60,8 @@ cc1cec215acce42c1f5a5f826c6315e47cbb85f2  main/psxsdk/libapi/a52
 6d3fbcdcd4dc86fd2d6c175c7fffaeab7352aac3  main/psxsdk/libapi/a65
 d89db6339a3edf39e642326b829ced6ea013ecc1  main/psxsdk/libapi/a66
 436bef94d61612e87cb2f70581eed767370e9d4a  main/psxsdk/libapi/a67
+259988c68e1aa9949473cba507d07d3f56930319  main/psxsdk/libapi/a71
+7fa97b6eaaa54a4d9a7eb7242b80e02ae9cf949b  main/psxsdk/libapi/a72
 e12d246e98693633bae82965bfc236865e2685c9  main/psxsdk/libapi/a91
 6444719057eade8cf609f51ccd6852a9a4d58f32  main/psxsdk/libapi/c112
 84f55e9aa5543474bf25002d941df2c53ae2f233  main/psxsdk/libapi/c159
@@ -77,7 +80,6 @@ d5ba30ed992eb95d361c050c944b196b621c0764  main/psxsdk/libc2/sprintf
 26d43c0cd9d105c3e00c58d186d0e759d2d9d078  main/psxsdk/libc2/strcpy
 efdf0fcf172eee0d831821e60b91e3027a6b1ed1  main/psxsdk/libc2/strlen
 8bfd42dad3fafef19985d51b9025ead5270376fc  main/psxsdk/libcomb/comb
-831b3a4202ada242956cea66d21119c0ca50ba7d  main/d_7D870
 d63cb1a187b36abde5fc44fce44df32c5e41219d  system
 aa02790aa1818dba03e44205bfe56e20639ccfb0  text1a_b_post_rodata
 254886b14b7223202b20d1d6517c66eacf97beb8  text1a_b_tail_rodata

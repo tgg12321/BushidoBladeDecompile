@@ -6,7 +6,7 @@
     "size": 606208
   },
   "expected_build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
-  "git_commit": "3e029d84086e9dcc767ac8f46100ab832c92829c",
+  "git_commit": "cb0a98f633371cf3bf62efa30020c9e23fbfc081",
   "toolchain": {
     "cc1_sha1": "ac80146bf50af58f719868de74c860fcdf617d30",
     "maspsx_sources_sha1": "25d24165d44a17a5f5b867617139267a4a847560",
@@ -49,7 +49,7 @@
     "src/main/d_1068.c": "12ec70ad8ec5c9a07cf67682c07f543df15b5e0b",
     "src/main/d_15EC.c": "883f164440c3b02e693194a8ba995246ffa224d9",
     "src/main/d_5BF0.c": "4761d6a720f01825baf9779b0d7e52d2c6bd7580",
-    "src/main/d_7D870.c": "1a240b9641b08a09f3c47834016821c6e360270e",
+    "src/main/d_7D870.c": "8b484bd0553c109a14449b863d9547de8271ba37",
     "src/main/memcard.c": "0c2e5b92d8c28d2e366845f252b2609c50bc45f1",
     "src/main/psxsdk/libapi/a08.c": "ef5b675407df6dbd7e57d16265761a41066b064c",
     "src/main/psxsdk/libapi/a09.c": "058610a215d51ff4b6731b35d624f0627d47c2d4",
@@ -69,6 +69,8 @@
     "src/main/psxsdk/libapi/a65.c": "61814011bbe3fb74f9e8959bd28e0742b0baef61",
     "src/main/psxsdk/libapi/a66.c": "c41b767b4ee8ccb7321b971fa8b3197cdfc9b5c5",
     "src/main/psxsdk/libapi/a67.c": "b5877f7f4422e85ce560250edc8aa006f1e6c5ec",
+    "src/main/psxsdk/libapi/a71.c": "e8484fa23d402fbc1af565d781175097f461351c",
+    "src/main/psxsdk/libapi/a72.c": "00ff47279007391d713959443aca9ba4e2744f09",
     "src/main/psxsdk/libapi/a91.c": "daaee103119e8b5e1523ff5029e81c8477c2cf17",
     "src/main/psxsdk/libapi/c112.c": "93d262c7cb950ed890b99527e70ca05dc64e7958",
     "src/main/psxsdk/libapi/c159.c": "c7cede9341e488038d9897eaa1faf55dfa8a4610",
@@ -100,7 +102,7 @@
     "named_syms.txt": "f12f5bf8931fbff7f82c01483cb4c6175f5c89f9",
     "undefined_funcs_auto.txt": "faba42cf9a3ff26d97d608dadebac645aa24a4dc",
     "undefined_syms_auto.txt": "b0dbfea10f6a95c0acb3139b9f22571dc8d4ebaf",
-    "bb2.ld": "e07bade2a12dc7e2addbe83fb2d298ef1a428da5",
+    "bb2.ld": "f84d6d986885c38ab41bb1507aad62df1094cb10",
     "tools/prologue_config.json": "5f36b2ea290645ee34d943220a14b54ee5ea5be5",
     "maspsx_prefill_label_funcs.txt": "fbcfc22e701730f655212397f3d19bfd43884f1b",
     "maspsx_comm_syms.txt": "68bf36ddc83edce4182ccdfa29360063a27414f2"
