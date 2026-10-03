@@ -815,7 +815,6 @@ extern s16 InfoPosYTbl1[];
 void func_80054884(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
     func_80054604(InfoPosYTbl1[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
 }
-void DrawSync(s32);
 void func_8004659C(s32);
 void func_80046A60(void);
 void func_800548DC(void) {

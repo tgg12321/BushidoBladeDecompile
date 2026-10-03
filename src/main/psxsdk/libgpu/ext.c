@@ -2,6 +2,7 @@
  * 0x8007A4D8..0x8007A788, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
  * D3. */
 #include "common.h"
+#include <psxsdk/libgpu.h>
 
 u16 LoadTPage(s32 a0, s32 mode, s32 a2, s32 a3, s32 texpage, s32 width, s32 clut) {
     s16 buf[4];

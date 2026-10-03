@@ -875,7 +875,6 @@ void game_Stub4(void) {
 void func_800477DC(s32 a0) {
     D_800A33D0 = (s16 *)a0;
 }
-extern u32 GetTPage(s32, s32, s32, s32);
 extern u32 GetClut(s32, s32);
 extern void func_800417D0(s32 *);
 extern s32 D_800EF558[];

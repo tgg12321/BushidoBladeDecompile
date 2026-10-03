@@ -10,6 +10,7 @@
 #include <psxsdk/libcd.h>
 #include <psxsdk/libcomb.h>
 #include <psxsdk/libetc.h>
+#include <psxsdk/libgpu.h>
 #include <psxsdk/libgte.h>
 #include <psxsdk/libsn.h>
 
@@ -1135,8 +1136,6 @@ extern void func_80049584(s32);
 extern s32 func_8005B8B8(s32);
 extern void func_8005C6D0(void);
 extern void ResetGraph(s32);
-extern void SetDispMask(s32);
-extern void DrawSync(s32);
 extern void CdInit(void);
 extern void CdSetDebug(s32);
 extern void CdReadyCallback(s32);

@@ -12,7 +12,6 @@
 /* func_80060A68 .. func_80060E38 moved here from text1b.c: the file boundary follows the per-file gp evidence
  * (owner ruling Q65). */
 /* Declarations from the file this TU was split from (text1b.c). */
-void DrawSync(s32);
 extern s32 rand(void);
 extern u8 D_8009BA60[];
 extern s32 chractar_use_pset_combo_id_table[];
@@ -946,23 +945,6 @@ void func_80062020(s32 *arg0) {
 end:
     D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;
 }
-/* PsyQ LIBGPU.H POLY_FT4 (0x28 bytes), same layout as text1a_c.c's. */
-typedef struct {
-    u32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    u8 u0, v0;
-    u16 clut;
-    s16 x1, y1;
-    u8 u1, v1;
-    u16 tpage;
-    s16 x2, y2;
-    u8 u2, v2;
-    u16 pad1;
-    s16 x3, y3;
-    u8 u3, v3;
-    u16 pad2;
-} POLY_FT4;
 /* Draw the D_800F1198 effect particles (see func_80062020): per record until
    the terminator, pick a sprite size and an animation frame from the record's
    type, rotate/translate its position, project it, and when it lands in range
@@ -4092,7 +4074,6 @@ typedef struct {
 } S_69AE4;
 
 
-extern void SetPolyF4(u8 *p);
 extern void func_80069A8C(u8 *p);
 
 void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
@@ -6342,9 +6323,7 @@ extern DRAWENV *SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
 extern DISPENV *SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
 extern void LoadImage(u8 *, s32);
 extern void ClearImage(s32, s32, s32, s32);
-extern DRAWENV *PutDrawEnv(DRAWENV *);
 extern DISPENV *PutDispEnv(DISPENV *);
-extern void SetDispMask(s32);
 
 s32 func_8006E10C(void) {
     s32 ff0;
@@ -6387,7 +6366,6 @@ s32 func_8006E10C(void) {
     return 1;
 }
 extern u8 D_800A32E0[8];
-extern void DrawSync(s32);
 extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 s32 func_8006E2A8(void) {
     u8 rect[8];

@@ -2,7 +2,8 @@
 #define PSXSDK_LIBC_H
 
 /* PsyQ C library entry points (Sony's libc.h / ctype.h / setjmp.h; SOTN include/psxsdk/libc.h),
- * spelled as BB2's code uses them (the LIBC2 module definitions in src/main/psxsdk/libc2/). */
+ * spelled as BB2's code already spells them: the LIBC2 C definitions in src/main/psxsdk/libc2/,
+ * and for setjmp (an asm module) its caller's declaration. */
 
 #include "common.h"
 

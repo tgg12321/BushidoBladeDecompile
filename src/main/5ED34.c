@@ -20,7 +20,6 @@ extern s32 ClearOTagR(s32, s32);
 extern s32 D_800A36AC;
 extern s32 rcos();
 extern s32 rsin();
-void DrawSync(s32);
 extern s32 g_gpu_ot_ptr;
 typedef struct GameObj {
     u8 field_00; u8 field_01; s16 field_02;
@@ -94,7 +93,6 @@ void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2);
 s32 *func_80077D00(void);
 extern void SetDrawOffset();
 extern void LoadImage(u8 *, s32);
-extern void DrawSync(s32);
 void func_8006E440(s32 *a0);
 s32 func_8006E480(s32 a0_addr, s32 a1);
 s32 func_8006E49C(s32 arg0, s32 *arg1);
@@ -252,7 +250,6 @@ s32 func_8006E8AC(s32 a0) {
     return D_800A35AC + a0 * 44;
 }
 s32* func_80077D00(void);
-void DrawSync(s32);
 
 void func_8006E8CC(s32 *a0) {
     s32 *p;

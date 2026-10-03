@@ -3,8 +3,102 @@
  * D3. */
 /* One file across the old gpu.c|display.c cut at 0x8007B244, which was mid-module (Q106 D3). */
 #include "common.h"
-#include "gpu.h"
+#include <psxsdk/libgpu.h>
 #include "psx.h"
+
+/* PsyQ libgpu device table ("gpu" in the SDK's sys.c): a 0x40-byte struct of
+ * function pointers, the object at D_8009BE2C, reached through the pointer
+ * g_gpu_dev_table (0x8009BE6C).  Member names/offsets are the PsyQ ones; every
+ * index used across src/ maps onto them exactly (p[2]=addque2, p[3]=clr,
+ * p[5]=cwb, p[6]=cwc, p[7]=drs, p[8]=dws, p[0xB]=otc, p[0xD]=reset,
+ * p[0xE]=status, p[0xF]=sync, 0x28/4=getctl, 0x10/4=ctl).
+ *
+ * SetDispMask, DrawSync, ClearImage(2), LoadImage, StoreImage, DrawOTag and
+ * PutDrawEnv call through the members (measured byte-identical). A few other
+ * call sites in this file still use a `(u32 *)` word view of the same
+ * pointer; that is recorded debt, not a codegen requirement. */
+typedef struct GpuDevTable {
+    /* 0x00 */ const char *rcsid;
+    /* 0x04 */ void (*addque)();
+    /* 0x08 */ s32 (*addque2)();
+    /* 0x0C */ s32 (*clr)();
+    /* 0x10 */ void (*ctl)();
+    /* 0x14 */ s32 (*cwb)();
+    /* 0x18 */ void (*cwc)();
+    /* 0x1C */ s32 (*drs)();
+    /* 0x20 */ s32 (*dws)();
+    /* 0x24 */ s32 (*exeque)();
+    /* 0x28 */ s32 (*getctl)();
+    /* 0x2C */ s32 (*otc)();
+    /* 0x30 */ s32 (*param)();
+    /* 0x34 */ s32 (*reset)();
+    /* 0x38 */ u32 (*status)();
+    /* 0x3C */ s32 (*sync)();
+} GpuDevTable;
+
+extern GpuDevTable *g_gpu_dev_table;
+
+/* libgpu SYS state block: one 0x80-byte object at 0x8009BE74 (the one C handle
+ * for these bytes). Evidence that it is one object: ResetGraph clears 0x80 bytes
+ * from its base and then re-fills +0x10 (0x5C) and +0x6C (0x14); SetDispMask,
+ * PutDrawEnv and DrawOTagEnv address disp_env / draw_env off the register that
+ * holds &debug_level (+0x6A, +0xE), which cse's related-value addressing only
+ * does for offsets of ONE symbol. Member names restate the API that owns each
+ * field: GetGraphType/_reset (type), SetGraphQueue (queue_mode), SetGraphDebug
+ * (debug_level), SetGraphReverse (reverse; get_dx mirrors x when set),
+ * ResetGraph's per-type limit tables + the clamps in checkRECT/get_cs/_clr
+ * (width/height), DrawSyncCallback (drawsync_cb), GetDrawEnv/PutDrawEnv
+ * (draw_env), GetDispEnv/PutDispEnv (disp_env). unk08 is set to 1 by _addque2 and
+ * test-and-cleared by _exeque (also the DMA-2 IRQ callback) before it calls drawsync_cb. */
+typedef struct {
+    u8 type;         /* +0x00 */
+    u8 queue_mode;   /* +0x01 */
+    u8 debug_level;  /* +0x02 */
+    u8 reverse;      /* +0x03 */
+    s16 width;       /* +0x04 */
+    s16 height;      /* +0x06 */
+    volatile s32 unk08; /* +0x08 volatile: grant in volatile_extern_allowlist.txt */
+    u32 drawsync_cb; /* +0x0C */
+    DRAWENV draw_env; /* +0x10 */
+    DISPENV disp_env; /* +0x6C */
+} GpuCtx; /* 0x80 */
+
+extern GpuCtx g_gpu_ctx;
+
+/* PsyQ libgpu packet queue (sys.c `static volatile struct QueueItem`): 64
+ * records of 0x60 bytes {callback, argument pointer, the callback's second
+ * argument (a colour, a pixel pointer or 0), 21 data words}. Evidence for the aggregate: the original code of _addque2 and
+ * _exeque scales the queue index by 0x60 (x3 then sll 5) and adds it to
+ * these addresses, and the copy loop parks &D_8010368C in a base register
+ * and stores through base + i*4 + slot*0x60 -- one object addressed by
+ * base + offset, not symbol adjacency. Replaces the splat per-word scalars
+ * D_80103680 / D_80103684 / D_80103688 / D_8010368C.
+ * volatile: Sony's own qualifier on this object (the queue is drained by
+ * _exeque from DMA-IRQ context); grant in volatile_extern_allowlist.txt. */
+typedef struct GpuQueueItem {
+    /* 0x00 */ s32 (*func)(s32 *, s32);
+    /* 0x04 */ s32 *arg;
+    /* 0x08 */ s32 cb_arg;  /* the callback's second argument */
+    /* 0x0C */ s32 data[21];
+} GpuQueueItem; /* size 0x60 */
+
+extern volatile GpuQueueItem _que[64];
+
+/* PsyQ libgpu sys.c DR_ENV packet buffer (the `_clr` split-clear / fill
+ * packet): one tag word + up to 15 command words at 0x800F1858.  Evidence for
+ * the aggregate from the ORIGINAL code of _clr: it materialises &code[8]
+ * (0x800F187C) into a base register and stores 0x03FFFFFF through it, and
+ * the tag word carries that same address -- one object addressed by base +
+ * offset, not thirteen adjacent scalars.  Replaces splat's per-word names
+ * D_800F185C..D_800F1888 (retired from the symbol config; this aggregate is
+ * the sole handle).  Stock PsyQ DR_ENV is 0x40 bytes;
+ * the next object (g_gpu_color_table, 0x800F189C) starts at +0x44. */
+typedef struct GpuDrEnv {
+    /* 0x00 */ u32 tag;
+    /* 0x04 */ u32 code[15];
+} GpuDrEnv; /* size 0x40 */
+
+extern GpuDrEnv D_800F1858;
 #include <psxsdk/libetc.h>
 
 /* .rodata 0x80015E28..0x8001605C: this module's strings (moved from src/text1a_b_post_rodata.c, Q106
@@ -1049,7 +1143,7 @@ extern s32 D_8009BF84;
 /* LIBGPU/SYS `_addque2` — reference sotn-decomp src/main/psxsdk/libgpu/sys.c:744
  * (older library revision: per-store re-index of the volatile queue head,
  * 0x60-byte slots = func / arg / cb_arg / 21 data words). */
-/* GpuQueueItem and `extern volatile GpuQueueItem _que[64];` are declared in include/gpu.h. */
+/* GpuQueueItem and `extern volatile GpuQueueItem _que[64];` are declared at the top of this file. */
 
 s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 cb_arg) {
     s32 i;

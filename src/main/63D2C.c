@@ -45,28 +45,11 @@ extern s32 func_8006E480();
 extern s32 func_8007352C();
 void SetRotMatrix(u8 *);
 void SetRotMatrix(u8*);
-typedef struct {
-    u32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    u8 u0, v0;
-    u16 clut;
-    s16 x1, y1;
-    u8 u1, v1;
-    u16 tpage;
-    s16 x2, y2;
-    u8 u2, v2;
-    u16 pad1;
-    s16 x3, y3;
-    u8 u3, v3;
-    u16 pad2;
-} POLY_FT4;
 extern s32 SetShadeTex(s32, s32);
 extern void SetPolyFT4(void *);
 void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2);
 void func_80069A30(u8 *a0);
 void func_80069A8C(u8 *a0);
-extern void SetPolyF4(u8 *p);
 extern void func_80069A8C(u8 *p);
 extern const u8 D_800159A0[16];
 typedef struct EnvA {

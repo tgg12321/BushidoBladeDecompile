@@ -2,7 +2,7 @@
  * 0x8007A788..0x8007AE7C, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
  * D3. */
 #include "common.h"
-#include "gpu.h"
+#include <psxsdk/libgpu.h>
 #include "psx.h"
 
 /* .rodata 0x80015D58..0x80015E28: this module's strings (moved from src/text1a_b_post_rodata.c, Q106 D4:
