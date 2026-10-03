@@ -1253,3 +1253,13 @@ decisions D1-D10 as tabled there (D6 amended: subsystem file names where the fil
 otherwise ROM-offset names). D3 (LIBSCAN module span is TU-boundary evidence for library code) and D4 (data-only
 rodata folds into its proven owner) are rule text in rodata-object-alignment.md § New TU boundaries; D8 keeps bb2.ld
 hand-maintained (plus a checker).
+
+## 2026-10-03 — OWNER RULINGS — Q107-Q109: verb principle; C68/SENDPAD boundary fix; sound-library gap splits
+
+Forty-seventh batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 47). Q107: typed-restatement T4 is a
+principle — the verb describes the whole effect (every store and the return); the closed list is examples; game nouns
+still need an accepted class. Q108: asm/funcs/FlushCache.s is split at 0x80079000 into FlushCache (4-word BIOS stub) and
+_SendPAD (LIBAPI SENDPAD), each in its own module file; a splat boundary fix, bytes unchanged. Q109: sound-library (LIBSND/LIBSPU) gap
+files may be cut at module starts whose first function is identified by the libscan xref or near tier; each cut is a
+byte-identical move (rodata-object-alignment.md conditions 2/4); unidentified regions stay gap files. Rule text:
+docs/naming/sweep-2026-10-03/README.md (T4); rodata-object-alignment.md § New TU boundaries (Q109).

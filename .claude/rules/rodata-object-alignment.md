@@ -38,7 +38,8 @@ be added only when ALL hold, recorded in the evidence doc per site:
 
 Library code (owner ruling Q106 D3): a LIBSCAN verbatim module span (docs/naming/libscan/) is existence and
 cut evidence for a boundary at that module's start, including re-cuts of a current mid-module cut; an
-unidentified gap between placed modules stays one file; conditions 2 and 4 above still apply. A data-only rodata file folds into its proven owning
+unidentified gap between placed modules stays one file, except that a LIBSND/LIBSPU gap may be cut at a module start whose first
+function the libscan xref or near tier identifies (owner ruling Q109); conditions 2 and 4 above still apply. A data-only rodata file folds into its proven owning
 TU (Q106 D4: sole referrer, contiguous, in link order).
 
 Boundaries proven by the per-file gp model ([[per-file-gp-model]]) take existence from its split test instead

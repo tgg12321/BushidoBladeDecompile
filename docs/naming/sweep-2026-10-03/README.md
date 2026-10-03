@@ -149,17 +149,17 @@ against its class test (default refute) before applying.
   - Obj80106A78 `age`: it counts only while unk_50 != 0.
   - Record `pad` (+0x24): it is not a VERIFIED API argument, and the CPU-side writer's source is the
     func_80055B60 synthesized record.
-- `pad_ResetStateMarkValid` 0x80019534: still refused after the Q105 re-check, now on T4. `valid[2]` passes,
-  but "Mark" is not on the closed verb list (Q105 amended only T5). The listed verbs do not fit the
-  `valid[0] = valid[1] = 1` stores: "Set" means storing arguments, and "Reset ... Valid" reads as clearing
-  the flags. The function stays `func_80019534`, and the PadState header comment records its store.
+- `pad_ResetStateMarkValid` 0x80019534: refused after the Q105 re-check on the then-closed T4 list
+  ("Mark" was not listed; "Set" means storing arguments, and "Reset ... Valid" reads as clearing the flags).
+  Owner ruling Q107 made T4 a principle; the rename is to be applied in hand-off work item D. Until then
+  the function is `func_80019534`, and the PadState header comment records its store.
 - basis-withdrawn, 3 aliases: the parents of `cpu_helper_80026DA4` / `cpu_helper_80029454`
   (`cpu_exec_main_game_loop_frame` 0x8002C61C) and `cpu_helper_8003F3D4`
   (`cpu_init_stage_and_camera_setup` 0x8001E404) are MEDIUM v3 rows that were never reset, so their basis
   stands.
 
 1. **New class `typed-restatement`** (CORROBORATED tier). A name may restate a matched C body
-   built only from admitted objects, using a closed verb list. The class has six tests:
+   built only from admitted objects, with a verb that describes the whole effect (T4 as amended by Q107). The class has six tests:
    - T1: the function is matched.
    - T2: at most 12 statements, no `jalr`, and all callees are VERIFIED or CORROBORATED.
    - T3: every touched object is admitted by an accepted row.
@@ -176,7 +176,9 @@ against its class test (default refute) before applying.
    - The Obj80106A78 members `pos` / `prev_pos` / `vel` / `rot` / `rot_vel` / `mtx` / `slot` / `owner`.
    - PracticeMenuRec `other` / `index`.
 
-   Verbs (fixed meanings): Get (return a member, no store), Set (store args), Clear (zero/neutral
+   **T4 as amended by owner ruling Q107 (2026-10-03):** the verb must describe the whole effect (every
+   store and the return); game nouns still need an accepted class. Examples (the former closed list,
+   fixed meanings): Get (return a member, no store), Set (store args), Clear (zero/neutral
    constants to exactly the named members), Reset (the full store list), Copy, Swap, Find (linear
    search returning an entry or NULL), Has (0/1), Count/Sum, Open/Close (a VERIFIED Sony call
    restated); literal ids go in the name. **T5 as amended by owner ruling Q105 (2026-10-03):** a

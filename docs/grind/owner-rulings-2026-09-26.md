@@ -1036,3 +1036,18 @@ Owner, verbatim: "Go ahead and make that change if you think it makes sense. I w
 Context: the owner asked how to make the codebase human readable and organized like SOTN; the orchestrator recommended a phased restructure (layout, then types, then names) and ran a read-only Phase 1 survey, presenting decisions D1-D10 with recommendations, amending the survey on D6 (subsystem file names where the file's functions already carry accepted names, address names otherwise).
 Owner, verbatim: "This looks good. Save the plan and get it ready as a handoff. So I can provide it to an agent with fresh context to work through"
 Recorded as Q106 with the decisions as presented (table in docs/grind/handoff-2026-10-03-restructure.md § 1).
+
+# Owner rulings 2026-10-03 (forty-seventh batch, conversation) — VERBATIM RECORD
+
+Context: the owner asked for recommendations, "keeping in mind our SOTN standards", on the three open items of
+docs/grind/handoff-2026-10-03-restructure.md § 3. The orchestrator recommended:
+- Q107: typed-restatement T4's closed verb list becomes a principle: a function name's verb must describe the whole
+  effect (every store and the return); the list stays as examples; the game-noun bar stays. 0x80019534 ->
+  pad_ResetStateMarkValid follows.
+- Q108: split LIBAPI C68 and SENDPAD. asm/funcs/FlushCache.s holds the 4-word FlushCache BIOS stub (ends 0x80078FFC)
+  plus Sony's separate _SendPAD function from 0x80079000 (own frame and return; docs/naming/libscan/boundary_fixes.md).
+  Fixing that splat boundary gives FlushCache, _SendPAD and the SENDPAD module their own files, bytes unchanged.
+- Q109: split the sound-library gap files at module starts identified by the xref or near tier, only where the
+  module's first function is identified at that tier and each cut is a byte-identical move; unidentified regions stay
+  gap files.
+Owner, verbatim: "Sure go ahead with your recommendations"

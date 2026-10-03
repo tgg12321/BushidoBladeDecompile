@@ -63,6 +63,13 @@ a fresh adversarial `cheat-reviewer` PASS where a function body, rule or gate fi
   **Status: done** (37d769472 type[2]/valid[2]/kind; 0c813f2d7 0x80019534 refused on T4).
 - **C. Phase 1 restructure** (Part C below). Tag `pre-restructure-<date>` first, then freeze the tree for
   the moves.
+- **D. Q107-Q109 follow-ups** (after step 5): apply 0x80019534 -> pad_ResetStateMarkValid via naming_wave; split
+  asm/funcs/FlushCache.s at 0x80079000 into FlushCache.s + _SendPAD.s and libapi/c68.c into c68.c + sendpad.c;
+  rewrite FlushCache's inline_asm_canonical.txt row comment (its "unreachable tail" premise moves out). _SendPAD is
+  an ordinary framed function (lw through D_800A362C, jalr, jr $ra): run the `canonical` gate on it and decompile it
+  to C (COMPLETED-C via layer-2); if no honest C matches, it stays INCLUDE_ASM and queued (no canonical grant without
+  its own evidence). Cut the sound-library (LIBSND/LIBSPU) gap
+  files at xref/near-tier module starts (rodata-object-alignment.md, conditions 2/4).
 - **Later:** Phase 2 types (make Unk80101EC8Record / Obj80106A78 the "Entity"; ~1,238 raw-offset casts;
   fix the conflicting declarations, worklist memory/grind/restructure-2026-10-03/step5/phase2_conflicts.tsv,
   and the u8 * / s32 * callee prototypes). Phase 3 names (owner to
@@ -71,23 +78,9 @@ a fresh adversarial `cheat-reviewer` PASS where a function body, rule or gate fi
 
 ## 3. Open debt carried (not in A-C)
 
-- **Owner question (pending):** should typed-restatement's T4 verb list become a principle like Q105's
-  nouns? It blocks only 0x80019534 → pad_ResetStateMarkValid ("Mark" is not a listed verb; refused 0c813f2d7).
-- **Owner question (pending, restructure 4a):** two Sony library pieces, FlushCache and the pad-sending
-  routine `_SendPAD` that follows it, sit in one assembly file (`asm/funcs/FlushCache.s`) because the original
-  split tool merged them. May we cut that file in two and give the second piece its own name and its own entry
-  in the approved-assembly list (same evidence as FlushCache's)? Yes: `libapi/c68.c` (FlushCache) and
-  `libapi/sendpad.c` become separate files like every other module. No: both stay in `libapi/c68.c`, whose top
-  comment says why.
-- **Owner question (pending, restructure 4f):** Bushido Blade 2 uses an in-between build of Sony's sound
-  library (newer than our PsyQ 4.0 copies, older than 4.1), so nine stretches of it (in `libsnd/` and
-  `libspu/`) match none of our reference copies module by module, and each sits in one file named by its
-  address. For many functions in those stretches we already
-  know the Sony name and module from calls made by matched modules (e.g. `_SsSndCrescendo` and
-  `_SsSndDecrescendo`, which Sony ships as two modules, CRES and DECRES). May we split those stretches at the
-  functions whose Sony module is known this way? Yes: e.g. `libsnd/749E0.c` becomes `cres.c` and `decre.c`,
-  and similarly for the other stretches (each file's top comment states the naming evidence). No: each
-  stretch stays one address-named file, as now (owner ruling Q106 D3 as written).
+- **Answered (Q107-Q109, 2026-10-03):** T4 verb principle (0x80019534 -> pad_ResetStateMarkValid); C68/SENDPAD split
+  via the FlushCache.s boundary fix (Q108); sound-library gap files cut at xref/near-tier module starts (Q109). Work
+  order item D below.
 - func_80031B24 hands `&D_800A37E8` to func_800274BC / func_80032854 unlabelled (outside Q96).
 - Q97's struct form is unmeasured; Q96-Q99 retire as soon as a one-object spelling matches.
 - Hygiene rows in the 2026-10-03 commit bodies (`git log --grep="Hygiene debt" --since=2026-10-03`).
@@ -781,7 +774,7 @@ Jun-06 4.0 build; 30 LIBSPU incl. spu.c; libapi/a13, a10) and one per unplaced r
 through SndSeqTickEnv's raw .data word, not by SSSTART's C, so the SSSTART|SSCALL cut changes no linkage. R1:
 every LIBSND/LIBSPU jump table is 8-aligned in its own object. Declarations per part are chosen mechanically
 (step4/split4f.py, citems.py) and checked (implchk.py, l2cmp.py). No file named system.c, ings2.c, main.c or
-text1a_b_*_rodata.c remains. Open: the gap files' xref/near-tier module starts (§ 3 owner question).
+text1a_b_*_rodata.c remains. Gap files' xref/near-tier module starts: Q109, work item D.
 
 **Status step 5a (2026-10-03):** done: 0c2f2aa60 (tools/Makefile: include/**/*.h and src/**/*.h globs),
 f121c2b07 (LIBSPU: include/psxsdk/libspu.h + src/main/psxsdk/libspu/libspu_internal.h), 9b9edd713 (LIBSND:
