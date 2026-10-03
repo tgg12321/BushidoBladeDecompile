@@ -1,0 +1,1 @@
+{"func": "func_80031B24", "addr": "80031B24", "verdict": "PASS", "body_hash": "eaa0b89feccae612", "body_kind": "c", "file": "code6cac_b_tu2", "reviewer": "rv2-q96-ad8-member", "scope": "cheat-cleanup", "date": "2026-10-03T08:02:01Z", "head": "24f5f0834", "notes": "Q96 vec FAKE; func_80027AD8 retyped to PracticeMenuRec * members (item 4); oracle ok"}

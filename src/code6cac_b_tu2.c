@@ -370,8 +370,8 @@ void func_80027A58(s32 *a0) {
 }
 extern void func_800203B4(u8 *, s32, s16 *);
 extern u8 D_8008EB74[3][2][2];
-s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
-    /* tbl, tbl_arg: copies of the stack-passed parameter `rec`, kept because GCC 2.7.2
+s32 func_80027AD8(s32 pass, PracticeMenuRec *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
+    /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec`, kept because GCC 2.7.2
      * halves the register priority of an unmodified stack parameter (local-alloc doubles
      * its live length); Ruling 12. */
     Tbl8008E194 *tbl;     /* the record, read field by field */
@@ -379,7 +379,7 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     s16 *vec;
     u8 *scr;
     s32 player;
-    u8 *opp;
+    PracticeMenuRec *opp;
     s32 dot;
     s32 dot_lo;
     u16 st;
@@ -389,57 +389,60 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     s32 same;
     s32 code;
 
+    /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached by the first's address: handed to
+     * func_800203B4 and read here as vec[0..2] (owner ruling Q96). Declared as s16[3] or {x,y,z}, cse rewrites the dot's [0] read to
+     * this register (score 2; memory/grind/judge-decl-cleanup/followups/func_80027AD8.vec-investigation.md). */
     vec = &D_800A37E8;
-    player = *(s16 *)(ch + 4);
-    opp = *(u8 **)ch;
+    player = ch->unk_04;
+    opp = ch->unk_00;
     tbl = rec;
     tbl_arg = rec;
-    scr = (u8 *)0x1F8000A8 + player * 0x108 + limb * 12;
+    scr = (u8 *)&SPAD->unkA8[player][limb];
     *out = 0;
-    if (*(s16 *)(ch + 0xC) == 0x1C) {
-        dot = (*(s32 *)(ch + 0x1EC) * D_800A37E8 + *(s32 *)(ch + 0x1F0) * D_800A37EA +
-               *(s32 *)(ch + 0x1F4) * D_800A37EC) >> 12;
+    if (ch->unk_0C == 0x1C) {
+        dot = (ch->unk_1EC.x * D_800A37E8 + ch->unk_1EC.y * D_800A37EA +
+               ch->unk_1EC.z * D_800A37EC) >> 12;
         dot &= 0x1FFF;
         if (dot >= 0x1000) {
             dot -= 0x2000;
         }
         dot_lo = dot < 0x400;
         if (!((0xE >> limb) & 1) || dot_lo) {
-            if (*(s16 *)(ch + 0x96) == 0) {
-                *(s16 *)(ch + 0x286) = 0x1E;
+            if (ch->unk_96 == 0) {
+                ch->unk_286 = 0x1E;
             }
-            if (pass == 0 && *(s16 *)(opp + 0x286) == -1) {
-                *(s16 *)(opp + 0x286) = tbl == NULL ? 0xB : 0x19;
+            if (pass == 0 && opp->unk_286 == -1) {
+                opp->unk_286 = tbl == NULL ? 0xB : 0x19;
             }
             func_80032854(player, 0x12, scr, 0);
             return 0;
         }
     }
-    if (*(s16 *)(ch + 0xC) == 0xD && *(s16 *)(ch + 0x96) == 0 && *(u16 *)(ch + 0x6A) != 0x2E) {
-        func_80027640((s32)ch);
+    if (ch->unk_0C == 0xD && ch->unk_96 == 0 && ch->unk_6A != 0x2E) {
+        func_80027640(ch);
         return 2;
     }
-    st = *(u16 *)(ch + 0x6A);
+    st = ch->unk_6A;
     if (st == 4 || st == 0x14) {
-        func_800203B4(ch, limb, vec);
+        func_800203B4((u8 *)ch, limb, vec);
         func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
         return 1;
     }
-    if (*(s16 *)(ch + 0xC) == 0x1F) {
-        func_800203B4(ch, limb, vec);
+    if (ch->unk_0C == 0x1F) {
+        func_800203B4((u8 *)ch, limb, vec);
         func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
-        *(s16 *)(ch + 0x286) = 7;
+        ch->unk_286 = 7;
         return 1;
     }
-    if ((st == 2 || st == 0x1B || st == 0x28 || st == 0x26) && *(s16 *)(ch + 0x40) < *(u8 *)(ch + 0xA0)) {
+    if ((st == 2 || st == 0x1B || st == 0x28 || st == 0x26) && ch->unk_40 < ch->unk_A0) {
         if (pass == 0) {
-            diff = *(s16 *)(opp + 0x20) - *(s16 *)(ch + 0x20);
+            diff = opp->unk_20 - ch->unk_20;
             cat = func_800272FC(diff);
             sign = (u32)diff >> 31;
-            same = ch[0xAF] == opp[0xAF];
-            ch[0xB4] = opp[0xB4] = same;
+            same = ch->unk_AF == opp->unk_AF;
+            ch->unk_B4 = opp->unk_B4 = same;
             func_80032854(player, same ? 0xF : 2, scr, 0);
-            code = *(s16 *)(ch + 0x286) = D_8008EB74[cat][sign][same];
+            code = ch->unk_286 = D_8008EB74[cat][sign][same];
             if (code == 0) {
                 func_80032854(player == 0, 0x25, scr, 0);
                 func_80032854(player, 0x25, scr, 0);
@@ -455,13 +458,13 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
             } else {
                 return 0;
             }
-            if (*(s16 *)(ch + 0x286) != 2) {
+            if (ch->unk_286 != 2) {
                 return 0;
             }
             if (vec[1] * vec[1] < vec[0] * vec[0] + vec[2] * vec[2]) {
                 func_8001F860((s16 *)ch, ratan2(vec[0], vec[2]));
-                *(s32 *)(ch + 0x134) -= vec[0] / 16;
-                *(s32 *)(ch + 0x13C) -= vec[2] / 16;
+                ch->unk_134.vx -= vec[0] / 16;
+                ch->unk_134.vz -= vec[2] / 16;
             }
             return 0;
         }
@@ -469,17 +472,17 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
             if (tbl->unkC == 0) {
                 func_80032854(player, 2, scr, 0);
                 func_80032854(player, 0x25, scr, 0);
-                *(s16 *)(ch + 0x286) = 0;
+                ch->unk_286 = 0;
                 *out = pass;
                 return 0;
             }
             if (tbl->unkC == 1) {
                 func_80032854(player, 2, scr, 0);
                 func_80032854(player, 0x25, scr, 0);
-                *(s16 *)(ch + 0x286) = 1;
+                ch->unk_286 = 1;
                 func_8001F860((s16 *)ch, ratan2(vec[0], vec[2]));
-                *(s32 *)(ch + 0x134) -= vec[0] / 16;
-                *(s32 *)(ch + 0x13C) -= vec[2] / 16;
+                ch->unk_134.vx -= vec[0] / 16;
+                ch->unk_134.vz -= vec[2] / 16;
                 *out = pass;
                 return 0;
             }
@@ -489,23 +492,23 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
         func_8002738C(0, limb);
     }
     func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
-    st = *(u16 *)(ch + 0x6A);
+    st = ch->unk_6A;
     if (st == 6 || st == 9) {
         if (flag) {
-            *(s16 *)(ch + 0x286) = *(s16 *)(ch + 0x1DA) ? 6 : 7;
-            func_800203B4(ch, limb, vec);
+            ch->unk_286 = ch->unk_1DA ? 6 : 7;
+            func_800203B4((u8 *)ch, limb, vec);
             return 1;
         }
-        *(s16 *)(ch + 0x286) = *(s16 *)(ch + 0x1DA) ? 3 : 4;
+        ch->unk_286 = ch->unk_1DA ? 3 : 4;
         func_80032854(player, 3, scr, 0);
-        func_80027438(ch, limb, 1);
+        func_80027438((u8 *)ch, limb, 1);
         return 0;
     }
     if (pass == 1 && tbl->unk0 == 4) {
-        s16 kind = *(s16 *)(ch + 0xA);
+        s16 kind = ch->unk_0A;
         if (kind == 2 || kind == 4 || kind == 0xE || kind == 0xF) {
-            func_80027438(ch, limb, tbl->unkD == 2 ? 2 : 1);
-            *(s16 *)(ch + 0x286) = 0x1B;
+            func_80027438((u8 *)ch, limb, tbl->unkD == 2 ? 2 : 1);
+            ch->unk_286 = 0x1B;
             func_80032854(player, 3, scr, 0);
             return 0;
         }
@@ -513,20 +516,20 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     switch (limb) {
     case 0:
         if (flag) {
-            *(s16 *)(ch + 0x286) = thresh > 0x400 ? 6 : 9;
-            func_800203B4(ch, limb, vec);
+            ch->unk_286 = thresh > 0x400 ? 6 : 9;
+            func_800203B4((u8 *)ch, limb, vec);
             func_80027A58((s32 *)ch);
             return 1;
         }
         /* FAKE: duplicate the real count/return tail across switch arms so flow.c
          * raises tbl's reg_n_refs before jump2 cross-jump merges it. */
         if (pass == 1 && tbl->unkD == 2) {
-            (*(u16 *)(ch + 0x272))++;
+            ch->unk_272++;
         }
         if (D_800A38DC != 5) {
-            (*(u16 *)(ch + 0x272))++;
+            ch->unk_272++;
         }
-        *(s16 *)(ch + 0x286) = 5;
+        ch->unk_286 = 5;
         func_80032854(player, 3, scr, 0);
         func_80027A58((s32 *)ch);
         return 0;
@@ -534,20 +537,20 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     case 2:
     case 3:
         if (flag) {
-            *(s16 *)(ch + 0x286) = thresh > 0x400 ? 7 : 9;
-            func_800203B4(ch, limb, vec);
+            ch->unk_286 = thresh > 0x400 ? 7 : 9;
+            func_800203B4((u8 *)ch, limb, vec);
             func_80027A58((s32 *)ch);
             return 1;
         }
         /* FAKE: duplicate the real count/return tail across switch arms so flow.c
          * raises tbl's reg_n_refs before jump2 cross-jump merges it. */
         if (pass == 1 && tbl->unkD == 2) {
-            (*(u16 *)(ch + 0x272))++;
+            ch->unk_272++;
         }
         if (D_800A38DC != 5) {
-            (*(u16 *)(ch + 0x272))++;
+            ch->unk_272++;
         }
-        *(s16 *)(ch + 0x286) = 5;
+        ch->unk_286 = 5;
         func_80032854(player, 3, scr, 0);
         func_80027A58((s32 *)ch);
         return 0;
@@ -557,18 +560,18 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
             /* FAKE: duplicate the real count/return tail across switch arms so flow.c
              * raises tbl's reg_n_refs before jump2 cross-jump merges it. */
             if (pass == 1 && tbl->unkD == 2) {
-                (*(u16 *)(ch + 0x272))++;
+                ch->unk_272++;
             }
             if (D_800A38DC != 5) {
-                (*(u16 *)(ch + 0x272))++;
+                ch->unk_272++;
             }
-            *(s16 *)(ch + 0x286) = 5;
+            ch->unk_286 = 5;
             func_80032854(player, 3, scr, 0);
             func_80027A58((s32 *)ch);
             return 0;
         }
-        *(s16 *)(ch + 0x286) = thresh > 0x400 ? 8 : 9;
-        func_800203B4(ch, limb, vec);
+        ch->unk_286 = thresh > 0x400 ? 8 : 9;
+        func_800203B4((u8 *)ch, limb, vec);
         func_80027A58((s32 *)ch);
         return 1;
     case 6:
@@ -576,22 +579,22 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     case 8:
     case 9:
         if (D_800A38DC != 5) {
-            *(s16 *)(ch + 0x26C) = 0;
+            ch->unk_26C = 0;
         }
-        *(s16 *)(ch + 0x286) = 4;
-        *(s16 *)(ch + 0x90) = 0;
+        ch->unk_286 = 4;
+        ch->unk_90 = 0;
         func_80032854(player, 3, scr, 0);
         func_80027A58((s32 *)ch);
-        *(s16 *)(ch + 0x8A) = 0;
+        ch->unk_8A = 0;
         return 0;
     case 10:
     case 11:
     case 12:
     case 13:
         if (D_800A38DC != 5) {
-            (*(u16 *)(ch + 0x270))++;
+            ch->unk_270++;
         }
-        *(s16 *)(ch + 0x286) = 5;
+        ch->unk_286 = 5;
         func_80032854(player, 3, scr, 0);
         func_80027A58((s32 *)ch);
         return 0;
@@ -604,9 +607,9 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     case 20:
     case 21:
         if (D_800A38DC != 5) {
-            (*(u16 *)(ch + 0x26E))++;
+            ch->unk_26E++;
         }
-        *(s16 *)(ch + 0x286) = 3;
+        ch->unk_286 = 3;
         func_80032854(player, 3, scr, 0);
         func_80027A58((s32 *)ch);
         return 0;
@@ -1708,7 +1711,8 @@ void func_8002AB08(s32 mode) {
      * one pseudo with a REG_EQUIV to the symbol (local-alloc.c update_equiv_regs) that global.c
      * leaves unallocated (lowest priority, live across the whole function), so reload1.c substitutes
      * the symbol at each use; spelled directly, cse keeps the address in one callee-saved register
-     * across the first call. Same local as func_80027AD8's `vec = &D_800A37E8;` in this file. */
+     * across the first call. Same local as func_80027AD8's `vec = &D_800A37E8;` in this file; the
+     * three scalars reached through it as one vector: owner ruling Q96. */
     s16 *vec = &D_800A37E8;
     s32 i;
 
@@ -2070,7 +2074,7 @@ void func_8002AB08(s32 mode) {
         /* func_80027AD8's sixth argument is a record pointer on its pass-1 calls (func_80031B24) and,
          * on this pass-0 call, the 0/1 alternate-blade flag the target passes in that slot: its
          * `tbl == NULL ? 0xB : 0x19` picks the same reaction func_80029454 picks from +0x8C. */
-        func_80027AD8(0, (u8 *)self, idx, ang, strong, (Tbl8008E194 *)alt, flag, 0);
+        func_80027AD8(0, self, idx, ang, strong, (Tbl8008E194 *)alt, flag, 0);
         other->unk_AD = 0;
     }
 }
@@ -5251,7 +5255,7 @@ void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
     ent->unk_2C.y += ent->unk_44.y / 2;
     ent->unk_2C.z += ent->unk_44.z / 2;
 }
-extern s32 func_80027AD8(s32, u8 *, s32, s32, s32, Tbl8008E194 *, s32, s32 *);
+extern s32 func_80027AD8(s32, PracticeMenuRec *, s32, s32, s32, Tbl8008E194 *, s32, s32 *);
 void func_80031B24(void) {
     u8 *scr = (u8 *)0x1F8002B8;
     s32 i;
@@ -5311,7 +5315,7 @@ void func_80031B24(void) {
         obj->unk_2C.x -= obj->unk_44.x / 2;
         obj->unk_2C.y -= obj->unk_44.y / 2;
         obj->unk_2C.z -= obj->unk_44.z / 2;
-        r = func_80027AD8(1, (u8 *)ch, j, diff, deep, &D_8008E194[obj->unk_02], 0, &flag);
+        r = func_80027AD8(1, ch, j, diff, deep, &D_8008E194[obj->unk_02], 0, &flag);
         if (r == 2) continue;
         if (r != 0) {
             func_80032854((obj->unk_02 ^ D_800A36F2[0]) != 0, 0x2B, (u8 *)&SPAD->unkA8[other][j], 0);
