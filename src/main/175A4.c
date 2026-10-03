@@ -1,3 +1,5 @@
+/* One game function, func_80026DA4. .text 0x80026DA4 (ROM 0x175A4). Start boundary: LEGACY (a
+ * tooling split, no evidence either way); also the first file of the EXPAND_LB run. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

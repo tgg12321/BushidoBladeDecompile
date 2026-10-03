@@ -1,3 +1,5 @@
+/* 5 game functions. .text 0x8007352C (ROM 0x63D2C). Start boundary: G8 (the end of 5ED34.c's -G8
+ * unit). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

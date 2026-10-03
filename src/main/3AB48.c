@@ -1,3 +1,6 @@
+/* 153 game functions: GTE and math helpers (gte_SetRotTransMatrix, math_SquareRoot0,
+ * math_LerpMatrix3x3, ...) and the sound-bank loader (snd_Init, snd_Quit, snd_LoadCommonVab,
+ * snd_VabOpen, ...). .text 0x8004A348 (ROM 0x3AB48). Start boundary: G8 (the Q89 cut). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "gpu.h"

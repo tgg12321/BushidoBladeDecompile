@@ -1,5 +1,5 @@
-/* The CD-mix setters cdrom_SetMix and func_80035F78, moved unchanged out of
- * code6cac_b2_post.c into their own translation unit compiled -G8 (Makefile
+/* The CD-mix setters cdrom_SetMix and func_80035F78. .text 0x80035F30 (ROM 0x26730).
+ * Start boundary: G8. Their own translation unit, compiled -G8 (Makefile
  * GP_FILES): their original bytes write g_cd_atv / D_800A36B8 / D_800A3854 /
  * D_800A3840 straight off $gp, which the original compiler emits only at -G8.
  * g_cd_atv and D_800A36B8 are declared here the way their bytes show the

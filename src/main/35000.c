@@ -1,3 +1,5 @@
+/* 44 game functions. .text 0x80044800 (ROM 0x35000). Start boundary: GP (a per-file gp split,
+ * Q65). */
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"

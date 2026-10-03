@@ -1,3 +1,6 @@
+/* 93 game functions, among them math_SignExt12Div, math_FloorDiv2000, math_RotMatrixZYXAngles and
+ * pad_ClearStateBits. .text 0x8001979C (ROM 0x9F9C). Start boundary: PHASE (a jump-table phase
+ * change, docs/grind/rodata-align-2026-09-30.md site 1). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

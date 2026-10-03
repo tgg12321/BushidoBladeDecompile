@@ -1,3 +1,5 @@
+/* func_800343F0 and func_800344B4. .text 0x800343F0 (ROM 0x24BF0). Start boundary: PHASE
+ * (rodata-align site 3), placed by the per-file gp model (Q65). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

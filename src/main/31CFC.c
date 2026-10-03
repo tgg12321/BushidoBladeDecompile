@@ -1,11 +1,10 @@
-/* text1a_svc.c -- save_vc_ctrl's own translation unit, linked by bb2.ld between
- * text1a_pre_tu2 and text1a_post (the slot the raw asm object held since
- * 4fd7a997a). One function per TU, so the -G8 TARGET_FILE_SWITCHING float that
- * forced the raw-asm object cannot reorder anything here.
+/* save_vc_ctrl alone. .text 0x800414FC (ROM 0x31CFC). Start boundary: LEGACY (a tooling
+ * split inside the -G8 run, no evidence either way). One function per TU, so the -G8
+ * TARGET_FILE_SWITCHING float cannot reorder anything here.
  *
  * save_vc_ctrl is plain C: its 8-byte frame that no instruction touches is cc1's
  * stack slot for the folded `i != -1` loop guard (.claude/rules/phantom-slot-frame-lever.md,
- * producer 1), as in gpu_SetDrawMoveArray (src/code6cac_c2.c).
+ * producer 1), as in gpu_SetDrawMoveArray (src/main/2B344.c).
  */
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1

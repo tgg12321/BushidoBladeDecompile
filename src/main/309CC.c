@@ -1,3 +1,5 @@
+/* 12 game functions, among them gpu_AddDrawMove. .text 0x800401CC (ROM 0x309CC). Start boundary:
+ * G8 (cc1 -G8 by proof). */
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"

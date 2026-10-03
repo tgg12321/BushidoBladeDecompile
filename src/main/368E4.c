@@ -1,3 +1,6 @@
+/* 103 game functions, among them rcnt_StartCnt1, rcnt_GetCnt1, math_GrayscaleRgb555 and
+ * math_Grayscale3. .text 0x800460E4 (ROM 0x368E4). Start boundary: GP (a per-file gp merge, Q67);
+ * compiled -G8 (Q89). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "gpu.h"

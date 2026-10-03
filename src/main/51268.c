@@ -1,3 +1,5 @@
+/* 147 game functions. .text 0x80060A68 (ROM 0x51268). Start boundary: PHASE (rodata-align section
+ * 9), moved by the per-file gp model. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

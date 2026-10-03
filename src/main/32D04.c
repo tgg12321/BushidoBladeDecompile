@@ -1,3 +1,6 @@
+/* Rotation-matrix and colour math (math_RotMatrixZXY / YXZ / XYZ, math_Rotate2D, math_RgbToHsv,
+ * ...) and the primitive texture-offset helpers (gpu_OffsetTexPolyFT3..gpu_OffsetClut). .text
+ * 0x80042504 (ROM 0x32D04). Start boundary: G8 (the -G8 run ends). */
 #include "common.h"
 #include "gpu.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1

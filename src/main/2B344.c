@@ -1,3 +1,6 @@
+/* 92 game functions, among them bitstream_ReadBits, gpu_SetDrawMoveArray and math_AlignUp4. .text
+ * 0x8003AB44 (ROM 0x2B344). Start boundary: LEGACY (a tooling split); one object by the per-file
+ * gp model (Q65 merge group) and the rodata-align section 11 merge. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

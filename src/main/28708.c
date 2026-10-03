@@ -1,3 +1,6 @@
+/* memcard_Format, 30 game functions, then the link-cable wrappers comb_Init..comb_WaitRead8 and
+ * math_Popcount32. .text 0x80037F08 (ROM 0x28708). Start boundary: LEGACY (a tooling split, no
+ * evidence either way). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

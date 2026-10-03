@@ -1,5 +1,4 @@
-/* Rodata sub-TU split out for the text1a_a cluster (rodata-cleanup project,
- * docs/rodata-cleanup-project.md, 2026-06-09).
+/* Data-only file: .rodata 0x80010DEC (ROM 0x15EC); its owning TU is unproven.
  *
  * Contains two symbols:
  *   D_80010DEC (17568B) — list of 899 game asset file paths (DATA0/DATA1/DATA7
@@ -9,12 +8,9 @@
  *                          symbol has no detectable static caller — it is
  *                          accessed via address arithmetic that static
  *                          analysis cannot resolve.
- *   D_8001528C   (40B)   — "Marionation over flow. No.%%d (-%%dbyte)
-"
- *                          debug message (owned by func_80044FA0 in text1a.c).
+ *   D_8001528C   (40B)   — "Marionation over flow. No.%%d (-%%dbyte)\n"
+ *                          debug message (read by func_80044FA0, 35000.c).
  *
- * Sub-TU rationale: D_80010DEC is too large + too unowned to attribute to a
- * specific function file; the sub-TU is the cleanest evidence-respecting move.
  * Bracket-sized to match the asm/data block's exact byte content. */
 /* D_80010DEC: 17568 bytes @ 0x80010DEC */
 const char D_80010DEC[17568] =
@@ -569,6 +565,6 @@ const char D_80010DEC[17568] =
     "DATA0\\M001.DAT\0\0DATA0\\M000.DAT\0\0"
     ;
 
-/* D_8001528C: 40 bytes @ 0x8001528C â€” "Marionation over flow. No.%d (-%dbyte)\n" */
+/* D_8001528C: 40 bytes @ 0x8001528C - "Marionation over flow. No.%d (-%dbyte)\n" */
 const char D_8001528C[40] = "Marionation over flow. No.%d (-%dbyte)\n";
 

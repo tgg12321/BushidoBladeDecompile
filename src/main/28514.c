@@ -1,3 +1,5 @@
+/* func_80037D14, a state machine over _card_info / _card_load / _card_clear. .text 0x80037D14 (ROM
+ * 0x28514). Start boundary: LEGACY (a tooling split, no evidence either way). */
 #include "common.h"
 
 extern s32 D_800A31E8;

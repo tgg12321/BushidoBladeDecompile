@@ -1,4 +1,6 @@
-/* func_80034708's translation unit, compiled -G8 (Makefile GP_FILES). The
+/* func_80034708 alone. .text 0x80034708 (ROM 0x24F08). Start boundary: G8 (cc1 -G8 by proof).
+ *
+ * Compiled -G8 (Makefile GP_FILES). The
  * original compiler knew the 4-byte cursor array D_800A3174 was small data:
  * the target reads cursor[0] / cursor[1] straight off $gp while the loop walks
  * &cursor[i]. Under -G0 an array element's address stays in a register. The

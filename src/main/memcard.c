@@ -1,3 +1,7 @@
+/* The memory-card layer: memcard_Init / memcard_Quit, the software and hardware event waits
+ * (memcard_PollSwEvents..memcard_AckHwEvents), memcard_CountFiles, memcard_ReadFile and
+ * memcard_WriteFile. .text 0x800375EC (ROM 0x27DEC). Start boundary: LEGACY (a tooling split, no
+ * evidence either way). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

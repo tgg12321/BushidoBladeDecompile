@@ -1,7 +1,7 @@
-/* The code6cac_b4_post.c functions that follow func_80036940, moved unchanged so
- * that func_80036140 and func_80036940 can sit in their own -G8 unit
- * (code6cac_b5.c) before them. The declarations below are the source file's own,
- * for the names this code uses. */
+/* The CD read and audio layer: cdrom_IsIdle, cdrom_StartRead, cdrom_StartReadAt, cdrom_Pause,
+ * cdrom_GetFileSize, cdrom_StartAudio, cdrom_ReadWait, cdrom_LoadExec, and sys_Exec, which runs
+ * the executable cdrom_LoadExec reads. .text 0x80036D88 (ROM 0x27588). Start boundary: G8 (the end
+ * of 26940.c's -G8 unit). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

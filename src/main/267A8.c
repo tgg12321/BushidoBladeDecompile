@@ -1,7 +1,5 @@
-/* The code6cac_b2_post.c functions that follow func_80035F78, moved unchanged so
- * that the CD-mix setters can sit in their own -G8 unit (code6cac_b4.c) before
- * them. The declarations below are the source file's own, for the names this code
- * uses. */
+/* CD and sound start-up: snd_SerialMixOn, cdrom_Init, cdrom_FlushInit, cdrom_ReadyCallback. .text
+ * 0x80035FA8 (ROM 0x267A8). Start boundary: G8 (the end of 26730.c's -G8 unit). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

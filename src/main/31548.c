@@ -1,3 +1,4 @@
+/* 4 game functions. .text 0x80040D48 (ROM 0x31548). Start boundary: PHASE (rodata-align site 4). */
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"

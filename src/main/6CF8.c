@@ -1,3 +1,7 @@
+/* The game's boot and main loop: main(), the PCdrv host-file loaders (pcdrv_LoadFile,
+ * pcdrv_LoadSectors), display setup wrappers, rng_SetSeed / rng_Next and scratchpad_Save /
+ * scratchpad_Restore. .text 0x800164F8 (ROM 0x6CF8). Start boundary: the first game .text object
+ * (LEGACY: a splat segment edge). */
 #include "common.h"
 #include "include_asm.h"
 #include "game.h"

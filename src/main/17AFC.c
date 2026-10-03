@@ -1,3 +1,5 @@
+/* 80 game functions, among them math_LerpAngle. .text 0x800272FC (ROM 0x17AFC). Start boundary:
+ * PHASE (rodata-align site 2). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

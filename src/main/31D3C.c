@@ -1,3 +1,5 @@
+/* 21 game functions. .text 0x8004153C (ROM 0x31D3C). Start boundary: LEGACY (inside the -G8 run,
+ * no evidence either way). */
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"

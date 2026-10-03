@@ -1,10 +1,10 @@
-/* The CD module's two state-machine steppers, func_80036140 and func_80036940,
- * moved out of code6cac_b4_post.c together into their own translation unit
+/* The CD module's two state-machine steppers, func_80036140 and func_80036940.
+ * .text 0x80036140 (ROM 0x26940). Start boundary: G8. Their own translation unit,
  * compiled -G8 (Makefile GP_FILES; owner ruling 2026-09-26, Q10): both read
  * g_cd_result (and func_80036140 g_cd_atv, D_800A36B8, D_800A3840, D_800A3854)
  * straight off $gp, which the original compiler emits only at -G8.
  * g_cd_atv, D_800A36B8 and g_cd_result are declared here as in
- * code6cac_b4.c, the way their bytes show the original did: file-scope
+ * 26730.c, the way their bytes show the original did: file-scope
  * tentative definitions (no initializer; their original bytes are zero).
  * Sony's assembler gave such a COMMON variable gp at its base only, never at
  * an offset (func_80036140 reads byte 0 of each gp-relative and the others

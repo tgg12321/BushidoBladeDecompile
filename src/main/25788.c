@@ -1,5 +1,5 @@
-/* The code6cac_b.c functions that follow func_80034708, moved unchanged so
- * that func_80034708 can sit in its own -G8 unit (code6cac_b3.c) between them. */
+/* The 4 game functions after func_80034708. .text 0x80034F88 (ROM 0x25788). Start boundary: G8
+ * (the end of 24F08.c's -G8 unit); the last file of the EXPAND_LB run. */
 #include "common.h"
 #include "include_asm.h"
 #include "gpu.h"

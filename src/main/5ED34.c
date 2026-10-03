@@ -1,5 +1,5 @@
-/* func_8006E534..func_80073200, split out of text1b_tu1c.c (tail in text1b_tu1e.c)
- * and compiled -G8 (Makefile GP_FILES; per-file -G8 by proof, owner rulings Q10,
+/* func_8006E534..func_80073200. .text 0x8006E534 (ROM 0x5ED34). Start boundary: G8.
+ * Compiled -G8 (Makefile GP_FILES; per-file -G8 by proof, owner rulings Q10,
  * Q44 and Q54). Their original bytes reach the small globals 0x800A32E8..0x800A35CA
  * (40 addresses, 403 accesses) straight off $gp, which the original compiler
  * emits only at -G8, and no function outside this range gp-accesses any of them.

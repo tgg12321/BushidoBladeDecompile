@@ -1,3 +1,5 @@
+/* 12 game functions, among them pad_ResetState. .text 0x80017FA0 (ROM 0x87A0). Start boundary:
+ * LEGACY (the splat 6CAC segment edge). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

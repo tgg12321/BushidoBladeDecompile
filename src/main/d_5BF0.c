@@ -1,12 +1,8 @@
-/* Rodata-only file linked between text1b.o (Q89 head; joins GP_FILES with the camera_CalcAngles landing) and
- * text1b_tu1b.o (tail), owner ruling Q94
+/* Data-only file: .rodata 0x800153F0 (ROM 0x5BF0), linked between 368E4.o (-G8) and
+ * 3AB48.o, owner ruling Q94
  * (.claude/rules/compiler-flags-canonical.md): under -G8 cc1 emits every file-scope data object before the
- * head's jump tables, which the original places first. Restored from text1b.c's "merged from
- * text1a_b_pre_rodata.c" block (Q67/A7) verbatim.
- * Rodata sub-TU split out for the 101C.rodata_text1a_b_pre cluster
- * (rodata-cleanup project, docs/rodata-cleanup-project.md, 2026-06-09).
- * MULTI-FILE cluster: 23 symbols (12 jtbls + 5 strings + 6 data words)
- * spanning text1a.c and text1b.c. */
+ * head's jump tables, which the original places first.
+ * A multi-file cluster: 23 symbols (12 jtbls + 5 strings + 6 data words). */
 #include "common.h"
 
 /* 0x800153F0: the 22-halfword record func_8004A09C unpacks; func_80049F4C (text1b.c) copies it whole. */
