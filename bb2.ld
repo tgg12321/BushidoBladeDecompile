@@ -51,7 +51,6 @@ SECTIONS
         build/src/main/267A8.o(.rodata);
         build/src/main/26940.o(.rodata);
         build/src/main/cdrom.o(.rodata);
-        build/src/code6cac_b_rodata_post.o(.rodata);
         build/src/main/memcard.o(.rodata);
         build/src/main/28514.o(.rodata);
         build/src/main/28708.o(.rodata);

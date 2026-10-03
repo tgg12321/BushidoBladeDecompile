@@ -14,7 +14,6 @@
     "python": "Python 3.12.3"
   },
   "corpus": {
-    "src/code6cac_b_rodata_post.c": "6c74f7ad2f923b092da816a02c1077d11b01d665",
     "src/display.c": "be23bd83b5b7603101e99201b1a897da7e3c47e7",
     "src/gpu.c": "adc620436841fc0c0af929c56f0a721cb945d624",
     "src/ings2.c": "e2c57e5c95a04ffda54759cd583b3b84c4d0e6ff",

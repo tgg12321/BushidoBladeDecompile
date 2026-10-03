@@ -29,7 +29,9 @@
 
 
 
-extern s32 D_800109BC;
+/* This file's .rodata: the memory-card path formats. */
+const char g_str_memcard_fmt[12] = "bu%1d%1d:*";
+const char D_800109BC[12] = "bu%1d%1d:%s";
 
 
 
@@ -165,7 +167,6 @@ extern void StopCARD(void);
 
 
 
-extern const char g_str_memcard_fmt[];
 extern s32 g_memcard_file_list;
 
 

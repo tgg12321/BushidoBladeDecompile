@@ -2,6 +2,10 @@
  * 0x28514). Start boundary: LEGACY (a tooling split, no evidence either way). */
 #include "common.h"
 
+/* memcard_Format's (28708.c) path format. It sits in this file's .rodata, before
+ * func_80037D14's jump table, whose .align 3 supplies the zero bytes after it. */
+const char D_800109C8[] = "bu%1d%1d:";
+
 extern s32 D_800A31E8;
 extern s32 D_800A31EC;
 extern s32 D_800A3890;

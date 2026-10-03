@@ -38,3 +38,5 @@ text1b_tu1d	main/5ED34	after:65bd3da90028
 text1b_tu1e	main/63D2C	after:8963ed6bc75d
 code6cac_b_rodata_pre	main/d_1068	after:9ebd5241847c
 ings_strings	main/6CF8	after:700f335eff2e
+# code6cac_b_rodata_post: D_800109C8 went to main/28514 (rodata-align doc §12).
+code6cac_b_rodata_post	main/memcard	after:99d242d6a8d4
