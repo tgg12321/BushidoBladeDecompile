@@ -324,9 +324,6 @@ void func_8003AE5C(u8 *arg0) {
         func_800602AC(result, addr);
     }
 }
-__asm__(".section .rodata
-	.word 0
-	.text");
 void func_8003AF40(s32 arg0) {
     if (D_80102778.unk_4[2 + arg0] == 0xFF) {
         D_80102778.unk_4[2 + arg0] = (&D_80102778.unk_4[2])[(u32)arg0 < 1u];
