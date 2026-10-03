@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "stage_SetLightPosDir",
+  "body_hash": "b47e0842646a45b6",
+  "summary": "g_stage_light_pos[a2] / g_stage_light_dir[a2] on declared arrays; cross-symbol indexing of the base scalars gone."
+}

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800422BC",
+  "body_hash": "f35b2860a4503935",
+  "summary": "The X4 FAIL is resolved. The `g_gte_color_matrix_data - 0x38` / `+ 0x28` / `p2 - 0x38` derivations and the D_800F631E..D_800F64BA second handles are gone; every store and call goes through D_800F62E0[0|1|4].cmat.m[k][0] / .back[k] / &D_800F62E0[n] (offsets checked: 0x800F631E, 6324, 6378, 6498, 6338, 6398, 64B8)."
+}

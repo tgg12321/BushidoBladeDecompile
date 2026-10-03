@@ -27,7 +27,6 @@ extern s32 D_80102C00;
 extern u16 D_800A38D6;
 extern u8 *g_gpu_ot_ptr;
 extern s32 D_800A3808;
-extern u8 D_800F62E0[8][0x60];
 s32 stage_GetId(void);
 void func_80046914(void);
 s32 *func_800469C4(s32 a0);
@@ -954,9 +953,9 @@ s32 func_8005490C(void) {
     func_8004211C();
     camera_InitBoneData();
     stage_InitCollision();
-    func_8004A1FC(D_800F62E0[0]);
-    func_8004A1FC(D_800F62E0[1]);
-    func_8004A1FC(D_800F62E0[4]);
+    func_8004A1FC(&D_800F62E0[0]);
+    func_8004A1FC(&D_800F62E0[1]);
+    func_8004A1FC(&D_800F62E0[4]);
     for (i = 0; i < 2; i++) {
         if (s->unk34[i] != 0) {
             s32 ang;
@@ -3343,8 +3342,6 @@ s32 func_80058580(PracticeMenuRec *p) {
 
 #undef CPU_SQ
 extern s32 g_vab_vb_sbaddr[];
-extern u32 D_800EFB78[];
-extern u8 D_800EFB7C[];
 extern s32 *g_vab_rec_ptr[];
 extern void SsStart(void);
 extern s32 SsSetTickMode(s32);
@@ -3358,7 +3355,6 @@ void snd_Init(void) {
     s32 *p1;
     s32 *p2;
     s32 i;
-    u8 *q;
     s32 j;
 
     i = 0;
@@ -3378,17 +3374,9 @@ void snd_Init(void) {
     SsUtSetReverbDepth(0, 0);
     SsSetReservedVoice(0);
     SsSetTickMode(1);
-    {
-        s32 v = 0x7F;
-        q = (u8 *)&D_800EFB78;
-        j = 0;
-        do {
-            *(s32 *)((u8 *)&D_800EFB78 + j) = 0;
-            *(s8 *)(q + 5) = v;
-            *(s8 *)((u8 *)&D_800EFB7C + j) = v;
-            j += 8;
-            q += 8;
-        } while (j < 0xC0);
+    for (j = 0; j < 24; j++) {
+        D_800EFB78[j].req = 0;
+        D_800EFB78[j].volr = D_800EFB78[j].voll = 0x7F;
     }
     SsStart();
     D_800A3408 = 0;
@@ -3432,24 +3420,13 @@ extern void func_80086130(s32, s32, s32);
 
 
 void func_8005B5AC(void) {
-    s32 s1;
-    s32 s3;
-    u8 *s2;
-    s32 s0;
+    s32 i;
     func_800858D0(0);
-    s1 = 0;
-    s3 = 0x7F;
-    s2 = (u8 *)D_800EFB78;
-    s0 = 0;
-    do {
-        *(u32 *)((u8 *)D_800EFB78 + s0) = 0;
-        s2[5] = s3;
-        *((u8 *)D_800EFB7C + s0) = s3;
-        func_80086130((s16)s1, 0, 0);
-        s2 += 8;
-        s1++;
-        s0 += 8;
-    } while (s1 < 24);
+    for (i = 0; i < 24; i++) {
+        D_800EFB78[i].req = 0;
+        D_800EFB78[i].volr = D_800EFB78[i].voll = 0x7F;
+        func_80086130((s16)i, 0, 0);
+    }
 }
 void SsVabClose(s16);
 
@@ -3541,8 +3518,6 @@ extern Unk8009BD38Flags D_8009BD38;
 
 
 
-extern u8 D_8009BD58;
-extern u8 D_8009BD59;
 
 
 
@@ -3633,17 +3608,8 @@ extern s16 D_800F0BEC[];
 
 
 
-extern s32 D_800F0D78;
-extern s32 D_800F0D7C;
-extern s32 videoDec;
-extern s32 D_800F0FB8;
-extern s32 D_800F0FBC;
-extern s32 D_800F0FC0;
 
 
-extern s16 D_800F10A0;
-extern s16 D_800F10A2;
-extern s16 D_800F10A4;
 extern s32 D_800F10D0[];
 
 
@@ -4240,23 +4206,21 @@ void func_8005C614(void) {
     SsSetStereo();
     SsSetAutoKeyOffMode(0);
 }
-extern s32 D_8009AA70;
+extern u16 D_8009AA70[][2];
 
 
-extern u8 D_800EFB7D;
 void func_8005C650(s32 a0, s32 a1, s32 a2) {
-    s16 a3 = 0;
-    s32 *base = (s32 *)((u8 *)&D_8009AA70 + a0 * 4);
+    s16 i = 0;
+    u16 *req = D_8009AA70[a0];
     do {
-        s32 off = a3 * 8;
-        if (!*(s32 *)((u8 *)&D_800EFB78 + off)) {
-            *(s32 *)((u8 *)&D_800EFB78 + off) = (s32)base;
-            *((u8 *)&D_800EFB7C + off) = (u8)a1;
-            *((u8 *)&D_800EFB7D + off) = (u8)a2;
+        if (D_800EFB78[i].req == 0) {
+            D_800EFB78[i].req = req;
+            D_800EFB78[i].volr = a1;
+            D_800EFB78[i].voll = a2;
             return;
         }
-        a3 = (s16)(a3 + 1);
-    } while ((s16)a3 < 0x18);
+        i++;
+    } while (i < 0x18);
 }
 /* Per-frame sound-request flush: walk the 24-entry pending-sound pool, and for
  * every entry whose VAB is loaded, find the first free SPU voice at or after the
@@ -4274,32 +4238,18 @@ void func_8005C6D0(void) {
     s16 next;
     u16 vab;
     u16 *p;
-    s32 off;
-    s32 nv;
     u32 *ev;
 
     SpuGetAllKeysStatus(keys);
     next = 0;
-    for (i = 0; (s16)i < 0x18; i = (s16)(i + 1)) {
-        off = i * 8;
-        p = *(u16 **)((u8 *)&D_800EFB78 + off);
+    for (i = 0; i < 0x18; i++) {
+        p = D_800EFB78[i].req;
         if (p != 0 && (s32)g_vab_rec_ptr[*p] < 0) {
             voice = next;
-            for (; (s16)voice < 0x18; voice = (s16)(voice + 1)) {
-                /* FAKE: second name for the pool byte offset i*8, feeding only the
-                 * two volume-byte reads (named-intermediate family, .claude/rules/
-                 * no-new-park-categories.md SOTN-accepted list as amended by
-                 * .claude/rules/ordinary-c-judge-decidable.md Ruling 1);
-                 * mechanism: GCC 2.7.2 local-alloc/global.c gives one C name one
-                 * pseudo, so a single name can never produce the target's second,
-                 * callee-saved copy of the offset that survives the SpuGetKeyStatus
-                 * call (`addu $s2,$v1,$zero`, asm/funcs/func_8005C6D0.s:41,
-                 * 0x8005C768); loop.c LICM hoists this copy into the scan preheader
-                 * exactly where the target emits it. */
-                nv = off;
+            for (; voice < 0x18; voice++) {
                 if (SpuGetKeyStatus(1 << voice) != 1) {
                     vab = *p;
-                    if (vab == 6 && g_vab_rec_ptr_plus_0x18 == g_vab_rec_ptr_plus_0xC) {
+                    if (vab == 6 && g_vab_rec_ptr[6] == g_vab_rec_ptr[3]) {
                         vab = 3;
                     }
                     ev = &((u32 *)g_vab_rec_ptr[vab][0])[p[1]];
@@ -4308,14 +4258,14 @@ void func_8005C6D0(void) {
                                (s16)((*ev >> 7) & 0xF),
                                (s16)((*ev >> 11) & 0x7F),
                                (s16)((*ev >> 18) & 0x7F),
-                               *((u8 *)&D_800EFB7D + nv),
-                               *((u8 *)&D_800EFB7C + nv));
-                    next = (s16)(voice + 1);
+                               D_800EFB78[i].voll,
+                               D_800EFB78[i].volr);
+                    next = voice + 1;
                     break;
                 }
             }
         }
-        *(s32 *)((u8 *)&D_800EFB78 + i * 8) = 0;
+        D_800EFB78[i].req = 0;
     }
 }
 /* The 0x2C-byte draw descriptor func_8007352C consumes (EnvA layout). */

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8005C650",
+  "body_hash": "1d5389903a1e60e4",
+  "summary": "Queues D_8009AA70[a0] (u16 pairs {vab, tone index}, one dlabel) into D_800EFB78[i].req/volr/voll; no cross-symbol access. The (s16) counter casts are byte-neutral noise (debt)."
+}

@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "_spu_Fw1ts",
+ "body_hash": "58cfc673f80ea0cc",
+ "summary": "PASS: volatile pair FAKE-labelled with reproduced measurement (plain 25; i-only 9; v-only 18, so both needed) and SOTN tags spu.c:14-15 (WASTE_TIME's volatile pair, matched c segment); Route B independently holds."
+}

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8006295C",
+  "body_hash": "6894b13ca21dbb53",
+  "summary": "Clean: D_800F0C04[i] / D_800F10A0[i].vx / D_800F0FB8[i].x|y|z through the header declarations. The gte_stsz island is authorized (inline_asm_canonical.txt:392). Both existing FAKEs (prim staging, end) are load-bearing: a fresh base local or direct reads score 37, and a fresh link cursor scores 37. Sandbox 0."
+}

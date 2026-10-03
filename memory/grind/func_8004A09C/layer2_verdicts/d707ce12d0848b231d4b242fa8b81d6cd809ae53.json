@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8004A09C",
+  "body_hash": "9b2f58d524e52f6c",
+  "summary": "Takes Unk800F62E0Rec * and stores members in the template order. The layout checks out (cmat +0x38 column-major fill, lmat +0x18 zeroed, light[k] at +0/+8/+0x10, back +0x58, unk5C +0x5C). The argless func_8004A1FC() now passes arg0 with the same bytes."
+}

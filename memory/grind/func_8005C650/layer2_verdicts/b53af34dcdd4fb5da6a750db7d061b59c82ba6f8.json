@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8005C650",
+  "body_hash": "94a909c3f942aff3",
+  "summary": "Clean: queues D_8009AA70[a0] (u16 {vab, tone} pairs) into the first free D_800EFB78[i] with volr = a1 and voll = a2, using the header struct. The byte-neutral (s16) counter casts are gone. No FAKEs, sandbox 0."
+}

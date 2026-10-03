@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "_SsSeqCalledTbyT_1per2",
+ "body_hash": "8800b070539f6a12",
+ "summary": "PASS: unk20 is a real SndSeqTickEnv member (SOTN layout, data initializer); one FAKE (get20 accessor) labelled with reproduced measurement (direct read 12, 19 vs 20 insns; inverted/early-return 14) and a verified SOTN tag (ssstart.c:24, used :27 in the same function)."
+}

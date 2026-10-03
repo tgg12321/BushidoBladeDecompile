@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "stage_ClearLighting",
+  "body_hash": "b0acfa274f0c2332",
+  "summary": "Zeroes all six elements in target order through the two s32[3] arrays; per-word names retired."
+}

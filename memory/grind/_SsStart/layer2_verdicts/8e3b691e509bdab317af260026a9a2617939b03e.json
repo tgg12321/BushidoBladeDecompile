@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "_SsStart",
+ "body_hash": "0aad1583e1688583",
+ "summary": "PASS: _snd_seq_tick_env_plus_0x8 handle retired, unk8 through the one struct; no FAKE; sandbox 0."
+}

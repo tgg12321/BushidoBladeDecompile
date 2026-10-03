@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80045600",
+  "body_hash": "1995053045d72ad7",
+  "summary": "Two FAKEs labelled with true measured numbers (single e++ walker 7; fresh local for amt 17 - both re-measured) and true asm descriptions."
+}

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800451D0",
+  "body_hash": "d3bc3b53cd09531c",
+  "summary": "for i=9..0 D_800EED10[i].id = -1 matches asm offsets 0x90..0 step 0x10; 10 entries end at D_800EEDB0."
+}

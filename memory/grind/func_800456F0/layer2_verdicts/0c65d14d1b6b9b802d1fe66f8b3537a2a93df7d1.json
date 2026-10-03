@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800456F0",
+  "body_hash": "9f16693048c0b7b4",
+  "summary": "Plain for-loop clearing D_800EED10[i].fn."
+}

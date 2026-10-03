@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80045510",
+  "body_hash": "917337352b3ccf2b",
+  "summary": "Plain indexed walk over the table; no casts, no second handle."
+}

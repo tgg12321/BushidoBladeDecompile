@@ -336,24 +336,13 @@ extern s32 func_80044FA0(s32, s32);
 extern s16 D_800A324A;
 
 /* Externs for globals */
-extern s16 D_800EEDB0;
-extern s16 D_800EEDB2;
-extern s16 D_800EEDBE;
+extern MATRIX D_800EEDB0;
 
 extern s32 D_800EF800[];
 extern u8 g_stage_data;
 extern s16 D_800F6654;
 extern u8 g_cam_bone_data;
 
-extern s16 D_800F62F8;
-extern s16 D_800F62FA;
-extern s16 D_800F62FC;
-extern s16 D_800EEDB4;
-extern s16 D_800EEDB6;
-extern s16 D_800EEDB8;
-extern s16 D_800EEDBA;
-extern s16 D_800EEDBC;
-extern s16 D_800EEDC0;
 
 extern void func_800451A0(void);
 extern void func_800451D0(void);
@@ -368,7 +357,6 @@ extern s32 D_80102C00;
 extern u16 D_800A38D6;
 extern u8 *g_gpu_ot_ptr;
 extern s32 D_800A3808;
-extern u8 D_800F62E0[8][0x60];
 extern void func_80042E90(void);
 extern void func_80044498(void);
 extern void func_80049E4C(void);
@@ -551,7 +539,6 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
     s32 trans[3];
     Unk80101DF0Rot rot;
     Unk80101DF0Mat matrix_buf;
-    u8 *base;
 
     D_800A3820 = (s32)&D_80102C00;
     {
@@ -594,10 +581,9 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
         D_800A33C0 = a2;
     }
 
-    base = D_800F62E0[0];
-    func_8004A1FC(base);
-    func_8004A1FC(base + 0x60);
-    func_8004A1FC(base + 0x180);
+    func_8004A1FC(&D_800F62E0[0]);
+    func_8004A1FC(&D_800F62E0[1]);
+    func_8004A1FC(&D_800F62E0[4]);
     func_800420D0();
     stage_ClearLighting();
     stage_ApplyLighting();
@@ -669,57 +655,44 @@ void *stage_GetDataPtr(void) {
 }
 
 void func_80046F24(void) {
-    s32 num = (s32)D_800F62F8 << 12;
-    s32 div = D_800F62FA;
+    s32 num = (s32)D_800F62E0[0].lmat.m[0][0] << 12;
+    s32 div = D_800F62E0[0].lmat.m[0][1];
     s32 v0 = num / div;
-    s32 v1 = ((s32)D_800F62FC << 12) / div;
-    D_800EEDB4 = 0;
-    div = 0;
-    num = v0;
-    D_800EEDB6 = 0;
+    s32 v1 = ((s32)D_800F62E0[0].lmat.m[0][2] << 12) / div;
+    D_800EEDB0.m[0][2] = 0;
+    D_800EEDB0.m[1][0] = 0;
     v1 = -(s16)v1;
-    D_800EEDB8 = 0;
-    D_800EEDBA = 0;
-    D_800EEDBC = div;
-    D_800EEDB0 = 0x1000;
-    D_800EEDC0 = 0x1000;
-    v0 = -(s16)num;
-    D_800EEDB2 = v0;
-    D_800EEDBE = v1;
+    D_800EEDB0.m[1][1] = 0;
+    D_800EEDB0.m[1][2] = 0;
+    D_800EEDB0.m[2][0] = 0;
+    D_800EEDB0.m[0][0] = 0x1000;
+    D_800EEDB0.m[2][2] = 0x1000;
+    v0 = -(s16)v0;
+    D_800EEDB0.m[0][1] = v0;
+    D_800EEDB0.m[2][1] = v1;
 }
-void func_8004700C(s32 *a0, s32 *a1, s32 a2) {
-    s32 new_var;
-    s32 diff, prod;
-    gte_MulMatrix0ClearTrans((MATRIX *)&D_800EEDB0, (MATRIX *)a0, (MATRIX *)a1);
-    new_var = a0[5];
-    diff = a0[6] - a2;
-    prod = diff * D_800EEDB2;
-    a1[6] = a2;
-    a1[5] = new_var + (prod >> 12);
-    diff = a0[6] - a2;
-    prod = diff * D_800EEDBE;
-    a1[7] = a0[7] + (prod >> 12);
+void func_8004700C(MATRIX *a0, MATRIX *a1, s32 a2) {
+    gte_MulMatrix0ClearTrans(&D_800EEDB0, a0, a1);
+    a1->t[0] = a0->t[0] + (((a0->t[1] - a2) * D_800EEDB0.m[0][1]) >> 12);
+    a1->t[1] = a2;
+    a1->t[2] = a0->t[2] + (((a0->t[1] - a2) * D_800EEDB0.m[2][1]) >> 12);
 }
-void func_800470B0(s32 arg0, s32 *arg1, s32 *arg2, s32 arg3) {
+void func_800470B0(s32 arg0, MATRIX *arg1, MATRIX *arg2, s32 arg3) {
     MATRIX sp10;
-    s32 temp_v1;
-    s32 *var_s0;
 
-    var_s0 = arg1;
-    temp_v1 = arg0 * 0x60;
     sp10.m[0][0] = 0x1000;
-    sp10.m[0][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62F8 + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
+    sp10.m[0][1] = (s16) -((s32)(D_800F62E0[arg0].lmat.m[0][0] << 12) / D_800F62E0[arg0].lmat.m[0][1]);
     sp10.m[0][2] = 0;
     sp10.m[1][0] = 0;
     sp10.m[1][1] = 0;
     sp10.m[1][2] = 0;
     sp10.m[2][0] = 0;
-    sp10.m[2][1] = (s16) -((s32)(*(s16 *)((s8 *)&D_800F62FC + temp_v1) << 12) / *(s16 *)((s8 *)&D_800F62FA + temp_v1));
+    sp10.m[2][1] = (s16) -((s32)(D_800F62E0[arg0].lmat.m[0][2] << 12) / D_800F62E0[arg0].lmat.m[0][1]);
     sp10.m[2][2] = 0x1000;
-    gte_MulMatrix0ClearTrans(&sp10, (MATRIX *)var_s0, (MATRIX *)arg2);
-    arg2[5] = var_s0[5] + (((var_s0[6] - arg3) * sp10.m[0][1]) >> 12);
-    arg2[6] = arg3;
-    arg2[7] = var_s0[7] + (((var_s0[6] - arg3) * sp10.m[2][1]) >> 12);
+    gte_MulMatrix0ClearTrans(&sp10, arg1, arg2);
+    arg2->t[0] = arg1->t[0] + (((arg1->t[1] - arg3) * sp10.m[0][1]) >> 12);
+    arg2->t[1] = arg3;
+    arg2->t[2] = arg1->t[2] + (((arg1->t[1] - arg3) * sp10.m[2][1]) >> 12);
 }
 typedef struct {
     s32 w[8];
@@ -2493,92 +2466,80 @@ void func_80049E4C(void) {
    it whole by assignment: the copy's run-time alignment test in the target bytes is the halfword
    type's alignment. */
 extern const Unk800153F0Record D_800153F0;
-extern s32 g_gte_color_matrix_data;
-extern u8 g_gte_back_color_r;
-extern u8 g_gte_back_color_g;
-extern u8 g_gte_back_color_b;
-extern void func_8004A09C(s32, u16 *);
-extern void SetColorMatrix(s32 *);
+extern void func_8004A09C(Unk800F62E0Rec *, u16 *);
+extern void SetColorMatrix(Unk80101DF0Mat *);
 extern void SetBackColor(s32, s32, s32);
 
 void func_80049F4C(void) {
     Unk800153F0Record sp10;
     s32 i;
-    u8 *base;
     sp10 = D_800153F0;
-    i = 0;
-    base = D_800F62E0[0];
-    do {
-        func_8004A09C((s32)base, sp10.v);
-        i++;
-        base += 0x60;
-    } while (i < 8);
-    SetColorMatrix(&g_gte_color_matrix_data);
-    SetBackColor(g_gte_back_color_r, g_gte_back_color_g, g_gte_back_color_b);
+    for (i = 0; i < 8; i++) {
+        func_8004A09C(&D_800F62E0[i], sp10.v);
+    }
+    SetColorMatrix(&D_800F62E0[0].cmat);
+    SetBackColor(D_800F62E0[0].back[0], D_800F62E0[0].back[1], D_800F62E0[0].back[2]);
 }
-void func_8004A09C(s32 arg0, u16 *arg1) {
-    *(s16 *)(arg0 + 0x38) = *arg1++;
-    *(s16 *)(arg0 + 0x3E) = *arg1++;
-    *(s16 *)(arg0 + 0x44) = *arg1++;
-    *(s16 *)(arg0 + 0x3A) = *arg1++;
-    *(s16 *)(arg0 + 0x40) = *arg1++;
-    *(s16 *)(arg0 + 0x46) = *arg1++;
-    *(s16 *)(arg0 + 0x3C) = *arg1++;
-    *(s16 *)(arg0 + 0x42) = *arg1++;
+void func_8004A09C(Unk800F62E0Rec *arg0, u16 *arg1) {
+    arg0->cmat.m[0][0] = *arg1++;
+    arg0->cmat.m[1][0] = *arg1++;
+    arg0->cmat.m[2][0] = *arg1++;
+    arg0->cmat.m[0][1] = *arg1++;
+    arg0->cmat.m[1][1] = *arg1++;
+    arg0->cmat.m[2][1] = *arg1++;
+    arg0->cmat.m[0][2] = *arg1++;
+    arg0->cmat.m[1][2] = *arg1++;
     {
         s16 v48 = *arg1++;
-        *(s16 *)(arg0 + 0x18) = 0;
-        *(s16 *)(arg0 + 0x1A) = 0;
-        *(s16 *)(arg0 + 0x1C) = 0;
-        *(s16 *)(arg0 + 0x1E) = 0;
-        *(s16 *)(arg0 + 0x20) = 0;
-        *(s16 *)(arg0 + 0x22) = 0;
-        *(s16 *)(arg0 + 0x24) = 0;
-        *(s16 *)(arg0 + 0x26) = 0;
-        *(s16 *)(arg0 + 0x28) = 0;
-        *(s16 *)(arg0 + 0x48) = v48;
+        arg0->lmat.m[0][0] = 0;
+        arg0->lmat.m[0][1] = 0;
+        arg0->lmat.m[0][2] = 0;
+        arg0->lmat.m[1][0] = 0;
+        arg0->lmat.m[1][1] = 0;
+        arg0->lmat.m[1][2] = 0;
+        arg0->lmat.m[2][0] = 0;
+        arg0->lmat.m[2][1] = 0;
+        arg0->lmat.m[2][2] = 0;
+        arg0->cmat.m[2][2] = v48;
     }
-    *(s16 *)(arg0 + 0x00) = *arg1++;
-    *(s16 *)(arg0 + 0x02) = *arg1++;
-    *(s16 *)(arg0 + 0x04) = *arg1++;
-    *(s16 *)(arg0 + 0x08) = *arg1++;
-    *(s16 *)(arg0 + 0x0A) = *arg1++;
-    *(s16 *)(arg0 + 0x0C) = *arg1++;
-    *(s16 *)(arg0 + 0x10) = *arg1++;
-    *(s16 *)(arg0 + 0x12) = *arg1++;
-    *(s16 *)(arg0 + 0x14) = *arg1++;
-    func_8004A1FC();
-    *(s8 *)(arg0 + 0x58) = *arg1++;
-    *(s8 *)(arg0 + 0x59) = *arg1++;
-    *(s8 *)(arg0 + 0x5A) = *arg1;
-    *(s16 *)(arg0 + 0x5C) = *(arg1 + 1);
+    arg0->light[0].pitch = *arg1++;
+    arg0->light[0].yaw = *arg1++;
+    arg0->light[0].on = *arg1++;
+    arg0->light[1].pitch = *arg1++;
+    arg0->light[1].yaw = *arg1++;
+    arg0->light[1].on = *arg1++;
+    arg0->light[2].pitch = *arg1++;
+    arg0->light[2].yaw = *arg1++;
+    arg0->light[2].on = *arg1++;
+    func_8004A1FC(arg0);
+    arg0->back[0] = *arg1++;
+    arg0->back[1] = *arg1++;
+    arg0->back[2] = *arg1;
+    arg0->unk5C = *(arg1 + 1);
 }
 extern s32 rcos();
 extern s32 rsin();
-void func_8004A1FC(arg0) s16 *arg0; {
+void func_8004A1FC(arg0) Unk800F62E0Rec *arg0; {
     s16 i;
-    s16 *p;
-    s16 *out;
+    Unk800F62E0Light *p;
     s16 c0;
     s32 t;
 
     i = 0;
     do {
-        p = arg0 + (s32)i * 4;
-        if (p[2] != 0) {
-            c0 = rcos(p[0]);
-            t = ((rsin(p[1]) * c0) >> 12) * arg0[0x2E];
-            out = arg0 + (s32)i * 3 + 12;
-            out[0] = -t >> 12;
-            t = rsin(p[0]) * arg0[0x2E];
-            out[1] = t >> 12;
-            t = ((rcos(p[1]) * c0) >> 12) * arg0[0x2E];
-            out[2] = -t >> 12;
+        p = &arg0->light[i];
+        if (p->on != 0) {
+            c0 = rcos(p->pitch);
+            t = ((rsin(p->yaw) * c0) >> 12) * arg0->unk5C;
+            arg0->lmat.m[i][0] = -t >> 12;
+            t = rsin(p->pitch) * arg0->unk5C;
+            arg0->lmat.m[i][1] = t >> 12;
+            t = ((rcos(p->yaw) * c0) >> 12) * arg0->unk5C;
+            arg0->lmat.m[i][2] = -t >> 12;
         } else {
-            out = arg0 + (s32)i * 3 + 12;
-            out[0] = 0;
-            out[1] = 0;
-            out[2] = 0;
+            arg0->lmat.m[i][0] = 0;
+            arg0->lmat.m[i][1] = 0;
+            arg0->lmat.m[i][2] = 0;
         }
         i++;
     } while (i < 3);

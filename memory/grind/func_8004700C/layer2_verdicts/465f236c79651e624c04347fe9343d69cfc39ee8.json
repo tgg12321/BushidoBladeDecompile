@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8004700C",
+  "body_hash": "b5b1ea0958ab4854",
+  "summary": "Clean: (MATRIX *, MATRIX *, s32) with ->t[k]; &D_800EEDB0 is now a real MATRIX, so there is no cross-symbol derivation and no second handles. Its only caller is asm (func_8004A940.s:313-317: node+0x18 and s1+0x28, then reads +0x3C..+0x44 = t[]), so it needs no casts. Sandbox 0."
+}

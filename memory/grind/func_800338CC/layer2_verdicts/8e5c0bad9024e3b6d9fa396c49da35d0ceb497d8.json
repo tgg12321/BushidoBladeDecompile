@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800338CC",
+  "body_hash": "9e91ef653e2ec8c5",
+  "summary": "D_801077B0[24] evidenced (u8 accesses, max 18 bits + 3 appended <= 21, 24 bytes to _svm_vab_total); [i-1]/[10] replace D_801077AF/BA; `one` FAKE verified (literal -> srav/andi, score 4); nothing false."
+}

@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "_spu_setInTransfer",
+ "body_hash": "bb0e351361392961",
+ "summary": "PASS: g_spu_busy replaced by _spu_inTransfer (SOTN s_it.c:7-9 same statements); sandbox 0."
+}

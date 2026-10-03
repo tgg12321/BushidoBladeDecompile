@@ -415,15 +415,13 @@ extern s32 gte_SumSquares3(s32, s32, s32);
 extern s32 ratan2(s32, s32);
 extern s32 rcos(s32);
 extern s32 rsin(s32);
-extern s32 func_8004A1FC(s32);
-extern s16 D_800F62E0[];
-extern s16 D_800F6340[];
+extern void func_8004A1FC(Unk800F62E0Rec *);
 void func_80041EB0(s32 a0, s32 a1)
 {
-    s16 *fp_ptr;
+    Unk800F62E0Rec *fp_ptr;
     s32 outer;
     s32 *cam;
-    s16 *tbl;
+    Unk800F62E0Rec *tbl;
     s32 dx;
     s32 dy;
     s32 dz;
@@ -441,7 +439,7 @@ void func_80041EB0(s32 a0, s32 a1)
             ptr = (s32 *)a0;
         } else {
             ptr = (s32 *)a1;
-            tbl = D_800F6340;
+            tbl = &D_800F62E0[1];
         }
 
         if (ptr == 0) { goto skip; }
@@ -478,24 +476,24 @@ void func_80041EB0(s32 a0, s32 a1)
         {
             s32 sin_val = rsin(angle);
             s32 cross = (cos_val * dz + sin_val * dx) >> 12;
-            tbl[4] = (s16)-ratan2(dy, cross);
+            tbl->light[1].pitch = (s16)-ratan2(dy, cross);
         }
-        tbl[5] = (s16)angle;
-        tbl[6] = 1;
-        tbl[29] = g_anim_select[0];
-        tbl[32] = g_anim_select[1];
-        tbl[35] = g_anim_select[2];
+        tbl->light[1].yaw = (s16)angle;
+        tbl->light[1].on = 1;
+        tbl->cmat.m[0][1] = g_anim_select[0];
+        tbl->cmat.m[1][1] = g_anim_select[1];
+        tbl->cmat.m[2][1] = g_anim_select[2];
         goto end_loop;
 
     skip:
-        tbl[6] = 0;
+        tbl->light[1].on = 0;
 
     end_loop:
         outer++;
     } while (outer < 2);
 
-    func_8004A1FC((s32)fp_ptr);
-    func_8004A1FC((s32)D_800F6340);
+    func_8004A1FC(fp_ptr);
+    func_8004A1FC(&D_800F62E0[1]);
 }
 extern s16 g_anim_select[3];
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
@@ -533,10 +531,6 @@ void func_800421A4(void) {
 }
 extern void func_800422BC(s32, s32, s32, s32);
 extern void func_80042478(s32);
-extern s16 D_800F6462;
-extern s16 D_800F6342;
-extern s16 D_800F62E2;
-extern s16 D_800F6460;
 
 
 extern s32 StageLight[];
@@ -548,33 +542,15 @@ void func_800421C8(s32 a0) {
     func_800422BC(a0, *p++, 1, 0);
     func_800422BC(a0, *p++, 1, 1);
     val = *p;
-    D_800F6462 = val & 0xFFF;
-    D_800F6342 = val & 0xFFF;
-    D_800F62E2 = val & 0xFFF;
+    D_800F62E0[4].light[0].yaw = val & 0xFFF;
+    D_800F62E0[1].light[0].yaw = val & 0xFFF;
+    D_800F62E0[0].light[0].yaw = val & 0xFFF;
     val = *(s16 *)((u8 *)p + 2);
-    D_800F6460 = val & 0xFFF;
-    *(s16 *)D_800F6340 = val & 0xFFF;
-    *(s16 *)D_800F62E0 = val & 0xFFF;
+    D_800F62E0[4].light[0].pitch = val & 0xFFF;
+    D_800F62E0[1].light[0].pitch = val & 0xFFF;
+    D_800F62E0[0].light[0].pitch = val & 0xFFF;
     func_80042478(*(s32 *)((u8 *)p + 4));
 }
-extern s16 g_gte_color_matrix_data[];
-extern s16 D_800F631E;
-extern s16 D_800F6324;
-extern u8 g_gte_back_color_r;
-extern u8 g_gte_back_color_g;
-extern u8 g_gte_back_color_b;
-extern s16 D_800F6378;
-extern s16 D_800F637E;
-extern s16 D_800F6384;
-extern u8 D_800F6398;
-extern u8 D_800F6399;
-extern u8 D_800F639A;
-extern s16 D_800F6498[];
-extern s16 D_800F649E;
-extern s16 D_800F64A4;
-extern u8 D_800F64B8;
-extern u8 D_800F64B9;
-extern u8 D_800F64BA;
 
 extern s32 math_Grayscale3(s32, s32, s32);
 
@@ -584,7 +560,6 @@ void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
     s32 b = packed & 0xFF;
     s16 r2;
     s16 g2;
-    s16 *new_var;
     s16 b2;
     if (func_800486FC(a0)) {
         b = math_Grayscale3(r, g, b);
@@ -600,40 +575,36 @@ void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
     if (a2 != 0) {
         goto alt_scale;
     }
-    new_var = g_gte_color_matrix_data;
-    *new_var = r2;
-    D_800F631E = g2;
-    D_800F6324 = b2;
-    func_8004A1FC((s16 *)(((u8 *)new_var) - 0x38));
-    D_800F6378 = r2;
-    D_800F637E = g2;
-    D_800F6384 = b2;
-    func_8004A1FC((s16 *)(((u8 *)new_var) + 0x28));
+    D_800F62E0[0].cmat.m[0][0] = r2;
+    D_800F62E0[0].cmat.m[1][0] = g2;
+    D_800F62E0[0].cmat.m[2][0] = b2;
+    func_8004A1FC(&D_800F62E0[0]);
+    D_800F62E0[1].cmat.m[0][0] = r2;
+    D_800F62E0[1].cmat.m[1][0] = g2;
+    D_800F62E0[1].cmat.m[2][0] = b2;
+    func_8004A1FC(&D_800F62E0[1]);
     goto out;
 alt_scale:
-    {
-        s16 *p2 = D_800F6498;
-        *p2 = r2;
-        D_800F649E = g2;
-        D_800F64A4 = b2;
-        func_8004A1FC((s16 *)(((u8 *)p2) - 0x38));
-    }
+    D_800F62E0[4].cmat.m[0][0] = r2;
+    D_800F62E0[4].cmat.m[1][0] = g2;
+    D_800F62E0[4].cmat.m[2][0] = b2;
+    func_8004A1FC(&D_800F62E0[4]);
     goto out;
 raw:
     if (a2 != 0) {
         goto alt_raw;
     }
-    g_gte_back_color_r = r;
-    g_gte_back_color_g = g;
-    g_gte_back_color_b = b;
-    D_800F6398 = r;
-    D_800F6399 = g;
-    D_800F639A = b;
+    D_800F62E0[0].back[0] = r;
+    D_800F62E0[0].back[1] = g;
+    D_800F62E0[0].back[2] = b;
+    D_800F62E0[1].back[0] = r;
+    D_800F62E0[1].back[1] = g;
+    D_800F62E0[1].back[2] = b;
     goto out;
 alt_raw:
-    D_800F64B8 = r;
-    D_800F64B9 = g;
-    D_800F64BA = b;
+    D_800F62E0[4].back[0] = r;
+    D_800F62E0[4].back[1] = g;
+    D_800F62E0[4].back[2] = b;
 out:;
 }
 extern s32 func_800486FC();

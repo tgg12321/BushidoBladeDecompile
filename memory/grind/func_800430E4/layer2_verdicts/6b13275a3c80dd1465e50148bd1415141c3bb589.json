@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800430E4",
+  "body_hash": "089a4a080c8697c1",
+  "summary": "`(s32)&D_800F62E0[arg2]` through Unk800F62E0Rec[8] (0x60 x 8 ends at _svm_sreg_dirty 0x800F65E0); TU-local u8[8][0x60] second declaration gone."
+}

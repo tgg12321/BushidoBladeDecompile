@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "SpuWrite",
+ "body_hash": "a92a023e792dd50c",
+ "summary": "PASS: Sony names through the single declarations, as SOTN s_w.c; no FAKE; sandbox 0."
+}

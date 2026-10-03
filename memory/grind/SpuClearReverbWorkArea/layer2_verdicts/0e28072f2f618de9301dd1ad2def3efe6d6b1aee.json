@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "SpuClearReverbWorkArea",
+ "body_hash": "6209afe16981b78b",
+ "summary": "PASS: one volatile local, FAKE-labelled with measured reason (plain 36, reproduced) and a verified SOTN tag (s_crwa.c:10, same function and statement, matched c segment); Route B also holds; the fn-pointer typing is truthful and cast-free (SOTN's volatile s32 spelling also 0 but needs two casts)."
+}

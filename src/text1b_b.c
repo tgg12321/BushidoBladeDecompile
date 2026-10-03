@@ -29,8 +29,6 @@ typedef struct {
     u32 unk18 : 6;
 } Unk8009BD38Flags;
 extern Unk8009BD38Flags D_8009BD38;
-extern u8 D_8009BD58;
-extern u8 D_8009BD59;
 void func_8005B6FC(void);
 typedef struct GameObj {
     u8 field_00; u8 field_01; s16 field_02;
@@ -1501,12 +1499,9 @@ s32 func_80077894(s32 held, s32 pressed) {
     return ret;
 }
 s32 func_80077904(void) {
-    s32 i;
-
     D_800A35E4 = 0;
-    i = D_8009BD38.unk0 * 2;
-    D_800A35E0 = *((u8 *)&D_8009BD59 + i);
-    return *((u8 *)&D_8009BD58 + i);
+    D_800A35E0 = D_8009BD58[D_8009BD38.unk0][1];
+    return D_8009BD58[D_8009BD38.unk0][0];
 }
 void func_80077940(s32 arg0) {
     D_800A35E8 = (arg0 & 0x3FF) + ((u32) (arg0 & 0x3FF000) >> 2) + ((u32) (arg0 & 0x01000000) >> 4) + ((u32) (arg0 & 0x04000000) >> 5);
@@ -1859,15 +1854,9 @@ extern s32 D_8009BD88;
 
 
 
-extern s32 D_800F0FB8;
-extern s32 D_800F0FBC;
-extern s32 D_800F0FC0;
 
 
 
-extern s16 D_800F10A0;
-extern s16 D_800F10A2;
-extern s16 D_800F10A4;
 extern s32 D_800F10D0;
 
 
@@ -2092,7 +2081,6 @@ extern s32 D_800A37D4;
 
 
 
-    extern s16 D_800F0C04;
 
 
 
@@ -2958,12 +2946,15 @@ s32 RemovePatchPad(void) {
     ExitCriticalSection();
     return 1;
 }
-/* PsyQ 4.0 LIBAPI PAD: _Pad1 (static) — verbatim-linked Sony object.
-   FAKE(partial-use volatile array, owner Ruling 3): volatile delay-counter
-   array, only [0] used (frame 16 = i[3]) — SOTN vsync.c precedent; original
-   author idiom. */
+/* PsyQ 4.0 LIBAPI PAD: _Pad1 (static) — verbatim-linked Sony object. */
 s32 _Pad1(void) {
-    volatile s32 i[3];
+    /* FAKE: volatile delay counter, only i[0] used. volatile (owner rulings
+       Q50 route A / Q48 route B, Q53): every access to the counter is a
+       $sp-slot round-trip in the target; a plain local runs the loop in a
+       register (score 15). [3]: frame layout -- the target frame is 16 bytes,
+       a scalar counter gives 8 (score 2). SOTN's v_wait counts down element
+       0 of a volatile array the same way. */
+    volatile s32 i[3]; /* SOTN: src/main/psxsdk/libetc/vsync.c:52 @db41b28 */
     *(s16 *)((u8 *)D_8009BD84 + 0xA) = 0;
     i[0] = 10;
     i[0] = i[0] - 1;

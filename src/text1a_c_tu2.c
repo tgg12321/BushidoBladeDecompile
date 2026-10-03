@@ -7,11 +7,6 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1a_c.c). */
-extern s16 D_800EED10[];
-extern s32 D_800EED1C[];
-extern s32 D_800EED18;
-extern s32 D_800EED14;
-extern s32 D_800EED00[];
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
 extern void func_80052C10(void);
@@ -345,12 +340,10 @@ void func_800451A0(void) {
     cdrom_StartReadAt(1, (s32)D_800963EC, 0, 2);
 }
 void func_800451D0(void) {
-    s32 v1 = -1;
-    s32 v0 = 0x90;
-L_loop:
-    *(s16 *)((u8 *)D_800EED10 + v0) = v1;
-    v0 -= 0x10;
-    if (v0 >= 0) goto L_loop;
+    s32 i;
+    for (i = 9; i >= 0; i--) {
+        D_800EED10[i].id = -1;
+    }
     D_800A33A0 = (s32)&D_800A9D10;
     D_800A33A4 = 0x45000;
     D_800A33AC = 0;
@@ -373,86 +366,32 @@ void func_80045230(s32 a0) {
     }
 }
 void func_80045294(s32 a0, s32 a1) {
-    s32 sum = 0;
-    s32 i = a0;
-    s32 v1;
-    s32 s4;
+    s32 sum;
+    s32 i;
+    s32 src;
+    s32 dst;
     s32 count;
-    s32 s5;
 
-    /* !FAKE: `i++; i--;` cancellation pair (F6 family, semantically-null
-       statement pair) -- keeps the loop counter `i` out of the parameter's
-       cse quantity while the `a0 << 4` offset below is processed, so the
-       shift reads the parameter register ($s2) as the target does; without
-       the pair cse canonicalises the shift to the copy `i` ($s0)
-       (make_regs_eqv, tools/gcc-2.7.2/cse.c:842-857).
-       mechanism: cse_insn invalidates the destination of the self-referencing
-       `i = i + 1` and remove_invalid_refs drops its table entry, so cse1 and
-       cse2 both keep the pair and the copy; combine.c cancels the pair back
-       into the plain copy in the same insn slot, keeping copy-before-shift
-       order for the sched.c:2464 LUID tiebreak. */
-    i++;
-    i--;
-    v1 = a0 << 4;
-    s4 = *(s32 *)((u8 *)&D_800EED14 + v1);
+    sum = 0;
+    src = D_800EED10[a0].unk4;
     count = D_800A33AC;
-    s5 = s4 + a1;
-
-    if (i < count) {
-        do {
-            s32 val = *(s32 *)((u8 *)&D_800EED18 + v1);
-            v1 += 0x10;
-            i += 1;
-            sum += val;
-        } while (i < count);
+    dst = src + a1;
+    for (i = a0; i < count; i++) {
+        sum += D_800EED10[i].amt;
     }
-
     if (sum != 0) {
-        s32 idx;
-
         DrawSync(0);
-        func_800520B8(s4, s5, sum);
-
-        i = a0;
-        if (i < D_800A33AC) {
-            v1 = i << 4;
-            a0 = (s32)((u8 *)&D_800EED14 + v1);
-            idx = v1;
-            do {
-                *(s32 *)a0 += a1;
-                {
-                    void (*fn)(s16, s32) = (void (*)(s16, s32)) *(s32 *)((u8 *)&D_800EED1C + idx);
-                    if (fn != 0) {
-                        fn(*(s16 *)((u8 *)&D_800EED10 + idx), a1);
-                    }
-                }
-                a0 += 0x10;
-                idx += 0x10;
-                i += 1;
-            } while (i < D_800A33AC);
+        func_800520B8(src, dst, sum);
+        for (i = a0; i < D_800A33AC; i++) {
+            D_800EED10[i].unk4 += a1;
+            if (D_800EED10[i].fn != 0) {
+                D_800EED10[i].fn(D_800EED10[i].id, a1);
+            }
         }
     }
-
     D_800A33A0 += a1;
     D_800A33A4 -= a1;
 }
-/* The subtitle/effect slot table is an array of 16-byte records:
-   { s16 id; s16 unk2; s32 unk4; s32 amt; void (*fn)(s16, s32); }
-   (field offsets 0/2/4/8/0xC), with D_800A33AC live entries. The same layout
-   and 0x10 stride is used by every other function in this file that walks it
-   (func_80045294 above, func_80045510 / func_800455AC below, and the two
-   setters near the end). D_800EED00 is the 16-byte slot immediately preceding
-   the table, so SUBSLOT[n + 1] is table entry n. */
-typedef struct {
-    s16 id;
-    s16 unk2;
-    s32 unk4;
-    s32 amt;
-    void (*fn)(s16, s32);
-} SubEntry;
-
-#define SUBSLOT ((SubEntry *)D_800EED00)
-
 /* Remove the table entry whose id == a0: undo its contribution via
    func_80045294(index + 1, -amt), shift the following records down one slot,
    clear the freed tail slot, decrement the count. */
@@ -460,136 +399,115 @@ void func_800453E0(s32 a0) {
     s32 i;
     s32 j;
     s32 last;
-    s32 off;
 
     for (i = 0; i < D_800A33AC; i++) {
-        off = i << 4;
-        if (*(s16 *)((u8 *)D_800EED10 + off) == a0) {
-            func_80045294(i + 1, -*(s32 *)((u8 *)&D_800EED18 + off));
+        if (D_800EED10[i].id == a0) {
+            func_80045294(i + 1, -D_800EED10[i].amt);
             if (i < D_800A33AC - 1) {
                 for (j = i + 1; j < D_800A33AC; j++) {
-                    SUBSLOT[j] = SUBSLOT[j + 1];
+                    D_800EED10[j - 1] = D_800EED10[j];
                 }
             }
             last = D_800A33AC - 1;
-            *(s16 *)((u8 *)D_800EED10 + (last << 4)) = -1;
-            *(s32 *)((u8 *)D_800EED1C + (last << 4)) = 0;
+            D_800EED10[last].id = -1;
+            D_800EED10[last].fn = 0;
             D_800A33AC = last;
             return;
         }
     }
 }
 void func_80045510(s32 a0, s32 a1) {
-    s32 i = 0;
-    s32 count = D_800A33AC;
-    if (i >= count) return;
-    {
-        s16 *s0 = (s16 *)&D_800EED18;
-        s32 v1 = 0;
-        do {
-            if (*(s16 *)((s32)&D_800EED10 + v1) == a0) {
-                s32 diff = a1 - *(s32 *)s0;
-                if (diff == 0) return;
-                func_80045294(i + 1, diff);
-                *(s32 *)s0 = a1;
-                return;
-            }
-            s0 = (s16 *)((u8 *)s0 + 0x10);
-            count = D_800A33AC;
-            i += 1;
-            v1 += 0x10;
-        } while (i < count);
+    s32 i;
+    s32 diff;
+
+    for (i = 0; i < D_800A33AC; i++) {
+        if (D_800EED10[i].id == a0) {
+            diff = a1 - D_800EED10[i].amt;
+            if (diff == 0) return;
+            func_80045294(i + 1, diff);
+            D_800EED10[i].amt = a1;
+            return;
+        }
     }
 }
 s32 *func_800455AC(s32 a0) {
+    Unk800EED10Entry *e;
     s32 idx;
-    s32 *ret;
-    s16 *slot;
+    s32 ret;
+
     func_800453E0(a0);
     idx = D_800A33AC;
-    slot = (s16 *)((u8 *)D_800EED10 + idx * 16);
+    e = &D_800EED10[idx];
     D_800A33AC = idx + 1;
-    ret = (s32 *)D_800A33A0;
-    *(s32 *)((u8 *)slot + 4) = (s32)ret;
-    *slot = a0;
-    *(s32 *)((u8 *)slot + 0xC) = 0;
-    return ret;
+    ret = D_800A33A0;
+    e->unk4 = ret;
+    e->id = a0;
+    e->fn = 0;
+    return (s32 *)ret;
 }
 void func_80045600(s32 a0, s32 a1) {
     s32 i = 0;
     s32 count = D_800A33AC;
-    s16 *a3;
+    Unk800EED10Entry *e;
     if (i >= count) goto not_found;
     {
-        s16 *a2 = D_800EED10;
+        Unk800EED10Entry *p = D_800EED10;
         do {
-            s16 cur;
-            a3 = a2;
-            cur = *a3;
-            if (cur == a0) goto found;
+            /* FAKE: the cursor `p` and the tested entry `e` are two names for one
+               walk; mechanism: the target keeps both live (`move a3,a2` at the
+               loop head, `addiu a2,a3,16` in the back-edge slot, `sw ...,8(a3)`
+               after the loop).  One pointer `e` walked by `e++` scores 7. */
+            e = p;
+            if (e->id == a0) goto found;
             i++;
-            a2 = (s16 *)((u8 *)a3 + 0x10);
+            p = e + 1;
         } while (i < count);
     }
 found:
     if (i < D_800A33AC) {
-        s32 old_a0 = D_800A33A0;
-        s32 old_a4 = D_800A33A4;
-        a0 = a1 - old_a0;
-        old_a0 = old_a0 + a0;
-        old_a4 = old_a4 - a0;
-        *(s32 *)((u8 *)a3 + 8) = a0;
-        D_800A33A0 = old_a0;
-        D_800A33A4 = old_a4;
+        s32 cur = D_800A33A0;
+        s32 rest = D_800A33A4;
+        /* FAKE: the parameter a0 (the id, dead here) reused for the entry's new
+           amt; the target computes it into $a0 (`subu a0,a1,v0`).  A fresh local
+           scores 17. */
+        a0 = a1 - cur;
+        cur += a0;
+        rest -= a0;
+        e->amt = a0;
+        D_800A33A0 = cur;
+        D_800A33A4 = rest;
         return;
     }
 not_found:
     func_80052C10();
 }
-extern s16 D_800EED10[];
-extern s32 D_800EED1C[];
 void func_80045694(s32 a0, s32 a1) {
     s32 i;
     s32 count = D_800A33AC;
-    if (count <= 0) return;
-    i = 0;
-    do {
-        if (*(s16 *)((u8 *)D_800EED10 + i) == a0) {
-            *(s32 *)((u8 *)D_800EED1C + i) = a1;
+    for (i = 0; i < count; i++) {
+        if (D_800EED10[i].id == a0) {
+            D_800EED10[i].fn = (void (*)(s16, s32))a1;
             return;
         }
-        i += 0x10;
-    } while (i < count * 16);
+    }
 }
 void func_800456F0(s32 a0) {
     s32 i;
     s32 count = D_800A33AC;
-    if (count <= 0) return;
-    i = 0;
-    do {
-        if (*(s16 *)((u8 *)D_800EED10 + i) == a0) {
-            *(s32 *)((u8 *)D_800EED1C + i) = 0;
+    for (i = 0; i < count; i++) {
+        if (D_800EED10[i].id == a0) {
+            D_800EED10[i].fn = 0;
             return;
         }
-        i += 0x10;
-    } while (i < count * 16);
+    }
 }
 s32 *func_8004574C(s32 arg0) {
-    s32 *var_a1;
-    s32 var_v1;
-    s32 limit;
-
-    if (D_800A33AC > 0) {
-        var_a1 = (s32 *)&D_800EED10;
-        var_v1 = 0;
-        limit = D_800A33AC << 4;
-        do {
-            if (*(s16 *)((s32)&D_800EED10 + var_v1) == arg0) {
-                return var_a1;
-            }
-            var_v1 += 0x10;
-            var_a1 = (s32 *)((s32)var_a1 + 0x10);
-        } while (var_v1 < limit);
+    s32 i;
+    s32 count = D_800A33AC;
+    for (i = 0; i < count; i++) {
+        if (D_800EED10[i].id == arg0) {
+            return (s32 *)&D_800EED10[i];
+        }
     }
     return NULL;
 }

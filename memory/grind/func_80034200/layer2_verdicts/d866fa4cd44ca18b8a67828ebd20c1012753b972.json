@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "func_80034200",
+  "body_hash": "c4b8b1b4da653779",
+  "summary": "Zero FAKEs; plain pair-index loop over the header's D_800F65F8[8][2] (no second extern, D_800F65F9 retired from include/ and src/); useReal/innerBound/acc/shift all carry real values; sandbox --disable all 0 (40/40, 0 stripped); src holds the briefed a5 body. Items 2-5 met.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "innerBound is the played-round count (D_800A3874) and bounds the outer index i, not an inner loop; a name such as `played` would read better",
+    "named_syms.txt still mentions D_800F65F9 in the g_match_round_index / g_match_round_byte_a comments"
+  ]
+}

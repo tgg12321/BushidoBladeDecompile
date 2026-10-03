@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800340A0",
+  "body_hash": "b337b7967bf4cb1a",
+  "summary": "D_800F65F8[round][0/1] on u8[8][2] (16 bytes to D_800F6608; 4 bits/round packing in func_80034200 fits 8); D_800F65F9 gone. Redundant (u8) casts are byte-neutral (measured 0) - hygiene."
+}

@@ -52,7 +52,7 @@ in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
 |   g_disp_fb_base   0x800F7438                |
 |     two adjacent 0x4090 buffers (draw+disp   |
 |     env + OT)                                |
-|   videoDec         0x800F0D80 (MDEC dec)     |
+|   D_800F0D78[16]   0x800F0D78 (effect pos)   |
 |   MotDataBaseAddress 0x80104F38              |
 |   g_memcard_data    0x80103600               |
 +----------------------------------------------+ 0x801D_8800  <- overlay region

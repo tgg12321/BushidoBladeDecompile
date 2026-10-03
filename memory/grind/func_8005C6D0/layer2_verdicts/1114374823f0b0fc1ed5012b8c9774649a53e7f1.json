@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8005C6D0",
+  "body_hash": "b97ae8d990f5f903",
+  "summary": "Clean: the pool goes through D_800EFB78[i].req/.voll/.volr (header struct, voll/volr order matches SsUtKeyOnV's 7th/8th args), and the alias symbols are replaced by g_vab_rec_ptr[6] == g_vab_rec_ptr[3]. The old nv/off FAKE and the (s16) counter casts are dropped. No FAKEs, sandbox 0."
+}

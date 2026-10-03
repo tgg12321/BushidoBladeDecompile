@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "SpuQuit",
+ "body_hash": "fe6b7f0f55a6240d",
+ "summary": "PASS: g_spu_init_flag second handle replaced by the single allowlisted _spu_transferCallback declaration (Sony type, SOTN libspu_internal.h:39); sandbox 0."
+}

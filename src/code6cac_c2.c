@@ -507,62 +507,60 @@ void func_8003C2C0(void) {
         }
     }
 }
-extern u8 D_800F65F8[];
 void func_8003C42C(void) {
+    /* FAKE: frame layout -- only counts[0..2] are used (D_800A377C holds 0/1/2); counts[3]..[6]
+     * score 4, [7] or [8] gives the target's -0x38 frame. */
     s32 counts[8];
     s32 i;
-    s32 v0;
-    v0 = D_800A389B;
+
+    s32 rounds;
+    rounds = D_800A389B;
     i = 0;
     counts[2] = 0;
     counts[1] = 0;
     counts[0] = 0;
-    if (v0 > 0) {
+    if (rounds > 0) {
+        /* FAKE: base / n are second handles of counts / rounds for the loop; using them
+         * directly scores 4. */
         s32 *base = counts;
-        s32 n = v0;
+        s32 n = rounds;
         do {
             s32 idx = D_800A377C[i];
             base[idx]++;
             i++;
         } while (i < n);
     }
-    v0 = counts[0];
-    /* FAKE: D_800A382D store duplicated into all three arms â€” cross-jump
-       re-merges them at the join with the sb scheduled ahead of the
-       disp_SetFramebufferMode arg setup (single join store gets deferred
-       past the arg moves by sched2) */
-    if (v0 != counts[1]) {
-        v0 = counts[0] < counts[1];
-        D_800A382D = v0;
+    /* FAKE: the counts[0] < counts[1] store is written in both decisive arms (here and in
+     * the tie-break below); one shared store after the if/else scores 11. */
+    if (counts[0] != counts[1]) {
+        D_800A382D = counts[0] < counts[1];
     } else {
-        v0 = D_800A389B;
+        s32 rounds2 = D_800A389B;
         i = 0;
         counts[1] = 0;
         counts[0] = 0;
-        if (v0 > 0) {
+        if (rounds2 > 0) {
+            /* FAKE: base2 / n2, the same handles for the second tally; direct use scores 6. */
             s32 *base2 = counts;
-            s32 n2 = v0;
-            u8 *tbl = D_800F65F8;
+            s32 n2 = rounds2;
+            u8 (*tbl)[2] = D_800F65F8;
             do {
                 s32 j = 0;
                 s32 *p = base2;
-                u8 *q = tbl;
+                u8 *q = *tbl;
                 do {
                     *p += *q++;
                     j++;
                     p++;
                 } while (j < 2);
                 i++;
-                tbl += 2;
+                tbl++;
             } while (i < n2);
         }
-        v0 = counts[0];
-        if (v0 != counts[1]) {
-            v0 = v0 < counts[1];
-            D_800A382D = v0;
+        if (counts[0] != counts[1]) {
+            D_800A382D = counts[0] < counts[1];
         } else {
-            v0 = 2;
-            D_800A382D = v0;
+            D_800A382D = 2;
         }
     }
     gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -2093,12 +2091,6 @@ extern void gte_SetMatrixRotTransIR(s32 *, s32 *, s16 *);
 /* Externs for globals */
 extern u8 g_stage_collision[];
 extern s32 D_80094A6C[];
-extern s32 g_stage_light_pos;
-extern s32 D_800A93B4;
-extern s32 D_800A93B8;
-extern s32 g_stage_light_dir;
-extern s32 D_800A93C0;
-extern s32 D_800A93C4;
 
 /* --- Functions 0x8003F168 - 0x8004019C --- */
 void stage_ExecInitFunc(void) {
@@ -2231,23 +2223,23 @@ u32 stage_GetCollision(s32 a0, s32 a1) {
 void stage_ClearLighting(void) {
     g_game_flag_b = 0;
     g_game_flag_a = 0;
-    D_800A93B8 = 0;
-    D_800A93B4 = 0;
-    g_stage_light_pos = 0;
-    D_800A93C4 = 0;
-    D_800A93C0 = 0;
-    g_stage_light_dir = 0;
+    g_stage_light_pos[2] = 0;
+    g_stage_light_pos[1] = 0;
+    g_stage_light_pos[0] = 0;
+    g_stage_light_dir[2] = 0;
+    g_stage_light_dir[1] = 0;
+    g_stage_light_dir[0] = 0;
 }
 
 void stage_SetLightPosDir(s32 a0, s32 a1, s32 a2) {
-    (&g_stage_light_pos)[a2] = a0;
-    (&g_stage_light_dir)[a2] = a1;
+    g_stage_light_pos[a2] = a0;
+    g_stage_light_dir[a2] = a1;
 }
 
 void stage_ApplyLighting(void) {
-    sys_StubEmpty3(g_stage_light_pos, g_stage_light_dir, 0);
-    sys_StubEmpty3(D_800A93B4, D_800A93C0, 1);
-    sys_StubEmpty3(D_800A93B8, D_800A93C4, 2);
+    sys_StubEmpty3(g_stage_light_pos[0], g_stage_light_dir[0], 0);
+    sys_StubEmpty3(g_stage_light_pos[1], g_stage_light_dir[1], 1);
+    sys_StubEmpty3(g_stage_light_pos[2], g_stage_light_dir[2], 2);
 }
 
 void func_8003F62C(s32 *a0) {

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8006288C",
+  "body_hash": "9644f5c47594a339",
+  "summary": "Clean: D_800F0FB8[i] / D_800F10A0[i] / D_800F0C04[i] through the one shared header (code6cac.h:117-119; the sizes fit up to D_800F1000 / D_800F10D0 / D_800F0C10). The block-scope and scalar externs are gone, and the old `one` FAKE was removed (plain 1 << i matches). No FAKEs, sandbox 0."
+}

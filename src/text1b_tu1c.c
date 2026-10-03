@@ -330,15 +330,6 @@ extern s32 D_8009BC04;
 extern s32 D_800A32C8;
 extern s16 D_800F0BCC[];
 extern s16 D_800F0BEC[];
-extern s32 D_800F0D78;
-extern s32 D_800F0D7C;
-extern s32 videoDec;
-extern s32 D_800F0FB8;
-extern s32 D_800F0FBC;
-extern s32 D_800F0FC0;
-extern s16 D_800F10A0;
-extern s16 D_800F10A2;
-extern s16 D_800F10A4;
 extern s32 D_800F10EC;
 extern s32 D_800F10F0;
 extern s32 D_800F1138;
@@ -1154,56 +1145,29 @@ void func_800620B8(s16 *pos, s32 *trans) {
     D_800A37D4 = (s32)prim;
 }
 s32 func_8006288C(void) {
-    extern s16 D_800F0C04;
-    extern s32 D_800F0FB8;
-    extern s32 D_800F0FBC;
-    extern s32 D_800F0FC0;
-
-
-
     extern s32 D_800F1138;
-    /* FAKE: `one` is an opaque holder for the constant 1 rather than a literal
-       `1 << i`; mechanism: with a literal the shift base is loop-invariant and
-       loop.c hoists its `(set reg 1)` into the preheader TAIL, so sched.c's
-       first pass parks `addiu $t3,$zero,1` at init-block slot 6 instead of the
-       target's slot 2. No literal-1 init-block ordering or scalar-type choice
-       moves the constant off slot 6. */
-    s32 one;
-    s16 *flag_p;
-    s32 *src_a;
-    u16 *src_b;
+    s32 *pos;
+    s16 *rot;
     s32 i;
-    s32 off_s32;
-    s32 off_s16;
     s32 mask;
 
     D_800F1138 = 1;
-    i = 0;
-    one = 1;
-    flag_p = &D_800F0C04;
-    off_s16 = 0;
-    off_s32 = 0;
-    src_a = (s32 *)D_800A347C;
-    src_b = (u16 *)D_800A3478;
-    do {
-        mask = one << i;
+    pos = (s32 *)D_800A347C;
+    rot = (s16 *)D_800A3478;
+    for (i = 0; i < 6; i++) {
+        mask = 1 << i;
         if (!(D_800A3460 & mask)) {
-            *(s32 *)((s32)&D_800F0FB8 + off_s32) = src_a[0];
-            *(s32 *)((s32)&D_800F0FBC + off_s32) = src_a[1];
-            *(s32 *)((s32)&D_800F0FC0 + off_s32) = src_a[2];
-            *(u16 *)((s32)&D_800F10A0 + off_s16) = src_b[0];
-            *(u16 *)((s32)&D_800F10A2 + off_s16) = src_b[1];
+            D_800F0FB8[i].x = pos[0];
+            D_800F0FB8[i].y = pos[1];
+            D_800F0FB8[i].z = pos[2];
+            D_800F10A0[i].vx = rot[0];
+            D_800F10A0[i].vy = rot[1];
             D_800A3460 |= mask;
-            *(u16 *)((s32)&D_800F10A4 + off_s16) = src_b[2];
-            *flag_p = 0;
-            goto out;
+            D_800F10A0[i].vz = rot[2];
+            D_800F0C04[i] = 0;
+            break;
         }
-        flag_p++;
-        off_s16 += 8;
-        i++;
-        off_s32 += 0xC;
-    } while (i < 6);
-out:
+    }
     return 1;
 }
 extern void RotMatrixZYX(s16 *, u8 *);
@@ -1217,7 +1181,6 @@ extern s32 RotTransPers4(s16 *, s16 *, s16 *, s16 *, s32 *, s32 *, s32 *, s32 *,
    link the new quads into the OT. Returns 1 when quads were added, else the
    live-slot mask (0 once every slot has expired). */
 s32 func_8006295C(void) {
-    extern s16 D_800F0C04[];
     extern u16 D_8009B958[];
     extern u16 D_8009B960[];
     extern u16 D_8009B968[];
@@ -1266,11 +1229,11 @@ s32 func_8006295C(void) {
         m = &mats[i];
         v = rsin(((D_800F0C04[i] + 6) << 10) / 6);
         scale[0] = scale[1] = scale[2] = v + (D_800F0C04[i] << 12) / 6;
-        RotMatrixZYX((s16 *)((s32)&D_800F10A0 + i * 8), (u8 *)m);
+        RotMatrixZYX(&D_800F10A0[i].vx, (u8 *)m);
         ScaleMatrix((u8 *)m, scale);
-        m->t[0] = *(s32 *)((s32)&D_800F0FB8 + i * 12) - ((s32 *)D_800A3470)[0];
-        m->t[1] = *(s32 *)((s32)&D_800F0FBC + i * 12) - ((s32 *)D_800A3470)[1];
-        m->t[2] = *(s32 *)((s32)&D_800F0FC0 + i * 12) - ((s32 *)D_800A3470)[2];
+        m->t[0] = D_800F0FB8[i].x - ((s32 *)D_800A3470)[0];
+        m->t[1] = D_800F0FB8[i].y - ((s32 *)D_800A3470)[1];
+        m->t[2] = D_800F0FB8[i].z - ((s32 *)D_800A3470)[2];
         CompMatrix(D_800A3474, (u8 *)m, (u8 *)cm);
         SetRotMatrix((u8 *)cm);
         SetTransMatrix((u8 *)cm);
@@ -1974,59 +1937,26 @@ void func_800644FC(s32 *count, MATRIX *m, s32 idx) {
 }
 
 /* func_800645B0 -- for each group of four slots (bits of D_800A3444), claim
- * the first free slot: set its 3-word record at D_800F0D78 / D_800F0D7C /
- * videoDec to the position at D_800A347C jittered by (rand() & 0xFF) - 0x7F
- * per axis, give it a random 0..7 in D_800F0BCC, and mark its bit.
- *
- * Shape notes:
- *  - `idx = idx * 12`: D_800F0D78 / D_800F0D7C / videoDec are one 3-word
- *    record, so the byte offset for slot `idx` is idx * 12, and
- *    `idx2 = idx << 1` is the halfword record's byte offset.  Written as
- *    `idx = idx2 + idx`, optabs.c expand_binop (tools/gcc-2.7.2/optabs.c:409-420)
- *    swaps the commutative operands because the expansion target IS op1, so the
- *    target's `addu $s0,$s1,$s0` cannot be emitted; expand_mult gives the add a
- *    fresh temp.
- *  - The loop-invariant `1` is carried in `last` (FAKE, below), which leaves
- *    `val` confined to the D_800A3444 read-modify-write inside the `if`; with
- *    `val` as the carrier the local-alloc / global-alloc split differs and the
- *    loop head and back-edge delay slot do not match.
- */
+ * the first free slot: set its position D_800F0D78[slot] to the position at
+ * D_800A347C jittered by (rand() & 0xFF) - 0x7F per axis, give it a random
+ * 0..7 in D_800F0BCC, and mark its bit. */
 s32 func_800645B0(void) {
     s32 i;
     s32 j;
     s32 idx;
-    s32 idx2;
     s32 mask;
-    s32 val;
-    s32 last;
+
     D_800F10EC = 1;
     for (i = 0; i < 0xF; i += 4) {
         for (j = 0; j < 4; j++) {
             idx = i + j;
-            /* FAKE: the shift's constant 1 is staged through `last`, the
-             * scratch local that holds each rand() result below (its previous
-             * value is dead here -- the last read of it is the `last & 7` of
-             * the preceding iteration).  mechanism: GCC 2.7.2 loop.c
-             * count_loop_regs_set (loop.c:3040) marks a register set in two
-             * basic blocks of the loop `may_not_move`, so scan_loop never
-             * admits the const-1 as a movable and move_movables cannot hoist
-             * it; written with a single-set carrier the `li` is hoisted into a
-             * fresh callee-save and the function costs two extra
-             * instructions. */
-            last = 1;
-            mask = last << idx;
+            mask = 1 << idx;
             if (!(D_800A3444 & mask)) {
-                idx2 = idx << 1;
-                last = rand();
-                idx = idx * 12;
-                *((s32 *)(((s32)(&D_800F0D78)) + idx)) = (((s32 *)D_800A347C)[0] + (last & 0xFF)) - 0x7F;
-                *((s32 *)(((s32)(&D_800F0D7C)) + idx)) = (((s32 *)D_800A347C)[1] + (rand() & 0xFF)) - 0x7F;
-                *((s32 *)(((s32)(&videoDec)) + idx)) = (((s32 *)D_800A347C)[2] + (rand() & 0xFF)) - 0x7F;
-                last = rand();
-                val = D_800A3444;
-                *((s16 *)(((s32)(&D_800F0BCC)) + idx2)) = last & 7;
-                val = val | mask;
-                D_800A3444 = val;
+                D_800F0D78[idx].x = ((s32 *)D_800A347C)[0] + (rand() & 0xFF) - 0x7F;
+                D_800F0D78[idx].y = ((s32 *)D_800A347C)[1] + (rand() & 0xFF) - 0x7F;
+                D_800F0D78[idx].z = ((s32 *)D_800A347C)[2] + (rand() & 0xFF) - 0x7F;
+                D_800F0BCC[idx] = rand() & 7;
+                D_800A3444 |= mask;
                 break;
             }
         }
@@ -2105,9 +2035,9 @@ s32 func_800646E8(void) {
         D_800F0BCC[i]++;
         *frame = D_800F0BCC[i] / 4;
         if (*frame < 7) {
-            pos->vx = *(s32 *)((s32)&D_800F0D78 + i * 12) - ((s32 *)D_800A3470)[0];
-            pos->vy = *(s32 *)((s32)&D_800F0D7C + i * 12) - ((s32 *)D_800A3470)[1];
-            pos->vz = *(s32 *)((s32)&videoDec + i * 12) - ((s32 *)D_800A3470)[2];
+            pos->vx = D_800F0D78[i].x - ((s32 *)D_800A3470)[0];
+            pos->vy = D_800F0D78[i].y - ((s32 *)D_800A3470)[1];
+            pos->vz = D_800F0D78[i].z - ((s32 *)D_800A3470)[2];
             ApplyRotMatrixLV(pos, trans);
             /* the MATRIX whose t[] is *trans: SetTransMatrix reads only m->t */
             SetTransMatrix((u8 *)trans - 0x14);

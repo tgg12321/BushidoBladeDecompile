@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800455AC",
+  "body_hash": "721a71aeead979f7",
+  "summary": "Entry pointer e = &D_800EED10[idx]; member stores; return cast follows the pre-existing s32* prototype (hygiene)."
+}

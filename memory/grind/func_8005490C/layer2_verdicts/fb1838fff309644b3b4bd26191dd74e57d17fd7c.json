@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8005490C",
+  "body_hash": "01bbdcac4ed8c271",
+  "summary": "Only &D_800F62E0[0|1|4] changed. The three existing FAKEs are still load-bearing: direct D_800EFAE8 scores 157, split player locals 9, block-local rot_z 41. They are labelled with their mechanism."
+}

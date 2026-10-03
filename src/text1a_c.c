@@ -9,11 +9,6 @@
 
 
 
-extern s16 D_800EED10[];
-extern s32 D_800EED1C[];
-extern s32 D_800EED18;
-extern s32 D_800EED14;
-extern s32 D_800EED00[];
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
 extern void func_80052C10(void);
@@ -41,7 +36,6 @@ extern s32 func_8004019C(s32 *, s32);
 
 
 extern s32 func_800486FC(s32 *);
-extern u8 D_800F62E0[8][0x60];
 
 void func_80042504(s32 *hsv, s32 *rgb) {
     s32 h = hsv[0];
@@ -521,7 +515,7 @@ void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
 
     *dst = D_800FF610;
 
-    D_800A3828 = (s32)D_800F62E0[arg2];
+    D_800A3828 = (s32)&D_800F62E0[arg2];
 
     dst->m[1][0] >>= 1;
     dst->m[1][1] >>= 1;

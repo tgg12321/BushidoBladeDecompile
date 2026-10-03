@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80045294",
+  "body_hash": "4f2022fc977cbe69",
+  "summary": "Plain loops over Unk800EED10Entry; `i++; i--;` FAKE removed; src/dst names match func_800520B8's move(src, dst, size) use."
+}

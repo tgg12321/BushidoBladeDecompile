@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80033BC0",
+  "body_hash": "c2228d7a6452ca4a",
+  "summary": "Reads D_801077B0[a0] through the one array; remaining (&D_8008D55C/E748/E75C)[i] stay inside each table's own dlabel (hygiene: scalar-typed tables)."
+}

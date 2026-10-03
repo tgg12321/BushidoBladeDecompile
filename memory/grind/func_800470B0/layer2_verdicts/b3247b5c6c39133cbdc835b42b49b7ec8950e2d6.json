@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800470B0",
+  "body_hash": "52876925f5a6c41a",
+  "summary": "Clean: (s32 n, MATRIX *, MATRIX *, s32), reading D_800F62E0[n].lmat row 0 through the shared header type. The dead temp_v1 and the var_s0 copy are gone. It has no callers in C or asm, so no casts to check. No FAKEs, sandbox 0."
+}

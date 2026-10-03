@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "SpuIsTransferCompleted",
+ "body_hash": "fc9e2c166e099e0f",
+ "summary": "PASS: g_spu_busy second handle replaced by Sony's _spu_inTransfer (SOTN s_itc.c same statements); no FAKE; sandbox 0."
+}

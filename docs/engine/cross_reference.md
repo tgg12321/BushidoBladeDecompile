@@ -189,7 +189,7 @@ If you've seen a global in the source and want to know what it does:
 - `g_snd_config_tbl` (0x800EF7BC) — Sound
 - `g_snd_fade_curve` (0x800EF800) — Sound
 - `g_snd_ch_data` (0x800EF848) — Sound (per-channel data)
-- `videoDec` (0x800F0D80) — MDEC overlay
+- `D_800F0D78[16]` (0x800F0D78) — effect slot positions (func_800645B0 / func_800646E8)
 - `MarioCam_str` (0x800F19D0) — Replay/Special-cam debug
 - `g_gpu_color_table` (0x800F189C) — GPU
 - `g_color_mode` (0x800F6652) — Menus (grayscale)

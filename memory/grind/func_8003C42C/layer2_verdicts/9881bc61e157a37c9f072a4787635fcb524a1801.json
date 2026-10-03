@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "func_8003C42C",
+  "body_hash": "803acdb0beb6ab12",
+  "summary": "All four codegen constructs carry FAKE labels, and every measured number in them re-measures true: counts[3]/[6]/[9] 4, [7] 0; dropping base/n 4, base2/n2 6, the shared result-temp store 11. counts is a referenced, written array, so it falls under dead-vars carve-out 2, whose only blocking part is the label. No lighter form is known: no handles 10, one shared base 8, static-inline tally helpers 22. sandbox 0 (77/77). The 3 stripped items are the file-scope PAD_NOPS macros, which are outside this body.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "dead-vars-local-array carve-out 2 paperwork (hygiene since Q91): the SOTN-style range annotation and the ledger exhaustion entry for counts[8]. The frame equation does force the slack (0x38 - ra 4 - outgoing args 0x10 leaves more than the 12 bytes written).",
+    "code6cac_c2.c still defines the file-scope PAD_NOPS_1/2/3 __asm__ macros (stripped by the sandbox; not used in this body)"
+  ]
+}

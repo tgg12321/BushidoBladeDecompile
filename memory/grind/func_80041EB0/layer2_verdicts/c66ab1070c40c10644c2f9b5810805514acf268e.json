@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80041EB0",
+  "body_hash": "ce2fd9838d9d5013",
+  "summary": "Light records 0/1 written through D_800F62E0[n].light[1] / cmat column 1; fp_ptr is a once-written pointer to record 0 (truthful named intermediate; removing it scores 45). No cross-symbol access, no second handle."
+}

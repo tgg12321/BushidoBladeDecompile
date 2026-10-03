@@ -2,6 +2,7 @@
 #include "include_asm.h"
 #include "bios.h"
 #include "system.h"
+#include "sound.h"
 
 /* Forward declarations */
 extern void SpuInit(void);
@@ -530,34 +531,29 @@ s32 PCread(s32 addr, s32 dest, s32 len) {
     return total;
 }
 INCLUDE_ASM("asm/funcs", _SN_read);
-extern s32 _snd_seq_tick_env_plus_0x4;
-extern u8 _snd_seq_tick_env_plus_0x11;
-extern u8 _snd_seq_tick_env_plus_0x12;
-extern u8 _snd_seq_tick_env_plus_0x10;
-extern s32 _snd_seq_tick_env_plus_0xC;
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
 
 void SsEnd(void) {
-    if (_snd_seq_tick_env_plus_0x4 != 0) {
+    if (_snd_seq_tick_env.unk4 != 0) {
         return;
     }
-    _snd_seq_tick_env_plus_0x11 = 0;
-    if (_snd_seq_tick_env_plus_0x12 == 0x7F) {
+    _snd_seq_tick_env.unk17 = 0;
+    if (_snd_seq_tick_env.unk18 == 0x7F) {
         return;
     }
     EnterCriticalSection();
-    if (_snd_seq_tick_env_plus_0x10 != 0) {
+    if (_snd_seq_tick_env.unk16 != 0) {
         VSyncCallback(0);
-        _snd_seq_tick_env_plus_0x10 = 0;
-    } else if (_snd_seq_tick_env_plus_0x12 == 0) {
-        ((void (*)(s32, s32))InterruptCallback)(0, _snd_seq_tick_env_plus_0xC);
-        _snd_seq_tick_env_plus_0xC = 0;
+        _snd_seq_tick_env.unk16 = 0;
+    } else if (_snd_seq_tick_env.unk18 == 0) {
+        ((void (*)(s32, s32))InterruptCallback)(0, _snd_seq_tick_env.unk12);
+        _snd_seq_tick_env.unk12 = 0;
     } else {
         ((void (*)(s32, s32))InterruptCallback)(6, 0);
     }
     ExitCriticalSection();
-    _snd_seq_tick_env_plus_0x12 = 0x7F;
+    _snd_seq_tick_env.unk18 = 0x7F;
 }
 
 void SsInit(void) {

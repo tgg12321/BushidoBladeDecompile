@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80046BF4",
+  "body_hash": "d5253ac5ffaeaf0c",
+  "summary": "&D_800F62E0[0|1|4] replaces the u8 base + 0x60/0x180 arithmetic. new_var2 is a once-written named intermediate holding the incremented counter (inlining it scores 12, 109/109 insns), a truthful entry-6 shape; renaming it is debt."
+}

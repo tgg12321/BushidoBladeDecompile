@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "stage_ApplyLighting",
+  "body_hash": "add8fbe421c13f76",
+  "summary": "g_stage_light_pos[i]/dir[i], i=0..2, on the s32[3] arrays (0x800A93B0 / +0xC); no second handle; nothing false."
+}

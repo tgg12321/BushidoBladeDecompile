@@ -122,7 +122,6 @@ extern u8 D_800A38AA;
 extern u8 D_800A38AB;
 
 
-extern u8 D_800F65F8;
 
 
 

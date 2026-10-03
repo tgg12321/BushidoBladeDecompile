@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80049F4C",
+  "body_hash": "ab639dcb71735570",
+  "summary": "Plain for-loop over D_800F62E0[i], SetColorMatrix(&D_800F62E0[0].cmat), SetBackColor(back[0..2]); the second u8[8][0x60] / g_gte_color_matrix_data / g_gte_back_color_* handles are retired."
+}

@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80046F24",
+  "body_hash": "b57101500ab7cb18",
+  "summary": "Clean: writes the 3x3 shadow matrix D_800EEDB0 (one extern MATRIX, 0x20 bytes up to g_cam_bone_data 0x800EEDD0) through .m[r][c] from D_800F62E0[0].lmat row 0. The div/num reuses are gone and -(s16)x mirrors the target's sll/sra/neg. No FAKEs, sandbox 0."
+}

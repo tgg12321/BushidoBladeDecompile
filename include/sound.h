@@ -188,6 +188,25 @@ typedef struct {
 } _SsFCALL;
 extern _SsFCALL D_800F3340; /* SsFCALL */
 
+/* Sony LIBSND `_snd_seq_tick_env` (ssstart.c SndSeqTickEnv), base
+   0x800A26CC: tick mode / tick-mode flag / tick handler / saved interrupt
+   callback / VSync-hooked flag / 1-per-2 flag / interrupt slot / pad, then
+   the 1-per-2 toggle at +0x14 (asm/data/91C98.data.s initializer: 0x3C, 1,
+   SsSeqCalledTbyT, 0, 0, 0, 0x7F, 0, 0). Layout per SOTN
+   src/main/psxsdk/libsnd/libsnd_i.h:284. */
+typedef struct {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ s32 unk4;
+    /* 0x08 */ s32 unk8;
+    /* 0x0C */ s32 unk12;
+    /* 0x10 */ u8 unk16;
+    /* 0x11 */ u8 unk17;
+    /* 0x12 */ u8 unk18;
+    /* 0x13 */ u8 unk19;
+    /* 0x14 */ u32 unk20;
+} SndSeqTickEnv;
+extern SndSeqTickEnv _snd_seq_tick_env;
+
 /* Functions */
 extern void SsSetSerialAttr(s32, s32, s32);
 

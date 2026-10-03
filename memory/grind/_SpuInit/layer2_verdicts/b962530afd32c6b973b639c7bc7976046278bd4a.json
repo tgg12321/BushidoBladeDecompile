@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "_SpuInit",
+ "body_hash": "597178ae75af9862",
+ "summary": "PASS: _spu_rev_attr_plus_* and _spu_voice_centerNote_plus_0x2E handles retired; members and &_spu_voice_centerNote[23] through the declared objects (members match SOTN s_ini.c:22-26); backward walk is real C; sandbox 0."
+}

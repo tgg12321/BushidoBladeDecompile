@@ -77,8 +77,6 @@ g_spu_dma_ctrl = 0x800A2CF0;
 _spu_tsa = 0x800A2CF4;  /* data-wave 2026-09-07: was g_spu_xfer_addr */
 _spu_transMode = 0x800A2CF8;  /* data-wave 2026-09-07: was g_spu_reverb_mode */
 _spu_mem_mode_plus = 0x800A2D04;  /* data-wave 2026-09-07: was g_spu_addr_shift */
-g_spu_busy = 0x800A2D10;
-g_spu_init_flag = 0x800A2D14;
 _spu_IRQCallback = 0x800A2D18;  /* data-wave 2026-09-07: was g_spu_timer */
 _spu_AllocBlockNum = 0x800A2D38;  /* data-wave 2026-09-07: was g_spu_voice_key_a */
 _spu_AllocLastNum = 0x800A2D3C;  /* data-wave 2026-09-07: was g_spu_voice_key_b */
@@ -103,9 +101,6 @@ D_800EEDB0 = 0x800EEDB0;  /* data-wave 2026-09-29: was g_cam_matrix */
 g_cam_bone_data = 0x800EEDD0;
 g_cam_bone_data2 = 0x800EEDF0;
 g_cam_interp = 0x800EEDF8;
-D_800F62F8 = 0x800F62F8;  /* data-wave 2026-09-29: was g_cam_fov_x */
-D_800F62FA = 0x800F62FA;  /* data-wave 2026-09-29: was g_cam_fov_div */
-D_800F62FC = 0x800F62FC;  /* data-wave 2026-09-29: was g_cam_fov_z */
 g_stage_id = 0x80099478;
 g_stage_variant = 0x8009947A;
 g_stage_data = 0x8009947C;
@@ -584,10 +579,6 @@ D_800A14E4              = 0x800A14E4;  /* volatile alarm handle; -1 = no alarm *
 
 /* === Data-symbol batches 12-14 (2026-05-17) -- 19 highs landed === */
 /* 2026-09-23: g_replay_attack_pos_y retired -- per-word piece of Unk80101DF0Record (include/code6cac.h). */
-/* GTE background color (RGB triple) */
-g_gte_back_color_r              = 0x800F6338;  /* R, passed to gte_SetBackColor */
-g_gte_back_color_g              = 0x800F6339;  /* G */
-g_gte_back_color_b              = 0x800F633A;  /* B */
 /* Scratchpad pointer cache (extending the A4/AC/B8 set from batch 9-11) */
 g_scratchpad_ptr_18             = 0x800A346C;  /* -> 0x1F800018 */
 g_scratchpad_ptr_20             = 0x800A3470;  /* -> 0x1F800020 */
@@ -934,7 +925,6 @@ g_comb_send_buf                                = 0x800A3698;  /* 8-byte link-cab
 patch0                                      = 0x800F1838;  /* passed to bios_SysDeqIntRP; interrupt routine pointer table */  /* data-wave 2026-09-25: was g_sys_int_rp_table */
 /* g_pad_analog_state at 0x800F33D8 already named in batch 5; ALSO passed to camera_SetMatrix in code6cac_c_mid (shared state buffer) */
 g_damage_debug_disp_buf                                 = 0x800F34D8;  /* passed to damage_DebugDisp; damage debug display buffer */
-g_gte_color_matrix_data                                 = 0x800F6318;  /* passed to gte_SetColorMatrix; 9 x s16 = 18-byte 3x3 color matrix */
 g_gpu_db_plus_0x40EC                                   = 0x800FB524;  /* passed to gpu_InitDispEnv; display environment init data */  /* data-wave 2026-09-24: was g_disp_env_init_block */
 g_status_up_data_buf                                    = 0x801027BC;  /* passed to single_game_SetStatusUpData; status-up data buffer */
 
@@ -958,7 +948,6 @@ InfoPosYTbl1                                            = 0x80099D54;  /* info Y
 UesrWorkDef                                             = 0x8009ADD8;  /* user work def (sic: original spelling) */
 chractar_use_pset_combo_id_table                        = 0x8009BA7C;  /* character preset-combo ID table (sic) */
 light_effect_col                                        = 0x800A3D70;  /* light effect color value */
-videoDec                                                = 0x800F0D80;  /* video decoder state */
 D_800F19D0                                            = 0x800F19D0;  /* MarioCam structure */  /* data-wave 2026-09-24: was MarioCam_str */
 selCharaID                                              = 0x80102092;  /* selected character ID */
 
@@ -1104,13 +1093,6 @@ _spu_mem_mode_unitM                                         = 0x800A2D0C;  /* SP
 _spu_rev_startaddr                                   = 0x800A2D44;  /* default value written to SPU register 0xD1 via spu_WriteReg */  /* data-wave 2026-09-07: was g_spu_init_reg_D1_val */
 
 /* === Stage lighting + collision (2026-05-17) -- 5 highs === */
-/* From config.c stage_ClearLighting / stage_ApplyLighting: there are */
-/* 3 lights (pos+dir pairs), already named [0] but indices [1] and [2] */
-/* were unnamed.  `(&g_stage_light_pos)[a2]` indexes from the base. */
-g_stage_light_pos_1                                     = 0x800A93B4;  /* (&g_stage_light_pos)[1] -- second light position */
-g_stage_light_pos_2                                     = 0x800A93B8;  /* (&g_stage_light_pos)[2] -- third light position */
-g_stage_light_dir_1                                     = 0x800A93C0;  /* (&g_stage_light_dir)[1] -- second light direction */
-g_stage_light_dir_2                                     = 0x800A93C4;  /* (&g_stage_light_dir)[2] -- third light direction */
 g_default_collision_pattern                             = 0x80094A6C;  /* 16 u32 entries; each encodes a 16x16 grid row of 2-bit collision flags applied to g_stage_collision */
 
 /* === CD-ROM streaming state (2026-05-17) -- 12 highs === */
@@ -1380,16 +1362,6 @@ D_800FF5E0                                    = 0x800FF5E0;  /* data-wave 2026-0
 /* and g_satan0_gauge_data_block (28D4). */
 /* data-wave 2026-09-29: g_spu_voice_vol_table = 0x800A28A4 retired; _spu_voice_centerNote is now object-defined */
 
-/* === Per-effect GTE color matrix + back-color siblings (2026-05-17) -- 4 highs === */
-/* From text1a.c gnd_land_hit_char_die_main (line 1373): the engine */
-/* maintains 3 "effect" slots (A/B/C), each with a (color_matrix, */
-/* back_color) pair.  Effect A is already named */
-/* (g_gte_color_matrix_data, g_gte_back_color_r/g/b at 0x800F6318/6338); */
-/* B and C are at +0x60 and +0x180 offsets. */
-g_gte_color_matrix_data_b                               = 0x800F6378;  /* effect B 3x3 color matrix (mirror of g_gte_color_matrix_data + 0x60) */
-g_gte_back_color_b_r                                    = 0x800F6398;  /* effect B back-color R (mirror of g_gte_back_color_r + 0x60) */
-g_gte_color_matrix_data_c                               = 0x800F6498;  /* effect C 3x3 color matrix (alt path) */
-g_gte_back_color_c_r                                    = 0x800F64B8;  /* effect C back-color R */
 
 /* === Sound-channel texture metadata (2026-05-17) -- 4 highs === */
 /* From main.c AddTbpOfst (line 1181): looks up texture metadata for an */
@@ -1594,7 +1566,6 @@ g_match_p2_score                                        = 0x800A3899;  /* P2 pri
 g_match_win_threshold                                   = 0x800A37F8;  /* compared via == against P1/P2 score; matching = instant win for that player */
 g_match_p1_tiebreaker                                   = 0x800A38AA;  /* P1 secondary score (used on primary tie) */
 g_match_p2_tiebreaker                                   = 0x800A38AB;  /* P2 secondary score */
-g_match_round_byte_a_paired                             = 0x800F65F9;  /* sibling byte to g_match_round_byte_a (P1/P2 score history per round) */
 
 /* === Misc state arrays in code6cac_b.c (2026-05-17) -- 4 highs === */
 g_char_class_state_array                                = 0x800A36F2;  /* per-char class state array; entries copied from D_8008E338 (5-byte stride); XOR'd with 0xE for state check */
@@ -2313,13 +2284,6 @@ patch0_plus_0x8                               = 0x800F1840;  /* +8 from g_sys_in
 Result_plus_0x10                           = 0x800F19B0;  /* +8 from g_cdrom_callback_buf_b (0x800F19A8) */  /* data-wave 2026-09-25: was g_cdrom_callback_buf_b_plus_8 */
 D_800F1AFC                       = 0x800F1AFC;  /* +4 from g_spu_xfer_status_snapshot (0x800F1AF8) */  /* data-wave 2026-09-25: was g_spu_xfer_status_snapshot_plus_4 */
 _svm_voice_plus_0x1D                  = 0x800F4E35;  /* +7 from g_satan1_slot_state_field_at_14 (0x800F4E2E) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14_plus_7 */  /* alias of _svm_voice+0x1D (struct SpuVoice, include/sound.h); retire with _SsVmFlush */
-g_gte_color_matrix_data_plus_6                          = 0x800F631E;  /* +6 from g_gte_color_matrix_data (0x800F6318) */
-g_gte_color_matrix_data_b_plus_6                        = 0x800F637E;  /* +6 from g_gte_color_matrix_data_b (0x800F6378) */
-g_gte_back_color_b_r_plus_1                             = 0x800F6399;  /* +1 from g_gte_back_color_b_r (0x800F6398) */
-g_gte_back_color_b_r_plus_2                             = 0x800F639A;  /* +2 from g_gte_back_color_b_r (0x800F6398) */
-g_gte_color_matrix_data_c_plus_6                        = 0x800F649E;  /* +6 from g_gte_color_matrix_data_c (0x800F6498) */
-g_gte_back_color_c_r_plus_1                             = 0x800F64B9;  /* +1 from g_gte_back_color_c_r (0x800F64B8) */
-g_gte_back_color_c_r_plus_2                             = 0x800F64BA;  /* +2 from g_gte_back_color_c_r (0x800F64B8) */
 g_gnd_init_complete_flag_plus_1                         = 0x800F6627;  /* +1 from g_gnd_init_complete_flag (0x800F6626) */
 D_800F665A                                   = 0x800F665A;  /* +2 from g_game_p2_ctrl (0x800F6658) */  /* data-wave 2026-09-25: was g_game_p2_ctrl_plus_2 */
 D_80101BD0                                   = 0x80101BD0;  /* +4 from g_memcard_slot (0x80101BCC) */  /* data-wave 2026-09-29: was g_memcard_slot_plus_4 */
@@ -2624,10 +2588,6 @@ _svm_okon2                                         = 0x800F1B12;  /* data-wave 2
 _svm_voice                                         = 0x800F4E18;  /* data-wave 2026-09-24: was g_satan1_slot_state_anchor_FE18 */
 g_code6cac_state_F5344                                     = 0x800F5344;
 g_code6cac_state_F5347                                     = 0x800F5347;
-g_gte_color_matrix_data_plus_6_plus_6                        = 0x800F6324;
-g_gte_color_matrix_data_b_plus_6_plus_6                      = 0x800F6384;
-g_text1a_value_12bit_F6460                                       = 0x800F6460;
-g_gte_color_matrix_data_c_plus_6_plus_6                      = 0x800F64A4;
 _snd_ev_flag                                        = 0x800FF630;  /* data-wave 2026-09-07: was g_ings2_counter_FF630 */
 D_800FF6A8                                   = 0x800FF6A8;  /* data-wave 2026-09-29: was g_voice_state_ptr_plus_8 */
 _svm_vh                                         = 0x80101BC4;  /* data-wave 2026-09-07: was g_main_value_101BC4 */
@@ -2665,8 +2625,6 @@ _svm_cur_plus_0x6                                           = 0x801027F6;  /* da
 _svm_cur_plus_0x16                                   = 0x80102806;  /* data-wave 2026-09-24: was g_weapon_frame_col_plus_10 */
 g_char_p6_field_23A                                          = 0x8010367E;
 _SsMarkCallback                                         = 0x80106FA8;  /* data-wave 2026-09-07: was g_char_p19_field_388 */
-g_char_p21_field_2F7                                         = 0x801077AF;
-g_practice_byte_table_plus_10                                = 0x801077BA;
 _svm_vab_total                                         = 0x801077C8;  /* data-wave 2026-09-07: was g_char_p21_field_310 */
 _svm_envx_hist                                         = 0x80107898;  /* data-wave 2026-09-24: was g_char_p21_field_3E0 */
 _svm_okof1                                         = 0x801078D8;  /* data-wave 2026-09-24: was g_char_p21_field_420 */

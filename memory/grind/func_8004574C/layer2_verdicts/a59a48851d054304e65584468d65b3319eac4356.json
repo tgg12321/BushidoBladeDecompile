@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8004574C",
+  "body_hash": "216a05991c69f97c",
+  "summary": "Plain for-loop; returns &D_800EED10[i] under the pre-existing s32* prototype (hygiene)."
+}

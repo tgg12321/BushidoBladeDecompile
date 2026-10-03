@@ -32,7 +32,6 @@ extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
 extern u8 D_800A38AB;
-extern u8 D_800F65F8;
 extern s16 D_800A3824;
 extern s16 D_800A3876;
 extern s16 D_800A38A8;
@@ -6222,8 +6221,11 @@ void func_800338CC(void) {
         count = 0;
         i = 0;
         bits = D_80106A50.unk_00 & mask;
+        /* FAKE: `one` carries the constant 1 of `1 << i`; with the literal
+           the test becomes `(bits >> i) & 1` (srav/andi instead of the
+           target's `li a2,1` + sllv/and), score 4. */
         one = 1;
-        ptr = &D_801077B0;
+        ptr = D_801077B0;
         do {
             if (bits & (one << i)) {
                 *ptr = i;
@@ -6240,9 +6242,9 @@ void func_800338CC(void) {
         idx1 = rand() % count;
         {
             s32 idx2 = rand() % count;
-            s32 tmp = (u8)(&D_801077B0)[idx1];
-            (&D_801077B0)[idx1] = (u8)(&D_801077B0)[idx2];
-            (&D_801077B0)[idx2] = tmp;
+            s32 tmp = D_801077B0[idx1];
+            D_801077B0[idx1] = D_801077B0[idx2];
+            D_801077B0[idx2] = tmp;
         }
     } while (i < 0x6C);
 
@@ -6268,7 +6270,7 @@ block_12:
         if (count >= 0xB) {
             i = count;
             do {
-                (&D_801077B0)[i] = (&D_801077AF)[i];
+                D_801077B0[i] = D_801077B0[i - 1];
                 i--;
             } while (i >= 0xB);
             {
@@ -6276,18 +6278,18 @@ block_12:
                 if (sp[0] & 0x20) {
                     dir = 5;
                 }
-                D_801077BA = dir;
+                D_801077B0[10] = dir;
             }
         } else {
             s32 dir = 0x10;
             if (sp[0] & 0x20) {
                 dir = 5;
             }
-            (&D_801077B0)[count] = dir;
+            D_801077B0[count] = dir;
         }
         count++;
         if (sp[1] != 0) {
-            u8 *a1 = &(&D_801077B0)[count];
+            u8 *a1 = &D_801077B0[count];
             count++;
             {
                 s32 dir = 0x10;
@@ -6314,7 +6316,7 @@ block_12:
         }
         goto set_count;
 append_last:
-        (&D_801077B0)[count] = val;
+        D_801077B0[count] = val;
         count++;
     }
 set_count:
@@ -6342,7 +6344,7 @@ void func_80033BC0(void) {
         u8 a1;
         D_800A376B = 0;
         D_800A3783 = a0 + 1;
-        a1 = (&D_801077B0)[a0];
+        a1 = D_801077B0[a0];
         D_80102778.unk_4[1] = (&D_8008D55C)[a1];
         if (a1 == 5) {
             D_80102778.unk_4[3] = 6;
@@ -6523,8 +6525,8 @@ void func_800340A0(void) {
             }
         }
     }
-    *(&D_800F65F8 + (D_800A3874 * 2)) = D_800A3898;
-    *(&D_800F65F9 + (D_800A3874 * 2)) = D_800A3899;
+    D_800F65F8[D_800A3874][0] = D_800A3898;
+    D_800F65F8[D_800A3874][1] = D_800A3899;
     D_800A3874 = D_800A3874 + 1;
 }
 void func_80034200(void) {
@@ -6534,8 +6536,6 @@ void func_80034200(void) {
     u8 n;
     s32 innerBound;
     u8 *base;
-    u8 *p;
-    u8 *end_p;
 
     g_disp_enable = DISP_LOADING;
     n = D_800A389B;
@@ -6543,19 +6543,19 @@ void func_80034200(void) {
         innerBound = D_800A3874;
         do {
             s32 useReal;
-            base = &D_800F65F8 + i * 2;
+            s32 j;
+            base = D_800F65F8[i];
             useReal = (i < innerBound);
-            p = base;
-            end_p = base + 2;
+            j = 0;
             do {
                 if (useReal) {
-                    acc |= ((s32)*p) << shift;
+                    acc |= base[j] << shift;
                 } else {
                     acc |= 3 << shift;
                 }
-                p++;
                 shift += 2;
-            } while ((s32)p < (s32)end_p);
+                j++;
+            } while (j < 2);
             i++;
             n = D_800A389B;
         } while (i < n);

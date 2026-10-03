@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_8005B5AC",
+  "body_hash": "f803a6eb9f55a211",
+  "summary": "Reset loop over D_800EFB78[i] {req, volr, voll}; the s1/s2/s3 walkers and the D_800EFB7C byte-offset handle are gone."
+}

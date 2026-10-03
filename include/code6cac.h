@@ -63,12 +63,33 @@ typedef struct { s32 x, y, z; } Vec3i32;
    s32 x/y/z triple as Vec3i32: func_800207C8 copies a scratchpad point
    (SPAD->unkA8) into PracticeMenuRec.unk_180 as one 12-byte object. */
 typedef Vec3i32 LeafPos;
+/* The 16 slots func_800645B0 spawns and func_800646E8 draws (bit i of D_800A3444
+ * live): slot i's position.  Both functions address it as base + i*12
+ * (asm/funcs/func_800645B0.s:31-55, func_800646E8.s:93-109).  Replaces the splat
+ * per-word scalars D_800F0D78 / D_800F0D7C / D_800F0D80 (the last was misnamed
+ * "videoDec": it is slot 0's z). */
+extern Vec3i32 D_800F0D78[16];
 /* PsyQ VECTOR / SVECTOR layouts (include/gte.h), spelled with local tags for
  * the same reason as Unk80101DF0Rot below.  func_80022580 copies
  * PracticeMenuRec's +0xB8 and +0x104 as whole 16-byte VECTORs (pad included)
  * and +0x1C8 as a whole 8-byte SVECTOR. */
 typedef struct { s32 vx, vy, vz, pad; } Vec4i32;
 typedef struct { s16 vx, vy, vz, pad; } SVec4i16;
+/* The 10-entry block table over the 0x45000-byte buffer at D_800A9D10
+ * (text1a_c_tu2.c func_800451D0 .. func_8004574C; D_800A33AC live entries).
+ * func_800451D0 clears id in all 10 (offset 0x90 down to 0 in steps of 0x10,
+ * asm/funcs/func_800451D0.s); the walkers index base + i*16.  func_80045294(a0,
+ * a1) hands func_800520B8 entry a0's unk4, unk4 + a1 and the summed amt of
+ * entries a0.., then adds a1 to their unk4 and calls each fn(id, a1).  Replaces the splat per-word scalars D_800EED14 /
+ * D_800EED18 / D_800EED1C and D_800EED00 (entry -1, i.e. D_800EED10[j - 1]). */
+typedef struct {
+    s16 id;
+    s16 unk2;
+    s32 unk4;
+    s32 amt;
+    void (*fn)(s16, s32);
+} Unk800EED10Entry;
+extern Unk800EED10Entry D_800EED10[10];
 
 /* A hit record: one of the 22 test points of a character.  func_800207C8 places
  * point i at SPAD->unkA8[ch][i] (`ofs` rotated by game_GetPlayerData()'s matrix
@@ -88,6 +109,14 @@ typedef struct BoneHitRec {
  * D_800F5F68[ch] from the template D_8008D59C, offsets and limits scaled. */
 extern BoneHitRec D_800F5F68[2][22];
 extern BoneHitRec D_8008D59C[22];
+/* The 6 slots func_8006288C spawns and func_8006295C draws (bit i of D_800A3460
+ * live): slot i's position and its RotMatrixZYX angles.  Both functions
+ * address them as base + i*12 / base + i*8 (asm/funcs/func_8006288C.s:20-44, the
+ * 0xC / 0x8 induction steps at :49-53).  Replaces the splat per-word scalars
+ * D_800F0FB8 / D_800F0FBC / D_800F0FC0 and D_800F10A0 / D_800F10A2 / D_800F10A4. */
+extern Vec3i32 D_800F0FB8[6];
+extern SVec4i16 D_800F10A0[6];
+extern s16 D_800F0C04[6];
 
 /* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
  * frame from the two pads (one u16 half per player in each word):
@@ -102,6 +131,19 @@ typedef struct PadState {
     u32 released;                  /* 0x10 */
     u32 unheld;                    /* 0x14 */
 } PadState;                        /* sizeof == 0x18 */
+
+/* The 24-entry pending-sound pool (text1b_tu1b.c): func_8005C650 queues a
+ * request (an entry of D_8009AA70) with its volumes in the first free entry;
+ * func_8005C6D0 keys each queued note on via SsUtKeyOnV(.., voll, volr) and
+ * clears the entry; snd_Init / func_8005B5AC reset all 24.  Every user indexes
+ * base + i*8 (asm/funcs/func_8005C650.s, snd_Init.s: 0xC0 / 8 entries).
+ * Replaces the splat per-word scalars D_800EFB7C / D_800EFB7D. */
+typedef struct {
+    u16 *req;
+    u8 volr;
+    u8 voll;
+} Unk800EFB78Entry;
+extern Unk800EFB78Entry D_800EFB78[24];
 
 /* Scratchpad point tables at 0x1F800000.  unk00: three points per character
  * (func_8002C61C copies [0][0..2] and [1][0..2] to the two records' +0x210);
@@ -467,6 +509,11 @@ typedef struct {
     u8 unkD;
 } Tbl8008E194;
 extern Tbl8008E194 D_8008E194[];
+/* 8 initialized byte pairs (asm/data/7D920.data.s, 0x8009BD58: {0,0} {1,0}
+ * {2,0} {3,0} {4,1} {5,1} {6,1} {7,0}); func_80077904 returns [n][0] and
+ * caches [n][1] in D_800A35E0, n = D_8009BD38.unk0 (base + n*2,
+ * asm/funcs/func_80077904.s).  Replaces the splat per-byte scalar D_8009BD59. */
+extern u8 D_8009BD58[8][2];
 /* PsyQ MATRIX layout (include/gte.h), spelled with a local tag for the same
  * reason as Unk80101DF0Mat below (several TUs typedef MATRIX themselves). */
 typedef struct { s16 m[3][3]; u16 pad; s32 t[3]; } Obj80106A78Mat;
@@ -749,6 +796,12 @@ extern u8 D_800A3920;
 extern u8 D_800A3928;
 extern u8 D_800A3929;
 extern s32 D_800A3D40;
+/* The three stage lights' position / direction words: stage_SetLightPosDir
+ * stores pos[a2] / dir[a2] (base + a2*4), stage_ClearLighting zeroes all six,
+ * stage_ApplyLighting passes pair i to sys_StubEmpty3(pos, dir, i).  Replaces
+ * the splat per-word scalars D_800A93B4 / D_800A93B8 / D_800A93C0 / D_800A93C4. */
+extern s32 g_stage_light_pos[3];
+extern s32 g_stage_light_dir[3];
 /* 0x44-byte record shared by the two camera-target objects at 0x800F5328 and
  * 0x800F6608. Field span evidenced by func_8001B294 (initialises +0x00/04/08/10/12/14/
  * 18/1E/30/32/34/38/3A/3C on the 0x800F6608 object) and func_8001B3C0 (the same
@@ -773,7 +826,12 @@ typedef struct Rec1C {
 } Rec1C;
 extern Rec44 D_800F5328;
 extern Rec44 D_800F6608;
-extern u8 D_800F65F9;
+/* Per-round snapshot: func_800340A0 stores both players' counters
+ * (D_800A3898 / D_800A3899) for round D_800A3874 at base + round*2 / +1
+ * (asm/funcs/func_800340A0.s); func_80034200 packs the pairs into D_800A3784,
+ * func_8003C42C sums them.  16 bytes up to D_800F6608.  Replaces the splat
+ * per-byte scalar D_800F65F9 (entry [0][1]). */
+extern u8 D_800F65F8[8][2];
 extern s16 D_800F68E0[];
 extern s32 g_pad_buf_plus_0x4;
 extern s32 g_pad_buf_plus_0x24;
@@ -826,6 +884,31 @@ extern Unk80101DF0Record D_80101DF0;
 extern Unk80101DF0Record D_800FF638;
 extern Unk80101DF0Record g_cam_bone_data2;
 extern Unk80101DF0Record D_800EF070;
+/* The 8 light-setup records at 0x800F62E0 (0x60 each; base + n*0x60 in
+ * func_800470B0, func_80049F4C).  func_8004A09C fills one from a 22-halfword
+ * template: the color matrix +0x38 (m[3][3]), the three lights' pitch / yaw /
+ * on at +0x00 / +0x08 / +0x10, the u8 back color +0x58 and the s16 +0x5C;
+ * func_8004A1FC then turns light i's pitch / yaw into the light matrix row i
+ * (+0x18 + i*6, zero when off), scaled by +0x5C.  func_80049F4C hands record
+ * 0's color matrix and back color to SetColorMatrix / SetBackColor; the light
+ * matrix goes to gte_MulMatrix0ClearTrans (asm/funcs/func_8004A940.s:70-72);
+ * func_80046F24 / func_800470B0 read its row 0.  Replaces the splat per-field
+ * scalars D_800F62E2..D_800F64BA, g_gte_color_matrix_data and
+ * g_gte_back_color_r/g/b. */
+typedef struct {
+    s16 pitch;
+    s16 yaw;
+    s16 on;
+    s16 pad;
+} Unk800F62E0Light;
+typedef struct {
+    Unk800F62E0Light light[3]; /* +0x00 */
+    Unk80101DF0Mat lmat;       /* +0x18 */
+    Unk80101DF0Mat cmat;       /* +0x38 */
+    u8 back[3];                /* +0x58 */
+    s16 unk5C;                 /* +0x5C */
+} Unk800F62E0Rec;              /* 0x60 */
+extern Unk800F62E0Rec D_800F62E0[8];
 /* 0x800F66A0: the rotation-to-matrix handlers a transform node's unk8 selects
  * (rot -> matrix, PsyQ RotMatrix shape).  func_80042E90 fills [0] ZYX, [2] ZXY,
  * [4] YXZ, [5] XYZ ([1] and [3] are never written); the nodes set unk8 to 0, 2,
@@ -992,9 +1075,13 @@ extern PadState D_80102788;
 extern s32 D_801027B0[][5];
 extern u8 D_80104E88;
 extern s32 MotDataBaseAddress;
-extern u8 D_801077AF;
-extern u8 D_801077B0;
-extern u8 D_801077BA;
+/* func_800338CC's list: the set bit numbers of D_80106A50.unk_00 & mask,
+ * shuffled, plus up to three appended values (D_800A391F entries; func_80033BC0
+ * reads entry D_800A3783, then advances it).  One u8 array, indexed i, i - 1
+ * and 10 by func_800338CC (asm/funcs/func_800338CC.s:118-136); 24 bytes up to
+ * the next object (_svm_vab_total, 0x801077C8).  Replaces the splat per-byte
+ * scalars D_801077AF (entry -1) and D_801077BA (entry 10). */
+extern u8 D_801077B0[24];
 
 extern LeafPos D_80107850[6];
 

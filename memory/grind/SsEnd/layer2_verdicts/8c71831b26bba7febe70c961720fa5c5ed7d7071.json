@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "SsEnd",
+ "body_hash": "1455782a4a285b07",
+ "summary": "PASS: all five per-member _snd_seq_tick_env_plus_* externs retired; accesses go through the one SndSeqTickEnv in sound.h (layout checked against SOTN libsnd_i.h:284 and the 91C98.data.s initializer); no FAKE needed; sandbox 0."
+}

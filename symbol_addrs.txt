@@ -96,8 +96,6 @@ g_spu_dma_ctrl = 0x800A2CF0; // SPU DMA control register ptr
 _spu_tsa = 0x800A2CF4; // SPU transfer address (shifted)  // data-wave 2026-09-07: was g_spu_xfer_addr
 _spu_transMode = 0x800A2CF8; // SPU reverb mode (0=off)  // data-wave 2026-09-07: was g_spu_reverb_mode
 _spu_mem_mode_plus = 0x800A2D04; // SPU address shift factor  // data-wave 2026-09-07: was g_spu_addr_shift
-g_spu_busy = 0x800A2D10; // SPU busy/transfer state
-g_spu_init_flag = 0x800A2D14; // SPU initialized flag
 _spu_IRQCallback = 0x800A2D18; // SPU timer  // data-wave 2026-09-07: was g_spu_timer
 _spu_AllocBlockNum = 0x800A2D38; // SPU voice key A  // data-wave 2026-09-07: was g_spu_voice_key_a
 _spu_AllocLastNum = 0x800A2D3C; // SPU voice key B  // data-wave 2026-09-07: was g_spu_voice_key_b
@@ -130,9 +128,6 @@ D_800EEDB0 = 0x800EEDB0;  // data-wave 2026-09-29: was g_cam_matrix
 g_cam_bone_data = 0x800EEDD0; // camera bone data
 g_cam_bone_data2 = 0x800EEDF0; // camera bone data 2
 g_cam_interp = 0x800EEDF8; // camera interpolation timer
-D_800F62F8 = 0x800F62F8;  // data-wave 2026-09-29: was g_cam_fov_x
-D_800F62FA = 0x800F62FA;  // data-wave 2026-09-29: was g_cam_fov_div
-D_800F62FC = 0x800F62FC;  // data-wave 2026-09-29: was g_cam_fov_z
 
 // === Stage ===
 g_stage_id = 0x80099478; // current stage index
@@ -229,7 +224,6 @@ InfoPosYTbl1 = 0x80099D54;
 UesrWorkDef = 0x8009ADD8;
 chractar_use_pset_combo_id_table = 0x8009BA7C;
 light_effect_col = 0x800A3D70;
-videoDec = 0x800F0D80;
 D_800F19D0 = 0x800F19D0;  // data-wave 2026-09-24: was MarioCam_str
 selCharaID = 0x80102092;
 // RENAME 0x800836EC: retired name '_start' — preserved note: PS-EXE entry point / crt0 (split out of asm/funcs/ang_hosei.s 2026-08-06); documentation only — bb2.ld is hand-maintained, do not re-run splat

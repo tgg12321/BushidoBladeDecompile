@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800421C8",
+  "body_hash": "f23d7d6a15d3dfad",
+  "summary": "light[0].yaw/pitch of records 4/1/0 through the shared D_800F62E0[8]; the six per-field scalars are retired. StageLight's 24-byte stride and the s16 read at +2 stay inside one dlabel (no declared record type yet: debt)."
+}

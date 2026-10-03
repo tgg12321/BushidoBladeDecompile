@@ -17,15 +17,15 @@ extern s32 _SpuSetAnyVoice(s32, u32, s32, s32);
 /* Externs for globals */
 extern s16 _svm_damper;
 extern s16 _svm_stereo_mono;
-extern s32 g_spu_busy;
 
 
 extern void DMACallback(s32, s32);
 
-/* PsyQ LIBSPU: _spu_transferCallback — Sony's own header types the SPU
-   transfer callback as a volatile function pointer (sotn-decomp
-   libspu_internal.h:39); volatile is original semantics, not coercion */
-extern void (* volatile g_spu_init_flag)();
+/* PsyQ LIBSPU: Sony's own header types the SPU transfer callback as a
+   volatile function pointer; volatile_extern_allowlist.txt grant.
+   SOTN: src/main/psxsdk/libspu/libspu_internal.h:39 @db41b28 (PS1 use:
+   src/main/psxsdk/libspu/s_r.c:10) */
+extern void (* volatile _spu_transferCallback)();
 extern s32 _spu_keystat;
 extern s32 _spu_trans_mode;
 
@@ -42,14 +42,8 @@ extern void _spu_FsetRXX(s32, u32, s32);
 extern s32 _spu_rev_flag;
 extern s32 _spu_rev_reserve_wa;
 extern s32 _spu_rev_offsetaddr;
-extern s32 _spu_rev_attr_plus_0x4;
-extern s16 _spu_rev_attr_plus_0x8;
-extern s16 _spu_rev_attr_plus_0xA;
-extern s32 _spu_rev_attr_plus_0xC;
-extern s32 _spu_rev_attr_plus_0x10;
 extern volatile s32 _spu_RQvoice; /* _spu_RQvoice — Ruling-4 grant (volatile_extern_allowlist.txt:44) */
 extern volatile s32 _spu_RQmask;
-extern s16 _spu_voice_centerNote_plus_0x2E;
 extern volatile s32 _spu_env;
 
 extern s32 _spu_AllocBlockNum;
@@ -70,7 +64,6 @@ extern s32 _spu_mem_mode;
 extern s32 _spu_mem_mode_unit;
 extern s32 _spu_mem_mode_unitM;
 extern volatile u32 *D_800A2CEC;
-extern volatile s32 _spu_transferCallback;
 extern s32 _spu_RXX;
 typedef struct {
     u16 pad[196];
@@ -120,25 +113,13 @@ extern void VSyncCallback(s32);
 extern s32 InterruptCallback(s32, s32);
 extern void ResetRCnt(s32);
 extern void SetRCnt(s32, s32, s32);
-extern s32 _snd_seq_tick_env_plus_0x8;
 static void _SsTrapIntrVSync(void); /* _SsTrapIntrVSync (ssstart.c static) */
 static void _SsSeqCalledTbyT_1per2(void); /* _SsSeqCalledTbyT_1per2 (ssstart.c static) */
 
-/* PsyQ 4.0 LIBSND ssstart: _SsStart + SndSeqTickEnv (_snd_seq_tick_env @
-   D_800A26CC) — verbatim-linked Sony object; C ref:
-   sotn-decomp src/main/psxsdk/libsnd/ssstart.c (BB2's 4.0 rev uses 0x7F for
-   the case-0 sentinel where SOTN's rev uses 0xFF) */
-typedef struct {
-    /* 0x00 */ s32 unk0;
-    /* 0x04 */ s32 unk4;
-    /* 0x08 */ s32 unk8;
-    /* 0x0C */ s32 unk12;
-    /* 0x10 */ u8 unk16;
-    /* 0x11 */ u8 unk17;
-    /* 0x12 */ u8 unk18;
-    /* 0x13 */ u8 unk19;
-} SndSeqTickEnv;
-extern SndSeqTickEnv _snd_seq_tick_env;
+/* PsyQ 4.0 LIBSND ssstart: _SsStart (SndSeqTickEnv in sound.h) —
+   verbatim-linked Sony object; C ref: sotn-decomp
+   src/main/psxsdk/libsnd/ssstart.c (BB2's 4.0 rev uses 0x7F for the case-0
+   sentinel where SOTN's rev uses 0xFF) */
 
 void _SsStart(s32 arg0) {
     u16 rcnt_target;
@@ -192,7 +173,7 @@ void _SsStart(s32 arg0) {
 
     if (_snd_seq_tick_env.unk16 != 0) {
         EnterCriticalSection();
-        VSyncCallback(_snd_seq_tick_env_plus_0x8);
+        VSyncCallback(_snd_seq_tick_env.unk8);
     } else {
         s32 de;
         s32 a1_val;
@@ -208,7 +189,7 @@ void _SsStart(s32 arg0) {
         } else {
             a1_val = (s32)&_SsSeqCalledTbyT_1per2;
             if (_snd_seq_tick_env.unk17 == 0) {
-                a1_val = _snd_seq_tick_env_plus_0x8;
+                a1_val = _snd_seq_tick_env.unk8;
             }
         }
         InterruptCallback(de, a1_val);
@@ -247,17 +228,18 @@ static void _SsTrapIntrVSync(void) {
     }
     ((void (*)(void))_snd_seq_tick_env.unk8)();
 }
+/* FAKE: the toggle's read goes through an inline accessor; the direct
+   `_snd_seq_tick_env.unk20 == 0` read lets CSE share one base register
+   across the three unk20 accesses (score 12, one insn short).
+   SOTN: src/main/psxsdk/libsnd/ssstart.c:24 @db41b28 (same accessor, same
+   function, ssstart.c:27). */
+static inline s32 get20(void) { return _snd_seq_tick_env.unk20; }
+
 static void _SsSeqCalledTbyT_1per2(void) {
-    /* The 1-per-2 tick toggle: a standalone word AFTER the declared
-       SndSeqTickEnv block (which ends at +0x13) — its own splat symbol
-       (dlabel D_800A26E0 in 7D920.data.s; named_syms.txt:
-       g_alarm_pending_priority_flag), the only C handle for this memory
-       in the TU. */
-    extern s32 _snd_seq_tick_env_plus_0x14;
-    if (_snd_seq_tick_env_plus_0x14 == 0) {
-        _snd_seq_tick_env_plus_0x14 = 1;
+    if (get20() == 0) {
+        _snd_seq_tick_env.unk20 = 1;
     } else {
-        _snd_seq_tick_env_plus_0x14 = 0;
+        _snd_seq_tick_env.unk20 = 0;
         ((void (*)(void))_snd_seq_tick_env.unk8)();
     }
 }
@@ -2102,6 +2084,18 @@ void SpuInit(void) {
     _SpuInit(0);
 }
 
+/* Sony _spu_rev_attr — ONE struct (sotn libspu_internal.h:87 struct
+   SpuRevAttr), base 0x800A2888: mode / depth L,R / delay / feedback. */
+typedef struct {
+    /* 0x00 */ u32 unk0;
+    /* 0x04 */ s32 mode;
+    /* 0x08 */ SpuVolume depth;
+    /* 0x0C */ s32 delay;
+    /* 0x10 */ s32 feedback;
+} SpuRevAttr;
+extern SpuRevAttr _spu_rev_attr; /* _spu_rev_attr */
+extern u16 _spu_voice_centerNote[]; /* one entry per SPU voice (24) */
+
 void _SpuInit(s32 arg0) {
     u16 *var_v0;
     s32 var_v1;
@@ -2112,7 +2106,7 @@ void _SpuInit(s32 arg0) {
     val = 0xC000;
     if (arg0 == 0) {
         var_v1 = 0x17;
-        var_v0 = (u16 *)&_spu_voice_centerNote_plus_0x2E;
+        var_v0 = &_spu_voice_centerNote[23];
         do {
             *var_v0 = val;
             var_v1 -= 1;
@@ -2122,11 +2116,11 @@ void _SpuInit(s32 arg0) {
     SpuStart();
     _spu_rev_flag = 0;
     _spu_rev_reserve_wa = 0;
-    _spu_rev_attr_plus_0x4 = 0;
-    _spu_rev_attr_plus_0x8 = 0;
-    _spu_rev_attr_plus_0xA = 0;
-    _spu_rev_attr_plus_0xC = 0;
-    _spu_rev_attr_plus_0x10 = 0;
+    _spu_rev_attr.mode = 0;
+    _spu_rev_attr.depth.left = 0;
+    _spu_rev_attr.depth.right = 0;
+    _spu_rev_attr.delay = 0;
+    _spu_rev_attr.feedback = 0;
     _spu_rev_offsetaddr = _spu_rev_startaddr[0];
     _spu_FsetRXX(0xD1, _spu_rev_startaddr[0], 0);
     _spu_AllocBlockNum = 0;
@@ -2356,7 +2350,7 @@ void _spu_FiDMA(void) {
         }
     }
     if (_spu_transferCallback) {
-        ((void (*)(void))_spu_transferCallback)();
+        _spu_transferCallback();
         return;
     }
     DeliverEvent(0xF0000009, 0x20);
@@ -2532,9 +2526,15 @@ void _spu_FsetDelayW(void) {
 void _spu_FsetDelayR(void) {
     *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_TO_RAM;
 }
+/* LIBSPU spu.c WASTE_TIME(): the 4.0 rev's out-of-line busy-wait. */
 void _spu_Fw1ts(void) {
-    volatile s32 i;
-    volatile s32 v = 0xD;
+    /* FAKE: volatile locals admitted on SOTN precedent (owner rulings Q50
+       route A, Q53) -- every access to i and v is a $sp-slot round-trip, as
+       in the target; the plain-local spelling keeps both in registers
+       (score 25). SOTN's WASTE_TIME() runs the same counter/accumulator
+       loop on its volatile pair (src/main/psxsdk/libspu/spu.c:7-11). */
+    volatile s32 i;     /* SOTN: src/main/psxsdk/libspu/spu.c:14 @db41b28 */
+    volatile s32 v = 0xD; /* SOTN: src/main/psxsdk/libspu/spu.c:15 @db41b28 */
     for (i = 0; i < 0x3C; i++) {
         v = v * 13;
     }
@@ -2543,17 +2543,14 @@ void _SpuDataCallback(s32 a0) {
     DMACallback(4, a0);
 }
 /* PsyQ LIBSPU s_q.c: SpuQuit — verbatim-linked Sony object;
-   C ref: sotn-decomp src/main/psxsdk/libspu/s_q.c.
-   g_spu_init_flag = _spu_transferCallback, g_spu_timer = _spu_IRQCallback
-   (both volatile fn ptrs per Sony's header), g_snd_init_flag =
-   _spu_isCalled. */
+   C ref: sotn-decomp src/main/psxsdk/libspu/s_q.c. */
 
 
 void SpuQuit(void) {
     if (_spu_isCalled == 1) {
         _spu_isCalled = 0;
         EnterCriticalSection();
-        g_spu_init_flag = 0;
+        _spu_transferCallback = NULL;
         _spu_IRQCallback = 0;
         _SpuDataCallback(0);
         CloseEvent(_spu_EVdma);
@@ -2635,8 +2632,12 @@ s32 SpuMalloc(s32 size) {
             _spu_memList[var_s2].size - var_s3 >= size) {
             s32 next = var_s2 + 1;
 
-            /* Sony s_m_m.c has this volatile re-read verbatim (SOTN psxsdk
-               keeps it with a "why the volatile?" note) -- original semantics */
+            /* FAKE: volatile re-read of the block's addr word, admitted on
+               SOTN precedent (owner rulings Q50/Q55, Q53): the target reloads
+               the word here; without the cast GCC reuses the register loaded
+               for the 0x40000000 test (score 15). SOTN carries the same cast
+               at the same statement, marked "Why the volatile?".
+               SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @db41b28 */
             _spu_memList[next].addr =
                 (*(volatile u32 *)&_spu_memList[var_s2].addr & 0x0FFFFFFF) +
                     size |
@@ -2955,20 +2956,6 @@ typedef struct {
 
 extern RevParamEntry _spu_rev_param[]; /* rev_param preset table */
 
-/* Sony _spu_rev_attr — ONE struct (sotn libspu_internal.h:87 struct
-   SpuRevAttr), base 0x800A2888. Members == the split splat symbols
-   D_800A288C (mode) / D_800A2890/92 (depth L/R) / D_800A2894 (delay) /
-   D_800A2898 (feedback), which other functions in this TU
-   still reference by their per-member names (same linked bytes). */
-typedef struct {
-    /* 0x00 */ u32 unk0;
-    /* 0x04 */ s32 mode;
-    /* 0x08 */ SpuVolume depth;
-    /* 0x0C */ s32 delay;
-    /* 0x10 */ s32 feedback;
-} SpuRevAttr;
-extern SpuRevAttr _spu_rev_attr; /* _spu_rev_attr */
-
 void _spu_setReverbAttr(s32 *arg0);
 s32 SpuClearReverbWorkArea(u32 rev_mode);
 
@@ -3150,7 +3137,12 @@ void SpuSetReverbVoice(s32 a0, s32 a1) {
    object; C ref: sotn-decomp
    src/main/psxsdk/libspu/s_crwa.c */
 s32 SpuClearReverbWorkArea(u32 rev_mode) {
-    volatile s32 callback;
+    /* FAKE: volatile local admitted on SOTN precedent (owner rulings Q50
+       route A, Q53) -- the saved transfer callback is stored to / reloaded
+       from its $sp slot around the WaitEvent loop, as in the target; the
+       plain-local spelling keeps it in a register (score 36). SOTN holds it
+       in a `volatile s32`; typed here as the callback it stores. */
+    void (* volatile callback)(); /* SOTN: src/main/psxsdk/libspu/s_crwa.c:10 @db41b28 */
     s32 oldTransmode;
     s32 var_s2;
     s32 var_s3;
@@ -3303,8 +3295,8 @@ s32 SpuRead(s32 a0, s32 a1) {
         a1 = 0x7EFF0;
     }
     _spu_Fr(a0, a1);
-    if (g_spu_init_flag == 0) {
-        g_spu_busy = 0;
+    if (_spu_transferCallback == NULL) {
+        _spu_inTransfer = 0;
     }
     return a1;
 }
@@ -3313,8 +3305,8 @@ s32 SpuWrite(s32 a0, s32 a1) {
         a1 = 0x7EFF0;
     }
     _spu_Fw(a0, a1);
-    if (g_spu_init_flag == 0) {
-        g_spu_busy = 0;
+    if (_spu_transferCallback == NULL) {
+        _spu_inTransfer = 0;
     }
     return a1;
 }
@@ -3350,7 +3342,7 @@ s32 SpuSetTransferMode(s32 mode) {
 s32 SpuIsTransferCompleted(s32 arg0) {
     s32 var_v0;
 
-    if ((_spu_trans_mode == 1) || (g_spu_busy == 1)) {
+    if ((_spu_trans_mode == 1) || (_spu_inTransfer == 1)) {
         return 1;
     }
     var_v0 = TestEvent(_spu_EVdma);
@@ -3365,20 +3357,20 @@ s32 SpuIsTransferCompleted(s32 arg0) {
     }
     if (var_v0 == 1) {
 block_8:
-        g_spu_busy = var_v0;
+        _spu_inTransfer = var_v0;
     }
     return var_v0;
 }
 void _spu_setInTransfer(s32 a0) {
     if (a0 == 1) {
-        g_spu_busy = 0;
+        _spu_inTransfer = 0;
     } else {
-        g_spu_busy = 1;
+        _spu_inTransfer = 1;
     }
 }
 
 s32 _spu_getInTransfer(void) {
-    return g_spu_busy != 1;
+    return _spu_inTransfer != 1;
 }
 
 /* PsyQ 4.0 LIBSPU s_sca: SpuSetCommonAttr — verbatim-linked Sony object;
@@ -3646,11 +3638,14 @@ void SpuGetAllKeysStatus(u8 *status) {
  * it). SpuVoiceAttr (defined above _SsVmFlush) per PsyQ libspu.h (sizeof =
  * 0x40, the callers' s32[16]). */
 
-extern u16 _spu_voice_centerNote[];
-
 void func_8008B488(SpuVoiceAttr *attr) {
-    volatile s32 i;
-    volatile s32 v;
+    /* FAKE: volatile locals admitted on SOTN precedent (owner rulings Q50
+       route A, Q53) -- the closing settle loop (v = 1; 2 x v *= 13) runs on
+       $sp slots, as in the target; plain locals score 35. SOTN's
+       _SpuSetVoiceAttr ends with the same loop on the same volatile pair
+       (src/main/psxsdk/libspu/s_sva.c:279-283). */
+    volatile s32 i; /* SOTN: src/main/psxsdk/libspu/s_sva.c:14 @db41b28 */
+    volatile s32 v; /* SOTN: src/main/psxsdk/libspu/s_sva.c:15 @db41b28 */
     s32 voice;
     s32 pos;
     u32 mask;

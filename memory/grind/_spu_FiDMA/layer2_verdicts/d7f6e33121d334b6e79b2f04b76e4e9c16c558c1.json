@@ -1,0 +1,6 @@
+{
+ "decision": "PASS",
+ "function": "_spu_FiDMA",
+ "body_hash": "e5116aab532417e2",
+ "summary": "PASS: cast removed, the allowlisted Sony-typed _spu_transferCallback is called directly; no FAKE; sandbox 0."
+}

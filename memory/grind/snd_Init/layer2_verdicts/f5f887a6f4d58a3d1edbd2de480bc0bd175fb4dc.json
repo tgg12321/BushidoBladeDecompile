@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "snd_Init",
+  "body_hash": "eb3fcd362ff67447",
+  "summary": "for-loop over D_800EFB78[j] (24 entries, 0xC0 bytes); the q pointer, the D_800EFB7C byte-offset handle and the `v` carrier are gone. g_vab_rec_ptr is walked only through its base name."
+}

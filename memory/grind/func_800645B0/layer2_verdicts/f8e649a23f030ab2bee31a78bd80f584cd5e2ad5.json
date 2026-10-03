@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_800645B0",
+  "body_hash": "04f295bff28e2b4d",
+  "summary": "Plain C through D_800F0D78[idx].x/y/z and D_800F0BCC[idx]; the `last` FAKE, the idx*12/idx2 workaround and the cross-symbol videoDec handle are gone. The array count of 16 is evidenced (bits of D_800A3444; D_800F0E38 follows at +0xC0)."
+}

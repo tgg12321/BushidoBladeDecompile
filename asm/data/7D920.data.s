@@ -23880,11 +23880,6 @@ nonmatching D_8009BD58
 
 dlabel D_8009BD58
     /* 8C558 8009BD58 */ .byte 0x00
-enddlabel D_8009BD58
-
-nonmatching D_8009BD59
-
-dlabel D_8009BD59
     /* 8C559 8009BD59 */ .byte 0x00
     /* 8C55A 8009BD5A */ .byte 0x01
     /* 8C55B 8009BD5B */ .byte 0x00
@@ -23900,7 +23895,7 @@ dlabel D_8009BD59
     /* 8C565 8009BD65 */ .byte 0x01
     /* 8C566 8009BD66 */ .byte 0x07
     /* 8C567 8009BD67 */ .byte 0x00
-enddlabel D_8009BD59
+enddlabel D_8009BD58
 
 nonmatching D_8009BD68
 
