@@ -149,7 +149,10 @@ against its class test (default refute) before applying.
   - Obj80106A78 `age`: it counts only while unk_50 != 0.
   - Record `pad` (+0x24): it is not a VERIFIED API argument, and the CPU-side writer's source is the
     func_80055B60 synthesized record.
-- `pad_ResetStateMarkValid` 0x80019534 falls with `valid[2]`. It is to be re-checked under Q105 (adopted 2026-10-03).
+- `pad_ResetStateMarkValid` 0x80019534: still refused after the Q105 re-check, now on T4. `valid[2]` passes,
+  but "Mark" is not on the closed verb list (Q105 amended only T5). The listed verbs do not fit the
+  `valid[0] = valid[1] = 1` stores: "Set" means storing arguments, and "Reset ... Valid" reads as clearing
+  the flags. The function stays `func_80019534`, and the PadState header comment records its store.
 - basis-withdrawn, 3 aliases: the parents of `cpu_helper_80026DA4` / `cpu_helper_80029454`
   (`cpu_exec_main_game_loop_frame` 0x8002C61C) and `cpu_helper_8003F3D4`
   (`cpu_init_stage_and_camera_setup` 0x8001E404) are MEDIUM v3 rows that were never reset, so their basis
