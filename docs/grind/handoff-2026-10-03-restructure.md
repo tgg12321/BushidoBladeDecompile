@@ -707,6 +707,20 @@ Every later move: `tools/move_tu.py OLD NEW` (dry run), then `--apply`, then `ma
 `build_diagnostic_cc1.sh` hard-code the -G8 set as `text1a_pre|text1a_post` (stale; step 2 renames
 those ids); nested `src/` citations are not existence-checked by grindlib's self-vet check.
 
+**Status steps 2-3 (2026-10-03):** step 2 done: 31 single-file renames 2b19da32c..774342551 (every
+game TU and data-only file under src/main/; old -> new in `tools/tu_renames.tsv`). D6 names: only
+`cdrom.c` (ex code6cac_b5_post) and `memcard.c` (ex code6cac_c); the rest are ROM-offset or `d_<off>.c`
+names, reasons per commit body. Then 7783482ec (top comments), 0a3b1f0c0 (current-state references;
+the cc1 scripts' -G8 case is now `main/309CC|main/31D3C`, still the stale subset), 700f335ef
+(re-lock). Step 3 done: 99d242d6a (ings_strings -> 6CF8.c), 0ed85417a (b_rodata_post -> memcard.c +
+D_800109C8 -> 28514.c), 644f07862 (pre_rodata_b -> 3AB48.c), 7008ac105 (mid_rodata deleted),
+01b806bcc (cc1 expectation re-record + re-lock); evidence in rodata-align doc §12, one cheat-reviewer
+PASS. Not folded: `main/d_1068.c` (only a 24BF0+24F08 object emits its word; their cc1 -G flags differ).
+Open: the mixed game/Sony files (text1b_b, main_post, gpu, display, system, ings2, main) and the Sony-only
+rodata files (text1a_b_post_rodata, text1a_b_tail_rodata, text1b_b_tu2) keep their old ids for step 4;
+`build_oracle_cc1.sh`'s self-check vs cc1.PRE-RECIPE-aa04d761 reports main/9F9C (28 lines; also at
+6e606ac0f, pre-existing); src/ comments still cite pre-move file names (history, D9).
+
 Total: about 25 to 30 commits, 5 to 8 focused sessions. Step 4 (library rodata placement per
 module) and step 5 (per-file header proofs) dominate.
 
