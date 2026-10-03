@@ -2,9 +2,9 @@
 
 BB2's menu and mode-transition logic is a state machine driven by
 `D_800A3834` (the main game-mode value) and a set of per-mode sub-state
-variables. The transitions are scattered across `code6cac_c2.c`,
-`code6cac_c_ab.c`, and `code6cac_c_mid.c` (the former `config.c` is now the
-tail of `code6cac_c2.c`).
+variables. The transitions are scattered across `code6cac_c2.c` and
+`code6cac_c_mid.c` (the former `code6cac_c_ab.c` is now the head of
+`code6cac_c2.c`, the former `config.c` its tail).
 
 ## Mode dispatch recap
 

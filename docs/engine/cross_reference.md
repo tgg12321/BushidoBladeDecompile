@@ -100,7 +100,7 @@ know which subsystem owns it, look here.
 - **Doc:** [file_io.md](file_io.md)
 
 ### Menus / UI / Fades
-- **File:** `code6cac_c2.c`, `code6cac_c_ab.c`, `code6cac_c_mid.c`,
+- **File:** `code6cac_c2.c`, `code6cac_c_mid.c`,
   `code6cac_c2.c` tail (options), `text1a_*.c` (mental gauge / `efc_*`)
 - **Key functions:** `md_game_check_change_sub_mode`,
   `md_menu_logo_exec` (asm-only), `game_SetControllerPorts`,

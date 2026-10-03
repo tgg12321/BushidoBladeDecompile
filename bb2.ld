@@ -55,8 +55,6 @@ SECTIONS
         build/src/code6cac_c0.o(.rodata);
         build/src/code6cac_c_mid.o(.rodata);
         build/src/code6cac_c.o(.rodata);
-        build/src/code6cac_c_ab.o(.rodata);
-        build/src/code6cac_c_ab_pad.o(.rodata);
         build/src/code6cac_c2.o(.rodata);
         build/src/text1a_pre.o(.rodata);
         build/src/text1a_pre_tu2.o(.rodata);
@@ -103,7 +101,6 @@ SECTIONS
         build/src/code6cac_c.o(.text);
         build/src/code6cac_c0.o(.text);
         build/src/code6cac_c_mid.o(.text);
-        build/src/code6cac_c_ab.o(.text);
         build/src/code6cac_c2.o(.text);
         build/src/text1a_pre.o(.text);
         build/src/text1a_pre_tu2.o(.text);
@@ -144,7 +141,6 @@ SECTIONS
         build/src/code6cac_c.o(.data);
         build/src/code6cac_c0.o(.data);
         build/src/code6cac_c_mid.o(.data);
-        build/src/code6cac_c_ab.o(.data);
         build/src/code6cac_c2.o(.data);
         build/src/text1a_pre.o(.data);
         build/src/text1a_pre_tu2.o(.data);
@@ -235,7 +231,6 @@ SECTIONS
         build/src/code6cac_c.o(.bss);
         build/src/code6cac_c0.o(.bss);
         build/src/code6cac_c_mid.o(.bss);
-        build/src/code6cac_c_ab.o(.bss);
         build/src/code6cac_c2.o(.bss);
         build/src/text1a_pre.o(.bss);
         build/src/text1a_pre_tu2.o(.bss);

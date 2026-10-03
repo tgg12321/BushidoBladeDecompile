@@ -46,7 +46,7 @@ OUT_CSV = REPO / "memory" / "project" / "rodata_block_inventory.csv"
 #   - 101C.rodata_pre.s          (retired 2026-06-09, sub-TU split to src/code6cac_b_rodata.c — multi-file: 7 jtbls + 3 strings across 4 owner .c files)
 #   - 101C.rodata_text1a_b_pre.s (retired 2026-06-09, sub-TU split to src/text1a_b_pre_rodata.c — multi-file: 12 jtbls + 5 strings + 6 data across 2 files)
 #   - 101C.rodata_text1a_b_post.s(retired 2026-06-09, sub-TU split to src/text1a_b_post_rodata.c — 5-file cluster, 68 symbols, generator now resolves named symbols + decodes asm escapes properly)
-#   - 101C.rodata_post.s         (retired 2026-06-09, 4-byte sub-TU at src/code6cac_c_ab_pad.c — minimal __asm__(".word 0") emits the trailing pad byte)
+#   - 101C.rodata_post.s         (retired 2026-06-09, 4-byte sub-TU at src/code6cac_c_ab_pad.c; retired 2026-10-03: code6cac_c_ab.c merged into code6cac_c2.c, whose .align 3 emits those 4 bytes)
 #
 # *** PROJECT COMPLETE 2026-06-09 *** all 12 blocks retired; bb2.ld no longer
 # references any asm/data/*.rodata*.o segments. The tool continues to read

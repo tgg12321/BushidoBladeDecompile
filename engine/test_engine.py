@@ -1202,8 +1202,8 @@ def test_asm_keyword_recognition() -> None:
     gte_c = one('__asm__ /* x */ volatile("mtc2 %0, $0" : : "r"(n));')
     eq("asm-kw: canonical GTE op behind a comment still canonical (kept)",
        inlineasm.strip_cheat_asm_file(gte_c), (gte_c, 0))
-    # cc1 2.7.2 accepts a string literal spanning lines (code6cac_c_ab.c has
-    # one); its body must come out whole, not desync the parser.
+    # cc1 2.7.2 accepts a string literal spanning lines (code6cac_c_ab.c had
+    # one until 2026-10-03); its body must come out whole, not desync the parser.
     ml = '__asm__(".section .rodata\n\t.word 0\n\t.text");\nvoid g(void) { h(1); }\n'
     kws = cia.find_asm_keywords(ml)
     eq("asm-kw: multi-line string literal body intact",

@@ -324,3 +324,24 @@ docs/grind/handoff-2026-10-03-restructure.md Part A.
 | LIBGTE FGO_05 | 8007FA1C..8007FBBC | 2 | asm/funcs/RotMatrixY.s |
 | LIBGTE FGO_06 | 8007FBBC..8007FD5C | 2 | asm/funcs/RotMatrixZ.s |
 | LIBGTE PATCHGTE | 8007FEDC..8007FF7C | 1 | display.c's file-scope `_patch_gte` block, after `.word 0x40026800` |
+
+## 11. code6cac_c_ab.c merged into code6cac_c2.c; code6cac_c_ab_pad.c retired (Part A R1/R2, 2026-10-03)
+
+- **R1.** c_ab's mid-file `.section .rodata` `.word 0` (added in f2d6c1995 under the retired per-file
+  `.align 2` sed) was deleted: under the object-relative model the next table's `.align 3` emits the
+  same zero word (object identical in .text, .rodata 0xCC, relocations and symbols).
+- **R2, existence.** c_ab's object started at 0x80010CA4 (phase 4) and c2's first rodata item is a jump
+  table at 0x80010D74 (phase 4). The 4 zero bytes at 0x80010D70 are exactly the `.align 3` pad one
+  object holding both rodata runs emits; the split needed a phantom 4-byte object
+  (code6cac_c_ab_pad.c). The c_ab|c2 boundary at 0x8003B9D0 was the early code6cac_c|c2 split
+  (97eb39533, "fix extern conflicts"); 9cb130a8e then cut c_ab out at func_8003AB44 (a CU split for one
+  jump table). No rodata evidence supports the 0x8003B9D0 boundary.
+- **Survivors** (condition 2; all oracle-identical, survey `memory/grind/restructure-2026-10-03/pad-survey/`):
+  the full merge (cut at func_8003AB44, the c_mid|c_ab cut); a cut before func_8003ACB8 with c_ab's
+  Q65 tentative commons in both parts; a cut before func_8003AE5C with the commons in the first part
+  or both. Cuts with the commons only in the second part fail (func_8003AB44 / func_8003ACB8 reach them
+  gp-relative). Positions inside c_mid were not tested; c_mid's `.sdata` and c2's are separated by
+  asm/data/93A0E in bb2.ld, so the gp model keeps c_mid distinct.
+- **Chosen:** the full merge (removes a boundary, adds none). code6cac_c2.c = c_ab's text verbatim, then
+  c2's after its include block. Two declarations reconciled: `func_80020D38` is `void` (its definition,
+  src/code6cac_tu2.c), `D_800A3894` is `u8 *` (as in c_ab, c_mid and tu2; c2's `s32` extern dropped).

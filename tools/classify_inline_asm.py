@@ -175,8 +175,8 @@ def _blank(text: str, strings: bool, multiline: bool) -> str:
     A char literal ends at its closing quote or at a newline. A string literal
     does too unless `multiline`: the preprocessor (modern cpp here) lexes an
     unterminated `"` as running to the end of the line, but cc1 2.7.2 accepts a
-    string literal spanning physical lines, and the tree has one (a file-scope
-    `__asm__(".section .rodata<NL>.word 0<NL>.text")` in code6cac_c_ab.c)."""
+    string literal spanning physical lines (the tree had one until 2026-10-03: a
+    file-scope `__asm__(".section .rodata<NL>.word 0<NL>.text")` in code6cac_c_ab.c)."""
     chars = list(text)
     i, n = 0, len(text)
     while i < n:

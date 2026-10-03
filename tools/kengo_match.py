@@ -71,13 +71,11 @@ FILE_MODULE_AFFINITY: dict[str, list[str]] = {
         "is_coli", "is_ki_control", "is_damage_calc",
         "is_action", "is_motion", "is_pad",
     ],
-    "code6cac_c_ab.c": [
-        "is_coli", "is_action", "common",
-    ],
     "code6cac_c_mid.c": [
         "is_coli", "is_action", "is_motion",
     ],
     "code6cac_c2.c": [
+        "is_coli", "is_action", "common",
         "nm_replay_cam", "nm_katinuki_game", "nm_single_game",
         "md_game", "am_rmd", "nm_cpu",
     ],

@@ -104,8 +104,7 @@ address is the stable key.
 | `code6cac_c.c` | 0x800375EC-0x80037D14 | Memory-card wrappers (`memcard_Init` .. `memcard_WriteFile`) |
 | `code6cac_c0.c` | 0x80037D14-0x80037F08 | func_80037D14 (memory card; calls libcard `_card_*`) |
 | `code6cac_c_mid.c` | 0x80037F08-0x8003AB44 | Mixed: game-side link-cable `comb_*` wrappers, motion-shift mode setters, file-I/O state machine, `mode_handler_04` |
-| `code6cac_c_ab.c` | 0x8003AB44-0x8003B9D0 | Menu/mode handlers (VS-mode init, logo init) |
-| `code6cac_c2.c` | 0x8003B9D0-0x800401CC | Mode handlers 06-33 (post-battle, teardown, reboot), stage collision/lighting (`stage_*`), bitstream reader |
+| `code6cac_c2.c` | 0x8003AB44-0x800401CC | Menu/mode handlers (VS-mode init, logo init), mode handlers 06-33 (post-battle, teardown, reboot), stage collision/lighting (`stage_*`), bitstream reader |
 | `text1a_pre.c` | 0x800401CC-0x80040D48 | Player-model ("rob") init, draw-move list (`gpu_AddDrawMove`) |
 | `text1a_pre_tu2.c` | 0x80040D48-0x800414FC | 4 functions; mixed / unclear |
 | `text1a_svc.c` | 0x800414FC-0x8004153C | `save_vc_ctrl` alone |
@@ -131,7 +130,7 @@ address is the stable key.
 Rodata-only files (no `.text`): `ings_strings.c` (0x80010000-0x80010068, debug
 format strings + build date), `code6cac_b_rodata_pre.c` (0x80010868, 4 bytes),
 `code6cac_b_rodata_post.c` (0x800109B0-0x800109D8, memory-card path formats),
-`code6cac_c_ab_pad.c` (0x80010D70, 4-byte pad), `text1a_filepaths.c`
+`text1a_filepaths.c`
 (0x80010DEC-0x800152B4, asset file-path table), `text1a_b_pre_rodata.c`
 (0x800153F0-0x8001585C) and `text1a_b_pre_rodata_b.c` (0x800158B4-0x800158E0)
 (jump tables / strings of the text1b files), `text1a_b_post_rodata.c`
