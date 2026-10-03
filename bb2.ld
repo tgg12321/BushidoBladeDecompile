@@ -85,7 +85,7 @@ SECTIONS
         main_RODATA_END = .;
         main_RODATA_SIZE = ABSOLUTE(main_RODATA_END - main_RODATA_START);
         main_TEXT_START = .;
-        build/src/ings.o(.text);
+        build/src/main/6CF8.o(.text);
         build/src/code6cac.o(.text);
         build/src/code6cac_tu2.o(.text);
         build/src/code6cac_b.o(.text);
@@ -166,7 +166,7 @@ SECTIONS
         build/src/main/psxsdk/libcomb/comb.o(.data);
         build/src/main_post.o(.data);
         build/asm/data/91C98.data.o(.data);
-        build/src/ings.o(.sdata);
+        build/src/main/6CF8.o(.sdata);
         build/asm/data/938EA.data.o(.data);
         build/src/code6cac_tu2.o(.sdata);
         build/asm/data/938FE.data.o(.data);
