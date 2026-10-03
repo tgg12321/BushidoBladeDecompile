@@ -3,10 +3,8 @@
 # tools/cc1-reorg-negate-rtx-decl.patch (no codegen patch; owner Q17).
 # Keyed to the source tree: they change whenever src/ or include/ does.
 # Refresh with: bash tools/build_oracle_cc1.sh --record-manifest
-# src-digest 4dcb871b6c47cf77cc497a28d0857a54ea6b235c
-# recorded 2026-10-03T14:29:19Z
-684727a226ea1d212aa6d5f04a7ded04b4aaa4fa  main/psxsdk/libgpu/sys
-bc60c54aa5534f3e039cc0a020e57bad8be781d0  main/psxsdk/libgpu/prim
+# src-digest 62497add7f03c88573dfa5c1b146ff579281e000
+# recorded 2026-10-03T15:58:50Z
 aebf2779ad36e65eb2f400092840ec864004abf1  ings2
 5b828f665c4fc844dd8703832dd96567f9b01ef7  main
 f0794ea2848865ef42396f92b2d3fc6f0ad4b195  main/175A4
@@ -67,6 +65,7 @@ e12d246e98693633bae82965bfc236865e2685c9  main/psxsdk/libapi/a91
 84f55e9aa5543474bf25002d941df2c53ae2f233  main/psxsdk/libapi/c159
 2275fadc326491693b0757605c7ccf3040a2b9bd  main/psxsdk/libapi/c67
 1e68cffe9cffbc0c9d194db2d11f57667cb8e28e  main/psxsdk/libapi/c68
+44df5b020ac10d23f277b542beefec5ce778d9c4  main/psxsdk/libapi/c73
 c5eeffdc323606a6622ca71ea374085a00d53e39  main/psxsdk/libapi/chclrpad
 c4c0abaa608351c8185ad6f26d7e89af75b6501c  main/psxsdk/libapi/counter
 d646673a0b64dce77d00508883b17383c6827497  main/psxsdk/libapi/l02
@@ -76,6 +75,7 @@ e29f7fc72bedad2c1bfba82a0db8eed854390533  main/psxsdk/libapi/patch
 9986023d65554c7883a7f744c953a18f75c7a68a  main/psxsdk/libc2/ctype
 774ab28efa54ad7844db2e7300d24122266d0973  main/psxsdk/libc2/memchr
 2ea2a2606452fbcb8787d863c219a85f11e13e05  main/psxsdk/libc2/memcpy
+d4c1f90510013a65c9de92192a5a8385d4bfce37  main/psxsdk/libc2/memmove
 c685440348be40389fae84f14dea169406b4f439  main/psxsdk/libc2/printf
 21d45eac49f691488b6462fc8f46d56c076980c8  main/psxsdk/libc2/prnt
 d935e7cd4a58d74959fab2671d29ffc0f16164c3  main/psxsdk/libc2/putchar
@@ -83,7 +83,58 @@ d935e7cd4a58d74959fab2671d29ffc0f16164c3  main/psxsdk/libc2/putchar
 d5ba30ed992eb95d361c050c944b196b621c0764  main/psxsdk/libc2/sprintf
 26d43c0cd9d105c3e00c58d186d0e759d2d9d078  main/psxsdk/libc2/strcpy
 efdf0fcf172eee0d831821e60b91e3027a6b1ed1  main/psxsdk/libc2/strlen
+f784746e2a50c2b839e2dce46c66ce3fd82b3ade  main/psxsdk/libcard/a74
+d47d2b867b6fa1216f4aafd4037cae2238c293ed  main/psxsdk/libcard/a75
+2572894dd89973962e635dbb8c276003fc8379d5  main/psxsdk/libcard/a76
+d9adf9d192259fcc9d5e0228dabd926ac4b7fba7  main/psxsdk/libcard/a78
+6f8fe2aae00e2c5bf2fa2cc20eaaf91eef6ced57  main/psxsdk/libcard/a80
+f7db6167e50f6239793ff0f75600268e09f546c5  main/psxsdk/libcard/c171
+2ab6db8eedf03f58f5022728616ff542678561c0  main/psxsdk/libcard/c172
+de9efc7a55276b4269743ec3a10ff5061c3c6bb4  main/psxsdk/libcard/card
+0fec1f7fee1e2350525b5c9aaf357ecaed75d99d  main/psxsdk/libcard/end
+4825851ceef9c1a0356db1adee24b3cba837f496  main/psxsdk/libcard/init
+89031dcd619361e984a74641739ccb558b076b32  main/psxsdk/libcd/event
 8bfd42dad3fafef19985d51b9025ead5270376fc  main/psxsdk/libcomb/comb
+3386b7224cdd7d0f786eee3a055e90a93bca502e  main/psxsdk/libgpu/ext
+665f13de94265af485eedbcc5daa72589da2fc62  main/psxsdk/libgpu/prim
+9d910b57dfc3ca551fbc8d9581462cefc11abfe4  main/psxsdk/libgpu/sys
+7b1166252ae3c0ba57f02a7f8d90a32454821968  main/psxsdk/libgte/cmb_00
+66f206b4e2aa7bae73d047db2d90cc55eace5351  main/psxsdk/libgte/fgo_01
+56ff1b739d265df90446911ce7aa7558c67bb4eb  main/psxsdk/libgte/fgo_03
+60b1f6879f60fcfb85c1fdcc42484eb178ba6f2f  main/psxsdk/libgte/fgo_04
+d9bb695c9f82b5e5d4e88b348a88628543ee5e0d  main/psxsdk/libgte/fgo_05
+108e00baa3110d649734ceb9e6941db59c984511  main/psxsdk/libgte/fgo_06
+779b31b6b1ccac0ceae552655a793d5296eaa1a5  main/psxsdk/libgte/geo_00
+4ee674d09bd3144ff939c32edaa171e1eaf1e43e  main/psxsdk/libgte/geo_01
+25ecb2ff46f5725363ddf0511cbfd94f801f8d58  main/psxsdk/libgte/msc00
+4cdf05f286013939c2ceaa08aa1d853a1b7afa6e  main/psxsdk/libgte/msc01
+3752a3001b238b2aa7fdbf1dc144de277dd44b19  main/psxsdk/libgte/msc06
+9a606342287ce5e0d4820218e1fecd6004debdd3  main/psxsdk/libgte/msc09
+9e254c9209acfb46b54fe72bb39ff93c0736f78a  main/psxsdk/libgte/mtx_000
+270bd7dd3891192cb62ca4ef0158e90151999423  main/psxsdk/libgte/mtx_003
+21097309d492e3acfb5d324834affe2c7d43970d  main/psxsdk/libgte/mtx_004
+06d7c4dcd2a98b19edb3758e60f1f39ee956796a  main/psxsdk/libgte/mtx_005
+cf28935031639c384f9ef099b2f13488a141275f  main/psxsdk/libgte/mtx_00a
+ddab14e17c366dacec3249c63b9cfca5784f629c  main/psxsdk/libgte/mtx_01
+09318a878894b8adc6963f05e420a7263fb6c61e  main/psxsdk/libgte/mtx_03
+7fbe0b67990383db98a42efecef11a482af3eefc  main/psxsdk/libgte/mtx_04
+abdde13639bbc9696e94d0b0efaa6cf82676611b  main/psxsdk/libgte/mtx_05
+60f8f5ff4a8931ccdd2844dff39ad6e5eeb8999c  main/psxsdk/libgte/mtx_08
+f0a38dbd88ea5606bc80f67ae13bf6cd38c6375c  main/psxsdk/libgte/mtx_09
+28f207a340ffb57191bb89f029efec1cc4a9cf85  main/psxsdk/libgte/mtx_11
+da6cfbbbca80d616f91717c39c65da4bebb3dc65  main/psxsdk/libgte/mtx_12
+da4df172f66cc518b67cb25e26d8d18fc97d0354  main/psxsdk/libgte/patchgte
+e1a7863be33669a69261293cc568ee485390c785  main/psxsdk/libgte/ratan
+6f1097a6c533bab4cbf28cb95506de1a10a6e850  main/psxsdk/libgte/reg04
+7b1599a1ca0b84c8a4460dc9281740e6f747a215  main/psxsdk/libgte/reg09
+a4ddaf6f8dd212d7158bace86c431fcb959e01ec  main/psxsdk/libgte/reg10
+184c8ddf33c0fc3a6742ac822c3999fdf3d33087  main/psxsdk/libgte/reg11
+dbe4e4ed67df49c71a9707db9bf5913e00b41ce5  main/psxsdk/libgte/reg12
+ccbd663bb072814d8623dd4c7600a2b4a67179cb  main/psxsdk/libgte/reg13
+3126b8323b3d04e8ab5bebd79b2a83f4b81eccb1  main/psxsdk/libgte/smp_00
+3acedfaafb709976853b948a9ff6353de3ad30ad  main/psxsdk/libgte/smp_02
+ffc04e222684142be136f716a6377b73099da9bb  main/psxsdk/libgte/smp_03
+46712049b7bb9d64443f8be61f6cfe4d1f6797ad  main/psxsdk/libgte/smp_04
 d63cb1a187b36abde5fc44fce44df32c5e41219d  system
-aa02790aa1818dba03e44205bfe56e20639ccfb0  text1a_b_post_rodata
+15134bef28dddd0bb809e410d6487a0feb277ca7  text1a_b_post_rodata
 254886b14b7223202b20d1d6517c66eacf97beb8  text1a_b_tail_rodata
