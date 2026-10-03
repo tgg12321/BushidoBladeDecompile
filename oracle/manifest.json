@@ -53,7 +53,6 @@
     "src/main/psxsdk/libcomb/comb.c": "2728d5de33911e26efdf79bb66d9e0968a865177",
     "src/main_post.c": "1a240b9641b08a09f3c47834016821c6e360270e",
     "src/system.c": "7c69496f3689a677744269ccc4864360e6714eaa",
-    "src/text1a_b_mid_rodata.c": "65a3f778211404dbd52f26507270de5ae8ba52d0",
     "src/text1a_b_post_rodata.c": "c049e63d65bded5d86d0a4bb9f4fd196090bf726",
     "src/text1a_b_tail_rodata.c": "57e9ca03fc577d75a6f564e0c01213857beb1dcb",
     "src/text1b_b.c": "132c87e32f62f64b2a906e545f47650d5433d42e",

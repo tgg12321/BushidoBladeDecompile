@@ -69,7 +69,6 @@ SECTIONS
         build/src/main/5ED34.o(.rodata);
         build/src/main/63D2C.o(.rodata);
         build/src/text1b_b.o(.rodata);
-        build/src/text1a_b_mid_rodata.o(.rodata);
         build/src/text1b_b_tu2.o(.rodata);
         build/src/main/psxsdk/libc2/sprintf.o(.rodata);
         build/src/text1a_b_post_rodata.o(.rodata);
