@@ -78,16 +78,16 @@ Lower-level CD-ROM control:
 | `cdrom_SendCmd` / `cdrom_DmaToRam` / `cdrom_DmaChain` | Thin wrappers over PsyQ libcd |
 
 Globals:
-- `g_cd_index_reg/param_fifo/req_reg/irq_reg/spu_voice` — pointers to the
+- `g_cd_reg0..3` (-> 0x1F801800..3) / `g_cd_spu_voice` — pointers to the
   CD-ROM hardware registers (mapped at `0x1F801800..0x1F801803`)
 - `g_cd_status_a/b/c` — register shadows updated by IRQ
 - `g_cd_mode` — current command mode
 - `g_cd_callback_a/b` — installed async callbacks
 - `g_cd_init_flag` — set once `cdrom_Initialize` succeeds
-- `g_cd_dma_madr/bcr/dest/size/ctrl` — register shadows for DMA
+- `g_com_delay_reg` (-> 0x1F801020 COM_DELAY), `g_cdrom_delay_reg` (-> 0x1F801018 CD-ROM delay) and `g_cd_dma_dest/size/ctrl` — pointers to the CD DMA channel registers
 - `g_cd_cmd_table` — command dispatch table (28 entries)
 - `g_cd_result_table` — result handler table (7 entries)
-- `g_cd_sector_buf` — sector buffer
+- `g_cd_setloc_flags` — per-command "issue CdlSetloc first" flags
 
 The CD timing is critical for XA streaming — the BGM has to land in the
 SPU's CD-audio input every 1/75 second (one CD sector at 2x speed = 12.6 ms

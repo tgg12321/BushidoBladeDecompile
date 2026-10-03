@@ -1,0 +1,14 @@
+{
+ "decision": "PASS",
+ "function": "cd_read_retry",
+ "body_hash": "2f0be9671ccbcbb6",
+ "summary": "Items 1-5 met. The round-5 defect is gone. The CdLastPos() pointer now goes straight into `CdControl(2, CdLastPos(), 0)` (SOTN cdread.c:78), so it is no longer laundered through the reused s32 temp_s0. `CdControl(0xE, &sp10, 0)` passes the one-byte Setmode parameter as a u8*, which matches the truthful libcd.h prototype `s32 CdControl(u8, u8 *, u8 *)`. temp_s0 now holds only the mode word and its low byte, which is a single semantic value. Both `volatile s32 *` handles (tsl, md) are FAKE-labelled with measured reasons, and the round-5 ablation showed they are load-bearing. Every cdread-block extern has a row in volatile_extern_allowlist.txt (lines 32 and 49-60). sandbox --disable all = 0 (133/133). build/bb2.exe SHA1 == oracle and the build is newer than every touched source.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": [
+  "`CdReadyCallback((s32)&cb_read)` / `CdDataCallback((s32)&cb_data)`: the libcd callback setters take s32 rather than a callback pointer type.",
+  "`void *CdLastPos(void)`: PsyQ returns `CdlLOC *`. CdlLOC is not yet in include/libcd.h.",
+  "D_800A14D0 is declared at block scope with two incompatible types in one TU: a scalar view here and a CdlREAD view in CdReadSync.",
+  "Local names temp_s0 / sp10 come from registers and stack offsets. SOTN calls them mode2 / mode."
+ ]
+}

@@ -1,0 +1,1 @@
+{"decision": "PASS", "function": "CdMix", "body_hash": "3edd77af0b748251", "summary": "`s32 CdMix(CdlATV *vol) { CD_vol(vol); return 1; }` is SOTN sys.c:121 verbatim. The fabricated no-argument call is gone, and the prototype matches its callers' CdlATV * argument (code6cac_b4.c:28, code6cac_b5.c:41)."}

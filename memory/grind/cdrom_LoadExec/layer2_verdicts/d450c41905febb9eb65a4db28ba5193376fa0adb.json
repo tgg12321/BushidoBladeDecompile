@@ -1,0 +1,13 @@
+{
+ "decision": "PASS",
+ "function": "cdrom_LoadExec",
+ "body_hash": "89ccf42e0f83e3fd",
+ "summary": "The round-6 item-4 defect is fixed. dest is now `EXEC *`, the copy is `*dest = *(EXEC *)&sp_buf[0x10]`, and the read uses dest->t_size / dest->t_addr. EXEC is declared once (include/system.h:42-49) and matches the PsyQ libapi layout. There is no pin, asm, volatile or FAKE-needing construct; every local carries a real value; and the leading comment is true: D_8008F12C[6]=156 as s16, and g_cd_file_table entry 156 has size 124928, which equals disc/STR/MOVOVL.EXE. sandbox --disable all scores 0 (72/72).",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": [
+  "The file-scope `extern s32 CdPosToInt(s32)` (code6cac_b5_post.c:27) and `extern void CdIntToPos(s32, s32)` (:199) under-type the real `s32 CdPosToInt(u8 *)` / `u8 *CdIntToPos(s32, u8 *)` (src/system.c:302,317). Move them into include/libcd.h and drop the (s32) casts.",
+  "sp_buf2 is the CdIntToPos destination, a CdlLOC (4 bytes). `u8 sp_buf2[4]` measures byte-neutral (tmp/l2v/CD7/le_loc4.c, sandbox 0 72/72). Optionally type it as a CdlLOC in libcd.h.",
+  "g_cd_file_table is `extern u8` (game.h:9), but it is an array of 8-byte locator records. The int-typed table_base is load-bearing per round 5."
+ ]
+}

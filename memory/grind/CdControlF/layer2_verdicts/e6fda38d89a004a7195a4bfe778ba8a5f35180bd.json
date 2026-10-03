@@ -1,0 +1,12 @@
+{
+ "decision": "PASS",
+ "function": "CdControlF",
+ "body_hash": "d68aa2baf3644438",
+ "summary": "Items 1-5 met. Both round-4 defects are resolved. The false shared-header `extern void CdControlF(s32, s32)` in code6cac.h is deleted. The contradictory file-local extern in system.c is deleted. The single truthful declaration `s32 CdControlF(u8 com, u8 *param)` is in include/libcd.h, and every game caller compiles against it. The do-while(0) wrap is FAKE-labelled and load-bearing: removing it scores 20. sandbox --disable all = 0 and SHA1 == oracle.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": [
+  "include/m2c_context.h:1116 (a generated file) still carries `s32 CdControlF(s32, s32)`.",
+  "Parameter names a0/a1 could be com/param."
+ ]
+}

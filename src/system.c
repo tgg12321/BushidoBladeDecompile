@@ -4,12 +4,13 @@
 #include "bios.h"
 #include "system.h"
 #include "psx.h"
+#include "libcd.h"
 
 /* Forward declarations */
 extern void CD_flush(void);
 extern s32 CD_sync(s32, u8 *);
 extern s32 CD_ready(s32, u8 *);
-extern s32 CD_vol();
+extern s32 CD_vol(CdlATV *vol);
 extern s32 CD_getsector();
 extern s32 CD_getsector2();
 extern s32 DMACallback(s32, s32);
@@ -119,10 +120,10 @@ s32 CdReadyCallback(s32 a0) {
     return old;
 }
 
-extern s32 g_cd_sector_buf[];
+extern s32 g_cd_setloc_flags[];
 extern s32 CD_cw(u8, u8 *, u8 *, s32);
 
-s32 CdControl(u8 a0, s32 a1, s32 a2) {
+s32 CdControl(u8 a0, u8 *a1, u8 *a2) {
     s32 result;
     s32 idx;
     s32 saved;
@@ -133,7 +134,7 @@ s32 CdControl(u8 a0, s32 a1, s32 a2) {
     idx = a0;
     saved = CD_cbsync;
     count = 3;
-    base = g_cd_sector_buf;
+    base = g_cd_setloc_flags;
     elem = base + idx;
     result = 0;
 
@@ -173,7 +174,7 @@ next:
 done:
     return result + 1;
 }
-s32 CdControlF(u8 a0, s32 a1) {
+s32 CdControlF(u8 a0, u8 *a1) {
     s32 result;
     s32 idx;
     s32 saved;
@@ -184,7 +185,7 @@ s32 CdControlF(u8 a0, s32 a1) {
     idx = a0;
     saved = CD_cbsync;
     count = 3;
-    base = g_cd_sector_buf;
+    base = g_cd_setloc_flags;
     elem = base + idx;
     result = 0;
 
@@ -223,7 +224,7 @@ next:
 done:
     return result + 1;
 }
-s32 CdControlB(u8 a0, s32 a1, s32 a2) {
+s32 CdControlB(u8 a0, u8 *a1, u8 *a2) {
     s32 count;
     s32 idx;
     s32 saved;
@@ -233,8 +234,8 @@ s32 CdControlB(u8 a0, s32 a1, s32 a2) {
 
     saved = CD_cbsync;
     count = 3;
-    idx = a0 & 0xFF;
-    base = g_cd_sector_buf;
+    idx = a0;
+    base = g_cd_setloc_flags;
     elem = base + idx;
 
 loop:
@@ -253,7 +254,7 @@ loop:
         }
     }
     CD_cbsync = saved;
-    if (CD_cw(a0 & 0xFF, a1, a2, 0) == 0) {
+    if (CD_cw(a0, a1, a2, 0) == 0) {
         status = 0;
         goto done;
     }
@@ -268,16 +269,11 @@ done:
     if (status != 0) {
         return 0;
     }
-    {
-        s32 r;
-        r = ((s32 (*)(s32, s32))CD_sync)(0, a2);
-        r ^= 2;
-        return (u32)r < 1;
-    }
+    return CD_sync(0, a2) == 2;
 }
 
-s32 CdMix(void) {
-    CD_vol();
+s32 CdMix(CdlATV *vol) {
+    CD_vol(vol);
     return 1;
 }
 
@@ -369,7 +365,7 @@ static inline void _memcpy(void *_dst, void *_src, u32 _size)
 typedef char Result_t[8];
 extern s32 CD_status1; /* 0x800A11C8 = Sony CD_status1 */
 extern s32 CD_nopen;     /* Sony CD_nopen */
-extern s32 D_800A127C[];   /* per-command "ack is complete" flags */
+extern s32 D_800A127C[];   /* per-command flags: INT3 is only the acknowledge, completion follows as INT2 (SOTN D_80032B68) */
 extern s32 D_800A137C[];   /* per-command "status valid" flags */
 extern void Result;    /* Result_t result buffers */
 extern void Result_plus_0x8;
@@ -378,10 +374,10 @@ extern char D_800161E4[]; /* "DiskError: " */
 extern char D_800161F0[]; /* "com=%s,code=(%02x:%02x)\n" */
 extern char D_8001620C[]; /* "CDROM: unknown intr" */
 extern char D_80016220[]; /* "(%d)\n" */
-extern volatile u8 *g_cd_index_reg;
-extern volatile u8 *g_cd_param_fifo;
-extern volatile u8 *g_cd_req_reg;
-extern volatile u8 *g_cd_irq_reg;
+extern volatile u8 *g_cd_reg0;
+extern volatile u8 *g_cd_reg1;
+extern volatile u8 *g_cd_reg2;
+extern volatile u8 *g_cd_reg3;
 extern void puts();
 extern void printf();
 
@@ -392,9 +388,9 @@ s32 getintr(void) {
     s32 i, j;
     s32 bHasError;
 
-    *g_cd_index_reg = 1;
+    *g_cd_reg0 = 1;
 
-    nReg = *g_cd_irq_reg & 0x7;
+    nReg = *g_cd_reg3 & 0x7;
 
     if (nReg == 0) {
         return 0;
@@ -402,23 +398,23 @@ s32 getintr(void) {
 
     bHasError = 0;
 
-    while (nReg != (*g_cd_irq_reg & 7)) {
-        nReg = *g_cd_irq_reg & 0x7;
+    while (nReg != (*g_cd_reg3 & 7)) {
+        nReg = *g_cd_reg3 & 0x7;
     }
 
     for (i = 0; i < 8; i++) {
-        if ((*g_cd_index_reg & 0x20) == 0) {
+        if ((*g_cd_reg0 & 0x20) == 0) {
             break;
         }
-        buf[i] = *g_cd_param_fifo;
+        buf[i] = *g_cd_reg1;
     }
     for (j = i; j < 8; j++) {
         buf[j] = 0;
     }
 
-    *g_cd_index_reg = 1;
-    *g_cd_irq_reg = 7;
-    *g_cd_req_reg = 7;
+    *g_cd_reg0 = 1;
+    *g_cd_reg3 = 7;
+    *g_cd_reg2 = 7;
     if (nReg != 3 || D_800A137C[CD_com]) {
         if (!(*(s32 *)&CD_status & 0x10) && (buf[0] & 0x10)) {
             CD_nopen++;
@@ -461,8 +457,8 @@ s32 getintr(void) {
         }
         Intr.ready = bHasError ? 5 : 1;
         _memcpy(&Result_plus_0x8, &buf, sizeof(Result_t));
-        *g_cd_index_reg = 0;
-        *g_cd_irq_reg = 0;
+        *g_cd_reg0 = 0;
+        *g_cd_reg3 = 0;
         return 4;
     case 4:
         Intr.ready = Intr.c = 4;
@@ -485,7 +481,6 @@ extern void puts(void *);
 extern void printf();
 extern s32 CheckCallback(void);
 extern s32 getintr(void);
-extern volatile u8 *D_800A147C;
 extern s32 CD_cbsync;
 extern s32 CD_cbready;
 extern void Result;
@@ -531,7 +526,7 @@ static inline void callback(void)
     s32 status;
     u8 saved;
 
-    saved = *D_800A147C & 3;
+    saved = *g_cd_reg0 & 3;
     while (1) {
         status = getintr();
         if (status == 0) {
@@ -544,7 +539,7 @@ static inline void callback(void)
             ((void (*)(u8, void *))CD_cbsync)(Intr.sync, &Result);
         }
     }
-    *D_800A147C = saved;
+    *g_cd_reg0 = saved;
 }
 
 /* SOTN: src/main/psxsdk/libcd/bios.c:232 @aa53500 */
@@ -641,17 +636,17 @@ s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
     if (D_800A12FC[com]) {
         Intr.ready = 0;
     }
-    *D_800A147C = 0;
+    *g_cd_reg0 = 0;
     /* FAKE: the parameter count D_800A13FC[com] read through the preceding
      * table's base, verbatim SOTN (owner rulings Q50/Q55, Q53) -- cse keeps
      * &D_800A12FC from the ready-flag read above live and forms the count's
      * address as that base + 0x100 (asm/funcs/CD_cw.s: `addiu $v0, $v1, 0x100`
      * at 0x80081460). */
     for (i = 0; i < D_800A12FC[com + 0x40]; i++) { /* SOTN: src/main/psxsdk/libcd/bios.c:314 @aa53500 */
-        *g_cd_req_reg = param[i];
+        *g_cd_reg2 = param[i];
     }
     CD_com = com;
-    *g_cd_param_fifo = com;
+    *g_cd_reg1 = com;
     if (async != 0) {
         return 0;
     }
@@ -671,41 +666,41 @@ s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
     return -(Intr.sync == 5);
 }
 
-s32 CD_vol(u8 *a0) {
-    *g_cd_index_reg = 2;
-    *g_cd_req_reg = a0[0];
-    *g_cd_irq_reg = a0[1];
-    *g_cd_index_reg = 3;
-    *g_cd_param_fifo = a0[2];
-    *g_cd_req_reg = a0[3];
-    *g_cd_irq_reg = 0x20;
+s32 CD_vol(CdlATV *vol) {
+    *g_cd_reg0 = 2;
+    *g_cd_reg2 = vol->val0;
+    *g_cd_reg3 = vol->val1;
+    *g_cd_reg0 = 3;
+    *g_cd_reg1 = vol->val2;
+    *g_cd_reg2 = vol->val3;
+    *g_cd_reg3 = 0x20;
     return 0;
 }
-extern volatile u32 *g_cd_dma_madr;
+extern volatile u32 *g_com_delay_reg;
 
 void CD_flush(void) {
     u8 v0;
-    *g_cd_index_reg = 1;
-    v0 = *g_cd_irq_reg & 7;
+    *g_cd_reg0 = 1;
+    v0 = *g_cd_reg3 & 7;
     if (v0 != 0) {
         do {
-            *g_cd_index_reg = 1;
-            *g_cd_irq_reg = 7;
-            *g_cd_req_reg = 7;
-            v0 = *g_cd_irq_reg & 7;
+            *g_cd_reg0 = 1;
+            *g_cd_reg3 = 7;
+            *g_cd_reg2 = 7;
+            v0 = *g_cd_reg3 & 7;
         } while (v0 != 0);
     }
     Intr.ready = Intr.c = 0;
     Intr.sync = 2;
-    *g_cd_index_reg = 0;
-    *g_cd_irq_reg = 0;
-    *g_cd_dma_madr = 0x1325;
+    *g_cd_reg0 = 0;
+    *g_cd_reg3 = 0;
+    *g_com_delay_reg = 0x1325;
 }
 extern volatile u16 *g_cd_spu_voice;
 /* PsyQ 4.0 LIBCD bios.c v1.86: CD_initvol — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libcd/bios.c */
 s32 CD_initvol(void) {
-    u8 vol[4];
+    CdlATV vol;
 
     if (g_cd_spu_voice[0xDC] == 0 && g_cd_spu_voice[0xDD] == 0) {
         g_cd_spu_voice[0xC0] = 0x3FFF;
@@ -715,27 +710,27 @@ s32 CD_initvol(void) {
     g_cd_spu_voice[0xD8] = 0x3FFF;
     g_cd_spu_voice[0xD9] = 0x3FFF;
     g_cd_spu_voice[0xD5] = 0xC001;
-    vol[0] = vol[2] = 0x80;
-    vol[1] = vol[3] = 0;
-    *g_cd_index_reg = 2;
-    *g_cd_req_reg = vol[0];
-    *g_cd_irq_reg = vol[1];
-    *g_cd_index_reg = 3;
-    *g_cd_param_fifo = vol[2];
-    *g_cd_req_reg = vol[3];
-    *g_cd_irq_reg = 0x20;
+    vol.val0 = vol.val2 = 0x80;
+    vol.val1 = vol.val3 = 0;
+    *g_cd_reg0 = 2;
+    *g_cd_reg2 = vol.val0;
+    *g_cd_reg3 = vol.val1;
+    *g_cd_reg0 = 3;
+    *g_cd_reg1 = vol.val2;
+    *g_cd_reg2 = vol.val3;
+    *g_cd_reg3 = 0x20;
     return 0;
 }
 extern s32 CD_status1;
 extern void InterruptCallback(s32, void *);
-extern u8 D_80081F1C;
+void cdrom_IrqHandler(void);
 void CD_initintr(void) {
     CD_cbready = 0;
     CD_cbsync = 0;
     CD_status1 = 0;
     *(s32 *)&CD_status = 0;
     ResetCallback();
-    InterruptCallback(2, &D_80081F1C);
+    InterruptCallback(2, cdrom_IrqHandler);
 }
 extern void D_800162A8;
 extern void D_800162B4;
@@ -755,24 +750,24 @@ s32 CD_init(void) {
     *(s32 *)&CD_status = 0;
 
     ResetCallback();
-    InterruptCallback(2, &D_80081F1C);
+    InterruptCallback(2, cdrom_IrqHandler);
 
-    *g_cd_index_reg = 1;
-    v0 = *g_cd_irq_reg & 7;
+    *g_cd_reg0 = 1;
+    v0 = *g_cd_reg3 & 7;
     if (v0 != 0) {
         do {
-            *g_cd_index_reg = 1;
-            *g_cd_irq_reg = 7;
-            *g_cd_req_reg = 7;
-            v0 = *g_cd_irq_reg & 7;
+            *g_cd_reg0 = 1;
+            *g_cd_reg3 = 7;
+            *g_cd_reg2 = 7;
+            v0 = *g_cd_reg3 & 7;
         } while (v0 != 0);
     }
 
     Intr.ready = Intr.c = 0;
     Intr.sync = 2;
-    *g_cd_index_reg = 0;
-    *g_cd_irq_reg = 0;
-    *g_cd_dma_madr = 0x1325;
+    *g_cd_reg0 = 0;
+    *g_cd_reg3 = 0;
+    *g_com_delay_reg = 0x1325;
 
     CD_cw(1, 0, 0, 0);
 
@@ -786,12 +781,10 @@ s32 CD_init(void) {
     if (CD_cw(0xC, 0, 0, 0) != 0) {
         return -1;
     }
-    {
-        s32 r;
-        r = ((s32 (*)(s32, s32))CD_sync)(0, 0);
-        r ^= 2;
-        return -((u32)(0 < (u32)r));
+    if (CD_sync(0, 0) != 2) {
+        return -1;
     }
+    return 0;
 }
 extern s32 VSync(s32);
 extern void puts(void *);
@@ -803,7 +796,8 @@ extern s32 CD_comstr[];
 extern s32 CD_intstr[];
 
 
-extern volatile u32 *D_800A14C0;
+
+extern volatile u32 *g_cd_dma_ctrl;
 
 /* SOTN: src/main/psxsdk/libcd/bios.c:459 @aa53500 */
 s32 CD_datasync(s32 mode)
@@ -819,7 +813,7 @@ s32 CD_datasync(s32 mode)
             ret = -1;
             break;
         }
-        if (!(*D_800A14C0 & 0x1000000)) {
+        if (!(*g_cd_dma_ctrl & 0x1000000)) {
             ret = 0;
             break;
         }
@@ -831,55 +825,43 @@ s32 CD_datasync(s32 mode)
     return ret;
 }
 
-extern volatile u32 *g_cd_dma_madr;
-extern volatile u32 *g_cd_dma_bcr;
+extern volatile u32 *g_com_delay_reg;
+extern volatile u32 *g_cdrom_delay_reg;
 extern volatile u32 *g_cd_dma_ctrl_b4;
 extern volatile u32 *g_cd_dma_dest;
 extern volatile u32 *g_cd_dma_size;
-extern volatile u32 *g_cd_dma_ctrl;
 
 s32 CD_getsector(s32 a0, s32 a1) {
-    volatile u8 *v1;
-    u32 v0;
-    *g_cd_index_reg = 0;
-    *g_cd_irq_reg = CD_IRQ_DATA_READY;
-    *g_cd_dma_bcr = 0x20943;
-    *g_cd_dma_madr = 0x1323;
-    *g_cd_dma_ctrl_b4 = *g_cd_dma_ctrl_b4 | DMA_CD_ENABLE;
+    *g_cd_reg0 = 0;
+    *g_cd_reg3 = CD_REQ_WANT_DATA;
+    *g_cdrom_delay_reg = 0x20943;
+    *g_com_delay_reg = 0x1323;
+    *g_cd_dma_ctrl_b4 |= DMA_CD_ENABLE;
     *g_cd_dma_dest = a0;
     *g_cd_dma_size = a1 | 0x10000;
-    v1 = g_cd_index_reg;
-    do {
-        v0 = *v1 & CD_STAT_DATA_REQ;
-    } while (v0 == 0);
-    *g_cd_dma_ctrl = DMA_CD_TO_RAM;
-    if ((*g_cd_dma_ctrl & DMA_BUSY) != 0) {
-        do {
-            v0 = *g_cd_dma_ctrl & DMA_BUSY;
-        } while (v0 != 0);
+    while (!(*g_cd_reg0 & CD_STAT_DATA_REQ)) {
     }
-    *g_cd_dma_madr = 0x1325;
+    *g_cd_dma_ctrl = DMA_CD_TO_RAM;
+    while (*g_cd_dma_ctrl & DMA_BUSY) {
+    }
+    *g_com_delay_reg = 0x1325;
     return 0;
 }
 s32 CD_getsector2(s32 a0, s32 a1) {
-    volatile u8 *v1;
-    u32 v0;
-    *g_cd_index_reg = 0;
-    *g_cd_irq_reg = CD_IRQ_DATA_READY;
-    *g_cd_dma_bcr = 0x21020843;
-    *g_cd_dma_madr = 0x1325;
-    *g_cd_dma_ctrl_b4 = *g_cd_dma_ctrl_b4 | DMA_CD_ENABLE;
+    *g_cd_reg0 = 0;
+    *g_cd_reg3 = CD_REQ_WANT_DATA;
+    *g_cdrom_delay_reg = 0x21020843;
+    *g_com_delay_reg = 0x1325;
+    *g_cd_dma_ctrl_b4 |= DMA_CD_ENABLE;
     *g_cd_dma_dest = a0;
     *g_cd_dma_size = a1 | 0x10000;
-    v1 = g_cd_index_reg;
-    v0 = *v1 & CD_STAT_DATA_REQ;
-    if (v0 == 0) {
-        do {
-            v0 = *v1 & CD_STAT_DATA_REQ;
-        } while (v0 == 0);
+    while (!(*g_cd_reg0 & CD_STAT_DATA_REQ)) {
     }
-    *g_cd_dma_ctrl = DMA_CD_TO_RAM_CHAIN;
+    *g_cd_dma_ctrl = DMA_CD_TO_RAM_CHOPPED;
     {
+        /* FAKE: volatile dummy local (Route B, Q48) -- the target stores the CHCR read-back to
+         * its own $sp slot (sw $v0,0($sp) at 0x80081EF8, 8-byte frame); a non-volatile local or
+         * a bare `*g_cd_dma_ctrl;` drops the store and the frame. */
         volatile s32 tmp;
         tmp = *g_cd_dma_ctrl;
     }
@@ -898,23 +880,10 @@ extern void Result_plus_0x8;
 extern void Result;
 extern s32 getintr(void);
 
-__asm__(
-    ".set noreorder
-"
-    ".set noat
-"
-    "glabel D_80081F1C
-"
-    ".set reorder
-"
-    ".set at
-"
-);
-
 void cdrom_IrqHandler(void) {
     u8 s2;
     s32 s0;
-    s2 = *g_cd_index_reg & 3;
+    s2 = *g_cd_reg0 & 3;
     do {
         s0 = getintr();
         if (s0 == 0) break;
@@ -927,7 +896,7 @@ void cdrom_IrqHandler(void) {
         if (CD_cbsync == 0) continue;
         ((void (*)(u8, void *))CD_cbsync)(Intr.sync, &Result);
     } while (1);
-    *g_cd_index_reg = s2;
+    *g_cd_reg0 = s2;
 }
 /* PsyQ 4.0 LIBC2 puts: puts — verbatim-linked Sony object (census
    2026-07-09); no public C ref (absent from sotn psxsdk tree); transcribed
@@ -1007,7 +976,6 @@ extern volatile s32 D_800A14FC;
 extern u8 *D_800A1504;   /* cdread.c v1.86: saved result ptr for cb dispatch */
 extern s32 g_CdReadCallback_func;   /* CD_ReadCallbackFunc */
 extern s32 D_800162D4;   /* "CdRead: sector error\n" */
-extern s32 CdControlF(u8, s32); /* CdControlF */
 
 /* PsyQ 4.0 LIBCD cdread: cb_read (static) — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c
@@ -1125,8 +1093,7 @@ s32 cd_read_retry(s32 arg0) {
     if (arg0 != 0) {
         puts(&D_80016304);
         CdControl(9, 0, 0);
-        temp_s0 = (s32)CdLastPos();
-        if (CdControl(2, temp_s0, 0) == 0) {
+        if (CdControl(2, CdLastPos(), 0) == 0) {
             return D_800A14E4 = -1;
         }
     }
@@ -1136,7 +1103,7 @@ s32 cd_read_retry(s32 arg0) {
     sp10 = temp_s0;
     temp_s0 = temp_s0 & 0xFF;
     if (temp_s0 != CdMode() || arg0 != 0) {
-        if (CdControl(0xE, (s32)&sp10, 0) == 0) {
+        if (CdControl(0xE, &sp10, 0) == 0) {
             D_800A14E4 = -1;
             return D_800A14E4;
         }

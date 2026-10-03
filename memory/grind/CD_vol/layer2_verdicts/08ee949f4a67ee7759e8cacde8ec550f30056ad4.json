@@ -1,0 +1,1 @@
+{"decision": "PASS", "function": "CD_vol", "body_hash": "e3a41972a7412f3a", "summary": "`s32 CD_vol(CdlATV *vol)` with vol->val0..val3 is SOTN bios.c:342 verbatim, and it uses the shared CdlATV in include/libcd.h. The register writes are correct: index 2 sets reg2/reg3 = ATV0/ATV1; index 3 sets reg1/reg2 = ATV2/ATV3 and reg3 = 0x20 to apply. No second handle and nothing false."}

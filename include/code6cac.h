@@ -4,6 +4,7 @@
 /* Shared declarations for the code6cac module family */
 
 #include "common.h"
+#include "libcd.h"
 
 /* Named globals */
 extern s16 StatusUpBuf;
@@ -606,21 +607,6 @@ extern s32 g_comb_send_buf_plus_0x4;
 extern s16 D_800A36A4;
 extern s32 D_800A36AC;
 extern s32 D_800A36B4;
-/* libcd CdlATV, the attenuator block CdMix takes (CdMix(CdlATV *)): the CD-audio
- * mix currently applied (g_cd_atv, cdrom_SetMix) and the fade target
- * (D_800A36B8, func_80035F78) that func_80036140 steps toward and finally copies
- * over it with one struct assignment (the unaligned lwl/lwr/swl/swr at 80036310).
- * Both were tentative definitions in the CD module's file: ASPSX 2.34 gives such
- * a COMMON symbol gp only at its base, so byte 0 is gp-relative and bytes 1..3
- * are lui/%lo in all three accessors. Modelled by maspsx for every file from the
- * declarations (owner Q62); the tentative definitions are in
- * the CD module's two -G8 units, src/code6cac_b4.c and src/code6cac_b5.c. */
-typedef struct {
-    u8 val0;
-    u8 val1;
-    u8 val2;
-    u8 val3;
-} CdlATV;
 extern CdlATV D_800A36B8;
 extern s16 D_800A36C2;
 extern s32 D_800A36C4;
@@ -1010,7 +996,8 @@ extern void func_800494D4(s32, s32);
 extern void func_80049584(s32);
 extern s32 func_8005B8B8(s32);
 extern void func_8005C6D0(void);
-extern void Exec(s32 *, s32, s32 *);
+struct EXEC;
+extern void Exec(struct EXEC *, s32, s32 *);
 extern s32 format(s32 *);
 extern s32 sprintf(char *, char *, ...);
 extern void ResetGraph(s32);
@@ -1020,7 +1007,6 @@ extern void CdInit(void);
 extern void CdFlush(void);
 extern void CdSetDebug(s32);
 extern void CdReadyCallback(s32);
-extern void CdControlF(s32, s32);
 extern s32 CdRead(s32, s32, s32);
 extern s32 CdReadSync(s32, s32);
 extern void SsSetSerialVol(s32, s32, s32);

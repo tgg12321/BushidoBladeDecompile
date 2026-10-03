@@ -92,7 +92,6 @@ void game_FrameLoop(void) {
     }
     func_8003AAB0();
 }
-extern void CdControlB(s32, u8 *, s32);
 s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
     if (D_80101E58.rec.unk02 != 0) {
         return 0;
@@ -197,46 +196,43 @@ s32 cdrom_ReadWait(s32 nbytes, s32 buf, s32 mode) {
     } while (v > 0);
     return v;
 }
-/* The 0x3C-byte struct EXEC (PS-EXE header body) that sits 0x10 into the first
- * sector of a PS-EXE image on disc: pc0, gp0, t_addr, t_size, ... */
-typedef struct { s32 rot[15]; } CamRot;
-extern void CdControl(s32, s32, s32);
 extern void CdIntToPos(s32, s32);
 /* Loads a PS-EXE from disc (renamed cdrom_LoadExec 2026-09-07; was
  * special_camera_get_rot_dir - nothing camera-related). Seeks to entry
- * D_8008F12C[6] (=156, MOVOVL.EXE) of the SpecialCam CD-locator table, reads
+ * D_8008F12C[6] (=156, MOVOVL.EXE) of g_cd_file_table, reads
  * one 2048-byte sector, copies the struct EXEC at +0x10 into the caller's
- * dest[], then seeks to the following sector and reads t_size (dest[3]) bytes to
- * t_addr (dest[2]). The sole caller, sys_Exec, then Exec()s dest. Any failed read
+ * *dest, then seeks to the following sector and reads dest->t_size bytes to
+ * dest->t_addr. The sole caller, sys_Exec, then Exec()s dest. Any failed read
  * restarts the whole sequence from the seek. */
-void cdrom_LoadExec(s32 *dest) {
+void cdrom_LoadExec(EXEC *dest) {
     u8 sp_buf[0x800];
     u8 sp_buf2[8];
     s32 index;
-    s32 cam_base;
+    s32 table_base;
     s32 v0;
+    s32 pos;
     s32 mode;
 
     mode = 0x80; /* CdlModeSpeed - double-speed transfer */
     index = func_80036EA8(6, 0) << 3;
-    cam_base = (s32)&g_cd_file_table;
+    table_base = (s32)&g_cd_file_table;
 
     for (;;) {
-        CdControl(2, index + cam_base, 0);
+        CdControl(2, (u8 *)(index + table_base), 0);
         v0 = cdrom_ReadWait(0x800, (s32)sp_buf, mode);
         if (v0 != 0) continue;
 
-        *(CamRot *)dest = *(CamRot *)&sp_buf[0x10];
+        *dest = *(EXEC *)&sp_buf[0x10];
 
-        v0 = CdPosToInt(index + cam_base);
-        CdIntToPos(v0 + 1, (s32)sp_buf2);
-        CdControl(2, (s32)sp_buf2, 0);
-        v0 = cdrom_ReadWait(dest[3], dest[2], mode);
+        pos = CdPosToInt(index + table_base);
+        CdIntToPos(pos + 1, (s32)sp_buf2);
+        CdControl(2, sp_buf2, 0);
+        v0 = cdrom_ReadWait(dest->t_size, dest->t_addr, mode);
         if (v0 == 0) break;
     }
 }
 void sys_Exec(s32 a0, s32 *a1, s32 a2) {
-    s32 sp[16];
+    EXEC exec;
     VSync(0);
     SetDispMask(0);
     gpu_ResetGraphMode1();
@@ -244,15 +240,15 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     memcard_Quit();
     ResetCallback();
     CdInit();
-    cdrom_LoadExec(sp);
+    cdrom_LoadExec(&exec);
     DrawSync(0);
     ResetGraph(0);
     StopPAD();
     StopCallback();
-    sp[8] = a2;
-    sp[9] = 0;
+    exec.s_addr = a2;
+    exec.s_size = 0;
     EnterCriticalSection();
-    Exec(sp, a0, a1);
+    Exec(&exec, a0, a1);
     sys_Init();
     file_LoadSoundData();
     VSync(0);

@@ -48,7 +48,7 @@ void func_80036140(void) {
     switch (D_80101E58.rec.unk02) {
     case 0x10:
         cdrom_SetMix(0, 0, 0, 0);
-        CdControlF(0xE, (s32)&D_80101E58.rec.unk30);
+        CdControlF(0xE, &D_80101E58.rec.unk30);
         D_80101E58.rec.unk28 = 0;
         D_80101E58.rec.unk2C = 0;
         D_80101E58.rec.unk44 = 0;
@@ -57,7 +57,7 @@ void func_80036140(void) {
     case 0x11: {
         s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
-            CdControlF(2, (s32)&D_80101E58.rec.pair);
+            CdControlF(2, (u8 *)&D_80101E58.rec.pair);
             D_80101E58.rec.unk02 = 0x12;
         } else if (ret == 5) {
             D_80101E58.rec.unk02 = 0x17;
@@ -107,7 +107,7 @@ void func_80036140(void) {
         }
         D_80101E58.rec.unk02 = 0x16;
         if (D_80101E58.rec.unk34 != 0) {
-            CdControlF(0x11, (s32)g_cd_result);
+            CdControlF(0x11, g_cd_result);
             D_80101E58.rec.unk3A = 0;
             break;
         }
@@ -226,7 +226,6 @@ void func_80036140(void) {
 }
 void func_80036940(void);
 extern s32 CdSync(s32, u8 *);
-extern void CdControl(s32, s32, s32);
 extern void func_80036140(void);
 void func_80036940(void) {
     u8 param[4];
@@ -244,7 +243,7 @@ void func_80036940(void) {
             break;
         }
         param[0] = 0xA0;
-        CdControlF(0xE, (s32)param);
+        CdControlF(0xE, param);
         D_80101E58.rec.unk06 = 0;
         D_80101E58.rec.unk38 = 0;
         D_80101E58.rec.unk02 = 3;
@@ -266,7 +265,7 @@ void func_80036940(void) {
             D_80101E58.rec.dest_buffer = D_80101E58.rec.unk1C;
             D_80101E58.rec.sectors_remaining = D_80101E58.rec.unk18;
             D_80101E58.rec.expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
-            CdControl(2, (s32)&D_80101E58.rec.pair, 0);
+            CdControl(2, (u8 *)&D_80101E58.rec.pair, 0);
             D_80101E58.rec.unk38 = 0;
             D_80101E58.rec.unk02 = 5;
         }
@@ -276,7 +275,7 @@ void func_80036940(void) {
         if (ret == 2) {
             D_80101E58.rec.unk38 = 0;
             CdReadyCallback((s32)cdrom_ReadyCallback);
-            CdControlF(6, (s32)&D_80101E58.rec.pair);
+            CdControlF(6, (u8 *)&D_80101E58.rec.pair);
             D_80101E58.rec.unk02 = 6;
         } else if (ret == 5) {
             D_80101E58.rec.unk02 = 9;

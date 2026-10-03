@@ -1,0 +1,12 @@
+{
+ "decision": "PASS",
+ "function": "CD_initvol",
+ "body_hash": "c7fd54f8a71e6da9",
+ "summary": "Items 1-5 met. `CdlATV vol; vol.val0 = vol.val2 = 0x80; vol.val1 = vol.val3 = 0;` with member reads matches SOTN bios.c:368-387 @db41b28 verbatim. CdlATV is declared once, in the shared include/libcd.h, which system.c includes. The round-2/3 `u8 vol[4]` defect is gone. Sandbox --disable all = 0, system.o is section-identical to the fresh build, and the SHA1 == oracle. g_cd_spu_voice is a `volatile u16 *` to 0x1F801C00, which is type-level MMIO. No BB2 header declares an SPU register struct, so the indexed accesses do not trip item 4. No FAKE constructs, and no false claims in the body.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": [
+  "SOTN reaches the same SPU registers through a register struct (D_80032D7C->main_volx/main_vol/cd_vol/spucnt). The BB2 body indexes g_cd_spu_voice[0xC0/0xC1/0xD5/0xD8/0xD9/0xDC/0xDD] raw. A shared SPU-register struct in a header would be clearer. 'spu_voice' also undersells the pointer: it is the SPU register-file base, and none of these accesses are voice registers.",
+  "The comment above the function says 'PsyQ 4.0 LIBCD bios.c v1.86', but AGENTS.md records the SDK as PsyQ 3.5 (libcd bios.c v1.86). The version label should be reconciled file-wide."
+ ]
+}

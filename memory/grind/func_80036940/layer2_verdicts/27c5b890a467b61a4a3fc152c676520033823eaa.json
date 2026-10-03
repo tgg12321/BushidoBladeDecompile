@@ -1,0 +1,13 @@
+{
+ "decision": "PASS",
+ "function": "func_80036940",
+ "body_hash": "be204541568744c0",
+ "summary": "(a) The changed call sites are honest. `CdControlF(0xE, param)` passes a u8[4] Setmode buffer. `CdControl(2, (u8 *)&rec.pair, 0)` (Setloc) and `CdControlF(6, (u8 *)&rec.pair)` (ReadN) pass the CdlLOC bytes at the head of the locator record. The deleted file-local `extern void CdControl(s32,s32,s32)` no longer misdescribes the callee. (b) I found no pre-existing blocking defect inside the body. The `(s32)` casts that remain at CdPosToInt and CdReadyCallback fit callee prototypes that are false; those are debt against the callees. sandbox 0 and SHA1 == oracle.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": [
+  "There are still false libcd/game prototypes in the caller TUs. They are attributed to their callees and block those callees, not this body. `extern s32 CdPosToInt(s32)` (code6cac_b5.c:21, code6cac_b5_post.c:27, code6cac_b4_post.c:48) misdescribes `s32 CdPosToInt(u8 *)`. `extern void CdIntToPos(s32, s32)` (code6cac_b5_post.c:202, and an implicit declaration at :57) misdescribes `u8 *CdIntToPos(s32, u8 *)`. `extern void CdMix(CdlATV *)` (code6cac_b4.c:20, code6cac_b5.c:24) misdescribes `s32 CdMix(CdlATV *)`, and that is the round-4 CdControl defect pattern in CdMix, which was already PASSed. `void CdReadyCallback(s32)` (code6cac.h:1008) misdescribes the s32-returning callback setter. Move them into include/libcd.h with the truthful types and drop the (s32) casts at the call sites.",
+  "`CdPosToInt((s32)&D_80101E58.rec.pair)` and `CdReadyCallback((s32)cdrom_ReadyCallback)` should drop their casts once the callee prototypes are truthful.",
+  "Redundant duplicate prototypes just before the function: `extern s32 CdSync(s32, u8 *)` repeats line 28, and `void func_80036940(void);` is a self-forward-declaration."
+ ]
+}

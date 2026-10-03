@@ -1,0 +1,13 @@
+{
+ "decision": "PASS",
+ "function": "func_80036140",
+ "body_hash": "10f3a49358ec877a",
+ "summary": "(a) The changed call sites are honest. `CdControlF(0xE, &rec.unk30)` passes the u8 Setmode byte. `CdControlF(2, (u8 *)&rec.pair)` passes the 8-byte locator whose first 4 bytes are the CdlLOC, and the address is the same as pair.a. `CdControlF(0x11, g_cd_result)` passes the u8[8] buffer the binary passes. No cast launders an integer. (b) I found no pre-existing blocking defect in the body. The struct-assign fade and the CdlATV usage are truthful. The remaining false callee prototypes it calls through (CdPosToInt(s32), void CdMix) are the callees' defects and are recorded as debt. sandbox 0 and SHA1 == oracle.",
+ "evidence": [],
+ "next_action": "",
+ "hygiene_debt": [
+  "There are still false libcd/game prototypes in the caller TUs. They are attributed to their callees and block those callees, not this body. `extern s32 CdPosToInt(s32)` (code6cac_b5.c:21, code6cac_b5_post.c:27, code6cac_b4_post.c:48) misdescribes `s32 CdPosToInt(u8 *)`. `extern void CdIntToPos(s32, s32)` (code6cac_b5_post.c:202, and an implicit declaration at :57) misdescribes `u8 *CdIntToPos(s32, u8 *)`. `extern void CdMix(CdlATV *)` (code6cac_b4.c:20, code6cac_b5.c:24) misdescribes `s32 CdMix(CdlATV *)`, and that is the round-4 CdControl defect pattern in CdMix, which was already PASSed. `void CdReadyCallback(s32)` (code6cac.h:1008) misdescribes the s32-returning callback setter. Move them into include/libcd.h with the truthful types and drop the (s32) casts at the call sites.",
+  "`CdPosToInt((s32)&g_cd_result[3])` and `[5]`: drop the cast once CdPosToInt's prototype is truthful.",
+  "CamPair / ReplayCamRec type names in code6cac.h assert camera semantics for the CD-locator record (pos, size) and the CD state block. Rename them, for example CdFileLoc / CdStateRec."
+ ]
+}

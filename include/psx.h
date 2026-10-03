@@ -41,7 +41,7 @@
 
 /* CD-ROM DMA (channel 3) */
 #define DMA_CD_TO_RAM        0x11000000  /* CD DMA: normal transfer */
-#define DMA_CD_TO_RAM_CHAIN  0x11400100  /* CD DMA: chained transfer */
+#define DMA_CD_TO_RAM_CHOPPED 0x11400100 /* CD DMA to RAM: start + trigger, chopping, manual sync */
 #define DMA_CD_ENABLE        0x00008000  /* CD DMA enable bit */
 
 /* SPU DMA (channel 4) */
@@ -51,7 +51,7 @@
 #define DMA_BUSY             0x01000000  /* DMA busy/active bit */
 
 /* CD-ROM register flags */
-#define CD_IRQ_DATA_READY    0x80        /* CD data ready interrupt flag */
+#define CD_REQ_WANT_DATA     0x80        /* CD request register (index 0, reg 3): BFRD, want data */
 #define CD_STAT_DATA_REQ     0x40        /* CD status: data request */
 
 /* ===== Controller / Pad Button Constants ===== */

@@ -67,11 +67,11 @@ g_cos_lut_q4 = 0x8009A794; // cosine LUT quadrant 4
 g_gte_saved_ra = 0x8009C798; // saved RA in GTE init
 
 // === CD-ROM Subsystem (system.c) ===
-g_cd_index_reg = 0x800A147C; // CD-ROM index register ptr
-g_cd_param_fifo = 0x800A1480; // CD-ROM parameter FIFO ptr
-g_cd_req_reg = 0x800A1484; // CD-ROM request register ptr
-g_cd_irq_reg = 0x800A1488; // CD-ROM interrupt register ptr
-g_cd_dma_madr = 0x800A148C; // CD DMA MADR register ptr
+g_cd_reg0 = 0x800A147C; // -> 0x1F801800 CD index/status register
+g_cd_reg1 = 0x800A1480; // -> 0x1F801801 CD register 1 (command / response)
+g_cd_reg2 = 0x800A1484; // -> 0x1F801802 CD register 2 (parameter / interrupt enable)
+g_cd_reg3 = 0x800A1488; // -> 0x1F801803 CD register 3 (request / interrupt flag)
+g_com_delay_reg = 0x800A148C; // -> 0x1F801020 COM_DELAY memory-control register
 g_cd_spu_voice = 0x800A1490; // SPU voice register base ptr
 // data-wave 2026-09-07: g_cd_debug_level = 0x800A11C0 retired; CD_debug is now object-defined
 // data-wave 2026-09-07: g_cd_mode = 0x800A11C4 retired; CD_status is now object-defined
@@ -81,14 +81,14 @@ CD_com = 0x800A11D5; // CD ready status 2  // data-wave 2026-09-07: was g_cd_rea
 CD_cbsync = 0x800A11B4; // CD callback A  // data-wave 2026-09-07: was g_cd_callback_a
 CD_cbready = 0x800A11B8; // CD callback B  // data-wave 2026-09-07: was g_cd_callback_b
 // data-wave 2026-09-25: g_cd_init_flag = 0x800A11C8 retired; CD_status1 is now object-defined
-g_cd_dma_bcr = 0x800A14B0; // CD DMA BCR ptr
+g_cdrom_delay_reg = 0x800A14B0; // -> 0x1F801018 CD-ROM delay register
 g_cd_dma_ctrl_b4 = 0x800A14B4; // CD DMA control B4 ptr
 g_cd_dma_dest = 0x800A14B8; // CD DMA destination ptr
 g_cd_dma_size = 0x800A14BC; // CD DMA transfer size ptr
 g_cd_dma_ctrl = 0x800A14C0; // CD DMA control reg ptr
 CD_comstr = 0x800A11DC; // CD command dispatch table  // data-wave 2026-09-07: was g_cd_cmd_table
 CD_intstr = 0x800A125C; // CD result handler table  // data-wave 2026-09-07: was g_cd_result_table
-g_cd_sector_buf = 0x800A112C; // CD sector buffer
+g_cd_setloc_flags = 0x800A112C; // per-command "issue CdlSetloc first" flags
 
 // === Sound / SPU Subsystem ===
 _spu_RXX = 0x800A2CDC; // SPU register base address  // data-wave 2026-09-07: was g_spu_base_addr
