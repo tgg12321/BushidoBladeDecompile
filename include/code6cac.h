@@ -10,6 +10,7 @@
 #include <psxsdk/libcd.h>
 #include <psxsdk/libcomb.h>
 #include <psxsdk/libetc.h>
+#include <psxsdk/libgte.h>
 #include <psxsdk/libsn.h>
 
 /* Named globals */
@@ -74,8 +75,8 @@ typedef Vec3i32 LeafPos;
  * per-word scalars D_800F0D78 / D_800F0D7C / D_800F0D80 (the last was misnamed
  * "videoDec": it is slot 0's z). */
 extern Vec3i32 D_800F0D78[16];
-/* PsyQ VECTOR / SVECTOR layouts (include/gte.h), spelled with local tags for
- * the same reason as Unk80101DF0Rot below.  func_80022580 copies
+/* PsyQ VECTOR / SVECTOR layouts (include/psxsdk/libgte.h) under local names, like
+ * Unk80101DF0Rot below; retyping them as the Sony types is Phase 2 work.  func_80022580 copies
  * Unk80101EC8Record's +0xB8 and +0x104 as whole 16-byte VECTORs (pad included)
  * and +0x1C8 as a whole 8-byte SVECTOR. */
 typedef struct { s32 vx, vy, vz, pad; } Vec4i32;
@@ -527,8 +528,8 @@ extern Tbl8008E194 D_8008E194[];
  * caches [n][1] in D_800A35E0, n = D_8009BD38.unk0 (base + n*2,
  * asm/funcs/func_80077904.s).  Replaces the splat per-byte scalar D_8009BD59. */
 extern u8 D_8009BD58[8][2];
-/* PsyQ MATRIX layout (include/gte.h), spelled with a local tag for the same
- * reason as Unk80101DF0Mat below (several TUs typedef MATRIX themselves). */
+/* PsyQ MATRIX layout (include/psxsdk/libgte.h) under a local name, like
+ * Unk80101DF0Mat below; retyping it as MATRIX is Phase 2 work. */
 typedef struct { s16 m[3][3]; u16 pad; s32 t[3]; } Obj80106A78Mat;
 /* The twelve 0x64-byte object records at 0x80106A78. func_80030580 spawns one
  * (its kind indexes D_8008E194 / D_8008EB80), func_80030D7C moves them,
@@ -883,8 +884,8 @@ extern u8 D_80101BF0;
  * func_800477E8 sets up the second (+0x06 as s16) and passes it to
  * func_800417D0, which reads +0x06 as an s16 state.
  * Rot / Mat are the PsyQ SVECTOR / MATRIX layouts
- * (include/gte.h), spelled with local tags because several TUs typedef
- * SVECTOR/MATRIX themselves. */
+ * (include/psxsdk/libgte.h) under local names: they were spelled locally while
+ * several TUs typedef'd SVECTOR/MATRIX themselves; retyping them is Phase 2 work. */
 typedef struct { s16 vx, vy, vz, pad; } Unk80101DF0Rot;
 typedef struct { s16 m[3][3]; u16 pad; s32 t[3]; } Unk80101DF0Mat;
 typedef struct {

@@ -346,7 +346,6 @@ extern u8 g_cam_bone_data;
 
 extern void func_800451A0(void);
 extern void func_800451D0(void);
-extern void ApplyMatrixLV(void *, void *, void *);
 extern void func_800418D0(s32 *);
 extern void func_8004A1FC();
 extern void func_800420D0(void);
@@ -1110,8 +1109,6 @@ void func_80047A90(void) {
 }
 
 
-extern void RotTransPers3(SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *);
-extern void ReadSZfifo3(s32 *, s32 *, s32 *);
 extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
 extern SVECTOR D_800EF0D8[17];
 extern SVECTOR D_800EF168[17];
@@ -2468,7 +2465,6 @@ void func_80049E4C(void) {
 extern const Unk800153F0Record D_800153F0;
 extern void func_8004A09C(Unk800F62E0Rec *, u16 *);
 extern void SetColorMatrix(Unk80101DF0Mat *);
-extern void SetBackColor(s32, s32, s32);
 
 void func_80049F4C(void) {
     Unk800153F0Record sp10;

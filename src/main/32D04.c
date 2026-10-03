@@ -459,7 +459,6 @@ extern s32 *ApplyMatrix(s32 *, s16 *, s32 *);
 extern s16 ratan2(s32, s32);
 extern s32 rcos(s32);
 extern s32 rsin(s32);
-extern void MulMatrix(s32 *, s32 *);
 void math_MatrixToAnglesYXZ(s32 *a0, s16 *a1) {
     s16 rot[3];
     s32 result[4];
@@ -1228,7 +1227,6 @@ extern s32 D_800A370C;
 
 extern s32 D_80102C00;
 
-extern void MulMatrix(s32 *, s32 *);
 extern void MulMatrix2(s32 *, s32 *);
 extern void MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
 extern void func_80046F24(void);

@@ -735,7 +735,6 @@ extern s32 stage_GetId(void);
 extern void func_8003FFC4(s32 *);
 extern void func_8003F218(s32);
 extern s32 math_FovToScreenDist(s32);
-extern void SetGeomScreen(s32);
 extern void gpu_ResetGraphMode1(void);
 extern void game_StageCleanup(s32, s32);
 s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
@@ -1358,7 +1357,6 @@ typedef struct {
 } PadBitTable;
 extern PadBitTable D_800A3258;
 extern u8 D_8009A088[];
-extern s32 SquareRoot0(s32);
 extern s32 func_80058580(Unk80101EC8Record *);
 extern void func_80056CB8(s32);
 extern s32 func_80056FE8(Unk80101EC8Record *);

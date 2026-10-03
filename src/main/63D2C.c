@@ -43,9 +43,7 @@ extern s32 SetSemiTrans(void *, s32);
 extern s32 SetTile(void *);
 extern s32 func_8006E480();
 extern s32 func_8007352C();
-void *RotMatrix(s16 *, u8 *);
 void SetRotMatrix(u8 *);
-void ScaleMatrixL(u8*, u8*);
 void SetRotMatrix(u8*);
 typedef struct {
     u32 tag;

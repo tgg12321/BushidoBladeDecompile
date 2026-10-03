@@ -214,9 +214,6 @@ void rcnt_StartCnt1Wrapper(void) {
 }
 
 extern void SetGraphDebug(s32);
-extern void InitGeom(void);
-extern void SetGeomOffset(s32, s32);
-extern void SetGeomScreen(s32);
 extern DRAWENV *SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
 extern void SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
 void disp_Init(void) {
@@ -697,8 +694,6 @@ s32 obj_CalcOffset(s32 a0, s32 a1) {
     return (a0 << 6) + (a1 << 4);
 }
 
-extern s32 Square12(s32 *, s32 *);
-extern s32 SquareRoot12(s32);
 s32 math_Distance3D(s32 *a0, s32 *a1) {
     s32 in[3];
     s32 out[3];

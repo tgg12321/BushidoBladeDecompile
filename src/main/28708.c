@@ -142,7 +142,6 @@ extern s32 GetRCnt(s32);
 extern void func_8003E22C(void);
 extern void func_8003F218(s32);
 extern s32 math_FovToScreenDist(s32);
-extern void SetGeomScreen(s32);
 extern void func_8001B6F4(void);
 
 

@@ -3312,7 +3312,7 @@ s32 func_8002DAD0(u8 *obj) {
      * `nop; nop; .word` is gte_op0() (inline_o.h:711-715 / inline_c.h:784-787),
      * the GTE OP (outer product) invocation; the SDK headers carry the DMPSX
      * placeholder word (0x0000127f) where we carry the real cop2 encoding
-     * 0x4B70000C, the same real-encoding convention include/gte.h:88-89 uses
+     * 0x4B70000C, the same real-encoding convention include/gte.h:82-83 uses
      * for gte_mvmva and already committed at src/code6cac_b.c:1717-1718. */
     __asm__ volatile(
         "addu   $12, %0, $zero\n"
@@ -3439,7 +3439,7 @@ s32 func_8002DAD0(u8 *obj) {
      * trailing `nop; nop` belongs to the following op-invocation macro
      * (gte_rtv0()-class, inline_o.h:426-430), not to gte_ldlv0. The
      * `.word 0x4A486012` is MVMVA sf=1/mx=R/v=V0/cv=none =
-     * gte_mvmva(1,0,0,3,0) under include/gte.h:88-89, already committed at
+     * gte_mvmva(1,0,0,3,0) under include/gte.h:82-83, already committed at
      * src/code6cac_b.c:1543. Then gte_stlvnl (inline_o.h:904-909) stores the
      * rotated vector back: vecA is rotated in place. */
     __asm__ volatile(

@@ -222,7 +222,8 @@ extern u8 *D_800A36A0;
  * passes +0x14 as ApplyMatrix's VECTOR * and writes the nine s16 at +0..+0x10.
  * Replaces the twelve per-word splat scalars 0x800FF558..0x800FF574 (per-word
  * splat symbol -> aggregate merge family). Declared through the struct tag so
- * this header needs no gte.h; the type is complete wherever gte.h is included. */
+ * this header needs no libgte.h; the type is complete wherever <psxsdk/libgte.h> is
+ * included (gte.h and code6cac.h include it). */
 extern struct MATRIX D_800FF558;
 
 /* 0x8009BC94: table of {x, y} s16 position records, 6 records (24 bytes) per

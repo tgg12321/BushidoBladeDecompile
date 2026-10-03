@@ -194,7 +194,6 @@ void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
 
     LoadAverage12(sp18, sp28, 0x1000 - a2, a2, a3);
 }
-extern void LoadAverage12(s32 *, s32 *, s32, s32, s32);
 void func_80044DE4(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];

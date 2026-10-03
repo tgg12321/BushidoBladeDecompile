@@ -612,7 +612,6 @@ out:;
 extern s32 func_800486FC();
 extern s32 math_Grayscale3(s32, s32, s32);
 extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
-extern void SetFarColor(s32, s32, s32);
 void func_80042478(s32 a0) {
     s32 r = (a0 >> 16) & 0xFF;
     s32 g = (a0 >> 8) & 0xFF;

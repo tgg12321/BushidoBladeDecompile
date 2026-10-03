@@ -20,13 +20,7 @@
 #define GTE_H
 
 #include "common.h"
-
-/* ---- Vector / matrix structs ---------------------------------------- */
-typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
-typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
-typedef struct CVECTOR { u8  r,  g,  b,  cd;  } CVECTOR;
-typedef struct DVECTOR { s16 vx, vy;          } DVECTOR;
-typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
+#include <psxsdk/libgte.h>
 
 /* ---- COP2 vector/matrix register loads (lwc2) ----------------------- */
 #define gte_ldv0(p)  __asm__ volatile ("lwc2 $0, 0(%0)\n\tlwc2 $1, 4(%0)" :: "r"(p))

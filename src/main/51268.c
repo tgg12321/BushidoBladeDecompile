@@ -831,7 +831,6 @@ end:
 }
 extern u8 D_800F1168[];
 void RotTrans(s16 *, s32 *, s32 *);
-void *RotMatrix(s16 *, u8 *);
 void SetRotMatrix(u8 *);
 void SetTransMatrix(u8 *);
 void func_80061D74(s32 arg0, s16 arg1) {
@@ -911,7 +910,6 @@ end:
 }
 extern u8 D_8009BB74[];
 
-void ScaleMatrixL(u8*, u8*);
 void SetRotMatrix(u8*);
 void func_80061FAC(u16 *a0, s32 a1, u8 *a2) {
     u16 *v1 = a0;
@@ -1172,12 +1170,8 @@ s32 func_8006288C(void) {
     }
     return 1;
 }
-extern void RotMatrixZYX(s16 *, u8 *);
-extern void ScaleMatrix(u8 *, s32 *);
-extern void CompMatrix(s32, u8 *, u8 *);
 extern s32 SetShadeTex(s32, s32);
 extern void SetPolyFT4(void *);
-extern s32 RotTransPers4(s16 *, s16 *, s16 *, s16 *, s32 *, s32 *, s32 *, s32 *, s32 *, s32);
 /* Draw the up-to-6 slots func_8006288C spawns: per active slot, scale/rotate/
    translate its matrix, then emit three textured POLY_FT4 quads, and finally
    link the new quads into the OT. Returns 1 when quads were added, else the
@@ -1595,7 +1589,6 @@ u8 func_80063BD0(s32 idx) {
     }
     return 1;
 }
-extern s32 ReadGeomScreen(void);
 /* Draw lane `lane`'s live slots (up to 10, see func_80063BD0): per slot whose
    bit is set in D_800A3454[lane], emit one textured POLY_FT4 billboard at the
    slot's position (relative to *D_800A3470) through the composite of

@@ -1566,11 +1566,6 @@ typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
 typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
 typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
 typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
-typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
-typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
-typedef struct CVECTOR { u8 r, g, b, cd; } CVECTOR;
-typedef struct DVECTOR { s16 vx, vy; } DVECTOR;
-typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
 
 /* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
  * field layout is the union of all observed accesses; m2c picks the type

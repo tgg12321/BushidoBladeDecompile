@@ -10,7 +10,6 @@
 #include "code6cac.h"
 #include "bb2_const.h"
 
-typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
 typedef struct GameObj GameObj;
 
 /* Extern data declarations */
@@ -114,7 +113,6 @@ extern s32 game_GetPlayerData(s32);
 
 extern void func_8002EECC(s32, s32 *);
 extern void func_80061064(s32 *, s32 *);
-extern s32 SquareRoot0(s32);
 extern void *RotMatrixX(s32, s32);
 extern void *RotMatrixY(s32, s32);
 extern void *RotMatrixZ(s32, s32);
@@ -123,7 +121,6 @@ extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 
 extern void func_8003F218(s32);
 extern s32 math_FovToScreenDist(s32);
-extern void SetGeomScreen(s32);
 extern void func_8003F3D4(s16 *);
 extern void func_80055138(s32, s32, s32);
 extern void func_8003FFE0(s32);
