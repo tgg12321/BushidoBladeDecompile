@@ -697,6 +697,16 @@ Preconditions:
 | 5b | game headers: `code6cac.h` and friends → game.h + an executable declarations header; drop the 61 duplicates; multi-file identical game declarations | medium | 2-3 |
 | 6 | D10 dump deletion (after checking every tool that edits them); current-state docs, rules, skills, STATUS; rename-map pointer in AGENTS.md | low | 1 |
 
+**Status (2026-10-03):** step 0 done: 7bdb18ff6 (bb2.ld: 0-byte section lines into one order),
+5f4387b95 (engine/tus.py, linked-set `_file_index`, `tus-check`, verify-oracle `layout_problems`),
+dcf6ac4f4 (Makefile recursion; a flag-list id that is no TU stops the build), 412872a5f (tool globs,
+`tools/move_tu.py`), 468ced368 (rule `paths:` globs), a38713186 (oracle re-lock). Step 1 done:
+2c35cbd7d (comb -> main/psxsdk/libcomb/comb), 60985b4e9 (text1b_b_tu3 -> main/psxsdk/libc2/sprintf).
+Every later move: `tools/move_tu.py OLD NEW` (dry run), then `--apply`, then `make clean-check` and
+`verify-oracle --rebuild`; re-run `oracle-lock` after a batch. Open: `build_oracle_cc1.sh` /
+`build_diagnostic_cc1.sh` hard-code the -G8 set as `text1a_pre|text1a_post` (stale; step 2 renames
+those ids); nested `src/` citations are not existence-checked by grindlib's self-vet check.
+
 Total: about 25 to 30 commits, 5 to 8 focused sessions. Step 4 (library rodata placement per
 module) and step 5 (per-file header proofs) dominate.
 
