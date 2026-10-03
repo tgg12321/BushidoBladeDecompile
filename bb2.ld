@@ -44,7 +44,7 @@ SECTIONS
         build/src/main/17AFC.o(.rodata);
         build/src/main/24BF0.o(.rodata);
         build/src/code6cac_b_rodata_pre.o(.rodata);
-        build/src/code6cac_b3.o(.rodata);
+        build/src/main/24F08.o(.rodata);
         build/src/code6cac_b3_post.o(.rodata);
         build/src/code6cac_b2_post.o(.rodata);
         build/src/code6cac_b4.o(.rodata);
@@ -91,7 +91,7 @@ SECTIONS
         build/src/main/175A4.o(.text);
         build/src/main/17AFC.o(.text);
         build/src/main/24BF0.o(.text);
-        build/src/code6cac_b3.o(.text);
+        build/src/main/24F08.o(.text);
         build/src/code6cac_b3_post.o(.text);
         build/src/code6cac_b2_post.o(.text);
         build/src/code6cac_b4.o(.text);
@@ -131,7 +131,7 @@ SECTIONS
         build/src/main/175A4.o(.data);
         build/src/main/17AFC.o(.data);
         build/src/main/24BF0.o(.data);
-        build/src/code6cac_b3.o(.data);
+        build/src/main/24F08.o(.data);
         build/src/code6cac_b3_post.o(.data);
         build/src/code6cac_b2_post.o(.data);
         build/src/code6cac_b4.o(.data);
@@ -172,7 +172,7 @@ SECTIONS
         build/asm/data/938FE.data.o(.data);
         build/src/main/17AFC.o(.sdata);
         build/asm/data/93950.data.o(.data);
-        build/src/code6cac_b3.o(.sdata);
+        build/src/main/24F08.o(.sdata);
         build/asm/data/93978.data.o(.data);
         build/src/code6cac_b2_post.o(.sdata);
         build/asm/data/939DC.data.o(.data);
@@ -221,7 +221,7 @@ SECTIONS
         build/src/main/175A4.o(.bss);
         build/src/main/17AFC.o(.bss);
         build/src/main/24BF0.o(.bss);
-        build/src/code6cac_b3.o(.bss);
+        build/src/main/24F08.o(.bss);
         build/src/code6cac_b3_post.o(.bss);
         build/src/code6cac_b2_post.o(.bss);
         build/src/code6cac_b4.o(.bss);
