@@ -1097,7 +1097,7 @@ s32 rcos(s32 a0) {
     return g_cos_lut_q4[a0];
 }
 
-/* Data blob D_8007E08C between math_Cos and func_8007E094 */
+/* D_8007E08C: the two leading words of LIBGTE module MSC00, whose code starts at InitGeom */
 __asm__(
     ".section .text\n"
     "    .set noat\n"
