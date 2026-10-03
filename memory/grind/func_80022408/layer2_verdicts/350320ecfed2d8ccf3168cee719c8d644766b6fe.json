@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "func_80022408",
+  "body_hash": "7eb9ea97dd3d58a3",
+  "summary": "Staging local removed; `dist = dx * dx + dz * dz` matches with no FAKE (the old form re-measures 8). Nothing codegen-only remains.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}

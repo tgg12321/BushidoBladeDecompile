@@ -4682,10 +4682,10 @@ void func_8003032C(s32 *a0, s16 *a1) {
     cos_val = Judge[(angle + 0x400) & 0xFFF];
     /* FAKE: do-while(0) scheduling fence */
     do {
-        rx = cos_val * cos_val; /* FAKE: dead store */
+        rx = cos_val * cos_val; /* FAKE: dead store; without it score 6 */
         vx = *((s32 *)(((u8 *)a0) + 0x44));
         sin_val = Judge[angle & 0xFFF];
-        rx = ((vx * cos_val) + (vx * sin_val)) >> 12; /* FAKE: dead store */
+        rx = ((vx * cos_val) + (vx * sin_val)) >> 12; /* FAKE: dead store; without it score 19 */
         vz = *((s32 *)(((u8 *)a0) + 0x4C));
         rx = ((vx * cos_val) + (vz * sin_val)) >> 12;
         rz = -((((-vx) * sin_val) + (vz * cos_val)) >> 12);
@@ -4737,7 +4737,7 @@ void func_80030524(void) {
 }
 Obj80106A78 *func_80030580(PracticeMenuRec *arg0, s32 arg1) {
     /* FAKE: unwritten leading pad (phantom-frame-slot volatile pad local family, owner ruling 2026-08-18; row granted by owner ruling 2026-09-02): reserves the 16 untouched locals bytes the target frame holds beyond our single combine-orphan slot (target vars=24, ours 8; zero ($sp) references in asm/funcs/func_80030580.s). Mechanism: reload alter_reg / get_frame_size counts the never-accessed volatile object and emits no instruction. SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. */
-    volatile u32 pre_pad[4]; /* !FAKE */
+    volatile u32 pre_pad[4]; /* !FAKE: without it score 2 */
     Obj80106A78 *obj;
     Tbl8008E194 *tbl;
     s32 i;

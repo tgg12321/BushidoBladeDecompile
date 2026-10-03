@@ -1,0 +1,13 @@
+{
+  "decision": "PASS",
+  "function": "func_8001924C",
+  "body_hash": "610a2697d3cd7093",
+  "summary": "Integer pointer-alias holder `buf` FAKE-labelled with true measurements (direct 2, u8* holder 2, both orders re-measured 2); extern retyped u8[] as in ings.c; nothing false.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "g_file_data_buf is declared by file-scope externs in code6cac.c and ings.c, no shared header",
+    "code6cac_c2.c:2089 prototypes func_8001924C(s32 *, s32) against the s16 * definition",
+    "*(u8 *)((u8 *)s0 + 2): raw-offset read of the untyped 16-byte record"
+  ]
+}

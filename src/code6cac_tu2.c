@@ -2802,8 +2802,7 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     s32 dz;
     s32 dist;
 
-    disc = arg1[0]; /* FAKE: stage the minuend through the currently-dead disc */
-    dx = disc - arg0[0];
+    dx = arg1[0] - arg0[0];
     dz = arg1[2] - arg0[2];
     dist = SquareRoot0(dx * dx + dz * dz);
 
@@ -2816,8 +2815,7 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     {
         s32 dy;
 
-        disc = arg1[1]; /* FAKE: stage the minuend through the currently-dead disc */
-        dy = disc - arg0[1];
+        dy = arg1[1] - arg0[1];
 
         if (dy == 0) {
             s32 neg = -arg3;
@@ -2844,7 +2842,7 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
                      * quotient, whose find_reg low-first override then takes
                      * $v1 (target); dy's own $v0 home matches the subu/mult.
                      * The natural spelling, a fresh named temp and reusing
-                     * disc all miss. */
+                     * disc all miss (natural 6, fresh temp 6, reusing disc 8). */
                     dy = a2 - disc;
                     a0 = (dy * dist) / dy2 / 32;
                 }
@@ -3352,7 +3350,7 @@ done1_21280:
         a2->unk_4C = 0;
 
         if ((u32)(val >> 12) < 2) {
-            u16 t1;   /* FAKE: copy of val (shifting val directly does not match) */
+            u16 t1;   /* FAKE: copy of val (shifting val directly: score 7) */
             s32 t4;   /* FAKE: holds the constant 4 (a literal does not match) */
             s32 t3;   /* FAKE: holds the constant 3 (a literal does not match) */
             s32 t2;   /* FAKE: holds the constant 1 (a literal does not match) */
@@ -3641,7 +3639,6 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
                 if ((s0->unk_152) == 0) goto set_154;
                 if (v1k != 0x19) goto set_152;
                 if ((s0->unk_6C) != v1k) goto set_152;
-                goto set_154;
                 set_154:
                 s0->unk_154 = s0->unk_1D8;
                 goto set_152;
@@ -3829,7 +3826,6 @@ s32 func_80022408(s32 *arg0) {
     s32 best;
     s32 t1;
     s32 t2;
-    int new_var;
     s32 dx;
     s32 dz;
     s32 dist;
@@ -3841,10 +3837,8 @@ s32 func_80022408(s32 *arg0) {
     p = p + ((D_800A36A4 * 3) * 8);
 loop:
     dx = ((p[0] + p[3]) / 2) - t1;
-    new_var = dx * dx;
-    dist = new_var;
     dz = ((p[2] + p[5]) / 2) - t2;
-    dist = dist + (dz * dz);
+    dist = dx * dx + dz * dz;
     if (dist < best_dist) {
         best_dist = dist;
         best = i;
@@ -3872,7 +3866,7 @@ s32 func_800224E0(PracticeMenuRec *arg0) {
             }
         }
         p++;
-    } while ((s32)p < (s32)end); /* FAKE: signed compare (slt); `p < end` gives sltu */
+    } while ((s32)p < (s32)end); /* FAKE: signed compare (slt); `p < end` gives sltu (score 1) */
     return 0;
 }
 void func_80022568(s16 *arg0) {
@@ -5055,7 +5049,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         math_RotMatrixZYXAngles(pose[0].unk_06, pose[0].unk_08, pose[0].unk_0A, m2.m[0]);
         /* new frame's heading minus the previous frame's.  FAKE: spelled
          * -old + new so the old heading is computed first, as the target
-         * does; new - old computes the new heading first. */
+         * does; new - old computes the new heading first (score 7). */
         twist = -ratan2(m1.m[0][0], m1.m[2][0]) + ratan2(m2.m[0][0], m2.m[2][0]);
 
         rec->unk_1C8.vy += twist;

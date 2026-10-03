@@ -1065,22 +1065,24 @@ void func_800187F4(s16 *arg0, s32 *arg1) {
         node[2] = SCR->pos[2] + SCR->dpos[2] + node[5];
     }
 }
-extern s32 g_file_data_buf;
+extern u8 g_file_data_buf[];
 void func_8001924C(s16 *arg0, s32 arg1) {
     s32 i = 0;
     s16 *s0;
-    s32 new_var;
+    /* FAKE: pointer alias -- g_file_data_buf's address held in an integer local. Referenced directly, its
+     * lui/addiu is scheduled after `move s0,a0` (score 2); held as a u8 * the addu operands swap (score 2). */
+    s32 buf;
 
     if (i < arg1) {
-        new_var = (s32)&g_file_data_buf;
+        buf = (s32)g_file_data_buf;
         s0 = arg0;
         do {
             if (*(u8 *)((u8 *)s0 + 2) & 1) {
                 s16 val = s0[0];
-                func_80019310(s0, (s32 *)(val * 52 + new_var));
+                func_80019310(s0, (s32 *)(val * 52 + buf));
             } else {
                 s16 val = s0[0];
-                func_800187F4(s0, (s32 *)(val * 52 + new_var));
+                func_800187F4(s0, (s32 *)(val * 52 + buf));
             }
             i++;
             s0 = (s16 *)((u8 *)s0 + 16);

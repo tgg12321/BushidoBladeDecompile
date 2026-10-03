@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "func_800618B4",
+  "body_hash": "5bad8b06b69c0ccd",
+  "summary": "The new_var alias is removed (0). The v1 alias to D_800F116C is FAKE-labelled; the direct form re-measures 16 and the sibling claim is true (func_80061658 / func_80061710 carry the same alias).",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "*(s32 *)((s32)D_800A3468 + 0x14): raw offset through the current-object pointer. struct Ob is block-scoped in func_80060A68 rather than in a header",
+    "D_800F1178 / D_800F117C / D_800F1180 are per-word fields of the render-state object at D_800F116C (split scalars)"
+  ]
+}

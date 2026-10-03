@@ -1,0 +1,11 @@
+{
+  "decision": "PASS",
+  "function": "func_80038C70",
+  "body_hash": "488bf6e9873e6e60",
+  "summary": "Empty ==2/==3 arms reproduce real target tests (beq at 0x80038D58/0x80038D60); FAKE-labelled, removal re-measured 5 (398/402 insns); sel2 duplicate FAKE still load-bearing (13).",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "'a switch scores 14' holds only for the switch that keeps the case 2/3 arms; a plain two-case switch scores 9. Reword as 'switch forms score 9-14'"
+  ]
+}

@@ -385,14 +385,14 @@ void SetDrawMove(DR_MOVE *a0, RECT *a1, u32 a2, u32 a3) {
     }
     a0->code[0] = OT_TERMINATOR;
     a0->code[1] = OT_TAG_BASE;
-    /* FAKE: SDK setlen view of the packet's tag word. */
+    /* FAKE: SDK setlen view of the packet's tag word; the explicit mask-and-or on a0->tag scores 13. */
     /* SOTN: include/psxsdk/libgpu.h:87 @db41b28eee52969244a52cc269c8163d1ed8826a (PS1 use: src/main/psxsdk/libgpu/sys.c:287) */
     ((OTag *)a0)->len = size;
-    /* FAKE: packed RECT word read follows matched Sony-library precedent. */
+    /* FAKE: packed RECT word read follows matched Sony-library precedent; (y << 16) | (u16)x scores 16. */
     /* SOTN: src/main/psxsdk/libgpu/sys.c:275 @db41b28eee52969244a52cc269c8163d1ed8826a */
     a0->code[2] = *(s32 *)&a1->x;
     a0->code[3] = (a3 << 16) | (a2 & 0xFFFF);
-    /* FAKE: packed RECT word read follows matched Sony-library precedent. */
+    /* FAKE: packed RECT word read follows matched Sony-library precedent; (h << 16) | (u16)w scores 4. */
     /* SOTN: src/main/psxsdk/libgpu/sys.c:277 @db41b28eee52969244a52cc269c8163d1ed8826a */
     a0->code[4] = *(s32 *)&a1->w;
 }

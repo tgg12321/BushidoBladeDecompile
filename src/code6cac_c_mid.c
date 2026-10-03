@@ -902,6 +902,8 @@ s32 func_80038C70(void) {
         goto end;
     }
 
+    /* FAKE: the two empty arms reproduce the target's dead `== 2` / `== 3` tests that branch straight to the
+     * join; without them those 4 insns are gone (score 5; a switch scores 14) */
     if (D_800A3207 == 1) {
         v0 = 0;
     } else if (D_800A3207 == 2) {
@@ -1168,27 +1170,25 @@ s32 *func_800392B8(void) {
     return (s32 *)D_800F33D8;
 }
 void func_800392C8(void) {
-    u8 val;
-    int new_var;
+    /* FAKE: constant holder for the 0xFF fill; with the literal, `li 255` is scheduled after `li 0x1F0` (score 2) */
+    u8 fill;
     s32 i;
     s32 j;
 
-    val = 0xFF;
+    fill = 0xFF;
     i = 0x1F0;
     D_800A36EC = (u8 *)D_800F33D8;
     D_800A36F8 = 0;
     D_800A3782 = 0;
-loop1:
-    *(&D_80101BF0 + i) = val;
-    i -= 0x10;
-    if (i >= 0) goto loop1;
-
-    new_var = -1;
+    do {
+        *(&D_80101BF0 + i) = fill;
+        i -= 0x10;
+    } while (i >= 0);
     j = 0xB30;
-loop2:
-    *((s16 *)((u8 *)D_800F68E0 + j)) = new_var;
-    j -= 0x10;
-    if (j >= 0) goto loop2;
+    do {
+        *((s16 *)((u8 *)D_800F68E0 + j)) = -1;
+        j -= 0x10;
+    } while (j >= 0);
 }
 void func_80039320(void) {
     extern u8 D_800A379C;

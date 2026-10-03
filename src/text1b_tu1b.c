@@ -1792,14 +1792,14 @@ s32 func_80056FE8(PracticeMenuRec *arg0) {
      * (`;; 4 regs to allocate: 82 73 77 72` -> `73 in 5  77 in 6`). */
     if (a2->unk_A3[0] != 0xFF) {
         if (arg0->unk_5E == 0) {
-            /* FAKE: duplicated copy (see above) */
+            /* FAKE: duplicated copy (see above; one post-join add scores 13) */
             base += D_8009A830[a2->unk_0E] * 2;
         } else {
-            /* FAKE: duplicated copy (see above) */
+            /* FAKE: duplicated copy (see above; one post-join add scores 13) */
             base += D_8009A838[a2->unk_0E] * 8;
         }
     } else {
-        /* FAKE: duplicated copy (see above) */
+        /* FAKE: duplicated copy (see above; one post-join add scores 13) */
         base += D_8009A840[a2->unk_14] * 2;
     }
     return base + arg0->unk_00->unk_40A + 0x12C;
@@ -2428,7 +2428,7 @@ s32 func_80058580(PracticeMenuRec *p) {
     u16 *list;
     u8 *e;
     u8 *ep;
-    u8 *q; /* FAKE: second handle to the script start, see `q = ep;` */
+    u8 *q; /* FAKE: second handle to the script start, see `q = ep;` (read through ep: score 58) */
     u16 off;
     s16 pbest;
     u8 st2;
@@ -2958,15 +2958,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                 pick = 0;
             pick_loop:
                 {
-                    /* FAKE: named intermediates (.claude/rules/no-new-park-categories.md entry 6): with the
-                     * row named, the symbol is added to the row offset before the pick index, so combine
-                     * cannot fold `la D_80099D90` into the lbu offset (target `la; addu row; addu pick;
-                     * lbu 0`); every expression-level spelling folds. */
-                    s32 rnd;
-                    u8 *row;
-                    rnd = rand() & 0xFFF;
-                    row = D_80099D88[p->unk_443].pick_weight;
-                    score = (rnd * row[pick]) >> 12;
+                    score = ((rand() & 0xFFF) * D_80099D88[p->unk_443].pick_weight[pick]) >> 12;
                     if (score != 0) {
                         flip = 0;
                         switch (pick) {
@@ -3181,7 +3173,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                          * make flow.c weight et's defining reference by loop depth 3 instead of 2
                          * (reg_n_refs 8 -> 9), so global.c allocno_compare orders et (priority 2177)
                          * ahead of ep (2147): et takes $s5 and ep $s6, as in the target. Unwrapped,
-                         * ep is allocated first and the two swap. */
+                         * ep is allocated first and the two swap (score 10). */
                         do {
                             et = e[0] & 7;
                         } while (0);
@@ -3235,13 +3227,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                             }
                         }
                         if (work3) {
-                            /* FAKE: named intermediates, as rnd / row above (script_weight row). */
-                            s32 rnd2;
-                            u8 *row2;
-
-                            rnd2 = rand() & 0xFFF;
-                            row2 = D_80099D88[p->unk_443].script_weight;
-                            sc = (rnd2 * row2[et]) >> 12;
+                            sc = ((rand() & 0xFFF) * D_80099D88[p->unk_443].script_weight[et]) >> 12;
                             if (sc != 0 && pbest < sc) {
                                 pbest = sc;
                                 pbesti = work4;
@@ -4738,8 +4724,8 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
     s32 row_off;
     s32 x;
     s32 y;
-    s32 tmp1;  /* FAKE: carrier, see the y sites */
-    s32 tmp2;  /* FAKE: carrier, see the y sites */
+    s32 tmp1;  /* FAKE: carrier, see the y sites (without tmp1: score 4) */
+    s32 tmp2;  /* FAKE: carrier, see the y sites (without tmp2: score 4; without both: 15) */
     s32 scale; /* FAKE: constant 0x100 in a local; the literal does not match */
     s32 ot;    /* FAKE: constant 1 in a local; the literal does not match */
     u8 *hdr0;     /* FAKE: pointer alias of D_8009B2E0; direct use does not match */
@@ -4773,7 +4759,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             s.scale_y = scale;
             s.scale_x = scale;
             D_800A3418 ^= rand();
-            /* FAKE: split init; one expression does not match */
+            /* FAKE: split init; one expression does not match (score 3) */
             x = (s32)base_x - 0x19;
             x += ((u32)(D_800A3418 * 0x32) >> 0xF);
             /* FAKE: tmp1 is written twice (y base, then a copy of ft4) only so
@@ -4797,7 +4783,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             s.table = &D_8009B388[1];
             s.header = (Unk8009B398Record *)(hdr1_row + (D_800A3418 & 1) * 0xC);
             D_800A3418 ^= rand();
-            /* FAKE: split init, as in the first half */
+            /* FAKE: split init, as in the first half (one expression: score 3) */
             x = (s32)base_x - 0x32;
             x += ((u32)(D_800A3418 * 0x64) >> 0xF);
             /* FAKE: tmp2 written twice, as tmp1 above */
@@ -4979,8 +4965,8 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
      * loop, header[3] is also not related to header[2] by cse
      * (use_related_value), which would give header[2] a fourth ref and
      * reverse the $s6/$s7 order. */
-    hdr3 = &D_8009B398[3]; /* FAKE: pointer alias */
-    cell3 = &D_8009B3F8;   /* FAKE: pointer alias */
+    hdr3 = &D_8009B398[3]; /* FAKE: pointer alias; direct use scores 12 (both direct: 18) */
+    cell3 = &D_8009B3F8;   /* FAKE: pointer alias; direct use scores 6 */
     shown = 0;
     for (j = 0; j < 3; j++) {
         if (shown || digit[j] != 0 || j == 2) {
@@ -5021,8 +5007,8 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
          * (lifetime >= 3 at loop.c:1631), header then cell; the cell's
          * shorter live range ranks it first in global.c ($s6), the header
          * second ($s7). */
-        hdr2 = &D_8009B398[2]; /* FAKE: pointer alias */
-        cell2 = &D_8009B3F0;   /* FAKE: pointer alias */
+        hdr2 = &D_8009B398[2]; /* FAKE: pointer alias; direct use scores 16 (both direct: 24) */
+        cell2 = &D_8009B3F0;   /* FAKE: pointer alias; direct use scores 18 */
         s.y = D_8009B450[j].y;
         s.header = hdr2;
         s.table = cell2;

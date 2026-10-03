@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "func_80058580",
+  "body_hash": "a310b09cde57e476",
+  "summary": "The src body is J1 verbatim, minus the stale FAKE comment. The pick and script weight reads go straight through StatusFlagRec.pick_weight / script_weight. sandbox --disable all is 0 (2991/2991) and the oracle SHA1 matches. Every remaining FAKE was re-measured on this body and is load-bearing, with a true claim: q read through ep scores 58; unwrapping the do-while scores 10; a literal 1 for `one` scores 11 (1U 11, `one` at function scope 57); dropping the redundant `&& wtype == 1` scores 5 and is 2 instructions shorter, as the label says; the pick2 inner compare is load-bearing (10); q = e + 4 differs (1). The SOTN tag src/st/no0/e_stone_rose.c:611 @aa53500 checks out: it is the matched `Entity* fakeEntity = self; // !FAKE` pass-through alias, and e_stone_rose is a c member of splat.us.stno0. Each extern has exactly one declaration.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "The local copies `__builtin_memcpy(slotsN, D_800A325C/D_800A3260, 4)` are probably a lowered local aggregate initializer. They are truthful but not the natural `u8 slots[4] = {...}` spelling, and the TU builds with -fno-builtin.",
+    "The do-while(0) label gives a mechanism but no score. Unwrapped scores 10."
+  ]
+}

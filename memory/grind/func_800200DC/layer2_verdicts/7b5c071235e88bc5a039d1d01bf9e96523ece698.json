@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "func_800200DC",
+  "body_hash": "0229375d5178a9d9",
+  "summary": "The src body is F1 verbatim. Both disc stagings are gone. sandbox --disable all is 0 (168/168) and the oracle SHA1 matches. The one FAKE left (dy reused as the a2-disc temp) is load-bearing and its claim is true: the natural spelling scores 6, a fresh temp 6 and reusing disc 8. No asm, volatile or register pins; no duplicate types.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "The dy-reuse FAKE label says the alternatives 'all miss' but gives no numbers. Add them: natural 6, fresh temp 6, reuse disc 8.",
+    "The caller at src/code6cac_tu2.c:4957 passes (s32 *)&rec->unk_180, a Vec3i32, to an s32 * parameter. This is a per-site cast-certification item."
+  ]
+}

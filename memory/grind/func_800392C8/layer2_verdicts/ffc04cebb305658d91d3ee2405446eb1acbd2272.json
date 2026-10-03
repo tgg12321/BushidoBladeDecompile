@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "func_800392C8",
+  "body_hash": "44bd1d19c02862f4",
+  "summary": "goto loops become do-while; the -1 holder is gone; the remaining u8 fill holder is FAKE-labelled and the literal re-measures 2.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "include/code6cac.h:788 declares D_80101BF0 as a scalar u8 but it is a 16-byte-stride array (no other symbol in range)",
+    "(u8 *)D_800F68E0 + j: byte-offset cast on the s16[] header array of 16-byte records"
+  ]
+}

@@ -551,9 +551,9 @@ s32 func_80043244(s32 a0) {
     return ret;
 }
 s32 func_80043278(s32 a0) {
+    /* FAKE: constant holder for the 0xFFFFF000 mask; with the literal the function is one insn longer (score 4) */
     s32 mask = (s32)0xFFFFF000;
-    volatile s32 *sp = (volatile s32 *)0x1F800000;
-    s32 v0 = a0 >> sp[2];
+    s32 v0 = a0 >> *(s32 *)0x1F800008;
     s32 a0_new = v0 >> 11;
     v0 = (v0 & 0x7FF) | mask;
     v0 = v0 >> a0_new;
@@ -1120,7 +1120,7 @@ s32 func_8004428C(s32 *base, s16 *offsets) {
     }
 
     {
-    s32 stop = -2; /* FAKE: constant-holder, named-local-fake-exception */
+    s32 stop = -2; /* FAKE: constant-holder, named-local-fake-exception; the literal scores 2 */
     walker = slots;
     do {
         if (v1 >= 0) {

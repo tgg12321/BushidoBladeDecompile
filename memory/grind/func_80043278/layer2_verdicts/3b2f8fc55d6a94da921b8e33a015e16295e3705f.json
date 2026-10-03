@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "func_80043278",
+  "body_hash": "2a7df5db37df92ab",
+  "summary": "The volatile scratchpad pointer is replaced by a plain non-volatile read of 0x1F800008 (scratchpad is not MMIO). The mask holder is FAKE-labelled, and the literal re-measures 4 with 11/10 insns, as stated.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}

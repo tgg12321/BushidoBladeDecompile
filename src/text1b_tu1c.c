@@ -679,26 +679,26 @@ end:
 }
 extern u8 D_800F1152[];
 void func_800618B4(s32 *arg0, s32 arg1) {
+    /* FAKE: local pointer alias to D_800F116C (as in the siblings func_80061658 / func_80061710): one pseudo
+     * holds &D_800F116C instead of re-materializing it per use; the direct-global form scores 16. */
     s32 *v1 = (s32 *)&D_800F116C;
-    u8 *new_var;
     s32 *p;
     D_800A3468 = (s32)v1;
     D_800F1178 = (s32)arg0;
     D_800F117C = arg1;
-    new_var = D_800F1152;
-    if (new_var[0] != 0) {
+    if (D_800F1152[0] != 0) {
         if (D_800F1152[1] != 0) {
             D_800F1152[1] = 0;
             D_800F1152[0] = 0;
         }
-        if (new_var[0] != 0) goto check_one_zero;
+        if (D_800F1152[0] != 0) goto check_one_zero;
     }
     *(s32 *)((s32)D_800A3468 + 0x14) = (s32)D_800F1152;
     *(s32 *)D_800A3468 = 0x210002;
     goto end;
 check_one_zero:
     if (D_800F1152[1] == 0) {
-        D_800F1180 = (s32)(new_var + 1);
+        D_800F1180 = (s32)(D_800F1152 + 1);
         *v1 = 0x210003;
     }
 end:
@@ -1049,9 +1049,9 @@ void func_800620B8(s16 *pos, s32 *trans) {
     sv->vx = 0;
     *(s32 *)D_800A34B0 = ReadGeomScreen() << 8;
     *(s32 *)D_800A3490 = 0x2F;
-    alt32 = D_8009BA50; /* FAKE: alias */
-    strip16 = D_8009BA30; /* FAKE: alias */
-    alt16 = D_8009BA58; /* FAKE: alias */
+    alt32 = D_8009BA50; /* FAKE: alias; direct use scores 3 */
+    strip16 = D_8009BA30; /* FAKE: alias; direct use scores 3 */
+    alt16 = D_8009BA58; /* FAKE: alias; direct use scores 7 */
     for (i = 0; D_800F1198[i].unk0 & 1; i++) {
         strip32 = D_8009BA00; /* FAKE: alias, set here so loop.c hoists it */
         switch (D_800F1198[i].unk4 & 7) {
@@ -2584,10 +2584,10 @@ u8 func_80065800(s32 arg0) {
     s16 *p_th;
     VECTOR *dst;
     s32 n;
-    s32 w; /* FAKE: named intermediate - *p_w read once before the corner sign test */
-    s32 sw; /* FAKE: named intermediate - the width scale multiplied into *p_w whole */
-    s32 sh; /* FAKE: named intermediate - the height scale multiplied into *p_h whole */
-    s32 h; /* FAKE: named intermediate - *p_h read once before the corner sign test */
+    s32 w; /* FAKE: named intermediate - *p_w read once before the corner sign test (inline: score 7) */
+    s32 sw; /* FAKE: named intermediate - the width scale multiplied into *p_w whole (inline: score 10) */
+    s32 sh; /* FAKE: named intermediate - the height scale multiplied into *p_h whole (inline: score 9) */
+    s32 h; /* FAKE: named intermediate - *p_h read once before the corner sign test (inline: score 88) */
     s16 *t;
     s16 *tbl; /* FAKE: pointer alias of D_800F0BA8 - case 10/11's base address in its own
                * register ahead of the index shift */

@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "func_80021A98",
+  "body_hash": "c479aab045bbf96c",
+  "summary": "Only change: the no-op `goto set_154;` is removed (re-measured 0). The three FAKEs re-measure 2 / 4 / 6, as labelled.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}
