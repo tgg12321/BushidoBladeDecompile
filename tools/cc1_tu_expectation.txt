@@ -83,4 +83,4 @@ efdf0fcf172eee0d831821e60b91e3027a6b1ed1  main/psxsdk/libc2/strlen
 d63cb1a187b36abde5fc44fce44df32c5e41219d  system
 aa02790aa1818dba03e44205bfe56e20639ccfb0  text1a_b_post_rodata
 254886b14b7223202b20d1d6517c66eacf97beb8  text1a_b_tail_rodata
-7e851213390972ef265a57547f7a5f47bac9b220  text1b_b_tu2
+7e851213390972ef265a57547f7a5f47bac9b220  main/psxsdk/libc2/prnt
