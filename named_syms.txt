@@ -92,7 +92,7 @@ g_sys_irq_vtable = 0x800A2600;
 i_mask = 0x800A2608;  /* libetc intr.c i_mask: .word 0x1F801074 (I_MASK pointer); was g_sys_irq_counter */
 g_sys_vblank_count = 0x800A157A;
 /* data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined */
-g_CdReadMode_value = 0x800A1500;  /* data-wave 2026-09-24: was g_sys_timer */
+g_CdReadMode_value = 0x800A1500;  /* D_800A14D0.tslmode; named only by cb_read */  /* data-wave 2026-09-24: was g_sys_timer */
 g_sys_video_mode = 0x800A2664;
 Vcount = 0x800A2634;  /* data-wave 2026-09-07: was g_sys_dma_region */
 g_player_ptrs = 0x800A9A10;
@@ -572,7 +572,7 @@ g_mental_bar_max_packets        = 0x800A38F8;  /* max-count cap for mental-bar b
 g_dma_madr_ptr                  = 0x800A263C;  /* pointer to DMA register; (val >> 24) & 0x7F = status read */
 Alarm = 0x800F19B8;  /* libcd bios.c alarm {time, count, name} (SOTN name; pre-slim-2026-10-01:memory/closer/libcd-identity.md) */
 _snd_seq_tick_env_plus_0x4              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */  /* data-wave 2026-09-07: was g_alarm_armed_flag */
-D_800A14E4              = 0x800A14E4;  /* volatile alarm handle; -1 = no alarm */  /* data-wave 2026-09-24: was g_irq_alarm_handle */
+D_800A14E4              = 0x800A14E4;  /* D_800A14D0.cnt (cdread sectors left); named only by cb_read */  /* data-wave 2026-09-24: was g_irq_alarm_handle */
 
 /* === Data-symbol batches 12-14 (2026-05-17) -- 19 highs landed === */
 /* 2026-09-23: g_replay_attack_pos_y retired -- per-word piece of Unk80101DF0Record (include/code6cac.h). */
@@ -844,7 +844,7 @@ g_char_sprite_bitmap_block_3x8320                       = 0x80090740;  /* 3 reco
 /* Clusters where the consumer function uniquely identifies the role. */
 g_file_io_state_event_cells_17                          = 0x800A3338;  /* 17 x 4-byte cells (zero-init, never incremented; consumed by file_io_state_dispatch_80038988). Renamed from _event_counter_ since they're not actually counters. */
 g_ang_hosei_state_pairs_3                               = 0x800A3308;  /* 3 x 8-byte state pairs (zero-init); consumed by ang_hosei */
-D_800A14D0                                    = 0x800A14D0;  /* 14 x 4-byte IRQ state cells (zero-init); consumed by system.c IRQ helpers */  /* data-wave 2026-09-24: was g_irq_state_table_14 */
+D_800A14D0                                    = 0x800A14D0;  /* libcd cdread.c module state, CdlREAD (include/libcd.h) */  /* data-wave 2026-09-24: was g_irq_state_table_14 */
 g_text1b_const_pair_table_12                            = 0x8009B940;  /* 12 x 8-byte (.word, .word) const pairs; consumed by text1b func_80063084 */
 _spu_addrMode                                     = 0x800A2CFC;  /* 9 x 4-byte SPU state cells; consumed by main.c func_80088740 (SPU helper) */  /* data-wave 2026-09-29: was g_spu_state_table_9 */
 g_display_state_table_a_7                               = 0x8009BF58;  /* 7 x 4-byte display.c state cells (consumed by func_8007CAC8) */
@@ -1103,7 +1103,6 @@ g_cdrom_vsync_post                                      = 0x800A14EC;  /* sys_VS
 g_cdrom_pos_frames                                      = 0x800A14F0;  /* cdrom_BcdToFrames(func_800800CC()) -- current position in frames */
 g_cdrom_callback_a_saved                                = 0x800A14F4;  /* saved cdrom_SetCallbackA return; restored in saEft00Add_sub */
 g_cdrom_callback_b_saved                                = 0x800A14F8;  /* saved cdrom_SetCallbackB return */
-D_800A14FC                                = 0x800A14FC;  /* saved func_80080660_ret -- header pointer */  /* data-wave 2026-09-24: was g_cdrom_header_ptr_saved */
 cb_read                                  = 0x80082050;  /* object passed to cdrom_SetCallbackB((s32)&D_80082050) */  /* data-wave 2026-09-24: was g_cdrom_callback_b_obj */
 cb_data                                      = 0x80082320;  /* object passed to tslTmlGetHeda((s32)&D_80082320) */  /* data-wave 2026-09-24: was g_cdrom_header_obj */
 

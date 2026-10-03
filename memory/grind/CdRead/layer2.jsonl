@@ -1,0 +1,1 @@
+{"func": "CdRead", "addr": "800826CC", "verdict": "PASS", "body_hash": "0f72d2f8c0b5c3d2", "body_kind": "c", "file": "system", "reviewer": "rv2-q99-cdlread", "scope": "cheat-cleanup", "date": "2026-10-03T07:55:30Z", "head": "45e5c6982", "notes": "Q99 one CdlREAD; cb_read FAKE per-member line (all subsets 2-3, all three 0)"}

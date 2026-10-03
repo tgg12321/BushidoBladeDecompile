@@ -19,6 +19,30 @@ typedef struct {
     u8 val3;
 } CdlATV;
 
+/* PsyQ 4.0 LIBCD cdread.c module state (BB2 links Sony's CDREAD object verbatim; SOTN's
+ * psxsdk cdread.c names the same block D_80032DBC): one volatile block at 0x800A14D0,
+ * preceded by CD_ReadCallbackFunc (g_CdReadCallback_func, 0x800A14CC) and followed by the
+ * saved result pointer D_800A1504. Evidence it is one object: CdReadSync caches &t1 in $s1
+ * and reads cnt / t2 / sectors at -0x8 / -0x4 / -0x1C off it (0x800827E8), and the la-form
+ * member reads in cd_read_retry / CdReadBreak / CdRead / cb_read are cse's related-value
+ * addressing of one symbol. Members: system.c (CdRead family), ings2.c (CdReadMode). */
+typedef struct {
+    /* 0x00 */ s32 sectors; /* D_800A14D0 */
+    /* 0x04 */ s32 buf;     /* D_800A14D4 */
+    /* 0x08 */ s32 p;       /* D_800A14D8 */
+    /* 0x0C */ s32 mode;    /* D_800A14DC */
+    /* 0x10 */ s32 size;    /* D_800A14E0 */
+    /* 0x14 */ s32 cnt;     /* D_800A14E4 */
+    /* 0x18 */ s32 t2;      /* D_800A14E8 */
+    /* 0x1C */ s32 t1;      /* D_800A14EC */
+    /* 0x20 */ s32 pos;     /* D_800A14F0 */
+    /* 0x24 */ s32 cbsync;  /* D_800A14F4 */
+    /* 0x28 */ s32 cbready; /* D_800A14F8 */
+    /* 0x2C */ s32 cbdata;  /* D_800A14FC */
+    /* 0x30 */ s32 tslmode; /* D_800A1500 */
+} CdlREAD;
+extern volatile CdlREAD D_800A14D0;
+
 /* libcd control entry points (system.c): com, param bytes, result bytes. */
 s32 CdControl(u8 com, u8 *param, u8 *result);
 s32 CdControlB(u8 com, u8 *param, u8 *result);
