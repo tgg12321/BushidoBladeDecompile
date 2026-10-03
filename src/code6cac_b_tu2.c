@@ -71,6 +71,10 @@ void func_80027334(s16 *arg0) {
     arg0[0x26] = 0;
     arg0[0x29] = 0xBCD;
 }
+/* D_800A376A / D_800A376B are one u8 per player (the hit-limb bits); a0 is the player. Every
+ * `*(&D_800A376A + a0)` below reaches [1] through [0]'s address. FAKE (owner ruling Q97): declared
+ * u8[2] (memory/grind/judge-decl-cleanup/followups/func_8002738C.c12-merge-variant.diff), the
+ * cheat-sweep lane reported func_8003B2C8 at 12 and func_8003B328 at 16 (scores not banked). */
 void func_8002738C(s32 a0, s32 a1) {
     if (D_800A38DC != 0) {
         return;
@@ -82,31 +86,31 @@ void func_8002738C(s32 a0, s32 a1) {
         case 3:
         case 4:
         case 5:
-            *(&D_800A376A + a0) |= 0x10;
+            *(&D_800A376A + a0) |= 0x10; /* FAKE: Q97 */
             break;
         case 6:
         case 7:
         case 8:
         case 9:
-            *(&D_800A376A + a0) |= 0x01;
+            *(&D_800A376A + a0) |= 0x01; /* FAKE: Q97 */
             break;
         case 10:
         case 11:
         case 12:
         case 13:
-            *(&D_800A376A + a0) |= 0x02;
+            *(&D_800A376A + a0) |= 0x02; /* FAKE: Q97 */
             break;
         case 14:
         case 15:
         case 16:
         case 17:
-            *(&D_800A376A + a0) |= 0x04;
+            *(&D_800A376A + a0) |= 0x04; /* FAKE: Q97 */
             break;
         case 18:
         case 19:
         case 20:
         case 21:
-            *(&D_800A376A + a0) |= 0x08;
+            *(&D_800A376A + a0) |= 0x08; /* FAKE: Q97 */
             break;
     }
 }

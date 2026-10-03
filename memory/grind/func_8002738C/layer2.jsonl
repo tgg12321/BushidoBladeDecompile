@@ -1,0 +1,1 @@
+{"func": "func_8002738C", "addr": "8002738C", "verdict": "PASS", "body_hash": "1fb4abe0d1104631", "body_kind": "c", "file": "code6cac_b_tu2", "reviewer": "rv2-q96q97-b-tu2", "scope": "cheat-cleanup", "date": "2026-10-03T07:56:29Z", "head": "53f84da6b", "notes": "Q97 per-site FAKE tags; sole caller passes the player; scope exact"}
