@@ -315,7 +315,7 @@ const u32 D_80015820[8] = {
 /* D_80015840: 1 string, 28B @ 0x80015840 */
 const char D_80015840[28] = "Destruction tiny model.\n";
 
-/* NOTE: the cluster continues in src/text1b_tu1b.c (func_80058580's three switch tables at
- * 0x8001585C, text1b_tu1b.o's rodata; rodata-object-alignment ruling 2026-09-30) and then in
- * src/text1a_b_pre_rodata_b.c (0x800158B4..). */
+/* NOTE: the cluster continues in src/main/3AB48.c's rodata: func_80058580's three switch
+ * tables at 0x8001585C (rodata-object-alignment ruling 2026-09-30), then the sound-bank
+ * loader's two strings at 0x800158B4. */
 

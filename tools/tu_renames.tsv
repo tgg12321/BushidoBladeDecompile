@@ -40,3 +40,4 @@ code6cac_b_rodata_pre	main/d_1068	after:9ebd5241847c
 ings_strings	main/6CF8	after:700f335eff2e
 # code6cac_b_rodata_post: D_800109C8 went to main/28514 (rodata-align doc §12).
 code6cac_b_rodata_post	main/memcard	after:99d242d6a8d4
+text1a_b_pre_rodata_b	main/3AB48	after:0ed85417adf8

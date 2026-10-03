@@ -3766,7 +3766,7 @@ s32 printf(s32 *, s32);               /* extern */
 s32 game_FrameLoop();                           /* extern */
 s32 cdrom_StartRead(s32, s32);               /* extern */
 
-extern s32 D_800158B4;
+const char D_800158B4[24] = "common_vab start:%08x\n";
 
 s32 snd_LoadCommonVab(s32 arg0) {
     s32 temp_v0;
@@ -4101,7 +4101,7 @@ extern s16 SsVabTransCompleted(s16);
 extern s32 SsUtGetVBaddrInSB(s16);
 extern s32 snd_VabOpen(s32 *, s16);
 
-extern const char D_800158CC[];
+const char D_800158CC[20] = "vab id:%d mistake\n";
 
 s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
     s16 i;
