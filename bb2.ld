@@ -43,7 +43,7 @@ SECTIONS
         build/src/main/175A4.o(.rodata);
         build/src/main/17AFC.o(.rodata);
         build/src/main/24BF0.o(.rodata);
-        build/src/code6cac_b_rodata_pre.o(.rodata);
+        build/src/main/d_1068.o(.rodata);
         build/src/main/24F08.o(.rodata);
         build/src/main/25788.o(.rodata);
         build/src/main/25C38.o(.rodata);
