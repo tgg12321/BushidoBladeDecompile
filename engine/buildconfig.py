@@ -73,7 +73,7 @@ MASPSX_FLAGS_GP = (
 # Mirrors the Makefile GP_FILES / EXPAND_LB_FILES /
 # NO_SR_FILES lists. Byte-parity (task 4) is the proof
 # these are correct; do not edit without re-running `engine parity`.
-GP_FILES = {"main/309CC", "main/31548", "main/31CFC", "main/31D3C", "main/24F08", "main/26730", "main/26940", "text1b_tu1d", "main/368E4"}
+GP_FILES = {"main/309CC", "main/31548", "main/31CFC", "main/31D3C", "main/24F08", "main/26730", "main/26940", "main/5ED34", "main/368E4"}
 EXPAND_LB_FILES = {"main/175A4", "main/17AFC", "main/24BF0", "main/24F08", "main/25788"}
 EXPAND_LH_FILES = set()
 # Mirrors the Makefile PSYQ_LIBRARY_FILES (owner ruling Q69): Sony library code, maspsx without -G8;
