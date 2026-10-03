@@ -1,6 +1,6 @@
 ---
 name: rodata-object-alignment
-paths: ["Makefile", "bb2.ld", "engine/pipeline.py", "engine/buildconfig.py", "src/**/*rodata*.c", "src/display.c", "src/main/64FD8.c", "src/main/3AB48.c"]
+paths: ["Makefile", "bb2.ld", "engine/pipeline.py", "engine/buildconfig.py", "src/**/*rodata*.c", "src/main/psxsdk/libgpu/sys.c", "src/main/64FD8.c", "src/main/3AB48.c"]
 description: "Every C object's .rodata links 4-aligned with jump-table .align 3 relative to the object's start (as ASPSX+PSYLINK do). Per-file align sed retired. New TU boundaries only from evidence."
 metadata:
   type: rule

@@ -1,6 +1,6 @@
 ---
 name: packed-multiply-cluster
-paths: ["src/display.c", "src/main/368E4.c"]
+paths: ["src/main/psxsdk/libgpu/sys.c", "src/main/368E4.c"]
 description: "Packed fixed-point multiply (8007Exxx display.c): a redundant mask before a discarding shift = S8/STRONG = hand-coded (canonical asm); otherwise use the H-structure pure-C recipe."
 metadata:
   type: recipe
