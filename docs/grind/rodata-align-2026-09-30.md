@@ -387,3 +387,9 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   half keeping the block's `.set` wrapper; DelDrv's symbol size becomes its module's 0x10 (was 0xC0, the
   data included), which no EXE byte records. a71/a72 are `-G0` (PSYQ_LIBRARY_FILES), d_7D870 stays `-G8`;
   neither form can matter (no gp-capable access) and the compare shows identical bytes.
+- **4c text1b_b_tu2.c → `psxsdk/libc2/prnt.c` + `ctype.c`, `memchr.c`, `putchar.c`.** Cuts at LIBC2 CTYPE
+  (0x800798CC), MEMCHR (0x8007992C) and PUTCHAR (0x8007997C..0x80079A30). Rodata: all 0x214 bytes at
+  0x80015A68 are PRNT's (the three named digit/"(null)" arrays, 0x30, then prnt's 121-entry switch table at
+  +0x30, phase 0 of an object that still starts at 0x80015A68); CTYPE, MEMCHR and PUTCHAR have none (CTYPE's
+  `_ctype_` table is in asm/data .data). No position to choose, no survivors; the table's phase is
+  unchanged (R1 does not arise). All four parts were already `-G0`.

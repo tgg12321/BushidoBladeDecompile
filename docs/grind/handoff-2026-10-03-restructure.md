@@ -737,6 +737,11 @@ after it: `main/psxsdk/libapi/a71.c` (AddDrv), `a72.c` (DelDrv), and `main/d_7D8
 at the end of .text (0x8008D070..0x8008D120); DelDrv's asm block was cut at its module end (layer-2 key moved,
 reviewed and recorded). No mixed game/Sony file remains among text1b_b's and main_post's successors.
 
+**Status step 4c (2026-10-03):** done: 8a7c613e3 (text1b_b_tu2 -> main/psxsdk/libc2/prnt, rename) and the
+split commit after it: `libc2/ctype.c`, `memchr.c`, `putchar.c`; prnt.c keeps all of the old .rodata (its strings
+and jump table, phase unchanged). Library files still on old ids for 4d-4f: gpu, display, system, ings2, main,
+text1a_b_post_rodata, text1a_b_tail_rodata.
+
 Total: about 25 to 30 commits, 5 to 8 focused sessions. Step 4 (library rodata placement per
 module) and step 5 (per-file header proofs) dominate.
 

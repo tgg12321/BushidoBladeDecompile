@@ -1,3 +1,6 @@
+/* PsyQ 4.0 LIBC2 PRNT: prnt, the printf formatter. .text 0x80079244..0x800798CC and its .rodata
+ * 0x80015A68..0x80015C7C (the digit and "(null)" strings, then the format switch's jump table),
+ * a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -7,7 +10,6 @@
 
 /* Declarations from the file this TU was split from (text1b_b.c). */
 #define NULL ((void *)0)
-extern s32 column;
 s32 strlen(u8 *a0);
 
 /* D_80015A68: 1 string(s), 20B @ 0x80015A68 */
@@ -34,10 +36,10 @@ const char D_80015A84[20] =
  * (short unsigned)va_arg(argp, int). Transcription diff and provenance:
  * pre-slim-2026-10-01:memory/grind/prnt/evidence.md. BB2's build does not count ordinary
  * characters in the return value. The digit/"(null)" strings are the named
- * arrays above rather than literals: this file also holds LIBC SPRINTF (a
- * separate object in the original link), and GCC pools identical string
- * literals within one translation unit, which would fold sprintf's two digit
- * strings into these and drop 40 bytes of .rodata. The switch table is
+ * arrays above rather than literals: they were written so while this file also
+ * held LIBC SPRINTF (a separate object in the original link), because GCC pools
+ * identical string literals within one translation unit and would have folded
+ * sprintf's two digit strings into these, dropping 40 bytes of .rodata. The switch table is
  * compiler-emitted. */
 #define PRNT_LONGINT 0x01
 #define PRNT_LONGDBL 0x02
@@ -303,61 +305,4 @@ pforw:
             cnt++;
         }
     }
-}
-extern u8 _ctype__plus_0x1;
-u8 toupper(u8 a0) {
-    u8 c = a0;
-    if ((&_ctype__plus_0x1)[c] & 2) {
-        c = a0 - 0x20;
-    }
-    return c;
-}
-extern u8 _ctype__plus_0x1;
-u8 tolower(u8 a0) {
-    u8 c = a0;
-    if ((&_ctype__plus_0x1)[c] & 1) {
-        c = a0 + 0x20;
-    }
-    return c;
-}
-u8 *memchr(u8 *buf, s32 ch, s32 len) {
-    if (buf == 0) return 0;
-    if (len <= 0) return 0;
-    len--;
-    goto check;
-found:
-    return buf - 1;
-check:
-    if (len < 0) return 0;
-    ch &= 0xFF;
-loop:
-    if (*buf++ == ch) goto found;
-    --len;
-    if (len >= 0) goto loop;
-    return 0;
-}
-void write(s32, u8 *, s32);
-void putchar(s8 arg0) {
-    u8 sp10;
-    s32 temp_a0;
-
-    sp10 = arg0;
-    temp_a0 = arg0 & 0xFF;
-    if (temp_a0 == 9) goto loop;
-    if (temp_a0 == 0xA) {
-        putchar(0xD);
-        column = 0;
-        goto tail;
-    }
-    goto def;
-loop:
-    putchar(0x20);
-    if ((column & 7) == 0) return;
-    goto loop;
-def:
-    if ((&_ctype__plus_0x1)[temp_a0] & 0x97) {
-        column += 1;
-    }
-tail:
-    write(1, &sp10, 1);
 }

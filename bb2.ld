@@ -146,6 +146,9 @@ SECTIONS
         build/src/main/psxsdk/libc2/strlen.o(.text);
         build/src/main/psxsdk/libc2/printf.o(.text);
         build/src/main/psxsdk/libc2/prnt.o(.text);
+        build/src/main/psxsdk/libc2/ctype.o(.text);
+        build/src/main/psxsdk/libc2/memchr.o(.text);
+        build/src/main/psxsdk/libc2/putchar.o(.text);
         build/src/main/psxsdk/libc2/sprintf.o(.text);
         build/src/gpu.o(.text);
         build/src/display.o(.text);
@@ -222,6 +225,9 @@ SECTIONS
         build/src/main/psxsdk/libc2/strlen.o(.data);
         build/src/main/psxsdk/libc2/printf.o(.data);
         build/src/main/psxsdk/libc2/prnt.o(.data);
+        build/src/main/psxsdk/libc2/ctype.o(.data);
+        build/src/main/psxsdk/libc2/memchr.o(.data);
+        build/src/main/psxsdk/libc2/putchar.o(.data);
         build/src/main/psxsdk/libc2/sprintf.o(.data);
         build/src/gpu.o(.data);
         build/src/display.o(.data);
@@ -348,6 +354,9 @@ SECTIONS
         build/src/main/psxsdk/libc2/strlen.o(.bss);
         build/src/main/psxsdk/libc2/printf.o(.bss);
         build/src/main/psxsdk/libc2/prnt.o(.bss);
+        build/src/main/psxsdk/libc2/ctype.o(.bss);
+        build/src/main/psxsdk/libc2/memchr.o(.bss);
+        build/src/main/psxsdk/libc2/putchar.o(.bss);
         build/src/main/psxsdk/libc2/sprintf.o(.bss);
         build/src/gpu.o(.bss);
         build/src/display.o(.bss);
