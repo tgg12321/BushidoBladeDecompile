@@ -64,7 +64,8 @@ a fresh adversarial `cheat-reviewer` PASS where a function body, rule or gate fi
 - **C. Phase 1 restructure** (Part C below). Tag `pre-restructure-<date>` first, then freeze the tree for
   the moves.
 - **Later:** Phase 2 types (make Unk80101EC8Record / Obj80106A78 the "Entity"; ~1,238 raw-offset casts;
-  fix the 108 conflicting declarations and the u8 * / s32 * callee prototypes). Phase 3 names (owner to
+  fix the conflicting declarations, worklist memory/grind/restructure-2026-10-03/step5/phase2_conflicts.tsv,
+  and the u8 * / s32 * callee prototypes). Phase 3 names (owner to
   decide whether game-code naming moves from evidence classes to SOTN-style "explainable from the code +
   adversarial review").
 
@@ -781,6 +782,26 @@ through SndSeqTickEnv's raw .data word, not by SSSTART's C, so the SSSTART|SSCAL
 every LIBSND/LIBSPU jump table is 8-aligned in its own object. Declarations per part are chosen mechanically
 (step4/split4f.py, citems.py) and checked (implchk.py, l2cmp.py). No file named system.c, ings2.c, main.c or
 text1a_b_*_rodata.c remains. Open: the gap files' xref/near-tier module starts (§ 3 owner question).
+
+**Status step 5a (2026-10-03):** done: 0c2f2aa60 (tools/Makefile: include/**/*.h and src/**/*.h globs),
+f121c2b07 (LIBSPU: include/psxsdk/libspu.h + src/main/psxsdk/libspu/libspu_internal.h), 9b9edd713 (LIBSND:
+libsnd.h + libsnd/libsnd_i.h; sound.h retired), e30da8a9d (LIBCD: libcd.h moved to psxsdk/ + libcd_internal.h),
+cb603fcba (kernel.h, libapi.h, libetc.h, libc.h, libcard.h, libcomb.h, libsn.h), aa57e564c (libgte.h), 9d94c6b06
+(libgpu.h; sys.c-only internals moved into libgpu/sys.c), 6c7f8f8f7 (re-lock). A header holds a prototype only
+when every declaration and the C definition agree; 89 Sony functions whose spellings differ stay declared locally.
+**Status step 5b (2026-10-03):** done: 540cd41e6 (code6cac.h, game.h, gpu.h and system.h become include/game.h,
+holding types, and include/bb2.h, holding declarations; every game TU includes bb2.h), b57806c07 (44 duplicates
+dropped), 42f458af0 (identical multi-file declarations and types hoisted: 41 data, 53 functions, 7 types),
+d4ae9d5cc (re-lock). Every commit: all 221 objects byte-identical, 0 layer-2 keys moved, fresh cheat-reviewer
+PASS. **Phase 2 worklist:** memory/grind/restructure-2026-10-03/step5/phase2_conflicts.tsv. It lists the 89
+Sony and 73 game declarations whose spellings differ, 2 header-vs-local spellings, and 9 notes: the Q21 views
+D_800A3899/D_800A38AB, the D_800963EE alias, the implicit calls func_8005C2A8 (309CC) and SpuGetVoiceVolume
+(767D8) that a prototype would change, and the type names Vec3, EnvA and va_list. Scripts: step5/. For step 6,
+these still name the old headers: volatile_extern_allowlist.txt (_que, g_gpu_ctx.unk08 and the _spu_* rows'
+main.c line cites), symbol_addrs.txt:48, undefined_syms_auto.txt:537, tools/grinder/scope_allow.txt
+(include/sound.h, include/code6cac.h, include/gpu.h rows), .claude/rules/legitimate-volatile-interrupt-touched.md:35
+and docs/DECOMP_WORKFLOW.md:272-302. bb2.h still carries the old headers' single-TU entries (moving them back is
+optional, later work).
 
 Total: about 25 to 30 commits, 5 to 8 focused sessions. Step 4 (library rodata placement per
 module) and step 5 (per-file header proofs) dominate.
