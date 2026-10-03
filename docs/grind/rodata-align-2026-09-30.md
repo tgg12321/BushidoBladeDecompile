@@ -310,9 +310,9 @@ docs/grind/handoff-2026-10-03-restructure.md Part A.
 | LIBGTE MTX_04 | 8007EC5C..8007ED6C | 1 | asm/funcs/MulMatrix2.s |
 | LIBGTE MTX_08 | 8007EDBC..8007EEEC | 3 | asm/funcs/ScaleMatrix.s |
 | LIBGTE REG04 | 8007EF6C..8007EF8C | 3 | asm/funcs/ReadSZfifo3.s |
-| LIBGTE REG09 | 8007EF8C..8007EF9C | 1 | ReadGeomScreen (Q104, Part A step 6) |
-| LIBGTE REG12 | 8007EFDC..8007EFFC | 2 | SetGeomOffset (Q104, Part A step 6) |
-| LIBGTE REG13 | 8007EFFC..8007F00C | 1 | SetGeomScreen (Q104, Part A step 6) |
+| LIBGTE REG09 | 8007EF8C..8007EF9C | 1 | asm/funcs/ReadGeomScreen.s (whole-body asm, owner ruling Q104) |
+| LIBGTE REG12 | 8007EFDC..8007EFFC | 2 | asm/funcs/SetGeomOffset.s (whole-body asm, owner ruling Q104) |
+| LIBGTE REG13 | 8007EFFC..8007F00C | 1 | asm/funcs/SetGeomScreen.s (whole-body asm, owner ruling Q104) |
 | LIBGTE SMP_00 | 8007F00C..8007F21C | 1 | asm/funcs/Lzc.s |
 | LIBGTE SMP_02 | 8007F21C..8007F24C | 1 | asm/funcs/RotTransPers.s |
 | LIBGTE SMP_03 | 8007F24C..8007F2AC | 3 | asm/funcs/RotTransPers3.s |

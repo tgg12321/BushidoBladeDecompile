@@ -1,12 +1,6 @@
 {
   "schema": 1,
   "functions": {
-    "ReadGeomScreen": {
-      "file": "display",
-      "sha256": [
-        "1d5933751cf15300cd3cef9e766582c2679de481e8686f994dded5f427060194"
-      ]
-    },
     "SetBackColor": {
       "file": "display",
       "sha256": [
@@ -21,19 +15,6 @@
         "8906cfbb45953103c74e6868b5825db656a1897a09defbe6f3e789e8fc3b3cd5",
         "3d75c4c221677f91cc2ee92f1e345f871a99fd4d40cfde59f4d6e16da7b1d284",
         "3215b6d206a22b60286267fd7ffcecad515649aecec3775b232d15d82ce048b1"
-      ]
-    },
-    "SetGeomOffset": {
-      "file": "display",
-      "sha256": [
-        "1eb0b16285038bb366c0bc1789c4f94600a9c02b67a99166884eaf36cad683d2",
-        "466dc27a08987330794e41992c1608c1841a0f80042f817002840bcea9f2efc4"
-      ]
-    },
-    "SetGeomScreen": {
-      "file": "display",
-      "sha256": [
-        "344beedc0fdefe22c1dba1e59a15944906bf9847a5fd40c0db1a054f29a6620c"
       ]
     },
     "func_80018094": {

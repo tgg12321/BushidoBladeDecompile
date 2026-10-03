@@ -5,4 +5,6 @@ glabel SetGeomOffset
     /* 6F7E8 8007EFE8 00C8C548 */  ctc2       $a1, $25 /* handwritten instruction */
     /* 6F7EC 8007EFEC 0800E003 */  jr         $ra
     /* 6F7F0 8007EFF0 00000000 */   nop
+    /* 6F7F4 8007EFF4 00000000 */  nop
+    /* 6F7F8 8007EFF8 00000000 */  nop
 endlabel SetGeomOffset

@@ -4,11 +4,6 @@
 #include "gpu.h"
 #include "psx.h"
 
-/* Padding NOP macro - emits NOP instructions between functions to match original layout */
-#define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
-#define PAD_NOPS_2 __asm__(".section .text\n    nop\n    nop\n")
-#define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
-
 
 /* Forward declarations */
 extern s32 VSync(s32);
@@ -1236,8 +1231,8 @@ INCLUDE_ASM("asm/funcs", SetRotMatrix);
 INCLUDE_ASM("asm/funcs", SetColorMatrix);
 INCLUDE_ASM("asm/funcs", SetTransMatrix);
 INCLUDE_ASM("asm/funcs", ReadSZfifo3);
-s32 ReadGeomScreen(void) { s32 ret; __asm__ volatile ("cfc2 %0, $26" : "=r" (ret)); return ret; }
-PAD_NOPS_1; /* 1 NOP after gte_GetH */
+/* LIBGTE REG09: Sony's hand-written asm module, padded to 16 bytes (owner ruling Q104). */
+INCLUDE_ASM("asm/funcs", ReadGeomScreen);
 void SetBackColor(s32 a0, s32 a1, s32 a2) {
     a0 <<= 4;
     a1 <<= 4;
@@ -1254,17 +1249,9 @@ void SetFarColor(s32 a0, s32 a1, s32 a2) {
     __asm__ volatile ("ctc2 %0, $22" :: "r"(a1));  /* ctc2 $a1, $22 */
     __asm__ volatile ("ctc2 %0, $23" :: "r"(a2));  /* ctc2 $a2, $23 */
 }
-void SetGeomOffset(s32 a0, s32 a1) {
-    a0 <<= 16;
-    a1 <<= 16;
-    __asm__ volatile ("ctc2 %0, $24" :: "r"(a0));  /* ctc2 $a0, $24 */
-    __asm__ volatile ("ctc2 %0, $25" :: "r"(a1));  /* ctc2 $a1, $25 */
-}
-PAD_NOPS_2; /* 2 NOPs after gte_SetScreenOffset */
-void SetGeomScreen(s32 a0) {
-    __asm__ volatile ("ctc2 %0, $26" :: "r"(a0));  /* ctc2 $a0, $26 */
-}
-PAD_NOPS_1; /* 1 NOP after tslDmaDrawListDelAll */
+/* LIBGTE REG12 and REG13: hand-written asm modules, each padded to 16 bytes (owner ruling Q104). */
+INCLUDE_ASM("asm/funcs", SetGeomOffset);
+INCLUDE_ASM("asm/funcs", SetGeomScreen);
 INCLUDE_ASM("asm/funcs", LightColor);
 INCLUDE_ASM("asm/funcs", DpqColorLight);
 /* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */

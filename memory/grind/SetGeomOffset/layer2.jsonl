@@ -1,0 +1,1 @@
+{"func": "SetGeomOffset", "addr": "8007EFDC", "verdict": "PASS", "body_hash": "63b3410f4877d0f0", "body_kind": "asm", "file": "display", "reviewer": "cheat-reviewer-a5140b37", "scope": "auth", "date": "2026-10-03T10:30:42Z", "head": "4907fca49", "notes": ""}
