@@ -3,3 +3,4 @@
 # touches this row). Ids are paths under src/ without .c. Resolve a
 # historical src/<id>.c citation by following old -> new (engine/tus.py).
 comb	main/psxsdk/libcomb/comb	after:a38713186312
+text1b_b_tu3	main/psxsdk/libc2/sprintf	after:2c35cbd7d6f8

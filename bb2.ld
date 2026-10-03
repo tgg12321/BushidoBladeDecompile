@@ -73,7 +73,7 @@ SECTIONS
         build/src/text1b_b.o(.rodata);
         build/src/text1a_b_mid_rodata.o(.rodata);
         build/src/text1b_b_tu2.o(.rodata);
-        build/src/text1b_b_tu3.o(.rodata);
+        build/src/main/psxsdk/libc2/sprintf.o(.rodata);
         build/src/text1a_b_post_rodata.o(.rodata);
         build/src/gpu.o(.rodata);
         build/src/display.o(.rodata);
@@ -115,7 +115,7 @@ SECTIONS
         build/src/text1b_tu1e.o(.text);
         build/src/text1b_b.o(.text);
         build/src/text1b_b_tu2.o(.text);
-        build/src/text1b_b_tu3.o(.text);
+        build/src/main/psxsdk/libc2/sprintf.o(.text);
         build/src/gpu.o(.text);
         build/src/display.o(.text);
         build/src/system.o(.text);
@@ -155,7 +155,7 @@ SECTIONS
         build/src/text1b_tu1e.o(.data);
         build/src/text1b_b.o(.data);
         build/src/text1b_b_tu2.o(.data);
-        build/src/text1b_b_tu3.o(.data);
+        build/src/main/psxsdk/libc2/sprintf.o(.data);
         build/src/gpu.o(.data);
         build/src/display.o(.data);
         build/asm/data/7D920.data.o(.data);
@@ -245,7 +245,7 @@ SECTIONS
         build/src/text1b_tu1e.o(.bss);
         build/src/text1b_b.o(.bss);
         build/src/text1b_b_tu2.o(.bss);
-        build/src/text1b_b_tu3.o(.bss);
+        build/src/main/psxsdk/libc2/sprintf.o(.bss);
         build/src/gpu.o(.bss);
         build/src/display.o(.bss);
         build/src/system.o(.bss);
