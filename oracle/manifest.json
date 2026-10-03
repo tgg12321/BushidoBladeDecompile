@@ -14,7 +14,6 @@
     "python": "Python 3.12.3"
   },
   "corpus": {
-    "src/main.c": "9d41dcc3d51df51202ababdb32e29b42169fc9e2",
     "src/main/175A4.c": "471ff9b73f0d57cd29a1c3ece735a608c105e6bf",
     "src/main/17AFC.c": "3b387fb14145da40a057694fa6648618f0c31599",
     "src/main/24BF0.c": "4a38239824cbdb0620bb49b035eb6a7d5d856901",
@@ -166,7 +165,8 @@
     "src/main/psxsdk/libsnd/ssend.c": "805cd94026cf41ee34c55a4fc3c73cd7f5e9e9cd",
     "src/main/psxsdk/libsnd/ssinit.c": "bbf3520142eccf00c8392dba666dcd602bbf3ef0",
     "src/main/psxsdk/libsnd/ssinit_c.c": "8324d58dcb117d04d65fabf32ac8388b64d2efd5",
-    "src/main/psxsdk/libsnd/ssquit.c": "80368df9bae9f0d219b1e6864f664247346646f3"
+    "src/main/psxsdk/libsnd/ssquit.c": "80368df9bae9f0d219b1e6864f664247346646f3",
+    "src/main/psxsdk/libspu/spu.c": "9d41dcc3d51df51202ababdb32e29b42169fc9e2"
   },
   "config_files": {
     "expand_lb_funcs.txt": "3e4c205282278d136b49d910beffca5402a6fad3",

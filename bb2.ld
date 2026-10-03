@@ -81,7 +81,7 @@ SECTIONS
         build/src/main/psxsdk/libetc/vsync.o(.rodata);
         build/src/main/psxsdk/libetc/intr.o(.rodata);
         build/src/main/psxsdk/libetc/intr_dma.o(.rodata);
-        build/src/main.o(.rodata);
+        build/src/main/psxsdk/libspu/spu.o(.rodata);
         build/src/main/psxsdk/libcomb/comb.o(.rodata);
         main_RODATA_END = .;
         main_RODATA_SIZE = ABSOLUTE(main_RODATA_END - main_RODATA_START);
@@ -231,7 +231,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/ssinit.o(.text);
         build/src/main/psxsdk/libsnd/ssquit.o(.text);
         build/src/main/psxsdk/libsnd/scssattr.o(.text);
-        build/src/main.o(.text);
+        build/src/main/psxsdk/libspu/spu.o(.text);
         build/src/main/psxsdk/libcomb/comb.o(.text);
         build/src/main/psxsdk/libapi/a71.o(.text);
         build/src/main/psxsdk/libapi/a72.o(.text);
@@ -385,7 +385,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/ssinit.o(.data);
         build/src/main/psxsdk/libsnd/ssquit.o(.data);
         build/src/main/psxsdk/libsnd/scssattr.o(.data);
-        build/src/main.o(.data);
+        build/src/main/psxsdk/libspu/spu.o(.data);
         build/src/main/psxsdk/libcomb/comb.o(.data);
         build/src/main/psxsdk/libapi/a71.o(.data);
         build/src/main/psxsdk/libapi/a72.o(.data);
@@ -585,7 +585,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/ssinit.o(.bss);
         build/src/main/psxsdk/libsnd/ssquit.o(.bss);
         build/src/main/psxsdk/libsnd/scssattr.o(.bss);
-        build/src/main.o(.bss);
+        build/src/main/psxsdk/libspu/spu.o(.bss);
         build/src/main/psxsdk/libcomb/comb.o(.bss);
         build/src/main/psxsdk/libapi/a71.o(.bss);
         build/src/main/psxsdk/libapi/a72.o(.bss);
