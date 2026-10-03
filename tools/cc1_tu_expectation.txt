@@ -3,8 +3,8 @@
 # tools/cc1-reorg-negate-rtx-decl.patch (no codegen patch; owner Q17).
 # Keyed to the source tree: they change whenever src/ or include/ does.
 # Refresh with: bash tools/build_oracle_cc1.sh --record-manifest
-# src-digest 324fc3b89f0f912341fd4bd61587c8b6f29b806d
-# recorded 2026-10-03T18:46:48Z
+# src-digest 5fa902e6bc9d55f8ddb308f75131293502d120b4
+# recorded 2026-10-03T20:32:43Z
 f0794ea2848865ef42396f92b2d3fc6f0ad4b195  main/175A4
 6a1c6ea83dda1d73abf31706c06badd606a89a30  main/17AFC
 1d05c4837e7658d22930b193b67c5834ea2291ca  main/24BF0
