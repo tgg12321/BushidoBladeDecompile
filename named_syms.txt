@@ -939,7 +939,6 @@ g_module_func_tbl                                       = 0x8008D090;  /* mode d
 menuDat                                                 = 0x8008DCCC;  /* menu data block */
 cpu_practice_honmokuroku_data_tbl                       = 0x8008E778;  /* CPU practice exercise list ("honmokuroku") */
 g_cd_file_table                                              = 0x8008EC34;  /* CD file table: CamPair[159] {CdlLOC position, byte size} per disc file */  /* data-wave 2026-09-24: was SpecialCam */
-StatusUpBuf                                             = 0x800906A6;  /* status-up display buffer */
 InfoPosYTbl1                                            = 0x80099D54;  /* info Y-position table */
 UesrWorkDef                                             = 0x8009ADD8;  /* user work def (sic: original spelling) */
 chractar_use_pset_combo_id_table                        = 0x8009BA7C;  /* character preset-combo ID table (sic) */
@@ -1851,7 +1850,7 @@ g_text1b_last_frame_id                                  = 0x800A324C;  /* cached
 
 /* === GPU LoadImage packet buffer + status-up cache (2026-05-17) -- 3 highs === */
 g_gpu_loadimage_packet_buf                              = 0x800A4340;  /* 19-entry x 0x30 = 912-byte packet buffer for func_8003D9A0 initLoadImage loop */
-g_status_up_cached_idx                                  = 0x800905F8;  /* 0xFFFF sentinel or current idx cache for status-up records (paired with existing StatusUpBuf) */
+g_status_up_cached_idx                                  = 0x800905F8;  /* 0xFFFF sentinel or current idx cache for status-up records (paired with D_800906A4[i][1]) */
 g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base pointer to shadow primitive data (used by func_8003D330) */
 
 /* === CD-ROM stream reader state (2026-05-17) -- 4 highs === */

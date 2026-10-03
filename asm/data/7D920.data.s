@@ -5042,11 +5042,6 @@ nonmatching D_800906A4
 
 dlabel D_800906A4
     /* 80EA4 800906A4 */ .short 0x0001
-enddlabel D_800906A4
-
-nonmatching StatusUpBuf
-
-dlabel StatusUpBuf
     /* 80EA6 800906A6 */ .short 0x0000
     /* 80EA8 800906A8 */ .short 0x0001
     /* 80EAA 800906AA */ .short 0x0000
@@ -5124,7 +5119,7 @@ dlabel StatusUpBuf
     /* 80F3A 8009073A */ .short 0x0000
     /* 80F3C 8009073C */ .short 0x0000
     /* 80F3E 8009073E */ .short 0x0000
-enddlabel StatusUpBuf
+enddlabel D_800906A4
 
 nonmatching D_80090740
 

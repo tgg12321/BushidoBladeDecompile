@@ -7,7 +7,6 @@
 #include "libcd.h"
 
 /* Named globals */
-extern s16 StatusUpBuf;
 extern u8 cpu_practice_honmokuroku_data_tbl[][4];
 /* g_sqrt_table_u8[i] = floor(8 * sqrt(i)), i = 0..0x3FF: 0x8008D118..0x8008D517
  * (0x400 bytes; the first 8 are the words after DelDrv in src/main_post.c,
@@ -605,7 +604,14 @@ extern u32 D_800905F8;
 extern s32 D_80090600;
 extern s32 D_80090604;
 extern s16 D_80090608;
-extern s16 D_800906A4;
+/* Two per-stage tables (initialized data, asm/data/7D920.data.s), indexed by the
+ * stage id func_80046EA0 passes to func_8003DA8C: 38 s32 at 0x8009060C, then
+ * s16 pairs at 0x800906A4 (base + id*4, [0] tested, [1] passed to
+ * func_8003DBE4; asm/funcs/func_8003DA8C.s), 39 to the next object at
+ * 0x80090740 (the last one zero).  Replaces the splat per-halfword scalar
+ * StatusUpBuf (pair 0's [1]). */
+extern s32 D_8009060C[38];
+extern s16 D_800906A4[39][2];
 extern u16 D_80094C68[];
 /* 0x18-byte per-character status record table (named_syms.txt:
  * g_status_flag_record_table_80099D88). The original binary indexes it by character id

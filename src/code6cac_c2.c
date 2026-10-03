@@ -132,7 +132,6 @@ extern void gte_ReadFarColor(u8 *);
 
 
 extern s8 D_8008EA70;
-extern s32 D_8009060C;
 
 
 
@@ -1209,15 +1208,17 @@ void gpu_SetDrawMoveArray(RECT *a0, s32 a1, DR_MOVE (*a2)[2]) {
 extern s16 D_800F6656;
 extern void func_8003DBE4(s32, s32, DR_MOVE (*)[2], s32, s32);
 void func_8003DA8C(s32 arg0, s32 arg1) {
-    s32 dist;
-    s16 *new_var2;
-    s32 offset;
-    int new_var;
+    s16 *rec;
     s32 *ptr;
+    s32 dist;
+    s32 offset;
 
     D_800905F8 = 0xFFFF;
-    new_var2 = &D_800906A4 + arg0 * 2;
-    if (*new_var2 != 0) {
+    /* FAKE: the pair read through a pointer local; a direct
+       `D_800906A4[arg0][0]` read is MEM_IN_STRUCT and is scheduled above the
+       D_800905F8 store (the same sched.c:834-839 exemption as below), score 9. */
+    rec = D_800906A4[arg0];
+    if (rec[0] != 0) {
         {
             s32 base = func_8003F268();
             if (base == 0) {
@@ -1227,8 +1228,7 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
             }
             dist = base - arg1;
         }
-        new_var = dist < 0x1770;
-        if (new_var) {
+        if (dist < 0x1770) {
             offset = 0x1770 - dist;
             dist = 0x1770;
         } else {
@@ -1247,12 +1247,18 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
                 arg1 -= offset;
             }
         }
+        D_80090608 = (u16)D_800F6656;
+        ptr = &D_8009060C[arg0];
         {
+            /* FAKE: D_800906A4[arg0][1] read as a byte offset off the array
+               base: an element read is MEM_IN_STRUCT, and sched.c
+               true_dependence (tools/gcc-2.7.2/sched.c:834-839) lets a
+               varying in-struct HImode read pass the fixed scalar store to
+               D_80090608 just above, so both reads move ahead of the `sh`
+               (score 8).  The target keeps them after it. */
             s32 idx = arg0 * 4;
-            D_80090608 = (u16)D_800F6656;
-            ptr = (s32 *)((u8 *)&D_8009060C + idx);
-            func_8003DBE4(arg1, 0x1F, light_effect_col, *ptr, *(s16 *)((u8 *)&StatusUpBuf + idx));
-            func_8003DBE4(arg1, 0x13, D_800A4340, *ptr, *(s16 *)((u8 *)&StatusUpBuf + idx));
+            func_8003DBE4(arg1, 0x1F, light_effect_col, *ptr, *(s16 *)((u8 *)D_800906A4 + 2 + idx));
+            func_8003DBE4(arg1, 0x13, D_800A4340, *ptr, *(s16 *)((u8 *)D_800906A4 + 2 + idx));
         }
     }
 }

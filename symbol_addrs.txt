@@ -218,7 +218,6 @@ g_str_bbm_s123 = 0x800103C0; // S123.BBM
 menuDat = 0x8008DCCC;
 cpu_practice_honmokuroku_data_tbl = 0x8008E778;
 g_cd_file_table = 0x8008EC34;  // CD file table CamPair[159]  // data-wave 2026-09-24: was SpecialCam
-StatusUpBuf = 0x800906A6;
 InfoPosYTbl1 = 0x80099D54;
 UesrWorkDef = 0x8009ADD8;
 chractar_use_pset_combo_id_table = 0x8009BA7C;
