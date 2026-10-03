@@ -81,7 +81,7 @@ SECTIONS
         build/src/text1a_b_tail_rodata.o(.rodata);
         build/src/ings2.o(.rodata);
         build/src/main.o(.rodata);
-        build/src/comb.o(.rodata);
+        build/src/main/psxsdk/libcomb/comb.o(.rodata);
         main_RODATA_END = .;
         main_RODATA_SIZE = ABSOLUTE(main_RODATA_END - main_RODATA_START);
         main_TEXT_START = .;
@@ -121,7 +121,7 @@ SECTIONS
         build/src/system.o(.text);
         build/src/ings2.o(.text);
         build/src/main.o(.text);
-        build/src/comb.o(.text);
+        build/src/main/psxsdk/libcomb/comb.o(.text);
         build/src/main_post.o(.text);
         main_TEXT_END = .;
         main_TEXT_SIZE = ABSOLUTE(main_TEXT_END - main_TEXT_START);
@@ -163,7 +163,7 @@ SECTIONS
         build/src/system.o(.data);
         build/src/ings2.o(.data);
         build/src/main.o(.data);
-        build/src/comb.o(.data);
+        build/src/main/psxsdk/libcomb/comb.o(.data);
         build/src/main_post.o(.data);
         build/asm/data/91C98.data.o(.data);
         build/src/ings.o(.sdata);
@@ -251,7 +251,7 @@ SECTIONS
         build/src/system.o(.bss);
         build/src/ings2.o(.bss);
         build/src/main.o(.bss);
-        build/src/comb.o(.bss);
+        build/src/main/psxsdk/libcomb/comb.o(.bss);
         build/src/main_post.o(.bss);
         main_BSS_END = .;
         main_BSS_SIZE = ABSOLUTE(main_BSS_END - main_BSS_START);

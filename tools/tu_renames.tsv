@@ -1,0 +1,5 @@
+# TU renames (restructure, owner decision Q106 D9): old id, new id, and the
+# HEAD the move was made on (`after:<sha>`; the move is the next commit that
+# touches this row). Ids are paths under src/ without .c. Resolve a
+# historical src/<id>.c citation by following old -> new (engine/tus.py).
+comb	main/psxsdk/libcomb/comb	after:a38713186312
