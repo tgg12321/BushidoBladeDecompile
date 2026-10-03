@@ -189,6 +189,8 @@ Every non-AUTO name is attributed to a recorded evidence path:
 | `libscan-near` (Sony build match except explainable words; owner ruling 2026-09-07) | 11 | CORROBORATED |
 | `computation-restatement` (leaf's computation, emulation-proven; owner ruling 2026-09-24) | 15 | CORROBORATED |
 | `libsn-pcdrv-protocol` (SN PCdrv host-file traps by break code; owner ruling 2026-09-24) | 5 | CORROBORATED |
+| `typed-restatement` (matched small body restated from admitted objects; owner ruling Q103, 2026-10-03; `docs/naming/sweep-2026-10-03/`) | — | CORROBORATED |
+| `basis-withdrawn` (only basis was a name since RESET; owner ruling Q103) | — | SUSPECT → RESET |
 | `contradicted-by-body` (verified RESET; `docs/naming/sweep-2026-09-24/`) | — | SUSPECT → RESET |
 | `psyq-family-prefix` | 38 | INFERRED — prefix only |
 | `legacy-renamer-map(verified band)` | 29 | CORROBORATED |

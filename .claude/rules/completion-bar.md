@@ -37,7 +37,8 @@ item that links them (e.g. [[phantom-frame-pad-family]]'s allowlist row and labe
      `FAKE: frame layout`. A no-purpose local may not wear a name that claims a purpose.
    - Refused even when annotated: fabricated calls or side effects the program does not
      perform (`if (0) { f(); }`); cross-symbol address derivation (one symbol's bytes reached
-     through another's address; per-function Q63/Q73 admissions stand); `volatile` outside
+     through another's address; the per-function admissions in
+     [[aggregate-merge-family]] stand); `volatile` outside
      its catalog — every route these files admit and nothing else: the hardware range
      ([[mmio-volatile-type-level]]); the IRQ-touched extern allowlist and the volatile-locals
      Routes A/B ([[legitimate-volatile-interrupt-touched]]); the phantom-frame pad
@@ -50,7 +51,8 @@ item that links them (e.g. [[phantom-frame-pad-family]]'s allowlist row and labe
      file's conditions (1)-(4) and its `/* SOTN: */` tag are blocking for this route.
 4. **Existing types.** When a header already declares the object (struct, array, typed
    extern), access it through that declaration: no second extern, alias symbol or
-   raw-offset cast for the same bytes. A new aggregate the function needs goes in the shared
+   raw-offset cast for the same bytes (per-function exceptions Q98/Q99:
+   [[aggregate-merge-family]]). A new aggregate the function needs goes in the shared
    header, not at block scope.
 5. **Simplest known form.** Of the byte-exact spellings known, land the one with the fewest
    FAKE annotations; ablate whole clusters, not single pieces (`docs/DECOMP_WORKFLOW.md` §7).
@@ -75,6 +77,11 @@ item that links them (e.g. [[phantom-frame-pad-family]]'s allowlist row and labe
 
 ## Application
 
+- **Direction (owner, 2026-10-03):** the project is fully decompiled; the owner is retiring
+  special rules. Owner rulings and cleanup work choose the option closer to a faithful
+  representation of the original source; new exceptions come only by owner ruling, as interim
+  per-function labels, never precedent for a class. Not a review criterion: a FAIL still cites
+  items 1-6.
 - Uniform from 2026-10-02. COMPLETED functions are not re-audited against the hygiene tier;
   their existing debt (e.g. `memory/grind/judge-decl-cleanup/` disposition rows) stays there.
 - **Re-opened (clause D):** per-function refusals that rested on hygiene grounds or on

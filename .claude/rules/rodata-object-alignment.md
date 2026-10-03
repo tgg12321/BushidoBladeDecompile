@@ -1,9 +1,10 @@
 ---
 name: rodata-object-alignment
-paths: ["Makefile", "bb2.ld", "engine/pipeline.py", "engine/buildconfig.py", "src/*rodata*.c"]
+paths: ["Makefile", "bb2.ld", "engine/pipeline.py", "engine/buildconfig.py", "src/*rodata*.c", "src/display.c", "src/text1b_b.c", "src/text1b_tu1b.c", "src/code6cac_c_ab*.c"]
 description: "Every C object's .rodata links 4-aligned with jump-table .align 3 relative to the object's start (as ASPSX+PSYLINK do). Per-file align sed retired. New TU boundaries only from evidence."
 metadata:
   type: rule
+  tier: hygiene
 ---
 
 # Object-relative rodata alignment (owner ruling 2026-09-30)
@@ -42,6 +43,20 @@ commit.
 
 Choosing a boundary, reorder or item grouping BECAUSE it makes bytes match, when evidence does not force it,
 is the banned speculative rodata reorder ([[no-new-park-categories]]).
+
+## Inter-object padding (owner rulings Q101, Q102, 2026-10-03)
+
+The `PAD_NOPS_n` macros (`__asm__` nops between functions) and file-scope `.section .rodata`
+`.word 0` blocks are not admitted constructs: they are layout debt to retire, each change
+byte-neutral and oracle-green. Representation, first that the evidence supports:
+1. **Module end**: where the gap is a PsyQ object boundary (the following functions start at one
+   consistent phase, e.g. display.c's LIBGTE modules all at 0xC mod 16), split at the module
+   start and reproduce the gap the way the original link did, recorded per site in
+   docs/grind/rodata-align-2026-09-30.md.
+2. **Inside hand-written asm**: nops trailing a canonical asm function with no module evidence go
+   into that function's `asm/funcs/*.s` (splat's convention).
+3. **Rodata words**: a TU boundary under "New TU boundaries" above.
+Do not add new uses.
 
 ## Related
 

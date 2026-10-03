@@ -984,3 +984,35 @@ with CheckCallback()), and declares this module's info statics (BB2's GpuCtx nei
 (memory/grind/_exeque/evidence.md [s14b]). The question's "Sony's own compiler does the same thing" refers to cc1psx
 filling the slot on the non-volatile source ([s14]).
 The rule text is .claude/rules/legitimate-volatile-interrupt-touched.md § Owner ruling Q95.
+
+# Owner rulings 2026-10-03 (forty-fifth batch, conversation) — VERBATIM RECORD
+
+Owner asked: "Evaluate all standing rulings waiting on my input". The orchestrator evaluated the eight open
+questions of docs/grind/handoff-2026-09-30.md (cheat sweep 2026-10-02/03), re-reading the banked evidence in
+memory/grind/judge-decl-cleanup/followups/ and the cited SOTN source (@db41b28), and recommended (summary of the
+recommendations given, in order):
+1. func_80027AD8 — D_800A37E8/EA/EC vector: "approve per-function, Q63-style".
+2. func_8002738C — D_800A376A pair: "approve, same as 1" (a general rule instead was offered as an alternative
+   and not recommended).
+3. func_8003DA8C — "land it": one declared pair of tables, StatusUpBuf retired, permuter locals gone, two
+   FAKE-labelled offset reads.
+4. cb_read — "approve for cb_read only, Q73-style": one CdlREAD object, three FAKE per-member reads in cb_read.
+5. PutDispEnv — "accept a cross-function SOTN citation (lean yes)"; the cited s_m_m.c:48 read is real, matched
+   and self-marked ("Why the volatile?"); consequence disclosed: a labelled volatile read of a plain RAM member
+   becomes citable anywhere.
+6. PAD_NOPS — "don't keep the macros long-term": 24 of 34 sit at LIBGTE module ends (every next module at
+   0xC mod 16); represent them as module splits / the preceding asm's own nops; interim recorded layout debt.
+7. rodata `.word 0` — "same as 6": evidence-based TU boundary.
+8. Naming — approve `typed-restatement` and `basis-withdrawn`; RESET g_practice_menu_table/PracticeMenuRec;
+   apply the 0x800194F4 RESET.
+
+Owner, verbatim: "Go ahead with all your recommendations here. Note as a standing policy, now that we are fully
+decompiled, i am going to look to retile as many special rules and policies as i can. Slowly moving as much as
+the project to pure C as i can. So my choices will always be that which moves us more towards a faithful
+representation of the canonical source code, with no strange workarounds or cheats"
+
+Recorded as Q96 (item 1), Q97 (2), Q98 (3), Q99 (4), Q100 (5), Q101 (6), Q102 (7), Q103 (8), plus the standing
+direction ("retile" read as "retire"). Rule text: .claude/rules/aggregate-merge-family.md § Narrow per-function
+exceptions (Q96-Q99); completion-bar.md items 3-4 and § Application "Direction"; sotn-precedent-suffices.md
+condition (2) (Q100); rodata-object-alignment.md § Inter-object padding (Q101, Q102);
+docs/naming/sweep-2026-10-03/README.md § Owner ruling Q103.

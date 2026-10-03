@@ -20,7 +20,9 @@ SOTN repo"*. "Verifiably" (author's reading):
    `C:/Users/Trenton/Desktop/sotn-decomp` @db41b28), C source only. A header construct counts
    with a splat-member use site that itself meets (2) and (4).
 2. **Same thing when read**: open the file and read the construct in context; a shape-index
-   hit is not a citation.
+   hit is not a citation. The cited site may be another function or library (Q100): the same
+   spelling on the same object class (e.g. `*(volatile T *)&` on a plain-RAM global's member)
+   qualifies; its codegen effect need not be the same.
 3. **Layer-2 verifies** (1), (2), (4) against the SOTN source. Manual path only; a Judge PASS
    is not enough.
 4. **Matched code (Q55)**: not `INCLUDE_ASM`/`INCLUDE_RODATA`, not `NON_MATCHING`/disabled

@@ -1187,3 +1187,45 @@ field": a field-level `volatile s32 unk08` in include/gpu.h GpuCtx, the LIBGPU S
 jalr delay slot with the clear (2/187; evidence.md [s13b], [s14]). Only this field. Resolves the 2026-10-02 _exeque
 policy-question (rv2-exeque-1 FAIL item 3). Rule text: .claude/rules/legitimate-volatile-interrupt-touched.md
 § Owner ruling Q95.
+
+## 2026-10-03 — OWNER DIRECTION — retire special rules; faithful original source is the tiebreak
+
+Forty-fifth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 45). With the queue empty, the owner
+will retire as many special rules and policies as possible and move the project toward pure C. The owner's rulings
+and cleanup work take the option closer to a faithful representation of the original source, with no workarounds or
+cheats; new exceptions come only by owner ruling, as interim labels for the named functions only, each retired once a
+one-object spelling matches, never precedent. Not a review criterion (a FAIL still cites completion-bar items 1-6).
+Rule text: completion-bar.md § Application.
+
+## 2026-10-03 — OWNER RULINGS — Q96-Q99: four per-function exceptions (named functions only)
+
+Forty-fifth batch. Q96: func_80027AD8 / func_8002AB08 keep the three D_800A37E8/EA/EC scalars and hand out
+`&D_800A37E8` as the vector, FAKE-labelled (one-object forms banked at 2: cse rewrites the dot's [0] address).
+Q97: func_8002738C keeps `*(&D_800A376A + a0)`, FAKE-labelled (u8[2] only, lane-reported func_8003B2C8 12 /
+func_8003B328 16, unbanked; struct form unmeasured, open debt).
+Q98: D_800906A4[39][2] / D_8009060C[38] declared, StatusUpBuf retired; func_8003DA8C's [1] byte-offset read (used twice) and
+[0] row-pointer read FAKE (item 4 waived for them). Q99: one `extern volatile CdlREAD D_800A14D0`; cb_read alone keeps a FAKE per-member extern line for
+cnt/size/tslmode (item 4 waived for it). Not covered:
+func_80031B24 hands `&D_800A37E8` to func_800274BC / func_80032854 unlabelled (src/code6cac_b_tu2.c) — open debt. Evidence memory/grind/judge-decl-cleanup/followups/. Resolves cheat-sweep
+questions 1-4 of docs/grind/handoff-2026-09-30.md. Rule text: aggregate-merge-family.md § Narrow per-function
+exceptions.
+
+## 2026-10-03 — OWNER RULING — Q100: a SOTN citation may come from another function
+
+Forty-fifth batch. sotn-precedent-suffices condition (2) is met by the same spelling on the same object class in
+matched PS1 SOTN code, in any function or library; the codegen effect need not match. Applied first to PutDispEnv's
+eight `*(volatile s16 *)&` reads citing src/main/psxsdk/libspu/s_m_m.c:48 @db41b28 (read in context: matched,
+self-marked "Why the volatile?"). Resolves cheat-sweep question 5.
+
+## 2026-10-03 — OWNER RULINGS — Q101/Q102: inter-object padding asm is debt to retire
+
+Forty-fifth batch. PAD_NOPS_n and file-scope rodata `.word 0` blocks are not admitted; retire them byte-neutrally
+(module split at PsyQ object ends, nops into the preceding canonical asm's .s, or an evidence-based rodata TU
+boundary). No new uses. Resolves cheat-sweep questions 6-7. Rule text: rodata-object-alignment.md § Inter-object
+padding.
+
+## 2026-10-03 — OWNER RULING — Q103: naming classes typed-restatement and basis-withdrawn; two RESETs
+
+Forty-fifth batch. `typed-restatement` (CORROBORATED; tests T1-T6) and `basis-withdrawn` (RESET) are accepted
+classes; g_practice_menu_table / PracticeMenuRec and 0x800194F4 RESET. Resolves cheat-sweep question 8. Rule text:
+docs/naming/sweep-2026-10-03/README.md § Owner ruling Q103.

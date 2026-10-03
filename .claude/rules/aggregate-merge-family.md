@@ -1,7 +1,7 @@
 ---
 name: aggregate-merge-family
 paths: [".claude/rules/aggregate-merge-family.md"]
-description: "Frozen-list family: merging per-word splat D_ scalars into one aggregate — prongs (a)-(e), compiler-necessity evidence (a1)-(a4′), forced-in bytes (Q13/Q14), and the two narrow F4 exceptions (Q63, Q73)."
+description: "Frozen-list family: merging per-word splat D_ scalars into one aggregate — prongs (a)-(e), compiler-necessity evidence (a1)-(a4′), forced-in bytes (Q13/Q14), and the narrow per-function F4/item-4 exceptions (Q63, Q73, Q96-Q99)."
 metadata:
   type: rules
   tier: hygiene
@@ -60,7 +60,10 @@ sub-word reads) AND signed/unsigned builds of every C accessor are byte-identica
 member keeps main's current type (or the SDK type assigned to it), named in the ledger. Names
 follow the naming-evidence rules (offset names always ok).
 
-## Two narrow F4 exceptions (2026-09-30); nothing else may cite them
+## Narrow per-function exceptions (Q63, Q73, Q96-Q99); nothing else may cite them
+
+Interim labels for the named functions only (owner direction 2026-10-03): each is retired, not
+extended, once a one-object spelling matches.
 
 - **D_800A37D2 / D_800A37D3 (Q63):** only after the one-array and two-member-struct whole-tree
   forms are banked failing (scratch SHA1 + differing words). Then two adjacent `u8` scalars,
@@ -74,9 +77,28 @@ follow the naming-evidence rules (offset names always ok).
   (`.cse` `use_related_value` and `.greg`/final `.s` addressing), with Q31 mechanism + search.
   Each per-word declaration is `/* FAKE */`-annotated; every other access goes through
   `g_practice_menu_table`.
+- **D_800A37E8 / EA / EC (Q96):** func_80027AD8 and func_8002AB08 only. Three `s16` scalars;
+  the vector's address handed to callees is `&D_800A37E8`, `/* FAKE */`-annotated at the
+  assignment. Basis: the `s16[3]` and `{x,y,z}` forms banked at 2 (cse rewrites the dot's [0]
+  address to `vec`'s register; cc1psx identical),
+  memory/grind/judge-decl-cleanup/followups/func_80027AD8.vec-investigation.md.
+- **D_800A376A / D_800A376B (Q97):** func_8002738C only: the per-player byte indexed as
+  `*(&D_800A376A + a0)`, `/* FAKE */`-annotated. Basis: the `u8 D_800A376A[2]` form only
+  (source in followups/func_8002738C.c12-merge-variant.diff; func_8003B2C8 12 / func_8003B328 16
+  as reported by the cheat-sweep lane, scores not banked). No struct form was measured: open debt
+  (docs/grind/handoff-2026-09-30.md); a one-object form that matches retires Q97.
+- **D_800906A4 / D_8009060C (Q98, item 4):** declared `s16 D_800906A4[39][2]`,
+  `s32 D_8009060C[38]` (StatusUpBuf retires). func_8003DA8C only: the pair's [1] read (used twice) as
+  a byte offset off the declared array and its [0] through a row pointer, both
+  `/* FAKE */`-annotated (element reads schedule above the scalar stores: 8 / 9).
+  followups/func_8003DA8C.stagetables.*.
+- **CdlREAD D_800A14D0 (Q99, item 4):** one `extern volatile CdlREAD D_800A14D0` in libcd.h;
+  cb_read only keeps one block-scope `extern volatile s32` line for cnt, size and tslmode,
+  `/* FAKE */`-annotated (none 2; the measured partial sets cnt, cnt+size, cnt+tslmode,
+  size+tslmode 2-3; singletons size / tslmode not measured). followups/cb_read.cdlread.*.
 
 Records: docs/grind/decisions.md OWNER RULING entries of 2026-08-17, 2026-09-03, 2026-09-26
-(Q7, Q13, Q14) and 2026-09-30 (Q63, Q73).
+(Q7, Q13, Q14) and 2026-09-30 (Q63, Q73) and 2026-10-03 (Q96-Q99).
 
 Related: [[aggregate-declaration-views]] · [[split-scalars-hide-aggregate]] ·
 [[header-type-correction-from-use-sites]]

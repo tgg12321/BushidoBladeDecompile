@@ -99,9 +99,11 @@ types make provable, plus rows that depend on the proposed new class.
   - `mem_RelocPtrArray`.
   - 5 further MEDIUM RESETs.
 
-## Needs an owner ruling
+## Owner ruling Q103 (2026-10-03): all four items below adopted as recommended
 
-1. **New class `typed-restatement`** (`v4_newclass/class.md`). A name may restate a matched C body
+Applied by the follow-up naming commit. Items 1 and 2 are accepted classes from this date; 3 and 4 are RESETs.
+
+1. **New class `typed-restatement`** (CORROBORATED tier). A name may restate a matched C body
    built only from admitted objects, using a closed verb list. The class has six tests:
    - T1: the function is matched.
    - T2: at most 12 statements, and all callees are VERIFIED or CORROBORATED.
@@ -119,8 +121,17 @@ types make provable, plus rows that depend on the proposed new class.
    - The Obj80106A78 members `pos` / `prev_pos` / `vel` / `rot` / `rot_vel` / `mtx` / `slot` / `owner`.
    - PracticeMenuRec `other` / `index`.
 
+   Verbs (fixed meanings): Get (return a member, no store), Set (store args), Clear (zero/neutral
+   constants to exactly the named members), Reset (the full store list), Copy, Swap, Find (linear
+   search returning an entry or NULL), Has (0/1), Count/Sum, Open/Close (a VERIFIED Sony call
+   restated); literal ids go in the name. Relation nouns, each proven over every writer:
+   `other`/`index`/`slot`/`owner`; `pos`/`prev_pos`/`vel`/`rot`/`rot_vel`/`age`;
+   `size`/`count`/`list`/`id` (as passed to an admitted callee); a Sony type noun for a VERIFIED
+   API argument. C identifiers and comments are never evidence, only the matched operations.
+   Each row lists the admitting rows it depends on; if one is later reset, its dependants are
+   re-derived.
    Member renames are C edits inside matched files, so they need the manual lane with the oracle and a layer-2 review.
-2. **New class `basis-withdrawn`** (v3, one MEDIUM family row). If a name's only recorded basis is
+2. **New class `basis-withdrawn`** (v3, one MEDIUM family row; RESET). If a name's only recorded basis is
    another name that gets RESET, it is RESET too. This covers 20 `cpu_helper_<ADDR>` aliases.
 3. **`g_practice_menu_table` / `PracticeMenuRec`** (0x80101EC8, MEDIUM RESET). The record holds the
    two fighters' per-frame state, so "menu" is false. The name came from commit 80796420e with no
