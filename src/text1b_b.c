@@ -2281,11 +2281,6 @@ extern s32 func_8006E49C(s32, s32 *);
 
 
 
-/* Padding NOP macro */
-#define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
-#define PAD_NOPS_2 __asm__(".section .text\n    nop\n    nop\n")
-#define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
-
 /* --- Functions from text1b segment (0x80047ED0 - 0x80079A30) --- */
 
 extern u8 D_8009BD3B;
@@ -2783,7 +2778,6 @@ BIOS_B_FUNCTION(EnableEvent, 0xC);
 INCLUDE_ASM("asm/funcs", EnterCriticalSection);
 INCLUDE_ASM("asm/funcs", ExitCriticalSection);
 INCLUDE_ASM("asm/funcs", SetSp);
-PAD_NOPS_1; /* padding after func_800789D8 */
 BIOS_B_FUNCTION(open, 0x32);
 BIOS_B_FUNCTION(read, 0x34);
 BIOS_B_FUNCTION(write, 0x35);
@@ -2995,10 +2989,7 @@ INCLUDE_ASM("asm/funcs", _patch_pad);
 INCLUDE_ASM("asm/funcs", FlushCache);
 INCLUDE_ASM("asm/funcs", _send_pad);
 INCLUDE_ASM("asm/funcs", func_800790A4);
-PAD_NOPS_3; /* padding after func_800790A4 */
-PAD_NOPS_3; /* padding after func_800790A4 */
 INCLUDE_ASM("asm/funcs", _remove_ChgclrPAD);
-PAD_NOPS_1; /* padding after func_800790C0 */
 u8* memcpy(u8 *dst, u8 *src, s32 len) {
     u8 *ret;
     if (!dst) {

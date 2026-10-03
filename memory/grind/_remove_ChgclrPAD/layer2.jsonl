@@ -1,0 +1,1 @@
+{"func": "_remove_ChgclrPAD", "addr": "800790C0", "verdict": "PASS", "body_hash": "d07dfeaaa9e0cdcd", "body_kind": "asm", "file": "text1b_b", "reviewer": "cheat-reviewer-ab8ea014", "scope": "cheat-cleanup", "date": "2026-10-03T09:44:30Z", "head": "844536803", "notes": ""}

@@ -23,4 +23,5 @@ glabel _remove_ChgclrPAD
     /* 69910 80079110 00000000 */  nop
     /* 69914 80079114 0800E003 */  jr         $ra
     /* 69918 80079118 00000000 */   nop
+    /* 6991C 8007911C 00000000 */  nop
 endlabel _remove_ChgclrPAD

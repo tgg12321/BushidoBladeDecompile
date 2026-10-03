@@ -1,0 +1,1 @@
+{"func": "SetSp", "addr": "800789D8", "verdict": "PASS", "body_hash": "370bc6a406886e67", "body_kind": "asm", "file": "text1b_b", "reviewer": "cheat-reviewer-ab8ea014", "scope": "cheat-cleanup", "date": "2026-10-03T09:44:10Z", "head": "844536803", "notes": ""}
