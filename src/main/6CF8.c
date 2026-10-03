@@ -4,12 +4,9 @@
  * (LEGACY: a splat segment edge). */
 #include "common.h"
 #include "include_asm.h"
-#include "game.h"
-#include "system.h"
-#include "code6cac.h"
+#include "bb2.h"
 #include "bb2_const.h"
 #include "gte.h"
-#include "gpu.h"
 
 typedef struct {
     s16 x;

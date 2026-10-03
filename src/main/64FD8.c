@@ -4,10 +4,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "code6cac.h"
-#include "gpu.h"
+#include "bb2.h"
 
 /* ---- merged from text1b_tu2.c (owner ruling Q67: one original file) ---- */
 /* Declarations from the file this TU was split from (text1b.c). */

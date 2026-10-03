@@ -3,12 +3,8 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
-#include "gpu.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "system.h"
+#include "bb2.h"
 #include "gte.h"
-#include "code6cac.h"
 #include "bb2_const.h"
 
 /* func_800343F0 lives here, not in code6cac_b_tu2.c: the file boundary follows the per-file gp

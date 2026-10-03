@@ -9,10 +9,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "code6cac.h"
-#include "gpu.h"
+#include "bb2.h"
 
 /* Declarations from the file this TU was split from (text1b_tu1c.c). */
 extern s32 func_8005C2A8(s32 *, s16, s32);

@@ -3,13 +3,9 @@
  * snd_VabOpen, ...). .text 0x8004A348 (ROM 0x3AB48). Start boundary: G8 (the Q89 cut). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
-#include "gpu.h"
+#include "bb2.h"
 #include "include_asm.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "code6cac.h"
 #include "gte.h"
-#include <psxsdk/libspu.h>
 
 /* Declarations from the file this TU was split from (text1b.c). */
 extern void func_80054410(s32);

@@ -11,11 +11,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
-#include "gpu.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "system.h"
-#include "code6cac.h"
+#include "bb2.h"
 
 extern void CdMix(CdlATV *);
 extern s16 D_800A3854;

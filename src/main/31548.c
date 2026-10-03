@@ -2,10 +2,7 @@
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "code6cac.h"
-#include "gpu.h"
+#include "bb2.h"
 
 /* Declarations from the file this TU was split from (text1a_pre.c). */
 void func_800404A0(s16 *a0, s32 a1);

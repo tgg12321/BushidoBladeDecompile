@@ -11,11 +11,7 @@
  * with lui/%lo); maspsx models that for every file (owner ruling Q62,
  * 2026-09-30, global COMMON model), not per function. */
 #include "common.h"
-#include "gpu.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "system.h"
-#include "code6cac.h"
+#include "bb2.h"
 
 extern void VSync(s32);
 extern s32 CdPosToInt(s32);

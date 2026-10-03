@@ -3,10 +3,7 @@
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "code6cac.h"
-#include "gpu.h"
+#include "bb2.h"
 
 
 

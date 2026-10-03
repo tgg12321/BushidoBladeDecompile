@@ -8,12 +8,8 @@
  * .sdata at 0x800A3178.., the 9-byte ones in .rodata at 0x80010834. */
 #include "common.h"
 #include "include_asm.h"
-#include "gpu.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "system.h"
+#include "bb2.h"
 #include "gte.h"
-#include "code6cac.h"
 #include "bb2_const.h"
 
 extern s32 rand(void);

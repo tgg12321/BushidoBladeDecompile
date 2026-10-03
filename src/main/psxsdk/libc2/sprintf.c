@@ -1,8 +1,6 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
-#include "game.h"
-#include "code6cac.h"
 #include <psxsdk/libc.h>
 
 /* Declarations from the file this TU was split from (text1b_b.c). */

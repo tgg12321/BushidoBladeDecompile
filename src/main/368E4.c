@@ -3,11 +3,8 @@
  * compiled -G8 (Q89). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
-#include "gpu.h"
+#include "bb2.h"
 #include "include_asm.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "code6cac.h"
 #include "gte.h"
 
 /* ---- merged from text1a_c2.c (owner ruling Q67: one original file) ---- */

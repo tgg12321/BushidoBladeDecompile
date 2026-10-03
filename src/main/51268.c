@@ -3,11 +3,8 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "code6cac.h"
+#include "bb2.h"
 #include "gte.h"
-#include "gpu.h"
 
 /* func_80060A68 .. func_80060E38 moved here from text1b.c: the file boundary follows the per-file gp evidence
  * (owner ruling Q65). */
@@ -85,6 +82,13 @@ static s32 D_800A34E0;
 static s32 D_800A34E4;
 static s32 D_800A34E8;
 static s32 D_800A34EC;
+/* Two s16 slots at 0x800A34F0, indexed as one array. Object model evidence
+ * (the original binary): asm/funcs/func_800678A8.s
+ * reads the pair through ONE indexed access, `lh %lo(sym)(base + arg0*2)` with the
+ * base folded to 0x800A34F0 - 8 for arg0 = 4/5 (callers func_800677B8 /
+ * func_800677F4), and asm/funcs/func_80067D14.s forms the same folded base with
+ * %hi/%lo. func_80061C00 writes slot 0 or slot 1 with the same value. Replaces
+ * the splat per-word scalars D_800A34F0 / D_800A34F2. */
 static s16 D_800A34F0[2];
 static s32 D_800A34F4;  /* not named by any code or data: size from the gap */
 static s32 D_800A34F8;

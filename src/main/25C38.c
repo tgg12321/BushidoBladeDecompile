@@ -4,11 +4,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
-#include "gpu.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "system.h"
-#include "code6cac.h"
+#include "bb2.h"
 
 /* ---- merged from code6cac_b2_pre.c (owner ruling Q65: one original file) ---- */
 /* First half of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup -
@@ -17,11 +13,6 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
-#include "gpu.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "system.h"
-#include "code6cac.h"
 
 /* Extern data declarations */
 
@@ -186,11 +177,6 @@ void func_800355E8(void) {
  * + inline externs as code6cac_b2.c so cc1 sees identical declarations. */
 #include "common.h"
 #include "include_asm.h"
-#include "gpu.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "system.h"
-#include "code6cac.h"
 
 
 void func_80035618(s32 arg0) {

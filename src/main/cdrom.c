@@ -5,11 +5,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
-#include "gpu.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "system.h"
-#include "code6cac.h"
+#include "bb2.h"
 
 extern void VSync(s32);
 extern void func_8003AA78(void);

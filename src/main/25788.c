@@ -2,12 +2,8 @@
  * (the end of 24F08.c's -G8 unit); the last file of the EXPAND_LB run. */
 #include "common.h"
 #include "include_asm.h"
-#include "gpu.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "system.h"
+#include "bb2.h"
 #include "gte.h"
-#include "code6cac.h"
 #include "bb2_const.h"
 
 extern s32 *func_80077D00(void);
@@ -16,7 +12,7 @@ extern u8 D_801027D8;
 extern void func_800344B4(void);
 
 /* Copies the record at func_80077D00() into the FileRecord D_80106A50
- * (include/system.h): flags bits 0-2 are cleared and re-set from p[8] bits 0-2,
+ * (include/game.h): flags bits 0-2 are cleared and re-set from p[8] bits 0-2,
  * then the three colour bytes at p+0x17 are copied to D_80106A50.color.
  * The register allocation is a global.c priority fit
  * (floor_log2(nrefs) * nrefs * 10000 / live_length); see the FAKEs below. */

@@ -2,12 +2,9 @@
  * ...) and the primitive texture-offset helpers (gpu_OffsetTexPolyFT3..gpu_OffsetClut). .text
  * 0x80042504 (ROM 0x32D04). Start boundary: G8 (the -G8 run ends). */
 #include "common.h"
-#include "gpu.h"
+#include "bb2.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
-#include <psxsdk/libsnd.h>
-#include "game.h"
-#include "code6cac.h"
 #include "gte.h"
 
 
