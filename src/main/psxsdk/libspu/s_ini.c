@@ -1,12 +1,12 @@
 /* PsyQ 4.0 LIBSPU S_INI: _SpuInit and SpuStart. .text 0x800885CC..0x80088740, a verbatim LIBSCAN
  * module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "system.h"
+#include <psxsdk/libetc.h>
 #include "libspu_internal.h"
+#include <psxsdk/libapi.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
 extern s32 EnterCriticalSection(void);
-extern void ExitCriticalSection(void);
 
 void _SpuInit(s32 arg0) {
     u16 *var_v0;

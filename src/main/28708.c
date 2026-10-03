@@ -83,13 +83,6 @@ extern void game_Cleanup(void);
 
 
 extern s32 g_str_sio_800A3210;
-extern void AddCOMB(void);
-
-
-
-
-
-
 
 extern s32 D_800A36C0;
 
@@ -141,19 +134,10 @@ extern u8 D_800A37D0;
 
 
 /* Extern function declarations for decompiled functions */
-extern s32 TestEvent(s32);
-extern void CloseEvent(s32);
-extern void EnableEvent(s32);
 extern void EnterCriticalSection(void);
-extern void ExitCriticalSection(void);
-extern void read(s32, s32 *, s32);
-extern void close(s32);
-
 
 extern void ResetRCnt(s32);
 extern s32 GetRCnt(s32);
-
-extern void DelCOMB(void);
 
 extern void func_8003E22C(void);
 extern void func_8003F218(s32);
@@ -313,7 +297,6 @@ const u32 D_80010A2C[32] = {
 const char D_80010AAC[] = "BASLUS-00663BUSHIDO2";
 extern u8 D_800A3200;
 extern u8 D_800A3201;
-extern u8 *strcpy(u8 *, u8 *);
 
 void func_80038170(u8 *out) {
     s32 s1, s2, s3;

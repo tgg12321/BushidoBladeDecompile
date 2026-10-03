@@ -4,6 +4,8 @@
 /* System - IRQ, file I/O, memory card */
 
 #include "common.h"
+#include <psxsdk/kernel.h>
+#include <psxsdk/libetc.h>
 
 /* Named globals */
 /* The 0x24-byte file record at 0x80106A50 (func_80037F40 checksums it as one
@@ -23,29 +25,5 @@ typedef struct {
 } FileRecord;
 extern FileRecord D_80106A50;
 extern s16 D_800A3710;
-
-/* PsyQ libcd bios.c's command-timeout alarm (Sony's Alarm_t {int, int, char *};
- * SOTN: src/main/psxsdk/libcd/bios.c:24 @aa53500; object map:
- * pre-slim-2026-10-01:memory/closer/libcd-identity.md): armed and polled by libcd's command
- * wait loops in src/main/psxsdk/libcd/bios.c. */
-typedef struct {
-    s32 time;   /* 0x800F19B8: VSync(-1) deadline */
-    s32 count;  /* 0x800F19BC: poll count */
-    char *name; /* 0x800F19C0: caller name for the timeout report */
-} Alarm_t;
-extern Alarm_t Alarm;
-
-/* Functions */
-extern void ResetCallback(void);
-
-/* PsyQ libapi struct EXEC: the PS-EXE header body (0x3C bytes, 0x10 into the image). */
-typedef struct EXEC {
-    u32 pc0, gp0;
-    u32 t_addr, t_size;
-    u32 d_addr, d_size;
-    u32 b_addr, b_size;
-    u32 s_addr, s_size;
-    u32 sp, fp, gp, ret, base;
-} EXEC;
 
 #endif /* SYSTEM_H */

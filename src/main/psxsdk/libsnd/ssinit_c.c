@@ -3,9 +3,7 @@
  * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
-void ResetCallback(void);
+#include <psxsdk/libetc.h>
 
 void SsInit(void) {
     ResetCallback();

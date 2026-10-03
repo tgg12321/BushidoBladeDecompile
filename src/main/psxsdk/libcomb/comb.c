@@ -6,6 +6,8 @@
  * Boundaries and symbol offsets: the COMB module of PsyQ 4.0 LIBCOMB.LIB.
  * No published C reference (psyz decomp/src/libcomb/comb.c is INCLUDE_ASM). */
 #include "common.h"
+#include <psxsdk/libapi.h>
+#include <psxsdk/libcomb.h>
 
 /* SIO port registers (0x1F801050, hardware I/O: volatile is type-level). */
 typedef struct {
@@ -42,12 +44,9 @@ extern volatile SioReq sen;
 extern volatile SioReq D_800F1AFC;    /* rec */
 
 extern s32 EnterCriticalSection(void);
-extern void ExitCriticalSection(void);
 extern s32 ResetGraph(s32);
 extern void DeliverEvent(u32, u32);
-extern void AddDrv(s32 *);
 extern void DelDrv(const char *);
-extern void FlushCache(void);
 /* Not declared by any PsyQ 4.0 header (KERNEL.H lists neither), so COMB
    called them undeclared: int-returning calls with no prototype. */
 extern s32 SysEnqIntRP();

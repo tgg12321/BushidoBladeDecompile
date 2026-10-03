@@ -2,6 +2,9 @@
  * libetc/intr.c). .text 0x80082AC0..0x800831D0, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
+#include <psxsdk/libapi.h>
+#include <psxsdk/libetc.h>
+#include <psxsdk/libc.h>
 
 /* .rodata 0x80016328..0x80016394: the module's rcsid "$Id: intr.c,v 1.76 ..." (pointed at only by
  * INTR's callbacks table, asm/data/91C98.data.s:1271) and trapIntr's two messages (moved from
@@ -26,8 +29,6 @@ const char D_80016378[28] =
 extern u16 g_sys_vblank_count;
 extern volatile u16 *i_mask; /* libetc intr.c i_mask = (u16 *)0x1F801074, I_MASK (MMIO) */
 extern s32 *g_sys_irq_vtable;
-extern void ChangeClearPAD(s32);
-extern void ChangeClearRCnt(s32, s32);
 
 void ResetCallback(void) {
     ((void (*)(void))g_sys_irq_vtable[3])();
@@ -79,9 +80,7 @@ extern volatile u16 *i_stat;   /* i_stat = (u16 *)0x1F801070 (MMIO) */
 extern volatile s32 *d_pcr;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
 extern intrEnv_t D_800A1578;
 
-extern s32 setjmp(s32 *);
 extern void trapIntr(void);
-extern void HookEntryInt(s32 *);
 extern s32 startIntrVSync();
 extern s32 startIntrDMA();
 /* FAKE: the BIOS call takes no argument; declared with one for startIntr (see there). */
@@ -122,8 +121,6 @@ intrEnv_t *startIntr(void) {
    callbacks vtable raw words at 0x800A25E8/F0/F8 (7D920.data.s). */
 typedef void (*IntrCallback)(void);
 extern s32 D_800A2610; /* trapMissedCount */
-extern void ReturnFromException(void);
-extern void ResetEntryInt(void);
 
 /* trapIntr */
 void trapIntr(void) {

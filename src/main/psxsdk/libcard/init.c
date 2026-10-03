@@ -1,6 +1,7 @@
 /* PsyQ 4.0 LIBCARD INIT: InitCARD, StartCARD and StopCARD. .text 0x8007A370..0x8007A428, a verbatim
  * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
+#include <psxsdk/libcard.h>
 
 /* Declarations from the file this module was split from (gpu.c). */
 extern void StopCARD2(void);

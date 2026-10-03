@@ -1,6 +1,7 @@
 /* func_80037D14, a state machine over _card_info / _card_load / _card_clear. .text 0x80037D14 (ROM
  * 0x28514). Start boundary: LEGACY (a tooling split, no evidence either way). */
 #include "common.h"
+#include <psxsdk/libcard.h>
 
 /* memcard_Format's (28708.c) path format. It sits in this file's .rodata, before
  * func_80037D14's jump table, whose .align 3 supplies the zero bytes after it. */
@@ -12,9 +13,6 @@ extern s32 D_800A3890;
 extern s32 D_800A3924;
 extern s32 D_800A37F4;
 
-extern void _card_info(s32);
-extern void _card_load(s32);
-extern void _card_clear(s32);
 extern s32  memcard_PollSwEventsTimeout(void);
 extern void memcard_AckHwEvents(void);
 extern s32  memcard_WaitHwEvent(void);

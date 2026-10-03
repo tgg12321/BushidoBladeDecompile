@@ -147,25 +147,7 @@ extern s32 g_memcard_file_count;
 
 
 /* Extern function declarations for decompiled functions */
-extern s32 TestEvent(s32);
-extern void CloseEvent(s32);
-extern void EnableEvent(s32);
 extern void EnterCriticalSection(void);
-extern void ExitCriticalSection(void);
-extern void read(s32, s32 *, s32);
-
-extern s32 firstfile(s32 *, s32 *);
-extern s32 nextfile(s32 *);
-
-
-extern void StopCARD(void);
-
-
-
-
-
-
-
 
 extern s32 g_memcard_file_list;
 
@@ -363,7 +345,6 @@ s32 func_80037B00(u8 *arg0) {
     }
     return 0;
 }
-extern s32 open(s32 *, s32);
 typedef void (*Func79A30_5)(s32 *, s32 *, s32, s32, s32);
 s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 sp18[8];
@@ -380,7 +361,6 @@ s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     read(temp_v0, arg3, arg4);
     return -(memcard_WaitHwEvent() != 1);
 }
-extern void close(s32);
 extern void write(s32, s32, s32);
 s32 memcard_WriteFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
     s32 sp18[8];

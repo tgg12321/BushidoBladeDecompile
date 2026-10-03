@@ -4,7 +4,13 @@
 /* Shared declarations for the code6cac module family */
 
 #include "common.h"
+#include <psxsdk/libapi.h>
+#include <psxsdk/libc.h>
+#include <psxsdk/libcard.h>
 #include <psxsdk/libcd.h>
+#include <psxsdk/libcomb.h>
+#include <psxsdk/libetc.h>
+#include <psxsdk/libsn.h>
 
 /* Named globals */
 extern u8 cpu_practice_honmokuroku_data_tbl[][4];
@@ -1127,10 +1133,6 @@ extern void func_800494D4(s32, s32);
 extern void func_80049584(s32);
 extern s32 func_8005B8B8(s32);
 extern void func_8005C6D0(void);
-struct EXEC;
-extern void Exec(struct EXEC *, s32, s32 *);
-extern s32 format(s32 *);
-extern s32 sprintf(char *, char *, ...);
 extern void ResetGraph(s32);
 extern void SetDispMask(s32);
 extern void DrawSync(s32);

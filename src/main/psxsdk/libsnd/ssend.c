@@ -2,13 +2,13 @@
  * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
+#include <psxsdk/libapi.h>
+#include <psxsdk/libetc.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
-void VSyncCallback(s32 a0);
 void InterruptCallback(void);
 
 extern void EnterCriticalSection(void);
-extern void ExitCriticalSection(void);
 
 void SsEnd(void) {
     if (_snd_seq_tick_env.unk4 != 0) {

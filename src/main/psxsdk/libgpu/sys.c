@@ -5,6 +5,7 @@
 #include "common.h"
 #include "gpu.h"
 #include "psx.h"
+#include <psxsdk/libetc.h>
 
 /* .rodata 0x80015E28..0x8001605C: this module's strings (moved from src/text1a_b_post_rodata.c, Q106
  * D4: every C reader is in this file, in link order; the leading rcsid is referenced only by SYS's
@@ -402,7 +403,6 @@ s32 GetDrawEnv(s32 a0) {
     memcpy(a0, &g_gpu_ctx.draw_env, 0x5C);
     return a0;
 }
-extern s32 GetVideoMode(void);
 s32 get_dx(s16 *arg0);
 /* PsyQ 4.0 LIBGPU SYS: PutDispEnv (verbatim-linked Sony object);
    C ref: SOTN src/main/psxsdk/libgpu/sys.c:336 @aa53500 (a PsyQ 3.3 build; structure only) */

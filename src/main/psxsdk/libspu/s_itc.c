@@ -2,9 +2,7 @@
  * module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 TestEvent(s32);
+#include <psxsdk/libapi.h>
 
 s32 SpuIsTransferCompleted(s32 arg0) {
     s32 var_v0;

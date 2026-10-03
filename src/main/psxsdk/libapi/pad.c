@@ -2,6 +2,7 @@
  * (SetInitPadFlag .. _IsVSync). .text 0x80078BE0..0x80078F00, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
+#include <psxsdk/libapi.h>
 
 /* Declarations from the file this module was split from (src/main/64FD8.c, ex text1b_b.c). */
 s32 _Pad1(void);
@@ -18,8 +19,6 @@ s32 ReadInitPadFlag(void) {
 void _remove_ChgclrPAD(void);
 void EnterCriticalSection(void);
 void _patch_pad(void);
-void ExitCriticalSection(void);
-void ChangeClearPAD(s32);
 s32 SetPatchPad(void);
 void PAD_init2(s32, s32, s32, s32);
 void _send_pad(void);
@@ -63,7 +62,6 @@ void StopPAD(void) {
     D_8009BD80 = 0;
 }
 extern void EnterCriticalSection(void);
-extern void ExitCriticalSection(void);
 extern void SysDeqIntRP(s32, u32 *);
 extern void SysEnqIntRP(s32, u32 *);
 

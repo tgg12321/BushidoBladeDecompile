@@ -1,6 +1,7 @@
 /* PsyQ 4.0 LIBC2 RAND: rand and srand. .text 0x80079154..0x80079194, a verbatim LIBSCAN module
  * span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
+#include <psxsdk/libc.h>
 
 extern u32 D_800F1848;
 s32 rand(void) {

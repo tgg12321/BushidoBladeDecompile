@@ -4,10 +4,10 @@
  * gap (Q106 D3), named by its ROM offset. */
 #include "common.h"
 #include "include_asm.h"
+#include <psxsdk/libsn.h>
 
 INCLUDE_ASM("asm/funcs", PCopen);
 INCLUDE_ASM("asm/funcs", PCclose);
-extern s32 PClseek(s32, s32, s32);
 INCLUDE_ASM("asm/funcs", PClseek);
 INCLUDE_ASM("asm/funcs", __SN_ENTRY_POINT);
 /* 0x80083794 = libgcc __main / crt0 ctor-walker — COMPLETED-INLINE-ASM-CANONICAL

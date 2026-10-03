@@ -6,10 +6,10 @@
 #include "include_asm.h"
 #include "game.h"
 #include "code6cac.h"
+#include <psxsdk/libc.h>
 
 /* Declarations from the file this TU was split from (text1b_b.c). */
 #define NULL ((void *)0)
-s32 strlen(u8 *a0);
 
 /* D_80015A68: 1 string(s), 20B @ 0x80015A68 */
 const char D_80015A68[20] =

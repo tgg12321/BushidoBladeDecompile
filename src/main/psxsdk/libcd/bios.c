@@ -2,8 +2,8 @@
  * static `callback`; $Id: bios.c,v 1.86; SOTN libcd/bios.c). .text 0x80080828..0x80082000, a
  * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include "system.h"
 #include "psx.h"
+#include <psxsdk/libetc.h>
 #include "libcd_internal.h"
 
 /* .rodata 0x8001607C..0x8001622C: the module's strings in front of getintr's jump table
@@ -256,9 +256,20 @@ extern void Result;
 extern void Result_plus_0x8;
 extern void Result_plus_0x10;
 
+/* PsyQ libcd bios.c's command-timeout alarm (Sony's Alarm_t {int, int, char *};
+ * SOTN: src/main/psxsdk/libcd/bios.c:24 @aa53500; object map:
+ * pre-slim-2026-10-01:memory/closer/libcd-identity.md): armed and polled by libcd's command
+ * wait loops in src/main/psxsdk/libcd/bios.c. */
+typedef struct {
+    s32 time;   /* 0x800F19B8: VSync(-1) deadline */
+    s32 count;  /* 0x800F19BC: poll count */
+    char *name; /* 0x800F19C0: caller name for the timeout report */
+} Alarm_t;
+extern Alarm_t Alarm;
+
 /* bios.c's alarm helpers, as in Sony's source (SOTN: src/main/psxsdk/libcd/bios.c:95 @aa53500).
  * SOTN reaches its `volatile Alarm_t Alarm` only through the non-volatile view
- * `((Alarm_t *)&Alarm)->`; include/system.h declares Alarm non-volatile, which is
+ * `((Alarm_t *)&Alarm)->`; Alarm is declared non-volatile above, which is
  * that view without the cast. */
 static inline void set_alarm(char *name)
 {

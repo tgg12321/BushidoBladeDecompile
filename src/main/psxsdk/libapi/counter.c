@@ -2,6 +2,7 @@
  * .text 0x80078A68..0x80078BE0, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json),
  * Q106 D3. */
 #include "common.h"
+#include <psxsdk/libapi.h>
 
 /* Declarations from the file this module was split from (src/main/64FD8.c, ex text1b_b.c). */
 extern s32 D_8009BD68;

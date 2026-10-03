@@ -18,8 +18,6 @@ extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern void snd_Quit(void);
 extern void memcard_Quit(void);
-extern void StopPAD(void);
-extern void StopCallback(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);

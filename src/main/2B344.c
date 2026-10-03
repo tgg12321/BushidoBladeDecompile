@@ -1641,9 +1641,6 @@ typedef char *va_list;
 #define va_start(ap, last) ((ap) = (va_list)(&(last) + 1))
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
 
-s32 strlen(u8 *);
-
-
 void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
     u8 buf[0x400];
     u8 seg[0x100];

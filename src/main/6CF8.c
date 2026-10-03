@@ -41,12 +41,7 @@ const char g_str_build_date[28] = "Fri Aug  7 22:26:32 1998\n";
 extern void printf();
 extern void func_800164F8(void);
 extern s16 Judge[];
-extern s32 PCopen(s32, s32, s32);
-extern s32 PClseek(s32, s32, s32);
 extern s32 PCread(s32, u8 *, s32);
-extern void close(s32);
-extern void PCclose(s32);
-
 
 extern u8 D_800A30E8;
 extern u8 D_800A30D4;
@@ -73,8 +68,6 @@ extern s32 GetRCnt(u32);
 extern s32 rand(void);
 extern void func_800372C0(void);
 extern void __main(void);
-extern void SetSp(u32);
-extern void SetMem(s32);
 extern void func_80060E04(s32);
 extern void func_8003D2F4(void);
 
@@ -242,8 +235,6 @@ void disp_Init(void) {
     DrawSync(0);
 }
 extern void InitPAD(u8 *, s32, u8 *, s32);
-extern void StartPAD(void);
-extern void ChangeClearPAD(s32);
 extern void cdrom_Init(void);
 extern void memcard_Init(void);
 extern u8 g_pad_buf;

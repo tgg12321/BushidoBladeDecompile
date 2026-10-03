@@ -3,11 +3,10 @@
 #include "include_asm.h"
 #include "game.h"
 #include "code6cac.h"
+#include <psxsdk/libc.h>
 
 /* Declarations from the file this TU was split from (text1b_b.c). */
-s32 strlen(u8 *a0);
 #define __va_rounded_size(TYPE) (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
-u8 *memchr(u8 *buf, s32 ch, s32 len);
 
 /* PsyQ LIBC SPRINTF: sprintf — verbatim-linked Sony object; C ref: SOTN
  * src/main/psxsdk/libc/sprintf.c (sotn-decomp @8bd7c77). Two differences for

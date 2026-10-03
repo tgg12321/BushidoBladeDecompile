@@ -3,6 +3,7 @@
  * memory/closer/psyq-library-census.md), one file per gap (Q106 D3), named by its ROM offset. */
 #include "common.h"
 #include "include_asm.h"
+#include <psxsdk/libsn.h>
 
 extern s32 _SN_read(s32, s32, s32, s32);
 

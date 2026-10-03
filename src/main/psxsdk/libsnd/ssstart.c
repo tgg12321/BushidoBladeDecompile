@@ -3,12 +3,12 @@
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
+#include <psxsdk/libapi.h>
+#include <psxsdk/libetc.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
 extern s32 EnterCriticalSection(void);
-extern void ExitCriticalSection(void);
 
-extern void VSyncCallback(s32);
 extern s32 InterruptCallback(s32, s32);
 extern void ResetRCnt(s32);
 extern void SetRCnt(s32, s32, s32);

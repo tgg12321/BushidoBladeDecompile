@@ -1,6 +1,8 @@
 /* PsyQ 4.0 LIBETC VSYNC: VSync and v_wait (SOTN libetc/vsync.c). .text 0x800828CC..0x80082AB0, a
  * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
+#include <psxsdk/libapi.h>
+#include <psxsdk/libetc.h>
 
 /* .rodata 0x80016318..0x80016328: v_wait's timeout message (moved from src/text1a_b_tail_rodata.c,
  * Q106 D4: every reader is in this file, in link order). */
@@ -68,8 +70,6 @@ s32 VSync(s32 a0) {
 }
 
 extern void puts(void *);
-extern void ChangeClearPAD(s32);
-extern void ChangeClearRCnt(s32, s32);
 /* PsyQ 4.0 LIBETC VSYNC: v_wait (static) — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libetc/vsync.c.
    FAKE(partial-use volatile array, Ruling 3): only [0] is

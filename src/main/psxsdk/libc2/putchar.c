@@ -1,6 +1,7 @@
 /* PsyQ 4.0 LIBC2 PUTCHAR: putchar. .text 0x8007997C..0x80079A30,
  * a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
+#include <psxsdk/libc.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libc2/prnt.c). */
 extern s32 column;
