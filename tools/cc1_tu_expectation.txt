@@ -154,7 +154,7 @@ ffc04e222684142be136f716a6377b73099da9bb  main/psxsdk/libgte/smp_03
 46712049b7bb9d64443f8be61f6cfe4d1f6797ad  main/psxsdk/libgte/smp_04
 104f4b9610b589f25a2d4df717dd3b783cabbf73  main/psxsdk/libsn/73E98
 035a537170e03497cba8415c7e2a9cfde31b904c  main/psxsdk/libsn/7407C
-0c7920282bb80aea9e956289f1f2aa6af565da5e  main/psxsdk/libsnd/749E0
+0c7920282bb80aea9e956289f1f2aa6af565da5e  main/psxsdk/libsnd/cres
 1778c3172524e12bd7bd95b032b4cfc6ff7c8080  main/psxsdk/libsnd/75174
 14e8dabdb81c35d0e63185602ff819ba8ce4cbb2  main/psxsdk/libsnd/760D0
 dc94e3ac28e481040feca7c5c1ba426847ed23a3  main/psxsdk/libsnd/76240

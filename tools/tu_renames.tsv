@@ -56,3 +56,4 @@ text1a_b_post_rodata	main/psxsdk/libcd/bios	after:c13e49ca8439
 # libetc/intr, libetc/intr_dma (rodata-align doc §13, 4e).
 text1a_b_tail_rodata	main/psxsdk/libcd/bios	after:c13e49ca8439
 main	main/psxsdk/libspu/spu	after:3467622c018e
+main/psxsdk/libsnd/749E0	main/psxsdk/libsnd/cres	after:2cc9d7eb5019
