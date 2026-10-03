@@ -194,7 +194,7 @@ cc2fe073351748878fab2a345172c0ccbe7a1a2a  main/psxsdk/libsnd/vs_vfb
 3c3c60e8c887f7a5e02a22b7f03a5c11f612acba  main/psxsdk/libsnd/vs_vh
 fce622bb85e70f2dd7ee06ea26a0a6589d9f095d  main/psxsdk/libsnd/vs_vtb
 346e7a2c0aa57341702a7e4571e9af4d1dbb7be7  main/psxsdk/libsnd/vs_vtc
-35bdcc1baf3893700017177f1bdb63980aafd3c8  main/psxsdk/libspu/7A248
+35bdcc1baf3893700017177f1bdb63980aafd3c8  main/psxsdk/libspu/s_sav
 22fc19e43bcf96e857d4d694fa9bf5602d675c6d  main/psxsdk/libspu/7BC88
 85678a3bb6effe791999749bab587078cda82fcc  main/psxsdk/libspu/s_crwa
 e8e76bd27e3351744ae7a2c388e06ab7034d1730  main/psxsdk/libspu/s_dcb

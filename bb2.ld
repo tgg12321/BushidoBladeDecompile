@@ -281,7 +281,7 @@ SECTIONS
         build/src/main/psxsdk/libspu/s_m_int.o(.text);
         build/src/main/psxsdk/libspu/s_m_f.o(.text);
         build/src/main/psxsdk/libspu/s_snv.o(.text);
-        build/src/main/psxsdk/libspu/7A248.o(.text);
+        build/src/main/psxsdk/libspu/s_sav.o(.text);
         build/src/main/psxsdk/libspu/s_snc.o(.text);
         build/src/main/psxsdk/libspu/s_sr.o(.text);
         build/src/main/psxsdk/libspu/s_m_util.o(.text);
@@ -504,7 +504,7 @@ SECTIONS
         build/src/main/psxsdk/libspu/s_m_int.o(.data);
         build/src/main/psxsdk/libspu/s_m_f.o(.data);
         build/src/main/psxsdk/libspu/s_snv.o(.data);
-        build/src/main/psxsdk/libspu/7A248.o(.data);
+        build/src/main/psxsdk/libspu/s_sav.o(.data);
         build/src/main/psxsdk/libspu/s_snc.o(.data);
         build/src/main/psxsdk/libspu/s_sr.o(.data);
         build/src/main/psxsdk/libspu/s_m_util.o(.data);
@@ -773,7 +773,7 @@ SECTIONS
         build/src/main/psxsdk/libspu/s_m_int.o(.bss);
         build/src/main/psxsdk/libspu/s_m_f.o(.bss);
         build/src/main/psxsdk/libspu/s_snv.o(.bss);
-        build/src/main/psxsdk/libspu/7A248.o(.bss);
+        build/src/main/psxsdk/libspu/s_sav.o(.bss);
         build/src/main/psxsdk/libspu/s_snc.o(.bss);
         build/src/main/psxsdk/libspu/s_sr.o(.bss);
         build/src/main/psxsdk/libspu/s_m_util.o(.bss);
