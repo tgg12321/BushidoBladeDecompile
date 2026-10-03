@@ -43,3 +43,4 @@ code6cac_b_rodata_post	main/memcard	after:99d242d6a8d4
 text1a_b_pre_rodata_b	main/3AB48	after:0ed85417adf8
 text1a_b_mid_rodata	-	after:644f07862193
 text1b_b	main/64FD8	after:0ca30f008294
+main_post	main/d_7D870	after:aef789b9158a

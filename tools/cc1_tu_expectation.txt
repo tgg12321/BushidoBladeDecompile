@@ -77,7 +77,7 @@ d5ba30ed992eb95d361c050c944b196b621c0764  main/psxsdk/libc2/sprintf
 26d43c0cd9d105c3e00c58d186d0e759d2d9d078  main/psxsdk/libc2/strcpy
 efdf0fcf172eee0d831821e60b91e3027a6b1ed1  main/psxsdk/libc2/strlen
 8bfd42dad3fafef19985d51b9025ead5270376fc  main/psxsdk/libcomb/comb
-831b3a4202ada242956cea66d21119c0ca50ba7d  main_post
+831b3a4202ada242956cea66d21119c0ca50ba7d  main/d_7D870
 d63cb1a187b36abde5fc44fce44df32c5e41219d  system
 aa02790aa1818dba03e44205bfe56e20639ccfb0  text1a_b_post_rodata
 254886b14b7223202b20d1d6517c66eacf97beb8  text1a_b_tail_rodata
