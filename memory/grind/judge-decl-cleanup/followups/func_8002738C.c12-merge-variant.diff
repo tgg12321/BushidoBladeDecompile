@@ -1,0 +1,127 @@
+--- a/include/code6cac.h
++++ b/include/code6cac.h
+@@ -660,8 +660,11 @@
+  * src/code6cac_b5.c). */
+ extern u8 g_cd_result[8];
+ extern u8 D_800A3769;
+-extern u8 D_800A376A;
+-extern u8 D_800A376B;
++/* One byte per player: func_8002738C(player, limb) ORs the hit limb's bit
++ * (0x01..0x10) into [player] (base + player, asm/funcs/func_8002738C.s);
++ * player_SetCharId(0, D_800A376A[0]) applies player 0's; func_80032BBC-style
++ * resets clear both.  Replaces the splat per-byte scalar D_800A376B ([1]). */
++extern u8 D_800A376A[2];
+ extern u8 D_800A376C;
+ extern s16 D_800A376E;
+ extern s32 D_800A3778;
+--- a/src/code6cac_b_tu2.c
++++ b/src/code6cac_b_tu2.c
+@@ -85,31 +85,31 @@
+         case 3:
+         case 4:
+         case 5:
+-            *(&D_800A376A + a0) |= 0x10;
++            D_800A376A[a0] |= 0x10;
+             break;
+         case 6:
+         case 7:
+         case 8:
+         case 9:
+-            *(&D_800A376A + a0) |= 0x01;
++            D_800A376A[a0] |= 0x01;
+             break;
+         case 10:
+         case 11:
+         case 12:
+         case 13:
+-            *(&D_800A376A + a0) |= 0x02;
++            D_800A376A[a0] |= 0x02;
+             break;
+         case 14:
+         case 15:
+         case 16:
+         case 17:
+-            *(&D_800A376A + a0) |= 0x04;
++            D_800A376A[a0] |= 0x04;
+             break;
+         case 18:
+         case 19:
+         case 20:
+         case 21:
+-            *(&D_800A376A + a0) |= 0x08;
++            D_800A376A[a0] |= 0x08;
+             break;
+     }
+ }
+@@ -6340,7 +6340,7 @@
+         }
+     } else {
+         u8 a1;
+-        D_800A376B = 0;
++        D_800A376A[1] = 0;
+         D_800A3783 = a0 + 1;
+         a1 = (&D_801077B0)[a0];
+         D_80102778.unk_4[1] = (&D_8008D55C)[a1];
+@@ -6449,7 +6449,7 @@
+         s32 row;
+ 
+         D_800A38E2 = state + 1;
+-        D_800A376B = 0;
++        D_800A376A[1] = 0;
+         entry = table[0];
+         D_800A384C = entry;
+         row = D_8008D9EC[D_8008D538[(s8)D_80102778.unk_4[0]]] == 0;
+--- a/src/code6cac_b_tu3.c
++++ b/src/code6cac_b_tu3.c
+@@ -27,8 +27,8 @@
+     D_800A36A4 = val_84;
+     player_SetCharId(0, 0);
+     player_SetCharId(1, 0);
+-    D_800A376A = 0;
+-    D_800A376B = 0;
++    D_800A376A[0] = 0;
++    D_800A376A[1] = 0;
+     D_800A380C = 0;
+     D_800A38D4 = 2;
+     D_800A37D3 = 0;
+--- a/src/code6cac_c_ab.c
++++ b/src/code6cac_c_ab.c
+@@ -416,10 +416,10 @@
+     D_800A3836 = *p;
+     {
+         u8 *base = D_800A3894;
+-        u8 v1 = D_800A376A;
++        u8 v1 = D_800A376A[0];
+         u8 v0 = *base;
+         D_800A36C8 = v1;
+-        D_800A376A = 0;
++        D_800A376A[0] = 0;
+         *p = v0;
+     }
+     player_SetCharId(0, 0);
+@@ -427,14 +427,14 @@
+ void func_8003B328(void) {
+     u8 *p = &D_80102778.unk_4[0];
+     u8 v_277C = *p;
+-    u8 v_376A = D_800A376A;
++    u8 v_376A = D_800A376A[0];
+     u8 v_3836 = D_800A3836;
+     u8 v_36C8 = D_800A36C8;
+     D_800A3836 = 0xFF;
+     D_800A3915 = v_277C;
+     D_800A36F4 = v_376A;
+     *p = v_3836;
+-    D_800A376A = v_36C8;
++    D_800A376A[0] = v_36C8;
+     player_SetCharId(0, v_36C8);
+     func_80022568((u8 *)g_practice_menu_table);
+ }
+@@ -602,7 +602,7 @@
+     } while (!done);
+ }
+ void func_8003B870(void) {
+-    player_SetCharId(0, D_800A376A);
++    player_SetCharId(0, D_800A376A[0]);
+     player_SetCharId(1, 0);
+     func_8005B5AC();
+     gpu_InitDisplay();

@@ -1,0 +1,120 @@
+# Naming sweep 2026-10-02 (read-only research): proposals
+
+Scratch output, not applied. Every row still needs a fresh default-refute verifier before
+`tools/naming_wave.py` / `tools/data_wave.py` touch anything (docs/naming/README.md policy). Nothing tracked was edited.
+The working tree was dirty from another lane during the run (src/system.c, include/*, registries).
+Line citations are against that tree as of 2026-10-02 evening.
+
+## Method
+
+1. **Census regenerated** read-only: `build_census.py` copied to
+   `tmp/naming3/build_census.py` with its output redirected, writing `tmp/naming3/function-names.csv`.
+   Universe 1455. Tiers: VERIFIED 418, CORROBORATED 118, INFERRED 522, AUTO 396, SUSPECT 1
+   (`save_vc_ctrl`, owner-excluded). Two LINK-MAP DESYNC rows: `snd_AllocSe` (0x80046934) and
+   `snd_SeNullCallback` (0x80046954). The only drift from the committed CSV is two glabel cells.
+2. **Fact tables** (`build_table.py`): `functions.json` (per function: tier, callees with their
+   tiers, %hi/%lo/%gp_rel data refs, cop2 use, C definition), `datarefs.json`, `symmap.json`.
+3. **Four veins**, each with a default-refute stance and checked against the 09-24/25/25b/29
+   rejected and keep lists (`git show pre-slim-2026-10-01:docs/naming/sweep-2026-09-29/...`):
+   - `v1_func/`: functions under accepted classes. Includes an R3000A interpreter over raw EXE words: `emu.py`, `test_*.py`.
+   - `v2_data/`: data under accepted classes. The C-level Sony-API argument scan is `api_args.csv`. This vein's
+     agent stalled; I finished it by hand (`write_rows.py`).
+   - `v3_audit/`: INFERRED names that the typed C now contradicts. These are RESET rows.
+   - `v4_newclass/`: one new evidence class, defined for an owner ruling (`class.md`).
+4. `merge.py` writes `proposals.tsv` with columns `vein kind addr current_name proposed_name verdict
+   evidence_class class_status confidence decisive_evidence wrong_reading_ruled_out hazards`.
+   Rows are sorted ACCEPTED first, then HIGH first.
+
+## Counts (61 rows)
+
+| class_status | kind | HIGH | MEDIUM | other |
+|---|---|---:|---:|---:|
+| ACCEPTED | func | 1 RENAME + 9 RESET | 2 RENAME + 6 RESET | 2 HOLD |
+| ACCEPTED | data | 5 RENAME + 1 RESET | 3 RENAME + 1 NEW + 2 RESET | — |
+| NEW-CLASS-PROPOSED | func | 7 | 4 (incl. 1 cascade family row) | — |
+| NEW-CLASS-PROPOSED | data / member | 2 / 11 | 0 / 5 | — |
+
+This is short of the 20-40 per kind the brief targeted. Under the accepted classes, the function
+veins are close to exhausted. The census has not moved since the 09-29 wave, so no callee-tier
+promotions opened up. Every AUTO wrapper, leaf and cop2 body already has a prior verdict, and the
+55 INFERRED `gte_*` names all pass the op check. Most of the new yield is RESETs, which the new
+types make provable, plus rows that depend on the proposed new class.
+
+## Top candidates (accepted classes)
+
+- **The `cpu_*` / `mario_test_*` misnomer cluster (RESET, HIGH, contradicted-by-body; v3).** The
+  typed records show these are not what their names say:
+  - 0x80030D7C `cpu_ai_pick_move_for_situation` is the physics step for the 12 Obj80106A78 objects.
+  - 0x80030A2C `cpu_set_move_command_and_dir` spawns an object with random velocity and spin.
+  - 0x80030BA8 `check_dodge_kawashi` finds a resting object, consumes it and returns its kind.
+  - 0x8003339C `cpu_check_same_dir_timer` compares the move's current *frame*, not a direction, and runs for both fighters.
+  - 0x80032C50 `cpu_check_special_move_input`: no input is read and nothing is returned. 09-29 had held it at MEDIUM.
+  - 0x80023F08 `cpu_calc_move_pattern_trajectory` is the shared per-fighter update. For a human fighter it takes the real pad record.
+  - 0x800455AC `efc_particle_queue_entry` is a heap-slot allocator whose blocks are disc-read destinations.
+  - 0x80021974 / 0x800219E4 `mario_test_get_guard_power` / `_charm_bonus` return MoveScript pointers.
+- **INTR/VSYNC MMIO pointer statics (RENAME, HIGH, hardware-role; v2).** Each pointer's .data word is
+  a register address, and every user is VERIFIED LIBETC code:
+  - 0x800A2608 `g_sys_irq_counter` → `g_intr_i_mask_reg`. It holds 0x1F801074 and is read and written by GetIntrMask/SetIntrMask.
+  - 0x800A2604 → `g_intr_i_stat_reg` (0x1F801070).
+  - 0x800A260C → `g_intr_dpcr_reg` (0x1F8010F0).
+  - 0x800A1510 `g_ings2_vsync_block_ptr` → `g_vsync_gpu_stat_reg` (0x1F801814).
+  - 0x800A1514 `g_vsync_counter_ptr` → `g_vsync_rcnt1_count_reg` (0x1F801110, timer 1, not a vblank counter).
+
+  These do not overlap the system.c register-pointer corrections landed today.
+- **0x800FF610 `g_gte_vector_template` → RESET (HIGH).** It is the MATRIX output of MulMatrix0
+  (= 0x8007E4DC, the very function its comment cites as the consumer of a "vector template").
+- **0x8004C388 `satan_helper` → `math_MidpointS16x3U8x2` (HIGH, computation-restatement; v1).**
+  Run on raw EXE words: 122k cases, 0 mismatches. The verifier must re-run it with its own harness.
+- MEDIUM rows:
+  - The DR_MOVE / DR_MODE / TILE packet cursors and buffers (`g_dr_move_cursor`, `g_dr_move_buf`,
+    `g_dr_mode_cursor`, `g_tile_cursor`). The element type is pinned by SetDrawMove, SetDrawMode and
+    SetTile [VERIFIED]; the open question is whether the "cursor" restatement is acceptable.
+  - `calc_NormVector` → `math_NegNormalizeVector`. It is approximate: exact only for |v| ≥ 128.
+  - `mem_RelocPtrArray`.
+  - 5 further MEDIUM RESETs.
+
+## Needs an owner ruling
+
+1. **New class `typed-restatement`** (`v4_newclass/class.md`). A name may restate a matched C body
+   built only from admitted objects, using a closed verb list. The class has six tests:
+   - T1: the function is matched.
+   - T2: at most 12 statements, and all callees are VERIFIED or CORROBORATED.
+   - T3: every touched object is admitted by an accepted row.
+   - T4: the name accounts for every store and the return value.
+   - T5: each member or data role is pinned by an exhaustive access scan.
+   - T6: no game nouns and no claims about purpose.
+
+   Its 28 rows are all tagged NEW-CLASS-PROPOSED. Strongest:
+   - 0x80036F28 `cdrom_GetFileSize`. This closes the 09-25 "no class for table reads" rejection.
+   - 0x80037AA4 `memcard_CountFreeBlocks`.
+   - 0x80037B00 `memcard_HasFileNamePrefix`.
+   - 0x8001BE08 `pad_ClearStateBits`.
+   - Data `g_pad_state` (0x80102788), whose builder reads the InitPAD [VERIFIED] buffers.
+   - The Obj80106A78 members `pos` / `prev_pos` / `vel` / `rot` / `rot_vel` / `mtx` / `slot` / `owner`.
+   - PracticeMenuRec `other` / `index`.
+
+   Member renames are C edits inside matched files, so they need the manual lane with the oracle and a layer-2 review.
+2. **New class `basis-withdrawn`** (v3, one MEDIUM family row). If a name's only recorded basis is
+   another name that gets RESET, it is RESET too. This covers 20 `cpu_helper_<ADDR>` aliases.
+3. **`g_practice_menu_table` / `PracticeMenuRec`** (0x80101EC8, MEDIUM RESET). The record holds the
+   two fighters' per-frame state, so "menu" is false. The name came from commit 80796420e with no
+   evidence; the same batch named `g_isqrt_lut`, since proven wrong. No accepted class yields a
+   positive name, because "character" and "fighter" are game nouns. Renaming the typedef is a C-wide
+   manual-lane edit.
+4. **Conflict at 0x800194F4.** v3 gives RESET `replay_camera_helper` under an accepted class. v4
+   gives `pad_ResetState`, which applies only if the new class is admitted. Apply the RESET either
+   way.
+5. Holds, unchanged:
+   - `snd_SeNullCallback` (0x80046954; 09-25 ruling: manual lane).
+   - `save_vc_ctrl` (action-overrides).
+   - `snd_AllocSe`: the C-definition desync is a respelling job.
+
+## Leads not closed
+
+- LIBSND/LIBSPU holds (func_80087770, func_8008B488, func_80084CC0, func_800858D0) need the PsyQ 4.0
+  LIBs. They are gone from `tmp/libscan/`; re-fetch them to set `PSYQ_LIB_DIR`.
+- `v2_data/api_args.csv` holds 558 VERIFIED/CORROBORATED call-site arguments, but only the rows above
+  were worked. Most D_ arguments are strings, already-reset Sony statics, or library-internal.
+- Hygiene seen on the way, not naming:
+  - `include/m2c_context.h:686` mistypes 0x8004C388's arguments.
+  - func_80019568 has pad-word locals named `voice_mask` / `voice2`.

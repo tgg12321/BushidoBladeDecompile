@@ -1,0 +1,145 @@
+--- a/src/code6cac_c2.c
++++ b/src/code6cac_c2.c
+@@ -131,7 +131,6 @@
+ 
+ 
+ extern s8 D_8008EA70;
+-extern s32 D_8009060C;
+ 
+ 
+ 
+@@ -1212,15 +1211,17 @@
+ extern s16 D_800F6656;
+ extern void func_8003DBE4(s32, s32, DR_MOVE (*)[2], s32, s32);
+ void func_8003DA8C(s32 arg0, s32 arg1) {
++    s16 *rec;
++    s32 *ptr;
+     s32 dist;
+-    s16 *new_var2;
+     s32 offset;
+-    int new_var;
+-    s32 *ptr;
+ 
+     D_800905F8 = 0xFFFF;
+-    new_var2 = &D_800906A4 + arg0 * 2;
+-    if (*new_var2 != 0) {
++    /* FAKE: the pair read through a pointer local; a direct
++       `D_800906A4[arg0][0]` read is MEM_IN_STRUCT and is scheduled above the
++       D_800905F8 store (the same sched.c:834-839 exemption as below), score 9. */
++    rec = D_800906A4[arg0];
++    if (rec[0] != 0) {
+         {
+             s32 base = func_8003F268();
+             if (base == 0) {
+@@ -1230,8 +1231,7 @@
+             }
+             dist = base - arg1;
+         }
+-        new_var = dist < 0x1770;
+-        if (new_var) {
++        if (dist < 0x1770) {
+             offset = 0x1770 - dist;
+             dist = 0x1770;
+         } else {
+@@ -1250,12 +1250,18 @@
+                 arg1 -= offset;
+             }
+         }
++        D_80090608 = (u16)D_800F6656;
++        ptr = &D_8009060C[arg0];
+         {
++            /* FAKE: D_800906A4[arg0][1] read as a byte offset off the array
++               base: an element read is MEM_IN_STRUCT, and sched.c
++               true_dependence (tools/gcc-2.7.2/sched.c:834-839) lets a
++               varying in-struct HImode read pass the fixed scalar store to
++               D_80090608 just above, so both reads move ahead of the `sh`
++               (score 8).  The target keeps them after it. */
+             s32 idx = arg0 * 4;
+-            D_80090608 = (u16)D_800F6656;
+-            ptr = (s32 *)((u8 *)&D_8009060C + idx);
+-            func_8003DBE4(arg1, 0x1F, light_effect_col, *ptr, *(s16 *)((u8 *)&StatusUpBuf + idx));
+-            func_8003DBE4(arg1, 0x13, D_800A4340, *ptr, *(s16 *)((u8 *)&StatusUpBuf + idx));
++            func_8003DBE4(arg1, 0x1F, light_effect_col, *ptr, *(s16 *)((u8 *)D_800906A4 + 2 + idx));
++            func_8003DBE4(arg1, 0x13, D_800A4340, *ptr, *(s16 *)((u8 *)D_800906A4 + 2 + idx));
+         }
+     }
+ }
+--- a/include/code6cac.h
++++ b/include/code6cac.h
+@@ -6,7 +6,6 @@
+ #include "common.h"
+ 
+ /* Named globals */
+-extern s16 StatusUpBuf;
+ extern u8 cpu_practice_honmokuroku_data_tbl[][4];
+ /* g_sqrt_table_u8[i] = floor(8 * sqrt(i)), i = 0..0x3FF: 0x8008D118..0x8008D517
+  * (0x400 bytes; the first 8 are the words after DelDrv in src/main_post.c,
+@@ -558,7 +557,14 @@
+ extern s32 D_80090600;
+ extern s32 D_80090604;
+ extern s16 D_80090608;
+-extern s16 D_800906A4;
++/* Two per-stage tables (initialized data, asm/data/7D920.data.s), indexed by the
++ * stage id func_80046EA0 passes to func_8003DA8C: 38 s32 at 0x8009060C, then
++ * s16 pairs at 0x800906A4 (base + id*4, [0] tested, [1] passed to
++ * func_8003DBE4; asm/funcs/func_8003DA8C.s), 39 to the next object at
++ * 0x80090740 (the last one zero).  Replaces the splat per-halfword scalar
++ * StatusUpBuf (pair 0's [1]). */
++extern s32 D_8009060C[38];
++extern s16 D_800906A4[39][2];
+ extern u16 D_80094C68[];
+ /* 0x18-byte per-character status record table (named_syms.txt:
+  * g_status_flag_record_table_80099D88). The original binary indexes it by character id
+--- a/named_syms.txt
++++ b/named_syms.txt
+@@ -953,7 +953,6 @@
+ menuDat                                                 = 0x8008DCCC;  /* menu data block */
+ cpu_practice_honmokuroku_data_tbl                       = 0x8008E778;  /* CPU practice exercise list ("honmokuroku") */
+ g_cd_file_table                                              = 0x8008EC34;  /* special camera data block (referenced by replay-camera) */  /* data-wave 2026-09-24: was SpecialCam */
+-StatusUpBuf                                             = 0x800906A6;  /* status-up display buffer */
+ InfoPosYTbl1                                            = 0x80099D54;  /* info Y-position table */
+ UesrWorkDef                                             = 0x8009ADD8;  /* user work def (sic: original spelling) */
+ chractar_use_pset_combo_id_table                        = 0x8009BA7C;  /* character preset-combo ID table (sic) */
+--- a/symbol_addrs.txt
++++ b/symbol_addrs.txt
+@@ -224,7 +224,6 @@
+ menuDat = 0x8008DCCC;
+ cpu_practice_honmokuroku_data_tbl = 0x8008E778;
+ g_cd_file_table = 0x8008EC34;  // data-wave 2026-09-24: was SpecialCam
+-StatusUpBuf = 0x800906A6;
+ InfoPosYTbl1 = 0x80099D54;
+ UesrWorkDef = 0x8009ADD8;
+ chractar_use_pset_combo_id_table = 0x8009BA7C;
+--- a/undefined_syms_auto.txt
++++ b/undefined_syms_auto.txt
+@@ -38,7 +38,6 @@
+ D_8008EB0A = 0x8008EB0A;
+ D_8008EBFC = 0x8008EBFC;
+ D_8008EBFD = 0x8008EBFD;  /* alias of D_8008EBFC+1; retire with func_800335D8 (asm/funcs/func_800335D8.s is its only referrer) */
+-StatusUpBuf = 0x800906A6;
+ D_80094B96 = 0x80094B96;
+ D_80094B9A = 0x80094B9A;
+ D_80094C68 = 0x80094C68;
+--- a/asm/data/7D920.data.s
++++ b/asm/data/7D920.data.s
+@@ -5047,11 +5047,6 @@
+ 
+ dlabel D_800906A4
+     /* 80EA4 800906A4 */ .short 0x0001
+-enddlabel D_800906A4
+-
+-nonmatching StatusUpBuf
+-
+-dlabel StatusUpBuf
+     /* 80EA6 800906A6 */ .short 0x0000
+     /* 80EA8 800906A8 */ .short 0x0001
+     /* 80EAA 800906AA */ .short 0x0000
+@@ -5129,7 +5124,7 @@
+     /* 80F3A 8009073A */ .short 0x0000
+     /* 80F3C 8009073C */ .short 0x0000
+     /* 80F3E 8009073E */ .short 0x0000
+-enddlabel StatusUpBuf
++enddlabel D_800906A4
+ 
+ nonmatching D_80090740
+ 
