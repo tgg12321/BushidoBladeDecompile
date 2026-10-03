@@ -67,8 +67,11 @@ S_O_FILES    := $(patsubst $(ASM_DIR)/%.s,$(BUILD_DIR)/$(ASM_DIR)/%.o,$(S_FILES)
 DATA_S_FILES := $(wildcard $(ASM_DIR)/data/*.s)
 DATA_O_FILES := $(patsubst $(ASM_DIR)/data/%.s,$(BUILD_DIR)/$(ASM_DIR)/data/%.o,$(DATA_S_FILES))
 
-# C source files (decompiled functions)
-C_FILES      := $(wildcard $(SRC_DIR)/*.c)
+# C source files (decompiled functions), found recursively. A TU id is the path
+# under src/ without .c (`text1b`, `main/psxsdk/libcomb/comb`); its object is
+# build/src/<id>.o, the path bb2.ld links (engine/tus.py).
+C_FILES      := $(sort $(shell find $(SRC_DIR) -name '*.c'))
+C_IDS        := $(patsubst $(SRC_DIR)/%.c,%,$(C_FILES))
 C_O_FILES    := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/$(SRC_DIR)/%.o,$(C_FILES))
 
 # Per-function asm objects linked directly (explicit opt-in — NOT a wildcard;
@@ -93,6 +96,7 @@ all: check
 # Build and verify match
 check: $(EXE) $(TARGET).sha1
 	@sha1sum -c $(TARGET).sha1 || { echo "MISMATCH: $(TARGET) does not match"; exit 1; }
+	@python3 -m engine.tus check
 	@python3 -m engine.buildstamp record-current
 	@echo "OK: $(TARGET) matches!"
 
@@ -120,7 +124,7 @@ $(EXE): $(BIN) $(TARGET_EXE) tools/make_psexe.py
 	python3 tools/make_psexe.py $(TARGET_EXE) $< $@
 
 # -- Per-file GP-relative opt-in --
-# List C files (without path/extension) that need GP-relative addressing.
+# List C files (TU ids: path under src/ without .c) that need GP-relative addressing.
 # Our cc1 runs these at -G8 (gp itself is maspsx's decision on each file's own definitions).
 GP_FILES := text1a_pre text1a_pre_tu2 text1a_svc text1a_post code6cac_b3 code6cac_b4 code6cac_b5 text1b_tu1d text1b
 
@@ -152,20 +156,25 @@ RODATA_OBJ_ALIGN := --set-section-alignment .rodata=4
 # These files get the flag applied; other files in NO_SR_FILES below.
 NO_SR_FILES :=
 
+# Every per-file list names TU ids. An id that is not a TU stops the build: a
+# moved or renamed file must take its flags along, never silently lose them.
+FLAG_LISTS := GP_FILES PSYQ_LIBRARY_FILES EXPAND_LB_FILES EXPAND_LH_FILES NO_SR_FILES
+$(foreach l,$(FLAG_LISTS),$(foreach f,$($(l)),$(if $(filter $(f),$(C_IDS)),,$(error $(l) names '$(f)', which is not a TU (no $(SRC_DIR)/$(f).c)))))
+
 # Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
 cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)
 maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(PSYQ_LIBRARY_FILES)),, -G8)$(if $(filter $1,$(EXPAND_LB_FILES)), --expand-lb)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)
 
 # Shared pipeline dependencies for every C object. Without these, changing
 # pipeline/toolchain config can leave stale objects in place because
-# make only notices src/*.c timestamps.
+# make only notices src/**/*.c timestamps.
 PIPELINE_DEPS := Makefile \
 	$(CC1) engine/buildconfig.py \
 	tools/prologue_config.json \
 	expand_lb_funcs.txt multu_funcs.txt multu_pad_funcs.txt expand_dest_funcs.txt maspsx_prefill_label_funcs.txt maspsx_comm_syms.txt \
 	tools/prologue_fix.py tools/multu_pad.py \
 	$(wildcard tools/maspsx/*.py tools/maspsx/maspsx/*.py) \
-	$(wildcard include/* src/*.h asm/funcs/*.s)
+	$(wildcard include/* asm/funcs/*.s) $(shell find $(SRC_DIR) -name '*.h')
 
 # -- Compile C source (decompiled functions) --
 # Pipeline: cpp | cc1 | prologue_fix | maspsx | multu_pad | as -> .o, then objcopy (.rodata alignment 4)
