@@ -65,7 +65,7 @@ SECTIONS
         build/src/main/d_15EC.o(.rodata);
         build/src/main/368E4.o(.rodata);
         build/src/main/d_5BF0.o(.rodata);
-        build/src/text1b_tu1b.o(.rodata);
+        build/src/main/3AB48.o(.rodata);
         build/src/text1a_b_pre_rodata_b.o(.rodata);
         build/src/text1b_tu1c.o(.rodata);
         build/src/text1b_tu1d.o(.rodata);
@@ -109,7 +109,7 @@ SECTIONS
         build/src/main/32D04.o(.text);
         build/src/main/35000.o(.text);
         build/src/main/368E4.o(.text);
-        build/src/text1b_tu1b.o(.text);
+        build/src/main/3AB48.o(.text);
         build/src/text1b_tu1c.o(.text);
         build/src/text1b_tu1d.o(.text);
         build/src/text1b_tu1e.o(.text);
@@ -149,7 +149,7 @@ SECTIONS
         build/src/main/32D04.o(.data);
         build/src/main/35000.o(.data);
         build/src/main/368E4.o(.data);
-        build/src/text1b_tu1b.o(.data);
+        build/src/main/3AB48.o(.data);
         build/src/text1b_tu1c.o(.data);
         build/src/text1b_tu1d.o(.data);
         build/src/text1b_tu1e.o(.data);
@@ -187,7 +187,7 @@ SECTIONS
         build/asm/data/93A3E.data.o(.data);
         build/src/main/35000.o(.sdata);
         build/src/main/368E4.o(.sdata);
-        build/src/text1b_tu1b.o(.sdata);
+        build/src/main/3AB48.o(.sdata);
         build/src/text1b_tu1c.o(.sdata);
         build/asm/data/93AC0.data.o(.data);
         build/src/text1b_tu1d.o(.sdata);
@@ -205,7 +205,7 @@ SECTIONS
         build/asm/data/93B8C.data.o(.data);
         build/src/main/35000.o(.sbss);
         build/src/main/368E4.o(.sbss);
-        build/src/text1b_tu1b.o(.sbss);
+        build/src/main/3AB48.o(.sbss);
         build/asm/data/93C1C.data.o(.data);
         build/src/text1b_tu1c.o(.sbss);
         build/asm/data/93D30.data.o(.data);
@@ -239,7 +239,7 @@ SECTIONS
         build/src/main/32D04.o(.bss);
         build/src/main/35000.o(.bss);
         build/src/main/368E4.o(.bss);
-        build/src/text1b_tu1b.o(.bss);
+        build/src/main/3AB48.o(.bss);
         build/src/text1b_tu1c.o(.bss);
         build/src/text1b_tu1d.o(.bss);
         build/src/text1b_tu1e.o(.bss);
