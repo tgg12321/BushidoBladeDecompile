@@ -37,7 +37,7 @@ extern s16 Judge[0x1000];
  * them: f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids 0x7FF1/2/4),
  * f54[rec+0x86][t] (id 0x7FF3), and
  * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16 (func_800219E4) and
- * f18[class] (func_80021A3C; class = PracticeMenuRec.unk_0A, 0..26 as D_8008D538
+ * f18[class] (func_80021A3C; class = Unk80101EC8Record.unk_0A, 0..26 as D_8008D538
  * holds and as the [27][6] class tables D_8008DE34 / D_8008DF78 are sized; 27
  * halfwords end exactly at f4E) are indices into D_80102760; both readers load
  * them with lhu. */
@@ -53,14 +53,14 @@ typedef struct {
     u16 f66[11][3];
 } Tbl800A3860Entry;
 
-/* s32 x/y/z triple.  PracticeMenuRec's position-like triples are copied as
+/* s32 x/y/z triple.  Unk80101EC8Record's position-like triples are copied as
  * whole 12-byte objects (func_80022580), and func_80021DB0 writes one through
  * its out parameter. */
 typedef struct { s32 x, y, z; } Vec3i32;
 /* 12-byte per-leaf record table (named_syms.txt: g_leaf_position_table,
    "12-byte stride per leaf, 6 entries = 72-byte position array").  The same
    s32 x/y/z triple as Vec3i32: func_800207C8 copies a scratchpad point
-   (SPAD->unkA8) into PracticeMenuRec.unk_180 as one 12-byte object. */
+   (SPAD->unkA8) into Unk80101EC8Record.unk_180 as one 12-byte object. */
 typedef Vec3i32 LeafPos;
 /* The 16 slots func_800645B0 spawns and func_800646E8 draws (bit i of D_800A3444
  * live): slot i's position.  Both functions address it as base + i*12
@@ -70,7 +70,7 @@ typedef Vec3i32 LeafPos;
 extern Vec3i32 D_800F0D78[16];
 /* PsyQ VECTOR / SVECTOR layouts (include/gte.h), spelled with local tags for
  * the same reason as Unk80101DF0Rot below.  func_80022580 copies
- * PracticeMenuRec's +0xB8 and +0x104 as whole 16-byte VECTORs (pad included)
+ * Unk80101EC8Record's +0xB8 and +0x104 as whole 16-byte VECTORs (pad included)
  * and +0x1C8 as a whole 8-byte SVECTOR. */
 typedef struct { s32 vx, vy, vz, pad; } Vec4i32;
 typedef struct { s16 vx, vy, vz, pad; } SVec4i16;
@@ -159,9 +159,9 @@ typedef struct {
 } ScrPad;
 #define SPAD ((ScrPad *)0x1F800000)
 
-/* Per-character / practice-menu record table (base 0x80101EC8, stride 0x44C,
- * 4 records).  Schema: docs/naming/CHAR_STRUCT_SCHEMA.md; base symbol:
- * named_syms.txt:345 (g_practice_menu_table).  Only the fields reached by C so
+/* Per-character record table (base 0x80101EC8, stride 0x44C, 2 records); the
+ * old "practice menu" name was RESET by owner ruling Q103.  Schema:
+ * docs/naming/CHAR_STRUCT_SCHEMA.md; base symbol: named_syms.txt (D_80101EC8).  Only the fields reached by C so
  * far are named; the rest is reserved padding.  func_80022580 initializes
  * record [idx] (every field it writes is declared at its offset). */
 /* One CPU path waypoint (CpuRoute.node[]): func_800571C0 writes x/z from the
@@ -174,7 +174,7 @@ typedef struct CpuWaypoint {
 } CpuWaypoint;
 
 /* A CPU route: the polygon and vertex the walker stands at (func_80057ACC), the waypoint
- * count and the waypoints. PracticeMenuRec carries one at +0x360; func_80057E84 builds two
+ * count and the waypoints. Unk80101EC8Record carries one at +0x360; func_80057E84 builds two
  * candidates of the same layout on its stack and appends the cheaper one. */
 typedef struct CpuRoute {
     u8 poly;                       /* index into the stage's NavPolySet.polys */
@@ -205,7 +205,7 @@ typedef struct NavPolySet {
 
 /* One decoded motion frame (0x84 bytes, 33 words): func_800198D0 decodes
  * frame `frame` of a character's motion into one, and func_80023F08 keeps the
- * current and next frames of its record (PracticeMenuRec.unk_290 holds the
+ * current and next frames of its record (Unk80101EC8Record.unk_290 holds the
  * frame it last used).  Only 16-bit channels, so a whole-frame assignment is
  * the halfword-aligned block copy func_80023F08 shows.  unk_00 is the root
  * offset it negates, unk_02 / unk_04 the root heading and distance, unk_06..
@@ -221,9 +221,9 @@ typedef struct MotionFrame {
 } MotionFrame;                     /* sizeof == 0x84 */
 
 /* Header of one move record of a character's move script (the u16 stream
- * func_80021424 returns pointers into; PracticeMenuRec.unk_50 is the current
+ * func_80021424 returns pointers into; Unk80101EC8Record.unk_50 is the current
  * move, unk_7C a buffered one).  unk_00 / unk_02 are follow-up move ids,
- * unk_07 / unk_08 frame bounds against PracticeMenuRec.unk_40, unk_09 flag
+ * unk_07 / unk_08 frame bounds against Unk80101EC8Record.unk_40, unk_09 flag
  * bits (func_80023F08, func_80055B60, func_80058580); unk_0A starts the
  * command list func_80023F08 walks: (flags, move id[, mask lo, mask hi])
  * entries of 2 or 4 halfwords, ended by a zero flags word. */
@@ -231,16 +231,16 @@ typedef struct MoveScript {
     u16 unk_00;
     u16 unk_02;
     u16 unk_04;                    /* row of the bank's 4-byte entry table (func_80021A98) */
-    u8  unk_06;                    /* first frame: PracticeMenuRec.unk_40 starts here (func_80021A98) */
+    u8  unk_06;                    /* first frame: Unk80101EC8Record.unk_40 starts here (func_80021A98) */
     u8  unk_07;
     u8  unk_08;
     u8  unk_09;
     u16 unk_0A[1];
 } MoveScript;
 
-typedef struct PracticeMenuRec {
-    struct PracticeMenuRec *unk_00; /* the other record: [1] for record 0, else [0] (func_80022580) */
-    s16 unk_04;                    /* this record's own index (func_80022580) */
+typedef struct Unk80101EC8Record {
+    struct Unk80101EC8Record *other; /* the other record: [1] for record 0, else [0] (func_80022580) */
+    s16 index;                     /* this record's own index (func_80022580) */
     s16 unk_06;                    /* != 0: func_8001BE20 hands pad input to func_80055B60 */
     s16 unk_08;
     s16 unk_0A;                    /* class idx: row of D_8008E5CC / D_8008E6A4, index of D_8008D9EC */
@@ -465,9 +465,9 @@ typedef struct PracticeMenuRec {
     u8  unk_442;
     u8  unk_443;
     u8  unk_444[8];                /* func_80056CB8's per-direction results */
-} PracticeMenuRec;                 /* sizeof == 0x44C */
+} Unk80101EC8Record;                 /* sizeof == 0x44C */
 
-extern PracticeMenuRec g_practice_menu_table[];
+extern Unk80101EC8Record D_80101EC8[];
 
 /* Data symbols */
 extern s32 D_800100A4;
@@ -490,10 +490,10 @@ extern u8 D_8008DA08[0x48];         /* 0x8008DA08..0x8008DA4F (asm/data/7D920.da
 extern s16 D_8008DA50[];          /* [unk_0A] (func_80023F08) */
 extern s16 D_8008DA94[];          /* [unk_0A] (func_80023F08) */
 extern s16 D_8008DAD8[];          /* [unk_0A] (func_80023F08) */
-extern u16 D_8008DB1C[27][8];      /* [unk_0A][unk_0E] -> PracticeMenuRec.unk_48 model id (func_80020E74) */
-extern u8 D_8008DD5C[27][8];        /* [unk_0A][unk_0E] -> PracticeMenuRec.unk_84 */
-extern u16 D_8008DE34[27][6];       /* [unk_0A][unk_0E] -> PracticeMenuRec.unk_1C */
-extern u16 D_8008DF78[27][6];       /* [unk_0A][unk_0E] -> PracticeMenuRec.unk_1E / unk_20 */
+extern u16 D_8008DB1C[27][8];      /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_48 model id (func_80020E74) */
+extern u8 D_8008DD5C[27][8];        /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_84 */
+extern u16 D_8008DE34[27][6];       /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_1C */
+extern u16 D_8008DF78[27][6];       /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_1E / unk_20 */
 /* 14-byte record table indexed by the kind field (+0x2) of the 0x64-byte
  * objects at D_80106A78: func_80030580 and func_80031B24 index it with
  * stride 14, func_80030D7C reads +0x0 / +0xA of a record. */
@@ -526,32 +526,32 @@ typedef struct {
     s16 unk_02;                    /* kind; -1 = free */
     u8  unk_04;
     u8  unk_05;
-    u8  unk_06;                    /* owner: PracticeMenuRec index */
+    u8  owner;                     /* .index of the spawning record (func_80030580) */
     u8  unk_07;
     u8  unk_08;
     u8  unk_09;                    /* index into the owner's matrix table (func_800300B4) */
-    u8  unk_0A;                    /* slot number; 0xFF = never used */
+    u8  slot;                      /* own index in D_80106A78 once allocated; 0xFF = free (set by func_8003043C at init and by func_80030D7C once unk_02 == -1) */
     u8  unk_0B;
-    Obj80106A78Mat unk_0C;         /* func_8002FF20 builds it (identity, RotMatrixX/Y/Z,
+    Obj80106A78Mat mtx;            /* func_8002FF20 builds it (identity, RotMatrixX/Y/Z,
                                       MulMatrix0); func_800300B4 reads it */
-    Vec3i32 unk_2C;                /* position */
-    Vec3i32 unk_38;                /* previous position */
-    Vec3i32 unk_44;                /* velocity */
+    Vec3i32 pos;                   /* += vel each func_80030D7C step */
+    Vec3i32 prev_pos;              /* pos before the step */
+    Vec3i32 vel;
     s32 unk_50;                    /* != 0: moving */
-    s16 unk_54[3];                 /* rotation angles */
+    s16 rot[3];                    /* RotMatrixX/Y/Z angles; += rot_vel each step */
     u8  unk_5A[0x5C - 0x5A];
-    s16 unk_5C[3];                 /* angular speeds */
+    s16 rot_vel[3];
     u8  unk_62[0x64 - 0x62];
 } Obj80106A78;                     /* sizeof == 0x64 */
 extern Obj80106A78 D_80106A78[12];
-extern s8 D_8008E338[27][5];        /* [unk_0A][i] -> PracticeMenuRec.unk_332[i] (func_8003047C);
+extern s8 D_8008E338[27][5];        /* [unk_0A][i] -> Unk80101EC8Record.unk_332[i] (func_8003047C);
                                        0x8008E338..0x8008E3BE, then one alignment byte */
-extern u16 D_8008E3C0[28];          /* [unk_0A] -> PracticeMenuRec.unk_274 */
-extern u16 D_8008E3F8[27][4];       /* [unk_0A][i] -> PracticeMenuRec.unk_276[i] */
-extern u16 D_8008E4D0[27][4];       /* [unk_0A][i] -> PracticeMenuRec.unk_27E[i] */
+extern u16 D_8008E3C0[28];          /* [unk_0A] -> Unk80101EC8Record.unk_274 */
+extern u16 D_8008E3F8[27][4];       /* [unk_0A][i] -> Unk80101EC8Record.unk_276[i] */
+extern u16 D_8008E4D0[27][4];       /* [unk_0A][i] -> Unk80101EC8Record.unk_27E[i] */
 extern u8 D_8008E5A8[];
-extern u8 D_8008E5CC[][8];         /* [unk_0A][unk_0E] of g_practice_menu_table */
-extern u8 D_8008E6A4[][6];         /* [unk_0A][unk_0E] of g_practice_menu_table */
+extern u8 D_8008E5CC[][8];         /* [unk_0A][unk_0E] of D_80101EC8 */
+extern u8 D_8008E6A4[][6];         /* [unk_0A][unk_0E] of D_80101EC8 */
 extern u8 D_8008E748;
 extern u8 D_8008E75C;
 /* 2-byte {a,b} threshold pairs. D_8008EA44: indexed by (type - 2), 5 entries (types 2..6);
@@ -574,9 +574,9 @@ extern s32 D_8008EB10;
 extern s32 D_8008EB14;
 extern s32 D_8008EB18;
 extern u8 D_8008EB1C[][2];
-extern u8 D_8008EB28[8][2];         /* [unk_0E][flag] -> PracticeMenuRec.unk_12 */
-extern u8 D_8008EB38[8];            /* [unk_0E] -> PracticeMenuRec.unk_12 */
-/* 6-row tables func_80026DA4 selects by g_practice_menu_table[0].unk_6A mode (row 0..5): unk0
+extern u8 D_8008EB28[8][2];         /* [unk_0E][flag] -> Unk80101EC8Record.unk_12 */
+extern u8 D_8008EB38[8];            /* [unk_0E] -> Unk80101EC8Record.unk_12 */
+/* 6-row tables func_80026DA4 selects by D_80101EC8[0].unk_6A mode (row 0..5): unk0
  * scales the Judge sin/cos offset, unk2 is added to y; D_8008EB6C[row] is
  * passed as func_80032854's arg1. */
 typedef struct {
@@ -966,17 +966,19 @@ typedef struct {
     s32 unk8;  /* +0x08 */
     s32 unkC;  /* +0x0C */
 } Unk800A4750Rec;          /* 0x10 */
+/* One entry of the CD file table (sweep-2026-09-24 data_manifest.csv:18-19, CONFIRM:
+ * 159/159 entries equal the disc's ISO9660 directory records). */
 typedef struct {
-    s32 a;
-    s32 b;
-} CamPair;
+    CdlLOC loc;                    /* the file's start position */
+    u32 size;                      /* the file's length in bytes */
+} CdFileEntry;
 
 /* The CD file table at 0x8008EC34: one 8-byte record per disc file, indexed by the
- * file numbers func_80036EA8 forms. `a` holds the file's CdlLOC position (cdrom_StartRead
- * copies the record into D_80101E58.rec.pair, whose position is sought; cdrom_LoadExec
- * seeks to it directly), `b` its size in bytes (cdrom_StartRead's sector count,
- * cdrom_GetFileSize, cdrom_StartAudio's end position). */
-extern CamPair g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
+ * file numbers func_80036EA8 forms. `loc` is sought (cdrom_StartRead copies the record
+ * into D_80101E58.rec.pair, whose position is sought; cdrom_LoadExec seeks to it
+ * directly); `size` is cdrom_StartRead's sector count, cdrom_GetFileSize's result and
+ * cdrom_StartAudio's end position. */
+extern CdFileEntry g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
 
 /* The replay-camera / CD-read words at 0x80101E60..0x80101EA7: the tail of
  * CdState D_80101E58 below, where the evidence that they are one object with
@@ -1001,10 +1003,10 @@ extern CamPair g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
  * signedness, and s32 / u32 build byte-identical).
  * Evidence: pre-slim-2026-10-01:memory/grind/func_80036140/evidence.md.
  *
- * The 8-byte `pair` is also one CamPair by the table it is copied from: the
- * source is an element of g_cd_file_table, copied as a whole CamPair
+ * The 8-byte `pair` is also one CdFileEntry by the table it is copied from: the
+ * source is an element of g_cd_file_table, copied as a whole CdFileEntry
  * aggregate (cdrom_StartRead, cdrom_StartAudio).  The CdPosToInt/CdIntToPos calls on it evidence
- * only `pair.a`: CdIntToPos (src/system.c) writes just p[0..2]. */
+ * only `pair.loc`: CdIntToPos (src/system.c) writes just p[0..2]. */
 typedef struct {
     s16 unk00; /* 0x80101E60 */
     s16 unk02; /* 0x80101E62 */
@@ -1012,7 +1014,7 @@ typedef struct {
     s16 unk06; /* 0x80101E66 */
     s16 unk08; /* 0x80101E68 */
     s16 unk0A; /* 0x80101E6A */
-    CamPair pair; /* 0x80101E6C .. 0x80101E73 */
+    CdFileEntry pair; /* 0x80101E6C .. 0x80101E73 */
     s32 unk14; /* 0x80101E74 */
     s32 unk18; /* 0x80101E78 */
     s32 unk1C; /* 0x80101E7C */
@@ -1046,7 +1048,7 @@ typedef struct {
  *     (80036B08).
  *   - 0x80101E60..62 and 0x80101E6C are in one object (aggregate-merge prong
  *     (a), (a1)/(a2)): cdrom_StartAudio reloads rec.unk00 (lh at 8003703C)
- *     only after its CamPair copy into rec.pair (sw at 8003702C/80037034).
+ *     only after its CdFileEntry copy into rec.pair (sw at 8003702C/80037034).
  *     sched1 orders the two through true_dependence (sched.c:817) ->
  *     memrefs_conflict_p (sched.c:614): SIZE_FOR_MODE(BLKmode) is 0, so the
  *     aggregate store conflicts with the halfword load only when both
@@ -1086,7 +1088,7 @@ typedef struct {
     u8 unk_F;
 } PracticeParams;
 extern PracticeParams D_80102778;
-extern PadState D_80102788;
+extern PadState g_pad_state;
 extern s32 D_801027B0[][5];
 extern u8 D_80104E88;
 extern s32 MotDataBaseAddress;

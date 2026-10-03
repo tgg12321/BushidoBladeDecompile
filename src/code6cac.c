@@ -56,7 +56,7 @@ extern void func_8005B868(void);
 
 extern s32 file_GetFlag2(void);
 
-extern void func_800324D0(PracticeMenuRec *);
+extern void func_800324D0(Unk80101EC8Record *);
 
 
 
@@ -1207,17 +1207,17 @@ void func_800194C0(s32 arg0) {
     D_800A3914 = (arg0 >> 8) & 0xF;
 }
 void pad_ResetState(void) {
-    D_80102788.unk_00[0] = 4;
-    D_80102788.unk_00[1] = 4;
-    D_80102788.held = 0;
-    D_80102788.pressed = 0;
-    D_80102788.released = 0;
-    D_80102788.unheld = -1;
+    g_pad_state.unk_00[0] = 4;
+    g_pad_state.unk_00[1] = 4;
+    g_pad_state.held = 0;
+    g_pad_state.pressed = 0;
+    g_pad_state.released = 0;
+    g_pad_state.unheld = -1;
 }
 void func_80019534(void) {
     pad_ResetState();
-    D_80102788.unk_00[2] = 1;
-    D_80102788.unk_00[3] = 1;
+    g_pad_state.unk_00[2] = 1;
+    g_pad_state.unk_00[3] = 1;
 }
 void func_80019568(s32 arg0) {
     struct {
@@ -1310,7 +1310,7 @@ void func_80019568(s32 arg0) {
             switch (voice_state) {
             case 4:
             case 5:
-                if (D_80102788.unk_00[3] == 0) {
+                if (g_pad_state.unk_00[3] == 0) {
                     sp.voice_mask |= 0x08000800;
                 }
             case 0:
@@ -1318,7 +1318,7 @@ void func_80019568(s32 arg0) {
             case 2:
             case 3:
             case 6:
-                if (D_80102788.unk_00[2] == 0) {
+                if (g_pad_state.unk_00[2] == 0) {
                     sp.voice_mask |= 0x08000800;
                 }
                 break;
@@ -1329,7 +1329,7 @@ void func_80019568(s32 arg0) {
     func_8003A728((s32)&sp.output[0]);
 
     i = 0;
-    base_addr = D_80102788.unk_00;
+    base_addr = g_pad_state.unk_00;
     dst1 = base_addr + 2;
     dst0 = base_addr;
     src = &sp.output[0];
@@ -1343,10 +1343,10 @@ void func_80019568(s32 arg0) {
         dst1++;
     } while (i < 2);
 
-    p = &D_80102788.held;
+    p = &g_pad_state.held;
     old_mask = *p;
     *p = sp.voice_mask;
-    D_80102788.pressed = sp.voice_mask & ~old_mask;
-    D_80102788.unheld = ~sp.voice_mask;
-    D_80102788.released = ~sp.voice_mask & old_mask;
+    g_pad_state.pressed = sp.voice_mask & ~old_mask;
+    g_pad_state.unheld = ~sp.voice_mask;
+    g_pad_state.released = ~sp.voice_mask & old_mask;
 }

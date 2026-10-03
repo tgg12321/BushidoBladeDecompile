@@ -20,8 +20,8 @@ glabel func_8005BA8C
     /* 4C2D4 8005BAD4 38FC9426 */  addiu      $s4, $s4, %lo(g_vab_rec_ptr)
     /* 4C2D8 8005BAD8 0F80123C */  lui        $s2, %hi(g_vab_vb_sbaddr)
     /* 4C2DC 8005BADC 38FB5226 */  addiu      $s2, $s2, %lo(g_vab_vb_sbaddr)
-    /* 4C2E0 8005BAE0 0A80103C */  lui        $s0, %hi(D_8009AD18)
-    /* 4C2E4 8005BAE4 18AD1026 */  addiu      $s0, $s0, %lo(D_8009AD18)
+    /* 4C2E0 8005BAE0 0A80103C */  lui        $s0, %hi(g_vab_id_list)
+    /* 4C2E4 8005BAE4 18AD1026 */  addiu      $s0, $s0, %lo(g_vab_id_list)
     /* 4C2E8 8005BAE8 03001126 */  addiu      $s1, $s0, 0x3
   .L8005BAEC:
     /* 4C2EC 8005BAEC 00000492 */  lbu        $a0, 0x0($s0)
@@ -96,9 +96,9 @@ glabel func_8005BA8C
     /* 4C3F4 8005BBF4 21209300 */  addu       $a0, $a0, $s3
     /* 4C3F8 8005BBF8 000004AE */  sw         $a0, 0x0($s0)
     /* 4C3FC 8005BBFC 08001026 */  addiu      $s0, $s0, 0x8
-    /* 4C400 8005BC00 0A80013C */  lui        $at, %hi(D_8009AD18)
+    /* 4C400 8005BC00 0A80013C */  lui        $at, %hi(g_vab_id_list)
     /* 4C404 8005BC04 21083200 */  addu       $at, $at, $s2
-    /* 4C408 8005BC08 18AD2590 */  lbu        $a1, %lo(D_8009AD18)($at)
+    /* 4C408 8005BC08 18AD2590 */  lbu        $a1, %lo(g_vab_id_list)($at)
     /* 4C40C 8005BC0C AA70010C */  jal        func_8005C2A8
     /* 4C410 8005BC10 01005226 */   addiu     $s2, $s2, 0x1
     /* 4C414 8005BC14 180022AE */  sw         $v0, 0x18($s1)
@@ -138,9 +138,9 @@ glabel func_8005BA8C
   .L8005BC90:
     /* 4C490 8005BC90 04009426 */  addiu      $s4, $s4, 0x4
     /* 4C494 8005BC94 0800B526 */  addiu      $s5, $s5, 0x8
-    /* 4C498 8005BC98 0A80013C */  lui        $at, %hi(D_8009AD18)
+    /* 4C498 8005BC98 0A80013C */  lui        $at, %hi(g_vab_id_list)
     /* 4C49C 8005BC9C 21083200 */  addu       $at, $at, $s2
-    /* 4C4A0 8005BCA0 18AD2590 */  lbu        $a1, %lo(D_8009AD18)($at)
+    /* 4C4A0 8005BCA0 18AD2590 */  lbu        $a1, %lo(g_vab_id_list)($at)
     /* 4C4A4 8005BCA4 0000248E */  lw         $a0, 0x0($s1)
     /* 4C4A8 8005BCA8 01005226 */  addiu      $s2, $s2, 0x1
     /* 4C4AC 8005BCAC 3071010C */  jal        snd_VabFakeOpen

@@ -446,7 +446,7 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
         DrawOTag((u32 *)g_gpu_ot_ptr);
         D_800A36AC++;
 
-        padbits = D_80102788.pressed;
+        padbits = g_pad_state.pressed;
         if (padbits & 0x100010) {
             func_8005C650(1, 0x7F, 0x7F);
             select = 0;
@@ -465,7 +465,7 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
         }
 
         if ((special != 0) && (select >= 3)) {
-            if (D_80102788.pressed & 0x80008000) {
+            if (g_pad_state.pressed & 0x80008000) {
                 u8 shift;
                 s32 mask;
                 s32 bits;
@@ -476,7 +476,7 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
                 bits = D_800A3788;
                 bits |= mask;
                 D_800A3788 = bits;
-            } else if (D_80102788.pressed & 0x20002000) {
+            } else if (g_pad_state.pressed & 0x20002000) {
                 u8 shift;
                 s32 mask;
                 s32 bits;
@@ -606,7 +606,7 @@ loop:
 
     if (D_800A3834 != 1) goto loop;
     if (skip != 0) goto loop;
-    if (D_80102788.pressed & 0x08000800u) goto call_func;
+    if (g_pad_state.pressed & 0x08000800u) goto call_func;
     if (D_800A38DC != 2) goto loop;
     if (D_800A3713 == 0) goto loop;
     D_800A3713--;

@@ -4,8 +4,8 @@ glabel func_8003BEA8
     /* 2C6B0 8003BEB0 1400BFAF */  sw         $ra, 0x14($sp)
     /* 2C6B4 8003BEB4 2CE2010C */  jal        func_800788B0
     /* 2C6B8 8003BEB8 21800000 */   addu      $s0, $zero, $zero
-    /* 2C6BC 8003BEBC 1080033C */  lui        $v1, %hi(D_80102794)
-    /* 2C6C0 8003BEC0 9427638C */  lw         $v1, %lo(D_80102794)($v1)
+    /* 2C6BC 8003BEBC 1080033C */  lui        $v1, %hi(g_pad_state_plus_0xC)
+    /* 2C6C0 8003BEC0 9427638C */  lw         $v1, %lo(g_pad_state_plus_0xC)($v1)
     /* 2C6C4 8003BEC4 00000000 */  nop
     /* 2C6C8 8003BEC8 40006330 */  andi       $v1, $v1, 0x40
     /* 2C6CC 8003BECC 02006010 */  beqz       $v1, .L8003BED8

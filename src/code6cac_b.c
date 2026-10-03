@@ -155,9 +155,9 @@ extern void func_80031B24(void);
  * SOTN: src/main/psxsdk/libsnd/ssclose.c:8 and
  * src/main/psxsdk/libsnd/vmanager.c:1107 @db41b28eee52969244a52cc269c8163d1ed8826a */
 void func_80026DA4(void) {
-    PracticeMenuRec *record;
-    PracticeMenuRec *partner;
-    PracticeMenuRec *current;
+    Unk80101EC8Record *record;
+    Unk80101EC8Record *partner;
+    Unk80101EC8Record *current;
     s32 timer;
     s32 i;
     s32 idx;
@@ -166,24 +166,24 @@ void func_80026DA4(void) {
     s32 pos[3];
 
     timer = func_8002BEA0();
-    record = g_practice_menu_table;
+    record = D_80101EC8;
     D_800A3824 = -1;
-    if ((u16)g_practice_menu_table[0].unk_6A == 0x1C) {
-        if (g_practice_menu_table[0].unk_40 != 4) goto tail;
+    if ((u16)D_80101EC8[0].unk_6A == 0x1C) {
+        if (D_80101EC8[0].unk_40 != 4) goto tail;
         idx = D_800A3876;
         if (idx == -1) goto tail;
         /* FAKE: reuse the record pointers for the selected pair, then restore
          * the fixed pair at the tail join. This keeps the selected pointers
          * in the call-preserved allocation used by the original.
          * SOTN: src/st/lib/unk_3B53C.c:41-55 @db41b28eee52969244a52cc269c8163d1ed8826a */
-        record = &g_practice_menu_table[idx];
-        partner = g_practice_menu_table;
+        record = &D_80101EC8[idx];
+        partner = D_80101EC8;
         if (idx == 0) {
             partner++;
         }
         record->unk_286 = 3;
         partner->unk_286 = 4;
-    } else if ((u16)g_practice_menu_table[0].unk_6A != 0xF) {
+    } else if ((u16)D_80101EC8[0].unk_6A != 0xF) {
         for (i = 0; i < 2; i++) {
             current = record + i;
             if (current->unk_24.pressed & 0x20) {
@@ -208,21 +208,21 @@ void func_80026DA4(void) {
         /* FAKE: re-materialize the same record base after the drift loop;
          * GCC cse.c's basic-block boundary retains the original base load.
          * SOTN: src/weapon/w_011.c:343-348 @db41b28eee52969244a52cc269c8163d1ed8826a */
-        record = g_practice_menu_table;
+        record = D_80101EC8;
         partner = record + 1;
         D_800A389C++;
         if ((s16)D_800A389C >= 0x2B) {
-            if (g_practice_menu_table[0].unk_28C > g_practice_menu_table[1].unk_28C) {
-                g_practice_menu_table[0].unk_286 = 3;
-                g_practice_menu_table[1].unk_286 = 4;
-                if ((u16)g_practice_menu_table[1].unk_6A == 0x21) {
+            if (D_80101EC8[0].unk_28C > D_80101EC8[1].unk_28C) {
+                D_80101EC8[0].unk_286 = 3;
+                D_80101EC8[1].unk_286 = 4;
+                if ((u16)D_80101EC8[1].unk_6A == 0x21) {
                     func_80027A58((s32 *)partner);
                 }
                 func_80032854(1, 0x2D, (u8 *)&partner->unk_F4, (s16 *)0);
-            } else if (g_practice_menu_table[1].unk_28C > g_practice_menu_table[0].unk_28C) {
-                g_practice_menu_table[1].unk_286 = 3;
-                g_practice_menu_table[0].unk_286 = 4;
-                if ((u16)g_practice_menu_table[0].unk_6A == 0x21) {
+            } else if (D_80101EC8[1].unk_28C > D_80101EC8[0].unk_28C) {
+                D_80101EC8[1].unk_286 = 3;
+                D_80101EC8[0].unk_286 = 4;
+                if ((u16)D_80101EC8[0].unk_6A == 0x21) {
                     func_80027A58((s32 *)record);
                 }
                 func_80032854(0, 0x2D, (u8 *)&record->unk_F4, (s16 *)0);
@@ -260,13 +260,13 @@ void func_80026DA4(void) {
     /* FAKE: restore record zero at the three-path join after selected-pair
      * work; preserve the pointer reuse documented above.
      * SOTN: src/st/lib/unk_3B53C.c:41-55 @db41b28eee52969244a52cc269c8163d1ed8826a */
-    record = g_practice_menu_table;
+    record = D_80101EC8;
 tail:
     /* FAKE: restore the second fixed record with the first at this join.
      * SOTN: src/st/lib/unk_3B53C.c:41-55 @db41b28eee52969244a52cc269c8163d1ed8826a */
     partner = record + 1;
     if (D_800A3910 == 0) {
-        switch ((u16)g_practice_menu_table[0].unk_6A) {
+        switch ((u16)D_80101EC8[0].unk_6A) {
         case 0xF:
             kind = -1;
             break;

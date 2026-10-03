@@ -1037,7 +1037,7 @@ s32* func_8005508C(void) {
 void func_8005509C(s32 arg0)
 {
   s32 i;
-  u8 *p = (u8 *)g_practice_menu_table + (arg0 * 0x44C);
+  u8 *p = (u8 *)D_80101EC8 + (arg0 * 0x44C);
   i = 0;
   do
   {
@@ -1048,7 +1048,7 @@ void func_8005509C(s32 arg0)
 }
 void func_800550E8(s32 arg0) {
     s32 i;
-    u8 *p = (u8 *)g_practice_menu_table + arg0 * 0x44C;
+    u8 *p = (u8 *)D_80101EC8 + arg0 * 0x44C;
     i = 0;
     do {
         p[i * 2 + 0x415] = p[i * 2 + 0x415] >> 1;
@@ -1057,7 +1057,7 @@ void func_800550E8(s32 arg0) {
 extern u32 file_GetFlag1(void);
 extern s32 rand(void);
 void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
-    PracticeMenuRec *p = &g_practice_menu_table[arg0];
+    Unk80101EC8Record *p = &D_80101EC8[arg0];
     CpuLevelEntry *src;
     u8 *pair;
     u8 base;
@@ -1066,7 +1066,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
      * (.claude/rules/ordinary-c-judge-decidable.md). */
     s32 idx;
     s32 sec;
-    PracticeMenuRec *rec;
+    Unk80101EC8Record *rec;
     u16 *cursor;
     u16 *list;
     s32 chr;
@@ -1080,7 +1080,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     s32 temp;
     u32 cat;
     s32 lo_val, hi1_val, hi2_val;
-    PracticeMenuRec *other;
+    Unk80101EC8Record *other;
 
     p->unk_443 = p->unk_0A;
     p->unk_438 = p->unk_08;
@@ -1093,7 +1093,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         break;
     case 0:
         if (D_800A3680 == D_800A3671) {
-            func_8005509C(p->unk_04);
+            func_8005509C(p->index);
         }
         if (D_80099D88[p->unk_443].flags & 0x300) {
             src = &D_8009A8C8[p->unk_86][D_800A37A0 - 1];
@@ -1109,7 +1109,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                 p->unk_438 = 0x1000;
             }
             if (D_800A37D2 % 5 == 0) {
-                func_8005509C(p->unk_04);
+                func_8005509C(p->index);
             }
         } else {
             temp = D_800A37D2 / 3;
@@ -1135,7 +1135,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
             p->unk_438 += 0x200;
         }
         if ((D_800A38E2 - 1) % 10 == 0) {
-            func_8005509C(p->unk_04);
+            func_8005509C(p->index);
         }
         temp = D_800A38E2 / 10 * 2;
         if (D_800A38E2 % 10 == 0) {
@@ -1163,7 +1163,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     p->unk_3A4 = arg1;
     for (idx = 0; idx < 2; idx++) {
         if (idx) {
-            rec = p->unk_00;
+            rec = p->other;
             cursor = arg2;
             list = arg2;
             chr = rec->unk_0A;
@@ -1233,7 +1233,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
             rec->unk_404[sec] = hi2_val;
         }
     }
-    other = p->unk_00;
+    other = p->other;
     p->unk_40D = -1;
     p->unk_40C = -1;
     p->unk_428 = -1;
@@ -1347,7 +1347,7 @@ loop:
 ret_3c8:
     return *(s32 *)(arg0 + 0x3C8);
 }
-void func_80055B44(PracticeMenuRec *a0, u8 *a1, s32 a2, s32 a3) {
+void func_80055B44(Unk80101EC8Record *a0, u8 *a1, s32 a2, s32 a3) {
     a0->unk_3B4 = a1;
     a0->unk_3BC = a2;
     a0->unk_3B8 = a3;
@@ -1356,20 +1356,20 @@ void func_80055B44(PracticeMenuRec *a0, u8 *a1, s32 a2, s32 a3) {
 }
 /* BEGIN func_80055B60 */
 /* Four pad-bit numbers; func_80055B60 copies the table whole (align 1: lwl/lwr)
-   and indexes the copy by PracticeMenuRec.unk_441. */
+   and indexes the copy by Unk80101EC8Record.unk_441. */
 typedef struct {
     u8 bit[4];
 } PadBitTable;
 extern PadBitTable D_800A3258;
 extern u8 D_8009A088[];
 extern s32 SquareRoot0(s32);
-extern s32 func_80058580(PracticeMenuRec *);
+extern s32 func_80058580(Unk80101EC8Record *);
 extern void func_80056CB8(s32);
-extern s32 func_80056FE8(PracticeMenuRec *);
+extern s32 func_80056FE8(Unk80101EC8Record *);
 void func_80055B60(s32 arg0, PadState *arg1) {
-    PracticeMenuRec *rec;
-    PracticeMenuRec *me;
-    PracticeMenuRec *opp;
+    Unk80101EC8Record *rec;
+    Unk80101EC8Record *me;
+    Unk80101EC8Record *opp;
     PadState pad;
     PadBitTable bits;
     s32 lo, hi;
@@ -1392,13 +1392,13 @@ void func_80055B60(s32 arg0, PadState *arg1) {
        SOTN's AddToInventory reuses i for its two loops (Q51) */
     s32 i; /* SOTN: src/dra/5D5BC.c:173 @aa53500 */
 
-    rec = &g_practice_menu_table[arg0];
+    rec = &D_80101EC8[arg0];
     rec->unk_3CC = 0;
     if (rec->unk_3E8 & 1) {
-        opp = rec->unk_00;
+        opp = rec->other;
         me = rec;
     } else {
-        me = rec->unk_00;
+        me = rec->other;
         opp = rec;
     }
     me->unk_441 = me->unk_58[2] & 0xF;
@@ -1415,11 +1415,11 @@ void func_80055B60(s32 arg0, PadState *arg1) {
                    ((D_80099D88[rec->unk_443].flags & 0xFF00)
                         ? (rec->unk_3F6 < rec->unk_3F5) << 2
                         : ((rand() & 0xFFF) < (rec->unk_438 >> 3) && rec->unk_3E8 >= 0x3D) << 2) |
-                   (((rand() & 0xFFF) < rec->unk_438 || rec->unk_3E8 < (rec->unk_438 >> 3)) << 3) | (((rand() & 0xFFF) < (rec->unk_438 >> 1) || rec->unk_3E8 < (rec->unk_438 >> 4)) << 4) | ((rec->unk_00->unk_6A == 2 || rec->unk_00->unk_6A == 0x1B || rec->unk_00->unk_6A == 0x28 || rec->unk_00->unk_6A == 0x26 || (rec->unk_6A == 0x11 && rec->unk_50->unk_08 != rec->unk_58[1] - 1)) << 7) | ((rec->unk_6A == 0x13 || rec->unk_6A == 0x1B || rec->unk_6A == 0x30) << 8) | ((rec->unk_00->unk_6A == 0x13 || rec->unk_00->unk_6A == 0x1B || rec->unk_00->unk_6A == 0x30) << 9) | ((rec->unk_6A == 6 || rec->unk_6A == 4 || rec->unk_6A == 0x14) << 10) | ((rec->unk_00->unk_6A == 6 || rec->unk_00->unk_6A == 4 || rec->unk_00->unk_6A == 0x14) << 11) |
+                   (((rand() & 0xFFF) < rec->unk_438 || rec->unk_3E8 < (rec->unk_438 >> 3)) << 3) | (((rand() & 0xFFF) < (rec->unk_438 >> 1) || rec->unk_3E8 < (rec->unk_438 >> 4)) << 4) | ((rec->other->unk_6A == 2 || rec->other->unk_6A == 0x1B || rec->other->unk_6A == 0x28 || rec->other->unk_6A == 0x26 || (rec->unk_6A == 0x11 && rec->unk_50->unk_08 != rec->unk_58[1] - 1)) << 7) | ((rec->unk_6A == 0x13 || rec->unk_6A == 0x1B || rec->unk_6A == 0x30) << 8) | ((rec->other->unk_6A == 0x13 || rec->other->unk_6A == 0x1B || rec->other->unk_6A == 0x30) << 9) | ((rec->unk_6A == 6 || rec->unk_6A == 4 || rec->unk_6A == 0x14) << 10) | ((rec->other->unk_6A == 6 || rec->other->unk_6A == 4 || rec->other->unk_6A == 0x14) << 11) |
                    (rec->unk_6A == 0x15 ? 0x1000 : 0) |
-                   (rec->unk_00->unk_6A == 0x15 ? 0x2000 : 0) |
+                   (rec->other->unk_6A == 0x15 ? 0x2000 : 0) |
                    (rec->unk_6A == 0x19 ? 0x4000 : 0) |
-                   (rec->unk_00->unk_6A == 0x19 ? 0x8000 : 0) |
+                   (rec->other->unk_6A == 0x19 ? 0x8000 : 0) |
                    (rec->unk_6A == 0x1A ? 0x10000 : 0);
     rec->unk_3E8++;
 
@@ -1433,8 +1433,8 @@ void func_80055B60(s32 arg0, PadState *arg1) {
         rec->unk_3F5 = 0;
     }
 
-    if (((D_8009A088[rec->unk_00->unk_0E] >> rec->unk_00->unk_440) & 1) &&
-        rec->unk_00->unk_43C < (rec->unk_438 >> 4) && rec->unk_0E < 6 &&
+    if (((D_8009A088[rec->other->unk_0E] >> rec->other->unk_440) & 1) &&
+        rec->other->unk_43C < (rec->unk_438 >> 4) && rec->unk_0E < 6 &&
         (rec->unk_430 & 0x2000) && !(D_80099D88[rec->unk_443].flags & 0xBF00)) {
         rec->unk_430 |= 0x20000;
     } else {
@@ -1455,7 +1455,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
         rec->unk_3F0 = 0;
     }
 
-    temp = rec->unk_00->unk_148 - rec->unk_148;
+    temp = rec->other->unk_148 - rec->unk_148;
     if (temp < -1000) {
         rec->unk_442 = 1;
     } else if (temp > 1000) {
@@ -1467,18 +1467,18 @@ void func_80055B60(s32 arg0, PadState *arg1) {
         func_80056CB8((s32)rec);
     }
     if ((rec->unk_40 == 0 && (rec->unk_6A == 3 || rec->unk_6A == 0x2C)) ||
-        (rec->unk_00->unk_40 == 0 && (rec->unk_00->unk_6A == 0xD || rec->unk_00->unk_6A == 0x2C))) {
+        (rec->other->unk_40 == 0 && (rec->other->unk_6A == 0xD || rec->other->unk_6A == 0x2C))) {
         if (rec->unk_3F4 != 0xFF) {
             rec->unk_3F4++;
         }
     }
 
     if (rec->unk_430 & 0x80) {
-        lo = rec->unk_00->unk_A1[0] != 0xFF ? rec->unk_00->unk_A1[0] : rec->unk_00->unk_A1[1];
-        hi = rec->unk_00->unk_A3[0] != 0xFF ? rec->unk_00->unk_A3[0] : rec->unk_00->unk_A3[1];
+        lo = rec->other->unk_A1[0] != 0xFF ? rec->other->unk_A1[0] : rec->other->unk_A1[1];
+        hi = rec->other->unk_A3[0] != 0xFF ? rec->other->unk_A3[0] : rec->other->unk_A3[1];
     }
     if (!(rec->unk_430 & 0x80) ||
-        (rec->unk_6A != 0x11 ? (hi < rec->unk_00->unk_40 || lo - rec->unk_00->unk_40 >= 9)
+        (rec->unk_6A != 0x11 ? (hi < rec->other->unk_40 || lo - rec->other->unk_40 >= 9)
                                   : rec->unk_50->unk_08 < rec->unk_40)) {
         if (rec->unk_428 != -1) {
             if (rec->unk_424 != 0 && (file_GetFlag1() == 0 || D_800A38DC == 3)) {
@@ -1522,11 +1522,11 @@ void func_80055B60(s32 arg0, PadState *arg1) {
             rec->unk_430 &= ~0x60;
         }
     } else {
-        if (rec->unk_428 != rec->unk_00->unk_5C) {
+        if (rec->unk_428 != rec->other->unk_5C) {
             if (rec->unk_6A == 0x11) {
                 rec->unk_428 = 0xFF;
             } else {
-                rec->unk_428 = (rec->unk_00->unk_6C != 0xE && rec->unk_00->unk_6C != 0x2C) ? rec->unk_00->unk_5C : 0xFE;
+                rec->unk_428 = (rec->other->unk_6C != 0xE && rec->other->unk_6C != 0x2C) ? rec->other->unk_5C : 0xFE;
                 rec->unk_427 = lo;
                 temp2 = func_80056FE8(rec);
                 temp3 = temp2 + 800;
@@ -1547,8 +1547,8 @@ void func_80055B60(s32 arg0, PadState *arg1) {
                         rec->unk_426 = 3;
                     }
                 }
-                rec->unk_42A = rec->unk_00->unk_F4.x;
-                rec->unk_42C = rec->unk_00->unk_F4.z;
+                rec->unk_42A = rec->other->unk_F4.x;
+                rec->unk_42C = rec->other->unk_F4.z;
                 rec->unk_42E = temp3;
             }
             for (i = 0; i < 8; i++) {
@@ -1568,24 +1568,24 @@ void func_80055B60(s32 arg0, PadState *arg1) {
         }
     }
 
-    if (rec->unk_00->unk_6A == 0x12 && rec->unk_00->unk_43C < 0x80 && D_800A387C < 0x1194) {
+    if (rec->other->unk_6A == 0x12 && rec->other->unk_43C < 0x80 && D_800A387C < 0x1194) {
         rec->unk_425 = 1;
     } else {
         rec->unk_425 = 0;
         for (i = 0; i < 12; i++) {
             Obj80106A78 *obj = &D_80106A78[i];
 
-            temp2 = SquareRoot0((rec->unk_F4.x - obj->unk_2C.x) * (rec->unk_F4.x - obj->unk_2C.x) +
-                                (rec->unk_F4.z - obj->unk_2C.z) * (rec->unk_F4.z - obj->unk_2C.z));
-            if (obj->unk_02 != -1 && obj->unk_04 != 0 && obj->unk_06 != rec->unk_04) {
-                temp = (ratan2(rec->unk_F4.x - obj->unk_2C.x, rec->unk_F4.z - obj->unk_2C.z) -
-                        ratan2(obj->unk_2C.x - obj->unk_38.x, obj->unk_2C.z - obj->unk_38.z)) & 0xFFF;
+            temp2 = SquareRoot0((rec->unk_F4.x - obj->pos.x) * (rec->unk_F4.x - obj->pos.x) +
+                                (rec->unk_F4.z - obj->pos.z) * (rec->unk_F4.z - obj->pos.z));
+            if (obj->unk_02 != -1 && obj->unk_04 != 0 && obj->owner != rec->index) {
+                temp = (ratan2(rec->unk_F4.x - obj->pos.x, rec->unk_F4.z - obj->pos.z) -
+                        ratan2(obj->pos.x - obj->prev_pos.x, obj->pos.z - obj->prev_pos.z)) & 0xFFF;
                 if (temp > 0x800) {
                     temp -= 0x1000;
                 }
                 if ((temp < 0 ? -temp : temp) < 0x80) {
-                    if ((rec->unk_B8.vy - obj->unk_2C.y >= 0) ? (rec->unk_B8.vy - obj->unk_2C.y < 2000)
-                                                               : (obj->unk_2C.y - rec->unk_B8.vy < 2000)) {
+                    if ((rec->unk_B8.vy - obj->pos.y >= 0) ? (rec->unk_B8.vy - obj->pos.y < 2000)
+                                                               : (obj->pos.y - rec->unk_B8.vy < 2000)) {
                         rec->unk_425 = temp2 < 3000 ? 2 : 1;
                     }
                 }
@@ -1596,23 +1596,23 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     if ((rec->unk_430 & 1) && !(D_80099D88[rec->unk_443].flags & 0xFF00) &&
         rec->unk_426 != 1 && rec->unk_426 != 2 && rec->unk_425 != 1 && rec->unk_425 != 2 &&
         (((rec->unk_430 & 0x80) &&
-          ((rec->unk_00->unk_7C == 0 && hi < rec->unk_00->unk_40) || lo - rec->unk_00->unk_40 >= 9)) ||
-         rec->unk_00->unk_6A == 0x10 || rec->unk_00->unk_6A == 3 ||
-         rec->unk_00->unk_6A == 7 || rec->unk_00->unk_6A == 0x2C ||
-         rec->unk_00->unk_6A == 0x24 ||
+          ((rec->other->unk_7C == 0 && hi < rec->other->unk_40) || lo - rec->other->unk_40 >= 9)) ||
+         rec->other->unk_6A == 0x10 || rec->other->unk_6A == 3 ||
+         rec->other->unk_6A == 7 || rec->other->unk_6A == 0x2C ||
+         rec->other->unk_6A == 0x24 ||
          (!(D_80099D88[rec->unk_443].flags & 0x20) &&
           (((rec->unk_430 & 0x80) && rec->unk_426 == 3) ||
-           (rec->unk_00->unk_6A == 0x2A && rec->unk_00->unk_26C == 0) ||
-           (rec->unk_00->unk_6A == 0x12 &&
-            (!((0x78 >> rec->unk_00->unk_B1) & 1) || rec->unk_00->unk_26C == 0)) ||
-           (rec->unk_00->unk_6A == 0xB &&
-            ((rec->unk_00->unk_330 == 0 && rec->unk_425 != 1 && rec->unk_425 != 2) || rec->unk_00->unk_26C == 0)))) ||
+           (rec->other->unk_6A == 0x2A && rec->other->unk_26C == 0) ||
+           (rec->other->unk_6A == 0x12 &&
+            (!((0x78 >> rec->other->unk_B1) & 1) || rec->other->unk_26C == 0)) ||
+           (rec->other->unk_6A == 0xB &&
+            ((rec->other->unk_330 == 0 && rec->unk_425 != 1 && rec->unk_425 != 2) || rec->other->unk_26C == 0)))) ||
          ((D_80099D88[rec->unk_443].flags & 0x20) &&
-          (rec->unk_00->unk_6A == 0x25 || rec->unk_00->unk_6A == 9 ||
-           rec->unk_00->unk_6A == 0x16 || rec->unk_00->unk_6A == 0x17 ||
-           rec->unk_00->unk_6A == 0xA ||
-           (rec->unk_00->unk_6A == 0x22 && rec->unk_442 == 0) ||
-           rec->unk_00->unk_43C > 0x400)))) {
+          (rec->other->unk_6A == 0x25 || rec->other->unk_6A == 9 ||
+           rec->other->unk_6A == 0x16 || rec->other->unk_6A == 0x17 ||
+           rec->other->unk_6A == 0xA ||
+           (rec->other->unk_6A == 0x22 && rec->unk_442 == 0) ||
+           rec->other->unk_43C > 0x400)))) {
         rec->unk_430 |= 2;
     } else {
         rec->unk_430 &= ~2;
@@ -1620,7 +1620,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
 
     if (D_80099D88[rec->unk_443].flags & 0x8000) {
         rec->unk_430 &= ~0x78;
-        if (rec->unk_6A != 0x25 && (D_80102788.held & 0x100)) {
+        if (rec->unk_6A != 0x25 && (g_pad_state.held & 0x100)) {
             rec->unk_430 |= 0x40000;
             rec->unk_3F2 = 0;
         }
@@ -1775,8 +1775,8 @@ extern u8 D_8009A840[];
  * re-merged byte-neutrally by post-reload cross-jumping.  ($a1 has no ABI
  * anchor in this 1-argument leaf, so copy-preference cannot seat `base`.)
  */
-s32 func_80056FE8(PracticeMenuRec *arg0) {
-    PracticeMenuRec *a2 = arg0->unk_00;
+s32 func_80056FE8(Unk80101EC8Record *arg0) {
+    Unk80101EC8Record *a2 = arg0->other;
     s32 a3 = a2->unk_58[3];
     s32 base = a3 * 40;
     /* FAKE: `base += <arm value>` duplicated into all three dispatch arms
@@ -1800,7 +1800,7 @@ s32 func_80056FE8(PracticeMenuRec *arg0) {
         /* FAKE: duplicated copy (see above; one post-join add scores 13) */
         base += D_8009A840[a2->unk_14] * 2;
     }
-    return base + arg0->unk_00->unk_40A + 0x12C;
+    return base + arg0->other->unk_40A + 0x12C;
 }
 extern s32 func_800233AC(void *, s32 *);
 extern s32 D_8009AA50[];
@@ -1842,7 +1842,7 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
 }
 typedef struct { s32 x, y, z, w; } Vec4_571C0;
 
-s32 func_800571C0(PracticeMenuRec *obj) {
+s32 func_800571C0(Unk80101EC8Record *obj) {
     Vec4_571C0 probe;
     Vec4_571C0 top;
     Vec4_571C0 left;
@@ -1859,7 +1859,7 @@ s32 func_800571C0(PracticeMenuRec *obj) {
     s32 ang;
     s32 rad;
     s32 a;
-    PracticeMenuRec *p;
+    Unk80101EC8Record *p;
     s32 dx;
     s32 dz;
     s32 x;
@@ -1877,7 +1877,7 @@ s32 func_800571C0(PracticeMenuRec *obj) {
     right = left;
     for (ang = 0x200; ang <= 0x800; ang += 0x200) {
         if (goL) {
-            p = obj->unk_00;
+            p = obj->other;
             a = p->unk_1D8 + ang;
             goL = 0;
             dx = rad * Judge[a & 0xFFF];
@@ -1899,7 +1899,7 @@ s32 func_800571C0(PracticeMenuRec *obj) {
             }
         }
         if (goR) {
-            p = obj->unk_00;
+            p = obj->other;
             a = p->unk_1D8 - ang;
             goR = 0;
             dx = rad * Judge[a & 0xFFF];
@@ -1937,14 +1937,14 @@ s32 func_800571C0(PracticeMenuRec *obj) {
         }
         ret = nl--;
         for (ang = 0x200; nl >= 0; nl--, ang += 0x200) {
-            s32 base = obj->unk_00->unk_1D8;
+            s32 base = obj->other->unk_1D8;
             if (temp != 0) {
                 a = base + ang;
             } else {
                 a = base - ang;
             }
-            obj->cpu_route.node[nl].x = obj->unk_00->unk_B8.vx + ((D_800A387C * Judge[a & 0xFFF]) >> 12);
-            obj->cpu_route.node[nl].z = obj->unk_00->unk_B8.vz + ((D_800A387C * Judge[(a + 0x400) & 0xFFF]) >> 12);
+            obj->cpu_route.node[nl].x = obj->other->unk_B8.vx + ((D_800A387C * Judge[a & 0xFFF]) >> 12);
+            obj->cpu_route.node[nl].z = obj->other->unk_B8.vz + ((D_800A387C * Judge[(a + 0x400) & 0xFFF]) >> 12);
             obj->cpu_route.node[nl].kind = 2;
         }
         obj->unk_398 = 0;
@@ -2030,7 +2030,7 @@ s32 func_8005763C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s3
 }
 extern s32 func_8005763C(s32, s32, s32, s32, s32, s32, s32, s32, s32 *, s32 *);
 
-s32 func_80057ACC(PracticeMenuRec *arg0, NavPolySet *arg1, s32 arg2, s32 arg3) {
+s32 func_80057ACC(Unk80101EC8Record *arg0, NavPolySet *arg1, s32 arg2, s32 arg3) {
     s32 sp28;
     s32 sp2C;
     s32 best;
@@ -2156,7 +2156,7 @@ void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
  * the next corner while the segment to the goal is blocked by an edge, and
  * append the cheaper of the two corner chains (up to 8 corners) to arg0's
  * route. */
-void func_80057E84(PracticeMenuRec *arg0, NavPolySet *arg1, s32 goal_x, s32 goal_z) {
+void func_80057E84(Unk80101EC8Record *arg0, NavPolySet *arg1, s32 goal_x, s32 goal_z) {
     CpuRoute path[2];
     s16 ofs0_x;
     s16 ofs0_z;
@@ -2353,11 +2353,11 @@ extern u8 D_8009A9DC[][3];
 extern s32 D_8009A9F0[][8];
 extern u8 D_800A325C[4];
 extern u8 D_800A3260[4];
-extern void func_80057E84(PracticeMenuRec *, NavPolySet *, s32, s32);
+extern void func_80057E84(Unk80101EC8Record *, NavPolySet *, s32, s32);
 
 #define CPU_SQ(x) ((x) * (x))
 
-s32 func_80058580(PracticeMenuRec *p) {
+s32 func_80058580(Unk80101EC8Record *p) {
     s32 wx;
     u8 *pscript;
     s32 wz;
@@ -2439,19 +2439,19 @@ s32 func_80058580(PracticeMenuRec *p) {
     s8 besti;
     s32 score;
 
-    if (p->unk_00->unk_6A == 4 || p->unk_00->unk_6A == 0x14) {
+    if (p->other->unk_6A == 4 || p->other->unk_6A == 0x14) {
         return 0;
     }
     if (p->unk_443 != 0x16 && ((p->unk_430 & 0x15100) ||
                              (p->unk_6A == 0xD && (p->unk_426 == 4 || p->unk_425 == 4)))) {
         script1 = 0;
-        if ((p->unk_426 == 1 && p->unk_00->unk_40 + 1 >= p->unk_427) || p->unk_425 == 2) {
+        if ((p->unk_426 == 1 && p->other->unk_40 + 1 >= p->unk_427) || p->unk_425 == 2) {
             if (p->unk_430 & 8) {
                 u8 *tbl[2];
                 s32 f;
                 tbl[0] = D_8009A874;
                 tbl[1] = D_8009A870;
-                work3 = p->unk_00->unk_AF & 1;
+                work3 = p->other->unk_AF & 1;
                 f = p->unk_430;
                 if (!(((f & 0x20) || ((f & 0x10) && p->unk_3F3 % ((p->unk_438 >> 8) + 2) != (p->unk_438 >> 8) + 1)) &&
                       (!(D_80099D88[p->unk_443].flags & 0xFF00) || (f & 0x40))) ||
@@ -2486,11 +2486,11 @@ s32 func_80058580(PracticeMenuRec *p) {
                 }
             }
             if (p->unk_425 == 1 ||
-                (p->unk_426 == 1 && p->unk_00->unk_441 == 2 && p->unk_427 - p->unk_00->unk_40 >= 6) ||
+                (p->unk_426 == 1 && p->other->unk_441 == 2 && p->unk_427 - p->other->unk_40 >= 6) ||
                 (p->unk_426 == 2 && script1 == 0)) {
                 if ((p->unk_430 & 8) &&
                     (!(D_80099D88[p->unk_443].flags & 0xBF00) || ((D_80099D88[p->unk_443].flags & 0x300) && D_800A37A0 >= 7))) {
-                    if (p->unk_00->unk_43A > 0) {
+                    if (p->other->unk_43A > 0) {
                         if (work1) {
                             script1 = D_8009A880;
                         } else if (work2) {
@@ -2543,9 +2543,9 @@ s32 func_80058580(PracticeMenuRec *p) {
                 }
             }
             if (!(p->unk_425 == 1 || p->unk_425 == 2) && p->unk_426 != 2 &&
-                (p->unk_3CC == 0 || p->unk_442 != 0 || p->unk_00->unk_6A == 2 ||
-                 p->unk_00->unk_6A == 0x29 || p->unk_00->unk_6A == 0x13 ||
-                 p->unk_00->unk_6A == 6 || p->unk_00->unk_404[p->unk_00->unk_86] < D_800A387C)) {
+                (p->unk_3CC == 0 || p->unk_442 != 0 || p->other->unk_6A == 2 ||
+                 p->other->unk_6A == 0x29 || p->other->unk_6A == 0x13 ||
+                 p->other->unk_6A == 6 || p->other->unk_404[p->other->unk_86] < D_800A387C)) {
                 if (p->unk_43C < 0x400 && p->unk_444[3] == 0) {
                     p->unk_3CC = 0x8000;
                 } else {
@@ -2576,7 +2576,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                     p->unk_3CC = (p->unk_443 & 1) ? vd | 0x1000 : vd | 0x4000;
                 }
             }
-        } else if (state == 0x11 && p->unk_04 != D_800A38AE && p->unk_40 == p->unk_50->unk_08 - 1) {
+        } else if (state == 0x11 && p->index != D_800A38AE && p->unk_40 == p->unk_50->unk_08 - 1) {
             {
                 s32 a, b, c;
                 a = p->unk_26E;
@@ -2615,7 +2615,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                              (far || (D_8009A850[work4][3] & 4))) ||
                             work3) {
                             if (D_8009A850[work4][0] == p->unk_6A &&
-                                ((st2 = D_8009A850[work4][1]) == 0xFF || st2 == p->unk_00->unk_6A)) {
+                                ((st2 = D_8009A850[work4][1]) == 0xFF || st2 == p->other->unk_6A)) {
                                 if (D_8009A850[work4][3] & 2) {
                                     vb = 0x40;
                                     if (p->unk_3E8 & 1) {
@@ -2653,8 +2653,8 @@ s32 func_80058580(PracticeMenuRec *p) {
     if (p->unk_430 & 0x5100) {
         pois = &D_8009A658[D_800A36A4];
         if (p->unk_39D == 0) {
-            tx = p->unk_00->unk_F4.x;
-            tz = p->unk_00->unk_F4.z;
+            tx = p->other->unk_F4.x;
+            tz = p->other->unk_F4.z;
             wtype = 1;
         } else {
             tx = p->unk_3A0;
@@ -2666,7 +2666,7 @@ s32 func_80058580(PracticeMenuRec *p) {
          * || chain (`beq $s2,$v0` at 0x80059210); without it the chain is two instructions
          * shorter. */
         if (!(wtype == 1 &&
-              (p->unk_00->unk_6A == 0xA || p->unk_443 == 0xA || (p->unk_0E >= 6 && p->unk_34A == 0)) &&
+              (p->other->unk_6A == 0xA || p->unk_443 == 0xA || (p->unk_0E >= 6 && p->unk_34A == 0)) &&
               wtype == 1)) {
             if (!(p->unk_3E8 & 7)) {
                 p->unk_434 = func_80057ACC(p, pois, tx, tz);
@@ -2675,28 +2675,28 @@ s32 func_80058580(PracticeMenuRec *p) {
                 work1 = p->unk_444[6];
                 if (!(p->unk_430 & 0x800) || D_800A387C < 4000) {
                     if (p->unk_442 == 2 && !(work1 == 1 || work1 == 2)) {
-                        lim = p->unk_00->unk_3F8[p->unk_00->unk_86];
+                        lim = p->other->unk_3F8[p->other->unk_86];
                     } else if ((p->unk_442 == 1 || p->unk_442 == 2) || p->unk_442 == 3) {
                         if (!(D_80099D88[p->unk_443].flags & 0x4000)) {
-                            lim = p->unk_00->unk_3FE[p->unk_00->unk_86];
+                            lim = p->other->unk_3FE[p->other->unk_86];
                         } else {
-                            lim = p->unk_00->unk_404[p->unk_00->unk_86];
+                            lim = p->other->unk_404[p->other->unk_86];
                         }
                     } else if (p->unk_434 != 100000) {
                         if (p->unk_430 & 0x200) {
-                            lim = p->unk_00->unk_404[p->unk_00->unk_86];
+                            lim = p->other->unk_404[p->other->unk_86];
                         } else {
-                            lim = p->unk_404[p->unk_86] + p->unk_00->unk_404[p->unk_00->unk_86];
+                            lim = p->unk_404[p->unk_86] + p->other->unk_404[p->other->unk_86];
                         }
                     } else {
-                        lim = p->unk_3FE[p->unk_86] + p->unk_00->unk_3FE[p->unk_00->unk_86];
+                        lim = p->unk_3FE[p->unk_86] + p->other->unk_3FE[p->other->unk_86];
                         if (p->unk_430 & 0x200) {
-                            if (p->unk_00->unk_43C > 0x600) {
-                                lim = p->unk_00->unk_3F8[p->unk_00->unk_86];
-                            } else if (p->unk_00->unk_43C > 0x300) {
-                                lim = p->unk_00->unk_404[p->unk_00->unk_86];
-                            } else if (p->unk_00->unk_43C > 0x100) {
-                                lim = p->unk_00->unk_3FE[p->unk_00->unk_86];
+                            if (p->other->unk_43C > 0x600) {
+                                lim = p->other->unk_3F8[p->other->unk_86];
+                            } else if (p->other->unk_43C > 0x300) {
+                                lim = p->other->unk_404[p->other->unk_86];
+                            } else if (p->other->unk_43C > 0x100) {
+                                lim = p->other->unk_3FE[p->other->unk_86];
                             }
                         }
                     }
@@ -2740,15 +2740,15 @@ s32 func_80058580(PracticeMenuRec *p) {
                     if (!(work1 == 1 || work1 == 2)) {
                         script2 = 0;
                         if (p->cpu_route.node[wi].kind == 1) {
-                            if (work2 == 3 && D_800A387C < p->unk_00->unk_404[p->unk_00->unk_86]) {
+                            if (work2 == 3 && D_800A387C < p->other->unk_404[p->other->unk_86]) {
                                 goto pick2;
                             }
                             /* !FAKE: the inner test contradicts the outer one, so pick2's body runs only by the
                              * goto above; the target compares twice (0x80059638 / 0x8005966C), and failing
                              * either compare here still reaches the script2 call test (redundant condition,
                              * .claude/rules/no-new-park-categories.md entry 16). */
-                            if (work2 == 5 && p->unk_00->unk_404[p->unk_00->unk_86] < D_800A387C) {
-                                if (D_800A387C < p->unk_00->unk_404[p->unk_00->unk_86]) {
+                            if (work2 == 5 && p->other->unk_404[p->other->unk_86] < D_800A387C) {
+                                if (D_800A387C < p->other->unk_404[p->other->unk_86]) {
                                 pick2:
                                     if (p->unk_6A == 0x13) {
                                         script2 = D_8009A8A4;
@@ -2817,12 +2817,12 @@ s32 func_80058580(PracticeMenuRec *p) {
             }
         }
 
-        if ((!(p->unk_430 & 0x80) && D_800A387C < p->unk_00->unk_404[p->unk_00->unk_86] &&
+        if ((!(p->unk_430 & 0x80) && D_800A387C < p->other->unk_404[p->other->unk_86] &&
              ((p->unk_444[3] >= 2 && (p->unk_444[5] >= 2 || p->unk_444[1] >= 2)) || p->unk_444[3] == 1 || p->unk_444[4] == 1 ||
               p->unk_444[2] == 1)) ||
-            ((D_80099D88[p->unk_443].flags & 0x4000 || p->unk_443 == 0x18 || p->unk_443 == 0x1A) && D_800A387C < p->unk_00->unk_404[p->unk_00->unk_86] &&
-             p->unk_00->unk_43C < 0x10) ||
-            (p->unk_0E >= 7 && D_800A387C < p->unk_00->unk_404[p->unk_00->unk_86] && p->unk_00->unk_43C < 0x10 &&
+            ((D_80099D88[p->unk_443].flags & 0x4000 || p->unk_443 == 0x18 || p->unk_443 == 0x1A) && D_800A387C < p->other->unk_404[p->other->unk_86] &&
+             p->other->unk_43C < 0x10) ||
+            (p->unk_0E >= 7 && D_800A387C < p->other->unk_404[p->other->unk_86] && p->other->unk_43C < 0x10 &&
              p->unk_34A != 0)) {
             if (!(D_80099D88[p->unk_443].flags & 0x8F00)) {
                 if ((p->cpu_route.count = func_800571C0(p)) != 0) {
@@ -2838,7 +2838,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                 work2 = p->unk_444[5] == 0;
                 for (; cnt < 2; cnt++, work3++) {
                     if (work3 & 1) {
-                        if (p->unk_00->unk_43A < 0) {
+                        if (p->other->unk_43A < 0) {
                             if (work1) {
                                 sel = 6;
                             } else if (work2) {
@@ -2871,14 +2871,14 @@ s32 func_80058580(PracticeMenuRec *p) {
             script3 = 0;
             if (p->unk_39C != 1) {
                 work3 = p->unk_394;
-            } else if (p->unk_00->unk_6A == 0x19) {
+            } else if (p->other->unk_6A == 0x19) {
                 u8 slots0[4];
                 __builtin_memcpy(slots0, D_800A325C, 4);
-                work3 = slots0[p->unk_00->unk_441];
-            } else if (p->unk_00->unk_6A == 0x1A) {
+                work3 = slots0[p->other->unk_441];
+            } else if (p->other->unk_6A == 0x1A) {
                 u8 slots1[4];
                 __builtin_memcpy(slots1, D_800A3260, 4);
-                work3 = slots1[p->unk_00->unk_441];
+                work3 = slots1[p->other->unk_441];
             }
             switch (work3) {
             case 0:
@@ -2936,7 +2936,7 @@ s32 func_80058580(PracticeMenuRec *p) {
                     script3 = 0;
                 }
             } else if ((p->unk_430 & 0x800) || p->unk_442 != 0 ||
-                       (p->unk_3CC == 0x2000 && D_800A387C < p->unk_00->unk_3F8[p->unk_00->unk_86])) {
+                       (p->unk_3CC == 0x2000 && D_800A387C < p->other->unk_3F8[p->other->unk_86])) {
                 script3 = 0;
                 p->unk_398 = 0;
                 p->unk_3CC = 0;
@@ -2997,8 +2997,8 @@ s32 func_80058580(PracticeMenuRec *p) {
                             break;
                         case 4:
                             if ((p->unk_444[6] == 1 || p->unk_444[6] == 2) || !(D_800A387C >= 3000 && D_800A387C <= 5000) ||
-                                p->unk_43C >= 0x201 || p->unk_440 == 4 || p->unk_00->unk_6A == 0x18 ||
-                                p->unk_00->unk_6A == 0x2A) {
+                                p->unk_43C >= 0x201 || p->unk_440 == 4 || p->other->unk_6A == 0x18 ||
+                                p->other->unk_6A == 0x2A) {
                                 goto pick_next;
                             }
                             break;
@@ -3178,8 +3178,8 @@ s32 func_80058580(PracticeMenuRec *p) {
                         work3 = 0;
                         if (et == 0) {
                             if (work1 < D_800A387C && D_800A387C < hi) {
-                                if (p->unk_00->unk_6A == 0x15 || p->unk_00->unk_6A == 0x2C ||
-                                    p->unk_00->unk_6A == 0xE || p->unk_00->unk_6A == 0x19) {
+                                if (p->other->unk_6A == 0x15 || p->other->unk_6A == 0x2C ||
+                                    p->other->unk_6A == 0xE || p->other->unk_6A == 0x19) {
                                     work3 = 1;
                                 }
                             }
@@ -3254,16 +3254,16 @@ s32 func_80058580(PracticeMenuRec *p) {
                        !(D_800A38DC == 2 || D_800A38DC == 3)) {
                 script4 = 0;
                 if ((rand() & 0xFF) < (D_80099D88[p->unk_443].script_weight[5] >> 2) && ((0x78 >> p->unk_B1) & 1) && p->unk_442 == 0 &&
-                    p->unk_00->unk_404[p->unk_00->unk_86] < D_800A387C && D_800A387C < 4500) {
+                    p->other->unk_404[p->other->unk_86] < D_800A387C && D_800A387C < 4500) {
                     script4 = D_8009A8C0;
                 } else {
                     s32 level;
 
                     if (p->unk_443 == 0x15) {
                         level = p->unk_34D;
-                        work1 = p->unk_00->unk_3F8[p->unk_00->unk_86];
+                        work1 = p->other->unk_3F8[p->other->unk_86];
                     } else {
-                        work1 = p->unk_00->unk_404[p->unk_00->unk_86] + 300;
+                        work1 = p->other->unk_404[p->other->unk_86] + 300;
                         if (D_80099D88[p->unk_443].flags & 0x300) {
                             level = 0;
                             if (D_800A37A0 >= 6) {
@@ -3312,21 +3312,21 @@ s32 func_80058580(PracticeMenuRec *p) {
                 p->unk_394 = 0;
             }
         } else if (p->unk_0E >= 6) {
-            if (p->unk_34A == 0 && p->unk_34B != 0 && p->unk_26C != 0 && p->unk_00->unk_404[p->unk_00->unk_86] < D_800A387C) {
+            if (p->unk_34A == 0 && p->unk_34B != 0 && p->unk_26C != 0 && p->other->unk_404[p->other->unk_86] < D_800A387C) {
                 p->unk_3CC = 0x80;
             }
         } else if ((p->unk_430 & 0x800) && (D_80099D88[p->unk_443].flags & 1) && D_800A387C < 4000 && p->unk_440 != 4 &&
                    (p->unk_442 == 0 || p->unk_442 == 2)) {
             func_80055B44(p, D_8009A898, 1, p->unk_3BD);
             p->unk_3F2++;
-        } else if ((p->unk_430 & 0xA801) || p->unk_00->unk_6A == 0x18 ||
-                   p->unk_00->unk_6A == 0x25 || p->unk_00->unk_6A == 8 ||
-                   p->unk_00->unk_6A == 0xA || (p->unk_00->unk_6A == 0x1A && p->unk_441 == 1)) {
+        } else if ((p->unk_430 & 0xA801) || p->other->unk_6A == 0x18 ||
+                   p->other->unk_6A == 0x25 || p->other->unk_6A == 8 ||
+                   p->other->unk_6A == 0xA || (p->other->unk_6A == 0x1A && p->unk_441 == 1)) {
             if (D_80099D88[p->unk_443].unk3 != 0 &&
-                ((!(D_80099D88[p->unk_443].flags & 0xFF00) && p->unk_00->unk_404[p->unk_00->unk_86] < D_800A387C && p->unk_3F4 >= D_80099D88[p->unk_443].unk3) ||
-                 ((D_80099D88[p->unk_443].flags & 0x100) && p->unk_00->unk_3F8[p->unk_00->unk_86] < D_800A387C && p->unk_3F4 >= D_80099D88[p->unk_443].unk3 &&
+                ((!(D_80099D88[p->unk_443].flags & 0xFF00) && p->other->unk_404[p->other->unk_86] < D_800A387C && p->unk_3F4 >= D_80099D88[p->unk_443].unk3) ||
+                 ((D_80099D88[p->unk_443].flags & 0x100) && p->other->unk_3F8[p->other->unk_86] < D_800A387C && p->unk_3F4 >= D_80099D88[p->unk_443].unk3 &&
                   p->unk_440 != 2) ||
-                 ((D_80099D88[p->unk_443].flags & 0x7C00) && p->unk_00->unk_3F8[p->unk_00->unk_86] < D_800A387C && p->unk_3F4 >= D_80099D88[p->unk_443].unk3 &&
+                 ((D_80099D88[p->unk_443].flags & 0x7C00) && p->other->unk_3F8[p->other->unk_86] < D_800A387C && p->unk_3F4 >= D_80099D88[p->unk_443].unk3 &&
                   D_800A38E2 >= 0x5B) ||
                  (p->unk_430 & 0x40000))) {
                 p->unk_3F4 = 0;
@@ -3874,7 +3874,7 @@ typedef struct {
 } VabLoad;
 
 
-extern u8 D_8009AD18[];
+extern u8 g_vab_id_list[];
 extern void SsVabClose(s16);
 extern s32 game_FrameLoop(void);
 extern s32 cdrom_StartRead(s32, s32);
@@ -3896,9 +3896,9 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
     p = (u8 *)hdr;
     func_800858D0(0);
     for (i = 0; i < 3; i++) {
-        SsVabClose(D_8009AD18[i]);
-        g_vab_rec_ptr[D_8009AD18[i]] = 0;
-        g_vab_vb_sbaddr[D_8009AD18[i]] = 0;
+        SsVabClose(g_vab_id_list[i]);
+        g_vab_rec_ptr[g_vab_id_list[i]] = 0;
+        g_vab_vb_sbaddr[g_vab_id_list[i]] = 0;
     }
     task = func_80036EA8(2, arg1 + 9);
     game_FrameLoop();
@@ -3922,13 +3922,13 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
     }
     for (i = 0; i < count; i++) {
         loc.ent[i].off += (s32)p;
-        loc.len[i] = func_8005C2A8(loc.ent[i].off, D_8009AD18[i], (s32)p + size);
+        loc.len[i] = func_8005C2A8(loc.ent[i].off, g_vab_id_list[i], (s32)p + size);
     }
     for (i = 0; i < count; i++) {
         for (j = 0; j < (u32)loc.len[i]; j++) {
             p[j] = ((u8 *)loc.ent[i].off)[j];
         }
-        snd_VabFakeOpen((s32)p - loc.ent[i].off, D_8009AD18[i]);
+        snd_VabFakeOpen((s32)p - loc.ent[i].off, g_vab_id_list[i]);
         loc.ent[i].off = (s32)p;
         p += loc.len[i];
     }
@@ -3948,7 +3948,7 @@ void func_8005BD30(s32 arg0) {
     i = 0;
     if (count != 0) {
         do {
-            u8 byte = D_8009AD18[i & 0xFF];
+            u8 byte = g_vab_id_list[i & 0xFF];
             snd_VabFakeOpen(arg0, byte);
             i += 1;
         } while ((u32)(i & 0xFF) < (u32)count);
@@ -3961,7 +3961,7 @@ void func_8005BD30(s32 arg0) {
 void snd_CloseListedVabs(void) {
     u32 *s3 = g_vab_rec_ptr;
     u32 *s2 = g_vab_vb_sbaddr;
-    u8 *s0 = D_8009AD18;
+    u8 *s0 = g_vab_id_list;
     u8 *s1 = (u8 *)((s32)s0 + 3);
     do {
         SsVabClose(*s0);

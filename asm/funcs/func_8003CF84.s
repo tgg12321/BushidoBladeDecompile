@@ -142,8 +142,8 @@ glabel func_8003CF84
   .L8003D198:
     /* 2D998 8003D198 07002016 */  bnez       $s1, .L8003D1B8
     /* 2D99C 8003D19C 4000033C */   lui       $v1, (0x400040 >> 16)
-    /* 2D9A0 8003D1A0 1080023C */  lui        $v0, %hi(D_80102794)
-    /* 2D9A4 8003D1A4 9427428C */  lw         $v0, %lo(D_80102794)($v0)
+    /* 2D9A0 8003D1A0 1080023C */  lui        $v0, %hi(g_pad_state_plus_0xC)
+    /* 2D9A4 8003D1A4 9427428C */  lw         $v0, %lo(g_pad_state_plus_0xC)($v0)
     /* 2D9A8 8003D1A8 40006334 */  ori        $v1, $v1, (0x400040 & 0xFFFF)
     /* 2D9AC 8003D1AC 24104300 */  and        $v0, $v0, $v1
     /* 2D9B0 8003D1B0 38004010 */  beqz       $v0, .L8003D294

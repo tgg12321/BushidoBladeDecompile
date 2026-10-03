@@ -40,8 +40,8 @@ glabel func_8003AB44
     /* 2B3D0 8003ABD0 2AEB0008 */  j          .L8003ACA8
     /* 2B3D4 8003ABD4 21100000 */   addu      $v0, $zero, $zero
   jlabel .L8003ABD8
-    /* 2B3D8 8003ABD8 1080023C */  lui        $v0, %hi(D_80102794)
-    /* 2B3DC 8003ABDC 9427428C */  lw         $v0, %lo(D_80102794)($v0)
+    /* 2B3D8 8003ABD8 1080023C */  lui        $v0, %hi(g_pad_state_plus_0xC)
+    /* 2B3DC 8003ABDC 9427428C */  lw         $v0, %lo(g_pad_state_plus_0xC)($v0)
     /* 2B3E0 8003ABE0 00000000 */  nop
     /* 2B3E4 8003ABE4 10004230 */  andi       $v0, $v0, 0x10
     /* 2B3E8 8003ABE8 1C004014 */  bnez       $v0, .L8003AC5C

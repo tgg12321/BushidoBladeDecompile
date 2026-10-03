@@ -70,13 +70,13 @@ extended, once a one-object spelling matches.
   indexed via the first's address (`p = &D_800A37D2; p[t != 0]++`,
   `(&D_800A37D2)[D_800A3748]`), each indexed use and the `p` assignment `/* FAKE */`-annotated,
   `p` meeting [[pointer-alias-fake-exception]]. For func_8001C8DC and func_8003CF84 only.
-- **Practice-menu per-word reads (Q73):** `D_80101FA0`, `D_80101FA8`, `D_801023EC`,
+- **D_80101EC8 per-word reads (Q73):** `D_80101FA0`, `D_80101FA8`, `D_801023EC`,
   `D_801023F4`, `D_80101FBC`, `D_80101FC4`, `D_80102408`, `D_80102410`, read by own name only in
   func_8002BC68 / func_8002BEA0, only after the three single-object spellings (direct struct
   field, typed base pointer, per-record pointer) are banked missing for the shared-base reason
   (`.cse` `use_related_value` and `.greg`/final `.s` addressing), with Q31 mechanism + search.
   Each per-word declaration is `/* FAKE */`-annotated; every other access goes through
-  `g_practice_menu_table`.
+  `D_80101EC8`.
 - **D_800A37E8 / EA / EC (Q96):** func_80027AD8 and func_8002AB08 only. Three `s16` scalars;
   the vector's address handed to callees is `&D_800A37E8`, `/* FAKE */`-annotated at the
   assignment. Basis: the `s16[3]` and `{x,y,z}` forms banked at 2 (cse rewrites the dot's [0]

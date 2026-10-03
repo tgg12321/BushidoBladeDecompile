@@ -19,6 +19,15 @@ typedef struct {
     u8 val3;
 } CdlATV;
 
+/* libcd CdlLOC, a disc position: BCD minute / second / sector plus the track byte
+ * (CdControl(CdlSetloc, ...), CdPosToInt, CdIntToPos). */
+typedef struct {
+    u8 minute;
+    u8 second;
+    u8 sector;
+    u8 track;
+} CdlLOC;
+
 /* PsyQ 4.0 LIBCD cdread.c module state (BB2 links Sony's CDREAD object verbatim; SOTN's
  * psxsdk cdread.c names the same block D_80032DBC): one volatile block at 0x800A14D0,
  * preceded by CD_ReadCallbackFunc (g_CdReadCallback_func, 0x800A14CC) and followed by the

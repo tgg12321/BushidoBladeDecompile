@@ -199,7 +199,7 @@ s32 func_8003AB44(void) {
             D_800A38AC = 3;
             break;
         case 2:
-            if (D_80102788.pressed & 0x10) {
+            if (g_pad_state.pressed & 0x10) {
                 goto fail;
             }
             if (_comb_control(3, 1, 0) == 0) {
@@ -355,12 +355,12 @@ void func_8003AFFC(void) {
 
     tbl = D_8008E5CC[0];
     s2 = 0;
-    edcp = &g_practice_menu_table[0].unk_14;
+    edcp = &D_80101EC8[0].unk_14;
     s0 = 0;
 loop:
-    /* interim: byte-offset puns on g_practice_menu_table (.unk_12 / .unk_0A / .unk_0E), inherited from pre-struct code (9cb130a8); naturalize when func_8003AFFC is matched */
-    func_800493E4(*(s16 *)((u8 *)g_practice_menu_table + s0 + 0x12));
-    func_800494D4(s2, *(tbl + *(s16 *)((u8 *)&g_practice_menu_table[0].unk_0A + s0) * 8 + *(s16 *)((u8 *)&g_practice_menu_table[0].unk_0E + s0)));
+    /* interim: byte-offset puns on D_80101EC8 (.unk_12 / .unk_0A / .unk_0E), inherited from pre-struct code (9cb130a8); naturalize when func_8003AFFC is matched */
+    func_800493E4(*(s16 *)((u8 *)D_80101EC8 + s0 + 0x12));
+    func_800494D4(s2, *(tbl + *(s16 *)((u8 *)&D_80101EC8[0].unk_0A + s0) * 8 + *(s16 *)((u8 *)&D_80101EC8[0].unk_0E + s0)));
 
     v1 = *edcp;
     if (v1 != -1) {
@@ -384,12 +384,12 @@ void func_8003B10C(s32 arg0) {
     func_80020D38();
     func_8004939C();
 
-    func_800493E4(g_practice_menu_table[arg0].unk_12);
+    func_800493E4(D_80101EC8[arg0].unk_12);
 
     if (D_800A38DC == 5) {
-        func_800494D4(arg0, D_8008E6A4[g_practice_menu_table[arg0].unk_0A][g_practice_menu_table[arg0].unk_0E]);
+        func_800494D4(arg0, D_8008E6A4[D_80101EC8[arg0].unk_0A][D_80101EC8[arg0].unk_0E]);
     } else {
-        func_800494D4(arg0, D_8008E5CC[g_practice_menu_table[arg0].unk_0A][g_practice_menu_table[arg0].unk_0E]);
+        func_800494D4(arg0, D_8008E5CC[D_80101EC8[arg0].unk_0A][D_80101EC8[arg0].unk_0E]);
     }
     func_80049584(addr);
 }
@@ -436,7 +436,7 @@ void func_8003B328(void) {
     *p = v_3836;
     D_800A376A = v_36C8;
     player_SetCharId(0, v_36C8);
-    func_80022568((u8 *)g_practice_menu_table);
+    func_80022568((u8 *)D_80101EC8);
 }
 s32 func_8003B3A4(u8 *arg0) {
     u8 idx;
@@ -556,14 +556,14 @@ void func_8003B5A4(void) {
                 (&D_800A37A8)[counter] = byte;
                 D_800A3834 = 22;
                 done = 1;
-                func_80022568((u8 *)g_practice_menu_table);
+                func_80022568((u8 *)D_80101EC8);
                 D_800A3907 = 0;
                 break;
             }
 
             case 0:
                 if (D_800A380C == 0) {
-                    D_800A38A4 = (D_8008D9EC[g_practice_menu_table[0].unk_0A] != 0);
+                    D_800A38A4 = (D_8008D9EC[D_80101EC8[0].unk_0A] != 0);
                     D_800A3834 = 18;
                 } else {
                     D_800A3834 = 10;

@@ -1,8 +1,8 @@
-# Per-character struct schema (`g_practice_menu_table`)
+# Per-character struct schema (`D_80101EC8`, typedef `Unk80101EC8Record`)
 
 The per-character struct is an array indexed by character/slot id.
 Each record is **0x44C bytes (1100)**.  The array base is at
-`g_practice_menu_table = 0x80101EC8`.  Record N spans
+`D_80101EC8 = 0x80101EC8` (named `g_practice_menu_table` until owner ruling Q103 reset it).  Record N spans
 `0x80101EC8 + N * 0x44C` to `0x80101EC8 + (N+1) * 0x44C - 1`.
 
 | Record | Start | End |
@@ -35,7 +35,7 @@ which only has record-2 references).
 
 | Offset | Width | Records | Refs | Sample callsite | Role hint |
 |--:|:-:|:-:|--:|---|---|
-| +0x000 | (base) | 0,1,2 | 104 | `u8 *base = (u8 *)&g_practice_menu_table + idx * 0x44C` | record base (table indexing entry point) |
+| +0x000 | (base) | 0,1,2 | 104 | `u8 *base = (u8 *)&D_80101EC8 + idx * 0x44C` | record base (table indexing entry point) |
 | +0x006 | s16 | 0,1 | 5 | `if (D_8010231A != 0)` | flag/state at offset 6 |
 | +0x00E | s16 | 0,1 | 34 | `v3r[0x9] = (u8)D_80101ED6;` | byte/halfword cell read into v3r[9] |
 | +0x012 | s16 | 0,1 | 28 | `s16 *eda = &D_80101EDA;` | pointer-taken s16 field |

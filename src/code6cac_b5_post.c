@@ -42,7 +42,7 @@ s32 cdrom_StartRead(s32 a0, s32 a1) {
     D_80101E58.rec.unk1C = a1;
     D_80101E58.rec.unk08 = 0;
     D_80101E58.rec.unk02 = 2;
-    reloaded = D_80101E58.rec.pair.b;
+    reloaded = D_80101E58.rec.pair.size;
     D_80101E58.rec.unk3E = 0;
     D_80101E58.rec.unk18 = (u32)(reloaded + 0x7FF) >> 11;
     return 1;
@@ -68,7 +68,7 @@ void cdrom_Pause(void) {
     D_80101E58.unk04 = 0;
 }
 u32 cdrom_GetFileSize(s32 arg0) {
-    return g_cd_file_table[arg0].b;
+    return g_cd_file_table[arg0].size;
 }
 void game_FrameLoop(void) {
     u16 *p;
@@ -97,7 +97,7 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
     D_80101E58.rec.unk00 = arg0;
     D_80101E58.rec.pair = g_cd_file_table[D_80101E58.rec.unk00];
     D_80101E58.rec.unk14 = CdPosToInt((s32)&g_cd_file_table[D_80101E58.rec.unk00]) +
-                           ((u32)g_cd_file_table[D_80101E58.rec.unk00].b >> 11) - 0x96;
+                           ((u32)g_cd_file_table[D_80101E58.rec.unk00].size >> 11) - 0x96;
 
     if (arg1 < 0) {
         D_80101E58.rec.unk34 = 0;

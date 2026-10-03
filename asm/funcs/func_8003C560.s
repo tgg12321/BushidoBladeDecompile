@@ -64,8 +64,8 @@ glabel func_8003C560
     /* 2CE40 8003C640 80180300 */  sll        $v1, $v1, 2
     /* 2CE44 8003C644 0A80023C */  lui        $v0, %hi(D_800A38B4)
     /* 2CE48 8003C648 B438428C */  lw         $v0, %lo(D_800A38B4)($v0)
-    /* 2CE4C 8003C64C 1080043C */  lui        $a0, %hi(D_80102794)
-    /* 2CE50 8003C650 9427848C */  lw         $a0, %lo(D_80102794)($a0)
+    /* 2CE4C 8003C64C 1080043C */  lui        $a0, %hi(g_pad_state_plus_0xC)
+    /* 2CE50 8003C650 9427848C */  lw         $a0, %lo(g_pad_state_plus_0xC)($a0)
     /* 2CE54 8003C654 21104300 */  addu       $v0, $v0, $v1
     /* 2CE58 8003C658 24208500 */  and        $a0, $a0, $a1
     /* 2CE5C 8003C65C 0A80013C */  lui        $at, %hi(D_800A38B4)

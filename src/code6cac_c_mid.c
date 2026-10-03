@@ -699,7 +699,7 @@ s32 func_800388A8(void) {
         D_800A3204 = 0;
         D_800A3318 = 0;
     }
-    buttons = D_80102788.pressed;
+    buttons = g_pad_state.pressed;
     if (buttons & 0x400040) {
         func_8005C650(1, 0x7F, 0x7F);
         if (D_800A3318 == 0) {
@@ -851,7 +851,7 @@ s32 func_80038988(void) {
 
 timer:
     D_800A3330--;
-    if ((u8)D_800A3330 == 0 || (D_80102788.pressed & 0x100010)) {
+    if ((u8)D_800A3330 == 0 || (g_pad_state.pressed & 0x100010)) {
         func_8005C650(2, 0x7F, 0x7F);
         result = 1;
     }
@@ -891,7 +891,7 @@ s32 func_80038C70(void) {
     if (D_800A3354 != 0) {
         func_8006BEC4(0xA, -1);
         D_800A334C--;
-        if (((u8)D_800A334C) == 0 || (D_80102788.pressed & 0x100010)) {
+        if (((u8)D_800A334C) == 0 || (g_pad_state.pressed & 0x100010)) {
             func_8005C650(2, 0x7F, 0x7F);
             D_800A3207 = 1;
             D_800A334C = 0x5A;
@@ -961,7 +961,7 @@ s32 func_80038C70(void) {
         if (D_800A3206 == 0) {
             D_800A3350 = 1;
         }
-        if (D_80102788.pressed & 0x400040) {
+        if (g_pad_state.pressed & 0x400040) {
             D_800A3206 = 0;
             func_8005C650(1, 0x7F, 0x7F);
             sel = 0xD;
@@ -977,7 +977,7 @@ s32 func_80038C70(void) {
             goto sel_dispatch;
         }
         sel = 0xC;
-        if ((D_80102788.pressed & 0xA000A000U) != 0) {
+        if ((g_pad_state.pressed & 0xA000A000U) != 0) {
             D_800A3206 = 1;
         }
         goto load_sel2;
@@ -1051,7 +1051,7 @@ sel_dispatch:
             break;
         case 6:
             D_800A334C--;
-            if (((u8)D_800A334C) == 0 || (D_80102788.pressed & 0x100010)) {
+            if (((u8)D_800A334C) == 0 || (g_pad_state.pressed & 0x100010)) {
                 func_8005C650(2, 0x7F, 0x7F);
                 result = 1;
                 break;
@@ -1066,7 +1066,7 @@ sel_dispatch:
             break;
         case 2: case 3: case 7: case 12:
             D_800A334C--;
-            if (((u8)D_800A334C) == 0 || (D_80102788.pressed & 0x100010)) {
+            if (((u8)D_800A334C) == 0 || (g_pad_state.pressed & 0x100010)) {
                 func_8005C650(2, 0x7F, 0x7F);
                 if (v0 != 7) {
                     result = 1;
@@ -1098,7 +1098,7 @@ sel_dispatch:
             goto sw4_L2;
         case 17:
         sw4_L2:
-            if (D_80102788.pressed & 0x400040) {
+            if (g_pad_state.pressed & 0x400040) {
                 func_8005C650(1, 0x7F, 0x7F);
                 if (v0 == 0) {
                     if (D_800A3350 != 0) {
@@ -1126,12 +1126,12 @@ sel_dispatch:
             goto sw4_buttons;
         case 10:
         sw4_buttons:
-            if (D_80102788.pressed & 0x80008000U) {
+            if (g_pad_state.pressed & 0x80008000U) {
                 func_8005C650(0, 0x7F, 0x7F);
                 D_800A3350 = 0;
                 break;
             }
-            if (D_80102788.pressed & 0x20002000) {
+            if (g_pad_state.pressed & 0x20002000) {
                 func_8005C650(0, 0x7F, 0x7F);
                 D_800A3350 = 1;
             }
@@ -1393,7 +1393,7 @@ void func_800397D4(void) {
 }
 extern s32 func_80053584(s32 *, s32 *, s32 *, s32 *);
 extern s32 func_80054434(void);
-void func_8003984C(PracticeMenuRec *arg0, s32 *arg1, s32 *arg2) {
+void func_8003984C(Unk80101EC8Record *arg0, s32 *arg1, s32 *arg2) {
     s32 sp10[3];
     s32 sp20[3];
     s32 sp30[4];
@@ -1430,7 +1430,7 @@ extern s32 camera_GetBoneData(void);
 extern u8 D_800A3208;
 extern u8 *D_800A3894;
 
-extern void func_800207C8(PracticeMenuRec *, LeafPos *, LeafPos *, LeafPos *);
+extern void func_800207C8(Unk80101EC8Record *, LeafPos *, LeafPos *, LeafPos *);
 void func_8003993C(void) {
     s32 work[2][33];
     s32 sp120[34];
@@ -1443,7 +1443,7 @@ void func_8003993C(void) {
     s32 prog;
     s32 i;
     u8 *p;
-    PracticeMenuRec *rob;
+    Unk80101EC8Record *rob;
     u8 *e;
     /* Ruling 11 (ordinary-c-judge-decidable.md): `temp` holds two values, the 0/1 weapon-set
      * selector (flags >> 1) & 1 in the per-player loop and the replay window of the event loop. */
@@ -1474,7 +1474,7 @@ void func_8003993C(void) {
         s32 entry;
 
         p = (u8 *)(D_800A36EC + idx * 56) + i * 28;
-        rob = &g_practice_menu_table[i];
+        rob = &D_80101EC8[i];
         func_800198D0((*(s16 *)(p + 0xE) >> 14) & 3, *(s16 *)(p + 0xE) & 0x3FFF, work[0], sp1C0);
         func_800198D0((*(s16 *)(p + 0x10) >> 14) & 3, *(s16 *)(p + 0x10) & 0x3FFF, work[1], sp1C0);
         func_8001F1C4(rob, p, work[0], work[1]);
@@ -1565,10 +1565,10 @@ void func_8003993C(void) {
     func_80046DA8(1);
     func_800335D8();
     D_800A37D0++;
-    if ((D_800A3782 != 0 ? D_800A37D0 == 0x78 : D_800A37D0 == D_800A36F8) || (D_80102788.pressed & 0x400040)) {
+    if ((D_800A3782 != 0 ? D_800A37D0 == 0x78 : D_800A37D0 == D_800A36F8) || (g_pad_state.pressed & 0x400040)) {
         switch (D_800A38DC) {
         case 0:
-            if (g_practice_menu_table[0].unk_96 == 0) {
+            if (D_80101EC8[0].unk_96 == 0) {
                 s32 valid = D_800A3836 != 0xFF;
                 if (D_800A3712 != 0) {
                     D_800A38D4 = 2;
@@ -1601,21 +1601,21 @@ void func_8003993C(void) {
             func_8003B328();
             func_8003AF40(0);
             func_8003AFFC();
-            if (D_800A3712 != 0 && g_practice_menu_table[1].unk_96 != 0) {
+            if (D_800A3712 != 0 && D_80101EC8[1].unk_96 != 0) {
                 func_8003B534(6);
             } else {
                 func_8003B534(4);
             }
             return;
         case 3:
-            if (g_practice_menu_table[0].unk_96 == 0) {
+            if (D_80101EC8[0].unk_96 == 0) {
                 D_800A3834 = 0x1E;
             } else {
                 D_800A3834 = 0xC;
             }
             break;
         default:
-            if (g_practice_menu_table[0].unk_96 == 0 || g_practice_menu_table[1].unk_96 == 0) {
+            if (D_80101EC8[0].unk_96 == 0 || D_80101EC8[1].unk_96 == 0) {
                 D_800A3834 = 0x10;
             } else {
                 D_800A3834 = 0xC;

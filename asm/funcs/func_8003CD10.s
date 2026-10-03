@@ -48,8 +48,8 @@ glabel func_8003CD10
     /* 2D5C8 8003CDC8 B43823AC */  sw         $v1, %lo(D_800A38B4)($at)
     /* 2D5CC 8003CDCC 07008010 */  beqz       $a0, .L8003CDEC
     /* 2D5D0 8003CDD0 4000033C */   lui       $v1, (0x400040 >> 16)
-    /* 2D5D4 8003CDD4 1080023C */  lui        $v0, %hi(D_80102794)
-    /* 2D5D8 8003CDD8 9427428C */  lw         $v0, %lo(D_80102794)($v0)
+    /* 2D5D4 8003CDD4 1080023C */  lui        $v0, %hi(g_pad_state_plus_0xC)
+    /* 2D5D8 8003CDD8 9427428C */  lw         $v0, %lo(g_pad_state_plus_0xC)($v0)
     /* 2D5DC 8003CDDC 40006334 */  ori        $v1, $v1, (0x400040 & 0xFFFF)
     /* 2D5E0 8003CDE0 24104300 */  and        $v0, $v0, $v1
     /* 2D5E4 8003CDE4 08004010 */  beqz       $v0, .L8003CE08

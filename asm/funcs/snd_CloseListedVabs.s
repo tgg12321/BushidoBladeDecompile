@@ -7,8 +7,8 @@ glabel snd_CloseListedVabs
     /* 4C604 8005BE04 0F80123C */  lui        $s2, %hi(g_vab_vb_sbaddr)
     /* 4C608 8005BE08 38FB5226 */  addiu      $s2, $s2, %lo(g_vab_vb_sbaddr)
     /* 4C60C 8005BE0C 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 4C610 8005BE10 0A80103C */  lui        $s0, %hi(D_8009AD18)
-    /* 4C614 8005BE14 18AD1026 */  addiu      $s0, $s0, %lo(D_8009AD18)
+    /* 4C610 8005BE10 0A80103C */  lui        $s0, %hi(g_vab_id_list)
+    /* 4C614 8005BE14 18AD1026 */  addiu      $s0, $s0, %lo(g_vab_id_list)
     /* 4C618 8005BE18 1400B1AF */  sw         $s1, 0x14($sp)
     /* 4C61C 8005BE1C 03001126 */  addiu      $s1, $s0, 0x3
     /* 4C620 8005BE20 2000BFAF */  sw         $ra, 0x20($sp)

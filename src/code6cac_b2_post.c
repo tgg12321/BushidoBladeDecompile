@@ -464,13 +464,13 @@ void func_80035828(void) {
             func_800371E8(1);
         }
         D_800A37B8++;
-        if (D_80102788.held != 0) {
+        if (g_pad_state.held != 0) {
             D_800A37B8 = 1;
         }
         if (D_800A37B8 >= 0xCA9) {
             D_800A3834 = 0xF;
         }
-        ret = func_80077894(D_80102788.held, D_80102788.pressed);
+        ret = func_80077894(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;
         }
@@ -499,7 +499,7 @@ void func_80035828(void) {
         }
         break;
     case 2:
-        switch (func_80077B30(D_80102788.held, D_80102788.pressed)) {
+        switch (func_80077B30(g_pad_state.held, g_pad_state.pressed)) {
         case -1:
         case 1:
             func_800372C0();
@@ -540,7 +540,7 @@ void func_80035828(void) {
         }
         break;
     case 3:
-        ret = func_800779C8(D_80102788.held, D_80102788.pressed);
+        ret = func_800779C8(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;
         }
@@ -549,7 +549,7 @@ void func_80035828(void) {
         }
         goto check_quit;
     case 4:
-        ret = func_8007855C(D_80102788.pressed);
+        ret = func_8007855C(g_pad_state.pressed);
         if (ret == 0) {
             break;
         }
@@ -558,7 +558,7 @@ void func_80035828(void) {
         }
         goto check_quit;
     case 5:
-        ret = func_80077A04(D_80102788.held, D_80102788.pressed);
+        ret = func_80077A04(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;
         }
@@ -567,7 +567,7 @@ void func_80035828(void) {
         }
         goto check_cancel;
     case 6:
-        ret = func_80077A60(D_80102788.held, D_80102788.pressed);
+        ret = func_80077A60(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;
         }
@@ -589,7 +589,7 @@ void func_80035828(void) {
         }
         break;
     case 10:
-        ret = func_80077AC0(D_80102788.held, D_80102788.pressed);
+        ret = func_80077AC0(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;
         }

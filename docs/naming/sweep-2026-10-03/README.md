@@ -112,19 +112,38 @@ against its class test (default refute) before applying.
   c934e38db.
 - Census: INFERRED 512 -> 494, CORROBORATED 119 -> 126, AUTO 405 -> 416.
 
+**Applied, data / member / typedef batch** (`data_manifest_q103.csv` via `data_wave.py`, plus C edits):
+- typed-restatement data:
+  - 0x80102788 `g_pad_state`, with `_plus_0x2`..`_plus_0x14` for its interior registry aliases. This
+    retires `g_pad_input_combined` (that is `.pressed`) and `g_practice_lesson_init_done`.
+  - 0x8009AD18 `g_vab_id_list` (retires the contradicted `g_byte_lookup_table_256`).
+- Item 3:
+  - 0x80101EC8 `g_practice_menu_table` -> `D_80101EC8`.
+  - typedef `PracticeMenuRec` -> `Unk80101EC8Record`, the tree's majority address-keyed spelling
+    (`Unk<ADDR>Record`, as `Unk80101DF0Record`).
+- basis-withdrawn data, 3 aliases spelled only from a reset name:
+  - `g_practice_menu_table_p2_plus_6` -> `D_8010231A`;
+  - `g_practice_menu_index` -> `D_800A3748`;
+  - `g_byte_lookup_table_256_plus_4` -> `D_8009AD1C` (registry line, by hand).
+- typed-restatement members:
+  - `Unk80101EC8Record.other` / `.index`;
+  - Obj80106A78 `owner` / `slot` / `mtx` / `pos` / `prev_pos` / `vel` / `rot` / `rot_vel`;
+  - new `CdFileEntry {CdlLOC loc; u32 size;}`. It replaces `CamPair` for `g_cd_file_table` and
+    `D_80101E58.rec.pair`; `CdlLOC` is added to `include/libcd.h`.
+
 **Refused on re-verification** (not applied):
 - T2, more than 12 statements in the matched C:
   - `memcard_CountFreeBlocks` 0x80037AA4 (16 statements);
   - `memcard_HasFileNamePrefix` 0x80037B00 (about 22 statements).
   Both names describe the bodies correctly.
-- T5, noun not on the closed relation-noun list:
-  - PadState `type[2]` / `valid[2]`;
-  - Obj80106A78 `kind`.
-- T5, relation does not hold for every writer:
+- T5, noun not on the closed relation-noun list: PadState `type[2]` / `valid[2]` and Obj80106A78
+  `kind`. These were refused under the closed T5 list. They are to be re-checked under Q105, which
+  is pending and replaces the list with a principle.
+- T5, relation does not hold for every writer. These two refusals are final:
   - Obj80106A78 `age`: it counts only while unk_50 != 0.
   - Record `pad` (+0x24): it is not a VERIFIED API argument, and the CPU-side writer's source is the
     func_80055B60 synthesized record.
-- `pad_ResetStateMarkValid` 0x80019534 falls with `valid[2]`.
+- `pad_ResetStateMarkValid` 0x80019534 falls with `valid[2]`. It is to be re-checked under Q105, which is pending.
 - basis-withdrawn, 3 aliases: the parents of `cpu_helper_80026DA4` / `cpu_helper_80029454`
   (`cpu_exec_main_game_loop_frame` 0x8002C61C) and `cpu_helper_8003F3D4`
   (`cpu_init_stage_and_camera_setup` 0x8001E404) are MEDIUM v3 rows that were never reset, so their basis

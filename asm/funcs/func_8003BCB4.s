@@ -10,8 +10,8 @@ glabel func_8003BCB4
     /* 2C4D4 8003BCD4 00000000 */   nop
     /* 2C4D8 8003BCD8 07004010 */  beqz       $v0, .L8003BCF8
     /* 2C4DC 8003BCDC 4000033C */   lui       $v1, (0x400040 >> 16)
-    /* 2C4E0 8003BCE0 1080023C */  lui        $v0, %hi(D_80102794)
-    /* 2C4E4 8003BCE4 9427428C */  lw         $v0, %lo(D_80102794)($v0)
+    /* 2C4E0 8003BCE0 1080023C */  lui        $v0, %hi(g_pad_state_plus_0xC)
+    /* 2C4E4 8003BCE4 9427428C */  lw         $v0, %lo(g_pad_state_plus_0xC)($v0)
     /* 2C4E8 8003BCE8 40006334 */  ori        $v1, $v1, (0x400040 & 0xFFFF)
     /* 2C4EC 8003BCEC 24104300 */  and        $v0, $v0, $v1
     /* 2C4F0 8003BCF0 43004010 */  beqz       $v0, .L8003BE00

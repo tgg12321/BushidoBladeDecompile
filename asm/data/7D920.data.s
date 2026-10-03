@@ -21717,14 +21717,14 @@ dlabel D_8009AA70
     /* 8B514 8009AD14 09000D00 */ .word 0x000D0009
 enddlabel D_8009AA70
 
-nonmatching D_8009AD18
+nonmatching g_vab_id_list
 
-dlabel D_8009AD18
+dlabel g_vab_id_list
     /* 8B518 8009AD18 */ .byte 0x07
     /* 8B519 8009AD19 */ .byte 0x03
     /* 8B51A 8009AD1A */ .byte 0x06
     /* 8B51B 8009AD1B */ .byte 0x00
-enddlabel D_8009AD18
+enddlabel g_vab_id_list
 
 nonmatching D_8009AD1C
 

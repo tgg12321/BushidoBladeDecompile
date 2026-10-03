@@ -290,8 +290,8 @@ camera_InitBone2_80047570    = 0x80047570;  /* camera_InitRotation(&g_cam_bone_d
 /* data-wave 2026-09-29: g_isqrt_lut = 0x8008D118 retired; g_sqrt_table_u8 is now object-defined */
 g_frame_parity               = 0x800A36AC;  /* double-buffer parity word, `& 1` mask used to alternate framebuffers/CLUTs */
 g_stage_data_ptr             = 0x800A3708;  /* pointer to current stage data; +0x4C/+0x54 are collision center fields */
-g_practice_menu_table        = 0x80101EC8;  /* base of per-character/practice-menu records, stride 0x44C (1100 bytes; matches D_80101F00 char struct) */
-g_practice_menu_index        = 0x800A3748;  /* index into g_practice_menu_table; -1 == none */
+D_80101EC8        = 0x80101EC8;  /* two 0x44C-byte per-frame records, one per fighter ([i].other = the other record); 'practice menu' RESET by owner ruling Q103 */  /* data-wave 2026-10-03: was g_practice_menu_table */
+D_800A3748        = 0x800A3748;  /* index into D_80101EC8; -1 == none */  /* data-wave 2026-10-03: was g_practice_menu_index */
 g_palette_base_ptr           = 0x800A378C;  /* base of palette/CLUT table, 4-byte stride, dynamically allocated */
 
 /* === Batch 5 data-symbol renames (2026-05-17) -- next 4 highs from rank 31-60 === */
@@ -749,7 +749,7 @@ g_text1b_glyph_buf_b                                    = 0x800F1154;  /* ref: g
 g_mdec_fp_buf                                           = 0x800F62E0;  /* ref: replay_camera_rob_back_win_near */
 g_grid_pos_vec3                                         = 0x800F6608;  /* ref: suLeagueSystemInit */
 g_char_state                                            = 0x80101F00;  /* per-character struct base, 1100-byte stride (ref: g_motion_data_base_ptr) */
-g_replay_camera_target_a                                = 0x80101FBC;  /* ref: g_practice_menu_index */
+g_replay_camera_target_a                                = 0x80101FBC;  /* ref: D_800A3748 */
 g_motion_keyframe_table_ptr                             = 0x801027B0;  /* ref: g_motion_data_base_ptr */
 VBLANK_MINUS                                      = 0x80104E80;  /* ref: md_game_check_change_main_mode_default */  /* data-wave 2026-09-07: was g_blood_spot_timer */
 
@@ -864,7 +864,7 @@ g_motion_ex_state_table_8x4                             = 0x8009B9D8;  /* 4 x 8-
 
 /* === Per-char struct sub-fields (2026-05-17) -- record-0 instances === */
 /* See docs/naming/CHAR_STRUCT_SCHEMA.md for the second-half decode. */
-/* Each name is record[0] of g_practice_menu_table; same field in records */
+/* Each name is record[0] of D_80101EC8; same field in records */
 /* 1/2/3 is at base + N * 0x44C. */
 g_char_pos_midpoint_x                                   = 0x8010203C;  /* +0x174 in char_state -- midpoint X of (a1[-5] + a1[-2]) / 2 */
 g_char_pos_midpoint_y                                   = 0x80102040;  /* +0x178 -- midpoint Y of (a1[-4] + a1[-1]) / 2 */
@@ -874,7 +874,7 @@ g_char_pos_centroid_y                                   = 0x80102058;  /* +0x190
 g_char_pos_centroid_z                                   = 0x8010205C;  /* +0x194 -- centroid Z */
 
 /* === Per-char struct sub-fields part 2 (2026-05-17) === */
-/* +0x210 / +0x234 are PracticeMenuRec.unk_210 / unk_234 (include/code6cac.h). */
+/* +0x210 / +0x234 are Unk80101EC8Record.unk_210 / unk_234 (include/code6cac.h). */
 g_char_vec3_b_w_or_alpha                                = 0x80102114;  /* +0x24C -- separately-accessed 7th word, likely W or alpha */
 
 /* World-position vec3 at +0xD8 -- delta'd between players for 2D distance via g_sqrt_table_u8 */
@@ -1133,7 +1133,7 @@ g_video_fb_a                                            = 0x800A3770;  /* FMV ov
 g_video_fb_size                                         = 0x800A3798;  /* = 0x13400 (78848 bytes) -- FMV region total size */
 g_intro_render_active                                   = 0x800A36B0;  /* flag: 0/1; set to 1 during intro render loop */
 g_intro_render_busy                                     = 0x800A3906;  /* flag: 0 init, set during intro/video render */
-g_pad_input_combined                                    = 0x80102794;  /* combined pad input s32; bits 0x100010 = start+select, 0x400040 = cross+circle, 0x10001000 = ? */
+g_pad_state_plus_0xC                                    = 0x80102794;  /* g_pad_state.pressed */  /* data-wave 2026-10-03: was g_pad_input_combined */
 
 /* === GPU packet queue + motion-save state (2026-05-17) -- 7 highs === */
 /* From display.c around lines 880-960.  Additional fields of the GPU */
@@ -1401,7 +1401,7 @@ g_motion_state_flag_table                               = 0x800F10D0;  /* 24-ent
 mode_handler_01_GameFrameUpdate                         = 0x8001E878;  /* main per-frame fight: camera, characters, collision, motion, stage tick */
 mode_handler_04_GameSetup                               = 0x800397D4;  /* full game setup: gpu_EnableDisplay + gnd_open + player count + DMA list */
 mode_handler_10_GameTeardown                            = 0x8003BE10;  /* gpu_EnableDisplay + gpu_InitDisplay + player_Destroy(0/1) */
-mode_handler_11_PadInputCheck                           = 0x8003BEA8;  /* checks g_pad_input_combined & 0x40 (action button), returns state */
+mode_handler_11_PadInputCheck                           = 0x8003BEA8;  /* checks g_pad_state.pressed & 0x40 (action button), returns state */
 mode_handler_12_RoundCleanup                            = 0x8001EA04;  /* gnd_init_80041688(0/1) + game_Cleanup; round-end state */
 mode_handler_15_TeardownVariant                         = 0x8003BFC4;  /* gpu_EnableDisplay + player_Destroy (similar to mode_10) */
 mode_handler_17_GameContinueFrame                       = 0x8001EFA0;  /* increments g_practice_loop_frame, camera_GetBoneData, func_8001BCF0 */
@@ -1525,11 +1525,11 @@ g_memcard_section_state                                 = 0x800A3358;  /* paired
 /* D_800A3878 as a pointer to a state struct, then tests bits at +3 */
 /* (0x10/0x20/0x80/0x1/0x2) to decide which char-struct fields to */
 /* override.  D_80101EDA / D_80102326 are the same field at offset */
-/* +0x12 in P1/P2 entries of g_practice_menu_table (stride 0x44C). */
+/* +0x12 in P1/P2 entries of D_80101EC8 (stride 0x44C). */
 g_menuctl_player_select_struct_ptr                      = 0x800A3878;  /* state struct ptr; bits at +3 control which player's char-struct fields the menu modifies */
 
 /* === code6cac_c2.c misc state names (2026-05-17) -- 4 highs === */
-g_menuctl_current_char_idx                              = 0x800A382D;  /* current char-struct index (0/1/2); used as `D_*0x44C` to compute g_practice_menu_table offset */
+g_menuctl_current_char_idx                              = 0x800A382D;  /* current char-struct index (0/1/2); used as `D_*0x44C` to compute D_80101EC8 offset */
 g_stage_helper_result_cache                             = 0x800A3818;  /* result cache passed to stage_GetTriple (func_80021D10) */
 g_menuctl_pending_flag                                  = 0x800A3894;  /* flag (set to 0 / tested != 0 in menuctl flow) */
 g_char_data_base_idx                                    = 0x800A3368;  /* base index subtracted from v1 to compute g_char_data array offset (v1 - D) * 0x68 */
@@ -1815,7 +1815,7 @@ g_char_pose_id_p2                                       = 0x800A30FD;  /* P2 cha
 g_cam_bone_data_cached                                  = 0x800A3778;  /* cached camera_GetBoneData() return; reread once per frame */
 g_char_struct_p1_field_6A                               = 0x80101F32;  /* per-char field +0x6A (u16; mode == 0x11 check) */
 g_char_struct_p1_field_FC                               = 0x80101FC4;  /* per-char field +0xFC; set to a0_val + passed to func_8003E6A0 */
-g_practice_lesson_init_done                             = 0x8010278C;  /* init flag (set to 1 by func_80019534; == 0 means needs init) */
+g_pad_state_plus_0x4                             = 0x8010278C;  /* g_pad_state.unk_00[2] (set to 1 by func_80019534) */  /* data-wave 2026-10-03: was g_practice_lesson_init_done */
 
 /* === Attack-angle offset table + char field paired (2026-05-17) -- 2 highs === */
 g_attack_angle_offset_table                             = 0x8008EB40;  /* s16 2D table; rows 3-wide indexed by attack-dir, cols by sub-dir; values added to char angle (BAM) for attack direction offset */
@@ -1869,7 +1869,7 @@ g_mottest_slot_value_table                              = 0x8008E748;  /* s8 tab
 
 /* === Motion func dispatch + lookup tables (2026-05-17) -- 3 highs === */
 g_motion_func_dispatch_offset                           = 0x8009BA60;  /* per-idx offset combined with g_motion_state_flag_table to select function pointer in chractar_use_pset_combo_id_table */
-g_byte_lookup_table_256                                 = 0x8009AD18;  /* 256-byte table indexed by `i & 0xFF`; used in text1b.c per-byte processing */
+g_vab_id_list                                 = 0x8009AD18;  /* u8[3] {7,3,6}: VAB ids for SsVabClose / snd_VabFakeOpen (func_8005BA8C, func_8005BD30, snd_CloseListedVabs) */  /* data-wave 2026-10-03: was g_byte_lookup_table_256 */
 g_player_byte_flags_table                               = 0x8009BC7C;  /* per-player byte flags indexed by D_800A3560.rec[i].unk1; bit & 2 test */
 
 /* === 3D sound data buffer cluster (2026-05-17) -- 6 highs === */
@@ -2161,7 +2161,7 @@ func_8004A940                                = 0x8004A940;  /* MISNAMED: not loc
 /* Names use _plus_<offset> convention; future cleanup can refine. */
 g_status_up_cached_idx_plus_8                           = 0x80090600;  /* +8 from g_status_up_cached_idx (0x800905F8) */
 g_text1b_motion_byte_table_8x3_plus_8                   = 0x8009A838;  /* s8[8] (dlabel D_8009A838, read lb); func_80056FE8, func_80058580 */
-g_byte_lookup_table_256_plus_4                          = 0x8009AD1C;  /* +4 from g_byte_lookup_table_256 (0x8009AD18) */
+D_8009AD1C                                              = 0x8009AD1C;  /* data-wave 2026-10-03: was g_byte_lookup_table_256_plus_4 (basis-withdrawn: spelled from the contradicted 0x8009AD18 alias, now g_vab_id_list) */
 D_8009BC04                                 = 0x8009BC04;  /* +8 from g_str_r_8009BBFC (0x8009BBFC) */  /* data-wave 2026-09-29: was g_str_r_8009BBFC_plus_8 */
 g_menu_screen_live_byte_c_plus_1                        = 0x8009BD44;  /* +1 from g_menu_screen_live_byte_c (0x8009BD43) */
 g_intro_get_set_value_plus_4                            = 0x8009BD84;  /* +4 from g_intro_get_set_value (0x8009BD80) */
@@ -2284,11 +2284,11 @@ g_char_world_pos_z_plus_8                               = 0x80101FB0;  /* +8 fro
 g_char_struct_p1_field_FC_plus_8                        = 0x80101FCC;  /* +8 from g_char_struct_p1_field_FC (0x80101FC4) */
 g_practice_halfword_table_plus_4                        = 0x80102764;  /* +4 from g_practice_halfword_table (0x80102760) */
 g_practice_halfword_table_plus_8                        = 0x80102768;  /* +8 from g_practice_halfword_table (0x80102760) */
-D_80102788                         = 0x80102788;  /* +1 from g_practice_lesson_flag_b (0x80102787) */  /* data-wave 2026-09-29: was g_practice_lesson_flag_b_plus_1 */
-D_8010278A                         = 0x8010278A;  /* +3 from g_practice_lesson_flag_b (0x80102787) */  /* data-wave 2026-09-29: was g_practice_lesson_flag_b_plus_3 */
-g_practice_lesson_init_done_plus_2                      = 0x8010278E;  /* +2 from g_practice_lesson_init_done (0x8010278C) */
-g_pad_input_combined_plus_4                             = 0x80102798;  /* +4 from g_pad_input_combined (0x80102794) */
-g_pad_input_combined_plus_8                             = 0x8010279C;  /* +8 from g_pad_input_combined (0x80102794) */
+g_pad_state                         = 0x80102788;  /* PadState (include/code6cac.h), built by func_80019568 from the InitPAD buffers g_pad_buf */  /* data-wave 2026-10-03: was D_80102788 (2026-09-29: g_practice_lesson_flag_b_plus_1) */
+g_pad_state_plus_0x2                         = 0x8010278A;  /* g_pad_state.unk_00[1] */  /* data-wave 2026-10-03: was D_8010278A (2026-09-29: g_practice_lesson_flag_b_plus_3) */
+g_pad_state_plus_0x6                      = 0x8010278E;  /* g_pad_state.unk_00[3] */  /* data-wave 2026-10-03: was g_practice_lesson_init_done_plus_2 */
+g_pad_state_plus_0x10                             = 0x80102798;  /* g_pad_state.released */  /* data-wave 2026-10-03: was g_pad_input_combined_plus_4 */
+g_pad_state_plus_0x14                             = 0x8010279C;  /* g_pad_state.unheld */  /* data-wave 2026-10-03: was g_pad_input_combined_plus_8 */
 g_motion_keyframe_table_ptr_plus_4                      = 0x801027B4;  /* +4 from g_motion_keyframe_table_ptr (0x801027B0) */
 g_motion_keyframe_table_ptr_plus_8                      = 0x801027B8;  /* +8 from g_motion_keyframe_table_ptr (0x801027B0) */
 g_status_up_data_buf_plus_4                             = 0x801027C0;  /* +4 from g_status_up_data_buf (0x801027BC) */
@@ -2299,7 +2299,7 @@ D_80106A78                                     = 0x80106A78;  /* Obj80106A78[12]
 
 /* === Tier 2 batch: cross-character P2..PN paired fields (2026-05-17) === */
 /* 4 P2..PN addresses for already-named P1 fields in */
-/* g_practice_menu_table (0x44C stride per char, 28 chars). */
+/* D_80101EC8 (0x44C stride per char, 28 chars). */
 g_char_world_pos_x_p2                                   = 0x801023EC;  /* P2 of g_char_world_pos_x (P1 = 0x80101FA0) */
 g_char_world_pos_z_p2                                   = 0x801023F4;  /* P2 of g_char_world_pos_z (P1 = 0x80101FA8) */
 _snd_openflag                             = 0x801027E4;  /* P3 of g_char_curr_keyframe_idx (P1 = 0x80101F4C) */  /* data-wave 2026-09-07: was g_char_curr_keyframe_idx_p3 */
@@ -2603,7 +2603,7 @@ g_char_p1_field_150                                          = 0x80102018;
 g_char_p1_field_152                                          = 0x8010201A;
 g_char_p1_field_168                                          = 0x80102030;
 g_char_p1_field_31A                                          = 0x801021E2;
-g_practice_menu_table_p2_plus_6                              = 0x8010231A;
+D_8010231A                              = 0x8010231A;  /* data-wave 2026-10-03: was g_practice_menu_table_p2_plus_6 */
 g_char_p2_field_96                                           = 0x801023AA;
 g_char_p2_field_31A                                          = 0x8010262E;
 g_practice_halfword_table_plus_8_plus_8                      = 0x80102770;

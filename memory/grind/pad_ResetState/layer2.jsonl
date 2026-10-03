@@ -1,0 +1,1 @@
+{"func": "pad_ResetState", "addr": "800194F4", "verdict": "PASS", "body_hash": "6efdb3094e3fc8d3", "body_kind": "c", "file": "code6cac", "reviewer": "rv2-q103-naming-b", "scope": "cheat-cleanup", "date": "2026-10-03T08:40:53Z", "head": "4ac3546c6", "notes": "Q103 naming batch (b): identifier-only renames, oracle-green"}
