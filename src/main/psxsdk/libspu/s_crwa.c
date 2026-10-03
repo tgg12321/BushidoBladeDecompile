@@ -1,20 +1,10 @@
 /* PsyQ 4.0 LIBSPU S_CRWA: SpuClearReverbWorkArea. .text 0x8008A928..0x8008AAC4, a verbatim LIBSCAN
  * module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
+#include "libspu_internal.h"
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-/* PsyQ LIBSPU: Sony's own header types the SPU transfer callback as a
-   volatile function pointer; volatile_extern_allowlist.txt grant.
-   SOTN: src/main/psxsdk/libspu/libspu_internal.h:39 @db41b28 (PS1 use:
-   src/main/psxsdk/libspu/s_r.c:10) */
-extern void (* volatile _spu_transferCallback)();
-extern s32 _spu_rev_startaddr[]; /* _spu_rev_startaddr */
 extern s32 _spu_zerobuf;
-extern s32 _spu_transMode;
-extern s32 _spu_mem_mode_plus;
-extern s32 _spu_EVdma;
-s32 _spu_t(s32 mode, ...);
-s32 _SpuIsInAllocateArea_(u32 arg0);
 
 /* PsyQ 4.0 LIBSPU s_crwa: SpuClearReverbWorkArea — verbatim-linked Sony
    object; C ref: sotn-decomp

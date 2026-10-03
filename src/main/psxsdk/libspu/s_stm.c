@@ -1,10 +1,7 @@
 /* PsyQ 4.0 LIBSPU S_STM: SpuSetTransferMode. .text 0x8008AE7C..0x8008AEB0, a verbatim LIBSCAN
  * module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 _spu_trans_mode;
-extern s32 _spu_transMode;
+#include "libspu_internal.h"
 
 /* PsyQ LIBSPU s_stm.c: SpuSetTransferMode — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libspu/s_stm.c */

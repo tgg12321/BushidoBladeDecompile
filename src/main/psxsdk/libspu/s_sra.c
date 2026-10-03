@@ -1,9 +1,7 @@
 /* PsyQ 4.0 LIBSPU S_SRA: _spu_setReverbAttr. .text 0x8008A434..0x8008A904, a verbatim LIBSCAN
  * module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 _spu_RXX;
+#include "libspu_internal.h"
 
 void _spu_setReverbAttr(s32 *arg0) {
     s32 flags = arg0[0];

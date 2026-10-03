@@ -5,6 +5,7 @@
  * (Q106 D3), named by its ROM offset. */
 #include "common.h"
 #include "sound.h"
+#include <psxsdk/libspu.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
 extern s16 _svm_stereo_mono;
@@ -25,8 +26,6 @@ extern u16 _svm_okof1;
 extern u16 D_800F1B14;              /* psyz _svm_orev1 */
 extern u16 D_800F2B68;              /* psyz _svm_orev2 */
 
-extern void SpuSetNoiseVoice(s32, s32);
-extern s32 SpuSetNoiseClock(s32);
 extern u16 _svm_okon2;
 extern u16 _svm_okof2;
 /* Sony LIBSND `vmNoiseOn` (vm_no1.c): compute the noise voice's L/R volume

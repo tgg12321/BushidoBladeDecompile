@@ -1,22 +1,7 @@
 /* PsyQ 4.0 LIBSPU S_SK: SpuSetKey. .text 0x8008AAD4..0x8008ACD0, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 _spu_keystat;
-extern volatile s32 _spu_RQvoice; /* _spu_RQvoice — Ruling-4 grant (volatile_extern_allowlist.txt:44) */
-extern volatile s32 _spu_RQmask;
-extern volatile s32 _spu_env;
-extern s32 _spu_RXX;
-typedef struct {
-    u16 pad[196];
-    volatile u16 key_on[2];  /* +0x188 SPU KEY-ON (MMIO via _spu_RXX) */
-    volatile u16 key_off[2]; /* +0x18C SPU KEY-OFF */
-} SpuRXX;
-/* Sony _spu_RQ: ONE u16[4] object (PsyQ 4.0 LIBSPU S_SK relocs: addends 0/2/4/6 —
- * key-on pending [0..1], key-off pending [2..3]); splat split it into two D_
- * symbols. Ruling-4 grant, volatile_extern_allowlist.txt:40-41. */
-extern volatile u16 _spu_RQ[10]; /* _spu_RQ; _spu_init clears all 10 (PsyQ 4.0 spu.c) */
+#include "libspu_internal.h"
 
 /* PsyQ 4.0 LIBSPU s_sk: SpuSetKey — verbatim-linked Sony object;
  * C ref: sotn-decomp src/psxsdk/libspu/s_sk.c shape + PsyQ 4.0

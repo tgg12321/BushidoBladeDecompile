@@ -2,6 +2,7 @@
  * span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "sound.h"
+#include <psxsdk/libspu.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
 extern s32 _snd_ev_flag;  /* _snd_ev_flag */

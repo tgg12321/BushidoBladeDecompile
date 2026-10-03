@@ -9,6 +9,7 @@
 #include "game.h"
 #include "code6cac.h"
 #include "gte.h"
+#include <psxsdk/libspu.h>
 
 /* Declarations from the file this TU was split from (text1b.c). */
 extern void func_80054410(s32);
@@ -4011,10 +4012,6 @@ void func_8005BF3C(void) {
 
 extern s32 SsVabFakeBody();
 extern s32 SsVabFakeHead();
-extern s32 SpuRead();
-extern s32 SpuWrite();
-extern s32 SpuSetTransferStartAddr();
-extern s32 SpuIsTransferCompleted();
 
 
 s32 snd_MoveVabBody(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -4221,8 +4218,6 @@ void func_8005C650(s32 a0, s32 a1, s32 a2) {
  * running `next` cursor and key the note on with the entry's stored volumes.
  * Each pool slot is cleared as it is visited.
  */
-extern void SpuGetAllKeysStatus(u8 *);
-extern s32 SpuGetKeyStatus(s32);
 extern s32 SsUtKeyOnV(s16, s16, s16, s16, s16, s16, s16, s16);
 void func_8005C6D0(void) {
 

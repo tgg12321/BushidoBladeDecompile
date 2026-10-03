@@ -2,6 +2,7 @@
  * 0x8008BA94..0x8008BD88, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
  * D3. */
 #include "common.h"
+#include "libspu_internal.h"
 
 /* PsyQ LIBSPU S_N2P: _spu_2pitch — a second exported entry point that splat
    merged into func_8008B488 (docs/naming/libscan/

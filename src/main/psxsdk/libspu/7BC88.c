@@ -3,46 +3,14 @@
  * memory/closer/libsnd-hunt-report.md lists the probable newer-build modules), one file per gap
  * (Q106 D3), named by its ROM offset. */
 #include "common.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 _spu_RXX;
-typedef struct {
-    s16 left, right;
-} SpuVolume;
-/* PsyQ LIBSPU SpuVoiceAttr (libspu.h), the argument of func_8008B488
-   (SpuSetVoiceAttr shape). */
-typedef struct {
-    /* 0x00 */ u32 voice;
-    /* 0x04 */ u32 mask;
-    /* 0x08 */ SpuVolume volume;
-    /* 0x0C */ SpuVolume volmode;
-    /* 0x10 */ SpuVolume volumex;
-    /* 0x14 */ u16 pitch;
-    /* 0x16 */ u16 note;
-    /* 0x18 */ u16 sample_note;
-    /* 0x1A */ s16 envx;
-    /* 0x1C */ u32 addr;
-    /* 0x20 */ u32 loop_addr;
-    /* 0x24 */ s32 a_mode;
-    /* 0x28 */ s32 s_mode;
-    /* 0x2C */ s32 r_mode;
-    /* 0x30 */ u16 ar;
-    /* 0x32 */ u16 dr;
-    /* 0x34 */ u16 sr;
-    /* 0x36 */ u16 rr;
-    /* 0x38 */ u16 sl;
-    /* 0x3A */ u16 adsr1;
-    /* 0x3C */ u16 adsr2;
-} SpuVoiceAttr;
-extern u16 _spu_voice_centerNote[]; /* one entry per SPU voice (24) */
-extern s32 _spu_FsetRXXa(s32, s32);
+#include "libspu_internal.h"
 
 /* func_8008B488: per-voice SPU attribute setter with the shape of PsyQ
  * LIBSPU's SpuSetVoiceAttr (C ref: sotn-decomp src/main/psxsdk/libspu/s_sva.c
  * and psyz decomp/src/libspu/sr_sv.c). BB2 links an older build: no min/max
  * voice range, a different block order, and the SR mode defaulting to 0x100.
  * The name stays auto (near-tier-ruling-2026-09-07: no verbatim caller pins
- * it). SpuVoiceAttr (defined above) per PsyQ libspu.h (sizeof =
+ * it). SpuVoiceAttr is PsyQ libspu.h's (include/psxsdk/libspu.h; sizeof =
  * 0x40, the callers' s32[16]). */
 
 void func_8008B488(SpuVoiceAttr *attr) {

@@ -1,9 +1,7 @@
 /* PsyQ 4.0 LIBSPU S_GVV: SpuGetVoiceVolume. .text 0x8008BD88..0x8008BDE8, a verbatim LIBSCAN module
  * span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 _spu_RXX;
+#include "libspu_internal.h"
 
 void SpuGetVoiceVolume(s32 arg0, u16 *arg1, u16 *arg2) {
     u16 temp_v1;

@@ -3,20 +3,9 @@
  * memory/closer/libsnd-hunt-report.md lists the probable newer-build modules), one file per gap
  * (Q106 D3), named by its ROM offset. */
 #include "common.h"
+#include "libspu_internal.h"
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern volatile s32 _spu_RQmask;
-extern volatile s32 _spu_env;
-extern s32 _spu_RXX;
-typedef struct {
-    u16 pad[196];
-    volatile u16 key_on[2];  /* +0x188 SPU KEY-ON (MMIO via _spu_RXX) */
-    volatile u16 key_off[2]; /* +0x18C SPU KEY-OFF */
-} SpuRXX;
-typedef union {
-    SpuRXX rxx;
-    volatile u16 raw[0x100];
-} SpuUnion;
 extern SpuUnion D_800F7298;
 
 s32 _SpuSetAnyVoice(s32 on_off, u32 bits, s32 addr1, s32 addr2)

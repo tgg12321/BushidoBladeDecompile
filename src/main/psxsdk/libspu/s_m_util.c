@@ -2,17 +2,11 @@
  * 0x80089E30..0x80089F3C, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
  * D3. */
 #include "common.h"
+#include "libspu_internal.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-typedef struct {
-    u32 addr;
-    u32 size;
-} SpuMemRec;
-extern s32 _spu_mem_mode_plus;
-extern s32 _spu_memList;
 /* Self-referential on purpose: the object `_spu_memList` (Sony's SPU_MALLOC list pointer,
-   declared s32 here) is viewed as SpuMemRec* through this macro; a macro name inside its
-   own replacement list is not re-expanded (C90 6.8.3.4). */
+   declared s32 in libspu_internal.h) is viewed as SpuMemRec* through this macro; a macro
+   name inside its own replacement list is not re-expanded (C90 6.8.3.4). */
 #define _spu_memList ((SpuMemRec *)_spu_memList)
 
 /* PsyQ 4.0 LIBSPU s_m_util: _SpuIsInAllocateArea / _SpuIsInAllocateArea_ —

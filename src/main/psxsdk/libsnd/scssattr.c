@@ -2,6 +2,7 @@
  * 0x80083B50..0x80083BE4, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
  * D3. */
 #include "common.h"
+#include <psxsdk/libspu.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
 extern void SpuSetCommonAttr(s32 *);

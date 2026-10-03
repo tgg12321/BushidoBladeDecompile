@@ -4,6 +4,7 @@
  * probable newer-build modules), one file per gap (Q106 D3), named by its ROM offset. */
 #include "common.h"
 #include "sound.h"
+#include <psxsdk/libspu.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
 extern s16 _svm_damper;

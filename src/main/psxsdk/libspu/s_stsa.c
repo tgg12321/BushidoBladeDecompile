@@ -1,12 +1,8 @@
 /* PsyQ 4.0 LIBSPU S_STSA: SpuSetTransferStartAddr. .text 0x8008AE24..0x8008AE7C, a verbatim LIBSCAN
  * module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
+#include "libspu_internal.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 _spu_mem_mode_plus;
-extern u16 _spu_tsa;
-
-extern s32 _spu_FsetRXXa(s32, s32);
 s32 SpuSetTransferStartAddr(s32 a0) {
     s32 v0;
     if ((u32)(a0 - 0x1010) > (u32)0x7EFE8) {

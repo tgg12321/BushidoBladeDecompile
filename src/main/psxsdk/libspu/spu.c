@@ -4,31 +4,16 @@
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "psx.h"
+#include "libspu_internal.h"
 
 /* Declarations from the old main.c's head that this module uses. */
-/* PsyQ LIBSPU: Sony's own header types the SPU transfer callback as a
-   volatile function pointer; volatile_extern_allowlist.txt grant.
-   SOTN: src/main/psxsdk/libspu/libspu_internal.h:39 @db41b28 (PS1 use:
-   src/main/psxsdk/libspu/s_r.c:10) */
-extern void (* volatile _spu_transferCallback)();
-extern s32 _spu_transMode;
-extern s32 _spu_mem_mode_plus;
 extern s32 _spu_mem_mode;
 extern s32 _spu_mem_mode_unit;
-extern s32 _spu_mem_mode_unitM;
 extern volatile u32 *D_800A2CEC;
-extern s32 _spu_RXX;
 extern s32 _spu_addrMode;
-extern u16 _spu_tsa;
-extern s32 _spu_inTransfer;
-extern s32 _spu_IRQCallback;
 extern s32 D_800A2D1C;
 extern void printf(s32 *, s32 *);
 extern void _spu_Fw1ts(void);
-/* Sony _spu_RQ: ONE u16[4] object (PsyQ 4.0 LIBSPU S_SK relocs: addends 0/2/4/6 —
- * key-on pending [0..1], key-off pending [2..3]); splat split it into two D_
- * symbols. Ruling-4 grant, volatile_extern_allowlist.txt:40-41. */
-extern volatile u16 _spu_RQ[10]; /* _spu_RQ; _spu_init clears all 10 (PsyQ 4.0 spu.c) */
 extern s32 D_800A2D2C;
 extern s32 D_800A2D30;
 extern s32 D_800A2D34;

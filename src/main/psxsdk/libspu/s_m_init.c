@@ -1,13 +1,7 @@
 /* PsyQ 4.0 LIBSPU S_M_INIT: SpuInitMalloc. .text 0x80089384..0x800893D8, a verbatim LIBSCAN module
  * span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 _spu_mem_mode_plus;
-
-extern s32 _spu_AllocBlockNum;
-extern s32 _spu_AllocLastNum;
-extern s32 _spu_memList;
+#include "libspu_internal.h"
 
 /* PsyQ LIBSPU s_m_init.c: SpuInitMalloc — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libspu/

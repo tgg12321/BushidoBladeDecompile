@@ -4,13 +4,11 @@
  * (Q106 D3), named by its ROM offset. */
 #include "common.h"
 #include "sound.h"
+#include <psxsdk/libspu.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
 extern s16 _svm_damper;
 extern s16 _svm_stereo_mono;
-typedef struct {
-    s16 left, right;
-} SpuVolume;
 extern u8 _SsVmMaxVoice;
 extern u8 _svm_vab_used[];
 extern s32 _svm_rattr;
@@ -20,32 +18,6 @@ extern s32 _svm_rattr_plus_0x4;
 extern s16 _svm_sreg_buf[];
 extern u8 _svm_sreg_dirty[];
 extern s32 _svm_envx_hist[];
-
-/* PsyQ LIBSPU SpuVoiceAttr (libspu.h), the argument of func_8008B488
-   (SpuSetVoiceAttr shape). */
-typedef struct {
-    /* 0x00 */ u32 voice;
-    /* 0x04 */ u32 mask;
-    /* 0x08 */ SpuVolume volume;
-    /* 0x0C */ SpuVolume volmode;
-    /* 0x10 */ SpuVolume volumex;
-    /* 0x14 */ u16 pitch;
-    /* 0x16 */ u16 note;
-    /* 0x18 */ u16 sample_note;
-    /* 0x1A */ s16 envx;
-    /* 0x1C */ u32 addr;
-    /* 0x20 */ u32 loop_addr;
-    /* 0x24 */ s32 a_mode;
-    /* 0x28 */ s32 s_mode;
-    /* 0x2C */ s32 r_mode;
-    /* 0x30 */ u16 ar;
-    /* 0x32 */ u16 dr;
-    /* 0x34 */ u16 sr;
-    /* 0x36 */ u16 rr;
-    /* 0x38 */ u16 sl;
-    /* 0x3A */ u16 adsr1;
-    /* 0x3C */ u16 adsr2;
-} SpuVoiceAttr;
 
 extern s32 D_80103604;              /* psyz _svm_envx_ptr */
 extern u8  _svm_auto_kof_mode;
@@ -57,10 +29,6 @@ extern u16 _svm_okof1;
 extern u16 _svm_okof2;
 extern u16 D_800F1B14;              /* psyz _svm_orev1 */
 extern u16 D_800F2B68;              /* psyz _svm_orev2 */
-extern void SpuGetVoiceEnvelope(s32, u16 *);
-extern void SpuSetNoiseVoice(s32, s32);
-extern void SpuSetKey(s32, u32);
-extern void SpuSetReverbVoice(s32, s32);
 
 /* Sony LIBSND `_SsVmFlush` (VM_F): sample every voice's envelope into
    _svm_voice[].unk6 and the 16-slot silence history ring, release the
