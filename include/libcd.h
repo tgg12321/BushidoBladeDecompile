@@ -34,7 +34,7 @@ typedef struct {
  * saved result pointer D_800A1504. Evidence it is one object: CdReadSync caches &t1 in $s1
  * and reads cnt / t2 / sectors at -0x8 / -0x4 / -0x1C off it (0x800827E8), and the la-form
  * member reads in cd_read_retry / CdReadBreak / CdRead / cb_read are cse's related-value
- * addressing of one symbol. Members: system.c (CdRead family), ings2.c (CdReadMode). */
+ * addressing of one symbol. All its users are in src/main/psxsdk/libcd/cdread.c. */
 typedef struct {
     /* 0x00 */ s32 sectors; /* D_800A14D0 */
     /* 0x04 */ s32 buf;     /* D_800A14D4 */
@@ -52,7 +52,7 @@ typedef struct {
 } CdlREAD;
 extern volatile CdlREAD D_800A14D0;
 
-/* libcd control entry points (system.c): com, param bytes, result bytes. */
+/* libcd control entry points (src/main/psxsdk/libcd/sys.c): com, param bytes, result bytes. */
 s32 CdControl(u8 com, u8 *param, u8 *result);
 s32 CdControlB(u8 com, u8 *param, u8 *result);
 s32 CdControlF(u8 com, u8 *param);

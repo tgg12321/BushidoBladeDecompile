@@ -1014,7 +1014,7 @@ extern CdFileEntry g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
  * The 8-byte `pair` is also one CdFileEntry by the table it is copied from: the
  * source is an element of g_cd_file_table, copied as a whole CdFileEntry
  * aggregate (cdrom_StartRead, cdrom_StartAudio).  The CdPosToInt/CdIntToPos calls on it evidence
- * only `pair.loc`: CdIntToPos (src/system.c) writes just p[0..2]. */
+ * only `pair.loc`: CdIntToPos (src/main/psxsdk/libcd/sys.c) writes just p[0..2]. */
 typedef struct {
     s16 unk00; /* 0x80101E60 */
     s16 unk02; /* 0x80101E62 */

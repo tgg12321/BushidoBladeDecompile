@@ -86,9 +86,9 @@ segments:
       - [0x7D920, data]   # .data section (initialized data)
       # HAND SPLIT (2026-09-22, CD_cw): the splat output above was cut at
       # 0x91C94 (vram 0x800A1494). 0x91C94..0x91C97 is libcd bios.c's
-      # `static volatile CD_intr Intr`, now DEFINED in src/system.c; the
+      # `static volatile CD_intr Intr`, now DEFINED in src/main/psxsdk/libcd/bios.c; the
       # remainder is asm/data/91C98.data.s. bb2.ld links
-      # 7D920.data.o, system.o(.data), 91C98.data.o in that order. A splat
+      # 7D920.data.o, main/psxsdk/libcd/bios.o(.data), 91C98.data.o in that order. A splat
       # re-run must reproduce this split (see the recovery procedure above).
 
   - [0x94000]
