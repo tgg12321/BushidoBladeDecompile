@@ -1,6 +1,6 @@
 ---
 name: no-new-park-categories
-paths: ["src/*.c", "engine/queue.py", "engine/cheats.py"]
+paths: ["src/**/*.c", "engine/queue.py", "engine/cheats.py"]
 description: "Anti-cheat policy: no new park categories, no build-time rewriting, auto-search finds are proposals; the pre-cleared FAKE shapes (examples under completion-bar item 3, owner ruling Q91)."
 metadata:
   type: rules

@@ -1,6 +1,6 @@
 ---
 name: codegen-technique-index
-paths: ["src/*.c", "include/*.h"]
+paths: ["src/**/*.c", "include/*.h"]
 description: "Symptom-keyed index of the on-demand codegen-technique rules. When a symptom matches your diff, Read .claude/rules/<slug>.md BEFORE grinding."
 metadata:
   type: reference

@@ -3,13 +3,13 @@
 
 Agents had buried the repo in markdown — 16 MB of .md, a 3.6 MB decisions log,
 1.3 MB ledgers for a 127-insn function, ~100K tokens of rules auto-loaded on every
-src/*.c read. History belongs in commit messages and git; files hold current state.
+src/**/*.c read. History belongs in commit messages and git; files hold current state.
 
 Checks the STAGED tree (index blobs, not the working copy):
   1. New .md files need `[new-doc]` in the commit message (justify it in the body).
      Exempt: per-function grind ledgers (memory/grind/**), docs/naming/data_evidence/.
   2. Each .claude/rules/*.md <= RULE_MAX bytes (split long policy into on-demand files).
-  3. Rules whose `paths:` match src/*.c (they auto-load on every source read)
+  3. Rules whose `paths:` match a C source (they auto-load on every source read)
      total <= AUTOLOAD_MAX bytes.
   4. memory/grind/<func>/{hypotheses,evidence}.md <= LEDGER_MAX bytes
      (fix: python tools/grinder/grindlib.py compact-ledger <func>).
@@ -35,7 +35,8 @@ LOG_CAPS = {
 }
 NEW_DOC_EXEMPT = ("memory/grind/", "docs/naming/data_evidence/")
 LEDGER_RE = re.compile(r"^memory/grind/[^/]+/(hypotheses|evidence)\.md$")
-SRC_PROBE = "src/code6cac.c"
+# a flat and a nested TU (fnmatch: `src/**/*.c` needs a directory level)
+SRC_PROBES = ("src/code6cac.c", "src/main/psxsdk/libgte/msc00.c")
 
 
 def git(*args: str) -> str:
@@ -93,11 +94,11 @@ def main() -> int:
         total, hits = 0, []
         for path in git("ls-files", "--cached", ".claude/rules/*.md").splitlines():
             text = git("show", f":{path}")
-            if any(fnmatch.fnmatch(SRC_PROBE, p) for p in rule_paths(text)):
+            if any(fnmatch.fnmatch(s, p) for s in SRC_PROBES for p in rule_paths(text)):
                 total += len(text.encode("utf-8"))
                 hits.append(path.rsplit("/", 1)[-1])
         if total > AUTOLOAD_MAX:
-            errors.append(f"rules auto-loaded on src/*.c total {total} B > {AUTOLOAD_MAX} B "
+            errors.append(f"rules auto-loaded on src/**/*.c total {total} B > {AUTOLOAD_MAX} B "
                           f"({', '.join(hits)}): narrow `paths:` or trim.")
 
     if errors:

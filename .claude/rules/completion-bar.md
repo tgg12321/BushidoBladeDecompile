@@ -1,6 +1,6 @@
 ---
 name: completion-bar
-paths: ["src/*.c", "include/*.h", "memory/grind/**", ".claude/rules/*.md", "engine/queue.py", "tools/grinder/roles/*.md"]
+paths: ["src/**/*.c", "include/*.h", "memory/grind/**", ".claude/rules/*.md", "engine/queue.py", "tools/grinder/roles/*.md"]
 description: "BLOCKING (owner ruling Q91, 2026-10-02): the whole completion bar, SOTN-equivalent. Byte match + the wall + honest code (every no-semantic-purpose construct /* FAKE */-annotated with its measured reason, no false claims) + existing types + simplest form. A FAIL must cite an item here; everything else is hygiene or technique."
 metadata:
   type: rule

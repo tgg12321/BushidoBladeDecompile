@@ -1,6 +1,6 @@
 ---
 name: inline-asm-policy
-paths: ["src/*.c"]
+paths: ["src/**/*.c"]
 description: "Inline asm: CANONICAL (GTE/cop2, BIOS, HW pokes; verbatim PsyQ GTE macro islands under the 2026-09-23/26 rulings) is allowed; CHEAT asm (pins, hardcoded-$N injection, alias renames, barriers, GPR-opcode asm) is forbidden and keeps a function INCOMPLETE."
 metadata:
   type: rules

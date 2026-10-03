@@ -1,6 +1,6 @@
 ---
 name: asm-until-matched
-paths: ["src/*.c", "tools/grinder/**", "engine/queue.py"]
+paths: ["src/**/*.c", "tools/grinder/**", "engine/queue.py"]
 description: "Owner ruling 2026-08-19: no cheat on main in any form; an unfinished function is committed as INCLUDE_ASM(\"asm/funcs\", <func>); C lands once, at COMPLETED-C; candidates live in memory/grind/<func>/."
 metadata:
   type: rule

@@ -1,6 +1,6 @@
 ---
 name: no-compiler-divergence
-paths: ["src/*.c", "tools/gcc-2.7.2/**", "tools/maspsx/**"]
+paths: ["src/**/*.c", "tools/gcc-2.7.2/**", "tools/maspsx/**"]
 description: "HARD RULE: the compiler is FROZEN (a compiler patch is a cheat, Q17) and difficult is not impossible: every unmatched function closes in pure C source structure. Never claim a 'compiler wall'."
 metadata:
   type: rule
