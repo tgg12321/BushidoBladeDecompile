@@ -5,6 +5,7 @@
 #include "common.h"
 #include "psx.h"
 #include "libspu_internal.h"
+#include <psxsdk/libapi.h>
 
 /* Declarations from the old main.c's head that this module uses. */
 extern s32 _spu_mem_mode;

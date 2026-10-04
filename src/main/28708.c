@@ -70,10 +70,7 @@ extern u8 D_800A37D0;
 
 
 /* Extern function declarations for decompiled functions */
-extern void EnterCriticalSection(void);
 
-extern void ResetRCnt(s32);
-extern s32 GetRCnt(s32);
 
 extern void func_8001B6F4(void);
 

@@ -8,7 +8,6 @@
 /* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
 void InterruptCallback(void);
 
-extern void EnterCriticalSection(void);
 
 void SsEnd(void) {
     if (_snd_seq_tick_env.unk4 != 0) {

@@ -1,0 +1,1 @@
+{"func": "StartRCnt", "addr": "80078B3C", "verdict": "PASS", "body_hash": "23eebbc87c38d87f", "body_kind": "c", "file": "main/psxsdk/libapi/counter", "reviewer": "p2-rev-a1", "scope": "cheat-cleanup", "date": "2026-10-04T07:23:33Z", "head": "1c2c328ac", "notes": ""}

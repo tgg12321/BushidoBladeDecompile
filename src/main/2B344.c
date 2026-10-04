@@ -106,7 +106,6 @@ extern u8 D_800A37A8;
 
 
 
-extern void ResetRCnt(s32);
 
 
 

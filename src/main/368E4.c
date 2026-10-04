@@ -297,9 +297,6 @@ typedef struct {
 /* ---- merged from sound.c (owner ruling Q67: one original file) ---- */
 /* Forward declarations for called functions */
 extern void func_80054FDC(s32);
-extern void SetRCnt(u32, s32, s32);
-extern void GetRCnt(u32);
-extern void StartRCnt(u32);
 extern void func_8004473C(void);
 extern void func_80044800(void);
 extern void func_80048F58(s32, s32);

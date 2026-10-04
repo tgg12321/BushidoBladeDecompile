@@ -3,6 +3,7 @@
  * D3. */
 #include "common.h"
 #include "libcd_internal.h"
+#include <psxsdk/libapi.h>
 
 /* .rodata 0x8001605C..0x80016074: this module's strings (moved from src/text1a_b_post_rodata.c, Q106 D4:
  * every reader is in this file, in link order). */
@@ -13,7 +14,6 @@ const char g_str_cdinit_fail[24] =
     ;
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libgpu/sys.c, ex display.c). */
-extern void DeliverEvent(s32, s32);
 extern s32 printf();
 
 void def_cbsync(u8 intr, u8 *result);

@@ -289,7 +289,6 @@ extern void func_8003AAB0(void);
 
 
 
-extern s32 EnterCriticalSection(void);
 
 /* Continuation of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup -
  * replay_camera_rob_back_loose2 extracted to its own .c file, requiring this

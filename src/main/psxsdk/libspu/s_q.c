@@ -5,7 +5,6 @@
 #include <psxsdk/libapi.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 EnterCriticalSection(void);
 
 /* PsyQ LIBSPU s_q.c: SpuQuit — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libspu/s_q.c. */

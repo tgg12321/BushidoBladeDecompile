@@ -126,7 +126,6 @@ extern s32 g_memcard_file_count;
 
 
 /* Extern function declarations for decompiled functions */
-extern void EnterCriticalSection(void);
 
 extern s32 g_memcard_file_list;
 

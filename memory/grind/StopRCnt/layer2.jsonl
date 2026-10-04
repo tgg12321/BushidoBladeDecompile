@@ -1,0 +1,1 @@
+{"func": "StopRCnt", "addr": "80078B70", "verdict": "PASS", "body_hash": "1b1a943d3b84ee10", "body_kind": "c", "file": "main/psxsdk/libapi/counter", "reviewer": "p2-rev-a1", "scope": "cheat-cleanup", "date": "2026-10-04T07:23:44Z", "head": "1c2c328ac", "notes": ""}

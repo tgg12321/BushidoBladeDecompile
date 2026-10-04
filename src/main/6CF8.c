@@ -55,8 +55,6 @@ extern u32 *ClearOTagR(u32 *, s32);
 
 extern s32 func_8005C8A8(s32, s32, u32, s32);
 extern void func_8005C650(s32, s32, s32);
-extern void ResetRCnt(u32);
-extern s32 GetRCnt(u32);
 extern s32 rand(void);
 extern void func_800372C0(void);
 extern void __main(void);

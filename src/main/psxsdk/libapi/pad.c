@@ -17,7 +17,6 @@ s32 ReadInitPadFlag(void) {
     return D_8009BD80;
 }
 void _remove_ChgclrPAD(void);
-void EnterCriticalSection(void);
 void _patch_pad(void);
 s32 SetPatchPad(void);
 void PAD_init2(s32, s32, s32, s32);
@@ -61,7 +60,6 @@ void StopPAD(void) {
     RemovePatchPad();
     D_8009BD80 = 0;
 }
-extern void EnterCriticalSection(void);
 extern void SysDeqIntRP(s32, u32 *);
 extern void SysEnqIntRP(s32, u32 *);
 

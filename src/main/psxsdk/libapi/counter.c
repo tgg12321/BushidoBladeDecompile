@@ -9,7 +9,7 @@ extern s32 D_8009BD68;
 extern s32 D_8009BD6C;
 extern s32 D_8009BD70;
 
-s32 SetRCnt(s32 arg0, s32 arg1, s32 arg2) {
+s32 SetRCnt(u32 arg0, s32 arg1, s32 arg2) {
     s32 a3;
     s32 t0;
     s32 v0;
@@ -45,14 +45,14 @@ s32 SetRCnt(s32 arg0, s32 arg1, s32 arg2) {
     *(volatile u16 *) (((t0 * 0x10) + D_8009BD6C) + 4) = a3;
     return 1;
 }
-s32 GetRCnt(s32 arg0) {
+s32 GetRCnt(u32 arg0) {
     s32 v = arg0 & 0xFFFF;
     if (v >= 3) {
         return 0;
     }
     return *(volatile u16 *)(D_8009BD6C + v * 0x10);
 }
-s32 StartRCnt(s32 arg0) {
+s32 StartRCnt(u32 arg0) {
     s32 v;
     volatile s32 *base;
     v = arg0 & 0xFFFF;
@@ -60,7 +60,7 @@ s32 StartRCnt(s32 arg0) {
     base[1] = base[1] | (&D_8009BD70)[v];
     return v < 3;
 }
-s32 StopRCnt(s32 arg0) {
+s32 StopRCnt(u32 arg0) {
     s32 v;
     volatile s32 *base;
     v = arg0 & 0xFFFF;
@@ -68,7 +68,7 @@ s32 StopRCnt(s32 arg0) {
     base[1] = base[1] & ~(&D_8009BD70)[v];
     return 1;
 }
-s32 ResetRCnt(s32 arg0) {
+s32 ResetRCnt(u32 arg0) {
     s32 v = arg0 & 0xFFFF;
     if (v >= 3) {
         return 0;

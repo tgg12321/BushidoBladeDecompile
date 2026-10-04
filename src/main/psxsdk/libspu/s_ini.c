@@ -6,7 +6,6 @@
 #include <psxsdk/libapi.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 EnterCriticalSection(void);
 
 void _SpuInit(s32 arg0) {
     u16 *var_v0;

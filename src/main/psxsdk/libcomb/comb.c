@@ -43,9 +43,7 @@ extern s32 (*CombWaitCallback)(s32, s32);
 extern volatile SioReq sen;
 extern volatile SioReq D_800F1AFC;    /* rec */
 
-extern s32 EnterCriticalSection(void);
 extern s32 ResetGraph(s32);
-extern void DeliverEvent(u32, u32);
 extern void DelDrv(const char *);
 /* Not declared by any PsyQ 4.0 header (KERNEL.H lists neither), so COMB
    called them undeclared: int-returning calls with no prototype. */

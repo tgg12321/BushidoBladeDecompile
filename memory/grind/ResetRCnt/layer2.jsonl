@@ -1,0 +1,1 @@
+{"func": "ResetRCnt", "addr": "80078BA8", "verdict": "PASS", "body_hash": "8d6dc934eb88efa1", "body_kind": "c", "file": "main/psxsdk/libapi/counter", "reviewer": "p2-rev-a1", "scope": "cheat-cleanup", "date": "2026-10-04T07:23:15Z", "head": "1c2c328ac", "notes": ""}

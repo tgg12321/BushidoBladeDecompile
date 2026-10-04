@@ -7,11 +7,8 @@
 #include <psxsdk/libetc.h>
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s32 EnterCriticalSection(void);
 
 extern s32 InterruptCallback(s32, s32);
-extern void ResetRCnt(s32);
-extern void SetRCnt(s32, s32, s32);
 static void _SsTrapIntrVSync(void); /* _SsTrapIntrVSync (ssstart.c static) */
 static void _SsSeqCalledTbyT_1per2(void); /* _SsSeqCalledTbyT_1per2 (ssstart.c static) */
 
