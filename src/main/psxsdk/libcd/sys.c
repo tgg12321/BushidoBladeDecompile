@@ -87,15 +87,15 @@ s32 CdReady(s32 mode, u8 *result) {
     return CD_ready(mode, result);
 }
 
-s32 CdSyncCallback(s32 a0) {
-    s32 old = CD_cbsync;
-    CD_cbsync = a0;
+CdlCB CdSyncCallback(CdlCB func) {
+    CdlCB old = CD_cbsync;
+    CD_cbsync = func;
     return old;
 }
 
-s32 CdReadyCallback(s32 a0) {
-    s32 old = CD_cbready;
-    CD_cbready = a0;
+CdlCB CdReadyCallback(CdlCB func) {
+    CdlCB old = CD_cbready;
+    CD_cbready = func;
     return old;
 }
 
@@ -104,7 +104,7 @@ extern s32 g_cd_setloc_flags[];
 s32 CdControl(u8 a0, u8 *a1, u8 *a2) {
     s32 result;
     s32 idx;
-    s32 saved;
+    CdlCB saved;
     s32 count;
     s32 *base;
     s32 *elem;
@@ -155,7 +155,7 @@ done:
 s32 CdControlF(u8 a0, u8 *a1) {
     s32 result;
     s32 idx;
-    s32 saved;
+    CdlCB saved;
     s32 count;
     s32 *base;
     s32 *elem;
@@ -205,7 +205,7 @@ done:
 s32 CdControlB(u8 a0, u8 *a1, u8 *a2) {
     s32 count;
     s32 idx;
-    s32 saved;
+    CdlCB saved;
     s32 *elem;
     s32 *base;
     s32 status;

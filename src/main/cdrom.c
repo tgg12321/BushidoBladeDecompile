@@ -182,7 +182,7 @@ s32 cdrom_ReadWait(s32 nbytes, s32 buf, s32 mode) {
  * restarts the whole sequence from the seek. */
 void cdrom_LoadExec(EXEC *dest) {
     u8 sp_buf[0x800];
-    u8 sp_buf2[8];
+    CdlLOC sp_buf2;
     s32 index;
     s32 v0;
     s32 pos;
@@ -192,15 +192,15 @@ void cdrom_LoadExec(EXEC *dest) {
     index = func_80036EA8(6, 0);
 
     for (;;) {
-        CdControl(2, (u8 *)&g_cd_file_table[index], 0);
+        CdControl(2, (u8 *)&g_cd_file_table[index].loc, 0);
         v0 = cdrom_ReadWait(0x800, (s32)sp_buf, mode);
         if (v0 != 0) continue;
 
         *dest = *(EXEC *)&sp_buf[0x10];
 
         pos = CdPosToInt(&g_cd_file_table[index].loc);
-        CdIntToPos(pos + 1, (CdlLOC *)sp_buf2);
-        CdControl(2, sp_buf2, 0);
+        CdIntToPos(pos + 1, &sp_buf2);
+        CdControl(2, (u8 *)&sp_buf2, 0);
         v0 = cdrom_ReadWait(dest->t_size, dest->t_addr, mode);
         if (v0 == 0) break;
     }

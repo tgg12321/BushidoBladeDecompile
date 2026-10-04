@@ -13,7 +13,7 @@
 #include "common.h"
 #include "bb2.h"
 
-extern void cdrom_ReadyCallback(u8 arg0);
+extern void cdrom_ReadyCallback(u8 arg0, u8 *result);
 
 extern void cdrom_SetMix(s32, s32, s32, s32);
 CdlATV g_cd_atv;
@@ -252,7 +252,7 @@ void func_80036940(void) {
             D_80101E58.rec.dest_buffer = D_80101E58.rec.unk1C;
             D_80101E58.rec.sectors_remaining = D_80101E58.rec.unk18;
             D_80101E58.rec.expected_pos = CdPosToInt(&D_80101E58.rec.pair.loc);
-            CdControl(2, (u8 *)&D_80101E58.rec.pair, 0);
+            CdControl(2, (u8 *)&D_80101E58.rec.pair.loc, 0);
             D_80101E58.rec.unk38 = 0;
             D_80101E58.rec.unk02 = 5;
         }
@@ -261,7 +261,7 @@ void func_80036940(void) {
         s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
             D_80101E58.rec.unk38 = 0;
-            CdReadyCallback((s32)cdrom_ReadyCallback);
+            CdReadyCallback(cdrom_ReadyCallback);
             CdControlF(6, (u8 *)&D_80101E58.rec.pair);
             D_80101E58.rec.unk02 = 6;
         } else if (ret == 5) {

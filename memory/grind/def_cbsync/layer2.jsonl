@@ -1,0 +1,1 @@
+{"func": "def_cbsync", "addr": "80080014", "verdict": "PASS", "body_hash": "f3a9c4e2ee0f04f6", "body_kind": "c", "file": "main/psxsdk/libcd/event", "reviewer": "p2-rev-c2", "scope": "cheat-cleanup", "date": "2026-10-04T07:04:27Z", "head": "d39702794", "notes": ""}

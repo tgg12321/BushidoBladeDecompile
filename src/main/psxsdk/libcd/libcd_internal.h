@@ -10,8 +10,8 @@ extern u8 CD_status;
 extern u8 CD_pos[4]; /* Sony's u_char CD_pos[4] (SOTN: src/main/psxsdk/libcd/bios.c:42 @aa53500) */
 extern u8 CD_mode;
 extern u8 CD_com;
-extern s32 CD_cbsync;
-extern s32 CD_cbready;
+extern CdlCB CD_cbsync;
+extern CdlCB CD_cbready;
 extern s32 CD_debug;
 extern s32 CD_comstr[];
 extern s32 CD_intstr[];

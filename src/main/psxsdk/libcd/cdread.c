@@ -28,7 +28,6 @@ const char D_80016304[20] =
  * LIBCD SYS and BIOS functions CDREAD calls, declared as their definitions declare them (the old file
  * defined them above this module). */
 extern void puts(void *);
-s32 CdReadyCallback(s32 a0);
 s32 CdGetSector(s32 madr, s32 size);
 
 
@@ -38,7 +37,7 @@ void cb_data(void);
 
 /* The cdread module state is D_800A14D0 (CdlREAD, include/psxsdk/libcd.h). */
 extern u8 *D_800A1504;   /* cdread.c v1.86: saved result ptr for cb dispatch */
-extern s32 g_CdReadCallback_func;   /* CD_ReadCallbackFunc */
+extern CdlCB g_CdReadCallback_func;   /* CD_ReadCallbackFunc */
 
 /* PsyQ 4.0 LIBCD cdread: cb_read (static) — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c
@@ -103,7 +102,7 @@ static void cb_read(u8 intr, u8 *result) {
     }
     CdControlF(9, 0);
     if (g_CdReadCallback_func != 0) {
-        ((void (*)(u8, u8 *))g_CdReadCallback_func)(D_800A14D0.cnt == 0 ? 2 : 5, result);
+        g_CdReadCallback_func(D_800A14D0.cnt == 0 ? 2 : 5, result);
     }
 }
 
@@ -123,7 +122,7 @@ void cb_data(void) {
     }
     CdControlF(9, 0);
     if (g_CdReadCallback_func != 0) {
-        ((void (*)(u8, u8 *))g_CdReadCallback_func)(2, D_800A1504);
+        g_CdReadCallback_func(2, D_800A1504);
     }
 }
 
@@ -164,7 +163,7 @@ s32 cd_read_retry(s32 arg0) {
         }
     }
     D_800A14D0.pos = CdPosToInt(CdLastPos());
-    CdReadyCallback((s32)&cb_read);
+    CdReadyCallback(cb_read);
     if (D_800A14D0.tslmode & 1) {
         CdDataCallback((s32)&cb_data);
     }
@@ -243,9 +242,9 @@ s32 CdReadSync(s32 mode, s32 result) {
     }
 }
 
-s32 CdReadCallback(s32 a0) {
-    s32 old = g_CdReadCallback_func;
-    g_CdReadCallback_func = a0;
+CdlCB CdReadCallback(CdlCB func) {
+    CdlCB old = g_CdReadCallback_func;
+    g_CdReadCallback_func = func;
     return old;
 }
 

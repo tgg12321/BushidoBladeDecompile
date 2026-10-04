@@ -303,10 +303,10 @@ static inline void callback(void)
             break;
         }
         if ((status & 4) && CD_cbready != 0) {
-            ((void (*)(u8, void *))CD_cbready)(Intr.ready, &Result_plus_0x8);
+            CD_cbready(Intr.ready, &Result_plus_0x8);
         }
         if ((status & 2) && CD_cbsync != 0) {
-            ((void (*)(u8, void *))CD_cbsync)(Intr.sync, &Result);
+            CD_cbsync(Intr.sync, &Result);
         }
     }
     *g_cd_reg0 = saved;
@@ -644,12 +644,12 @@ void cdrom_IrqHandler(void) {
         if (s0 == 0) break;
         if (s0 & 4) {
             if (CD_cbready != 0) {
-                ((void (*)(u8, void *))CD_cbready)(Intr.ready, &Result_plus_0x8);
+                CD_cbready(Intr.ready, &Result_plus_0x8);
             }
         }
         if (!(s0 & 2)) continue;
         if (CD_cbsync == 0) continue;
-        ((void (*)(u8, void *))CD_cbsync)(Intr.sync, &Result);
+        CD_cbsync(Intr.sync, &Result);
     } while (1);
     *g_cd_reg0 = s2;
 }

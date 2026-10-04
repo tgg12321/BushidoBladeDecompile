@@ -1,0 +1,1 @@
+{"func": "def_cbready", "addr": "8008003C", "verdict": "PASS", "body_hash": "81ff575b24266ad2", "body_kind": "c", "file": "main/psxsdk/libcd/event", "reviewer": "p2-rev-c2", "scope": "cheat-cleanup", "date": "2026-10-04T07:04:16Z", "head": "d39702794", "notes": ""}

@@ -16,9 +16,9 @@ const char g_str_cdinit_fail[24] =
 extern void DeliverEvent(s32, s32);
 extern s32 printf();
 
-void def_cbsync(void);
-void def_cbready(void);
-void def_cbread(void);
+void def_cbsync(u8 intr, u8 *result);
+void def_cbready(u8 intr, u8 *result);
+void def_cbread(u8 intr, u8 *result);
 
 
 
@@ -32,21 +32,21 @@ loop:
         printf(g_str_cdinit_fail);
         return 0;
     }
-    CdSyncCallback((s32)&def_cbsync);
-    CdReadyCallback((s32)&def_cbready);
-    CdReadCallback((s32)&def_cbread);
+    CdSyncCallback(def_cbsync);
+    CdReadyCallback(def_cbready);
+    CdReadCallback(def_cbread);
     CdReadMode(0);
     return 1;
 }
 
-void def_cbsync(void) {
+void def_cbsync(u8 intr, u8 *result) {
     DeliverEvent(0xF0000003, 0x20);
 }
 
-void def_cbready(void) {
+void def_cbready(u8 intr, u8 *result) {
     DeliverEvent(0xF0000003, 0x40);
 }
 
-void def_cbread(void) {
+void def_cbread(u8 intr, u8 *result) {
     DeliverEvent(0xF0000003, 0x40);
 }

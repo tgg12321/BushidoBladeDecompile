@@ -1,0 +1,1 @@
+{"func": "CdSyncCallback", "addr": "80080228", "verdict": "PASS", "body_hash": "b40a67ad416853ed", "body_kind": "c", "file": "main/psxsdk/libcd/sys", "reviewer": "p2-rev-c2", "scope": "cheat-cleanup", "date": "2026-10-04T07:05:30Z", "head": "d39702794", "notes": ""}

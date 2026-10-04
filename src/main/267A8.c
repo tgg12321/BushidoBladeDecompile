@@ -31,7 +31,7 @@ void cdrom_FlushInit(void) {
     VSync(4);
 }
 extern void CdGetSector(s32, s32);
-void cdrom_ReadyCallback(u8 arg0) {
+void cdrom_ReadyCallback(u8 arg0, u8 *result) {
     s32 sp[4];
     if (arg0 == 1) {
         D_80101E58.rec.unk38 = 0;

@@ -1,0 +1,1 @@
+{"func": "CdReadCallback", "addr": "8008289C", "verdict": "PASS", "body_hash": "5b7cff2c0b23f2d9", "body_kind": "c", "file": "main/psxsdk/libcd/cdread", "reviewer": "p2-rev-c2", "scope": "cheat-cleanup", "date": "2026-10-04T07:03:00Z", "head": "d39702794", "notes": ""}

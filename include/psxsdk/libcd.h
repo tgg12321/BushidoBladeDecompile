@@ -33,6 +33,9 @@ typedef struct {
     u8 track;
 } CdlLOC;
 
+/* libcd CdlCB: the sync / ready / read callback (the interrupt code, the result bytes). */
+typedef void (*CdlCB)(u8, u8 *);
+
 /* PsyQ 4.0 LIBCD cdread.c module state (BB2 links Sony's CDREAD object verbatim; SOTN's
  * psxsdk cdread.c names the same block D_80032DBC): one volatile block at 0x800A14D0,
  * preceded by CD_ReadCallbackFunc (g_CdReadCallback_func, 0x800A14CC) and followed by the
@@ -51,8 +54,8 @@ typedef struct {
     /* 0x18 */ s32 t2;      /* D_800A14E8 */
     /* 0x1C */ s32 t1;      /* D_800A14EC */
     /* 0x20 */ s32 pos;     /* D_800A14F0 */
-    /* 0x24 */ s32 cbsync;  /* D_800A14F4 */
-    /* 0x28 */ s32 cbready; /* D_800A14F8 */
+    /* 0x24 */ CdlCB cbsync;  /* D_800A14F4 */
+    /* 0x28 */ CdlCB cbready; /* D_800A14F8 */
     /* 0x2C */ s32 cbdata;  /* D_800A14FC */
     /* 0x30 */ s32 tslmode; /* D_800A1500 */
 } CdlREAD;
@@ -75,7 +78,8 @@ extern void *CdComstr(u8);   /* PsyQ: char *CdComstr(u_char) */
 extern void *CdIntstr(u8);   /* PsyQ: char *CdIntstr(u_char) */
 extern s32 CdSync(s32, u8 *);
 extern s32 CdReady(s32, u8 *);
-extern s32 CdSyncCallback(s32);  /* PsyQ: CdlCB CdSyncCallback(CdlCB) */
+extern CdlCB CdSyncCallback(CdlCB);
+extern CdlCB CdReadyCallback(CdlCB);
 extern s32 CdDataCallback(s32);  /* PsyQ: void (*CdDataCallback(void (*func)())) */
 extern void CdDataSync(s32);     /* PsyQ: int CdDataSync(int) */
 extern s32 CdGetSector2(s32, s32); /* PsyQ: int CdGetSector2(void *, int) */
@@ -84,7 +88,7 @@ extern CdlLOC *CdIntToPos(s32, CdlLOC *);
 extern s32 CdPosToInt(CdlLOC *);
 extern s32 CdRead(s32, s32, s32);  /* PsyQ: int CdRead(int, u_long *, int) */
 extern s32 CdReadSync(s32, s32);   /* PsyQ: int CdReadSync(int, u_char *) */
-extern s32 CdReadCallback(s32);    /* PsyQ: CdlCB CdReadCallback(CdlCB) */
+extern CdlCB CdReadCallback(CdlCB);
 extern void CdReadBreak(void);
 
 #endif /* PSXSDK_LIBCD_H */
