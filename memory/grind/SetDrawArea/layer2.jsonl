@@ -1,0 +1,1 @@
+{"func": "SetDrawArea", "addr": "8007C154", "verdict": "PASS", "body_hash": "b9b65ca59fb99cf7", "body_kind": "c", "file": "main/psxsdk/libgpu/sys", "reviewer": "p2-rev-g3", "scope": "cheat-cleanup", "date": "2026-10-04T06:31:09Z", "head": "b6113fafc", "notes": ""}

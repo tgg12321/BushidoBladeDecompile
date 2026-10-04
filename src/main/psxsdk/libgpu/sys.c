@@ -229,6 +229,10 @@ const char D_80016044[24] =
 
 /* Forward declarations */
 extern s32 memcpy(s32, void *, s32);
+s32 get_mode(s32, s32, s32);
+s32 get_cs(s16, s16);
+s32 get_ce(s16, s16);
+s32 get_ofs(s32, s32);
 
 /* Externs for globals */
 extern volatile u32 *g_gpu_stat_reg;
@@ -599,20 +603,21 @@ u32 GetODE(void) {
     s32 (*func)(void) = ((s32 (**)(void))g_gpu_dev_table)[0xE];
     return (u32)func() >> 31;
 }
-void SetTexWindow(u8 *a0, s32 a1) {
-    a0[3] = 2;
-    *(u32 *)(a0 + 4) = get_tw(a1);
-    *(u32 *)(a0 + 8) = 0;
+void SetTexWindow(DR_TWIN *p, RECT *tw) {
+    setlen(p, 2);
+    p->code[0] = get_tw(tw);
+    p->code[1] = 0;
 }
-void SetDrawArea(u8 *a0, s16 *a1) {
-    a0[3] = 2;
-    *(u32 *)(a0 + 4) = get_cs(a1[0], a1[1]);
-    *(u32 *)(a0 + 8) = get_ce((s32)(s16)((u16)a1[0] + (u16)a1[2] - 1), (s32)(s16)((u16)a1[1] + (u16)a1[3] - 1));
+void SetDrawArea(DR_AREA *p, RECT *r) {
+    setlen(p, 2);
+    p->code[0] = get_cs(r->x, r->y);
+    p->code[1] = get_ce(r->x + r->w - 1, r->y + r->h - 1);
 }
-void SetDrawOffset(u8 *a0, s16 *a1) {
-    a0[3] = 2;
-    *(u32 *)(a0 + 4) = get_ofs(a1[0], a1[1]);
-    *(u32 *)(a0 + 8) = 0;
+/* PsyQ: u_short *ofs; this build loads the two offsets signed (lh; u16 * gives lhu). */
+void SetDrawOffset(DR_OFFSET *p, s16 *ofs) {
+    setlen(p, 2);
+    p->code[0] = get_ofs(ofs[0], ofs[1]);
+    p->code[1] = 0;
 }
 void SetPriority(u8 *a0, s32 a1, s32 a2) {
     u32 v0;
@@ -627,10 +632,10 @@ void SetPriority(u8 *a0, s32 a1, s32 a2) {
     *(u32 *)(a0 + 4) = v0;
     *(u32 *)(a0 + 8) = 0;
 }
-void SetDrawMode(u8 *a0, s32 a1, s32 a2, u16 a3, s32 a4) {
-    a0[3] = 2;
-    *(u32 *)(a0 + 4) = get_mode(a1, a2, a3);
-    *(u32 *)(a0 + 8) = get_tw(a4);
+void SetDrawMode(DR_MODE *p, s32 dfe, s32 dtd, s32 tpage, RECT *tw) {
+    setlen(p, 2);
+    p->code[0] = get_mode(dfe, dtd, (u16)tpage);
+    p->code[1] = get_tw(tw);
 }
 typedef struct {
     s16 x;
@@ -874,21 +879,21 @@ s32 get_ofs(s32 arg0, s32 arg1) {
     new_var2 = 0xE5000000;
     return var_v1 | (var_v0 | new_var2);
 }
-s32 get_tw(u8 *arg0) {
-    if (arg0 != 0) {
+s32 get_tw(RECT *tw) {
+    if (tw != 0) {
         u32 tmp[4]; /* FAKE: written-never-read scratch (SOTN dra/62DEC.c sp70[4] family;
                        dead-vars-local-array carve-out) */
         u8 r, b1;
         s32 g, b2;
         u32 b15, re2, ret;
-        r = arg0[0] >> 3;
+        r = (tw->x & 0xFF) >> 3;
         tmp[0] = r;
-        g = ((-*(s16 *)(arg0 + 4)) & 0xFF) >> 3;
+        g = ((-tw->w) & 0xFF) >> 3;
         tmp[2] = g;
-        b1 = arg0[2] >> 3;
+        b1 = (tw->y & 0xFF) >> 3;
         tmp[1] = b1;
         b15 = (u32)b1 << 0xF;
-        b2 = ((-*(s16 *)(arg0 + 6)) & 0xFF) >> 3;
+        b2 = ((-tw->h) & 0xFF) >> 3;
         re2 = ((u32)r << 0xA) | 0xE2000000u;
         ret = b15 | re2 | ((u32)b2 << 5) | (u32)g;
         tmp[3] = b2;

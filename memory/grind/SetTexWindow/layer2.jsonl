@@ -1,0 +1,1 @@
+{"func": "SetTexWindow", "addr": "8007C118", "verdict": "PASS", "body_hash": "71db09f6d2402508", "body_kind": "c", "file": "main/psxsdk/libgpu/sys", "reviewer": "p2-rev-g3", "scope": "cheat-cleanup", "date": "2026-10-04T06:31:45Z", "head": "b6113fafc", "notes": ""}

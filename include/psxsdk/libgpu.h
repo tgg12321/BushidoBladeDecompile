@@ -95,6 +95,12 @@ typedef struct {
     u8 pad1;     /* +0x13 */
 } DISPENV; /* 0x14 */
 
+/* PsyQ LIBGPU.H drawing-environment primitives: the OT tag word, then two GPU command words. */
+typedef struct { u32 tag; u32 code[2]; } DR_MODE;   /* Drawing Mode */
+typedef struct { u32 tag; u32 code[2]; } DR_TWIN;   /* Texture Window */
+typedef struct { u32 tag; u32 code[2]; } DR_AREA;   /* Drawing Area */
+typedef struct { u32 tag; u32 code[2]; } DR_OFFSET; /* Drawing Offset */
+
 /* PsyQ DR_MOVE: DMA tag word, then five GPU command words. */
 typedef struct { u32 tag; u32 code[5]; } DR_MOVE;
 
@@ -355,6 +361,7 @@ extern void SetLineF3(LINE_F3 *);
 extern void SetLineG3(LINE_G3 *);
 extern void SetLineF4(LINE_F4 *);
 extern void SetLineG4(LINE_G4 *);
+extern void SetTexWindow(DR_TWIN *, RECT *);
 extern void SetDrawMove(DR_MOVE *, RECT *, u32, u32); /* PsyQ: (DR_MOVE *, RECT *, int, int) */
 
 #endif /* PSXSDK_LIBGPU_H */

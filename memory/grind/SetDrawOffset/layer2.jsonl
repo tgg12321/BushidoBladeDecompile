@@ -1,0 +1,1 @@
+{"func": "SetDrawOffset", "addr": "8007C1D8", "verdict": "PASS", "body_hash": "e7be584b25920f2a", "body_kind": "c", "file": "main/psxsdk/libgpu/sys", "reviewer": "p2-rev-g3", "scope": "cheat-cleanup", "date": "2026-10-04T06:31:34Z", "head": "b6113fafc", "notes": ""}
