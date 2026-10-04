@@ -23,10 +23,7 @@ extern s32 memcpy(s32 *, s32, s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 func_80054434(void);
 
-extern void func_8003AA78(void);
 
-extern void func_8003AA48(void);
-extern void func_8003AAB0(void);
 
 
 
@@ -67,9 +64,7 @@ extern void func_8003FFE0(s32);
 
 
 
-extern void func_80039320(void);
 
-extern void func_800397A0(void);
 
 
 extern void func_80018300(s32 *);

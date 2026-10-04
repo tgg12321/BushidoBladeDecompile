@@ -7,10 +7,6 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-extern void func_8003AA78(void);
-extern void func_8003AA48(void);
-extern void func_8003AAB0(void);
-
 s32 cdrom_IsIdle(void) {
     return D_80101E58.rec.unk02 == 0;
 }

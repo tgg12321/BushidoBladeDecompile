@@ -15,11 +15,8 @@ extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern s32 rcos(s32);
 extern s32 rsin(s32);
 void func_800433E4();
-void func_80044010(s32 *p, s16 slot);
 void func_80044100(s32 a0, s32 a1);
 extern void func_800520B8(s32, s32, s32);
-s32 func_8004428C(s32 *base, s16 *offsets);
-s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *frame_offsets);
 extern void func_800417D0(s32 *);
 
 void func_80044800(void) {
@@ -533,7 +530,6 @@ void func_80045824(s32 a0, s32 a1, s32 a2) {
 }
 extern void func_800400F8(s32);
 extern void func_80044ED8(s32, s32);
-extern s32 *func_800455AC(s32);
 extern void func_80045AA4(s32, s32);
 
 s16 *func_80045878(s32 a0, s32 a1, s32 a2) {
@@ -620,11 +616,7 @@ void func_80045AA4(s32 a0, s32 a1) {
     }
 }
 extern s16 D_800993FC[];
-extern s32 func_80044378(s32, s32 *, s16 *);
-extern s32 func_8004428C(s32 *, s16 *);
-extern void func_80044010(s32 *, s16);
 extern void func_80044F50(s32, s32, s32);
-extern s32 *func_800455AC(s32);
 extern void func_80046048(s32, s32);
 
 void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {

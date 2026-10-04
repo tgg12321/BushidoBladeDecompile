@@ -1018,7 +1018,6 @@ typedef struct {
 s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3);
 s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2);
 void func_80033550(LeafPos *arg0);
-extern void func_80044B30(s32 a0, s32 a1);
 
 /* `tbl` holds two 2x2 grids of points (entry idx * 4 + row * 2 + col).
  * Builds the x/z bounds and the top y of grid `idx` in the scratchpad record

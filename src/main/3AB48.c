@@ -12,7 +12,6 @@ extern s32 *func_8004153C();
 extern s16 Judge[];
 extern void func_8004211C(void);
 extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
-extern s32 func_80044FA0(s32, s32);
 extern void func_800418D0(s32 *);
 extern void func_800420D0(void);
 extern u8 *g_gpu_ot_ptr;
@@ -697,7 +696,6 @@ s16 func_80054434(void) {
 INCLUDE_ASM("asm/funcs", func_80054440);
 INCLUDE_ASM("asm/funcs", func_800545F4);
 extern const char D_80015840[];
-extern s32 func_80045080(s32);
 
 s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     /* FAKE: second C handle to the global ctrl block (pointer-alias family);
@@ -783,8 +781,6 @@ void func_800548DC(void) {
     func_80046A60();
 }
 extern s32 D_800A3250[2];
-extern void math_MatrixToAnglesYXZ(MATRIX *, SVECTOR *);
-extern void math_TransposeMatrixInPlace(MATRIX *);
 extern void func_800198D0(s32, s32, u32 *, u16 *);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
 /* Per-frame stage handler on the ctrl block D_800EFAE8.  On the first frame
@@ -947,7 +943,6 @@ s32 func_8005490C(void) {
     return 1;
 }
 extern s32 func_8005490C(void);
-extern void func_800444E0(void);
 s32 func_80054F68(void) {
     s32 v3;
     s32 s0;

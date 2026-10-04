@@ -196,7 +196,6 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 extern s32 D_80094CFC[];
 extern void math_RotMatrixZYX(s16 *, s32 *);
 extern void func_800523E0(s32 *, s32 *, s32, s32);
-extern void func_80044DE4(s16 *, s16 *, s32, s32);
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
     s32 i = 1;

@@ -9,17 +9,11 @@
 
 /* ---- merged from text1a_c2.c (owner ruling Q67: one original file) ---- */
 extern s32 *func_800457A0(s32);
-extern s32 *func_800455AC(s32);
-extern void func_80044F30(s32, s32);
-extern void func_80045824(s32, s32, s32);
-extern void func_80044010(s32 *, s16);
 extern s32 func_80044670(s32, s32, s32);
 extern void func_800477DC(s32);
 extern s32 func_80047EC8(void);
 extern void func_800481E8(s32, s32);
 extern void func_800466C0(s32, s32);
-extern void func_80045510(s32, s32);
-extern void func_80044098(s32);
 
 
 #define ALIGN4(x) (((u32)(x) >> 2) << 2)
@@ -249,7 +243,6 @@ void func_8004659C(s32 a0) {
     D_800A33B4 = (s32)s1p;
     func_8003EDC0((u16 *)s0p, 7);
 }
-extern void func_800453E0(s32);
 void func_8004668C(void) {
     func_800453E0(7);
     g_stage_id = -1;
@@ -258,7 +251,6 @@ void func_8004668C(void) {
 
 /* ---- merged from text1a_b.c (owner ruling Q67: one original file) ---- */
 extern void func_80044100();
-extern void func_80044C70(s32);
 extern void func_80047ED0(s32);
 void func_800466C0(s32 a0, s32 a1) {
     s32 rounded;
@@ -291,8 +283,6 @@ typedef struct {
 
 /* ---- merged from sound.c (owner ruling Q67: one original file) ---- */
 /* Forward declarations for called functions */
-extern void func_8004473C(void);
-extern void func_80044800(void);
 extern void func_80048F58(s32, s32);
 extern void func_80048FFC(s32);
 extern s32 *func_8004153C();
@@ -302,15 +292,12 @@ extern void func_80048B8C(s32);
 extern void func_800460E4(s32, s32);
 extern void func_800421C8(s32);
 extern void func_8004668C(void);
-extern void func_80046020(void);
 
 extern void math_RotMatrixYXZ(SVECTOR *, MATRIX *);
 extern s16 Judge[];
 extern Unk80101DF0Record *D_800A3708;
 extern void func_8004211C(void);
-extern void func_800444BC(void);
 extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
-extern s32 func_80044FA0(s32, s32);
 extern s16 D_800A324A;
 
 /* Externs for globals */
@@ -322,13 +309,9 @@ extern s16 D_800F6654;
 extern u8 g_cam_bone_data;
 
 
-extern void func_800451A0(void);
-extern void func_800451D0(void);
 extern void func_800418D0(s32 *);
 extern void func_800420D0(void);
 extern u8 *g_gpu_ot_ptr;
-extern void func_80042E90(void);
-extern void func_80044498(void);
 extern void func_80049E4C(void);
 extern void func_80049F4C(void);
 extern void func_800404D8(void);
@@ -1998,7 +1981,6 @@ s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2)
 extern s16 D_80099C50[];
 extern s32 D_800A324C;
 extern s32 func_8004954C(s32, s32, s32);
-extern void func_80045B68(s32, s32, s16 *, s32);
 void func_80049584(s32 arg0) {
     s16 *dst;
     s16 *src;

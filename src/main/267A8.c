@@ -5,10 +5,6 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-extern void func_8003AA78(void);
-extern void func_8003AA48(void);
-extern void func_8003AAB0(void);
-
 void snd_SerialMixOn(void) {
     SsSetSerialAttr(0, 0, 1);
     SsSetSerialVol(0, 0x7F, 0x7F);

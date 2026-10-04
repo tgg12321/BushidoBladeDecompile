@@ -15,17 +15,12 @@ extern s32 D_800A38B4;
 extern s32 memcpy(s32 *, s32, s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 func_80054434(void);
-extern void func_8003AA78(void);
-extern void func_8003AA48(void);
-extern void func_8003AAB0(void);
 extern s32 rand();
 extern void func_800325E0(s32, s32);
 extern void func_80061064(s32 *, s32 *);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 extern void func_80055138(s32, s32, s32);
 extern void func_8003FFE0(s32);
-extern void func_80039320(void);
-extern void func_800397A0(void);
 
 INCLUDE_RODATA("asm/rodata", D_800100A4);
 void func_8001979C(s32 arg0, u32 *arg1) {
@@ -4602,7 +4597,6 @@ extern s16 D_8008E0BC[27][4];
  * func_80030A2C (ex cpu_set_move_command_and_dir, RESET sweep 2026-10-03). */
 extern u8 D_8008D90C[28][8];
 extern void func_8003339C(s32 *);
-extern void func_80039680(u8 *);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
 extern void func_80041188(s32, u8 *, u8 *, s32, s32 *);
 extern void func_80049718(s32, s32, s32 *, s16 *);

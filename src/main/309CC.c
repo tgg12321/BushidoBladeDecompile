@@ -19,7 +19,6 @@
 
 extern void func_80052C10(void);
 
-extern void func_80044010(s32 *, s16);
 
 
 

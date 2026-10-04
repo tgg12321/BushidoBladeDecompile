@@ -91,7 +91,6 @@ void func_80035438(void) {
     func_80068ECC(a0);
 }
 extern u8 D_800A31D8;
-extern void func_8003A41C(void);
 void func_80035480(void) {
     gpu_ResetGraphMode1();
     gpu_InitDisplay();
@@ -278,9 +277,6 @@ void func_80035618(s32 arg0) {
 
 
 
-extern void func_8003AA78(void);
-extern void func_8003AA48(void);
-extern void func_8003AAB0(void);
 
 
 
@@ -296,9 +292,6 @@ extern u8 D_800A31D9;
 extern s32 rand(void);
 extern void func_80035618(s32);
 extern void func_8003553C(void);
-extern s32 func_8003880C(void);
-extern s32 func_800388A8(void);
-extern s32 func_80038988(void);
 extern void func_80035438(void);
 extern s32 func_80077894(s32, s32);
 extern void func_80035F78(s16, s32, s32, s32, s32);

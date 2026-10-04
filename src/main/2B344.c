@@ -618,7 +618,6 @@ extern s16 D_800A7FE0[32][32];
 extern u16 D_800A87E0[];
 extern u8 g_stage_collision[];
 extern s32 *func_8004153C();
-extern void func_800432A0(s32, s32, s32, s32, s32);
 
 
 
@@ -2570,7 +2569,6 @@ extern void obj_Clear(s32);
 
 /* Externs for globals */
 extern void func_8001924C(s32 *, s32);
-extern void func_80045A28(s32, s32);
 extern void gte_SetMatrixRotTransIR(s32 *, s32 *, s16 *);
 
 /* Externs for globals */
