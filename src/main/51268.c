@@ -331,10 +331,7 @@ extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
-extern s32 SetSemiTrans(void *, s32);
-extern s32 SetTile(void *);
 extern s32 SetDrawArea();
-extern s32 SetPolyG4();
 extern s32 func_8006E480();
 extern s32 func_8007352C();
 extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
@@ -906,7 +903,6 @@ void func_800620B8(s16 *pos, s32 *trans) {
     extern u16 D_8009BA58[4];
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
-    extern s32 SetSemiTrans(void *, s32);
     extern s32 rand(void);
     u8 *base;
     s16 *w;
@@ -3919,7 +3915,7 @@ cancel:
 void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
     u8 *p = (u8 *) arg0->field_18;
 
-    SetTile(p);
+    SetTile((TILE *)p);
     p[4] = 0xFF;
     p[5] = 0xFF;
     p[6] = 0xFF;
@@ -3934,7 +3930,7 @@ void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
     AddPrim((u32 *) g_gpu_ot_ptr + arg2, (u32 *)p);
     p += 0x10;
 
-    SetTile(p);
+    SetTile((TILE *)p);
     p[4] = 0x80;
     p[5] = 0x80;
     p[6] = 0x80;
@@ -3946,7 +3942,7 @@ void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
     AddPrim((u32 *) g_gpu_ot_ptr + arg2, (u32 *)p);
     p += 0x10;
 
-    SetTile(p);
+    SetTile((TILE *)p);
     p[4] = 0x40;
     p[5] = 0x40;
     p[6] = 0x40;
@@ -4008,7 +4004,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
     p = (u8 *)arg0[6];
 
     if (mode == 2) {
-        SetTile(p);
+        SetTile((TILE *)p);
         func_80069A30(p);
         *(s16 *)(p + 8)  = 0x4E;
         *(s16 *)(p + 10) = 0x30;
@@ -4017,7 +4013,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
         SetSemiTrans(p, 1);
         AddPrim((u32 *)(g_gpu_ot_ptr + 0x44), (u32 *)p);
         p += 0x10;
-        SetTile(p);
+        SetTile((TILE *)p);
         func_80069A30(p);
         *(s16 *)(p + 8)  = 0x166;
         *(s16 *)(p + 10) = 0x30;
@@ -4027,7 +4023,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
         AddPrim((u32 *)(g_gpu_ot_ptr + 0x44), (u32 *)p);
         p += 0x10;
     } else if (mode == 1) {
-        SetTile(p);
+        SetTile((TILE *)p);
         func_80069A30(p);
         *(s16 *)(p + 8)  = 0x3F;
         *(s16 *)(p + 10) = 0x30;
@@ -4037,7 +4033,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
         AddPrim((u32 *)(g_gpu_ot_ptr + 0x44), (u32 *)p);
         p += 0x10;
     } else {
-        SetTile(p);
+        SetTile((TILE *)p);
         func_80069A30(p);
         *(s16 *)(p + 8)  = 0x130;
         *(s16 *)(p + 10) = 0x3A;
@@ -4142,7 +4138,7 @@ void func_80069E18(s32 arg0) {
     s32 p1;
 
     tile = *(s32 *)(arg0 + 0x18);
-    SetTile(tile);
+    SetTile((TILE *)tile);
     *(u8 *)(tile + 4) = 0xFF;
     *(u8 *)(tile + 5) = 0xFF;
     *(u8 *)(tile + 6) = 0xFF;
@@ -4150,7 +4146,7 @@ void func_80069E18(s32 arg0) {
     *(s16 *)(tile + 8) = 0;
     *(s16 *)(tile + 0xA) = 0;
     *(s16 *)(tile + 0xE) = 0xF0;
-    SetSemiTrans(tile, 0);
+    SetSemiTrans((TILE *)tile, 0);
     AddPrim(g_gpu_ot_ptr + 0x50, tile);
     *(s32 *)(arg0 + 0x18) = tile + 0x10;
 
@@ -4419,7 +4415,7 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
     s32 s4;
 
     tile = *(u8 **)(arg0 + 0x18);
-    SetTile(tile);
+    SetTile((TILE *)tile);
     {
         s32 v0;
         if ((D_800A34F8 & 0xF) == arg2) {
@@ -4444,7 +4440,7 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr + (*(s32 *)(arg1 + 0x14) << 2), tile);
     tile += 0x10;
 
-    SetTile(tile);
+    SetTile((TILE *)tile);
     {
         s32 v0;
         if ((D_800A34F8 & 0xF) == arg2) {
@@ -4468,7 +4464,7 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr + (*(s32 *)(arg1 + 0x14) << 2), tile);
     tile += 0x10;
 
-    SetTile(tile);
+    SetTile((TILE *)tile);
     {
         s32 v0;
         if ((D_800A34F8 & 0xF) == arg2) {
@@ -4755,7 +4751,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s.ft4_out = *(s32 *)(arg0 + 8);
     *(s32 *)(arg0 + 8) = func_80073728((s32)&s, 0);
 
-    SetTile(*(u8 **)(arg0 + 0x18));
+    SetTile(*(TILE **)(arg0 + 0x18));
     (*(u8 **)(arg0 + 0x18))[4] = 0;
     (*(u8 **)(arg0 + 0x18))[5] = 0;
     (*(u8 **)(arg0 + 0x18))[6] = 0;
@@ -5245,17 +5241,11 @@ void func_8006BD28(s32 arg0, s32 arg1, S_6A880 *arg2, s32 arg3) {
 }
 /* END func_8006BD28 */
 /* BEGIN func_8006BEC4 */
-typedef struct Tile {
-    s32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    s16 w, h;
-} Tile;
 extern s32 D_800A3900;
-extern Tile *D_800A36DC;
+extern TILE *D_800A36DC;
 extern u8 D_800F11E0[];
 extern u8 D_800F1438[];
-extern Tile D_800F1498[];
+extern TILE D_800F1498[];
 
 
 
@@ -5351,17 +5341,6 @@ typedef struct {
     u8 r, g, b, pad;
 } Rec_8006C21C;
 
-typedef struct {
-    u32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    u8 r1, g1, b1, p1;
-    s16 x1, y1;
-    u8 r2, g2, b2, p2;
-    s16 x2, y2;
-    u8 r3, g3, b3, p3;
-    s16 x3, y3;
-} PolyG4_8006C21C;
 
 #define setXYWH(p, _x0, _y0, _w, _h)                                   \
     (p)->x0 = (_x0), (p)->y0 = (_y0),                                    \
@@ -5375,8 +5354,8 @@ void func_8006C21C(s32 *arg0) {
     Rec_8006C21C *recs;
     Rec_8006C21C *rec;
     Rec_8006C21C *tile_rec;
-    Tile *tile;
-    PolyG4_8006C21C *poly;
+    TILE *tile;
+    POLY_G4 *poly;
     /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
        func_8006E480's second argument at all three call sites. Set once and
        live across every call, so global.c gives the once-set constant pseudo
@@ -5499,7 +5478,7 @@ void func_8006C21C(s32 *arg0) {
     arg0[7] += 0xC;
 
     recs = *(Rec_8006C21C **)(*(s32 *)(D_800A34FC + 0x24) + 0x44);
-    tile = (Tile *)arg0[6];
+    tile = (TILE *)arg0[6];
     for (work = 0; work < 11; work++) {
         tile_rec = &recs[work];
         for (j = 0; j < 2; j++) {
@@ -5519,7 +5498,7 @@ void func_8006C21C(s32 *arg0) {
     arg0[6] = (s32)tile;
 
     pulse = ((rcos((D_800A3518 << 7) & 0xF80) * 32) >> 12) + 0xD0;
-    poly = (PolyG4_8006C21C *)arg0[4];
+    poly = (POLY_G4 *)arg0[4];
     x = 0;
     for (j = 0; j < 2; j++) {
         work = *(s16 *)(D_800A34FC + j * 2 + 0x28);
@@ -6369,7 +6348,7 @@ s32 func_8006E49C(s32 arg0, s32 *arg1) {
 s32 D_800A32B8 = 0;
 s32 D_800A32BC = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
-Tile * D_800A36DC;
+TILE * D_800A36DC;
 u8 * D_800A36E0;
 u8 * D_800A36E4;
 s32 D_800A3720;

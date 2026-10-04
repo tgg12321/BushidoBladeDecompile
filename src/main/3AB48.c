@@ -4003,13 +4003,6 @@ typedef struct {
     u8 col_b;
 } Env5C8A8;
 
-/* PsyQ libgpu TILE primitive. */
-typedef struct {
-    u32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    s16 w, h;
-} Tile5C8A8;
 
 extern Unk8009B400Record D_8009B194[3];
 extern Unk8009B400Record D_8009B1AC[2];
@@ -4022,11 +4015,9 @@ extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
-extern s32 SetSemiTrans(void *, s32);
-extern s32 SetTile(void *);
 s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     Env5C8A8 s;
-    Tile5C8A8 *tile;
+    TILE *tile;
     s32 cur;
     s16 sel;
     u16 y_base;
@@ -4038,7 +4029,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     s16 x;
     s16 y;
 
-    tile = (Tile5C8A8 *)arg2;
+    tile = (TILE *)arg2;
     cur = arg2 + 0xF0;
     y_base = 0;
     /* FAKE: the low half read from arg1's stack home, which keeps arg1 in
@@ -4472,13 +4463,6 @@ typedef struct {
     u8 col_g;
     u8 col_b;
 } Env5D814;
-/* PsyQ libgpu TILE primitive (SetTile / SetSemiTrans / AddPrim). */
-typedef struct {
-    u32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    s16 w, h;
-} Tile5D814;
 extern Unk8009B400Record D_8009B3C8[3];
 extern Unk8009B400Record D_8009B3E0[2];
 extern Unk8009B400Record D_8009B3F0;
@@ -4487,12 +4471,10 @@ extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
-extern s32 SetSemiTrans(void *, s32);
-extern s32 SetTile(void *);
 s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Env5D814 s;
     s16 digit[3];
-    Tile5D814 *tile;
+    TILE *tile;
     s32 cur;
     s32 mode_off;
     s32 end_off;
@@ -4506,7 +4488,7 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk8009B400Record *cell3; /* FAKE: pointer alias of D_8009B3F8 */
 
     arg1--;
-    tile = (Tile5D814 *)arg2;
+    tile = (TILE *)arg2;
     s.has_color = 0;
     s.y = 0;
     s.x = 0;
@@ -4695,17 +4677,11 @@ typedef struct {
     s32 pad2C;
     s16 d[2];
 } S5E098;
-typedef struct {
-    u32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    s16 w, h;
-} T5E098;
 extern s32 D_8009B488;
 extern u8 D_8009B48E;
 s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     S5E098 s;
-    T5E098 *tile;
+    TILE *tile;
     s32 cur;
     s32 mode_off;
     s32 end_off;
@@ -4714,7 +4690,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s16 v;
     Unk8009B400Record *p;
 
-    tile = (T5E098 *)arg2;
+    tile = (TILE *)arg2;
     s.byte28 = 0;
     s.height = 0;
     s.width = 0;
@@ -4856,7 +4832,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
        (no-new-park-categories.md, phantom-frame-slot pad family, trailing
        unused array with sibling evidence). */
     volatile s16 digit[3];
-    T5E098 *tile;
+    TILE *tile;
     s32 cur;
     s32 ft4;
     s32 mode_off;
@@ -4871,7 +4847,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s16 c;
     s16 y;
 
-    tile = (T5E098 *)arg1;
+    tile = (TILE *)arg1;
     s.has_color = 0;
     s.semi = 0;
     s.y = 0;
@@ -5152,7 +5128,7 @@ extern Unk8009B400Record D_8009B5D8[2];
 extern Unk8009B400Record D_8009B5E8;
 s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     S5F1C8 s;
-    T5E098 *tile;
+    TILE *tile;
     s32 cur;
     s32 mode_off;
     s32 end_off;
@@ -5171,7 +5147,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s.byte28 = 0;
     s.height = 0;
     s.zero10 = 0;
-    tile = (T5E098 *)arg2;
+    tile = (TILE *)arg2;
     cur = arg2 + 0xA0;
     mode_off = arg2 + 0x2F8;
     end_off = arg2 + 0x304;
@@ -5386,19 +5362,7 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
 extern s32 D_8009B698;
 extern s32 D_8009B6B0;
 extern s32 SetDrawArea();
-extern s32 SetPolyG4();
 
-typedef struct {
-    u32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    u8 r1, g1, b1, p1;
-    s16 x1, y1;
-    u8 r2, g2, b2, p2;
-    s16 x2, y2;
-    u8 r3, g3, b3, p3;
-    s16 x3, y3;
-} PolyG4FC9C;
 
 typedef struct {
     s32 *p0;
@@ -5422,7 +5386,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
     GpuDb *env;
     s32 cur_tex;
     s32 mode_off;
-    PolyG4FC9C *poly;
+    POLY_G4 *poly;
     s32 area;
     s32 end_off;
     s16 j;
@@ -5433,7 +5397,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
 
     cur_tex = arg0;
     mode_off = arg0 + 0x280;
-    poly = (PolyG4FC9C *)(arg0 + 0x28C);
+    poly = (POLY_G4 *)(arg0 + 0x28C);
     area = arg0 + 0x2D4;
     end_off = arg0 + 0x2F8;
     j = 0;
@@ -5838,7 +5802,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     sp1C = arg0 + 0x870;
     func_8006D808(&sp18, &sp1C, &D_8009B0C0, arg1, arg2);
     if ((u32)arg2 < 3U) {
-        SetTile((void *)tile_off);
+        SetTile((TILE *)tile_off);
         *(u8 *)(arg0 + 0x7D4) = 0xFF;
         *(s16 *)(arg0 + 0x7D8) = 0x6A;
         *(u8 *)(arg0 + 0x7D5) = 0;
@@ -5858,11 +5822,11 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
         if ((s16)D_800A32B4 >= 0x1F) {
             D_800A32B4 = 0x1E;
         }
-        SetSemiTrans((void *)tile_off, 0);
+        SetSemiTrans((TILE *)tile_off, 0);
         AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
         tile_off = arg0 + 0x7E0;
     }
-    SetTile((void *)tile_off);
+    SetTile((TILE *)tile_off);
     *(u8 *)(tile_off + 4) = 0xFF;
     *(s16 *)(tile_off + 8) = 0x9E;
     *(u8 *)(tile_off + 5) = 0;
@@ -5882,11 +5846,11 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     if ((s16)D_800A32B6 >= 0x1F) {
         D_800A32B6 = 0x1E;
     }
-    SetSemiTrans((void *)tile_off, 0);
+    SetSemiTrans((TILE *)tile_off, 0);
     AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
     tile_off += 0x10;
 
-    SetTile((void *)tile_off);
+    SetTile((TILE *)tile_off);
     *(s16 *)(tile_off + 8) = 0x3F;
     *(s16 *)(tile_off + 0xA) = 0x2D;
     *(s16 *)(tile_off + 0xC) = 0x202;
@@ -5894,11 +5858,11 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     *(u8 *)(tile_off + 5) = 0;
     *(u8 *)(tile_off + 6) = 0;
     *(s16 *)(tile_off + 0xE) = 0x6C;
-    SetSemiTrans((void *)tile_off, 1);
+    SetSemiTrans((TILE *)tile_off, 1);
     AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
     tile_off += 0x10;
 
-    SetTile((void *)tile_off);
+    SetTile((TILE *)tile_off);
     *(s16 *)(tile_off + 8) = 0x92;
     *(s16 *)(tile_off + 0xA) = 0xAA;
     *(s16 *)(tile_off + 0xC) = 0x15C;
@@ -5906,7 +5870,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     *(u8 *)(tile_off + 5) = 0;
     *(u8 *)(tile_off + 6) = 0;
     *(s16 *)(tile_off + 0xE) = 0x1A;
-    SetSemiTrans((void *)tile_off, 1);
+    SetSemiTrans((TILE *)tile_off, 1);
     AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
 
     SetDrawMode((void *)sp1C, 1, 0, 0, 0);

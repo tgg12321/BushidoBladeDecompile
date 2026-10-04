@@ -1483,17 +1483,10 @@ void func_8003D330(void) {
     p->addr = ot->addr;
     ot->addr = (u32)p;
 }
-typedef struct {
-    u32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    u8 u0, v0;
-    u16 clut;
-} Sprt8Prim;
-extern Sprt8Prim D_800A3930[2][32];
+extern SPRT_8 D_800A3930[2][32];
 void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
     s32 n = D_800A3358;
-    Sprt8Prim *p;
+    SPRT_8 *p;
     OTag *ot;
 
     if (n == 0x20) return;

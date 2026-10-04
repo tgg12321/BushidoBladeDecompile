@@ -19,8 +19,6 @@ extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
-extern s32 SetSemiTrans(void *, s32);
-extern s32 SetTile(void *);
 extern s32 SetDrawArea();
 extern s32 func_8006E480();
 extern s32 func_8007352C();
@@ -231,7 +229,7 @@ void func_80074B18(s32 *arg0, s32 arg1, s32 arg2) {
     for (i = 0; i < SELWORK->f65 + 3; i++) {
         t = (u8 *)SELWORK->f04[0x3C / 4];
         for (j = 0; j < n; j++) {
-            SetTile((GameObj *)p);
+            SetTile((TILE *)p);
             *(u8 *)(p + 4) = *(u8 *)(t + 8);
             *(u8 *)(p + 5) = *(u8 *)(t + 9);
             *(u8 *)(p + 6) = *(u8 *)(t + 0xA);
@@ -307,8 +305,8 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     s16 i;
 
     prim = arg0[5];
-    SetTile(prim);
-    SetSemiTrans(prim, 0);
+    SetTile((TILE *)prim);
+    SetSemiTrans((TILE *)prim, 0);
     *(u8 *)(prim + 4) = 0xD0;
     *(u8 *)(prim + 5) = 0xC8;
     *(u8 *)(prim + 6) = 0xB8;
@@ -1152,7 +1150,7 @@ s32 func_80076D74(s32 *arg0) {
         }
     }
     p = (u8 *)arg0[5];
-    SetTile((GameObj *)p);
+    SetTile((TILE *)p);
     *(u8 *)(p + 4) = *cnt;
     *(u8 *)(p + 5) = *cnt;
     *(u8 *)(p + 6) = *cnt;

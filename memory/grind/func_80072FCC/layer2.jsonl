@@ -1,0 +1,1 @@
+{"func": "func_80072FCC", "addr": "80072FCC", "verdict": "PASS", "body_hash": "2a00eecf7e4466e5", "body_kind": "c", "file": "main/5ED34", "reviewer": "p2-rev-g2b", "scope": "cheat-cleanup", "date": "2026-10-04T06:18:45Z", "head": "b1197e758", "notes": ""}

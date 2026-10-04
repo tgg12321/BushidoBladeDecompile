@@ -32,10 +32,7 @@ extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
-extern s32 SetSemiTrans(void *, s32);
-extern s32 SetTile(void *);
 extern s32 SetDrawArea();
-extern s32 SetPolyG4();
 extern s32 func_8006E480();
 extern s32 func_8007352C();
 extern s32 snd_StopAll(void);
@@ -458,7 +455,7 @@ void func_8006F038(s32 arg0) {
     s16 v3;
 
     temp_s0 = *((s32 *)(((s32)arg0) + 0x14));
-    SetTile(temp_s0);
+    SetTile((TILE *)temp_s0);
     v1 = D_800A3550;
     *((s16 *)(((s32)temp_s0) + 8)) = 0;
     *((s16 *)(((s32)temp_s0) + 0xA)) = 0;
@@ -469,7 +466,7 @@ void func_8006F038(s32 arg0) {
     v3 = D_800A3550;
     *((s16 *)(((s32)temp_s0) + 0xE)) = 0xF0;
     *((s8 *)(((s32)temp_s0) + 6)) = v3;
-    SetSemiTrans(temp_s0, 1);
+    SetSemiTrans((TILE *)temp_s0, 1);
     AddPrim(g_gpu_ot_ptr, temp_s0);
     temp_s0 += 0x10;
     *((s32 *)(((s32)arg0) + 0x14)) = temp_s0;
@@ -759,7 +756,7 @@ void func_8006F528(s32 *arg0) {
     }
 
     prim = (u8 *)arg0[5];
-    SetTile(prim);
+    SetTile((TILE *)prim);
     SetSemiTrans(prim, 0);
     if (*(s32 *)(D_800A3568 + 0x20) & 1) {
         prim[4] = 0xC8;
@@ -1916,13 +1913,12 @@ end:
 }
 extern s32 g_gpu_ot_ptr;
 
-extern s32 SetPolyG4(GameObj *);
 
 s32 func_80072BC4(s32 arg0, GameObj *arg1) {
     u8 var_v0;
     int fc_const;
 
-    SetPolyG4(arg1);
+    SetPolyG4((POLY_G4 *)arg1);
     SetSemiTrans(arg1, 0);
     fc_const = 0xFC;
     if (arg0 < 4) {
@@ -1967,7 +1963,7 @@ s32 func_80072BC4(s32 arg0, GameObj *arg1) {
 s32 func_80072CD4(s32 arg0, GameObj *arg1) {
     int red;
 
-    SetPolyG4(arg1);
+    SetPolyG4((POLY_G4 *)arg1);
     SetSemiTrans(arg1, 0);
     if (arg0 < 4) {
         red = 0xFC;
@@ -2012,21 +2008,10 @@ s32 func_80072CD4(s32 arg0, GameObj *arg1) {
 
 extern s32 func_80072CD4(s32, GameObj *);
 /* BEGIN func_80072E10 */
-typedef struct PolyG4Xy {
-    s32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    u8 r1, g1, b1, pad1;
-    s16 x1, y1;
-    u8 r2, g2, b2, pad2;
-    s16 x2, y2;
-    u8 r3, g3, b3, pad3;
-    s16 x3, y3;
-} PolyG4Xy;
 void func_80072E10(s32 arg0) {
-    PolyG4Xy *p;
+    POLY_G4 *p;
     func_80073060(arg0);
-    p = *(PolyG4Xy **)((s32)arg0 + 0xC);
+    p = *(POLY_G4 **)((s32)arg0 + 0xC);
     p->x0 = 0x50;
     p->y0 = 0x32;
     p->x1 = 0x50;
@@ -2035,7 +2020,7 @@ void func_80072E10(s32 arg0) {
     p->y2 = 0x32;
     p->x3 = 0x140;
     p->y3 = 0x52;
-    p = (PolyG4Xy *)func_80072BC4(D_800A3580, (GameObj *)p);
+    p = (POLY_G4 *)func_80072BC4(D_800A3580, (GameObj *)p);
     p->x0 = 0x231;
     p->y0 = 0x32;
     p->x1 = 0x231;
@@ -2044,7 +2029,7 @@ void func_80072E10(s32 arg0) {
     p->y2 = 0x32;
     p->x3 = 0x140;
     p->y3 = 0x52;
-    p = (PolyG4Xy *)func_80072BC4(D_800A3580, (GameObj *)p);
+    p = (POLY_G4 *)func_80072BC4(D_800A3580, (GameObj *)p);
     p->x0 = 0x140;
     p->y0 = 0x52;
     p->x1 = 0x140;
@@ -2053,7 +2038,7 @@ void func_80072E10(s32 arg0) {
     p->y2 = 0x52;
     p->x3 = 0x50;
     p->y3 = 0x71;
-    p = (PolyG4Xy *)func_80072CD4(D_800A3580, (GameObj *)p);
+    p = (POLY_G4 *)func_80072CD4(D_800A3580, (GameObj *)p);
     p->x0 = 0x140;
     p->y0 = 0x52;
     p->x1 = 0x140;
@@ -2062,8 +2047,8 @@ void func_80072E10(s32 arg0) {
     p->y2 = 0x52;
     p->x3 = 0x231;
     p->y3 = 0x71;
-    p = (PolyG4Xy *)func_80072CD4(D_800A3580, (GameObj *)p);
-    *(PolyG4Xy **)((s32)arg0 + 0xC) = p;
+    p = (POLY_G4 *)func_80072CD4(D_800A3580, (GameObj *)p);
+    *(POLY_G4 **)((s32)arg0 + 0xC) = p;
 }
 /* END func_80072E10 */
 
@@ -2071,85 +2056,79 @@ void func_80072E10(s32 arg0) {
 extern s32 g_gpu_ot_ptr;
 
 s32 *func_80072F30(s32 a0, u8 *a1) {
-    SetTile((s32)a1);
+    SetTile((TILE *)a1);
     if (a0 < 4) {
         a1[4] = 0x9E;
         a1[5] = 0x64;
         a1[6] = 0;
-        SetSemiTrans((s32)a1, 1);
+        SetSemiTrans(a1, 1);
     } else {
         a1[4] = 0x28;
         a1[5] = 0x28;
         a1[6] = 0x18;
-        SetSemiTrans((s32)a1, 0);
+        SetSemiTrans(a1, 0);
     }
     AddPrim(g_gpu_ot_ptr + 0x5C, (s32)a1);
     return (s32 *)(a1 + 0x10);
 }
 s32 *func_80072FCC(s32 ignored, u8 *a1) {
-    SetTile((s32)a1);
+    SetTile((TILE *)a1);
     if (D_800A3580 < 4) {
         a1[4] = 0x46;
         a1[5] = 0x24;
         a1[6] = 0x0A;
-        SetSemiTrans((s32)a1, 1);
+        SetSemiTrans(a1, 1);
     } else {
         a1[4] = 0;
         a1[5] = 0;
         a1[6] = 0;
-        SetSemiTrans((s32)a1, 0);
+        SetSemiTrans(a1, 0);
     }
     AddPrim(g_gpu_ot_ptr + 0x5C, (s32)a1);
     return (s32 *)(a1 + 0x10);
 }
 /* BEGIN func_80073060 */
-typedef struct TileXy {
-    s32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    s16 w, h;
-} TileXy;
 void func_80073060(s32 arg0) {
-    TileXy *p;
+    TILE *p;
     s32 i;
-    p = *(TileXy **)((s32)arg0 + 0x14);
+    p = *(TILE **)((s32)arg0 + 0x14);
     for (i = 0x6F; i < 0x210; i += 0x20) {
         p->x0 = i;
         p->y0 = 0x32;
         p->w = 2;
         p->h = 0x3F;
-        p = (TileXy *)func_80072F30(D_800A3580, (u8 *)p);
+        p = (TILE *)func_80072F30(D_800A3580, (u8 *)p);
     }
     p->x0 = 0x51;
     p->y0 = 0x41;
     p->w = 0x1E0;
     p->h = 1;
-    p = (TileXy *)func_80072F30(D_800A3580, (u8 *)p);
+    p = (TILE *)func_80072F30(D_800A3580, (u8 *)p);
     p->x0 = 0x51;
     p->y0 = 0x61;
     p->w = 0x1E0;
     p->h = 1;
-    p = (TileXy *)func_80072F30(D_800A3580, (u8 *)p);
+    p = (TILE *)func_80072F30(D_800A3580, (u8 *)p);
     p->x0 = 0x51;
     p->y0 = 0x50;
     p->w = 0x1E0;
     p->h = 2;
-    p = (TileXy *)func_80072F30(D_800A3580, (u8 *)p);
+    p = (TILE *)func_80072F30(D_800A3580, (u8 *)p);
     for (i = 0; i < 5; i++) {
         p->x0 = 0x6A + i * 0x21;
         p->y0 = 0x32;
         p->w = 5 - i;
         p->h = 0x3F;
-        p = (TileXy *)func_80072FCC(D_800A3580, (u8 *)p);
+        p = (TILE *)func_80072FCC(D_800A3580, (u8 *)p);
     }
     for (i = 0; i < 5; i++) {
         p->x0 = 0x211 - i * 0x20;
         p->y0 = 0x32;
         p->w = 5 - i;
         p->h = 0x3F;
-        p = (TileXy *)func_80072FCC(D_800A3580, (u8 *)p);
+        p = (TILE *)func_80072FCC(D_800A3580, (u8 *)p);
     }
-    *(TileXy **)((s32)arg0 + 0x14) = p;
+    *(TILE **)((s32)arg0 + 0x14) = p;
 }
 /* END func_80073060 */
 /* func_80073200 - draws three sprite-sheet layers: in modes D_800A3580 < 4,

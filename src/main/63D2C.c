@@ -13,8 +13,6 @@ extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
-extern s32 SetSemiTrans(void *, s32);
-extern s32 SetTile(void *);
 extern s32 func_8006E480();
 extern s32 func_8007352C();
 void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2);
@@ -40,7 +38,6 @@ typedef struct EnvA {
 s32 func_8006E480(s32 a0_addr, s32 a1);
 extern s32 func_80073C78();
 
-extern void SetSprt(s32);
 
 
 
@@ -80,7 +77,7 @@ s32 func_8007352C(s32 env_addr) {
         x1 = x0 + e->w;
         y1 = y0 + e->h;
         if (x1 > 0 && x0 < 0x280 && y0 < 0xF0 && y1 > 0) {
-            SetSprt((s32)sp);
+            SetSprt(sp);
             sp->clut = clut;
             sp->x0 = x0;
             sp->y0 = y0;
@@ -381,13 +378,13 @@ void func_80074220(s32 *arg0, s32 arg1) {
 
     if (arg1 != 0) goto skip_init;
     t = arg0[5];
-    SetTile(t);
+    SetTile((TILE *)t);
     func_80069A30(t);
     *(s16 *)(t + 8) = 0x3F;
     *(s16 *)(t + 0xA) = 0x30;
     *(s16 *)(t + 0xC) = 0x202;
     *(s16 *)(t + 0xE) = 0xB0;
-    SetSemiTrans(t, 1);
+    SetSemiTrans((TILE *)t, 1);
     AddPrim(g_gpu_ot_ptr + 0x78, t);
     t += 0x10;
     arg0[5] = t;
@@ -424,7 +421,7 @@ skip_init:
     *(s16 *)(q + 0x12) = 0xEF;
     *(s16 *)(q + 0x14) = 0x122;
     *(s16 *)(q + 0x16) = 0xEF;
-    SetSemiTrans(q, 0);
+    SetSemiTrans((POLY_F4 *)q, 0);
     AddPrim(g_gpu_ot_ptr + 0x80, q);
     q += 0x18;
 
@@ -438,7 +435,7 @@ skip_init:
     *(s16 *)(q + 0x12) = 0xEF;
     *(s16 *)(q + 0x14) = 0x27F;
     *(s16 *)(q + 0x16) = 0x36;
-    SetSemiTrans(q, 0);
+    SetSemiTrans((POLY_F4 *)q, 0);
     AddPrim(g_gpu_ot_ptr + 0x80, q);
     q += 0x18;
 
@@ -452,7 +449,7 @@ skip_init:
     *(s16 *)(q + 0x12) = 0xEF;
     *(s16 *)(q + 0x14) = 0x15E;
     *(s16 *)(q + 0x16) = 0xEF;
-    SetSemiTrans(q, 0);
+    SetSemiTrans((POLY_F4 *)q, 0);
     AddPrim(g_gpu_ot_ptr + 0x80, q);
     q += 0x18;
 
