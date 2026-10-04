@@ -971,21 +971,21 @@ s32* func_8005508C(void) {
 void func_8005509C(s32 arg0)
 {
   s32 i;
-  u8 *p = (u8 *)D_80101EC8 + (arg0 * 0x44C);
+  Unk80101EC8Record *p = &D_80101EC8[arg0];
   i = 0;
   do
   {
-    p[i * 2 + 0x415] = 0;
-    p[i * 2 + 0x414] = 0;
+    p->unk_414[i][1] = 0;
+    p->unk_414[i][0] = 0;
   }
   while ((++i) < 8);
 }
 void func_800550E8(s32 arg0) {
     s32 i;
-    u8 *p = (u8 *)D_80101EC8 + arg0 * 0x44C;
+    Unk80101EC8Record *p = &D_80101EC8[arg0];
     i = 0;
     do {
-        p[i * 2 + 0x415] = p[i * 2 + 0x415] >> 1;
+        p->unk_414[i][1] = p->unk_414[i][1] >> 1;
     } while (++i < 8);
 }
 extern s32 rand(void);
@@ -1205,60 +1205,60 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     p->unk_3D0.unheld = -1;
 }
 
-s32 func_80055948(u8 *arg0) {
+s32 func_80055948(Unk80101EC8Record *arg0) {
     u8 *p;
     u8 ctr;
     s32 t;
     s32 mask;
     s32 dx, dy, dz;
 
-    ctr = arg0[0x3B8];
-    p = *(u8 **)(arg0 + 0x3B4);
+    ctr = arg0->unk_3B8;
+    p = arg0->unk_3B4;
     if (ctr != 0) {
-        if (*(s16 *)(arg0 + 0x46) == 0) {
-            arg0[0x3B8] = ctr - 1;
+        if (arg0->unk_46 == 0) {
+            arg0->unk_3B8 = ctr - 1;
         }
         goto ret_3c8;
     }
-    if (arg0[0x3BC] != 0) {
+    if (arg0->unk_3BC != 0) {
         goto check_loop;
     }
     {
-        u8 idx = arg0[0x443];
+        u8 idx = arg0->unk_443;
         if (idx == 22) goto check_loop;
         if ((D_80099D88[idx].flags & 0xBF00) != 0) goto check_loop;
         {
             s32 limit;
-            if (*(s32 *)(arg0 + 0x430) & 0x200) {
-                limit = (*(s16 *)(arg0 + 0x43C) < 0x801);
+            if (arg0->unk_430 & 0x200) {
+                limit = (arg0->unk_43C < 0x801);
             } else {
-                limit = (*(s16 *)(arg0 + 0x43C) < 0x401);
+                limit = (arg0->unk_43C < 0x401);
             }
             if (limit == 0) goto reset_ret_neg1;
         }
-        if (*(s32 *)(arg0 + 0x430) & 0x800) goto reset_ret_neg1;
-        if ((u32)(arg0[0x425] - 1) < 2U) goto reset_ret_neg1;
-        if (arg0[0x442] != 0) goto reset_ret_neg1;
+        if (arg0->unk_430 & 0x800) goto reset_ret_neg1;
+        if ((u32)(arg0->unk_425 - 1) < 2U) goto reset_ret_neg1;
+        if (arg0->unk_442 != 0) goto reset_ret_neg1;
         {
-            u8 *other = *(u8 **)arg0;
-            if (*(u16 *)(other + 0x6A) == 0x2D) goto reset_ret_neg1;
-            dx = *(s32 *)(other + 0xF4) - *(s16 *)(arg0 + 0x40E);
-            dy = *(s32 *)(other + 0xFC) - *(s16 *)(arg0 + 0x410);
-            dz = *(s16 *)(arg0 + 0x412);
+            Unk80101EC8Record *other = arg0->other;
+            if (other->unk_6A == 0x2D) goto reset_ret_neg1;
+            dx = other->unk_F4.x - arg0->unk_40E;
+            dy = other->unk_F4.z - arg0->unk_410;
+            dz = arg0->unk_412;
             if ((dz * dz) >= ((dx * dx) + (dy * dy))) goto loop;
         }
     }
     goto reset_ret_neg1;
 check_loop:
-    if (arg0[0x3BC] != 1) goto loop;
-    if (*(s32 *)(arg0 + 0x430) & 0x800) {
+    if (arg0->unk_3BC != 1) goto loop;
+    if (arg0->unk_430 & 0x800) {
         goto loop;
     }
 reset_ret_neg1:
-    *(s32 *)(arg0 + 0x3B4) = 0;
+    arg0->unk_3B4 = 0;
     return -1;
 sentinel_reset:
-    *(s32 *)(arg0 + 0x3B4) = 0;
+    arg0->unk_3B4 = 0;
     goto ret_3c8;
 loop:
     while (1) {
@@ -1266,19 +1266,19 @@ loop:
         p += 1;
         if (t & 0x80) {
             if (t == 0x80) goto sentinel_reset;
-            *(s32 *)(arg0 + 0x3B4) = (s32)p;
-            arg0[0x3B8] = (t & 0x7F) - 1;
+            arg0->unk_3B4 = p;
+            arg0->unk_3B8 = (t & 0x7F) - 1;
             goto ret_3c8;
         }
         mask = 1 << (t & 0xF);
         if (t & 0x10) {
-            *(s32 *)(arg0 + 0x3C8) &= ~mask;
+            arg0->unk_3C8 &= ~mask;
         } else {
-            *(s32 *)(arg0 + 0x3C8) |= mask;
+            arg0->unk_3C8 |= mask;
         }
     }
 ret_3c8:
-    return *(s32 *)(arg0 + 0x3C8);
+    return arg0->unk_3C8;
 }
 void func_80055B44(Unk80101EC8Record *a0, u8 *a1, s32 a2, s32 a3) {
     a0->unk_3B4 = a1;
@@ -1296,7 +1296,7 @@ typedef struct {
 extern PadBitTable D_800A3258;
 extern u8 D_8009A088[];
 extern s32 func_80058580(Unk80101EC8Record *);
-extern void func_80056CB8(s32);
+extern void func_80056CB8(Unk80101EC8Record *);
 extern s32 func_80056FE8(Unk80101EC8Record *);
 void func_80055B60(s32 arg0, PadState *arg1) {
     Unk80101EC8Record *rec;
@@ -1396,7 +1396,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
         rec->unk_442 = 0;
     }
     if (rec->unk_430 & 0x15500) {
-        func_80056CB8((s32)rec);
+        func_80056CB8(rec);
     }
     if ((rec->unk_40 == 0 && (rec->unk_6A == 3 || rec->unk_6A == 0x2C)) ||
         (rec->other->unk_40 == 0 && (rec->other->unk_6A == 0xD || rec->other->unk_6A == 0x2C))) {
@@ -1564,7 +1564,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     i = 0;
     do {
         if (rec->unk_3B4 != 0) {
-            temp = func_80055948((u8 *)rec);
+            temp = func_80055948(rec);
         } else {
             temp = func_80058580(rec);
         }
@@ -1595,7 +1595,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
 extern u8 D_8009A820[];
 extern u8 D_8009A821[];
 
-void func_80056CB8(s32 arg0) {
+void func_80056CB8(Unk80101EC8Record *arg0) {
     s32 pt0[4];
     s32 pt1[4];
     s32 hit0[4];
@@ -1604,9 +1604,9 @@ void func_80056CB8(s32 arg0) {
     s32 start;
     s32 i;
 
-    start = (*(u16 *)(arg0 + 0x3E8) & 3) * 2;
+    start = (arg0->unk_3E8 & 3) * 2;
     for (i = start; i < start + 2; i++) {
-        s32 obj;
+        Unk80101EC8Record *obj;
         s32 flags;
         s32 scale;
         s16 *sin_p;
@@ -1621,26 +1621,26 @@ void func_80056CB8(s32 arg0) {
         obj = arg0;
         flags = D_8009A821[idx] << 8;
         if ((flags & 0x1000) != 0) {
-            obj = *(s32 *)arg0;
+            obj = arg0->other;
         }
 
-        if (*(u16 *)(arg0 + 0x6A) == 0x13 || *(u16 *)(arg0 + 0x6A) == 6) {
-            flags += *(s16 *)(obj + 0x1CA);
+        if (arg0->unk_6A == 0x13 || arg0->unk_6A == 6) {
+            flags += obj->unk_1C8.vy;
         } else {
-            flags += ratan2(D_800F6608.w0 - *(s32 *)(obj + 0xF4),
-                             D_800F6608.w8 - *(s32 *)(obj + 0xFC));
+            flags += ratan2(D_800F6608.w0 - obj->unk_F4.x,
+                             D_800F6608.w8 - obj->unk_F4.z);
         }
 
         sin_p = &Judge[flags & 0xFFF];
         scale = D_8009A820[i * 2] << 8;
-        x = *(s32 *)(obj + 0xB8) + ((scale * *sin_p) >> 12);
+        x = obj->unk_B8.vx + ((scale * *sin_p) >> 12);
         cos_p = &Judge[(flags + 0x400) & 0xFFF];
-        z = *(s32 *)(obj + 0xC0) + ((scale * *cos_p) >> 12);
-        pt0[0] = *(s32 *)(obj + 0xB8);
-        pt0[1] = *(s32 *)(obj + 0xBC) - 0x320;
-        pt0[2] = *(s32 *)(obj + 0xC0);
+        z = obj->unk_B8.vz + ((scale * *cos_p) >> 12);
+        pt0[0] = obj->unk_B8.vx;
+        pt0[1] = obj->unk_B8.vy - 0x320;
+        pt0[2] = obj->unk_B8.vz;
         pt1[0] = x;
-        pt1[1] = *(s32 *)(obj + 0xBC) - 0x320;
+        pt1[1] = obj->unk_B8.vy - 0x320;
         pt1[2] = z;
 
         flags = func_80053614(pt0, pt1, hit0, work, 0x1F8002B8);
@@ -1650,27 +1650,27 @@ void func_80056CB8(s32 arg0) {
         }
 
         pt0[0] = x;
-        pt0[1] = *(s32 *)(obj + 0xBC) - 0x834;
+        pt0[1] = obj->unk_B8.vy - 0x834;
         pt0[2] = z;
         pt1[0] = x;
-        pt1[1] = *(s32 *)(obj + 0xBC) + 0x1004;
+        pt1[1] = obj->unk_B8.vy + 0x1004;
         pt1[2] = z;
 
         flags |= func_80053614(pt0, pt1, hit1, work, 0x1F8002B8) << 1;
         flags += 1;
-        if (flags == 3 && hit1[1] - *(s32 *)(obj + 0xBC) < 5) {
+        if (flags == 3 && hit1[1] - obj->unk_B8.vy < 5) {
             flags = 0;
         } else if (flags == 4) {
-            s32 dx = hit0[0] - *(s32 *)(obj + 0xB8);
-            s32 dz = hit0[2] - *(s32 *)(obj + 0xC0);
+            s32 dx = hit0[0] - obj->unk_B8.vx;
+            s32 dz = hit0[2] - obj->unk_B8.vz;
             if (0x3D0900 < dx * dx + dz * dz) {
-                s32 y = *(s32 *)(obj + 0xBC);
+                s32 y = obj->unk_B8.vy;
                 if ((y - hit1[1] >= 0 ? y - hit1[1] : hit1[1] - y) >= 0x3E9) {
                     flags = 5;
                 }
             }
         }
-        *(s8 *)(arg0 + i + 0x444) = (s8)flags;
+        arg0->unk_444[i] = flags;
     }
 }
 #undef sp18
@@ -1736,21 +1736,21 @@ s32 func_80056FE8(Unk80101EC8Record *arg0) {
 }
 extern s32 D_8009AA50[];
 
-s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 func_80057094(Unk80101EC8Record *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 sp10;
     s32 temp_s0;
     s32 temp_v0;
     s32 temp_v1;
     s32 var_v0;
 
-    temp_s0 = ratan2(D_800F6608.w0 - *(s32 *)((s32)arg0 + 0xF4), D_800F6608.w8 - *(s32 *)((s32)arg0 + 0xFC));
-    var_v0 = temp_s0 - ratan2(arg1 - *(s32 *)((s32)arg0 + 0xF4), arg2 - *(s32 *)((s32)arg0 + 0xFC));
+    temp_s0 = ratan2(D_800F6608.w0 - arg0->unk_F4.x, D_800F6608.w8 - arg0->unk_F4.z);
+    var_v0 = temp_s0 - ratan2(arg1 - arg0->unk_F4.x, arg2 - arg0->unk_F4.z);
     var_v0 -= 0x100;
     temp_v0 = (s32)var_v0 >> 9;
     temp_v1 = temp_v0 & 7;
     sp10 = temp_v1;
     if ((arg3 == 0) && !(temp_v0 & 1)) {
-        if (*(u16 *)((s32)arg0 + 0x3E8) & 0x10) {
+        if (arg0->unk_3E8 & 0x10) {
             sp10 = temp_v1 + 1;
             if (sp10 >= 8) {
                 sp10 = 0;
@@ -1766,7 +1766,7 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (arg3 == 1) {
         var_v0 |= 4;
     }
-    if (func_800233AC(arg0, &sp10) != 0) {
+    if (func_800233AC((u8 *)arg0, &sp10) != 0) {
         var_v0 |= 8;
     }
     return var_v0;
