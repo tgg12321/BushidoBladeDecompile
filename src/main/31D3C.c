@@ -308,8 +308,6 @@ void func_80041AC8(s16 *arg0)
   DrawSync(0);
 }
 extern void LoadImage(s32, s32);
-extern s32 func_8003E2A0(void);
-extern void func_8003E120(void);
 void func_80041BF4(s32 a0, s32 a1, s32 a2)
 {
   s32 *fp_ptr;

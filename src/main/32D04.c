@@ -18,7 +18,6 @@ extern s16 D_800963EE;
 
 
 extern void func_80041430(s32, s32);
-extern s32 func_8004019C(s32 *, s32);
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
 
@@ -1139,7 +1138,6 @@ extern MATRIX D_80101BD0;
 extern Unk80101DF0Record *D_800A3708;
 extern Unk80101DF0Record *D_800A370C;
 
-extern s32 func_8003E2C8(void);
 extern void func_8004A4E0(void);
 void func_80044504(u32 *a0) {
     MATRIX *s0 = &D_80101BD0;
@@ -1216,7 +1214,6 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
         return a2 + val * 104;
     }
 }
-extern void *game_GetCharData(void);
 void func_8004473C(void)
 {
     Unk800A6690Rec *src;

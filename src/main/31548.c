@@ -11,8 +11,6 @@ void func_80040A78(s32 arg0);
 typedef struct { s32 a, b, c, d, e, f, g, h; } Copy8_40D48;
 extern s32 D_80094CFC[];
 extern void func_800417D0(s32 *);
-extern void func_800400B0(s32 *, s32);
-extern void func_8003F62C(s32 *);
 extern void func_800420E8(s32, s32);
 void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     u8 *s4;

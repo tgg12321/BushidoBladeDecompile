@@ -783,8 +783,6 @@ void func_800548DC(void) {
     func_80046A60();
 }
 extern s32 D_800A3250[2];
-extern s16 *func_8003D7B4(s32);
-extern void func_8003D774(s32, s32);
 extern void math_MatrixToAnglesYXZ(MATRIX *, SVECTOR *);
 extern void math_TransposeMatrixInPlace(MATRIX *);
 extern void func_800198D0(s32, s32, u32 *, u16 *);

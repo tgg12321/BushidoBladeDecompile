@@ -63,7 +63,6 @@ extern void func_80061064(s32 *, s32 *);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 
 
-extern void func_8003F3D4(s16 *);
 extern void func_80055138(s32, s32, s32);
 extern void func_8003FFE0(s32);
 
@@ -74,7 +73,6 @@ extern void func_8002C61C(void);
 extern void func_80030D7C(void);
 
 extern void func_800397A0(void);
-extern void func_8003E6A0(s32, s32);
 
 
 extern void func_80018300(s32 *);

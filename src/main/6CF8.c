@@ -52,10 +52,8 @@ extern u32 *ClearOTagR(u32 *, s32);
 
 extern s32 rand(void);
 extern void __main(void);
-extern void func_8003D2F4(void);
 
 extern void func_80019568();
-extern void func_8003D330(void);
 extern u8 *func_8005D46C(u8 *);
 extern u8 *func_8005D554(u8 *, u8);
 extern s32 func_8005E54C(s32, u8 *, s32);
@@ -321,7 +319,6 @@ extern u8 D_800A3746;
 extern void func_80020D70(void);
 extern u8 D_800A36B0;
 extern void pad_ResetStateMarkValid(void);
-extern void func_8003D2C4(void);
 extern void func_8001C444(void);
 void sys_GameInit(void) {
     printf(g_str_limit, 0x8010DB00);

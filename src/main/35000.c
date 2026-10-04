@@ -10,7 +10,6 @@
 extern void func_80052C10(void);
 extern s16 D_800963EE;
 extern void func_80041430(s32, s32);
-extern s32 func_8004019C(s32 *, s32);
 extern s16 Judge[];
 extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern s32 rcos(s32);
@@ -613,7 +612,7 @@ void func_80045AA4(s32 a0, s32 a1) {
     ptr = (s32 *)func_800457A0(idx);
     if (ptr == 0) return;
     ptr[7] = ptr[7] + a1;
-    func_8004019C((s32)ptr, a1);
+    func_8004019C(ptr, a1);
     if ((ptr[0] >> 1) & 1) {
         s32 val = *(s16 *)((u8 *)ptr + 4);
         idx = 3 * val + 1;

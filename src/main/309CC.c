@@ -172,7 +172,6 @@ extern void func_800408F8(s32 *);
 extern void func_80040B44(s32 *);
 extern s32 *func_80045878(s32);
 extern void func_8003F824(s32 *, s32);
-extern void func_8003E120(void);
 s32 *func_80040510(s32 a0) {
     s32 *ptr;
     ptr = func_80045878(a0);
