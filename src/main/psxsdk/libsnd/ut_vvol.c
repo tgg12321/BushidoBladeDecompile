@@ -1,4 +1,4 @@
-/* PsyQ LIBSND UT_VVOL: func_80085FD8 (SsUtGetDetVVol), SsUtSetDetVVol, func_80086080 (SsUtGetVVol) and
+/* PsyQ LIBSND UT_VVOL: SsUtGetDetVVol, SsUtSetDetVVol, SsUtGetVVol and
  * func_80086130 (at SsUtSetVVol's place in the module). .text 0x80085FD8..0x800861BC. Not a verbatim
  * LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0 and 4.1, that no archived release
  * holds (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109), libscan near tier:
@@ -8,9 +8,9 @@
 #include "common.h"
 #include "libsnd_i.h"
 
-s32 func_80085FD8(s16 a0) {
-    if ((u16)a0 < 0x18) {
-        SpuGetVoiceVolume(a0);
+s32 SsUtGetDetVVol(s16 voice, s16 *voll, s16 *volr) {
+    if ((u16)voice < 0x18) {
+        SpuGetVoiceVolume(voice, voll, volr);
         return 0;
     }
     return -1;
@@ -27,7 +27,7 @@ s32 SsUtSetDetVVol(s16 idx, s16 x, s16 y)
     return -1;
 }
 
-s32 func_80086080(s16 a0, s16 *a1, s16 *a2) {
+s32 SsUtGetVVol(s16 a0, s16 *a1, s16 *a2) {
     u16 raw1, raw2;
 
     if ((u16)a0 < 0x18) {

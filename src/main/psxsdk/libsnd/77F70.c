@@ -1,4 +1,4 @@
-/* LIBSND code between VM_NOWON and VM_VSU: func_80087770, _SsVmGetSeqVol, func_80087D10, func_80087D58
+/* LIBSND code between VM_NOWON and VM_VSU: func_80087770, _SsVmGetSeqVol, _SsVmGetSeqLVol, _SsVmGetSeqRVol
  * and _SsVmSeqKeyOff. .text 0x80087770..0x80087E3C. By layout this is LIBSND VM_SEQ (PsyQ 4.0
  * LIBSND.LIB XDEFs _SsVmSetSeqVol +0x0, _SsVmGetSeqVol +0x538, _SsVmGetSeqLVol +0x59C, _SsVmGetSeqRVol
  * +0x5E4, _SsVmSeqKeyOff +0x62C; here +0x53C, +0x5A0, +0x5E8, +0x630), but its first function
@@ -99,13 +99,13 @@ s16 _SsVmGetSeqVol(s32 a0, s16 *a1, s16 *a2) {
     return _svm_cur.seq_sep_no;
 }
 
-s16 func_80087D10(s32 a0) {
+s16 _SsVmGetSeqLVol(s32 a0) {
     struct SeqStruct *score = &_ss_score[a0 & 0xFF][(a0 & 0xFF00) >> 8];
     _svm_cur.seq_sep_no = a0;
     return score->unk58;
 }
 
-s16 func_80087D58(s32 a0) {
+s16 _SsVmGetSeqRVol(s32 a0) {
     struct SeqStruct *score = &_ss_score[a0 & 0xFF][(a0 & 0xFF00) >> 8];
     _svm_cur.seq_sep_no = a0;
     return score->unk5A;

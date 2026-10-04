@@ -1,0 +1,1 @@
+{"func": "SsUtGetVVol", "addr": "80086080", "verdict": "PASS", "body_hash": "07cf86119e18e799", "body_kind": "c", "file": "main/psxsdk/libsnd/ut_vvol", "reviewer": "ae2cf5faa5e5dc29e", "scope": "cheat-cleanup", "date": "2026-10-04T01:40:42Z", "head": "d6c24a927", "notes": "near-tier rename (libscan-near CONFIRM 2026-09-07); fresh cheat-reviewer PASS items 1-6"}

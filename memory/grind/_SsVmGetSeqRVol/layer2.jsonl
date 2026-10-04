@@ -1,0 +1,1 @@
+{"func": "_SsVmGetSeqRVol", "addr": "80087D58", "verdict": "PASS", "body_hash": "c1f958d6308d7ab8", "body_kind": "c", "file": "main/psxsdk/libsnd/77F70", "reviewer": "ae2cf5faa5e5dc29e", "scope": "cheat-cleanup", "date": "2026-10-04T01:41:18Z", "head": "d6c24a927", "notes": "near-tier rename (libscan-near CONFIRM 2026-09-07); fresh cheat-reviewer PASS items 1-6"}

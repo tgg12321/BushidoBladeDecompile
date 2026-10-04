@@ -1,0 +1,1 @@
+{"func": "SsUtGetDetVVol", "addr": "80085FD8", "verdict": "PASS", "body_hash": "5558fb9c23b64982", "body_kind": "c", "file": "main/psxsdk/libsnd/ut_vvol", "reviewer": "ae2cf5faa5e5dc29e", "scope": "cheat-cleanup", "date": "2026-10-04T01:40:55Z", "head": "d6c24a927", "notes": "near-tier rename (libscan-near CONFIRM 2026-09-07); fresh cheat-reviewer PASS items 1-6"}
