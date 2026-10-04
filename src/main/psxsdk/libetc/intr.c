@@ -26,9 +26,27 @@ const char D_80016378[28] =
     ;
 
 /* Declarations from the old ings2.c (its head and its VSYNC module) that this module uses. */
-extern u16 g_sys_vblank_count;
 extern volatile u16 *i_mask; /* libetc intr.c i_mask = (u16 *)0x1F801074, I_MASK (MMIO) */
 extern s32 *g_sys_irq_vtable;
+
+/* PsyQ 4.0 LIBETC INTR: intr.c v1.76 module state — verbatim-linked Sony
+   object; C ref: sotn-decomp src/main/psxsdk/libetc/
+   intr.c (intrEnv_t). D_800A1578 = intrEnv; D_800A15B4 = intrEnv.buf[1]
+   (JB_SP); i_stat/i_mask/d_pcr (0x800A2604/08/0C) = the module's
+   MMIO pointer statics (0x1F801070/74/F0). */
+typedef struct {
+    u16 interruptsInitialized;   /* +0x00 = D_800A1578 */
+    u16 inInterrupt;             /* +0x02 */
+    void (*handlers[11])(void);  /* +0x04 */
+    u16 enabledInterruptsMask;   /* +0x30 */
+    u16 savedMask;               /* +0x32 */
+    s32 savedPcr;                /* +0x34 */
+    s32 buf[12];                 /* +0x38 jmp_buf; [1] = JB_SP = D_800A15B4 */
+    s32 stack[1024];             /* +0x68 */
+} intrEnv_t;                     /* sizeof 0x1068; memclr count 0x41A words */
+extern volatile u16 *i_stat;   /* i_stat = (u16 *)0x1F801070 (MMIO) */
+extern volatile s32 *d_pcr;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
+extern intrEnv_t D_800A1578;
 
 s32 ResetCallback(void) {
     return ((s32 (*)(void))g_sys_irq_vtable[3])();
@@ -55,30 +73,12 @@ s32 RestartCallback(void) {
     return ((s32 (*)(void))g_sys_irq_vtable[6])();
 }
 s32 CheckCallback(void) {
-    return g_sys_vblank_count;
+    return D_800A1578.inInterrupt;
 }
 
 u32 GetIntrMask(void) {
     return *i_mask;
 }
-/* PsyQ 4.0 LIBETC INTR: intr.c v1.76 module state — verbatim-linked Sony
-   object; C ref: sotn-decomp src/main/psxsdk/libetc/
-   intr.c (intrEnv_t). D_800A1578 = intrEnv; D_800A15B4 = intrEnv.buf[1]
-   (JB_SP); i_stat/i_mask/d_pcr (0x800A2604/08/0C) = the module's
-   MMIO pointer statics (0x1F801070/74/F0). */
-typedef struct {
-    u16 interruptsInitialized;   /* +0x00 = D_800A1578 */
-    u16 inInterrupt;             /* +0x02 */
-    void (*handlers[11])(void);  /* +0x04 */
-    u16 enabledInterruptsMask;   /* +0x30 */
-    u16 savedMask;               /* +0x32 */
-    s32 savedPcr;                /* +0x34 */
-    s32 buf[12];                 /* +0x38 jmp_buf; [1] = JB_SP = D_800A15B4 */
-    s32 stack[1024];             /* +0x68 */
-} intrEnv_t;                     /* sizeof 0x1068; memclr count 0x41A words */
-extern volatile u16 *i_stat;   /* i_stat = (u16 *)0x1F801070 (MMIO) */
-extern volatile s32 *d_pcr;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
-extern intrEnv_t D_800A1578;
 
 extern void trapIntr(void);
 /* FAKE: the BIOS call takes no argument; declared with one for startIntr (see there). */

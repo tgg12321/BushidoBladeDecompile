@@ -335,7 +335,7 @@ Folded in from the former `recent_naming_findings.md` (full traces: `pre-slim-20
 - **GTE back colour** `0x800F6338..633A` (R/G/B bytes for `gte_SetBackColor`).
 - **SPU registers** — block pointer `0x800A3044`, register pairs `0x800F7420/7424`, voice array
   `0x800F7298`, key/transfer masks and pending flags `0x800A2874..2D2C`.
-- **IRQ / alarm state** `0x800A26D0..26DE`, alarm handle `0x800A14E4`, vblank count `0x800A157A`,
+- **IRQ / alarm state** `0x800A26D0..26DE`, alarm handle `0x800A14E4`, intrEnv.inInterrupt `0x800A157A`,
   dispatch counter `0x800F19BC`, VSync deadline `0x800F19B8` — walked by `irq_ProcessPending`.
 - **CD-ROM callback buffers** `0x800F19A0/19A8` (8-byte payloads for `cdrom_SetCallbackA/B`).
 - `g_file_disc_size` (`0x80106A50`) is a misnomer: it is a move-enable bitmap (see [combat.md](combat.md)).

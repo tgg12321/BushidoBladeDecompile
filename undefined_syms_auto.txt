@@ -945,7 +945,6 @@ g_str_sio = 0x800164A8;
 g_str_storeimage = 0x80015F68;
 i_mask = 0x800A2608;
 g_sys_irq_vtable = 0x800A2600;
-g_sys_vblank_count = 0x800A157A;
 g_sys_video_mode = 0x800A2664;
 /* data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined */
 game_GetPlayerData = 0x80046DEC;

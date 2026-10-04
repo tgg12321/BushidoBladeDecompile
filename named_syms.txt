@@ -90,7 +90,6 @@ _svm_vab_start = 0x80107810;  /* data-wave 2026-09-07: was g_snd_ch_addr */
 _svm_vab_count = 0x80107808;  /* data-wave 2026-09-07: was g_snd_ch_count */
 g_sys_irq_vtable = 0x800A2600;
 i_mask = 0x800A2608;  /* libetc intr.c i_mask: .word 0x1F801074 (I_MASK pointer); was g_sys_irq_counter */
-g_sys_vblank_count = 0x800A157A;
 /* data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined */
 g_CdReadMode_value = 0x800A1500;  /* D_800A14D0.tslmode; named only by cb_read */  /* data-wave 2026-09-24: was g_sys_timer */
 g_sys_video_mode = 0x800A2664;
@@ -411,7 +410,7 @@ DMACallback  = 0x80082B20;  /* jalr [g_psyq_io_vec_table+0x4] */
 VSyncCallback           = 0x80082B50;  /* jalr [g_psyq_io_vec_table+0x14] with $a0=4, $a1=arg */
 StopCallback              = 0x80082BB4;  /* jalr [g_psyq_io_vec_table+0x10] */
 /* System counters (1) */
-CheckCallback     = 0x80082C14;  /* lhu of g_vblank_count */
+CheckCallback     = 0x80082C14;  /* lhu of intrEnv.inInterrupt (D_800A1578 + 2) */
 /* Memory clear (2; identical bodies, position-distinct) */
 sys_MemClear_8008339C           = 0x8008339C;  /* word-by-word `for (i=a1; i>0; i--) *a0++ = 0` */
 sys_MemClear2_80083644          = 0x80083644;  /* identical body, distinct address */
@@ -428,7 +427,6 @@ SsInit           = 0x80083A18;  /* irq_DisableInterrupts + spu_Init + state clea
 /* === Data names landed by the ings2.c cluster audit (5) === */
 g_psyq_io_vec_table             = 0x800A2600;  /* function-pointer table for IRQ dispatch (irq_Enable/Disable/Ack/Set/Reset all load from here) */
 /* data-wave 2026-09-24: g_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined */
-g_vblank_count                  = 0x800A157A;  /* halfword incremented per vblank; returned by sys_GetVblankCount */
 g_irq_counter_ptr               = 0x800A2608;  /* pointer to a halfword counter; deref'd by sys_GetIrqCounter (which itself isn't a separate function) */
 
 /* === Legacy renamer audit: Item 6/7 readability band (2026-05-17) === */

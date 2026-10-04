@@ -158,7 +158,7 @@ know which subsystem owns it, look here.
   `irq_DisableInterrupts`, `irq_AcknowledgeVblank`,
   `irq_EnableInterrupts`, `irq_SetAlarm`, `irq_Reset`,
   `EnterCriticalSection`, `ExitCriticalSection`
-- **Key globals:** `g_sys_irq_vtable`, `g_sys_vblank_count`,
+- **Key globals:** `g_sys_irq_vtable`, `D_800A1578` (intrEnv; `.inInterrupt` = CheckCallback),
   `g_sys_vsync_mode`, `g_sys_timer`, `g_sys_video_mode`,
   `g_sys_dma_region`
 

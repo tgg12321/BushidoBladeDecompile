@@ -87,7 +87,7 @@ Identifiable libapi functions:
 
 Timer / IRQ globals:
 - `g_sys_irq_vtable` (`0x800A2600`) — interrupt vector table
-- `g_sys_vblank_count` (`0x800A157A`) — vblank counter (libapi)
+- `D_800A1578.inInterrupt` (`0x800A157A`) — LIBETC intrEnv's in-interrupt flag (CheckCallback's return)
 - `g_sys_vsync_mode` (`0x800A14CC`) — VSync wait mode
 
 ## libspu — Sound Processing Unit

@@ -1,1 +1,2 @@
 {"func": "CheckCallback", "addr": "80082C14", "verdict": "PASS", "body_hash": "374d5bed85c3f6be", "body_kind": "c", "file": "main/psxsdk/libetc/intr", "reviewer": "p2-rev-e1", "scope": "cheat-cleanup", "date": "2026-10-04T07:36:46Z", "head": "6b187fcf0", "notes": ""}
+{"func": "CheckCallback", "addr": "80082C14", "verdict": "PASS", "body_hash": "a6e36480dde54d49", "body_kind": "c", "file": "main/psxsdk/libetc/intr", "reviewer": "p2-rev-e1b", "scope": "cheat-cleanup", "date": "2026-10-04T07:50:19Z", "head": "f8005009b", "notes": ""}

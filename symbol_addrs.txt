@@ -113,7 +113,6 @@ _svm_vab_count = 0x80107808; // active sound channel count  // data-wave 2026-09
 // === System / IRQ ===
 g_sys_irq_vtable = 0x800A2600; // interrupt handler vtable
 i_mask = 0x800A2608; // libetc intr.c I_MASK register pointer (0x1F801074); was g_sys_irq_counter
-g_sys_vblank_count = 0x800A157A; // VBlank counter
 // data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined
 g_CdReadMode_value = 0x800A1500; // cdread tslmode (D_800A14D0.tslmode)  // data-wave 2026-09-24: was g_sys_timer
 g_sys_video_mode = 0x800A2664; // video mode (0=NTSC)
