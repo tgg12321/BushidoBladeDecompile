@@ -151,7 +151,7 @@ against its class test (default refute) before applying.
     func_80055B60 synthesized record.
 - `pad_ResetStateMarkValid` 0x80019534: refused after the Q105 re-check on the then-closed T4 list
   ("Mark" was not listed; "Set" means storing arguments, and "Reset ... Valid" reads as clearing the flags).
-  Owner ruling Q107 made T4 a principle; applied in the Q107 naming wave (func_manifest_q107.csv).
+  Owner ruling Q107 made T4 a principle; applied a154ce3a8 (func_manifest_q107.csv).
 - basis-withdrawn, 3 aliases: the parents of `cpu_helper_80026DA4` / `cpu_helper_80029454`
   (`cpu_exec_main_game_loop_frame` 0x8002C61C) and `cpu_helper_8003F3D4`
   (`cpu_init_stage_and_camera_setup` 0x8001E404) are MEDIUM v3 rows that were never reset, so their basis

@@ -70,6 +70,19 @@ a fresh adversarial `cheat-reviewer` PASS where a function body, rule or gate fi
   to C (COMPLETED-C via layer-2); if no honest C matches, it stays INCLUDE_ASM and queued (no canonical grant without
   its own evidence). Cut the sound-library (LIBSND/LIBSPU) gap
   files at xref/near-tier module starts (rodata-object-alignment.md, conditions 2/4).
+  **Status (2026-10-03): done.** Q107: a154ce3a8 (pad_ResetStateMarkValid; census src_location now skips
+  prototypes). Q108: 2cc9d7eb5 (FlushCache.s = C68's 4 words, asm/funcs/_SendPAD.s; libapi/c68.c + sendpad.c;
+  FlushCache's canonical row rewritten). _SendPAD did not reach honest C: every form floors at 4/10 ($v0 vs
+  $t1, $ra at 0x10 vs 0x14; cc1psx the same), so it stays INCLUDE_ASM and is the one active queue item
+  (memory/grind/_SendPAD/candidate.c); its module mates are hand-written asm (_send_pad's trapping addi, the
+  func_800790A4 data-as-code), evidence for a Judge-gated grant path if pursued. Q109: a6f20ee2e..6a286cd62
+  + 00ef19715 (re-lock): midiread, ut_keyv, s_sav (whole gaps); cres|decre, ut_vvol|vm_aloc2, vm_f|vm_init,
+  vm_no1|vm_nowof|vm_nowon + gap 77F70 (VM_SEQ by layout, first function unidentified); 760D0 and 7BC88 stay
+  gap files (rodata-align doc § 14). Scripts: memory/grind/restructure-2026-10-03/itemD/. Open: the near-tier
+  names of func_80085FD8 / func_80086080 / func_80087D10 / func_80087D58 (near_manifest.csv CONFIRM) never
+  landed, because the census has no row for functions without an asm/funcs listing; `queue regen` lists 10
+  data-as-code labels (D_800545F8.., g_data_start..) as items; boundary_fixes.md's FlushCache prose and the
+  inline_asm_canonical.txt func_800790A4 row ("BIOS-table slots") are stale wording.
 - **Later:** Phase 2 types (make Unk80101EC8Record / Obj80106A78 the "Entity"; ~1,238 raw-offset casts;
   fix the conflicting declarations, worklist memory/grind/restructure-2026-10-03/step5/phase2_conflicts.tsv,
   and the u8 * / s32 * callee prototypes). Phase 3 names (owner to
