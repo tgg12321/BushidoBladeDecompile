@@ -24,7 +24,7 @@ judged normally (do-while(0) wraps per [[do-while-zero-exception]]).
 
 ## Ruling 8 — vmNoiseOn's SOTN pan `temp` (vmNoiseOn only, 2026-09-24)
 
-Only `vmNoiseOn` (`src/main/psxsdk/libsnd/774F8.c`) may carry one function-scope `u32 temp;` used solely by the
+Only `vmNoiseOn` (`src/main/psxsdk/libsnd/vm_no1.c`) may carry one function-scope `u32 temp;` used solely by the
 SOTN-verbatim three-step pan cascade (sotn `libsnd/vmanager.c:251-270` @aa53500; fields
 `tone_pan`/`mpan`/`pan`), placed right after the `volr_t` scaling and before
 `if (_svm_stereo_mono == 1)`, with an inline comment, and the field-direct and three-local

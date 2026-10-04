@@ -490,3 +490,18 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   func_800790A4. No `.rodata` or data in either part; both `-G0` (PSYQ_LIBRARY_FILES). Compare (splitcmp.py):
   `.text` 0xD0 identical, 17 relocations identical, globals at the same offsets; FlushCache's st_size 0x38 →
   0x10 and the new global _SendPAD are the only symbol differences.
+- **Sound-library gap files cut at xref/near-tier module starts (Q109).** Module membership from the PsyQ
+  4.0 LIBSND.LIB / LIBSPU.LIB XDEF tables (tools/libscan/psyq_lib.py); identification tier per module start
+  from docs/naming/libscan/near_manifest.csv (xref: a verbatim module's REL26 + the EXE jal; near: a
+  near-verbatim body or a near-verbatim caller's XREF). Renamed whole (the gap is one module): 75174 →
+  midiread (MIDIREAD, xref via PLAY), 76240 → ut_keyv (UT_KEYV, near), libspu/7A248 → libspu/s_sav (S_SAV,
+  xref via S_SNV/S_SRV). Cut: 749E0 → cres (xref) + decre (xref, 0x80084500); 767D8 → ut_vvol (near) +
+  vm_aloc2 (near, 0x800861BC); 76BDC → vm_f (xref) + vm_init (xref, 0x80086818); 774F8 → vm_no1 (near) +
+  vm_nowof (near, 0x800871D4) + vm_nowon (near, 0x800872A4) + gap 77F70 (0x80087770, VM_SEQ by layout, its
+  first function func_80087770 unidentified; VM_NOWON's only XDEF ends there). Unchanged gaps: 760D0
+  (UT_AKO PROBABLE), libspu/7BC88 (S_SVA PROBABLE). No part has `.rodata` or data (no position to choose;
+  jtphase.py 39 tables OK, none here). Compare (splitcmp.py, renamed file vs its parts): `.text` identical
+  for all four (0x6CC, 0x3F4, 0x75C, 0x1144) bar 5/1/1/11 section-symbol addends re-based, relocations
+  identical (30/79/180/257), globals at the same offsets. Declarations: each part takes the old file's two
+  includes; cc1 -Wimplicit reports the same implicit callees, plus func_8008B488 in _SsVmInit, which was
+  implicit in the old file too (first called in _SsVmFlush).

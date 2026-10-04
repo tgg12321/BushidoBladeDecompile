@@ -1,7 +1,11 @@
-/* LIBSND code between verbatim modules: _SsSeqPlay, _SsSeqGetEof and func_80084CC0. .text
- * 0x80084974..0x80085064: an unidentified region between verbatim LIBSCAN modules
- * (docs/naming/libscan/matches.json; memory/closer/libsnd-hunt-report.md lists the probable
- * newer-build modules), one file per gap (Q106 D3), named by its ROM offset. */
+/* PsyQ LIBSND MIDIREAD: _SsSeqPlay, _SsSeqGetEof and func_80084CC0 (_SsGetSeqData's offset). .text
+ * 0x80084974..0x80085064, the whole region between PLAY and MIDITIME. Not a verbatim LIBSCAN span: BB2
+ * links an interim LIBSND build, between PsyQ 4.0 and 4.1, that no archived release holds
+ * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109), libscan xref tier: PLAY,
+ * placed at 0x80084948 (docs/naming/libscan/ambiguous_resolutions.md), has one REL26, naming
+ * _SsSeqPlay, and the EXE word there is jal 0x80084974 (RELOC_CHAIN_ID); PsyQ 4.0 LIBSND.LIB MIDIREAD
+ * XDEFs _SsSeqPlay +0x0, _SsSeqGetEof +0x108, _SsGetSeqData +0x34C, the offsets of the three functions
+ * here. */
 #include "common.h"
 #include "libsnd_i.h"
 

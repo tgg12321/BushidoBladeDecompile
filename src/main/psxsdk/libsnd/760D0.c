@@ -1,7 +1,7 @@
-/* LIBSND code between verbatim modules: func_800858D0. .text 0x800858D0..0x800859F0: an
- * unidentified region between verbatim LIBSCAN modules (docs/naming/libscan/matches.json;
- * memory/closer/libsnd-hunt-report.md lists the probable newer-build modules), one file per gap
- * (Q106 D3), named by its ROM offset. */
+/* LIBSND code between TEMPO and UT_GVBA: func_800858D0. .text 0x800858D0..0x800859F0. By link order
+ * and size it is probably LIBSND UT_AKO (SsUtAllKeyOff; memory/closer/libsnd-hunt-report.md,
+ * PROBABLE), but no libscan xref or near-tier evidence identifies it, so the region stays one gap file
+ * (owner rulings Q106 D3, Q109), named by its ROM offset. */
 #include "common.h"
 #include "libsnd_i.h"
 
