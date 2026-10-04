@@ -1291,13 +1291,12 @@ void func_800397D4(void) {
     D_800A37D0 = 0;
     D_800A3834 = 5;
 }
-extern s32 func_80053584(s32 *, s32 *, s32 *, s32 *);
 extern s32 func_80054434(void);
 void func_8003984C(Unk80101EC8Record *arg0, s32 *arg1, s32 *arg2) {
     s32 sp10[3];
     s32 sp20[3];
     s32 sp30[4];
-    s32 sp40[2];
+    s16 sp40[4];
     s32 mid_x, mid_y, mid_z;
     s32 result;
 

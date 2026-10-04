@@ -228,7 +228,7 @@ typedef struct {
  * +0x90 the major-axis steps left. Each cell crossed goes to the per-cell
  * test at +0x5C (func_80053E9C or func_80053754) until one reports a hit;
  * func_80053694 then reads the result back out. */
-s32 func_80052D00(s32 arg0, s32 arg1) {
+s32 func_80052D00(s32 *arg0, s16 *arg1) {
     s32 xdir;
     s32 zdir;
     s32 swapped;
@@ -338,15 +338,15 @@ s32 func_80052D00(s32 arg0, s32 arg1) {
             W->unk5C(W->unk8C.x, W->unk8C.z);
         }
     }
-    return func_80053694((s32 *)arg0, (s16 *)arg1);
+    return func_80053694(arg0, arg1);
 }
-extern s32 func_80052D00(s32, s32);
+extern s32 func_80052D00(s32 *, s16 *);
 extern s32 func_80053754();
 extern s32 func_80053E9C();
 extern u8 D_800EFA00;
 extern u8 D_800EF9F8;
 typedef struct { s32 a, b, c, d; } _S16_53304;
-void func_80053304(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
+void func_80053304(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
     u8 *p;
     s32 a, b, c;
     s32 hi0, hi1, hi2;
@@ -375,7 +375,7 @@ void func_80053304(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
 }
 
 typedef struct { s32 a, b, c, d; } _S16_5344C;
-void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 func_8005344C(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
     u8 *p;
     s32 a, b, c;
     s32 hi0, hi1, hi2;
@@ -400,19 +400,19 @@ void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     } else {
         *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
     }
-    func_80052D00(arg2, arg3);
+    return func_80052D00(arg2, arg3);
 }
 
 typedef struct { s32 a, b, c, d; } _S16_53584;
-void func_80053584(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
+s32 func_80053584(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
     D_800A33F4 = (s32)&D_800EF9F8;
     *(_S16_53584 *)&D_800EFA00 = *(_S16_53584 *)arg0;
     *(_S16_53584 *)((u8 *)D_800A33F4 + 0x18) = *(_S16_53584 *)arg1;
     *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
-    func_80052D00(arg2, arg3);
+    return func_80052D00(arg2, arg3);
 }
 typedef struct { s32 a, b, c, d; } _S16_53614;
-s32 func_80053614(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 func_80053614(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
     D_800A33F4 = arg4;
     *(_S16_53614 *)((u8 *)D_800A33F4 + 8) = *(_S16_53614 *)arg0;
     *(_S16_53614 *)((u8 *)D_800A33F4 + 0x18) = *(_S16_53614 *)arg1;
@@ -1603,7 +1603,7 @@ void func_80056CB8(s32 arg0) {
     s32 pt1[4];
     s32 hit0[4];
     s32 hit1[4];
-    s32 work[2];
+    s16 work[4];
     s32 start;
     s32 i;
 
@@ -1646,7 +1646,7 @@ void func_80056CB8(s32 arg0) {
         pt1[1] = *(s32 *)(obj + 0xBC) - 0x320;
         pt1[2] = z;
 
-        flags = func_80053614(pt0, pt1, (s32)hit0, (s32)work, 0x1F8002B8);
+        flags = func_80053614(pt0, pt1, hit0, work, 0x1F8002B8);
         if (flags != 0) {
             x += (*sin_p * 0x7D) >> 8;
             z += (*cos_p * 0x7D) >> 8;
@@ -1659,7 +1659,7 @@ void func_80056CB8(s32 arg0) {
         pt1[1] = *(s32 *)(obj + 0xBC) + 0x1004;
         pt1[2] = z;
 
-        flags |= func_80053614(pt0, pt1, (s32)hit1, (s32)work, 0x1F8002B8) << 1;
+        flags |= func_80053614(pt0, pt1, hit1, work, 0x1F8002B8) << 1;
         flags += 1;
         if (flags == 3 && hit1[1] - *(s32 *)(obj + 0xBC) < 5) {
             flags = 0;
@@ -1824,8 +1824,8 @@ s32 func_800571C0(Unk80101EC8Record *obj) {
             top.x = x;
             top.y = obj->unk_B8.vy + 5;
             top.z = z;
-            if (func_80053614(&probe.x, &top.x, (s32)hit, (s32)work, 0x1F8002B8) != 0) {
-                goL = func_80053614(&left.x, &probe.x, (s32)hit, (s32)work, 0x1F8002B8) == 0;
+            if (func_80053614(&probe.x, &top.x, hit, work, 0x1F8002B8) != 0) {
+                goL = func_80053614(&left.x, &probe.x, hit, work, 0x1F8002B8) == 0;
             }
             if (goL) {
                 left = probe;
@@ -1846,8 +1846,8 @@ s32 func_800571C0(Unk80101EC8Record *obj) {
             top.x = x;
             top.y = obj->unk_B8.vy + 5;
             top.z = z;
-            if (func_80053614(&probe.x, &top.x, (s32)hit, (s32)work, 0x1F8002B8) != 0) {
-                goR = func_80053614(&right.x, &probe.x, (s32)hit, (s32)work, 0x1F8002B8) == 0;
+            if (func_80053614(&probe.x, &top.x, hit, work, 0x1F8002B8) != 0) {
+                goR = func_80053614(&right.x, &probe.x, hit, work, 0x1F8002B8) == 0;
             }
             if (goR) {
                 right = probe;

@@ -11,11 +11,9 @@
 
 extern s32 D_800A38B4;
 extern s32 memcpy(s32 *, s32, s32);
-extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 func_80054434(void);
 extern s32 rand();
 extern void func_800325E0(s32, s32);
-extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 
 INCLUDE_RODATA("asm/rodata", D_800100A4);
 void func_8001979C(s32 arg0, u32 *arg1) {
@@ -649,7 +647,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
             scr->head = arg2->unk_B8;
         }
         scr->head.vy -= 0xC8;
-        if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm, (s32)&scr->unk60) &&
+        if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, scr->nrm, (s32)&scr->unk60) &&
             scr->nrm[1] < -0x320) {
             func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
             if (D_800A30F0[p]) {
@@ -679,7 +677,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
                 }
                 cam->h10 = hi + d / 2;
                 func_8001A538((s32 *)cam, (s32 *)&scr->eye);
-                if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm,
+                if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, scr->nrm,
                                   (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
                     work = cam->h10;
@@ -709,7 +707,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
                 }
                 cam->h10 = lo + d / 2;
                 func_8001A538((s32 *)cam, (s32 *)&scr->eye);
-                if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm,
+                if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, scr->nrm,
                                   (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
                     func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
@@ -3109,7 +3107,7 @@ void func_800207C8(Unk80101EC8Record *rec, LeafPos *bone_out, LeafPos *att_out, 
         probe[4] = rec->unk_198[i].x;
         probe[5] = rec->unk_198[i].y + 2000;
         probe[6] = rec->unk_198[i].z;
-        if (func_80053614(&probe[0], &probe[4], &probe[8], &probe[12], (s32)&probe[14])) {
+        if (func_80053614(&probe[0], &probe[4], &probe[8], (s16 *)&probe[12], (s32)&probe[14])) {
             rec->unk_1B0[i] = probe[9];
         } else {
             rec->unk_1B0[i] = probe[5];
@@ -3617,7 +3615,7 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
         probe.x = base.x + dx;
         probe.y = base.y;
         probe.z = base.z + dz;
-        if (func_80053614(&base.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0) {
+        if (func_80053614(&base.x, &probe.x, &hit.x, nrm, 0x1F8002B8) != 0) {
             continue;
         }
         cur = base;
@@ -3625,7 +3623,7 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
             probe.y = base.y;
             probe.x = base.x + (dx * temp) / 40;
             probe.z = base.z + (dz * temp) / 40;
-            if (func_8005344C(&cur.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0) {
+            if (func_8005344C(&cur.x, &probe.x, &hit.x, nrm, 0x1F8002B8) != 0) {
                 break;
             }
             *out = probe;
@@ -3633,7 +3631,7 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
         }
         probe = *out;
         probe.y += 4000;
-        if (func_80053614(&out->x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) == 0) {
+        if (func_80053614(&out->x, &probe.x, &hit.x, nrm, 0x1F8002B8) == 0) {
             continue;
         }
         if (nrm[1] != -0x1000) {
@@ -3642,7 +3640,7 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
         cur = *out;
         for (temp = 1; temp < 41; temp++) {
             probe.y = out->y + temp * 100;
-            if (func_8005344C(&cur.x, &probe.x, &hit.x, (s32 *)nrm, 0x1F8002B8) != 0 && nrm[1] == -0x1000) {
+            if (func_8005344C(&cur.x, &probe.x, &hit.x, nrm, 0x1F8002B8) != 0 && nrm[1] == -0x1000) {
                 out->y = hit.y;
                 return;
             }
@@ -4073,7 +4071,7 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
   s32 count = 0;
   s32 lim;
   s16 *scratch_d;
-  s32 *scratch_c = (s32 *) 0x1F8001C0;
+  s16 *scratch_c = (s16 *) 0x1F8001C0;
   lim = 0x1F8002B8;
   scratch_d = (s16 *) 0x1F8001D0;
   loop:
@@ -4086,7 +4084,7 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
     }
     *((s8 *) (obj + 0xB1)) = (s8) func_80054434();
     *(Quad_2304C *)pos1 = *(Quad_2304C *)scratch;
-    func_8002EBDC((s16 *) arg3, (s16 *) scratch_c, arg3, -0x40, 0xE6);
+    func_8002EBDC((s16 *) arg3, scratch_c, arg3, -0x40, 0xE6);
     {
       s16 vel;
       vel = *((s16 *) (((u8 *) scratch) + 0x10));
@@ -4105,13 +4103,13 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
       vel = *((s16 *) (((u8 *) scratch) + 0x14));
       pos2[2] += vel / 1024;
     }
-    if (func_8005344C(pos1, scratch + 12, scratch, scratch + 6, lim) == 0)
+    if (func_8005344C(pos1, scratch + 12, scratch, (s16 *)(scratch + 6), lim) == 0)
     {
       *(Quad_2304C *)pos1 = *(Quad_2304C *)(scratch + 12);
       scratch[8] = pos2[0] - pos1[0];
       scratch[9] = pos2[1] - pos1[1];
       scratch[10] = pos2[2] - pos1[2];
-      func_8002EBDC(scratch_d, (s16 *) scratch_c, (s32 *) scratch_d, 0,
+      func_8002EBDC(scratch_d, scratch_c, (s32 *) scratch_d, 0,
                     (*((u16 *) (obj + 0x6A)) == 0x15) ? 0x80 : 0x100);
       {
         s16 vel_y = *((s16 *) (((u8 *) scratch) + 0x12));
@@ -4198,7 +4196,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         }
     }
 
-    if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+    if (func_80053614(pos, off, out2, out1, (s32)0x1F8002B8) == 0) {
         return 0;
     }
 
@@ -4228,7 +4226,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
             off[2] = pos[2] + jv4 / 8;
         }
 
-        if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) != 0) {
+        if (func_80053614(pos, off, out2, out1, (s32)0x1F8002B8) != 0) {
             return 0;
         }
 
@@ -4236,7 +4234,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         pos[1] = off[1] + 0x190;
         pos[2] = off[2];
 
-        if (func_80053614(off, pos, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+        if (func_80053614(off, pos, out2, out1, (s32)0x1F8002B8) == 0) {
             return 0;
         }
 
@@ -4406,7 +4404,7 @@ void func_800238C4(u8 *arg0)
     dst[0] = *((s32 *) (arg0 + 0xB8));
     dst[1] = (*((s32 *) (arg0 + 0xBC))) + 0x514;
     dst[2] = *((s32 *) (arg0 + 0xC0));
-    s1 = func_80053614(src, dst, out, (s32 *) offsets, scratchpad);
+    s1 = func_80053614(src, dst, out, offsets, scratchpad);
     ok = 1;
     if (s1 != 0)
     {
@@ -4421,7 +4419,7 @@ void func_800238C4(u8 *arg0)
         }
         dst[0] += offsets[0] / 8;
         dst[2] += offsets[2] / 8;
-        ok = func_80053614(src, dst, out, (s32 *) offsets2, scratchpad) == 0;
+        ok = func_80053614(src, dst, out, offsets2, scratchpad) == 0;
         goto ok_check;
     }
     goto ok_check;
@@ -4547,14 +4545,14 @@ void func_80023D28(u8 *arg0) {
     *(s32 *)0x1F8001E0 = *(s32 *)(arg0 + 0xB8);
     *(s32 *)0x1F8001E4 = *(s32 *)(arg0 + 0xBC) + 0x1F4;
     *(s32 *)0x1F8001E8 = *(s32 *)(arg0 + 0xC0);
-    *(s16 *)(arg0 + 0x1DC) = func_8005344C((s32 *)(arg0 + 0xB8), (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s32 *)0x1F8001C0, 0x1F8002B8);
+    *(s16 *)(arg0 + 0x1DC) = func_8005344C((s32 *)(arg0 + 0xB8), (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8);
 }
 s32 func_80023DB8(u8 *arg0) {
     s32 result;
     *(s32 *)0x1F8001E0 = *(s32 *)(arg0 + 0xB8);
     *(s32 *)0x1F8001E4 = *(s32 *)(arg0 + 0xBC) + 5;
     *(s32 *)0x1F8001E8 = *(s32 *)(arg0 + 0xC0);
-    if (func_8005344C((s32 *)(arg0 + 0xB8), (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s32 *)0x1F8001C0, 0x1F8002B8) != 0) {
+    if (func_8005344C((s32 *)(arg0 + 0xB8), (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8) != 0) {
         result = *(s16 *)0x1F8001C2 < -0x800;
     } else {
         result = 0;
@@ -4575,7 +4573,7 @@ void func_80023E40(u8 *arg0) {
         s1[0xC] = *(s32 *)(arg0 + 0xB8);
         s1[0xD] = *(s32 *)(arg0 + 0xBC) + 0x1F40;
         s1[0xE] = *(s32 *)(arg0 + 0xC0);
-        v0 = func_80053614((s32 *)(arg0 + 0xB8), &s1[0xC], s1, &s1[4], (s32)v3);
+        v0 = func_80053614((s32 *)(arg0 + 0xB8), &s1[0xC], s1, (s16 *)&s1[4], (s32)v3);
         if (v0 == 0) goto done;
         *(s32 *)(arg0 + 0x148) = s1[1];
         goto done;

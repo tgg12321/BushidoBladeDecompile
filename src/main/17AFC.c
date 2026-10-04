@@ -8,7 +8,6 @@
 #include "bb2_const.h"
 
 /* Declarations from the file this TU was split from (code6cac_b.c). */
-extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 rand(void);
 extern u8 D_800A3898;
 extern u8 D_800A3899;
@@ -1510,7 +1509,6 @@ extern char D_80010478[];
 extern void printf();
 extern void func_8002E838(u8 *obj);
 extern s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq);
-extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32 *);
 extern s32 func_80054434(void);
 void func_8002A458(u8 *obj, u32 *hit, u32 *deep, s32 quiet) {
     u8 *scr = (u8 *)0x1F8002B8;
@@ -1646,7 +1644,7 @@ void func_8002A458(u8 *obj, u32 *hit, u32 *deep, s32 quiet) {
     *(s32 *)(scr + 0xAC) = (*(s32 **)(scr + 0x60))[1] - qy / 4;
     *(s32 *)(scr + 0xB0) = (*(s32 **)(scr + 0x60))[2] - qz / 4;
     if (func_80053614((s32 *)(scr + 0xA8), *(s32 **)(scr + 0x64), (s32 *)(scr + 0x100),
-                      (s32 *)(scr + 0xF8), work) != 0
+                      (s16 *)(scr + 0xF8), (s32)work) != 0
         && func_80054434() != 7) {
         if (*hit != 0) {
             p = *(s32 **)(scr + 0x60);
@@ -5024,7 +5022,7 @@ void func_80030D7C(void) {
         *(s32 *)(scr + 0x8) = obj->pos.z + obj->vel.z;
         obj->pos.y -= 8;
         nrm = (s16 *)(scr + 0x30);
-        temp = func_8005344C((s32 *)&obj->pos, (s32 *)scr, (s32 *)(scr + 0x10), (s32 *)nrm, (s32)(scr + 0x38));
+        temp = func_8005344C((s32 *)&obj->pos, (s32 *)scr, (s32 *)(scr + 0x10), nrm, (s32)(scr + 0x38));
         if (temp != 0 && func_80054434() == 7) {
             temp = 0;
         }
@@ -5376,7 +5374,7 @@ void func_800321E8(void) {
                 sp[2] = *(s32 *)(base + 0xC) + *(s32 *)(base + 0x24);
                 arg5++; /* FAKE: +1-1 pair (SOTN-wiki redundant-arithmetic class) makes arg5 multi-set so loop.c */
                 arg5--; /* cannot hoist the loop-invariant sp+0x38 into a callee-save; target recomputes it inline */
-                if (func_8005344C((s32 *)(base + 4), sp, (s32 *)((u8 *)sp + 0x10), (s32 *)((u8 *)sp + 0x30), arg5) != 0 || *(s32 *)(base + 8) > *(s32 *)(base + 0x28)) {
+                if (func_8005344C((s32 *)(base + 4), sp, (s32 *)((u8 *)sp + 0x10), (s16 *)((u8 *)sp + 0x30), arg5) != 0 || *(s32 *)(base + 8) > *(s32 *)(base + 0x28)) {
                     *base = 0;
                 } else {
                     *(Vec3_copy *)(base + 4) = *(Vec3_copy *)sp;
