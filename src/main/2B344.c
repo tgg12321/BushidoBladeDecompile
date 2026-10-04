@@ -627,7 +627,6 @@ extern s32 D_800A38B4;
 
 
 extern s32 func_80052C28(s32, s32);
-extern s32 func_8005E54C(s32, s32, s32);
 extern void func_8001CD68(u8 *);
 
 

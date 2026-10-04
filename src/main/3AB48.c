@@ -4255,7 +4255,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
 extern s32 D_8009B2C8;
 extern s32 D_8009B340;
 extern s32 D_8009B358;
-void func_8005D46C(s32 arg0, s32 arg1) {
+s32 func_8005D46C(s32 arg0, s32 arg1) {
     S46C s;
     s32 stride;
     s32 ret;
@@ -4286,7 +4286,7 @@ void func_8005D46C(s32 arg0, s32 arg1) {
     s.zero10 = 0;
     s.one14 = 1;
     s.ret = ret;
-    func_80073728((s32)(&s), 0);
+    return func_80073728((s32)(&s), 0);
 }
 /* The 0x2C-byte draw descriptor func_8007352C (SPRT walker) and func_80073728
    (POLY_FT4 walker) consume; same layout as S_6A880. */

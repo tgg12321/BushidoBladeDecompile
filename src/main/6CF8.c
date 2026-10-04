@@ -51,11 +51,10 @@ extern u32 *ClearOTagR(u32 *, s32);
 
 extern s32 rand(void);
 extern void __main(void);
+/* Not the bb2.h spelling: the definition (3AB48.c) takes an s16 first parameter, but this call
+ * passes it unextended (an s16 prototype adds sll/sra here, measured). */
+extern s32 func_80060414(s32, s32, s32);
 
-extern u8 *func_8005D46C(u8 *);
-extern u8 *func_8005D554(u8 *, u8);
-extern s32 func_8005E54C(s32, u8 *, s32);
-extern void func_80060414(s32, u8 *, s32);
 
 
 
@@ -585,12 +584,12 @@ void func_800174F4(void) {
     /* temp: holds two values, the case-1/2 fade loop's iteration count and
      * the case-20 D_800A37A8[] code passed to func_80060414 (owner ruling 11). */
     s32 temp;
-    u8 *prim;
+    s32 prim;
     /* temp2: holds two values, the g_disp_enable switch selector and the
      * case-20 D_800A37A0 limit (owner ruling 11). */
     s32 temp2;
 
-    prim = &D_800F33D8;
+    prim = (s32)&D_800F33D8;
     if (g_disp_enable == DISP_DISABLED) {
         return;
     }
@@ -603,7 +602,7 @@ void func_800174F4(void) {
     switch (temp2) {
     case 1:
     case 2:
-        prim = func_8005D46C(prim);
+        prim = func_8005D46C(prim, temp2);
         if (g_disp_fade != 0) {
             s32 i;
             temp = (rand() & 3) + 4;
