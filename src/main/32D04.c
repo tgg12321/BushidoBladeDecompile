@@ -17,7 +17,6 @@ extern s16 D_800963EE;
 
 
 
-extern void func_80041430(s32, s32);
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
 
@@ -1240,7 +1239,6 @@ void func_8004473C(void)
         dst->unk58 = -1;
     }
 }
-extern void func_800417D0(s32 *);
 
 /* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
 Unk80101DF0Record *D_800A3708;

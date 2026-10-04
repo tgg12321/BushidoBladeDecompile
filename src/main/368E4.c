@@ -290,13 +290,11 @@ extern s32 func_800477E8(void);
 extern void func_80047A90(void);
 extern void func_80048B8C(s32);
 extern void func_800460E4(s32, s32);
-extern void func_800421C8(s32);
 extern void func_8004668C(void);
 
 extern void math_RotMatrixYXZ(SVECTOR *, MATRIX *);
 extern s16 Judge[];
 extern Unk80101DF0Record *D_800A3708;
-extern void func_8004211C(void);
 extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
 extern s16 D_800A324A;
 
@@ -309,12 +307,9 @@ extern s16 D_800F6654;
 extern u8 g_cam_bone_data;
 
 
-extern void func_800418D0(s32 *);
-extern void func_800420D0(void);
 extern u8 *g_gpu_ot_ptr;
 extern void func_80049E4C(void);
 extern void func_80049F4C(void);
-extern void func_800404D8(void);
 extern s16 g_color_mode;
 extern s16 D_800F665A;
 extern void func_80044F80(s32, s32 *);
@@ -822,7 +817,6 @@ void game_Stub4(void) {
 void func_800477DC(s32 a0) {
     D_800A33D0 = (s16 *)a0;
 }
-extern void func_800417D0(s32 *);
 extern s32 D_800EF558[];
 extern s32 D_800EF59C[];
 s32 func_800477E8(void) {
@@ -1568,7 +1562,6 @@ u16 cx, cy;
         spr->tpage = GetTPage(spr->mode, 0, spr->x & 0xFFC0, spr->y & 0xFF00);
     }
 }
-s32 file_GetFlag0(void);
 s32 func_800486FC(void) {
     if (file_GetFlag0()) {
         g_color_mode = 1;

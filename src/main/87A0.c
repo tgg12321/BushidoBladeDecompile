@@ -15,7 +15,6 @@ extern s32 g_pad_buf;
 
 
 
-extern s32 file_GetFlag2(void);
 
 extern s32 func_8005B9FC(s32);
 extern s32 D_800A38B4;

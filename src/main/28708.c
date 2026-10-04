@@ -77,9 +77,7 @@ extern u8 D_800A37D0;
 
 extern s32 D_800F34D8;
 extern s32 D_800A31F0;
-extern s32 memcard_CountFiles(s32, s32);
 
-extern s32 func_80037AA4(void);
 extern s32 func_80037B00(s32);
 extern s32 memcard_ReadFile(s32, s32, s32, void *, s32);
 extern s32 memcard_WriteFile(s32, s32, s32, void *, s32, s32, s32);

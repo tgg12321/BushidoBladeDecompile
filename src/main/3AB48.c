@@ -10,10 +10,7 @@
 /* Declarations from the file this TU was split from (text1b.c). */
 extern s32 *func_8004153C();
 extern s16 Judge[];
-extern void func_8004211C(void);
 extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
-extern void func_800418D0(s32 *);
-extern void func_800420D0(void);
 extern u8 *g_gpu_ot_ptr;
 extern s32 func_8005C2A8(s32 *, s16, s32);
 extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
@@ -782,7 +779,6 @@ void func_800548DC(void) {
 }
 extern s32 D_800A3250[2];
 extern void func_800198D0(s32, s32, u32 *, u16 *);
-extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
 /* Per-frame stage handler on the ctrl block D_800EFAE8.  On the first frame
  * (unk0 == 0) it resolves the loaded data's offset table (unk2C) into the
  * camera stream (unk30), the per-player motion streams (unk34[], dropped
@@ -998,7 +994,6 @@ void func_800550E8(s32 arg0) {
         p[i * 2 + 0x415] = p[i * 2 + 0x415] >> 1;
     } while (++i < 8);
 }
-extern u32 file_GetFlag1(void);
 extern s32 rand(void);
 void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     Unk80101EC8Record *p = &D_80101EC8[arg0];
@@ -3972,7 +3967,6 @@ extern Unk8009B400Record D_8009B20C[6];
 extern Unk8009B400Record D_8009B23C[12];
 extern Unk8009B400Record D_8009B29C[2];
 extern Unk8009B400Record *D_8009B2AC[4];
-extern s32 func_8007352C(s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
@@ -4261,7 +4255,6 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     AddPrim((s32)g_gpu_ot_ptr + ot * 4, mode_off);
     return size;
 }
-extern s32 func_80073728(s32, s32);
 extern s32 D_8009B2C8;
 extern s32 D_8009B340;
 extern s32 D_8009B358;
@@ -4427,7 +4420,6 @@ extern Unk8009B400Record D_8009B3C8[3];
 extern Unk8009B400Record D_8009B3E0[2];
 extern Unk8009B400Record D_8009B3F0;
 extern Unk8009B400Record D_8009B3F8;
-extern s32 func_8007352C(s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -5539,7 +5531,6 @@ void func_800602AC(s32 arg0, s32 *arg1) {
     LoadImage((s32)r4, (s32)((u8 *)arg1 + 0x14));
     DrawSync(0);
 }
-extern s32 func_8007352C();
 extern s32 D_8009B7AC;
 extern s32 D_8009B7B8;
 extern s32 D_8009B7C4;

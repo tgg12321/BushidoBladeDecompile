@@ -4,14 +4,8 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-/* Declarations from the file this TU was split from (text1a_pre.c). */
-void func_800404A0(s16 *a0, s32 a1);
-void func_80040A78(s32 arg0);
-
 typedef struct { s32 a, b, c, d, e, f, g, h; } Copy8_40D48;
 extern s32 D_80094CFC[];
-extern void func_800417D0(s32 *);
-extern void func_800420E8(s32, s32);
 void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     u8 *s4;
     u8 *s5;

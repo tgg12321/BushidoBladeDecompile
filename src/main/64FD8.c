@@ -12,12 +12,9 @@ extern s32 ClearOTagR(s32, s32);
 extern s32 rsin();
 extern s32 g_gpu_ot_ptr;
 extern Unk8009BD38Flags D_8009BD38;
-extern s32 func_80073728(s32, s32);
-extern s32 func_8007352C(s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 extern s32 SetDrawArea();
-extern s32 func_8007352C();
 extern void SetDrawOffset();
 /* func_8007352C's draw descriptor: .header = the sprite sheet's SprtHdrA, .table = its
    SprtEntA cell array (the s32 form of S_80074488 / DescF97C). */
@@ -37,13 +34,7 @@ typedef struct EnvA {
     u8   col_b;
 } EnvA;
 s32 func_8006E49C(s32 arg0, s32 *arg1);
-s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3);
 void func_8006E950(s32 a0, s32 *a1);
-s32 func_8006EACC(s32 arg0, s32 arg1);
-s32 func_8007352C(s32 env_addr);
-s32 func_80073728(s32 env_addr, s32 mode);
-void func_80074220(s32 *arg0, s32 arg1);
-void func_80074488(s32 *arg0);
 
 /* func_800747D8: the duplicated `sound = 4;` below is the
  * duplicated-statement-into-arms shape and carries its FAKE annotation inline. */
@@ -1426,7 +1417,6 @@ void func_80077940(s32 arg0) {
     D_800A35E8 = (arg0 & 0x3FF) + ((u32) (arg0 & 0x3FF000) >> 2) + ((u32) (arg0 & 0x01000000) >> 4) + ((u32) (arg0 & 0x04000000) >> 5);
 }
 
-s32 func_8006E534(s32, s32, u8*, u32);
 s32 func_80077984(s32 a0) {
     func_8006E534(a0, D_800A35E0, &D_8009BD24[0][0].chr, D_800A35E8);
     gpu_SetDrawEnvBg(1, 0, 0, 0);

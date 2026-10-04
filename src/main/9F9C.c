@@ -9,7 +9,6 @@
 
 /* Declarations from the file this TU was split from (code6cac.c). */
 
-extern s32 file_GetFlag2(void);
 extern s32 func_8005B9FC(s32);
 extern s32 D_800A38B4;
 extern s32 memcpy(s32 *, s32, s32);
@@ -1738,7 +1737,6 @@ extern s32 func_80021904(s32);
 extern s32 func_800219E4(s32);
 extern void func_8001B294(Unk80101EC8Record *, Unk80101EC8Record *);
 extern void func_8001B3C0(Unk80101EC8Record *, Unk80101EC8Record *);
-extern void rng_SetSeed(s32);
 void func_8001DCB0(void) {
     s32 i;
     s32 addr;
@@ -4597,11 +4595,8 @@ extern s16 D_8008E0BC[27][4];
  * func_80030A2C (ex cpu_set_move_command_and_dir, RESET sweep 2026-10-03). */
 extern u8 D_8008D90C[28][8];
 extern void func_8003339C(s32 *);
-extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
 extern void func_80041188(s32, u8 *, u8 *, s32, s32 *);
 extern void func_80049718(s32, s32, s32 *, s16 *);
-extern void scratchpad_Save(void);
-extern void scratchpad_Restore(void);
 extern void func_800204C0(Unk80101EC8Record *);
 
 /* Per-frame update of character `arg0`'s record from this frame's pad input:

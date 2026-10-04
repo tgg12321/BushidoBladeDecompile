@@ -315,19 +315,15 @@ extern s32 D_800F1180;
 s32 printf(s32 *, s32);               /* extern */
 s32 func_8005C2A8(s32 *, s16, s32);
 s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2);
-extern s32 func_80073728(s32, s32);
-extern s32 func_8007352C(s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 extern s32 SetDrawArea();
-extern s32 func_8007352C();
 void func_80060A68(void);
 void func_80060B70(void);
 void func_80060C60(void);
 void func_80060E38(s32 arg0, s32 arg1);
 
 extern s32 func_80041E10();
-extern s32 func_800421A4();
 
 
 

@@ -14,7 +14,6 @@ extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
 extern u8 D_800A38AB;
-void func_80026DA4(void);
 
 INCLUDE_RODATA("asm/rodata", D_80010478);
 s32 func_800272FC(s32 a0) {

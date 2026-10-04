@@ -86,7 +86,6 @@ s32 func_80041650(s32 a0) {
     }
     return -1;
 }
-extern void func_80041398(s32);
 
 /* func_80041688 (gnd_init_80041688): sets or clears bit 0 of the flag byte
  * in every bone record of player arg0, then pushes the player's colour

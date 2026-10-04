@@ -8,7 +8,6 @@
 #include "bb2_const.h"
 
 /* Extern function declarations */
-extern void pad_ResetState(void);
 
 
 
@@ -120,12 +119,6 @@ extern void func_80022568(u8 *);
 
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
-extern void func_80077AE0(void);
-extern void func_80077B00(void);
-extern u16 bits_ExtractMask3F83F8(s32);
-extern s32 bits_DepositMask3F83F8(s16);
-extern u16 func_80019488(void);
-extern void func_800194C0(s16);
 extern u16 rand(void);
 extern void func_80019568(s32);
 extern u8 D_800A38AC;
@@ -638,7 +631,6 @@ extern s32 D_800A38B4;
 
 
 extern s32 func_80052C28(s32, s32);
-extern s32 func_800788B0(void);
 extern s32 func_8005E54C(s32, s32, s32);
 extern void func_8001CD68(u8 *);
 
@@ -793,7 +785,6 @@ call_bar:
     func_8003B5A4();
 }
 
-extern void func_80078824(s32);
 void func_8003BE10(void) {
     gpu_ResetGraphMode1();
     gpu_InitDisplay();
@@ -2563,9 +2554,6 @@ const char D_80010D8C[16] = "Multipul Model";
 
 /* Forward declarations */
 extern void sys_StubEmpty3(s32, s32, s32);
-extern void obj_ClearAll(void);
-extern void sys_StubEmpty2(void);
-extern void obj_Clear(s32);
 
 /* Externs for globals */
 extern void func_8001924C(s32 *, s32);
@@ -2850,8 +2838,6 @@ void func_8003F824(u8 *arg0, s32 arg1) {
         func_80045A28(*(s16 *)(arg0 + 4), cur - *(u8 **)(arg0 + 0x1C));
     }
 }
-extern s32 obj_CalcOffset(s32, s32);
-extern s32 func_80017D84(u8 *);
 extern u16 **D_80103608[];
 extern s16 D_80094AEC[];
 s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2);

@@ -17,7 +17,6 @@ typedef struct {
 
 
 /* Forward declarations for called functions */
-extern void func_8001945C(void);
 extern void ClearImage(void *, s32, s32, s32);
 
 /* Externs for globals */
@@ -213,7 +212,6 @@ void disp_Init(void) {
     DrawSync(0);
 }
 extern void InitPAD(u8 *, s32, u8 *, s32);
-extern void memcard_Init(void);
 extern u8 g_pad_buf;
 void sys_Init(void) {
     u8 *base = &g_pad_buf;
@@ -317,7 +315,6 @@ extern u8 D_800A3744;
 extern u8 D_800A3745;
 extern u8 D_800A3746;
 extern u8 D_800A36B0;
-extern void pad_ResetStateMarkValid(void);
 void sys_GameInit(void) {
     printf(g_str_limit, 0x8010DB00);
     func_800167EC();

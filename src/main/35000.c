@@ -9,7 +9,6 @@
 /* Declarations from the file this TU was split from (text1a_c.c). */
 extern void func_80052C10(void);
 extern s16 D_800963EE;
-extern void func_80041430(s32, s32);
 extern s16 Judge[];
 extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern s32 rcos(s32);
@@ -17,7 +16,6 @@ extern s32 rsin(s32);
 void func_800433E4();
 void func_80044100(s32 a0, s32 a1);
 extern void func_800520B8(s32, s32, s32);
-extern void func_800417D0(s32 *);
 
 void func_80044800(void) {
     SVECTOR sv;
