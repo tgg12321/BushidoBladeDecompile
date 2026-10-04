@@ -600,14 +600,14 @@ end:
     D_800A3464 = 0xC06013;
 }
 extern u8 D_800F1152[];
-void func_800618B4(s32 *arg0, s32 arg1) {
+void func_800618B4(s32 *arg0, s16 *arg1) {
     /* FAKE: local pointer alias to D_800F116C (as in the siblings func_80061658 / func_80061710): one pseudo
      * holds &D_800F116C instead of re-materializing it per use; the direct-global form scores 16. */
     s32 *v1 = (s32 *)&D_800F116C;
     s32 *p;
     D_800A3468 = (s32)v1;
     D_800F1178 = (s32)arg0;
-    D_800F117C = arg1;
+    D_800F117C = (s32)arg1;
     if (D_800F1152[0] != 0) {
         if (D_800F1152[1] != 0) {
             D_800F1152[1] = 0;

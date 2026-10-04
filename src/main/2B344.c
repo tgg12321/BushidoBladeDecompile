@@ -1331,10 +1331,9 @@ void func_8003CE18(void) {
     D_800A3834 = 0x1D;
     gpu_SetDispMaskOn();
 }
-extern void func_800618B4(s32 *, s32 *);
 extern void func_8003B328(void);
 extern void func_8003B534(s32);
-extern s32 D_800A312C;
+extern SVECTOR D_800A312C;
 void func_8003CF84(void) {
     /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner rulings 2026-08-17 + 2026-08-18): reconstructs the original frame's 16-byte allocated-but-untouched leading region (compiled-out >=7-word call). SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. */
     volatile u32 pre_pad[4];
@@ -1374,7 +1373,7 @@ void func_8003CF84(void) {
         vec[0] += D_8008EB10;
         vec[1] += D_8008EB14;
         vec[2] += D_8008EB18;
-        func_800618B4(vec, &D_800A312C);
+        func_800618B4(vec, &D_800A312C.vx);
     }
     a = func_8005507C();
     b = func_8005508C();
@@ -2548,7 +2547,6 @@ const char D_80010D8C[16] = "Multipul Model";
 /* Forward declarations */
 
 /* Externs for globals */
-extern void func_8001924C(s32 *, s32);
 extern void gte_SetMatrixRotTransIR(s32 *, s32 *, s16 *);
 
 /* Externs for globals */
@@ -2711,13 +2709,13 @@ void func_8003F62C(s32 *a0) {
     if (s0 == 0) return;
     if (s0[3]) {
         func_8004016C(*(s16 *)((u8 *)s1 + 4));
-        func_8003F824(s1, 0);
+        func_8003F824((u8 *)s1, 0);
     }
     if (s0[1]) {
         func_8004001C((u8 *)s0);
     }
     func_8003F6D8(s0);
-    func_8001924C((s32 *)((u8 *)s0 + 0x418), s0[0]);
+    func_8001924C(&s0[0x20C], s0[0]);
     if (s0[1]) {
         func_80040068((u8 *)s0);
         s0[1] = 0;

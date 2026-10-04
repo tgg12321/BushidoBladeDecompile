@@ -169,14 +169,13 @@ void func_800404D8(void) {
 extern void func_80040594(s32 *);
 extern void func_800408F8(s32 *);
 extern void func_80040B44(s32 *);
-extern void func_8003F824(s32 *, s32);
 s32 *func_80040510(s32 a0, s32 a1, s32 a2) {
     s32 *ptr;
     ptr = (s32 *)func_80045878(a0, a1, a2);
     g_player_ptrs[a0] = ptr;
     func_80040594(ptr);
     /* FAKE: loop-note ref weighting seats ptr in s0 (s0/s1 swap) */
-    do { func_800408F8(ptr); func_80040B44(ptr); func_8003F824(ptr, 1); } while (0);
+    do { func_800408F8(ptr); func_80040B44(ptr); func_8003F824((u8 *)ptr, 1); } while (0);
     func_8003FFC4(ptr);
     func_80040CB8(ptr);
     func_8003E120();
