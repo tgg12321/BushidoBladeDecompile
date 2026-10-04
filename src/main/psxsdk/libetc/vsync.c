@@ -2,6 +2,7 @@
  * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libapi.h>
+#include <psxsdk/libc.h>
 #include <psxsdk/libetc.h>
 
 /* .rodata 0x80016318..0x80016328: v_wait's timeout message (moved from src/text1a_b_tail_rodata.c,
@@ -69,7 +70,6 @@ s32 VSync(s32 a0) {
     return s1_val;
 }
 
-extern void puts(void *);
 /* PsyQ 4.0 LIBETC VSYNC: v_wait (static) — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libetc/vsync.c.
    FAKE(partial-use volatile array, Ruling 3): only [0] is
@@ -81,7 +81,7 @@ void v_wait(s32 a0, s32 a1) {
     timeout[0] = a1 << 0xF;
     while (Vcount < a0) {
         if (timeout[0]-- == 0) {
-            puts(&D_80016318);
+            puts(D_80016318);
             ChangeClearPAD(0);
             ChangeClearRCnt(3, 0);
             return;

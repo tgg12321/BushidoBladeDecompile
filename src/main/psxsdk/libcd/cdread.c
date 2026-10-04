@@ -4,6 +4,7 @@
  * D3). */
 #include "common.h"
 #include "libcd_internal.h"
+#include <psxsdk/libc.h>
 #include <psxsdk/libetc.h>
 
 /* .rodata 0x800162D4..0x80016318: cb_read's and cd_read_retry's messages (moved from
@@ -27,7 +28,6 @@ const char D_80016304[20] =
 /* Declarations from the file this module was split from (src/main/psxsdk/libcd/bios.c, ex system.c): the
  * LIBCD SYS and BIOS functions CDREAD calls, declared as their definitions declare them (the old file
  * defined them above this module). */
-extern void puts(void *);
 s32 CdGetSector(s32 madr, s32 size);
 
 
@@ -69,7 +69,7 @@ static void cb_read(u8 intr, u8 *result) {
                     CdGetSector((s32)pos, 3);
                 }
                 if (CdPosToInt((CdlLOC *)pos) != D_800A14D0.pos) {
-                    puts(&D_800162D4);
+                    puts(D_800162D4);
                     D_800A14D0.cnt = -1;
                 }
             }
@@ -138,7 +138,7 @@ s32 cd_read_retry(s32 arg0) {
     }
     if (CdStatus() & 0x10) {
         if (!(VSync(-1) & 0x3F)) {
-            puts(&D_800162EC);
+            puts(D_800162EC);
         }
         CdControlF(1, 0);
         D_800A14D0.t1 = VSync(-1);
@@ -146,7 +146,7 @@ s32 cd_read_retry(s32 arg0) {
         return D_800A14D0.cnt;
     }
     if (arg0 != 0) {
-        puts(&D_80016304);
+        puts(D_80016304);
         CdControl(9, 0, 0);
         if (CdControl(2, CdLastPos(), 0) == 0) {
             return D_800A14D0.cnt = -1;

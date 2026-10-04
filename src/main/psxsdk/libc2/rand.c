@@ -9,6 +9,6 @@ s32 rand(void) {
     return (D_800F1848 >> 16) & 0x7FFF;
 }
 
-void srand(s32 a0) {
+void srand(u32 a0) {
     D_800F1848 = a0;
 }

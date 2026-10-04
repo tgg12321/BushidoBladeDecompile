@@ -6,7 +6,7 @@
 
 /* PsyQ 4.0 LIBC2 MEMMOVE: memmove — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libc/memmove.c */
-u8 *memmove(u8 *dst, u8 *src, s32 n) {
+void *memmove(u8 *dst, u8 *src, s32 n) {
     if (dst >= src) {
         while (n-- > 0) {
             dst[n] = src[n];

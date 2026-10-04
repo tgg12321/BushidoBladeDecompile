@@ -1,0 +1,1 @@
+{"func": "strlen", "addr": "800791D8", "verdict": "PASS", "body_hash": "90101cb95e6d813d", "body_kind": "c", "file": "main/psxsdk/libc2/strlen", "reviewer": "p2-rev-l1", "scope": "cheat-cleanup", "date": "2026-10-04T08:14:22Z", "head": "17a062ed5", "notes": ""}

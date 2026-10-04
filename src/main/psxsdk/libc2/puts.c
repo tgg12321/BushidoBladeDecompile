@@ -15,8 +15,7 @@ const char D_800162CC[8] =
    2026-07-09); no public C ref (absent from sotn psxsdk tree); transcribed
    from the ground-truth object: putchar loop with "<NULL>" fallback. */
 extern void putchar();
-void puts(void *a0) {
-    char *s = a0;
+void puts(char *s) {
     char c;
 
     if (s == NULL) {

@@ -1,0 +1,1 @@
+{"func": "memmove", "addr": "8007A28C", "verdict": "PASS", "body_hash": "8076e5cfcd318bda", "body_kind": "c", "file": "main/psxsdk/libc2/memmove", "reviewer": "p2-rev-l1", "scope": "cheat-cleanup", "date": "2026-10-04T08:13:43Z", "head": "17a062ed5", "notes": ""}

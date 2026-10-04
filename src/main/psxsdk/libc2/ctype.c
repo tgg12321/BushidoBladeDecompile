@@ -4,16 +4,16 @@
 #include <psxsdk/libc.h>
 
 extern u8 _ctype__plus_0x1;
-u8 toupper(u8 a0) {
-    u8 c = a0;
+char toupper(char a0) {
+    char c = a0;
     if ((&_ctype__plus_0x1)[c] & 2) {
         c = a0 - 0x20;
     }
     return c;
 }
 extern u8 _ctype__plus_0x1;
-u8 tolower(u8 a0) {
-    u8 c = a0;
+char tolower(char a0) {
+    char c = a0;
     if ((&_ctype__plus_0x1)[c] & 1) {
         c = a0 + 0x20;
     }

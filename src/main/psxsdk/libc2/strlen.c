@@ -3,7 +3,7 @@
 #include "common.h"
 #include <psxsdk/libc.h>
 
-s32 strlen(u8 *a0) {
+s32 strlen(char *a0) {
     s32 v1 = 0;
     if (!a0) {
         return 0;

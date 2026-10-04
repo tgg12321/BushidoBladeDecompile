@@ -1,0 +1,1 @@
+{"func": "srand", "addr": "80079184", "verdict": "PASS", "body_hash": "c6c360a902a4f496", "body_kind": "c", "file": "main/psxsdk/libc2/rand", "reviewer": "p2-rev-l1", "scope": "cheat-cleanup", "date": "2026-10-04T08:14:08Z", "head": "17a062ed5", "notes": ""}

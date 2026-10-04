@@ -16,7 +16,6 @@
 typedef void *va_list;
 #define LOH(x) (*(s16*)&(x))
 #define LOW(x) (*(s32*)&(x))
-extern void *memmove();
 typedef struct {
     u32 leftJustified : 1;
     u32 prependPlus : 1;

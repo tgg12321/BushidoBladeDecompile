@@ -3,6 +3,7 @@
  * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "psx.h"
+#include <psxsdk/libc.h>
 #include <psxsdk/libetc.h>
 #include "libcd_internal.h"
 
@@ -102,7 +103,6 @@ extern volatile u8 *g_cd_reg0;
 extern volatile u8 *g_cd_reg1;
 extern volatile u8 *g_cd_reg2;
 extern volatile u8 *g_cd_reg3;
-extern void puts();
 extern void printf();
 
 s32 getintr(void) {
@@ -247,7 +247,6 @@ const char D_800162C0[12] =
     "CD_datasync\0"
     ;
 
-extern void puts(void *);
 extern void printf();
 extern s32 getintr(void);
 extern void Result;
@@ -280,7 +279,7 @@ static inline void set_alarm(char *name)
 static inline s32 get_alarm(void)
 {
     if (Alarm.time < VSync(-1) || Alarm.count++ > 0x3C0000) {
-        puts(&D_800161B8);
+        puts(D_800161B8);
         printf(&D_800161C8, Alarm.name, CD_comstr[CD_com],
                CD_intstr[Intr.sync], CD_intstr[Intr.ready]);
         CD_flush();
@@ -503,7 +502,7 @@ extern void D_800A1498;
 s32 CD_init(void) {
     u8 v0;
 
-    puts(&D_800162A8);
+    puts(D_800162A8);
     printf(&D_800162B4, &D_800A1498);
 
     CD_com = 0;
@@ -550,7 +549,6 @@ s32 CD_init(void) {
     }
     return 0;
 }
-extern void puts(void *);
 extern void printf();
 
 extern volatile u32 *g_cd_dma_ctrl;

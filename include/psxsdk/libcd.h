@@ -2,8 +2,8 @@
 #define PSXSDK_LIBCD_H
 
 /* PsyQ LIBCD types and entry points (Sony's libcd.h; SOTN include/psxsdk/libcd.h). Each prototype
- * agrees with its C definition in src/main/psxsdk/libcd/ and every caller; where that differs
- * from PsyQ's LIBCD.H spelling the entry carries a PsyQ: note. Library-internal state and entry
+ * agrees with its C definition in src/main/psxsdk/libcd/; where that differs from PsyQ's
+ * LIBCD.H spelling the entry carries a PsyQ: note. Library-internal state and entry
  * points shared by the modules: src/main/psxsdk/libcd/libcd_internal.h. */
 
 #include "common.h"

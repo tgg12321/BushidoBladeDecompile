@@ -2,8 +2,8 @@
 #define PSXSDK_LIBGPU_H
 
 /* PsyQ LIBGPU types, macros and entry points (Sony's libgpu.h; SOTN include/psxsdk/libgpu.h).
- * Each prototype agrees with its C definition in src/main/psxsdk/libgpu/ and every caller; where
- * that differs from PsyQ's LIBGPU.H spelling the entry carries a PsyQ: note. */
+ * Each prototype agrees with its C definition in src/main/psxsdk/libgpu/; where that differs
+ * from PsyQ's LIBGPU.H spelling the entry carries a PsyQ: note. */
 
 #include "common.h"
 

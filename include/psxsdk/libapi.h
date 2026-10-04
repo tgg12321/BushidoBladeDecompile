@@ -2,8 +2,8 @@
 #define PSXSDK_LIBAPI_H
 
 /* PsyQ LIBAPI entry points (Sony's libapi.h; SOTN include/psxsdk/libapi.h). Most are BIOS vector
- * trampolines (src/main/psxsdk/libapi/). Each prototype agrees with its definition and every
- * caller; where that differs from PsyQ's LIBAPI.H spelling the entry carries a PsyQ: note. */
+ * trampolines (src/main/psxsdk/libapi/). Each prototype agrees with its C / asm definition; where
+ * that differs from PsyQ's LIBAPI.H spelling the entry carries a PsyQ: note. */
 
 #include "common.h"
 #include <psxsdk/kernel.h>

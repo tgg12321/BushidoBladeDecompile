@@ -2,8 +2,8 @@
 #define PSXSDK_LIBGTE_H
 
 /* PsyQ LIBGTE types and entry points (Sony's libgte.h; SOTN include/psxsdk/libgte.h). Each
- * prototype agrees with its C / asm definition in src/main/psxsdk/libgte/ and every caller (long is
- * spelled s32); where that differs from PsyQ's LIBGTE.H spelling the entry carries a
+ * prototype agrees with its C / asm definition in src/main/psxsdk/libgte/ (long is spelled s32);
+ * where that differs from PsyQ's LIBGTE.H spelling the entry carries a
  * PsyQ: note. The cop2 instruction macros are in include/gte.h. */
 
 #include "common.h"

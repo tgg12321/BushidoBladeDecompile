@@ -1,0 +1,1 @@
+{"func": "v_wait", "addr": "80082A14", "verdict": "PASS", "body_hash": "a235f71702336e8a", "body_kind": "c", "file": "main/psxsdk/libetc/vsync", "reviewer": "p2-rev-l1", "scope": "cheat-cleanup", "date": "2026-10-04T08:15:25Z", "head": "17a062ed5", "notes": ""}

@@ -1,0 +1,1 @@
+{"func": "tolower", "addr": "800798FC", "verdict": "PASS", "body_hash": "48cfa2a4e5ace140", "body_kind": "c", "file": "main/psxsdk/libc2/ctype", "reviewer": "p2-rev-l1", "scope": "cheat-cleanup", "date": "2026-10-04T08:13:19Z", "head": "17a062ed5", "notes": ""}
