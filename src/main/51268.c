@@ -269,7 +269,7 @@ void func_80060E04(s32 arg0) {
     D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
     D_800A3720 = D_800A37D4;
 }
-void func_80060E38(s32 arg0, s32 arg1) {
+void func_80060E38(s16 *arg0, s32 *arg1) {
     D_800A3468 = 0x1F800000;
     D_800A346C = 0x1F800018;
     D_800A3470 = 0x1F800020;
@@ -302,8 +302,8 @@ void func_80060E38(s32 arg0, s32 arg1) {
     D_800A3484 = 0x1F8000AC;
     D_800A348C = 0x1F8000B0;
     D_800A34EC = 0x1F8000B8;
-    *(s32 *)0x1F800004 = arg0;
-    *(s32 *)0x1F800008 = arg1;
+    *(s16 **)0x1F800004 = arg0;
+    *(s32 **)0x1F800008 = arg1;
 }
 
 /* Declarations from the file this TU was split from (text1b.c). */
@@ -321,7 +321,7 @@ extern s32 SetDrawArea();
 void func_80060A68(void);
 void func_80060B70(void);
 void func_80060C60(void);
-void func_80060E38(s32 arg0, s32 arg1);
+void func_80060E38(s16 *arg0, s32 *arg1);
 
 extern s32 func_80041E10();
 
@@ -332,10 +332,10 @@ const char D_800158E0[24] = "eff prim over :%d \n";
 
 extern s32 D_800F1140;
 
-void func_80061064(s32 *a0, s32 *a1) {
+void func_80061064(s16 *a0, s32 *a1) {
     s32 temp_a1;
     s32 i;
-    func_80060E38((s32)a0, (s32)a1);
+    func_80060E38(a0, a1);
     i = 0;
     do {
         *(s32 **)((s32)D_800A3468 + 0x14) = (s32 *)(i + (s32)&D_800F1150);
@@ -915,7 +915,7 @@ void func_800620B8(s16 *pos, s32 *trans) {
     u16 (*strip16)[4]; /* FAKE: alias of D_8009BA30 */
     u16 *alt16; /* FAKE: alias of D_8009BA58 */
 
-    func_80060E38((s32)pos, (s32)trans);
+    func_80060E38(pos, trans);
     outer = D_800A3468;
     dst16 = (u16 *)D_800A346C;
     dst16[0] = (*(u16 **)(outer + 4))[0];

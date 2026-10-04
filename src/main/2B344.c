@@ -1343,7 +1343,7 @@ void func_8003CF84(void) {
     s32 vec[3];
     /* FAKE: unwritten TRAILING pad (owner ruling 2026-08-18, this function only): the target frame has a second 8-byte allocated-but-untouched object above vec, which no phantom-slot producer reproduces. */
     volatile u32 pad2[2];
-    s32 *a;
+    s16 *a;
     s32 *b;
     s32 flag = 0;
     s8 p;

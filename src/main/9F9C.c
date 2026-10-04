@@ -1952,7 +1952,7 @@ common_tail:
     {
         s32 *p20 = &s2->w20;
         func_8001A538(&local.w0, p20);
-        func_80061064((s32 *)&local.h10, p20);
+        func_80061064(&local.h10, p20);
     }
     func_8003F3D4(s2->h30[0]);
     func_8003F3D4(s2->h30[1]);
@@ -1991,7 +1991,7 @@ void func_8001E6E4(s32 arg0) {
     {
         s32 *p20 = (s32 *)((u8 *)s2 + 0x20);
         func_8001A538((s32 *)&local, p20);
-        func_80061064((s32 *)&local.rx, p20);
+        func_80061064(&local.rx, p20);
     }
 
     D_800A36B4 = (s32)s2;

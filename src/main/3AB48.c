@@ -967,8 +967,8 @@ void func_80054FDC(s32 a0) {
         D_800EFAE8.unk3C[1] = a0 + D_800EFAE8.unk3C[1];
     }
 }
-s32* func_8005507C(void) {
-    return (s32 *)D_800EFAE8.unk24;
+s16 *func_8005507C(void) {
+    return D_800EFAE8.unk24;
 }
 s32* func_8005508C(void) {
     return D_80101DF0.xf.mat.t;
