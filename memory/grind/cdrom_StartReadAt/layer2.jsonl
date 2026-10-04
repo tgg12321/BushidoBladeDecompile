@@ -1,0 +1,1 @@
+{"func": "cdrom_StartReadAt", "addr": "80036E34", "verdict": "PASS", "body_hash": "997e22c20454e454", "body_kind": "c", "file": "main/cdrom", "reviewer": "p2-rev-c1", "scope": "cheat-cleanup", "date": "2026-10-04T06:50:10Z", "head": "5aaa2118b", "notes": ""}

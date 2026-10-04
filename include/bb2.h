@@ -666,8 +666,6 @@ extern void sys_Panic(void);
  * definition (src/main/psxsdk/). Reconciling them is Phase 2 work; until then they stay here,
  * where the game code has always seen them. */
 extern void ResetGraph(s32);
-extern void CdInit(void);
-extern void CdSetDebug(s32);
 extern void CdReadyCallback(s32);
 
 #endif /* BB2_H */

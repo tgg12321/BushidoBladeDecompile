@@ -31,7 +31,6 @@ void cdrom_FlushInit(void) {
     VSync(4);
 }
 extern void CdGetSector(s32, s32);
-extern s32 CdPosToInt(s32);
 void cdrom_ReadyCallback(u8 arg0) {
     s32 sp[4];
     if (arg0 == 1) {
@@ -41,7 +40,7 @@ void cdrom_ReadyCallback(u8 arg0) {
         }
         CdGetSector((s32)sp, 3);
         {
-            s32 v0 = CdPosToInt((s32)sp);
+            s32 v0 = CdPosToInt((CdlLOC *)sp);
             if (v0 != D_80101E58.rec.expected_pos) {
                 D_80101E58.rec.sectors_remaining = -2;
                 goto do_stop;

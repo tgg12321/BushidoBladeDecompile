@@ -30,7 +30,6 @@ const char D_80016304[20] =
 extern void puts(void *);
 s32 CdReadyCallback(s32 a0);
 s32 CdGetSector(s32 madr, s32 size);
-s32 CdPosToInt(u8 *a0);
 
 
 /* External linkage (Sony's cdread.c had cb_data static): the linked bytes
@@ -70,7 +69,7 @@ static void cb_read(u8 intr, u8 *result) {
                 } else {
                     CdGetSector((s32)pos, 3);
                 }
-                if (CdPosToInt((u8 *)pos) != D_800A14D0.pos) {
+                if (CdPosToInt((CdlLOC *)pos) != D_800A14D0.pos) {
                     puts(&D_800162D4);
                     D_800A14D0.cnt = -1;
                 }

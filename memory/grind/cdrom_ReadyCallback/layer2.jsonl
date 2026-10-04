@@ -1,0 +1,1 @@
+{"func": "cdrom_ReadyCallback", "addr": "80036064", "verdict": "PASS", "body_hash": "5162655597f989b7", "body_kind": "c", "file": "main/267A8", "reviewer": "p2-rev-c1", "scope": "cheat-cleanup", "date": "2026-10-04T06:49:10Z", "head": "5aaa2118b", "notes": ""}

@@ -13,7 +13,6 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-extern void CdMix(CdlATV *);
 CdlATV g_cd_atv;
 void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     g_cd_atv.val0 = (u8)arg0;

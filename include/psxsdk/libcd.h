@@ -1,9 +1,10 @@
 #ifndef PSXSDK_LIBCD_H
 #define PSXSDK_LIBCD_H
 
-/* PsyQ LIBCD types and entry points (Sony's libcd.h; SOTN include/psxsdk/libcd.h), spelled as
- * BB2's code uses them (the module definitions in src/main/psxsdk/libcd/). Library-internal
- * state shared by the modules: src/main/psxsdk/libcd/libcd_internal.h. */
+/* PsyQ LIBCD types and entry points (Sony's libcd.h; SOTN include/psxsdk/libcd.h). Each prototype
+ * agrees with its C definition in src/main/psxsdk/libcd/ and every caller; where that differs
+ * from PsyQ's LIBCD.H spelling the entry carries a PsyQ: note. Library-internal state and entry
+ * points shared by the modules: src/main/psxsdk/libcd/libcd_internal.h. */
 
 #include "common.h"
 
@@ -62,24 +63,28 @@ s32 CdControl(u8 com, u8 *param, u8 *result);
 s32 CdControlB(u8 com, u8 *param, u8 *result);
 s32 CdControlF(u8 com, u8 *param);
 
+extern s32 CdInit(void);
 extern s32 CdReset(s32);
 extern void CdFlush(void);
-extern u32 CdStatus(void);
-extern u32 CdMode(void);
-extern u32 CdLastCom(void);
-extern void *CdLastPos(void);
-extern void *CdComstr(u8);
-extern void *CdIntstr(u8);
+extern s32 CdSetDebug(s32);
+extern u32 CdStatus(void);   /* PsyQ: int CdStatus(void) */
+extern u32 CdMode(void);     /* PsyQ: int CdMode(void) */
+extern u32 CdLastCom(void);  /* PsyQ: int CdLastCom(void) */
+extern void *CdLastPos(void); /* PsyQ: CdlLOC *CdLastPos(void) */
+extern void *CdComstr(u8);   /* PsyQ: char *CdComstr(u_char) */
+extern void *CdIntstr(u8);   /* PsyQ: char *CdIntstr(u_char) */
 extern s32 CdSync(s32, u8 *);
 extern s32 CdReady(s32, u8 *);
-extern s32 CdSyncCallback(s32);
-extern s32 CdDataCallback(s32);
-extern void CdDataSync(s32);
-extern s32 CdGetSector2(s32, s32);
-extern s32 CdRead(s32, s32, s32);
-extern s32 CdReadSync(s32, s32);
-extern s32 CdReadCallback(s32);
-extern s32 CdReadMode(s32);
+extern s32 CdSyncCallback(s32);  /* PsyQ: CdlCB CdSyncCallback(CdlCB) */
+extern s32 CdDataCallback(s32);  /* PsyQ: void (*CdDataCallback(void (*func)())) */
+extern void CdDataSync(s32);     /* PsyQ: int CdDataSync(int) */
+extern s32 CdGetSector2(s32, s32); /* PsyQ: int CdGetSector2(void *, int) */
+extern s32 CdMix(CdlATV *);
+extern CdlLOC *CdIntToPos(s32, CdlLOC *);
+extern s32 CdPosToInt(CdlLOC *);
+extern s32 CdRead(s32, s32, s32);  /* PsyQ: int CdRead(int, u_long *, int) */
+extern s32 CdReadSync(s32, s32);   /* PsyQ: int CdReadSync(int, u_char *) */
+extern s32 CdReadCallback(s32);    /* PsyQ: CdlCB CdReadCallback(CdlCB) */
 extern void CdReadBreak(void);
 
 #endif /* PSXSDK_LIBCD_H */

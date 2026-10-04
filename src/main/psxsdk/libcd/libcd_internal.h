@@ -28,4 +28,7 @@ extern s32 CD_getsector(s32, s32);
 extern s32 CD_getsector2(s32, s32);
 extern s32 CD_datasync(s32);
 
+/* CDREAD read-mode setter (not in PsyQ LIBCD.H; CdInit calls it). */
+extern s32 CdReadMode(s32);
+
 #endif /* LIBCD_INTERNAL_H */

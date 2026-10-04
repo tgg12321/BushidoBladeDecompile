@@ -277,27 +277,27 @@ void CdDataSync(s32 a0) {
 
 /* PsyQ 4.0 LIBCD sys: CdIntToPos — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
-u8 *CdIntToPos(s32 i, u8 *p) {
+CdlLOC *CdIntToPos(s32 i, CdlLOC *p) {
     inline int ENCODE_BCD(n) { return ((n / 10) << 4) + (n % 10); }
 
     i += 150;
-    p[2] = ENCODE_BCD(i % 75);
-    p[1] = ENCODE_BCD(i / 75 % 60);
-    p[0] = ENCODE_BCD(i / 75 / 60);
+    p->sector = ENCODE_BCD(i % 75);
+    p->second = ENCODE_BCD(i / 75 % 60);
+    p->minute = ENCODE_BCD(i / 75 / 60);
     return p;
 }
 
 
-s32 CdPosToInt(u8 *a0) {
-    u8 b0 = a0[0];
-    u8 b1 = a0[1];
+s32 CdPosToInt(CdlLOC *p) {
+    u8 b0 = p->minute;
+    u8 b1 = p->second;
     s32 min, sec, frm;
     min = (b0 >> 4) * 10 + (b0 & 0xF);
     sec = min * 60;
     sec += (b1 >> 4) * 10 + (b1 & 0xF);
     {
         s32 total = sec * 75;
-        u8 b2 = a0[2];
+        u8 b2 = p->sector;
         frm = (b2 >> 4) * 10 + (b2 & 0xF);
         total += frm;
         return total - 150;

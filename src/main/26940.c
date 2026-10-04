@@ -13,10 +13,8 @@
 #include "common.h"
 #include "bb2.h"
 
-extern s32 CdPosToInt(s32);
 extern void cdrom_ReadyCallback(u8 arg0);
 
-extern void CdMix(CdlATV *);
 extern void cdrom_SetMix(s32, s32, s32, s32);
 CdlATV g_cd_atv;
 CdlATV D_800A36B8;
@@ -108,7 +106,7 @@ void func_80036140(void) {
             if (ret == 1) {
                 if (!(g_cd_result[4] & 0x80)) {
                     D_80101E58.rec.unk3C = 0;
-                    if (CdPosToInt((s32)&g_cd_result[3]) >= D_80101E58.rec.unk14) {
+                    if (CdPosToInt((CdlLOC *)&g_cd_result[3]) >= D_80101E58.rec.unk14) {
                         cdrom_SetMix(0, 0, 0, 0);
                         D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
                     }
@@ -135,7 +133,7 @@ void func_80036140(void) {
             if (ret == 2) {
                 D_80101E58.rec.unk02 = 0x15;
                 if (D_80101E58.rec.unk34 != 0) {
-                    s32 pos = CdPosToInt((s32)&g_cd_result[5]);
+                    s32 pos = CdPosToInt((CdlLOC *)&g_cd_result[5]);
                     if (pos >= D_80101E58.rec.unk14) {
                         cdrom_SetMix(0, 0, 0, 0);
                         D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
@@ -253,7 +251,7 @@ void func_80036940(void) {
         if (++D_80101E58.rec.unk2C >= 3) {
             D_80101E58.rec.dest_buffer = D_80101E58.rec.unk1C;
             D_80101E58.rec.sectors_remaining = D_80101E58.rec.unk18;
-            D_80101E58.rec.expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
+            D_80101E58.rec.expected_pos = CdPosToInt(&D_80101E58.rec.pair.loc);
             CdControl(2, (u8 *)&D_80101E58.rec.pair, 0);
             D_80101E58.rec.unk38 = 0;
             D_80101E58.rec.unk02 = 5;

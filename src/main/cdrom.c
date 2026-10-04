@@ -12,7 +12,6 @@ extern void func_8003AA48(void);
 extern void func_8003AAB0(void);
 extern s32 EnterCriticalSection(void);
 extern void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
-extern s32 CdPosToInt(s32);
 
 s32 cdrom_IsIdle(void) {
     return D_80101E58.rec.unk02 == 0;
@@ -38,7 +37,7 @@ s32 cdrom_StartReadAt(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (cdrom_StartRead(arg0, arg1) == 0) {
         return 0;
     }
-    CdIntToPos(CdPosToInt((s32)&D_80101E58.rec.pair) + arg2, (s32)&D_80101E58.rec.pair);
+    CdIntToPos(CdPosToInt(&D_80101E58.rec.pair.loc) + arg2, &D_80101E58.rec.pair.loc);
     D_80101E58.rec.unk18 = arg3;
     return 1;
 }
@@ -83,7 +82,7 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
 
     D_80101E58.rec.unk00 = arg0;
     D_80101E58.rec.pair = g_cd_file_table[D_80101E58.rec.unk00];
-    D_80101E58.rec.unk14 = CdPosToInt((s32)&g_cd_file_table[D_80101E58.rec.unk00]) +
+    D_80101E58.rec.unk14 = CdPosToInt(&g_cd_file_table[D_80101E58.rec.unk00].loc) +
                            ((u32)g_cd_file_table[D_80101E58.rec.unk00].size >> 11) - 0x96;
 
     if (arg1 < 0) {
@@ -111,7 +110,7 @@ s32 func_80037110(s32 arg0) {
     v0 = cdrom_StartAudio(v0, s0[1]);
     if (v0 != 0) {
         if (*(s32 *)(s0 + 4) != -1) {
-            v0 = CdPosToInt((s32)&g_cd_file_table[D_80101E58.rec.unk00]);
+            v0 = CdPosToInt(&g_cd_file_table[D_80101E58.rec.unk00].loc);
             D_80101E58.rec.unk14 = v0 + *(s32 *)(s0 + 4);
         }
         return 1;
@@ -174,7 +173,6 @@ s32 cdrom_ReadWait(s32 nbytes, s32 buf, s32 mode) {
     } while (v > 0);
     return v;
 }
-extern void CdIntToPos(s32, s32);
 /* Loads a PS-EXE from disc (renamed cdrom_LoadExec 2026-09-07; was
  * special_camera_get_rot_dir - nothing camera-related). Seeks to entry
  * D_8008F12C[6] (=156, MOVOVL.EXE) of g_cd_file_table, reads
@@ -200,8 +198,8 @@ void cdrom_LoadExec(EXEC *dest) {
 
         *dest = *(EXEC *)&sp_buf[0x10];
 
-        pos = CdPosToInt((s32)&g_cd_file_table[index]);
-        CdIntToPos(pos + 1, (s32)sp_buf2);
+        pos = CdPosToInt(&g_cd_file_table[index].loc);
+        CdIntToPos(pos + 1, (CdlLOC *)sp_buf2);
         CdControl(2, sp_buf2, 0);
         v0 = cdrom_ReadWait(dest->t_size, dest->t_addr, mode);
         if (v0 == 0) break;
