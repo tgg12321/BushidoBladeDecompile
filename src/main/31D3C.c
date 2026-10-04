@@ -167,7 +167,7 @@ void func_800417D0(s32 *a0) {
     }
     if (((s16 *)a0)[3] != 2) {
         func = g_anim_func_table[((s16 *)a0)[4]];
-        func((Unk80101DF0Rot *)(a0 + 4), (Unk80101DF0Mat *)(a0 + 14));
+        func((SVECTOR *)(a0 + 4), (MATRIX *)(a0 + 14));
     }
     if ((s32 *)a0[3] != 0) {
         if (((s16 *)a0[3])[3] == 0) {
@@ -182,13 +182,13 @@ void func_800417D0(s32 *a0) {
     ((s16 *)a0)[3] = 1;
 }
 void func_800418D0(s32 *a0) {
-    Unk80101DF0Rot sp10;
+    SVECTOR sp10;
     AnimRotFunc func;
     sp10.vx = -(u16)((u16 *)a0)[8];
     sp10.vy = -(u16)((u16 *)a0)[9];
     sp10.vz = -(u16)((u16 *)a0)[10];
     func = g_anim_func_table[((s16 *)a0)[4]];
-    func(&sp10, (Unk80101DF0Mat *)(a0 + 14));
+    func(&sp10, (MATRIX *)(a0 + 14));
     ((Block16 *)(a0 + 6))[0] = ((Block16 *)(a0 + 14))[0];
     ((Block16 *)(a0 + 6))[1] = ((Block16 *)(a0 + 14))[1];
 }

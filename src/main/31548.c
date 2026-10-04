@@ -91,7 +91,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         *(s16 *)(s2 + 0x12) = -(s16)*(u16 *)((u8 *)s1 + 0x74);
         *(s16 *)(s2 + 0x14) = -(s16)*(u16 *)((u8 *)s1 + 0x76);
 
-        g_anim_func_table[0]((Unk80101DF0Rot *)(s2 + 0x10), (Unk80101DF0Mat *)(s2 + 0x38));
+        g_anim_func_table[0]((SVECTOR *)(s2 + 0x10), (MATRIX *)(s2 + 0x38));
 
         *(s32 *)(s2 + 0xB4) = *(s16 *)((u8 *)s1 + 0x78);
         *(s32 *)(s2 + 0xB8) = -(s32)*(s16 *)((u8 *)s1 + 0x7A);
@@ -100,7 +100,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         *(s16 *)(s2 + 0x7A) = -(s16)*(u16 *)((u8 *)s1 + 0x80);
         *(s16 *)(s2 + 0x7C) = -(s16)*(u16 *)((u8 *)s1 + 0x82);
 
-        g_anim_func_table[0]((Unk80101DF0Rot *)(s2 + 0x78), (Unk80101DF0Mat *)(s2 + 0xA0));
+        g_anim_func_table[0]((SVECTOR *)(s2 + 0x78), (MATRIX *)(s2 + 0xA0));
         break;
     }
     case 1:

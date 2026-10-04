@@ -317,7 +317,7 @@ extern void func_8004668C(void);
 extern void func_80046020(void);
 extern void func_80049E1C(void);
 
-extern void math_RotMatrixYXZ(Unk80101DF0Rot *, MATRIX *);
+extern void math_RotMatrixYXZ(SVECTOR *, MATRIX *);
 extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
 extern s16 Judge[];
 extern Unk80101DF0Record *D_800A3708;
@@ -521,8 +521,8 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
     s32 result[3];
     u16 new_var2;
     s32 trans[3];
-    Unk80101DF0Rot rot;
-    Unk80101DF0Mat matrix_buf;
+    SVECTOR rot;
+    MATRIX matrix_buf;
 
     D_800A3820 = (s32)&D_80102C00;
     {
@@ -690,7 +690,7 @@ void camera_InitBoneData(void) {
        physically live INSIDE g_cam_bone_data (+6/+8), so the dependency is
        real, but the split extern symbols hide it from GCC's alias analysis;
        no distinct-symbol spelling can express it. */
-    do { *(Unk80101DF0Mat *)&g_cam_bone_data = D_80101DF0.xf.mat; } while (0);
+    do { *(MATRIX *)&g_cam_bone_data = D_80101DF0.xf.mat; } while (0);
     {
         s16 h0 = D_800EEDD6;
         s16 h1 = D_800EEDD8;
@@ -796,7 +796,7 @@ void func_800475A4(void) {
     rot.vx = 0;
     rot.vy = 0;
     rot.vz = 0x6590;
-    ApplyMatrix((MATRIX *)&D_80101DF0.xf.mat, &rot, &result);
+    ApplyMatrix(&D_80101DF0.xf.mat, &rot, &result);
 
     angle = ratan2(result.vx, result.vz);
 
@@ -817,9 +817,9 @@ void func_800475A4(void) {
     base->xf.mat.t[0] = D_80101DF0.xf.mat.t[0];
     base->xf.mat.t[1] = D_80101DF0.xf.mat.t[1];
     base->xf.mat.t[2] = D_80101DF0.xf.mat.t[2] + 0x6590;
-    g_anim_func_table[4](&base->xf.rot, (Unk80101DF0Mat *)&buf1);
-    g_anim_func_table[0](&D_80101DF0.xf.rot, (Unk80101DF0Mat *)&buf2);
-    MulMatrix0(&buf2, &buf1, (MATRIX *)&base->xf.mat);
+    g_anim_func_table[4](&base->xf.rot, &buf1);
+    g_anim_func_table[0](&D_80101DF0.xf.rot, &buf2);
+    MulMatrix0(&buf2, &buf1, &base->xf.mat);
 
     {
         s32 *temp = (s32 *)D_800A3820;
@@ -2149,7 +2149,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             *(s16 *)(obj + 0x10) = rot_in[0];
             *(s16 *)(obj + 0x12) = rot_in[1];
             *(s16 *)(obj + 0x14) = rot_in[2];
-            g_anim_func_table[0]((Unk80101DF0Rot *)(obj + 0x10), (Unk80101DF0Mat *)(obj + 0x18));
+            g_anim_func_table[0]((SVECTOR *)(obj + 0x10), (MATRIX *)(obj + 0x18));
             *(s32 *)(obj + 0x2C) = pos[0];
             *(s32 *)(obj + 0x30) = pos[1];
             *(s32 *)(obj + 0x34) = pos[2];
@@ -2444,7 +2444,6 @@ void func_80049E4C(void) {
    type's alignment. */
 extern const Unk800153F0Record D_800153F0;
 extern void func_8004A09C(Unk800F62E0Rec *, u16 *);
-extern void SetColorMatrix(Unk80101DF0Mat *);
 
 void func_80049F4C(void) {
     Unk800153F0Record sp10;

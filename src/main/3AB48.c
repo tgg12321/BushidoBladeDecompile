@@ -905,13 +905,13 @@ s32 func_8005490C(void) {
     D_80101DF0.xf.rot.vz = v[5];
     if (s->unk1E != 0) {
         MATRIX m;
-        Unk80101DF0Rot rot;
+        SVECTOR rot;
         rot.vx = 0;
         rot.vz = 0;
         rot.vy = s->unk1E;
-        g_anim_func_table[0](&rot, (Unk80101DF0Mat *)&m);
+        g_anim_func_table[0](&rot, &m);
         g_anim_func_table[0](&D_80101DF0.xf.rot, &D_80101DF0.work);
-        MulMatrix2(&m, (MATRIX *)&D_80101DF0.work);
+        MulMatrix2(&m, &D_80101DF0.work);
         math_MatrixToAnglesYXZ((s32 *)&D_80101DF0.work, &D_80101DF0.xf.rot.vx);
         math_TransposeMatrixInPlace((u16 *)&D_80101DF0.work);
         D_80101DF0.xf.mat = D_80101DF0.work;

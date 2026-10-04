@@ -40,6 +40,7 @@ extern void ApplyMatrixLV(void *, void *, void *);
 extern VECTOR *ApplyRotMatrix(SVECTOR *, VECTOR *);
 extern VECTOR *ApplyRotMatrixLV(VECTOR *, VECTOR *);
 extern void SetRotMatrix(MATRIX *);
+extern void SetColorMatrix(MATRIX *);
 extern void SetTransMatrix(MATRIX *);
 extern void RotTrans(SVECTOR *, VECTOR *, s32 *);
 extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);

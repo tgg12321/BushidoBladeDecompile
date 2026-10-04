@@ -438,8 +438,8 @@ typedef struct { s32 x, y, z; } Vec3i32;
    (SPAD->unkA8) into Unk80101EC8Record.unk_180 as one 12-byte object. */
 typedef Vec3i32 LeafPos;
 
-/* PsyQ VECTOR / SVECTOR layouts (include/psxsdk/libgte.h) under local names, like
- * Unk80101DF0Rot below; retyping them as the Sony types is Phase 2 work.  func_80022580 copies
+/* Vec4i32 / SVec4i16 are the remaining local-name copies of the PsyQ VECTOR / SVECTOR
+ * layouts (include/psxsdk/libgte.h); retyping them as the Sony types is Phase 2 work.  func_80022580 copies
  * Unk80101EC8Record's +0xB8 and +0x104 as whole 16-byte VECTORs (pad included)
  * and +0x1C8 as a whole 8-byte SVECTOR. */
 typedef struct { s32 vx, vy, vz, pad; } Vec4i32;
@@ -960,16 +960,11 @@ typedef struct Rec1C {
  * s32 at +0x0C, rot, work.t, then xf.mat = work; it does not write +0x06),
  * func_800477E8 sets up the second (+0x06 as s16) and passes it to
  * func_800417D0, which reads +0x06 as an s16 state.
- * Rot / Mat are the PsyQ SVECTOR / MATRIX layouts
- * (include/psxsdk/libgte.h) under local names: they were spelled locally while
- * several TUs typedef'd SVECTOR/MATRIX themselves; retyping them is Phase 2 work. */
-typedef struct { s16 vx, vy, vz, pad; } Unk80101DF0Rot;
-
-typedef struct { s16 m[3][3]; u16 pad; s32 t[3]; } Unk80101DF0Mat;
-
+ * rot is the RotMatrix-style angle SVECTOR the rotation handlers take; mat and
+ * work are libgte MATRIXes (MulMatrix0 / ApplyMatrix / MulMatrix2 operands). */
 typedef struct {
-    Unk80101DF0Rot rot; /* +0x00 */
-    Unk80101DF0Mat mat; /* +0x08 */
+    SVECTOR rot; /* +0x00 */
+    MATRIX mat; /* +0x08 */
 } Unk80101DF0Xform;
 
 typedef struct {
@@ -982,7 +977,7 @@ typedef struct {
     s16 unkA;              /* +0x0A */
     s32 unkC;              /* +0x0C */
     Unk80101DF0Xform xf;   /* +0x10 */
-    Unk80101DF0Mat work;   /* +0x38 */
+    MATRIX work;   /* +0x38 */
 } Unk80101DF0Record;      /* 0x58 */
 
 /* The 8 light-setup records at 0x800F62E0 (0x60 each; base + n*0x60 in
@@ -1005,8 +1000,8 @@ typedef struct {
 
 typedef struct {
     Unk800F62E0Light light[3]; /* +0x00 */
-    Unk80101DF0Mat lmat;       /* +0x18 */
-    Unk80101DF0Mat cmat;       /* +0x38 */
+    MATRIX lmat;       /* +0x18 */
+    MATRIX cmat;       /* +0x38 */
     u8 back[3];                /* +0x58 */
     s16 unk5C;                 /* +0x5C */
 } Unk800F62E0Rec;              /* 0x60 */
@@ -1016,7 +1011,7 @@ typedef struct {
  * [4] YXZ, [5] XYZ ([1] and [3] are never written); the nodes set unk8 to 0, 2,
  * 4 and 5, and func_8003EDC0 / func_800417D0 / func_800418D0 / camera_InitRotation
  * index it by unk8 (4-byte stride).  _svm_vab_vh follows at 0x800F66B8. */
-typedef void (*AnimRotFunc)(Unk80101DF0Rot *, Unk80101DF0Mat *);
+typedef void (*AnimRotFunc)(SVECTOR *, MATRIX *);
 
 /* The 0x68-byte records of the table game_GetCharData returns: a transform
  * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
