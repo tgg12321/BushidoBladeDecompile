@@ -31,10 +31,17 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
    $t1; $ra saved at 0x10 vs 0x14; cc1psx the same); candidates in `memory/grind/_SendPAD/`. Its module
    mates are hand-written asm (`_send_pad`'s trapping `addi`, the func_800790A4 data-as-code), which is
    evidence for the Judge-gated canonical-grant path if pursued; no grant without its own evidence.
-2. **Phase 2 types** — make Unk80101EC8Record / Obj80106A78 the "Entity" type in include/game.h; about
-   1,238 raw-offset casts; the conflicting declarations (89 Sony, 73 game, notes) in
-   `memory/grind/restructure-2026-10-03/step5/phase2_conflicts.tsv`; the `u8 *` / `s32 *` callee
-   prototypes. Optional: move bb2.h's single-TU entries back into their TUs.
+2. **Phase 2 types** — in progress (started 2026-10-03; census, harness and plan:
+   `memory/grind/phase2-2026-10-03/README.txt`; gate `tools/check.sh`, commits via `tools/commit.sh`).
+   Sony prototype stream (plan items 1-5) done, 9475a2b5a..3c25b4a5c: one PsyQ-spelled prototype per
+   reached Sony function, audited against real PsyQ 4.5 headers (open-ribbon `include/psyq/`), per-entry
+   `PsyQ:` notes where BB2's definition differs; implicit pairs 219 -> 203. Left local: callers that hold
+   the object in int-typed fields (SetDraw*, CdRead/CdGetSector*, write, memcpy, VSyncCallback, the VAB
+   family, the remaining libgpu definitions) and measured-codegen rows (listed in each commit body).
+   Deferred: OT pointers + AddPrim/ClearOTagR, after the struct batches type the primitive holders in
+   3AB48/51268/5ED34/64FD8. No "Entity" rename: no evidence (Obj80106A78 and Unk80101EC8Record differ in
+   size, table and consumers). Next: game prototypes (item 6), Unk80101EC8Record member access (item 7),
+   render-record / small structs (items 8-9).
 3. **Phase 3 naming** — the owner decides whether game-code naming moves from evidence classes to
    SOTN-style "explainable from the code + adversarial review"; address-named game files then take
    subsystem names file by file (`tools/move_tu.py`).
