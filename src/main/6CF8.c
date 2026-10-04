@@ -34,13 +34,11 @@ const char g_str_build_date[28] = "Fri Aug  7 22:26:32 1998\n";
 
 extern void printf();
 extern void func_800164F8(void);
-extern s16 Judge[];
 extern s32 PCread(s32, u8 *, s32);
 
 extern u8 D_800A30E8;
 extern u8 D_800A30D4;
 extern u8 *g_gpu_ot_ptr;
-extern u32 D_800A38B4;
 extern s32 D_800A30DC;
 
 

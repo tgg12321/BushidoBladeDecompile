@@ -288,7 +288,6 @@ extern void func_80048B8C(s32);
 extern void func_800460E4(s32, s32);
 extern void func_8004668C(void);
 
-extern s16 Judge[];
 extern Unk80101DF0Record *D_800A3708;
 extern s16 D_800A324A;
 
@@ -2046,7 +2045,6 @@ end:
 void func_80049710(void) {
 }
 
-extern u8 *D_800A38B4;
 
 /* Appends one or two 0x68-byte draw objects at D_800A38B4 for animation entry
  * arg0 and links each into the ordering table at D_800A3820.  The first object
@@ -2074,7 +2072,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     if (D_800EF980[arg0] < 0) {
         func_80052C10();
     }
-    obj = D_800A38B4;
+    obj = (u8 *)D_800A38B4;
     /* FAKE: dead store (dead-store-fake-exception).  The 0 is never read: the
      * flags == 1 path skips the second object.  Flow cannot tell, so the store
      * stays as the target's `move s5,zero`; without it that instruction is
@@ -2151,7 +2149,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             *(u8 **)ot = obj;
             obj += 0x68;
         }
-        D_800A38B4 = obj;
+        D_800A38B4 = (u32)obj;
     }
 }
 extern s16 D_80099D3C[];
@@ -2198,7 +2196,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
         func_80052C10();
     }
     vehicle = (u8 *) func_8004153C(arg1 >> 1);
-    obj = D_800A38B4;
+    obj = (u8 *)D_800A38B4;
     obj[0] = 0;
     obj[1] = 0;
     a1_val = (*p_anim) * 2;
@@ -2240,7 +2238,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     ot = (u8 *)D_800A3820;
     D_800A3820 = (s32)(ot + 4);
     *((u8 **) ot) = obj;
-    D_800A38B4 = obj + 0x68;
+    D_800A38B4 = (u32)(obj + 0x68);
 }
 s32 func_80049C24(s32 arg0, s32 arg1) {
     s32 count;

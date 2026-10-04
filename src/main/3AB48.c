@@ -8,7 +8,6 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1b.c). */
-extern s16 Judge[];
 extern u8 *g_gpu_ot_ptr;
 extern s32 func_8005C2A8(s32 *, s16, s32);
 extern void func_80052C10(void);

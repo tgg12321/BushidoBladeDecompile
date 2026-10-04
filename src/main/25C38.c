@@ -31,7 +31,6 @@
 
 
 
-extern void *D_800A38B4;
 
 
 
@@ -130,7 +129,7 @@ void func_8003553C(void) {
     q = g;
     g += 1;
     AddPrim(ot, (u32 *)q);
-    D_800A38B4 = g;
+    D_800A38B4 = (u32)g;
 }
 void func_800355E8(void) {
     snd_SerialMixOn();

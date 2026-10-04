@@ -8,7 +8,6 @@
 
 /* Declarations from the file this TU was split from (text1a_c.c). */
 extern s16 D_800963EE;
-extern s16 Judge[];
 extern s32 rcos(s32);
 extern s32 rsin(s32);
 void func_800433E4();

@@ -168,7 +168,6 @@ void func_8004283C(s32 a0) {
 s32 func_80042864(void) {
     return D_800F6650;
 }
-extern s16 Judge[];
 void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
@@ -269,7 +268,6 @@ void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
  * `a0`, so its position decides where $a0 dies; reading it here gives angC
  * $v1 and its cos-index temp $v0, as in the target.
  */
-extern s16 Judge[];
 void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
@@ -340,7 +338,6 @@ void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
     sinB_sinC = sinB * sinC;
     a1->m[2][1] = (scb_cosC + sinB_sinC) >> 12;
 }
-extern s16 Judge[];
 void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     s32 angA, angB, angC;
     s16 sinA, sinB, sinC, cosA;
@@ -426,7 +423,6 @@ void math_TransposeMatrixInPlace(MATRIX *a0) {
     a0->m[1][2] = t;
     a0->m[2][1] = z;
 }
-extern s16 Judge[];
 void math_Rotate2D(s32 *a0, s32 *a1, s32 a2) {
     s16 sin_val, cos_val;
     s32 x, y;

@@ -19,7 +19,6 @@
 
 
 
-extern s32 D_800A38B4;
 
 
 
@@ -616,7 +615,6 @@ extern void func_8003AF40(s32);
 
 
 
-extern s32 D_800A38B4;
 
 
 
