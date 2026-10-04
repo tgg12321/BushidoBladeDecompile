@@ -7,7 +7,8 @@
 #   4. cmp.py BASE NEW: per-object section bytes / relocations / symbols; implicit-set changes
 #   5. l2diff.py BASE NEW: layer-2 body keys that moved between the two snapshots' sources
 # `check.sh --base NAME` only builds and snapshots (take the base on an unchanged tree).
-# Scratch: tmp/p2/. Exit 0 only if the SHA1 matches and every object is identical.
+# Scratch: tmp/p2/. Exit 0 only if make succeeds, the SHA1 matches, every object is identical and
+# tools/check_completion_integrity.py reports no violation.
 # (Moved layer-2 keys are reported, not failed: a typed rewrite moves keys by design; each moved
 #  key names a body that needs its layer-2 review re-run before the commit.)
 set -u -o pipefail
@@ -38,10 +39,14 @@ make -j"$(nproc)" > "$log" 2>&1
 mk=$?
 sha=$(sha1sum build/bb2.exe 2>/dev/null | cut -d' ' -f1)
 if [ "$sha" = "$ORACLE" ]; then echo "SHA1 OK $sha"; else echo "SHA1 MISMATCH ${sha:-<no exe>} (make exit $mk; log $log)"; tail -15 "$log"; fi
+[ $mk = 0 ] || { echo "MAKE FAILED (exit $mk; log $log): objects may be stale"; tail -15 "$log"; echo "CHECK FAIL"; exit 2; }
 [ -f build/bb2.exe ] || exit 2
 python3 $T/snap.py "$NEW" || exit 2
 [ $baseonly = 1 ] && { [ "$sha" = "$ORACLE" ]; exit $?; }
 python3 $T/cmp.py "$BASE" "$NEW"; c=$?
 python3 $T/l2diff.py "$BASE" "$NEW"
-[ "$sha" = "$ORACLE" ] && [ $c = 0 ] && { echo "CHECK PASS"; exit 0; }
+# completion integrity: canonical asm-island hashes, cheat-asm audit, departures (l2diff cannot see these)
+python3 tools/check_completion_integrity.py > tmp/p2/$NEW.integrity.log 2>&1; ci=$?
+[ $ci = 0 ] && echo "INTEGRITY OK" || { echo "INTEGRITY FAIL (exit $ci; log tmp/p2/$NEW.integrity.log)"; tail -8 tmp/p2/$NEW.integrity.log; }
+[ "$sha" = "$ORACLE" ] && [ $c = 0 ] && [ $ci = 0 ] && { echo "CHECK PASS"; exit 0; }
 echo "CHECK FAIL"; exit 1
