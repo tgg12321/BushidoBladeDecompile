@@ -80,7 +80,7 @@ void func_80040304(s32 a0, s32 a1) {
     s32 mask;
     s32 i;
 
-    ptr = func_8004153C(a0);
+    ptr = (s32)func_8004153C(a0);
     if (ptr != 0) {
         switch (a1) {
         case 0:
@@ -147,7 +147,7 @@ init:
     *(s16 *)((u8 *)a1 + 0x6A) = -1;
 }
 s32 func_8004046C(s32 a0, s32 a1) {
-    s32 *base = (s32 *)func_8004153C(a0);
+    s32 *base = func_8004153C(a0);
     return *(s32 *)((u8 *)base + a1 * 4 + 0x1A34);
 }
 void func_800404A0(s16 *a0, s32 a1) {
@@ -173,7 +173,7 @@ extern void func_8003F824(s32 *, s32);
 s32 *func_80040510(s32 a0, s32 a1, s32 a2) {
     s32 *ptr;
     ptr = (s32 *)func_80045878(a0, a1, a2);
-    g_player_ptrs[a0] = (s32)ptr;
+    g_player_ptrs[a0] = ptr;
     func_80040594(ptr);
     /* FAKE: loop-note ref weighting seats ptr in s0 (s0/s1 swap) */
     do { func_800408F8(ptr); func_80040B44(ptr); func_8003F824(ptr, 1); } while (0);

@@ -8,7 +8,6 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1b.c). */
-extern s32 *func_8004153C();
 extern s16 Judge[];
 extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
 extern u8 *g_gpu_ot_ptr;

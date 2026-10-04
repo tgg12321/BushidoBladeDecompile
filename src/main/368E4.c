@@ -284,7 +284,6 @@ typedef struct {
 /* Forward declarations for called functions */
 extern void func_80048F58(s32, s32);
 extern void func_80048FFC(s32);
-extern s32 *func_8004153C();
 extern s32 func_800477E8(void);
 extern void func_80047A90(void);
 extern void func_80048B8C(s32);
@@ -549,8 +548,8 @@ void *game_GetPlayerData(s32 a0) {
     return NULL;
 }
 
-void *game_GetPlayerBase(void) {
-    void *v0 = func_8004153C();
+void *game_GetPlayerBase(s32 a0) {
+    void *v0 = func_8004153C(a0);
     if (v0) {
         return (u8 *)v0 + 0x2C;
     }

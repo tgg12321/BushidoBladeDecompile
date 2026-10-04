@@ -606,7 +606,7 @@ extern u8 D_801027D8;
 extern s32 D_80102C00;
 extern u8 g_file_data_buf[];
 extern s32 g_player_char_ids[];
-extern s32 g_player_ptrs[];
+extern s32 *g_player_ptrs[];
 
 extern s32 bits_DepositMask3F83F8(s32);
 extern s32 bits_ExtractMask3F83F8(s32);
@@ -732,6 +732,7 @@ extern void func_80040A78(s32);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
 extern void func_80041398(s32);
 extern void func_80041430(s32, s32);
+extern s32 *func_8004153C(s32);
 extern void func_800417D0(s32 *);
 extern void func_800418D0(s32 *);
 extern void func_80041BF4(s32, s32, s32);

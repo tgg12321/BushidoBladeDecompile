@@ -312,8 +312,8 @@ g_match_round_index          = 0x800A3874;  /* match-round counter; indexes the 
 func_8004678C            = 0x8004678C;  /* gp-rel getter for g_snd_se_id (paired with snd_GetBgmId for g_snd_bgm_id) */
 stage_GetVariant_800467A8       = 0x800467A8;  /* lh getter for g_stage_variant (paired with stage_GetId for g_stage_id, +0x2 offset) */
 game_GetDummyFlag_80046DE4      = 0x80046DE4;  /* literal `return 0;` (jr ra; v0 = 0) -- the dummy-flag accessor stub */
-game_GetPlayerData_80046DEC     = 0x80046DEC;  /* func_8004153C() returning +0x1994 offset (player struct data field) */
-game_GetPlayerBase_80046E18     = 0x80046E18;  /* func_8004153C() returning +0x2C offset (player struct base field) */
+game_GetPlayerData_80046DEC     = 0x80046DEC;  /* func_8004153C(a0) + 0x1994 offset (player struct data field) */
+game_GetPlayerBase_80046E18     = 0x80046E18;  /* func_8004153C(a0) + 0x2C offset (player struct base field) */
 /* RESET 0x80046E44: retired name 'game_DisablePause_80046E44' — preserved note: writes 0 to g_game_pause_flag */
 func_80046E54          = 0x80046E54;  /* writes (a0 ? 1 : 0) to g_game_pause_flag */
 func_80046E7C          = 0x80046E7C;  /* lh getter for g_game_pause_flag */

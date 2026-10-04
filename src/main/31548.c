@@ -15,7 +15,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     s16 *s1;
     s32 ent;
 
-    ent = g_player_ptrs[a0];
+    ent = (s32)g_player_ptrs[a0];
     if (ent == 0) {
         return;
     }
@@ -194,7 +194,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
     s32 i = 1;
     s32 *tbl = D_80094CFC;
-    s32 base = g_player_ptrs[a0];
+    s32 base = (s32)g_player_ptrs[a0];
     s16 buf[3];
     s32 ents;
     s32 *out2;
@@ -285,12 +285,12 @@ void func_80041398(s32 a0) {
     } while (t1 < 4);
 }
 void func_80041430(s32 a0, s32 a1) {
-    s32 *base;
+    s32 **base;
     s32 *s0;
     s32 i;
     base = &g_player_ptrs[a0];
-    s0 = (s32 *)(*base + a1);
-    *base = (s32)s0;
+    s0 = (s32 *)((u8 *)*base + a1);
+    *base = s0;
     save_vc_ctrl(a1, (s16 *)((u8 *)s0 + 0x2C), 0x15);
     save_vc_ctrl(a1, (s16 *)((u8 *)s0 + 0x8B4), 0x14);
     save_vc_ctrl(a1, (s16 *)((u8 *)s0 + 0x10D4), 0x14);

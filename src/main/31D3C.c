@@ -41,7 +41,7 @@
 extern u8 D_80094D40[];
 
 
-s32 func_8004153C(s32 a0) {
+s32 *func_8004153C(s32 a0) {
     return g_player_ptrs[a0];
 }
 s32 func_80041554(s32 a0) {
@@ -101,7 +101,7 @@ void func_80041688(s32 arg0, s32 arg1) {
     s32 b, r, g, v;
 
 
-    player = (s32 *)g_player_ptrs[arg0];
+    player = g_player_ptrs[arg0];
     if (player == NULL) return;
 
     p = (u8 *)player + 0x94;
@@ -339,7 +339,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
      ruling); prong 2 is satisfied by extending the LIVE object - rect's
      address is passed to LoadImage - rather than adding a dead pad. */
   s16 rect[8];
-  fp_ptr = (s32 *)func_8004153C(1);
+  fp_ptr = func_8004153C(1);
   if (fp_ptr == 0) { return; }
   if ((*(((s16 *) fp_ptr) + 4)) != D_800A9A20) { return; }
   if (D_80094E08[*(((s16 *) fp_ptr) + 4)] == 0xFF) { return; }

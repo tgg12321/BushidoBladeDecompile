@@ -608,7 +608,6 @@ extern Unk800A6690Rec D_800A6690[];
 extern s16 D_800A7FE0[32][32];
 extern u16 D_800A87E0[];
 extern u8 g_stage_collision[];
-extern s32 *func_8004153C();
 
 
 
@@ -3082,7 +3081,7 @@ void func_8003FFC4(s32 *a0) {
     }
 }
 void func_8003FFE0(s32 a0) {
-    s32 *v0 = (s32 *)func_8004153C(a0);
+    s32 *v0 = func_8004153C(a0);
     if (v0) {
         s16 *v1 = (s16 *)v0[9];
         if (v1) {
@@ -3135,7 +3134,7 @@ void func_800400F8(s32 *a0) {
 }
 
 void func_8004016C(s32 a0) {
-    void *v0 = func_8004153C(a0);
+    s32 *v0 = func_8004153C(a0);
     if (v0) {
         func_800400F8(v0);
     }
