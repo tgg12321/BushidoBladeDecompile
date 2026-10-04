@@ -4587,7 +4587,6 @@ extern s16 D_8008E0BC[27][4];
  * func_80030A2C (ex cpu_set_move_command_and_dir, RESET sweep 2026-10-03). */
 extern u8 D_8008D90C[28][8];
 extern void func_8003339C(s32 *);
-extern void func_80041188(s32, u8 *, u8 *, s32, s32 *);
 extern void func_80049718(s32, s32, s32 *, s16 *);
 extern void func_800204C0(Unk80101EC8Record *);
 
@@ -5117,7 +5116,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     rec->unk_168.y = rec->unk_D8.y - 0x384;
     rec->unk_168.z = rec->unk_F4.z;
     func_80023E40((u8 *)rec);
-    func_80041188(arg0, (u8 *)&pose[0], (u8 *)&pose[1], rec->unk_68, (s32 *)0x1F8001B0);
+    func_80041188(arg0, (u8 *)&pose[0], (u8 *)&pose[1], rec->unk_68, (MATRIX *)0x1F8001B0);
     scratchpad_Save();
     func_80040D48(arg0, 1, (s32 *)&rec->unk_F4, (s16 *)&rec->unk_1C8, 0, rec->unk_148);
     scratchpad_Restore();

@@ -775,7 +775,6 @@ void func_800548DC(void) {
     func_80046A60();
 }
 extern s32 D_800A3250[2];
-extern void func_800198D0(s32, s32, u32 *, u16 *);
 /* Per-frame stage handler on the ctrl block D_800EFAE8.  On the first frame
  * (unk0 == 0) it resolves the loaded data's offset table (unk2C) into the
  * camera stream (unk30), the per-player motion streams (unk34[], dropped

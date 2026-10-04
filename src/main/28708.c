@@ -1328,11 +1328,12 @@ neg:
 extern u8 D_800A3208;
 
 void func_8003993C(void) {
-    s32 work[2][33];
+    MotionFrame work[2];
+    /* FAKE: frame layout - func_80041188 writes two MATRIXes (0x40 bytes); 0x88 keeps the frame (MATRIX[2] / MATRIX[4] measured different) */
     s32 sp120[34];
     s32 pos[3];
     s16 rot[3];
-    s32 sp1C0[100];
+    u16 sp1C0[200];
     s32 out_b1;
     s32 out_b2;
     s32 idx;
@@ -1371,10 +1372,10 @@ void func_8003993C(void) {
 
         p = (u8 *)(D_800A36EC + idx * 56) + i * 28;
         rob = &D_80101EC8[i];
-        func_800198D0((*(s16 *)(p + 0xE) >> 14) & 3, *(s16 *)(p + 0xE) & 0x3FFF, work[0], sp1C0);
-        func_800198D0((*(s16 *)(p + 0x10) >> 14) & 3, *(s16 *)(p + 0x10) & 0x3FFF, work[1], sp1C0);
-        func_8001F1C4(rob, p, work[0], work[1]);
-        func_80041188(i, work[0], work[1], *(s16 *)(p + 0x12), sp120);
+        func_800198D0((*(s16 *)(p + 0xE) >> 14) & 3, *(s16 *)(p + 0xE) & 0x3FFF, (u32 *)&work[0], sp1C0);
+        func_800198D0((*(s16 *)(p + 0x10) >> 14) & 3, *(s16 *)(p + 0x10) & 0x3FFF, (u32 *)&work[1], sp1C0);
+        func_8001F1C4(rob, p, (u8 *)&work[0], (u8 *)&work[1]);
+        func_80041188(i, (u8 *)&work[0], (u8 *)&work[1], *(s16 *)(p + 0x12), (MATRIX *)sp120);
         pos[0] = *(s16 *)(p + 4);
         pos[1] = *(s16 *)(p + 6);
         pos[2] = *(s16 *)(p + 8);

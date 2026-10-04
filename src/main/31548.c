@@ -188,36 +188,35 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 }
 
 extern s32 D_80094CFC[];
-extern void func_800523E0(s32 *, s32 *, s32, s32);
-void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
+void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4)
 {
     s32 i = 1;
     s32 *tbl = D_80094CFC;
     s32 base = (s32)g_player_ptrs[a0];
     SVECTOR buf;
     s32 ents;
-    s32 *out2;
-    s32 *out3;
+    MATRIX *out2;
+    MATRIX *out3;
     s32 offset;
     u16 *p;
     s32 stptr2;
     ents = base + 0x94;
-    out2 = (s32 *) (((u8 *) a4) + 0x20);
+    out2 = a4 + 1;
     do {
         offset = (*tbl) * 6;
         p = (u16 *) (offset + (s32) a1);
         buf.vx = p[0];
         buf.vy = -p[1];
         buf.vz = -p[2];
-        math_RotMatrixZYX(&buf, (MATRIX *)a4);
+        math_RotMatrixZYX(&buf, a4);
         tbl++;
         offset = offset + (s32) a2;
         p = (u16 *) offset;
         buf.vx = p[0];
         buf.vy = -p[1];
         buf.vz = -p[2];
-        math_RotMatrixZYX(&buf, (MATRIX *)out2);
-        func_800523E0(a4, out2, a3, ents + i * 0x68 + 0x38);
+        math_RotMatrixZYX(&buf, out2);
+        func_800523E0(a4, out2, a3, (MATRIX *)(ents + i * 0x68 + 0x38));
         *((s16 *) (ents + i * 0x68 + 6)) = 2;
         i++;
     } while (i < 0x12);
@@ -225,7 +224,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     a2 += 0x6C;
     i = 0x12;
     stptr2 = ents + 0x750;
-    out3 = (s32 *) (((u8 *) a4) + 0x20);
+    out3 = a4 + 1;
     loop2:
     func_80044DE4((s16 *) a1, (s16 *) a2, a3, stptr2 + 0x4C);
     a1 += 6;
@@ -236,15 +235,15 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     a1 += 2;
     buf.vz = -(*((u16 *) a1));
     a1 += 2;
-    math_RotMatrixZYX(&buf, (MATRIX *)a4);
+    math_RotMatrixZYX(&buf, a4);
     buf.vx = *((u16 *) a2);
     a2 += 2;
     buf.vy = -(*((u16 *) a2));
     a2 += 2;
     buf.vz = -(*((u16 *) a2));
     a2 += 2;
-    math_RotMatrixZYX(&buf, (MATRIX *)out3);
-    func_800523E0(a4, out3, a3, stptr2 + 0x38);
+    math_RotMatrixZYX(&buf, out3);
+    func_800523E0(a4, out3, a3, (MATRIX *)(stptr2 + 0x38));
     *((s16 *) (stptr2 + 6)) = 1;
     stptr2 += 0x68;
     i++;

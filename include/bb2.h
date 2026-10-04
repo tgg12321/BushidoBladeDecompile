@@ -636,6 +636,7 @@ extern void func_800194C0(s32);
  * argument (the original sets no $a0 before that jal). */
 extern void func_80019568();
 extern void func_8001979C(s32, u32 *);
+extern void func_800198D0(s32, s32, u32 *, u16 *);
 extern void func_8001B6F4(void);
 extern void func_8001C444(void);
 extern void func_8001DA2C(void);
@@ -736,6 +737,7 @@ extern void func_800404D8(void);
 extern s32 *func_80040510(s32, s32, s32);
 extern void func_80040A78(s32);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
+extern void func_80041188(s32, u8 *, u8 *, s32, MATRIX *);
 extern void func_80041398(s32);
 extern void func_80041430(s32, s32);
 extern s32 *func_8004153C(s32);
@@ -806,6 +808,7 @@ extern s32 func_80049C24(s32, s32);
 extern void func_80049E1C(void);
 extern void func_8004A1FC(Unk800F62E0Rec *);
 extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
+extern void func_800523E0(MATRIX *, MATRIX *, s32, MATRIX *);
 /* No prototype: the definition (canonical asm in 3AB48.c) takes no arguments, but 2B344
  * func_8003EDC0 / func_8003FA24 pass it one (the original loads $a0 before those jals). */
 extern void func_80052C10();
