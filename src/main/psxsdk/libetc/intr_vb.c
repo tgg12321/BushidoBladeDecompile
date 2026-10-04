@@ -2,7 +2,7 @@
  * and the module's memclr, sys_MemClear; SOTN libetc/intr_vb.c). .text 0x800832A0..0x800833C8, a
  * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include <psxsdk/libetc.h>
+#include "libetc_internal.h"
 
 /* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
 void InterruptCallback(void);

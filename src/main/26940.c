@@ -13,7 +13,6 @@
 #include "common.h"
 #include "bb2.h"
 
-extern void VSync(s32);
 extern s32 CdPosToInt(s32);
 extern void cdrom_ReadyCallback(u8 arg0);
 

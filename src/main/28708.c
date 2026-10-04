@@ -14,7 +14,6 @@ extern u8 D_800F33D8[];
 
 
 /* Extern function declarations */
-extern void VSync(s32);
 
 
 

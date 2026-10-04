@@ -4,6 +4,7 @@
  * D3). */
 #include "common.h"
 #include "libcd_internal.h"
+#include <psxsdk/libetc.h>
 
 /* .rodata 0x800162D4..0x80016318: cb_read's and cd_read_retry's messages (moved from
  * src/text1a_b_tail_rodata.c, Q106 D4: every reader is in this file, in link order). */
@@ -26,7 +27,6 @@ const char D_80016304[20] =
 /* Declarations from the file this module was split from (src/main/psxsdk/libcd/bios.c, ex system.c): the
  * LIBCD SYS and BIOS functions CDREAD calls, declared as their definitions declare them (the old file
  * defined them above this module). */
-extern s32 VSync(s32);
 extern void puts(void *);
 s32 CdReadyCallback(s32 a0);
 s32 CdGetSector(s32 madr, s32 size);

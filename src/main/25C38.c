@@ -245,7 +245,6 @@ void func_80035618(s32 arg0) {
 /* Padding NOP macro */
 
 /* Extern function declarations */
-extern void VSync(s32);
 
 
 

@@ -3315,12 +3315,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
 #undef CPU_SQ
 extern s32 g_vab_vb_sbaddr[];
 extern s32 *g_vab_rec_ptr[];
-extern s32 SsSetTickMode(s32);
-extern s32 SsInit(void);
 extern void func_800858D0(s32);
-extern s32 SsUtSetReverbDepth(s32, s32);
 extern s32 SsUtSetReverbType(s32);
-extern s32 SsUtReverbOff(void);
 void snd_Init(void) {
     s32 *p1;
     s32 *p2;
@@ -3382,7 +3378,6 @@ void snd_Quit(void) {
 void func_8005B58C(void) {
     func_800858D0(0);
 }
-extern void func_80086130(s32, s32, s32);
 
 
 void func_8005B5AC(void) {
@@ -3483,9 +3478,7 @@ void snd_CloseVab1(void) {
     g_vab_rec_ptr_plus_0x4[0] = 0;
     g_vab_vb_sbaddr_plus_0x4[0] = 0;
 }
-s32 SsUtReverbOff(void);
 s32 SsUtSetReverbType(s32);
-s32 SsUtSetReverbDepth(s32, s32);
 
 void func_8005B72C(void) {
     s32 s0;
@@ -3719,7 +3712,6 @@ extern s16 D_8009AD1C[][2];
 
 
 
-extern s32 SsUtReverbOn();
 extern s32 SpuClearReverbWorkArea(s16);
 s32 func_8005BE84(s32 arg0)
 {
@@ -3759,7 +3751,6 @@ void func_8005BF3C(void) {
     SsUtSetReverbDepth(0, 0);
 }
 
-extern s32 SsVabFakeBody();
 extern s32 SsVabFakeHead();
 
 
@@ -3933,7 +3924,6 @@ s32 snd_VabOpen(s32 *a0, s16 a1) {
     *(s32 *)(a0[1] + 8) = a1;
     return (s16)SsVabTransBody(a0[2], a1);
 }
-void SsSetMVol(s32, s32);
 void SsSetAutoKeyOffMode(s32);
 void func_8005C614(void) {
     SsSetMVol(0x7F, 0x7F);
@@ -3962,7 +3952,6 @@ void func_8005C650(s32 a0, s32 a1, s32 a2) {
  * running `next` cursor and key the note on with the entry's stored volumes.
  * Each pool slot is cleared as it is visited.
  */
-extern s32 SsUtKeyOnV(s16, s16, s16, s16, s16, s16, s16, s16);
 void func_8005C6D0(void) {
 
     u8 keys[24];

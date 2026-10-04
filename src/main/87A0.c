@@ -15,7 +15,6 @@ extern void func_8002F770(s16 *, s32, s32, s32);
 
 extern void game_FrameLoop(void);
 
-extern void VSync(s32);
 
 
 extern void snd_SerialMixOn(void);

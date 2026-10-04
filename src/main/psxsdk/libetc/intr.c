@@ -3,7 +3,7 @@
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libapi.h>
-#include <psxsdk/libetc.h>
+#include "libetc_internal.h"
 #include <psxsdk/libc.h>
 
 /* .rodata 0x80016328..0x80016394: the module's rcsid "$Id: intr.c,v 1.76 ..." (pointed at only by
@@ -81,8 +81,6 @@ extern volatile s32 *d_pcr;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
 extern intrEnv_t D_800A1578;
 
 extern void trapIntr(void);
-extern s32 startIntrVSync();
-extern s32 startIntrDMA();
 /* FAKE: the BIOS call takes no argument; declared with one for startIntr (see there). */
 extern void _96_remove(s32 *);
 u16 SetIntrMask(u16 arg0) {

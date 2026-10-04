@@ -247,7 +247,6 @@ const char D_800162C0[12] =
     "CD_datasync\0"
     ;
 
-extern s32 VSync(s32);
 extern void puts(void *);
 extern void printf();
 extern s32 CheckCallback(void);
@@ -552,7 +551,6 @@ s32 CD_init(void) {
     }
     return 0;
 }
-extern s32 VSync(s32);
 extern void puts(void *);
 extern void printf();
 

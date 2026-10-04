@@ -9,6 +9,7 @@
 extern void ResetCallback(void);
 extern void StopCallback(void);
 extern void RestartCallback(void);
+extern s32 VSync(s32);
 extern void VSyncCallback(s32);
 extern s32 GetVideoMode(void);
 extern s32 SetVideoMode(s32);

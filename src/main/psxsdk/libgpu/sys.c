@@ -228,7 +228,6 @@ const char D_80016044[24] =
     ;
 
 /* Forward declarations */
-extern s32 VSync(s32);
 extern s32 memcpy(s32, void *, s32);
 
 /* Externs for globals */

@@ -2,7 +2,7 @@
  * module's memclr, sys_MemClear2; SOTN libetc/intr_dma.c). .text 0x800833C8..0x80083670, a verbatim
  * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
-#include <psxsdk/libetc.h>
+#include "libetc_internal.h"
 
 /* .rodata 0x80016394..0x800163C0: trapIntrDMA's bus-error report (moved from
  * src/text1a_b_tail_rodata.c, Q106 D4: every reader is in this file, in link order). */

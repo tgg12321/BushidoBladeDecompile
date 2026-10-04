@@ -49,21 +49,31 @@ typedef struct {
     u32 reserved1;
 } VabHdr;
 
+extern void SsInit(void);
 extern void SsStart(void);
 extern void SsEnd(void);
 extern void SsQuit(void);
+extern void SsSetTickMode(s32);
 extern void SsSetStereo(void);
 extern void SsSetMono(void);
+extern void SsSetMVol(s16, s16);
+extern void SsSetSerialVol(s16, s16, s16);
 extern s32 SsSetReservedVoice(s32);
 extern void SsSetSerialAttr(s32, s32, s32);
 extern s16 SsVabOpenHead(s32, s16);
 extern s16 SsVabOpenHeadWithMode(u8 *, s16, s16, u32);
+extern s16 SsVabFakeBody(s16);
 extern s16 SsVabTransCompleted(s16);
 extern void SsVabClose(s16);
 extern void SsSeqStop(s16);
 extern void SsSepStop(s16, s16);
+extern s16 SsUtKeyOnV(s16, s16, s16, s16, s16, s16, s16, s16);
 extern s16 SsUtKeyOffV(s16);
 extern s32 SsUtSetDetVVol(s16, s16, s16);
+extern s32 func_80086130(s16, s16, s16);
+extern void SsUtReverbOn(void);
+extern void SsUtReverbOff(void);
+extern void SsUtSetReverbDepth(s16, s16);
 extern s16 SsUtGetReverbType(void);
 extern s32 SsUtGetVBaddrInSB(s16);
 

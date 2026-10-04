@@ -669,7 +669,5 @@ extern void ResetGraph(s32);
 extern void CdInit(void);
 extern void CdSetDebug(s32);
 extern void CdReadyCallback(s32);
-extern void SsSetSerialVol(s32, s32, s32);
-extern s32 _comb_control(s32, s32, s32);
 
 #endif /* BB2_H */

@@ -52,7 +52,6 @@ extern void cdrom_StartRead(s32, s32);
 extern void game_FrameLoop(void);
 extern void PutDispEnv(DISPENV *);
 extern void LoadImage(u8 *, u8 *);
-extern void VSync(s32);
 extern u32 *ClearOTagR(u32 *, s32);
 
 extern s32 func_8005C8A8(s32, s32, u32, s32);

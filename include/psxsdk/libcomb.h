@@ -9,5 +9,6 @@
 extern void AddCOMB(void);
 extern void DelCOMB(void);
 extern void ChangeClearSIO(s32);
+extern s32 _comb_control(u32, u32, u32);
 
 #endif /* PSXSDK_LIBCOMB_H */

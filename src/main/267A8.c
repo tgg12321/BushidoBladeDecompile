@@ -5,7 +5,6 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-extern void VSync(s32);
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
 extern void func_8003AAB0(void);

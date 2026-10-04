@@ -10,7 +10,6 @@
 /* Extern function declarations */
 extern void pad_ResetState(void);
 
-extern void VSync(s32);
 
 
 
