@@ -8,11 +8,7 @@
 #include "bb2_const.h"
 
 /* Declarations from the file this TU was split from (code6cac.c). */
-extern s32 func_80037110(s32);
 extern void func_8002F770(s16 *, s32, s32, s32);
-extern void game_FrameLoop(void);
-extern void snd_SerialMixOn(void);
-extern s32 func_800371E8(s16);
 
 extern s32 file_GetFlag2(void);
 extern s32 func_8005B9FC(s32);
@@ -24,7 +20,6 @@ extern void func_8003AA78(void);
 extern void func_8003AA48(void);
 extern void func_8003AAB0(void);
 extern s32 stage_GetDataPtr(void);
-extern s32 cdrom_StartRead(s32, s32);
 extern s32 rand();
 extern void func_800325E0(s32, s32);
 extern void func_80046BF4(s32 *, s32 *, s32);
@@ -46,7 +41,6 @@ extern s32 func_8005C8A8(s32, s32, s32, s32);
 extern s32 func_8005FA98(s32, s32, s32);
 extern s32 func_8005D814(s16 *, s32, s32, s32);
 extern void func_800550E8(s32);
-extern void func_800372C0(void);
 extern void func_80023F08(s32, PadState *);
 
 INCLUDE_RODATA("asm/rodata", D_800100A4);
@@ -3196,7 +3190,6 @@ void func_80020D70(void) {
     func_80020CDC();
 }
 void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    cdrom_StartRead(v0, D_800A3830);    game_FrameLoop();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
-extern s32 cdrom_StartReadAt(s32, s32, s32, s32);
 
 /* Loads the motion sets and models for the two characters about to fight:
  * slot i gets character chr0 / chr1 in costume costume0 / costume1. */

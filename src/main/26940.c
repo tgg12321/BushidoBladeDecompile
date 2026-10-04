@@ -13,9 +13,6 @@
 #include "common.h"
 #include "bb2.h"
 
-extern void cdrom_ReadyCallback(u8 arg0, u8 *result);
-
-extern void cdrom_SetMix(s32, s32, s32, s32);
 CdlATV g_cd_atv;
 CdlATV D_800A36B8;
 u8 g_cd_result[8];

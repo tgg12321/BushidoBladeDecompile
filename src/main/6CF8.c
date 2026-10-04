@@ -48,15 +48,12 @@ extern s32 D_800A30DC;
 
 extern u8 D_800F33D8;
 extern u8 D_800A37A8[];
-extern void cdrom_StartRead(s32, s32);
-extern void game_FrameLoop(void);
 extern void LoadImage(u8 *, u8 *);
 extern u32 *ClearOTagR(u32 *, s32);
 
 extern s32 func_8005C8A8(s32, s32, u32, s32);
 extern void func_8005C650(s32, s32, s32);
 extern s32 rand(void);
-extern void func_800372C0(void);
 extern void __main(void);
 extern void func_80060E04(s32);
 extern void func_8003D2F4(void);
@@ -222,7 +219,6 @@ void disp_Init(void) {
     DrawSync(0);
 }
 extern void InitPAD(u8 *, s32, u8 *, s32);
-extern void cdrom_Init(void);
 extern void memcard_Init(void);
 extern u8 g_pad_buf;
 void sys_Init(void) {

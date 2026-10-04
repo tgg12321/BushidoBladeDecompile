@@ -14,13 +14,6 @@ extern u8 D_8009BA60[];
 extern s32 chractar_use_pset_combo_id_table[];
 extern Unk8009BD38Flags D_8009BD38;
 extern s32 D_800F10D0[];
-extern s32 func_80036EA8();
-s32 game_FrameLoop();                           /* extern */
-s32 cdrom_StartRead(s32, s32);               /* extern */
-s32 game_FrameLoop(void);
-s32 cdrom_StartRead(s32, s32);
-extern s32 game_FrameLoop(void);
-extern s32 cdrom_StartRead(s32, s32);
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
 static s32 D_800A3420;
@@ -319,10 +312,7 @@ extern s32 rcos();
 extern s32 rsin();
 extern s32 g_gpu_ot_ptr;
 extern s32 D_800F1180;
-extern s32 cdrom_GetFileSize();
 s32 printf(s32 *, s32);               /* extern */
-extern s32 cdrom_GetFileSize(s32);
-s32 cdrom_GetFileSize(s32);
 s32 func_8005C2A8(s32 *, s16, s32);
 s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2);
 void func_8005C650(s32 a0, s32 a1, s32 a2);

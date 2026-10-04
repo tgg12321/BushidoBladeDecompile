@@ -6549,7 +6549,6 @@ void func_80034200(void) {
     D_800A3784 = acc;
 }
 extern void func_80034200(void);
-extern void func_800372C0(void);
 void func_800342A0(void) {
     func_80034200();
     if (D_800A3874 == D_800A389B) {

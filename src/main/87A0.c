@@ -10,15 +10,11 @@
 extern s32 g_pad_buf;
 
 /* Extern function declarations */
-extern s32 func_80037110(s32);
 extern void func_8002F770(s16 *, s32, s32, s32);
 
-extern void game_FrameLoop(void);
 
 
 
-extern void snd_SerialMixOn(void);
-extern s32 func_800371E8(s16);
 
 extern s32 file_GetFlag2(void);
 
@@ -61,7 +57,6 @@ extern s32 stage_GetDataPtr(void);
 
 
 
-extern s32 cdrom_StartRead(s32, s32);
 extern s32 rand();
 extern void func_800325E0(s32, s32);
 extern void func_80046BF4(s32 *, s32 *, s32);
@@ -93,7 +88,6 @@ extern s32 func_8005D814(s16 *, s32, s32, s32);
 extern void func_800550E8(s32);
 
 extern void func_80018300(s32 *);
-extern void func_800372C0(void);
 extern void func_80023F08(s32, PadState *);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */

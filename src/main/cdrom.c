@@ -10,7 +10,6 @@
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
 extern void func_8003AAB0(void);
-extern void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 
 s32 cdrom_IsIdle(void) {
     return D_80101E58.rec.unk02 == 0;
@@ -129,8 +128,6 @@ void func_800371E8(s16 arg0) {
     D_80101E58.rec.unk0A = arg0;
 }
 s32 func_800371F8(void) {
-    extern s32 cdrom_StartAudio();
-
     if (((s32 (*)())cdrom_StartAudio)() != 0) {
         D_80101E58.rec.unk04 = 1;
         return 1;
@@ -228,7 +225,6 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     SetDispMask(1);
 }
 extern s32 func_800392B8(void);
-extern void sys_Exec(s32, s32 *, s32);
 void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     /* n.b.! needs to be 25-32 bytes (inclusive): target frame 0x48 - callee
        saves (6 regs @ 0x30-0x44 = 24) - outgoing args (16) = 32-byte locals

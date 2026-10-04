@@ -208,8 +208,6 @@ s32 func_80044E64(void) {
 s32 func_80044E6C(void) {
     return 0x26;
 }
-extern void game_FrameLoop(void);
-extern void cdrom_StartReadAt(s32, s32, s32, s32);
 
 typedef struct { s16 start_sector; s16 length_sectors; } NdataInfEntry;
 extern NdataInfEntry D_800963EC[];

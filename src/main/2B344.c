@@ -641,7 +641,6 @@ extern s32 D_800A38B4;
 
 extern s32 func_80052C28(s32, s32);
 extern s32 func_800788B0(void);
-extern void func_800372C0(void);
 extern void func_800548DC(void);
 extern s32 func_8005FC9C(s32, s32);
 extern s32 func_80054F68(void);
@@ -690,9 +689,6 @@ extern s32 g_gpu_ot_ptr;
 
 extern void func_8003AFFC(void);
 extern void func_8004659C(s32);
-extern void snd_SerialMixOn(void);
-extern void cdrom_StartAudio(s32, s32);
-extern void func_80037260(void);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 void func_8003B9D0(void) {

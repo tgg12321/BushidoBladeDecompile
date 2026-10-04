@@ -3505,12 +3505,8 @@ typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
 typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
 typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
 
-extern s32 func_80036EA8();
-extern s32 cdrom_GetFileSize();
 
 s32 printf(s32 *, s32);               /* extern */
-s32 game_FrameLoop();                           /* extern */
-s32 cdrom_StartRead(s32, s32);               /* extern */
 
 const char D_800158B4[24] = "common_vab start:%08x\n";
 
@@ -3548,7 +3544,6 @@ void func_8005B868(void) {
     g_vab_rec_ptr_plus_0x10 = 0;
     g_vab_vb_sbaddr_plus_0x10 = 0;
 }
-extern s32 cdrom_GetFileSize(s32);
 
 s32 func_8005B8B8(s32 arg0) {
     s32 t0;
@@ -3584,9 +3579,6 @@ void func_8005B9C4(void) {
     g_vab_rec_ptr_plus_0x24 = 0;
     g_vab_vb_sbaddr_plus_0x24 = 0;
 }
-s32 game_FrameLoop(void);
-s32 cdrom_StartRead(s32, s32);
-s32 cdrom_GetFileSize(s32);
 s32 func_8005C2A8(s32 *, s16, s32);
 void func_8005B9FC(s32 a0) {
     s32 s1;
@@ -3612,8 +3604,6 @@ typedef struct {
 
 
 extern u8 g_vab_id_list[];
-extern s32 game_FrameLoop(void);
-extern s32 cdrom_StartRead(s32, s32);
 
 
 extern s32 snd_VabFakeOpen(s32, s16);

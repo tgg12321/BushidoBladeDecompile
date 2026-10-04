@@ -8,7 +8,6 @@
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
 extern void func_8003AAB0(void);
-extern void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 
 void snd_SerialMixOn(void) {
     SsSetSerialAttr(0, 0, 1);
