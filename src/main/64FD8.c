@@ -1354,7 +1354,7 @@ typedef struct {
     s32 sp30;
     s32 sp34;
 } S7724;
-void func_80077724(s32 arg0, s32 arg1) {
+s32 func_80077724(s32 arg0, s32 arg1) {
     S7724 s;
     s32 *p;
     s32 temp_v1;
@@ -1374,7 +1374,7 @@ void func_80077724(s32 arg0, s32 arg1) {
     s.sp2C = p[6];
     s.sp30 = p[7];
     s.sp34 = p[8];
-    func_80077374(arg1, &s.sp10);
+    return func_80077374(arg1, &s.sp10);
 }
 
 
@@ -1423,17 +1423,17 @@ s32 func_80077984(s32 a0) {
     return 1;
 }
 
-s32 func_800779C8(void) {
-    s32 ret = ((s32 (*)())func_8006EACC)();
+s32 func_800779C8(s32 arg0, s32 arg1) {
+    s32 ret = func_8006EACC(arg0, arg1);
     if (ret) {
         snd_CloseVab1();
     }
     return ret;
 }
 
-void func_80077A04(s32 a0, s32 a1) {
+s32 func_80077A04(s32 a0, s32 a1) {
     D_800A35E4 = 0;
-    func_8006D74C(a0, a1);
+    return func_8006D74C(a0, a1);
 }
 void func_80077A28(void) {
     D_800A35E4 = 0;
@@ -1441,8 +1441,8 @@ void func_80077A28(void) {
     func_8006D7FC();
 }
 
-void func_80077A60(void) {
-    ((void (*)())func_8006E068)();
+s32 func_80077A60(s32 arg0, s32 arg1) {
+    return func_8006E068(arg0, arg1);
 }
 
 s32 func_800770B8(s32, s32, s32);
@@ -1453,8 +1453,8 @@ s32 func_80077A80(s32 a0) {
 }
 
 
-void func_80077AC0(void) {
-    ((void (*)())func_80077724)();
+s32 func_80077AC0(s32 arg0, s32 arg1) {
+    return func_80077724(arg0, arg1);
 }
 
 void func_80077AE0(void) {
@@ -1875,8 +1875,6 @@ extern u8 D_8009BD43;
 
 
 s32 func_80077B30(s32 arg0, s32 arg1) {
-    extern s32 func_8006B898(s32, s32);
-    extern s32 func_8006D338(s32, s32);
     s32 s2;
     s32 result;
 

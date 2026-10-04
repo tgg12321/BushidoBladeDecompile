@@ -14,7 +14,6 @@ extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern s32 rcos(s32);
 extern s32 rsin(s32);
 void func_800433E4();
-void func_80044100(s32 a0, s32 a1);
 extern void func_800520B8(s32, s32, s32);
 
 void func_80044800(void) {
@@ -150,7 +149,6 @@ void func_80044B30(s32 a0, s32 a1) {
         p->node.work.t[2] = p->node.xf.mat.t[2];
     }
 }
-extern void func_80044100(s32, s32);
 void func_80044C70(s32 a0) {
     func_80044100((s32)D_800A9CF8.unk0, a0);
     D_800A9CF8.unkC += a0;
@@ -581,17 +579,15 @@ void func_80045A28(s32 a0, s32 a1) {
     func_80045510(a0 + 3, a1);
     func_80045230(0);
 }
-extern void func_8005B644(void);
 extern void func_800456F0(s32);
 void func_80045A50(s32 a0) {
     s32 a0p3 = a0 + 3;
-    func_8005B644();
+    func_8005B644(a0);
     func_800456F0(a0p3);
     func_800456F0(a0);
     func_800453E0(a0p3);
     func_800453E0(a0);
 }
-extern void func_80044100(s32, s32);
 extern void snd_VabFakeOpen(s32, s32);
 void func_80045AA4(s32 a0, s32 a1) {
     s32 *ptr;

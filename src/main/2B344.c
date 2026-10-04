@@ -32,7 +32,6 @@ extern s32 D_800A38B4;
 
 
 
-extern void func_80040510(s32, s32, s32);
 
 
 
@@ -120,7 +119,6 @@ extern void func_80022568(u8 *);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 extern u16 rand(void);
-extern void func_80019568(s32);
 extern u8 D_800A38AC;
 extern s32 D_800A37D8;
 
@@ -1337,7 +1335,6 @@ void func_8003CE18(void) {
     gpu_SetDispMaskOn();
 }
 extern void func_800618B4(s32 *, s32 *);
-extern void func_80061064(s32 *, s32 *);
 extern void func_8003B328(void);
 extern void func_8003B534(s32);
 extern s32 D_800A312C;
@@ -2553,7 +2550,6 @@ void func_8003EDC0(u16 *p, s32 arg1) {
 const char D_80010D8C[16] = "Multipul Model";
 
 /* Forward declarations */
-extern void sys_StubEmpty3(s32, s32, s32);
 
 /* Externs for globals */
 extern void func_8001924C(s32 *, s32);
@@ -3085,8 +3081,8 @@ void func_8003FFC4(s32 *a0) {
         v1[3] = 1;
     }
 }
-void func_8003FFE0(void) {
-    s32 *v0 = (s32 *)func_8004153C();
+void func_8003FFE0(s32 a0) {
+    s32 *v0 = (s32 *)func_8004153C(a0);
     if (v0) {
         s16 *v1 = (s16 *)v0[9];
         if (v1) {
@@ -3138,8 +3134,8 @@ void func_800400F8(s32 *a0) {
     }
 }
 
-void func_8004016C(void) {
-    void *v0 = func_8004153C();
+void func_8004016C(s32 a0) {
+    void *v0 = func_8004153C(a0);
     if (v0) {
         func_800400F8(v0);
     }

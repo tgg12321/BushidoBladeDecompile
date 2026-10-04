@@ -3546,7 +3546,7 @@ void func_8005B9C4(void) {
     g_vab_vb_sbaddr_plus_0x24 = 0;
 }
 s32 func_8005C2A8(s32 *, s16, s32);
-void func_8005B9FC(s32 a0) {
+s32 func_8005B9FC(s32 a0) {
     s32 s1;
     func_8005B9C4();
     s1 = func_80036EA8(2, 8);
@@ -3554,7 +3554,7 @@ void func_8005B9FC(s32 a0) {
     cdrom_StartRead(s1, a0);
     s1 = cdrom_GetFileSize(s1);
     game_FrameLoop();
-    func_8005C2A8(a0, 9, a0 + s1);
+    return func_8005C2A8(a0, 9, a0 + s1);
 }
 void snd_VabFakeOpen9(s32 a0) {
     snd_VabFakeOpen(a0, 9);

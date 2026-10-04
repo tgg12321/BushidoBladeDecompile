@@ -291,11 +291,7 @@ extern s32 rand(void);
 extern void func_80035618(s32);
 extern void func_8003553C(void);
 extern void func_80035438(void);
-extern s32 func_800779C8(s32, s32);
-extern s32 func_80077A04(s32, s32);
-extern s32 func_80077A60(s32, s32);
 extern void func_800355E8(void);
-extern s32 func_80077AC0(s32, s32);
 void func_80035828(void) {
     s32 ret;
 

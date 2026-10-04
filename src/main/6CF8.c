@@ -52,7 +52,6 @@ extern u32 *ClearOTagR(u32 *, s32);
 extern s32 rand(void);
 extern void __main(void);
 
-extern void func_80019568();
 extern u8 *func_8005D46C(u8 *);
 extern u8 *func_8005D554(u8 *, u8);
 extern s32 func_8005E54C(s32, u8 *, s32);
@@ -891,7 +890,7 @@ void scratchpad_Restore(void) {
 void sys_StubEmpty2(void) {
 }
 
-void sys_StubEmpty3(void) {
+void sys_StubEmpty3(s32 arg0, s32 arg1, s32 arg2) {
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */

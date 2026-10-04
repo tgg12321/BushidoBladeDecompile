@@ -16,7 +16,6 @@ extern s32 g_pad_buf;
 
 
 
-extern s32 func_8005B9FC(s32);
 extern s32 D_800A38B4;
 extern s32 memcpy(s32 *, s32, s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
@@ -54,12 +53,10 @@ extern s32 func_80054434(void);
 extern s32 rand();
 extern void func_800325E0(s32, s32);
 
-extern void func_80061064(s32 *, s32 *);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 
 
 extern void func_80055138(s32, s32, s32);
-extern void func_8003FFE0(s32);
 
 
 

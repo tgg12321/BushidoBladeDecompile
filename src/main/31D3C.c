@@ -62,7 +62,6 @@ s32 func_80041584(void) {
     }
     return ret;
 }
-extern void func_8004016C(s32);
 void player_Destroy(s32 a0) {
     func_8004016C(a0);
     func_80045A50(a0);

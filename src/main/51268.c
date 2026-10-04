@@ -332,10 +332,10 @@ const char D_800158E0[24] = "eff prim over :%d \n";
 
 extern s32 D_800F1140;
 
-void func_80061064(void) {
+void func_80061064(s32 *a0, s32 *a1) {
     s32 temp_a1;
     s32 i;
-    ((void (*)())func_80060E38)();
+    func_80060E38((s32)a0, (s32)a1);
     i = 0;
     do {
         *(s32 **)((s32)D_800A3468 + 0x14) = (s32 *)(i + (s32)&D_800F1150);
@@ -5028,7 +5028,7 @@ tail:
  * switch tables. */
 const u8 D_800159A0[16] = "warning\n";
 
-void func_8006B898(s32 arg0, s32 arg1) {
+s32 func_8006B898(s32 arg0, s32 arg1) {
     s32 sp10[10];
     GpuDb *t;
     D_800A3514 += 1;
@@ -5036,7 +5036,7 @@ void func_8006B898(s32 arg0, s32 arg1) {
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
     ((void (*)())func_8006B120)(sp10);
-    func_8006B578(&arg0, &arg1);
+    return func_8006B578(&arg0, &arg1);
 }
 
 
@@ -5800,7 +5800,7 @@ void func_8006D324(void) {
 }
 extern void func_8006C21C(s32 *);
 extern s32 func_8006CFBC(s32 *);
-void func_8006D338(s32 arg0, s32 arg1) {
+s32 func_8006D338(s32 arg0, s32 arg1) {
     s32 sp10[22];
     GpuDb *t;
     s32 r;
@@ -5810,7 +5810,7 @@ void func_8006D338(s32 arg0, s32 arg1) {
     func_80069AE4(sp10, 2, t);
     func_8006C21C(sp10);
     r = func_8006CFBC(sp10);
-    func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
+    return func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
 
 /* EnvA: the 0x2C-byte draw descriptor func_8007352C consumes.  Same field
@@ -6184,7 +6184,7 @@ s32 func_8006DF68(s32 arg0, u32 arg1) {
 }
 
 extern s32 func_8006DF68();
-void func_8006E068(s32 arg0, s32 arg1) {
+s32 func_8006E068(s32 arg0, s32 arg1) {
     s32 sp10[22];
     GpuDb *t;
     D_800A3514 += 1;
@@ -6192,7 +6192,7 @@ void func_8006E068(s32 arg0, s32 arg1) {
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
     func_8006DD94(sp10);
-    func_8006DF68(arg0, arg1);
+    return func_8006DF68(arg0, arg1);
 }
 extern u8 D_800A32D8[8];
 
