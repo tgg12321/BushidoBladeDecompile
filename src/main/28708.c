@@ -78,9 +78,6 @@ extern u8 D_800A37D0;
 extern s32 D_800F34D8;
 extern s32 D_800A31F0;
 
-extern s32 func_80037B00(s32);
-extern s32 memcard_ReadFile(s32, s32, s32, void *, s32);
-extern s32 memcard_WriteFile(s32, s32, s32, void *, s32, s32, s32);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
@@ -376,7 +373,7 @@ state_3:
     D_800A379E = 1;
     memcard_CountFiles(0, 0);
     temp_s0 = func_80037AA4();
-    if (func_80037B00(D_800A31F0) != 0) {
+    if (func_80037B00((u8 *)D_800A31F0) != 0) {
         var_s1 = 0;
         if (D_800A37C8 == 1) {
             var_v0 = 0xD;
@@ -394,7 +391,7 @@ setup_load:
     func_80038148();
     func_80038170(D_800F33D8);
     func_80037F40(D_800F33D8 + 0x100);
-    if (memcard_WriteFile(0, 0, D_800A31F0, D_800F33D8, 1, 0x200, var_s1) != 0) {
+    if (memcard_WriteFile(0, 0, D_800A31F0, (s32)D_800F33D8, 1, 0x200, var_s1) != 0) {
         close(g_memcard_fd);
         var_v0 = 3;
         goto finish;
@@ -405,13 +402,13 @@ setup_load:
 state_5:
     memcard_CountFiles(0, 0);
     func_80037AA4();
-    if (func_80037B00(D_800A31F0) == 0) {
+    if (func_80037B00((u8 *)D_800A31F0) == 0) {
         var_v0 = 0xE;
         goto finish;
     }
     D_800A379E = 4;
     func_80038148();
-    if (memcard_ReadFile(0, 0, D_800A31F0, D_800F33D8, 0x200) != 0) {
+    if (memcard_ReadFile(0, 0, D_800A31F0, (s32)D_800F33D8, 0x200) != 0) {
         close(g_memcard_fd);
         var_v0 = 6;
         goto finish;

@@ -24,7 +24,6 @@ extern s32 AddPrim(s32, s32);
 extern s32 SetDrawArea();
 extern void SetDrawOffset();
 extern void LoadImage(u8 *, s32);
-s32 func_8006E49C(s32 arg0, s32 *arg1);
 
 typedef struct SelectEntryE534 {
     u8 value;
@@ -94,22 +93,22 @@ s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
 
     switch (D_800A35BC) {
     case 0:
-        func_8006E950(5, D_800A356C);
+        func_8006E950(5, (s32 *)D_800A356C);
         break;
     case 4:
     case 6:
-        func_8006E950(3, D_800A356C);
+        func_8006E950(3, (s32 *)D_800A356C);
         break;
     case 2:
         if (*(s32 *)(D_800A3568 + 0x14) & 0x20000) {
-            func_8006E950(3, D_800A356C);
+            func_8006E950(3, (s32 *)D_800A356C);
         } else {
-            func_8006E950(4, D_800A356C);
+            func_8006E950(4, (s32 *)D_800A356C);
         }
         break;
     case 1:
     case 3:
-        func_8006E950(4, D_800A356C);
+        func_8006E950(4, (s32 *)D_800A356C);
         break;
     }
 

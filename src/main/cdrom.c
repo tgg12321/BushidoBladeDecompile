@@ -220,7 +220,6 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     VSync(0);
     SetDispMask(1);
 }
-extern s32 func_800392B8(void);
 void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     /* n.b.! needs to be 25-32 bytes (inclusive): target frame 0x48 - callee
        saves (6 regs @ 0x30-0x44 = 24) - outgoing args (16) = 32-byte locals
@@ -240,6 +239,6 @@ void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     v0 = func_80036EA8(6, 2);
     sp[4] = (s32)&g_cd_file_table[v0];
     sp[5] = a4;
-    v0 = func_800392B8();
+    v0 = (s32)func_800392B8();
     sys_Exec(6, sp, v0 + 0x7FC);
 }

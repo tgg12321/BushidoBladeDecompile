@@ -17,7 +17,6 @@
 
 
 
-extern void func_800602AC(s32, s32);
 
 
 extern s32 D_800A38B4;
@@ -231,7 +230,7 @@ s32 func_8003ACB8(void) {
     return temp_s0;
 }
 void func_8003AE5C(u8 *arg0) {
-    s32 addr = (s32)0x80190800;
+    s32 *addr = (s32 *)0x80190800;
     s32 result = -1;
     s32 done = 0;
 
@@ -632,7 +631,6 @@ extern s32 func_8005E54C(s32, s32, s32);
 extern void func_8001CD68(u8 *);
 
 
-extern void func_8005FBC8(s32, s32);
 
 
 extern void StoreImage(s32 *, u16 *);
@@ -923,7 +921,7 @@ void func_8003C040(void) {
     } else {
         a0 = 8;
     }
-    func_8005FBC8(a0, (s32)0x80118800);
+    func_8005FBC8(a0, (u8 *)0x80118800);
     {
         if (D_800A38A4 == 4) {
             if (D_8008D9EC[D_80101EC8[0].unk_0A] != 0) {

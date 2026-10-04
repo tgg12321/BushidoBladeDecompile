@@ -16,7 +16,6 @@ extern s32 func_80054434(void);
 extern s32 rand();
 extern void func_800325E0(s32, s32);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
-extern void func_80055138(s32, s32, s32);
 
 INCLUDE_RODATA("asm/rodata", D_800100A4);
 void func_8001979C(s32 arg0, u32 *arg1) {
@@ -4032,7 +4031,7 @@ void func_80022F34(void) {
                 s32 val1 = D_801027B0[idx1][3];
                 {
                     s16 idx2 = rec->other->unk_4A;
-                    func_80055138(i, val1, D_801027B0[idx2][3]);
+                    func_80055138(i, (u16 *)val1, (u16 *)D_801027B0[idx2][3]);
                 }
             }
         }

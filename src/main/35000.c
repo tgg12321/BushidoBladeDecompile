@@ -496,7 +496,7 @@ s32 *func_8004574C(s32 arg0) {
     return NULL;
 }
 s32 func_800457A0(s32 a0) {
-    s32 *v0 = ((s32 *(*)())func_8004574C)();
+    s32 *v0 = func_8004574C(a0);
     if (v0) {
         return v0[1];
     }
@@ -524,7 +524,6 @@ void func_80045824(s32 a0, s32 a1, s32 a2) {
     func_80045230(a1 + a2);
     func_800520B8(a0, a1, a2);
 }
-extern void func_800400F8(s32);
 extern void func_80044ED8(s32, s32);
 extern void func_80045AA4(s32, s32);
 
@@ -546,7 +545,7 @@ s16 *func_80045878(s32 a0, s32 a1, s32 a2) {
     }
     s3 = a0 + 3;
     if (func_8004574C(s3) != 0) {
-        func_800400F8((s32) s1);
+        func_800400F8((s32 *)s1);
     }
     if (((func_8004574C(s3) != 0) && (s1[4] == a1)) && (s1[3] != (-2))) {
         s1[3] = 0;

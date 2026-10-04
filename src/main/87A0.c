@@ -56,7 +56,6 @@ extern void func_800325E0(s32, s32);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 
 
-extern void func_80055138(s32, s32, s32);
 
 
 

@@ -8,8 +8,6 @@
 #include "gte.h"
 
 /* ---- merged from text1a_c2.c (owner ruling Q67: one original file) ---- */
-extern s32 *func_800457A0(s32);
-extern s32 func_80044670(s32, s32, s32);
 extern void func_800477DC(s32);
 extern s32 func_80047EC8(void);
 extern void func_800481E8(s32, s32);
@@ -46,7 +44,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     s32 *fp_ptr;
     s32 *sp10, *sp18, *sp20;
 
-    s0 = func_800457A0(7);
+    s0 = (s32 *)func_800457A0(7);
     if (s0 != NULL) {
         if (g_stage_id == stage_id) {
             s7 = 1;
@@ -145,7 +143,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     case 18:
         s1 = s2;
         func_80044010((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
-        s1 = (s32 *)func_80044670(PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
+        s1 = (s32 *)func_80044670((s16 *)PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
         break;
     case 11:
         func_800477DC((s32)s1);
@@ -310,7 +308,6 @@ extern void func_80049E4C(void);
 extern void func_80049F4C(void);
 extern s16 g_color_mode;
 extern s16 D_800F665A;
-extern void func_80044F80(s32, s32 *);
 extern s16 D_800A3248;
 
 void func_800468DC(s32 a0, s32 a1);
@@ -348,7 +345,7 @@ s32 *func_800467B8(s32 a0) {
             s32 *s1;
             s32 *s0;
             s2 = func_800455AC(chan);
-            func_80044F80(arg, s2);
+            func_80044F80(arg, (s32)s2);
             {
                 s32 off1 = (u32)s2[2] >> 2 << 2;
                 s32 off0 = (u32)s2[1] >> 2 << 2;

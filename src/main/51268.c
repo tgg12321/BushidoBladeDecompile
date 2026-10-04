@@ -151,24 +151,23 @@ void func_80060B70(void) {
 
 
 
-    extern void func_80061FAC(s32, s32, s32);
     s32 outer;
-    s32 dst_u16;
+    u16 *dst_u16;
     s32 dst_s32;
     u16 idx;
     s32 result;
 
     outer = D_800A3468;
-    dst_u16 = (s32)D_800A346C;
-    *(u16 *)(dst_u16 + 0) = *(u16 *)(*(s32 *)(outer + 4) + 0);
-    *(u16 *)(dst_u16 + 2) = *(u16 *)(*(s32 *)(outer + 4) + 2);
-    *(u16 *)(dst_u16 + 4) = *(u16 *)(*(s32 *)(outer + 4) + 4);
+    dst_u16 = (u16 *)D_800A346C;
+    dst_u16[0] = *(u16 *)(*(s32 *)(outer + 4) + 0);
+    dst_u16[1] = *(u16 *)(*(s32 *)(outer + 4) + 2);
+    dst_u16[2] = *(u16 *)(*(s32 *)(outer + 4) + 4);
 
-    dst_s32 = (s32)D_800A3470;
+    dst_s32 = D_800A3470;
     *(s32 *)(dst_s32 + 0) = *(s32 *)(*(s32 *)(outer + 8) + 0);
     *(s32 *)(dst_s32 + 4) = *(s32 *)(*(s32 *)(outer + 8) + 4);
     {
-        s32 last_arg = D_800A3474;
+        MATRIX *last_arg = (MATRIX *)D_800A3474;
         *(s32 *)(dst_s32 + 8) = *(s32 *)(*(s32 *)(outer + 8) + 8);
         func_80061FAC(dst_u16, dst_s32, last_arg);
     }
@@ -3563,11 +3562,11 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
     temp_s0 = arg0 + 0x58;
     D_800A3500 = temp_s0;
     snd_StopAll();
-    func_8006E950(2, D_800A3500);
+    func_8006E950(2, (s32 *)D_800A3500);
     D_800A372C = D_800A3500;
     v0_efc = func_8006919C(D_800A3500);
     D_800A3500 = v0_efc;
-    v0_e49c = func_8006E49C(v0_efc, D_800A351C);
+    v0_e49c = func_8006E49C(v0_efc, (s32 *)D_800A351C);
     v0_e49c[9] = temp_s0;
     D_800A3500 = (s32)v0_e49c;
     D_800A34FC = (s32)v0_e49c;

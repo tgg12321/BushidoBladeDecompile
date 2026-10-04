@@ -33,8 +33,6 @@ typedef struct EnvA {
     u8   col_g;
     u8   col_b;
 } EnvA;
-s32 func_8006E49C(s32 arg0, s32 *arg1);
-void func_8006E950(s32 a0, s32 *a1);
 
 /* func_800747D8: the duplicated `sound = 4;` below is the
  * duplicated-statement-into-arms shape and carries its FAKE annotation inline. */
@@ -1693,7 +1691,6 @@ extern s32 column;
 
     extern s32 rand(void);
 
-    extern void func_80061FAC(s32, s32, s32);
 
 
 
@@ -1853,9 +1850,7 @@ extern s32 column;
 
 
 
-extern void func_8006E950(s32, s32 *);
 
-extern s32 func_8006E49C(s32, s32 *);
 
 
 
