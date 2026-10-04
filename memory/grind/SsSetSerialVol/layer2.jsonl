@@ -1,0 +1,1 @@
+{"func": "SsSetSerialVol", "addr": "80085448", "verdict": "PASS", "body_hash": "923410e7541c8395", "body_kind": "c", "file": "main/psxsdk/libsnd/scssvol", "reviewer": "p2-rev-b2", "scope": "cheat-cleanup", "date": "2026-10-04T03:05:03Z", "head": "9475a2b5a", "notes": ""}

@@ -1,0 +1,1 @@
+{"func": "SpuSetCommonAttr", "addr": "8008AF9C", "verdict": "PASS", "body_hash": "9846d359cc5a7807", "body_kind": "c", "file": "main/psxsdk/libspu/s_sca", "reviewer": "p2-rev-b2", "scope": "cheat-cleanup", "date": "2026-10-04T03:05:26Z", "head": "9475a2b5a", "notes": ""}

@@ -3,9 +3,6 @@
 #include "common.h"
 #include "libsnd_i.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern void SpuSetCommonAttr(void *);
-
 /* PsyQ LIBSND ssvol: SsSetSerialVol — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libsnd/scssvol.c.
    SpuCommonAttr per PsyQ libspu.h (sizeof = 0x28 — matches the frame). */
@@ -34,5 +31,5 @@ void SsSetSerialVol(s16 s_num, s16 voll, s16 volr) {
         attr.ext.volume.left = voll * 258;
         attr.ext.volume.right = volr * 258;
     }
-    SpuSetCommonAttr((s32 *)&attr);
+    SpuSetCommonAttr(&attr);
 }

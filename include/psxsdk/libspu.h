@@ -82,5 +82,7 @@ extern s32 SpuSetNoiseClock(s32);
 extern s32 SpuSetReverb(s32);
 extern void SpuSetReverbVoice(s32, s32);
 extern s32 SpuSetReverbModeParam(SpuReverbAttr *);
+extern s32 SpuClearReverbWorkArea(u32);
+extern void SpuSetCommonAttr(SpuCommonAttr *);
 
 #endif /* PSXSDK_LIBSPU_H */

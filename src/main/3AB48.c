@@ -3712,7 +3712,6 @@ extern s16 D_8009AD1C[][2];
 
 
 
-extern s32 SpuClearReverbWorkArea(s16);
 s32 func_8005BE84(s32 arg0)
 {
   s32 result;
@@ -3924,7 +3923,6 @@ s32 snd_VabOpen(s32 *a0, s16 a1) {
     *(s32 *)(a0[1] + 8) = a1;
     return (s16)SsVabTransBody(a0[2], a1);
 }
-void SsSetAutoKeyOffMode(s32);
 void func_8005C614(void) {
     SsSetMVol(0x7F, 0x7F);
     func_800858D0(0);

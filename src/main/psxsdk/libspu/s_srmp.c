@@ -24,7 +24,6 @@ typedef struct {
 
 extern RevParamEntry _spu_rev_param[]; /* rev_param preset table */
 
-s32 SpuClearReverbWorkArea(u32 rev_mode);
 
 static inline void _memcpy(char *dst, char *src, u32 size) {
     while (size--) {

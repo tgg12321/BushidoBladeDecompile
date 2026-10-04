@@ -1,0 +1,1 @@
+{"func": "SsSetSerialAttr", "addr": "80083B50", "verdict": "PASS", "body_hash": "05864565a2716dbc", "body_kind": "c", "file": "main/psxsdk/libsnd/scssattr", "reviewer": "p2-rev-b2", "scope": "cheat-cleanup", "date": "2026-10-04T03:05:13Z", "head": "9475a2b5a", "notes": ""}

@@ -1,0 +1,1 @@
+{"func": "SsSetMVol", "addr": "80083BE4", "verdict": "PASS", "body_hash": "dbfa13f544f5cfb0", "body_kind": "c", "file": "main/psxsdk/libsnd/scsmvol", "reviewer": "p2-rev-b2", "scope": "cheat-cleanup", "date": "2026-10-04T03:05:39Z", "head": "9475a2b5a", "notes": ""}

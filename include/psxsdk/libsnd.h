@@ -60,6 +60,7 @@ extern void SsSetMVol(s16, s16);
 extern void SsSetSerialVol(s16, s16, s16);
 extern s32 SsSetReservedVoice(s32);
 extern void SsSetSerialAttr(s32, s32, s32);
+extern void SsSetAutoKeyOffMode(s16);
 extern s16 SsVabOpenHead(s32, s16);
 extern s16 SsVabOpenHeadWithMode(u8 *, s16, s16, u32);
 extern s16 SsVabFakeBody(s16);

@@ -1,0 +1,1 @@
+{"func": "SsSetAutoKeyOffMode", "addr": "80087F00", "verdict": "PASS", "body_hash": "5f609ff3827e269f", "body_kind": "c", "file": "main/psxsdk/libsnd/vs_auto", "reviewer": "p2-rev-b2", "scope": "cheat-cleanup", "date": "2026-10-04T03:05:49Z", "head": "9475a2b5a", "notes": ""}

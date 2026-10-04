@@ -7,8 +7,7 @@
    C ref: sotn-decomp src/main/psxsdk/libspu/s_sca.c
    (4.0 block order: mvol L/R, cd vol L/R, ext vol L/R, cd rev/mix,
    ext rev/mix). */
-void SpuSetCommonAttr(void *arg0) {
-    SpuCommonAttr *attr = arg0;
+void SpuSetCommonAttr(SpuCommonAttr *attr) {
     u16 mvol_mode_left;
     u16 mvol_mode_right;
     u16 vol_total_left;

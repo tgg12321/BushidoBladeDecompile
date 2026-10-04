@@ -3,6 +3,6 @@
 #include "common.h"
 #include "libsnd_i.h"
 
-void SsSetAutoKeyOffMode(u8 a0) {
+void SsSetAutoKeyOffMode(s16 a0) {
     _svm_auto_kof_mode = a0;
 }
