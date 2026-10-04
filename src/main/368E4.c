@@ -1796,7 +1796,6 @@ test_index:
     *(s32 *)g_gpu_ot256_ptr = old;
 }
 
-extern void func_80052C10(void);
 void func_80048F58(s32 a0, s32 a1) {
     s32 i;
     u16 *src;
@@ -2324,7 +2323,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             a0_arg = var_s1 + var_s4;
         }
         func_80045230(a0_arg);
-        var_s1 += func_8005C2A8(var_s1, 2, var_s7);
+        var_s1 += func_8005C2A8((s32 *)var_s1, 2, var_s7);
     }
 
     if (var_s2 >= 0) {
@@ -2337,7 +2336,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             a0_arg = var_s1 + var_s4;
         }
         func_80045230(a0_arg);
-        var_s1 += func_8005C2A8(var_s1, 5, var_s7);
+        var_s1 += func_8005C2A8((s32 *)var_s1, 5, var_s7);
     }
     return var_s1;
 }

@@ -17,7 +17,6 @@
 
 
 
-extern void func_80052C10(void);
 
 
 
@@ -169,6 +168,9 @@ void func_800404D8(void) {
 extern void func_80040594(s32 *);
 extern void func_800408F8(s32 *);
 extern void func_80040B44(s32 *);
+/* Not the definition's spelling: snd_VabFakeOpen (3AB48.c) takes an s16 second parameter, but
+ * the original's call here passes it unextended (an s16 prototype adds sll/sra, measured). */
+extern s32 snd_VabFakeOpen(s32, s32);
 s32 *func_80040510(s32 a0, s32 a1, s32 a2) {
     s32 *ptr;
     ptr = (s32 *)func_80045878(a0, a1, a2);

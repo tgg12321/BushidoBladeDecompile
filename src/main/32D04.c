@@ -9,7 +9,6 @@
 
 
 
-extern void func_80052C10(void);
 
 
 
@@ -1178,7 +1177,6 @@ void func_80044504(u32 *a0) {
     func_80046E54(1);
     D_800A3820 = (s32)&D_80102C00;
 }
-extern void func_80052C10(void);
 void func_80044650(void) {
     func_80052C10();
 }

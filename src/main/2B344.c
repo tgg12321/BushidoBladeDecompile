@@ -2446,7 +2446,6 @@ skip:
 }
 extern s16 D_800A3678;
 extern s32 D_800A3230;
-extern void func_80052C10();
 /* func_8003EDC0 - unpacks a stream of u16 words in sections ended by -1:
  * (cell, id) pairs into the 16-byte record table (count kept in D_800A3368),
  * the transform-node records (header word, xf.mat.t, xf.rot; each node is

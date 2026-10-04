@@ -7,7 +7,6 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1a_c.c). */
-extern void func_80052C10(void);
 extern s16 D_800963EE;
 extern s16 Judge[];
 extern s32 rcos(s32);
@@ -586,7 +585,10 @@ void func_80045A50(s32 a0) {
     func_800453E0(a0p3);
     func_800453E0(a0);
 }
-extern void snd_VabFakeOpen(s32, s32);
+/* Not the definition's spelling: snd_VabFakeOpen (3AB48.c) takes an s16 second parameter, but
+ * the original's calls here pass it unextended (an s16 prototype sign-extends the argument:
+ * sll/sra in func_80045AA4, lh for lw in func_80046048; measured). */
+extern s32 snd_VabFakeOpen(s32, s32);
 void func_80045AA4(s32 a0, s32 a1) {
     s32 *ptr;
     s32 idx;
@@ -751,7 +753,6 @@ void func_80046020(void) {
     func_800453E0(6);
     func_8005B6AC();
 }
-extern void snd_VabFakeOpen(s32, s32);
 void func_80046048(s32 a0, s32 a1) {
     s32 *s0;
     s32 count;

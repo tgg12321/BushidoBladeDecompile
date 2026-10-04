@@ -17,8 +17,6 @@ extern s32 ClearOTagR(s32, s32);
 extern s32 rcos();
 extern s32 rsin();
 extern s32 g_gpu_ot_ptr;
-s32 func_8005C2A8(s32 *, s16, s32);
-s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 extern s32 SetDrawArea();
@@ -225,7 +223,6 @@ void func_8006E950(s32 a0, s32 *a1) {
 
     func_8006E8CC(s1);
 }
-s32 func_8005C2A8(s32 *, s16, s32);
 s32 func_8006EA28(s32 *a0) {
     func_8006920C(a0, a0[21]);
     func_8006920C(a0, a0[22]);
@@ -236,7 +233,7 @@ s32 func_8006EA28(s32 *a0) {
     func_8006920C(a0, a0[27]);
     func_8006920C(a0, a0[28]);
     func_8006920C(a0, a0[29]);
-    func_8005C2A8(a0[0], 1, a0[1]);
+    func_8005C2A8((s32 *)a0[0], 1, a0[1]);
     return a0[1];
 }
 extern s32 D_8009BC1C;

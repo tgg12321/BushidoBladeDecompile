@@ -3488,7 +3488,7 @@ s32 snd_LoadCommonVab(s32 arg0) {
     D_800A3408 = 0;
     D_800A340C = 0x1010;
     g_vab_sticky_sbaddr = 0x1010;
-    ret = func_8005C2A8((GameObj *) arg0, 0, arg0 + temp_s0);
+    ret = func_8005C2A8((s32 *)arg0, 0, arg0 + temp_s0);
     D_800A340C = g_vab_sticky_sbaddr;
     return ret;
 }
@@ -3521,13 +3521,13 @@ s32 func_8005B8B8(s32 arg0) {
     cdrom_StartRead(t0, arg0);
     size = cdrom_GetFileSize(t0);
     game_FrameLoop();
-    ret = func_8005C2A8(arg0, 8, arg0 + size);
+    ret = func_8005C2A8((s32 *)arg0, 8, arg0 + size);
     t0_2 = func_80036EA8(2, 0x5E);
     game_FrameLoop();
     cdrom_StartRead(t0_2, arg0 + ret);
     size = cdrom_GetFileSize(t0_2) + ret;
     game_FrameLoop();
-    return func_8005C2A8(arg0 + ret, 4, arg0 + size) + ret;
+    return func_8005C2A8((s32 *)(arg0 + ret), 4, arg0 + size) + ret;
 }
 s32 snd_VabFakeOpen(s32, s16);
 void snd_VabFakeOpen8And4(s32 a0) {
@@ -3542,7 +3542,6 @@ void func_8005B9C4(void) {
     g_vab_rec_ptr_plus_0x24 = 0;
     g_vab_vb_sbaddr_plus_0x24 = 0;
 }
-s32 func_8005C2A8(s32 *, s16, s32);
 s32 func_8005B9FC(s32 a0) {
     s32 s1;
     func_8005B9C4();
@@ -3551,7 +3550,7 @@ s32 func_8005B9FC(s32 a0) {
     cdrom_StartRead(s1, a0);
     s1 = cdrom_GetFileSize(s1);
     game_FrameLoop();
-    return func_8005C2A8(a0, 9, a0 + s1);
+    return func_8005C2A8((s32 *)a0, 9, a0 + s1);
 }
 void snd_VabFakeOpen9(s32 a0) {
     snd_VabFakeOpen(a0, 9);
@@ -3569,7 +3568,6 @@ typedef struct {
 extern u8 g_vab_id_list[];
 
 
-extern s32 snd_VabFakeOpen(s32, s16);
 extern s32 g_vab_rec_ptr_plus_0xC;
 extern s32 g_vab_rec_ptr_plus_0x18;
 s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
@@ -3611,7 +3609,7 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
     }
     for (i = 0; i < count; i++) {
         loc.ent[i].off += (s32)p;
-        loc.len[i] = func_8005C2A8(loc.ent[i].off, g_vab_id_list[i], (s32)p + size);
+        loc.len[i] = func_8005C2A8((s32 *)loc.ent[i].off, g_vab_id_list[i], (s32)p + size);
     }
     for (i = 0; i < count; i++) {
         for (j = 0; j < (u32)loc.len[i]; j++) {

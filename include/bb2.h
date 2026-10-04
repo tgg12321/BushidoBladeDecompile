@@ -806,6 +806,9 @@ extern s32 func_80049C24(s32, s32);
 extern void func_80049E1C(void);
 extern void func_8004A1FC(Unk800F62E0Rec *);
 extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
+/* No prototype: the definition (canonical asm in 3AB48.c) takes no arguments, but 2B344
+ * func_8003EDC0 / func_8003FA24 pass it one (the original loads $a0 before those jals). */
+extern void func_80052C10();
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s16 *, s32);
 extern s32 func_80053584(s32 *, s32 *, s32 *, s16 *);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s16 *, s32);

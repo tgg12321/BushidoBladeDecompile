@@ -294,7 +294,7 @@ void eff_Init(void) {
     g_file_dma_flag = 1;
 }
 extern void memcpy(u32, u32, s32);
-extern void snd_VabFakeOpen(u32, s32);
+extern s32 snd_VabFakeOpen(s32, s16);
 void file_LoadSoundData(void) {
     s32 size;
 
