@@ -3,30 +3,30 @@
 # tools/cc1-reorg-negate-rtx-decl.patch (no codegen patch; owner Q17).
 # Keyed to the source tree: they change whenever src/ or include/ does.
 # Refresh with: bash tools/build_oracle_cc1.sh --record-manifest
-# src-digest 0858bf3bc3747d019ab6c55be0d408d036b6a135
-# recorded 2026-10-04T00:08:14Z
+# src-digest 0f36badc19d5572a064ae3cb8f1e6c4f3405928c
+# recorded 2026-10-04T01:44:41Z
 f0794ea2848865ef42396f92b2d3fc6f0ad4b195  main/175A4
 6a1c6ea83dda1d73abf31706c06badd606a89a30  main/17AFC
 1d05c4837e7658d22930b193b67c5834ea2291ca  main/24BF0
-8b39d13e2dfbbb0349c2e7c3bcc1d356f54db6e8  main/24F08
+a60024318f525e1125260897769c598b0884f7b4  main/24F08
 2e8145c2b5fa42531393b61f7acff2129ed44f8b  main/25788
 53131aba7eba79081114d21bd99943bd63828d64  main/25C38
-b921eee720be1c263c475884c214753a8e99e1b0  main/26730
+b414cf61656963dfe2909d8853535d1334cfc08d  main/26730
 4b1d9992801b7d21a6ea23829a8736b2f7fa3552  main/267A8
-3877fce6ad84b00e9fcb0a6e5f8dd4bcc2843a78  main/26940
+d9dbd25fce9c0a0bdbf9f0b9833ff3391236f402  main/26940
 c47377bba8a509300780d8f65541a13c432a2229  main/28514
 fdfb65289cdf4c8308a56b25605fa102a54ff777  main/28708
 aa5412042afa072da6d9d8f06b62e3ba61d9e940  main/2B344
 0da0e78fce6b0dbed61a3a41e6a22caf2abbed4a  main/309CC
-1b4d46f04eac94eda1ad94b66b5ec0a18a5be407  main/31548
-d0cb48d0ae6af04534acadad7104b5df7dea2ce2  main/31CFC
+28181045752251cea30037c9330c8354a8630402  main/31548
+a44e562e91a242153de78c8459f06e40d43a16b8  main/31CFC
 34ea0b1c5ac80d1a11e8b25564b0959b25e4ecc9  main/31D3C
 2bec50fa8815ea8630c5b03034d5acb9fde41769  main/32D04
 329d8188fe8b3545869b99110413386d9cd6ed20  main/35000
-6d185f55da775ccc2ac2a07804567ba67c896f63  main/368E4
+ac4de942112df32781f33e09b0aed4e8c73a6c79  main/368E4
 398218f1ea0016fd9879804eb286728b83cc6395  main/3AB48
 a744e9751b9e8dc229e147b38634dde97fbde51d  main/51268
-aa429195bfc3bad2185c9191d37d2a3327ab3839  main/5ED34
+a6b7a15615320eb752f7a0acdf5337bb86c6bdd7  main/5ED34
 0d148bc9b445be0ef0d0ef2778621d251e3cddb0  main/63D2C
 931edf336d7f24483e39c81dba8f8e6a95347ae6  main/64FD8
 5ef5ff09e294dc6ac22d4d5e6f68405deaf72f80  main/6CF8
@@ -156,7 +156,7 @@ ffc04e222684142be136f716a6377b73099da9bb  main/psxsdk/libgte/smp_03
 104f4b9610b589f25a2d4df717dd3b783cabbf73  main/psxsdk/libsn/73E98
 035a537170e03497cba8415c7e2a9cfde31b904c  main/psxsdk/libsn/7407C
 14e8dabdb81c35d0e63185602ff819ba8ce4cbb2  main/psxsdk/libsnd/760D0
-f057aa00fd50000a2ab7f0721152f8ee7eeaa444  main/psxsdk/libsnd/77F70
+472a8d8b2d5420dee2fd0ca65e6873fec583f4d8  main/psxsdk/libsnd/77F70
 95061dae0872657034c93e723ff6c9ddbd62938b  main/psxsdk/libsnd/cres
 a5049472170a5cf185513a3464f0ea7b741109e9  main/psxsdk/libsnd/decre
 69cb2e4230f9592093160496fc652302b070044d  main/psxsdk/libsnd/midiread
@@ -183,7 +183,7 @@ df8d5bb5cfa2cbf970b9b759c75ed7e7e133faa3  main/psxsdk/libsnd/tempo
 f2edd756d7f47da671f57e88a7a339ae992c1559  main/psxsdk/libsnd/ut_rev
 7a1e0456c7c1068606c5e5134e6acf24c0b453d2  main/psxsdk/libsnd/ut_roff
 4f19e11fff2325db87268418f4af8ad800cfd48d  main/psxsdk/libsnd/ut_ron
-996d1406a7e5d915299114281c347469082c09b4  main/psxsdk/libsnd/ut_vvol
+f6e63f2b63c13666e78474e9dcb6b00c5bb9e2c0  main/psxsdk/libsnd/ut_vvol
 59600d6f6d93ba4da04d57e8f5a4e70eda28c40d  main/psxsdk/libsnd/vm_aloc2
 af0cee36febdef3ac4bb7e7dd51e2374bd51e853  main/psxsdk/libsnd/vm_doff
 617d6de2cb255c8a7ff9ba1d1d2c4f149fdfd41c  main/psxsdk/libsnd/vm_f

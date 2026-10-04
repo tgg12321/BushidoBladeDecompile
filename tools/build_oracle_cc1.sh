@@ -176,7 +176,11 @@ fi
 #           2026-09-25 .. 2026-09-26, kept by the Q17 --install). It differs
 #           from stock only at (plus REG CONST_INT) disjoint-bit sites; its one
 #           dependent function, func_800174F4, returned to INCLUDE_ASM in the
-#           same change, so it expects NO divergence.
+#           same change. Expects:
+#     main/9F9C: func_8001A820 (landed 2026-09-27, 87450b3e7) — stock emits
+#             the target's `lhu` + `sll 16; sra 16` for its s16 field reads;
+#             the narrow compiler folds them to `lh` and swaps the subtraction
+#             operands (28 lines).
 #   cc1.PRE-RECIPE-0f438e42 — the retired NO-REWRITE compiler with the crash
 #           fix (operative 2026-08-24 .. 2026-09-25). Expects:
 #     main/63D2C: func_80073C78's `+` UV stores — stock emits the target `ori`
@@ -184,7 +188,7 @@ fi
 #     main/6CF8: `main`'s natural `((D_800A36F1 - 1) << 8) + 0x80` (site C) —
 #             stock keeps the unfolded `addiu -1; sll 8; addiu 0x80`,
 #             no-rewrite folds to `sll; addiu -128`.
-NARROW_REF_EXPECT_DIFF=""
+NARROW_REF_EXPECT_DIFF="main/9F9C"
 NOREWRITE_REF_EXPECT_DIFF="main/6CF8 main/63D2C"
 F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 FG8="-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
