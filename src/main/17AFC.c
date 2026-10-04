@@ -4052,8 +4052,8 @@ void func_8002EECC(void *arg0, void *arg1) {
     *(s16 *)((u8 *)arg1 + 0xE) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 0xE)) - (*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 0xC))) / temp_v1_2);
     *(s16 *)((u8 *)arg1 + 0x10) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 6)) - (*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 8))) / temp_v1_2);
 }
-void func_8002F2D0(MATRIX *a0, s32 *a1);
-void func_8002F2D0(MATRIX *a0, s32 *a1) {
+void func_8002F2D0(MATRIX *a0, s16 *a1);
+void func_8002F2D0(MATRIX *a0, s16 *a1) {
     MATRIX *m;
     u8 *scr;
     MATRIX *mat;
@@ -4159,9 +4159,9 @@ void func_8002F2D0(MATRIX *a0, s32 *a1) {
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
 
-    ((s16 *)a1)[0] = ratan2(vec[2], vec[1]);
-    ((s16 *)a1)[1] = -ang_y;
-    ((s16 *)a1)[2] = -ang_z;
+    a1[0] = ratan2(vec[2], vec[1]);
+    a1[1] = -ang_y;
+    a1[2] = -ang_z;
 }
 void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     MATRIX *m;
@@ -4547,7 +4547,7 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
 /* GTE rotate+translate of the object's local vector, then dispatch */
 void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
-    s32 dir[2];
+    s16 dir[4];
     MATRIX mtx;
     s32 *playerData;
     MATRIX *mat;
@@ -4638,7 +4638,7 @@ void func_80030208(void) {
         } else if (kind == 0xE && obj->unk_05 == 2) {
             lookup += 3;
         }
-        func_80049718(lookup, 1, &obj->pos, obj->rot);
+        func_80049718(lookup, 1, &obj->pos.x, obj->rot);
         func_800393C8(obj->slot, lookup, &obj->pos, obj->rot);
     }
 }

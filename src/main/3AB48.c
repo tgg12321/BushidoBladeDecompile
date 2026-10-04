@@ -12,7 +12,6 @@ extern s16 Judge[];
 extern u8 *g_gpu_ot_ptr;
 extern s32 func_8005C2A8(s32 *, s16, s32);
 extern void func_80052C10(void);
-void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in);
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
 static s32 D_800A33F0;

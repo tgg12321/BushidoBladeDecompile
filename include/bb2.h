@@ -803,6 +803,7 @@ extern s32 func_800486FC(void);
 extern void func_80048A7C(s32, s32, s32, s32, s32, s32);
 extern s32 func_80048AD0(s32);
 extern void func_8004939C(void);
+extern void func_80049718(s32, s32, s32 *, s16 *);
 extern void func_80049A2C(s32, s32, s32);
 extern s32 func_80049C24(s32, s32);
 extern void func_80049E1C(void);
