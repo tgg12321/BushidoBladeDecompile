@@ -2010,9 +2010,8 @@ void func_8003E120(void) {
     func_8003DE14(buf, 0x13);
 }
 extern s32 D_800A3228;
-extern void MoveImage(s16 *, s32, s32);
 void func_8003E164(s32 arg0) {
-    s16 buf[4];
+    RECT buf;
     s32 *s0;
 
     if (D_800A3228 == arg0) {
@@ -2024,14 +2023,14 @@ void func_8003E164(s32 arg0) {
         goto end;
     }
     if (arg0 != 0) {
-        buf[0] = 0x300;
+        buf.x = 0x300;
     } else {
-        buf[0] = 0x280;
+        buf.x = 0x280;
     }
-    buf[1] = 0xF8;
-    buf[2] = 0x40;
-    buf[3] = 6;
-    MoveImage(buf, 0x140, 0x1E8);
+    buf.y = 0xF8;
+    buf.w = 0x40;
+    buf.h = 6;
+    MoveImage(&buf, 0x140, 0x1E8);
     if (arg0 == 0) {
         func_800432A0(*(s16 *)((u8 *)s0 + 0x14), 0, 0, -0x140, 0xE8);
     } else {

@@ -1,0 +1,1 @@
+{"func": "GetClut", "addr": "8007A7C4", "verdict": "PASS", "body_hash": "7e96e4f53439effe", "body_kind": "c", "file": "main/psxsdk/libgpu/prim", "reviewer": "p2-rev-g1", "scope": "cheat-cleanup", "date": "2026-10-04T05:17:33Z", "head": "7b1643b1a", "notes": ""}

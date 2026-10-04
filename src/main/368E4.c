@@ -858,7 +858,6 @@ void game_Stub4(void) {
 void func_800477DC(s32 a0) {
     D_800A33D0 = (s16 *)a0;
 }
-extern u32 GetClut(s32, s32);
 extern void func_800417D0(s32 *);
 extern s32 D_800EF558[];
 extern s32 D_800EF59C[];
@@ -866,8 +865,8 @@ s32 func_800477E8(void) {
     s16 *s0;
     s32 s3val;
     s32 s2val;
-    s32 s1val;
-    s32 t1val;
+    u16 s1val;
+    u16 t1val;
     s32 a3;
     s32 a0;
     s32 a2;

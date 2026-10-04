@@ -1128,7 +1128,7 @@ extern volatile s32 _qin;
 extern volatile s32 _qout;
 
 
-s32 _exeque();                            /* extern */
+s32 _exeque(void);
 s32 get_alarm();                                /* extern */
 s32 DMACallback(s32, s32 (*)()); /* extern */
 s32 SetIntrMask(s32);                         /* extern */
@@ -1257,7 +1257,6 @@ s32 _reset(s32 arg0) {
     }
     return _version(arg0);
 }
-extern s32 _exeque();
 s32 _sync(s32 arg0) {
     s32 temp_s0;
     s32 ret;

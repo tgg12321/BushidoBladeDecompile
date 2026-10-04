@@ -50,7 +50,6 @@ extern u8 D_800F33D8;
 extern u8 D_800A37A8[];
 extern void cdrom_StartRead(s32, s32);
 extern void game_FrameLoop(void);
-extern void PutDispEnv(DISPENV *);
 extern void LoadImage(u8 *, u8 *);
 extern u32 *ClearOTagR(u32 *, s32);
 

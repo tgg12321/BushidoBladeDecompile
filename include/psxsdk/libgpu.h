@@ -156,7 +156,10 @@ extern void SetDispMask(s32);
 extern void DrawSync(s32);
 extern void DrawOTag(u32 *);
 extern DRAWENV *PutDrawEnv(DRAWENV *);
+extern DISPENV *PutDispEnv(DISPENV *);
+extern s32 MoveImage(RECT *, s32, s32);
 extern u32 GetTPage(s32, s32, s32, s32);
+extern u16 GetClut(s32, s32);
 extern void SetPolyF4(u8 *);
 extern void SetDrawMove(DR_MOVE *, RECT *, u32, u32);
 

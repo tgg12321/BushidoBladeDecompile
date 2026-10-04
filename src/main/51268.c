@@ -3579,9 +3579,8 @@ extern s32 snd_StopAll(void);
 
 
 
-extern s32 MoveImage(u8 *, s32, s32);
 s32 func_80068F70(s32 arg0, s32 *arg1) {
-    u8 buf[8];
+    RECT buf;
     s32 temp_s0;
     s32 v0_efc;
     s32 *v0_e49c;
@@ -3659,9 +3658,9 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
             *(s16 *)(p_34fc + 0x10) = 0;
             *(s16 *)(p_34fc + 0xE) = 0;
             *(s16 *)(p_34fc + 0xC) = 0;
-            __builtin_memcpy(buf, D_800A32C0, 8);
+            __builtin_memcpy(&buf, D_800A32C0, 8);
             DrawSync(0);
-            MoveImage(buf, 0x3C0, 0x1FE);
+            MoveImage(&buf, 0x3C0, 0x1FE);
             DrawSync(0);
         }
     }
@@ -6249,7 +6248,6 @@ extern DRAWENV *SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
 extern DISPENV *SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
 extern void LoadImage(u8 *, s32);
 extern void ClearImage(s32, s32, s32, s32);
-extern DISPENV *PutDispEnv(DISPENV *);
 
 s32 func_8006E10C(void) {
     s32 ff0;

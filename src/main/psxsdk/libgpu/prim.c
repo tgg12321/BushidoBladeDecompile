@@ -66,8 +66,8 @@ const char D_80015E1C[12] =
 u32 GetTPage(s32 a0, s32 a1, s32 a2, s32 a3) {
     return ((a0 & 3) << 7) | ((a1 & 3) << 5) | ((a3 & 0x100) >> 4) | ((a2 & 0x3FF) >> 6) | ((a3 & 0x200) << 2);
 }
-u32 GetClut(s32 a0, s32 a1) {
-    return ((a1 << 6) | ((a0 >> 4) & 0x3F)) & 0xFFFF;
+u16 GetClut(s32 a0, s32 a1) {
+    return (a1 << 6) | ((a0 >> 4) & 0x3F);
 }
 void DumpTPage(s32 a0) {
     u32 val = a0 & 0xFFFF;

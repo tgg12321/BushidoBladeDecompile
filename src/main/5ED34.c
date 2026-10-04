@@ -39,7 +39,6 @@ extern s32 SetPolyG4();
 extern s32 func_8006E480();
 extern s32 func_8007352C();
 extern s32 snd_StopAll(void);
-extern s32 MoveImage(u8 *, s32, s32);
 void func_8006920C(s32 *, s32);
 void func_8006920C(s32 *a0, s32 a1);
 void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2);
@@ -60,13 +59,6 @@ extern u8 D_800A32E8;
 extern u8 D_800A32E9;
 extern u8 D_800A32EC[8];
 extern s32 g_gpu_ot_ptr;
-
-typedef struct RectE534 {
-    s16 x;
-    s16 y;
-    s16 w;
-    s16 h;
-} RectE534;
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
 static s16 D_800A3540[2];
@@ -105,7 +97,7 @@ static void * D_800A35C4;
 static s16 D_800A35C8[2];
 
 s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
-    RectE534 rect;
+    RECT rect;
     s16 i;
     u8 value;
 
