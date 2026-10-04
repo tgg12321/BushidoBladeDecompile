@@ -669,6 +669,7 @@ extern void func_80031B24(void);
 extern u8 *func_80032064(Unk80101EC8Record *, s32);
 extern void func_800321E8(void);
 extern void func_800324D0(Unk80101EC8Record *);
+extern void func_80032854(s32, s32, s32 *, s16 *);
 extern void func_80033510(void);
 extern void func_800335D8(void);
 extern void func_800338CC(void);

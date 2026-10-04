@@ -151,14 +151,14 @@ void func_80026DA4(void) {
                 if ((u16)D_80101EC8[1].unk_6A == 0x21) {
                     func_80027A58((s32 *)partner);
                 }
-                func_80032854(1, 0x2D, (u8 *)&partner->unk_F4, (s16 *)0);
+                func_80032854(1, 0x2D, &partner->unk_F4.x, (s16 *)0);
             } else if (D_80101EC8[1].unk_28C > D_80101EC8[0].unk_28C) {
                 D_80101EC8[1].unk_286 = 3;
                 D_80101EC8[0].unk_286 = 4;
                 if ((u16)D_80101EC8[0].unk_6A == 0x21) {
                     func_80027A58((s32 *)record);
                 }
-                func_80032854(0, 0x2D, (u8 *)&record->unk_F4, (s16 *)0);
+                func_80032854(0, 0x2D, &record->unk_F4.x, (s16 *)0);
             }
             partner->unk_28C = 0;
             record->unk_28C = 0;
@@ -229,7 +229,7 @@ tail:
             pos[0] += (Judge[(u16)record->unk_1D8 & 0xFFF] * D_8008EB54[kind].unk0) >> 12;
             pos[1] += D_8008EB54[kind].unk2;
             pos[2] += (Judge[(record->unk_1D8 + 0x400) & 0xFFF] * D_8008EB54[kind].unk0) >> 12;
-            func_80032854(0, D_8008EB6C[kind], (u8 *)pos, (s16 *)0);
+            func_80032854(0, D_8008EB6C[kind], pos, (s16 *)0);
         }
     } else {
         D_800A3910--;

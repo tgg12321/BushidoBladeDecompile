@@ -2596,7 +2596,6 @@ check3:
 }
 void func_8001FBE8(void);
 
-extern void func_80032854(s32, s32, s32 *, s16 *);
 
 void func_8001FBE8(void) {
     Unk80101EC8Record *rec;
@@ -5296,7 +5295,7 @@ skip_62:
             || (rec->unk_6A == 0x11 && arg0 != D_800A38AE && rec->unk_AA == rec->unk_40))) {
         MATRIX **bones = game_GetPlayerData(arg0);
         if (D_800A38DC != 0 || D_8008D9EC[D_80101EC8[0].unk_0A] == 0 || D_800A37A0 != 1 || arg0 != D_800A37A0) {
-            func_80032854(arg0, 0x2E, (s32 *)&rec->unk_F4, 0);
+            func_80032854(arg0, 0x2E, &rec->unk_F4.x, 0);
         }
         if (rec->unk_0C != 0x1F) {
             func_80030A2C(rec, D_8008D90C[D_8008D9EC[rec->unk_0A]][rec->unk_0E], (Vec3i32 *)bones[0x12]->t);
@@ -5334,7 +5333,7 @@ skip_62:
         if (rec->unk_6A == 0x10 && rec->unk_40 == rec->unk_AC && rec->unk_26C != 0 && rec->unk_34B != 0) {
             rec->unk_34A = 0xA;
             rec->unk_34B--;
-            func_80032854(arg0, 0x31, (s32 *)&rec->unk_F4, 0);
+            func_80032854(arg0, 0x31, &rec->unk_F4.x, 0);
         }
         if (rec->unk_46 == 0 && (rec->unk_6A != 0x11 || arg0 == D_800A38AE)) {
             rec->unk_62 |= 0x40;
