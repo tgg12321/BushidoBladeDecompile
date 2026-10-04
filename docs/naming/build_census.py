@@ -839,6 +839,40 @@ for a in sorted(libscan):
             e["classification"]])[:1000],
         action="KEEP" if same else "RENAME",
         proposed_name="" if same else e["name"]))
+
+# ------------------------------------------------- verified manifest rows outside the universe
+# The same gap for the CONFIRMed manifest names (near tier, xref, ...): a function with no
+# asm/funcs listing of its own (it sits inside a neighbour's .s; docs/naming/README.md "The
+# universe") had no row, so its verified name never reached the wave (the 2026-09-07 near-tier
+# names at 0x80085FD8, 0x80086080, 0x80087D10, 0x80087D58). The current name comes from the
+# link map, as above. Only an auto-named or already-applied address gets a row: a different
+# semantic name there is a later decision this manifest does not override.
+_covered = {r["address"].upper().replace("0X", "") for r in rows}
+for a in sorted(apiscan):
+    if a in _covered:
+        continue
+    e = apiscan[a]
+    live = [n for n in _mapdef.get(a, []) if not AUTOPAT.match(n)] or _mapdef.get(a, [])
+    if not live:
+        continue
+    nm = live[0]
+    same = nm == e["name"]
+    if not same and not AUTOPAT.match(nm):
+        continue
+    al = sorted({s for (s, sf, i, c) in addr_syms.get(a, []) if not AUTOPAT.match(strip_addr(s))})
+    ev = [e["origin"] + ": " + e["evidence"][:600],
+          "outside the asm/funcs universe (no split file of its own), so this row is seeded "
+          "from the verified manifest rather than a glabel"]
+    if e["note"]:
+        ev.append("verifier: " + e["note"][:200])
+    rows.append(dict(
+        address="0x" + a, glabel="", current_name=nm,
+        name_layer="src/**/*.c definition (no asm/funcs split file)",
+        aliases=";".join(al)[:300], insns="", src_location=src_def.get(nm, ""),
+        queued="yes" if nm in queue_funcs else "",
+        origin=e["origin"], tier=e["tier"], evidence="; ".join(ev)[:1000],
+        action="KEEP" if same else "RENAME",
+        proposed_name="" if same else e["name"]))
 rows.sort(key=lambda r: r["address"])
 
 # ------------------------------------------------- BIOS jumptable index (second chain)
