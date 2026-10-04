@@ -188,6 +188,16 @@ NARROW_REF_EXPECT_DIFF=""
 NOREWRITE_REF_EXPECT_DIFF="main/6CF8 main/63D2C"
 F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 FG8="-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
+# Per-TU cc1 flags, read from the Makefile lists so they never drift from the build:
+# GP_FILES run at -G8, NO_SR_FILES add -fno-strength-reduce (Makefile cc_flags_for).
+GP_IDS=" $(sed -n 's/^GP_FILES *:= *//p' Makefile) "
+NO_SR_IDS=" $(sed -n 's/^NO_SR_FILES *:= *//p' Makefile) "
+cc1_flags() {
+  local fl="$F"
+  case "$GP_IDS" in *" $1 "*) fl="$FG8";; esac
+  case "$NO_SR_IDS" in *" $1 "*) fl="$fl -fno-strength-reduce";; esac
+  echo "$fl"
+}
 CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
 W=tmp/cc1build_check; mkdir -p $W
 
@@ -210,7 +220,7 @@ SRCDIG=$( (sha1sum src/**/*.[ch] include/**/*.h 2>/dev/null | sha1sum) | cut -d'
 n=0
 for stem in $(tu_ids); do
   $CPP src/$stem.c > $W/t.i 2>/dev/null
-  case "$stem" in main/309CC|main/31D3C) FL="$FG8";; *) FL="$F";; esac
+  FL=$(cc1_flags "$stem")
   "$SCRATCH/cc1" $FL $W/t.i -o $W/new.s 2>/dev/null
   # Drop the .file directive: it carries the input path, not codegen.
   grep -v '^\t\.file' $W/new.s | sha1sum | sed "s|-|$stem|" >> $W/digests.txt
@@ -223,7 +233,7 @@ if [ -n "$REF" ]; then
   bad=""; lines=0
   for stem in $(tu_ids); do
     $CPP src/$stem.c > $W/t.i 2>/dev/null
-    case "$stem" in main/309CC|main/31D3C) FL="$FG8";; *) FL="$F";; esac
+    FL=$(cc1_flags "$stem")
     "$SCRATCH/cc1" $FL $W/t.i -o $W/new.s 2>/dev/null
     "$REF"         $FL $W/t.i -o $W/ref.s 2>/dev/null
     cmp -s $W/new.s $W/ref.s || { bad="$bad $stem"; lines=$((lines + $(diff $W/ref.s $W/new.s | grep -c '^[<>]'))); }
