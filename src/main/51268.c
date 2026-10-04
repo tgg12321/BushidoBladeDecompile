@@ -748,7 +748,7 @@ void func_80061C00(s32 arg0, s32 arg1, s32 arg2) {
     sp18.vy = arg1;
     sp18.vz = 0;
     sp18.vx = 0;
-    RotMatrix((s16 *)&sp18, (u8 *)&sp30);
+    RotMatrix(&sp18, &sp30);
     sp30.t[2] = 0;
     sp30.t[1] = 0;
     sp30.t[0] = 0;
@@ -798,7 +798,7 @@ void func_80061D74(s32 arg0, s16 arg1) {
     sp18.vz = 0;
     sp18.vy = arg1;
     sp18.vx = 0;
-    RotMatrix((s16 *)&sp18, (u8 *)&sp30);
+    RotMatrix(&sp18, &sp30);
     sp30.t[2] = 0;
     sp30.t[1] = 0;
     sp30.t[0] = 0;
@@ -863,7 +863,7 @@ void func_80061FAC(u16 *a0, s32 a1, MATRIX *a2) {
     dest->vx = a0[0];
     dest->vy = a0[1];
     dest->vz = a0[2];
-    RotMatrix((s16 *)dest, (u8 *)a2);
+    RotMatrix(dest, a2);
     a2->t[2] = 0;
     a2->t[1] = 0;
     a2->t[0] = 0;
@@ -1821,41 +1821,21 @@ s32 func_80063E10(s32 lane) {
     return 1;
 }
 /* func_800644FC -- rotates one matrix per enabled bit: for every i < *count
- * whose bit is set in D_800A3454[idx], RotMatrix(&D_800F1000[idx][i], &m[i]).
- *
- * Shape notes:
- *  - goto loop, not for/do/while: with a loop note present, loop.c
- *    move_movables hoists the `1` of `1 << i` and the D_800F1000 address
- *    out of the loop and strength-reduces the i*8 giv; the target keeps all
- *    three inside the loop (li/lui/addiu/sll every iteration).
- *  - `i = 0` before the guard, guard written on i: the i=0 lands in the blez
- *    delay slot and the folded guard-compare pseudo reserves the target's
- *    8 phantom frame bytes (vars=8, frame 0x30) -- phantom-slot producer 1.
- *  - `ptr++` before `i++`: bottom-block LUID order (lw *count schedules
- *    before addiu i, and the ptr increment fills the bnez delay slot).
- */
+ * whose bit is set in D_800A3454[idx], RotMatrix(&D_800F1000[idx][i], &m[i]). */
 void func_800644FC(s32 *count, MATRIX *m, s32 idx) {
     s32 i;
-    MATRIX *ptr;
-    s32 *bits;
-    s32 vec_off;
-    s32 *base; /* FAKE: second handle to D_800A3454 so its address is materialized (la) before the idx<<2 shift, mechanism: expr.c expand_binop force_reg emits the symbol_ref la AFTER the index shift for every single-expression spelling and sched.c rank_for_schedule breaks the equal-priority tie by INSN_LUID; no direct-global form matches */
-    i = 0;
-    if (i < *count) {
-        base = D_800A3454;
-        bits = base + idx;
-        vec_off = idx * 0x50;
-        ptr = m;
-    top:
-        {
-            s32 mask = 1 << i;
-            if (*bits & mask) {
-                RotMatrix((s16 *)((u8 *)D_800F1000 + vec_off + (i << 3)), (u8 *)ptr);
-            }
+    s32 mask;
+
+    for (i = 0; i < *count; i++) {
+        /* FAKE: `mask = 1 << i` in one statement lets loop.c move_movables
+           hoist the constant 1 into a callee-saved register (li s5,1 before
+           the loop, frame 56; score 12); setting mask twice keeps the target's
+           `li v0,1; sllv` inside the loop. */
+        mask = 1;
+        mask <<= i;
+        if (D_800A3454[idx] & mask) {
+            RotMatrix(&D_800F1000[idx][i], &m[i]);
         }
-        ptr++;
-        i++;
-        if (i < *count) goto top;
     }
 }
 
@@ -2710,7 +2690,7 @@ again:
         p_v->vy = 0;
         p_v->vx = 0;
         p_v->vz = D_800F0BA8[arg0];
-        RotMatrix((s16 *)p_v, (u8 *)p_mat);
+        RotMatrix(p_v, p_mat);
         dst = p_t;
         SetRotMatrix(p_mat);
         do {
@@ -3042,7 +3022,7 @@ u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
         p->unk2 = 0;
         p->unk0 = 0;
         p->unk10 = 1;
-        RotMatrix((s16 *)&ang, (u8 *)&m);
+        RotMatrix(&ang, &m);
         /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
         __asm__ volatile(
             "lw     $12, 0(%0)\n"

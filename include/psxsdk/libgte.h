@@ -26,7 +26,7 @@ extern s32 SquareRoot12(s32);
 extern s32 ratan2(s32, s32);
 extern s32 Square12(s32 *, s32 *);
 extern void LoadAverage12(s32 *, s32 *, s32, s32, s32);
-extern void *RotMatrix(s16 *, u8 *);
+extern MATRIX *RotMatrix(SVECTOR *, MATRIX *);
 extern void RotMatrixZYX(s16 *, u8 *);
 extern MATRIX *RotMatrixX(s32, MATRIX *);
 extern MATRIX *RotMatrixY(s32, MATRIX *);

@@ -327,7 +327,7 @@ s32 func_80073C78(env, angle, mode)
         ang.vy = 0;
         ang.vx = 0;
         ang.vz = angle;
-        RotMatrix((s16 *)&ang, (u8 *)&mtx);
+        RotMatrix(&ang, &mtx);
         ScaleMatrixL(&mtx, &D_8009BCD4);
         SetRotMatrix(&mtx);
         for (j = 0; j < 4; j++) {
