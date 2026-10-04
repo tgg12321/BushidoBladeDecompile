@@ -3,8 +3,8 @@
 # tools/cc1-reorg-negate-rtx-decl.patch (no codegen patch; owner Q17).
 # Keyed to the source tree: they change whenever src/ or include/ does.
 # Refresh with: bash tools/build_oracle_cc1.sh --record-manifest
-# src-digest 989e01ef1ff786ccce45feeeb799c3188eea4666
-# recorded 2026-10-03T22:08:45Z
+# src-digest 0858bf3bc3747d019ab6c55be0d408d036b6a135
+# recorded 2026-10-04T00:08:14Z
 f0794ea2848865ef42396f92b2d3fc6f0ad4b195  main/175A4
 6a1c6ea83dda1d73abf31706c06badd606a89a30  main/17AFC
 1d05c4837e7658d22930b193b67c5834ea2291ca  main/24BF0
@@ -29,8 +29,8 @@ a744e9751b9e8dc229e147b38634dde97fbde51d  main/51268
 aa429195bfc3bad2185c9191d37d2a3327ab3839  main/5ED34
 0d148bc9b445be0ef0d0ef2778621d251e3cddb0  main/63D2C
 931edf336d7f24483e39c81dba8f8e6a95347ae6  main/64FD8
-94c1ebed92b387a2c15b2e1a4097bc7df3d7c401  main/6CF8
-d28bb08439e60b85ef5ca0fd9d7b8dbc24ee8b71  main/87A0
+5ef5ff09e294dc6ac22d4d5e6f68405deaf72f80  main/6CF8
+71b4cc80e94addd60513a44247473788c0a8a439  main/87A0
 3eaed26ae2e955ce63b34eca20e340c9a0c91a0f  main/9F9C
 8718372a7638c98d464b4710e799cff86855b3ff  main/cdrom
 73e0c389a4c7fbfef9a371e68c2dfe495907cb8b  main/d_1068
@@ -70,7 +70,7 @@ e12d246e98693633bae82965bfc236865e2685c9  main/psxsdk/libapi/a91
 84f55e9aa5543474bf25002d941df2c53ae2f233  main/psxsdk/libapi/c159
 7f137c0360537864b667f918e9e6b81b15f73a71  main/psxsdk/libapi/c57
 2275fadc326491693b0757605c7ccf3040a2b9bd  main/psxsdk/libapi/c67
-1e68cffe9cffbc0c9d194db2d11f57667cb8e28e  main/psxsdk/libapi/c68
+374a2d5f742e14b8e2b968a04b3fc275d7cebe5d  main/psxsdk/libapi/c68
 44df5b020ac10d23f277b542beefec5ce778d9c4  main/psxsdk/libapi/c73
 c5eeffdc323606a6622ca71ea374085a00d53e39  main/psxsdk/libapi/chclrpad
 c4c0abaa608351c8185ad6f26d7e89af75b6501c  main/psxsdk/libapi/counter
@@ -79,6 +79,7 @@ d54384e8c9acebade159ff1339eb4db2bbf615a5  main/psxsdk/libapi/l03
 21c018c05001d2310b5b8932a1846a5994d8271c  main/psxsdk/libapi/l10
 087d593abd87f6bfa3a02c1e4367f14bc0b8cde1  main/psxsdk/libapi/pad
 e29f7fc72bedad2c1bfba82a0db8eed854390533  main/psxsdk/libapi/patch
+5d11dc2065dbd501a57d2f197c631643618979f4  main/psxsdk/libapi/sendpad
 9986023d65554c7883a7f744c953a18f75c7a68a  main/psxsdk/libc2/ctype
 774ab28efa54ad7844db2e7300d24122266d0973  main/psxsdk/libc2/memchr
 2ea2a2606452fbcb8787d863c219a85f11e13e05  main/psxsdk/libc2/memcpy
@@ -154,13 +155,11 @@ ffc04e222684142be136f716a6377b73099da9bb  main/psxsdk/libgte/smp_03
 46712049b7bb9d64443f8be61f6cfe4d1f6797ad  main/psxsdk/libgte/smp_04
 104f4b9610b589f25a2d4df717dd3b783cabbf73  main/psxsdk/libsn/73E98
 035a537170e03497cba8415c7e2a9cfde31b904c  main/psxsdk/libsn/7407C
-0c7920282bb80aea9e956289f1f2aa6af565da5e  main/psxsdk/libsnd/cres
-1778c3172524e12bd7bd95b032b4cfc6ff7c8080  main/psxsdk/libsnd/midiread
 14e8dabdb81c35d0e63185602ff819ba8ce4cbb2  main/psxsdk/libsnd/760D0
-dc94e3ac28e481040feca7c5c1ba426847ed23a3  main/psxsdk/libsnd/ut_keyv
-742334bc69003fa6e781701bf3f5c10d86e0a596  main/psxsdk/libsnd/ut_vvol
-0aca9dfe00b48bc648c0a34fc22118663746d9e9  main/psxsdk/libsnd/vm_f
-554caf143c8303551f9588a115fe95481bf84a54  main/psxsdk/libsnd/vm_no1
+f057aa00fd50000a2ab7f0721152f8ee7eeaa444  main/psxsdk/libsnd/77F70
+95061dae0872657034c93e723ff6c9ddbd62938b  main/psxsdk/libsnd/cres
+a5049472170a5cf185513a3464f0ea7b741109e9  main/psxsdk/libsnd/decre
+69cb2e4230f9592093160496fc652302b070044d  main/psxsdk/libsnd/midiread
 a2f6196bbb0f68e6ce49e5c6c4202a88aee41a43  main/psxsdk/libsnd/miditime
 f61f39caea61ef79eda42819f5cdb9cad44a1014  main/psxsdk/libsnd/next
 ff210c39a94c4333a95f9a54f4eaafcb365c71f9  main/psxsdk/libsnd/pause
@@ -179,12 +178,20 @@ e4a7d35e4742041cddb2c18f325a8c0a0779eede  main/psxsdk/libsnd/ssinit_c
 bc9bd3480127c34776f43692547c9b8825203ba4  main/psxsdk/libsnd/stop
 df8d5bb5cfa2cbf970b9b759c75ed7e7e133faa3  main/psxsdk/libsnd/tempo
 0ec186ed374c40ddb7db7e27f8c043601110573e  main/psxsdk/libsnd/ut_gvba
+79a662956cbf8d800f1f19c2ea4b03710a96c586  main/psxsdk/libsnd/ut_keyv
 5c5a3cb0c1f8de27fca676fbc1a49811f4d2425f  main/psxsdk/libsnd/ut_rdep
 f2edd756d7f47da671f57e88a7a339ae992c1559  main/psxsdk/libsnd/ut_rev
 7a1e0456c7c1068606c5e5134e6acf24c0b453d2  main/psxsdk/libsnd/ut_roff
 4f19e11fff2325db87268418f4af8ad800cfd48d  main/psxsdk/libsnd/ut_ron
+996d1406a7e5d915299114281c347469082c09b4  main/psxsdk/libsnd/ut_vvol
+59600d6f6d93ba4da04d57e8f5a4e70eda28c40d  main/psxsdk/libsnd/vm_aloc2
 af0cee36febdef3ac4bb7e7dd51e2374bd51e853  main/psxsdk/libsnd/vm_doff
+617d6de2cb255c8a7ff9ba1d1d2c4f149fdfd41c  main/psxsdk/libsnd/vm_f
+d3fe8bb33b99b80c8075679879caf25d7f71821a  main/psxsdk/libsnd/vm_init
 e081886da5efbf503aa703a6617c2b89788371dc  main/psxsdk/libsnd/vm_n2p
+1a8aef70ebfa5b251f2e1f75772746e9c8ab05b6  main/psxsdk/libsnd/vm_no1
+0a834025eec8f8dea0240a5ae17f3dc94373a733  main/psxsdk/libsnd/vm_nowof
+fcce35f70cb4b23d9b5bf3aa6374317959858ebc  main/psxsdk/libsnd/vm_nowon
 d5e1bfb475a444f6ca8bb52ebc7087b3ae207294  main/psxsdk/libsnd/vm_vsu
 ebc3fd8b57b244acb08daab1607e56076e6a2dc9  main/psxsdk/libsnd/vs_auto
 df16436b4f3735e9f38facd6813aa94b22a27f47  main/psxsdk/libsnd/vs_mono
@@ -194,7 +201,6 @@ cc2fe073351748878fab2a345172c0ccbe7a1a2a  main/psxsdk/libsnd/vs_vfb
 3c3c60e8c887f7a5e02a22b7f03a5c11f612acba  main/psxsdk/libsnd/vs_vh
 fce622bb85e70f2dd7ee06ea26a0a6589d9f095d  main/psxsdk/libsnd/vs_vtb
 346e7a2c0aa57341702a7e4571e9af4d1dbb7be7  main/psxsdk/libsnd/vs_vtc
-35bdcc1baf3893700017177f1bdb63980aafd3c8  main/psxsdk/libspu/s_sav
 22fc19e43bcf96e857d4d694fa9bf5602d675c6d  main/psxsdk/libspu/7BC88
 85678a3bb6effe791999749bab587078cda82fcc  main/psxsdk/libspu/s_crwa
 e8e76bd27e3351744ae7a2c388e06ab7034d1730  main/psxsdk/libspu/s_dcb
@@ -213,6 +219,7 @@ ee6be15a47bbd2d0d86c704ac4474a58440f5751  main/psxsdk/libspu/s_m_int
 f0527755125ef78d7104a4668bbc19f32ea44078  main/psxsdk/libspu/s_n2p
 6dca2e4c102729c35a4b34e620a369a0da399f04  main/psxsdk/libspu/s_q
 52f75adf68048b4f29c69eb5260d1cc784feedad  main/psxsdk/libspu/s_r
+b0af0e0060a21b76e2330736445dec30ebac5058  main/psxsdk/libspu/s_sav
 a3d06f1e6479596381d4b426b6587e82208726a7  main/psxsdk/libspu/s_sca
 2bcd6a2869b78e331ca1cc4d9e755a787896cf7a  main/psxsdk/libspu/s_sk
 b786dbd63567f6d922163f64758022b4b3b4037d  main/psxsdk/libspu/s_snc
