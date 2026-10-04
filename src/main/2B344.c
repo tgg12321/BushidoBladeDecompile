@@ -643,14 +643,10 @@ extern s32 func_800788B0(void);
 extern s32 func_8005E54C(s32, s32, s32);
 extern void func_8001CD68(u8 *);
 
-extern void func_8001DA2C(void);
 
 extern void func_8005FBC8(s32, s32);
-extern void func_8001DBE4(void);
 
 
-extern void func_800342A0(void);
-extern s32 func_80022408(s32 *);
 extern void StoreImage(s32 *, u16 *);
 extern void gte_ReadFarColor(u8 *);
 
@@ -1350,7 +1346,6 @@ void func_8003CE18(void) {
     D_800A3834 = 0x1D;
     gpu_SetDispMaskOn();
 }
-extern void func_80021D10(s32, s32 *, s32);
 extern void func_800618B4(s32 *, s32 *);
 extern void func_80061064(s32 *, s32 *);
 extern void func_8003B328(void);

@@ -68,8 +68,6 @@ extern u8 D_800A38AB;
 
 
 
-extern s32 func_80029454(void);
-extern void func_80031B24(void);
 
 
 

@@ -316,10 +316,8 @@ extern u32 D_800A3798;
 extern u8 D_800A3744;
 extern u8 D_800A3745;
 extern u8 D_800A3746;
-extern void func_80020D70(void);
 extern u8 D_800A36B0;
 extern void pad_ResetStateMarkValid(void);
-extern void func_8001C444(void);
 void sys_GameInit(void) {
     printf(g_str_limit, 0x8010DB00);
     func_800167EC();

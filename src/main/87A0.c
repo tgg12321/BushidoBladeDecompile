@@ -10,7 +10,6 @@
 extern s32 g_pad_buf;
 
 /* Extern function declarations */
-extern void func_8002F770(s16 *, s32, s32, s32);
 
 
 
@@ -69,14 +68,11 @@ extern void func_8003FFE0(s32);
 
 
 extern void func_80039320(void);
-extern void func_8002C61C(void);
-extern void func_80030D7C(void);
 
 extern void func_800397A0(void);
 
 
 extern void func_80018300(s32 *);
-extern void func_80023F08(s32, PadState *);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 

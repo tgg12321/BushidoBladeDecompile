@@ -14,8 +14,6 @@ extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
 extern u8 D_800A38AB;
-extern s32 func_80029454(void);
-extern void func_80031B24(void);
 void func_80026DA4(void);
 
 INCLUDE_RODATA("asm/rodata", D_80010478);
@@ -175,7 +173,6 @@ void func_800274BC(s32 *arg0, s16 *arg1) {
     arg1[1] = (s16)(((-arg0[1]) << 12) / ((s32)log2_val));
     arg1[2] = (s16)(((-arg0[2]) << 12) / ((s32)log2_val));
 }
-extern void *func_80021424(Unk80101EC8Record *, s32, s16 *);
 
 extern void func_80032854(s32, s32, u8 *, s16 *);
 void func_80027640(Unk80101EC8Record *arg0)
@@ -345,7 +342,6 @@ void func_80027A58(s32 *a0) {
         }
     }
 }
-extern void func_800203B4(u8 *, s32, s16 *);
 extern u8 D_8008EB74[3][2][2];
 s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
     /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec`, kept because GCC 2.7.2

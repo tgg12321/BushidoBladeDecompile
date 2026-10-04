@@ -8,7 +8,6 @@
 #include "bb2_const.h"
 
 /* Declarations from the file this TU was split from (code6cac.c). */
-extern void func_8002F770(s16 *, s32, s32, s32);
 
 extern s32 file_GetFlag2(void);
 extern s32 func_8005B9FC(s32);
@@ -26,10 +25,7 @@ extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 extern void func_80055138(s32, s32, s32);
 extern void func_8003FFE0(s32);
 extern void func_80039320(void);
-extern void func_8002C61C(void);
-extern void func_80030D7C(void);
 extern void func_800397A0(void);
-extern void func_80023F08(s32, PadState *);
 
 INCLUDE_RODATA("asm/rodata", D_800100A4);
 void func_8001979C(s32 arg0, u32 *arg1) {
@@ -1430,8 +1426,6 @@ void func_8001CD68(s16 *arg0) {
  * match are refused/set aside, Q22/Q23). */
 extern u8 D_800A3898[2];
 extern u8 D_800A38AA[2];
-extern void func_800340A0(void);
-extern void func_800342A0(void);
 void func_8001CE60(void) {
     u8 buf[4]; /* func_8001CD68's clock record: s16 minutes, u8 seconds, u8 centiseconds */
 
@@ -1749,7 +1743,6 @@ extern s32 func_80021904(s32);
 extern s32 func_800219E4(s32);
 extern void func_8001B294(Unk80101EC8Record *, Unk80101EC8Record *);
 extern void func_8001B3C0(Unk80101EC8Record *, Unk80101EC8Record *);
-extern void func_80033510(void);
 extern void rng_SetSeed(s32);
 void func_8001DCB0(void) {
     s32 i;
@@ -2614,7 +2607,6 @@ check3:
 }
 void func_8001FBE8(void);
 
-extern void *func_80021424(Unk80101EC8Record *, s32, s16 *);
 extern void func_80032854(s32, s32, s32 *, s16 *);
 
 void func_8001FBE8(void) {
@@ -4610,12 +4602,6 @@ extern s16 D_8008E0BC[27][4];
  * func_80030A2C (ex cpu_set_move_command_and_dir, RESET sweep 2026-10-03). */
 extern u8 D_8008D90C[28][8];
 extern void func_8003339C(s32 *);
-extern void func_80030A2C(Unk80101EC8Record *, s32, Vec3i32 *);
-extern s32 func_8002798C(u8 *);
-extern s32 func_8002FDB0(s32 *);
-extern s32 func_800307D0(Unk80101EC8Record *);
-extern s32 func_80030BA8(Unk80101EC8Record *);
-extern u8 *func_80032064(Unk80101EC8Record *, s32);
 extern void func_80039680(u8 *);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
 extern void func_80041188(s32, u8 *, u8 *, s32, s32 *);
@@ -4623,7 +4609,6 @@ extern void func_80049718(s32, s32, s32 *, s16 *);
 extern void scratchpad_Save(void);
 extern void scratchpad_Restore(void);
 extern void func_800204C0(Unk80101EC8Record *);
-extern void func_800207C8(Unk80101EC8Record *, LeafPos *, LeafPos *, LeafPos *);
 
 /* Per-frame update of character `arg0`'s record from this frame's pad input:
  * converts the pad bits, advances the move frame, runs the move script's

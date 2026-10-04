@@ -72,7 +72,6 @@ extern u8 D_800A37D0;
 /* Extern function declarations for decompiled functions */
 
 
-extern void func_8001B6F4(void);
 
 
 
@@ -1334,7 +1333,6 @@ neg:
 }
 extern u8 D_800A3208;
 
-extern void func_800207C8(Unk80101EC8Record *, LeafPos *, LeafPos *, LeafPos *);
 void func_8003993C(void) {
     s32 work[2][33];
     s32 sp120[34];

@@ -1750,7 +1750,6 @@ s32 func_80056FE8(Unk80101EC8Record *arg0) {
     }
     return base + arg0->other->unk_40A + 0x12C;
 }
-extern s32 func_800233AC(void *, s32 *);
 extern s32 D_8009AA50[];
 
 s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {

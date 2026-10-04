@@ -32,9 +32,6 @@ void func_800343F0(void) {
 }
 
 /* Declarations from the file this TU was split from (code6cac_b.c). */
-void func_800338CC(void);
-s32 func_80033DF4(void);
-void func_800342A0(void);
 void func_800343F0(void);
 
 INCLUDE_RODATA("asm/rodata", jtbl_8001084C);
