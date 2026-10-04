@@ -2353,7 +2353,6 @@ void func_80049E1C(void) {
     D_800A324C = -1;
 }
 
-extern void *D_800A370C;
 void func_80049E4C(void) {
     Unk80101DF0Record *p1 = &D_80101DF0;
     Unk80101DF0Record *p2 = &D_800FF638;

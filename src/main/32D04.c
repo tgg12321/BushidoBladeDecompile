@@ -1133,7 +1133,6 @@ void func_800444E0(void) {
 extern s32 D_800A3678;
 extern MATRIX D_80101BD0;
 extern Unk80101DF0Record *D_800A3708;
-extern Unk80101DF0Record *D_800A370C;
 
 extern void func_8004A4E0(void);
 void func_80044504(u32 *a0) {

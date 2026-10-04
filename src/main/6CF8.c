@@ -44,8 +44,6 @@ extern u32 D_800A38B4;
 extern s32 D_800A30DC;
 
 
-extern u8 D_800F33D8;
-extern u8 D_800A37A8[];
 extern void LoadImage(u8 *, u8 *);
 extern u32 *ClearOTagR(u32 *, s32);
 
@@ -589,7 +587,7 @@ void func_800174F4(void) {
      * case-20 D_800A37A0 limit (owner ruling 11). */
     s32 temp2;
 
-    prim = (s32)&D_800F33D8;
+    prim = (s32)D_800F33D8;
     if (g_disp_enable == DISP_DISABLED) {
         return;
     }

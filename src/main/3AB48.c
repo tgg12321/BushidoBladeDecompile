@@ -3349,8 +3349,6 @@ void func_8005B5AC(void) {
     }
 }
 
-extern u8 D_8009BA60[];
-extern s32 chractar_use_pset_combo_id_table[];
 
 extern Unk8009BD38Flags D_8009BD38;
 
@@ -3363,7 +3361,6 @@ extern Unk8009BD38Flags D_8009BD38;
 
 
 
-extern s32 D_800F10D0[];
 
 
 

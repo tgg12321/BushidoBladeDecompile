@@ -8,7 +8,6 @@
 #include "bb2_const.h"
 
 /* Extern data declarations */
-extern u8 D_800F33D8[];
 
 
 
@@ -83,7 +82,7 @@ extern s32 D_800A31F0;
 
 s32 memcard_Format(s32 a0, s32 a1) {
     s32 buf[2];
-    sprintf(buf, &D_800109C8, a0, a1);
+    sprintf(buf, (char *)D_800109C8, a0, a1);
     return format(buf);
 }
 

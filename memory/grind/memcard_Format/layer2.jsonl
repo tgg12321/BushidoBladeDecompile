@@ -1,0 +1,1 @@
+{"func": "memcard_Format", "addr": "80037F08", "verdict": "PASS", "body_hash": "612e304b18251ee8", "body_kind": "c", "file": "main/28708", "reviewer": "p2-rev-ga22", "scope": "cheat-cleanup", "date": "2026-10-04T23:23:27Z", "head": "1e5fb25fb", "notes": ""}

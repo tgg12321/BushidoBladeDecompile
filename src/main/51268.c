@@ -10,10 +10,7 @@
  * (owner ruling Q65). */
 /* Declarations from the file this TU was split from (text1b.c). */
 extern s32 rand(void);
-extern u8 D_8009BA60[];
-extern s32 chractar_use_pset_combo_id_table[];
 extern Unk8009BD38Flags D_8009BD38;
-extern s32 D_800F10D0[];
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
 static s32 D_800A3420;
@@ -173,8 +170,7 @@ void func_80060B70(void) {
     }
 
     idx = *(u16 *)D_800A3468;
-    result = ((s32 (*)(void)) *(s32 *)((s32)&chractar_use_pset_combo_id_table
-              + (*(u8 *)((s32)&D_8009BA60 + idx) + *(s32 *)((s32)&D_800F10D0 + idx * 4)) * 4))();
+    result = ((s32 (*)(void)) chractar_use_pset_combo_id_table[D_8009BA60[idx] + D_800F10D0[idx]])();
 
     *(s8 *)*(s32 *)((s32)D_800A3468 + 0x14) = result;
 }

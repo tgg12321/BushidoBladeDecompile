@@ -1473,8 +1473,6 @@ typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
 typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
 typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
 
-extern u8 D_8009BA60;
-extern s32 chractar_use_pset_combo_id_table;
 
 
 
@@ -1595,7 +1593,6 @@ extern s32 chractar_use_pset_combo_id_table;
 
 
 
-extern s32 D_800F10D0;
 
 
 

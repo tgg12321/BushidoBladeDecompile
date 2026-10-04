@@ -48,7 +48,6 @@ extern s32 D_800A38B4;
 
 
 
-extern u8 D_800A37A8;
 
 
 
@@ -262,7 +261,7 @@ void func_8003AE5C(u8 *arg0) {
     } while (!done);
 
     if (result >= 0) {
-        (&D_800A37A8)[D_800A37A0] = *(u16 *)&D_800A36A4;
+        D_800A37A8[D_800A37A0] = *(u16 *)&D_800A36A4;
         gpu_ResetGraphMode1();
         func_80020D38();
         func_800602AC(result, addr);
@@ -487,7 +486,7 @@ void func_8003B5A4(void) {
                 byte = *p;
                 D_800A37A0 = counter + 1;
                 D_800A36A4 = byte;
-                (&D_800A37A8)[counter] = byte;
+                D_800A37A8[counter] = byte;
                 D_800A3834 = 22;
                 done = 1;
                 func_80022568((u8 *)D_80101EC8);
