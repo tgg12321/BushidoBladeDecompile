@@ -67,23 +67,24 @@ a key, oracle-verified per batch, never hand-applied. Applied so far:
 
 ## The universe: what counts as a function
 
-**1,483 functions** = 1,260 COMPLETED-C + 223 COMPLETED-INLINE-ASM-CANONICAL
-(`tools/check_completion_integrity.py`, 2026-10-02 reconciliation). The authoritative source is
+**1,484 functions** = 1,260 COMPLETED-C + 223 COMPLETED-INLINE-ASM-CANONICAL + 1 INCOMPLETE
+(`_SendPAD`, split out of `FlushCache.s` by owner ruling Q108; `tools/check_completion_integrity.py`,
+2026-10-03). The authoritative source is
 the C objects' function symbols (one per distinct linked address; no aliases or labels), not
 `asm/funcs/`, which under-enumerates. Derivation from the file census:
 
 | Source | Count | Note |
 |---|---|---|
-| `asm/funcs/*.s` files | 1,437 | after the stale-duplicate deletions (7 pairs in 5a02fc789, `func_80047384.s` in 6e6e29489) |
-| minus `D_8007E08C.s`, `jtbl_comb_control.s` | 1,435 | data-as-code blob; a jump table in `.rodata` (`0x800164AC`) — not functions. Each remaining file is one function at a distinct address (file stem may differ from the C name, e.g. `func_800167AC.s` = `file_GetFlag0`) |
-| plus 45 functions inside a neighbour's listing | 1,480 | splat did not split statics / pointer-only entries: e.g. `setIntr`/`stopIntr`/`restartIntr` inside `trapIntr.s`, `r_sio*`/`HandleSio`/`__nulldev` inside `_comb_control.s`, `SsSeqCalledTbyT` inside `SsStart.s`, `cdrom_IrqHandler` inside `func_80081E1C.s` |
-| plus 3 functions with no listing | **1,483** | `func_8001C624`, `func_80037D14` (`.s` deleted on match, 2026-04-14), `SetVideoMode` (never listed) |
+| `asm/funcs/*.s` files | 1,438 | after the stale-duplicate deletions (7 pairs in 5a02fc789, `func_80047384.s` in 6e6e29489) and the `_SendPAD.s` split (2cc9d7eb5) |
+| minus `D_8007E08C.s`, `jtbl_comb_control.s` | 1,436 | data-as-code blob; a jump table in `.rodata` (`0x800164AC`) — not functions. Each remaining file is one function at a distinct address (file stem may differ from the C name, e.g. `func_800167AC.s` = `file_GetFlag0`) |
+| plus 45 functions inside a neighbour's listing | 1,481 | splat did not split statics / pointer-only entries: e.g. `setIntr`/`stopIntr`/`restartIntr` inside `trapIntr.s`, `r_sio*`/`HandleSio`/`__nulldev` inside `_comb_control.s`, `SsSeqCalledTbyT` inside `SsStart.s`, `cdrom_IrqHandler` inside `func_80081E1C.s` |
+| plus 3 functions with no listing | **1,484** | `func_8001C624`, `func_80037D14` (`.s` deleted on match, 2026-04-14), `SetVideoMode` (never listed) |
 
-Excluded: the 11 data-as-code symbols the integrity script lists. Two canonical entries,
+Excluded: the 10 data-as-code symbols the integrity script lists. Two canonical entries,
 `func_800790A4` and `func_800545F4`, are no-`jr $ra` fragments counted as functions.
 
 `engine/queue.json` is *not* a universe source: it lists only INCOMPLETE functions
-(empty since 2026-10-02).
+(empty 2026-10-02, then `_SendPAD` since 2026-10-03).
 
 ### A name lives in up to three layers
 
@@ -91,7 +92,7 @@ This is the subtlety that makes a naive census wrong. A function can be called o
 by the linker and another thing by a human reader:
 
 1. **`glabel`** in `asm/funcs/<name>.s` — linker-authoritative.
-2. **The C definition** in `src/*.c` — what a reader of the source sees.
+2. **The C definition** in `src/**/*.c` — what a reader of the source sees.
 3. **Alias registry lines** in `named_syms.txt` / `symbol_addrs.txt`, conventionally
    suffixed `<name>_<ADDR>`.
 
@@ -323,7 +324,7 @@ corresponding row.
 python3 docs/naming/build_census.py     # rewrites docs/naming/function-names.csv
 ```
 
-Read-only; it writes exactly one file. Inputs: `asm/funcs/*.s`, `src/*.c`,
+Read-only; it writes exactly one file. Inputs: `asm/funcs/*.s`, `src/**/*.c`,
 `named_syms.txt`, `symbol_addrs.txt`, `kengo_matches.csv`, `kengo_name_decisions.csv`,
 `tools/rename_funcs.py`, `known_psyq_stdlib.txt`, `inline_asm_canonical.txt`,
 `engine/queue.json`, `disc/SLUS_006.63` (string extraction), the `docs/naming/*.csv`
@@ -339,7 +340,7 @@ proposal tables, and `git log -S` for otherwise-unattributed names.
 | `name_layer` | which layer `current_name` came from |
 | `aliases` | all semantic aliases at this address |
 | `insns` | instruction count |
-| `src_location` | best-effort `src/<file>:<line>` (heuristic; may point at a declaration) |
+| `src_location` | best-effort `src/<id>.c:<line>` of the definition (heuristic; prototypes and `extern` lines are skipped) |
 | `origin` | evidence path the name came from |
 | `tier` | VERIFIED / CORROBORATED / INFERRED / SUSPECT / AUTO |
 | `evidence` | short citation chain |

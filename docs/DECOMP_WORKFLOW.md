@@ -269,10 +269,10 @@ hand-inlining the layout of a type the project already defines:
 
 ```c
 typedef struct { s16 matrix[9]; s16 pad[7]; s16 rot[3]; } _stack;  /* 14 dead bytes */
-MATRIX mtx; SVECTOR rot;                                           /* include/gte.h */
+MATRIX mtx; SVECTOR rot;                                           /* include/psxsdk/libgte.h */
 ```
 
-Check `include/gte.h` before inventing a stack struct. `MATRIX`, `SVECTOR`, `VECTOR`,
+Check `include/psxsdk/libgte.h` before inventing a stack struct. `MATRIX`, `SVECTOR`, `VECTOR`,
 `CVECTOR`, `DVECTOR` already exist and are correct.
 
 **Raw-offset writes into declared padding.** If you are casting to reach a byte, the struct
@@ -299,7 +299,7 @@ to mimic a rotated test, where `while ((count = *p++) != 0)` emits it anyway.
 **Lying prototypes — in both directions.** A parameter declared as a scalar and immediately
 cast to a pointer, with callers passing arrays through it. And the inverse: deliberately
 *under*-typing a callee to `u8 *` / `s16 *` and casting back at every call site, when the
-file already includes `gte.h` and already holds the correct `MATRIX` / `SVECTOR` / `VECTOR`
+file already includes `libgte.h` and already holds the correct `MATRIX` / `SVECTOR` / `VECTOR`
 objects being passed. Pointer conversions are codegen-inert on MIPS, so these casts buy
 nothing and cost type safety. Declare the real signature.
 
@@ -360,10 +360,10 @@ Three ways this gate gets faked. All three occurred:
 
 ## 11. Environment rules that will silently break the build
 
-- **LF line endings** on `src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld` and the pipeline
+- **LF line endings** on `src/**/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld` and the pipeline
   `*.txt` files. A Windows-side editor defaulting to CRLF breaks the GNU toolchain quietly.
 - **Never run `make setup`.** `bb2.ld` is hand-maintained; regenerating it re-adds dead
-  rodata lines and conflicts with const declarations now living in `src/*.c`.
+  rodata lines and conflicts with const declarations now living in `src/`.
 - **Never recreate `asm/data/*.rodata*.s`.** They were deliberately deleted in 2026-06-09.
 - **Do not edit `Makefile`, `engine/buildconfig.py`, gate lists, or detector configs** to
   close a function. These are owner-authorized surfaces. If you believe one genuinely needs

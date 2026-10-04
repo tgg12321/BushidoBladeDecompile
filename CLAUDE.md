@@ -20,6 +20,7 @@ guards block those).
 | `sandbox <func> --disable all [--diff] [--candidate <path>]` | honest pure-C distance (cheat-asm stripped); `--diff` shows WHERE, per hunk (source-level / operand-only / not-scored) — read it before choosing a lever |
 | `diagnose <funcs…>` / `dossier <func>` | classify a gap / the full live picture of a function |
 | `verify-oracle [--rebuild]` / `build` | confirm the tree builds byte-identical |
+| `tus-check` | `bb2.ld` consistency: every `src/**/*.c` TU linked, every linked TU present, one object order across sections |
 | `layer2 hash\|record\|check <func>` | key / record / gate the layer-2 review of the exact landed body |
 | `queue done <func>` | mark complete — refuses without zero non-canonical cheat-asm, a layer-2 PASS on this body, and SHA1 == oracle |
 | `queue rotate <func> --reason …` | back of the worklist — **only when truly stuck across multiple sessions** |
@@ -85,7 +86,7 @@ auto-loaded ~100K tokens of rules. Don't rebuild that.
 - **Rules (`.claude/rules/`) hold the operative rule only:** what to do, the test, at most one
   short example. ≤ 8 KB each (split long policy into on-demand files it links). No Q&A transcripts, dated
   amendment chains, or case histories — edit the rule in place; the diff is the history.
-  Rules matching `src/*.c` must total ≤ 60 KB; give new technique rules self-only `paths:` and an
+  Rules matching `src/**/*.c` must total ≤ 60 KB; give new technique rules self-only `paths:` and an
   index line in `codegen-technique-index`.
 - **Owner rulings:** record the operative change in the rule; put the verbatim exchange in the
   commit body, not a new doc.

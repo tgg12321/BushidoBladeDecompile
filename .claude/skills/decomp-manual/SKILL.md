@@ -89,7 +89,8 @@ instrumented cc1 (`tools/gcc-2.7.2/cc1`, `BB2_*_DEBUG`) for pass-level dumps.
 
 ## 3. Landing it
 
-1. Splice the candidate into `src/<file>.c`, replacing the `INCLUDE_ASM` line (LF; the Write tool is
+1. Splice the candidate into `src/<file>.c` (`<file>` = the queue item's TU id, e.g.
+   `main/psxsdk/libapi/sendpad`), replacing the `INCLUDE_ASM` line (LF; the Write tool is
    LF here). If the banked candidate is a whole-file snapshot, move ONLY the function's definition —
    copying the file reverts every sibling completed since. The staged diff should delete exactly the
    `INCLUDE_ASM` line.

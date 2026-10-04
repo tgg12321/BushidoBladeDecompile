@@ -67,9 +67,18 @@ hand-escaped quotes.
   constructs and no draft C on `main`; C lands once, when it byte-matches honestly. In-progress
   candidates live in `memory/grind/<func>/`.
 - GTE (cop2) ops and BIOS/syscall trampolines have no C form — inline `__asm__` for those is canonical.
-- C sources may sit in subdirectories of `src/`. A TU id is the path under `src/` without `.c`;
-  `bb2.ld` links `build/src/<id>.o` (`engine/tus.py`, `engine tus-check`) and the per-file flag lists
-  hold ids. Move or rename a TU only with `tools/move_tu.py` (renames: `tools/tu_renames.tsv`).
+- **Source layout (SOTN model, owner ruling Q106):** game TUs in `src/main/`, named by subsystem
+  where their functions carry accepted names (`cdrom.c`, `memcard.c`) and otherwise by the ROM
+  file offset of their first `.text` byte (`368E4.c`; data-only files `d_<off>.c`); Sony library
+  code in `src/main/psxsdk/<lib>/<module>.c`, one file per PsyQ module (unidentified gaps:
+  `<off>.c`). Each file's top comment states its boundary evidence. Headers: Sony types and
+  prototypes in `include/psxsdk/lib*.h` (+ per-lib `*_internal.h` / `libsnd_i.h` next to the
+  sources); game types in `include/game.h`, multi-file game declarations in `include/bb2.h`;
+  single-file externs stay local.
+- A TU id is the path under `src/` without `.c` (`main/368E4`); `bb2.ld` links `build/src/<id>.o`
+  (`engine/tus.py`, `engine tus-check`) and the per-file flag lists hold ids. Move or rename a TU
+  only with `tools/move_tu.py`. Older docs and ledgers cite pre-restructure names (`src/text1b.c`):
+  resolve them through `tools/tu_renames.tsv` (old id -> new id) at tag `pre-restructure-2026-10-03`.
 - Addresses are KSEG0 (`0x80000000`+); `0x1F800000`–`0x1F8003FF` is scratchpad RAM.
 - Scratch goes in `tmp/` (gitignored); don't add files at the repo root
   (`tools/check_root_cleanliness.py`).

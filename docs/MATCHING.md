@@ -70,7 +70,7 @@ whole TUs and links. Differences that matter:
 
 - `.L<N>` labels are numbered per file, so neighbouring functions shift each other.
 - A change in one function can cascade into later functions of the same large TU
-  (`text1b*.c`, `main.c`, `code6cac*.c`) — always re-run `verify-oracle --rebuild`.
+  (`src/main/17AFC.c`, `3AB48.c`, `51268.c`, `9F9C.c`) — always re-run `verify-oracle --rebuild`.
 - The permuter checks `.text` only; a wrong `case` order shows up only in `.rodata` (jump tables).
 - Build the permuter target from `asm/funcs/<func>.s` so the function sits at offset 0.
 

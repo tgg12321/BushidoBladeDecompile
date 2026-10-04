@@ -52,16 +52,13 @@ and the rename lands, but the `asm/funcs` function splat produced is *longer* th
 being named. Recorded here so the future re-split knows the name covers only the first few
 words. Confirmed against the disassembly (BIOS index decode concurs, `tmp/bios_decode`).
 
-**`0x80078FF0` -> `FlushCache`** (LIBAPI/C68, BIOS `A0:0x44`). The function is 14 words. The
-first four are the trampoline — `addiu $t2,$zero,0xA0` / `jr $t2` / `addiu $t1,$zero,0x44` /
-`nop` — and that is all of FlushCache. The remaining ten words from `0x80079000` are a
+**`0x80078FF0` -> `FlushCache`** (LIBAPI/C68, BIOS `A0:0x44`). splat's function was 14 words.
+The first four are the trampoline — `addiu $t2,$zero,0xA0` / `jr $t2` / `addiu $t1,$zero,0x44` /
+`nop` — and that is all of FlushCache. The other ten words, from `0x80079000`, are a
 **separate, stack-framed body** (`addiu $sp,$sp,-0x18` … `jalr $t1` through `D_800A362C`):
-that is `_SendPAD`, the mid-function XDEF listed in the table above. So after the wave the
-name `FlushCache` sits on a file that also contains `_SendPAD`. The rename is still right —
-the linker's symbol at `0x80078FF0` was `FlushCache` — but the file is two functions.
-Split 2026-10-03 (owner ruling Q108): `asm/funcs/FlushCache.s` holds the four words
-(`src/main/psxsdk/libapi/c68.c`), `asm/funcs/_SendPAD.s` the ten from `0x80079000`
-(`src/main/psxsdk/libapi/sendpad.c`).
+`_SendPAD`, the mid-function XDEF listed in the table above. Fixed 2026-10-03 (owner ruling
+Q108): `asm/funcs/FlushCache.s` holds the four words (`src/main/psxsdk/libapi/c68.c`) and
+`asm/funcs/_SendPAD.s` the ten from `0x80079000` (`src/main/psxsdk/libapi/sendpad.c`).
 
 **`0x8008D060` -> `DelDrv`** (LIBAPI/A72, BIOS `B0:0x48`, indexed as `RemoveDevice`). Same
 trampoline shape, three instructions plus a `nop`; everything from `0x8008D070` is the
