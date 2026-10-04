@@ -1,0 +1,1 @@
+{"func": "StopCallback", "addr": "80082BB4", "verdict": "PASS", "body_hash": "f543d2df1d0fa920", "body_kind": "c", "file": "main/psxsdk/libetc/intr", "reviewer": "p2-rev-e1", "scope": "cheat-cleanup", "date": "2026-10-04T07:37:49Z", "head": "6b187fcf0", "notes": ""}

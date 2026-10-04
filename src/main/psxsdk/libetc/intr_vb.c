@@ -4,9 +4,6 @@
 #include "common.h"
 #include "libetc_internal.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
-void InterruptCallback(void);
-
 extern s32 D_800A2614[8];
 extern volatile s32 Vcount;
 extern s32 *D_800A2638;
@@ -18,7 +15,7 @@ s32 startIntrVSync(void) {
     *D_800A2638 = 0x107;
     Vcount = 0;
     sys_MemClear(&D_800A2614[0], 8);
-    ((void (*)(s32, void *))InterruptCallback)(0, (void *)trapIntrVSync);
+    InterruptCallback(0, trapIntrVSync);
     return (s32)setIntrVSync;
 }
 

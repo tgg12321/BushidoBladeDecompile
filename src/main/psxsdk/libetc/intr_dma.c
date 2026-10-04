@@ -17,9 +17,6 @@ const char D_800163B0[16] =
     "MADR[%d]=%08x\n\0\0"
     ;
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
-void InterruptCallback(void);
-
 extern s32 D_800A2640[8];
 /* PsyQ 4.0 LIBETC intr_dma.c module state (verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libetc/intr_dma.c).
@@ -33,7 +30,7 @@ s32 setIntrDMA(s32, s32);
 s32 startIntrDMA(void) {
     sys_MemClear2((s32 *)&D_800A2640, 8);
     *D_800A263C = 0;
-    ((void (*)(s32, void *))InterruptCallback)(3, (void *)trapIntrDMA);
+    InterruptCallback(3, trapIntrDMA);
     return (s32)setIntrDMA;
 }
 

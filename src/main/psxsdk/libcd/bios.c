@@ -249,7 +249,6 @@ const char D_800162C0[12] =
 
 extern void puts(void *);
 extern void printf();
-extern s32 CheckCallback(void);
 extern s32 getintr(void);
 extern void Result;
 extern void Result_plus_0x8;

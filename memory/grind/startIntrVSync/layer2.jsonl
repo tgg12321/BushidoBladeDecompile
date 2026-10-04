@@ -1,0 +1,1 @@
+{"func": "startIntrVSync", "addr": "800832A0", "verdict": "PASS", "body_hash": "6ce1cde06a818da2", "body_kind": "c", "file": "main/psxsdk/libetc/intr_vb", "reviewer": "p2-rev-e1", "scope": "cheat-cleanup", "date": "2026-10-04T07:38:14Z", "head": "6b187fcf0", "notes": ""}

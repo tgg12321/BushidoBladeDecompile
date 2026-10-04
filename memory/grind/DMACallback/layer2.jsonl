@@ -1,0 +1,1 @@
+{"func": "DMACallback", "addr": "80082B20", "verdict": "PASS", "body_hash": "b48fdaecda4733f4", "body_kind": "c", "file": "main/psxsdk/libetc/intr", "reviewer": "p2-rev-e1", "scope": "cheat-cleanup", "date": "2026-10-04T07:36:59Z", "head": "6b187fcf0", "notes": ""}

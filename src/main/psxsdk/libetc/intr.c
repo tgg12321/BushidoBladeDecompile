@@ -30,15 +30,15 @@ extern u16 g_sys_vblank_count;
 extern volatile u16 *i_mask; /* libetc intr.c i_mask = (u16 *)0x1F801074, I_MASK (MMIO) */
 extern s32 *g_sys_irq_vtable;
 
-void ResetCallback(void) {
-    ((void (*)(void))g_sys_irq_vtable[3])();
+s32 ResetCallback(void) {
+    return ((s32 (*)(void))g_sys_irq_vtable[3])();
 }
-void InterruptCallback(void) {
-    ((void (*)(void))g_sys_irq_vtable[2])();
+void *InterruptCallback(s32 irq, void (*func)()) {
+    return ((void *(*)(s32, void (*)()))g_sys_irq_vtable[2])(irq, func);
 }
 
-void DMACallback(void) {
-    ((void (*)(void))g_sys_irq_vtable[1])();
+void *DMACallback(s32 dma, void (*func)()) {
+    return ((void *(*)(s32, void (*)()))g_sys_irq_vtable[1])(dma, func);
 }
 void VSyncCallback(s32 a0) {
     ((void (*)(s32, s32))g_sys_irq_vtable[5])(4, a0);
@@ -47,14 +47,14 @@ void VSyncCallback(s32 a0) {
 void VSyncCallbacks(void) {
     ((void (*)(void))g_sys_irq_vtable[5])();
 }
-void StopCallback(void) {
-    ((void (*)(void))g_sys_irq_vtable[4])();
+s32 StopCallback(void) {
+    return ((s32 (*)(void))g_sys_irq_vtable[4])();
 }
 
-void RestartCallback(void) {
-    ((void (*)(void))g_sys_irq_vtable[6])();
+s32 RestartCallback(void) {
+    return ((s32 (*)(void))g_sys_irq_vtable[6])();
 }
-u32 CheckCallback(void) {
+s32 CheckCallback(void) {
     return g_sys_vblank_count;
 }
 

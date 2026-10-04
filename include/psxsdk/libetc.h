@@ -1,16 +1,19 @@
 #ifndef PSXSDK_LIBETC_H
 #define PSXSDK_LIBETC_H
 
-/* PsyQ LIBETC entry points (Sony's libetc.h; SOTN include/psxsdk/libetc.h), spelled as BB2's code
- * uses them (the module definitions in src/main/psxsdk/libetc/). */
+/* PsyQ LIBETC entry points (Sony's libetc.h; SOTN include/psxsdk/libetc.h). Each prototype agrees
+ * with its definition in src/main/psxsdk/libetc/ and every caller; where that differs from PsyQ's
+ * LIBETC.H spelling the entry carries a PsyQ: note. Library-internal entry points:
+ * src/main/psxsdk/libetc/libetc_internal.h. */
 
 #include "common.h"
 
-extern void ResetCallback(void);
-extern void StopCallback(void);
-extern void RestartCallback(void);
+extern s32 CheckCallback(void);
+extern s32 ResetCallback(void);
+extern s32 StopCallback(void);
+extern s32 RestartCallback(void);
 extern s32 VSync(s32);
-extern void VSyncCallback(s32);
+extern void VSyncCallback(s32); /* PsyQ: int VSyncCallback(void (*)(void)) */
 extern s32 GetVideoMode(void);
 extern s32 SetVideoMode(s32);
 

@@ -1,0 +1,1 @@
+{"func": "startIntrDMA", "addr": "800833C8", "verdict": "PASS", "body_hash": "fe3a14c783d250d9", "body_kind": "c", "file": "main/psxsdk/libetc/intr_dma", "reviewer": "p2-rev-e1", "scope": "cheat-cleanup", "date": "2026-10-04T07:38:00Z", "head": "6b187fcf0", "notes": ""}

@@ -1,0 +1,1 @@
+{"func": "ResetCallback", "addr": "80082AC0", "verdict": "PASS", "body_hash": "8cb89ecc3927c6f8", "body_kind": "c", "file": "main/psxsdk/libetc/intr", "reviewer": "p2-rev-e1", "scope": "cheat-cleanup", "date": "2026-10-04T07:37:24Z", "head": "6b187fcf0", "notes": ""}

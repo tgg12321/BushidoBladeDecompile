@@ -1,0 +1,1 @@
+{"func": "InterruptCallback", "addr": "80082AF0", "verdict": "PASS", "body_hash": "db6045d19116b471", "body_kind": "c", "file": "main/psxsdk/libetc/intr", "reviewer": "p2-rev-e1", "scope": "cheat-cleanup", "date": "2026-10-04T07:37:11Z", "head": "6b187fcf0", "notes": ""}
