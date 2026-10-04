@@ -20,7 +20,6 @@ extern s32 func_80047EC8(void);
 extern void func_800481E8(s32, s32);
 extern void func_80054410(s32);
 extern void stage_ExecInitFunc(void);
-extern void func_8004659C(s32);
 extern void func_800466C0(s32, s32);
 extern void func_80045510(s32, s32);
 extern void func_80044098(s32);
@@ -312,7 +311,6 @@ extern void func_8003E6D8(s32);
 extern void func_8003DA8C(s32, s32);
 extern void func_8004668C(void);
 extern void func_80046020(void);
-extern void func_80049E1C(void);
 
 extern void math_RotMatrixYXZ(SVECTOR *, MATRIX *);
 extern s16 Judge[];
@@ -335,7 +333,6 @@ extern u8 g_cam_bone_data;
 extern void func_800451A0(void);
 extern void func_800451D0(void);
 extern void func_800418D0(s32 *);
-extern void func_8004A1FC();
 extern void func_800420D0(void);
 extern void stage_ClearLighting(void);
 extern void stage_ApplyLighting(void);
@@ -349,7 +346,6 @@ extern void func_800404D8(void);
 extern void func_8003F7F4(void);
 extern s16 g_color_mode;
 extern s16 D_800F665A;
-extern s32 func_800486FC(void);
 extern void func_80044F80(s32, s32 *);
 extern s16 D_800A3248;
 
@@ -1755,7 +1751,6 @@ s32 func_80048AD0(s32 arg0) {
 void func_80048B8C(s32 a0) {
     D_800A33E4 += a0;
 }
-extern void *game_GetPlayerData();
 extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern s32 ClearOTagR(s32, s32);
 extern s32 g_gpu_ot256_ptr;

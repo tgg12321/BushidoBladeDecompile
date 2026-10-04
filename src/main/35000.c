@@ -7,7 +7,6 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1a_c.c). */
-extern void func_80049E1C(void);
 extern void func_80052C10(void);
 extern s16 D_800963EE;
 extern void func_80041430(s32, s32);
@@ -622,11 +621,9 @@ void func_80045AA4(s32 a0, s32 a1) {
     }
 }
 extern s16 D_800993FC[];
-extern void func_800480C0(s32, s32, s16, s16, s16, s16);
 extern s32 func_80044378(s32, s32 *, s16 *);
 extern s32 func_8004428C(s32 *, s16 *);
 extern void func_80044010(s32 *, s16);
-extern s32 func_80049C24(s32, s32);
 extern void func_80044F50(s32, s32, s32);
 extern s32 *func_800455AC(s32);
 extern void func_80046048(s32, s32);

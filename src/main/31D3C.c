@@ -87,8 +87,6 @@ s32 func_80041650(s32 a0) {
     }
     return -1;
 }
-extern s32 func_800486FC();
-extern s32 math_Grayscale3(s32, s32, s32);
 extern void func_80041398(s32);
 
 /* func_80041688 (gnd_init_80041688): sets or clears bit 0 of the flag byte
@@ -310,7 +308,6 @@ void func_80041AC8(s16 *arg0)
   DrawSync(0);
 }
 extern void LoadImage(s32, s32);
-extern void func_80048A7C(s16, s16, s32, s32, s32, s32);
 extern s32 func_8003E2A0(void);
 extern void func_8003E120(void);
 void func_80041BF4(s32 a0, s32 a1, s32 a2)
@@ -347,7 +344,6 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
      ruling); prong 2 is satisfied by extending the LIVE object - rect's
      address is passed to LoadImage - rather than adding a dead pad. */
   s16 rect[8];
-  extern s32 func_800486FC();
   fp_ptr = (s32 *)func_8004153C(1);
   if (fp_ptr == 0) { return; }
   if ((*(((s16 *) fp_ptr) + 4)) != D_800A9A20) { return; }
@@ -411,7 +407,6 @@ void func_80041E10(Block16 *a0, s32 a1) {
 }
 extern s32 rcos(s32);
 extern s32 rsin(s32);
-extern void func_8004A1FC(Unk800F62E0Rec *);
 void func_80041EB0(s32 a0, s32 a1)
 {
     Unk800F62E0Rec *fp_ptr;
@@ -548,7 +543,6 @@ void func_800421C8(s32 a0) {
     func_80042478(*(s32 *)((u8 *)p + 4));
 }
 
-extern s32 math_Grayscale3(s32, s32, s32);
 
 void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
     s32 r = (packed >> 16) & 0xFF;
@@ -557,7 +551,7 @@ void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
     s16 r2;
     s16 g2;
     s16 b2;
-    if (func_800486FC(a0)) {
+    if (func_800486FC()) {
         b = math_Grayscale3(r, g, b);
         g = b;
         r = b;
@@ -603,13 +597,11 @@ alt_raw:
     D_800F62E0[4].back[2] = b;
 out:;
 }
-extern s32 func_800486FC();
-extern s32 math_Grayscale3(s32, s32, s32);
 void func_80042478(s32 a0) {
     s32 r = (a0 >> 16) & 0xFF;
     s32 g = (a0 >> 8) & 0xFF;
     s32 b = a0 & 0xFF;
-    if (func_800486FC(a0)) {
+    if (func_800486FC()) {
         b = math_Grayscale3(r, g, b);
         g = b;
         r = b;

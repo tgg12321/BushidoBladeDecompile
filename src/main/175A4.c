@@ -8,7 +8,6 @@
 #include "bb2_const.h"
 
 /* Extern function declarations */
-extern s16 *func_8004678C(void);
 
 
 
@@ -31,7 +30,6 @@ extern s32 rand(void);
 
 
 
-extern s32 stage_GetDataPtr(void);
 
 
 

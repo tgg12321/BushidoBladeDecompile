@@ -19,18 +19,13 @@ extern s32 func_80054434(void);
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
 extern void func_8003AAB0(void);
-extern s32 stage_GetDataPtr(void);
 extern s32 rand();
 extern void func_800325E0(s32, s32);
-extern void func_80046BF4(s32 *, s32 *, s32);
-extern s32 game_GetPlayerData(s32);
-extern void func_8002EECC(s32, s32 *);
 extern void func_80061064(s32 *, s32 *);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 extern void func_8003F3D4(s16 *);
 extern void func_80055138(s32, s32, s32);
 extern void func_8003FFE0(s32);
-extern s32 camera_GetBoneData(void);
 extern void func_80039320(void);
 extern void func_8002C61C(void);
 extern void func_80030D7C(void);
@@ -1755,7 +1750,6 @@ void func_8001DBE4(void) {
     gpu_SetDispMaskOn();
 }
 extern void func_8003E164(s32);
-extern s32 func_80048AD0(s32);
 extern void func_80020E74(s32, s32, s32, s32);
 extern void func_80021210(void);
 extern void func_80021280(s32);
@@ -1984,7 +1978,7 @@ common_tail:
         local = *s2;
     }
 
-    func_80046BF4(&local.w0, (s32 *)&local.h10, local.w18);
+    func_80046BF4(&local.w0, (u16 *)&local.h10, local.w18);
     {
         s32 *p20 = &s2->w20;
         func_8001A538(&local.w0, p20);
@@ -2022,7 +2016,7 @@ void func_8001E6E4(s32 arg0) {
     local.rz = *(u16 *)((u8 *)s2 + 0x14) + (u16)D_800FF5DC;
 
     local.dist = *(s32 *)((u8 *)s2 + 0x18) + D_800FF5E0;
-    func_80046BF4((s32 *)&local, &local.rx, local.dist);
+    func_80046BF4(&local.vx, (u16 *)&local.rx, local.dist);
 
     {
         s32 *p20 = (s32 *)((u8 *)s2 + 0x20);
@@ -2049,7 +2043,7 @@ void func_8001E800(void) {
 void func_8001E878(void) {
     PadState buf;
     s32 v0;
-    v0 = camera_GetBoneData();
+    v0 = (s32)camera_GetBoneData();
     D_800A3778 = v0;
     func_8001A820(&D_80101EC8[0].unk_168, &D_80101EC8[1].unk_168, &D_80101EC8[0], &D_80101EC8[1]);
     if (D_800A38BA != 0) {
@@ -2098,7 +2092,7 @@ void func_8001EA84(void) {
     Unk80101EC8Record *base;
 
     D_800A37B8 += 1;
-    D_800A3778 = camera_GetBoneData();
+    D_800A3778 = (s32)camera_GetBoneData();
     base = &D_80101EC8[0];
     if (D_800A3748 == 0) {
         base++;
@@ -2206,7 +2200,7 @@ void func_8001EFA0(void) {
     s16 var_v0;
 
     D_800A37B8 += 1;
-    D_800A3778 = camera_GetBoneData();
+    D_800A3778 = (s32)camera_GetBoneData();
     func_8001BCF0((u8 *)&D_80101EC8[D_800A3748], (D_800A37B8 << 12) / 105);
     func_8001E404();
     func_80039320();
@@ -2833,12 +2827,11 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
 void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
     s32 mat[8];
     s32 vec[3];
-    s32 src;
+    MATRIX *src;
 
     *(s16 *)(arg0 + 0x350) = 1;
     *(s16 *)(arg0 + 0x352) = D_8008D59C[arg1].bone;
-    src = *(s32 *)((((s32)*(s16 *)(arg0 + 0x352)) << 2) +
-                   game_GetPlayerData(*(s16 *)(arg0 + 4)));
+    src = ((MATRIX **)game_GetPlayerData(*(s16 *)(arg0 + 4)))[*(s16 *)(arg0 + 0x352)];
     func_8002EECC(src, mat);
     /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
      * rotation-matrix words at r into cop2 control regs $0..$4.  The SDK
@@ -2905,7 +2898,7 @@ void func_800204C0(Unk80101EC8Record *rec) {
     if (rec->unk_350 != 0) {
         rec->unk_350 += 1;
         if ((rec->unk_350 & 7) == 2) {
-            bones = (MATRIX **)game_GetPlayerData(pid);
+            bones = game_GetPlayerData(pid);
             /* inline_o.h: gte_SetRotMatrix :272-284 */
             __asm__ volatile ("move  $12,%0": :"r"(bones[rec->unk_352]):"$12","$13","$14","$15","memory");
             __asm__ volatile ("lw    $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -2997,7 +2990,7 @@ void func_800207C8(Unk80101EC8Record *rec, LeafPos *bone_out, LeafPos *att_out, 
     LeafPos *o;
     s32 i;
 
-    bones = (MATRIX **)game_GetPlayerData(rec->index);
+    bones = game_GetPlayerData(rec->index);
     hr = D_800F5F68[rec->index];
     o = bone_out;
     for (i = 0; i < 22; i++, hr++, o++) {
@@ -3619,7 +3612,7 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
 }
 void func_80021D10(s32 arg0, s32 *arg1, s32 arg2) {
     s16 *temp_v0;
-    temp_v0 = (s16 *)(stage_GetDataPtr() + (((D_800A36A4 * 0x18) + (arg2 * 6) + (arg0 * 3)) * 2));
+    temp_v0 = (s16 *)stage_GetDataPtr() + ((D_800A36A4 * 0x18) + (arg2 * 6) + (arg0 * 3));
     arg1[0] = (s32)temp_v0[0];
     arg1[1] = (s32)temp_v0[1];
     arg1[2] = (s32)temp_v0[2];
@@ -3644,7 +3637,7 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     s32 best;
     s32 d;
 
-    stage = (s16 *)stage_GetDataPtr();
+    stage = stage_GetDataPtr();
     phase = rand();
     ofs = rand() & 7;
     base.x = pos[0];
@@ -3721,7 +3714,7 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     s32 *r;
     s32 *w;
 
-    base = (s16 *)(stage_GetDataPtr() + (D_800A36A4 * 3) * 0x10);
+    base = (s16 *)stage_GetDataPtr() + (D_800A36A4 * 3) * 8;
     i = 0;
     p = base;
     d = dists;
@@ -3786,7 +3779,7 @@ s32 func_80022408(s32 *arg0) {
     s32 dx;
     s32 dz;
     s32 dist;
-    p = (s16 *)stage_GetDataPtr();
+    p = stage_GetDataPtr();
     best_dist = 0x7FFFFFFF;
     i = 0;
     t1 = arg0[0];
@@ -4639,7 +4632,6 @@ extern void func_80039680(u8 *);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
 extern void func_80041188(s32, u8 *, u8 *, s32, s32 *);
 extern void func_80049718(s32, s32, s32 *, s16 *);
-extern void func_80049A2C(s32, s32, s32);
 extern void scratchpad_Save(void);
 extern void scratchpad_Restore(void);
 extern void func_800204C0(Unk80101EC8Record *);
@@ -5344,7 +5336,7 @@ skip_62:
     if (rec->unk_96 == 0
         && ((rec->unk_7A != 0 && rec->unk_6C != 4 && rec->unk_6C != 0x14 && (rec->unk_6A == 4 || rec->unk_6A == 0x14))
             || (rec->unk_6A == 0x11 && arg0 != D_800A38AE && rec->unk_AA == rec->unk_40))) {
-        MATRIX **bones = (MATRIX **)game_GetPlayerData(arg0);
+        MATRIX **bones = game_GetPlayerData(arg0);
         if (D_800A38DC != 0 || D_8008D9EC[D_80101EC8[0].unk_0A] == 0 || D_800A37A0 != 1 || arg0 != D_800A37A0) {
             func_80032854(arg0, 0x2E, (s32 *)&rec->unk_F4, 0);
         }

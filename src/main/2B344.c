@@ -45,7 +45,6 @@ extern void func_80040510(s32, s32, s32);
 
 
 
-extern s32 func_8004939C(void);
 
 
 
@@ -688,7 +687,6 @@ extern s32 g_gpu_ot_ptr;
 
 
 extern void func_8003AFFC(void);
-extern void func_8004659C(s32);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 void func_8003B9D0(void) {
@@ -1207,7 +1205,6 @@ void func_8003C958(void) {
     D_800A3834 = 0x19;
     gpu_SetDispMaskOn();
 }
-extern void func_80046BF4(s16 *, s16 *, s32);
 void func_8003C9A4(void) {
     s32 ret;
     s32 *a0 = &D_800F6608.w0;
@@ -1221,7 +1218,7 @@ void func_8003C9A4(void) {
     D_800F6608.h14 = 0;
     D_800F6608.w18 = 0x2710;
     D_800F6608.h12 = (s16)(D_800A36AC << 2);
-    func_80046BF4((s16 *)a0, a1, 0x2710);
+    func_80046BF4(a0, (u16 *)a1, 0x2710);
     func_80046DA8(1);
 
     if (D_800A3929 == 0) {
@@ -1303,7 +1300,7 @@ void func_8003CD10(void) {
     D_800F6608.h14 = 0;
     D_800F6608.w18 = 0x2710;
     D_800F6608.h12 = (s16)(D_800A36AC << 2);
-    func_80046BF4((s16 *)a0, a1, 0x2710);
+    func_80046BF4(a0, (u16 *)a1, 0x2710);
     func_80046DA8(1);
 
     ret = func_800600C8(D_800A391F, D_800A38B4, 1);
@@ -2198,7 +2195,6 @@ extern s32 D_80090740[64][32];
 extern s32 D_80094840[];
 extern s32 D_800A7EF0[];
 extern s32 *func_8003EB84(s32, s32, s32 *);
-extern s16 *camera_CalcAngles(void);
 extern void math_RotMatrixYXZ(SVECTOR *, s32 *);
 extern void func_800620B8(s16 *, s32 *);
 /* func_8003E6D8 - grid pass. D_800A3708's xf.rot is turned into a matrix

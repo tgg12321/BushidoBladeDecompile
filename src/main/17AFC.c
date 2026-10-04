@@ -8,10 +8,8 @@
 #include "bb2_const.h"
 
 /* Declarations from the file this TU was split from (code6cac_b.c). */
-extern s16 *func_8004678C(void);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 rand(void);
-extern s32 stage_GetDataPtr(void);
 extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
@@ -194,7 +192,7 @@ void func_80027640(Unk80101EC8Record *arg0)
     s32 vz;
 
     idx = arg0->index;
-    tbl = (s16 *)stage_GetDataPtr();
+    tbl = stage_GetDataPtr();
     cnt = arg0->unk_34C;
     if (cnt < 0x40) {
         arg0->unk_34C = cnt + 1;
@@ -334,13 +332,12 @@ done:
 }
 
 
-extern s32 game_GetPlayerData(s32);
 void func_80027A58(s32 *a0) {
     s16 v1 = *(s16 *)((u8 *)a0 + 0x86);
     if (v1 == *(s16 *)((u8 *)a0 + 0x88)) {
         if (*(s16 *)((u8 *)a0 + 0x8A)) {
             if (((s32 (*)())func_8002798C)()) {
-                s32 v0 = game_GetPlayerData(*(s16 *)((u8 *)a0 + 4));
+                u8 *v0 = game_GetPlayerData(*(s16 *)((u8 *)a0 + 4));
                 func_80030900(a0, *(s32 *)(v0 + 0x4C) + 0x14);
                 *(s16 *)((u8 *)a0 + 0x8A) = 0;
                 *(s16 *)((u8 *)a0 + 0x86) = *(u16 *)((u8 *)a0 + 0x84);
@@ -1006,7 +1003,7 @@ void func_800288C8(void) {
     }
 }
 void func_8002906C(void) {
-    s16 *ptr = func_8004678C();
+    s16 *ptr = (s16 *)func_8004678C();
     while (*(s16 *)ptr != 0) {
         *(s16 *)((u8 *)ptr + 2) = 0;
         ptr = (s16 *)((u8 *)ptr + 0x10);
@@ -4468,7 +4465,7 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
 
     arg0->unk_08 = 1;
     arg0->unk_09 = arg1;
-    playerData = (s32 *)game_GetPlayerData(arg0->owner < 1);
+    playerData = game_GetPlayerData(arg0->owner < 1);
     rot_mat = &arg0->mtx;
     s2_ptr = (s32 *)playerData[arg0->unk_09];
 
@@ -4565,7 +4562,7 @@ void func_800300B4(Obj80106A78 *arg0) {
     MATRIX *mat;
     s32 lookup;
 
-    playerData = (s32 *)game_GetPlayerData(arg0->owner < 1);
+    playerData = game_GetPlayerData(arg0->owner < 1);
     mat = (MATRIX *)playerData[arg0->unk_09];
 
     /* PsyQ libgte inline macro gte_SetRotMatrix(r) (PsyQ 4.5 inline_c.h) - loads the 5

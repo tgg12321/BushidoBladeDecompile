@@ -19,7 +19,6 @@ typedef struct {
 /* Forward declarations for called functions */
 extern void func_8001945C(void);
 extern void ClearImage(void *, s32, s32, s32);
-extern void rcnt_StartCnt1(void);
 
 /* Externs for globals */
 extern u8 g_file_dma_flag;
@@ -327,7 +326,6 @@ extern u8 D_800A3744;
 extern u8 D_800A3745;
 extern u8 D_800A3746;
 extern void func_80020D70(void);
-extern void game_Init(void);
 extern u8 D_800A36B0;
 extern void pad_ResetStateMarkValid(void);
 extern void func_8003D2C4(void);

@@ -3556,7 +3556,6 @@ void func_80068ECC(s32 arg0) {
 }
 extern s32 D_800A372C;
 extern u8 D_800A32C0[8];
-extern s32 snd_StopAll(void);
 
 
 

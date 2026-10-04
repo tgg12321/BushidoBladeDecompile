@@ -22,7 +22,6 @@ extern s32 AddPrim(s32, s32);
 extern s32 SetDrawArea();
 extern s32 func_8006E480();
 extern s32 func_8007352C();
-extern s32 snd_StopAll(void);
 s32 func_80068F70(s32 arg0, s32 *arg1);
 void func_8006920C(s32 *, s32);
 void func_8006920C(s32 *a0, s32 a1);

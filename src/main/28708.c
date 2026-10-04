@@ -1335,7 +1335,6 @@ neg:
         *arg2 = -1;
     }
 }
-extern s32 camera_GetBoneData(void);
 extern u8 D_800A3208;
 
 extern void func_800207C8(Unk80101EC8Record *, LeafPos *, LeafPos *, LeafPos *);
@@ -1366,7 +1365,7 @@ void func_8003993C(void) {
         idx = D_800A37D0;
         prog = (idx << 12) / D_800A36F8;
     }
-    D_800A3778 = camera_GetBoneData();
+    D_800A3778 = (s32)camera_GetBoneData();
     /* The frame record's address is written out at each argument (compound-address duplication,
      * no-new-park-categories F3): binding it to a `rec` local does not match. */
     func_8001BAE4((u8 *)(D_800A36EC + idx * 56) + D_800A3748 * 28,

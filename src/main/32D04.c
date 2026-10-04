@@ -9,7 +9,6 @@
 
 
 
-extern void func_80049E1C(void);
 extern void func_80052C10(void);
 
 
@@ -33,7 +32,6 @@ extern s32 func_8004019C(s32 *, s32);
 
 
 
-extern s32 func_800486FC(s32 *);
 
 void func_80042504(s32 *hsv, s32 *rgb) {
     s32 h = hsv[0];
@@ -42,7 +40,7 @@ void func_80042504(s32 *hsv, s32 *rgb) {
     s32 i, f, p, q, t;
     s32 r, g, b;
 
-    if (func_800486FC(hsv)) {
+    if (func_800486FC()) {
         s = 0;
     }
     if (s == 0) {
@@ -1141,11 +1139,8 @@ extern MATRIX D_80101BD0;
 extern Unk80101DF0Record *D_800A3708;
 extern Unk80101DF0Record *D_800A370C;
 
-extern void func_80046F24(void);
 extern s32 func_8003E2C8(void);
-extern s32 func_80046E7C(void);
 extern void func_8004A4E0(void);
-extern void func_80046E54(s32);
 void func_80044504(u32 *a0) {
     MATRIX *s0 = &D_80101BD0;
     math_RotMatrixZXY(&D_800A3678, s0);

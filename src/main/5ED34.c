@@ -28,7 +28,6 @@ extern s32 AddPrim(s32, s32);
 extern s32 SetDrawArea();
 extern s32 func_8006E480();
 extern s32 func_8007352C();
-extern s32 snd_StopAll(void);
 void func_8006920C(s32 *, s32);
 void func_8006920C(s32 *a0, s32 a1);
 void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2);

@@ -9,8 +9,6 @@
 
 /* Declarations from the file this TU was split from (text1b.c). */
 extern void func_80054410(s32);
-extern void func_8004659C(s32);
-void func_8004659C(s32 a0);
 extern void func_8005441C(s32);
 extern void func_80054FDC(s32);
 extern s32 *func_8004153C();
@@ -19,22 +17,12 @@ extern void func_8004211C(void);
 extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
 extern s32 func_80044FA0(s32, s32);
 extern void func_800418D0(s32 *);
-extern void func_8004A1FC();
 extern void func_800420D0(void);
 extern u8 *g_gpu_ot_ptr;
-void func_80046914(void);
-s32 *func_800469C4(s32 a0);
-void func_80046A60(void);
-void func_80046EA0(s32 a0);
-void game_StageCleanup(s32 a0, s32 a1);
-void *stage_GetDataPtr(void);
-void camera_InitBoneData(void);
 extern s32 func_8005C2A8(s32 *, s16, s32);
 extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern void func_80052C10(void);
 void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in);
-void func_80049A2C(s32 arg0, s32 arg1, s32 arg2);
-void func_8004A1FC();
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
 static s32 D_800A33F0;
@@ -713,11 +701,7 @@ INCLUDE_ASM("asm/funcs", func_80054440);
 INCLUDE_ASM("asm/funcs", func_800545F4);
 extern const char D_80015840[];
 extern s32 func_80045080(s32);
-extern void func_80046914(void);
-extern s32 *func_800469C4(s32);
-extern void *stage_GetDataPtr(void);
 
-extern void game_StageCleanup(s32, s32);
 s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     /* FAKE: second C handle to the global ctrl block (pointer-alias family);
        mechanism: expand/cse address materialisation -- the pointer local seats
@@ -796,8 +780,6 @@ extern s16 InfoPosYTbl1[];
 void func_80054884(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
     func_80054604(InfoPosYTbl1[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
 }
-void func_8004659C(s32);
-void func_80046A60(void);
 void func_800548DC(void) {
     DrawSync(0);
     func_8004659C(-1);

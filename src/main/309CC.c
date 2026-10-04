@@ -266,14 +266,14 @@ after_select:
         func_80047EE8(sec, 0);
         if (func_8003E2A0() != 0) goto done_cases;
         func_800432A0(((s16 *)a0)[10], 0, 0, -0x140, 0xE8);
-        func_800480C0(sec, 0, 0, 0, -0x140, 0xF0);
+        func_800480C0((s32)sec, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
     case_1:
         func_80047FBC(sec, 0, 0x80, 0);
         if (func_8003E2A0() != player) goto case_1_else;
         func_800432A0(((s16 *)a0)[10], 0x80, 0, -0x140, 0xE8);
-        func_800480C0(sec, 0, 0x80, 0, -0x140, 0xF0);
+        func_800480C0((s32)sec, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
 
     case_1_else:

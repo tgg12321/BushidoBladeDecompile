@@ -32,7 +32,6 @@ extern void func_8003AAB0(void);
 
 
 
-extern s32 stage_GetDataPtr(void);
 
 
 
@@ -59,10 +58,7 @@ extern s32 stage_GetDataPtr(void);
 
 extern s32 rand();
 extern void func_800325E0(s32, s32);
-extern void func_80046BF4(s32 *, s32 *, s32);
-extern s32 game_GetPlayerData(s32);
 
-extern void func_8002EECC(s32, s32 *);
 extern void func_80061064(s32 *, s32 *);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 
@@ -73,7 +69,6 @@ extern void func_8003FFE0(s32);
 
 
 
-extern s32 camera_GetBoneData(void);
 extern void func_80039320(void);
 extern void func_8002C61C(void);
 extern void func_80030D7C(void);
