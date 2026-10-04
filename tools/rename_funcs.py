@@ -447,10 +447,7 @@ total_files = 0
 total_replacements = 0
 
 c_files = list((root / "src").rglob("*.[ch]")) + list((root / "include").rglob("*.h"))
-asm_files = (
-    list((root / "asm" / "funcs").glob("*.s")) +
-    list((root / "asm").glob("*.s"))
-)
+asm_files = list((root / "asm" / "funcs").glob("*.s"))
 # Data section .s files use .word symbol references — treat like C (replace all)
 data_files = list((root / "asm" / "data").glob("*.s"))
 # sdata files list functions by name — must be updated or GP-relative breaks

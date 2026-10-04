@@ -797,7 +797,6 @@ def plan_wave(wave: Wave) -> Plan:
     # .globl, jal targets and .word symbol references in one pass.
     asm_files = (
         sorted((ROOT / "asm/funcs").glob("*.s"))
-        + sorted((ROOT / "asm").glob("*.s"))
         + sorted((ROOT / "asm/data").glob("*.s"))
     )
     for p in asm_files:
@@ -1266,7 +1265,7 @@ def residual_audit(wave: Wave) -> dict[str, list[str]]:
 
     for p in sorted((ROOT / "src").rglob("*.[ch]")) + sorted((ROOT / "include").rglob("*.h")):
         scan(str(p.relative_to(ROOT)), read(p), "c")
-    for d in ("asm/funcs", "asm", "asm/data"):
+    for d in ("asm/funcs", "asm/data"):
         for p in sorted((ROOT / d).glob("*.s")):
             scan(str(p.relative_to(ROOT)), read(p), None)
     for rel in SYMBOL_FILES + RULE_FILES + LIST_FILES + PLAIN_FILES:

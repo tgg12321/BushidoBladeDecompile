@@ -354,7 +354,6 @@ def substitute_in_files(accepted: list[dict]) -> dict[str, int]:
         if p.exists():
             files.append(p)
     files.extend(sorted(ASM_FUNCS.glob("*.s")))
-    files.extend(sorted((ROOT / "asm").glob("*.s")))
     files.extend(sorted((ROOT / "asm" / "data").glob("*.s")))
 
     edits: dict[str, int] = {}

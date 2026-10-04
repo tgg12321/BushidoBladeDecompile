@@ -10,7 +10,7 @@ of the proposed name, across every surface where a data name is a key:
 
   src/**/*.[ch], include/**/*.h   whole-word substitution outside comments (string literals in
                                   scope — INCLUDE_ASM / __asm__ bodies), via naming_wave.sub_c
-  asm/**/*.s                      same (%hi/%lo operands, .word references)
+  asm/funcs/*.s, asm/data/*.s     same (%hi/%lo operands, .word references)
   bb2.ld                          same
   named_syms.txt, symbol_addrs.txt, undefined_syms_auto.txt
                                   line-wise: the definition line is rewritten to the new name;
@@ -124,7 +124,7 @@ def main() -> int:
         if n:
             edits[rel] = (new_text, n)
 
-    for pattern in ("src/**/*.c", "src/**/*.h", "include/**/*.h", "asm/*.s", "asm/funcs/*.s", "asm/data/*.s", "bb2.ld"):
+    for pattern in ("src/**/*.c", "src/**/*.h", "include/**/*.h", "asm/funcs/*.s", "asm/data/*.s", "bb2.ld"):
         for p in sorted(glob.glob(str(ROOT / pattern), recursive=True)):
             plan_file(os.path.relpath(p, ROOT).replace("\\", "/"), lambda t: nw.sub_c(pat, repl, t))
     for rel in LIST_FILES:

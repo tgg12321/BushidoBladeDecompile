@@ -326,7 +326,6 @@ def cmd_revert(args) -> int:
         if pp.exists():
             files.append(pp)
     files.extend(sorted(ASM_FUNCS.glob("*.s")))
-    files.extend(sorted((ROOT / "asm").glob("*.s")))
     files.extend(sorted((ROOT / "asm" / "data").glob("*.s")))
     for pp in files:
         text = pp.read_text(encoding="utf-8", errors="replace")
@@ -434,7 +433,7 @@ def main() -> int:
     #   1. rename asm/funcs/func_XXXX.s -> asm/funcs/<kengo>.s
     #      and update glabel/endlabel inside each
     #   2. rewrite `jal func_XXXX` callsites across all other asm files
-    #      (asm/funcs/*.s, asm/6CAC.s, asm/data/*.s)
+    #      (asm/funcs/*.s, asm/data/*.s)
     asm_renames = 0
     asm_collisions = 0
     plan_map = {f"func_{r['addr']:08X}": (r.get('_suffixed') or r['kn'])
@@ -462,9 +461,6 @@ def main() -> int:
         asm_files: list[Path] = []
         asm_files.extend(sorted(ASM_FUNCS.glob("*.s")))
         asm_root = ASM_FUNCS.parent
-        bulk = asm_root / "6CAC.s"
-        if bulk.exists():
-            asm_files.append(bulk)
         asm_files.extend(sorted((asm_root / "data").glob("*.s")))
         asm_callsite_refs = 0
         asm_callsite_files = 0
