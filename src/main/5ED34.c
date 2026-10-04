@@ -21,19 +21,12 @@ s32 func_8005C2A8(s32 *, s16, s32);
 s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2);
 extern s32 func_80073728(s32, s32);
 extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 extern s32 SetDrawArea();
-extern s32 func_8006E480();
 extern s32 func_8007352C();
-void func_8006920C(s32 *, s32);
-void func_8006920C(s32 *a0, s32 a1);
-void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2);
 extern void SetDrawOffset();
 extern void LoadImage(u8 *, s32);
-void func_8006E440(s32 *a0);
-s32 func_8006E480(s32 a0_addr, s32 a1);
 s32 func_8006E49C(s32 arg0, s32 *arg1);
 
 typedef struct SelectEntryE534 {
@@ -236,7 +229,6 @@ void func_8006E950(s32 a0, s32 *a1) {
 
     func_8006E8CC(s1);
 }
-void func_8006920C(s32 *, s32);
 s32 func_8005C2A8(s32 *, s16, s32);
 s32 func_8006EA28(s32 *a0) {
     func_8006920C(a0, a0[21]);

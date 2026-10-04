@@ -3981,7 +3981,6 @@ extern Unk8009B400Record D_8009B23C[12];
 extern Unk8009B400Record D_8009B29C[2];
 extern Unk8009B400Record *D_8009B2AC[4];
 extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
@@ -4437,7 +4436,6 @@ extern Unk8009B400Record D_8009B3E0[2];
 extern Unk8009B400Record D_8009B3F0;
 extern Unk8009B400Record D_8009B3F8;
 extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -5549,7 +5547,6 @@ void func_800602AC(s32 arg0, s32 *arg1) {
     LoadImage((s32)r4, (s32)((u8 *)arg1 + 0x14));
     DrawSync(0);
 }
-extern s32 func_8006E480();
 extern s32 func_8007352C();
 extern s32 D_8009B7AC;
 extern s32 D_8009B7B8;
@@ -5751,7 +5748,6 @@ void func_80060758(void) {
     D_800A32B4 = 0;
 }
 extern s32 D_8009B0C0;
-extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 
 
 s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {

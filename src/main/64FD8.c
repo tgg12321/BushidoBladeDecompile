@@ -14,18 +14,10 @@ extern s32 g_gpu_ot_ptr;
 extern Unk8009BD38Flags D_8009BD38;
 extern s32 func_80073728(s32, s32);
 extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 extern s32 SetDrawArea();
-extern s32 func_8006E480();
 extern s32 func_8007352C();
-s32 func_80068F70(s32 arg0, s32 *arg1);
-void func_8006920C(s32 *, s32);
-void func_8006920C(s32 *a0, s32 a1);
-s32 func_80069250(s32 arg0, s32 arg1);
-s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3);
-s32 func_800693CC(s32 held, s32 pressed);
 extern void SetDrawOffset();
 /* func_8007352C's draw descriptor: .header = the sprite sheet's SprtHdrA, .table = its
    SprtEntA cell array (the s32 form of S_80074488 / DescF97C). */
@@ -44,13 +36,6 @@ typedef struct EnvA {
     u8   col_g;
     u8   col_b;
 } EnvA;
-s32 func_8006D74C(s32 arg0, s32 arg1);
-s32 func_8006D7FC(void);
-extern s32 func_800692C0();
-void func_8006E068(s32 arg0, s32 arg1);
-s32 func_8006E10C(void);
-s32 func_8006E2A8(void);
-s32 func_8006E480(s32 a0_addr, s32 a1);
 s32 func_8006E49C(s32 arg0, s32 *arg1);
 s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3);
 void func_8006E950(s32 a0, s32 *a1);
@@ -1898,11 +1883,9 @@ extern u8 D_8009BD42;
 extern u8 D_8009BD43;
 
 
-extern void func_8006D324(void);
 
 s32 func_80077B30(s32 arg0, s32 arg1) {
     extern s32 func_8006B898(s32, s32);
-    extern s32 func_8006C1FC(s32, s32);
     extern s32 func_8006D338(s32, s32);
     s32 s2;
     s32 result;
@@ -1959,7 +1942,6 @@ end:
 s32* func_80077D00(void) {
     return (s32 *)D_8009BD24;
 }
-void func_8006920C(s32*, s32);
 s32 func_80077D10(s32 *a0) {
     func_8006920C(a0, a0[6]);
     func_8006920C(a0, a0[7]);

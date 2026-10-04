@@ -317,13 +317,10 @@ s32 func_8005C2A8(s32 *, s16, s32);
 s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2);
 extern s32 func_80073728(s32, s32);
 extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 extern s32 SetDrawArea();
-extern s32 func_8006E480();
 extern s32 func_8007352C();
-extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 void func_80060A68(void);
 void func_80060B70(void);
 void func_80060C60(void);
@@ -3660,7 +3657,6 @@ s32 *func_80069120(s32 a0) {
     return (s32 *)((u8 *)D_800A351C + a0 * 44);
 }
 
-void func_8006920C(s32 *, s32);
 
 s32 func_8006919C(s32 *a0) {
     s32 i = 0;
@@ -3979,7 +3975,6 @@ typedef struct {
 } S_69AE4;
 
 
-extern void func_80069A8C(u8 *p);
 
 void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
     u8 *p;
@@ -6164,7 +6159,6 @@ void func_8006DD94(s32 *arg0) {
     rect[3] = 1;
     func_80069898((GameObj *)arg0, rect, 0x11);
 }
-extern s32 func_800692C0();
 
 s32 func_8006DF68(s32 arg0, u32 arg1) {
     s32 sp10;

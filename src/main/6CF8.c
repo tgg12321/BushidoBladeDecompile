@@ -52,7 +52,6 @@ extern u32 *ClearOTagR(u32 *, s32);
 
 extern s32 rand(void);
 extern void __main(void);
-extern void func_80060E04(s32);
 extern void func_8003D2F4(void);
 
 extern void func_80019568();
@@ -287,7 +286,6 @@ void sys_Panic(void) {
 void file_ResetDmaFlag(void) {
     g_file_dma_flag = 0;
 }
-extern s32 func_80060CB8(u32, u32);
 void eff_Init(void) {
     s32 size;
 

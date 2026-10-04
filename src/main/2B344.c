@@ -2185,7 +2185,6 @@ extern s32 D_80094840[];
 extern s32 D_800A7EF0[];
 extern s32 *func_8003EB84(s32, s32, s32 *);
 extern void math_RotMatrixYXZ(SVECTOR *, s32 *);
-extern void func_800620B8(s16 *, s32 *);
 /* func_8003E6D8 - grid pass. D_800A3708's xf.rot is turned into a matrix
  * (func_80042A88) and applied to {0,0,0x1000}; ratan2 of the result, stored
  * to D_800A336C, picks ((a >> 6) & 0x3F) one of 64 tables of 32-bit row

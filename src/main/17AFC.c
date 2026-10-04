@@ -5810,7 +5810,6 @@ void func_80032854(s32 arg0, s32 arg1, u8 *arg2, s16 *arg3) {
         break;
     }
 }
-extern void func_80061A3C(s32 *, s16, s32, s32);
 void func_80032C50(s32 obj, s32 kind) {
     s32 pos[3];
     s32 base;

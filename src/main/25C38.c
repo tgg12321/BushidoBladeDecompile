@@ -78,7 +78,6 @@ extern void AddPrim(u32 *a0, u32 *a1);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 extern void func_80035280(void);
-extern void func_80068ECC(s32);
 extern u8 D_800A3740;
 void func_80035438(void) {
     s32 a0;
@@ -306,7 +305,6 @@ extern void func_80035F78(s16, s32, s32, s32, s32);
 extern s32 func_80077904(void);
 extern s32 func_80077B30(s32, s32);
 extern void func_80034F88(void);
-extern s32 func_8006C1FC(s32, s32);
 extern void func_80077B20(void);
 extern s32 func_800779C8(s32, s32);
 extern s32 func_8007855C(s32);

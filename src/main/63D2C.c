@@ -10,15 +10,9 @@ extern s32 rsin();
 extern s32 g_gpu_ot_ptr;
 extern s32 func_80073728(s32, s32);
 extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
-extern s32 func_8006E480();
 extern s32 func_8007352C();
-void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2);
-void func_80069A30(u8 *a0);
-void func_80069A8C(u8 *a0);
-extern void func_80069A8C(u8 *p);
 extern const u8 D_800159A0[16];
 typedef struct EnvA {
     s32 *header;
@@ -35,7 +29,6 @@ typedef struct EnvA {
     u8   col_g;
     u8   col_b;
 } EnvA;
-s32 func_8006E480(s32 a0_addr, s32 a1);
 extern s32 func_80073C78();
 
 
