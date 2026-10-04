@@ -27,11 +27,7 @@ extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 
 
 
-extern s32 ratan2(s32, s32);
 extern s32 rand(void);
-extern void RotMatrixX(s32, s32 *);
-extern void RotMatrixY(s32, s32 *);
-extern void RotMatrixZ(s32, s32 *);
 
 
 

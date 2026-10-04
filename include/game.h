@@ -848,10 +848,6 @@ typedef struct {
     u8 unkD;
 } Tbl8008E194;
 
-/* PsyQ MATRIX layout (include/psxsdk/libgte.h) under a local name, like
- * Unk80101DF0Mat below; retyping it as MATRIX is Phase 2 work. */
-typedef struct { s16 m[3][3]; u16 pad; s32 t[3]; } Obj80106A78Mat;
-
 /* The twelve 0x64-byte object records at 0x80106A78. func_80030580 spawns one
  * (its kind indexes D_8008E194 / D_8008EB80), func_80030D7C moves them,
  * func_80031B24 tests them against both fighters, func_80030208 hands them to
@@ -868,7 +864,7 @@ typedef struct {
     u8  unk_09;                    /* index into the owner's matrix table (func_800300B4) */
     u8  slot;                      /* own index in D_80106A78 once allocated; 0xFF = free (set by func_8003043C at init and by func_80030D7C once kind == -1) */
     u8  unk_0B;
-    Obj80106A78Mat mtx;            /* func_8002FF20 builds it (identity, RotMatrixX/Y/Z,
+    MATRIX mtx;                    /* func_8002FF20 builds it (identity, RotMatrixX/Y/Z,
                                       MulMatrix0); func_800300B4 reads it */
     Vec3i32 pos;                   /* += vel each func_80030D7C step */
     Vec3i32 prev_pos;              /* pos before the step */

@@ -23,7 +23,6 @@ extern s32 func_80054434(void);
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
 extern void func_8003AAB0(void);
-extern s32 ratan2(s32, s32);
 extern s32 stage_GetDataPtr(void);
 extern s32 cdrom_StartRead(s32, s32);
 extern s32 rand();
@@ -32,9 +31,6 @@ extern void func_80046BF4(s32 *, s32 *, s32);
 extern s32 game_GetPlayerData(s32);
 extern void func_8002EECC(s32, s32 *);
 extern void func_80061064(s32 *, s32 *);
-extern void *RotMatrixX(s32, s32);
-extern void *RotMatrixY(s32, s32);
-extern void *RotMatrixZ(s32, s32);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 extern void func_8003F3D4(s16 *);
 extern void func_80055138(s32, s32, s32);
@@ -458,9 +454,9 @@ void func_8001A538(s32 *arg0, s32 *arg1) {
     m.m[2][0] = 0;
     m.m[2][1] = 0;
     m.m[2][2] = 0x1000;
-    RotMatrixX(-*(s16 *)((u8 *)arg0 + 0x10), (s32)&m);
-    RotMatrixY(-*(s16 *)((u8 *)arg0 + 0x12), (s32)&m);
-    RotMatrixZ(-*(s16 *)((u8 *)arg0 + 0x14), (s32)&m);
+    RotMatrixX(-*(s16 *)((u8 *)arg0 + 0x10), &m);
+    RotMatrixY(-*(s16 *)((u8 *)arg0 + 0x12), &m);
+    RotMatrixZ(-*(s16 *)((u8 *)arg0 + 0x14), &m);
     arg1[0] = arg0[0] - ((s32)(m.m[0][2] * arg0[6]) >> 12);
     arg1[1] = arg0[1] - ((s32)(m.m[1][2] * arg0[6]) >> 12);
     arg1[2] = arg0[2] - ((s32)(m.m[2][2] * arg0[6]) >> 12);
@@ -4558,19 +4554,19 @@ void func_800238C4(u8 *arg0)
     *((s32 *) (arg0 + 0x104)) += dx_delta;
     *((s32 *) (arg0 + 0x10C)) += dz_delta;
 }
-void math_RotMatrixZYXAngles(s32 arg0, s32 arg1, s32 arg2, s16 *arg3) {
-    arg3[0] = 0x1000;
-    arg3[1] = 0;
-    arg3[2] = 0;
-    arg3[3] = 0;
-    arg3[4] = 0x1000;
-    arg3[5] = 0;
-    arg3[6] = 0;
-    arg3[7] = 0;
-    arg3[8] = 0x1000;
-    RotMatrixX(arg0, (s32)arg3);
-    RotMatrixY(arg1, (s32)arg3);
-    RotMatrixZ(arg2, (s32)arg3);
+void math_RotMatrixZYXAngles(s32 arg0, s32 arg1, s32 arg2, MATRIX *arg3) {
+    arg3->m[0][0] = 0x1000;
+    arg3->m[0][1] = 0;
+    arg3->m[0][2] = 0;
+    arg3->m[1][0] = 0;
+    arg3->m[1][1] = 0x1000;
+    arg3->m[1][2] = 0;
+    arg3->m[2][0] = 0;
+    arg3->m[2][1] = 0;
+    arg3->m[2][2] = 0x1000;
+    RotMatrixX(arg0, arg3);
+    RotMatrixY(arg1, arg3);
+    RotMatrixZ(arg2, arg3);
 }
 void func_80023CB4(s16 *arg0, s16 arg1) {
     s16 v;
@@ -5012,8 +5008,8 @@ void func_80023F08(s32 arg0, PadState *pad) {
         MATRIX m2;
         s32 twist;
 
-        math_RotMatrixZYXAngles(rec->unk_290.unk_06, rec->unk_290.unk_08, rec->unk_290.unk_0A, m1.m[0]);
-        math_RotMatrixZYXAngles(pose[0].unk_06, pose[0].unk_08, pose[0].unk_0A, m2.m[0]);
+        math_RotMatrixZYXAngles(rec->unk_290.unk_06, rec->unk_290.unk_08, rec->unk_290.unk_0A, &m1);
+        math_RotMatrixZYXAngles(pose[0].unk_06, pose[0].unk_08, pose[0].unk_0A, &m2);
         /* new frame's heading minus the previous frame's.  FAKE: spelled
          * -old + new so the old heading is computed first, as the target
          * does; new - old computes the new heading first (score 7). */

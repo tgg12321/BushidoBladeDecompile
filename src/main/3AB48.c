@@ -14,7 +14,6 @@ void func_8004659C(s32 a0);
 extern void func_8005441C(s32);
 extern void func_80054FDC(s32);
 extern s32 *func_8004153C();
-extern s32 ratan2(s32, s32);
 extern s16 Judge[];
 extern void func_8004211C(void);
 extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);

@@ -319,7 +319,6 @@ extern void func_80049E1C(void);
 
 extern void math_RotMatrixYXZ(Unk80101DF0Rot *, MATRIX *);
 extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
-extern s32 ratan2(s32, s32);
 extern s16 Judge[];
 extern Unk80101DF0Record *D_800A3708;
 extern void func_8004211C(void);
@@ -781,7 +780,6 @@ void camera_InitBone2(void) {
     camera_InitRotation(&g_cam_bone_data2);
     g_cam_bone_data2.unk8 = 4;
 }
-extern MATRIX *MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
 void func_800475A4(void) {
     SVECTOR rot;
     VECTOR result;

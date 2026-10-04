@@ -10,11 +10,7 @@
 /* Declarations from the file this TU was split from (code6cac_b.c). */
 extern s16 *func_8004678C(void);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
-extern s32 ratan2(s32, s32);
 extern s32 rand(void);
-extern void RotMatrixX(s32, s32 *);
-extern void RotMatrixY(s32, s32 *);
-extern void RotMatrixZ(s32, s32 *);
 extern s32 stage_GetDataPtr(void);
 extern u8 D_800A3898;
 extern u8 D_800A3899;
@@ -2714,8 +2710,8 @@ s32 func_8002CD58(u8 *obj) {
             *(s16 *)(obj + 0xE4) = 0;
             *(s16 *)(obj + 0xE6) = 0;
             *(s16 *)(obj + 0xE8) = 0x1000;
-            RotMatrixY(*(s16 *)(obj + 0xFA), (s32 *)(obj + 0xD8));
-            RotMatrixX(*(s16 *)(obj + 0xF8), (s32 *)(obj + 0xD8));
+            RotMatrixY(*(s16 *)(obj + 0xFA), (MATRIX *)(obj + 0xD8));
+            RotMatrixX(*(s16 *)(obj + 0xF8), (MATRIX *)(obj + 0xD8));
             /* gte_SetRotMatrix(obj+0xD8) -- inline_o.h:860: the five
              * packed rotation-matrix words into cop2 control $0..$4. */
             __asm__ volatile(
@@ -2821,8 +2817,8 @@ s32 func_8002CD58(u8 *obj) {
     *(s16 *)(obj + 0xE4) = 0;
     *(s16 *)(obj + 0xE6) = 0;
     *(s16 *)(obj + 0xE8) = 0x1000;
-    RotMatrixY(*(s16 *)(obj + 0xFA), (s32 *)(obj + 0xD8));
-    RotMatrixX(*(s16 *)(obj + 0xF8), (s32 *)(obj + 0xD8));
+    RotMatrixY(*(s16 *)(obj + 0xFA), (MATRIX *)(obj + 0xD8));
+    RotMatrixX(*(s16 *)(obj + 0xF8), (MATRIX *)(obj + 0xD8));
     /* gte_SetRotMatrix (inline_o.h:860), then gte_ldlv0 (:277) / gte_rtv0
      * (:1353) / gte_stlvnl (:2422) for a and for b: the same islands as the
      * first path. */
@@ -3258,7 +3254,7 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
  * Provenance: pre-slim-2026-10-01:memory/grind/func_8002DAD0/psyq_inline_o_provenance.md.
  */
 s32 func_8002DAD0(u8 *obj) {
-    s32 *mat;
+    MATRIX *mat;
     s32 sp_tmp;
     s32 dist_sq;
     s32 angle1;
@@ -3380,7 +3376,7 @@ s32 func_8002DAD0(u8 *obj) {
     }
 
     angle2 = ratan2(*(s32 *)(obj + 0xCC), dist);
-    mat = (s32 *)(obj + 0xD8);
+    mat = (MATRIX *)(obj + 0xD8);
     *(s16 *)(obj + 0xF8) = 0x800 - angle2;
 
     /* identity 3x3 rotation matrix at obj+0xD8 */
@@ -3729,7 +3725,7 @@ s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3)
 }
 void func_8002E838(u8 *obj) {
     s32 sp_tmp;
-    s32 *mat;
+    MATRIX *mat;
     s32 *vec;
     s32 dist_sq;
     s32 angle;
@@ -3772,7 +3768,7 @@ void func_8002E838(u8 *obj) {
     }
 
     angle = ratan2(*(s32 *)(obj + 0xAC), dist);
-    mat = (s32 *)(obj + 0xD8);
+    mat = (MATRIX *)(obj + 0xD8);
     *(s16 *)(obj + 0xF8) = 0x800 - angle;
 
     /* identity 3x3 rotation matrix at obj+0xD8 */
@@ -3914,7 +3910,7 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
 void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     s32 sp_tmp;
     u8 *scr = (u8 *)0x1F8002B8;
-    s32 *mat;
+    MATRIX *mat;
     s32 *vec;
     s32 angle1;
     s32 angle2;
@@ -3946,7 +3942,7 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     }
 
     angle2 = ratan2(dir[1], dist);
-    mat = (s32 *)(scr + 0xD8);
+    mat = (MATRIX *)(scr + 0xD8);
     *(s16 *)(scr + 0xF8) = 0x800 - angle2;
 
     *(s16 *)(scr + 0xD8) = 0x1000;
@@ -4068,11 +4064,11 @@ void func_8002EECC(void *arg0, void *arg1) {
     *(s16 *)((u8 *)arg1 + 0xE) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 0xE)) - (*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 0xC))) / temp_v1_2);
     *(s16 *)((u8 *)arg1 + 0x10) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 6)) - (*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 8))) / temp_v1_2);
 }
-void func_8002F2D0(s32 *a0, s32 *a1);
-void func_8002F2D0(s32 *a0, s32 *a1) {
+void func_8002F2D0(MATRIX *a0, s32 *a1);
+void func_8002F2D0(MATRIX *a0, s32 *a1) {
     MATRIX *m;
     u8 *scr;
-    s32 *mat;
+    MATRIX *mat;
     s32 *vec;
     s32 c0, c1, c2;
     /* work holds two values (Ruling 11): the 3x3 determinant (the divisor of the six
@@ -4088,7 +4084,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
     s32 sp_tmp;
 
     m = (MATRIX *)0x1F800390;
-    *m = *(MATRIX *)a0;
+    *m = *a0;
 
     c0 = m->m[1][2] * m->m[2][1] - m->m[1][1] * m->m[2][2];
     d0 = m->m[0][0] * (c0 >> 12);
@@ -4127,7 +4123,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
     }
 
     ang_y = ratan2(i2, work);
-    mat = (s32 *)(scr + 0xD8);
+    mat = (MATRIX *)(scr + 0xD8);
     *(s16 *)(scr + 0xD8) = 0x1000;
     *(s16 *)(scr + 0xDA) = 0;
     *(s16 *)(scr + 0xDC) = 0;
@@ -4182,7 +4178,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
 void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     MATRIX *m;
     u8 *scr;
-    s32 *mat;
+    MATRIX *mat;
     s32 *vec;
     s32 c0, c1, c2;
     /* work holds two values (Ruling 11): the 3x3 determinant (the divisor of the six
@@ -4207,12 +4203,12 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     *(s16 *)(scr + 0xE4) = 0;
     *(s16 *)(scr + 0xE6) = 0;
     *(s16 *)(scr + 0xE8) = 0x1000;
-    RotMatrixX(x, (s32 *)(scr + 0xD8));
-    RotMatrixY(y, (s32 *)(scr + 0xD8));
-    RotMatrixZ(-z, (s32 *)(scr + 0xD8));
-    RotMatrixX(angles[0], (s32 *)(scr + 0xD8));
-    RotMatrixY(angles[1], (s32 *)(scr + 0xD8));
-    RotMatrixZ(angles[2], (s32 *)(scr + 0xD8));
+    RotMatrixX(x, (MATRIX *)(scr + 0xD8));
+    RotMatrixY(y, (MATRIX *)(scr + 0xD8));
+    RotMatrixZ(-z, (MATRIX *)(scr + 0xD8));
+    RotMatrixX(angles[0], (MATRIX *)(scr + 0xD8));
+    RotMatrixY(angles[1], (MATRIX *)(scr + 0xD8));
+    RotMatrixZ(angles[2], (MATRIX *)(scr + 0xD8));
 
     m = (MATRIX *)(scr + 0xD8);
     c0 = m->m[1][2] * m->m[2][1] - m->m[1][1] * m->m[2][2];
@@ -4251,7 +4247,7 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     }
 
     ang_y = ratan2(i2, work);
-    mat = (s32 *)(scr + 0xD8);
+    mat = (MATRIX *)(scr + 0xD8);
     *(s16 *)(scr + 0xD8) = 0x1000;
     *(s16 *)(scr + 0xDA) = 0;
     *(s16 *)(scr + 0xDC) = 0;
@@ -4467,13 +4463,13 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     s32 mat_local[8];
     s32 *playerData;
     s32 *s2_ptr;
-    s32 *rot_mat;
+    MATRIX *rot_mat;
     Vec3i32 *vec;
 
     arg0->unk_08 = 1;
     arg0->unk_09 = arg1;
     playerData = (s32 *)game_GetPlayerData(arg0->owner < 1);
-    rot_mat = (s32 *)&arg0->mtx;
+    rot_mat = &arg0->mtx;
     s2_ptr = (s32 *)playerData[arg0->unk_09];
 
     /* 3x3 identity rotation in the record's matrix. */
@@ -4490,7 +4486,7 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     RotMatrixY(arg0->rot[1], rot_mat);
     RotMatrixZ(arg0->rot[2], rot_mat);
     func_8002EECC(s2_ptr, mat_local);
-    MulMatrix0(mat_local, rot_mat, rot_mat);
+    MulMatrix0((MATRIX *)mat_local, rot_mat, rot_mat);
 
     /* Subtract opponent reference position from self position. */
     arg0->pos.x -= s2_ptr[5];
@@ -4564,13 +4560,13 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
 void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
     s32 dir[2];
-    s32 mtx[8];
+    MATRIX mtx;
     s32 *playerData;
-    s32 *mat;
+    MATRIX *mat;
     s32 lookup;
 
     playerData = (s32 *)game_GetPlayerData(arg0->owner < 1);
-    mat = (s32 *)playerData[arg0->unk_09];
+    mat = (MATRIX *)playerData[arg0->unk_09];
 
     /* PsyQ libgte inline macro gte_SetRotMatrix(r) (PsyQ 4.5 inline_c.h) - loads the 5
      * packed rotation-matrix words at r into cop2 control regs R11R12..R33.
@@ -4619,12 +4615,12 @@ void func_800300B4(Obj80106A78 *arg0) {
     } while (0);
 
     /* Add the matrix translation to the rotated vector. */
-    mac[0] += mat[5];
-    mac[1] += mat[6];
-    mac[2] += mat[7];
+    mac[0] += mat->t[0];
+    mac[1] += mat->t[1];
+    mac[2] += mat->t[2];
 
-    MulMatrix0(mat, &arg0->mtx, mtx);
-    func_8002F2D0(mtx, dir);
+    MulMatrix0(mat, &arg0->mtx, &mtx);
+    func_8002F2D0(&mtx, dir);
 
     lookup = D_8008EB80[arg0->kind];
     func_80049718(lookup, 1, mac, dir);
@@ -5148,7 +5144,7 @@ void func_80030D7C(void) {
 }
 /* GTE rotate-velocity-by-table-angle (sibling of func_8002E838) */
 void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
-    s32 *mat;
+    MATRIX *mat;
     Vec3i32 *vec;
     s32 angle1;
     s32 angle2;
@@ -5168,7 +5164,7 @@ void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
         ent->rot_vel[1] = av + adj;
     }
 
-    mat = (s32 *)(obj + 0xD8);
+    mat = (MATRIX *)(obj + 0xD8);
     angle1 = D_8008EBA0[idx] & 0xFFF;
     angle2 = (((ent->pos.x * 16) + ent->pos.y + (ent->pos.z * 8)) & 0x7FF) - 0x400;
     /* identity 3x3 rotation matrix at obj+0xD8 */

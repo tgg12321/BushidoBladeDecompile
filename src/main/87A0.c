@@ -32,7 +32,6 @@ extern void func_8003AA78(void);
 
 extern void func_8003AA48(void);
 extern void func_8003AAB0(void);
-extern s32 ratan2(s32, s32);
 
 
 
@@ -70,9 +69,6 @@ extern s32 game_GetPlayerData(s32);
 
 extern void func_8002EECC(s32, s32 *);
 extern void func_80061064(s32 *, s32 *);
-extern void *RotMatrixX(s32, s32);
-extern void *RotMatrixY(s32, s32);
-extern void *RotMatrixZ(s32, s32);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 
 

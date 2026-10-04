@@ -449,7 +449,6 @@ void math_Rotate2D(s32 *a0, s32 *a1, s32 a2) {
     *a0 = (sin_x - cos_y) >> 12;
 }
 extern s32 *ApplyMatrix(s32 *, s16 *, s32 *);
-extern s16 ratan2(s32, s32);
 extern s32 rcos(s32);
 extern s32 rsin(s32);
 void math_MatrixToAnglesYXZ(s32 *a0, s16 *a1) {
@@ -1144,7 +1143,6 @@ extern s32 D_800A3708;
 extern s32 D_800A370C;
 
 extern void MulMatrix2(s32 *, s32 *);
-extern void MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
 extern void func_80046F24(void);
 extern s32 func_8003E2C8(void);
 extern s32 func_80046E7C(void);
