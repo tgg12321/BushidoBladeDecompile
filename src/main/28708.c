@@ -777,7 +777,6 @@ s32 func_80038C70(void) {
     extern u8 D_800A3207;
     extern u8 D_800A3206;
     extern void func_8006BEC4(s32, s32);
-    extern void func_8005C650(s32, s32, s32);
     extern void func_8003877C(void);
     extern void func_8003879C(void);
     extern void func_800387C0(void);

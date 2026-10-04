@@ -764,7 +764,6 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     func_80045600(6, dl);
     func_80045694(6, (s32)&func_80046048);
 }
-extern void func_8005B6AC(void);
 void func_80046020(void) {
     func_800453E0(6);
     func_8005B6AC();

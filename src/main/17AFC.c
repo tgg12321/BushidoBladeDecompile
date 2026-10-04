@@ -5395,7 +5395,6 @@ void func_800321E8(void) {
         base += 0x2C;
     } while (i < 4);
 }
-extern void func_8005C650(s32, s32, s32);
 void func_80032314(void) {
     u8 *t0 = &D_80104E88;
     s32 t1 = 0;

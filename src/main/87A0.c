@@ -76,11 +76,6 @@ extern void func_80030D7C(void);
 extern void func_800397A0(void);
 extern void func_8003E6A0(s32, s32);
 
-extern void func_8005C650(s32, s32, s32);
-extern s32 func_8005C8A8(s32, s32, s32, s32);
-extern s32 func_8005FA98(s32, s32, s32);
-extern s32 func_8005D814(s16 *, s32, s32, s32);
-extern void func_800550E8(s32);
 
 extern void func_80018300(s32 *);
 extern void func_80023F08(s32, PadState *);

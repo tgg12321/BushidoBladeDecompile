@@ -50,8 +50,6 @@ extern u8 D_800A37A8[];
 extern void LoadImage(u8 *, u8 *);
 extern u32 *ClearOTagR(u32 *, s32);
 
-extern s32 func_8005C8A8(s32, s32, u32, s32);
-extern void func_8005C650(s32, s32, s32);
 extern s32 rand(void);
 extern void __main(void);
 extern void func_80060E04(s32);
@@ -303,11 +301,8 @@ void eff_Init(void) {
     }
     g_file_dma_flag = 1;
 }
-extern void snd_Init(void);
-extern s32 snd_LoadCommonVab(u32);
 extern void memcpy(u32, u32, s32);
 extern void snd_VabFakeOpen(u32, s32);
-extern void func_8005C614(void);
 void file_LoadSoundData(void) {
     s32 size;
 

@@ -640,24 +640,15 @@ extern s32 D_800A38B4;
 
 extern s32 func_80052C28(s32, s32);
 extern s32 func_800788B0(void);
-extern void func_800548DC(void);
-extern s32 func_8005FC9C(s32, s32);
-extern s32 func_80054F68(void);
 extern s32 func_8005E54C(s32, s32, s32);
-extern void func_8005C650(s32, s32, s32);
-extern void func_80060758(void);
 extern void func_8001CD68(u8 *);
 
-extern s32 func_800600C8(s32, s32, s32);
 extern void func_8001DA2C(void);
 
 extern void func_8005FBC8(s32, s32);
-extern void func_80054884(s32, s32, s32, s32, s32, s32, s32, s32);
 extern void func_8001DBE4(void);
 
 
-extern s32 func_8005C8A8(s32, s32, s32, s32);
-extern s32 func_8005FA98(s32, s32, s32);
 extern void func_800342A0(void);
 extern s32 func_80022408(s32 *);
 extern void StoreImage(s32 *, u16 *);
@@ -1361,8 +1352,6 @@ void func_8003CE18(void) {
 }
 extern void func_80021D10(s32, s32 *, s32);
 extern void func_800618B4(s32 *, s32 *);
-extern s32 *func_8005507C(void);
-extern s32 *func_8005508C(void);
 extern void func_80061064(s32 *, s32 *);
 extern void func_8003B328(void);
 extern void func_8003B534(s32);

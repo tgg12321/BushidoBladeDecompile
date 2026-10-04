@@ -38,7 +38,6 @@ void func_800342A0(void);
 void func_800343F0(void);
 
 extern void func_8003B20C(s32);
-extern s32 func_8005509C(s32);
 INCLUDE_RODATA("asm/rodata", jtbl_8001084C);
 
 void func_800344B4(void) {

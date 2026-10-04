@@ -18,7 +18,6 @@ extern s32 func_80044670(s32, s32, s32);
 extern void func_800477DC(s32);
 extern s32 func_80047EC8(void);
 extern void func_800481E8(s32, s32);
-extern void func_80054410(s32);
 extern void stage_ExecInitFunc(void);
 extern void func_800466C0(s32, s32);
 extern void func_80045510(s32, s32);
@@ -262,7 +261,6 @@ void func_8004668C(void) {
 /* ---- merged from text1a_b.c (owner ruling Q67: one original file) ---- */
 extern void func_80044100();
 extern void func_80044C70(s32);
-extern void func_8005441C(s32);
 extern void func_80047ED0(s32);
 void func_800466C0(s32 a0, s32 a1) {
     s32 rounded;
@@ -295,7 +293,6 @@ typedef struct {
 
 /* ---- merged from sound.c (owner ruling Q67: one original file) ---- */
 /* Forward declarations for called functions */
-extern void func_80054FDC(s32);
 extern void func_8004473C(void);
 extern void func_80044800(void);
 extern void func_80048F58(s32, s32);

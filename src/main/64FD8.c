@@ -12,8 +12,6 @@ extern s32 ClearOTagR(s32, s32);
 extern s32 rsin();
 extern s32 g_gpu_ot_ptr;
 extern Unk8009BD38Flags D_8009BD38;
-void snd_CloseVab1(void);
-void func_8005C650(s32 a0, s32 a1, s32 a2);
 extern s32 func_80073728(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
@@ -550,7 +548,6 @@ void func_800753D8(s32 *arg0, s32 arg1) {
         arg0[6] += 0xC;
     } while (i < 2);
 }
-extern void func_8005C650(s32, s32, s32);
 void func_80075670(s32 arg0, s32 arg1) {
     s16 i;
     SelWork *base;

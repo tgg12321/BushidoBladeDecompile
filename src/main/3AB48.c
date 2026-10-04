@@ -8,9 +8,6 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1b.c). */
-extern void func_80054410(s32);
-extern void func_8005441C(s32);
-extern void func_80054FDC(s32);
 extern s32 *func_8004153C();
 extern s16 Judge[];
 extern void func_8004211C(void);
@@ -4764,7 +4761,6 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     AddPrim((s32)g_gpu_ot_ptr + arg3 * 4, mode_off);
     return end_off - arg2;
 }
-s32 func_8005E098(s32, s32, s32, s32);
 s32 func_8005E51C(s32 a0, s32 a1, s32 a2) {
     return func_8005E098(-1, a0 - 1, a1, a2);
 }

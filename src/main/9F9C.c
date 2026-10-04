@@ -31,11 +31,6 @@ extern void func_8002C61C(void);
 extern void func_80030D7C(void);
 extern void func_800397A0(void);
 extern void func_8003E6A0(s32, s32);
-extern void func_8005C650(s32, s32, s32);
-extern s32 func_8005C8A8(s32, s32, s32, s32);
-extern s32 func_8005FA98(s32, s32, s32);
-extern s32 func_8005D814(s16 *, s32, s32, s32);
-extern void func_800550E8(s32);
 extern void func_80023F08(s32, PadState *);
 
 INCLUDE_RODATA("asm/rodata", D_800100A4);
@@ -1437,9 +1432,6 @@ void func_8001CD68(s16 *arg0) {
  * match are refused/set aside, Q22/Q23). */
 extern u8 D_800A3898[2];
 extern u8 D_800A38AA[2];
-extern s32 func_8005E51C(s32, s32, s32);
-extern s32 func_8005E098(s32, s32, s32, s32);
-extern s32 func_8005F1C8(u8 *, s32, s32, s32);
 extern void func_800340A0(void);
 extern void func_800342A0(void);
 void func_8001CE60(void) {
@@ -1761,7 +1753,6 @@ extern s32 func_800219E4(s32);
 extern void func_8001B294(Unk80101EC8Record *, Unk80101EC8Record *);
 extern void func_8001B3C0(Unk80101EC8Record *, Unk80101EC8Record *);
 extern void func_80033510(void);
-extern s32 func_8005BE84(s32);
 extern void rng_SetSeed(s32);
 void func_8001DCB0(void) {
     s32 i;
