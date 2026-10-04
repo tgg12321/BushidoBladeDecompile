@@ -18,8 +18,6 @@ extern s32 SetSemiTrans(void *, s32);
 extern s32 SetTile(void *);
 extern s32 func_8006E480();
 extern s32 func_8007352C();
-void SetRotMatrix(u8 *);
-void SetRotMatrix(u8*);
 extern s32 SetShadeTex(s32, s32);
 extern void SetPolyFT4(void *);
 void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2);
@@ -263,8 +261,7 @@ s32 func_80073728(s32 env_addr, s32 mode) {
     env->out = p;
     return (s32)p;
 }
-extern s32 D_8009BCD4[];
-extern void ApplyRotMatrix(s16 *, s32 *);
+extern VECTOR D_8009BCD4;
 
 s32 func_80073C78(env, angle, mode)
     EnvF *env;
@@ -278,10 +275,10 @@ s32 func_80073C78(env, angle, mode)
     s16 du1, dv1;
     u16 ub, vb;
     Ft4Sheet *hdr;
-    s16 vec[4][4];
-    s16 ang[4];
-    s32 out[4][4];
-    s32 mtx[8];
+    SVECTOR vec[4];
+    SVECTOR ang;
+    VECTOR out[4];
+    MATRIX mtx;
     POLY_FT4 *p;
     Ft4Cell *e;
     s16 j;
@@ -327,33 +324,33 @@ s32 func_80073C78(env, angle, mode)
         SetPolyFT4(p);
         p->tpage = tpage;
         p->clut = clut;
-        ang[1] = 0;
-        ang[0] = 0;
-        ang[2] = angle;
-        RotMatrix(ang, (u8 *)mtx);
-        ScaleMatrixL((u8 *)mtx, (u8 *)D_8009BCD4);
-        SetRotMatrix((u8 *)mtx);
+        ang.vy = 0;
+        ang.vx = 0;
+        ang.vz = angle;
+        RotMatrix((s16 *)&ang, (u8 *)&mtx);
+        ScaleMatrixL(&mtx, &D_8009BCD4);
+        SetRotMatrix(&mtx);
         for (j = 0; j < 4; j++) {
-            vec[j][0] = (((e->x - cx) + e->w * (j & 1)) * env->scale_x >> 8) * 2;
+            vec[j].vx = (((e->x - cx) + e->w * (j & 1)) * env->scale_x >> 8) * 2;
             if (mode == 1 || mode == 3) {
-                vec[j][0] = -vec[j][0];
+                vec[j].vx = -vec[j].vx;
             }
-            vec[j][1] = (((e->y - cy) + ((e->h * (j & 2)) >> 1)) * env->scale_y >> 8) * 2;
+            vec[j].vy = (((e->y - cy) + ((e->h * (j & 2)) >> 1)) * env->scale_y >> 8) * 2;
             if (mode == 2 || mode == 3) {
-                vec[j][1] = -vec[j][1];
+                vec[j].vy = -vec[j].vy;
             }
-            ApplyRotMatrix(vec[j], out[j]);
+            ApplyRotMatrix(&vec[j], &out[j]);
         }
         x = env->x;
         y = env->y;
-        p->x0 = cx + out[0][0] + x;
-        p->y0 = cy + out[0][1] + y;
-        p->x1 = cx + out[1][0] + x;
-        p->y1 = cy + out[1][1] + y;
-        p->x2 = cx + out[2][0] + x;
-        p->y2 = cy + out[2][1] + y;
-        p->x3 = cx + out[3][0] + x;
-        p->y3 = cy + out[3][1] + y;
+        p->x0 = cx + out[0].vx + x;
+        p->y0 = cy + out[0].vy + y;
+        p->x1 = cx + out[1].vx + x;
+        p->y1 = cy + out[1].vy + y;
+        p->x2 = cx + out[2].vx + x;
+        p->y2 = cy + out[2].vy + y;
+        p->x3 = cx + out[3].vx + x;
+        p->y3 = cy + out[3].vy + y;
         u = ub + e->u;
         v = vb + e->v;
         p->u0 = u + du0;

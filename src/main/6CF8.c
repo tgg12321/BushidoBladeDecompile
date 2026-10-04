@@ -777,9 +777,6 @@ s32 func_80017848(Func80017A44Output *out, s32 group_id, s32 a, s32 b) {
     out->edge_count++;
     return 1;
 }
-extern void SetRotMatrix(MATRIX *);
-extern void SetTransMatrix(MATRIX *);
-extern void RotTrans(SVECTOR *, VECTOR *, s32 *);
 
 typedef struct {
     s16 count;

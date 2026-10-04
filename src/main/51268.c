@@ -729,37 +729,37 @@ end:
     D_800A3464 = 0xFF8080;
 }
 void func_80061C00(s32 arg0, s32 arg1, s32 arg2) {
-    s16 sp10[4];
-    s16 sp18[4];
-    s32 sp20[3];
-    u8 sp30[32];
+    SVECTOR sp10;
+    SVECTOR sp18;
+    VECTOR sp20;
+    MATRIX sp30;
     s32 sp50;
 
     D_800A3468 = (s32)&D_800F116C;
     if (arg2 != 1) {
         arg2 = 0;
     }
-    sp10[1] = -0xA00;
-    sp10[0] = 0;
-    sp10[2] = 0xA00;
-    sp20[2] = 0;
-    sp20[1] = 0;
-    sp20[0] = 0;
-    sp18[1] = arg1;
-    sp18[2] = 0;
-    sp18[0] = 0;
-    RotMatrix(sp18, sp30);
-    *(s32 *)(sp30 + 0x1C) = 0;
-    *(s32 *)(sp30 + 0x18) = 0;
-    *(s32 *)(sp30 + 0x14) = 0;
-    SetRotMatrix(sp30);
-    SetTransMatrix(sp30);
-    RotTrans(sp10, sp20, &sp50);
-    sp10[0] = (s16)sp20[0];
-    sp10[1] = (s16)sp20[1];
-    sp10[2] = (s16)sp20[2];
+    sp10.vy = -0xA00;
+    sp10.vx = 0;
+    sp10.vz = 0xA00;
+    sp20.vz = 0;
+    sp20.vy = 0;
+    sp20.vx = 0;
+    sp18.vy = arg1;
+    sp18.vz = 0;
+    sp18.vx = 0;
+    RotMatrix((s16 *)&sp18, (u8 *)&sp30);
+    sp30.t[2] = 0;
+    sp30.t[1] = 0;
+    sp30.t[0] = 0;
+    SetRotMatrix(&sp30);
+    SetTransMatrix(&sp30);
+    RotTrans(&sp10, &sp20, &sp50);
+    sp10.vx = sp20.vx;
+    sp10.vy = sp20.vy;
+    sp10.vz = sp20.vz;
     *(s32 *)(D_800A3468 + 0xC) = arg0;
-    *(s32 *)(D_800A3468 + 0x10) = (s32)sp10;
+    *(s32 *)(D_800A3468 + 0x10) = (s32)&sp10;
     if ((D_800F1164 + 2)[0] != 0) {
         if ((D_800F1164 + 2)[1] != 0) {
             (D_800F1164 + 2)[1] = 0;
@@ -781,38 +781,35 @@ end:
     func_80060A68();
 }
 extern u8 D_800F1168[];
-void RotTrans(s16 *, s32 *, s32 *);
-void SetRotMatrix(u8 *);
-void SetTransMatrix(u8 *);
 void func_80061D74(s32 arg0, s16 arg1) {
-    s16 sp10[4];
-    s16 sp18[4];
-    s32 sp20[3];
-    u8 sp30[32];
+    SVECTOR sp10;
+    SVECTOR sp18;
+    VECTOR sp20;
+    MATRIX sp30;
     s32 sp50;
 
     D_800A3468 = (s32)&D_800F116C;
-    sp10[1] = -0xA00;
-    sp10[0] = 0;
-    sp10[2] = 0xA00;
-    sp20[2] = 0;
-    sp20[1] = 0;
-    sp20[0] = 0;
-    sp18[2] = 0;
-    sp18[1] = arg1;
-    sp18[0] = 0;
-    RotMatrix(sp18, sp30);
-    *(s32 *)(sp30 + 0x1C) = 0;
-    *(s32 *)(sp30 + 0x18) = 0;
-    *(s32 *)(sp30 + 0x14) = 0;
-    SetRotMatrix(sp30);
-    SetTransMatrix(sp30);
-    RotTrans(sp10, sp20, &sp50);
-    sp10[0] = (s16)sp20[0];
-    sp10[1] = (s16)sp20[1];
-    sp10[2] = (s16)sp20[2];
+    sp10.vy = -0xA00;
+    sp10.vx = 0;
+    sp10.vz = 0xA00;
+    sp20.vz = 0;
+    sp20.vy = 0;
+    sp20.vx = 0;
+    sp18.vz = 0;
+    sp18.vy = arg1;
+    sp18.vx = 0;
+    RotMatrix((s16 *)&sp18, (u8 *)&sp30);
+    sp30.t[2] = 0;
+    sp30.t[1] = 0;
+    sp30.t[0] = 0;
+    SetRotMatrix(&sp30);
+    SetTransMatrix(&sp30);
+    RotTrans(&sp10, &sp20, &sp50);
+    sp10.vx = sp20.vx;
+    sp10.vy = sp20.vy;
+    sp10.vz = sp20.vz;
     *(s32 *)(D_800A3468 + 0xC) = arg0;
-    *(s32 *)(D_800A3468 + 0x10) = (s32)sp10;
+    *(s32 *)(D_800A3468 + 0x10) = (s32)&sp10;
     if (D_800F1168[0] != 0) {
         if (D_800F1168[1] != 0) {
             D_800F1168[1] = 0;
@@ -859,22 +856,19 @@ end:
     D_800F1148 = *p;
     D_800A3464 = 0xFF00FF;
 }
-extern u8 D_8009BB74[];
+extern VECTOR D_8009BB74;
 
-void SetRotMatrix(u8*);
-void func_80061FAC(u16 *a0, s32 a1, u8 *a2) {
-    u16 *v1 = a0;
-    u16 *dest = (u16 *)D_800A34EC;
-    u8 *s0 = a2;
-    dest[0] = v1[0];
-    dest[1] = v1[1];
-    dest[2] = v1[2];
-    RotMatrix(dest, s0);
-    *(s32 *)(s0 + 0x1C) = 0;
-    *(s32 *)(s0 + 0x18) = 0;
-    *(s32 *)(s0 + 0x14) = 0;
-    ScaleMatrixL(s0, D_8009BB74);
-    SetRotMatrix(s0);
+void func_80061FAC(u16 *a0, s32 a1, MATRIX *a2) {
+    SVECTOR *dest = (SVECTOR *)D_800A34EC;
+    dest->vx = a0[0];
+    dest->vy = a0[1];
+    dest->vz = a0[2];
+    RotMatrix((s16 *)dest, (u8 *)a2);
+    a2->t[2] = 0;
+    a2->t[1] = 0;
+    a2->t[0] = 0;
+    ScaleMatrixL(a2, &D_8009BB74);
+    SetRotMatrix(a2);
 }
 extern s32 D_800A32B8;
 void func_80062020(s32 *arg0) {
@@ -910,7 +904,6 @@ void func_800620B8(s16 *pos, s32 *trans) {
     extern u16 D_8009BA30[4][4];
     extern u16 D_8009BA50[4];
     extern u16 D_8009BA58[4];
-    extern void ApplyRotMatrixLV(VECTOR *, VECTOR *);
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
     extern void SetPolyFT4(void *);
@@ -929,7 +922,7 @@ void func_800620B8(s16 *pos, s32 *trans) {
     s32 outer;
     u16 *dst16;
     s32 *dst32;
-    u8 *rot;
+    MATRIX *rot;
     s16 i;
     s32 proj_w;
     s32 proj_h;
@@ -954,14 +947,14 @@ void func_800620B8(s16 *pos, s32 *trans) {
     dst16[1] = (*(u16 **)(outer + 4))[1];
     dst16[2] = (*(u16 **)(outer + 4))[2];
     dst32 = (s32 *)D_800A3470;
-    rot = (u8 *)D_800A3474; /* matrix func_80061FAC builds from pos */
+    rot = (MATRIX *)D_800A3474; /* matrix func_80061FAC builds from pos */
     dst32[0] = (*(s32 **)(outer + 8))[0];
     base = (u8 *)D_800A34EC;
     dst32[1] = (*(s32 **)(outer + 8))[1];
     dst32[2] = (*(s32 **)(outer + 8))[2];
     D_800A32B8++;
     func_80061FAC(dst16, (s32)dst32, rot);
-    SetRotMatrix((u8 *)D_800A3474);
+    SetRotMatrix((MATRIX *)D_800A3474);
     w = (s16 *)(base + 0x10);
     h = (s16 *)(base + 0x12);
     tv = (VECTOR *)(base + 0x14);
@@ -1022,8 +1015,9 @@ void func_800620B8(s16 *pos, s32 *trans) {
         ApplyRotMatrixLV(v, tv);
         /* SetTransMatrix reads only m->t (+0x14): hand it the address 0x14
            below tv so tv is loaded as the translation (base+0x10/0x12 hold
-           w/h -- there is no whole MATRIX here). */
-        SetTransMatrix((u8 *)tv - 0x14);
+           w/h -- there is no whole MATRIX here). Spelled (MATRIX *)base, base
+           stays live across the loop: +4 bytes. */
+        SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
         RotTransPers(sv, (s32 *)D_800A34B8, flag, (s32 *)D_800A34CC);
         /* gte_stsz(r0) --- inline_c.h :1042-1046 */
         __asm__ volatile(
@@ -1164,9 +1158,9 @@ s32 func_8006295C(void) {
         m->t[0] = D_800F0FB8[i].x - ((s32 *)D_800A3470)[0];
         m->t[1] = D_800F0FB8[i].y - ((s32 *)D_800A3470)[1];
         m->t[2] = D_800F0FB8[i].z - ((s32 *)D_800A3470)[2];
-        CompMatrix(D_800A3474, (u8 *)m, (u8 *)cm);
-        SetRotMatrix((u8 *)cm);
-        SetTransMatrix((u8 *)cm);
+        CompMatrix((MATRIX *)D_800A3474, m, cm);
+        SetRotMatrix(cm);
+        SetTransMatrix(cm);
         for (j = 0; j < 3; j++) {
             if (D_800F0C04[i] < 3) {
                 *(s32 *)&prim->r0 = 0x808080;
@@ -1288,7 +1282,6 @@ s32 func_80063084(void) {
     extern u16 D_8009B940[];
     extern u16 D_8009B948[];
     extern u16 D_8009B950[];
-    extern void ApplyRotMatrix(s16 *, s32 *);
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
     u8 *base;
@@ -1352,10 +1345,11 @@ s32 func_80063084(void) {
                 } else {
                     sv->vy = D_800F0E38[i].unk4 - ((s32 *)D_800A3470)[1];
                 }
-                ApplyRotMatrix(&sv->vx, &tv->vx);
+                ApplyRotMatrix(sv, tv);
                 /* SetTransMatrix reads only m->t (+0x14): hand it the address
-                   0x14 below tv so tv is loaded as the translation. */
-                SetTransMatrix((u8 *)tv - 0x14);
+                   0x14 below tv so tv is loaded as the translation. Spelled
+                   (MATRIX *)base, base stays live across the loops: +20 bytes. */
+                SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
                 RotTransPers(v, (s32 *)D_800A34B8, interp, (s32 *)D_800A34CC);
                 /* PsyQ libgte inline macro gte_stsz(r0) --- PsyQ Run-time
                  * Library Release 4.3 inline_c.h (DMPSX v3) :1042-1046,
@@ -1892,7 +1886,6 @@ s32 func_800645B0(void) {
     }
     return 1;
 }
-extern VECTOR *ApplyRotMatrixLV(VECTOR *, VECTOR *);
 /* One 8-byte texture record: the CLUT position (PsyQ getClut(x, y) =
    (y << 6) | ((x >> 4) & 0x3F)) and the texture u/v origin. */
 typedef struct {
@@ -1968,8 +1961,11 @@ s32 func_800646E8(void) {
             pos->vy = D_800F0D78[i].y - ((s32 *)D_800A3470)[1];
             pos->vz = D_800F0D78[i].z - ((s32 *)D_800A3470)[2];
             ApplyRotMatrixLV(pos, trans);
-            /* the MATRIX whose t[] is *trans: SetTransMatrix reads only m->t */
-            SetTransMatrix((u8 *)trans - 0x14);
+            /* the MATRIX whose t[] is *trans: SetTransMatrix reads only m->t
+               (base+0x10/0x12/0x14 hold w/h/frame -- there is no whole MATRIX
+               here). Spelled (MATRIX *)(base + 4), base stays live across the
+               loop: +24 bytes. */
+            SetTransMatrix((MATRIX *)((u8 *)trans - 0x14));
             RotTransPers((s32 *)sv, (s32 *)D_800A34B8, p, (s32 *)D_800A34CC);
             /* gte_stsz(r0) --- inline_c.h :1042-1046 */
             __asm__ volatile(
@@ -2428,7 +2424,6 @@ u8 func_80065800(s32 arg0) {
     extern u16 D_8009B9E0[];
     extern u16 D_8009B9E8[];
     extern u16 D_8009B9F0[];
-    extern void ApplyRotMatrix(SVECTOR *, VECTOR *);
     extern s32 ReadGeomScreen(void);
     s32 outer;
     POLY_FT4 *prim;
@@ -2717,7 +2712,7 @@ again:
         p_v->vz = D_800F0BA8[arg0];
         RotMatrix((s16 *)p_v, (u8 *)p_mat);
         dst = p_t;
-        SetRotMatrix((u8 *)p_mat);
+        SetRotMatrix(p_mat);
         do {
             w = *p_w;
             if (!(i & 1)) {
