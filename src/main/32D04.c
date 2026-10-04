@@ -174,7 +174,7 @@ s32 func_80042864(void) {
     return D_800F6650;
 }
 extern s16 Judge[];
-void math_RotMatrixZXY(u16 *a0, s16 *a1) {
+void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
     s16 cosB, cosC;
@@ -223,7 +223,7 @@ void math_RotMatrixZXY(u16 *a0, s16 *a1) {
     sinAxcosB = sinA * cosB;
 
     rawA = Judge[((s16)angA + 0x400) & 0xFFF];
-    a1[7] = sinA;
+    a1->m[2][1] = sinA;
     cosA = (s16)rawA;
 
     cosA_negSinC = cosA * -sinC;
@@ -250,21 +250,21 @@ void math_RotMatrixZXY(u16 *a0, s16 *a1) {
 
     cosA_cosB = cosA * cosB;
 
-    a1[1] = cosA_negSinC >> 12;
-    a1[4] = cosA_cosC >> 12;
-    a1[6] = cosA_negSinB >> 12;
-    a1[8] = cosA_cosB >> 12;
-    a1[0] = (prod_sinC + cosB_cosC) >> 12;
-    a1[2] = (prod2_sinC + sinB_cosC) >> 12;
-    a1[3] = (sinAxsinB_12_cosC + cosB_sinC) >> 12;
+    a1->m[0][1] = cosA_negSinC >> 12;
+    a1->m[1][1] = cosA_cosC >> 12;
+    a1->m[2][0] = cosA_negSinB >> 12;
+    a1->m[2][2] = cosA_cosB >> 12;
+    a1->m[0][0] = (prod_sinC + cosB_cosC) >> 12;
+    a1->m[0][2] = (prod2_sinC + sinB_cosC) >> 12;
+    a1->m[1][0] = (sinAxsinB_12_cosC + cosB_sinC) >> 12;
 
     sinB_sinC = sinB * sinC;
-    a1[5] = (negSinAxcosB_12_cosC + sinB_sinC) >> 12;
+    a1->m[1][2] = (negSinAxcosB_12_cosC + sinB_sinC) >> 12;
 }
-/* Euler angles (a0[0..2], 12-bit) -> 3x3 rotation matrix a1[9], Y-X-Z order.
+/* Euler angles (a0[0..2], 12-bit) -> the 3x3 rotation part of *a1, Y-X-Z order.
  *
  * cosA is read through a `u16 rawA` staging local and sign-extended with an
- * explicit (s16) cast, with the `a1[5] = -sinA;` store placed between the load
+ * explicit (s16) cast, with the `a1->m[1][2] = -sinA;` store placed between the load
  * and the cast: combine will not merge a MEM load into a later user across a
  * store, so the target's lhu + sll 16 + sra 16 shape survives (sched1 then
  * hoists the store back out at no instruction cost).  Both halves matter: the
@@ -275,7 +275,7 @@ void math_RotMatrixZXY(u16 *a0, s16 *a1) {
  * $v1 and its cos-index temp $v0, as in the target.
  */
 extern s16 Judge[];
-void math_RotMatrixYXZ(u16 *a0, s16 *a1) {
+void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
     s16 cosB, cosC;
@@ -314,7 +314,7 @@ void math_RotMatrixYXZ(u16 *a0, s16 *a1) {
     prod_cosC = sinAxsinB_12 * cosC;
 
     rawA = Judge[((s16)angA + 0x400) & 0xFFF];
-    a1[5] = -sinA;
+    a1->m[1][2] = -sinA;
     cosA = (s16)rawA;
 
     cosB_negsinC = cosB * -sinC;
@@ -334,19 +334,19 @@ void math_RotMatrixYXZ(u16 *a0, s16 *a1) {
 
     cosA_cosB = cosA * cosB;
 
-    a1[2] = cosA_sinB >> 12;
-    a1[3] = cosA_sinC >> 12;
-    a1[4] = cosA_cosC >> 12;
-    a1[8] = cosA_cosB >> 12;
-    a1[0] = (prod_sinC + cosB_cosC) >> 12;
-    a1[1] = (prod_cosC + cosB_negsinC) >> 12;
-    a1[6] = (scb_sinC + neg_sinB_cosC) >> 12;
+    a1->m[0][2] = cosA_sinB >> 12;
+    a1->m[1][0] = cosA_sinC >> 12;
+    a1->m[1][1] = cosA_cosC >> 12;
+    a1->m[2][2] = cosA_cosB >> 12;
+    a1->m[0][0] = (prod_sinC + cosB_cosC) >> 12;
+    a1->m[0][1] = (prod_cosC + cosB_negsinC) >> 12;
+    a1->m[2][0] = (scb_sinC + neg_sinB_cosC) >> 12;
 
     sinB_sinC = sinB * sinC;
-    a1[7] = (scb_cosC + sinB_sinC) >> 12;
+    a1->m[2][1] = (scb_cosC + sinB_sinC) >> 12;
 }
 extern s16 Judge[];
-void math_RotMatrixXYZ(u16 *a0, s16 *a1) {
+void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     s32 angA, angB, angC;
     s16 sinA, sinB, sinC, cosA;
     s32 cosB, cosC;
@@ -375,7 +375,7 @@ void math_RotMatrixXYZ(u16 *a0, s16 *a1) {
     cosC = Judge[((s16)angC + 0x400) & 0xFFF];
 
     cosB_cosC = cosB * cosC;
-    a1[2] = sinB;
+    a1->m[0][2] = sinB;
     sab = sinA * sinB;
     cosB_negsinC = cosB * -sinC;
     sab12 = sab >> 12;
@@ -392,15 +392,15 @@ void math_RotMatrixXYZ(u16 *a0, s16 *a1) {
     csb12_sinC = (cosA_sinB >> 12) * sinC;
     cosA_cosB = cosA * cosB;
 
-    a1[0] = cosB_cosC >> 12;
-    a1[1] = cosB_negsinC >> 12;
-    a1[5] = negsinA_cosB >> 12;
+    a1->m[0][0] = cosB_cosC >> 12;
+    a1->m[0][1] = cosB_negsinC >> 12;
+    a1->m[1][2] = negsinA_cosB >> 12;
     sinA_cosC = sinA * cosC;
-    a1[8] = cosA_cosB >> 12;
-    a1[3] = (sab12_cosC + cosA_sinC) >> 12;
-    a1[4] = (sab12_negsinC + cosA_cosC) >> 12;
-    a1[6] = (cab12_cosC + sinA_sinC) >> 12;
-    a1[7] = (csb12_sinC + sinA_cosC) >> 12;
+    a1->m[2][2] = cosA_cosB >> 12;
+    a1->m[1][0] = (sab12_cosC + cosA_sinC) >> 12;
+    a1->m[1][1] = (sab12_negsinC + cosA_cosC) >> 12;
+    a1->m[2][0] = (cab12_cosC + sinA_sinC) >> 12;
+    a1->m[2][1] = (csb12_sinC + sinA_cosC) >> 12;
 }
 extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 
@@ -408,29 +408,29 @@ extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern void math_RotMatrixXYZ();
 void func_80042E90(void) {
     g_anim_func_table[0] = math_RotMatrixZYX;
-    /* the three below are defined above on the angle / matrix element arrays */
+    /* the three below take their angles as u16 * (read unsigned), not SVECTOR * */
     g_anim_func_table[2] = (AnimRotFunc)math_RotMatrixZXY;
     g_anim_func_table[4] = (AnimRotFunc)math_RotMatrixYXZ;
     g_anim_func_table[5] = (AnimRotFunc)math_RotMatrixXYZ;
 }
-void math_TransposeMatrixInPlace(u16 *a0) {
+void math_TransposeMatrixInPlace(MATRIX *a0) {
     /* FAKE: statement staging — saving one
        side of all three pairs up front seats x/y/z in $a1/$v1/$v0 for
        the whole body with the scratch reloads sharing $a2, and keeps
        the load-delay nop at +0x18 unfilled, as in the target. */
-    u16 t, x, y, z;
-    y = a0[1];
-    x = a0[2];
-    z = a0[5];
-    t = a0[6];
-    a0[2] = t;
-    a0[6] = x;
-    t = a0[3];
-    a0[1] = t;
-    a0[3] = y;
-    t = a0[7];
-    a0[5] = t;
-    a0[7] = z;
+    s16 t, x, y, z;
+    y = a0->m[0][1];
+    x = a0->m[0][2];
+    z = a0->m[1][2];
+    t = a0->m[2][0];
+    a0->m[0][2] = t;
+    a0->m[2][0] = x;
+    t = a0->m[1][0];
+    a0->m[0][1] = t;
+    a0->m[1][0] = y;
+    t = a0->m[2][1];
+    a0->m[1][2] = t;
+    a0->m[2][1] = z;
 }
 extern s16 Judge[];
 void math_Rotate2D(s32 *a0, s32 *a1, s32 a2) {
@@ -448,49 +448,48 @@ void math_Rotate2D(s32 *a0, s32 *a1, s32 a2) {
     *a1 = (cos_x + sin_y) >> 12;
     *a0 = (sin_x - cos_y) >> 12;
 }
-extern s32 *ApplyMatrix(s32 *, s16 *, s32 *);
 extern s32 rcos(s32);
 extern s32 rsin(s32);
-void math_MatrixToAnglesYXZ(s32 *a0, s16 *a1) {
-    s16 rot[3];
-    s32 result[4];
-    s32 sp28[8];
+void math_MatrixToAnglesYXZ(MATRIX *a0, SVECTOR *a1) {
+    SVECTOR rot;
+    VECTOR result;
+    MATRIX sp28;
     s16 angle1;
     s32 cos_val, sin_val;
     s16 neg_angle2;
     s32 combined;
 
-    rot[0] = 0;
-    rot[1] = 0;
-    rot[2] = 0x1000;
-    ApplyMatrix(a0, rot, result);
+    rot.vx = 0;
+    rot.vy = 0;
+    rot.vz = 0x1000;
+    ApplyMatrix(a0, &rot, &result);
 
-    angle1 = ratan2(result[0], result[2]);
+    angle1 = ratan2(result.vx, result.vz);
 
     cos_val = rcos((s16)angle1);
     sin_val = rsin((s16)angle1);
 
-    combined = (cos_val * result[2] + sin_val * result[0]) >> 12;
-    neg_angle2 = -ratan2(result[1], combined);
+    combined = (cos_val * result.vz + sin_val * result.vx) >> 12;
+    neg_angle2 = -ratan2(result.vy, combined);
 
-    rot[0] = -neg_angle2;
-    rot[1] = -angle1;
-    rot[2] = 0;
-    math_RotMatrixXYZ(rot, sp28);
+    rot.vx = -neg_angle2;
+    rot.vy = -angle1;
+    rot.vz = 0;
+    math_RotMatrixXYZ((u16 *)&rot, &sp28);
 
-    MulMatrix(sp28, a0);
+    MulMatrix(&sp28, a0);
 
-    rot[0] = 0;
-    rot[1] = 0x1000;
-    rot[2] = 0;
-    ApplyMatrix(sp28, rot, result);
+    rot.vx = 0;
+    rot.vy = 0x1000;
+    rot.vz = 0;
+    ApplyMatrix(&sp28, &rot, &result);
 
     {
         s16 angle3;
-        angle3 = ratan2(result[0], result[1]);
-        a1[0] = neg_angle2;
-        a1[1] = angle1;
-        a1[2] = -angle3;
+        angle3 = ratan2(result.vx, result.vy);
+        a1->vx = neg_angle2;
+        a1->vy = angle1;
+        a1->vz = -angle3;
     }
 }
 
@@ -1138,22 +1137,21 @@ void func_800444E0(void) {
     func_80044504(D_800A378C);
 }
 extern s32 D_800A3678;
-extern s32 D_80101BD0;
-extern s32 D_800A3708;
-extern s32 D_800A370C;
+extern MATRIX D_80101BD0;
+extern Unk80101DF0Record *D_800A3708;
+extern Unk80101DF0Record *D_800A370C;
 
-extern void MulMatrix2(s32 *, s32 *);
 extern void func_80046F24(void);
 extern s32 func_8003E2C8(void);
 extern s32 func_80046E7C(void);
 extern void func_8004A4E0(void);
 extern void func_80046E54(s32);
 void func_80044504(u32 *a0) {
-    s32 *s0 = &D_80101BD0;
+    MATRIX *s0 = &D_80101BD0;
     math_RotMatrixZXY(&D_800A3678, s0);
-    MulMatrix(s0, (s32 *)(D_800A3708 + 0x18));
-    MulMatrix2((s32 *)(D_800A370C + 0x18), s0);
-    MulMatrix0((MATRIX *)(D_800A370C + 0x18), (MATRIX *)(D_800A3708 + 0x18), &D_800FF610);
+    MulMatrix(s0, &D_800A3708->xf.mat);
+    MulMatrix2(&D_800A370C->xf.mat, s0);
+    MulMatrix0(&D_800A370C->xf.mat, &D_800A3708->xf.mat, &D_800FF610);
     if (D_800A36AC & 1) {
         *(s32 *)0x1F800014 = -1;
     } else {
@@ -1253,7 +1251,7 @@ void func_8004473C(void)
 extern void func_800417D0(s32 *);
 
 /* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
-s32 D_800A3708;
+Unk80101DF0Record *D_800A3708;
 u32 *D_800A378C;
 s32 D_800A3790;
 s32 D_800A3820;

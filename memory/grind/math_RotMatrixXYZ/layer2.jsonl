@@ -1,0 +1,1 @@
+{"func": "math_RotMatrixXYZ", "addr": "80042C80", "verdict": "PASS", "body_hash": "5abb97bba85f9196", "body_kind": "c", "file": "main/32D04", "reviewer": "p2-rev-b5b", "scope": "cheat-cleanup", "date": "2026-10-04T05:04:27Z", "head": "00bf3608a", "notes": ""}

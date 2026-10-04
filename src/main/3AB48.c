@@ -806,9 +806,8 @@ void func_800548DC(void) {
 extern s32 D_800A3250[2];
 extern s16 *func_8003D7B4(s32);
 extern void func_8003D774(s32, s32);
-extern void MulMatrix2(MATRIX *, MATRIX *);
-extern void math_MatrixToAnglesYXZ(s32 *, s16 *);
-extern void math_TransposeMatrixInPlace(u16 *);
+extern void math_MatrixToAnglesYXZ(MATRIX *, SVECTOR *);
+extern void math_TransposeMatrixInPlace(MATRIX *);
 extern void func_800198D0(s32, s32, u32 *, u16 *);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
 /* Per-frame stage handler on the ctrl block D_800EFAE8.  On the first frame
@@ -912,8 +911,8 @@ s32 func_8005490C(void) {
         g_anim_func_table[0](&rot, &m);
         g_anim_func_table[0](&D_80101DF0.xf.rot, &D_80101DF0.work);
         MulMatrix2(&m, &D_80101DF0.work);
-        math_MatrixToAnglesYXZ((s32 *)&D_80101DF0.work, &D_80101DF0.xf.rot.vx);
-        math_TransposeMatrixInPlace((u16 *)&D_80101DF0.work);
+        math_MatrixToAnglesYXZ(&D_80101DF0.work, &D_80101DF0.xf.rot);
+        math_TransposeMatrixInPlace(&D_80101DF0.work);
         D_80101DF0.xf.mat = D_80101DF0.work;
     } else {
         func_800418D0((s32 *)&D_80101DF0);

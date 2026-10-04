@@ -318,7 +318,6 @@ extern void func_80046020(void);
 extern void func_80049E1C(void);
 
 extern void math_RotMatrixYXZ(SVECTOR *, MATRIX *);
-extern VECTOR *ApplyMatrix(MATRIX *, SVECTOR *, VECTOR *);
 extern s16 Judge[];
 extern Unk80101DF0Record *D_800A3708;
 extern void func_8004211C(void);
