@@ -1,0 +1,548 @@
+# func	def	param	idx	decl	callers	resolved	caller_structs	callers_downcast	body_struct_casts	body_offset_sites	verdict   (memory/grind/phase2-2026-10-03/tools/protos.py)
+ApplyMatrix	asm		1	s16 *	6	4	SVECTOR:4	0	-	0	typed-callers
+ApplyMatrix	asm		2	s32 *	6	4	VECTOR:4	2	-	0	typed-callers
+ApplyMatrixLV	asm		0	void *	1	1	Unk80101DF0Mat:1	0	-	0	typed-callers
+ApplyRotMatrix	asm		0	s16 *	4	1	SVECTOR:1	0	-	0	typed-callers
+ApplyRotMatrix	asm		1	s32 *	4	1	VECTOR:1	0	-	0	typed-callers
+CompMatrix	asm		1	u8 *	1	1	MATRIX:1	1	-	0	typed-callers
+CompMatrix	asm		2	u8 *	1	1	MATRIX:1	1	-	0	typed-callers
+MulMatrix	asm		1	s32 *	2	1	Unk80101DF0Mat:1	1	-	0	typed-callers
+MulMatrix2	asm		0	s32 *	3	1	MATRIX:1	1	-	0	typed-callers
+MulMatrix2	asm		1	s32 *	3	1	MATRIX:1	2	-	0	typed-callers
+RotMatrix	asm		0	s16 *	6	2	SVECTOR:2	3	-	0	typed-callers
+RotMatrix	asm		1	u8 *	6	3	MATRIX:3	3	-	0	typed-callers
+RotMatrixZYX	asm		1	u8 *	1	1	MATRIX:1	1	-	0	typed-callers
+ScaleMatrix	asm		0	u8 *	1	1	MATRIX:1	1	-	0	typed-callers
+SetRotMatrix	asm		0	u8 *	7	3	MATRIX:3	3	-	0	typed-callers
+func_8004BCC0	asm		1	s16 *	1	1	SVECTOR:1	1	-	0	typed-callers
+func_8004DDB4	asm		2	s32	1	1	MATRIX:1	0	-	0	typed-callers
+math_RotMatrixZYX	asm		0	s16 *	6	1	SVECTOR:1	0	-	0	typed-callers
+func_80027438	src/main/17AFC.c:101	a0	0	u8 *	2	2	Unk80101EC8Record:2	2	-	6	typed-callers
+func_800274BC	src/main/17AFC.c:145	arg0	0	s32 *	3	1	Vec3i32:1	1	-	0	typed-callers
+func_8002A458	src/main/17AFC.c:1529	obj	0	u8 *	2	2	Unk80101EC8Record:2	2	-	6	typed-callers
+func_8002CA8C	src/main/17AFC.c:2459	a0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	2	typed-callers
+func_800278C0	src/main/17AFC.c:248	ptr	1	s32 *	3	3	Unk80101EC8Record:3	3	-	0	typed-callers
+func_800278C0	src/main/17AFC.c:248	a3	3	s32	3	3	Tbl8008E194:3	0	-	0	typed-callers
+func_8002798C	src/main/17AFC.c:291	a0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	6	typed-callers
+func_80027A58	src/main/17AFC.c:342	a0	0	s32 *	17	16	Unk80101EC8Record:16	16	-	7	typed-callers
+func_8002FDB0	src/main/17AFC.c:4379	arg0	0	s32 *	1	1	Unk80101EC8Record:1	1	-	1	typed-callers
+func_80027334	src/main/17AFC.c:44	arg0	0	s16 *	4	2	MotionFrame:2	4	-	0	typed-callers
+func_80030B10	src/main/17AFC.c:4866	arg0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	11	typed-callers
+func_800325E0	src/main/17AFC.c:5578	arg1	1	s32 *	103	32	Vec3i32:32	98	-	0	typed-callers
+func_80032C50	src/main/17AFC.c:5822	obj	0	s32	1	1	Unk80101EC8Record:1	0	-	114	typed-callers
+func_8003339C	src/main/17AFC.c:5985	base	0	s32 *	2	2	Unk80101EC8Record:2	1	-	3	typed-callers
+func_800393C8	src/main/28708.c:1145	arg2	2	s32 *	2	1	Vec3i32:1	0	-	0	typed-callers
+func_800395B4	src/main/28708.c:1209	arg2	2	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_80039680	src/main/28708.c:1247	a0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	18	typed-callers
+func_8003A728	src/main/28708.c:1740	a0	0	s32	2	1	PadState:1	0	-	7	typed-callers
+func_8003DDF8	src/main/2B344.c:1845	arg0	0	u32	1	1	DR_MOVE:1	0	-	0	typed-callers
+func_8003FECC	src/main/2B344.c:3063	a1	1	s32 *	1	1	SceneRec:1	1	-	2	typed-callers
+func_80040D48	src/main/31548.c:17	a2	2	s32 *	3	1	Vec3i32:1	1	-	0	typed-callers
+func_80040D48	src/main/31548.c:17	a3	3	s16 *	3	1	SVec4i16:1	1	-	0	typed-callers
+func_80041188	src/main/31548.c:202	a1	1	u8 *	2	1	MotionFrame:1	1	-	0	typed-callers
+func_80041188	src/main/31548.c:202	a2	2	u8 *	2	1	MotionFrame:1	1	-	0	typed-callers
+func_800418D0	src/main/31D3C.c:184	a0	0	s32 *	4	4	Unk80101DF0Record:4	4	-	9	typed-callers
+math_RotMatrixYXZ	src/main/32D04.c:278	a1	1	s16 *	2	1	MATRIX:1	0	-	0	typed-callers
+math_TransposeMatrixInPlace	src/main/32D04.c:416	a0	0	u16 *	1	1	Unk80101DF0Mat:1	1	-	0	typed-callers
+math_MatrixToAnglesYXZ	src/main/32D04.c:455	a0	0	s32 *	1	1	Unk80101DF0Mat:1	1	-	0	typed-callers
+func_80044DE4	src/main/35000.c:193	a0	0	s16 *	1	1	MotionFrame:1	1	-	0	typed-callers
+func_80044DE4	src/main/35000.c:193	a1	1	s16 *	1	1	MotionFrame:1	1	-	0	typed-callers
+func_80049718	src/main/368E4.c:2121	pos	2	s32 *	8	1	Vec3i32:1	0	-	0	typed-callers
+func_80055948	src/main/3AB48.c:1249	arg0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	17	typed-callers
+func_80056CB8	src/main/3AB48.c:1639	arg0	0	s32	1	1	Unk80101EC8Record:1	0	-	5	typed-callers
+func_80057094	src/main/3AB48.c:1781	arg0	0	void *	1	1	Unk80101EC8Record:1	0	-	5	typed-callers
+func_8005C2A8	src/main/3AB48.c:3848	hdr	0	s32 *	10	1	GameObj:1	1	-	0	typed-callers
+snd_VabOpen	src/main/3AB48.c:3930	a0	0	s32 *	1	1	GameObj:1	0	-	1	typed-callers
+func_800611A4	src/main/51268.c:390	arg0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_80061250	src/main/51268.c:409	arg0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_8006133C	src/main/51268.c:439	a0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_8006A494	src/main/51268.c:4430	arg1	1	u8 *	1	1	S_6A880:1	1	-	12	typed-callers
+func_8006A564	src/main/51268.c:4446	arg1	1	u8 *	2	2	S_6A880:2	2	-	35	typed-callers
+func_800613C8	src/main/51268.c:454	a0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_8006A880	src/main/51268.c:4597	arg1	1	u16 *	2	1	GpuDb:1	1	-	0	typed-callers
+func_80061454	src/main/51268.c:468	a0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_800614E0	src/main/51268.c:482	a0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_8006156C	src/main/51268.c:496	arg0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_80061658	src/main/51268.c:525	arg0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_80061710	src/main/51268.c:560	arg0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_800617C8	src/main/51268.c:596	arg0	0	s32 *	2	2	Vec3i32:2	0	-	0	typed-callers
+func_800618B4	src/main/51268.c:625	arg0	0	s32 *	2	1	Vec3i32:1	0	-	0	typed-callers
+func_800619A4	src/main/51268.c:657	a0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_800619F0	src/main/51268.c:667	a0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_80061ACC	src/main/51268.c:697	arg0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_80061C00	src/main/51268.c:731	arg0	0	s32	1	1	Vec3i32:1	0	-	0	typed-callers
+func_80061D74	src/main/51268.c:787	arg0	0	s32	1	1	Vec3i32:1	0	-	0	typed-callers
+func_80061EC0	src/main/51268.c:834	arg0	0	s32 *	1	1	Vec3i32:1	0	-	0	typed-callers
+func_80072F30	src/main/5ED34.c:2081	a1	1	u8 *	4	4	TileXy:4	4	-	1	typed-callers
+func_80072FCC	src/main/5ED34.c:2097	a1	1	u8 *	2	2	TileXy:2	2	-	1	typed-callers
+func_80016A8C	src/main/6CF8.c:245	arg1	1	void *	1	1	GpuDb:1	0	-	0	typed-callers
+math_Distance3D_16	src/main/6CF8.c:701	a0	0	s32 *	3	3	VECTOR:3	3	-	0	typed-callers
+func_8001BC70	src/main/9F9C.c:1050	arg0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	1	typed-callers
+func_8001BCF0	src/main/9F9C.c:1063	arg0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	2	typed-callers
+func_800198D0	src/main/9F9C.c:204	out	2	u32 *	5	2	MotionFrame:2	3	-	0	typed-callers
+func_8001F1C4	src/main/9F9C.c:2264	arg0	0	u8 *	1	1	Unk80101EC8Record:1	0	-	2	typed-callers
+func_8001F2E4	src/main/9F9C.c:2295	obj	0	u8 *	1	1	Unk80101EC8Record:1	1	-	49	typed-callers
+func_8001F2E4	src/main/9F9C.c:2295	a	1	u8 *	1	1	MotionFrame:1	1	-	7	typed-callers
+func_8001F2E4	src/main/9F9C.c:2295	b	2	u8 *	1	1	MotionFrame:1	1	-	7	typed-callers
+func_8001F860	src/main/9F9C.c:2481	arg0	0	s16 *	9	9	Unk80101EC8Record:9	9	-	2	typed-callers
+func_8001F938	src/main/9F9C.c:2529	arg0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	16	typed-callers
+func_800200DC	src/main/9F9C.c:2768	arg0	0	s32 *	1	1	Vec3i32:1	1	-	0	typed-callers
+func_800203B4	src/main/9F9C.c:2844	arg0	0	u8 *	6	6	Unk80101EC8Record:6	6	-	4	typed-callers
+func_80022568	src/main/9F9C.c:3841	arg0	0	s16 *	3	3	Unk80101EC8Record:3	3	-	0	typed-callers
+func_8002304C	src/main/9F9C.c:4122	obj	0	u8 *	1	1	Unk80101EC8Record:1	1	-	4	typed-callers
+func_8002304C	src/main/9F9C.c:4122	arg3	3	s32 *	1	1	Vec4i32:1	1	-	0	typed-callers
+func_800233AC	src/main/9F9C.c:4196	arg0	0	u8 *	2	2	Unk80101EC8Record:2	1	-	10	typed-callers
+func_80023648	src/main/9F9C.c:4299	arg0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	25	typed-callers
+func_800238C4	src/main/9F9C.c:4421	arg0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	31	typed-callers
+func_80023CB4	src/main/9F9C.c:4576	arg0	0	s16 *	2	2	Unk80101EC8Record:2	1	-	10	typed-callers
+func_80023D08	src/main/9F9C.c:4591	arg0	0	s32	3	3	Unk80101EC8Record:3	0	-	0	typed-callers
+func_80023D28	src/main/9F9C.c:4594	arg0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	7	typed-callers
+func_80023DB8	src/main/9F9C.c:4604	arg0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	4	typed-callers
+func_80023E40	src/main/9F9C.c:4616	arg0	0	u8 *	1	1	Unk80101EC8Record:1	1	-	8	typed-callers
+func_8001B478	src/main/9F9C.c:815	arg0	0	s32	1	1	Unk80101EC8Record:1	0	-	0	typed-callers
+cdrom_StartRead	src/main/cdrom.c:21	a1	1	s32	18	1	Tbl800A3860Entry:1	0	-	0	typed-callers
+memcpy	src/main/psxsdk/libc2/memcpy.c:6	dst	0	u8 *	7	1	DISPENV:1	0	-	0	typed-callers
+printf	src/main/psxsdk/libc2/printf.c:6	b	2	s32	9	1	GpuCtx:1	0	-	0	typed-callers
+CD_cw	src/main/psxsdk/libcd/bios.c:378	param	1	u8 *	13	2	CdFileEntry:2	0	-	0	typed-callers
+_memcpy	src/main/psxsdk/libcd/bios.c:74	_dst	0	void *	16	3	RevParamEntry:3	3	-	0	typed-callers
+_memcpy	src/main/psxsdk/libcd/bios.c:74	_src	1	void *	16	3	RevParamEntry:3	3	-	0	typed-callers
+CdControl	src/main/psxsdk/libcd/sys.c:104	a1	1	u8 *	6	1	CdFileEntry:1	2	-	0	typed-callers
+CdPosToInt	src/main/psxsdk/libcd/sys.c:291	a0	0	u8 *	10	3	CdFileEntry:3	1	-	0	typed-callers
+func_800831A4	src/main/psxsdk/libetc/intr.c:225	ptr	0	u16 *	1	1	intrEnv_t:1	0	-	0	typed-callers
+SetDefDrawEnv	src/main/psxsdk/libgpu/ext.c:45	a0	0	s16 *	5	5	DRAWENV:5	0	-	7	typed-callers
+SetDefDispEnv	src/main/psxsdk/libgpu/ext.c:72	a0	0	s16 *	6	6	DISPENV:6	0	-	4	typed-callers
+SetPolyFT4	src/main/psxsdk/libgpu/prim.c:142	p	0	u8 *	6	5	POLY_FT4:5	0	-	0	typed-callers
+SetSprt	src/main/psxsdk/libgpu/prim.c:167	p	0	u8 *	1	1	SprtA:1	0	-	0	typed-callers
+_cwc	src/main/psxsdk/libgpu/sys.c:1115	a0	0	u32	1	1	GpuDrEnv:1	0	-	0	typed-callers
+SetDrawEnv2	src/main/psxsdk/libgpu/sys.c:724	out	0	s32 *	2	2	DR_ENV:2	0	-	0	typed-callers
+get_dx	src/main/psxsdk/libgpu/sys.c:900	arg0	0	s16 *	1	1	DISPENV:1	1	-	1	typed-callers
+SsVabOpenHeadSticky	src/main/psxsdk/libsnd/vs_vh.c:11	a0	0	s32	1	1	GameObj:1	0	-	0	typed-callers
+SsVabTransBody	src/main/psxsdk/libsnd/vs_vtb.c:6	a0	0	s32	1	1	GameObj:1	0	-	0	typed-callers
+SpuSetCommonAttr	src/main/psxsdk/libspu/s_sca.c:10	arg0	0	void *	3	1	SpuCommonAttr:1	1	-	0	typed-callers
+_spu_setReverbAttr	src/main/psxsdk/libspu/s_sra.c:6	arg0	0	s32 *	1	1	RevParamEntry:1	1	-	32	typed-callers
+SpuWrite	src/main/psxsdk/libspu/s_w.c:6	a0	0	s32	2	1	GameObj:1	0	-	0	typed-callers
+_spu_Fw	src/main/psxsdk/libspu/spu.c:340	a0	0	s32	1	1	GameObj:1	0	-	0	typed-callers
+func_8002F2D0	src/main/17AFC.c:4072	a0	0	s32 *	1	0	-	0	MATRIX:1	1	body-casts
+snd_LoadCommonVab	src/main/3AB48.c:3526	arg0	0	s32	1	0	-	0	GameObj:1	0	body-casts
+func_80053304	src/main/3AB48.c:372	arg0	0	s32 *	0	0	-	0	_S16_53304:1	1	body-casts
+func_80053304	src/main/3AB48.c:372	arg1	1	s32 *	0	0	-	0	_S16_53304:1	1	body-casts
+func_8005344C	src/main/3AB48.c:401	arg1	1	s32 *	8	0	@scratchpad:4	3	_S16_5344C:1	1	body-casts
+func_8005C8A8	src/main/3AB48.c:4042	arg2	2	s32	4	0	-	0	Tile5C8A8:1	0	body-casts
+func_80053584	src/main/3AB48.c:430	arg0	0	s32 *	1	0	-	0	_S16_53584:1	1	body-casts
+func_80053584	src/main/3AB48.c:430	arg1	1	s32 *	1	0	-	0	_S16_53584:1	1	body-casts
+func_80053614	src/main/3AB48.c:438	arg0	0	s32 *	19	0	@scratchpad:1	5	_S16_53614:1	1	body-casts
+func_80053614	src/main/3AB48.c:438	arg1	1	s32 *	19	0	@scratchpad:2	3	_S16_53614:1	1	body-casts
+func_8005D814	src/main/3AB48.c:4507	arg2	2	s32	2	0	-	0	Tile5D814:1	0	body-casts
+func_8005E098	src/main/3AB48.c:4721	arg2	2	s32	2	0	-	0	T5E098:1	0	body-casts
+func_8005E54C	src/main/3AB48.c:4859	arg1	1	s32	2	0	-	0	T5E098:1	0	body-casts
+func_8005F1C8	src/main/3AB48.c:5168	arg2	2	s32	1	0	-	0	T5E098:1	0	body-casts
+func_8006B120	src/main/51268.c:4821	arg0	0	s32 *	0	0	-	0	GameObj:1	2	body-casts
+func_8006BB68	src/main/51268.c:5167	arg0	0	s32 *	1	0	-	0	GameObj:1	2	body-casts
+func_8006CFBC	src/main/51268.c:5778	arg0	0	s32 *	1	0	-	0	GameObj:1	1	body-casts
+func_8006D3DC	src/main/51268.c:5907	arg0	0	s32 *	1	0	-	0	GameObj:1	1	body-casts
+func_8006DD94	src/main/51268.c:6160	arg0	0	s32 *	1	0	-	0	GameObj:1	1	body-casts
+func_80070C70	src/main/5ED34.c:1180	arg0	0	s32	0	0	-	0	GameObj:10	15	body-casts
+func_800720FC	src/main/5ED34.c:1681	arg1	1	s32	3	0	-	0	Sheets720FC:5	6	body-casts
+func_8006F97C	src/main/5ED34.c:832	arg0	0	s32 *	0	0	-	0	GameObj:1	0	body-casts
+func_80076D74	src/main/64FD8.c:1118	arg0	0	s32 *	1	0	-	0	GameObj:1	0	body-casts
+func_80018094	src/main/87A0.c:207	arg0	0	s32 *	1	0	-	1	MATRIX:1	4	body-casts
+func_8002304C	src/main/9F9C.c:4122	pos2	2	s32 *	1	0	-	0	Quad_2304C:1	1	body-casts
+ApplyMatrix	asm		0	s32 *	6	5	MATRIX:4,Unk80101DF0Mat:1	2	-	0	conflict
+RotMatrixX	asm		1	s32	12	2	MATRIX:1,Obj80106A78Mat:1	4	-	0	conflict
+RotMatrixY	asm		1	s32	14	2	MATRIX:1,Obj80106A78Mat:1	4	-	0	conflict
+RotMatrixZ	asm		1	s32	7	2	MATRIX:1,Obj80106A78Mat:1	2	-	0	conflict
+func_800417D0	src/main/31D3C.c:162	a0	0	s32 *	6	3	Unk800A9CF8Entry:2,Unk80101DF0Record:1	5	-	17	conflict
+func_80046BF4	src/main/368E4.c:521	a0	0	s32 *	4	2	CamWork:1,Rec44:1	3	-	0	conflict
+func_8005344C	src/main/3AB48.c:401	arg0	0	s32 *	8	3	Vec4i32:2,Vec3i32:1	4	_S16_5344C:1	1	conflict
+func_8006C21C	src/main/51268.c:5401	arg0	0	s32 *	1	0	-	0	Tile:1,PolyG4_8006C21C:1	4	conflict
+func_8006E480	src/main/51268.c:6359	a0_addr	0	s32	69	7	Unk8009B398Record:6,Unk8009B0E0Record:1	1	-	0	conflict
+func_80073728	src/main/63D2C.c:167	env_addr	0	s32	35	35	S46C:14,Desc720FC:5,Env5E54C:4,S73200:4,S_69F80:2,S_6A880:2,DescF97C:2,S544:1,EnvA:1	0	EnvF:1	0	conflict
+func_8007352C	src/main/63D2C.c:81	env_addr	0	s32	124	112	Env5C8A8:11,Env5E54C:11,DescF97C:11,EnvA:10,S_80074488:10,S_6A880:7,Env5D814:6,S5F1C8:6,S69E18:5,S_6B120:5,S5E098:4,S_69F80:4,Env_8006C21C:4,S_753D8:4,S544:3,Env_8006CFBC:3,Desc720FC:3,S60C8:2,SFC9C:1,S414:1,EnvB:1	3	EnvA:1	0	conflict
+func_8002304C	src/main/9F9C.c:4122	pos1	1	s32 *	1	1	Vec4i32:1	1	Quad_2304C:3	3	conflict
+func_8001A538	src/main/9F9C.c:451	arg0	0	s32 *	5	4	Rec44:3,CamWork:1	4	-	3	conflict
+cdrom_StartReadAt	src/main/cdrom.c:38	arg1	1	s32	3	2	MotionFrame:1,NdataInfEntry:1	0	-	0	conflict
+memcpy	src/main/psxsdk/libc2/memcpy.c:6	src	1	u8 *	7	3	DISPENV:2,DRAWENV:1	0	-	0	conflict
+SetSemiTrans	src/main/psxsdk/libgpu/prim.c:101	a0	0	u8 *	57	34	Tile5C8A8:5,T5E098:5,POLY_FT4:5,Tile:4,PolyG4_8006C21C:4,GameObj:4,TileXy:4,Tile5D814:1,PolyG4FC9C:1,SprtA:1	6	-	0	conflict
+SetShadeTex	src/main/psxsdk/libgpu/prim.c:109	a0	0	u8 *	9	8	POLY_FT4:6,SprtA:2	0	-	0	conflict
+SetPolyG4	src/main/psxsdk/libgpu/prim.c:147	p	0	u8 *	6	6	PolyG4_8006C21C:2,GameObj:2,POLY_G4:1,PolyG4FC9C:1	1	-	0	conflict
+SetTile	src/main/psxsdk/libgpu/prim.c:187	p	0	u8 *	37	18	Tile5C8A8:5,T5E098:5,Tile:3,TileXy:2,GameObj:2,Tile5D814:1	6	-	0	conflict
+memset	src/main/psxsdk/libgpu/sys.c:1335	a0	0	u8 *	6	5	DISPENV:2,GpuCtx:1,DRAWENV:1,GpuQueueItem:1	1	-	0	conflict
+SetDrawArea	src/main/psxsdk/libgpu/sys.c:608	a1	1	s16 *	10	6	RECT:2,Rect6A880:2,Rect_8006F528:2	0	-	0	conflict
+SsVabOpenHeadWithMode	src/main/psxsdk/libsnd/vs_vh.c:20	addr	0	u8 *	3	1	GameObj:1	3	VabHdr:1	0	conflict
+math_RotMatrixZYX	asm		1	s32 *	6	1	@scratchpad:2,MATRIX:1	0	-	0	mixed-scratchpad
+func_8002EBDC	src/main/17AFC.c:3914	vec_in	0	s16 *	2	1	Vec4i32:1,@scratchpad:1	1	-	0	mixed-scratchpad
+func_8002EBDC	src/main/17AFC.c:3914	out	2	s32 *	2	1	Vec4i32:1,@scratchpad:1	1	-	0	mixed-scratchpad
+func_80032854	src/main/17AFC.c:5672	arg2	2	u8 *	84	21	Vec3i32:21,@scratchpad:6	37	-	0	mixed-scratchpad
+func_800523E0	asm		0	s32 *	2	0	@scratchpad:2	0	-	0	scratchpad
+box_overlap	src/main/17AFC.c:1127	scr	0	u8 *	2	0	@scratchpad:2	0	-	12	scratchpad
+func_8002CD58	src/main/17AFC.c:2576	obj	0	u8 *	1	0	@scratchpad:1	0	-	71	scratchpad
+func_8002D320	src/main/17AFC.c:2880	obj	1	u8 *	2	0	@scratchpad:2	0	-	13	scratchpad
+func_8002D780	src/main/17AFC.c:3123	obj	1	u8 *	2	0	@scratchpad:2	0	-	29	scratchpad
+func_8002DAD0	src/main/17AFC.c:3260	obj	0	u8 *	2	0	@scratchpad:2	0	-	46	scratchpad
+func_8002E838	src/main/17AFC.c:3730	obj	0	u8 *	2	0	@scratchpad:2	0	-	31	scratchpad
+func_8002EA24	src/main/17AFC.c:3832	obj	0	u8 *	4	0	@scratchpad:4	0	-	12	scratchpad
+func_8002EBDC	src/main/17AFC.c:3914	dir	1	s16 *	2	0	@scratchpad:2	2	-	0	scratchpad
+func_80031890	src/main/17AFC.c:5150	obj	0	u8 *	1	0	@scratchpad:1	0	-	10	scratchpad
+func_800283D0	src/main/17AFC.c:602	arg1	1	u8 *	2	0	@scratchpad:2	2	-	0	scratchpad
+func_80041188	src/main/31548.c:202	a4	4	s32 *	2	0	@scratchpad:1	1	-	2	scratchpad
+func_80052D00	src/main/3AB48.c:254	arg0	0	s32	4	0	@scratchpad:2	0	-	0	scratchpad
+func_80052D00	src/main/3AB48.c:254	arg1	1	s32	4	0	@scratchpad:2	0	-	0	scratchpad
+func_8005344C	src/main/3AB48.c:401	arg2	2	s32	8	0	@scratchpad:4	4	-	0	scratchpad
+func_8005344C	src/main/3AB48.c:401	arg3	3	s32	8	0	@scratchpad:3	6	-	0	scratchpad
+func_8005344C	src/main/3AB48.c:401	arg4	4	s32	8	0	@scratchpad:7	0	-	0	scratchpad
+func_80053614	src/main/3AB48.c:438	arg2	2	s32	19	0	@scratchpad:2	1	-	0	scratchpad
+func_80053614	src/main/3AB48.c:438	arg3	3	s32	19	0	@scratchpad:2	11	-	0	scratchpad
+func_80053614	src/main/3AB48.c:438	arg4	4	s32	19	0	@scratchpad:15	0	-	0	scratchpad
+func_80053694	src/main/3AB48.c:446	arg0	0	s32 *	1	0	@scratchpad:1	1	-	0	scratchpad
+func_80053694	src/main/3AB48.c:446	arg1	1	s16 *	1	0	@scratchpad:1	1	-	0	scratchpad
+func_800198D0	src/main/9F9C.c:204	work	3	u16 *	5	0	@scratchpad:3	3	-	0	scratchpad
+ratan2	src/main/psxsdk/libgte/ratan.c:10	arg0	0	s32	63	0	@scratchpad:2	0	-	0	scratchpad
+ratan2	src/main/psxsdk/libgte/ratan.c:10	arg1	1	s32	63	0	@scratchpad:1	0	-	0	scratchpad
+ApplyMatrixLV	asm		1	void *	1	0	-	0	-	0	none
+ApplyMatrixLV	asm		2	void *	1	0	-	0	-	0	none
+LoadAverage12	asm		0	s32 *	2	0	-	0	-	0	none
+LoadAverage12	asm		1	s32 *	2	0	-	0	-	0	none
+MulMatrix	asm		0	s32 *	2	0	-	0	-	0	none
+ReadSZfifo3	asm		0	s32 *	1	0	-	0	-	0	none
+ReadSZfifo3	asm		1	s32 *	1	0	-	0	-	0	none
+ReadSZfifo3	asm		2	s32 *	1	0	-	0	-	0	none
+RotMatrixZYX	asm		0	s16 *	1	0	-	0	-	0	none
+RotTrans	asm		2	s32 *	3	0	-	0	-	0	none
+RotTransPers	asm		1	s32 *	5	0	-	3	-	0	none
+RotTransPers	asm		2	s32 *	5	0	-	0	-	0	none
+RotTransPers	asm		3	s32 *	5	0	-	3	-	0	none
+RotTransPers3	asm		3	s32 *	1	0	-	0	-	0	none
+RotTransPers3	asm		4	s32 *	1	0	-	0	-	0	none
+RotTransPers3	asm		5	s32 *	1	0	-	0	-	0	none
+RotTransPers3	asm		6	s32 *	1	0	-	0	-	0	none
+RotTransPers3	asm		7	s32 *	1	0	-	0	-	0	none
+RotTransPers4	asm		0	s16 *	1	0	-	0	-	0	none
+RotTransPers4	asm		1	s16 *	1	0	-	0	-	0	none
+RotTransPers4	asm		2	s16 *	1	0	-	0	-	0	none
+RotTransPers4	asm		3	s16 *	1	0	-	0	-	0	none
+RotTransPers4	asm		4	s32 *	1	0	-	0	-	0	none
+RotTransPers4	asm		5	s32 *	1	0	-	0	-	0	none
+RotTransPers4	asm		6	s32 *	1	0	-	0	-	0	none
+RotTransPers4	asm		7	s32 *	1	0	-	0	-	0	none
+RotTransPers4	asm		8	s32 *	1	0	-	0	-	0	none
+ScaleMatrix	asm		1	s32 *	1	0	-	0	-	0	none
+ScaleMatrixL	asm		0	u8 *	1	0	-	0	-	0	none
+ScaleMatrixL	asm		1	u8 *	1	0	-	0	-	0	none
+Square12	asm		0	s32 *	2	0	-	0	-	0	none
+Square12	asm		1	s32 *	2	0	-	0	-	0	none
+func_8004BCC0	asm		2	s16 *	1	0	-	0	-	0	none
+func_800523E0	asm		1	s32 *	2	0	-	0	-	0	none
+func_80074220	asm		0	s32 *	1	0	-	0	-	0	none
+func_80074488	asm		0	s32 *	1	0	-	0	-	0	none
+gte_ReadFarColor	asm		0	u8 *	1	0	-	0	-	0	none
+gte_ReadIR1IR2Sra2	asm		0	s32 *	1	0	-	0	-	0	none
+gte_ReadIR1IR2Sra2	asm		1	s32 *	1	0	-	0	-	0	none
+gte_SetMatrixRotTransIR	asm		0	s32 *	2	0	-	0	-	0	none
+gte_SetMatrixRotTransIR	asm		1	s32 *	2	0	-	0	-	0	none
+gte_SetMatrixRotTransIR	asm		2	s16 *	2	0	-	0	-	0	none
+gte_SetMatrixRotTransIRVec	asm		0	void *	1	0	-	1	-	0	none
+gte_SetMatrixRotTransIRVec	asm		1	void *	1	0	-	1	-	0	none
+gte_SetMatrixRotTransIRVec	asm		2	void *	1	0	-	1	-	0	none
+setjmp	asm		0	s32 *	1	0	-	0	-	0	none
+func_800274BC	src/main/17AFC.c:145	arg1	1	s16 *	3	0	-	0	-	0	none
+func_8002A458	src/main/17AFC.c:1529	hit	1	u32 *	2	0	-	0	-	0	none
+func_8002A458	src/main/17AFC.c:1529	deep	2	u32 *	2	0	-	0	-	0	none
+func_800278C0	src/main/17AFC.c:248	stack_a2	4	u8 *	3	0	-	0	-	0	none
+func_8002D320	src/main/17AFC.c:2880	pos	2	s32 *	2	0	-	2	-	0	none
+func_8002D518	src/main/17AFC.c:2993	p1	2	s32 *	3	0	-	0	-	0	none
+func_8002D518	src/main/17AFC.c:2993	p2	3	s32 *	3	0	-	0	-	0	none
+func_8002D780	src/main/17AFC.c:3123	pos	2	s32 *	2	0	-	2	-	0	none
+func_8002DE20	src/main/17AFC.c:3499	p0	1	s32 *	2	0	-	0	-	0	none
+func_8002DE20	src/main/17AFC.c:3499	p1	2	s32 *	2	0	-	0	-	0	none
+func_8002DE20	src/main/17AFC.c:3499	p2	3	s32 *	2	0	-	0	-	0	none
+func_80027AD8	src/main/17AFC.c:357	out	7	s32 *	2	0	-	0	-	0	none
+func_8002E6B0	src/main/17AFC.c:3696	arg0	0	s32 *	1	0	-	1	-	0	none
+func_8002E6B0	src/main/17AFC.c:3696	arg1	1	s32 *	1	0	-	1	-	0	none
+func_8002E6B0	src/main/17AFC.c:3696	arg2	2	s32 *	1	0	-	1	-	0	none
+func_8002E6B0	src/main/17AFC.c:3696	arg3	3	s32 *	1	0	-	1	-	0	none
+func_8002EA24	src/main/17AFC.c:3832	pos	1	s32 *	4	0	-	0	-	0	none
+func_8002EECC	src/main/17AFC.c:4043	arg0	0	void *	2	0	-	0	-	41	none
+func_8002EECC	src/main/17AFC.c:4043	arg1	1	void *	2	0	-	0	-	9	none
+func_8002F2D0	src/main/17AFC.c:4072	a1	1	s32 *	1	0	-	0	-	3	none
+func_8002F770	src/main/17AFC.c:4182	angles	0	s16 *	4	0	-	4	-	0	none
+func_8003032C	src/main/17AFC.c:4661	a0	0	s32 *	0	0	-	0	-	6	none
+func_8003032C	src/main/17AFC.c:4661	a1	1	s16 *	0	0	-	0	-	0	none
+func_80032854	src/main/17AFC.c:5672	arg3	3	s16 *	84	0	-	16	-	0	none
+func_80037F40	src/main/28708.c:100	a0	0	u8 *	1	0	-	0	-	0	none
+func_800393C8	src/main/28708.c:1145	arg3	3	u16 *	2	0	-	0	-	3	none
+func_800395B4	src/main/28708.c:1209	arg3	3	u16 *	1	0	-	0	-	0	none
+func_8003984C	src/main/28708.c:1309	arg1	1	s32 *	1	0	-	0	-	0	none
+func_8003984C	src/main/28708.c:1309	arg2	2	s32 *	1	0	-	0	-	0	none
+func_8003800C	src/main/28708.c:137	arg0	0	s32 *	1	0	-	0	-	0	none
+func_80038170	src/main/28708.c:233	out	0	u8 *	1	0	-	0	-	0	none
+func_8003D478	src/main/2B344.c:1515	str	2	u8 *	0	0	-	0	-	0	none
+func_8003D52C	src/main/2B344.c:1541	fmt	0	u8 *	17	0	-	0	-	0	none
+bitstream_ReadBits	src/main/2B344.c:1651	s	0	u32 *	2	0	-	2	-	0	none
+func_8003DE14	src/main/2B344.c:1862	rect	0	s16 *	2	0	-	0	-	8	none
+func_8003EB84	src/main/2B344.c:2417	out	2	s32 *	1	0	-	0	-	0	none
+func_8003AE5C	src/main/2B344.c:245	arg0	0	u8 *	2	0	-	0	-	0	none
+func_8003EDC0	src/main/2B344.c:2511	p	0	u16 *	4	0	-	4	-	0	none
+func_8003F388	src/main/2B344.c:2695	a0	0	s16 *	4	0	-	0	-	0	none
+func_8003F3D4	src/main/2B344.c:2702	a0	0	s16 *	2	0	-	0	-	0	none
+func_8003F62C	src/main/2B344.c:2765	a0	0	s32 *	1	0	-	1	-	0	none
+func_8003F6D8	src/main/2B344.c:2792	arg0	0	s16 *	1	0	-	0	-	1	none
+func_8003F824	src/main/2B344.c:2838	arg0	0	u8 *	2	0	-	0	-	6	none
+func_8003FA24	src/main/2B344.c:2897	cmds	1	s16 *	1	0	-	0	-	0	none
+func_8003FA24	src/main/2B344.c:2897	cur	2	u8 *	1	0	-	0	-	0	none
+func_8003FE40	src/main/2B344.c:3025	a0	0	s16 *	1	0	-	1	-	0	none
+func_8003FE40	src/main/2B344.c:3025	a2	2	s16 *	1	0	-	0	-	0	none
+func_8003FECC	src/main/2B344.c:3063	a0	0	s32 *	1	0	-	1	-	0	none
+func_8003FECC	src/main/2B344.c:3063	a2	2	s16 *	1	0	-	0	-	0	none
+func_8003FFC4	src/main/2B344.c:3134	a0	0	s32 *	5	0	-	0	-	0	none
+func_8004001C	src/main/2B344.c:3149	a0	0	u8 *	1	0	-	1	-	1	none
+func_80040068	src/main/2B344.c:3156	a0	0	u8 *	1	0	-	1	-	1	none
+func_800400B0	src/main/2B344.c:3163	a0	0	s32 *	1	0	-	1	-	0	none
+func_800400F8	src/main/2B344.c:3175	a0	0	s32 *	2	0	-	0	-	0	none
+func_8004019C	src/main/2B344.c:3200	a0	0	s32 *	1	0	-	0	-	0	none
+func_8003B3A4	src/main/2B344.c:388	arg0	0	u8 *	2	0	-	1	-	0	none
+func_8003B484	src/main/2B344.c:424	arg0	0	u8 *	3	0	-	1	-	0	none
+func_80040400	src/main/309CC.c:122	a0	0	s32 *	0	0	-	0	-	0	none
+func_80040400	src/main/309CC.c:122	a1	1	s16 *	0	0	-	0	-	8	none
+func_800404A0	src/main/309CC.c:154	a0	0	s16 *	1	0	-	1	-	2	none
+func_80040594	src/main/309CC.c:188	a0	0	s32 *	1	0	-	0	-	18	none
+func_800408F8	src/main/309CC.c:308	a0	0	s32 *	1	0	-	0	-	9	none
+func_80040B44	src/main/309CC.c:398	arg0	0	s32 *	1	0	-	0	-	4	none
+func_80040CB8	src/main/309CC.c:479	arg0	0	void *	1	0	-	0	-	2	none
+func_80040D48	src/main/31548.c:17	arg4	4	s16 *	3	0	-	0	-	0	none
+func_80041AC8	src/main/31D3C.c:250	arg0	0	s16 *	1	0	-	1	-	0	none
+func_8004428C	src/main/32D04.c:1013	base	0	s32 *	1	0	-	1	-	0	none
+func_8004428C	src/main/32D04.c:1013	offsets	1	s16 *	1	0	-	0	-	0	none
+func_80044378	src/main/32D04.c:1066	dest_arr	1	s32 *	1	0	-	0	-	0	none
+func_80044378	src/main/32D04.c:1066	frame_offsets	2	s16 *	1	0	-	0	-	0	none
+func_80044504	src/main/32D04.c:1153	a0	0	u32 *	2	0	-	0	-	0	none
+func_80044670	src/main/32D04.c:1198	a0	0	s16 *	1	0	-	0	-	1	none
+math_RotMatrixZXY	src/main/32D04.c:177	a0	0	u16 *	1	0	-	0	-	0	none
+math_RotMatrixZXY	src/main/32D04.c:177	a1	1	s16 *	1	0	-	0	-	0	none
+math_RotMatrixYXZ	src/main/32D04.c:278	a0	0	u16 *	2	0	-	0	-	0	none
+math_RotMatrixXYZ	src/main/32D04.c:349	a0	0	u16 *	1	0	-	0	-	0	none
+math_RotMatrixXYZ	src/main/32D04.c:349	a1	1	s16 *	1	0	-	0	-	0	none
+func_80042504	src/main/32D04.c:38	hsv	0	s32 *	0	0	-	0	-	0	none
+func_80042504	src/main/32D04.c:38	rgb	1	s32 *	0	0	-	0	-	0	none
+math_Rotate2D	src/main/32D04.c:436	a0	0	s32 *	0	0	-	0	-	0	none
+math_Rotate2D	src/main/32D04.c:436	a1	1	s32 *	0	0	-	0	-	0	none
+math_MatrixToAnglesYXZ	src/main/32D04.c:455	a1	1	s16 *	1	0	-	0	-	0	none
+func_800430E4	src/main/32D04.c:504	arg3	3	u8 *	0	0	-	0	-	0	none
+math_RgbToHsv	src/main/32D04.c:85	a0	0	s32 *	0	0	-	0	-	0	none
+math_RgbToHsv	src/main/32D04.c:85	a1	1	s32 *	0	0	-	0	-	0	none
+gpu_OffsetTPageClutAt0And4	src/main/32D04.c:869	a0	0	s16 *	1	0	-	1	-	0	none
+gpu_OffsetTPageClutAt6And2	src/main/32D04.c:877	a0	0	s16 *	1	0	-	1	-	0	none
+func_80044010	src/main/32D04.c:903	p	0	s32 *	10	0	-	3	-	0	none
+func_80044170	src/main/32D04.c:968	a0	0	s32 *	0	0	-	0	-	2	none
+func_80044CCC	src/main/35000.c:169	a0	0	s16 *	0	0	-	0	-	0	none
+func_80044CCC	src/main/35000.c:169	a1	1	s16 *	0	0	-	0	-	0	none
+func_80045B68	src/main/35000.c:637	arg2	2	s16 *	1	0	-	0	-	0	none
+func_800482C8	src/main/368E4.c:1415	arg0	0	u8 *	4	0	-	0	-	3	none
+func_800484A0	src/main/368E4.c:1493	arg0	0	u8 *	1	0	-	0	-	2	none
+math_GrayscaleRgb555	src/main/368E4.c:1627	arg0	0	u16 *	2	0	-	0	-	0	none
+math_GrayscaleRgb555	src/main/368E4.c:1627	arg2	2	u16 *	2	0	-	0	-	0	none
+func_80049718	src/main/368E4.c:2121	rot_in	3	s16 *	8	0	-	0	-	0	none
+func_8004A09C	src/main/368E4.c:2461	arg1	1	u16 *	1	0	-	0	-	0	none
+func_80046BF4	src/main/368E4.c:521	a1	1	u16 *	4	0	-	1	-	0	none
+func_80055138	src/main/3AB48.c:1033	arg1	1	u16 *	1	0	-	0	-	0	none
+func_80055138	src/main/3AB48.c:1033	arg2	2	u16 *	1	0	-	0	-	0	none
+func_80055B44	src/main/3AB48.c:1324	a1	1	u8 *	6	0	-	0	-	0	none
+func_8005763C	src/main/3AB48.c:1930	arg8	8	s32 *	3	0	-	0	-	0	none
+func_8005763C	src/main/3AB48.c:1930	arg9	9	s32 *	3	0	-	0	-	0	none
+func_80057CC8	src/main/3AB48.c:2065	arg2	2	s16 *	4	0	-	0	-	0	none
+func_80057CC8	src/main/3AB48.c:2065	arg3	3	s16 *	4	0	-	0	-	0	none
+func_8005D814	src/main/3AB48.c:4507	arg0	0	s16 *	2	0	-	1	-	2	none
+func_8005F1C8	src/main/3AB48.c:5168	arg0	0	u8 *	1	0	-	0	-	0	none
+func_8005FBC8	src/main/3AB48.c:5377	arg1	1	u8 *	1	0	-	0	-	0	none
+func_800602AC	src/main/3AB48.c:5610	arg1	1	s32 *	1	0	-	0	-	2	none
+func_800644FC	src/main/51268.c:1843	count	0	s32 *	1	0	-	0	-	0	none
+func_80068F70	src/main/51268.c:3608	arg1	1	s32 *	1	0	-	1	-	0	none
+func_8006919C	src/main/51268.c:3711	a0	0	s32 *	1	0	-	0	-	0	none
+func_8006920C	src/main/51268.c:3722	a0	0	s32 *	25	0	-	0	-	0	none
+func_800692C0	src/main/51268.c:3747	arg0	0	u32 *	9	0	-	4	-	0	none
+func_800692C0	src/main/51268.c:3747	arg2	2	s16 *	9	0	-	2	-	0	none
+func_800692C0	src/main/51268.c:3747	arg3	3	s16 *	9	0	-	0	-	1	none
+func_800611A4	src/main/51268.c:390	arg1	1	s32 *	1	0	-	0	-	2	none
+func_80069898	src/main/51268.c:3949	arg1	1	u16 *	8	0	-	1	-	0	none
+func_80069A30	src/main/51268.c:3993	a0	0	u8 *	4	0	-	0	-	0	none
+func_80069A8C	src/main/51268.c:4008	a0	0	u8 *	3	0	-	0	-	0	none
+func_80069AE4	src/main/51268.c:4030	arg0	0	s32 *	7	0	-	0	-	1	none
+func_80069F80	src/main/51268.c:4227	arg0	0	s32 *	2	0	-	0	-	1	none
+func_8006A1A0	src/main/51268.c:4320	arg0	0	s32 *	2	0	-	0	-	1	none
+func_8006A3CC	src/main/51268.c:4416	arg0	0	s32 *	0	0	-	0	-	1	none
+func_8006A3CC	src/main/51268.c:4416	arg1	1	u8 *	0	0	-	0	-	10	none
+func_8006A494	src/main/51268.c:4430	arg0	0	s32 *	1	0	-	1	-	1	none
+func_8006A564	src/main/51268.c:4446	arg0	0	u8 *	2	0	-	0	-	11	none
+func_8006A880	src/main/51268.c:4597	arg0	0	u8 *	2	0	-	1	-	62	none
+func_8006B578	src/main/51268.c:4960	arg0	0	s32 *	1	0	-	0	-	0	none
+func_8006B578	src/main/51268.c:4960	arg1	1	s32 *	1	0	-	0	-	6	none
+func_8006B92C	src/main/51268.c:5098	unused	0	s32 *	1	0	-	0	-	0	none
+func_8006B92C	src/main/51268.c:5098	arg1	1	u32 *	1	0	-	0	-	0	none
+func_8006CCC8	src/main/51268.c:5678	arg0	0	s32 *	1	0	-	0	-	0	none
+func_8006CCC8	src/main/51268.c:5678	arg1	1	s32 *	1	0	-	0	-	0	none
+func_8006D808	src/main/51268.c:6020	arg0	0	s32 *	2	0	-	0	-	0	none
+func_8006D808	src/main/51268.c:6020	arg1	1	s32 *	2	0	-	0	-	0	none
+func_8006D808	src/main/51268.c:6020	arg2	2	s32 *	2	0	-	0	-	2	none
+func_8006E390	src/main/51268.c:6334	a0	0	s32 *	7	0	-	0	-	0	none
+func_8006E390	src/main/51268.c:6334	a1	1	s32 *	7	0	-	0	-	0	none
+func_8006E440	src/main/51268.c:6351	a0	0	s32 *	1	0	-	0	-	0	none
+func_8006E49C	src/main/51268.c:6365	arg1	1	s32 *	5	0	-	4	-	0	none
+func_80061A3C	src/main/51268.c:677	a0	0	s32 *	2	0	-	0	-	0	none
+func_80061FAC	src/main/51268.c:865	a0	0	u16 *	3	0	-	0	-	0	none
+func_80061FAC	src/main/51268.c:865	a2	2	u8 *	3	0	-	0	-	0	none
+func_80062020	src/main/51268.c:880	arg0	0	s32 *	1	0	-	1	-	5	none
+func_800620B8	src/main/51268.c:904	pos	0	s16 *	1	0	-	0	-	0	none
+func_800620B8	src/main/51268.c:904	trans	1	s32 *	1	0	-	0	-	0	none
+func_8006E534	src/main/5ED34.c:107	arg2	2	u8 *	1	0	-	0	-	1	none
+func_8006E8CC	src/main/5ED34.c:205	a0	0	s32 *	2	0	-	0	-	0	none
+func_8006E950	src/main/5ED34.c:223	a1	1	s32 *	9	0	-	0	-	0	none
+func_8006EA28	src/main/5ED34.c:261	a0	0	s32 *	1	0	-	1	-	0	none
+func_8006F528	src/main/5ED34.c:641	arg0	0	s32 *	1	0	-	0	-	0	none
+func_800768DC	src/main/64FD8.c:1031	arg2	2	s16 *	1	0	-	0	-	0	none
+func_80076FF8	src/main/64FD8.c:1174	a0	0	s32 *	1	0	-	0	-	0	none
+func_80077374	src/main/64FD8.c:1301	arg1	1	s32 *	1	0	-	0	-	0	none
+func_80077D10	src/main/64FD8.c:1969	a0	0	s32 *	1	0	-	0	-	0	none
+func_80077D94	src/main/64FD8.c:2022	arg0	0	s32 *	1	0	-	0	-	0	none
+func_80074B18	src/main/64FD8.c:218	arg0	0	s32 *	4	0	-	0	-	0	none
+func_80078628	src/main/64FD8.c:2258	a0	0	s32 *	1	0	-	0	-	0	none
+func_80078654	src/main/64FD8.c:2282	arg0	0	s32 *	1	0	-	0	-	0	none
+func_80074E08	src/main/64FD8.c:289	arg0	0	s32 *	5	0	-	0	-	1	none
+func_800753D8	src/main/64FD8.c:482	arg0	0	s32 *	1	0	-	0	-	3	none
+func_80075830	src/main/64FD8.c:597	arg0	0	s32 *	2	0	-	0	-	0	none
+func_800759D0	src/main/64FD8.c:648	arg0	0	s32 *	1	0	-	0	-	3	none
+func_800759D0	src/main/64FD8.c:648	arg2	2	s16 *	1	0	-	0	-	0	none
+func_80075F80	src/main/64FD8.c:796	arg2	2	s16 *	1	0	-	0	-	0	none
+func_8007636C	src/main/64FD8.c:916	arg0	0	s32 *	3	0	-	0	-	5	none
+func_8007636C	src/main/64FD8.c:916	arg2	2	s16 *	3	0	-	0	-	0	none
+pcdrv_LoadSectors	src/main/6CF8.c:118	dest	1	u8 *	0	0	-	0	-	0	none
+func_80016A8C	src/main/6CF8.c:245	arg0	0	u8 *	1	0	-	1	-	1	none
+math_Distance3D	src/main/6CF8.c:691	a0	0	s32 *	1	0	-	0	-	0	none
+math_Distance3D	src/main/6CF8.c:691	a1	1	s32 *	1	0	-	0	-	0	none
+math_Distance3D_16	src/main/6CF8.c:701	a1	1	s32 *	3	0	-	0	-	0	none
+func_80017D84	src/main/6CF8.c:866	a0	0	u8 *	1	0	-	1	-	5	none
+pcdrv_LoadFile	src/main/6CF8.c:88	dest	1	u8 *	0	0	-	0	-	0	none
+func_8001924C	src/main/87A0.c:1012	arg0	0	s16 *	1	0	-	1	-	0	none
+func_80019310	src/main/87A0.c:1062	arg0	0	s16 *	1	0	-	0	-	3	none
+func_80019310	src/main/87A0.c:1062	arg1	1	s32 *	1	0	-	1	-	3	none
+func_80017FA0	src/main/87A0.c:120	a0	0	s32 *	1	0	-	0	-	1	none
+func_80018094	src/main/87A0.c:207	arg1	1	s32 *	1	0	-	0	-	0	none
+func_80018300	src/main/87A0.c:403	arg0	0	s32 *	1	0	-	0	-	3	none
+func_800187F4	src/main/87A0.c:682	arg0	0	s16 *	1	0	-	0	-	1	none
+func_800187F4	src/main/87A0.c:682	arg1	1	s32 *	1	0	-	1	-	1	none
+func_8001BAE4	src/main/9F9C.c:1022	arg0	0	s32 *	1	0	-	1	-	2	none
+func_8001BAE4	src/main/9F9C.c:1022	arg1	1	s32 *	1	0	-	0	-	2	none
+func_8001BBD8	src/main/9F9C.c:1045	arg0	0	s32 *	1	0	-	1	-	2	none
+func_8001BBD8	src/main/9F9C.c:1045	arg1	1	s32 *	1	0	-	0	-	2	none
+func_8001BBD8	src/main/9F9C.c:1045	arg2	2	s32 *	1	0	-	0	-	0	none
+func_8001CD68	src/main/9F9C.c:1421	arg0	0	s16 *	3	0	-	1	-	6	none
+func_8001F1C4	src/main/9F9C.c:2264	arg1	1	u8 *	1	0	-	0	-	9	none
+func_8001F1C4	src/main/9F9C.c:2264	arg2	2	u8 *	1	0	-	0	-	5	none
+func_8001F1C4	src/main/9F9C.c:2264	arg3	3	u8 *	1	0	-	0	-	5	none
+func_800200DC	src/main/9F9C.c:2768	arg1	1	s32 *	1	0	-	0	-	0	none
+func_800200DC	src/main/9F9C.c:2768	arg4	4	s32 *	1	0	-	0	-	0	none
+func_800203B4	src/main/9F9C.c:2844	arg2	2	s16 *	6	0	-	0	-	0	none
+func_80021424	src/main/9F9C.c:3454	out	2	s16 *	15	0	-	0	-	0	none
+func_80021D10	src/main/9F9C.c:3632	arg1	1	s32 *	9	0	-	1	-	0	none
+func_80021DB0	src/main/9F9C.c:3639	pos	2	s32 *	1	0	-	0	-	0	none
+func_80022224	src/main/9F9C.c:3724	arg1	1	s32 *	1	0	-	0	-	0	none
+func_80022224	src/main/9F9C.c:3724	arg2	2	s32 *	1	0	-	0	-	0	none
+func_80022408	src/main/9F9C.c:3791	arg0	0	s32 *	4	0	-	0	-	0	none
+func_800233AC	src/main/9F9C.c:4196	arg1	1	s32 *	2	0	-	0	-	0	none
+func_8001A484	src/main/9F9C.c:432	arg0	0	u16 *	0	0	-	0	-	0	none
+func_8001A538	src/main/9F9C.c:451	arg1	1	s32 *	5	0	-	3	-	0	none
+math_RotMatrixZYXAngles	src/main/9F9C.c:4562	arg3	3	s16 *	2	0	-	0	-	0	none
+func_8001A67C	src/main/9F9C.c:475	arg0	0	s16 *	2	0	-	0	-	0	none
+func_8001A67C	src/main/9F9C.c:475	arg1	1	s32 *	2	0	-	2	-	0	none
+func_8001A67C	src/main/9F9C.c:475	arg2	2	s32 *	2	0	-	0	-	0	none
+func_8001979C	src/main/9F9C.c:58	arg1	1	u32 *	7	0	-	4	-	0	none
+func_8001B138	src/main/9F9C.c:777	arg0	0	s32 *	1	0	-	0	-	0	none
+sys_Exec	src/main/cdrom.c:211	a1	1	s32 *	1	0	-	0	-	0	none
+func_80037B00	src/main/memcard.c:277	arg0	0	u8 *	2	0	-	0	-	0	none
+memchr	src/main/psxsdk/libc2/memchr.c:6	buf	0	u8 *	2	0	-	0	-	0	none
+memmove	src/main/psxsdk/libc2/memmove.c:9	dst	0	u8 *	1	0	-	0	-	0	none
+memmove	src/main/psxsdk/libc2/memmove.c:9	src	1	u8 *	1	0	-	0	-	0	none
+prnt	src/main/psxsdk/libc2/prnt.c:62	fmt0	1	u8 *	1	0	-	0	-	0	none
+prnt	src/main/psxsdk/libc2/prnt.c:62	argp	2	char *	1	0	-	0	-	0	none
+puts	src/main/psxsdk/libc2/puts.c:18	a0	0	void *	7	0	-	0	-	0	none
+sprintf	src/main/psxsdk/libc2/sprintf.c:36	out	0	char *	4	0	-	0	-	0	none
+sprintf	src/main/psxsdk/libc2/sprintf.c:36	f	1	char *	4	0	-	0	-	0	none
+strcpy	src/main/psxsdk/libc2/strcpy.c:6	a0	0	u8 *	1	0	-	0	-	0	none
+strcpy	src/main/psxsdk/libc2/strcpy.c:6	a1	1	u8 *	1	0	-	0	-	0	none
+strlen	src/main/psxsdk/libc2/strlen.c:6	a0	0	u8 *	4	0	-	0	-	0	none
+CD_sync	src/main/psxsdk/libcd/bios.c:317	result	1	u8 *	4	0	-	0	-	0	none
+CD_ready	src/main/psxsdk/libcd/bios.c:341	result	1	u8 *	1	0	-	0	-	0	none
+CD_cw	src/main/psxsdk/libcd/bios.c:378	result	2	u8 *	13	0	-	0	-	0	none
+cb_read	src/main/psxsdk/libcd/cdread.c:48	result	1	u8 *	0	0	-	0	-	0	none
+CdControl	src/main/psxsdk/libcd/sys.c:104	a2	2	u8 *	6	0	-	0	-	0	none
+CdControlF	src/main/psxsdk/libcd/sys.c:155	a1	1	u8 *	20	0	-	2	-	0	none
+CdControlB	src/main/psxsdk/libcd/sys.c:205	a1	1	u8 *	2	0	-	0	-	0	none
+CdControlB	src/main/psxsdk/libcd/sys.c:205	a2	2	u8 *	2	0	-	0	-	0	none
+CdIntToPos	src/main/psxsdk/libcd/sys.c:280	p	1	u8 *	2	0	-	0	-	0	none
+CdSync	src/main/psxsdk/libcd/sys.c:80	result	1	u8 *	13	0	-	0	-	0	none
+CdReady	src/main/psxsdk/libcd/sys.c:86	result	1	u8 *	2	0	-	1	-	0	none
+SioAnsyncWrite	src/main/psxsdk/libcomb/comb.c:140	buf	0	u8 *	1	0	-	0	-	0	none
+SioSyncroWrite	src/main/psxsdk/libcomb/comb.c:152	buf	0	u8 *	1	0	-	0	-	0	none
+SioAnsyncRead	src/main/psxsdk/libcomb/comb.c:82	buf	0	u8 *	1	0	-	0	-	0	none
+SioSyncroRead	src/main/psxsdk/libcomb/comb.c:94	buf	0	u8 *	1	0	-	0	-	0	none
+sys_MemClear2	src/main/psxsdk/libetc/intr_dma.c:81	a0	0	s32 *	1	0	-	1	-	0	none
+sys_MemClear	src/main/psxsdk/libetc/intr_vb.c:48	a0	0	s32 *	1	0	-	0	-	0	none
+SetPolyF3	src/main/psxsdk/libgpu/prim.c:117	p	0	u8 *	0	0	-	0	-	0	none
+SetPolyFT3	src/main/psxsdk/libgpu/prim.c:122	p	0	u8 *	0	0	-	0	-	0	none
+SetPolyG3	src/main/psxsdk/libgpu/prim.c:127	p	0	u8 *	0	0	-	0	-	0	none
+SetPolyGT3	src/main/psxsdk/libgpu/prim.c:132	p	0	u8 *	0	0	-	0	-	0	none
+SetPolyF4	src/main/psxsdk/libgpu/prim.c:137	p	0	u8 *	3	0	-	0	-	0	none
+SetPolyGT4	src/main/psxsdk/libgpu/prim.c:152	p	0	u8 *	0	0	-	0	-	0	none
+SetSprt8	src/main/psxsdk/libgpu/prim.c:157	p	0	u8 *	0	0	-	0	-	0	none
+SetSprt16	src/main/psxsdk/libgpu/prim.c:162	p	0	u8 *	0	0	-	0	-	0	none
+SetTile1	src/main/psxsdk/libgpu/prim.c:172	p	0	u8 *	0	0	-	0	-	0	none
+SetTile8	src/main/psxsdk/libgpu/prim.c:177	p	0	u8 *	0	0	-	0	-	0	none
+SetTile16	src/main/psxsdk/libgpu/prim.c:182	p	0	u8 *	0	0	-	0	-	0	none
+SetLineF2	src/main/psxsdk/libgpu/prim.c:192	p	0	u8 *	0	0	-	0	-	0	none
+SetLineG2	src/main/psxsdk/libgpu/prim.c:197	p	0	u8 *	0	0	-	0	-	0	none
+SetLineF3	src/main/psxsdk/libgpu/prim.c:202	p	0	u8 *	0	0	-	0	-	1	none
+SetLineG3	src/main/psxsdk/libgpu/prim.c:208	p	0	u8 *	0	0	-	0	-	1	none
+SetLineF4	src/main/psxsdk/libgpu/prim.c:214	p	0	u8 *	0	0	-	0	-	1	none
+SetLineG4	src/main/psxsdk/libgpu/prim.c:220	p	0	u8 *	0	0	-	0	-	1	none
+SetDrawTPage	src/main/psxsdk/libgpu/prim.c:226	a0	0	u8 *	0	0	-	0	-	1	none
+SetDrawLoad	src/main/psxsdk/libgpu/prim.c:267	a0	0	u32 *	0	0	-	0	-	1	none
+SetDrawLoad	src/main/psxsdk/libgpu/prim.c:267	a1	1	s16 *	0	0	-	0	-	2	none
+MargePrim	src/main/psxsdk/libgpu/prim.c:283	a0	0	u8 *	0	0	-	0	-	0	none
+MargePrim	src/main/psxsdk/libgpu/prim.c:283	a1	1	u32 *	0	0	-	0	-	1	none
+DumpDrawEnv	src/main/psxsdk/libgpu/prim.c:293	a0	0	s16 *	0	0	-	0	-	3	none
+DumpDispEnv	src/main/psxsdk/libgpu/prim.c:304	a0	0	s16 *	0	0	-	0	-	2	none
+NextPrim	src/main/psxsdk/libgpu/prim.c:80	a0	0	u32 *	0	0	-	0	-	0	none
+IsEndPrim	src/main/psxsdk/libgpu/prim.c:84	a0	0	u32 *	0	0	-	0	-	0	none
+CatPrim	src/main/psxsdk/libgpu/prim.c:95	a0	0	u32 *	0	0	-	0	-	0	none
+TermPrim	src/main/psxsdk/libgpu/prim.c:98	a0	0	u32 *	0	0	-	0	-	0	none
+_dws	src/main/psxsdk/libgpu/sys.c:1007	data	1	s32 *	0	0	-	0	-	0	none
+_drs	src/main/psxsdk/libgpu/sys.c:1055	data	1	s32 *	0	0	-	0	-	0	none
+_cwb	src/main/psxsdk/libgpu/sys.c:1107	a0	0	u32 *	0	0	-	0	-	0	none
+_addque2	src/main/psxsdk/libgpu/sys.c:1148	func	0	s32 *	1	0	-	0	-	0	none
+_addque2	src/main/psxsdk/libgpu/sys.c:1148	arg	1	s32 *	1	0	-	0	-	0	none
+checkRECT	src/main/psxsdk/libgpu/sys.c:356	str	0	char *	5	0	-	0	-	0	none
+LoadImage	src/main/psxsdk/libgpu/sys.c:396	a1	1	u32 *	32	0	-	3	-	0	none
+StoreImage	src/main/psxsdk/libgpu/sys.c:401	a1	1	u32 *	3	0	-	0	-	0	none
+ClearOTag	src/main/psxsdk/libgpu/sys.c:424	a0	0	u32 *	0	0	-	0	-	1	none
+ClearOTagR	src/main/psxsdk/libgpu/sys.c:445	ot	0	u32 *	8	0	-	1	-	0	none
+DrawPrim	src/main/psxsdk/libgpu/sys.c:459	a0	0	u8 *	0	0	-	0	-	0	none
+DrawOTag	src/main/psxsdk/libgpu/sys.c:466	a0	0	u32 *	4	0	-	2	-	0	none
+SetTexWindow	src/main/psxsdk/libgpu/sys.c:603	a0	0	u8 *	0	0	-	0	-	2	none
+SetDrawArea	src/main/psxsdk/libgpu/sys.c:608	a0	0	u8 *	10	0	-	2	-	2	none
+SetDrawOffset	src/main/psxsdk/libgpu/sys.c:613	a0	0	u8 *	8	0	-	2	-	2	none
+SetDrawOffset	src/main/psxsdk/libgpu/sys.c:613	a1	1	s16 *	8	0	-	2	-	0	none
+SetPriority	src/main/psxsdk/libgpu/sys.c:618	a0	0	u8 *	0	0	-	0	-	2	none
+SetDrawMode	src/main/psxsdk/libgpu/sys.c:631	a0	0	u8 *	74	0	-	8	-	2	none
+SetDrawEnv	src/main/psxsdk/libgpu/sys.c:653	out	0	s32 *	0	0	-	0	-	0	none
+get_tw	src/main/psxsdk/libgpu/sys.c:878	arg0	0	u8 *	4	0	-	2	-	2	none
+_SsVmGetSeqVol	src/main/psxsdk/libsnd/77F70.c:94	a1	1	s16 *	6	0	-	4	-	0	none
+_SsVmGetSeqVol	src/main/psxsdk/libsnd/77F70.c:94	a2	2	s16 *	6	0	-	4	-	0	none
+SsUtGetDetVVol	src/main/psxsdk/libsnd/ut_vvol.c:11	voll	1	s16 *	0	0	-	0	-	0	none
+SsUtGetDetVVol	src/main/psxsdk/libsnd/ut_vvol.c:11	volr	2	s16 *	0	0	-	0	-	0	none
+SsUtGetVVol	src/main/psxsdk/libsnd/ut_vvol.c:30	a1	1	s16 *	0	0	-	0	-	0	none
+SsUtGetVVol	src/main/psxsdk/libsnd/ut_vvol.c:30	a2	2	s16 *	0	0	-	0	-	0	none
+SpuGetVoiceEnvelope	src/main/psxsdk/libspu/s_gvex.c:6	a1	1	u16 *	1	0	-	0	-	0	none
+SpuGetVoiceVolume	src/main/psxsdk/libspu/s_gvv.c:6	arg1	1	u16 *	2	0	-	0	-	0	none
+SpuGetVoiceVolume	src/main/psxsdk/libspu/s_gvv.c:6	arg2	2	u16 *	2	0	-	0	-	0	none
+SpuInitMalloc	src/main/psxsdk/libspu/s_m_init.c:9	top	1	s32 *	1	0	-	0	-	0	none
+_spu_FwriteByIO	src/main/psxsdk/libspu/spu.c:151	addr	0	u8 *	2	0	-	0	-	0	none
+SpuRGetAllKeysStatus	src/main/psxsdk/libspu/sr_gaks.c:12	status	2	s8 *	0	0	-	0	-	0	none
+SpuGetAllKeysStatus	src/main/psxsdk/libspu/sr_gaks.c:55	status	0	u8 *	1	0	-	0	-	0	none

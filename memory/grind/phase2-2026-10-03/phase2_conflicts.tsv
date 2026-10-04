@@ -1,0 +1,147 @@
+# class	symbol	spellings <- sites  (phase2 refresh, memory/grind/phase2-2026-10-03/tools/conflicts.py)
+sony-func	AddPrim	s32 @(s32, s32); <- 3AB48.c:4039,3AB48.c:4504,51268.c:333,5ED34.c:34,63D2C.c:16,64FD8.c:21 | void @(OTag *, OTag *); <- psxsdk/libgpu/prim.c:87(def) | void @(u32 *, u32 *); <- 25C38.c:68
+sony-func	ApplyMatrix	VECTOR *ApplyMatrix (MATRIX *, SVECTOR *, VECTOR *); <- 368E4.c:321 | s32 *ApplyMatrix (s32 *, s16 *, s32 *); <- 32D04.c:451
+sony-func	ApplyRotMatrix	void @(SVECTOR *, VECTOR *); <- 51268.c:2431 | void @(s16 *, s32 *); <- 51268.c:1291,63D2C.c:267
+sony-func	ApplyRotMatrixLV	VECTOR *ApplyRotMatrixLV (VECTOR *, VECTOR *); <- 51268.c:1895 | void @(VECTOR *, VECTOR *); <- 51268.c:913
+sony-func	CdGetSector	s32 @(s32, s32); <- psxsdk/libcd/cdread.c:32,psxsdk/libcd/sys.c:260(def) | void @(s32, s32); <- 267A8.c:34
+sony-func	CdInit	s32 @(void); <- psxsdk/libcd/event.c:26(def) | void @(void); <- include/bb2.h:669
+sony-func	CdIntToPos	u8 *CdIntToPos (s32, u8 *); <- psxsdk/libcd/sys.c:280(def) | void @(s32, s32); <- cdrom.c:178
+sony-func	CdMix	s32 @(CdlATV *); <- psxsdk/libcd/sys.c:253(def) | void @(CdlATV *); <- 26730.c:16,26940.c:20
+sony-func	CdPosToInt	s32 @(s32); <- 267A8.c:35,26940.c:17,cdrom.c:16 | s32 @(u8 *); <- psxsdk/libcd/cdread.c:33,psxsdk/libcd/sys.c:291(def)
+sony-func	CdReadyCallback	s32 @(s32); <- psxsdk/libcd/cdread.c:31,psxsdk/libcd/sys.c:96(def) | void @(s32); <- include/bb2.h:671
+sony-func	CdSetDebug	s32 @(s32); <- psxsdk/libcd/sys.c:54(def) | void @(s32); <- include/bb2.h:670
+sony-func	CheckCallback	s32 @(void); <- psxsdk/libcd/bios.c:253 | u32 @(void); <- psxsdk/libetc/intr.c:57(def)
+sony-func	ClearImage	void @(RECT *, u8, u8, u8); <- psxsdk/libgpu/sys.c:386(def) | void @(s32, s32, s32, s32); <- 51268.c:6276 | void @(void *, s32, s32, s32); <- 6CF8.c:21
+sony-func	ClearOTagR	s32 @(s32, s32); <- 368E4.c:1767,5ED34.c:16,64FD8.c:11 | u32 *ClearOTagR (u32 *, s32); <- 6CF8.c:56,psxsdk/libgpu/sys.c:445(def)
+sony-func	DMACallback	s32 @(s32, s32 (*) (/* ??? */)); <- psxsdk/libgpu/sys.c:1134 | s32 @(s32, s32); <- psxsdk/libcd/sys.c:16 | void @(s32, s32); <- psxsdk/libspu/s_dcb.c:7 | void @(void); <- psxsdk/libetc/intr.c:40(def)
+sony-func	DeliverEvent	void @(s32, s32); <- psxsdk/libcd/event.c:16 | void @(u32, u32); <- psxsdk/libcomb/comb.c:48
+sony-func	EnterCriticalSection	s32 @(void); <- 25C38.c:294,267A8.c:12,cdrom.c:14,psxsdk/libcomb/comb.c:46,psxsdk/libsnd/ssstart.c:10,psxsdk/libspu/s_ini.c:9 | void @(void); <- 28708.c:74,memcard.c:129,psxsdk/libapi/pad.c:20,psxsdk/libapi/pad.c:64,psxsdk/libsnd/ssend.c:11
+sony-func	GetClut	u16 @(s32, s32); <- 63D2C.c:53,63D2C.c:9 | u32 @(s32, s32); <- 368E4.c:864,psxsdk/libgpu/prim.c:69(def)
+sony-func	GetRCnt	s32 @(s32); <- 28708.c:77,psxsdk/libapi/counter.c:48(def) | s32 @(u32); <- 6CF8.c:61 | void @(u32); <- 368E4.c:301
+sony-func	InitPAD	void @(s32, s32, s32, s32); <- psxsdk/libapi/pad.c:37(def) | void @(u8 *, s32, u8 *, s32); <- 6CF8.c:228
+sony-func	InterruptCallback	s32 @(s32, s32); <- psxsdk/libsnd/ssstart.c:12 | void @(s32, void *); <- psxsdk/libcd/bios.c:493 | void @(void); <- psxsdk/libetc/intr.c:36(def),psxsdk/libetc/intr_dma.c:21,psxsdk/libetc/intr_vb.c:8,psxsdk/libsnd/ssend.c:9
+sony-func	LoadImage	void @(RECT *, u32 *); <- psxsdk/libgpu/sys.c:396(def) | void @(s32, s32); <- 2B344.c:597,31D3C.c:312,64FD8.c:1980 | void @(u8 *, s32); <- 51268.c:6275,5ED34.c:47 | void @(u8 *, u8 *); <- 6CF8.c:54
+sony-func	MoveImage	s32 @(RECT *, int, int); <- psxsdk/libgpu/sys.c:407(def) | s32 @(u8 *, s32, s32); <- 51268.c:3607,5ED34.c:42 | void @(s16 *, s32, s32); <- 2B344.c:2014
+sony-func	MulMatrix0	MATRIX *MulMatrix0 (MATRIX *, MATRIX *, MATRIX *); <- 368E4.c:784 | void @(MATRIX *, MATRIX *, MATRIX *); <- 32D04.c:1147
+sony-func	MulMatrix2	void @(MATRIX *, MATRIX *); <- 3AB48.c:810 | void @(s32 *, s32 *); <- 32D04.c:1146,35000.c:25
+sony-func	PCread	s32 @(s32, s32, s32); <- psxsdk/libsn/7407C.c:10(def) | s32 @(s32, u8 *, s32); <- 6CF8.c:40
+sony-func	PutDispEnv	DISPENV *PutDispEnv (DISPENV *); <- 51268.c:6277,psxsdk/libgpu/sys.c:503(def) | void @(DISPENV *); <- 6CF8.c:53
+sony-func	ResetGraph	s32 @(s32); <- psxsdk/libcomb/comb.c:47 | u32 @(s32); <- psxsdk/libgpu/sys.c:251(def) | void @(s32); <- include/bb2.h:668
+sony-func	ResetRCnt	s32 @(s32); <- psxsdk/libapi/counter.c:71(def) | void @(s32); <- 28708.c:76,2B344.c:110,psxsdk/libsnd/ssstart.c:13 | void @(u32); <- 6CF8.c:60
+sony-func	RotMatrixX	void *RotMatrixX (s32, s32); <- 87A0.c:74,9F9C.c:36 | void @(s32, s32 *); <- 175A4.c:32,17AFC.c:15
+sony-func	RotMatrixY	void *RotMatrixY (s32, s32); <- 87A0.c:75,9F9C.c:37 | void @(s32, s32 *); <- 175A4.c:33,17AFC.c:16
+sony-func	RotMatrixZ	void *RotMatrixZ (s32, s32); <- 87A0.c:76,9F9C.c:38 | void @(s32, s32 *); <- 175A4.c:34,17AFC.c:17
+sony-func	RotTrans	void @(SVECTOR *, VECTOR *, s32 *); <- 6CF8.c:783 | void @(s16 *, s32 *, s32 *); <- 51268.c:784
+sony-func	SetDefDispEnv	DISPENV *SetDefDispEnv (DISPENV *, s32, s32, s32, s32); <- 51268.c:6274 | s16 *SetDefDispEnv (s16 *, s16, s16, s16, s32); <- psxsdk/libgpu/ext.c:72(def) | void @(DISPENV *, s32, s32, s32, s32); <- 6CF8.c:212
+sony-func	SetDefDrawEnv	DRAWENV *SetDefDrawEnv (DRAWENV *, s32, s32, s32, s32); <- 51268.c:6273,6CF8.c:211 | s16 *SetDefDrawEnv (s16 *, s16, s16, s16, s32); <- psxsdk/libgpu/ext.c:45(def)
+sony-func	SetDrawArea	s32 @(/* ??? */); <- 3AB48.c:5403,51268.c:336,5ED34.c:37,64FD8.c:24 | void @(u8 *, s16 *); <- psxsdk/libgpu/sys.c:608(def)
+sony-func	SetDrawMode	s32 @(s32, s32, s32, s32, s32); <- 3AB48.c:4038,3AB48.c:4503,51268.c:332,5ED34.c:1166,5ED34.c:33,63D2C.c:15 | void @(u8 *, s32, s32, u16, s32); <- psxsdk/libgpu/sys.c:631(def)
+sony-func	SetDrawOffset	void @(/* ??? */); <- 51268.c:4587,5ED34.c:46,64FD8.c:34 | void @(u8 *, s16 *); <- psxsdk/libgpu/sys.c:613(def)
+sony-func	SetGraphDebug	u32 @(s32); <- psxsdk/libgpu/sys.c:301(def) | void @(s32); <- 6CF8.c:210
+sony-func	SetIntrMask	s32 @(s32); <- psxsdk/libgpu/sys.c:1135,psxsdk/libgpu/sys.c:1222 | u16 @(u16); <- psxsdk/libetc/intr.c:88(def)
+sony-func	SetPolyFT4	void @(u8 *); <- psxsdk/libgpu/prim.c:142(def) | void @(void *); <- 51268.c:1108,51268.c:916,63D2C.c:127,63D2C.c:24
+sony-func	SetPolyG4	s32 @(/* ??? */); <- 3AB48.c:5404,51268.c:337,5ED34.c:38 | s32 @(GameObj *); <- 5ED34.c:1927 | void @(u8 *); <- 25C38.c:67,psxsdk/libgpu/prim.c:147(def)
+sony-func	SetRCnt	s32 @(s32, s32, s32); <- psxsdk/libapi/counter.c:12(def) | void @(s32, s32, s32); <- psxsdk/libsnd/ssstart.c:14 | void @(u32, s32, s32); <- 368E4.c:300
+sony-func	SetRotMatrix	void @(MATRIX *); <- 6CF8.c:781 | void @(u8 *); <- 51268.c:785,51268.c:864,63D2C.c:21,63D2C.c:22
+sony-func	SetSemiTrans	s32 @(void *, s32); <- 3AB48.c:4040,3AB48.c:4505,51268.c:334,51268.c:918,5ED34.c:35,63D2C.c:17 | void @(u8 *, s32); <- psxsdk/libgpu/prim.c:101(def)
+sony-func	SetShadeTex	s32 @(s32, s32); <- 51268.c:1107,51268.c:917,63D2C.c:23,63D2C.c:49 | void @(u8 *, s32); <- psxsdk/libgpu/prim.c:109(def)
+sony-func	SetSprt	void @(s32); <- 63D2C.c:48 | void @(u8 *); <- psxsdk/libgpu/prim.c:167(def)
+sony-func	SetTile	s32 @(void *); <- 3AB48.c:4041,3AB48.c:4506,51268.c:335,5ED34.c:36,63D2C.c:18,64FD8.c:23 | void @(u8 *); <- psxsdk/libgpu/prim.c:187(def)
+sony-func	SetTransMatrix	void @(MATRIX *); <- 6CF8.c:782 | void @(u8 *); <- 51268.c:786
+sony-func	SpuClearReverbWorkArea	s32 @(s16); <- 3AB48.c:3723 | s32 @(u32); <- psxsdk/libspu/s_crwa.c:12(def),psxsdk/libspu/s_srmp.c:27
+sony-func	SpuSetCommonAttr	void @(s32 *); <- psxsdk/libsnd/scssattr.c:8 | void @(void *); <- psxsdk/libsnd/scsmvol.c:7,psxsdk/libsnd/scssvol.c:7,psxsdk/libspu/s_sca.c:10(def)
+sony-func	SsInit	s32 @(void); <- 3AB48.c:3319 | void @(void); <- psxsdk/libsnd/ssinit_c.c:8(def)
+sony-func	SsSetAutoKeyOffMode	void @(s32); <- 3AB48.c:3937 | void @(u8); <- psxsdk/libsnd/vs_auto.c:6(def)
+sony-func	SsSetMVol	void @(s16, s16); <- psxsdk/libsnd/scsmvol.c:9(def) | void @(s32, s32); <- 3AB48.c:3936
+sony-func	SsSetSerialVol	void @(s16, s16, s16); <- psxsdk/libsnd/scssvol.c:13(def) | void @(s32, s32, s32); <- include/bb2.h:672
+sony-func	SsSetTickMode	s32 @(s32); <- 3AB48.c:3318 | void @(s32); <- psxsdk/libsnd/sstick.c:6(def)
+sony-func	SsUtKeyOnV	s16 @(s16, s16, s16, s16, s16, s16, s16, s16); <- psxsdk/libsnd/ut_keyv.c:12(def) | s32 @(s16, s16, s16, s16, s16, s16, s16, s16); <- 3AB48.c:3965
+sony-func	SsUtReverbOff	s32 @(void); <- 3AB48.c:3323,3AB48.c:3486 | void @(void); <- psxsdk/libsnd/ut_roff.c:6(def)
+sony-func	SsUtReverbOn	s32 @(/* ??? */); <- 3AB48.c:3722 | void @(void); <- psxsdk/libsnd/ut_ron.c:6(def)
+sony-func	SsUtSetReverbDepth	s32 @(s32, s32); <- 3AB48.c:3321,3AB48.c:3488 | void @(s16, s16); <- psxsdk/libsnd/ut_rdep.c:6(def)
+sony-func	SsUtSetReverbType	s16 @(s16); <- psxsdk/libsnd/ut_rev.c:6(def) | s32 @(s32); <- 3AB48.c:3322,3AB48.c:3487
+sony-func	SsVabFakeBody	s16 @(s16); <- psxsdk/libsnd/vs_vfb.c:6(def) | s32 @(/* ??? */); <- 3AB48.c:3762
+sony-func	SsVabFakeHead	s16 @(s32, s16, s32); <- psxsdk/libsnd/vs_vh.c:15(def) | s32 @(/* ??? */); <- 3AB48.c:3763
+sony-func	SsVabOpenHeadSticky	s16 @(s32, s16, s32); <- psxsdk/libsnd/vs_vh.c:11(def) | void @(s32, s16, s32); <- 3AB48.c:3928
+sony-func	SsVabTransBody	s16 @(s32, s16); <- psxsdk/libsnd/vs_vtb.c:6(def) | s32 @(s32, s16); <- 3AB48.c:3929
+sony-func	StartRCnt	s32 @(s32); <- psxsdk/libapi/counter.c:55(def) | void @(u32); <- 368E4.c:302
+sony-func	StoreImage	void @(RECT *, u32 *); <- psxsdk/libgpu/sys.c:401(def) | void @(s32 *, u16 *); <- 2B344.c:667
+sony-func	SysDeqIntRP	s32 @(/* ??? */); <- psxsdk/libcomb/comb.c:53 | void @(s32, u32 *); <- psxsdk/libapi/pad.c:65
+sony-func	SysEnqIntRP	s32 @(/* ??? */); <- psxsdk/libcomb/comb.c:52 | void @(s32, u32 *); <- psxsdk/libapi/pad.c:66
+sony-func	VSync	s32 @(s32); <- psxsdk/libcd/bios.c:250,psxsdk/libcd/bios.c:555,psxsdk/libcd/cdread.c:29,psxsdk/libetc/vsync.c:24(def),psxsdk/libgpu/sys.c:231 | void @(s32); <- 25C38.c:248,267A8.c:8,26940.c:16,28708.c:17,2B344.c:13,6CF8.c:55
+sony-func	_comb_control	s32 @(s32, s32, s32); <- include/bb2.h:673 | s32 @(u32, u32, u32); <- psxsdk/libcomb/comb.c:190(def)
+sony-func	_exeque	s32 @(/* ??? */); <- psxsdk/libgpu/sys.c:1132,psxsdk/libgpu/sys.c:1261 | s32 @(void); <- psxsdk/libgpu/sys.c:1192(def)
+sony-func	_memcpy	static void @(char *, char *, u32); <- psxsdk/libspu/s_srmp.c:29(def) | static void @(void *, void *, u32); <- psxsdk/libcd/bios.c:75(def)
+header-local	func_80036EA8	s32 @(/* ??? */); <- 3AB48.c:3517,51268.c:17,5ED34.c:20 | s32 @(s32, s32); <- cdrom.c:46(def),include/bb2.h:552
+sony-func	func_800858D0	void @(s32); <- 3AB48.c:3320,3AB48.c:3355 | void @(void); <- psxsdk/libsnd/760D0.c:11(def)
+sony-func	func_80086130	s32 @(s16, s16, s16); <- psxsdk/libsnd/ut_vvol.c:42(def) | void @(s32, s32, s32); <- 3AB48.c:3385
+sony-func	get_alarm	s32 @(/* ??? */); <- psxsdk/libgpu/sys.c:1133,psxsdk/libgpu/sys.c:935 | s32 @(void); <- psxsdk/libgpu/sys.c:1296(def) | static s32 @(void); <- psxsdk/libcd/bios.c:283(def)
+sony-func	memcpy	s32 @(s32 *, s32, s32); <- 87A0.c:28,9F9C.c:21 | s32 @(s32, void *, s32); <- psxsdk/libgpu/sys.c:232 | u8 *memcpy (u8 *, u8 *, s32); <- psxsdk/libc2/memcpy.c:6(def) | void @(u32, u32, s32); <- 6CF8.c:317
+sony-func	memmove	u8 *memmove (u8 *, u8 *, s32); <- psxsdk/libc2/memmove.c:9(def) | void *memmove (/* ??? */); <- psxsdk/libc2/sprintf.c:19
+sony-func	printf	s32 @(/* ??? */); <- psxsdk/libcd/event.c:17,psxsdk/libgpu/sys.c:1233 | s32 @(s32 *, s32); <- 3AB48.c:3520,51268.c:323 | void @(/* ??? */); <- 17AFC.c:1524,6CF8.c:37,psxsdk/libcd/bios.c:106,psxsdk/libcd/bios.c:252,psxsdk/libcd/bios.c:557 | void @(s32 *, s32 *); <- psxsdk/libspu/spu.c:15 | void @(s32, s32, s32, s32); <- psxsdk/libc2/printf.c:6(def)
+sony-func	putchar	void @(/* ??? */); <- psxsdk/libc2/puts.c:17 | void @(s8); <- psxsdk/libc2/putchar.c:11(def)
+sony-func	puts	void @(/* ??? */); <- psxsdk/libcd/bios.c:105 | void @(void *); <- psxsdk/libc2/puts.c:18(def),psxsdk/libcd/bios.c:251,psxsdk/libcd/bios.c:556,psxsdk/libcd/cdread.c:30,psxsdk/libetc/vsync.c:72
+sony-func	rand	s32 @(/* ??? */); <- 87A0.c:67,9F9C.c:30 | s32 @(void); <- 175A4.c:31,17AFC.c:14,24F08.c:15,25C38.c:300,3AB48.c:1032,51268.c:12 | u16 @(void); <- 2B344.c:132
+sony-func	ratan2	s16 @(s32, s32); <- 32D04.c:452 | s32 @(s32, s32); <- 175A4.c:30,17AFC.c:13,2B344.c:2217,31D3C.c:412,368E4.c:322,3AB48.c:17
+sony-func	rcos	s32 @(/* ??? */); <- 368E4.c:2498,51268.c:318,5ED34.c:17 | s32 @(s32); <- 31D3C.c:413,32D04.c:453,35000.c:168,35000.c:17,psxsdk/libgte/geo_01.c:11(def)
+sony-func	rsin	s32 @(/* ??? */); <- 368E4.c:2499,51268.c:319,5ED34.c:18,63D2C.c:10,64FD8.c:12 | s32 @(s32); <- 31D3C.c:414,32D04.c:454,35000.c:167,35000.c:18,64FD8.c:473,psxsdk/libgte/geo_00.c:7(def)
+sony-func	set_alarm	static void @(char *); <- psxsdk/libcd/bios.c:275(def) | void @(void); <- psxsdk/libgpu/sys.c:1292(def),psxsdk/libgpu/sys.c:934
+sony-func	startIntrDMA	s32 @(/* ??? */); <- psxsdk/libetc/intr.c:85 | s32 @(void); <- psxsdk/libetc/intr_dma.c:33(def)
+sony-func	startIntrVSync	s32 @(/* ??? */); <- psxsdk/libetc/intr.c:84 | s32 @(void); <- psxsdk/libetc/intr_vb.c:17(def)
+sony-func	write	void @(s32, s32, s32); <- memcard.c:343 | void @(s32, u8 *, s32); <- psxsdk/libc2/putchar.c:10
+header-local	Judge	extern s16 Judge[0x1000]; <- include/bb2.h:190 | extern s16 Judge[]; <- 32D04.c:176,32D04.c:277,32D04.c:348,32D04.c:435,35000.c:15,368E4.c:323
+game-local	D_8009BA60	extern u8 D_8009BA60; | extern u8 D_8009BA60[];
+game-local	D_800A3678	extern s16 D_800A3678; | extern s32 D_800A3678;
+game-local	D_800A3708	extern Unk80101DF0Record *D_800A3708; | extern s32 D_800A3708;
+game-local	D_800A370C	extern s32 D_800A370C; | extern void *D_800A370C;
+game-local	D_800A37A8	extern u8 D_800A37A8; | extern u8 D_800A37A8[];
+game-local	D_800A3898	extern u8 D_800A3898; | extern u8 D_800A3898[2];
+game-local	D_800A38AA	extern u8 D_800A38AA; | extern u8 D_800A38AA[2];
+game-local	D_800A38B4	extern s32 D_800A38B4; | extern u32 D_800A38B4; | extern u8 *D_800A38B4; | extern void *D_800A38B4;
+game-local	D_800F10D0	extern s32 D_800F10D0; | extern s32 D_800F10D0[];
+game-local	D_800F33D8	extern u8 D_800F33D8; | extern u8 D_800F33D8[];
+game-local	D_80103608	extern s32 *D_80103608[]; | extern u16 **D_80103608[];
+game-proto	camera_GetBoneData	s32 camera_GetBoneData (void); | void *camera_GetBoneData (void);
+game-local	cdrom_GetFileSize	extern s32 cdrom_GetFileSize(); | extern s32 cdrom_GetFileSize(s32); | s32 cdrom_GetFileSize(s32);
+game-local	cdrom_StartRead	extern s32 cdrom_StartRead(s32, s32); | extern void cdrom_StartRead(s32, s32); | s32 cdrom_StartRead(s32, s32); | s32 cdrom_StartRead(s32, s32);               /* extern */
+game-local	cdrom_StartReadAt	extern s32 cdrom_StartReadAt(s32, s32, s32, s32); | extern void cdrom_StartReadAt(s32, s32, s32, s32);
+game-local	chractar_use_pset_combo_id_table	extern s32 chractar_use_pset_combo_id_table; | extern s32 chractar_use_pset_combo_id_table[];
+game-proto	file_GetFlag2	s32 file_GetFlag2 (void); | u32 file_GetFlag2 (void);
+game-local	func_80019568	extern void func_80019568(); | extern void func_80019568(s32);
+game-local	func_80032854	extern void func_80032854(s32, s32, s32 *, s16 *); | extern void func_80032854(s32, s32, u8 *, s16 *);
+game-local	func_800371E8	extern s32 func_800371E8(s16); | extern void func_800371E8(s16);
+game-local	func_8003E120	extern s32 func_8003E120(); | extern void func_8003E120(void);
+game-proto	func_80040510	s32 *func_80040510 (s32); | void func_80040510 (s32, s32, s32);
+game-local	func_80044100	extern void func_80044100(); | extern void func_80044100(s32, s32); | void func_80044100(s32 a0, s32 a1);
+game-proto	func_8004678C	s16 *func_8004678C (void); | s32 func_8004678C (void);
+game-local	func_80046BF4	extern void func_80046BF4(s16 *, s16 *, s32); | extern void func_80046BF4(s32 *, s32 *, s32);
+game-local	func_800486FC	extern s32 func_800486FC(); | extern s32 func_800486FC(s32 *); | extern s32 func_800486FC(void);
+game-local	func_8004A1FC	extern void func_8004A1FC(); | extern void func_8004A1FC(Unk800F62E0Rec *); | void func_8004A1FC();
+game-local	func_80052C10	extern void func_80052C10(); | extern void func_80052C10(void);
+game-local	func_80053614	extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32 *); | extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
+game-proto	func_80055138	void func_80055138 (s32, s32, s32); | void func_80055138 (s32, u16 *, u16 *);
+game-proto	func_8005B9FC	s32 func_8005B9FC (s32); | void func_8005B9FC (s32);
+game-local	func_8005C8A8	extern s32 func_8005C8A8(s32, s32, s32, s32); | extern s32 func_8005C8A8(s32, s32, u32, s32);
+game-local	func_8005E54C	extern s32 func_8005E54C(s32, s32, s32); | extern s32 func_8005E54C(s32, u8 *, s32);
+game-local	func_800692C0	extern s32 func_800692C0(); | s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3);
+game-local	func_8006E480	extern s32 func_8006E480(); | extern s32 func_8006E480(s32, s32); | s32 func_8006E480(s32 a0_addr, s32 a1);
+game-local	func_8007352C	extern s32 func_8007352C(); | extern s32 func_8007352C(s32); | s32 func_8007352C(s32 env_addr);
+game-local	g_gpu_ot_ptr	extern s32 g_gpu_ot_ptr; | extern u8 *g_gpu_ot_ptr;
+game-local	g_pad_buf	extern s32 g_pad_buf; | extern u8 g_pad_buf;
+game-local	game_FrameLoop	extern s32 game_FrameLoop(void); | extern void game_FrameLoop(void); | s32 game_FrameLoop();                           /* extern */ | s32 game_FrameLoop(void);
+game-local	game_GetPlayerData	extern s32 game_GetPlayerData(s32); | extern void *game_GetPlayerData();
+game-local	gte_MulMatrix0ClearTrans	extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *); | extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
+game-local	math_RotMatrixYXZ	extern void math_RotMatrixYXZ(Unk80101DF0Rot *, MATRIX *); | extern void math_RotMatrixYXZ(Unk80101DF0Rot *, s32 *);
+game-local	math_RotMatrixZYX	extern void math_RotMatrixZYX(SVECTOR *, MATRIX *); | extern void math_RotMatrixZYX(Unk80101DF0Rot *, Unk80101DF0Mat *); | extern void math_RotMatrixZYX(s16 *, s32 *);
+game-proto	snd_StopAll	s32 snd_StopAll (void); | void snd_StopAll (void);
+game-local	snd_VabFakeOpen	extern s32 snd_VabFakeOpen(s32, s16); | extern void snd_VabFakeOpen(s32, s32); | extern void snd_VabFakeOpen(u32, s32); | s32 snd_VabFakeOpen(s32, s16);
+game-local	stage_GetDataPtr	extern s32 stage_GetDataPtr(void); | extern void *stage_GetDataPtr(void); | void *stage_GetDataPtr(void);
+note	func_8005C2A8	main/309CC.c (func_80040594) calls it implicitly with an int second argument; the (s32 *, s16, s32) prototype changes 309CC's bytes (sll/sra), so its declarations stay local
+note	SpuGetVoiceVolume	libsnd/ut_vvol.c calls it implicitly twice (voice, s16 *, s16 *); the definition libspu/s_gvv.c is (s32, u16 *, u16 *) and libspu.h gives no prototype
+note	D_800A3899/D_800A38AB	Q21 per-file views: 175A4.c/17AFC.c declare single u8s D_800A3898/99/AA/AB, main/9F9C.c declares D_800A3898[2]/D_800A38AA[2]
+note	D_800963EE	second name for D_800963EC[0].length_sectors (main/35000.c x2, main/32D04.c); 35000.c also indexes it as (u8 *)&D_800963EE + a0 * 4
+note	Vec3	type name: 16-byte {vx,vy,vz,pad} at file scope in 3AB48.c/64FD8.c vs 12-byte block-scope Vec3 twice in main/9F9C.c
+note	EnvA	type: two layouts (s32 * / s8 * vs s32 members) in 51268.c/63D2C.c vs 64FD8.c
+note	va_list	type: char * (2B344.c, libspu/spu.c) vs void * (libc2/sprintf.c)
+note	InterruptCallback	declared (void) in libetc/intr*.c and cast at every call (SOTN: (int, void *))
+note	Vec4i32/SVec4i16/Obj80106A78Mat/Unk80101DF0Rot/Unk80101DF0Mat	game.h local names for VECTOR/SVECTOR/MATRIX layouts (libgte.h)

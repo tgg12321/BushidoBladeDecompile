@@ -1,0 +1,425 @@
+# class	symbol	tu	calls	result	changed_functions	call_site_warnings
+game-local	cdrom_GetFileSize	main/3AB48	7	same		
+game-local	cdrom_GetFileSize	main/51268	1	same		
+game-local	cdrom_GetFileSize	main/cdrom	def	defcompat yes		
+game-local	cdrom_StartRead	main/3AB48	7	same		
+game-local	cdrom_StartRead	main/51268	6	same		
+game-local	cdrom_StartRead	main/5ED34	1	same		
+game-local	cdrom_StartRead	main/6CF8	1	same		
+game-local	cdrom_StartRead	main/9F9C	2	same		
+game-local	cdrom_StartRead	main/cdrom	def	defcompat yes		
+game-local	cdrom_StartReadAt	main/35000	2	same		
+game-local	cdrom_StartReadAt	main/9F9C	1	same		
+game-local	cdrom_StartReadAt	main/cdrom	def	defcompat yes		
+game-local	func_80019568	main/2B344	1	same		
+game-local	func_80019568	main/6CF8	2	error: src/main/6CF8.c:414: too few arguments to function `func_80019568'		
+game-local	func_80019568	main/87A0	def	defcompat yes		
+game-local	func_80032854	main/175A4	3	same		
+game-local	func_80032854	main/28708	1	same		28708.c:1450: passing arg 3 of `func_80032854' from incompatible pointer type
+game-local	func_80032854	main/9F9C	4	same		9F9C.c:2753: passing arg 3 of `func_80032854' from incompatible pointer type; 9F9C.c:2959: passing arg 3 of `func_80032854' from incompatible pointer type; 9F9C.c:5361: passing arg 3 of `func_80032854' from incompatible pointer type; 9F9C.c:5399: passing arg 3 of `func_80032854' from incompatible pointer type
+game-local	func_80032854	main/17AFC	def	defcompat yes		
+game-local	func_800371E8	main/25C38	2	same		
+game-local	func_800371E8	main/9F9C	1	same		
+game-local	func_800371E8	main/cdrom	def	defcompat yes		
+game-local	func_8003E120	main/309CC	1	same		
+game-local	func_8003E120	main/31D3C	1	same		
+game-local	func_8003E120	main/368E4	1	same		
+game-local	func_8003E120	main/2B344	def	defcompat yes		
+game-local	func_80044100	main/35000	4	same		
+game-local	func_80044100	main/368E4	3	error: src/main/368E4.c:282: too few arguments to function `func_80044100'		
+game-local	func_80044100	main/32D04	def	defcompat yes		
+game-local	func_80046BF4	main/2B344	2	same		2B344.c:1230: passing arg 1 of `func_80046BF4' from incompatible pointer type; 2B344.c:1312: passing arg 1 of `func_80046BF4' from incompatible pointer type
+game-local	func_80046BF4	main/9F9C	2	same		9F9C.c:1998: passing arg 2 of `func_80046BF4' from incompatible pointer type
+game-local	func_80046BF4	main/368E4	def	defcompat yes		
+game-local	func_800486FC	main/31D3C	4	error: src/main/31D3C.c:561: too many arguments to function `func_800486FC'		
+game-local	func_800486FC	main/32D04	1	error: src/main/32D04.c:45: too many arguments to function `func_800486FC'		
+game-local	func_800486FC	main/368E4	def	defcompat yes		
+game-local	func_8004A1FC	main/31D3C	5	same		
+game-local	func_8004A1FC	main/3AB48	3	same		
+game-local	func_8004A1FC	main/368E4	def	defcompat yes		
+game-local	func_80052C10	main/2B344	3	error: src/main/2B344.c:2588: too many arguments to function `func_80052C10'		
+game-local	func_80052C10	main/309CC	1	same		
+game-local	func_80052C10	main/32D04	4	same		
+game-local	func_80052C10	main/35000	2	same		
+game-local	func_80052C10	main/368E4	8	same		
+game-local	func_80053614	main/17AFC	1	same		17AFC.c:1663: passing arg 3 of `func_80053614' makes integer from pointer without a cast; 17AFC.c:1663: passing arg 4 of `func_80053614' makes integer from pointer without a cast; 17AFC.c:1663: passing arg 5 of `func_80053614' makes integer from pointer without a cast
+game-local	func_80053614	main/9F9C	12	same		9F9C.c:689: passing arg 3 of `func_80053614' makes integer from pointer without a cast; 9F9C.c:689: passing arg 4 of `func_80053614' makes integer from pointer without a cast; 9F9C.c:720: passing arg 3 of `func_80053614' makes integer from pointer without a cast; 9F9C.c:720: passing arg 4 of `func_80053614' makes integer from pointer without a cast; 9F9C.c:750: passing arg 3 of `func_80053614' makes integer from pointer without a cast; 9F9C.c:750: passing arg 4 of `func_80053614' makes integer from pointer without a cast; 9F9C.c:3163: passing arg 3 of `func_80053614' makes integer from pointer without a cast; 9F9C.c:3163: passing arg 4 of `func_80053614' makes integer from pointer without a cast; +16 more
+game-local	func_80053614	main/3AB48	def	defcompat yes		
+game-local	func_8005C8A8	main/2B344	1	same		
+game-local	func_8005C8A8	main/6CF8	2	same		
+game-local	func_8005C8A8	main/9F9C	1	same		
+game-local	func_8005C8A8	main/3AB48	def	defcompat yes		
+game-local	func_8005E54C	main/2B344	1	same		
+game-local	func_8005E54C	main/6CF8	1	same		6CF8.c:645: passing arg 2 of `func_8005E54C' makes integer from pointer without a cast
+game-local	func_8005E54C	main/3AB48	def	defcompat yes		
+game-local	func_800692C0	main/64FD8	4	same		
+game-local	func_800692C0	main/51268	def	defcompat yes		
+game-local	func_8006E480	main/3AB48	11	same		3AB48.c:5601: passing arg 1 of `func_8006E480' makes integer from pointer without a cast
+game-local	func_8006E480	main/5ED34	13	same		
+game-local	func_8006E480	main/63D2C	2	same		
+game-local	func_8006E480	main/64FD8	16	same		
+game-local	func_8006E480	main/51268	def	defcompat yes		
+game-local	func_8007352C	main/3AB48	45	same		3AB48.c:5799: passing arg 1 of `func_8007352C' makes integer from pointer without a cast; 3AB48.c:5808: passing arg 1 of `func_8007352C' makes integer from pointer without a cast; 3AB48.c:5820: passing arg 1 of `func_8007352C' makes integer from pointer without a cast
+game-local	func_8007352C	main/51268	37	same		
+game-local	func_8007352C	main/5ED34	16	same		5ED34.c:1213: passing arg 1 of `func_8007352C' makes integer from pointer without a cast; 5ED34.c:1230: passing arg 1 of `func_8007352C' makes integer from pointer without a cast; 5ED34.c:1252: passing arg 1 of `func_8007352C' makes integer from pointer without a cast; 5ED34.c:1727: passing arg 1 of `func_8007352C' makes integer from pointer without a cast; 5ED34.c:1734: passing arg 1 of `func_8007352C' makes integer from pointer without a cast; 5ED34.c:1749: passing arg 1 of `func_8007352C' makes integer from pointer without a cast
+game-local	func_8007352C	main/64FD8	26	same		
+game-local	func_8007352C	main/63D2C	def	defcompat yes		
+game-local	game_FrameLoop	main/35000	2	same		
+game-local	game_FrameLoop	main/3AB48	12	same		
+game-local	game_FrameLoop	main/51268	3	same		
+game-local	game_FrameLoop	main/5ED34	2	same		
+game-local	game_FrameLoop	main/6CF8	2	same		
+game-local	game_FrameLoop	main/9F9C	3	same		
+game-local	game_FrameLoop	main/cdrom	def	defcompat yes		
+game-local	game_GetPlayerData	main/17AFC	3	same		
+game-local	game_GetPlayerData	main/9F9C	4	asm-diff(4 lines)	func_800203B4	
+game-local	game_GetPlayerData	main/368E4	def	defcompat yes		
+game-local	gte_MulMatrix0ClearTrans	main/31D3C	1	same		
+game-local	gte_MulMatrix0ClearTrans	main/368E4	3	same		
+game-local	math_RotMatrixYXZ	main/2B344	1	same		2B344.c:2270: passing arg 1 of `math_RotMatrixYXZ' from incompatible pointer type; 2B344.c:2270: passing arg 2 of `math_RotMatrixYXZ' from incompatible pointer type
+game-local	math_RotMatrixYXZ	main/368E4	1	same		368E4.c:736: passing arg 1 of `math_RotMatrixYXZ' from incompatible pointer type; 368E4.c:736: passing arg 2 of `math_RotMatrixYXZ' from incompatible pointer type
+game-local	math_RotMatrixYXZ	main/32D04	def	defcompat yes		
+game-local	math_RotMatrixZYX	main/31548	4	same		
+game-local	math_RotMatrixZYX	main/32D04	0	same		
+game-local	math_RotMatrixZYX	main/35000	1	same		
+game-local	math_RotMatrixZYX	main/368E4	1	same		368E4.c:1807: passing arg 1 of `math_RotMatrixZYX' from incompatible pointer type; 368E4.c:1807: passing arg 2 of `math_RotMatrixZYX' from incompatible pointer type
+game-local	snd_VabFakeOpen	main/309CC	1	asm-diff(4 lines)	func_80040594	
+game-local	snd_VabFakeOpen	main/35000	2	asm-diff(10 lines)	func_80045AA4,func_80046048	
+game-local	snd_VabFakeOpen	main/6CF8	1	same		
+game-local	snd_VabFakeOpen	main/3AB48	def	defcompat yes		
+game-local	stage_GetDataPtr	main/17AFC	1	same		
+game-local	stage_GetDataPtr	main/3AB48	1	same		
+game-local	stage_GetDataPtr	main/9F9C	4	same		
+game-local	stage_GetDataPtr	main/368E4	def	defcompat yes		
+game-proto	camera_GetBoneData	main/28708	1	same		
+game-proto	camera_GetBoneData	main/9F9C	3	same		
+game-proto	camera_GetBoneData	main/368E4	def	defcompat yes		
+game-proto	file_GetFlag2	main/9F9C	2	same		
+game-proto	file_GetFlag2	main/6CF8	def	defcompat yes		
+game-proto	func_80040510	main/2B344	1	error: src/main/2B344.c:291: too many arguments to function `func_80040510'		
+game-proto	func_80040510	main/9F9C	4	error: src/main/9F9C.c:1347: too many arguments to function `func_80040510'		
+game-proto	func_80040510	main/309CC	def	defcompat yes		
+game-proto	func_8004678C	main/17AFC	2	same		
+game-proto	func_8004678C	main/368E4	def	defcompat yes		
+game-proto	func_80055138	main/9F9C	1	same		9F9C.c:4086: passing arg 2 of `func_80055138' makes pointer from integer without a cast; 9F9C.c:4086: passing arg 3 of `func_80055138' makes pointer from integer without a cast
+game-proto	func_80055138	main/3AB48	def	defcompat yes		
+game-proto	func_8005B9FC	main/9F9C	1	error: src/main/9F9C.c:1664: void value not ignored as it ought to be		
+game-proto	func_8005B9FC	main/3AB48	def	defcompat yes		
+game-proto	snd_StopAll	main/51268	1	same		
+game-proto	snd_StopAll	main/5ED34	1	same		
+game-proto	snd_StopAll	main/64FD8	1	same		
+game-proto	snd_StopAll	main/368E4	def	defcompat yes		
+header-local	func_80036EA8	main/2B344	3	same		
+header-local	func_80036EA8	main/3AB48	7	same		
+header-local	func_80036EA8	main/51268	6	same		
+header-local	func_80036EA8	main/5ED34	1	same		
+header-local	func_80036EA8	main/6CF8	1	same		
+header-local	func_80036EA8	main/9F9C	3	same		
+header-local	func_80036EA8	main/cdrom	def	defcompat yes		
+sony-func	AddPrim	main/25C38	1	same		
+sony-func	AddPrim	main/3AB48	30	same		3AB48.c:4141: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 3AB48.c:4141: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 3AB48.c:4194: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 3AB48.c:4194: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 3AB48.c:4272: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 3AB48.c:4272: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 3AB48.c:4309: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 3AB48.c:4309: passing arg 2 of `AddPrim' makes pointer from integer without a cast; +46 more
+sony-func	AddPrim	main/51268	57	same		51268.c:1243: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 51268.c:1243: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 51268.c:2832: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 51268.c:2832: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 51268.c:2841: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 51268.c:2841: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 51268.c:4104: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 51268.c:4104: passing arg 2 of `AddPrim' makes pointer from integer without a cast; +86 more
+sony-func	AddPrim	main/5ED34	29	same		5ED34.c:481: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 5ED34.c:481: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 5ED34.c:485: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 5ED34.c:485: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 5ED34.c:729: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 5ED34.c:729: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 5ED34.c:737: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 5ED34.c:737: passing arg 2 of `AddPrim' makes pointer from integer without a cast; +47 more
+sony-func	AddPrim	main/63D2C	9	same		63D2C.c:119: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 63D2C.c:119: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 63D2C.c:259: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 63D2C.c:259: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 63D2C.c:379: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 63D2C.c:379: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 63D2C.c:408: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 63D2C.c:408: passing arg 2 of `AddPrim' makes pointer from integer without a cast; +10 more
+sony-func	AddPrim	main/64FD8	24	same		64FD8.c:252: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 64FD8.c:286: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 64FD8.c:286: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 64FD8.c:324: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 64FD8.c:324: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 64FD8.c:372: passing arg 1 of `AddPrim' makes pointer from integer without a cast; 64FD8.c:372: passing arg 2 of `AddPrim' makes pointer from integer without a cast; 64FD8.c:387: passing arg 1 of `AddPrim' makes pointer from integer without a cast; +37 more
+sony-func	AddPrim	main/psxsdk/libgpu/prim	def	defcompat no: src/main/psxsdk/libgpu/prim.c:87: conflicting types for `AddPrim'		
+sony-func	ApplyMatrix	main/32D04	2	same		32D04.c:467: passing arg 1 of `ApplyMatrix' from incompatible pointer type; 32D04.c:467: passing arg 2 of `ApplyMatrix' from incompatible pointer type; 32D04.c:467: passing arg 3 of `ApplyMatrix' from incompatible pointer type; 32D04.c:487: passing arg 1 of `ApplyMatrix' from incompatible pointer type; 32D04.c:487: passing arg 2 of `ApplyMatrix' from incompatible pointer type; 32D04.c:487: passing arg 3 of `ApplyMatrix' from incompatible pointer type
+sony-func	ApplyMatrix	main/368E4	4	same		
+sony-func	ApplyRotMatrix	main/51268	2	same		51268.c:1355: passing arg 1 of `ApplyRotMatrix' from incompatible pointer type; 51268.c:1355: passing arg 2 of `ApplyRotMatrix' from incompatible pointer type
+sony-func	ApplyRotMatrix	main/63D2C	1	same		63D2C.c:345: passing arg 1 of `ApplyRotMatrix' from incompatible pointer type; 63D2C.c:345: passing arg 2 of `ApplyRotMatrix' from incompatible pointer type
+sony-func	CdGetSector	main/267A8	2	same		267A8.c:43: passing arg 1 of `CdGetSector' makes pointer from integer without a cast; 267A8.c:51: passing arg 1 of `CdGetSector' makes pointer from integer without a cast
+sony-func	CdGetSector	main/psxsdk/libcd/cdread	2	same		psxsdk/libcd/cdread.c:71: passing arg 1 of `CdGetSector' makes pointer from integer without a cast; psxsdk/libcd/cdread.c:81: passing arg 1 of `CdGetSector' makes pointer from integer without a cast
+sony-func	CdGetSector	main/psxsdk/libcd/sys	def	defcompat no: src/main/psxsdk/libcd/sys.c:260: conflicting types for `CdGetSector'		
+sony-func	CdInit	main/267A8	2	same		
+sony-func	CdInit	main/cdrom	1	same		
+sony-func	CdInit	main/psxsdk/libcd/event	def	defcompat yes		
+sony-func	CdIntToPos	main/cdrom	2	same		cdrom.c:42: passing arg 2 of `CdIntToPos' makes pointer from integer without a cast; cdrom.c:205: passing arg 2 of `CdIntToPos' makes pointer from integer without a cast
+sony-func	CdIntToPos	main/psxsdk/libcd/sys	def	defcompat no: src/main/psxsdk/libcd/sys.c:280: conflicting types for `CdIntToPos'		
+sony-func	CdMix	main/26730	1	same		
+sony-func	CdMix	main/26940	1	same		
+sony-func	CdMix	main/psxsdk/libcd/sys	def	defcompat yes		
+sony-func	CdPosToInt	main/267A8	1	same		267A8.c:45: passing arg 1 of `CdPosToInt' makes pointer from integer without a cast
+sony-func	CdPosToInt	main/26940	3	same		26940.c:112: passing arg 1 of `CdPosToInt' makes pointer from integer without a cast; 26940.c:139: passing arg 1 of `CdPosToInt' makes pointer from integer without a cast; 26940.c:257: passing arg 1 of `CdPosToInt' makes pointer from integer without a cast
+sony-func	CdPosToInt	main/cdrom	4	same		cdrom.c:42: passing arg 1 of `CdPosToInt' makes pointer from integer without a cast; cdrom.c:87: passing arg 1 of `CdPosToInt' makes pointer from integer without a cast; cdrom.c:115: passing arg 1 of `CdPosToInt' makes pointer from integer without a cast; cdrom.c:204: passing arg 1 of `CdPosToInt' makes pointer from integer without a cast
+sony-func	CdPosToInt	main/psxsdk/libcd/cdread	2	same		psxsdk/libcd/cdread.c:73: passing arg 1 of `CdPosToInt' from incompatible pointer type
+sony-func	CdPosToInt	main/psxsdk/libcd/sys	def	defcompat no: src/main/psxsdk/libcd/sys.c:291: conflicting types for `CdPosToInt'		
+sony-func	CdReadyCallback	main/267A8	1	type-missing: CdlCB		
+sony-func	CdReadyCallback	main/26940	4	type-missing: CdlCB		
+sony-func	CdReadyCallback	main/cdrom	1	type-missing: CdlCB		
+sony-func	CdReadyCallback	main/psxsdk/libcd/cdread	6	type-missing: CdlCB		
+sony-func	CdReadyCallback	main/psxsdk/libcd/event	1	type-missing: CdlCB		
+sony-func	CdReadyCallback	main/psxsdk/libcd/sys	def	defcompat type-missing: CdlCB		
+sony-func	CdSetDebug	main/267A8	1	same		
+sony-func	CdSetDebug	main/psxsdk/libcd/sys	def	defcompat yes		
+sony-func	CheckCallback	main/psxsdk/libcd/bios	3	same		
+sony-func	CheckCallback	main/psxsdk/libetc/intr	def	defcompat no: src/main/psxsdk/libetc/intr.c:57: conflicting types for `CheckCallback'		
+sony-func	ClearImage	main/51268	2	same		51268.c:6310: passing arg 1 of `ClearImage' makes pointer from integer without a cast; 51268.c:6327: passing arg 1 of `ClearImage' makes pointer from integer without a cast
+sony-func	ClearImage	main/6CF8	2	same		6CF8.c:195: passing arg 1 of `ClearImage' from incompatible pointer type; 6CF8.c:225: passing arg 1 of `ClearImage' from incompatible pointer type
+sony-func	ClearImage	main/psxsdk/libgpu/sys	def	defcompat no: src/main/psxsdk/libgpu/sys.c:386: conflicting types for `ClearImage'		
+sony-func	ClearOTagR	main/368E4	1	same		368E4.c:1849: passing arg 1 of `ClearOTagR' makes pointer from integer without a cast
+sony-func	ClearOTagR	main/5ED34	1	same		5ED34.c:112: passing arg 1 of `ClearOTagR' makes pointer from integer without a cast
+sony-func	ClearOTagR	main/64FD8	3	same		64FD8.c:1210: passing arg 1 of `ClearOTagR' makes pointer from integer without a cast; 64FD8.c:2206: passing arg 1 of `ClearOTagR' makes pointer from integer without a cast; 64FD8.c:2352: passing arg 1 of `ClearOTagR' makes pointer from integer without a cast
+sony-func	ClearOTagR	main/6CF8	3	same		
+sony-func	ClearOTagR	main/psxsdk/libgpu/sys	def	defcompat yes		
+sony-func	DMACallback	main/psxsdk/libcd/sys	1	same		psxsdk/libcd/sys.c:271: passing arg 2 of `DMACallback' makes pointer from integer without a cast
+sony-func	DMACallback	main/psxsdk/libgpu/sys	3	same		psxsdk/libgpu/sys.c:1171: passing arg 2 of `DMACallback' from incompatible pointer type
+sony-func	DMACallback	main/psxsdk/libspu/s_dcb	1	same		psxsdk/libspu/s_dcb.c:10: passing arg 2 of `DMACallback' makes pointer from integer without a cast
+sony-func	DMACallback	main/psxsdk/libetc/intr	def	defcompat no: src/main/psxsdk/libetc/intr.c:40: conflicting types for `DMACallback'		
+sony-func	DeliverEvent	main/psxsdk/libcd/event	3	same		
+sony-func	DeliverEvent	main/psxsdk/libcomb/comb	7	same		
+sony-func	DeliverEvent	main/psxsdk/libspu/spu	1	same		
+sony-func	EnterCriticalSection	main/28708	2	same		
+sony-func	EnterCriticalSection	main/cdrom	1	same		
+sony-func	EnterCriticalSection	main/memcard	2	same		
+sony-func	EnterCriticalSection	main/psxsdk/libapi/pad	4	same		
+sony-func	EnterCriticalSection	main/psxsdk/libcard/init	2	same		
+sony-func	EnterCriticalSection	main/psxsdk/libcomb/comb	5	error: src/main/psxsdk/libcomb/comb.c:61: void value not ignored as it ought to be		
+sony-func	EnterCriticalSection	main/psxsdk/libetc/intr	1	same		
+sony-func	EnterCriticalSection	main/psxsdk/libsnd/ssend	1	same		
+sony-func	EnterCriticalSection	main/psxsdk/libsnd/ssstart	2	same		
+sony-func	EnterCriticalSection	main/psxsdk/libspu/s_ini	1	same		
+sony-func	EnterCriticalSection	main/psxsdk/libspu/s_q	1	same		
+sony-func	GetClut	main/368E4	3	asm-diff(10 lines)	func_800477E8	
+sony-func	GetClut	main/63D2C	3	same		
+sony-func	GetClut	main/psxsdk/libgpu/ext	2	same		
+sony-func	GetClut	main/psxsdk/libgpu/prim	def	defcompat no: src/main/psxsdk/libgpu/prim.c:69: conflicting types for `GetClut'		
+sony-func	GetRCnt	main/28708	5	same		
+sony-func	GetRCnt	main/368E4	1	same		
+sony-func	GetRCnt	main/6CF8	1	same		
+sony-func	GetRCnt	main/psxsdk/libapi/counter	def	defcompat no: src/main/psxsdk/libapi/counter.c:48: conflicting types for `GetRCnt'		
+sony-func	InitPAD	main/6CF8	1	same		
+sony-func	InitPAD	main/psxsdk/libapi/pad	def	defcompat no: src/main/psxsdk/libapi/pad.c:37: conflicting types for `InitPAD'		
+sony-func	InterruptCallback	main/psxsdk/libcd/bios	2	error: src/main/psxsdk/libcd/bios.c:501: too many arguments to function `InterruptCallback'		
+sony-func	InterruptCallback	main/psxsdk/libetc/intr_dma	0	same		
+sony-func	InterruptCallback	main/psxsdk/libetc/intr_vb	0	same		
+sony-func	InterruptCallback	main/psxsdk/libsnd/ssend	0	same		
+sony-func	InterruptCallback	main/psxsdk/libsnd/ssstart	2	error: src/main/psxsdk/libsnd/ssstart.c:84: too many arguments to function `InterruptCallback'		
+sony-func	InterruptCallback	main/psxsdk/libetc/intr	def	defcompat yes		
+sony-func	LoadImage	main/2B344	3	same		2B344.c:1450: passing arg 1 of `LoadImage' makes pointer from integer without a cast; 2B344.c:1450: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 2B344.c:1878: passing arg 1 of `LoadImage' makes pointer from integer without a cast; 2B344.c:1878: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 2B344.c:1991: passing arg 1 of `LoadImage' makes pointer from integer without a cast; 2B344.c:1991: passing arg 2 of `LoadImage' makes pointer from integer without a cast
+sony-func	LoadImage	main/31D3C	1	same		31D3C.c:391: passing arg 1 of `LoadImage' makes pointer from integer without a cast; 31D3C.c:391: passing arg 2 of `LoadImage' makes pointer from integer without a cast
+sony-func	LoadImage	main/368E4	6	same		368E4.c:1439: passing arg 1 of `LoadImage' from incompatible pointer type; 368E4.c:1450: passing arg 1 of `LoadImage' from incompatible pointer type; 368E4.c:1454: passing arg 1 of `LoadImage' from incompatible pointer type; 368E4.c:1512: passing arg 1 of `LoadImage' from incompatible pointer type; 368E4.c:1512: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 368E4.c:1515: passing arg 1 of `LoadImage' from incompatible pointer type; 368E4.c:1515: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 368E4.c:1717: passing arg 1 of `LoadImage' from incompatible pointer type; +1 more
+sony-func	LoadImage	main/3AB48	6	same		3AB48.c:5386: passing arg 1 of `LoadImage' makes pointer from integer without a cast; 3AB48.c:5386: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 3AB48.c:5388: passing arg 1 of `LoadImage' makes pointer from integer without a cast; 3AB48.c:5388: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 3AB48.c:5623: passing arg 1 of `LoadImage' makes pointer from integer without a cast; 3AB48.c:5623: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 3AB48.c:5625: passing arg 1 of `LoadImage' makes pointer from integer without a cast; 3AB48.c:5625: passing arg 2 of `LoadImage' makes pointer from integer without a cast; +4 more
+sony-func	LoadImage	main/51268	3	same		51268.c:260: passing arg 1 of `LoadImage' from incompatible pointer type; 51268.c:260: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 51268.c:265: passing arg 1 of `LoadImage' from incompatible pointer type; 51268.c:265: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 51268.c:6312: passing arg 1 of `LoadImage' from incompatible pointer type; 51268.c:6312: passing arg 2 of `LoadImage' makes pointer from integer without a cast
+sony-func	LoadImage	main/5ED34	7	same		5ED34.c:220: passing arg 1 of `LoadImage' from incompatible pointer type; 5ED34.c:220: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 5ED34.c:248: passing arg 1 of `LoadImage' from incompatible pointer type; 5ED34.c:248: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 5ED34.c:255: passing arg 1 of `LoadImage' from incompatible pointer type; 5ED34.c:255: passing arg 2 of `LoadImage' makes pointer from integer without a cast; 5ED34.c:433: passing arg 1 of `LoadImage' makes pointer from integer without a cast; 5ED34.c:433: passing arg 2 of `LoadImage' makes pointer from integer without a cast; +6 more
+sony-func	LoadImage	main/64FD8	1	same		64FD8.c:2135: passing arg 1 of `LoadImage' makes pointer from integer without a cast; 64FD8.c:2135: passing arg 2 of `LoadImage' makes pointer from integer without a cast
+sony-func	LoadImage	main/6CF8	2	same		6CF8.c:258: passing arg 1 of `LoadImage' from incompatible pointer type; 6CF8.c:258: passing arg 2 of `LoadImage' from incompatible pointer type; 6CF8.c:281: passing arg 1 of `LoadImage' from incompatible pointer type; 6CF8.c:281: passing arg 2 of `LoadImage' from incompatible pointer type
+sony-func	LoadImage	main/psxsdk/libgpu/ext	3	same		psxsdk/libgpu/ext.c:23: passing arg 1 of `LoadImage' makes pointer from integer without a cast; psxsdk/libgpu/ext.c:23: passing arg 2 of `LoadImage' makes pointer from integer without a cast; psxsdk/libgpu/ext.c:33: passing arg 1 of `LoadImage' makes pointer from integer without a cast; psxsdk/libgpu/ext.c:33: passing arg 2 of `LoadImage' makes pointer from integer without a cast; psxsdk/libgpu/ext.c:42: passing arg 1 of `LoadImage' makes pointer from integer without a cast; psxsdk/libgpu/ext.c:42: passing arg 2 of `LoadImage' makes pointer from integer without a cast
+sony-func	LoadImage	main/psxsdk/libgpu/sys	def	defcompat no: src/main/psxsdk/libgpu/sys.c:396: conflicting types for `LoadImage'		
+sony-func	MoveImage	main/2B344	1	same		2B344.c:2035: passing arg 1 of `MoveImage' from incompatible pointer type
+sony-func	MoveImage	main/51268	1	same		51268.c:3689: passing arg 1 of `MoveImage' from incompatible pointer type
+sony-func	MoveImage	main/5ED34	1	same		5ED34.c:192: passing arg 1 of `MoveImage' from incompatible pointer type
+sony-func	MoveImage	main/psxsdk/libgpu/sys	def	defcompat yes		
+sony-func	MulMatrix0	main/17AFC	2	same		17AFC.c:4493: passing arg 1 of `MulMatrix0' from incompatible pointer type; 17AFC.c:4493: passing arg 2 of `MulMatrix0' from incompatible pointer type; 17AFC.c:4493: passing arg 3 of `MulMatrix0' from incompatible pointer type; 17AFC.c:4626: passing arg 1 of `MulMatrix0' from incompatible pointer type; 17AFC.c:4626: passing arg 2 of `MulMatrix0' from incompatible pointer type; 17AFC.c:4626: passing arg 3 of `MulMatrix0' from incompatible pointer type
+sony-func	MulMatrix0	main/32D04	1	same		
+sony-func	MulMatrix0	main/368E4	2	same		
+sony-func	PCread	main/6CF8	2	same		6CF8.c:107: passing arg 2 of `PCread' makes integer from pointer without a cast; 6CF8.c:128: passing arg 2 of `PCread' makes integer from pointer without a cast
+sony-func	PCread	main/psxsdk/libsn/7407C	def	defcompat yes		
+sony-func	PutDispEnv	main/51268	2	same		
+sony-func	PutDispEnv	main/6CF8	3	same		
+sony-func	PutDispEnv	main/psxsdk/libgpu/sys	def	defcompat yes		
+sony-func	ResetGraph	main/6CF8	3	same		
+sony-func	ResetGraph	main/cdrom	1	same		
+sony-func	ResetGraph	main/psxsdk/libcomb/comb	1	same		
+sony-func	ResetGraph	main/psxsdk/libgpu/sys	def	defcompat no: src/main/psxsdk/libgpu/sys.c:251: conflicting types for `ResetGraph'		
+sony-func	ResetRCnt	main/28708	4	same		
+sony-func	ResetRCnt	main/2B344	1	same		
+sony-func	ResetRCnt	main/6CF8	2	same		
+sony-func	ResetRCnt	main/psxsdk/libsnd/ssstart	1	same		
+sony-func	ResetRCnt	main/psxsdk/libapi/counter	def	defcompat no: src/main/psxsdk/libapi/counter.c:71: conflicting types for `ResetRCnt'		
+sony-func	RotMatrixX	main/17AFC	10	same		17AFC.c:2718: passing arg 2 of `RotMatrixX' from incompatible pointer type; 17AFC.c:2825: passing arg 2 of `RotMatrixX' from incompatible pointer type; 17AFC.c:3397: passing arg 2 of `RotMatrixX' from incompatible pointer type; 17AFC.c:3789: passing arg 2 of `RotMatrixX' from incompatible pointer type; 17AFC.c:3962: passing arg 2 of `RotMatrixX' from incompatible pointer type; 17AFC.c:4009: passing arg 2 of `RotMatrixX' from incompatible pointer type; 17AFC.c:4210: passing arg 2 of `RotMatrixX' from incompatible pointer type; 17AFC.c:4213: passing arg 2 of `RotMatrixX' from incompatible pointer type; +2 more
+sony-func	RotMatrixX	main/9F9C	2	same		9F9C.c:462: passing arg 2 of `RotMatrixX' makes pointer from integer without a cast; 9F9C.c:4572: passing arg 2 of `RotMatrixX' makes pointer from integer without a cast
+sony-func	RotMatrixY	main/17AFC	12	same		17AFC.c:2717: passing arg 2 of `RotMatrixY' from incompatible pointer type; 17AFC.c:2824: passing arg 2 of `RotMatrixY' from incompatible pointer type; 17AFC.c:3396: passing arg 2 of `RotMatrixY' from incompatible pointer type; 17AFC.c:3788: passing arg 2 of `RotMatrixY' from incompatible pointer type; 17AFC.c:3961: passing arg 2 of `RotMatrixY' from incompatible pointer type; 17AFC.c:4010: passing arg 2 of `RotMatrixY' from incompatible pointer type; 17AFC.c:4141: passing arg 2 of `RotMatrixY' from incompatible pointer type; 17AFC.c:4211: passing arg 2 of `RotMatrixY' from incompatible pointer type; +4 more
+sony-func	RotMatrixY	main/9F9C	2	same		9F9C.c:463: passing arg 2 of `RotMatrixY' makes pointer from integer without a cast; 9F9C.c:4573: passing arg 2 of `RotMatrixY' makes pointer from integer without a cast
+sony-func	RotMatrixZ	main/17AFC	5	same		17AFC.c:4140: passing arg 2 of `RotMatrixZ' from incompatible pointer type; 17AFC.c:4212: passing arg 2 of `RotMatrixZ' from incompatible pointer type; 17AFC.c:4215: passing arg 2 of `RotMatrixZ' from incompatible pointer type; 17AFC.c:4264: passing arg 2 of `RotMatrixZ' from incompatible pointer type; 17AFC.c:4491: passing arg 2 of `RotMatrixZ' from incompatible pointer type
+sony-func	RotMatrixZ	main/9F9C	2	same		9F9C.c:464: passing arg 2 of `RotMatrixZ' makes pointer from integer without a cast; 9F9C.c:4574: passing arg 2 of `RotMatrixZ' makes pointer from integer without a cast
+sony-func	RotTrans	main/51268	2	same		51268.c:757: passing arg 1 of `RotTrans' from incompatible pointer type; 51268.c:757: passing arg 2 of `RotTrans' from incompatible pointer type; 51268.c:810: passing arg 1 of `RotTrans' from incompatible pointer type; 51268.c:810: passing arg 2 of `RotTrans' from incompatible pointer type
+sony-func	RotTrans	main/6CF8	1	same		
+sony-func	SetDefDispEnv	main/51268	2	same		
+sony-func	SetDefDispEnv	main/6CF8	4	same		
+sony-func	SetDefDispEnv	main/psxsdk/libgpu/ext	def	defcompat no: src/main/psxsdk/libgpu/ext.c:72: conflicting types for `SetDefDispEnv'		
+sony-func	SetDefDrawEnv	main/51268	2	same		
+sony-func	SetDefDrawEnv	main/6CF8	3	same		
+sony-func	SetDefDrawEnv	main/psxsdk/libgpu/ext	def	defcompat no: src/main/psxsdk/libgpu/ext.c:45: conflicting types for `SetDefDrawEnv'		
+sony-func	SetDrawArea	main/3AB48	2	type-missing: DR_AREA		
+sony-func	SetDrawArea	main/51268	2	type-missing: DR_AREA		
+sony-func	SetDrawArea	main/5ED34	4	type-missing: DR_AREA		
+sony-func	SetDrawArea	main/64FD8	2	type-missing: DR_AREA		
+sony-func	SetDrawArea	main/psxsdk/libgpu/sys	def	defcompat type-missing: DR_AREA		
+sony-func	SetDrawMode	main/3AB48	12	type-missing: DR_MODE		
+sony-func	SetDrawMode	main/51268	30	type-missing: DR_MODE		
+sony-func	SetDrawMode	main/5ED34	15	type-missing: DR_MODE		
+sony-func	SetDrawMode	main/63D2C	2	type-missing: DR_MODE		
+sony-func	SetDrawMode	main/64FD8	17	type-missing: DR_MODE		
+sony-func	SetDrawMode	main/psxsdk/libgpu/sys	def	defcompat type-missing: DR_MODE		
+sony-func	SetDrawOffset	main/51268	2	type-missing: DR_OFFSET		
+sony-func	SetDrawOffset	main/5ED34	4	type-missing: DR_OFFSET		
+sony-func	SetDrawOffset	main/64FD8	2	type-missing: DR_OFFSET		
+sony-func	SetDrawOffset	main/psxsdk/libgpu/sys	def	defcompat type-missing: DR_OFFSET		
+sony-func	SetGraphDebug	main/6CF8	1	same		
+sony-func	SetGraphDebug	main/psxsdk/libgpu/sys	def	defcompat no: src/main/psxsdk/libgpu/sys.c:301: conflicting types for `SetGraphDebug'		
+sony-func	SetIntrMask	main/psxsdk/libgpu/sys	9	asm-diff(14 lines)	_addque2,_exeque,_reset,get_alarm	
+sony-func	SetIntrMask	main/psxsdk/libetc/intr	def	defcompat yes		
+sony-func	SetPolyFT4	main/51268	4	same		
+sony-func	SetPolyFT4	main/63D2C	2	same		
+sony-func	SetPolyFT4	main/psxsdk/libgpu/prim	def	defcompat no: src/main/psxsdk/libgpu/prim.c:142: conflicting types for `SetPolyFT4'		
+sony-func	SetPolyG4	main/25C38	1	same		25C38.c:125: passing arg 1 of `SetPolyG4' from incompatible pointer type
+sony-func	SetPolyG4	main/3AB48	1	same		3AB48.c:5472: passing arg 1 of `SetPolyG4' from incompatible pointer type
+sony-func	SetPolyG4	main/51268	2	same		51268.c:5558: passing arg 1 of `SetPolyG4' from incompatible pointer type; 51268.c:5594: passing arg 1 of `SetPolyG4' from incompatible pointer type
+sony-func	SetPolyG4	main/5ED34	2	same		5ED34.c:1933: passing arg 1 of `SetPolyG4' from incompatible pointer type; 5ED34.c:1978: passing arg 1 of `SetPolyG4' from incompatible pointer type
+sony-func	SetPolyG4	main/psxsdk/libgpu/prim	def	defcompat no: src/main/psxsdk/libgpu/prim.c:147: conflicting types for `SetPolyG4'		
+sony-func	SetRCnt	main/368E4	1	asm-diff(2 lines)	rcnt_StartCnt1	
+sony-func	SetRCnt	main/psxsdk/libsnd/ssstart	1	same		
+sony-func	SetRCnt	main/psxsdk/libapi/counter	def	defcompat no: src/main/psxsdk/libapi/counter.c:12: conflicting types for `SetRCnt'		
+sony-func	SetRotMatrix	main/51268	6	same		51268.c:755: passing arg 1 of `SetRotMatrix' from incompatible pointer type; 51268.c:808: passing arg 1 of `SetRotMatrix' from incompatible pointer type; 51268.c:877: passing arg 1 of `SetRotMatrix' from incompatible pointer type; 51268.c:964: passing arg 1 of `SetRotMatrix' from incompatible pointer type; 51268.c:1168: passing arg 1 of `SetRotMatrix' from incompatible pointer type; 51268.c:2720: passing arg 1 of `SetRotMatrix' from incompatible pointer type
+sony-func	SetRotMatrix	main/63D2C	1	same		63D2C.c:335: passing arg 1 of `SetRotMatrix' from incompatible pointer type
+sony-func	SetRotMatrix	main/6CF8	1	same		
+sony-func	SetSemiTrans	main/3AB48	16	same		
+sony-func	SetSemiTrans	main/51268	27	same		51268.c:4183: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast
+sony-func	SetSemiTrans	main/5ED34	8	same		5ED34.c:480: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast; 5ED34.c:2087: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast; 5ED34.c:2092: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast; 5ED34.c:2103: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast; 5ED34.c:2108: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast
+sony-func	SetSemiTrans	main/63D2C	7	same		63D2C.c:114: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast; 63D2C.c:407: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast; 63D2C.c:444: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast; 63D2C.c:458: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast; 63D2C.c:472: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast
+sony-func	SetSemiTrans	main/64FD8	3	same		64FD8.c:311: passing arg 1 of `SetSemiTrans' makes pointer from integer without a cast
+sony-func	SetSemiTrans	main/psxsdk/libgpu/prim	def	defcompat no: src/main/psxsdk/libgpu/prim.c:101: conflicting types for `SetSemiTrans'		
+sony-func	SetShadeTex	main/51268	4	same		51268.c:1068: passing arg 1 of `SetShadeTex' makes pointer from integer without a cast; 51268.c:1205: passing arg 1 of `SetShadeTex' makes pointer from integer without a cast; 51268.c:2026: passing arg 1 of `SetShadeTex' makes pointer from integer without a cast; 51268.c:2691: passing arg 1 of `SetShadeTex' makes pointer from integer without a cast
+sony-func	SetShadeTex	main/63D2C	6	same		63D2C.c:107: passing arg 1 of `SetShadeTex' makes pointer from integer without a cast; 63D2C.c:112: passing arg 1 of `SetShadeTex' makes pointer from integer without a cast; 63D2C.c:248: passing arg 1 of `SetShadeTex' makes pointer from integer without a cast; 63D2C.c:253: passing arg 1 of `SetShadeTex' makes pointer from integer without a cast; 63D2C.c:368: passing arg 1 of `SetShadeTex' makes pointer from integer without a cast; 63D2C.c:373: passing arg 1 of `SetShadeTex' makes pointer from integer without a cast
+sony-func	SetShadeTex	main/psxsdk/libgpu/prim	def	defcompat no: src/main/psxsdk/libgpu/prim.c:109: conflicting types for `SetShadeTex'		
+sony-func	SetSprt	main/63D2C	1	type-missing: SPRT		
+sony-func	SetSprt	main/psxsdk/libgpu/prim	def	defcompat type-missing: SPRT		
+sony-func	SetTile	main/3AB48	15	type-missing: TILE		
+sony-func	SetTile	main/51268	15	type-missing: TILE		
+sony-func	SetTile	main/5ED34	4	type-missing: TILE		
+sony-func	SetTile	main/63D2C	1	type-missing: TILE		
+sony-func	SetTile	main/64FD8	3	type-missing: TILE		
+sony-func	SetTile	main/psxsdk/libgpu/prim	def	defcompat type-missing: TILE		
+sony-func	SetTransMatrix	main/51268	6	same		51268.c:756: passing arg 1 of `SetTransMatrix' from incompatible pointer type; 51268.c:809: passing arg 1 of `SetTransMatrix' from incompatible pointer type; 51268.c:1026: passing arg 1 of `SetTransMatrix' from incompatible pointer type; 51268.c:1169: passing arg 1 of `SetTransMatrix' from incompatible pointer type; 51268.c:1358: passing arg 1 of `SetTransMatrix' from incompatible pointer type; 51268.c:1972: passing arg 1 of `SetTransMatrix' from incompatible pointer type
+sony-func	SetTransMatrix	main/6CF8	1	same		
+sony-func	SpuClearReverbWorkArea	main/3AB48	1	same		
+sony-func	SpuClearReverbWorkArea	main/psxsdk/libspu/s_srmp	1	same		
+sony-func	SpuClearReverbWorkArea	main/psxsdk/libspu/s_crwa	def	defcompat no: src/main/psxsdk/libspu/s_crwa.c:12: conflicting types for `SpuClearReverbWorkArea'		
+sony-func	SpuSetCommonAttr	main/psxsdk/libsnd/scsmvol	1	same		psxsdk/libsnd/scsmvol.c:14: passing arg 1 of `SpuSetCommonAttr' from incompatible pointer type
+sony-func	SpuSetCommonAttr	main/psxsdk/libsnd/scssattr	1	same		psxsdk/libsnd/scssattr.c:33: passing arg 1 of `SpuSetCommonAttr' from incompatible pointer type
+sony-func	SpuSetCommonAttr	main/psxsdk/libsnd/scssvol	1	same		psxsdk/libsnd/scssvol.c:37: passing arg 1 of `SpuSetCommonAttr' from incompatible pointer type
+sony-func	SpuSetCommonAttr	main/psxsdk/libspu/s_sca	def	defcompat no: src/main/psxsdk/libspu/s_sca.c:10: conflicting types for `SpuSetCommonAttr'		
+sony-func	SsInit	main/3AB48	1	same		
+sony-func	SsInit	main/psxsdk/libsnd/ssinit_c	def	defcompat yes		
+sony-func	SsSetAutoKeyOffMode	main/3AB48	1	same		
+sony-func	SsSetAutoKeyOffMode	main/psxsdk/libsnd/vs_auto	def	defcompat no: src/main/psxsdk/libsnd/vs_auto.c:6: conflicting types for `SsSetAutoKeyOffMode'		
+sony-func	SsSetMVol	main/3AB48	1	same		
+sony-func	SsSetMVol	main/psxsdk/libsnd/scsmvol	def	defcompat yes		
+sony-func	SsSetSerialVol	main/267A8	1	same		
+sony-func	SsSetSerialVol	main/psxsdk/libsnd/scssvol	def	defcompat yes		
+sony-func	SsSetTickMode	main/3AB48	1	same		
+sony-func	SsSetTickMode	main/psxsdk/libsnd/sstick	def	defcompat yes		
+sony-func	SsUtKeyOnV	main/3AB48	1	same		
+sony-func	SsUtKeyOnV	main/psxsdk/libsnd/ut_keyv	def	defcompat yes		
+sony-func	SsUtReverbOff	main/3AB48	5	same		
+sony-func	SsUtReverbOff	main/psxsdk/libsnd/ut_roff	def	defcompat yes		
+sony-func	SsUtReverbOn	main/3AB48	1	same		
+sony-func	SsUtReverbOn	main/psxsdk/libsnd/ut_ron	def	defcompat yes		
+sony-func	SsUtSetReverbDepth	main/3AB48	6	same		
+sony-func	SsUtSetReverbDepth	main/psxsdk/libsnd/ut_rdep	def	defcompat yes		
+sony-func	SsUtSetReverbType	main/3AB48	6	error: src/main/3AB48.c:3740: void value not ignored as it ought to be		
+sony-func	SsUtSetReverbType	main/psxsdk/libsnd/ut_rev	def	defcompat no: src/main/psxsdk/libsnd/ut_rev.c:6: conflicting types for `SsUtSetReverbType'		
+sony-func	SsVabFakeBody	main/3AB48	2	same		
+sony-func	SsVabFakeBody	main/psxsdk/libsnd/vs_vfb	def	defcompat yes		
+sony-func	SsVabFakeHead	main/3AB48	2	asm-diff(52 lines)	snd_VabFakeOpen	3AB48.c:3775: passing arg 1 of `SsVabFakeHead' makes pointer from integer without a cast; 3AB48.c:3916: passing arg 1 of `SsVabFakeHead' makes pointer from integer without a cast
+sony-func	SsVabFakeHead	main/psxsdk/libsnd/vs_vh	def	defcompat no: src/main/psxsdk/libsnd/vs_vh.c:15: conflicting types for `SsVabFakeHead'		
+sony-func	SsVabOpenHeadSticky	main/3AB48	1	same		3AB48.c:3932: passing arg 1 of `SsVabOpenHeadSticky' makes pointer from integer without a cast
+sony-func	SsVabOpenHeadSticky	main/psxsdk/libsnd/vs_vh	def	defcompat no: src/main/psxsdk/libsnd/vs_vh.c:11: conflicting types for `SsVabOpenHeadSticky'		
+sony-func	SsVabTransBody	main/3AB48	1	same		3AB48.c:3934: passing arg 1 of `SsVabTransBody' makes pointer from integer without a cast
+sony-func	SsVabTransBody	main/psxsdk/libsnd/vs_vtb	def	defcompat no: src/main/psxsdk/libsnd/vs_vtb.c:6: conflicting types for `SsVabTransBody'		
+sony-func	StartRCnt	main/368E4	1	same		
+sony-func	StartRCnt	main/psxsdk/libapi/counter	def	defcompat no: src/main/psxsdk/libapi/counter.c:55: conflicting types for `StartRCnt'		
+sony-func	StoreImage	main/2B344	1	same		2B344.c:1875: passing arg 1 of `StoreImage' from incompatible pointer type; 2B344.c:1875: passing arg 2 of `StoreImage' from incompatible pointer type
+sony-func	StoreImage	main/31D3C	1	same		31D3C.c:303: passing arg 1 of `StoreImage' from incompatible pointer type; 31D3C.c:303: passing arg 2 of `StoreImage' from incompatible pointer type
+sony-func	StoreImage	main/368E4	1	same		368E4.c:1679: passing arg 1 of `StoreImage' from incompatible pointer type; 368E4.c:1679: passing arg 2 of `StoreImage' from incompatible pointer type
+sony-func	StoreImage	main/psxsdk/libgpu/sys	def	defcompat no: src/main/psxsdk/libgpu/sys.c:401: conflicting types for `StoreImage'		
+sony-func	VSync	main/267A8	1	same		
+sony-func	VSync	main/26940	4	same		
+sony-func	VSync	main/28708	7	same		
+sony-func	VSync	main/2B344	8	same		
+sony-func	VSync	main/6CF8	4	same		
+sony-func	VSync	main/9F9C	2	same		
+sony-func	VSync	main/cdrom	5	same		
+sony-func	VSync	main/psxsdk/libcd/bios	2	same		
+sony-func	VSync	main/psxsdk/libcd/cdread	9	same		
+sony-func	VSync	main/psxsdk/libgpu/sys	2	same		
+sony-func	VSync	main/psxsdk/libetc/vsync	def	defcompat yes		
+sony-func	_comb_control	main/28708	17	same		
+sony-func	_comb_control	main/2B344	3	same		
+sony-func	_comb_control	main/psxsdk/libcomb/comb	def	defcompat yes		
+sony-func	_exeque	main/psxsdk/libgpu/sys	def	defcompat yes		
+sony-func	_memcpy	main/psxsdk/libcd/bios	def	defcompat no: src/main/psxsdk/libcd/bios.c:75: conflicting types for `_memcpy' (TU defines it; not in census defs)		
+sony-func	_memcpy	main/psxsdk/libspu/s_srmp	def	defcompat yes		
+sony-func	func_800858D0	main/3AB48	19	error: src/main/3AB48.c:3341: too many arguments to function `func_800858D0'		
+sony-func	func_800858D0	main/psxsdk/libsnd/760D0	def	defcompat yes		
+sony-func	func_80086130	main/3AB48	1	same		
+sony-func	func_80086130	main/psxsdk/libsnd/ut_vvol	def	defcompat yes		
+sony-func	get_alarm	main/psxsdk/libcd/bios	def	defcompat yes		
+sony-func	get_alarm	main/psxsdk/libgpu/sys	def	defcompat yes (TU defines it; not in census defs)		
+sony-func	memcpy	main/6CF8	1	type-missing: size_t		
+sony-func	memcpy	main/9F9C	3	type-missing: size_t		
+sony-func	memcpy	main/psxsdk/libgpu/sys	3	type-missing: size_t		
+sony-func	memcpy	main/psxsdk/libc2/memcpy	def	defcompat type-missing: size_t		
+sony-func	memmove	main/psxsdk/libc2/sprintf	1	same		
+sony-func	memmove	main/psxsdk/libc2/memmove	def	defcompat no: src/main/psxsdk/libc2/memmove.c:9: conflicting types for `memmove'		
+sony-func	printf	main/17AFC	1	same		
+sony-func	printf	main/35000	1	same		
+sony-func	printf	main/3AB48	3	same		3AB48.c:742: passing arg 1 of `printf' discards `const' from pointer target type; 3AB48.c:3532: passing arg 1 of `printf' from incompatible pointer type; 3AB48.c:3885: passing arg 1 of `printf' discards `const' from pointer target type
+sony-func	printf	main/51268	1	same		51268.c:378: passing arg 1 of `printf' from incompatible pointer type
+sony-func	printf	main/6CF8	4	same		6CF8.c:293: passing arg 1 of `printf' discards `const' from pointer target type; 6CF8.c:309: passing arg 1 of `printf' discards `const' from pointer target type; 6CF8.c:344: passing arg 1 of `printf' discards `const' from pointer target type; 6CF8.c:582: passing arg 1 of `printf' discards `const' from pointer target type
+sony-func	printf	main/psxsdk/libcd/bios	7	same		psxsdk/libcd/bios.c:153: passing arg 1 of `printf' discards `const' from pointer target type; psxsdk/libcd/bios.c:156: passing arg 1 of `printf' discards `const' from pointer target type; psxsdk/libcd/bios.c:199: passing arg 1 of `printf' discards `const' from pointer target type; psxsdk/libcd/bios.c:287: passing arg 1 of `printf' from incompatible pointer type; psxsdk/libcd/bios.c:386: passing arg 1 of `printf' discards `const' from pointer target type; psxsdk/libcd/bios.c:390: passing arg 1 of `printf' discards `const' from pointer target type; psxsdk/libcd/bios.c:509: passing arg 1 of `printf' from incompatible pointer type
+sony-func	printf	main/psxsdk/libcd/event	1	same		psxsdk/libcd/event.c:32: passing arg 1 of `printf' discards `const' from pointer target type
+sony-func	printf	main/psxsdk/libetc/intr	2	same		psxsdk/libetc/intr.c:131: passing arg 1 of `printf' from incompatible pointer type; psxsdk/libetc/intr.c:149: passing arg 1 of `printf' from incompatible pointer type
+sony-func	printf	main/psxsdk/libetc/intr_dma	2	same		psxsdk/libetc/intr_dma.c:58: passing arg 1 of `printf' from incompatible pointer type; psxsdk/libetc/intr_dma.c:60: passing arg 1 of `printf' from incompatible pointer type
+sony-func	printf	main/psxsdk/libgpu/sys	3	same		psxsdk/libgpu/sys.c:255: passing arg 1 of `printf' from incompatible pointer type; psxsdk/libgpu/sys.c:1300: passing arg 1 of `printf' discards `const' from pointer target type; psxsdk/libgpu/sys.c:1301: passing arg 1 of `printf' discards `const' from pointer target type
+sony-func	printf	main/psxsdk/libspu/spu	3	same		psxsdk/libspu/spu.c:59: passing arg 1 of `printf' from incompatible pointer type; psxsdk/libspu/spu.c:177: passing arg 1 of `printf' from incompatible pointer type; psxsdk/libspu/spu.c:193: passing arg 1 of `printf' from incompatible pointer type
+sony-func	printf	main/psxsdk/libc2/printf	def	defcompat no: src/main/psxsdk/libc2/printf.c:6: conflicting types for `printf'		
+sony-func	putchar	main/psxsdk/libc2/prnt	11	asm-diff(71 lines)	prnt	
+sony-func	putchar	main/psxsdk/libc2/puts	1	asm-diff(7 lines)	puts	
+sony-func	putchar	main/psxsdk/libc2/putchar	def	defcompat yes		
+sony-func	puts	main/psxsdk/libcd/bios	3	same		psxsdk/libcd/bios.c:198: passing arg 1 of `puts' discards `const' from pointer target type; psxsdk/libcd/bios.c:285: passing arg 1 of `puts' from incompatible pointer type; psxsdk/libcd/bios.c:508: passing arg 1 of `puts' from incompatible pointer type
+sony-func	puts	main/psxsdk/libcd/cdread	3	same		psxsdk/libcd/cdread.c:74: passing arg 1 of `puts' from incompatible pointer type; psxsdk/libcd/cdread.c:143: passing arg 1 of `puts' from incompatible pointer type; psxsdk/libcd/cdread.c:151: passing arg 1 of `puts' from incompatible pointer type
+sony-func	puts	main/psxsdk/libetc/vsync	1	same		psxsdk/libetc/vsync.c:84: passing arg 1 of `puts' from incompatible pointer type
+sony-func	puts	main/psxsdk/libc2/puts	def	defcompat no: src/main/psxsdk/libc2/puts.c:18: conflicting types for `puts'		
+sony-func	rand	main/17AFC	3	same		
+sony-func	rand	main/24F08	1	same		
+sony-func	rand	main/25C38	1	same		
+sony-func	rand	main/2B344	1	same		
+sony-func	rand	main/3AB48	26	same		
+sony-func	rand	main/51268	17	asm-diff(2 lines)	func_800620B8	
+sony-func	rand	main/6CF8	3	same		
+sony-func	rand	main/9F9C	4	error: src/main/9F9C.c:1291: too many arguments to function `rand'		
+sony-func	rand	main/psxsdk/libc2/rand	def	defcompat yes		
+sony-func	ratan2	main/17AFC	28	same		
+sony-func	ratan2	main/2B344	1	same		
+sony-func	ratan2	main/31D3C	2	same		
+sony-func	ratan2	main/32D04	3	same		
+sony-func	ratan2	main/368E4	4	same		
+sony-func	ratan2	main/3AB48	9	same		
+sony-func	ratan2	main/9F9C	16	same		
+sony-func	ratan2	main/psxsdk/libgte/ratan	def	defcompat yes		
+sony-func	rcos	main/31D3C	1	same		
+sony-func	rcos	main/32D04	1	same		
+sony-func	rcos	main/35000	2	same		
+sony-func	rcos	main/368E4	2	same		
+sony-func	rcos	main/51268	4	asm-diff(10 lines)	func_80065800	
+sony-func	rcos	main/5ED34	2	same		
+sony-func	rcos	main/psxsdk/libgte/geo_01	def	defcompat yes		
+sony-func	rsin	main/31D3C	1	same		
+sony-func	rsin	main/32D04	1	same		
+sony-func	rsin	main/35000	2	same		
+sony-func	rsin	main/368E4	2	same		
+sony-func	rsin	main/51268	18	asm-diff(14 lines)	func_80065800	
+sony-func	rsin	main/5ED34	8	same		
+sony-func	rsin	main/63D2C	4	same		
+sony-func	rsin	main/64FD8	4	same		
+sony-func	rsin	main/psxsdk/libgte/geo_00	def	defcompat yes		
+sony-func	set_alarm	main/psxsdk/libcd/bios	def	defcompat yes		
+sony-func	set_alarm	main/psxsdk/libgpu/sys	def	defcompat no: src/main/psxsdk/libgpu/sys.c:1291: conflicting types for `set_alarm' (TU defines it; not in census defs)		
+sony-func	startIntrDMA	main/psxsdk/libetc/intr	1	same		
+sony-func	startIntrDMA	main/psxsdk/libetc/intr_dma	def	defcompat yes		
+sony-func	startIntrVSync	main/psxsdk/libetc/intr	1	same		
+sony-func	startIntrVSync	main/psxsdk/libetc/intr_vb	def	defcompat yes		
+sony-func	write	main/28708	1	same		
+sony-func	write	main/memcard	1	same		memcard.c:363: passing arg 2 of `write' makes pointer from integer without a cast
+sony-func	write	main/psxsdk/libc2/putchar	1	same		
