@@ -98,129 +98,96 @@ void CatPrim(u32 *a0, u32 a1) {
 void TermPrim(u32 *a0) {
     *a0 |= OT_ADDR_MASK;
 }
-void SetSemiTrans(u8 *a0, s32 a1) {
-    if (a1) {
-        a0[7] |= 2;
-    } else {
-        a0[7] &= ~2;
-    }
+void SetSemiTrans(void *p, s32 abe) {
+    setSemiTrans(p, abe);
 }
 
-void SetShadeTex(u8 *a0, s32 a1) {
-    if (a1) {
-        a0[7] |= 1;
-    } else {
-        a0[7] &= ~1;
-    }
+void SetShadeTex(void *p, s32 tge) {
+    setShadeTex(p, tge);
 }
 
-void SetPolyF3(u8 *p) {
-    p[3] = 0x4;
-    p[7] = 0x20;
+void SetPolyF3(POLY_F3 *p) {
+    setPolyF3(p);
 }
 
-void SetPolyFT3(u8 *p) {
-    p[3] = 0x7;
-    p[7] = 0x24;
+void SetPolyFT3(POLY_FT3 *p) {
+    setPolyFT3(p);
 }
 
-void SetPolyG3(u8 *p) {
-    p[3] = 0x6;
-    p[7] = 0x30;
+void SetPolyG3(POLY_G3 *p) {
+    setPolyG3(p);
 }
 
-void SetPolyGT3(u8 *p) {
-    p[3] = 0x9;
-    p[7] = 0x34;
+void SetPolyGT3(POLY_GT3 *p) {
+    setPolyGT3(p);
 }
 
-void SetPolyF4(u8 *p) {
-    p[3] = 0x5;
-    p[7] = 0x28;
+void SetPolyF4(POLY_F4 *p) {
+    setPolyF4(p);
 }
 
-void SetPolyFT4(u8 *p) {
-    p[3] = 0x9;
-    p[7] = 0x2C;
+void SetPolyFT4(POLY_FT4 *p) {
+    setPolyFT4(p);
 }
 
-void SetPolyG4(u8 *p) {
-    p[3] = 0x8;
-    p[7] = 0x38;
+void SetPolyG4(POLY_G4 *p) {
+    setPolyG4(p);
 }
 
-void SetPolyGT4(u8 *p) {
-    p[3] = 0xC;
-    p[7] = 0x3C;
+void SetPolyGT4(POLY_GT4 *p) {
+    setPolyGT4(p);
 }
 
-void SetSprt8(u8 *p) {
-    p[3] = 0x3;
-    p[7] = 0x74;
+void SetSprt8(SPRT_8 *p) {
+    setSprt8(p);
 }
 
-void SetSprt16(u8 *p) {
-    p[3] = 0x3;
-    p[7] = 0x7C;
+void SetSprt16(SPRT_16 *p) {
+    setSprt16(p);
 }
 
-void SetSprt(u8 *p) {
-    p[3] = 0x4;
-    p[7] = 0x64;
+void SetSprt(SPRT *p) {
+    setSprt(p);
 }
 
-void SetTile1(u8 *p) {
-    p[3] = 0x2;
-    p[7] = 0x68;
+void SetTile1(TILE_1 *p) {
+    setTile1(p);
 }
 
-void SetTile8(u8 *p) {
-    p[3] = 0x2;
-    p[7] = 0x70;
+void SetTile8(TILE_8 *p) {
+    setTile8(p);
 }
 
-void SetTile16(u8 *p) {
-    p[3] = 0x2;
-    p[7] = 0x78;
+void SetTile16(TILE_16 *p) {
+    setTile16(p);
 }
 
-void SetTile(u8 *p) {
-    p[3] = 0x3;
-    p[7] = 0x60;
+void SetTile(TILE *p) {
+    setTile(p);
 }
 
-void SetLineF2(u8 *p) {
-    p[3] = 0x3;
-    p[7] = 0x40;
+void SetLineF2(LINE_F2 *p) {
+    setLineF2(p);
 }
 
-void SetLineG2(u8 *p) {
-    p[3] = 0x4;
-    p[7] = 0x50;
+void SetLineG2(LINE_G2 *p) {
+    setLineG2(p);
 }
 
-void SetLineF3(u8 *p) {
-    p[3] = 0x5;
-    p[7] = 0x48;
-    *(u32 *)(p + 0x14) = GPU_DITHER_PATTERN;
+void SetLineF3(LINE_F3 *p) {
+    setLineF3(p);
 }
 
-void SetLineG3(u8 *p) {
-    p[3] = 0x7;
-    p[7] = 0x58;
-    *(u32 *)(p + 0x1C) = GPU_DITHER_PATTERN;
+void SetLineG3(LINE_G3 *p) {
+    setLineG3(p);
 }
 
-void SetLineF4(u8 *p) {
-    p[3] = 0x6;
-    p[7] = 0x4C;
-    *(u32 *)(p + 0x18) = GPU_DITHER_PATTERN;
+void SetLineF4(LINE_F4 *p) {
+    setLineF4(p);
 }
 
-void SetLineG4(u8 *p) {
-    p[3] = 0x9;
-    p[7] = 0x5C;
-    *(u32 *)(p + 0x24) = GPU_DITHER_PATTERN;
+void SetLineG4(LINE_G4 *p) {
+    setLineG4(p);
 }
 
 void SetDrawTPage(u8 *a0, s32 a1, s32 a2, u32 a3) {

@@ -906,8 +906,6 @@ void func_800620B8(s16 *pos, s32 *trans) {
     extern u16 D_8009BA58[4];
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
-    extern void SetPolyFT4(void *);
-    extern s32 SetShadeTex(s32, s32);
     extern s32 SetSemiTrans(void *, s32);
     extern s32 rand(void);
     u8 *base;
@@ -1059,7 +1057,7 @@ void func_800620B8(s16 *pos, s32 *trans) {
             prim->v2 = *(u16 *)D_800A34A4;
             prim->u3 = *(u16 *)D_800A349C;
             prim->v3 = *(u16 *)D_800A34A4;
-            SetShadeTex((s32)prim, 1);
+            SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
             if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
                 D_800A34E4 = g_gpu_ot_ptr + *z * 4;
@@ -1098,8 +1096,6 @@ s32 func_8006288C(void) {
     }
     return 1;
 }
-extern s32 SetShadeTex(s32, s32);
-extern void SetPolyFT4(void *);
 /* Draw the up-to-6 slots func_8006288C spawns: per active slot, scale/rotate/
    translate its matrix, then emit three textured POLY_FT4 quads, and finally
    link the new quads into the OT. Returns 1 when quads were added, else the
@@ -1196,7 +1192,7 @@ s32 func_8006295C(void) {
             *(u16 *)&prim->u2 = *(u16 *)D_800A34DC;
             *(u16 *)&prim->u3 = *(u16 *)D_800A34E0;
             SetPolyFT4(prim);
-            SetShadeTex((s32)prim, 1);
+            SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
             sv = &D_8009BB84[j * 16];
             RotTransPers4(sv, sv + 4, sv + 8, sv + 12,
@@ -1999,7 +1995,7 @@ s32 func_800646E8(void) {
             prim->v2 = *(u16 *)D_800A34A4;
             prim->u3 = *(u16 *)D_800A349C;
             prim->v3 = *(u16 *)D_800A34A4;
-            SetShadeTex((s32)prim, 0);
+            SetShadeTex(prim, 0);
             SetSemiTrans(prim, 1);
             if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
                 prim++;
@@ -2663,7 +2659,7 @@ again:
     prim->v2 = *(u16 *)D_800A34A4;
     prim->u3 = *(u16 *)D_800A349C;
     prim->v3 = *(u16 *)D_800A34A4;
-    SetShadeTex((s32)prim, 0);
+    SetShadeTex(prim, 0);
     SetSemiTrans(prim, 1);
     switch (arg0) {
     case 0:
@@ -4079,7 +4075,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
 
     poly = (u8 *)arg0[3];
     arg0[7] += 0xC;
-    SetPolyF4(poly);
+    SetPolyF4((POLY_F4 *)poly);
     func_80069A8C(poly);
     *(s16 *)(poly + 8)  = 0;
     *(s16 *)(poly + 10) = 0xB9;
@@ -4093,7 +4089,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
     AddPrim(g_gpu_ot_ptr + 0x4C, (s32)poly);
     poly += 0x18;
 
-    SetPolyF4(poly);
+    SetPolyF4((POLY_F4 *)poly);
     func_80069A8C(poly);
     *(s16 *)(poly + 8)  = 0x15E;
     *(s16 *)(poly + 12) = 0x27F;
@@ -4107,7 +4103,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
     AddPrim(g_gpu_ot_ptr + 0x4C, (s32)poly);
     poly += 0x18;
 
-    SetPolyF4(poly);
+    SetPolyF4((POLY_F4 *)poly);
     func_80069A8C(poly);
     *(s16 *)(poly + 8)  = 0x122;
     *(s16 *)(poly + 10) = 0;

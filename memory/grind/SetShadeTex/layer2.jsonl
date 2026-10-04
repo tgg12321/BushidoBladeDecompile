@@ -1,0 +1,1 @@
+{"func": "SetShadeTex", "addr": "8007A990", "verdict": "PASS", "body_hash": "30122c43dfd8cc45", "body_kind": "c", "file": "main/psxsdk/libgpu/prim", "reviewer": "p2-rev-g2a", "scope": "cheat-cleanup", "date": "2026-10-04T05:58:10Z", "head": "11ece7283", "notes": ""}

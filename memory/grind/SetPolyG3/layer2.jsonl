@@ -1,0 +1,1 @@
+{"func": "SetPolyG3", "addr": "8007A9E0", "verdict": "PASS", "body_hash": "ca7c6a3156a2a49d", "body_kind": "c", "file": "main/psxsdk/libgpu/prim", "reviewer": "p2-rev-g2a", "scope": "cheat-cleanup", "date": "2026-10-04T05:57:08Z", "head": "11ece7283", "notes": ""}

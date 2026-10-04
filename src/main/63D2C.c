@@ -17,8 +17,6 @@ extern s32 SetSemiTrans(void *, s32);
 extern s32 SetTile(void *);
 extern s32 func_8006E480();
 extern s32 func_8007352C();
-extern s32 SetShadeTex(s32, s32);
-extern void SetPolyFT4(void *);
 void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2);
 void func_80069A30(u8 *a0);
 void func_80069A8C(u8 *a0);
@@ -43,20 +41,11 @@ s32 func_8006E480(s32 a0_addr, s32 a1);
 extern s32 func_80073C78();
 
 extern void SetSprt(s32);
-extern s32 SetShadeTex(s32, s32);
 
 
 
 extern const u8 D_800159A0[];
 
-typedef struct SprtA {
-    u32 tag;
-    u8  r0, g0, b0, code;
-    s16 x0, y0;
-    u8  u0, v0;
-    u16 clut;
-    s16 w, h;
-} SprtA;
 
 typedef struct SprtHdrA {
     u8  pad0, pad1;
@@ -77,7 +66,7 @@ typedef struct SprtEntA {
 s32 func_8007352C(s32 env_addr) {
     EnvA *env = (EnvA *)env_addr;
     SprtHdrA *hdr = (SprtHdrA *)env->header;
-    SprtA *sp = (SprtA *)env->out;
+    SPRT *sp = (SPRT *)env->out;
     SprtEntA *e;
     s32 clut;
     s16 i;
@@ -100,12 +89,12 @@ s32 func_8007352C(s32 env_addr) {
             sp->w = e->w;
             sp->h = e->h;
             if (env->has_color) {
-                SetShadeTex((s32)sp, 0);
+                SetShadeTex(sp, 0);
                 sp->r0 = env->col_r;
                 sp->g0 = env->col_g;
                 sp->b0 = env->col_b;
             } else {
-                SetShadeTex((s32)sp, 1);
+                SetShadeTex(sp, 1);
             }
             SetSemiTrans((s32)sp, env->semi);
             if (env->ot_idx >= 0x1006) {
@@ -120,7 +109,6 @@ s32 func_8007352C(s32 env_addr) {
 }
 /* END func_8007352C */
 
-extern void SetPolyFT4(void *);
 
 /* Sprite-sheet header and 8-byte cell record read by func_80073728 (the
    scaled POLY_FT4 sibling of func_8007352C's SPRT walker). */
@@ -241,12 +229,12 @@ s32 func_80073728(s32 env_addr, s32 mode) {
         p->u3 = u + du1;
         p->v3 = v + dv1;
         if (env->has_color) {
-            SetShadeTex((s32)p, 0);
+            SetShadeTex(p, 0);
             p->r0 = env->col_r;
             p->g0 = env->col_g;
             p->b0 = env->col_b;
         } else {
-            SetShadeTex((s32)p, 1);
+            SetShadeTex(p, 1);
         }
         SetSemiTrans(p, env->semi);
         if (env->ot_idx >= 0x1006) {
@@ -360,12 +348,12 @@ s32 func_80073C78(env, angle, mode)
         p->u3 = u + du1;
         p->v3 = v + dv1;
         if (env->has_color) {
-            SetShadeTex((s32)p, 0);
+            SetShadeTex(p, 0);
             p->r0 = env->col_r;
             p->g0 = env->col_g;
             p->b0 = env->col_b;
         } else {
-            SetShadeTex((s32)p, 1);
+            SetShadeTex(p, 1);
         }
         SetSemiTrans(p, env->semi);
         if (env->ot_idx >= 0x1006) {
@@ -426,7 +414,7 @@ skip_init:
     AddPrim(g_gpu_ot_ptr + 0x7C, arg0[6]);
     q = arg0[2];
     arg0[6] = arg0[6] + 0xC;
-    SetPolyF4(q);
+    SetPolyF4((POLY_F4 *)q);
     func_80069A8C(q);
     *(s16 *)(q + 0x8) = 0;
     *(s16 *)(q + 0xA) = 0xB9;
@@ -440,7 +428,7 @@ skip_init:
     AddPrim(g_gpu_ot_ptr + 0x80, q);
     q += 0x18;
 
-    SetPolyF4(q);
+    SetPolyF4((POLY_F4 *)q);
     func_80069A8C(q);
     *(s16 *)(q + 0x8) = 0x15E;
     *(s16 *)(q + 0xA) = 0;
@@ -454,7 +442,7 @@ skip_init:
     AddPrim(g_gpu_ot_ptr + 0x80, q);
     q += 0x18;
 
-    SetPolyF4(q);
+    SetPolyF4((POLY_F4 *)q);
     func_80069A8C(q);
     *(s16 *)(q + 0x8) = 0x122;
     *(s16 *)(q + 0xA) = 0;

@@ -1,0 +1,1 @@
+{"func": "SetSprt8", "addr": "8007AA58", "verdict": "PASS", "body_hash": "52995c6f66853996", "body_kind": "c", "file": "main/psxsdk/libgpu/prim", "reviewer": "p2-rev-g2a", "scope": "cheat-cleanup", "date": "2026-10-04T05:58:47Z", "head": "11ece7283", "notes": ""}

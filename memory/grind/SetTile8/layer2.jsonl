@@ -1,0 +1,1 @@
+{"func": "SetTile8", "addr": "8007AAA8", "verdict": "PASS", "body_hash": "48299bf8ebabc364", "body_kind": "c", "file": "main/psxsdk/libgpu/prim", "reviewer": "p2-rev-g2a", "scope": "cheat-cleanup", "date": "2026-10-04T05:59:36Z", "head": "11ece7283", "notes": ""}

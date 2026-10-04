@@ -1,0 +1,1 @@
+{"func": "SetSemiTrans", "addr": "8007A968", "verdict": "PASS", "body_hash": "4bd30a6d664a01b9", "body_kind": "c", "file": "main/psxsdk/libgpu/prim", "reviewer": "p2-rev-g2a", "scope": "cheat-cleanup", "date": "2026-10-04T05:57:58Z", "head": "11ece7283", "notes": ""}
