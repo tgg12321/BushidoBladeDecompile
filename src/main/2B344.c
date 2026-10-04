@@ -2163,7 +2163,6 @@ extern s32 D_80090740[64][32];
 extern s32 D_80094840[];
 extern s32 D_800A7EF0[];
 extern s32 *func_8003EB84(s32, s32, s32 *);
-extern void math_RotMatrixYXZ(SVECTOR *, s32 *);
 /* func_8003E6D8 - grid pass. D_800A3708's xf.rot is turned into a matrix
  * (func_80042A88) and applied to {0,0,0x1000}; ratan2 of the result, stored
  * to D_800A336C, picks ((a >> 6) & 0x3F) one of 64 tables of 32-bit row
@@ -2215,7 +2214,7 @@ void func_8003E6D8(s32 arg0) {
     cx = (D_800A3708->work.t[0] + 0x7D00) / 2000;
     cz = (D_800A3708->work.t[2] + 0x7D00) / 2000;
     camera_CalcAngles();
-    math_RotMatrixYXZ(&D_800A3708->xf.rot, mat);
+    math_RotMatrixYXZ((u16 *)&D_800A3708->xf.rot, (MATRIX *)mat);
     vec[2] = 0x1000;
     vec[0] = 0;
     vec[1] = 0;

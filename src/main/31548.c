@@ -112,16 +112,16 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 
     {
         s32 scaled;
-        s32 *s1p;
+        Unk80101DF0Record *s1p;
         scaled = (*(s32 *)(s3 + 0x50) * *(s16 *)(s4 + 0x12)) >> 12;
         s0 = 0;
-        s1p = (s32 *)s3;
+        s1p = (Unk80101DF0Record *)s3;
         *(s32 *)(s3 + 0x50) = scaled;
         *(s16 *)(s5 + 6) = 0;
         do {
             func_800417D0(s1p);
             s0++;
-            s1p = (s32 *)((u8 *)s1p + 0x68);
+            s1p = (Unk80101DF0Record *)((u8 *)s1p + 0x68);
         } while (s0 < 0x12);
     }
 
@@ -188,14 +188,13 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 }
 
 extern s32 D_80094CFC[];
-extern void math_RotMatrixZYX(s16 *, s32 *);
 extern void func_800523E0(s32 *, s32 *, s32, s32);
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
     s32 i = 1;
     s32 *tbl = D_80094CFC;
     s32 base = (s32)g_player_ptrs[a0];
-    s16 buf[3];
+    SVECTOR buf;
     s32 ents;
     s32 *out2;
     s32 *out3;
@@ -207,17 +206,17 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     do {
         offset = (*tbl) * 6;
         p = (u16 *) (offset + (s32) a1);
-        buf[0] = p[0];
-        buf[1] = -p[1];
-        buf[2] = -p[2];
-        math_RotMatrixZYX(buf, a4);
+        buf.vx = p[0];
+        buf.vy = -p[1];
+        buf.vz = -p[2];
+        math_RotMatrixZYX(&buf, (MATRIX *)a4);
         tbl++;
         offset = offset + (s32) a2;
         p = (u16 *) offset;
-        buf[0] = p[0];
-        buf[1] = -p[1];
-        buf[2] = -p[2];
-        math_RotMatrixZYX(buf, out2);
+        buf.vx = p[0];
+        buf.vy = -p[1];
+        buf.vz = -p[2];
+        math_RotMatrixZYX(&buf, (MATRIX *)out2);
         func_800523E0(a4, out2, a3, ents + i * 0x68 + 0x38);
         *((s16 *) (ents + i * 0x68 + 6)) = 2;
         i++;
@@ -231,20 +230,20 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     func_80044DE4((s16 *) a1, (s16 *) a2, a3, stptr2 + 0x4C);
     a1 += 6;
     a2 += 6;
-    buf[0] = *((u16 *) a1);
+    buf.vx = *((u16 *) a1);
     a1 += 2;
-    buf[1] = -(*((u16 *) a1));
+    buf.vy = -(*((u16 *) a1));
     a1 += 2;
-    buf[2] = -(*((u16 *) a1));
+    buf.vz = -(*((u16 *) a1));
     a1 += 2;
-    math_RotMatrixZYX(buf, a4);
-    buf[0] = *((u16 *) a2);
+    math_RotMatrixZYX(&buf, (MATRIX *)a4);
+    buf.vx = *((u16 *) a2);
     a2 += 2;
-    buf[1] = -(*((u16 *) a2));
+    buf.vy = -(*((u16 *) a2));
     a2 += 2;
-    buf[2] = -(*((u16 *) a2));
+    buf.vz = -(*((u16 *) a2));
     a2 += 2;
-    math_RotMatrixZYX(buf, out3);
+    math_RotMatrixZYX(&buf, (MATRIX *)out3);
     func_800523E0(a4, out3, a3, stptr2 + 0x38);
     *((s16 *) (stptr2 + 6)) = 1;
     stptr2 += 0x68;

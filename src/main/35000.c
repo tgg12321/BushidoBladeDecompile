@@ -10,7 +10,6 @@
 extern void func_80052C10(void);
 extern s16 D_800963EE;
 extern s16 Judge[];
-extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern s32 rcos(s32);
 extern s32 rsin(s32);
 void func_800433E4();
@@ -53,7 +52,7 @@ void func_80044800(void) {
             rec->node.xf.rot.vy = *scan++;
             rec->node.xf.rot.vz = *scan++;
             rec->node.unk6 = 0;
-            func_800417D0((s32 *)rec);
+            func_800417D0(&rec->node);
             MulMatrix2(&mat, &rec->node.xf.mat);
             cos_val = Judge[(angle + 0x400) & 0xFFF];
             cz = cos_val * sv.vz;
@@ -85,7 +84,7 @@ void func_80044800(void) {
                 rec->node.xf.rot.vy = *scan++;
                 rec->node.xf.rot.vz = *scan++;
                 rec->node.unk6 = 0;
-                func_800417D0((s32 *)rec);
+                func_800417D0(&rec->node);
                 rec->node.xf.mat.t[0] += sv.vx;
                 rec->node.xf.mat.t[1] += sv.vy;
                 rec->node.xf.mat.t[2] += sv.vz;

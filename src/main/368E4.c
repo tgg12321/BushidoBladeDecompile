@@ -288,10 +288,8 @@ extern void func_80048B8C(s32);
 extern void func_800460E4(s32, s32);
 extern void func_8004668C(void);
 
-extern void math_RotMatrixYXZ(SVECTOR *, MATRIX *);
 extern s16 Judge[];
 extern Unk80101DF0Record *D_800A3708;
-extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
 extern s16 D_800A324A;
 
 /* Externs for globals */
@@ -685,7 +683,7 @@ s16 *camera_CalcAngles(void) {
     MATRIX mtx;
     s16 yaw;
 
-    math_RotMatrixYXZ(&D_800A3708->xf.rot, &mtx);
+    math_RotMatrixYXZ((u16 *)&D_800A3708->xf.rot, &mtx);
     rot.vx = 0;
     rot.vy = 0;
     rot.vz = 0x1000;
@@ -934,7 +932,7 @@ inner:
         node->unk8 = 0;
         node->unkC = 0;
         node->unk6 = 0;
-        func_800417D0((s32 *)node);
+        func_800417D0(node);
     }
 
     a3 = 0;
@@ -1710,7 +1708,6 @@ s32 func_80048AD0(s32 arg0) {
 void func_80048B8C(s32 a0) {
     D_800A33E4 += a0;
 }
-extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern s32 ClearOTagR(s32, s32);
 extern s32 g_gpu_ot256_ptr;
 extern u8 g_gpu_ot256_db[];
@@ -2224,7 +2221,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     *((s32 *) (obj + 0xC)) = (s32) (vehicle + 0x50C);
     *((s16 *) (obj + 6)) = 0;
     *((u16 *) (obj + 0x14)) = (u16) new_var2;
-    func_800417D0((s32 *) obj);
+    func_800417D0((Unk80101DF0Record *)obj);
     ot = (u8 *)D_800A3820;
     D_800A3820 = (s32)(ot + 4);
     *((u8 **) ot) = obj;

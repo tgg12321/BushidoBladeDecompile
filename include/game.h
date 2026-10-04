@@ -957,7 +957,7 @@ typedef struct Rec1C {
  * base+0x1C (xf.mat.t). g_cam_bone_data2 (0x800EEDF0) and D_800EF070 are
  * two more records of this layout: camera_InitRotation initialises the
  * first (u8/s8 stores at +0x00/+0x01, s16 stores at +0x02/+0x04/+0x08/+0x0A,
- * s32 at +0x0C, rot, work.t, then xf.mat = work; it does not write +0x06),
+ * unkC = 0 at +0x0C, rot, work.t, then xf.mat = work; it does not write +0x06),
  * func_800477E8 sets up the second (+0x06 as s16) and passes it to
  * func_800417D0, which reads +0x06 as an s16 state.
  * rot is the RotMatrix-style angle SVECTOR the rotation handlers take; mat and
@@ -967,7 +967,7 @@ typedef struct {
     MATRIX mat; /* +0x08 */
 } Unk80101DF0Xform;
 
-typedef struct {
+typedef struct Unk80101DF0Record {
     u8 unk0;               /* +0x00 */
     s8 unk1;               /* +0x01 */
     s16 unk2;              /* +0x02 */
@@ -975,7 +975,7 @@ typedef struct {
     s16 unk6;              /* +0x06 */
     s16 unk8;              /* +0x08 g_anim_func_table index */
     s16 unkA;              /* +0x0A */
-    s32 unkC;              /* +0x0C */
+    struct Unk80101DF0Record *unkC; /* +0x0C */
     Unk80101DF0Xform xf;   /* +0x10 */
     MATRIX work;   /* +0x38 */
 } Unk80101DF0Record;      /* 0x58 */

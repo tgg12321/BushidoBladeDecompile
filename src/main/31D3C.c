@@ -152,29 +152,27 @@ after2:
     }
 }
 typedef struct { s32 w[4]; } Block16;
-extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
 extern void gte_SetMatrixRotTransIRVec(void *, void *, void *);
-void func_800417D0(s32 *a0) {
+void func_800417D0(Unk80101DF0Record *a0) {
     AnimRotFunc func;
 
-    if (((s16 *)a0)[3] == 1) {
+    if (a0->unk6 == 1) {
         return;
     }
-    if (((s16 *)a0)[3] != 2) {
-        func = g_anim_func_table[((s16 *)a0)[4]];
-        func((SVECTOR *)(a0 + 4), (MATRIX *)(a0 + 14));
+    if (a0->unk6 != 2) {
+        func = g_anim_func_table[a0->unk8];
+        func(&a0->xf.rot, &a0->work);
     }
-    if ((s32 *)a0[3] != 0) {
-        if (((s16 *)a0[3])[3] == 0) {
-            func_800417D0((s32 *)a0[3]);
+    if (a0->unkC != 0) {
+        if (a0->unkC->unk6 == 0) {
+            func_800417D0(a0->unkC);
         }
-        gte_MulMatrix0ClearTrans((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x38), (void *)((u8 *)a0 + 0x18));
-        gte_SetMatrixRotTransIRVec((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x4C), (void *)((u8 *)a0 + 0x2C));
+        gte_MulMatrix0ClearTrans(&a0->unkC->xf.mat, &a0->work, &a0->xf.mat);
+        gte_SetMatrixRotTransIRVec(&a0->unkC->xf.mat, a0->work.t, a0->xf.mat.t);
     } else {
-        ((Block16 *)(a0 + 6))[0] = ((Block16 *)(a0 + 14))[0];
-        ((Block16 *)(a0 + 6))[1] = ((Block16 *)(a0 + 14))[1];
+        a0->xf.mat = a0->work;
     }
-    ((s16 *)a0)[3] = 1;
+    a0->unk6 = 1;
 }
 void func_800418D0(s32 *a0) {
     SVECTOR sp10;

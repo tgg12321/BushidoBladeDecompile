@@ -398,7 +398,6 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     a1->m[2][0] = (cab12_cosC + sinA_sinC) >> 12;
     a1->m[2][1] = (csb12_sinC + sinA_cosC) >> 12;
 }
-extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 
 
 extern void math_RotMatrixXYZ();

@@ -9,10 +9,8 @@
 
 /* Declarations from the file this TU was split from (text1b.c). */
 extern s16 Judge[];
-extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
 extern u8 *g_gpu_ot_ptr;
 extern s32 func_8005C2A8(s32 *, s16, s32);
-extern void math_RotMatrixZYX(SVECTOR *, MATRIX *);
 extern void func_80052C10(void);
 void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in);
 
