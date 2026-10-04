@@ -59,7 +59,7 @@ BIN          := $(BUILD_DIR)/$(TARGET).bin
 EXE          := $(BUILD_DIR)/$(TARGET).exe
 
 # -- Collect source files --
-# Assembly files (non-decompiled functions)
+# Top-level assembly: header.s (the PS-X EXE header, linked as .data)
 S_FILES      := $(wildcard $(ASM_DIR)/*.s)
 S_O_FILES    := $(patsubst $(ASM_DIR)/%.s,$(BUILD_DIR)/$(ASM_DIR)/%.o,$(S_FILES))
 

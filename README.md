@@ -71,7 +71,7 @@ If the final line is `OK: bb2 matches!`, you have a byte-identical rebuild.
 
 ```
 .
-|-- asm/                       # Disassembly. .text in 6CAC.s + asm/funcs/<name>.s; data in asm/data/
+|-- asm/                       # Disassembly: header.s (EXE header), asm/funcs/<name>.s, data in asm/data/
 |-- asm/funcs/                 # Per-function .s files (~1,438): reference target listing for every function, kept after completion
 |-- build/                     # All build artifacts (gitignored)
 |-- disc/                      # Extracted disc filesystem (gitignored; reproduced by extract_iso.py)

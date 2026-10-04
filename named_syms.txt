@@ -1415,7 +1415,7 @@ mode_handler_32_RebootDispatch                          = 0x8003CCCC;  /* gpu_In
 mode_handler_33_RebootBegin                             = 0x8003CD10;  /* mirrors mode_25 setup; final teardown state */
 
 /* === g_module_func_tbl mode handler decode (cont'd) -- 1 high === */
-/* Mode 18 confirmed from asm at asm/6CAC.s:41135: */
+/* Mode 18 confirmed from asm at pre-restructure-2026-10-03:asm/6CAC.s:41135: */
 /*   - gpu_InitDisplay + gpu_EnableDisplay */
 /*   - func_80020CDC (seq_ConditionalReset) */
 /*   - Reads g_practice_unlock_anim_id (D_800A38A4): cases 6, 7, 8, 9 */
@@ -1437,7 +1437,7 @@ mode_handler_21_FrameTimerSfx                           = 0x8003C560;  /* increm
 mode_handler_29_StageLeafUpdate                         = 0x8003CF84;  /* calls mk_leaf_newpos + reads char struct fields via &D_80101ED2 + D_800A3748 * 0x44C */
 
 /* === Final 2 mode handlers from asm (2026-05-17) -- 2 highs === */
-/* Modes 0 and 7 are asm-only; decoded directly from asm/6CAC.s. */
+/* Modes 0 and 7 are asm-only; decoded directly from asm/6CAC.s (the splat segment dump, deleted 2026-10-03; at tag pre-restructure-2026-10-03). */
 /* RESET 0x8001DCB0: retired name 'mode_handler_00_GameInit' — preserved note: main game-init: obj_InitChars + gpu_InitDisplay/Disable (conditional on D_800A3768 != 0x14) + gnd_disp_loop_ctrl + gpu_EnableDisplay + gnd_open */
 /* RESET 0x8003BCB4: retired name 'mode_handler_07_SubModeTransition' — preserved note: increments g_practice_loop_frame, calls md_game_check_change_sub_mode, branches on pad input (0x400040 = cross+circle), then katinuki_game_setData */
 

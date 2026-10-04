@@ -1257,7 +1257,7 @@ void func_8001C624(void) {
     *(Blk16 *)(e + 0x24C) = *(Blk16 *)(e + 0x104);
     /* FAKE: self-assigning round-trip through `local`, which is address-taken by
      * the func_80021D10 call above.  The target genuinely contains these
-     * self-copy stores (asm/6CAC.s:5101-5119: lw $v0,0x10($sp) / sw $v0,0x10($sp),
+     * self-copy stores (pre-restructure-2026-10-03:asm/6CAC.s:5101-5119: lw $v0,0x10($sp) / sw $v0,0x10($sp),
      * lw $v1,0x18($sp) / sw $v1,0x18($sp)); this is the libgte setVector
      * comma-assign idiom, adjusting only the middle component. */
     local[0] = local[0], local[1] = local[1] - 0x384, local[2] = local[2];
