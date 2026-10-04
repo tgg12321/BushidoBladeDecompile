@@ -21,7 +21,7 @@ or any surface outside their scope. On a Judge ESCALATE the DRIVER acts:
 
 1. **Scope widening.** `escalate_kind=integration-handoff` + `scope_paths=[...]` ⇒ the driver
    runs `grindlib.py add-scope-allow`, appending the per-function `scope_allow.txt` line ONLY
-   for allowed classes: shared headers (`include/*.h`), sibling TUs (`src/*.c`), root-level
+   for allowed classes: shared headers (`include/**/*.h`), sibling TUs (`src/**/*.c`), root-level
    `*.txt` allowlists except the denylist below. The function stays ACTIVE and the next session
    lands the fix through the FULL gates (sandbox-0 re-verify, scope check, layer-1, Judge,
    full-build SHA1). A scope line widens scope, never standards.

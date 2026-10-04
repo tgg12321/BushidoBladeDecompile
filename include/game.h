@@ -2,8 +2,10 @@
 #define GAME_H
 
 /* Game types for the translation units in src/main/ (SLUS_006.63's game code): records, tables
- * and object layouts. The objects and functions are declared in bb2.h, which includes this file;
- * Sony's library types come from include/psxsdk/. */
+ * and object layouts. bb2.h, which includes this file, holds the declarations moved out of the
+ * pre-restructure headers plus the identical multi-TU declarations hoisted in 42f458af0; other
+ * externs, some of them shared by several TUs, are still declared locally. Sony's library types
+ * come from include/psxsdk/. */
 
 #include "common.h"
 #include <psxsdk/kernel.h>

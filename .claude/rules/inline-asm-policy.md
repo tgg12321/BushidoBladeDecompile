@@ -48,7 +48,7 @@ evidence instead of a STRONG scan tier when ALL hold:
    independent copy (one copy only ⇒ not admitted).
 2. **Nothing else in the islands**: no preamble ([[cop2-addressing-preamble-cluster]]), no extra
    `nop`, no GPR literal beyond the macro's own, no pin feeding an operand.
-3. **Inline and the only asm**: written out in `src/*.c` (no `#include`, BB2-local header or
+3. **Inline and the only asm**: written out in `src/**/*.c` (no `#include`, BB2-local header or
    macro-by-name); everything else is ordinary C passing normal review.
 4. **Bytes and hashes**: sandbox 0, full-build SHA1 == oracle, island hashes in
    `tools/canonical_asm_regions.json` (an edit voids the grant).

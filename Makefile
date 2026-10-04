@@ -68,7 +68,7 @@ DATA_S_FILES := $(wildcard $(ASM_DIR)/data/*.s)
 DATA_O_FILES := $(patsubst $(ASM_DIR)/data/%.s,$(BUILD_DIR)/$(ASM_DIR)/data/%.o,$(DATA_S_FILES))
 
 # C source files (decompiled functions), found recursively. A TU id is the path
-# under src/ without .c (`text1b`, `main/psxsdk/libcomb/comb`); its object is
+# under src/ without .c (`main/368E4`, `main/psxsdk/libcomb/comb`); its object is
 # build/src/<id>.o, the path bb2.ld links (engine/tus.py).
 C_FILES      := $(sort $(shell find $(SRC_DIR) -name '*.c'))
 C_IDS        := $(patsubst $(SRC_DIR)/%.c,%,$(C_FILES))
@@ -76,12 +76,12 @@ C_O_FILES    := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/$(SRC_DIR)/%.o,$(C_FILES)
 
 # Per-function asm objects linked directly (explicit opt-in — NOT a wildcard;
 # asm/funcs/ holds all 1437 split functions and we want only the listed ones).
-# Used where a function cannot live inside a C translation unit: text1a is the
-# project's sole -G8 file, and under -G8 cc1 buffers function bodies to a temp
-# file (TARGET_FILE_SWITCHING) so a file-scope __asm__ floats to the top of the
-# TU instead of staying in place. Empty since 2026-10-01: save_vc_ctrl (the
-# only member) moved to its own one-function TU src/text1a_svc.c when it was
-# de-authorized and re-queued. Kept for any future raw-asm object.
+# Used where a function cannot live inside a C translation unit: under cc1 -G8
+# (GP_FILES) cc1 buffers function bodies to a temp file (TARGET_FILE_SWITCHING),
+# so a file-scope __asm__ floats to the top of the TU instead of staying in
+# place. Empty since 2026-10-01: save_vc_ctrl (the only member) moved to its own
+# one-function TU (src/main/31CFC.c) when it was de-authorized and re-queued.
+# Kept for any future raw-asm object.
 LINKED_ASM_FUNCS :=
 ASM_FUNC_O_FILES := $(patsubst %,$(BUILD_DIR)/$(ASM_DIR)/funcs/%.o,$(LINKED_ASM_FUNCS))
 

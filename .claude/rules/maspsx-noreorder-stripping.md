@@ -9,7 +9,7 @@ metadata:
 # maspsx silently strips TAB-form `.set` directives
 
 Every file-scope `__asm__()` block using `glabel`/`endlabel` (canonical asm, `inline_asm_canonical.txt`) MUST
-duplicate each TAB-form `.set` directive with a SPACE-form one (reference: `src/text1b.c` `func_8004A76C`):
+duplicate each TAB-form `.set` directive with a SPACE-form one (reference: `func_8004A76C` at `d4e3de00a^:src/text1b.c:1677-1682`):
 
 ```c
 __asm__(

@@ -53,7 +53,7 @@ reaches sandbox 0 under the normal gates. It is not a shortcut for a function hu
 **Bucket.** Every carrier is COMPLETED-INLINE-ASM-CANONICAL (allowlist line in `inline_asm_canonical.txt`
 required) — never COMPLETED-C; the driver enforces this on the Judge PASS path. Preferred future form: a
 BB2-local GTE macro header (`gte_ldlv0(vec)`), except for islands admitted under inline-asm-policy's
-2026-09-23 / 2026-09-26 rulings, which must be inline in `src/*.c`.
+2026-09-23 / 2026-09-26 rulings, which must be inline in `src/**/*.c`.
 
 **inline_o.h class (owner ruling 2026-09-26).** A member whose islands all meet the verbatim inline_o.h
 macro-unit ruling ([[inline-asm-policy]], checked against `engine/gtemacro.py`'s pinned copy) needs no

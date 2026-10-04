@@ -15,7 +15,7 @@ and the docs/grind/decisions.md OWNER RULING entry named in each heading.
 
 ## Ruling 7 — sprintf's SOTN buffer-end line (sprintf only, 2026-09-23)
 
-Only `sprintf` (`src/text1b_b.c`) may carry, exactly once, SOTN's
+Only `sprintf` (`src/main/psxsdk/libc2/sprintf.c`) may carry, exactly once, SOTN's
 `bufPtr = (char*)&args - sizeof(printf_info) - 4;` (sotn `src/main/psxsdk/libc/sprintf.c:90`),
 with the frame confirming `&buf[sizeof(buf)]`, an inline comment (SOTN-verbatim, what it
 computes, this ruling; not SOTN's inaccurate comment), the truthful spelling recorded failing in
