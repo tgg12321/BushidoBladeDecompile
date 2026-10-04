@@ -1489,12 +1489,12 @@ typedef char *va_list;
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
 
 void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
-    u8 buf[0x400];
-    u8 seg[0x100];
+    char buf[0x400];
+    char seg[0x100];
     va_list ap;
     s32 cur_arg;
     s32 seen_pct;
-    u8 *p;
+    char *p;
     s32 ch;
 
     cur_arg = first_arg;

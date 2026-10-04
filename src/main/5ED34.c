@@ -1890,99 +1890,98 @@ end:
 extern s32 g_gpu_ot_ptr;
 
 
-s32 func_80072BC4(s32 arg0, GameObj *arg1) {
+POLY_G4 *func_80072BC4(s32 arg0, POLY_G4 *arg1) {
     u8 var_v0;
     int fc_const;
 
-    SetPolyG4((POLY_G4 *)arg1);
+    SetPolyG4(arg1);
     SetSemiTrans(arg1, 0);
     fc_const = 0xFC;
     if (arg0 < 4) {
-        *(u8 *)((s32)(arg1) + 4) = 0;
-        *(u8 *)((s32)(arg1) + 5) = 0;
-        *(u8 *)((s32)(arg1) + 6) = 0;
-        *(u8 *)((s32)(arg1) + 0xC) = fc_const;
-        *(u8 *)((s32)(arg1) + 0xD) = 0x82;
-        *(u8 *)((s32)(arg1) + 0xE) = 0;
-        *(u8 *)((s32)(arg1) + 0x14) = fc_const;
-        *(u8 *)((s32)(arg1) + 0x15) = 0x82;
-        *(u8 *)((s32)(arg1) + 0x16) = 0;
+        arg1->r0 = 0;
+        arg1->g0 = 0;
+        arg1->b0 = 0;
+        arg1->r1 = fc_const;
+        arg1->g1 = 0x82;
+        arg1->b1 = 0;
+        arg1->r2 = fc_const;
+        arg1->g2 = 0x82;
+        arg1->b2 = 0;
         if (*(s32 *)((s32)(D_800A35C4) + 8) & 4) {
-            *(u8 *)((s32)(arg1) + 0x1D) = 0xC3;
+            arg1->g3 = 0xC3;
             var_v0 = 0x1E;
         } else {
-            *(u8 *)((s32)(arg1) + 0x1D) = 0xC3;
+            arg1->g3 = 0xC3;
             var_v0 = 0x50;
         }
-        *(u8 *)((s32)(arg1) + 0x1C) = fc_const;
-        *(u8 *)((s32)(arg1) + 0x1E) = var_v0;
+        arg1->r3 = fc_const;
+        arg1->b3 = var_v0;
     } else {
-        *(u8 *)((s32)(arg1) + 4) = 0;
-        *(u8 *)((s32)(arg1) + 5) = 0;
-        *(u8 *)((s32)(arg1) + 6) = 0;
-        *(u8 *)((s32)(arg1) + 0xC) = 0x40;
-        *(u8 *)((s32)(arg1) + 0xD) = 0;
-        *(u8 *)((s32)(arg1) + 0xE) = 0x80;
-        *(u8 *)((s32)(arg1) + 0x14) = 0x50;
-        *(u8 *)((s32)(arg1) + 0x15) = 0xA0;
-        *(u8 *)((s32)(arg1) + 0x16) = 0x40;
-        *(u8 *)((s32)(arg1) + 0x1C) = 0x10;
-        *(u8 *)((s32)(arg1) + 0x1D) = 0x40;
-        *(u8 *)((s32)(arg1) + 0x1E) = 0x80;
+        arg1->r0 = 0;
+        arg1->g0 = 0;
+        arg1->b0 = 0;
+        arg1->r1 = 0x40;
+        arg1->g1 = 0;
+        arg1->b1 = 0x80;
+        arg1->r2 = 0x50;
+        arg1->g2 = 0xA0;
+        arg1->b2 = 0x40;
+        arg1->r3 = 0x10;
+        arg1->g3 = 0x40;
+        arg1->b3 = 0x80;
     }
-    AddPrim(g_gpu_ot_ptr + 0x60, arg1);
-    return (s32)((u8 *)arg1 + 0x24);
+    AddPrim(g_gpu_ot_ptr + 0x60, (s32)arg1);
+    return arg1 + 1;
 }
 /* func_80072CD4 - colours a Gouraud quad (POLY_G4) by mode: warm per-vertex
  * RGB triples (two variants on D_800A35C4's flag 4) for modes < 4, a fixed
  * dark set otherwise; then adds it to the OT and returns the next primitive slot. */
-s32 func_80072CD4(s32 arg0, GameObj *arg1) {
+POLY_G4 *func_80072CD4(s32 arg0, POLY_G4 *arg1) {
     int red;
 
-    SetPolyG4((POLY_G4 *)arg1);
+    SetPolyG4(arg1);
     SetSemiTrans(arg1, 0);
     if (arg0 < 4) {
         red = 0xFC;
         if (*(s32 *)((s32)(D_800A35C4) + 8) & 4) {
-            *(u8 *)((s32)(arg1) + 4) = red;
-            *(u8 *)((s32)(arg1) + 5) = 0xC3;
-            *(u8 *)((s32)(arg1) + 6) = 0x1E;
-            *(u8 *)((s32)(arg1) + 0xC) = red;
-            *(u8 *)((s32)(arg1) + 0xD) = 0xC8;
-            *(u8 *)((s32)(arg1) + 0xE) = 0x32;
+            arg1->r0 = red;
+            arg1->g0 = 0xC3;
+            arg1->b0 = 0x1E;
+            arg1->r1 = red;
+            arg1->g1 = 0xC8;
+            arg1->b1 = 0x32;
         } else {
-            *(u8 *)((s32)(arg1) + 4) = red;
-            *(u8 *)((s32)(arg1) + 5) = 0xC3;
-            *(u8 *)((s32)(arg1) + 6) = 0x50;
-            *(u8 *)((s32)(arg1) + 0xC) = red;
-            *(u8 *)((s32)(arg1) + 0xD) = 0xDC;
-            *(u8 *)((s32)(arg1) + 0xE) = 0x46;
+            arg1->r0 = red;
+            arg1->g0 = 0xC3;
+            arg1->b0 = 0x50;
+            arg1->r1 = red;
+            arg1->g1 = 0xDC;
+            arg1->b1 = 0x46;
         }
-        *(u8 *)((s32)(arg1) + 0x14) = 0xFC;
-        *(u8 *)((s32)(arg1) + 0x15) = 0x82;
-        *(u8 *)((s32)(arg1) + 0x1C) = 0x32;
-        *(u8 *)((s32)(arg1) + 0x1D) = 0x28;
-        *(u8 *)((s32)(arg1) + 0x16) = 0;
-        *(u8 *)((s32)(arg1) + 0x1E) = 0xA;
+        arg1->r2 = 0xFC;
+        arg1->g2 = 0x82;
+        arg1->r3 = 0x32;
+        arg1->g3 = 0x28;
+        arg1->b2 = 0;
+        arg1->b3 = 0xA;
     } else {
-        *(u8 *)((s32)(arg1) + 4) = 0x10;
-        *(u8 *)((s32)(arg1) + 5) = 0x30;
-        *(u8 *)((s32)(arg1) + 6) = 0x60;
-        *(u8 *)((s32)(arg1) + 0xC) = 0x18;
-        *(u8 *)((s32)(arg1) + 0xD) = 0;
-        *(u8 *)((s32)(arg1) + 0xE) = 0x40;
-        *(u8 *)((s32)(arg1) + 0x14) = 0x30;
-        *(u8 *)((s32)(arg1) + 0x15) = 0;
-        *(u8 *)((s32)(arg1) + 0x16) = 0x60;
-        *(u8 *)((s32)(arg1) + 0x1C) = 0;
-        *(u8 *)((s32)(arg1) + 0x1D) = 0;
-        *(u8 *)((s32)(arg1) + 0x1E) = 0;
+        arg1->r0 = 0x10;
+        arg1->g0 = 0x30;
+        arg1->b0 = 0x60;
+        arg1->r1 = 0x18;
+        arg1->g1 = 0;
+        arg1->b1 = 0x40;
+        arg1->r2 = 0x30;
+        arg1->g2 = 0;
+        arg1->b2 = 0x60;
+        arg1->r3 = 0;
+        arg1->g3 = 0;
+        arg1->b3 = 0;
     }
-    AddPrim(g_gpu_ot_ptr + 0x60, arg1);
-    return (s32)((u8 *)arg1 + 0x24);
+    AddPrim(g_gpu_ot_ptr + 0x60, (s32)arg1);
+    return arg1 + 1;
 }
 
-extern s32 func_80072CD4(s32, GameObj *);
 /* BEGIN func_80072E10 */
 void func_80072E10(s32 arg0) {
     POLY_G4 *p;
@@ -1996,7 +1995,7 @@ void func_80072E10(s32 arg0) {
     p->y2 = 0x32;
     p->x3 = 0x140;
     p->y3 = 0x52;
-    p = (POLY_G4 *)func_80072BC4(D_800A3580, (GameObj *)p);
+    p = func_80072BC4(D_800A3580, p);
     p->x0 = 0x231;
     p->y0 = 0x32;
     p->x1 = 0x231;
@@ -2005,7 +2004,7 @@ void func_80072E10(s32 arg0) {
     p->y2 = 0x32;
     p->x3 = 0x140;
     p->y3 = 0x52;
-    p = (POLY_G4 *)func_80072BC4(D_800A3580, (GameObj *)p);
+    p = func_80072BC4(D_800A3580, p);
     p->x0 = 0x140;
     p->y0 = 0x52;
     p->x1 = 0x140;
@@ -2014,7 +2013,7 @@ void func_80072E10(s32 arg0) {
     p->y2 = 0x52;
     p->x3 = 0x50;
     p->y3 = 0x71;
-    p = (POLY_G4 *)func_80072CD4(D_800A3580, (GameObj *)p);
+    p = func_80072CD4(D_800A3580, p);
     p->x0 = 0x140;
     p->y0 = 0x52;
     p->x1 = 0x140;
@@ -2023,7 +2022,7 @@ void func_80072E10(s32 arg0) {
     p->y2 = 0x52;
     p->x3 = 0x231;
     p->y3 = 0x71;
-    p = (POLY_G4 *)func_80072CD4(D_800A3580, (GameObj *)p);
+    p = func_80072CD4(D_800A3580, p);
     *(POLY_G4 **)((s32)arg0 + 0xC) = p;
 }
 /* END func_80072E10 */

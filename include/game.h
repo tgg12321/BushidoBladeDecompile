@@ -1233,8 +1233,7 @@ typedef struct {
 /* GameObj: a generic 0x100-byte layout, fields named by offset (field_XX), from the early m2c
  * context tooling (feaa560b2) rather than from the game's objects. In C the only member used by
  * name is field_18, a GPU primitive write cursor (func_80069898 and func_80070C70 build primitives
- * at it and advance it); func_80072BC4 / func_80072CD4 take a GameObj * but write a POLY_G4
- * through byte casts. Retyping these users is Phase 2 work. */
+ * at it and advance it). */
 typedef struct GameObj {
     u8 field_00; u8 field_01; s16 field_02;
     s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
