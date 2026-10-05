@@ -40,3 +40,9 @@ ADDITIONAL FAILURE CLASSES (learned in P3):
   the PASS certifies the whole body;
 - adjacent-field indexing ((&s.a)[i]) reaching one field through another's address;
 - casts on edited lines that contradict the callee's prototype.
+
+ADDITIONAL FAILURE CLASSES (learned in F02 batches 3-4):
+- per-function aggregate members/types for bytes that several functions lay out identically with
+  the same consumer contract (one struct per layout);
+- a FAKE annotation whose stated register effect differs from the objdump of its ablation;
+- a FAKE kept when the whole cluster (FAKE + the local it rides on) ablates to IDENTICAL.

@@ -63,14 +63,16 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      evidence in `memory/grind/phase2-2026-10-03/lt/item3_plan2.txt`.
    - Long tail (plan item 4) in progress: census `lt/families.tsv` / `lt/plan.txt` (3303 sites, 20
      families + 744 scattered). F02 (17AFC collision scratchpad, Unk1F8002B8Rec in ScrPad.unk2B8):
-     batch 1 ef5686d36, batch 2 9ccd8e382.
-   - **Next session starts here:** F02 batch 3 (unk00 union views; func_8002EA24 / A458 / 31B24 /
-     E838 / 31890) is prepared and measured IDENTICAL in a scratch build but not applied:
-     generator `memory/grind/phase2-2026-10-03/lt/f02/f02b3.py` (it builds from tmp/ copies; re-derive
-     on HEAD 9ccd8e382), message draft `lt/f02/msg_f02b3.txt`. Apply, run check.sh, fresh review. Then batch 4 (ScrPad.unk2B8
-     becomes a union { rec; v80030D7C; v800321E8 } for the +0x38 work-area users; approved), then
-     func_8002AB08, then F01. Worker / reviewer briefs with every failure class learned:
-     `lt/worker_brief.txt`, `lt/reviewer_brief.txt`.
+     batch 1 ef5686d36, batch 2 9ccd8e382, batch 3 3351da420 (unk00 = union { raw; LeafPos
+     unk00[2] }), batch 4 557ce2b3b (ScrPad.unk2B8 = union { rec; v8005344C }; Work_80053E9C in
+     game.h).
+   - **Next session starts here:** func_8002AB08 (its further unk00 points +0x18..+0x44; passes
+     `(u8 *)scr` to func_8002CD58), then the rest of F02 (lt/f02/plan.txt "Later"), then F01. Lessons
+     from batches 3-4's reviews (now in the commit bodies): one struct per layout, not per function;
+     verify each FAKE comment's stated register effect against the objdump (`lt/f02/regdiff_fn.sh`);
+     ablate whole clusters (a FAKE pair plus its local). Editing build files with the Edit tool needs
+     `& tools/reintegrate_lock.ps1 acquire` first. Worker / reviewer briefs with every failure class
+     learned: `lt/worker_brief.txt`, `lt/reviewer_brief.txt`.
    - func_800203B4's island operand (`auth:` re-hash) is still open, after the long tail.
    - Kept on purpose: original-call facts as commented declarations (func_80019568 / func_80044100 /
      func_80052C10 K&R; snd_VabFakeOpen, func_8005C2A8, func_80054434, func_80060414 local).
