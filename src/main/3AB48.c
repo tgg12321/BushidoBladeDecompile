@@ -5536,8 +5536,8 @@ extern s32 D_8009B7C4;
 extern u16 D_8009B850[]; /* packed screen positions: x = (v >> 7) + 0x37, y = (v & 0x7F) + 0x2A */
 typedef struct {
     s32 *header;  /* the sprite-sheet header func_8007352C reads */
-    Unk8009B400Record *p_static;
-    s32 arg1_field;
+    Unk8009B400Record *unk_04;
+    s32 unk_08;
     s32 pad0C;
     s32 zero10;
     s32 arg2_field;
@@ -5549,13 +5549,11 @@ typedef struct {
 } S414;
 s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     S414 s;
-    DR_MODE *dist_off;
+    Unk80060414Rec *chunk = (Unk80060414Rec *)arg1;
+    DR_MODE *mode_off;
     s32 end_off;
-    /* FAKE: param copy; reading arg1 directly scores 6 (75 vs 76 insns). */
-    s32 arg1_copy;
-    arg1_copy = arg1;
-    dist_off = (DR_MODE *)(arg1_copy + 0x14);
-    end_off = arg1_copy + 0x2C;
+    mode_off = &chunk->unk_14;
+    end_off = arg1 + sizeof(Unk80060414Rec);
     s.byte28 = 0;
     s.zero10 = 0;
     s.arg2_field = arg2;
@@ -5568,11 +5566,11 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     } else {
         s.header = &D_8009B7C4;
     }
-    s.p_static = &D_800A328C;
-    s.arg1_field = arg1_copy;
+    s.unk_04 = &D_800A328C;
+    s.unk_08 = (s32)&chunk->unk_00;
     func_8007352C((s32)(&s));
-    SetDrawMode(dist_off, 1, 0, func_8006E480((s32)s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + (arg2 * 4), dist_off);
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)s.header, 0), 0);
+    AddPrim(g_gpu_ot_ptr + (arg2 * 4), mode_off);
     return end_off - arg1;
 }
 extern s32 D_8009B770;
