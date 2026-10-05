@@ -1627,8 +1627,8 @@ void func_80056CB8(Unk80101EC8Record *arg0) {
         if (arg0->unk_6A == 0x13 || arg0->unk_6A == 6) {
             flags += obj->unk_1C8.vy;
         } else {
-            flags += ratan2(D_800F6608.w0 - obj->unk_F4.x,
-                             D_800F6608.w8 - obj->unk_F4.z);
+            flags += ratan2(D_800F6608.unk_00.x - obj->unk_F4.x,
+                             D_800F6608.unk_00.z - obj->unk_F4.z);
         }
 
         sin_p = &Judge[flags & 0xFFF];
@@ -1743,7 +1743,7 @@ s32 func_80057094(Unk80101EC8Record *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_v1;
     s32 var_v0;
 
-    temp_s0 = ratan2(D_800F6608.w0 - arg0->unk_F4.x, D_800F6608.w8 - arg0->unk_F4.z);
+    temp_s0 = ratan2(D_800F6608.unk_00.x - arg0->unk_F4.x, D_800F6608.unk_00.z - arg0->unk_F4.z);
     var_v0 = temp_s0 - ratan2(arg1 - arg0->unk_F4.x, arg2 - arg0->unk_F4.z);
     var_v0 -= 0x100;
     temp_v0 = (s32)var_v0 >> 9;

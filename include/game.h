@@ -924,11 +924,13 @@ typedef struct CpuLevelEntry {
 /* 0x44-byte record shared by the two camera-target objects at 0x800F5328 and
  * 0x800F6608. Field span evidenced by func_8001B294 (initialises +0x00/04/08/10/12/14/
  * 18/1E/30/32/34/38/3A/3C on the 0x800F6608 object) and func_8001B3C0 (the same
- * treatment of 0x800F5328 at +0x00/04/08/30/32/34/38/3A/3C/40); +0x00/04/08 are the
- * Vec3 that func_8001BC70/func_8001BCF0 already copy through a struct assignment.
+ * treatment of 0x800F5328 at +0x00/04/08/30/32/34/38/3A/3C/40); +0x00..+0x0B is one
+ * 12-byte vector: func_8001BC70 / func_8001BCF0 copy it as a struct (three lw, then three
+ * sw through one base register); member-by-member copies compile differently.
  * Replaces the per-word splat symbols D_800F532C..D_800F5368 / D_800F660C..D_800F6644. */
 typedef struct Rec44 {
-    s32 w0; s32 w4; s32 w8; s32 wC;
+    Vec3i32 unk_00;
+    s32 wC;
     s16 h10; s16 h12; s16 h14; s16 h16;
     s32 w18;
     s16 h1C; u8 b1E; u8 b1F;

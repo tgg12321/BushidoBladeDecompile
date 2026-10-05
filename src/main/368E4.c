@@ -467,7 +467,7 @@ void game_Init(void) {
     D_800A3790 = 0x23;
     D_800A33BC = 0;
 }
-void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
+void func_80046BF4(s32 *a0, s16 *a1, s32 a2) {
     s32 result[3];
     u16 new_var2;
     s32 trans[3];
@@ -485,16 +485,16 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
     }
 
     if (a0 != 0) {
-        D_80101DF0.xf.rot.vx = -(s16)a1[0];
-        D_80101DF0.xf.rot.vy = -(s16)a1[1];
-        D_80101DF0.xf.rot.vz = -(s16)a1[2];
+        D_80101DF0.xf.rot.vx = -a1[0];
+        D_80101DF0.xf.rot.vy = -a1[1];
+        D_80101DF0.xf.rot.vz = -a1[2];
 
         trans[1] = (trans[0] = 0);
         trans[2] = -a2;
 
-        rot.vx = -(s16)a1[0];
-        rot.vy = -(s16)a1[1];
-        rot.vz = -(s16)a1[2];
+        rot.vx = -a1[0];
+        rot.vy = -a1[1];
+        rot.vz = -a1[2];
 
         g_anim_func_table[0](&rot, &matrix_buf);
 

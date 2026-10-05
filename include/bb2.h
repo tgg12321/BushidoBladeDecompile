@@ -802,7 +802,7 @@ extern s32 func_8004678C(void);
 extern void func_80046914(void);
 extern s32 *func_800469C4(s32);
 extern void func_80046A60(void);
-extern void func_80046BF4(s32 *, u16 *, s32);
+extern void func_80046BF4(s32 *, s16 *, s32);
 extern void func_80046DA8(s32);
 extern void func_80046E54(s32);
 extern s32 func_80046E7C(void);

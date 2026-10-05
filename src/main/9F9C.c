@@ -408,7 +408,7 @@ s32 math_SignExt12Div(s32 arg0, s32 arg1) {
     }
     return v / arg1;
 }
-void func_8001A538(s32 *arg0, s32 *arg1) {
+void func_8001A538(Rec44 *arg0, s32 *arg1) {
     MATRIX m;
     m.m[0][0] = 0x1000;
     m.m[0][1] = 0;
@@ -419,12 +419,12 @@ void func_8001A538(s32 *arg0, s32 *arg1) {
     m.m[2][0] = 0;
     m.m[2][1] = 0;
     m.m[2][2] = 0x1000;
-    RotMatrixX(-*(s16 *)((u8 *)arg0 + 0x10), &m);
-    RotMatrixY(-*(s16 *)((u8 *)arg0 + 0x12), &m);
-    RotMatrixZ(-*(s16 *)((u8 *)arg0 + 0x14), &m);
-    arg1[0] = arg0[0] - ((s32)(m.m[0][2] * arg0[6]) >> 12);
-    arg1[1] = arg0[1] - ((s32)(m.m[1][2] * arg0[6]) >> 12);
-    arg1[2] = arg0[2] - ((s32)(m.m[2][2] * arg0[6]) >> 12);
+    RotMatrixX(-arg0->h10, &m);
+    RotMatrixY(-arg0->h12, &m);
+    RotMatrixZ(-arg0->h14, &m);
+    arg1[0] = arg0->unk_00.x - ((s32)(m.m[0][2] * arg0->w18) >> 12);
+    arg1[1] = arg0->unk_00.y - ((s32)(m.m[1][2] * arg0->w18) >> 12);
+    arg1[2] = arg0->unk_00.z - ((s32)(m.m[2][2] * arg0->w18) >> 12);
 }
 s32 math_FloorDiv2000(s32 arg0) {
     if (arg0 < 0) {
@@ -556,9 +556,9 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
     } else {
         scr->focus = *(CamVec *)arg0;
     }
-    cam->w0 += (scr->focus.vx - cam->w0) / 4;
-    cam->w4 += (scr->focus.vy - cam->w4) / 4;
-    cam->w8 += (scr->focus.vz - cam->w8) / 4;
+    cam->unk_00.x += (scr->focus.vx - cam->unk_00.x) / 4;
+    cam->unk_00.y += (scr->focus.vy - cam->unk_00.y) / 4;
+    cam->unk_00.z += (scr->focus.vz - cam->unk_00.z) / 4;
 
     x = dx;
     y = dy;
@@ -639,7 +639,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
 
         work = base_pitch;
         cam->h10 = work;
-        func_8001A538((s32 *)cam, (s32 *)&scr->eye);
+        func_8001A538(cam, &scr->eye.vx);
         if (p != 0) {
             scr->head = arg3->unk_B8;
         } else {
@@ -675,7 +675,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
                     d -= 0x1000;
                 }
                 cam->h10 = hi + d / 2;
-                func_8001A538((s32 *)cam, (s32 *)&scr->eye);
+                func_8001A538(cam, &scr->eye.vx);
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, scr->nrm,
                                   (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
@@ -705,7 +705,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
                     d -= 0x1000;
                 }
                 cam->h10 = lo + d / 2;
-                func_8001A538((s32 *)cam, (s32 *)&scr->eye);
+                func_8001A538(cam, &scr->eye.vx);
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, scr->nrm,
                                   (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
@@ -770,10 +770,10 @@ void func_8001B138(s32 *arg0) {
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
-void func_8001B294(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30[0][0] = 0x64;    D_800F6608.h30[0][1] = 0;    D_800F6608.h30[0][2] = 0x64;    D_800F6608.h30[1][0] = 0x64;    D_800F6608.h30[1][1] = 0;    D_800F6608.h30[1][2] = 0x64;    func_8003F1E4(0);    D_800F6608.w0 = (a0->unk_F4.x + a1->unk_F4.x) / 2;    D_800F6608.w4 = (a0->unk_F4.y + a1->unk_F4.y) / 2;    {        s32 t1 = a0->unk_F4.z;        s32 t2 = a1->unk_F4.z;        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = a1->unk_F4.x - a0->unk_F4.x;        s32 dz = a1->unk_F4.z - a0->unk_F4.z;        v0 = ratan2(dx, dz);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
-void func_8001B3C0(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {    D_800A36FA = 0;    D_800F5328.h30[0][0] = 0x64;    D_800F5328.h30[0][1] = 0;    D_800F5328.h30[0][2] = 0x64;    D_800F5328.h30[1][0] = 0x64;    D_800F5328.h30[1][1] = 0;    D_800F5328.h30[1][2] = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = a0->unk_180.x;    D_800F5328.w8 = a0->unk_180.z;    {        s32 v = a0->unk_180.y;        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
+void func_8001B294(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30[0][0] = 0x64;    D_800F6608.h30[0][1] = 0;    D_800F6608.h30[0][2] = 0x64;    D_800F6608.h30[1][0] = 0x64;    D_800F6608.h30[1][1] = 0;    D_800F6608.h30[1][2] = 0x64;    func_8003F1E4(0);    D_800F6608.unk_00.x = (a0->unk_F4.x + a1->unk_F4.x) / 2;    D_800F6608.unk_00.y = (a0->unk_F4.y + a1->unk_F4.y) / 2;    {        s32 t1 = a0->unk_F4.z;        s32 t2 = a1->unk_F4.z;        D_800F6608.h10 = 0;        D_800F6608.unk_00.z = (t1 + t2) / 2;    }    {        s32 dx = a1->unk_F4.x - a0->unk_F4.x;        s32 dz = a1->unk_F4.z - a0->unk_F4.z;        v0 = ratan2(dx, dz);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
+void func_8001B3C0(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {    D_800A36FA = 0;    D_800F5328.h30[0][0] = 0x64;    D_800F5328.h30[0][1] = 0;    D_800F5328.h30[0][2] = 0x64;    D_800F5328.h30[1][0] = 0x64;    D_800F5328.h30[1][1] = 0;    D_800F5328.h30[1][2] = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.unk_00.x = a0->unk_180.x;    D_800F5328.unk_00.z = a0->unk_180.z;    {        s32 v = a0->unk_180.y;        D_800F5328.b40 = 0;        D_800F5328.unk_00.y = v;    }}
 void func_8001B478(Unk80101EC8Record *obj) {
-    u8 *s2 = (u8 *)&D_800F5328;
+    Rec44 *s2 = &D_800F5328;
     s32 a2;
     s32 val;
     s32 far;
@@ -786,8 +786,8 @@ void func_8001B478(Unk80101EC8Record *obj) {
     if (obj->unk_6A == 0x2A) {
         val = 0x200;
     } else {
-        *(s32 *)s2 = obj->unk_180.x;
-        D_800F5328.w8 = obj->unk_180.z;
+        s2->unk_00.x = obj->unk_180.x;
+        D_800F5328.unk_00.z = obj->unk_180.z;
         val = obj->unk_180.y;
 
         if (!far) {
@@ -799,18 +799,18 @@ void func_8001B478(Unk80101EC8Record *obj) {
         }
 
         {
-            s32 diff = val - *(s32 *)(s2 + 4);
+            s32 diff = val - s2->unk_00.y;
             if (diff < 0) {
                 diff += 3;
             }
-            a2 = *(s32 *)(s2 + 4) + (diff >> 2);
-            *(s32 *)(s2 + 4) = a2;
+            a2 = s2->unk_00.y + (diff >> 2);
+            s2->unk_00.y = a2;
         }
 
         if (obj->unk_6A == 0x2A) {
             val = 0x200;
         } else {
-            val = (-obj->unk_1D8 - *(s16 *)(s2 + 0x12)) & 0xFFF;
+            val = (-obj->unk_1D8 - s2->h12) & 0xFFF;
 
             if (val >= 0x800) {
                 val = 0x1000 - val;
@@ -828,14 +828,14 @@ void func_8001B478(Unk80101EC8Record *obj) {
     }
 
     {
-        s16 old = *(s16 *)(s2 + 0x10);
+        s16 old = s2->h10;
         s32 diff = val - old;
         if (diff < 0) {
             diff += 7;
         }
-        *(s16 *)(s2 + 0x10) = old + (diff >> 3);
+        s2->h10 = old + (diff >> 3);
     }
-    *(s16 *)(s2 + 0x14) = 0;
+    s2->h14 = 0;
 
     {
         s16 counter;
@@ -843,30 +843,30 @@ void func_8001B478(Unk80101EC8Record *obj) {
         counter = D_800A36FC;
 
         if (counter != 0) {
-            s16 old12 = *(s16 *)(s2 + 0x12);
+            s16 old12 = s2->h12;
             s32 diff = val - old12;
             if (diff < 0) {
                 diff += 3;
             }
             {
                 s16 cnt = counter - 1;
-                *(s16 *)(s2 + 0x12) = old12 + (diff >> 2);
+                s2->h12 = old12 + (diff >> 2);
                 D_800A36FC = cnt;
             }
 
             {
-                s32 decay = *(s16 *)(s2 + 0x1C) * 3;
+                s32 decay = s2->h1C * 3;
                 if (decay < 0) {
                     decay += 3;
                 }
-                *(s16 *)(s2 + 0x1C) = decay >> 2;
+                s2->h1C = decay >> 2;
             }
         } else {
-            *(s16 *)(s2 + 0x12) = val;
-            *(s16 *)(s2 + 0x1C) = 0;
+            s2->h12 = val;
+            s2->h1C = 0;
         }
     }
-    *(s32 *)(s2 + 0x18) = 0;
+    s2->w18 = 0;
 }
 
 void func_8001B690(s32 arg0, s32 arg1) {
@@ -911,15 +911,15 @@ void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 va
     s32 dd;
     if (dst->b1F == 0) {
         dst->b1F = 1;
-        dst->w0 = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
-        dst->w4 = (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
+        dst->unk_00.x = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
+        dst->unk_00.y = (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
         D_800A3310 = 0;
         zval = (frac * (a->h8)) + (inv_frac * (b->h8));
         dst->h12 = val;
         dst->h10 = 0x80;
         dst->h14 = 0;
         dst->w18 = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
-        dst->w8 = zval >> 12;
+        dst->unk_00.z = zval >> 12;
         return;
     }
     {
@@ -930,27 +930,27 @@ void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 va
         }
     }
     use_high = ((s16) D_800A3310) >= 0xB;
-    cur = dst->w0;
+    cur = dst->unk_00.x;
     t = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
     dx = t - cur;
     if (dx < 0) {
         dx += 0xF;
     }
-    dst->w0 = cur + (dx >> 4);
-    cur = dst->w4;
+    dst->unk_00.x = cur + (dx >> 4);
+    cur = dst->unk_00.y;
     t = (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
     dy = t - cur;
     if (dy < 0) {
         dy += 0xF;
     }
-    dst->w4 = cur + (dy >> 4);
-    cur = dst->w8;
+    dst->unk_00.y = cur + (dy >> 4);
+    cur = dst->unk_00.z;
     t = ((frac * (a->h8)) + (inv_frac * (b->h8))) >> 12;
     dz = t - cur;
     if (dz < 0) {
         dz += 0xF;
     }
-    dst->w8 = cur + (dz >> 4);
+    dst->unk_00.z = cur + (dz >> 4);
     if (use_high) {
         t = ((frac_s1 * 0x180) >> 12) + 0x80;
     } else {
@@ -1007,12 +1007,8 @@ void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
     func_8001B748(&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - ratan2(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
 }
 void func_8001BC70(Unk80101EC8Record *arg0, s32 arg1) {
-    Vec3i32 *dst;
-    Vec3i32 *src;
     func_8003F1E4(0);
-    dst = (Vec3i32 *)&D_800F6608;
-    src = &arg0->unk_174;
-    *dst = *src;
+    D_800F6608.unk_00 = arg0->unk_174;
     D_800F6608.h10 = 0x120;
     D_800F6608.h12 = arg1;
     D_800F6608.h14 = 0;
@@ -1026,7 +1022,7 @@ void func_8001BCF0(u8 *arg0, s32 arg1) {
 
     *(Vec3 *)&D_800F6608 = *(Vec3 *)(arg0 + 0xB8);
 
-    D_800F6608.w4 -= 0x44C;
+    D_800F6608.unk_00.y -= 0x44C;
 
     D_800F6608.h10 = 0x100 - (arg1 * 288) / 4096;
 
@@ -1927,9 +1923,9 @@ void func_8001E404(void) {
 common_tail:
 
     if (D_800A3834 == 1) {
-        local.w0 = s2->w0 + D_800FF5C8;
-        local.w4 = s2->w4 + D_800FF5CC;
-        local.w8 = s2->w8 + D_800FF5D0;
+        local.unk_00.x = s2->unk_00.x + D_800FF5C8;
+        local.unk_00.y = s2->unk_00.y + D_800FF5CC;
+        local.unk_00.z = s2->unk_00.z + D_800FF5D0;
         local.h10 = s2->h10 + (u16)D_800FF5D8;
         local.h12 = s2->h12 + (u16)D_800FF5DA;
         local.h14 = s2->h14 + (u16)D_800FF5DC;
@@ -1938,50 +1934,41 @@ common_tail:
         local = *s2;
     }
 
-    func_80046BF4(&local.w0, (u16 *)&local.h10, local.w18);
+    func_80046BF4(&local.unk_00.x, &local.h10, local.w18);
     {
         s32 *p20 = &s2->w20;
-        func_8001A538(&local.w0, p20);
+        func_8001A538(&local, p20);
         func_80061064(&local.h10, p20);
     }
     func_8003F3D4(s2->h30[0]);
     func_8003F3D4(s2->h30[1]);
     D_800A36B4 = (s32)s2;
 }
-typedef struct {
-    s32 vx, vy, vz;
-    s32 pad0;
-    s16 rx, ry, rz;
-    s16 pad1;
-    s32 dist;
-    s32 pad2[11];
-} CamWork;
-
 void func_8001E6E4(s32 arg0) {
     /* FAKE: frame layout -- unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16); SOTN precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
     volatile u32 pre_pad[2];
-    CamWork local;
-    s32 *s2;
+    Rec44 local;
+    Rec44 *s2;
 
-    s2 = (s32 *)&D_800F5328;
+    s2 = &D_800F5328;
     if ((u32)(arg0 - 0x555) >= 0x556U) {
-        s2 = (s32 *)&D_800F6608;
+        s2 = &D_800F6608;
     }
 
-    local.vx = s2[0] + D_800FF5C8;
-    local.vy = s2[1] + D_800FF5CC;
-    local.vz = s2[2] + D_800FF5D0;
-    local.rx = *(u16 *)((u8 *)s2 + 0x10) + (u16)D_800FF5D8;
-    local.ry = *(u16 *)((u8 *)s2 + 0x12) + (u16)D_800FF5DA;
-    local.rz = *(u16 *)((u8 *)s2 + 0x14) + (u16)D_800FF5DC;
+    local.unk_00.x = s2->unk_00.x + D_800FF5C8;
+    local.unk_00.y = s2->unk_00.y + D_800FF5CC;
+    local.unk_00.z = s2->unk_00.z + D_800FF5D0;
+    local.h10 = s2->h10 + (u16)D_800FF5D8;
+    local.h12 = s2->h12 + (u16)D_800FF5DA;
+    local.h14 = s2->h14 + (u16)D_800FF5DC;
 
-    local.dist = *(s32 *)((u8 *)s2 + 0x18) + D_800FF5E0;
-    func_80046BF4(&local.vx, (u16 *)&local.rx, local.dist);
+    local.w18 = s2->w18 + D_800FF5E0;
+    func_80046BF4(&local.unk_00.x, &local.h10, local.w18);
 
     {
-        s32 *p20 = (s32 *)((u8 *)s2 + 0x20);
-        func_8001A538((s32 *)&local, p20);
-        func_80061064(&local.rx, p20);
+        s32 *p20 = &s2->w20;
+        func_8001A538(&local, p20);
+        func_80061064(&local.h10, p20);
     }
 
     D_800A36B4 = (s32)s2;
