@@ -711,16 +711,19 @@ typedef struct {
     s32 unkE8;
 } Work_80053E9C;
 
-/* Unk1F8002B8Rec.unk00, 0x60 bytes of scratch. unk00 is two points that unk60[0] / unk60[1] aim at
- * for func_8002E838 / func_8002EA24: func_8002A458's segment, base then tip (func_8002AB08 writes
- * them before each call), and func_80031B24's D_80106A78 object step, prev_pos then pos.
- * func_8002AB08 lays out more points after these two and still uses the bytes through its u8 *
- * pointer. func_80030D7C / func_800321E8 lay the bytes out differently (func_8005344C's argument
- * block, its work area from +0x38 through +0x123): Unk1F8002B8_8005344C, the other member of
+/* Unk1F8002B8Rec.unk00, 0x60 bytes of scratch. unk00 is up to six points that unk60[0..2] aim at.
+ * func_8002A458 and func_80031B24 use [0] / [1], for func_8002E838 / func_8002EA24:
+ * func_8002A458's segment, base then tip (func_8002AB08 writes them before each call), and
+ * func_80031B24's D_80106A78 object step, prev_pos then pos. func_8002AB08 uses all six: [0] / [1]
+ * are two of the other character's scratchpad points (ScrPad.unk00 or unk48), [2] / [3] the same
+ * two from its record (unk_210 or unk_234), [4] / [5] the midpoints of [0] / [2] and [1] / [3];
+ * for each triangle it hands func_8002CD58 it aims unk60[0..2] at three of them.
+ * func_80030D7C / func_800321E8 lay the bytes out differently (func_8005344C's argument block, its
+ * work area from +0x38 through +0x123): Unk1F8002B8_8005344C, the other member of
  * Unk1F8002B8Union. raw sizes the union to 0x60. */
 typedef union {
     u8 raw[0x60];
-    LeafPos unk00[2];
+    LeafPos unk00[6];
 } Unk1F8002B8Unk00;
 
 /* 17AFC's view of the last 0x148 bytes of the scratchpad, 0x1F8002B8..0x1F8003FF
@@ -749,8 +752,7 @@ typedef union {
  * as a member); unkD8 is the matrix the RotMatrix* calls build, and the GTE rotates unkA8 through
  * it; func_8002DE20 rotates three points, relative to the origin *unk60[0], into unk118 and tests
  * them against the triangle (0,0) / unkA8 / unkB8. unk00 is scratch (Unk1F8002B8Unk00):
- * func_8002A458 / func_80031B24 use its two points; func_8002AB08 still uses it through its u8 *
- * pointer. */
+ * func_8002A458 / func_80031B24 / func_8002AB08 use its points. */
 typedef struct {
     Unk1F8002B8Unk00 unk00;
     LeafPos *unk60[3];

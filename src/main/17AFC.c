@@ -1670,7 +1670,7 @@ done:
 extern void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2);
 extern s32 func_8002CD58(u8 *obj);
 void func_8002AB08(s32 mode) {
-    u8 *scr = (u8 *)0x1F8002B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     /* FAKE: second handle to D_800A37E8 (pointer-alias-fake-exception). The target rematerializes
      * the address at each of its three call sites (lui/addiu straight into $a1/$a3). This local is
      * one pseudo with a REG_EQUIV to the symbol (local-alloc.c update_equiv_regs) that global.c
@@ -1759,8 +1759,8 @@ void func_8002AB08(s32 mode) {
             && other->unk_40 == other->unk_A1[0]) {
             if (other->unk_34A != 0) {
                 other->unk_34A -= 1;
-                *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][0];
+                scr->unk00.unk00[0] = SPAD->unk00[i == 0][1];
+                scr->unk00.unk00[1] = SPAD->unk00[i == 0][0];
                 func_8002A458(self, &hit, &deep, 0);
                 mask_a |= hit;
             } else {
@@ -1773,8 +1773,8 @@ void func_8002AB08(s32 mode) {
                 || other->unk_6A == 0x26)
             && other->unk_40 == other->unk_A1[1] && other->unk_34A != 0) {
             other->unk_34A -= 1;
-            *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][1];
-            *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][0];
+            scr->unk00.unk00[0] = SPAD->unk48[i == 0][1];
+            scr->unk00.unk00[1] = SPAD->unk48[i == 0][0];
             func_8002A458(self, &hit, &deep, other->unk_0C == 0xE);
             func_80032854(i == 0, 0x2A, i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
             mask_a |= hit;
@@ -1803,25 +1803,25 @@ void func_8002AB08(s32 mode) {
                 deep_on = 0;
             }
             if (alt == 0) {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][temp2];
-                *(LeafPos *)(scr + 0x18) = other->unk_210[temp1];
-                *(LeafPos *)(scr + 0x24) = other->unk_210[temp2];
+                scr->unk00.unk00[0] = SPAD->unk00[i == 0][temp1];
+                scr->unk00.unk00[1] = SPAD->unk00[i == 0][temp2];
+                scr->unk00.unk00[2] = other->unk_210[temp1];
+                scr->unk00.unk00[3] = other->unk_210[temp2];
             } else {
-                *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][temp1];
-                *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][temp2];
-                *(LeafPos *)(scr + 0x18) = other->unk_234[temp1];
-                *(LeafPos *)(scr + 0x24) = other->unk_234[temp2];
+                scr->unk00.unk00[0] = SPAD->unk48[i == 0][temp1];
+                scr->unk00.unk00[1] = SPAD->unk48[i == 0][temp2];
+                scr->unk00.unk00[2] = other->unk_234[temp1];
+                scr->unk00.unk00[3] = other->unk_234[temp2];
             }
-            *(s32 *)(scr + 0x30) = (*(s32 *)(scr + 0x0) + *(s32 *)(scr + 0x18)) / 2;
-            *(s32 *)(scr + 0x34) = (*(s32 *)(scr + 0x4) + *(s32 *)(scr + 0x1C)) / 2;
-            *(s32 *)(scr + 0x38) = (*(s32 *)(scr + 0x8) + *(s32 *)(scr + 0x20)) / 2;
-            *(s32 *)(scr + 0x3C) = (*(s32 *)(scr + 0xC) + *(s32 *)(scr + 0x24)) / 2;
-            *(s32 *)(scr + 0x40) = (*(s32 *)(scr + 0x10) + *(s32 *)(scr + 0x28)) / 2;
-            *(s32 *)(scr + 0x44) = (*(s32 *)(scr + 0x14) + *(s32 *)(scr + 0x2C)) / 2;
-            dx = *(s32 *)(scr + 0xC) - *(s32 *)(scr + 0x24);
-            dy = *(s32 *)(scr + 0x10) - *(s32 *)(scr + 0x28);
-            dz = *(s32 *)(scr + 0x14) - *(s32 *)(scr + 0x2C);
+            scr->unk00.unk00[4].x = (scr->unk00.unk00[0].x + scr->unk00.unk00[2].x) / 2;
+            scr->unk00.unk00[4].y = (scr->unk00.unk00[0].y + scr->unk00.unk00[2].y) / 2;
+            scr->unk00.unk00[4].z = (scr->unk00.unk00[0].z + scr->unk00.unk00[2].z) / 2;
+            scr->unk00.unk00[5].x = (scr->unk00.unk00[1].x + scr->unk00.unk00[3].x) / 2;
+            scr->unk00.unk00[5].y = (scr->unk00.unk00[1].y + scr->unk00.unk00[3].y) / 2;
+            scr->unk00.unk00[5].z = (scr->unk00.unk00[1].z + scr->unk00.unk00[3].z) / 2;
+            dx = scr->unk00.unk00[1].x - scr->unk00.unk00[3].x;
+            dy = scr->unk00.unk00[1].y - scr->unk00.unk00[3].y;
+            dz = scr->unk00.unk00[1].z - scr->unk00.unk00[3].z;
             work = dx * dx + dy * dy + dz * dz;
             nseg = 2;
             if (work > 6249999) {
@@ -1830,67 +1830,67 @@ void func_8002AB08(s32 mode) {
             for (idx = 0; idx < nseg; idx++) {
                 if (nseg == 2) {
                     if (idx == 0) {
-                        *(u8 **)(scr + 0x60) = scr + 0x18;
-                        *(u8 **)(scr + 0x64) = scr + 0x24;
-                        *(u8 **)(scr + 0x68) = scr + 0xC;
+                        scr->unk60[0] = &scr->unk00.unk00[2];
+                        scr->unk60[1] = &scr->unk00.unk00[3];
+                        scr->unk60[2] = &scr->unk00.unk00[1];
                     } else {
-                        *(u8 **)(scr + 0x60) = scr;
-                        *(u8 **)(scr + 0x64) = scr + 0xC;
-                        *(u8 **)(scr + 0x68) = scr + 0x18;
+                        scr->unk60[0] = &scr->unk00.unk00[0];
+                        scr->unk60[1] = &scr->unk00.unk00[1];
+                        scr->unk60[2] = &scr->unk00.unk00[2];
                     }
                 } else {
                     switch (idx) {
                     case 0:
-                        *(u8 **)(scr + 0x60) = scr + 0x24;
-                        *(u8 **)(scr + 0x64) = scr + 0x18;
-                        *(u8 **)(scr + 0x68) = scr + 0x3C;
+                        scr->unk60[0] = &scr->unk00.unk00[3];
+                        scr->unk60[1] = &scr->unk00.unk00[2];
+                        scr->unk60[2] = &scr->unk00.unk00[5];
                         break;
                     case 1:
-                        *(u8 **)(scr + 0x60) = scr + 0x3C;
-                        *(u8 **)(scr + 0x64) = scr + 0x30;
-                        *(u8 **)(scr + 0x68) = scr + 0x18;
+                        scr->unk60[0] = &scr->unk00.unk00[5];
+                        scr->unk60[1] = &scr->unk00.unk00[4];
+                        scr->unk60[2] = &scr->unk00.unk00[2];
                         break;
                     case 2:
-                        *(u8 **)(scr + 0x60) = scr + 0x3C;
-                        *(u8 **)(scr + 0x64) = scr + 0x30;
-                        *(u8 **)(scr + 0x68) = scr + 0xC;
+                        scr->unk60[0] = &scr->unk00.unk00[5];
+                        scr->unk60[1] = &scr->unk00.unk00[4];
+                        scr->unk60[2] = &scr->unk00.unk00[1];
                         break;
                     case 3:
-                        *(u8 **)(scr + 0x60) = scr + 0xC;
-                        *(u8 **)(scr + 0x64) = scr;
-                        *(u8 **)(scr + 0x68) = scr + 0x30;
+                        scr->unk60[0] = &scr->unk00.unk00[1];
+                        scr->unk60[1] = &scr->unk00.unk00[0];
+                        scr->unk60[2] = &scr->unk00.unk00[4];
                         break;
                     }
                 }
-                *(LeafPos *)(scr + 0x84) = **(LeafPos **)(scr + 0x60);
-                *(LeafPos *)(scr + 0x78) = *(LeafPos *)(scr + 0x84);
+                scr->unk84 = *scr->unk60[0];
+                scr->unk78 = scr->unk84;
                 for (j = 1; j < 3; j++) {
-                    if ((*(s32 **)(scr + 0x60 + j * 4))[0] < *(s32 *)(scr + 0x78)) {
-                        *(s32 *)(scr + 0x78) = (*(s32 **)(scr + 0x60 + j * 4))[0];
-                    } else if (*(s32 *)(scr + 0x84) < (*(s32 **)(scr + 0x60 + j * 4))[0]) {
-                        *(s32 *)(scr + 0x84) = (*(s32 **)(scr + 0x60 + j * 4))[0];
+                    if (scr->unk60[j]->x < scr->unk78.x) {
+                        scr->unk78.x = scr->unk60[j]->x;
+                    } else if (scr->unk84.x < scr->unk60[j]->x) {
+                        scr->unk84.x = scr->unk60[j]->x;
                     }
-                    if ((*(s32 **)(scr + 0x60 + j * 4))[1] < *(s32 *)(scr + 0x7C)) {
-                        *(s32 *)(scr + 0x7C) = (*(s32 **)(scr + 0x60 + j * 4))[1];
-                    } else if (*(s32 *)(scr + 0x88) < (*(s32 **)(scr + 0x60 + j * 4))[1]) {
-                        *(s32 *)(scr + 0x88) = (*(s32 **)(scr + 0x60 + j * 4))[1];
+                    if (scr->unk60[j]->y < scr->unk78.y) {
+                        scr->unk78.y = scr->unk60[j]->y;
+                    } else if (scr->unk84.y < scr->unk60[j]->y) {
+                        scr->unk84.y = scr->unk60[j]->y;
                     }
-                    if ((*(s32 **)(scr + 0x60 + j * 4))[2] < *(s32 *)(scr + 0x80)) {
-                        *(s32 *)(scr + 0x80) = (*(s32 **)(scr + 0x60 + j * 4))[2];
-                    } else if (*(s32 *)(scr + 0x8C) < (*(s32 **)(scr + 0x60 + j * 4))[2]) {
-                        *(s32 *)(scr + 0x8C) = (*(s32 **)(scr + 0x60 + j * 4))[2];
+                    if (scr->unk60[j]->z < scr->unk78.z) {
+                        scr->unk78.z = scr->unk60[j]->z;
+                    } else if (scr->unk84.z < scr->unk60[j]->z) {
+                        scr->unk84.z = scr->unk60[j]->z;
                     }
                 }
-                func_8002CA8C(self, func_8002CD58(scr), deep_on);
-                hit |= *(s32 *)(scr + 0xB4);
-                deep |= *(s32 *)(scr + 0xC4);
+                func_8002CA8C(self, func_8002CD58((u8 *)scr), deep_on);
+                hit |= scr->unkB4;
+                deep |= scr->unkC4;
                 if (alt != 0) {
-                    mask_a |= *(s32 *)(scr + 0xB4);
+                    mask_a |= scr->unkB4;
                 }
                 if (pass == 1 && alt == 0) {
-                    mask_b |= *(s32 *)(scr + 0xB4);
+                    mask_b |= scr->unkB4;
                 } else {
-                    mask_c |= *(s32 *)(scr + 0xB4);
+                    mask_c |= scr->unkB4;
                 }
             }
         }
@@ -1899,14 +1899,14 @@ void func_8002AB08(s32 mode) {
         }
         rec = D_800F5F68[i];
         best = 0x7FFFFFFF;
-        *(s32 *)(scr + 0xC8) = other->unk_210[1].x;
-        *(s32 *)(scr + 0xCC) = other->unk_210[1].y;
-        *(s32 *)(scr + 0xD0) = other->unk_210[1].z;
+        scr->unkC8.x = other->unk_210[1].x;
+        scr->unkC8.y = other->unk_210[1].y;
+        scr->unkC8.z = other->unk_210[1].z;
         for (temp3 = 0; temp3 < 22; temp3++, rec++) {
             if (hit & (1 << temp3)) {
-                dx = SPAD->unkA8[i][temp3].x - *(s32 *)(scr + 0xC8);
-                dy = SPAD->unkA8[i][temp3].y - *(s32 *)(scr + 0xCC);
-                dz = SPAD->unkA8[i][temp3].z - *(s32 *)(scr + 0xD0);
+                dx = SPAD->unkA8[i][temp3].x - scr->unkC8.x;
+                dy = SPAD->unkA8[i][temp3].y - scr->unkC8.y;
+                dz = SPAD->unkA8[i][temp3].z - scr->unkC8.z;
                 work = dx * dx + dy * dy + dz * dz - rec->unk_0E;
                 if (work < best) {
                     best = work;
