@@ -5131,7 +5131,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_62 |= 2;
     }
     if (rec->unk_86 == rec->unk_88 && rec->unk_8A != 0) {
-        if (func_8002798C((u8 *)rec) == 0) {
+        if (func_8002798C(rec) == 0) {
             goto clear_8c;
         }
         goto set_8c;
@@ -5236,7 +5236,7 @@ skip_62:
     rec->unk_114[1].vx = SPAD->unk48[arg0][0].x - rec->unk_234[0].x;
     rec->unk_114[1].vy = SPAD->unk48[arg0][0].y - rec->unk_234[0].y;
     rec->unk_114[1].vz = SPAD->unk48[arg0][0].z - rec->unk_234[0].z;
-    rec->unk_1DA = func_8002FDB0((s32 *)rec);
+    rec->unk_1DA = func_8002FDB0(rec);
     hit = 0;
     if ((rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 || rec->unk_6A == 0x26) && rec->unk_AD != 0) {
         if ((rec->unk_40 >= rec->unk_A1[0] && rec->unk_40 <= rec->unk_A3[0]) || (rec->unk_40 >= rec->unk_A1[1] && rec->unk_40 <= rec->unk_A3[1])) {

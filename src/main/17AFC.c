@@ -88,7 +88,7 @@ void func_8002738C(s32 a0, s32 a1) {
             break;
     }
 }
-void func_80027438(u8 *a0, s32 a1, s16 a2) {
+void func_80027438(Unk80101EC8Record *a0, s32 a1, s16 a2) {
     s16 v1;
     v1 = D_800A38DC;
     if (v1 == 5) {
@@ -104,21 +104,21 @@ void func_80027438(u8 *a0, s32 a1, s16 a2) {
         case 3:
         case 4:
         case 5:
-            *(u16 *)(a0 + 0x272) += a2;
+            a0->unk_272 += a2;
             break;
         case 6:
         case 7:
         case 8:
         case 9:
-            *(u16 *)(a0 + 0x26C) = 0;
-            *(u16 *)(a0 + 0x90) = 0;
-            *(u16 *)(a0 + 0x8A) = 0;
+            a0->unk_26C = 0;
+            a0->unk_90 = 0;
+            a0->unk_8A = 0;
             break;
         case 10:
         case 11:
         case 12:
         case 13:
-            *(u16 *)(a0 + 0x270) += a2;
+            a0->unk_270 += a2;
             break;
         case 14:
         case 15:
@@ -128,7 +128,7 @@ void func_80027438(u8 *a0, s32 a1, s16 a2) {
         case 19:
         case 20:
         case 21:
-            *(u16 *)(a0 + 0x26E) += a2;
+            a0->unk_26E += a2;
             break;
     }
 }
@@ -233,74 +233,74 @@ void func_80027640(Unk80101EC8Record *arg0)
     func_80032854(arg0->index, 0x30, &arg0->unk_F4.x, 0);
 }
 
-void func_800278C0(s32 a0, s32 *ptr, s32 cmd, s32 a3, s32 *stack_a2, s32 stack_v1) {
-    s32 chk_obj;
+void func_800278C0(s32 a0, Unk80101EC8Record *ptr, s32 cmd, Tbl8008E194 *a3, s32 *stack_a2, s32 stack_v1) {
+    Unk80101EC8Record *chk_obj;
 
     if (a0 == 1) {
         return;
     }
 
     if (stack_v1 != 0) {
-        func_80032854(*(s16 *)(*ptr + 0x4), 0x2B, stack_a2, (s16 *)0);
+        func_80032854(ptr->other->index, 0x2B, stack_a2, (s16 *)0);
         return;
     }
 
-    chk_obj = *ptr;
+    chk_obj = ptr->other;
     {
-        s16 f86 = *(s16 *)(chk_obj + 0x86);
-        s16 f8E = *(s16 *)(chk_obj + 0x8E);
+        s16 f86 = chk_obj->unk_86;
+        s16 f8E = chk_obj->unk_8E;
 
         if (f86 == f8E) {
-            func_80032854(*(s16 *)(chk_obj + 0x4), 0x28, stack_a2, (s16 *)0);
+            func_80032854(chk_obj->index, 0x28, stack_a2, (s16 *)0);
             return;
         }
 
         {
-            s16 f88 = *(s16 *)(chk_obj + 0x88);
+            s16 f88 = chk_obj->unk_88;
             if (f86 == f88 && a3 != 0) {
-                func_80032854(*(s16 *)(chk_obj + 0x4), 0x27, stack_a2, (s16 *)0);
+                func_80032854(chk_obj->index, 0x27, stack_a2, (s16 *)0);
                 return;
             }
         }
     }
 
     if (cmd == 0) {
-        func_80032854(*(s16 *)(*ptr + 0x4), 0x22, stack_a2, (s16 *)0);
+        func_80032854(ptr->other->index, 0x22, stack_a2, (s16 *)0);
         return;
     }
 
     if (cmd < 6) {
-        func_80032854(*(s16 *)(*ptr + 0x4), 0x23, stack_a2, (s16 *)0);
+        func_80032854(ptr->other->index, 0x23, stack_a2, (s16 *)0);
         return;
     }
 
-    func_80032854(*(s16 *)(*ptr + 0x4), 0x24, stack_a2, (s16 *)0);
+    func_80032854(ptr->other->index, 0x24, stack_a2, (s16 *)0);
 }
-s32 func_8002798C(u8 *a0) {
+s32 func_8002798C(Unk80101EC8Record *a0) {
     s32 ret = 0;
-    u16 v1 = *(u16 *)(a0 + 0x6A);
+    u16 v1 = a0->unk_6A;
     
     if (v1 == 6 || v1 == 0x25 || v1 == 0x33 || v1 == 4 || v1 == 0x14) {
         goto check_88;
     }
     {
-        s16 v40 = *(s16 *)(a0 + 0x40);
-        if (v40 < *(u8 *)(a0 + 0xA5)) {
+        s16 v40 = a0->unk_40;
+        if (v40 < a0->unk_A5) {
             goto check_88;
         }
-        if (!(*(u8 *)(a0 + 0xA6) < v40)) {
+        if (!(a0->unk_A6 < v40)) {
             goto final_1;
         }
     }
     
 check_88:
     {
-        s16 v88 = *(s16 *)(a0 + 0x88);
+        s16 v88 = a0->unk_88;
         s32 a0_6a;
         if (v88 == -1) {
             goto done;
         }
-        a0_6a = *(u16 *)(a0 + 0x6A);
+        a0_6a = a0->unk_6A;
         if ((u16)a0_6a == 0xF) {
             goto final_1;
         }
@@ -326,15 +326,15 @@ done:
 }
 
 
-void func_80027A58(s32 *a0) {
-    s16 v1 = *(s16 *)((u8 *)a0 + 0x86);
-    if (v1 == *(s16 *)((u8 *)a0 + 0x88)) {
-        if (*(s16 *)((u8 *)a0 + 0x8A)) {
-            if (((s32 (*)())func_8002798C)()) {
-                u8 *v0 = game_GetPlayerData(*(s16 *)((u8 *)a0 + 4));
+void func_80027A58(Unk80101EC8Record *a0) {
+    s16 v1 = a0->unk_86;
+    if (v1 == a0->unk_88) {
+        if (a0->unk_8A) {
+            if (func_8002798C(a0)) {
+                u8 *v0 = game_GetPlayerData(a0->index);
                 func_80030900(a0, *(s32 *)(v0 + 0x4C) + 0x14);
-                *(s16 *)((u8 *)a0 + 0x8A) = 0;
-                *(s16 *)((u8 *)a0 + 0x86) = *(u16 *)((u8 *)a0 + 0x84);
+                a0->unk_8A = 0;
+                a0->unk_86 = a0->unk_84;
             }
         }
     }
@@ -395,12 +395,12 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
     st = ch->unk_6A;
     if (st == 4 || st == 0x14) {
         func_800203B4((u8 *)ch, limb, vec);
-        func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
+        func_800278C0(pass, ch, limb, tbl_arg, scr, arg6);
         return 1;
     }
     if (ch->unk_0C == 0x1F) {
         func_800203B4((u8 *)ch, limb, vec);
-        func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
+        func_800278C0(pass, ch, limb, tbl_arg, scr, arg6);
         ch->unk_286 = 7;
         return 1;
     }
@@ -424,7 +424,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
                 func_80032854(player == 0, 0x26, scr, 0);
                 func_80032854(player, 0x26, scr, 0);
                 func_80032854(player, 0x2D, scr, 0);
-                func_80027A58((s32 *)ch);
+                func_80027A58(ch);
             } else {
                 return 0;
             }
@@ -461,7 +461,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
     if (D_800A38DC == 0 && player == 0) {
         func_8002738C(0, limb);
     }
-    func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
+    func_800278C0(pass, ch, limb, tbl_arg, scr, arg6);
     st = ch->unk_6A;
     if (st == 6 || st == 9) {
         if (flag) {
@@ -471,13 +471,13 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         }
         ch->unk_286 = ch->unk_1DA ? 3 : 4;
         func_80032854(player, 3, scr, 0);
-        func_80027438((u8 *)ch, limb, 1);
+        func_80027438(ch, limb, 1);
         return 0;
     }
     if (pass == 1 && tbl->unk0 == 4) {
         s16 kind = ch->unk_0A;
         if (kind == 2 || kind == 4 || kind == 0xE || kind == 0xF) {
-            func_80027438((u8 *)ch, limb, tbl->unkD == 2 ? 2 : 1);
+            func_80027438(ch, limb, tbl->unkD == 2 ? 2 : 1);
             ch->unk_286 = 0x1B;
             func_80032854(player, 3, scr, 0);
             return 0;
@@ -488,7 +488,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         if (flag) {
             ch->unk_286 = thresh > 0x400 ? 6 : 9;
             func_800203B4((u8 *)ch, limb, vec);
-            func_80027A58((s32 *)ch);
+            func_80027A58(ch);
             return 1;
         }
         /* FAKE: duplicate the real count/return tail across switch arms so flow.c
@@ -501,7 +501,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         }
         ch->unk_286 = 5;
         func_80032854(player, 3, scr, 0);
-        func_80027A58((s32 *)ch);
+        func_80027A58(ch);
         return 0;
     case 1:
     case 2:
@@ -509,7 +509,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         if (flag) {
             ch->unk_286 = thresh > 0x400 ? 7 : 9;
             func_800203B4((u8 *)ch, limb, vec);
-            func_80027A58((s32 *)ch);
+            func_80027A58(ch);
             return 1;
         }
         /* FAKE: duplicate the real count/return tail across switch arms so flow.c
@@ -522,7 +522,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         }
         ch->unk_286 = 5;
         func_80032854(player, 3, scr, 0);
-        func_80027A58((s32 *)ch);
+        func_80027A58(ch);
         return 0;
     case 4:
     case 5:
@@ -537,12 +537,12 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
             }
             ch->unk_286 = 5;
             func_80032854(player, 3, scr, 0);
-            func_80027A58((s32 *)ch);
+            func_80027A58(ch);
             return 0;
         }
         ch->unk_286 = thresh > 0x400 ? 8 : 9;
         func_800203B4((u8 *)ch, limb, vec);
-        func_80027A58((s32 *)ch);
+        func_80027A58(ch);
         return 1;
     case 6:
     case 7:
@@ -554,7 +554,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         ch->unk_286 = 4;
         ch->unk_90 = 0;
         func_80032854(player, 3, scr, 0);
-        func_80027A58((s32 *)ch);
+        func_80027A58(ch);
         ch->unk_8A = 0;
         return 0;
     case 10:
@@ -566,7 +566,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         }
         ch->unk_286 = 5;
         func_80032854(player, 3, scr, 0);
-        func_80027A58((s32 *)ch);
+        func_80027A58(ch);
         return 0;
     case 14:
     case 15:
@@ -581,7 +581,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         }
         ch->unk_286 = 3;
         func_80032854(player, 3, scr, 0);
-        func_80027A58((s32 *)ch);
+        func_80027A58(ch);
         return 0;
     }
 }
@@ -741,30 +741,29 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
 
 void func_8002872C(void) {
     s32 i = 0;
-    s32 offset = 0;
-    u8 *base;
+    Unk80101EC8Record *base;
 
     do {
         s32 cmp_a1;
         s32 cmp_a2;
-        s32 *ptr;
+        Unk80101EC8Record *ptr;
         s32 a0_raw;
         s32 v1;
 
-        base = (u8 *)D_80101EC8 + offset;
+        base = &D_80101EC8[i];
 
-        cmp_a1 = *(s16 *)(base + 0xC);
+        cmp_a1 = base->unk_0C;
         if (cmp_a1 != 0x1B) goto next;
 
-        if (*(s16 *)(base + 0x46) != 0) goto next;
+        if (base->unk_46 != 0) goto next;
 
-        cmp_a2 = *(u16 *)(base + 0x6A);
+        cmp_a2 = base->unk_6A;
         if (cmp_a2 != 0xB) goto next;
 
-        if (*(s16 *)(base + 0x40) != *(u8 *)(base + 0xA7)) goto next;
+        if (base->unk_40 != base->unk_A7) goto next;
 
-        ptr = *(s32 **)base;
-        a0_raw = *(u16 *)((u8 *)ptr + 0x6A);
+        ptr = base->other;
+        a0_raw = ptr->unk_6A;
         v1 = a0_raw & 0xFFFF;
 
         if (v1 == 0x26) goto match;
@@ -788,19 +787,18 @@ void func_8002872C(void) {
     match:
         if (!(D_800A387C < D_800A3134)) goto next;
 
-        *(s16 *)((u8 *)*(s32 **)base + 0x286) = 0x1C;
-        func_80027A58(*(s32 **)base);
+        base->other->unk_286 = 0x1C;
+        func_80027A58(base->other);
 
         {
-            s32 *p2 = *(s32 **)base;
-            if (*(u16 *)((u8 *)p2 + 0x6A) == 0x25) {
-                *(u16 *)((u8 *)p2 + 0x86) = *(u16 *)((u8 *)p2 + 0x84);
+            Unk80101EC8Record *p2 = base->other;
+            if (p2->unk_6A == 0x25) {
+                p2->unk_86 = p2->unk_84;
             }
         }
 
     next:
         i++;
-        offset += 0x44C;
     } while (i < 2);
 }
 extern s32 D_800A3144[2];
@@ -950,14 +948,14 @@ void func_800288C8(void) {
                 func_80032854(0, 0x21, &D_80101EC8[0].unk_F4.x, 0);
                 D_80101EC8[1].unk_286 = 0xF;
                 D_80101EC8[0].unk_286 = 0xF;
-                func_80027A58((s32 *)&D_80101EC8[0]);
-                func_80027A58((s32 *)&D_80101EC8[1]);
+                func_80027A58(&D_80101EC8[0]);
+                func_80027A58(&D_80101EC8[1]);
                 hits = 0;
             }
         } else {
             if (facing < 0x400 && D_80101EC8[1].unk_6A == 0x15) {
                 D_80101EC8[1].unk_286 = 0x10;
-                func_80027A58((s32 *)&D_80101EC8[1]);
+                func_80027A58(&D_80101EC8[1]);
             }
             if (facing > 0x600 && D_80101EC8[1].unk_6A == 0x15) {
                 if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7
@@ -974,7 +972,7 @@ void func_800288C8(void) {
     } else if (flag2) {
         if (facing < 0x400 && D_80101EC8[0].unk_6A == 0x15) {
             D_80101EC8[0].unk_286 = 0x10;
-            func_80027A58((s32 *)&D_80101EC8[0]);
+            func_80027A58(&D_80101EC8[0]);
         }
         if (facing > 0x600 && D_80101EC8[0].unk_6A == 0x15) {
             if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7
@@ -1510,10 +1508,10 @@ extern void printf();
 extern void func_8002E838(u8 *obj);
 extern s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq);
 extern s32 func_80054434(void);
-void func_8002A458(u8 *obj, u32 *hit, u32 *deep, s32 quiet) {
+void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     u8 *scr = (u8 *)0x1F8002B8;
-    s32 id = *(s16 *)(obj + 4);
-    u8 *partner = *(u8 **)obj;
+    s32 id = obj->index;
+    Unk80101EC8Record *partner = obj->other;
     s32 work[64];
     s32 sp_tmp;
     s32 sp_tmp2;
@@ -1548,7 +1546,7 @@ void func_8002A458(u8 *obj, u32 *hit, u32 *deep, s32 quiet) {
     dx = (*(s32 **)(scr + 0x64))[0] - (*(s32 **)(scr + 0x60))[0];
     dy = (*(s32 **)(scr + 0x64))[1] - (*(s32 **)(scr + 0x60))[1];
     dz = (*(s32 **)(scr + 0x64))[2] - (*(s32 **)(scr + 0x60))[2];
-    diff = (*(s16 *)(partner + 0x1D8) - ratan2(dx, dz)) & 0xFFF;
+    diff = (partner->unk_1D8 - ratan2(dx, dz)) & 0xFFF;
     if (diff >= 0x800) {
         diff = 0x1000 - diff;
     }
@@ -1626,7 +1624,7 @@ void func_8002A458(u8 *obj, u32 *hit, u32 *deep, s32 quiet) {
         } while (0);
         for (i = 0; i < 22; i++, rec++) {
             s32 *pos;
-            if (*(s16 *)(obj + 0x26C) == 0 && i >= 6 && i <= 9) {
+            if (obj->unk_26C == 0 && i >= 6 && i <= 9) {
                 continue;
             }
             pos = (s32 *)&SPAD->unkA8[id][i];
@@ -1652,9 +1650,9 @@ void func_8002A458(u8 *obj, u32 *hit, u32 *deep, s32 quiet) {
             dy = *(s32 *)(scr + 0x104) - p[1];
             dz = *(s32 *)(scr + 0x108) - p[2];
             hit_sq = dx * dx + dy * dy + dz * dz;
-            dx = *(s32 *)(obj + 0xF4) - p[0];
-            dy = *(s32 *)(obj + 0xF8) - p[1];
-            dz = *(s32 *)(obj + 0xFC) - p[2];
+            dx = obj->unk_F4.x - p[0];
+            dy = obj->unk_F4.y - p[1];
+            dz = obj->unk_F4.z - p[2];
             if (hit_sq >= dx * dx + dy * dy + dz * dz) {
                 goto done;
             }
@@ -1670,7 +1668,7 @@ done:
     D_800A37EA = -qy;
     D_800A37EC = -qz;
 }
-extern void func_8002CA8C(u8 *a0, s32 a1, s32 a2);
+extern void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2);
 extern s32 func_8002CD58(u8 *obj);
 void func_8002AB08(s32 mode) {
     u8 *scr = (u8 *)0x1F8002B8;
@@ -1764,7 +1762,7 @@ void func_8002AB08(s32 mode) {
                 other->unk_34A -= 1;
                 *(LeafPos *)(scr + 0x0) = SPAD->unk00[i == 0][1];
                 *(LeafPos *)(scr + 0xC) = SPAD->unk00[i == 0][0];
-                func_8002A458((u8 *)self, &hit, &deep, 0);
+                func_8002A458(self, &hit, &deep, 0);
                 mask_a |= hit;
             } else {
                 func_80032854(i == 0, 0x32, i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
@@ -1778,7 +1776,7 @@ void func_8002AB08(s32 mode) {
             other->unk_34A -= 1;
             *(LeafPos *)(scr + 0x0) = SPAD->unk48[i == 0][1];
             *(LeafPos *)(scr + 0xC) = SPAD->unk48[i == 0][0];
-            func_8002A458((u8 *)self, &hit, &deep, other->unk_0C == 0xE);
+            func_8002A458(self, &hit, &deep, other->unk_0C == 0xE);
             func_80032854(i == 0, 0x2A, i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
             mask_a |= hit;
         }
@@ -1884,7 +1882,7 @@ void func_8002AB08(s32 mode) {
                         *(s32 *)(scr + 0x8C) = (*(s32 **)(scr + 0x60 + j * 4))[2];
                     }
                 }
-                func_8002CA8C((u8 *)self, func_8002CD58(scr), deep_on);
+                func_8002CA8C(self, func_8002CD58(scr), deep_on);
                 hit |= *(s32 *)(scr + 0xB4);
                 deep |= *(s32 *)(scr + 0xC4);
                 if (alt != 0) {
@@ -2185,16 +2183,16 @@ s32 func_8002BEA0(void) {
 
 void func_8002C0DC(void) {
     s32 i;
-    u8 *var_s0;
+    Unk80101EC8Record *var_s0;
     s32 temp_s2;
 
     temp_s2 = func_8002BC68(D_800A371C);
 
     for (i = 0; i < 2; i++) {
-        u8 *e = (u8 *)D_80101EC8 + i * 0x44C;
-        u8 *ptr = *(u8 **)e;
-        s32 arg1 = *(s32 *)(ptr + 0xD8) - *(s32 *)(e + 0xD8);
-        s32 arg2 = *(s32 *)(ptr + 0xE0) - *(s32 *)(e + 0xE0);
+        Unk80101EC8Record *e = &D_80101EC8[i];
+        Unk80101EC8Record *ptr = e->other;
+        s32 arg1 = ptr->unk_D8.x - e->unk_D8.x;
+        s32 arg2 = ptr->unk_D8.z - e->unk_D8.z;
         func_8001F860((s16 *)e, ratan2(arg1, arg2));
     }
 
@@ -2203,11 +2201,11 @@ void func_8002C0DC(void) {
         s32 chk;
         idx = D_800A38AE;
         chk = D_800A376E;
-        var_s0 = (u8 *)D_80101EC8 + idx * 0x44C;
+        var_s0 = &D_80101EC8[idx];
 
         if (chk == 0) {
             if (D_800A3758 == 0xFF) {
-                if (*(u8 *)(var_s0 + 0xAA) == *(s16 *)(var_s0 + 0x40)) {
+                if (var_s0->unk_AA == var_s0->unk_40) {
                     func_8002AB08(1);
                 }
             }
@@ -2215,21 +2213,21 @@ void func_8002C0DC(void) {
 
         {
             s32 v1;
-            v1 = *(s16 *)(var_s0 + 0x40);
+            v1 = var_s0->unk_40;
             if (v1 < (s32)D_800A38E8) {
                 return;
             }
-            if (v1 >= *(u8 *)(var_s0 + 0xAA)) {
+            if (v1 >= var_s0->unk_AA) {
                 return;
             }
             if (D_800A371C + 0xC8 >= temp_s2) {
                 return;
             }
             {
-                u8 *v1ptr;
-                v1ptr = *(u8 **)var_s0;
-                *(s16 *)(var_s0 + 0x286) = 4;
-                *(s16 *)(v1ptr + 0x286) = 5;
+                Unk80101EC8Record *v1ptr;
+                v1ptr = var_s0->other;
+                var_s0->unk_286 = 4;
+                v1ptr->unk_286 = 5;
             }
         }
     }
@@ -2440,9 +2438,9 @@ void func_8002C61C(void) {
 extern s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq);
 extern s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq);
 
-void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
+void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     u8 *scr = (u8 *)0x1F8002B8;
-    s32 id = *(s16 *)(a0 + 4);
+    s32 id = a0->index;
     BoneHitRec *recbase = D_800F5F68[id];
     BoneHitRec *rec;
     s32 hitMask = 0;
@@ -2456,7 +2454,7 @@ void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
         s32 r;
         s32 hit;
 
-        if (*(s16 *)(a0 + 0x26C) == 0 && i >= 6 && i <= 9) {
+        if (a0->unk_26C == 0 && i >= 6 && i <= 9) {
             continue;
         }
 
@@ -4360,13 +4358,13 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
     }
     return ret;
 }
-s32 func_8002FDB0(s32 *arg0) {
+s32 func_8002FDB0(Unk80101EC8Record *arg0) {
     s32 stride;
     s32 v1, v2;
     s32 w1, w2;
     s32 ret;
 
-    stride = (s32)((s16 *)arg0)[2] * 264;
+    stride = arg0->index * 264;
 
     /* Compute (point_a - center) into scratchpad SCR[0x60..0x68] and
      * (point_b - center) into SCR[0x70..0x78].  Source vectors live at
@@ -4846,35 +4844,35 @@ void func_80030A2C(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
 }
 
 
-s32 func_80030B10(u8 *arg0, s32 arg1) {
-    s32 count = *(s16 *)(arg0 + 0x330);
-    u16 c;
+s32 func_80030B10(Unk80101EC8Record *arg0, s32 arg1) {
+    s32 count = arg0->unk_330;
+    s16 c;
     if (count == 0xC) {
         return 0;
     }
-    if (*(s16 *)(arg0 + 0x88) == -1) {
+    if (arg0->unk_88 == -1) {
         goto skip_shift;
     }
-    if (arg1 != *(s16 *)(arg0 + 0x14)) {
+    if (arg1 != arg0->unk_14) {
         goto skip_shift;
     }
     if (count > 0) {
         s32 i = count;
         do {
-            *(u16 *)(arg0 + i * 2 + 0x332) = *(u16 *)(arg0 + i * 2 + 0x330);
+            arg0->unk_332[i] = arg0->unk_332[i - 1];
             i--;
         } while (i > 0);
     }
     {
-        u16 cc = *(u16 *)(arg0 + 0x330);
-        *(u16 *)(arg0 + 0x332) = (u16)arg1;
-        *(u16 *)(arg0 + 0x330) = cc + 1;
+        s16 cc = arg0->unk_330;
+        arg0->unk_332[0] = arg1;
+        arg0->unk_330 = cc + 1;
         goto done;
     }
 skip_shift:
-    c = *(u16 *)(arg0 + 0x330);
-    *(u16 *)(arg0 + 0x330) = c + 1;
-    *(u16 *)(arg0 + (s16)c * 2 + 0x332) = (u16)arg1;
+    c = arg0->unk_330;
+    arg0->unk_330 = c + 1;
+    arg0->unk_332[c] = arg1;
 done:
     return 1;
 }
@@ -4912,7 +4910,7 @@ s32 func_80030BA8(Unk80101EC8Record *arg0) {
                 continue;
             }
         }
-        if (func_80030B10((u8 *)arg0, kind) == 0) {
+        if (func_80030B10(arg0, kind) == 0) {
             return -1;
         }
         old_val = p->kind;

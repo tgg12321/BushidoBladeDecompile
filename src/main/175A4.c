@@ -148,14 +148,14 @@ void func_80026DA4(void) {
                 D_80101EC8[0].unk_286 = 3;
                 D_80101EC8[1].unk_286 = 4;
                 if ((u16)D_80101EC8[1].unk_6A == 0x21) {
-                    func_80027A58((s32 *)partner);
+                    func_80027A58(partner);
                 }
                 func_80032854(1, 0x2D, &partner->unk_F4.x, (s16 *)0);
             } else if (D_80101EC8[1].unk_28C > D_80101EC8[0].unk_28C) {
                 D_80101EC8[1].unk_286 = 3;
                 D_80101EC8[0].unk_286 = 4;
                 if ((u16)D_80101EC8[0].unk_6A == 0x21) {
-                    func_80027A58((s32 *)record);
+                    func_80027A58(record);
                 }
                 func_80032854(0, 0x2D, &record->unk_F4.x, (s16 *)0);
             }
