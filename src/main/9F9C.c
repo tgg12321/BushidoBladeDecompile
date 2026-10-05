@@ -2222,7 +2222,7 @@ void func_8001F1C4(Unk80101EC8Record *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
         *(u16 *)(arg3 + 0x72) = (u16)(*(u16 *)(arg3 + 0x72) + (*(s8 *)(arg1 + 0x16) * 4));
     }
 }
-/* Steers two bone-angle sets (a, b) toward obj's partner (*(u8 **)obj):
+/* Steers two bone-angle sets (a, b) toward obj's partner (obj->other):
  * while obj+0x6A is 0x15/0x25, a clamped heading (obj+0x1D8 - obj+0x1CA) and
  * a clamped elevation from ratan2(ground distance, height delta) are eased
  * 1/8 of the wrapped difference per call into obj+0x1E6/0x1E8 and applied
@@ -2235,7 +2235,7 @@ void func_8001F1C4(Unk80101EC8Record *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
  * obj+0xE in 6..7 with obj+0x6A == 2), and adds random jitter to both sets
  * when obj+0x26E is set and obj+0x96 == 0. The x target passed to
  * func_8002F770 is 0 in every state. */
-void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
+void func_8001F2E4(Unk80101EC8Record *obj, u8 *a, u8 *b) {
     s32 lzc_out;
     s32 lzc_out2;
     s32 tgt_z;
@@ -2266,12 +2266,12 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
     s32 temp;
     s16 t;
 
-    if (*(s16 *)(obj + 0x26C) == 0) {
+    if (obj->unk_26C == 0) {
         func_80027334((s32 *)a);
         func_80027334((s32 *)b);
     }
-    if (*(u16 *)(obj + 0x6A) == 0x15 || *(u16 *)(obj + 0x6A) == 0x25) {
-        if (*(s16 *)(obj + 0xC) == 0x1F) {
+    if (obj->unk_6A == 0x15 || obj->unk_6A == 0x25) {
+        if (obj->unk_0C == 0x1F) {
             temp2 = 0x100;
             tgt_x = 0;
             tgt_z = 0;
@@ -2279,7 +2279,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
             s32 dist_sq;
             s32 dist;
 
-            tgt_z = (*(s16 *)(obj + 0x1D8) - *(s16 *)(obj + 0x1CA)) & 0xFFF;
+            tgt_z = (obj->unk_1D8 - obj->unk_1C8.vy) & 0xFFF;
             if (tgt_z >= 0x800) {
                 tgt_z -= 0x1000;
             }
@@ -2288,8 +2288,8 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
             } else if (tgt_z >= 0x200) {
                 tgt_z = 0x1FF;
             }
-            dx = *(s32 *)(*(u8 **)obj + 0x180) - *(s32 *)(obj + 0x180);
-            dz = *(s32 *)(*(u8 **)obj + 0x188) - *(s32 *)(obj + 0x188);
+            dx = obj->other->unk_180.x - obj->unk_180.x;
+            dz = obj->other->unk_180.z - obj->unk_180.z;
             dist_sq = dx * dx + dz * dz;
             if ((u32)dist_sq < 0x400) {
                 dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
@@ -2313,7 +2313,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
                     dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
                 }
             }
-            temp2 = 0x400 - ratan2(dist, *(s32 *)(*(u8 **)obj + 0x184) - *(s32 *)(obj + 0x184));
+            temp2 = 0x400 - ratan2(dist, obj->other->unk_180.y - obj->unk_180.y);
             if (temp2 < -0xFF) {
                 temp2 = -0xFF;
             } else if (temp2 >= 0x100) {
@@ -2327,22 +2327,22 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
         tgt_z = 0;
     }
 
-    temp = (tgt_z - *(s16 *)(obj + 0x1E6)) & 0xFFF;
+    temp = (tgt_z - obj->unk_1E6) & 0xFFF;
     if (temp >= 0x800) {
         temp -= 0x1000;
     }
-    *(s16 *)(obj + 0x1E6) = *(s16 *)(obj + 0x1E6) + temp / 8;
-    temp = (temp2 - *(s16 *)(obj + 0x1E8)) & 0xFFF;
+    obj->unk_1E6 = obj->unk_1E6 + temp / 8;
+    temp = (temp2 - obj->unk_1E8) & 0xFFF;
     if (temp >= 0x800) {
         temp -= 0x1000;
     }
-    *(s16 *)(obj + 0x1E8) = *(s16 *)(obj + 0x1E8) + temp / 8;
-    func_8002F770((s16 *)(a + 0x36), *(s16 *)(obj + 0x1E6), *(s16 *)(obj + 0x1E8), tgt_x);
-    func_8002F770((s16 *)(b + 0x36), *(s16 *)(obj + 0x1E6), *(s16 *)(obj + 0x1E8), tgt_x);
+    obj->unk_1E8 = obj->unk_1E8 + temp / 8;
+    func_8002F770((s16 *)(a + 0x36), obj->unk_1E6, obj->unk_1E8, tgt_x);
+    func_8002F770((s16 *)(b + 0x36), obj->unk_1E6, obj->unk_1E8, tgt_x);
 
-    t = *(s16 *)(obj + 0xC);
-    if ((t == 0x1D || t == 0xE) && *(s16 *)(obj + 0x8C) != 0) {
-        temp = (ratan2(D_800A387C, *(s32 *)(*(u8 **)obj + 0xF8) - *(s32 *)(obj + 0xF8)) - 0x400) & 0xFFF;
+    t = obj->unk_0C;
+    if ((t == 0x1D || t == 0xE) && obj->unk_8C != 0) {
+        temp = (ratan2(D_800A387C, obj->other->unk_F4.y - obj->unk_F4.y) - 0x400) & 0xFFF;
         if (temp >= 0x800) {
             temp -= 0x1000;
         }
@@ -2351,22 +2351,22 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
         } else if (temp < -0x1FF) {
             temp = -0x1FF;
         }
-        *(s16 *)(obj + 0x1EA) = temp;
+        obj->unk_1EA = temp;
         *(u16 *)(a + 0x7E) += temp;
         *(u16 *)(b + 0x7E) += temp;
     }
 
-    if ((u32)(*(u16 *)(obj + 0xE) - 6) < 2U && *(u16 *)(obj + 0x6A) == 2) {
+    if ((u32)((u16)obj->unk_0E - 6) < 2U && obj->unk_6A == 2) {
         s32 dist_sq;
         s32 dist;
 
-        if (*(s32 *)(obj + 0x268) == 0) {
-            *(s32 *)(obj + 0x25C) = *(s32 *)(obj + 0xF4);
-            *(s32 *)(obj + 0x260) = *(s32 *)(obj + 0xF8);
-            *(s32 *)(obj + 0x264) = *(s32 *)(obj + 0xFC);
+        if (obj->unk_268 == 0) {
+            obj->unk_25C.x = obj->unk_F4.x;
+            obj->unk_25C.y = obj->unk_F4.y;
+            obj->unk_25C.z = obj->unk_F4.z;
         }
-        dx = *(s32 *)(*(u8 **)obj + 0xF4) - *(s32 *)(obj + 0x25C);
-        dz = *(s32 *)(*(u8 **)obj + 0xFC) - *(s32 *)(obj + 0x264);
+        dx = obj->other->unk_F4.x - obj->unk_25C.x;
+        dz = obj->other->unk_F4.z - obj->unk_25C.z;
         dist_sq = dx * dx + dz * dz;
         if ((u32)dist_sq < 0x400) {
             dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
@@ -2390,7 +2390,7 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
                 dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }
-        temp2 = (ratan2(dist, *(s32 *)(*(u8 **)obj + 0xF8) - *(s32 *)(obj + 0x260)) - 0x400) & 0xFFF;
+        temp2 = (ratan2(dist, obj->other->unk_F4.y - obj->unk_25C.y) - 0x400) & 0xFFF;
         if (temp2 >= 0x800) {
             temp2 -= 0x1000;
         }
@@ -2399,16 +2399,16 @@ void func_8001F2E4(u8 *obj, u8 *a, u8 *b) {
         } else if (temp2 < -0x1FF) {
             temp2 = -0x1FF;
         }
-        temp = (temp2 - *(s16 *)(obj + 0x1EA)) & 0xFFF;
+        temp = (temp2 - obj->unk_1EA) & 0xFFF;
         if (temp >= 0x800) {
             temp -= 0x1000;
         }
-        *(s16 *)(obj + 0x1EA) = *(s16 *)(obj + 0x1EA) + temp / 8;
-        *(u16 *)(a + 0x72) += *(s16 *)(obj + 0x1EA);
-        *(u16 *)(b + 0x72) += *(s16 *)(obj + 0x1EA);
+        obj->unk_1EA = obj->unk_1EA + temp / 8;
+        *(u16 *)(a + 0x72) += obj->unk_1EA;
+        *(u16 *)(b + 0x72) += obj->unk_1EA;
     }
 
-    if (*(s16 *)(obj + 0x26E) != 0 && *(s16 *)(obj + 0x96) == 0) {
+    if (obj->unk_26E != 0 && obj->unk_96 == 0) {
         temp = (rng_Next() & 0x3F) - 0x20;
         *(u16 *)(a + 0xC) += temp;
         *(u16 *)(b + 0xC) += temp;
@@ -2469,7 +2469,7 @@ s32 func_8001F888(void) {
  * `andi`), a single `u16 kind` local, `kind_full` alone with no mask, or a second
  * `*(u16*)` read into a `u16` local do not reproduce it.
  */
-void func_8001F938(u8 *arg0)
+void func_8001F938(Unk80101EC8Record *arg0)
 {
     u32 kind_full;
     u32 kind;
@@ -2477,9 +2477,9 @@ void func_8001F938(u8 *arg0)
     s32 a2;
     s32 idx;
     s32 factor;
-    kind_full = *((u16 *)(arg0 + 0x6A));
+    kind_full = arg0->unk_6A;
     kind = kind_full & 0xFFFFU;
-    a2 = *((s16 *)(arg0 + 0x1C));
+    a2 = arg0->unk_1C;
     if (kind == 0x11 || kind == 0xF ||
         ((u32)((s32)kind_full - 0x1C)) < 2U ||
         ((u32)((s32)kind_full - 0x1E)) < 2U ||
@@ -2494,42 +2494,42 @@ void func_8001F938(u8 *arg0)
     if (kind == 0x28) { goto rangecheck; }
     if (kind != 0x26) { goto defaultpath; }
 rangecheck:
-    val = *((s16 *)(arg0 + 0x40));
-    if (val < ((s32)(*((u8 *)(arg0 + 0xA1))))) { goto check_outer; }
-    if (val > ((s32)(*((u8 *)(arg0 + 0xA3))))) { goto check_outer; }
+    val = arg0->unk_40;
+    if (val < arg0->unk_A1[0]) { goto check_outer; }
+    if (val > arg0->unk_A3[0]) { goto check_outer; }
     goto clamp;
 check_outer:
-    if (val < ((s32)(*((u8 *)(arg0 + 0xA2))))) { goto multpath_start; }
-    if (val > ((s32)(*((u8 *)(arg0 + 0xA4))))) { goto multpath_start; }
+    if (val < arg0->unk_A1[1]) { goto multpath_start; }
+    if (val > arg0->unk_A3[1]) { goto multpath_start; }
 clamp:
-    *((s16 *)(arg0 + 0x44)) = 0x1000;
+    arg0->unk_44 = 0x1000;
     return;
 multpath_start:
-    if ((*((s16 *)(arg0 + 0x26C))) == 0)
+    if (arg0->unk_26C == 0)
     {
-        s32 f = *((s16 *)(arg0 + 0x274));
+        s32 f = arg0->unk_274;
         a2 = (a2 * f) >> 12;
     }
     {
-        s16 dmg = *((s16 *)(arg0 + 0x270));
+        s16 dmg = arg0->unk_270;
         if (dmg >= 4) {
             dmg = 3;
         }
-        idx = dmg * 2;
+        idx = dmg;
     }
-    factor = *((s16 *)((arg0 + 0x276) + idx));
+    factor = arg0->unk_276[idx];
     a2 = (a2 * factor) >> 12;
 defaultpath:
     {
-        s32 vv0 = *((s16 *)(arg0 + 0x26E));
-        s32 vv1 = *((s16 *)(arg0 + 0x272));
+        s32 vv0 = arg0->unk_26E;
+        s32 vv1 = arg0->unk_272;
         s32 sum = vv0 + vv1;
         s32 sum_or_3 = (sum < 4) ? sum : 3;
-        idx = sum_or_3 * 2;
+        idx = sum_or_3;
     }
-    factor = *((s16 *)((arg0 + 0x27E) + idx));
+    factor = arg0->unk_27E[idx];
     a2 = (a2 * factor) >> 12;
-    *((s16 *)(arg0 + 0x44)) = (s16)a2;
+    arg0->unk_44 = a2;
 }
 
 typedef struct {
@@ -4641,7 +4641,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     if (rec->unk_7A == 1) {
         rec->unk_7A = 0;
     }
-    func_8001F938((u8 *)rec);
+    func_8001F938(rec);
     frac = rec->unk_42 + rec->unk_44;
     rec->unk_42 = frac;
     if (frac >= 0x1000) {
@@ -4947,7 +4947,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_1C8.vy += twist;
         func_8001B690(arg0, twist);
     }
-    func_8001F2E4((u8 *)rec, (u8 *)&pose[0], (u8 *)&pose[1]);
+    func_8001F2E4(rec, (u8 *)&pose[0], (u8 *)&pose[1]);
     if (rec->unk_6A == 0x11) {
         rec->unk_154 = rec->unk_1C8.vy;
     }
