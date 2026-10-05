@@ -1051,3 +1051,18 @@ docs/grind/handoff-2026-10-03-restructure.md § 3. The orchestrator recommended:
   module's first function is identified at that tier and each cut is a byte-identical move; unidentified regions stay
   gap files.
 Owner, verbatim: "Sure go ahead with your recommendations"
+
+# Owner rulings 2026-10-04 (forty-eighth batch, conversation) — VERBATIM RECORD
+
+Context: at the end of the first Phase 2 session the owner asked which questions to settle before a fresh session. The
+orchestrator asked two:
+- Q110: Phase 2 scope. Plan items 8-9 finish soon; ~3,500 raw-offset casts remain on objects with no declared type
+  (scratchpad work areas, the player object, render records), which need new evidence-built aggregates. (A, recommended)
+  finish items 8-9 + the OT batch, close Phase 2, treat the long tail as later work; (B) keep Phase 2 open until those
+  are typed too.
+- Q111: the Phase 3 naming standard. Current: a game name needs an accepted evidence class. Alternative: SOTN-style —
+  explainable from the code plus an adversarial review.
+Owner, verbatim: "Lets go with B for the first one, and we can loosen our naming standards to SOTN. If we need a new
+naming-specific adversarial reviewer, we can make that"
+Recorded as Q110 = B (Phase 2 covers the long tail) and Q111 = naming loosened to the SOTN standard, with an optional
+dedicated naming reviewer.

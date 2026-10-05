@@ -52,14 +52,23 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      3AB48 / 51268 / 5ED34 / 64FD8 first); func_800203B4's island operand (`auth:` re-hash).
    - Kept on purpose: original-call facts as commented declarations (func_80019568 / func_80044100 /
      func_80052C10 K&R; snd_VabFakeOpen, func_8005C2A8, func_80054434, func_80060414 local).
-     **Owner ruling 2026-10-05:** func_8001C820 keeps its raw `(s32)((u8 *)s0 + 0x536)` argument rather
+     **Owner ruling 2026-10-04:** func_8001C820 keeps its raw `(s32)((u8 *)s0 + 0x536)` argument rather
      than the typed container_of spelling (score 0, judged too hard to read), so func_800325E0 stays
      declared locally in 9F9C. Remaining smaller debt is in each commit body's Hygiene debt row
      (`git log --grep "Hygiene debt" 1a40f4535..`).
    - No "Entity" rename: no evidence (Obj80106A78 and Unk80101EC8Record differ in size, table, consumers).
-3. **Phase 3 naming** — the owner decides whether game-code naming moves from evidence classes to
-   SOTN-style "explainable from the code + adversarial review"; address-named game files then take
-   subsystem names file by file (`tools/move_tu.py`).
+   - **Scope (owner ruling Q110, 2026-10-04):** Phase 2 stays open until the long tail is typed too — the
+     ~3,500 raw-offset casts on objects no header declares yet (`memory/grind/phase2-2026-10-03/casts.tsv`:
+     untyped bases, scratchpad workspaces, unknown). Orchestrator plan: evidence-built aggregates, one
+     object family per reviewed batch; order after item 8 — primitive holders + the OT batch, then the long
+     tail by object (largest families first), then func_800203B4.
+3. **Phase 3 naming** — owner ruling Q111 (2026-10-04): naming standards are loosened to the SOTN standard
+   (explainable from the code plus an adversarial review); a naming-specific adversarial reviewer may be created.
+   Orchestrator plan: step 0 writes the rule text (what the SOTN bar requires, e.g. every read, write and call
+   of the named thing bears the name out; how the evidence classes relate), reviewed, in docs/naming/README.md
+   and the sweep README, and builds the naming reviewer in `.claude/agents/` if cheat-reviewer's rubric doesn't
+   fit; names then land through `tools/naming_wave.py`, and address-named game files take subsystem names file
+   by file (`tools/move_tu.py`). Sequencing per the original plan: after Phase 2.
 4. **Debt** —
    - func_80031B24 hands `&D_800A37E8` to func_800274BC / func_80032854 unlabelled (outside Q96).
    - Q97's struct form is unmeasured; Q96-Q99 retire as soon as a one-object spelling matches.

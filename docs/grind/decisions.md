@@ -1263,3 +1263,12 @@ _SendPAD (LIBAPI SENDPAD), each in its own module file; a splat boundary fix, by
 files may be cut at module starts whose first function is identified by the libscan xref or near tier; each cut is a
 byte-identical move (rodata-object-alignment.md conditions 2/4); unidentified regions stay gap files. Rule text:
 docs/naming/sweep-2026-10-03/README.md (T4); rodata-object-alignment.md § New TU boundaries (Q109).
+
+## 2026-10-04 — OWNER RULINGS — Q110-Q111: Phase 2 covers the raw-offset long tail; SOTN-style naming
+
+Forty-eighth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 48). Q110: Phase 2 (types) stays open
+until the long tail is typed too — the ~3,500 raw-offset casts on objects no header declares yet. Q111: the naming
+standard is loosened to the SOTN standard (explainable from the code plus an adversarial review); a dedicated
+naming-specific adversarial reviewer may be created. Interpretation (rule text at Phase 3 step 0): what the SOTN bar
+requires in detail, and how the existing evidence classes relate to it, is written then and reviewed; the orchestrator's
+plan for both is in docs/grind/handoff-2026-10-03-restructure.md items 2-3.
