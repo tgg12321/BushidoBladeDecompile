@@ -2435,11 +2435,11 @@ void func_8002C61C(void) {
         }
     }
 }
-extern s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq);
+extern s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s32 r_sq);
 extern s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq);
 
 void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
-    u8 *scr = (u8 *)0x1F8002B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8;
     s32 id = a0->index;
     BoneHitRec *recbase = D_800F5F68[id];
     BoneHitRec *rec;
@@ -2467,15 +2467,15 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
          * target seats it in $s0 = the call-crossing `hit` pseudo. */
         hit = 0;
         x = SPAD->unkA8[id][i].x;
-        if (*(s32 *)(scr + 0x84) < x - r || x + r < *(s32 *)(scr + 0x78)) {
+        if (scr->unk84.x < x - r || x + r < scr->unk78.x) {
             hit = 1;
         } else {
             y = SPAD->unkA8[id][i].y;
-            if (*(s32 *)(scr + 0x88) < y - r || y + r < *(s32 *)(scr + 0x7C)) {
+            if (scr->unk84.y < y - r || y + r < scr->unk78.y) {
                 hit = 1;
             } else {
                 z = SPAD->unkA8[id][i].z;
-                if (*(s32 *)(scr + 0x8C) < z - r || z + r < *(s32 *)(scr + 0x80)) {
+                if (scr->unk84.z < z - r || z + r < scr->unk78.z) {
                     hit = 1;
                 }
             }
@@ -2485,11 +2485,11 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
         }
 
         if (a1 != 0) {
-            hit = func_8002D780(0, scr, (s32 *)&SPAD->unkA8[id][i],
+            hit = func_8002D780(0, (u8 *)scr, (s32 *)&SPAD->unkA8[id][i],
                                 r, rec->unk_0E);
             if (hit != 0) {
                 if (rec->unk_00 != 0 && a2 != 0) {
-                    if (func_8002D780(1, scr, (s32 *)0,
+                    if (func_8002D780(1, (u8 *)scr, (s32 *)0,
                                       rec->unk_10,
                                       rec->unk_12) != 0) {
                         hitMask |= 1 << i;
@@ -2497,11 +2497,11 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
                 }
             }
         } else {
-            hit = func_8002D320(0, scr, (s32 *)&SPAD->unkA8[id][i],
+            hit = func_8002D320(0, scr, &SPAD->unkA8[id][i],
                                 r, rec->unk_0E);
             if (hit != 0) {
                 if (rec->unk_00 != 0 && a2 != 0) {
-                    if (func_8002D320(1, scr, (s32 *)0,
+                    if (func_8002D320(1, scr, NULL,
                                       rec->unk_10,
                                       rec->unk_12) != 0) {
                         hitMask |= 1 << i;
@@ -2514,8 +2514,8 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
         }
     }
 
-    *(s32 *)(scr + 0xB4) = seenMask;
-    *(s32 *)(scr + 0xC4) = hitMask;
+    scr->unkB4 = seenMask;
+    scr->unkC4 = hitMask;
 }
 /* Orients a triangle's local frame. The three vertex pointers at obj+0x60/
  * 0x64/0x68 give edge vectors a = v1 - v0 (obj+0xA8) and b = v2 - v0
@@ -2859,14 +2859,14 @@ s32 func_8002CD58(u8 *obj) {
         :: "r"(obj + 0xB8) : "$12", "memory");
     return 1;
 }
-s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
+s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
-        s32 *vin;
-        s32 *vout;
-        *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
-        *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
-        *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
-        vin = (s32 *)(obj + 0xF8);
+        SVECTOR *vin;
+        Vec3i32 *vout;
+        obj->unkF8.vx = pos->x - obj->unk60[0]->x;
+        obj->unkF8.vy = pos->y - obj->unk60[0]->y;
+        obj->unkF8.vz = pos->z - obj->unk60[0]->z;
+        vin = &obj->unkF8;
         __asm__ volatile(
             "addu $t4, %0, $zero\n"
             "lwc2 $0, 0($t4)\n"
@@ -2875,7 +2875,7 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             "nop\n"
             ".word 0x4A486012"
             : : "r"(vin) : "$12", "memory");
-        vout = (s32 *)(obj + 0x100);
+        vout = &obj->unk100[0];
         __asm__ volatile(
             "addu $t4, %0, $zero\n"
             "swc2 $25, 0($t4)\n"
@@ -2884,23 +2884,26 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             : : "r"(vout) : "$12", "memory");
     }
     {
+        /* x: four values -- unk100[0].x, then x * x + y * y, then r_sq minus that, then
+         * its square root (the sphere's half-chord along z). Ruling 11. The name stays
+         * because x is the LZC island's operand below. */
         s32 x;
-        s32 z;
-        s32 sp_var;
-        s32 min_y;
-        s32 max_y;
-        s32 y_low;
-        s32 y_high;
         s32 y;
+        s32 sp_var;
+        s32 min_z;
+        s32 max_z;
+        s32 az;
+        s32 bz;
+        s32 z;
         s32 ret;
         s32 neg_threshold = -threshold;
 
-        x = *(s32 *)(obj + 0x100);
+        x = obj->unk100[0].x;
         if (x < neg_threshold || threshold < x) return 0;
-        z = *(s32 *)(obj + 0x104);
-        if (z < neg_threshold || threshold < z) return 0;
+        y = obj->unk100[0].y;
+        if (y < neg_threshold || threshold < y) return 0;
 
-        x = x * x + z * z;
+        x = x * x + y * y;
         if (r_sq < x) return 0;
         x = r_sq - x;
 
@@ -2926,23 +2929,23 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             }
         }
 
-        max_y = 0;
-        min_y = 0;
-        y_low = *(s32 *)(obj + 0xB0);
-        if (y_low < 0) {
-            min_y = y_low;
-        } else if (min_y < y_low) {
-            max_y = y_low;
+        max_z = 0;
+        min_z = 0;
+        az = obj->unkA8.z;
+        if (az < 0) {
+            min_z = az;
+        } else if (min_z < az) {
+            max_z = az;
         }
-        y_high = *(s32 *)(obj + 0xC0);
-        if (y_high < min_y) {
-            min_y = y_high;
-        } else if (max_y < y_high) {
-            max_y = y_high;
+        bz = obj->unkB8.z;
+        if (bz < min_z) {
+            min_z = bz;
+        } else if (max_z < bz) {
+            max_z = bz;
         }
-        y = *(s32 *)(obj + 0x108);
-        if (max_y < y - x) return 0;
-        if (y + x < min_y) {
+        z = obj->unk100[0].z;
+        if (max_z < z - x) return 0;
+        if (z + x < min_z) {
             ret = 1; /* FAKE: dead store -- overwritten by `ret = 0;` on the
                       * next statement, never read.  Mechanism: jump.c's
                       * store-flag if-conversion requires SINGLE-SET 0/1 arms;
