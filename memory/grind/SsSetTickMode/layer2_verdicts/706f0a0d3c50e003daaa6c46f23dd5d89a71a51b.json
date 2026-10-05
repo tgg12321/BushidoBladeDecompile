@@ -1,0 +1,15 @@
+{
+  "decision": "PASS",
+  "function": "SsSetTickMode",
+  "body_hash": "4ad0f26975e80ccd",
+  "summary": "The staged body satisfies completion-bar items 2–5, preserves behavior, and passes the completed byte-match checks.",
+  "evidence": [
+    {"construct": "Ordinary if/switch control flow", "test_failed": "", "explanation": "No assembly, register pins, barriers, aliases, fabricated effects, or build changes. Every construct expresses the tick-mode selection."},
+    {"construct": "Masking, signed dispatch, and stores", "test_failed": "", "explanation": "Verified against HEAD and canonical assembly: GetVideoMode precedes stores; flag precedes mode; bit 0x1000 selects masking by 0xFFF. Unmasked negative values take default 60; values >=6 retain their custom rate. Cases 0–5 preserve values and store order for every video-mode result."},
+    {"construct": "Existing shared declarations", "test_failed": "", "explanation": "Uses SndSeqTickEnv and VBLANK_MINUS directly through libsnd_i.h. Signed fields and existing function declarations remain unchanged; no competing object model or raw-offset access."},
+    {"construct": "Simplest known form", "test_failed": "", "explanation": "Zero FAKE constructs. Independently verified the published SOTN structure and measured alternative logs; early-return and merged-case alternatives do not byte-match."},
+    {"construct": "Completed mechanical evidence", "test_failed": "", "explanation": "Read disabled-all sandbox result: score 0, 91/91 instructions, zero unmasked differences. Independently hashed executable and oracle: both 62efab4f73f992798c43e8c730aa43baa10bb4fa. Current source and executable match the verification stamp. Independently compared all 228 snapshot objects: no differences."}
+  ],
+  "next_action": "",
+  "hygiene_debt": []
+}
