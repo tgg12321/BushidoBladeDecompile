@@ -4019,8 +4019,6 @@ void func_80022F34(void) {
     } while (i < 2);
 }
 
-typedef struct { s32 a, b, c, d; } Quad_2304C;
-
 /* func_8002304C (tanren_CameraControl) - pure C, no FAKE constructs.
  *
  * The target's `andi $v1,$a0,0xffff` at 0x232F4 (rather than a plain copy)
@@ -4045,7 +4043,7 @@ typedef struct { s32 a, b, c, d; } Quad_2304C;
  * side narrow (u16 mode, or u16 m) lets combine fold the truncate/extend pair
  * into a copy or delete it outright.
  */
-void func_8002304C(Unk80101EC8Record *obj, s32 *pos1, s32 *pos2, s32 *arg3)
+void func_8002304C(Unk80101EC8Record *obj, Vec4i32 *pos1, Vec4i32 *pos2, s32 *arg3)
 {
   s32 *scratch = (s32 *) 0x1F8001B0;
   s32 count = 0;
@@ -4055,40 +4053,40 @@ void func_8002304C(Unk80101EC8Record *obj, s32 *pos1, s32 *pos2, s32 *arg3)
   lim = 0x1F8002B8;
   scratch_d = (s16 *) 0x1F8001D0;
   loop:
-  if (((pos1[0] != pos2[0]) || (pos1[1] != pos2[1])) || (pos1[2] != pos2[2]))
+  if (((pos1->vx != pos2->vx) || (pos1->vy != pos2->vy)) || (pos1->vz != pos2->vz))
   {
-    if (func_8005344C(pos1, pos2, scratch, scratch_c, lim) == 0)
+    if (func_8005344C(&pos1->vx, &pos2->vx, scratch, scratch_c, lim) == 0)
     {
-      *(Quad_2304C *)pos1 = *(Quad_2304C *)pos2;
+      *pos1 = *pos2;
       goto done;
     }
     obj->unk_B1 = func_80054434();
-    *(Quad_2304C *)pos1 = *(Quad_2304C *)scratch;
+    *pos1 = *(Vec4i32 *)scratch;
     func_8002EBDC((s16 *) arg3, scratch_c, arg3, -0x40, 0xE6);
     {
       s16 vel;
       vel = *((s16 *) (((u8 *) scratch) + 0x10));
-      scratch[12] = pos1[0] + (vel / 1024);
+      scratch[12] = pos1->vx + (vel / 1024);
       vel = *((s16 *) (((u8 *) scratch) + 0x12));
-      scratch[13] = pos1[1] + (vel / 1024);
+      scratch[13] = pos1->vy + (vel / 1024);
       vel = *((s16 *) (((u8 *) scratch) + 0x14));
-      scratch[14] = pos1[2] + (vel / 1024);
+      scratch[14] = pos1->vz + (vel / 1024);
     }
     {
       s16 vel;
       vel = *((s16 *) (((u8 *) scratch) + 0x10));
-      pos2[0] += vel / 1024;
+      pos2->vx += vel / 1024;
       vel = *((s16 *) (((u8 *) scratch) + 0x12));
-      pos2[1] += vel / 1024;
+      pos2->vy += vel / 1024;
       vel = *((s16 *) (((u8 *) scratch) + 0x14));
-      pos2[2] += vel / 1024;
+      pos2->vz += vel / 1024;
     }
-    if (func_8005344C(pos1, scratch + 12, scratch, (s16 *)(scratch + 6), lim) == 0)
+    if (func_8005344C(&pos1->vx, scratch + 12, scratch, (s16 *)(scratch + 6), lim) == 0)
     {
-      *(Quad_2304C *)pos1 = *(Quad_2304C *)(scratch + 12);
-      scratch[8] = pos2[0] - pos1[0];
-      scratch[9] = pos2[1] - pos1[1];
-      scratch[10] = pos2[2] - pos1[2];
+      *pos1 = *(Vec4i32 *)(scratch + 12);
+      scratch[8] = pos2->vx - pos1->vx;
+      scratch[9] = pos2->vy - pos1->vy;
+      scratch[10] = pos2->vz - pos1->vz;
       func_8002EBDC(scratch_d, scratch_c, (s32 *) scratch_d, 0,
                     (obj->unk_6A == 0x15) ? 0x80 : 0x100);
       {
@@ -4103,10 +4101,10 @@ void func_8002304C(Unk80101EC8Record *obj, s32 *pos1, s32 *pos2, s32 *arg3)
           }
         }
       }
-      pos2[0] = pos1[0] + scratch[8];
-      pos2[1] = pos1[1] + scratch[9];
+      pos2->vx = pos1->vx + scratch[8];
+      pos2->vy = pos1->vy + scratch[9];
       count++;
-      pos2[2] = pos1[2] + scratch[10];
+      pos2->vz = pos1->vz + scratch[10];
       if (count < 4)
       {
         goto loop;
@@ -4520,16 +4518,16 @@ void func_80023D28(Unk80101EC8Record *arg0) {
         arg0->unk_1DC = 0;
         return;
     }
-    ((Vec3i32 *)0x1F8001E0)->x = arg0->unk_B8.vx;
-    ((Vec3i32 *)0x1F8001E0)->y = arg0->unk_B8.vy + 0x1F4;
-    ((Vec3i32 *)0x1F8001E0)->z = arg0->unk_B8.vz;
+    ((Vec4i32 *)0x1F8001E0)->vx = arg0->unk_B8.vx;
+    ((Vec4i32 *)0x1F8001E0)->vy = arg0->unk_B8.vy + 0x1F4;
+    ((Vec4i32 *)0x1F8001E0)->vz = arg0->unk_B8.vz;
     arg0->unk_1DC = func_8005344C(&arg0->unk_B8.vx, (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8);
 }
 s32 func_80023DB8(Unk80101EC8Record *arg0) {
     s32 result;
-    ((Vec3i32 *)0x1F8001E0)->x = arg0->unk_B8.vx;
-    ((Vec3i32 *)0x1F8001E0)->y = arg0->unk_B8.vy + 5;
-    ((Vec3i32 *)0x1F8001E0)->z = arg0->unk_B8.vz;
+    ((Vec4i32 *)0x1F8001E0)->vx = arg0->unk_B8.vx;
+    ((Vec4i32 *)0x1F8001E0)->vy = arg0->unk_B8.vy + 5;
+    ((Vec4i32 *)0x1F8001E0)->vz = arg0->unk_B8.vz;
     if (func_8005344C(&arg0->unk_B8.vx, (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8) != 0) {
         result = *(s16 *)0x1F8001C2 < -0x800;
     } else {
@@ -4576,7 +4574,7 @@ extern void func_800204C0(Unk80101EC8Record *);
 void func_80023F08(s32 arg0, PadState *pad) {
     MotionFrame pose[2];
     Vec3i32 v[2];
-    s32 pos[3];
+    Vec4i32 pos;
     s16 ang[2];
     s32 dir;
     s16 alt;
@@ -5067,14 +5065,14 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_D8.y += rec->unk_134.vy;
         rec->unk_D8.z += rec->unk_134.vz;
     }
-    pos[0] = rec->unk_D8.x + rec->unk_E8.x;
-    pos[1] = rec->unk_D8.y;
+    pos.vx = rec->unk_D8.x + rec->unk_E8.x;
+    pos.vy = rec->unk_D8.y;
     if (rec->unk_6A == 8 || rec->unk_6A == 0x22) {
-        pos[1] += rec->unk_E8.y;
+        pos.vy += rec->unk_E8.y;
     }
-    pos[2] = rec->unk_D8.z + rec->unk_E8.z;
+    pos.vz = rec->unk_D8.z + rec->unk_E8.z;
     rec->unk_C8 = rec->unk_B8;
-    func_8002304C(rec, (s32 *)&rec->unk_B8, pos, (s32 *)&rec->unk_104);
+    func_8002304C(rec, &rec->unk_B8, &pos, &rec->unk_104.vx);
     if (rec->unk_B1 != 7 && rec->unk_B1 != 0) {
         rec->unk_B2 = ((0x2A >> rec->unk_B1) ^ 1) & 1;
     }
