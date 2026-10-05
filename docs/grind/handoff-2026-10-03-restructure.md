@@ -71,7 +71,17 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      func_8002C61C typed. F02 is done except the raw-offset asm-operand bodies (func_8002CD58 /
      D518 / D780 / DAD0 / FC80 / FDB0): typing them edits GTE asm operand expressions (hashed in
      tools/canonical_asm_regions.json), which lt/f02/plan.txt marks RULING NEEDED.
-   - **Next session starts here:** F01 (lt/families.tsv / lt/plan.txt). Lessons from F02's
+   - F01 (51268 scratchpad; owner 2026-10-05: F02's asm-operand bodies stay debt, start F01) is
+     not one record: the D_800A34xx globals are fixed field pointers, cursors other functions
+     retarget (D_800A3468 command blocks, D_800A3478 / 347C into them, D_800A3488 / 348C
+     texture tables, D_800A34E4 / 34E8 OT / prim) and D_800A34EC, a work area each user lays out
+     differently. F01a b9b07dd27: the 24 fixed field globals point into Unk1F800000Rec (game.h,
+     51268's view; ScrPad stays 17AFC's). Tools: memory/grind/phase2-2026-10-03/lt/f01/.
+   - **Next session starts here:** F01b: hoist func_80060A68's local struct Ob (the command
+     block) to game.h as Unk1F800000Rec.unk00's type and type D_800A3468 / 346C / 3470 / 3478 /
+     347C and the `*(T **)0x1F800004 / 8` seeds; then F01c the cursors D_800A3488 / 348C /
+     34E4 / 34E8; then F01d D_800A34EC's per-function work-area layouts (one struct per layout).
+     Lessons from F02's
      reviews (in the commit bodies and the briefs): one struct per layout, not per function;
      verify each FAKE comment's stated register effect against the objdump
      (`lt/f02/regdiff_fn.sh`), including comments carried from HEAD in moved bodies; ablate
