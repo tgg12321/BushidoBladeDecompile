@@ -633,6 +633,18 @@ typedef struct {
     u8 voll;
 } Unk800EFB78Entry;
 
+/* Unk1F8002B8Rec.unk00, 0x60 bytes of scratch. unk00 is two points that unk60[0] / unk60[1] aim at
+ * for func_8002E838 / func_8002EA24: func_8002A458's segment, base then tip (func_8002AB08 writes
+ * them before each call), and func_80031B24's D_80106A78 object step, prev_pos then pos.
+ * func_8002AB08 lays out more points after these two and still uses the bytes through its u8 *
+ * pointer. func_80030D7C / func_800321E8 lay the bytes out differently (func_8005344C's argument
+ * block, its work area from +0x38 through +0x123) and have no member here. raw sizes the union
+ * to 0x60. */
+typedef union {
+    u8 raw[0x60];
+    LeafPos unk00[2];
+} Unk1F8002B8Unk00;
+
 /* 17AFC's view of the last 0x148 bytes of the scratchpad, 0x1F8002B8..0x1F8003FF (ScrPad.unk2B8).
  * The scratchpad is shared scratch: other code puts its own data in these bytes at other times,
  * with its own views. Among others:
@@ -649,7 +661,7 @@ typedef struct {
  *   per-vertex table at 0x1F8002B4 + 2 * i (all INCLUDE_ASM), which runs into the record for
  *   i >= 2.
  * In 17AFC, func_8002A458 / func_8002AB08 / func_8002CA8C / func_80029454 / func_80031B24 take its
- * address (`scr`) and pass it as `obj` to func_8002E838 / func_8002EA24 / func_8002D320 /
+ * address (`scr`) and pass it to func_8002E838 / func_8002EA24 / func_8002D320 /
  * func_8002D780 / func_8002CD58 / func_8002DAD0 / func_8002DE20 / func_80031890; func_800290B8 /
  * func_8002C22C / func_8002C61C / func_8002EBDC / func_8002F2D0 / func_8002F770 / func_8002FC80 /
  * func_8002FDB0 / func_80030D7C / func_800321E8 address it directly. unk60 / unk6C hold point
@@ -657,10 +669,11 @@ typedef struct {
  * (func_8002AB08 reads them; no 17AFC code accesses unkD4 as a member); unkD8 is the matrix the
  * RotMatrix* calls build, and the GTE rotates unkA8 through it; func_8002DE20 rotates three
  * points, relative to the origin *unk60[0], into unk118 and tests them against the triangle
- * (0,0) / unkA8 / unkB8. unk00 is used differently by func_8002A458 / func_8002AB08 /
- * func_80030D7C / func_80031B24 / func_800321E8 and is not yet typed. */
+ * (0,0) / unkA8 / unkB8. unk00 is scratch (Unk1F8002B8Unk00): func_8002A458 / func_80031B24
+ * use its two points; func_8002AB08 / func_80030D7C (u8 *) and func_800321E8 (s32 *) still
+ * use it through raw pointers. */
 typedef struct {
-    u8 unk00[0x60];
+    Unk1F8002B8Unk00 unk00;
     LeafPos *unk60[3];
     LeafPos *unk6C[3];
     Vec3i32 unk78;

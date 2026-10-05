@@ -1466,7 +1466,6 @@ s32 func_80029454(void) {
     }
     return -1;
 }
-typedef struct { s32 x, y, z; } Vec3i;
 /* Sweeps a character's weapon segment against its limb spheres. The scratch
  * record at 0x1F8002B8 (`scr`, the one func_8002E838 / func_8002EA24 /
  * func_8002CA8C use) gets its two segment-end pointers (+0x60 -> scr+0x0,
@@ -1505,11 +1504,11 @@ typedef struct { s32 x, y, z; } Vec3i;
  * dz, temp, temp2) and the do-while(0), each annotated below. */
 extern char D_80010478[];
 extern void printf();
-extern void func_8002E838(u8 *obj);
-extern s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq);
+extern void func_8002E838(Unk1F8002B8Rec *scr);
+extern s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq);
 extern s32 func_80054434(void);
 void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
-    u8 *scr = (u8 *)0x1F8002B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8;
     s32 id = obj->index;
     Unk80101EC8Record *partner = obj->other;
     s32 work[64];
@@ -1536,16 +1535,16 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     s32 qx;
     s32 qy;
     s32 qz;
-    s32 *p;
+    LeafPos *p;
     BoneHitRec *rec;
     s32 i;
 
-    *(u8 **)(scr + 0x60) = scr;
-    *(u8 **)(scr + 0x64) = scr + 0xC;
-    *(Vec3i *)(scr + 0xC8) = *(Vec3i *)(scr + 0xC);
-    dx = (*(s32 **)(scr + 0x64))[0] - (*(s32 **)(scr + 0x60))[0];
-    dy = (*(s32 **)(scr + 0x64))[1] - (*(s32 **)(scr + 0x60))[1];
-    dz = (*(s32 **)(scr + 0x64))[2] - (*(s32 **)(scr + 0x60))[2];
+    scr->unk60[0] = &scr->unk00.unk00[0];
+    scr->unk60[1] = &scr->unk00.unk00[1];
+    scr->unkC8 = scr->unk00.unk00[1];
+    dx = scr->unk60[1]->x - scr->unk60[0]->x;
+    dy = scr->unk60[1]->y - scr->unk60[0]->y;
+    dz = scr->unk60[1]->z - scr->unk60[0]->z;
     diff = (partner->unk_1D8 - ratan2(dx, dz)) & 0xFFF;
     if (diff >= 0x800) {
         diff = 0x1000 - diff;
@@ -1577,11 +1576,11 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
             hlen = (u32)(temp2 << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
-    *(s16 *)(scr + 0xF8) = -ratan2(dy, hlen);
-    *(s16 *)(scr + 0xFA) = ratan2(dx, dz);
-    *(s16 *)(scr + 0xFC) = 0;
+    scr->unkF8.vx = -ratan2(dy, hlen);
+    scr->unkF8.vy = ratan2(dx, dz);
+    scr->unkF8.vz = 0;
     if (quiet == 0) {
-        func_80032854(id == 0, 0xB, (s32 *)(scr + 0xC8), (s16 *)(scr + 0xF8));
+        func_80032854(id == 0, 0xB, &scr->unkC8.x, &scr->unkF8.vx);
     }
     len_sq = dx * dx + dy * dy + dz * dz;
     if ((u32)len_sq < 0x400) {
@@ -1609,25 +1608,25 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     qx = (dx << 12) / temp;
     qy = (dy << 12) / temp;
     qz = (dz << 12) / temp;
-    **(Vec3i **)(scr + 0x60) = **(Vec3i **)(scr + 0x64);
-    (*(s32 **)(scr + 0x64))[0] += qx * 4;
-    (*(s32 **)(scr + 0x64))[1] += qy * 4;
-    (*(s32 **)(scr + 0x64))[2] += qz * 4;
+    *scr->unk60[0] = *scr->unk60[1];
+    scr->unk60[1]->x += qx * 4;
+    scr->unk60[1]->y += qy * 4;
+    scr->unk60[1]->z += qz * 4;
     if (diff < 0x400) {
         func_8002E838(scr);
-        /* FAKE: do-while(0) (do-while-zero-exception), observed effect: the
-         * loop-note ref weighting on rec's set and the id * 0x1B8 multiply
-         * seats rec in $s4 / scr in $s5 and id in $s7 / obj in $fp, as in
-         * the target. Unwrapped: the four seats swap pairwise. */
+        /* FAKE: do-while(0) (do-while-zero-exception), observed effect: id in
+         * $s7 / obj in $fp, as in the target. Unwrapped, those two swap
+         * ($s7 <-> $fp, 16 instructions differ); rec and scr keep $s4 / $s5
+         * either way. */
         do {
             rec = D_800F5F68[id];
         } while (0);
         for (i = 0; i < 22; i++, rec++) {
-            s32 *pos;
+            LeafPos *pos;
             if (obj->unk_26C == 0 && i >= 6 && i <= 9) {
                 continue;
             }
-            pos = (s32 *)&SPAD->unkA8[id][i];
+            pos = &SPAD->unkA8[id][i];
             if (func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E) != 0) {
                 s32 bit = 1 << i;
                 *hit |= bit;
@@ -1638,21 +1637,21 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
             }
         }
     }
-    *(s32 *)(scr + 0xA8) = (*(s32 **)(scr + 0x60))[0] - qx / 4;
-    *(s32 *)(scr + 0xAC) = (*(s32 **)(scr + 0x60))[1] - qy / 4;
-    *(s32 *)(scr + 0xB0) = (*(s32 **)(scr + 0x60))[2] - qz / 4;
-    if (func_80053614((s32 *)(scr + 0xA8), *(s32 **)(scr + 0x64), (s32 *)(scr + 0x100),
-                      (s16 *)(scr + 0xF8), (s32)work) != 0
+    scr->unkA8.x = scr->unk60[0]->x - qx / 4;
+    scr->unkA8.y = scr->unk60[0]->y - qy / 4;
+    scr->unkA8.z = scr->unk60[0]->z - qz / 4;
+    if (func_80053614(&scr->unkA8.x, &scr->unk60[1]->x, &scr->unk100[0].x,
+                      &scr->unkF8.vx, (s32)work) != 0
         && func_80054434() != 7) {
         if (*hit != 0) {
-            p = *(s32 **)(scr + 0x60);
-            dx = *(s32 *)(scr + 0x100) - p[0];
-            dy = *(s32 *)(scr + 0x104) - p[1];
-            dz = *(s32 *)(scr + 0x108) - p[2];
+            p = scr->unk60[0];
+            dx = scr->unk100[0].x - p->x;
+            dy = scr->unk100[0].y - p->y;
+            dz = scr->unk100[0].z - p->z;
             hit_sq = dx * dx + dy * dy + dz * dz;
-            dx = obj->unk_F4.x - p[0];
-            dy = obj->unk_F4.y - p[1];
-            dz = obj->unk_F4.z - p[2];
+            dx = obj->unk_F4.x - p->x;
+            dy = obj->unk_F4.y - p->y;
+            dz = obj->unk_F4.z - p->z;
             if (hit_sq >= dx * dx + dy * dy + dz * dz) {
                 goto done;
             }
@@ -1660,7 +1659,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
             *hit = 0;
         }
         if (quiet == 0) {
-            func_80032854(id == 0, 0xA, (s32 *)(scr + 0x100), 0);
+            func_80032854(id == 0, 0xA, &scr->unk100[0].x, 0);
         }
     }
 done:
@@ -3699,8 +3698,7 @@ s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3)
     }
     return 0;
 }
-void func_8002E838(u8 *obj) {
-    Unk1F8002B8Rec *scr = (Unk1F8002B8Rec *)obj;
+void func_8002E838(Unk1F8002B8Rec *scr) {
     s32 sp_tmp;
     MATRIX *mat;
     Vec3i32 *vec;
@@ -3802,13 +3800,13 @@ void func_8002E838(u8 *obj) {
         "swc2   $27, 8($12)\n"
         :: "r"(vec) : "$12", "memory");
 }
-s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
-    s32 *vin;
-    s32 *vout;
-    *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
-    *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
-    *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
-    vin = (s32 *)(obj + 0xF8);
+s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq) {
+    SVECTOR *vin;
+    Vec3i32 *vout;
+    scr->unkF8.vx = pos->x - scr->unk60[0]->x;
+    scr->unkF8.vy = pos->y - scr->unk60[0]->y;
+    scr->unkF8.vz = pos->z - scr->unk60[0]->z;
+    vin = &scr->unkF8;
     __asm__ volatile(
         "addu $t4, %0, $zero\n"
         "lwc2 $0, 0($t4)\n"
@@ -3817,7 +3815,7 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         "nop\n"
         ".word 0x4A486012"
         : : "r"(vin) : "$12", "memory");
-    vout = (s32 *)(obj + 0x100);
+    vout = &scr->unk100[0];
     __asm__ volatile(
         "addu $t4, %0, $zero\n"
         "swc2 $25, 0($t4)\n"
@@ -3826,23 +3824,26 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         : : "r"(vout) : "$12", "memory");
 
     {
-        s32 z;
+        s32 y;
+        /* a0_var: two values -- r_sq - (x * x + y * y), then its square root (the sphere's
+         * half-chord along z). Ruling 11. The name stays because a0_var is the LZC island's
+         * operand below. */
         s32 a0_var;
         s32 sp_var;
-        s32 min_y;
-        s32 max_y;
-        s32 y_low;
-        s32 y;
+        s32 min_z;
+        s32 max_z;
+        s32 az;
+        s32 z;
         s32 x;
         s32 neg_threshold = -threshold;
         s32 sq;
 
-        x = *(s32 *)(obj + 0x100);
+        x = scr->unk100[0].x;
         if (x < neg_threshold || threshold < x) return 0;
-        z = *(s32 *)(obj + 0x104);
-        if (z < neg_threshold || threshold < z) return 0;
+        y = scr->unk100[0].y;
+        if (y < neg_threshold || threshold < y) return 0;
 
-        sq = x * x + z * z;
+        sq = x * x + y * y;
         if (r_sq < sq) return 0;
         a0_var = r_sq - sq;
 
@@ -3870,16 +3871,16 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             }
         }
 
-        max_y = 0;
-        min_y = 0;
-        y_low = *(s32 *)(obj + 0xB0);
-        if (y_low < 0) {
-            min_y = y_low;
+        max_z = 0;
+        min_z = 0;
+        az = scr->unkA8.z;
+        if (az < 0) {
+            min_z = az;
         } else {
-            max_y = y_low;
+            max_z = az;
         }
-        y = *(s32 *)(obj + 0x108);
-        if (max_y < y - a0_var || y + a0_var < min_y) return 0;
+        z = scr->unk100[0].z;
+        if (max_z < z - a0_var || z + a0_var < min_z) return 0;
         return 1;
     }
 }
@@ -5119,8 +5120,7 @@ void func_80030D7C(void) {
     func_80030208();
 }
 /* GTE rotate-velocity-by-table-angle (sibling of func_8002E838) */
-void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
-    Unk1F8002B8Rec *scr;
+void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     MATRIX *mat;
     Vec3i32 *vec;
     s32 angle1;
@@ -5141,7 +5141,6 @@ void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
         ent->rot_vel[1] = av + adj;
     }
 
-    scr = (Unk1F8002B8Rec *)obj;
     mat = &scr->unkD8;
     angle1 = D_8008EBA0[idx] & 0xFFF;
     angle2 = (((ent->pos.x * 16) + ent->pos.y + (ent->pos.z * 8)) & 0x7FF) - 0x400;
@@ -5214,11 +5213,11 @@ void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
 }
 extern s32 func_80027AD8(s32, Unk80101EC8Record *, s32, s32, s32, Tbl8008E194 *, s32, s32 *);
 void func_80031B24(void) {
-    u8 *scr = (u8 *)0x1F8002B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8;
     s32 i;
     s32 deep;
     Obj80106A78 *obj;
-    Vec3i32 *seg = (Vec3i32 *)scr;
+    Vec3i32 *seg = scr->unk00.unk00;
     Unk80101EC8Record *ch;
     s32 other;
     u16 st;
@@ -5245,16 +5244,16 @@ void func_80031B24(void) {
 
         seg[0] = obj->prev_pos;
         seg[1] = obj->pos;
-        *(Vec3i32 **)(scr + 0x60) = &seg[0];
-        *(Vec3i32 **)(scr + 0x64) = &seg[1];
+        scr->unk60[0] = &seg[0];
+        scr->unk60[1] = &seg[1];
         func_8002E838(scr);
 
         hit = 0;
         rec = D_800F5F68[other];
         for (j = 0; j < 22; j++, rec++) {
-            s32 *pos;
+            LeafPos *pos;
             if (ch->unk_26C == 0 && j >= 6 && j <= 9) continue;
-            pos = (s32 *)&SPAD->unkA8[other][j];
+            pos = &SPAD->unkA8[other][j];
             hit = func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E);
             if (hit != 0) {
                 deep = 0;
