@@ -198,6 +198,16 @@ typedef struct {
     void *unk_24;
 } Unk8006EACCRec;
 
+/* The draw chunk 3AB48 func_800600C8 builds at the address its caller passes: 0xB4 bytes of SPRTs
+ * from +0 (func_8007352C's cursor), then the DR_MODE at +0xB4. func_800600C8 returns the chunk
+ * size, 0xC0. At most 5 SPRTs are written: func_8007352C writes at most one per cell of the sheet
+ * header it is given (cell count: the byte at +2); D_8009B6F0's header holds 3, and D_8009B6FC's
+ * holds 1, drawn once per digit for up to two digits. */
+typedef struct {
+    SPRT unk_00[9];
+    DR_MODE unk_B4;
+} Unk800600C8Rec;
+
 /* The select-screen work area D_800A36A0 points at (func_800770B8 places it at
  * the end of the buffers func_8006E49C lays out). Two-element arrays are per
  * player. Per player, f48 is a list of f60 entries with cursor f5C; confirming

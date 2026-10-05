@@ -5450,8 +5450,9 @@ extern s32 D_8009B758;
 s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
 {
     S60C8 s;
-    DR_MODE *dist_off = (DR_MODE *)(arg1 + 0xB4);
-    s32 end_off = arg1 + 0xC0;
+    Unk800600C8Rec *chunk = (Unk800600C8Rec *)arg1;
+    DR_MODE *dist_off = &chunk->unk_B4;
+    s32 end_off = (s32)(chunk + 1);
     s32 cur_tex = arg1;
     s32 i;
     s16 hi;
