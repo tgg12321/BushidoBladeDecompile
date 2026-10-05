@@ -7,8 +7,6 @@
 
 /* Declarations from the file this TU was split from (text1b_tu1c.c). */
 extern s32 rsin();
-extern u8 *g_gpu_ot_ptr;
-extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
 extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
 typedef struct EnvA {

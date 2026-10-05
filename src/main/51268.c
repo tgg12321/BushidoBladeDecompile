@@ -305,12 +305,9 @@ void func_80060E38(s16 *arg0, s32 *arg1) {
 extern s32 func_8005C2A8(s32 *, s16, s32);
 extern s32 rcos();
 extern s32 rsin();
-extern u8 *g_gpu_ot_ptr;
 extern s32 D_800F1180;
 s32 printf(s32 *, s32);               /* extern */
-extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
 extern void AddPrim(void *, void *);
-extern void SetDrawArea(DR_AREA *, RECT *);
 void func_80060A68(void);
 void func_80060B70(void);
 void func_80060C60(void);
@@ -4516,7 +4513,6 @@ typedef struct {
 
 
 extern s32 D_8009BC08;
-extern void SetDrawOffset(DR_OFFSET *, u16 *);
 
 /* Draws the eight-row list screen from the MOD.BIN resource (ctx+4): the row
  * sheets (cursor row flashing, rows switched on in D_8009BC04 lit), a counter

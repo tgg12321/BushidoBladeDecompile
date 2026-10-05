@@ -60,7 +60,6 @@
 
 
 
-extern u8 *g_gpu_ot_ptr;
 
 extern void AddPrim(void *, void *);
 

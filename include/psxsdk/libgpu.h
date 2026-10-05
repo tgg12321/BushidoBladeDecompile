@@ -362,6 +362,9 @@ extern void SetLineG3(LINE_G3 *);
 extern void SetLineF4(LINE_F4 *);
 extern void SetLineG4(LINE_G4 *);
 extern void SetTexWindow(DR_TWIN *, RECT *);
+extern void SetDrawArea(DR_AREA *, RECT *);
+extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
+extern void SetDrawOffset(DR_OFFSET *, s16 *); /* PsyQ: u_short *ofs (sys.c's definition loads them signed) */
 extern void SetDrawMove(DR_MOVE *, RECT *, u32, u32); /* PsyQ: (DR_MOVE *, RECT *, int, int) */
 
 #endif /* PSXSDK_LIBGPU_H */

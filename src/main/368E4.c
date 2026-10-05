@@ -300,7 +300,6 @@ extern s16 D_800F6654;
 extern u8 g_cam_bone_data;
 
 
-extern u8 *g_gpu_ot_ptr;
 extern void func_80049E4C(void);
 extern void func_80049F4C(void);
 extern s16 g_color_mode;

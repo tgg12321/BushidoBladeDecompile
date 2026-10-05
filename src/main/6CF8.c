@@ -38,7 +38,6 @@ extern s32 PCread(s32, u8 *, s32);
 
 extern u8 D_800A30E8;
 extern u8 D_800A30D4;
-extern u8 *g_gpu_ot_ptr;
 extern s32 D_800A30DC;
 
 

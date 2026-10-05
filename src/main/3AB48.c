@@ -8,7 +8,6 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1b.c). */
-extern u8 *g_gpu_ot_ptr;
 extern s32 func_8005C2A8(s32 *, s16, s32);
 extern void func_80052C10(void);
 
@@ -3956,7 +3955,6 @@ extern Unk8009B400Record D_8009B20C[6];
 extern Unk8009B400Record D_8009B23C[12];
 extern Unk8009B400Record D_8009B29C[2];
 extern Unk8009B400Record *D_8009B2AC[4];
-extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
 /* AddPrim has no prototype here: this TU's original called it as an implicit-int function.
  * func_80060768 shows it: after its last AddPrim the target computes its return value
  * (subu v0,s4,s2) inside the dead sp1C bump, which goes through v1; with PsyQ's void
@@ -4415,7 +4413,6 @@ extern Unk8009B400Record D_8009B3C8[3];
 extern Unk8009B400Record D_8009B3E0[2];
 extern Unk8009B400Record D_8009B3F0;
 extern Unk8009B400Record D_8009B3F8;
-extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
 s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk8005D814Rec *chunk = (Unk8005D814Rec *)arg2;
     Env5D814 s;
@@ -5314,7 +5311,6 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
 
 extern s32 D_8009B698;
 extern s32 D_8009B6B0;
-extern void SetDrawArea(DR_AREA *, RECT *);
 
 
 typedef struct {

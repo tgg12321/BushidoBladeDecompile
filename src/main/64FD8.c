@@ -10,12 +10,8 @@
 /* Declarations from the file this TU was split from (text1b.c). */
 extern u32 *ClearOTagR(u32 *, s32);
 extern s32 rsin();
-extern u8 *g_gpu_ot_ptr;
 extern Unk8009BD38Flags D_8009BD38;
-extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
 extern void AddPrim(void *, void *);
-extern void SetDrawArea(DR_AREA *, RECT *);
-extern void SetDrawOffset(DR_OFFSET *, u16 *);
 /* func_8007352C's draw descriptor: .header = the sprite sheet's SprtHdrA, .table = its
    SprtEntA cell array (the s32 form of S_80074488 / DescF97C). */
 typedef struct EnvA {

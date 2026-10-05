@@ -16,11 +16,7 @@ extern s32 func_8005C2A8(s32 *, s16, s32);
 extern u32 *ClearOTagR(u32 *, s32);
 extern s32 rcos();
 extern s32 rsin();
-extern u8 *g_gpu_ot_ptr;
-extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
 extern void AddPrim(void *, void *);
-extern void SetDrawArea(DR_AREA *, RECT *);
-extern void SetDrawOffset(DR_OFFSET *, u16 *);
 extern void LoadImage(u8 *, s32);
 
 typedef struct SelectEntryE534 {
@@ -33,7 +29,6 @@ extern u8 D_8009BC7C[];
 extern u8 D_800A32E8;
 extern u8 D_800A32E9;
 extern u8 D_800A32EC[8];
-extern u8 *g_gpu_ot_ptr;
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
 static s16 D_800A3540[2];
@@ -1121,10 +1116,8 @@ void func_80070188(Unk8006EACCRec *arg0) {
     }
     func_8005C6D0();
 }
-extern u8 *g_gpu_ot_ptr;
 
 
-extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
 
 extern void func_80070F78(Unk8006EACCRec *a0, DescF97C *s);
 extern void func_8006ECF4(Unk8006EACCRec *);
@@ -1877,7 +1870,6 @@ end:
     func_80073200(arg0);
     func_8005C6D0();
 }
-extern u8 *g_gpu_ot_ptr;
 
 
 POLY_G4 *func_80072BC4(s32 arg0, POLY_G4 *arg1) {
@@ -2018,7 +2010,6 @@ void func_80072E10(Unk8006EACCRec *arg0) {
 /* END func_80072E10 */
 
 
-extern u8 *g_gpu_ot_ptr;
 
 TILE *func_80072F30(s32 a0, TILE *a1) {
     SetTile(a1);
