@@ -400,3 +400,60 @@ file. Everything in the diff should be explainable from the message.
 | Project history and retired systems | [`HISTORY.md`](HISTORY.md) |
 | Commit prefixes | [`COMMIT_CONVENTIONS.md`](COMMIT_CONVENTIONS.md) |
 | Past rulings on specific constructs | `docs/grind/decisions.md` (index of standing owner rulings; older entries at git tag `pre-slim-2026-10-01`) + `docs/grind/owner-rulings-2026-09-26.md` |
+
+---
+
+## 14. Readable C simplification pass (owner request, 2026-10-05)
+
+Goal: make already COMPLETED-C bodies easier to follow while preserving the original
+executable. This is maintenance of completed functions, separate from the incomplete-function
+queue: leave `_SendPAD`, queue state, canonical assembly and the stopped Grinder alone.
+
+**Restructure boundary.** Re-read [the handoff](grind/handoff-2026-10-03-restructure.md)
+and `memory/grind/phase2-2026-10-03/lt/plan.txt` / `families.tsv` before selecting each batch.
+Reserve every pending Phase 2 family (FZZ included), its whole TU, its dependencies and listed
+hygiene debt. Initially reserve all game TUs for Phase 2/3. No header, type, prototype,
+global/member/function-name, naming-manifest, TU-layout, asm, build or policy changes; no
+new shared macros or helpers. Preserve existing local names where their variables remain.
+If review exposes a defect that needs a reserved change, defer that whole function.
+
+1. **Census:** inspect eligible, already named Sony C modules for assembly-shaped loops,
+   redundant guards, repeated branches, transcribed arithmetic and match-only construct
+   clusters. Read prior trials and provenance before proposing variants. Rank by clarity
+   gained and low coupling, not label count; ordinary `goto` and readable intermediates
+   can be the right source. Keep candidate/disposition data in `tmp/`.
+2. **Pilot, one function at a time:** `memchr` (`main/psxsdk/libc2/memchr`), then
+   `SpuIsTransferCompleted` (`main/psxsdk/libspu/s_itc`), then `SsSetTickMode`
+   (`main/psxsdk/libsnd/sstick`). These are leads outside the current family list, not
+   measured simplifications or permanent scope grants. Recheck current declarations,
+   naming plans and active ownership first. Try structured search, structured polling/shared
+   exit, and switch/range simplification respectively; preserve every call and store order.
+3. **Expand after the pilot:** process eligible Sony modules in small reviewed batches,
+   initially one function, then at most 3-5 related functions in one TU. Prefer normal
+   loops/conditions, whole-cluster ablation and plain expressions. Preserve null/negative
+   input behavior, signedness, rounding, overflow assumptions and pointer semantics; add
+   no undefined behavior or replacement codegen tricks. A plain-form mismatch keeps the
+   landed body unchanged: record the result and move to another cleanup candidate, without
+   reclassifying or rotating anything in the decomp queue. Avoid an open-ended matching grind.
+4. **Validate and land:** take a baseline at the current HEAD; run canonical routing and
+   `sandbox --disable all --diff --candidate ...` through `tools/wteng.ps1 main`.
+   Ablate whole construct clusters. Apply only a zero-distance, clearer candidate. Require
+   a full oracle rebuild, object section/relocation/symbol comparison (including siblings),
+   no new compiler diagnostics, completion integrity and `audit_asm_cheats.py --check-new`.
+   Reuse the unmodified Phase 2 snapshot/comparison helpers with unique `readable_*` names,
+   never their shared `base`. Every changed body needs fresh adversarial review and a
+   layer-2 PASS on its exact hash; changes after review invalidate that PASS. Commit each
+   accepted batch separately using the existing cleanup conventions, with before/after
+   rationale, actual measurements and rejected plain forms in the body/existing ledger.
+5. **Close or defer:** report changed / already clear / tested nonmatching / reserved
+   candidates and remaining necessary FAKEs. No success quota or cosmetic churn. Game C
+   becomes eligible only when the restructure owner explicitly releases the affected TU
+   and its type/naming dependencies, followed by a fresh census and baseline.
+
+**Coordination:** one writer/build session on main. During restructure edits, do only
+read-only inspection; sandbox/sweep tools can temporarily replace or restore shared files,
+so scratch output alone does not make them safe to run concurrently. Use the existing
+session/ownership procedure for a named completed target; keep the Grinder stopped. Before
+landing, recheck HEAD, source and dependency hashes and ownership; if anything drifted,
+recreate the candidate from current source and repeat validation/review. Do not restore a
+whole-file snapshot, create legacy worker worktrees or stage another agent's changes.
