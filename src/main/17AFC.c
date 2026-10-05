@@ -31,19 +31,19 @@ s32 func_800272FC(s32 a0) {
     }
     return v1;
 }
-void func_80027334(s16 *arg0) {
-    arg0[0x1E] = 0x3F5;
-    arg0[0x1F] = 0x2B6;
-    arg0[0x20] = 0x77A;
-    arg0[0x21] = 0xBEE;
-    arg0[0x22] = 0x8C;
-    arg0[0x23] = 0x227;
-    arg0[0x27] = 0x8A0;
-    arg0[0x28] = 0xF0E;
-    arg0[0x24] = 0;
-    arg0[0x25] = 0;
-    arg0[0x26] = 0;
-    arg0[0x29] = 0xBCD;
+void func_80027334(MotionFrame *arg0) {
+    arg0->unk_0C[0x18] = 0x3F5;
+    arg0->unk_0C[0x19] = 0x2B6;
+    arg0->unk_0C[0x1A] = 0x77A;
+    arg0->unk_0C[0x1B] = 0xBEE;
+    arg0->unk_0C[0x1C] = 0x8C;
+    arg0->unk_0C[0x1D] = 0x227;
+    arg0->unk_0C[0x21] = 0x8A0;
+    arg0->unk_0C[0x22] = 0xF0E;
+    arg0->unk_0C[0x1E] = 0;
+    arg0->unk_0C[0x1F] = 0;
+    arg0->unk_0C[0x20] = 0;
+    arg0->unk_0C[0x23] = 0xBCD;
 }
 /* D_800A376A / D_800A376B are one u8 per player (the hit-limb bits); a0 is the player. Every
  * `*(&D_800A376A + a0)` below reaches [1] through [0]'s address. FAKE (owner ruling Q97): declared

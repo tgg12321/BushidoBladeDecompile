@@ -571,7 +571,9 @@ typedef struct NavPolySet {
  * frame it last used).  Only 16-bit channels, so a whole-frame assignment is
  * the halfword-aligned block copy func_80023F08 shows.  unk_00 is the root
  * offset it negates, unk_02 / unk_04 the root heading and distance, unk_06..
- * unk_0A the three rotation angles it hands math_RotMatrixZYXAngles. */
+ * unk_0A the three rotation angles it hands math_RotMatrixZYXAngles.  unk_0C[]
+ * holds signed channels: func_8002F770 reads the triplet at +0x36 with lh, and
+ * func_800198D0 sign-extends the 12-bit values at +0x6C..+0x70 / +0x78..+0x7C. */
 typedef struct MotionFrame {
     s16 unk_00;
     u16 unk_02;
@@ -579,7 +581,7 @@ typedef struct MotionFrame {
     u16 unk_06;
     u16 unk_08;
     u16 unk_0A;
-    u16 unk_0C[0x3C];
+    s16 unk_0C[0x3C];
 } MotionFrame;                     /* sizeof == 0x84 */
 
 /* Header of one move record of a character's move script (the u16 stream

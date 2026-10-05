@@ -161,7 +161,7 @@ extern s32 D_800A30EC;
    the cached previous frame, or decoded from its keyframe. `work` holds the
    current pose (+0x00), the per-channel rates (+0x84) and the channel codes
    (+0x108). */
-void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
+void func_800198D0(s32 obj, s32 frame, MotionFrame *out, u16 *work) {
     u8 *rec;
     u8 *tbl;
     u8 *slot;
@@ -2191,22 +2191,22 @@ void func_8001EFA0(void) {
         D_800A3834 = var_v0;
     }
 }
-void func_8001F1C4(Unk80101EC8Record *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
+void func_8001F1C4(Unk80101EC8Record *arg0, u8 *arg1, MotionFrame *arg2, MotionFrame *arg3) {
     s16 temp_v1;
     if (!(*(u8 *)(arg1 + 0x18) & 0x80)) {
-        func_80027334((s32 *)arg2);
-        func_80027334((s32 *)arg3);
+        func_80027334(arg2);
+        func_80027334(arg3);
     }
-    func_8002F770((s16 *)(arg2 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
-    func_8002F770((s16 *)(arg3 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
+    func_8002F770(&arg2->unk_0C[0x15], *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
+    func_8002F770(&arg3->unk_0C[0x15], *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
     temp_v1 = arg0->unk_0C;
     if ((temp_v1 == 0x1D) || (temp_v1 == 0xE)) {
-        *(u16 *)(arg2 + 0x7E) = (u16)(*(u16 *)(arg2 + 0x7E) + (*(s8 *)(arg1 + 0x16) * 4));
-        *(u16 *)(arg3 + 0x7E) = (u16)(*(u16 *)(arg3 + 0x7E) + (*(s8 *)(arg1 + 0x16) * 4));
+        arg2->unk_0C[0x39] += *(s8 *)(arg1 + 0x16) * 4;
+        arg3->unk_0C[0x39] += *(s8 *)(arg1 + 0x16) * 4;
     }
     if ((u32)((u16)arg0->unk_0E - 6) < 2U) {
-        *(u16 *)(arg2 + 0x72) = (u16)(*(u16 *)(arg2 + 0x72) + (*(s8 *)(arg1 + 0x16) * 4));
-        *(u16 *)(arg3 + 0x72) = (u16)(*(u16 *)(arg3 + 0x72) + (*(s8 *)(arg1 + 0x16) * 4));
+        arg2->unk_0C[0x33] += *(s8 *)(arg1 + 0x16) * 4;
+        arg3->unk_0C[0x33] += *(s8 *)(arg1 + 0x16) * 4;
     }
 }
 /* Steers two bone-angle sets (a, b) toward obj's partner (obj->other):
@@ -2222,7 +2222,7 @@ void func_8001F1C4(Unk80101EC8Record *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
  * obj+0xE in 6..7 with obj+0x6A == 2), and adds random jitter to both sets
  * when obj+0x26E is set and obj+0x96 == 0. The x target passed to
  * func_8002F770 is 0 in every state. */
-void func_8001F2E4(Unk80101EC8Record *obj, u8 *a, u8 *b) {
+void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
     s32 lzc_out;
     s32 lzc_out2;
     s32 tgt_z;
@@ -2254,8 +2254,8 @@ void func_8001F2E4(Unk80101EC8Record *obj, u8 *a, u8 *b) {
     s16 t;
 
     if (obj->unk_26C == 0) {
-        func_80027334((s32 *)a);
-        func_80027334((s32 *)b);
+        func_80027334(a);
+        func_80027334(b);
     }
     if (obj->unk_6A == 0x15 || obj->unk_6A == 0x25) {
         if (obj->unk_0C == 0x1F) {
@@ -2324,8 +2324,8 @@ void func_8001F2E4(Unk80101EC8Record *obj, u8 *a, u8 *b) {
         temp -= 0x1000;
     }
     obj->unk_1E8 = obj->unk_1E8 + temp / 8;
-    func_8002F770((s16 *)(a + 0x36), obj->unk_1E6, obj->unk_1E8, tgt_x);
-    func_8002F770((s16 *)(b + 0x36), obj->unk_1E6, obj->unk_1E8, tgt_x);
+    func_8002F770(&a->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, tgt_x);
+    func_8002F770(&b->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, tgt_x);
 
     t = obj->unk_0C;
     if ((t == 0x1D || t == 0xE) && obj->unk_8C != 0) {
@@ -2339,8 +2339,8 @@ void func_8001F2E4(Unk80101EC8Record *obj, u8 *a, u8 *b) {
             temp = -0x1FF;
         }
         obj->unk_1EA = temp;
-        *(u16 *)(a + 0x7E) += temp;
-        *(u16 *)(b + 0x7E) += temp;
+        a->unk_0C[0x39] += temp;
+        b->unk_0C[0x39] += temp;
     }
 
     if ((u32)((u16)obj->unk_0E - 6) < 2U && obj->unk_6A == 2) {
@@ -2391,21 +2391,21 @@ void func_8001F2E4(Unk80101EC8Record *obj, u8 *a, u8 *b) {
             temp -= 0x1000;
         }
         obj->unk_1EA = obj->unk_1EA + temp / 8;
-        *(u16 *)(a + 0x72) += obj->unk_1EA;
-        *(u16 *)(b + 0x72) += obj->unk_1EA;
+        a->unk_0C[0x33] += obj->unk_1EA;
+        b->unk_0C[0x33] += obj->unk_1EA;
     }
 
     if (obj->unk_26E != 0 && obj->unk_96 == 0) {
         temp = (rng_Next() & 0x3F) - 0x20;
-        *(u16 *)(a + 0xC) += temp;
-        *(u16 *)(b + 0xC) += temp;
-        *(u16 *)(a + 0x14) -= temp;
-        *(u16 *)(b + 0x14) -= temp;
+        a->unk_0C[0] += temp;
+        b->unk_0C[0] += temp;
+        a->unk_0C[4] -= temp;
+        b->unk_0C[4] -= temp;
         temp = (rng_Next() & 0x3F) - 0x20;
-        *(u16 *)(a + 0x1E) += temp;
-        *(u16 *)(b + 0x1E) += temp;
-        *(u16 *)(a + 0x26) -= temp;
-        *(u16 *)(b + 0x26) -= temp;
+        a->unk_0C[9] += temp;
+        b->unk_0C[9] += temp;
+        a->unk_0C[0xD] -= temp;
+        b->unk_0C[0xD] -= temp;
     }
 }
 void func_8001F860(Unk80101EC8Record *arg0, s32 arg1) {
@@ -4914,8 +4914,8 @@ void func_80023F08(s32 arg0, PadState *pad) {
         pose[1] = D_800A3888[arg0][rec->unk_40];
         pose[0] = pose[1];
     } else {
-        func_800198D0(motion, cur_frame, (u32 *)&pose[0], (u16 *)0x1F8001B0);
-        func_800198D0(motion, next_frame, (u32 *)&pose[1], (u16 *)0x1F8001B0);
+        func_800198D0(motion, cur_frame, &pose[0], (u16 *)0x1F8001B0);
+        func_800198D0(motion, next_frame, &pose[1], (u16 *)0x1F8001B0);
     }
     if (rec->unk_7A != 0 && (rec->unk_6A == 6 || rec->unk_6A == 0x14) && rec->unk_6C == 6) {
         MATRIX m1;
@@ -4932,7 +4932,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_1C8.vy += twist;
         func_8001B690(arg0, twist);
     }
-    func_8001F2E4(rec, (u8 *)&pose[0], (u8 *)&pose[1]);
+    func_8001F2E4(rec, &pose[0], &pose[1]);
     if (rec->unk_6A == 0x11) {
         rec->unk_154 = rec->unk_1C8.vy;
     }

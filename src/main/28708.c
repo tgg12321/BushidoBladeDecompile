@@ -1371,9 +1371,9 @@ void func_8003993C(void) {
 
         p = (u8 *)(D_800A36EC + idx * 56) + i * 28;
         rob = &D_80101EC8[i];
-        func_800198D0((*(s16 *)(p + 0xE) >> 14) & 3, *(s16 *)(p + 0xE) & 0x3FFF, (u32 *)&work[0], sp1C0);
-        func_800198D0((*(s16 *)(p + 0x10) >> 14) & 3, *(s16 *)(p + 0x10) & 0x3FFF, (u32 *)&work[1], sp1C0);
-        func_8001F1C4(rob, p, (u8 *)&work[0], (u8 *)&work[1]);
+        func_800198D0((*(s16 *)(p + 0xE) >> 14) & 3, *(s16 *)(p + 0xE) & 0x3FFF, &work[0], sp1C0);
+        func_800198D0((*(s16 *)(p + 0x10) >> 14) & 3, *(s16 *)(p + 0x10) & 0x3FFF, &work[1], sp1C0);
+        func_8001F1C4(rob, p, &work[0], &work[1]);
         func_80041188(i, (u8 *)&work[0], (u8 *)&work[1], *(s16 *)(p + 0x12), (MATRIX *)sp120);
         pos[0] = *(s16 *)(p + 4);
         pos[1] = *(s16 *)(p + 6);

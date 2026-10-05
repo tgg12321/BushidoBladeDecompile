@@ -894,7 +894,7 @@ s32 func_8005490C(void) {
         if (s->unk34[i] != 0) {
             s32 ang;
             player = func_8004153C(i);
-            func_800198D0(i, s->unk0, (u32 *)frame, (u16 *)0x1F800000);
+            func_800198D0(i, s->unk0, (MotionFrame *)frame, (u16 *)0x1F800000);
             vec.vy = frame[0];
             vec.vy = (vec.vy * *(s16 *)((u8 *)player + 0x12)) >> 12;
             ang = frame[1];
