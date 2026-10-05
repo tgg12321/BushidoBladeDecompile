@@ -1430,7 +1430,7 @@ void func_8003D2F4(void) {
 void func_8003D330(void) {
     OTag *p = (OTag *)((u8 *)&D_800A3D30 + (D_800A3218 << 3));
     OTag *ot;
-    ((u8 *)p)[3] = 1;
+    p->len = 1;
     *((u32 *)p + 1) = 0xE100001F;
     ot = (OTag *)g_gpu_ot_ptr;
     p->addr = ot->addr;
@@ -1445,7 +1445,7 @@ void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
     if (n == 0x20) return;
     D_800A3358 = n + 1;
     p = &D_800A3930[D_800A3218][n];
-    ((u8 *)p)[3] = 3;
+    setlen(p, 3);
     p->code = 0x74;
     p->x0 = x;
     p->y0 = y;
