@@ -5310,12 +5310,12 @@ extern void SetDrawArea(DR_AREA *, RECT *);
 typedef struct {
     s32 *p0;
     s32 *p1;
-    s32 in_tex;
+    s32 unk_08;
     s32 pad0C;
     s32 zero10;
-    s32 arg2;
-    s32 width;
-    s32 height;
+    s32 unk_14;
+    s32 unk_18;
+    s32 unk_1C;
     s32 pad20;
     s32 pad24;
     s8 byte28;
@@ -5323,11 +5323,12 @@ typedef struct {
 
 s32 func_8005FC9C(s32 arg0, s32 arg1)
 {
+    Unk8005FC9CRec *chunk = (Unk8005FC9CRec *)arg0;
     SFC9C s;
     RECT r;
     RECT *clip;
     GpuDb *env;
-    s32 cur_tex;
+    s32 cur;
     DR_MODE *mode_off;
     POLY_G4 *poly;
     DR_AREA *area;
@@ -5338,11 +5339,11 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
     s16 x;
     u8 c;
 
-    cur_tex = arg0;
-    mode_off = (DR_MODE *)(arg0 + 0x280);
-    poly = (POLY_G4 *)(arg0 + 0x28C);
-    area = (DR_AREA *)(arg0 + 0x2D4);
-    end_off = arg0 + 0x2F8;
+    cur = arg0;
+    mode_off = &chunk->unk_280;
+    poly = chunk->unk_28C;
+    area = chunk->unk_2D4;
+    end_off = arg0 + sizeof(Unk8005FC9CRec);
     j = 0;
     env = &g_gpu_db[D_800A36AC & 1];
     r.x = env->draw.clip.x;
@@ -5355,8 +5356,8 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
     area++;
     s.byte28 = 0;
     s.zero10 = 0;
-    s.width = 0;
-    s.arg2 = arg1;
+    s.unk_18 = 0;
+    s.unk_14 = arg1;
     s.p1 = &D_8009B6B0;
     off = (D_800A3278 - 0xB4) * 24;
     do {
@@ -5409,9 +5410,9 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
         }
         for (i = 0; i < 2; i++) {
             s.p0 = (s32 *)((u8 *)&D_8009B698 + i * 12);
-            s.height = i << 6;
-            s.in_tex = cur_tex;
-            cur_tex = func_8007352C((s32)&s);
+            s.unk_1C = i << 6;
+            s.unk_08 = cur;
+            cur = func_8007352C((s32)&s);
         }
         if (D_800A3278 >= 0xB5) {
             SetDrawArea(area, &r);
@@ -5430,32 +5431,31 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
 typedef struct {
     s32 *p0;
     s32 *p1;
-    s32 in_tex;
+    s32 unk_08;
     s32 pad0C;
     s32 zero10;
     s32 arg2;
-    s32 width;
+    s32 unk_18;
     s32 zero1C;
     s32 pad20;
     s32 pad24;
     s8 byte28;
     s8 padpad[7];
-    s16 d0;
-    s16 d1;
+    s16 d[2];
 } S60C8;
 extern s32 D_8009B6F0;
 extern s32 D_8009B6FC;
-extern s32 D_8009B708;
+extern s32 D_8009B708[10][2];
 extern s32 D_8009B758;
 s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
 {
     S60C8 s;
     Unk800600C8Rec *chunk = (Unk800600C8Rec *)arg1;
-    DR_MODE *dist_off = &chunk->unk_B4;
-    s32 end_off = (s32)(chunk + 1);
-    s32 cur_tex = arg1;
+    DR_MODE *mode_off = &chunk->unk_B4;
+    s32 end_off = arg1 + sizeof(Unk800600C8Rec);
+    s32 cur = arg1;
     s32 i;
-    s16 hi;
+    s16 v;
 
     s.p0 = &D_8009B6F0;
     s.byte28 = 0;
@@ -5463,36 +5463,36 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
     s.zero1C = 0;
     s.arg2 = arg2;
     if (arg0 < 0xA) {
-        s.width = 0x93;
+        s.unk_18 = 0x93;
     } else {
-        s.width = 0xA3;
+        s.unk_18 = 0xA3;
     }
     s.p1 = &D_8009B758;
-    s.in_tex = cur_tex;
-    cur_tex = func_8007352C((s32)&s);
-    hi = arg0;
+    s.unk_08 = cur;
+    cur = func_8007352C((s32)&s);
+    v = arg0;
     s.p0 = &D_8009B6FC;
-    s.d1 = hi;
-    s.d0 = hi;
-    hi = ((s16)arg0) / 10;
-    s.d1 = hi % 10;
-    s.d0 = ((s16)arg0) % 10;
+    s.d[1] = v;
+    s.d[0] = v;
+    v = ((s16)arg0) / 10;
+    s.d[1] = v % 10;
+    s.d[0] = ((s16)arg0) % 10;
     i = 0;
 loop_60C8:
-    s.p1 = (s32 *)((s32)&D_8009B708 + ((&s.d0)[i] * 8));
+    s.p1 = D_8009B708[s.d[i]];
     if (arg0 < 0xA) {
-        s.width = 0x64;
+        s.unk_18 = 0x64;
     } else {
-        s.width = (((1 - i) << 2) << 3) + 0x54;
+        s.unk_18 = (((1 - i) << 2) << 3) + 0x54;
     }
-    s.in_tex = cur_tex;
-    cur_tex = func_8007352C((s32)&s);
-    if (s.d1 != 0) {
+    s.unk_08 = cur;
+    cur = func_8007352C((s32)&s);
+    if (s.d[1] != 0) {
         i += 1;
         if (i < 2) goto loop_60C8;
     }
-    SetDrawMode(dist_off, 1, 0, func_8006E480((s32 *)&D_8009B6F0, 0), 0);
-    AddPrim(g_gpu_ot_ptr + (arg2 * 4), dist_off);
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B6F0, 0), 0);
+    AddPrim(g_gpu_ot_ptr + (arg2 * 4), mode_off);
     return end_off - arg1;
 }
 extern u8 D_800A3294[8];

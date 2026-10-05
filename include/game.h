@@ -198,6 +198,19 @@ typedef struct {
     void *unk_24;
 } Unk8006EACCRec;
 
+/* The draw chunk 3AB48 func_8005FC9C builds at the address its caller passes: SPRTs from +0
+ * (func_8007352C's cursor), the DR_MODE at +0x280, two POLY_G4 at +0x28C (at most one per pass)
+ * and three DR_AREA at +0x2D4 (the first, then at most one per pass). func_8005FC9C returns the
+ * chunk size, 0x2F8. The 32 SPRTs are the most it writes: func_8007352C writes at most one per
+ * cell of the sheet header it is given (cell count: the byte at +2), and each of the two passes
+ * draws D_8009B698's header and the one 12 bytes after it (8 cells each). */
+typedef struct {
+    SPRT unk_00[32];
+    DR_MODE unk_280;
+    POLY_G4 unk_28C[2];
+    DR_AREA unk_2D4[3];
+} Unk8005FC9CRec;
+
 /* The draw chunk 3AB48 func_800600C8 builds at the address its caller passes: 0xB4 bytes of SPRTs
  * from +0 (func_8007352C's cursor), then the DR_MODE at +0xB4. func_800600C8 returns the chunk
  * size, 0xC0. At most 5 SPRTs are written: func_8007352C writes at most one per cell of the sheet
