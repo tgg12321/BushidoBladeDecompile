@@ -432,7 +432,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
                 return 0;
             }
             if (vec[1] * vec[1] < vec[0] * vec[0] + vec[2] * vec[2]) {
-                func_8001F860((s16 *)ch, ratan2(vec[0], vec[2]));
+                func_8001F860(ch, ratan2(vec[0], vec[2]));
                 ch->unk_134.vx -= vec[0] / 16;
                 ch->unk_134.vz -= vec[2] / 16;
             }
@@ -450,7 +450,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
                 func_80032854(player, 2, scr, 0);
                 func_80032854(player, 0x25, scr, 0);
                 ch->unk_286 = 1;
-                func_8001F860((s16 *)ch, ratan2(vec[0], vec[2]));
+                func_8001F860(ch, ratan2(vec[0], vec[2]));
                 ch->unk_134.vx -= vec[0] / 16;
                 ch->unk_134.vz -= vec[2] / 16;
                 *out = pass;
@@ -2193,7 +2193,7 @@ void func_8002C0DC(void) {
         Unk80101EC8Record *ptr = e->other;
         s32 arg1 = ptr->unk_D8.x - e->unk_D8.x;
         s32 arg2 = ptr->unk_D8.z - e->unk_D8.z;
-        func_8001F860((s16 *)e, ratan2(arg1, arg2));
+        func_8001F860(e, ratan2(arg1, arg2));
     }
 
     {

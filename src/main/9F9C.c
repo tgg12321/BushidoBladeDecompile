@@ -2421,12 +2421,12 @@ void func_8001F2E4(Unk80101EC8Record *obj, u8 *a, u8 *b) {
         *(u16 *)(b + 0x26) -= temp;
     }
 }
-void func_8001F860(s16 *arg0, s32 arg1) {
-    arg1 = (arg1 - *(s16 *)((u8 *)arg0 + 0x1CA)) & 0xFFF;
+void func_8001F860(Unk80101EC8Record *arg0, s32 arg1) {
+    arg1 = (arg1 - arg0->unk_1C8.vy) & 0xFFF;
     if (arg1 >= 0x800) {
         arg1 -= 0x1000;
     }
-    *(s16 *)((u8 *)arg0 + 0x14C) = arg1;
+    arg0->unk_14C = arg1;
 }
 s32 func_8001F888(void) {
     s32 dx = D_80101EC8[1].unk_F4.x - D_80101EC8[0].unk_F4.x;
@@ -3777,11 +3777,11 @@ s32 func_800224E0(Unk80101EC8Record *arg0) {
     } while ((s32)p < (s32)end); /* FAKE: signed compare (slt); `p < end` gives sltu (score 1) */
     return 0;
 }
-void func_80022568(s16 *arg0) {
-    arg0[0x136] = 1;
-    arg0[0x137] = 0;
-    arg0[0x138] = 0;
-    arg0[0x139] = 0;
+void func_80022568(Unk80101EC8Record *arg0) {
+    arg0->unk_26C = 1;
+    arg0->unk_26E = 0;
+    arg0->unk_270 = 0;
+    arg0->unk_272 = 0;
 }
 void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     Unk80101EC8Record *p;
@@ -3938,7 +3938,7 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_1D0 = p->unk_1C8;
     func_800206B0(idx, p->unk_1A);
     if (D_800A38DC != 0 || idx != 0 || D_800A3907 < 2 || D_800A3670 != 0) {
-        func_80022568((s16 *)p);
+        func_80022568(p);
     }
     p->unk_274 = D_8008E3C0[p->unk_0A];
     for (i = 0; i < 4; i++) {
@@ -4040,7 +4040,7 @@ typedef struct { s32 a, b, c, d; } Quad_2304C;
  * comes from spelling the masked state id the way the original author spelled
  * it in the sibling function func_80023E40 later in this file, which
  * reads the identical field with the identical two-line idiom
- *     s32 a0 = *(u16 *)(arg0 + 0x6A);
+ *     s32 a0 = arg0->unk_6A;
  *     s32 v1 = a0 & 0xFFFF;
  * and runs the identical comparison cascade (== 8, == 0x22,
  * (u32)(a0 - 0x17) < 2, == 0xA). The two functions are copy-paste siblings in
@@ -4058,7 +4058,7 @@ typedef struct { s32 a, b, c, d; } Quad_2304C;
  * side narrow (u16 mode, or u16 m) lets combine fold the truncate/extend pair
  * into a copy or delete it outright.
  */
-void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
+void func_8002304C(Unk80101EC8Record *obj, s32 *pos1, s32 *pos2, s32 *arg3)
 {
   s32 *scratch = (s32 *) 0x1F8001B0;
   s32 count = 0;
@@ -4075,7 +4075,7 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
       *(Quad_2304C *)pos1 = *(Quad_2304C *)pos2;
       goto done;
     }
-    *((s8 *) (obj + 0xB1)) = (s8) func_80054434();
+    obj->unk_B1 = func_80054434();
     *(Quad_2304C *)pos1 = *(Quad_2304C *)scratch;
     func_8002EBDC((s16 *) arg3, scratch_c, arg3, -0x40, 0xE6);
     {
@@ -4103,14 +4103,14 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
       scratch[9] = pos2[1] - pos1[1];
       scratch[10] = pos2[2] - pos1[2];
       func_8002EBDC(scratch_d, scratch_c, (s32 *) scratch_d, 0,
-                    (*((u16 *) (obj + 0x6A)) == 0x15) ? 0x80 : 0x100);
+                    (obj->unk_6A == 0x15) ? 0x80 : 0x100);
       {
         s16 vel_y = *((s16 *) (((u8 *) scratch) + 0x12));
         if (vel_y >= (-0x7FF))
         {
-          s32 mode = *((u16 *) (obj + 0x6A));
+          s32 mode = obj->unk_6A;
           s32 m = mode & 0xFFFF;
-          if (((((m != 8) && (m != 0x22)) && (((u32) (mode - 0x17)) >= 2)) && (m != 0xA)) && ((*((s16 *) (obj + 0x72))) == 0))
+          if (((((m != 8) && (m != 0x22)) && (((u32) (mode - 0x17)) >= 2)) && (m != 0xA)) && (obj->unk_72 == 0))
           {
             scratch[9] = 0;
           }
@@ -4130,18 +4130,16 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
   done:
   ;
 }
-typedef struct { s16 a, b, c, d; } SVec8_233AC;
-
-s32 func_800233AC(u8 *arg0, s32 *arg1) {
+s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
     s32 pos[3];
     s32 off[3];
-    s16 out1[4];
+    SVec4i16 out1;
     s32 out2[4];
     u32 bits;
     s32 a1_idx;
     s32 a0_idx;
 
-    bits = *(u32 *)(arg0 + 0x2C);
+    bits = arg0->unk_24.held;
     a1_idx = (bits >> 14) & 1;
     if (!(bits & 0x1000)) {
         a1_idx++;
@@ -4165,16 +4163,16 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         s16 *row;
         s32 a1_val;
 
-        px = *(s32 *)(arg0 + 0xB8);
+        px = arg0->unk_B8.vx;
         row = tbl[a0_idx];
         a1_val = row[a1_idx];
 
         pos[0] = px;
-        pos[1] = *(s32 *)(arg0 + 0xBC) - 0x64;
-        pos[2] = *(s32 *)(arg0 + 0xC0);
+        pos[1] = arg0->unk_B8.vy - 0x64;
+        pos[2] = arg0->unk_B8.vz;
 
         {
-            s32 angle = (*(s16 *)(arg0 + 0x1D8) + a1_val) & 0xFFF;
+            s32 angle = (arg0->unk_1D8 + a1_val) & 0xFFF;
             s16 jv = Judge[angle];
 
             off[0] = px + jv / 4;
@@ -4182,26 +4180,26 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         }
 
         {
-            s32 angle2 = (*(s16 *)(arg0 + 0x1D8) + a1_val + 0x400) & 0xFFF;
+            s32 angle2 = (arg0->unk_1D8 + a1_val + 0x400) & 0xFFF;
             s16 jv2 = Judge[angle2];
 
             off[2] = pos[2] + jv2 / 4;
         }
     }
 
-    if (func_80053614(pos, off, out2, out1, (s32)0x1F8002B8) == 0) {
+    if (func_80053614(pos, off, out2, &out1.vx, (s32)0x1F8002B8) == 0) {
         return 0;
     }
 
-    *(SVec8_233AC *)(arg0 + 0x98) = *(SVec8_233AC *)out1;
+    arg0->unk_98 = out1;
 
     {
-        s32 fwd_angle = ratan2(out1[0], out1[2]);
+        s32 fwd_angle = ratan2(out1.vx, out1.vz);
         s32 fwd_800;
 
-        pos[0] = *(s32 *)(arg0 + 0xB8);
-        pos[1] = *(s32 *)(arg0 + 0xBC) - 0x898;
-        pos[2] = *(s32 *)(arg0 + 0xC0);
+        pos[0] = arg0->unk_B8.vx;
+        pos[1] = arg0->unk_B8.vy - 0x898;
+        pos[2] = arg0->unk_B8.vz;
 
         fwd_800 = fwd_angle + 0x800;
 
@@ -4219,7 +4217,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
             off[2] = pos[2] + jv4 / 8;
         }
 
-        if (func_80053614(pos, off, out2, out1, (s32)0x1F8002B8) != 0) {
+        if (func_80053614(pos, off, out2, &out1.vx, (s32)0x1F8002B8) != 0) {
             return 0;
         }
 
@@ -4227,7 +4225,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         pos[1] = off[1] + 0x190;
         pos[2] = off[2];
 
-        if (func_80053614(off, pos, out2, out1, (s32)0x1F8002B8) == 0) {
+        if (func_80053614(off, pos, out2, &out1.vx, (s32)0x1F8002B8) == 0) {
             return 0;
         }
 
@@ -4235,8 +4233,8 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         return 1;
     }
 }
-void func_80023648(u8 *arg0) {
-    u16 kind = *(u16 *)(arg0 + 0x6A);
+void func_80023648(Unk80101EC8Record *arg0) {
+    u16 kind = arg0->unk_6A;
     /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception), same
      * mechanism as func_800233AC: the row pointer local puts the table address in
      * a register ahead of the a0 * 6 row offset, as the target does (direct
@@ -4247,7 +4245,7 @@ void func_80023648(u8 *arg0) {
 
     if (kind == 0x13 || kind == 0x1B || kind == 0x30) {
         s32 a2;
-        u32 bits = *(u32 *)(arg0 + 0x2C);
+        u32 bits = arg0->unk_24.held;
         if (bits & 0xF000) {
             s32 a1 = (bits >> 14) & 1;
             s32 a0;
@@ -4270,19 +4268,19 @@ void func_80023648(u8 *arg0) {
              * operand order and the element pointer lands in $a2 as target does. */
             a2 = a1[row];
 
-            if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
-                func_8001F860((s16 *)arg0, *(s16 *)(arg0 + 0x1CA) + a2 / 4);
+            if (D_800A38BA != 0 && arg0->unk_06 == 0) {
+                func_8001F860(arg0, arg0->unk_1C8.vy + a2 / 4);
             } else {
-                func_8001F860((s16 *)arg0, *(s16 *)(arg0 + 0x1D8) + a2);
+                func_8001F860(arg0, arg0->unk_1D8 + a2);
             }
         } else {
-            if (D_800A38BA != 0 && *(s16 *)(arg0 + 6) == 0) {
-                *(s16 *)(arg0 + 0x14C) = 0;
+            if (D_800A38BA != 0 && arg0->unk_06 == 0) {
+                arg0->unk_14C = 0;
             }
         }
 
         {
-            /* FAKE: the clamped |*(s16*)(arg0+0x150)| is staged through the
+            /* FAKE: the clamped |arg0->unk_150| is staged through the
              * existing `a2` (its D_8008EB40 table-entry value is dead here - it
              * was consumed by the func_8001F860 call above and is never read
              * again), mechanism: GCC 2.7.2 global.c - a multiply-set pseudo is
@@ -4290,7 +4288,7 @@ void func_80023648(u8 *arg0) {
              * every staged value in a single hard reg ($a2) exactly as target
              * does; separate locals form separate allocnos that find_reg seats in
              * $a2/$a0/$a1. */
-            a2 = *(s16 *)(arg0 + 0x150);
+            a2 = arg0->unk_150;
             if (a2 < 0) {
                 a2 = -a2;
             }
@@ -4299,39 +4297,39 @@ void func_80023648(u8 *arg0) {
             }
 
             {
-                s32 sub_result = *(u16 *)(arg0 + 0x14E) - a2;
-                s32 div16 = *(s16 *)(arg0 + 0x1A);
+                s32 sub_result = (u16)arg0->unk_14E - a2;
+                s32 div16 = arg0->unk_1A;
                 s16 new_14e;
                 s32 tbl_val;
                 s32 mult_res;
                 s32 limit;
 
-                *(s16 *)(arg0 + 0x14E) = sub_result;
+                arg0->unk_14E = sub_result;
                 if (div16 < 0) {
                     div16 += 15;
                 }
                 div16 >>= 4;
                 new_14e = sub_result + div16;
-                *(s16 *)(arg0 + 0x14E) = new_14e;
+                arg0->unk_14E = new_14e;
 
-                tbl_val = D_800A310C[D_8008DA08[*(s16 *)(arg0 + 0xA)]];
-                /* FAKE: the second read of *(s16*)(arg0+0x1A) is staged through
+                tbl_val = D_800A310C[D_8008DA08[arg0->unk_0A]];
+                /* FAKE: the second read of arg0->unk_1A is staged through
                  * the existing `sub_result` (its 0x14E difference is dead here -
                  * consumed by the store above and by new_14e), mechanism: GCC
                  * 2.7.2 global.c multiply-set pseudo / single allocno as above. */
-                sub_result = *(s16 *)(arg0 + 0x1A);
+                sub_result = arg0->unk_1A;
                 mult_res = sub_result * tbl_val;
                 limit = (mult_res << 4) >> 12;
 
                 if (limit < (s16)new_14e) {
-                    *(s16 *)(arg0 + 0x14E) = limit;
+                    arg0->unk_14E = limit;
                 } else if ((s16)new_14e < 0) {
-                    *(s16 *)(arg0 + 0x14E) = 0;
+                    arg0->unk_14E = 0;
                 }
 
                 {
-                    s32 speed_prod = *(s16 *)(arg0 + 0x14E) * *(s16 *)(arg0 + 0x44);
-                    s16 sin_val = Judge[(*(u16 *)(arg0 + 0x1CA) & 0xFFF)];
+                    s32 speed_prod = arg0->unk_14E * arg0->unk_44;
+                    s16 sin_val = Judge[(arg0->unk_1C8.vy & 0xFFF)];
 
                     /* FAKE: the >>12 speed is staged through the existing `a2`
                      * (its clamped-|0x150| value is dead here - consumed by
@@ -4339,25 +4337,25 @@ void func_80023648(u8 *arg0) {
                      * multiply-set pseudo / single allocno as above. */
                     a2 = speed_prod >> 12;
 
-                    *(s32 *)(arg0 + 0xD8) += (sin_val * a2) >> 16;
+                    arg0->unk_D8.x += (sin_val * a2) >> 16;
 
                     {
-                        s16 cos_val = Judge[((*(s16 *)(arg0 + 0x1CA) + 0x400) & 0xFFF)];
-                        *(s32 *)(arg0 + 0xE0) += (cos_val * a2) >> 16;
+                        s16 cos_val = Judge[((arg0->unk_1C8.vy + 0x400) & 0xFFF)];
+                        arg0->unk_D8.z += (cos_val * a2) >> 16;
                     }
                 }
             }
         }
     } else {
-        if (*(s16 *)(arg0 + 0x14E) > 0) {
+        if (arg0->unk_14E > 0) {
             if (kind != 0x22) {
-                *(s16 *)(arg0 + 0x14C) = 0;
+                arg0->unk_14C = 0;
             }
-            *(s16 *)(arg0 + 0x14E) = 0;
+            arg0->unk_14E = 0;
         }
     }
 }
-void func_800238C4(u8 *arg0)
+void func_800238C4(Unk80101EC8Record *arg0)
 {
     s32 src[4];
     s32 dst[4];
@@ -4369,18 +4367,18 @@ void func_800238C4(u8 *arg0)
     s32 dz_delta;
     s32 scratchpad;
     s32 ok;
-    if ((*((s32 *) (arg0 + 0x108))) <= 0) {
+    if (arg0->unk_104.vy <= 0) {
         return;
     }
     {
-        s32 kind = *((u16 *) (arg0 + 0x6A));
+        s32 kind = arg0->unk_6A;
         if (((u32) (kind - 0x17)) < 2u) {
             return;
         }
         if ((kind & 0xFFFF) == 0xA) {
             return;
         }
-        if ((*((s16 *) (arg0 + 0x72))) != 0) {
+        if (arg0->unk_72 != 0) {
             return;
         }
         if ((kind & 0xFFFF) == 1) {
@@ -4391,19 +4389,19 @@ void func_800238C4(u8 *arg0)
         }
     }
     scratchpad = 0x1F8002B8;
-    src[0] = *((s32 *) (arg0 + 0xB8));
-    src[1] = (*((s32 *) (arg0 + 0xBC))) - 0xC8;
-    src[2] = *((s32 *) (arg0 + 0xC0));
-    dst[0] = *((s32 *) (arg0 + 0xB8));
-    dst[1] = (*((s32 *) (arg0 + 0xBC))) + 0x514;
-    dst[2] = *((s32 *) (arg0 + 0xC0));
+    src[0] = arg0->unk_B8.vx;
+    src[1] = arg0->unk_B8.vy - 0xC8;
+    src[2] = arg0->unk_B8.vz;
+    dst[0] = arg0->unk_B8.vx;
+    dst[1] = arg0->unk_B8.vy + 0x514;
+    dst[2] = arg0->unk_B8.vz;
     s1 = func_80053614(src, dst, out, offsets, scratchpad);
     ok = 1;
     if (s1 != 0)
     {
         if ((out[1] - src[1]) >= 0x191)
         {
-            ok = (*((u16 *) (arg0 + 0x6A))) != 0x22;
+            ok = arg0->unk_6A != 0x22;
             goto ok_check;
         }
         if (offsets[1] < (-0x7FF))
@@ -4424,8 +4422,8 @@ void func_800238C4(u8 *arg0)
     }
     if (s1 == 0)
     {
-        offsets[0] = *(s32 *)(arg0 + 0xB8) - *(s32 *)(arg0 + 0xC8);
-        offsets[2] = *(s32 *)(arg0 + 0xC0) - *(s32 *)(arg0 + 0xD0);
+        offsets[0] = arg0->unk_B8.vx - arg0->unk_C8.vx;
+        offsets[2] = arg0->unk_B8.vz - arg0->unk_C8.vz;
         if (offsets[0] < -0x40) {
             offsets[0] = -0x40;
         } else if (offsets[0] > 0x40) {
@@ -4446,22 +4444,22 @@ void func_800238C4(u8 *arg0)
     }
     {
         s32 kind;
-        s1 = ((*((s16 *) (arg0 + 0x1CA))) - ratan2(offsets[0], offsets[2])) & 0xFFF;
+        s1 = (arg0->unk_1C8.vy - ratan2(offsets[0], offsets[2])) & 0xFFF;
         if (s1 >= 0x800) {
             s1 = 0x1000 - s1;
         }
-        kind = *((u16 *) (arg0 + 0x6A));
+        kind = arg0->unk_6A;
         if (((((kind & 0xFFFF) == 0xF) || (((u32) (kind - 0x1C)) < 2u)) || (((u32) (kind - 0x1E)) < 2u)) || (((u32) (kind - 0x20)) < 2u))
         {
             if (s1 < 0x400) {
-                *((s16 *) (arg0 + 0x286)) = 0;
-                *((s16 *) (arg0 + 0x94)) = 0;
+                arg0->unk_286 = 0;
+                arg0->unk_94 = 0;
             }
             else {
-                *((s16 *) (arg0 + 0x286)) = 1;
-                *((s16 *) (arg0 + 0x94)) = 1;
+                arg0->unk_286 = 1;
+                arg0->unk_94 = 1;
             }
-            *((s16 *) ((*((u8 **) arg0)) + 0x286)) = 2;
+            arg0->other->unk_286 = 2;
             /* FAKE: the common tail `0x74 = 0xBC` + its control transfer duplicated into
              * this arm instead of falling through to the shared copy below,
              * mechanism: local-alloc block_alloc's hand-rolled quantity sort
@@ -4473,30 +4471,30 @@ void func_800238C4(u8 *arg0)
              * pointer to qty_order[0], so it takes $v0 and the constant takes $v1 - the
              * target seating. jump2 cross-jump re-merges the two copies, so the emitted
              * function is unchanged at 219 instructions. */
-            *((s32 *) (arg0 + 0x74)) = *((s32 *) (arg0 + 0xBC));
+            arg0->unk_74 = arg0->unk_B8.vy;
             goto skip_74;
         }
         else if ((kind & 0xFFFF) == 0x11)
         {
             D_800A3769 = s1 < 0x400;
-            D_800A3758 = ((u16 *)arg0)[2];
+            D_800A3758 = arg0->index;
             goto skip_74;
         }
         else if (s1 < 0x400)
         {
-            *((s16 *) (arg0 + 0x286)) = 0x12;
-            *((s16 *) (arg0 + 0x94)) = 0;
+            arg0->unk_286 = 0x12;
+            arg0->unk_94 = 0;
         }
         else
         {
-            *((s16 *) (arg0 + 0x286)) = 0x11;
-            *((s16 *) (arg0 + 0x94)) = 1;
+            arg0->unk_286 = 0x11;
+            arg0->unk_94 = 1;
         }
-        *((s32 *) (arg0 + 0x74)) = *((s32 *) (arg0 + 0xBC));
+        arg0->unk_74 = arg0->unk_B8.vy;
     }
     skip_74:
-    *((s32 *) (arg0 + 0x104)) += dx_delta;
-    *((s32 *) (arg0 + 0x10C)) += dz_delta;
+    arg0->unk_104.vx += dx_delta;
+    arg0->unk_104.vz += dz_delta;
 }
 void math_RotMatrixZYXAngles(s32 arg0, s32 arg1, s32 arg2, MATRIX *arg3) {
     arg3->m[0][0] = 0x1000;
@@ -4512,66 +4510,66 @@ void math_RotMatrixZYXAngles(s32 arg0, s32 arg1, s32 arg2, MATRIX *arg3) {
     RotMatrixY(arg1, arg3);
     RotMatrixZ(arg2, arg3);
 }
-void func_80023CB4(s16 *arg0, s16 arg1) {
+void func_80023CB4(Unk80101EC8Record *arg0, s16 arg1) {
     s16 v;
-    *(u16 *)((u8 *)arg0 + 0x31A) += 1;
-    v = *(s16 *)((u8 *)arg0 + 0x31A);
+    arg0->unk_31A += 1;
+    v = arg0->unk_31A;
     if (v == 1) {
-        *(s16 *)((u8 *)arg0 + 0x318) = arg1;
-        *(s32 *)((u8 *)arg0 + 0x320) = 0;
-        *(s32 *)((u8 *)arg0 + 0x328) = 0;
+        arg0->unk_318 = arg1;
+        arg0->unk_320.x = 0;
+        arg0->unk_320.z = 0;
     }
-    *(s16 *)((u8 *)arg0 + 0x31C) = arg1;
-    if (*(s16 *)((u8 *)arg0 + 0x152) == 0) {
-        *(s16 *)((u8 *)arg0 + 0x152) = 1;
-        *(s16 *)((u8 *)arg0 + 0x154) = *(u16 *)((u8 *)arg0 + 0x1D8);
+    arg0->unk_31C = arg1;
+    if (arg0->unk_152 == 0) {
+        arg0->unk_152 = 1;
+        arg0->unk_154 = arg0->unk_1D8;
     }
 }
-void func_80023D08(s32 arg0) {
+void func_80023D08(Unk80101EC8Record *arg0) {
     func_80023CB4(arg0, 0x200);
 }
-void func_80023D28(u8 *arg0) {
-    if (*(s32 *)(arg0 + 0x108) < 0) {
-        *(s16 *)(arg0 + 0x1DC) = 0;
+void func_80023D28(Unk80101EC8Record *arg0) {
+    if (arg0->unk_104.vy < 0) {
+        arg0->unk_1DC = 0;
         return;
     }
-    *(s32 *)0x1F8001E0 = *(s32 *)(arg0 + 0xB8);
-    *(s32 *)0x1F8001E4 = *(s32 *)(arg0 + 0xBC) + 0x1F4;
-    *(s32 *)0x1F8001E8 = *(s32 *)(arg0 + 0xC0);
-    *(s16 *)(arg0 + 0x1DC) = func_8005344C((s32 *)(arg0 + 0xB8), (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8);
+    ((Vec3i32 *)0x1F8001E0)->x = arg0->unk_B8.vx;
+    ((Vec3i32 *)0x1F8001E0)->y = arg0->unk_B8.vy + 0x1F4;
+    ((Vec3i32 *)0x1F8001E0)->z = arg0->unk_B8.vz;
+    arg0->unk_1DC = func_8005344C(&arg0->unk_B8.vx, (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8);
 }
-s32 func_80023DB8(u8 *arg0) {
+s32 func_80023DB8(Unk80101EC8Record *arg0) {
     s32 result;
-    *(s32 *)0x1F8001E0 = *(s32 *)(arg0 + 0xB8);
-    *(s32 *)0x1F8001E4 = *(s32 *)(arg0 + 0xBC) + 5;
-    *(s32 *)0x1F8001E8 = *(s32 *)(arg0 + 0xC0);
-    if (func_8005344C((s32 *)(arg0 + 0xB8), (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8) != 0) {
+    ((Vec3i32 *)0x1F8001E0)->x = arg0->unk_B8.vx;
+    ((Vec3i32 *)0x1F8001E0)->y = arg0->unk_B8.vy + 5;
+    ((Vec3i32 *)0x1F8001E0)->z = arg0->unk_B8.vz;
+    if (func_8005344C(&arg0->unk_B8.vx, (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8) != 0) {
         result = *(s16 *)0x1F8001C2 < -0x800;
     } else {
         result = 0;
     }
     return result;
 }
-void func_80023E40(u8 *arg0) {
+void func_80023E40(Unk80101EC8Record *arg0) {
     s32 *s1 = (s32 *)0x1F8001B0;
     s32 a0;
     s32 v1;
-    a0 = *(u16 *)(arg0 + 0x6A);
+    a0 = arg0->unk_6A;
     v1 = a0 & 0xFFFF;
     if (v1 == 8) goto done;
     if (v1 == 0x22) goto done;
     if ((u32)(a0 - 0x17) < 2 || v1 == 0x28 || v1 == 0xA) {
         s32 v0;
         s32 *v3 = (s32 *)0x1F8002B8;
-        s1[0xC] = *(s32 *)(arg0 + 0xB8);
-        s1[0xD] = *(s32 *)(arg0 + 0xBC) + 0x1F40;
-        s1[0xE] = *(s32 *)(arg0 + 0xC0);
-        v0 = func_80053614((s32 *)(arg0 + 0xB8), &s1[0xC], s1, (s16 *)&s1[4], (s32)v3);
+        s1[0xC] = arg0->unk_B8.vx;
+        s1[0xD] = arg0->unk_B8.vy + 0x1F40;
+        s1[0xE] = arg0->unk_B8.vz;
+        v0 = func_80053614(&arg0->unk_B8.vx, &s1[0xC], s1, (s16 *)&s1[4], (s32)v3);
         if (v0 == 0) goto done;
-        *(s32 *)(arg0 + 0x148) = s1[1];
+        arg0->unk_148 = s1[1];
         goto done;
     }
-    *(s32 *)(arg0 + 0x148) = *(s32 *)(arg0 + 0xBC);
+    arg0->unk_148 = arg0->unk_B8.vy;
 done:;
 }
 /* [unk_0A][min(unk_272, 3)]: 4.12 scale of unk_1E into unk_20 (func_80023F08). */
@@ -4665,10 +4663,10 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_286 = -1;
     }
     if ((rec->unk_24.held & 8) && (rec->unk_24.held & 0xF000)) {
-        if ((rec->unk_6A == 0x15 || rec->unk_6A == 0x19 || rec->unk_6A == 0x1A || rec->unk_6A == 0x13 || rec->unk_6A == 0x30 || rec->unk_6A == 0x31) && func_800233AC((u8 *)rec, &dir) != 0) {
+        if ((rec->unk_6A == 0x15 || rec->unk_6A == 0x19 || rec->unk_6A == 0x1A || rec->unk_6A == 0x13 || rec->unk_6A == 0x30 || rec->unk_6A == 0x31) && func_800233AC(rec, &dir) != 0) {
             u16 *table;
 
-            func_8001F860((s16 *)rec, dir);
+            func_8001F860(rec, dir);
             rec->unk_31A = 0;
             table = func_80021424(rec, rec->unk_50->unk_00, &rec->unk_5E);
             func_80021A98(arg0, func_80021424(rec, table[0xD], &rec->unk_5E), rec->unk_5E);
@@ -4788,7 +4786,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         }
     }
     if (rec->unk_6A == 0xA || rec->unk_72 != 0) {
-        if (func_80023DB8((u8 *)rec) != 0) {
+        if (func_80023DB8(rec) != 0) {
             if (rec->unk_74 + 0xFA0 < rec->unk_B8.vy) {
                 u16 *table;
 
@@ -4806,11 +4804,11 @@ void func_80023F08(s32 arg0, PadState *pad) {
         func_80021A98(arg0, func_80021424(rec, table[0x18], &rec->unk_5E), rec->unk_5E);
     }
     if (rec->unk_70 == 1) {
-        func_8001F860((s16 *)rec, rec->unk_1D8);
+        func_8001F860(rec, rec->unk_1D8);
     }
     if (rec->unk_7A != 0) {
         if (rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 || rec->unk_6A == 0x26 || rec->unk_6A == 0x24) {
-            func_8001F860((s16 *)rec, rec->unk_1D8);
+            func_8001F860(rec, rec->unk_1D8);
             if (rec->unk_6A == 2 || rec->unk_6A == 0x24) {
                 temp = (rec->unk_58[2] >> 4) * 0x88;
                 if (rec->unk_14C > temp) {
@@ -4822,7 +4820,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         }
     }
     if (rec->unk_46 == 0 && rec->unk_6A == 9 && rec->unk_A9 == rec->unk_40) {
-        func_8001F860((s16 *)rec, rec->unk_1D8);
+        func_8001F860(rec, rec->unk_1D8);
     }
     if (rec->unk_7A != 0 && rec->unk_6C != 0x18 && rec->unk_6A == 0x18) {
         rec->unk_104.vx += (Judge[rec->unk_1C8.vy & 0xFFF] * D_8008DA94[rec->unk_0A]) >> 12;
@@ -4880,12 +4878,12 @@ void func_80023F08(s32 arg0, PadState *pad) {
     rec->unk_14C -= temp;
     if (rec->unk_7A != 0) {
         if (rec->unk_78 != 0) {
-            func_80023D08((s32)rec);
+            func_80023D08(rec);
         } else if (rec->unk_6A == 0x1C) {
-            func_80023CB4((s16 *)rec, 0x400);
+            func_80023CB4(rec, 0x400);
         } else {
             if (rec->unk_6C == 0x1C || rec->unk_6A == 0x11 || rec->unk_6C == 0x11 || rec->unk_6A == 0x15 || rec->unk_6A == 0xA || rec->unk_6A == 0x2D) {
-                func_80023D08((s32)rec);
+                func_80023D08(rec);
             } else {
                 switch ((rec->unk_6C << 8) | rec->unk_6A) {
                 case 0x1525:
@@ -4895,7 +4893,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
                 case 0x3022:
                 case 0x1913:
                 case 0x3122:
-                    func_80023D08((s32)rec);
+                    func_80023D08(rec);
                     break;
                 }
             }
@@ -5018,8 +5016,8 @@ void func_80023F08(s32 arg0, PadState *pad) {
             rec->unk_D8.y += rec->unk_1F8.y - rec->unk_E8.y;
         }
     }
-    func_80023648((u8 *)rec);
-    func_800238C4((u8 *)rec);
+    func_80023648(rec);
+    func_800238C4(rec);
     if (rec->unk_6A != 8 && rec->unk_6A != 0x22) {
         rec->unk_104.vy += 0x15;
     }
@@ -5089,7 +5087,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     }
     pos[2] = rec->unk_D8.z + rec->unk_E8.z;
     rec->unk_C8 = rec->unk_B8;
-    func_8002304C((u8 *)rec, (s32 *)&rec->unk_B8, pos, (s32 *)&rec->unk_104);
+    func_8002304C(rec, (s32 *)&rec->unk_B8, pos, (s32 *)&rec->unk_104);
     if (rec->unk_B1 != 7 && rec->unk_B1 != 0) {
         rec->unk_B2 = ((0x2A >> rec->unk_B1) ^ 1) & 1;
     }
@@ -5106,7 +5104,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     rec->unk_168.x = rec->unk_F4.x;
     rec->unk_168.y = rec->unk_D8.y - 0x384;
     rec->unk_168.z = rec->unk_F4.z;
-    func_80023E40((u8 *)rec);
+    func_80023E40(rec);
     func_80041188(arg0, (u8 *)&pose[0], (u8 *)&pose[1], rec->unk_68, (MATRIX *)0x1F8001B0);
     scratchpad_Save();
     func_80040D48(arg0, 1, (s32 *)&rec->unk_F4, (s16 *)&rec->unk_1C8, 0, rec->unk_148);
@@ -5202,7 +5200,7 @@ skip_62:
     }
     rec->unk_1D8 = ratan2(rec->other->unk_F4.x - rec->unk_F4.x, rec->other->unk_F4.z - rec->unk_F4.z);
     rec->unk_24C = rec->unk_104;
-    func_80023D28((u8 *)rec);
+    func_80023D28(rec);
     func_800207C8(rec, SPAD->unkA8[arg0], SPAD->unk00[arg0], SPAD->unk48[arg0]);
     if (rec->unk_3C == 1) {
         rec->unk_210[0] = SPAD->unk00[arg0][0];

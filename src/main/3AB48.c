@@ -1766,7 +1766,7 @@ s32 func_80057094(Unk80101EC8Record *arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (arg3 == 1) {
         var_v0 |= 4;
     }
-    if (func_800233AC((u8 *)arg0, &sp10) != 0) {
+    if (func_800233AC(arg0, &sp10) != 0) {
         var_v0 |= 8;
     }
     return var_v0;
