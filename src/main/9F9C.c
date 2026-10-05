@@ -4585,7 +4585,6 @@ extern s16 D_8008E0BC[27][4];
 /* [D_8008D9EC[unk_0A]][unk_0E]: the move command func_80023F08 hands
  * func_80030A2C (ex cpu_set_move_command_and_dir, RESET sweep 2026-10-03). */
 extern u8 D_8008D90C[28][8];
-extern void func_8003339C(s32 *);
 extern void func_800204C0(Unk80101EC8Record *);
 
 /* Per-frame update of character `arg0`'s record from this frame's pad input:
@@ -5331,7 +5330,7 @@ skip_62:
         }
         if (rec->unk_46 == 0 && (rec->unk_6A != 0x11 || arg0 == D_800A38AE)) {
             rec->unk_62 |= 0x40;
-            func_8003339C((s32 *)rec);
+            func_8003339C(rec);
         }
     }
     if (rec->unk_26C != 0) {

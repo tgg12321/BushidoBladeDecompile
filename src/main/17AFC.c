@@ -5798,7 +5798,7 @@ void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
         break;
     }
 }
-void func_80032C50(s32 obj, s32 kind) {
+void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
     s32 pos[3];
     s32 base;
     s32 base2;
@@ -5807,169 +5807,169 @@ void func_80032C50(s32 obj, s32 kind) {
     s32 tri;
     s32 tri2;
 
-    if (D_800A38DC == 3 && *(s16 *)(obj + 4) == 1 &&
+    if (D_800A38DC == 3 && obj->index == 1 &&
         ((u32)(kind - 7) < 2 || (u32)(kind - 9) < 2 || (u32)(kind - 11) < 2 ||
          (u32)(kind - 13) < 2 || (u32)(kind - 15) < 2 || kind == 17)) {
         base2 = 0;
         base = 0;
     } else {
-        base = *(s16 *)(obj + 4) * 40;
-        base2 = *(s16 *)(*(u8 **)obj + 4) * 40;
+        base = obj->index * 40;
+        base2 = obj->other->index * 40;
     }
 
     if (D_800A38DC == 3 &&
         ((u32)(kind - 0x15) < 2 || (u32)(kind - 0x17) < 2 || (u32)(kind - 0x19) < 2 ||
          kind == 0x26 || (u32)(kind - 0x36) < 2 || (u32)(kind - 0x38) < 2 ||
          (u32)(kind - 0x3A) < 2 || kind == 0x47)) {
-        if (*(s16 *)(obj + 4) == 1) {
+        if (obj->index == 1) {
             base += D_8008EBCC[D_800A384C];
         } else {
             base2 += D_8008EBCC[D_800A384C];
         }
     }
 
-    row = base + *(u8 *)(obj + 0xB2) * 4;
-    tri = *(u8 *)(obj + 0xB2) * 3;
-    row2 = base2 + (*(u8 **)obj)[0xB2] * 4;
-    tri2 = (*(u8 **)obj)[0xB2] * 3;
+    row = base + obj->unk_B2 * 4;
+    tri = obj->unk_B2 * 3;
+    row2 = base2 + obj->other->unk_B2 * 4;
+    tri2 = obj->other->unk_B2 * 3;
 
     switch (kind) {
     case 0:
         if (D_800A36A4 == 11) {
-            if (*(s32 *)(obj + 0x1B0) - 600 < *(s32 *)(obj + 0x19C)) {
-                pos[0] = *(s32 *)(obj + 0x198);
-                pos[1] = *(s32 *)(obj + 0x1B0);
-                pos[2] = *(s32 *)(obj + 0x1A0);
-                func_80061A3C(pos, *(s16 *)(obj + 0x1BA),
-                              D_8008EBE0[D_8008E5A8[*(s16 *)(obj + 0xC)]],
-                              *(s16 *)(obj + 4));
-                if ((0x60 >> *(u8 *)(obj + 0xB1)) & 1) {
-                    func_80032854(*(s16 *)(obj + 4), 9, pos, 0);
+            if (obj->unk_1B0[0] - 600 < obj->unk_198[0].y) {
+                pos[0] = obj->unk_198[0].x;
+                pos[1] = obj->unk_1B0[0];
+                pos[2] = obj->unk_198[0].z;
+                func_80061A3C(pos, obj->unk_1BA,
+                              D_8008EBE0[D_8008E5A8[obj->unk_0C]],
+                              obj->index);
+                if ((0x60 >> obj->unk_B1) & 1) {
+                    func_80032854(obj->index, 9, pos, 0);
                 }
             }
         } else if (D_800A36A4 == 14) {
-            if (((0x60 >> *(u8 *)(obj + 0xB1)) & 1) &&
-                *(s32 *)(obj + 0x1B0) - 600 < *(s32 *)(obj + 0x19C)) {
-                pos[0] = *(s32 *)(obj + 0x198);
-                pos[1] = *(s32 *)(obj + 0x1B0);
-                pos[2] = *(s32 *)(obj + 0x1A0);
-                func_80032854(*(s16 *)(obj + 4), 9, pos, 0);
+            if (((0x60 >> obj->unk_B1) & 1) &&
+                obj->unk_1B0[0] - 600 < obj->unk_198[0].y) {
+                pos[0] = obj->unk_198[0].x;
+                pos[1] = obj->unk_1B0[0];
+                pos[2] = obj->unk_198[0].z;
+                func_80032854(obj->index, 9, pos, 0);
             }
         }
         break;
     case 1:
         if (D_800A36A4 == 11) {
-            if (*(s32 *)(obj + 0x1B4) - 600 < *(s32 *)(obj + 0x1A8)) {
-                pos[0] = *(s32 *)(obj + 0x1A4);
-                pos[1] = *(s32 *)(obj + 0x1B4);
-                pos[2] = *(s32 *)(obj + 0x1AC);
-                func_80061A3C(pos, *(s16 *)(obj + 0x1C2),
-                              D_8008EBE0[D_8008E5A8[*(s16 *)(obj + 0xC)]],
-                              *(s16 *)(obj + 4));
-                if ((0x60 >> *(u8 *)(obj + 0xB1)) & 1) {
-                    func_80032854(*(s16 *)(obj + 4), 9, pos, 0);
+            if (obj->unk_1B0[1] - 600 < obj->unk_198[1].y) {
+                pos[0] = obj->unk_198[1].x;
+                pos[1] = obj->unk_1B0[1];
+                pos[2] = obj->unk_198[1].z;
+                func_80061A3C(pos, obj->unk_1C2,
+                              D_8008EBE0[D_8008E5A8[obj->unk_0C]],
+                              obj->index);
+                if ((0x60 >> obj->unk_B1) & 1) {
+                    func_80032854(obj->index, 9, pos, 0);
                 }
             }
         } else if (D_800A36A4 == 14) {
-            if (((0x60 >> *(u8 *)(obj + 0xB1)) & 1) &&
-                *(s32 *)(obj + 0x1B4) - 600 < *(s32 *)(obj + 0x1A8)) {
-                pos[0] = *(s32 *)(obj + 0x1A4);
-                pos[1] = *(s32 *)(obj + 0x1B4);
-                pos[2] = *(s32 *)(obj + 0x1AC);
-                func_80032854(*(s16 *)(obj + 4), 9, pos, 0);
+            if (((0x60 >> obj->unk_B1) & 1) &&
+                obj->unk_1B0[1] - 600 < obj->unk_198[1].y) {
+                pos[0] = obj->unk_198[1].x;
+                pos[1] = obj->unk_1B0[1];
+                pos[2] = obj->unk_198[1].z;
+                func_80032854(obj->index, 9, pos, 0);
             }
         }
         break;
     case 2:
-        func_80032854(*(s16 *)(obj + 4), 10, (s32 *)(obj + 0x180), 0);
+        func_80032854(obj->index, 10, &obj->unk_180.x, 0);
         break;
     case 3:
-        func_80032854(*(s16 *)(obj + 4), 10, (s32 *)(obj + 0x18C), 0);
+        func_80032854(obj->index, 10, &obj->unk_18C.x, 0);
         break;
     case 4:
-        func_80032854(*(s16 *)(obj + 4), 10, (s32 *)(obj + 0x174), 0);
+        func_80032854(obj->index, 10, &obj->unk_174.x, 0);
         break;
-    case 7:  func_800325E0(base + 0x31, (s32 *)(obj + 0xF4)); break;
-    case 8:  func_800325E0(base + 0x32, (s32 *)(obj + 0xF4)); break;
-    case 9:  func_800325E0(base + 0x33, (s32 *)(obj + 0xF4)); break;
-    case 10: func_800325E0(base + 0x37, (s32 *)(obj + 0xF4)); break;
-    case 11: func_800325E0(base + 0x38, (s32 *)(obj + 0xF4)); break;
-    case 12: func_800325E0(base + 0x39, (s32 *)(obj + 0xF4)); break;
-    case 13: func_800325E0(base + 0x3D, (s32 *)(obj + 0xF4)); break;
-    case 14: func_800325E0(base + 0x3E, (s32 *)(obj + 0xF4)); break;
-    case 15: func_800325E0(base + 0x3D, (s32 *)(obj + 0xF4)); break;
-    case 16: func_800325E0(base + 0x3F, (s32 *)(obj + 0xF4)); break;
-    case 17: func_800325E0(base + 0x40, (s32 *)(obj + 0xF4)); break;
-    case 18: func_800325E0(base + 0x22, (s32 *)(obj + 0xF4)); break;
-    case 19: func_800325E0(base + 0x23, (s32 *)(obj + 0xF4)); break;
-    case 20: func_800325E0(base + 0x24, (s32 *)(obj + 0xF4)); break;
-    case 21: func_800325E0(base + 0x25, (s32 *)(obj + 0xF4)); break;
-    case 22: func_800325E0(base + 0x26, (s32 *)(obj + 0xF4)); break;
-    case 23: func_800325E0(base + 0x27, (s32 *)(obj + 0xF4)); break;
-    case 24: func_800325E0(base + 0x28, (s32 *)(obj + 0xF4)); break;
-    case 25: func_800325E0(base + 0x29, (s32 *)(obj + 0xF4)); break;
-    case 26: func_800325E0(base + 0x2A, (s32 *)(obj + 0xF4)); break;
-    case 27: func_800325E0(row + 0x41, (s32 *)(obj + 0xF4)); break;
-    case 28: func_800325E0(row + 0x42, (s32 *)(obj + 0xF4)); break;
-    case 29: func_800325E0(row + 0x43, (s32 *)(obj + 0xF4)); break;
-    case 30: func_800325E0(row + 0x44, (s32 *)(obj + 0xF4)); break;
-    case 31: func_800325E0(tri + 0x71, (s32 *)(obj + 0xF4)); break;
-    case 32: func_800325E0(tri + 0x72, (s32 *)(obj + 0xF4)); break;
-    case 33: func_800325E0(tri + 0x73, (s32 *)(obj + 0xF4)); break;
-    case 34: func_800325E0(0x77, (s32 *)(obj + 0xF4)); break;
-    case 35: func_800325E0(0x7A, (s32 *)(obj + 0xF4)); break;
-    case 36: func_800325E0(base + 0x3A, (s32 *)(obj + 0xF4)); break;
-    case 37: func_800325E0(base + 0x36, (s32 *)(obj + 0xF4)); break;
-    case 38: func_800325E0(base + 0x2B, (s32 *)(obj + 0xF4)); break;
-    case 39: func_800325E0(base + 0x2C, (s32 *)(obj + 0xF4)); break;
-    case 40: func_800325E0(base2 + 0x31, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 41: func_800325E0(base2 + 0x32, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 42: func_800325E0(base2 + 0x33, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 43: func_800325E0(base2 + 0x37, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 44: func_800325E0(base2 + 0x38, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 45: func_800325E0(base2 + 0x39, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 46: func_800325E0(base2 + 0x3D, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 47: func_800325E0(base2 + 0x3E, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 48: func_800325E0(base2 + 0x3D, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 49: func_800325E0(base2 + 0x3F, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 50: func_800325E0(base2 + 0x40, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 51: func_800325E0(base2 + 0x22, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 52: func_800325E0(base2 + 0x23, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 53: func_800325E0(base2 + 0x24, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 54: func_800325E0(base2 + 0x25, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 55: func_800325E0(base2 + 0x26, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 56: func_800325E0(base2 + 0x27, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 57: func_800325E0(base2 + 0x28, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 58: func_800325E0(base2 + 0x29, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 59: func_800325E0(base2 + 0x2A, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 60: func_800325E0(row2 + 0x41, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 61: func_800325E0(row2 + 0x42, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 62: func_800325E0(row2 + 0x43, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 63: func_800325E0(row2 + 0x44, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 64: func_800325E0(tri2 + 0x71, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 65: func_800325E0(tri2 + 0x72, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 66: func_800325E0(tri2 + 0x73, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 67: func_800325E0(0x77, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 68: func_800325E0(0x7A, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 69: func_800325E0(base2 + 0x3A, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 70: func_800325E0(base2 + 0x36, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 71: func_800325E0(base2 + 0x2B, (s32 *)(*(u8 **)obj + 0xF4)); break;
-    case 72: func_800325E0(base2 + 0x2C, (s32 *)(*(u8 **)obj + 0xF4)); break;
+    case 7:  func_800325E0(base + 0x31, &obj->unk_F4.x); break;
+    case 8:  func_800325E0(base + 0x32, &obj->unk_F4.x); break;
+    case 9:  func_800325E0(base + 0x33, &obj->unk_F4.x); break;
+    case 10: func_800325E0(base + 0x37, &obj->unk_F4.x); break;
+    case 11: func_800325E0(base + 0x38, &obj->unk_F4.x); break;
+    case 12: func_800325E0(base + 0x39, &obj->unk_F4.x); break;
+    case 13: func_800325E0(base + 0x3D, &obj->unk_F4.x); break;
+    case 14: func_800325E0(base + 0x3E, &obj->unk_F4.x); break;
+    case 15: func_800325E0(base + 0x3D, &obj->unk_F4.x); break;
+    case 16: func_800325E0(base + 0x3F, &obj->unk_F4.x); break;
+    case 17: func_800325E0(base + 0x40, &obj->unk_F4.x); break;
+    case 18: func_800325E0(base + 0x22, &obj->unk_F4.x); break;
+    case 19: func_800325E0(base + 0x23, &obj->unk_F4.x); break;
+    case 20: func_800325E0(base + 0x24, &obj->unk_F4.x); break;
+    case 21: func_800325E0(base + 0x25, &obj->unk_F4.x); break;
+    case 22: func_800325E0(base + 0x26, &obj->unk_F4.x); break;
+    case 23: func_800325E0(base + 0x27, &obj->unk_F4.x); break;
+    case 24: func_800325E0(base + 0x28, &obj->unk_F4.x); break;
+    case 25: func_800325E0(base + 0x29, &obj->unk_F4.x); break;
+    case 26: func_800325E0(base + 0x2A, &obj->unk_F4.x); break;
+    case 27: func_800325E0(row + 0x41, &obj->unk_F4.x); break;
+    case 28: func_800325E0(row + 0x42, &obj->unk_F4.x); break;
+    case 29: func_800325E0(row + 0x43, &obj->unk_F4.x); break;
+    case 30: func_800325E0(row + 0x44, &obj->unk_F4.x); break;
+    case 31: func_800325E0(tri + 0x71, &obj->unk_F4.x); break;
+    case 32: func_800325E0(tri + 0x72, &obj->unk_F4.x); break;
+    case 33: func_800325E0(tri + 0x73, &obj->unk_F4.x); break;
+    case 34: func_800325E0(0x77, &obj->unk_F4.x); break;
+    case 35: func_800325E0(0x7A, &obj->unk_F4.x); break;
+    case 36: func_800325E0(base + 0x3A, &obj->unk_F4.x); break;
+    case 37: func_800325E0(base + 0x36, &obj->unk_F4.x); break;
+    case 38: func_800325E0(base + 0x2B, &obj->unk_F4.x); break;
+    case 39: func_800325E0(base + 0x2C, &obj->unk_F4.x); break;
+    case 40: func_800325E0(base2 + 0x31, &obj->other->unk_F4.x); break;
+    case 41: func_800325E0(base2 + 0x32, &obj->other->unk_F4.x); break;
+    case 42: func_800325E0(base2 + 0x33, &obj->other->unk_F4.x); break;
+    case 43: func_800325E0(base2 + 0x37, &obj->other->unk_F4.x); break;
+    case 44: func_800325E0(base2 + 0x38, &obj->other->unk_F4.x); break;
+    case 45: func_800325E0(base2 + 0x39, &obj->other->unk_F4.x); break;
+    case 46: func_800325E0(base2 + 0x3D, &obj->other->unk_F4.x); break;
+    case 47: func_800325E0(base2 + 0x3E, &obj->other->unk_F4.x); break;
+    case 48: func_800325E0(base2 + 0x3D, &obj->other->unk_F4.x); break;
+    case 49: func_800325E0(base2 + 0x3F, &obj->other->unk_F4.x); break;
+    case 50: func_800325E0(base2 + 0x40, &obj->other->unk_F4.x); break;
+    case 51: func_800325E0(base2 + 0x22, &obj->other->unk_F4.x); break;
+    case 52: func_800325E0(base2 + 0x23, &obj->other->unk_F4.x); break;
+    case 53: func_800325E0(base2 + 0x24, &obj->other->unk_F4.x); break;
+    case 54: func_800325E0(base2 + 0x25, &obj->other->unk_F4.x); break;
+    case 55: func_800325E0(base2 + 0x26, &obj->other->unk_F4.x); break;
+    case 56: func_800325E0(base2 + 0x27, &obj->other->unk_F4.x); break;
+    case 57: func_800325E0(base2 + 0x28, &obj->other->unk_F4.x); break;
+    case 58: func_800325E0(base2 + 0x29, &obj->other->unk_F4.x); break;
+    case 59: func_800325E0(base2 + 0x2A, &obj->other->unk_F4.x); break;
+    case 60: func_800325E0(row2 + 0x41, &obj->other->unk_F4.x); break;
+    case 61: func_800325E0(row2 + 0x42, &obj->other->unk_F4.x); break;
+    case 62: func_800325E0(row2 + 0x43, &obj->other->unk_F4.x); break;
+    case 63: func_800325E0(row2 + 0x44, &obj->other->unk_F4.x); break;
+    case 64: func_800325E0(tri2 + 0x71, &obj->other->unk_F4.x); break;
+    case 65: func_800325E0(tri2 + 0x72, &obj->other->unk_F4.x); break;
+    case 66: func_800325E0(tri2 + 0x73, &obj->other->unk_F4.x); break;
+    case 67: func_800325E0(0x77, &obj->other->unk_F4.x); break;
+    case 68: func_800325E0(0x7A, &obj->other->unk_F4.x); break;
+    case 69: func_800325E0(base2 + 0x3A, &obj->other->unk_F4.x); break;
+    case 70: func_800325E0(base2 + 0x36, &obj->other->unk_F4.x); break;
+    case 71: func_800325E0(base2 + 0x2B, &obj->other->unk_F4.x); break;
+    case 72: func_800325E0(base2 + 0x2C, &obj->other->unk_F4.x); break;
     }
 }
 
 /* Tail word after func_80032C50's 73-entry compiler-generated switch table. */
 const u32 D_800107BC[1] = { 0x00000000 };
 
-void func_8003339C(s32 *base) {
+void func_8003339C(Unk80101EC8Record *base) {
     u8 *s0;
     s32 a1val;
-    s32 *p;
+    u8 *p;
 
-    p = *(s32 **)((u8 *)base + 0x58);
-    a1val = *(u8 *)((u8 *)p + 4);
+    p = base->unk_58;
+    a1val = p[4];
     if (a1val == 0) goto done;
-    s0 = (u8 *)p + 5;
+    s0 = p + 5;
 
 loop:
     a1val = a1val & 0xFF;
@@ -5983,7 +5983,7 @@ loop:
         s32 mask;
 
         packed = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
-        shift = *(s16 *)((u8 *)base + 0xA);
+        shift = base->unk_0A;
         mask = 1 << shift;
         if ((packed & mask) != 0) {
             s0 += 4;
@@ -6004,10 +6004,10 @@ loop:
     do {
         if ((u32)a1val < 0x80) {
             u8 val = s0[0];
-            s16 dir = *(s16 *)((u8 *)base + 0x40);
+            s16 dir = base->unk_40;
             s0 += 1;
             if ((val & 0xFF) == dir) {
-                func_80032C50((s32)base, a1val - 1);
+                func_80032C50(base, a1val - 1);
                 goto next;
             }
             if (dir < val) {
