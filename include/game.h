@@ -155,6 +155,49 @@ typedef struct {
     u8 unk1;
 } Unk8009BCF8Record;
 
+/* The 0x2C-byte record func_8006E49C fills, two at a time (51268 / 5ED34 / 64FD8 keep the pair at
+ * the start of their work area; getters `base + i * 44`). Each word holds the start of a region
+ * func_8006E49C carves from its buffer: +0x00 0x9C40 bytes, +0x04 0x5DC0, +0x08 0x438, +0x0C 0x640,
+ * +0x10 0x1B58, +0x14 0x258, +0x18 0x78, +0x1C 0x78, +0x20 0x110; +0x24 / +0x28 it leaves alone.
+ * The 5ED34 / 64FD8 draw contexts copy them into Unk800788B0Rec, whose members name the primitive
+ * types; 51268's func_8006E390 copies them into the s32 words of its context array. */
+typedef struct {
+    s32 unk_00;
+    void *unk_04;
+    void *unk_08;
+    void *unk_0C;
+    s32 unk_10;
+    void *unk_14;
+    void *unk_18;
+    void *unk_1C;
+    void *unk_20;
+    s32 unk_24;
+    s32 unk_28;
+} Unk8006E49CRec;
+
+/* The eight primitive cursors of a draw context (func_800788B0 fills one bare; Unk8006EACCRec
+ * embeds it). The draw functions build primitives at a cursor and advance it.
+ * unk_00 / unk_0C hold the s32 cursors func_80073728 / func_80073C78 and func_8007352C return. */
+typedef struct {
+    s32 unk_00;
+    POLY_F4 *unk_04;
+    POLY_G4 *unk_08;
+    s32 unk_0C;
+    TILE *unk_10;
+    DR_MODE *unk_14;
+    DR_AREA *unk_18;
+    DR_OFFSET *unk_1C;
+} Unk800788B0Rec;
+
+/* Draw context filled by 5ED34 func_8006EACC and 64FD8 func_80077724 / func_8007855C: unk_00 the
+ * resource root (func_8007855C leaves it unset), then the cursors; unk_24 (pool word +0x20) only
+ * func_8006EACC / func_80077724 set. */
+typedef struct {
+    s32 unk_00;
+    Unk800788B0Rec unk_04;
+    void *unk_24;
+} Unk8006EACCRec;
+
 /* The select-screen work area D_800A36A0 points at (func_800770B8 places it at
  * the end of the buffers func_8006E49C lays out). Two-element arrays are per
  * player. Per player, f48 is a list of f60 entries with cursor f5C; confirming
@@ -194,7 +237,7 @@ typedef struct {
     } f20;
     void *f24;
     u8 pad28[4];
-    s32 *f2C;
+    Unk8006E49CRec *f2C;
     s32 f30;
     u16 f34;
     u16 f36;
@@ -1245,33 +1288,5 @@ typedef struct {
     u32 unk17 : 1;
     u32 unk18 : 6;
 } Unk8009BD38Flags;
-
-/* GameObj: a generic 0x100-byte layout, fields named by offset (field_XX), from the early m2c
- * context tooling (feaa560b2) rather than from the game's objects. In C the only member used by
- * name is field_18, a GPU primitive write cursor (func_80069898 and func_80070C70 build primitives
- * at it and advance it). */
-typedef struct GameObj {
-    u8 field_00; u8 field_01; s16 field_02;
-    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
-    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
-    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
-    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
-    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
-    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
-    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
-    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
-    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
-    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
-    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
-    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
-    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
-    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
-    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
-    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
-    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
-    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
-    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
-    s16 field_FA; s32 field_FC;
-} GameObj;
 
 #endif /* GAME_H */

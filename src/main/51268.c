@@ -77,8 +77,8 @@ static s16 D_800A350C[2];
 static s16 D_800A3510[2];
 static s32 D_800A3514;
 static s32 D_800A3518;
-static s32 D_800A351C;
-static s32 D_800A3520;
+static Unk8006E49CRec *D_800A351C;
+static Unk8006E49CRec *D_800A3520;
 static s32 D_800A3524;
 static s16 D_800A3528;
 static s32 D_800A352C;
@@ -3546,7 +3546,7 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
     s32 *v0_e49c;
 
     D_800A3500 = arg0;
-    D_800A351C = arg0;
+    D_800A351C = (Unk8006E49CRec *)arg0;
     temp_s0 = arg0 + 0x58;
     D_800A3500 = temp_s0;
     snd_StopAll();
@@ -3554,7 +3554,7 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
     D_800A372C = D_800A3500;
     v0_efc = func_8006919C(D_800A3500);
     D_800A3500 = v0_efc;
-    v0_e49c = func_8006E49C(v0_efc, (s32 *)D_800A351C);
+    v0_e49c = func_8006E49C(v0_efc, D_800A351C);
     v0_e49c[9] = temp_s0;
     D_800A3500 = (s32)v0_e49c;
     D_800A34FC = (s32)v0_e49c;
@@ -3628,7 +3628,7 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
     return 1;
 }
 
-s32 *func_80069120(s32 a0) {
+Unk8006E49CRec *func_80069120(s32 a0) {
     s32 *v0 = (s32 *)D_800A3524;
     u8 *v1 = (u8 *)D_800A34FC;
     if (v1[0x30] != (v0[8] & 1)) {
@@ -3637,7 +3637,7 @@ s32 *func_80069120(s32 a0) {
     v0 = (s32 *)D_800A3524;
     v1 = (u8 *)D_800A34FC;
     v1[0x30] = (u8)(v0[8] & 1);
-    return (s32 *)((u8 *)D_800A351C + a0 * 44);
+    return &D_800A351C[a0];
 }
 
 
@@ -3879,8 +3879,8 @@ cancel:
 
 
 
-void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
-    u8 *p = (u8 *) arg0->field_18;
+void func_80069898(s32 *arg0, u16 *arg1, s32 arg2) {
+    u8 *p = (u8 *)arg0[6];
 
     SetTile((TILE *)p);
     p[4] = 0xFF;
@@ -3921,36 +3921,38 @@ void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
     AddPrim((u32 *) g_gpu_ot_ptr + arg2, (u32 *)p);
     p += 0x10;
 
-    arg0->field_18 = (s32) p;
+    arg0[6] = (s32)p;
 }
-void func_80069A30(u8 *a0) {
+void func_80069A30(void *prim) {
+    TILE *a0 = prim;
     s32 *p = func_80077D00();
     s32 v0;
     if (p[8] & 1) {
         v0 = 0x22;
-        a0[4] = (u8)v0;
-        a0[5] = (u8)v0;
+        a0->r0 = v0;
+        a0->g0 = v0;
     } else {
         v0 = 0x4C;
-        a0[4] = (u8)v0;
-        a0[5] = (u8)v0;
+        a0->r0 = v0;
+        a0->g0 = v0;
         v0 = 0x6C;
     }
-    a0[6] = (u8)v0;
+    a0->b0 = v0;
 }
-void func_80069A8C(u8 *a0) {
+void func_80069A8C(void *prim) {
+    POLY_F4 *a0 = prim;
     s32 *p = func_80077D00();
     s32 v0;
     if (p[8] & 1) {
         v0 = 8;
-        a0[4] = (u8)v0;
-        a0[5] = (u8)v0;
+        a0->r0 = v0;
+        a0->g0 = v0;
     } else {
         v0 = 0x31;
-        a0[4] = 0;
-        a0[5] = 0;
+        a0->r0 = 0;
+        a0->g0 = 0;
     }
-    a0[6] = (u8)v0;
+    a0->b0 = v0;
 }
 typedef struct {
     s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
@@ -4884,7 +4886,7 @@ void func_8006B120(s32 *arg0) {
     r[0] = 0xE8;
     r[1] = 0x25;
     r[3] = 1;
-    func_80069898((GameObj *)arg0, r, 0x11);
+    func_80069898(arg0, r, 0x11);
 }
 /* func_8006B578 — menu/config input dispatch. The second `switch` makes GCC
  * synthesize a 6-entry jump table into this TU's .rodata; bb2.ld places this
@@ -5148,7 +5150,7 @@ void func_8006BB68(s32 *arg0) {
     rect[0] = 0xE8;
     rect[1] = 0x25;
     rect[3] = 1;
-    func_80069898((GameObj *)arg0, rect, 0x11);
+    func_80069898(arg0, rect, 0x11);
 }
 /* END func_8006BB68 */
 /* BEGIN func_8006BD28 */
@@ -5776,7 +5778,7 @@ s32 func_8006CFBC(s32 *arg0) {
         rect[0] = 0xCF;
         rect[1] = 0x25;
         rect[3] = 1;
-        func_80069898((GameObj *)arg0, rect, 0x11);
+        func_80069898(arg0, rect, 0x11);
     }
     return (s16)result;
 }
@@ -5868,7 +5870,7 @@ void func_8006D3DC(s32 *arg0) {
     rect[1] = 0x25;
     rect[2] = 0xCB;
     rect[3] = 1;
-    func_80069898((GameObj *)arg0, rect, 0x11);
+    func_80069898(arg0, rect, 0x11);
 }
 
 
@@ -6140,7 +6142,7 @@ void func_8006DD94(s32 *arg0) {
     rect[0] = 0xF5;
     rect[1] = 0x25;
     rect[3] = 1;
-    func_80069898((GameObj *)arg0, rect, 0x11);
+    func_80069898(arg0, rect, 0x11);
 }
 
 s32 func_8006DF68(s32 arg0, u32 arg1) {
@@ -6243,22 +6245,22 @@ s32 func_8006E2A8(void) {
     SetDispMask(1);
     return 1;
 }
-s32 *func_80069120(s32);
+Unk8006E49CRec *func_80069120(s32);
 void func_8006E390(s32 *a0, s32 *a1) {
     s32 *s0 = a0;
-    s32 *v0;
+    Unk8006E49CRec *v0;
     a1[0]++;
     v0 = func_80069120(a1[0] & 1);
     s0[1] = ((s32 *)D_800A34FC)[9];
-    s0[3] = v0[1];
-    s0[2] = v0[0];
-    s0[4] = v0[2];
-    s0[5] = v0[4];
-    s0[6] = v0[3];
-    s0[7] = v0[5];
-    s0[8] = v0[6];
-    D_800A3520 = (s32)v0;
-    s0[9] = v0[7];
+    s0[3] = (s32)v0->unk_04;
+    s0[2] = v0->unk_00;
+    s0[4] = (s32)v0->unk_08;
+    s0[5] = v0->unk_10;
+    s0[6] = (s32)v0->unk_0C;
+    s0[7] = (s32)v0->unk_14;
+    s0[8] = (s32)v0->unk_18;
+    D_800A3520 = v0;
+    s0[9] = (s32)v0->unk_1C;
 }
 
 void func_8006E440(s32 *a0) {
@@ -6275,38 +6277,38 @@ s32 func_8006E480(s32 a0_addr, s32 a1) {
     s32 v1 = a0[1] << 7;
     return v0 + v1 + a1;
 }
-s32 func_8006E49C(s32 arg0, s32 *arg1) {
-    s32 base1;
-    s32 base2;
+s32 func_8006E49C(s32 arg0, Unk8006E49CRec *arg1) {
+    u8 *base1;
+    u8 *base2;
     int tail;
-    s32 base3;
-    s32 base4;
-    arg1[0] = arg0;
-    base1 = arg0 + 0x9C40;
-    arg1[2] = base1 + 0x5DC0;
-    arg1[1] = base1;
+    u8 *base3;
+    u8 *base4;
+    arg1[0].unk_00 = arg0;
+    base1 = (u8 *)arg0 + 0x9C40;
+    arg1[0].unk_08 = base1 + 0x5DC0;
+    arg1[0].unk_04 = base1;
     base2 = base1 + 0x6838;
-    arg1[3] = base1 + 0x61F8;
-    arg1[5] = base2 + 0x1B58;
-    arg1[6] = base2 + 0x1DB0;
-    arg1[7] = base2 + 0x1E28;
-    arg1[8] = base2 + 0x1EA0;
-    arg1[4] = base2;
-    arg1[0xB] = base2 + 0x1FB0;
+    arg1[0].unk_0C = base1 + 0x61F8;
+    arg1[0].unk_14 = base2 + 0x1B58;
+    arg1[0].unk_18 = base2 + 0x1DB0;
+    arg1[0].unk_1C = base2 + 0x1E28;
+    arg1[0].unk_20 = base2 + 0x1EA0;
+    arg1[0].unk_10 = (s32)base2;
+    arg1[1].unk_00 = (s32)(base2 + 0x1FB0);
     tail = 0x1FB0;
-    /* tail must stay a variable: as a literal, (base2 + 0x1FB0) + 0x9C40
-     * folds to a single out-of-range immediate (0xBBF0 > 16 bits). */
+    /* FAKE: tail must stay a variable: as a literal, (base2 + 0x1FB0) + 0x9C40 folds to
+     * li 0xBBF0 + addu (0xBBF0 > 0x7FFF, out of addiu's signed range); score 8. */
     base3 = (base2 + tail) + 0x9C40;
-    arg1[0xD] = base3 + 0x5DC0;
-    arg1[0xC] = base3;
+    arg1[1].unk_08 = base3 + 0x5DC0;
+    arg1[1].unk_04 = base3;
     base4 = base3 + 0x6838;
-    arg1[0xE] = base3 + 0x61F8;
-    arg1[0x10] = base4 + 0x1B58;
-    arg1[0x11] = base4 + 0x1DB0;
-    arg1[0x12] = base4 + 0x1E28;
-    arg1[0x13] = base4 + 0x1EA0;
-    arg1[0xF] = base4;
-    return base4 + tail;
+    arg1[1].unk_0C = base3 + 0x61F8;
+    arg1[1].unk_14 = base4 + 0x1B58;
+    arg1[1].unk_18 = base4 + 0x1DB0;
+    arg1[1].unk_1C = base4 + 0x1E28;
+    arg1[1].unk_20 = base4 + 0x1EA0;
+    arg1[1].unk_10 = (s32)base4;
+    return (s32)(base4 + tail);
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */

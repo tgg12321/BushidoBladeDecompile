@@ -7,9 +7,9 @@
 
 /* Declarations from the file this TU was split from (text1b_tu1c.c). */
 extern s32 rsin();
-extern s32 g_gpu_ot_ptr;
-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
-extern s32 AddPrim(s32, s32);
+extern u8 *g_gpu_ot_ptr;
+extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
+extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
 typedef struct EnvA {
     s32 *header;
@@ -88,7 +88,7 @@ s32 func_8007352C(s32 env_addr) {
                 env->ot_idx = 1;
                 ((void (*)())func_8003D52C)(D_800159A0);
             }
-            AddPrim(g_gpu_ot_ptr + env->ot_idx * 4, (s32)sp);
+            AddPrim(g_gpu_ot_ptr + env->ot_idx * 4, sp);
             sp++;
         }
     }
@@ -227,7 +227,7 @@ s32 func_80073728(s32 env_addr, s32 mode) {
         if (env->ot_idx >= 0x1006) {
             env->ot_idx = 1;
         }
-        AddPrim(g_gpu_ot_ptr + env->ot_idx * 4, (s32)p);
+        AddPrim(g_gpu_ot_ptr + env->ot_idx * 4, p);
         p++;
         e++;
     }
@@ -346,7 +346,7 @@ s32 func_80073C78(env, angle, mode)
         if (env->ot_idx >= 0x1006) {
             env->ot_idx = 1;
         }
-        AddPrim(g_gpu_ot_ptr + env->ot_idx * 4, (s32)p);
+        AddPrim(g_gpu_ot_ptr + env->ot_idx * 4, p);
         p++;
         e++;
     }
@@ -357,96 +357,96 @@ s32 func_80073C78(env, angle, mode)
 
 
 
-void func_80074220(s32 *arg0, s32 arg1) {
-    s32 sp[12];
+void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
+    S_80074488 s;
     s32 i;
     s32 *temp_s2;
     s32 v;
-    s32 t;
-    s32 q;
+    TILE *t;
+    POLY_F4 *q;
     s32 a3;
 
     if (arg1 != 0) goto skip_init;
-    t = arg0[5];
-    SetTile((TILE *)t);
+    t = arg0->unk_04.unk_10;
+    SetTile(t);
     func_80069A30(t);
-    *(s16 *)(t + 8) = 0x3F;
-    *(s16 *)(t + 0xA) = 0x30;
-    *(s16 *)(t + 0xC) = 0x202;
-    *(s16 *)(t + 0xE) = 0xB0;
-    SetSemiTrans((TILE *)t, 1);
+    t->x0 = 0x3F;
+    t->y0 = 0x30;
+    t->w = 0x202;
+    t->h = 0xB0;
+    SetSemiTrans(t, 1);
     AddPrim(g_gpu_ot_ptr + 0x78, t);
-    t += 0x10;
-    arg0[5] = t;
+    t++;
+    arg0->unk_04.unk_10 = t;
 skip_init:
-    sp[5] = 0x1F;
-    *(s8 *)((s32)&sp[0] + 0x28) = 0;
-    sp[4] = 0;
-    temp_s2 = *(s32 **)((s32)arg0[0] + 0x38);
-    sp[6] = 0;
-    sp[7] = 0;
+    s.sp2C = 0x1F;
+    s.sp40 = 0;
+    s.sp28 = 0;
+    temp_s2 = *(s32 **)(arg0->unk_00 + 0x38);
+    s.sp30 = 0;
+    s.sp34 = 0;
     i = 0;
     do {
         v = temp_s2[i];
-        sp[0] = v;
-        sp[1] = v + 0xC;
-        sp[2] = arg0[4];
-        arg0[4] = func_8007352C(sp);
+        s.sp18 = v;
+        s.sp1C = v + 0xC;
+        s.sp20 = arg0->unk_04.unk_0C;
+        arg0->unk_04.unk_0C = func_8007352C((s32)&s);
         i++;
     } while (i < 3);
 
-    sp[0] = *temp_s2;
-    a3 = func_8006E480(sp[0], 0);
-    SetDrawMode(arg0[6], 1, 0, a3, 0);
-    AddPrim(g_gpu_ot_ptr + 0x7C, arg0[6]);
-    q = arg0[2];
-    arg0[6] = arg0[6] + 0xC;
-    SetPolyF4((POLY_F4 *)q);
+    s.sp18 = *temp_s2;
+    a3 = func_8006E480(s.sp18, 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, a3, 0);
+    AddPrim(g_gpu_ot_ptr + 0x7C, arg0->unk_04.unk_14);
+    q = arg0->unk_04.unk_04;
+    arg0->unk_04.unk_14++;
+    SetPolyF4(q);
     func_80069A8C(q);
-    *(s16 *)(q + 0x8) = 0;
-    *(s16 *)(q + 0xA) = 0xB9;
-    *(s16 *)(q + 0xC) = 0x122;
-    *(s16 *)(q + 0xE) = 0;
-    *(s16 *)(q + 0x10) = 0;
-    *(s16 *)(q + 0x12) = 0xEF;
-    *(s16 *)(q + 0x14) = 0x122;
-    *(s16 *)(q + 0x16) = 0xEF;
-    SetSemiTrans((POLY_F4 *)q, 0);
+    q->x0 = 0;
+    q->y0 = 0xB9;
+    q->x1 = 0x122;
+    q->y1 = 0;
+    q->x2 = 0;
+    q->y2 = 0xEF;
+    q->x3 = 0x122;
+    q->y3 = 0xEF;
+    SetSemiTrans(q, 0);
     AddPrim(g_gpu_ot_ptr + 0x80, q);
-    q += 0x18;
+    q++;
 
-    SetPolyF4((POLY_F4 *)q);
+    SetPolyF4(q);
     func_80069A8C(q);
-    *(s16 *)(q + 0x8) = 0x15E;
-    *(s16 *)(q + 0xA) = 0;
-    *(s16 *)(q + 0xC) = 0x27F;
-    *(s16 *)(q + 0xE) = 0;
-    *(s16 *)(q + 0x10) = 0x15E;
-    *(s16 *)(q + 0x12) = 0xEF;
-    *(s16 *)(q + 0x14) = 0x27F;
-    *(s16 *)(q + 0x16) = 0x36;
-    SetSemiTrans((POLY_F4 *)q, 0);
+    q->x0 = 0x15E;
+    q->y0 = 0;
+    q->x1 = 0x27F;
+    q->y1 = 0;
+    q->x2 = 0x15E;
+    q->y2 = 0xEF;
+    q->x3 = 0x27F;
+    q->y3 = 0x36;
+    SetSemiTrans(q, 0);
     AddPrim(g_gpu_ot_ptr + 0x80, q);
-    q += 0x18;
+    q++;
 
-    SetPolyF4((POLY_F4 *)q);
+    SetPolyF4(q);
     func_80069A8C(q);
-    *(s16 *)(q + 0x8) = 0x122;
-    *(s16 *)(q + 0xA) = 0;
-    *(s16 *)(q + 0xC) = 0x15E;
-    *(s16 *)(q + 0xE) = 0;
-    *(s16 *)(q + 0x10) = 0x122;
-    *(s16 *)(q + 0x12) = 0xEF;
-    *(s16 *)(q + 0x14) = 0x15E;
-    *(s16 *)(q + 0x16) = 0xEF;
-    SetSemiTrans((POLY_F4 *)q, 0);
+    q->x0 = 0x122;
+    q->y0 = 0;
+    q->x1 = 0x15E;
+    q->y1 = 0;
+    q->x2 = 0x122;
+    q->y2 = 0xEF;
+    q->x3 = 0x15E;
+    q->y3 = 0xEF;
+    SetSemiTrans(q, 0);
     AddPrim(g_gpu_ot_ptr + 0x80, q);
-    q += 0x18;
+    q++;
 
-    arg0[2] = q;
+    arg0->unk_04.unk_04 = q;
 }
 
-void func_80074488(s32 *arg0) {
+void func_80074488(Unk8006EACCRec *arg0) {
     S_80074488 s;
     s16 mask;
     s16 i;
@@ -463,7 +463,7 @@ void func_80074488(s32 *arg0) {
          + (1 << (base->f67 + 8))
          + (1 << (base->f66 + 9));
     s.sp2C = 2;
-    table = *(s32 **)(arg0[0] + 0x34);
+    table = *(s32 **)(arg0->unk_00 + 0x34);
     do {
         s.sp30 = 0;
         s.sp34 = 0;
@@ -523,21 +523,24 @@ void func_80074488(s32 *arg0) {
             value = table[i];
             s.sp18 = value;
             s.sp1C = value + 0xC;
-            s.sp20 = arg0[4];
-            arg0[4] = func_8007352C((s32)&s.sp18);
+            s.sp20 = arg0->unk_04.unk_0C;
+            arg0->unk_04.unk_0C = func_8007352C((s32)&s.sp18);
         }
         i++;
     } while (i < 15);
 
     s.sp18 = table[0];
-    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 8, arg0[6]);
-    arg0[6] += 0xC;
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, 0), 0);
+    AddPrim(g_gpu_ot_ptr + 8, arg0->unk_04.unk_14);
+    arg0->unk_04.unk_14++;
     rect[2] = 0x108;
     rect[0] = 0xBC;
     rect[1] = 0x25;
     rect[3] = 1;
-    func_80069898((GameObj *)arg0, (u16 *)rect, 2);
+    /* The original passes its own context base here, unadjusted (func_80074488.s:196-217):
+     * func_80069898 reads +0x18 as its TILE cursor (func_80069898.s:11, 37 / 65 / 91, 94),
+     * and in this context +0x18 is the DR_MODE cursor. */
+    func_80069898((s32 *)arg0, (u16 *)rect, 2);
 }
 
 /* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
