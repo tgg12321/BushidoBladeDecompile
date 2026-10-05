@@ -67,13 +67,16 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      unk00[2] }), batch 4 557ce2b3b (ScrPad.unk2B8 = union { rec; v8005344C }; Work_80053E9C in
      game.h).
    - F02 batch 5 6c37fa778: func_8002AB08 typed; unk00's point array is `LeafPos unk00[6]`.
-   - **Next session starts here:** F01 (lt/families.tsv / lt/plan.txt), or the rest of F02 first
-     (lt/f02/plan.txt "Later": func_80029454 :1149 / func_800290B8 :1032 still hold `u8 *scr`,
-     box_overlap, func_8002C22C / C61C; the raw-offset asm-operand bodies stay debt). Lessons
-     from batches 3-5's reviews (in the commit bodies and the briefs): one struct per layout, not
-     per function; verify each FAKE comment's stated register effect against the objdump
-     (`lt/f02/regdiff_fn.sh`); ablate whole clusters; every count / line / "no" claim in the
-     message is checked. Editing build files with the Edit tool needs
+   - F02 batch 6 a564052cd: func_800290B8 / func_80029454 (+ box_overlap) / func_8002C22C /
+     func_8002C61C typed. F02 is done except the raw-offset asm-operand bodies (func_8002CD58 /
+     D518 / D780 / DAD0 / FC80 / FDB0): typing them edits GTE asm operand expressions (hashed in
+     tools/canonical_asm_regions.json), which lt/f02/plan.txt marks RULING NEEDED.
+   - **Next session starts here:** F01 (lt/families.tsv / lt/plan.txt). Lessons from F02's
+     reviews (in the commit bodies and the briefs): one struct per layout, not per function;
+     verify each FAKE comment's stated register effect against the objdump
+     (`lt/f02/regdiff_fn.sh`), including comments carried from HEAD in moved bodies; ablate
+     whole clusters; the generator must reproduce the landed file; every count / line / "no"
+     claim in the message is checked. Editing build files with the Edit tool needs
      `& tools/reintegrate_lock.ps1 acquire` first. Worker / reviewer briefs with every failure class
      learned: `lt/worker_brief.txt`, `lt/reviewer_brief.txt`.
    - func_800203B4's island operand (`auth:` re-hash) is still open, after the long tail.

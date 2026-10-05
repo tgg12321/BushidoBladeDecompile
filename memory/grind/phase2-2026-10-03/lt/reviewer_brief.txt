@@ -46,3 +46,6 @@ ADDITIONAL FAILURE CLASSES (learned in F02 batches 3-4):
   the same consumer contract (one struct per layout);
 - a FAKE annotation whose stated register effect differs from the objdump of its ablation;
 - a FAKE kept when the whole cluster (FAKE + the local it rides on) ablates to IDENTICAL.
+- (F02 b6) a FAKE comment carried unchanged from HEAD inside a moved body is certified by the PASS:
+  check every register / field it names against the target and ablation objdumps.
+- (F02 b6) the message's "Generator:" must rebuild the staged file byte-exact from HEAD.

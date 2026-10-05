@@ -61,3 +61,7 @@ RECURRING REVIEW-FAILURE CLASSES (each one failed a past review - avoid them):
   (lt/f02/regdiff_fn.sh) and state exactly which registers move.
 - (F02 b4) Ablate the whole cluster: a FAKE pair plus the local it rides on (arg5 + arg5++/--).
   The pair-only ablation can look necessary while the local-free spelling is IDENTICAL.
+- (F02 b6) Re-verify FAKE comments carried from HEAD in every moved body (fields and registers vs
+  the target objdump and the ablation); fold every hand fix back into the generator.
+- (F02 b6) A static inline has no address: layer2 record refuses it; say so in the Review section
+  (precedent 1c2c328ac) and pass only addressed functions to commit.sh.
