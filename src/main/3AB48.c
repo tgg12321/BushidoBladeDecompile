@@ -3956,8 +3956,13 @@ extern Unk8009B400Record D_8009B20C[6];
 extern Unk8009B400Record D_8009B23C[12];
 extern Unk8009B400Record D_8009B29C[2];
 extern Unk8009B400Record *D_8009B2AC[4];
-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
-extern s32 AddPrim(s32, s32);
+extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
+/* AddPrim has no prototype here: this TU's original called it as an implicit-int function.
+ * func_80060768 shows it: after its last AddPrim the target computes its return value
+ * (subu v0,s4,s2) inside the dead sp1C bump, which goes through v1; with PsyQ's void
+ * AddPrim(void *, void *) the bump takes v0, the subu moves after it and a load-delay nop is
+ * added (192 -> 193 insns); under this non-prototype int declaration the TU is byte-identical. */
+extern int AddPrim();
 s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     Env5C8A8 s;
     TILE *tile;
@@ -4057,7 +4062,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = D_8009B2BC[mode].w;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim((s32)g_gpu_ot_ptr + ot * 4, (s32)tile);
+            AddPrim(g_gpu_ot_ptr + ot * 4, tile);
             tile++;
         }
         /* fallthrough */
@@ -4110,7 +4115,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = D_8009B2BC[mode].w;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim((s32)g_gpu_ot_ptr + ot * 4, (s32)tile);
+            AddPrim(g_gpu_ot_ptr + ot * 4, tile);
             tile++;
         }
         break;
@@ -4188,7 +4193,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = D_8009B2BC[mode].w;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim((s32)g_gpu_ot_ptr + ot * 4, (s32)tile);
+            AddPrim(g_gpu_ot_ptr + ot * 4, tile);
             tile++;
         }
         if (j != 0) {
@@ -4225,7 +4230,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = 2;
             tile->h = D_8009B2BC[mode].h + 2;
             SetSemiTrans(tile, 0);
-            AddPrim((s32)g_gpu_ot_ptr + ot * 4, (s32)tile);
+            AddPrim(g_gpu_ot_ptr + ot * 4, tile);
             tile++;
         }
     }
@@ -4239,9 +4244,9 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     tile->w = D_8009B2BC[mode].w;
     tile->h = D_8009B2BC[mode].h;
     SetSemiTrans(tile, 1);
-    AddPrim((s32)g_gpu_ot_ptr + ot * 4, (s32)tile);
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B0E0[0], 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + ot * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + ot * 4, tile);
+    SetDrawMode((DR_MODE *)mode_off, 1, 0, func_8006E480((s32)&D_8009B0E0[0], 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot * 4, (DR_MODE *)mode_off);
     return size;
 }
 extern s32 D_8009B2C8;
@@ -4409,14 +4414,13 @@ extern Unk8009B400Record D_8009B3C8[3];
 extern Unk8009B400Record D_8009B3E0[2];
 extern Unk8009B400Record D_8009B3F0;
 extern Unk8009B400Record D_8009B3F8;
-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
-extern s32 AddPrim(s32, s32);
+extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
 s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Env5D814 s;
     s16 digit[3];
     TILE *tile;
     s32 cur;
-    s32 mode_off;
+    DR_MODE *mode_off;
     s32 end_off;
     s16 i;
     s16 j;
@@ -4436,7 +4440,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s.semi = 0;
     s.header = &D_8009B398[0];
     cur = arg2 + 0xA0;
-    mode_off = arg2 + 0x2F8;
+    mode_off = (DR_MODE *)(arg2 + 0x2F8);
     end_off = arg2 + 0x304;
     for (i = 0; i < 3; i++) {
         s.table = &D_8009B3C8[i];
@@ -4573,7 +4577,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         tile->w = 0x238 - D_8009B450[j].x;
         tile->h = 1;
         SetSemiTrans(tile, 0);
-        AddPrim((s32)g_gpu_ot_ptr + arg3 * 4, (s32)tile);
+        AddPrim(g_gpu_ot_ptr + arg3 * 4, tile);
         tile++;
         /* FAKE (pointer-alias-fake-exception): the first sheet and cell,
          * named a few insns before their stores so loop.c hoists them
@@ -4593,7 +4597,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         cur = func_8007352C((s32)&s);
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B398[0], 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg3 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
     return end_off - arg2;
 }
 
@@ -4623,7 +4627,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     S5E098 s;
     TILE *tile;
     s32 cur;
-    s32 mode_off;
+    DR_MODE *mode_off;
     s32 end_off;
     s16 i;
     s16 j;
@@ -4637,7 +4641,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s.zero10 = 0;
     s.p0 = &D_8009B398[1];
     cur = arg2 + 0xA0;
-    mode_off = arg2 + 0x2F8;
+    mode_off = (DR_MODE *)(arg2 + 0x2F8);
     end_off = arg2 + 0x304;
     s.arg3 = arg3;
     for (i = 0; i < 2; i++) {
@@ -4713,7 +4717,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         tile->w = 0x30;
         tile->h = 1;
         SetSemiTrans(tile, 0);
-        AddPrim((s32)g_gpu_ot_ptr + arg3 * 4, (s32)tile);
+        AddPrim(g_gpu_ot_ptr + arg3 * 4, tile);
         tile++;
         s.height = 0x24;
         s.p0 = &D_8009B398[2];
@@ -4729,7 +4733,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         }
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B398[0], 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg3 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
     return end_off - arg2;
 }
 s32 func_8005E51C(s32 a0, s32 a1, s32 a2) {
@@ -4774,7 +4778,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     TILE *tile;
     s32 cur;
     s32 ft4;
-    s32 mode_off;
+    DR_MODE *mode_off;
     s32 end_off;
     /* i counts the players (first loop) and then the rounds; j is the
        player and k the mark; each phase restarts them as plain loop indices,
@@ -4792,7 +4796,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s.y = 0;
     cur = arg1 + 0xA0;
     ft4 = arg1 + 0x898;
-    mode_off = arg1 + 0xBB8;
+    mode_off = (DR_MODE *)(arg1 + 0xBB8);
     end_off = arg1 + 0xBC4;
     s.ot_idx = arg2;
     for (i = 0; i < 2; i++) {
@@ -4911,8 +4915,8 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         }
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B524, 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg2 * 4, mode_off);
-    mode_off += 0xC;
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
+    mode_off++;
 
     s.ot_idx = arg2;
     wins[0] = wins[1] = 0;
@@ -5005,7 +5009,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->w = 0xDC;
     tile->h = 1;
     SetSemiTrans(tile, 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg2 * 4, (s32)tile);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, tile);
     tile++;
     SetTile(tile);
     tile->r0 = 0xFF;
@@ -5016,7 +5020,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->w = 0xDC;
     tile->h = 1;
     SetSemiTrans(tile, 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg2 * 4, (s32)tile);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, tile);
     tile++;
     SetTile(tile);
     tile->r0 = 0xFF;
@@ -5038,9 +5042,9 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->w = 0x1C5;
     tile->h = 1;
     SetSemiTrans(tile, 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg2 * 4, (s32)tile);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, tile);
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009ADB4, 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg2 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
     return end_off - arg1;
 }
 typedef struct {
@@ -5069,7 +5073,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     S5F1C8 s;
     TILE *tile;
     s32 cur;
-    s32 mode_off;
+    DR_MODE *mode_off;
     s32 end_off;
     /* i/row count the win-mark pips' players and rows; k and j are reused
      * as plain loop indices by the later phases (tile strip k/j, timer j/k),
@@ -5088,7 +5092,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s.zero10 = 0;
     tile = (TILE *)arg2;
     cur = arg2 + 0xA0;
-    mode_off = arg2 + 0x2F8;
+    mode_off = (DR_MODE *)(arg2 + 0x2F8);
     end_off = arg2 + 0x304;
     s.arg3 = arg3;
     for (i = 0; i < 2; i++) {
@@ -5116,8 +5120,8 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         }
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B5A0[0], 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg3 * 4, mode_off);
-    mode_off += 0xC;
+    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
+    mode_off++;
 
     s.byte28 = 0;
     s.height = 0;
@@ -5151,7 +5155,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             tile->w = 0x42 - k * 16;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim((s32)g_gpu_ot_ptr + arg3 * 4, (s32)tile);
+            AddPrim(g_gpu_ot_ptr + arg3 * 4, tile);
             tile++;
             s.height = k * 20 + 0x24;
             s.p0 = &D_8009B398[2];
@@ -5228,7 +5232,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         cur = func_8007352C((s32)&s);
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B398[1], 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg3 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
     return end_off - arg2;
 }
 extern s32 D_8009B610;
@@ -5300,7 +5304,7 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
 
 extern s32 D_8009B698;
 extern s32 D_8009B6B0;
-extern s32 SetDrawArea();
+extern void SetDrawArea(DR_AREA *, RECT *);
 
 
 typedef struct {
@@ -5324,9 +5328,9 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
     RECT *clip;
     GpuDb *env;
     s32 cur_tex;
-    s32 mode_off;
+    DR_MODE *mode_off;
     POLY_G4 *poly;
-    s32 area;
+    DR_AREA *area;
     s32 end_off;
     s16 j;
     s16 i;
@@ -5335,9 +5339,9 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
     u8 c;
 
     cur_tex = arg0;
-    mode_off = arg0 + 0x280;
+    mode_off = (DR_MODE *)(arg0 + 0x280);
     poly = (POLY_G4 *)(arg0 + 0x28C);
-    area = arg0 + 0x2D4;
+    area = (DR_AREA *)(arg0 + 0x2D4);
     end_off = arg0 + 0x2F8;
     j = 0;
     env = &g_gpu_db[D_800A36AC & 1];
@@ -5347,8 +5351,8 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
     r.h = env->draw.clip.h;
     clip = &env->draw.clip;
     SetDrawArea(area, &r);
-    AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, area);
-    area = arg0 + 0x2E0;
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, area);
+    area++;
     s.byte28 = 0;
     s.zero10 = 0;
     s.width = 0;
@@ -5400,7 +5404,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
             poly->r3 = 0;
             poly->g3 = 0;
             poly->b3 = 0;
-            AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, poly);
+            AddPrim(g_gpu_ot_ptr + arg1 * 4, poly);
             poly++;
         }
         for (i = 0; i < 2; i++) {
@@ -5411,13 +5415,13 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
         }
         if (D_800A3278 >= 0xB5) {
             SetDrawArea(area, &r);
-            AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, area);
-            area += 0xC;
+            AddPrim(g_gpu_ot_ptr + arg1 * 4, area);
+            area++;
         }
         j++;
     } while (j < 2);
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B698, 0x20), 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, mode_off);
     if (off <= 0x140) {
         D_800A3278++;
     }
@@ -5446,7 +5450,7 @@ extern s32 D_8009B758;
 s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
 {
     S60C8 s;
-    s32 dist_off = arg1 + 0xB4;
+    DR_MODE *dist_off = (DR_MODE *)(arg1 + 0xB4);
     s32 end_off = arg1 + 0xC0;
     s32 cur_tex = arg1;
     s32 i;
@@ -5487,7 +5491,7 @@ loop_60C8:
         if (i < 2) goto loop_60C8;
     }
     SetDrawMode(dist_off, 1, 0, func_8006E480((s32 *)&D_8009B6F0, 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + (arg2 * 4), dist_off);
+    AddPrim(g_gpu_ot_ptr + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
 extern u8 D_800A3294[8];
@@ -5539,12 +5543,12 @@ typedef struct {
 } S414;
 s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     S414 s;
-    s32 dist_off;
+    DR_MODE *dist_off;
     s32 end_off;
     /* FAKE: param copy; reading arg1 directly scores 6 (75 vs 76 insns). */
     s32 arg1_copy;
     arg1_copy = arg1;
-    dist_off = arg1_copy + 0x14;
+    dist_off = (DR_MODE *)(arg1_copy + 0x14);
     end_off = arg1_copy + 0x2C;
     s.byte28 = 0;
     s.zero10 = 0;
@@ -5562,7 +5566,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     s.arg1_field = arg1_copy;
     func_8007352C((s32)(&s));
     SetDrawMode(dist_off, 1, 0, func_8006E480((s32)s.header, 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + (arg2 * 4), dist_off);
+    AddPrim(g_gpu_ot_ptr + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
 extern s32 D_8009B770;
@@ -5604,38 +5608,19 @@ s32 func_80060544(s32 arg0, s32 arg1) {
     s32 *p0;
     S544 *new_var2;
     s32 *p1;
-    int new_var3;
+    DR_MODE *new_var3;
     prev = arg0;
     mid_off = arg0 + 0x4EC;
     end_off = arg0 + 0x5F4;
     s.byte28 = 0;
     s.zero10 = 0;
     s.arg2_field = arg1;
-    new_var3 = arg0 + 0x5DC;
+    new_var3 = (DR_MODE *)(arg0 + 0x5DC);
     new_var6 = end_off;
     s.pad20 = 0x200;
     s.pad24 = 0x100;
     s.height = 0;
     s.width = 0;
-    /* FAKE: dead store.  THE VALUE STORED HERE IS ARBITRARY AND IS NEVER READ —
-     * it is not "the Case3 handle" and it is not the i == 0 table being set up
-     * early; any value would do, and flow.c deletes the store outright, so this
-     * line contributes NO instruction to the output.  The line exists solely to give the pseudo an
-     * earlier reference than its real assignment in the Case3 arm, before
-     * loop.c runs: that moves `regno_first_uid[c3]` off the `la`, which makes
-     * `reg_in_basic_block_p` return 0 at loop.c:700 and disqualifies
-     * `c3 = (s32)(&D_8009B7D0);` as a movable (loop.c:693-701 — cases (2) and
-     * (3) are already false for a named local assigned under `maybe_never`), so
-     * the `la D_8009B7D0` is NOT hoisted into loop 1's preheader.  It therefore
-     * reaches sched1 inside the Case3 block as a live pseudo with
-     * reg_n_sets == 1 (this store having been deleted), and
-     * adjust_priority()/birthing_insn_p() promote it to LAUNCH_PRIORITY
-     * (sched.c:2496/2531/2601), which is what puts `addu $a1,$zero,$zero` first
-     * in that block exactly as target has it.  Every LIVE hoist-blocking
-     * mention costs extra instructions or lands the address in a callee-save.
-     * Family: [[dead-store-fake-exception]]; mechanism family
-     * [[defeat-licm-hoist-var-reuse]]. */
-    c3 = (s32)(&D_8009B7D8);
     i = 0;
     /* FAKE: constant-holder for the special-cased last index.  It must sit
      * BETWEEN `i = 0;` and `idx = 0;` — that source position is what reproduces
@@ -5709,7 +5694,7 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         p0 = (s32 *)(((s32)p0) + 0xC);
     } while (j < 2);
     SetDrawMode(new_var3, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
-    AddPrim((s32)g_gpu_ot_ptr + (arg1 * 4), new_var3);
+    AddPrim(g_gpu_ot_ptr + (arg1 * 4), new_var3);
     return new_var6 - arg0;
 }
 
@@ -5759,7 +5744,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
             D_800A32B4 = 0x1E;
         }
         SetSemiTrans((TILE *)tile_off, 0);
-        AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+        AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
         tile_off = arg0 + 0x7E0;
     }
     SetTile((TILE *)tile_off);
@@ -5783,7 +5768,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
         D_800A32B6 = 0x1E;
     }
     SetSemiTrans((TILE *)tile_off, 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
     tile_off += 0x10;
 
     SetTile((TILE *)tile_off);
@@ -5795,7 +5780,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     *(u8 *)(tile_off + 6) = 0;
     *(s16 *)(tile_off + 0xE) = 0x6C;
     SetSemiTrans((TILE *)tile_off, 1);
-    AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
     tile_off += 0x10;
 
     SetTile((TILE *)tile_off);
@@ -5807,10 +5792,10 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     *(u8 *)(tile_off + 6) = 0;
     *(s16 *)(tile_off + 0xE) = 0x1A;
     SetSemiTrans((TILE *)tile_off, 1);
-    AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
 
     SetDrawMode((void *)sp1C, 1, 0, 0, 0);
-    AddPrim((s32)g_gpu_ot_ptr + arg1 * 4, (void *)sp1C);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)sp1C);
     sp1C += 0xC;
     return end_off - arg0;
 }
