@@ -1367,23 +1367,23 @@ end:
 }
 
 
-void func_8001CD68(s16 *arg0) {
+void func_8001CD68(Unk8001CD68Rec *arg0) {
     s32 val = D_800A3858;
 
     if (val > 0x2BF1F) {
-        *(s16 *)arg0 = 99;
-        *((u8 *)arg0 + 2) = 59;
-        *((u8 *)arg0 + 3) = 99;
+        arg0->unk_0 = 99;
+        arg0->unk_2 = 59;
+        arg0->unk_3 = 99;
         return;
     }
     {
         s32 minutes = val / 1800;
         s32 seconds = val / 30 - minutes * 60;
-        *((u8 *)arg0 + 2) = seconds;
+        arg0->unk_2 = seconds;
         {
             s32 centiseconds = (D_800A3858 % 30) * 100 / 30;
-            *(s16 *)arg0 = minutes;
-            *((u8 *)arg0 + 3) = centiseconds;
+            arg0->unk_0 = minutes;
+            arg0->unk_3 = centiseconds;
         }
     }
 }
@@ -1403,7 +1403,7 @@ void func_8001CD68(s16 *arg0) {
 extern u8 D_800A3898[2];
 extern u8 D_800A38AA[2];
 void func_8001CE60(void) {
-    u8 buf[4]; /* func_8001CD68's clock record: s16 minutes, u8 seconds, u8 centiseconds */
+    Unk8001CD68Rec buf;
 
     if (D_800A38DC == 1) {
         D_800A38B4 += func_8005E51C(D_800A3783, D_800A38B4, 1) / 4 * 4;
@@ -1414,8 +1414,8 @@ void func_8001CE60(void) {
                 D_800A3858 = 0x2BF20;
             }
         }
-        func_8001CD68((s16 *)buf);
-        D_800A38B4 += func_8005D814((s16 *)buf, D_800A38E2, D_800A38B4, 1) / 4 * 4;
+        func_8001CD68(&buf);
+        D_800A38B4 += func_8005D814(&buf, D_800A38E2, D_800A38B4, 1) / 4 * 4;
     } else if ((D_800A38DC == 2 && D_800A389A == 1) || D_800A38DC == 4) {
         D_800A38B4 += func_8005E098(D_800A37D2, D_800A37D3, D_800A38B4, 1) / 4 * 4;
     } else if (D_800A38DC == 5) {
@@ -1551,10 +1551,10 @@ void func_8001CE60(void) {
         }
         if (D_800A36CC != 0) {
             temp = D_800A36CC * 30 - D_800A38F4;
-            buf[2] = temp / 30;
-            buf[3] = temp % 30 * 100 / 30;
+            buf.unk_2 = temp / 30;
+            buf.unk_3 = temp % 30 * 100 / 30;
         }
-        D_800A38B4 += func_8005F1C8(buf, D_800A3898[0] | (D_800A38AA[0] << 8) | (D_800A3898[1] << 4) | (D_800A38AA[1] << 12), D_800A38B4, 1) / 4 * 4;
+        D_800A38B4 += func_8005F1C8(&buf, D_800A3898[0] | (D_800A38AA[0] << 8) | (D_800A3898[1] << 4) | (D_800A38AA[1] << 12), D_800A38B4, 1) / 4 * 4;
     }
 }
 extern s8 D_800A30FC;
@@ -2034,7 +2034,7 @@ void func_8001EA04(void) {
 }
 void func_8001EA84(void) {
     PadState sp10;
-    s16 buf[4];
+    Unk8001CD68Rec buf;
     s32 ret;
     Unk80101EC8Record *base;
 
@@ -2058,8 +2058,8 @@ void func_8001EA84(void) {
     func_80046DA8(1);
     func_800335D8();
     if (D_800A38DC == 3) {
-        func_8001CD68(buf);
-        D_800A38B4 = D_800A38B4 + ((func_8005D814(buf, D_800A38E2, D_800A38B4, 1) / 4) * 4);
+        func_8001CD68(&buf);
+        D_800A38B4 = D_800A38B4 + ((func_8005D814(&buf, D_800A38E2, D_800A38B4, 1) / 4) * 4);
     }
     if (D_800A3929 == 0) {
         D_800A38B4 = D_800A38B4 + ((func_8005C8A8(1, D_800A3817, D_800A38B4, 0) / 4) * 4);

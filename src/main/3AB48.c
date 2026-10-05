@@ -4411,7 +4411,7 @@ extern Unk8009B400Record D_8009B3F0;
 extern Unk8009B400Record D_8009B3F8;
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
-s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Env5D814 s;
     s16 digit[3];
     TILE *tile;
@@ -4467,7 +4467,7 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
         for (i = 0; i < 2; i++) {
             switch (j) {
             case 0:
-                digit[i] = *arg0;
+                digit[i] = arg0->unk_0;
                 if (i != 0) {
                     digit[i] = digit[i] % 10;
                 } else {
@@ -4484,7 +4484,7 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 s.table->unk0 = 0x1A2;
                 break;
             case 1:
-                digit[i] = *((u8 *)arg0 + 2);
+                digit[i] = arg0->unk_2;
                 if (i != 0) {
                     digit[i] = digit[i] % 10;
                 } else {
@@ -4501,7 +4501,7 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 s.table->unk0 = 0x1D3;
                 break;
             case 2:
-                digit[i] = *((u8 *)arg0 + 3);
+                digit[i] = arg0->unk_3;
                 if (i != 0) {
                     digit[i] = digit[i] % 10;
                 } else {
@@ -5065,7 +5065,7 @@ extern Unk8009B398Record D_8009B5A0[2];
 extern Unk8009B400Record D_8009B5B8[2][2];
 extern Unk8009B400Record D_8009B5D8[2];
 extern Unk8009B400Record D_8009B5E8;
-s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     S5F1C8 s;
     TILE *tile;
     s32 cur;
@@ -5175,7 +5175,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
             switch (j) {
             case 0:
                 if (k < 2 || D_8009BD38.unk12 == 2) {
-                    s.d[k] = arg0[2];
+                    s.d[k] = arg0->unk_2;
                     if (k == 0 && D_8009BD38.unk12 == 2) {
                         s.d[k] = s.d[k] / 100;
                     } else if (k == 0 || (k == 1 && D_8009BD38.unk12 == 2)) {
@@ -5192,7 +5192,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 break;
             case 1:
                 if (k < 2) {
-                    s.d[k] = arg0[3];
+                    s.d[k] = arg0->unk_3;
                     if (k != 0) {
                         s.d[k] = s.d[k] % 10;
                     } else {

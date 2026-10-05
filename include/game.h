@@ -949,6 +949,18 @@ typedef struct Rec1C {
     s32 w10; s32 w14; s32 w18;
 } Rec1C;
 
+/* The 4-byte record func_8001CD68 fills from the frame counter D_800A3858 (30 per
+ * second): unk_0 = count / 1800, unk_2 = count / 30 % 60, unk_3 = count % 30 * 100 / 30
+ * (99 / 59 / 99 past 0x2BF1F). func_8005D814 draws the three as two-digit numbers;
+ * func_8003C714 copies them into its save record at +0x2D..+0x2F. func_8001CE60 also
+ * fills only unk_2 = n / 30 and unk_3 = n % 30 * 100 / 30 from a frame countdown n, for
+ * func_8005F1C8 to draw. */
+typedef struct Unk8001CD68Rec {
+    s16 unk_0;
+    u8 unk_2;
+    u8 unk_3;
+} Unk8001CD68Rec;
+
 /* Two 0x58-byte records set up side by side by func_80049E4C: 0x80101DF0
  * (unk0 = 0x64, unk8 = 5; pointer stored to D_800A3708) and 0x800FF638
  * (unk0 = 0x65, unk8 = 2; pointer stored to D_800A370C). func_800418D0

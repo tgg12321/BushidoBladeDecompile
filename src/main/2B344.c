@@ -623,7 +623,6 @@ extern void func_8003AF40(s32);
 
 
 extern s32 func_80052C28(s32, s32);
-extern void func_8001CD68(u8 *);
 
 
 
@@ -1104,7 +1103,7 @@ void func_8003C560(void) {
  * the preheader, as in the target.
  */
 void func_8003C714(void) {
-    u8 buf[4];
+    Unk8001CD68Rec buf;
     s32 *s0;
     s32 i;
     s32 a, b, c, v;
@@ -1141,13 +1140,13 @@ void func_8003C714(void) {
          * jal right after the back-branch, asm/funcs/func_8003C714.s:77-79). Inside
          * the loop it sets loop_has_call, which keeps the /1800 magic in the loop. */
         if (i >= 3) {
-            func_8001CD68(buf);
+            func_8001CD68(&buf);
             break;
         }
     } while (1);
-    *((u8 *)s0 + 0x2D) = *(u16 *)buf;
-    *((u8 *)s0 + 0x2E) = buf[2];
-    *((u8 *)s0 + 0x2F) = buf[3];
+    *((u8 *)s0 + 0x2D) = buf.unk_0;
+    *((u8 *)s0 + 0x2E) = buf.unk_2;
+    *((u8 *)s0 + 0x2F) = buf.unk_3;
     *((u8 *)s0 + 0x30) = D_80101EC8[0].unk_0A;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A37B8 = 0;
