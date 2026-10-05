@@ -25,12 +25,11 @@ void def_cbread(u8 intr, u8 *result);
 
 s32 CdInit(void) {
     s32 retries = 4;
-loop:
-    if (CdReset(1) != 1) {
-        retries--;
-        if (retries != -1) goto loop;
-        printf(g_str_cdinit_fail);
-        return 0;
+    while (CdReset(1) != 1) {
+        if (--retries == -1) {
+            printf(g_str_cdinit_fail);
+            return 0;
+        }
     }
     CdSyncCallback(def_cbsync);
     CdReadyCallback(def_cbready);

@@ -1,0 +1,11 @@
+{
+  "decision": "PASS",
+  "function": "CdInit",
+  "body_hash": "b9adf8b0ba161cdc",
+  "summary": "Independent items 2–5 review passes: ordinary C preserves five reset attempts and all success/failure effects, uses existing declarations, and contains no FAKEs or forbidden mechanisms. Disable-all score is 0 (38/38); fresh oracle rebuild, comparison, integrity, and audit checks pass.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "Pre-existing, unchanged extern s32 printf() declaration lacks a parameter prototype and differs from the current libc2/printf.c definition's void return type; CdInit discards its return value."
+  ]
+}
