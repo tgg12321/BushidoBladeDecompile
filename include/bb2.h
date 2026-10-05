@@ -502,9 +502,10 @@ extern Rec44 D_800F6608;
 extern u8 D_800F65F8[8][2];
 
 extern s16 D_800F68E0[];
-extern s32 g_pad_buf_plus_0x4;
-extern s32 g_pad_buf_plus_0x24;
-extern s32 g_pad_buf_plus_0x28;
+/* The two InitPAD receive buffers, 0x24 bytes apart: sys_Init passes g_pad_buf and
+ * g_pad_buf + 0x24 (asm/funcs/func_80016A18.s:6-11), and func_80019568 copies the first two
+ * words of each.  0x48 bytes up to D_800FF5C8. */
+extern s32 g_pad_buf[2][9];
 extern s32 D_800FF5C8;
 extern s32 D_800FF5CC;
 extern s32 D_800FF5D0;

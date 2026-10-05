@@ -1,0 +1,1 @@
+{"func": "sys_Init", "addr": "80016A18", "verdict": "PASS", "body_hash": "0b84c7d550e35969", "body_kind": "c", "file": "main/6CF8", "reviewer": "p2-rev-s5b", "scope": "cheat-cleanup", "date": "2026-10-05T03:31:17Z", "head": "f9749fd8c", "notes": ""}

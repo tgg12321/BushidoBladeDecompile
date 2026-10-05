@@ -7,7 +7,6 @@
 #include "bb2_const.h"
 
 /* Extern data declarations */
-extern s32 g_pad_buf;
 
 /* Extern function declarations */
 
@@ -1133,10 +1132,10 @@ void func_80019568(s32 arg0) {
     held = 0;
     i = 0;
     packets = (u8 *)&pkts[0];
-    pkts[0] = g_pad_buf;
-    pkts[1] = g_pad_buf_plus_0x4;
-    pkts[2] = g_pad_buf_plus_0x24;
-    pkts[3] = g_pad_buf_plus_0x28;
+    pkts[0] = g_pad_buf[0][0];
+    pkts[1] = g_pad_buf[0][1];
+    pkts[2] = g_pad_buf[1][0];
+    pkts[3] = g_pad_buf[1][1];
     do {
         u8 *rec = &packets[i * 8];
         s32 valid = 0;

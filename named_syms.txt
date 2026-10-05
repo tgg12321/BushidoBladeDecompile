@@ -1331,13 +1331,7 @@ motion_ex_Init_id3                                      = 0x80064F68;  /* init i
 motion_ex_Init_id4                                      = 0x80064FB4;  /* init id4 (state @ D_800F0CA0[4], flag @ D_800F10F8, counter @ D_800F0BA8[4] = 0x40) */
 motion_ex_Init_id5                                      = 0x80065000;  /* init id5 (state @ D_800F0CA0[5], flag @ D_800F10FC, counter @ D_800F0BA8[5]) */
 
-/* === Voice-control state cluster (2026-05-17) -- 11 highs === */
-/* From code6cac.c around line 775-790 (voice packet table assignment) */
-/* and 1031-1038 (single_game_VoiceContorol's func_8001B138 reset). */
-/* sp.packets[0..3] are loaded from 4 VoicePacket-base addresses. */
-g_pad_buf_plus_0x4                                   = 0x800FF584;  /* sp.packets[1] base */  /* data-wave 2026-09-24: was g_voice_packet_base_1 */
-g_pad_buf_plus_0x24                                   = 0x800FF5A4;  /* sp.packets[2] base */  /* data-wave 2026-09-24: was g_voice_packet_base_2 */
-g_pad_buf_plus_0x28                                   = 0x800FF5A8;  /* sp.packets[3] base */  /* data-wave 2026-09-24: was g_voice_packet_base_3 */
+/* === State words cleared by func_8001B138 === */
 D_800FF5C8                                    = 0x800FF5C8;  /* state cluster cleared by func_8001B138 (single_game_VoiceContorol helper) */  /* data-wave 2026-09-25: was g_voice_state_word_a */
 D_800FF5CC                                    = 0x800FF5CC;  /* data-wave 2026-09-25: was g_voice_state_word_b */
 D_800FF5D0                                    = 0x800FF5D0;  /* data-wave 2026-09-25: was g_voice_state_word_c */

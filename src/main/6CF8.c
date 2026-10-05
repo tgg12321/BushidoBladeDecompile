@@ -206,11 +206,9 @@ void disp_Init(void) {
     DrawSync(0);
 }
 extern void InitPAD(u8 *, s32, u8 *, s32);
-extern u8 g_pad_buf;
 void sys_Init(void) {
-    u8 *base = &g_pad_buf;
     ResetCallback();
-    InitPAD(base, 8, base + 0x24, 8);
+    InitPAD((u8 *)g_pad_buf[0], 8, (u8 *)g_pad_buf[1], 8);
     StartPAD();
     ChangeClearPAD(0);
     disp_Init();
