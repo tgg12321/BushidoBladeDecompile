@@ -66,11 +66,14 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      batch 1 ef5686d36, batch 2 9ccd8e382, batch 3 3351da420 (unk00 = union { raw; LeafPos
      unk00[2] }), batch 4 557ce2b3b (ScrPad.unk2B8 = union { rec; v8005344C }; Work_80053E9C in
      game.h).
-   - **Next session starts here:** func_8002AB08 (its further unk00 points +0x18..+0x44; passes
-     `(u8 *)scr` to func_8002CD58), then the rest of F02 (lt/f02/plan.txt "Later"), then F01. Lessons
-     from batches 3-4's reviews (now in the commit bodies): one struct per layout, not per function;
-     verify each FAKE comment's stated register effect against the objdump (`lt/f02/regdiff_fn.sh`);
-     ablate whole clusters (a FAKE pair plus its local). Editing build files with the Edit tool needs
+   - F02 batch 5 6c37fa778: func_8002AB08 typed; unk00's point array is `LeafPos unk00[6]`.
+   - **Next session starts here:** F01 (lt/families.tsv / lt/plan.txt), or the rest of F02 first
+     (lt/f02/plan.txt "Later": func_80029454 :1149 / func_800290B8 :1032 still hold `u8 *scr`,
+     box_overlap, func_8002C22C / C61C; the raw-offset asm-operand bodies stay debt). Lessons
+     from batches 3-5's reviews (in the commit bodies and the briefs): one struct per layout, not
+     per function; verify each FAKE comment's stated register effect against the objdump
+     (`lt/f02/regdiff_fn.sh`); ablate whole clusters; every count / line / "no" claim in the
+     message is checked. Editing build files with the Edit tool needs
      `& tools/reintegrate_lock.ps1 acquire` first. Worker / reviewer briefs with every failure class
      learned: `lt/worker_brief.txt`, `lt/reviewer_brief.txt`.
    - func_800203B4's island operand (`auth:` re-hash) is still open, after the long tail.
