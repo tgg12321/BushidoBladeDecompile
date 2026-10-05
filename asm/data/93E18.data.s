@@ -92,20 +92,10 @@ nonmatching D_800A3678
 
 dlabel D_800A3678
     /* 93E78 800A3678 */ .short 0x0000
-enddlabel D_800A3678
-
-nonmatching D_800A367A
-
-dlabel D_800A367A
     /* 93E7A 800A367A */ .short 0x0000
-enddlabel D_800A367A
-
-nonmatching D_800A367C
-
-dlabel D_800A367C
     /* 93E7C 800A367C */ .short 0x0000
     /* 93E7E 800A367E */ .short 0x0000
-enddlabel D_800A367C
+enddlabel D_800A3678
 
 nonmatching D_800A3680
 

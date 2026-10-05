@@ -318,8 +318,10 @@ extern s32 D_800A3140;
 extern u8 D_800A31DA;
 extern u8 D_800A3670;
 extern u8 D_800A3671;
-extern s16 D_800A367A;
-extern s16 D_800A367C;
+/* Three angles: func_80044504 passes the array to math_RotMatrixZXY (u16 *, reads [0..2]);
+ * func_8003EDC0 zeroes them.  Replaces the splat per-halfword symbols D_800A367A /
+ * D_800A367C.  The label's last two bytes (0x800A367E) are not accessed. */
+extern u16 D_800A3678[3];
 extern u8 D_800A3680;
 extern s32 g_comb_recv_buf_plus_0x4;
 extern u8 D_800A3690;

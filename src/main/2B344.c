@@ -2439,7 +2439,6 @@ skip:
 
     return out;
 }
-extern s16 D_800A3678;
 extern s32 D_800A3230;
 /* func_8003EDC0 - unpacks a stream of u16 words in sections ended by -1:
  * (cell, id) pairs into the 16-byte record table (count kept in D_800A3368),
@@ -2526,9 +2525,9 @@ void func_8003EDC0(u16 *p, s32 arg1) {
          * count in $a0 at this jal; without the argument it is given $v1. */
         func_80052C10(D_800A3230);
     }
-    D_800A3678 = 0;
-    D_800A367A = 0;
-    D_800A367C = 0;
+    D_800A3678[0] = 0;
+    D_800A3678[1] = 0;
+    D_800A3678[2] = 0;
 }
 
 /* ---- merged from config.c (owner ruling Q65: one original file) ---- */

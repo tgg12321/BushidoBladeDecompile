@@ -1126,14 +1126,13 @@ void func_800444BC(void) {
 void func_800444E0(void) {
     func_80044504(D_800A378C);
 }
-extern s32 D_800A3678;
 extern MATRIX D_80101BD0;
 extern Unk80101DF0Record *D_800A3708;
 
 extern void func_8004A4E0(void);
 void func_80044504(u32 *a0) {
     MATRIX *s0 = &D_80101BD0;
-    math_RotMatrixZXY(&D_800A3678, s0);
+    math_RotMatrixZXY(D_800A3678, s0);
     MulMatrix(s0, &D_800A3708->xf.mat);
     MulMatrix2(&D_800A370C->xf.mat, s0);
     MulMatrix0(&D_800A370C->xf.mat, &D_800A3708->xf.mat, &D_800FF610);
