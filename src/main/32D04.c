@@ -536,7 +536,6 @@ s32 func_80043278(s32 a0) {
     v0 = v0 >> a0_new;
     return v0 & 0xFFF;
 }
-extern s32 *D_80103608[];
 extern u16 D_80103658[];
 extern void func_80043454(s16, s16, s16, s16);
 void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {

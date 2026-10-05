@@ -2820,7 +2820,6 @@ void func_8003F824(u8 *arg0, s32 arg1) {
         func_80045A28(*(s16 *)(arg0 + 4), cur - *(u8 **)(arg0 + 0x1C));
     }
 }
-extern u16 **D_80103608[];
 extern s16 D_80094AEC[];
 s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2);
 
@@ -2850,7 +2849,7 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
 
     obj = rec->obj;
     dst = (u16 *)cur;
-    src = D_80103608[*(s16 *)(obj + 4)][*(s16 *)(obj + 2)];
+    src = (u16 *)D_80103608[*(s16 *)(obj + 4)][*(s16 *)(obj + 2)];
     count = *src;
     init.count = count;
     init.points = cur;

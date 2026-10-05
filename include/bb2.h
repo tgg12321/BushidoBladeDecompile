@@ -536,6 +536,14 @@ extern s32 D_80102770;
 extern PracticeParams D_80102778;
 extern PadState g_pad_state;
 extern s32 D_801027B0[][5];
+/* [i] points to block i's slots, the words after its header word (func_80044010 records it and
+ * 32D04's D_80103658[i] holds the slot count).  Each slot is a word holding a block-relative
+ * offset that func_80044010 turns into an address by adding the block's base, unless header
+ * bit 15 marks the block relocated; func_80044098 subtracts the base again (and clears bit 15),
+ * and func_80044100 moves [i] by a1 / 4 words and adds a1 to each slot.  func_800432A0 /
+ * func_800433E4 store a slot to scratchpad word 0, the u16 * cursor func_80043454 reads, and
+ * func_8003FA24 reads u16 data through one. */
+extern s32 *D_80103608[];
 extern u8 D_80104E88;
 extern s32 MotDataBaseAddress;
 
