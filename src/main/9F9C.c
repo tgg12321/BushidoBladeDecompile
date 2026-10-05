@@ -772,8 +772,7 @@ void func_8001B138(s32 *arg0) {
 }
 void func_8001B294(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30[0][0] = 0x64;    D_800F6608.h30[0][1] = 0;    D_800F6608.h30[0][2] = 0x64;    D_800F6608.h30[1][0] = 0x64;    D_800F6608.h30[1][1] = 0;    D_800F6608.h30[1][2] = 0x64;    func_8003F1E4(0);    D_800F6608.w0 = (a0->unk_F4.x + a1->unk_F4.x) / 2;    D_800F6608.w4 = (a0->unk_F4.y + a1->unk_F4.y) / 2;    {        s32 t1 = a0->unk_F4.z;        s32 t2 = a1->unk_F4.z;        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = a1->unk_F4.x - a0->unk_F4.x;        s32 dz = a1->unk_F4.z - a0->unk_F4.z;        v0 = ratan2(dx, dz);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
 void func_8001B3C0(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {    D_800A36FA = 0;    D_800F5328.h30[0][0] = 0x64;    D_800F5328.h30[0][1] = 0;    D_800F5328.h30[0][2] = 0x64;    D_800F5328.h30[1][0] = 0x64;    D_800F5328.h30[1][1] = 0;    D_800F5328.h30[1][2] = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = a0->unk_180.x;    D_800F5328.w8 = a0->unk_180.z;    {        s32 v = a0->unk_180.y;        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
-void func_8001B478(s32 arg0) {
-    u8 *obj = (u8 *)arg0;
+void func_8001B478(Unk80101EC8Record *obj) {
     u8 *s2 = (u8 *)&D_800F5328;
     s32 a2;
     s32 val;
@@ -781,18 +780,18 @@ void func_8001B478(s32 arg0) {
 
     func_8003F1E4(0);
 
-    val = (*(s32 *)(obj + 0x19C) + *(s32 *)(obj + 0x1A8)) / 2 - *(s32 *)(obj + 0x184);
+    val = (obj->unk_198[0].y + obj->unk_198[1].y) / 2 - obj->unk_180.y;
     far = val >= 0x391;
 
-    if (*(u16 *)(obj + 0x6A) == 0x2A) {
+    if (obj->unk_6A == 0x2A) {
         val = 0x200;
     } else {
-        *(s32 *)s2 = *(s32 *)(obj + 0x180);
-        D_800F5328.w8 = *(s32 *)(obj + 0x188);
-        val = *(s32 *)(obj + 0x184);
+        *(s32 *)s2 = obj->unk_180.x;
+        D_800F5328.w8 = obj->unk_180.z;
+        val = obj->unk_180.y;
 
         if (!far) {
-            s32 v = -(*(s16 *)(obj + 0x1A) * 950);
+            s32 v = -(obj->unk_1A * 950);
             if (v < 0) {
                 v += 0xFFF;
             }
@@ -808,10 +807,10 @@ void func_8001B478(s32 arg0) {
             *(s32 *)(s2 + 4) = a2;
         }
 
-        if (*(u16 *)(obj + 0x6A) == 0x2A) {
+        if (obj->unk_6A == 0x2A) {
             val = 0x200;
         } else {
-            val = (-(*(s16 *)(obj + 0x1D8)) - *(s16 *)(s2 + 0x12)) & 0xFFF;
+            val = (-obj->unk_1D8 - *(s16 *)(s2 + 0x12)) & 0xFFF;
 
             if (val >= 0x800) {
                 val = 0x1000 - val;
@@ -821,7 +820,7 @@ void func_8001B478(s32 arg0) {
             }
 
             {
-                s32 base_val = *(s32 *)(*(s32 *)obj + 0xF8);
+                s32 base_val = obj->other->unk_F4.y;
                 s32 result = ratan2(base_val - a2, D_800A387C);
                 val = (result * (0x400 - val)) >> 10;
             }
@@ -840,7 +839,7 @@ void func_8001B478(s32 arg0) {
 
     {
         s16 counter;
-        val = -(*(s16 *)(obj + 0x1CA));
+        val = -obj->unk_1C8.vy;
         counter = D_800A36FC;
 
         if (counter != 0) {
@@ -900,7 +899,7 @@ static u16 D_800A3310;
 void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 val) {
     s32 inv_frac = 0x1000 - frac;
     s32 inv_s1 = 0x1000 - frac_s1;
-    u8 *base = (u8 *)D_80101EC8 + D_800A3748 * 0x44C;
+    Unk80101EC8Record *base = &D_80101EC8[D_800A3748];
     s32 zval;
     s32 dx;
     s32 dy;
@@ -924,9 +923,9 @@ void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 va
         return;
     }
     {
-        s32 sum = (*((s32 *) (base + 0x19C))) + (*((s32 *) (base + 0x1A8)));
+        s32 sum = base->unk_198[0].y + base->unk_198[1].y;
         s32 avg = ((s32) (sum + (((u32) sum) >> 31))) >> 1;
-        if ((avg - (*((s32 *) (base + 0x184)))) < 0xC8) {
+        if ((avg - base->unk_180.y) < 0xC8) {
             D_800A3310 += 1;
         }
     }
@@ -1007,13 +1006,12 @@ void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
     temp_s0 = (D_800A387C < 0x2711) << 0xB;
     func_8001B748(&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - ratan2(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
 }
-void func_8001BC70(u8 *arg0, s32 arg1) {
-    typedef struct { s32 x, y, z; } Vec3;
-    Vec3 *dst;
-    Vec3 *src;
+void func_8001BC70(Unk80101EC8Record *arg0, s32 arg1) {
+    Vec3i32 *dst;
+    Vec3i32 *src;
     func_8003F1E4(0);
-    dst = (Vec3 *)&D_800F6608;
-    src = (Vec3 *)(arg0 + 0x174);
+    dst = (Vec3i32 *)&D_800F6608;
+    src = &arg0->unk_174;
     *dst = *src;
     D_800F6608.h10 = 0x120;
     D_800F6608.h12 = arg1;
@@ -1185,57 +1183,53 @@ void func_8001C51C(void) {
     func_800392C8();
     func_80021280(1);
 }
-/* Initialise player-entry 0 of the 0x44C-stride player-entry table at
- * D_80101EC8 -- same table, same byte-offset addressing as func_8001EEB4 /
- * func_8001EFA0 / func_80021A98 elsewhere in this file. */
+/* Initialise record 0 of D_80101EC8 (Unk80101EC8Record). */
 void func_8001C624(void) {
-    typedef struct { s32 a, b, c, d; } Blk16;
-    typedef struct { s32 a, b, c; } Blk12;
-    u8 *e = (u8 *)D_80101EC8;
+    Unk80101EC8Record *e = D_80101EC8;
     s32 local[3];
     s32 x, y, z;
 
-    func_80021D10(0, (s32 *)(e + 0xD8), (s32)D_800A38E0);
+    func_80021D10(0, &e->unk_D8.x, (s32)D_800A38E0);
     func_80021D10(1, local, (s32)D_800A38E0);
-    *(s32 *)(e + 0xE8) = 0;
-    x = *(s32 *)(e + 0xD8);
-    y = *(s32 *)(e + 0xDC);
-    z = *(s32 *)(e + 0xE0);
-    *(s32 *)(e + 0xEC) = -0x384;
-    *(s32 *)(e + 0xF0) = 0;
-    *(s32 *)(e + 0xF4) = x;
-    *(s32 *)(e + 0xF8) = y - 0x384;
-    *(s32 *)(e + 0xFC) = z;
-    *(s32 *)(e + 0xB8) = x;
-    *(s32 *)(e + 0xBC) = y;
-    *(s32 *)(e + 0xC0) = z;
-    *(Blk16 *)(e + 0xC8) = *(Blk16 *)(e + 0xB8);
-    *(Blk12 *)(e + 0x1F8) = *(Blk12 *)(e + 0xE8);
-    *(s32 *)(e + 0x104) = 0;
-    *(s32 *)(e + 0x108) = 0;
-    *(s32 *)(e + 0x10C) = 0;
-    *(Blk16 *)(e + 0x24C) = *(Blk16 *)(e + 0x104);
+    e->unk_E8.x = 0;
+    x = e->unk_D8.x;
+    y = e->unk_D8.y;
+    z = e->unk_D8.z;
+    e->unk_E8.y = -0x384;
+    e->unk_E8.z = 0;
+    e->unk_F4.x = x;
+    e->unk_F4.y = y - 0x384;
+    e->unk_F4.z = z;
+    e->unk_B8.vx = x;
+    e->unk_B8.vy = y;
+    e->unk_B8.vz = z;
+    e->unk_C8 = e->unk_B8;
+    e->unk_1F8 = e->unk_E8;
+    e->unk_104.vx = 0;
+    e->unk_104.vy = 0;
+    e->unk_104.vz = 0;
+    e->unk_24C = e->unk_104;
     /* FAKE: self-assigning round-trip through `local`, which is address-taken by
      * the func_80021D10 call above.  The target genuinely contains these
      * self-copy stores (pre-restructure-2026-10-03:asm/6CAC.s:5101-5119: lw $v0,0x10($sp) / sw $v0,0x10($sp),
      * lw $v1,0x18($sp) / sw $v1,0x18($sp)); this is the libgte setVector
      * comma-assign idiom, adjusting only the middle component. */
     local[0] = local[0], local[1] = local[1] - 0x384, local[2] = local[2];
-    *(s32 *)(e + 0x114) = 0;
-    *(s32 *)(e + 0x118) = 0;
-    *(s32 *)(e + 0x11C) = 0;
-    *(s32 *)(e + 0x124) = 0;
-    *(s32 *)(e + 0x128) = 0;
-    *(s32 *)(e + 0x12C) = 0;
-    *(s32 *)(e + 0x134) = 0;
-    *(s32 *)(e + 0x138) = 0;
-    *(s32 *)(e + 0x13C) = 0;
-    *(s32 *)(e + 0x144) = 0;
-    *(s16 *)(e + 0x14C) = 0;
-    *(s16 *)(e + 0x150) = 0;
-    *(s16 *)(e + 0x152) = 0;
-    *(s16 *)(e + 0x14E) = 0;
-    *(s32 *)(e + 0x148) = *(s32 *)(e + 0xBC);
+    e->unk_114[0].vx = 0;
+    e->unk_114[0].vy = 0;
+    e->unk_114[0].vz = 0;
+    e->unk_114[1].vx = 0;
+    e->unk_114[1].vy = 0;
+    e->unk_114[1].vz = 0;
+    e->unk_134.vx = 0;
+    e->unk_134.vy = 0;
+    e->unk_134.vz = 0;
+    e->unk_144 = 0;
+    e->unk_14C = 0;
+    e->unk_150 = 0;
+    e->unk_152 = 0;
+    e->unk_14E = 0;
+    e->unk_148 = e->unk_B8.vy;
     func_8003FFE0(0);
 }
 void func_8001C820(void) {
@@ -1994,15 +1988,15 @@ void func_8001E6E4(s32 arg0) {
 }
 void func_8001E800(void) {
     s32 v = D_800A36F6;
-    u8 *ptr = (u8 *)D_80101EC8 + v * 1100;
+    Unk80101EC8Record *ptr = &D_80101EC8[v];
     s32 a1;
-    if (ptr[0x62] & 1) {
-        a1 = *(s16 *)(ptr + 0xE);
+    if (ptr->unk_62 & 1) {
+        a1 = ptr->unk_0E;
     } else {
         a1 = -1;
     }
     {
-        u32 flags = ptr[0x62] & 4;
+        u32 flags = ptr->unk_62 & 4;
         func_80048BA4(D_800F5328.h1C, a1, flags > 0);
     }
 }
@@ -2013,7 +2007,7 @@ void func_8001E878(void) {
     D_800A3778 = v0;
     func_8001A820(&D_80101EC8[0].unk_168, &D_80101EC8[1].unk_168, &D_80101EC8[0], &D_80101EC8[1]);
     if (D_800A38BA != 0) {
-        func_8001B478((s32)&D_80101EC8[D_800A36F6]);
+        func_8001B478(&D_80101EC8[D_800A36F6]);
     }
     func_8001E404();
     func_80039320();
@@ -2063,7 +2057,7 @@ void func_8001EA84(void) {
     if (D_800A3748 == 0) {
         base++;
     }
-    func_8001BC70((u8 *)base, D_800A37B8 << 3);
+    func_8001BC70(base, D_800A37B8 << 3);
     func_8001E404();
     func_80039320();
     func_8002006C();
@@ -2142,19 +2136,19 @@ void func_8001EA84(void) {
 }
 void func_8001EEB4(void) {
     s8 idx = D_800A3748;
-    u8 *entry = (u8 *)D_80101EC8 + idx * 0x44C;
-    u16 a1 = *(u16 *)(entry + 0x6A);
+    Unk80101EC8Record *entry = &D_80101EC8[idx];
+    u16 a1 = entry->unk_6A;
 
-    if (a1 != 0xA && *(s16 *)(entry + 0x72) == 0 &&
-        a1 != 0x17 && a1 != 0x18 && *(s16 *)(entry + 0x96) == 0) {
+    if (a1 != 0xA && entry->unk_72 == 0 &&
+        a1 != 0x17 && a1 != 0x18 && entry->unk_96 == 0) {
         func_800218C8(D_800A3748);
         {
-            s32 ret = func_80021A3C(D_800A3748, *(s16 *)(entry + 0xA));
+            s32 ret = func_80021A3C(D_800A3748, entry->unk_0A);
             s32 idx2 = D_800A3748;
-            *(s16 *)(entry + 0x5E) = 1;
+            entry->unk_5E = 1;
             func_80021A98(idx2, ret, 1);
         }
-        *(s16 *)(entry + 0x26C) = 1;
+        entry->unk_26C = 1;
     }
 
     game_Cleanup();
@@ -2210,7 +2204,7 @@ void func_8001EFA0(void) {
         D_800A3834 = var_v0;
     }
 }
-void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
+void func_8001F1C4(Unk80101EC8Record *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
     s16 temp_v1;
     if (!(*(u8 *)(arg1 + 0x18) & 0x80)) {
         func_80027334((s32 *)arg2);
@@ -2218,12 +2212,12 @@ void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
     }
     func_8002F770((s16 *)(arg2 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
     func_8002F770((s16 *)(arg3 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
-    temp_v1 = *(s16 *)(arg0 + 0xC);
+    temp_v1 = arg0->unk_0C;
     if ((temp_v1 == 0x1D) || (temp_v1 == 0xE)) {
         *(u16 *)(arg2 + 0x7E) = (u16)(*(u16 *)(arg2 + 0x7E) + (*(s8 *)(arg1 + 0x16) * 4));
         *(u16 *)(arg3 + 0x7E) = (u16)(*(u16 *)(arg3 + 0x7E) + (*(s8 *)(arg1 + 0x16) * 4));
     }
-    if ((u32)(*(u16 *)(arg0 + 0xE) - 6) < 2U) {
+    if ((u32)((u16)arg0->unk_0E - 6) < 2U) {
         *(u16 *)(arg2 + 0x72) = (u16)(*(u16 *)(arg2 + 0x72) + (*(s8 *)(arg1 + 0x16) * 4));
         *(u16 *)(arg3 + 0x72) = (u16)(*(u16 *)(arg3 + 0x72) + (*(s8 *)(arg1 + 0x16) * 4));
     }

@@ -649,6 +649,7 @@ extern void func_8001C444(void);
 extern void func_8001DA2C(void);
 extern s32 func_8001DB58(void);
 extern void func_8001DBE4(void);
+extern void func_8001F1C4(Unk80101EC8Record *, u8 *, u8 *, u8 *);
 extern void func_8001F860(s16 *, s32);
 extern void func_800203B4(u8 *, s32, s16 *);
 extern void func_800207C8(Unk80101EC8Record *, LeafPos *, LeafPos *, LeafPos *);
