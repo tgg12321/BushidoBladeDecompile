@@ -633,6 +633,52 @@ typedef struct {
     u8 voll;
 } Unk800EFB78Entry;
 
+/* 51268's view of the scratchpad from 0x1F800000 (SPAD51268 in 51268.c). 17AFC's view of the same
+ * memory, used at other times, is ScrPad. func_80060E38 points the file's D_800A34xx globals at these
+ * members (51268.c); apart from its own two raw stores to unk00's +0x04 / +0x08, the code reaches
+ * them only through those globals:
+ * - unk00: the command block D_800A3468 points at until a function retargets it (func_80060A68's
+ *   Ob layout; D_800A346C / D_800A3470 point at its +0x18 / +0x20), with +0x2C..+0x2F. Typed with
+ *   D_800A3468 in a later batch.
+ * - unk50 / unkB0: the initial targets of D_800A3488 / D_800A348C. func_800620B8 retargets them
+ *   only in its switch cases 0-3 (unk4 & 7), so its u16 reads at 51268.c:989-991 go through these
+ *   seeded values when no earlier record took one of those cases (typed with the globals later).
+ * - unkA0: the initial targets of D_800A34E4 / D_800A34E8, which every user retargets before use.
+ * - unkB8: the work area D_800A34EC points at, laid out differently by its users (later batch);
+ *   it runs to the end of the scratchpad.
+ * The other members are one global each (D_800A3474 .. D_800A34E0, D_800A3480 / D_800A3484). */
+typedef struct {
+    u8 unk00[0x30];
+    MATRIX unk30;      /* D_800A3474 */
+    u8 unk50[8];
+    s32 unk58;         /* D_800A3490 */
+    s32 unk5C;         /* D_800A3494 */
+    u16 unk60;         /* D_800A3498 */
+    u16 unk62;         /* D_800A349C */
+    u16 unk64;         /* D_800A34A0 */
+    u16 unk66;         /* D_800A34A4 */
+    s16 unk68;         /* D_800A34A8 */
+    s16 unk6A;         /* D_800A34AC */
+    s32 unk6C;         /* D_800A34B0 */
+    s32 unk70;         /* D_800A34B4 */
+    s32 unk74[3];      /* D_800A34B8 */
+    s16 unk80;         /* D_800A34BC */
+    s16 unk82;         /* D_800A34C0 */
+    s32 unk84;         /* D_800A34C4 */
+    s32 unk88;         /* D_800A34C8 */
+    s32 unk8C;         /* D_800A34CC */
+    s32 unk90[2];      /* D_800A34D0 */
+    u16 unk98;         /* D_800A34D4 */
+    u16 unk9A;         /* D_800A34D8 */
+    u16 unk9C;         /* D_800A34DC */
+    u16 unk9E;         /* D_800A34E0 */
+    u8 unkA0[8];
+    s32 unkA8;         /* D_800A3480 */
+    s32 unkAC;         /* D_800A3484 */
+    u8 unkB0[8];
+    u8 unkB8[0x400 - 0xB8];
+} Unk1F800000Rec;
+
 /* A cell (x, z) of the 32x32 grid of 2000-unit cells that 3AB48's func_80052D00 walks
  * (Work_80053E9C.unk88 / unk8C). */
 typedef struct {

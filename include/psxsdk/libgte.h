@@ -49,6 +49,6 @@ extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
 /* PsyQ: long RotTransPers3(...) */
 extern void RotTransPers3(SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *);
 /* PsyQ: (SVECTOR *v0..v3, long *sxy0..sxy3, long *p, long *flag) */
-extern s32 RotTransPers4(s16 *, s16 *, s16 *, s16 *, s32 *, s32 *, s32 *, s32 *, s32 *, s32);
+extern s32 RotTransPers4(s16 *, s16 *, s16 *, s16 *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 
 #endif /* PSXSDK_LIBGTE_H */

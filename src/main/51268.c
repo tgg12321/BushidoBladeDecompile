@@ -29,34 +29,34 @@ static s32 D_800A3464;
 static s32 D_800A3468;
 static s32 D_800A346C;
 static s32 D_800A3470;
-static s32 D_800A3474;
+static MATRIX *D_800A3474;
 static s32 D_800A3478;
 static s32 D_800A347C;
-static s32 D_800A3480;
-static s32 D_800A3484;
+static s32 *D_800A3480;
+static s32 *D_800A3484;
 static s32 D_800A3488;
 static s32 D_800A348C;
-static s32 D_800A3490;
-static s32 D_800A3494;
-static s32 D_800A3498;
-static s32 D_800A349C;
-static s32 D_800A34A0;
-static s32 D_800A34A4;
-static s32 D_800A34A8;
-static s32 D_800A34AC;
-static s32 D_800A34B0;
-static s32 D_800A34B4;
-static s32 D_800A34B8;
-static s32 D_800A34BC;
-static s32 D_800A34C0;
-static s32 D_800A34C4;
-static s32 D_800A34C8;
-static s32 D_800A34CC;
-static s32 D_800A34D0;
-static s32 D_800A34D4;
-static s32 D_800A34D8;
-static s32 D_800A34DC;
-static s32 D_800A34E0;
+static s32 *D_800A3490;
+static s32 *D_800A3494;
+static u16 *D_800A3498;
+static u16 *D_800A349C;
+static u16 *D_800A34A0;
+static u16 *D_800A34A4;
+static s16 *D_800A34A8;
+static s16 *D_800A34AC;
+static s32 *D_800A34B0;
+static s32 *D_800A34B4;
+static s32 *D_800A34B8;
+static s16 *D_800A34BC;
+static s16 *D_800A34C0;
+static s32 *D_800A34C4;
+static s32 *D_800A34C8;
+static s32 *D_800A34CC;
+static s32 *D_800A34D0;
+static u16 *D_800A34D4;
+static u16 *D_800A34D8;
+static u16 *D_800A34DC;
+static u16 *D_800A34E0;
 static u8 *D_800A34E4;
 static s32 D_800A34E8;
 static s32 D_800A34EC;
@@ -164,7 +164,7 @@ void func_80060B70(void) {
     *(s32 *)(dst_s32 + 0) = *(s32 *)(*(s32 *)(outer + 8) + 0);
     *(s32 *)(dst_s32 + 4) = *(s32 *)(*(s32 *)(outer + 8) + 4);
     {
-        MATRIX *last_arg = (MATRIX *)D_800A3474;
+        MATRIX *last_arg = D_800A3474;
         *(s32 *)(dst_s32 + 8) = *(s32 *)(*(s32 *)(outer + 8) + 8);
         func_80061FAC(dst_u16, dst_s32, last_arg);
     }
@@ -264,37 +264,38 @@ void func_80060E04(s32 arg0) {
     D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
     D_800A3720 = D_800A37D4;
 }
+#define SPAD51268 ((Unk1F800000Rec *)0x1F800000)
 void func_80060E38(s16 *arg0, s32 *arg1) {
     D_800A3468 = 0x1F800000;
     D_800A346C = 0x1F800018;
     D_800A3470 = 0x1F800020;
-    D_800A3474 = 0x1F800030;
+    D_800A3474 = &SPAD51268->unk30;
     D_800A3488 = 0x1F800050;
-    D_800A3490 = 0x1F800058;
-    D_800A3494 = 0x1F80005C;
-    D_800A3498 = 0x1F800060;
-    D_800A349C = 0x1F800062;
-    D_800A34A0 = 0x1F800064;
-    D_800A34A4 = 0x1F800066;
-    D_800A34A8 = 0x1F800068;
-    D_800A34AC = 0x1F80006A;
-    D_800A34B0 = 0x1F80006C;
-    D_800A34B4 = 0x1F800070;
-    D_800A34B8 = 0x1F800074;
-    D_800A34BC = 0x1F800080;
-    D_800A34C0 = 0x1F800082;
-    D_800A34C4 = 0x1F800084;
-    D_800A34C8 = 0x1F800088;
-    D_800A34CC = 0x1F80008C;
-    D_800A34D0 = 0x1F800090;
-    D_800A34D4 = 0x1F800098;
-    D_800A34D8 = 0x1F80009A;
-    D_800A34DC = 0x1F80009C;
-    D_800A34E0 = 0x1F80009E;
+    D_800A3490 = &SPAD51268->unk58;
+    D_800A3494 = &SPAD51268->unk5C;
+    D_800A3498 = &SPAD51268->unk60;
+    D_800A349C = &SPAD51268->unk62;
+    D_800A34A0 = &SPAD51268->unk64;
+    D_800A34A4 = &SPAD51268->unk66;
+    D_800A34A8 = &SPAD51268->unk68;
+    D_800A34AC = &SPAD51268->unk6A;
+    D_800A34B0 = &SPAD51268->unk6C;
+    D_800A34B4 = &SPAD51268->unk70;
+    D_800A34B8 = SPAD51268->unk74;
+    D_800A34BC = &SPAD51268->unk80;
+    D_800A34C0 = &SPAD51268->unk82;
+    D_800A34C4 = &SPAD51268->unk84;
+    D_800A34C8 = &SPAD51268->unk88;
+    D_800A34CC = &SPAD51268->unk8C;
+    D_800A34D0 = SPAD51268->unk90;
+    D_800A34D4 = &SPAD51268->unk98;
+    D_800A34D8 = &SPAD51268->unk9A;
+    D_800A34DC = &SPAD51268->unk9C;
+    D_800A34E0 = &SPAD51268->unk9E;
     D_800A34E4 = (u8 *)0x1F8000A0;
     D_800A34E8 = 0x1F8000A4;
-    D_800A3480 = 0x1F8000A8;
-    D_800A3484 = 0x1F8000AC;
+    D_800A3480 = &SPAD51268->unkA8;
+    D_800A3484 = &SPAD51268->unkAC;
     D_800A348C = 0x1F8000B0;
     D_800A34EC = 0x1F8000B8;
     *(s16 **)0x1F800004 = arg0;
@@ -907,14 +908,14 @@ void func_800620B8(s16 *pos, s32 *trans) {
     dst16[1] = (*(u16 **)(outer + 4))[1];
     dst16[2] = (*(u16 **)(outer + 4))[2];
     dst32 = (s32 *)D_800A3470;
-    rot = (MATRIX *)D_800A3474; /* matrix func_80061FAC builds from pos */
+    rot = D_800A3474; /* matrix func_80061FAC builds from pos */
     dst32[0] = (*(s32 **)(outer + 8))[0];
     base = (u8 *)D_800A34EC;
     dst32[1] = (*(s32 **)(outer + 8))[1];
     dst32[2] = (*(s32 **)(outer + 8))[2];
     D_800A32B8++;
     func_80061FAC(dst16, (s32)dst32, rot);
-    SetRotMatrix((MATRIX *)D_800A3474);
+    SetRotMatrix(D_800A3474);
     w = (s16 *)(base + 0x10);
     h = (s16 *)(base + 0x12);
     tv = (VECTOR *)(base + 0x14);
@@ -925,8 +926,8 @@ void func_800620B8(s16 *pos, s32 *trans) {
     sv->vz = 0;
     sv->vy = 0;
     sv->vx = 0;
-    *(s32 *)D_800A34B0 = ReadGeomScreen() << 8;
-    *(s32 *)D_800A3490 = 0x2F;
+    *D_800A34B0 = ReadGeomScreen() << 8;
+    *D_800A3490 = 0x2F;
     alt32 = D_8009BA50; /* FAKE: alias; direct use scores 3 */
     strip16 = D_8009BA30; /* FAKE: alias; direct use scores 3 */
     alt16 = D_8009BA58; /* FAKE: alias; direct use scores 7 */
@@ -934,12 +935,12 @@ void func_800620B8(s16 *pos, s32 *trans) {
         strip32 = D_8009BA00; /* FAKE: alias, set here so loop.c hoists it */
         switch (D_800F1198[i].unk4 & 7) {
         case 3:
-            *(s16 *)D_800A34A8 = 0x151;
-            *(s16 *)D_800A34AC = 0xA8;
+            *D_800A34A8 = 0x151;
+            *D_800A34AC = 0xA8;
             goto sel_a;
         case 0:
-            *(s16 *)D_800A34A8 = 0x1C2;
-            *(s16 *)D_800A34AC = 0xE1;
+            *D_800A34A8 = 0x1C2;
+            *D_800A34AC = 0xE1;
         sel_a:
             /* FAKE: `- strip32 + strip32` round trip (combine-foldable chain-extender):
                combine folds it back to the direct `frame * 8 + strip32` (same RTL, zero
@@ -950,23 +951,23 @@ void func_800620B8(s16 *pos, s32 *trans) {
             if (D_8009BD44[0] & 1) {
                 D_800A348C = (s32)alt32;
             }
-            *(u16 *)D_800A349C = ((u16 *)D_800A3488)[2] + 0x1F;
-            *(u16 *)D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x1F;
+            *D_800A349C = ((u16 *)D_800A3488)[2] + 0x1F;
+            *D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x1F;
             break;
         case 2:
-            *(s16 *)D_800A34A8 = 0x50;
-            *(s16 *)D_800A34AC = 0x3C;
+            *D_800A34A8 = 0x50;
+            *D_800A34AC = 0x3C;
             goto sel_b;
         case 1:
-            *(s16 *)D_800A34A8 = 0x64;
-            *(s16 *)D_800A34AC = 0x78;
+            *D_800A34A8 = 0x64;
+            *D_800A34AC = 0x78;
         sel_b:
             D_800A348C = D_800A3488 = (D_800A32B8 & 3) * sizeof(*strip16) + (s32)strip16;
             if (D_8009BD44[0] & 1) {
                 D_800A348C = (s32)alt16;
             }
-            *(u16 *)D_800A349C = ((u16 *)D_800A3488)[2] + 0xF;
-            *(u16 *)D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x13;
+            *D_800A349C = ((u16 *)D_800A3488)[2] + 0xF;
+            *D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x13;
             break;
         }
         v->vx = D_800F1198[i].unk0 / 2 - ((s32 *)D_800A3470)[0];
@@ -978,47 +979,47 @@ void func_800620B8(s16 *pos, s32 *trans) {
            w/h -- there is no whole MATRIX here). Spelled (MATRIX *)base, base
            stays live across the loop: +4 bytes. */
         SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
-        RotTransPers(sv, (s32 *)D_800A34B8, flag, (s32 *)D_800A34CC);
+        RotTransPers(sv, D_800A34B8, flag, D_800A34CC);
         /* gte_stsz(r0) --- inline_c.h :1042-1046 */
         __asm__ volatile(
             "swc2   $19, 0(%0)\n"
             :: "r"(D_800A34D0) : "memory");
-        *z = func_80052C28(*(s32 *)D_800A34D0, 0);
-        if (*z < 0x1005 && (*(s32 *)D_800A34B0 / 256 >> 4) < *z) {
-            *(s32 *)D_800A3494 = (u16)(((((u16 *)D_800A348C)[0] >> 4) & 0x3F) + (((u16 *)D_800A348C)[1] << 6));
-            *(u16 *)D_800A3498 = ((u16 *)D_800A3488)[2];
-            *(u16 *)D_800A34A0 = ((u16 *)D_800A3488)[3];
-            *(s32 *)D_800A34D0 = *(s32 *)D_800A34D0 ? *(s32 *)D_800A34D0 : 1;
-            *(s32 *)D_800A34B4 = *(s32 *)D_800A34B0 / *(s32 *)D_800A34D0;
-            proj_w = *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4;
+        *z = func_80052C28(*D_800A34D0, 0);
+        if (*z < 0x1005 && (*D_800A34B0 / 256 >> 4) < *z) {
+            *D_800A3494 = (u16)(((((u16 *)D_800A348C)[0] >> 4) & 0x3F) + (((u16 *)D_800A348C)[1] << 6));
+            *D_800A3498 = ((u16 *)D_800A3488)[2];
+            *D_800A34A0 = ((u16 *)D_800A3488)[3];
+            *D_800A34D0 = *D_800A34D0 ? *D_800A34D0 : 1;
+            *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
+            proj_w = *D_800A34A8 * *D_800A34B4;
             width = proj_w > 0x200 ? proj_w >> 8 : 2;
             *w = width / 2;
-            proj_h = *(s16 *)D_800A34AC * *(s32 *)D_800A34B4;
+            proj_h = *D_800A34AC * *D_800A34B4;
             height = proj_h > 0x200 ? proj_h >> 8 : 2;
             *h = height;
             *h += (*h * rand() / 10) >> 14;
             SetPolyFT4(prim);
-            prim->tpage = *(s32 *)D_800A3490;
-            prim->clut = *(s32 *)D_800A3494;
+            prim->tpage = *D_800A3490;
+            prim->clut = *D_800A3494;
             prim->r0 = 0xFF;
             prim->g0 = 0x80;
             prim->b0 = 0x80;
-            prim->x0 = *(s32 *)D_800A34B8 - *w;
-            prim->y0 = (*(s32 *)D_800A34B8 >> 16) - *h;
-            prim->x1 = *w + *(s32 *)D_800A34B8;
-            prim->y1 = (*(s32 *)D_800A34B8 >> 16) - *h;
-            prim->x2 = *(s32 *)D_800A34B8 - *w;
-            prim->y2 = *(s32 *)D_800A34B8 >> 16;
-            prim->x3 = *w + *(s32 *)D_800A34B8;
-            prim->y3 = *(s32 *)D_800A34B8 >> 16;
-            prim->u0 = *(u16 *)D_800A3498;
-            prim->v0 = *(u16 *)D_800A34A0;
-            prim->u1 = *(u16 *)D_800A349C;
-            prim->v1 = *(u16 *)D_800A34A0;
-            prim->u2 = *(u16 *)D_800A3498;
-            prim->v2 = *(u16 *)D_800A34A4;
-            prim->u3 = *(u16 *)D_800A349C;
-            prim->v3 = *(u16 *)D_800A34A4;
+            prim->x0 = *D_800A34B8 - *w;
+            prim->y0 = (*D_800A34B8 >> 16) - *h;
+            prim->x1 = *w + *D_800A34B8;
+            prim->y1 = (*D_800A34B8 >> 16) - *h;
+            prim->x2 = *D_800A34B8 - *w;
+            prim->y2 = *D_800A34B8 >> 16;
+            prim->x3 = *w + *D_800A34B8;
+            prim->y3 = *D_800A34B8 >> 16;
+            prim->u0 = *D_800A3498;
+            prim->v0 = *D_800A34A0;
+            prim->u1 = *D_800A349C;
+            prim->v1 = *D_800A34A0;
+            prim->u2 = *D_800A3498;
+            prim->v2 = *D_800A34A4;
+            prim->u3 = *D_800A349C;
+            prim->v3 = *D_800A34A4;
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
             if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
@@ -1116,7 +1117,7 @@ s32 func_8006295C(void) {
         m->t[0] = D_800F0FB8[i].x - ((s32 *)D_800A3470)[0];
         m->t[1] = D_800F0FB8[i].y - ((s32 *)D_800A3470)[1];
         m->t[2] = D_800F0FB8[i].z - ((s32 *)D_800A3470)[2];
-        CompMatrix((MATRIX *)D_800A3474, m, cm);
+        CompMatrix(D_800A3474, m, cm);
         SetRotMatrix(cm);
         SetTransMatrix(cm);
         for (j = 0; j < 3; j++) {
@@ -1133,26 +1134,26 @@ s32 func_8006295C(void) {
                 D_800A3488 = j ? (s32)D_8009B970 : (s32)D_8009B968;
             }
             if (j) {
-                *(u16 *)D_800A349C = ((u16 *)D_800A3488)[2] + 0x3F;
+                *D_800A349C = ((u16 *)D_800A3488)[2] + 0x3F;
             } else {
-                *(u16 *)D_800A349C = ((u16 *)D_800A3488)[2] + 0x1F;
+                *D_800A349C = ((u16 *)D_800A3488)[2] + 0x1F;
             }
-            *(u16 *)D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x1F;
-            *(s32 *)D_800A3490 = 0x2E;
-            *(s32 *)D_800A3494 = (((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6)) << 16;
-            *(s32 *)D_800A3490 = *(s32 *)D_800A3490 << 16;
-            *(u16 *)D_800A3498 = ((u16 *)D_800A3488)[2];
-            *(u16 *)D_800A34A0 = ((u16 *)D_800A3488)[3];
-            *(u16 *)D_800A34D4 = *(u16 *)D_800A3498 + (*(u16 *)D_800A34A0 << 8);
-            *(u16 *)D_800A34D8 = *(u16 *)D_800A349C + (*(u16 *)D_800A34A0 << 8);
-            *(u16 *)D_800A34DC = *(u16 *)D_800A3498 + (*(u16 *)D_800A34A4 << 8);
-            *(u16 *)D_800A34E0 = *(u16 *)D_800A349C + (*(u16 *)D_800A34A4 << 8);
+            *D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x1F;
+            *D_800A3490 = 0x2E;
+            *D_800A3494 = (((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6)) << 16;
+            *D_800A3490 = *D_800A3490 << 16;
+            *D_800A3498 = ((u16 *)D_800A3488)[2];
+            *D_800A34A0 = ((u16 *)D_800A3488)[3];
+            *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
+            *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
+            *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
+            *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
             setlen(prim, 9);
             prim->code = 0x2E;
-            *(s32 *)&prim->u0 = *(u16 *)D_800A34D4 + *(s32 *)D_800A3494;
-            *(s32 *)&prim->u1 = *(u16 *)D_800A34D8 + *(s32 *)D_800A3490;
-            *(u16 *)&prim->u2 = *(u16 *)D_800A34DC;
-            *(u16 *)&prim->u3 = *(u16 *)D_800A34E0;
+            *(s32 *)&prim->u0 = *D_800A34D4 + *D_800A3494;
+            *(s32 *)&prim->u1 = *D_800A34D8 + *D_800A3490;
+            *(u16 *)&prim->u2 = *D_800A34DC;
+            *(u16 *)&prim->u3 = *D_800A34E0;
             SetPolyFT4(prim);
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
@@ -1163,12 +1164,12 @@ s32 func_8006295C(void) {
             __asm__ volatile(
                 "swc2   $19, 0(%0)\n"
                 :: "r"(D_800A34D0) : "memory");
-            *(s32 *)D_800A34D0 = func_80052C28(*(s32 *)D_800A34D0, 0);
-            if (*(s32 *)D_800A34D0 == 0) {
-                *(s32 *)D_800A34D0 = 1;
+            *D_800A34D0 = func_80052C28(*D_800A34D0, 0);
+            if (*D_800A34D0 == 0) {
+                *D_800A34D0 = 1;
             }
-            if (*(s32 *)D_800A34D0 < 0x1005) {
-                zbuf[count] = *(s32 *)D_800A34D0;
+            if (*D_800A34D0 < 0x1005) {
+                zbuf[count] = *D_800A34D0;
                 *(s32 *)&prim->x0 = sxy[0];
                 *(s32 *)&prim->x1 = sxy[1];
                 *(s32 *)&prim->x2 = sxy[2];
@@ -1187,9 +1188,9 @@ s32 func_8006295C(void) {
     if (D_800A37D4 != (s32)prim) {
         /* FAKE: `end` keeps the fill position and prim, the quad cursor,
            walks the same POLY_FT4 buffer again from its start to link each
-           quad; mechanism: global.c priority -- a fresh cursor local
-           (nrefs 10 / livelen 15) outranks the zbuf[k] giv and takes s0,
-           while prim's pseudo is already seated in s1 as in the target. */
+           quad (target: prim s1, the zbuf[k] giv s0, end s2). Linked through
+           a fresh cursor local instead, prim loses the tail refs and drops
+           to s2, the cursor takes s0 and the giv s1: score 37. */
         end = prim;
         for (prim = (POLY_FT4 *)D_800A37D4, k = 0; prim < end; prim++, k++) {
             AddPrim(g_gpu_ot_ptr + zbuf[k] * 4, prim);
@@ -1282,11 +1283,11 @@ s32 func_80063084(void) {
     v->vz = 0;
     v->vy = 0;
     v->vx = 0;
-    *(s32 *)D_800A34B0 = ReadGeomScreen() * 1000;
-    *(s16 *)D_800A34A8 = 0xC0;
-    *(s16 *)D_800A34AC = 0x60;
-    *(s32 *)D_800A3490 = 0x2E;
-    *(s32 *)D_800A3490 = *(s32 *)D_800A3490 << 16;
+    *D_800A34B0 = ReadGeomScreen() * 1000;
+    *D_800A34A8 = 0xC0;
+    *D_800A34AC = 0x60;
+    *D_800A3490 = 0x2E;
+    *D_800A3490 = *D_800A3490 << 16;
     for (i = 0; i < 12; i++) {
         bit = 1 << i;
         if (!(D_800A3448 & bit)) {
@@ -1308,7 +1309,7 @@ s32 func_80063084(void) {
                    0x14 below tv so tv is loaded as the translation. Spelled
                    (MATRIX *)base, base stays live across the loops: +20 bytes. */
                 SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
-                RotTransPers(v, (s32 *)D_800A34B8, interp, (s32 *)D_800A34CC);
+                RotTransPers(v, D_800A34B8, interp, D_800A34CC);
                 /* PsyQ libgte inline macro gte_stsz(r0) --- PsyQ Run-time
                  * Library Release 4.3 inline_c.h (DMPSX v3) :1042-1046,
                  * verbatim body, operand and clobbers. */
@@ -1322,34 +1323,34 @@ s32 func_80063084(void) {
                 } else {
                     D_800A3488 = (s32)D_8009B950;
                 }
-                *(s32 *)D_800A3494 = (((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6)) << 16;
-                *(u16 *)D_800A3498 = ((u16 *)D_800A3488)[2];
-                *(u16 *)D_800A34A0 = ((u16 *)D_800A3488)[3];
-                *(u16 *)D_800A349C = ((u16 *)D_800A3488)[2] + 0x3F;
-                *(u16 *)D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x3F;
-                *(u16 *)D_800A34D4 = *(u16 *)D_800A3498 + (*(u16 *)D_800A34A0 << 8);
-                *(u16 *)D_800A34D8 = *(u16 *)D_800A349C + (*(u16 *)D_800A34A0 << 8);
-                *(u16 *)D_800A34DC = *(u16 *)D_800A3498 + (*(u16 *)D_800A34A4 << 8);
-                *(u16 *)D_800A34E0 = *(u16 *)D_800A349C + (*(u16 *)D_800A34A4 << 8);
-                *z = func_80052C28(*(s32 *)D_800A34D0, 0);
-                if (*z < 0x1005 && *(s32 *)D_800A34B0 / 1000 >> 4 < *z) {
-                    *(s32 *)D_800A34B4 = *(s32 *)D_800A34B0 / *(s32 *)D_800A34D0;
+                *D_800A3494 = (((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6)) << 16;
+                *D_800A3498 = ((u16 *)D_800A3488)[2];
+                *D_800A34A0 = ((u16 *)D_800A3488)[3];
+                *D_800A349C = ((u16 *)D_800A3488)[2] + 0x3F;
+                *D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x3F;
+                *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
+                *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
+                *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
+                *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
+                *z = func_80052C28(*D_800A34D0, 0);
+                if (*z < 0x1005 && *D_800A34B0 / 1000 >> 4 < *z) {
+                    *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
                     /* Sprite size = base size * depth scale, in 1/256 units,
                        at least 8. */
-                    *(s16 *)D_800A34C0 = *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 > 0x800
-                        ? *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 >> 8 : 8;
-                    *(s32 *)D_800A34C8 = *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 > 0x800
-                        ? *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 >> 8 : 8;
+                    *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x800
+                        ? *D_800A34A8 * *D_800A34B4 >> 8 : 8;
+                    *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x800
+                        ? *D_800A34AC * *D_800A34B4 >> 8 : 8;
                     if (j == 0) {
                         if (D_800F0BEC[i] < 5) {
-                            *(s16 *)D_800A34C0 = *(s16 *)D_800A34C0 * (rcos((D_800F0BEC[i] << 10) / 5) * 3 / 4096 + 7) / 10;
+                            *D_800A34C0 = *D_800A34C0 * (rcos((D_800F0BEC[i] << 10) / 5) * 3 / 4096 + 7) / 10;
                         } else if (D_800F0BEC[i] < 16) {
-                            *(s16 *)D_800A34C0 = *(s16 *)D_800A34C0 * (rcos(((D_800F0BEC[i] - 5) << 10) / 11) * 7 / 4096) / 10;
+                            *D_800A34C0 = *D_800A34C0 * (rcos(((D_800F0BEC[i] - 5) << 10) / 11) * 7 / 4096) / 10;
                         }
                         if (D_800F0BEC[i] < 10) {
-                            *(s32 *)D_800A34C8 = *(s32 *)D_800A34C8 * (rsin((D_800F0BEC[i] << 10) / 10) * 85 / 4096) / 100;
+                            *D_800A34C8 = *D_800A34C8 * (rsin((D_800F0BEC[i] << 10) / 10) * 85 / 4096) / 100;
                         } else if (D_800F0BEC[i] < 16) {
-                            *(s32 *)D_800A34C8 = *(s32 *)D_800A34C8 * (rcos(((D_800F0BEC[i] - 10) << 10) / 6) * 85 / 4096) / 100;
+                            *D_800A34C8 = *D_800A34C8 * (rcos(((D_800F0BEC[i] - 10) << 10) / 6) * 85 / 4096) / 100;
                         }
                         if (D_8009BD44[0] & 1) {
                             *(s32 *)&prim->r0 = 0x808080;
@@ -1358,8 +1359,8 @@ s32 func_80063084(void) {
                         }
                     } else {
                         scale = rsin((D_800F0BEC[i] << 10) / 12) * 12 / 4096;
-                        *(s16 *)D_800A34C0 = *(s16 *)D_800A34C0 * scale / 10;
-                        *(s32 *)D_800A34C8 = *(s32 *)D_800A34C8 * scale / 10;
+                        *D_800A34C0 = *D_800A34C0 * scale / 10;
+                        *D_800A34C8 = *D_800A34C8 * scale / 10;
                         if (D_800F0BEC[i] >= 9) {
                             /* fade = age - 15 <= 0: the halo fades out over ages 9..15. */
                             *fade = D_800F0BEC[i] - 15;
@@ -1371,18 +1372,18 @@ s32 func_80063084(void) {
                     }
                     setlen(prim, 9);
                     prim->code = 0x2E;
-                    *(s16 *)D_800A34C0 = *(s16 *)D_800A34C0 >> 1;
-                    *(s16 *)D_800A34BC = -*(s16 *)D_800A34C0;
-                    *(s32 *)D_800A34C4 = *(s32 *)D_800A34C8 * 60 / 64;
-                    *(s32 *)D_800A34C8 = 0;
-                    *(s32 *)&prim->x0 = *(s32 *)D_800A34B8 + *(s16 *)D_800A34BC - (*(s32 *)D_800A34C4 << 16);
-                    *(s32 *)&prim->x1 = *(s32 *)D_800A34B8 + *(s16 *)D_800A34C0 - (*(s32 *)D_800A34C4 << 16);
-                    *(s32 *)&prim->x2 = *(s32 *)D_800A34B8 + *(s16 *)D_800A34BC + (*(s32 *)D_800A34C8 << 16);
-                    *(s32 *)&prim->x3 = *(s32 *)D_800A34B8 + *(s16 *)D_800A34C0 + (*(s32 *)D_800A34C8 << 16);
-                    *(s32 *)&prim->u0 = *(u16 *)D_800A34D4 + *(s32 *)D_800A3494;
-                    *(s32 *)&prim->u1 = *(u16 *)D_800A34D8 + *(s32 *)D_800A3490;
-                    *(u16 *)&prim->u2 = *(u16 *)D_800A34DC;
-                    *(u16 *)&prim->u3 = *(u16 *)D_800A34E0;
+                    *D_800A34C0 = *D_800A34C0 >> 1;
+                    *D_800A34BC = -*D_800A34C0;
+                    *D_800A34C4 = *D_800A34C8 * 60 / 64;
+                    *D_800A34C8 = 0;
+                    *(s32 *)&prim->x0 = *D_800A34B8 + *D_800A34BC - (*D_800A34C4 << 16);
+                    *(s32 *)&prim->x1 = *D_800A34B8 + *D_800A34C0 - (*D_800A34C4 << 16);
+                    *(s32 *)&prim->x2 = *D_800A34B8 + *D_800A34BC + (*D_800A34C8 << 16);
+                    *(s32 *)&prim->x3 = *D_800A34B8 + *D_800A34C0 + (*D_800A34C8 << 16);
+                    *(s32 *)&prim->u0 = *D_800A34D4 + *D_800A3494;
+                    *(s32 *)&prim->u1 = *D_800A34D8 + *D_800A3490;
+                    *(u16 *)&prim->u2 = *D_800A34DC;
+                    *(u16 *)&prim->u3 = *D_800A34E0;
                     D_800A34E4 = g_gpu_ot_ptr + *z * 4;
                     D_800A34E8 = (s32)prim;
                     *(u32 *)prim = (*(u32 *)prim & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
@@ -1417,11 +1418,11 @@ u8 func_80063B34(void) {
 }
 s32 func_80063E10(s32);
 u8 func_80063B78(void) {
-    *(s32 *)D_800A3480 = D_800A345C[0];
+    *D_800A3480 = D_800A345C[0];
     return func_80063E10(0);
 }
 u8 func_80063BA4(void) {
-    *(s32 *)D_800A3480 = D_800A345C[1];
+    *D_800A3480 = D_800A345C[1];
     return func_80063E10(1);
 }
 extern SVECTOR D_800F1000[][10];
@@ -1532,21 +1533,21 @@ s32 func_80063E10(s32 lane) {
         count = 10;
     }
     func_800644FC(&count, mats, lane);
-    D_800A3488 = (s32)D_8009B920[*(s32 *)D_800A3480];
+    D_800A3488 = (s32)D_8009B920[*D_800A3480];
     prim = (POLY_FT4 *)D_800A37D4;
-    *(s32 *)D_800A3490 = 0xE;
-    *(s32 *)D_800A3494 = (((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6)) << 16;
-    *(s32 *)D_800A3490 = *(s32 *)D_800A3490 << 16;
-    *(u16 *)D_800A3498 = ((u16 *)D_800A3488)[2];
-    *(u16 *)D_800A34A0 = ((u16 *)D_800A3488)[3];
-    *(u16 *)D_800A349C = ((u16 *)D_800A3488)[2] + 7;
-    *(u16 *)D_800A34A4 = ((u16 *)D_800A3488)[3] + 0xF;
-    *(u16 *)D_800A34D4 = *(u16 *)D_800A3498 + (*(u16 *)D_800A34A0 << 8);
-    *(u16 *)D_800A34D8 = *(u16 *)D_800A349C + (*(u16 *)D_800A34A0 << 8);
-    *(u16 *)D_800A34DC = *(u16 *)D_800A3498 + (*(u16 *)D_800A34A4 << 8);
-    *(u16 *)D_800A34E0 = *(u16 *)D_800A349C + (*(u16 *)D_800A34A4 << 8);
+    *D_800A3490 = 0xE;
+    *D_800A3494 = (((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6)) << 16;
+    *D_800A3490 = *D_800A3490 << 16;
+    *D_800A3498 = ((u16 *)D_800A3488)[2];
+    *D_800A34A0 = ((u16 *)D_800A3488)[3];
+    *D_800A349C = ((u16 *)D_800A3488)[2] + 7;
+    *D_800A34A4 = ((u16 *)D_800A3488)[3] + 0xF;
+    *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
+    *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
+    *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
+    *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
     *zn = 0;
-    *(s32 *)D_800A34B0 = ReadGeomScreen();
+    *D_800A34B0 = ReadGeomScreen();
     for (i = 0; i < count; i++) {
         /* FAKE: the slot's mask is named `bit` inside the test and not read
            again; mechanism: expand_binop expands the MEM operand's address,
@@ -1560,10 +1561,10 @@ s32 func_80063E10(s32 lane) {
         }
         setlen(prim, 9);
         prim->code = 0x2F;
-        *(s32 *)&prim->u0 = *(u16 *)D_800A34D4 + *(s32 *)D_800A3494;
-        *(s32 *)&prim->u1 = *(u16 *)D_800A34D8 + *(s32 *)D_800A3490;
-        *(u16 *)&prim->u2 = *(u16 *)D_800A34DC;
-        *(u16 *)&prim->u3 = *(u16 *)D_800A34E0;
+        *(s32 *)&prim->u0 = *D_800A34D4 + *D_800A3494;
+        *(s32 *)&prim->u1 = *D_800A34D8 + *D_800A3490;
+        *(u16 *)&prim->u2 = *D_800A34DC;
+        *(u16 *)&prim->u3 = *D_800A34E0;
         mats[i].t[0] = D_800F0EC8[lane][i].unk0 - ((s32 *)D_800A3470)[0];
         mats[i].t[1] = D_800F0EC8[lane][i].unk4 - ((s32 *)D_800A3470)[1];
         mats[i].t[2] = D_800F0EC8[lane][i].unk8 - ((s32 *)D_800A3470)[2];
@@ -1729,17 +1730,17 @@ s32 func_80063E10(s32 lane) {
         __asm__ volatile(
             "swc2   $19, 0(%0)\n"
             :: "r"(D_800A34D0) : "memory");
-        if (*(s32 *)D_800A34D0 <= 0) {
+        if (*D_800A34D0 <= 0) {
             continue;
         }
-        *(s32 *)D_800A34D0 = func_80052C28(*(s32 *)D_800A34D0 - 50, 0);
-        if (*(s32 *)D_800A34D0 >= 0x1005) {
+        *D_800A34D0 = func_80052C28(*D_800A34D0 - 50, 0);
+        if (*D_800A34D0 >= 0x1005) {
             continue;
         }
-        if ((*(s32 *)D_800A34B0 >> 4) >= *(s32 *)D_800A34D0) {
+        if ((*D_800A34B0 >> 4) >= *D_800A34D0) {
             continue;
         }
-        zbuf[(*zn)++] = *(s32 *)D_800A34D0;
+        zbuf[(*zn)++] = *D_800A34D0;
         /* gte_ldv0(r0) --- inline_c.h :16-20 (no clobber list) */
         __asm__ volatile(
             "lwc2   $0, 0(%0)\n"
@@ -1883,10 +1884,10 @@ s32 func_800646E8(void) {
         "ctc2   $14, $4\n"
         :: "r"(D_800A3474) : "$12", "$13", "$14");
     sv->vx = sv->vy = sv->vz = 0;
-    *(s32 *)D_800A34B0 = ReadGeomScreen() * 1000;
-    *(s16 *)D_800A34A8 = 0x40;
-    *(s16 *)D_800A34AC = 0x20;
-    *(s32 *)D_800A3490 = 0xE;
+    *D_800A34B0 = ReadGeomScreen() * 1000;
+    *D_800A34A8 = 0x40;
+    *D_800A34AC = 0x20;
+    *D_800A3490 = 0xE;
     for (i = 0, zp = zbuf; i < 16; i++) {
         bit = 1 << i;
         if (!(D_800A3444 & bit)) {
@@ -1904,34 +1905,34 @@ s32 func_800646E8(void) {
                here). Spelled (MATRIX *)(base + 4), base stays live across the
                loop: +24 bytes. */
             SetTransMatrix((MATRIX *)((u8 *)trans - 0x14));
-            RotTransPers((s32 *)sv, (s32 *)D_800A34B8, p, (s32 *)D_800A34CC);
+            RotTransPers(sv, D_800A34B8, p, D_800A34CC);
             /* gte_stsz(r0) --- inline_c.h :1042-1046 */
             __asm__ volatile(
                 "swc2   $19, 0(%0)\n"
                 :: "r"(D_800A34D0) : "memory");
             D_800A3488 = (s32)&D_8009B8E8[*frame];
-            *(s32 *)D_800A3494 = (u16)(((((TexRec *)D_800A3488)->clut_x >> 4) & 0x3F) + (((TexRec *)D_800A3488)->clut_y << 6));
-            *(u16 *)D_800A3498 = ((TexRec *)D_800A3488)->u;
-            *(u16 *)D_800A34A0 = ((TexRec *)D_800A3488)->v;
-            *(u16 *)D_800A349C = ((TexRec *)D_800A3488)->u + 0x3F;
-            *(u16 *)D_800A34A4 = ((TexRec *)D_800A3488)->v + 0x1F;
-            *zp = func_80052C28(*(s32 *)D_800A34D0, 0);
+            *D_800A3494 = (u16)(((((TexRec *)D_800A3488)->clut_x >> 4) & 0x3F) + (((TexRec *)D_800A3488)->clut_y << 6));
+            *D_800A3498 = ((TexRec *)D_800A3488)->u;
+            *D_800A34A0 = ((TexRec *)D_800A3488)->v;
+            *D_800A349C = ((TexRec *)D_800A3488)->u + 0x3F;
+            *D_800A34A4 = ((TexRec *)D_800A3488)->v + 0x1F;
+            *zp = func_80052C28(*D_800A34D0, 0);
             if (*zp >= 0x1005) {
                 continue;
             }
-            if ((*(s32 *)D_800A34B0 / 1000 >> 4) >= *zp) {
+            if ((*D_800A34B0 / 1000 >> 4) >= *zp) {
                 continue;
             }
-            *(s32 *)D_800A34B4 = *(s32 *)D_800A34B0 / *(s32 *)D_800A34D0;
-            *w = *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 > 0x800
-                ? (*(s16 *)D_800A34A8 * *(s32 *)D_800A34B4) >> 8 : 8;
-            *h = *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 > 0x800
-                ? (*(s16 *)D_800A34AC * *(s32 *)D_800A34B4) >> 8 : 8;
+            *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
+            *w = *D_800A34A8 * *D_800A34B4 > 0x800
+                ? (*D_800A34A8 * *D_800A34B4) >> 8 : 8;
+            *h = *D_800A34AC * *D_800A34B4 > 0x800
+                ? (*D_800A34AC * *D_800A34B4) >> 8 : 8;
             *w += (*w * D_800F0BCC[i]) >> 5;
             *h += (*h * (D_800F0BCC[i] << 2)) >> 8;
             SetPolyFT4(prim);
-            prim->tpage = *(s32 *)D_800A3490;
-            prim->clut = *(s32 *)D_800A3494;
+            prim->tpage = *D_800A3490;
+            prim->clut = *D_800A3494;
             if (D_8009BD44[0] & 1) {
                 prim->r0 = 0x80;
                 prim->g0 = 0x80;
@@ -1941,22 +1942,22 @@ s32 func_800646E8(void) {
                 prim->g0 = 0x8C;
                 prim->b0 = 0x50;
             }
-            prim->x0 = *(s32 *)D_800A34B8 - *w / 2;
-            prim->y0 = (*(s32 *)D_800A34B8 >> 16) - *h * 28 / 32;
-            prim->x1 = *(s32 *)D_800A34B8 + *w / 2;
-            prim->y1 = (*(s32 *)D_800A34B8 >> 16) - *h * 28 / 32;
-            prim->x2 = *(s32 *)D_800A34B8 - *w / 2;
-            prim->y2 = (*(s32 *)D_800A34B8 >> 16) + *h / 8;
-            prim->x3 = *(s32 *)D_800A34B8 + *w / 2;
-            prim->y3 = (*(s32 *)D_800A34B8 >> 16) + *h / 8;
-            prim->u0 = *(u16 *)D_800A3498;
-            prim->v0 = *(u16 *)D_800A34A0;
-            prim->u1 = *(u16 *)D_800A349C;
-            prim->v1 = *(u16 *)D_800A34A0;
-            prim->u2 = *(u16 *)D_800A3498;
-            prim->v2 = *(u16 *)D_800A34A4;
-            prim->u3 = *(u16 *)D_800A349C;
-            prim->v3 = *(u16 *)D_800A34A4;
+            prim->x0 = *D_800A34B8 - *w / 2;
+            prim->y0 = (*D_800A34B8 >> 16) - *h * 28 / 32;
+            prim->x1 = *D_800A34B8 + *w / 2;
+            prim->y1 = (*D_800A34B8 >> 16) - *h * 28 / 32;
+            prim->x2 = *D_800A34B8 - *w / 2;
+            prim->y2 = (*D_800A34B8 >> 16) + *h / 8;
+            prim->x3 = *D_800A34B8 + *w / 2;
+            prim->y3 = (*D_800A34B8 >> 16) + *h / 8;
+            prim->u0 = *D_800A3498;
+            prim->v0 = *D_800A34A0;
+            prim->u1 = *D_800A349C;
+            prim->v1 = *D_800A34A0;
+            prim->u2 = *D_800A3498;
+            prim->v2 = *D_800A34A4;
+            prim->u3 = *D_800A349C;
+            prim->v3 = *D_800A34A4;
             SetShadeTex(prim, 0);
             SetSemiTrans(prim, 1);
             if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
@@ -2217,9 +2218,9 @@ u8 func_80065434(void) {
 u8 func_80065484(void) {
     unsigned int temp_v1;
     u8 v0;
-    *(s32 *)D_800A3484 = (s32)*(s16 *)&D_800A3440;
+    *D_800A3484 = D_800A3440;
     v0 = func_80065800(5);
-    temp_v1 = *(s32 *)D_800A3484;
+    temp_v1 = *D_800A3484;
     switch (temp_v1) {
     case 0: {
         s16 *p = &D_800F0BA8[5];
@@ -2458,18 +2459,18 @@ u8 func_80065800(s32 arg0) {
         "sra    $12, $12, 2\n"
         "sw     $12, 0(%0)\n"
         :: "r"(D_800A34D0) : "$12", "memory");
-    *(s32 *)D_800A34D0 = *(s32 *)D_800A34D0 ? *(s32 *)D_800A34D0 << 2 : 1;
+    *D_800A34D0 = *D_800A34D0 ? *D_800A34D0 << 2 : 1;
 
 again:
-    *(s16 *)D_800A34A8 = 0x20;
-    *(s16 *)D_800A34AC = 0x20;
+    *D_800A34A8 = 0x20;
+    *D_800A34AC = 0x20;
     *p_tw = 0x40;
     *p_th = 0x40;
-    *(s32 *)D_800A3490 = 0x2E;
+    *D_800A3490 = 0x2E;
     switch (arg0) {
     case 1:
     case 2:
-        if (*(s32 *)D_800A34D0 > 4000) {
+        if (*D_800A34D0 > 4000) {
             D_800A3488 = (s32)D_8009B8D0;
         } else {
             D_800A3488 = (s32)D_8009B8D8;
@@ -2488,8 +2489,8 @@ again:
         prim->r0 = 0xFF;
         prim->g0 = D_800F0BA8[arg0];
         prim->b0 = 0x60;
-        *(s16 *)D_800A34A8 = 0xC0;
-        *(s16 *)D_800A34AC = 0xC0;
+        *D_800A34A8 = 0xC0;
+        *D_800A34AC = 0xC0;
         break;
     case 5:
         if (D_800F0BA8[4] > 0x800) {
@@ -2543,12 +2544,12 @@ again:
         prim->b0 = 0xFF;
     size_sel:
         if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
-            *(s16 *)D_800A34A8 = 0x80;
-            *(s16 *)D_800A34AC = 0x80;
-            *(s32 *)D_800A3490 = 0x2F;
+            *D_800A34A8 = 0x80;
+            *D_800A34AC = 0x80;
+            *D_800A3490 = 0x2F;
         } else {
-            *(s16 *)D_800A34A8 = 0x20;
-            *(s16 *)D_800A34AC = 0x80;
+            *D_800A34A8 = 0x20;
+            *D_800A34AC = 0x80;
             *p_tw = 0x40;
             *p_th = 0x10;
         }
@@ -2563,8 +2564,8 @@ again:
         prim->r0 = D_800F0BA8[arg0 - 2] * 2 / 3;
         prim->g0 = D_800F0BA8[arg0 - 2] / 2;
         prim->b0 = 0xFF;
-        *(s16 *)D_800A34A8 = 0x100;
-        *(s16 *)D_800A34AC = 0x100;
+        *D_800A34A8 = 0x100;
+        *D_800A34AC = 0x100;
         break;
     case 12:
     case 13:
@@ -2573,22 +2574,22 @@ again:
         prim->r0 = 0xC0;
         prim->g0 = 0x70;
         prim->b0 = 0x13;
-        *(s16 *)D_800A34A8 *= 2;
-        *(s16 *)D_800A34AC *= 2;
+        *D_800A34A8 *= 2;
+        *D_800A34AC *= 2;
         if (D_800F0BA8[arg0] >= 8) {
             D_800A3488 = (s32)D_8009B8C8;
             n = 10 - D_800F0BA8[arg0];
             prim->r0 = n << 6;
             prim->g0 = n * 0x70 / 3;
             prim->b0 = n * 0x60 / 15;
-            *(s32 *)D_800A3490 = 0x2E;
+            *D_800A3490 = 0x2E;
         } else {
             if (D_800F0BA8[arg0] >= 5) {
                 D_800A3488 = (s32)D_8009B9F0;
             } else {
                 D_800A3488 = (s32)D_8009B9E8;
             }
-            *(s32 *)D_800A3490 = 0x2F;
+            *D_800A3490 = 0x2F;
         }
         break;
     case 16:
@@ -2599,42 +2600,42 @@ again:
         prim->b0 = 0xFF;
         break;
     }
-    *(s32 *)D_800A3494 = (u16)(((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6));
-    *(u16 *)D_800A3498 = ((u16 *)D_800A3488)[2];
-    *(u16 *)D_800A34A0 = ((u16 *)D_800A3488)[3];
-    *(u16 *)D_800A349C = *p_tw + ((u16 *)D_800A3488)[2] - 1;
-    *(u16 *)D_800A34A4 = *p_th + ((u16 *)D_800A3488)[3] - 1;
-    *(s32 *)D_800A34B0 = ReadGeomScreen() * 1000;
-    *(s32 *)D_800A34B4 = *(s32 *)D_800A34B0 / *(s32 *)D_800A34D0;
-    *p_w = *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 > 0x200
-               ? *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 >> 8 : 6;
-    *p_h = *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 > 0x200
-               ? *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 >> 8 : 6;
+    *D_800A3494 = (u16)(((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6));
+    *D_800A3498 = ((u16 *)D_800A3488)[2];
+    *D_800A34A0 = ((u16 *)D_800A3488)[3];
+    *D_800A349C = *p_tw + ((u16 *)D_800A3488)[2] - 1;
+    *D_800A34A4 = *p_th + ((u16 *)D_800A3488)[3] - 1;
+    *D_800A34B0 = ReadGeomScreen() * 1000;
+    *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
+    *p_w = *D_800A34A8 * *D_800A34B4 > 0x200
+               ? *D_800A34A8 * *D_800A34B4 >> 8 : 6;
+    *p_h = *D_800A34AC * *D_800A34B4 > 0x200
+               ? *D_800A34AC * *D_800A34B4 >> 8 : 6;
     SetPolyFT4(prim);
-    prim->tpage = *(s32 *)D_800A3490;
-    prim->clut = *(s32 *)D_800A3494;
-    prim->u0 = *(u16 *)D_800A3498;
-    prim->v0 = *(u16 *)D_800A34A0;
-    prim->u1 = *(u16 *)D_800A349C;
-    prim->v1 = *(u16 *)D_800A34A0;
-    prim->u2 = *(u16 *)D_800A3498;
-    prim->v2 = *(u16 *)D_800A34A4;
-    prim->u3 = *(u16 *)D_800A349C;
-    prim->v3 = *(u16 *)D_800A34A4;
+    prim->tpage = *D_800A3490;
+    prim->clut = *D_800A3494;
+    prim->u0 = *D_800A3498;
+    prim->v0 = *D_800A34A0;
+    prim->u1 = *D_800A349C;
+    prim->v1 = *D_800A34A0;
+    prim->u2 = *D_800A3498;
+    prim->v2 = *D_800A34A4;
+    prim->u3 = *D_800A349C;
+    prim->v3 = *D_800A34A4;
     SetShadeTex(prim, 0);
     SetSemiTrans(prim, 1);
     switch (arg0) {
     case 0:
         *p_w = (u16)*p_w * 8 + (*p_w * rcos(D_800F0BA8[arg0] & 0xFFF) >> 9);
         *p_h = (u16)*p_h * 2 + (*p_h * rcos((D_800F0BA8[arg0] + 0x7FF) & 0xFFF) >> 11);
-        prim->x0 = *(s32 *)D_800A34B8 - *p_w / 2;
-        prim->y0 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 2;
-        prim->x1 = *(s32 *)D_800A34B8 + *p_w / 2;
-        prim->y1 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 2;
-        prim->x2 = *(s32 *)D_800A34B8 - *p_w / 2;
-        prim->y2 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 2;
-        prim->x3 = *(s32 *)D_800A34B8 + *p_w / 2;
-        prim->y3 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 2;
+        prim->x0 = *D_800A34B8 - *p_w / 2;
+        prim->y0 = (*D_800A34B8 >> 16) - *p_h / 2;
+        prim->x1 = *D_800A34B8 + *p_w / 2;
+        prim->y1 = (*D_800A34B8 >> 16) - *p_h / 2;
+        prim->x2 = *D_800A34B8 - *p_w / 2;
+        prim->y2 = (*D_800A34B8 >> 16) + *p_h / 2;
+        prim->x3 = *D_800A34B8 + *p_w / 2;
+        prim->y3 = (*D_800A34B8 >> 16) + *p_h / 2;
         break;
     case 1:
     case 2:
@@ -2667,14 +2668,14 @@ again:
             ApplyRotMatrix(p_v, dst);
             dst++;
         } while (++i < 4);
-        prim->x0 = *(s32 *)D_800A34B8 + p_t[0].vx / 2;
-        prim->y0 = (*(s32 *)D_800A34B8 >> 16) + p_t[0].vy / 4;
-        prim->x1 = *(s32 *)D_800A34B8 + p_t[1].vx / 2;
-        prim->y1 = (*(s32 *)D_800A34B8 >> 16) + p_t[1].vy / 4;
-        prim->x2 = *(s32 *)D_800A34B8 + p_t[2].vx / 2;
-        prim->y2 = (*(s32 *)D_800A34B8 >> 16) + p_t[2].vy / 4;
-        prim->x3 = *(s32 *)D_800A34B8 + p_t[3].vx / 2;
-        prim->y3 = (*(s32 *)D_800A34B8 >> 16) + p_t[3].vy / 4;
+        prim->x0 = *D_800A34B8 + p_t[0].vx / 2;
+        prim->y0 = (*D_800A34B8 >> 16) + p_t[0].vy / 4;
+        prim->x1 = *D_800A34B8 + p_t[1].vx / 2;
+        prim->y1 = (*D_800A34B8 >> 16) + p_t[1].vy / 4;
+        prim->x2 = *D_800A34B8 + p_t[2].vx / 2;
+        prim->y2 = (*D_800A34B8 >> 16) + p_t[2].vy / 4;
+        prim->x3 = *D_800A34B8 + p_t[3].vx / 2;
+        prim->y3 = (*D_800A34B8 >> 16) + p_t[3].vy / 4;
         break;
     case 12:
     case 13:
@@ -2693,14 +2694,14 @@ again:
         *p_w = *p_w * rsin(D_800F0BA8[arg0] & 0xFFF) >> 11;
         *p_h = *p_h * rsin(D_800F0BA8[arg0] & 0xFFF) >> 11;
     quad:
-        prim->x0 = *(s32 *)D_800A34B8 - *p_w;
-        prim->y0 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 2;
-        prim->x1 = *p_w + *(s32 *)D_800A34B8;
-        prim->y1 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 2;
-        prim->x2 = *(s32 *)D_800A34B8 - *p_w;
-        prim->y2 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 2;
-        prim->x3 = *p_w + *(s32 *)D_800A34B8;
-        prim->y3 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 2;
+        prim->x0 = *D_800A34B8 - *p_w;
+        prim->y0 = (*D_800A34B8 >> 16) - *p_h / 2;
+        prim->x1 = *p_w + *D_800A34B8;
+        prim->y1 = (*D_800A34B8 >> 16) - *p_h / 2;
+        prim->x2 = *D_800A34B8 - *p_w;
+        prim->y2 = (*D_800A34B8 >> 16) + *p_h / 2;
+        prim->x3 = *p_w + *D_800A34B8;
+        prim->y3 = (*D_800A34B8 >> 16) + *p_h / 2;
         break;
     case 5:
         if (D_800F0BA8[arg0] < 0x1000) {
@@ -2710,14 +2711,14 @@ again:
             *p_h = 0;
             *p_w = 0;
         }
-        prim->x0 = *(s32 *)D_800A34B8 - *p_w / 4;
-        prim->y0 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 4;
-        prim->x1 = *(s32 *)D_800A34B8 + *p_w / 4;
-        prim->y1 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 4;
-        prim->x2 = *(s32 *)D_800A34B8 - *p_w / 4;
-        prim->y2 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 4;
-        prim->x3 = *(s32 *)D_800A34B8 + *p_w / 4;
-        prim->y3 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 4;
+        prim->x0 = *D_800A34B8 - *p_w / 4;
+        prim->y0 = (*D_800A34B8 >> 16) - *p_h / 4;
+        prim->x1 = *D_800A34B8 + *p_w / 4;
+        prim->y1 = (*D_800A34B8 >> 16) - *p_h / 4;
+        prim->x2 = *D_800A34B8 - *p_w / 4;
+        prim->y2 = (*D_800A34B8 >> 16) + *p_h / 4;
+        prim->x3 = *D_800A34B8 + *p_w / 4;
+        prim->y3 = (*D_800A34B8 >> 16) + *p_h / 4;
         break;
     case 6:
     case 10:
@@ -2734,32 +2735,32 @@ again:
             *p_h = *p_h * rcos((D_800F0BA8[arg0] << 9) / 255) >> 12;
         }
         if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
-            prim->x0 = *(s32 *)D_800A34B8 - *p_w;
-            prim->y0 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 2;
-            prim->x1 = *p_w + *(s32 *)D_800A34B8;
-            prim->y1 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 2;
-            prim->x2 = *(s32 *)D_800A34B8 - *p_w;
-            prim->y2 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 2;
-            prim->x3 = *p_w + *(s32 *)D_800A34B8;
-            prim->y3 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 2;
+            prim->x0 = *D_800A34B8 - *p_w;
+            prim->y0 = (*D_800A34B8 >> 16) - *p_h / 2;
+            prim->x1 = *p_w + *D_800A34B8;
+            prim->y1 = (*D_800A34B8 >> 16) - *p_h / 2;
+            prim->x2 = *D_800A34B8 - *p_w;
+            prim->y2 = (*D_800A34B8 >> 16) + *p_h / 2;
+            prim->x3 = *p_w + *D_800A34B8;
+            prim->y3 = (*D_800A34B8 >> 16) + *p_h / 2;
         } else if (D_800F0BA8[arg0] < 0x96) {
-            prim->x0 = *(s32 *)D_800A34B8 - *p_w / 2;
-            prim->y0 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 2;
-            prim->x1 = *(s32 *)D_800A34B8 - *p_w / 2;
-            prim->y1 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 2;
-            prim->x2 = *(s32 *)D_800A34B8 + *p_w / 2;
-            prim->y2 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 2;
-            prim->x3 = *(s32 *)D_800A34B8 + *p_w / 2;
-            prim->y3 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 2;
+            prim->x0 = *D_800A34B8 - *p_w / 2;
+            prim->y0 = (*D_800A34B8 >> 16) + *p_h / 2;
+            prim->x1 = *D_800A34B8 - *p_w / 2;
+            prim->y1 = (*D_800A34B8 >> 16) - *p_h / 2;
+            prim->x2 = *D_800A34B8 + *p_w / 2;
+            prim->y2 = (*D_800A34B8 >> 16) + *p_h / 2;
+            prim->x3 = *D_800A34B8 + *p_w / 2;
+            prim->y3 = (*D_800A34B8 >> 16) - *p_h / 2;
         } else {
-            prim->x0 = *(s32 *)D_800A34B8;
-            prim->y0 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 2;
-            prim->x1 = *(s32 *)D_800A34B8;
-            prim->y1 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 2;
-            prim->x2 = *p_w + *(s32 *)D_800A34B8;
-            prim->y2 = (*(s32 *)D_800A34B8 >> 16) + *p_h / 2;
-            prim->x3 = *p_w + *(s32 *)D_800A34B8;
-            prim->y3 = (*(s32 *)D_800A34B8 >> 16) - *p_h / 2;
+            prim->x0 = *D_800A34B8;
+            prim->y0 = (*D_800A34B8 >> 16) + *p_h / 2;
+            prim->x1 = *D_800A34B8;
+            prim->y1 = (*D_800A34B8 >> 16) - *p_h / 2;
+            prim->x2 = *p_w + *D_800A34B8;
+            prim->y2 = (*D_800A34B8 >> 16) + *p_h / 2;
+            prim->x3 = *p_w + *D_800A34B8;
+            prim->y3 = (*D_800A34B8 >> 16) - *p_h / 2;
         }
         if (arg0 < 9) {
             AddPrim(g_gpu_ot_ptr + 4, prim);
@@ -3076,21 +3077,21 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
     D_800A3724 = outer + 0x1AC;
     *(s32 *)(outer + 0x80) = D_800A37D4;
     *(s32 *)(outer + 4) = 0x895440;
-    *(s32 *)D_800A3490 = 0x2E;
+    *D_800A3490 = 0x2E;
 
     if (arg0 < 2) {
         D_800A3488 = (s32)D_8009B890;
         *(s16 *)(outer + 2) = 7;
         *(s16 *)(outer + 0) = 7;
-        *(s16 *)D_800A34A8 = 0x40;
-        *(s16 *)D_800A34AC = 0x20;
+        *D_800A34A8 = 0x40;
+        *D_800A34AC = 0x20;
         D_800F0B98[arg0] = 3;
     } else if (arg0 < 4) {
         D_800A3488 = (s32)D_8009B890;
         *(s16 *)(outer + 2) = 7;
         *(s16 *)(outer + 0) = 7;
-        *(s16 *)D_800A34A8 = 0x20;
-        *(s16 *)D_800A34AC = 0x10;
+        *D_800A34A8 = 0x20;
+        *D_800A34AC = 0x10;
         D_800F0B98[arg0] = 3;
     } else if (arg0 < 6) {
         s16 lv = D_800EFC8A[arg1 * 0x1E0] >> 3;
@@ -3105,31 +3106,31 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
         }
         *(s16 *)(outer + 0) = 0x1F;
         *p2 = 0x20;
-        *(s16 *)D_800A34A8 = 0xC0;
-        *(s16 *)D_800A34AC = 0x30;
-        *(s32 *)D_800A3490 = 0xF;
+        *D_800A34A8 = 0xC0;
+        *D_800A34AC = 0x30;
+        *D_800A3490 = 0xF;
         D_800F0B98[arg0] = 1;
     } else if (arg0 < 8) {
-        *(s32 *)D_800A3490 = 0x2E;
+        *D_800A3490 = 0x2E;
         D_800A3488 = (s32)D_8009B8B0;
         *(s16 *)(outer + 2) = 0xF;
         *(s16 *)(outer + 0) = 0xF;
-        *(s16 *)D_800A34A8 = 0xC0;
-        *(s16 *)D_800A34AC = 0x60;
+        *D_800A34A8 = 0xC0;
+        *D_800A34AC = 0x60;
         D_800F0B98[arg0] = 2;
     }
 
     tbl = (u16 *)D_800A3488;
-    *(s32 *)D_800A3494 = (((tbl[0] >> 4) & 0x3F) + (tbl[1] << 6)) << 16;
-    *(s32 *)D_800A3490 <<= 16;
-    *(s16 *)D_800A3498 = ((u16 *)D_800A3488)[2];
-    *(s16 *)D_800A34A0 = ((u16 *)D_800A3488)[3];
-    *(s16 *)D_800A349C = *(u16 *)outer + ((u16 *)D_800A3488)[2];
-    *(s16 *)D_800A34A4 = *(u16 *)p2 + ((u16 *)D_800A3488)[3];
-    *(s16 *)D_800A34D4 = *(u16 *)D_800A3498 + (*(u16 *)D_800A34A0 << 8);
-    *(s16 *)D_800A34D8 = *(u16 *)D_800A349C + (*(u16 *)D_800A34A0 << 8);
-    *(s16 *)D_800A34DC = *(u16 *)D_800A3498 + (*(u16 *)D_800A34A4 << 8);
-    *(s16 *)D_800A34E0 = *(u16 *)D_800A349C + (*(u16 *)D_800A34A4 << 8);
+    *D_800A3494 = (((tbl[0] >> 4) & 0x3F) + (tbl[1] << 6)) << 16;
+    *D_800A3490 <<= 16;
+    *D_800A3498 = ((u16 *)D_800A3488)[2];
+    *D_800A34A0 = ((u16 *)D_800A3488)[3];
+    *D_800A349C = *(u16 *)outer + ((u16 *)D_800A3488)[2];
+    *D_800A34A4 = *(u16 *)p2 + ((u16 *)D_800A3488)[3];
+    *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
+    *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
+    *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
+    *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
 
     /* PsyQ libgte inline macro gte_SetRotMatrix(r0) --- PsyQ Run-time Library
      * Release 4.3 inline_c.h (DMPSX v3) :297-310,
@@ -3349,59 +3350,59 @@ void func_80067D14(s32 arg0, s32 arg1) {
             "swc2   $19, 0(%0)\n"
             :: "r"(D_800A34D0) : "memory");
 
-        if (*(s32 *)D_800A34D0 < 0) {
+        if (*D_800A34D0 < 0) {
             continue;
         }
-        ((s32 *)D_800A34D0)[1] = *(s32 *)D_800A34D0 ? *(s32 *)D_800A34D0 : 1;
-        *(s32 *)D_800A34D0 = func_80052C28(((s32 *)D_800A34D0)[1], 0);
-        if (*(s32 *)D_800A34D0 == 0) {
-            *(s32 *)D_800A34D0 = 1;
+        D_800A34D0[1] = *D_800A34D0 ? *D_800A34D0 : 1;
+        *D_800A34D0 = func_80052C28(D_800A34D0[1], 0);
+        if (*D_800A34D0 == 0) {
+            *D_800A34D0 = 1;
         }
-        *(s32 *)D_800A34CC = 1;
-        if (*(s32 *)D_800A34D0 >= 0x1005 || *(s32 *)D_800A34CC == 0) {
+        *D_800A34CC = 1;
+        if (*D_800A34D0 >= 0x1005 || *D_800A34CC == 0) {
             continue;
         }
 
         if (arg0 < 2) {
-            *(s32 *)D_800A34B4 = *(s32 *)D_800A34B0 * 200 / ((s32 *)D_800A34D0)[1];
-            *(s16 *)D_800A34C0 = *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 > 0x200
-                                     ? *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 >> 9 : 1;
-            *(s32 *)D_800A34C8 = *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 > 0x200
-                                     ? *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 >> 9 : 1;
+            *D_800A34B4 = *D_800A34B0 * 200 / D_800A34D0[1];
+            *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x200
+                                     ? *D_800A34A8 * *D_800A34B4 >> 9 : 1;
+            *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x200
+                                     ? *D_800A34AC * *D_800A34B4 >> 9 : 1;
         } else if (arg0 < 4) {
-            *(s32 *)D_800A34B4 = *(s32 *)D_800A34B0 * 200 / ((s32 *)D_800A34D0)[1];
-            *(s16 *)D_800A34C0 = *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 > 0x200
-                                     ? *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 >> 9 : 1;
-            *(s32 *)D_800A34C8 = *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 > 0x200
-                                     ? *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 >> 9 : 1;
-            *(s16 *)D_800A34C0 += *(s16 *)D_800A34C0 * 20 / (*p_life * 6 + 1);
-            *(s32 *)D_800A34C8 += *(s32 *)D_800A34C8 * 20 / (*p_life * 6 + 1);
+            *D_800A34B4 = *D_800A34B0 * 200 / D_800A34D0[1];
+            *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x200
+                                     ? *D_800A34A8 * *D_800A34B4 >> 9 : 1;
+            *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x200
+                                     ? *D_800A34AC * *D_800A34B4 >> 9 : 1;
+            *D_800A34C0 += *D_800A34C0 * 20 / (*p_life * 6 + 1);
+            *D_800A34C8 += *D_800A34C8 * 20 / (*p_life * 6 + 1);
         } else if (arg0 < 6) {
-            *(s32 *)D_800A34B4 = *(s32 *)D_800A34B0 * 200 / ((s32 *)D_800A34D0)[1];
-            *(s16 *)D_800A34C0 = *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 > 0x200
-                                     ? *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 >> 9 : 1;
-            *(s32 *)D_800A34C8 = *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 > 0x200
-                                     ? *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 >> 9 : 1;
-            *(s16 *)D_800A34C0 += *(s16 *)D_800A34C0 * *p_life / 2;
-            *(s32 *)D_800A34C8 += *(s32 *)D_800A34C8 * *p_life / 2;
+            *D_800A34B4 = *D_800A34B0 * 200 / D_800A34D0[1];
+            *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x200
+                                     ? *D_800A34A8 * *D_800A34B4 >> 9 : 1;
+            *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x200
+                                     ? *D_800A34AC * *D_800A34B4 >> 9 : 1;
+            *D_800A34C0 += *D_800A34C0 * *p_life / 2;
+            *D_800A34C8 += *D_800A34C8 * *p_life / 2;
         } else if (arg0 < 8) {
-            *(s32 *)D_800A34B4 = *(s32 *)D_800A34B0 * 200 / ((s32 *)D_800A34D0)[1];
-            *(s16 *)D_800A34C0 = *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 > 0x200
-                                     ? *(s16 *)D_800A34A8 * *(s32 *)D_800A34B4 >> 9 : 1;
-            *(s32 *)D_800A34C8 = *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 > 0x200
-                                     ? *(s16 *)D_800A34AC * *(s32 *)D_800A34B4 >> 9 : 1;
+            *D_800A34B4 = *D_800A34B0 * 200 / D_800A34D0[1];
+            *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x200
+                                     ? *D_800A34A8 * *D_800A34B4 >> 9 : 1;
+            *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x200
+                                     ? *D_800A34AC * *D_800A34B4 >> 9 : 1;
             sxy = (s16 *)D_800A34B8;
             sxy[2] += rand() * 20 / 32768;
             sxy[3] += rand() * 10 / 32768;
         }
-        if (*(s16 *)D_800A34C0 > *(s16 *)D_800A34A8 * 2) {
-            *(s16 *)D_800A34C0 = *(s16 *)D_800A34A8 >> 1;
-            *(s32 *)D_800A34C8 = *(s16 *)D_800A34AC >> 1;
+        if (*D_800A34C0 > *D_800A34A8 * 2) {
+            *D_800A34C0 = *D_800A34A8 >> 1;
+            *D_800A34C8 = *D_800A34AC >> 1;
         }
-        *(s16 *)D_800A34BC = -*(s16 *)D_800A34C0;
-        *(s32 *)D_800A34C4 = -*(s32 *)D_800A34C8;
-        *(s32 *)D_800A34C8 <<= 16;
-        *(s32 *)D_800A34C4 <<= 16;
+        *D_800A34BC = -*D_800A34C0;
+        *D_800A34C4 = -*D_800A34C8;
+        *D_800A34C8 <<= 16;
+        *D_800A34C4 <<= 16;
 
         sum = p_out[0] + p_out[1] + p_out[2];
         if (*p_rad / 3 < sum) {
@@ -3417,19 +3418,19 @@ void func_80067D14(s32 arg0, s32 arg1) {
            SOTN: src/dra/8BEF8.c:185 @aa53500
            SOTN: src/st/cat/e_bone_ark.c:436 @aa53500 */
         for (; *p_n >= 0; (*p_n)--) {
-            p_ot[*p_prim - (POLY_FT4 *)D_800A37D4] = *(s32 *)D_800A34D0;
+            p_ot[*p_prim - (POLY_FT4 *)D_800A37D4] = *D_800A34D0;
             *(s32 *)&(*p_prim)->x0 =
-                ((s32 *)D_800A34B8)[*p_n] + *(s16 *)D_800A34BC + *(s32 *)D_800A34C4;
+                D_800A34B8[*p_n] + *D_800A34BC + *D_800A34C4;
             *(s32 *)&(*p_prim)->x1 =
-                ((s32 *)D_800A34B8)[*p_n] + *(s16 *)D_800A34C0 + *(s32 *)D_800A34C4;
+                D_800A34B8[*p_n] + *D_800A34C0 + *D_800A34C4;
             *(s32 *)&(*p_prim)->x2 =
-                ((s32 *)D_800A34B8)[*p_n] + *(s16 *)D_800A34BC + *(s32 *)D_800A34C8;
+                D_800A34B8[*p_n] + *D_800A34BC + *D_800A34C8;
             *(s32 *)&(*p_prim)->x3 =
-                ((s32 *)D_800A34B8)[*p_n] + *(s16 *)D_800A34C0 + *(s32 *)D_800A34C8;
-            *(s32 *)&(*p_prim)->u0 = *(u16 *)D_800A34D4 + *(s32 *)D_800A3494;
-            *(s32 *)&(*p_prim)->u1 = *(u16 *)D_800A34D8 + *(s32 *)D_800A3490;
-            *(u16 *)&(*p_prim)->u2 = *(u16 *)D_800A34DC;
-            *(u16 *)&(*p_prim)->u3 = *(u16 *)D_800A34E0;
+                D_800A34B8[*p_n] + *D_800A34C0 + *D_800A34C8;
+            *(s32 *)&(*p_prim)->u0 = *D_800A34D4 + *D_800A3494;
+            *(s32 *)&(*p_prim)->u1 = *D_800A34D8 + *D_800A3490;
+            *(u16 *)&(*p_prim)->u2 = *D_800A34DC;
+            *(u16 *)&(*p_prim)->u3 = *D_800A34E0;
             setlen(*p_prim, 9);
             if (arg0 < 2) {
                 *(s32 *)&(*p_prim)->r0 = *p_r + (*p_g << 8) + 0x2E000000;
