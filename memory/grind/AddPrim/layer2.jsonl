@@ -1,0 +1,1 @@
+{"func": "AddPrim", "addr": "8007A8B4", "verdict": "PASS", "body_hash": "bef67657d1765150", "body_kind": "c", "file": "main/psxsdk/libgpu/prim", "reviewer": "cheat-reviewer:rev-p2", "scope": "cheat-cleanup", "date": "2026-10-05T05:44:32Z", "head": "fd40277d3", "notes": ""}

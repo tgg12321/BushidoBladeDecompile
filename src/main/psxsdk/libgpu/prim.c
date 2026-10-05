@@ -84,7 +84,10 @@ u32 NextPrim(u32 *a0) {
 u32 IsEndPrim(u32 *a0) {
     return (*a0 & OT_ADDR_MASK) == OT_ADDR_MASK;
 }
-void AddPrim(OTag *a0, OTag *a1) {
+void AddPrim(void *ot, void *p) {
+    OTag *a0 = ot;
+    OTag *a1 = p;
+
     a1->addr = a0->addr;
     a0->addr = (u32)a1;
 }
