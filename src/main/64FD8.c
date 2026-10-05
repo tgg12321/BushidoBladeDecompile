@@ -348,32 +348,32 @@ void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
         ot_idx = 4;
         rect_x = 0x5E;
     }
-    rect.x = ((DRAWENV *)SELWORK->f24)->clip.x + rect_x;
-    rect.y = ((DRAWENV *)SELWORK->f24)->clip.y + 0x14;
+    rect.x = SELWORK->f24->draw.clip.x + rect_x;
+    rect.y = SELWORK->f24->draw.clip.y + 0x14;
     rect.w = 0xD4;
     rect.h = 0xC8 - SELWORK->f0C[arg1];
     SetDrawArea(arg0->unk_04.unk_18, &rect);
     AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, arg0->unk_04.unk_18);
     arg0->unk_04.unk_18++;
 
-    rect.x = ((DRAWENV *)SELWORK->f24)->clip.x;
-    rect.y = ((DRAWENV *)SELWORK->f24)->clip.y;
-    rect.w = ((DRAWENV *)SELWORK->f24)->clip.w;
-    rect.h = ((DRAWENV *)SELWORK->f24)->clip.h;
+    rect.x = SELWORK->f24->draw.clip.x;
+    rect.y = SELWORK->f24->draw.clip.y;
+    rect.w = SELWORK->f24->draw.clip.w;
+    rect.h = SELWORK->f24->draw.clip.h;
     SetDrawArea(arg0->unk_04.unk_18, &rect);
     work = ot_idx * 4;
     AddPrim(g_gpu_ot_ptr + work, arg0->unk_04.unk_18);
     arg0->unk_04.unk_18++;
 
-    offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
-    offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1]
+    offset[0] = SELWORK->f24->draw.ofs[0];
+    offset[1] = SELWORK->f24->draw.ofs[1]
               - SELWORK->f08[arg1];
     SetDrawOffset(arg0->unk_04.unk_1C, offset);
     AddPrim(g_gpu_ot_ptr + work + 0x24, arg0->unk_04.unk_1C);
     arg0->unk_04.unk_1C++;
 
-    offset[0] = ((DRAWENV *)SELWORK->f24)->ofs[0];
-    offset[1] = ((DRAWENV *)SELWORK->f24)->ofs[1];
+    offset[0] = SELWORK->f24->draw.ofs[0];
+    offset[1] = SELWORK->f24->draw.ofs[1];
     SetDrawOffset(arg0->unk_04.unk_1C, offset);
     AddPrim(g_gpu_ot_ptr + work, arg0->unk_04.unk_1C);
     arg0->unk_04.unk_1C++;

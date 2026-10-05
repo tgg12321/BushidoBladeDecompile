@@ -60,7 +60,7 @@ static s16 D_800A3594[2];
 static s16 D_800A3598;
 static s16 D_800A359C;
 static s32 D_800A35A0;
-static void * D_800A35A4;
+static Unk8006E49CRec *D_800A35A4;
 static s32 D_800A35A8;
 static Unk8006E49CRec *D_800A35AC;
 static s32 D_800A35B0;

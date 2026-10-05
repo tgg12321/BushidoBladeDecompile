@@ -235,7 +235,7 @@ typedef struct {
         s16 half[2];
         s32 word;
     } f20;
-    void *f24;
+    GpuDb *f24;
     u8 pad28[4];
     Unk8006E49CRec *f2C;
     s32 f30;
