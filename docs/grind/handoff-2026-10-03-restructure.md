@@ -32,16 +32,28 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
    mates are hand-written asm (`_send_pad`'s trapping `addi`, the func_800790A4 data-as-code), which is
    evidence for the Judge-gated canonical-grant path if pursued; no grant without its own evidence.
 2. **Phase 2 types** — in progress (started 2026-10-03; census, harness and plan:
-   `memory/grind/phase2-2026-10-03/README.txt`; gate `tools/check.sh`, commits via `tools/commit.sh`).
-   Sony prototype stream (plan items 1-5) done, 9475a2b5a..3c25b4a5c: one PsyQ-spelled prototype per
-   reached Sony function, audited against real PsyQ 4.5 headers (open-ribbon `include/psyq/`), per-entry
-   `PsyQ:` notes where BB2's definition differs; implicit pairs 219 -> 203. Left local: callers that hold
-   the object in int-typed fields (SetDraw*, CdRead/CdGetSector*, write, memcpy, VSyncCallback, the VAB
-   family, the remaining libgpu definitions) and measured-codegen rows (listed in each commit body).
-   Deferred: OT pointers + AddPrim/ClearOTagR, after the struct batches type the primitive holders in
-   3AB48/51268/5ED34/64FD8. No "Entity" rename: no evidence (Obj80106A78 and Unk80101EC8Record differ in
-   size, table and consumers). Next: game prototypes (item 6), Unk80101EC8Record member access (item 7),
-   render-record / small structs (items 8-9).
+   `memory/grind/phase2-2026-10-03/README.txt`; gate `tools/check.sh`, commits via `tools/commit.sh`;
+   game-stream helpers in `tools/game/`). Every commit: SHA1 == oracle, all objects identical,
+   INTEGRITY OK, a fresh cheat-reviewer PASS and layer-2 records for each moved body.
+   - Items 1-5 (Sony prototypes) done, 9475a2b5a..3c25b4a5c: one PsyQ-spelled prototype per reached Sony
+     function, audited against real PsyQ 4.5 headers (open-ribbon `include/psyq/`), `PsyQ:` notes where
+     BB2's definition differs.
+   - Item 6 (game declarations) done, edb03ae18..338a31eb8: each multi-TU game function / data symbol
+     declared once in bb2.h as its definition; holders retyped rather than casts added where byte-neutral.
+     Implicit pairs 219 -> 158 over items 1-7.
+   - Item 7 (Unk80101EC8Record member access) done, d5e5a9976..d73f96546: 3AB48 / 28708 / 17AFC / 9F9C
+     reach the record through members; record sites ~500 -> 7 (func_8001BCF0 x2, func_800203B4 x4,
+     2B344 func_8003AFFC x1).
+   - Open, by kind (detail in the commit bodies' Hygiene debt rows): original-call facts kept as
+     commented declarations (func_80019568 / func_80044100 / func_80052C10 K&R; snd_VabFakeOpen,
+     func_8005C2A8, func_80054434, func_80060414 local); item 8 small structs (MotionFrame callee params,
+     clock record of func_8001CD68 / func_8005D814, Rec44 camera records D_800F6608 / D_800F5328,
+     scratchpad blocks incl. a Vec4i32 at 0x1F8001E0, player node, replay entry, aggregate merges
+     D_800A3678 / g_pad_buf / D_800F1140 trio / D_80103608); the deferred OT pointers + AddPrim /
+     ClearOTagR batch (after primitive holders in 3AB48 / 51268 / 5ED34 / 64FD8 are typed);
+     func_800203B4's island operand (`auth:` re-hash); owner call on func_8001C820's container_of
+     spelling (score 0, typed, hard to read) vs keeping func_800325E0 declared locally.
+   - No "Entity" rename: no evidence (Obj80106A78 and Unk80101EC8Record differ in size, table, consumers).
 3. **Phase 3 naming** — the owner decides whether game-code naming moves from evidence classes to
    SOTN-style "explainable from the code + adversarial review"; address-named game files then take
    subsystem names file by file (`tools/move_tu.py`).
