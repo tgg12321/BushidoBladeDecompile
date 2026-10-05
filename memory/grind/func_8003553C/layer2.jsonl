@@ -1,2 +1,3 @@
 {"func": "func_8003553C", "addr": "8003553C", "verdict": "PASS", "body_hash": "0814f325453845de", "body_kind": "c", "file": "main/25C38", "reviewer": "p2-rev-g2b", "scope": "cheat-cleanup", "date": "2026-10-04T06:14:18Z", "head": "b1197e758", "notes": ""}
 {"func": "func_8003553C", "addr": "8003553C", "verdict": "PASS", "body_hash": "7b7d9fe118d8c00f", "body_kind": "c", "file": "main/25C38", "reviewer": "p2-rev-ga23", "scope": "cheat-cleanup", "date": "2026-10-04T23:40:43Z", "head": "14caac1c7", "notes": ""}
+{"func": "func_8003553C", "addr": "8003553C", "verdict": "PASS", "body_hash": "eaf7132541841e5c", "body_kind": "c", "file": "main/25C38", "reviewer": "cheat-reviewer:rev-p7a", "scope": "cheat-cleanup", "date": "2026-10-05T11:57:14Z", "head": "6dcb086d6", "notes": ""}

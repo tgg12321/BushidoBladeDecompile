@@ -643,7 +643,7 @@ extern s8 D_8008EA70;
 
 
 
-extern s32 g_gpu_ot_ptr;
+extern u8 *g_gpu_ot_ptr;
 
 
 
