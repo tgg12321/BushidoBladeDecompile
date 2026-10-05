@@ -1508,7 +1508,7 @@ extern void func_8002E838(Unk1F8002B8Rec *scr);
 extern s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq);
 extern s32 func_80054434(void);
 void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
-    Unk1F8002B8Rec *scr = &SPAD->unk2B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 id = obj->index;
     Unk80101EC8Record *partner = obj->other;
     s32 work[64];
@@ -2438,7 +2438,7 @@ extern s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 thresh
 extern s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq);
 
 void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
-    Unk1F8002B8Rec *scr = &SPAD->unk2B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 id = a0->index;
     BoneHitRec *recbase = D_800F5F68[id];
     BoneHitRec *rec;
@@ -3887,7 +3887,7 @@ s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq) {
 
 void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     s32 sp_tmp;
-    Unk1F8002B8Rec *scr = &SPAD->unk2B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     MATRIX *mat;
     Vec3i32 *vec;
     s32 angle1;
@@ -4061,7 +4061,7 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     s32 temp;
     s32 sp_tmp;
 
-    m = &SPAD->unk2B8.unkD8;
+    m = &SPAD->unk2B8.rec.unkD8;
     *m = *a0;
 
     c0 = m->m[1][2] * m->m[2][1] - m->m[1][1] * m->m[2][2];
@@ -4077,7 +4077,7 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     r2 = (m->m[0][0] * m->m[1][2] - m->m[0][2] * m->m[1][0]) / work;
 
     ang_z = -ratan2(i1, i0);
-    scr = &SPAD->unk2B8;
+    scr = &SPAD->unk2B8.rec;
     temp = i0 * i0 + i1 * i1;
     if ((u32)temp < 0x400) {
         work = (u32)g_sqrt_table_u8[temp] >> 3;
@@ -4171,7 +4171,7 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     s32 temp;
     s32 sp_tmp;
 
-    scr = &SPAD->unk2B8;
+    scr = &SPAD->unk2B8.rec;
     scr->unkD8.m[0][0] = 0x1000;
     scr->unkD8.m[0][1] = 0;
     scr->unkD8.m[0][2] = 0;
@@ -4936,9 +4936,10 @@ s32 math_LerpAngle(s32 arg0, s32 arg1, s32 arg2) {
 /* Per-frame update of the twelve 0x64-byte records at D_80106A78: velocity turn,
  * spin decay, gravity, collision test through func_8005344C, reflection off the
  * returned normal, func_80032854 cues, and the rest / re-hop logic. Scratch
- * vectors live in the scratchpad record at 0x1F8002B8. */
+ * vectors live in its layout of the scratchpad area at 0x1F8002B8
+ * (Unk1F8002B8_8005344C). */
 void func_80030D7C(void) {
-    u8 *scr;
+    Unk1F8002B8_8005344C *scr;
     Obj80106A78 *obj;
     s32 i;
     s32 half;
@@ -4947,7 +4948,7 @@ void func_80030D7C(void) {
     s16 kind;
     s16 *nrm;
 
-    scr = (u8 *)0x1F8002B8;
+    scr = &SPAD->unk2B8.v8005344C;
     obj = D_80106A78;
     for (i = 0; i < 12; i++, obj++) {
         /* work holds two values: the clamped turn amount (turn block) and the
@@ -4979,22 +4980,22 @@ void func_80030D7C(void) {
             } else if (work > 0x42) {
                 work = 0x42;
             }
-            *(s32 *)(scr + 0x10) = (Judge[(temp + 0x400) & 0xFFF] * obj->vel.x
+            scr->unk10.x = (Judge[(temp + 0x400) & 0xFFF] * obj->vel.x
                                     - Judge[temp & 0xFFF] * obj->vel.z) >> 12;
-            *(s32 *)(scr + 0x14) = obj->vel.y;
-            *(s32 *)(scr + 0x18) = (Judge[temp & 0xFFF] * obj->vel.x
+            scr->unk10.y = obj->vel.y;
+            scr->unk10.z = (Judge[temp & 0xFFF] * obj->vel.x
                                     + Judge[(temp + 0x400) & 0xFFF] * obj->vel.z) >> 12;
-            *(s32 *)(scr + 0x20) = *(s32 *)(scr + 0x10);
+            scr->unk20.x = scr->unk10.x;
             half = work / 2;
-            *(s32 *)(scr + 0x24) = (Judge[(half + 0x400) & 0xFFF] * *(s32 *)(scr + 0x14)
-                                    - Judge[half & 0xFFF] * *(s32 *)(scr + 0x18)) >> 12;
-            *(s32 *)(scr + 0x28) = (Judge[half & 0xFFF] * *(s32 *)(scr + 0x14)
-                                    + Judge[(half + 0x400) & 0xFFF] * *(s32 *)(scr + 0x18)) >> 12;
-            obj->vel.x = (Judge[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x20)
-                                    - Judge[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
-            obj->vel.y = *(s32 *)(scr + 0x24);
-            obj->vel.z = (Judge[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x20)
-                                    + Judge[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
+            scr->unk20.y = (Judge[(half + 0x400) & 0xFFF] * scr->unk10.y
+                                    - Judge[half & 0xFFF] * scr->unk10.z) >> 12;
+            scr->unk20.z = (Judge[half & 0xFFF] * scr->unk10.y
+                                    + Judge[(half + 0x400) & 0xFFF] * scr->unk10.z) >> 12;
+            obj->vel.x = (Judge[(work - temp + 0x400) & 0xFFF] * scr->unk20.x
+                                    - Judge[(work - temp) & 0xFFF] * scr->unk20.z) >> 12;
+            obj->vel.y = scr->unk20.y;
+            obj->vel.z = (Judge[(work - temp) & 0xFFF] * scr->unk20.x
+                                    + Judge[(work - temp + 0x400) & 0xFFF] * scr->unk20.z) >> 12;
             obj->rot_vel[0] = obj->rot_vel[0] * 63 / 64;
             obj->rot_vel[1] = obj->rot_vel[1] * 63 / 64;
             obj->rot_vel[2] = obj->rot_vel[2] * 63 / 64;
@@ -5007,18 +5008,18 @@ void func_80030D7C(void) {
         obj->rot[1] += obj->rot_vel[1];
         obj->rot[2] += obj->rot_vel[2];
         obj->vel.y += 13;
-        *(s32 *)(scr + 0x0) = obj->pos.x + obj->vel.x;
-        *(s32 *)(scr + 0x4) = obj->pos.y + obj->vel.y;
-        *(s32 *)(scr + 0x8) = obj->pos.z + obj->vel.z;
+        scr->unk00.x = obj->pos.x + obj->vel.x;
+        scr->unk00.y = obj->pos.y + obj->vel.y;
+        scr->unk00.z = obj->pos.z + obj->vel.z;
         obj->pos.y -= 8;
-        nrm = (s16 *)(scr + 0x30);
-        temp = func_8005344C((s32 *)&obj->pos, (s32 *)scr, (s32 *)(scr + 0x10), nrm, (s32)(scr + 0x38));
+        nrm = scr->unk30;
+        temp = func_8005344C(&obj->pos.x, &scr->unk00.x, &scr->unk10.x, nrm, (s32)&scr->unk38);
         if (temp != 0 && func_80054434() == 7) {
             temp = 0;
         }
         if (temp != 0) {
             if (obj->kind == 0xF) {
-                func_80032854(obj->owner, 0xE, (s32 *)(scr + 0x10), nrm);
+                func_80032854(obj->owner, 0xE, &scr->unk10.x, nrm);
                 obj->kind = -1;
                 continue;
             }
@@ -5028,7 +5029,7 @@ void func_80030D7C(void) {
             obj->vel.x -= nrm[0] * dot / 4096;
             obj->vel.y -= nrm[1] * dot / 4096;
             obj->vel.z -= nrm[2] * dot / 4096;
-            obj->pos = *(Vec3i32 *)(scr + 0x10);
+            obj->pos = scr->unk10;
             kind = obj->kind;
             work = D_8008E194[kind].unkA;
             if (obj->unk_50 != 0) {
@@ -5037,7 +5038,7 @@ void func_80030D7C(void) {
                 obj->vel.z = obj->vel.z * work / 4096;
                 spd = obj->vel.x * obj->vel.x
                     + obj->vel.z * obj->vel.z;
-                if (*(s16 *)(scr + 0x32) >= -0x7FF) {
+                if (scr->unk30[1] >= -0x7FF) {
                     obj->rot_vel[1] += (rng_Next() & 1) ? spd / 64 : -spd / 64;
                     if (obj->kind != 0xE && obj->unk_04 != 0) {
                         func_80032854(obj->owner, 1, &obj->pos.x, 0);
@@ -5056,7 +5057,7 @@ void func_80030D7C(void) {
                         func_80032854(obj->owner, 0x29, &obj->pos.x, 0);
                     }
                 }
-            } else if (*(s16 *)(scr + 0x32) >= -0x7FF && kind == 0xE) {
+            } else if (scr->unk30[1] >= -0x7FF && kind == 0xE) {
                 if (obj->unk_05 == 1) {
                     obj->unk_50 = 1;
                     obj->rot[1] += 0x780 + (rng_Next() & 0xFF);
@@ -5075,7 +5076,7 @@ void func_80030D7C(void) {
                 obj->unk_05 = 3;
             }
         } else {
-            obj->pos = *(Vec3i32 *)scr;
+            obj->pos = scr->unk00;
         }
         if (obj->vel.y >= -15 && obj->vel.y <= 15 && obj->vel.x >= -3 && obj->vel.x <= 3
             && obj->vel.z >= -3 && obj->vel.z <= 3) {
@@ -5213,7 +5214,7 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
 }
 extern s32 func_80027AD8(s32, Unk80101EC8Record *, s32, s32, s32, Tbl8008E194 *, s32, s32 *);
 void func_80031B24(void) {
-    Unk1F8002B8Rec *scr = &SPAD->unk2B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 i;
     s32 deep;
     Obj80106A78 *obj;
@@ -5347,7 +5348,7 @@ u8 *func_80032064(Unk80101EC8Record *src, s32 type) {
     return s0;
 }
 void func_800321E8(void) {
-    s32 *sp = (s32 *)0x1F8002B8;
+    Unk1F8002B8_8005344C *scr = &SPAD->unk2B8.v8005344C;
     u8 *base = &D_80104E88;
     s32 i;
 
@@ -5355,20 +5356,15 @@ void func_800321E8(void) {
     do {
         if (*base != 0) {
             *(u8 *)(base + 2) += 1;
-            *(Vec3_copy *)(base + 0x10) = *(Vec3_copy *)(base + 4);
+            *(Vec3i32 *)(base + 0x10) = *(Vec3i32 *)(base + 4);
             *(s32 *)(base + 0x20) += 0xD;
-            sp[0] = *(s32 *)(base + 4) + *(s32 *)(base + 0x1C);
-            sp[1] = *(s32 *)(base + 8) + *(s32 *)(base + 0x20);
-            {
-                s32 arg5 = (s32)sp + 0x38;
-                sp[2] = *(s32 *)(base + 0xC) + *(s32 *)(base + 0x24);
-                arg5++; /* FAKE: +1-1 pair (SOTN-wiki redundant-arithmetic class) makes arg5 multi-set so loop.c */
-                arg5--; /* cannot hoist the loop-invariant sp+0x38 into a callee-save; target recomputes it inline */
-                if (func_8005344C((s32 *)(base + 4), sp, (s32 *)((u8 *)sp + 0x10), (s16 *)((u8 *)sp + 0x30), arg5) != 0 || *(s32 *)(base + 8) > *(s32 *)(base + 0x28)) {
-                    *base = 0;
-                } else {
-                    *(Vec3_copy *)(base + 4) = *(Vec3_copy *)sp;
-                }
+            scr->unk00.x = *(s32 *)(base + 4) + *(s32 *)(base + 0x1C);
+            scr->unk00.y = *(s32 *)(base + 8) + *(s32 *)(base + 0x20);
+            scr->unk00.z = *(s32 *)(base + 0xC) + *(s32 *)(base + 0x24);
+            if (func_8005344C((s32 *)(base + 4), &scr->unk00.x, &scr->unk10.x, scr->unk30, (s32)&scr->unk38) != 0 || *(s32 *)(base + 8) > *(s32 *)(base + 0x28)) {
+                *base = 0;
+            } else {
+                *(Vec3i32 *)(base + 4) = scr->unk00;
             }
         }
         i++;
