@@ -12,16 +12,13 @@ s32 SpuIsTransferCompleted(s32 arg0) {
     }
     var_v0 = TestEvent(_spu_EVdma);
     if (arg0 == 1) {
-        if (var_v0 == 0) {
-            do {
-                var_v0 = TestEvent(_spu_EVdma);
-            } while (var_v0 == 0);
+        while (var_v0 == 0) {
+            var_v0 = TestEvent(_spu_EVdma);
         }
-        var_v0 = 1;
-        goto block_8;
+        _spu_inTransfer = 1;
+        return 1;
     }
     if (var_v0 == 1) {
-block_8:
         _spu_inTransfer = var_v0;
     }
     return var_v0;

@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "SpuIsTransferCompleted",
+  "body_hash": "036f5e929e7e8201",
+  "summary": "The staged body is honest, simpler C: it preserves event-call order, polls until nonzero only when arg0 equals 1, normalizes that path to 1, and preserves exact nonblocking results and stores. Existing declarations are used; no codegen-only constructs or new hygiene debt were found.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}
