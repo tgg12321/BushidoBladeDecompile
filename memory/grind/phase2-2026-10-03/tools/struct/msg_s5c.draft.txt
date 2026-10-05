@@ -1,0 +1,55 @@
+phase2: D_800F1140 / D_800F1144 / D_800F1148 are one Vec4i32 D_800F1140; func_80041E10 takes Vec4i32 *
+
+Commit-plan item 8, aggregate merge (aggregate-merge-family prongs (a)-(e)). The linked EXE is
+unchanged.
+
+- (a) Object model: base+offset addressing in the original. func_80061064 passes
+  &D_800F1140 to func_80041E10 (31D3C), which copies the 16 bytes at its argument to
+  D_800A9B28 as one struct copy (31D3C's file-local `Block16 { s32 w[4]; }`). Thirteen 51268
+  functions store x / y / z (+0 / +4 / +8) from their s32 * argument. No code names +0xC
+  (D_800F114C), and the next symbol is D_800F1150.
+- (b) Shape: `Vec4i32 D_800F1140` (game.h {vx, vy, vz, pad}), a 16-byte vector whose fourth
+  word is copied but never named. func_80041E10's parameter and its destination D_800A9B28
+  (31D3C-only, so a local extern) become Vec4i32 too, replacing Block16 there (Block16 stays
+  for func_800418D0). 31D3C func_80041EB0's `s32 *cam = (s32 *)&D_800A9B28` becomes
+  `Vec4i32 *cam = &D_800A9B28`, and its cam[0..2] reads become cam->vx / vy / vz.
+- (c) Complete: D_800F1144 / D_800F1148 leave C and the config. bb2.h's two s32 externs are
+  replaced by the Vec4i32 (with a comment saying what it is). 51268's local
+  `extern s32 D_800F1140;` is removed. The two undefined_syms_auto.txt rows are deleted; they
+  have no named_syms.txt rows. The only function .s files naming them are those of the 13 51268
+  writers, all C.
+- (d) One declaration, in bb2.h. func_80041E10 also gets its bb2.h prototype, void
+  (Vec4i32 *, s32), and 51268's non-prototype `extern s32 func_80041E10();` is removed (the
+  definition returns void; the one call does not use a value).
+- Uses: the 13 writers' `D_800F1140 = *p++; D_800F1144 = *p++; D_800F1148 = *p;` (or `*ap++`)
+  become D_800F1140.vx / vy / vz. func_80061064 passes &D_800F1140, unchanged text, now a
+  Vec4i32 *.
+
+`check.sh base s5c` (run name s5c; the base snapshot `base` was taken on clean HEAD 1d461415f):
+- SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa. INTEGRITY OK. Implicit pairs 157 -> 157.
+- CMP FAIL (1 object), relocation-only, from the symbol merge (prong (e)): 51268.o.
+  - .rodata / .sdata identical.
+  - .text differs in exactly 26 instruction words, the 13 + 13 `sw` to former D_800F1144 /
+    D_800F1148, which gain the addend 4 / 8 in the immediate.
+  - Their 52 HI16 / LO16 relocations name D_800F1140 (were D_800F1144 / D_800F1148), and the
+    symbol table loses the 2 UND entries.
+  - With D_800F1144 = D_800F1140+4 and D_800F1148 = D_800F1140+8 folded, the disassembly is
+    identical (relnorm.py), and the EXE SHA1 confirms the linked words.
+  - 31D3C.o is byte-identical.
+- L2DIFF: 15 moved layer-2 keys.
+  - 31D3C: func_80041E10, func_80041EB0.
+  - 51268, the 13 writers: func_800611A4, func_80061250, func_8006133C, func_800613C8,
+    func_80061454, func_800614E0, func_8006156C, func_80061658, func_80061710, func_800617C8,
+    func_800618B4, func_80061ACC, func_80061EC0.
+  - func_80061064's body text is unchanged, so its key did not move; only the
+    file-scope declarations above it changed.
+- key.py over the 2 touched .c files: no unkeyed moves.
+- cc1 without -w, every game TU against the HEAD sources and headers: no diagnostic gained or
+  lost.
+
+Hygiene debt:
+- docs/naming/data_evidence/D_800F1140.md / D_800F1144.md / D_800F1148.md and the README rows
+  for D_800F1144 / D_800F1148 (`g_text_render_v3_1` / `_2` proposals) describe the retired
+  per-word symbols (stale).
+- 31D3C func_800418D0 still copies through Block16 views of an s32 * record
+  ((Block16 *)(a0 + 6) / (a0 + 14)).
