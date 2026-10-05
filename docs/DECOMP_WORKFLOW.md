@@ -457,3 +457,41 @@ session/ownership procedure for a named completed target; keep the Grinder stopp
 landing, recheck HEAD, source and dependency hashes and ownership; if anything drifted,
 recreate the candidate from current source and repeat validation/review. Do not restore a
 whole-file snapshot, create legacy worker worktrees or stage another agent's changes.
+
+**First pass completed, 2026-10-05.** The SDK census covered 195 C files / 360 parsed C
+bodies. Reserving family TUs and canonical assembly left 143 mechanical candidates;
+16 had a goto, FAKE cluster or guarded do-loop worth inspecting. These were leads,
+not scope grants: nine received bounded scratch trials, three landed, five kept their
+existing C after nonmatching trials, six were deferred and two were already clear.
+
+| Function | Disposition / measured scratch result (score; built/target instructions) |
+|---|---|
+| `SpuIsTransferCompleted` | Landed normal polling loop and early store/return; 0; 42/42. Commit `e1b9de6a2`, exact-body PASS `036f5e929e7e8201`. |
+| `SsSetTickMode` | Landed SOTN's ordinary if/switch with the existing signature and local names; 0; 91/91. Initial early-return / merged-case forms scored 24 / 6 / 27. Commit `9cc7c7e56`, PASS `4ad0f26975e80ccd`. |
+| `CdInit` | Landed normal retry loop; 0; 38/38, preserving five attempts and callback order. Commit `3318fe610`, PASS `b9adf8b0ba161cdc`. |
+| `memchr` | Unchanged. Five structured-search forms scored 2 / 7 / 11 / 8 / 2; none matched. |
+| `VSync` | Unchanged. Normal sign-test polling loop scored 8; 75/82. |
+| `_spu_note2pitch` | Unchanged. Whole staging cluster removed: 2; 79/79. The widening and constant-load order changes. |
+| `SpuClearReverbWorkArea` | Unchanged. Whole volatile-callback cluster removed: 36; 100/103. |
+| `vmNoiseOn` | Unchanged. Whole staged-index cluster removed: 34; 303/305. |
+| `PCread` | Normal loop matches: 0; 48/48, but deferred. Its SDK definition uses an integer destination while the reserved `6CF8` caller declares a pointer; dossier/canonical routing also selects `6CF8` while sandbox selects `libsn/7407C`. Settle the declaration and locator boundaries before landing. |
+
+Other dispositions: `startIntr` / `putchar` need declaration or table-handle work;
+`cb_read` retains the Q98/Q99 member handles; `_spu_gcSPU` shares the allocation-object
+typing debt with reserved SPU modules; unnamed `func_80084CC0` stays out of the initial
+named-SDK lane. `prnt`'s shared formatting exits and required digit-conversion loops,
+and `_spu_pitch2note`'s exit from two nested searches, already express useful control flow.
+No forced goto purge. The three tested FAKE clusters remain necessary for the measured
+plain forms, not proven irreducible across every possible spelling.
+
+Each source landing passed a fresh full oracle rebuild, all 228 linked-object comparisons
+(sections, relocations and symbols), unchanged 157 implicit pairs, unchanged unsuppressed
+TU diagnostics, completion integrity, the asm-cheat audit and fresh independent review.
+Only the intended body's key moved in each comparison. Exact verdicts were recorded and
+archived by the normal manual-session close under `memory/grind/_completed/`.
+CdInit's unchanged old-style `extern s32 printf()` differs from the current implementation's
+void return and lacks a parameter prototype; its reviewer recorded that existing debt.
+No header/prototype, game TU, Phase 2 helper/family, naming, layout, queue or build change
+landed. `_SendPAD` is untouched and the Grinder stays stopped. Pre-existing metric edits
+were preserved and excluded from these commits. Scratch census, candidates and trial logs:
+`tmp/readable/`, `tmp/sandbox_sweep/`; before/after snapshots: `tmp/p2/snap/readable_*`.
