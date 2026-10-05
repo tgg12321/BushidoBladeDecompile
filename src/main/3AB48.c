@@ -5577,75 +5577,54 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr + (arg2 * 4), mode_off);
     return end_off - arg1;
 }
-extern s32 D_8009B770;
-extern s32 D_8009B7A0;
-extern s32 D_8009B7D0;
-extern s32 D_8009B7D8;
-extern s32 D_8009B800;
-extern s32 D_8009B820;
-extern s32 D_8009B840;
+extern Unk8009B0E0Record D_8009B770[4];
+extern Unk8009B0E0Record D_8009B7A0;
+extern Unk8009B400Record D_8009B7D0;
+extern Unk8009B400Record D_8009B7D8[5];
+extern Unk8009B400Record D_8009B800[4];
+extern Unk8009B400Record D_8009B820[4];
+extern Unk8009B400Record D_8009B840[2];
 typedef struct {
-    s32 *p_geom;
-    s32 *p_static;
-    s32 arg1_field;
-    s32 pad0C;
+    void *unk_00;
+    void *unk_04;
+    s32 unk_08;
+    s32 unk_0C;
     s32 zero10;
-    s32 arg2_field;
-    s32 width;
-    s32 height;
-    s32 pad20;
-    s32 pad24;
+    s32 unk_14;
+    s32 unk_18;
+    s32 unk_1C;
+    s32 unk_20;
+    s32 unk_24;
     u8 byte28;
     u8 byte29;
     u8 byte2A;
     u8 byte2B;
 } S544;
 s32 func_80060544(s32 arg0, s32 arg1) {
-    s32 geom;
-    s32 c3;
-    s32 stat;
-    s32 last;
+    Unk80060544Rec *chunk = (Unk80060544Rec *)arg0;
     S544 s;
     s32 end_off;
-    s32 mid_off;
+    s32 ft4;
     s32 i;
     s32 j;
-    s32 idx;
-    s32 new_var6;
-    s32 prev;
-    s32 *p0;
-    S544 *new_var2;
-    s32 *p1;
-    DR_MODE *new_var3;
-    prev = arg0;
-    mid_off = arg0 + 0x4EC;
-    end_off = arg0 + 0x5F4;
+    s32 cur;
+    Unk8009B398Record *p0;
+    Unk8009B400Record *p1;
+    DR_MODE *mode_off;
+    cur = arg0;
+    ft4 = (s32)chunk->unk_4EC;
     s.byte28 = 0;
     s.zero10 = 0;
-    s.arg2_field = arg1;
-    new_var3 = (DR_MODE *)(arg0 + 0x5DC);
-    new_var6 = end_off;
-    s.pad20 = 0x200;
-    s.pad24 = 0x100;
-    s.height = 0;
-    s.width = 0;
+    s.unk_14 = arg1;
+    mode_off = &chunk->unk_5DC;
+    end_off = arg0 + sizeof(Unk80060544Rec);
+    s.unk_20 = 0x200;
+    s.unk_24 = 0x100;
+    s.unk_1C = 0;
+    s.unk_18 = 0;
     i = 0;
-    /* FAKE: constant-holder for the special-cased last index.  It must sit
-     * BETWEEN `i = 0;` and `idx = 0;` — that source position is what reproduces
-     * target's prologue init order `$s0 = 0 / $s5 = 3 / $s1 = 0`
-     * (asm/funcs/func_80060544.s prologue; a loop.c-hoisted CSE constant
-     * cannot land there, because move_movables emits preheader movables
-     * immediately before the loop start, i.e. AFTER both inits -- which is
-     * exactly what the literal-3 spelling produces).  It is read twice
-     * (`i == last`, `i != last`), so it is live, but it is still a
-     * constant-holder.
-     * Family: [[named-local-fake-exception]]. */
-    last = 3;
-    idx = 0;
     do {
-        geom = (s32)(&D_8009B770);
-        geom += idx;
-        s.p_geom = (s32 *)geom;
+        s.unk_00 = &D_8009B770[i];
         if (i < 3) {
             if (i > 0) {
                 goto S800;
@@ -5655,55 +5634,50 @@ s32 func_80060544(s32 arg0, s32 arg1) {
             }
             goto Skip;
         }
-        if (i == last) {
+        if (i == 3) {
             goto Case3;
         }
         goto Skip;
     S7D8:
-        stat = (s32)(&D_8009B7D8);
-        s.p_static = (s32 *)stat;
+        s.unk_04 = D_8009B7D8;
         goto Skip;
     S800:
-        stat = (s32)(&D_8009B800);
-        s.p_static = (s32 *)stat;
+        s.unk_04 = D_8009B800;
         goto Skip;
     Case3:
-        c3 = (s32)(&D_8009B7D0);
-        s.p_static = (s32 *)c3;
-        s.pad0C = mid_off;
-        mid_off = func_80073728((s32)&s, 0);
+        s.unk_04 = &D_8009B7D0;
+        s.unk_0C = ft4;
+        ft4 = func_80073728((s32)&s, 0);
     Skip:
-        if (i != last) {
-            s.arg1_field = prev;
-            prev = func_8007352C(&s);
+        if (i != 3) {
+            s.unk_08 = cur;
+            cur = func_8007352C((s32)&s);
         }
         i += 1;
-        idx += 0xC;
     } while (i < 4);
-    s.p_geom = &D_8009B7A0;
-    s.p_static = &D_8009B820;
-    s.arg1_field = prev;
-    new_var2 = &s;
-    prev = func_8007352C(new_var2);
+    s.unk_00 = &D_8009B7A0;
+    s.unk_04 = &D_8009B820;
+    s.unk_08 = cur;
+    cur = func_8007352C((s32)&s);
     j = 0;
-    p1 = &D_8009B840;
-    p0 = (s32 *)&D_8009B398[2];
+    p1 = D_8009B840;
+    p0 = &D_8009B398[2];
     s.byte29 = 0xFF;
     s.byte2B = 0x10;
     s.byte2A = 0x10;
     s.byte28 = 1;
     do {
-        s.p_geom = p0;
-        s.p_static = p1;
-        s.arg1_field = prev;
-        prev = func_8007352C(&s);
-        p1 = (s32 *)(((s32)p1) + 8);
+        s.unk_00 = p0;
+        s.unk_04 = p1;
+        s.unk_08 = cur;
+        cur = func_8007352C((s32)&s);
+        p1++;
         j += 1;
-        p0 = (s32 *)(((s32)p0) + 0xC);
+        p0++;
     } while (j < 2);
-    SetDrawMode(new_var3, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
-    AddPrim(g_gpu_ot_ptr + (arg1 * 4), new_var3);
-    return new_var6 - arg0;
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)s.unk_00, 0), 0);
+    AddPrim(g_gpu_ot_ptr + (arg1 * 4), mode_off);
+    return end_off - arg0;
 }
 
 extern u16 D_800A32B6;

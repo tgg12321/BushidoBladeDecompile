@@ -254,6 +254,19 @@ typedef struct {
     u8 unk_20[0xC];
 } Unk80060414Rec;
 
+/* The draw chunk 3AB48 func_80060544 builds at the address its caller passes: SPRTs from +0 up
+ * to +0x4EC (63; func_8007352C's cursor), POLY_FT4s from +0x4EC up to +0x5DC (6; func_80073728's
+ * cursor), then the DR_MODE at +0x5DC. It returns the chunk size, 0x5F4; the last 0xC bytes are
+ * never written. The walkers write at most one primitive per cell of the sheet header they are
+ * given (cell count: the byte at +2): at most 19 SPRTs (D_8009B770[0..2] hold 5 / 4 / 4 cells,
+ * D_8009B7A0 4, D_8009B398[2] / [3] 1 each) and 1 POLY_FT4 (D_8009B770[3] holds 1). */
+typedef struct {
+    SPRT unk_00[63];
+    POLY_FT4 unk_4EC[6];
+    DR_MODE unk_5DC;
+    u8 unk_5E8[0xC];
+} Unk80060544Rec;
+
 /* The select-screen work area D_800A36A0 points at (func_800770B8 places it at
  * the end of the buffers func_8006E49C lays out). Two-element arrays are per
  * player. Per player, f48 is a list of f60 entries with cursor f5C; confirming

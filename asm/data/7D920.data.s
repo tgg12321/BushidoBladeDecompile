@@ -22909,18 +22909,13 @@ dlabel D_8009B770
     /* 8BF88 8009B788 1E000400 */ .word 0x0004001E
     /* 8BF8C 8009B78C 8003FF01 */ .word 0x01FF0380
     /* 8BF90 8009B790 00007F00 */ .word 0x007F0000
-enddlabel D_8009B770
-
-nonmatching D_8009B794
-
-dlabel D_8009B794
     /* 8BF94 8009B794 */ .short 0x001E
     /* 8BF96 8009B796 */ .short 0x0001
     /* 8BF98 8009B798 */ .short 0x0380
     /* 8BF9A 8009B79A */ .short 0x01FE
     /* 8BF9C 8009B79C */ .short 0x0000
     /* 8BF9E 8009B79E */ .short 0x0000
-enddlabel D_8009B794
+enddlabel D_8009B770
 
 nonmatching D_8009B7A0
 
