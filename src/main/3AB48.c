@@ -3964,12 +3964,13 @@ extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
  * added (192 -> 193 insns); under this non-prototype int declaration the TU is byte-identical. */
 extern int AddPrim();
 s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
+    Unk8005C8A8Rec *chunk = (Unk8005C8A8Rec *)arg2;
     Env5C8A8 s;
     TILE *tile;
     s32 cur;
     s16 sel;
     u16 y_base;
-    s32 mode_off;
+    DR_MODE *mode_off;
     s32 size;
     s16 top;
     s16 i;
@@ -3977,21 +3978,21 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     s16 x;
     s16 y;
 
-    tile = (TILE *)arg2;
-    cur = arg2 + 0xF0;
+    tile = chunk->unk_00;
+    cur = arg2 + sizeof(chunk->unk_00);
     y_base = 0;
     /* FAKE: the low half read from arg1's stack home, which keeps arg1 in
        memory for the in-loop `lw 0xBC($sp)` too; (s16)arg1 does not. */
     sel = *(s16 *)&arg1;
-    mode_off = arg2 + 0x4D8;
-    /* FAKE: the chunk's 0x4F0 bytes (the draw-mode area ends 0x18 past
-       mode_off), spelled from mode_off. The RTL becomes mode_off - (arg2 -
-       0x18), which cse leaves alone and combine folds to 0x4F0 with no
-       REG_EQUAL note: size keeps the target's frame slot (sp+0x70) to the
-       return, and the deleted temp's stale count gets the target's one
-       untouched slot (sp+0x78). The literal is rematerialised at the return
-       (frame 0x10 short). */
-    size = mode_off + 0x18 - arg2;
+    mode_off = &chunk->unk_4D8;
+    /* FAKE: the chunk's 0x4F0 bytes, sizeof(Unk8005C8A8Rec) (the draw-mode
+       area ends 0x18 past mode_off), spelled from mode_off as an int. The RTL
+       becomes mode_off - (arg2 - 0x18), which cse leaves alone and combine
+       folds to 0x4F0 with no REG_EQUAL note: size keeps the target's frame
+       slot (sp+0x70) to the return, and the deleted temp's stale count gets
+       the target's one untouched slot (sp+0x78). The literal or the sizeof is
+       rematerialised at the return (frame 0x10 short). */
+    size = (s32)mode_off + 0x18 - arg2;
     top = (0xF0 - D_8009B2BC[mode].h) / 2;
     s.col_b = 0x40;
     s.col_g = 0x40;
@@ -4245,8 +4246,8 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     tile->h = D_8009B2BC[mode].h;
     SetSemiTrans(tile, 1);
     AddPrim(g_gpu_ot_ptr + ot * 4, tile);
-    SetDrawMode((DR_MODE *)mode_off, 1, 0, func_8006E480((s32)&D_8009B0E0[0], 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot * 4, (DR_MODE *)mode_off);
+    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B0E0[0], 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot * 4, mode_off);
     return size;
 }
 extern s32 D_8009B2C8;
