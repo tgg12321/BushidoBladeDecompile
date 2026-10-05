@@ -4763,6 +4763,7 @@ extern Unk8009B400Record D_8009B57C[2];
 extern u8 D_8009B58C[];
 extern u8 D_800A3270[];
 s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
+    Unk8005E54CRec *chunk = (Unk8005E54CRec *)arg1;
     /* The per-player points pair: each round's points in the round rows,
        then the per-player totals under them. The target addresses both
        through the one frame slot sp+0x18 (a separate totals array does not
@@ -4792,14 +4793,14 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s16 c;
     s16 y;
 
-    tile = (TILE *)arg1;
+    tile = chunk->unk_00;
     s.has_color = 0;
     s.semi = 0;
     s.y = 0;
-    cur = arg1 + 0xA0;
-    ft4 = arg1 + 0x898;
-    mode_off = (DR_MODE *)(arg1 + 0xBB8);
-    end_off = arg1 + 0xBC4;
+    cur = arg1 + sizeof(chunk->unk_00);
+    ft4 = (s32)chunk->unk_898;
+    mode_off = &chunk->unk_BB8;
+    end_off = arg1 + sizeof(Unk8005E54CRec);
     s.ot_idx = arg2;
     for (i = 0; i < 2; i++) {
         if (!(D_8009BD38.unk15 >> i & 1)) {
@@ -4918,6 +4919,9 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B524, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
+    /* The second DR_MODE goes at the chunk's end, past the size this function returns (2B344
+     * func_8003C560 advances its cursor D_800A38B4 by that size; 6CF8 func_800174F4 ignores
+     * it). */
     mode_off++;
 
     s.ot_idx = arg2;
