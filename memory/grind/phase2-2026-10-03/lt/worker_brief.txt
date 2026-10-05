@@ -1,0 +1,57 @@
+PHASE 2 WORKER BRIEF (BB2 decomp, repo C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile, branch main)
+
+You are the Phase 2 (types) worker. The orchestrator holds the main-reintegration lock for this session.
+Read first: docs/grind/handoff-2026-10-03-restructure.md open item 2, memory/grind/phase2-2026-10-03/README.txt,
+.claude/rules/completion-bar.md (items 3/4/5), and 2-3 recent `phase2:` commit bodies
+(`git log -3 --format=%B 1d461415f`) for the message shape.
+
+PROCESS (exact):
+1. Prepare the batch in tmp/ only (scripts under tmp/p2/ or the existing ones in
+   memory/grind/phase2-2026-10-03/tools/struct/). Take the base on the CLEAN HEAD first:
+   `wsl bash memory/grind/phase2-2026-10-03/tools/check.sh --base base` (foreground).
+2. Apply one batch to the tree. Gate it in the FOREGROUND:
+   `wsl bash memory/grind/phase2-2026-10-03/tools/check.sh base <name>`
+   CHECK PASS = make OK + SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa + every object identical +
+   INTEGRITY OK. A relocation-only object diff is acceptable ONLY for a symbol merge/retirement, with
+   objdump evidence (relnorm.py in tools/struct/) stated in the message.
+3. Run memory/grind/phase2-2026-10-03/tools/key.py over the touched .c files (K&R / unkeyed bodies).
+   Also cc1 without -w diagnostics vs HEAD (see prior commit bodies for the line).
+4. `git add` the batch's tracked changes (stage). Write the commit message to tmp/p2/msg_<batch>.txt in
+   the established shape (subject `phase2: ...`; Commit-plan item; (a)-(e) prongs for merges; the check.sh
+   results; L2DIFF moved keys listed by TU; Hygiene debt; leave the `Review:` paragraph out - the
+   orchestrator supplies it as the append file).
+5. REPORT to the orchestrator and STOP: batch name, files changed, check.sh summary verbatim (SHA1,
+   CMP, INTEGRITY, implicit pairs, L2DIFF moved keys = the exact function list), the claims a
+   reviewer must verify, and the message path. Then end your turn. Do NOT commit until the orchestrator
+   tells you (after a fresh reviewer PASS and layer-2 records); then commit with
+   `bash memory/grind/phase2-2026-10-03/tools/commit.sh tmp/p2/msg_<batch>.txt tmp/p2/review_<batch>.txt <FUNC...>`
+   from Git Bash in the repo root (FUNC = every moved layer-2 key).
+- Never edit tracked files while a batch is staged (except to fix a FAIL when told).
+- Run every command in the FOREGROUND. Background-task notifications do not wake subagents; never
+  wait on one. Use long timeouts (check.sh takes ~60-120 s; give it 600000 ms).
+- Never run `make setup`, never start the Grinder, never touch the queue.
+- PowerShell-first: complex shell work goes in a file under tmp/ and is run as a file. Build files must
+  be LF (write with newline="\n").
+
+RECURRING REVIEW-FAILURE CLASSES (each one failed a past review - avoid them):
+- Adding a cast where retyping the holder is byte-neutral. Holder-first: retype the variable /
+  parameter / extern, and MEASURE it, before reaching for a cast.
+- A no-op cast. Try the plain member read first; keep a cast only if it is needed (and say why).
+- A raw or differently-typed view of header-declared bytes on an edited line (completion-bar item 4 has
+  no FAKE route). If no typed form matches, keep the line EXACTLY as at HEAD.
+- Edits inside __asm__ text or operands. Never.
+- Comments or commit-message sentences that are false. Verify every name, count, address and every
+  "only" / "all" / "every" / "no other" claim against the code, asm and symbol lists before writing it.
+- Waiting on background-task notifications (they don't wake you). Foreground only.
+- Neutral names only (Unk<addr>Rec, unk_XX member names, offset names) - no semantic names until Phase 3.
+- Retypes can make an existing FAKE byte-neutral: ablate every FAKE in every moved body (sandbox
+  --candidate, whole clusters) and retire the redundant ones; report each score in the message.
+- Stale comments: after a retype, re-read every comment in a touched function (word indexes, old
+  types) and every count in the message against the staged diff.
+- Names in every touched body are claims: re-read every local, struct field and label the body uses
+  (including local descriptor structs) against what the code/asm does with it; rename false ones to
+  neutral offset names (unk_XX) in the same batch.
+- No adjacent-field indexing ((&s.a)[i]): use an array member.
+- On every edited line, check each cast against the callee's prototype (no no-op or contradicting
+  casts) and prefer a typed table where an int-declared local table is read and a typed form matches.
+- Use real instruction counts (objdump without relocation lines) in comments and messages.

@@ -1,0 +1,100 @@
+LONG TAIL (commit-plan item 4): raw-offset site families, 2026-10-05 census
+===========================================================================
+Source: tmp/p2/lt/casts.tsv (memory/grind/phase2-2026-10-03/tools/casts.py over every linked TU of
+the working tree = HEAD 6dcb086d6 + the staged P7a, which has no raw-offset site). 3303 sites:
+deref-load 874, deref-store 804, pun-load 475, addr 469, index-load 259, pun-store 254, ptradd 64,
+index-store 54, struct-cast 50.
+tmp/p2/lt/families.tsv groups them, one row per real object (families.py has the rules; the
+`func_list` column is the moved-body list). 2559 sites in 20 families; 744 in FZZ.
+- `funcs` = moved bodies.
+- `fake_sites` = sites in a function with a FAKE (casts.py `fake` column), the bodies whose FAKEs a
+  batch must re-ablate.
+
+ORDER: largest first, one family per batch, rulings and blockers first.
+
+ 1. F01  51268 scratchpad workspace 0x1F800000..0x1F8000BC. 683 sites, 25 bodies (291 sites in
+     FAKE bodies).
+     - The D_800A3468..D_800A34EC TU-static s32 globals each hold one fixed 0x1F8000xx field
+       address. func_80060E38 seeds them (51268.c:268-299), so its stores are the field map.
+     - Shape: one ScrPad51268 record at 0x1F800000. Each global becomes `T *` to its field (or
+       the code reads `SPAD51->field`). Measure both.
+     - Blocker: game.h's ScrPad / SPAD (17AFC's view, F02) overlays the same memory. The two
+       views must be separate types (a union is an invented model); state that.
+     - Defects up front: func_80068D88's m2c names (strength_red / var_t3) and `*(u16 *)p_idx`
+       views (P8 debt row); 51268's block-scope g_gpu_ot_ptr externs go with it.
+ 2. F02  17AFC collision scratchpad workspace (scr / obj on 0x1F800xxx). 663 sites, 20 bodies
+     (227 in FAKE bodies).
+     - game.h:636-650 already declares ScrPad / SPAD (the point tables): extend it from the
+       sites.
+     - Header-declared, so item 4 applies to every edited line.
+ 3. F03  51268 layout-A context. 209 sites, 24 bodies.
+     - RULED a word array (P3 round 2), so only the resource-root reads `*(s32 *)(arg0 + 4)` /
+       `outer + 4` + off are open.
+     - Batch only those (the MOD.BIN root's header table, cf. func_80069F80 / tbl[10..11]).
+ 4. F06  SPU register block _spu_RXX (libspu) + _spu_setReverbAttr's arg0 record. 175 sites,
+     14 bodies.
+     - Sony library code (verbatim modules), MMIO (mmio-volatile-type-level).
+     - PsyQ's own libspu header spells _spu_RXX as a union of u16 / u32 views. Follow it; no
+       invented model.
+ 5. F04  5ED34 resource roots D_800A35C4 / D_800A35A8 / D_800A3568 (+ 64FD8 D_800A35F8). 106
+     sites, 16 bodies (80 in FAKE bodies).
+     - Blockers: the EnvA descriptor unification and the sheet-header / cell typing
+       (Unk8009B0E0Record / Unk8009B400Record, the D_8009B708 row) touch the same bodies; do them
+       together or first.
+ 6. F09  28708 records: D_800A36EC 0x1C records (func_8003993C, asm/funcs/func_8003993C.s:57-89)
+     and slot / dest records. 87 sites, 4 bodies (44 in FAKE bodies). game.h already describes
+     the 0x1C record.
+ 7. F05  368E4 transform nodes (Unk80101DF0Record / Unk800A6690Rec family, header-declared) +
+     vehicle / part. 84 sites, 3 bodies (func_80048BA4 / func_80049718 / func_80049A2C; 78 sites
+     in FAKE bodies).
+     - Defects up front (P7b / P7c rows):
+       - `ot` (the D_800A3820 list cursor) -> list;
+       - func_80049718's "ordering table" comment;
+       - `prim` naming;
+       - func_80049A2C's new_var2 / 5 / 6 / 7 / 8.
+     - P7c (g_gpu_ot256_ptr u32 *, PsyQ ClearOTagR, then ClearOTagR into libgpu.h) rides on it.
+     - If the typed node writes don't match, it doesn't land (ruling).
+ 8. F08  309CC records. 69 sites, 6 bodies.
+     - a0: s16 * vectors.
+     - arg0: a large object with +0x10D4 / +0x18F4..; check against Unk80101EC8Record (the
+       character object).
+ 9. F10  31548 func_80040D48 locals s1..s4. 68 sites, 1 body (all in a FAKE body). It is called
+     with `&vec.vx` (3AB48:915): do it with the first-member-pass batch (12).
+10. F11  368E4 other bases (p u32 * lists, s0, arg0 records). 62 sites, 13 bodies. After F05,
+     same TU.
+11. F12  libgpu internals (sys.c rect / g_gpu_ctx, ext.c SetDefDrawEnv / SetDefDispEnv). 60
+     sites, 18 bodies. Sony code, header-declared types: PsyQ spelling only.
+12. Cross-cutting rows (not families of their own, each its own small measured batch):
+    - Rec44 triple: func_80046BF4 reads a0[0..2] / a1[0..2]. Its callers pass &.unk_00.x and
+      &.h10 (2B344 func_8003C9A4 / CD10; 9F9C :1937 / :1966). Retype the parameters and Rec44's
+      h10..h14.
+    - First-member passes: func_80022408(&...unk_F4.x) (2B344 x2, 9F9C x1), func_80053614
+      (&probe.x, 3AB48:1824-1847), func_80040D48 (&vec.vx, 3AB48:915).
+    - EnvA descriptor unification: Env5C8A8 / Env5D814 / S5E098 / S5F1C8 / SFC9C / S60C8 / S414 /
+      S544 / S69E18 / Env5E54C / S_6A880 and EnvA x3 (63D2C / 51268 / 64FD8). One header type,
+      measured per builder. S69E18's in_tex / width names (P8 row) go with it.
+    - D_8009B708 -> the cell type (SprtEntA / Unk8009B400Record) once the descriptors are unified.
+13. Smaller families (F07 move-to-target ctx 54 / 6; F13 51268 POLY_FT4 holders 44 / 3; F18
+    17AFC func_8002EECC 41 / 1; F17 3AB48 data pun 33 / 2; F19 51268 work block D_800A34FC 33 /
+    17; F14 51268 accessor p 27 / 9; F20 51268 D_800A3524 26 / 13; F15 64FD8 Unk8006EACCRec
+    residue 14 / 6). One batch each, or pair those in the same TU.
+14. FZZ: 744 sites in 228 bodies, no root above 14 sites (top: 17AFC base 14, 9F9C arg1 13,
+    32D04 SCRATCH_PTR 13). A second families pass (per TU, by callee prototype) before batching.
+
+RULED / CLOSED (no batch):
+- F16: 3AB48 func_80060768 tile_off (21 sites). D7 ruling (b): no record; non-struct schedule
+  (member forms 192 -> 191, 51 / 49 lines).
+- F03's word array itself (P3 round 2).
+
+DEFERRED AND ORDERED LAST: P7b (D_800A38B4 as u32 *, the word cursor), after the cleanups of its
+13 bodies (tmp/p2/item3_plan2.txt P7 STATUS).
+
+Bodies with known pre-existing defects, so each batch fixes them up front:
+- 2B344 func_8003C2C0: false `stage`.
+- 2B344 func_8003C9A4 / func_8003CD10: Rec44 triple and first-member pass.
+- 9F9C func_8001EA84: first-member pass.
+- 368E4 func_80048BA4 / func_80049718 / func_80049A2C: F05 defects.
+- 6CF8 func_80016E60: `u8 *ot[2]`.
+- 51268 func_80068D88: m2c names and u16 views of s16.
+- 51268 func_80069E18: S69E18 names.
+- 3AB48 func_8005C8A8: size-FAKE comment wording.

@@ -1,0 +1,121 @@
+phase2: Unk1F8002B8Rec.unk00 is a union of per-function views; func_8002A458 / func_80031B24 and their callees read the record typed
+
+Commit-plan item 4 (long tail), family F02 (tmp/p2/lt/plan.txt), batch 3. Byte-identical. It builds on
+batches 1-2 (Unk1F8002B8Rec, func_8002D320).
+
+- game.h:
+  - Unk1F8002B8Rec.unk00 (0x60 bytes) is per-function scratch. It becomes
+    `Unk1F8002B8Unk00 unk00`, a union with one member per function layout, each a struct named
+    after its function. The comment says each function uses only its own member.
+    - `Unk1F8002B8_8002A458 v8002A458`: `LeafPos unk00[2]`, the segment's base and tip.
+      func_8002AB08 writes them before each call; func_8002A458 aims unk60[0] / unk60[1] at them.
+    - `Unk1F8002B8_80031B24 v80031B24`: `Vec3i32 unk00[2]`, one D_80106A78 object's prev_pos
+      and pos, aimed at the same way.
+    - `u8 unk00[0x60]` sizes the union. Its comment says func_8002AB08 still uses the bytes
+      through its byte pointer, and that func_80030D7C / func_800321E8 lay out more than unk00
+      (see the debt rows), so they have no member here.
+  - Member style follows the record (unkXX, as Unk1F8002B8Rec's own members). Union members are
+    v<addr>, after their function.
+  - The record comment: "pass it as `obj` to" -> "pass it to" (func_8002E838 / func_8002EA24 /
+    func_80031890 now name it `scr`). "unk00 ... is not yet typed" -> unk00 is per-function
+    scratch (Unk1F8002B8Unk00): func_8002A458 / func_80031B24 use their members, and
+    func_8002AB08 / func_80030D7C / func_800321E8 still use it through a byte pointer.
+- Parameters typed (the batch-1 conversions are gone):
+  - func_8002E838(Unk1F8002B8Rec *scr) (was `u8 *obj` + `scr = (Unk1F8002B8Rec *)obj` at entry);
+  - func_80031890(Unk1F8002B8Rec *scr, ...) (was `u8 *obj` + the late conversion);
+  - func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, ...) (was `u8 *obj, s32 *pos`). Its
+    in-body conversion measured 12 differing lines; the typed parameter is identical.
+  Callers, every site, argument types (17AFC.c line numbers after this batch):
+  - func_8002E838: func_8002A458 :1616 and func_80031B24 :5249 pass `scr`
+    (Unk1F8002B8Rec *, = &SPAD->unk2B8, :1511 / :5216). Prototype :1507.
+  - func_8002EA24: func_8002A458 :1630 / :1634 and func_80031B24 :5257 / :5261 pass `scr` and
+    `pos` (LeafPos *, `= &SPAD->unkA8[id][i]` / `[other][j]`; ScrPad.unkA8 is
+    `LeafPos unkA8[2][22]`, include/game.h). Prototype :1508.
+  - func_80031890: func_80031B24 :5297 passes `scr`. Its definition precedes the call (no
+    separate prototype).
+  No edited line keeps a cast that contradicts a prototype. The remaining `(s32)work` matches
+  func_80053614's `s32` fifth parameter (bb2.h:846).
+- func_8002A458 (whole body): `scr = &SPAD->unk2B8`.
+  - `*(u8 **)(scr + 0x60 / 0x64) = scr / scr + 0xC` -> `scr->unk60[0 / 1] =
+    &scr->unk00.v8002A458.unk00[0 / 1]`;
+  - `*(Vec3i *)(scr + 0xC8) = *(Vec3i *)(scr + 0xC)` -> `scr->unkC8 = ...v8002A458.unk00[1]`;
+  - `(*(s32 **)(scr + 0x60 / 0x64))[k]` -> `scr->unk60[0 / 1]->x / y / z`;
+    `**(Vec3i **)(scr + 0x60) = **(Vec3i **)(scr + 0x64)` -> `*scr->unk60[0] = *scr->unk60[1]`;
+  - `*(s16 *)(scr + 0xF8 / 0xFA / 0xFC)` -> `scr->unkF8.vx / vy / vz`;
+  - `*(s32 *)(scr + 0xA8..0xB0)` -> `scr->unkA8.x / y / z`;
+  - `p` is `LeafPos *` (`= scr->unk60[0]`, read ->x / ->y / ->z; was `s32 *` indexed [0..2]);
+  - `*(s32 *)(scr + 0x100..0x108)` -> `scr->unk100[0].x / y / z`.
+  - The calls pass member addresses of the parameter type:
+    - func_80053614(`&scr->unkA8.x`, `&scr->unk60[1]->x`, `&scr->unk100[0].x`,
+      `&scr->unkF8.vx`, `(s32)work`) (bb2.h:846, s32 * / s32 * / s32 * / s16 * / s32);
+    - func_80032854(.., `&scr->unkC8.x`, `&scr->unkF8.vx`) and (.., `&scr->unk100[0].x`, 0)
+      (bb2.h:700, s32 * / s16 *).
+  - The file-local `typedef struct { s32 x, y, z; } Vec3i;` (a second spelling of Vec3i32, used
+    only here) is removed.
+- func_80031B24 (whole body): `scr = &SPAD->unk2B8`. `seg` is `scr->unk00.v80031B24.unk00`
+  (was `(Vec3i32 *)scr`). `*(Vec3i32 **)(scr + 0x60 / 0x64) = &seg[0 / 1]` ->
+  `scr->unk60[0 / 1] = &seg[0 / 1]`; `pos` is `LeafPos *`.
+- func_8002EA24 (whole body), as func_8002D320 in batch 2:
+  - `scr->unk60[0]->x / y / z`, `pos->x / y / z`, `scr->unkF8.vx / vy / vz`,
+    `scr->unk100[0].x / y / z`, `scr->unkA8.z`;
+  - `vin` / `vout` are `SVECTOR *` / `Vec3i32 *`;
+  - renames: z -> y (unk100[0].y), y -> z (unk100[0].z), y_low -> az (unkA8.z), min_y /
+    max_y -> min_z / max_z. Each declaration keeps its place.
+  - `a0_var` keeps its name because it is the LZC island's operand. It gets a Ruling-11 note:
+    two values, r_sq - (x * x + y * y), then its square root.
+- Asm: no __asm__ text or operand expression changes. The operands of these bodies are locals
+  (`vin`, `vout`, `a0_var`, `&sp_var`, `temp2`, `&sp_tmp`, `len_sq`, `&sp_tmp2`, `dist_sq`,
+  `mat`, `vec`). Only `vin` / `vout` (func_8002EA24) are retyped, and only in their declarations,
+  outside the asm.
+
+Cast tally (diff of 17AFC.c, removed / added): `(s16 *)` -8, `(s32 *)` -18, `(s32 **)` -17,
+`(u8 *)` -2, `(u8 **)` -2, `(Vec3i *)` -2, `(Vec3i **)` -2, `(Vec3i32 *)` -1, `(Vec3i32 **)` -2,
+`(Unk1F8002B8Rec *)` -2 (the batch-1 conversions); `(s32)` -1 +1 (the `work` line rewrapped).
+
+Hygiene debt:
+- func_8002AB08 (17AFC.c:1672) is not in this batch. It passes its `scr` to func_8002CD58's
+  `u8 *obj` (:1884; prototype :1671), which stays as at HEAD (raw-offset asm operands); under
+  the batch-2 ruling a typed AB08 passes `(u8 *)scr` there as a boundary conversion. It writes
+  func_8002A458's two points raw (`*(LeafPos *)(scr + 0x0 / 0xC)`) and its own layout
+  (+0x18..+0x44, pointed at by unk60..unk68), so its own unk00 view comes with it in a later
+  batch (93 record sites).
+- func_80030D7C / func_800321E8 stay as at HEAD. Their layout of these bytes runs from +0x00
+  through func_8005344C's 0xEC-byte work area at +0x38..+0x123, over unk60..unk118. A view of
+  them cannot be a member of unk00 (0x60 bytes) without misstating the work area's extent. It
+  needs a record-level union: batch 4 makes ScrPad.unk2B8 itself a union (orchestrator ruling).
+- include/m2c_context.h:340 / :348 / :365 still declare func_8002A458 / func_8002EA24 /
+  func_80031890 with stale m2c types (m2c-only, not compiled into the build).
+
+Names (the five bodies, re-read whole): nothing contradicts its use after the renames above.
+- func_8002A458: scr, id, partner, work (the stage-cast work buffer), sp_tmp / sp_tmp2 (GTE
+  LZCR slots), dx / dy / dz / temp / temp2 (their Ruling-11 notes), diff, hlen, len_sq,
+  hit_sq, qx / qy / qz, p (the base point), rec, i, pos, bit.
+- func_80031B24: scr, seg (the object's step), pos.
+- func_8002EA24: vin / vout, x / y / z (unk100[0]), az, min_z / max_z, sq, a0_var (noted),
+  sp_var, lzcr, shift, tbl.
+- func_8002E838 / func_80031890: unchanged except the parameter (scr).
+- No labels changed; `done:` (func_8002A458) is as at HEAD. No adjacent-field indexing: p[k],
+  pos[k], (*(s32 **)..)[k] became members; seg[0 / 1] and v8002A458.unk00[0 / 1] index real
+  arrays.
+FAKEs (F), re-ablated on this batch (tmp/p2/lt/f02/abl_b3.py; wk build): func_8002A458's
+do-while(0), unwrapped: 422 -> 422 insns, 32 differing lines. Still needed. The other four
+bodies have no FAKE.
+Comments (C):
+- func_8002A458's header (offsets +0x60 / +0x64 / +0xC8 / +0xF8 / +0xFA / +0xA8 / +0x100 and
+  "the one func_8002E838 / func_8002EA24 / func_8002CA8C use") stays true.
+- func_80031890's "sibling of func_8002E838" stays true; func_8002E838's comments are
+  unchanged.
+- The record comment is updated as above; the view comments state who writes each view.
+
+Measured (prep, wk build of tmp/p2/lt/f02/v/17AFC.b3.c + game.h.b3 against the base snapshot):
+- func_8002EA24 107, func_8002A458 422, func_80031B24 327, func_8002E838 121, func_80031890
+  164 insns, all IDENTICAL; the whole 17AFC TU IDENTICAL.
+- Every linked TU compiled against the new game.h (tc_all) IDENTICAL.
+- cc1 diagnostics: 17AFC 10 -> 10; every linked TU unchanged (warn_all).
+Prep body keys (against batch 2's landed text, v/17AFC.b2t2.c):
+- func_8002A458 0d4dccb19ee7eaa2 -> c2056bda3cc83c91
+- func_8002E838 9d74e594a404417e -> 9e5b001c0bc6232f
+- func_8002EA24 b209eca88efe4acc -> 801042fa0b2e5821
+- func_80031890 c3fa0f9a3c3c5261 -> 2710558259bd95cf
+- func_80031B24 afc6ac95ba5df326 -> abc29163dc565039
+No UNKEYED-MOVED. The check.sh section (SHA1 / CMP / INTEGRITY / L2DIFF) is added at apply.

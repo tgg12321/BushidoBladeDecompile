@@ -43,13 +43,35 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
    - Item 8 (small structs) in progress, 7a7bb6dcd..1d461415f: Rec44 +0x00 is a Vec3i32; MotionFrame
      callee params and s16 channels; scratchpad 16-byte points / func_8002304C Vec4i32 *; the
      Unk8001CD68Rec 4-byte record; merges D_800A3678[3] and g_pad_buf[2][9].
-   - **Next session starts here:** s5c (D_800F1140/44/48 -> one Vec4i32; func_80041E10(Vec4i32 *) in
-     bb2.h) is prepared and measured but NOT reviewed — `tools/struct/s5c.py`, evidence `s5c.ev.txt`,
-     draft message `msg_s5c.draft.txt`; re-take the base, re-run, stage, then fresh review. Then s5d
-     (one `extern s32 *D_80103608[]`; `tools/struct/s5d.py`, measured with tc.sh only). tc.sh needs
-     bb2.h in tmp/p2/wk/include; headdiag.sh rebuilds tmp/p2/wk from HEAD.
-   - After item 8: the deferred OT pointers + AddPrim / ClearOTagR batch (type the primitive holders in
-     3AB48 / 51268 / 5ED34 / 64FD8 first); func_800203B4's island operand (`auth:` re-hash).
+   - Item 8 done (s5c 211bbda71, s5d 486221d00). Item 3 of the plan (primitive holders, OT, AddPrim /
+     SetDraw*) done fd40277d3..a47145798: P1 setlen, P2 AddPrim def, P3 pool / context records
+     (31bb65e13), P4-P6 holder flips, D1-D8 3AB48 chunk-builder records, P7a, P8 libgpu.h + bb2.h.
+     Rulings taken this session are in those commit bodies: g_gpu_ot_ptr is u8 *; 51268's layout-A
+     context is a word array (value conversions at GPU calls); 3AB48 declares `extern int AddPrim();`
+     (implicit-int evidence), so AddPrim stays out of libgpu.h; func_80060768 keeps int arithmetic
+     (member TILE stores 192 -> 191 insns); a cast to a callee's declared parameter type is a boundary
+     conversion; asm text / operands are never edited and no alias local exists to keep them compiling.
+   - Open owner questions: (1) func_8006C21C's Q27 `s16 tw` passed as SetDrawMode's RECT * gains 2 cc1
+     warnings; no typed spelling matches (all diff 70 lines; `(RECT *)tw` matches but swaps the warning).
+     (2) 3AB48's K&R AddPrim vs a libgpu.h `void AddPrim` prototype (conflict).
+   - Corrections to committed messages: 31bb65e13 (P3) and e6a30adb9 (P5) state "insns" counts that
+     included objdump relocation lines (e.g. P5's 650 -> 641 is 552 -> 543; full table
+     `memory/grind/phase2-2026-10-03/lt/insn_audit.txt`); verdicts unchanged. dbf53f73d (D1) says the
+     caller passes s32; it passes the u32 D_800A38B4.
+   - Deferred: P7b (D_800A38B4 as a u32 * word cursor; IDENTICAL in 5 TUs, two callers over-advance by
+     ret words) and P7c (368E4 g_gpu_ot256_ptr) wait for the long-tail cleanups they pull in; plan and
+     evidence in `memory/grind/phase2-2026-10-03/lt/item3_plan2.txt`.
+   - Long tail (plan item 4) in progress: census `lt/families.tsv` / `lt/plan.txt` (3303 sites, 20
+     families + 744 scattered). F02 (17AFC collision scratchpad, Unk1F8002B8Rec in ScrPad.unk2B8):
+     batch 1 ef5686d36, batch 2 9ccd8e382.
+   - **Next session starts here:** F02 batch 3 (unk00 union views; func_8002EA24 / A458 / 31B24 /
+     E838 / 31890) is prepared and measured IDENTICAL in a scratch build but not applied:
+     generator `memory/grind/phase2-2026-10-03/lt/f02/f02b3.py` (it builds from tmp/ copies; re-derive
+     on HEAD 9ccd8e382), message draft `lt/f02/msg_f02b3.txt`. Apply, run check.sh, fresh review. Then batch 4 (ScrPad.unk2B8
+     becomes a union { rec; v80030D7C; v800321E8 } for the +0x38 work-area users; approved), then
+     func_8002AB08, then F01. Worker / reviewer briefs with every failure class learned:
+     `lt/worker_brief.txt`, `lt/reviewer_brief.txt`.
+   - func_800203B4's island operand (`auth:` re-hash) is still open, after the long tail.
    - Kept on purpose: original-call facts as commented declarations (func_80019568 / func_80044100 /
      func_80052C10 K&R; snd_VabFakeOpen, func_8005C2A8, func_80054434, func_80060414 local).
      **Owner ruling 2026-10-04:** func_8001C820 keeps its raw `(s32)((u8 *)s0 + 0x536)` argument rather

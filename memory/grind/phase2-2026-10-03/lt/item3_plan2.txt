@@ -1,0 +1,258 @@
+ITEM 3 -- REMAINING BATCHES after P1 (fd40277d3), P2 (34a4dd020), P3 (31bb65e13). Research only.
+
+State after P3: 63D2C / 64FD8 / 5ED34 are flipped (PsyQ AddPrim / SetDraw* / ClearOTagR local
+declarations, u8 * g_gpu_ot_ptr, typed contexts and local primitive holders). Still on s32 / K&R
+local declarations: 51268 (58 AddPrim, 37 SetDraw*, 3 `extern s32 g_gpu_ot_ptr`), 3AB48 (32
+AddPrim, 17 SetDraw*, two `s32 AddPrim(s32, s32)` / `s32 SetDrawMode(s32 x5)` pairs, `SetDrawArea()`),
+25C38 (`void AddPrim(u32 *, u32 *)`, `extern s32 g_gpu_ot_ptr`), 2B344 (`extern s32 g_gpu_ot_ptr`),
+368E4 (`s32 ClearOTagR(s32, s32)` on the second OT `extern s32 g_gpu_ot256_ptr`), 6CF8 (the
+definition and a redundant `extern u8 *` copy). A TU's AddPrim / SetDraw* declaration flips in one
+commit with every primitive argument it passes (a mixed TU gains cc1 diagnostics), and libgpu.h's
+prototypes land last (P10).
+
+Obligations for every batch below: (F) ablate every FAKE in every moved body as a whole cluster
+(tmp/p2/item3/ablate.py), retire the byte-neutral ones, record each result in the message;
+(C) re-read every comment in each touched function for word indexes / old types made false, and
+every count in the message against the staged diff; plus the usual check.sh, key.py (incl.
+UNKEYED-MOVED), cc1 -w-less diagnostics, holder-first conversions listed with reasons.
+
+-----------------------------------------------------------------------------------------------
+P4  Small typed-holder follow-ups in the flipped TUs (no GPU declaration change).      ~3 bodies
+    - game.h SelWork.f24 void * -> GpuDb * (its only writer: 64FD8 func_80077724
+      `SELWORK->f24 = &g_gpu_db[...]`, 64FD8:1345); func_80074E08's 10 `((DRAWENV *)SELWORK->f24)->`
+      reads become `SELWORK->f24->draw.` (64FD8:351-376). Measure (64FD8 is not -G8; SelWork is
+      reached through SELWORK).
+    - 5ED34 `static void *D_800A35A4` -> Unk8006E49CRec * (write-only, func_8006EACC:265).
+    (F) func_80074E08: no FAKE; func_80077724 / func_8006EACC: none. (C) func_80074E08's header and
+    Ruling-11 comments; game.h's SelWork comment block (f24 is described there?).
+
+P5  51268 flip (deferred from P3; ruling: the layout-A context stays a word array).    ~22 bodies
+    - Local declarations -> PsyQ spelling (AddPrim / SetDrawMode / SetDrawArea / SetDrawOffset),
+      the three `extern s32 g_gpu_ot_ptr` -> u8 *; D_800A34E4 (OT slot address) -> u8 * (needed once
+      g_gpu_ot_ptr is u8 *: 4 assignments `D_800A34E4 = g_gpu_ot_ptr + z * 4`); D_800A36E0 /
+      D_800F1438 -> DR_MODE * / DR_MODE[] (func_8006BD28 / func_8006BEC4).
+    - Local primitive holders: func_80069898 p (u8 * -> TILE *, 3 AddPrim), func_80069AE4 p / poly
+      (TILE * / POLY_F4 *, 8 AddPrim), func_80069E18 tile (TILE *), func_8006A564 tile (TILE *, split
+      from its Ruling-11 reuse as a sheet pointer -- measured identical in the P3 struct trial),
+      the POLY_FT4 builders' `(s32)prim` / `(s32)poly` / `(u32 *)p` drops (func_8006295C,
+      func_80065800, func_800620B8-area).
+    - The word-array slot arguments: AddPrim 34 (arg0[7] x16, *(s32 *)(arg0 + 0x1C) x9, +0x20 x2,
+      +0x24 x2, +0x18 x1, *(u8 **)(arg0 + 0x1C) x1, func_8006D808's *arg1 x3), SetDrawMode ~29,
+      SetDrawArea 3, SetDrawOffset 3. NEEDS A RULING -- two honest spellings:
+        (a) value conversion at each call, `(DR_MODE *)arg0[7]` (s5d precedent: an int-held
+            address converted where it is used as a pointer): ~69 conversions;
+        (b) the word array as `void **` (slots hold untyped addresses): no call conversions, but
+            the ~35 cursor bumps `arg0[7] += 0xC` become GNU void * arithmetic (byte steps) and the
+            res reads `*(s32 **)(arg0[1] + off)` void * + int -- a GNU extension, not ISO C.
+      Recommendation: (a) (standard C; the conversions sit exactly where the int-held cursor is
+      used as a primitive pointer).
+    - func_8006C21C's Q27 FAKE `s16 tw` passed as SetDrawMode's RECT *tw (2 calls): `(RECT *)tw`
+      warns (int of different size), `(RECT *)(s32)tw` was refused, retyping tw (RECT *) breaks the
+      FAKE (measured in P3). NEEDS A RULING (owner?): e.g. keep 51268's SetDrawMode declaration
+      K&R-free but pass `0` is not the program; or re-derive the Q27 FAKE with a RECT * zero local
+      (measure; it changes the FAKE's mechanism).
+    - func_8006D808's `s32 *arg1` (address of a DR_MODE cursor word): stays s32 * under (a), its
+      three calls convert `(DR_MODE *)*arg1`.
+    (F) FAKEs: func_8006295C 2, func_80065800 5, func_80069F80 1, func_8006A1A0 1, func_8006BD28 2,
+    func_8006C21C 3, func_8006D808 1, func_8006DD94 1 (16). (C) the layout-A comments that name
+    byte offsets (func_8006A880's header etc.) stay true (no retype of the context).
+    Could split only by keeping 51268's declarations K&R in a first half -- not recommended.
+
+P6  3AB48 flip (all chunk builders keep their s32 chunk arithmetic).                 ~10 bodies
+    - Two local declaration pairs -> PsyQ; `extern u8 *g_gpu_ot_ptr` already; `(s32)tile` x11
+      dropped (tile is TILE * already); `(void *)tile_off` x4 / `(void *)sp1C` x1 stay (already a
+      value conversion to the void * parameter).
+    - Int holders passed to AddPrim / SetDraw*: mode_off (8 AddPrim + its SetDrawMode), dist_off 2,
+      area 2 (+3 SetDrawArea), new_var3 1, sp1C: value conversions at the calls (~30); the holders
+      themselves cannot be retyped here because the FAKE-dense size arithmetic uses them as ints
+      (func_8005C8A8's `size = mode_off + 0x18 - arg2` etc.). The D batches remove them.
+    - SetDrawArea's `&r` rects: check their types (RECT?).
+    (F) func_8005C8A8 2, func_8005D814 10, func_8005E54C 1, func_80060414 1, func_80060544 2,
+    func_80060768 2 (18). (C) chunk-layout comments.
+
+D1..D10  3AB48 chunk builders, one per batch (after P6).                          1 body each
+    - (D2 review, 2026-10-05) Each D batch also renames its builder's descriptor fields that
+      func_8007352C reads as EnvA (63D2C.c) and whose names are false: `in_tex` (+0x08, the SPRT
+      output cursor) -> unk_08, `width` (+0x18, EnvA.x) -> unk_18, `height` (+0x1C, EnvA.y) ->
+      unk_1C, an `argN` field holding another value -> unk_14, and the int cursor local `cur_tex`
+      -> `cur`. D3: Env5D814 / S5E098 / S5F1C8 (3AB48.c:4398-4623, 5050-5067) get the same pass.
+    - SWEEP (D2 review 3, 2026-10-05): per builder, the names the code contradicts and the
+      adjacent-field indexing, to fix up front in that builder's D batch. Mechanical greps over
+      3AB48.c: no `(&x.f)[i]` / `(T *)&x.f + n` indexing is left after D2. EnvA (63D2C.c) is the
+      reference: +0 header, +4 table, +8 SPRT out, +0xC POLY_FT4 out (EnvF), +0x10 semi, +0x14
+      ot_idx, +0x18 x, +0x1C y, +0x20 / +0x24 scale_x / scale_y (EnvF), +0x28 has_color, +0x29-2B col.
+      D3 func_8005E098 (S5E098, 3AB48.c:4606-4623):
+        - in_tex -> unk_08; width -> unk_18; height -> unk_1C.
+        - p0 / p1 (void *), zero10 (always 0), arg3 (holds arg3), byte28-2B and d[2] (the digits)
+          are true.
+        - Locals: tile, cur, mode_off, end_off, i, j, v, p are true.
+      D3 func_8005F1C8 (S5F1C8, :5050-5067):
+        - in_tex -> unk_08; width -> unk_18; height -> unk_1C.
+        - zero10 (always 0), arg3, d[3] (the digits) are true.
+        - Locals: wins / count / row / x match their uses (the i/row comment is existing).
+      D3 func_8005D814 (Env5D814, :4398-4412): EnvA's own names, true. digit[3], num_tens (= arg1 / 10),
+        shown, the hdr / cell FAKE aliases: true.
+      D5 func_80060414 (S414, :5532-5544):
+        - local `dist_off` -> mode_off (the chunk's DR_MODE).
+        - p_static (+4, the cell table &D_800A328C): "static" is unsupported -> unk_04.
+        - arg1_field / arg2_field hold arg1 / arg2 (true); header / x / y are commented and true.
+      D6 func_8005E54C (Env5E54C): EnvA / EnvF names, true. points[2] / wins[2] and the Q36 one-store
+        clear of points are owner-ruled. Re-check c / y in-batch.
+      D7 func_80060544 (S544, :5580-5595): most false names of any builder.
+        - p_geom (+0, a sheet header, not geometry) -> unk_00; p_static (+4) -> unk_04.
+        - arg1_field (+8, the SPRT cursor; holds `prev`, never arg1) -> unk_08.
+        - pad0C (+0xC: written `s.pad0C = mid_off` and read by func_80073728 as its POLY_FT4 cursor,
+          not padding) -> unk_0C.
+        - arg2_field (+0x14) holds arg1 -> unk_14; width / height -> unk_18 / unk_1C.
+        - pad20 / pad24 (written 0x200 / 0x100, read by func_80073728 as scales) -> unk_20 / unk_24.
+        - Locals: geom (a header address) -> neutral; new_var3 (the chunk's DR_MODE) -> mode_off.
+          new_var2 / new_var6 are meaningless m2c names -> name or drop.
+        - Int walks of typed tables: `geom = (s32)&D_8009B770; geom += idx` (idx += 0xC) and
+          `p0 = (s32 *)(((s32)p0) + 0xC)` / `p1 + 8` over D_8009B398 / D_8009B840 records ->
+          typed pointers ++, measured.
+      D9 func_80060768: tile_off is an int address ("off").
+        - Its TILEs are written through raw views, partly via arg0 (`*(u8 *)(arg0 + 0x7D4)` is
+          tile_off's r0): the item-4 work of D9.
+        - sp18 / sp1C are stack-slot names (neutral).
+      D10 func_8005C8A8 (Env5C8A8): EnvA names, true. Re-check sel / y_base / top / x / y in-batch.
+      Outside the builders (long tail, not a D batch): the first-member-address-for-the-struct
+      pattern:
+        - `func_80053614(&probe.x, &top.x, ...)` / `&left.x` / `&right.x` (3AB48.c:1824-1847):
+          func_80053614 takes s32 * and reads the x / y / z after it;
+        - `func_80040D48(i, 0, &vec.vx, ...)` (3AB48.c:915).
+        Typing those parameters as the struct would retire it, measured.
+    - D7 RESULT (2026-10-05, team-lead ruling (b)): func_80060768 takes no record and keeps HEAD's
+      int arithmetic. No member form of its TILE stores matches (insns as matched -> candidate,
+      differing instruction lines):
+        - the first TILE's seven stores as `chunk->unk_7D0[0].field`: 192 -> 191, 51 (with or
+          without the (s16)s, with or without SetTile / SetSemiTrans / AddPrim through the member);
+        - tile_off as TILE * with every store a member: 192 -> 191, 49.
+      The diff shows struct-member stores (MEM_IN_STRUCT_P) letting sched move the D_800A32B4
+      load / store and the y0 arithmetic across them; the target keeps non-struct order (the
+      func_8006A880 / P5 word-array finding). A record the body bypassed with raw views would
+      put an item-4 problem into a moved body. The partial candidate (record + cursor inits,
+      identical) is kept in tmp/p2/d7/ for reference only. Hygiene row in the next commit.
+    - LONG TAIL: the per-builder descriptors (Env5D814, S5E098, S5F1C8, SFC9C, S60C8, S414, S544,
+      ...) duplicate func_8007352C's EnvA layout; consolidate them onto one header-declared
+      descriptor type, measured per builder.
+    func_8005C8A8, func_8005D814, func_8005E098, func_8005E54C, func_8005F1C8, func_8005FC9C,
+    func_800600C8, func_80060414, func_80060544, func_80060768: a per-builder chunk record
+    (Unk<builder>Rec: TILE[n] / SPRT[m] / POLY_FT4[k] / POLY_G4 / DR_MODE / DR_AREA at the offsets the
+    asm shows; sizes from the returned `end - base` literal), the builder's int chunk base
+    converted once at entry (its callers in 2B344 pass the u32 D_800A38B4 cursor -- 338a31eb8's
+    int-held cursor stays), holders as members, the P6 call conversions removed. Measure first;
+    FAKE-dense (func_8005D814 has 10) -- (F) each builder's FAKEs; a builder whose FAKE mechanism
+    depends on int offset arithmetic may not take the record: report, do not force.
+
+P7  The other OT sites (P9 in the first plan).                                   ~6 bodies
+    - STATUS (2026-10-05 prep, tmp/p2/p7/): split three ways.
+      P7a (ready): 25C38 g_gpu_ot_ptr u8 * + PsyQ AddPrim + func_8003553C's ot holder u8 *; 2B344
+        g_gpu_ot_ptr u8 *. IDENTICAL (tc.sh), diagnostics unchanged. 1 moved body.
+      P7c (measured, not proposed for P7a): 368E4's g_gpu_ot256_ptr -> u32 * (definition + extern),
+        g_gpu_ot256_db -> u32[2][256], PsyQ ClearOTagR, `g_gpu_ot256_ptr = g_gpu_ot256_db[D_800A36AC & 1]`,
+        `D_800A378C[0] = (u32)(g_gpu_ot256_ptr + 0xFF) & 0xFFFFFF`, `*g_gpu_ot256_ptr = old`.
+        IDENTICAL. Editing func_80048BA4 moves its key and certifies the whole body:
+          - its `ot` is the D_800A3820 draw-list cursor (named `list` in 2B344 / 31548 / 35000);
+          - its `prim` holds 0x68-byte transform nodes (game.h Unk800A6690Rec family);
+          - `*(MATRIX *)(prim + 0x18)` writes their matrix through a raw view.
+        So P7c needs its own batch that types that node write (to measure) along with the rename.
+        g_gpu_ot256_ptr's other readers are INCLUDE_ASM (func_80051D08 / func_80051ED4).
+      RULING (team-lead, 2026-10-05): P7b DEFERRED, option (b). The word-cursor evidence below
+        (all 5 TUs IDENTICAL, the site list, the two over-advancing `+= ret` sites:
+        2B344 func_8003C2C0 :957 (caller of func_8005FC9C) and func_8003CD10 :1273 (caller of
+        func_800600C8, asm/funcs/func_8003CD10.s:35-42 `jal func_800600C8; sll v0,v0,2; ...
+        addu v1,v1,v0`) is for the hand-off. P7b lands last, after the long-tail cleanups of its
+        13 bodies, because the D_800A38B4 retype is all-or-nothing. P7c is deferred the same way:
+        the g_gpu_ot256_ptr retype rides on the long-tail "368E4 transform nodes" batch.
+      LONG-TAIL rows from the P7b / P7c body re-read:
+        - 368E4 transform nodes: func_80048BA4 / func_80049718 / func_80049A2C write the 0x68-byte
+          Unk80101DF0Record-family objects through raw byte offsets. Their D_800A3820 list cursor is
+          named `ot` (func_80049718's comment calls the list "the ordering table"; game.h calls it
+          the D_800A3820 list, and 2B344 / 31548 / 35000 name the cursor `list`). func_80048BA4's
+          `prim` holds such nodes. func_80049A2C carries m2c names new_var2 / 5 / 6 / 7 / 8. Typed
+          node writes are to be measured; g_gpu_ot256_ptr -> u32 * rides on this batch.
+        - Rec44 triple: func_80046BF4 (368E4:470) reads a0[0..2] / a1[0..2]. Its callers pass
+          &D_800F6608.unk_00.x and &D_800F6608.h10 (2B344 func_8003C9A4 / func_8003CD10; 9F9C
+          :1937 / :1966 with a local Rec44), so h10 / h12 / h14 are read as one s16 triple.
+          Retyping the parameters and Rec44 is to be measured.
+        - First-member passes: func_80022408(s32 *) (bb2.h:674) takes &D_80101EC8[..].unk_F4.x
+          (a Vec3i32) in 2B344 func_8003C9A4 and 9F9C func_8001EA84; also 2B344 :1317.
+        - 2B344 func_8003C2C0: local `stage` holds D_80101EC8[0].unk_0A, the class idx
+          (game.h:738), so it is false; fix it whenever that body is next moved.
+        - 6CF8 func_80016E60: its one-entry OT pair is declared `u8 *ot[2]` (OT words as u8 *);
+          review when moved.
+      P7b PREP (2026-10-05, ruling (i); tmp/p2/p7b/p7b.py, candidates in tmp/p2/p7b/v/): every site
+        spelled; tc.sh IDENTICAL for 2B344 / 9F9C / 6CF8 / 368E4 / 25C38; diagnostics unchanged
+        (29 / 28 / 2 / 16 / 0). Sites:
+          - bb2.h extern and the 6CF8 definition become u32 *.
+          - 2B344: 7 builder calls `(s32)D_800A38B4`, 5 `+= ret / 4`, 2 `+= ret`.
+          - 9F9C: 9 calls, 9 `+= .../ 4`.
+          - 6CF8: 2 calls; :376 `(u32 *)(prim_base + idx * 0x9A00)`; :506 `(u32 *)tbl[idx]`;
+            :543 `(s32)D_800A38B4 + 0xFFFECC00u`.
+          - 368E4: 2 stores `(u32 *)obj` / `(u32 *)(obj + 0x68)`; the reads `(u8 *)D_800A38B4`
+            keep their text.
+          - 25C38: 1 store `(u32 *)g`.
+        13 bodies move:
+          - 2B344 func_8003B8E4 / C2C0 / C560 / C8B4 / C9A4 / CD10;
+          - 9F9C func_8001CE60 / EA84;
+          - 6CF8 func_80016E60 / main;
+          - 368E4 func_80049718 / A2C;
+          - 25C38 func_8003553C.
+        Pre-existing whole-body problems in them:
+          - 2B344 func_8003C2C0: local `stage` holds D_80101EC8[0].unk_0A, the class idx
+            (game.h:738), so it is false.
+          - 2B344 func_8003C9A4 / func_8003CD10: `s32 *a0 = &D_800F6608.unk_00.x` and
+            `s16 *a1 = &D_800F6608.h10`; func_80046BF4 (368E4:470) reads a0[0..2] (the Vec3i32)
+            and a1[0..2] (three separate s16 fields h10 / h12 / h14 of Rec44), i.e. adjacent-field
+            indexing through the callee. 9F9C:1937 / :1966 pass the same.
+          - 2B344 func_8003C9A4 and 9F9C func_8001EA84: `func_80022408(&D_80101EC8[..].unk_F4.x)`,
+            the Vec3i32's first member as s32 *.
+          - 368E4 func_80049718 / func_80049A2C:
+            - the 0x68-byte objects (func_800417D0 takes them as Unk80101DF0Record *) are written
+              through raw byte offsets;
+            - the D_800A3820 list cursor is named `ot`, and func_80049718's comment calls it "the
+              ordering table";
+            - func_80049A2C carries m2c names new_var2 / 5 / 6 / 7 / 8.
+          - 6CF8 func_80016E60: the one-entry OT pair is `u8 *ot[2]`.
+      P7b (evidence measured, needs a ruling): D_800A38B4 as `u32 *`. In 2B344 + 9F9C the advances
+        `D_800A38B4 += ret / 4` and the two `D_800A38B4 += ret` (func_8003C2C0 / func_8003CD10)
+        are IDENTICAL, which makes the word-cursor model explicit. But every builder call then
+        passes `(s32)D_800A38B4` (16 sites in 2B344 / 9F9C, plus 6CF8 x2), and 6CF8 :376 / :506 /
+        :543, 368E4 :2075-2241 and 25C38 :118 / :132 change. Typing the builders' parameters
+        instead would make D1-D8's `arg + sizeof(...)` int arithmetic scale by 4.
+    - EVIDENCE for D_800A38B4's original type (record only; team-lead ruling 3, 2026-10-05; do not
+      act on it without a ruling): the chunk-builder callers advance the u32 D_800A38B4 cursor by
+      `(ret / 4) * 4` bytes (func_80060544, func_8005E54C, func_80060768, func_8005C8A8,
+      func_8005D814 ...), but 2B344 func_8003CD10 (func_800600C8, asm/funcs/func_8003CD10.s:35-42:
+      `sll v0,v0,2` then `addu`) and the func_8005FC9C caller (2B344.c:956-957) add `ret * 4`,
+      i.e. 4x the returned byte size. That reads like an original u32 * cursor: `p += ret / 4` at
+      most sites and `p += ret` at these two.
+    - 25C38: `extern s32 g_gpu_ot_ptr` -> u8 *; local `void AddPrim(u32 *, u32 *)` -> PsyQ;
+      func_8003553C's `ot = (u32 *)(g_gpu_ot_ptr + 0x401C)` / `AddPrim(ot, (u32 *)q)` (q POLY_G4 *:
+      the cast drops).
+    - 2B344: `extern s32 g_gpu_ot_ptr` -> u8 *; its two `(OTag *)g_gpu_ot_ptr` stay (OT entry as an
+      OTag *, a view of u8 * bytes -> check item 4: OTag is a libgpu.h type, g_gpu_ot_ptr holds
+      bytes; probably keep as conversion).
+    - 368E4: `s32 ClearOTagR(s32, s32)` -> PsyQ; the second OT `extern s32 g_gpu_ot256_ptr` (int
+      arithmetic `+ 0x3FC & 0xFFFFFF`) -> conversion at ClearOTagR or holder retype (measure);
+      `(s32)g_gpu_ot_ptr` (368E4:480) stays.
+    - 6CF8: drop the redundant `extern u8 *g_gpu_ot_ptr` (the definition is in the same TU) at P8.
+    (F) check each body's FAKEs (25C38 func_8003553C, 2B344 func_8003D330 / func_8003D39C, 368E4
+    two, 6CF8 three). (C) comments.
+
+P8  libgpu.h + bb2.h (the first plan's P10).                                     headers + decls
+    - libgpu.h: `void AddPrim(void *, void *)`, `u32 *ClearOTagR(u32 *, s32)`, `void SetDrawMode(DR_MODE *,
+      s32, s32, s32, RECT *)`, `void SetDrawArea(DR_AREA *, RECT *)` -- each agreeing with its
+      definition (P2 AddPrim; sys.c ClearOTagR / SetDrawMode / SetDrawArea already PsyQ-typed) --
+      and SetDrawOffset: the definition is (DR_OFFSET *, s16 *) (sys.c:616-617, signed loads), PsyQ
+      u_short *: the prototype follows the definition with a PsyQ note; callers passing u16 *
+      (64FD8 `u16 offset[2]`, 5ED34 `(u16 *)D_800A35C4 + 8`, 51268) -- measure whether cc1 warns
+      on u16 * -> s16 *; if it does, the callers' holders become s16 (stores identical).
+    - bb2.h `extern u8 *g_gpu_ot_ptr;` and removal of every local copy (5ED34 x5, 64FD8, 63D2C,
+      51268 x3, 3AB48, 368E4, 6CF8, 25C38, 2B344) and every local AddPrim / SetDraw* / ClearOTagR
+      declaration. Evidence line for u8 *: func_80074E08.s:191 / 195 / 229 / 251 / 275.
+    (F) no body moves except declaration-only changes; (C) libgpu.h's comments (the "packet word
+    count" hygiene row can be fixed here).
+
+Order: P4 (independent) -> P5 (51268) and P6 (3AB48) in either order -> D1..D10 -> P7 -> P8.
+Open rulings before P5: (a) vs (b) for the 51268 word-array slot arguments; func_8006C21C's tw.

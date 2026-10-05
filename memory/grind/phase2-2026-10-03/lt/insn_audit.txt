@@ -1,0 +1,126 @@
+INSTRUCTION-COUNT AUDIT, Phase 2 commits 28c327d86..HEAD (e6a30adb9) plus staged P6, 2026-10-05
+================================================================================================
+
+The fault: tmp/p2/item3/fcmp1.py (and tc.sh's summary) counted `objdump -d -r` lines, so each
+function's "insns" figure included its relocation lines (R_MIPS_*). Its "diff lines" figure also
+counted relocation lines. Both are the same fault.
+
+Method: tmp/p2/item3/remeasure.py and remeasure2.py rebuild tmp/p2/wk from each COMMIT's headers
+and TU source (`git show <commit>:...`; every commit builds identical objects, so the base snapshot
+serves for all of them), re-apply the original edit, and run tmp/p2/item3/fcmp2.py.
+- fcmp2 prints the old metric next to the real one. The old metric reproduced EVERY committed figure
+  exactly, which confirms each reconstruction is the edit originally measured.
+- The real instruction count drops the R_ lines. As a check, func_80060768 = 192 and func_80060414
+  = 76, matching the instruction count of asm/funcs/<func>.s.
+- Raw output: tmp/p2/item3/remeasure_p3.out, remeasure_p5.out, remeasure2.out.
+- Notation: old "a -> b, N" = committed lines and differing lines (relocations counted).
+  TRUE "a -> b, N" = instructions and differing instruction lines.
+
+A. SOURCE COMMENTS (committed bodies): no false instruction count; no fix needed
+-------------------------------------------------------------------------------
+Every comment line this session added or changed in src/ and include/ was grepped for a count
+(insn / instruction / "N -> M" / lines / score / differ / measur). Only two sites carry a number.
+1. src/main/51268.c:5355-5359, func_8006C21C, the Q27 comment (e6a30adb9): "every pointer or int
+   spelling of it measured (...) differs by 70 lines".
+   TRUE: all 9 spellings (s32 + cast; RECT * at the same place, initialised, first, after `row`,
+   last, block top; assigned later; literal 0) diff by 70 lines either way: 70 objdump lines and
+   70 instruction lines. The instruction count is 622 -> 622, no change.
+   Verdict: true as written.
+2. src/main/51268.c:6301-6302, func_8006E49C (31bb65e13): "FAKE: tail must stay a variable: ...
+   folds to li 0xBBF0 + addu (...); score 8."
+   "score" is the engine sandbox score, not the faulty tool's figure (it came from the P3 reviewer).
+   Re-measured with `sandbox func_8006E49C --disable all --candidate`:
+   - HEAD body: score 0 (38/38 insns).
+   - base3's `tail` as a literal: score 8 (38 -> 39 insns).
+   - every `tail` as a literal (the whole-cluster ablation): score 8 (38 -> 39 insns).
+   Candidates: tmp/p2/audit/e49c_*.c. Verdict: true as written.
+3. The staged P6 comment (src/main/3AB48.c, the AddPrim evidence comment) already uses real counts:
+   192 -> 193 insns, re-measured. Not committed.
+=> No fix batch is needed for source comments.
+
+B. COMMIT MESSAGES: record corrections (mislabelled "insns"; diff-line counts include relocations)
+--------------------------------------------------------------------------------------------------
+Every instruction figure below was published as "insns". The "differing disassembly lines" figures
+were objdump lines with relocations counted; they are restated as instruction-line counts.
+
+B1. 31bb65e13 (P3)
+  - Body line 29, layout-A struct for 51268 (func_8006A880): "650 -> 649 insns"
+    TRUE: 552 -> 551 insns, 17 differing instruction lines (old: 19 lines).
+    Re-measured on tmp/p2/item3/51268.wk.c, the layout-A experiment. Unk8006E390Rec was
+    reconstructed from p3lib LAY["A"] as { s32 unk_00; s32 unk_04; Unk800788B0Rec unk_08; } with
+    31bb65e13's headers. The old metric reproduces 650 -> 649.
+  - Body lines 108 / 110, retired FAKEs measured at HEAD 34a4dd020:
+    func_80076D74 do-while(0): "178 -> 177 insns" -> TRUE 161 -> 160 insns, 7 lines (old 7).
+    func_80073200 `cond`: "235 -> 237 insns" -> TRUE 203 -> 205 insns, 14 lines (old 16).
+  - Body lines 112-127, kept FAKEs ("insns target -> ablated, differing disassembly lines").
+    Each row: committed -> TRUE.
+    func_80068F70 fences       148 -> 148, 6 (each alone 6 / 4)  ->  108 -> 108, 6 (each alone 6 / 2)
+    func_8006DD94 EnvB         131 -> 131, 42    ->  117 -> 117, 42
+    func_8006E49C tail         38 -> 39, 13      ->  38 -> 39, 13 (no relocations: unchanged)
+    func_8006ECF4 dup p0       253 -> 253, 40    ->  209 -> 209, 40
+    func_8006F100 cx / cy      311 -> 311, 74    ->  266 -> 266, 78
+    func_8006F97C draw tail    594 -> 596, 56    ->  515 -> 517, 56
+    func_80070C70 c60          230 -> 227, 11    ->  194 -> 191, 11
+    func_80070F78 tim          1015 -> 1014, 59  ->  810 -> 809, 55
+    func_80071C4C dst          330 -> 330, 4     ->  270 -> 270, 4
+    func_800720FC scale stores 826 -> 823, 3     ->  690 -> 687, 3
+    func_80073200 sp43 dup     235 -> 235, 2     ->  203 -> 203, 2
+    func_800753D8 zero         184 -> 181, 15    ->  166 -> 163, 15
+    func_800759D0 zero         405 -> 403, 58    ->  364 -> 362, 58
+    func_800759D0 Q53 pointer  405 -> 410, 87    ->  364 -> 365, 79
+    func_8007636C mode         374 -> 372, 6     ->  348 -> 346, 4
+    func_800770B8 empty dw0    205 -> 205, 6     ->  175 -> 175, 6
+    func_800770B8 work dead    205 -> 205, 4     ->  175 -> 175, 4
+    func_800770B8 row + re-set 205 -> 208, 41    ->  175 -> 176, 33
+      (re-set alone)           205 -> 205, 40    ->  175 -> 175, 32
+    func_80077D94 abr          542 -> 539, 21    ->  468 -> 465, 21
+    func_80077D94 colour tails 542 -> 545, 41    ->  468 -> 470, 36
+                               542 -> 524, 112   ->  468 -> 450, 104
+    func_80077D94 j            542 -> 541, 17    ->  468 -> 467, 15
+    func_80077D94 t            542 -> 543, 35    ->  468 -> 469, 35
+    func_80078654 zero         132 -> 129, 11    ->  116 -> 113, 11
+    func_80078654 8-deep wrap  132 -> 132, 38    ->  116 -> 116, 38
+  - Every verdict stands: each kept FAKE still differs when ablated, and each retired one is still
+    byte-identical at 31bb65e13 (func_800720FC `timer` is IDENTICAL at 34a4dd020 too). Only the
+    labels and figures change.
+
+B2. d7a249134 (P4), 486221d00 (s5d), 211bbda71 (s5c), fd40277d3 (P1), 34a4dd020 (P2):
+  - No instruction count from the faulty tool.
+  - s5c's "52 lines" is a relnorm relocation-diff line count, which that sentence describes
+    correctly.
+
+B3. e6a30adb9 (P5)
+  - Body line 25, func_8006A880 with a TILE * local: "650 -> 641 insns"
+    TRUE: 552 -> 543 insns, 359 differing instruction lines (old 325).
+    Reconstruction: `TILE *tile;` after `s32 cells;`, `tile = (TILE *)*(s32 *)(arg0 + 0x18);`
+    before SetTile, tile-> at the seven stores, SetSemiTrans and AddPrim. The old metric reproduces
+    650 -> 641.
+  - Body lines 49-55, FAKEs ("insns target -> ablated, differing disassembly lines").
+    Each row: committed -> TRUE.
+    func_8006295C base staging  512 -> 511, 73     ->  420 -> 419, 71
+    func_8006295C `end`         512 -> 511, 73     ->  420 -> 419, 77
+    func_80065800 w / h         1695 -> 1699, 24   ->  1455 -> 1459, 20
+      w alone 12 / h alone 388                     ->  10 / 368 (w 1455 -> 1457, h 1455 -> 1457)
+    func_80065800 sw / sh       35; 18 / 17        ->  35; 18 / 17 (1455 -> 1456; sw 1455, sh 1456)
+    func_80065800 tbl           12                 ->  8 (1455 -> 1455)
+    S_69F80 oversized tail      69F80 24, 6A1A0 28 ->  24 / 28 (136 -> 136, 139 -> 139)
+    func_8006BD28 cells         53                 ->  53 (103 -> 102)
+    func_8006BD28 grouping      65                 ->  57 (103 -> 100)
+    func_8006C21C mode          6                  ->  6 (622 -> 622)
+    func_8006C21C col           12                 ->  12 (622 -> 622)
+    func_8006C21C Q27 narrow    74                 ->  74 (622 -> 622)
+    func_8006D808 d[5]          52                 ->  52 (355 -> 355)
+    func_8006DD94 EnvB          42                 ->  42 (117 -> 117)
+    (The message gave diff lines only for these rows except 6295C and 65800 w / h.)
+  - Body line 63, func_8006C21C tw re-spellings: "672 -> 672 insns, 70 lines each"
+    TRUE: 622 -> 622 insns, 70 lines each. The explicit `(RECT *)tw` is IDENTICAL, as the message
+    says.
+  - The review body (tmp/p2/review_p5.txt), "Q27's typed spellings each diff by 70 lines": true.
+  - Every verdict stands; only the labels and figures change.
+
+B4. Staged P6 (tmp/p2/msg_p6.txt): already restated in real instructions, with diff lines labelled
+    "differing objdump lines counting relocations". No correction needed.
+
+Tool state: tmp/p2/item3/fcmp1.py now prints real instruction counts (diff lines still count
+relocations and say so). fcmp2.py prints both metrics. tc.sh's per-function summary still counts
+objdump lines with relocations; it is used only for IDENTICAL / DIFF, never for counts.

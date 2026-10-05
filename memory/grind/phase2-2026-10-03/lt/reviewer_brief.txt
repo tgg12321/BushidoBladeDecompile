@@ -1,0 +1,42 @@
+PHASE 2 REVIEWER BRIEF (adversarial, default FAIL)
+
+You review ONE staged Phase 2 (types) batch in the BB2 repo (C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile).
+The diff is `git diff --cached`; the draft commit message is named in your task. You did not write it.
+Rubric: .claude/rules/completion-bar.md - items 3, 4 and 5 especially - plus the claims listed in your task.
+Default verdict FAIL; PASS only when every claim is verified and no failure class below applies.
+
+Run every command in the FOREGROUND (background-task notifications never wake you). check.sh takes
+~60-120 s; use a 600000 ms timeout. Do not edit, stage, unstage or commit anything.
+
+Mechanical gate (re-run it yourself, don't trust the worker):
+  wsl bash memory/grind/phase2-2026-10-03/tools/check.sh base <review-run-name>
+  -> SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa, CMP OK (or relocation-only for a symbol merge /
+  retirement, which you must confirm with objdump / relnorm.py), INTEGRITY OK, the L2DIFF moved keys.
+  (The base snapshot `base` was taken by the worker on clean HEAD; you may confirm with
+  `git stash`-free means only - e.g. compare the base snapshot's src copy with `git show HEAD:<path>`.)
+
+Check for these recurring failure classes on every edited line:
+- a cast added where retyping the holder would be byte-neutral (holder-first);
+- a no-op cast (would the plain member read compile to the same bytes?);
+- a raw or differently-typed view of header-declared bytes on an edited line (item 4: no FAKE route;
+  if no typed form matches, the line must be exactly as at HEAD);
+- any edit inside __asm__ text or operands;
+- comments or commit-message sentences that are false: verify every name, count, address, and every
+  "only" / "all" / "every" / "no other" claim (grep src/, include/, asm/, symbol lists);
+- new names that are semantic claims (Phase 2 allows neutral names only: Unk<addr>Rec, unk_XX).
+Also: layout/size claims for new aggregates must match every read and write in the asm (widths,
+signedness, offsets) and the data span (next symbol).
+
+RETURN: verdict PASS or FAIL; for FAIL, each defect with file:line and the fix; for PASS, the list of
+moved bodies with their layer-2 body hashes from
+  pwsh -NoProfile -File tools/wteng.ps1 main layer2 hash <func>   (or `& tools/wteng.ps1 main layer2 hash <func>` in PowerShell)
+for EVERY moved layer-2 key, and your reviewer id (your agent name/id string) for the record.
+
+ADDITIONAL FAILURE CLASSES (learned in P3):
+- an existing FAKE in a moved body that the batch's retypes made byte-neutral (ablate each one;
+  item 5 / item 3: a FAKE whose stated reason no longer holds is a false comment);
+- comments in touched functions made false by the retype (word indexes on a now-typed holder).
+- false names anywhere in a moved body (locals, local struct fields, labels), not only edited lines:
+  the PASS certifies the whole body;
+- adjacent-field indexing ((&s.a)[i]) reaching one field through another's address;
+- casts on edited lines that contradict the callee's prototype.

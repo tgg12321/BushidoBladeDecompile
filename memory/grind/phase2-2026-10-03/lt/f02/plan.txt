@@ -1,0 +1,45 @@
+F02 (17AFC collision scratchpad) batch plan, 2026-10-05
+- Batch 1 (prepped: f02b1v2.py; 17AFC.b1.c / game.h.b1; msg tmp/p2/msg_f02b1.txt):
+  - Unk1F8002B8Rec + ScrPad.unk2B8, with member names matching func_8002DE20's existing view.
+  - The file-local Unk8002DE20Obj is retired.
+  - func_8002E838, func_8002EBDC, func_8002F2D0, func_8002F770, func_80031890 and func_8002DE20:
+    6 moved bodies, 0 FAKEs.
+- Batch 2 PREPPED 2026-10-05 (team-lead order: D320 / D780 / CA8C, renames up front; EA24 with its
+  callers later): f02b2.py -> v/17AFC.b2.c / game.h.b2, abl_b2.py, keys_b2.py, msg tmp/p2/msg_f02b2.txt.
+  D320 / D780 / D518 / CA8C, all IDENTICAL; D780's two ApplyRotMatrix operands via `u8 *obj`.
+  REFINED (team-lead: no alias local; raw-offset-asm bodies stay at HEAD as debt): batch 2 is
+  func_8002D320 alone (u8 *obj + entry conversion, LeafPos *pos) + func_8002CA8C's two D320 call
+  lines: f02b2s.py -> v/17AFC.b2s.c, abl_b2s.py. D780 / D518 / CA8C body = debt rows.
+- Batch 3 PREPPED 2026-10-05: f02b3.py -> v/17AFC.b3.c / game.h.b3 (on b2s), abl_b3.py, msg
+  tmp/p2/msg_f02b3.txt. unk00 union (v8002A458 / v80031B24 + u8 sizing member); EA24 / A458 /
+  31B24 / E838 / 31890 typed, all IDENTICAL. AB08 blocked by CD58 (u8 *obj, raw asm operands);
+  30D7C / 321E8 need a record-level union (work area +0x38..+0x123) -> ruling.
+- Batch 4 PREPPED 2026-10-05 (ruled: ScrPad.unk2B8 union): f02b4.py -> v/17AFC.b4.c / game.h.b4 /
+  3AB48.b4.c (on b3), abl_b4.py, t/sz.c size asserts, msg tmp/p2/msg_f02b4.txt. 30D7C / 321E8 views,
+  Work_80053E9C + Cell_80052D00 -> game.h, 6 re-spells; 8 bodies IDENTICAL.
+- Later: func_8002AB08 (own unk00 view; (u8 *)scr to CD58), func_80029454, func_800290B8, box_overlap,
+  func_8002C22C / C61C, the raw-asm-operand bodies (debt).
+- (old) Batch 3: func_8002EA24 + func_8002A458 / func_80031B24 with the unk00 union views.
+- (old plan) Batch 2: func_8002EA24 / func_8002D320 / func_8002D780 with their callers func_8002A458 /
+  func_80031B24 / func_8002CA8C (6 bodies).
+  - Type the `u8 *obj` parameters as Unk1F8002B8Rec * and the callers' `scr`.
+    func_8002EA24's in-body conversion measures 12 differing lines (register), so the parameter
+    itself must be typed.
+  - Rename func_8002D320's / func_8002D780's component-mismatched locals (x holds four values;
+    y_low / y_high / y hold .z, z holds .y) to neutral or true names, or give them Ruling-11 notes.
+  - Re-ablate func_8002D320's dead-store FAKE and func_8002A458's / func_8002CA8C's FAKEs.
+- RULING NEEDED before CD58 / DAD0 / D780 are fully typed: func_8002CD58 / func_8002DAD0 /
+  func_8002D780 pass `obj + 0xA8` / `obj + 0xB8` / `(s32 *)(obj + 0xF8)` etc. directly as GTE asm
+  operands. Typing them means editing asm operand expressions (canonical island text, hashed in
+  tools/canonical_asm_regions.json). The alternative is locals computed outside the asm, as
+  func_8002E838 does with mat / vec: that also edits the operand text.
+- unk_00 (+0x00..+0x5F) is used by func_8002AB08 (LeafPos at 0 / 0xC / 0x18 / 0x24, s32 0x2C..0x44),
+  func_80030D7C (Vec3i32 at 0 / 0x10, s16 at 0x30 / 0x32), func_80031B24 (Vec3i32 at 0 / 0xC) and
+  func_800321E8. The views conflict (a Vec3i32 at +0x10), so they need a decision: per-function
+  views (union members) vs leaving unk_00 untyped.
+- The ScrPad-internal raw views (func_8002FDB0 `*(s32 *)((u8 *)0x1F8000C0 + stride)` etc. into
+  unkA8; func_8002FC80 / func_8002FDB0's 0x1F800360.. GTE operands = record +0xA8 / +0xB8 / +0xC8)
+  are direct item-4 cases, but they are asm operands too (same ruling).
+- func_80029454 (172 sites, 0 FAKEs), func_8002AB08 (93, FAKEs), box_overlap, func_800290B8,
+  func_8002CA8C, func_80030D7C, func_800321E8 and the obj-parameter functions follow in batches of
+  <= 8 bodies, after the rulings above.
