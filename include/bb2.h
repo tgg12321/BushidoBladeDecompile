@@ -702,7 +702,7 @@ extern s32 func_800388A8(void);
 extern s32 func_80038988(void);
 extern s32 *func_800392B8(void);
 extern void func_80039320(void);
-extern void func_80039680(u8 *);
+extern void func_80039680(Unk80101EC8Record *);
 extern void func_800397A0(void);
 extern void func_8003A41C(void);
 extern void func_8003AA48(void);

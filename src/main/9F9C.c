@@ -5352,7 +5352,7 @@ skip_62:
     if (rec->unk_7A == 2) {
         rec->unk_7A = 0;
     }
-    func_80039680((u8 *)rec);
+    func_80039680(rec);
 }
 
 /* Tail word after func_80021424's five-entry compiler-generated switch table. */

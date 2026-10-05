@@ -1230,44 +1230,44 @@ loop:
         }
     }
 }
-void func_80039680(u8 *a0) {
+void func_80039680(Unk80101EC8Record *a0) {
     s16 idx;
     u8 *base;
     u8 *dest;
 
-    idx = *(s16 *)(a0 + 4);
+    idx = a0->index;
     base = (u8 *)(D_800A36EC + D_800A36F8 * 56);
     dest = base + idx * 28;
 
-    *(s16 *)(dest + 4) = *(s32 *)(a0 + 0xF4);
-    *(s16 *)(dest + 8) = *(s32 *)(a0 + 0xFC);
-    *(s16 *)(dest + 6) = *(s32 *)(a0 + 0xF8);
+    *(s16 *)(dest + 4) = a0->unk_F4.x;
+    *(s16 *)(dest + 8) = a0->unk_F4.z;
+    *(s16 *)(dest + 6) = a0->unk_F4.y;
 
     {
-        u16 v = *(u16 *)(a0 + 0x1CA);
-        u8 b = *(u8 *)(a0 + 0xB3);
+        u16 v = a0->unk_1C8.vy;
+        u8 b = a0->unk_B3;
         *(s16 *)(dest + 0xA) = (v & 0xFFF) | (b << 12);
     }
 
-    *(s16 *)(dest + 0xC) = *(s32 *)(a0 + 0x148);
-    *(u8 *)(dest + 0x14) = *(u16 *)(a0 + 0x1E6) >> 2;
-    *(u8 *)(dest + 0x15) = *(u16 *)(a0 + 0x1E8) >> 2;
-    *(u8 *)(dest + 0x16) = *(u16 *)(a0 + 0x1EA) >> 2;
-    *(s32 *)(dest + 0) = *(s32 *)(a0 + 0x50);
+    *(s16 *)(dest + 0xC) = a0->unk_148;
+    *(u8 *)(dest + 0x14) = a0->unk_1E6 >> 2;
+    *(u8 *)(dest + 0x15) = a0->unk_1E8 >> 2;
+    *(u8 *)(dest + 0x16) = a0->unk_1EA >> 2;
+    *(s32 *)(dest + 0) = (s32)a0->unk_50;
     *(u8 *)(dest + 0x17) = 0;
 
-    if (*(u8 *)(a0 + 0x60) != 0) {
+    if (a0->unk_60 != 0) {
         *(u8 *)(dest + 0x17) = 1;
     }
-    if (*(u8 *)(a0 + 0x61) != 0) {
+    if (a0->unk_61 != 0) {
         *(u8 *)(dest + 0x17) |= 2;
     }
 
-    *(s16 *)(dest + 0xE) = *(u16 *)(a0 + 0x64);
-    *(s16 *)(dest + 0x10) = *(u16 *)(a0 + 0x66);
-    *(s16 *)(dest + 0x12) = *(u16 *)(a0 + 0x68);
-    *(u8 *)(dest + 0x18) = *(u8 *)(a0 + 0x62);
-    *(u8 *)(dest + 0x19) = *(u16 *)(a0 + 0x40);
+    *(s16 *)(dest + 0xE) = a0->unk_64;
+    *(s16 *)(dest + 0x10) = a0->unk_66;
+    *(s16 *)(dest + 0x12) = a0->unk_68;
+    *(u8 *)(dest + 0x18) = a0->unk_62;
+    *(u8 *)(dest + 0x19) = a0->unk_40;
 }
 void func_800397A0(void) {
     u8 val = D_800A36F8;
