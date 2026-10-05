@@ -1113,8 +1113,8 @@ static inline s32 box_overlap(u8 *scr) {
         && *(s32 *)(scr + 0x80) <= *(s32 *)(scr + 0xA4) && *(s32 *)(scr + 0x8C) >= *(s32 *)(scr + 0x98);
 }
 
-/* Both are defined further down this file; func_8002DE20's first parameter
- * type (Unk8002DE20Obj) is declared there, hence no prototype here. */
+/* Both are defined further down this file. func_8002DE20 has no prototype here: it takes
+ * the Unk1F8002B8Rec its callers hold as a u8 * `scr`. */
 extern s32 func_8002DAD0(u8 *obj);
 extern s32 func_8002DE20();
 
@@ -3460,25 +3460,12 @@ s32 func_8002DAD0(u8 *obj) {
  * cross_a / cross_b: Ruling 11 (see their declaration). */
 extern s32 D_800A314C;
 
-/* Layout of the object func_80029454 passes in, as far as this function uses it. */
-typedef struct {
-    u8 unk0[0x60];
-    s32 *unk60;             /* 0x60: origin position */
-    u8 unk64[0xA8 - 0x64];
-    VECTOR unkA8;           /* 0xA8: triangle corner A, relative to the origin */
-    VECTOR unkB8;           /* 0xB8: triangle corner B, relative to the origin */
-    u8 unkC8[0xF8 - 0xC8];
-    SVECTOR unkF8;          /* 0xF8: GTE input vector */
-    u8 unk100[0x118 - 0x100];
-    Vec3i unk118[3];        /* 0x118: the three rotated points */
-} Unk8002DE20Obj;
-
 /* Rotates the three points p0/p1/p2 (relative to the origin) by the current GTE
  * rotation matrix, cuts the rotated triangle with the plane z = 0, and returns 1
  * if the resulting segment (x1,y1)-(x2,y2) touches the triangle (0,0) / A / B in
  * the x-y plane: either endpoint inside it (same side of every edge as the
  * centroid), or the segment crossing one of its edges. */
-s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
+s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2)
 {
     s32 i;
     s32 max_i;
@@ -3503,9 +3490,9 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
     s32 cross_b;
     s32 cross_ab2; /* edge A-B x ((x2,y2) - A): its own value, see ruling11.md */
 
-    obj->unkF8.vx = p0[0] - obj->unk60[0];
-    obj->unkF8.vy = p0[1] - obj->unk60[1];
-    obj->unkF8.vz = p0[2] - obj->unk60[2];
+    obj->unkF8.vx = p0->x - obj->unk60[0]->x;
+    obj->unkF8.vy = p0->y - obj->unk60[0]->y;
+    obj->unkF8.vz = p0->z - obj->unk60[0]->z;
     /* gte_ldv0(&obj->unkF8): inline_o.h 4.3 :16-20 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
@@ -3515,9 +3502,9 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
-    obj->unkF8.vx = p1[0] - obj->unk60[0];
-    obj->unkF8.vy = p1[1] - obj->unk60[1];
-    obj->unkF8.vz = p1[2] - obj->unk60[2];
+    obj->unkF8.vx = p1->x - obj->unk60[0]->x;
+    obj->unkF8.vy = p1->y - obj->unk60[0]->y;
+    obj->unkF8.vz = p1->z - obj->unk60[0]->z;
     /* gte_stlvnl(&obj->unk118[0]): inline_o.h 4.3 :904-909 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[0]):"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
@@ -3532,9 +3519,9 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
-    obj->unkF8.vx = p2[0] - obj->unk60[0];
-    obj->unkF8.vy = p2[1] - obj->unk60[1];
-    obj->unkF8.vz = p2[2] - obj->unk60[2];
+    obj->unkF8.vx = p2->x - obj->unk60[0]->x;
+    obj->unkF8.vy = p2->y - obj->unk60[0]->y;
+    obj->unkF8.vz = p2->z - obj->unk60[0]->z;
     /* gte_stlvnl(&obj->unk118[1]): inline_o.h 4.3 :904-909 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[1]):"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
@@ -3606,63 +3593,63 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
         y2 = obj->unk118[mid_i].y + (-obj->unk118[mid_i].z * (obj->unk118[max_i].y - obj->unk118[mid_i].y)) / dz_b;
     }
 
-    cx = (obj->unkA8.vx + obj->unkB8.vx) / 3;
-    cy = (obj->unkA8.vy + obj->unkB8.vy) / 3;
+    cx = (obj->unkA8.x + obj->unkB8.x) / 3;
+    cy = (obj->unkA8.y + obj->unkB8.y) / 3;
 
     /* (x1,y1) inside the triangle */
-    cross_a = obj->unkA8.vy * cx - obj->unkA8.vx * cy;
-    cross_b = obj->unkA8.vy * x1 - obj->unkA8.vx * y1;
+    cross_a = obj->unkA8.y * cx - obj->unkA8.x * cy;
+    cross_b = obj->unkA8.y * x1 - obj->unkA8.x * y1;
     if ((cross_a ^ cross_b) >= 0) {
-        cross_a = obj->unkB8.vy * cx - obj->unkB8.vx * cy;
-        cross_b = obj->unkB8.vy * x1 - obj->unkB8.vx * y1;
+        cross_a = obj->unkB8.y * cx - obj->unkB8.x * cy;
+        cross_b = obj->unkB8.y * x1 - obj->unkB8.x * y1;
         if ((cross_a ^ cross_b) >= 0) {
-            cross_a = (obj->unkB8.vy - obj->unkA8.vy) * (cx - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (cy - obj->unkA8.vy);
-            cross_b = (obj->unkB8.vy - obj->unkA8.vy) * (x1 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y1 - obj->unkA8.vy);
+            cross_a = (obj->unkB8.y - obj->unkA8.y) * (cx - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (cy - obj->unkA8.y);
+            cross_b = (obj->unkB8.y - obj->unkA8.y) * (x1 - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (y1 - obj->unkA8.y);
             if ((cross_a ^ cross_b) >= 0) {
                 return 1;
             }
         }
     }
     /* (x2,y2) inside the triangle */
-    cross_a = obj->unkA8.vy * cx - obj->unkA8.vx * cy;
-    cross_b = obj->unkA8.vy * x2 - obj->unkA8.vx * y2;
+    cross_a = obj->unkA8.y * cx - obj->unkA8.x * cy;
+    cross_b = obj->unkA8.y * x2 - obj->unkA8.x * y2;
     if ((cross_a ^ cross_b) >= 0) {
-        cross_a = obj->unkB8.vy * cx - obj->unkB8.vx * cy;
-        cross_b = obj->unkB8.vy * x2 - obj->unkB8.vx * y2;
+        cross_a = obj->unkB8.y * cx - obj->unkB8.x * cy;
+        cross_b = obj->unkB8.y * x2 - obj->unkB8.x * y2;
         if ((cross_a ^ cross_b) >= 0) {
-            cross_a = (obj->unkB8.vy - obj->unkA8.vy) * (cx - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (cy - obj->unkA8.vy);
-            cross_b = (obj->unkB8.vy - obj->unkA8.vy) * (x2 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y2 - obj->unkA8.vy);
+            cross_a = (obj->unkB8.y - obj->unkA8.y) * (cx - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (cy - obj->unkA8.y);
+            cross_b = (obj->unkB8.y - obj->unkA8.y) * (x2 - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (y2 - obj->unkA8.y);
             if ((cross_a ^ cross_b) >= 0) {
                 return 1;
             }
         }
     }
     /* the segment against edge (0,0)-A */
-    cross_a = obj->unkA8.vy * x1 - obj->unkA8.vx * y1;
-    cross_b = obj->unkA8.vy * x2 - obj->unkA8.vx * y2;
+    cross_a = obj->unkA8.y * x1 - obj->unkA8.x * y1;
+    cross_b = obj->unkA8.y * x2 - obj->unkA8.x * y2;
     if ((cross_a ^ cross_b) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkA8.vx - x1) - (x2 - x1) * (obj->unkA8.vy - y1);
+        cross_a = (y2 - y1) * (obj->unkA8.x - x1) - (x2 - x1) * (obj->unkA8.y - y1);
         cross_b = (y2 - y1) * -x1 - (x2 - x1) * -y1;
         if ((cross_a ^ cross_b) >= 0) {
             return 1;
         }
     }
     /* the segment against edge (0,0)-B */
-    cross_a = obj->unkB8.vy * x1 - obj->unkB8.vx * y1;
-    cross_b = obj->unkB8.vy * x2 - obj->unkB8.vx * y2;
+    cross_a = obj->unkB8.y * x1 - obj->unkB8.x * y1;
+    cross_b = obj->unkB8.y * x2 - obj->unkB8.x * y2;
     if ((cross_a ^ cross_b) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkB8.vx - x1) - (x2 - x1) * (obj->unkB8.vy - y1);
+        cross_a = (y2 - y1) * (obj->unkB8.x - x1) - (x2 - x1) * (obj->unkB8.y - y1);
         cross_b = (y2 - y1) * -x1 - (x2 - x1) * -y1;
         if ((cross_a ^ cross_b) >= 0) {
             return 1;
         }
     }
     /* the segment against edge A-B */
-    cross_a = (obj->unkB8.vy - obj->unkA8.vy) * (x1 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y1 - obj->unkA8.vy);
-    cross_ab2 = (obj->unkB8.vy - obj->unkA8.vy) * (x2 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y2 - obj->unkA8.vy);
+    cross_a = (obj->unkB8.y - obj->unkA8.y) * (x1 - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (y1 - obj->unkA8.y);
+    cross_ab2 = (obj->unkB8.y - obj->unkA8.y) * (x2 - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (y2 - obj->unkA8.y);
     if ((cross_a ^ cross_ab2) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkA8.vx - x1) - (x2 - x1) * (obj->unkA8.vy - y1);
-        cross_b = (y2 - y1) * (obj->unkB8.vx - x1) - (x2 - x1) * (obj->unkB8.vy - y1);
+        cross_a = (y2 - y1) * (obj->unkA8.x - x1) - (x2 - x1) * (obj->unkA8.y - y1);
+        cross_b = (y2 - y1) * (obj->unkB8.x - x1) - (x2 - x1) * (obj->unkB8.y - y1);
         if ((cross_a ^ cross_b) >= 0) {
             return 1;
         }
@@ -3710,20 +3697,21 @@ s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3)
     return 0;
 }
 void func_8002E838(u8 *obj) {
+    Unk1F8002B8Rec *scr = (Unk1F8002B8Rec *)obj;
     s32 sp_tmp;
     MATRIX *mat;
-    s32 *vec;
+    Vec3i32 *vec;
     s32 dist_sq;
     s32 angle;
     s32 dist;
 
-    *(s32 *)(obj + 0xA8) = (*(s32 **)(obj + 0x64))[0] - (*(s32 **)(obj + 0x60))[0];
-    *(s32 *)(obj + 0xAC) = (*(s32 **)(obj + 0x64))[1] - (*(s32 **)(obj + 0x60))[1];
-    *(s32 *)(obj + 0xB0) = (*(s32 **)(obj + 0x64))[2] - (*(s32 **)(obj + 0x60))[2];
-    angle = ratan2(*(s32 *)(obj + 0xA8), *(s32 *)(obj + 0xB0));
-    dist_sq = *(s32 *)(obj + 0xA8) * *(s32 *)(obj + 0xA8)
-            + *(s32 *)(obj + 0xB0) * *(s32 *)(obj + 0xB0);
-    *(s16 *)(obj + 0xFA) = 0x800 - angle;
+    scr->unkA8.x = scr->unk60[1]->x - scr->unk60[0]->x;
+    scr->unkA8.y = scr->unk60[1]->y - scr->unk60[0]->y;
+    scr->unkA8.z = scr->unk60[1]->z - scr->unk60[0]->z;
+    angle = ratan2(scr->unkA8.x, scr->unkA8.z);
+    dist_sq = scr->unkA8.x * scr->unkA8.x
+            + scr->unkA8.z * scr->unkA8.z;
+    scr->unkF8.vy = 0x800 - angle;
 
     if ((u32)dist_sq < 0x400) {
         dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
@@ -3753,22 +3741,22 @@ void func_8002E838(u8 *obj) {
         }
     }
 
-    angle = ratan2(*(s32 *)(obj + 0xAC), dist);
-    mat = (MATRIX *)(obj + 0xD8);
-    *(s16 *)(obj + 0xF8) = 0x800 - angle;
+    angle = ratan2(scr->unkA8.y, dist);
+    mat = &scr->unkD8;
+    scr->unkF8.vx = 0x800 - angle;
 
-    /* identity 3x3 rotation matrix at obj+0xD8 */
-    *(s16 *)(obj + 0xD8) = 0x1000;
-    *(s16 *)(obj + 0xDA) = 0;
-    *(s16 *)(obj + 0xDC) = 0;
-    *(s16 *)(obj + 0xDE) = 0;
-    *(s16 *)(obj + 0xE0) = 0x1000;
-    *(s16 *)(obj + 0xE2) = 0;
-    *(s16 *)(obj + 0xE4) = 0;
-    *(s16 *)(obj + 0xE6) = 0;
-    *(s16 *)(obj + 0xE8) = 0x1000;
-    RotMatrixY(*(s16 *)(obj + 0xFA), mat);
-    RotMatrixX(*(s16 *)(obj + 0xF8), mat);
+    /* identity 3x3 rotation matrix at scr->unkD8 */
+    scr->unkD8.m[0][0] = 0x1000;
+    scr->unkD8.m[0][1] = 0;
+    scr->unkD8.m[0][2] = 0;
+    scr->unkD8.m[1][0] = 0;
+    scr->unkD8.m[1][1] = 0x1000;
+    scr->unkD8.m[1][2] = 0;
+    scr->unkD8.m[2][0] = 0;
+    scr->unkD8.m[2][1] = 0;
+    scr->unkD8.m[2][2] = 0x1000;
+    RotMatrixY(scr->unkF8.vy, mat);
+    RotMatrixX(scr->unkF8.vx, mat);
 
     /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
      * rotation-matrix words at r into cop2 control regs $0..$4.  Same island
@@ -3786,7 +3774,7 @@ void func_8002E838(u8 *obj) {
         "ctc2   $14, $3\n"
         "ctc2   $15, $4\n"
         :: "r"(mat) : "$12", "$13", "$14", "$15");
-    vec = (s32 *)(obj + 0xA8);
+    vec = &scr->unkA8;
     /* PsyQ libgte inline macro gte_ldv0(r) --- pack VX0/VY0 into one word,
      * mtc2 to $0, lwc2 VZ0 into $1, then the 2-cycle GTE load delay. */
     __asm__ volatile(
@@ -3895,16 +3883,16 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
 
 void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     s32 sp_tmp;
-    u8 *scr = (u8 *)0x1F8002B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8;
     MATRIX *mat;
-    s32 *vec;
+    Vec3i32 *vec;
     s32 angle1;
     s32 angle2;
     s32 dist_sq;
     s32 dist;
 
     angle1 = ratan2(dir[0], dir[2]);
-    *(s16 *)(scr + 0xFA) = 0x800 - angle1;
+    scr->unkF8.vy = 0x800 - angle1;
     dist_sq = dir[0] * dir[0] + dir[2] * dir[2];
 
     if ((u32)dist_sq < 0x400) {
@@ -3928,20 +3916,20 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     }
 
     angle2 = ratan2(dir[1], dist);
-    mat = (MATRIX *)(scr + 0xD8);
-    *(s16 *)(scr + 0xF8) = 0x800 - angle2;
+    mat = &scr->unkD8;
+    scr->unkF8.vx = 0x800 - angle2;
 
-    *(s16 *)(scr + 0xD8) = 0x1000;
-    *(s16 *)(scr + 0xDA) = 0;
-    *(s16 *)(scr + 0xDC) = 0;
-    *(s16 *)(scr + 0xDE) = 0;
-    *(s16 *)(scr + 0xE0) = 0x1000;
-    *(s16 *)(scr + 0xE2) = 0;
-    *(s16 *)(scr + 0xE4) = 0;
-    *(s16 *)(scr + 0xE6) = 0;
-    *(s16 *)(scr + 0xE8) = 0x1000;
-    RotMatrixY(*(s16 *)(scr + 0xFA), mat);
-    RotMatrixX(*(s16 *)(scr + 0xF8), mat);
+    scr->unkD8.m[0][0] = 0x1000;
+    scr->unkD8.m[0][1] = 0;
+    scr->unkD8.m[0][2] = 0;
+    scr->unkD8.m[1][0] = 0;
+    scr->unkD8.m[1][1] = 0x1000;
+    scr->unkD8.m[1][2] = 0;
+    scr->unkD8.m[2][0] = 0;
+    scr->unkD8.m[2][1] = 0;
+    scr->unkD8.m[2][2] = 0x1000;
+    RotMatrixY(scr->unkF8.vy, mat);
+    RotMatrixX(scr->unkF8.vx, mat);
 
     /* inline_o.h: gte_SetRotMatrix :272-284 */
     __asm__ volatile ("move  $12,%0": :"r"(mat):"$12","$13","$14","$15","memory");
@@ -3968,28 +3956,28 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
-    vec = (s32 *)(scr + 0xA8);
+    vec = &scr->unkA8;
     /* inline_o.h: gte_stlvnl :904-909 */
     __asm__ volatile ("move  $12,%0": :"r"(vec):"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
 
-    vec[2] = (vec[2] * scale_z) / 256;
-    vec[0] = (vec[0] * scale_xy) / 256;
-    vec[1] = (vec[1] * scale_xy) / 256;
+    vec->z = (vec->z * scale_z) / 256;
+    vec->x = (vec->x * scale_xy) / 256;
+    vec->y = (vec->y * scale_xy) / 256;
 
-    *(s16 *)(scr + 0xD8) = 0x1000;
-    *(s16 *)(scr + 0xDA) = 0;
-    *(s16 *)(scr + 0xDC) = 0;
-    *(s16 *)(scr + 0xDE) = 0;
-    *(s16 *)(scr + 0xE0) = 0x1000;
-    *(s16 *)(scr + 0xE2) = 0;
-    *(s16 *)(scr + 0xE4) = 0;
-    *(s16 *)(scr + 0xE6) = 0;
-    *(s16 *)(scr + 0xE8) = 0x1000;
-    RotMatrixX(-*(s16 *)(scr + 0xF8), mat);
-    RotMatrixY(-*(s16 *)(scr + 0xFA), mat);
+    scr->unkD8.m[0][0] = 0x1000;
+    scr->unkD8.m[0][1] = 0;
+    scr->unkD8.m[0][2] = 0;
+    scr->unkD8.m[1][0] = 0;
+    scr->unkD8.m[1][1] = 0x1000;
+    scr->unkD8.m[1][2] = 0;
+    scr->unkD8.m[2][0] = 0;
+    scr->unkD8.m[2][1] = 0;
+    scr->unkD8.m[2][2] = 0x1000;
+    RotMatrixX(-scr->unkF8.vx, mat);
+    RotMatrixY(-scr->unkF8.vy, mat);
 
     /* inline_o.h: gte_SetRotMatrix :272-284 */
     __asm__ volatile ("move  $12,%0": :"r"(mat):"$12","$13","$14","$15","memory");
@@ -4053,9 +4041,9 @@ void func_8002EECC(void *arg0, void *arg1) {
 void func_8002F2D0(MATRIX *a0, s16 *a1);
 void func_8002F2D0(MATRIX *a0, s16 *a1) {
     MATRIX *m;
-    u8 *scr;
+    Unk1F8002B8Rec *scr;
     MATRIX *mat;
-    s32 *vec;
+    Vec3i32 *vec;
     s32 c0, c1, c2;
     /* work holds two values (Ruling 11): the 3x3 determinant (the divisor of the six
      * cofactors) and then the square root of i0*i0 + i1*i1 (the ratan2 length). */
@@ -4069,7 +4057,7 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     s32 temp;
     s32 sp_tmp;
 
-    m = (MATRIX *)0x1F800390;
+    m = &SPAD->unk2B8.unkD8;
     *m = *a0;
 
     c0 = m->m[1][2] * m->m[2][1] - m->m[1][1] * m->m[2][2];
@@ -4085,7 +4073,7 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     r2 = (m->m[0][0] * m->m[1][2] - m->m[0][2] * m->m[1][0]) / work;
 
     ang_z = -ratan2(i1, i0);
-    scr = (u8 *)0x1F8002B8;
+    scr = &SPAD->unk2B8;
     temp = i0 * i0 + i1 * i1;
     if ((u32)temp < 0x400) {
         work = (u32)g_sqrt_table_u8[temp] >> 3;
@@ -4109,16 +4097,16 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     }
 
     ang_y = ratan2(i2, work);
-    mat = (MATRIX *)(scr + 0xD8);
-    *(s16 *)(scr + 0xD8) = 0x1000;
-    *(s16 *)(scr + 0xDA) = 0;
-    *(s16 *)(scr + 0xDC) = 0;
-    *(s16 *)(scr + 0xDE) = 0;
-    *(s16 *)(scr + 0xE0) = 0x1000;
-    *(s16 *)(scr + 0xE2) = 0;
-    *(s16 *)(scr + 0xE4) = 0;
-    *(s16 *)(scr + 0xE6) = 0;
-    *(s16 *)(scr + 0xE8) = 0x1000;
+    mat = &scr->unkD8;
+    scr->unkD8.m[0][0] = 0x1000;
+    scr->unkD8.m[0][1] = 0;
+    scr->unkD8.m[0][2] = 0;
+    scr->unkD8.m[1][0] = 0;
+    scr->unkD8.m[1][1] = 0x1000;
+    scr->unkD8.m[1][2] = 0;
+    scr->unkD8.m[2][0] = 0;
+    scr->unkD8.m[2][1] = 0;
+    scr->unkD8.m[2][2] = 0x1000;
     RotMatrixZ(ang_z, mat);
     RotMatrixY(ang_y, mat);
 
@@ -4134,10 +4122,10 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     __asm__ volatile ("ctc2  $13,$2": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
-    vec = (s32 *)(scr + 0xA8);
-    vec[0] = r0;
-    vec[1] = r1;
-    vec[2] = r2;
+    vec = &scr->unkA8;
+    vec->x = r0;
+    vec->y = r1;
+    vec->z = r2;
     /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word is the
      * post-DMPSX word .word 0x4A486012 in place of the header's DMPSX placeholder
      * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner Q61 per-function grant) */
@@ -4157,15 +4145,15 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
 
-    a1[0] = ratan2(vec[2], vec[1]);
+    a1[0] = ratan2(vec->z, vec->y);
     a1[1] = -ang_y;
     a1[2] = -ang_z;
 }
 void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     MATRIX *m;
-    u8 *scr;
+    Unk1F8002B8Rec *scr;
     MATRIX *mat;
-    s32 *vec;
+    Vec3i32 *vec;
     s32 c0, c1, c2;
     /* work holds two values (Ruling 11): the 3x3 determinant (the divisor of the six
      * cofactors) and then the square root of i0*i0 + i1*i1 (the ratan2 length). */
@@ -4179,24 +4167,24 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     s32 temp;
     s32 sp_tmp;
 
-    scr = (u8 *)0x1F8002B8;
-    *(s16 *)(scr + 0xD8) = 0x1000;
-    *(s16 *)(scr + 0xDA) = 0;
-    *(s16 *)(scr + 0xDC) = 0;
-    *(s16 *)(scr + 0xDE) = 0;
-    *(s16 *)(scr + 0xE0) = 0x1000;
-    *(s16 *)(scr + 0xE2) = 0;
-    *(s16 *)(scr + 0xE4) = 0;
-    *(s16 *)(scr + 0xE6) = 0;
-    *(s16 *)(scr + 0xE8) = 0x1000;
-    RotMatrixX(x, (MATRIX *)(scr + 0xD8));
-    RotMatrixY(y, (MATRIX *)(scr + 0xD8));
-    RotMatrixZ(-z, (MATRIX *)(scr + 0xD8));
-    RotMatrixX(angles[0], (MATRIX *)(scr + 0xD8));
-    RotMatrixY(angles[1], (MATRIX *)(scr + 0xD8));
-    RotMatrixZ(angles[2], (MATRIX *)(scr + 0xD8));
+    scr = &SPAD->unk2B8;
+    scr->unkD8.m[0][0] = 0x1000;
+    scr->unkD8.m[0][1] = 0;
+    scr->unkD8.m[0][2] = 0;
+    scr->unkD8.m[1][0] = 0;
+    scr->unkD8.m[1][1] = 0x1000;
+    scr->unkD8.m[1][2] = 0;
+    scr->unkD8.m[2][0] = 0;
+    scr->unkD8.m[2][1] = 0;
+    scr->unkD8.m[2][2] = 0x1000;
+    RotMatrixX(x, &scr->unkD8);
+    RotMatrixY(y, &scr->unkD8);
+    RotMatrixZ(-z, &scr->unkD8);
+    RotMatrixX(angles[0], &scr->unkD8);
+    RotMatrixY(angles[1], &scr->unkD8);
+    RotMatrixZ(angles[2], &scr->unkD8);
 
-    m = (MATRIX *)(scr + 0xD8);
+    m = &scr->unkD8;
     c0 = m->m[1][2] * m->m[2][1] - m->m[1][1] * m->m[2][2];
     d0 = m->m[0][0] * (c0 >> 12);
     c1 = m->m[0][1] * m->m[2][2] - m->m[0][2] * m->m[2][1];
@@ -4233,16 +4221,16 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     }
 
     ang_y = ratan2(i2, work);
-    mat = (MATRIX *)(scr + 0xD8);
-    *(s16 *)(scr + 0xD8) = 0x1000;
-    *(s16 *)(scr + 0xDA) = 0;
-    *(s16 *)(scr + 0xDC) = 0;
-    *(s16 *)(scr + 0xDE) = 0;
-    *(s16 *)(scr + 0xE0) = 0x1000;
-    *(s16 *)(scr + 0xE2) = 0;
-    *(s16 *)(scr + 0xE4) = 0;
-    *(s16 *)(scr + 0xE6) = 0;
-    *(s16 *)(scr + 0xE8) = 0x1000;
+    mat = &scr->unkD8;
+    scr->unkD8.m[0][0] = 0x1000;
+    scr->unkD8.m[0][1] = 0;
+    scr->unkD8.m[0][2] = 0;
+    scr->unkD8.m[1][0] = 0;
+    scr->unkD8.m[1][1] = 0x1000;
+    scr->unkD8.m[1][2] = 0;
+    scr->unkD8.m[2][0] = 0;
+    scr->unkD8.m[2][1] = 0;
+    scr->unkD8.m[2][2] = 0x1000;
     RotMatrixZ(ang_z, mat);
     RotMatrixY(ang_y, mat);
 
@@ -4258,10 +4246,10 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     __asm__ volatile ("ctc2  $13,$2": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
-    vec = (s32 *)(scr + 0xA8);
-    vec[0] = r0;
-    vec[1] = r1;
-    vec[2] = r2;
+    vec = &scr->unkA8;
+    vec->x = r0;
+    vec->y = r1;
+    vec->z = r2;
     /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word is the
      * post-DMPSX word .word 0x4A486012 in place of the header's DMPSX placeholder
      * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner Q61 per-function grant) */
@@ -4281,7 +4269,7 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
 
-    angles[0] = ratan2(vec[2], vec[1]);
+    angles[0] = ratan2(vec->z, vec->y);
     angles[1] = -ang_y;
     angles[2] = -ang_z;
 }
@@ -5129,6 +5117,7 @@ void func_80030D7C(void) {
 }
 /* GTE rotate-velocity-by-table-angle (sibling of func_8002E838) */
 void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
+    Unk1F8002B8Rec *scr;
     MATRIX *mat;
     Vec3i32 *vec;
     s32 angle1;
@@ -5149,19 +5138,20 @@ void func_80031890(u8 *obj, Obj80106A78 *ent, s32 idx) {
         ent->rot_vel[1] = av + adj;
     }
 
-    mat = (MATRIX *)(obj + 0xD8);
+    scr = (Unk1F8002B8Rec *)obj;
+    mat = &scr->unkD8;
     angle1 = D_8008EBA0[idx] & 0xFFF;
     angle2 = (((ent->pos.x * 16) + ent->pos.y + (ent->pos.z * 8)) & 0x7FF) - 0x400;
-    /* identity 3x3 rotation matrix at obj+0xD8 */
-    *(s16 *)(obj + 0xD8) = 0x1000;
-    *(s16 *)(obj + 0xDA) = 0;
-    *(s16 *)(obj + 0xDC) = 0;
-    *(s16 *)(obj + 0xDE) = 0;
-    *(s16 *)(obj + 0xE0) = 0x1000;
-    *(s16 *)(obj + 0xE2) = 0;
-    *(s16 *)(obj + 0xE4) = 0;
-    *(s16 *)(obj + 0xE6) = 0;
-    *(s16 *)(obj + 0xE8) = 0x1000;
+    /* identity 3x3 rotation matrix at scr->unkD8 */
+    scr->unkD8.m[0][0] = 0x1000;
+    scr->unkD8.m[0][1] = 0;
+    scr->unkD8.m[0][2] = 0;
+    scr->unkD8.m[1][0] = 0;
+    scr->unkD8.m[1][1] = 0x1000;
+    scr->unkD8.m[1][2] = 0;
+    scr->unkD8.m[2][0] = 0;
+    scr->unkD8.m[2][1] = 0;
+    scr->unkD8.m[2][2] = 0x1000;
     RotMatrixY(angle1, mat);
     RotMatrixX(angle2, mat);
 

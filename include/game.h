@@ -633,18 +633,68 @@ typedef struct {
     u8 voll;
 } Unk800EFB78Entry;
 
+/* 17AFC's view of the last 0x148 bytes of the scratchpad, 0x1F8002B8..0x1F8003FF (ScrPad.unk2B8).
+ * The scratchpad is shared scratch: other code puts its own data in these bytes at other times,
+ * with its own views. Among others:
+ * - 3AB48 func_80053614 / func_8005344C keep their work area (Work_80053E9C, 0xEC bytes) at the
+ *   address of their last argument (D_800A33F4). 3AB48 func_80056CB8 / func_800571C0 and 9F9C
+ *   func_80021DB0 / func_8002304C / func_800233AC / func_800238C4 / func_80023D28 /
+ *   func_80023DB8 / func_80023E40 pass 0x1F8002B8 (the area spans record +0x00..+0xEB);
+ *   9F9C func_800207C8 and 17AFC func_80030D7C / func_800321E8 pass 0x1F8002F0 (+0x38..+0x123,
+ *   over unk60 up into unk118).
+ * - 9F9C func_800207C8 keeps a whole probe record at 0x1F8002B8: from, to, hit, normal, then
+ *   that work area.
+ * - 32D04 func_800430E4 keeps a MATRIX at 0x1F8003A0.
+ * - 3AB48 func_8004DA74 fills, and 30 renderers in func_8004C994 .. func_80051ED4 read, an s16
+ *   per-vertex table at 0x1F8002B4 + 2 * i (all INCLUDE_ASM), which runs into the record for
+ *   i >= 2.
+ * In 17AFC, func_8002A458 / func_8002AB08 / func_8002CA8C / func_80029454 / func_80031B24 take its
+ * address (`scr`) and pass it as `obj` to func_8002E838 / func_8002EA24 / func_8002D320 /
+ * func_8002D780 / func_8002CD58 / func_8002DAD0 / func_8002DE20 / func_80031890; func_800290B8 /
+ * func_8002C22C / func_8002C61C / func_8002EBDC / func_8002F2D0 / func_8002F770 / func_8002FC80 /
+ * func_8002FDB0 / func_80030D7C / func_800321E8 address it directly. unk60 / unk6C hold point
+ * pointers (func_80029454 reads unk60[0..2]); unkB4 / unkC4 are func_8002CA8C's two hit masks
+ * (func_8002AB08 reads them; no 17AFC code accesses unkD4 as a member); unkD8 is the matrix the
+ * RotMatrix* calls build, and the GTE rotates unkA8 through it; func_8002DE20 rotates three
+ * points, relative to the origin *unk60[0], into unk118 and tests them against the triangle
+ * (0,0) / unkA8 / unkB8. unk00 is used differently by func_8002A458 / func_8002AB08 /
+ * func_80030D7C / func_80031B24 / func_800321E8 and is not yet typed. */
+typedef struct {
+    u8 unk00[0x60];
+    LeafPos *unk60[3];
+    LeafPos *unk6C[3];
+    Vec3i32 unk78;
+    Vec3i32 unk84;
+    Vec3i32 unk90;
+    Vec3i32 unk9C;
+    Vec3i32 unkA8;
+    s32 unkB4;
+    Vec3i32 unkB8;
+    s32 unkC4;
+    Vec3i32 unkC8;
+    s32 unkD4;
+    MATRIX unkD8;
+    SVECTOR unkF8;
+    Vec3i32 unk100[2];
+    Vec3i32 unk118[3];
+    Vec3i32 unk13C;
+} Unk1F8002B8Rec;
+
 /* Scratchpad point tables at 0x1F800000.  unk00: three points per character
  * (func_8002C61C copies [0][0..2] and [1][0..2] to the two records' +0x210);
  * unk48: two more per character (copied to +0x234); unk78: two body points
  * per character (func_800288C8 builds them from unkA8 joint 1 and the
  * midpoint of joints 15 and 19); unkA8: 22 points per
  * character (func_8002A458 reads 0x1F8000A8 + id * 0x108 + i * 0xC, i < 22).
- * func_80023F08 hands func_800207C8 its character's unkA8 / unk00 / unk48. */
+ * func_80023F08 hands func_800207C8 its character's unkA8 / unk00 / unk48.  unk2B8: the record at
+ * 0x1F8002B8 (Unk1F8002B8Rec), to the end of the scratchpad; the scratchpad is shared scratch
+ * that other code also uses with its own views (see Unk1F8002B8Rec). */
 typedef struct {
     LeafPos unk00[2][3];
     LeafPos unk48[2][2];
     LeafPos unk78[2][2];
     LeafPos unkA8[2][22];
+    Unk1F8002B8Rec unk2B8;
 } ScrPad;
 
 #define SPAD ((ScrPad *)0x1F800000)
