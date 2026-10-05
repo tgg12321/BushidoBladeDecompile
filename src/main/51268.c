@@ -316,14 +316,8 @@ void func_80060B70(void);
 void func_80060C60(void);
 void func_80060E38(s16 *arg0, s32 *arg1);
 
-extern s32 func_80041E10();
-
-
-
 /* D_800158E0: 24B @ 0x800158E0 — "eff prim over :%d \n" + alignment + empty trailing string */
 const char D_800158E0[24] = "eff prim over :%d \n";
-
-extern s32 D_800F1140;
 
 void func_80061064(s16 *a0, s32 *a1) {
     s32 temp_a1;
@@ -373,9 +367,9 @@ void func_800611A4(s32 *arg0, s32 *arg1) {
     *v1 = 0x21001A;
     func_80060A68();
     p = arg0;
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0xFFFFEF;
 }
 void func_80061250(s32 *arg0) {
@@ -402,9 +396,9 @@ check_one_zero:
 end:
     func_80060A68();
     p = arg0;
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0xFF0060;
 }
     extern u8 D_800F1154[];
@@ -416,9 +410,9 @@ s32 func_8006133C(s32 *a0) {
     D_800F1180 = (s32)D_800F1154;
     *v1 = 0x210004;
     func_80060A68();
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0x8080FF;
     return 1;
 }
@@ -431,9 +425,9 @@ s32 func_800613C8(s32 *a0) {
     D_800F1180 = (s32)&D_800F115B;
     *v1 = 0x21000B;
     func_80060A68();
-    D_800F1140 = *ap++;
-    D_800F1144 = *ap++;
-    D_800F1148 = *ap++;
+    D_800F1140.vx = *ap++;
+    D_800F1140.vy = *ap++;
+    D_800F1140.vz = *ap++;
     D_800A3464 = 0x8080FF;
     return 16;
 }
@@ -445,9 +439,9 @@ s32 func_80061454(s32 *a0) {
     D_800F1180 = (s32)&D_800F115B;
     *v1 = 0x29000B;
     func_80060A68();
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0x8080FF;
     return 8;
 }
@@ -459,9 +453,9 @@ s32 func_800614E0(s32 *a0) {
     D_800F1180 = (s32)&D_800F115B;
     *v1 = 0x31000B;
     func_80060A68();
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0x8080FF;
     return 5;
 }
@@ -488,9 +482,9 @@ check_one_zero:
 end:
     func_80060A68();
     p = arg0;
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0xFF8080;
 }
 extern u8 D_800F115C;
@@ -524,9 +518,9 @@ void func_80061658(s32 *arg0, s32 arg1) {
 done:
     func_80060A68();
     p = arg0;
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0x10FFFF;
 }
 void func_80061710(s32 *arg0, s32 arg1) {
@@ -559,9 +553,9 @@ void func_80061710(s32 *arg0, s32 arg1) {
 done:
     func_80060A68();
     p = arg0;
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0x10FF10;
 }
 extern u8 D_800F1160[];
@@ -588,9 +582,9 @@ check_one_zero:
 end:
     func_80060A68();
     p = arg0;
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0xC06013;
 }
 extern u8 D_800F1152[];
@@ -620,9 +614,9 @@ check_one_zero:
 end:
     func_80060A68();
     p = arg0;
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0xFF0000;
 }
 extern s32 D_800F1158;
@@ -695,9 +689,9 @@ check_one_zero:
 end:
     func_80060A68();
     p = arg0;
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0xFF8080;
 }
 void func_80061C00(s32 arg0, s32 arg1, s32 arg2) {
@@ -823,9 +817,9 @@ check_one_zero:
 end:
     func_80060A68();
     p = arg0;
-    D_800F1140 = *p++;
-    D_800F1144 = *p++;
-    D_800F1148 = *p;
+    D_800F1140.vx = *p++;
+    D_800F1140.vy = *p++;
+    D_800F1140.vz = *p;
     D_800A3464 = 0xFF00FF;
 }
 extern VECTOR D_8009BB74;

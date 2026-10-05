@@ -602,8 +602,9 @@ extern s32 D_800F10D0[];
 extern s32 D_800F10EC;
 extern s32 D_800F10F0;
 extern s32 D_800F1138;
-extern s32 D_800F1144;
-extern s32 D_800F1148;
+/* A 16-byte vector: thirteen 51268 functions store x / y / z, and func_80061064 passes its
+ * address to func_80041E10, which copies all 16 bytes to D_800A9B28. */
+extern Vec4i32 D_800F1140;
 extern s32 D_800F1178;
 extern s32 D_800F117C;
 extern u8 D_800F1B18[];
@@ -759,6 +760,7 @@ extern s32 *func_8004153C(s32);
 extern void func_800417D0(Unk80101DF0Record *);
 extern void func_800418D0(s32 *);
 extern void func_80041BF4(s32, s32, s32);
+extern void func_80041E10(Vec4i32 *, s32);
 extern void func_800420D0(void);
 extern void func_800420E8(s32, s32);
 extern void func_8004211C(void);
