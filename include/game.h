@@ -198,6 +198,17 @@ typedef struct {
     void *unk_24;
 } Unk8006EACCRec;
 
+/* The draw chunk 3AB48 func_8005D814, func_8005E098 and func_8005F1C8 each build at the address
+ * their caller passes (one layout): TILEs from +0 up to +0xA0 (10; they write at most 2, 2 and 4),
+ * SPRTs from +0xA0 up to +0x2F8 (30; func_8007352C's cursor), then the DR_MODE at +0x2F8. Each
+ * returns the chunk size, 0x304. func_8005F1C8 also writes a second DR_MODE at the chunk's end,
+ * outside the chunk. */
+typedef struct {
+    TILE unk_00[10];
+    SPRT unk_A0[30];
+    DR_MODE unk_2F8;
+} Unk8005D814Rec;
+
 /* The draw chunk 3AB48 func_8005FC9C builds at the address its caller passes: SPRTs from +0
  * (func_8007352C's cursor), the DR_MODE at +0x280, two POLY_G4 at +0x28C (at most one per pass)
  * and three DR_AREA at +0x2D4 (the first, then at most one per pass). func_8005FC9C returns the
