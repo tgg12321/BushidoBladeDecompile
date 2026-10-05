@@ -1016,20 +1016,20 @@ void func_80033550(LeafPos *arg0);
 
 /* `tbl` holds two 2x2 grids of points (entry idx * 4 + row * 2 + col).
  * Builds the x/z bounds and the top y of grid `idx` in the scratchpad record
- * at 0x1F8002B8 (min at +0x78, max at +0x84), then walks the PosRec list for
- * an unused entry inside those bounds and tests it (at +0x100) against the
+ * at 0x1F8002B8 (min in unk78, max in unk84), then walks the PosRec list for
+ * an unused entry inside those bounds and tests it (at unk100[0]) against the
  * grid's two triangles (points 0,1,2 and 1,2,3) with func_8002E6B0.
  * A hit on a type-2 entry: when `flag` is set and idx is 0, idx becomes 1
  * and the triangle tests restart on grid 1 (the bounds are not rebuilt);
  * otherwise it calls func_80044B30 with the entry's list index and
  * func_8002FC80's result for that triangle, calls func_80033550, marks the
  * entry used and returns 0. A hit on any other type, or both triangles
- * missing while `flag` is set and idx is not 0, stores at +0x104 the average
- * of +0x7C (the y of point idx * 4, which the scan never updates) and the top
- * y, and returns 1. Returns 0 when the list runs out.
+ * missing while `flag` is set and idx is not 0, stores in unk100[0].y the
+ * average of unk78.y (the starting grid's point 0; the scan never updates it)
+ * and the top y (unk84.y), and returns 1. Returns 0 when the list runs out.
  * func_8002FC80 reads only vx/vy/vz, so the 12-byte points pass as VECTOR. */
 s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
-    u8 *scr = (u8 *)0x1F8002B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     PosRec *rec;
     LeafPos *a;
     LeafPos *b;
@@ -1041,39 +1041,39 @@ s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
     s32 temp2; /* two values: the grid column i & 1, then the triangle number
                 * (Ruling 11) */
 
-    *(LeafPos *)(scr + 0x84) = tbl[idx * 4];
-    *(LeafPos *)(scr + 0x78) = *(LeafPos *)(scr + 0x84);
+    scr->unk84 = tbl[idx * 4];
+    scr->unk78 = scr->unk84;
 
     for (i = 1; i < 4; i++) {
         temp = i / 2;
         temp2 = i & 1;
         n = idx * 4 + temp * 2 + temp2;
-        if (tbl[n].x < *(s32 *)(scr + 0x78)) {
-            *(s32 *)(scr + 0x78) = tbl[n].x;
-        } else if (*(s32 *)(scr + 0x84) < tbl[n].x) {
-            *(s32 *)(scr + 0x84) = tbl[n].x;
+        if (tbl[n].x < scr->unk78.x) {
+            scr->unk78.x = tbl[n].x;
+        } else if (scr->unk84.x < tbl[n].x) {
+            scr->unk84.x = tbl[n].x;
         }
-        if (tbl[n].z < *(s32 *)(scr + 0x80)) {
-            *(s32 *)(scr + 0x80) = tbl[n].z;
-        } else if (*(s32 *)(scr + 0x8C) < tbl[n].z) {
-            *(s32 *)(scr + 0x8C) = tbl[n].z;
+        if (tbl[n].z < scr->unk78.z) {
+            scr->unk78.z = tbl[n].z;
+        } else if (scr->unk84.z < tbl[n].z) {
+            scr->unk84.z = tbl[n].z;
         }
-        if (tbl[n].y > *(s32 *)(scr + 0x88)) {
-            *(s32 *)(scr + 0x88) = tbl[n].y;
+        if (tbl[n].y > scr->unk84.y) {
+            scr->unk84.y = tbl[n].y;
         }
     }
 
     rec = (PosRec *)func_8004678C();
     for (temp = 0; rec->type != 0; temp++, rec++) {
         if (rec->used != 0) continue;
-        if (rec->y > *(s32 *)(scr + 0x88)) continue;
-        if (rec->x < *(s32 *)(scr + 0x78)) continue;
-        if (*(s32 *)(scr + 0x84) < rec->x) continue;
-        if (rec->z < *(s32 *)(scr + 0x80)) continue;
-        if (*(s32 *)(scr + 0x8C) < rec->z) continue;
+        if (rec->y > scr->unk84.y) continue;
+        if (rec->x < scr->unk78.x) continue;
+        if (scr->unk84.x < rec->x) continue;
+        if (rec->z < scr->unk78.z) continue;
+        if (scr->unk84.z < rec->z) continue;
 
-        *(s32 *)(scr + 0x100) = rec->x;
-        *(s32 *)(scr + 0x108) = rec->z;
+        scr->unk100[0].x = rec->x;
+        scr->unk100[0].z = rec->z;
         for (temp2 = 0; temp2 < 2; temp2++) {
             if (temp2 == 0) {
                 a = &tbl[idx * 4];
@@ -1084,7 +1084,7 @@ s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
                 b = &tbl[idx * 4 + 2];
                 c = &tbl[idx * 4 + 3];
             }
-            if (func_8002E6B0((s32 *)a, (s32 *)b, (s32 *)c, (s32 *)(scr + 0x100)) != 0) {
+            if (func_8002E6B0((s32 *)a, (s32 *)b, (s32 *)c, &scr->unk100[0].x) != 0) {
                 if (rec->type != 2) goto hit;
                 if (flag != 0 && idx == 0) {
                     idx = 1;
@@ -1099,24 +1099,23 @@ s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
         }
         if (flag == 0 || idx == 0) continue;
     hit:
-        *(s32 *)(scr + 0x104) = (*(s32 *)(scr + 0x7C) + *(s32 *)(scr + 0x88)) / 2;
+        scr->unk100[0].y = (scr->unk78.y + scr->unk84.y) / 2;
         return 1;
     }
     return 0;
 }
 
-/* 1 when the box at scr+0x78 (min) / +0x84 (max) and the box at scr+0x90 (min)
- * / +0x9C (max) overlap on all three axes. */
-static inline s32 box_overlap(u8 *scr) {
-    return *(s32 *)(scr + 0x78) <= *(s32 *)(scr + 0x9C) && *(s32 *)(scr + 0x84) >= *(s32 *)(scr + 0x90)
-        && *(s32 *)(scr + 0x7C) <= *(s32 *)(scr + 0xA0) && *(s32 *)(scr + 0x88) >= *(s32 *)(scr + 0x94)
-        && *(s32 *)(scr + 0x80) <= *(s32 *)(scr + 0xA4) && *(s32 *)(scr + 0x8C) >= *(s32 *)(scr + 0x98);
+/* 1 when the box unk78 (min) / unk84 (max) and the box unk90 (min) / unk9C (max)
+ * overlap on all three axes. */
+static inline s32 box_overlap(Unk1F8002B8Rec *scr) {
+    return scr->unk78.x <= scr->unk9C.x && scr->unk84.x >= scr->unk90.x
+        && scr->unk78.y <= scr->unk9C.y && scr->unk84.y >= scr->unk90.y
+        && scr->unk78.z <= scr->unk9C.z && scr->unk84.z >= scr->unk90.z;
 }
 
-/* Both are defined further down this file. func_8002DE20 has no prototype here: it takes
- * the Unk1F8002B8Rec its callers hold as a u8 * `scr`. */
+/* Both are defined further down this file. */
 extern s32 func_8002DAD0(u8 *obj);
-extern s32 func_8002DE20();
+extern s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2);
 
 /* Blade contact test between the two records at D_80101EC8 (stride 0x44C),
  * called by func_8002C61C (its result goes to D_800A3824). Returns -1 unless
@@ -1130,23 +1129,23 @@ extern s32 func_8002DE20();
  * 0x28 or 0x26: fills grid 0 (and grid 1: the +0xE 4/5 shape, or the unk48
  * points when +0x8C is set). If +0x40 is inside +0xA1..+0xA3 and func_800290B8
  * hits grid 0, or +0x8C is set, +0x40 is inside +0xA2..+0xA4 and it hits grid
- * 1, effects 1, 0x26 and 0x2D play at scr+0x100, +0x286 becomes 0x19 (+0x8C
+ * 1, effects 1, 0x26 and 0x2D play at scr->unk100[0], +0x286 becomes 0x19 (+0x8C
  * set, first case) or 0xB, and +0xAD is cleared.
  *
  * Then both records' grids are rebuilt (y raised to 100000 when +0x96 is set,
  * +0x92 is 0 or +0xC is 0x1F), count[c] is the record's triangle count (2, or
  * 4 with +0x8C set), and every coordinate is halved. Triangle t of a record is
  * points 2,3,1 (t even) or 0,1,2 (t odd) of grid t >> 1, written as pointers
- * to scr+0x60.. (first triangle) or scr+0x6C.. (second).
+ * to scr->unk60[] (first triangle) or scr->unk6C[] (second).
  *
  * Each record-0 triangle that func_8002DAD0 accepts is tested against each
- * record-1 triangle (bounding boxes at scr+0x78 / scr+0x90, then
+ * record-1 triangle (bounding boxes unk78 / unk84 and unk90 / unk9C, then
  * func_8002DE20); the rejected ones are marked in `mask` and tested again with
  * the roles swapped. A hit restores the saved points and returns
  * (record-1 grid << 1) | record-0 grid; otherwise the points are restored and
  * -1 is returned. */
 s32 func_80029454(void) {
-    u8 *scr = (u8 *)0x1F8002B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     LeafPos *ws = SPAD->unkA8[0];
     LeafPos saved[16];
     s32 count[2];
@@ -1207,16 +1206,16 @@ s32 func_80029454(void) {
         }
         if (rec->unk_40 >= rec->unk_A1[0] && rec->unk_40 <= rec->unk_A3[0]
             && func_800290B8(0, rec->unk_0E == 4 || rec->unk_0E == 5, ws) != 0) {
-            func_80032854(i, 1, (s32 *)(scr + 0x100), 0);
-            func_80032854(i, 0x26, (s32 *)(scr + 0x100), 0);
-            func_80032854(i, 0x2D, (s32 *)(scr + 0x100), 0);
+            func_80032854(i, 1, &scr->unk100[0].x, 0);
+            func_80032854(i, 0x26, &scr->unk100[0].x, 0);
+            func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
             rec->unk_286 = rec->unk_8C != 0 ? 0x19 : 0xB;
             rec->unk_AD = 0;
         } else if (rec->unk_8C != 0 && rec->unk_40 >= rec->unk_A1[1]
                    && rec->unk_40 <= rec->unk_A3[1] && func_800290B8(1, 0, ws) != 0) {
-            func_80032854(i, 1, (s32 *)(scr + 0x100), 0);
-            func_80032854(i, 0x26, (s32 *)(scr + 0x100), 0);
-            func_80032854(i, 0x2D, (s32 *)(scr + 0x100), 0);
+            func_80032854(i, 1, &scr->unk100[0].x, 0);
+            func_80032854(i, 0x26, &scr->unk100[0].x, 0);
+            func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
             rec->unk_286 = 0xB;
             rec->unk_AD = 0;
         }
@@ -1261,93 +1260,93 @@ s32 func_80029454(void) {
     for (j = 0; j < count[0]; j++) {
         switch (j) {
         case 0:
-            *(LeafPos **)(scr + 0x60) = &ws[2];
-            *(LeafPos **)(scr + 0x64) = &ws[3];
-            *(LeafPos **)(scr + 0x68) = &ws[1];
+            scr->unk60[0] = &ws[2];
+            scr->unk60[1] = &ws[3];
+            scr->unk60[2] = &ws[1];
             break;
         case 1:
-            *(LeafPos **)(scr + 0x60) = &ws[0];
-            *(LeafPos **)(scr + 0x64) = &ws[1];
-            *(LeafPos **)(scr + 0x68) = &ws[2];
+            scr->unk60[0] = &ws[0];
+            scr->unk60[1] = &ws[1];
+            scr->unk60[2] = &ws[2];
             break;
         case 2:
-            *(LeafPos **)(scr + 0x60) = &ws[6];
-            *(LeafPos **)(scr + 0x64) = &ws[7];
-            *(LeafPos **)(scr + 0x68) = &ws[5];
+            scr->unk60[0] = &ws[6];
+            scr->unk60[1] = &ws[7];
+            scr->unk60[2] = &ws[5];
             break;
         case 3:
-            *(LeafPos **)(scr + 0x60) = &ws[4];
-            *(LeafPos **)(scr + 0x64) = &ws[5];
-            *(LeafPos **)(scr + 0x68) = &ws[6];
+            scr->unk60[0] = &ws[4];
+            scr->unk60[1] = &ws[5];
+            scr->unk60[2] = &ws[6];
             break;
         }
-        if (func_8002DAD0(scr) == 0) {
+        if (func_8002DAD0((u8 *)scr) == 0) {
             mask |= 1 << j;
             continue;
         }
-        *(LeafPos *)(scr + 0x84) = **(LeafPos **)(scr + 0x60);
-        *(LeafPos *)(scr + 0x78) = *(LeafPos *)(scr + 0x84);
+        scr->unk84 = *scr->unk60[0];
+        scr->unk78 = scr->unk84;
         for (k = 1; k < 3; k++) {
-            if (((LeafPos **)(scr + 0x60))[k]->x < *(s32 *)(scr + 0x78)) {
-                *(s32 *)(scr + 0x78) = ((LeafPos **)(scr + 0x60))[k]->x;
-            } else if (*(s32 *)(scr + 0x84) < ((LeafPos **)(scr + 0x60))[k]->x) {
-                *(s32 *)(scr + 0x84) = ((LeafPos **)(scr + 0x60))[k]->x;
+            if (scr->unk60[k]->x < scr->unk78.x) {
+                scr->unk78.x = scr->unk60[k]->x;
+            } else if (scr->unk84.x < scr->unk60[k]->x) {
+                scr->unk84.x = scr->unk60[k]->x;
             }
-            if (((LeafPos **)(scr + 0x60))[k]->y < *(s32 *)(scr + 0x7C)) {
-                *(s32 *)(scr + 0x7C) = ((LeafPos **)(scr + 0x60))[k]->y;
-            } else if (*(s32 *)(scr + 0x88) < ((LeafPos **)(scr + 0x60))[k]->y) {
-                *(s32 *)(scr + 0x88) = ((LeafPos **)(scr + 0x60))[k]->y;
+            if (scr->unk60[k]->y < scr->unk78.y) {
+                scr->unk78.y = scr->unk60[k]->y;
+            } else if (scr->unk84.y < scr->unk60[k]->y) {
+                scr->unk84.y = scr->unk60[k]->y;
             }
-            if (((LeafPos **)(scr + 0x60))[k]->z < *(s32 *)(scr + 0x80)) {
-                *(s32 *)(scr + 0x80) = ((LeafPos **)(scr + 0x60))[k]->z;
-            } else if (*(s32 *)(scr + 0x8C) < ((LeafPos **)(scr + 0x60))[k]->z) {
-                *(s32 *)(scr + 0x8C) = ((LeafPos **)(scr + 0x60))[k]->z;
+            if (scr->unk60[k]->z < scr->unk78.z) {
+                scr->unk78.z = scr->unk60[k]->z;
+            } else if (scr->unk84.z < scr->unk60[k]->z) {
+                scr->unk84.z = scr->unk60[k]->z;
             }
         }
         for (n = 0; n < count[1]; n++) {
             switch (n) {
             case 0:
-                *(LeafPos **)(scr + 0x6C) = &ws[10];
-                *(LeafPos **)(scr + 0x70) = &ws[11];
-                *(LeafPos **)(scr + 0x74) = &ws[9];
+                scr->unk6C[0] = &ws[10];
+                scr->unk6C[1] = &ws[11];
+                scr->unk6C[2] = &ws[9];
                 break;
             case 1:
-                *(LeafPos **)(scr + 0x6C) = &ws[8];
-                *(LeafPos **)(scr + 0x70) = &ws[9];
-                *(LeafPos **)(scr + 0x74) = &ws[10];
+                scr->unk6C[0] = &ws[8];
+                scr->unk6C[1] = &ws[9];
+                scr->unk6C[2] = &ws[10];
                 break;
             case 2:
-                *(LeafPos **)(scr + 0x6C) = &ws[14];
-                *(LeafPos **)(scr + 0x70) = &ws[15];
-                *(LeafPos **)(scr + 0x74) = &ws[13];
+                scr->unk6C[0] = &ws[14];
+                scr->unk6C[1] = &ws[15];
+                scr->unk6C[2] = &ws[13];
                 break;
             case 3:
-                *(LeafPos **)(scr + 0x6C) = &ws[12];
-                *(LeafPos **)(scr + 0x70) = &ws[13];
-                *(LeafPos **)(scr + 0x74) = &ws[14];
+                scr->unk6C[0] = &ws[12];
+                scr->unk6C[1] = &ws[13];
+                scr->unk6C[2] = &ws[14];
                 break;
             }
-            *(LeafPos *)(scr + 0x9C) = **(LeafPos **)(scr + 0x6C);
-            *(LeafPos *)(scr + 0x90) = *(LeafPos *)(scr + 0x9C);
+            scr->unk9C = *scr->unk6C[0];
+            scr->unk90 = scr->unk9C;
             for (k = 1; k < 3; k++) {
-                if (((LeafPos **)(scr + 0x6C))[k]->x < *(s32 *)(scr + 0x90)) {
-                    *(s32 *)(scr + 0x90) = ((LeafPos **)(scr + 0x6C))[k]->x;
-                } else if (*(s32 *)(scr + 0x9C) < ((LeafPos **)(scr + 0x6C))[k]->x) {
-                    *(s32 *)(scr + 0x9C) = ((LeafPos **)(scr + 0x6C))[k]->x;
+                if (scr->unk6C[k]->x < scr->unk90.x) {
+                    scr->unk90.x = scr->unk6C[k]->x;
+                } else if (scr->unk9C.x < scr->unk6C[k]->x) {
+                    scr->unk9C.x = scr->unk6C[k]->x;
                 }
-                if (((LeafPos **)(scr + 0x6C))[k]->y < *(s32 *)(scr + 0x94)) {
-                    *(s32 *)(scr + 0x94) = ((LeafPos **)(scr + 0x6C))[k]->y;
-                } else if (*(s32 *)(scr + 0xA0) < ((LeafPos **)(scr + 0x6C))[k]->y) {
-                    *(s32 *)(scr + 0xA0) = ((LeafPos **)(scr + 0x6C))[k]->y;
+                if (scr->unk6C[k]->y < scr->unk90.y) {
+                    scr->unk90.y = scr->unk6C[k]->y;
+                } else if (scr->unk9C.y < scr->unk6C[k]->y) {
+                    scr->unk9C.y = scr->unk6C[k]->y;
                 }
-                if (((LeafPos **)(scr + 0x6C))[k]->z < *(s32 *)(scr + 0x98)) {
-                    *(s32 *)(scr + 0x98) = ((LeafPos **)(scr + 0x6C))[k]->z;
-                } else if (*(s32 *)(scr + 0xA4) < ((LeafPos **)(scr + 0x6C))[k]->z) {
-                    *(s32 *)(scr + 0xA4) = ((LeafPos **)(scr + 0x6C))[k]->z;
+                if (scr->unk6C[k]->z < scr->unk90.z) {
+                    scr->unk90.z = scr->unk6C[k]->z;
+                } else if (scr->unk9C.z < scr->unk6C[k]->z) {
+                    scr->unk9C.z = scr->unk6C[k]->z;
                 }
             }
             if (box_overlap(scr)
-                && func_8002DE20(scr, *(s32 **)(scr + 0x6C), *(s32 **)(scr + 0x70), *(s32 **)(scr + 0x74)) != 0) {
+                && func_8002DE20(scr, scr->unk6C[0], scr->unk6C[1], scr->unk6C[2]) != 0) {
                 for (k = 0; k < 16; k++) {
                     SPAD->unkA8[0][k] = saved[k];
                 }
@@ -1365,46 +1364,46 @@ s32 func_80029454(void) {
     for (j = 0; j < count[1]; j++) {
         switch (j) {
         case 0:
-            *(LeafPos **)(scr + 0x60) = &ws[10];
-            *(LeafPos **)(scr + 0x64) = &ws[11];
-            *(LeafPos **)(scr + 0x68) = &ws[9];
+            scr->unk60[0] = &ws[10];
+            scr->unk60[1] = &ws[11];
+            scr->unk60[2] = &ws[9];
             break;
         case 1:
-            *(LeafPos **)(scr + 0x60) = &ws[8];
-            *(LeafPos **)(scr + 0x64) = &ws[9];
-            *(LeafPos **)(scr + 0x68) = &ws[10];
+            scr->unk60[0] = &ws[8];
+            scr->unk60[1] = &ws[9];
+            scr->unk60[2] = &ws[10];
             break;
         case 2:
-            *(LeafPos **)(scr + 0x60) = &ws[14];
-            *(LeafPos **)(scr + 0x64) = &ws[15];
-            *(LeafPos **)(scr + 0x68) = &ws[13];
+            scr->unk60[0] = &ws[14];
+            scr->unk60[1] = &ws[15];
+            scr->unk60[2] = &ws[13];
             break;
         case 3:
-            *(LeafPos **)(scr + 0x60) = &ws[12];
-            *(LeafPos **)(scr + 0x64) = &ws[13];
-            *(LeafPos **)(scr + 0x68) = &ws[14];
+            scr->unk60[0] = &ws[12];
+            scr->unk60[1] = &ws[13];
+            scr->unk60[2] = &ws[14];
             break;
         }
-        if (func_8002DAD0(scr) == 0) {
+        if (func_8002DAD0((u8 *)scr) == 0) {
             continue;
         }
-        *(LeafPos *)(scr + 0x84) = **(LeafPos **)(scr + 0x60);
-        *(LeafPos *)(scr + 0x78) = *(LeafPos *)(scr + 0x84);
+        scr->unk84 = *scr->unk60[0];
+        scr->unk78 = scr->unk84;
         for (k = 1; k < 3; k++) {
-            if (((LeafPos **)(scr + 0x60))[k]->x < *(s32 *)(scr + 0x78)) {
-                *(s32 *)(scr + 0x78) = ((LeafPos **)(scr + 0x60))[k]->x;
-            } else if (*(s32 *)(scr + 0x84) < ((LeafPos **)(scr + 0x60))[k]->x) {
-                *(s32 *)(scr + 0x84) = ((LeafPos **)(scr + 0x60))[k]->x;
+            if (scr->unk60[k]->x < scr->unk78.x) {
+                scr->unk78.x = scr->unk60[k]->x;
+            } else if (scr->unk84.x < scr->unk60[k]->x) {
+                scr->unk84.x = scr->unk60[k]->x;
             }
-            if (((LeafPos **)(scr + 0x60))[k]->y < *(s32 *)(scr + 0x7C)) {
-                *(s32 *)(scr + 0x7C) = ((LeafPos **)(scr + 0x60))[k]->y;
-            } else if (*(s32 *)(scr + 0x88) < ((LeafPos **)(scr + 0x60))[k]->y) {
-                *(s32 *)(scr + 0x88) = ((LeafPos **)(scr + 0x60))[k]->y;
+            if (scr->unk60[k]->y < scr->unk78.y) {
+                scr->unk78.y = scr->unk60[k]->y;
+            } else if (scr->unk84.y < scr->unk60[k]->y) {
+                scr->unk84.y = scr->unk60[k]->y;
             }
-            if (((LeafPos **)(scr + 0x60))[k]->z < *(s32 *)(scr + 0x80)) {
-                *(s32 *)(scr + 0x80) = ((LeafPos **)(scr + 0x60))[k]->z;
-            } else if (*(s32 *)(scr + 0x8C) < ((LeafPos **)(scr + 0x60))[k]->z) {
-                *(s32 *)(scr + 0x8C) = ((LeafPos **)(scr + 0x60))[k]->z;
+            if (scr->unk60[k]->z < scr->unk78.z) {
+                scr->unk78.z = scr->unk60[k]->z;
+            } else if (scr->unk84.z < scr->unk60[k]->z) {
+                scr->unk84.z = scr->unk60[k]->z;
             }
         }
         for (n = 0; n < count[0]; n++) {
@@ -1413,47 +1412,47 @@ s32 func_80029454(void) {
             }
             switch (n) {
             case 0:
-                *(LeafPos **)(scr + 0x6C) = &ws[2];
-                *(LeafPos **)(scr + 0x70) = &ws[3];
-                *(LeafPos **)(scr + 0x74) = &ws[1];
+                scr->unk6C[0] = &ws[2];
+                scr->unk6C[1] = &ws[3];
+                scr->unk6C[2] = &ws[1];
                 break;
             case 1:
-                *(LeafPos **)(scr + 0x6C) = &ws[0];
-                *(LeafPos **)(scr + 0x70) = &ws[1];
-                *(LeafPos **)(scr + 0x74) = &ws[2];
+                scr->unk6C[0] = &ws[0];
+                scr->unk6C[1] = &ws[1];
+                scr->unk6C[2] = &ws[2];
                 break;
             case 2:
-                *(LeafPos **)(scr + 0x6C) = &ws[6];
-                *(LeafPos **)(scr + 0x70) = &ws[7];
-                *(LeafPos **)(scr + 0x74) = &ws[5];
+                scr->unk6C[0] = &ws[6];
+                scr->unk6C[1] = &ws[7];
+                scr->unk6C[2] = &ws[5];
                 break;
             case 3:
-                *(LeafPos **)(scr + 0x6C) = &ws[4];
-                *(LeafPos **)(scr + 0x70) = &ws[5];
-                *(LeafPos **)(scr + 0x74) = &ws[6];
+                scr->unk6C[0] = &ws[4];
+                scr->unk6C[1] = &ws[5];
+                scr->unk6C[2] = &ws[6];
                 break;
             }
-            *(LeafPos *)(scr + 0x9C) = **(LeafPos **)(scr + 0x6C);
-            *(LeafPos *)(scr + 0x90) = *(LeafPos *)(scr + 0x9C);
+            scr->unk9C = *scr->unk6C[0];
+            scr->unk90 = scr->unk9C;
             for (k = 1; k < 3; k++) {
-                if (((LeafPos **)(scr + 0x6C))[k]->x < *(s32 *)(scr + 0x90)) {
-                    *(s32 *)(scr + 0x90) = ((LeafPos **)(scr + 0x6C))[k]->x;
-                } else if (*(s32 *)(scr + 0x9C) < ((LeafPos **)(scr + 0x6C))[k]->x) {
-                    *(s32 *)(scr + 0x9C) = ((LeafPos **)(scr + 0x6C))[k]->x;
+                if (scr->unk6C[k]->x < scr->unk90.x) {
+                    scr->unk90.x = scr->unk6C[k]->x;
+                } else if (scr->unk9C.x < scr->unk6C[k]->x) {
+                    scr->unk9C.x = scr->unk6C[k]->x;
                 }
-                if (((LeafPos **)(scr + 0x6C))[k]->y < *(s32 *)(scr + 0x94)) {
-                    *(s32 *)(scr + 0x94) = ((LeafPos **)(scr + 0x6C))[k]->y;
-                } else if (*(s32 *)(scr + 0xA0) < ((LeafPos **)(scr + 0x6C))[k]->y) {
-                    *(s32 *)(scr + 0xA0) = ((LeafPos **)(scr + 0x6C))[k]->y;
+                if (scr->unk6C[k]->y < scr->unk90.y) {
+                    scr->unk90.y = scr->unk6C[k]->y;
+                } else if (scr->unk9C.y < scr->unk6C[k]->y) {
+                    scr->unk9C.y = scr->unk6C[k]->y;
                 }
-                if (((LeafPos **)(scr + 0x6C))[k]->z < *(s32 *)(scr + 0x98)) {
-                    *(s32 *)(scr + 0x98) = ((LeafPos **)(scr + 0x6C))[k]->z;
-                } else if (*(s32 *)(scr + 0xA4) < ((LeafPos **)(scr + 0x6C))[k]->z) {
-                    *(s32 *)(scr + 0xA4) = ((LeafPos **)(scr + 0x6C))[k]->z;
+                if (scr->unk6C[k]->z < scr->unk90.z) {
+                    scr->unk90.z = scr->unk6C[k]->z;
+                } else if (scr->unk9C.z < scr->unk6C[k]->z) {
+                    scr->unk9C.z = scr->unk6C[k]->z;
                 }
             }
             if (box_overlap(scr)
-                && func_8002DE20(scr, *(s32 **)(scr + 0x6C), *(s32 **)(scr + 0x70), *(s32 **)(scr + 0x74)) != 0) {
+                && func_8002DE20(scr, scr->unk6C[0], scr->unk6C[1], scr->unk6C[2]) != 0) {
                 for (k = 0; k < 16; k++) {
                     SPAD->unkA8[0][k] = saved[k];
                 }
@@ -2233,11 +2232,10 @@ void func_8002C0DC(void) {
 }
 /* Accumulates a character's shadow vectors in PSX scratchpad RAM.  Everything
  * this function writes lives in the one record at 0x1F8002B8 that `scr` points
- * at (an s32 view; each index is the byte offset / 4): two 3-word vectors at
- * +0xA8 and +0xB8 (the +0xB4 and +0xC4 words are not touched, so both are
- * 16-byte-strided like a PsyQ VECTOR), and the 3-word result at +0x13C.
- * +0xA8 sums two of the scratchpad points SPAD holds per character (unk48[k]
- * when bit k of D_800A3824 is set, else unk00[k]); +0xB8 sums the matching
+ * at: two vectors, unkA8 and unkB8 (this function does not touch unkB4 /
+ * unkC4), and the result, unk13C.
+ * unkA8 sums two of the scratchpad points SPAD holds per character (unk48[k]
+ * when bit k of D_800A3824 is set, else unk00[k]); unkB8 sums the matching
  * pair func_8002C61C copied into D_80101EC8[k] (unk_234 / unk_210).
  *
  * The first block's accesses come out absolute (`lui $at; sw $x,off($at)`)
@@ -2257,7 +2255,7 @@ void func_8002C0DC(void) {
  * arms' instruction-identical tails, not source-level statements.
  */
 void func_8002C22C(void) {
-    s32 *scr = (s32 *)0x1F8002B8;
+    Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     /* FAKE: pointer alias to D_80101EC8[1] (pointer-alias-fake-exception).
      * The target holds record 1's base in a register from entry (lui/addiu $t1)
      * and reads its unk_210 / unk_234 words at displacements off it, while
@@ -2268,70 +2266,70 @@ void func_8002C22C(void) {
      * instructions). */
     Unk80101EC8Record *rec1 = &D_80101EC8[1];
 
-    scr[0xA8/4] = 0;
-    scr[0xAC/4] = 0;
-    scr[0xB0/4] = 0;
-    scr[0xB8/4] = 0;
-    scr[0xBC/4] = 0;
-    scr[0xC0/4] = 0;
+    scr->unkA8.x = 0;
+    scr->unkA8.y = 0;
+    scr->unkA8.z = 0;
+    scr->unkB8.x = 0;
+    scr->unkB8.y = 0;
+    scr->unkB8.z = 0;
 
     if (D_800A3824 & 1) {
-        scr[0xA8/4] = SPAD->unk48[0][0].x;
-        scr[0xAC/4] = SPAD->unk48[0][0].y;
-        scr[0xB0/4] = SPAD->unk48[0][0].z;
-        scr[0xA8/4] += SPAD->unk48[0][1].x;
-        scr[0xAC/4] += SPAD->unk48[0][1].y;
-        scr[0xB0/4] += SPAD->unk48[0][1].z;
-        scr[0xB8/4] = D_80101EC8[0].unk_234[0].x;
-        scr[0xBC/4] = D_80101EC8[0].unk_234[0].y;
-        scr[0xC0/4] = D_80101EC8[0].unk_234[0].z;
-        scr[0xB8/4] += D_80101EC8[0].unk_234[1].x;
-        scr[0xBC/4] += D_80101EC8[0].unk_234[1].y;
-        scr[0xC0/4] += D_80101EC8[0].unk_234[1].z;
+        scr->unkA8.x = SPAD->unk48[0][0].x;
+        scr->unkA8.y = SPAD->unk48[0][0].y;
+        scr->unkA8.z = SPAD->unk48[0][0].z;
+        scr->unkA8.x += SPAD->unk48[0][1].x;
+        scr->unkA8.y += SPAD->unk48[0][1].y;
+        scr->unkA8.z += SPAD->unk48[0][1].z;
+        scr->unkB8.x = D_80101EC8[0].unk_234[0].x;
+        scr->unkB8.y = D_80101EC8[0].unk_234[0].y;
+        scr->unkB8.z = D_80101EC8[0].unk_234[0].z;
+        scr->unkB8.x += D_80101EC8[0].unk_234[1].x;
+        scr->unkB8.y += D_80101EC8[0].unk_234[1].y;
+        scr->unkB8.z += D_80101EC8[0].unk_234[1].z;
     } else {
-        scr[0xA8/4] = SPAD->unk00[0][0].x;
-        scr[0xAC/4] = SPAD->unk00[0][0].y;
-        scr[0xB0/4] = SPAD->unk00[0][0].z;
-        scr[0xA8/4] += SPAD->unk00[0][1].x;
-        scr[0xAC/4] += SPAD->unk00[0][1].y;
-        scr[0xB0/4] += SPAD->unk00[0][1].z;
-        scr[0xB8/4] = D_80101EC8[0].unk_210[0].x;
-        scr[0xBC/4] = D_80101EC8[0].unk_210[0].y;
-        scr[0xC0/4] = D_80101EC8[0].unk_210[0].z;
-        scr[0xB8/4] += D_80101EC8[0].unk_210[1].x;
-        scr[0xBC/4] += D_80101EC8[0].unk_210[1].y;
-        scr[0xC0/4] += D_80101EC8[0].unk_210[1].z;
+        scr->unkA8.x = SPAD->unk00[0][0].x;
+        scr->unkA8.y = SPAD->unk00[0][0].y;
+        scr->unkA8.z = SPAD->unk00[0][0].z;
+        scr->unkA8.x += SPAD->unk00[0][1].x;
+        scr->unkA8.y += SPAD->unk00[0][1].y;
+        scr->unkA8.z += SPAD->unk00[0][1].z;
+        scr->unkB8.x = D_80101EC8[0].unk_210[0].x;
+        scr->unkB8.y = D_80101EC8[0].unk_210[0].y;
+        scr->unkB8.z = D_80101EC8[0].unk_210[0].z;
+        scr->unkB8.x += D_80101EC8[0].unk_210[1].x;
+        scr->unkB8.y += D_80101EC8[0].unk_210[1].y;
+        scr->unkB8.z += D_80101EC8[0].unk_210[1].z;
     }
     if (D_800A3824 & 2) {
-        scr[0xA8/4] += SPAD->unk48[1][0].x;
-        scr[0xAC/4] += SPAD->unk48[1][0].y;
-        scr[0xB0/4] += SPAD->unk48[1][0].z;
-        scr[0xB8/4] += rec1->unk_234[0].x;
-        scr[0xBC/4] += rec1->unk_234[0].y;
-        scr[0xC0/4] += rec1->unk_234[0].z;
-        scr[0xA8/4] += SPAD->unk48[1][1].x;
-        scr[0xAC/4] += SPAD->unk48[1][1].y;
-        scr[0xB0/4] += SPAD->unk48[1][1].z;
-        scr[0xB8/4] += rec1->unk_234[1].x;
-        scr[0xBC/4] += rec1->unk_234[1].y;
-        scr[0xC0/4] += rec1->unk_234[1].z;
+        scr->unkA8.x += SPAD->unk48[1][0].x;
+        scr->unkA8.y += SPAD->unk48[1][0].y;
+        scr->unkA8.z += SPAD->unk48[1][0].z;
+        scr->unkB8.x += rec1->unk_234[0].x;
+        scr->unkB8.y += rec1->unk_234[0].y;
+        scr->unkB8.z += rec1->unk_234[0].z;
+        scr->unkA8.x += SPAD->unk48[1][1].x;
+        scr->unkA8.y += SPAD->unk48[1][1].y;
+        scr->unkA8.z += SPAD->unk48[1][1].z;
+        scr->unkB8.x += rec1->unk_234[1].x;
+        scr->unkB8.y += rec1->unk_234[1].y;
+        scr->unkB8.z += rec1->unk_234[1].z;
     } else {
-        scr[0xA8/4] += SPAD->unk00[1][0].x;
-        scr[0xAC/4] += SPAD->unk00[1][0].y;
-        scr[0xB0/4] += SPAD->unk00[1][0].z;
-        scr[0xB8/4] += rec1->unk_210[0].x;
-        scr[0xBC/4] += rec1->unk_210[0].y;
-        scr[0xC0/4] += rec1->unk_210[0].z;
-        scr[0xA8/4] += SPAD->unk00[1][1].x;
-        scr[0xAC/4] += SPAD->unk00[1][1].y;
-        scr[0xB0/4] += SPAD->unk00[1][1].z;
-        scr[0xB8/4] += rec1->unk_210[1].x;
-        scr[0xBC/4] += rec1->unk_210[1].y;
-        scr[0xC0/4] += rec1->unk_210[1].z;
+        scr->unkA8.x += SPAD->unk00[1][0].x;
+        scr->unkA8.y += SPAD->unk00[1][0].y;
+        scr->unkA8.z += SPAD->unk00[1][0].z;
+        scr->unkB8.x += rec1->unk_210[0].x;
+        scr->unkB8.y += rec1->unk_210[0].y;
+        scr->unkB8.z += rec1->unk_210[0].z;
+        scr->unkA8.x += SPAD->unk00[1][1].x;
+        scr->unkA8.y += SPAD->unk00[1][1].y;
+        scr->unkA8.z += SPAD->unk00[1][1].z;
+        scr->unkB8.x += rec1->unk_210[1].x;
+        scr->unkB8.y += rec1->unk_210[1].y;
+        scr->unkB8.z += rec1->unk_210[1].z;
     }
-    scr[0x13C/4] = ((scr[0xA8/4] * 3) + scr[0xB8/4]) >> 4;
-    scr[0x140/4] = ((scr[0xAC/4] * 3) + scr[0xBC/4]) >> 4;
-    scr[0x144/4] = ((scr[0xB0/4] * 3) + scr[0xC0/4]) >> 4;
+    scr->unk13C.x = ((scr->unkA8.x * 3) + scr->unkB8.x) >> 4;
+    scr->unk13C.y = ((scr->unkA8.y * 3) + scr->unkB8.y) >> 4;
+    scr->unk13C.z = ((scr->unkA8.z * 3) + scr->unkB8.z) >> 4;
 }
 
 /* Per-frame update of the two D_80101EC8 records.  The three
@@ -2343,12 +2341,12 @@ void func_8002C61C(void) {
     /* FAKE: pointer aliases to D_80101EC8[0] / [1]
      * (pointer-alias-fake-exception).  The target keeps both record bases in
      * $s1 / $s0 from the prologue (lui/addiu s1, addiu s0,s1,0x44C) and reads
-     * unk_AD / unk_3C / unk_286 / unk_0C / unk_F4 / unk_28C at displacements off
-     * them, while unk_6A and the unk_210 / unk_234 copy loops use the absolute
-     * address.  Without the pointers every access is a symbol+offset constant
-     * address, which GO_IF_LEGITIMATE_ADDRESS
-     * (tools/gcc-2.7.2/config/mips/mips.h:2286) accepts as is, so no base
-     * register exists. */
+     * unk_3C / unk_286 / unk_0C / unk_F4 / unk_28C at displacements off them,
+     * while unk_AD, unk_6A and the unk_210 / unk_234 copy loops use the
+     * absolute address.  Without the pointers those five fields' accesses
+     * become absolute lui pairs (GO_IF_LEGITIMATE_ADDRESS, gcc-2.7.2 mips.h:2286)
+     * and cse keeps &D_80101EC8[0].unk_6A in $s0 instead (later also
+     * &D_80101EC8[0].unk_286 in $s1): 12 more instructions. */
     Unk80101EC8Record *s1 = &D_80101EC8[0];
     Unk80101EC8Record *s0 = &D_80101EC8[1];
     s32 i;
@@ -2369,8 +2367,8 @@ void func_8002C61C(void) {
         func_8002C22C();
         if (D_800A3824 < 0) goto do_calc;
         if (s1->unk_AD != 0 || s0->unk_AD != 0) {
-            func_800283D0(s1, (s32 *)0x1F8003F4);
-            func_800283D0(s0, (s32 *)0x1F8003F4);
+            func_800283D0(s1, &SPAD->unk2B8.rec.unk13C.x);
+            func_800283D0(s0, &SPAD->unk2B8.rec.unk13C.x);
             s0->unk_AD = 0;
             s1->unk_AD = 0;
             goto after_calc;
@@ -2397,10 +2395,10 @@ void func_8002C61C(void) {
 
     }
 
-    if ((u16)D_80101EC8[0].unk_6A == 5) {
+    if (D_80101EC8[0].unk_6A == 5) {
         D_800A3748 = 1;
         D_800A3834 = 0x1C;
-    } else if ((u16)D_80101EC8[1].unk_6A == 5) {
+    } else if (D_80101EC8[1].unk_6A == 5) {
         D_800A3748 = 0;
         D_800A3834 = 0x1C;
     }
