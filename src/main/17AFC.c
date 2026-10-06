@@ -1114,7 +1114,7 @@ static inline s32 box_overlap(Unk1F8002B8Rec *scr) {
 }
 
 /* Both are defined further down this file. */
-extern s32 func_8002DAD0(u8 *obj);
+extern s32 func_8002DAD0(Unk1F8002B8Rec *obj);
 extern s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2);
 
 /* Blade contact test between the two records at D_80101EC8 (stride 0x44C),
@@ -1280,7 +1280,7 @@ s32 func_80029454(void) {
             scr->unk60[2] = &ws[6];
             break;
         }
-        if (func_8002DAD0((u8 *)scr) == 0) {
+        if (func_8002DAD0(scr) == 0) {
             mask |= 1 << j;
             continue;
         }
@@ -1384,7 +1384,7 @@ s32 func_80029454(void) {
             scr->unk60[2] = &ws[14];
             break;
         }
-        if (func_8002DAD0((u8 *)scr) == 0) {
+        if (func_8002DAD0(scr) == 0) {
             continue;
         }
         scr->unk84 = *scr->unk60[0];
@@ -1667,7 +1667,7 @@ done:
     D_800A37EC = -qz;
 }
 extern void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2);
-extern s32 func_8002CD58(u8 *obj);
+extern s32 func_8002CD58(Unk1F8002B8Rec *obj);
 void func_8002AB08(s32 mode) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     /* FAKE: second handle to D_800A37E8 (pointer-alias-fake-exception). The target rematerializes
@@ -1880,7 +1880,7 @@ void func_8002AB08(s32 mode) {
                         scr->unk84.z = scr->unk60[j]->z;
                     }
                 }
-                func_8002CA8C(self, func_8002CD58((u8 *)scr), deep_on);
+                func_8002CA8C(self, func_8002CD58(scr), deep_on);
                 hit |= scr->unkB4;
                 deep |= scr->unkC4;
                 if (alt != 0) {
@@ -2433,7 +2433,7 @@ void func_8002C61C(void) {
     }
 }
 extern s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s32 r_sq);
-extern s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq);
+extern s32 func_8002D780(s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq);
 
 void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
@@ -2482,11 +2482,11 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
         }
 
         if (a1 != 0) {
-            hit = func_8002D780(0, (u8 *)scr, (s32 *)&SPAD->unkA8[id][i],
+            hit = func_8002D780(0, scr, (s32 *)&SPAD->unkA8[id][i],
                                 r, rec->unk_0E);
             if (hit != 0) {
                 if (rec->unk_00 != 0 && a2 != 0) {
-                    if (func_8002D780(1, (u8 *)scr, (s32 *)0,
+                    if (func_8002D780(1, scr, (s32 *)0,
                                       rec->unk_10,
                                       rec->unk_12) != 0) {
                         hitMask |= 1 << i;
@@ -2514,14 +2514,14 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     scr->unkB4 = seenMask;
     scr->unkC4 = hitMask;
 }
-/* Orients a triangle's local frame. The three vertex pointers at obj+0x60/
- * 0x64/0x68 give edge vectors a = v1 - v0 (obj+0xA8) and b = v2 - v0
- * (obj+0xB8); the GTE outer product n = a x b lands in obj+0xC8. If every
+/* Orients a triangle's local frame. The three vertex pointers obj->unk60[0..2]
+ * give edge vectors a = v1 - v0 (obj->unkA8) and b = v2 - v0 (obj->unkB8);
+ * the GTE outer product n = a x b lands in obj->unkC8. If every
  * component of n is within +-0x3FFF and |n| (GTE SQR, then the g_sqrt_table_u8
  * byte-LUT integer sqrt with the GTE leading-zero count for large inputs) is
- * below 0x4000, the yaw (obj+0xFA) and pitch (obj+0xF8) are taken from a;
+ * below 0x4000, the yaw (obj->unkF8.vy) and pitch (.vx) are taken from a;
  * otherwise n is scaled down by 64 in place and the angles are taken from n.
- * Either way a rotation matrix is built at obj+0xD8 (identity, RotMatrixY by
+ * Either way a rotation matrix is built in obj->unkD8 (identity, RotMatrixY by
  * the yaw, RotMatrixX by the pitch), loaded into the GTE, and a and b are
  * rotated in place. Returns 0 on the first path, 1 on the second. Each tail
  * is func_8002E838's sequence (this file), applied to b as well as a.
@@ -2552,28 +2552,24 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
  * 0x4B70000C, sqr0 0x00000f3f -> 0x4AA00428, rtv0 0x0000013f -> 0x4A486012.
  * Everything else is ordinary C; `len` and `temp` each hold two values
  * under Ruling 11 (annotated at their declarations). */
-s32 func_8002CD58(u8 *obj) {
+s32 func_8002CD58(Unk1F8002B8Rec *obj) {
     s32 sp_tmp;
     s32 sp_tmp2;
     s32 sp_tmp3;
     s32 len_sq;
     s32 xz_sq;
-    /* temp holds two values (Ruling 11): n.x*n.x + n.z*n.z of the scaled n
+    /* FAKE: temp holds two values (Ruling 11): n.x*n.x + n.z*n.z of the scaled n
      * (the squared length fed to the table lookup and the leading-zero count)
-     * and then the square-root table byte. */
+     * and then the square-root table byte. Ablated (2026-10-06): one local per value: score 6. */
     s32 temp;
-    s32 yaw;
-    s32 pitch;
-    s32 nyaw;
-    s32 npitch;
     s32 nxz_len;
 
-    *(s32 *)(obj + 0xA8) = (*(s32 **)(obj + 0x64))[0] - (*(s32 **)(obj + 0x60))[0];
-    *(s32 *)(obj + 0xAC) = (*(s32 **)(obj + 0x64))[1] - (*(s32 **)(obj + 0x60))[1];
-    *(s32 *)(obj + 0xB0) = (*(s32 **)(obj + 0x64))[2] - (*(s32 **)(obj + 0x60))[2];
-    *(s32 *)(obj + 0xB8) = (*(s32 **)(obj + 0x68))[0] - (*(s32 **)(obj + 0x60))[0];
-    *(s32 *)(obj + 0xBC) = (*(s32 **)(obj + 0x68))[1] - (*(s32 **)(obj + 0x60))[1];
-    *(s32 *)(obj + 0xC0) = (*(s32 **)(obj + 0x68))[2] - (*(s32 **)(obj + 0x60))[2];
+    obj->unkA8.x = obj->unk60[1]->x - obj->unk60[0]->x;
+    obj->unkA8.y = obj->unk60[1]->y - obj->unk60[0]->y;
+    obj->unkA8.z = obj->unk60[1]->z - obj->unk60[0]->z;
+    obj->unkB8.x = obj->unk60[2]->x - obj->unk60[0]->x;
+    obj->unkB8.y = obj->unk60[2]->y - obj->unk60[0]->y;
+    obj->unkB8.z = obj->unk60[2]->z - obj->unk60[0]->z;
 
     /* gte_ldopv1(a) -- inline_o.h:595: a into the rotation matrix
      * diagonal (cop2 control $0/$2/$4). */
@@ -2585,7 +2581,7 @@ s32 func_8002CD58(u8 *obj) {
         "lw     $15, 8($12)\n"
         "ctc2   $14, $2\n"
         "ctc2   $15, $4\n"
-        :: "r"(obj + 0xA8) : "$12", "$13", "$14", "$15");
+        :: "r"(&obj->unkA8) : "$12", "$13", "$14", "$15");
     /* gte_ldopv2(b) -- inline_o.h:626: b into IR1-IR3, then gte_op0's
      * two nops (inline_o.h:1866). */
     __asm__ volatile(
@@ -2595,37 +2591,37 @@ s32 func_8002CD58(u8 *obj) {
         "lwc2   $10, 4($12)\n"
         "nop\n"
         "nop\n"
-        :: "r"(obj + 0xB8) : "$12");
+        :: "r"(&obj->unkB8) : "$12");
     /* gte_op0() command word -- inline_o.h:1866, OP sf=0. */
     __asm__ volatile(".word 0x4B70000C");
-    /* gte_stlvnl(n) -- inline_o.h:2422: MAC1-MAC3 to obj+0xC8. */
+    /* gte_stlvnl(n) -- inline_o.h:2422: MAC1-MAC3 to obj->unkC8. */
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
         "swc2   $26, 4($12)\n"
         "swc2   $27, 8($12)\n"
-        :: "r"(obj + 0xC8) : "$12", "memory");
+        :: "r"(&obj->unkC8) : "$12", "memory");
 
-    if ((u32)(*(s32 *)(obj + 0xC8) + 0x3FFF) < 0x7FFF
-        && (u32)(*(s32 *)(obj + 0xCC) + 0x3FFF) < 0x7FFF
-        && (u32)(*(s32 *)(obj + 0xD0) + 0x3FFF) < 0x7FFF) {
-        /* len holds two values (Ruling 11): |n|, the square root of len_sq read
+    if ((u32)(obj->unkC8.x + 0x3FFF) < 0x7FFF
+        && (u32)(obj->unkC8.y + 0x3FFF) < 0x7FFF
+        && (u32)(obj->unkC8.z + 0x3FFF) < 0x7FFF) {
+        /* FAKE: len holds two values (Ruling 11): |n|, the square root of len_sq read
          * by the `< 0x4000` guard, and then |a.xz|, the square root of xz_sq
-         * passed to ratan2 for the pitch. */
+         * passed to ratan2 for the pitch. Ablated (2026-10-06): one local per value: score 3. */
         s32 len;
         /* gte_sqr0() -- inline_o.h:1749: square IR1-IR3 (still n). */
         __asm__ volatile(
             "nop\n"
             "nop\n"
             ".word 0x4AA00428\n");
-        /* gte_stlvnl -- inline_o.h:2422: the squares to obj+0x100. */
+        /* gte_stlvnl -- inline_o.h:2422: the squares to obj->unk100[0]. */
         __asm__ volatile(
             "move   $12, %0\n"
             "swc2   $25, 0($12)\n"
             "swc2   $26, 4($12)\n"
             "swc2   $27, 8($12)\n"
-            :: "r"(obj + 0x100) : "$12", "memory");
-        len_sq = *(s32 *)(obj + 0x100) + *(s32 *)(obj + 0x104) + *(s32 *)(obj + 0x108);
+            :: "r"(&obj->unk100[0]) : "$12", "memory");
+        len_sq = obj->unk100[0].x + obj->unk100[0].y + obj->unk100[0].z;
         if ((u32)len_sq < 0x400) {
             len = (u32)g_sqrt_table_u8[len_sq] >> 3;
         } else {
@@ -2648,15 +2644,13 @@ s32 func_8002CD58(u8 *obj) {
             }
             {
                 s32 shift = 0x16 - (lzcr & ~1);
-                s32 tbl = g_sqrt_table_u8[(u32)len_sq >> shift];
-                len = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+                len = (u32)(g_sqrt_table_u8[(u32)len_sq >> shift] << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }
         if ((u32)len < 0x4000) {
-            yaw = ratan2(*(s32 *)(obj + 0xA8), *(s32 *)(obj + 0xB0));
-            xz_sq = *(s32 *)(obj + 0xA8) * *(s32 *)(obj + 0xA8)
-                  + *(s32 *)(obj + 0xB0) * *(s32 *)(obj + 0xB0);
-            *(s16 *)(obj + 0xFA) = 0x800 - yaw;
+            obj->unkF8.vy = 0x800 - ratan2(obj->unkA8.x, obj->unkA8.z);
+            xz_sq = obj->unkA8.x * obj->unkA8.x
+                  + obj->unkA8.z * obj->unkA8.z;
             if ((u32)xz_sq < 0x400) {
                 len = (u32)g_sqrt_table_u8[xz_sq] >> 3;
             } else {
@@ -2678,24 +2672,22 @@ s32 func_8002CD58(u8 *obj) {
                 }
                 {
                     s32 shift = 0x16 - (lzcr & ~1);
-                    s32 tbl = g_sqrt_table_u8[(u32)xz_sq >> shift];
-                    len = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+                    len = (u32)(g_sqrt_table_u8[(u32)xz_sq >> shift] << 16) >> (0x13 - ((u32)shift >> 1));
                 }
             }
-            pitch = ratan2(*(s32 *)(obj + 0xAC), len);
-            *(s16 *)(obj + 0xF8) = 0x800 - pitch;
-            *(s16 *)(obj + 0xD8) = 0x1000;
-            *(s16 *)(obj + 0xDA) = 0;
-            *(s16 *)(obj + 0xDC) = 0;
-            *(s16 *)(obj + 0xDE) = 0;
-            *(s16 *)(obj + 0xE0) = 0x1000;
-            *(s16 *)(obj + 0xE2) = 0;
-            *(s16 *)(obj + 0xE4) = 0;
-            *(s16 *)(obj + 0xE6) = 0;
-            *(s16 *)(obj + 0xE8) = 0x1000;
-            RotMatrixY(*(s16 *)(obj + 0xFA), (MATRIX *)(obj + 0xD8));
-            RotMatrixX(*(s16 *)(obj + 0xF8), (MATRIX *)(obj + 0xD8));
-            /* gte_SetRotMatrix(obj+0xD8) -- inline_o.h:860: the five
+            obj->unkF8.vx = 0x800 - ratan2(obj->unkA8.y, len);
+            obj->unkD8.m[0][0] = 0x1000;
+            obj->unkD8.m[0][1] = 0;
+            obj->unkD8.m[0][2] = 0;
+            obj->unkD8.m[1][0] = 0;
+            obj->unkD8.m[1][1] = 0x1000;
+            obj->unkD8.m[1][2] = 0;
+            obj->unkD8.m[2][0] = 0;
+            obj->unkD8.m[2][1] = 0;
+            obj->unkD8.m[2][2] = 0x1000;
+            RotMatrixY(obj->unkF8.vy, &obj->unkD8);
+            RotMatrixX(obj->unkF8.vx, &obj->unkD8);
+            /* gte_SetRotMatrix(&obj->unkD8) -- inline_o.h:860: the five
              * packed rotation-matrix words into cop2 control $0..$4. */
             __asm__ volatile(
                 "move   $12, %0\n"
@@ -2709,7 +2701,7 @@ s32 func_8002CD58(u8 *obj) {
                 "ctc2   $13, $2\n"
                 "ctc2   $14, $3\n"
                 "ctc2   $15, $4\n"
-                :: "r"(obj + 0xD8) : "$12", "$13", "$14", "$15");
+                :: "r"(&obj->unkD8) : "$12", "$13", "$14", "$15");
             /* gte_ldlv0(a) -- inline_o.h:277: pack VX0/VY0, VZ0 via lwc2,
              * then gte_rtv0's two nops (inline_o.h:1353). */
             __asm__ volatile(
@@ -2722,7 +2714,7 @@ s32 func_8002CD58(u8 *obj) {
                 "lwc2   $1, 8($12)\n"
                 "nop\n"
                 "nop\n"
-                :: "r"(obj + 0xA8) : "$12", "$13", "$14");
+                :: "r"(&obj->unkA8) : "$12", "$13", "$14");
             /* gte_rtv0() command word -- inline_o.h:1353, MVMVA sf=1,
              * rotation x V0. */
             __asm__ volatile(".word 0x4A486012");
@@ -2732,7 +2724,7 @@ s32 func_8002CD58(u8 *obj) {
                 "swc2   $25, 0($12)\n"
                 "swc2   $26, 4($12)\n"
                 "swc2   $27, 8($12)\n"
-                :: "r"(obj + 0xA8) : "$12", "memory");
+                :: "r"(&obj->unkA8) : "$12", "memory");
             /* gte_ldlv0(b) (inline_o.h:277) / gte_rtv0() (:1353) /
              * gte_stlvnl(b) (:2422): same for b. */
             __asm__ volatile(
@@ -2745,25 +2737,24 @@ s32 func_8002CD58(u8 *obj) {
                 "lwc2   $1, 8($12)\n"
                 "nop\n"
                 "nop\n"
-                :: "r"(obj + 0xB8) : "$12", "$13", "$14");
+                :: "r"(&obj->unkB8) : "$12", "$13", "$14");
             __asm__ volatile(".word 0x4A486012");
             __asm__ volatile(
                 "move   $12, %0\n"
                 "swc2   $25, 0($12)\n"
                 "swc2   $26, 4($12)\n"
                 "swc2   $27, 8($12)\n"
-                :: "r"(obj + 0xB8) : "$12", "memory");
+                :: "r"(&obj->unkB8) : "$12", "memory");
             return 0;
         }
     }
 
-    nyaw = ratan2(*(s32 *)(obj + 0xC8), *(s32 *)(obj + 0xD0));
-    *(s32 *)(obj + 0xC8) >>= 6;
-    *(s32 *)(obj + 0xCC) >>= 6;
-    *(s32 *)(obj + 0xD0) >>= 6;
-    temp = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8)
-           + *(s32 *)(obj + 0xD0) * *(s32 *)(obj + 0xD0);
-    *(s16 *)(obj + 0xFA) = 0x800 - nyaw;
+    obj->unkF8.vy = 0x800 - ratan2(obj->unkC8.x, obj->unkC8.z);
+    obj->unkC8.x >>= 6;
+    obj->unkC8.y >>= 6;
+    obj->unkC8.z >>= 6;
+    temp = obj->unkC8.x * obj->unkC8.x
+           + obj->unkC8.z * obj->unkC8.z;
     if ((u32)temp < 0x400) {
         nxz_len = (u32)g_sqrt_table_u8[temp] >> 3;
     } else {
@@ -2789,19 +2780,18 @@ s32 func_8002CD58(u8 *obj) {
             nxz_len = (u32)(temp << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
-    npitch = ratan2(*(s32 *)(obj + 0xCC), nxz_len);
-    *(s16 *)(obj + 0xF8) = 0x800 - npitch;
-    *(s16 *)(obj + 0xD8) = 0x1000;
-    *(s16 *)(obj + 0xDA) = 0;
-    *(s16 *)(obj + 0xDC) = 0;
-    *(s16 *)(obj + 0xDE) = 0;
-    *(s16 *)(obj + 0xE0) = 0x1000;
-    *(s16 *)(obj + 0xE2) = 0;
-    *(s16 *)(obj + 0xE4) = 0;
-    *(s16 *)(obj + 0xE6) = 0;
-    *(s16 *)(obj + 0xE8) = 0x1000;
-    RotMatrixY(*(s16 *)(obj + 0xFA), (MATRIX *)(obj + 0xD8));
-    RotMatrixX(*(s16 *)(obj + 0xF8), (MATRIX *)(obj + 0xD8));
+    obj->unkF8.vx = 0x800 - ratan2(obj->unkC8.y, nxz_len);
+    obj->unkD8.m[0][0] = 0x1000;
+    obj->unkD8.m[0][1] = 0;
+    obj->unkD8.m[0][2] = 0;
+    obj->unkD8.m[1][0] = 0;
+    obj->unkD8.m[1][1] = 0x1000;
+    obj->unkD8.m[1][2] = 0;
+    obj->unkD8.m[2][0] = 0;
+    obj->unkD8.m[2][1] = 0;
+    obj->unkD8.m[2][2] = 0x1000;
+    RotMatrixY(obj->unkF8.vy, &obj->unkD8);
+    RotMatrixX(obj->unkF8.vx, &obj->unkD8);
     /* gte_SetRotMatrix (inline_o.h:860), then gte_ldlv0 (:277) / gte_rtv0
      * (:1353) / gte_stlvnl (:2422) for a and for b: the same islands as the
      * first path. */
@@ -2817,7 +2807,7 @@ s32 func_8002CD58(u8 *obj) {
         "ctc2   $13, $2\n"
         "ctc2   $14, $3\n"
         "ctc2   $15, $4\n"
-        :: "r"(obj + 0xD8) : "$12", "$13", "$14", "$15");
+        :: "r"(&obj->unkD8) : "$12", "$13", "$14", "$15");
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -2828,14 +2818,14 @@ s32 func_8002CD58(u8 *obj) {
         "lwc2   $1, 8($12)\n"
         "nop\n"
         "nop\n"
-        :: "r"(obj + 0xA8) : "$12", "$13", "$14");
+        :: "r"(&obj->unkA8) : "$12", "$13", "$14");
     __asm__ volatile(".word 0x4A486012");
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
         "swc2   $26, 4($12)\n"
         "swc2   $27, 8($12)\n"
-        :: "r"(obj + 0xA8) : "$12", "memory");
+        :: "r"(&obj->unkA8) : "$12", "memory");
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -2846,14 +2836,14 @@ s32 func_8002CD58(u8 *obj) {
         "lwc2   $1, 8($12)\n"
         "nop\n"
         "nop\n"
-        :: "r"(obj + 0xB8) : "$12", "$13", "$14");
+        :: "r"(&obj->unkB8) : "$12", "$13", "$14");
     __asm__ volatile(".word 0x4A486012");
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
         "swc2   $26, 4($12)\n"
         "swc2   $27, 8($12)\n"
-        :: "r"(obj + 0xB8) : "$12", "memory");
+        :: "r"(&obj->unkB8) : "$12", "memory");
     return 1;
 }
 s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s32 r_sq) {
@@ -3102,44 +3092,44 @@ dist_calc:
 
 
 
-s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
+s32 func_8002D780(s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
-        *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
-        *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
-        *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
-        /* gte_ApplyRotMatrix(obj + 0xF8, obj + 0x100) -- gtemac.h 4.3 :354-357 = inline_o.h 4.3 gte_ldv0 :16-20,
+        obj->unkF8.vx = pos[0] - obj->unk60[0]->x;
+        obj->unkF8.vy = pos[1] - obj->unk60[0]->y;
+        obj->unkF8.vz = pos[2] - obj->unk60[0]->z;
+        /* gte_ApplyRotMatrix(&obj->unkF8, &obj->unk100[0]) -- gtemac.h 4.3 :354-357 = inline_o.h 4.3 gte_ldv0 :16-20,
          * gte_rtv0 :426-430 (post-DMPSX word 0x4A486012 for the placeholder 0x0000013f),
          * gte_stlvnl :904-909 */
-        __asm__ volatile ("move  $12,%0": :"r"((s32 *)(obj + 0xF8)):"$12","$13","$14","$15","memory");
+        __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
         __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("move  $12,%0": :"r"((s32 *)(obj + 0x100)):"$12","$13","$14","$15","memory");
+        __asm__ volatile ("move  $12,%0": :"r"(&obj->unk100[0]):"$12","$13","$14","$15","memory");
         __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
     }
 
     {
-        s32 y = *(s32 *)(obj + 0x108);
+        s32 y = obj->unk100[0].z;
         if (y < -threshold || threshold < y) return 0;
     }
 
     {
-        s32 x0 = *(s32 *)(obj + 0xA8);
-        s32 x2 = *(s32 *)(obj + 0xB8);
-        s32 z0 = *(s32 *)(obj + 0xAC);
-        s32 z2 = *(s32 *)(obj + 0xBC);
+        s32 x0 = obj->unkA8.x;
+        s32 x2 = obj->unkB8.x;
+        s32 z0 = obj->unkA8.y;
+        s32 z2 = obj->unkB8.y;
         s32 cx = (x0 + x2) / 3;
         s32 cz = (z0 + z2) / 3;
-        s32 px = *(s32 *)(obj + 0x100);
-        s32 pz = *(s32 *)(obj + 0x104);
-        /* cross_center and cross_point each hold three values, one per side test (Ruling 11):
+        s32 px = obj->unk100[0].x;
+        s32 pz = obj->unk100[0].y;
+        /* FAKE: cross_center and cross_point each hold three values, one per side test (Ruling 11):
          * the 2-D cross product of one edge of the triangle (0,0), (x0,z0), (x2,z2) with the
          * centroid's offset (cross_center) and with the query point's offset (cross_point), for
-         * the edge (0,0)-(x0,z0), then (0,0)-(x2,z2), then (x0,z0)-(x2,z2). */
+         * the edge (0,0)-(x0,z0), then (0,0)-(x2,z2), then (x0,z0)-(x2,z2). Ablated (2026-10-06): a pair per side test: score 36. */
         s32 cross_center = z0 * cx - x0 * cz;
         s32 cross_point = z0 * px - x0 * pz;
 
@@ -3147,10 +3137,10 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             cross_center = z2 * cx - x2 * cz;
             cross_point = z2 * px - x2 * pz;
             if ((cross_center ^ cross_point) >= 0) {
+                /* FAKE: ax holds cx - x0 ahead of the dx set-up; in the product the subtraction
+                 * moves (score 2). */
                 s32 ax = cx - x0;
                 s32 dx;
-                s32 az;
-                s32 bz;
                 /* FAKE: the third edge test's edge difference z2 - z0 is staged through the
                  * `flag` parameter (its own job, the mode test at entry, is finished: nothing
                  * reads `flag` after `if (flag == 0)`, and this value is consumed by the two
@@ -3162,13 +3152,11 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                  * parameter's pseudo third in allocno order, seats it in $a0, the lowest free
                  * register at that turn (the entry copy from $a0 is folded away by combine AFTER
                  * flow has fixed the pseudo's REG_BASIC_BLOCK as global) -- the target's seats;
-                 * a block-local dz ties dx in qty_compare_1 and takes $v1 itself. */
+                 * a block-local dz ties dx in qty_compare_1 and takes $v1 itself. Ablated (2026-10-06): a block-local dz: score 9. */
                 flag = z2 - z0;
                 dx = x2 - x0;
-                az = cz - z0;
-                cross_center = (flag * ax) - (dx * az);
-                bz = pz - z0;
-                cross_point = (flag * (px - x0)) - (dx * bz);
+                cross_center = (flag * ax) - (dx * (cz - z0));
+                cross_point = (flag * (px - x0)) - (dx * (pz - z0));
                 if ((cross_center ^ cross_point) >= 0)
                     return 1;
             }
@@ -3176,13 +3164,13 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     }
 
     {
-        s32 y = *(s32 *)(obj + 0x108);
+        s32 y = obj->unk100[0].z;
         s32 sp_var;
         s32 dist = r_sq - y * y;
         s32 sqrt_val;
-        s32 *p118;
-        s32 *p124;
-        s32 *p10C;
+        Vec3i32 *p118;
+        Vec3i32 *p124;
+        Vec3i32 *p10C;
 
         if ((u32)dist < 0x400) {
             sqrt_val = (u32)g_sqrt_table_u8[dist] >> 3;
@@ -3198,7 +3186,7 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                  * canonicalised to dist ($s1); without it the srlv reads $s1. The copy
                  * itself is the target's `addu $a0,$s1,$zero` at 0x8002D980 (the delay slot
                  * of the `dist < 0x400` branch), and the sibling func_8002D518 in this file
-                 * ships the same re-store of its `ud` copy. */
+                 * ships the same re-store of its `ud` copy. Ablated (2026-10-06): without the re-store: score 4. */
                 m = dist;
                 /* gte_Lzc(m, &sp_var) -- gtemac.h 4.3 :174-178 = inline_o.h 4.3 gte_ldlzc :207-210,
                  * gte_nop :1095-1097 (x2), gte_stlzc :1074-1077 */
@@ -3216,20 +3204,20 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             }
         }
 
-        p118 = (s32 *)(obj + 0x118);
-        p124 = (s32 *)(obj + 0x124);
-        p118[0] = *(s32 *)(obj + 0xA8) - *(s32 *)(obj + 0x100);
-        p118[1] = *(s32 *)(obj + 0xAC) - *(s32 *)(obj + 0x104);
-        p124[0] = *(s32 *)(obj + 0xB8) - *(s32 *)(obj + 0x100);
-        p124[1] = *(s32 *)(obj + 0xBC) - *(s32 *)(obj + 0x104);
-        if (func_8002D518(sqrt_val, dist, p118, p124) != 0) return 1;
+        p118 = &obj->unk118[0];
+        p124 = &obj->unk118[1];
+        p118->x = obj->unkA8.x - obj->unk100[0].x;
+        p118->y = obj->unkA8.y - obj->unk100[0].y;
+        p124->x = obj->unkB8.x - obj->unk100[0].x;
+        p124->y = obj->unkB8.y - obj->unk100[0].y;
+        if (func_8002D518(sqrt_val, dist, (s32 *)p118, (s32 *)p124) != 0) return 1;
 
-        p10C = (s32 *)(obj + 0x10C);
-        p10C[0] = -*(s32 *)(obj + 0x100);
-        p10C[1] = -*(s32 *)(obj + 0x104);
-        if (func_8002D518(sqrt_val, dist, p10C, p118) != 0) return 1;
+        p10C = &obj->unk100[1];
+        p10C->x = -obj->unk100[0].x;
+        p10C->y = -obj->unk100[0].y;
+        if (func_8002D518(sqrt_val, dist, (s32 *)p10C, (s32 *)p118) != 0) return 1;
 
-        if (func_8002D518(sqrt_val, dist, p10C, p124) != 0) return 1;
+        if (func_8002D518(sqrt_val, dist, (s32 *)p10C, (s32 *)p124) != 0) return 1;
         return 0;
     }
 }
@@ -3239,21 +3227,19 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
  * the &sp_tmp register and materializes its stack address outside the island.
  * Provenance: pre-slim-2026-10-01:memory/grind/func_8002DAD0/psyq_inline_o_provenance.md.
  */
-s32 func_8002DAD0(u8 *obj) {
+s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     MATRIX *mat;
     s32 sp_tmp;
     s32 dist_sq;
-    s32 angle1;
-    s32 angle2;
     s32 dist;
 
-    *(s32 *)(obj + 0xA8) = (*(s32 **)(obj + 0x64))[0] - (*(s32 **)(obj + 0x60))[0];
-    *(s32 *)(obj + 0xAC) = (*(s32 **)(obj + 0x64))[1] - (*(s32 **)(obj + 0x60))[1];
-    *(s32 *)(obj + 0xB0) = (*(s32 **)(obj + 0x64))[2] - (*(s32 **)(obj + 0x60))[2];
+    obj->unkA8.x = obj->unk60[1]->x - obj->unk60[0]->x;
+    obj->unkA8.y = obj->unk60[1]->y - obj->unk60[0]->y;
+    obj->unkA8.z = obj->unk60[1]->z - obj->unk60[0]->z;
 
-    *(s32 *)(obj + 0xB8) = (*(s32 **)(obj + 0x68))[0] - (*(s32 **)(obj + 0x60))[0];
-    *(s32 *)(obj + 0xBC) = (*(s32 **)(obj + 0x68))[1] - (*(s32 **)(obj + 0x60))[1];
-    *(s32 *)(obj + 0xC0) = (*(s32 **)(obj + 0x68))[2] - (*(s32 **)(obj + 0x60))[2];
+    obj->unkB8.x = obj->unk60[2]->x - obj->unk60[0]->x;
+    obj->unkB8.y = obj->unk60[2]->y - obj->unk60[0]->y;
+    obj->unkB8.z = obj->unk60[2]->z - obj->unk60[0]->z;
 
     /* Sony PsyQ DMPSX macro gte_ldopv1(r1) - inline_o.h:192-200, expanded
      * equivalent to (`move $12,%0` · `lw $13,($12)` · `lw $14,4($12)` ·
@@ -3268,7 +3254,7 @@ s32 func_8002DAD0(u8 *obj) {
         "lw     $15, 8($12)\n"
         "ctc2   $14, $2\n"
         "ctc2   $15, $4\n"
-        :: "r"(obj + 0xA8) : "$12", "$13", "$14", "$15");
+        :: "r"(&obj->unkA8) : "$12", "$13", "$14", "$15");
 
     /* Sony PsyQ DMPSX macro gte_ldopv2(r1) - inline_o.h:201-206, expanded
      * equivalent to (`move $12,%0` · `lwc2 $11,8($12)` · `lwc2 $9,($12)` ·
@@ -3286,28 +3272,28 @@ s32 func_8002DAD0(u8 *obj) {
         "nop\n"
         "nop\n"
         ".word 0x4B70000C\n"
-        :: "r"(obj + 0xB8) : "$12");
+        :: "r"(&obj->unkB8) : "$12");
 
     /* Sony PsyQ DMPSX macro gte_stlvnl(r1) - inline_o.h:904-909, expanded
      * equivalent to (`move $12,%0` · `swc2 $25,($12)` · `swc2 $26,4($12)` ·
      * `swc2 $27,8($12)`): stores MAC1/MAC2/MAC3 (the unclamped cross
-     * product) to obj+0xC8/CC/D0. */
+     * product) to obj->unkC8. */
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
         "swc2   $26, 4($12)\n"
         "swc2   $27, 8($12)\n"
-        :: "r"(obj + 0xC8) : "$12", "memory");
+        :: "r"(&obj->unkC8) : "$12", "memory");
 
-    if ((u32)(*(s32 *)(obj + 0xC8) + 0x3FFF) < 0x7FFF &&
-        (u32)(*(s32 *)(obj + 0xCC) + 0x3FFF) < 0x7FFF &&
-        (u32)(*(s32 *)(obj + 0xD0) + 0x3FFF) < 0x7FFF) {
+    if ((u32)(obj->unkC8.x + 0x3FFF) < 0x7FFF &&
+        (u32)(obj->unkC8.y + 0x3FFF) < 0x7FFF &&
+        (u32)(obj->unkC8.z + 0x3FFF) < 0x7FFF) {
         return 0;
     }
 
-    angle1 = ratan2(*(s32 *)(obj + 0xC8), *(s32 *)(obj + 0xD0));
-    *(s32 *)(obj + 0xC8) = *(s32 *)(obj + 0xC8) >> 6;
-    *(s32 *)(obj + 0xCC) = *(s32 *)(obj + 0xCC) >> 6;
+    obj->unkF8.vy = 0x800 - ratan2(obj->unkC8.x, obj->unkC8.z);
+    obj->unkC8.x = obj->unkC8.x >> 6;
+    obj->unkC8.y = obj->unkC8.y >> 6;
     /* FAKE: the scaled Z delta is staged through the function's existing
      * `dist` local (whose distance value is only assigned by the if/else
      * below, so `dist` is dead at this point) instead of a fresh
@@ -3321,12 +3307,11 @@ s32 func_8002DAD0(u8 *obj) {
      * natural ascending pick of $a0 that the target uses; a variable
      * referenced in more than one basic block is a GLOBAL allocno
      * (reg_renumber == -1 during global_conflicts), so no preference is
-     * stamped at all and dist_sq lands in $a0. */
-    dist = *(s32 *)(obj + 0xD0);
+     * stamped at all and dist_sq lands in $a0. Ablated (2026-10-06): a block-local dz: score 6. */
+    dist = obj->unkC8.z;
     dist >>= 6;
-    dist_sq = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8) + dist * dist;
-    *(s32 *)(obj + 0xD0) = dist;
-    *(s16 *)(obj + 0xFA) = 0x800 - angle1;
+    dist_sq = obj->unkC8.x * obj->unkC8.x + dist * dist;
+    obj->unkC8.z = dist;
 
     if ((u32)dist_sq < 0x400) {
         dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
@@ -3356,27 +3341,25 @@ s32 func_8002DAD0(u8 *obj) {
         }
         {
             s32 shift = 0x16 - (lzcr & ~1);
-            s32 tbl = g_sqrt_table_u8[(u32)dist_sq >> shift];
-            dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+            dist = (u32)(g_sqrt_table_u8[(u32)dist_sq >> shift] << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
 
-    angle2 = ratan2(*(s32 *)(obj + 0xCC), dist);
-    mat = (MATRIX *)(obj + 0xD8);
-    *(s16 *)(obj + 0xF8) = 0x800 - angle2;
+    obj->unkF8.vx = 0x800 - ratan2(obj->unkC8.y, dist);
+    mat = &obj->unkD8;
 
-    /* identity 3x3 rotation matrix at obj+0xD8 */
-    *(s16 *)(obj + 0xD8) = 0x1000;
-    *(s16 *)(obj + 0xDA) = 0;
-    *(s16 *)(obj + 0xDC) = 0;
-    *(s16 *)(obj + 0xDE) = 0;
-    *(s16 *)(obj + 0xE0) = 0x1000;
-    *(s16 *)(obj + 0xE2) = 0;
-    *(s16 *)(obj + 0xE4) = 0;
-    *(s16 *)(obj + 0xE6) = 0;
-    *(s16 *)(obj + 0xE8) = 0x1000;
-    RotMatrixY(*(s16 *)(obj + 0xFA), mat);
-    RotMatrixX(*(s16 *)(obj + 0xF8), mat);
+    /* identity 3x3 rotation matrix obj->unkD8 */
+    obj->unkD8.m[0][0] = 0x1000;
+    obj->unkD8.m[0][1] = 0;
+    obj->unkD8.m[0][2] = 0;
+    obj->unkD8.m[1][0] = 0;
+    obj->unkD8.m[1][1] = 0x1000;
+    obj->unkD8.m[1][2] = 0;
+    obj->unkD8.m[2][0] = 0;
+    obj->unkD8.m[2][1] = 0;
+    obj->unkD8.m[2][2] = 0x1000;
+    RotMatrixY(obj->unkF8.vy, mat);
+    RotMatrixX(obj->unkF8.vx, mat);
 
     /* Sony PsyQ DMPSX macro gte_SetRotMatrix(r1) - inline_o.h:272-284,
      * expanded to equivalent instructions (all 11 instructions, including the $13/$14 re-use
@@ -3416,14 +3399,14 @@ s32 func_8002DAD0(u8 *obj) {
         "lwc2   $1, 8($12)\n"
         "nop\n"
         "nop\n"
-        :: "r"(obj + 0xA8) : "$12", "$13", "$14");
+        :: "r"(&obj->unkA8) : "$12", "$13", "$14");
     __asm__ volatile(".word 0x4A486012");
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
         "swc2   $26, 4($12)\n"
         "swc2   $27, 8($12)\n"
-        :: "r"(obj + 0xA8) : "$12", "memory");
+        :: "r"(&obj->unkA8) : "$12", "memory");
 
     /* Same gte_ldlv0 (inline_o.h:95-103) + gte_rtv0()-class MVMVA
      * (inline_o.h:426-430, `.word 0x4A486012`) + gte_stlvnl
@@ -3438,14 +3421,14 @@ s32 func_8002DAD0(u8 *obj) {
         "lwc2   $1, 8($12)\n"
         "nop\n"
         "nop\n"
-        :: "r"(obj + 0xB8) : "$12", "$13", "$14");
+        :: "r"(&obj->unkB8) : "$12", "$13", "$14");
     __asm__ volatile(".word 0x4A486012");
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
         "swc2   $26, 4($12)\n"
         "swc2   $27, 8($12)\n"
-        :: "r"(obj + 0xB8) : "$12", "memory");
+        :: "r"(&obj->unkB8) : "$12", "memory");
 
     return 1;
 }
@@ -5245,7 +5228,11 @@ void func_80031B24(void) {
 
         diff = (ch->unk_1C8.vy - ratan2(obj->vel.x, obj->vel.z)) & 0xFFF;
         if (diff >= 0x800) diff = 0x1000 - diff;
-        func_800274BC((s32 *)&obj->vel, &D_800A37E8);
+        func_800274BC((s32 *)&obj->vel,
+                      /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached by the first's address and
+                       * handed to func_800274BC as its s16 vector (owner rulings Q96 / Q117; the s16[3] and {x,y,z}
+                       * forms score 2 in func_80027AD8). */
+                      &D_800A37E8);
         obj->pos.x -= obj->vel.x / 2;
         obj->pos.y -= obj->vel.y / 2;
         obj->pos.z -= obj->vel.z / 2;
@@ -5263,7 +5250,11 @@ void func_80031B24(void) {
         }
         kind = obj->kind;
         if (kind == 0xF) {
-            func_80032854(other ^ 1, 0xE, &SPAD->unkA8[other][j].x, &D_800A37E8);
+            func_80032854(other ^ 1, 0xE, &SPAD->unkA8[other][j].x,
+                          /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached by the first's address and
+                           * handed to func_80032854 as its s16 vector (owner rulings Q96 / Q117; the s16[3] and {x,y,z}
+                           * forms score 2 in func_80027AD8). */
+                          &D_800A37E8);
             obj->kind = -1;
             continue;
         }
