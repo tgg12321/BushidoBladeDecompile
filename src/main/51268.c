@@ -70,7 +70,7 @@ static Unk1F8000B8Union *D_800A34EC;
 static s16 D_800A34F0[2];
 static s32 D_800A34F4;  /* not named by any code or data: size from the gap */
 static s32 D_800A34F8;
-static s32 D_800A34FC;
+static Unk800A34FCRec *D_800A34FC;
 static s32 D_800A3500;
 static s32 D_800A3504[2];  /* not named by any code or data: size from the gap */
 static s16 D_800A350C[2];
@@ -3518,7 +3518,7 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
     RECT buf;
     s32 temp_s0;
     s32 v0_efc;
-    s32 *v0_e49c;
+    Unk800A34FCRec *v0_e49c;
 
     D_800A3500 = arg0;
     D_800A351C = (Unk8006E49CRec *)arg0;
@@ -3529,11 +3529,11 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
     D_800A372C = D_800A3500;
     v0_efc = func_8006919C(D_800A3500);
     D_800A3500 = v0_efc;
-    v0_e49c = func_8006E49C(v0_efc, D_800A351C);
-    v0_e49c[9] = temp_s0;
+    v0_e49c = (Unk800A34FCRec *)func_8006E49C(v0_efc, D_800A351C);
+    v0_e49c->unk_24 = (Unk8006919CRec *)temp_s0;
     D_800A3500 = (s32)v0_e49c;
-    D_800A34FC = (s32)v0_e49c;
-    D_800A3500 = (s32)v0_e49c + 0x34;
+    D_800A34FC = v0_e49c;
+    D_800A3500 = (s32)(v0_e49c + 1);
     {
         s32 init_mask = -0x10;
         s32 outer_cache;
@@ -3566,22 +3566,41 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
             } while (!flags);
         }
         {
-            s32 p_34fc;
+            /* FAKE: one s16 * holder per stored work-block field, set before the
+               D_800A3524 store. The stores through them are plain `*p` (not
+               in-struct), so the D_800A3528 zero store and the D_800A34F8 update
+               keep their place; as member stores through an Unk800A34FCRec *
+               holder they sink below the block stores and the D_800A32C0 copy
+               loads (score 28); straight through D_800A34FC, 39. Partial sets:
+               pair holders for unk_28 / unk_0C with unk_10 / unk_12 direct, 8,
+               with field holders for those two, 4; only unk_0C as a pair, 2;
+               unk_10 / unk_12 stored direct, 4. */
+            s16 *p_2A;
+            s16 *p_28;
+            s16 *p_0E;
+            s16 *p_0C;
+            s16 *p_10;
+            s16 *p_12;
             s32 value;
 
             value = 5;
             do { /* FAKE: block fence keeps li v0,5 at the join-block head so
                     reorg steals it into all three incoming jump delay slots */
             } while (0);
-            p_34fc = D_800A34FC;
+            p_2A = &D_800A34FC->unk_28.half[1];
+            p_28 = &D_800A34FC->unk_28.half[0];
+            p_0E = &D_800A34FC->unk_0C[1];
+            p_0C = &D_800A34FC->unk_0C[0];
+            p_10 = &D_800A34FC->unk_10;
+            p_12 = &D_800A34FC->unk_12;
             D_800A3524 = (s32)arg1;
             do { /* FAKE: sched fence keeps the D_800A3524 store adjacent to the
                     D_800A34FC load instead of sinking below the zero-stores */
             } while (0);
             D_800A3518 = 0;
             D_800A3528 = 0;
-            *(s16 *)(p_34fc + 0x2A) = value;
-            *(s16 *)(p_34fc + 0x28) = value;
+            *p_2A = value;
+            *p_28 = value;
             flags = D_800A34F8 & ~0x1C00;
             D_800A3510[1] = 0;
             D_800A3510[0] = 0;
@@ -3589,29 +3608,29 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
             D_800A350C[0] = 0;
             flags |= 0x1000;
             D_800A34F8 = flags;
-            *(s16 *)(p_34fc + 0x12) = 0;
-            *(s16 *)(p_34fc + 0x10) = 0;
-            *(s16 *)(p_34fc + 0xE) = 0;
-            *(s16 *)(p_34fc + 0xC) = 0;
+            *p_12 = 0;
+            *p_10 = 0;
+            *p_0E = 0;
+            *p_0C = 0;
             __builtin_memcpy(&buf, D_800A32C0, 8);
             DrawSync(0);
             MoveImage(&buf, 0x3C0, 0x1FE);
             DrawSync(0);
         }
     }
-    *(s8 *)((u8 *)D_800A34FC + 0x30) = (s8)(((s32 *)D_800A3524)[8] & 1);
+    D_800A34FC->unk_30 = ((s32 *)D_800A3524)[8] & 1;
     return 1;
 }
 
 Unk8006E49CRec *func_80069120(s32 a0) {
     s32 *v0 = (s32 *)D_800A3524;
-    u8 *v1 = (u8 *)D_800A34FC;
-    if (v1[0x30] != (v0[8] & 1)) {
+    Unk800A34FCRec *v1 = D_800A34FC;
+    if (v1->unk_30 != (v0[8] & 1)) {
         func_8006E8CC(D_800A372C);
     }
     v0 = (s32 *)D_800A3524;
-    v1 = (u8 *)D_800A34FC;
-    v1[0x30] = (u8)(v0[8] & 1);
+    v1 = D_800A34FC;
+    v1->unk_30 = v0[8] & 1;
     return &D_800A351C[a0];
 }
 
@@ -3743,7 +3762,7 @@ s32 func_800693CC(s32 held, s32 pressed) {
     func_8006E390(context, &D_800A3518);
     context[12] = (pressed & 0xFFFF) | ((u32)pressed >> 16);
     result = func_800692C0((u32 *)&context[12], 0,
-                           (s16 *)(D_800A34FC + 0xC), D_800A350C);
+                           D_800A34FC->unk_0C, D_800A350C);
     if ((result >> 16) == 1) goto increment;
     if ((result >> 16) == 2) goto decrement;
     goto after_move;
@@ -4176,7 +4195,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
         x0 = s.sp30;
         if (((s32 *)D_800A3524)[8] & 8) {
             if (arg1 & 1) {
-                s.sp30 = x0 + *(s16 *)(D_800A34FC + 0xC);
+                s.sp30 = x0 + D_800A34FC->unk_0C[0];
                 c = ((rsin((D_800A3514 & 0x1F) << 7) * 47) >> 12) - 0x80;
                 s.sp43 = (s8)c;
                 s.sp42 = (s8)c;
@@ -4271,7 +4290,7 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
         x0 = s.sp30;
         if (!(((s32 *)D_800A3524)[8] & 8)) {
             if (arg1 & 2) {
-                s.sp30 = x0 + *(s16 *)(D_800A34FC + 0xC);
+                s.sp30 = x0 + D_800A34FC->unk_0C[0];
                 c = ((rsin((D_800A3514 & 0x1F) << 7) * 47) >> 12) - 0x80;
                 s.sp43 = (s8)c;
                 s.sp42 = (s8)c;
@@ -4557,7 +4576,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
             s.col_r = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 63) >> 12) - 0x61;
             s.col_g = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 45) >> 12) - 0x7D;
             s.col_b = 0x30;
-            s.y = *(s16 *)(D_800A34FC + 0xE) + y;
+            s.y = D_800A34FC->unk_0C[1] + y;
             D_800A3514++;
         } else if ((row_mask >> i) & 1) {
             s.col_r = 0x80;
@@ -4623,7 +4642,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
         s.col_r = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 63) >> 12) - 0x61;
         s.col_g = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 45) >> 12) - 0x7D;
         s.col_b = 0x30;
-        s.y = *(s16 *)(D_800A34FC + 0xE) + 0xCF;
+        s.y = D_800A34FC->unk_0C[1] + 0xCF;
         D_800A3514++;
     } else if ((row_mask >> 7) & 1) {
         s.col_r = 0x80;
@@ -4752,7 +4771,7 @@ void func_8006B120(s32 *arg0) {
         s.p0 = tbl[i + 1];
         if ((((u32)D_800A34F8 >> 10) & 7) == i) {
             s.flag28 = 1;
-            s.y1C = *(s16 *)(D_800A34FC + 0xE);
+            s.y1C = D_800A34FC->unk_0C[1];
             s.flag10 = 0;
             s.c29 = s.c2A = s.c2B = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 47) >> 12) - 0x80;
         } else {
@@ -4779,7 +4798,7 @@ void func_8006B120(s32 *arg0) {
                 s32 c;
 
                 s.flag28 = 1;
-                s.x18 = *(s16 *)(D_800A34FC + 0xC);
+                s.x18 = D_800A34FC->unk_0C[0];
                 c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 32) >> 12) - 0x80;
                 s.c2B = c;
                 s.c2A = c;
@@ -4806,7 +4825,7 @@ void func_8006B120(s32 *arg0) {
                 s32 c;
 
                 s.flag28 = 1;
-                s.x18 = *(s16 *)(D_800A34FC + 0xC);
+                s.x18 = D_800A34FC->unk_0C[0];
                 c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 32) >> 12) - 0x80;
                 s.c2B = c;
                 s.c2A = c;
@@ -4833,7 +4852,7 @@ void func_8006B120(s32 *arg0) {
                 s32 c;
 
                 s.flag28 = 1;
-                s.x18 = *(s16 *)(D_800A34FC + 0xC);
+                s.x18 = D_800A34FC->unk_0C[0];
                 c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 32) >> 12) - 0x80;
                 s.c2B = c;
                 s.c2A = c;
@@ -4872,7 +4891,7 @@ s32 func_8006B578(s32 *arg0, s32 *arg1) {
 
     v = *(u32 *)arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
-    ret = func_800692C0((u32 *)&sp10, 0, (s16 *)(D_800A34FC + 0xC), D_800A350C);
+    ret = func_800692C0((u32 *)&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     hi = ret >> 16;
     switch (hi) {
     case 1: {
@@ -5010,7 +5029,7 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
     u32 a0;
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
-    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, D_800A350C);
+    ret = func_800692C0(&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     ret >>= 16;
     switch (ret) {
     case 1:
@@ -5101,7 +5120,7 @@ void func_8006BB68(s32 *arg0) {
         s.p0 = (s32 *)p0;
         s.p1 = (s32 *)p1;
         if ((((u32)D_800A34F8 >> 13) & 7) == i) {
-            s.zero1C = *(s16 *)(D_800A34FC + 0xE);
+            s.zero1C = D_800A34FC->unk_0C[1];
             s.zero10 = 0;
         } else {
             s.zero1C = 0;
@@ -5129,8 +5148,8 @@ void func_8006BB68(s32 *arg0) {
 extern DR_MODE *D_800A36E0;
 extern u8 *D_800A36E4;
 void func_8006BD28(s32 arg0, s32 arg1, S_6A880 *arg2, s32 arg3) {
-    /* sprite-sheet header pointers, two per arg0: the table that word +0x20 of
-       the block at *(D_800A34FC + 0x24) points to */
+    /* sprite-sheet header pointers, two per arg0: the unk_20 list of the
+       MOD.BIN root (D_800A34FC->unk_24) */
     s32 *sheets;
     /* FAKE: named intermediate (no-new-park-categories entry 6): the sheet's
        8-byte cells start at header + 0xC. Spelled inline, fold
@@ -5141,7 +5160,7 @@ void func_8006BD28(s32 arg0, s32 arg1, S_6A880 *arg2, s32 arg3) {
     s32 cells;
     s32 i, j, n;
 
-    sheets = *(s32 **)(*(s32 *)(D_800A34FC + 0x24) + 0x20);
+    sheets = D_800A34FC->unk_24->unk_20;
 
     arg2->col_b = 0x30;
     arg2->col_g = 0x30;
@@ -5206,7 +5225,7 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
     D_800A36DC = D_800F1498 + par * 4;
     func_8006BD28(arg0, 0, &sp10, 0);
     h = 0;
-    pos = *(Vec2s16 **)(*(s32 *)(D_800A34FC + 0x24) + 0x48);
+    pos = D_800A34FC->unk_24->unk_48;
     pos += arg0;
     if (arg1 != -1) {
         w = arg1 ? 0x1F : 0x28;
@@ -5366,9 +5385,9 @@ void func_8006C21C(s32 *arg0) {
     s.y = ypos;
     for (pl = 0; pl < 2; pl++) {
         s.x = pl * 280;
-        if (*(s16 *)(D_800A34FC + pl * 2 + 0x28) < 3) {
+        if (D_800A34FC->unk_28.half[pl] < 3) {
             for (work = 0; work < 4; work++) {
-                if (*(u8 *)(D_800A3524 + *(s16 *)(D_800A34FC + pl * 2 + 0x28) + 0x17) &
+                if (*(u8 *)(D_800A3524 + D_800A34FC->unk_28.half[pl] + 0x17) &
                     ((1 << work) << (pl * 4))) {
                     s.header = (u8 *)table[work + 13];
                     s.semi = 0;
@@ -5416,7 +5435,7 @@ void func_8006C21C(s32 *arg0) {
     AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
-    recs = *(Rec_8006C21C **)(*(s32 *)(D_800A34FC + 0x24) + 0x44);
+    recs = D_800A34FC->unk_24->unk_44;
     tile = (TILE *)arg0[6];
     for (work = 0; work < 11; work++) {
         tile_rec = &recs[work];
@@ -5440,7 +5459,7 @@ void func_8006C21C(s32 *arg0) {
     poly = (POLY_G4 *)arg0[4];
     x = 0;
     for (j = 0; j < 2; j++) {
-        work = *(s16 *)(D_800A34FC + j * 2 + 0x28);
+        work = D_800A34FC->unk_28.half[j];
         rec = &recs[work + 1];
         for (row = 0; row < 2; row++) {
             SetPolyG4(poly);
@@ -5556,7 +5575,7 @@ void func_8006CBD4(s32 arg0, s32 arg1) {
     mask = (1 << code) << (arg0 * 4);
 
     for (i = 0; i < 3; i++) {
-        if (i == *(s16 *)((u8 *)D_800A34FC + (arg0 * 2) + 0x28)) {
+        if (i == D_800A34FC->unk_28.half[arg0]) {
             *((u8 *)D_800A3524 + i + 0x17) |= mask;
         } else {
             *((u8 *)D_800A3524 + i + 0x17) &= ~mask;
@@ -5576,7 +5595,7 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
     s16 field;
 
     ret = 0;
-    if ((*(s32 *)((u8 *)D_800A34FC + 0x28) == 0x50005) && (*arg1 & 0x400040)) {
+    if ((D_800A34FC->unk_28.word == 0x50005) && (*arg1 & 0x400040)) {
         func_8005C650(1, 0x7F, 0x7F);
         ret = 1;
     }
@@ -5590,21 +5609,21 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
 
         if (*arg1 & (0x1000 << shift)) {
             func_8005C650(0, 0x7F, 0x7F);
-            if (((s16 *)((u8 *)D_800A34FC + 0x28))[i] <= 0) {
-                ((s16 *)((u8 *)D_800A34FC + 0x28))[i] = lim;
+            if (D_800A34FC->unk_28.half[i] <= 0) {
+                D_800A34FC->unk_28.half[i] = lim;
             } else {
-                ((s16 *)((u8 *)D_800A34FC + 0x28))[i] = (s16)(((s16 *)((u8 *)D_800A34FC + 0x28))[i] - 1);
+                D_800A34FC->unk_28.half[i] = D_800A34FC->unk_28.half[i] - 1;
             }
         } else if (*arg1 & (0x4000 << shift)) {
             func_8005C650(0, 0x7F, 0x7F);
-            if (((s16 *)((u8 *)D_800A34FC + 0x28))[i] >= lim) {
-                ((s16 *)((u8 *)D_800A34FC + 0x28))[i] = 0;
+            if (D_800A34FC->unk_28.half[i] >= lim) {
+                D_800A34FC->unk_28.half[i] = 0;
             } else {
-                ((s16 *)((u8 *)D_800A34FC + 0x28))[i] = (s16)(((s16 *)((u8 *)D_800A34FC + 0x28))[i] + 1);
+                D_800A34FC->unk_28.half[i] = D_800A34FC->unk_28.half[i] + 1;
             }
         }
 
-        field = ((s16 *)((u8 *)D_800A34FC + 0x28))[i];
+        field = D_800A34FC->unk_28.half[i];
         switch (field) {
         case 0:
         case 1:
@@ -5722,7 +5741,7 @@ s32 func_8006CFBC(s32 *arg0) {
 
     row = 0;
     do {
-        if (*(s32 *)(D_800A34FC + 0x28) == 0x50005) {
+        if (D_800A34FC->unk_28.word == 0x50005) {
             s.header = (s32 *)table[17];
         } else if ((result >> row) & 1) {
             s.header = (s32 *)table[19];
@@ -5754,9 +5773,8 @@ s32 func_8006CFBC(s32 *arg0) {
     return (s16)result;
 }
 void func_8006D324(void) {
-    s16 *v1 = (s16 *)D_800A34FC;
-    v1[0x15] = 5;
-    v1[0x14] = 5;
+    D_800A34FC->unk_28.half[1] = 5;
+    D_800A34FC->unk_28.half[0] = 5;
 }
 extern void func_8006C21C(s32 *);
 extern s32 func_8006CFBC(s32 *);
@@ -5814,7 +5832,7 @@ void func_8006D3DC(s32 *arg0) {
             s.has_color = 0;
             s.semi = 0;
         } else if (i == D_800A3528 + 1) {
-            s.y = *(s16 *)(D_800A34FC + 0xE);
+            s.y = D_800A34FC->unk_0C[1];
             c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
             s.col_r = s.col_g = s.col_b = c;
             s.semi = 0;
@@ -5854,7 +5872,7 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
     s32 sval;
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
-    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, D_800A350C);
+    ret = func_800692C0(&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     if ((ret >> 16) == 1) {
         D_800A3528 = D_800A3528 + 1;
         func_8005C650(0, 0x7F, 0x7F);
@@ -6086,7 +6104,7 @@ void func_8006DD94(s32 *arg0) {
     for (i = 0; i < 3; i++) {
         s.has_color = 1;
         if (i == D_800A352C + 1) {
-            s.y = *(s16 *)(D_800A34FC + 0xE);
+            s.y = D_800A34FC->unk_0C[1];
             c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
             s.col_r = s.col_g = s.col_b = c;
         } else {
@@ -6122,7 +6140,7 @@ s32 func_8006DF68(s32 arg0, u32 arg1) {
     s32 result = 0;
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
-    ret = func_800692C0(&sp10, 0, D_800A34FC + 0xC, D_800A350C);
+    ret = func_800692C0(&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     if (((ret >> 16) & 0xFF) != 0) {
         D_800A352C += 1;
         func_8005C650(0, 0x7F, 0x7F);
@@ -6222,7 +6240,7 @@ void func_8006E390(s32 *a0, s32 *a1) {
     Unk8006E49CRec *v0;
     a1[0]++;
     v0 = func_80069120(a1[0] & 1);
-    s0[1] = ((s32 *)D_800A34FC)[9];
+    s0[1] = (s32)D_800A34FC->unk_24;
     s0[3] = (s32)v0->unk_04;
     s0[2] = v0->unk_00;
     s0[4] = (s32)v0->unk_08;

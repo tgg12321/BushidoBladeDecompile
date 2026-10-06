@@ -1744,6 +1744,31 @@ typedef struct {
     Vec2s16 *unk_48;
 } Unk8006919CRec;
 
+/* 51268's work block: the 0x34 bytes func_80068F70 keeps at the start of func_8006E49C's
+ * returned space (D_800A34FC; its arena cursor D_800A3500 moves past the block). func_80068F70
+ * zeroes unk_0C / unk_10 / unk_12, sets both unk_28 halves to 5 and unk_30 to bit 0 of D_800A3524's
+ * word 8 (func_80069120 compares and refreshes it), and stores the MOD.BIN root in unk_24.
+ * - unk_0C: the s16 pair func_800692C0 steps (its arg2); the draw functions use unk_0C[0] / [1] as
+ *   x / y offsets.
+ * - unk_28: one s16 per player (func_8006C21C, func_8006CBD4, func_8006CCC8); func_8006CCC8 and
+ *   func_8006CFBC also test the pair as one word (== 0x50005: both 5), as SelWork's f1C / f20.
+ * No code touches the other bytes. */
+typedef struct {
+    u8 pad00[0xC];
+    s16 unk_0C[2];
+    s16 unk_10;
+    s16 unk_12;
+    u8 pad14[0x10];
+    Unk8006919CRec *unk_24;
+    union {
+        s16 half[2];
+        s32 word;
+    } unk_28;
+    u8 pad2C[4];
+    u8 unk_30;
+    u8 pad31[3];
+} Unk800A34FCRec;
+
 typedef struct { s32 f0, f1, f2, f3; } Copy16;
 
 typedef struct {
