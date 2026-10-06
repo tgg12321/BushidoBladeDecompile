@@ -18,7 +18,11 @@ BLOCKING (FAIL):
       stated effect matches the ablation objdump; whole clusters ablated; a FAKE whose cluster
       ablates to IDENTICAL is removed, not kept.
   B5. Item 4: no raw-offset or differently-typed view of header-declared bytes on an edited line
-      (if no typed form matches, the line stays exactly as at HEAD and gets a debt row).
+      (if no typed form matches, the line stays exactly as at HEAD and gets a debt row). Before
+      claiming "no typed form matches", try at least: a typed holder with member access; no holder;
+      one typed pointer per stored member, set where the original holder was set (f03b: six s16 *
+      holders matched where a struct holder scored 28 and pair holders 2-8); the member read into a
+      typed local first. A typed form that matches as a labelled FAKE cluster beats a raw debt row.
   B6. Holder-first: no cast where retyping the holder is byte-neutral; no no-op cast (a cast to a
       callee's declared parameter type is a boundary conversion, not a no-op).
  Object model
