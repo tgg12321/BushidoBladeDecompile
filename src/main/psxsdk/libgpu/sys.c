@@ -15,7 +15,7 @@
  *
  * SetDispMask, DrawSync, ClearImage(2), LoadImage, StoreImage, DrawOTag and
  * PutDrawEnv call through the members (measured byte-identical), as do the
- * other users except ClearOTagR (its word view is the P7c debt row). */
+ * other users. */
 typedef struct GpuDevTable {
     /* 0x00 */ const char *rcsid;
     /* 0x04 */ void (*addque)();
@@ -425,18 +425,12 @@ u32 *ClearOTag(u32 *a0, s32 a1) {
 }
 
 u32 *ClearOTagR(u32 *ot, s32 n) {
-    u32 *new_var;
     if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&D_80015F98, ot, n);
-        new_var = ot; /* FAKE: cse.c make_regs_eqv beyond-block gate; flow-deleted pre-RA */
     }
-    {
-        u32 *v0 = (u32 *)g_gpu_dev_table;
-        ((void (*)(u32 *, s32))v0[11])(ot, n);
-    }
-    new_var = ot;
-    *new_var = ((u32)&g_gpu_ot_end) & 0xFFFFFF;
-    return new_var;
+    g_gpu_dev_table->otc(ot, n);
+    *ot = ((u32)&g_gpu_ot_end) & 0xFFFFFF;
+    return ot;
 }
 void DrawPrim(u8 *a0) {
     u32 size = a0[3];

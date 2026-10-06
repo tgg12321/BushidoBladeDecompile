@@ -1136,7 +1136,7 @@ s32 func_80047EC8(void) {
 }
 
 /* ---- merged from text1b.c (owner ruling Q67: one original file) ---- */
-extern s32 func_8005C2A8(s32 *, s16, s32);
+extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
 
 /* --- Functions from text1b segment (0x80047ED0 - 0x80079A30) --- */
 
@@ -1706,9 +1706,8 @@ s32 func_80048AD0(s32 arg0) {
 void func_80048B8C(s32 a0) {
     D_800A33E4 += a0;
 }
-extern s32 ClearOTagR(s32, s32);
-extern s32 g_gpu_ot256_ptr;
-extern u8 g_gpu_ot256_db[];
+extern u32 *g_gpu_ot256_ptr;
+extern u32 g_gpu_ot256_db[][256];
 extern s16 D_80099C14[];
 
 void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
@@ -1718,9 +1717,9 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     s32 scale;
     s32 old;
     s16 *indices;
-    s32 *ot;
+    s32 *list;
     MATRIX **player;
-    u8 *prim;
+    Unk80045878Node *node;
 
     player = game_GetPlayerData(D_800A33E0);
     if (player == 0) {
@@ -1733,10 +1732,11 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     rot.vx = 0x1770;
     rot.vy = 0;
     rot.vz = 0;
+    /* FAKE: constant holder for the 0x1770 radius; the literal scores 20 */
     scale = 0x1770;
     rot.vz = ((s32)Judge[arg0 & 0xFFF] * scale) >> 12;
     rot.vx = ((s32)Judge[(arg0 + 0x400) & 0xFFF] * scale) >> 12;
-    prim = (u8 *)D_800A33E4;
+    node = (Unk80045878Node *)D_800A33E4;
     ApplyMatrix(player[0], &rot, (VECTOR *)D_800FF558.t);
     D_800FF558.t[0] += player[0]->t[0];
     D_800FF558.t[1] += player[1]->t[1];
@@ -1760,11 +1760,11 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
 
     goto test_index;
 copy_index:
-        *(MATRIX *)(prim + 0x18) = *player[index];
-        ot = (s32 *)D_800A3820;
-        D_800A3820 = (s32)(ot + 1);
-        *ot = (s32)prim;
-        prim += 0x68;
+        node->node.xf.mat = *player[index];
+        list = (s32 *)D_800A3820;
+        D_800A3820 = (s32)(list + 1);
+        *list = (s32)node;
+        node++;
 test_index:
     index = *indices;
     indices++;
@@ -1772,26 +1772,26 @@ test_index:
         goto copy_index;
     }
     if (arg1 >= 0) {
-        *(MATRIX *)(prim + 0x18) = *player[18];
-        ot = (s32 *)D_800A3820;
-        *(s16 *)(prim + 2) = arg1 + 0xF;
-        D_800A3820 = (s32)(ot + 1);
-        *ot = (s32)prim;
-        prim += 0x68;
+        node->node.xf.mat = *player[18];
+        list = (s32 *)D_800A3820;
+        node->node.unk2 = arg1 + 0xF;
+        D_800A3820 = (s32)(list + 1);
+        *list = (s32)node;
+        node++;
     }
     if (arg2 != 0) {
-        *(MATRIX *)(prim + 0x18) = *player[19];
-        ot = (s32 *)D_800A3820;
-        *(s16 *)(prim + 2) = 0x15;
-        D_800A3820 = (s32)(ot + 1);
-        *ot = (s32)prim;
+        node->node.xf.mat = *player[19];
+        list = (s32 *)D_800A3820;
+        node->node.unk2 = 0x15;
+        D_800A3820 = (s32)(list + 1);
+        *list = (s32)node;
     }
 
-    g_gpu_ot256_ptr = (s32)(g_gpu_ot256_db + ((D_800A36AC & 1) << 10));
+    g_gpu_ot256_ptr = g_gpu_ot256_db[D_800A36AC & 1];
     ClearOTagR(g_gpu_ot256_ptr, 0x100);
     old = D_800A378C[0];
-    D_800A378C[0] = (g_gpu_ot256_ptr + 0x3FC) & 0xFFFFFF;
-    *(s32 *)g_gpu_ot256_ptr = old;
+    D_800A378C[0] = (u32)(g_gpu_ot256_ptr + 0xFF) & 0xFFFFFF;
+    *g_gpu_ot256_ptr = old;
 }
 
 void func_80048F58(s32 a0, s32 a1) {
@@ -2045,115 +2045,117 @@ void func_80049710(void) {
 }
 
 
-/* Appends one or two 0x68-byte draw objects at D_800A38B4 for animation entry
- * arg0 and links each into the ordering table at D_800A3820.  The first object
- * (type 0) gets its rotation and position either from rot_in/pos (flags == 1:
- * g_anim_func_table[0] turns rot_in into the object's matrix at +0x18) or from
- * part (flags & 1) of vehicle flags >> 1: the part's offset (+0x4C) is scaled
- * by the vehicle's +0x12, the vehicle matrix (+0x44) times the part's matrix
- * (+0x38) becomes the object's matrix, the scaled offset run through the
- * parent's matrix (part +0xC, matrix +0x18, translation +0x2C) gives its
- * position, and the matrix is copied back into the part.  The second object
- * (type 3, parent = the first) follows unless flags is still 1.  Objects and
- * parts are walked by byte offset, as func_80049A2C below does. */
+/* Appends one or two 0x68-byte draw nodes at D_800A38B4 for animation entry arg0 and queues
+ * each on the D_800A3820 draw list. The first node (type 0) gets its rotation and position either
+ * from rot_in / pos (flags == 1: g_anim_func_table[0] turns rot_in into the node's matrix) or from
+ * node 19 + (flags & 1) of player flags >> 1's model object: that node's offset (work.t) is scaled
+ * by the object's unk_12, the root node's matrix times the node's work matrix becomes the new
+ * node's matrix, the scaled offset run through the parent's matrix (plus its translation) gives its
+ * position, and the matrix is copied back into the object's node. The second node (type 3, parent =
+ * the first) follows unless flags is still 1. */
 void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     SVECTOR ofs;
     s32 val58;
-    u8 *vehicle;
-    u8 *obj;
-    u8 *part;
+    Unk80045878Obj *player;
+    Unk80045878Node *obj;
+    Unk80045878Node *part;
     /* FAKE: named intermediate (no-new-park-categories entry 6).  Set before
      * the call, sched1 moves the andi past func_8004153C but ahead of the copy
      * of its result (`andi v1,s3,1; move s1,v0`, as in the target); written
      * inside the part expression or after the call it follows the copy and
-     * takes $v0. */
+     * takes $v0. Ablated (2026-10-06): score 5. */
     s32 side;
     if (D_800EF980[arg0] < 0) {
         func_80052C10();
     }
-    obj = (u8 *)D_800A38B4;
+    obj = (Unk80045878Node *)D_800A38B4;
     /* FAKE: dead store (dead-store-fake-exception).  The 0 is never read: the
-     * flags == 1 path skips the second object.  Flow cannot tell, so the store
+     * flags == 1 path skips the second node.  Flow cannot tell, so the store
      * stays as the target's `move s5,zero`; without it that instruction is
-     * missing. */
+     * missing. Ablated (2026-10-06): score 1. */
     val58 = 0;
-    obj[0] = 0;
-    obj[1] = 0;
-    *(s16 *)(obj + 2) = D_800EF980[arg0] * 2;
-    *(s16 *)(obj + 4) = 6;
-    *(s16 *)(obj + 8) = 0;
-    *(s32 *)(obj + 0xC) = 0;
-    *(s16 *)(obj + 0xA) = 4;
+    obj->node.unk0 = 0;
+    obj->node.unk1 = 0;
+    obj->node.unk2 = D_800EF980[arg0] * 2;
+    obj->node.unk4 = 6;
+    obj->node.unk8 = 0;
+    obj->node.unkC = 0;
+    obj->node.unkA = 4;
     if (flags != 0) {
         if (flags == 1) {
-            *(s16 *)(obj + 0x10) = rot_in[0];
-            *(s16 *)(obj + 0x12) = rot_in[1];
-            *(s16 *)(obj + 0x14) = rot_in[2];
-            g_anim_func_table[0]((SVECTOR *)(obj + 0x10), (MATRIX *)(obj + 0x18));
-            *(s32 *)(obj + 0x2C) = pos[0];
-            *(s32 *)(obj + 0x30) = pos[1];
-            *(s32 *)(obj + 0x34) = pos[2];
+            obj->node.xf.rot.vx = rot_in[0];
+            obj->node.xf.rot.vy = rot_in[1];
+            obj->node.xf.rot.vz = rot_in[2];
+            g_anim_func_table[0](&obj->node.xf.rot, &obj->node.xf.mat);
+            obj->node.xf.mat.t[0] = pos[0];
+            obj->node.xf.mat.t[1] = pos[1];
+            obj->node.xf.mat.t[2] = pos[2];
         } else {
             /* FAKE: flags is rewritten in place - compound-assigned, read (>> 1, & 1),
              * compound-assigned again, read (!= 1) - as SOTN reuses a parameter
              * (Q51).  Copied into a local instead, global.c's allocno order flips:
              * rot_in's pseudo (priority 3333) outranks the table-address pseudo
-             * (3000) for $s0, against 2962 / 3333 in place. */
+             * (3000) for $s0, against 2962 / 3333 in place. Ablated (2026-10-06): score 63. */
             /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
             flags &= 0x7FFF;
             side = flags & 1;
-            vehicle = (u8 *)func_8004153C(flags >> 1);
-            part = vehicle + (side * 0x68 + 0x7E4);
-            *(s32 *)(part + 0x4C) = (*(s32 *)(part + 0x4C) * *(s16 *)(vehicle + 0x12)) >> 12;
-            *(s32 *)(part + 0x50) = (*(s32 *)(part + 0x50) * *(s16 *)(vehicle + 0x12)) >> 12;
-            *(s32 *)(part + 0x54) = (*(s32 *)(part + 0x54) * *(s16 *)(vehicle + 0x12)) >> 12;
-            MulMatrix0((MATRIX *)(vehicle + 0x44), (MATRIX *)(part + 0x38), (MATRIX *)(obj + 0x18));
-            ofs.vx = *(s32 *)(part + 0x4C);
-            ofs.vy = *(s32 *)(part + 0x50);
-            ofs.vz = *(s32 *)(part + 0x54);
-            ApplyMatrix((MATRIX *)(*(u8 **)(part + 0xC) + 0x18), &ofs, (VECTOR *)(obj + 0x2C));
-            *(s32 *)(obj + 0x2C) = *(s32 *)(obj + 0x2C) + *(s32 *)(*(u8 **)(part + 0xC) + 0x2C);
-            *(s32 *)(obj + 0x30) = *(s32 *)(obj + 0x30) + *(s32 *)(*(u8 **)(part + 0xC) + 0x30);
-            *(s32 *)(obj + 0x34) = *(s32 *)(obj + 0x34) + *(s32 *)(*(u8 **)(part + 0xC) + 0x34);
+            player = func_8004153C(flags >> 1);
+            part = &player->unk_2C[19 + side];
+            part->node.work.t[0] = (part->node.work.t[0] * player->unk_12) >> 12;
+            part->node.work.t[1] = (part->node.work.t[1] * player->unk_12) >> 12;
+            part->node.work.t[2] = (part->node.work.t[2] * player->unk_12) >> 12;
+            MulMatrix0(&player->unk_2C[0].node.xf.mat, &part->node.work, &obj->node.xf.mat);
+            ofs.vx = part->node.work.t[0];
+            ofs.vy = part->node.work.t[1];
+            ofs.vz = part->node.work.t[2];
+            ApplyMatrix(&part->node.unkC->xf.mat, &ofs, (VECTOR *)obj->node.xf.mat.t);
+            obj->node.xf.mat.t[0] = obj->node.xf.mat.t[0] + part->node.unkC->xf.mat.t[0];
+            obj->node.xf.mat.t[1] = obj->node.xf.mat.t[1] + part->node.unkC->xf.mat.t[1];
+            obj->node.xf.mat.t[2] = obj->node.xf.mat.t[2] + part->node.unkC->xf.mat.t[2];
             /* SOTN: src/st/lib/e_shop.c:4625 @aa53500 */
             flags |= 0x8000;
-            *(MATRIX *)(part + 0x18) = *(MATRIX *)(obj + 0x18);
-            val58 = *(s16 *)(vehicle + 0x1A84);
+            part->node.xf.mat = obj->node.xf.mat;
+            val58 = player->unk_1A84;
         }
         {
-            u8 *ot = (u8 *)D_800A3820;
-            D_800A3820 = (s32)(ot + 4);
-            *(u8 **)ot = obj;
+            s32 *list = (s32 *)D_800A3820;
+            D_800A3820 = (s32)(list + 1);
+            *list = (s32)obj;
         }
-        obj += 0x68;
+        obj++;
         if (flags != 1) {
             /* FAKE: named intermediate (no-new-park-categories entry 6).  The
-             * table is read before the object's fields are written, as in the
+             * table is read before the node's fields are written, as in the
              * target (lh first); storing D_800EF980[arg0] * 2 + 1 directly at
              * the +2 store reads it last, and moving that store first
-             * reorders the stores. */
+             * reorders the stores. Ablated (2026-10-06): score 22. */
             s32 frame = D_800EF980[arg0];
-            u8 *ot;
-            obj[0] = 3;
-            obj[1] = 0;
-            *(s32 *)(obj + 0x58) = val58;
-            ot = (u8 *)D_800A3820;
-            *(s32 *)(obj + 0xC) = (s32)(obj - 0x68);
-            *(s16 *)(obj + 6) = 1;
-            *(s16 *)(obj + 8) = 0;
-            *(s16 *)(obj + 0xA) = 0;
-            *(s16 *)(obj + 4) = 6;
-            *(s16 *)(obj + 2) = frame * 2 + 1;
-            D_800A3820 = (s32)(ot + 4);
-            *(u8 **)ot = obj;
-            obj += 0x68;
+            s32 *list;
+            obj->node.unk0 = 3;
+            obj->node.unk1 = 0;
+            /* FAKE: unk58 stored through a pointer; the member store lets sched sink it below
+             * the D_800A3820 load (score 2). */
+            {
+                s32 *p58 = &obj->unk58;
+                *p58 = val58;
+            }
+            list = (s32 *)D_800A3820;
+            obj->node.unkC = &obj[-1].node;
+            obj->node.unk6 = 1;
+            obj->node.unk8 = 0;
+            obj->node.unkA = 0;
+            obj->node.unk4 = 6;
+            obj->node.unk2 = frame * 2 + 1;
+            D_800A3820 = (s32)(list + 1);
+            *list = (s32)obj;
+            obj++;
         }
         D_800A38B4 = (u32)obj;
     }
 }
 extern s16 D_80099D3C[];
-/* func_80049A2C: the only non-ordinary construct is the first declaration,
- * `volatile u32 pre_pad[2];`, a labelled FAKE (phantom-frame-slot volatile pad family; row
+/* func_80049A2C: the first declaration,
+ * `volatile u32 pre_pad[2];`, is a labelled FAKE (phantom-frame-slot volatile pad family; row
  * ("pre_pad", 2) in engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS). It
  * gives target's frame signature, .frame $sp,48 # vars= 8, regs= 5/0.
  * Target's +8 vars region is reachable from ordinary C only via a
@@ -2167,20 +2169,20 @@ extern s16 D_80099D3C[];
  * (volatile char pad[8] //! FAKE; volatile u32 pad; volatile u32 pad[4]).
  */
 void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
-    volatile u32 pre_pad[2]; // !FAKE: phantom-frame-slot volatile filler (.claude/rules/no-new-park-categories.md): target reserves 8 locals bytes at sp+0x10..sp+0x17 that no instruction touches; mechanism: GCC 2.7.2 get_frame_size reserves declared locals
+    volatile u32 pre_pad[2]; // !FAKE: phantom-frame-slot volatile filler (.claude/rules/no-new-park-categories.md): target reserves 8 locals bytes at sp+0x10..sp+0x17 that no instruction touches; mechanism: GCC 2.7.2 get_frame_size reserves declared locals. Ablated (2026-10-06): score 12.
     u8 *new_var6;
-    u8 *new_var5;
-    s16 *new_var7;
     u8 temp_v1;
-    u8 *new_var8;
+    s16 *new_var8;
     s16 *p_anim;
     s16 new_var2;
     s16 *src;
-    u8 *obj;
-    u8 *vehicle;
+    Unk80045878Node *obj;
+    Unk80045878Obj *player;
     s16 a1_val;
-    u8 *ot;
+    s32 *list;
 
+    /* FAKE: the table base in its own holder; indexing D_80099CC8 directly emits the row
+       shift ahead of the base load (score 2). */
     new_var6 = D_80099CC8;
     {
         u8 *p = new_var6 + (arg0 * 2);
@@ -2189,55 +2191,64 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     if (temp_v1 == 0xFF) {
         return;
     }
-    new_var8 = (u8 *) D_800EF980;
-    p_anim = (s16 *) (new_var8 + (temp_v1 * 2));
+    /* FAKE: the table base in its own holder; &D_800EF980[temp_v1] emits the shift ahead of
+       the base load and swaps the addu operands (score 4). */
+    new_var8 = D_800EF980;
+    p_anim = new_var8 + temp_v1;
     if ((*p_anim) < 0) {
         func_80052C10();
     }
-    vehicle = (u8 *) func_8004153C(arg1 >> 1);
-    obj = (u8 *)D_800A38B4;
-    obj[0] = 0;
-    obj[1] = 0;
+    player = func_8004153C(arg1 >> 1);
+    obj = (Unk80045878Node *)D_800A38B4;
+    obj->node.unk0 = 0;
+    obj->node.unk1 = 0;
+    /* FAKE: a1_val reads *p_anim ahead of each node's stores; read at the unk2 stores the lh
+       moves down to them (first 29, second 6, both 35). */
     a1_val = (*p_anim) * 2;
-    *((s16 *) (obj + 4)) = 6;
-    *((s16 *) (obj + 8)) = 0;
-    *((s16 *) (obj + 0xA)) = 4;
-    *((s16 *) (obj + 2)) = a1_val;
+    obj->node.unk4 = 6;
+    obj->node.unk8 = 0;
+    obj->node.unkA = 4;
+    obj->node.unk2 = a1_val;
     src = &D_80099D3C[(arg1 & 1) * 6];
-    *((s32 *) (obj + 0x4C)) = ((s32) ((*src) * (*((s16 *) (vehicle + 0x12))))) >> 12;
+    obj->node.work.t[0] = ((*src) * player->unk_12) >> 12;
     src++;
-    *((s32 *) (obj + 0x50)) = ((s32) ((*src) * (*((s16 *) (vehicle + 0x12))))) >> 12;
+    obj->node.work.t[1] = ((*src) * player->unk_12) >> 12;
     src++;
-    *((s32 *) (obj + 0x54)) = ((s32) ((*src) * (*((s16 *) (vehicle + 0x12))))) >> 12;
+    obj->node.work.t[2] = ((*src) * player->unk_12) >> 12;
     src++;
-    *((u16 *) (obj + 0x10)) = (u16) (*src);
+    obj->node.xf.rot.vx = *src;
     src++;
-    *((u16 *) (obj + 0x12)) = (u16) (*src);
+    obj->node.xf.rot.vy = *src;
+    /* FAKE: rot.vz's value read into a local ahead of the parent store; read at its own store
+       it scores 8. */
     new_var2 = src[1];
-    *((s32 *) (obj + 0xC)) = (s32) (vehicle + 0x50C);
-    *((s16 *) (obj + 6)) = 0;
-    *((u16 *) (obj + 0x14)) = (u16) new_var2;
-    func_800417D0((Unk80101DF0Record *)obj);
-    ot = (u8 *)D_800A3820;
-    D_800A3820 = (s32)(ot + 4);
-    *((u8 **) ot) = obj;
-    obj += 0x68;
-    new_var5 = obj + 0xA;
+    obj->node.unkC = &player->unk_2C[12].node;
+    obj->node.unk6 = 0;
+    obj->node.xf.rot.vz = new_var2;
+    func_800417D0(&obj->node);
+    list = (s32 *)D_800A3820;
+    D_800A3820 = (s32)(list + 1);
+    *list = (s32)obj;
+    obj++;
     a1_val = (*p_anim) * 2;
-    obj[0] = 3;
-    *((s32 *) (obj + 0xC)) = (s32) (obj - 0x68);
-    obj[1] = 0;
-    new_var7 = (s16 *) (obj + 6);
-    *((s16 *) (obj + 8)) = 0;
-    *new_var7 = 1;
-    *((s16 *) new_var5) = 0;
-    *((s16 *) (obj + 4)) = 6;
-    *((s16 *) (obj + 2)) = (s16) (a1_val + 1);
-    *((s32 *) (obj + 0x58)) = (s32) (*((s16 *) (vehicle + 0x1A84)));
-    ot = (u8 *)D_800A3820;
-    D_800A3820 = (s32)(ot + 4);
-    *((u8 **) ot) = obj;
-    D_800A38B4 = (u32)(obj + 0x68);
+    obj->node.unk0 = 3;
+    obj->node.unkC = &obj[-1].node;
+    obj->node.unk1 = 0;
+    obj->node.unk8 = 0;
+    obj->node.unk6 = 1;
+    obj->node.unkA = 0;
+    obj->node.unk4 = 6;
+    obj->node.unk2 = a1_val + 1;
+    /* FAKE: unk58 stored through a pointer; the member store lets sched lift the D_800A3820
+       reload above the node's stores (score 17). */
+    {
+        s32 *p58 = &obj->unk58;
+        *p58 = player->unk_1A84;
+    }
+    list = (s32 *)D_800A3820;
+    D_800A3820 = (s32)(list + 1);
+    *list = (s32)obj;
+    D_800A38B4 = (u32)(obj + 1);
 }
 s32 func_80049C24(s32 arg0, s32 arg1) {
     s32 count;
@@ -2256,20 +2267,23 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
     s32 v1;
     s32 hdr;
     s32 a0_arg;
+    s32 *tbl = (s32 *)arg0;
 
-    count = *(s32 *)arg0;
+    count = tbl[0];
     var_s3 = arg1;
-    temp_v0 = *(s32 *)(arg0 + (count * 4) + 4);
-    temp_a2 = *(s32 *)(arg0 + 8);
+    /* FAKE: temp_v0 reads the word here; read at its use, arg0 is copied to s6 and the saved registers shift (score 11). */
+    temp_v0 = tbl[count + 1];
+    temp_a2 = tbl[2];
+    /* FAKE: var_s7 built in two steps; `var_s7 = arg0 + temp_v0` swaps s7 / s8 (score 6). */
     var_s7 = arg0;
     var_s7 += temp_v0;
-    v0 = *(s32 *)(arg0 + 4);
+    v0 = tbl[1];
     var_fp = arg0 + v0;
     var_s5 = temp_a2 - v0;
 
     if (count >= 2) {
         var_s6 = arg0 + temp_a2;
-        var_s4 = *(s32 *)(arg0 + 0xC) - temp_a2;
+        var_s4 = tbl[3] - temp_a2;
     } else {
         var_s6 = 0;
         var_s4 = 0;
@@ -2281,6 +2295,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
 
     if (var_s0 == -1) {
         if (var_s2 == var_s0) {
+            /* FAKE: a no-op copy (both are -1); the target's `move s0,s2`; without it the test inverts (score 4). */
             var_s0 = var_s2;
         } else {
             var_s2 = 0;
@@ -2300,6 +2315,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
         func_80052C10();
     }
 
+    /* FAKE: hdr built in two steps (one expression emits the nor after the slot copy, score 2); v1 holds the header slot so var_s3 steps before the store (stored through var_s3, the step follows the store, score 4). */
     hdr = ~var_s0;
     v1 = var_s3;
     var_s3 += 4;
@@ -2320,7 +2336,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             a0_arg = var_s1 + var_s4;
         }
         func_80045230(a0_arg);
-        var_s1 += func_8005C2A8((s32 *)var_s1, 2, var_s7);
+        var_s1 += func_8005C2A8((Unk8005C2A8Pack *)var_s1, 2, var_s7);
     }
 
     if (var_s2 >= 0) {
@@ -2333,7 +2349,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             a0_arg = var_s1 + var_s4;
         }
         func_80045230(a0_arg);
-        var_s1 += func_8005C2A8((s32 *)var_s1, 5, var_s7);
+        var_s1 += func_8005C2A8((Unk8005C2A8Pack *)var_s1, 5, var_s7);
     }
     return var_s1;
 }
@@ -2464,4 +2480,4 @@ s16 D_800A3248 = -1;
 s16 D_800A324A = -1;
 s32 D_800A324C = -1;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
-s32 g_gpu_ot256_ptr;
+u32 *g_gpu_ot256_ptr;

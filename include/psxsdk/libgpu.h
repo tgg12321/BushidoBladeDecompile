@@ -336,6 +336,7 @@ extern void (*GPU_printf)(); /* PsyQ: int (*GPU_printf)(char *, ...) */
 extern void SetDispMask(s32);
 extern void DrawSync(s32); /* PsyQ: int DrawSync(int) */
 extern void DrawOTag(u32 *);
+extern u32 *ClearOTagR(u32 *, s32);
 extern DRAWENV *PutDrawEnv(DRAWENV *);
 extern DISPENV *PutDispEnv(DISPENV *);
 extern s32 MoveImage(RECT *, s32, s32);
