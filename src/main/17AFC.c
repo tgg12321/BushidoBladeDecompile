@@ -5603,7 +5603,7 @@ void func_800325E0(s32 arg0, s32 *arg1) {
         distance_scale = 0;
     }
 
-    listener_angle = D_800A36B4->h12;
+    listener_angle = D_800A36B4->unk_10.vy;
     projected_pan = (s32)((dx * (s32)Judge[(listener_angle + 0x400) & 0xFFF])
                        + (dz * (s32)Judge[listener_angle & 0xFFF])) >> 12;
     pan_sign = ~(u32)projected_pan;

@@ -1118,11 +1118,11 @@ void func_8003C9A4(void) {
     D_800F6608.unk_00.x = 0;
     D_800F6608.unk_00.y = -0xBB8;
     D_800F6608.unk_00.z = 0;
-    D_800F6608.h10 = 0x20;
-    D_800F6608.h14 = 0;
+    D_800F6608.unk_10.vx = 0x20;
+    D_800F6608.unk_10.vz = 0;
     D_800F6608.w18 = 0x2710;
-    D_800F6608.h12 = (s16)(D_800A36AC << 2);
-    func_80046BF4(&D_800F6608.unk_00.x, &D_800F6608.h10, 0x2710);
+    D_800F6608.unk_10.vy = D_800A36AC << 2;
+    func_80046BF4(&D_800F6608.unk_00, &D_800F6608.unk_10, 0x2710);
     func_80046DA8(1);
 
     if (D_800A3929 == 0) {
@@ -1168,7 +1168,7 @@ void func_8003C9A4(void) {
         }
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;
-        D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4.x);
+        D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4);
         D_800A3834 = 0;
         return;
     }
@@ -1195,11 +1195,11 @@ void func_8003CD10(void) {
     D_800F6608.unk_00.x = 0;
     D_800F6608.unk_00.y = -0xBB8;
     D_800F6608.unk_00.z = 0;
-    D_800F6608.h10 = 0x20;
-    D_800F6608.h14 = 0;
+    D_800F6608.unk_10.vx = 0x20;
+    D_800F6608.unk_10.vz = 0;
     D_800F6608.w18 = 0x2710;
-    D_800F6608.h12 = (s16)(D_800A36AC << 2);
-    func_80046BF4(&D_800F6608.unk_00.x, &D_800F6608.h10, 0x2710);
+    D_800F6608.unk_10.vy = D_800A36AC << 2;
+    func_80046BF4(&D_800F6608.unk_00, &D_800F6608.unk_10, 0x2710);
     func_80046DA8(1);
 
     D_800A38B4 += func_800600C8(D_800A391F, (s32)D_800A38B4, 1);
@@ -1213,7 +1213,6 @@ void func_8003CD10(void) {
 extern s32 D_800A3818;
 void func_8003CE18(void) {
     s32 s0;
-    s32 v0;
     s8 player;
 
     func_8001DA2C();
@@ -1223,12 +1222,10 @@ void func_8003CE18(void) {
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     func_8003E22C();
     func_8003F218(0);
-    v0 = math_FovToScreenDist(0x2D);
-    SetGeomScreen(v0);
+    SetGeomScreen(math_FovToScreenDist(0x2D));
     player = D_800A3748;
     {
-        u16 val = (u16)D_80101EC8[player].unk_0E;
-        if ((u16)(val - 6) < 2) {
+        if ((u16)(D_80101EC8[player].unk_0E - 6) < 2) {
             s0 = 8;
             if (player != 0) {
                 s0 = 9;
@@ -1241,10 +1238,10 @@ void func_8003CE18(void) {
         }
     }
     {
-        s32 *addr = &D_80101EC8[0].unk_F4.x;
+        Vec3i32 *addr = &D_80101EC8[0].unk_F4;
         s32 result;
         if (D_800A3748 == 0) {
-            addr = &D_80101EC8[1].unk_F4.x;
+            addr = &D_80101EC8[1].unk_F4;
         }
         result = func_80022408(addr);
         D_800A3818 = result;

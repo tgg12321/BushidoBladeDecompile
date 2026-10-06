@@ -1701,12 +1701,14 @@ typedef struct CpuLevelEntry {
  * 18/1E/30/32/34/38/3A/3C on the 0x800F6608 object) and func_8001B3C0 (the same
  * treatment of 0x800F5328 at +0x00/04/08/30/32/34/38/3A/3C/40); +0x00..+0x0B is one
  * 12-byte vector: func_8001BC70 / func_8001BCF0 copy it as a struct (three lw, then three
- * sw through one base register); member-by-member copies compile differently.
+ * sw through one base register); member-by-member copies compile differently. +0x10 is the
+ * camera rotation: func_8001A538 builds the matrix from vx / vy / vz and func_80046BF4 takes
+ * it with the +0x00 vector; no field access reads or writes its pad (+0x16).
  * Replaces the per-word splat symbols D_800F532C..D_800F5368 / D_800F660C..D_800F6644. */
 typedef struct Rec44 {
     Vec3i32 unk_00;
     s32 wC;
-    s16 h10; s16 h12; s16 h14; s16 h16;
+    SVECTOR unk_10;
     s32 w18;
     s16 h1C; u8 b1E; u8 b1F;
     s32 w20; s32 w24; s32 w28; s32 w2C;

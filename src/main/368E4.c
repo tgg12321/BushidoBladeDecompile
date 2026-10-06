@@ -465,7 +465,7 @@ void game_Init(void) {
     D_800A3790 = 0x23;
     D_800A33BC = 0;
 }
-void func_80046BF4(s32 *a0, s16 *a1, s32 a2) {
+void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
     s32 result[3];
     u16 count1;
     s32 trans[3];
@@ -482,26 +482,26 @@ void func_80046BF4(s32 *a0, s16 *a1, s32 a2) {
     }
 
     if (a0 != 0) {
-        D_80101DF0.xf.rot.vx = -a1[0];
-        D_80101DF0.xf.rot.vy = -a1[1];
-        D_80101DF0.xf.rot.vz = -a1[2];
+        D_80101DF0.xf.rot.vx = -a1->vx;
+        D_80101DF0.xf.rot.vy = -a1->vy;
+        D_80101DF0.xf.rot.vz = -a1->vz;
 
         trans[0] = 0;
         trans[1] = 0;
         trans[2] = -a2;
 
-        rot.vx = -a1[0];
-        rot.vy = -a1[1];
-        rot.vz = -a1[2];
+        rot.vx = -a1->vx;
+        rot.vy = -a1->vy;
+        rot.vz = -a1->vz;
 
         g_anim_func_table[0](&rot, &matrix_buf);
 
         ApplyMatrixLV(&matrix_buf, trans, result);
 
         {
-            D_80101DF0.work.t[0] = result[0] + a0[0];
-            D_80101DF0.work.t[1] = result[1] + a0[1];
-            D_80101DF0.work.t[2] = result[2] + a0[2];
+            D_80101DF0.work.t[0] = result[0] + a0->x;
+            D_80101DF0.work.t[1] = result[1] + a0->y;
+            D_80101DF0.work.t[2] = result[2] + a0->z;
         }
 
         func_800418D0(&D_80101DF0);

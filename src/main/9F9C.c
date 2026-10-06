@@ -410,9 +410,9 @@ void func_8001A538(Rec44 *arg0, s32 *arg1) {
     m.m[2][0] = 0;
     m.m[2][1] = 0;
     m.m[2][2] = 0x1000;
-    RotMatrixX(-arg0->h10, &m);
-    RotMatrixY(-arg0->h12, &m);
-    RotMatrixZ(-arg0->h14, &m);
+    RotMatrixX(-arg0->unk_10.vx, &m);
+    RotMatrixY(-arg0->unk_10.vy, &m);
+    RotMatrixZ(-arg0->unk_10.vz, &m);
     arg1[0] = arg0->unk_00.x - ((s32)(m.m[0][2] * arg0->w18) >> 12);
     arg1[1] = arg0->unk_00.y - ((s32)(m.m[1][2] * arg0->w18) >> 12);
     arg1[2] = arg0->unk_00.z - ((s32)(m.m[2][2] * arg0->w18) >> 12);
@@ -474,7 +474,7 @@ extern u8 D_800A30F0[];
 extern s32 D_800A30F4[];
 typedef VECTOR CamVec;
 /* Scratchpad work area (0x1F800000) used by func_8001A820: the target yaw/roll
- * that D_800F6608's h12/h14 ease toward, the camera focus, the eye position
+ * that D_800F6608's unk_10.vy / vz ease toward, the camera focus, the eye position
  * func_8001A538 computes, a fighter's head position, and the hit position,
  * surface normal and work area func_80053614 is given (its 3rd/4th/5th
  * arguments; its other callers pass a VECTOR hit and an s16[4] normal). */
@@ -496,11 +496,11 @@ typedef struct {
  * when D_800A3690 is set); turns the fighters' separation into a zoom target
  * (distance through the D_8008D118 byte-LUT square root with the GTE
  * leading-zero count for large inputs, weapon-state adjustments, eased 1/12
- * and clamped) and a hysteresis flag passed to func_8003F1E4; eases h12/h14
- * toward the facing yaw and zero roll; then, per fighter, bisects h10 (rot_x)
+ * and clamped) and a hysteresis flag passed to func_8003F1E4; eases unk_10.vy / vz
+ * toward the facing yaw and zero roll; then, per fighter, bisects unk_10.vx (rot_x)
  * so the fighter's head stays visible past the camera-collision normal test of
  * func_80053614, keeping a per-fighter step in D_800A30F4[] and a blocked flag
- * in D_800A30F0[]; finally eases h10 toward the larger of the two results,
+ * in D_800A30F0[]; finally eases unk_10.vx toward the larger of the two results,
  * clamped to 0x80..0x1C0.
  *
  * GTE island: PsyQ gte_Lzc(r1,r2), gtemac.h 4.3 :174-178, written out as the
@@ -522,7 +522,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
     s32 pitch0, pitch1;
     s32 base_pitch;
     s32 p;
-    /* work holds three values, all h10 (rot_x) quantities: the per-fighter
+    /* work holds three values, all unk_10.vx (rot_x) quantities: the per-fighter
      * bisection angle (loop), the target angle max(pitch0, pitch1) clamped to
      * 0x80..0x1C0, and the final eased step. Ruling 11
      * (ordinary-c-judge-decidable.md). */
@@ -579,8 +579,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
         }
         {
             s32 sh = 0x16 - (lzcr & ~1);
-            s32 tbl = g_sqrt_table_u8[dist_sq >> sh];
-            dist = (u32)(tbl << 16) >> (0x13 - ((u32)sh >> 1));
+            dist = (u32)(g_sqrt_table_u8[dist_sq >> sh] << 16) >> (0x13 - ((u32)sh >> 1));
         }
     }
     dist <<= shift;
@@ -616,20 +615,20 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
     func_8003F1E4(cam->b1E);
 
     if (arg2->unk_6A == 0x11) {
-        scr->yaw = cam->h12;
+        scr->yaw = cam->unk_10.vy;
     } else {
         scr->yaw = (0x400 - ratan2(dx, dz)) & 0xFFF;
     }
     scr->roll = 0;
-    cam->h12 += math_SignExt12Div(scr->yaw - cam->h12, 8);
-    cam->h14 += math_SignExt12Div(scr->roll - cam->h14, 8);
-    base_pitch = cam->h10;
+    cam->unk_10.vy += math_SignExt12Div(scr->yaw - cam->unk_10.vy, 8);
+    cam->unk_10.vz += math_SignExt12Div(scr->roll - cam->unk_10.vz, 8);
+    base_pitch = cam->unk_10.vx;
 
     for (p = 0; p < 2; p++) {
         s32 hi, lo;
 
         work = base_pitch;
-        cam->h10 = work;
+        cam->unk_10.vx = work;
         func_8001A538(cam, &scr->eye.vx);
         if (p != 0) {
             scr->head = arg3->unk_B8;
@@ -657,7 +656,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
              * the pair adds references to `hi` (allocno_n_refs 13 -> 21, pri
              * 11142 -> 23333 against work's 13253), so the bounds are allocated
              * before `work` and take $s0 and `work` $s1, as in the target;
-             * combine folds the pair to nothing. */
+             * combine folds the pair to nothing. Ablated (2026-10-06): score 29. */
             hi++;
             hi--;
             for (i = 0; i < 2; i++) {
@@ -665,14 +664,14 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                cam->h10 = hi + d / 2;
+                cam->unk_10.vx = hi + d / 2;
                 func_8001A538(cam, &scr->eye.vx);
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, scr->nrm,
                                   (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
-                    work = cam->h10;
+                    work = cam->unk_10.vx;
                 } else {
-                    hi = cam->h10;
+                    hi = cam->unk_10.vx;
                 }
             }
             work = hi;
@@ -695,15 +694,15 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                cam->h10 = lo + d / 2;
+                cam->unk_10.vx = lo + d / 2;
                 func_8001A538(cam, &scr->eye.vx);
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, scr->nrm,
                                   (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
                     func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
-                    lo = cam->h10;
+                    lo = cam->unk_10.vx;
                 } else {
-                    work = cam->h10;
+                    work = cam->unk_10.vx;
                 }
             }
             D_800A30F0[p] = 0;
@@ -721,9 +720,9 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk801
     if (work > 0x1C0) {
         work = 0x1C0;
     }
-    cam->h10 = base_pitch;
+    cam->unk_10.vx = base_pitch;
     work = math_SignExt12Div(work - base_pitch, 8);
-    cam->h10 += work;
+    cam->unk_10.vx += work;
 }
 void func_8001B138(s32 *arg0) {
     D_800FF5C8 = 0;
@@ -761,9 +760,32 @@ void func_8001B138(s32 *arg0) {
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
-void func_8001B294(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30[0][0] = 0x64;    D_800F6608.h30[0][1] = 0;    D_800F6608.h30[0][2] = 0x64;    D_800F6608.h30[1][0] = 0x64;    D_800F6608.h30[1][1] = 0;    D_800F6608.h30[1][2] = 0x64;    func_8003F1E4(0);    D_800F6608.unk_00.x = (a0->unk_F4.x + a1->unk_F4.x) / 2;    D_800F6608.unk_00.y = (a0->unk_F4.y + a1->unk_F4.y) / 2;    {        s32 t1 = a0->unk_F4.z;        s32 t2 = a1->unk_F4.z;        D_800F6608.h10 = 0;        D_800F6608.unk_00.z = (t1 + t2) / 2;    }    {        s32 dx = a1->unk_F4.x - a0->unk_F4.x;        s32 dz = a1->unk_F4.z - a0->unk_F4.z;        v0 = ratan2(dx, dz);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
+void func_8001B294(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
+    D_800A36FA = 0;
+    D_800F6608.h30[0][0] = 0x64;
+    D_800F6608.h30[0][1] = 0;
+    D_800F6608.h30[0][2] = 0x64;
+    D_800F6608.h30[1][0] = 0x64;
+    D_800F6608.h30[1][1] = 0;
+    D_800F6608.h30[1][2] = 0x64;
+    func_8003F1E4(0);
+    D_800F6608.unk_00.x = (a0->unk_F4.x + a1->unk_F4.x) / 2;
+    D_800F6608.unk_00.y = (a0->unk_F4.y + a1->unk_F4.y) / 2;
+    {
+        /* FAKE: t1 / t2 read the two z's ahead of the unk_10.vx store; read in the sum, the store is scheduled ahead of the loads (score 4). */
+        s32 t1 = a0->unk_F4.z;
+        s32 t2 = a1->unk_F4.z;
+        D_800F6608.unk_10.vx = 0;
+        D_800F6608.unk_00.z = (t1 + t2) / 2;
+    }
+    D_800F6608.unk_10.vy = 0x400 - ratan2(a1->unk_F4.x - a0->unk_F4.x, a1->unk_F4.z - a0->unk_F4.z);
+    D_800F6608.unk_10.vz = 0;
+    D_800F6608.w18 = 0x1388;
+    D_800F6608.b1E = 0;
+}
 void func_8001B3C0(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {    D_800A36FA = 0;    D_800F5328.h30[0][0] = 0x64;    D_800F5328.h30[0][1] = 0;    D_800F5328.h30[0][2] = 0x64;    D_800F5328.h30[1][0] = 0x64;    D_800F5328.h30[1][1] = 0;    D_800F5328.h30[1][2] = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.unk_00.x = a0->unk_180.x;    D_800F5328.unk_00.z = a0->unk_180.z;    {        s32 v = a0->unk_180.y;        D_800F5328.b40 = 0;        D_800F5328.unk_00.y = v;    }}
 void func_8001B478(Unk80101EC8Record *obj) {
+    /* FAKE: s2 holds &D_800F5328 in a saved register; through the symbol each access re-forms the address (score 34). */
     Rec44 *s2 = &D_800F5328;
     s32 a2;
     s32 val;
@@ -778,7 +800,7 @@ void func_8001B478(Unk80101EC8Record *obj) {
         val = 0x200;
     } else {
         s2->unk_00.x = obj->unk_180.x;
-        D_800F5328.unk_00.z = obj->unk_180.z;
+        s2->unk_00.z = obj->unk_180.z;
         val = obj->unk_180.y;
 
         if (!far) {
@@ -801,7 +823,7 @@ void func_8001B478(Unk80101EC8Record *obj) {
         if (obj->unk_6A == 0x2A) {
             val = 0x200;
         } else {
-            val = (-obj->unk_1D8 - s2->h12) & 0xFFF;
+            val = (-obj->unk_1D8 - s2->unk_10.vy) & 0xFFF;
 
             if (val >= 0x800) {
                 val = 0x1000 - val;
@@ -810,23 +832,19 @@ void func_8001B478(Unk80101EC8Record *obj) {
                 val = 0x400;
             }
 
-            {
-                s32 base_val = obj->other->unk_F4.y;
-                s32 result = ratan2(base_val - a2, D_800A387C);
-                val = (result * (0x400 - val)) >> 10;
-            }
+            val = (ratan2(obj->other->unk_F4.y - a2, D_800A387C) * (0x400 - val)) >> 10;
         }
     }
 
     {
-        s16 old = s2->h10;
+        s16 old = s2->unk_10.vx;
         s32 diff = val - old;
         if (diff < 0) {
             diff += 7;
         }
-        s2->h10 = old + (diff >> 3);
+        s2->unk_10.vx = old + (diff >> 3);
     }
-    s2->h14 = 0;
+    s2->unk_10.vz = 0;
 
     {
         s16 counter;
@@ -834,14 +852,15 @@ void func_8001B478(Unk80101EC8Record *obj) {
         counter = D_800A36FC;
 
         if (counter != 0) {
-            s16 old12 = s2->h12;
+            s16 old12 = s2->unk_10.vy;
             s32 diff = val - old12;
             if (diff < 0) {
                 diff += 3;
             }
             {
+                /* FAKE: cnt computed ahead of the unk_10.vy store; computed at the D_800A36FC store the addiu moves below it (score 6). */
                 s16 cnt = counter - 1;
-                s2->h12 = old12 + (diff >> 2);
+                s2->unk_10.vy = old12 + (diff >> 2);
                 D_800A36FC = cnt;
             }
 
@@ -853,7 +872,7 @@ void func_8001B478(Unk80101EC8Record *obj) {
                 s2->h1C = decay >> 2;
             }
         } else {
-            s2->h12 = val;
+            s2->unk_10.vy = val;
             s2->h1C = 0;
         }
     }
@@ -895,6 +914,7 @@ void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 va
     s32 dx;
     s32 dy;
     s32 dz;
+    /* FAKE: cur / t are reused for the x, y and z steps, the pitch target and the w18 step; one local per role re-seats the products and moves the loads (score 23). */
     s32 cur;
     s32 use_high;
     s32 v;
@@ -905,20 +925,17 @@ void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 va
         dst->unk_00.x = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
         dst->unk_00.y = (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
         D_800A3310 = 0;
+        /* FAKE: zval's products formed ahead of the unk_10 stores; formed at the unk_00.z store the multiply chains reorder (score 35). */
         zval = (frac * (a->h8)) + (inv_frac * (b->h8));
-        dst->h12 = val;
-        dst->h10 = 0x80;
-        dst->h14 = 0;
+        dst->unk_10.vy = val;
+        dst->unk_10.vx = 0x80;
+        dst->unk_10.vz = 0;
         dst->w18 = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
         dst->unk_00.z = zval >> 12;
         return;
     }
-    {
-        s32 sum = base->unk_198[0].y + base->unk_198[1].y;
-        s32 avg = ((s32) (sum + (((u32) sum) >> 31))) >> 1;
-        if ((avg - base->unk_180.y) < 0xC8) {
-            D_800A3310 += 1;
-        }
+    if ((base->unk_198[0].y + base->unk_198[1].y) / 2 - base->unk_180.y < 0xC8) {
+        D_800A3310 += 1;
     }
     use_high = ((s16) D_800A3310) >= 0xB;
     cur = dst->unk_00.x;
@@ -947,10 +964,11 @@ void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 va
     } else {
         t = 0x80 - ((frac_s1 << 8) >> 12);
     }
-    dst->h10 = dst->h10 + math_SignExt12Div(t - (s16)dst->h10, 0x10);
-    v = math_SignExt12Div(val - (s16)dst->h12, 0x10);
-    dst->h14 = 0;
-    dst->h12 = dst->h12 + v;
+    dst->unk_10.vx = dst->unk_10.vx + math_SignExt12Div(t - dst->unk_10.vx, 0x10);
+    /* FAKE: v computed ahead of the unk_10.vz store; computed in the unk_10.vy store the vz store rises above the call (score 4). */
+    v = math_SignExt12Div(val - dst->unk_10.vy, 0x10);
+    dst->unk_10.vz = 0;
+    dst->unk_10.vy = dst->unk_10.vy + v;
     if (use_high) {
         t = ((frac_s1 * 0x7D0) + (inv_s1 * 0x2EE0)) >> 12;
     } else {
@@ -999,9 +1017,9 @@ void func_8001BBD8(Rec1C *arg0, Rec1C *arg1, s32 arg2) {
 void func_8001BC70(Unk80101EC8Record *arg0, s32 arg1) {
     func_8003F1E4(0);
     D_800F6608.unk_00 = arg0->unk_174;
-    D_800F6608.h10 = 0x120;
-    D_800F6608.h12 = arg1;
-    D_800F6608.h14 = 0;
+    D_800F6608.unk_10.vx = 0x120;
+    D_800F6608.unk_10.vy = arg1;
+    D_800F6608.unk_10.vz = 0;
     D_800F6608.w18 = 0x1162;
 }
 void func_8001BCF0(Unk80101EC8Record *arg0, s32 arg1) {
@@ -1016,7 +1034,7 @@ void func_8001BCF0(Unk80101EC8Record *arg0, s32 arg1) {
 
     D_800F6608.unk_00.y -= 0x44C;
 
-    D_800F6608.h10 = 0x100 - (arg1 * 288) / 4096;
+    D_800F6608.unk_10.vx = 0x100 - (arg1 * 288) / 4096;
 
     {
         /* FAKE: div4 taken first; at its use the multiply chain is rebuilt after the shift (score 17). */
@@ -1025,10 +1043,10 @@ void func_8001BCF0(Unk80101EC8Record *arg0, s32 arg1) {
         u16 lhu_val = arg0->unk_1C8.vy;
         s32 val;
         D_800F6608.w18 = (arg1 * 3000 + diff * 8000) >> 12;
-        /* FAKE: val holds 0xB00 - div4 ahead of the h14 store; at the h12 store the subu moves below it (score 2). */
+        /* FAKE: val holds 0xB00 - div4 ahead of the unk_10.vz store; at the unk_10.vy store the subu moves below it (score 2). */
         val = 0xB00 - div4;
-        D_800F6608.h14 = 0;
-        D_800F6608.h12 = val - lhu_val;
+        D_800F6608.unk_10.vz = 0;
+        D_800F6608.unk_10.vy = val - lhu_val;
     }
 }
 void pad_ClearStateBits(PadState *arg0) {
@@ -1324,7 +1342,7 @@ void func_8001C8DC(void) {
                 /* FAKE: second handle to D_800A37D2 (pointer-alias-fake-exception, owner Q63): the
                  * target sets the pair's base in its own register before the index (v0 base, v1
                  * index); the index written without p computes the index first and loses that
-                 * seat. */
+                 * seat. Ablated (2026-10-06): both sites without p (indexing &D_800A37D2): score 17; each byte by its own symbol: score 27. */
                 p = &D_800A37D2;
                 /* FAKE: indexes past D_800A37D2 into D_800A37D3 (owner Q63, this byte pair only):
                  * the target also reaches each byte by its own symbol, which no single array or
@@ -1333,7 +1351,7 @@ void func_8001C8DC(void) {
             }
         }
         D_800A3670 = 1;
-        D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4.x);
+        D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4);
         D_800A3834 = 0;
         goto end;
     case 4:
@@ -1921,18 +1939,18 @@ common_tail:
         local.unk_00.x = s2->unk_00.x + D_800FF5C8;
         local.unk_00.y = s2->unk_00.y + D_800FF5CC;
         local.unk_00.z = s2->unk_00.z + D_800FF5D0;
-        local.h10 = s2->h10 + (u16)D_800FF5D8;
-        local.h12 = s2->h12 + (u16)D_800FF5DA;
-        local.h14 = s2->h14 + (u16)D_800FF5DC;
+        local.unk_10.vx = s2->unk_10.vx + D_800FF5D8;
+        local.unk_10.vy = s2->unk_10.vy + D_800FF5DA;
+        local.unk_10.vz = s2->unk_10.vz + D_800FF5DC;
         local.w18 = s2->w18 + D_800FF5E0;
     } else {
         local = *s2;
     }
 
-    func_80046BF4(&local.unk_00.x, &local.h10, local.w18);
+    func_80046BF4(&local.unk_00, &local.unk_10, local.w18);
     {
         func_8001A538(&local, &s2->w20);
-        func_80061064(&local.h10, &s2->w20);
+        func_80061064(&local.unk_10.vx, &s2->w20);
     }
     func_8003F3D4(s2->h30[0]);
     func_8003F3D4(s2->h30[1]);
@@ -1952,16 +1970,16 @@ void func_8001E6E4(s32 arg0) {
     local.unk_00.x = s2->unk_00.x + D_800FF5C8;
     local.unk_00.y = s2->unk_00.y + D_800FF5CC;
     local.unk_00.z = s2->unk_00.z + D_800FF5D0;
-    local.h10 = s2->h10 + (u16)D_800FF5D8;
-    local.h12 = s2->h12 + (u16)D_800FF5DA;
-    local.h14 = s2->h14 + (u16)D_800FF5DC;
+    local.unk_10.vx = s2->unk_10.vx + D_800FF5D8;
+    local.unk_10.vy = s2->unk_10.vy + D_800FF5DA;
+    local.unk_10.vz = s2->unk_10.vz + D_800FF5DC;
 
     local.w18 = s2->w18 + D_800FF5E0;
-    func_80046BF4(&local.unk_00.x, &local.h10, local.w18);
+    func_80046BF4(&local.unk_00, &local.unk_10, local.w18);
 
     {
         func_8001A538(&local, &s2->w20);
-        func_80061064(&local.h10, &s2->w20);
+        func_80061064(&local.unk_10.vx, &s2->w20);
     }
 
     D_800A36B4 = s2;
@@ -2087,7 +2105,7 @@ void func_8001EA84(void) {
     if (D_800A3817 == 0) {
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;
-        D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4.x);
+        D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4);
         if (D_80101EC8[1].unk_06 != 0) {
             func_800550E8(1);
         }
@@ -3709,7 +3727,7 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     arg1[1] = base[1];
     arg1[2] = base[2];
 }
-s32 func_80022408(s32 *arg0) {
+s32 func_80022408(Vec3i32 *arg0) {
     s16 *p;
     s32 i;
     s32 best_dist;
@@ -3722,8 +3740,8 @@ s32 func_80022408(s32 *arg0) {
     p = stage_GetDataPtr();
     best_dist = 0x7FFFFFFF;
     i = 0;
-    t1 = arg0[0];
-    t2 = arg0[2];
+    t1 = arg0->x;
+    t2 = arg0->z;
     p = p + ((D_800A36A4 * 3) * 8);
 loop:
     dx = ((p[0] + p[3]) / 2) - t1;
