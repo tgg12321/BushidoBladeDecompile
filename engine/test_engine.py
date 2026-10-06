@@ -2747,6 +2747,111 @@ def test_buildstamp() -> None:
             buildstamp.STAMP, buildstamp.inputs, buildstamp.artifacts = old
 
 
+def test_queue_non_function_labels() -> None:
+    """No-body source errors must not turn object-table labels into work."""
+    from unittest.mock import patch
+
+    labels = {
+        "main/3AB48": ("D_800521AC", "D_800521FC", "D_80052344",
+                        "D_80052394", "D_800545F8", "D_800545FC", "D_80054600"),
+        "main/d_7D870": ("g_data_start", "g_module_func_tbl", "g_sqrt_table_u8"),
+    }
+    texts = {stem: Path(f"src/{stem}.c").read_text(encoding="utf-8")
+             for stem in labels}
+    label_names = {name for names in labels.values() for name in names}
+    texts["unknown"] = "extern void mystery(void);\n"
+    texts["body"] = ('void real_body(void) { __asm__("nop"); }\n'
+                     '__asm__(".aent real_body\\n");\n'
+                     'INCLUDE_ASM("asm/funcs", asm_body);\n')
+    tables = {stem: {name: (0, 4) for name in names}
+              for stem, names in labels.items()}
+    tables.update(unknown={"mystery": (0, 4)},
+                  body={"real_body": (0, 4), "asm_body": (0, 4)})
+    scanned, gated = [], []
+    rules, prologues = {}, {}
+    gate_reason = None
+    missing = False
+
+    def measure(a, b, func):
+        scanned.append(func)
+        if missing:
+            raise KeyError(func)
+        return {"score": 23}
+
+    def gate(func, stem):
+        gated.append(func)
+        return gate_reason
+
+    with tempfile.TemporaryDirectory() as td, contextlib.ExitStack() as stack:
+        cwd = os.getcwd()
+        try:
+            os.chdir(td)
+            for stem, text in texts.items():
+                p = Path(f"src/{stem}.c")
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(text, encoding="utf-8")
+                obj = Path(f"build/src/{stem}.o")
+                obj.parent.mkdir(parents=True, exist_ok=True)
+                obj.touch()
+            stack.enter_context(patch.dict(inlineasm._FILE_TEXT_CACHE, {}, clear=True))
+            for obj, attr, value in (
+                (Q, "QUEUE_PATH", "queue.json"),
+                (P, "c_stems", lambda: list(texts)),
+                (canonical, "scan_all", lambda: []),
+                (cheats, "canonical_asm_funcs", lambda: set()),
+                (Q, "_rule_count", lambda f: rules.get(f, 0)),
+                (cheats, "func_prologue_count", lambda f: prologues.get(f, 0)),
+                (cheats, "is_jtbl_infra", lambda f: False),
+                (cheats, "is_canonical_extraction_only", lambda f: False),
+                (Q, "_route_with_evidence", lambda *a: ("C", None)),
+                (Q.sandbox, "build_stripped_object", lambda *a, **k: {}),
+                (score, "_o_func_table", lambda p: tables[str(Path(p).relative_to("build/src").with_suffix(""))]),
+                (score, "score_func", measure),
+                (score, "normalized_insns", lambda *a: ["nop"]),
+                (Q.layer2, "gate", gate),
+            ):
+                stack.enter_context(patch.object(obj, attr, value))
+
+            for stem, names in labels.items():
+                for name in names:
+                    check(f"queue labels: real source classifies {name}",
+                          Q._not_a_c_function(stem, name))
+                    check(f"queue labels: {name} has the no-body issue being bypassed",
+                          bool(completion.source_issues(stem, name)))
+
+            for missing in (False, True):
+                Path(Q.QUEUE_PATH).write_text('{"items": []}')
+                scanned.clear()
+                q = Q.generate(workdir="scan")
+                eq("queue labels: ten labels excluded even with nonzero/missing score",
+                   {it["func"] for it in q["items"]},
+                   {"mystery", "real_body", "asm_body"})
+                check("queue labels: excluded labels never reach scoring",
+                      label_names.isdisjoint(scanned))
+
+            rules["D_800521AC"] = 1
+            prologues["g_data_start"] = 1
+            Path(Q.QUEUE_PATH).write_text('{"items": []}')
+            q = Q.generate(workdir="scan")
+            check("queue labels: rule/prologue debt still retained",
+                  {"D_800521AC", "g_data_start"} <= {it["func"] for it in q["items"]})
+            rules.clear()
+            prologues.clear()
+
+            seed = {"func": "g_data_start", "file": "main/d_7D870",
+                    "distance": 0, "rules": 0, "verdict": "C", "status": "active"}
+            for gate_reason in ("needs review", None):
+                Path(Q.QUEUE_PATH).write_text(json.dumps({"items": [seed]}))
+                gated.clear()
+                q = Q.generate(workdir="scan")
+                held = [it for it in q["items"] if it["func"] == "g_data_start"]
+                eq("queue labels: previously listed label uses Q39 gate", gated, ["g_data_start"])
+                eq("queue labels: no departure bypass for previously listed label",
+                   bool(held), gate_reason is not None)
+        finally:
+            os.chdir(cwd)
+
+
 def test_canonical_completion_is_the_drop() -> None:
     """THE DROP is the canonical completion — pinned end-to-end, not just at
     mark_done.
@@ -5629,6 +5734,7 @@ def main() -> int:
     test_buildstamp()
     with _synth_addrs():
         test_canonical_completion_is_the_drop()
+        test_queue_non_function_labels()
     with _synth_addrs():
         test_layer2_gate()
     test_departures()

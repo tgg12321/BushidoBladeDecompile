@@ -357,6 +357,16 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
         for func in score._o_func_table(ref_o):
             rules = _rule_count(func)
             prologue = cheats.func_prologue_count(func)
+            cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
+            if (rules == 0 and prologue == 0 and cheat_count < 0
+                    and _not_a_c_function(stem, func)):
+                # Data/alternate-entry labels have no body to score or audit.
+                # Check before source_issues treats that absence as incomplete.
+                # A previously listed label still needs the Q39 departure gate.
+                held = _held(func, stem, -1, rules)
+                if held is not None:
+                    items.append(held)
+                continue
             try:
                 dist = score.score_func(purec_o, ref_o, func)["score"]
                 scorable = True
@@ -377,14 +387,6 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                         held = _held(func, stem, -1, rules)
                         if held is None:
                             continue  # completed
-                        items.append(held)
-                        continue
-                    if cheats_unscored < 0 and _not_a_c_function(stem, func):
-                        # Not decomp work — but a LISTED item leaving is still a
-                        # completion, so it goes through the gate (Q39).
-                        held = _held(func, stem, -1, rules)
-                        if held is None:
-                            continue  # nothing to track
                         items.append(held)
                         continue
                 dist = -1
@@ -433,7 +435,6 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                     if pins and (dist < 0 or min(pins) < dist):
                         dist = min(pins)
                         scorable = True
-            cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
             source_issues = completion.source_issues(stem, func, func in canon_funcs)
             if source_issues:
                 cheat_count = max(1, cheat_count)
@@ -457,16 +458,9 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # UNKNOWN and must never read as clean — that is precisely how an
                 # undecompiled function silently left the queue (ang_hosei,
                 # 2026-08-06). The one safe exception is a symbol that is not a
-                # C-level function at all (`_not_a_c_function`), which is not
-                # decomp work in the first place.
+                # C-level function at all, handled before scoring above.
                 if dist == 0 and cheat_count == 0:
                     held = _held(func, stem, dist, rules)
-                    if held is None:
-                        continue
-                    items.append(held)
-                    continue
-                if dist == 0 and cheat_count < 0 and _not_a_c_function(stem, func):
-                    held = _held(func, stem, dist, rules)  # listed -> gated (Q39)
                     if held is None:
                         continue
                     items.append(held)
