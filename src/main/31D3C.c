@@ -232,15 +232,15 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
     } while (i < 5);
 }
 
-extern s32 D_80094DF0[];
+extern s16 *D_80094DF0[6];
 extern u8 D_80094E08[];
 extern s16 D_800A9A20;
-extern u16 g_gpu_store_buf;
+extern u16 g_gpu_store_buf[][16];
 void func_80041AC8(Unk80045878Obj *arg0)
 {
   RECT rect;
   s16 *var_s0;
-  u16 *var_s1;
+  u16 (*var_s1)[16];
   s32 var_s2;
   s32 var_s3;
   u16 v1_val;
@@ -261,7 +261,7 @@ void func_80041AC8(Unk80045878Obj *arg0)
    * .claude/rules/proven-spelling-class-reconstruction.md. Ablated (2026-10-06): score 2. */
   id_ptr = &arg0->unk_08;
   D_800A9A20 = arg0->unk_08;
-  var_s0 = (s16 *) D_80094DF0[D_80094E08[*id_ptr]];
+  var_s0 = D_80094DF0[D_80094E08[*id_ptr]];
   if (func_8003E2A0() != 1)
   {
     goto else_lbl;
@@ -282,7 +282,7 @@ void func_80041AC8(Unk80045878Obj *arg0)
     /* FAKE: constant holders for the 16 x 1 rect size; as literals the g_gpu_store_buf address (lui/addiu s1) is scheduled ahead of li s5,16 / li s4,1 (score 4) */
     s32 w = 0x10;
     s32 h = 1;
-    var_s1 = &g_gpu_store_buf;
+    var_s1 = g_gpu_store_buf;
     do
     {
       /* FAKE: v0_val reads var_s0[1] ahead of the rect.w / rect.h stores; read at the rect.y store, sh s5 / sh s4 move above the load (score 4) */
@@ -294,7 +294,7 @@ void func_80041AC8(Unk80045878Obj *arg0)
       rect.y = v0_val + var_s2;
       StoreImage(&rect, (u32 *)var_s1);
       var_s0 += 2;
-      var_s1 += 0x10;
+      var_s1++;
       v1_val = (u16) (*var_s0);
     }
     while ((*var_s0) >= 0);
@@ -364,25 +364,23 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
        sanctioned for any codegen effect incl. register allocation). Ablated (2026-10-06): score 18. */
     do { xoff = 0x80; yoff = 0; } while (0);
   }
-  tbl = *(s16 **)((u8 *) D_80094DF0 + (D_80094E08[fp_ptr->unk_08] << 2));
+  tbl = D_80094DF0[D_80094E08[fp_ptr->unk_08]];
   idx = 0;
   goto test;
   again:
   {
-    /* FAKE: off = idx << 5 taken before idx++; inline in LoadImage with idx++ after DrawSync, addiu s1 / sll v0 swap around the call setup (score 4). */
-    s32 off = idx << 5;
-    idx++;
     rect[0].x = x + xoff;
     rect[0].y = tbl[1] + yoff;
     rect[0].w = 0x10;
     rect[0].h = 1;
-    LoadImage(&rect[0], (u32 *)((u8 *)&g_gpu_store_buf + off));
+    LoadImage(&rect[0], (u32 *)g_gpu_store_buf[idx++]);
     DrawSync(0);
     tbl += 2;
     func_80048A7C(rect[0].x, rect[0].y, 0x10, r, g, b);
   }
   test:
-  x = *(u16 *) tbl;
+  /* FAKE: x is the row's x zero-extended (the lhu beside the test's lh); as tbl[0] the pair is one lh and the frame drops 88 -> 80: score 25 */
+  x = (u16)tbl[0];
   if ((s16) x >= 0) goto again;
   outer++;
   }
