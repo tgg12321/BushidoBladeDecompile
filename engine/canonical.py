@@ -18,18 +18,23 @@ Definitive signals in that disasm:
 
 A function/region with these is AUTO-ROUTED to canonical-asm (no pure-C attempt).
 Region-granular, so a partially-asm function gets pure C for the C parts and
-inline-asm only for the genuinely-asm span. A function with NO definitive signal
+inline-asm only for the genuinely-asm span. Explicit grants in
+inline_asm_canonical.txt take precedence over the inferred classification;
+reviewed region grants distinguish mixed C/assembly from whole assembly bodies.
+A function with NO definitive signal or explicit grant
 is 'C' (the pure-C ladder); if that ladder plateaus, the controller PARKs with
 evidence and escalates to a user canonical-asm call — that's the gate for the
 heuristic/uncertain cases (auth model: auto-route definitive, gate the rest).
 """
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 from pathlib import Path
 
 from . import buildconfig as cfg
+from . import cheats, completion
 
 # Distance thresholds for STRUCTURAL (non-opcode) hand-asm detection. The
 # masked cheat-invisible distance = how far GCC's natural pure-C output sits
@@ -237,8 +242,20 @@ def _regions(indices: list[int]) -> list[tuple[int, int]]:
 def _verdict(func: str, hits: list, total: int, structural: int = 0,
              distance: int | None = None) -> dict:
     """Build the verdict dict from a detected (hits, total[, structural]).
-    Definitive opcode signals win outright; otherwise the optional pure-C
-    `distance` applies the structural tier."""
+    Explicit canonical grants win; otherwise definitive opcode signals win,
+    then the optional pure-C `distance` applies the structural tier."""
+    if func in cheats.canonical_asm_funcs():
+        grants = json.loads(completion.REGIONS.read_text(encoding="utf-8"))
+        if grants["schema"] != 1:
+            raise ValueError("unsupported canonical assembly-region grant schema")
+        mixed = func in grants["functions"]
+        reason = ("mixed C/assembly grant in inline_asm_canonical.txt "
+                  "with reviewed regions in tools/canonical_asm_regions.json" if mixed else
+                  "whole-function canonical-asm grant in inline_asm_canonical.txt")
+        return {"func": func, "verdict": "ASM-PARTIAL" if mixed else "ASM-WHOLE",
+                "asm_insns": len(hits),
+                "total": total, "regions": _regions([i for i, _, _ in hits]),
+                "reasons": [reason], "reason": reason}
     if hits:
         spans = _regions([i for i, _, _ in hits])
         frac = len(hits) / total if total else 0

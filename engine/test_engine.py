@@ -84,6 +84,37 @@ def _dline(addr: str, byts: str, mn: str, ops: str = "") -> str:
 # --------------------------------------------------------------------------
 
 def test_canonical() -> None:
+    # An explicit whole-function grant outranks opcode/distance heuristics.
+    # Read the real list format in an isolated cwd, including trailing comments.
+    with tempfile.TemporaryDirectory() as td:
+        cwd = os.getcwd()
+        try:
+            os.chdir(td)
+            Path("inline_asm_canonical.txt").write_text(
+                "# grants\n\nlisted # owner evidence\nmixed # region grant\n", encoding="utf-8")
+            Path("tools").mkdir()
+            Path("tools/canonical_asm_regions.json").write_text(
+                json.dumps({"schema": 1, "functions": {"mixed": {"file": "fake", "sha256": []}}}),
+                encoding="utf-8")
+            for hits, distance in (([], None), ([], 600), ([(0, "c2", "GTE")], 0)):
+                r = canonical._verdict("listed", hits, 8, distance=distance)
+                eq("canonical grant: overrides opcode/distance heuristics",
+                   r["verdict"], "ASM-WHOLE")
+                check("canonical grant: reports its authority",
+                      "inline_asm_canonical.txt" in r["reason"])
+                eq("canonical grant: preserves detected instruction count",
+                   r["asm_insns"], len(hits))
+                eq("canonical grant: reviewed mixed body stays partial",
+                   canonical._verdict("mixed", hits, 8, distance=distance)["verdict"],
+                   "ASM-PARTIAL")
+            eq("canonical grant: an unlisted ordinary function stays C",
+               canonical._verdict("unlisted", [], 8)["verdict"], "C")
+            Path("inline_asm_canonical.txt").unlink()
+            eq("canonical grant: removing the list removes the grant",
+               canonical._verdict("listed", [], 8)["verdict"], "C")
+        finally:
+            os.chdir(cwd)
+
     lines = [
         _dline("8002ec84", "c9890000", "lwc2", "$9,0(t4)"),   # GTE transfer
         _dline("80018500", "4aa00428", "c2", "0xa00428"),      # GTE command (regression)
@@ -2208,13 +2239,22 @@ def test_canonical_build() -> None:
         skip("canonical verdicts vs build/bb2.elf", "empty symbol table")
         return
     check("func_table: nontrivial function count (>1000)", len(tbl) > 1000)
+    scanned = {r["func"]: r for r in canonical.scan_all()}
+    for func in ("_SendPAD", "SetGeomOffset"):
+        check(f"canonical grant: {func} exists in the linked ELF", func in tbl)
+        eq(f"canonical grant: classify({func})",
+           canonical.classify(func)["verdict"], "ASM-WHOLE")
+        eq(f"canonical grant: classify_full({func})",
+           canonical.classify_full(func)["verdict"], "ASM-WHOLE")
+        eq(f"canonical grant: scan_all({func})",
+           scanned[func]["verdict"], "ASM-WHOLE")
     # motion_Close lives inside motion_Open.s -> the old asm/funcs gate said
     # NO-TARGET; the ELF gate must resolve it.
     if "__do_global_dtors" in tbl:
-        eq("classify(__do_global_dtors): resolves (not NO-TARGET)",
-           canonical.classify("__do_global_dtors")["verdict"], "C")
+        eq("classify(__do_global_dtors): resolves its canonical grant",
+           canonical.classify("__do_global_dtors")["verdict"], "ASM-WHOLE")
     if "func_8002EBDC" in tbl:
-        eq("classify(func_8002EBDC): GTE -> ASM-PARTIAL",
+        eq("classify(func_8002EBDC): reviewed mixed C/GTE -> ASM-PARTIAL",
            canonical.classify("func_8002EBDC")["verdict"], "ASM-PARTIAL")
     if "func_8003F1C8" in tbl:
         eq("classify(func_8003F1C8): ordinary C -> C",
@@ -2250,7 +2290,7 @@ def test_rodata_object_alignment() -> None:
 
 def test_score_object_paths() -> None:
     """score reads objects through an argv list, so an ABSOLUTE path whose
-    directory contains spaces (this repo's own path does) must give the same
+    directory contains spaces must give the same
     answer as the relative path the engine normally passes. Under the old
     shell-interpolated command the path word-split into an empty symbol table
     and surfaced as a bogus '<func> not found in <obj>'."""
@@ -2274,20 +2314,24 @@ def test_score_object_paths() -> None:
         skip("score: absolute object path with spaces", "no object with functions")
         return
     o, tbl_rel = rel
-    absolute = str(Path(o).resolve())
-    check("score: test path really contains a space (else this proves nothing)",
-          " " in absolute)
-    tbl_abs = score._o_func_table(absolute)
-    eq("score: _o_func_table(absolute with spaces) == relative", tbl_abs, tbl_rel)
-    func = sorted(tbl_rel)[0]
-    eq("score: normalized_insns(absolute) == normalized_insns(relative)",
-       score.normalized_insns(absolute, func), score.normalized_insns(str(o), func))
-    eq("score: func_byte_signature(absolute) == relative",
-       score.func_byte_signature(absolute, func), score.func_byte_signature(str(o), func))
-    check("score: signature is non-empty (an empty read would fake equality)",
-          len(score.func_byte_signature(absolute, func)) > 0)
-    eq("score: score_func(absolute, relative) == 0 (same object, either spelling)",
-       score.score_func(absolute, str(o), func)["score"], 0)
+    Path("tmp").mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="score path with spaces ", dir="tmp") as td:
+        copied = Path(td) / o.name
+        shutil.copyfile(o, copied)
+        absolute = str(copied.resolve())
+        check("score: test path really contains a space (else this proves nothing)",
+              " " in absolute)
+        tbl_abs = score._o_func_table(absolute)
+        eq("score: _o_func_table(absolute with spaces) == relative", tbl_abs, tbl_rel)
+        func = sorted(tbl_rel)[0]
+        eq("score: normalized_insns(absolute) == normalized_insns(relative)",
+           score.normalized_insns(absolute, func), score.normalized_insns(str(o), func))
+        eq("score: func_byte_signature(absolute) == relative",
+           score.func_byte_signature(absolute, func), score.func_byte_signature(str(o), func))
+        check("score: signature is non-empty (an empty read would fake equality)",
+              len(score.func_byte_signature(absolute, func)) > 0)
+        eq("score: score_func(absolute, relative) == 0 (identical objects)",
+           score.score_func(absolute, str(o), func)["score"], 0)
 
 
 def test_prologue_cheat() -> None:
