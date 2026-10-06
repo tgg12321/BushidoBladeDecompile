@@ -4351,43 +4351,21 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
     return ret;
 }
 s32 func_8002FDB0(Unk80101EC8Record *arg0) {
-    s32 stride;
-    s32 v1, v2;
-    s32 w1, w2;
-    s32 ret;
+    LeafPos *pt;
 
-    stride = arg0->index * 264;
-
-    /* Compute (point_a - center) into scratchpad SCR[0x60..0x68] and
-     * (point_b - center) into SCR[0x70..0x78].  Source vectors live at
-     * stride-offset slots in scratchpad (0xB4/0xB8/0xBC = center xyz;
-     * 0xC0/0xC4/0xC8 = a xyz; 0xCC/0xD0/0xD4 = b xyz). */
-    v1 = *(s32 *)((u8 *)0x1F8000C0 + stride);
-    v2 = *(s32 *)((u8 *)0x1F8000B4 + stride);
-    *(s32 *)0x1F800360 = v1 - v2;
-
-    v1 = *(s32 *)((u8 *)0x1F8000C4 + stride);
-    v2 = *(s32 *)((u8 *)0x1F8000B8 + stride);
-    *(s32 *)0x1F800364 = v1 - v2;
-
-    v1 = *(s32 *)((u8 *)0x1F8000C8 + stride);
-    v2 = *(s32 *)((u8 *)0x1F8000BC + stride);
-    *(s32 *)0x1F800368 = v1 - v2;
-
-    v1 = *(s32 *)((u8 *)0x1F8000CC + stride);
-    v2 = *(s32 *)((u8 *)0x1F8000B4 + stride);
-    *(s32 *)0x1F800370 = v1 - v2;
-
-    v1 = *(s32 *)((u8 *)0x1F8000D0 + stride);
-    v2 = *(s32 *)((u8 *)0x1F8000B8 + stride);
-    *(s32 *)0x1F800374 = v1 - v2;
-
-    w1 = *(s32 *)((u8 *)0x1F8000D4 + stride);
-    w2 = *(s32 *)((u8 *)0x1F8000BC + stride);
-    *(s32 *)0x1F800378 = w1 - w2;
+    /* The character's points 2 and 3 relative to its point 1, into the collision record's unkA8 and
+     * unkB8 (0x1F800360 / 0x1F800370, the GTE operands below); the GTE's product lands in unkC8. */
+    pt = SPAD->unkA8[arg0->index];
+    SPAD->unk2B8.rec.unkA8.x = pt[2].x - pt[1].x;
+    SPAD->unk2B8.rec.unkA8.y = pt[2].y - pt[1].y;
+    SPAD->unk2B8.rec.unkA8.z = pt[2].z - pt[1].z;
+    SPAD->unk2B8.rec.unkB8.x = pt[3].x - pt[1].x;
+    SPAD->unk2B8.rec.unkB8.y = pt[3].y - pt[1].y;
+    SPAD->unk2B8.rec.unkB8.z = pt[3].z - pt[1].z;
 
     /* PsyQ libgte inline macro gte_SetRotMatrix(r) — loads the 3 packed
-     * rotation-matrix words at r into cop2 control regs R11R12/R13R21/R22R23.
+     * rotation-matrix words at r into cop2 control regs R11R12 / R22R23 / R33
+     * (ctc2 $0 / $2 / $4: the words holding the diagonal).
      * The SDK macro body hardcodes $12-$15 and copies the operand into $12. */
     __asm__ volatile(
         "move   $12, %0\n"
@@ -4419,9 +4397,8 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
         "swc2   $26, 4($12)\n"
         "swc2   $27, 8($12)\n"
         :: "r"((s32 *)0x1F800380) : "$12");
-    /* Read MAC2 from scratchpad and return slt(0, MAC2) — i.e. MAC2 > 0. */
-    ret = *(s32 *)0x1F800384;
-    return 0 < ret;
+    /* unkC8.y (MAC2) > 0 */
+    return 0 < SPAD->unk2B8.rec.unkC8.y;
 }
 
 
