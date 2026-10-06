@@ -565,3 +565,22 @@ read narrows to lbu). Found by rev-w2b1 (Phase 2 worker-2 batch 1, F06).
 disposition taken: the body is left textually unmoved (its redundant `(SpuUnion *)` cast kept on the unedited line), so
 no review re-certifies it; recorded as debt. Question for the owner: may D_800F7298 keep PsyQ's SpuUnion type (volatile
 raw) as an interim per-function label, or must it get a non-volatile type (and the function be re-opened)?
+
+## 2026-10-06 — Phase 2 asm-operand bodies — may typing edit a canonical GTE island's operand expressions? — policy-question
+category: policy-question
+evidence: memory/grind/phase2-2026-10-03/lt/plan.txt (owner-blocked (1)); lt/f02/plan.txt "RULING NEEDED". 17AFC
+func_8002CD58 / func_8002DAD0 / func_8002D780 (146 sites), 87A0 (35), 51268 func_80067D14 (3) and 9F9C func_800203B4
+(4, scratch tmp/p2/i203/) pass raw offsets (`obj + 0xA8`, `(s32 *)(obj + 0xF8)`) as "r" operands of canonical GTE
+islands. Typing `obj` changes that operand text (hashed in tools/canonical_asm_regions.json); the alternatives are a
+labelled u8 * byte view kept only for the asm (an alias local), or locals computed outside the asm (also edits the text).
+disposition taken: bodies left as at HEAD; debt rows in the phase-2 commits. Question for the owner: may an operand
+EXPRESSION (not the asm template) be retyped to the member form (`&rec->unkA8`) with an `auth:` re-hash of the region?
+
+## 2026-10-06 — func_80031B24 — extend Q96 to its &D_800A37E8 vector passes? — policy-question
+category: policy-question
+evidence: 17AFC func_80031B24 hands &D_800A37E8 (the D_800A37E8 / EA / EC s16 vector) to func_800274BC / func_80032854,
+which read [0..2]: cross-symbol address derivation, refused by completion-bar item 3 except under Q96, which names only
+func_80027AD8 / func_8002AB08. One-object `s16 D_800A37E8[3]` scores 0 in func_80031B24 / 8002A458 / 8002AB08 but 2 in
+func_80027AD8 (Q96's basis: memory/grind/judge-decl-cleanup/followups/func_80027AD8.vec-investigation.md).
+disposition taken: unchanged; debt row (lt/plan.txt owner-blocked (3)). Question for the owner: extend Q96 to
+func_80031B24's two call sites (FAKE-labelled in Q96's form), or leave the debt row?
