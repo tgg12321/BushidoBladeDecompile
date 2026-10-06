@@ -7,12 +7,12 @@
 #include "bb2_const.h"
 
 /* Copies the record at func_80077D00() into the FileRecord D_80106A50
- * (include/game.h): flags bits 0-2 are cleared and re-set from p[8] bits 0-2,
- * then the three colour bytes at p+0x17 are copied to D_80106A50.color.
+ * (include/game.h): flags bits 0-2 are cleared and re-set from p->unk20_0..2,
+ * then the three colour bytes at p->unk17 are copied to D_80106A50.color.
  * The register allocation is a global.c priority fit
  * (floor_log2(nrefs) * nrefs * 10000 / live_length); see the FAKEs below. */
 void func_80034F88(void) {
-    s32 *p;
+    Unk8009BD24Block *p;
     s32 v;
     s32 c;
     s32 u;
@@ -33,7 +33,7 @@ void func_80034F88(void) {
                 * the sb into the following lbu only while the stored value's
                 * pseudo still holds it. */
         u = *q;
-        c = p[8] & 1;
+        c = p->unk20_0;
         if (c) {
             c = u | 1;
         } else {
@@ -48,7 +48,11 @@ void func_80034F88(void) {
             u8 *r = &D_80106A50.flags;
 
             v = *r;
-            c = p[8] & 2;
+            /* FAKE: bits 1 and 2 are read back at their word position (<< 1 / << 2;
+               c is only tested): read plain, each extract adds an srl (srl + andi 1
+               where the target tests andi 2 / andi 4), score 4 (2 per site);
+               tested directly (`if (p->unk20_1) {` / `if (p->unk20_2) {`), 35. */
+            c = p->unk20_1 << 1;
             if (c) {
                 c = v | 2;
             } else {
@@ -58,7 +62,7 @@ void func_80034F88(void) {
 
             r = &D_80106A50.flags;
             v = *r;
-            c = p[8] & 4;
+            c = p->unk20_2 << 2;
             if (c) {
                 c = v | 4;
             } else {
@@ -78,13 +82,13 @@ void func_80034F88(void) {
          * byte-neutral reference lifts (duplicated store into arms, split
          * reads, merged mask) do not reach the target seating. */
         for (q = 0; (s32)q < 3; q++) {
-            c = *((u8 *)p + (s32)q + 0x17);
+            c = p->unk17[(s32)q];
             D_80106A50.color[(s32)q] = c;
         }
     }
 }
 void func_8003504C(void) {
-    s32 *p;
+    Unk8009BD24Block *p;
     s32 i;
     u8 *s;
     /* FAKE: 5 and 20 held in locals so their `li`s are pre-loop SOURCE insns
@@ -95,7 +99,6 @@ void func_8003504C(void) {
        behind the two p-copies). */
     s32 new_var;
     s32 new_var2;
-    s32 *q;
     s8 val;
     u8 tmp;
 
@@ -120,29 +123,26 @@ void func_8003504C(void) {
         i++;
     } while (i < 2);
 
-    D_80102778.unk_C = ((u32)p[5] >> 4) & 0x3F;
-    q = &p[8];
-    D_80102778.unk_E = ((u32)*q >> 3) & 1;
+    D_80102778.unk_C = p->unk14_4;
+    D_80102778.unk_E = p->unk20_3;
     D_800A36F6 = 0;
     val = D_80102778.unk_D;
 
     if (val == 2) {
-        D_800A389A = ((u32)p[5] >> 17) & 1;
-        D_800A3788 = ((u32)p[5] >> 18) & 7;
+        D_800A389A = p->unk14_17;
+        D_800A3788 = p->unk14_18;
     } else if (val == 5) {
-        u32 idx;
         s32 sel;
 
-        D_800A389B = (((u32)p[5] >> 10) & 3) + 3;
-        idx = ((u32)p[5] >> 12) & 3;
-        D_800A36CC = (&D_8008EC30)[idx];
+        D_800A389B = p->unk14_10 + 3;
+        D_800A36CC = D_8008EC30[p->unk14_12];
         sel = 1;
-        if ((u32)p[5] & 0x4000) {
+        if (p->unk14_14) {
             sel = 2;
         }
         D_800A37F8 = sel;
         s = &D_801027D8;
-        D_800A38E1 = ((u32)p[5] >> 15) & 3;
+        D_800A38E1 = p->unk14_15;
         {
             s32 j = 0;
             u8 *dst_d = s;
@@ -174,7 +174,7 @@ void func_8003504C(void) {
 }
 
 void func_80035280(void) {
-    s32 *p;
+    Unk8009BD24Block *p;
     u8 *src;
     /* FAKE: one pointer to the three 8-byte clock records (D_80106A50.times),
      * hoisted above the loop rather than indexing D_80106A50.times[i] at each
@@ -184,29 +184,16 @@ void func_80035280(void) {
      * at the use sites creates a second address movable. */
     FileTimeRec *base;
     s32 i;
-    s32 flags;
-    /* FAKE: the flag merge is staged through one fresh named intermediate per
-     * merged bit instead of re-using a single accumulator; mechanism:
-     * local-alloc.c:472's `reg_n_deaths == 1` eligibility test -- one death per
-     * pseudo makes each merge result eligible for the target's seat, where a
-     * single re-used accumulator has three deaths and is refused. */
-    s32 flags0;
-    s32 flags1;
-    s32 flags2;
 
     p = func_80077D00();
     i = 0;
-    flags = p[8];
-    flags0 = (flags & ~1) | (D_80106A50.flags & 1);
-    p[8] = flags0;
-    flags1 = (flags0 & ~2) | (D_80106A50.flags & 2);
-    p[8] = flags1;
-    flags2 = (flags1 & ~4) | (D_80106A50.flags & 4);
-    p[8] = flags2;
+    p->unk20_0 = D_80106A50.flags & 1;
+    p->unk20_1 = (D_80106A50.flags >> 1) & 1;
+    p->unk20_2 = (D_80106A50.flags >> 2) & 1;
     src = D_80106A50.color;
     for (; i < 3; i++) {
-        ((u8 *)p + i)[0x17] = *src;
-        ((u8 *)p + i)[0x1D] = *src;
+        p->unk17[i] = *src;
+        p->unk1D[i] = *src;
         src++;
     }
     base = D_80106A50.times;
@@ -231,13 +218,13 @@ void func_80035280(void) {
         s32 t;
 
         mn = base[i].unk_4 / 1800;
-        ((u8 *)p)[i * 4 + 0x21] = mn;
+        p->unk21[i].unk0 = mn;
         sc = (base[i].unk_4 / 30) % 60;
-        ((u8 *)p)[i * 4 + 0x22] = sc;
+        p->unk21[i].unk1 = sc;
         hs = (base[i].unk_4 % 30) * 100 / 30;
-        ((u8 *)p)[i * 4 + 0x23] = hs;
+        p->unk21[i].unk2 = hs;
         t = base[i].unk_0;
-        ((u8 *)p)[i * 4 + 0x24] = t;
+        p->unk21[i].unk3 = t;
     }
 }
 void func_80035430(void) {

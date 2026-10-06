@@ -10,7 +10,6 @@
 /* Declarations from the file this TU was split from (text1b.c). */
 extern u32 *ClearOTagR(u32 *, s32);
 extern s32 rsin();
-extern Unk8009BD38Flags D_8009BD38;
 extern void AddPrim(void *, void *);
 /* func_8007352C's draw descriptor: .header = the sprite sheet's SprtHdrA, .table = its
    SprtEntA cell array (the s32 form of S_80074488 / DescF97C). */
@@ -1067,21 +1066,12 @@ void func_800768DC(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 }
 /* func_80076D74: select-screen fade-out.  Raises SELWORK->f36 by 8 per frame
  * (capped at 0xFF) and, once it reaches 0xFF, fills the result record at
- * SELWORK->f00 (f65, f66, f67, f68 packed into bitfields; per player and pick,
+ * SELWORK->f00 (f65, f66, f67, f68 into its unk14 bit fields; per player and pick,
  * the picked entry's D_8009BCF8 column 1 and its f7E value).  Every frame it
  * draws the full-screen TILE with f36 as its colour. */
-typedef struct {
-    u8 cells[2][5][2];  /* 0x00: [row][col][{glyph, attr}] */
-    u32 pad10 : 10;     /* 0x14 */
-    u32 f10 : 2;
-    u32 f12 : 2;
-    u32 f14 : 1;
-    u32 f15 : 2;
-} S_80076D74;
-
 s32 func_80076D74(Unk8006EACCRec *arg0) {
     TILE *p;
-    S_80076D74 *hdr;
+    Unk8009BD24Block *hdr;
     u16 *cnt;
     s16 v;
     s16 i;
@@ -1096,22 +1086,22 @@ s32 func_80076D74(Unk8006EACCRec *arg0) {
     if (v >= 0xFF) {
         *cnt = 0xFF;
         hdr = SELWORK->f00;
-        hdr->f10 = SELWORK->f65;
+        hdr->unk14_10 = SELWORK->f65;
         ret = 1;
         if (SELWORK->f66 < 3) {
             sel = SELWORK->f66 - 1;
         } else {
             sel = SELWORK->f66 - 2;
         }
-        hdr->f12 = sel;
-        hdr->f14 = SELWORK->f67;
-        hdr->f15 = SELWORK->f68[0] + SELWORK->f68[1] * 2;
+        hdr->unk14_12 = sel;
+        hdr->unk14_14 = SELWORK->f67;
+        hdr->unk14_15 = SELWORK->f68[0] + SELWORK->f68[1] * 2;
         for (i = 0; i < 2; i++) {
             for (j = 0; j < SELWORK->f65 + 3; j++) {
                 /* flat character index into both pages, through row 0. */
                 /* SOTN: src/st/e_grave_keeper.h:534 @aa53500 */
-                hdr->cells[i][j][0] = D_8009BCF8[0][SELWORK->f6A[i][j]].unk1;
-                hdr->cells[i][j][1] = SELWORK->f7E[i][j];
+                hdr->unk00[i][j].chr = D_8009BCF8[0][SELWORK->f6A[i][j]].unk1;
+                hdr->unk00[i][j].unk1 = SELWORK->f7E[i][j];
             }
         }
     }
@@ -1153,7 +1143,7 @@ Unk8006E49CRec *func_80077098(s32 a0) {
 
 extern s32 func_80076FF8(s32 *);
 
-s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
+s32 func_800770B8(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     s16 sp[2];
     /* work holds two values: the entry list pointer (arg0 + 0x58, passed to func_8006E950 /
        func_80076FF8 and stored as the work area's f04), then the work area func_8006E49C returns
@@ -1359,7 +1349,7 @@ s32 func_80077724(s32 arg0, s32 arg1) {
 
 
 s32 func_80077820(s32 a0) {
-    func_80068F70(a0, (s32 *)&D_8009BD24);
+    func_80068F70(a0, &D_8009BD24);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A35E4 = 0;
     return 1;
@@ -1382,7 +1372,7 @@ s32 func_80077894(s32 held, s32 pressed) {
     if (result >= 0) {
         ret = 1;
         D_800A35E4 = 0;
-        D_8009BD38.unk0 = result;
+        D_8009BD24.unk14_0 = result;
     } else if (result == -2) {
         ret = -1;
     }
@@ -1390,15 +1380,15 @@ s32 func_80077894(s32 held, s32 pressed) {
 }
 s32 func_80077904(void) {
     D_800A35E4 = 0;
-    D_800A35E0 = D_8009BD58[D_8009BD38.unk0][1];
-    return D_8009BD58[D_8009BD38.unk0][0];
+    D_800A35E0 = D_8009BD58[D_8009BD24.unk14_0][1];
+    return D_8009BD58[D_8009BD24.unk14_0][0];
 }
 void func_80077940(s32 arg0) {
     D_800A35E8 = (arg0 & 0x3FF) + ((u32) (arg0 & 0x3FF000) >> 2) + ((u32) (arg0 & 0x01000000) >> 4) + ((u32) (arg0 & 0x04000000) >> 5);
 }
 
 s32 func_80077984(s32 a0) {
-    func_8006E534(a0, D_800A35E0, &D_8009BD24[0][0].chr, D_800A35E8);
+    func_8006E534(a0, D_800A35E0, &D_8009BD24, D_800A35E8);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
@@ -1425,9 +1415,9 @@ s32 func_80077A60(s32 arg0, s32 arg1) {
     return func_8006E068(arg0, arg1);
 }
 
-s32 func_800770B8(s32, s32, s32);
+s32 func_800770B8(s32, Unk8009BD24Block *, s32);
 s32 func_80077A80(s32 a0) {
-    func_800770B8(a0, (s32)&D_8009BD24, D_800A35E8);
+    func_800770B8(a0, &D_8009BD24, D_800A35E8);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
@@ -1838,12 +1828,6 @@ extern s32 column;
 
 /* --- Functions from text1b segment (0x80047ED0 - 0x80079A30) --- */
 
-extern u8 D_8009BD3B;
-extern u8 D_8009BD3C;
-extern u8 D_8009BD3D;
-extern u8 D_8009BD41;
-extern u8 D_8009BD42;
-extern u8 D_8009BD43;
 
 
 
@@ -1860,9 +1844,9 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
         case 1: s2 = -1; goto end;
         case 2: D_800A35E4 = 1; goto end;
         case 3:
-            D_8009BD3B = D_8009BD41;
-            D_8009BD3C = D_8009BD42;
-            D_8009BD3D = D_8009BD43;
+            D_8009BD24.unk17[0] = D_8009BD24.unk1D[0];
+            D_8009BD24.unk17[1] = D_8009BD24.unk1D[1];
+            D_8009BD24.unk17[2] = D_8009BD24.unk1D[2];
             D_800A35E4 = 4;
             goto end;
         }
@@ -1889,9 +1873,9 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
         result = func_8006D338(arg0, arg1);
         if (result == 1) {
             D_800A35E4 = 0;
-            D_8009BD41 = D_8009BD3B;
-            D_8009BD42 = D_8009BD3C;
-            D_8009BD43 = D_8009BD3D;
+            D_8009BD24.unk1D[0] = D_8009BD24.unk17[0];
+            D_8009BD24.unk1D[1] = D_8009BD24.unk17[1];
+            D_8009BD24.unk1D[2] = D_8009BD24.unk17[2];
             goto end;
         }
         if (result == -1) { D_800A35E4 = 0; }
@@ -1900,8 +1884,8 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
 end:
     return s2;
 }
-s32* func_80077D00(void) {
-    return (s32 *)D_8009BD24;
+Unk8009BD24Block *func_80077D00(void) {
+    return &D_8009BD24;
 }
 s32 func_80077D10(s32 *a0) {
     func_8006920C(a0, a0[6]);

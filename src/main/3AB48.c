@@ -3276,8 +3276,6 @@ void func_8005B5AC(void) {
 }
 
 
-extern Unk8009BD38Flags D_8009BD38;
-
 
 
 
@@ -3709,7 +3707,7 @@ s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
     s16 i;
     s16 id;
 
-    if ((func_80077D00()[5] & 0xF) == 3 && vabid == 5) {
+    if (func_80077D00()->unk14_0 == 3 && vabid == 5) {
         return 0;
     }
     func_800858D0(0);
@@ -4729,7 +4727,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     end_off = arg1 + sizeof(Unk8005E54CRec);
     s.ot_idx = arg2;
     for (i = 0; i < 2; i++) {
-        if (!(D_8009BD38.unk15 >> i & 1)) {
+        if (!(D_8009BD24.unk14_15 >> i & 1)) {
             s.header = &D_8009B524;
         } else {
             s.header = &D_8009B53C;
@@ -4738,7 +4736,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         s.table = D_8009B554;
         s.sprt_out = cur;
         cur = func_8007352C((s32)&s);
-        if (!(D_8009BD38.unk15 >> i & 1)) {
+        if (!(D_8009BD24.unk14_15 >> i & 1)) {
             s.header = &D_8009B530;
             s.table = D_8009B56C;
         } else {
@@ -4751,12 +4749,12 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
 
     s.semi = 0;
     s.has_color = 0;
-    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
+    for (i = 0; i < D_8009BD24.unk14_10 + 3; i++) {
         points[0] = (arg0 >> (i * 4)) & 3;
         points[1] = (arg0 >> (i * 4 + 2)) & 3;
-        if (D_8009BD38.unk10 == 2) {
+        if (D_8009BD24.unk14_10 == 2) {
             s.y = i * 24 + 0x44;
-        } else if (D_8009BD38.unk10 == 1) {
+        } else if (D_8009BD24.unk14_10 == 1) {
             s.y = i * 24 + 0x4F;
         } else {
             s.y = i * 34 + 0x4F;
@@ -4805,9 +4803,9 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
 
     s.header = &D_8009B4E4;
     s.x = 0;
-    if (D_8009BD38.unk10 == 2) {
+    if (D_8009BD24.unk14_10 == 2) {
         y = 0xC6;
-    } else if (D_8009BD38.unk10 == 1) {
+    } else if (D_8009BD24.unk14_10 == 1) {
         y = 0xC2;
     } else {
         y = 0xBE;
@@ -4821,7 +4819,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
        ruling Q36 (no-new-park-categories.md, one cast store on a
        local array). */
     *(s32 *)points = 0;
-    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
+    for (i = 0; i < D_8009BD24.unk14_10 + 3; i++) {
         if (((arg0 >> (i * 4)) & 3) != 3) {
             points[0] += (arg0 >> (i * 4)) & 3;
         }
@@ -4852,7 +4850,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
 
     s.ot_idx = arg2;
     wins[0] = wins[1] = 0;
-    for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
+    for (i = 0; i < D_8009BD24.unk14_10 + 3; i++) {
         s.header = &D_8009ADB4;
         s.semi = 0;
         points[0] = (arg0 >> (i * 4)) & 3;
@@ -4871,22 +4869,22 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                 }
                 s.has_color = 0;
             }
-            c = D_8009BD24[j][i].chr;
+            c = D_8009BD24.unk00[j][i].chr;
             if (c >= 12) {
                 c -= 2;
             }
             s.table = UesrWorkDef[c];
             s.x = j * 320 + D_8009B58C[c];
-            if (D_8009BD38.unk10 == 2) {
+            if (D_8009BD24.unk14_10 == 2) {
                 s.y = i * 24 - 8;
-            } else if (D_8009BD38.unk10 == 1) {
+            } else if (D_8009BD24.unk14_10 == 1) {
                 s.y = i * 24 + 3;
             } else {
                 s.y = i * 34 + 3;
             }
             s.sprt_out = cur;
             cur = func_8007352C((s32)&s);
-            if (D_8009BD24[j][i].chr == 8) {
+            if (D_8009BD24.unk00[j][i].chr == 8) {
                 s.table = D_8009ADC0;
                 s.sprt_out = cur;
                 cur = func_8007352C((s32)&s);
@@ -4914,9 +4912,9 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
 
     s.header = &D_8009B398[0];
     s.semi = 0;
-    if (D_8009BD38.unk10 == 2) {
+    if (D_8009BD24.unk14_10 == 2) {
         s.y = 0xC9;
-    } else if (D_8009BD38.unk10 == 1) {
+    } else if (D_8009BD24.unk14_10 == 1) {
         s.y = 0xC5;
     } else {
         s.y = 0xC1;
@@ -4961,10 +4959,10 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     /* Each arm sets the whole (x0, y0) position: the target stores x0 once
        per arm (0x8005F0E0, 0x8005F0F8, 0x8005F104); one x0 store above the
        if/else does not match. */
-    if (D_8009BD38.unk10 == 2) {
+    if (D_8009BD24.unk14_10 == 2) {
         tile->x0 = 0x5E;
         tile->y0 = 0xC1;
-    } else if (D_8009BD38.unk10 == 1) {
+    } else if (D_8009BD24.unk14_10 == 1) {
         tile->x0 = 0x5E;
         tile->y0 = 0xBD;
     } else {
@@ -5034,7 +5032,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         if (i != 0) {
             count = 2;
         } else {
-            count = D_8009BD38.unk14 + 1;
+            count = D_8009BD24.unk14_14 + 1;
         }
         for (row = 0; row < 2; row++) {
             for (k = 0; k < count; k++) {
@@ -5113,11 +5111,11 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         for (k = 0; k < 3; k++) {
             switch (j) {
             case 0:
-                if (k < 2 || D_8009BD38.unk12 == 2) {
+                if (k < 2 || D_8009BD24.unk14_12 == 2) {
                     s.d[k] = arg0->unk_2;
-                    if (k == 0 && D_8009BD38.unk12 == 2) {
+                    if (k == 0 && D_8009BD24.unk14_12 == 2) {
                         s.d[k] = s.d[k] / 100;
-                    } else if (k == 0 || (k == 1 && D_8009BD38.unk12 == 2)) {
+                    } else if (k == 0 || (k == 1 && D_8009BD24.unk14_12 == 2)) {
                         s.d[k] = s.d[k] / 10;
                     }
                     s.d[k] = s.d[k] % 10;
@@ -5139,7 +5137,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
 
                         s.d[k] = tens % 10;
                     }
-                    x = (D_8009BD38.unk12 == 2) ? k * 20 + 0x48 : k * 20 + 0x34;
+                    x = (D_8009BD24.unk14_12 == 2) ? k * 20 + 0x48 : k * 20 + 0x34;
                     s.p1 = &D_8009B400[s.d[k]];
                     if (s.d[k] == 1) {
                         s.unk_18 = x + 3;
@@ -5149,7 +5147,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 }
                 break;
             }
-            if (D_8009BD38.unk12 == 2) {
+            if (D_8009BD24.unk14_12 == 2) {
                 s.p1->unk0 = 0x109;
             } else {
                 s.p1->unk0 = 0x113;
@@ -5158,7 +5156,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             cur = func_8007352C((s32)&s);
         }
         s.p1 = &D_8009B5E8;
-        if (D_8009BD38.unk12 == 2) {
+        if (D_8009BD24.unk14_12 == 2) {
             s.unk_18 = j * 6 + 0x145;
         } else {
             s.unk_18 = j * 6 + 0x13B;
@@ -5490,7 +5488,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     s.y = (D_8009B850[arg0 & 0x7FFF] & 0x7F) + 0x2A;
     if (arg0 & 0x8000) {
         s.header = &D_8009B7AC;
-    } else if (D_8009BD24[0][0].chr < 0xC) {
+    } else if (D_8009BD24.unk00[0][0].chr < 0xC) {
         s.header = &D_8009B7B8;
     } else {
         s.header = &D_8009B7C4;

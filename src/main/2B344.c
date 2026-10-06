@@ -1103,12 +1103,11 @@ void func_8003C560(void) {
  */
 void func_8003C714(void) {
     Unk8001CD68Rec buf;
-    s32 *s0;
+    Unk8009BD24Block *s0;
     s32 i;
     s32 a, b, c, v;
     FileTimeRec *base;
     FileTimeRec *src;
-    u8 *dst;
 
     s0 = func_80077D00();
     func_800372C0();
@@ -1118,21 +1117,20 @@ void func_8003C714(void) {
     base = D_80106A50.times;
     do {
         src = &base[i];
-        dst = (u8 *)s0 + i * 4;
         a = src->unk_4;
         a = a / 1800;
-        dst[0x21] = a;
+        s0->unk21[i].unk0 = a;
         b = src->unk_4;
         b = b / 30;
         b = b % 60;
-        dst[0x22] = b;
+        s0->unk21[i].unk1 = b;
         c = src->unk_4;
         c = c % 30;
         c = c * 100;
         c = c / 30;
-        dst[0x23] = c;
+        s0->unk21[i].unk2 = c;
         v = src->unk_0;
-        dst[0x24] = v;
+        s0->unk21[i].unk3 = v;
         i += 1;
         /* FAKE: the call is spelled inside the loop on its exit path; the natural
          * spelling is a counted loop followed by the call (the target places the
@@ -1143,10 +1141,10 @@ void func_8003C714(void) {
             break;
         }
     } while (1);
-    *((u8 *)s0 + 0x2D) = buf.unk_0;
-    *((u8 *)s0 + 0x2E) = buf.unk_2;
-    *((u8 *)s0 + 0x2F) = buf.unk_3;
-    *((u8 *)s0 + 0x30) = D_80101EC8[0].unk_0A;
+    s0->unk2D[0] = buf.unk_0;
+    s0->unk2D[1] = buf.unk_2;
+    s0->unk2D[2] = buf.unk_3;
+    s0->unk30 = D_80101EC8[0].unk_0A;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x1F;

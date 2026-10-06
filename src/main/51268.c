@@ -10,7 +10,6 @@
  * (owner ruling Q65). */
 /* Declarations from the file this TU was split from (text1b.c). */
 extern s32 rand(void);
-extern Unk8009BD38Flags D_8009BD38;
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
 static s32 D_800A3420;
@@ -79,7 +78,7 @@ static s32 D_800A3514;
 static s32 D_800A3518;
 static Unk8006E49CRec *D_800A351C;
 static Unk8006E49CRec *D_800A3520;
-static s32 D_800A3524;
+static Unk8009BD24Block *D_800A3524;
 static s16 D_800A3528;
 static s32 D_800A352C;
 
@@ -191,7 +190,7 @@ s32 func_80060CB8(s32 arg0, s32 arg1)
   s32 ret;
   new_var = arg0;
   game_FrameLoop();
-  v = D_8009BD38.unk0;
+  v = D_8009BD24.unk14_0;
   if (v == 0)
   {
     cdrom_StartRead(func_80036EA8(2, 0x3C), arg0);
@@ -824,7 +823,6 @@ void func_800620B8(s16 *arg0, s32 *trans) {
     extern s32 D_800A32B8;
     extern s32 D_800A37D4;
     extern s32 D_800A3720;
-    extern s32 D_8009BD44[];
     extern TexRec D_8009BA00[6];
     extern TexRec D_8009BA30[4];
     extern TexRec D_8009BA50[1];
@@ -913,7 +911,7 @@ void func_800620B8(s16 *arg0, s32 *trans) {
                addu (`addu v1,s8,a0` for the target's `addu a0,a0,s8`): 4; plain
                `&strip32[n]`: 38. */
             D_800A348C = D_800A3488 = (TexRec *)(((u32)D_800A32B8 % 6) * sizeof(*strip32) + (s32)strip32 - (s32)strip32 + (s32)strip32);
-            if (D_8009BD44[0] & 1) {
+            if (D_8009BD24.unk20_0) {
                 D_800A348C = alt32;
             }
             *D_800A349C = D_800A3488->u + 0x1F;
@@ -931,7 +929,7 @@ void func_800620B8(s16 *arg0, s32 *trans) {
                `strip16 + n` or `&strip16[n]` strip16 comes first in the addu (`addu
                v0,t0,v0` for the target's `addu v0,v0,t0`): score 1. */
             D_800A348C = D_800A3488 = (TexRec *)((D_800A32B8 & 3) * sizeof(*strip16) + (s32)strip16);
-            if (D_8009BD44[0] & 1) {
+            if (D_8009BD24.unk20_0) {
                 D_800A348C = alt16;
             }
             *D_800A349C = D_800A3488->u + 0xF;
@@ -1206,7 +1204,6 @@ s32 func_80062FEC(void) {
    depth. A slot whose age reaches 16 clears its bit. Returns nonzero while any
    slot is still live. */
 s32 func_80063084(void) {
-    extern s32 D_8009BD44[];
     extern TexRec D_8009B940[];
     extern TexRec D_8009B948[];
     extern TexRec D_8009B950[];
@@ -1323,7 +1320,7 @@ s32 func_80063084(void) {
                         } else if (D_800F0BEC[i] < 16) {
                             *D_800A34C8 = *D_800A34C8 * (rcos(((D_800F0BEC[i] - 10) << 10) / 6) * 85 / 4096) / 100;
                         }
-                        if (D_8009BD44[0] & 1) {
+                        if (D_8009BD24.unk20_0) {
                             *(s32 *)&prim->r0 = 0x808080;
                         } else {
                             *(s32 *)&prim->r0 = 0xFF8080;
@@ -1357,7 +1354,7 @@ s32 func_80063084(void) {
                     *(u16 *)&prim->u3 = *D_800A34E0;
                     D_800A34E4 = g_gpu_ot_ptr + *z * 4;
                     D_800A34E8 = &prim->tag;
-                    *(u32 *)prim = (*(u32 *)prim & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
+                    *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
                     *(u32 *)D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
                     if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
                         prim++;
@@ -1797,7 +1794,6 @@ s32 func_800645B0(void) {
    into the OT at its depth. Returns 1 when any slot is still live, else 0. */
 s32 func_800646E8(void) {
     extern TexRec D_8009B8E8[];
-    extern s32 D_8009BD44[];
     extern s32 D_800A3720;
     extern s32 D_800A37D4;
     Unk1F8000B8_800646E8 *base;
@@ -1890,7 +1886,7 @@ s32 func_800646E8(void) {
             SetPolyFT4(prim);
             prim->tpage = *D_800A3490;
             prim->clut = *D_800A3494;
-            if (D_8009BD44[0] & 1) {
+            if (D_8009BD24.unk20_0) {
                 prim->r0 = 0x80;
                 prim->g0 = 0x80;
                 prim->b0 = 0x80;
@@ -2334,7 +2330,6 @@ u8 func_800657B0(void) {
  * command word in place of the header's DMPSX placeholder (noted at the island). */
 u8 func_80065800(s32 arg0) {
     extern s32 D_800A3720;
-    extern s32 D_8009BD44[];
     extern s16 D_800A3834;
     extern TexRec D_8009B8C8[];
     extern TexRec D_8009B8D0[];
@@ -2495,7 +2490,7 @@ again:
         break;
     case 10:
     case 11:
-        if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
+        if (D_8009BD24.unk20_3 && D_800A3834 != 5) {
             D_800A3488 = D_8009B9D8;
         } else {
             D_800A3488 = D_8009B990;
@@ -2514,12 +2509,12 @@ again:
     case 6:
     case 7:
         if (D_800F0BA8[arg0] < 0x96) {
-            if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
+            if (D_8009BD24.unk20_3 && D_800A3834 != 5) {
                 D_800A3488 = D_8009B9D8;
             } else {
                 D_800A3488 = D_8009B988;
             }
-        } else if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
+        } else if (D_8009BD24.unk20_3 && D_800A3834 != 5) {
             D_800A3488 = D_8009B9E0;
         } else {
             D_800A3488 = D_8009B990;
@@ -2528,7 +2523,7 @@ again:
         prim->g0 = ~D_800F0BA8[arg0];
         prim->b0 = 0xFF;
     size_sel:
-        if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
+        if (D_8009BD24.unk20_3 && D_800A3834 != 5) {
             *D_800A34A8 = 0x80;
             *D_800A34AC = 0x80;
             *D_800A3490 = 0x2F;
@@ -2707,19 +2702,19 @@ again:
         break;
     case 6:
     case 10:
-        if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
+        if (D_8009BD24.unk20_3 && D_800A3834 != 5) {
             *p_w = -*p_w;
         }
     case 7:
     case 11:
-        if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
+        if (D_8009BD24.unk20_3 && D_800A3834 != 5) {
             *p_w = *p_w * rsin(D_800F0BA8[arg0] & 0xFFF) >> 11;
             *p_h = *p_h * rsin(D_800F0BA8[arg0] & 0xFFF) >> 11;
         } else {
             *p_w = *p_w + (*p_w * rsin(D_800F0BA8[arg0] * 0x300 / 255) >> 11);
             *p_h = *p_h * rcos((D_800F0BA8[arg0] << 9) / 255) >> 12;
         }
-        if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
+        if (D_8009BD24.unk20_3 && D_800A3834 != 5) {
             prim->x0 = *D_800A34B8 - *p_w;
             prim->y0 = (*D_800A34B8 >> 16) - *p_h / 2;
             prim->x1 = *p_w + *D_800A34B8;
@@ -3162,7 +3157,6 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
  * word in place of the header's DMPSX placeholder (noted at each island). */
 void func_80067D14(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
-    extern s32 D_8009BD44[];
     Unk1F8000B8_800678A8 *outer = &D_800A34EC->v800678A8;
     u32 *p_rad;
     VECTOR *p_tv;
@@ -3420,7 +3414,7 @@ void func_80067D14(s32 arg0, s32 arg1) {
                 if (*p_prim - (POLY_FT4 *)D_800A3720 >= 0x1C1) {
                     continue;
                 }
-                if (D_8009BD44[0] & 1) {
+                if (D_8009BD24.unk20_0) {
                     *(s32 *)&(*p_prim)++->r0 = 0x2C242424;
                     break;
                 } else if (D_800A34F0[arg0 - 4] != 0) {
@@ -3514,7 +3508,7 @@ extern u8 D_800A32C0[8];
 
 
 
-s32 func_80068F70(s32 arg0, s32 *arg1) {
+s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
     RECT buf;
     s32 temp_s0;
     s32 v0_efc;
@@ -3593,7 +3587,7 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
             p_0C = &D_800A34FC->unk_0C[0];
             p_10 = &D_800A34FC->unk_10;
             p_12 = &D_800A34FC->unk_12;
-            D_800A3524 = (s32)arg1;
+            D_800A3524 = arg1;
             do { /* FAKE: sched fence keeps the D_800A3524 store adjacent to the
                     D_800A34FC load instead of sinking below the zero-stores */
             } while (0);
@@ -3618,19 +3612,19 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
             DrawSync(0);
         }
     }
-    D_800A34FC->unk_30 = ((s32 *)D_800A3524)[8] & 1;
+    D_800A34FC->unk_30 = D_800A3524->unk20_0;
     return 1;
 }
 
 Unk8006E49CRec *func_80069120(s32 a0) {
-    s32 *v0 = (s32 *)D_800A3524;
+    Unk8009BD24Block *v0 = D_800A3524;
     Unk800A34FCRec *v1 = D_800A34FC;
-    if (v1->unk_30 != (v0[8] & 1)) {
+    if (v1->unk_30 != v0->unk20_0) {
         func_8006E8CC(D_800A372C);
     }
-    v0 = (s32 *)D_800A3524;
+    v0 = D_800A3524;
     v1 = D_800A34FC;
-    v1->unk_30 = v0[8] & 1;
+    v1->unk_30 = v0->unk20_0;
     return &D_800A351C[a0];
 }
 
@@ -3801,19 +3795,17 @@ decrement:
     }
 moved:
     D_800A3514 = 0;
-    ((s32 *)D_800A3524)[8] &= ~8;
+    D_800A3524->unk20_3 = 0;
 after_move:
     if (((result & 0xFF) < 3) && ((result & 0xFF) != 0) &&
         (D_8009BC0C[D_800A34F8 & 0xF].mode == 3)) {
-        ((s32 *)D_800A3524)[8] =
-            (((s32 *)D_800A3524)[8] & ~8) |
-            (((((u32)((s32 *)D_800A3524)[8] >> 3) & 1) ^ 1) << 3);
+        D_800A3524->unk20_3 ^= 1;
         func_8005C650(0, 0x7F, 0x7F);
     }
     if (D_8009BC0C[D_800A34F8 & 0xF].mode == 2) {
-        ((s32 *)D_800A3524)[8] |= 8;
+        D_800A3524->unk20_3 = 1;
     } else if (D_8009BC0C[D_800A34F8 & 0xF].mode == 1) {
-        ((s32 *)D_800A3524)[8] &= ~8;
+        D_800A3524->unk20_3 = 0;
     }
     if ((D_800A34F8 & 0xF) != 7) {
         if (((D_800A34F8 & 0xF) - 6) >= 0) {
@@ -3919,9 +3911,9 @@ void func_80069898(s32 *arg0, u16 *arg1, s32 arg2) {
 }
 void func_80069A30(void *prim) {
     TILE *a0 = prim;
-    s32 *p = func_80077D00();
+    Unk8009BD24Block *p = func_80077D00();
     s32 v0;
-    if (p[8] & 1) {
+    if (p->unk20_0) {
         v0 = 0x22;
         a0->r0 = v0;
         a0->g0 = v0;
@@ -3935,9 +3927,9 @@ void func_80069A30(void *prim) {
 }
 void func_80069A8C(void *prim) {
     POLY_F4 *a0 = prim;
-    s32 *p = func_80077D00();
+    Unk8009BD24Block *p = func_80077D00();
     s32 v0;
-    if (p[8] & 1) {
+    if (p->unk20_0) {
         v0 = 8;
         a0->r0 = v0;
         a0->g0 = v0;
@@ -4193,7 +4185,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
             s.sp40 = 0;
         }
         x0 = s.sp30;
-        if (((s32 *)D_800A3524)[8] & 8) {
+        if (D_800A3524->unk20_3) {
             if (arg1 & 1) {
                 s.sp30 = x0 + D_800A34FC->unk_0C[0];
                 c = ((rsin((D_800A3514 & 0x1F) << 7) * 47) >> 12) - 0x80;
@@ -4288,7 +4280,7 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
             s.sp40 = 0;
         }
         x0 = s.sp30;
-        if (!(((s32 *)D_800A3524)[8] & 8)) {
+        if (!(D_800A3524->unk20_3)) {
             if (arg1 & 2) {
                 s.sp30 = x0 + D_800A34FC->unk_0C[0];
                 c = ((rsin((D_800A3514 & 0x1F) << 7) * 47) >> 12) - 0x80;
@@ -4584,7 +4576,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
             s.col_b = 0x30;
             s.semi = 1;
             s.y = y;
-            if (((s32 *)D_800A3524)[8] & 1) {
+            if (D_800A3524->unk20_0) {
                 s.has_color = 0;
             }
         } else {
@@ -4650,7 +4642,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
         s.col_b = 0x30;
         s.semi = 1;
         s.y = 0xCF;
-        if (((s32 *)D_800A3524)[8] & 1) {
+        if (D_800A3524->unk20_0) {
             s.has_color = 0;
         }
     } else {
@@ -4792,7 +4784,7 @@ void func_8006B120(s32 *arg0) {
         s.p0 = tbl[i + 7];
         s.x18 = 0;
         s.flag28 = 0;
-        if ((((u32 *)D_800A3524)[8] & 1) == i) {
+        if (D_800A3524->unk20_0 == i) {
             s.flag10 = 0;
             if (!(D_800A34F8 & 0x1C00)) {
                 s32 c;
@@ -4819,7 +4811,7 @@ void func_8006B120(s32 *arg0) {
         s.p0 = tbl[i + 9];
         s.x18 = 0;
         s.flag28 = 0;
-        if (((((u32 *)D_800A3524)[8] >> 1) & 1) == i) {
+        if (D_800A3524->unk20_1 == i) {
             s.flag10 = 0;
             if ((D_800A34F8 & 0x1C00) == 0x400) {
                 s32 c;
@@ -4846,7 +4838,7 @@ void func_8006B120(s32 *arg0) {
         s.p0 = tbl[i + 11];
         s.x18 = 0;
         s.flag28 = 0;
-        if (((((u32 *)D_800A3524)[8] >> 2) & 1) == i) {
+        if (D_800A3524->unk20_2 == i) {
             s.flag10 = 0;
             if ((D_800A34F8 & 0x1C00) == 0x800) {
                 s32 c;
@@ -4930,39 +4922,19 @@ s32 func_8006B578(s32 *arg0, s32 *arg1) {
     switch ((u32)D_800A34F8 >> 10 & 7) {
     case 0:
         if ((ret & 0xFF) != 0) {
-            s32 *p = (s32 *)D_800A3524;
-            u32 f = (u32)p[8];
-            u32 a3 = f & ~1u;
-            u32 bit = f & 1;
-            bit ^= 1;
-            a3 |= bit;
-            p[8] = (s32)a3;
+            D_800A3524->unk20_0 ^= 1;
             func_8005C650(0, 0x7F, 0x7F);
         }
         goto shared_400040;
     case 1:
         if ((ret & 0xFF) != 0) {
-            s32 *p = (s32 *)D_800A3524;
-            u32 f = (u32)p[8];
-            u32 a3 = f & ~2u;
-            u32 bit = (f >> 1) & 1;
-            bit ^= 1;
-            bit <<= 1;
-            a3 |= bit;
-            p[8] = (s32)a3;
+            D_800A3524->unk20_1 ^= 1;
             func_8005C650(0, 0x7F, 0x7F);
         }
         goto shared_400040;
     case 2:
         if ((ret & 0xFF) != 0) {
-            s32 *p = (s32 *)D_800A3524;
-            u32 f = (u32)p[8];
-            u32 a3 = f & ~4u;
-            u32 bit = (f >> 2) & 1;
-            bit ^= 1;
-            bit <<= 2;
-            a3 |= bit;
-            p[8] = (s32)a3;
+            D_800A3524->unk20_2 ^= 1;
             func_8005C650(0, 0x7F, 0x7F);
         }
     shared_400040:
@@ -5387,7 +5359,7 @@ void func_8006C21C(s32 *arg0) {
         s.x = pl * 280;
         if (D_800A34FC->unk_28.half[pl] < 3) {
             for (work = 0; work < 4; work++) {
-                if (*(u8 *)(D_800A3524 + D_800A34FC->unk_28.half[pl] + 0x17) &
+                if (D_800A3524->unk17[D_800A34FC->unk_28.half[pl]] &
                     ((1 << work) << (pl * 4))) {
                     s.header = (u8 *)table[work + 13];
                     s.semi = 0;
@@ -5576,9 +5548,9 @@ void func_8006CBD4(s32 arg0, s32 arg1) {
 
     for (i = 0; i < 3; i++) {
         if (i == D_800A34FC->unk_28.half[arg0]) {
-            *((u8 *)D_800A3524 + i + 0x17) |= mask;
+            D_800A3524->unk17[i] |= mask;
         } else {
-            *((u8 *)D_800A3524 + i + 0x17) &= ~mask;
+            D_800A3524->unk17[i] &= ~mask;
         }
     }
 }
@@ -5712,7 +5684,7 @@ s32 func_8006CFBC(s32 *arg0) {
             temp = (s8 *)s.header + 0xC;
             s.table = temp;
             for (row = 0; row < 2; row++) {
-                if (*(u8 *)(D_800A3524 + outer + 0x17) &
+                if (D_800A3524->unk17[outer] &
                     ((1 << (row * 4)) << column)) {
                     s.x = row * 280 + counts.count[row] * 23;
                     s.out = arg0[5];
@@ -5867,8 +5839,6 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
     s32 sp10;
     s32 result = 0;
     s32 ret;
-    s32 *p;
-    s32 v;
     s32 sval;
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
@@ -5893,9 +5863,7 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
         if (sval == 2) {
             result = -1;
         } else {
-            p = (s32 *)((s32)D_800A3524 + 0x14);
-            v = *p;
-            *p = (v & 0xFFFDFFFF) | ((sval & 1) << 17);
+            D_800A3524->unk14_17 = sval;
             result = 1;
         }
     }
@@ -5975,7 +5943,7 @@ void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
         n = 3;
     }
     for (i = 0; i < n; i++) {
-        idx = *(u8 *)(D_800A3524 + (i << 2) + 0x24);
+        idx = D_800A3524->unk21[i].unk3;
         if (idx >= 12 && idx < 22) {
             idx -= 2;
         }
@@ -6011,13 +5979,13 @@ void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
             }
             switch (i) {
             case 0:
-                d[0] = d[1] = *(u8 *)(D_800A3524 + (k << 2) + 0x21);
+                d[0] = d[1] = D_800A3524->unk21[k].unk0;
                 break;
             case 1:
-                d[0] = d[1] = *(u8 *)(D_800A3524 + (k << 2) + 0x22);
+                d[0] = d[1] = D_800A3524->unk21[k].unk1;
                 break;
             case 2:
-                d[0] = d[1] = *(u8 *)(D_800A3524 + (k << 2) + 0x23);
+                d[0] = d[1] = D_800A3524->unk21[k].unk2;
                 break;
             }
             v = d[1] / 10;
@@ -6189,7 +6157,7 @@ s32 func_8006E10C(void) {
     s32 a1v;
 
     __builtin_memcpy(rect, D_800A32D8, 8);
-    if (((s32 *)D_800A3524)[8] & 1) {
+    if (D_800A3524->unk20_0) {
         a0v = 2;
         a1v = 0x60;
     } else {

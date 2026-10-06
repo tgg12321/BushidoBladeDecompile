@@ -278,6 +278,58 @@ typedef struct {
     u8 unk_5E8[0xC];
 } Unk80060544Rec;
 
+/* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is the
+   character the round was fought with (func_8005E54C reads it at
+   j * 10 + i * 2 and picks UesrWorkDef / D_8009B58C by it; func_80060414 reads
+   player 0 round 0). Unk8009BD24Block.unk00. */
+typedef struct {
+    u8 chr;
+    u8 unk1;
+} Unk8009BD24Record;
+
+/* One of the three 4-byte records at Unk8009BD24Block.unk21 (func_8003C714 and func_80035280 store
+   them; func_8006D808 reads them). */
+typedef struct {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+} Unk8009BD45Rec;
+
+/* 0x8009BD24..0x8009BD57: the settings record func_80077D00 returns and 64FD8 hands to
+   func_80068F70 / func_8006E534 / func_800770B8, whose callees reach every field off that one
+   base (51268 D_800A3524, 5ED34 D_800A3568, SelWork.f00). Bit fields are named by bit offset.
+   - unk14_*: the word at +0x14. unk14_0 (`& 0xF`; func_80077894 stores it), unk14_4 (6 bits),
+     unk14_10 (the round count - 3; also picks the results-screen layout), unk14_12 (`== 2`
+     tests), unk14_14, unk14_15 (one bit per player), unk14_17, unk14_18 (3 bits); no code
+     reads bits 21-23.
+   - unk17 / unk1A / unk1D: three byte triples. func_8006CCC8 rebuilds a player's nibble of unk17
+     from unk1A or unk1D; 64FD8 copies unk17 and unk1D into each other.
+   - unk20_*: the word at +0x20, bits 0-3; its upper bytes start the unk21 records. */
+typedef struct {
+    Unk8009BD24Record unk00[2][5];
+    u32 unk14_0 : 4;
+    u32 unk14_4 : 6;
+    u32 unk14_10 : 2;
+    u32 unk14_12 : 2;
+    u32 unk14_14 : 1;
+    u32 unk14_15 : 2;
+    u32 unk14_17 : 1;
+    u32 unk14_18 : 3;
+    u32 unk14_21 : 3;
+    u8 unk17[3];
+    u8 unk1A[3];
+    u8 unk1D[3];
+    u32 unk20_0 : 1;
+    u32 unk20_1 : 1;
+    u32 unk20_2 : 1;
+    u32 unk20_3 : 1;
+    u32 unk20_4 : 4;
+    Unk8009BD45Rec unk21[3];
+    u8 unk2D[3];
+    u8 unk30;
+} Unk8009BD24Block;
+
 /* The select-screen work area D_800A36A0 points at (func_800770B8 places it at
  * the end of the buffers func_8006E49C lays out). Two-element arrays are per
  * player. Per player, f48 is a list of f60 entries with cursor f5C; confirming
@@ -294,7 +346,7 @@ typedef struct {
  * struct 4-aligned, so sizeof is 0x94 (the members end at 0x92; owner ruling
  * Q57). */
 typedef struct {
-    void *f00;
+    Unk8009BD24Block *f00;
     s32 *f04;
     s16 f08[2];
     s16 f0C[2];
@@ -1804,30 +1856,5 @@ typedef struct {
     u8 sp42;
     u8 sp43;
 } S_80074488;
-
-/* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is the
-   character the round was fought with (func_8005E54C reads it at
-   j * 10 + i * 2 and picks UesrWorkDef / D_8009B58C by it; func_80060414 reads
-   player 0 round 0). 0x14 bytes, ending at the flag word below. */
-typedef struct {
-    u8 chr;
-    u8 unk1;
-} Unk8009BD24Record;
-
-/* 0x8009BD38: the match-settings flag word, bit fields named by bit offset.
-   Its C readers extract it by field: unk0 (`& 0xF`), unk10 (the round count
-   - 3; also picks the results-screen layout), unk12 (`== 2` tests), unk14
-   (1 bit), unk15 (one bit per player); func_80077894 stores unk0. Byte 3 is
-   not named here (main/64FD8.c reads it as D_8009BD3B). */
-typedef struct {
-    u32 unk0 : 4;
-    u32 unk4 : 6;
-    u32 unk10 : 2;
-    u32 unk12 : 2;
-    u32 unk14 : 1;
-    u32 unk15 : 2;
-    u32 unk17 : 1;
-    u32 unk18 : 6;
-} Unk8009BD38Flags;
 
 #endif /* GAME_H */

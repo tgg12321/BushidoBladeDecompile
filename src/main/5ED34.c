@@ -40,7 +40,7 @@ static s16 D_800A3554;
 static s16 D_800A3558;
 static s16 D_800A355C;
 static Unk800A3560Slots D_800A3560;
-static s32 D_800A3568;
+static Unk8009BD24Block *D_800A3568;
 static s32 D_800A356C;
 static s16 D_800A3570;
 static s32 D_800A3574;  /* not named by any code or data: size from the gap */
@@ -66,16 +66,16 @@ static GpuDb *D_800A35C0;
 static void * D_800A35C4;
 static s16 D_800A35C8[2];
 
-s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
+s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
     RECT rect;
     s16 i;
     u8 value;
 
     ClearOTagR((u32 *)g_gpu_ot_ptr, 0x1008);
     D_800A32E8 = 0x7F;
-    D_800A35BC = *(s32 *)(arg2 + 0x14) & 0xF;
+    D_800A35BC = arg2->unk14_0;
     D_800A35AC = (Unk8006E49CRec *)arg0;
-    D_800A3568 = (s32)arg2;
+    D_800A3568 = arg2;
     D_800A3558 = 0;
     D_800A3554 = 0;
     D_800A32E9 = 0;
@@ -93,7 +93,7 @@ s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
         func_8006E950(3, (s32 *)D_800A356C);
         break;
     case 2:
-        if (*(s32 *)(D_800A3568 + 0x14) & 0x20000) {
+        if (D_800A3568->unk14_17) {
             func_8006E950(3, (s32 *)D_800A356C);
         } else {
             func_8006E950(4, (s32 *)D_800A356C);
@@ -165,11 +165,11 @@ Unk8006E49CRec *func_8006E8AC(s32 a0) {
 }
 
 void func_8006E8CC(s32 *a0) {
-    s32 *p;
+    Unk8009BD24Block *p;
     s32 data;
     s16 rect[4];
     p = func_80077D00();
-    if (p[8] & 1) {
+    if (p->unk20_0) {
         data = a0[4];
     } else {
         data = a0[3];
@@ -401,7 +401,7 @@ void func_8006ECF4(Unk8006EACCRec *arg0) {
         if (D_800A35B0 != 0) goto p1_idx;
         if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) goto p1_idx;
         if (D_800A35BC != 2) goto p1_fallback;
-        if (*(s32 *)((s32)D_800A3568 + 0x14) & 0x20000) goto p1_idx;
+        if (D_800A3568->unk14_17) goto p1_idx;
     p1_fallback:
         s.p1 = (s32 *)*(s32 *)(s3 + 4);
         goto p1_done;
@@ -523,7 +523,7 @@ void func_8006F100(Unk8006EACCRec *arg0) {
     for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
         obj = *(Obj_8006F100 **)(base + D_800A3560.rec[i].unk2 * 4);
         sel = 1;
-        if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
+        if (D_800A35BC == 2 && !(D_800A3568->unk14_17) && i == 1) {
             if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
                 sel = 1;
             } else {
@@ -722,7 +722,7 @@ void func_8006F528(Unk8006EACCRec *arg0) {
     prim = arg0->unk_04.unk_10;
     SetTile(prim);
     SetSemiTrans(prim, 0);
-    if (*(s32 *)(D_800A3568 + 0x20) & 1) {
+    if (D_800A3568->unk20_0) {
         prim->r0 = 0xC8;
         prim->g0 = 0xC8;
         prim->b0 = 0xC8;
@@ -1045,7 +1045,7 @@ void func_80070188(Unk8006EACCRec *arg0) {
                 func_8005C650(D_8009BC40[*row][*col].value + 0xB, 0x7F, 0x7F);
                 D_800A35C8[0] = 0xF;
                 D_800A35C8[1] = 0x14;
-                if (D_800A35BC == 2 && (*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 0) {
+                if (D_800A35BC == 2 && (D_800A3568->unk14_17) && i == 0) {
                     if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
                         D_800A3588[1] = 2;
                     } else {
@@ -1101,7 +1101,7 @@ void func_80070188(Unk8006EACCRec *arg0) {
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     }
     if (D_800A3580 == 0 && D_800A3560.rec[0].unk0 != 0xFF && ((s16 *)D_800A35C4)[0] == 0) {
-        if (D_800A35BC == 2 && (*(s32 *)(D_800A3568 + 0x14) & 0x20000)) {
+        if (D_800A35BC == 2 && (D_800A3568->unk14_17)) {
             D_800A3554 = 1;
         }
         if ((D_800A3560.rec[1].unk0 != 0xFF && ((s16 *)D_800A35C4)[1] == 0) || D_800A35B0 + D_800A3554 == 0) {
@@ -1270,7 +1270,7 @@ void func_80070F78(Unk8006EACCRec *arg0, DescF97C *s) {
             s32 max;
             s32 min;
 
-            if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
+            if (D_800A35BC == 2 && !(D_800A3568->unk14_17) && i == 1) {
                 if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
                     max = 5;
                     min = 1;
@@ -1333,7 +1333,7 @@ void func_80070F78(Unk8006EACCRec *arg0, DescF97C *s) {
                     func_8005C650(1, 0x7F, 0x7F);
                     D_800A3560.rec[i].unk2 = D_8009BC38[D_800A3590[i]];
                     sel = 1;
-                    if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
+                    if (D_800A35BC == 2 && !(D_800A3568->unk14_17) && i == 1) {
                         if (!(D_8009BC7C[D_800A3560.rec[0].unk1] & 2)) {
                             sel = 0;
                         }
@@ -1465,7 +1465,7 @@ void func_80070F78(Unk8006EACCRec *arg0, DescF97C *s) {
             s->table = cells;
             s->x = (D_800A3590[i] << 6) + 0x80;
             s->y = 0xAC - (D_800A3594[i] << 5);
-            if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
+            if (D_800A35BC == 2 && !(D_800A3568->unk14_17) && i == 1) {
                 if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
                     s->table += *(u8 *)(s->header + 2) * 8;
                 }
@@ -1516,7 +1516,7 @@ void func_80071C4C(Unk8006EACCRec *arg0) {
             s.unk28 = 0;
             obj = *(Obj_8006F100 **)(base + D_800A3560.rec[i].unk2 * 4);
             sel = 1;
-            if (D_800A35BC == 2 && !(*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 1) {
+            if (D_800A35BC == 2 && !(D_800A3568->unk14_17) && i == 1) {
                 if (D_8009BC7C[D_800A3560.rec[0].unk1] & 2) {
                     sel = 1;
                 } else {
@@ -1557,8 +1557,7 @@ void func_80071C4C(Unk8006EACCRec *arg0) {
             s32 mode = func_80071C20();
 
             D_800A35A0 = 1;
-            *(s32 *)(D_800A3568 + 0x14) =
-                (*(s32 *)(D_800A3568 + 0x14) & ~0x3F0) | ((mode & 0x3F) << 4);
+            D_800A3568->unk14_4 = mode;
         } else if (D_800A35BC == 4) {
             D_800A3584 = 5;
         } else if (D_800A35BC == 6) {
@@ -1569,25 +1568,10 @@ void func_80071C4C(Unk8006EACCRec *arg0) {
             D_800A35A0 = 1;
         }
         for (i = 0; i < 1 + D_800A35B0 + D_800A3554; i++) {
-            s32 dst = i * 10; /* FAKE: named intermediate for player i's 10-byte replay-record
-                               * offset (named-intermediate entry, no-new-park-categories.md).
-                               * Mechanism, fixed at RTL expansion: the store's address expands
-                               * with EXPAND_SUM, where an inlined `i * 10` comes back as
-                               * (mult i 10) (expr.c:5359-5383) and PLUS_EXPR's "put a
-                               * multiplication first" (expr.c:5288-5290) swaps it ahead of
-                               * D_800A3568; force_operand (expr.c:3744) then emits
-                               * (plus i*10 D_800A3568), `addu v0,a0,v0`. dst is a REG, so
-                               * nothing is swapped and the add keeps the target's
-                               * `addu v0,v0,a0`. */
-
-            *(u8 *)(D_800A3568 + dst) = D_800A3560.rec[i].unk0;
+            D_800A3568->unk00[i][0].chr = D_800A3560.rec[i].unk0;
         }
         for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
-            s32 dst = i * 10; /* FAKE: named intermediate for player i's 10-byte replay-record
-                               * offset; same entry and mechanism as the first loop's
-                               * dst (here the `+ 1` store). */
-
-            *(u8 *)(D_800A3568 + dst + 1) = D_800A3560.rec[i].unk2;
+            D_800A3568->unk00[i][0].unk1 = D_800A3560.rec[i].unk2;
         }
     }
     func_8006F038(arg0);
@@ -1629,12 +1613,6 @@ typedef struct {
     s32 hdr2C;
     s32 hdr30;
 } Sheets720FC;
-typedef struct {
-    u8 unk0[0x14];
-    u32 unk14_0 : 4;
-    u32 unk14_4 : 6;
-    u32 unk14_10 : 22;
-} Cfg720FC;
 void func_800720FC(Unk8006EACCRec *arg0, s32 arg1, s32 mode) {
     Desc720FC s;
     u16 rect2[4];
@@ -1858,9 +1836,9 @@ void func_800720FC(Unk8006EACCRec *arg0, s32 arg1, s32 mode) {
             action = menu[(D_800A3580 - 4) * 8 + D_800A359C * 2 + D_800A3598];
             func_8005C650(1, 0x7F, 0x7F);
             if (action != 0xD || D_800A35BC != 6) {
-                ((Cfg720FC *)D_800A3568)->unk14_4 = action;
+                D_800A3568->unk14_4 = action;
             } else {
-                ((Cfg720FC *)D_800A3568)->unk14_4 = 0x25;
+                D_800A3568->unk14_4 = 0x25;
             }
             D_800A35A0 = 1;
         }

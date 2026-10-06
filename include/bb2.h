@@ -248,7 +248,7 @@ extern Tbl8008E194 D_8008E194[];
 
 /* 8 initialized byte pairs (asm/data/7D920.data.s, 0x8009BD58: {0,0} {1,0}
  * {2,0} {3,0} {4,1} {5,1} {6,1} {7,0}); func_80077904 returns [n][0] and
- * caches [n][1] in D_800A35E0, n = D_8009BD38.unk0 (base + n*2,
+ * caches [n][1] in D_800A35E0, n = D_8009BD24.unk14_0 (base + n*2,
  * asm/funcs/func_80077904.s).  Replaces the splat per-byte scalar D_8009BD59. */
 extern u8 D_8009BD58[8][2];
 
@@ -287,7 +287,7 @@ extern s32 D_8008EBCC[];
 extern s32 D_8008EBE0[];
 extern u8 D_8008EBF4[6];
 extern LeafThreshold D_8008EBFC[6];
-extern u8 D_8008EC30;
+extern u8 D_8008EC30[4];
 extern s16 D_8008F12C;
 extern u8 D_8008F13C;
 extern u8 D_8008F19C[];
@@ -586,7 +586,7 @@ extern s32 D_8008EA00[][4];
 extern u8 D_8008EC24[][5];
 extern u8 D_8009BA60[];
 extern s32 D_8009BC04;
-extern Unk8009BD24Record D_8009BD24[2][5];
+extern Unk8009BD24Block D_8009BD24;
 extern s32 D_800A3244;
 extern s32 D_800A326C;
 extern s32 D_800A32BC;
@@ -888,7 +888,7 @@ extern void func_80061A3C(s32 *, s16, s32, s32);
 extern void func_80061FAC(s16 *, s32 *, MATRIX *);
 extern void func_800620B8(s16 *, s32 *);
 extern void func_80068ECC(s32);
-extern s32 func_80068F70(s32, s32 *);
+extern s32 func_80068F70(s32, Unk8009BD24Block *);
 extern void func_8006920C(s32 *, s32);
 extern s32 func_80069250(s32, s32);
 extern s32 func_800692C0(u32 *, s32, s16 *, s16 *);
@@ -910,7 +910,7 @@ extern s32 func_8006E2A8(void);
 extern void func_8006E440(s32 *);
 extern s32 func_8006E480(s32, s32);
 extern s32 func_8006E49C(s32, Unk8006E49CRec *);
-extern s32 func_8006E534(s32, s32, u8 *, u32);
+extern s32 func_8006E534(s32, s32, Unk8009BD24Block *, u32);
 extern void func_8006E950(s32, s32 *);
 extern s32 func_8006EACC(s32, s32);
 extern s32 func_8007352C(s32);
@@ -930,7 +930,7 @@ extern void func_80077AE0(void);
 extern void func_80077B00(void);
 extern void func_80077B20(void);
 extern s32 func_80077B30(s32, s32);
-extern s32 *func_80077D00(void);
+extern Unk8009BD24Block *func_80077D00(void);
 extern s32 func_8007855C(s32);
 extern s32 func_80078824(s32);
 extern s32 func_800788B0(void);
