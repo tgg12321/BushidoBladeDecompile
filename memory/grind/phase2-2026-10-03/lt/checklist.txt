@@ -23,6 +23,10 @@ BLOCKING (FAIL):
       where the holder was computed); moving a store is a different spelling, not the ablation (rev-fdesc1).
       The class most often missed: named temps / staged reads computed AHEAD of a store or call and used
       after it (texA, delta, v0_val, loop-rotated reads) -- inline each at its use and score it (rev-w2b3).
+      Scope: this applies to SINGLE-USE temps (read ahead of an intervening store / call, used once after).
+      A local read more than once, a loop-invariant hoist, or a per-iteration value used several times is an
+      ordinary program variable (ordinary-c-judge-decidable Ruling 1, named intermediate) -- no label needed
+      even if inlining it changes bytes.
   B5. Item 4: no raw-offset or differently-typed view of header-declared bytes on an edited line
       (if no typed form matches, the line stays exactly as at HEAD and gets a debt row). Before
       claiming "no typed form matches", try at least: a typed holder with member access; no holder;
