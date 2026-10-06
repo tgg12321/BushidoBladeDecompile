@@ -978,7 +978,7 @@ void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 va
     dst->h30[1][1] = 0;
     dst->h30[1][2] = 0x64;
 }
-void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
+void func_8001BAE4(Rec1C *arg0, Rec1C *arg1, s32 arg2) {
     s32 temp_a2;
     s32 var_s3;
     s32 var_v1;
@@ -989,8 +989,7 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
     } else {
         var_s3 = 0x1000;
     }
-    temp_a2 = ratan2(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4),
-                             *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8));
+    temp_a2 = ratan2(arg1->h4 - arg0->h4, arg1->h8 - arg0->h8);
     var_v1 = arg2;
     if (arg2 < 0) {
         var_v1 = arg2 + 3;
@@ -999,12 +998,12 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
     if (var_v0 < 0) {
         var_v0 += 3;
     }
-    func_8001B748(&D_800F6608, arg0, arg1, (s32 *)arg2, var_s3, (0x500 - temp_a2) - (var_v0 >> 2));
+    func_8001B748(&D_800F6608, arg0, arg1, arg2, var_s3, (0x500 - temp_a2) - (var_v0 >> 2));
 }
-void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
+void func_8001BBD8(Rec1C *arg0, Rec1C *arg1, s32 arg2) {
     s32 temp_s0;
     temp_s0 = (D_800A387C < 0x2711) << 0xB;
-    func_8001B748(&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - ratan2(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
+    func_8001B748(&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - ratan2(arg1->h4 - arg0->h4, arg1->h8 - arg0->h8));
 }
 void func_8001BC70(Unk80101EC8Record *arg0, s32 arg1) {
     func_8003F1E4(0);
@@ -2191,22 +2190,22 @@ void func_8001EFA0(void) {
         D_800A3834 = var_v0;
     }
 }
-void func_8001F1C4(Unk80101EC8Record *arg0, u8 *arg1, MotionFrame *arg2, MotionFrame *arg3) {
+void func_8001F1C4(Unk80101EC8Record *arg0, Rec1C *arg1, MotionFrame *arg2, MotionFrame *arg3) {
     s16 temp_v1;
-    if (!(*(u8 *)(arg1 + 0x18) & 0x80)) {
+    if (!(arg1->b18 & 0x80)) {
         func_80027334(arg2);
         func_80027334(arg3);
     }
-    func_8002F770(&arg2->unk_0C[0x15], *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
-    func_8002F770(&arg3->unk_0C[0x15], *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
+    func_8002F770(&arg2->unk_0C[0x15], arg1->b14 * 4, arg1->b15 * 4, 0);
+    func_8002F770(&arg3->unk_0C[0x15], arg1->b14 * 4, arg1->b15 * 4, 0);
     temp_v1 = arg0->unk_0C;
     if ((temp_v1 == 0x1D) || (temp_v1 == 0xE)) {
-        arg2->unk_0C[0x39] += *(s8 *)(arg1 + 0x16) * 4;
-        arg3->unk_0C[0x39] += *(s8 *)(arg1 + 0x16) * 4;
+        arg2->unk_0C[0x39] += arg1->b16 * 4;
+        arg3->unk_0C[0x39] += arg1->b16 * 4;
     }
     if ((u32)((u16)arg0->unk_0E - 6) < 2U) {
-        arg2->unk_0C[0x33] += *(s8 *)(arg1 + 0x16) * 4;
-        arg3->unk_0C[0x33] += *(s8 *)(arg1 + 0x16) * 4;
+        arg2->unk_0C[0x33] += arg1->b16 * 4;
+        arg3->unk_0C[0x33] += arg1->b16 * 4;
     }
 }
 /* Steers two bone-angle sets (a, b) toward obj's partner (obj->other):

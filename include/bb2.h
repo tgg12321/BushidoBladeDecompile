@@ -504,7 +504,7 @@ extern Rec44 D_800F6608;
  * per-byte scalar D_800F65F9 (entry [0][1]). */
 extern u8 D_800F65F8[8][2];
 
-extern s16 D_800F68E0[];
+extern Unk800F68E0Rec D_800F68E0[0xB4];
 /* The two InitPAD receive buffers, 0x24 bytes apart: sys_Init passes g_pad_buf and
  * g_pad_buf + 0x24 (asm/funcs/func_80016A18.s:6-11), and func_80019568 copies the first two
  * words of each.  0x48 bytes up to D_800FF5C8. */
@@ -516,7 +516,7 @@ extern s16 D_800FF5D8;
 extern s16 D_800FF5DA;
 extern s16 D_800FF5DC;
 extern s32 D_800FF5E0;
-extern u8 D_80101BF0;
+extern Unk80101BF0Rec D_80101BF0[0x20];
 extern Unk80101DF0Record D_80101DF0;
 extern Unk80101DF0Record D_800FF638;
 extern Unk80101DF0Record g_cam_bone_data2;
@@ -665,7 +665,7 @@ extern void func_8001CD68(Unk8001CD68Rec *);
 extern void func_8001DA2C(void);
 extern s32 func_8001DB58(void);
 extern void func_8001DBE4(void);
-extern void func_8001F1C4(Unk80101EC8Record *, u8 *, MotionFrame *, MotionFrame *);
+extern void func_8001F1C4(Unk80101EC8Record *, Rec1C *, MotionFrame *, MotionFrame *);
 extern void func_8001F860(Unk80101EC8Record *, s32);
 extern void func_800203B4(u8 *, s32, s16 *);
 extern void func_800207C8(Unk80101EC8Record *, LeafPos *, LeafPos *, LeafPos *);

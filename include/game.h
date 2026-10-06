@@ -1609,13 +1609,52 @@ typedef struct Rec44 {
     u8 b40; u8 b41; u8 b42; u8 b43;
 } Rec44;
 
-/* 0x1C-byte record: func_8003993C walks an array of these at D_800A36EC with element
- * stride 0x1C (base + i*0x38 + {0,0x1C} + D_800A3748*0x1C, asm/funcs/func_8003993C.s:57-89)
- * and passes two of them to func_8001BAE4 / func_8001BBD8. */
+/* 0x1C-byte record: one player's state in one frame of the replay buffer D_800A36EC (frames
+ * of two, Rec1C[2] = 0x38 bytes; func_80039680 writes player a0->index's record of frame
+ * D_800A36F8 from the character record, func_8003993C reads both back and passes two of them
+ * to func_8001BAE4 / func_8001BBD8, func_8001F1C4 reads b14..b16 / b18).
+ * - w0: the character's current move (Unk80101EC8Record.unk_50); func_8003993C reads its unk_04.
+ * - h4 / h6 / h8: unk_F4 x / y / z; hA: unk_1C8.vy & 0xFFF with unk_B3 in the top four bits;
+ *   hC: unk_148; hE / h10 / h12: unk_64 / unk_66 / unk_68.
+ * - b14..b16: unk_1E6 / unk_1E8 / unk_1EA >> 2, read back signed; b17: bit 0 = unk_60 != 0,
+ *   bit 1 = unk_61 != 0; b18: unk_62; b19: unk_40. */
 typedef struct Rec1C {
-    s16 h0; s16 h2; s16 h4; s16 h6; s16 h8; s16 hA; s16 hC; s16 hE;
-    s32 w10; s32 w14; s32 w18;
+    MoveScript *w0;
+    s16 h4; s16 h6; s16 h8;
+    u16 hA;
+    s16 hC; s16 hE; s16 h10; s16 h12;
+    s8 b14; s8 b15; s8 b16;
+    u8 b17; u8 b18; u8 b19;
+    u8 pad1A[2];
 } Rec1C;
+
+/* The 0xB4 0x10-byte records of the event table D_800F68E0 (func_800392C8 clears unk_0 to -1,
+ * func_80039320 ages them, func_800393C8 adds or refreshes one, func_8003993C replays them).
+ * unk_0: -1 = free, else a frame counter; unk_2: frames seen; unk_3: func_800393C8's arg1;
+ * unk_4: the s16 x / y / z of arg2; unk_A: arg3[0] & 0xFFF with arg0 in the top four bits;
+ * unk_C / unk_E: arg3[1] / arg3[2]. */
+typedef struct Unk800F68E0Rec {
+    s16 unk_0;
+    u8 unk_2;
+    u8 unk_3;
+    s16 unk_4[3];
+    u16 unk_A;
+    s16 unk_C;
+    s16 unk_E;
+} Unk800F68E0Rec;
+
+/* The 0x20 0x10-byte records of the event table D_80101BF0 (func_800392C8 sets unk_0 to 0xFF =
+ * free, func_80039320 frees the current frame's, func_800395B4 fills one, func_8003993C replays
+ * those whose unk_0 is the frame index). unk_0: the frame (D_800A36F8); unk_1 / unk_2:
+ * func_800395B4's arg0 / arg1; unk_4: the s16 x / y / z of arg2; unk_A: arg3[0..2]. */
+typedef struct Unk80101BF0Rec {
+    u8 unk_0;
+    u8 unk_1;
+    u8 unk_2;
+    u8 pad3;
+    s16 unk_4[3];
+    u16 unk_A[3];
+} Unk80101BF0Rec;
 
 /* The 4-byte record func_8001CD68 fills from the frame counter D_800A3858 (30 per
  * second): unk_0 = count / 1800, unk_2 = count / 30 % 60, unk_3 = count % 30 * 100 / 30

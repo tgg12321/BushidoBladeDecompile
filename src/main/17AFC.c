@@ -4013,6 +4013,8 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
 }
 void func_8002EECC(void *arg0, void *arg1) {
+    MATRIX *src = arg0;
+    MATRIX *dst = arg1;
     s16 temp_a3;
     s16 temp_t0;
     s16 temp_t1;
@@ -4022,23 +4024,23 @@ void func_8002EECC(void *arg0, void *arg1) {
     s32 temp_a2;
     s32 temp_v1_2;
 
-    temp_t2 = *(s16 *)((u8 *)arg0 + 0xA);
-    temp_t1 = *(s16 *)((u8 *)arg0 + 0xE);
-    temp_t0 = *(s16 *)((u8 *)arg0 + 8);
-    temp_a3 = *(s16 *)((u8 *)arg0 + 0x10);
+    temp_t2 = src->m[1][2];
+    temp_t1 = src->m[2][1];
+    temp_t0 = src->m[1][1];
+    temp_a3 = src->m[2][2];
     temp_a2 = (temp_t2 * temp_t1) - (temp_t0 * temp_a3);
-    temp_v1 = *(s16 *)((u8 *)arg0 + 2);
-    temp_v0 = *(s16 *)((u8 *)arg0 + 4);
-    temp_v1_2 = (s32) ((*(s16 *)((u8 *)arg0 + 0) * (temp_a2 >> 0xC)) + (*(s16 *)((u8 *)arg0 + 6) * ((s32) ((temp_v1 * temp_a3) - (temp_v0 * temp_t1)) >> 0xC)) + (*(s16 *)((u8 *)arg0 + 0xC) * ((s32) ((temp_v0 * temp_t0) - (temp_v1 * temp_t2)) >> 0xC))) >> 0xC;
-    *(s16 *)((u8 *)arg1 + 0) = (s16) (temp_a2 / temp_v1_2);
-    *(s16 *)((u8 *)arg1 + 2) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 0x10)) - (*(s16 *)((u8 *)arg0 + 4) * *(s16 *)((u8 *)arg0 + 0xE))) / temp_v1_2);
-    *(s16 *)((u8 *)arg1 + 4) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 4) * *(s16 *)((u8 *)arg0 + 8)) - (*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 0xA))) / temp_v1_2);
-    *(s16 *)((u8 *)arg1 + 6) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 6) * *(s16 *)((u8 *)arg0 + 0x10)) - (*(s16 *)((u8 *)arg0 + 0xA) * *(s16 *)((u8 *)arg0 + 0xC))) / temp_v1_2);
-    *(s16 *)((u8 *)arg1 + 8) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 4) * *(s16 *)((u8 *)arg0 + 0xC)) - (*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 0x10))) / temp_v1_2);
-    *(s16 *)((u8 *)arg1 + 0xA) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 0xA)) - (*(s16 *)((u8 *)arg0 + 4) * *(s16 *)((u8 *)arg0 + 6))) / temp_v1_2);
-    *(s16 *)((u8 *)arg1 + 0xC) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 8) * *(s16 *)((u8 *)arg0 + 0xC)) - (*(s16 *)((u8 *)arg0 + 6) * *(s16 *)((u8 *)arg0 + 0xE))) / temp_v1_2);
-    *(s16 *)((u8 *)arg1 + 0xE) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 0xE)) - (*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 0xC))) / temp_v1_2);
-    *(s16 *)((u8 *)arg1 + 0x10) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 6)) - (*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 8))) / temp_v1_2);
+    temp_v1 = src->m[0][1];
+    temp_v0 = src->m[0][2];
+    temp_v1_2 = ((src->m[0][0] * (temp_a2 >> 0xC)) + (src->m[1][0] * (((temp_v1 * temp_a3) - (temp_v0 * temp_t1)) >> 0xC)) + (src->m[2][0] * (((temp_v0 * temp_t0) - (temp_v1 * temp_t2)) >> 0xC))) >> 0xC;
+    dst->m[0][0] = (temp_a2 / temp_v1_2);
+    dst->m[0][1] = (((src->m[0][1] * src->m[2][2]) - (src->m[0][2] * src->m[2][1])) / temp_v1_2);
+    dst->m[0][2] = (((src->m[0][2] * src->m[1][1]) - (src->m[0][1] * src->m[1][2])) / temp_v1_2);
+    dst->m[1][0] = (((src->m[1][0] * src->m[2][2]) - (src->m[1][2] * src->m[2][0])) / temp_v1_2);
+    dst->m[1][1] = (((src->m[0][2] * src->m[2][0]) - (src->m[0][0] * src->m[2][2])) / temp_v1_2);
+    dst->m[1][2] = (((src->m[0][0] * src->m[1][2]) - (src->m[0][2] * src->m[1][0])) / temp_v1_2);
+    dst->m[2][0] = (((src->m[1][1] * src->m[2][0]) - (src->m[1][0] * src->m[2][1])) / temp_v1_2);
+    dst->m[2][1] = (((src->m[0][0] * src->m[2][1]) - (src->m[0][1] * src->m[2][0])) / temp_v1_2);
+    dst->m[2][2] = (((src->m[0][1] * src->m[1][0]) - (src->m[0][0] * src->m[1][1])) / temp_v1_2);
 }
 void func_8002F2D0(MATRIX *a0, s16 *a1);
 void func_8002F2D0(MATRIX *a0, s16 *a1) {
