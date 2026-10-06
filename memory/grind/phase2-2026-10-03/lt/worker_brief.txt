@@ -5,6 +5,10 @@ Read first: docs/grind/handoff-2026-10-03-restructure.md open item 2, memory/gri
 .claude/rules/completion-bar.md (items 3/4/5), and 2-3 recent `phase2:` commit bodies
 (`git log -3 --format=%B 1d461415f`) for the message shape.
 
+SHARED CHECKLIST: memory/grind/phase2-2026-10-03/lt/checklist.txt is exactly what the reviewer judges.
+Run every BLOCKING item on your batch yourself before reporting, and say in the report which you checked.
+Messages follow its COMMIT MESSAGES section (short, no line-number citations).
+
 PROCESS (exact):
 1. Prepare the batch in tmp/ only (scripts under tmp/p2/ or the existing ones in
    memory/grind/phase2-2026-10-03/tools/struct/). Take the base on the CLEAN HEAD first:

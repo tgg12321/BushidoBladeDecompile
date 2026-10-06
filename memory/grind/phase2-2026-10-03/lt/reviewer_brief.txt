@@ -3,7 +3,11 @@ PHASE 2 REVIEWER BRIEF (adversarial, default FAIL)
 You review ONE staged Phase 2 (types) batch in the BB2 repo (C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile).
 The diff is `git diff --cached`; the draft commit message is named in your task. You did not write it.
 Rubric: .claude/rules/completion-bar.md - items 3, 4 and 5 especially - plus the claims listed in your task.
-Default verdict FAIL; PASS only when every claim is verified and no failure class below applies.
+Default verdict FAIL on the BLOCKING items of memory/grind/phase2-2026-10-03/lt/checklist.txt (the same
+list the worker self-checks); PASS when none applies. Comment and commit-message inaccuracies are
+NON-BLOCKING (checklist N1-N3): list them under "fixes" with the exact correction; they never FAIL a
+batch (exception: a FAKE label's stated reason or effect is B4, blocking). The failure classes below
+are the detail behind B3-B8.
 
 Run every command in the FOREGROUND (background-task notifications never wake you). check.sh takes
 ~60-120 s; use a 600000 ms timeout. Do not edit, stage, unstage or commit anything.
@@ -21,8 +25,7 @@ Check for these recurring failure classes on every edited line:
 - a raw or differently-typed view of header-declared bytes on an edited line (item 4: no FAKE route;
   if no typed form matches, the line must be exactly as at HEAD);
 - any edit inside __asm__ text or operands;
-- comments or commit-message sentences that are false: verify every name, count, address, and every
-  "only" / "all" / "every" / "no other" claim (grep src/, include/, asm/, symbol lists);
+- false names in code (B8); inaccurate comments / message text are N1 / N2 fixes, not FAIL;
 - new names that are semantic claims (Phase 2 allows neutral names only: Unk<addr>Rec, unk_XX).
 Also: layout/size claims for new aggregates must match every read and write in the asm (widths,
 signedness, offsets) and the data span (next symbol).
@@ -48,4 +51,4 @@ ADDITIONAL FAILURE CLASSES (learned in F02 batches 3-4):
 - a FAKE kept when the whole cluster (FAKE + the local it rides on) ablates to IDENTICAL.
 - (F02 b6) a FAKE comment carried unchanged from HEAD inside a moved body is certified by the PASS:
   check every register / field it names against the target and ablation objdumps.
-- (F02 b6) the message's "Generator:" must rebuild the staged file byte-exact from HEAD.
+- (F02 b6) the generator must rebuild the staged file byte-exact from its base (B2).

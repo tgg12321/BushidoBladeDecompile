@@ -1,0 +1,41 @@
+PHASE 2 SHARED CHECKLIST (owner directive 2026-10-06): the worker runs this list on its own batch before
+reporting; the reviewer judges against exactly this list. Same criteria on both sides, so a review FAIL
+means the worker missed something on the list, never a criterion it was not told about.
+
+The owner's priority: cheats and regressions. Documentation precision is not a FAIL ground.
+
+BLOCKING (FAIL):
+ Regressions
+  B1. check.sh: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa, CMP OK (every object identical, or
+      relocation-only for a stated symbol merge, proven with relnorm.py), INTEGRITY OK, implicit
+      pairs not increased, no new cc1 diagnostic unless the batch states it.
+  B2. The generator rebuilds the staged files byte-exact from its stated base.
+ Cheats (completion-bar items 2-4)
+  B3. No register pins, hardcoded-$N __asm__, scheduling barriers, build-time rewriting; no edit
+      inside __asm__ text or operands.
+  B4. Every codegen-shaping construct (a local, pointer, ordering, cast or spelling kept because
+      the plain form changes bytes) carries /* FAKE: ... */ with its measured ablation score; the
+      stated effect matches the ablation objdump; whole clusters ablated; a FAKE whose cluster
+      ablates to IDENTICAL is removed, not kept.
+  B5. Item 4: no raw-offset or differently-typed view of header-declared bytes on an edited line
+      (if no typed form matches, the line stays exactly as at HEAD and gets a debt row).
+  B6. Holder-first: no cast where retyping the holder is byte-neutral; no no-op cast (a cast to a
+      callee's declared parameter type is a boundary conversion, not a no-op).
+ Object model
+  B7. New aggregates match every read and write in the asm (offset, width, signedness) and the
+      data span; one struct per LAYOUT (not per function); no invented union beyond one member per
+      real layout; no adjacent-field indexing.
+  B8. Names in moved bodies (locals, params, members, types) assert nothing the code contradicts;
+      Phase 2 adds only neutral names (Unk<addr>..., unk_XX) or names the code already bears out.
+
+NON-BLOCKING (reviewer lists them as "fixes"; the orchestrator applies and checks them before the
+commit, no re-review):
+  N1. Ordinary source comments (not FAKE labels) that are inaccurate or stale.
+  N2. Commit-message errors: counts, quotes, wording.
+  N3. Hygiene debt rows.
+
+COMMIT MESSAGES (keep them short; they are an audit trail, not a proof):
+  - what changed, by object and function name (no line-number citations);
+  - the check.sh summary and the moved layer-2 keys;
+  - a FAKE table: function, construct, ablation score, one-line objdump effect;
+  - debt rows. Cast tallies optional.
