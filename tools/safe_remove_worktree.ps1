@@ -62,6 +62,21 @@ foreach ($line in $out) {
     }
 }
 
+# `dir /AL /S` RECURSES INTO junctions, so it also lists reparse points that
+# live inside a junction's TARGET (e.g. main's .venv/lib64 symlink, the
+# tools/gcc-2.7.2 self-link) under the worktree's path. Detaching those deletes
+# MAIN's links (2026-10-06). Keep only the OUTERMOST reparse points: drop any
+# path that sits below another reparse point already in the list.
+$outer = @()
+foreach ($j in ($junctions | Sort-Object -Property Length)) {
+    $below = $false
+    foreach ($k in $outer) {
+        if ($j.StartsWith($k + '\', [System.StringComparison]::OrdinalIgnoreCase)) { $below = $true; break }
+    }
+    if (-not $below) { $outer += $j }
+}
+$junctions = $outer
+
 if ($junctions.Count -eq 0) {
     Write-Output "  no junctions found — safe to use git worktree remove directly"
 } else {
