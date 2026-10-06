@@ -28,12 +28,12 @@ s32 SsUtSetDetVVol(s16 idx, s16 x, s16 y)
 }
 
 s32 SsUtGetVVol(s16 a0, s16 *a1, s16 *a2) {
-    u16 raw1, raw2;
+    s16 raw1, raw2;
 
     if ((u16)a0 < 0x18) {
         SpuGetVoiceVolume(a0, &raw1, &raw2);
-        *a1 = (s16)raw1 / 129;
-        *a2 = (s16)raw2 / 129;
+        *a1 = raw1 / 129;
+        *a2 = raw2 / 129;
         return 0;
     }
     return -1;

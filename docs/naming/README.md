@@ -76,8 +76,8 @@ the C objects' function symbols (one per distinct linked address; no aliases or 
 
 | Source | Count | Note |
 |---|---|---|
-| `asm/funcs/*.s` files | 1,438 | after the stale-duplicate deletions (7 pairs in 5a02fc789, `func_80047384.s` in 6e6e29489) and the `_SendPAD.s` split (2cc9d7eb5) |
-| minus `D_8007E08C.s`, `jtbl_comb_control.s` | 1,436 | data-as-code blob; a jump table in `.rodata` (`0x800164AC`) — not functions. Each remaining file is one function at a distinct address (file stem may differ from the C name, e.g. `func_800167AC.s` = `file_GetFlag0`) |
+| `asm/funcs/*.s` files | 1,437 | after the stale-duplicate deletions (7 pairs in 5a02fc789, `func_80047384.s` in 6e6e29489) and the `_SendPAD.s` split (2cc9d7eb5) |
+| minus `jtbl_comb_control.s` (and InitGeom.s's leading `D_8007E08C` dlabel block) | 1,436 | MSC00's two leading data words, ahead of InitGeom's glabel; a jump table in `.rodata` (`0x800164AC`) — not functions. Each remaining file is one function at a distinct address (file stem may differ from the C name, e.g. `func_800167AC.s` = `file_GetFlag0`) |
 | plus 45 functions inside a neighbour's listing | 1,481 | splat did not split statics / pointer-only entries: e.g. `setIntr`/`stopIntr`/`restartIntr` inside `trapIntr.s`, `r_sio*`/`HandleSio`/`__nulldev` inside `_comb_control.s`, `SsSeqCalledTbyT` inside `SsStart.s`, `cdrom_IrqHandler` inside `func_80081E1C.s` |
 | plus 3 functions with no listing | **1,484** | `func_8001C624`, `func_80037D14` (`.s` deleted on match, 2026-04-14), `SetVideoMode` (never listed) |
 

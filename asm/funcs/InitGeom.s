@@ -1,3 +1,7 @@
+dlabel D_8007E08C
+    /* 6E88C 8007E08C 50730915 */ .word 0x15097350
+    /* 6E890 8007E090 9C9F4000 */ .word 0x00409F9C /* invalid instruction */
+enddlabel D_8007E08C
 glabel InitGeom
     /* 6E894 8007E094 0A80013C */  lui        $at, %hi(D_8009C798)
     /* 6E898 8007E098 98C73FAC */  sw         $ra, %lo(D_8009C798)($at)

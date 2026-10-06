@@ -15,6 +15,7 @@ J = lambda *p: os.path.join(ROOT, *p)
 funcs = {}   # name -> dict(addr, file, insns)
 FUNCDIR = J("asm", "funcs")
 glabel_re = re.compile(r"^glabel\s+(\S+)")
+dlabel_re = re.compile(r"^dlabel\s+(\S+)")
 addr_re = re.compile(r"^\s*/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s")
 for fn in sorted(os.listdir(FUNCDIR)):
     if not fn.endswith(".s"):
@@ -22,6 +23,20 @@ for fn in sorted(os.listdir(FUNCDIR)):
     path = os.path.join(FUNCDIR, fn)
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
         lines = fh.readlines()
+    # A function's address and size count from its glabel (as engine/layer2._asm_addr reads it). A
+    # module's leading data block (dlabel) ahead of the glabel in the same .s -- MSC00's D_8007E08C in
+    # InitGeom.s -- is its own entry, as when it had its own .s; a file with no glabel is one entry.
+    if any(glabel_re.match(ln) for ln in lines):
+        pre = []
+        for i, ln in enumerate(lines):
+            if glabel_re.match(ln):
+                break
+            pre.append(ln)
+        lead = next((dlabel_re.match(ln).group(1) for ln in pre if dlabel_re.match(ln)), None)
+        if lead and any(addr_re.match(ln) for ln in pre):
+            cols = [addr_re.match(ln).group(1).upper() for ln in pre if addr_re.match(ln)]
+            funcs[lead] = dict(addr=cols[0], stem=fn[:-2], insns=len(cols))
+        lines = lines[i:]
     name = None
     addr = None
     insns = 0

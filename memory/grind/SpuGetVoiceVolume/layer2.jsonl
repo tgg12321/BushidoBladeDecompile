@@ -1,1 +1,2 @@
 {"func": "SpuGetVoiceVolume", "addr": "8008BD88", "verdict": "PASS", "body_hash": "995c6c77ed2f1b85", "body_kind": "c", "file": "main/psxsdk/libspu/s_gvv", "reviewer": "cheat-reviewer:rev-w2b1", "scope": "cheat-cleanup", "date": "2026-10-06T09:35:43Z", "head": "4290c05ec", "notes": ""}
+{"func": "SpuGetVoiceVolume", "addr": "8008BD88", "verdict": "PASS", "body_hash": "6355102aa21eecd6", "body_kind": "c", "file": "main/psxsdk/libspu/s_gvv", "reviewer": "cheat-reviewer:rev-fsmall-p", "scope": "cheat-cleanup", "date": "2026-10-06T16:51:26Z", "head": "f2b56796b", "notes": ""}

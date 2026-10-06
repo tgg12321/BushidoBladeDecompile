@@ -3,26 +3,22 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-void SpuGetVoiceVolume(s32 arg0, u16 *arg1, u16 *arg2) {
-    u16 temp_v1;
-    u16 temp_a0_2;
-    u32 temp_a3;
-    u32 temp_v1_2;
+/* the form of psyz's decomp/src/libspu/s_gvv.c (github.com/Xeeynamo/psyz @ 973fa3460, PsyQ 4.0) */
+static inline void assign(u16 val, s16 *out) {
+    u32 offset = 0x8000; /* FAKE: 0x8000 held in a u32 so the adjustment is a subu; inline, uval - 0x8000 becomes an addu of the same 0x8000 register (same low 16 bits): score 2 */
+    u32 uval = val;
 
-    temp_v1 = _spu_RXX->raw[arg0 * 8];
-    temp_a0_2 = _spu_RXX->raw[arg0 * 8 + 1];
-    temp_a3 = temp_v1 & 0xFFFF;
-    if (temp_a3 >= 0x4000U) {
-        u32 sub = 0x8000;
-        *arg1 = temp_a3 - sub;
+    if (uval >= 0x4000) {
+        *out = uval - offset;
     } else {
-        *arg1 = temp_v1;
+        *out = val;
     }
-    temp_v1_2 = temp_a0_2 & 0xFFFF;
-    if (temp_v1_2 >= 0x4000U) {
-        u32 sub = 0x8000;
-        *arg2 = temp_v1_2 - sub;
-        return;
-    }
-    *arg2 = temp_a0_2;
+}
+
+void SpuGetVoiceVolume(s32 arg0, s16 *arg1, s16 *arg2) {
+    u16 left = _spu_RXX->raw[arg0 * 8];
+    u16 right = _spu_RXX->raw[arg0 * 8 + 1]; /* FAKE: read ahead of the left channel's store (the two lhu together); read at its assign: score 14 */
+
+    assign(left, arg1);
+    assign(right, arg2);
 }
