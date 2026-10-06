@@ -2109,6 +2109,30 @@ typedef struct {
     MATRIX matrix;
 } Func80017A44Output;
 
+/* The 16-byte scene quad (2B344 func_8003FA24 fills it in each SceneRec, func_8003F824 copies it into
+ * Scene.quads; 87A0 func_8001924C steps one object per quad): the object's g_file_data_buf index (unk0),
+ * its flags (unk2; bit 0 picks func_80019310 over func_800187F4), the object's matrix, its point table end
+ * and its collision-volume block. */
+typedef struct {
+    /* 0x00 */ s16 unk0;
+    /* 0x02 */ u8 unk2;
+    /* 0x03 */ u8 unk3;
+    /* 0x04 */ MATRIX *unk4;
+    /* 0x08 */ u8 *unk8;
+    /* 0x0C */ struct Unk8003F6D8Coll *unkC;
+} SceneQuad;
+
+/* The collision volumes of one scene record (2B344 Func8003F6D8Inner +0x10; SceneQuad.unkC points here):
+ * unk00 (func_800400B0 sets it; 87A0 func_80017FA0 scales it into the scratchpad's ground word), the
+ * volume count, each volume's two foci (gte_SetMatrixRotTransIR writes each as three words) and its
+ * bound (unk68). */
+typedef struct Unk8003F6D8Coll {
+    /* 0x00 */ s32 unk00;
+    /* 0x04 */ s32 count;
+    /* 0x08 */ VECTOR foci[3][2];
+    /* 0x68 */ s32 unk68[3];
+} Unk8003F6D8Coll;
+
 /* func_80017D84's argument (2B344 func_8003FA24 builds it on its stack): the point table and its
  * count, the flags, the group list, the object's matrix and the buffer the node / edge tables go to. */
 typedef struct {

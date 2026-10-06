@@ -2445,7 +2445,7 @@ const char D_80010D8C[16] = "Multipul Model";
 /* Forward declarations */
 
 /* Externs for globals */
-extern void gte_SetMatrixRotTransIR(MATRIX *, SVECTOR *, s16 *);
+extern void gte_SetMatrixRotTransIR(MATRIX *, SVECTOR *, VECTOR *);
 
 /* Externs for globals */
 extern s32 D_80094A6C[];
@@ -2603,24 +2603,9 @@ void stage_ApplyLighting(void) {
 typedef struct {
     /* 0x00 */ s32 count;
     /* 0x04 */ Unk80045878Node *objs[3];
-    /* 0x10 */ s32 unk10;
-    /* 0x14 */ s32 unk14;
-    /* 0x18 */ s16 pairs[3][16];
-    /* 0x78 */ s32 unk78[3];
+    /* 0x10 */ Unk8003F6D8Coll coll;
     /* 0x84 */ SVECTOR quads[3][2];
 } Func8003F6D8Inner; /* size 0xB4; sits at +0x1C of each 0xD0-byte record, records start at arg0+8 */
-
-/* The 16 bytes func_8003FA24 fills at SceneRec +0x04 and func_8003F824 copies into Scene.quads:
-   the record's id (unk0), two zero bytes, the object's matrix (its +0x18), its point table end and
-   the address of the record's inner.unk10. */
-typedef struct {
-    /* 0x00 */ u16 unk0;
-    /* 0x02 */ u8 unk2;
-    /* 0x03 */ u8 unk3;
-    /* 0x04 */ MATRIX *unk4;
-    /* 0x08 */ u8 *unk8;
-    /* 0x0C */ void *unkC;
-} SceneQuad;
 
 typedef struct {
     /* 0x00 */ s16 unk0;
@@ -2653,7 +2638,7 @@ void func_8003F62C(Unk80045878Obj *a0) {
         func_8004001C(s0);
     }
     func_8003F6D8(s0);
-    func_8001924C((s16 *)s0->quads, s0->count);
+    func_8001924C(s0->quads, s0->count);
     if (s0->unk2) {
         func_80040068(s0);
         s0->unk2 = 0;
@@ -2668,8 +2653,8 @@ void func_8003F6D8(Scene *arg0) {
         Func8003F6D8Inner *in = &arg0->recs[i].inner;
         for (j = 0; j < in->count; j++) {
             MATRIX *mat = &in->objs[j]->node.xf.mat;
-            gte_SetMatrixRotTransIR(mat, &in->quads[j][0], in->pairs[j]);
-            gte_SetMatrixRotTransIR(mat, &in->quads[j][1], in->pairs[j] + 8);
+            gte_SetMatrixRotTransIR(mat, &in->quads[j][0], &in->coll.foci[j][0]);
+            gte_SetMatrixRotTransIR(mat, &in->quads[j][1], &in->coll.foci[j][1]);
         }
     }
 }
@@ -2855,12 +2840,12 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     rec->unk0 = func_80017D84(&init.in);
     obj->unk60 = init.in.buf;
     rec->inner.count = 0;
-    rec->inner.unk14 = 0;
+    rec->inner.coll.count = 0;
     cur = ((u32)cur & 3) ? cur + 2 : cur;
     rec->quad.unk0 = rec->unk0;
     rec->quad.unk4 = &obj->node.xf.mat;
     rec->quad.unk8 = obj->unk60;
-    rec->quad.unkC = &rec->inner.unk10;
+    rec->quad.unkC = &rec->inner.coll;
     rec->quad.unk2 = 0;
     rec->quad.unk3 = 0;
     return cur;
@@ -2910,13 +2895,13 @@ void func_8003FECC(Unk80045878Obj *a0, SceneRec *rec, s16 *a2) {
             in->quads[n][1].vx = *a2++;
             in->quads[n][1].vy = *a2++;
             in->quads[n][1].vz = *a2++;
-            in->unk78[n] = *a2++;
+            in->coll.unk68[n] = *a2++;
             n++;
             id = *a2;
         } while (id != -2);
     }
     in->count = n;
-    in->unk14 = n;
+    in->coll.count = n;
 }
 s32 math_AlignUp4(s32 a0) {
     if (a0 & 3) {
@@ -2958,7 +2943,7 @@ void func_800400B0(Unk80045878Obj *a0, s32 a1) {
     if (v1) {
         s32 i;
         for (i = 0; i < v1->count; i++) {
-            v1->recs[i].inner.unk10 = a1;
+            v1->recs[i].inner.coll.unk00 = a1;
         }
     }
 }

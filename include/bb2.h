@@ -670,7 +670,7 @@ extern void file_LoadSoundData(void);
 extern void file_ResetDmaFlag(void);
 extern void func_800174F4(void);
 extern s32 func_80017D84(Func80017A44Input *);
-extern void func_8001924C(s16 *, s32);
+extern void func_8001924C(SceneQuad *, s32);
 extern void func_8001945C(void);
 extern s32 func_80019488(void);
 extern void func_800194C0(s32);
