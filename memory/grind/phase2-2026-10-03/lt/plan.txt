@@ -2,18 +2,19 @@ LONG TAIL (commit-plan item 4): status at close-out, 2026-10-06
 ================================================================
 Current state only; how each family was worked is in the commit bodies (`git log --grep '^phase2'`).
 
-Census: memory/grind/phase2-2026-10-03/tools/casts.py over every linked TU of b9a504cd0: 685 raw-offset
-sites (2026-10-05: 3303). Classification from worker 2's closing census (p2-w2 tmp/w2/census_final.txt),
-carried to main's hashes (w2 4dea4ed42 = 8d257aa42, 4cf103dac / 1441073f4 = ebacf0123) and updated for
-5574f89a1 (fres1), 765102ec8 (b12), b9a504cd0 (fres2) and fot1's rev fixes:
+Census: memory/grind/phase2-2026-10-03/tools/casts.py over every linked TU of 21a094d90: 503 raw-offset
+sites (2026-10-05: 3303; close-out at b9a504cd0: 685). Classification from worker 2's closing census (p2-w2
+tmp/w2/census_final.txt), carried to main's hashes (w2 4dea4ed42 = 8d257aa42, 4cf103dac / 1441073f4 =
+ebacf0123), updated for 5574f89a1 (fres1), 765102ec8 (b12), b9a504cd0 (fres2), fot1's rev fixes and the
+owner rulings Q115-Q117 (a6939b16f; commits 643796e7f 43a813168 6151b1808 21a094d90):
 
-    ruled          180   a ruling or a labelled FAKE keeps the form
-    debt           246   a debt row in the commit that left it (no typed form matches, measured)
-    owner-blocked  196   waits on an owner question (list below)
+    ruled          182   a ruling or a labelled FAKE keeps the form
+    debt           258   a debt row in the commit that left it (no typed form matches, measured)
     boundary        63   file formats, in-place relocation, ABI (no object behind the bytes)
+    owner-blocked    0
     open             0
 
-Statuses: DONE in <commits> / RULED / DEBT (rows, commit) / OWNER-BLOCKED (question) / BOUNDARY.
+Statuses: DONE in <commits> / RULED / DEBT (rows, commit) / BOUNDARY.
 
 F01  51268 scratchpad workspace (D_800A3468..D_800A34EC fields, the 0x1F8000B8 work area)
      DONE  b9b07dd27 643264f38 ec8c6dcd2 d8c591f23 63ca60f46 c54057823 (the five D_800A34E4 OT views).
@@ -21,12 +22,15 @@ F01  51268 scratchpad workspace (D_800A3468..D_800A34EC fields, the 0x1F8000B8 w
            work-area layouts: typed 37 / 12, the base is staged through `prim` (5574f89a1); 620B8 strip
            sums + SetTransMatrix(tv - 0x14) (labelled, 84373e6f8); 611A4 u16 reads (643264f38, labelled);
            E49C work block base + 0x9C40 (71073622e / 31bb65e13); 67D14 packed prim words, 14 sites
-           (63ca60f46 / fd40277d3).
-     OWNER 67D14's three GTE operands (OWNER-BLOCKED 1).
+           (63ca60f46 / fd40277d3); 67D14's SetTransMatrix operand `(u8 *)p_out - 0x14` (typed forms 82 /
+           57 / 25; 21a094d90).
+     DONE  Q115: 67D14's gte_stsxy3 operands are &D_800A34B8[k] (21a094d90).
 F02  17AFC collision scratchpad (ScrPad / Unk1F8002B8Rec)
      DONE  ef5686d36 9ccd8e382 3351da420 557ce2b3b 6c37fa778 a564052cd ebacf0123.
      DEBT  979899252 rows (8003032C, 80032314, 800342A0, 80027A58), 80029454 halving cursor (ebacf0123).
-     OWNER func_8002CD58 / func_8002DAD0 / func_8002D780: GTE island operands (146 sites).
+     DONE  Q115: func_8002CD58 / func_8002DAD0 / func_8002D780 read the record by member, their GTE
+           operands member addresses (6151b1808); Q117: func_80031B24's &D_800A37E8 passes labelled under
+           Q96 (6151b1808).
 F03  51268 layout-A draw context (func_8006E390's word array) and its MOD.BIN root
      RULED word array (P3 round 2); roots typed 71073622e; 106 sites stay (8006A880 62, 69E18 13,
            6A564 11, C21C 4, B120 / BB68 2, and the labelled single sites).
@@ -37,8 +41,8 @@ F04  5ED34 / 64FD8 resource roots (D_800A35C4 / D_800A35A8 / D_800A3568 / D_800A
 F05  368E4 transform nodes / player model
      DONE  a2df2d160 f2bcb4406.
 F06  libspu _spu_RXX (PsyQ's union)
-     DONE  7712eeca3 979899252.  DEBT SpuGetKeyStatus volumex sum (7712eeca3).
-     OWNER _SpuSetAnyVoice (8 sites): the D_800F7298 RAM shadow as volatile (borderline.md 544ac7e3a).
+     DONE  7712eeca3 979899252; Q116: _SpuSetAnyVoice reads and writes _spu_RQ[reg - 0xC4] (643796e7f).
+     DEBT  SpuGetKeyStatus volumex sum (7712eeca3); D_800F7298's undefined_syms entry (643796e7f).
 F07  3AB48 move-to-target / collision context (D_800A33F4, Work_80053E9C)
      DONE  ac9d98537 2f3e6ef93.  DEBT 53304 / 344C / 3584 / 3614: 12- vs 16-byte callers (2f3e6ef93).
 F08  309CC records
@@ -76,7 +80,14 @@ FZZ  the per-TU long tail (744 sites in 2026-10-05's census)
            SpuVoiceAttr, audio-cue rows, BitStream, DR_TPAGE, the worker-2 library pass; 2B344 scene
            helpers; PsyQ addPrim for func_8003DBE4 / func_80048FFC, StageLight[][6] rows, g_cam_bone_data;
            31D3C D_80094DF0 s16 *[6] and g_gpu_store_buf[][16]).
-     RULED 6CF8 obj_ClearAll's byte walk (labelled, score 4).
+     DONE  Q115: 87A0's scene quad / object graph by member, its island operands member addresses; SceneQuad
+           and Unk8003F6D8Coll in game.h (43a813168); 9F9C func_800203B4 takes its Unk80101EC8Record,
+           operand &rec->unk_354, 17AFC func_80027AD8's six casts gone (21a094d90).
+     RULED 6CF8 obj_ClearAll's byte walk (labelled, score 4); 87A0 func_8001924C's labelled integer alias of
+           g_file_data_buf (2 sites, score 2).
+     DEBT  87A0 (43a813168): func_80017FA0's focus / bound byte walkers and the goto loop's absolute
+           scratchpad stores (6); func_800187F4's packed edge-index words (4); func_80019568's pad packet
+           bytes (1); 87A0's ScrV second scratchpad layout; 17AFC func_80027AD8's dot_lo (21a094d90).
      DEBT  2B344 func_8003D39C's colour+code word (setRGB0 + code: 27; 765102ec8).
      DEBT  32D04 43454 packed stream (afbefb601); 3AB48 BA8C VAB pack views (4290c05ec); 28708 / 35000 /
            31548 self-relative tables and 9F9C pack headers (979899252); 25788 3504C walker (7797854fe);
@@ -97,22 +108,7 @@ CROSS-CUTTING ROWS
      DEBT  (84373e6f8) block-scope declaration copies; memcpy / printf / write / column / AddPrim not
            hoisted; D_800F1178 / 117C / 1180 per-word views of D_800F116C; func_800520B8's prototype.
 
-OWNER-BLOCKED (exact list; one question each)
-  1. asm-operand bodies (owner 2026-10-05: operands are never edited; the question is whether a typed
-     operand expression with an `auth:` region re-hash is admissible):
-     - 17AFC func_8002CD58 (71) / func_8002DAD0 (46) / func_8002D780 (29): GTE island operands obj + 0xNN;
-     - 87A0 (35): func_80019310's island operands and its record bodies (80018300, 80017FA0, 80018094,
-       8001924C, 800187F4, 80019568);
-     - 51268 func_80067D14 (3): the SetTransMatrix operand `(u8 *)p_out - 0x14` and the
-       `(s32 *)D_800A34B8 + 1` / `+ 2` operands (its 14 packed prim words are F01 debt);
-     - 9F9C func_800203B4 (4): the gte_stlvnl operand &rec->unk_354, landed only with the i203 set: the
-       Unk80101EC8Record * retype, 17AFC func_80027AD8's six `(u8 *)ch` call casts and the region re-hash
-       (measured byte-identical; scratch tmp/p2/i203, not landed).
-  2. libspu _SpuSetAnyVoice (8): the D_800F7298 RAM shadow spelled volatile (borderline.md 544ac7e3a).
-  3. Q96 scope (0 census sites; codex item 11): 17AFC func_80031B24 hands &D_800A37E8 to func_800274BC /
-     func_80032854 as the x,y,z vector of D_800A37E8 / EA / EC. The one-object merge breaks func_80027AD8
-     (score 2, Q96's basis); a FAKE label needs Q96 extended to func_80031B24.
-  Not owner-blocked: 9F9C func_8001C820's raw `(s32 *)((u8 *)s0 + 0x536)` is RULED (owner 2026-10-04,
-  docs/grind/handoff-2026-10-03-restructure.md:96).
+OWNER-BLOCKED: none (Q115-Q117 ruled, a6939b16f). 9F9C func_8001C820's raw `(s32 *)((u8 *)s0 + 0x536)` is
+RULED (owner 2026-10-04, docs/grind/handoff-2026-10-03-restructure.md:96).
 
 OPEN: none.
