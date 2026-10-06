@@ -59,11 +59,11 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
             a4p = &s3[s0];
             /* FAKE: idx re-read from *tbl before each component, as the target reloads it and recomputes idx * 6; one read computes it once (score 48) */
             idx = *tbl;
-            a4p->node.xf.rot.vx = *(u16 *)((u8 *)s1 + idx * 6);
+            a4p->node.xf.rot.vx = s1[idx * 3];
             idx = *tbl;
-            a4p->node.xf.rot.vy = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 2);
+            a4p->node.xf.rot.vy = -s1[idx * 3 + 1];
             idx = *tbl;
-            a4p->node.xf.rot.vz = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 4);
+            a4p->node.xf.rot.vz = -s1[idx * 3 + 2];
             s0++;
             tbl++;
         } while (s0 < 0x12);
@@ -76,21 +76,21 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
             p--;
         } while (s0 >= 0);
 
-        s2->node.work.t[0] = *(s16 *)((u8 *)s1 + 0x6C);
-        s2->node.work.t[1] = -(s32)*(s16 *)((u8 *)s1 + 0x6E);
-        s2->node.work.t[2] = -(s32)*(s16 *)((u8 *)s1 + 0x70);
-        s2->node.xf.rot.vx = *(u16 *)((u8 *)s1 + 0x72);
-        s2->node.xf.rot.vy = -(s16)*(u16 *)((u8 *)s1 + 0x74);
-        s2->node.xf.rot.vz = -(s16)*(u16 *)((u8 *)s1 + 0x76);
+        s2->node.work.t[0] = s1[0x36];
+        s2->node.work.t[1] = -s1[0x37];
+        s2->node.work.t[2] = -s1[0x38];
+        s2->node.xf.rot.vx = s1[0x39];
+        s2->node.xf.rot.vy = -s1[0x3A];
+        s2->node.xf.rot.vz = -s1[0x3B];
 
         g_anim_func_table[0](&s2->node.xf.rot, &s2->node.work);
 
-        s2[1].node.work.t[0] = *(s16 *)((u8 *)s1 + 0x78);
-        s2[1].node.work.t[1] = -(s32)*(s16 *)((u8 *)s1 + 0x7A);
-        s2[1].node.work.t[2] = -(s32)*(s16 *)((u8 *)s1 + 0x7C);
-        s2[1].node.xf.rot.vx = *(u16 *)((u8 *)s1 + 0x7E);
-        s2[1].node.xf.rot.vy = -(s16)*(u16 *)((u8 *)s1 + 0x80);
-        s2[1].node.xf.rot.vz = -(s16)*(u16 *)((u8 *)s1 + 0x82);
+        s2[1].node.work.t[0] = s1[0x3C];
+        s2[1].node.work.t[1] = -s1[0x3D];
+        s2[1].node.work.t[2] = -s1[0x3E];
+        s2[1].node.xf.rot.vx = s1[0x3F];
+        s2[1].node.xf.rot.vy = -s1[0x40];
+        s2[1].node.xf.rot.vz = -s1[0x41];
 
         g_anim_func_table[0](&s2[1].node.xf.rot, &s2[1].node.work);
         break;
