@@ -2659,12 +2659,12 @@ void func_8003F62C(Unk80045878Obj *a0) {
         func_8003F824(a0, 0);
     }
     if (s0->unk2) {
-        func_8004001C((u8 *)s0);
+        func_8004001C(s0);
     }
     func_8003F6D8(s0);
     func_8001924C((s16 *)s0->quads, s0->count);
     if (s0->unk2) {
-        func_80040068((u8 *)s0);
+        func_80040068(s0);
         s0->unk2 = 0;
     }
 }
@@ -2746,7 +2746,7 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
     }
 }
 extern s16 D_80094AEC[];
-s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2);
+s16 *func_8003FE40(SVECTOR *a0, s32 a1, s16 *a2);
 
 u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     /* FAKE: frame layout (oversized live object): func_80017D84's argument plus an unwritten
@@ -2857,7 +2857,7 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     if (*src != 0) {
         func_80052C10(D_80010D8C);
     }
-    func_8003FE40((s16 *)init.in.points, init.in.count, cmds);
+    func_8003FE40(init.in.points, init.in.count, cmds);
 
     init.in.matrix = &obj->node.xf.mat;
     init.in.flags = 0xE00;
@@ -2874,16 +2874,10 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     rec->quad.unk3 = 0;
     return cur;
 }
-s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {
-    s32 i;
-    i = 0;
-    if (a1 > i) {
-        s16 fill = -256;
-        s16 *p = a0;
-        for (i = 0; i < a1; i++) {
-            *(s16 *)((u8 *)p + 6) = fill;
-            p = (s16 *)((u8 *)p + 8);
-        }
+s16 *func_8003FE40(SVECTOR *a0, s32 a1, s16 *a2) {
+    s32 i; /* FAKE: also the point index read from a2 in the second loop; its own local there: score 12 */
+    for (i = 0; i < a1; i++) {
+        a0[i].pad = -256;
     }
 
     {
@@ -2897,19 +2891,17 @@ s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {
                 a2++;
                 count--;
                 while (count != -1) {
-                    s32 addr;
                     i = a2[0];
                     a2++;
                     count--;
-                    addr = (i << 3) + (s32)a0;
-                    *(s16 *)(addr + 6) = val;
+                    a0[i].pad = val;
                 }
                 count = a2[0];
                 a2++;
             } while (count >= 0);
         }
     }
-    return (s16 *)a2;
+    return a2;
 }
 
 void func_8003FECC(Unk80045878Obj *a0, SceneRec *rec, s16 *a2) {
@@ -2956,18 +2948,18 @@ void func_8003FFE0(s32 a0) {
         }
     }
 }
-void func_8004001C(u8 *a0) {
+void func_8004001C(Scene *a0) {
     s32 i;
-    for (i = 0; i < *(s16 *)a0; i++) {
-        a0[0x41A + i * 0x10] = 1;
-        a0[0xE + i * 0xD0] = 1;
+    for (i = 0; i < a0->count; i++) {
+        a0->quads[i].unk2 = 1;
+        a0->recs[i].quad.unk2 = 1;
     }
 }
-void func_80040068(u8 *a0) {
+void func_80040068(Scene *a0) {
     s32 i;
-    for (i = 0; i < *(s16 *)a0; i++) {
-        a0[0x41A + i * 0x10] = 0;
-        a0[0xE + i * 0xD0] = 0;
+    for (i = 0; i < a0->count; i++) {
+        a0->quads[i].unk2 = 0;
+        a0->recs[i].quad.unk2 = 0;
     }
 }
 void func_800400B0(Unk80045878Obj *a0, s32 a1) {
