@@ -3615,7 +3615,7 @@ Unk8006E49CRec *func_80069120(s32 a0) {
 
 s32 func_8006919C(Unk8006919CRec *a0) {
     s32 i = 0;
-    s32 **p = &a0->unk_14;
+    Unk8009B0E0Record ***p = &a0->unk_14;
     do {
         func_8006920C((s32 *)a0, (s32)*p);
         p++;
@@ -3924,20 +3924,16 @@ void func_80069A8C(void *prim) {
     }
     a0->b0 = v0;
 }
-typedef struct {
-    s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
-    s8 sp40;
-} S_69AE4;
 
 
 
 void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
     TILE *p;
     POLY_F4 *poly;
-    s32 *qbase;
-    s32 *q;
+    Unk8009B0E0Record **qbase;
+    Unk8009B0E0Record **q;
     s32 i;
-    S_69AE4 s;
+    Unk8007352CEnv s;
 
     p = (TILE *)arg0[6];
 
@@ -3982,28 +3978,26 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
         p++;
     }
     arg0[6] = (s32)p;
-    s.sp2C = 0x12;
-    s.sp40 = 0;
-    s.sp28 = 0;
+    s.ot_idx = 0x12;
+    s.has_color = 0;
+    s.semi = 0;
     qbase = ((Unk8006919CRec *)arg0[1])->unk_34;
-    s.sp30 = 0;
-    s.sp34 = 0;
+    s.x = 0;
+    s.y = 0;
     q = qbase;
     i = 0;
     do {
-        s32 v = *q;
-        s.sp18 = v;
-        s.sp1C = v + 0xC;
-        s.sp20 = arg0[5];
-        arg0[5] = func_8007352C((s32)&s.sp18);
+        s.header = *q;
+        s.table = s.header->cells;
+        s.sprt_out = arg0[5];
+        arg0[5] = func_8007352C((s32)&s);
         q++;
         i++;
     } while (i < 3);
 
     {
-        s32 first = qbase[0];
-        s.sp18 = first;
-        SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(first, 0), 0);
+        s.header = qbase[0];
+        SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
     }
     AddPrim(g_gpu_ot_ptr + 0x48, (DR_MODE *)arg0[7]);
 
@@ -4054,26 +4048,13 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
     arg0[3] = (s32)poly;
 }
 
-typedef struct {
-    s32 *p0;
-    s32 *p1;
-    s32 in_tex;
-    s32 pad0C;
-    s32 zero10;
-    s32 arg2;
-    s32 width;
-    s32 zero1C;
-    s32 pad20;
-    s32 pad24;
-    s8 byte28;
-} S69E18;
 void func_80069E18(s32 arg0) {
     extern u8 *g_gpu_ot_ptr;
     TILE *tile;
-    s32 *ptr;
-    S69E18 s;
-    s32 p0;
-    s32 p1;
+    Unk8009B0E0Record **ptr;
+    Unk8007352CEnv s;
+    /* FAKE: single-use holder of the cell table ahead of the descriptor's table store; stored directly: score 8. */
+    Unk8009B400Record *p1;
 
     tile = (TILE *)*(s32 *)(arg0 + 0x18);
     SetTile(tile);
@@ -4089,49 +4070,47 @@ void func_80069E18(s32 arg0) {
     *(s32 *)(arg0 + 0x18) = (s32)(tile + 1);
 
     ptr = (*(Unk8006919CRec **)(arg0 + 4))->unk_14;
-    s.arg2 = 0x10;
-    s.zero10 = 0;
-    s.width = 0;
-    s.zero1C = 0;
-    s.byte28 = 0;
+    s.ot_idx = 0x10;
+    s.semi = 0;
+    s.x = 0;
+    s.y = 0;
+    s.has_color = 0;
 
-    s.p0 = (s32 *)ptr[0];
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.p0, 0), 0);
+    s.header = ptr[0];
+    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x44, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
 
-    p0 = (s32)s.p0;
-    p1 = p0 + 0xC;
-    s.p1 = (s32 *)p1;
-    s.in_tex = *(s32 *)(arg0 + 0x14);
+    p1 = s.header->cells;
+    s.table = p1;
+    s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
 
-    p0 = ptr[1];
-    p1 = p0 + 0xC;
-    s.p0 = (s32 *)p0;
-    s.p1 = (s32 *)p1;
-    s.in_tex = *(s32 *)(arg0 + 0x14);
+    s.header = ptr[1];
+    p1 = s.header->cells;
+    s.table = p1;
+    s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
 
-    p0 = ptr[2];
-    p1 = p0 + 0xC;
-    s.p0 = (s32 *)p0;
-    s.p1 = (s32 *)p1;
-    s.in_tex = *(s32 *)(arg0 + 0x14);
+    s.header = ptr[2];
+    p1 = s.header->cells;
+    s.table = p1;
+    s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
 }
+/* FAKE: frame layout (oversized live object): the descriptor plus its unwritten tail, so the
+   locals region reaches the target's frame; mechanism at func_80069F80 / func_8006DD94. */
 typedef struct {
-    s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
-    s8 sp40, sp41, sp42, sp43;
-    s32 sp44, sp48, sp4C, sp50;
-} S_69F80;
+    Unk8007352CEnv env;
+    s32 tail[4];
+} Env_69F80;
 
 
 
 void func_80069F80(s32 *arg0, s32 arg1) {
     /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address is
        passed to func_80073728 and func_8007352C (addiu $a0,$sp,0x18 at three
-       sites); sp44/sp48/sp4C/sp50 are this call site's UNWRITTEN PADDING tail.
+       sites); tail[0..3] are this call site's UNWRITTEN PADDING tail.
        They are NOT asserted to be fields of a shared descriptor type: nothing in
        this function or its callees' asm reads them.
        mechanism: mips.c compute_frame_size / get_frame_size -
@@ -4149,74 +4128,70 @@ void func_80069F80(s32 *arg0, s32 arg1) {
        Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out;
        the LIVE object (`s`, address passed to both descriptor callees) is
        extended rather than adding a dead pad local, as in func_8006DD94 (this
-       TU) and func_80041BF4 (src/text1a_post.c). */
-    S_69F80 s;
-    s32 *ptr;
+       TU) and func_80041BF4 (src/text1a_post.c). The plain descriptor: score 12. */
+    Env_69F80 s;
+    Unk8009B0E0Record **ptr;
     s32 x0;
     s32 c;
-    s32 p1;
-    s32 p2;
-    s32 tbl;
+    /* FAKE: single-use holder of the cell table ahead of the descriptor's table store; stored directly: score 8. */
+    Unk8009B400Record *tbl;
 
     if (arg1 & 2) {
         ptr = ((Unk8006919CRec *)arg0[1])->unk_1C;
-        s.sp18 = ptr[0];
+        s.env.header = ptr[0];
         if (arg1 & 1) {
-            s.sp30 = 0x9C;
-            s.sp40 = 1;
+            s.env.x = 0x9C;
+            s.env.has_color = 1;
         } else {
-            s.sp30 = 0x4E;
-            s.sp40 = 0;
+            s.env.x = 0x4E;
+            s.env.has_color = 0;
         }
-        x0 = s.sp30;
+        x0 = s.env.x;
         if (D_800A3524->unk20_3) {
             if (arg1 & 1) {
-                s.sp30 = x0 + D_800A34FC->unk_0C[0];
+                s.env.x = x0 + D_800A34FC->unk_0C[0];
                 c = ((rsin((D_800A3514 & 0x1F) << 7) * 47) >> 12) - 0x80;
-                s.sp43 = (s8)c;
-                s.sp42 = (s8)c;
-                s.sp41 = (s8)c;
+                s.env.col_b = c;
+                s.env.col_g = c;
+                s.env.col_r = c;
             }
-            s.sp34 = 0;
-            s.sp3C = 0x100;
-            s.sp38 = 0x100;
+            s.env.y = 0;
+            s.env.scale_y = 0x100;
+            s.env.scale_x = 0x100;
         } else {
-            s.sp43 = 0x70;
-            s.sp42 = 0x70;
-            s.sp41 = 0x70;
-            s.sp3C = 0x80;
-            s.sp38 = 0x80;
-            s.sp34 = 0xA;
+            s.env.col_b = 0x70;
+            s.env.col_g = 0x70;
+            s.env.col_r = 0x70;
+            s.env.scale_y = 0x80;
+            s.env.scale_x = 0x80;
+            s.env.y = 0xA;
         }
-        s.sp28 = 0;
-        s.sp2C = 3;
-        tbl = s.sp18 + 0xC;
-        s.sp1C = tbl;
-        s.sp24 = arg0[2];
-        arg0[2] = func_80073728((s32)&s, 0);
-        s.sp34 = 0;
-        s.sp30 = x0;
-        s.sp40 = 0;
-        p1 = ptr[1];
-        tbl = p1 + 0xC;
-        s.sp18 = p1;
-        s.sp1C = tbl;
-        s.sp20 = arg0[5];
-        arg0[5] = func_8007352C((s32)&s);
+        s.env.semi = 0;
+        s.env.ot_idx = 3;
+        tbl = s.env.header->cells;
+        s.env.table = tbl;
+        s.env.ft4_out = arg0[2];
+        arg0[2] = func_80073728((s32)&s.env, 0);
+        s.env.y = 0;
+        s.env.x = x0;
+        s.env.has_color = 0;
+        s.env.header = ptr[1];
+        tbl = s.env.header->cells;
+        s.env.table = tbl;
+        s.env.sprt_out = arg0[5];
+        arg0[5] = func_8007352C((s32)&s.env);
         if (arg1 & 1) {
-            s.sp2C = 2;
-            s.sp28 = 0;
-            p2 = ptr[6];
-            s.sp30 = 0;
-            s.sp34 = 0;
-            s.sp40 = 1;
-            s.sp18 = p2;
-            p2 += 0x14;
-            s.sp1C = p2;
-            s.sp20 = arg0[5];
-            arg0[5] = func_8007352C((s32)&s);
+            s.env.ot_idx = 2;
+            s.env.semi = 0;
+            s.env.header = ptr[6];
+            s.env.x = 0;
+            s.env.y = 0;
+            s.env.has_color = 1;
+            s.env.table = &s.env.header->cells[1];
+            s.env.sprt_out = arg0[5];
+            arg0[5] = func_8007352C((s32)&s.env);
         }
-        SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.sp18, 0), 0);
+        SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.env.header, 0), 0);
         AddPrim(g_gpu_ot_ptr + 0xC, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
@@ -4224,7 +4199,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
 void func_8006A1A0(s32 *arg0, s32 arg1) {
     /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address is
        passed to func_80073728 and func_8007352C (addiu $a0,$sp,0x18 at three
-       sites: 8006A2B8, 8006A30C, 8006A350); the S_69F80 tail sp44/sp48/sp4C/sp50
+       sites: 8006A2B8, 8006A30C, 8006A350); the Env_69F80 tail tail[0..3]
        is this call site's UNWRITTEN PADDING.  Nothing in this function or its
        callees' asm reads it; it is NOT asserted to be a field of a shared
        descriptor type.
@@ -4240,128 +4215,125 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
        produce the target frame.
        n.b.! ALIGN8 makes the declared descriptor size recoverable only as a
        RANGE: 0x39..0x40 bytes all give vars = 0x40; 0x3C is the smallest whole-word
-       (s32-member) size in that range and is the one declared (S_69F80, shared
+       (s32-member) size in that range and is the one declared (Env_69F80, shared
        with the sibling func_80069F80 whose frame equation is identical).
        Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out;
        the LIVE object is extended rather than adding a dead pad local, as in
-       func_80069F80 and func_8006DD94 (this TU). */
-    S_69F80 s;
-    s32 *ptr;
+       func_80069F80 and func_8006DD94 (this TU). The plain descriptor: score 14. */
+    Env_69F80 s;
+    Unk8009B0E0Record **ptr;
     s32 x0;
     s32 c;
-    s32 p1;
-    s32 p2;
-    s32 tbl;
+    /* FAKE: single-use holder of the cell table ahead of the descriptor's table store; stored directly: score 8. */
+    Unk8009B400Record *tbl;
 
     if (arg1 & 1) {
         ptr = ((Unk8006919CRec *)arg0[1])->unk_1C;
-        s.sp18 = ptr[2];
+        s.env.header = ptr[2];
         if (arg1 & 2) {
-            s.sp30 = -1;
-            s.sp40 = 1;
+            s.env.x = -1;
+            s.env.has_color = 1;
         } else {
-            s.sp30 = 0x4E;
-            s.sp40 = 0;
+            s.env.x = 0x4E;
+            s.env.has_color = 0;
         }
-        x0 = s.sp30;
+        x0 = s.env.x;
         if (!(D_800A3524->unk20_3)) {
             if (arg1 & 2) {
-                s.sp30 = x0 + D_800A34FC->unk_0C[0];
+                s.env.x = x0 + D_800A34FC->unk_0C[0];
                 c = ((rsin((D_800A3514 & 0x1F) << 7) * 47) >> 12) - 0x80;
-                s.sp43 = (s8)c;
-                s.sp42 = (s8)c;
-                s.sp41 = (s8)c;
+                s.env.col_b = c;
+                s.env.col_g = c;
+                s.env.col_r = c;
             }
-            s.sp34 = 0;
-            s.sp3C = 0x100;
-            s.sp38 = 0x100;
+            s.env.y = 0;
+            s.env.scale_y = 0x100;
+            s.env.scale_x = 0x100;
         } else {
-            s.sp30 = x0 + 0x32;
-            s.sp43 = 0x70;
-            s.sp42 = 0x70;
-            s.sp41 = 0x70;
-            s.sp3C = 0x80;
-            s.sp38 = 0x80;
-            s.sp34 = 0xA;
+            s.env.x = x0 + 0x32;
+            s.env.col_b = 0x70;
+            s.env.col_g = 0x70;
+            s.env.col_r = 0x70;
+            s.env.scale_y = 0x80;
+            s.env.scale_x = 0x80;
+            s.env.y = 0xA;
         }
-        s.sp28 = 0;
-        s.sp2C = 2;
-        tbl = s.sp18 + 0xC;
-        s.sp1C = tbl;
-        s.sp24 = arg0[2];
-        arg0[2] = func_80073728((s32)&s, 0);
-        s.sp34 = 0;
-        s.sp30 = x0;
-        s.sp40 = 0;
-        p1 = ptr[3];
-        tbl = p1 + 0xC;
-        s.sp18 = p1;
-        s.sp1C = tbl;
-        s.sp20 = arg0[5];
-        arg0[5] = func_8007352C((s32)&s);
+        s.env.semi = 0;
+        s.env.ot_idx = 2;
+        tbl = s.env.header->cells;
+        s.env.table = tbl;
+        s.env.ft4_out = arg0[2];
+        arg0[2] = func_80073728((s32)&s.env, 0);
+        s.env.y = 0;
+        s.env.x = x0;
+        s.env.has_color = 0;
+        s.env.header = ptr[3];
+        tbl = s.env.header->cells;
+        s.env.table = tbl;
+        s.env.sprt_out = arg0[5];
+        arg0[5] = func_8007352C((s32)&s.env);
         if (arg1 & 2) {
-            s.sp2C = 2;
-            s.sp28 = 0;
-            p2 = ptr[6];
-            s.sp30 = 0;
-            s.sp34 = 0;
-            s.sp40 = 1;
-            tbl = p2 + 0xC;
-            s.sp18 = p2;
-            s.sp1C = tbl;
-            s.sp20 = arg0[5];
-            arg0[5] = func_8007352C((s32)&s);
+            s.env.ot_idx = 2;
+            s.env.semi = 0;
+            s.env.header = ptr[6];
+            s.env.x = 0;
+            s.env.y = 0;
+            s.env.has_color = 1;
+            tbl = s.env.header->cells;
+            s.env.table = tbl;
+            s.env.sprt_out = arg0[5];
+            arg0[5] = func_8007352C((s32)&s.env);
         }
-        SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.sp18, 0), 0);
+        SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.env.header, 0), 0);
         AddPrim(g_gpu_ot_ptr + 8, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
 }
-void func_8006A3CC(s32 *arg0, u8 *arg1) {
-    *(s32 *)(arg1 + 0) = ((Unk8006919CRec *)arg0[1])->unk_1C[4];
-    *(s32 *)(arg1 + 0x18) = 0;
-    *(s32 *)(arg1 + 0x1C) = 0;
-    *(s8 *)(arg1 + 0x28) = 0;
-    *(s32 *)(arg1 + 0x10) = 0;
-    *(s32 *)(arg1 + 0x14) = 1;
-    *(s32 *)(arg1 + 4) = *(s32 *)(arg1 + 0) + 0xC;
-    *(s32 *)(arg1 + 8) = arg0[5];
+void func_8006A3CC(s32 *arg0, Unk8007352CEnv *arg1) {
+    arg1->header = ((Unk8006919CRec *)arg0[1])->unk_1C[4];
+    arg1->x = 0;
+    arg1->y = 0;
+    arg1->has_color = 0;
+    arg1->semi = 0;
+    arg1->ot_idx = 1;
+    arg1->table = arg1->header->cells;
+    arg1->sprt_out = arg0[5];
     arg0[5] = func_8007352C((s32)arg1);
-    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(*(s32 *)(arg1 + 0), 0), 0);
+    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)arg1->header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 4, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 }
-void func_8006A494(s32 *arg0, u8 *arg1) {
-    *(s32 *)(arg1 + 0) = ((Unk8006919CRec *)arg0[1])->unk_1C[9];
-    *(s32 *)(arg1 + 0x18) = 0;
-    *(s32 *)(arg1 + 0x1C) = 0;
-    *(s8 *)(arg1 + 0x28) = 0;
-    *(s32 *)(arg1 + 0x10) = 0;
-    *(s32 *)(arg1 + 0x14) = 1;
-    *(s32 *)(arg1 + 0x20) = 0x100;
-    *(s32 *)(arg1 + 0x24) = 0x100;
-    *(s32 *)(arg1 + 4) = *(s32 *)(arg1 + 0) + 0xC;
-    *(s32 *)(arg1 + 0xC) = arg0[2];
+void func_8006A494(s32 *arg0, Unk8007352CEnv *arg1) {
+    arg1->header = ((Unk8006919CRec *)arg0[1])->unk_1C[9];
+    arg1->x = 0;
+    arg1->y = 0;
+    arg1->has_color = 0;
+    arg1->semi = 0;
+    arg1->ot_idx = 1;
+    arg1->scale_x = 0x100;
+    arg1->scale_y = 0x100;
+    arg1->table = arg1->header->cells;
+    arg1->ft4_out = arg0[2];
     arg0[2] = func_80073728((s32)arg1, 0);
-    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(*(s32 *)(arg1 + 0), 0), 0);
+    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)arg1->header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 4, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 }
-void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
+void func_8006A564(u8 *arg0, Unk8007352CEnv *arg1, s32 arg2) {
     TILE *tile;
-    Unk8006919CRec *root;
-    s32 *tbl;
+    Unk8009B0E0Record **tbl;
     s32 s4;
 
     tile = (TILE *)*(s32 *)(arg0 + 0x18);
     SetTile(tile);
     {
+        /* FAKE: colour staged ahead of the g0 store (held across the arms for b0); col_r read at its use: score 2. */
         s32 v0;
         if ((D_800A34F8 & 0xF) == arg2) {
-            v0 = *(u8 *)(arg1 + 0x29);
+            v0 = arg1->col_r;
             tile->g0 = 0;
             tile->r0 = v0;
-            v0 = *(u8 *)(arg1 + 0x2B);
+            v0 = arg1->col_b;
             s4 = 0;
         } else {
             s4 = 0x20;
@@ -4371,22 +4343,23 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
         }
         tile->b0 = v0;
         tile->x0 = (0x5F);
-        tile->y0 = ((*(s32 *)(arg1 + 0x1C)) + 0xF);
-        tile->w = ((*(s32 *)(arg1 + 0x18)) + 0x19);
+        tile->y0 = (arg1->y + 0xF);
+        tile->w = (arg1->x + 0x19);
         tile->h = 1;
     }
-    SetSemiTrans(tile, *(s32 *)(arg1 + 0x10));
-    AddPrim(g_gpu_ot_ptr + (*(s32 *)(arg1 + 0x14) << 2), tile);
+    SetSemiTrans(tile, arg1->semi);
+    AddPrim(g_gpu_ot_ptr + (arg1->ot_idx << 2), tile);
     tile++;
 
     SetTile(tile);
     {
+        /* FAKE: colour staged ahead of the g0 store (held across the arms for b0); col_r read at its use: score 2. */
         s32 v0;
         if ((D_800A34F8 & 0xF) == arg2) {
-            v0 = *(u8 *)(arg1 + 0x29);
+            v0 = arg1->col_r;
             tile->g0 = 0;
             tile->r0 = v0;
-            v0 = *(u8 *)(arg1 + 0x2B);
+            v0 = arg1->col_b;
             tile->b0 = v0;
         } else {
             v0 = 0x20;
@@ -4394,24 +4367,25 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
             tile->g0 = v0;
             tile->b0 = v0;
         }
-        tile->x0 = (*(s32 *)(arg1 + 0x18));
-        tile->y0 = ((*(s32 *)(arg1 + 0x1C)) + 0xE);
+        tile->x0 = arg1->x;
+        tile->y0 = (arg1->y + 0xE);
         tile->w = 0x78;
         tile->h = 1;
     }
     SetSemiTrans(tile, 1);
-    AddPrim(g_gpu_ot_ptr + (*(s32 *)(arg1 + 0x14) << 2), tile);
+    AddPrim(g_gpu_ot_ptr + (arg1->ot_idx << 2), tile);
     tile++;
 
     SetTile(tile);
     {
+        /* FAKE: colour staged ahead of the g0 store (held across the arms for b0); col_r read at its use: score 2. */
         s32 v0;
         if ((D_800A34F8 & 0xF) == arg2) {
-            v0 = *(u8 *)(arg1 + 0x29);
+            v0 = arg1->col_r;
             tile->g0 = 0;
             v0 = (u32)v0 >> 1;
             tile->r0 = v0;
-            v0 = *(u8 *)(arg1 + 0x2B);
+            v0 = arg1->col_b;
             v0 = (u32)v0 >> 1;
             tile->b0 = v0;
         } else {
@@ -4420,69 +4394,56 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
             tile->g0 = v0;
             tile->b0 = v0;
         }
-        tile->x0 = ((*(s32 *)(arg1 + 0x18)) + 0x40);
-        tile->y0 = ((*(s32 *)(arg1 + 0x1C)) + 0xD);
+        tile->x0 = (arg1->x + 0x40);
+        tile->y0 = (arg1->y + 0xD);
         tile->w = 0x38;
         tile->h = 1;
     }
     SetSemiTrans(tile, 1);
-    AddPrim(g_gpu_ot_ptr + (*(s32 *)(arg1 + 0x14) << 2), tile);
+    AddPrim(g_gpu_ot_ptr + (arg1->ot_idx << 2), tile);
 
-    root = *(Unk8006919CRec **)(arg0 + 4);
     tile = tile + 1;
     *(s32 *)(arg0 + 0x18) = (s32)tile;
-    tbl = root->unk_1C;
+    tbl = (*(Unk8006919CRec **)(arg0 + 4))->unk_1C;
     {
-        s32 v0, v1;
-        *(s32 *)(arg1 + 0) = tbl[10];
+        /* FAKE: single-use holder of the cell table ahead of the descriptor's table store; stored directly: score 7. */
+        Unk8009B400Record *v1;
+        /* FAKE: the header store through a pointer to the member: stored as
+           arg1->header the member store is scheduled past the D_800A34F8 load
+           (MEM_IN_STRUCT_P); score 7. */
+        Unk8009B0E0Record **hp = &arg1->header;
+
+        *hp = tbl[10];
         if ((D_800A34F8 & 0xF) == arg2) {
-            *(u8 *)(arg1 + 0x2A) = 0;
-            *(u8 *)(arg1 + 0x29) = (u32)(*(u8 *)(arg1 + 0x29)) >> 1;
-            *(u8 *)(arg1 + 0x2B) = (u32)(*(u8 *)(arg1 + 0x2B)) >> 1;
+            arg1->col_g = 0;
+            arg1->col_r = arg1->col_r >> 1;
+            arg1->col_b = arg1->col_b >> 1;
         } else {
-            *(u8 *)(arg1 + 0x2B) = 0x28;
-            *(u8 *)(arg1 + 0x2A) = 0x28;
-            *(u8 *)(arg1 + 0x29) = 0x28;
+            arg1->col_b = 0x28;
+            arg1->col_g = 0x28;
+            arg1->col_r = 0x28;
         }
 
-        *(s32 *)(arg1 + 0x18) = 0;
-        v1 = *(s32 *)(arg1 + 0);
-        v1 += 0xC;
-        *(s32 *)(arg1 + 0x1C) += 0xF;
-        *(s32 *)(arg1 + 4) = v1;
+        arg1->x = 0;
+        v1 = arg1->header->cells;
+        arg1->y += 0xF;
+        arg1->table = v1;
 
-        *(s32 *)(arg1 + 8) = *(s32 *)(arg0 + 0x14);
+        arg1->sprt_out = *(s32 *)(arg0 + 0x14);
         *(s32 *)(arg0 + 0x14) = func_8007352C((s32)arg1);
 
-        v0 = tbl[11];
-        v1 = v0 + 0xC;
-        *(s32 *)(arg1 + 0) = v0;
-        *(s32 *)(arg1 + 4) = v1;
-        *(s32 *)(arg1 + 8) = *(s32 *)(arg0 + 0x14);
+        arg1->header = tbl[11];
+        v1 = arg1->header->cells;
+        arg1->table = v1;
+        arg1->sprt_out = *(s32 *)(arg0 + 0x14);
         *(s32 *)(arg0 + 0x14) = func_8007352C((s32)arg1);
     }
 
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
-                func_8006E480(*(s32 *)(arg1 + 0), s4), 0);
-    AddPrim(g_gpu_ot_ptr + (*(s32 *)(arg1 + 0x14) << 2), (DR_MODE *)*(s32 *)(arg0 + 0x1C));
+                func_8006E480((s32)arg1->header, s4), 0);
+    AddPrim(g_gpu_ot_ptr + (arg1->ot_idx << 2), (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
 }
-/* The 0x2C-byte sprite draw descriptor func_8007352C (SPRT walker, EnvA) and
-   func_80073728 (POLY_FT4 walker, EnvF) consume; same layout as EnvF. */
-typedef struct {
-    s32 header;
-    s32 table;
-    s32 sprt_out;
-    s32 ft4_out;
-    s32 semi;
-    s32 ot_idx;
-    s32 x;
-    s32 y;
-    s32 scale_x;
-    s32 scale_y;
-    u8 has_color;
-    u8 col_r, col_g, col_b;
-} S_6A880;
 
 
 extern s32 D_8009BC08;
@@ -4496,22 +4457,22 @@ extern s32 D_8009BC08;
  * arg1 = the display environment's clip RECT and ofs[2]; arg2 (passed by
  * func_800693CC) is unused. */
 void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
-    S_6A880 s;
+    Unk8007352CEnv s;
     RECT rect;
     s16 ofs[2];
     /* Ruling 11 (ordinary-c-judge-decidable.md): holds five values, each a
        sprite-sheet list of the MOD.BIN root: unk_18 (option rows; first sheet,
        the row loop and row 7), unk_40 (counter frames), unk_24 twice (icon
        frames at [8 + frame], then FT4 frames at [frame]). */
-    s32 *sheets;
+    Unk8009B0E0Record **sheets;
     /* Ruling 11: holds two values, each a mask with one bit per option row:
        D_8009BC08 (scanned for the first row drawn) and D_8009BC04 (rows
        switched on). */
     u32 row_mask;
     /* Ruling 9: the sheet's cell array. Every sheet drawn here is one 12-byte
        header followed by its 8-byte cells, so the cells always start at
-       +0xC (MOD.BIN census). */
-    s32 cells;
+       +0xC (MOD.BIN census). FAKE: single-use holder of the cell table ahead of the descriptor's table store; stored directly: score 15. */
+    Unk8009B400Record *cells;
     s32 yofs;
     s32 bit;
     s32 i;
@@ -4520,7 +4481,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     row_mask = D_8009BC08;
     bit = 0;
     s.header = sheets[0];
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x30, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
     rect.x = arg1[0];
@@ -4571,15 +4532,15 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
             s.y = y;
         }
         s.header = sheets[i];
-        cells = s.header + 0xC;
+        cells = s.header->cells;
         s.table = cells;
         s.sprt_out = *(s32 *)(arg0 + 0x14);
         *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
-        SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
+        SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.header, 0), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
         *(s32 *)(arg0 + 0x1C) += 0xC;
         s.has_color = 1;
-        func_8006A564(arg0, (u8 *)&s, i);
+        func_8006A564(arg0, &s, i);
     }
 
     sheets = (*(Unk8006919CRec **)(arg0 + 4))->unk_40;
@@ -4589,11 +4550,11 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s.x = 0;
     s.y = 0x41;
     s.header = sheets[D_800A34F8 & 0xF];
-    cells = s.header + 0xC;
+    cells = s.header->cells;
     s.table = cells;
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 
@@ -4638,22 +4599,22 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     }
     s.ot_idx = 9;
     s.header = sheets[7];
-    cells = s.header + 0xC;
+    cells = s.header->cells;
     s.table = cells;
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
     s.has_color = 1;
-    func_8006A564(arg0, (u8 *)&s, 7);
-    func_8006A494((s32 *)arg0, (u8 *)&s);
+    func_8006A564(arg0, &s, 7);
+    func_8006A494((s32 *)arg0, &s);
 
     s.has_color = 0;
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 4, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 4, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 
@@ -4664,11 +4625,11 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s.has_color = 0;
     s.semi = 0;
     s.ot_idx = 0;
-    cells = s.header + 0xC;
+    cells = s.header->cells;
     s.table = cells;
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 
@@ -4681,7 +4642,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s.has_color = 0;
     s.semi = 0;
     s.ot_idx = 0;
-    cells = s.header + 0xC;
+    cells = s.header->cells;
     s.table = cells;
     s.ft4_out = *(s32 *)(arg0 + 8);
     *(s32 *)(arg0 + 8) = func_80073728((s32)&s, 0);
@@ -4698,155 +4659,142 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr + 4, (TILE *)*(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) += 0x10;
 
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 }
 /* One argument: the caller's s32[10] draw context (asm reads a0 only). */
 void func_8006B120(s32 *arg0);
-typedef struct {
-    s32 p0;
-    s32 p1;
-    s32 chain;
-    s32 pad0C;
-    s32 flag10;
-    s32 n14;
-    s32 x18;
-    s32 y1C;
-    s32 pad20;
-    s32 pad24;
-    s8 flag28;
-    s8 c29, c2A, c2B;
-} S_6B120;
 
 void func_8006B120(s32 *arg0) {
-    S_6B120 s;
+    Unk8007352CEnv s;
     u16 r[4];
-    s32 *tbl;
+    Unk8009B0E0Record **tbl;
     s32 i;
-    s32 p1;
+    /* FAKE: single-use holder of the cell table ahead of the descriptor's table store; stored directly: score 11. */
+    Unk8009B400Record *p1;
 
-    s.flag28 = 0;
-    s.n14 = 10;
+    s.has_color = 0;
+    s.ot_idx = 10;
     tbl = ((Unk8006919CRec *)arg0[1])->unk_28;
-    s.p0 = tbl[0];
-    s.y1C = 0;
-    s.x18 = 0;
-    s.flag10 = 0;
-    p1 = s.p0 + 0xC;
-    s.p1 = p1;
-    s.chain = arg0[5];
+    s.header = tbl[0];
+    s.y = 0;
+    s.x = 0;
+    s.semi = 0;
+    p1 = s.header->cells;
+    s.table = p1;
+    s.sprt_out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
-    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.p0, 0), 0);
+    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
-    s.x18 = 0;
+    s.x = 0;
     i = 0;
 
     do {
-        s.p0 = tbl[i + 1];
+        s.header = tbl[i + 1];
         if ((((u32)D_800A34F8 >> 10) & 7) == i) {
-            s.flag28 = 1;
-            s.y1C = D_800A34FC->unk_0C[1];
-            s.flag10 = 0;
-            s.c29 = s.c2A = s.c2B = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 47) >> 12) - 0x80;
+            s.has_color = 1;
+            s.y = D_800A34FC->unk_0C[1];
+            s.semi = 0;
+            s.col_r = s.col_g = s.col_b = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 47) >> 12) - 0x80;
         } else {
-            s.flag28 = 0;
-            s.y1C = 0;
-            s.flag10 = 1;
+            s.has_color = 0;
+            s.y = 0;
+            s.semi = 1;
         }
-        p1 = s.p0 + 0xC;
-        s.p1 = p1;
-        s.chain = arg0[5];
+        p1 = s.header->cells;
+        s.table = p1;
+        s.sprt_out = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         i++;
     } while (i < 6);
 
-    s.y1C = 0;
+    s.y = 0;
     i = 0;
     do {
-        s.p0 = tbl[i + 7];
-        s.x18 = 0;
-        s.flag28 = 0;
+        s.header = tbl[i + 7];
+        s.x = 0;
+        s.has_color = 0;
         if (D_800A3524->unk20_0 == i) {
-            s.flag10 = 0;
+            s.semi = 0;
             if (!(D_800A34F8 & 0x1C00)) {
                 s32 c;
 
-                s.flag28 = 1;
-                s.x18 = D_800A34FC->unk_0C[0];
+                s.has_color = 1;
+                s.x = D_800A34FC->unk_0C[0];
                 c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 32) >> 12) - 0x80;
-                s.c2B = c;
-                s.c2A = c;
-                s.c29 = c;
+                s.col_b = c;
+                s.col_g = c;
+                s.col_r = c;
             }
         } else {
-            s.flag10 = 1;
+            s.semi = 1;
         }
-        p1 = s.p0 + 0xC;
-        s.p1 = p1;
-        s.chain = arg0[5];
+        p1 = s.header->cells;
+        s.table = p1;
+        s.sprt_out = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         i++;
     } while (i < 2);
 
     i = 0;
     do {
-        s.p0 = tbl[i + 9];
-        s.x18 = 0;
-        s.flag28 = 0;
+        s.header = tbl[i + 9];
+        s.x = 0;
+        s.has_color = 0;
         if (D_800A3524->unk20_1 == i) {
-            s.flag10 = 0;
+            s.semi = 0;
             if ((D_800A34F8 & 0x1C00) == 0x400) {
                 s32 c;
 
-                s.flag28 = 1;
-                s.x18 = D_800A34FC->unk_0C[0];
+                s.has_color = 1;
+                s.x = D_800A34FC->unk_0C[0];
                 c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 32) >> 12) - 0x80;
-                s.c2B = c;
-                s.c2A = c;
-                s.c29 = c;
+                s.col_b = c;
+                s.col_g = c;
+                s.col_r = c;
             }
         } else {
-            s.flag10 = 1;
+            s.semi = 1;
         }
-        p1 = s.p0 + 0xC;
-        s.p1 = p1;
-        s.chain = arg0[5];
+        p1 = s.header->cells;
+        s.table = p1;
+        s.sprt_out = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         i++;
     } while (i < 2);
 
     i = 0;
     do {
-        s.p0 = tbl[i + 11];
-        s.x18 = 0;
-        s.flag28 = 0;
+        s.header = tbl[i + 11];
+        s.x = 0;
+        s.has_color = 0;
         if (D_800A3524->unk20_2 == i) {
-            s.flag10 = 0;
+            s.semi = 0;
             if ((D_800A34F8 & 0x1C00) == 0x800) {
                 s32 c;
 
-                s.flag28 = 1;
-                s.x18 = D_800A34FC->unk_0C[0];
+                s.has_color = 1;
+                s.x = D_800A34FC->unk_0C[0];
                 c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 32) >> 12) - 0x80;
-                s.c2B = c;
-                s.c2A = c;
-                s.c29 = c;
+                s.col_b = c;
+                s.col_g = c;
+                s.col_r = c;
             }
         } else {
-            s.flag10 = 1;
+            s.semi = 1;
         }
-        p1 = s.p0 + 0xC;
-        s.p1 = p1;
-        s.chain = arg0[5];
+        p1 = s.header->cells;
+        s.table = p1;
+        s.sprt_out = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         i++;
     } while (i < 2);
 
     tbl = ((Unk8006919CRec *)arg0[1])->unk_28;
-    s.p0 = tbl[1];
-    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.p0, 0), 0);
+    s.header = tbl[1];
+    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
     r[2] = 0xAF;
@@ -5046,50 +4994,49 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
 
 /* BEGIN func_8006BB68 */
 void func_8006BB68(s32 *arg0) {
-    S69E18 s;
+    Unk8007352CEnv s;
     u16 rect[4];
     s32 i;
-    s32 *q;
-    s32 p1;
+    Unk8009B0E0Record **q;
+    /* FAKE: single-use holder of the cell table ahead of the descriptor's table store; stored directly: score 11. */
+    Unk8009B400Record *p1;
 
-    s.zero1C = 0;
-    s.width = 0;
-    s.arg2 = 0xA;
-    s.byte28 = 0;
+    s.y = 0;
+    s.x = 0;
+    s.ot_idx = 0xA;
+    s.has_color = 0;
     q = ((Unk8006919CRec *)arg0[1])->unk_2C;
     {
-        s32 p0 = q[0];
-        s.zero10 = 0;
-        p1 = p0 + 0xC;
-        s.p0 = (s32 *)p0;
-        s.p1 = (s32 *)p1;
+        s.header = q[0];
+        s.semi = 0;
+        p1 = s.header->cells;
+        s.table = p1;
     }
-    s.in_tex = arg0[5];
+    s.sprt_out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
-    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.p0, 0), 0);
+    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
     for (i = 0; i < 3; i++) {
-        s32 p0 = q[1];
-        p1 = p0 + 0xC;
-        s.p0 = (s32 *)p0;
-        s.p1 = (s32 *)p1;
+        s.header = q[1];
+        p1 = s.header->cells;
+        s.table = p1;
         if ((((u32)D_800A34F8 >> 13) & 7) == i) {
-            s.zero1C = D_800A34FC->unk_0C[1];
-            s.zero10 = 0;
+            s.y = D_800A34FC->unk_0C[1];
+            s.semi = 0;
         } else {
-            s.zero1C = 0;
-            s.zero10 = 1;
+            s.y = 0;
+            s.semi = 1;
         }
-        s.in_tex = arg0[5];
+        s.sprt_out = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         q++;
     }
 
     q = ((Unk8006919CRec *)arg0[1])->unk_28;
-    s.p0 = (s32 *)q[1];
-    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.p0, 0), 0);
+    s.header = q[1];
+    SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
@@ -5103,17 +5050,17 @@ void func_8006BB68(s32 *arg0) {
 /* BEGIN func_8006BD28 */
 extern DR_MODE *D_800A36E0;
 extern u8 *D_800A36E4;
-void func_8006BD28(s32 arg0, s32 arg1, S_6A880 *arg2, s32 arg3) {
+void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CEnv *arg2, s32 arg3) {
     /* sprite-sheet header pointers, two per arg0: the unk_20 list of the
        MOD.BIN root (D_800A34FC->unk_24) */
-    s32 *sheets;
+    Unk8009B0E0Record **sheets;
     /* FAKE: named intermediate (no-new-park-categories entry 6): the sheet's
        8-byte cells start at header + 0xC. Spelled inline, fold
        (tools/gcc-2.7.2/fold-const.c:3685-3737) reassociates header + 0xC + j * 8
        into header + (j * 8 + 0xC) and loop.c strength-reduces that giv into its
        own callee-saved register; the target adds 0xC first and recomputes
-       j << 3 each iteration. */
-    s32 cells;
+       j << 3 each iteration. Inline: score 31. */
+    Unk8009B400Record *cells;
     s32 i, j, n;
 
     sheets = D_800A34FC->unk_24->unk_20;
@@ -5126,10 +5073,9 @@ void func_8006BD28(s32 arg0, s32 arg1, S_6A880 *arg2, s32 arg3) {
         /* FAKE: operand grouping (or-tree-shape-shift carve-out): with
            (sheets + i) + arg0 * 2, loop.c hoists arg0 * 8 alone (the target's
            prologue sll + spill at sp+0x20) and keeps i * 4 + sheets per
-           iteration; sheets[arg0 * 2 + i] and (sheets + arg0 * 2)[i] do not
-           match. */
+           iteration; sheets[arg0 * 2 + i]: score 33. */
         arg2->header = *(sheets + i + arg0 * 2);
-        if (arg2->header == -1) return;
+        if (arg2->header == (Unk8009B0E0Record *)-1) return;
 
         n = (arg0 == 0x12) ? 3 : 1;
 
@@ -5144,12 +5090,12 @@ void func_8006BD28(s32 arg0, s32 arg1, S_6A880 *arg2, s32 arg3) {
             }
             arg2->semi = 0;
             arg2->sprt_out = (s32)D_800A36E4;
-            cells = arg2->header + 0xC;
-            arg2->table = cells + j * 8;
+            cells = arg2->header->cells;
+            arg2->table = cells + j;
             D_800A36E4 = (u8 *)func_8007352C((s32)arg2);
         }
 
-        SetDrawMode(D_800A36E0, 1, 0, func_8006E480(arg2->header, 0), 0);
+        SetDrawMode(D_800A36E0, 1, 0, func_8006E480((s32)arg2->header, 0), 0);
         AddPrim(g_gpu_ot_ptr + 0x20, D_800A36E0);
         D_800A36E0++;
     }
@@ -5165,7 +5111,7 @@ extern TILE D_800F1498[];
 
 
 void func_8006BEC4(s32 arg0, s32 arg1) {
-    S_6A880 sp10;
+    Unk8007352CEnv sp10;
     s32 par;
     Vec2s16 *pos;
     s16 i;
@@ -5236,20 +5182,6 @@ s32 func_8006C168(s32 arg0, s32 arg1) {
 s32 func_8006C1FC(s32 a0, s32 a1) {
     return func_8006C168(a0, a1);
 }
-typedef struct {
-    u8 *header;
-    u8 *table;
-    s32 out;
-    s32 pad0C;
-    s32 semi;
-    s32 ot_idx;
-    s32 x;
-    s32 y;
-    s32 pad20;
-    s32 pad24;
-    u8 has_color;
-    u8 col_r, col_g, col_b;
-} Env_8006C21C;
 
 #define setXYWH(p, _x0, _y0, _w, _h)                                   \
     (p)->x0 = (_x0), (p)->y0 = (_y0),                                    \
@@ -5257,9 +5189,9 @@ typedef struct {
     (p)->x2 = (_x0), (p)->y2 = (_y0) + (_h),                             \
     (p)->x3 = (_x0) + (_w), (p)->y3 = (_y0) + (_h)
 void func_8006C21C(s32 *arg0) {
-    Env_8006C21C s;
+    Unk8007352CEnv s;
     s32 j;
-    s32 *table;
+    Unk8009B0E0Record **table;
     Rec_8006C21C *recs;
     Rec_8006C21C *rec;
     Rec_8006C21C *tile_rec;
@@ -5270,22 +5202,21 @@ void func_8006C21C(s32 *arg0) {
        live across every call, so global.c gives the once-set constant pseudo
        callee-save $s5 (target: `addu $s5,$zero,$zero`, then `addu $a1,$s5,$zero`
        at the phase-3 and phase-5 calls; cse folds the phase-1 read to 0 inside
-       the entry block); a literal 0 at every call does not match. Same shape as
+       the entry block); a literal 0 at every call: score 3. Same shape as
        the siblings func_800753D8 (`zero`) and func_8007636C (`mode`). */
     s32 mode;
-    /* Holds several values (Ruling 11, ordinary-c-judge-decidable.md): the
+    /* FAKE: holds several values (Ruling 11, ordinary-c-judge-decidable.md): the
        phase-2 unlock-bit index, the phase-4 sprite index, the phase-6 tile
        row, and the phase-8 gauge level read per player. One variable is what
        the target's allocation requires (global.c: the merged pseudo outranks
-       `j` for $fp). */
+       `j` for $fp); one counter per phase: score 90. */
     s32 work;
     /* FAKE: per-branch constant holder (named-local-fake-exception, owner
        ruling Q27 (B)) -- the bar's far-corner red, 0 on the
        pulsing bar and 0x80 otherwise, set and read inside each arm. Set in
        four arms, it is not a loop.c movable, so the else-arm 0x80 is not
        matched with its twin and hoisted out of the row loop; the target
-       loads `li $v0,0x80` in each else arm. Literal and chained forms do not
-       match. */
+       loads `li $v0,0x80` in each else arm. The literals: score 8. */
     s32 col;
     /* FAKE: always-zero narrow locals (named-local-fake-exception, owner
        ruling Q27 (A)) -- SetDrawMode's dither and texture-window
@@ -5300,7 +5231,7 @@ void func_8006C21C(s32 *arg0) {
        cast to pointer from an integer of different size): every other pointer
        or int spelling of it measured (s32 + cast, RECT * local in any placement,
        initialised or assigned later, a literal 0) differs by 70 lines, because
-       the mechanism needs the s16 read. */
+       the mechanism needs the s16 read. Literals at every read: score 37. */
     s16 dtd;
     s16 xpos;
     s16 ypos;
@@ -5310,10 +5241,10 @@ void func_8006C21C(s32 *arg0) {
     s32 row;
     s32 pulse;
     /* the sprite sheet's 8-byte cell array, which starts just past the sheet's
-       12-byte header (SprtHdrA / SprtEntA, read by func_8007352C); every
+       12-byte header (Unk8009B0E0Record / Unk8009B400Record, read by func_8007352C); every
        MOD.BIN sheet these four sites reach has one header (census). Ruling 9:
-       one meaning, header + 0xC at every write. */
-    u8 *cells;
+       one meaning, header + 0xC at every write. FAKE: single-use holder of the cell table ahead of the descriptor's table store; stored directly: score 12. */
+    Unk8009B400Record *cells;
 
     mode = 0;
     dtd = 0;
@@ -5325,11 +5256,11 @@ void func_8006C21C(s32 *arg0) {
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
     s.y = ypos;
     s.x = xpos;
-    s.header = (u8 *)table[0];
+    s.header = table[0];
     s.semi = 0;
-    cells = s.header + 0xC;
+    cells = s.header->cells;
     s.table = cells;
-    s.out = arg0[5];
+    s.sprt_out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
     SetDrawMode((DR_MODE *)arg0[7], 1, dtd, func_8006E480((s32)s.header, mode), (RECT *)tw);
     AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
@@ -5345,17 +5276,17 @@ void func_8006C21C(s32 *arg0) {
             for (work = 0; work < 4; work++) {
                 if (D_800A3524->unk17[D_800A34FC->unk_28.half[pl]] &
                     ((1 << work) << (pl * 4))) {
-                    s.header = (u8 *)table[work + 13];
+                    s.header = table[work + 13];
                     s.semi = 0;
-                    cells = s.header + 0xC;
+                    cells = s.header->cells;
                     s.table = cells;
-                    s.out = arg0[5];
+                    s.sprt_out = arg0[5];
                     arg0[5] = func_8007352C((s32)&s);
                 }
             }
         }
     }
-    s.header = (u8 *)table[13];
+    s.header = table[13];
     SetDrawMode((DR_MODE *)arg0[7], 1, dtd, func_8006E480((s32)s.header, mode), (RECT *)tw);
     AddPrim(g_gpu_ot_ptr + 0x24, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
@@ -5365,28 +5296,28 @@ void func_8006C21C(s32 *arg0) {
     s.ot_idx = 10;
     s.has_color = 0;
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
-    s.header = (u8 *)table[1];
+    s.header = table[1];
     s.semi = 0;
-    cells = s.header + 0xC;
+    cells = s.header->cells;
     s.table = cells;
-    s.out = arg0[5];
+    s.sprt_out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
     for (work = 0; work < 6; work++) {
-        s.header = (u8 *)table[work + 2];
+        s.header = table[work + 2];
         s.ot_idx = 10;
         s.has_color = 0;
         s.semi = 0;
         s.y = 0;
-        cells = s.header + 0xC;
+        cells = s.header->cells;
         s.table = cells;
         for (j = 0; j < 2; j++) {
             s.x = j ? 280 : 0;
-            s.out = arg0[5];
+            s.sprt_out = arg0[5];
             arg0[5] = func_8007352C((s32)&s);
         }
     }
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
-    s.header = (u8 *)table[1];
+    s.header = table[1];
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.header, mode), 0);
     AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
@@ -5615,19 +5546,6 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
     return ret;
 }
 
-typedef struct {
-    s32 *header;
-    s8 *table;
-    s32 out;
-    s32 pad0C;
-    s32 semi;
-    s32 ot_idx;
-    s32 x;
-    s32 y;
-    s32 pad20;
-    s32 pad24;
-    s8 has_color;
-} Env_8006CFBC;
 
 /* The two per-row sprite counters. The target clears both with one word
  * store (0x8006D018 `sw $zero,0x48($sp)`), so the storage is declared as
@@ -5639,9 +5557,9 @@ typedef union {
 } Counts_8006CFBC;
 
 s32 func_8006CFBC(s32 *arg0) {
-    Env_8006CFBC s;
+    Unk8007352CEnv s;
     Counts_8006CFBC counts;
-    s32 *table;
+    Unk8009B0E0Record **table;
     s16 outer;
     s16 column;
     s16 row;
@@ -5649,8 +5567,8 @@ s32 func_8006CFBC(s32 *arg0) {
     /* Ruling 11 (ordinary-c-judge-decidable.md): holds three values, each
      * s.header + 0xC stored to s.table -- for table[column + 8] in the
      * column loop, for table[12] when a row drew nothing, and for
-     * table[17], [18] or [19] in the last loop. */
-    s8 *temp;
+     * table[17], [18] or [19] in the last loop. FAKE: single-use holder of the cell table ahead of the descriptor's table store; stored directly: score 8. */
+    Unk8009B400Record *temp;
 
     result = 0;
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
@@ -5664,14 +5582,14 @@ s32 func_8006CFBC(s32 *arg0) {
         s.y = outer * 16;
         column = 0;
         do {
-            s.header = (s32 *)table[column + 8];
-            temp = (s8 *)s.header + 0xC;
+            s.header = table[column + 8];
+            temp = s.header->cells;
             s.table = temp;
             for (row = 0; row < 2; row++) {
                 if (D_800A3524->unk17[outer] &
                     ((1 << (row * 4)) << column)) {
                     s.x = row * 280 + counts.count[row] * 23;
-                    s.out = arg0[5];
+                    s.sprt_out = arg0[5];
                     arg0[5] = func_8007352C((s32)&s);
                     counts.count[row]++;
                 }
@@ -5684,10 +5602,10 @@ s32 func_8006CFBC(s32 *arg0) {
             if (counts.count[row] == 0) {
                 s.x = row * 280;
                 result |= 1 << row;
-                s.header = (s32 *)table[12];
-                temp = (s8 *)s.header + 0xC;
+                s.header = table[12];
+                temp = s.header->cells;
                 s.table = temp;
-                s.out = arg0[5];
+                s.sprt_out = arg0[5];
                 arg0[5] = func_8007352C((s32)&s);
             }
             row++;
@@ -5698,22 +5616,22 @@ s32 func_8006CFBC(s32 *arg0) {
     row = 0;
     do {
         if (D_800A34FC->unk_28.word == 0x50005) {
-            s.header = (s32 *)table[17];
+            s.header = table[17];
         } else if ((result >> row) & 1) {
-            s.header = (s32 *)table[19];
+            s.header = table[19];
         } else {
-            s.header = (s32 *)table[18];
+            s.header = table[18];
         }
         s.x = row * 280;
         s.y = 0;
-        temp = (s8 *)s.header + 0xC;
+        temp = s.header->cells;
         s.table = temp;
-        s.out = arg0[5];
+        s.sprt_out = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         row++;
     } while (row < 2);
 
-    s.header = (s32 *)table[14];
+    s.header = table[14];
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x20, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
@@ -5747,33 +5665,14 @@ s32 func_8006D338(s32 arg0, s32 arg1) {
     return func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
 
-/* EnvA: the 0x2C-byte draw descriptor func_8007352C consumes.  Same field
-   layout as EnvB (func_8006DD94) and S69E18 (func_80069E18); this call site
-   declares only the fields through col_b, which is what the target frame
-   (locals 0x18..0x4F = EnvA 0x2C + 8-aligned u16 rect[4]) accounts for. */
-typedef struct EnvA {
-    s32 *header;
-    s8  *table;
-    s32  out;
-    s32  pad0C;
-    s32  semi;
-    u32  ot_idx;
-    s32  x;
-    s32  y;
-    s32  pad20, pad24;
-    u8   has_color;
-    u8   col_r;
-    u8   col_g;
-    u8   col_b;
-} EnvA;
 void func_8006D3DC(s32 *arg0) {
-    EnvA s;
+    Unk8007352CEnv s;
     u16 rect[4];
-    s32 *q;
-    s32 c;
-    s32 hdr;
+    Unk8009B0E0Record **q;
+    /* FAKE: constant holder for func_8006E480's 0; the literal: score 8. */
     s32 semi = 0;
     s16 i = 0;
+    /* FAKE: constant holder for the dimmed colour; the literal: score 25. */
     u8 dim = 0x40;
 
     s.ot_idx = 0xA;
@@ -5789,8 +5688,7 @@ void func_8006D3DC(s32 *arg0) {
             s.semi = 0;
         } else if (i == D_800A3528 + 1) {
             s.y = D_800A34FC->unk_0C[1];
-            c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
-            s.col_r = s.col_g = s.col_b = c;
+            s.col_r = s.col_g = s.col_b = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
             s.semi = 0;
         } else if (i != 1 && i != 2 && i != 3 && i == D_800A3528 + 4) {
             s.col_r = s.col_g = s.col_b = 0x80;
@@ -5801,10 +5699,9 @@ void func_8006D3DC(s32 *arg0) {
             s.y = 0;
             s.semi = 1;
         }
-        hdr = q[i];
-        s.header = (s32 *)hdr;
-        s.table = (s8 *)(hdr + 0xC);
-        s.out = arg0[5];
+        s.header = q[i];
+        s.table = s.header->cells;
+        s.sprt_out = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.header, semi), 0);
         AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
@@ -5875,15 +5772,15 @@ s32 func_8006D7FC(void) {
     D_800A352C = 0;
     return 1;
 }
-void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
-    EnvA s;
+void func_8006D808(s32 *arg0, s32 *arg1, Unk8006D808Set *arg2, s32 arg3, s32 arg4) {
+    Unk8007352CEnv s;
     /* FAKE: oversized digit array (dead-vars-local-array.md OVERSIZED-LOCALS
        carve-out) - only d[0]/d[1] are used; d[2..] is the unwritten tail of a
        LIVE object.  From the target bytes: frame 0x88; ten callee-saves ($s0-$s7,$fp,$ra at
        sp+0x60..0x87 => 40 bytes) and a 0x18 outgoing-args area (the 5-arg
        SetDrawMode stores its 5th arg at sp+0x10), so the locals region is
        0x88 - 0x28 - 0x18 = 72 bytes.  The only bytes it ever touches are the
-       0x2C EnvA descriptor (sp+0x18..0x43), d[0..1] (sp+0x48..0x4B) and the
+       0x2C descriptor (sp+0x18..0x43), d[0..1] (sp+0x48..0x4B) and the
        reload spill of the hoisted `0 < n` inner-loop guard (sp+0x58);
        sp+0x4C..0x57 is never read, written or addressed in
        asm/funcs/func_8006D808.s.  The fully-written form (s16 d[2]) gives
@@ -5893,15 +5790,14 @@ void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
        only as a RANGE: s16 d[5]..d[8] (10..16 bytes) are byte-identical;
        d[4] and below give vars= 64.  d[5] is
        the smallest member.  The live-object choice follows the family model:
-       EnvA + a separate 8-aligned s16 array at sp+0x48, as in func_8006D3DC
-       (u16 rect[4]); same carve-out as the caller func_8006DD94. */
+       the descriptor + a separate 8-aligned s16 array at sp+0x48, as in func_8006D3DC
+       (u16 rect[4]); same carve-out as the caller func_8006DD94. s16 d[2]: score 26. */
     s16 d[5];
     s16 i;
     s16 k;
-    s16 v;
     s16 idx;
     s16 n;
-    s32 p;
+    /* FAKE: holder of the character's x offset for both x stores; read at each: score 27. */
     s32 w;
 
     s.ot_idx = arg3;
@@ -5910,14 +5806,14 @@ void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
     s.semi = 0;
     s.has_color = 0;
     s.col_r = s.col_g = s.col_b = 0xA0;
-    s.header = (s32 *)arg2[2];
+    s.header = arg2->unk_00[2];
     for (i = 0; i < 3; i++) {
-        s.header = (s32 *)arg2[i];
-        s.table = (s8 *)((s32)s.header + 0xC);
-        s.out = *arg0;
+        s.header = arg2->unk_00[i];
+        s.table = s.header->cells;
+        s.sprt_out = *arg0;
         *arg0 = func_8007352C((s32)&s);
     }
-    s.header = (s32 *)arg2[0];
+    s.header = arg2->unk_00[0];
     SetDrawMode((DR_MODE *)*arg1, 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3 * 4, (DR_MODE *)*arg1);
     *arg1 += 0xC;
@@ -5931,25 +5827,25 @@ void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
         if (idx >= 12 && idx < 22) {
             idx -= 2;
         }
-        s.header = (s32 *)arg2[3];
-        s.table = (s8 *)(arg2[4] + 24 + idx * 24);
-        w = ((s16 *)arg2[7])[idx];
+        s.header = arg2->unk_0C;
+        s.table = arg2->unk_10 + 3 + idx * 3;
+        w = arg2->unk_1C[idx];
         s.y = i * 26;
         s.x = w;
         if (i == 3) {
             s.x = w - 50;
             s.y = 98;
         }
-        s.out = *arg0;
+        s.sprt_out = *arg0;
         *arg0 = func_8007352C((s32)&s);
         if (idx == 8) {
-            s.table = (s8 *)arg2[4];
-            s.out = *arg0;
+            s.table = arg2->unk_10;
+            s.sprt_out = *arg0;
             *arg0 = func_8007352C((s32)&s);
         }
     }
 
-    s.header = (s32 *)arg2[3];
+    s.header = arg2->unk_0C;
     SetDrawMode((DR_MODE *)*arg1, 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3 * 4, (DR_MODE *)*arg1);
     *arg1 += 0xC;
@@ -5972,52 +5868,39 @@ void func_8006D808(s32 *arg0, s32 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
                 d[0] = d[1] = D_800A3524->unk21[k].unk2;
                 break;
             }
-            v = d[1] / 10;
             d[0] = d[0] % 10;
-            d[1] = v % 10;
-            p = arg2[5];
-            s.header = (s32 *)p;
-            *(s16 *)(p + 8) = d[0] * 24;
-            s.table = (s8 *)arg2[6];
+            d[1] = d[1] / 10 % 10;
+            s.header = arg2->unk_14;
+            s.header->ubase = d[0] * 24;
+            s.table = arg2->unk_18;
             s.x = i * 58 + 24;
             s.y = k * 26 + 2;
             if (k == 3) {
                 s.x = i * 58 + 3;
                 s.y = 100;
             }
-            s.out = *arg0;
+            s.sprt_out = *arg0;
             *arg0 = func_8007352C((s32)&s);
-            *(s16 *)((s32)s.header + 8) = d[1] * 24;
+            s.header->ubase = d[1] * 24;
             s.x -= 24;
-            s.out = *arg0;
+            s.sprt_out = *arg0;
             *arg0 = func_8007352C((s32)&s);
         }
     }
 
-    s.header = (s32 *)arg2[5];
+    s.header = arg2->unk_14;
     SetDrawMode((DR_MODE *)*arg1, 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3 * 4, (DR_MODE *)*arg1);
     *arg1 += 0xC;
 }
-typedef struct EnvB {
-    s32 *header;
-    s8  *table;
-    s32  out;
-    s32  pad0C;
-    s32  semi;
-    u32  ot_idx;
-    s32  x;
-    s32  y;
-    s32  pad20, pad24;
-    u8   has_color;
-    u8   col_r;
-    u8   col_g;
-    u8   col_b;
-    s32  pad2C, pad30;
-} EnvB;
+/* FAKE: frame layout (oversized live object), as Env_69F80; mechanism at func_8006DD94. */
+typedef struct {
+    Unk8007352CEnv env;
+    s32 tail[2];
+} Env_8006DD94;
 void func_8006DD94(s32 *arg0) {
     /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address is
-       passed to func_8007352C every iteration; pad2C/pad30 are its unwritten tail.
+       passed to func_8007352C every iteration; tail[0..1] are its unwritten tail.
        mechanism: mips.c compute_frame_size / get_frame_size -
        frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  From the target
        bytes: frame 0x78 with seven callee-saves
@@ -6026,58 +5909,55 @@ void func_8006DD94(s32 *arg0) {
        0x78 - 0x20 - 0x18 = 0x40 = 64 bytes, while the only stores into it are the
        0x2C-byte descriptor at sp+0x18..0x43 and the 8-byte rect at sp+0x50..0x57
        (52 bytes; sp+0x44..0x4F is never read, written or addressed anywhere in
-       asm/funcs/func_8006DD94.s).  The fully-written form (EnvB = 0x2C + u16 rect[4])
+       asm/funcs/func_8006DD94.s).  The fully-written form (the 0x2C descriptor + u16 rect[4])
        gives vars= 56 => ALIGN8(56)+0x18+0x20 = 0x70 != 0x78, so no fully-written
        locals set can produce the target frame.
        n.b.! the rect's slot is 8-aligned (stmt.c:3419 clamps a BLKmode automatic to
        BIGGEST_ALIGNMENT = 64 bits, mips.h:1082), so the declared descriptor size is
-       recoverable only as a RANGE: 0x34 (pad2C, pad30) and 0x38 (pad2C, pad30, pad34)
-       are byte-identical; 0x30 (pad2C alone) puts the rect back at sp+0x48.  0x34 is
+       recoverable only as a RANGE: 0x34 (two tail words) and 0x38 (three)
+       are byte-identical; 0x30 (one tail word) puts the rect back at sp+0x48.  0x34 is
        chosen as the smallest member of the range.
        Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out;
        the LIVE object (`s`, whose address is passed to func_8007352C) is extended
        rather than adding a dead pad.  Extending the OTHER live object instead
        (u16 rect[8], the shape of func_80041BF4 in src/text1a_post.c) reaches the
        target frame but leaves the rect base at sp+0x48.  Spill homes cannot land
-       below the rect (function.c:724). */
-    EnvB s;
+       below the rect (function.c:724). The plain descriptor: score 21. */
+    Env_8006DD94 s;
     u16 rect[4];
     s16 i;
-    s32 *q;
-    s32 c;
-    s32 hdr;
+    Unk8006DD94List *q;
+    /* FAKE: constant holder for the semi flag and func_8006E480's 0; the literal: score 8. */
     s32 semi = 0;
 
-    s.ot_idx = 0xA;
+    s.env.ot_idx = 0xA;
     q = ((Unk8006919CRec *)arg0[1])->unk_3C;
-    s.x = 0;
-    s.semi = semi;
+    s.env.x = 0;
+    s.env.semi = semi;
 
     for (i = 0; i < 3; i++) {
-        s.has_color = 1;
+        s.env.has_color = 1;
         if (i == D_800A352C + 1) {
-            s.y = D_800A34FC->unk_0C[1];
-            c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
-            s.col_r = s.col_g = s.col_b = c;
+            s.env.y = D_800A34FC->unk_0C[1];
+            s.env.col_r = s.env.col_g = s.env.col_b = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
         } else {
             if (i == 0) {
-                s.col_r = s.col_g = s.col_b = 0x80;
+                s.env.col_r = s.env.col_g = s.env.col_b = 0x80;
             } else {
-                s.col_r = s.col_g = s.col_b = 0x40;
+                s.env.col_r = s.env.col_g = s.env.col_b = 0x40;
             }
-            s.y = 0;
+            s.env.y = 0;
         }
-        hdr = q[i + 8];
-        s.header = (s32 *)hdr;
-        s.table = (s8 *)(hdr + 0xC);
-        s.out = arg0[5];
-        arg0[5] = func_8007352C((s32)&s);
-        SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.header, semi), 0);
+        s.env.header = q->unk_20[i];
+        s.env.table = s.env.header->cells;
+        s.env.sprt_out = arg0[5];
+        arg0[5] = func_8007352C((s32)&s.env);
+        SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480((s32)s.env.header, semi), 0);
         AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
 
-    func_8006D808(&arg0[5], &arg0[7], q, s.ot_idx, -1);
+    func_8006D808(&arg0[5], &arg0[7], &q->unk_00, s.env.ot_idx, -1);
 
     rect[2] = 0x96;
     rect[0] = 0xF5;

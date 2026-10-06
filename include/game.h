@@ -1932,30 +1932,48 @@ typedef struct {
 
 typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
 
+/* func_8006D808's sheet set: three frame sheets (unk_00), the name sheet and the per-character name
+ * cells (unk_0C / unk_10, three cells per character after a first group), the digit sheet and its
+ * cells (unk_14 / unk_18; the walker shifts the sheet's ubase per digit), and per-character x
+ * offsets (unk_1C). 3AB48 hands it D_8009B0C0, func_8006DD94 MOD.BIN's unk_3C. */
+typedef struct {
+    Unk8009B0E0Record *unk_00[3];
+    Unk8009B0E0Record *unk_0C;
+    Unk8009B400Record *unk_10;
+    Unk8009B0E0Record *unk_14;
+    Unk8009B400Record *unk_18;
+    s16 *unk_1C;
+} Unk8006D808Set;
+
+/* MOD.BIN's unk_3C list: func_8006D808's set, then the three sheets func_8006DD94 draws. */
+typedef struct {
+    Unk8006D808Set unk_00;
+    Unk8009B0E0Record *unk_20[3];
+} Unk8006DD94List;
+
 /* MOD.BIN (resource file 2), the root 51268's func_80068F70 loads at its work area + 0x58; it keeps
  * it in D_800A34FC's word 9, and func_8006E390 copies that into word 1 of the draw context. After
  * the head:
  * - unk_14..unk_40: the twelve lists func_8006919C relocates (func_8006920C: entries up to a 0
- *   word, -1 entries skipped). Most entries are sprite sheets, a 12-byte Unk8009B0E0Record header
- *   followed by its 8-byte Unk8009B400Record cells (hence the readers' `+ 0xC`). The lists stay
- *   s32 *: their entries go into the s32 header words of the draw descriptors, which keep that
- *   type until the descriptors are unified.
+ *   word, -1 entries skipped). Their entries are sprite sheets (unk_20 pairs each sheet with a -1),
+ *   except unk_3C, func_8006DD94's list (Unk8006DD94List); func_8006919C walks the twelve slots
+ *   as one run of list pointers.
  * - unk_44: the Rec_8006C21C rows func_8006C21C draws; unk_48: the points func_8006BEC4 reads.
  * The -1 ending func_8006E440's offset list follows at +0x4C; no reader touches it. */
 typedef struct {
     Unk8006E950Head unk_00;
-    s32 *unk_14;
-    s32 *unk_18;
-    s32 *unk_1C;
-    s32 *unk_20;
-    s32 *unk_24;
-    s32 *unk_28;
-    s32 *unk_2C;
-    s32 *unk_30;
-    s32 *unk_34;
-    s32 *unk_38;
-    s32 *unk_3C;
-    s32 *unk_40;
+    Unk8009B0E0Record **unk_14;
+    Unk8009B0E0Record **unk_18;
+    Unk8009B0E0Record **unk_1C;
+    Unk8009B0E0Record **unk_20;
+    Unk8009B0E0Record **unk_24;
+    Unk8009B0E0Record **unk_28;
+    Unk8009B0E0Record **unk_2C;
+    Unk8009B0E0Record **unk_30;
+    Unk8009B0E0Record **unk_34;
+    Unk8009B0E0Record **unk_38;
+    Unk8006DD94List *unk_3C;
+    Unk8009B0E0Record **unk_40;
     Rec_8006C21C *unk_44;
     Vec2s16 *unk_48;
 } Unk8006919CRec;

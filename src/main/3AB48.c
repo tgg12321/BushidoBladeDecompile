@@ -5422,7 +5422,7 @@ void func_80060758(void) {
     D_800A32B6 = 0;
     D_800A32B4 = 0;
 }
-extern s32 D_8009B0C0;
+extern Unk8006D808Set D_8009B0C0;
 
 
 s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {

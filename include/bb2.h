@@ -914,7 +914,7 @@ extern void func_8006D324(void);
 extern s32 func_8006D338(s32, s32);
 extern s32 func_8006D74C(s32, s32);
 extern s32 func_8006D7FC(void);
-extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
+extern void func_8006D808(s32 *, s32 *, Unk8006D808Set *, s32, s32);
 extern s32 func_8006E068(s32, s32);
 extern s32 func_8006E10C(void);
 extern s32 func_8006E2A8(void);
