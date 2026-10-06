@@ -478,7 +478,7 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
         count1 = D_800A38D6 + 1;
         D_800A3808 = g_gpu_ot_ptr;
         D_800A38D6 = count1;
-        D_800A378C = (u32 *)(g_gpu_ot_ptr + 0x10);
+        D_800A378C = g_gpu_ot_ptr + 4;
     }
 
     if (a0 != 0) {

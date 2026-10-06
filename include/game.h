@@ -606,7 +606,7 @@ typedef struct {
  * func_80073728 / func_80073C78 (one POLY_FT4 per cell, scaled / rotated). header / table: the sprite
  * sheet (Unk8009B0E0Record) and its cells; sprt_out / ft4_out: the SPRT and POLY_FT4 cursors the
  * walkers advance and return; semi: their SetSemiTrans argument; ot_idx: the ordering-table slot
- * (g_gpu_ot_ptr + ot_idx * 4); x / y: the screen offset added to every cell; scale_x / scale_y:
+ * (g_gpu_ot_ptr + ot_idx); x / y: the screen offset added to every cell; scale_x / scale_y:
  * the 8.8 cell scales of the POLY_FT4 walkers; has_color / col_r / col_g / col_b: the SetShadeTex
  * switch and the primitive colour. The cursors are s32 because every source of them is an s32
  * word: the draw contexts' primitive cursors (Unk800788B0Rec, 51268's context words). */

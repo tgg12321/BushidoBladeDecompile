@@ -193,7 +193,7 @@ void func_80074B18(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
             if (arg1 != 0) {
                 ot = 0x15;
             }
-            AddPrim(g_gpu_ot_ptr + ot * 4, p);
+            AddPrim(g_gpu_ot_ptr + ot, p);
             p++;
             t++;
         }
@@ -219,7 +219,7 @@ void func_80074D2C(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C(&s);
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot * 4, arg0->unk_04.unk_14);
+    AddPrim(g_gpu_ot_ptr + ot, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
 void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
@@ -229,12 +229,6 @@ void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
     Unk8009B0E0Record **records;
     TILE *prim;
     s32 ot_idx;
-    /* work holds two values (owner Ruling 11; the first under its Q20
-       per-branch-constant clause): the backdrop TILE's OT index (0xE for
-       player 1, 4 for player 0), then ot_idx * 4, the OT byte offset the last
-       three AddPrim calls add. FAKE: one local for both; a second local for the byte
-       offset: score 22. */
-    s32 work;
     s32 rect_x;
     /* the sprite sheet's cell array (8-byte Unk8009B400Record cells), which starts
        just past the sheet's one 12-byte Unk8009B0E0Record header (+0xC) on each of
@@ -254,11 +248,11 @@ void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
     prim->w = 0xCC;
     prim->h = 0xC8;
     if (arg1 != 0) {
-        work = 0xE;
+        ot_idx = 0xE;
     } else {
-        work = 4;
+        ot_idx = 4;
     }
-    AddPrim(g_gpu_ot_ptr + work * 4 + 0x24, prim);
+    AddPrim(g_gpu_ot_ptr + ot_idx + 9, prim);
     prim++;
     arg0->unk_04.unk_10 = prim;
 
@@ -306,9 +300,10 @@ void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C(&s);
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
+    /* FAKE: ot_idx is set again (the same value) beside rect_x; set once, above: score 26. */
     if (arg1 != 0) {
         ot_idx = 0xE;
         rect_x = 0x14E;
@@ -321,7 +316,7 @@ void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
     rect.w = 0xD4;
     rect.h = 0xC8 - SELWORK->f0C[arg1];
     SetDrawArea(arg0->unk_04.unk_18, &rect);
-    AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, arg0->unk_04.unk_18);
+    AddPrim(g_gpu_ot_ptr + ot_idx + 9, arg0->unk_04.unk_18);
     arg0->unk_04.unk_18++;
 
     rect.x = SELWORK->f24->draw.clip.x;
@@ -329,21 +324,20 @@ void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
     rect.w = SELWORK->f24->draw.clip.w;
     rect.h = SELWORK->f24->draw.clip.h;
     SetDrawArea(arg0->unk_04.unk_18, &rect);
-    work = ot_idx * 4;
-    AddPrim(g_gpu_ot_ptr + work, arg0->unk_04.unk_18);
+    AddPrim(g_gpu_ot_ptr + ot_idx, arg0->unk_04.unk_18);
     arg0->unk_04.unk_18++;
 
     offset[0] = SELWORK->f24->draw.ofs[0];
     offset[1] = SELWORK->f24->draw.ofs[1]
               - SELWORK->f08[arg1];
     SetDrawOffset(arg0->unk_04.unk_1C, offset);
-    AddPrim(g_gpu_ot_ptr + work + 0x24, arg0->unk_04.unk_1C);
+    AddPrim(g_gpu_ot_ptr + ot_idx + 9, arg0->unk_04.unk_1C);
     arg0->unk_04.unk_1C++;
 
     offset[0] = SELWORK->f24->draw.ofs[0];
     offset[1] = SELWORK->f24->draw.ofs[1];
     SetDrawOffset(arg0->unk_04.unk_1C, offset);
-    AddPrim(g_gpu_ot_ptr + work, arg0->unk_04.unk_1C);
+    AddPrim(g_gpu_ot_ptr + ot_idx, arg0->unk_04.unk_1C);
     arg0->unk_04.unk_1C++;
 }
 void func_8007526C(void) {
@@ -459,7 +453,7 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C(&s);
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, zero), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     tbl = arg0->unk_00.v80076FF8->unk_2C;
     do {
@@ -476,7 +470,7 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C(&s);
         SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, zero), 0);
-        AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
+        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
         i++;
         arg0->unk_04.unk_14++;
     } while (i < 2);
@@ -617,7 +611,7 @@ void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C(&s);
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, zero), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
     s.col_r = s.col_g = s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
@@ -699,10 +693,10 @@ void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     table = arg0->unk_00.v80076FF8->unk_14;
     s.header = table[1];
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, zero), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, zero), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4 - 4, arg0->unk_04.unk_14);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx - 1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
 
@@ -873,7 +867,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C(&s);
         SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, mode), 0);
-        AddPrim(g_gpu_ot_ptr + ot * 4, arg0->unk_04.unk_14);
+        AddPrim(g_gpu_ot_ptr + ot, arg0->unk_04.unk_14);
         arg0->unk_04.unk_14++;
     }
 
@@ -943,7 +937,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     table = arg0->unk_00.v80076FF8->unk_14;
     s.header = table[1];
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, mode), 0);
-    AddPrim(g_gpu_ot_ptr + ot * 4, arg0->unk_04.unk_14);
+    AddPrim(g_gpu_ot_ptr + ot, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
 
@@ -1115,7 +1109,7 @@ s32 func_800770B8(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     do { } while (0);
     sp[0] = 0;
     sp[1] = 0;
-    ClearOTagR((u32 *)g_gpu_ot_ptr, 0x1008);
+    ClearOTagR(g_gpu_ot_ptr, 0x1008);
     work = (void *)(arg0 + 0x58);
     D_800A35D8 = (Unk8006E49CRec *)arg0;
     snd_StopAll();
@@ -1918,7 +1912,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                     s.sprt_out = arg0->unk_04.unk_0C;
                     arg0->unk_04.unk_0C = func_8007352C(&s);
                     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, abr), 0);
-                    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
+                    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
                     arg0->unk_04.unk_14++;
                 }
             }
@@ -1938,7 +1932,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 s.sprt_out = arg0->unk_04.unk_0C;
                 arg0->unk_04.unk_0C = func_8007352C(&s);
                 SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, abr), 0);
-                AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
+                AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
                 arg0->unk_04.unk_14++;
             }
             /* fall through */
@@ -1957,7 +1951,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 s.sprt_out = arg0->unk_04.unk_0C;
                 arg0->unk_04.unk_0C = func_8007352C(&s);
                 SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, abr), 0);
-                AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
+                AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
                 arg0->unk_04.unk_14++;
             }
             break;
@@ -1987,7 +1981,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                     s.sprt_out = arg0->unk_04.unk_0C;
                     arg0->unk_04.unk_0C = func_8007352C(&s);
                     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, abr), 0);
-                    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
+                    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
                     arg0->unk_04.unk_14++;
                 }
             }
@@ -2035,7 +2029,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
             s.sprt_out = arg0->unk_04.unk_0C;
             arg0->unk_04.unk_0C = func_8007352C(&s);
             SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, abr), 0);
-            AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
+            AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
             arg0->unk_04.unk_14++;
         }
     }
@@ -2044,7 +2038,7 @@ s32 func_800784E4(s32 arg0) {
     Ctx77D94 *s0;
     s32 r;
 
-    ClearOTagR((u32 *)g_gpu_ot_ptr, 0x1008);
+    ClearOTagR(g_gpu_ot_ptr, 0x1008);
     s0 = (Ctx77D94 *)(arg0 + 0x58);
     D_800A35F4 = (Unk8006E49CRec *)arg0;
     D_800A35F8 = s0;
@@ -2126,7 +2120,7 @@ void func_80078654(Unk800788B0Rec *arg0) {
         s.sprt_out = arg0->unk_0C;
         arg0->unk_0C = func_8007352C(&s);
         SetDrawMode(arg0->unk_14, 1, 0, func_8006E480(s.header, zero), 0);
-        AddPrim(g_gpu_ot_ptr + (s.ot_idx * 4), arg0->unk_14);
+        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
         arg0->unk_14++;
     }
     s.has_color = 0;
@@ -2151,7 +2145,7 @@ loop:
     s.sprt_out = arg0->unk_0C;
     arg0->unk_0C = func_8007352C(&s);
     SetDrawMode(arg0->unk_14, 1, 0, func_8006E480(s.header, zero), 0);
-    AddPrim(g_gpu_ot_ptr + (s.ot_idx * 4), arg0->unk_14);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
     var_s0++;
     arg0->unk_14++;
 check:
@@ -2163,7 +2157,7 @@ extern s32 D_800A3304;
 s32 func_80078824(s32 arg0) {
     Unk80078824Rec *s0;
 
-    ClearOTagR((u32 *)g_gpu_ot_ptr, 0x1008);
+    ClearOTagR(g_gpu_ot_ptr, 0x1008);
     s0 = (Unk80078824Rec *)(arg0 + 0x58);
     D_800A360C = (Unk8006E49CRec *)arg0;
     D_800A3610 = s0;

@@ -55,7 +55,7 @@ s32 func_8007352C(Unk8007352CEnv *env) {
                 env->ot_idx = 1;
                 ((void (*)())func_8003D52C)(D_800159A0);
             }
-            AddPrim(g_gpu_ot_ptr + env->ot_idx * 4, sp);
+            AddPrim(g_gpu_ot_ptr + env->ot_idx, sp);
             sp++;
         }
     }
@@ -156,7 +156,7 @@ s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
         if (env->ot_idx >= 0x1006) {
             env->ot_idx = 1;
         }
-        AddPrim(g_gpu_ot_ptr + env->ot_idx * 4, p);
+        AddPrim(g_gpu_ot_ptr + env->ot_idx, p);
         p++;
         e++;
     }
@@ -277,7 +277,7 @@ s32 func_80073C78(env, angle, mode)
         if (env->ot_idx >= 0x1006) {
             env->ot_idx = 1;
         }
-        AddPrim(g_gpu_ot_ptr + env->ot_idx * 4, p);
+        AddPrim(g_gpu_ot_ptr + env->ot_idx, p);
         p++;
         e++;
     }
@@ -304,7 +304,7 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     t->w = 0x202;
     t->h = 0xB0;
     SetSemiTrans(t, 1);
-    AddPrim(g_gpu_ot_ptr + 0x78, t);
+    AddPrim(g_gpu_ot_ptr + 0x1E, t);
     t++;
     arg0->unk_04.unk_10 = t;
 skip_init:
@@ -325,7 +325,7 @@ skip_init:
 
     s.header = *temp_s2;
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x7C, arg0->unk_04.unk_14);
+    AddPrim(g_gpu_ot_ptr + 0x1F, arg0->unk_04.unk_14);
     q = arg0->unk_04.unk_04;
     arg0->unk_04.unk_14++;
     SetPolyF4(q);
@@ -339,7 +339,7 @@ skip_init:
     q->x3 = 0x122;
     q->y3 = 0xEF;
     SetSemiTrans(q, 0);
-    AddPrim(g_gpu_ot_ptr + 0x80, q);
+    AddPrim(g_gpu_ot_ptr + 0x20, q);
     q++;
 
     SetPolyF4(q);
@@ -353,7 +353,7 @@ skip_init:
     q->x3 = 0x27F;
     q->y3 = 0x36;
     SetSemiTrans(q, 0);
-    AddPrim(g_gpu_ot_ptr + 0x80, q);
+    AddPrim(g_gpu_ot_ptr + 0x20, q);
     q++;
 
     SetPolyF4(q);
@@ -367,7 +367,7 @@ skip_init:
     q->x3 = 0x15E;
     q->y3 = 0xEF;
     SetSemiTrans(q, 0);
-    AddPrim(g_gpu_ot_ptr + 0x80, q);
+    AddPrim(g_gpu_ot_ptr + 0x20, q);
     q++;
 
     arg0->unk_04.unk_04 = q;
@@ -449,7 +449,7 @@ void func_80074488(Unk8006EACCRec *arg0) {
 
     s.header = table[0];
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 8, arg0->unk_04.unk_14);
+    AddPrim(g_gpu_ot_ptr + 2, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     rect[2] = 0x108;
     rect[0] = 0xBC;

@@ -9,9 +9,9 @@
 extern FileRecord D_80106A50;
 extern s16 D_800A3710;
 extern GpuDb g_gpu_db[2];
-/* The current frame's ordering table as a byte address (OT entry n is g_gpu_ot_ptr + n * 4);
+/* The current frame's ordering table (OT entry n is g_gpu_ot_ptr + n);
  * defined in src/main/6CF8.c. */
-extern u8 *g_gpu_ot_ptr;
+extern u32 *g_gpu_ot_ptr;
 extern void gpu_SetDispMaskOn(void);
 extern void gpu_ResetGraphMode1(void);
 extern void gpu_InitDisplay(void);
@@ -615,7 +615,7 @@ extern void func_800520B8(s32, s32, s32);
 extern u8 D_800A37A8[];
 extern u16 D_800A37C4;
 extern POLY_FT4 *D_800A37D4;
-extern u8 *D_800A3808;
+extern u32 *D_800A3808;
 extern s16 D_800A3840;
 extern u8 D_800A384C;
 extern s16 D_800A3854;

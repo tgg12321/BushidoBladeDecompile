@@ -854,7 +854,7 @@ s32 func_80054F68(void) {
     D_800A3820 = D_80102C00;
     D_800A38D6 = D_800A38D6 + 1;
     D_800A3808 = g_gpu_ot_ptr;
-    D_800A378C = (u32 *)(g_gpu_ot_ptr + 0x10);
+    D_800A378C = g_gpu_ot_ptr + 4;
     s0 = func_8005490C();
     func_800444E0();
     return s0;
@@ -3942,7 +3942,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = D_8009B2BC[mode].w;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim(g_gpu_ot_ptr + ot * 4, tile);
+            AddPrim(g_gpu_ot_ptr + ot, tile);
             tile++;
         }
         /* fallthrough */
@@ -3995,7 +3995,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = D_8009B2BC[mode].w;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim(g_gpu_ot_ptr + ot * 4, tile);
+            AddPrim(g_gpu_ot_ptr + ot, tile);
             tile++;
         }
         break;
@@ -4073,7 +4073,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = D_8009B2BC[mode].w;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim(g_gpu_ot_ptr + ot * 4, tile);
+            AddPrim(g_gpu_ot_ptr + ot, tile);
             tile++;
         }
         if (j != 0) {
@@ -4110,7 +4110,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             tile->w = 2;
             tile->h = D_8009B2BC[mode].h + 2;
             SetSemiTrans(tile, 0);
-            AddPrim(g_gpu_ot_ptr + ot * 4, tile);
+            AddPrim(g_gpu_ot_ptr + ot, tile);
             tile++;
         }
     }
@@ -4124,9 +4124,9 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     tile->w = D_8009B2BC[mode].w;
     tile->h = D_8009B2BC[mode].h;
     SetSemiTrans(tile, 1);
-    AddPrim(g_gpu_ot_ptr + ot * 4, tile);
+    AddPrim(g_gpu_ot_ptr + ot, tile);
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B0E0[0], 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + ot, mode_off);
     return size;
 }
 /* 0x8009B2C8: two rows of five sprite-sheet headers (func_8005D46C draws headers 0 / 1 of row
@@ -4414,7 +4414,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         tile->w = 0x238 - D_8009B450[j].x;
         tile->h = 1;
         SetSemiTrans(tile, 0);
-        AddPrim(g_gpu_ot_ptr + arg3 * 4, tile);
+        AddPrim(g_gpu_ot_ptr + arg3, tile);
         tile++;
         /* FAKE (pointer-alias-fake-exception): the first sheet and cell,
          * named a few insns before their stores so loop.c hoists them
@@ -4434,7 +4434,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         cur = func_8007352C(&s);
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B398[0], 0), 0);
-    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     return end_off - arg2;
 }
 
@@ -4534,7 +4534,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         tile->w = 0x30;
         tile->h = 1;
         SetSemiTrans(tile, 0);
-        AddPrim(g_gpu_ot_ptr + arg3 * 4, tile);
+        AddPrim(g_gpu_ot_ptr + arg3, tile);
         tile++;
         s.y = 0x24;
         s.header = &D_8009B398[2];
@@ -4550,7 +4550,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         }
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B398[0], 0), 0);
-    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     return end_off - arg2;
 }
 s32 func_8005E51C(s32 a0, s32 a1, s32 a2) {
@@ -4736,7 +4736,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         }
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B524, 0), 0);
-    AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     /* The second DR_MODE goes at the chunk's end, past the size this function returns (2B344
      * func_8003C560 advances its cursor D_800A38B4 by that size; 6CF8 func_800174F4 ignores
      * it). */
@@ -4834,7 +4834,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->w = 0xDC;
     tile->h = 1;
     SetSemiTrans(tile, 0);
-    AddPrim(g_gpu_ot_ptr + arg2 * 4, tile);
+    AddPrim(g_gpu_ot_ptr + arg2, tile);
     tile++;
     SetTile(tile);
     tile->r0 = 0xFF;
@@ -4845,7 +4845,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->w = 0xDC;
     tile->h = 1;
     SetSemiTrans(tile, 0);
-    AddPrim(g_gpu_ot_ptr + arg2 * 4, tile);
+    AddPrim(g_gpu_ot_ptr + arg2, tile);
     tile++;
     SetTile(tile);
     tile->r0 = 0xFF;
@@ -4867,9 +4867,9 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->w = 0x1C5;
     tile->h = 1;
     SetSemiTrans(tile, 0);
-    AddPrim(g_gpu_ot_ptr + arg2 * 4, tile);
+    AddPrim(g_gpu_ot_ptr + arg2, tile);
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009ADB4, 0), 0);
-    AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     return end_off - arg1;
 }
 extern Unk8009B0E0Record D_8009B5A0[2];
@@ -4930,7 +4930,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         }
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B5A0[0], 0), 0);
-    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     /* The second DR_MODE goes at the chunk's end, past the size this function returns (its
      * caller, 9F9C func_8001CE60, advances its cursor D_800A38B4 by that size). */
     mode_off++;
@@ -4967,7 +4967,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             tile->w = 0x42 - k * 16;
             tile->h = 1;
             SetSemiTrans(tile, 0);
-            AddPrim(g_gpu_ot_ptr + arg3 * 4, tile);
+            AddPrim(g_gpu_ot_ptr + arg3, tile);
             tile++;
             s.y = k * 20 + 0x24;
             s.header = &D_8009B398[2];
@@ -5042,7 +5042,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         cur = func_8007352C(&s);
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B398[1], 0), 0);
-    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     return end_off - arg2;
 }
 /* func_8005FA98's sheets: three headers at 0x8009B610 (the second draw, header arg0, its one cell at
@@ -5154,7 +5154,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
     r.h = env->draw.clip.h;
     clip = &env->draw.clip;
     SetDrawArea(area, &r);
-    AddPrim(g_gpu_ot_ptr + arg1 * 4, area);
+    AddPrim(g_gpu_ot_ptr + arg1, area);
     area++;
     s.has_color = 0;
     s.semi = 0;
@@ -5207,7 +5207,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
             poly->r3 = 0;
             poly->g3 = 0;
             poly->b3 = 0;
-            AddPrim(g_gpu_ot_ptr + arg1 * 4, poly);
+            AddPrim(g_gpu_ot_ptr + arg1, poly);
             poly++;
         }
         for (i = 0; i < 2; i++) {
@@ -5218,13 +5218,13 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
         }
         if (D_800A3278 >= 0xB5) {
             SetDrawArea(area, &r);
-            AddPrim(g_gpu_ot_ptr + arg1 * 4, area);
+            AddPrim(g_gpu_ot_ptr + arg1, area);
             area++;
         }
         j++;
     } while (j < 2);
     SetDrawMode(mode_off, 1, 0, func_8006E480(D_8009B698, 0x20), 0);
-    AddPrim(g_gpu_ot_ptr + arg1 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg1, mode_off);
     if (off <= 0x140) {
         D_800A3278++;
     }
@@ -5277,7 +5277,7 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
         }
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480(D_8009B6F0, 0), 0);
-    AddPrim(g_gpu_ot_ptr + (arg2 * 4), mode_off);
+    AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     return end_off - arg1;
 }
 extern RECT D_800A3294;
@@ -5337,7 +5337,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     s.sprt_out = (s32)&chunk->unk_00;
     func_8007352C(&s);
     SetDrawMode(mode_off, 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + (arg2 * 4), mode_off);
+    AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     return end_off - arg1;
 }
 extern Unk8009B0E0Record D_8009B770[4];
@@ -5414,7 +5414,7 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         p0++;
     } while (j < 2);
     SetDrawMode(mode_off, 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + (arg1 * 4), mode_off);
+    AddPrim(g_gpu_ot_ptr + arg1, mode_off);
     return end_off - arg0;
 }
 
@@ -5434,6 +5434,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     s32 t2;
     u16 cur1;
     u16 cur2;
+    /* FAKE: the returned size is the chunk's end minus its start; 0xAC8: score 26. */
     s32 end_off;
     s32 tile_off;
 
@@ -5464,7 +5465,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
             D_800A32B4 = 0x1E;
         }
         SetSemiTrans((TILE *)tile_off, 0);
-        AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+        AddPrim(g_gpu_ot_ptr + arg1, (void *)tile_off);
         tile_off = arg0 + 0x7E0;
     }
     SetTile((TILE *)tile_off);
@@ -5488,7 +5489,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
         D_800A32B6 = 0x1E;
     }
     SetSemiTrans((TILE *)tile_off, 0);
-    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+    AddPrim(g_gpu_ot_ptr + arg1, (void *)tile_off);
     tile_off += 0x10;
 
     SetTile((TILE *)tile_off);
@@ -5500,7 +5501,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     *(u8 *)(tile_off + 6) = 0;
     *(s16 *)(tile_off + 0xE) = 0x6C;
     SetSemiTrans((TILE *)tile_off, 1);
-    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+    AddPrim(g_gpu_ot_ptr + arg1, (void *)tile_off);
     tile_off += 0x10;
 
     SetTile((TILE *)tile_off);
@@ -5512,10 +5513,10 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     *(u8 *)(tile_off + 6) = 0;
     *(s16 *)(tile_off + 0xE) = 0x1A;
     SetSemiTrans((TILE *)tile_off, 1);
-    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
+    AddPrim(g_gpu_ot_ptr + arg1, (void *)tile_off);
 
     SetDrawMode((void *)sp1C, 1, 0, 0, 0);
-    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)sp1C);
+    AddPrim(g_gpu_ot_ptr + arg1, (void *)sp1C);
     sp1C += 0xC;
     return end_off - arg0;
 }

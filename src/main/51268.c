@@ -974,7 +974,7 @@ void func_800620B8(s16 *arg0, s32 *trans) {
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
             if (prim - D_800A3720 < 0x1C1) {
-                D_800A34E4 = (u32 *)(g_gpu_ot_ptr + *z * 4);
+                D_800A34E4 = g_gpu_ot_ptr + *z;
                 D_800A34E8 = &prim->tag;
                 *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
                 *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
@@ -1142,7 +1142,7 @@ s32 func_8006295C(void) {
            to s2, the cursor takes s0 and the giv s1: score 37. */
         end = prim;
         for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
-            AddPrim(g_gpu_ot_ptr + zbuf[k] * 4, prim);
+            AddPrim(g_gpu_ot_ptr + zbuf[k], prim);
         }
         D_800A37D4 = end;
         return 1;
@@ -1334,7 +1334,7 @@ s32 func_80063084(void) {
                     *(s32 *)&prim->u1 = *D_800A34D8 + *D_800A3490;
                     *(u16 *)&prim->u2 = *D_800A34DC;
                     *(u16 *)&prim->u3 = *D_800A34E0;
-                    D_800A34E4 = (u32 *)(g_gpu_ot_ptr + *z * 4);
+                    D_800A34E4 = g_gpu_ot_ptr + *z;
                     D_800A34E8 = &prim->tag;
                     *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
                     *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
@@ -1713,7 +1713,7 @@ s32 func_80063E10(s32 lane) {
     end = prim;
     for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
         D_800A34E8 = &prim->tag;
-        D_800A34E4 = (u32 *)(g_gpu_ot_ptr + zbuf[k] * 4);
+        D_800A34E4 = g_gpu_ot_ptr + zbuf[k];
         *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
         *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
     }
@@ -1905,7 +1905,7 @@ s32 func_800646E8(void) {
     }
     *end = prim;
     for (prim = D_800A37D4; prim < *end; prim++, zbuf++) {
-        D_800A34E4 = (u32 *)(g_gpu_ot_ptr + *zbuf * 4);
+        D_800A34E4 = g_gpu_ot_ptr + *zbuf;
         D_800A34E8 = &prim->tag;
         *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
         *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
@@ -2720,7 +2720,7 @@ again:
             prim->y3 = (*D_800A34B8 >> 16) - *p_h / 2;
         }
         if (arg0 < 9) {
-            AddPrim(g_gpu_ot_ptr + 4, prim);
+            AddPrim(g_gpu_ot_ptr + 1, prim);
             if (prim - D_800A3720 < 0x1C1) {
                 prim++;
             }
@@ -2729,7 +2729,7 @@ again:
         }
         break;
     }
-    AddPrim(g_gpu_ot_ptr + 4, prim);
+    AddPrim(g_gpu_ot_ptr + 1, prim);
     if (prim - D_800A3720 < 0x1C1) {
         prim++;
     }
@@ -3439,9 +3439,7 @@ u8 func_80068D88(s32 arg0, s32 arg1) {
         if (*p_cur < *p_end) {
             u32 *p_b;
             do {
-                s32 idx_s = *p_idx;
-                u32 entry = zbuf[idx_s];
-                D_800A34E4 = (u32 *)(g_gpu_ot_ptr + (s32)(entry * 4));
+                D_800A34E4 = g_gpu_ot_ptr + zbuf[*p_idx];
                 p_b = &(*p_cur)->tag;
                 D_800A34E8 = p_b;
                 *p_b = (*p_b & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
@@ -3844,7 +3842,7 @@ void func_80069898(s32 *arg0, u16 *arg1, s32 arg2) {
     p->w = arg1[2];
     p->h = arg1[3];
     SetSemiTrans(p, 0);
-    AddPrim(g_gpu_ot_ptr + arg2 * 4, p);
+    AddPrim(g_gpu_ot_ptr + arg2, p);
     p++;
 
     SetTile(p);
@@ -3856,7 +3854,7 @@ void func_80069898(s32 *arg0, u16 *arg1, s32 arg2) {
     p->w = arg1[2];
     p->h = arg1[3];
     SetSemiTrans(p, 1);
-    AddPrim(g_gpu_ot_ptr + arg2 * 4, p);
+    AddPrim(g_gpu_ot_ptr + arg2, p);
     p++;
 
     SetTile(p);
@@ -3868,7 +3866,7 @@ void func_80069898(s32 *arg0, u16 *arg1, s32 arg2) {
     p->w = arg1[2];
     p->h = arg1[3];
     SetSemiTrans(p, 1);
-    AddPrim(g_gpu_ot_ptr + arg2 * 4, p);
+    AddPrim(g_gpu_ot_ptr + arg2, p);
     p++;
 
     arg0[6] = (s32)p;
@@ -3925,7 +3923,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
         p->w = 0xCC;
         p->h = 0xB0;
         SetSemiTrans(p, 1);
-        AddPrim(g_gpu_ot_ptr + 0x44, p);
+        AddPrim(g_gpu_ot_ptr + 0x11, p);
         p++;
         SetTile(p);
         func_80069A30(p);
@@ -3934,7 +3932,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
         p->w = 0xCC;
         p->h = 0xB0;
         SetSemiTrans(p, 1);
-        AddPrim(g_gpu_ot_ptr + 0x44, p);
+        AddPrim(g_gpu_ot_ptr + 0x11, p);
         p++;
     } else if (mode == 1) {
         SetTile(p);
@@ -3944,7 +3942,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
         p->w = 0x202;
         p->h = 0xB0;
         SetSemiTrans(p, 1);
-        AddPrim(g_gpu_ot_ptr + 0x44, p);
+        AddPrim(g_gpu_ot_ptr + 0x11, p);
         p++;
     } else {
         SetTile(p);
@@ -3954,7 +3952,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
         p->w = 0x126;
         p->h = 0xAB;
         SetSemiTrans(p, 1);
-        AddPrim(g_gpu_ot_ptr + 0x44, p);
+        AddPrim(g_gpu_ot_ptr + 0x11, p);
         p++;
     }
     arg0[6] = (s32)p;
@@ -3979,7 +3977,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
         s.header = qbase[0];
         SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.header, 0), 0);
     }
-    AddPrim(g_gpu_ot_ptr + 0x48, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0x12, (DR_MODE *)arg0[7]);
 
     poly = (POLY_F4 *)arg0[3];
     arg0[7] += 0xC;
@@ -3994,7 +3992,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
     poly->x3 = 0x122;
     poly->y3 = 0xEF;
     SetSemiTrans(poly, 0);
-    AddPrim(g_gpu_ot_ptr + 0x4C, poly);
+    AddPrim(g_gpu_ot_ptr + 0x13, poly);
     poly++;
 
     SetPolyF4(poly);
@@ -4008,7 +4006,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
     poly->x3 = 0x27F;
     poly->y3 = 0x36;
     SetSemiTrans(poly, 0);
-    AddPrim(g_gpu_ot_ptr + 0x4C, poly);
+    AddPrim(g_gpu_ot_ptr + 0x13, poly);
     poly++;
 
     SetPolyF4(poly);
@@ -4022,14 +4020,13 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
     poly->x3 = 0x15E;
     poly->y3 = 0xEF;
     SetSemiTrans(poly, 0);
-    AddPrim(g_gpu_ot_ptr + 0x4C, poly);
+    AddPrim(g_gpu_ot_ptr + 0x13, poly);
     poly++;
 
     arg0[3] = (s32)poly;
 }
 
 void func_80069E18(s32 arg0) {
-    extern u8 *g_gpu_ot_ptr;
     TILE *tile;
     Unk8009B0E0Record **ptr;
     Unk8007352CEnv s;
@@ -4046,7 +4043,7 @@ void func_80069E18(s32 arg0) {
     tile->y0 = 0;
     tile->h = 0xF0;
     SetSemiTrans(tile, 0);
-    AddPrim(g_gpu_ot_ptr + 0x50, tile);
+    AddPrim(g_gpu_ot_ptr + 0x14, tile);
     *(s32 *)(arg0 + 0x18) = (s32)(tile + 1);
 
     ptr = (*(Unk8006919CRec **)(arg0 + 4))->unk_14;
@@ -4058,7 +4055,7 @@ void func_80069E18(s32 arg0) {
 
     s.header = ptr[0];
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x44, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
+    AddPrim(g_gpu_ot_ptr + 0x11, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
 
     p1 = s.header->cells;
@@ -4172,7 +4169,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
             arg0[5] = func_8007352C(&s.env);
         }
         SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.env.header, 0), 0);
-        AddPrim(g_gpu_ot_ptr + 0xC, (DR_MODE *)arg0[7]);
+        AddPrim(g_gpu_ot_ptr + 3, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
 }
@@ -4265,7 +4262,7 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
             arg0[5] = func_8007352C(&s.env);
         }
         SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.env.header, 0), 0);
-        AddPrim(g_gpu_ot_ptr + 8, (DR_MODE *)arg0[7]);
+        AddPrim(g_gpu_ot_ptr + 2, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
 }
@@ -4280,7 +4277,7 @@ void func_8006A3CC(s32 *arg0, Unk8007352CEnv *arg1) {
     arg1->sprt_out = arg0[5];
     arg0[5] = func_8007352C(arg1);
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(arg1->header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 4, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 }
 void func_8006A494(s32 *arg0, Unk8007352CEnv *arg1) {
@@ -4296,7 +4293,7 @@ void func_8006A494(s32 *arg0, Unk8007352CEnv *arg1) {
     arg1->ft4_out = arg0[2];
     arg0[2] = func_80073728(arg1, 0);
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(arg1->header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 4, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 }
 void func_8006A564(u8 *arg0, Unk8007352CEnv *arg1, s32 arg2) {
@@ -4328,7 +4325,7 @@ void func_8006A564(u8 *arg0, Unk8007352CEnv *arg1, s32 arg2) {
         tile->h = 1;
     }
     SetSemiTrans(tile, arg1->semi);
-    AddPrim(g_gpu_ot_ptr + (arg1->ot_idx << 2), tile);
+    AddPrim(g_gpu_ot_ptr + arg1->ot_idx, tile);
     tile++;
 
     SetTile(tile);
@@ -4353,7 +4350,7 @@ void func_8006A564(u8 *arg0, Unk8007352CEnv *arg1, s32 arg2) {
         tile->h = 1;
     }
     SetSemiTrans(tile, 1);
-    AddPrim(g_gpu_ot_ptr + (arg1->ot_idx << 2), tile);
+    AddPrim(g_gpu_ot_ptr + arg1->ot_idx, tile);
     tile++;
 
     SetTile(tile);
@@ -4380,7 +4377,7 @@ void func_8006A564(u8 *arg0, Unk8007352CEnv *arg1, s32 arg2) {
         tile->h = 1;
     }
     SetSemiTrans(tile, 1);
-    AddPrim(g_gpu_ot_ptr + (arg1->ot_idx << 2), tile);
+    AddPrim(g_gpu_ot_ptr + arg1->ot_idx, tile);
 
     tile = tile + 1;
     *(s32 *)(arg0 + 0x18) = (s32)tile;
@@ -4421,7 +4418,7 @@ void func_8006A564(u8 *arg0, Unk8007352CEnv *arg1, s32 arg2) {
 
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
                 func_8006E480(arg1->header, s4), 0);
-    AddPrim(g_gpu_ot_ptr + (arg1->ot_idx << 2), (DR_MODE *)*(s32 *)(arg0 + 0x1C));
+    AddPrim(g_gpu_ot_ptr + arg1->ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
 }
 
@@ -4462,14 +4459,14 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     bit = 0;
     s.header = sheets[0];
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x30, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
+    AddPrim(g_gpu_ot_ptr + 0xC, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
     rect.x = arg1[0];
     rect.y = arg1[1] + 0x3A;
     rect.w = 0xF6;
     rect.h = 0x92;
     SetDrawArea((DR_AREA *)*(s32 *)(arg0 + 0x20), &rect);
-    AddPrim(g_gpu_ot_ptr + 0x30, (DR_AREA *)*(s32 *)(arg0 + 0x20));
+    AddPrim(g_gpu_ot_ptr + 0xC, (DR_AREA *)*(s32 *)(arg0 + 0x20));
     *(s32 *)(arg0 + 0x20) += 0xC;
     yofs = 0;
     for (; !(row_mask & (1 << bit)); bit++) {
@@ -4478,7 +4475,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     ofs[0] = arg1[4];
     ofs[1] = arg1[5] + yofs;
     SetDrawOffset((DR_OFFSET *)*(s32 *)(arg0 + 0x24), ofs);
-    AddPrim(g_gpu_ot_ptr + 0x30, (DR_OFFSET *)*(s32 *)(arg0 + 0x24));
+    AddPrim(g_gpu_ot_ptr + 0xC, (DR_OFFSET *)*(s32 *)(arg0 + 0x24));
     *(s32 *)(arg0 + 0x24) += 0xC;
 
     row_mask = D_8009BC04;
@@ -4517,7 +4514,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
         s.sprt_out = *(s32 *)(arg0 + 0x14);
         *(s32 *)(arg0 + 0x14) = func_8007352C(&s);
         SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
-        AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
+        AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
         *(s32 *)(arg0 + 0x1C) += 0xC;
         s.has_color = 1;
         func_8006A564(arg0, &s, i);
@@ -4535,7 +4532,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C(&s);
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 
     sheets = (*(Unk8006919CRec **)(arg0 + 4))->unk_18;
@@ -4544,12 +4541,12 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     rect.w = arg1[2];
     rect.h = arg1[3];
     SetDrawArea((DR_AREA *)*(s32 *)(arg0 + 0x20), &rect);
-    AddPrim(g_gpu_ot_ptr + 0x28, (DR_AREA *)*(s32 *)(arg0 + 0x20));
+    AddPrim(g_gpu_ot_ptr + 0xA, (DR_AREA *)*(s32 *)(arg0 + 0x20));
     *(s32 *)(arg0 + 0x20) += 0xC;
     ofs[0] = arg1[4];
     ofs[1] = arg1[5];
     SetDrawOffset((DR_OFFSET *)*(s32 *)(arg0 + 0x24), ofs);
-    AddPrim(g_gpu_ot_ptr + 0x28, (DR_OFFSET *)*(s32 *)(arg0 + 0x24));
+    AddPrim(g_gpu_ot_ptr + 0xA, (DR_OFFSET *)*(s32 *)(arg0 + 0x24));
     *(s32 *)(arg0 + 0x24) += 0xC;
 
     s.x = 0x76;
@@ -4584,7 +4581,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C(&s);
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
     s.has_color = 1;
     func_8006A564(arg0, &s, 7);
@@ -4592,10 +4589,10 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
 
     s.has_color = 0;
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 4, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
+    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 4, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
+    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 
     sheets = (*(Unk8006919CRec **)(arg0 + 4))->unk_24;
@@ -4636,7 +4633,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     ((TILE *)*(s32 *)(arg0 + 0x18))->w = 0x100;
     ((TILE *)*(s32 *)(arg0 + 0x18))->h = 0x59;
     SetSemiTrans((TILE *)*(s32 *)(arg0 + 0x18), 0);
-    AddPrim(g_gpu_ot_ptr + 4, (TILE *)*(s32 *)(arg0 + 0x18));
+    AddPrim(g_gpu_ot_ptr + 1, (TILE *)*(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) += 0x10;
 
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
@@ -4666,7 +4663,7 @@ void func_8006B120(s32 *arg0) {
     s.sprt_out = arg0[5];
     arg0[5] = func_8007352C(&s);
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
     s.x = 0;
     i = 0;
@@ -4775,7 +4772,7 @@ void func_8006B120(s32 *arg0) {
     tbl = ((Unk8006919CRec *)arg0[1])->unk_28;
     s.header = tbl[1];
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
     r[2] = 0xAF;
     r[0] = 0xE8;
@@ -4996,7 +4993,7 @@ void func_8006BB68(s32 *arg0) {
     s.sprt_out = arg0[5];
     arg0[5] = func_8007352C(&s);
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
     for (i = 0; i < 3; i++) {
@@ -5018,7 +5015,7 @@ void func_8006BB68(s32 *arg0) {
     q = ((Unk8006919CRec *)arg0[1])->unk_28;
     s.header = q[1];
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
     rect[2] = 0xAF;
@@ -5077,7 +5074,7 @@ void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CEnv *arg2, s32 arg3) {
         }
 
         SetDrawMode(D_800A36E0, 1, 0, func_8006E480(arg2->header, 0), 0);
-        AddPrim(g_gpu_ot_ptr + 0x20, D_800A36E0);
+        AddPrim(g_gpu_ot_ptr + 8, D_800A36E0);
         D_800A36E0++;
     }
 }
@@ -5132,7 +5129,7 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
             D_800A36DC->x0 = x0;
             D_800A36DC->w = w;
             D_800A36DC->h = 1;
-            AddPrim(g_gpu_ot_ptr + 0x20, D_800A36DC);
+            AddPrim(g_gpu_ot_ptr + 8, D_800A36DC);
             D_800A36DC++;
         }
     }
@@ -5145,7 +5142,7 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
     D_800A36DC->w = pos->x;
     D_800A36DC->h = pos->y + h;
     SetSemiTrans(D_800A36DC, 1);
-    AddPrim(g_gpu_ot_ptr + 0x20, D_800A36DC);
+    AddPrim(g_gpu_ot_ptr + 8, D_800A36DC);
     D_800A36DC++;
 }
 /* END func_8006BEC4 */
@@ -5244,7 +5241,7 @@ void func_8006C21C(s32 *arg0) {
     s.sprt_out = arg0[5];
     arg0[5] = func_8007352C(&s);
     SetDrawMode((DR_MODE *)arg0[7], 1, dtd, func_8006E480(s.header, mode), (RECT *)tw);
-    AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
     s.ot_idx = 9;
@@ -5269,7 +5266,7 @@ void func_8006C21C(s32 *arg0) {
     }
     s.header = table[13];
     SetDrawMode((DR_MODE *)arg0[7], 1, dtd, func_8006E480(s.header, mode), (RECT *)tw);
-    AddPrim(g_gpu_ot_ptr + 0x24, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 9, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
     s.x = xpos;
@@ -5300,7 +5297,7 @@ void func_8006C21C(s32 *arg0) {
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
     s.header = table[1];
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.header, mode), 0);
-    AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
     recs = D_800A34FC->unk_24->unk_44;
@@ -5317,7 +5314,7 @@ void func_8006C21C(s32 *arg0) {
             tile->w = tile_rec->w;
             tile->h = tile_rec->h;
             SetSemiTrans(tile, 0);
-            AddPrim(g_gpu_ot_ptr + 0x30, tile);
+            AddPrim(g_gpu_ot_ptr + 0xC, tile);
             tile++;
         }
     }
@@ -5364,7 +5361,7 @@ void func_8006C21C(s32 *arg0) {
                 poly->b3 = 0;
                 setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w, -2 * row + 1);
             }
-            AddPrim(g_gpu_ot_ptr + 0x20, poly);
+            AddPrim(g_gpu_ot_ptr + 8, poly);
             poly++;
             SetPolyG4(poly);
             if (work == 5) {
@@ -5414,11 +5411,11 @@ void func_8006C21C(s32 *arg0) {
                 poly->x3 = rec->x + rec->w * row + x + (-4 * row + 2);
                 poly->y3 = rec[1].y - 1;
             }
-            AddPrim(g_gpu_ot_ptr + 0x20, poly);
+            AddPrim(g_gpu_ot_ptr + 8, poly);
             poly++;
         }
         SetDrawMode((DR_MODE *)arg0[7], 1, 0, 0x40, 0);
-        AddPrim(g_gpu_ot_ptr + 0x20, (DR_MODE *)arg0[7]);
+        AddPrim(g_gpu_ot_ptr + 8, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
         x += 280;
     }
@@ -5614,7 +5611,7 @@ s32 func_8006CFBC(s32 *arg0) {
 
     s.header = table[14];
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x20, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 8, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
     {
@@ -5685,7 +5682,7 @@ void func_8006D3DC(s32 *arg0) {
         s.sprt_out = arg0[5];
         arg0[5] = func_8007352C(&s);
         SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.header, semi), 0);
-        AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
+        AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
 
@@ -5796,7 +5793,7 @@ void func_8006D808(s32 *arg0, s32 *arg1, Unk8006D808Set *arg2, s32 arg3, s32 arg
     }
     s.header = arg2->unk_00[0];
     SetDrawMode((DR_MODE *)*arg1, 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + arg3 * 4, (DR_MODE *)*arg1);
+    AddPrim(g_gpu_ot_ptr + arg3, (DR_MODE *)*arg1);
     *arg1 += 0xC;
 
     n = 4;
@@ -5828,7 +5825,7 @@ void func_8006D808(s32 *arg0, s32 *arg1, Unk8006D808Set *arg2, s32 arg3, s32 arg
 
     s.header = arg2->unk_0C;
     SetDrawMode((DR_MODE *)*arg1, 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + arg3 * 4, (DR_MODE *)*arg1);
+    AddPrim(g_gpu_ot_ptr + arg3, (DR_MODE *)*arg1);
     *arg1 += 0xC;
 
     for (i = 0; i < 3; i++) {
@@ -5871,7 +5868,7 @@ void func_8006D808(s32 *arg0, s32 *arg1, Unk8006D808Set *arg2, s32 arg3, s32 arg
 
     s.header = arg2->unk_14;
     SetDrawMode((DR_MODE *)*arg1, 1, 0, func_8006E480(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + arg3 * 4, (DR_MODE *)*arg1);
+    AddPrim(g_gpu_ot_ptr + arg3, (DR_MODE *)*arg1);
     *arg1 += 0xC;
 }
 /* FAKE: frame layout (oversized live object), as Env_69F80; mechanism at func_8006DD94. */
@@ -5934,7 +5931,7 @@ void func_8006DD94(s32 *arg0) {
         s.env.sprt_out = arg0[5];
         arg0[5] = func_8007352C(&s.env);
         SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.env.header, semi), 0);
-        AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
+        AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
 

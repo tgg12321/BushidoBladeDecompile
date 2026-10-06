@@ -360,10 +360,10 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
     while (1) {
         idx = D_800A36AC & 1;
         D_800A38B4 = (u32 *)(prim_base + (idx * 0x9A00));
-        g_gpu_ot_ptr = (u8 *)&ot[idx];
+        g_gpu_ot_ptr = &ot[idx];
         env = &g_gpu_db[idx];
 
-        ClearOTagR((u32 *)g_gpu_ot_ptr, 1);
+        ClearOTagR(g_gpu_ot_ptr, 1);
         func_80019568();
         if (special != 0) {
             func_8005C8A8(2, select | (D_800A3788 << 16), (s32)D_800A38B4, 0);
@@ -385,7 +385,7 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
             PutDrawEnv(&env->draw);
         } while (0);
         DrawOTag(&ot_base->ot[0x1007]);
-        DrawOTag((u32 *)g_gpu_ot_ptr);
+        DrawOTag(g_gpu_ot_ptr);
         D_800A36AC++;
 
         if (g_pad_state.pressed & 0x100010) {
@@ -471,7 +471,7 @@ loop:
     env = &g_gpu_db[idx];
     ot = env->ot;
     ClearOTagR(ot, 0x1008);
-    g_gpu_ot_ptr = (u8 *)ot;
+    g_gpu_ot_ptr = ot;
     D_800A38B4 = (u32 *)tbl[idx];
     func_80060E04(idx);
     func_8003D2F4();
@@ -556,7 +556,7 @@ void func_800174F4(void) {
     SetDefDrawEnv(&env, 0, (D_800A36AC & 1) ? 0xF0 : 0, 0x280, 0xF0);
     env.isbg = 0;
     PutDrawEnv(&env);
-    g_gpu_ot_ptr = (u8 *)ot;
+    g_gpu_ot_ptr = ot;
     ClearOTagR(ot, 2);
     temp2 = g_disp_enable;
     switch (temp2) {
@@ -607,7 +607,7 @@ void func_800174F4(void) {
         break;
     }
     }
-    DrawOTag((u32 *)(g_gpu_ot_ptr + 4));
+    DrawOTag(g_gpu_ot_ptr + 1);
     DrawSync(0);
 }
 void obj_ClearAll(void) {
@@ -826,7 +826,7 @@ s16 D_800A3710;
 u8 D_800A3713;
 u8 g_file_dma_flag;
 u8 D_800A3744;
-u8 * g_gpu_ot_ptr;
+u32 *g_gpu_ot_ptr;
 u8 g_disp_enable;
 u32 D_800A3770[2];
 s32 D_800A3784;

@@ -122,7 +122,7 @@ void func_8003553C(void) {
     g->r1 = 0; g->g1 = 0; g->b1 = 0x80;
     g->r2 = 0; g->g2 = 0; g->b2 = 0;
     g->r3 = 0; g->g3 = 0; g->b3 = 0;
-    AddPrim(g_gpu_ot_ptr + 0x401C, g);
+    AddPrim(g_gpu_ot_ptr + 0x1007, g);
     g += 1;
     D_800A38B4 = (u32 *)g;
 }
