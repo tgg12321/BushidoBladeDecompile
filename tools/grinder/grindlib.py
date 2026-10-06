@@ -477,7 +477,7 @@ def preview_superseded_bans(root, func, needles):
 # integration-handoff-self-serve (owner ruling 2026-08-19): path classes the
 # driver may grant into scope_allow.txt. Everything else — and the explicit
 # denylist — stays owner-only (the "most severe blockers" list).
-_SCOPE_GRANT_ALLOWED_RE = re.compile(r"^(include/[\w.\-/]+\.h|src/[\w.\-/]+\.c|[\w\-]+\.txt)$")
+_SCOPE_GRANT_ALLOWED_RE = re.compile(r"^(include/[\w.\-/]+\.h|src/[\w.\-/]+\.[ch]|[\w\-]+\.txt)$")
 _SCOPE_GRANT_DENY = {
     "inline_asm_canonical.txt",          # has its own evidence-gated grant path
     "maspsx_prefill_label_funcs.txt",    # assembler fidelity gates: substrate-adjacent,
