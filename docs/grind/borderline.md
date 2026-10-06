@@ -554,3 +554,14 @@ category: resolution
 evidence: docs/grind/owner-rulings-2026-09-26.md batch 44; docs/grind/decisions.md 2026-10-02 OWNER RULING Q95.
 disposition taken: the 2026-10-02 _exeque policy-question is SPENT: the field-level volatile on GpuCtx.unk08 is
 allowed (this field only). The landing still needs its own fresh layer-2.
+
+## 2026-10-06 — _SpuSetAnyVoice — volatile on the RAM shadow D_800F7298 — policy-question
+category: policy-question
+evidence: src/main/psxsdk/libspu/ (\_SpuSetAnyVoice, `extern SpuUnion D_800F7298;`, landed 3a5e03773): a KSEG0 RAM shadow
+of the SPU register block read and written through PsyQ's `union SpuUnion`, whose `raw` member is volatile (the type is
+right for _spu_RXX at 0x1F801C00, MMIO). On RAM that volatile is outside the catalog (mmio-volatile-type-level,
+legitimate-volatile-interrupt-touched Routes A/B); it is load-bearing (a non-volatile view scores 45: the `& 0xFF`
+read narrows to lbu). Found by rev-w2b1 (Phase 2 worker-2 batch 1, F06).
+disposition taken: the body is left textually unmoved (its redundant `(SpuUnion *)` cast kept on the unedited line), so
+no review re-certifies it; recorded as debt. Question for the owner: may D_800F7298 keep PsyQ's SpuUnion type (volatile
+raw) as an interim per-function label, or must it get a non-volatile type (and the function be re-opened)?
