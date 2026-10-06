@@ -4,43 +4,39 @@
 #include "libspu_internal.h"
 
 s32 SpuGetKeyStatus(s32 arg0) {
-    s32 bit_found;
+    volatile SPU_VOICE_REG *voices;
+    s32 voice;
     s32 i;
+    s32 voice_mask;
     s32 one;
-    s32 mask;
-    s32 base;
-    s32 flags;
+    u16 volumex;
 
-    bit_found = -1;
+    voice = -1;
+    /* FAKE: the bit search's register setup. `i = 0` ahead of `one = 1` rather than in the for
+     * header (score 2), and `one` a named 1 rather than a literal (literal: srav/andi, score 4). */
     i = 0;
     one = 1;
     for (; i < 0x18; i++) {
-        mask = one << i;
-        if (arg0 & mask) {
-            bit_found = i;
+        if (arg0 & (one << i)) {
+            voice = i;
             break;
         }
     }
-
-    if (bit_found != -1) goto work;
-    return -1;
-work:
-    /* FAKE: mask doubles as the _spu_RXX holder and base as offset / address / value; a separate
-       _spu_RXX local scores 16, separate locals for every role 13. */
-    base = bit_found << 4;
-    mask = (s32)_spu_RXX;
-    flags = _spu_keystat;
-    base = base + mask;
-    mask = 1 << bit_found;
-    flags = flags & mask;
-    base = *(u16 *)(base + 0xC);
-    if (!flags) goto no_flags;
-    if (!base) goto ret3;
-    goto ret1;
-no_flags:
-    return (s32)(base != 0) << 1;
-ret3:
-    return 3;
-ret1:
-    return 1;
+    if (voice == -1) {
+        return -1;
+    }
+    voices = _spu_RXX->rxx.voice;
+    volumex = voices[voice].volumex;
+    voice_mask = 1 << voice;
+    if (_spu_keystat & voice_mask) {
+        if (volumex > 0) {
+            return 1;
+        } else {
+            return 3;
+        }
+    } else if (volumex > 0) {
+        return 2;
+    } else {
+        return 0;
+    }
 }
