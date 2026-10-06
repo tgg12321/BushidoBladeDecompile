@@ -2525,6 +2525,23 @@ class TestLedgerClose(unittest.TestCase):
         self.assertEqual(os.listdir(d), ["evidence.md"])
         self.assertIn("1 cited file(s) retained", msgs[-1])
 
+    def test_dot_segment_citation_is_normalised(self):
+        # `memory/grind/<func>/./`, `//` and `///` are the bare ledger citation;
+        # `./evidence.md` is the evidence file; `layer2_verdicts/./abc.json` and
+        # `//layer2_verdicts/abc.json` are a layer-2 verdict (always moved).
+        d = self._ledger("func_DONE")
+        with open(os.path.join(self.root, "references.txt"), "w") as fh:
+            fh.write("memory/grind/func_DONE/./\n"
+                     "memory/grind/func_DONE//\n"
+                     "memory/grind/func_DONE///\n"
+                     "memory/grind/func_DONE/./evidence.md\n"
+                     "memory/grind/func_DONE/layer2_verdicts/./abc.json\n"
+                     "memory/grind/func_DONE//layer2_verdicts/abc.json\n")
+        ok, msgs = G.close_ledger(self.root, "func_DONE", "auto")
+        self.assertTrue(ok, msgs)
+        self.assertEqual(os.listdir(d), ["evidence.md"])
+        self.assertIn("1 cited file(s) retained", msgs[-1])
+
     def test_cited_layer2_always_moves_without_repeat_duplicates(self):
         d = self._ledger("func_DONE")
         with open(os.path.join(self.root, "references.txt"), "w") as fh:

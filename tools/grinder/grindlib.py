@@ -3014,11 +3014,17 @@ def _cited_ledger_files(root, func):
         for match in pattern.finditer(text):
             cited = match.group().rstrip(".")
             rel = cited[len(prefix):]
-            if (not rel.rstrip("/") or ".." in rel.split("/")
-                    or rel == "layer2.jsonl"
-                    or rel.rstrip("/") == "layer2_verdicts"
+            if ".." in rel.split("/"):
+                continue
+            # `memory/grind/<func>/./`, `.../<func>//` or `sub/./x` name the same
+            # path as their normal form: compare that (leading slashes dropped, which
+            # normpath keeps), so a `.` or empty segment cannot keep the ledger.
+            rel = posixpath.normpath(rel.lstrip("/")) if rel.strip("/") else ""
+            if (rel in ("", ".") or rel == "layer2.jsonl"
+                    or rel == "layer2_verdicts"
                     or rel.startswith("layer2_verdicts/")):
                 continue
+            cited = prefix + rel
             target = os.path.join(root, cited)
             files = [cited] if os.path.isfile(target) else []
             if os.path.isdir(target):
