@@ -58,11 +58,14 @@ The original was built **Fri Aug 7 22:26:32 1998** (string embedded at `0x800100
 
 | Library | CVS tag | Confirms |
 |---|---|---|
-| `libgpu` | `sys.c v1.129 1996/12/25` | PsyQ ≤ 3.6 |
-| `libcd` | `bios.c v1.86 1997/03/28` | PsyQ ≤ 3.6 |
-| `libapi` | `intr.c v1.76 1997/02/12` | PsyQ ≤ 3.6 |
+| `libgpu` | `sys.c v1.129 1996/12/25` | module = PsyQ 4.0 LIBGPU/SYS |
+| `libcd` | `bios.c v1.86 1997/03/28` | module = PsyQ 4.0 LIBCD/BIOS |
+| `libetc` | `intr.c v1.76 1997/02/12` | module = PsyQ 4.0 LIBETC/INTR |
 
-Combined with the `1993-1997` PsyQ copyright string, this places the build at **PsyQ 3.5 (DTL-S3000)** with the **GCC 2.7.2 / ASPSX 2.34** compiler and assembler — confirmed by byte-identical reproduction.
+Each tagged module is byte-identical to its PsyQ 4.0 library member and differs from 3.3, 3.5 and 3.6; all 175 retained
+verbatim modules match 4.0, 79 of them no earlier release (`docs/naming/libscan/psyq_versions.txt`, 2026-10-06; an
+earlier reading of these tags as PsyQ 3.5 was wrong). The libraries are 4.0-era; the compiler and assembler are
+**GCC 2.7.2 / ASPSX 2.34**, confirmed by byte-identical reproduction.
 
 ### Linked PsyQ libraries
 

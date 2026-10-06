@@ -16,7 +16,10 @@ asset formats and inspectors: `docs/formats/`.
 
 ## Toolchain (confirmed from binary analysis)
 
-- **PsyQ SDK 3.5** (DTL-S3000; CVS tags libgpu `sys.c v1.129`, libcd `bios.c v1.86`, libapi `intr.c v1.76`).
+- **PsyQ libraries: 4.0-era.** All 175 retained verbatim library modules match PsyQ 4.0 byte-for-byte (.text,
+  relocations, exports); 79 match no 3.3 / 3.5 / 3.6 library, including the CVS-tagged libgpu SYS (`sys.c v1.129`),
+  libcd BIOS (`bios.c v1.86`) and libetc INTR (`intr.c v1.76`) (`docs/naming/libscan/psyq_versions.txt`). This dates
+  the libraries, not the compiler.
 - **Compiler:** GCC 2.7.2 (SN cc1psx); the build uses the open-source port `decompals/mips-gcc-2.7.2`.
 - **Assembler:** ASPSX 2.34 via [maspsx](https://github.com/mkst/maspsx) (`--aspsx-version=2.34`).
 - **Section order:** `.rodata → .text → .data → .bss` (PsyQ standard).
