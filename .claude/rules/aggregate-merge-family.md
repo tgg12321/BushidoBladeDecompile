@@ -77,7 +77,8 @@ extended, once a one-object spelling matches.
   (`.cse` `use_related_value` and `.greg`/final `.s` addressing), with Q31 mechanism + search.
   Each per-word declaration is `/* FAKE */`-annotated; every other access goes through
   `D_80101EC8`.
-- **D_800A37E8 / EA / EC (Q96):** func_80027AD8 and func_8002AB08 only. Three `s16` scalars;
+- **D_800A37E8 / EA / EC (Q96; Q117 2026-10-06):** func_80027AD8, func_8002AB08 and func_80031B24's two
+  call sites only (func_80031B24: at each argument). Three `s16` scalars;
   the vector's address handed to callees is `&D_800A37E8`, `/* FAKE */`-annotated at the
   assignment. Basis: the `s16[3]` and `{x,y,z}` forms banked at 2 (cse rewrites the dot's [0]
   address to `vec`'s register; cc1psx identical),

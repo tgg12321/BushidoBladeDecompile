@@ -60,6 +60,14 @@ of the same memory.
 Example: `D_8009BF7C` (display.c) — writer `func_8007D6D8` installed via `irq_AcknowledgeVblank`; use site
 `while (D_8009BF78 != D_8009BF7C) { ... }` in `func_8007DB20`.
 
+## Owner ruling Q116 (2026-10-06) — _SpuSetAnyVoice reads the request queue as `_spu_RQ`
+
+D_800F7298 is not an object: 0x800F7298 + 0xC4*2 = 0x800F7420 = `_spu_RQ`. PsyQ's S_SAV indexes `_spu_RQ[reg - 0xC4]`
+(psyz@4e4b3e8d decomp/src/libspu/s_sav.c; declaration `extern volatile u16 _spu_RQ[10];` libspu_private.h:215, already
+libspu_internal.h:145 under the Ruling-4 allowlist row). `_SpuSetAnyVoice` spells its RAM-path accesses that way and drops
+the `D_800F7298` extern and its SpuUnion view. No new volatile is admitted. A D_800F7298 alias stays refused (item 4,
+cross-symbol); if the `_spu_RQ` form does not byte-match, the function reopens.
+
 ## Volatile locals (owner rulings Q48 + Q50, 2026-09-30)
 
 A `volatile T x;` automatic local holding a value the function uses is admitted ONLY by route A or B, and

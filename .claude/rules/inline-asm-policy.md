@@ -74,22 +74,14 @@ in the 2026-09-23 ruling applies. Example: `gte_rtv0()` `0x0000013f` → `0x4A48
 (pcsx-redux/nugget@22037bd3 `psyq/include/inline_n.h:516-520`; PSn00bSDK@5d9aa2d3
 `libpsn00b/include/inline_c.h:1183-1186`).
 
-### Scorer ruling (owner, 2026-09-25) — header-exact GTE macro statements are scored as written
+### Scorer rulings (owner, 2026-09-25) — scoring only, never admission
 
-An engine bug-fix scope only: the sandbox's cheat-stripping keeps the GPR `move $12,%0` / `nop`
-statements of a **qualifying macro unit**: (A) a contiguous run of inline `__asm__` statements
-that is, statement for statement, the complete expansion of ONE named GTE macro from a pinned
-header (`inline_c.h`, `inline_o.h`, `gtemac.h`), character-identical except whitespace and an
-Extension-bounded placeholder word, recognised against the committed pinned excerpts
-(`engine/gtemacro.py` `PINNED`); (B) the expansion contains a cop2 instruction (a standalone
-`gte_nop()` is stripped); (C) recognition is by pinned header text, not by grant. Everything
-else is stripped as before. **Scoring is not admission.**
-
-#### Scorer amendment (owner, 2026-09-25, second batch) — `0(reg)` equals `(reg)`
-
-The recognizer treats a memory operand `0(REG)` as equal to the header's `(REG)` (same
-register). Nothing else is normalized (`4($12)`, `0x0($12)`, `00($12)`, `-0`, another register,
-constraints, clobbers stay edits). Scoring only.
+The sandbox's cheat-stripping keeps the GPR `move $12,%0` / `nop` statements of a **qualifying macro
+unit**: a contiguous run of inline `__asm__` statements that is, statement for statement, the complete expansion of ONE named GTE
+macro from a pinned header (`inline_c.h`, `inline_o.h`, `gtemac.h`; `engine/gtemacro.py` `PINNED`),
+character-identical except whitespace and an Extension-bounded placeholder word, containing a cop2
+instruction (a standalone `gte_nop()` is stripped), recognised by header text, not by grant. A memory
+operand `0(REG)` equals the header's `(REG)`; nothing else is normalized.
 
 ## Owner ruling 2026-09-26 — verbatim inline_o.h GTE macro blocks, granted as a class
 
@@ -108,17 +100,23 @@ path until the driver learns the class.
 
 ### Per-function grants (owner rows for DMPSX command words only)
 
-Named grants, no class widening; another function needs its own owner ruling. Each row admits
-only the listed units, each otherwise class-exact, under the 2026-09-24 Extension's (A)-(C);
-terms in docs/grind/decisions.md.
+Named grants, no class widening (another function needs its own owner ruling); each admits only the listed units, otherwise class-exact, under
+the 2026-09-24 Extension's (A)-(C) (terms: docs/grind/decisions.md).
 
-- **Per-function grant: func_8002DE20** (Q11, 2026-09-26): three `gte_rtv0()` units with
-  `0x4A486012`; plus the byte-neutral maspsx `($REG)` empty-offset parser fix.
-- **Per-function grant: func_800187F4** (Q29, 2026-09-28): `gte_rtv0tr` `0x4A480012`,
-  `gte_sqr0` `0x4AA00428`, `gte_gpf0` `0x4B90003D`, `gte_gpl12` `0x4BA8003E`.
-- **Per-function grants: func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770** (Q61,
-  2026-09-30): their `gte_rtv0()` units with `0x4A486012`.
-- **Per-function grants: func_800204C0, func_800207C8** (Q92, Q93, 2026-10-02,
-  owner-delegated): their `gte_rtv0()` units with `0x4A486012`.
+- func_8002DE20 (Q11): three `gte_rtv0()` `0x4A486012`, plus the byte-neutral maspsx `($REG)` parser fix.
+- func_800187F4 (Q29): `gte_rtv0tr` `0x4A480012`, `gte_sqr0` `0x4AA00428`, `gte_gpf0` `0x4B90003D`,
+  `gte_gpl12` `0x4BA8003E`.
+- func_8002D780, func_8002EBDC, func_8002F2D0, func_8002F770 (Q61); func_800204C0, func_800207C8 (Q92,
+  Q93): their `gte_rtv0()` units with `0x4A486012`.
+
+## Owner ruling Q115 (2026-10-06) — typed operand expressions in authorized islands
+
+Typing work may respell the C operand EXPRESSIONS of an authorized GTE island as the member form of the same
+address (`obj + 0xA8` -> `&rec->unkA8`) when ALL hold:
+(A) template text, constraints, clobbers and operand order stay character-identical; (B) each new
+expression denotes the same address (the reviewer checks every offset against the type); (C) sandbox 0
+and full-build SHA1 == oracle; (D) the function's `tools/canonical_asm_regions.json` hashes are recomputed
+(`engine/completion.py region_hashes`) in the same commit and layer-2 diffs every island old -> new. No alias
+local kept only for the asm; no operand moved into or out of the asm. Template edits stay refused.
 
 Related: [[cop2-addressing-preamble-cluster]] · [[no-new-park-categories]]
