@@ -2149,6 +2149,81 @@ class TestFloorAttestation(unittest.TestCase):
         self.assertFalse(G.attest_floor(self.root, "func_X", o, "other-sid", 77)[0])
 
 
+class TestAddScopeAllow(unittest.TestCase):
+    """Scope grants include headers beside the restructured PsyQ sources."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        self.path = os.path.join(self.root, "tools", "grinder", "scope_allow.txt")
+        os.makedirs(os.path.dirname(self.path))
+        self.baseline = ("# existing grants\n"
+                         "func_800861BC include/psxsdk/libsnd.h\n"
+                         "func_OTHER src/main/other.c\n")
+        with open(self.path, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(self.baseline)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _grant(self, paths):
+        return G.add_scope_allow(self.root, "func_800861BC", paths, "2026-10-05")
+
+    def test_internal_header_merges_with_existing_function_grant(self):
+        header = "src/main/psxsdk/libsnd/libsnd_i.h"
+        result = self._grant([header, "include/psxsdk/libsnd.h", header])
+        self.assertEqual(result, "func_800861BC include/psxsdk/libsnd.h "
+                         + header + "  (merged with prior line)")
+        self.assertEqual(G.scope_allow_entries(self.root, "func_800861BC"),
+                         ["include/psxsdk/libsnd.h", header])
+        self.assertEqual(G.scope_allow_entries(self.root, "func_OTHER"),
+                         ["src/main/other.c"])
+        with open(self.path, "rb") as fh:
+            text = fh.read()
+        self.assertEqual(text.count(b"\nfunc_800861BC "), 1)
+        self.assertNotIn(b"\r", text)
+        self.assertTrue(text.endswith(b"\n"))
+
+    def test_internal_header_normalizes_windows_and_dot_prefix(self):
+        self.assertIsNotNone(self._grant([r".\src\main\psxsdk\libsnd\libsnd_i.h"]))
+        self.assertEqual(G.scope_allow_entries(self.root, "func_800861BC"),
+                         ["include/psxsdk/libsnd.h",
+                          "src/main/psxsdk/libsnd/libsnd_i.h"])
+
+    def test_new_function_can_grant_another_library_internal_header(self):
+        header = "src/main/psxsdk/libspu/libspu_internal.h"
+        result = G.add_scope_allow(self.root, "func_NEW", [header], "2026-10-05")
+        self.assertEqual(result, "func_NEW " + header)
+        self.assertEqual(G.scope_allow_entries(self.root, "func_NEW"), [header])
+
+    def test_existing_path_classes_still_granted(self):
+        paths = ["include/game.h", "include/psxsdk/libsnd.h", "src/flat.c",
+                 "src/main/psxsdk/libsnd/vm_f.c", "volatile_extern_allowlist.txt"]
+        self.assertIsNotNone(self._grant(paths))
+        self.assertEqual(G.scope_allow_entries(self.root, "func_800861BC"),
+                         list(dict.fromkeys(["include/psxsdk/libsnd.h"] + paths)))
+
+    def test_denylisted_requests_leave_grants_unchanged(self):
+        for path in sorted(G._SCOPE_GRANT_DENY):
+            with self.subTest(path=path):
+                self.assertIsNone(self._grant(["src/main/psxsdk/libsnd/libsnd_i.h",
+                                              path]))
+                with open(self.path, encoding="utf-8") as fh:
+                    self.assertEqual(fh.read(), self.baseline)
+
+    def test_other_surfaces_and_extensions_leave_grants_unchanged(self):
+        for path in ("tools/private.h", "engine/private.h", ".claude/private.h",
+                     "docs/private.h", "memory/private.h", "asm/private.h",
+                     "disc/private.h", "Makefile", "bb2.ld", "splat.yaml",
+                     "src/main/psxsdk/libsnd/private.s", "src/main/private.txt",
+                     "include/private.c", "tools/private.txt"):
+            with self.subTest(path=path):
+                self.assertIsNone(self._grant(["src/main/psxsdk/libsnd/libsnd_i.h",
+                                              path]))
+                with open(self.path, encoding="utf-8") as fh:
+                    self.assertEqual(fh.read(), self.baseline)
+
+
 class TestScopeViolations(unittest.TestCase):
     """The Python twin of grind.ps1's scope check, backing the Stop gate."""
 
