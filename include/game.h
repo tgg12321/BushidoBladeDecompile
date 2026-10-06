@@ -1693,6 +1693,57 @@ typedef struct {
 
 typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
 
+/* The head of the resource files func_8006E950 loads. By g_cd_file_table's sizes, file 2 of
+ * func_80036EA8's group 2 is MOD.BIN, 3 SEL.BIN, 4 / 5 SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN.
+ * Each file starts with a list of file-relative offsets ending in -1, which func_8006E440 turns
+ * into addresses. The first five mean the same in every file: func_8006919C / func_8006EA28 pass
+ * unk_00 and unk_04 to the VAB loader func_8005C2A8 (func_80076FF8 / func_80077D10, for D_SEL /
+ * NAR, make no such call, and those files' unk_00..unk_08 are equal), func_8006E950 loads the
+ * image at unk_08 into VRAM, and func_8006E8CC loads the 640x32 strip at unk_0C or unk_10. The
+ * four per-file relocators (func_8006919C, func_8006EA28, func_80076FF8, func_80077D10) return
+ * unk_04, where the caller's func_8006E49C buffer starts. The words after the head differ per file. */
+typedef struct {
+    s32 *unk_00;
+    s32 unk_04;
+    s32 unk_08;
+    s32 unk_0C;
+    s32 unk_10;
+} Unk8006E950Head;
+
+/* The 12-byte records MOD.BIN's unk_44 points at (Unk8006919CRec), drawn by func_8006C21C. */
+typedef struct {
+    s16 x, y, w, h;
+    u8 r, g, b, pad;
+} Rec_8006C21C;
+
+/* MOD.BIN (resource file 2), the root 51268's func_80068F70 loads at its work area + 0x58; it keeps
+ * it in D_800A34FC's word 9, and func_8006E390 copies that into word 1 of the draw context. After
+ * the head:
+ * - unk_14..unk_40: the twelve lists func_8006919C relocates (func_8006920C: entries up to a 0
+ *   word, -1 entries skipped). Most entries are sprite sheets, a 12-byte Unk8009B0E0Record header
+ *   followed by its 8-byte Unk8009B400Record cells (hence the readers' `+ 0xC`). The lists stay
+ *   s32 *: their entries go into the s32 header words of the draw descriptors, which keep that
+ *   type until the descriptors are unified.
+ * - unk_44: the Rec_8006C21C rows func_8006C21C draws; unk_48: the points func_8006BEC4 reads.
+ * The -1 ending func_8006E440's offset list follows at +0x4C; no reader touches it. */
+typedef struct {
+    Unk8006E950Head unk_00;
+    s32 *unk_14;
+    s32 *unk_18;
+    s32 *unk_1C;
+    s32 *unk_20;
+    s32 *unk_24;
+    s32 *unk_28;
+    s32 *unk_2C;
+    s32 *unk_30;
+    s32 *unk_34;
+    s32 *unk_38;
+    s32 *unk_3C;
+    s32 *unk_40;
+    Rec_8006C21C *unk_44;
+    Vec2s16 *unk_48;
+} Unk8006919CRec;
+
 typedef struct { s32 f0, f1, f2, f3; } Copy16;
 
 typedef struct {
