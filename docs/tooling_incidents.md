@@ -68,3 +68,18 @@ mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC
 - **Permanent guard:** `tools/hooks/tooling_error_signatures.json` (uncommitted change)
 - **Verified by:** signature narrowed to full error phrases; JSON validates; file LF (0 CR); same false positive fired twice today
 - **Occurrences this incident:** 1
+
+## 2026-10-06 05:43:12 — FALSE POSITIVE (worktree-symlink/worktree-dep-missing)
+- **Triggering command:** `wsl bash /mnt/c/Users/Trenton/Desktop/bb2-worktrees/rev-w2b4/tmp/r/chk.sh --base rb4_base 2>&1 | Select-Object -Last 8`
+- **Why not a real failure:** Throwaway review worktree: check.sh's 'source .venv/bin/activate' fails because the repo .venv is a Windows venv (no bin/activate from WSL; worker 2's worktree is identical); the build ran on system python3 and reported SHA1 OK + snapshot, so no dependency was actually missing.
+- **Action:** tighten signature `worktree-dep-missing` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
+
+## 2026-10-06 06:05 — FIXED (worktree-symlink/worktree-dep-missing) — corrects the 05:43 "false positive"
+- **Root cause:** a reviewer removed its throwaway worktree with a recursive delete that followed the worktree's
+  `.venv` junction and emptied the MAIN checkout's `.venv` (as on 2026-06-03). The 05:43 entry misread the
+  resulting broken `.venv` as a Windows venv; the dependency really was missing (engine layer2 record failed 11x).
+- **Fix:** main `.venv` rebuilt (`python3 -m venv --copies .venv` + `pip install -r requirements.txt`, WSL);
+  verify-oracle --rebuild SHA1 62efab4f OK; the 11 failed records retried OK.
+- **Permanent guard:** `tools/hooks/shell_footgun_guard.py` rule 5 (04171ba7f) blocks `git worktree remove`
+  and recursive deletes under `bb2-worktrees` unless they go through `tools/safe_remove_worktree.ps1`
+  (detaches junctions with `cmd /c rmdir` first). Unit-tested on 8 cases.
