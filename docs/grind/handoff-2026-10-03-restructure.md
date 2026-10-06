@@ -27,10 +27,8 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
 
 ## Open items
 
-1. **`_SendPAD`** — the one active queue item (Q108 split). Every honest C form floors at 4/10 ($v0 vs
-   $t1; $ra saved at 0x10 vs 0x14; cc1psx the same); candidates in `memory/grind/_SendPAD/`. Its module
-   mates are hand-written asm (`_send_pad`'s trapping `addi`, the func_800790A4 data-as-code), which is
-   evidence for the Judge-gated canonical-grant path if pursued; no grant without its own evidence.
+1. **`_SendPAD`** — done: COMPLETED-INLINE-ASM-CANONICAL by owner ruling Q112 (rules 7b2e1706b, auth 2a3b1e6e4;
+   PsyQ 4.0's own object names the module source `sendpad.s`). The queue is empty.
 2. **Phase 2 types** — in progress (started 2026-10-03; census, harness and plan:
    `memory/grind/phase2-2026-10-03/README.txt`; gate `tools/check.sh`, commits via `tools/commit.sh`;
    helpers in `tools/game/` and `tools/struct/`). Every commit: SHA1 == oracle, all objects identical
@@ -51,9 +49,8 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      (implicit-int evidence), so AddPrim stays out of libgpu.h; func_80060768 keeps int arithmetic
      (member TILE stores 192 -> 191 insns); a cast to a callee's declared parameter type is a boundary
      conversion; asm text / operands are never edited and no alias local exists to keep them compiling.
-   - Open owner questions: (1) func_8006C21C's Q27 `s16 tw` passed as SetDrawMode's RECT * gains 2 cc1
-     warnings; no typed spelling matches (all diff 70 lines; `(RECT *)tw` matches but swaps the warning).
-     (2) 3AB48's K&R AddPrim vs a libgpu.h `void AddPrim` prototype (conflict).
+   - Owner questions (1) / (2) closed by Q113 / Q114 (rules 6dd0496dd): func_8006C21C passes `(RECT *)tw`
+     (f3f430cf9); AddPrim stays out of libgpu.h.
    - Corrections to committed messages: 31bb65e13 (P3) and e6a30adb9 (P5) state "insns" counts that
      included objdump relocation lines (e.g. P5's 650 -> 641 is 552 -> 543; full table
      `memory/grind/phase2-2026-10-03/lt/insn_audit.txt`); verdicts unchanged. dbf53f73d (D1) says the
@@ -71,24 +68,28 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      func_8002C61C typed. F02 is done except the raw-offset asm-operand bodies (func_8002CD58 /
      D518 / D780 / DAD0 / FC80 / FDB0): typing them edits GTE asm operand expressions (hashed in
      tools/canonical_asm_regions.json), which lt/f02/plan.txt marks RULING NEEDED.
-   - F01 (51268 scratchpad; owner 2026-10-05: F02's asm-operand bodies stay debt, start F01) is
-     not one record: the D_800A34xx globals are fixed field pointers, cursors other functions
-     retarget (D_800A3468 command blocks, D_800A3478 / 347C into them, D_800A3488 / 348C
-     texture tables, D_800A34E4 / 34E8 OT / prim) and D_800A34EC, a work area each user lays out
-     differently. F01a b9b07dd27: the 24 fixed field globals point into Unk1F800000Rec (game.h,
-     51268's view; ScrPad stays 17AFC's). Tools: memory/grind/phase2-2026-10-03/lt/f01/.
-   - **Next session starts here:** F01b: hoist func_80060A68's local struct Ob (the command
-     block) to game.h as Unk1F800000Rec.unk00's type and type D_800A3468 / 346C / 3470 / 3478 /
-     347C and the `*(T **)0x1F800004 / 8` seeds; then F01c the cursors D_800A3488 / 348C /
-     34E4 / 34E8; then F01d D_800A34EC's per-function work-area layouts (one struct per layout).
-     Lessons from F02's
-     reviews (in the commit bodies and the briefs): one struct per layout, not per function;
-     verify each FAKE comment's stated register effect against the objdump
-     (`lt/f02/regdiff_fn.sh`), including comments carried from HEAD in moved bodies; ablate
-     whole clusters; the generator must reproduce the landed file; every count / line / "no"
-     claim in the message is checked. Editing build files with the Edit tool needs
-     `& tools/reintegrate_lock.ps1 acquire` first. Worker / reviewer briefs with every failure class
-     learned: `lt/worker_brief.txt`, `lt/reviewer_brief.txt`.
+   - Long-tail progress 2026-10-05/06 (two workers; owner chose bigger batches and a second worker in its
+     own worktree, then stepped away): F01 done (b9b07dd27, 643264f38, ec8c6dcd2, d8c591f23, 63ca60f46);
+     F03 + F19 (71073622e, 110ccc84e); F13 / F14 / F20 settings-record merge (7797854fe); F04 / F15 / F07 /
+     F17 + 5ED34 work block + 2B344 groups (ac9d98537); 3AB48 VAB pack / stage header (4290c05ec); worker 2:
+     F06 + F12 (7712eeca3), F09 + F18 (662320305). Debt rows are in each commit body.
+   - **Process (owner 2026-10-06):** one shared checklist `memory/grind/phase2-2026-10-03/lt/checklist.txt` —
+     the worker self-checks and the reviewer judges the same BLOCKING items B1-B8 (cheats + regressions);
+     comment / message errors are non-blocking fixes the orchestrator applies. Short messages, no line cites.
+     Agents report once via SendMessage and end their turn with one line (idle notices repeat final text).
+   - **Two lanes.** Worker 1 (main checkout; build lock `tmp/orch/lock.ps1`): 51268 / 5ED34 / 64FD8 / 63D2C /
+     3AB48 / 25788 / 2B344 / game.h, then FZZ in 87A0 / 6CF8 / 760D0 / 32D04 / cdrom / memcard / pad. Worker 2
+     (worktree `C:/Users/Trenton/Desktop/bb2-worktrees/p2-w2`, branch p2/w2; commits per batch on the
+     branch, reviewed in a throwaway worktree, landed by the orchestrator with `git cherry-pick -n` +
+     verify-oracle + layer2 record + tools/commit.sh when main's index is clean): libspu / libgpu / 9F9C /
+     17AFC / 28708 / 309CC / 31548 / 31D3C / 35000 / 368E4 / 31CFC and the libraries.
+   - **Next session starts here:** worker 1 — descriptor unification batch (i) (one sheet header / cell /
+     Unk8007352CEnv in game.h; 63D2C / 64FD8 / 5ED34; scratch `lt/fdesc/fdesc1.py`), then (ii) 51268 + 3AB48,
+     then FZZ. Worker 2 — batch 3 (the per-player model object Unk80045878Obj / Node; g_player_ptrs /
+     func_8004153C retype incl. its 2B344 / 3AB48 users; `lt/f08/w2b3.py`), then batch 4 (F05 + P7c +
+     368E4 vehicle sites + F11, `lt/f05/w2b4.py`; F11's eight walkers stay as debt rows, B5 trials 15-60).
+     Still open: P7b (D_800A38B4 word cursor); the volatile RAM shadow D_800F7298 in _SpuSetAnyVoice
+     (borderline.md 544ac7e3a, owner question); Codex backlog `tmp/codex/backlog.md` (gitignored).
    - func_800203B4's island operand (`auth:` re-hash) is still open, after the long tail.
    - Kept on purpose: original-call facts as commented declarations (func_80019568 / func_80044100 /
      func_80052C10 K&R; snd_VabFakeOpen, func_8005C2A8, func_80054434, func_80060414 local).
