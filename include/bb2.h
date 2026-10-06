@@ -85,7 +85,18 @@ extern u8 *D_800A36A0;
 extern MATRIX D_800FF558;
 
 extern Unk8009BC94Record D_8009BC94[][6];
-extern Unk8009B398Record D_8009B398[4];
+/* 0x8009B398: table of 4 sprite-sheet headers (0x8009B398..0x8009B3C7;
+ * D_8009B3C8 follows, different data). Object model evidence from the original
+ * binary: asm/funcs/func_8005E098.s
+ * forms ONE base `lui $s7,%hi(D_8009B3B0); addiu $s7,$s7,%lo(D_8009B3B0)`
+ * (record 2) and reaches record 3 as `addiu $v1,$s7,0xC` and record 0 as
+ * `addiu $a0,$s7,-0x18` -- base+offset addressing of one object at a 12-byte
+ * stride. Data: all four records share one shape (word 0 = 0x0001001F,
+ * word 2 = 0). Replaces the splat per-word scalars D_8009B398 / D_8009B3A4 /
+ * D_8009B3B0 / D_8009B3BC in C (per-word splat symbol -> aggregate merge family,
+ * owner ruling); the dlabels stay in asm/data as data labels (no C
+ * handle; func_8005E54C reaches record 2 as &D_8009B398[j + 2]). */
+extern Unk8009B0E0Record D_8009B398[4];
 extern Unk8009B400Record D_8009B400[10];
 extern Unk8009B400Record D_8009B458[3][2];
 extern Unk8009B450Record D_8009B450[2];
@@ -93,7 +104,7 @@ extern Unk8009B450Record D_8009B450[2];
 /* 0x8009B388: two adjacent 8-byte sprite cells (Unk8009B400Record),
  * 0x8009B388..0x8009B397, the cell table func_8005D554 hands func_80073728 for
  * the row's header record 2 (cell 0) and records 3/4 (cell 1); each of those
- * D_8009B2E0 header records has cell count 1. No other function or asm file
+ * D_8009B2C8[row][2..4] headers has cell count 1. No other function or asm file
  * references either label. One object: spelled &D_8009B388[0] / [1],
  * func_8005D554 keeps the base in $s7 as the original does
  * (asm/funcs/func_8005D554.s); two separate symbols do not.

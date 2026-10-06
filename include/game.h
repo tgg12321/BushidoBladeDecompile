@@ -577,23 +577,6 @@ typedef struct {
     s16 y;
 } Unk8009BC94Record;
 
-/* 0x8009B398: table of 4 twelve-byte records (0x8009B398..0x8009B3C7;
- * D_8009B3C8 follows, different data). Object model evidence from the original
- * binary: asm/funcs/func_8005E098.s
- * forms ONE base `lui $s7,%hi(D_8009B3B0); addiu $s7,$s7,%lo(D_8009B3B0)`
- * (record 2) and reaches record 3 as `addiu $v1,$s7,0xC` and record 0 as
- * `addiu $a0,$s7,-0x18` -- base+offset addressing of one object at a 12-byte
- * stride. Data: all four records share one shape (word 0 = 0x0001001F,
- * word 2 = 0). Replaces the splat per-word scalars D_8009B398 / D_8009B3A4 /
- * D_8009B3B0 / D_8009B3BC in C (per-word splat symbol -> aggregate merge family,
- * owner ruling); the dlabels stay in asm/data as data labels (no C
- * handle; func_8005E54C reaches record 2 as &D_8009B398[j + 2]). */
-typedef struct {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-} Unk8009B398Record;
-
 /* 0x8009B450: two {x, y} screen points (.short 0x01A2,0x0024,0x01F7,0x0037).
  * Object model evidence from the original binary: asm/funcs/func_8005D814.s
  * forms ONE index $s0 = j << 2 and reads both %lo(D_8009B450)($at) and
@@ -2025,22 +2008,5 @@ typedef struct {
 } Unk800A34FCRec;
 
 typedef struct { s32 f0, f1, f2, f3; } Copy16;
-
-typedef struct {
-    void *p0;
-    s32 *p1;
-    s32 pad08;
-    s32 ret;
-    s32 zero10;
-    s32 one14;
-    s32 zero18;
-    s32 zero1C;
-    s32 c20;
-    s32 c24;
-    s8 byte28;
-    u8 byte29;
-    u8 byte2A;
-    u8 byte2B;
-} S46C;
 
 #endif /* GAME_H */
