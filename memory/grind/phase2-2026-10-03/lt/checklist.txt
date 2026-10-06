@@ -16,7 +16,9 @@ BLOCKING (FAIL):
   B4. Every codegen-shaping construct (a local, pointer, ordering, cast or spelling kept because
       the plain form changes bytes) carries /* FAKE: ... */ with its measured ablation score; the
       stated effect matches the ablation objdump; whole clusters ablated; a FAKE whose cluster
-      ablates to IDENTICAL is removed, not kept.
+      ablates to IDENTICAL is removed, not kept. This covers constructs CARRIED from HEAD in every moved
+      body, labelled or not: sweep each moved body for constant / sentinel holders, single-use aliases,
+      reused multi-role locals and redundant temps, and ablate each (rev-w2b2, rev-f04 caught these).
   B5. Item 4: no raw-offset or differently-typed view of header-declared bytes on an edited line
       (if no typed form matches, the line stays exactly as at HEAD and gets a debt row). Before
       claiming "no typed form matches", try at least: a typed holder with member access; no holder;
