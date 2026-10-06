@@ -178,17 +178,19 @@ _REPO_TOPDIRS = {".claude", "docs", "memory", "tools", "engine", "asm"}
 
 
 def _is_repo_shaped_citation(path):
-    """True only for paths that are unambiguously THIS repo's — never for
-    external-project precedents (SOTN cites like src/main/psxsdk/... or
-    src/dra/42398.c are legitimate and must not be existence-checked).
-    A src|include path counts as repo-shaped only with exactly one path
-    segment after the topdir: BB2's own nested TUs (src/main/...) share
-    SOTN's layout, so a nested src citation is not existence-checked."""
+    """Recognize local citation paths, including BB2's nested src/main TUs.
+
+    Shared layouts do not imply an external project: qualify SOTN src/main
+    precedents with a project prefix or URL (sotn-decomp/src/main/...).
+    Other nested src layouts (src/dra/...) remain external; snapshot-tag
+    citations are handled by the caller before this check."""
     parts = path.split("/")
     top = parts[0]
     if top in _REPO_TOPDIRS:
         return True
-    if top in ("src", "include"):
+    if top == "src":
+        return len(parts) == 2 or (len(parts) > 2 and parts[1] == "main")
+    if top == "include":
         return len(parts) == 2
     return False
 # Families whose rule files mandate a /* FAKE */ annotation, keyed by rule slug,

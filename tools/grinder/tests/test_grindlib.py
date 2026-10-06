@@ -328,7 +328,7 @@ CONSTRUCTS: goto end + shared return, s32 tmp intermediate
 SANCTIONED-FAMILY-CLAIMS:
   FAMILY: mixed exit forms
   SCOPE: "deliberately mix goto endK with inline return to defeat find_cross_jump"
-  PRECEDENT: src/main/psxsdk/libsnd/vs_vh.c:412
+  PRECEDENT: sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412
 ANNOTATION-CONFORMANCE: n/a — no FAKE construct in this diff
 """
 
@@ -371,24 +371,24 @@ class TestSelfVet(unittest.TestCase):
         self.assertIn("SCOPE", why)
 
     def test_family_claim_with_uncited_precedent_fails(self):
-        self.write_vet(GOOD_VET.replace("src/main/psxsdk/libsnd/vs_vh.c:412",
+        self.write_vet(GOOD_VET.replace("sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412",
                                         "SOTN does the same thing in spirit"))
         ok, why = G.validate_self_vet(self.root, "func_X")
         self.assertFalse(ok)
         self.assertIn("PRECEDENT", why)
 
     def test_commit_hash_counts_as_a_citation(self):
-        self.write_vet(GOOD_VET.replace("src/main/psxsdk/libsnd/vs_vh.c:412", "a1b2c3d4e5"))
+        self.write_vet(GOOD_VET.replace("sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412", "a1b2c3d4e5"))
         ok, why = G.validate_self_vet(self.root, "func_X")
         self.assertTrue(ok, why)
 
     def test_missing_repo_citation_fails_but_snapshot_tag_form_resolves(self):
         cite = ".claude/rules/deleted-rule.md:12"
-        self.write_vet(GOOD_VET.replace("src/main/psxsdk/libsnd/vs_vh.c:412", cite))
+        self.write_vet(GOOD_VET.replace("sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412", cite))
         ok, why = G.validate_self_vet(self.root, "func_X")
         self.assertFalse(ok)
         self.assertIn("does not", why)
-        self.write_vet(GOOD_VET.replace("src/main/psxsdk/libsnd/vs_vh.c:412",
+        self.write_vet(GOOD_VET.replace("sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412",
                                         "pre-slim-2026-10-01:" + cite))
         ok, why = G.validate_self_vet(self.root, "func_X")
         self.assertTrue(ok, why)
@@ -404,6 +404,69 @@ class TestSelfVet(unittest.TestCase):
         # back-compat: no func => the gate cannot run and must not fire
         ok, why = G.validate_outcome(o, "structural", self.root)
         self.assertTrue(ok, why)
+
+    def test_missing_nested_source_citations_fail(self):
+        for path in ("src/main/51268.c", "src/main/psxsdk/libsnd/vs_vh.c",
+                     "./src/main/psxsdk/libsnd/vs_vh.c",
+                     r"src\main\psxsdk\libsnd\vs_vh.c"):
+            with self.subTest(path=path):
+                self.write_vet(GOOD_VET.replace(
+                    "sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412", path + ":412"))
+                ok, why = G.validate_self_vet(self.root, "func_X")
+                self.assertFalse(ok)
+                self.assertIn("does not exist in the repo", why)
+
+    def test_existing_nested_source_citation_passes(self):
+        path = os.path.join(self.root, "src", "main", "psxsdk", "libsnd", "vs_vh.c")
+        os.makedirs(os.path.dirname(path))
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("/* local precedent fixture */\n")
+        self.write_vet(GOOD_VET.replace(
+            "sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412",
+            "src/main/psxsdk/libsnd/vs_vh.c:412"))
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertTrue(ok, why)
+
+    def test_directory_is_not_a_nested_source_file(self):
+        os.makedirs(os.path.join(self.root, "src", "main", "psxsdk", "libsnd", "vs_vh.c"))
+        self.write_vet(GOOD_VET.replace(
+            "sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412",
+            "src/main/psxsdk/libsnd/vs_vh.c:412"))
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertFalse(ok)
+        self.assertIn("does not exist in the repo", why)
+
+    def test_nested_source_snapshot_citation_passes(self):
+        self.write_vet(GOOD_VET.replace(
+            "sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412",
+            "pre-slim-2026-10-01:src/main/psxsdk/libsnd/vs_vh.c:412"))
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertTrue(ok, why)
+
+    def test_external_source_citations_pass(self):
+        for cite in ("sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412",
+                     "https://github.com/Xeeynamo/sotn-decomp/blob/master/src/main/psxsdk/libsnd/vs_vh.c:412",
+                     "src/dra/42398.c:412"):
+            with self.subTest(cite=cite):
+                self.write_vet(GOOD_VET.replace("sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412", cite))
+                ok, why = G.validate_self_vet(self.root, "func_X")
+                self.assertTrue(ok, why)
+
+    def test_missing_flat_source_citation_still_fails(self):
+        self.write_vet(GOOD_VET.replace("sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412", "src/text1b.c:412"))
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertFalse(ok)
+        self.assertIn("does not exist in the repo", why)
+
+    def test_candidate_ready_rejects_missing_nested_source(self):
+        self.write_vet(GOOD_VET.replace(
+            "sotn-decomp/src/main/psxsdk/libsnd/vs_vh.c:412",
+            "src/main/psxsdk/libsnd/vs_vh.c:412"))
+        outcome = {"result": "candidate-ready", "floor": 0, "headline": "matched",
+                   "hypotheses": [], "evidence": [], "frontier": [], "artifacts": []}
+        ok, why = G.validate_outcome(outcome, "structural", self.root, "func_X")
+        self.assertFalse(ok)
+        self.assertIn("does not exist in the repo", why)
 
 
 class TestBannedConstructs(unittest.TestCase):
