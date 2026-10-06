@@ -118,14 +118,14 @@ def main() -> int:
                 size["incomplete"] += fsize
                 continue  # INCOMPLETE — the queue covers it
             # Data-as-code: a symbol in the object's function table that is not
-            # a C-level function of the file at all (`.include`d asm body,
-            # `.aent` alternate entry, instruction-less `glabel` marker). Owner
-            # ruling 2026-08-07: these are NOT completions and are excluded
-            # from the COMPLETED-C count project-wide (same structural test the
-            # queue generator uses; tools/spotcheck applies it too). Surfaced,
-            # not silently dropped.
+            # a C-level function of the file at all (an `alabel` / `.aent` of an
+            # included asm body, `.aent` alternate entry, instruction-less
+            # `glabel` marker). Owner ruling 2026-08-07: these are NOT
+            # completions and are excluded from the COMPLETED-C count
+            # project-wide (same structural test the queue generator uses;
+            # tools/spotcheck applies it too). Surfaced, not silently dropped.
             if src_text is not None and func not in canon \
-                    and Q.not_a_c_function_text(src_text, func):
+                    and Q.not_a_c_function_text(src_text, func, Q.read_asm_file):
                 data_as_code.append(f"{func} ({stem}.c)")
                 continue
             # Function is not in the queue: must be one of the COMPLETED states.

@@ -72,6 +72,7 @@ import sys
 import time
 from collections import Counter
 from pathlib import Path
+from typing import Callable
 
 from . import buildconfig as cfg
 from . import canonical
@@ -198,6 +199,19 @@ def _no_c_body(stem: str, func: str) -> bool:
 
 
 _AENT_RE = re.compile(r'\.aent\s+([A-Za-z_]\w*)')
+# An included asm body's secondary entry points: `alabel` (a data / alternate label inside
+# the body) and `.aent`. A bare second `glabel` is a function of its own and is not one.
+_ASM_ENTRY_RE = re.compile(r'(?m)^\s*(?:alabel|\.aent)\s+([A-Za-z_]\w*)\b')
+
+
+def read_asm_file(name: str) -> str | None:
+    """asm/funcs/<name>.s from the working tree, or None: the included-asm reader
+    _not_a_c_function and check_completion_integrity.py hand to
+    not_a_c_function_text (tools reading a git ref pass their own)."""
+    try:
+        return Path(f"asm/funcs/{name}.s").read_text(encoding="utf-8")
+    except OSError:
+        return None
 
 
 def _not_a_c_function(stem: str, func: str) -> bool:
@@ -211,8 +225,10 @@ def _not_a_c_function(stem: str, func: str) -> bool:
     puts at the very top of the active lane.
 
     Three mechanical signals, all conservative:
-      * the name never appears in the .c text at all — it comes from an
-        `.include`d asm body (8 symbols: D_80088BA0, the text1b D_8005xxxx set);
+      * the name never appears in the .c text, and an asm body the file includes
+        declares it with `alabel` or `.aent` (3AB48's D_8005xxxx set). Absence
+        alone is not evidence: a bare second `glabel` in an included body, or a
+        body that cannot be read, leaves the symbol outstanding;
       * it is declared `.aent <name>` — an alternate ENTRY into another function,
         not a function of its own (3 symbols: g_data_start, g_module_func_tbl,
         g_module_type_tbl);
@@ -226,18 +242,28 @@ def _not_a_c_function(stem: str, func: str) -> bool:
     text = inlineasm._read_src_cached(stem)
     if text is None:
         return False
-    return not_a_c_function_text(text, func)
+    return not_a_c_function_text(text, func, read_asm_file)
 
 
-def not_a_c_function_text(text: str, func: str) -> bool:
-    """The text-level core of _not_a_c_function, split out so tools can apply
-    the SAME structural test to a source text they already hold (including a
-    git-ref blob, where reading the working tree would be wrong). Owner ruling
-    2026-08-07: symbols matching this test are excluded from the COMPLETED-C
-    pool/count project-wide (check_completion_integrity.py, tools/spotcheck/)
-    — they are data extracted as code, not completions."""
+def not_a_c_function_text(text: str, func: str,
+                          read_asm: Callable[[str], str | None]) -> bool:
+    """The core of _not_a_c_function, split out so tools can apply the SAME
+    structural test to a source text they already hold (including a git-ref
+    blob, where reading the working tree would be wrong). `read_asm(name)`
+    returns asm/funcs/<name>.s's text (or None) from the same tree as `text`:
+    a name absent from the .c is data-as-code only when an asm body the file
+    includes declares it with `alabel` / `.aent`. Owner ruling 2026-08-07:
+    symbols matching this test are excluded from the COMPLETED-C pool/count
+    project-wide (check_completion_integrity.py, tools/spotcheck/) — they are
+    data extracted as code, not completions."""
     if re.search(r'\b' + re.escape(func) + r'\b', text) is None:
-        return True
+        names = {name for name, _s, _e in inlineasm.include_asm_spans(text)}
+        names.update(inlineasm._INCLUDE_DIRECTIVE_RE.findall(text))
+        for name in sorted(names):
+            asm = read_asm(name)
+            if asm is not None and func in set(_ASM_ENTRY_RE.findall(asm)):
+                return True
+        return False
     return (func in set(_AENT_RE.findall(text))
             or func in inlineasm.symbol_marker_funcs(text))
 

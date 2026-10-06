@@ -268,6 +268,7 @@ def object_symbols() -> dict[str, list[str]]:
 def classify_pool(symbols: dict[str, list[str]], in_queue: set[str],
                   canon: set[str], rulecount: dict[str, int],
                   prologued: set[str], src_text: dict[str, str | None],
+                  read_asm,
                   unknown_is_completed: bool = True,
                   ) -> tuple[list[tuple[str, str]], list[str], list[tuple[str, str]]]:
     """-> (COMPLETED-C [(func, stem)], violation notes, no-C-body [(func, stem)])
@@ -283,9 +284,11 @@ def classify_pool(symbols: dict[str, list[str]], in_queue: set[str],
 
     no-C-body collects symbols the object lists as `F .text` that are
     structurally not C functions of the file at all (data extracted as code,
-    e.g. text1b's D_8005xxxx; `.aent` alternate entries; instruction-less
-    `glabel` markers) — the same test the queue generator draws via
-    queue.not_a_c_function_text. Owner ruling 2026-08-07: they are EXCLUDED
+    e.g. 3AB48's D_8005xxxx, `alabel`s of included asm bodies; `.aent`
+    alternate entries; instruction-less `glabel` markers) — the same test the
+    queue generator draws via queue.not_a_c_function_text, with `read_asm`
+    reading the included bodies from the same tree as `src_text` (the working
+    tree, or the ref in roster mode). Owner ruling 2026-08-07: they are EXCLUDED
     from the COMPLETED-C pool (they are not completions), and surfaced in the
     third return value so no run hides the exclusion.
 
@@ -318,7 +321,7 @@ def classify_pool(symbols: dict[str, list[str]], in_queue: set[str],
         for func in funcs:
             if func in in_queue or func in canon:
                 continue
-            if text is not None and Q.not_a_c_function_text(text, func):
+            if text is not None and Q.not_a_c_function_text(text, func, read_asm):
                 no_body.append((func, stem))
                 continue  # data-as-code: not a completion (owner ruling 2026-08-07)
             rules = rulecount.get(func, 0)
@@ -344,7 +347,8 @@ def enumerate_completed_c() -> tuple[list[tuple[str, str]], list[str], list[tupl
                 if q.exists() else set())
     src_text = {stem: inlineasm._read_src_cached(stem) for stem in P.c_stems()}
     return classify_pool(object_symbols(), in_queue, cheats.canonical_asm_funcs(),
-                         rule_counts(working_rule_texts()), prologue_funcs(), src_text)
+                         rule_counts(working_rule_texts()), prologue_funcs(), src_text,
+                         Q.read_asm_file)
 
 
 def select(pool: list[tuple[str, str]], args) -> list[tuple[str, str]]:
@@ -547,6 +551,13 @@ def completed_roster_at(ref: str, symbols: dict[str, list[str]]) -> set[str] | N
             prologued |= {ln.split()[0] for ln in t.splitlines()
                           if ln.strip() and not ln.strip().startswith("#")}
     src_text = {stem: git_show(ref, f"src/{stem}.c") for stem in symbols}
+    asm_at: dict[str, str | None] = {}
+
+    def read_asm_at(name: str) -> str | None:
+        # the included asm bodies at the same ref as the sources
+        if name not in asm_at:
+            asm_at[name] = git_show(ref, f"asm/funcs/{name}.s")
+        return asm_at[name]
 
     # Evaluate the detector with the REF'S allowlist, not the working tree's.
     # Without this the comparison silently applies today's grants to yesterday's
@@ -565,6 +576,7 @@ def completed_roster_at(ref: str, symbols: dict[str, list[str]]) -> set[str] | N
         with vc.use_allowlist(tmp_al):
             completed, _viol, _nb = classify_pool(symbols, in_queue, canon,
                                                   rulecount, prologued, src_text,
+                                                  read_asm_at,
                                                   unknown_is_completed=False)
     finally:
         if tmp_al:

@@ -2578,7 +2578,8 @@ def test_include_asm_whole_body() -> None:
 
     # 4. generate(): a negative (UNKNOWN) count must NOT drop an item, and a
     #    measured-zero count still must.
-    def _regen_with(cheat_count: int, canon: set, src_text: str | None = None) -> list:
+    def _regen_with(cheat_count: int, canon: set, src_text: str | None = None,
+                    asm_text: str | None = None) -> list:
         with tempfile.TemporaryDirectory() as td:
             cwd = os.getcwd()
             os.chdir(td)
@@ -2587,6 +2588,9 @@ def test_include_asm_whole_body() -> None:
             if src_text is not None:
                 Path("src").mkdir()
                 Path("src/faketu.c").write_text(src_text)
+            if asm_text is not None:
+                Path("asm/funcs").mkdir(parents=True)
+                Path("asm/funcs/other.s").write_text(asm_text)
             orig = (Q.QUEUE_PATH, P.c_stems, canonical.scan_all,
                     cheats.canonical_asm_funcs, Q._rule_count,
                     cheats.func_prologue_count, inlineasm.file_func_cheat_asm_count,
@@ -2632,9 +2636,22 @@ def test_include_asm_whole_body() -> None:
     # function whose body-span parse failed can never silently leave the queue.
     eq("include_asm: regen KEEPS an item whose cheat count is UNKNOWN",
        _regen_with(-1, set()), ["func_WB"])
-    # The ONE safe exception: the symbol is not a C-level function at all.
-    eq("include_asm: regen drops an UNKNOWN symbol absent from the .c",
-       _regen_with(-1, set(), src_text="void other(void) {}\n"), [])
+    # The ONE safe exception: the symbol is not a C-level function at all. Absence
+    # from the .c is not that evidence by itself: the included asm must declare it
+    # as an `alabel` / `.aent` (a bare second `glabel` is a function of its own).
+    eq("include_asm: regen KEEPS an UNKNOWN symbol absent from the .c (no asm evidence)",
+       _regen_with(-1, set(), src_text="void other(void) {}\n"), ["func_WB"])
+    included = 'INCLUDE_ASM("asm/funcs", other);\n'
+    eq("include_asm: regen KEEPS a bare second glabel in included asm",
+       _regen_with(-1, set(), src_text=included,
+                   asm_text="glabel other\n  jr $ra\n  nop\n"
+                            "glabel func_WB\n  jr $ra\n  nop\n"), ["func_WB"])
+    eq("include_asm: regen KEEPS an absent symbol whose included asm is missing",
+       _regen_with(-1, set(), src_text=included), ["func_WB"])
+    for entry in ("alabel", ".aent"):
+        eq(f"include_asm: regen drops an absent {entry} of included asm",
+           _regen_with(-1, set(), src_text=included,
+                       asm_text=f"glabel other\n  jr $ra\n  nop\n{entry} func_WB\n"), [])
     eq("include_asm: regen drops an UNKNOWN `.aent` alternate entry",
        _regen_with(-1, set(),
                    src_text='__asm__("    .aent func_WB\\n");\n'), [])
@@ -2750,6 +2767,7 @@ def test_buildstamp() -> None:
 def test_queue_non_function_labels() -> None:
     """No-body source errors must not turn object-table labels into work."""
     from unittest.mock import patch
+    repo_root = Path(Q.__file__).resolve().parent.parent
 
     labels = {
         "main/3AB48": ("D_800521AC", "D_800521FC", "D_80052344",
@@ -2758,6 +2776,10 @@ def test_queue_non_function_labels() -> None:
     }
     texts = {stem: Path(f"src/{stem}.c").read_text(encoding="utf-8")
              for stem in labels}
+    included_asm = {name: Path(f"asm/funcs/{name}.s").read_text(encoding="utf-8")
+                    for text in texts.values()
+                    for name, _s, _e in inlineasm.include_asm_spans(text)
+                    if Path(f"asm/funcs/{name}.s").is_file()}
     label_names = {name for names in labels.values() for name in names}
     texts["unknown"] = "extern void mystery(void);\n"
     texts["body"] = ('void real_body(void) { __asm__("nop"); }\n'
@@ -2786,6 +2808,9 @@ def test_queue_non_function_labels() -> None:
         cwd = os.getcwd()
         try:
             os.chdir(td)
+            Path("asm/funcs").mkdir(parents=True)
+            for name, asm in included_asm.items():
+                Path(f"asm/funcs/{name}.s").write_text(asm, encoding="utf-8")
             for stem, text in texts.items():
                 p = Path(f"src/{stem}.c")
                 p.parent.mkdir(parents=True, exist_ok=True)
@@ -2818,6 +2843,32 @@ def test_queue_non_function_labels() -> None:
                           Q._not_a_c_function(stem, name))
                     check(f"queue labels: {name} has the no-body issue being bypassed",
                           bool(completion.source_issues(stem, name)))
+
+            # The tools' classification (check_completion_integrity.py hands the
+            # working-tree reader to not_a_c_function_text; spotcheck's roster mode
+            # a git-ref reader): the alabels of the included asm are data-as-code,
+            # and without the asm evidence the same absent names stay outstanding.
+            src_3ab48 = texts["main/3AB48"]
+            for name in labels["main/3AB48"]:
+                check(f"integrity labels: {name} is data-as-code with its included asm",
+                      Q.not_a_c_function_text(src_3ab48, name, Q.read_asm_file))
+                check(f"integrity labels: {name} is outstanding without the asm",
+                      not Q.not_a_c_function_text(src_3ab48, name, lambda n: None))
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(
+                "spot_check_completed_t", repo_root / "tools/spotcheck/spot_check_completed.py")
+            spot = importlib.util.module_from_spec(spec)
+            here = os.getcwd()
+            spec.loader.exec_module(spot)   # the script chdirs to the repo on import
+            os.chdir(here)
+            pool_syms = {"main/3AB48": list(labels["main/3AB48"]) + ["real_c_fn"]}
+            pool_src = {"main/3AB48": src_3ab48 + "\nvoid real_c_fn(void) {}\n"}
+            done, _viol, no_body = spot.classify_pool(pool_syms, set(), set(), {}, set(),
+                                                      pool_src, Q.read_asm_file)
+            eq("spotcheck labels: the seven alabels are no-C-body, not completions",
+               sorted(f for f, _ in no_body), sorted(labels["main/3AB48"]))
+            eq("spotcheck labels: a real C function stays in the pool",
+               [f for f, _ in done], ["real_c_fn"])
 
             for missing in (False, True):
                 Path(Q.QUEUE_PATH).write_text('{"items": []}')
@@ -3397,10 +3448,16 @@ def test_layer2_gate() -> None:
                     Q.sandbox.build_stripped_object = lambda *a, **k: {}
 
                 # K1: a LISTED item that turns out not to be a C function (its
-                # name no longer appears in the .c) is held too — both the
-                # scored and the unscorable not-a-C drop go through _held. A
-                # never-listed non-C symbol still drops silently.
+                # name is an `alabel` of an asm body the .c includes) is held
+                # too — both the scored and the unscorable not-a-C drop go
+                # through _held. A never-listed non-C symbol still drops silently.
                 score._o_func_table = lambda o: {"func_NC": (0, 0), "func_NC2": (0, 0)}
+                l2_src = Path("src/l2tu.c").read_text()
+                Path("src/l2tu.c").write_text(l2_src + '\nINCLUDE_ASM("asm/funcs", nc_body);\n')
+                inlineasm._FILE_TEXT_CACHE.pop("l2tu", None)
+                Path("asm/funcs").mkdir(parents=True, exist_ok=True)
+                Path("asm/funcs/nc_body.s").write_text(
+                    "glabel nc_body\n  jr $ra\n  nop\nalabel func_NC\nalabel func_NC2\n")
                 inlineasm.file_func_cheat_asm_count = (
                     lambda s, f: -1 if f.startswith("func_NC") else 0)
                 nc_seed = {"items": [{"func": "func_NC", "file": "l2tu", "distance": 0,
@@ -3416,6 +3473,8 @@ def test_layer2_gate() -> None:
                     check(f"layer2: held not-a-C item says why [{point}]",
                           bool(items) and "layer-2 gate" in items[0].get("layer2_pending", ""))
                 inlineasm.file_func_cheat_asm_count = lambda s, f: 0
+                Path("src/l2tu.c").write_text(l2_src)
+                inlineasm._FILE_TEXT_CACHE.pop("l2tu", None)
 
                 # every item regen writes carries its function's address (the
                 # departures audit's key) — here from asm/funcs/func_L2.s
