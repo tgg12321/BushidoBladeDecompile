@@ -17,8 +17,8 @@ The ledger (memory/grind/<func>/) is the pipeline's persistent brain:
 
 Append-only with ONE exception: over LEDGER_MAX (64K) the driver rewrites a
 .md file as a current-state summary (compact_ledger; full text stays in git).
-When the function completes the directory is closed (close_ledger): only its
-layer-2 record survives, under memory/grind/_completed/<func>/.
+When the function completes the ledger is closed (close_ledger): its layer-2
+record moves under memory/grind/_completed/<func>/; cited files stay in place.
 
 Spec: docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md
 """
@@ -2912,8 +2912,8 @@ def completed_siblings(root, func, names=None):
 
 
 # ── Ledger close (2026-10-01 slim-down) ──────────────────────────────────────
-# A completed function's ledger is deleted; git keeps its history. Only the
-# layer-2 record outlives it (owner ruling Q39: `queue done` / departures audit
+# A completed function's uncited ledger files are deleted; git keeps their
+# history. The layer-2 record outlives it (owner ruling Q39: departures audit
 # read memory/grind/**/layer2.jsonl), moved to _completed/<func>/ together with
 # the layer2_verdicts/ copies its records point at. Before this, the Grinder
 # moved layer2.jsonl but deleted layer2_verdicts/ (dangling verdict_file), and
@@ -2981,16 +2981,56 @@ def locate_stem(root, func):
     return hit
 
 
-def archive_ledger(root, func):
+def _cited_ledger_files(root, func):
+    """Keep repository citations resolvable without rewriting their paths.
+    Scan tracked and nonignored untracked text outside this ledger, then the
+    retained files themselves for transitive citations. Directory citations
+    retain their subtree. Historical citations are conservatively kept too.
+    A failed inventory aborts the close before evidence is removed."""
+    prefix = f"memory/grind/{func}/"
+    inventory = subprocess.run(
+        ["git", "-C", root, "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        capture_output=True, check=True).stdout.decode("utf-8").split("\0")
+    pending = [p for p in inventory if p and not p.startswith(prefix)]
+    pattern = re.compile(re.escape(prefix) + r"[\w./-]*")
+    keep = set()
+    while pending:
+        path = pending.pop()
+        try:
+            with open(os.path.join(root, path), encoding="utf-8", errors="replace") as fh:
+                text = fh.read()
+        except FileNotFoundError:
+            continue
+        for match in pattern.finditer(text):
+            cited = match.group().rstrip(".")
+            rel = cited[len(prefix):]
+            if ".." in rel.split("/"):
+                continue
+            target = os.path.join(root, cited)
+            files = [cited] if os.path.isfile(target) else []
+            if os.path.isdir(target):
+                files = [os.path.relpath(os.path.join(d, f), root).replace(os.sep, "/")
+                         for d, _, fs in os.walk(target) for f in fs]
+            for p in files:
+                if p not in keep:
+                    keep.add(p)
+                    pending.append(p)
+    return keep
+
+
+def archive_ledger(root, func, keep=None):
     """Move the layer-2 record (layer2.jsonl, appended if an archive exists, and
     layer2_verdicts/) to memory/grind/_completed/<func>/, re-point every moved
-    record's verdict_file at the moved copy, then delete the ledger directory.
+    record's verdict_file at the moved copy, then delete uncited ledger files.
+    Cited evidence remains byte-for-byte at its original path.
     Call AFTER write_completion_tombstone. Raises on I/O failure (a half-moved
     record must not read as closed). Returns the number of records moved."""
     import shutil
     src = ledger_dir(root, func)
     if not os.path.isdir(src):
         return 0
+    if keep is None:
+        keep = _cited_ledger_files(root, func)
     dst = os.path.join(completed_dir(root), func)
     old = f"memory/grind/{func}/layer2_verdicts/"
     new = f"memory/grind/{COMPLETED_SUBDIR}/{func}/layer2_verdicts/"
@@ -3021,7 +3061,13 @@ def archive_ledger(root, func):
         with open(os.path.join(dst, "layer2.jsonl"), "a", encoding="utf-8", newline="\n") as fh:
             fh.write("".join(l + "\n" for l in out))
         n = len(out)
-    shutil.rmtree(src)
+    for d, _, fs in os.walk(src, topdown=False):
+        for fn in fs:
+            path = os.path.join(d, fn)
+            if os.path.relpath(path, root).replace(os.sep, "/") not in keep:
+                os.remove(path)
+        if not os.listdir(d):
+            os.rmdir(d)
     return n
 
 
@@ -3045,6 +3091,7 @@ def close_ledger(root, func, bucket="", sessions=0, headline="", notify=True,
     if why:
         return False, [f"NOT CLOSED {func}: {why}"]
     stem = locate_stem(root, func)
+    keep = _cited_ledger_files(root, func)
     if not bucket or bucket == "auto":
         bucket = ("COMPLETED-INLINE-ASM-CANONICAL" if func in _canonical_funcs(root)
                   else "COMPLETED-C")
@@ -3067,8 +3114,9 @@ def close_ledger(root, func, bucket="", sessions=0, headline="", notify=True,
                         f"src/{s['file']}.c) — {func} just reached floor 0; its "
                         f"body on main is an unspent transplant. The driver's "
                         f"`queue auto-return` brings it back on this sibling notice.")
-    n = archive_ledger(root, func)
-    msgs.append(f"CLOSED {func} ({bucket}, src/{stem}.c): {n} layer-2 record(s) archived")
+    n = archive_ledger(root, func, keep=keep)
+    msgs.append(f"CLOSED {func} ({bucket}, src/{stem}.c): {n} layer-2 record(s) archived; "
+                f"{len(keep)} cited file(s) retained at original paths")
     return True, msgs
 
 
@@ -3924,7 +3972,7 @@ if __name__ == "__main__":
         # close-ledger <root> <func> <bucket|auto> <sessions> [headline]
         # The ledger close for a function that just completed (Grinder merge path,
         # manual_session.ps1 end): tombstone + sibling notice + layer-2 record to
-        # _completed/<func>/ + delete. Exit 2 (nothing touched) if it is still
+        # _completed/<func>/ + delete uncited files. Exit 2 (nothing touched) if it is still
         # queued or has no completed body in src/.
         _sess = int(sys.argv[5]) if len(sys.argv) > 5 and sys.argv[5].isdigit() else 0
         _ok, _msgs = close_ledger(sys.argv[2], sys.argv[3],

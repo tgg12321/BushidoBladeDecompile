@@ -243,18 +243,28 @@ function Invoke-End {
 
     # Close the ledger of a function that completed this session (no longer
     # queued, body in src/): tombstone, layer-2 record to _completed/<func>/,
-    # directory deleted — the same close the Grinder's merge path runs. Exit 2 =
+    # uncited files deleted — the same close the Grinder's merge path runs. Exit 2 =
     # still queued / not landed: the ledger stays and is banked below.
     $closeOut = (python (Join-Path $Root 'tools\grinder\grindlib.py') close-ledger $Root $s.func auto 0 'manual lane' 2>&1 | Out-String).Trim()
     if ($LASTEXITCODE -eq 0) {
         Say "[manual] $closeOut" 'Green'
-        git -C $Root add -A -- memory/grind 2>$null
-        git -C $Root commit -q -m "grind: close ledger for $($s.func) (manual lane)" -- memory/grind 2>$null | Out-Null
+        $closePaths = @("memory/grind/$($s.func)",
+                        "memory/grind/_completed/$($s.func)",
+                        "memory/grind/_completed/$($s.func).json") | Where-Object {
+            (Test-Path (Join-Path $Root $_)) -or @(git -C $Root ls-files -- $_).Count
+        }
+        git -C $Root add -A -- @closePaths
+        if ($LASTEXITCODE -ne 0) { Die 'could not stage the closing ledger; session kept open.' }
+        git -C $Root commit -q -m "grind: close ledger for $($s.func) (manual lane)" -- @closePaths | Out-Null
+        if ($LASTEXITCODE -ne 0) { Die 'could not commit the closing ledger; session kept open.' }
+    } elseif ($LASTEXITCODE -ne 2) {
+        Die "ledger close failed; session kept open: $closeOut"
     }
 
     # Bank any ledger movement so the Grinder resumes informed. Explicit
     # pathspecs on the commit: `git commit` takes the WHOLE index otherwise.
-    $ledgerPaths = @("memory/grind/$($s.func)", 'docs/grind')
+    # Shared docs and sibling ledgers can carry another session's work.
+    $ledgerPaths = @("memory/grind/$($s.func)")
     $ledgerDirt = @(git -C $Root status --porcelain -- @ledgerPaths | Where-Object { $_ })
     if ($ledgerDirt.Count) {
         git -C $Root add -- @ledgerPaths 2>$null

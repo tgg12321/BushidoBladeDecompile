@@ -1,4 +1,4 @@
-import json, os, sys, tempfile, unittest
+import json, os, shutil, subprocess, sys, tempfile, unittest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 from tools.grinder import grindlib as G
 
@@ -2245,7 +2245,7 @@ class TestModuleMates(unittest.TestCase):
 class TestLedgerClose(unittest.TestCase):
     """2026-10-01: a completed function's ledger is closed — tombstone, layer-2
     record (layer2.jsonl AND layer2_verdicts/, pointers re-pointed) to
-    _completed/<func>/, directory deleted — and never while it is still queued
+    _completed/<func>/, uncited files deleted — never while it is still queued
     or not yet landed in src/."""
 
     def setUp(self):
@@ -2253,6 +2253,7 @@ class TestLedgerClose(unittest.TestCase):
         self.root = self.tmp.name
         os.makedirs(os.path.join(self.root, "engine"))
         os.makedirs(os.path.join(self.root, "src"))
+        subprocess.run(["git", "init", "-q", self.root], check=True)
         with open(os.path.join(self.root, "engine", "queue.json"), "w") as fh:
             json.dump({"items": [{"func": "func_Q", "status": "active"}]}, fh)
         with open(os.path.join(self.root, "src", "main.c"), "w", newline="\n") as fh:
@@ -2331,6 +2332,109 @@ class TestLedgerClose(unittest.TestCase):
         G.close_ledger(self.root, "func_DONE", "auto")
         recs = [json.loads(l) for l in open(os.path.join(arch, "layer2.jsonl"))]
         self.assertEqual([r["body_hash"] for r in recs], ["h0", "h1", "h2"])
+
+    def test_close_keeps_cited_evidence_at_its_original_path(self):
+        d = self._ledger("func_CAN")
+        evidence = os.path.join(d, "asm_evidence.py")
+        with open(evidence, "wb") as fh:
+            fh.write(b"# evidence\n")
+        with open(os.path.join(self.root, "inline_asm_canonical.txt"), "a") as fh:
+            fh.write("# memory/grind/func_CAN/asm_evidence.py:12\n")
+        subprocess.run(["git", "-C", self.root, "add", "inline_asm_canonical.txt"], check=True)
+        with open(os.path.join(d, "candidate.c"), "w") as fh:
+            fh.write("/* uncited candidate */\n")
+        # A cited directory and a transitive citation inside retained evidence.
+        os.makedirs(os.path.join(d, "proof"))
+        with open(os.path.join(d, "proof", "check.py"), "w") as fh:
+            fh.write("# memory/grind/func_CAN/helper.py\n")
+        with open(os.path.join(d, "helper.py"), "w") as fh:
+            fh.write("# helper\n")
+        with open(os.path.join(self.root, "references.txt"), "w") as fh:
+            fh.write("`memory/grind/func_CAN/proof/`\n")
+        canonical = os.path.join(self.root, "inline_asm_canonical.txt")
+        with open(canonical, "rb") as fh:
+            canonical_before = fh.read()
+        ok, msgs = G.close_ledger(self.root, "func_CAN", "auto")
+        self.assertTrue(ok, msgs)
+        with open(evidence, "rb") as fh:
+            self.assertEqual(fh.read(), b"# evidence\n")
+        with open(canonical, "rb") as fh:
+            self.assertEqual(fh.read(), canonical_before)
+        self.assertTrue(os.path.isfile(os.path.join(d, "proof", "check.py")))
+        self.assertTrue(os.path.isfile(os.path.join(d, "helper.py")))
+        self.assertFalse(os.path.exists(os.path.join(d, "candidate.c")))
+        self.assertFalse(os.path.exists(os.path.join(d, "layer2.jsonl")))
+        self.assertIn("3 cited file(s) retained", msgs[-1])
+
+    def test_failed_citation_inventory_does_not_delete_evidence(self):
+        from unittest.mock import patch
+        d = self._ledger("func_DONE")
+        with patch.object(G.subprocess, "run", side_effect=subprocess.CalledProcessError(1, "git")):
+            with self.assertRaises(subprocess.CalledProcessError):
+                G.close_ledger(self.root, "func_DONE", "auto")
+        self.assertTrue(os.path.isfile(os.path.join(d, "evidence.md")))
+        self.assertFalse(os.path.exists(os.path.join(G.completed_dir(self.root), "func_DONE.json")))
+
+    @unittest.skipUnless(shutil.which("pwsh"), "PowerShell required")
+    def test_manual_end_commits_only_own_paths(self):
+        self._manual_end_fixture()
+
+    @unittest.skipUnless(shutil.which("pwsh"), "PowerShell required")
+    def test_manual_end_without_layer2_archive(self):
+        self._manual_end_fixture(layer2=False)
+
+    def _manual_end_fixture(self, layer2=True):
+        self._ledger("func_DONE")
+        if not layer2:
+            d = G.ledger_dir(self.root, "func_DONE")
+            os.remove(os.path.join(d, "layer2.jsonl"))
+            shutil.rmtree(os.path.join(d, "layer2_verdicts"))
+        tools = os.path.join(self.root, "tools")
+        os.makedirs(os.path.join(tools, "grinder"))
+        repo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+        shutil.copyfile(os.path.join(repo, "tools", "manual_session.ps1"),
+                        os.path.join(tools, "manual_session.ps1"))
+        shutil.copyfile(G.__file__, os.path.join(tools, "grinder", "grindlib.py"))
+        def git(*args):
+            return subprocess.run(["git", "-C", self.root, *args], check=True,
+                                  capture_output=True, text=True).stdout
+        git("config", "user.name", "Test")
+        git("config", "user.email", "test@example.invalid")
+        other = os.path.join(self.root, "memory", "grind", "other")
+        docs = os.path.join(self.root, "docs", "grind")
+        os.makedirs(other)
+        os.makedirs(docs)
+        with open(os.path.join(other, "tracked.txt"), "w") as fh:
+            fh.write("before\n")
+        with open(os.path.join(docs, "unrelated.txt"), "w") as fh:
+            fh.write("before\n")
+        git("add", ".")
+        git("commit", "-qm", "fixture")
+        start = git("rev-parse", "HEAD").strip()
+        with open(os.path.join(other, "tracked.txt"), "a") as fh:
+            fh.write("unrelated staged change\n")
+        git("add", "memory/grind/other/tracked.txt")
+        with open(os.path.join(other, "untracked_b2.py"), "w") as fh:
+            fh.write("# unrelated untracked file\n")
+        with open(os.path.join(docs, "unrelated.txt"), "a") as fh:
+            fh.write("unrelated docs change\n")
+        manual = os.path.join(self.root, "tmp", "manual")
+        os.makedirs(manual)
+        with open(os.path.join(manual, "session.json"), "w") as fh:
+            json.dump({"func": "func_DONE", "start_head": start,
+                       "grinder_was_running": False}, fh)
+        result = subprocess.run(["pwsh", "-NoProfile", "-File",
+                                 os.path.join(tools, "manual_session.ps1"),
+                                 "end", "-NoRelaunch"], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        paths = git("diff", "--name-only", start, "HEAD").splitlines()
+        self.assertTrue(paths)
+        self.assertTrue(all(p.startswith("memory/grind/func_DONE/") or
+                            p.startswith("memory/grind/_completed/func_DONE/") or
+                            p == "memory/grind/_completed/func_DONE.json" for p in paths), paths)
+        self.assertIn("memory/grind/other/tracked.txt", git("diff", "--cached", "--name-only"))
+        self.assertIn("?? memory/grind/other/untracked_b2.py", git("status", "--porcelain"))
+        self.assertIn("docs/grind/unrelated.txt", git("diff", "--name-only"))
 
 
 class TestLedgerCompaction(unittest.TestCase):
