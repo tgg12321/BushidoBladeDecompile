@@ -42,6 +42,11 @@ TEXT_WRITE_RE = re.compile(
     r"\.write_text\(|\bopen\([^)\n]*,\s*['\"][wa]t?\+?['\"]"
 )
 
+WORKTREE_REMOVE_RE = re.compile(r"\bgit\b[^\n;&|]*\bworktree\s+remove\b")
+WORKTREE_RMRF_RE = re.compile(
+    r"(?:\brm\s+-[a-zA-Z]*r[a-zA-Z]*f?|\bRemove-Item\b[^\n;|]*-Recurse)[^\n;|]*bb2-worktrees",
+    re.IGNORECASE)
+
 SAFE = ("\nThe safe path:\n"
         "  - engine/build commands  ->  the PowerShell tool with  tools/wteng.ps1 main\n"
         "        & tools/wteng.ps1 main queue next\n"
@@ -129,6 +134,18 @@ def reasons_for(cmd: str) -> list[str]:
             "python3 is Windows Python: every line comes back CRLF and breaks .sh/.c/"
             "build files. Pass newline='\\n' (open(p, 'w', newline='\\n')), use "
             "write_bytes, or run the script under WSL (bash tools/wsl.sh)."
+        )
+    # Rule 5: removing a worktree directly. Worktrees here carry directory
+    # JUNCTIONS to main's .venv / tools / build; `git worktree remove --force`,
+    # `rm -rf` or `Remove-Item -Recurse` on one follows the junctions and empties
+    # MAIN's targets (2026-06-03 and again 2026-10-06: main's .venv wiped).
+    if (WORKTREE_REMOVE_RE.search(code) or WORKTREE_RMRF_RE.search(code)) \
+            and "safe_remove_worktree" not in code:
+        out.append(
+            "Direct worktree removal. Worktrees hold junctions to main's .venv / tools / "
+            "build, and a recursive delete follows them and wipes MAIN's copies. Use "
+            "`pwsh tools/safe_remove_worktree.ps1 <worktree-path>` (detaches junctions "
+            "with `cmd /c rmdir`, then runs `git worktree remove`)."
         )
     return out
 
