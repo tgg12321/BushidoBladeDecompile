@@ -181,7 +181,7 @@ confirm:
 
 void func_80074B18(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     TILE *p;
-    u8 *t;
+    Rec_8006C21C *t;
     s16 i;
     s16 j;
     s16 n;
@@ -196,18 +196,18 @@ void func_80074B18(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
         t = SELWORK->f04->unk_3C;
         for (j = 0; j < n; j++) {
             SetTile(p);
-            p->r0 = t[8];
-            p->g0 = t[9];
-            p->b0 = t[0xA];
-            p->w = *(u16 *)(t + 4);
-            p->h = *(u16 *)(t + 6);
+            p->r0 = t->r;
+            p->g0 = t->g;
+            p->b0 = t->b;
+            p->w = t->w;
+            p->h = t->h;
             SetSemiTrans(p, 0);
             if (arg2 != 0) {
-                p->x0 = *(u16 *)(t + 0) + arg1 * 240;
-                p->y0 = *(u16 *)(t + 2) + i * 34 + 0x2B;
+                p->x0 = t->x + arg1 * 240;
+                p->y0 = t->y + i * 34 + 0x2B;
             } else {
-                p->x0 = *(u16 *)(t + 0) + arg1 * 240;
-                p->y0 = *(u16 *)(t + 2) + i * 17 + 0x7C;
+                p->x0 = t->x + arg1 * 240;
+                p->y0 = t->y + i * 17 + 0x7C;
             }
             ot = 0xB;
             if (arg1 != 0) {
@@ -215,7 +215,7 @@ void func_80074B18(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
             }
             AddPrim(g_gpu_ot_ptr + ot * 4, p);
             p++;
-            t += 0xC;
+            t++;
         }
     }
     arg0->unk_04.unk_10 = p;

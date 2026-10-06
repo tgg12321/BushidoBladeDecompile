@@ -8,7 +8,7 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1b.c). */
-extern s32 func_8005C2A8(s32 *, s16, s32);
+extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
 extern void func_80052C10(void);
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
@@ -615,7 +615,6 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     s32 id = a0 + 0x131;
     s32 ret;
     s16 *t;
-    s32 p;
     s32 *v;
     s32 n;
 
@@ -630,10 +629,8 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
         D_800EFAE8.unk2C = (s32)func_800469C4(id);
         ret = 0;
     }
-    p = s->unk2C;
-    s->unk4 = *(s32 *)(*(s32 *)(p + 4) + p);
-    p = s->unk2C;
-    s->unk2 = *(u16 *)(*(s32 *)(p + 8) + p);
+    s->unk4 = *(s32 *)(((Unk800469C4Hdr *)s->unk2C)->unk4 + s->unk2C);
+    s->unk2 = *(u16 *)(((Unk800469C4Hdr *)s->unk2C)->unk8 + s->unk2C);
     s->unk0 = 0;
     t = stage_GetDataPtr();
     t += stage_GetId() * 24 + a1 * 6;
@@ -735,9 +732,9 @@ s32 func_8005490C(void) {
     if (s->unk0 == 0) {
         s32 j;
 
-        s->unk30 = *(s32 *)(s->unk2C + 0xC) + s->unk2C;
-        s->unk34[0] = *(s32 *)(s->unk2C + 0x10) + s->unk2C;
-        s->unk34[1] = *(s32 *)(s->unk2C + 0x14) + s->unk2C;
+        s->unk30 = ((Unk800469C4Hdr *)s->unk2C)->unkC + s->unk2C;
+        s->unk34[0] = ((Unk800469C4Hdr *)s->unk2C)->unk10[0] + s->unk2C;
+        s->unk34[1] = ((Unk800469C4Hdr *)s->unk2C)->unk10[1] + s->unk2C;
         func_8003D774(s->unk30, 0);
         for (j = 0; j < 2; j++) {
             if (*(s32 *)s->unk34[j] == D_800A3250[0]) {
@@ -750,10 +747,10 @@ s32 func_8005490C(void) {
         s->unk3C[1] = 0;
         s->unk3C[0] = 0;
         if (s->unk4 & 0x80) {
-            s->unk3C[0] = *(s32 *)(s->unk2C + 0x18) + s->unk2C;
+            s->unk3C[0] = ((Unk800469C4Hdr *)s->unk2C)->unk18[0] + s->unk2C;
         }
         if (s->unk4 & 0x40) {
-            s->unk3C[1] = *(s32 *)(s->unk2C + 0x1C) + s->unk2C;
+            s->unk3C[1] = ((Unk800469C4Hdr *)s->unk2C)->unk18[1] + s->unk2C;
         }
         player = func_8004153C(0);
         if (player != 0) {
@@ -3188,18 +3185,18 @@ s32 func_80058580(Unk80101EC8Record *p) {
 
 #undef CPU_SQ
 extern s32 g_vab_vb_sbaddr[];
-extern s32 *g_vab_rec_ptr[];
+extern Unk8005C2A8Pack *g_vab_rec_ptr[];
 extern void func_800858D0(s32);
 extern s32 SsUtSetReverbType(s32);
 void snd_Init(void) {
     s32 *p1;
-    s32 *p2;
+    Unk8005C2A8Pack **p2;
     s32 i;
     s32 j;
 
     i = 0;
     p1 = g_vab_vb_sbaddr;
-    p2 = (s32 *)g_vab_rec_ptr;
+    p2 = g_vab_rec_ptr;
     do {
         *p2 = 0;
         *p1 = 0;
@@ -3229,7 +3226,7 @@ void func_800858D0(s32);
 void snd_Quit(void) {
     s32 i;
     s32 *a0;
-    s32 *v1;
+    Unk8005C2A8Pack **v1;
     func_800858D0(0);
     SsUtReverbOff();
     SsUtSetReverbType(0);
@@ -3323,42 +3320,36 @@ void func_8005B644(s32 a0) {
     func_800858D0(0);
     v = a0 * 2 + a0 + 1;
     SsVabClose(v);
-    *(s32*)((u8*)&g_vab_rec_ptr + (v * 4)) = 0;
-    *(s32*)((u8*)&g_vab_vb_sbaddr + (v * 4)) = 0;
+    g_vab_rec_ptr[v] = 0;
+    g_vab_vb_sbaddr[v] = 0;
 }
-extern s32 g_vab_rec_ptr_plus_0x8;
-extern s32 g_vab_vb_sbaddr_plus_0x8;
-extern s32 g_vab_rec_ptr_plus_0x14;
-extern s32 g_vab_vb_sbaddr_plus_0x14;
 
 void func_8005B6AC(void) {
     func_800858D0(0);
     SsVabClose(2);
-    g_vab_rec_ptr_plus_0x8 = 0;
-    g_vab_vb_sbaddr_plus_0x8 = 0;
+    g_vab_rec_ptr[2] = 0;
+    g_vab_vb_sbaddr[2] = 0;
     SsVabClose(5);
-    g_vab_rec_ptr_plus_0x14 = 0;
-    g_vab_vb_sbaddr_plus_0x14 = 0;
+    g_vab_rec_ptr[5] = 0;
+    g_vab_vb_sbaddr[5] = 0;
 }
-extern s32 g_vab_rec_ptr_plus_0x4[];
-extern s32 g_vab_vb_sbaddr_plus_0x4[];
 void snd_CloseVab1(void) {
     SsVabClose(1);
-    g_vab_rec_ptr_plus_0x4[0] = 0;
-    g_vab_vb_sbaddr_plus_0x4[0] = 0;
+    g_vab_rec_ptr[1] = 0;
+    g_vab_vb_sbaddr[1] = 0;
 }
 s32 SsUtSetReverbType(s32);
 
 void func_8005B72C(void) {
     s32 s0;
     s32 *s2;
-    s32 *s1;
+    Unk8005C2A8Pack **s1;
     func_800858D0(0);
     SsUtReverbOff();
     SsUtSetReverbType(0);
     SsUtSetReverbDepth(0, 0);
-    s2 = g_vab_vb_sbaddr_plus_0x4;
-    s1 = g_vab_rec_ptr_plus_0x4;
+    s2 = &g_vab_vb_sbaddr[1];
+    s1 = &g_vab_rec_ptr[1];
     for (s0 = 1; s0 < 0x10; s0++) {
         SsVabClose((s16)s0);
         *s1 = 0;
@@ -3396,24 +3387,20 @@ s32 snd_LoadCommonVab(s32 arg0) {
     D_800A3408 = 0;
     D_800A340C = 0x1010;
     g_vab_sticky_sbaddr = 0x1010;
-    ret = func_8005C2A8((s32 *)arg0, 0, arg0 + temp_s0);
+    ret = func_8005C2A8((Unk8005C2A8Pack *)arg0, 0, arg0 + temp_s0);
     D_800A340C = g_vab_sticky_sbaddr;
     return ret;
 }
-extern s32 g_vab_rec_ptr_plus_0x20;
-extern s32 g_vab_vb_sbaddr_plus_0x20;
-extern s32 g_vab_rec_ptr_plus_0x10;
-extern s32 g_vab_vb_sbaddr_plus_0x10;
 
 
 void func_8005B868(void) {
     func_800858D0(0);
     SsVabClose(8);
-    g_vab_rec_ptr_plus_0x20 = 0;
-    g_vab_vb_sbaddr_plus_0x20 = 0;
+    g_vab_rec_ptr[8] = 0;
+    g_vab_vb_sbaddr[8] = 0;
     SsVabClose(4);
-    g_vab_rec_ptr_plus_0x10 = 0;
-    g_vab_vb_sbaddr_plus_0x10 = 0;
+    g_vab_rec_ptr[4] = 0;
+    g_vab_vb_sbaddr[4] = 0;
 }
 
 s32 func_8005B8B8(s32 arg0) {
@@ -3429,36 +3416,35 @@ s32 func_8005B8B8(s32 arg0) {
     cdrom_StartRead(t0, arg0);
     size = cdrom_GetFileSize(t0);
     game_FrameLoop();
-    ret = func_8005C2A8((s32 *)arg0, 8, arg0 + size);
+    ret = func_8005C2A8((Unk8005C2A8Pack *)arg0, 8, arg0 + size);
     t0_2 = func_80036EA8(2, 0x5E);
     game_FrameLoop();
     cdrom_StartRead(t0_2, arg0 + ret);
     size = cdrom_GetFileSize(t0_2) + ret;
     game_FrameLoop();
-    return func_8005C2A8((s32 *)(arg0 + ret), 4, arg0 + size) + ret;
+    return func_8005C2A8((Unk8005C2A8Pack *)(arg0 + ret), 4, arg0 + size) + ret;
 }
 s32 snd_VabFakeOpen(s32, s16);
 void snd_VabFakeOpen8And4(s32 a0) {
     snd_VabFakeOpen(a0, 8);
     snd_VabFakeOpen(a0, 4);
 }
-extern s32 g_vab_rec_ptr_plus_0x24;
-extern s32 g_vab_vb_sbaddr_plus_0x24;
 void func_8005B9C4(void) {
     func_800858D0(0);
     SsVabClose(9);
-    g_vab_rec_ptr_plus_0x24 = 0;
-    g_vab_vb_sbaddr_plus_0x24 = 0;
+    g_vab_rec_ptr[9] = 0;
+    g_vab_vb_sbaddr[9] = 0;
 }
 s32 func_8005B9FC(s32 a0) {
-    s32 s1;
+    s32 task;
+    s32 size;
     func_8005B9C4();
-    s1 = func_80036EA8(2, 8);
+    task = func_80036EA8(2, 8);
     game_FrameLoop();
-    cdrom_StartRead(s1, a0);
-    s1 = cdrom_GetFileSize(s1);
+    cdrom_StartRead(task, a0);
+    size = cdrom_GetFileSize(task);
     game_FrameLoop();
-    return func_8005C2A8((s32 *)a0, 9, a0 + s1);
+    return func_8005C2A8((Unk8005C2A8Pack *)a0, 9, a0 + size);
 }
 void snd_VabFakeOpen9(s32 a0) {
     snd_VabFakeOpen(a0, 9);
@@ -3476,8 +3462,6 @@ typedef struct {
 extern u8 g_vab_id_list[];
 
 
-extern s32 g_vab_rec_ptr_plus_0xC;
-extern s32 g_vab_rec_ptr_plus_0x18;
 s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
     VabLoad loc;
     u8 *p;
@@ -3517,7 +3501,7 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
     }
     for (i = 0; i < count; i++) {
         loc.ent[i].off += (s32)p;
-        loc.len[i] = func_8005C2A8((s32 *)loc.ent[i].off, g_vab_id_list[i], (s32)p + size);
+        loc.len[i] = func_8005C2A8((Unk8005C2A8Pack *)loc.ent[i].off, g_vab_id_list[i], (s32)p + size);
     }
     for (i = 0; i < count; i++) {
         for (j = 0; j < (u32)loc.len[i]; j++) {
@@ -3528,7 +3512,7 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
         p += loc.len[i];
     }
     if (count == 2) {
-        g_vab_rec_ptr_plus_0x18 = g_vab_rec_ptr_plus_0xC;
+        g_vab_rec_ptr[6] = g_vab_rec_ptr[3];
     }
     return (s32)p - base;
 }
@@ -3539,31 +3523,26 @@ void func_8005BD30(s32 arg0) {
     u8 count;
     s32 i;
     func_800858D0(0);
-    count = (g_vab_rec_ptr_plus_0x18 == g_vab_rec_ptr_plus_0xC) ? 2 : 3;
+    count = (g_vab_rec_ptr[6] == g_vab_rec_ptr[3]) ? 2 : 3;
     i = 0;
     if (count != 0) {
         do {
-            u8 byte = g_vab_id_list[i & 0xFF];
-            snd_VabFakeOpen(arg0, byte);
+            snd_VabFakeOpen(arg0, g_vab_id_list[i & 0xFF]);
             i += 1;
         } while ((u32)(i & 0xFF) < (u32)count);
     }
     if (count == 2) {
-        g_vab_rec_ptr_plus_0x18 = g_vab_rec_ptr_plus_0xC;
+        g_vab_rec_ptr[6] = g_vab_rec_ptr[3];
     }
 }
 
 void snd_CloseListedVabs(void) {
-    u32 *s3 = g_vab_rec_ptr;
-    u32 *s2 = g_vab_vb_sbaddr;
-    u8 *s0 = g_vab_id_list;
-    u8 *s1 = (u8 *)((s32)s0 + 3);
-    do {
-        SsVabClose(*s0);
-        s3[*s0] = 0;
-        s2[*s0] = 0;
-        s0++;
-    } while ((s32)s0 < (s32)s1);
+    s32 i;
+    for (i = 0; i < 3; i++) {
+        SsVabClose(g_vab_id_list[i]);
+        g_vab_rec_ptr[g_vab_id_list[i]] = 0;
+        g_vab_vb_sbaddr[g_vab_id_list[i]] = 0;
+    }
 }
 extern s16 D_8009AD1C[][2];
 
@@ -3614,15 +3593,15 @@ s32 snd_MoveVabBody(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     func_800858D0(0);
     SsVabClose((s16) arg1);
     SpuSetTransferStartAddr(arg3);
-    SpuRead(arg0, g_vab_rec_ptr[arg1][3]);
+    SpuRead(arg0, g_vab_rec_ptr[arg1]->unk_0C);
     SpuIsTransferCompleted(1);
     SpuSetTransferStartAddr(arg2);
-    SpuWrite(arg0, g_vab_rec_ptr[arg1][3]);
+    SpuWrite(arg0, g_vab_rec_ptr[arg1]->unk_0C);
     SpuIsTransferCompleted(1);
-    SsVabFakeHead(g_vab_rec_ptr[arg1][1], (s16) arg1, arg2);
+    SsVabFakeHead(g_vab_rec_ptr[arg1]->unk_04, (s16) arg1, arg2);
     SsVabFakeBody((s16) arg1);
     g_vab_vb_sbaddr[arg1] = arg2;
-    return arg2 + g_vab_rec_ptr[arg1][3];
+    return arg2 + g_vab_rec_ptr[arg1]->unk_0C;
 }
 /* func_8005C074 - SPU VAB compaction: sorts the resident VAB slots
  * 1..15 by SPU address (selection order into order[]), then walks them from the
@@ -3662,11 +3641,11 @@ s32 func_8005C074(s16 vabid, s32 base) {
         mask += 1 << minidx;
     }
     for (j = 0; j < count; j++) {
-        addr = g_vab_vb_sbaddr[0] + g_vab_rec_ptr[0][3];
+        addr = g_vab_vb_sbaddr[0] + g_vab_rec_ptr[0]->unk_0C;
     }
     for (j = 0; j < count; j++) {
         if (g_vab_vb_sbaddr[order[j]] == addr) {
-            addr += g_vab_rec_ptr[order[j]][3];
+            addr += g_vab_rec_ptr[order[j]]->unk_0C;
         } else {
             for (k = j; k < count; k++) {
                 addr = snd_MoveVabBody(base, order[k], addr, g_vab_vb_sbaddr[order[k]]);
@@ -3688,11 +3667,11 @@ s32 func_8005C074(s16 vabid, s32 base) {
  * do, and they say s32.
  */
 
-extern s32 snd_VabOpen(s32 *, s16);
+extern s32 snd_VabOpen(Unk8005C2A8Pack *, s16);
 
 const char D_800158CC[20] = "vab id:%d mistake\n";
 
-s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
+s32 func_8005C2A8(Unk8005C2A8Pack *hdr, s16 vabid, s32 arg2) {
     s16 i;
     s16 id;
 
@@ -3709,7 +3688,7 @@ s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
         g_vab_sticky_sbaddr = g_vab_vb_sbaddr[0];
         for (i = 0; i < 16; i++) {
             if (g_vab_rec_ptr[i] != 0) {
-                g_vab_sticky_sbaddr += g_vab_rec_ptr[i][3];
+                g_vab_sticky_sbaddr += g_vab_rec_ptr[i]->unk_0C;
             }
         }
     }
@@ -3717,17 +3696,17 @@ s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
     if (vabid != 0) {
         func_8005C074(vabid, arg2);
     }
-    hdr[0] += (s32) hdr;
-    hdr[1] += (s32) hdr;
-    hdr[2] += (s32) hdr;
+    hdr->unk_00 += (s32) hdr;
+    hdr->unk_04 += (s32) hdr;
+    hdr->unk_08 += (s32) hdr;
     id = snd_VabOpen(hdr, vabid);
     SsVabTransCompleted(1);
     if (id != -1) {
         g_vab_rec_ptr[id] = hdr;
-        D_800A3408 += hdr[3];
+        D_800A3408 += hdr->unk_0C;
         g_vab_sticky_sbaddr = D_800A340C + D_800A3408;
         g_vab_vb_sbaddr[vabid] = SsUtGetVBaddrInSB(vabid);
-        return hdr[2] - (s32) hdr;
+        return hdr->unk_08 - (s32) hdr;
     }
     printf(D_800158CC, vabid);
     return 0;
@@ -3743,24 +3722,25 @@ s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
  * .claude/rules/proven-spelling-class-reconstruction.md. */
 s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
     s32 idx;
-    u8 *base;
-    s32 **p;
-    s32 *v;
-    s32 *vv;
+    Unk8005C2A8Pack **base;
+    Unk8005C2A8Pack **p;
+    Unk8005C2A8Pack *v;
     s16 ret;
     func_800858D0(0);
     idx = arg1;
-    base = (u8 *)&g_vab_rec_ptr;
-    p = (s32 **)(base + idx * 4);
+    /* FAKE: the slot array's address is staged in base ahead of the slot index:
+       written `&g_vab_rec_ptr[idx]`, the index's `sll s3,s2,2` rises above the
+       array's lui / addiu (score 2). */
+    base = g_vab_rec_ptr;
+    p = base + idx;
     v = *p;
     if (v != 0) {
-        v = (s32 *)((u8 *)v + arg0);
+        v = (Unk8005C2A8Pack *)((u8 *)v + arg0);
         *p = v;
-        *v = *v + arg0;
-        vv = *p;
-        *(s32 *)((u8 *)vv + 4) = *(s32 *)((u8 *)vv + 4) + arg0;
+        v->unk_00 = v->unk_00 + arg0;
+        (*p)->unk_04 = (*p)->unk_04 + arg0;
         SsVabClose(idx);
-        ret = SsVabFakeHead(*(s32 *)((u8 *)*p + 4), idx, *(s32 *)((u8 *)&g_vab_vb_sbaddr + idx * 4));
+        ret = SsVabFakeHead((*p)->unk_04, idx, g_vab_vb_sbaddr[idx]);
         if (ret != idx) {
             return ret;
         }
@@ -3774,11 +3754,11 @@ s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
 
 void SsVabOpenHeadSticky(s32, s16, s32);
 s32 SsVabTransBody(s32, s16);
-s32 snd_VabOpen(s32 *a0, s16 a1) {
+s32 snd_VabOpen(Unk8005C2A8Pack *a0, s16 a1) {
     SsVabClose(a1);
-    SsVabOpenHeadSticky(a0[1], a1, g_vab_sticky_sbaddr);
-    *(s32 *)(a0[1] + 8) = a1;
-    return (s16)SsVabTransBody(a0[2], a1);
+    SsVabOpenHeadSticky(a0->unk_04, a1, g_vab_sticky_sbaddr);
+    ((VabHdr *)a0->unk_04)->id = a1;
+    return (s16)SsVabTransBody(a0->unk_08, a1);
 }
 void func_8005C614(void) {
     SsSetMVol(0x7F, 0x7F);
@@ -3829,7 +3809,7 @@ void func_8005C6D0(void) {
                     if (vab == 6 && g_vab_rec_ptr[6] == g_vab_rec_ptr[3]) {
                         vab = 3;
                     }
-                    ev = &((u32 *)g_vab_rec_ptr[vab][0])[p[1]];
+                    ev = &((u32 *)g_vab_rec_ptr[vab]->unk_00)[p[1]];
                     SsUtKeyOnV((s16)voice, (s16)vab,
                                (s16)(*ev & 0x7F),
                                (s16)((*ev >> 7) & 0xF),

@@ -189,6 +189,17 @@ typedef struct {
     DR_OFFSET *unk_1C;
 } Unk800788B0Rec;
 
+/* The VAB pack func_8005C2A8 loads (MOD.BIN's head unk_00 points at one; g_vab_rec_ptr keeps the
+   loaded ones): four words, the first three file-relative offsets func_8005C2A8 turns into addresses
+   in place. unk_00: the u32 key-event table func_8005C6D0 reads; unk_04: the VabHdr snd_VabOpen opens;
+   unk_08: the body snd_VabOpen transfers; unk_0C: the body's size in SPU memory. */
+typedef struct {
+    s32 unk_00;
+    s32 unk_04;
+    s32 unk_08;
+    s32 unk_0C;
+} Unk8005C2A8Pack;
+
 /* The head of the resource files func_8006E950 loads. By g_cd_file_table's sizes, file 2 of
  * func_80036EA8's group 2 is MOD.BIN, 3 SEL.BIN, 4 / 5 SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN.
  * Each file starts with a list of file-relative offsets ending in -1, which func_8006E440 turns
@@ -199,12 +210,19 @@ typedef struct {
  * four per-file relocators (func_8006919C, func_8006EA28, func_80076FF8, func_80077D10) return
  * unk_04, where the caller's func_8006E49C buffer starts. The words after the head differ per file. */
 typedef struct {
-    s32 *unk_00;
+    Unk8005C2A8Pack *unk_00;
     s32 unk_04;
     s32 unk_08;
     s32 unk_0C;
     s32 unk_10;
 } Unk8006E950Head;
+
+/* 12-byte rectangle rows {x, y, w, h, r, g, b}: MOD.BIN's unk_44 (func_8006C21C draws them) and
+ * D_SEL.BIN's unk_3C (func_80074B18). */
+typedef struct {
+    s16 x, y, w, h;
+    u8 r, g, b, pad;
+} Rec_8006C21C;
 
 /* SEL.BIN / SEL1.BIN / SEL2.BIN (resource files 3-5), the root 5ED34's func_8006E534 loads at its work
  * area + 0x58 (D_800A35A8; func_8006EACC hands it to the handlers as Unk8006EACCRec.unk_00). After
@@ -236,7 +254,7 @@ typedef struct {
 /* D_SEL.BIN (resource file 6), the root 64FD8's func_800770B8 loads at its work area + 0x58 and
  * keeps in SelWork.f04 (func_80077724 hands it to the handlers as Unk8006EACCRec.unk_00). After the
  * head: unk_14..unk_38, the ten lists func_80076FF8 relocates (unk_20 is indexed by the round count
- * SelWork.f65); unk_3C, the bytes func_80074B18 reads. */
+ * SelWork.f65); unk_3C, the rectangle rows func_80074B18 draws. */
 typedef struct {
     Unk8006E950Head unk_00;
     s32 *unk_14;
@@ -247,7 +265,7 @@ typedef struct {
     s32 *unk_30;
     s32 *unk_34;
     s32 *unk_38;
-    u8 *unk_3C;
+    Rec_8006C21C *unk_3C;
 } Unk80076FF8Rec;
 
 typedef struct {
@@ -568,6 +586,17 @@ typedef struct {
     s16 w;
     s16 h;
 } Unk8009B2BCRecord;
+
+/* The stage data a stage loads (func_800469C4, or the buffer func_80054604 is handed; Unk800EFAE8Ctrl
+   .unk2C): its header holds file-relative offsets of the parts func_80054604 / func_8005490C use. */
+typedef struct {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+    s32 unk10[2];
+    s32 unk18[2];
+} Unk800469C4Hdr;
 
 /* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence:
  * the original binary addresses the whole block through ONE base register -- asm/funcs/func_80054604.s
@@ -1823,12 +1852,6 @@ typedef struct {
 } PracticeParams;
 
 typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
-
-/* The 12-byte records MOD.BIN's unk_44 points at (Unk8006919CRec), drawn by func_8006C21C. */
-typedef struct {
-    s16 x, y, w, h;
-    u8 r, g, b, pad;
-} Rec_8006C21C;
 
 /* MOD.BIN (resource file 2), the root 51268's func_80068F70 loads at its work area + 0x58; it keeps
  * it in D_800A34FC's word 9, and func_8006E390 copies that into word 1 of the draw context. After

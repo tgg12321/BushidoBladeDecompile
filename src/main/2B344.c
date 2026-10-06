@@ -2531,7 +2531,7 @@ const char D_80010D8C[16] = "Multipul Model";
 /* Forward declarations */
 
 /* Externs for globals */
-extern void gte_SetMatrixRotTransIR(s32 *, s32 *, s16 *);
+extern void gte_SetMatrixRotTransIR(s32 *, SVECTOR *, s16 *);
 
 /* Externs for globals */
 extern s32 D_80094A6C[];
@@ -2686,57 +2686,19 @@ void stage_ApplyLighting(void) {
     sys_StubEmpty3(g_stage_light_pos[2], g_stage_light_dir[2], 2);
 }
 
-void func_8003F62C(s32 *a0) {
-    s16 *s0;
-    s32 *s1 = a0;
-    s0 = (s16 *)s1[9];
-    if (s0 == 0) return;
-    if (s0[3]) {
-        func_8004016C(*(s16 *)((u8 *)s1 + 4));
-        func_8003F824((u8 *)s1, 0);
-    }
-    if (s0[1]) {
-        func_8004001C((u8 *)s0);
-    }
-    func_8003F6D8(s0);
-    func_8001924C(&s0[0x20C], s0[0]);
-    if (s0[1]) {
-        func_80040068((u8 *)s0);
-        s0[1] = 0;
-    }
-}
 typedef struct {
     /* 0x00 */ s32 count;
-    /* 0x04 */ s32 *objs[5];
+    /* 0x04 */ s32 *objs[3];
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
     /* 0x18 */ s16 pairs[3][16];
     /* 0x78 */ s32 unk78[3];
-    /* 0x84 */ s32 quads[3][4];
+    /* 0x84 */ SVECTOR quads[3][2];
 } Func8003F6D8Inner; /* size 0xB4; sits at +0x1C of each 0xD0-byte record, records start at arg0+8 */
 
-void func_8003F6D8(s16 *arg0) {
-    s32 i;
-    s32 j;
-
-    for (i = 0; i < arg0[0]; i++) {
-        s32 off = i * 0xD0 + 8;
-        Func8003F6D8Inner *in = (Func8003F6D8Inner *)((u8 *)arg0 + off + 0x1C);
-        for (j = 0; j < in->count; j++) {
-            s32 *obj = in->objs[j] + 6;
-            gte_SetMatrixRotTransIR(obj, in->quads[j], in->pairs[j]);
-            gte_SetMatrixRotTransIR(obj, in->quads[j] + 2, in->pairs[j] + 8);
-        }
-    }
-}
-
-void func_8003F7F4(void) {
-    obj_ClearAll();
-    sys_StubEmpty2();
-    g_game_flag_a = 0;
-    g_game_flag_b = 0;
-}
 /* The 16 bytes func_8003FA24 fills at SceneRec +0x04 and func_8003F824 copies into Scene.quads:
    the record's id (unk0), two zero bytes, the object's matrix (its +0x18), its point table end and
-   the address of the record's inner.objs[3]. */
+   the address of the record's inner.unk10. */
 typedef struct {
     /* 0x00 */ u16 unk0;
     /* 0x02 */ u8 unk2;
@@ -2765,8 +2727,48 @@ typedef struct {
     /* 0x468 */ u8 data[1];
 } Scene;
 
+void func_8003F62C(s32 *a0) {
+    Scene *s0;
+    s0 = (Scene *)a0[9];
+    if (s0 == 0) return;
+    if (s0->unk6) {
+        func_8004016C(*(s16 *)((u8 *)a0 + 4));
+        func_8003F824((u8 *)a0, 0);
+    }
+    if (s0->unk2) {
+        func_8004001C((u8 *)s0);
+    }
+    func_8003F6D8(s0);
+    func_8001924C((s16 *)s0->quads, s0->count);
+    if (s0->unk2) {
+        func_80040068((u8 *)s0);
+        s0->unk2 = 0;
+    }
+}
+
+void func_8003F6D8(Scene *arg0) {
+    s32 i;
+    s32 j;
+
+    for (i = 0; i < arg0->count; i++) {
+        Func8003F6D8Inner *in = &arg0->recs[i].inner;
+        for (j = 0; j < in->count; j++) {
+            s32 *obj = in->objs[j] + 6;
+            gte_SetMatrixRotTransIR(obj, &in->quads[j][0], in->pairs[j]);
+            gte_SetMatrixRotTransIR(obj, &in->quads[j][1], in->pairs[j] + 8);
+        }
+    }
+}
+
+void func_8003F7F4(void) {
+    obj_ClearAll();
+    sys_StubEmpty2();
+    g_game_flag_a = 0;
+    g_game_flag_b = 0;
+}
+
 extern u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur);
-void func_8003FECC(s32 *a0, s32 *a1, s16 *a2);
+void func_8003FECC(u8 *a0, SceneRec *rec, s16 *a2);
 
 void func_8003F824(u8 *arg0, s32 arg1) {
     Scene *sc;
@@ -2775,7 +2777,6 @@ void func_8003F824(u8 *arg0, s32 arg1) {
     SceneRec *rec;
     u8 *obj;
     s32 i;
-    s16 c;
 
     sc = *(Scene **)(arg0 + 0x24);
     if (sc == 0) return;
@@ -2790,8 +2791,7 @@ void func_8003F824(u8 *arg0, s32 arg1) {
     sc->unk4 = 0;
     sc->unk6 = 0;
     for (i = 0; *cmds != -3; i++) {
-        c = *cmds;
-        if (c != -2) {
+        if (*cmds != -2) {
             if (sc->count >= 5) {
                 func_80052C10();
             }
@@ -2811,7 +2811,7 @@ void func_8003F824(u8 *arg0, s32 arg1) {
             }
             if (*cmds == -1) {
                 cmds++;
-                func_8003FECC((s32 *)arg0, (s32 *)rec, cmds);
+                func_8003FECC(arg0, rec, cmds);
             }
         }
         while (*cmds++ != -2) {
@@ -2942,12 +2942,12 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     rec->unk0 = func_80017D84((u8 *)&init);
     *(u8 **)(obj + 0x60) = init.point_end;
     rec->inner.count = 0;
-    rec->inner.objs[4] = 0;
+    rec->inner.unk14 = 0;
     cur = ((u32)cur & 3) ? cur + 2 : cur;
     rec->quad.unk0 = rec->unk0;
     rec->quad.unk4 = obj + 0x18;
     rec->quad.unk8 = *(u8 **)(obj + 0x60);
-    rec->quad.unkC = &rec->inner.objs[3];
+    rec->quad.unkC = &rec->inner.unk10;
     rec->quad.unk2 = 0;
     rec->quad.unk3 = 0;
     return cur;
@@ -2990,70 +2990,28 @@ s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {
     return (s16 *)a2;
 }
 
-void func_8003FECC(s32 *a0, s32 *a1, s16 *a2)
-{
-  s32 t2;
-  u8 *new_var2;
-  s16 v1;
-  unsigned int t3;
-  s32 *a3;
-  s32 *t1;
-  u16 t0;
-  t2 = *((s32 *) (((u8 *) a1) + 0x1C));
-  ;
-  t0 = (u16) a2[0];
-  a1 = (s32 *) (((u8 *) a1) + 0x1C);
-  if (a2[0] == (-2))
-  {
-    goto end;
-  }
-  t3 = -2;
-  a3 = (s32 *) ((t2 * 0x10) + (s32)(u8 *) a1);
-  t1 = (s32 *) ((t2 * 4) + (s32)(u8 *) a1);
-  loop:
-  {
-    a2++;
-    {
-      s32 v0;
-      v1 = 1;
-      v0 = (s32) (((u8 *) a0) + ((s32) ((((s16) t0) * 0x68) + 0x94)));
-      t1[v1] = v0;
-    }
-    {
-      u16 val = (u16) (*(a2++));
-      t2++;
-      *((u16 *) (((u8 *) a3) + 0x84)) = val;
-    }
-    *((u16 *) (((u8 *) a3) + 0x86)) = (u16) (*(a2++));
-    *((u16 *) (((u8 *) a3) + 0x88)) = (u16) (*(a2++));
-    *((u16 *) (((u8 *) a3) + 0x8C)) = (u16) (*(a2++));
-    new_var2 = ((u8 *) a3) + 0x90;
-    *((u16 *) (((u8 *) a3) + 0x8E)) = (u16) (*(a2++));
-    *((u16 *) new_var2) = (u16) (*(a2++));
-    {
-      s32 val78 = (s32) (*(a2++));
-      /* FAKE: split advance (+8 +8); the extra refs seat this pointer in $a3
-         ahead of the halfword temp (combine re-merges to one addiu). */
-      a3 = (s32 *) (((u8 *) a3) + 8);
-      a3 = (s32 *) (((u8 *) a3) + 8);
-      *((s32 *) (((u8 *) t1) + 0x78)) = val78;
-    }
-    t0 = (u16) (*a2);
-    v1 = *a2;
-    /* FAKE: split advance (+2 +2); the extra refs seat this pointer in $t1
-       ahead of the entry counter (combine re-merges to one addiu). */
-    t1 = (s32 *) (((u8 *) t1) + 2);
-    t1 = (s32 *) (((u8 *) t1) + 2);
-  }
+void func_8003FECC(u8 *a0, SceneRec *rec, s16 *a2) {
+    Func8003F6D8Inner *in = &rec->inner;
+    s32 n = in->count;
+    s16 id = a2[0];
 
-  if (v1 != ((s16) t3))
-  {
-    goto loop;
-  }
-  end:
-  a1[0] = t2;
-
-  a1[5] = t2;
+    if (id != -2) {
+        do {
+            a2++;
+            in->objs[n] = (s32 *)(a0 + 0x94 + id * 0x68);
+            in->quads[n][0].vx = *a2++;
+            in->quads[n][0].vy = *a2++;
+            in->quads[n][0].vz = *a2++;
+            in->quads[n][1].vx = *a2++;
+            in->quads[n][1].vy = *a2++;
+            in->quads[n][1].vz = *a2++;
+            in->unk78[n] = *a2++;
+            n++;
+            id = *a2;
+        } while (id != -2);
+    }
+    in->count = n;
+    in->unk14 = n;
 }
 s32 math_AlignUp4(s32 a0) {
     if (a0 & 3) {

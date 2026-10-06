@@ -278,7 +278,7 @@ void func_80060E38(s16 *arg0, s32 *arg1) {
 }
 
 /* Declarations from the file this TU was split from (text1b.c). */
-extern s32 func_8005C2A8(s32 *, s16, s32);
+extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
 extern s32 rcos();
 extern s32 rsin();
 extern s32 D_800F1180;
@@ -3613,16 +3613,16 @@ Unk8006E49CRec *func_80069120(s32 a0) {
 }
 
 
-s32 func_8006919C(s32 *a0) {
+s32 func_8006919C(Unk8006919CRec *a0) {
     s32 i = 0;
-    s32 *p = &a0[5];
+    s32 **p = &a0->unk_14;
     do {
-        func_8006920C(a0, *p);
+        func_8006920C((s32 *)a0, (s32)*p);
         p++;
         i++;
     } while (i < 12);
-    func_8005C2A8((s32 *)a0[0], 1, a0[1]);
-    return a0[1];
+    func_8005C2A8(a0->unk_00.unk_00, 1, a0->unk_00.unk_04);
+    return a0->unk_00.unk_04;
 }
 void func_8006920C(s32 *a0, s32 a1) {
     s32 *p = (s32 *)a1;

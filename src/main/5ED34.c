@@ -12,7 +12,7 @@
 #include "bb2.h"
 
 /* Declarations from the file this TU was split from (text1b_tu1c.c). */
-extern s32 func_8005C2A8(s32 *, s16, s32);
+extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
 extern u32 *ClearOTagR(u32 *, s32);
 extern s32 rcos();
 extern s32 rsin();
@@ -69,7 +69,6 @@ static s16 D_800A35C8[2];
 s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
     RECT rect;
     s16 i;
-    u8 value;
 
     ClearOTagR((u32 *)g_gpu_ot_ptr, 0x1008);
     D_800A32E8 = 0x7F;
@@ -105,7 +104,7 @@ s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
         break;
     }
 
-    D_800A356C = func_8006EA28((s32 *)D_800A356C);
+    D_800A356C = func_8006EA28((Unk8006EA28Rec *)D_800A356C);
     D_800A356C = func_8006E49C(D_800A356C, D_800A35AC);
     D_800A3560.word = -1;
     D_800A3570 = 0;
@@ -121,10 +120,9 @@ s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
     D_800A3560.rec[1].unk1 = D_8009BC40[0][2].value;
 
     for (i = 0; i < 0x16; i++) {
-        value = D_8009BC7C[i] & 0xFA;
-        D_8009BC7C[i] = value;
+        D_8009BC7C[i] &= 0xFA;
         if (arg3 & (1 << i)) {
-            D_8009BC7C[i] = value | 1;
+            D_8009BC7C[i] |= 1;
         }
     }
 
@@ -136,15 +134,9 @@ s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
     }
     D_800A35B8 = (arg3 >> 20) & 3;
     D_800A35B4 = 5;
-    {
-        s32 b = D_800A3588[0];
-        s32 c = D_800A358C[0];
-        D_8009BC7C[D_8009BC40[c][b].value] |= 4;
-    }
+    D_8009BC7C[D_8009BC40[D_800A358C[0]][D_800A3588[0]].value] |= 4;
     if (D_800A35B0 != 0) {
-        s32 b = D_800A3588[1];
-        s32 c = D_800A358C[1];
-        D_8009BC7C[D_8009BC40[c][b].value] |= 4;
+        D_8009BC7C[D_8009BC40[D_800A358C[1]][D_800A3588[1]].value] |= 4;
     }
 
     __builtin_memcpy(&rect, D_800A32EC, 8);
@@ -217,18 +209,18 @@ void func_8006E950(s32 a0, Unk8006E950Head *a1) {
 
     func_8006E8CC(a1);
 }
-s32 func_8006EA28(s32 *a0) {
-    func_8006920C(a0, a0[21]);
-    func_8006920C(a0, a0[22]);
-    func_8006920C(a0, a0[23]);
-    func_8006920C(a0, a0[24]);
-    func_8006920C(a0, a0[25]);
-    func_8006920C(a0, a0[26]);
-    func_8006920C(a0, a0[27]);
-    func_8006920C(a0, a0[28]);
-    func_8006920C(a0, a0[29]);
-    func_8005C2A8((s32 *)a0[0], 1, a0[1]);
-    return a0[1];
+s32 func_8006EA28(Unk8006EA28Rec *a0) {
+    func_8006920C((s32 *)a0, (s32)a0->unk_54);
+    func_8006920C((s32 *)a0, (s32)a0->unk_58);
+    func_8006920C((s32 *)a0, (s32)a0->unk_5C);
+    func_8006920C((s32 *)a0, (s32)a0->unk_60);
+    func_8006920C((s32 *)a0, (s32)a0->unk_64);
+    func_8006920C((s32 *)a0, (s32)a0->unk_68);
+    func_8006920C((s32 *)a0, (s32)a0->unk_6C);
+    func_8006920C((s32 *)a0, (s32)a0->unk_70);
+    func_8006920C((s32 *)a0, (s32)a0->unk_74);
+    func_8005C2A8(a0->unk_00.unk_00, 1, a0->unk_00.unk_04);
+    return a0->unk_00.unk_04;
 }
 extern void (*D_8009BC1C[7])(Unk8006EACCRec *);
 void func_8006EC0C(void);
