@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# F01 batch b2, on top of the staged F01b1 (the index copies of 51268.c / game.h / bb2.h): D_800A3478
+# F01 batch b2, on top of F01b1 (643264f38's 51268.c / game.h / bb2.h): D_800A3478
 # becomes s16 * and D_800A347C s32 *, the pointers func_80060A68 aims at the D_800F116C block's unk18
 # / unk20 (Unk1F800000Unk00); their readers drop the raw views. Unk1F800000Unk00.unk18 becomes s16[3]
 # (its sources unk04 / unk10 and every consumer are s16), with D_800A346C and func_80061FAC's a0.
@@ -17,9 +17,9 @@ for a in sys.argv[1:]:
 
 for _p in ("src/main/51268.c", "include/game.h", "include/bb2.h"):
     _d = B + os.path.basename(_p)
-    if not os.path.exists(_d):   # F01b1 as staged (the index), LF
+    if not os.path.exists(_d):   # F01b1 as committed (643264f38), LF
         os.makedirs(B, exist_ok=True)
-        open(_d, "wb").write(subprocess.run(["git", "show", ":" + _p], capture_output=True, check=True).stdout)
+        open(_d, "wb").write(subprocess.run(["git", "show", "643264f38:" + _p], capture_output=True, check=True).stdout)
 
 def rd(p):
     return open(p, encoding="utf-8").read()
@@ -55,9 +55,9 @@ SCORE_Q = {"D_800F10F4": "7", "D_800F10F8": "7"}
 LAST = ("    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store (`sh`)\n"
         "       rises above the unk4 store and the word-2 read (score 4) */\n"
         "    s32 last;\n")
-LAST_Q = ("    /* FAKE: named intermediate - with word 2 read inline, the {flag} store and the\n"
-          "       D_800F0BA8 store rise above the unk0 / unk4 stores and the word-2 read (score 12;\n"
-          "       with q as well, 8) */\n"
+LAST_Q = ("    /* FAKE: named intermediate - with word 2 read inline, the {flag} store rises above the\n"
+          "       unk0 / unk4 stores and the word-2 read, and the D_800F0BA8 store above the unk4 store\n"
+          "       and the word-2 read (score 12; with q as well, 8) */\n"
           "    s32 last;\n")
 
 def voidp(b):
@@ -119,6 +119,20 @@ def bb2(h):
 BD0_OLD = " * through 10..19 and the slot is overwritten in rotation.\n *\n * Shape notes:\n *  - `for` loop with the found-arm INSIDE the loop and `break`: the loop's\n *    duplicated exit test (jump.c duplicate_loop_exit_test) plus the arm's\n *    skip label is what keeps the D_800A344C base copy in the preheader\n *    (cse.c cse_around_loop stops scanning at the first CODE_LABEL); a\n *    `goto found` arm after the loop coalesces the base.\n *  - `bits`/`mask` read before the test: the array read must be expanded\n *    before the `1 << i` so loop.c hoists the D_800A3454 address ahead of\n *    the constant 1 (their preheader order is the loop-body order).\n *  - A single trailing `return 1` that the else-arm falls into keeps\n *    `li v0,1` out of the else-arm block, which frees v0 there.\n */\nu8 func_80063BD0(s32 idx) {\n    s32 bits;\n    s32 mask;\n"
 BD0_NEW = ' * through 10..19 and the slot is overwritten in rotation. */\nu8 func_80063BD0(s32 idx) {\n    s32 bits; /* FAKE: named intermediate - the D_800A3454[idx] word is read before `1 << i`, so\n                 loop.c hoists its address into the preheader ahead of the constant 1 (target:\n                 address in $t4, 1 in $t3); read in the test, or after mask: score 6, the two\n                 swap */\n    s32 mask;\n'
 
+SETTRANS_OLD = """        /* SetTransMatrix reads only m->t (+0x14): hand it the address 0x14
+           below tv so tv is loaded as the translation (base+0x10/0x12 hold
+           w/h -- there is no whole MATRIX here). Spelled (MATRIX *)base, base
+           stays live across the loop: +4 bytes. */
+        SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
+"""
+SETTRANS_NEW = """        /* FAKE: SetTransMatrix reads only m->t (+0x14): hand it the address 0x14
+           below tv so tv is loaded as the translation (base+0x10/0x12 hold
+           w/h -- there is no whole MATRIX here). Spelled (MATRIX *)base, base
+           stays live across the loop: score 65, 502 insns for 501 (an 88-byte
+           frame for 80; base in $s2 for the target's $s0). */
+        SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
+"""
+
 def src(s):
     s = sub1(s, "static s32 D_800A3478;\n", "static s16 *D_800A3478;\n")
     s = sub1(s, "static s32 D_800A347C;\n", "static s32 *D_800A347C;\n")
@@ -130,6 +144,27 @@ def src(s):
     s = sub1(s, "void func_80061FAC(u16 *a0, s32 *a1, MATRIX *a2) {", "void func_80061FAC(s16 *a0, s32 *a1, MATRIX *a2) {")
     s = fn(s, "func_80060B70", lambda b: re.sub(r"\bdst_u16\b", "dst16", sub1(b, "    u16 *dst_u16;\n", "    s16 *dst_u16;\n")))
     s = fn(s, "func_800620B8", lambda b: sub1(b, "    u16 *dst16;\n", "    s16 *dst16;\n"))
+    # review fixes (rev-f01b2):
+    # - func_800620B8's `pos` is the rotation angles (stored to unk04, copied to unk18, func_80061FAC's
+    #   RotMatrix angle SVECTOR; 2B344 fills it with the negated camera rotation): neutral arg0
+    s = sub1(s, "void func_800620B8(s16 *pos, s32 *trans) {", "void func_800620B8(s16 *arg0, s32 *trans) {")
+    s = sub1(s, "    func_80060E38(pos, trans);\n", "    func_80060E38(arg0, trans);\n")
+    s = sub1(s, "    rot = D_800A3474; /* matrix func_80061FAC builds from pos */\n",
+             "    rot = D_800A3474; /* the matrix func_80061FAC builds from the angles at arg0 */\n")
+    # - its tv - 0x14 SetTransMatrix idiom is load-bearing: label it (code text unchanged)
+    s = sub1(s, SETTRANS_OLD, SETTRANS_NEW)
+    # - func_80060B70's unlabelled last_arg block: the plain call is IDENTICAL
+    if "lastarg" not in OPT:
+        s = sub1(s, """    {
+        MATRIX *last_arg = D_800A3474;
+        dst_s32[2] = outer->unk08[2];
+        func_80061FAC(dst16, dst_s32, last_arg);
+    }
+""", """    dst_s32[2] = outer->unk08[2];
+    func_80061FAC(dst16, dst_s32, D_800A3474);
+""")
+    if "tvbase" in OPT:   # measurement: the idiom spelled (MATRIX *)base
+        s = fn(s, "func_800620B8", lambda b: sub1(b, "        SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));\n", "        SetTransMatrix((MATRIX *)base);\n"))
     # func_8006288C: rot is s16 * as at HEAD; only the cast goes
     s = sub1(s, "    pos = (s32 *)D_800A347C;\n    rot = (s16 *)D_800A3478;\n", "    pos = D_800A347C;\n    rot = D_800A3478;\n")
     s = sub1(s, "    src = (s32 *)D_800A347C;\n", "    src = D_800A347C;\n")

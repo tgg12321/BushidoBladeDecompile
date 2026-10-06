@@ -647,6 +647,10 @@ typedef struct {
  *   at its +0x0C / +0x10).
  * - unk14: the byte func_80060A68 / func_80060B70 store the called function's result to (`sb`);
  *   D_800F1180 is the D_800F116C block's +0x14.
+ * - unk18 / unk20: the copies. D_800A346C / D_800A3470 point at the scratchpad block's,
+ *   D_800A3478 / D_800A347C at the D_800F116C block's (func_80060A68). unk18 is s16 like
+ *   its sources (unk04 / unk10) and every consumer (SVECTOR / SVec4i16 fields: func_80061FAC,
+ *   func_8006288C, func_80063BD0, func_80067200).
  * - unk1E: no access. */
 typedef struct {
     union {
@@ -658,7 +662,7 @@ typedef struct {
     s32 *unk0C;
     s16 *unk10;
     u8 *unk14;
-    u16 unk18[3];
+    s16 unk18[3];
     u8 unk1E[2];
     s32 unk20[3];
 } Unk1F800000Unk00;

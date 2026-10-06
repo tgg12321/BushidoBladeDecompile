@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-# warn_b.py TU... : cc1 (no -w) diagnostics, HEAD copies (tmp/p2/lt/f01/b/headinc: 51268.c, game.h, bb2.h) vs the tree
-# (the HEAD side puts headinc/include ahead of include/). Prints gained / lost (function, message), line-free.
+# warn_b.py TU... : cc1 (no -w) diagnostics, a base revision's copies of 51268.c / game.h / bb2.h vs the tree
+# (the base side puts its include/ copies ahead of include/). Prints gained / lost (function, message),
+# line-free. Base revision: $HEADREV (default 7b5212f70, F01b1's base; F01b2 used HEADREV=9126eb268).
 import collections, os, re, subprocess, sys
-HI = "tmp/p2/lt/f01/b/headinc/"
-for _p in ("src/main/51268.c", "include/game.h", "include/bb2.h"):   # HEAD 7b5212f70's copies
+REV = os.environ.get("HEADREV", "7b5212f70")
+HI = "tmp/p2/lt/f01/b/headinc_%s/" % REV
+for _p in ("src/main/51268.c", "include/game.h", "include/bb2.h"):   # the base revision's copies
     if not os.path.exists(HI + _p):
         os.makedirs(os.path.dirname(HI + _p), exist_ok=True)
-        open(HI + _p, "wb").write(subprocess.run(["git", "show", "7b5212f70:" + _p], capture_output=True, check=True).stdout)
+        open(HI + _p, "wb").write(subprocess.run(["git", "show", REV + ":" + _p], capture_output=True, check=True).stdout)
 CPPF = ["-undef", "-Wall", "-lang-c", "-fno-builtin", "-Dmips", "-D__GNUC__=2", "-D__OPTIMIZE__", "-D__mips__",
         "-D__mips", "-Dpsx", "-D__psx__", "-D__psx", "-D_PSYQ", "-D__EXTENSIONS__", "-D_MIPSEL", "-D_LANGUAGE_C",
         "-DLANGUAGE_C"]
@@ -26,7 +28,7 @@ for tu in sys.argv[1:]:
     d = os.path.dirname("src/" + tu + ".c")
     wk = "tmp/p2/wk/src/" + tu + ".c"
     if not os.path.exists(wk): wk = "src/" + tu + ".c"
-    a = diags(["-Itmp/p2/lt/f01/b/headinc/include"], (lambda h: h if os.path.exists(h) else "src/" + tu + ".c")("tmp/p2/lt/f01/b/headinc/src/" + tu + ".c"), d)
+    a = diags(["-I" + HI + "include"], (lambda h: h if os.path.exists(h) else "src/" + tu + ".c")(HI + "src/" + tu + ".c"), d)
     b = diags([], "src/" + tu + ".c", d)
     if a != b or len(sys.argv) < 6: print("== %s  %d -> %d" % (tu, sum(a.values()), sum(b.values())))
     for k in sorted(set(a) | set(b)):
