@@ -28,9 +28,8 @@ static s32 SpuRGetAllKeysStatus(s32 min, s32 max, s8 *status) {
 
     max++;
     for (voice = min; voice < max; voice++) {
-        s32 off = voice << 4;
         s32 bit;
-        volumex = *(u16 *)((off + _spu_RXX) + 0xC);
+        volumex = _spu_RXX->raw[(8 * voice) + 6];
         bit = _spu_keystat & (1 << voice);
         if (bit) {
             if (volumex != 0) {
@@ -57,10 +56,9 @@ void SpuGetAllKeysStatus(u8 *status) {
     s32 voice = 0;
 
     do {
-        s32 off = voice << 4;
         u16 volumex;
         s32 bit;
-        volumex = *((u16 *)((off + _spu_RXX) + 0xC));
+        volumex = _spu_RXX->raw[(8 * voice) + 6];
         bit = _spu_keystat & (1 << voice);
         if (bit) {
             if (volumex != 0) {

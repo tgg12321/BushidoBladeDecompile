@@ -1,0 +1,1 @@
+{"func": "SpuSetReverbModeParam", "addr": "80089F3C", "verdict": "PASS", "body_hash": "7cd1317b14b355c6", "body_kind": "c", "file": "main/psxsdk/libspu/s_srmp", "reviewer": "cheat-reviewer:rev-w2b1", "scope": "cheat-cleanup", "date": "2026-10-06T09:34:15Z", "head": "4290c05ec", "notes": ""}

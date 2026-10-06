@@ -1,0 +1,1 @@
+{"func": "_spu_FgetRXXa", "addr": "80089178", "verdict": "PASS", "body_hash": "bdc96889a71a872f", "body_kind": "c", "file": "main/psxsdk/libspu/spu", "reviewer": "cheat-reviewer:rev-w2b1", "scope": "cheat-cleanup", "date": "2026-10-06T09:33:30Z", "head": "4290c05ec", "notes": ""}

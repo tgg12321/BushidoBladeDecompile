@@ -14,9 +14,8 @@
  * p[0xE]=status, p[0xF]=sync, 0x28/4=getctl, 0x10/4=ctl).
  *
  * SetDispMask, DrawSync, ClearImage(2), LoadImage, StoreImage, DrawOTag and
- * PutDrawEnv call through the members (measured byte-identical). A few other
- * call sites in this file still use a `(u32 *)` word view of the same
- * pointer; that is recorded debt, not a codegen requirement. */
+ * PutDrawEnv call through the members (measured byte-identical), as do the
+ * other users except ClearOTagR (its word view is the P7c debt row). */
 typedef struct GpuDevTable {
     /* 0x00 */ const char *rcsid;
     /* 0x04 */ void (*addque)();
@@ -238,7 +237,7 @@ s32 get_ofs(s32, s32);
 extern volatile u32 *g_gpu_stat_reg;
 extern volatile u32 *g_gpu_data_reg;
 extern volatile u32 *g_gpu_dma_madr;
-extern u32 *g_gpu_dma_bcr;
+extern volatile u32 *g_gpu_dma_bcr;
 extern volatile u32 *g_gpu_dma_chcr;
 extern u8 ctlbuf[];
 extern s32 g_gpu_vcount;
@@ -272,31 +271,19 @@ u32 ResetGraph(s32 a0) {
         if (g_gpu_ctx.debug_level >= 2) {
             GPU_printf(&D_80015E7C, a0);
         }
-        ((void (*)(s32))((u32 *)g_gpu_dev_table)[0x34 / 4])(1);
+        g_gpu_dev_table->reset(1);
         break;
     }
 }
 u32 SetGraphReverse(s32 a0) {
     u32 old = g_gpu_ctx.reverse;
-    u32 val;
     if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&D_80015E90, a0);
     }
     g_gpu_ctx.reverse = a0;
-    val = ((u32 (*)(s32))((u32 *)g_gpu_dev_table)[0x28 / 4])(8);
-    if (g_gpu_ctx.reverse) {
-        val |= 0x8000080;
-    } else {
-        val |= 0x8000000;
-    }
-    ((void (*)(u32))((u32 *)g_gpu_dev_table)[0x10 / 4])(val);
+    g_gpu_dev_table->ctl(0x08000000 | (g_gpu_ctx.reverse ? 0x80 : 0) | g_gpu_dev_table->getctl(8));
     if (g_gpu_ctx.type == 2) {
-        u32 *tbl = (u32 *)g_gpu_dev_table;
-        val = 0x20000504;
-        if (g_gpu_ctx.reverse) {
-            val = 0x20000501;
-        }
-        ((void (*)(u32))tbl[0x10 / 4])(val);
+        g_gpu_dev_table->ctl(0x20000000 | (g_gpu_ctx.reverse ? 0x501 : 0x504));
     }
     return old;
 }
@@ -316,7 +303,7 @@ u32 SetGraphQueue(s32 a0) {
         GPU_printf(&D_80015ED4, a0);
     }
     if (a0 != g_gpu_ctx.queue_mode) {
-        ((void (*)(s32))((u32 *)g_gpu_dev_table)[0x34 / 4])(1);
+        g_gpu_dev_table->reset(1);
         g_gpu_ctx.queue_mode = a0;
         DMACallback(2, 0);
     }
@@ -428,18 +415,10 @@ u32 *ClearOTag(u32 *a0, s32 a1) {
     if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(g_str_clearotag, a0, a1);
     }
-    a1--;
-    if (a1) {
-        u32 mask = 0xFFFFFF;
-        u32 himask = 0xFF000000;
-        do {
-            u32 *next;
-            a1--;
-            next = a0 + 1;
-            ((u8 *)a0)[3] = 0;
-            *a0 = (*a0 & himask) | ((u32)next & mask);
-            a0 = next;
-        } while (a1);
+    while (--a1) {
+        setlen(a0, 0);
+        setaddr(a0, a0 + 1);
+        a0++;
     }
     *a0 = (u32)&g_gpu_ot_end & 0xFFFFFF;
     return a0;
@@ -460,11 +439,9 @@ u32 *ClearOTagR(u32 *ot, s32 n) {
     return new_var;
 }
 void DrawPrim(u8 *a0) {
-    u32 *dev = (u32 *)g_gpu_dev_table;
     u32 size = a0[3];
-    ((void (*)(s32))dev[15])(0);
-    dev = (u32 *)g_gpu_dev_table;
-    ((void (*)(u32 *, u32))dev[5])(a0 + 4, size);
+    g_gpu_dev_table->sync(0);
+    g_gpu_dev_table->cwb(a0 + 4, size);
 }
 void DrawOTag(u32 *a0) {
     if (g_gpu_ctx.debug_level >= 2) {
@@ -485,22 +462,19 @@ DRAWENV *PutDrawEnv(DRAWENV *env) {
     return env;
 }
 void DrawOTagEnv(s32 arg0, DRAWENV *env) {
-    u32 *dev;
-
     if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&D_80015FDC, arg0, env);
     }
     SetDrawEnv2(&env->dr_env, env);
     env->dr_env.tag = (env->dr_env.tag & 0xFF000000) | (arg0 & 0xFFFFFF);
-    dev = (u32 *)g_gpu_dev_table;
-    ((s32 (*)(u32, DR_ENV *, s32, s32))dev[2])(dev[6], &env->dr_env, 0x40, 0);
+    g_gpu_dev_table->addque2(g_gpu_dev_table->cwc, &env->dr_env, 0x40, 0);
     g_gpu_ctx.draw_env = *env;
 }
 s32 GetDrawEnv(s32 a0) {
     memcpy(a0, &g_gpu_ctx.draw_env, 0x5C);
     return a0;
 }
-s32 get_dx(s16 *arg0);
+s32 get_dx(DISPENV *env);
 /* PsyQ 4.0 LIBGPU SYS: PutDispEnv (verbatim-linked Sony object);
    C ref: SOTN src/main/psxsdk/libgpu/sys.c:336 @aa53500 (a PsyQ 3.3 build; structure only) */
 DISPENV *PutDispEnv(DISPENV *env) {
@@ -514,7 +488,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
     }
     g_gpu_dev_table->ctl(
         g_gpu_ctx.type == 1 || g_gpu_ctx.type == 2
-            ? ((env->disp.y & 0xFFF) << 12) | (get_dx((s16 *)env) & 0xFFF) | 0x05000000
+            ? ((env->disp.y & 0xFFF) << 12) | (get_dx(env) & 0xFFF) | 0x05000000
             : ((env->disp.y & 0x3FF) << 10) | (env->disp.x & 0x3FF) |
                   0x05000000);
     /* FAKE: volatile-qualified reads of the saved environment (8 casts, both rect
@@ -524,7 +498,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
        folds to lh. Admitted on a cross-function citation (owner ruling Q100): the
        same use-site `*(volatile T *)&` read of a plain-RAM struct member, matched and
        self-marked in SOTN ("Why the volatile?"); SOTN's own PutDispEnv (3.3) compares
-       words and has none.
+       words and has none. The plain reads: score 71.
        SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @db41b28 */
     if (!(*(volatile s16 *)&g_gpu_ctx.disp_env.screen.x == env->screen.x &&
           *(volatile s16 *)&g_gpu_ctx.disp_env.screen.y == env->screen.y &&
@@ -584,7 +558,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
             }
         }
         /* FAKE: empty then-arm; the direct `if (env->disp.h > ...) mode |= 0x24;`
-           and its respellings add 4 insns.
+           and its respellings add 4 insns (score 5).
            SOTN: src/main/psxsdk/libgpu/sys.c:394 @aa53500 (same statement, same form). */
         if (env->disp.h <= (env->pad0 ? 288 : 256)) {
         } else {
@@ -600,8 +574,7 @@ s32 GetDispEnv(s32 a0) {
     return a0;
 }
 u32 GetODE(void) {
-    s32 (*func)(void) = ((s32 (**)(void))g_gpu_dev_table)[0xE];
-    return (u32)func() >> 31;
+    return g_gpu_dev_table->status() >> 31;
 }
 void SetTexWindow(DR_TWIN *p, RECT *tw) {
     setlen(p, 2);
@@ -619,9 +592,9 @@ void SetDrawOffset(DR_OFFSET *p, s16 *ofs) {
     p->code[0] = get_ofs(ofs[0], ofs[1]);
     p->code[1] = 0;
 }
-void SetPriority(u8 *a0, s32 a1, s32 a2) {
+void SetPriority(DR_PRIO *p, s32 a1, s32 a2) {
     u32 v0;
-    a0[3] = 2;
+    setlen(p, 2);
     v0 = 0xE6000000;
     if (a1) {
         v0 = 0xE6000002;
@@ -629,60 +602,47 @@ void SetPriority(u8 *a0, s32 a1, s32 a2) {
     if (a2) {
         v0 |= 1;
     }
-    *(u32 *)(a0 + 4) = v0;
-    *(u32 *)(a0 + 8) = 0;
+    p->code[0] = v0;
+    p->code[1] = 0;
 }
 void SetDrawMode(DR_MODE *p, s32 dfe, s32 dtd, s32 tpage, RECT *tw) {
     setlen(p, 2);
     p->code[0] = get_mode(dfe, dtd, (u16)tpage);
     p->code[1] = get_tw(tw);
 }
-typedef struct {
-    s16 x;
-    s16 y;
-    s16 w;
-    s16 h;
-    s16 u;
-    s16 v;
-    u8 pad12[4];
-    s16 ax;
-    s16 ay;
-    u16 cx;
-    u16 cy;
-    u8 flag;
-    u8 r;
-    u8 g;
-    u8 b;
-} Rect;
-void SetDrawEnv(s32 *out, Rect *r)
+void SetDrawEnv(DR_ENV *out, DRAWENV *r)
 {
-  s32 *o = out; /* FAKE: prologue pair order — single forward-order param
+  DR_ENV *o = out; /* FAKE: prologue pair order — single forward-order param
                    alias (pointer-alias-fake-exception; owner ruling for the
                    twins SetDrawEnv / SetDrawEnv2). cc1 combine's single-use
                    entry-copy merge relocates arg0's `move s1,a0` past arg1's
                    `move s0,a1`, flipping the prologue save+def pair
                    emit order to match target (s0-pair first). An arg1
                    alias, K&R decl-block reversal or do-while(0) entry wrap
-                   leaves the pair order unchanged. */
+                   leaves the pair order unchanged. Without it: score 4. */
   u16 buf[4];
   s16 var_v0;
   s16 var_v0_2;
   s16 new_var;
   s32 var_a3;
-  o[1] = get_cs(r->x, r->y);
-  o[2] = get_ce((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
-  o[3] = get_ofs(r->u, r->v);
-  o[4] = get_mode(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
-  o[5] = get_tw(((u8 *) r) + 12);
-  o[6] = (s32) 0xE6000000;
+  o->code[0] = get_cs(r->clip.x, r->clip.y);
+  o->code[1] = get_ce(r->clip.w + r->clip.x - 1, r->clip.y + r->clip.h - 1);
+  o->code[2] = get_ofs(r->ofs[0], r->ofs[1]);
+  o->code[3] = get_mode(r->dfe, r->dtd, r->tpage);
+  o->code[4] = get_tw(&r->tw);
+  o->code[5] = 0xE6000000;
+  /* FAKE: var_a3 counts the tag word, and the pushes are pointer arithmetic
+     (*(o->code + var_a3++ - 1)); the subscript o->code[var_a3++ - 1] adds the base
+     first (addu aN,s1,aN for addu aN,aN,s1 at every push): score 3 in SetDrawEnv,
+     6 in SetDrawEnv2. */
   var_a3 = 7;
-  if (r->flag != 0)
+  if (r->isbg != 0)
   {
-    buf[0] = (u16) r->x;
-    buf[1] = (u16) r->y;
-    new_var = (s16) r->w;
-    buf[2] = (u16) r->w;
-    buf[3] = (u16) r->h;
+    buf[0] = r->clip.x;
+    buf[1] = r->clip.y;
+    new_var = r->clip.w;
+    buf[2] = r->clip.w;
+    buf[3] = r->clip.h;
     if (new_var >= 0)
     {
       if ((g_gpu_ctx.width - 1) < new_var)
@@ -715,43 +675,47 @@ void SetDrawEnv(s32 *out, Rect *r)
       var_v0_2 = 0;
     }
     buf[3] = (u16) var_v0_2;
-    buf[0] -= (u16) r->u;
-    buf[1] -= (u16) r->v;
-    o[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x60000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
-    o[var_a3++] = ((u32 *) buf)[0];
-    o[var_a3++] = ((u32 *) buf)[1];
-    buf[0] += (u16) r->u;
-    buf[1] += (u16) r->v;
+    buf[0] -= r->ofs[0];
+    buf[1] -= r->ofs[1];
+    *(o->code + var_a3++ - 1) = (((r->b0 << 16) | 0x60000000) | (r->g0 << 8)) | r->r0;
+    *(o->code + var_a3++ - 1) = ((u32 *) buf)[0];
+    *(o->code + var_a3++ - 1) = ((u32 *) buf)[1];
+    buf[0] += r->ofs[0];
+    buf[1] += r->ofs[1];
   }
-  *(((s8 *) o) + 3) = (s8) (var_a3 - 1);
+  setlen(o, var_a3 - 1);
 }
-void SetDrawEnv2(s32 *out, Rect *r)
+void SetDrawEnv2(DR_ENV *out, DRAWENV *r)
 {
-  s32 *o = out; /* FAKE: prologue pair order — same param alias and
+  DR_ENV *o = out; /* FAKE: prologue pair order — same param alias and
                    mechanism as SetDrawEnv above (owner ruling for the twins):
                    cc1 combine's single-use entry-copy merge relocates arg0's
                    `move s1,a0` past arg1's `move s0,a1`, flipping the
                    prologue save+def pair emit order to match target
-                   (s0-pair first). */
+                   (s0-pair first). Without it: score 4. */
   u16 buf[4];
   s16 var_v0;
   s16 var_v0_2;
   s16 new_var;
   s32 var_a3;
-  o[1] = get_cs(r->x, r->y);
-  o[2] = get_ce((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
-  o[3] = get_ofs(r->u, r->v);
-  o[4] = get_mode(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
-  o[5] = get_tw(((u8 *) r) + 12);
-  o[6] = (s32) 0xE6000000;
+  o->code[0] = get_cs(r->clip.x, r->clip.y);
+  o->code[1] = get_ce(r->clip.w + r->clip.x - 1, r->clip.y + r->clip.h - 1);
+  o->code[2] = get_ofs(r->ofs[0], r->ofs[1]);
+  o->code[3] = get_mode(r->dfe, r->dtd, r->tpage);
+  o->code[4] = get_tw(&r->tw);
+  o->code[5] = 0xE6000000;
+  /* FAKE: var_a3 counts the tag word, and the pushes are pointer arithmetic
+     (*(o->code + var_a3++ - 1)); the subscript o->code[var_a3++ - 1] adds the base
+     first (addu aN,s1,aN for addu aN,aN,s1 at every push): score 3 in SetDrawEnv,
+     6 in SetDrawEnv2. */
   var_a3 = 7;
-  if (r->flag != 0)
+  if (r->isbg != 0)
   {
-    buf[0] = (u16) r->x;
-    buf[1] = (u16) r->y;
-    new_var = (s16) r->w;
-    buf[2] = (u16) r->w;
-    buf[3] = (u16) r->h;
+    buf[0] = r->clip.x;
+    buf[1] = r->clip.y;
+    new_var = r->clip.w;
+    buf[2] = r->clip.w;
+    buf[3] = r->clip.h;
     if (new_var >= 0)
     {
       if ((g_gpu_ctx.width - 1) < new_var)
@@ -786,22 +750,22 @@ void SetDrawEnv2(s32 *out, Rect *r)
     buf[3] = (u16) var_v0_2;
     if ((buf[0] & 0x3F) || (buf[2] & 0x3F))
     {
-      buf[0] -= (u16) r->u;
-      buf[1] -= (u16) r->v;
-      o[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x60000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
-      o[var_a3++] = ((u32 *) buf)[0];
-      o[var_a3++] = ((u32 *) buf)[1];
-      buf[0] += (u16) r->u;
-      buf[1] += (u16) r->v;
+      buf[0] -= r->ofs[0];
+      buf[1] -= r->ofs[1];
+      *(o->code + var_a3++ - 1) = (((r->b0 << 16) | 0x60000000) | (r->g0 << 8)) | r->r0;
+      *(o->code + var_a3++ - 1) = ((u32 *) buf)[0];
+      *(o->code + var_a3++ - 1) = ((u32 *) buf)[1];
+      buf[0] += r->ofs[0];
+      buf[1] += r->ofs[1];
     }
     else
     {
-      o[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x02000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
-      o[var_a3++] = ((u32 *) buf)[0];
-      o[var_a3++] = ((u32 *) buf)[1];
+      *(o->code + var_a3++ - 1) = (((r->b0 << 16) | 0x02000000) | (r->g0 << 8)) | r->r0;
+      *(o->code + var_a3++ - 1) = ((u32 *) buf)[0];
+      *(o->code + var_a3++ - 1) = ((u32 *) buf)[1];
     }
   }
-  *(((s8 *) o) + 3) = (s8) (var_a3 - 1);
+  setlen(o, var_a3 - 1);
 }
 s32 get_mode(s32 arg0, s32 arg1, s32 arg2) {
     s32 var_v1;
@@ -901,33 +865,34 @@ s32 get_tw(RECT *tw) {
     }
     return 0;
 }
-s32 get_dx(s16 *arg0) {
+s32 get_dx(DISPENV *env) {
     s32 v1, a, t;
     switch (g_gpu_ctx.type) {
     case 1:
         if (g_gpu_ctx.reverse != 0) {
             t = 0x400;
-            v1 = arg0[2];
-            a = arg0[0];
+            v1 = env->disp.w;
+            a = env->disp.x;
         sub:
             t = t - v1;
             return t - a;
         }
-        t = arg0[0];
+        t = env->disp.x;
         goto ret;
     case 2:
         if (0 != g_gpu_ctx.reverse) {
-            v1 = ((s16)(*((u16 *)(arg0 + 2)))) / 2;
-            a = arg0[0];
+            v1 = env->disp.w / 2;
+            a = env->disp.x;
             /* FAKE: wrap keeps the 0x400 load below the div chain so it
-               fills the jump delay slot instead of hoisting to block top */
+               fills the jump delay slot instead of hoisting to block top
+               (score 10) */
             do { t = 0x400; } while (0);
             goto sub;
         }
-        t = ((s32)((s16)(*((u16 *)arg0)))) / 2;
+        t = env->disp.x / 2;
         goto ret;
     default:
-        t = arg0[0];
+        t = env->disp.x;
     ret:
         return t;
     }
@@ -1110,17 +1075,17 @@ u32 _getctl(s32 a0) {
 }
 s32 _cwb(u32 *a0, s32 a1) {
     s32 i;
-    *(volatile u32 *)g_gpu_stat_reg = GP1_DMA_DIR;
+    *g_gpu_stat_reg = GP1_DMA_DIR;
     for (i = a1 - 1; i != -1; i--) {
-        *(volatile u32 *)g_gpu_data_reg = *a0++;
+        *g_gpu_data_reg = *a0++;
     }
     return 0;
 }
 void _cwc(u32 a0) {
-    *(volatile u32 *)g_gpu_stat_reg = GP1_DMA_DIR_FIFO;
-    *(volatile u32 *)g_gpu_dma_madr = a0;
-    *(volatile u32 *)g_gpu_dma_bcr = 0;
-    *(volatile u32 *)g_gpu_dma_chcr = DMA_GPU_LINKED_LIST;
+    *g_gpu_stat_reg = GP1_DMA_DIR_FIFO;
+    *g_gpu_dma_madr = a0;
+    *g_gpu_dma_bcr = 0;
+    *g_gpu_dma_chcr = DMA_GPU_LINKED_LIST;
 }
 u32 _param(u32 a0) {
     *g_gpu_stat_reg = a0 | GP1_GPU_INFO;
@@ -1316,23 +1281,23 @@ s32 get_alarm(void) {
     return 0;
 }
 s32 _version(s32 arg0) {
-    *(volatile s32 *)g_gpu_stat_reg = 0x10000007;
-    if ((*(volatile s32 *)g_gpu_data_reg & 0xFFFFFF) != 2) {
-        *(volatile s32 *)g_gpu_data_reg = (*(volatile s32 *)g_gpu_stat_reg & 0x3FFF) | 0xE1001000;
-        (void)*(volatile s32 *)g_gpu_data_reg;
-        if (!(*(volatile s32 *)g_gpu_stat_reg & 0x1000)) {
+    *g_gpu_stat_reg = 0x10000007;
+    if ((*g_gpu_data_reg & 0xFFFFFF) != 2) {
+        *g_gpu_data_reg = (*g_gpu_stat_reg & 0x3FFF) | 0xE1001000;
+        (void)*g_gpu_data_reg;
+        if (!(*g_gpu_stat_reg & 0x1000)) {
             return 0;
         }
         if (!(arg0 & 8)) {
             return 1;
         }
-        *(volatile s32 *)g_gpu_stat_reg = 0x20000504;
+        *g_gpu_stat_reg = 0x20000504;
         return 2;
     }
     if (!(arg0 & 8)) {
         return 3;
     }
-    *(volatile s32 *)g_gpu_stat_reg = 0x09000001;
+    *g_gpu_stat_reg = 0x09000001;
     return 4;
 }
 void memset(u8 *a0, u8 a1, s32 a2) {

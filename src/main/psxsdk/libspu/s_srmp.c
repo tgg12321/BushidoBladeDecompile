@@ -9,19 +9,6 @@
    compares (mode >= ECHO && mode <= DELAY) with no default-arm clears, and
    the depth/zero split threads off the var_s4 flag. Reverb preset table:
    D_800A2D94 (= Sony rev_param table, 10 entries x 0x44). */
-typedef struct {
-    /* 0x00 */ u32 flags;
-    /* 0x04 */ u16 dAPF1, dAPF2;
-    /* 0x08 */ u16 vIIR, vCOMB1, vCOMB2, vCOMB3, vCOMB4;
-    /* 0x12 */ u16 vWALL, vAPF1, vAPF2;
-    /* 0x18 */ u16 mLSAME, mRSAME, mLCOMB1, mRCOMB1, mLCOMB2, mRCOMB2;
-    /* 0x24 */ u16 dLSAME, dRSAME;
-    /* 0x28 */ u16 mLDIFF, mRDIFF, mLCOMB3, mRCOMB3, mLCOMB4, mRCOMB4;
-    /* 0x34 */ u16 dLDIFF, dRDIFF;
-    /* 0x38 */ u16 mLAPF1, mRAPF1, mLAPF2, mRAPF2;
-    /* 0x40 */ u16 vLIN, vRIN;
-} RevParamEntry;
-
 extern RevParamEntry _spu_rev_param[]; /* rev_param preset table */
 
 
@@ -119,30 +106,30 @@ s32 SpuSetReverbModeParam(SpuReverbAttr *attr) {
         }
     }
     if (var_s4) {
-        var_s7 = (*(volatile u16 *)(_spu_RXX + 0x1AA) >> 7) & 1;
+        var_s7 = (_spu_RXX->rxx.spucnt >> 7) & 1;
         if (var_s7) {
-            cnt = *(volatile u16 *)(_spu_RXX + 0x1AA);
+            cnt = _spu_RXX->rxx.spucnt;
             cnt &= ~0x80;
-            *(volatile u16 *)(_spu_RXX + 0x1AA) = cnt;
+            _spu_RXX->rxx.spucnt = cnt;
         }
     }
     if (!var_s4) {
         if (bSetAll || (mask & 0x2)) {
-            *(u16 *)(_spu_RXX + 0x184) = attr->depth.left;
+            _spu_RXX->rxx.rev_vol.left = attr->depth.left;
             _spu_rev_attr.depth.left = attr->depth.left;
         }
         if (bSetAll || (mask & 0x4)) {
-            *(u16 *)(_spu_RXX + 0x186) = attr->depth.right;
+            _spu_RXX->rxx.rev_vol.right = attr->depth.right;
             _spu_rev_attr.depth.right = attr->depth.right;
         }
     } else {
-        *(u16 *)(_spu_RXX + 0x184) = 0;
-        *(u16 *)(_spu_RXX + 0x186) = 0;
+        _spu_RXX->rxx.rev_vol.left = 0;
+        _spu_RXX->rxx.rev_vol.right = 0;
         _spu_rev_attr.depth.left = 0;
         _spu_rev_attr.depth.right = 0;
     }
     if (var_s4 || var_s6 || var_fp) {
-        _spu_setReverbAttr((s32 *)&entry);
+        _spu_setReverbAttr(&entry);
     }
     if (sp58) {
         SpuClearReverbWorkArea(_spu_rev_attr.mode);
@@ -150,9 +137,9 @@ s32 SpuSetReverbModeParam(SpuReverbAttr *attr) {
     if (var_s4) {
         _spu_FsetRXX(0xD1, _spu_rev_offsetaddr, 0);
         if (var_s7) {
-            cnt = *(volatile u16 *)(_spu_RXX + 0x1AA);
+            cnt = _spu_RXX->rxx.spucnt;
             cnt |= 0x80;
-            *(volatile u16 *)(_spu_RXX + 0x1AA) = cnt;
+            _spu_RXX->rxx.spucnt = cnt;
         }
     }
     return 0;

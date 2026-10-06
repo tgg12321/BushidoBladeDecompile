@@ -42,45 +42,45 @@ u16 LoadClut2(s32 a0, s32 a1, s32 a2) {
     LoadImage((s32)buf, a0);
     return GetClut(a1, a2);
 }
-s16 *SetDefDrawEnv(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
+DRAWENV *SetDefDrawEnv(DRAWENV *env, s32 x, s32 y, s32 w, s32 h) {
     s32 ret;
     ret = GetVideoMode();
-    a0[0] = a1;
-    a0[1] = a2;
-    a0[2] = a3;
-    a0[6] = 0;
-    a0[7] = 0;
-    a0[8] = 0;
-    a0[9] = 0;
-    ((s8 *)a0)[0x19] = 0;
-    ((s8 *)a0)[0x1A] = 0;
-    ((s8 *)a0)[0x1B] = 0;
-    ((s8 *)a0)[0x16] = 1;
-    a0[3] = a4;
+    env->clip.x = x;
+    env->clip.y = y;
+    env->clip.w = w;
+    env->tw.x = 0;
+    env->tw.y = 0;
+    env->tw.w = 0;
+    env->tw.h = 0;
+    env->r0 = 0;
+    env->g0 = 0;
+    env->b0 = 0;
+    env->dtd = 1;
+    env->clip.h = h;
     if (ret) {
-        ((s8 *)a0)[0x17] = (a4 < 0x121);
+        env->dfe = (h < 0x121);
     } else {
-        ((s8 *)a0)[0x17] = (a4 < 0x101);
+        env->dfe = (h < 0x101);
     }
-    a0[4] = a1;
-    a0[5] = a2;
-    a0[0xA] = 10;
-    ((s8 *)a0)[0x18] = 0;
-    return a0;
+    env->ofs[0] = x;
+    env->ofs[1] = y;
+    env->tpage = 10;
+    env->isbg = 0;
+    return env;
 }
 
-s16 *SetDefDispEnv(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
-    a0[0] = a1;
-    a0[1] = a2;
-    a0[2] = a3;
-    a0[4] = 0;
-    a0[5] = 0;
-    a0[6] = 0;
-    a0[7] = 0;
-    ((s8 *)a0)[0x11] = 0;
-    ((s8 *)a0)[0x10] = 0;
-    ((s8 *)a0)[0x13] = 0;
-    ((s8 *)a0)[0x12] = 0;
-    a0[3] = a4;
-    return a0;
+DISPENV *SetDefDispEnv(DISPENV *env, s32 x, s32 y, s32 w, s32 h) {
+    env->disp.x = x;
+    env->disp.y = y;
+    env->disp.w = w;
+    env->screen.x = 0;
+    env->screen.y = 0;
+    env->screen.w = 0;
+    env->screen.h = 0;
+    env->isrgb24 = 0;
+    env->isinter = 0;
+    env->pad1 = 0;
+    env->pad0 = 0;
+    env->disp.h = h;
+    return env;
 }

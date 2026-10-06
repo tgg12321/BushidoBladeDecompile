@@ -1,0 +1,1 @@
+{"func": "SpuSetKey", "addr": "8008AAD4", "verdict": "PASS", "body_hash": "4d5c6b58895c2bd0", "body_kind": "c", "file": "main/psxsdk/libspu/s_sk", "reviewer": "cheat-reviewer:rev-w2b1", "scope": "cheat-cleanup", "date": "2026-10-06T09:34:44Z", "head": "4290c05ec", "notes": ""}

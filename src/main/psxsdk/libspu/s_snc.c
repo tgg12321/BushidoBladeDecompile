@@ -12,10 +12,6 @@ s32 SpuSetNoiseClock(s32 a0) {
     } else {
         val = a0;
     }
-    {
-        volatile u16 *ptr = (volatile u16 *)(_spu_RXX + 0x1AA);
-        u16 tmp = *ptr;
-        *ptr = (tmp & 0xC0FF) | ((val & 0x3F) << 8);
-    }
+    _spu_RXX->rxx.spucnt = (_spu_RXX->rxx.spucnt & 0xC0FF) | ((val & 0x3F) << 8);
     return val;
 }

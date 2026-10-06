@@ -1,0 +1,1 @@
+{"func": "_spu_FwriteByIO", "addr": "800889D4", "verdict": "PASS", "body_hash": "7bf97b5adfc3a0ab", "body_kind": "c", "file": "main/psxsdk/libspu/spu", "reviewer": "cheat-reviewer:rev-w2b1", "scope": "cheat-cleanup", "date": "2026-10-06T09:32:04Z", "head": "4290c05ec", "notes": ""}

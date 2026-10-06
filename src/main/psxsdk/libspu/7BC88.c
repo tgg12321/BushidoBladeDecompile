@@ -38,7 +38,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
         pos = voice * 8;
 
         if (bSetAll || (mask & 0x10)) {
-            *(volatile u16 *)(_spu_RXX + (pos + 2) * 2) = attr->pitch;
+            _spu_RXX->raw[pos + 2] = attr->pitch;
         }
         if (bSetAll || (mask & 0x40)) {
             _spu_voice_centerNote[voice] = attr->sample_note;
@@ -49,7 +49,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
 
             center = _spu_voice_centerNote[voice];
             note = attr->note;
-            *(volatile u16 *)(_spu_RXX + (pos + 2) * 2) =
+            _spu_RXX->raw[pos + 2] =
                 _spu_note2pitch(center >> 8, center & 0xFF, note >> 8, note & 0xFF);
         }
         if (bSetAll || (mask & 0x1)) {
@@ -90,7 +90,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
                     vol_left = 0;
                 }
             }
-            *(volatile u16 *)(_spu_RXX + pos * 2) = vol_left | volmode_left;
+            _spu_RXX->raw[pos] = vol_left | volmode_left;
         }
         if (bSetAll || (mask & 0x2)) {
             u16 volmode_right;
@@ -130,7 +130,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
                     vol_right = 0;
                 }
             }
-            *(volatile u16 *)(_spu_RXX + (pos + 1) * 2) = vol_right | volmode_right;
+            _spu_RXX->raw[pos + 1] = vol_right | volmode_right;
         }
         if (bSetAll || (mask & 0x80)) {
             _spu_FsetRXXa(pos | 3, attr->addr);
@@ -139,10 +139,10 @@ void func_8008B488(SpuVoiceAttr *attr) {
             _spu_FsetRXXa(pos | 7, attr->loop_addr);
         }
         if (bSetAll || (mask & 0x20000)) {
-            *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = attr->adsr1;
+            _spu_RXX->raw[pos + 4] = attr->adsr1;
         }
         if (bSetAll || (mask & 0x40000)) {
-            *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = attr->adsr2;
+            _spu_RXX->raw[pos + 5] = attr->adsr2;
         }
         if (bSetAll || (mask & 0x800)) {
             u16 ar_rate;
@@ -159,9 +159,9 @@ void func_8008B488(SpuVoiceAttr *attr) {
                     amode = 0x80;
                 }
             }
-            adsr = *(volatile u16 *)(_spu_RXX + (pos + 4) * 2);
+            adsr = _spu_RXX->raw[pos + 4];
             adsr &= 0xFF;
-            *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = adsr | ((ar_rate | amode) << 8);
+            _spu_RXX->raw[pos + 4] = adsr | ((ar_rate | amode) << 8);
         }
         if (bSetAll || (mask & 0x1000)) {
             u16 dr_rate;
@@ -171,9 +171,9 @@ void func_8008B488(SpuVoiceAttr *attr) {
             if (dr_rate >= 0x10) {
                 dr_rate = 0xF;
             }
-            adsr = *(volatile u16 *)(_spu_RXX + (pos + 4) * 2);
+            adsr = _spu_RXX->raw[pos + 4];
             adsr &= 0xFF0F;
-            *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = adsr | (dr_rate << 4);
+            _spu_RXX->raw[pos + 4] = adsr | (dr_rate << 4);
         }
         if (bSetAll || (mask & 0x2000)) {
             s32 smode;
@@ -197,9 +197,9 @@ void func_8008B488(SpuVoiceAttr *attr) {
                     break;
                 }
             }
-            adsr = *(volatile u16 *)(_spu_RXX + (pos + 5) * 2);
+            adsr = _spu_RXX->raw[pos + 5];
             adsr &= 0x3F;
-            *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = adsr | ((temp | smode) << 6);
+            _spu_RXX->raw[pos + 5] = adsr | ((temp | smode) << 6);
         }
         if (bSetAll || (mask & 0x4000)) {
             u16 rr_rate;
@@ -220,9 +220,9 @@ void func_8008B488(SpuVoiceAttr *attr) {
                     break;
                 }
             }
-            adsr = *(volatile u16 *)(_spu_RXX + (pos + 5) * 2);
+            adsr = _spu_RXX->raw[pos + 5];
             adsr &= 0xFFC0;
-            *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = adsr | (rr_rate | rmode);
+            _spu_RXX->raw[pos + 5] = adsr | (rr_rate | rmode);
         }
         if (bSetAll || (mask & 0x8000)) {
             s32 adsr;
@@ -231,8 +231,8 @@ void func_8008B488(SpuVoiceAttr *attr) {
             if (temp >= 0x10) {
                 temp = 0xF;
             }
-            adsr = *(volatile u16 *)(_spu_RXX + (pos + 4) * 2);
-            *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = (adsr & 0xFFF0) | temp;
+            adsr = _spu_RXX->raw[pos + 4];
+            _spu_RXX->raw[pos + 4] = (adsr & 0xFFF0) | temp;
         }
     }
     v = 1;

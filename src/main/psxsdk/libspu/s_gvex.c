@@ -4,6 +4,5 @@
 #include "libspu_internal.h"
 
 void SpuGetVoiceEnvelope(s32 a0, u16 *a1) {
-    a0 = (a0 << 4) + _spu_RXX;
-    *a1 = *(u16 *)(a0 + 0xC);
+    *a1 = _spu_RXX->raw[a0 * 8 + 6];
 }

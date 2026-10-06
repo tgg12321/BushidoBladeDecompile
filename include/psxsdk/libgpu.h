@@ -36,6 +36,7 @@ typedef struct {
 #define setlen(p, _len) (((P_TAG *)(p))->len = (u8)(_len))
 #define setcode(p, _code) (((P_TAG *)(p))->code = (u8)(_code))
 #define getcode(p) (u8)(((P_TAG *)(p))->code)
+#define setaddr(p, _addr) (((P_TAG *)(p))->addr = (u32)(_addr))
 
 #define setPolyF3(p) setlen(p, 4), setcode(p, 0x20)
 #define setPolyFT3(p) setlen(p, 7), setcode(p, 0x24)
@@ -100,6 +101,8 @@ typedef struct { u32 tag; u32 code[2]; } DR_MODE;   /* Drawing Mode */
 typedef struct { u32 tag; u32 code[2]; } DR_TWIN;   /* Texture Window */
 typedef struct { u32 tag; u32 code[2]; } DR_AREA;   /* Drawing Area */
 typedef struct { u32 tag; u32 code[2]; } DR_OFFSET; /* Drawing Offset */
+
+typedef struct { u32 tag; u32 code[2]; } DR_PRIO;   /* Mask Priority */
 
 /* PsyQ DR_MOVE: DMA tag word, then five GPU command words. */
 typedef struct { u32 tag; u32 code[5]; } DR_MOVE;

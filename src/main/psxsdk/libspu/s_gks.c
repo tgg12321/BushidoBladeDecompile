@@ -25,8 +25,10 @@ s32 SpuGetKeyStatus(s32 arg0) {
     if (bit_found != -1) goto work;
     return -1;
 work:
+    /* FAKE: mask doubles as the _spu_RXX holder and base as offset / address / value; a separate
+       _spu_RXX local scores 16, separate locals for every role 13. */
     base = bit_found << 4;
-    mask = _spu_RXX;
+    mask = (s32)_spu_RXX;
     flags = _spu_keystat;
     base = base + mask;
     mask = 1 << bit_found;

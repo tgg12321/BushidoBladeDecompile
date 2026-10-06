@@ -1,1 +1,2 @@
 {"func": "SpuSetCommonAttr", "addr": "8008AF9C", "verdict": "PASS", "body_hash": "9846d359cc5a7807", "body_kind": "c", "file": "main/psxsdk/libspu/s_sca", "reviewer": "p2-rev-b2", "scope": "cheat-cleanup", "date": "2026-10-04T03:05:26Z", "head": "9475a2b5a", "notes": ""}
+{"func": "SpuSetCommonAttr", "addr": "8008AF9C", "verdict": "PASS", "body_hash": "61458b615b9f6d1f", "body_kind": "c", "file": "main/psxsdk/libspu/s_sca", "reviewer": "cheat-reviewer:rev-w2b1", "scope": "cheat-cleanup", "date": "2026-10-06T09:33:46Z", "head": "4290c05ec", "notes": ""}

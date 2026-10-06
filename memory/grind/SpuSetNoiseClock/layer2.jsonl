@@ -1,0 +1,1 @@
+{"func": "SpuSetNoiseClock", "addr": "80089D10", "verdict": "PASS", "body_hash": "739662eef84b4906", "body_kind": "c", "file": "main/psxsdk/libspu/s_snc", "reviewer": "cheat-reviewer:rev-w2b1", "scope": "cheat-cleanup", "date": "2026-10-06T09:34:58Z", "head": "4290c05ec", "notes": ""}

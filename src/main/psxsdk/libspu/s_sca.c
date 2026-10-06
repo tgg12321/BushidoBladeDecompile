@@ -69,7 +69,7 @@ void SpuSetCommonAttr(SpuCommonAttr *attr) {
             }
         }
         vol_total_left &= 0x7FFF;
-        *(u16 *)(_spu_RXX + 0x180) = vol_total_left | mvol_mode_left;
+        _spu_RXX->rxx.main_vol.left = vol_total_left | mvol_mode_left;
     }
 
     if (bSetAll || (mask & 0x2)) {
@@ -120,70 +120,70 @@ void SpuSetCommonAttr(SpuCommonAttr *attr) {
             }
         }
         vol_total_right &= 0x7FFF;
-        *(u16 *)(_spu_RXX + 0x182) = vol_total_right | mvol_mode_right;
+        _spu_RXX->rxx.main_vol.right = vol_total_right | mvol_mode_right;
     }
 
     if (bSetAll || (mask & 0x40)) {
-        *(u16 *)(_spu_RXX + 0x1B0) = attr->cd.volume.left;
+        _spu_RXX->rxx.cd_vol.left = attr->cd.volume.left;
     }
 
     if (bSetAll || (mask & 0x80)) {
-        *(u16 *)(_spu_RXX + 0x1B2) = attr->cd.volume.right;
+        _spu_RXX->rxx.cd_vol.right = attr->cd.volume.right;
     }
 
     if (bSetAll || (mask & 0x400)) {
-        *(u16 *)(_spu_RXX + 0x1B4) = attr->ext.volume.left;
+        _spu_RXX->rxx.ex_vol.left = attr->ext.volume.left;
     }
 
     if (bSetAll || (mask & 0x800)) {
-        *(u16 *)(_spu_RXX + 0x1B6) = attr->ext.volume.right;
+        _spu_RXX->rxx.ex_vol.right = attr->ext.volume.right;
     }
 
     if (bSetAll || (mask & 0x100)) {
         if (attr->cd.reverb == 0) {
-            cnt = *(u16 *)(_spu_RXX + 0x1AA);
+            cnt = _spu_RXX->rxx.spucnt;
             cnt &= ~4;
-            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
+            _spu_RXX->rxx.spucnt = cnt;
         } else {
-            cnt = *(u16 *)(_spu_RXX + 0x1AA);
+            cnt = _spu_RXX->rxx.spucnt;
             cnt |= 4;
-            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
+            _spu_RXX->rxx.spucnt = cnt;
         }
     }
 
     if (bSetAll || (mask & 0x200)) {
         if (attr->cd.mix == 0) {
-            cnt = *(u16 *)(_spu_RXX + 0x1AA);
+            cnt = _spu_RXX->rxx.spucnt;
             cnt &= ~1;
-            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
+            _spu_RXX->rxx.spucnt = cnt;
         } else {
-            cnt = *(u16 *)(_spu_RXX + 0x1AA);
+            cnt = _spu_RXX->rxx.spucnt;
             cnt |= 1;
-            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
+            _spu_RXX->rxx.spucnt = cnt;
         }
     }
 
     if (bSetAll || (mask & 0x1000)) {
         if (attr->ext.reverb == 0) {
-            cnt = *(u16 *)(_spu_RXX + 0x1AA);
+            cnt = _spu_RXX->rxx.spucnt;
             cnt &= ~8;
-            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
+            _spu_RXX->rxx.spucnt = cnt;
         } else {
-            cnt = *(u16 *)(_spu_RXX + 0x1AA);
+            cnt = _spu_RXX->rxx.spucnt;
             cnt |= 8;
-            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
+            _spu_RXX->rxx.spucnt = cnt;
         }
     }
 
     if (bSetAll || (mask & 0x2000)) {
         if (attr->ext.mix == 0) {
-            cnt = *(u16 *)(_spu_RXX + 0x1AA);
+            cnt = _spu_RXX->rxx.spucnt;
             cnt &= ~2;
-            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
+            _spu_RXX->rxx.spucnt = cnt;
         } else {
-            cnt = *(u16 *)(_spu_RXX + 0x1AA);
+            cnt = _spu_RXX->rxx.spucnt;
             cnt |= 2;
-            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
+            _spu_RXX->rxx.spucnt = cnt;
         }
     }
 }

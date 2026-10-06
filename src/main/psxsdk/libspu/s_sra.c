@@ -3,40 +3,40 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-void _spu_setReverbAttr(s32 *arg0) {
-    s32 flags = arg0[0];
+void _spu_setReverbAttr(RevParamEntry *arg0) {
+    s32 flags = arg0->flags;
     s32 zero = flags == 0;
 
-    if (zero || (flags & 0x1)) { *(u16 *)(_spu_RXX + 0x1C0) = *(u16 *)((s32)arg0 + 0x4); }
-    if (zero || (flags & 0x2)) { *(u16 *)(_spu_RXX + 0x1C2) = *(u16 *)((s32)arg0 + 0x6); }
-    if (zero || (flags & 0x4)) { *(u16 *)(_spu_RXX + 0x1C4) = *(u16 *)((s32)arg0 + 0x8); }
-    if (zero || (flags & 0x8)) { *(u16 *)(_spu_RXX + 0x1C6) = *(u16 *)((s32)arg0 + 0xA); }
-    if (zero || (flags & 0x10)) { *(u16 *)(_spu_RXX + 0x1C8) = *(u16 *)((s32)arg0 + 0xC); }
-    if (zero || (flags & 0x20)) { *(u16 *)(_spu_RXX + 0x1CA) = *(u16 *)((s32)arg0 + 0xE); }
-    if (zero || (flags & 0x40)) { *(u16 *)(_spu_RXX + 0x1CC) = *(u16 *)((s32)arg0 + 0x10); }
-    if (zero || (flags & 0x80)) { *(u16 *)(_spu_RXX + 0x1CE) = *(u16 *)((s32)arg0 + 0x12); }
-    if (zero || (flags & 0x100)) { *(u16 *)(_spu_RXX + 0x1D0) = *(u16 *)((s32)arg0 + 0x14); }
-    if (zero || (flags & 0x200)) { *(u16 *)(_spu_RXX + 0x1D2) = *(u16 *)((s32)arg0 + 0x16); }
-    if (zero || (flags & 0x400)) { *(u16 *)(_spu_RXX + 0x1D4) = *(u16 *)((s32)arg0 + 0x18); }
-    if (zero || (flags & 0x800)) { *(u16 *)(_spu_RXX + 0x1D6) = *(u16 *)((s32)arg0 + 0x1A); }
-    if (zero || (flags & 0x1000)) { *(u16 *)(_spu_RXX + 0x1D8) = *(u16 *)((s32)arg0 + 0x1C); }
-    if (zero || (flags & 0x2000)) { *(u16 *)(_spu_RXX + 0x1DA) = *(u16 *)((s32)arg0 + 0x1E); }
-    if (zero || (flags & 0x4000)) { *(u16 *)(_spu_RXX + 0x1DC) = *(u16 *)((s32)arg0 + 0x20); }
-    if (zero || (flags & 0x8000)) { *(u16 *)(_spu_RXX + 0x1DE) = *(u16 *)((s32)arg0 + 0x22); }
-    if (zero || (flags & 0x10000)) { *(u16 *)(_spu_RXX + 0x1E0) = *(u16 *)((s32)arg0 + 0x24); }
-    if (zero || (flags & 0x20000)) { *(u16 *)(_spu_RXX + 0x1E2) = *(u16 *)((s32)arg0 + 0x26); }
-    if (zero || (flags & 0x40000)) { *(u16 *)(_spu_RXX + 0x1E4) = *(u16 *)((s32)arg0 + 0x28); }
-    if (zero || (flags & 0x80000)) { *(u16 *)(_spu_RXX + 0x1E6) = *(u16 *)((s32)arg0 + 0x2A); }
-    if (zero || (flags & 0x100000)) { *(u16 *)(_spu_RXX + 0x1E8) = *(u16 *)((s32)arg0 + 0x2C); }
-    if (zero || (flags & 0x200000)) { *(u16 *)(_spu_RXX + 0x1EA) = *(u16 *)((s32)arg0 + 0x2E); }
-    if (zero || (flags & 0x400000)) { *(u16 *)(_spu_RXX + 0x1EC) = *(u16 *)((s32)arg0 + 0x30); }
-    if (zero || (flags & 0x800000)) { *(u16 *)(_spu_RXX + 0x1EE) = *(u16 *)((s32)arg0 + 0x32); }
-    if (zero || (flags & 0x1000000)) { *(u16 *)(_spu_RXX + 0x1F0) = *(u16 *)((s32)arg0 + 0x34); }
-    if (zero || (flags & 0x2000000)) { *(u16 *)(_spu_RXX + 0x1F2) = *(u16 *)((s32)arg0 + 0x36); }
-    if (zero || (flags & 0x4000000)) { *(u16 *)(_spu_RXX + 0x1F4) = *(u16 *)((s32)arg0 + 0x38); }
-    if (zero || (flags & 0x8000000)) { *(u16 *)(_spu_RXX + 0x1F6) = *(u16 *)((s32)arg0 + 0x3A); }
-    if (zero || (flags & 0x10000000)) { *(u16 *)(_spu_RXX + 0x1F8) = *(u16 *)((s32)arg0 + 0x3C); }
-    if (zero || (flags & 0x20000000)) { *(u16 *)(_spu_RXX + 0x1FA) = *(u16 *)((s32)arg0 + 0x3E); }
-    if (zero || (flags & 0x40000000)) { *(u16 *)(_spu_RXX + 0x1FC) = *(u16 *)((s32)arg0 + 0x40); }
-    if (zero || (flags < 0)) { *(u16 *)(_spu_RXX + 0x1FE) = *(u16 *)((s32)arg0 + 0x42); }
+    if (zero || (flags & 0x1)) { _spu_RXX->rxx.dAPF1 = arg0->dAPF1; }
+    if (zero || (flags & 0x2)) { _spu_RXX->rxx.dAPF2 = arg0->dAPF2; }
+    if (zero || (flags & 0x4)) { _spu_RXX->rxx.vIIR = arg0->vIIR; }
+    if (zero || (flags & 0x8)) { _spu_RXX->rxx.vCOMB1 = arg0->vCOMB1; }
+    if (zero || (flags & 0x10)) { _spu_RXX->rxx.vCOMB2 = arg0->vCOMB2; }
+    if (zero || (flags & 0x20)) { _spu_RXX->rxx.vCOMB3 = arg0->vCOMB3; }
+    if (zero || (flags & 0x40)) { _spu_RXX->rxx.vCOMB4 = arg0->vCOMB4; }
+    if (zero || (flags & 0x80)) { _spu_RXX->rxx.vWALL = arg0->vWALL; }
+    if (zero || (flags & 0x100)) { _spu_RXX->rxx.vAPF1 = arg0->vAPF1; }
+    if (zero || (flags & 0x200)) { _spu_RXX->rxx.vAPF2 = arg0->vAPF2; }
+    if (zero || (flags & 0x400)) { _spu_RXX->rxx.mLSAME = arg0->mLSAME; }
+    if (zero || (flags & 0x800)) { _spu_RXX->rxx.mRSAME = arg0->mRSAME; }
+    if (zero || (flags & 0x1000)) { _spu_RXX->rxx.mLCOMB1 = arg0->mLCOMB1; }
+    if (zero || (flags & 0x2000)) { _spu_RXX->rxx.mRCOMB1 = arg0->mRCOMB1; }
+    if (zero || (flags & 0x4000)) { _spu_RXX->rxx.mLCOMB2 = arg0->mLCOMB2; }
+    if (zero || (flags & 0x8000)) { _spu_RXX->rxx.mRCOMB2 = arg0->mRCOMB2; }
+    if (zero || (flags & 0x10000)) { _spu_RXX->rxx.dLSAME = arg0->dLSAME; }
+    if (zero || (flags & 0x20000)) { _spu_RXX->rxx.dRSAME = arg0->dRSAME; }
+    if (zero || (flags & 0x40000)) { _spu_RXX->rxx.mLDIFF = arg0->mLDIFF; }
+    if (zero || (flags & 0x80000)) { _spu_RXX->rxx.mRDIFF = arg0->mRDIFF; }
+    if (zero || (flags & 0x100000)) { _spu_RXX->rxx.mLCOMB3 = arg0->mLCOMB3; }
+    if (zero || (flags & 0x200000)) { _spu_RXX->rxx.mRCOMB3 = arg0->mRCOMB3; }
+    if (zero || (flags & 0x400000)) { _spu_RXX->rxx.mLCOMB4 = arg0->mLCOMB4; }
+    if (zero || (flags & 0x800000)) { _spu_RXX->rxx.mRCOMB4 = arg0->mRCOMB4; }
+    if (zero || (flags & 0x1000000)) { _spu_RXX->rxx.dLDIFF = arg0->dLDIFF; }
+    if (zero || (flags & 0x2000000)) { _spu_RXX->rxx.dRDIFF = arg0->dRDIFF; }
+    if (zero || (flags & 0x4000000)) { _spu_RXX->rxx.mLAPF1 = arg0->mLAPF1; }
+    if (zero || (flags & 0x8000000)) { _spu_RXX->rxx.mRAPF1 = arg0->mRAPF1; }
+    if (zero || (flags & 0x10000000)) { _spu_RXX->rxx.mLAPF2 = arg0->mLAPF2; }
+    if (zero || (flags & 0x20000000)) { _spu_RXX->rxx.mRAPF2 = arg0->mRAPF2; }
+    if (zero || (flags & 0x40000000)) { _spu_RXX->rxx.vLIN = arg0->vLIN; }
+    if (zero || (flags < 0)) { _spu_RXX->rxx.vRIN = arg0->vRIN; }
 }

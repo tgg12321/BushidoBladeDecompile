@@ -39,28 +39,29 @@ const char D_8001640C[20] = "wait (dmaf clear/W)";
 s32 _spu_init(s32 a0) {
     u32 i;
     s32 channel;
+    volatile u16 *spucnt;
 
     *D_800A2CEC |= 0xB0000;
 
     _spu_transMode = 0;
     _spu_addrMode = 0;
     _spu_tsa = 0;
-    *(volatile u16 *)(_spu_RXX + 0x180) = 0;
-    *(volatile u16 *)(_spu_RXX + 0x182) = 0;
-    *(volatile u16 *)(_spu_RXX + 0x1AA) = 0;
+    _spu_RXX->rxx.main_vol.left = 0;
+    _spu_RXX->rxx.main_vol.right = 0;
+    _spu_RXX->rxx.spucnt = 0;
     _spu_Fw1ts();
 
-    *(volatile u16 *)(_spu_RXX + 0x180) = 0;
-    *(volatile u16 *)(_spu_RXX + 0x182) = 0;
+    _spu_RXX->rxx.main_vol.left = 0;
+    _spu_RXX->rxx.main_vol.right = 0;
 
-    if (*(volatile u16 *)(_spu_RXX + 0x1AE) & 0x7FF) {
+    if (_spu_RXX->rxx.spustat & 0x7FF) {
         i = 0;
         do {
             if (++i > 0xF00) {
                 printf(&D_800163D8, &D_800163E8);
                 break;
             }
-        } while (*(volatile u16 *)(_spu_RXX + 0x1AE) & 0x7FF);
+        } while (_spu_RXX->rxx.spustat & 0x7FF);
     }
 
     channel = 0;
@@ -68,54 +69,48 @@ s32 _spu_init(s32 a0) {
     _spu_mem_mode_plus = 3;
     _spu_mem_mode_unit = 8;
     _spu_mem_mode_unitM = 7;
-    *(volatile u16 *)(_spu_RXX + 0x1AC) = 4;
-    *(volatile u16 *)(_spu_RXX + 0x184) = 0;
-    *(volatile u16 *)(_spu_RXX + 0x186) = 0;
-    *(volatile u16 *)(_spu_RXX + 0x18C) = 0xFFFF;
-    *(volatile u16 *)(_spu_RXX + 0x18E) = 0xFFFF;
-    *(volatile u16 *)(_spu_RXX + 0x198) = 0;
-    *(volatile u16 *)(_spu_RXX + 0x19A) = 0;
+    _spu_RXX->rxx.data_trans = 4;
+    _spu_RXX->rxx.rev_vol.left = 0;
+    _spu_RXX->rxx.rev_vol.right = 0;
+    _spu_RXX->rxx.key_off[0] = 0xFFFF;
+    _spu_RXX->rxx.key_off[1] = 0xFFFF;
+    _spu_RXX->rxx.rev_mode[0] = 0;
+    _spu_RXX->rxx.rev_mode[1] = 0;
     for (channel = 0; channel < 10; channel++) {
         _spu_RQ[channel] = 0;
     }
 
     if (a0 == 0) {
-        s32 kon;
-        s32 koff;
-        volatile u16 *vp;
 
         _spu_tsa = 0x200;
-        *(volatile u16 *)(_spu_RXX + 0x190) = 0;
-        *(volatile u16 *)(_spu_RXX + 0x192) = 0;
-        *(volatile u16 *)(_spu_RXX + 0x194) = 0;
-        *(volatile u16 *)(_spu_RXX + 0x196) = 0;
-        *(volatile u16 *)(_spu_RXX + 0x1B0) = 0;
-        *(volatile u16 *)(_spu_RXX + 0x1B2) = 0;
-        *(volatile u16 *)(_spu_RXX + 0x1B4) = 0;
-        *(volatile u16 *)(_spu_RXX + 0x1B6) = 0;
+        _spu_RXX->rxx.chan_fm[0] = 0;
+        _spu_RXX->rxx.chan_fm[1] = 0;
+        _spu_RXX->rxx.noise_mode[0] = 0;
+        _spu_RXX->rxx.noise_mode[1] = 0;
+        _spu_RXX->rxx.cd_vol.left = 0;
+        _spu_RXX->rxx.cd_vol.right = 0;
+        _spu_RXX->rxx.ex_vol.left = 0;
+        _spu_RXX->rxx.ex_vol.right = 0;
         _spu_FwriteByIO((s32)&D_800A2D1C, 0x10);
 
-        vp = (volatile u16 *)_spu_RXX;
         for (channel = 0; channel < 0x18; channel++) {
-            vp[channel * 8 + 0] = 0;
-            vp[channel * 8 + 1] = 0;
-            vp[channel * 8 + 2] = 0x3FFF;
-            vp[channel * 8 + 3] = 0x200;
-            vp[channel * 8 + 4] = 0;
-            vp[channel * 8 + 5] = 0;
+            _spu_RXX->rxx.voice[channel].volume.left = 0;
+            _spu_RXX->rxx.voice[channel].volume.right = 0;
+            _spu_RXX->rxx.voice[channel].pitch = 0x3FFF;
+            _spu_RXX->rxx.voice[channel].addr = 0x200;
+            _spu_RXX->rxx.voice[channel].adsr[0] = 0;
+            _spu_RXX->rxx.voice[channel].adsr[1] = 0;
         }
 
-        kon = 0xFFFF;
-        koff = 0xFF;
-        *(volatile u16 *)(_spu_RXX + 0x188) = kon;
-        *(volatile u16 *)(_spu_RXX + 0x18A) = koff;
+        _spu_RXX->rxx.key_on[0] = 0xFFFF;
+        _spu_RXX->rxx.key_on[1] = 0xFF;
         _spu_Fw1ts();
         _spu_Fw1ts();
         _spu_Fw1ts();
         _spu_Fw1ts();
 
-        *(volatile u16 *)(_spu_RXX + 0x18C) = kon;
-        *(volatile u16 *)(_spu_RXX + 0x18E) = koff;
+        _spu_RXX->rxx.key_off[0] = 0xFFFF;
+        _spu_RXX->rxx.key_off[1] = 0xFF;
         _spu_Fw1ts();
         _spu_Fw1ts();
         _spu_Fw1ts();
@@ -123,31 +118,18 @@ s32 _spu_init(s32 a0) {
     }
 
     _spu_inTransfer = 1;
-    *(volatile u16 *)(_spu_RXX + 0x1AA) = 0xC000;
+    /* FAKE: SPUCNT stored through a pointer; the member store
+       `_spu_RXX->rxx.spucnt = 0xC000` lets sched lift the _spu_IRQCallback zero store
+       above the sh (score 4). */
+    spucnt = &_spu_RXX->rxx.spucnt;
+    *spucnt = 0xC000;
     _spu_transferCallback = 0;
     _spu_IRQCallback = 0;
     return 0;
 }
 /* PsyQ LIBSPU spu.c: `_spu_FwriteByIO` (static) — verbatim-linked Sony object.
    C refs: Xeeynamo/psyz decomp/src/libspu/spu.c:111 and
-   sotn-decomp psxsdk/libspu/spu.c (_spu_writeByIO).
-
-   `_spu_RXX` (0x800A2CDC) holds the SPU register-file base (0x1F801C00), so
-   `_spu_RXX + 0x1A6` is the SPU transfer/control register block at 0x1F801DA6:
-   transfer address, data FIFO, SPUCNT, transfer control, SPUSTAT — five
-   consecutive 16-bit hardware registers.  Sony's own libspu reaches them
-   through `union SpuUnion *_spu_RXX` with the SPUR()/SPUW() field macros; the
-   struct below is that same register block, and every access in this function
-   goes through it, exactly as the original source does. */
-typedef struct {
-    u16 trans_addr;  /* 0x1DA6 */
-    u16 trans_fifo;  /* 0x1DA8 */
-    u16 spucnt;      /* 0x1DAA */
-    u16 trans_ctrl;  /* 0x1DAC */
-    u16 spustat;     /* 0x1DAE */
-} SpuCtrlRegs;
-
-#define SPU_CTRL ((volatile SpuCtrlRegs *)(_spu_RXX + 0x1A6))
+   sotn-decomp psxsdk/libspu/spu.c (_spu_writeByIO). */
 
 void _spu_FwriteByIO(u8 *addr, u32 size) {
     u16 spustat;
@@ -158,43 +140,43 @@ void _spu_FwriteByIO(u8 *addr, u32 size) {
     u16 cnt;
 
     cur = (u16 *)addr;
-    spustat = SPU_CTRL->spustat & 0x7FF;
-    SPU_CTRL->trans_addr = _spu_tsa;
+    spustat = _spu_RXX->rxx.spustat & 0x7FF;
+    _spu_RXX->rxx.trans_addr = _spu_tsa;
     _spu_Fw1ts();
     while (size != 0) {
         num = (size > 0x40) ? 0x40 : size;
         for (i = 0; i < num; i += 2) {
-            SPU_CTRL->trans_fifo = *cur++;
+            _spu_RXX->rxx.trans_fifo = *cur++;
         }
-        cnt = SPU_CTRL->spucnt;
+        cnt = _spu_RXX->rxx.spucnt;
         cnt &= ~0x30;
         cnt |= 0x10;
-        SPU_CTRL->spucnt = cnt;
+        _spu_RXX->rxx.spucnt = cnt;
         _spu_Fw1ts();
-        if (SPU_CTRL->spustat & 0x400) {
+        if (_spu_RXX->rxx.spustat & 0x400) {
             j = 0;
             do {
                 if (++j > 0xF00) {
                     printf(&D_800163D8, &D_800163F8);
                     break;
                 }
-            } while (SPU_CTRL->spustat & 0x400);
+            } while (_spu_RXX->rxx.spustat & 0x400);
         }
         _spu_Fw1ts();
         _spu_Fw1ts();
         size -= num;
     }
-    cnt = SPU_CTRL->spucnt;
+    cnt = _spu_RXX->rxx.spucnt;
     j = 0;
     cnt &= ~0x30;
-    SPU_CTRL->spucnt = cnt;
-    if ((SPU_CTRL->spustat & 0x7FF) != spustat) {
+    _spu_RXX->rxx.spucnt = cnt;
+    if ((_spu_RXX->rxx.spustat & 0x7FF) != spustat) {
         do {
             if (++j > 0xF00) {
                 printf(&D_800163D8, &D_8001640C);
                 break;
             }
-        } while ((SPU_CTRL->spustat & 0x7FF) != spustat);
+        } while ((_spu_RXX->rxx.spustat & 0x7FF) != spustat);
     }
 }
 /* PsyQ LIBSPU spu.c: _spu_FiDMA + _spu_Fr_ — two further exported entry
@@ -208,7 +190,7 @@ void _spu_FwriteByIO(u8 *addr, u32 size) {
    and would misread it as a C function. */
 /* PsyQ LIBSPU spu.c `_spu_FiDMA` (C ref: Xeeynamo/psyz decomp/src/libspu/spu.c:161).
    SPU DMA-completion interrupt handler: waits for the transfer-mode bits
-   (0x30) in SPUCNT (_spu_RXX + 0x1AA) to clear with a bounded spin, then
+   (0x30) in SPUCNT to clear with a bounded spin, then
    dispatches either the installed transfer callback or the SPU DMA event. */
 void _spu_FiDMA(void) {
     u32 timeout;
@@ -216,10 +198,10 @@ void _spu_FiDMA(void) {
     if (D_800A2D2C == 0) {
         _spu_Fw1ts();
     }
-    *(volatile u16 *)(_spu_RXX + 0x1AA) =
-        *(volatile u16 *)(_spu_RXX + 0x1AA) & ~0x30;
+    _spu_RXX->rxx.spucnt =
+        _spu_RXX->rxx.spucnt & ~0x30;
     timeout = 0;
-    while (*(volatile u16 *)(_spu_RXX + 0x1AA) & 0x30) {
+    while (_spu_RXX->rxx.spucnt & 0x30) {
         timeout++;
         if (timeout > 0xF00) {
             break;
@@ -235,10 +217,10 @@ void _spu_FiDMA(void) {
    by the linked Sony object; SpuRGetAllKeysStatus/S_SCA precedent).
    C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_r_); this build's
    WASTE_TIME() is the out-of-line _spu_Fw1ts call. */
-void _spu_Fr_(s32 addr, u16 mode, s32 size) {
-    *(volatile u16 *)(_spu_RXX + 0x1A6) = mode;
+void _spu_Fr_(s32 addr, u16 spu_addr, s32 size) {
+    _spu_RXX->rxx.trans_addr = spu_addr;
     _spu_Fw1ts();
-    *(volatile u16 *)(_spu_RXX + 0x1AA) = *(volatile u16 *)(_spu_RXX + 0x1AA) | 0x30;
+    _spu_RXX->rxx.spucnt = _spu_RXX->rxx.spucnt | 0x30;
     _spu_Fw1ts();
     _spu_FsetDelayR();
     *D_800A2CE0 = addr;
@@ -267,11 +249,11 @@ s32 _spu_t(s32 mode, ...) {
     case 2:
         count = va_arg(args, u32);
         _spu_tsa = count >> _spu_mem_mode_plus;
-        *(volatile u16 *)(_spu_RXX + 0x1A6) = _spu_tsa;
+        _spu_RXX->rxx.trans_addr = _spu_tsa;
         break;
 
     case 1:
-        t = *(volatile u16 *)(_spu_RXX + 0x1A6);
+        t = _spu_RXX->rxx.trans_addr;
         i = 0;
         D_800A2D2C = 0;
         if ((t & 0xFFFF) != _spu_tsa) {
@@ -279,16 +261,16 @@ s32 _spu_t(s32 mode, ...) {
                 if (++i > 0xF00) {
                     return -2;
                 }
-            } while (*(volatile u16 *)(_spu_RXX + 0x1A6) != _spu_tsa);
+            } while (_spu_RXX->rxx.trans_addr != _spu_tsa);
         }
-        cnt = *(volatile u16 *)(_spu_RXX + 0x1AA);
+        cnt = _spu_RXX->rxx.spucnt;
         cnt &= ~0x30;
         cnt |= 0x20;
-        *(volatile u16 *)(_spu_RXX + 0x1AA) = cnt;
+        _spu_RXX->rxx.spucnt = cnt;
         break;
 
     case 0:
-        t = *(volatile u16 *)(_spu_RXX + 0x1A6);
+        t = _spu_RXX->rxx.trans_addr;
         i = 0;
         D_800A2D2C = 1;
         if ((t & 0xFFFF) != _spu_tsa) {
@@ -296,12 +278,12 @@ s32 _spu_t(s32 mode, ...) {
                 if (++i > 0xF00) {
                     return -2;
                 }
-            } while (*(volatile u16 *)(_spu_RXX + 0x1A6) != _spu_tsa);
+            } while (_spu_RXX->rxx.trans_addr != _spu_tsa);
         }
-        cnt = *(volatile u16 *)(_spu_RXX + 0x1AA);
+        cnt = _spu_RXX->rxx.spucnt;
         cnt &= ~0x30;
         cnt |= 0x30;
-        *(volatile u16 *)(_spu_RXX + 0x1AA) = cnt;
+        _spu_RXX->rxx.spucnt = cnt;
         break;
 
     case 3:
@@ -311,7 +293,7 @@ s32 _spu_t(s32 mode, ...) {
             ck2 = 0x20;
         }
         i = 0;
-        while ((*(volatile u16 *)(_spu_RXX + 0x1AA) & 0x30) != ck2) {
+        while ((_spu_RXX->rxx.spucnt & 0x30) != ck2) {
             if (++i > 0xF00) {
                 return -2;
             }
@@ -356,12 +338,12 @@ s32 _spu_Fr(s32 a0, s32 a1) {
 }
 void _spu_FsetRXX(s32 arg0, u32 arg1, s32 arg2) {
     if (arg2 == 0) {
-        *(volatile u16 *)(arg0 * 2 + _spu_RXX) = arg1;
+        _spu_RXX->raw[arg0] = arg1;
         return;
     }
-    *(volatile u16 *)(arg0 * 2 + _spu_RXX) = arg1 >> _spu_mem_mode_plus;
+    _spu_RXX->raw[arg0] = arg1 >> _spu_mem_mode_plus;
 }
-s32 _spu_FsetRXXa(s32 mode, s32 val) {
+s32 _spu_FsetRXXa(s32 index, s32 val) {
     s32 aligned;
     if (_spu_mem_mode != 0) {
         u32 step = _spu_mem_mode_unit;
@@ -371,17 +353,17 @@ s32 _spu_FsetRXXa(s32 mode, s32 val) {
         }
     }
     aligned = (s32)((u32)val >> _spu_mem_mode_plus);
-    if (mode == -2) goto ret_val_m2;
-    if (mode != -1) goto store;
+    if (index == -2) goto ret_val_m2;
+    if (index != -1) goto store;
     return aligned & 0xFFFF;
 ret_val_m2:
     return val;
 store:
-    ((s16 *)_spu_RXX)[mode] = (s16)aligned;
+    _spu_RXX->raw[index] = aligned;
     return val;
 }
 s32 _spu_FgetRXXa(s32 index, s32 mode) {
-    u16 val = ((u16 *)_spu_RXX)[index];
+    u16 val = _spu_RXX->raw[index];
     if (mode == -1) {
         return val;
     }

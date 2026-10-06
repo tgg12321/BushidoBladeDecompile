@@ -33,8 +33,8 @@ void SpuSetKey(s32 on_off, u32 voice_bit) {
             }
         } else {
             u32 stat = _spu_keystat | voice_bit;
-            ((SpuRXX *)_spu_RXX)->key_on[0] = lo;
-            ((SpuRXX *)_spu_RXX)->key_on[1] = hi;
+            _spu_RXX->rxx.key_on[0] = lo;
+            _spu_RXX->rxx.key_on[1] = hi;
             _spu_keystat = stat;
         }
         break;
@@ -51,8 +51,8 @@ void SpuSetKey(s32 on_off, u32 voice_bit) {
                 _spu_RQ[1] &= ~hi2;
             }
         } else {
-            ((SpuRXX *)_spu_RXX)->key_off[0] = lo;
-            ((SpuRXX *)_spu_RXX)->key_off[1] = hi;
+            _spu_RXX->rxx.key_off[0] = lo;
+            _spu_RXX->rxx.key_off[1] = hi;
             _spu_keystat &= ~voice_bit;
         }
         break;

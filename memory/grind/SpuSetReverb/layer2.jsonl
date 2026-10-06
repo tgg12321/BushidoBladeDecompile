@@ -1,0 +1,1 @@
+{"func": "SpuSetReverb", "addr": "80089D60", "verdict": "PASS", "body_hash": "63f71e36c39d57c8", "body_kind": "c", "file": "main/psxsdk/libspu/s_sr", "reviewer": "cheat-reviewer:rev-w2b1", "scope": "cheat-cleanup", "date": "2026-10-06T09:33:59Z", "head": "4290c05ec", "notes": ""}
