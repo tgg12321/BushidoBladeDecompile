@@ -200,8 +200,10 @@ ADDR_RE = re.compile(r"[0-9A-F]{8}")
 
 
 def _asm_addr(text: str | None, func: str) -> str | None:
+    """`func`'s address: the first machine column AFTER its glabel (a module's leading data words may
+    sit ahead of the glabel in the same .s, e.g. MSC00's D_8007E08C in InitGeom.s)."""
     g = _GLABEL_RE.search(text or "")
-    m = _ASM_VADDR.search(text or "") if g and g.group(1) == func else None
+    m = _ASM_VADDR.search(text, g.end()) if g and g.group(1) == func else None
     return m.group(1).upper() if m else None
 
 
@@ -251,7 +253,7 @@ def addr_at(func: str, read) -> str | None:
 def addr_index() -> dict[str, str]:
     """name -> VRAM address (8 upper-case hex digits), with ONE precedence
     (addr_of uses the same): splat's asm/funcs glabel files (glabel -> the
-    first machine column's vaddr, as docs/naming/build_census.py reads it),
+    vaddr of the first machine column after the function's glabel),
     the tracked symbol files, the census, a splat auto-name's own address,
     then the link map build/bb2.map (definition AND `name = 0x...` lines).
     Names only an auto-name addresses are not listed: use lookup()."""

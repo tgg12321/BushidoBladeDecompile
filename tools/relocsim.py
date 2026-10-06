@@ -31,9 +31,12 @@ for f in ("undefined_syms_auto.txt", "named_syms.txt", "symbol_addrs.txt"):
 
 # ---- target words --------------------------------------------------------
 tw, base = [], None
+seen = False   # words from the function's glabel on (a module's leading data may precede it)
 for line in TGT.read_text().splitlines():
+    if re.match(r"^\s*glabel\s+%s\s*$" % re.escape(func), line):
+        seen = True
     m = re.match(r"^\s*/\*\s*\S+\s+([0-9A-Fa-f]{8})\s+([0-9A-Fa-f]{8})\s*\*/", line)
-    if m:
+    if m and seen:
         if base is None:
             base = int(m.group(1), 16)
         tw.append(int.from_bytes(bytes.fromhex(m.group(2)), "little"))

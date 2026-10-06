@@ -5709,6 +5709,23 @@ def test_symtab_data_dlabels() -> None:
         score.cfg.LD_SYM_FILES = saved_files
 
 
+def test_layer2_asm_addr_after_glabel() -> None:
+    """A .s may carry its module's leading data words ahead of the glabel (InitGeom.s holds MSC00's
+    D_8007E08C); the function's address is the first machine column after its glabel."""
+    from engine import layer2
+    text = ("dlabel D_8007E08C\n"
+            "    /* 6E88C 8007E08C 50730915 */ .word 0x15097350\n"
+            "    /* 6E890 8007E090 9C9F4000 */ .word 0x00409F9C\n"
+            "enddlabel D_8007E08C\n"
+            "glabel InitGeom\n"
+            "    /* 6E894 8007E094 0A80013C */  lui        $at, %hi(D_8009C798)\n")
+    eq("addresses: the first machine column after the glabel, not the leading data words",
+       layer2._asm_addr(text, "InitGeom"), "8007E094")
+    eq("addresses: a plain glabel file reads as before",
+       layer2._asm_addr("glabel f\n    /* 1 80010000 00000000 */  nop\n", "f"), "80010000")
+    eq("addresses: another function's file gives nothing", layer2._asm_addr(text, "D_8007E08C"), None)
+
+
 def main() -> int:
     test_datamodel()
     test_canonical()
@@ -5739,6 +5756,7 @@ def main() -> int:
         test_layer2_gate()
     test_departures()
     test_layer2_addresses()
+    test_layer2_asm_addr_after_glabel()
     test_naming_wave_renames()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
