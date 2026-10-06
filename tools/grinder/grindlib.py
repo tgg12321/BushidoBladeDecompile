@@ -27,6 +27,7 @@ import datetime
 import hashlib
 import json
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -506,10 +507,15 @@ def add_scope_allow(root, func, paths, date):
     existing line for the function. LF-enforced."""
     clean = []
     for p in paths:
-        p = str(p).strip().replace("\\", "/").lstrip("./")
+        p = str(p).strip().replace("\\", "/")
+        if ".." in p.split("/"):
+            return None
+        if p.startswith("./"):
+            p = p[2:]
         if not p:
             continue
-        if p in _SCOPE_GRANT_DENY or not _SCOPE_GRANT_ALLOWED_RE.match(p):
+        if (posixpath.normpath(p) != p or p in _SCOPE_GRANT_DENY
+                or not _SCOPE_GRANT_ALLOWED_RE.fullmatch(p)):
             return None
         clean.append(p)
     if not clean:

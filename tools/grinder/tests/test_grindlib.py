@@ -2211,6 +2211,17 @@ class TestAddScopeAllow(unittest.TestCase):
                 with open(self.path, encoding="utf-8") as fh:
                     self.assertEqual(fh.read(), self.baseline)
 
+    def test_traversal_and_non_normal_paths_leave_grants_unchanged(self):
+        for path in ("src/../tools/x.h", "include/../tools/x.h",
+                     "src/main/../../tools/x.h", "../src/main/x.h",
+                     "./../src/main/x.h", r"src\..\tools\x.h",
+                     "src/main/./x.h", "src//main/x.h", "/src/main/x.h"):
+            with self.subTest(path=path):
+                self.assertIsNone(self._grant([path]))
+                self.assertIsNone(self._grant(["include/game.h", path]))
+                with open(self.path, encoding="utf-8") as fh:
+                    self.assertEqual(fh.read(), self.baseline)
+
     def test_other_surfaces_and_extensions_leave_grants_unchanged(self):
         for path in ("tools/private.h", "engine/private.h", ".claude/private.h",
                      "docs/private.h", "memory/private.h", "asm/private.h",
