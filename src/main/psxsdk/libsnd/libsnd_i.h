@@ -199,15 +199,10 @@ extern u16 _svm_vab_count;
 extern u8 _svm_vab_used[];
 extern s32 _svm_vab_start[];
 extern s32 _svm_vab_total[];
-extern s32 _svm_vab_vh[];
-extern s32 _svm_vab_pg[];
-extern s32 _svm_vab_tn[];
-/* _svm_rattr: the voice manager's reverb attribute block, declared by its splat per-field
-   names (a typed SpuReverbAttr declaration is Phase 2 work). */
-extern s32 _svm_rattr;
-extern s32 _svm_rattr_plus_0x4;
-extern s16 _svm_rattr_plus_0x8;
-extern s16 _svm_rattr_plus_0xA;
+extern VabHdr *_svm_vab_vh[];
+extern ProgAtr *_svm_vab_pg[];
+extern VagAtr *_svm_vab_tn[];
+extern SpuReverbAttr _svm_rattr; /* the voice manager's reverb attribute block */
 
 extern void _SsInit(void);
 extern void _SsVmInit(s32);

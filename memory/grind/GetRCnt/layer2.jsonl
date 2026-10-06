@@ -1,1 +1,2 @@
 {"func": "GetRCnt", "addr": "80078B04", "verdict": "PASS", "body_hash": "7b4129b6130ff6e0", "body_kind": "c", "file": "main/psxsdk/libapi/counter", "reviewer": "p2-rev-a1", "scope": "cheat-cleanup", "date": "2026-10-04T07:23:04Z", "head": "1c2c328ac", "notes": ""}
+{"func": "GetRCnt", "addr": "80078B04", "verdict": "PASS", "body_hash": "28d8b5d12f24e965", "body_kind": "c", "file": "main/psxsdk/libapi/counter", "reviewer": "cheat-reviewer:rev-w2b5", "scope": "cheat-cleanup", "date": "2026-10-06T15:42:49Z", "head": "8fc462a1c", "notes": ""}

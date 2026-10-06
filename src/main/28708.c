@@ -74,7 +74,7 @@ extern u8 D_800A37D0;
 
 
 
-extern s32 D_800F34D8;
+extern Unk800F34D8Save D_800F34D8; /* = D_800F33D8 + 0x100 (debt row) */
 extern s32 D_800A31F0;
 
 
@@ -100,61 +100,52 @@ void func_80037F40(u8 *a0) {
     } while ((u32)i < 0x24);
 
     {
-        u8 *base = a0;
+        /* FAKE: the save-block view in its own local; through a0 (a cast at each use) the copy
+           moves into the checksum loop's delay slot (score 2). */
+        Unk800F34D8Save *base = (Unk800F34D8Save *)a0;
         i = 0;
         do {
-            ((FileRecord *)base)[i] = D_80106A50;
-            *(s32 *)(base + i * 4 + 0x6C) = checksum;
+            base->rec[i] = D_80106A50;
+            base->sum[i] = checksum;
             {
                 s32 j = 0;
-                s16 *hp = (s16 *)base;
-                u8 *bp = base;
                 do {
-                    *(s32 *)(bp + 0x78) = 0;
-                    *(s16 *)((u8 *)hp + 0xD0) = 0;
-                    hp++;
+                    base->ptr[j] = 0;
+                    base->val[j] = 0;
                     j++;
-                    bp += 4;
                 } while (j < 0x16);
             }
             i++;
         } while (i < 3);
-        *(s32 *)(base + 0xFC) = 0;
+        base->unk_FC = 0;
     }
 }
 
-s32 func_8003800C(s32 *arg0) {
-    u8 *base = (u8 *)arg0;
+s32 func_8003800C(Unk800F34D8Save *arg0) {
     s32 i;
-    s32 *chkptr;
-    s32 offset;
     /* FAKE: one counter 'j' serves both the per-record checksum loop and the
        0x16-entry fixup loop (C89 counter reuse), mechanism: global.c
        allocno_compare -- the merged live range lifts reg_live_length(j) so j's
-       allocno priority falls below sum's and sum takes $a0 (target's seat). */
+       allocno priority falls below sum's and sum takes $a0 (target's seat). Ablated (2026-10-06): score 16. */
     s32 j;
 
     i = 0;
-    chkptr = (s32 *)base;
-    offset = 0;
     do {
         s32 sum;
         u8 *bp;
 
         sum = 0;
-        bp = base + offset;
+        bp = (u8 *)&arg0->rec[i];
         j = 0;
         do {
             sum += *bp;
             bp++;
             j++;
         } while (j < 0x24U);
-        if (sum == *(s32 *)((u8 *)chkptr + 0x6C)) {
+        if (sum == arg0->sum[i]) {
             break;
         }
-        chkptr++;
         i++;
-        offset += 0x24;
     } while (i < 3);
 
     if (i == 3) {
@@ -166,17 +157,17 @@ s32 func_8003800C(s32 *arg0) {
     }
 
     {
-        u8 *src = base + i * 0x24;
+        FileRecord *src = &arg0->rec[i];
 
-        if (!(*(src + 0x23) & 0x80)) {
-            D_80106A50 = *(FileRecord *)src;
+        if (!(src->flags & 0x80)) {
+            D_80106A50 = *src;
         }
 
         j = 0;
         do {
-            u16 *ptr = *(u16 **)(base + j * 4 + 0x78);
+            u16 *ptr = arg0->ptr[j];
             if ((u32)((u32)ptr - 0x80000000U) <= 0x1FFFFF) {
-                *ptr = *(u16 *)(base + j * 2 + 0xD0);
+                *ptr = arg0->val[j];
             }
             j++;
         } while (j < 0x16);
@@ -427,7 +418,7 @@ finish:
     D_800A31F4 = 0;
 }
 
-extern s32 func_8003800C(s32 *);
+extern s32 func_8003800C(Unk800F34D8Save *);
 /* func_80038658 — CD-load/save state-machine completion handler: dispatches
  * on D_800A31F4 (state 4 = post-read, state 6 = post-write), reaps
  * func_800378A8()'s status, closes the file handle, and posts a result code
@@ -1364,7 +1355,7 @@ void func_8003993C(void) {
         /* Ruling 11 (ordinary-c-judge-decidable.md): `entry` holds two values, the address of the
          * frame's 4-byte entry in the practice weapon table (if arm) and in the character's weapon
          * table (else arm). */
-        s32 entry;
+        u16 *entry;
 
         p = &D_800A36EC[idx][i];
         rob = &D_80101EC8[i];
@@ -1403,12 +1394,12 @@ void func_8003993C(void) {
         rob->unk_40 = p->b19;
         save58 = rob->unk_58;
         if (p->b17 & 1) {
-            entry = D_80102764 + p->w0->unk_04 * 4;
-            rob->unk_58 = (u8 *)(D_80102768 + *(u16 *)(entry + 2));
+            entry = &D_80102760.unk_04[p->w0->unk_04 * 2];
+            rob->unk_58 = D_80102760.unk_08 + entry[1];
         } else {
             temp = (p->b17 >> 1) & 1;
-            entry = D_801027B0[temp][1] + p->w0->unk_04 * 4;
-            rob->unk_58 = (u8 *)(D_801027B0[temp][2] + *(u16 *)(entry + 2));
+            entry = &D_801027B0[temp].unk_04[p->w0->unk_04 * 2];
+            rob->unk_58 = D_801027B0[temp].unk_08 + entry[1];
         }
         if (p->b18 & 0x40) {
             func_8003339C(rob);
@@ -1717,8 +1708,8 @@ typedef s32 (*FuncBufType)(void *);
  * D_800A3870 handshake state once both sides report state 2.
  * `hi16 = hi16 | packed;` updates hi16 in place so the or prints `or a0,a0,v0` as in the
  * target. FAKE: the u16 low-half loads in the tail reuse the buf8 local (variable reuse
- * for codegen control). */
-void func_8003A728(s32 a0) {
+ * for codegen control). Ablated (2026-10-06): score 33. */
+void func_8003A728(PadState *a0) {
     s32 buf8;
     s32 packed;
     s32 hi16;
@@ -1728,15 +1719,15 @@ void func_8003A728(s32 a0) {
     s32 t;
     /* FAKE: constant-holder local; mechanism: the (set (reg) (const_int 0)) survives into
      * sched1's block-1 ready lists and displaces the D_800A369C store from the slot before the
-     * branch, then local-alloc.c update_equiv_regs deletes it (no insn emitted). */
+     * branch, then local-alloc.c update_equiv_regs deletes it (no insn emitted). Ablated (2026-10-06): score 3. */
     s32 zero;
 
     if (D_800A320C != 0) {
-        buf8 = *(s32 *)(a0 + 8);
+        buf8 = a0->held;
         vsync = D_800A38A0;
         zero = 0;
         packed = (vsync << 31) | (D_800A3730 << 30) | ((D_800A3870 & 3) << 28)
-               | (*(s16 *)a0 << 16) | (buf8 & 0xFFFF);
+               | (a0->type[0] << 16) | (buf8 & 0xFFFF);
         g_comb_send_buf = packed;
         hi16 = D_800A37C4 << 16;
         packed = packed ^ (packed >> 16);
@@ -1787,20 +1778,26 @@ void func_8003A728(s32 a0) {
         }
 
         if (D_800A3916 == 0) {
+            /* FAKE: the record's held / type stores go through pointers; stored as members
+               (in-struct memory) sched moves the D_800A36C2 / D_800A36D2 loads above them
+               (score 22). */
+            u32 *held = &a0->held;
+            s16 *type = a0->type;
+
             D_800A38FC += math_Popcount32((u16)D_800A36C0);
             c0lo = (u16)D_800A36C0;
             if (D_800A38A0 == 0) {
                 buf8 = (u16)g_comb_send_buf;
-                *(s32 *)(a0 + 8) = (c0lo << 16) | buf8;
+                *held = (c0lo << 16) | buf8;
                 t = D_800A36C2;
-                *(s16 *)(a0 + 2) = t & 0xF;
+                type[1] = t & 0xF;
             } else {
                 buf8 = (u16)D_800A36D0;
-                *(s32 *)(a0 + 8) = (buf8 << 16) | c0lo;
+                *held = (buf8 << 16) | c0lo;
                 t = D_800A36C2;
-                *(s16 *)a0 = t & 0xF;
+                type[0] = t & 0xF;
                 t = D_800A36D2;
-                *(s16 *)(a0 + 2) = t & 0xF;
+                type[1] = t & 0xF;
             }
             if (D_800A38A0 == 0) {
                 if (((D_800A36C0 >> 28) & 3) == 2 && D_800A3870 == 2) {
@@ -1821,11 +1818,11 @@ void func_8003A728(s32 a0) {
 }
 
 void func_8003AA48(void) {
-    s16 buf[12];
-    *(s32 *)&buf[4] = 0;
-    buf[1] = 4;
-    buf[0] = 4;
-    func_8003A728((s32)buf);
+    PadState pad;
+    pad.held = 0;
+    pad.type[1] = 4;
+    pad.type[0] = 4;
+    func_8003A728(&pad);
 }
 void func_8003AA78(void) {
     D_800A3870 = 1;

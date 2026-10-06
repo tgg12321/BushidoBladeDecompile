@@ -793,7 +793,7 @@ s32 func_8005490C(void) {
         math_TransposeMatrixInPlace(&D_80101DF0.work);
         D_80101DF0.xf.mat = D_80101DF0.work;
     } else {
-        func_800418D0((s32 *)&D_80101DF0);
+        func_800418D0(&D_80101DF0);
     }
     s->unk24[0] = -D_80101DF0.xf.rot.vx;
     s->unk24[1] = -D_80101DF0.xf.rot.vy;

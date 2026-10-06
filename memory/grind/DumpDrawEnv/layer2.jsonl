@@ -1,0 +1,1 @@
+{"func": "DumpDrawEnv", "addr": "8007ACBC", "verdict": "PASS", "body_hash": "b8556fc624880b87", "body_kind": "c", "file": "main/psxsdk/libgpu/prim", "reviewer": "cheat-reviewer:rev-w2b5", "scope": "cheat-cleanup", "date": "2026-10-06T15:46:37Z", "head": "8fc462a1c", "notes": ""}

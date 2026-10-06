@@ -1,0 +1,1 @@
+{"func": "CdStatus", "addr": "8008009C", "verdict": "PASS", "body_hash": "c2eab649f04b279e", "body_kind": "c", "file": "main/psxsdk/libcd/sys", "reviewer": "cheat-reviewer:rev-w2b5", "scope": "cheat-cleanup", "date": "2026-10-06T15:45:09Z", "head": "8fc462a1c", "notes": ""}

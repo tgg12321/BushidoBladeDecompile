@@ -132,7 +132,7 @@ extern s32 _spu_rev_startaddr[];
 extern SpuRevAttr _spu_rev_attr;
 extern s32 _spu_AllocBlockNum;
 extern s32 _spu_AllocLastNum;
-extern s32 _spu_memList;
+extern SpuMemRec *_spu_memList;
 /* PsyQ LIBSPU: Sony's own header types the SPU transfer callback as a
    volatile function pointer; volatile_extern_allowlist.txt grant.
    SOTN: src/main/psxsdk/libspu/libspu_internal.h:39 @db41b28 (PS1 use:

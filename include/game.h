@@ -38,6 +38,19 @@ typedef struct {
     u8 flags;               /* 0x80106A73: bits 0/1/2 = file_GetFlag0/1/2 */
 } FileRecord;
 
+/* The 0x100-byte save block after the memory-card header (D_800F34D8 = the 0x200-byte card
+ * buffer + 0x100): func_80037F40 writes three copies of D_80106A50 with their byte checksums
+ * and clears the pointer / value table; func_8003800C restores the first copy whose checksum
+ * holds (unless its flags bit 7 is set) and writes each val[j] through ptr[j] when ptr[j] is
+ * a KSEG0 RAM address. */
+typedef struct Unk800F34D8Save {
+    FileRecord rec[3];   /* +0x00 */
+    s32 sum[3];          /* +0x6C byte sums of rec[] */
+    u16 *ptr[0x16];      /* +0x78 */
+    u16 val[0x16];       /* +0xD0 */
+    s32 unk_FC;
+} Unk800F34D8Save;       /* sizeof == 0x100 */
+
 /* The game's display double buffer at 0x800F7438: two 0x4090-byte records, one per
  * frame parity (D_800A36AC & 1). disp_Init / func_8006E10C pass +0x00 to
  * SetDefDrawEnv and +0x5C to SetDefDispEnv for each record; main clears +0x70 with
@@ -736,18 +749,18 @@ typedef struct {
 
 /* Per-character record pointed to by D_800A3860[ch] (ch = rec+0x4A). f14 is
  * the modulus func_800213A0 / func_80021424 wrap rec+0x86 with. The u16
- * fields at +0x4E are indices into D_801027B0[ch][0], as func_80021424 reads
+ * fields at +0x4E are indices into D_801027B0[ch].unk_00, as func_80021424 reads
  * them: f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids 0x7FF1/2/4),
  * f54[rec+0x86][t] (id 0x7FF3), and
  * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16 (func_800219E4) and
  * f18[class] (func_80021A3C; class = Unk80101EC8Record.unk_0A, 0..26 as D_8008D538
  * holds and as the [27][6] class tables D_8008DE34 / D_8008DF78 are sized; 27
- * halfwords end exactly at f4E) are indices into D_80102760; both readers load
+ * halfwords end exactly at f4E) are indices into D_80102760.unk_00; both readers load
  * them with lhu. */
 typedef struct {
     u8 pad00[3];
-    u8 unk_03;                     /* D_801027B0[ch][0] = record + 0x6C + (unk_03 - 1) * 6 (func_80020E74) */
-    s32 unk_04[4];                 /* D_801027B0[ch][1 + k] = record + unk_04[k] (func_80020E74) */
+    u8 unk_03;                     /* D_801027B0[ch].unk_00 = record + 0x6C + (unk_03 - 1) * 6 (func_80020E74) */
+    s32 unk_04[4];                 /* D_801027B0[ch].unk_04 .. unk_10 = record + unk_04[k] (func_80020E74) */
     s16 f14;
     u16 f16;
     u16 f18[27];
@@ -755,6 +768,20 @@ typedef struct {
     u16 f54[3][3];
     u16 f66[11][3];
 } Tbl800A3860Entry;
+
+/* A loaded motion pack's five section pointers. D_801027B0[ch] for character ch's pack (func_80020E74:
+ * unk_00 = record + 0x6C + (unk_03 - 1) * 6, unk_04..unk_10 = record + unk_04[0..3]); D_80102760 for
+ * the common pack (func_80020DDC: unk_00 = file + 0x14, the others file + its header words 1 / 2 / 4;
+ * unk_0C unset). unk_00: halfword streams func_80021424 indexes (the f4E / f54 / f66 / f16 / f18
+ * entries); unk_04: 4-byte entries whose second halfword offsets unk_08 (func_80021A98,
+ * func_8003993C); unk_0C: func_80055138's table; unk_10: func_8001979C's motion bitstream. */
+typedef struct Unk801027B0Pack {
+    u16 *unk_00;
+    u16 *unk_04;
+    u8 *unk_08;
+    u16 *unk_0C;
+    u32 *unk_10;
+} Unk801027B0Pack;            /* sizeof == 0x14 */
 
 /* s32 x/y/z triple.  Unk80101EC8Record's position-like triples are copied as
  * whole 12-byte objects (func_80022580), and func_80021DB0 writes one through
@@ -774,6 +801,22 @@ typedef Vec3i32 LeafPos;
 typedef struct { s32 vx, vy, vz, pad; } Vec4i32;
 
 typedef struct { s16 vx, vy, vz, pad; } SVec4i16;
+
+/* D_80104E88[4]: the four 0x2C-byte records func_80032064 claims (first with unk_00 == 0) and
+ * func_800321E8 steps each frame (unk_02 counts frames; unk_10 keeps the previous unk_04;
+ * unk_1C is added to unk_04 with unk_1C.y growing by 0xD; the record is freed when
+ * func_8005344C reports a hit or unk_04.y passes unk_28). func_80032314 measures the distance
+ * from the other player's unk_F4 to unk_04 (unk_03 is the owner). func_80032040 clears unk_00 of all four. */
+typedef struct Unk80104E88Rec {
+    u8 unk_00;        /* 0 = free; func_80032064's type (1 / 2) */
+    u8 unk_01;
+    u8 unk_02;
+    u8 unk_03;        /* player index (Unk80101EC8Record.index) */
+    Vec3i32 unk_04;
+    Vec3i32 unk_10;
+    Vec3i32 unk_1C;
+    s32 unk_28;
+} Unk80104E88Rec;     /* sizeof == 0x2C */
 
 /* The 10-entry block table over the 0x45000-byte buffer at D_800A9D10
  * (main/35000.c func_800451D0 .. func_8004574C; D_800A33AC live entries).
@@ -1291,6 +1334,30 @@ typedef struct MotionFrame {
     u16 unk_0A;
     s16 unk_0C[0x3C];
 } MotionFrame;                     /* sizeof == 0x84 */
+
+/* One cached decoded frame of a character's motion stream (func_800198D0): the frame number
+ * (-2 = empty, func_8001979C), the decoded pose and per-channel rates (u16 channels, the layout
+ * of func_800198D0's `work`), and the bitstream reader state after the frame. */
+typedef struct Unk800F1B18Slot {
+    s32 frame;        /* +0x000 */
+    u16 pose[0x42];   /* +0x004 */
+    u16 rate[0x42];   /* +0x088 */
+    u32 *ptr;         /* +0x10C next stream word */
+    s32 bits;         /* +0x110 valid bits in cur */
+    u32 cur;          /* +0x114 unread bits, left-aligned */
+} Unk800F1B18Slot;    /* sizeof == 0x118 */
+
+/* D_800F1B18[obj]: one character's motion decoder record (func_8001979C sets it up,
+ * func_800198D0 decodes through it). stream is the motion bitstream (a byte table of 3-byte
+ * keyframe offsets at +0x70); pose / code the initial channel values and channel codes func_8001979C unpacks;
+ * ctr the round-robin counter over the four cache slots. */
+typedef struct Unk800F1B18Rec {
+    u32 *stream;              /* +0x000 */
+    u16 pose[0x42];           /* +0x004 */
+    u16 code[0x42];           /* +0x088 channel codes (2 bits each) */
+    s32 ctr;                  /* +0x10C */
+    Unk800F1B18Slot slot[4];  /* +0x110 */
+} Unk800F1B18Rec;             /* sizeof == 0x570 */
 
 /* Header of one move record of a character's move script (the u16 stream
  * func_80021424 returns pointers into; Unk80101EC8Record.unk_50 is the current

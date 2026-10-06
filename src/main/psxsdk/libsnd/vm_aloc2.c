@@ -26,12 +26,13 @@ void _SsVmDoAllocate(void) {
     for (i = 0; i < 16; i++) {
         _svm_envx_hist[i] &= ~(1 << _svm_cur.voice);
     }
+    /* FAKE: progIdx computed in both arms (duplicated-statement-into-arms); hoisted above the test the lhu becomes lh and the frame grows (score 19). */
     if ((_svm_cur.tone_vag_idx & 1) > 0) {
         progIdx = (_svm_cur.tone_vag_idx - 1) / 2;
-        vmSetStartAddr(((ProgAtr *)_svm_pg)[progIdx].reserved2);
+        vmSetStartAddr(_svm_pg[progIdx].reserved2);
     } else {
         progIdx = (_svm_cur.tone_vag_idx - 1) / 2;
-        vmSetStartAddr(((ProgAtr *)_svm_pg)[progIdx].reserved3);
+        vmSetStartAddr(_svm_pg[progIdx].reserved3);
     }
     _svm_sreg_buf[_svm_cur.voiceOffset + 4] =
         _svm_tn[_svm_cur.field_7_fake_program * 16 + _svm_cur.tone].adsr1;

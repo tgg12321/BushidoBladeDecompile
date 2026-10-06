@@ -10,7 +10,7 @@
 extern s32 D_800F19D0[2];
 
 void _SsVmInit(s32 a0) {
-    s32 buf[16];
+    SpuVoiceAttr attr;
     u16 i;
 
     _spu_setInTransfer(0);
@@ -35,6 +35,7 @@ void _SsVmInit(s32 a0) {
     } while (i < 0x10);
 
     {
+        /* FAKE: masked holds (u8)a0 as a u16; read from a0 twice the andi lands in v0 and the byte store takes s1 (score 3). */
         u16 masked = (u8)a0;
         if (masked >= 0x18) {
             _SsVmMaxVoice = 0x18;
@@ -43,14 +44,14 @@ void _SsVmInit(s32 a0) {
         }
     }
 
-    buf[1] = 0x60093;
+    attr.mask = 0x60093;
     i = 0;
-    *(s16 *)((u8 *)buf + 0x14) = 0x1000;
-    *(s32 *)((u8 *)buf + 0x1C) = 0x1000;
-    *(u16 *)((u8 *)buf + 0x3A) = 0x80FF;
-    *(s16 *)((u8 *)buf + 0x08) = 0;
-    *(s16 *)((u8 *)buf + 0x0A) = 0;
-    *(s16 *)((u8 *)buf + 0x3C) = 0x4000;
+    attr.pitch = 0x1000;
+    attr.addr = 0x1000;
+    attr.adsr1 = 0x80FF;
+    attr.volume.left = 0;
+    attr.volume.right = 0;
+    attr.adsr2 = 0x4000;
 
     if (_SsVmMaxVoice != 0) {
         do {
@@ -76,23 +77,23 @@ void _SsVmInit(s32 a0) {
             _svm_voice[i].unk2e = 0;
             _svm_voice[i].start_pan = 0;
             _svm_voice[i].start_vol = 0;
-            buf[0] = 1 << i;
-            func_8008B488(buf);
+            attr.voice = 1 << i;
+            func_8008B488(&attr);
             _svm_cur.voice = i;
             _SsVmKeyOffNow(1);
             i = i + 1;
         } while (i < _SsVmMaxVoice);
     }
 
-    _svm_rattr_plus_0x8 = 0x3FFF;
-    _svm_rattr_plus_0xA = 0x3FFF;
+    _svm_rattr.depth.left = 0x3FFF;
+    _svm_rattr.depth.right = 0x3FFF;
     _svm_okon1 = 0;
     _svm_okon2 = 0;
     _svm_okof1 = 0;
     D_800F1B14 = 0;
     D_800F2B68 = 0;
-    _svm_rattr = 0;
-    _svm_rattr_plus_0x4 = 0;
+    _svm_rattr.mask = 0;
+    _svm_rattr.mode = 0;
     _svm_auto_kof_mode = 0;
     _svm_stereo_mono = 0;
     kMaxPrograms = 0x80;

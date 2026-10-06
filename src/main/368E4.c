@@ -468,19 +468,18 @@ void game_Init(void) {
 }
 void func_80046BF4(s32 *a0, s16 *a1, s32 a2) {
     s32 result[3];
-    u16 new_var2;
+    u16 count1;
     s32 trans[3];
     SVECTOR rot;
     MATRIX matrix_buf;
 
     D_800A3820 = (s32)&D_80102C00;
     {
-        u16 cnt = D_800A38D6;
-        s32 old_ptr = (s32)g_gpu_ot_ptr;
-        new_var2 = cnt + 1;
-        D_800A3808 = old_ptr;
-        D_800A38D6 = new_var2;
-        D_800A378C = (u32 *)(old_ptr + 0x10);
+        /* FAKE: count1 holds the count + 1 ahead of the D_800A3808 store; at the D_800A38D6 store the loads reorder (score 12). */
+        count1 = D_800A38D6 + 1;
+        D_800A3808 = (s32)g_gpu_ot_ptr;
+        D_800A38D6 = count1;
+        D_800A378C = (u32 *)((s32)g_gpu_ot_ptr + 0x10);
     }
 
     if (a0 != 0) {
@@ -488,7 +487,8 @@ void func_80046BF4(s32 *a0, s16 *a1, s32 a2) {
         D_80101DF0.xf.rot.vy = -a1[1];
         D_80101DF0.xf.rot.vz = -a1[2];
 
-        trans[1] = (trans[0] = 0);
+        trans[0] = 0;
+        trans[1] = 0;
         trans[2] = -a2;
 
         rot.vx = -a1[0];
@@ -500,14 +500,12 @@ void func_80046BF4(s32 *a0, s16 *a1, s32 a2) {
         ApplyMatrixLV(&matrix_buf, trans, result);
 
         {
-            s32 *rp = result;
-            s32 *ap = a0;
-            D_80101DF0.work.t[0] = *rp++ + *ap++;
-            D_80101DF0.work.t[1] = *rp++ + *ap++;
-            D_80101DF0.work.t[2] = *rp++ + *ap++;
+            D_80101DF0.work.t[0] = result[0] + a0[0];
+            D_80101DF0.work.t[1] = result[1] + a0[1];
+            D_80101DF0.work.t[2] = result[2] + a0[2];
         }
 
-        func_800418D0((s32 *)&D_80101DF0);
+        func_800418D0(&D_80101DF0);
         camera_InitBoneData();
         stage_InitCollision();
 
@@ -2378,7 +2376,7 @@ void func_80049E4C(void) {
     D_80101DF0.work.t[2] = 0;
     D_80101DF0.unkC = 0;
     D_80101DF0.unk8 = 5;
-    func_800418D0((s32 *)p1);
+    func_800418D0(p1);
     p2->unk0 = 0x65;
     D_800FF638.unk1 = 0;
     D_800FF638.xf.rot.vx = 0;
@@ -2389,7 +2387,7 @@ void func_80049E4C(void) {
     D_800FF638.work.t[2] = 0;
     D_800FF638.unkC = 0;
     D_800FF638.unk8 = 2;
-    func_800418D0((s32 *)p2);
+    func_800418D0(p2);
     D_800A3708 = p1;
     D_800A370C = p2;
 }

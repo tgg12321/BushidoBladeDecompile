@@ -7,7 +7,6 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1a_c.c). */
-extern s16 D_800963EE;
 extern s32 rcos(s32);
 extern s32 rsin(s32);
 void func_800433E4();
@@ -244,7 +243,7 @@ s32 func_80044FA0(s32 a0, s32 a1) {
         goto set_from_table;
     }
     if (D_800A3240 != 0) {
-        s0 = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
+        s0 = D_800963EC[a0].length_sectors << 11;
     } else {
         s0 = 0;
     }
@@ -257,15 +256,16 @@ s32 func_80044FA0(s32 a0, s32 a1) {
     }
     goto do_return;
 set_from_table:
-    s0 = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
+    s0 = D_800963EC[a0].length_sectors << 11;
 do_return:
     func_80044E74(a0, a1);
     return s0;
 }
-extern s16 D_800963EE;
 extern s32 func_800457DC(void);
 s32 func_80045080(s32 a0) {
-    s32 val = (s32)*(s16 *)((u8 *)&D_800963EE + a0 * 4) << 11;
+    /* FAKE: val reads the length ahead of the func_800457DC call; at its use the lh moves after
+       the call and a0 * 4 is kept in s0 instead (score 9). */
+    s32 val = D_800963EC[a0].length_sectors << 11;
     return func_800457DC() - val;
 }
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */

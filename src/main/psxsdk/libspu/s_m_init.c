@@ -12,7 +12,7 @@ s32 SpuInitMalloc(s32 num, s32 *top) {
     if (num > 0) {
         size = 0x10000 << _spu_mem_mode_plus;
         top[0] = 0x40001010;
-        _spu_memList = (s32)top;
+        _spu_memList = (SpuMemRec *)top;
         _spu_AllocLastNum = 0;
         _spu_AllocBlockNum = num;
         top[1] = size - 0x1010;

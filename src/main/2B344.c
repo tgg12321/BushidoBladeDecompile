@@ -1307,10 +1307,10 @@ extern void func_8003B328(void);
 extern void func_8003B534(s32);
 extern SVECTOR D_800A312C;
 void func_8003CF84(void) {
-    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner rulings 2026-08-17 + 2026-08-18): reconstructs the original frame's 16-byte allocated-but-untouched leading region (compiled-out >=7-word call). SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. */
+    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner rulings 2026-08-17 + 2026-08-18): reconstructs the original frame's 16-byte allocated-but-untouched leading region (compiled-out >=7-word call). SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Ablated (2026-10-06): score 17. */
     volatile u32 pre_pad[4];
     s32 vec[3];
-    /* FAKE: unwritten TRAILING pad (owner ruling 2026-08-18, this function only): the target frame has a second 8-byte allocated-but-untouched object above vec, which no phantom-slot producer reproduces. */
+    /* FAKE: unwritten TRAILING pad (owner ruling 2026-08-18, this function only): the target frame has a second 8-byte allocated-but-untouched object above vec, which no phantom-slot producer reproduces. Ablated (2026-10-06): score 8. */
     volatile u32 pad2[2];
     s16 *a;
     s32 *b;
@@ -1358,12 +1358,12 @@ void func_8003CF84(void) {
         if (D_800A38DC == 4 || D_800A38DC == 6) {
             /* FAKE: indexes past D_800A37D2 into D_800A37D3 by player number (owner Q63, this
              * byte pair only): the target also reaches each byte through its own symbol, which
-             * no single array or struct gives. */
+             * no single array or struct gives. Ablated (2026-10-06): score 16. */
             (&D_800A37D2)[D_800A3748] = (&D_800A37D2)[D_800A3748] + 1;
         }
-        func_8001979C(0, (u32 *)D_80102770);
-        func_8001979C(1, (u32 *)D_801027B0[0][4]);
-        func_8001979C(2, (u32 *)D_801027B0[1][4]);
+        func_8001979C(0, D_80102760.unk_10);
+        func_8001979C(1, D_801027B0[0].unk_10);
+        func_8001979C(2, D_801027B0[1].unk_10);
         if (D_800A38DC == 0 && (u8)D_800A3836 != 0xFF) {
             func_8001DA2C();
             func_8003B328();

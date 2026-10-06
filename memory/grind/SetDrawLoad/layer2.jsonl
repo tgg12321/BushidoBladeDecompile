@@ -1,0 +1,1 @@
+{"func": "SetDrawLoad", "addr": "8007AC18", "verdict": "PASS", "body_hash": "8b4d516c73c6e0f7", "body_kind": "c", "file": "main/psxsdk/libgpu/prim", "reviewer": "cheat-reviewer:rev-w2b5", "scope": "cheat-cleanup", "date": "2026-10-06T15:47:15Z", "head": "8fc462a1c", "notes": ""}

@@ -1124,20 +1124,19 @@ void pad_ResetStateMarkValid(void) {
 void func_80019568(s32 arg0) {
     PadState pad;
     s32 pkts[4];
-    u8 *packets;
     s32 i;
     s32 held;
     s32 old_held;
 
     held = 0;
     i = 0;
-    packets = (u8 *)&pkts[0];
     pkts[0] = g_pad_buf[0][0];
     pkts[1] = g_pad_buf[0][1];
     pkts[2] = g_pad_buf[1][0];
     pkts[3] = g_pad_buf[1][1];
     do {
-        u8 *rec = &packets[i * 8];
+        /* FAKE: rec holds the packet's address for the loop body; indexing the packet bytes at each read adds a second induction (score 18). */
+        u8 *rec = (u8 *)pkts + i * 8;
         s32 valid = 0;
         s32 bits;
 
@@ -1155,7 +1154,7 @@ void func_80019568(s32 arg0) {
              * no movable exists and the `addiu $v0,$zero,1` stays in the loop
              * filling target's lhu load-delay slot. A bare literal, a computed
              * `valid = (rec[0] == 0)` or a single store after the join do not
-             * match. */
+             * match. Ablated (2026-10-06): score 21. */
             pad.valid[i] = valid;
             type_m1 = (s16)((u16)pad.type[i] - 1);
 
@@ -1189,9 +1188,8 @@ void func_80019568(s32 arg0) {
     func_8001B138(&pad.held);
 
     if (D_800A3834 == 1 && arg0 == 0) {
-        s32 mode = D_800A38DC;
 
-        switch (mode) {
+        switch (D_800A38DC) {
         case 4:
         case 5:
             if (g_pad_state.valid[1] == 0) {
@@ -1209,7 +1207,7 @@ void func_80019568(s32 arg0) {
         }
     }
 
-    func_8003A728((s32)&pad);
+    func_8003A728(&pad);
 
     i = 0;
     do {

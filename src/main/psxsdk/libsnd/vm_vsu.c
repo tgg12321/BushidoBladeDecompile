@@ -4,37 +4,16 @@
 #include "libsnd_i.h"
 
 s32 _SsVmVSetUp(s32 a0, s32 a1) {
-    u16 a0h;
-    s16 a1h;
-    s32 idx;
-    s32 sa1;
-    s32 v0;
-    int v1;
-    s32 v2;
-    s32 entry;
-    s32 ret;
-    a0h = a0;
-    a1h = a1;
-    if ((a0 & 0xFFFFu) >= 0x10) goto fail;
-    idx = (s16)a0h;
-    if (_svm_vab_used[idx] != 1) return -1;
-    sa1 = a1h;
-    if (sa1 < kMaxPrograms) goto ok;
-fail:
-    return -1;
-ok:
-    ret = idx << 2;
-    v0 = *(s32 *)((u8 *)_svm_vab_vh + ret);
-    v1 = *(s32 *)((u8 *)_svm_vab_pg + ret);
-    v2 = *(s32 *)((u8 *)_svm_vab_tn + ret);
-    ret = sa1 << 4;
-    _svm_cur.vabId = (u8) a0h;
-    _svm_cur.prog = (u8) a1h;
-    ret += v1;
-    entry = *((s32 *) (ret + 8));
-    _svm_vh = (VabHdr *)v0;
-    _svm_pg = v1;
-    _svm_tn = (VagAtr *)v2;
-    _svm_cur.field_7_fake_program = (u8)entry;
+    s16 vabId = a0;
+    s16 prog = a1;
+    if (vabId < 0 || vabId >= 0x10 || _svm_vab_used[vabId] != 1 || prog >= kMaxPrograms) {
+        return -1;
+    }
+    _svm_vh = _svm_vab_vh[vabId];
+    _svm_pg = _svm_vab_pg[vabId];
+    _svm_tn = _svm_vab_tn[vabId];
+    _svm_cur.vabId = vabId;
+    _svm_cur.prog = prog;
+    _svm_cur.field_7_fake_program = _svm_pg[prog].reserved1;
     return 0;
 }

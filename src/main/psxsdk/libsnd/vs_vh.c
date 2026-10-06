@@ -50,6 +50,7 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
             }
         }
     } else {
+        /* FAKE: var_a2 is the _svm_vab_used base here and the header cursor below (one local, two roles); indexing _svm_vab_used directly swaps a2 / a3 through the body (score 14). */
         var_a2 = _svm_vab_used;
         if (var_a2[vabid] == 0) {
             _svm_vab_used[vabid] = 1;
@@ -62,7 +63,7 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
         return -1;
     }
     var_a2 = addr;
-    _svm_vab_vh[vabId_2] = (s32)var_a2;
+    _svm_vab_vh[vabId_2] = (VabHdr *)var_a2;
 
     var_a2 = var_a2 + 0x20;
     vab_hdr_2 = (VabHdr *)addr;
@@ -83,7 +84,7 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
         kMaxPrograms = 0x40;
     }
     if (vab_hdr_2->ps <= kMaxPrograms) {
-        _svm_vab_pg[vabId_2] = (s32)var_a2;
+        _svm_vab_pg[vabId_2] = (ProgAtr *)var_a2;
         pProgTable = (ProgAtr *)var_a2;
         var_a2 = var_a2 + (kMaxPrograms * 0x10);
         var_s0 = 0;
@@ -94,7 +95,7 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
             }
         }
         var_s0 = 0;
-        _svm_vab_tn[vabId_2] = (s32)var_a2;
+        _svm_vab_tn[vabId_2] = (VagAtr *)var_a2;
         ptr_vag_off_table = (u16 *)(var_a2 + (vab_hdr_2->ps << 9));
         num_vags = vab_hdr_2->vs;
         for (i = 0; i < 256; i++) {

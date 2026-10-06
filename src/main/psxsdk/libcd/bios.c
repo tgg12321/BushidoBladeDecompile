@@ -89,8 +89,7 @@ static inline void _memcpy(void *_dst, void *_src, u32 _size)
  * v1.86, whose bytes differ in two places: the DiskError report is two
  * CD_debug-gated printf()s (not puts + one gated printf), and the error mask
  * is 0x1D (CdlStatError|SeekError|IdError|ShellOpen = 0x1D, spelled as the
- * value). CD_status is Sony's `int`; this TU declares the libc-side u_char
- * view, hence the s32 accesses (as in CD_initintr / CD_init below). */
+ * value). */
 typedef char Result_t[8];
 extern s32 CD_status1; /* 0x800A11C8 = Sony CD_status1 */
 extern s32 CD_nopen;     /* Sony CD_nopen */
@@ -106,7 +105,7 @@ extern volatile u8 *g_cd_reg3;
 extern void printf();
 
 s32 getintr(void) {
-    /* FAKE: volatile locals admitted on SOTN precedent (owner rulings Q50 route A, Q53) -- every access becomes a $sp-slot memory round-trip instead of a register, as in the target. */
+    /* FAKE: volatile locals admitted on SOTN precedent (owner rulings Q50 route A, Q53) -- every access becomes a $sp-slot memory round-trip instead of a register, as in the target. Ablated (2026-10-06): score 68. */
     volatile char nReg; /* SOTN: src/main/psxsdk/libcd/bios.c:116 @db41b28 */
     volatile Result_t buf; /* SOTN: src/main/psxsdk/libcd/bios.c:117 @db41b28 */
     s32 i, j;
@@ -140,20 +139,19 @@ s32 getintr(void) {
     *g_cd_reg3 = 7;
     *g_cd_reg2 = 7;
     if (nReg != 3 || D_800A137C[CD_com]) {
-        if (!(*(s32 *)&CD_status & 0x10) && (buf[0] & 0x10)) {
+        if (!(CD_status & 0x10) && (buf[0] & 0x10)) {
             CD_nopen++;
         }
-        *(s32 *)&CD_status = buf[0];
+        CD_status = buf[0];
         CD_status1 = buf[1];
-        bHasError = *(s32 *)&CD_status;
-        bHasError &= 0x1D;
+        bHasError = CD_status & 0x1D;
     }
     if (nReg == 5) {
         if (CD_debug > 0) {
             printf(D_800161E4);
         }
         if (CD_debug > 0) {
-            printf(D_800161F0, CD_comstr[CD_com], *(s32 *)&CD_status, CD_status1);
+            printf(D_800161F0, CD_comstr[CD_com], CD_status, CD_status1);
         }
     }
     switch (nReg) {
@@ -493,7 +491,7 @@ void CD_initintr(void) {
     CD_cbready = 0;
     CD_cbsync = 0;
     CD_status1 = 0;
-    *(s32 *)&CD_status = 0;
+    CD_status = 0;
     ResetCallback();
     InterruptCallback(2, cdrom_IrqHandler);
 }
@@ -510,7 +508,7 @@ s32 CD_init(void) {
     CD_cbready = 0;
     CD_cbsync = 0;
     CD_status1 = 0;
-    *(s32 *)&CD_status = 0;
+    CD_status = 0;
 
     ResetCallback();
     InterruptCallback(2, cdrom_IrqHandler);
@@ -534,7 +532,7 @@ s32 CD_init(void) {
 
     CD_cw(1, 0, 0, 0);
 
-    if (*(s32 *)&CD_status & 0x10) {
+    if (CD_status & 0x10) {
         CD_cw(1, 0, 0, 0);
     }
 

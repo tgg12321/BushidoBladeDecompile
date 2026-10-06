@@ -993,13 +993,6 @@ void func_800288C8(void) {
         D_80101EC8[1].unk_134.vz += push2_z;
     }
 }
-void func_8002906C(void) {
-    s16 *ptr = (s16 *)func_8004678C();
-    while (*(s16 *)ptr != 0) {
-        *(s16 *)((u8 *)ptr + 2) = 0;
-        ptr = (s16 *)((u8 *)ptr + 0x10);
-    }
-}
 /* One 16-byte entry of the list func_8004678C returns (terminated by a zero
  * `type`); func_8002906C clears every entry's `used`. */
 typedef struct {
@@ -1009,6 +1002,14 @@ typedef struct {
     s32 y;
     s32 z;
 } PosRec;
+
+void func_8002906C(void) {
+    PosRec *ptr = (PosRec *)func_8004678C();
+    while (ptr->type != 0) {
+        ptr->used = 0;
+        ptr++;
+    }
+}
 
 s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3);
 s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2);
@@ -5301,109 +5302,111 @@ void func_80031B24(void) {
 }
 void func_80032040(void) {
     s32 i;
-    for (i = 0x84; i >= 0; i -= 0x2C) {
-        (&D_80104E88)[i] = 0;
+    for (i = 0; i < 4; i++) {
+        D_80104E88[i].unk_00 = 0;
     }
 }
 
-u8 *func_80032064(Unk80101EC8Record *src, s32 type) {
+Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
+    /* FAKE: constant holders for the speed (0x50) and the initial y velocity (-0xC8); as literals the li pair reorders (speed: score 12; vel_y: score 7). */
     s32 speed = 0x50;
     s32 vel_y = -0xC8;
     s32 i = 0;
-    u8 *ptr = &D_80104E88;
-    u8 *s0;
+    Unk80104E88Rec *ptr = D_80104E88;
+    Unk80104E88Rec *s0;
     s16 sp_area[3];
 
     for (; i < 4; i++) {
         s0 = ptr;
-        if (*s0 == 0) break;
-        ptr = s0 + 0x2C;
+        if (s0->unk_00 == 0) break;
+        ptr = s0 + 1;
     }
     if (i == 4) return 0;
 
-    *s0 = type;
-    *(s0 + 1) = 1;
-    *(s0 + 2) = 0;
-    *(s0 + 3) = src->index;
-    *(s32 *)(s0 + 4) = src->unk_F4.x;
+    s0->unk_00 = type;
+    s0->unk_01 = 1;
+    s0->unk_02 = 0;
+    s0->unk_03 = src->index;
+    s0->unk_04.x = src->unk_F4.x;
     {
         s32 v1 = src->unk_1A;
         if (v1 < 0) v1 += 0x1F;
-        *(s32 *)(s0 + 8) = src->unk_B8.vy - (v1 >> 5);
+        s0->unk_04.y = src->unk_B8.vy - (v1 >> 5);
     }
-    *(s32 *)(s0 + 0xC) = src->unk_F4.z;
-    *(s32 *)(s0 + 0x1C) = ((s32)Judge[src->unk_1C8.vy & 0xFFF] * speed) >> 12;
-    *(s32 *)(s0 + 0x20) = vel_y;
-    *(s32 *)(s0 + 0x24) = ((s32)Judge[(src->unk_1C8.vy + 0x400) & 0xFFF] * speed) >> 12;
-    *(Vec3_copy *)(s0 + 0x10) = *(Vec3_copy *)(s0 + 4);
-    *(s32 *)(s0 + 0x28) = src->unk_B8.vy;
+    s0->unk_04.z = src->unk_F4.z;
+    s0->unk_1C.x = ((s32)Judge[src->unk_1C8.vy & 0xFFF] * speed) >> 12;
+    s0->unk_1C.y = vel_y;
+    s0->unk_1C.z = ((s32)Judge[(src->unk_1C8.vy + 0x400) & 0xFFF] * speed) >> 12;
+    s0->unk_10 = s0->unk_04;
+    s0->unk_28 = src->unk_B8.vy;
     sp_area[1] = src->unk_1C8.vy;
     {
+        /* FAKE: unk_B2 read into a0_arg before cmd is chosen; read at the call the argument registers rotate (score 20). */
         s32 a0_arg = src->unk_B2;
         s32 cmd = 0xD;
-        u8 *v1 = s0 + 4;
         if (type == 1) cmd = 0xC;
-        func_80032854(a0_arg, cmd, (s32 *)v1, sp_area);
+        func_80032854(a0_arg, cmd, &s0->unk_04.x, sp_area);
     }
     return s0;
 }
 void func_800321E8(void) {
     Unk1F8002B8_8005344C *scr = &SPAD->unk2B8.v8005344C;
-    u8 *base = &D_80104E88;
+    Unk80104E88Rec *base = D_80104E88;
     s32 i;
 
     i = 0;
     do {
-        if (*base != 0) {
-            *(u8 *)(base + 2) += 1;
-            *(Vec3i32 *)(base + 0x10) = *(Vec3i32 *)(base + 4);
-            *(s32 *)(base + 0x20) += 0xD;
-            scr->unk00.x = *(s32 *)(base + 4) + *(s32 *)(base + 0x1C);
-            scr->unk00.y = *(s32 *)(base + 8) + *(s32 *)(base + 0x20);
-            scr->unk00.z = *(s32 *)(base + 0xC) + *(s32 *)(base + 0x24);
-            if (func_8005344C((s32 *)(base + 4), &scr->unk00.x, &scr->unk10.x, scr->unk30, (s32)&scr->unk38) != 0 || *(s32 *)(base + 8) > *(s32 *)(base + 0x28)) {
-                *base = 0;
+        if (base->unk_00 != 0) {
+            base->unk_02 += 1;
+            base->unk_10 = base->unk_04;
+            base->unk_1C.y += 0xD;
+            scr->unk00.x = base->unk_04.x + base->unk_1C.x;
+            scr->unk00.y = base->unk_04.y + base->unk_1C.y;
+            scr->unk00.z = base->unk_04.z + base->unk_1C.z;
+            if (func_8005344C(&base->unk_04.x, &scr->unk00.x, &scr->unk10.x, scr->unk30, (s32)&scr->unk38) != 0 || base->unk_04.y > base->unk_28) {
+                base->unk_00 = 0;
             } else {
-                *(Vec3i32 *)(base + 4) = scr->unk00;
+                base->unk_04 = scr->unk00;
             }
         }
         i++;
-        base += 0x2C;
+        base++;
     } while (i < 4);
 }
 void func_80032314(void) {
-    u8 *t0 = &D_80104E88;
+    Unk80104E88Rec *t0 = D_80104E88;
     s32 t1 = 0;
-    u8 *a3 = &D_80104E88 + 2;
+    /* FAKE: a second, byte cursor a3 at each record's unk_02, read for unk_02 (*a3),
+       unk_03 (a3 + 1) and unk_04 (a3 + 2..); reading them through t0 drops the second
+       induction register (score 21). */
+    u8 *a3 = &D_80104E88[0].unk_02;
     Unk80101EC8Record *ent;
     s32 state;
-    s32 a0;
 
 loop:
-    if (*t0 == 0) goto next;
+    if (t0->unk_00 == 0) goto next;
     {
         /* FAKE: named intermediate (no-new-park-categories.md, named-intermediate entry): `v1_v` holds
          * the 0/1 record index so the index is a variable, not a comparison. Written
          * directly (&D_80101EC8[cmp]), fold-const.c:3282-3323 turns the
          * multiply by a comparison operand into a COND_EXPR and the record address
-         * becomes a branch (7 insns short; the target multiplies sltiu by 0x44C). */
+         * becomes a branch (7 insns short; the target multiplies sltiu by 0x44C). Ablated (2026-10-06): score 13. */
         s32 v1_v = (*(u8 *)(a3 + 1) == 0);
         ent = &D_80101EC8[v1_v];
     }
     state = (u16)ent->unk_6A;
-    a0 = state & 0xFFFF;
-    if (a0 == 4) goto next;
+    if ((state & 0xFFFF) == 4) goto next;
     /* FAKE: single-level do-while(0) wrap (body executes once), mechanism:
      * the wrap's NOTE_INSN_LOOP notes make flow.c weight in-wrap reg_n_refs
      * by loop_depth, re-ranking global.c allocno priorities (walker 4390 <
-     * ent 4761 < mult-temp 8000) into the target $a1/$a2/$a3 seating. */
+     * ent 4761 < mult-temp 8000) into the target $a1/$a2/$a3 seating. Ablated (2026-10-06): score 15. */
     do {
-    if (a0 == 0x14) goto next;
-    if (a0 == 0xF) goto next;
+    if ((state & 0xFFFF) == 0x14) goto next;
+    if ((state & 0xFFFF) == 0xF) goto next;
     if ((u32)(state - 0x1C) < 2) goto next;
     if ((u32)(state - 0x1E) < 2) goto next;
     if ((u32)(state - 0x20) < 2) goto next;
-    if (a0 == 0x11) goto next;
+    if ((state & 0xFFFF) == 0x11) goto next;
     {
         s32 dx = ent->unk_F4.x - *(s32 *)(a3 + 2);
         s32 dy = ent->unk_F4.y - *(s32 *)(a3 + 6);
@@ -5433,12 +5436,10 @@ loop:
                 clz = sp_tmp;
             }
             {
-                u32 v0_m = (u32)-2;
                 u32 v1_m;
                 u32 idx;
                 u32 hi;
-                v0_m &= clz;
-                v1_m = 0x16 - v0_m;
+                v1_m = 0x16 - (clz & (u32)-2);
                 idx = dist_sq >> v1_m;
                 v1_m = v1_m >> 1;
                 hi = (u32)((u8)(g_sqrt_table_u8[idx]));
@@ -5446,14 +5447,9 @@ loop:
             }
         }
         {
-            s32 v1 = *a3;
-            s32 v0 = v1 << 4;
-            v0 = v0 - v1;
-            v0 = v0 << 1;
-            v0 = v0 + 0x1F4;
-            if (log2_val < (u32)v0) {
+            if (log2_val < (u32)(*a3 * 30 + 0x1F4)) {
                 ent->unk_286 = 5;
-                *t0 = 0;
+                t0->unk_00 = 0;
             }
         }
     }
@@ -5461,7 +5457,7 @@ loop:
 next:
     t1 += 1;
     a3 += 0x2C;
-    t0 += 0x2C;
+    t0++;
     if (t1 < 4) goto loop;
 }
 void func_800324D0(Unk80101EC8Record *rec) {
@@ -5554,9 +5550,9 @@ void func_800325E0(s32 arg0, s32 *arg1) {
     s32 pan_L;
     s32 pan_R;
 
-    dx = *(s32 *)((u8 *)D_800A36B4 + 0x20) - arg1[0];
-    dy = *(s32 *)((u8 *)D_800A36B4 + 0x24) - arg1[1];
-    dz = *(s32 *)((u8 *)D_800A36B4 + 0x28) - arg1[2];
+    dx = D_800A36B4->w20 - arg1[0];
+    dy = D_800A36B4->w24 - arg1[1];
+    dz = D_800A36B4->w28 - arg1[2];
 
     if (((u32)(dx + 0x9C40) > 0x13880U) || ((u32)(dz + 0x9C40) > 0x13880U)) {
         dist_volume = 0x9C40;
@@ -5565,7 +5561,6 @@ void func_800325E0(s32 arg0, s32 *arg1) {
         if (dist_sq < 0x400U) {
             dist_volume = (u32)(u8)(g_sqrt_table_u8[dist_sq]) >> 3;
         } else {
-            u32 clz;
             /* PsyQ 4.5 SDK GTE macro body: gte_Lzc(dist_sq, &sp_tmp) (gtemac.h:174-178) =
              * gte_ldlzc(r0) `mtc2 %0,$30` (inline_c.h:228-231) + gte_nop() x2 `nop`
              * (inline_c.h:1346-1347) + gte_stlzc(r0) `swc2 $31,0(%0)` (inline_c.h:1318-1322).
@@ -5587,13 +5582,14 @@ void func_800325E0(s32 arg0, s32 *arg1) {
                 : "=m"(sp_tmp)
                 : "r"(dist_sq)
                 : "$2", "$12");
-            clz = sp_tmp;
             {
+                /* FAKE: v0_m holds the -2 mask (li -2 into v0, and v0,v1,v0); as a literal the mask
+                   lands in v1 and the clz in v0 (score 3). */
                 u32 v0_m = (u32)-2;
                 u32 v1_m;
                 u32 idx;
                 u32 hi;
-                v0_m &= clz;
+                v0_m &= sp_tmp;
                 v1_m = 0x16 - v0_m;
                 idx = dist_sq >> v1_m;
                 v1_m = v1_m >> 1;
@@ -5608,7 +5604,7 @@ void func_800325E0(s32 arg0, s32 *arg1) {
         distance_scale = 0;
     }
 
-    listener_angle = *(s16 *)((u8 *)D_800A36B4 + 0x12);
+    listener_angle = D_800A36B4->h12;
     projected_pan = (s32)((dx * (s32)Judge[(listener_angle + 0x400) & 0xFFF])
                        + (dz * (s32)Judge[listener_angle & 0xFFF])) >> 12;
     pan_sign = ~(u32)projected_pan;

@@ -1,0 +1,1 @@
+{"func": "_SpuIsInAllocateArea_", "addr": "80089EB0", "verdict": "PASS", "body_hash": "3d8efe9f3fc04dc1", "body_kind": "c", "file": "main/psxsdk/libspu/s_m_util", "reviewer": "cheat-reviewer:rev-w2b5", "scope": "cheat-cleanup", "date": "2026-10-06T15:50:55Z", "head": "8fc462a1c", "notes": ""}

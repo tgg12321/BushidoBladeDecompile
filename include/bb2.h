@@ -351,7 +351,7 @@ extern u8 D_800A3690;
 extern s32 g_comb_send_buf_plus_0x4;
 extern s16 D_800A36A4;
 extern s32 D_800A36AC;
-extern s32 D_800A36B4;
+extern Rec44 *D_800A36B4; /* the active camera record (func_8001E404 / func_8001E6E4) */
 extern CdlATV D_800A36B8;
 extern s16 D_800A36C2;
 extern s32 D_800A36C4;
@@ -552,13 +552,10 @@ extern AnimRotFunc g_anim_func_table[6];
 extern CdFileEntry g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
 
 extern CdState D_80101E58;
-extern s32 D_80102760;
-extern s32 D_80102764;
-extern s32 D_80102768;
-extern s32 D_80102770;
+extern Unk801027B0Pack D_80102760; /* the common motion pack */
 extern PracticeParams D_80102778;
 extern PadState g_pad_state;
-extern s32 D_801027B0[][5];
+extern Unk801027B0Pack D_801027B0[]; /* per character */
 /* [i] points to block i's slots, the words after its header word (func_80044010 records it and
  * 32D04's D_80103658[i] holds the slot count).  Each slot is a word holding a block-relative
  * offset that func_80044010 turns into an address by adding the block's base, unless header
@@ -567,7 +564,7 @@ extern s32 D_801027B0[][5];
  * func_800433E4 store a slot to scratchpad word 0, the u16 * cursor func_80043454 reads, and
  * func_8003FA24 reads u16 data through one. */
 extern s32 *D_80103608[];
-extern u8 D_80104E88;
+extern Unk80104E88Rec D_80104E88[];
 extern s32 MotDataBaseAddress;
 
 /* func_800338CC's list: the set bit numbers of D_80106A50.unk_00 & mask,
@@ -584,7 +581,7 @@ extern void func_8003D52C(u8 *, s32, ...);
 extern void func_80021A98(s32, MoveScript *, s32);
 extern void func_80022580(s32, s32, s32, s32, s32);
 extern s32 func_80036EA8(s32, s32);
-extern void func_8003A728(s32);
+extern void func_8003A728(PadState *);
 extern void func_8003AE5C(u8 *);
 extern void func_8003DE14(RECT *, s32);
 extern void func_8003F1E4(s32);
@@ -638,7 +635,7 @@ extern s32 D_800F1138;
 extern Vec4i32 D_800F1140;
 extern s32 D_800F1178;
 extern s32 D_800F117C;
-extern u8 D_800F1B18[];
+extern Unk800F1B18Rec D_800F1B18[];
 extern u8 D_800F33D8[];
 extern s16 D_800F6650;
 extern s16 D_800F6656;
@@ -714,9 +711,10 @@ extern void func_80030A2C(Unk80101EC8Record *, s32, Vec3i32 *);
 extern s32 func_80030BA8(Unk80101EC8Record *);
 extern void func_80030D7C(void);
 extern void func_80031B24(void);
-extern u8 *func_80032064(Unk80101EC8Record *, s32);
+extern Unk80104E88Rec *func_80032064(Unk80101EC8Record *, s32);
 extern void func_800321E8(void);
 extern void func_800324D0(Unk80101EC8Record *);
+extern void func_800325E0(s32, s32 *);
 extern void func_80032854(s32, s32, s32 *, s16 *);
 extern void func_8003339C(Unk80101EC8Record *);
 extern void func_80033510(void);
@@ -790,7 +788,7 @@ extern void func_80041430(s32, s32);
 extern void save_vc_ctrl(s32, Unk80045878Node *, s32);
 extern Unk80045878Obj *func_8004153C(s32);
 extern void func_800417D0(Unk80101DF0Record *);
-extern void func_800418D0(s32 *);
+extern void func_800418D0(Unk80101DF0Record *);
 extern void func_80041BF4(s32, s32, s32);
 extern void func_80041E10(Vec4i32 *, s32);
 extern void func_800420D0(void);

@@ -36,6 +36,7 @@ typedef struct {
 #define setlen(p, _len) (((P_TAG *)(p))->len = (u8)(_len))
 #define setcode(p, _code) (((P_TAG *)(p))->code = (u8)(_code))
 #define getcode(p) (u8)(((P_TAG *)(p))->code)
+#define getlen(p) (u8)(((P_TAG *)(p))->len)
 #define setaddr(p, _addr) (((P_TAG *)(p))->addr = (u32)(_addr))
 
 #define setPolyF3(p) setlen(p, 4), setcode(p, 0x20)
@@ -107,6 +108,9 @@ typedef struct { u32 tag; u32 code[2]; } DR_PRIO;   /* Mask Priority */
 
 /* PsyQ DR_MOVE: DMA tag word, then five GPU command words. */
 typedef struct { u32 tag; u32 code[5]; } DR_MOVE;
+
+/* PsyQ DR_LOAD: tag, three command words, up to 13 data words. */
+typedef struct { u32 tag; u32 code[3]; u32 p[13]; } DR_LOAD;
 
 typedef struct {
     u32 tag;
@@ -374,5 +378,10 @@ extern void SetDrawArea(DR_AREA *, RECT *);
 extern void SetDrawMode(DR_MODE *, s32, s32, s32, RECT *);
 extern void SetDrawOffset(DR_OFFSET *, s16 *); /* PsyQ: u_short *ofs (sys.c's definition loads them signed) */
 extern void SetDrawMove(DR_MOVE *, RECT *, u32, u32); /* PsyQ: (DR_MOVE *, RECT *, int, int) */
+extern void SetDrawLoad(DR_LOAD *, RECT *);
+extern void SetDrawTPage(DR_TPAGE *, s32, s32, s32);
+extern s32 MargePrim(void *, void *);
+extern void DumpDrawEnv(DRAWENV *);
+extern void DumpDispEnv(DISPENV *);
 
 #endif /* PSXSDK_LIBGPU_H */

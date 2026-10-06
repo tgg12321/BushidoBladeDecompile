@@ -6,7 +6,7 @@
 
 #include <psxsdk/libcd.h>
 
-extern u8 CD_status;
+extern s32 CD_status; /* Sony's int CD_status (bios.c) */
 extern u8 CD_pos[4]; /* Sony's u_char CD_pos[4] (SOTN: src/main/psxsdk/libcd/bios.c:42 @aa53500) */
 extern u8 CD_mode;
 extern u8 CD_com;

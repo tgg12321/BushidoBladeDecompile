@@ -151,7 +151,6 @@ after2:
         func_80041398(b | ((r << 16) | (g << 8)));
     }
 }
-typedef struct { s32 w[4]; } Block16;
 extern void gte_SetMatrixRotTransIRVec(void *, void *, void *);
 void func_800417D0(Unk80101DF0Record *a0) {
     AnimRotFunc func;
@@ -174,16 +173,13 @@ void func_800417D0(Unk80101DF0Record *a0) {
     }
     a0->unk6 = 1;
 }
-void func_800418D0(s32 *a0) {
+void func_800418D0(Unk80101DF0Record *a0) {
     SVECTOR sp10;
-    AnimRotFunc func;
-    sp10.vx = -(u16)((u16 *)a0)[8];
-    sp10.vy = -(u16)((u16 *)a0)[9];
-    sp10.vz = -(u16)((u16 *)a0)[10];
-    func = g_anim_func_table[((s16 *)a0)[4]];
-    func(&sp10, (MATRIX *)(a0 + 14));
-    ((Block16 *)(a0 + 6))[0] = ((Block16 *)(a0 + 14))[0];
-    ((Block16 *)(a0 + 6))[1] = ((Block16 *)(a0 + 14))[1];
+    sp10.vx = -(u16)a0->xf.rot.vx;
+    sp10.vy = -(u16)a0->xf.rot.vy;
+    sp10.vz = -(u16)a0->xf.rot.vz;
+    g_anim_func_table[a0->unk8](&sp10, &a0->work);
+    a0->xf.mat = a0->work;
 }
 void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
     s32 mask_table;

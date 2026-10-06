@@ -1,0 +1,1 @@
+{"func": "_SsVmVSetUp", "addr": "80087E3C", "verdict": "PASS", "body_hash": "69879b22fde07ebc", "body_kind": "c", "file": "main/psxsdk/libsnd/vm_vsu", "reviewer": "cheat-reviewer:rev-w2b5", "scope": "cheat-cleanup", "date": "2026-10-06T15:49:29Z", "head": "8fc462a1c", "notes": ""}

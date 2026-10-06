@@ -15,8 +15,8 @@ const char g_str_none[8] =
 /* Forward declarations */
 extern s32 DMACallback(s32, s32);
 
-u32 CdStatus(void) {
-    return CD_status;
+inline u32 CdStatus(void) {
+    return (u8)CD_status;
 }
 
 u32 CdMode(void) {
@@ -125,7 +125,7 @@ loop:
     CD_cbsync = 0;
 
     if (idx != 1) {
-        if (CD_status & 0x10) {
+        if (CdStatus() & 0x10) {
             CD_cw(1, 0, 0, 0);
         }
     }
@@ -175,7 +175,7 @@ loop:
     CD_cbsync = 0;
 
     if (idx != 1) {
-        if (CD_status & 0x10) {
+        if (CdStatus() & 0x10) {
             CD_cw(1, 0, 0, 0);
         }
     }
@@ -220,7 +220,7 @@ loop:
     CD_cbsync = 0;
 
     if (idx != 1) {
-        if (CD_status & 0x10) {
+        if (CdStatus() & 0x10) {
             CD_cw(1, 0, 0, 0);
         }
     }

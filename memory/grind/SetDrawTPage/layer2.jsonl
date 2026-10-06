@@ -1,0 +1,1 @@
+{"func": "SetDrawTPage", "addr": "8007AB8C", "verdict": "PASS", "body_hash": "3888f93bbfd87cd5", "body_kind": "c", "file": "main/psxsdk/libgpu/prim", "reviewer": "cheat-reviewer:rev-w2b5", "scope": "cheat-cleanup", "date": "2026-10-06T15:47:34Z", "head": "8fc462a1c", "notes": ""}

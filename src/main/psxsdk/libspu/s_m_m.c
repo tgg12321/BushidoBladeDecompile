@@ -5,10 +5,6 @@
 
 /* PsyQ 4.0 LIBSPU s_m_m: SpuMalloc — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libspu/s_m_m.c */
-/* Self-referential on purpose: the object `_spu_memList` (Sony's SPU_MALLOC list pointer,
-   declared s32 in libspu_internal.h) is viewed as SpuMemRec* through this macro; a macro
-   name inside its own replacement list is not re-expanded (C90 6.8.3.4). */
-#define _spu_memList ((SpuMemRec *)_spu_memList)
 s32 SpuMalloc(s32 size) {
     s32 var_s2;
     s32 var_s3;
@@ -75,6 +71,8 @@ s32 SpuMalloc(s32 size) {
             _spu_AllocLastNum < _spu_AllocBlockNum) {
             u32 _addr = _spu_memList[var_s2].addr + size;
             u32 _size = _spu_memList[var_s2].size - size;
+            /* FAKE: record address as integer arithmetic (index first); &_spu_memList[n]
+               adds base first (addu operand order, score 1). */
             SpuMemRec *kb =
                 (SpuMemRec *)((_spu_AllocLastNum << 3) + (s32)_spu_memList);
             u32 swapAddr = kb->addr;

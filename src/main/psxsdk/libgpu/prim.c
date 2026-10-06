@@ -193,10 +193,10 @@ void SetLineG4(LINE_G4 *p) {
     setLineG4(p);
 }
 
-void SetDrawTPage(u8 *a0, s32 a1, s32 a2, u32 a3) {
+void SetDrawTPage(DR_TPAGE *a0, s32 a1, s32 a2, s32 a3) {
     u32 cmd;
     u32 val;
-    a0[3] = 1;
+    setlen(a0, 1);
     cmd = GP0_DRAW_MODE;
     if (a2) {
         cmd = (GP0_DRAW_MODE | GPU_DRAW_MODE_DITHER);
@@ -207,12 +207,12 @@ void SetDrawTPage(u8 *a0, s32 a1, s32 a2, u32 a3) {
          * val |= TEXOFF;`. The single-def compound form ties val's andi dest into dying
          * $a3 via GCC 2.7.2 local-alloc combine_regs; the two-arm spelling
          * keeps the masked temp in $v0 so the final IOR reproduces target's
-         * cmd=$v1/val=$v0 `or v0,v1,v0`. Byte-neutral: one andi (delay slot), 11 insns. */
+         * cmd=$v1/val=$v0 `or v0,v1,v0`. Byte-neutral: one andi (delay slot), 11 insns. Ablated (2026-10-06): score 5. */
         val = (a3 & GPU_DRAW_MODE_MASK) | GPU_DRAW_MODE_TEXOFF;
     } else {
         val = a3 & GPU_DRAW_MODE_MASK;
     }
-    *(u32 *)(a0 + 4) = cmd | val;
+    a0->code[0] = cmd | val;
 }
 /* Copy packet: tag followed by five GPU command words. */
 void SetDrawMove(DR_MOVE *a0, RECT *a1, u32 a2, u32 a3) {
@@ -234,46 +234,46 @@ void SetDrawMove(DR_MOVE *a0, RECT *a1, u32 a2, u32 a3) {
     a0->code[4] = *(s32 *)&a1->w;
 }
 
-void SetDrawLoad(u32 *a0, s16 *a1) {
+void SetDrawLoad(DR_LOAD *p, RECT *rect) {
     u32 nwords;
     s32 size;
-    u32 *end;
-    nwords = (a1[2] * a1[3] + 1) / 2;
+    nwords = (rect->w * rect->h + 1) / 2;
     size = nwords + 4;
     if (nwords >= 13) {
         size = 0;
     }
-    ((u8 *)a0)[3] = size;
-    a0[1] = GP0_COPY_RECT_C2V;
-    a0[2] = *(u32 *)&a1[0];
-    a0[3] = *(u32 *)&a1[2];
-    end = a0 + size;
-    *end = OT_TERMINATOR;
+    setlen(p, size);
+    p->code[0] = GP0_COPY_RECT_C2V;
+    /* FAKE: packed RECT word read follows matched Sony-library precedent (as SetDrawMove; psyz
+       prim.c SetDrawLoad reads the same words); (y << 16) | (u16)x scores 12. */
+    p->code[1] = *(u32 *)&rect->x;
+    /* FAKE: packed RECT word read follows matched Sony-library precedent (as SetDrawMove; psyz
+       prim.c SetDrawLoad reads the same words); (h << 16) | (u16)w scores 10. */
+    p->code[2] = *(u32 *)&rect->w;
+    p->p[size - 4] = OT_TERMINATOR;
 }
-s32 MargePrim(u8 *a0, u32 *a1) {
+s32 MargePrim(void *p0, void *p1) {
     s32 size;
-    size = a0[3] + ((u8 *)a1)[3] + 1;
+    size = getlen(p0) + getlen(p1) + 1;
     if (size >= 17) {
         return -1;
     }
-    a0[3] = size;
-    *a1 = 0;
+    setlen(p0, size);
+    *(u32 *)p1 = 0;
     return 0;
 }
-void DumpDrawEnv(s16 *a0) {
-    u32 val;
-    GPU_printf(&D_80015D80, a0[0], a0[1], a0[2], a0[3]);
-    GPU_printf(&D_80015D98, a0[4], a0[5]);
-    GPU_printf(&D_80015DA8, a0[6], a0[7], a0[8], a0[9]);
-    GPU_printf(&D_80015DC0, ((u8 *)a0)[0x16]);
-    GPU_printf(&D_80015DCC, ((u8 *)a0)[0x17]);
-    val = ((u16 *)a0)[0xA];
-    GPU_printf(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
-               ((val << 4) & 0x100) + ((val >> 2) & 0x200));
+void DumpDrawEnv(DRAWENV *env) {
+    GPU_printf(&D_80015D80, env->clip.x, env->clip.y, env->clip.w, env->clip.h);
+    GPU_printf(&D_80015D98, env->ofs[0], env->ofs[1]);
+    GPU_printf(&D_80015DA8, env->tw.x, env->tw.y, env->tw.w, env->tw.h);
+    GPU_printf(&D_80015DC0, env->dtd);
+    GPU_printf(&D_80015DCC, env->dfe);
+    GPU_printf(&D_80015D58, (env->tpage >> 7) & 3, (env->tpage >> 5) & 3, (env->tpage << 6) & 0x7C0,
+               ((env->tpage << 4) & 0x100) + ((env->tpage >> 2) & 0x200));
 }
-void DumpDispEnv(s16 *a0) {
-    GPU_printf(&D_80015DD8, a0[0], a0[1], a0[2], a0[3]);
-    GPU_printf(&D_80015DF4, a0[4], a0[5], a0[6], a0[7]);
-    GPU_printf(&D_80015E10, ((u8 *)a0)[0x10]);
-    GPU_printf(&D_80015E1C, ((u8 *)a0)[0x11]);
+void DumpDispEnv(DISPENV *env) {
+    GPU_printf(&D_80015DD8, env->disp.x, env->disp.y, env->disp.w, env->disp.h);
+    GPU_printf(&D_80015DF4, env->screen.x, env->screen.y, env->screen.w, env->screen.h);
+    GPU_printf(&D_80015E10, env->isinter);
+    GPU_printf(&D_80015E1C, env->isrgb24);
 }
