@@ -29,7 +29,7 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
 
 1. **`_SendPAD`** — done: COMPLETED-INLINE-ASM-CANONICAL by owner ruling Q112 (rules 7b2e1706b, auth 2a3b1e6e4;
    PsyQ 4.0's own object names the module source `sendpad.s`). The queue is empty.
-2. **Phase 2 types** — in progress (started 2026-10-03; census, harness and plan:
+2. **Phase 2 types** — long tail closed 2026-10-06 (owner questions open) (started 2026-10-03; census, harness and plan:
    `memory/grind/phase2-2026-10-03/README.txt`; gate `tools/check.sh`, commits via `tools/commit.sh`;
    helpers in `tools/game/` and `tools/struct/`). Every commit: SHA1 == oracle, all objects identical
    (or relocation-only for a symbol merge/retirement, stated in the body), INTEGRITY OK, a fresh
@@ -83,13 +83,18 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      branch, reviewed in a throwaway worktree, landed by the orchestrator with `git cherry-pick -n` +
      verify-oracle + layer2 record + tools/commit.sh when main's index is clean): libspu / libgpu / 9F9C /
      17AFC / 28708 / 309CC / 31548 / 31D3C / 35000 / 368E4 / 31CFC and the libraries.
-   - **Next session starts here:** worker 1 — descriptor unification batch (i) (one sheet header / cell /
-     Unk8007352CEnv in game.h; 63D2C / 64FD8 / 5ED34; scratch `lt/fdesc/fdesc1.py`), then (ii) 51268 + 3AB48,
-     then FZZ. Worker 2 — batch 3 (the per-player model object Unk80045878Obj / Node; g_player_ptrs /
-     func_8004153C retype incl. its 2B344 / 3AB48 users; `lt/f08/w2b3.py`), then batch 4 (F05 + P7c +
-     368E4 vehicle sites + F11, `lt/f05/w2b4.py`; F11's eight walkers stay as debt rows, B5 trials 15-60).
-     Still open: P7b (D_800A38B4 word cursor); the volatile RAM shadow D_800F7298 in _SpuSetAnyVoice
-     (borderline.md 544ac7e3a, owner question); Codex backlog `tmp/codex/backlog.md` (gitignored).
+   - **Long tail CLOSED 2026-10-06** (609a9a09a): `lt/plan.txt` is the current-state record; census 685 sites
+     (2026-10-05: 3303): ruled 180, debt 246, owner-blocked 196, boundary 63, open 0. Session landings
+     8fc462a1c..b9a504cd0 (fimg1, w2 b5 / P7b / b7-b12, fsmall + engine f2b56796b, fdecl1, fot1 = g_gpu_ot_ptr
+     u32 * reversing P5, fres1 / fres2). Tooling: fdfb27257 (data-as-code needs included-asm evidence),
+     97dd7cc7e (close-ledger normpath).
+   - **Owner questions (borderline.md, 2026-10-06):** asm-operand typing (17AFC CD58 / DAD0 / D780, 87A0,
+     51268 67D14, func_800203B4 + tmp/p2/i203); _SpuSetAnyVoice's D_800F7298 volatile; Q96 scope for
+     func_80031B24. Nothing else in Phase 2 is open.
+   - **Next session starts here:** owner answers above, then Phase 3 step 0 — draft (scratch, unreviewed)
+     `tmp/p2/phase3_step0_draft.txt`: rule text N1-N6, a naming-reviewer rubric, wave flow, 20 first-wave
+     candidates. Process: never export GIT_DIR / GIT_WORK_TREE in a shell that runs tests (2026-10-06 the
+     grinder tests rewrote main's .git/config).
    - func_800203B4's island operand (`auth:` re-hash) is still open, after the long tail.
    - Kept on purpose: original-call facts as commented declarations (func_80019568 / func_80044100 /
      func_80052C10 K&R; snd_VabFakeOpen, func_8005C2A8, func_80054434, func_80060414 local).
