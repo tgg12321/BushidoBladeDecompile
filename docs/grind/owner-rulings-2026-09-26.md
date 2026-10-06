@@ -1066,3 +1066,24 @@ Owner, verbatim: "Lets go with B for the first one, and we can loosen our naming
 naming-specific adversarial reviewer, we can make that"
 Recorded as Q110 = B (Phase 2 covers the long tail) and Q111 = naming loosened to the SOTN standard, with an optional
 dedicated naming reviewer.
+
+# Owner ruling 2026-10-05 (forty-ninth batch, conversation) — VERBATIM RECORD
+
+## Q112 — _SendPAD as original hand-written assembly
+
+Context: _SendPAD, the last active queue item (Q108 split), floors at 4/10 in every honest C form (GCC loads the
+pointer into $v0 and saves $ra at 0x10; the original uses $t1 and 0x14). A manual lane found Sony's own PsyQ 4.0
+LIBAPI objects (sozud/psy-q, 4.0/COFF/LIB/LIBAPI.A and LIBAPI.LIB) name the module's source `sendpad.s`; the
+orchestrator re-ran memory/grind/_SendPAD/asm_evidence.py and confirmed it. scan_hand_coded rates it LOW (score 0/8: S3-S5 need at least 40 insns; the other five signals find nothing in these 10).
+Question, as asked: "_SendPAD (the last active queue item, 10 instructions) can't be written in C that matches. Sony's
+own copy of the PsyQ library names its source file `sendpad.s`: Sony wrote it by hand in assembly, not C. Our
+hand-written-assembly scanner can't see that, because the function is too short for any of its tests. The rules only
+let a function stay as assembly when that scanner flags it, unless you rule otherwise. Should _SendPAD be recorded as
+original hand-written assembly?" Options: "Grant it (Recommended)" — this one function only, rules: commit first, then
+a whole-body canonical row after the full-build SHA1 check and a fresh adversarial review; the scanner rule stays as it
+is for everything else; "Keep it in the queue".
+Owner, verbatim (selected option): "Grant it (Recommended)"
+Correction recorded after the answer (scan_hand_coded --single _SendPAD): score 0/8; only S3-S5 are size-gated (40
+insns); S1/S2/S6/S7/S8 ran and found nothing. The question said the function is too short for any of its tests. The
+conclusion is unchanged.
+Recorded as Q112: per-function canonical-body grant for _SendPAD; not a precedent.

@@ -1272,3 +1272,16 @@ standard is loosened to the SOTN standard (explainable from the code plus an adv
 naming-specific adversarial reviewer may be created. Interpretation (rule text at Phase 3 step 0): what the SOTN bar
 requires in detail, and how the existing evidence classes relate to it, is written then and reviewed; the orchestrator's
 plan for both is in docs/grind/handoff-2026-10-03-restructure.md items 2-3.
+
+## 2026-10-05 — OWNER RULING — Q112: _SendPAD is hand-written asm (per-function canonical grant)
+
+Forty-ninth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 49). LIBAPI SENDPAD's _SendPAD
+(0x80079000, 10 words) is recorded as Sony hand-written assembly: its whole body stays the INCLUDE_ASM .s and gets a
+canonical-body row in inline_asm_canonical.txt. Evidence (memory/grind/_SendPAD/asm_evidence.py): the PsyQ 4.0 ECOFF
+member sendpad.o names its source `sendpad.s` (r3000.h / asm.h includes, no gcc2_compiled marker); SENDPAD uses the
+assembler section order of the 75 `.s` members of LIBAPI.LIB, not the compiler order of its C members; its 10 words
+equal BB2's apart from relocated fields; the same release's C one-liner SendPAD (send.c) compiles to GCC's layout
+($ra at 0x10), not _SendPAD's ($ra at 0x14, jalr $t1). scan_hand_coded rates it LOW (score 0/8: S3-S5 need at least 40
+insns; the other five signals find nothing in these 10); this per-function ruling replaces that gate (judge-sole-gate
+rule 3 and Endgame-lock Gate 1) for _SendPAD only. Not a precedent and not a new evidence class: other functions still
+take rule 3.
