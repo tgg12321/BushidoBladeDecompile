@@ -1874,6 +1874,15 @@ typedef struct {
     s8 pad62[6];            /* +0x62 */
 } Unk800A9CF8Entry;         /* 0x68 */
 
+/* The 21 ten-byte node-template records at 0x80094B96 (up to D_80094C68): func_800408F8 builds
+ * Unk80045878Obj.unk_2C[i] from record i (unk_00: the parent node index, -1 for none; unk_02: the
+ * position, scaled by unk_12), func_80040CB8 copies unk_08 (-1: no node) into unk_8B4[]. */
+typedef struct {
+    s16 unk_00;
+    s16 unk_02[3];
+    s16 unk_08;
+} Unk80094B96Rec;
+
 /* The per-player model object func_80045878 builds (0x1A88 bytes, its func_80045600 block) and
  * g_player_ptrs[] / func_8004153C hand out. The header (0x00..0x2B) is followed by three arrays of
  * 0x68-byte transform nodes (func_80041430 rebases them as 0x15, 0x14 and 0x14 records), then

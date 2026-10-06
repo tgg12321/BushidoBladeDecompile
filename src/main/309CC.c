@@ -117,33 +117,20 @@ void func_80040304(s32 a0, s32 a1) {
         } while (i < 5);
     }
 }
-void func_80040400(s32 *a0, s16 *a1, s16 a2) {
-    s32 v0;
-    if (a1[1] == -1) {
-        v0 = 2;
-        goto init;
+void func_80040400(Unk80045878Node *a0, Unk80045878Node *a1, s16 a2) {
+    while (a1->node.unk2 != -1) {
+        a1++;
     }
-    {
-        s32 v1 = -1;
-        a1 = (s16 *)((u8 *)a1 + 0x68);
-        do {
-            v0 = a1[1];
-            a1 = (s16 *)((u8 *)a1 + 0x68);
-        } while (v0 != v1);
-        a1 = (s16 *)((u8 *)a1 - 0x68);
-        v0 = 2;
-    }
-init:
-    a1[1] = v0;
-    *(u8 *)a1 = 3;
-    *(u8 *)((u8 *)a1 + 1) = 0;
-    *(s32 *)((u8 *)a1 + 0xC) = (s32)a0 + 0x270;
-    a1[3] = 1;
-    a1[4] = 0;
-    a1[5] = 0;
-    a1[2] = a2;
-    *(s32 *)((u8 *)a1 + 0x58) = 0;
-    *(s16 *)((u8 *)a1 + 0x6A) = -1;
+    a1->node.unk2 = 2;
+    a1->node.unk0 = 3;
+    a1->node.unk1 = 0;
+    a1->node.unkC = &a0[6].node;
+    a1->node.unk6 = 1;
+    a1->node.unk8 = 0;
+    a1->node.unkA = 0;
+    a1->node.unk4 = a2;
+    a1->unk58 = 0;
+    a1[1].node.unk2 = -1;
 }
 Unk80045878Node *func_8004046C(s32 a0, s32 a1) {
     Unk80045878Obj *base = func_8004153C(a0);
@@ -293,10 +280,7 @@ done_cases:
 }
 
 
-extern s16 D_80094B96[];
-extern s16 D_80094B98[];
-extern s16 D_80094B9A[];
-extern s16 D_80094B9C[];
+extern Unk80094B96Rec D_80094B96[21];
 
 void func_800408F8(Unk80045878Obj *a0) {
     s16 *tbl;
@@ -320,34 +304,32 @@ void func_800408F8(Unk80045878Obj *a0) {
         Unk80045878Node *p = a0->unk_2C;
         /* FAKE: base keeps the array start (move t1,a3); &a0->unk_2C[v1] rebuilds it from a0 (addiu 44 + addu) and the mflo temps move to t1 (score 9) */
         Unk80045878Node *base = p;
-        /* FAKE: constant holder for -1 (the parent-less marker); the literal scores 2 (li t0,-1 moves one slot) */
-        s32 neg1 = -1;
-        s32 off = 0;
+        s32 i = 0;
 
         do {
             s16 v1;
             p->node.unk0 = 0;
             p->node.unk1 = 0;
             p->node.unk8 = 0;
-            p->node.unk2 = neg1;
-            v1 = *(s16 *)((u8 *)D_80094B96 + off);
-            if (v1 != neg1) {
+            p->node.unk2 = -1;
+            v1 = D_80094B96[i].unk_00;
+            if (v1 != -1) {
                 p->node.unkC = &base[v1].node;
             } else {
                 p->node.unkC = 0;
             }
-            p->node.work.t[0] = ((s32)*(s16 *)((u8 *)D_80094B98 + off) * a0->unk_12) >> 12;
-            p->node.work.t[1] = ((s32)*(s16 *)((u8 *)D_80094B9A + off) * a0->unk_12) >> 12;
-            p->node.work.t[2] = ((s32)*(s16 *)((u8 *)D_80094B9C + off) * a0->unk_12) >> 12;
+            p->node.work.t[0] = (D_80094B96[i].unk_02[0] * a0->unk_12) >> 12;
+            p->node.work.t[1] = (D_80094B96[i].unk_02[1] * a0->unk_12) >> 12;
+            p->node.work.t[2] = (D_80094B96[i].unk_02[2] * a0->unk_12) >> 12;
             p->node.xf.rot.vx = 0;
             p->node.xf.rot.vy = 0;
             p->node.xf.rot.vz = 0;
             p->node.unk6 = 0;
             p->node.unkA = a0->unk_10;
             p->node.unk4 = a0->unk_14;
-            off += 0xA;
             p++;
-        } while (off < 0xD2);
+            i++;
+        } while (i < 21);
     }
 
     func_80040A78(a0);
@@ -389,32 +371,27 @@ void func_80040B44(Unk80045878Obj *arg0) {
     Unk80045878Node *t5;
     Unk80045878Node *t7;
     s32 *v1;
-    s32 *t3;
+    u16 *t3;
     u16 a0_val;
     s32 i;
 
     t5 = arg0->unk_10D4;
     t7 = &arg0->unk_2C[1];
     v1 = (s32 *)arg0->unk_1C;
-    t3 = (s32 *)((u8 *)v1 + *(s32 *)((u8 *)v1 + 8));
+    t3 = (u16 *)((u8 *)v1 + v1[2]);
 
-    {
-        s32 *p1;
-        i = 0x11;
-        p1 = &seen[17];
-        do {
-            *p1 = 0;
-            i--;
-            p1--;
-        } while (i >= 0);
-    }
+    i = 0x11;
+    do {
+        seen[i] = 0;
+        i--;
+    } while (i >= 0);
     i = 0x13;
     do {
         arg0->unk_1A34[i] = 0;
         i--;
     } while (i >= 0);
 
-    a0_val = *(u16 *)t3;
+    a0_val = *t3;
     if (a0_val == 0xFFFF) goto done;
 
     {
@@ -423,9 +400,9 @@ void func_80040B44(Unk80045878Obj *arg0) {
             s32 *a1;
             s32 t2;
 
-            t3 = (s32 *)((u8 *)t3 + 2);
-            a3 = *(u16 *)t3;
-            t3 = (s32 *)((u8 *)t3 + 2);
+            t3++;
+            a3 = *t3;
+            t3++;
             /* FAKE: the slot address as integer arithmetic; &seen[a3] swaps the addu operands (score 1) */
             a1 = (s32 *)(a3 * 4 + (s32)&seen[0]);
             /* FAKE: t2 copies a0_val ahead of the seen[] test; with a0_val itself the load and the cursor step re-seat (score 9). */
@@ -443,16 +420,15 @@ void func_80040B44(Unk80045878Obj *arg0) {
                 t5++;
             }
 
-            a0_val = *(u16 *)t3;
+            a0_val = *t3;
         } while (a0_val != 0xFFFF);
     }
 done:
     t5->unk58 = 0;
 }
-extern s16 D_80094B9E[];
 void func_80040CB8(Unk80045878Obj *arg0) {
     s16 id;
-    s8 *slot = (s8 *)arg0->unk_8B4;
+    Unk80045878Node *slot = arg0->unk_8B4;
     s32 i = 0;
     // FAKE (none/kind/one): the three loop-invariant constants must be held in
     // registers across the loop, as target holds them in $t4/$t3/$t2. The
@@ -478,7 +454,9 @@ void func_80040CB8(Unk80045878Obj *arg0) {
         one = 1;
     } while (0);
     link = (s32)&arg0->unk_2C[1];
-    tbl = D_80094B9E;
+    /* FAKE: tbl walks the records' unk_08 members (a cursor at +8, stepped by a record): a record
+       pointer reads unk_08 at 8(a3) off D_80094B96 (score 2), D_80094B96[i].unk_08 scores 21. */
+    tbl = &D_80094B96[0].unk_08;
     // FAKE: wrap emits loop notes around the body, so flow.c weights every
     // reference inside it by loop_depth 2. That weighting is what seats the
     // id copy in $v1 and the 0x90C cursor in $a1 (and the rest on target);
@@ -495,7 +473,7 @@ void func_80040CB8(Unk80045878Obj *arg0) {
         id = *tbl;
         if (id != none) {
             *(s16 *)(ent - 0x56) = id;
-            *slot = kind;
+            slot->node.unk0 = kind;
             *(s8 *)(ent - 0x57) = 0;
             *(s16 *)(ent - 0x50) = 0;
             *(s32 *)(ent - 0x4C) = link;
@@ -504,7 +482,7 @@ void func_80040CB8(Unk80045878Obj *arg0) {
             {
                 /* FAKE: w reads unk_16 ahead of the slot step and the *ent store; read at its store the sw zero moves above it (score 2). */
                 u16 w = arg0->unk_16;
-                slot += 0x68;
+                slot++;
                 *(s32 *)ent = 0;
                 *(s16 *)(ent - 0x54) = w;
                 ent += 0x68;
@@ -512,10 +490,10 @@ void func_80040CB8(Unk80045878Obj *arg0) {
         }
         link += 0x68;
         i++;
-        tbl = (s16 *)((s32)tbl + 0xA);
+        tbl = (s16 *)((u8 *)tbl + sizeof(Unk80094B96Rec));
         if (i < 0x12) goto loop;
     } while (0);
-    *(s16 *)((s32)slot + 2) = -1;
+    slot->node.unk2 = -1;
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
