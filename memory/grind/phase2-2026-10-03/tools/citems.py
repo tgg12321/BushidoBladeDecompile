@@ -2,7 +2,7 @@
 
 Item = (lead, start, end, kind, name, names): lines are 1-based; `lead` is the first line of the
 comments / blank lines in front of the item (they travel with it); [start, end] the item's own lines.
-kind: 'func' (definition with a body), 'stub' (a top-level BIOS_x_FUNCTION / INCLUDE_ASM invocation),
+kind: 'func' (definition with a body, ANSI or K&R), 'stub' (a top-level BIOS_x_FUNCTION / INCLUDE_ASM invocation),
 'pp' (preprocessor line), 'decl' (anything ending in ';' at file scope: externs, prototypes, typedefs,
 definitions of data). `name` is the function / stub / macro name; `names` the identifiers a decl
 declares (heuristic: declarator names, typedef names, struct/union tags)."""
@@ -40,6 +40,20 @@ def strip_cs(s):
     return "".join(out)
 
 
+# a K&R definition's text up to its first top-level ';': `name(a, b, c)`, then the first parameter
+# declaration
+KNR = re.compile(r"[^(){}=;]*?\b([A-Za-z_]\w*)\s*\(\s*([A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*)\s*\)\s*"
+                 r"[A-Za-z_][^{}=;]*$")
+
+
+def knr_head(head):
+    """the KNR match of comment-blanked `head`, or None (a keyword is no parameter name: `f(void)`)."""
+    m = KNR.match(head)
+    if m and not any(p.strip() in KEYW for p in m.group(2).split(",")):
+        return m
+    return None
+
+
 def items(text):
     lines = text.split("\n")
     clean = strip_cs(text)
@@ -68,6 +82,7 @@ def items(text):
             continue
         depth = paren = 0
         seen_body = False
+        knr = None
         j = i
         k = 0
         buf = []
@@ -83,8 +98,8 @@ def items(text):
                     depth += 1
                     if depth == 1:
                         head = "".join(buf)
-                        if (re.search(r"\)\s*$", head) and not re.match(r"\s*(typedef|struct|union|enum)\b", head)
-                                and "=" not in head):
+                        if knr or (re.search(r"\)\s*$", head)
+                                   and not re.match(r"\s*(typedef|struct|union|enum)\b", head) and "=" not in head):
                             seen_body = True
                 elif ch == "}":
                     depth -= 1
@@ -92,14 +107,21 @@ def items(text):
                         done = "func"
                         break
                 elif ch == ";" and depth == 0 and paren == 0:
-                    done = "decl"
-                    break
+                    # a K&R parameter declaration: the item runs on to the '{' body
+                    knr = knr or knr_head("".join(buf))
+                    if not knr:
+                        done = "decl"
+                        break
                 buf.append(ch)
             buf.append("\n")
             j += 1
         end = j - 1
         src = "\n".join(cl[start:end + 1])
-        if done == "func":
+        if done == "func" and knr:
+            name = knr.group(1)
+            kind = "func"
+            names = {name}
+        elif done == "func":
             head = src[:src.index("{")]
             m = re.search(r"(\w+)\s*\([^()]*(\([^()]*\)[^()]*)*\)\s*$", head)
             name = m.group(1)
@@ -145,7 +167,12 @@ def decl_names(src):
 
 
 def proto(lines, it):
-    """a prototype for a function item: its header up to '{', plus ';'."""
+    """a prototype for a function item: its header up to '{', plus ';' (K&R: `T name();`)."""
     text = "\n".join(lines[it["start"] - 1:it["end"]])
-    head = text[:strip_cs(text).index("{")].rstrip()
+    clean = strip_cs(text)
+    head = clean[:clean.index("{")]
+    m = ";" in head and knr_head(head[:head.index(";")])
+    if m:
+        return text[:m.end(1)] + "();"
+    head = text[:len(head)].rstrip()
     return head + ";"
