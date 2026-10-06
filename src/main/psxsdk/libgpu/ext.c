@@ -4,42 +4,42 @@
 #include "common.h"
 #include <psxsdk/libgpu.h>
 
-u16 LoadTPage(s32 a0, s32 mode, s32 a2, s32 a3, s32 texpage, s32 width, s32 clut) {
-    s16 buf[4];
-    buf[0] = a3;
-    buf[3] = clut;
-    buf[1] = texpage;
-    switch (mode) {
+u16 LoadTPage(u32 *pix, s32 tp, s32 abr, s32 x, s32 y, s32 w, s32 h) {
+    RECT buf;
+    buf.x = x;
+    buf.h = h;
+    buf.y = y;
+    switch (tp) {
     case 0:
-        buf[2] = width / 4;
+        buf.w = w / 4;
         break;
     case 1:
-        buf[2] = width / 2;
+        buf.w = w / 2;
         break;
     case 2:
-        buf[2] = width;
+        buf.w = w;
         break;
     }
-    LoadImage((s32)buf, a0);
-    return GetTPage(mode, a2, a3, texpage) & 0xFFFF;
+    LoadImage(&buf, pix);
+    return GetTPage(tp, abr, x, y);
 }
 
-u16 LoadClut(s32 a0, s32 a1, s32 a2) {
-    s16 buf[4];
-    buf[0] = a1;
-    buf[1] = a2;
-    buf[2] = 0x100;
-    buf[3] = 1;
-    LoadImage((s32)buf, a0);
+u16 LoadClut(u32 *a0, s32 a1, s32 a2) {
+    RECT buf;
+    buf.x = a1;
+    buf.y = a2;
+    buf.w = 0x100;
+    buf.h = 1;
+    LoadImage(&buf, a0);
     return GetClut(a1, a2);
 }
-u16 LoadClut2(s32 a0, s32 a1, s32 a2) {
-    s16 buf[4];
-    buf[0] = a1;
-    buf[1] = a2;
-    buf[2] = 0x10;
-    buf[3] = 1;
-    LoadImage((s32)buf, a0);
+u16 LoadClut2(u32 *a0, s32 a1, s32 a2) {
+    RECT buf;
+    buf.x = a1;
+    buf.y = a2;
+    buf.w = 0x10;
+    buf.h = 1;
+    LoadImage(&buf, a0);
     return GetClut(a1, a2);
 }
 DRAWENV *SetDefDrawEnv(DRAWENV *env, s32 x, s32 y, s32 w, s32 h) {

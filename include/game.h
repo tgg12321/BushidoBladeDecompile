@@ -301,7 +301,7 @@ typedef struct {
  * - unk_54..unk_74: the nine lists func_8006EA28 relocates (func_8006920C): unk_54, the
  *   header block func_8006ECF4 draws (Unk8006ECF4Rec); unk_58..unk_74, sprite-sheet lists.
  *   unk_78 is a further offset no code reads.
- * - unk_7C: per player a row of VRAM RECTs (64 bytes) func_80070F78 hands LoadImage as the
+ * - unk_7C: per player a row of eight VRAM RECTs func_80070F78 hands LoadImage as the
  *   destination; unk_80: the bytes func_800720FC reads.
  * - unk_84: TIM pixel addresses func_8006ECF4 loads per character case. */
 typedef struct {
@@ -317,7 +317,7 @@ typedef struct {
     Unk8009B0E0Record **unk_70;
     Unk8009B0E0Record **unk_74;
     s32 *unk_78;
-    u8 *unk_7C;
+    RECT *unk_7C;
     u8 *unk_80;
     s32 unk_84[5];
 } Unk8006EA28Rec;

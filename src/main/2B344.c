@@ -563,7 +563,6 @@ u8 D_800A3916;
 
 
 /* Extern function declarations */
-extern void LoadImage(s32, s32);
 
 
 
@@ -612,7 +611,6 @@ extern s32 func_80052C28(s32, s32);
 
 
 
-extern void StoreImage(s32 *, u16 *);
 extern void gte_ReadFarColor(u8 *);
 
 
@@ -1379,7 +1377,7 @@ void func_8003CF84(void) {
     D_800A37B8 = D_800A37B8 + 1;
 }
 void func_8003D2C4(void) {
-    LoadImage((s32)&D_800A3220, (s32)&D_80090178);
+    LoadImage(&D_800A3220, &D_80090178);
 }
 extern s32 D_800A3218;
 extern s32 D_800A321C;
@@ -1774,11 +1772,11 @@ void func_8003DDF8(u32 arg0) {
  * column at y 0x200.
  *
  * FAKE constructs (each labelled at its site): the `gm` named green mask, the
- * inner bound's `+ rect[2] - rect[2]` detour and the `((s32)dst_buf + j) - j`
+ * inner bound's `+ rect->w - rect->w` detour and the `((s32)dst_buf + j) - j`
  * LoadImage argument. The two detours are combine-foldable chain extenders
  * ([[dead-store-fake-exception]]) with zero emitted bytes.
  */
-void func_8003DE14(s16 *rect, s32 count) {
+void func_8003DE14(RECT *rect, s32 count) {
     u16 src_buf[0x200];
     u16 dst_buf[0x200];
     u8 color_info[0x20];
@@ -1791,12 +1789,12 @@ void func_8003DE14(s16 *rect, s32 count) {
 
     DrawSync(0);
     count--;
-    StoreImage((s32 *)rect, src_buf);
+    StoreImage(rect, (u32 *)src_buf);
     DrawSync(0);
-    ((u16 *)rect)[1] -= ((u16 *)rect)[3];
-    LoadImage((s32)rect, (s32)src_buf);
-    saved_y = rect[1];
-    rect[1] = ((u16 *)rect)[3] + saved_y;
+    rect->y -= rect->h;
+    LoadImage(rect, (u32 *)src_buf);
+    saved_y = rect->y;
+    rect->y = rect->h + saved_y;
     gte_ReadFarColor(color_info);
 
     r = color_info[0];
@@ -1808,7 +1806,7 @@ void func_8003DE14(s16 *rect, s32 count) {
     if (count > 0) {
         s32 blend_base = 0x1000;
         do {
-            s32 total = rect[2] * rect[3];
+            s32 total = rect->w * rect->h;
             u16 *src = src_buf;
             u16 *dst = dst_buf;
             s32 factor = ((i + 1) << 12) / count;
@@ -1874,15 +1872,15 @@ void func_8003DE14(s16 *rect, s32 count) {
                 loop_check:
                     j++;
                 /* FAKE: the inner loop's bound is routed through the algebraically
-                 * equivalent detour `+ rect[2] - rect[2]`, which combine folds back to the
-                 * direct `rect[2] * rect[3]` with ZERO emitted bytes.  Its only surviving
+                 * equivalent detour `+ rect->w - rect->w`, which combine folds back to the
+                 * direct `rect->w * rect->h` with ZERO emitted bytes.  Its only surviving
                  * effect is the extra reg_n_refs that flow.c records BEFORE the fold.
                  * Mechanism: local-alloc.c:1669-1684 `qty_compare_1` ranks the two
                  * block-local halfword loads of the bound by
                  * floor_log2(n_refs)*n_refs*size/(death-birth).  Both loads die at the
-                 * shared `mult`, so the earlier-born rect[2] load has the strictly larger
+                 * shared `mult`, so the earlier-born rect->w load has the strictly larger
                  * denominator: at the natural 2 refs each (weighted x3 for loop depth =
-                 * 6) it scores floor_log2(6)*6/4 = 3 against the rect[3] load's
+                 * 6) it scores floor_log2(6)*6/4 = 3 against the rect->h load's
                  * floor_log2(6)*6/2 = 6, is sorted second, and is handed $v1 instead of the
                  * target's $v0.  The detour's two extra reads CSE onto the same pseudo, so
                  * flow counts 4 refs (weighted 12) and it scores floor_log2(12)*12/4 = 9 >
@@ -1891,43 +1889,40 @@ void func_8003DE14(s16 *rect, s32 count) {
                  * the `((s32)dst_buf + j) - j` extender below
                  * ([[dead-store-fake-exception]] combine-foldable chain-extender clause,
                  * owner ruling 2026-07-01). */
-                } while (j < rect[2] * rect[3] + rect[2] - rect[2]);
+                } while (j < rect->w * rect->h + rect->w - rect->w);
             }
 
-            {
-                s32 new_y = ((u16 *)rect)[1] + ((u16 *)rect)[3];
-                ((u16 *)rect)[1] = new_y;
-                if ((s16)new_y >= 0x200) {
-                    rect[1] = saved_y;
-                    ((u16 *)rect)[0] += ((u16 *)rect)[2];
-                }
+            rect->y += rect->h;
+            if (rect->y >= 0x200) {
+                rect->y = saved_y;
+                rect->x += rect->w;
             }
             /* FAKE: j chain extender on the dst_buf argument; mechanism:
              * combine.c folds the +j/-j pair away but flow.c's reg_n_refs for j is
              * counted before it, lifting j's allocno priority (global.c
              * allocno_compare) above `complement`'s so the $t4/$t5 seat pair
              * matches; without it j and complement swap registers. */
-            LoadImage((s32)rect, ((s32)dst_buf + j) - j);
+            LoadImage(rect, (u32 *)(((s32)dst_buf + j) - j));
             DrawSync(0);
             i++;
         } while (i < count);
     }
 }
 void func_8003E0E0(void) {
-    s16 buf[4];
-    buf[1] = 0x1E1;
-    buf[2] = 0x140;
-    buf[0] = 0;
-    buf[3] = 1;
-    func_8003DE14(buf, 0x1F);
+    RECT buf;
+    buf.y = 0x1E1;
+    buf.w = 0x140;
+    buf.x = 0;
+    buf.h = 1;
+    func_8003DE14(&buf, 0x1F);
 }
 void func_8003E120(void) {
-    s16 buf[4];
-    buf[0] = 0x140;
-    buf[1] = 0x1E8;
-    buf[2] = 0x40;
-    buf[3] = 8;
-    func_8003DE14(buf, 0x13);
+    RECT buf;
+    buf.x = 0x140;
+    buf.y = 0x1E8;
+    buf.w = 0x40;
+    buf.h = 8;
+    func_8003DE14(&buf, 0x13);
 }
 extern s32 D_800A3228;
 void func_8003E164(s32 arg0) {

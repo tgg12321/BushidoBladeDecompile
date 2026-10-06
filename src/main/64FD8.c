@@ -1857,16 +1857,12 @@ s32 func_80077D10(s32 *a0) {
 Unk8006E49CRec *func_80077D74(s32 a0) {
     return &D_800A35F4[a0];
 }
-extern void LoadImage(s32, s32);
 
-typedef struct {
-    s16 x, y, w, h;
-} Rect77D94;
-extern Rect77D94 D_800A32FC;
+extern RECT D_800A32FC;
 
 void func_80077D94(Unk8006EACCRec *arg0) {
     Unk8007352CEnv s;
-    Rect77D94 rect;
+    RECT rect;
     s16 *in;
     s16 *out;
     Unk8009B400Record *table;
@@ -1978,7 +1974,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                    displacement (`sll; addu; lw a1,56(v0)`) and the giv is not
                    reduced (score 9). */
                 img = &D_800A35F8->img38[i];
-                LoadImage((s32)&rect, *img + 0x220);
+                LoadImage(&rect, (u32 *)(*img + 0x220));
                 DrawSync(0);
                 rect.x += 0x40;
             }

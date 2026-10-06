@@ -5092,22 +5092,22 @@ s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
     func_80073728(&s, 0);
     return end - arg1;
 }
-extern u8 D_800A327C[8];
-extern u8 D_800A3284[8];
+extern RECT D_800A327C;
+extern RECT D_800A3284;
 extern s32 D_800A3278;
 
 void func_8005FBC8(s32 arg0, u8 *arg1) {
-    u8 r1[8], r2[8];
+    RECT r1, r2;
     s32 s0;
     s0 = func_80036EA8(2, arg0 + 0x33);
     cdrom_StartRead(s0, (s32)arg1);
     game_FrameLoop();
     cdrom_GetFileSize(s0);
-    __builtin_memcpy(r1, D_800A327C, 8);
-    __builtin_memcpy(r2, D_800A3284, 8);
-    LoadImage((s32)r1, (s32)(arg1 + 0x40));
+    r1 = D_800A327C;
+    r2 = D_800A3284;
+    LoadImage(&r1, (u32 *)(arg1 + 0x40));
     DrawSync(0);
-    LoadImage((s32)r2, (s32)(arg1 + 0x14));
+    LoadImage(&r2, (u32 *)(arg1 + 0x14));
     DrawSync(0);
     D_800A3278 = 0;
 }
@@ -5283,34 +5283,35 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
     AddPrim(g_gpu_ot_ptr + (arg2 * 4), mode_off);
     return end_off - arg1;
 }
-extern u8 D_800A3294[8];
-extern u8 D_800A329C[8];
-extern u8 D_800A32A4[8];
-extern u8 D_800A32AC[8];
+extern RECT D_800A3294;
+extern RECT D_800A329C;
+extern RECT D_800A32A4;
+extern RECT D_800A32AC;
 
 void func_800602AC(s32 arg0, s32 *arg1) {
-    u8 r1[8], r2[8], r3[8], r4[8];
+    RECT r1, r2, r3, r4;
     s32 s1;
     u8 *p;
+    u8 *q;
     s1 = func_80036EA8(2, arg0 + 0x3D);
     cdrom_StartRead(s1, (s32)arg1);
     game_FrameLoop();
     cdrom_GetFileSize(s1);
     arg1[0] = arg1[0] + (s32)arg1;
     arg1[1] = arg1[1] + (s32)arg1;
-    __builtin_memcpy(r1, D_800A3294, 8);
-    __builtin_memcpy(r2, D_800A329C, 8);
+    r1 = D_800A3294;
+    r2 = D_800A329C;
     p = (u8 *)arg1[0];
-    LoadImage((s32)r1, (s32)(p + 0x40));
+    LoadImage(&r1, (u32 *)(p + 0x40));
     DrawSync(0);
-    LoadImage((s32)r2, (s32)(p + 0x14));
+    LoadImage(&r2, (u32 *)(p + 0x14));
     DrawSync(0);
-    __builtin_memcpy(r3, D_800A32A4, 8);
-    __builtin_memcpy(r4, D_800A32AC, 8);
-    arg1 = (s32 *)arg1[1];
-    LoadImage((s32)r3, (s32)((u8 *)arg1 + 0x60));
+    r3 = D_800A32A4;
+    r4 = D_800A32AC;
+    q = (u8 *)arg1[1];
+    LoadImage(&r3, (u32 *)(q + 0x60));
     DrawSync(0);
-    LoadImage((s32)r4, (s32)((u8 *)arg1 + 0x14));
+    LoadImage(&r4, (u32 *)(q + 0x14));
     DrawSync(0);
 }
 extern Unk8009B0E0Record D_8009B7AC[3];
@@ -5531,12 +5532,12 @@ s32 D_800A3264[2] = { 0x4e00b3, 0xc180000 };  /* named by the pointer word at 0X
 s32 D_800A326C = 0;
 u8 D_800A3270[8] = { 0, 1, 2, 3, 4, 0, 0, 0 };
 s32 D_800A3278 = 0;
-u8 D_800A327C[8] = { 0x80, 3, 0, 0, 0x40, 0, 0, 1 };
-u8 D_800A3284[8] = { 0xe0, 3, 0xff, 1, 0x10, 0, 1, 0 };
+RECT D_800A327C = { 0x380, 0, 0x40, 0x100 };
+RECT D_800A3284 = { 0x3E0, 0x1FF, 0x10, 1 };
 Unk8009B400Record D_800A328C = { 0, 0, 0, 0, 0x14, 0xE };
-u8 D_800A3294[8] = { 0xc0, 3, 0x80, 1, 0x40, 0, 0x16, 0 };
-u8 D_800A329C[8] = { 0xc0, 3, 0xff, 1, 0x10, 0, 1, 0 };
-u8 D_800A32A4[8] = { 0x80, 3, 0x7f, 1, 0x40, 0, 0x7f, 0 };
-u8 D_800A32AC[8] = { 0x80, 3, 0xff, 1, 0x20, 0, 1, 0 };
+RECT D_800A3294 = { 0x3C0, 0x180, 0x40, 0x16 };
+RECT D_800A329C = { 0x3C0, 0x1FF, 0x10, 1 };
+RECT D_800A32A4 = { 0x380, 0x17F, 0x40, 0x7F };
+RECT D_800A32AC = { 0x380, 0x1FF, 0x20, 1 };
 u16 D_800A32B4 = 0;
 u16 D_800A32B6 = 0;

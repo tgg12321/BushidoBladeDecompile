@@ -8,21 +8,13 @@
 #include "bb2_const.h"
 #include "gte.h"
 
-typedef struct {
-    s16 x;
-    s16 y;
-    s16 w;
-    s16 h;
-} Rect;
-
 
 /* Forward declarations for called functions */
-extern void ClearImage(void *, s32, s32, s32);
 
 /* Externs for globals */
 extern u8 g_file_dma_flag;
 extern s32 g_rng_state;
-extern u32 g_gpu_clear_rect;
+extern RECT g_gpu_clear_rect;
 extern u32 g_scratchpad_save;
 /* This file's .rodata: debug format strings, and the build date that D_800A30E0
  * (below) points at. */
@@ -37,11 +29,10 @@ extern void func_800164F8(void);
 extern s32 PCread(s32, u8 *, s32);
 
 extern u8 D_800A30E8;
-extern Rect D_800A30D4;
+extern RECT D_800A30D4;
 extern s32 D_800A30DC;
 
 
-extern void LoadImage(u8 *, u8 *);
 extern u32 *ClearOTagR(u32 *, s32);
 
 extern s32 rand(void);
@@ -218,7 +209,7 @@ void sys_Init(void) {
     rcnt_StartCnt1Wrapper();
 }
 void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
-    Rect rect;
+    RECT rect;
     s32 i;
 
     rect = D_800A30D4;
@@ -230,7 +221,7 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
     game_FrameLoop();
     PutDispEnv(&g_gpu_db[1].disp);
     DrawSync(0);
-    LoadImage((u8 *)&rect, arg0 + 0x14);
+    LoadImage(&rect, (u32 *)(arg0 + 0x14));
     DrawSync(0);
     SetDispMask(1);
 
@@ -254,7 +245,7 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
                 value += pixel;
                 *pixels = value;
             }
-            LoadImage((u8 *)&rect, arg0 + 0x14);
+            LoadImage(&rect, (u32 *)(arg0 + 0x14));
         }
 
         DrawSync(0);

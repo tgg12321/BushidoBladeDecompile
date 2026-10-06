@@ -178,14 +178,7 @@ s32 func_80060CB8(s32 arg0, s32 arg1)
                            (owner ruling, param-local-alias-prologue-pair-flip). Mechanism: cse
                            unifies arg0/new_var, combine sinks the single-use a0 entry copy
                            below a1's, flipping the s2/s1 save+copy pair order to target. */
-  typedef struct
-  {
-    s16 sp10;
-    s16 sp12;
-    s16 sp14;
-    s16 sp16;
-  } SLocal;
-  SLocal s;
+  RECT s;
   s32 v;
   s32 ret;
   new_var = arg0;
@@ -215,17 +208,17 @@ s32 func_80060CB8(s32 arg0, s32 arg1)
     cdrom_StartRead(func_80036EA8(2, 0), new_var);
   }
   game_FrameLoop();
-  s.sp10 = 0x380;
-  s.sp12 = 0;
-  s.sp14 = 0x80;
-  s.sp16 = 0x1DC;
+  s.x = 0x380;
+  s.y = 0;
+  s.w = 0x80;
+  s.h = 0x1DC;
   DrawSync(0);
-  LoadImage(&s.sp10, new_var);
+  LoadImage(&s, (u32 *)new_var);
   DrawSync(0);
-  s.sp14 = 0x70;
-  s.sp12 = 0x1DC;
-  s.sp16 = 0x24;
-  LoadImage(&s.sp10, new_var + 0x1DC00);
+  s.w = 0x70;
+  s.y = 0x1DC;
+  s.h = 0x24;
+  LoadImage(&s, (u32 *)(new_var + 0x1DC00));
   DrawSync(0);
   func_80060C60();
   srand(rand());
@@ -5997,23 +5990,21 @@ s32 func_8006E068(s32 arg0, s32 arg1) {
     func_8006DD94(sp10);
     return func_8006DF68(arg0, arg1);
 }
-extern u8 D_800A32D8[8];
+extern RECT D_800A32D8;
 
 
 extern DRAWENV *SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
 extern DISPENV *SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
-extern void LoadImage(u8 *, s32);
-extern void ClearImage(s32, s32, s32, s32);
 
 s32 func_8006E10C(void) {
     s32 ff0;
-    s32 temp_s3 = D_800A3500;
-    u8 rect[8];
+    s32 temp_s3 = D_800A3500; /* FAKE: read at entry and held in $s3 across the calls; read at the LoadImage call: score 9 (frame 48 for 56) */
+    RECT rect;
     s32 v0;
-    s32 a0v;
+    s32 a0v; /* FAKE: the per-branch 2 (li a0,2 in each arm's delay slot); the literal at the call: score 9 */
     s32 a1v;
 
-    __builtin_memcpy(rect, D_800A32D8, 8);
+    rect = D_800A32D8;
     if (D_800A3524->unk20_0) {
         a0v = 2;
         a1v = 0x60;
@@ -6021,7 +6012,7 @@ s32 func_8006E10C(void) {
         a0v = 2;
         a1v = 7;
     }
-    do { ff0 = 0xF0; } while (0); /* FAKE: loop notes fence sched1's constant-sink so the li stays at the jal */
+    do { ff0 = 0xF0; } while (0); /* FAKE: loop notes fence sched1's constant-sink so the li stays at the jal; plain `ff0 = 0xF0;`: score 13 */
     v0 = func_80036EA8(a0v, a1v);
     cdrom_StartRead(v0, D_800A3500);
     game_FrameLoop();
@@ -6036,24 +6027,24 @@ s32 func_8006E10C(void) {
     g_gpu_db[0].disp.isrgb24 = 0;
     g_gpu_db[1].disp.isrgb24 = 0;
     DrawSync(0);
-    ClearImage((s32)rect, 0, 0, 0);
+    ClearImage(&rect, 0, 0, 0);
     DrawSync(0);
-    LoadImage(rect, temp_s3 + 0x14);
+    LoadImage(&rect, (u32 *)(temp_s3 + 0x14));
     DrawSync(0);
     PutDrawEnv(&g_gpu_db[0].draw);
     PutDispEnv(&g_gpu_db[1].disp);
     SetDispMask(1);
     return 1;
 }
-extern u8 D_800A32E0[8];
+extern RECT D_800A32E0;
 s32 func_8006E2A8(void) {
-    u8 rect[8];
+    RECT rect;
     SetDispMask(0);
     PutDrawEnv(&g_gpu_db[D_800A3518 & 1].draw);
     PutDispEnv(&g_gpu_db[D_800A3518 & 1].disp);
     DrawSync(0);
-    __builtin_memcpy(rect, D_800A32E0, 8);
-    ClearImage((s32)rect, 0, 0, 0);
+    rect = D_800A32E0;
+    ClearImage(&rect, 0, 0, 0);
     DrawSync(0);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     SetDispMask(1);

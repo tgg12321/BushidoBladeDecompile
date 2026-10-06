@@ -1357,10 +1357,9 @@ void func_800481E8(s32 arg0, s32 arg1)
         } while ((count--) != 0);
     }
 }
-void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
-    u16 arg4_lo = *(u16 *)&arg4;
-    s16 rect[4];
-    s16 buf[512];
+void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
+    RECT rect;
+    u16 buf[512];
     u8 *p_alt;
     s32 flags;
     u32 dim;
@@ -1376,27 +1375,27 @@ void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
         p_alt += 4;
     }
     arg0 += 8;
-    rect[0] = arg1;
-    rect[1] = arg2;
+    rect.x = arg1;
+    rect.y = arg2;
     dim = *(u32 *)arg0;
-    rect[3] = dim >> 16;
-    rect[2] = dim;
-    LoadImage(rect, (s32 *)(arg0 + 4));
+    rect.h = dim >> 16;
+    rect.w = dim;
+    LoadImage(&rect, (u32 *)(arg0 + 4));
     if (flags == 0) return;
     p_alt += 4;
-    rect[0] = arg3;
-    rect[1] = arg4_lo;
+    rect.x = arg3;
+    rect.y = arg4;
     dim2 = *(u32 *)p_alt;
     p_alt += 4;
-    rect[3] = dim2 >> 16;
-    rect[2] = dim2;
+    rect.h = dim2 >> 16;
+    rect.w = dim2;
     if (func_800486FC() != 0) {
-        math_GrayscaleRgb555((s32)p_alt, rect[2], (s32)buf);
-        LoadImage(rect, (s32 *)buf);
+        math_GrayscaleRgb555((u16 *)p_alt, rect.w, buf);
+        LoadImage(&rect, (u32 *)buf);
         DrawSync(0);
         return;
     }
-    LoadImage(rect, (s32 *)p_alt);
+    LoadImage(&rect, (u32 *)p_alt);
 }
 
 
@@ -1436,8 +1435,8 @@ void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
     }
 }
 void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
-    s16 rect[4];
-    s16 buf[512];
+    RECT rect;
+    u16 buf[512];
     u32 dim;
     s32 flags;
     if (arg0[0] != 0x10) return;
@@ -1446,18 +1445,18 @@ void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
     arg0 += 4;
     if ((flags & 8) == 0) return;
     arg0 += 8;
-    rect[0] = arg1;
-    rect[1] = arg2;
+    rect.x = arg1;
+    rect.y = arg2;
     dim = *(u32 *)arg0;
     arg0 += 4;
-    rect[3] = dim >> 16;
-    rect[2] = dim;
+    rect.h = dim >> 16;
+    rect.w = dim;
     if (func_800486FC() != 0) {
-        math_GrayscaleRgb555((s32)arg0, rect[2], (s32)buf);
-        LoadImage(rect, (s32)buf);
+        math_GrayscaleRgb555((u16 *)arg0, rect.w, buf);
+        LoadImage(&rect, (u32 *)buf);
         return;
     }
-    LoadImage(rect, (s32)arg0);
+    LoadImage(&rect, (u32 *)arg0);
 }
 extern void func_800485EC();
 s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
@@ -1608,7 +1607,7 @@ s32 math_Grayscale3(s32 arg0, s32 arg1, s32 arg2) {
 void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 dx, s32 dy) {
     u16 buf[256];
     u16 out[256];
-    s16 rect[4];
+    RECT rect;
     u16 *src;
     u16 *dst;
     s32 i;
@@ -1616,11 +1615,11 @@ void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 
     s32 r, g, b, a;
 
     DrawSync(0);
-    rect[0] = sx;
-    rect[1] = sy;
-    rect[2] = w;
-    rect[3] = 1;
-    StoreImage(rect, buf);
+    rect.x = sx;
+    rect.y = sy;
+    rect.w = w;
+    rect.h = 1;
+    StoreImage(&rect, (u32 *)buf);
     DrawSync(0);
     src = buf;
     dst = out;
@@ -1656,9 +1655,9 @@ void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 
         b &= 0x1F;
         *dst++ = a | r | (g << 5) | (b << 10);
     }
-    rect[0] = dx;
-    rect[1] = dy;
-    LoadImage(rect, out);
+    rect.x = dx;
+    rect.y = dy;
+    LoadImage(&rect, (u32 *)out);
     DrawSync(0);
 }
 void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {

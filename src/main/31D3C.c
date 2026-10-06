@@ -242,7 +242,7 @@ extern s16 D_800A9A20;
 extern u16 g_gpu_store_buf;
 void func_80041AC8(Unk80045878Obj *arg0)
 {
-  s16 rect[4];
+  RECT rect;
   s16 *var_s0;
   u16 *var_s1;
   s32 var_s2;
@@ -278,7 +278,7 @@ void func_80041AC8(Unk80045878Obj *arg0)
 
   var_s2 = 0;
   after_if:
-  /* FAKE: v1_val is the loop-rotated read of *var_s0 (here and at the loop's end); read at the rect[0] store the frame shrinks 0x50 -> 0x40 and the head's lh / lhu pair changes (score 26). */
+  /* FAKE: v1_val is the loop-rotated read of *var_s0 (here and at the loop's end); read at the rect.x store the frame shrinks 0x50 -> 0x40 and the head's lh / lhu pair changes (score 26). */
   v1_val = (u16) (*var_s0);
 
   if ((*var_s0) >= 0)
@@ -289,14 +289,14 @@ void func_80041AC8(Unk80045878Obj *arg0)
     var_s1 = &g_gpu_store_buf;
     do
     {
-      /* FAKE: v0_val reads var_s0[1] ahead of the rect[2] / rect[3] stores; read at the rect[1] store, sh s5 / sh s4 move above the load (score 4) */
+      /* FAKE: v0_val reads var_s0[1] ahead of the rect.w / rect.h stores; read at the rect.y store, sh s5 / sh s4 move above the load (score 4) */
       u16 v0_val;
-      rect[0] = v1_val + var_s3;
+      rect.x = v1_val + var_s3;
       v0_val = (u16) var_s0[1];
-      rect[2] = w;
-      rect[3] = h;
-      rect[1] = v0_val + var_s2;
-      StoreImage(rect, var_s1);
+      rect.w = w;
+      rect.h = h;
+      rect.y = v0_val + var_s2;
+      StoreImage(&rect, (u32 *)var_s1);
       var_s0 += 2;
       var_s1 += 0x10;
       v1_val = (u16) (*var_s0);
@@ -305,7 +305,6 @@ void func_80041AC8(Unk80045878Obj *arg0)
   }
   DrawSync(0);
 }
-extern void LoadImage(s32, s32);
 void func_80041BF4(s32 a0, s32 a1, s32 a2)
 {
   Unk80045878Obj *fp_ptr;
@@ -325,21 +324,21 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
      (subtract-compare-zero, double negation, switch, named call result) do
      not.  Family: .claude/rules/named-local-fake-exception.md (owner ruling). Ablated (2026-10-06): score 12. */
   int one;
-  /* FAKE: oversized locals object - rect[0..3] is the live LoadImage RECT and
-     rect[4..7] is the unwritten tail, mechanism: mips.c compute_frame_size /
+  /* FAKE: oversized locals object - rect[0] is the live LoadImage RECT and
+     rect[1] is the unwritten tail, mechanism: mips.c compute_frame_size /
      get_frame_size - ALIGN8(vars) + ALIGN8(args) + gp_regs.  Frame-math proof
      from the TARGET BYTES ALONE: target frame is 88 with ten callee-saves
      ($s0-$s7,$fp,$ra = 40 bytes) and a 24-byte outgoing-args area (the 6-arg
      func_80048A7C call), so the locals region is 88-40-24 = 24 bytes while the
      only stores into it are the 8 bytes of the RECT at sp+0x18.  The
-     fully-written form (rect[4]) gives frame 80, so no fully-written locals
+     fully-written form (one RECT) gives frame 80, so no fully-written locals
      set can produce target's 88.  ALIGN8 plus this frame's fixed 8-byte
-     phantom slot make the declared size recoverable only as a RANGE: rect[5]
-     through rect[8] are all byte-identical here - [8] is chosen.  Family:
+     phantom slot make the declared size recoverable only as a RANGE: 10
+     through 16 bytes are all byte-identical here - two RECTs are chosen.  Family:
      .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out (owner
      ruling); prong 2 is satisfied by extending the LIVE object - rect's
      address is passed to LoadImage - rather than adding a dead pad. Ablated (2026-10-06): score 22. */
-  s16 rect[8];
+  RECT rect[2];
   fp_ptr = func_8004153C(1);
   if (fp_ptr == 0) { return; }
   if ((fp_ptr->unk_08) != D_800A9A20) { return; }
@@ -377,14 +376,14 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
     /* FAKE: off = idx << 5 taken before idx++; inline in LoadImage with idx++ after DrawSync, addiu s1 / sll v0 swap around the call setup (score 4). */
     s32 off = idx << 5;
     idx++;
-    rect[0] = x + xoff;
-    rect[1] = (*(((u16 *) tbl) + 1)) + yoff;
-    rect[2] = 0x10;
-    rect[3] = 1;
-    LoadImage((s32)rect, (s32)((u8 *)&g_gpu_store_buf + off));
+    rect[0].x = x + xoff;
+    rect[0].y = tbl[1] + yoff;
+    rect[0].w = 0x10;
+    rect[0].h = 1;
+    LoadImage(&rect[0], (u32 *)((u8 *)&g_gpu_store_buf + off));
     DrawSync(0);
     tbl += 2;
-    func_80048A7C(rect[0], rect[1], 0x10, r, g, b);
+    func_80048A7C(rect[0].x, rect[0].y, 0x10, r, g, b);
   }
   test:
   x = *(u16 *) tbl;

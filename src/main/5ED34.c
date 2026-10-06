@@ -17,7 +17,6 @@ extern u32 *ClearOTagR(u32 *, s32);
 extern s32 rcos();
 extern s32 rsin();
 extern void AddPrim(void *, void *);
-extern void LoadImage(u8 *, s32);
 
 typedef struct SelectEntryE534 {
     u8 value;
@@ -28,7 +27,7 @@ extern SelectEntryE534 D_8009BC40[][6];
 extern u8 D_8009BC7C[];
 extern u8 D_800A32E8;
 extern u8 D_800A32E9;
-extern u8 D_800A32EC[8];
+extern RECT D_800A32EC;
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
 static s16 D_800A3540[2];
@@ -139,7 +138,7 @@ s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
         D_8009BC7C[D_8009BC40[D_800A358C[1]][D_800A3588[1]].value] |= 4;
     }
 
-    __builtin_memcpy(&rect, D_800A32EC, 8);
+    rect = D_800A32EC;
     D_800A359C = 0;
     D_800A3598 = 0;
     DrawSync(0);
@@ -159,53 +158,45 @@ Unk8006E49CRec *func_8006E8AC(s32 a0) {
 void func_8006E8CC(Unk8006E950Head *a0) {
     Unk8009BD24Block *p;
     s32 data;
-    s16 rect[4];
+    RECT rect;
     p = func_80077D00();
     if (p->unk20_0) {
         data = a0->unk_10;
     } else {
         data = a0->unk_0C;
     }
-    rect[0] = 0;
-    rect[1] = 0x1E0;
-    rect[2] = 0x280;
-    rect[3] = 0x20;
+    rect.x = 0;
+    rect.y = 0x1E0;
+    rect.w = 0x280;
+    rect.h = 0x20;
     DrawSync(0);
-    LoadImage(rect, data);
+    LoadImage(&rect, (u32 *)data);
     DrawSync(0);
 }
 void func_8006E950(s32 a0, Unk8006E950Head *a1) {
-    s32 s2;
     s32 s3;
-    s32 s0;
-    s32 s0_addr;
-    s32 v0;
-    s16 rect[4];
+    RECT rect;
 
-    s0_addr = a0;
     game_FrameLoop();
-    v0 = func_80036EA8(2, s0_addr);
-    cdrom_StartRead(v0, (s32)a1);
+    cdrom_StartRead(func_80036EA8(2, a0), (s32)a1);
     game_FrameLoop();
-    s2 = 0x280;
     func_8006E440((s32 *)a1);
 
     s3 = a1->unk_08;
-    s0 = 0x1DC;
 
-    rect[0] = (s16)s2;
-    rect[1] = 0;
-    rect[2] = 0x180;
-    rect[3] = (s16)s0;
+    rect.x = 0x280;
+    rect.y = 0;
+    rect.w = 0x180;
+    rect.h = 0x1DC;
     DrawSync(0);
-    LoadImage(rect, s3);
+    LoadImage(&rect, (u32 *)s3);
 
-    rect[2] = 0x170;
-    rect[0] = (s16)s2;
-    rect[1] = (s16)s0;
-    rect[3] = 0x24;
+    rect.w = 0x170;
+    rect.x = 0x280;
+    rect.y = 0x1DC;
+    rect.h = 0x24;
     DrawSync(0);
-    LoadImage(rect, s3 + 0x59400);
+    LoadImage(&rect, (u32 *)(s3 + 0x59400));
 
     func_8006E8CC(a1);
 }
@@ -297,13 +288,7 @@ extern u8 D_8009BC7C[];
 extern SelectEntryE534 D_8009BC40[][6];
 extern u8 D_800A32E8;
 extern u8 D_800A32E9;
-typedef struct {
-    s16 x;
-    s16 y;
-    s16 w;
-    s16 h;
-} Rect_8006ECF4;
-extern Rect_8006ECF4 D_800A32F4;
+extern RECT D_800A32F4;
 
 void func_8006ECF4(Unk8006EACCRec *arg0) {
     Unk8007352CEnv s;
@@ -312,7 +297,7 @@ void func_8006ECF4(Unk8006EACCRec *arg0) {
     s32 sel;
     s32 a2;
     s16 i;
-    Rect_8006ECF4 rectbuf;
+    RECT rectbuf;
 
     s.ot_idx = 0x14;
     s.scale_x = 0x200;
@@ -378,7 +363,7 @@ void func_8006ECF4(Unk8006EACCRec *arg0) {
         if (i == 0) goto default_p0;
         if (D_800A32E8 != sel || D_800A32E9 != D_800A3554) {
             rectbuf = D_800A32F4;
-            LoadImage((s32)&rectbuf, a2);
+            LoadImage(&rectbuf, (u32 *)a2);
             DrawSync(0);
         }
         goto p1_dispatch;
@@ -1167,13 +1152,15 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
         }
     }
     for (i = 0; i < 1 + D_800A35B0 + (port_ofs = D_800A3558); i++) {
-        u8 *vram; /* several values of one kind: player i's VRAM rect row,
-                   * D_800A35A8->unk_7C + (i << 6), computed at the top of the
+        RECT *vram; /* several values of one kind: player i's VRAM rect row,
+                   * D_800A35A8->unk_7C + i * 8, computed at the top of the
                    * loop and again in the locked-slot arm. Ruling 11, proof in
                    * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md. */
 
+        /* FAKE: base and step as two statements, here and in the locked-slot arm;
+         * `vram = D_800A35A8->unk_7C + i * 8` scores 28 */
         vram = D_800A35A8->unk_7C;
-        vram += i << 6;
+        vram += i * 8;
         port = i - port_ofs;
         if (D_800A3560.rec[i].unk0 != 5 && D_800A3560.rec[i].unk0 != 0x10) {
             s32 max;
@@ -1233,7 +1220,7 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                     }
                     id = D_800A3560.rec[i].unk2;
                     tim = &D_800A35A8->unk_14[id][sel];
-                    LoadImage(vram + id * 8, *tim);
+                    LoadImage(&vram[id], (u32 *)*tim);
                     DrawSync(0);
                 } else if (D_800A354C & (0x40 << (port * 16))) {
                     s32 sel;
@@ -1252,7 +1239,7 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                     }
                     id = D_800A3560.rec[i].unk2;
                     tim = &D_800A35A8->unk_14[id][sel];
-                    LoadImage(vram + id * 8, *tim);
+                    LoadImage(&vram[id], (u32 *)*tim);
                     DrawSync(0);
                 } else if (D_800A354C & (0x10 << (port * 16))) {
                     func_8005C650(2, 0x7F, 0x7F);
@@ -1331,7 +1318,7 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                     func_8005C650(1, 0x7F, 0x7F);
                     flag = 2;
                     vram = D_800A35A8->unk_7C;
-                    vram += i << 6;
+                    vram += i * 8;
                     if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) {
                         sel = 0;
                     } else {
@@ -1339,7 +1326,7 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                     }
                     id = D_800A3560.rec[i].unk2;
                     tim = &D_800A35A8->unk_14[id][sel];
-                    LoadImage(vram + id * 8, *tim);
+                    LoadImage(&vram[id], (u32 *)*tim);
                     DrawSync(0);
                 }
             }

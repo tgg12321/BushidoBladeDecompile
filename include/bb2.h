@@ -586,7 +586,7 @@ extern void func_80022580(s32, s32, s32, s32, s32);
 extern s32 func_80036EA8(s32, s32);
 extern void func_8003A728(s32);
 extern void func_8003AE5C(u8 *);
-extern void func_8003DE14(s16 *, s32);
+extern void func_8003DE14(RECT *, s32);
 extern void func_8003F1E4(s32);
 extern void func_80041688(s32, s32);
 extern void func_80048BA4(s32, s32, s32);

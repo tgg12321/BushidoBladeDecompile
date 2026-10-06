@@ -340,6 +340,9 @@ extern void DrawOTag(u32 *);
 extern u32 *ClearOTagR(u32 *, s32);
 extern DRAWENV *PutDrawEnv(DRAWENV *);
 extern DISPENV *PutDispEnv(DISPENV *);
+extern s32 ClearImage(RECT *, u8, u8, u8);
+extern s32 LoadImage(RECT *, u32 *);  /* PsyQ: u_long *p */
+extern s32 StoreImage(RECT *, u32 *); /* PsyQ: u_long *p */
 extern s32 MoveImage(RECT *, s32, s32);
 extern u32 GetTPage(s32, s32, s32, s32); /* PsyQ: u_short GetTPage(int, int, int, int) */
 extern u16 GetClut(s32, s32);

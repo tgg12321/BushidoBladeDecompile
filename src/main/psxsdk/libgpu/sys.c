@@ -373,9 +373,9 @@ end:
 }
 extern void checkRECT(const char *, RECT *);
 
-void ClearImage(RECT *arg0, u8 arg1, u8 arg2, u8 arg3) {
+s32 ClearImage(RECT *arg0, u8 arg1, u8 arg2, u8 arg3) {
     checkRECT(g_str_clearimage, arg0);
-    g_gpu_dev_table->addque2(g_gpu_dev_table->clr, arg0, 8, ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
+    return g_gpu_dev_table->addque2(g_gpu_dev_table->clr, arg0, 8, ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
 }
 void ClearImage2(RECT *arg0, u8 arg1, u8 arg2, u8 arg3) {
     checkRECT(g_str_clearimage, arg0);
@@ -383,14 +383,14 @@ void ClearImage2(RECT *arg0, u8 arg1, u8 arg2, u8 arg3) {
                              0x80000000 | ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
 }
 
-void LoadImage(RECT *a0, u32 *a1) {
+s32 LoadImage(RECT *a0, u32 *a1) {
     checkRECT(g_str_loadimage, a0);
-    g_gpu_dev_table->addque2(g_gpu_dev_table->dws, a0, 8, a1);
+    return g_gpu_dev_table->addque2(g_gpu_dev_table->dws, a0, 8, a1);
 }
 
-void StoreImage(RECT *a0, u32 *a1) {
+s32 StoreImage(RECT *a0, u32 *a1) {
     checkRECT(g_str_storeimage, a0);
-    g_gpu_dev_table->addque2(g_gpu_dev_table->drs, a0, 8, a1);
+    return g_gpu_dev_table->addque2(g_gpu_dev_table->drs, a0, 8, a1);
 }
 extern u32 g_gpu_move_param[5];
 
