@@ -5326,11 +5326,12 @@ void func_8006C21C(s32 *arg0) {
        four never-allocated temps take the target's four untouched frame
        slots (0x60-0x78, frame 0xC0). A read from phase 5 on keeps the local
        live across the phase-4 calls (callee-saved reg, +insns), so later
-       sites write a literal 0. `tw` is passed as SetDrawMode's RECT *tw (an
-       int -> pointer conversion cc1 reports): every pointer or int spelling of
-       it measured (s32 + cast, RECT * local in any placement, initialised or
-       assigned later, a literal 0) differs by 70 lines, because the mechanism
-       needs the s16 read. */
+       sites write a literal 0. `tw` is passed as SetDrawMode's RECT *tw through
+       a `(RECT *)tw` boundary conversion (owner ruling Q113; cc1 reports it as a
+       cast to pointer from an integer of different size): every other pointer
+       or int spelling of it measured (s32 + cast, RECT * local in any placement,
+       initialised or assigned later, a literal 0) differs by 70 lines, because
+       the mechanism needs the s16 read. */
     s16 dtd;
     s16 xpos;
     s16 ypos;
@@ -5361,7 +5362,7 @@ void func_8006C21C(s32 *arg0) {
     s.table = cells;
     s.out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
-    SetDrawMode((DR_MODE *)arg0[7], 1, dtd, func_8006E480((s32)s.header, mode), tw);
+    SetDrawMode((DR_MODE *)arg0[7], 1, dtd, func_8006E480((s32)s.header, mode), (RECT *)tw);
     AddPrim(g_gpu_ot_ptr + 0x28, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
@@ -5386,7 +5387,7 @@ void func_8006C21C(s32 *arg0) {
         }
     }
     s.header = (u8 *)table[13];
-    SetDrawMode((DR_MODE *)arg0[7], 1, dtd, func_8006E480((s32)s.header, mode), tw);
+    SetDrawMode((DR_MODE *)arg0[7], 1, dtd, func_8006E480((s32)s.header, mode), (RECT *)tw);
     AddPrim(g_gpu_ot_ptr + 0x24, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
