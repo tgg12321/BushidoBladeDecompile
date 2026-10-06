@@ -885,7 +885,7 @@ extern void func_80060E04(s32);
 extern void func_80061064(s16 *, s32 *);
 extern void func_800618B4(s32 *, s16 *);
 extern void func_80061A3C(s32 *, s16, s32, s32);
-extern void func_80061FAC(u16 *, s32, MATRIX *);
+extern void func_80061FAC(u16 *, s32 *, MATRIX *);
 extern void func_800620B8(s16 *, s32 *);
 extern void func_80068ECC(s32);
 extern s32 func_80068F70(s32, s32 *);

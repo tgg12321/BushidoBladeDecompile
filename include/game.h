@@ -633,22 +633,53 @@ typedef struct {
     u8 voll;
 } Unk800EFB78Entry;
 
+/* The 0x2C-byte block D_800A3468 points at (51268.c): Unk1F800000Rec.unk00 (func_80060E38's seed)
+ * or D_800F116C, where func_800611A4 .. func_80061EC0 point it before calling func_80060A68.
+ * D_800F1198 follows D_800F116C, so that copy ends at +0x2C. Each copy sets one pointer pair:
+ * - unk00: one word, stored whole and read whole (bit 21 in func_80060A68, bits 17-18 / 19-20 in
+ *   func_80063AF0 / func_80063B34 / func_80065000); func_80060A68 / func_80060B70 also read its
+ *   low halfword (`lhu`), their D_800F10D0 / D_8009BA60 index.
+ * - unk04 / unk08: the three halfwords / three words func_80060B70 and func_800620B8 copy into the
+ *   scratchpad block's unk18 / unk20 (through D_800A346C / D_800A3470). Only the scratchpad block's
+ *   are set: func_80060E38 stores its two arguments there.
+ * - unk0C / unk10: the three words / three halfwords func_80060A68 copies into unk20 / unk18. Set
+ *   only in the D_800F116C block (through D_800A3468, or D_800F1178 / D_800F117C, separate symbols
+ *   at its +0x0C / +0x10).
+ * - unk14: the byte func_80060A68 / func_80060B70 store the called function's result to (`sb`);
+ *   D_800F1180 is the D_800F116C block's +0x14.
+ * - unk1E: no access. */
+typedef struct {
+    union {
+        s32 w;
+        u16 h;
+    } unk00;
+    s16 *unk04;
+    s32 *unk08;
+    s32 *unk0C;
+    s16 *unk10;
+    u8 *unk14;
+    u16 unk18[3];
+    u8 unk1E[2];
+    s32 unk20[3];
+} Unk1F800000Unk00;
+
 /* 51268's view of the scratchpad from 0x1F800000 (SPAD51268 in 51268.c). 17AFC's view of the same
  * memory, used at other times, is ScrPad. func_80060E38 points the file's D_800A34xx globals at these
- * members (51268.c); apart from its own two raw stores to unk00's +0x04 / +0x08, the code reaches
- * them only through those globals:
- * - unk00: the command block D_800A3468 points at until a function retargets it (func_80060A68's
- *   Ob layout; D_800A346C / D_800A3470 point at its +0x18 / +0x20), with +0x2C..+0x2F. Typed with
- *   D_800A3468 in a later batch.
+ * members (51268.c); apart from its own two stores to unk00.unk04 / unk08, the code reaches them only
+ * through those globals:
+ * - unk00: the command block D_800A3468 points at until a function retargets it; D_800A346C /
+ *   D_800A3470 point at its unk18 / unk20.
+ * - unk2C: no access.
  * - unk50 / unkB0: the initial targets of D_800A3488 / D_800A348C. func_800620B8 retargets them
- *   only in its switch cases 0-3 (unk4 & 7), so its u16 reads at 51268.c:989-991 go through these
+ *   only in its switch cases 0-3 (unk4 & 7), so its u16 reads at 51268.c:953-955 go through these
  *   seeded values when no earlier record took one of those cases (typed with the globals later).
  * - unkA0: the initial targets of D_800A34E4 / D_800A34E8, which every user retargets before use.
  * - unkB8: the work area D_800A34EC points at, laid out differently by its users (later batch);
  *   it runs to the end of the scratchpad.
  * The other members are one global each (D_800A3474 .. D_800A34E0, D_800A3480 / D_800A3484). */
 typedef struct {
-    u8 unk00[0x30];
+    Unk1F800000Unk00 unk00;
+    u8 unk2C[4];
     MATRIX unk30;      /* D_800A3474 */
     u8 unk50[8];
     s32 unk58;         /* D_800A3490 */
