@@ -904,7 +904,6 @@ void func_800550E8(s32 arg0) {
         p->unk_414[i][1] = p->unk_414[i][1] >> 1;
     } while (++i < 8);
 }
-extern s32 rand(void);
 void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     Unk80101EC8Record *p = &D_80101EC8[arg0];
     CpuLevelEntry *src;

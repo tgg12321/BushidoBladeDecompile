@@ -7,10 +7,7 @@
 #include "gte.h"
 
 /* Declarations from the file this TU was split from (text1a_c.c). */
-extern s32 rcos(s32);
-extern s32 rsin(s32);
 void func_800433E4();
-extern void func_800520B8(s32, s32, s32);
 
 void func_80044800(void) {
     SVECTOR sv;
@@ -150,8 +147,6 @@ void func_80044C70(s32 a0) {
     D_800A9CF8.unkC += a0;
     D_800A9CF8.unk8 += a0;
 }
-extern s32 rsin(s32);
-extern s32 rcos(s32);
 void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];
@@ -516,7 +511,6 @@ s32 func_80045808(void) {
 void *func_80045814(void) {
     return &D_800A9D10;
 }
-extern void func_800520B8(s32, s32, s32);
 void func_80045824(s32 a0, s32 a1, s32 a2) {
     func_80045230(a1 + a2);
     func_800520B8(a0, a1, a2);

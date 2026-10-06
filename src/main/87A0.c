@@ -47,7 +47,6 @@ extern s32 func_80054434(void);
 
 
 
-extern s32 rand();
 
 
 

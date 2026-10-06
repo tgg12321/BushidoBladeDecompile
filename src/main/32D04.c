@@ -437,8 +437,6 @@ void math_Rotate2D(s32 *a0, s32 *a1, s32 a2) {
     *a1 = (cos_x + sin_y) >> 12;
     *a0 = (sin_x - cos_y) >> 12;
 }
-extern s32 rcos(s32);
-extern s32 rsin(s32);
 void math_MatrixToAnglesYXZ(MATRIX *a0, SVECTOR *a1) {
     SVECTOR rot;
     VECTOR result;
@@ -953,7 +951,6 @@ void func_80044100(s32 a0, s32 a1) {
         } while (count != -1);
     }
 }
-extern void func_800520B8(s32, s32, s32);
 typedef char *va_list;
 #define va_start(ap, last) ((ap) = (va_list)(&(last) + 1))
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
@@ -1002,7 +999,6 @@ s32 func_80044170(s32 *a0, ...) {
     *slots = dest - (s32)base;
     return dest;
 }
-extern void func_800520B8(s32, s32, s32);
 s32 func_8004428C(s32 *base, s16 *offsets) {
     s32 *b = base; /* FAKE: prologue pair order -- single forward-order
                       param alias (pointer-alias-fake-exception);
@@ -1055,7 +1051,6 @@ done:
     *slots = v1;
     return ret;
 }
-extern void func_800520B8(s32, s32, s32);
 s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
     s16 *fp;
     s16 *scan;
@@ -1132,7 +1127,6 @@ void func_800444E0(void) {
     func_80044504(D_800A378C);
 }
 extern MATRIX D_80101BD0;
-extern Unk80101DF0Record *D_800A3708;
 
 extern void func_8004A4E0(void);
 void func_80044504(u32 *a0) {

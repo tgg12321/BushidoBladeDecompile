@@ -33,9 +33,7 @@ extern RECT D_800A30D4;
 extern s32 D_800A30DC;
 
 
-extern u32 *ClearOTagR(u32 *, s32);
 
-extern s32 rand(void);
 extern void __main(void);
 /* Not the bb2.h spelling: the definition (3AB48.c) takes an s16 first parameter, but this call
  * passes it unextended (an s16 prototype adds sll/sra here, measured). */
@@ -178,8 +176,6 @@ void rcnt_StartCnt1Wrapper(void) {
 }
 
 extern void SetGraphDebug(s32);
-extern DRAWENV *SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
-extern void SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
 void disp_Init(void) {
     ResetGraph(0);
     SetGraphDebug(0);

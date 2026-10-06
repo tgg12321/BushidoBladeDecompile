@@ -11,7 +11,6 @@ const char D_800109C8[] = "bu%1d%1d:";
 extern s32 D_800A31E8;
 extern s32 D_800A31EC;
 extern s32 D_800A3890;
-extern s32 D_800A3924;
 extern s32 D_800A37F4;
 
 

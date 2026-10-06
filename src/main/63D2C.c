@@ -6,7 +6,6 @@
 #include "bb2.h"
 
 /* Declarations from the file this TU was split from (text1b_tu1c.c). */
-extern s32 rsin();
 extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
 extern s32 func_80073C78();

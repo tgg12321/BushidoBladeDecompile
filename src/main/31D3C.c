@@ -397,8 +397,6 @@ void func_80041E10(Vec4i32 *a0, s32 a1) {
     g_anim_select[2] = (s16)(((a1 & 0xFF) << 12) / 255);
     D_800A9B28 = *a0;
 }
-extern s32 rcos(s32);
-extern s32 rsin(s32);
 void func_80041EB0(s32 a0, s32 a1)
 {
     Unk800F62E0Rec *fp_ptr;

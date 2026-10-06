@@ -609,6 +609,9 @@ extern s32 D_800A326C;
 extern s32 D_800A32BC;
 extern u32 D_800A32C8[2];
 extern Unk80101DF0Record *D_800A370C;
+extern Unk80101DF0Record *D_800A3708; /* defined in main/32D04.c */
+extern s32 D_800A3924;               /* tentative definitions in main/28514.c and main/memcard.c */
+extern void func_800520B8(s32, s32, s32);
 extern u8 D_800A37A8[];
 extern u16 D_800A37C4;
 extern POLY_FT4 *D_800A37D4;

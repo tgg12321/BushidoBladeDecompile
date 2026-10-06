@@ -14,6 +14,7 @@ extern s32 strlen(char *);         /* PsyQ: int strlen() -- char * in its commen
 extern u8 *strcpy(u8 *, u8 *);     /* PsyQ: char *strcpy() -- char *, char * in its comment */
 extern u8 *memchr(u8 *, s32, s32); /* PsyQ: void *memchr(unsigned char *, unsigned char, int) */
 extern void *memmove(u8 *, u8 *, s32);
+extern s32 rand(void);
 extern void srand(u32);
 extern s32 sprintf(char *, char *, ...);
 extern void puts(char *);

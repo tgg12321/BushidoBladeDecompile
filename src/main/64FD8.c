@@ -8,8 +8,6 @@
 
 /* ---- merged from text1b_tu2.c (owner ruling Q67: one original file) ---- */
 /* Declarations from the file this TU was split from (text1b.c). */
-extern u32 *ClearOTagR(u32 *, s32);
-extern s32 rsin();
 extern void AddPrim(void *, void *);
 /* func_800747D8: the duplicated `sound = 4;` below is the
  * duplicated-statement-into-arms shape and carries its FAKE annotation inline. */
@@ -405,7 +403,6 @@ void func_8007526C(void) {
 
 
 
-extern s32 rsin(s32);
 
 /* Per-player gauge draw: fills the 0x2C-byte sprite descriptor `s` (the same
    descriptor shape func_8006DD94 / func_80069F80 hand to func_8007352C) for the

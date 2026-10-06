@@ -25,7 +25,6 @@
 
 
 
-extern s32 rand(void);
 
 
 

@@ -24,6 +24,8 @@ extern void ReadSZfifo3(s32 *, s32 *, s32 *);
 extern s32 SquareRoot0(s32);
 extern s32 SquareRoot12(s32);
 extern s32 ratan2(s32, s32);
+extern s32 rsin(s32);
+extern s32 rcos(s32);
 extern s32 Square12(s32 *, s32 *); /* PsyQ: VECTOR *Square12(VECTOR *, VECTOR *) */
 extern void LoadAverage12(s32 *, s32 *, s32, s32, s32); /* PsyQ: void LoadAverage12(VECTOR *, VECTOR *, long, long, VECTOR *) */
 extern MATRIX *RotMatrix(SVECTOR *, MATRIX *);

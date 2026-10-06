@@ -24,7 +24,6 @@ void cdrom_FlushInit(void) {
     CdInit();
     VSync(4);
 }
-extern void CdGetSector(s32, s32);
 void cdrom_ReadyCallback(u8 arg0, u8 *result) {
     s32 sp[4];
     if (arg0 == 1) {

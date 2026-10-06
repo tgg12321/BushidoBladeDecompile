@@ -82,6 +82,7 @@ extern CdlCB CdSyncCallback(CdlCB);
 extern CdlCB CdReadyCallback(CdlCB);
 extern s32 CdDataCallback(s32);  /* PsyQ: void (*CdDataCallback(void (*func)())) */
 extern void CdDataSync(s32);     /* PsyQ: int CdDataSync(int) */
+extern s32 CdGetSector(s32, s32);  /* PsyQ: int CdGetSector(void *, int) */
 extern s32 CdGetSector2(s32, s32); /* PsyQ: int CdGetSector2(void *, int) */
 extern s32 CdMix(CdlATV *);
 extern CdlLOC *CdIntToPos(s32, CdlLOC *);

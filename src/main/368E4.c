@@ -288,7 +288,6 @@ extern void func_80048B8C(s32);
 extern void func_800460E4(s32, s32);
 extern void func_8004668C(void);
 
-extern Unk80101DF0Record *D_800A3708;
 extern s16 D_800A324A;
 
 /* Externs for globals */
@@ -2444,8 +2443,6 @@ void func_8004A09C(Unk800F62E0Rec *arg0, u16 *arg1) {
     arg0->back[2] = *arg1;
     arg0->unk5C = *(arg1 + 1);
 }
-extern s32 rcos();
-extern s32 rsin();
 void func_8004A1FC(arg0) Unk800F62E0Rec *arg0; {
     s16 i;
     Unk800F62E0Light *p;

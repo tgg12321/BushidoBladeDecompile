@@ -28,7 +28,6 @@ const char D_80016304[20] =
 /* Declarations from the file this module was split from (src/main/psxsdk/libcd/bios.c, ex system.c): the
  * LIBCD SYS and BIOS functions CDREAD calls, declared as their definitions declare them (the old file
  * defined them above this module). */
-s32 CdGetSector(s32 madr, s32 size);
 
 
 /* External linkage (Sony's cdread.c had cb_data static): the linked bytes

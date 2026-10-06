@@ -281,7 +281,6 @@ void func_80035618(s32 arg0) {
  * replay_camera_rob_back_loose2 extracted to its own .c file, requiring this
  * file to be split around it to preserve text addresses). */
 extern u8 D_800A31D9;
-extern s32 rand(void);
 extern void func_80035618(s32);
 extern void func_8003553C(void);
 extern void func_80035438(void);

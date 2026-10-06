@@ -13,9 +13,6 @@
 
 /* Declarations from the file this TU was split from (text1b_tu1c.c). */
 extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
-extern u32 *ClearOTagR(u32 *, s32);
-extern s32 rcos();
-extern s32 rsin();
 extern void AddPrim(void *, void *);
 
 typedef struct SelectEntryE534 {

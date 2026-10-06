@@ -8,7 +8,6 @@
 #include "bb2_const.h"
 
 /* Declarations from the file this TU was split from (code6cac_b.c). */
-extern s32 rand(void);
 extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;

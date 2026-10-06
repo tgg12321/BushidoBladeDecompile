@@ -348,6 +348,8 @@ extern s32 ClearImage(RECT *, u8, u8, u8);
 extern s32 LoadImage(RECT *, u32 *);  /* PsyQ: u_long *p */
 extern s32 StoreImage(RECT *, u32 *); /* PsyQ: u_long *p */
 extern s32 MoveImage(RECT *, s32, s32);
+extern DRAWENV *SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
+extern DISPENV *SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
 extern u32 GetTPage(s32, s32, s32, s32); /* PsyQ: u_short GetTPage(int, int, int, int) */
 extern u16 GetClut(s32, s32);
 extern void SetSemiTrans(void *, s32);

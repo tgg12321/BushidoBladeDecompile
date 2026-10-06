@@ -114,7 +114,6 @@
 
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
-extern u16 rand(void);
 extern u8 D_800A38AC;
 extern s32 D_800A37D8;
 
@@ -2074,7 +2073,6 @@ loop_16:
 void func_8003E6A0(s32 arg0, s32 arg1) {
     func_8003E2D8(D_80101DF0.work.t[0], D_80101DF0.work.t[2], arg0, arg1);
 }
-extern Unk80101DF0Record *D_800A3708;
 extern s32 D_800A322C;
 extern s32 D_800927C0[64][32];
 extern s32 D_80090740[64][32];

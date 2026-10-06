@@ -8,9 +8,6 @@
 
 /* func_80060A68 .. func_80060E38 moved here from text1b.c: the file boundary follows the per-file gp evidence
  * (owner ruling Q65). */
-/* Declarations from the file this TU was split from (text1b.c). */
-extern s32 rand(void);
-
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
 static POLY_FT4 *D_800A3420;
 static POLY_FT4 *D_800A3424;
@@ -272,8 +269,6 @@ void func_80060E38(s16 *arg0, s32 *arg1) {
 
 /* Declarations from the file this TU was split from (text1b.c). */
 extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
-extern s32 rcos();
-extern s32 rsin();
 extern s32 D_800F1180;
 s32 printf(s32 *, s32);               /* extern */
 extern void AddPrim(void *, void *);
@@ -5993,8 +5988,6 @@ s32 func_8006E068(s32 arg0, s32 arg1) {
 extern RECT D_800A32D8;
 
 
-extern DRAWENV *SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
-extern DISPENV *SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
 
 s32 func_8006E10C(void) {
     s32 ff0;
