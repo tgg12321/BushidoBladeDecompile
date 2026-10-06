@@ -34,8 +34,8 @@ static s16 *D_800A3478;
 static s32 *D_800A347C;
 static s32 *D_800A3480;
 static s32 *D_800A3484;
-static s32 D_800A3488;
-static s32 D_800A348C;
+static TexRec *D_800A3488;
+static TexRec *D_800A348C;
 static s32 *D_800A3490;
 static s32 *D_800A3494;
 static u16 *D_800A3498;
@@ -58,7 +58,7 @@ static u16 *D_800A34D8;
 static u16 *D_800A34DC;
 static u16 *D_800A34E0;
 static u8 *D_800A34E4;
-static s32 D_800A34E8;
+static u32 *D_800A34E8;
 static s32 D_800A34EC;
 /* Two s16 slots at 0x800A34F0, indexed as one array. Object model evidence
  * (the original binary): asm/funcs/func_800678A8.s
@@ -246,7 +246,7 @@ void func_80060E38(s16 *arg0, s32 *arg1) {
     D_800A346C = SPAD51268->unk00.unk18;
     D_800A3470 = SPAD51268->unk00.unk20;
     D_800A3474 = &SPAD51268->unk30;
-    D_800A3488 = 0x1F800050;
+    D_800A3488 = &SPAD51268->unk50;
     D_800A3490 = &SPAD51268->unk58;
     D_800A3494 = &SPAD51268->unk5C;
     D_800A3498 = &SPAD51268->unk60;
@@ -268,11 +268,11 @@ void func_80060E38(s16 *arg0, s32 *arg1) {
     D_800A34D8 = &SPAD51268->unk9A;
     D_800A34DC = &SPAD51268->unk9C;
     D_800A34E0 = &SPAD51268->unk9E;
-    D_800A34E4 = (u8 *)0x1F8000A0;
-    D_800A34E8 = 0x1F8000A4;
+    D_800A34E4 = SPAD51268->unkA0;
+    D_800A34E8 = &SPAD51268->unkA4;
     D_800A3480 = &SPAD51268->unkA8;
     D_800A3484 = &SPAD51268->unkAC;
-    D_800A348C = 0x1F8000B0;
+    D_800A348C = &SPAD51268->unkB0;
     D_800A34EC = 0x1F8000B8;
     SPAD51268->unk00.unk04 = arg0;
     SPAD51268->unk00.unk08 = arg1;
@@ -825,10 +825,10 @@ void func_800620B8(s16 *arg0, s32 *trans) {
     extern s32 D_800A37D4;
     extern s32 D_800A3720;
     extern s32 D_8009BD44[];
-    extern u16 D_8009BA00[6][4];
-    extern u16 D_8009BA30[4][4];
-    extern u16 D_8009BA50[4];
-    extern u16 D_8009BA58[4];
+    extern TexRec D_8009BA00[6];
+    extern TexRec D_8009BA30[4];
+    extern TexRec D_8009BA50[1];
+    extern TexRec D_8009BA58[1];
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
     extern s32 rand(void);
@@ -838,7 +838,7 @@ void func_800620B8(s16 *arg0, s32 *trans) {
     VECTOR *tv;
     VECTOR *v;
     SVECTOR *sv;
-    s32 *flag;
+    s32 *interp;
     u32 *z;
     POLY_FT4 *prim;
     Unk1F800000Unk00 *outer;
@@ -856,10 +856,10 @@ void func_800620B8(s16 *arg0, s32 *trans) {
        the other three lose global allocation, so reload rebuilds each address in $t0
        at its use, as the target does. Tables used directly: 47; any one of the three
        used directly: 3-7. */
-    u16 (*strip32)[4]; /* FAKE: alias of D_8009BA00 */
-    u16 *alt32; /* FAKE: alias of D_8009BA50 */
-    u16 (*strip16)[4]; /* FAKE: alias of D_8009BA30 */
-    u16 *alt16; /* FAKE: alias of D_8009BA58 */
+    TexRec *strip32; /* FAKE: alias of D_8009BA00 */
+    TexRec *alt32; /* FAKE: alias of D_8009BA50 */
+    TexRec *strip16; /* FAKE: alias of D_8009BA30 */
+    TexRec *alt16; /* FAKE: alias of D_8009BA58 */
 
     func_80060E38(arg0, trans);
     outer = D_800A3468;
@@ -882,7 +882,7 @@ void func_800620B8(s16 *arg0, s32 *trans) {
     tv = (VECTOR *)(base + 0x14);
     v = (VECTOR *)(base + 0x24);
     sv = (SVECTOR *)(base + 0x34);
-    flag = (s32 *)(base + 0x3C);
+    interp = (s32 *)(base + 0x3C);
     z = (u32 *)(base + 0x44);
     sv->vz = 0;
     sv->vy = 0;
@@ -906,14 +906,18 @@ void func_800620B8(s16 *arg0, s32 *trans) {
             /* FAKE: `- strip32 + strip32` round trip (combine-foldable chain-extender):
                combine folds it back to the direct `frame * 8 + strip32` (same RTL, zero
                bytes), but flow.c has already counted the two extra uses of strip32
-               (nrefs 3 -> 7), so global.c ranks it above sv/flag and gives it $fp, as
-               the target has it. Without it: 35. */
-            D_800A348C = D_800A3488 = ((u32)D_800A32B8 % 6) * sizeof(*strip32) + (s32)strip32 - (s32)strip32 + (s32)strip32;
+               (nrefs 3 -> 7), so global.c ranks it above sv/interp and gives it $fp, as
+               the target has it. Without it: 35. The sum is formed in integers and
+               converted to TexRec *: in pointer arithmetic (`strip32 + n - strip32 +
+               strip32`, `&strip32[n] - strip32 + strip32`) strip32 comes first in the
+               addu (`addu v1,s8,a0` for the target's `addu a0,a0,s8`): 4; plain
+               `&strip32[n]`: 38. */
+            D_800A348C = D_800A3488 = (TexRec *)(((u32)D_800A32B8 % 6) * sizeof(*strip32) + (s32)strip32 - (s32)strip32 + (s32)strip32);
             if (D_8009BD44[0] & 1) {
-                D_800A348C = (s32)alt32;
+                D_800A348C = alt32;
             }
-            *D_800A349C = ((u16 *)D_800A3488)[2] + 0x1F;
-            *D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x1F;
+            *D_800A349C = D_800A3488->u + 0x1F;
+            *D_800A34A4 = D_800A3488->v + 0x1F;
             break;
         case 2:
             *D_800A34A8 = 0x50;
@@ -923,12 +927,15 @@ void func_800620B8(s16 *arg0, s32 *trans) {
             *D_800A34A8 = 0x64;
             *D_800A34AC = 0x78;
         sel_b:
-            D_800A348C = D_800A3488 = (D_800A32B8 & 3) * sizeof(*strip16) + (s32)strip16;
+            /* FAKE: the record address is an integer sum converted to TexRec *: as
+               `strip16 + n` or `&strip16[n]` strip16 comes first in the addu (`addu
+               v0,t0,v0` for the target's `addu v0,v0,t0`): score 1. */
+            D_800A348C = D_800A3488 = (TexRec *)((D_800A32B8 & 3) * sizeof(*strip16) + (s32)strip16);
             if (D_8009BD44[0] & 1) {
-                D_800A348C = (s32)alt16;
+                D_800A348C = alt16;
             }
-            *D_800A349C = ((u16 *)D_800A3488)[2] + 0xF;
-            *D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x13;
+            *D_800A349C = D_800A3488->u + 0xF;
+            *D_800A34A4 = D_800A3488->v + 0x13;
             break;
         }
         v->vx = D_800F1198[i].unk0 / 2 - D_800A3470[0];
@@ -941,16 +948,16 @@ void func_800620B8(s16 *arg0, s32 *trans) {
            stays live across the loop: score 65, 502 insns for 501 (an 88-byte
            frame for 80; base in $s2 for the target's $s0). */
         SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
-        RotTransPers(sv, D_800A34B8, flag, D_800A34CC);
+        RotTransPers(sv, D_800A34B8, interp, D_800A34CC);
         /* gte_stsz(r0) --- inline_c.h :1042-1046 */
         __asm__ volatile(
             "swc2   $19, 0(%0)\n"
             :: "r"(D_800A34D0) : "memory");
         *z = func_80052C28(*D_800A34D0, 0);
         if (*z < 0x1005 && (*D_800A34B0 / 256 >> 4) < *z) {
-            *D_800A3494 = (u16)(((((u16 *)D_800A348C)[0] >> 4) & 0x3F) + (((u16 *)D_800A348C)[1] << 6));
-            *D_800A3498 = ((u16 *)D_800A3488)[2];
-            *D_800A34A0 = ((u16 *)D_800A3488)[3];
+            *D_800A3494 = (u16)(((D_800A348C->clut_x >> 4) & 0x3F) + (D_800A348C->clut_y << 6));
+            *D_800A3498 = D_800A3488->u;
+            *D_800A34A0 = D_800A3488->v;
             *D_800A34D0 = *D_800A34D0 ? *D_800A34D0 : 1;
             *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
             proj_w = *D_800A34A8 * *D_800A34B4;
@@ -986,9 +993,9 @@ void func_800620B8(s16 *arg0, s32 *trans) {
             SetSemiTrans(prim, 1);
             if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
                 D_800A34E4 = g_gpu_ot_ptr + *z * 4;
-                D_800A34E8 = (s32)prim;
-                *(u32 *)D_800A34E8 = (*(u32 *)D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
-                *(u32 *)D_800A34E4 = (D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
+                D_800A34E8 = &prim->tag;
+                *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
+                *(u32 *)D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
                 prim++;
             }
         }
@@ -1026,10 +1033,10 @@ s32 func_8006288C(void) {
    link the new quads into the OT. Returns 1 when quads were added, else the
    live-slot mask (0 once every slot has expired). */
 s32 func_8006295C(void) {
-    extern u16 D_8009B958[];
-    extern u16 D_8009B960[];
-    extern u16 D_8009B968[];
-    extern u16 D_8009B970[];
+    extern TexRec D_8009B958[];
+    extern TexRec D_8009B960[];
+    extern TexRec D_8009B968[];
+    extern TexRec D_8009B970[];
     extern s16 D_8009BB84[];
     extern s32 D_800A3720;
     extern s32 D_800A37D4;
@@ -1091,21 +1098,21 @@ s32 func_8006295C(void) {
                 *(s32 *)&prim->r0 = c + (c << 8) + (c << 16);
             }
             if (D_800F0C04[i] < 3) {
-                D_800A3488 = j ? (s32)D_8009B960 : (s32)D_8009B958;
+                D_800A3488 = j ? D_8009B960 : D_8009B958;
             } else {
-                D_800A3488 = j ? (s32)D_8009B970 : (s32)D_8009B968;
+                D_800A3488 = j ? D_8009B970 : D_8009B968;
             }
             if (j) {
-                *D_800A349C = ((u16 *)D_800A3488)[2] + 0x3F;
+                *D_800A349C = D_800A3488->u + 0x3F;
             } else {
-                *D_800A349C = ((u16 *)D_800A3488)[2] + 0x1F;
+                *D_800A349C = D_800A3488->u + 0x1F;
             }
-            *D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x1F;
+            *D_800A34A4 = D_800A3488->v + 0x1F;
             *D_800A3490 = 0x2E;
-            *D_800A3494 = (((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6)) << 16;
+            *D_800A3494 = (((D_800A3488->clut_x >> 4) & 0x3F) + (D_800A3488->clut_y << 6)) << 16;
             *D_800A3490 = *D_800A3490 << 16;
-            *D_800A3498 = ((u16 *)D_800A3488)[2];
-            *D_800A34A0 = ((u16 *)D_800A3488)[3];
+            *D_800A3498 = D_800A3488->u;
+            *D_800A34A0 = D_800A3488->v;
             *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
             *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
             *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
@@ -1200,9 +1207,9 @@ s32 func_80062FEC(void) {
    slot is still live. */
 s32 func_80063084(void) {
     extern s32 D_8009BD44[];
-    extern u16 D_8009B940[];
-    extern u16 D_8009B948[];
-    extern u16 D_8009B950[];
+    extern TexRec D_8009B940[];
+    extern TexRec D_8009B948[];
+    extern TexRec D_8009B950[];
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
     u8 *base;
@@ -1279,17 +1286,17 @@ s32 func_80063084(void) {
                     "swc2   $19, 0(%0)\n"
                     :: "r"(D_800A34D0) : "memory");
                 if (j == 0) {
-                    D_800A3488 = (s32)D_8009B940;
+                    D_800A3488 = D_8009B940;
                 } else if (D_800F0BEC[i] < 11) {
-                    D_800A3488 = (s32)D_8009B948;
+                    D_800A3488 = D_8009B948;
                 } else {
-                    D_800A3488 = (s32)D_8009B950;
+                    D_800A3488 = D_8009B950;
                 }
-                *D_800A3494 = (((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6)) << 16;
-                *D_800A3498 = ((u16 *)D_800A3488)[2];
-                *D_800A34A0 = ((u16 *)D_800A3488)[3];
-                *D_800A349C = ((u16 *)D_800A3488)[2] + 0x3F;
-                *D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x3F;
+                *D_800A3494 = (((D_800A3488->clut_x >> 4) & 0x3F) + (D_800A3488->clut_y << 6)) << 16;
+                *D_800A3498 = D_800A3488->u;
+                *D_800A34A0 = D_800A3488->v;
+                *D_800A349C = D_800A3488->u + 0x3F;
+                *D_800A34A4 = D_800A3488->v + 0x3F;
                 *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
                 *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
                 *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
@@ -1347,9 +1354,9 @@ s32 func_80063084(void) {
                     *(u16 *)&prim->u2 = *D_800A34DC;
                     *(u16 *)&prim->u3 = *D_800A34E0;
                     D_800A34E4 = g_gpu_ot_ptr + *z * 4;
-                    D_800A34E8 = (s32)prim;
+                    D_800A34E8 = &prim->tag;
                     *(u32 *)prim = (*(u32 *)prim & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
-                    *(u32 *)D_800A34E4 = (D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
+                    *(u32 *)D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
                     if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
                         prim++;
                     }
@@ -1451,7 +1458,7 @@ u8 func_80063BD0(s32 idx) {
    gte_SetTransMatrix/gte_ldlv0/gte_rt/gte_stlvnl), written out macro by
    macro. */
 s32 func_80063E10(s32 lane) {
-    extern u16 D_8009B920[][4];
+    extern TexRec D_8009B920[];
     extern SVECTOR D_8009BBE4;
     extern SVECTOR D_8009BBEC;
     extern SVECTOR D_8009BBF4;
@@ -1488,15 +1495,15 @@ s32 func_80063E10(s32 lane) {
         count = 10;
     }
     func_800644FC(&count, mats, lane);
-    D_800A3488 = (s32)D_8009B920[*D_800A3480];
+    D_800A3488 = &D_8009B920[*D_800A3480];
     prim = (POLY_FT4 *)D_800A37D4;
     *D_800A3490 = 0xE;
-    *D_800A3494 = (((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6)) << 16;
+    *D_800A3494 = (((D_800A3488->clut_x >> 4) & 0x3F) + (D_800A3488->clut_y << 6)) << 16;
     *D_800A3490 = *D_800A3490 << 16;
-    *D_800A3498 = ((u16 *)D_800A3488)[2];
-    *D_800A34A0 = ((u16 *)D_800A3488)[3];
-    *D_800A349C = ((u16 *)D_800A3488)[2] + 7;
-    *D_800A34A4 = ((u16 *)D_800A3488)[3] + 0xF;
+    *D_800A3498 = D_800A3488->u;
+    *D_800A34A0 = D_800A3488->v;
+    *D_800A349C = D_800A3488->u + 7;
+    *D_800A34A4 = D_800A3488->v + 0xF;
     *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
     *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
     *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
@@ -1726,10 +1733,10 @@ s32 func_80063E10(s32 lane) {
        target). */
     end = prim;
     for (prim = (POLY_FT4 *)D_800A37D4, k = 0; prim < end; prim++, k++) {
-        D_800A34E8 = (s32)prim;
+        D_800A34E8 = &prim->tag;
         D_800A34E4 = g_gpu_ot_ptr + zbuf[k] * 4;
-        *(u32 *)D_800A34E8 = (*(u32 *)D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
-        *(u32 *)D_800A34E4 = (D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
+        *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
+        *(u32 *)D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
     }
     D_800A37D4 = (s32)end;
     return 1;
@@ -1780,14 +1787,6 @@ s32 func_800645B0(void) {
     }
     return 1;
 }
-/* One 8-byte texture record: the CLUT position (PsyQ getClut(x, y) =
-   (y << 6) | ((x >> 4) & 0x3F)) and the texture u/v origin. */
-typedef struct {
-    u16 clut_x;
-    u16 clut_y;
-    u16 u;
-    u16 v;
-} TexRec;
 /* Draw the up-to-16 effect slots func_800645B0 spawns: per live slot (bit i
    of D_800A3444) advance its counter, and while the counter's frame (/4) is
    below 7 project the slot's world position through D_800A3474 and emit one
@@ -1865,12 +1864,12 @@ s32 func_800646E8(void) {
             __asm__ volatile(
                 "swc2   $19, 0(%0)\n"
                 :: "r"(D_800A34D0) : "memory");
-            D_800A3488 = (s32)&D_8009B8E8[*frame];
-            *D_800A3494 = (u16)(((((TexRec *)D_800A3488)->clut_x >> 4) & 0x3F) + (((TexRec *)D_800A3488)->clut_y << 6));
-            *D_800A3498 = ((TexRec *)D_800A3488)->u;
-            *D_800A34A0 = ((TexRec *)D_800A3488)->v;
-            *D_800A349C = ((TexRec *)D_800A3488)->u + 0x3F;
-            *D_800A34A4 = ((TexRec *)D_800A3488)->v + 0x1F;
+            D_800A3488 = &D_8009B8E8[*frame];
+            *D_800A3494 = (u16)(((D_800A3488->clut_x >> 4) & 0x3F) + (D_800A3488->clut_y << 6));
+            *D_800A3498 = D_800A3488->u;
+            *D_800A34A0 = D_800A3488->v;
+            *D_800A349C = D_800A3488->u + 0x3F;
+            *D_800A34A4 = D_800A3488->v + 0x1F;
             *zp = func_80052C28(*D_800A34D0, 0);
             if (*zp >= 0x1005) {
                 continue;
@@ -1930,9 +1929,9 @@ s32 func_800646E8(void) {
     *end = prim;
     for (prim = (POLY_FT4 *)D_800A37D4; prim < *end; prim++, zbuf++) {
         D_800A34E4 = g_gpu_ot_ptr + *zbuf * 4;
-        D_800A34E8 = (s32)prim;
-        *(u32 *)D_800A34E8 = (*(u32 *)D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
-        *(u32 *)D_800A34E4 = (D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
+        D_800A34E8 = &prim->tag;
+        *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
+        *(u32 *)D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
     }
     D_800A37D4 = (s32)*end;
     return 1;
@@ -2334,18 +2333,18 @@ u8 func_80065800(s32 arg0) {
     extern s32 D_800A3720;
     extern s32 D_8009BD44[];
     extern s16 D_800A3834;
-    extern u16 D_8009B8C8[];
-    extern u16 D_8009B8D0[];
-    extern u16 D_8009B8D8[];
-    extern u16 D_8009B8E0[];
-    extern u16 D_8009B978[];
-    extern u16 D_8009B980[];
-    extern u16 D_8009B988[];
-    extern u16 D_8009B990[];
-    extern u16 D_8009B9D8[];
-    extern u16 D_8009B9E0[];
-    extern u16 D_8009B9E8[];
-    extern u16 D_8009B9F0[];
+    extern TexRec D_8009B8C8[];
+    extern TexRec D_8009B8D0[];
+    extern TexRec D_8009B8D8[];
+    extern TexRec D_8009B8E0[];
+    extern TexRec D_8009B978[];
+    extern TexRec D_8009B980[];
+    extern TexRec D_8009B988[];
+    extern TexRec D_8009B990[];
+    extern TexRec D_8009B9D8[];
+    extern TexRec D_8009B9E0[];
+    extern TexRec D_8009B9E8[];
+    extern TexRec D_8009B9F0[];
     extern s32 ReadGeomScreen(void);
     s32 outer;
     POLY_FT4 *prim;
@@ -2454,9 +2453,9 @@ again:
     case 1:
     case 2:
         if (*D_800A34D0 > 4000) {
-            D_800A3488 = (s32)D_8009B8D0;
+            D_800A3488 = D_8009B8D0;
         } else {
-            D_800A3488 = (s32)D_8009B8D8;
+            D_800A3488 = D_8009B8D8;
         }
         prim->r0 = 0xFF;
         prim->g0 = 0x80;
@@ -2465,9 +2464,9 @@ again:
     case 3:
     case 4:
         if (D_800F0BA8[arg0] < 0x96) {
-            D_800A3488 = (s32)D_8009B980;
+            D_800A3488 = D_8009B980;
         } else {
-            D_800A3488 = (s32)D_8009B978;
+            D_800A3488 = D_8009B978;
         }
         prim->r0 = 0xFF;
         prim->g0 = D_800F0BA8[arg0];
@@ -2477,16 +2476,16 @@ again:
         break;
     case 5:
         if (D_800F0BA8[4] > 0x800) {
-            D_800A3488 = (s32)D_8009B8E0;
+            D_800A3488 = D_8009B8E0;
         } else {
-            D_800A3488 = (s32)D_8009B8C8;
+            D_800A3488 = D_8009B8C8;
         }
         prim->r0 = 0x80;
         prim->g0 = 0x80;
         prim->b0 = 0xFF;
         break;
     case 0:
-        D_800A3488 = (s32)D_8009B8C8;
+        D_800A3488 = D_8009B8C8;
         prim->r0 = 0x80;
         prim->g0 = 0x80;
         prim->b0 = 0xFF;
@@ -2494,9 +2493,9 @@ again:
     case 10:
     case 11:
         if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
-            D_800A3488 = (s32)D_8009B9D8;
+            D_800A3488 = D_8009B9D8;
         } else {
-            D_800A3488 = (s32)D_8009B990;
+            D_800A3488 = D_8009B990;
         }
         tbl = D_800F0BA8;
         t = tbl + arg0;
@@ -2513,14 +2512,14 @@ again:
     case 7:
         if (D_800F0BA8[arg0] < 0x96) {
             if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
-                D_800A3488 = (s32)D_8009B9D8;
+                D_800A3488 = D_8009B9D8;
             } else {
-                D_800A3488 = (s32)D_8009B988;
+                D_800A3488 = D_8009B988;
             }
         } else if ((D_8009BD44[0] & 8) && D_800A3834 != 5) {
-            D_800A3488 = (s32)D_8009B9E0;
+            D_800A3488 = D_8009B9E0;
         } else {
-            D_800A3488 = (s32)D_8009B990;
+            D_800A3488 = D_8009B990;
         }
         prim->r0 = 0x10;
         prim->g0 = ~D_800F0BA8[arg0];
@@ -2540,9 +2539,9 @@ again:
     case 8:
     case 9:
         if (D_800F0BA8[arg0 - 2] < 0xC8) {
-            D_800A3488 = (s32)D_8009B980;
+            D_800A3488 = D_8009B980;
         } else {
-            D_800A3488 = (s32)D_8009B978;
+            D_800A3488 = D_8009B978;
         }
         prim->r0 = D_800F0BA8[arg0 - 2] * 2 / 3;
         prim->g0 = D_800F0BA8[arg0 - 2] / 2;
@@ -2560,7 +2559,7 @@ again:
         *D_800A34A8 *= 2;
         *D_800A34AC *= 2;
         if (D_800F0BA8[arg0] >= 8) {
-            D_800A3488 = (s32)D_8009B8C8;
+            D_800A3488 = D_8009B8C8;
             n = 10 - D_800F0BA8[arg0];
             prim->r0 = n << 6;
             prim->g0 = n * 0x70 / 3;
@@ -2568,26 +2567,26 @@ again:
             *D_800A3490 = 0x2E;
         } else {
             if (D_800F0BA8[arg0] >= 5) {
-                D_800A3488 = (s32)D_8009B9F0;
+                D_800A3488 = D_8009B9F0;
             } else {
-                D_800A3488 = (s32)D_8009B9E8;
+                D_800A3488 = D_8009B9E8;
             }
             *D_800A3490 = 0x2F;
         }
         break;
     case 16:
     case 17:
-        D_800A3488 = (s32)D_8009B8C8;
+        D_800A3488 = D_8009B8C8;
         prim->r0 = 0xFF;
         prim->g0 = 0x60;
         prim->b0 = 0xFF;
         break;
     }
-    *D_800A3494 = (u16)(((((u16 *)D_800A3488)[0] >> 4) & 0x3F) + (((u16 *)D_800A3488)[1] << 6));
-    *D_800A3498 = ((u16 *)D_800A3488)[2];
-    *D_800A34A0 = ((u16 *)D_800A3488)[3];
-    *D_800A349C = *p_tw + ((u16 *)D_800A3488)[2] - 1;
-    *D_800A34A4 = *p_th + ((u16 *)D_800A3488)[3] - 1;
+    *D_800A3494 = (u16)(((D_800A3488->clut_x >> 4) & 0x3F) + (D_800A3488->clut_y << 6));
+    *D_800A3498 = D_800A3488->u;
+    *D_800A34A0 = D_800A3488->v;
+    *D_800A349C = *p_tw + D_800A3488->u - 1;
+    *D_800A34A4 = *p_th + D_800A3488->v - 1;
     *D_800A34B0 = ReadGeomScreen() * 1000;
     *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
     *p_w = *D_800A34A8 * *D_800A34B4 > 0x200
@@ -3045,17 +3044,16 @@ u8 func_8006786C(void) {
 }
 extern s16 D_800EFC8A[];
 extern s16 D_800F0B98[];
-extern u16 D_8009B890[];
-extern u16 D_8009B8B0[];
-extern u16 D_8009B998[];
-extern u16 D_8009B9B8[];
+extern TexRec D_8009B890[];
+extern TexRec D_8009B8B0[];
+extern TexRec D_8009B998[];
+extern TexRec D_8009B9B8[];
 u8 func_800678A8(s32 arg0, s32 arg1) {
     extern s32 D_800A37D4;
     extern s32 D_800A3724;
     s32 outer = D_800A34EC;
     s16 *p2 = (s16 *)(outer + 2);
     s16 *p6C = (s16 *)(outer + 0x6C);
-    u16 *tbl;
 
     D_800A3724 = outer + 0x1AC;
     *(s32 *)(outer + 0x80) = D_800A37D4;
@@ -3063,14 +3061,14 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
     *D_800A3490 = 0x2E;
 
     if (arg0 < 2) {
-        D_800A3488 = (s32)D_8009B890;
+        D_800A3488 = D_8009B890;
         *(s16 *)(outer + 2) = 7;
         *(s16 *)(outer + 0) = 7;
         *D_800A34A8 = 0x40;
         *D_800A34AC = 0x20;
         D_800F0B98[arg0] = 3;
     } else if (arg0 < 4) {
-        D_800A3488 = (s32)D_8009B890;
+        D_800A3488 = D_8009B890;
         *(s16 *)(outer + 2) = 7;
         *(s16 *)(outer + 0) = 7;
         *D_800A34A8 = 0x20;
@@ -3083,9 +3081,9 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
             *(s16 *)(outer + 0x70) = 3;
         }
         if (D_800A34F0[arg0 - 4] != 0) {
-            D_800A3488 = (s32)&D_8009B9B8[*(s16 *)(outer + 0x70) * 4];
+            D_800A3488 = &D_8009B9B8[*(s16 *)(outer + 0x70)];
         } else {
-            D_800A3488 = (s32)&D_8009B998[*(s16 *)(outer + 0x70) * 4];
+            D_800A3488 = &D_8009B998[*(s16 *)(outer + 0x70)];
         }
         *(s16 *)(outer + 0) = 0x1F;
         *p2 = 0x20;
@@ -3095,7 +3093,7 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
         D_800F0B98[arg0] = 1;
     } else if (arg0 < 8) {
         *D_800A3490 = 0x2E;
-        D_800A3488 = (s32)D_8009B8B0;
+        D_800A3488 = D_8009B8B0;
         *(s16 *)(outer + 2) = 0xF;
         *(s16 *)(outer + 0) = 0xF;
         *D_800A34A8 = 0xC0;
@@ -3103,13 +3101,12 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
         D_800F0B98[arg0] = 2;
     }
 
-    tbl = (u16 *)D_800A3488;
-    *D_800A3494 = (((tbl[0] >> 4) & 0x3F) + (tbl[1] << 6)) << 16;
+    *D_800A3494 = (((D_800A3488->clut_x >> 4) & 0x3F) + (D_800A3488->clut_y << 6)) << 16;
     *D_800A3490 <<= 16;
-    *D_800A3498 = ((u16 *)D_800A3488)[2];
-    *D_800A34A0 = ((u16 *)D_800A3488)[3];
-    *D_800A349C = *(u16 *)outer + ((u16 *)D_800A3488)[2];
-    *D_800A34A4 = *(u16 *)p2 + ((u16 *)D_800A3488)[3];
+    *D_800A3498 = D_800A3488->u;
+    *D_800A34A0 = D_800A3488->v;
+    *D_800A349C = *(u16 *)outer + D_800A3488->u;
+    *D_800A34A4 = *(u16 *)p2 + D_800A3488->v;
     *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
     *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
     *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
@@ -3450,56 +3447,54 @@ void func_80067D14(s32 arg0, s32 arg1) {
 u8 func_80068D88(s32 arg0, s32 arg1) {
     extern s32 D_800A37D4;
     extern s32 D_800A3724;
-    extern u8 *g_gpu_ot_ptr;
     s32 outer = D_800A34EC;
     s16 *p_idx = (s16 *)(outer + 0x6E);
-    s32 *p_prev = (s32 *)(outer + 0x7C);
+    s32 *p_end = (s32 *)(outer + 0x7C);
     s32 *p_cur = (s32 *)(outer + 0x80);
-    s16 *p_matrix = (s16 *)(outer + 0x8C);
+    u16 *zbuf = (u16 *)(outer + 0x8C);
     s32 cur_init;
     s32 prev_init;
-    s32 strength_red;
-    s32 var_t3;
-    (void)arg0; (void)arg1;
+    s32 count;
+    s32 ret;
 
     D_800A3724 = outer + 0x1AC;
     prev_init = D_800A37D4;
     cur_init = *p_cur;
-    strength_red = -((cur_init - prev_init) * 0x33333333) >> 3;
+    count = (POLY_FT4 *)cur_init - (POLY_FT4 *)prev_init;
 
-    if (strength_red != 0) {
+    if (count != 0) {
         *p_cur = prev_init;
-        *p_prev = cur_init;
-        var_t3 = 1;
+        *p_end = cur_init;
+        ret = 1;
         *p_idx = 0;
 
-        if ((u32)*p_cur < (u32)*p_prev) {
+        if ((u32)*p_cur < (u32)*p_end) {
             s32 *p_a;
-            s32 *p_b;
+            u32 *p_b;
             do {
                 s32 idx_s = *p_idx;
-                u32 entry = *(u16 *)((s32)p_matrix + idx_s * 2);
+                u32 entry = zbuf[idx_s];
                 p_a = (s32 *)(g_gpu_ot_ptr + (s32)(entry * 4));
                 D_800A34E4 = (u8 *)p_a;
-                p_b = (s32 *)*p_cur;
-                D_800A34E8 = (s32)p_b;
+                p_b = (u32 *)*p_cur;
+                D_800A34E8 = p_b;
                 *p_b = (*p_b & 0xFF000000) | (*p_a & 0xFFFFFF);
 
                 {
                     s32 *p_a2 = (s32 *)D_800A34E4;
-                    *p_a2 = (D_800A34E8 & 0xFFFFFF) | (*p_a2 & 0xFF000000);
+                    *p_a2 = ((u32)D_800A34E8 & 0xFFFFFF) | (*p_a2 & 0xFF000000);
                 }
 
                 *p_cur += 0x28;
-                *(u16 *)p_idx = *(u16 *)p_idx + 1;
-            } while ((u32)*p_cur < (u32)*p_prev);
+                (*p_idx)++;
+            } while ((u32)*p_cur < (u32)*p_end);
         }
-        D_800A37D4 = *p_prev;
+        D_800A37D4 = *p_end;
     } else {
-        var_t3 = 0;
+        ret = 0;
     }
 
-    return var_t3;
+    return ret;
 }
 void func_80068ECC(s32 arg0) {
     s32 *p = &D_8009BC04;

@@ -633,6 +633,16 @@ typedef struct {
     u8 voll;
 } Unk800EFB78Entry;
 
+/* One 8-byte texture record: the CLUT position (PsyQ getClut(x, y) = (y << 6) | ((x >> 4) & 0x3F))
+ * and the texture u/v origin. 51268's D_800A3488 / D_800A348C point at one; the D_8009B890 ..
+ * D_8009BA58 tables (asm/data/7D920.data.s) are runs of them. */
+typedef struct {
+    u16 clut_x;
+    u16 clut_y;
+    u16 u;
+    u16 v;
+} TexRec;
+
 /* The 0x2C-byte block D_800A3468 points at (51268.c): Unk1F800000Rec.unk00 (func_80060E38's seed)
  * or D_800F116C, where func_800611A4 .. func_80061EC0 point it before calling func_80060A68.
  * D_800F1198 follows D_800F116C, so that copy ends at +0x2C. Each copy sets one pointer pair:
@@ -674,10 +684,11 @@ typedef struct {
  * - unk00: the command block D_800A3468 points at until a function retargets it; D_800A346C /
  *   D_800A3470 point at its unk18 / unk20.
  * - unk2C: no access.
- * - unk50 / unkB0: the initial targets of D_800A3488 / D_800A348C. func_800620B8 retargets them
- *   only in its switch cases 0-3 (unk4 & 7), so its u16 reads at 51268.c:953-955 go through these
- *   seeded values when no earlier record took one of those cases (typed with the globals later).
- * - unkA0: the initial targets of D_800A34E4 / D_800A34E8, which every user retargets before use.
+ * - unk50 / unkB0: the initial targets of D_800A3488 / D_800A348C (TexRec). func_800620B8 retargets
+ *   them only in its switch cases 0-3 (unk4 & 7), so its reads at 51268.c:958-960 go through these
+ *   seeded values when no earlier record took one of those cases.
+ * - unkA0 / unkA4: the initial targets of D_800A34E4 (u8 *) / D_800A34E8 (u32 *), which every
+ *   user retargets before use.
  * - unkB8: the work area D_800A34EC points at, laid out differently by its users (later batch);
  *   it runs to the end of the scratchpad.
  * The other members are one global each (D_800A3474 .. D_800A34E0, D_800A3480 / D_800A3484). */
@@ -685,7 +696,7 @@ typedef struct {
     Unk1F800000Unk00 unk00;
     u8 unk2C[4];
     MATRIX unk30;      /* D_800A3474 */
-    u8 unk50[8];
+    TexRec unk50;
     s32 unk58;         /* D_800A3490 */
     s32 unk5C;         /* D_800A3494 */
     u16 unk60;         /* D_800A3498 */
@@ -707,10 +718,11 @@ typedef struct {
     u16 unk9A;         /* D_800A34D8 */
     u16 unk9C;         /* D_800A34DC */
     u16 unk9E;         /* D_800A34E0 */
-    u8 unkA0[8];
+    u8 unkA0[4];
+    u32 unkA4;
     s32 unkA8;         /* D_800A3480 */
     s32 unkAC;         /* D_800A3484 */
-    u8 unkB0[8];
+    TexRec unkB0;
     u8 unkB8[0x400 - 0xB8];
 } Unk1F800000Rec;
 
