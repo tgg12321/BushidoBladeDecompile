@@ -472,7 +472,7 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
 void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2, Unk80101EC8Record *arg3);
 extern u8 D_800A30F0[];
 extern s32 D_800A30F4[];
-typedef Vec4i32 CamVec;
+typedef VECTOR CamVec;
 /* Scratchpad work area (0x1F800000) used by func_8001A820: the target yaw/roll
  * that D_800F6608's h12/h14 ease toward, the camera focus, the eye position
  * func_8001A538 computes, a fighter's head position, and the hit position,
@@ -4010,7 +4010,7 @@ void func_80022F34(void) {
     } while (i < 2);
 }
 
-/* func_8002304C (tanren_CameraControl) - pure C, no FAKE constructs.
+/* func_8002304C (tanren_CameraControl) - pure C; its scratchpad address holders are a labelled FAKE.
  *
  * The target's `andi $v1,$a0,0xffff` at 0x232F4 (rather than a plain copy)
  * comes from spelling the masked state id the way the original author spelled
@@ -4034,62 +4034,48 @@ void func_80022F34(void) {
  * side narrow (u16 mode, or u16 m) lets combine fold the truncate/extend pair
  * into a copy or delete it outright.
  */
-void func_8002304C(Unk80101EC8Record *obj, Vec4i32 *pos1, Vec4i32 *pos2, s32 *arg3)
+void func_8002304C(Unk80101EC8Record *obj, VECTOR *pos1, VECTOR *pos2, s32 *arg3)
 {
+  /* FAKE: the scratchpad addresses scratch_c (0x1F8001C0) / scratch_d (0x1F8001D0) and work (0x1F8002B8) are held in locals; as literals they are re-formed at each use (scratch_c: score 29; scratch_d: 17; work: 13). */
   s32 *scratch = (s32 *) 0x1F8001B0;
   s32 count = 0;
-  s32 lim;
+  s32 work;
   s16 *scratch_d;
   s16 *scratch_c = (s16 *) 0x1F8001C0;
-  lim = 0x1F8002B8;
+  work = 0x1F8002B8;
   scratch_d = (s16 *) 0x1F8001D0;
   loop:
   if (((pos1->vx != pos2->vx) || (pos1->vy != pos2->vy)) || (pos1->vz != pos2->vz))
   {
-    if (func_8005344C(&pos1->vx, &pos2->vx, scratch, scratch_c, lim) == 0)
+    if (func_8005344C(&pos1->vx, &pos2->vx, scratch, scratch_c, work) == 0)
     {
       *pos1 = *pos2;
       goto done;
     }
     obj->unk_B1 = func_80054434();
-    *pos1 = *(Vec4i32 *)scratch;
+    *pos1 = *(VECTOR *)scratch;
     func_8002EBDC((s16 *) arg3, scratch_c, arg3, -0x40, 0xE6);
+    scratch[12] = pos1->vx + (*((s16 *) (((u8 *) scratch) + 0x10)) / 1024);
+    scratch[13] = pos1->vy + (*((s16 *) (((u8 *) scratch) + 0x12)) / 1024);
+    scratch[14] = pos1->vz + (*((s16 *) (((u8 *) scratch) + 0x14)) / 1024);
+    pos2->vx += *((s16 *) (((u8 *) scratch) + 0x10)) / 1024;
+    pos2->vy += *((s16 *) (((u8 *) scratch) + 0x12)) / 1024;
+    pos2->vz += *((s16 *) (((u8 *) scratch) + 0x14)) / 1024;
+    if (func_8005344C(&pos1->vx, scratch + 12, scratch, (s16 *)(scratch + 6), work) == 0)
     {
-      s16 vel;
-      vel = *((s16 *) (((u8 *) scratch) + 0x10));
-      scratch[12] = pos1->vx + (vel / 1024);
-      vel = *((s16 *) (((u8 *) scratch) + 0x12));
-      scratch[13] = pos1->vy + (vel / 1024);
-      vel = *((s16 *) (((u8 *) scratch) + 0x14));
-      scratch[14] = pos1->vz + (vel / 1024);
-    }
-    {
-      s16 vel;
-      vel = *((s16 *) (((u8 *) scratch) + 0x10));
-      pos2->vx += vel / 1024;
-      vel = *((s16 *) (((u8 *) scratch) + 0x12));
-      pos2->vy += vel / 1024;
-      vel = *((s16 *) (((u8 *) scratch) + 0x14));
-      pos2->vz += vel / 1024;
-    }
-    if (func_8005344C(&pos1->vx, scratch + 12, scratch, (s16 *)(scratch + 6), lim) == 0)
-    {
-      *pos1 = *(Vec4i32 *)(scratch + 12);
+      *pos1 = *(VECTOR *)(scratch + 12);
       scratch[8] = pos2->vx - pos1->vx;
       scratch[9] = pos2->vy - pos1->vy;
       scratch[10] = pos2->vz - pos1->vz;
       func_8002EBDC(scratch_d, scratch_c, (s32 *) scratch_d, 0,
                     (obj->unk_6A == 0x15) ? 0x80 : 0x100);
+      if (*((s16 *) (((u8 *) scratch) + 0x12)) >= (-0x7FF))
       {
-        s16 vel_y = *((s16 *) (((u8 *) scratch) + 0x12));
-        if (vel_y >= (-0x7FF))
+        s32 mode = obj->unk_6A;
+        s32 m = mode & 0xFFFF;
+        if (((((m != 8) && (m != 0x22)) && (((u32) (mode - 0x17)) >= 2)) && (m != 0xA)) && (obj->unk_72 == 0))
         {
-          s32 mode = obj->unk_6A;
-          s32 m = mode & 0xFFFF;
-          if (((((m != 8) && (m != 0x22)) && (((u32) (mode - 0x17)) >= 2)) && (m != 0xA)) && (obj->unk_72 == 0))
-          {
-            scratch[9] = 0;
-          }
+          scratch[9] = 0;
         }
       }
       pos2->vx = pos1->vx + scratch[8];
@@ -4509,16 +4495,16 @@ void func_80023D28(Unk80101EC8Record *arg0) {
         arg0->unk_1DC = 0;
         return;
     }
-    ((Vec4i32 *)0x1F8001E0)->vx = arg0->unk_B8.vx;
-    ((Vec4i32 *)0x1F8001E0)->vy = arg0->unk_B8.vy + 0x1F4;
-    ((Vec4i32 *)0x1F8001E0)->vz = arg0->unk_B8.vz;
+    ((VECTOR *)0x1F8001E0)->vx = arg0->unk_B8.vx;
+    ((VECTOR *)0x1F8001E0)->vy = arg0->unk_B8.vy + 0x1F4;
+    ((VECTOR *)0x1F8001E0)->vz = arg0->unk_B8.vz;
     arg0->unk_1DC = func_8005344C(&arg0->unk_B8.vx, (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8);
 }
 s32 func_80023DB8(Unk80101EC8Record *arg0) {
     s32 result;
-    ((Vec4i32 *)0x1F8001E0)->vx = arg0->unk_B8.vx;
-    ((Vec4i32 *)0x1F8001E0)->vy = arg0->unk_B8.vy + 5;
-    ((Vec4i32 *)0x1F8001E0)->vz = arg0->unk_B8.vz;
+    ((VECTOR *)0x1F8001E0)->vx = arg0->unk_B8.vx;
+    ((VECTOR *)0x1F8001E0)->vy = arg0->unk_B8.vy + 5;
+    ((VECTOR *)0x1F8001E0)->vz = arg0->unk_B8.vz;
     if (func_8005344C(&arg0->unk_B8.vx, (s32 *)0x1F8001E0, (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8) != 0) {
         result = *(s16 *)0x1F8001C2 < -0x800;
     } else {
@@ -4565,7 +4551,7 @@ extern void func_800204C0(Unk80101EC8Record *);
 void func_80023F08(s32 arg0, PadState *pad) {
     MotionFrame pose[2];
     Vec3i32 v[2];
-    Vec4i32 pos;
+    VECTOR pos;
     s16 ang[2];
     s32 dir;
     s16 alt;
@@ -4579,14 +4565,13 @@ void func_80023F08(s32 arg0, PadState *pad) {
      * (folded to 0..0x800), the unk_14C turn step and the -1/0/1 stick side.
      * The target keeps all four in $a1; a local per value, or any partial
      * split, misses (global.c find_reg gives the split values other
-     * registers). */
+     * registers). Ablated (2026-10-06): one local per value: score 25. */
     s32 temp;
     s32 face;
     s32 face90;
     s32 blend;
     s32 cur_frame;
     s32 next;
-    s32 first;
     s32 next_frame;
     s32 motion;
     s32 extra;
@@ -4696,7 +4681,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
              * With an int mask, fold-const.c:4437 rewrites (mask & (1 << cls)) != 0
              * into ((mask >> cls) & 1) != 0 (srav / andi); converted, the
              * rewrite does not apply and the target's li 1 / sllv / and stays
-             * (0x800244E0..E8). */
+             * (0x800244E0..E8). Ablated (2026-10-06): an s32 mask: score 3. */
             u32 mask;
 
             if (!(cmd & 0x8000) || ((mask = ent[2] | (ent[3] << 16)) & (1 << rec->unk_0A))) {
@@ -4842,7 +4827,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
          * (lhu 0x6A ahead of the beqz at 0x80024C14). Spelled with two direct
          * reads, the 6A load follows the branch and jump.c thread_jumps sends
          * the 0x23 test's unk_7A == 0 jump past this test (+2 insns); a u16
-         * `state` also misses. */
+         * `state` also misses. Ablated (2026-10-06): score 3. */
         s32 state = rec->unk_6A;
 
         if (rec->unk_7A != 0 && state == 6) {
@@ -4894,9 +4879,8 @@ void func_80023F08(s32 arg0, PadState *pad) {
             extra = 0;
         }
     }
-    first = extra + *rec->unk_54;
-    cur_frame = first + rec->unk_40;
-    next_frame = first + next;
+    cur_frame = extra + *rec->unk_54 + rec->unk_40;
+    next_frame = extra + *rec->unk_54 + next;
     rec->unk_64 = (motion << 14) | cur_frame;
     rec->unk_66 = (motion << 14) | next_frame;
     if (rec->unk_6A == 0x33) {
@@ -4968,6 +4952,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
             rec->unk_320.x += rec->unk_1F8.x - v[0].x;
             rec->unk_320.z += rec->unk_1F8.z - v[0].z;
         }
+        /* FAKE: perp staged ahead of the vc stores; in the Judge indices the addiu moves (score 3). */
         perp = ang[0] + 0x400;
         vc.x = (pose[0].unk_04 * Judge[(pose[0].unk_02 - perp + 0x400) & 0xFFF]) >> 12;
         vc.y = -pose[0].unk_00;
@@ -5001,7 +4986,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         /* FAKE: named intermediate (no-new-park-categories.md entry 6): with
          * `state`, cse.c keeps this test's own li 8 / li 0x22 (the target
          * re-materialises them at 0x80025780 / 0x80025788); with direct rec->unk_6A
-         * reads cse substitutes the previous test's constant pseudos. */
+         * reads cse substitutes the previous test's constant pseudos. Ablated (2026-10-06): score 11. */
         s32 state = rec->unk_6A;
 
         if (state == 8 || state == 0x22) {
@@ -5107,7 +5092,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
      * (cond ? func_8002798C(rec) != 0 : (A || B)) does not match.  FAKE: the
      * second range test is written unk_A6 >= unk_40; spelled like the first
      * (unk_40 <= unk_A6) fold-const factors the two identical tests out of
-     * the || */
+     * the ||. Ablated (2026-10-06): the goto-free spelling: score 2; the range test spelled like the first: score 11. */
     if (((rec->unk_0C == 0x1D || rec->unk_0C == 0xE) && (rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 || rec->unk_6A == 0x26) && rec->unk_A1[1] < 0xFF && rec->unk_26C != 0 && rec->unk_40 >= rec->unk_A5 && rec->unk_40 <= rec->unk_A6)
         || (rec->unk_0A == 0xE && rec->unk_6A == 0x11 && D_800A38AE == arg0 && rec->unk_40 >= rec->unk_A5 && rec->unk_A6 >= rec->unk_40)) {
     set_8c:

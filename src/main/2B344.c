@@ -2077,8 +2077,8 @@ extern s32 D_800A322C;
 extern s32 D_800927C0[64][32];
 extern s32 D_80090740[64][32];
 extern s32 D_80094840[];
-extern s32 D_800A7EF0[];
-extern s32 *func_8003EB84(s32, s32, s32 *);
+extern Unk800A6690Rec *D_800A7EF0[]; /* func_8003E6D8's buffer of the queued Unk800A6690Rec */
+extern Unk800A6690Rec **func_8003EB84(s32, s32, Unk800A6690Rec **);
 /* func_8003E6D8 - grid pass. D_800A3708's xf.rot is turned into a matrix
  * (func_80042A88) and applied to {0,0,0x1000}; ratan2 of the result, stored
  * to D_800A336C, picks ((a >> 6) & 0x3F) one of 64 tables of 32-bit row
@@ -2111,7 +2111,7 @@ void func_8003E6D8(s32 arg0) {
     s16 x;
     s16 z;
     s32 *mask;
-    s32 *out;
+    Unk800A6690Rec **out;
     s32 i;
     s32 j;
     s32 bits;
@@ -2123,7 +2123,7 @@ void func_8003E6D8(s32 arg0) {
     s32 a3;
     Unk800A4750Rec *e;
     Unk800A6690Rec *e2;
-    s32 *list;
+    void **list;
     s32 ang;
     s32 idx;
 
@@ -2218,7 +2218,7 @@ void func_8003E6D8(s32 arg0) {
                  * back into the one shift in the loop branch's delay slot
                  * (bytes unchanged); the second copy lifts bits' reg_n_refs
                  * 17->23 so global-alloc ranks it above a3 (pri 11500 vs
-                 * 8823), giving the target's bits->$t1 / a3->$t2. */
+                 * 8823), giving the target's bits->$t1 / a3->$t2. Ablated (2026-10-06): score 9. */
                 bits <<= 1;
                 continue;
             }
@@ -2240,13 +2240,13 @@ void func_8003E6D8(s32 arg0) {
                             } else {
                                 e->unk7 &= 0xFE;
                             }
-                            list = (s32 *)D_800A3820;
-                            D_800A3820 = (s32)(list + 1);
-                            *list = (s32)e;
+                            list = D_800A3820;
+                            D_800A3820 = list + 1;
+                            *list = e;
                         } else {
                             e2 = &D_800A6690[v1 - D_800A3368];
                             if (e2->unk58 == 0) {
-                                *out++ = (s32)e2;
+                                *out++ = e2;
                                 e2->unk58 = 1;
                             }
                         }
@@ -2262,36 +2262,32 @@ void func_8003E6D8(s32 arg0) {
     }
     while (out != D_800A7EF0) {
         out--;
-        *(s32 *)D_800A3820 = *out;
-        (*(Unk800A6690Rec **)D_800A3820)->unk58 = 0;
-        D_800A3820 += 4;
+        *D_800A3820 = *out;
+        ((Unk800A6690Rec *)*D_800A3820)->unk58 = 0;
+        D_800A3820++;
     }
     if (g_stage_init_tbl[stage_GetId()].unk4 != 0) {
         g_stage_init_tbl[stage_GetId()].unk4();
     }
-    {
-        Unk80101DF0Xform *cam = &D_80101DF0.xf;
-        pos[0] = -cam->rot.vx;
-        pos[1] = -cam->rot.vy;
-        pos[2] = -cam->rot.vz;
-        func_800620B8(pos, cam->mat.t);
-    }
+    pos[0] = -D_80101DF0.xf.rot.vx;
+    pos[1] = -D_80101DF0.xf.rot.vy;
+    pos[2] = -D_80101DF0.xf.rot.vz;
+    func_800620B8(pos, D_80101DF0.xf.mat.t);
 }
-s32 *func_8003EB84(s32 a0, s32 a1, s32 *out) {
+Unk800A6690Rec **func_8003EB84(s32 a0, s32 a1, Unk800A6690Rec **out) {
     s32 sp[0x20];
     s32 mask;
     s32 i;
     s32 t4;
     s32 t1;
     s32 t2;
-    s16 temp_v0;
     s16 vidx;
     u16 t0;
     s32 v1;
     s32 a3;
     Unk800A4750Rec *e;
     Unk800A6690Rec *e2;
-    s32 *list;
+    void **list;
 
     if (a0 >= 0) {
         mask = -1;
@@ -2326,9 +2322,8 @@ skip:
         if (t2 != 0) {
             for (t1 = 0; t1 < 0x20; t1++) {
                 if (t2 < 0) {
-                    temp_v0 = D_800A7FE0[t4][t1];
-                    vidx = temp_v0;
-                    if (temp_v0 >= 0) {
+                    vidx = D_800A7FE0[t4][t1];
+                    if (vidx >= 0) {
                         a3 = g_stage_collision[t4 * 0x20 + t1];
                         do {
                             t0 = D_800A87E0[vidx++];
@@ -2341,13 +2336,13 @@ skip:
                                 } else {
                                     e->unk7 &= 0xFE;
                                 }
-                                list = (s32 *)D_800A3820;
-                                D_800A3820 = (s32)(list + 1);
-                                *list = (s32)e;
+                                list = D_800A3820;
+                                D_800A3820 = list + 1;
+                                *list = e;
                             } else {
                                 e2 = &D_800A6690[v1 - D_800A3368];
                                 if (e2->unk58 == 0) {
-                                    *out = (s32)e2;
+                                    *out = e2;
                                     out += 1;
                                     e2->unk58 = 1;
                                 }

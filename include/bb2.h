@@ -437,7 +437,7 @@ extern u8 D_800A3816;
 extern u8 D_800A3817;
 extern s16 D_800A381C;
 extern u8 D_800A381E;
-extern s32 D_800A3820;
+extern void **D_800A3820; /* the draw queue cursor (into D_80102C00) */
 extern s16 D_800A3824;
 extern u8 D_800A382D;
 extern s16 D_800A382E;
@@ -615,7 +615,7 @@ extern void func_800520B8(s32, s32, s32);
 extern u8 D_800A37A8[];
 extern u16 D_800A37C4;
 extern POLY_FT4 *D_800A37D4;
-extern s32 D_800A3808;
+extern u8 *D_800A3808;
 extern s16 D_800A3840;
 extern u8 D_800A384C;
 extern s16 D_800A3854;
@@ -635,7 +635,7 @@ extern s32 D_800F10F0;
 extern s32 D_800F1138;
 /* A 16-byte vector: thirteen 51268 functions store x / y / z, and func_80061064 passes its
  * address to func_80041E10, which copies all 16 bytes to D_800A9B28. */
-extern Vec4i32 D_800F1140;
+extern VECTOR D_800F1140;
 extern s32 D_800F1178;
 extern s32 D_800F117C;
 extern Unk800F1B18Rec D_800F1B18[];
@@ -644,7 +644,7 @@ extern s16 D_800F6650;
 extern s16 D_800F6656;
 extern u8 D_801027A0;
 extern u8 D_801027D8;
-extern s32 D_80102C00;
+extern void *D_80102C00[640]; /* the draw queue: record pointers (0x80102C00..0x801035FF) */
 extern s32 chractar_use_pset_combo_id_table[];
 extern Func80017A44Output g_file_data_buf[8];
 extern s32 g_player_char_ids[];
@@ -793,7 +793,7 @@ extern Unk80045878Obj *func_8004153C(s32);
 extern void func_800417D0(Unk80101DF0Record *);
 extern void func_800418D0(Unk80101DF0Record *);
 extern void func_80041BF4(s32, s32, s32);
-extern void func_80041E10(Vec4i32 *, s32);
+extern void func_80041E10(VECTOR *, s32);
 extern void func_800420D0(void);
 extern void func_800420E8(s32, s32);
 extern void func_8004211C(void);

@@ -26,7 +26,7 @@ void func_80044800(void) {
     s32 sx;
     s32 last;
     s32 fade;
-    s32 *list;
+    void **list;
 
     rec = (Unk800A9CF8Entry *)D_800A9CF8.unkC;
     for (i = 0; i < D_800A9CF8.unk6; rec++, i++) {
@@ -34,6 +34,7 @@ void func_80044800(void) {
         if (frame < 0) continue;
         if (frame < D_800A9CF8.unk2) {
             sv.vx = 0;
+            /* FAKE: angle read ahead of the sv.vz store; read at its uses the loads reorder (score 12). */
             angle = rec->unk5C;
             sv.vz = 0;
             scan = (s16 *)(D_800A9CF8.unk8 + frame * 12);
@@ -49,6 +50,7 @@ void func_80044800(void) {
             func_800417D0(&rec->node);
             MulMatrix2(&mat, &rec->node.xf.mat);
             cos_val = Judge[(angle + 0x400) & 0xFFF];
+            /* FAKE: cz / sz / cx / sx: the four products staged ahead of the sums; computed in the sums the multiplies reorder (score 61). */
             cz = cos_val * sv.vz;
             sin_val = Judge[angle & 0xFFF];
             sz = sin_val * sv.vz;
@@ -69,6 +71,7 @@ void func_80044800(void) {
                  * Unk80101DF0Record * local scores 70. */
                 ent = rec;
                 rec = (Unk800A9CF8Entry *)((Unk800A6690Rec *)D_800A9CF8.unk10 + i);
+                /* FAKE: last staged ahead of the scan address; in the expression the subtraction moves (score 8). */
                 last = D_800A9CF8.unk2 - 1;
                 scan = (s16 *)(D_800A9CF8.unk8 + (frame + last) * 12);
                 sv.vx = *scan++;
@@ -94,9 +97,9 @@ void func_80044800(void) {
             }
             rec->unk60 = fade;
         }
-        list = (s32 *)D_800A3820;
-        D_800A3820 = (s32)(list + 1);
-        *list = (s32)rec;
+        list = D_800A3820;
+        D_800A3820 = list + 1;
+        *list = rec;
     }
 }
 

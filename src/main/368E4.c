@@ -472,13 +472,13 @@ void func_80046BF4(s32 *a0, s16 *a1, s32 a2) {
     SVECTOR rot;
     MATRIX matrix_buf;
 
-    D_800A3820 = (s32)&D_80102C00;
+    D_800A3820 = D_80102C00;
     {
-        /* FAKE: count1 holds the count + 1 ahead of the D_800A3808 store; at the D_800A38D6 store the loads reorder (score 12). */
+        /* FAKE: count1 holds the count + 1 ahead of the D_800A3808 store; at the D_800A38D6 store the loads reorder (score 16). */
         count1 = D_800A38D6 + 1;
-        D_800A3808 = (s32)g_gpu_ot_ptr;
+        D_800A3808 = g_gpu_ot_ptr;
         D_800A38D6 = count1;
-        D_800A378C = (u32 *)((s32)g_gpu_ot_ptr + 0x10);
+        D_800A378C = (u32 *)(g_gpu_ot_ptr + 0x10);
     }
 
     if (a0 != 0) {
@@ -755,7 +755,7 @@ void func_800475A4(void) {
     {
         /* FAKE: s16 temporary for the negated pitch: storing -ratan2() straight
          * into the field sinks its negu 8 slots to just before the sh and
-         * lifts `addiu s2,sp,0x28` 5 slots. */
+         * lifts `addiu s2,sp,0x28` 5 slots. Ablated (2026-10-06): score 3. */
         s16 neg = -ratan2(result.vy, computed);
         base->xf.rot.vx = neg;
     }
@@ -768,9 +768,9 @@ void func_800475A4(void) {
     MulMatrix0(&buf2, &buf1, &base->xf.mat);
 
     {
-        s32 *temp = (s32 *)D_800A3820;
-        D_800A3820 = (s32)(temp + 1);
-        *temp = (s32)base;
+        void **temp = D_800A3820;
+        D_800A3820 = temp + 1;
+        *temp = base;
     }
 }
 
@@ -966,9 +966,10 @@ void func_80047A90(void) {
     s32 *pa1;
     s32 *pa2;
     s32 *pt3;
-    s32 *temp;
+    void **temp;
 
     i = 0;
+    /* FAKE: jb holds the Judge base ahead of the loop; indexing Judge directly re-forms it in the loop (score 5). */
     jb = Judge;
     p558 = D_800EF558;
     p59C = D_800EF59C;
@@ -988,18 +989,18 @@ void func_80047A90(void) {
     pa1 = pt1;
     do {
         /* FAKE: loop-note ref weighting lifts a3's allocno priority above
-         * the shared counter i, seating a3 in $a3 and i in $t0 */
+         * the shared counter i, seating a3 in $a3 and i in $t0. Ablated (2026-10-06): score 10. */
         a3 = 0;
     } while (0);
     do {
         /* FAKE: loop-note ref weighting lifts pa2 above the shared counter
-         * i, seating pa2 in $a2 (shared with the loop-1 Judge base) */
+         * i, seating pa2 in $a2 (shared with the loop-1 Judge base). Ablated (2026-10-06): score 13. */
         pa2 = pt2;
     } while (0);
     do {
         /* FAKE: loop-note ref weighting keeps pt1 ahead of pt2 in
          * allocation order (pt1->$t1, pt2->$t2) after the pa2 wrap's
-         * weighted pt2 use lifted pt2 */
+         * weighted pt2 use lifted pt2. Ablated (2026-10-06): score 8. */
         pt3 = pt1 + 0x11;
     } while (0);
   inner_loop:
@@ -1017,7 +1018,7 @@ void func_80047A90(void) {
         pa2++;
     } else {
         /* FAKE: loop tail duplicated into both arms (cross-jump re-merges,
-         * byte-neutral); reg_n_refs lift lands pa2->$a2, a3->$a3 */
+         * byte-neutral); reg_n_refs lift lands pa2->$a2, a3->$a3. Ablated (2026-10-06): score 16. */
         pa1++;
         a3 += 4;
         pa2++;
@@ -1030,9 +1031,9 @@ void func_80047A90(void) {
     if (i < 9)
         goto outer_loop;
 
-    temp = (s32 *)D_800A3820;
-    D_800A3820 = (s32)(temp + 1);
-    *temp = (s32)&D_800EF070;
+    temp = D_800A3820;
+    D_800A3820 = temp + 1;
+    *temp = &D_800EF070;
 }
 
 
@@ -1713,7 +1714,7 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     s32 scale;
     s32 old;
     s16 *indices;
-    s32 *list;
+    void **list;
     MATRIX **player;
     Unk80045878Node *node;
 
@@ -1757,9 +1758,9 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     goto test_index;
 copy_index:
         node->node.xf.mat = *player[index];
-        list = (s32 *)D_800A3820;
-        D_800A3820 = (s32)(list + 1);
-        *list = (s32)node;
+        list = D_800A3820;
+        D_800A3820 = list + 1;
+        *list = node;
         node++;
 test_index:
     index = *indices;
@@ -1769,18 +1770,18 @@ test_index:
     }
     if (arg1 >= 0) {
         node->node.xf.mat = *player[18];
-        list = (s32 *)D_800A3820;
+        list = D_800A3820;
         node->node.unk2 = arg1 + 0xF;
-        D_800A3820 = (s32)(list + 1);
-        *list = (s32)node;
+        D_800A3820 = list + 1;
+        *list = node;
         node++;
     }
     if (arg2 != 0) {
         node->node.xf.mat = *player[19];
-        list = (s32 *)D_800A3820;
+        list = D_800A3820;
         node->node.unk2 = 0x15;
-        D_800A3820 = (s32)(list + 1);
-        *list = (s32)node;
+        D_800A3820 = list + 1;
+        *list = node;
     }
 
     g_gpu_ot256_ptr = g_gpu_ot256_db[D_800A36AC & 1];
@@ -2114,9 +2115,9 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             val58 = player->unk_1A84;
         }
         {
-            s32 *list = (s32 *)D_800A3820;
-            D_800A3820 = (s32)(list + 1);
-            *list = (s32)obj;
+            void **list = D_800A3820;
+            D_800A3820 = list + 1;
+            *list = obj;
         }
         obj++;
         if (flags != 1) {
@@ -2126,7 +2127,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
              * the +2 store reads it last, and moving that store first
              * reorders the stores. Ablated (2026-10-06): score 22. */
             s32 frame = D_800EF980[arg0];
-            s32 *list;
+            void **list;
             obj->node.unk0 = 3;
             obj->node.unk1 = 0;
             /* FAKE: unk58 stored through a pointer; the member store lets sched sink it below
@@ -2135,15 +2136,15 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
                 s32 *p58 = &obj->unk58;
                 *p58 = val58;
             }
-            list = (s32 *)D_800A3820;
+            list = D_800A3820;
             obj->node.unkC = &obj[-1].node;
             obj->node.unk6 = 1;
             obj->node.unk8 = 0;
             obj->node.unkA = 0;
             obj->node.unk4 = 6;
             obj->node.unk2 = frame * 2 + 1;
-            D_800A3820 = (s32)(list + 1);
-            *list = (s32)obj;
+            D_800A3820 = list + 1;
+            *list = obj;
             obj++;
         }
         D_800A38B4 = (u32 *)obj;
@@ -2175,14 +2176,13 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     Unk80045878Node *obj;
     Unk80045878Obj *player;
     s16 a1_val;
-    s32 *list;
+    void **list;
 
     /* FAKE: the table base in its own holder; indexing D_80099CC8 directly emits the row
        shift ahead of the base load (score 2). */
     new_var6 = D_80099CC8;
     {
-        u8 *p = new_var6 + (arg0 * 2);
-        temp_v1 = p[arg2];
+        temp_v1 = (new_var6 + (arg0 * 2))[arg2];
     }
     if (temp_v1 == 0xFF) {
         return;
@@ -2222,9 +2222,9 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.unk6 = 0;
     obj->node.xf.rot.vz = new_var2;
     func_800417D0(&obj->node);
-    list = (s32 *)D_800A3820;
-    D_800A3820 = (s32)(list + 1);
-    *list = (s32)obj;
+    list = D_800A3820;
+    D_800A3820 = list + 1;
+    *list = obj;
     obj++;
     a1_val = (*p_anim) * 2;
     obj->node.unk0 = 3;
@@ -2241,9 +2241,9 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
         s32 *p58 = &obj->unk58;
         *p58 = player->unk_1A84;
     }
-    list = (s32 *)D_800A3820;
-    D_800A3820 = (s32)(list + 1);
-    *list = (s32)obj;
+    list = D_800A3820;
+    D_800A3820 = list + 1;
+    *list = obj;
     D_800A38B4 = (u32 *)(obj + 1);
 }
 s32 func_80049C24(s32 arg0, s32 arg1) {

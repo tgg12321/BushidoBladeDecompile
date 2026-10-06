@@ -850,13 +850,11 @@ s32 func_8005490C(void) {
 }
 extern s32 func_8005490C(void);
 s32 func_80054F68(void) {
-    s32 v3;
     s32 s0;
-    D_800A3820 = (s32)&D_80102C00;
-    v3 = (s32)g_gpu_ot_ptr;
+    D_800A3820 = D_80102C00;
     D_800A38D6 = D_800A38D6 + 1;
-    D_800A3808 = v3;
-    D_800A378C = (u32 *)(v3 + 0x10);
+    D_800A3808 = g_gpu_ot_ptr;
+    D_800A378C = (u32 *)(g_gpu_ot_ptr + 0x10);
     s0 = func_8005490C();
     func_800444E0();
     return s0;

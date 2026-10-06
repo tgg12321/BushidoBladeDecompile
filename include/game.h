@@ -794,11 +794,9 @@ typedef struct { s32 x, y, z; } Vec3i32;
    (SPAD->unkA8) into Unk80101EC8Record.unk_180 as one 12-byte object. */
 typedef Vec3i32 LeafPos;
 
-/* Vec4i32 / SVec4i16 are the remaining local-name copies of the PsyQ VECTOR / SVECTOR
- * layouts (include/psxsdk/libgte.h); retyping them as the Sony types is Phase 2 work.  func_80022580 copies
- * Unk80101EC8Record's +0xB8 and +0x104 as whole 16-byte VECTORs (pad included)
- * and +0x1C8 as a whole 8-byte SVECTOR. */
-typedef struct { s32 vx, vy, vz, pad; } Vec4i32;
+/* SVec4i16 is the remaining local-name copy of the PsyQ SVECTOR layout (include/psxsdk/libgte.h);
+ * retyping it as the Sony type is Phase 2 work.  func_80022580 copies Unk80101EC8Record's +0xB8
+ * and +0x104 as whole 16-byte VECTORs (pad included) and +0x1C8 as a whole 8-byte SVECTOR. */
 
 typedef struct { s16 vx, vy, vz, pad; } SVec4i16;
 
@@ -1463,16 +1461,16 @@ typedef struct Unk80101EC8Record {
     u8  unk_B3;
     u8  unk_B4;
     u8  unk_B5[0xB8 - 0xB5];
-    Vec4i32 unk_B8;
-    Vec4i32 unk_C8;
+    VECTOR unk_B8;
+    VECTOR unk_C8;
     Vec3i32 unk_D8;
     u8  unk_E4[0xE8 - 0xE4];
     Vec3i32 unk_E8;
     Vec3i32 unk_F4;
     u8  unk_100[0x104 - 0x100];
-    Vec4i32 unk_104;
-    Vec4i32 unk_114[2];            /* per blade; func_8002AB08 indexes it with its 0/1 blade flag */
-    Vec4i32 unk_134;
+    VECTOR unk_104;
+    VECTOR unk_114[2];            /* per blade; func_8002AB08 indexes it with its 0/1 blade flag */
+    VECTOR unk_134;
     s32 unk_144;
     s32 unk_148;
     s16 unk_14C;
@@ -1513,7 +1511,7 @@ typedef struct Unk80101EC8Record {
     u8  unk_204[0x210 - 0x204];
     LeafPos unk_210[3];            /* func_8002C61C: copy of scratchpad points 0x1F800000 + idx * 0x24 */
     LeafPos unk_234[2];            /* func_8002C61C: copy of scratchpad points 0x1F800048 + idx * 0x18 */
-    Vec4i32 unk_24C;
+    VECTOR unk_24C;
     LeafPos unk_25C;               /* func_80023F08: copy of scratchpad point unk00[idx][0] */
     s32 unk_268;
     s16 unk_26C;

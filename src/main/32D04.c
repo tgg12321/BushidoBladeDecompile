@@ -1130,10 +1130,9 @@ extern MATRIX D_80101BD0;
 
 extern void func_8004A4E0(void);
 void func_80044504(u32 *a0) {
-    MATRIX *s0 = &D_80101BD0;
-    math_RotMatrixZXY(D_800A3678, s0);
-    MulMatrix(s0, &D_800A3708->xf.mat);
-    MulMatrix2(&D_800A370C->xf.mat, s0);
+    math_RotMatrixZXY(D_800A3678, &D_80101BD0);
+    MulMatrix(&D_80101BD0, &D_800A3708->xf.mat);
+    MulMatrix2(&D_800A370C->xf.mat, &D_80101BD0);
     MulMatrix0(&D_800A370C->xf.mat, &D_800A3708->xf.mat, &D_800FF610);
     if (D_800A36AC & 1) {
         *(s32 *)0x1F800014 = -1;
@@ -1143,32 +1142,21 @@ void func_80044504(u32 *a0) {
     func_80046F24();
     *(s32 *)0x1F80001C = (s32)&D_80095328;
     *(s32 *)0x1F80000C = (s32)a0;
-    {
-        s32 v1;
-        if (D_800A3790 & 8) {
-            v1 = func_8003E2C8();
-        } else {
-            v1 = 0x7FFFFFFF;
-        }
-        *(s32 *)0x1F800010 = v1;
+    if (D_800A3790 & 8) {
+        *(s32 *)0x1F800010 = func_8003E2C8();
+    } else {
+        *(s32 *)0x1F800010 = 0x7FFFFFFF;
     }
-    {
-        s32 v0 = func_8003F268();
-        if (v0 != 0) {
-            v0 = 0xBE;
-        } else {
-            v0 = func_80046E7C();
-            if (v0 != 0) {
-                v0 = 0x182;
-            } else {
-                v0 = 0xBE;
-            }
-        }
-        *(s32 *)0x1F800018 = v0;
+    if (func_8003F268() != 0) {
+        *(s32 *)0x1F800018 = 0xBE;
+    } else if (func_80046E7C() != 0) {
+        *(s32 *)0x1F800018 = 0x182;
+    } else {
+        *(s32 *)0x1F800018 = 0xBE;
     }
     func_8004A4E0();
     func_80046E54(1);
-    D_800A3820 = (s32)&D_80102C00;
+    D_800A3820 = D_80102C00;
 }
 void func_80044650(void) {
     func_80052C10();
@@ -1229,5 +1217,5 @@ void func_8004473C(void)
 Unk80101DF0Record *D_800A3708;
 u32 *D_800A378C;
 s32 D_800A3790;
-s32 D_800A3820;
+void **D_800A3820;
 s32 D_800A3828;

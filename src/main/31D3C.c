@@ -390,8 +390,8 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   if (func_8003E2A0() == one) { func_8003E120(); }
 }
 extern s16 g_anim_select[3];
-extern Vec4i32 D_800A9B28;
-void func_80041E10(Vec4i32 *a0, s32 a1) {
+extern VECTOR D_800A9B28;
+void func_80041E10(VECTOR *a0, s32 a1) {
     g_anim_select[0] = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
     g_anim_select[1] = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
     g_anim_select[2] = (s16)(((a1 & 0xFF) << 12) / 255);
@@ -401,18 +401,16 @@ void func_80041EB0(s32 a0, s32 a1)
 {
     Unk800F62E0Rec *fp_ptr;
     s32 outer;
-    Vec4i32 *cam;
     Unk800F62E0Rec *tbl;
     s32 dx;
     s32 dy;
     s32 dz;
     s32 angle;
-    s32 cos_val;
     s32 *ptr;
 
+    /* FAKE: fp_ptr holds D_800F62E0 for the loop and the first func_8004A1FC call; naming D_800F62E0 directly re-forms the address and the registers rotate (score 45). */
     fp_ptr = D_800F62E0;
     outer = 0;
-    cam = &D_800A9B28;
 
     do {
         tbl = fp_ptr;
@@ -426,9 +424,9 @@ void func_80041EB0(s32 a0, s32 a1)
         if (ptr == 0) { goto skip; }
         if (g_anim_select[0] < 0) { goto skip; }
 
-        dx = ptr[0] - cam->vx;
-        dy = ptr[1] - cam->vy;
-        dz = ptr[2] - cam->vz;
+        dx = ptr[0] - D_800A9B28.vx;
+        dy = ptr[1] - D_800A9B28.vy;
+        dz = ptr[2] - D_800A9B28.vz;
 
         if (dx < 0) goto neg_dx;
         if (dx < 0x7000) goto check_dy;
@@ -453,12 +451,7 @@ void func_80041EB0(s32 a0, s32 a1)
 
     calc:
         angle = ratan2(dx, dz);
-        cos_val = rcos(angle);
-        {
-            s32 sin_val = rsin(angle);
-            s32 cross = (cos_val * dz + sin_val * dx) >> 12;
-            tbl->light[1].pitch = (s16)-ratan2(dy, cross);
-        }
+        tbl->light[1].pitch = (s16)-ratan2(dy, (rcos(angle) * dz + rsin(angle) * dx) >> 12);
         tbl->light[1].yaw = (s16)angle;
         tbl->light[1].on = 1;
         tbl->cmat.m[0][1] = g_anim_select[0];

@@ -132,20 +132,20 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         *p58 = (s32)s4->unk_18F4;
     }
     {
-        s32 *list;
+        void **list;
         Unk80045878Node *a4p;
-        list = (s32 *)D_800A3820;
+        list = D_800A3820;
         a4p = &s3[1];
         s3->node.unk2 = 0;
-        D_800A3820 = (s32)(list + 1);
-        *list = (s32)s3;
+        D_800A3820 = list + 1;
+        *list = s3;
 
         do {
             if (a4p->node.unk2 >= 0) {
-                s32 *list2;
-                list2 = (s32 *)D_800A3820;
-                D_800A3820 = (s32)(list2 + 1);
-                *list2 = (s32)a4p;
+                void **list2;
+                list2 = D_800A3820;
+                D_800A3820 = list2 + 1;
+                *list2 = a4p;
             }
             s0++;
             a4p++;
@@ -156,25 +156,25 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         Unk80045878Node *a2p;
         a2p = s4->unk_10D4;
         for (;;) {
-            s32 *list3;
+            void **list3;
             s5 = (Unk80045878Node *)a2p->unk58;
             if (s5 == 0) {
                 break;
             }
             a2p->node.xf.mat = s5->node.xf.mat;
-            list3 = (s32 *)D_800A3820;
-            D_800A3820 = (s32)(list3 + 1);
-            *list3 = (s32)a2p;
+            list3 = D_800A3820;
+            D_800A3820 = list3 + 1;
+            *list3 = a2p;
             a2p++;
         }
 
         a2p = s4->unk_8B4;
         if (s4->unk_8B4[0].node.unk2 != -1) {
             do {
-                s32 *list4;
-                list4 = (s32 *)D_800A3820;
-                D_800A3820 = (s32)(list4 + 1);
-                *list4 = (s32)a2p;
+                void **list4;
+                list4 = D_800A3820;
+                D_800A3820 = list4 + 1;
+                *list4 = a2p;
                 a2p++;
             } while (a2p->node.unk2 != -1);
         }
