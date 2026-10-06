@@ -96,8 +96,9 @@ typedef struct {
     u8 pad1;     /* +0x13 */
 } DISPENV; /* 0x14 */
 
-/* PsyQ LIBGPU.H drawing-environment primitives: the OT tag word, then two GPU command words. */
+/* PsyQ LIBGPU.H drawing-environment primitives: the OT tag word, then its GPU command words. */
 typedef struct { u32 tag; u32 code[2]; } DR_MODE;   /* Drawing Mode */
+typedef struct { u32 tag; u32 code[1]; } DR_TPAGE;  /* Drawing TPage */
 typedef struct { u32 tag; u32 code[2]; } DR_TWIN;   /* Texture Window */
 typedef struct { u32 tag; u32 code[2]; } DR_AREA;   /* Drawing Area */
 typedef struct { u32 tag; u32 code[2]; } DR_OFFSET; /* Drawing Offset */

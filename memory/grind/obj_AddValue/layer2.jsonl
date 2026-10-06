@@ -1,0 +1,1 @@
+{"func": "obj_AddValue", "addr": "80017EF4", "verdict": "PASS", "body_hash": "feaeb86b307dc843", "body_kind": "c", "file": "main/6CF8", "reviewer": "cheat-reviewer:rev-fclose1", "scope": "cheat-cleanup", "date": "2026-10-06T14:39:06Z", "head": "f2bcb4406", "notes": ""}

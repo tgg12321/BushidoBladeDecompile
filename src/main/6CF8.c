@@ -37,7 +37,7 @@ extern void func_800164F8(void);
 extern s32 PCread(s32, u8 *, s32);
 
 extern u8 D_800A30E8;
-extern u8 D_800A30D4;
+extern Rect D_800A30D4;
 extern s32 D_800A30DC;
 
 
@@ -221,7 +221,7 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
     Rect rect;
     s32 i;
 
-    rect = *(Rect *)&D_800A30D4;
+    rect = D_800A30D4;
 
     SetDispMask(0);
     SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x140, 0xF0);
@@ -241,10 +241,11 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
 
             for (j = 0; j < rect.w * rect.h; j++, pixels++) {
                 u32 pixel = *pixels;
+                /* FAKE: (s32) makes the shift signed; unsigned: score 1 (srl for the target's sra) */
                 s32 value = (s32)(pixel & 0x1F) >> 1;
                 u32 temp;
 
-                pixel &= 0xFFFF;
+                pixel &= 0xFFFF; /* FAKE: no-op mask of the u16 read; removed: score 1 (the andi goes) */
                 temp = pixel >> 1;
                 temp &= 0x1E0;
                 value += temp;
@@ -645,8 +646,11 @@ void func_800174F4(void) {
 }
 void obj_ClearAll(void) {
     s32 i;
-    for (i = 0x16C; i >= 0; i -= 0x34) {
-        *(s32 *)(g_file_data_buf + i) = 0;
+    /* FAKE: the table walked by byte offset: the target's one induction variable is the
+       record's offset (`li v0,364` ... `addiu v0,v0,-52`); indexed by record, loop.c keeps
+       the index beside its scaled copy: score 4. */
+    for (i = 7 * sizeof(Func80017A44Output); i >= 0; i -= sizeof(Func80017A44Output)) {
+        ((Func80017A44Output *)((u8 *)g_file_data_buf + i))->points = 0;
     }
 }
 
@@ -674,41 +678,6 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     Square12(in, out);
     return SquareRoot12(out[0] + out[1] + out[2]) << 4;
 }
-typedef struct {
-    s32 pos[3];
-    s32 field_C;
-    s32 field_10;
-    s32 field_14;
-    s32 index;
-    s32 field_1C;    /* entries used in field_24 */
-    s32 field_20;    /* entries used in field_2C */
-    u8 field_24[8];  /* edges whose node a is this record */
-    u8 field_2C[8];  /* edges whose node b is this record */
-    s32 distance;
-    s32 field_38[2];
-} Func80017A44Record;
-
-typedef struct {
-    s32 dist;
-    union {
-        s32 pair; /* a << 16 | b */
-        struct {
-            u16 b;
-            s16 a;
-        } node;
-    } ends;
-    s32 field_8;
-    s32 group_id;
-} Func80017848Edge;
-
-typedef struct {
-    u8 field_0[6];
-    s16 edge_count;
-    u8 field_8[4];
-    Func80017A44Record *records;
-    Func80017848Edge *edges;
-} Func80017A44Output;
-
 /* Adds an edge between records a and b unless a == b, both records have a
  * non-negative index, or an edge a->b or b->a already exists. Returns 1 when
  * an edge was added. */
@@ -744,14 +713,6 @@ s32 func_80017848(Func80017A44Output *out, s32 group_id, s32 a, s32 b) {
     out->edge_count++;
     return 1;
 }
-
-typedef struct {
-    s16 count;
-    s16 field_2;
-    SVECTOR *points;
-    s16 *groups;
-    MATRIX *matrix;
-} Func80017A44Input;
 
 void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
     VECTOR pos;
@@ -825,42 +786,41 @@ void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
         groups += group_count;
     }
 }
-typedef struct { s32 v[8]; } ObjBlock;
-s32 func_80017D84(u8 *a0) {
-    u8 *p;
+s32 func_80017D84(Func80017A44Input *a0) {
+    Func80017A44Output *p;
     s32 i;
-    s32 c;
+    Func80017A44Record *c;
 
     p = g_file_data_buf;
     for (i = 0; i < 8; i++) {
-        if (*(s32 *)p == 0) break;
-        p += 0x34;
+        if (p->points == 0) break;
+        p++;
     }
     if (i == 8) return -1;
     if (D_800A30E8 < i) D_800A30E8 = i;
-    *(u16 *)(p + 4) = *(u16 *)a0;
-    *(s32 *)p = *(s32 *)(a0 + 4);
-    *(ObjBlock *)(p + 0x14) = **(ObjBlock **)(a0 + 0xC);
-    *(s32 *)(p + 8) = *(s16 *)(a0 + 2);
-    c = *(s32 *)(a0 + 0x10);
-    *(s16 *)(p + 6) = 0;
-    *(s32 *)(p + 0xC) = c;
-    *(s32 *)(p + 0x10) = c + (*(s16 *)(p + 4) << 6);
+    p->count = a0->count;
+    p->points = a0->points;
+    p->matrix = *a0->matrix;
+    p->flags = a0->flags;
+    c = (Func80017A44Record *)a0->buf;
+    p->edge_count = 0;
+    p->records = c;
+    p->edges = (Func80017848Edge *)(c + p->count);
     func_80017A44(a0, p);
     return i;
 }
 void obj_Clear(s32 a0) {
-    *(s32 *)(g_file_data_buf + a0 * 52) = 0;
+    g_file_data_buf[a0].points = 0;
 }
 void obj_UpdatePosition(s32 a0, s32 a1) {
-    u8 *ptr = g_file_data_buf + a0 * 52;
-    s32 c = *(s32 *)(ptr + 0xC) + a1;
-    *(s32 *)(ptr + 0xC) = c;
-    *(s32 *)(ptr + 0x10) = c + (*(s16 *)(ptr + 4) << 6);
+    Func80017A44Output *ptr = &g_file_data_buf[a0];
+
+    ptr->records = (Func80017A44Record *)((u8 *)ptr->records + a1);
+    ptr->edges = (Func80017848Edge *)(ptr->records + ptr->count);
 }
 void obj_AddValue(s32 a0, s32 a1) {
-    s32 *ptr = (s32 *)(g_file_data_buf + a0 * 52);
-    *ptr = *ptr + a1;
+    Func80017A44Output *ptr = &g_file_data_buf[a0];
+    ptr->points = (SVECTOR *)((u8 *)ptr->points + a1);
 }
 void scratchpad_Save(void) {
     vu32 *src = (vu32 *)0x1F800000;

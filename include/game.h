@@ -1991,6 +1991,59 @@ typedef struct {
     u8 unk_F;
 } PracticeParams;
 
+typedef struct {
+    s32 pos[3];
+    s32 field_C;
+    s32 field_10;
+    s32 field_14;
+    s32 index;
+    s32 field_1C;    /* entries used in field_24 */
+    s32 field_20;    /* entries used in field_2C */
+    u8 field_24[8];  /* edges whose node a is this record */
+    u8 field_2C[8];  /* edges whose node b is this record */
+    s32 distance;
+    s32 field_38[2];
+} Func80017A44Record;
+
+typedef struct {
+    s32 dist;
+    union {
+        s32 pair; /* a << 16 | b */
+        struct {
+            u16 b;
+            s16 a;
+        } node;
+    } ends;
+    s32 field_8;
+    s32 group_id;
+} Func80017848Edge;
+
+/* 6CF8's object record (sizeof = 0x34): g_file_data_buf holds eight, func_80017D84 fills a free one
+ * from a Func80017A44Input and func_80017A44 builds its node / edge graph; 87A0 steps it
+ * (func_8001924C by the scene quad's id). points: the input's point table, 0 = free (obj_Clear);
+ * count: its node count; flags: the input's flags; records / edges: the node and edge tables
+ * (edges right after the count 0x40-byte nodes); matrix: a copy of the input's matrix. */
+typedef struct {
+    SVECTOR *points;
+    s16 count;
+    s16 edge_count;
+    s32 flags;
+    Func80017A44Record *records;
+    Func80017848Edge *edges;
+    MATRIX matrix;
+} Func80017A44Output;
+
+/* func_80017D84's argument (2B344 func_8003FA24 builds it on its stack): the point table and its
+ * count, the flags, the group list, the object's matrix and the buffer the node / edge tables go to. */
+typedef struct {
+    s16 count;
+    s16 flags;
+    SVECTOR *points;
+    s16 *groups;
+    MATRIX *matrix;
+    u8 *buf;
+} Func80017A44Input;
+
 typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
 
 /* func_8006D808's sheet set: three frame sheets (unk_00), the name sheet and the per-character name
@@ -2039,11 +2092,19 @@ typedef struct {
     Vec2s16 *unk_48;
 } Unk8006919CRec;
 
-/* 0x800A3D40: 24-byte records func_8003D774 starts and func_8003D7B4 advances: the bit stream
-   bitstream_ReadBits reads (unk0, its u32 words) and six s16 values func_8003D7B4 adds the decoded
-   deltas to and returns (3AB48 func_8005490C reads them as an offset and a rotation). */
+/* The bit stream bitstream_ReadBits reads, most significant bit first: the next u32 word to load,
+   the word being read and how many of its low bits are still unread. */
 typedef struct {
-    u32 unk0[3];
+    u32 *next;
+    u32 word;
+    s32 avail;
+} BitStream;
+
+/* 0x800A3D40: 24-byte records func_8003D774 starts and func_8003D7B4 advances: the bit stream
+   bitstream_ReadBits reads and six s16 values func_8003D7B4 adds the decoded deltas to and
+   returns (3AB48 func_8005490C reads them as an offset and a rotation). */
+typedef struct {
+    BitStream bits;
     s16 unkC[6];
 } Unk800A3D40Rec;
 

@@ -1969,7 +1969,8 @@ void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     pi = (s16) prev_idx;
     ang_prev = ratan2(arg0->vtx[pi][0] - (s16) cx,
                       arg0->vtx[pi][1] - (s16) cy) & 0xFFF;
-    /* The next vertex's address is spelled as the integer sum, index first: every pointer
+    /* FAKE (score 4 as arg0->vtx[(s16)next_idx]): the next vertex's address is spelled as the
+     * integer sum, index first: every pointer
      * spelling (vtx[k], *(k + vtx), &vtx[k][0], (u8 *)vtx + k * 4, *(vtx + k),
      * vtx[(s32)(k << 16) >> 16]) expands base first, and local-alloc ties the sum to the dying
      * table load (lw a1 / addu a1,a1,v1) instead of the shifted index (target lw a0 /

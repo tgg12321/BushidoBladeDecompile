@@ -299,7 +299,7 @@ void func_80061064(s16 *a0, s32 *a1) {
     i = 0;
     do {
         D_800A3468->unk14 = &D_800F1150[i];
-        if (*((u8 *)&D_800F1150 + i) != 0) {
+        if (D_800F1150[i] != 0) {
             D_800A3468->unk00.w = i;
             func_80060B70();
         }
@@ -326,13 +326,14 @@ void game_Cleanup(void) {
 extern u8 D_800F116A;
 extern Unk1F800000Unk00 D_800F116C;
 
-void func_800611A4(s32 *arg0, s32 *arg1) {
+void func_800611A4(s32 *arg0, u16 *arg1) {
     u16 svec[3];
     s32 *p;
-    svec[0] = *((u16 *) (((s32) arg1) + 0));
-    svec[1] = *((u16 *) (((s32) arg1) + 2));
+    svec[0] = arg1[0];
+    /* FAKE: integer-address loads keep the arg1[1] load ahead of the D_800A3468 / D_800F1178 stores; arg1[1] / arg1[2] score 15 */
+    svec[1] = *(u16 *)((s32)arg1 + 2);
     D_800A3468 = &D_800F116C;
-    svec[2] = *((u16 *) (((s32) arg1) + 4));
+    svec[2] = *(u16 *)((s32)arg1 + 4);
     D_800F117C = (s32) (&svec[0]);
     D_800F1178 = (s32) arg0;
     D_800F1180 = (s32) (&D_800F116A);
@@ -795,22 +796,19 @@ void func_80061FAC(s16 *a0, s32 *a1, MATRIX *a2) {
     SetRotMatrix(a2);
 }
 extern s32 D_800A32B8;
-void func_80062020(s32 *arg0) {
+void func_80062020(Unk800F1198Record *arg0) {
     s32 i;
-    s32 ofs;
     s32 t;
-    t = *(s32 *)((u8 *)arg0 + 0);
+    t = arg0[0].unk0;
     D_800A32B8 = 0;
     i = 0;
     if ((t & 1) == 0) goto end;
-    ofs = 0;
     do {
-        D_800F1198[i].unk0 = *(s32 *)((u8 *)arg0 + ofs + 0);
-        D_800F1198[i].unk4 = *(s32 *)((u8 *)arg0 + ofs + 4);
-        D_800F1198[i].unk8 = *(s32 *)((u8 *)arg0 + ofs + 8);
+        D_800F1198[i].unk0 = arg0[i].unk0;
+        D_800F1198[i].unk4 = arg0[i].unk4;
+        D_800F1198[i].unk8 = arg0[i].unk8;
         i = i + 1;
-        ofs = ofs + 12;
-        t = *(s32 *)((u8 *)arg0 + ofs + 0);
+        t = arg0[i].unk0;
     } while ((t & 1) != 0);
 end:
     D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;
@@ -3648,7 +3646,7 @@ s32 func_80069250(s32 arg0, s32 arg1) {
     }
     return 0;
 }
-extern u32 D_800A32D0;
+extern u32 D_800A32D0[2];
 s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     s32 one;
     s32 sum;
@@ -3659,7 +3657,6 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     u32 maskA;
     u32 maskB;
     u32 v;
-    s32 c;
     s16 sval;
 
     sum = 0;
@@ -3674,31 +3671,27 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     do {
         a3_off = 0;
         bitpos = 0;
-        p = &D_800A32D0;
+        p = D_800A32D0;
 
         do {
-            s32 idx4;
-            arg3 = (s16 *)((s32)arg3 + a3_off);
-            v = i * 4;
+            /* FAKE: byte-offset step (arg3 += a3_off with an element count scores 3) */
+            arg3 = (s16 *)((u8 *)arg3 + a3_off);
+            v = i * 4; /* FAKE: dead store -- v is reassigned from *arg0 before any read; removed, loop.c strength-reduces D_800A32C8[i] to a walking pointer (lui/addiu t3, addiu t3,t3,4) instead of the target's sll / addu indexed load: score 13 */
             maskB = *p << arg1;
-            idx4 = v;
-            maskA = *(u32 *)((s32)&D_800A32C8 + idx4) << arg1;
+            maskA = D_800A32C8[i] << arg1;
             if (*arg2 == 0) {
                 v = *arg0;
                 if (v & maskA) {
                     *arg3 = one;
                 } else if (v & maskB) {
-                    c = -1;
-                    *arg3 = c;
+                    *arg3 = -1;
                 }
             } else {
                 v = *arg0;
                 if (v & maskA) {
-                    c = 6;
-                    *arg2 = c;
+                    *arg2 = 6;
                 } else if (v & maskB) {
-                    c = -6;
-                    *arg3 = c;
+                    *arg3 = -6;
                 }
                 sval = *arg2;
                 if (sval >= 6) {
@@ -3706,8 +3699,7 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
                     *arg3 = 0;
                     *arg2 = 0;
                 } else if (sval < -5) {
-                    c = 2;
-                    sum += c << bitpos;
+                    sum += 2 << bitpos;
                     *arg3 = 0;
                     *arg2 = 0;
                 }
@@ -4806,14 +4798,14 @@ void func_8006B120(s32 *arg0) {
 /* func_8006B578 — menu/config input dispatch. The second `switch` makes GCC
  * synthesize a 6-entry jump table into this TU's .rodata; bb2.ld places this
  * TU's .rodata so that table lands at its original address, 0x80015988. */
-s32 func_8006B578(s32 *arg0, s32 *arg1) {
+s32 func_8006B578(s32 *arg0, u32 *arg1) {
     u32 v;
     s32 sp10;
     s32 ret;
     s32 hi;
     s32 var_s2 = 0;
 
-    v = *(u32 *)arg1;
+    v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
     ret = func_800692C0((u32 *)&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     hi = ret >> 16;
@@ -4870,7 +4862,7 @@ s32 func_8006B578(s32 *arg0, s32 *arg1) {
             func_8005C650(0, 0x7F, 0x7F);
         }
     shared_400040:
-        if (*(u32 *)arg1 & 0x400040) {
+        if (*arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             {
                 u32 f2 = D_800A34F8;
@@ -4881,27 +4873,27 @@ s32 func_8006B578(s32 *arg0, s32 *arg1) {
         }
         goto tail;
     case 3:
-        if (*(u32 *)arg1 & 0x400040) {
+        if (*arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) | 0x4000;
             var_s2 = 2;
         }
         goto tail;
     case 4:
-        if (*(u32 *)arg1 & 0x400040) {
+        if (*arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             var_s2 = 3;
         }
         goto tail;
     case 5:
-        if (*(u32 *)arg1 & 0x400040) {
+        if (*arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             var_s2 = 1;
         }
         goto tail;
     }
 tail:
-    if (*(u32 *)arg1 & 0x100010) {
+    if (*arg1 & 0x100010) {
         func_8005C650(2, 0x7F, 0x7F);
         var_s2 = 1;
     }
@@ -4912,14 +4904,15 @@ tail:
  * switch tables. */
 const u8 D_800159A0[16] = "warning\n";
 
-s32 func_8006B898(s32 arg0, s32 arg1) {
+s32 func_8006B898(s32 arg0, u32 arg1) {
     s32 sp10[10];
     GpuDb *t;
     D_800A3514 += 1;
+    /* FAKE: the frame's GpuDb taken ahead of func_8006E390; at its use: score 23 */
     t = &g_gpu_db[D_800A36AC & 1];
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
-    ((void (*)())func_8006B120)(sp10);
+    func_8006B120(sp10);
     return func_8006B578(&arg0, &arg1);
 }
 

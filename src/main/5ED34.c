@@ -258,7 +258,7 @@ s32 func_8006EACC(s32 arg0, s32 arg1) {
     return D_800A35A0;
 }
 void func_8006EC0C(void) {
-    s32 state = *(u8 *)&D_800A3578;  /* entry dispatch reads low byte only -> lbu */
+    s32 state = D_800A3578 & 0xFF;
 
     if (state == 2) goto fade_out;
     if (state < 3) {
@@ -273,7 +273,7 @@ ramp_up:
     D_800A3570 = (s16)(D_800A3570 + 0x20);
     if ((s32)(s16)D_800A3570 < 0x1E8) goto done;
     {
-        s16 v3584 = D_800A3584;
+        s16 v3584 = D_800A3584; /* FAKE: read ahead of the D_800A3570 store; at its use: score 2 */
         u16 word = D_800A3578;
         D_800A3570 = 0x1E8;
         D_800A3580 = v3584;

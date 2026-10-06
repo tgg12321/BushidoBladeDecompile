@@ -227,7 +227,7 @@ s32 func_8003ACB8(void) {
     return temp_s0;
 }
 void func_8003AE5C(u8 *arg0) {
-    s32 *addr = (s32 *)0x80190800;
+    s32 *addr = (s32 *)0x80190800; /* FAKE: the load address in a local; at the call: score 11 */
     s32 result = -1;
     s32 done = 0;
 
@@ -259,7 +259,7 @@ void func_8003AE5C(u8 *arg0) {
     } while (!done);
 
     if (result >= 0) {
-        D_800A37A8[D_800A37A0] = *(u16 *)&D_800A36A4;
+        D_800A37A8[D_800A37A0] = D_800A36A4;
         gpu_ResetGraphMode1();
         func_80020D38();
         func_800602AC(result, addr);
@@ -275,38 +275,23 @@ void func_8003AF40(s32 arg0) {
     func_80040510(arg0, D_8008D578[(s8)D_80102778.unk_4[arg0]], (s32)0x80190800);
 }
 void func_8003AFFC(void) {
-    s32 addr = (s32)0x80190800;
-    s32 s0;
-    s16 *edcp;
-    s32 s2;
-    u8 *tbl;
-    s32 v1;
+    s32 addr = (s32)0x80190800; /* FAKE: the load address in a local; at the call: score 12 */
+    s32 i;
 
     gpu_ResetGraphMode1();
     func_80020D38();
     func_8004939C();
 
-    tbl = D_8008E5CC[0];
-    s2 = 0;
-    edcp = &D_80101EC8[0].unk_14;
-    s0 = 0;
-loop:
-    /* interim: byte-offset puns on D_80101EC8 (.unk_12 / .unk_0A / .unk_0E), inherited from pre-struct code (9cb130a8); naturalize when func_8003AFFC is matched */
-    func_800493E4(*(s16 *)((u8 *)D_80101EC8 + s0 + 0x12));
-    func_800494D4(s2, *(tbl + *(s16 *)((u8 *)&D_80101EC8[0].unk_0A + s0) * 8 + *(s16 *)((u8 *)&D_80101EC8[0].unk_0E + s0)));
-
-    v1 = *edcp;
-    if (v1 != -1) {
-        func_800493E4(D_8008EB80[v1]);
-        v1 = *edcp;
-        if (v1 == 14) {
-            func_800493E4(D_8008EB80[14] + 3);
+    for (i = 0; i < 2; i++) {
+        func_800493E4(D_80101EC8[i].unk_12);
+        func_800494D4(i, D_8008E5CC[D_80101EC8[i].unk_0A][D_80101EC8[i].unk_0E]);
+        if (D_80101EC8[i].unk_14 != -1) {
+            func_800493E4(D_8008EB80[D_80101EC8[i].unk_14]);
+            if (D_80101EC8[i].unk_14 == 14) {
+                func_800493E4(D_8008EB80[14] + 3);
+            }
         }
     }
-    edcp = (s16 *)((u8 *)edcp + 0x44C);
-    s0 += 0x44C;
-    s2++;
-    if (s2 < 2) goto loop;
 
     func_80049584(addr);
 }
@@ -582,7 +567,7 @@ extern void LoadImage(s32, s32);
 
 
 
-extern u32 D_800A3D30;
+extern DR_TPAGE D_800A3D30[2]; /* one per frame parity (D_800A3218) */
 
 
 
@@ -639,7 +624,7 @@ extern void gte_ReadFarColor(u8 *);
 
 
 
-extern s8 D_8008EA70;
+extern s8 D_8008EA70[][2];
 
 
 
@@ -868,7 +853,8 @@ void func_8003BFC4(void) {
 extern void func_8003B10C(s32);
 
 void func_8003C040(void) {
-    s32 a0;
+    s32 a0; /* FAKE: func_8003AF40's 0 held in a local set on each dispatch path (move a0,zero in each branch's delay slot); the literal at the call scores 5 */
+    s32 sel;
     s8 *p;
     gpu_InitDisplay();
     gpu_ResetGraphMode1();
@@ -907,11 +893,11 @@ void func_8003C040(void) {
         }
     }
     if (D_800A38A4 != 9) {
-        a0 = D_800A38A4;
+        sel = D_800A38A4;
     } else {
-        a0 = 8;
+        sel = 8;
     }
-    func_8005FBC8(a0, (u8 *)0x80118800);
+    func_8005FBC8(sel, (u8 *)0x80118800);
     {
         if (D_800A38A4 == 4) {
             if (D_8008D9EC[D_80101EC8[0].unk_0A] != 0) {
@@ -935,7 +921,7 @@ void func_8003C040(void) {
     func_80041688(0, 0);
     func_80041688(1, 0);
     game_Cleanup();
-    p = (s8 *)(((s8 *)(&D_8008EA70)) + (D_800A38A4 << 1));
+    p = D_8008EA70[D_800A38A4];
     if (p[0] >= 0) {
         snd_SerialMixOn();
         cdrom_StartAudio(func_80036EA8(5, p[0]), (u8)p[1]);
@@ -1422,12 +1408,12 @@ void func_8003D2F4(void) {
     }
 }
 void func_8003D330(void) {
-    OTag *p = (OTag *)((u8 *)&D_800A3D30 + (D_800A3218 << 3));
+    DR_TPAGE *p = &D_800A3D30[D_800A3218];
     OTag *ot;
-    p->len = 1;
-    *((u32 *)p + 1) = 0xE100001F;
+    setlen(p, 1);
+    p->code[0] = 0xE100001F;
     ot = (OTag *)g_gpu_ot_ptr;
-    p->addr = ot->addr;
+    setaddr(p, ot->addr);
     ot->addr = (u32)p;
 }
 extern SPRT_8 D_800A3930[2][32];
@@ -1448,7 +1434,7 @@ void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
     p->clut = ((ch >> 3) & 3) << 6 | 0x773F;
     *(u32 *)&p->r0 = (color >> 1) | 0x74000000;
     ot = (OTag *)g_gpu_ot_ptr;
-    ((OTag *)p)->addr = ot->addr;
+    setaddr(p, ot->addr);
     ot->addr = (u32)p;
 }
 void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
@@ -1545,9 +1531,9 @@ void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
 
 void func_8003D774(s32 arg0, s32 arg1) {
     Unk800A3D40Rec *ptr = &D_800A3D40[arg1];
-    ptr->unk0[0] = arg0;
-    ptr->unk0[1] = 0;
-    ptr->unk0[2] = 0;
+    ptr->bits.next = (u32 *)arg0;
+    ptr->bits.word = 0;
+    ptr->bits.avail = 0;
     ptr->unkC[5] = 0;
     ptr->unkC[4] = 0;
     ptr->unkC[3] = 0;
@@ -1555,7 +1541,7 @@ void func_8003D774(s32 arg0, s32 arg1) {
     ptr->unkC[1] = 0;
     ptr->unkC[0] = 0;
 }
-extern s32 bitstream_ReadBits(u32 *, s32);
+extern s32 bitstream_ReadBits(BitStream *, s32);
 s16 *func_8003D7B4(s32 arg0) {
     s32 i = 0;
     Unk800A3D40Rec *base = &D_800A3D40[arg0];
@@ -1564,12 +1550,12 @@ s16 *func_8003D7B4(s32 arg0) {
         s16 val;
         s32 sign_bit;
         s32 sval;
-        nbits = bitstream_ReadBits(base->unk0, 4);
+        nbits = bitstream_ReadBits(&base->bits, 4);
         if (nbits == 0) {
             nbits = 16;
         }
-        val = (s16)bitstream_ReadBits(base->unk0, nbits);
-        sval = val;
+        val = (s16)bitstream_ReadBits(&base->bits, nbits);
+        sval = val; /* FAKE: the sign test reads an s32 copy of val; tested as val: score 2 (addiu a1,s0,-1 moves two slots) */
         sign_bit = nbits - 1;
         if ((sval >> sign_bit) & 1) {
             val = val | (0xFFFF << sign_bit);
@@ -1580,46 +1566,42 @@ s16 *func_8003D7B4(s32 arg0) {
     return base->unkC;
 }
 
-/* Bitstream reader.  State through `u32 *s`: s[0]=word pointer, s[1]=current word,
-   s[2]=bits still available in s[1].  Returns the next `n` bits.
+/* Bitstream reader: returns the next `n` bits of the BitStream `s`, loading the next word
+   when the current one has fewer than `n` unread bits.
    `m1 = 1 << avail; m1 -= 1;` is the user-sanctioned same-variable split-init
    accumulation family (owner ruling 2026-06-13) -- both statements are live and the pair
    folds back into one emitted `addiu v0,v0,-1`. */
-s32 bitstream_ReadBits(u32 *s, s32 n)
+s32 bitstream_ReadBits(BitStream *s, s32 n)
 {
-    s32 avail = s[2];
+    s32 avail = s->avail;
     u32 r;
 
     if (avail < n) {
         u32 m1, m2;
         s32 shift;
-        u32 p;
-        /* FAKE: `hi` names the masked high-bit slice of the freshly loaded word,
-           mechanism: GCC 2.7.2 RTL expansion (expr.c expand_binop) fixes the iorsi3
-           source-operand order from the C expression tree and combine preserves it --
-           naming the slice moves it to operand 1 (`or v1,v1,v0`, target) without
-           touching statement order, so sched1's order and the greg allocation are
-           byte-identical to the un-named form, whereas swapping the operands in the
-           source expression itself also moves the LUID and regresses the
-           allocation. */
+        u32 *wp;
+        u32 w;
+        /* FAKE: `hi` names the masked high-bit slice of the freshly loaded word; written into
+           the or (`r = (r << n) | ((w >> shift) & m2)`): score 17 -- s and n swap argument
+           registers (move a3,a0 / move a2,a1 for the target's move a2,a0 / move a3,a1). */
         u32 hi;
 
         n -= avail;
         m1 = 1 << avail;
         m1 -= 1;
         m2 = (1 << n) - 1;
-        r = s[1] & m1;
-        p = s[0];
-        s[0] = p + 4;
+        r = s->word & m1;
+        wp = s->next;
+        s->next = wp + 1;
         shift = 32 - n;
-        p = *(u32 *)p;
-        s[2] = shift;
-        s[1] = p;
-        hi = ((u32)p >> shift) & m2;
+        w = *wp;
+        s->avail = shift;
+        s->word = w;
+        hi = (w >> shift) & m2;
         r = (r << n) | hi;
     } else {
-        s[2] = avail - n;
-        r = (s[1] >> (avail - n)) & ((1 << n) - 1);
+        s->avail = avail - n;
+        r = (s->word >> (avail - n)) & ((1 << n) - 1);
     }
     return r;
 }
@@ -1998,8 +1980,9 @@ s32 func_8003E2A0(void) {
     return D_800A3228;
 }
 void func_8003E2AC(void) {
-    u16 *p = (u16 *)&D_800F6656;
-    *p = *p & 0xFFFD;
+    /* FAKE: the flag word's address held in p (one lui / addiu, lhu / sh off it); `D_800F6656 &= ~2` scores 6 */
+    s16 *p = &D_800F6656;
+    *p &= ~2;
 }
 u32 func_8003E2C8(void) {
     return D_800905F8;
@@ -2826,16 +2809,12 @@ extern s16 D_80094AEC[];
 s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2);
 
 u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
-    struct SceneObjInit {
-        s16 count;
-        s16 flags;
-        u8 *points;
-        s16 *groups;
-        void *matrix;
-        u8 *point_end;
-        s32 unk14;
-        s32 unk18;
-        s32 unk1C;
+    /* FAKE: frame layout (oversized live object): func_80017D84's argument plus an unwritten
+       tail (two or three words are byte-identical: three chosen); the argument alone gives a frame
+       8 short (0x48 for 0x50): score 16. */
+    struct {
+        Func80017A44Input in;
+        s32 tail[3];
     } init;
     Unk80045878Node *obj;
     u16 *src;
@@ -2853,8 +2832,8 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     dst = (u16 *)cur;
     src = (u16 *)D_80103608[obj->node.unk4][obj->node.unk2];
     count = *src;
-    init.count = count;
-    init.points = cur;
+    init.in.count = count;
+    init.in.points = (SVECTOR *)cur;
     src += 2;
     count--;
     if (count != -1) {
@@ -2885,13 +2864,13 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
         count = *src++;
     }
 
-    init.point_end = cur;
-    cur = cur + obj_CalcOffset(init.count, point_count);
+    init.in.buf = cur;
+    cur = cur + obj_CalcOffset(init.in.count, point_count);
     cur = ((u32)cur & 3) ? cur + 2 : cur;
 
     src = block;
     packet = (s16 *)0x1F800000;
-    init.groups = packet;
+    init.in.groups = packet;
     /* FAKE: n reads each group count signed (lh) and is copied to count; read straight into count the load is lhu and the copy goes (score 8) */
     for (n = (s16)*src++, count = n; n != 0; n = (s16)*src++, count = n) {
         flags = *src++;
@@ -2938,12 +2917,12 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     if (*src != 0) {
         func_80052C10(D_80010D8C);
     }
-    func_8003FE40((s16 *)init.points, init.count, cmds);
+    func_8003FE40((s16 *)init.in.points, init.in.count, cmds);
 
-    init.matrix = &obj->node.xf.mat;
-    init.flags = 0xE00;
-    rec->unk0 = func_80017D84((u8 *)&init);
-    obj->unk60 = init.point_end;
+    init.in.matrix = &obj->node.xf.mat;
+    init.in.flags = 0xE00;
+    rec->unk0 = func_80017D84(&init.in);
+    obj->unk60 = init.in.buf;
     rec->inner.count = 0;
     rec->inner.unk14 = 0;
     cur = ((u32)cur & 3) ? cur + 2 : cur;
