@@ -524,32 +524,32 @@ void func_80045824(s32 a0, s32 a1, s32 a2) {
 extern void func_80044ED8(s32, s32);
 extern void func_80045AA4(s32, s32);
 
-s16 *func_80045878(s32 a0, s32 a1, s32 a2) {
+Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
     s32 s3;
-    s16 *v0;
-    s16 *s1;
+    s32 *v0;
+    Unk80045878Obj *s1;
     s32 s0;
-    v0 = (s16 *) func_8004574C(a0);
+    v0 = func_8004574C(a0);
     if (v0 != 0) {
-        s1 = (s16 *) ((s32 *) v0)[1];
+        s1 = (Unk80045878Obj *)v0[1];
     } else {
-        s1 = (s16 *) func_800455AC(a0);
-        func_80045600(a0, 0x1A88 + ((s32) s1));
+        s1 = (Unk80045878Obj *) func_800455AC(a0);
+        func_80045600(a0, sizeof(Unk80045878Obj) + ((s32) s1));
         func_80045230(0);
         func_80045694(a0, (s32) (&func_80045AA4));
-        s1[4] = -1;
-        s1[3] = 0;
+        s1->unk_08 = -1;
+        s1->unk_06 = 0;
     }
     s3 = a0 + 3;
     if (func_8004574C(s3) != 0) {
-        func_800400F8((s32 *)s1);
+        func_800400F8(s1);
     }
-    if (((func_8004574C(s3) != 0) && (s1[4] == a1)) && (s1[3] != (-2))) {
-        s1[3] = 0;
+    if (((func_8004574C(s3) != 0) && (s1->unk_08 == a1)) && (s1->unk_06 != (-2))) {
+        s1->unk_06 = 0;
     } else {
-        *((s32 *) (((s32) s1) + 0x20)) = a2;
+        s1->unk_20 = a2;
         s0 = (s32) func_800455AC(s3);
-        *((s32 *) (((s32) s1) + 0x1C)) = s0;
+        s1->unk_1C = s0;
         if (a2 != 0) {
             func_80044ED8(a1, a2);
         } else {
@@ -559,16 +559,16 @@ s16 *func_80045878(s32 a0, s32 a1, s32 a2) {
         }
         func_80045600(s3, s0);
         func_80045694(s3, (s32) (&func_80045AA4));
-        s1[3] = 1;
-        *((s32 *) (((s32) s1) + 0x24)) = 0;
-        *((s32 *) s1) = 0;
+        s1->unk_06 = 1;
+        s1->unk_24 = 0;
+        s1->unk_00.word = 0;
     }
-    s1[2] = a0;
-    s1[4] = a1;
-    s1[10] = a0;
-    s1[8] = a0;
-    s1[11] = a0 + 3;
-    *((s32 *) (((s32) s1) + 0x18)) = 0x8000;
+    s1->unk_04 = a0;
+    s1->unk_08 = a1;
+    s1->unk_14 = a0;
+    s1->unk_10 = a0;
+    s1->unk_16 = a0 + 3;
+    s1->unk_18.word = 0x8000;
     return s1;
 }
 void func_80045A28(s32 a0, s32 a1) {
@@ -589,7 +589,7 @@ void func_80045A50(s32 a0) {
  * sll/sra in func_80045AA4, lh for lw in func_80046048; measured). */
 extern s32 snd_VabFakeOpen(s32, s32);
 void func_80045AA4(s32 a0, s32 a1) {
-    s32 *ptr;
+    Unk80045878Obj *ptr;
     s32 idx;
     if (a0 < 3) {
         func_80041430(a0, a1);
@@ -598,13 +598,13 @@ void func_80045AA4(s32 a0, s32 a1) {
     idx = a0 - 3;
     func_80044100(idx, a1);
     func_80044100(a0, a1);
-    ptr = (s32 *)func_800457A0(idx);
+    ptr = (Unk80045878Obj *)func_800457A0(idx);
     if (ptr == 0) return;
-    ptr[7] = ptr[7] + a1;
+    ptr->unk_1C = ptr->unk_1C + a1;
     func_8004019C(ptr, a1);
-    if ((ptr[0] >> 1) & 1) {
-        s32 val = *(s16 *)((u8 *)ptr + 4);
-        idx = 3 * val + 1;
+    if ((ptr->unk_00.word >> 1) & 1) {
+        /* FAKE: idx (a0 - 3) is reused for the sound index; a fresh local swaps the s0 / s1 seats (score 8) */
+        idx = 3 * ptr->unk_04 + 1;
         snd_VabFakeOpen(a1, idx);
     }
 }

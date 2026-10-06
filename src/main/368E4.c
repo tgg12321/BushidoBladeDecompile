@@ -534,17 +534,17 @@ s32 game_GetDummyFlag(void) {
 }
 
 void *game_GetPlayerData(s32 a0) {
-    void *v0 = func_8004153C(a0);
+    Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
-        return (u8 *)v0 + 0x1994;
+        return v0->unk_1994;
     }
     return NULL;
 }
 
 void *game_GetPlayerBase(s32 a0) {
-    void *v0 = func_8004153C(a0);
+    Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
-        return (u8 *)v0 + 0x2C;
+        return v0->unk_2C;
     }
     return NULL;
 }
@@ -1668,31 +1668,31 @@ extern s32 *func_800467B8(s32); /* matches the definition above */
 extern void func_800468B0(s32);
 extern u8 D_80099BCC;
 s32 func_80048AD0(s32 arg0) {
-    s32 temp_v0;
+    Unk80045878Obj *temp_v0;
     s32 sound;
-    s32 idx;
     u8 *base;
     s32 delta;
     u8 *p;
     u8 *q;
 
-    temp_v0 = (s32)func_8004153C(arg0);
+    temp_v0 = func_8004153C(arg0);
     if (temp_v0 == 0) return 0;
-    idx = *(s16 *)(temp_v0 + 8);
     D_800A33E0 = arg0;
-    sound = (&D_80099BCC)[idx];
+    sound = (&D_80099BCC)[temp_v0->unk_08];
     if (sound == 0xFF) return 0;
     base = (u8 *)func_800467B8(sound);
     p = base + ((*(u32 *)(base + 8) >> 2) << 2);
+    /* FAKE: delta taken before the loop (subu a2 ahead of it); computed at the call, p's registers shift (score 19) */
     delta = (s32)(p - base);
     D_800A33E4 = (s32)p;
+    /* FAKE: q = p + 0xA, the target's second cursor (addiu a1,v1,10; stores at -8 / -6 / -9 / 0 from it); through p the cursor goes (score 11) */
     q = p + 0xA;
     /* FAKE: the record counter reuses `sound` rather than a fresh local.
        snd_LoadBgm's argument copy gives `sound` a hard-reg $a0 preference;
        global.c expand_preferences propagates it to the counter, which stops
        prune_preferences making the counter yield $a0 to `delta`. With a
        separate counter the pair allocates $a2/$a0 instead of target's
-       $a0/$a2. */
+       $a0/$a2. Ablated (2026-10-06): score 6. */
     for (sound = 0; sound < 0x11; sound++) {
         *(s16 *)(q - 8 + sound * 0x68) = sound;
         *(s16 *)(q - 6 + sound * 0x68) = 9;

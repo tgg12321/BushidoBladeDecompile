@@ -4,42 +4,41 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-typedef struct { s32 a, b, c, d, e, f, g, h; } Copy8_40D48;
 extern s32 D_80094CFC[];
 void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
-    u8 *s4;
-    u8 *s5;
-    u8 *s3;
-    u8 *s2;
+    Unk80045878Obj *s4;
+    Unk80045878Node *s5;
+    Unk80045878Node *s3;
+    Unk80045878Node *s2;
     s32 s0;
     s16 *s1;
-    s32 ent;
+    Unk80045878Obj *ent;
 
-    ent = (s32)g_player_ptrs[a0];
+    ent = g_player_ptrs[a0];
     if (ent == 0) {
         return;
     }
-    /* FAKE: s4 copies ent as a byte pointer; using ent directly scores 4. */
-    s4 = (u8 *)ent;
+    /* FAKE: s4 copies ent; using ent directly scores 4. */
+    s4 = ent;
 
-    *(s16 *)(s4 + 0x3C) = a3[0];
-    *(s16 *)(s4 + 0x3E) = a3[1];
-    *(s16 *)(s4 + 0x40) = a3[2];
+    s4->unk_2C[0].node.xf.rot.vx = a3[0];
+    s4->unk_2C[0].node.xf.rot.vy = a3[1];
+    s4->unk_2C[0].node.xf.rot.vz = a3[2];
 
-    *(s32 *)(s4 + 0x78) = a2[0];
+    s4->unk_2C[0].node.work.t[0] = a2[0];
     /* FAKE: s5 holds s4 + 0x2C here and the linked record pointer in the copy loop below;
      * a fresh loop local scores 35, dropping this first role 46. */
-    s5 = s4 + 0x2C;
-    *(s32 *)(s4 + 0x7C) = a2[1];
-    s3 = s4 + 0x94;
-    *(s32 *)(s4 + 0x80) = a2[2];
+    s5 = s4->unk_2C;
+    s4->unk_2C[0].node.work.t[1] = a2[1];
+    s3 = &s4->unk_2C[1];
+    s4->unk_2C[0].node.work.t[2] = a2[2];
 
-    s2 = s4 + 0x7E4;
+    s2 = &s4->unk_2C[19];
 
     switch (a1) {
     case 0: {
         s32 *tbl;
-        u8 *p;
+        Unk80045878Node *p;
         /* FAKE: s0 is the counter of all four loops in this function; a counter per loop
          * scores 15. */
         s0 = 1;
@@ -47,61 +46,62 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         /* FAKE: s1 copies the parameter arg4; using arg4 directly scores 78. */
         s1 = arg4;
 
-        *(s32 *)(s3 + 0x4C) = 0;
-        *(s32 *)(s3 + 0x50) = 0;
-        *(s32 *)(s3 + 0x54) = 0;
-        *(s16 *)(s3 + 0x10) = 0;
-        *(s16 *)(s3 + 0x12) = 0;
-        *(s16 *)(s3 + 0x14) = 0;
+        s3->node.work.t[0] = 0;
+        s3->node.work.t[1] = 0;
+        s3->node.work.t[2] = 0;
+        s3->node.xf.rot.vx = 0;
+        s3->node.xf.rot.vy = 0;
+        s3->node.xf.rot.vz = 0;
 
         do {
             s32 idx;
-            u8 *a4p;
-            a4p = s3 + s0 * 0x68;
+            Unk80045878Node *a4p;
+            a4p = &s3[s0];
+            /* FAKE: idx re-read from *tbl before each component, as the target reloads it and recomputes idx * 6; one read computes it once (score 48) */
             idx = *tbl;
-            *(s16 *)(a4p + 0x10) = *(u16 *)((u8 *)s1 + idx * 6);
+            a4p->node.xf.rot.vx = *(u16 *)((u8 *)s1 + idx * 6);
             idx = *tbl;
-            *(s16 *)(a4p + 0x12) = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 2);
+            a4p->node.xf.rot.vy = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 2);
             idx = *tbl;
-            *(s16 *)(a4p + 0x14) = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 4);
+            a4p->node.xf.rot.vz = -(s16)*(u16 *)((u8 *)s1 + idx * 6 + 4);
             s0++;
             tbl++;
         } while (s0 < 0x12);
 
         s0 = 0x11;
-        p = s3 + 0x6E8;
+        p = &s3[17];
         do {
-            *(s16 *)(p + 6) = 0;
+            p->node.unk6 = 0;
             s0--;
-            p -= 0x68;
+            p--;
         } while (s0 >= 0);
 
-        *(s32 *)(s2 + 0x4C) = *(s16 *)((u8 *)s1 + 0x6C);
-        *(s32 *)(s2 + 0x50) = -(s32)*(s16 *)((u8 *)s1 + 0x6E);
-        *(s32 *)(s2 + 0x54) = -(s32)*(s16 *)((u8 *)s1 + 0x70);
-        *(s16 *)(s2 + 0x10) = *(u16 *)((u8 *)s1 + 0x72);
-        *(s16 *)(s2 + 0x12) = -(s16)*(u16 *)((u8 *)s1 + 0x74);
-        *(s16 *)(s2 + 0x14) = -(s16)*(u16 *)((u8 *)s1 + 0x76);
+        s2->node.work.t[0] = *(s16 *)((u8 *)s1 + 0x6C);
+        s2->node.work.t[1] = -(s32)*(s16 *)((u8 *)s1 + 0x6E);
+        s2->node.work.t[2] = -(s32)*(s16 *)((u8 *)s1 + 0x70);
+        s2->node.xf.rot.vx = *(u16 *)((u8 *)s1 + 0x72);
+        s2->node.xf.rot.vy = -(s16)*(u16 *)((u8 *)s1 + 0x74);
+        s2->node.xf.rot.vz = -(s16)*(u16 *)((u8 *)s1 + 0x76);
 
-        g_anim_func_table[0]((SVECTOR *)(s2 + 0x10), (MATRIX *)(s2 + 0x38));
+        g_anim_func_table[0](&s2->node.xf.rot, &s2->node.work);
 
-        *(s32 *)(s2 + 0xB4) = *(s16 *)((u8 *)s1 + 0x78);
-        *(s32 *)(s2 + 0xB8) = -(s32)*(s16 *)((u8 *)s1 + 0x7A);
-        *(s32 *)(s2 + 0xBC) = -(s32)*(s16 *)((u8 *)s1 + 0x7C);
-        *(s16 *)(s2 + 0x78) = *(u16 *)((u8 *)s1 + 0x7E);
-        *(s16 *)(s2 + 0x7A) = -(s16)*(u16 *)((u8 *)s1 + 0x80);
-        *(s16 *)(s2 + 0x7C) = -(s16)*(u16 *)((u8 *)s1 + 0x82);
+        s2[1].node.work.t[0] = *(s16 *)((u8 *)s1 + 0x78);
+        s2[1].node.work.t[1] = -(s32)*(s16 *)((u8 *)s1 + 0x7A);
+        s2[1].node.work.t[2] = -(s32)*(s16 *)((u8 *)s1 + 0x7C);
+        s2[1].node.xf.rot.vx = *(u16 *)((u8 *)s1 + 0x7E);
+        s2[1].node.xf.rot.vy = -(s16)*(u16 *)((u8 *)s1 + 0x80);
+        s2[1].node.xf.rot.vz = -(s16)*(u16 *)((u8 *)s1 + 0x82);
 
-        g_anim_func_table[0]((SVECTOR *)(s2 + 0x78), (MATRIX *)(s2 + 0xA0));
+        g_anim_func_table[0](&s2[1].node.xf.rot, &s2[1].node.work);
         break;
     }
     case 1:
-        *(s16 *)(s3 + 0x10) = 0;
-        *(s16 *)(s3 + 0x12) = 0;
-        *(s16 *)(s3 + 0x14) = 0;
-        *(s16 *)(s3 + 0x06) = 0;
-        *(s32 *)(s3 + 0x4C) = 0;
-        *(s32 *)(s3 + 0x54) = 0;
+        s3->node.xf.rot.vx = 0;
+        s3->node.xf.rot.vy = 0;
+        s3->node.xf.rot.vz = 0;
+        s3->node.unk6 = 0;
+        s3->node.work.t[0] = 0;
+        s3->node.work.t[2] = 0;
         break;
     case 2: break;
     case 3: break;
@@ -111,80 +111,80 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     }
 
     {
-        s32 scaled;
-        Unk80101DF0Record *s1p;
-        scaled = (*(s32 *)(s3 + 0x50) * *(s16 *)(s4 + 0x12)) >> 12;
+        Unk80045878Node *s1p;
         s0 = 0;
-        s1p = (Unk80101DF0Record *)s3;
-        *(s32 *)(s3 + 0x50) = scaled;
-        *(s16 *)(s5 + 6) = 0;
+        s1p = s3;
+        s3->node.work.t[1] = (s3->node.work.t[1] * s4->unk_12) >> 12;
+        s5->node.unk6 = 0;
         do {
-            func_800417D0(s1p);
+            func_800417D0(&s1p->node);
             s0++;
-            s1p = (Unk80101DF0Record *)((u8 *)s1p + 0x68);
+            s1p++;
         } while (s0 < 0x12);
     }
 
     s0 = 1;
-    *s3 = 0xA;
-    *(s32 *)(s3 + 0x58) = (s32)(s4 + 0x18F4);
+    s3->node.unk0 = 0xA;
+    /* FAKE: unk58 stored through a pointer; the member store lets sched sink it below the
+       D_800A3820 load (score 5). */
+    {
+        s32 *p58 = &s3->unk58;
+        *p58 = (s32)s4->unk_18F4;
+    }
     {
         s32 *list;
-        u8 *a4p;
+        Unk80045878Node *a4p;
         list = (s32 *)D_800A3820;
-        a4p = s3 + 0x68;
-        *(s16 *)(s3 + 2) = 0;
+        a4p = &s3[1];
+        s3->node.unk2 = 0;
         D_800A3820 = (s32)(list + 1);
         *list = (s32)s3;
 
         do {
-            if (*(s16 *)(a4p + 2) >= 0) {
+            if (a4p->node.unk2 >= 0) {
                 s32 *list2;
                 list2 = (s32 *)D_800A3820;
                 D_800A3820 = (s32)(list2 + 1);
                 *list2 = (s32)a4p;
             }
             s0++;
-            a4p += 0x68;
+            a4p++;
         } while (s0 < 0x12);
     }
 
     {
-        u8 *a2p;
-        u8 *a3p;
-        a2p = s4 + 0x10D4;
-        a3p = s4 + 0x10EC;
+        Unk80045878Node *a2p;
+        a2p = s4->unk_10D4;
         for (;;) {
             s32 *list3;
-            s5 = *(u8 **)(a3p + 0x40);
+            s5 = (Unk80045878Node *)a2p->unk58;
             if (s5 == 0) {
                 break;
             }
-            *(Copy8_40D48 *)a3p = *(Copy8_40D48 *)(s5 + 0x18);
+            a2p->node.xf.mat = s5->node.xf.mat;
             list3 = (s32 *)D_800A3820;
-            a3p += 0x68;
             D_800A3820 = (s32)(list3 + 1);
             *list3 = (s32)a2p;
-            a2p += 0x68;
+            a2p++;
         }
 
-        a2p = s4 + 0x8B4;
-        if (*(s16 *)(s4 + 0x8B6) != -1) {
+        a2p = s4->unk_8B4;
+        if (s4->unk_8B4[0].node.unk2 != -1) {
             do {
                 s32 *list4;
                 list4 = (s32 *)D_800A3820;
                 D_800A3820 = (s32)(list4 + 1);
                 *list4 = (s32)a2p;
-                a2p += 0x68;
-            } while (*(s16 *)(a2p + 2) != -1);
+                a2p++;
+            } while (a2p->node.unk2 != -1);
         }
     }
 
-    func_800404A0((s16 *)(s4 + 0x8B4), arg5);
-    *(s16 *)(s4 + 0x1A84) = (s16)arg5;
-    func_800400B0((s32 *)s4, arg5);
-    func_8003F62C((s32 *)s4);
-    func_800420E8(a0, (s32)(s3 + 0x2C));
+    func_800404A0(s4->unk_8B4, arg5);
+    s4->unk_1A84 = arg5;
+    func_800400B0(s4, arg5);
+    func_8003F62C(s4);
+    func_800420E8(a0, (s32)s3->node.xf.mat.t);
 }
 
 extern s32 D_80094CFC[];
@@ -192,15 +192,15 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4)
 {
     s32 i = 1;
     s32 *tbl = D_80094CFC;
-    s32 base = (s32)g_player_ptrs[a0];
+    Unk80045878Obj *base = g_player_ptrs[a0];
     SVECTOR buf;
-    s32 ents;
+    Unk80045878Node *ents;
     MATRIX *out2;
     MATRIX *out3;
     s32 offset;
     u16 *p;
-    s32 stptr2;
-    ents = base + 0x94;
+    Unk80045878Node *stptr2;
+    ents = &base->unk_2C[1];
     out2 = a4 + 1;
     do {
         offset = (*tbl) * 6;
@@ -210,23 +210,25 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4)
         buf.vz = -p[2];
         math_RotMatrixZYX(&buf, a4);
         tbl++;
+        /* FAKE: offset becomes the a2-side address (addu s0,s0,s2); a fresh sum loads through v1 (score 4) */
         offset = offset + (s32) a2;
         p = (u16 *) offset;
         buf.vx = p[0];
         buf.vy = -p[1];
         buf.vz = -p[2];
         math_RotMatrixZYX(&buf, out2);
-        func_800523E0(a4, out2, a3, (MATRIX *)(ents + i * 0x68 + 0x38));
-        *((s16 *) (ents + i * 0x68 + 6)) = 2;
+        func_800523E0(a4, out2, a3, &ents[i].node.work);
+        ents[i].node.unk6 = 2;
         i++;
     } while (i < 0x12);
     a1 += 0x6C;
     a2 += 0x6C;
     i = 0x12;
-    stptr2 = ents + 0x750;
+    stptr2 = &ents[18];
+    /* FAKE: a second copy of a4 + 1 for the second loop (s3); reusing out2 drops the copy and moves lw t0,24(sp) up (score 4) */
     out3 = a4 + 1;
     loop2:
-    func_80044DE4((s16 *) a1, (s16 *) a2, a3, stptr2 + 0x4C);
+    func_80044DE4((s16 *) a1, (s16 *) a2, a3, (s32)stptr2->node.work.t);
     a1 += 6;
     a2 += 6;
     buf.vx = *((u16 *) a1);
@@ -243,9 +245,9 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4)
     buf.vz = -(*((u16 *) a2));
     a2 += 2;
     math_RotMatrixZYX(&buf, out3);
-    func_800523E0(a4, out3, a3, (MATRIX *)(stptr2 + 0x38));
-    *((s16 *) (stptr2 + 6)) = 1;
-    stptr2 += 0x68;
+    func_800523E0(a4, out3, a3, &stptr2->node.work);
+    stptr2->node.unk6 = 1;
+    stptr2++;
     i++;
     if (i < 0x14) {
         goto loop2;
@@ -283,34 +285,34 @@ void func_80041398(s32 a0) {
     } while (t1 < 4);
 }
 void func_80041430(s32 a0, s32 a1) {
-    s32 **base;
-    s32 *s0;
+    Unk80045878Obj **base;
+    Unk80045878Obj *s0;
     s32 i;
     base = &g_player_ptrs[a0];
-    s0 = (s32 *)((u8 *)*base + a1);
+    s0 = (Unk80045878Obj *)((u8 *)*base + a1);
     *base = s0;
-    save_vc_ctrl(a1, (s16 *)((u8 *)s0 + 0x2C), 0x15);
-    save_vc_ctrl(a1, (s16 *)((u8 *)s0 + 0x8B4), 0x14);
-    save_vc_ctrl(a1, (s16 *)((u8 *)s0 + 0x10D4), 0x14);
+    save_vc_ctrl(a1, s0->unk_2C, 0x15);
+    save_vc_ctrl(a1, s0->unk_8B4, 0x14);
+    save_vc_ctrl(a1, s0->unk_10D4, 0x14);
     {
-        s32 *v1 = (s32 *)((u8 *)s0 + 0x112C);
+        Unk80045878Node *c = s0->unk_10D4;
         do {
-            s32 val = *v1;
+            s32 val = c->unk58;
             if (val) {
-                *v1 = val + a1;
+                c->unk58 = val + a1;
             } else {
                 break;
             }
-            v1 = (s32 *)((u8 *)v1 + 0x68);
+            c++;
         } while (1);
     }
     i = 0;
     do {
-        s32 val = *(s32 *)((u8 *)s0 + i * 4 + 0x1A34);
+        Unk80045878Node *val = s0->unk_1A34[i];
         if (val) {
-            *(s32 *)((u8 *)s0 + i * 4 + 0x1A34) = val + a1;
+            s0->unk_1A34[i] = (Unk80045878Node *)((u8 *)val + a1);
         }
         i++;
     } while (i < 0x14);
-    func_80040A78((s32)s0);
+    func_80040A78(s0);
 }

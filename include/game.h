@@ -1807,6 +1807,67 @@ typedef struct {
     s8 pad62[6];            /* +0x62 */
 } Unk800A9CF8Entry;         /* 0x68 */
 
+/* The per-player model object func_80045878 builds (0x1A88 bytes, its func_80045600 block) and
+ * g_player_ptrs[] / func_8004153C hand out. The header (0x00..0x2B) is followed by three arrays of
+ * 0x68-byte transform nodes (func_80041430 rebases them as 0x15, 0x14 and 0x14 records), then
+ * three 20-entry pointer tables.
+ * - unk_00: flag word; func_80040594 sets bit 1 and keeps the character id in bits 16..20,
+ *   which player_SetCharId / func_80041650 read as the upper halfword (half[1] & 0x1F).
+ * - unk_04: the player index (func_80045878's a0); unk_06: a state func_80040594 clears
+ *   (func_80045878 sets 1, player_SetCharId -2); unk_08: func_80045878's a1, indexing the
+ *   D_80094C68 / D_80094B48 tables.
+ * - unk_10 / unk_14 / unk_16: func_80045878's a0 / a0 / a0 + 3 (unk_14 / unk_16 are the
+ *   func_80044010 / func_800432A0 ids); unk_12: the Q12 scale func_800408F8 sets from D_80094C68.
+ * - unk_18: written as the word 0x8000 by func_80045878, read as three colour bytes by
+ *   func_80041688.
+ * - unk_1C / unk_20: the resource blocks func_80045878 stores; unk_24 / unk_28: the scene block
+ *   and command cursor (func_8003F824, func_8004019C).
+ * - unk_2C[]: node 0 is the root (func_80049718 reads its xf.mat); func_800408F8 builds 0..20,
+ *   func_80040CB8 fills unk_8B4[] (unk2 = -1 ends it), func_80040B44 copies duplicates into
+ *   unk_10D4[] (unk58 = the source node; 0 ends it).
+ * - unk_18F4[] / unk_1994[]: &node.xf.mat of unk_2C[] nodes (func_80040A78); unk_1A34[]: the
+ *   node each id selects (func_80040B44); unk_1A84: func_80040D48's arg5. */
+typedef struct Unk80045878Node {
+    Unk80101DF0Record node; /* +0x00 */
+    s32 unk58;              /* +0x58 */
+    s32 unk5C;              /* +0x5C */
+    u8 *unk60;              /* +0x60 func_8003FA24's point data */
+    s32 unk64;              /* +0x64 */
+} Unk80045878Node;          /* 0x68 */
+
+typedef struct Unk80045878Obj {
+    union {
+        s32 word;
+        s16 half[2];
+    } unk_00;                        /* +0x0000 */
+    s16 unk_04;                      /* +0x0004 */
+    s16 unk_06;                      /* +0x0006 */
+    s16 unk_08;                      /* +0x0008 */
+    u8 pad0A[6];                     /* +0x000A */
+    u16 unk_10;                      /* +0x0010 */
+    s16 unk_12;                      /* +0x0012 */
+    s16 unk_14;                      /* +0x0014 */
+    s16 unk_16;                      /* +0x0016 */
+    union {
+        s32 word;
+        u8 byte[4];
+    } unk_18;                        /* +0x0018 */
+    s32 unk_1C;                      /* +0x001C */
+    s32 unk_20;                      /* +0x0020 */
+    void *unk_24;                    /* +0x0024 */
+    s32 unk_28;                      /* +0x0028 */
+    Unk80045878Node unk_2C[21];      /* +0x002C */
+    Unk80045878Node unk_8B4[20];     /* +0x08B4 */
+    Unk80045878Node unk_10D4[20];    /* +0x10D4 */
+    MATRIX *unk_18F4[20];            /* +0x18F4 */
+    u8 pad1944[0x50];                /* +0x1944 */
+    MATRIX *unk_1994[20];            /* +0x1994 */
+    u8 pad19E4[0x50];                /* +0x19E4 */
+    Unk80045878Node *unk_1A34[20];   /* +0x1A34 */
+    s16 unk_1A84;                    /* +0x1A84 */
+    u8 pad1A86[2];                   /* +0x1A86 */
+} Unk80045878Obj;                    /* 0x1A88 */
+
 /* The 16-byte records func_8003EDC0 fills ahead of those (unk8 / unkC = the
  * grid cell's column / row * 2000 - 32000); func_8003E6D8 and func_8003EB84
  * set unk6 and the unk7 bits and queue them on the D_800A3820 list. */

@@ -1,1 +1,2 @@
 {"func": "game_GetPlayerBase", "addr": "80046E18", "verdict": "PASS", "body_hash": "cb1ef6f9ff926f33", "body_kind": "c", "file": "main/368E4", "reviewer": "p2-rev-ga10b", "scope": "cheat-cleanup", "date": "2026-10-04T19:04:16Z", "head": "be33dcc8e", "notes": ""}
+{"func": "game_GetPlayerBase", "addr": "80046E18", "verdict": "PASS", "body_hash": "e3763c3fb6ee7ef8", "body_kind": "c", "file": "main/368E4", "reviewer": "cheat-reviewer:rev-w2b3", "scope": "cheat-cleanup", "date": "2026-10-06T13:44:17Z", "head": "afbefb601", "notes": ""}

@@ -610,12 +610,13 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
        mechanism: expand/cse address materialisation -- the pointer local seats
        %hi/%lo(D_800EFAE8) in one callee-saved base register ($s1) for the whole
        body, whereas the direct D_800EFAE8.field form re-materialises the address
-       per extended basic block. */
+       per extended basic block. Ablated (2026-10-06): score 63. */
     Unk800EFAE8Ctrl *s = &D_800EFAE8;
+    /* FAKE: id (a0 + 0x131) computed at entry; at its uses the addiu moves below the prologue stores (score 6). */
     s32 id = a0 + 0x131;
     s32 ret;
     s16 *t;
-    s32 *v;
+    Unk80045878Obj *v;
     s32 n;
 
     if (a6 != 0) {
@@ -662,6 +663,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     func_8003F218(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
     if (s->unk4 & 0x3F) {
+        /* FAKE: n computed ahead of the a6 test; computed in each call the subtraction moves into the call setup (score 5). */
         n = (s->unk4 & 0x3F) - 1;
         if (a6 != 0) {
             a6 += ret;
@@ -700,7 +702,7 @@ s32 func_8005490C(void) {
        as in func_80054604 above; mechanism: expand/cse address
        materialisation -- the pointer local seats %hi/%lo(D_800EFAE8) in one
        callee-saved base register ($s3) for the whole body; the direct
-       D_800EFAE8.field form re-materialises the address per use. */
+       D_800EFAE8.field form re-materialises the address per use. Ablated (2026-10-06): score 157. */
     Unk800EFAE8Ctrl *s = &D_800EFAE8;
     VECTOR vec;
     /* The 0x84-byte motion frame func_800198D0 decodes (func_80023F08 keeps
@@ -717,13 +719,13 @@ s32 func_8005490C(void) {
        loop.  Shared, it is one allocno that crosses the loop's func_800198D0
        call and takes $s0 for all three (move s0,v0 at 0x80054A50,
        0x80054A6C, 0x80054CF8); with one local per value the first-frame
-       values take $v0 and both moves vanish. */
-    s32 *player;
+       values take $v0 and both moves vanish. Ablated (2026-10-06): score 9. */
+    Unk80045878Obj *player;
     /* FAKE: one variable for two values, the camera-rotated z of the camera
        position and of player i's root offset.  Read in two blocks it is not
        a local-alloc quantity, so combine_regs does not tie it to the
        subtraction and it takes $t0 (sra t0 at 0x80054B30 and 0x80054E0C);
-       one local per block is tied to the subtraction. */
+       one local per block is tied to the subtraction. Ablated (2026-10-06): score 41. */
     s32 rot_z;
 
     if (s->unk0 < 0) {
@@ -808,8 +810,9 @@ s32 func_8005490C(void) {
             s32 ang;
             player = func_8004153C(i);
             func_800198D0(i, s->unk0, (MotionFrame *)frame, (u16 *)0x1F800000);
+            /* FAKE: vec.vy set twice; one expression drops the target's spill of frame[0] (sw v1,28(sp)) (score 2) */
             vec.vy = frame[0];
-            vec.vy = (vec.vy * *(s16 *)((u8 *)player + 0x12)) >> 12;
+            vec.vy = (vec.vy * player->unk_12) >> 12;
             ang = frame[1];
             vec.vx = (Judge[ang & 0xFFF] * frame[2]) >> 12;
             vec.vz = (Judge[(ang + 0x400) & 0xFFF] * frame[2]) >> 12;

@@ -41,13 +41,13 @@
 extern u8 D_80094D40[];
 
 
-s32 *func_8004153C(s32 a0) {
+Unk80045878Obj *func_8004153C(s32 a0) {
     return g_player_ptrs[a0];
 }
 s32 func_80041554(s32 a0) {
-    s16 *ptr = (s16 *)g_player_ptrs[a0];
+    Unk80045878Obj *ptr = g_player_ptrs[a0];
     if (ptr) {
-        return ptr[4];
+        return ptr->unk_08;
     }
     return -1;
 }
@@ -68,19 +68,21 @@ void player_Destroy(s32 a0) {
     g_player_ptrs[a0] = 0;
 }
 void player_SetCharId(s32 a0, s32 a1) {
-    s16 *ptr = (s16 *)g_player_ptrs[a0];
+    Unk80045878Obj *ptr = g_player_ptrs[a0];
     if (ptr) {
-        s32 val = ptr[1];
+        /* FAKE: the halfword read into an s32 local (lh); in the masked expression it loads lhu (score 1) */
+        s32 val = ptr->unk_00.half[1];
         if ((val & 0x1F) != a1) {
-            ptr[3] = -2;
+            ptr->unk_06 = -2;
         }
     }
     g_player_char_ids[a0] = a1;
 }
 s32 func_80041650(s32 a0) {
-    s16 *ptr = (s16 *)g_player_ptrs[a0];
+    Unk80045878Obj *ptr = g_player_ptrs[a0];
     if (ptr) {
-        s32 val = ptr[1];
+        /* FAKE: the halfword read into an s32 local (lh); in the masked expression it loads lhu (score 1) */
+        s32 val = ptr->unk_00.half[1];
         return val & 0x1F;
     }
     return -1;
@@ -93,10 +95,10 @@ void func_80041688(s32 arg0, s32 arg1) {
     volatile u32 pre_pad[8]; /* !FAKE: target frame 0x38 keeps 0x20 leading
         bytes allocated-but-untouched (only the sp/ra/s0 offset immediates
         depend on it); phantom-frame-slot family, owner-sanctioned pad row
-        (engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS). */
-    s32 *player;
+        (engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS). Ablated (2026-10-06): score 6. */
+    Unk80045878Obj *player;
     s32 i;
-    u8 *p;
+    Unk80045878Node *p;
     u8 *q;
     s32 b, r, g, v;
 
@@ -104,27 +106,27 @@ void func_80041688(s32 arg0, s32 arg1) {
     player = g_player_ptrs[arg0];
     if (player == NULL) return;
 
-    p = (u8 *)player + 0x94;
+    p = &player->unk_2C[1];
     if (arg1) {
-        p[1] |= 1;
+        p->node.unk1 |= 1;
     } else {
-        p[1] &= ~1;
+        p->node.unk1 &= ~1;
     }
 
     i = 1;
 loop1:
-    p += 0x68;
+    p++;
     /* FAKE: guard staged through the existing local b (value consumed by
        the branch below; b's real color-byte assignment follows later and
        this staged value is dead before it), mechanism: sched.c
        adjust_priority -> birthing_insn_p reg_n_sets==1 launch-boost gate
        (second live set of b turns off the FALSE-arm lbu's LAUNCH_PRIORITY
        so it is picked last = emitted first, matching target [b,r,g]);
-       staged-value-reused-variable. */
-    b = *(s16 *)(p + 2) >= 0;
+       staged-value-reused-variable. Ablated (2026-10-06): score 2. */
+    b = p->node.unk2 >= 0;
     if (b) {
-        if (arg1) p[1] |= 1;
-        else      p[1] &= ~1;
+        if (arg1) p->node.unk1 |= 1;
+        else      p->node.unk1 &= ~1;
     }
     i++;
     if (i < 18) goto loop1;
@@ -139,15 +141,13 @@ loop2:
 after2:
 
     if (func_800486FC()) {
-        r = *((u8 *)player + 0x18);
-        g = *((u8 *)player + 0x19);
-        b = *((u8 *)player + 0x1A);
-        v = math_Grayscale3(b, g, r);
+        v = math_Grayscale3(player->unk_18.byte[2], player->unk_18.byte[1], player->unk_18.byte[0]);
         func_80041398((v << 16) | (v << 8) | v);
     } else {
-        r = *((u8 *)player + 0x18);
-        g = *((u8 *)player + 0x19);
-        b = *((u8 *)player + 0x1A);
+        /* FAKE: r / g / b read into locals ahead of the call; read in the argument expression the frame grows 0x38 -> 0x40 (score 8). */
+        r = player->unk_18.byte[0];
+        g = player->unk_18.byte[1];
+        b = player->unk_18.byte[2];
         func_80041398(b | ((r << 16) | (g << 8)));
     }
 }
@@ -240,7 +240,7 @@ extern s32 D_80094DF0[];
 extern u8 D_80094E08[];
 extern s16 D_800A9A20;
 extern u16 g_gpu_store_buf;
-void func_80041AC8(s16 *arg0)
+void func_80041AC8(Unk80045878Obj *arg0)
 {
   s16 rect[4];
   s16 *var_s0;
@@ -249,22 +249,22 @@ void func_80041AC8(s16 *arg0)
   s32 var_s3;
   u16 v1_val;
   s16 *id_ptr;
-  if (arg0[2] != 1)
+  if (arg0->unk_04 != 1)
   {
     return;
   }
-  if (D_80094E08[arg0[4]] == 0xFF)
+  if (D_80094E08[arg0->unk_08] == 0xFF)
   {
     return;
   }
-  /* id_ptr spelling: target's store->reload order (sh D_800A9A20 BEFORE
-   * lh arg0[4]) is only producible when the reload is NOT spelled as plain
+  /* FAKE: id_ptr spelling: target's store->reload order (sh D_800A9A20 BEFORE
+   * lh arg0->unk_08) is only producible when the reload is NOT spelled as plain
    * pointer-indexing (GCC 2.7.2 MEM_IN_STRUCT_P /s flag + sched.c escape
    * clause) — the original source provably used a non-indexed spelling.
    * One representative spelling sanctioned by owner policy; see
-   * .claude/rules/proven-spelling-class-reconstruction.md. */
-  id_ptr = &arg0[4];
-  D_800A9A20 = arg0[4];
+   * .claude/rules/proven-spelling-class-reconstruction.md. Ablated (2026-10-06): score 2. */
+  id_ptr = &arg0->unk_08;
+  D_800A9A20 = arg0->unk_08;
   var_s0 = (s16 *) D_80094DF0[D_80094E08[*id_ptr]];
   if (func_8003E2A0() != 1)
   {
@@ -278,15 +278,18 @@ void func_80041AC8(s16 *arg0)
 
   var_s2 = 0;
   after_if:
+  /* FAKE: v1_val is the loop-rotated read of *var_s0 (here and at the loop's end); read at the rect[0] store the frame shrinks 0x50 -> 0x40 and the head's lh / lhu pair changes (score 26). */
   v1_val = (u16) (*var_s0);
 
   if ((*var_s0) >= 0)
   {
+    /* FAKE: constant holders for the 16 x 1 rect size; as literals the g_gpu_store_buf address (lui/addiu s1) is scheduled ahead of li s5,16 / li s4,1 (score 4) */
     s32 w = 0x10;
     s32 h = 1;
     var_s1 = &g_gpu_store_buf;
     do
     {
+      /* FAKE: v0_val reads var_s0[1] ahead of the rect[2] / rect[3] stores; read at the rect[1] store, sh s5 / sh s4 move above the load (score 4) */
       u16 v0_val;
       rect[0] = v1_val + var_s3;
       v0_val = (u16) var_s0[1];
@@ -305,7 +308,7 @@ void func_80041AC8(s16 *arg0)
 extern void LoadImage(s32, s32);
 void func_80041BF4(s32 a0, s32 a1, s32 a2)
 {
-  s32 *fp_ptr;
+  Unk80045878Obj *fp_ptr;
   s32 r;
   s32 g;
   s32 b;
@@ -320,7 +323,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
      rematerialized by reload into $v1, while a live pseudo carrying it is
      allocated $t0 exactly as target does; ordinary-C spellings of the test
      (subtract-compare-zero, double negation, switch, named call result) do
-     not.  Family: .claude/rules/named-local-fake-exception.md (owner ruling). */
+     not.  Family: .claude/rules/named-local-fake-exception.md (owner ruling). Ablated (2026-10-06): score 12. */
   int one;
   /* FAKE: oversized locals object - rect[0..3] is the live LoadImage RECT and
      rect[4..7] is the unwritten tail, mechanism: mips.c compute_frame_size /
@@ -335,12 +338,12 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
      through rect[8] are all byte-identical here - [8] is chosen.  Family:
      .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out (owner
      ruling); prong 2 is satisfied by extending the LIVE object - rect's
-     address is passed to LoadImage - rather than adding a dead pad. */
+     address is passed to LoadImage - rather than adding a dead pad. Ablated (2026-10-06): score 22. */
   s16 rect[8];
   fp_ptr = func_8004153C(1);
   if (fp_ptr == 0) { return; }
-  if ((*(((s16 *) fp_ptr) + 4)) != D_800A9A20) { return; }
-  if (D_80094E08[*(((s16 *) fp_ptr) + 4)] == 0xFF) { return; }
+  if ((fp_ptr->unk_08) != D_800A9A20) { return; }
+  if (D_80094E08[fp_ptr->unk_08] == 0xFF) { return; }
   r = (a0 << 12) / 255;
   one = 1;
   g = (a1 << 12) / 255;
@@ -363,14 +366,15 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
        and the two offsets land in $s5/$s4.  Arm swap, hoisted defs, a
        ternary, narrower declaration scopes and plain assignment do not.
        Family: .claude/rules/do-while-zero-exception.md (owner ruling,
-       sanctioned for any codegen effect incl. register allocation). */
+       sanctioned for any codegen effect incl. register allocation). Ablated (2026-10-06): score 18. */
     do { xoff = 0x80; yoff = 0; } while (0);
   }
-  tbl = *(s16 **)((u8 *) D_80094DF0 + (D_80094E08[*(((s16 *) fp_ptr) + 4)] << 2));
+  tbl = *(s16 **)((u8 *) D_80094DF0 + (D_80094E08[fp_ptr->unk_08] << 2));
   idx = 0;
   goto test;
   again:
   {
+    /* FAKE: off = idx << 5 taken before idx++; inline in LoadImage with idx++ after DrawSync, addiu s1 / sll v0 swap around the call setup (score 4). */
     s32 off = idx << 5;
     idx++;
     rect[0] = x + xoff;
