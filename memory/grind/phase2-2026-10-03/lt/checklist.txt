@@ -19,6 +19,8 @@ BLOCKING (FAIL):
       ablates to IDENTICAL is removed, not kept. This covers constructs CARRIED from HEAD in every moved
       body, labelled or not: sweep each moved body for constant / sentinel holders, single-use aliases,
       reused multi-role locals and redundant temps, and ablate each (rev-w2b2, rev-f04 caught these).
+      Ablate a holder by substituting its expression AT THE HOLDER'S POSITION (keep every store / call
+      where the holder was computed); moving a store is a different spelling, not the ablation (rev-fdesc1).
   B5. Item 4: no raw-offset or differently-typed view of header-declared bytes on an edited line
       (if no typed form matches, the line stays exactly as at HEAD and gets a debt row). Before
       claiming "no typed form matches", try at least: a typed holder with member access; no holder;
