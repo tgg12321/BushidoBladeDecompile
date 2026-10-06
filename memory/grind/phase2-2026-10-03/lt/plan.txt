@@ -1,100 +1,118 @@
-LONG TAIL (commit-plan item 4): raw-offset site families, 2026-10-05 census
-===========================================================================
-Source: tmp/p2/lt/casts.tsv (memory/grind/phase2-2026-10-03/tools/casts.py over every linked TU of
-the working tree = HEAD 6dcb086d6 + the staged P7a, which has no raw-offset site). 3303 sites:
-deref-load 874, deref-store 804, pun-load 475, addr 469, index-load 259, pun-store 254, ptradd 64,
-index-store 54, struct-cast 50.
-tmp/p2/lt/families.tsv groups them, one row per real object (families.py has the rules; the
-`func_list` column is the moved-body list). 2559 sites in 20 families; 744 in FZZ.
-- `funcs` = moved bodies.
-- `fake_sites` = sites in a function with a FAKE (casts.py `fake` column), the bodies whose FAKEs a
-  batch must re-ablate.
+LONG TAIL (commit-plan item 4): status at close-out, 2026-10-06
+================================================================
+Current state only; how each family was worked is in the commit bodies (`git log --grep '^phase2'`).
 
-ORDER: largest first, one family per batch, rulings and blockers first.
+Census: memory/grind/phase2-2026-10-03/tools/casts.py over every linked TU of b9a504cd0: 685 raw-offset
+sites (2026-10-05: 3303). Classification from worker 2's closing census (p2-w2 tmp/w2/census_final.txt),
+carried to main's hashes (w2 4dea4ed42 = 8d257aa42, 4cf103dac / 1441073f4 = ebacf0123) and updated for
+5574f89a1 (fres1), 765102ec8 (b12), b9a504cd0 (fres2) and fot1's rev fixes:
 
- 1. F01  51268 scratchpad workspace 0x1F800000..0x1F8000BC. 683 sites, 25 bodies (291 sites in
-     FAKE bodies).
-     - The D_800A3468..D_800A34EC TU-static s32 globals each hold one fixed 0x1F8000xx field
-       address. func_80060E38 seeds them (51268.c:268-299), so its stores are the field map.
-     - Shape: one ScrPad51268 record at 0x1F800000. Each global becomes `T *` to its field (or
-       the code reads `SPAD51->field`). Measure both.
-     - Blocker: game.h's ScrPad / SPAD (17AFC's view, F02) overlays the same memory. The two
-       views must be separate types (a union is an invented model); state that.
-     - Defects up front: func_80068D88's m2c names (strength_red / var_t3) and `*(u16 *)p_idx`
-       views (P8 debt row); 51268's block-scope g_gpu_ot_ptr externs go with it.
- 2. F02  17AFC collision scratchpad workspace (scr / obj on 0x1F800xxx). 663 sites, 20 bodies
-     (227 in FAKE bodies).
-     - game.h:636-650 already declares ScrPad / SPAD (the point tables): extend it from the
-       sites.
-     - Header-declared, so item 4 applies to every edited line.
- 3. F03  51268 layout-A context. 209 sites, 24 bodies.
-     - RULED a word array (P3 round 2), so only the resource-root reads `*(s32 *)(arg0 + 4)` /
-       `outer + 4` + off are open.
-     - Batch only those (the MOD.BIN root's header table, cf. func_80069F80 / tbl[10..11]).
- 4. F06  SPU register block _spu_RXX (libspu) + _spu_setReverbAttr's arg0 record. 175 sites,
-     14 bodies.
-     - Sony library code (verbatim modules), MMIO (mmio-volatile-type-level).
-     - PsyQ's own libspu header spells _spu_RXX as a union of u16 / u32 views. Follow it; no
-       invented model.
- 5. F04  5ED34 resource roots D_800A35C4 / D_800A35A8 / D_800A3568 (+ 64FD8 D_800A35F8). 106
-     sites, 16 bodies (80 in FAKE bodies).
-     - Blockers: the EnvA descriptor unification and the sheet-header / cell typing
-       (Unk8009B0E0Record / Unk8009B400Record, the D_8009B708 row) touch the same bodies; do them
-       together or first.
- 6. F09  28708 records: D_800A36EC 0x1C records (func_8003993C, asm/funcs/func_8003993C.s:57-89)
-     and slot / dest records. 87 sites, 4 bodies (44 in FAKE bodies). game.h already describes
-     the 0x1C record.
- 7. F05  368E4 transform nodes (Unk80101DF0Record / Unk800A6690Rec family, header-declared) +
-     vehicle / part. 84 sites, 3 bodies (func_80048BA4 / func_80049718 / func_80049A2C; 78 sites
-     in FAKE bodies).
-     - Defects up front (P7b / P7c rows):
-       - `ot` (the D_800A3820 list cursor) -> list;
-       - func_80049718's "ordering table" comment;
-       - `prim` naming;
-       - func_80049A2C's new_var2 / 5 / 6 / 7 / 8.
-     - P7c (g_gpu_ot256_ptr u32 *, PsyQ ClearOTagR, then ClearOTagR into libgpu.h) rides on it.
-     - If the typed node writes don't match, it doesn't land (ruling).
- 8. F08  309CC records. 69 sites, 6 bodies.
-     - a0: s16 * vectors.
-     - arg0: a large object with +0x10D4 / +0x18F4..; check against Unk80101EC8Record (the
-       character object).
- 9. F10  31548 func_80040D48 locals s1..s4. 68 sites, 1 body (all in a FAKE body). It is called
-     with `&vec.vx` (3AB48:915): do it with the first-member-pass batch (12).
-10. F11  368E4 other bases (p u32 * lists, s0, arg0 records). 62 sites, 13 bodies. After F05,
-     same TU.
-11. F12  libgpu internals (sys.c rect / g_gpu_ctx, ext.c SetDefDrawEnv / SetDefDispEnv). 60
-     sites, 18 bodies. Sony code, header-declared types: PsyQ spelling only.
-12. Cross-cutting rows (not families of their own, each its own small measured batch):
-    - Rec44 triple: func_80046BF4 reads a0[0..2] / a1[0..2]. Its callers pass &.unk_00.x and
-      &.h10 (2B344 func_8003C9A4 / CD10; 9F9C :1937 / :1966). Retype the parameters and Rec44's
-      h10..h14.
-    - First-member passes: func_80022408(&...unk_F4.x) (2B344 x2, 9F9C x1), func_80053614
-      (&probe.x, 3AB48:1824-1847), func_80040D48 (&vec.vx, 3AB48:915).
-    - EnvA descriptor unification: Env5C8A8 / Env5D814 / S5E098 / S5F1C8 / SFC9C / S60C8 / S414 /
-      S544 / S69E18 / Env5E54C / S_6A880 and EnvA x3 (63D2C / 51268 / 64FD8). One header type,
-      measured per builder. S69E18's in_tex / width names (P8 row) go with it.
-    - D_8009B708 -> the cell type (SprtEntA / Unk8009B400Record) once the descriptors are unified.
-13. Smaller families (F07 move-to-target ctx 54 / 6; F13 51268 POLY_FT4 holders 44 / 3; F18
-    17AFC func_8002EECC 41 / 1; F17 3AB48 data pun 33 / 2; F19 51268 work block D_800A34FC 33 /
-    17; F14 51268 accessor p 27 / 9; F20 51268 D_800A3524 26 / 13; F15 64FD8 Unk8006EACCRec
-    residue 14 / 6). One batch each, or pair those in the same TU.
-14. FZZ: 744 sites in 228 bodies, no root above 14 sites (top: 17AFC base 14, 9F9C arg1 13,
-    32D04 SCRATCH_PTR 13). A second families pass (per TU, by callee prototype) before batching.
+    ruled          180   a ruling or a labelled FAKE keeps the form
+    debt           246   a debt row in the commit that left it (no typed form matches, measured)
+    owner-blocked  196   waits on an owner question (list below)
+    boundary        63   file formats, in-place relocation, ABI (no object behind the bytes)
+    open             0
 
-RULED / CLOSED (no batch):
-- F16: 3AB48 func_80060768 tile_off (21 sites). D7 ruling (b): no record; non-struct schedule
-  (member forms 192 -> 191, 51 / 49 lines).
-- F03's word array itself (P3 round 2).
+Statuses: DONE in <commits> / RULED / DEBT (rows, commit) / OWNER-BLOCKED (question) / BOUNDARY.
 
-DEFERRED AND ORDERED LAST: P7b (D_800A38B4 as u32 *, the word cursor), after the cleanups of its
-13 bodies (tmp/p2/item3_plan2.txt P7 STATUS).
+F01  51268 scratchpad workspace (D_800A3468..D_800A34EC fields, the 0x1F8000B8 work area)
+     DONE  b9b07dd27 643264f38 ec8c6dcd2 d8c591f23 63ca60f46 c54057823 (the five D_800A34E4 OT views).
+     DEBT  295C / 3E10 / 63084: F13 packed prim words + the prim carve (7797854fe); 295C / 3E10's own
+           work-area layouts: typed 37 / 12, the base is staged through `prim` (5574f89a1); 620B8 strip
+           sums + SetTransMatrix(tv - 0x14) (labelled, 84373e6f8); 611A4 u16 reads (643264f38, labelled);
+           E49C work block base + 0x9C40 (71073622e / 31bb65e13); 67D14 packed prim words, 14 sites
+           (63ca60f46 / fd40277d3).
+     OWNER 67D14's three GTE operands (OWNER-BLOCKED 1).
+F02  17AFC collision scratchpad (ScrPad / Unk1F8002B8Rec)
+     DONE  ef5686d36 9ccd8e382 3351da420 557ce2b3b 6c37fa778 a564052cd ebacf0123.
+     DEBT  979899252 rows (8003032C, 80032314, 800342A0, 80027A58), 80029454 halving cursor (ebacf0123).
+     OWNER func_8002CD58 / func_8002DAD0 / func_8002D780: GTE island operands (146 sites).
+F03  51268 layout-A draw context (func_8006E390's word array) and its MOD.BIN root
+     RULED word array (P3 round 2); roots typed 71073622e; 106 sites stay (8006A880 62, 69E18 13,
+           6A564 11, C21C 4, B120 / BB68 2, and the labelled single sites).
+F04  5ED34 / 64FD8 resource roots (D_800A35C4 / D_800A35A8 / D_800A3568 / D_800A35F8)
+     DONE  31bb65e13 ac9d98537 4290c05ec 1b9a7a3ee.
+     BOUNDARY E534 / 770B8 / 784E4 resource at work area + 0x58; 78824 STAFF.BIN header words (debt,
+           ac9d98537).
+F05  368E4 transform nodes / player model
+     DONE  a2df2d160 f2bcb4406.
+F06  libspu _spu_RXX (PsyQ's union)
+     DONE  7712eeca3 979899252.  DEBT SpuGetKeyStatus volumex sum (7712eeca3).
+     OWNER _SpuSetAnyVoice (8 sites): the D_800F7298 RAM shadow as volatile (borderline.md 544ac7e3a).
+F07  3AB48 move-to-target / collision context (D_800A33F4, Work_80053E9C)
+     DONE  ac9d98537 2f3e6ef93.  DEBT 53304 / 344C / 3584 / 3614: 12- vs 16-byte callers (2f3e6ef93).
+F08  309CC records
+     DONE  8d257aa42.  DEBT 40CB8 ent integer cursor, 40594 offset-table walk (8d257aa42).
+F09  28708 records (D_800A36EC 0x1C records, replay frames)
+     DONE  662320305.  DEBT 38170 memory-card header bytes (979899252).
+F10  31548 func_80040D48 motion frame
+     DONE  606bd1065.  BOUNDARY 41430 relocation; DEBT 41188 self-relative table (979899252).
+F11  368E4 other bases (stream walkers, word table)
+     DONE  f2bcb4406 (word table).  DEBT 460E4 / 4659C stage-file word table; 47EE8 / 47FBC / 480C0 /
+           481E8 / 483DC / 464C4 / 482C8 / 48530 / 484A0 integer cursors; 49C24 output list (f2bcb4406).
+F12  libgpu internals (sys.c / ext.c / prim.c)
+     DONE  7712eeca3 979899252 8fc462a1c.  RULED the SOTN LOW() reads, Q100 volatiles, buffer pushes,
+           PsyQ word reads of RECT pairs (sys.c 26, prim.c 6).
+F13  51268 POLY_FT4 holder views
+     DEBT  closed 7797854fe: the packed prim word stores stay (typed forms +4 insns).
+F14  51268 accessor p (func_80064E90..func_800650A4)
+     DONE  closed 7797854fe.
+F15  64FD8 Unk8006EACCRec residue
+     DONE  ac9d98537 c54057823 (func_80074E08's byte-offset local retired in fot1's rev).
+F16  3AB48 func_80060768 tile_off
+     RULED D7 (b): int arithmetic (28 sites); tile_off's TILE * typing is later work (debt row,
+           c54057823).
+F17  3AB48 data pun (func_80053754 / 80053E9C)
+     DONE  ac9d98537.  DEBT D_800A33F0, the file-local collision map (u16 32x32 offset grid, then
+           byte-offset records; 5574f89a1).
+F18  17AFC func_8002EECC
+     DONE  662320305.
+F19  51268 work block D_800A34FC
+     DONE  110ccc84e.  DEBT 6CCC8 D_800A3524 + j views, typed 24 (7797854fe).
+F20  51268 D_800A3524 / settings record (Unk8009BD24Block)
+     DONE  closed 7797854fe.
+FZZ  the per-TU long tail (744 sites in 2026-10-05's census)
+     DONE  afbefb601 370450dcc 979899252 5574f89a1 765102ec8 b9a504cd0 (6CF8 object table, DIRENTRY, SIO,
+           SpuVoiceAttr, audio-cue rows, BitStream, DR_TPAGE, the worker-2 library pass; 2B344 scene
+           helpers; PsyQ addPrim for func_8003DBE4 / func_80048FFC, StageLight[][6] rows, g_cam_bone_data;
+           31D3C D_80094DF0 s16 *[6] and g_gpu_store_buf[][16]).
+     RULED 6CF8 obj_ClearAll's byte walk (labelled, score 4).
+     DEBT  2B344 func_8003D39C's colour+code word (setRGB0 + code: 27; 765102ec8).
+     DEBT  32D04 43454 packed stream (afbefb601); 3AB48 BA8C VAB pack views (4290c05ec); 28708 / 35000 /
+           31548 self-relative tables and 9F9C pack headers (979899252); 25788 3504C walker (7797854fe);
+           9F9C 2304C (2f3e6ef93), 198D0 (156f6a596), 1A820 (2f3e6ef93), 1BCF0 (979899252);
+           libc2 sprintf, libcomb HandleSio (979899252).
+     BOUNDARY TIM data (602AC, FBC8, 60CB8, E950, 77D94, 16A8C, 485EC), relocations (5490C / 54604 motion
+           header, 4019C Scene, 6CF8 obj_*, 31CFC save_vc_ctrl, 32D04 4428C; 35000 D_800A9CF8's unk8 / unkC /
+           unk10 slots, written by 32D04 and relocated by a byte delta in func_80044B30; 3AB48 snd_VabOpen /
+           func_8005C6D0's VAB pack words), cdrom_LoadExec, vs_vh VAB.
 
-Bodies with known pre-existing defects, so each batch fixes them up front:
-- 2B344 func_8003C2C0: false `stage`.
-- 2B344 func_8003C9A4 / func_8003CD10: Rec44 triple and first-member pass.
-- 9F9C func_8001EA84: first-member pass.
-- 368E4 func_80048BA4 / func_80049718 / func_80049A2C: F05 defects.
-- 6CF8 func_80016E60: `u8 *ot[2]`.
-- 51268 func_80068D88: m2c names and u16 views of s16.
-- 51268 func_80069E18: S69E18 names.
-- 3AB48 func_8005C8A8: size-FAKE comment wording.
+CROSS-CUTTING ROWS
+     DONE  EnvA / sprite descriptor unification (1b9a7a3ee 12e8c26bd 5180b9e9a afbefb601);
+           D_8009B708 cell type (12e8c26bd); Rec44 triple and first-member passes (9462a0204 606bd1065
+           2f3e6ef93); P7b D_800A38B4 word cursor (6607ec419); P7c second OT (f2bcb4406); OT family
+           (c54057823, reverses P5's u8 *); LoadImage / StoreImage / ClearImage + RECT (8fc462a1c);
+           D_800A3820 draw queue (2f3e6ef93); local declarations hoisted (84373e6f8); InitGeom fold +
+           SpuGetVoiceVolume (54e21bed1); _asm_addr / census from the glabel (f2b56796b 54e21bed1).
+     DEBT  (84373e6f8) block-scope declaration copies; memcpy / printf / write / column / AddPrim not
+           hoisted; D_800F1178 / 117C / 1180 per-word views of D_800F116C; func_800520B8's prototype.
+
+OWNER-BLOCKED (exact list; one question each)
+  1. asm-operand bodies (owner 2026-10-05: operands are never edited; the question is whether a typed
+     operand expression with an `auth:` region re-hash is admissible):
+     - 17AFC func_8002CD58 (71) / func_8002DAD0 (46) / func_8002D780 (29): GTE island operands obj + 0xNN;
+     - 87A0 (35): func_80019310's island operands and its record bodies (80018300, 80017FA0, 80018094,
+       8001924C, 800187F4, 80019568);
+     - 51268 func_80067D14 (3): the SetTransMatrix operand `(u8 *)p_out - 0x14` and the
+       `(s32 *)D_800A34B8 + 1` / `+ 2` operands (its 14 packed prim words are F01 debt);
+     - 9F9C func_800203B4 (4): the gte_stlvnl operand &rec->unk_354, landed only with the i203 set: the
+       Unk80101EC8Record * retype, 17AFC func_80027AD8's six `(u8 *)ch` call casts and the region re-hash
+       (measured byte-identical; scratch tmp/p2/i203, not landed).
+  2. libspu _SpuSetAnyVoice (8): the D_800F7298 RAM shadow spelled volatile (borderline.md 544ac7e3a).
+  3. Q96 scope (0 census sites; codex item 11): 17AFC func_80031B24 hands &D_800A37E8 to func_800274BC /
+     func_80032854 as the x,y,z vector of D_800A37E8 / EA / EC. The one-object merge breaks func_80027AD8
+     (score 2, Q96's basis); a FAKE label needs Q96 extended to func_80031B24.
+  Not owner-blocked: 9F9C func_8001C820's raw `(s32 *)((u8 *)s0 + 0x536)` is RULED (owner 2026-10-04,
+  docs/grind/handoff-2026-10-03-restructure.md:96).
+
+OPEN: none.
