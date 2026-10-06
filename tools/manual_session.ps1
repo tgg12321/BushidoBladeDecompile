@@ -288,6 +288,13 @@ manual lane learned. See the decomp-manual skill." -- @ledgerPaths 2>$null | Out
     $commits = @(git -C $Root log --oneline $range)
     if ($commits.Count) { $commits | ForEach-Object { Say "  $_" } } else { Say '  (none)' }
 
+    $leftover = @(git -C $Root status --porcelain | Where-Object { $_ })
+    if ($leftover.Count) {
+        Head 'leftover dirty paths'
+        $leftover | ForEach-Object { Say "  $_" 'Yellow' }
+        Say '[manual] Commit these paths separately; they were not banked with this session ledger.' 'Yellow'
+    }
+
     Remove-Item $StateFile -Force
 
     if ($NoRelaunch) { Say '[manual] -NoRelaunch: leaving the Grinder down.' 'Yellow'; return }

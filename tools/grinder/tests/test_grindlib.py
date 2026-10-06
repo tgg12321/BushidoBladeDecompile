@@ -2566,7 +2566,11 @@ class TestLedgerClose(unittest.TestCase):
     def test_manual_end_without_layer2_archive(self):
         self._manual_end_fixture(layer2=False)
 
-    def _manual_end_fixture(self, layer2=True):
+    @unittest.skipUnless(shutil.which("pwsh"), "PowerShell required")
+    def test_manual_end_clean_has_no_leftover_report(self):
+        self._manual_end_fixture(leftovers=False)
+
+    def _manual_end_fixture(self, layer2=True, leftovers=True):
         self._ledger("func_DONE")
         if not layer2:
             d = G.ledger_dir(self.root, "func_DONE")
@@ -2583,6 +2587,8 @@ class TestLedgerClose(unittest.TestCase):
                                   capture_output=True, text=True).stdout
         git("config", "user.name", "Test")
         git("config", "user.email", "test@example.invalid")
+        with open(os.path.join(self.root, ".gitignore"), "w") as fh:
+            fh.write("tmp/\n")
         other = os.path.join(self.root, "memory", "grind", "other")
         docs = os.path.join(self.root, "docs", "grind")
         os.makedirs(other)
@@ -2594,13 +2600,14 @@ class TestLedgerClose(unittest.TestCase):
         git("add", ".")
         git("commit", "-qm", "fixture")
         start = git("rev-parse", "HEAD").strip()
-        with open(os.path.join(other, "tracked.txt"), "a") as fh:
-            fh.write("unrelated staged change\n")
-        git("add", "memory/grind/other/tracked.txt")
-        with open(os.path.join(other, "untracked_b2.py"), "w") as fh:
-            fh.write("# unrelated untracked file\n")
-        with open(os.path.join(docs, "unrelated.txt"), "a") as fh:
-            fh.write("unrelated docs change\n")
+        if leftovers:
+            with open(os.path.join(other, "tracked.txt"), "a") as fh:
+                fh.write("unrelated staged change\n")
+            git("add", "memory/grind/other/tracked.txt")
+            with open(os.path.join(other, "untracked_b2.py"), "w") as fh:
+                fh.write("# unrelated untracked file\n")
+            with open(os.path.join(docs, "unrelated.txt"), "a") as fh:
+                fh.write("unrelated docs change\n")
         manual = os.path.join(self.root, "tmp", "manual")
         os.makedirs(manual)
         with open(os.path.join(manual, "session.json"), "w") as fh:
@@ -2615,9 +2622,18 @@ class TestLedgerClose(unittest.TestCase):
         self.assertTrue(all(p.startswith("memory/grind/func_DONE/") or
                             p.startswith("memory/grind/_completed/func_DONE/") or
                             p == "memory/grind/_completed/func_DONE.json" for p in paths), paths)
-        self.assertIn("memory/grind/other/tracked.txt", git("diff", "--cached", "--name-only"))
-        self.assertIn("?? memory/grind/other/untracked_b2.py", git("status", "--porcelain"))
-        self.assertIn("docs/grind/unrelated.txt", git("diff", "--name-only"))
+        if leftovers:
+            self.assertIn("memory/grind/other/tracked.txt", git("diff", "--cached", "--name-only"))
+            self.assertIn("?? memory/grind/other/untracked_b2.py", git("status", "--porcelain"))
+            self.assertIn("docs/grind/unrelated.txt", git("diff", "--name-only"))
+            self.assertIn("leftover dirty paths", result.stdout)
+            for path in ("memory/grind/other/tracked.txt",
+                         "memory/grind/other/untracked_b2.py", "docs/grind/unrelated.txt"):
+                self.assertIn(path, result.stdout)
+            self.assertIn("Commit these paths separately", result.stdout)
+        else:
+            self.assertEqual(git("status", "--porcelain"), "")
+            self.assertNotIn("leftover dirty paths", result.stdout)
 
 
 class TestLedgerCompaction(unittest.TestCase):
