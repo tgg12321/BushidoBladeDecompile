@@ -1008,8 +1008,9 @@ typedef struct {
     u16 unk00;                     /* func_800678A8: added to the texture u */
     u16 unk02;                     /* func_800678A8: added to the texture v */
     u32 unk04;                     /* func_800678A8 stores 0x895440; func_80067D14 compares against it */
-    u8 unk08[0x1C];                /* no access */
-    s32 unk24[3];                  /* func_80067D14: gte_stlvnl out */
+    u8 unk08[8];                   /* no access */
+    MATRIX unk10;                  /* func_80067D14: only its translation (+0x24) is used: the gte_stlvnl
+                                      output, which the SetTransMatrix island loads */
     u8 unk30[4];                   /* no access */
     VECTOR unk34;                  /* func_80067D14: gte_ldlvl in */
     SVECTOR unk44[3];              /* func_80067D14: gte_ldv0 / gte_ldv3 in */

@@ -342,7 +342,7 @@ extern u8 D_8008EB74[3][2][2];
 s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
     /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec`, kept because GCC 2.7.2
      * halves the register priority of an unmodified stack parameter (local-alloc doubles
-     * its live length); Ruling 12. */
+     * its live length); Ruling 12. (rec used directly: score 78) */
     Tbl8008E194 *tbl;     /* the record, read field by field */
     Tbl8008E194 *tbl_arg; /* the record, passed on to func_800278C0 */
     s16 *vec;
@@ -393,12 +393,12 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
     }
     st = ch->unk_6A;
     if (st == 4 || st == 0x14) {
-        func_800203B4((u8 *)ch, limb, vec);
+        func_800203B4(ch, limb, vec);
         func_800278C0(pass, ch, limb, tbl_arg, scr, arg6);
         return 1;
     }
     if (ch->unk_0C == 0x1F) {
-        func_800203B4((u8 *)ch, limb, vec);
+        func_800203B4(ch, limb, vec);
         func_800278C0(pass, ch, limb, tbl_arg, scr, arg6);
         ch->unk_286 = 7;
         return 1;
@@ -407,6 +407,8 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         if (pass == 0) {
             diff = opp->unk_20 - ch->unk_20;
             cat = func_800272FC(diff);
+            /* FAKE: diff's sign bit taken ahead of the same / unk_B4 stores and the func_80032854 call; read
+             * at its use in the table index, ch and limb swap $s0 / $s1 across the function: score 102 */
             sign = (u32)diff >> 31;
             same = ch->unk_AF == opp->unk_AF;
             ch->unk_B4 = opp->unk_B4 = same;
@@ -465,7 +467,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
     if (st == 6 || st == 9) {
         if (flag) {
             ch->unk_286 = ch->unk_1DA ? 6 : 7;
-            func_800203B4((u8 *)ch, limb, vec);
+            func_800203B4(ch, limb, vec);
             return 1;
         }
         ch->unk_286 = ch->unk_1DA ? 3 : 4;
@@ -486,12 +488,12 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
     case 0:
         if (flag) {
             ch->unk_286 = thresh > 0x400 ? 6 : 9;
-            func_800203B4((u8 *)ch, limb, vec);
+            func_800203B4(ch, limb, vec);
             func_80027A58(ch);
             return 1;
         }
         /* FAKE: duplicate the real count/return tail across switch arms so flow.c
-         * raises tbl's reg_n_refs before jump2 cross-jump merges it. */
+         * raises tbl's reg_n_refs before jump2 cross-jump merges it. (cases 0, 1-3 goto the case 4-5 copy: score 31) */
         if (pass == 1 && tbl->unkD == 2) {
             ch->unk_272++;
         }
@@ -507,12 +509,12 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
     case 3:
         if (flag) {
             ch->unk_286 = thresh > 0x400 ? 7 : 9;
-            func_800203B4((u8 *)ch, limb, vec);
+            func_800203B4(ch, limb, vec);
             func_80027A58(ch);
             return 1;
         }
         /* FAKE: duplicate the real count/return tail across switch arms so flow.c
-         * raises tbl's reg_n_refs before jump2 cross-jump merges it. */
+         * raises tbl's reg_n_refs before jump2 cross-jump merges it. (cases 0, 1-3 goto the case 4-5 copy: score 31) */
         if (pass == 1 && tbl->unkD == 2) {
             ch->unk_272++;
         }
@@ -527,7 +529,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
     case 5:
         if (!flag) {
             /* FAKE: duplicate the real count/return tail across switch arms so flow.c
-             * raises tbl's reg_n_refs before jump2 cross-jump merges it. */
+             * raises tbl's reg_n_refs before jump2 cross-jump merges it. (cases 0, 1-3 goto the case 4-5 copy: score 31) */
             if (pass == 1 && tbl->unkD == 2) {
                 ch->unk_272++;
             }
@@ -540,7 +542,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
             return 0;
         }
         ch->unk_286 = thresh > 0x400 ? 8 : 9;
-        func_800203B4((u8 *)ch, limb, vec);
+        func_800203B4(ch, limb, vec);
         func_80027A58(ch);
         return 1;
     case 6:

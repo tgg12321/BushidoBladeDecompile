@@ -2761,9 +2761,9 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     }
 }
 /* func_800203B4 — COMPLETED-INLINE-ASM-CANONICAL (owner grant, widened cop2
- * materialize-then-copy anchor; see inline_asm_canonical.txt). Starts the arg0+0x350
- * frame counter, records bone index D_8008D59C[arg1].bone at arg0+0x352, and rotates
- * the vector arg2 by that bone's matrix of game_GetPlayerData(arg0+4) into arg0+0x354.
+ * materialize-then-copy anchor; see inline_asm_canonical.txt). Starts the rec->unk_350
+ * frame counter, records bone index D_8008D59C[arg1].bone at rec->unk_352, and rotates
+ * the vector arg2 by that bone's matrix of game_GetPlayerData(rec->index) into rec->unk_354.
  * Pure-C head + four PsyQ SDK GTE macro islands — gte_SetRotMatrix, gte_ldv0, cop2
  * MVMVA (.word 0x4A486012), gte_stlvnl — character-identical to the
  * func_8002FDB0-authorized spelling (src/code6cac_b.c, inline_asm_canonical.txt). The
@@ -2772,15 +2772,15 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
  * SDK macros' $12-$15 seats). Load-bearing facts — do not tidy:
  *  - local DECLARATION ORDER (mat, vec, src) is byte-load-bearing;
  *  - STATEMENT ORDER is byte-load-bearing (vec[] stores stay below the func_8002EECC call);
- *  - `arg0 += 0x354;` mirrors the SDK call shape (re-association is byte-neutral). */
-void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
+ *  - the gte_stlvnl operand is &rec->unk_354. */
+void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
     s32 mat[8];
     s32 vec[3];
     MATRIX *src;
 
-    *(s16 *)(arg0 + 0x350) = 1;
-    *(s16 *)(arg0 + 0x352) = D_8008D59C[arg1].bone;
-    src = ((MATRIX **)game_GetPlayerData(*(s16 *)(arg0 + 4)))[*(s16 *)(arg0 + 0x352)];
+    rec->unk_350 = 1;
+    rec->unk_352 = D_8008D59C[arg1].bone;
+    src = ((MATRIX **)game_GetPlayerData(rec->index))[rec->unk_352];
     func_8002EECC(src, mat);
     /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
      * rotation-matrix words at r into cop2 control regs $0..$4.  The SDK
@@ -2818,7 +2818,6 @@ void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
         :: "r"(vec) : "$12", "$13", "$14");
     /* GTE MVMVA sf=1, mx=rotation, v=V0, cv=none --- cop2 command 0x0486012. */
     __asm__ volatile(".word 0x4A486012");
-    arg0 += 0x354;
     /* PsyQ libgte inline macro gte_stlvnl(r) --- store MAC1/MAC2/MAC3
      * ($25/$26/$27) to r. */
     __asm__ volatile(
@@ -2826,7 +2825,7 @@ void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
         "swc2   $25, 0($12)\n"
         "swc2   $26, 4($12)\n"
         "swc2   $27, 8($12)\n"
-        :: "r"(arg0) : "$12");
+        :: "r"(&rec->unk_354) : "$12");
 }
 /* func_800204C0 — rec->unk_350 is a frame counter func_800203B4 starts at 1. On the tick
  * where (counter & 7) == 2, the vector func_800203B4 stored at rec->unk_354 is rotated by

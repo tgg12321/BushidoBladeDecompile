@@ -3158,7 +3158,7 @@ void func_80067D14(s32 arg0, s32 arg1) {
     p_seed = &outer->unk1AC;
     *p_seed = rand();
     p_rad = &outer->unk04;
-    p_out = outer->unk24;
+    p_out = outer->unk10.t;
     p_work = &outer->unk34;
     p_vert = outer->unk44;
     p_tv = &outer->unk5C;
@@ -3292,8 +3292,8 @@ void func_80067D14(s32 arg0, s32 arg1) {
             "swc2   $12, 0(%0)\n"
             "swc2   $13, 0(%1)\n"
             "swc2   $14, 0(%2)\n"
-            :: "r"((s32 *)D_800A34B8), "r"((s32 *)D_800A34B8 + 1),
-               "r"((s32 *)D_800A34B8 + 2) : "memory");
+            :: "r"(&D_800A34B8[0]), "r"(&D_800A34B8[1]),
+               "r"(&D_800A34B8[2]) : "memory");
         /* gte_stsz(r0) --- inline_c.h :1042-1046 */
         __asm__ volatile(
             "swc2   $19, 0(%0)\n"

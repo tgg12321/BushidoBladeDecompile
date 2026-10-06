@@ -687,7 +687,7 @@ extern s32 func_8001DB58(void);
 extern void func_8001DBE4(void);
 extern void func_8001F1C4(Unk80101EC8Record *, Rec1C *, MotionFrame *, MotionFrame *);
 extern void func_8001F860(Unk80101EC8Record *, s32);
-extern void func_800203B4(u8 *, s32, s16 *);
+extern void func_800203B4(Unk80101EC8Record *, s32, s16 *);
 extern void func_800207C8(Unk80101EC8Record *, LeafPos *, LeafPos *, LeafPos *);
 extern void func_80020CDC(void);
 extern void func_80020D38(void);
