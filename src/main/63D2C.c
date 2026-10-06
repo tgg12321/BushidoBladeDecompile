@@ -9,21 +9,6 @@
 extern s32 rsin();
 extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
-typedef struct EnvA {
-    s32 *header;
-    s8  *table;
-    s32  out;
-    s32  pad0C;
-    s32  semi;
-    u32  ot_idx;
-    s32  x;
-    s32  y;
-    s32  pad20, pad24;
-    u8   has_color;
-    u8   col_r;
-    u8   col_g;
-    u8   col_b;
-} EnvA;
 extern s32 func_80073C78();
 
 
@@ -32,34 +17,19 @@ extern s32 func_80073C78();
 extern const u8 D_800159A0[];
 
 
-typedef struct SprtHdrA {
-    u8  pad0, pad1;
-    u8  count;
-    u8  pad3;
-    u16 cx, cy;
-    u8  ubase;
-    u8  pad9;
-    u8  vbase;
-} SprtHdrA;
-
-typedef struct SprtEntA {
-    s16 x, y;
-    u8  u, v;
-    u8  w, h;
-} SprtEntA;
 
 s32 func_8007352C(s32 env_addr) {
-    EnvA *env = (EnvA *)env_addr;
-    SprtHdrA *hdr = (SprtHdrA *)env->header;
-    SPRT *sp = (SPRT *)env->out;
-    SprtEntA *e;
+    Unk8007352CEnv *env = (Unk8007352CEnv *)env_addr;
+    Unk8009B0E0Record *hdr = env->header;
+    SPRT *sp = (SPRT *)env->sprt_out;
+    Unk8009B400Record *e;
     s32 clut;
     s16 i;
     s32 x0, y0, x1, y1;
 
     clut = GetClut(hdr->cx, hdr->cy);
     for (i = hdr->count - 1; i >= 0; i--) {
-        e = (SprtEntA *)env->table + i;
+        e = env->table + i;
         x0 = e->x + env->x;
         y0 = e->y + env->y;
         x1 = x0 + e->w;
@@ -95,48 +65,11 @@ s32 func_8007352C(s32 env_addr) {
 /* END func_8007352C */
 
 
-/* Sprite-sheet header and 8-byte cell record read by func_80073728 (the
-   scaled POLY_FT4 sibling of func_8007352C's SPRT walker). */
-typedef struct Ft4Sheet {
-    u8  tp0, tp1;
-    u8  count;
-    u8  pad3;
-    u16 cx, cy;
-    u16 ubase;
-    u16 vbase;
-} Ft4Sheet;
-
-typedef struct Ft4Cell {
-    s16 x, y;
-    u8  u, v;
-    u8  w, h;
-} Ft4Cell;
-
-/* The same 0x2C-byte draw descriptor as EnvA (func_80073200 builds one on
-   its stack as S73200 and passes it to both walkers): +0x8 is the SPRT
-   cursor func_8007352C advances, +0xC the POLY_FT4 cursor this one does,
-   and +0x20/+0x24 are 8.8 fixed-point scales (func_80073200 stores 0x100). */
-typedef struct EnvF {
-    Ft4Sheet *header;
-    Ft4Cell  *table;
-    s32       sprt_out;
-    POLY_FT4 *out;
-    s32       semi;
-    u32       ot_idx;
-    s32       x;
-    s32       y;
-    s32       scale_x;
-    s32       scale_y;
-    u8        has_color;
-    u8        col_r;
-    u8        col_g;
-    u8        col_b;
-} EnvF;
 
 s32 func_80073728(s32 env_addr, s32 mode) {
-    EnvF *env = (EnvF *)env_addr;
-    Ft4Cell *e = env->table;
-    Ft4Sheet *hdr = env->header;
+    Unk8007352CEnv *env = (Unk8007352CEnv *)env_addr;
+    Unk8009B400Record *e = env->table;
+    Unk8009B0E0Record *hdr = env->header;
     POLY_FT4 *p;
     s16 i;
     u32 tpage;
@@ -172,7 +105,7 @@ s32 func_80073728(s32 env_addr, s32 mode) {
         du0 = 0;
         dv0 = 0;
     }
-    p = env->out;
+    p = (POLY_FT4 *)env->ft4_out;
     for (i = 0; i < hdr->count; i++) {
         if (mode == 1) {
             du0 = e->w - 1;
@@ -229,29 +162,31 @@ s32 func_80073728(s32 env_addr, s32 mode) {
         p++;
         e++;
     }
-    env->out = p;
+    env->ft4_out = (s32)p;
     return (s32)p;
 }
 extern VECTOR D_8009BCD4;
 
 s32 func_80073C78(env, angle, mode)
-    EnvF *env;
+    Unk8007352CEnv *env;
     s16 angle;
     s32 mode;
 {
     s16 i;
     u32 tpage;
     u32 clut;
+    /* FAKE: du0 / dv0 stay 0 in this walker (func_80073728 sets them per mirror mode); u / v
+       written without them: score 33. */
     s16 du0, dv0;
     s16 du1, dv1;
     u16 ub, vb;
-    Ft4Sheet *hdr;
+    Unk8009B0E0Record *hdr;
     SVECTOR vec[4];
     SVECTOR ang;
     VECTOR out[4];
     MATRIX mtx;
     POLY_FT4 *p;
-    Ft4Cell *e;
+    Unk8009B400Record *e;
     s16 j;
     s16 minx, miny, maxx, maxy;
     s16 cx, cy;
@@ -284,7 +219,7 @@ s32 func_80073C78(env, angle, mode)
     cy = (miny + maxy) / 2;
     cx = (minx + maxx) / 2;
     e = env->table;
-    p = env->out;
+    p = (POLY_FT4 *)env->ft4_out;
     du0 = 0;
     dv0 = 0;
     ub = hdr->ubase;
@@ -348,7 +283,7 @@ s32 func_80073C78(env, angle, mode)
         p++;
         e++;
     }
-    env->out = p;
+    env->ft4_out = (s32)p;
     return (s32)p;
 }
 
@@ -356,13 +291,11 @@ s32 func_80073C78(env, angle, mode)
 
 
 void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
-    S_80074488 s;
+    Unk8007352CEnv s;
     s32 i;
-    s32 *temp_s2;
-    s32 v;
+    Unk8009B0E0Record **temp_s2;
     TILE *t;
     POLY_F4 *q;
-    s32 a3;
 
     if (arg1 != 0) goto skip_init;
     t = arg0->unk_04.unk_10;
@@ -377,25 +310,23 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     t++;
     arg0->unk_04.unk_10 = t;
 skip_init:
-    s.sp2C = 0x1F;
-    s.sp40 = 0;
-    s.sp28 = 0;
+    s.ot_idx = 0x1F;
+    s.has_color = 0;
+    s.semi = 0;
     temp_s2 = arg0->unk_00.v80076FF8->unk_38;
-    s.sp30 = 0;
-    s.sp34 = 0;
+    s.x = 0;
+    s.y = 0;
     i = 0;
     do {
-        v = temp_s2[i];
-        s.sp18 = v;
-        s.sp1C = v + 0xC;
-        s.sp20 = arg0->unk_04.unk_0C;
+        s.header = temp_s2[i];
+        s.table = s.header->cells;
+        s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
         i++;
     } while (i < 3);
 
-    s.sp18 = *temp_s2;
-    a3 = func_8006E480(s.sp18, 0);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, a3, 0);
+    s.header = *temp_s2;
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x7C, arg0->unk_04.unk_14);
     q = arg0->unk_04.unk_04;
     arg0->unk_04.unk_14++;
@@ -445,90 +376,81 @@ skip_init:
 }
 
 void func_80074488(Unk8006EACCRec *arg0) {
-    S_80074488 s;
+    Unk8007352CEnv s;
     s16 mask;
     s16 i;
-    s32 *table;
-    s32 value;
-    s32 color;
+    Unk8009B0E0Record **table;
     s16 rect[4];
-    SelWork *base;
 
-    base = SELWORK;
     i = 0;
-    mask = (1 << base->f3C[0])
-         + (1 << (base->f65 + 5))
-         + (1 << (base->f67 + 8))
-         + (1 << (base->f66 + 9));
-    s.sp2C = 2;
+    mask = (1 << SELWORK->f3C[0])
+         + (1 << (SELWORK->f65 + 5))
+         + (1 << (SELWORK->f67 + 8))
+         + (1 << (SELWORK->f66 + 9));
+    s.ot_idx = 2;
     table = arg0->unk_00.v80076FF8->unk_34;
     do {
-        s.sp30 = 0;
-        s.sp34 = 0;
-        s.sp28 = 0;
+        s.x = 0;
+        s.y = 0;
+        s.semi = 0;
         if ((mask >> i) & 1) {
             if (i < 5) {
-                color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
-                s.sp43 = color;
-                s.sp34 = SELWORK->f40[0][1];
+                s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                s.y = SELWORK->f40[0][1];
             } else if (i < 8) {
                 if (SELWORK->f3C[0] == 0) {
-                    color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
-                    s.sp43 = color;
-                    s.sp30 = SELWORK->f40[0][0];
-                    s.sp34 = SELWORK->f40[0][1];
+                    s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                    s.x = SELWORK->f40[0][0];
+                    s.y = SELWORK->f40[0][1];
                 } else {
-                    s.sp43 = 0x80;
+                    s.col_b = 0x80;
                 }
             } else if (i < 10) {
                 if (SELWORK->f3C[0] == 1) {
-                    color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
-                    s.sp43 = color;
-                    s.sp30 = SELWORK->f40[0][0];
-                    s.sp34 = SELWORK->f40[0][1];
+                    s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                    s.x = SELWORK->f40[0][0];
+                    s.y = SELWORK->f40[0][1];
                 } else {
-                    s.sp43 = 0x80;
+                    s.col_b = 0x80;
                 }
             } else if (i < 14) {
                 if (SELWORK->f3C[0] == 2) {
-                    color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
-                    s.sp43 = color;
-                    s.sp30 = SELWORK->f40[0][0];
-                    s.sp34 = SELWORK->f40[0][1];
+                    s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                    s.x = SELWORK->f40[0][0];
+                    s.y = SELWORK->f40[0][1];
                 } else {
-                    s.sp43 = 0x80;
+                    s.col_b = 0x80;
                 }
             }
-            s.sp40 = 1;
-            s.sp42 = s.sp43;
-            s.sp41 = s.sp43;
+            s.has_color = 1;
+            s.col_g = s.col_b;
+            s.col_r = s.col_b;
         } else {
-            s.sp43 = 0x40;
-            s.sp42 = 0x40;
-            s.sp41 = 0x40;
+            s.col_b = 0x40;
+            s.col_g = 0x40;
+            s.col_r = 0x40;
             if (i < 5) {
-                s.sp40 = 0;
-                s.sp28 = 1;
+                s.has_color = 0;
+                s.semi = 1;
             } else if (i < 14) {
-                s.sp40 = 1;
+                s.has_color = 1;
             } else {
-                s.sp40 = 0;
+                s.has_color = 0;
             }
         }
         if ((u16)(i - 10) >= 4 ||
             D_8009BD20[SELWORK->f67][0] + 9 == i ||
             D_8009BD20[SELWORK->f67][1] + 9 == i) {
-            value = table[i];
-            s.sp18 = value;
-            s.sp1C = value + 0xC;
-            s.sp20 = arg0->unk_04.unk_0C;
-            arg0->unk_04.unk_0C = func_8007352C((s32)&s.sp18);
+            s.header = table[i];
+            s.table = s.header->cells;
+            s.sprt_out = arg0->unk_04.unk_0C;
+            arg0->unk_04.unk_0C = func_8007352C((s32)&s);
         }
         i++;
     } while (i < 15);
 
-    s.sp18 = table[0];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, 0), 0);
+    s.header = table[0];
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 8, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     rect[2] = 0x108;

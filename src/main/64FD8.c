@@ -11,24 +11,6 @@
 extern u32 *ClearOTagR(u32 *, s32);
 extern s32 rsin();
 extern void AddPrim(void *, void *);
-/* func_8007352C's draw descriptor: .header = the sprite sheet's SprtHdrA, .table = its
-   SprtEntA cell array (the s32 form of S_80074488 / DescF97C). */
-typedef struct EnvA {
-    s32  header;
-    s32  table;
-    s32  out;
-    s32  pad0C;
-    s32  semi;
-    u32  ot_idx;
-    s32  x;
-    s32  y;
-    s32  pad20, pad24;
-    u8   has_color;
-    u8   col_r;
-    u8   col_g;
-    u8   col_b;
-} EnvA;
-
 /* func_800747D8: the duplicated `sound = 4;` below is the
  * duplicated-statement-into-arms shape and carries its FAKE annotation inline. */
 /* 0x800A35D0: one {s16, s16} pair per player (two words,
@@ -51,7 +33,7 @@ static s32 D_800A3600;
 static s32 D_800A3604;  /* not named by any code or data: size from the gap */
 static s32 D_800A3608;
 static Unk8006E49CRec *D_800A360C;
-static s32 * D_800A3610;
+static Unk80078824Rec *D_800A3610;
 static s32 D_800A3614;
 
 s32 func_800747D8(u32 input) {
@@ -220,54 +202,47 @@ void func_80074B18(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     }
     arg0->unk_04.unk_10 = p;
 }
-typedef struct {
-    s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
-    s8 sp40;
-} S_80074D2C;
 
 void func_80074D2C(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
-    S_80074D2C s;
-    s32 var_s1;
-    s32 sp18_val;
-    s32 *inner_ptr;
+    Unk8007352CEnv s;
+    s32 ot;
 
-    var_s1 = 0xC;
-    s.sp28 = 0;
-    s.sp40 = 0;
-    inner_ptr = arg0->unk_00.v80076FF8->unk_1C;
-    sp18_val = inner_ptr[(arg2 << 16) >> 16];
-    s.sp30 = arg1 * 0xF0;
-    s.sp34 = 0;
-    s.sp18 = sp18_val;
-    s.sp1C = sp18_val + 0xC;
+    ot = 0xC;
+    s.semi = 0;
+    s.has_color = 0;
+    s.header = arg0->unk_00.v80076FF8->unk_1C[(arg2 << 16) >> 16];
+    s.x = arg1 * 0xF0;
+    s.y = 0;
+    s.table = s.header->cells;
     if (arg1 != 0) {
-        var_s1 = 0x16;
+        ot = 0x16;
     }
-    s.sp2C = var_s1;
-    s.sp20 = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C((s32)&s.sp18);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, 0), 0);
-    AddPrim(g_gpu_ot_ptr + var_s1 * 4, arg0->unk_04.unk_14);
+    s.ot_idx = ot;
+    s.sprt_out = arg0->unk_04.unk_0C;
+    arg0->unk_04.unk_0C = func_8007352C((s32)&s);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot * 4, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
 void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
-    EnvA s;
+    Unk8007352CEnv s;
     RECT rect;
     u16 offset[2];
-    s32 *records;
+    Unk8009B0E0Record **records;
     TILE *prim;
     s32 ot_idx;
     /* work holds two values (owner Ruling 11; the first under its Q20
        per-branch-constant clause): the backdrop TILE's OT index (0xE for
        player 1, 4 for player 0), then ot_idx * 4, the OT byte offset the last
-       three AddPrim calls add. */
+       three AddPrim calls add. FAKE: one local for both; a second local for the byte
+       offset: score 22. */
     s32 work;
     s32 rect_x;
-    /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts
-       just past the sheet's one 12-byte SprtHdrA header (+0xC) on each of
+    /* the sprite sheet's cell array (8-byte Unk8009B400Record cells), which starts
+       just past the sheet's one 12-byte Unk8009B0E0Record header (+0xC) on each of
        the four root+0x18 sheets this function draws: one meaning at one
-       constant offset, written once per sheet (owner Ruling 9). */
-    s32 cells;
+       constant offset, written once per sheet (owner Ruling 9). FAKE: the holder between the header's cells and s.table; stored directly: score 12. */
+    Unk8009B400Record *cells;
     s16 i;
 
     prim = arg0->unk_04.unk_10;
@@ -298,19 +273,19 @@ void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
     do {
         s.y = (0xD2 - SELWORK->f0C[arg1]) * i;
         s.header = records[3];
-        cells = s.header + 0xC;
+        cells = s.header->cells;
         s.table = cells;
-        s.out = arg0->unk_04.unk_0C;
+        s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
         s.header = records[2];
-        cells = s.header + 0xC;
+        cells = s.header->cells;
         s.table = cells;
-        s.out = arg0->unk_04.unk_0C;
+        s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
-        s.table += *(u8 *)(s.header + 2) * 8;
-        s.pad20 = 0xCE00;
-        s.pad24 = 0x100;
-        s.pad0C = arg0->unk_04.unk_00;
+        s.table += s.header->count;
+        s.scale_x = 0xCE00;
+        s.scale_y = 0x100;
+        s.ft4_out = arg0->unk_04.unk_00;
         arg0->unk_04.unk_00 = func_80073728((s32)&s, 0);
         i++;
     } while (i < 2);
@@ -318,21 +293,21 @@ void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
     s.x = arg1 * 0xF0;
     s.y = 0;
     s.header = records[0];
-    cells = s.header + 0xC;
+    cells = s.header->cells;
     s.table = cells;
     if (arg1 != 0) {
         s.ot_idx = 0x16;
     } else {
         s.ot_idx = 0xC;
     }
-    s.out = arg0->unk_04.unk_0C;
+    s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     s.header = records[1];
-    cells = s.header + 0xC;
+    cells = s.header->cells;
     s.table = cells;
-    s.out = arg0->unk_04.unk_0C;
+    s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C((s32)&s);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
@@ -427,10 +402,6 @@ void func_8007526C(void) {
         i++;
     } while (i < 2);
 }
-typedef struct {
-    s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
-    u8 sp40, sp41, sp42, sp43;
-} S_753D8;
 
 
 
@@ -444,75 +415,71 @@ extern s32 rsin(s32);
    frame's y is the per-player 0x68 counter * 90 plus the per-player s16 at
    0x42; the frame colour breathes with rsin of the 5-bit timer at 0x34. */
 void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
-    S_753D8 s;
-    s32 *tbl;
+    Unk8007352CEnv s;
+    Unk8009B0E0Record **tbl;
     s16 i;
-    s32 body;
-    s32 c;
+    /* FAKE: the holder between the header's cells and s.table; stored directly: score 15. */
+    Unk8009B400Record *body;
     /* FAKE: constant-holder — the 0 passed to both func_8006E480 calls is
        kept live in callee-save $s5 (target: `addu $s5,$zero,$zero` in the
        prologue, `addu $a1,$s5,$zero` at both call sites) instead of being
        re-materialized as `li $a1,0`; mechanism: global.c allocates the
        once-set constant pseudo a callee-save because it crosses calls and
        cse.c only folds the constant within the entry extended basic block.
-       SOTN ships this exact shape: src/dra/7879C.c:2067 `s32 zero = 0;`. */
+       SOTN ships this exact shape: src/dra/7879C.c:2067 `s32 zero = 0;`. The literal
+       at both calls: score 9. */
     s32 zero;
-    SelWork *base;
 
     zero = 0;
-    s.sp28 = 0;
+    s.semi = 0;
     if (arg1 != 0) {
-        s.sp2C = 0x16;
+        s.ot_idx = 0x16;
     } else {
-        s.sp2C = 0xC;
+        s.ot_idx = 0xC;
     }
     tbl = arg0->unk_00.v80076FF8->unk_2C;
-    s.sp18 = tbl[arg1 + 2];
-    s.sp30 = arg1 * 240;
-    body = s.sp18 + 0xC;
-    s.sp1C = body;
-    base = SELWORK;
-    s.sp34 = base->f68[arg1] * 90 + base->f40[arg1][1];
-    c = ((rsin(((base->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
-    s.sp43 = c;
-    s.sp42 = c;
-    s.sp41 = c;
-    s.sp40 = 1;
-    s.sp20 = arg0->unk_04.unk_0C;
+    s.header = tbl[arg1 + 2];
+    s.x = arg1 * 240;
+    body = s.header->cells;
+    s.table = body;
+    s.y = SELWORK->f68[arg1] * 90 + SELWORK->f40[arg1][1];
+    s.col_r = s.col_g = s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+    s.has_color = 1;
+    s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C((s32)&s);
-    s.sp40 = 0;
+    s.has_color = 0;
     tbl = arg0->unk_00.v80076FF8->unk_14;
     i = 0;
-    s.sp18 = tbl[0];
-    s.sp30 = arg1 * 240 + 0x9D;
-    s.sp34 = 0x36;
-    body = s.sp18 + 0xC;
-    s.sp1C = body;
-    s.sp20 = arg0->unk_04.unk_0C;
+    s.header = tbl[0];
+    s.x = arg1 * 240 + 0x9D;
+    s.y = 0x36;
+    body = s.header->cells;
+    s.table = body;
+    s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C((s32)&s);
-    s.sp34 = 0x90;
-    s.sp1C += *(u8 *)(s.sp18 + 2) << 3;
-    s.sp20 = arg0->unk_04.unk_0C;
+    s.y = 0x90;
+    s.table += s.header->count;
+    s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C((s32)&s);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, zero), 0);
-    AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0->unk_04.unk_14);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, zero), 0);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     tbl = arg0->unk_00.v80076FF8->unk_2C;
     do {
-        s.sp18 = tbl[i];
-        s.sp30 = arg1 * 240;
-        s.sp34 = 0;
-        body = s.sp18 + 0xC;
+        s.header = tbl[i];
+        s.x = arg1 * 240;
+        s.y = 0;
+        body = s.header->cells;
         if (arg1 != 0) {
-            s.sp2C = 0x16;
+            s.ot_idx = 0x16;
         } else {
-            s.sp2C = 0xC;
+            s.ot_idx = 0xC;
         }
-        s.sp1C = body;
-        s.sp20 = arg0->unk_04.unk_0C;
+        s.table = body;
+        s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
-        SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, zero), 0);
-        AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0->unk_04.unk_14);
+        SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, zero), 0);
+        AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
         i++;
         arg0->unk_04.unk_14++;
     } while (i < 2);
@@ -558,19 +525,13 @@ void func_80075670(s32 arg0, s32 arg1) {
     }
 }
 void func_80075830(Unk8006EACCRec *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    S_80074488 s;
+    Unk8007352CEnv s;
     s16 var_a1;
     s16 var_a2;
-    s32 temp_v0;
-    s32 temp_v1;
-    s.sp28 = arg3;
-    temp_v1 = ((s32) (rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) * 0x30) >> 12) - 0x40;
-    s.sp43 = temp_v1;
-    s.sp42 = temp_v1;
-    s.sp41 = temp_v1;
-    temp_v0 = arg0->unk_00.v80076FF8->unk_14[21];
-    s.sp18 = temp_v0;
-    s.sp1C = temp_v0 + 0xC;
+    s.semi = arg3;
+    s.col_r = s.col_g = s.col_b = ((s32) (rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) * 0x30) >> 12) - 0x40;
+    s.header = arg0->unk_00.v80076FF8->unk_14[21];
+    s.table = s.header->cells;
     if (arg1 < 0xA) {
         var_a1 = arg1 / 5;
         var_a2 = arg1 % 5;
@@ -579,18 +540,18 @@ void func_80075830(Unk8006EACCRec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         var_a2 = (arg1 - 0xA) % 5;
     }
     if (SELWORK->f1C.half[arg2] == var_a1 && SELWORK->f20.half[arg2] == var_a2) {
-        s.sp40 = 1;
+        s.has_color = 1;
     } else {
-        s.sp40 = 0;
+        s.has_color = 0;
     }
-    s.sp30 = arg2 * 0xF0 + var_a1 * 0x64;
-    s.sp34 = var_a2 * 16;
+    s.x = arg2 * 0xF0 + var_a1 * 0x64;
+    s.y = var_a2 * 16;
     if (arg2 != 0) {
-        s.sp2C = 0x13;
+        s.ot_idx = 0x13;
     } else {
-        s.sp2C = 9;
+        s.ot_idx = 9;
     }
-    s.sp20 = arg0->unk_04.unk_0C;
+    s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C((s32)&s);
 }
 /* 0x8009BCE4: 20 flag bytes indexed by entry id (asm/data/7D920.data.s:23732-23753;
@@ -609,14 +570,13 @@ extern u8 D_8009BCE4[20];
  * unselectable cells via func_80075830), the picks made so far, then the
  * f65+3 slot sprites, and closes with two DR_MODE/AddPrim pairs. */
 void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
-    S_80074488 s;
+    Unk8007352CEnv s;
     /* table holds three values, each a sprite-sheet pointer table read from the
      * root at arg0->unk_00: the page table at +0x14 (the head; read by the head and
      * loops 1-2), the slot table at +0x20 + f65 * 4 (reloaded every loop-3
      * iteration), and the page table at +0x14 again for the closing DR_MODE
      * pair.  One local, not three (owner Ruling 11). */
-    s32 *table;
-    s32 color;
+    Unk8009B0E0Record **table;
     /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
        func_8006E480's second argument at all three call sites is kept in
        callee-save $fp (target: `addu $fp,$zero,$zero` in the entry block,
@@ -624,51 +584,52 @@ void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        global.c gives the once-set constant pseudo a callee-save because it
        crosses every call, and cse only folds a constant within the entry
        extended basic block. Same shape as the siblings
-       func_800753D8 (`zero`) and func_8007636C (`mode`). */
+       func_800753D8 (`zero`) and func_8007636C (`mode`). The literal at the three
+       calls: score 30. */
     s32 zero;
     s16 i;
     /* the sheet's cell array. The code treats each sheet it draws here as
-       12-byte SprtHdrA headers followed by 8-byte SprtEntA cells: the head
+       12-byte Unk8009B0E0Record headers followed by 8-byte Unk8009B400Record cells: the head
        treats the table[0] page sheet as one header (cells at +0xC), and
        loops 1-3 treat their sheets as three headers, normal then one cursor
        highlight per player at +12/+24 (cells at +0x24). Loop 2 applies that
        three-header view to every pick slot, including the 0x14 placeholder
        func_80075F80 stores for an unavailable cell, whose sheet the code
        elsewhere draws as one header (func_80075830); there the +0x24 runs
-       past the sheet into bytes nothing references (owner Ruling 9). */
-    s32 cells;
+       past the sheet into bytes nothing references (owner Ruling 9).
+       FAKE: the holder between the header's cells and s.table; stored directly: score 25. */
+    Unk8009B400Record *cells;
 
     zero = 0;
-    s.sp28 = 0;
-    s.sp40 = 0;
+    s.semi = 0;
+    s.has_color = 0;
     table = arg0->unk_00.v80076FF8->unk_14;
-    s.sp18 = table[0];
-    s.sp30 = arg3 * 240 + 0x88;
-    s.sp34 = 0x33;
-    cells = s.sp18 + 0xC;
-    s.sp1C = cells;
+    s.header = table[0];
+    s.x = arg3 * 240 + 0x88;
+    s.y = 0x33;
+    cells = s.header->cells;
+    s.table = cells;
     if (arg3 != 0) {
-        s.sp2C = 0x16;
+        s.ot_idx = 0x16;
     } else {
-        s.sp2C = 0xC;
+        s.ot_idx = 0xC;
     }
     if (arg1 != 0) {
-        s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
+        s.table += s.header->count;
     }
-    s.sp20 = arg0->unk_04.unk_0C;
+    s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C((s32)&s);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, zero), 0);
-    AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0->unk_04.unk_14);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, zero), 0);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
-    color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
-    s.sp41 = s.sp42 = s.sp43 = color;
+    s.col_r = s.col_g = s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
     if (arg3 != 0) {
-        s.sp2C = 0x14;
+        s.ot_idx = 0x14;
     } else {
-        s.sp2C = 0xA;
+        s.ot_idx = 0xA;
     }
-    s.sp30 = arg3 * 240;
+    s.x = arg3 * 240;
     for (i = arg1 * 10; i < arg1 * 10 + 10; i++) {
         /* i indexes the whole table flat (arg1 * 10 + cell), from the first record. */
         /* SOTN: src/dra/62DEC.c:1091 @aa53500 */
@@ -676,21 +637,21 @@ void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
          * forms the address as its own value, so cse reuses it for the second
          * read and loop.c hoists the table base into $s6 (the target's
          * `lui/addiu $s6` and 2-byte step); D_8009BCF8[0][i].unk0 at the three
-         * sites folds the symbol into each load (`lui $at; addu; lbu %lo`). */
+         * sites folds the symbol into each load (`lui $at; addu; lbu %lo`): score 44. */
         u8 entry = (&D_8009BCF8[0][0] + i)->unk0;
 
         if (D_8009BCE4[entry] & 1) {
-            s.sp18 = table[entry + 1];
-            cells = s.sp18 + 0x24;
-            s.sp1C = cells;
+            s.header = table[entry + 1];
+            cells = s.header[2].cells;
+            s.table = cells;
             if (D_8009BCF8[arg1][SELWORK->f1C.half[arg3] * 5 + SELWORK->f20.half[arg3]].unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
-                s.sp40 = 1;
-                s.sp18 = s.sp18 + 12 + arg3 * 12;
+                s.has_color = 1;
+                s.header += 1 + arg3;
             } else {
-                s.sp40 = 0;
+                s.has_color = 0;
             }
-            s.sp34 = 0;
-            s.sp20 = arg0->unk_04.unk_0C;
+            s.y = 0;
+            s.sprt_out = arg0->unk_04.unk_0C;
             arg0->unk_04.unk_0C = func_8007352C((s32)&s);
             if (D_8009BCE4[(&D_8009BCF8[0][0] + i)->unk0] & (4 << arg3)) {
                 func_80075830(arg0, i, arg3, 1);
@@ -702,49 +663,49 @@ void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     for (i = 0; i < SELWORK->f3C[arg3] + 1; i++) {
         if (arg2[i] >= 0) {
-            s.sp18 = table[arg2[i] + 1];
-            cells = s.sp18 + 0x24;
+            s.header = table[arg2[i] + 1];
+            cells = s.header[2].cells;
             if (i != SELWORK->f3C[arg3]) {
-                s.sp40 = 0;
+                s.has_color = 0;
             } else {
-                s.sp40 = 1;
-                s.sp18 = s.sp18 + 12 + arg3 * 12;
+                s.has_color = 1;
+                s.header += 1 + arg3;
             }
-            s.sp34 = i * 17;
-            s.sp1C = cells;
-            s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
-            s.sp20 = arg0->unk_04.unk_0C;
+            s.y = i * 17;
+            s.table = cells;
+            s.table += s.header->count;
+            s.sprt_out = arg0->unk_04.unk_0C;
             arg0->unk_04.unk_0C = func_8007352C((s32)&s);
         }
     }
 
-    s.sp40 = 0;
+    s.has_color = 0;
     for (i = 0; i < SELWORK->f65 + 3; i++) {
         table = arg0->unk_00.v80076FF8->unk_20[SELWORK->f65];
-        s.sp18 = table[i];
-        cells = s.sp18 + 0x24;
+        s.header = table[i];
+        cells = s.header[2].cells;
         if (i == SELWORK->f3C[arg3]) {
-            s.sp18 = s.sp18 + 12 + arg3 * 12;
+            s.header += 1 + arg3;
         }
-        s.sp1C = cells;
-        s.sp30 = arg3 * 240;
-        s.sp34 = i * 17;
+        s.table = cells;
+        s.x = arg3 * 240;
+        s.y = i * 17;
         if (arg3 != 0) {
-            s.sp2C = 0x14;
+            s.ot_idx = 0x14;
         } else {
-            s.sp2C = 0xA;
+            s.ot_idx = 0xA;
         }
-        s.sp20 = arg0->unk_04.unk_0C;
+        s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     }
 
     table = arg0->unk_00.v80076FF8->unk_14;
-    s.sp18 = table[1];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, zero), 0);
-    AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0->unk_04.unk_14);
+    s.header = table[1];
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, zero), 0);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, zero), 0);
-    AddPrim(g_gpu_ot_ptr + s.sp2C * 4 - 4, arg0->unk_04.unk_14);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, zero), 0);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4 - 4, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
 
@@ -877,15 +838,14 @@ void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     }
 }
 void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
-    S_80074488 s;
+    Unk8007352CEnv s;
     s32 ot;
-    s32 *table;
-    /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts
-       just past the sheet's 12-byte SprtHdrA headers: one header on the
+    Unk8009B0E0Record **table;
+    /* the sprite sheet's cell array (8-byte Unk8009B400Record cells), which starts
+       just past the sheet's 12-byte Unk8009B0E0Record headers: one header on the
        single-state sheets (+0xC), three (normal, then one cursor highlight
-       per player) on the highlightable ones (+0x24). */
-    s32 cells;
-    s32 color;
+       per player) on the highlightable ones (+0x24). FAKE: the holder between the header's cells and s.table; stored directly: score 6. */
+    Unk8009B400Record *cells;
     s16 i;
     /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
      * func_8006E480's second argument at both call sites. Set once and live
@@ -894,49 +854,48 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
      * rematerializes it as the target's `move t0,zero; slt` (0x800764A0); a
      * literal 0 lets combine fold the guard to a beqz. The case-2
      * sibling func_800759D0 holds this same argument's zero in $fp (asm lines
-     * 20/56/334/356). */
+     * 20/56/334/356). The literal: score 3. */
     s32 mode;
     u16 idx;
 
     mode = 0;
     ot = 10;
-    s.sp28 = 0;
+    s.semi = 0;
     if (arg3 != 0) {
         ot = 20;
     }
     table = arg0->unk_00.v80076FF8->unk_30;
     if (SELWORK->f14.half[arg3] < 4) {
-        s.sp18 = table[12];
-        s.sp40 = 0;
-        s.sp30 = arg3 * 240;
-        cells = s.sp18 + 0xC;
-        s.sp1C = cells;
-        s.sp34 = SELWORK->f3C[arg3] * 34;
-        s.sp2C = ot;
-        s.sp20 = arg0->unk_04.unk_0C;
+        s.header = table[12];
+        s.has_color = 0;
+        s.x = arg3 * 240;
+        cells = s.header->cells;
+        s.table = cells;
+        s.y = SELWORK->f3C[arg3] * 34;
+        s.ot_idx = ot;
+        s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
-        SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, mode), 0);
+        SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, mode), 0);
         AddPrim(g_gpu_ot_ptr + ot * 4, arg0->unk_04.unk_14);
         arg0->unk_04.unk_14++;
     }
 
-    s.sp40 = 0;
-    color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
-    s.sp41 = s.sp42 = s.sp43 = color;
+    s.has_color = 0;
+    s.col_r = s.col_g = s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
     table = arg0->unk_00.v80076FF8->unk_14;
     for (i = 0; i < SELWORK->f65 + 3; i++) {
-        s.sp40 = 0;
-        s.sp18 = table[arg2[i] + 1];
-        cells = s.sp18 + 0x24;
+        s.has_color = 0;
+        s.header = table[arg2[i] + 1];
+        cells = s.header[2].cells;
         if (SELWORK->f3C[arg3] == i || SELWORK->f14.half[arg3] >= 4) {
-            s.sp18 = s.sp18 + 12 + arg3 * 12;
+            s.header += 1 + arg3;
         }
-        s.sp1C = cells;
-        s.sp1C += *(u8 *)(s.sp18 + 2) * 16;
-        s.sp30 = arg3 * 240;
-        s.sp34 = i * 34;
-        s.sp2C = ot;
-        s.sp20 = arg0->unk_04.unk_0C;
+        s.table = cells;
+        s.table += s.header->count * 2;
+        s.x = arg3 * 240;
+        s.y = i * 34;
+        s.ot_idx = ot;
+        s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     }
 
@@ -944,49 +903,49 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < SELWORK->f3C[arg3] + 1; i++) {
         if (SELWORK->f3C[arg3] != i || SELWORK->f14.half[arg3] >= 4) {
             idx = SELWORK->f7E[arg3][i];
-            s.sp40 = 0;
+            s.has_color = 0;
         } else {
             idx = SELWORK->f48[arg3][SELWORK->f5C[arg3]];
-            s.sp40 = 1;
+            s.has_color = 1;
         }
-        s.sp18 = table[(s16)idx * 2];
-        cells = s.sp18 + 0x24;
+        s.header = table[(s16)idx * 2];
+        cells = s.header[2].cells;
         if (SELWORK->f3C[arg3] == i || SELWORK->f14.half[arg3] >= 4) {
-            s.sp18 = s.sp18 + 12 + arg3 * 12;
+            s.header += 1 + arg3;
         }
-        s.sp30 = arg3 * 240;
-        s.sp1C = cells;
-        s.sp34 = i * 34;
-        s.sp2C = ot;
-        s.sp20 = arg0->unk_04.unk_0C;
+        s.x = arg3 * 240;
+        s.table = cells;
+        s.y = i * 34;
+        s.ot_idx = ot;
+        s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
-        s.sp18 = table[(s16)idx * 2 + 1];
-        s.sp40 = 0;
-        cells = s.sp18 + 0xC;
-        s.sp1C = cells;
-        s.sp20 = arg0->unk_04.unk_0C;
+        s.header = table[(s16)idx * 2 + 1];
+        s.has_color = 0;
+        cells = s.header->cells;
+        s.table = cells;
+        s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     }
 
     table = arg0->unk_00.v80076FF8->unk_20[SELWORK->f65];
     for (i = 0; i < SELWORK->f65 + 3; i++) {
-        s.sp40 = 0;
-        s.sp18 = table[i];
-        cells = s.sp18 + 0x24;
+        s.has_color = 0;
+        s.header = table[i];
+        cells = s.header[2].cells;
         if (SELWORK->f3C[arg3] == i || SELWORK->f14.half[arg3] >= 4) {
-            s.sp18 = s.sp18 + 12 + arg3 * 12;
+            s.header += 1 + arg3;
         }
-        s.sp1C = cells;
-        s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
-        s.sp30 = arg3 * 240;
-        s.sp34 = i * 34;
-        s.sp20 = arg0->unk_04.unk_0C;
+        s.table = cells;
+        s.table += s.header->count;
+        s.x = arg3 * 240;
+        s.y = i * 34;
+        s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     }
 
     table = arg0->unk_00.v80076FF8->unk_14;
-    s.sp18 = table[1];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, mode), 0);
+    s.header = table[1];
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, mode), 0);
     AddPrim(g_gpu_ot_ptr + ot * 4, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
@@ -1905,29 +1864,12 @@ typedef struct {
 } Rect77D94;
 extern Rect77D94 D_800A32FC;
 
-/* 0x2C-byte draw descriptor func_8007352C consumes (EnvA layout). */
-typedef struct {
-    s32 header;
-    s32 table;
-    s32 out;
-    s32 pad0C;
-    s32 semi;
-    s32 ot_idx;
-    s32 x;
-    s32 y;
-    s32 pad20, pad24;
-    u8 has_color;
-    u8 col_r;
-    u8 col_g;
-    u8 col_b;
-} Env77D94;
-
 void func_80077D94(Unk8006EACCRec *arg0) {
-    Env77D94 s;
+    Unk8007352CEnv s;
     Rect77D94 rect;
     s16 *in;
     s16 *out;
-    s32 table;
+    Unk8009B400Record *table;
     /* FAKE: constant-holder local (named-local-fake-exception). abr is the
        tpage blend-mode bits func_8006E480 adds to every sprite's tpage.
        Mechanism: a pseudo live across the draw calls is seated once in
@@ -1937,7 +1879,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
        Same shape as func_80078654's `zero` and func_80070C70's `c60`.
        The literal at every call: score 12. */
     s32 abr;
-    s32 *hp;
+    Unk8009B0E0Record **hp;
     s32 i;
     s32 x;
     s32 v;
@@ -1954,7 +1896,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     /* FAKE (duplicated-statement-into-arms): both fade arms store their own
        has_color/r/g/b; the compiler cross-jumps the identical tails. The
        shared-tail spelling (arms set v only, the else skips the stores with
-       a goto) does not match. */
+       a goto) does not match: score 23. */
     if (D_800A35F0 < in[D_800A3600] + 60 && D_800A35F0 >= in[D_800A3600]) {
         v = ((D_800A35F0 - in[D_800A3600]) << 7) / 60;
         s.has_color = 1;
@@ -1980,9 +1922,9 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                     s.header = *hp;
                     s.table = table;
                     s.x = i << 7;
-                    s.out = arg0->unk_04.unk_0C;
-                    arg0->unk_04.unk_0C = func_8007352C((s32)&s.header);
-                    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, abr), 0);
+                    s.sprt_out = arg0->unk_04.unk_0C;
+                    arg0->unk_04.unk_0C = func_8007352C((s32)&s);
+                    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, abr), 0);
                     AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
                     arg0->unk_04.unk_14++;
                 }
@@ -2000,9 +1942,9 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 s.header = *hp;
                 s.x = x;
                 s.table = table;
-                s.out = arg0->unk_04.unk_0C;
-                arg0->unk_04.unk_0C = func_8007352C((s32)&s.header);
-                SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, abr), 0);
+                s.sprt_out = arg0->unk_04.unk_0C;
+                arg0->unk_04.unk_0C = func_8007352C((s32)&s);
+                SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, abr), 0);
                 AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
                 arg0->unk_04.unk_14++;
             }
@@ -2019,9 +1961,9 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 s.header = *hp;
                 s.x = x;
                 s.table = table;
-                s.out = arg0->unk_04.unk_0C;
-                arg0->unk_04.unk_0C = func_8007352C((s32)&s.header);
-                SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, abr), 0);
+                s.sprt_out = arg0->unk_04.unk_0C;
+                arg0->unk_04.unk_0C = func_8007352C((s32)&s);
+                SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, abr), 0);
                 AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
                 arg0->unk_04.unk_14++;
             }
@@ -2049,9 +1991,9 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                     s.header = *hp;
                     s.table = table;
                     s.x = i << 7;
-                    s.out = arg0->unk_04.unk_0C;
-                    arg0->unk_04.unk_0C = func_8007352C((s32)&s.header);
-                    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, abr), 0);
+                    s.sprt_out = arg0->unk_04.unk_0C;
+                    arg0->unk_04.unk_0C = func_8007352C((s32)&s);
+                    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, abr), 0);
                     AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
                     arg0->unk_04.unk_14++;
                 }
@@ -2073,7 +2015,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
             /* FAKE (duplicated-statement-into-arms): each arm stores its own
                r/g/b chain; the compiler cross-jumps the identical tails back
                into one. One shared chain after the if/else puts the value in
-               a separate pseudo and costs a `move` at the join. */
+               a separate pseudo and costs a `move` at the join (shared tail: score 54). */
             if (D_800A35F0 < w->on + 60) {
                 s.has_color = 1;
                 v = ((D_800A35F0 - w->on) * 112) / 60;
@@ -2084,7 +2026,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                    Mechanism: inline, fold reassociates off - (cnt - 60)
                    into (off + 60) - cnt; the target computes cnt - 60
                    first (`addiu v0,a1,-60`); neither the inline form nor
-                   60 - (cnt - off) matches. */
+                   60 - (cnt - off) matches (inline: score 16). */
                 s32 t = D_800A35F0 - 60;
                 s.has_color = 1;
                 v = ((w->off - t) * 112) / 60;
@@ -2092,15 +2034,14 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 s.col_r = s.col_g = s.col_b = v;
             } else {
                 s.has_color = 1;
-                v = 0x72;
                 s.semi = 1;
-                s.col_r = s.col_g = s.col_b = v;
+                s.col_r = s.col_g = s.col_b = 0x72;
             }
             s.header = hp[i];
-            s.table = s.header + 0xC;
-            s.out = arg0->unk_04.unk_0C;
-            arg0->unk_04.unk_0C = func_8007352C((s32)&s.header);
-            SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, abr), 0);
+            s.table = s.header->cells;
+            s.sprt_out = arg0->unk_04.unk_0C;
+            arg0->unk_04.unk_0C = func_8007352C((s32)&s);
+            SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, abr), 0);
             AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0->unk_04.unk_14);
             arg0->unk_04.unk_14++;
         }
@@ -2151,67 +2092,51 @@ s32 func_8007855C(s32 arg0) {
         return cond ? 0 : 1;
     }
 }
-s32 func_80078628(s32 *a0) {
-    return a0[1];
+s32 func_80078628(Unk80078824Rec *a0) {
+    return a0->unk_00.unk_04;
 }
 Unk8006E49CRec *func_80078634(s32 a0) {
     return &D_800A360C[a0];
 }
 
-typedef struct {
-    s32 a;       /* sp18 - 0x00 */
-    s32 b;       /* sp1C - 0x04 */
-    s32 c;       /* sp20 - 0x08 */
-    s32 d;       /* sp24 - 0x0C - unused */
-    s32 e;       /* sp28 - 0x10 */
-    s32 f;       /* sp2C - 0x14 */
-    s32 g;       /* sp30 - 0x18 */
-    s32 h;       /* sp34 - 0x1C */
-    s32 i;       /* sp38 - 0x20 - unused */
-    s32 j;       /* sp3C - 0x24 - unused */
-    u8 cd_flag;  /* sp40 - 0x28 */
-    u8 r;        /* sp41 - 0x29 */
-    u8 g_;       /* sp42 - 0x2A */
-    u8 b_;       /* sp43 - 0x2B */
-} S78654;
 
 void func_80078654(Unk800788B0Rec *arg0) {
-    S78654 s;
-    s32 *var_s0;
+    Unk8007352CEnv s;
+    Unk8009B0E0Record **var_s0;
     /* FAKE: constant-holder local, kept live across the SetDrawMode /
        func_8006E480 / AddPrim call sequence so the 0 argument comes out of a
        register instead of being re-materialized at each use.  Mechanism:
        local-alloc/global-alloc seat the constant in a call-saved quantity;
        with the literal 0 the function comes out 3 instructions short of
-       the target. */
+       the target (score 7). */
     s32 zero;
 
     zero = 0;
-    s.f = 2;
-    s.cd_flag = 0;
-    s.e = 0;
-    s.g = 0;
-    s.a = D_800A3610[0xF];
-    s.h = 0;
-    s.b = s.a + 0xC;
-    var_s0 = D_800A3610 + 5;
+    s.ot_idx = 2;
+    s.has_color = 0;
+    s.semi = 0;
+    s.x = 0;
+    s.header = D_800A3610->unk_14[10];
+    s.y = 0;
+    s.table = s.header->cells;
+    var_s0 = D_800A3610->unk_14;
     if (D_800A3608 >= 0xAAA) {
         if (D_800A3608 >= 0xB04) {
             s16 sv;
-            s.cd_flag = 1;
+            s.has_color = 1;
             sv = 0x80 - (((D_800A3608 - 0xB04) << 7) / 15);
             if (sv < 0) {
                 sv = 0;
             }
-            s.r = (s.g_ = (s.b_ = (u8) sv));
+            s.col_r = s.col_g = s.col_b = sv;
         }
-        s.c = arg0->unk_0C;
-        arg0->unk_0C = func_8007352C((s32)&s.a);
-        SetDrawMode(arg0->unk_14, 1, 0, func_8006E480(s.a, zero), 0);
-        AddPrim(g_gpu_ot_ptr + (s.f * 4), arg0->unk_14);
+        s.sprt_out = arg0->unk_0C;
+        arg0->unk_0C = func_8007352C((s32)&s);
+        SetDrawMode(arg0->unk_14, 1, 0, func_8006E480((s32)s.header, zero), 0);
+        AddPrim(g_gpu_ot_ptr + (s.ot_idx * 4), arg0->unk_14);
         arg0->unk_14++;
     }
-    s.cd_flag = 0;
+    s.has_color = 0;
     goto check;
 loop:
     /* FAKE: 8-deep do-while(0) wrap around the walk-pointer read block.
@@ -2223,35 +2148,34 @@ loop:
        var_s0 (13 refs / 91 live, pri 4285) above arg0 (13 / 98, pri 3979).
        A single level is insufficient: depth 1 yields 6 of the 13
        references the priority inversion requires; depth 8 is the minimum
-       that reaches 13 at the only wrap site that costs no delay slot. */
+       that reaches 13 at the only wrap site that costs no delay slot. Unwrapped:
+       score 19. */
     do { do { do { do { do { do { do { do {
-    s.a = var_s0[0];
-    s.b = s.a + 0xC;
-    s.h = -D_800A3608;
+    s.header = var_s0[0];
+    s.table = s.header->cells;
+    s.y = -D_800A3608;
     } while (0); } while (0); } while (0); } while (0); } while (0); } while (0); } while (0); } while (0);
-    s.c = arg0->unk_0C;
-    arg0->unk_0C = func_8007352C((s32)&s.a);
-    SetDrawMode(arg0->unk_14, 1, 0, func_8006E480(s.a, zero), 0);
-    AddPrim(g_gpu_ot_ptr + (s.f * 4), arg0->unk_14);
+    s.sprt_out = arg0->unk_0C;
+    arg0->unk_0C = func_8007352C((s32)&s);
+    SetDrawMode(arg0->unk_14, 1, 0, func_8006E480((s32)s.header, zero), 0);
+    AddPrim(g_gpu_ot_ptr + (s.ot_idx * 4), arg0->unk_14);
     var_s0++;
     arg0->unk_14++;
 check:
-    if (var_s0[1] != -1) goto loop;
+    if (var_s0[1] != (Unk8009B0E0Record *)-1) goto loop;
 }
 
 extern s32 D_800A3304;
 
 s32 func_80078824(s32 arg0) {
-    s32 s0;
-    s32 r;
+    Unk80078824Rec *s0;
 
     ClearOTagR((u32 *)g_gpu_ot_ptr, 0x1008);
-    s0 = arg0 + 0x58;
+    s0 = (Unk80078824Rec *)(arg0 + 0x58);
     D_800A360C = (Unk8006E49CRec *)arg0;
     D_800A3610 = s0;
-    func_8006E950(0x5F, s0);
-    r = func_80078628(s0);
-    func_8006E49C(r, D_800A360C);
+    func_8006E950(0x5F, &s0->unk_00);
+    func_8006E49C(func_80078628(s0), D_800A360C);
     D_800A3304 = 0;
     D_800A3608 = 0;
     D_800A3614 = 0;

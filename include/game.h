@@ -200,6 +200,59 @@ typedef struct {
     s32 unk_0C;
 } Unk8005C2A8Pack;
 
+/* The 8-byte sprite cell: x / y, its offset from the descriptor's screen position; u / v, its texel
+ * offset from the sheet's ubase / vbase; w / h, its size (func_8007352C: x0 = x + env x,
+ * u0 = u + ubase, w / h copied). A sheet's cells follow its header(s) (Unk8009B0E0Record.cells).
+ * The 0x8009B400 tables hold such cells. Object model evidence from the original binary:
+ * asm/funcs/func_8005E098.s and asm/funcs/func_8005D814.s index 0x8009B400 by a
+ * digit value through a shift-3 (8-byte-stride) index, and func_8005E098 stores
+ * an s16 to offset 0 of the indexed record (`sh $v0,0x0($v1)`); it indexes 0x8009B458 by `sra 13` of an
+ * s16 counter (i * 8) and 0x8009B468 / 0x8009B470 by counter * 16 -- pairs of
+ * 8-byte records. Data: 0x8009B400..0x8009B44F is 10 records (one per digit),
+ * 0x8009B458..0x8009B487 is 6 records of the same shape; D_8009B450 and
+ * D_8009B488 follow. Replaces the splat per-word scalars D_8009B458 /
+ * D_8009B468 / D_8009B470 in C (per-word splat symbol -> aggregate merge
+ * family, owner ruling). */
+typedef struct {
+    s16 x;
+    s16 y;
+    u8 u;
+    u8 v;
+    u8 w;
+    u8 h;
+} Unk8009B400Record;
+
+/* The 12-byte sprite-sheet header the walkers read (Unk8007352CEnv.header): tp0 / tp1, the
+ * texture-page bits (func_80073728: (tp0 & 0xFE1F) + (tp1 << 7), func_8006E480); count, the cell
+ * count; cx / cy, the CLUT position (GetClut); ubase / vbase, the texel origin the cells' u / v add
+ * to; cells, the cell table that follows. A resource sheet may carry two or three headers (the
+ * plain one, then one highlight per player: func_8006F97C, func_800759D0) ahead of one shared cell
+ * table, which then starts at the last header's cells (hdr[2].cells).
+ * 0x8009B0E0: table of 9 twelve-byte sprite-sheet headers (0x8009B0E0..0x8009B14B),
+ * the record func_8007352C reads through Unk8007352CEnv.header. Object
+ * model evidence from the original binary: asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B0F8) in $s0
+ * and reaches record 8 as `addiu $s0,$s0,0x48`; forms %hi/%lo(D_8009B110) in $s1
+ * and reaches records 2 and 1 as `addiu $v1,$s1,-0xC` / `addiu $s1,$s1,-0x18`;
+ * forms it again in $s2 and reaches records 0 and 1 as -0x30 / -0x24; its tail
+ * loop indexes the table by `(j * 3) << 2` added to that base -- base+offset
+ * and 12-byte-stride addressing of one object. Replaces the splat per-word
+ * labels D_8009B0E0 / D_8009B0F8 / D_8009B110 / D_8009B11C in C (per-word splat
+ * symbol -> aggregate merge family, owner ruling); the dlabels stay
+ * in asm/data as data labels. D_8009B14C and D_8009B158 are two more headers of
+ * the same shape (func_8005C8A8 passes &D_8009B14C as a header and reads its
+ * +2 count byte, the splat label D_8009B14E, which this declaration retires). */
+typedef struct {
+    u8 tp0;
+    u8 tp1;
+    u8 count;
+    u8 unk3;
+    u16 cx;
+    u16 cy;
+    u16 ubase;
+    u16 vbase;
+    Unk8009B400Record cells[0];
+} Unk8009B0E0Record;
+
 /* The head of the resource files func_8006E950 loads. By g_cd_file_table's sizes, file 2 of
  * func_80036EA8's group 2 is MOD.BIN, 3 SEL.BIN, 4 / 5 SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN.
  * Each file starts with a list of file-relative offsets ending in -1, which func_8006E440 turns
@@ -217,6 +270,15 @@ typedef struct {
     s32 unk_10;
 } Unk8006E950Head;
 
+/* STAFF.BIN (resource file 0x5F), the root 64FD8's func_80078824 loads at its work area + 0x58
+ * (D_800A3610). After the head, one offset list (relocated with the head by func_8006E440, so it
+ * ends in -1 like the head's own list): the sprite sheets func_80078654 draws: unk_14[10] first,
+ * then unk_14[0] onward while the next entry is not -1. */
+typedef struct {
+    Unk8006E950Head unk_00;
+    Unk8009B0E0Record *unk_14[0];
+} Unk80078824Rec;
+
 /* 12-byte rectangle rows {x, y, w, h, r, g, b}: MOD.BIN's unk_44 (func_8006C21C draws them) and
  * D_SEL.BIN's unk_3C (func_80074B18). */
 typedef struct {
@@ -224,27 +286,36 @@ typedef struct {
     u8 r, g, b, pad;
 } Rec_8006C21C;
 
+/* SEL.BIN's unk_54 block, func_8006ECF4's: two cell tables (unk_00[i], one per player), a 0 word,
+ * then the 12-byte sheet headers the cells are drawn with (unk_0C[sel], plus five special cases). */
+typedef struct {
+    Unk8009B400Record *unk_00[2];
+    s32 unk_08;
+    Unk8009B0E0Record unk_0C[0];
+} Unk8006ECF4Rec;
+
 /* SEL.BIN / SEL1.BIN / SEL2.BIN (resource files 3-5), the root 5ED34's func_8006E534 loads at its work
  * area + 0x58 (D_800A35A8; func_8006EACC hands it to the handlers as Unk8006EACCRec.unk_00). After
  * the head:
  * - unk_14: per entry id two TIM pixel addresses, one per column, func_80070F78 loads (LoadImage).
- * - unk_54..unk_74: the nine lists func_8006EA28 relocates (func_8006920C); s32 * as
- *   Unk8006919CRec's lists. unk_78 is a further offset no code reads.
+ * - unk_54..unk_74: the nine lists func_8006EA28 relocates (func_8006920C): unk_54, the
+ *   header block func_8006ECF4 draws (Unk8006ECF4Rec); unk_58..unk_74, sprite-sheet lists.
+ *   unk_78 is a further offset no code reads.
  * - unk_7C: per player a row of VRAM RECTs (64 bytes) func_80070F78 hands LoadImage as the
  *   destination; unk_80: the bytes func_800720FC reads.
  * - unk_84: TIM pixel addresses func_8006ECF4 loads per character case. */
 typedef struct {
     Unk8006E950Head unk_00;
     s32 unk_14[8][2];
-    s32 *unk_54;
-    s32 *unk_58;
-    s32 *unk_5C;
-    s32 *unk_60;
-    s32 *unk_64;
-    s32 *unk_68;
-    s32 *unk_6C;
-    s32 *unk_70;
-    s32 *unk_74;
+    Unk8006ECF4Rec *unk_54;
+    Unk8009B0E0Record **unk_58;
+    Unk8009B0E0Record **unk_5C;
+    Unk8009B0E0Record **unk_60;
+    Unk8009B0E0Record **unk_64;
+    Unk8009B0E0Record **unk_68;
+    Unk8009B0E0Record **unk_6C;
+    Unk8009B0E0Record **unk_70;
+    Unk8009B0E0Record **unk_74;
     s32 *unk_78;
     u8 *unk_7C;
     u8 *unk_80;
@@ -253,18 +324,19 @@ typedef struct {
 
 /* D_SEL.BIN (resource file 6), the root 64FD8's func_800770B8 loads at its work area + 0x58 and
  * keeps in SelWork.f04 (func_80077724 hands it to the handlers as Unk8006EACCRec.unk_00). After the
- * head: unk_14..unk_38, the ten lists func_80076FF8 relocates (unk_20 is indexed by the round count
- * SelWork.f65); unk_3C, the rectangle rows func_80074B18 draws. */
+ * head: unk_14..unk_38, the ten lists func_80076FF8 relocates, each a list of sprite sheets
+ * (unk_20 is indexed by the round count SelWork.f65); unk_3C, the rectangle rows func_80074B18
+ * draws. */
 typedef struct {
     Unk8006E950Head unk_00;
-    s32 *unk_14;
-    s32 *unk_18;
-    s32 *unk_1C;
-    s32 *unk_20[3];
-    s32 *unk_2C;
-    s32 *unk_30;
-    s32 *unk_34;
-    s32 *unk_38;
+    Unk8009B0E0Record **unk_14;
+    Unk8009B0E0Record **unk_18;
+    Unk8009B0E0Record **unk_1C;
+    Unk8009B0E0Record **unk_20[3];
+    Unk8009B0E0Record **unk_2C;
+    Unk8009B0E0Record **unk_30;
+    Unk8009B0E0Record **unk_34;
+    Unk8009B0E0Record **unk_38;
     Rec_8006C21C *unk_3C;
 } Unk80076FF8Rec;
 
@@ -273,16 +345,17 @@ typedef struct {
 } Win77D94;
 
 /* NAR.BIN (resource file 0x32), the root 64FD8's func_800784E4 loads at its work area + 0x58
- * (D_800A35F8). After the head: table, hdr18..hdr28 (the five lists func_80077D10 relocates),
+ * (D_800A35F8). After the head: table, the cell table func_80077D94 draws the hdr18..hdr24
+ * sheets with; hdr18..hdr28, the five sheet lists func_80077D10 relocates;
  * win2C, in30 / out34 and the five portrait TIMs img38 func_80077D94 uploads. */
 typedef struct {
     Unk8006E950Head unk_00;
-    s32 table;
-    s32 *hdr18;
-    s32 *hdr1C;
-    s32 *hdr20;
-    s32 *hdr24;
-    s32 *hdr28;
+    Unk8009B400Record *table;
+    Unk8009B0E0Record **hdr18;
+    Unk8009B0E0Record **hdr1C;
+    Unk8009B0E0Record **hdr20;
+    Unk8009B0E0Record **hdr24;
+    Unk8009B0E0Record **hdr28;
     Win77D94 *win2C;
     s16 *in30;
     s16 *out34;
@@ -521,26 +594,6 @@ typedef struct {
     s32 unk8;
 } Unk8009B398Record;
 
-/* 8-byte sprite records {s16, s16, u8 x4}. Object model evidence from the
- * original binary:
- * asm/funcs/func_8005E098.s and asm/funcs/func_8005D814.s index 0x8009B400 by a
- * digit value through a shift-3 (8-byte-stride) index, and func_8005E098 stores
- * an s16 to offset 0 of the indexed record (`sh $v0,0x0($v1)`); it indexes 0x8009B458 by `sra 13` of an
- * s16 counter (i * 8) and 0x8009B468 / 0x8009B470 by counter * 16 -- pairs of
- * 8-byte records. Data: 0x8009B400..0x8009B44F is 10 records (one per digit),
- * 0x8009B458..0x8009B487 is 6 records of the same shape; D_8009B450 and
- * D_8009B488 follow. Replaces the splat per-word scalars D_8009B458 /
- * D_8009B468 / D_8009B470 in C (per-word splat symbol -> aggregate merge
- * family, owner ruling). */
-typedef struct {
-    s16 unk0;
-    s16 unk2;
-    u8 unk4;
-    u8 unk5;
-    u8 unk6;
-    u8 unk7;
-} Unk8009B400Record;
-
 /* 0x8009B450: two {x, y} screen points (.short 0x01A2,0x0024,0x01F7,0x0037).
  * Object model evidence from the original binary: asm/funcs/func_8005D814.s
  * forms ONE index $s0 = j << 2 and reads both %lo(D_8009B450)($at) and
@@ -553,26 +606,30 @@ typedef struct {
     s16 y;
 } Unk8009B450Record;
 
-/* 0x8009B0E0: table of 9 twelve-byte sprite-sheet headers (0x8009B0E0..0x8009B14B),
- * the record func_8007352C reads through EnvA.header (cell count at +2). Object
- * model evidence from the original binary: asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B0F8) in $s0
- * and reaches record 8 as `addiu $s0,$s0,0x48`; forms %hi/%lo(D_8009B110) in $s1
- * and reaches records 2 and 1 as `addiu $v1,$s1,-0xC` / `addiu $s1,$s1,-0x18`;
- * forms it again in $s2 and reaches records 0 and 1 as -0x30 / -0x24; its tail
- * loop indexes the table by `(j * 3) << 2` added to that base -- base+offset
- * and 12-byte-stride addressing of one object. Replaces the splat per-word
- * labels D_8009B0E0 / D_8009B0F8 / D_8009B110 / D_8009B11C in C (per-word splat
- * symbol -> aggregate merge family, owner ruling); the dlabels stay
- * in asm/data as data labels. D_8009B14C and D_8009B158 are two more headers of
- * the same shape (func_8005C8A8 passes &D_8009B14C as a header and reads its
- * +2 count byte, the splat label D_8009B14E, which this declaration retires). */
+/* The 0x2C-byte draw descriptor the sprite walkers consume: func_8007352C (one SPRT per cell),
+ * func_80073728 / func_80073C78 (one POLY_FT4 per cell, scaled / rotated). header / table: the sprite
+ * sheet (Unk8009B0E0Record) and its cells; sprt_out / ft4_out: the SPRT and POLY_FT4 cursors the
+ * walkers advance and return; semi: their SetSemiTrans argument; ot_idx: the ordering-table slot
+ * (g_gpu_ot_ptr + ot_idx * 4); x / y: the screen offset added to every cell; scale_x / scale_y:
+ * the 8.8 cell scales of the POLY_FT4 walkers; has_color / col_r / col_g / col_b: the SetShadeTex
+ * switch and the primitive colour. The cursors are s32 because every source of them is an s32
+ * word: the draw contexts' primitive cursors (Unk800788B0Rec, 51268's context words). */
 typedef struct {
-    u16 unk0;
-    u8 count;
-    u8 unk3;
-    s32 unk4;
-    s32 unk8;
-} Unk8009B0E0Record;
+    Unk8009B0E0Record *header;
+    Unk8009B400Record *table;
+    s32 sprt_out;
+    s32 ft4_out;
+    s32 semi;
+    u32 ot_idx;
+    s32 x;
+    s32 y;
+    s32 scale_x;
+    s32 scale_y;
+    u8 has_color;
+    u8 col_r;
+    u8 col_g;
+    u8 col_b;
+} Unk8007352CEnv;
 
 /* 0x8009B2BC: three {w, h} menu-frame sizes, one per mode (0x8009B2BC..
  * 0x8009B2C7; D_8009B2C8 follows, different data). Object model evidence from
@@ -1985,22 +2042,5 @@ typedef struct {
     u8 byte2A;
     u8 byte2B;
 } S46C;
-
-typedef struct {
-    s32 sp18;
-    s32 sp1C;
-    s32 sp20;
-    s32 sp24;
-    s32 sp28;
-    s32 sp2C;
-    s32 sp30;
-    s32 sp34;
-    s32 sp38;
-    s32 sp3C;
-    s8 sp40;
-    u8 sp41;
-    u8 sp42;
-    u8 sp43;
-} S_80074488;
 
 #endif /* GAME_H */

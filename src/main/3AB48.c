@@ -3875,7 +3875,8 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     cur = arg2 + sizeof(chunk->unk_00);
     y_base = 0;
     /* FAKE: the low half read from arg1's stack home, which keeps arg1 in
-       memory for the in-loop `lw 0xBC($sp)` too; (s16)arg1 does not. */
+       memory for the in-loop `lw 0xBC($sp)` too; (s16)arg1 does not. `sel = arg1`:
+       score 58. */
     sel = *(s16 *)&arg1;
     mode_off = &chunk->unk_4D8;
     /* FAKE: the chunk's 0x4F0 bytes, sizeof(Unk8005C8A8Rec) (the draw-mode
@@ -3884,7 +3885,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
        folds to 0x4F0 with no REG_EQUAL note: size keeps the target's frame
        slot (sp+0x70) to the return, and the deleted temp's stale count gets
        the target's one untouched slot (sp+0x78). The literal or the sizeof is
-       rematerialised at the return (frame 0x10 short). */
+       rematerialised at the return (frame 0x10 short). sizeof: score 33. */
     size = (s32)mode_off + 0x18 - arg2;
     top = (0xF0 - D_8009B2BC[mode].h) / 2;
     s.col_b = 0x40;
@@ -3902,8 +3903,8 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
         s.semi = 0;
         s.out = cur;
         s.ot_idx = ot;
-        D_8009B184[0].unk0 = (0x280 - D_8009B2BC[2].w) / 2;
-        D_8009B184[1].unk0 = (D_8009B2BC[2].w + 0x280) / 2 - 0xC;
+        D_8009B184[0].x = (0x280 - D_8009B2BC[2].w) / 2;
+        D_8009B184[1].x = (D_8009B2BC[2].w + 0x280) / 2 - 0xC;
         cur = func_8007352C((s32)&s);
         s.header = &D_8009B0E0[8];
         s.table = D_8009B20C;
@@ -3990,8 +3991,8 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
         s.semi = 0;
         s.out = cur;
         s.ot_idx = ot;
-        D_8009B184[0].unk0 = (0x280 - D_8009B2BC[mode].w) / 2;
-        D_8009B184[1].unk0 = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
+        D_8009B184[0].x = (0x280 - D_8009B2BC[mode].w) / 2;
+        D_8009B184[1].x = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
         cur = func_8007352C((s32)&s);
         for (i = 0; i < 2; i++) {
             SetTile(tile);
@@ -4053,15 +4054,15 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     s.semi = 0;
     s.out = cur;
     s.ot_idx = ot;
-    D_8009B164[0][0].unk0 = (0x280 - D_8009B2BC[mode].w) / 2;
-    D_8009B164[0][1].unk0 = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
+    D_8009B164[0][0].x = (0x280 - D_8009B2BC[mode].w) / 2;
+    D_8009B164[0][1].x = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
     cur = func_8007352C((s32)&s);
     s.header = &D_8009B0E0[1];
     s.table = D_8009B164[1];
     s.y = (D_8009B2BC[mode].h + 0xF0) / 2;
     s.out = cur;
-    D_8009B164[1][0].unk0 = (0x280 - D_8009B2BC[mode].w) / 2;
-    D_8009B164[1][1].unk0 = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
+    D_8009B164[1][0].x = (0x280 - D_8009B2BC[mode].w) / 2;
+    D_8009B164[1][1].x = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
     func_8007352C((s32)&s);
 
     for (j = 0; j < 2; j++) {
@@ -4315,10 +4316,10 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     TILE *tile;
     s32 cur;
     DR_MODE *mode_off;
+    /* FAKE: the returned size is the chunk's end minus its start; sizeof(Unk8005D814Rec): score 76. */
     s32 end_off;
     s16 i;
     s16 j;
-    s16 num_tens;
     s16 shown;
     Unk8009B398Record *hdr2;  /* FAKE: pointer alias of D_8009B398[2] */
     Unk8009B398Record *hdr3;  /* FAKE: pointer alias of D_8009B398[3] */
@@ -4347,9 +4348,9 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         s.table = &D_8009B3E0[i];
         if (i != 0) {
             if (arg1 == 1) {
-                s.table->unk6 = 0x2D;
+                s.table->w = 0x2D;
             } else {
-                s.table->unk6 = 0x3C;
+                s.table->w = 0x3C;
             }
         }
         s.out = cur;
@@ -4369,9 +4370,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 if (i != 0) {
                     digit[i] = digit[i] % 10;
                 } else {
-                    s16 tens = digit[0] / 10;
-
-                    digit[0] = tens % 10;
+                    digit[0] = digit[0] / 10 % 10;
                 }
                 s.table = &D_8009B400[digit[i]];
                 if (digit[i] == 1) {
@@ -4379,16 +4378,14 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 } else {
                     s.x = i * 20;
                 }
-                s.table->unk0 = 0x1A2;
+                s.table->x = 0x1A2;
                 break;
             case 1:
                 digit[i] = arg0->unk_2;
                 if (i != 0) {
                     digit[i] = digit[i] % 10;
                 } else {
-                    s16 tens = digit[0] / 10;
-
-                    digit[0] = tens % 10;
+                    digit[0] = digit[0] / 10 % 10;
                 }
                 s.table = &D_8009B400[digit[i]];
                 if (digit[i] == 1) {
@@ -4396,16 +4393,14 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 } else {
                     s.x = i * 20;
                 }
-                s.table->unk0 = 0x1D3;
+                s.table->x = 0x1D3;
                 break;
             case 2:
                 digit[i] = arg0->unk_3;
                 if (i != 0) {
                     digit[i] = digit[i] % 10;
                 } else {
-                    s16 tens = digit[0] / 10;
-
-                    digit[0] = tens % 10;
+                    digit[0] = digit[0] / 10 % 10;
                 }
                 s.table = &D_8009B400[digit[i]];
                 if (digit[i] == 1) {
@@ -4413,7 +4408,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 } else {
                     s.x = i * 20;
                 }
-                s.table->unk0 = 0x209;
+                s.table->x = 0x209;
                 break;
             }
             s.out = cur;
@@ -4423,9 +4418,8 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
 
     s.header = &D_8009B398[0];
     digit[0] = digit[1] = digit[2] = arg1;
-    num_tens = digit[1] / 10;
     digit[2] = digit[2] % 10;
-    digit[1] = num_tens % 10;
+    digit[1] = digit[1] / 10 % 10;
     digit[0] = digit[0] / 100;
     digit[1] = digit[1] % 100;
     s.y = 0x29;
@@ -4442,7 +4436,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     for (j = 0; j < 3; j++) {
         if (shown || digit[j] != 0 || j == 2) {
             s.table = &D_8009B400[digit[j]];
-            s.table->unk0 = 0x1F3;
+            s.table->x = 0x1F3;
             shown = 1;
             if (digit[j] == 1) {
                 s.x = j * 21 + 3;
@@ -4523,10 +4517,11 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     TILE *tile;
     s32 cur;
     DR_MODE *mode_off;
+    /* FAKE: the returned size is the chunk's end minus its start; sizeof(Unk8005D814Rec): score 53. */
     s32 end_off;
     s16 i;
     s16 j;
-    s16 v;
+    /* FAKE: alias of s.p1 for the digit cell's x store; through s.p1: score 68. */
     Unk8009B400Record *p;
 
     tile = chunk->unk_00;
@@ -4568,9 +4563,8 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         } else {
             s.d[0] = s.d[1] = arg1;
         }
-        v = s.d[0] / 10;
         s.d[1] = s.d[1] % 10;
-        s.d[0] = v % 10;
+        s.d[0] = s.d[0] / 10 % 10;
         for (i = 0; i < 2; i++) {
             if (s.d[i] == 0 && i == 0 && arg0 < 0) {
                 i++;
@@ -4578,9 +4572,9 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             p = &D_8009B400[s.d[i]];
             s.p1 = p;
             if (j != 0) {
-                p->unk0 = 0x50;
+                p->x = 0x50;
             } else {
-                p->unk0 = 0x209;
+                p->x = 0x209;
             }
             if (s.d[i] == 1) {
                 s.unk_18 = i * 20 + 3;
@@ -4669,17 +4663,18 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
        keep a real s16[3] digit array: func_8005D814 `s16 digit[3];` (copied
        here) and func_8005F1C8 `s16 d[3];`. Owner ruling Q35
        (no-new-park-categories.md, phantom-frame-slot pad family, trailing
-       unused array with sibling evidence). */
+       unused array with sibling evidence). Removed: score 47. */
     volatile s16 digit[3];
     TILE *tile;
     s32 cur;
     s32 ft4;
     DR_MODE *mode_off;
+    /* FAKE: the returned size is the chunk's end minus its start; sizeof(Unk8005E54CRec): score 75. */
     s32 end_off;
-    /* i counts the players (first loop) and then the rounds; j is the
+    /* FAKE: i counts the players (first loop) and then the rounds; j is the
        player and k the mark; each phase restarts them as plain loop indices,
        the counter reuse of func_8005E098 / func_8005F1C8. Separate counters
-       per phase do not match. */
+       per phase (a round counter of its own): score 8. */
     s16 i;
     s16 j;
     s16 k;
@@ -4743,6 +4738,8 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             cur = func_8007352C((s32)&s);
             for (j = 0; j < 2; j++) {
                 s.x = j * 70;
+                /* FAKE: the other player's points read through a selected address;
+                   points[j ^ 1] (both sites): score 110. */
                 if (points[j] > *(j ? &points[0] : &points[1])) {
                     s.table = &D_8009B4FC;
                 } else if (points[j] < *(j ? &points[0] : &points[1])) {
@@ -4783,10 +4780,10 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s.table = &D_8009B514;
     s.sprt_out = cur;
     cur = func_8007352C((s32)&s);
-    /* One 32-bit store clears the whole pair (target 0x8005EA44
+    /* FAKE: one 32-bit store clears the whole pair (target 0x8005EA44
        `sw $zero,0x18($sp)`); the union spelling does not match. Owner
        ruling Q36 (no-new-park-categories.md, one cast store on a
-       local array). */
+       local array). `points[0] = points[1] = 0`: score 2. */
     *(s32 *)points = 0;
     for (i = 0; i < D_8009BD24.unk14_10 + 3; i++) {
         if (((arg0 >> (i * 4)) & 3) != 3) {
@@ -4826,6 +4823,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         points[1] = (arg0 >> (i * 4 + 2)) & 3;
         s.col_r = s.col_g = s.col_b = 0x40;
         for (j = 0; j < 2; j++) {
+            /* FAKE: the other player's points, as above. */
             if (points[j] <= *(j ? &points[0] : &points[1])) {
                 if (points[j] != 3) {
                     s.has_color = 1;
@@ -4894,7 +4892,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             s.x += 3;
         }
         s.table = &D_8009B400[wins[j]];
-        s.table->unk0 = s.table->unk2 = 0;
+        s.table->x = s.table->y = 0;
         s.sprt_out = cur;
         cur = func_8007352C((s32)&s);
     }
@@ -4925,9 +4923,9 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->r0 = 0xFF;
     tile->g0 = 0x10;
     tile->b0 = 0x10;
-    /* Each arm sets the whole (x0, y0) position: the target stores x0 once
+    /* FAKE: each arm sets the whole (x0, y0) position: the target stores x0 once
        per arm (0x8005F0E0, 0x8005F0F8, 0x8005F104); one x0 store above the
-       if/else does not match. */
+       if/else: score 10. */
     if (D_8009BD24.unk14_10 == 2) {
         tile->x0 = 0x5E;
         tile->y0 = 0xC1;
@@ -4974,11 +4972,12 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     TILE *tile;
     s32 cur;
     DR_MODE *mode_off;
+    /* FAKE: the returned size is the chunk's end minus its start; sizeof(Unk8005D814Rec): score 97. */
     s32 end_off;
-    /* i/row count the win-mark pips' players and rows; k and j are reused
+    /* FAKE: i/row count the win-mark pips' players and rows; k and j are reused
      * as plain loop indices by the later phases (tile strip k/j, timer j/k),
      * the same counter reuse as func_8005E098 and the func_8003800C
-     * single-counter shape. Separate counters per phase do not match. */
+     * single-counter shape. Separate counters for the later phases: score 11. */
     s16 i;
     s16 j;
     s16 k;
@@ -5102,9 +5101,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                     if (k != 0) {
                         s.d[k] = s.d[k] % 10;
                     } else {
-                        s16 tens = s.d[k] / 10;
-
-                        s.d[k] = tens % 10;
+                        s.d[k] = s.d[k] / 10 % 10;
                     }
                     x = (D_8009BD24.unk14_12 == 2) ? k * 20 + 0x48 : k * 20 + 0x34;
                     s.p1 = &D_8009B400[s.d[k]];
@@ -5117,9 +5114,9 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 break;
             }
             if (D_8009BD24.unk14_12 == 2) {
-                s.p1->unk0 = 0x109;
+                s.p1->x = 0x109;
             } else {
-                s.p1->unk0 = 0x113;
+                s.p1->x = 0x113;
             }
             s.unk_08 = cur;
             cur = func_8007352C((s32)&s);

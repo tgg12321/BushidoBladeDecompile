@@ -147,7 +147,7 @@ extern Unk8009B400Record D_8009B184[2];
 
 /* 0x800A328C: one 8-byte sprite cell (Unk8009B400Record: x, y = 0, u, v = 0,
  * w 0x14, h 0x0E), the cell table func_80060414 hands func_8007352C in its
- * descriptor (func_8007352C reads it as SprtEntA {s16 x, y; u8 u, v, w, h}).
+ * descriptor (func_8007352C reads it as one cell).
  * Defined in src/main/3AB48.c. */
 extern Unk8009B400Record D_800A328C;
 
