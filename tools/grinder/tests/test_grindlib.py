@@ -2515,6 +2515,40 @@ class TestLedgerClose(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(d, "layer2.jsonl")))
         self.assertIn("3 cited file(s) retained", msgs[-1])
 
+    def test_bare_ledger_citation_keeps_only_explicit_evidence(self):
+        d = self._ledger("func_DONE")
+        with open(os.path.join(self.root, "references.txt"), "w") as fh:
+            fh.write("memory/grind/func_DONE/\n"
+                     "memory/grind/func_DONE/evidence.md:1\n")
+        ok, msgs = G.close_ledger(self.root, "func_DONE", "auto")
+        self.assertTrue(ok, msgs)
+        self.assertEqual(os.listdir(d), ["evidence.md"])
+        self.assertIn("1 cited file(s) retained", msgs[-1])
+
+    def test_cited_layer2_always_moves_without_repeat_duplicates(self):
+        d = self._ledger("func_DONE")
+        with open(os.path.join(self.root, "references.txt"), "w") as fh:
+            fh.write("memory/grind/func_DONE/layer2.jsonl\n"
+                     "memory/grind/func_DONE/layer2_verdicts/\n"
+                     "memory/grind/func_DONE/layer2_verdicts/abc.json\n"
+                     "memory/grind/func_DONE/evidence.md\n")
+        arch = os.path.join(G.completed_dir(self.root), "func_DONE")
+        for _ in range(2):
+            ok, msgs = G.close_ledger(self.root, "func_DONE", "auto")
+            self.assertTrue(ok, msgs)
+            self.assertEqual(os.listdir(d), ["evidence.md"])
+            with open(os.path.join(arch, "layer2.jsonl")) as fh:
+                recs = [json.loads(line) for line in fh]
+            self.assertEqual([r["body_hash"] for r in recs], ["h1", "h2"])
+            self.assertTrue(os.path.isfile(os.path.join(self.root, recs[0]["verdict_file"])))
+
+    def test_archive_ignores_explicit_keep_for_layer2_files(self):
+        d = self._ledger("func_DONE")
+        keep = {"memory/grind/func_DONE/layer2.jsonl",
+                "memory/grind/func_DONE/layer2_verdicts/abc.json"}
+        self.assertEqual(G.archive_ledger(self.root, "func_DONE", keep=keep), 2)
+        self.assertFalse(os.path.exists(d))
+
     def test_failed_citation_inventory_does_not_delete_evidence(self):
         from unittest.mock import patch
         d = self._ledger("func_DONE")

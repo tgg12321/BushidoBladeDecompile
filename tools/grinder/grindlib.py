@@ -2992,8 +2992,10 @@ def locate_stem(root, func):
 def _cited_ledger_files(root, func):
     """Keep repository citations resolvable without rewriting their paths.
     Scan tracked and nonignored untracked text outside this ledger, then the
-    retained files themselves for transitive citations. Directory citations
-    retain their subtree. Historical citations are conservatively kept too.
+    retained files themselves for transitive citations. Subdirectory citations
+    retain their subtree; a bare ledger citation retains no files by itself.
+    Layer-2 records and verdicts always move to the archive.
+    Historical citations are conservatively kept too.
     A failed inventory aborts the close before evidence is removed."""
     prefix = f"memory/grind/{func}/"
     inventory = subprocess.run(
@@ -3012,7 +3014,10 @@ def _cited_ledger_files(root, func):
         for match in pattern.finditer(text):
             cited = match.group().rstrip(".")
             rel = cited[len(prefix):]
-            if ".." in rel.split("/"):
+            if (not rel.rstrip("/") or ".." in rel.split("/")
+                    or rel == "layer2.jsonl"
+                    or rel.rstrip("/") == "layer2_verdicts"
+                    or rel.startswith("layer2_verdicts/")):
                 continue
             target = os.path.join(root, cited)
             files = [cited] if os.path.isfile(target) else []
@@ -3039,6 +3044,9 @@ def archive_ledger(root, func, keep=None):
         return 0
     if keep is None:
         keep = _cited_ledger_files(root, func)
+    prefix = f"memory/grind/{func}/"
+    keep = {p for p in keep if p != prefix + "layer2.jsonl"
+            and not p.startswith(prefix + "layer2_verdicts/")}
     dst = os.path.join(completed_dir(root), func)
     old = f"memory/grind/{func}/layer2_verdicts/"
     new = f"memory/grind/{COMPLETED_SUBDIR}/{func}/layer2_verdicts/"
