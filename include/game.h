@@ -677,6 +677,128 @@ typedef struct {
     s32 unk20[3];
 } Unk1F800000Unk00;
 
+/* 20-byte record table at 0x800EFC78 (51268.c): 4 rows (arg1) of 48 records. Object model evidence:
+ * asm/funcs/func_80067200.s addresses it as base + arg1*0x3C0 + i*20 with halfword stores at
+ * +0..+0xC, +0x10, +0x12 (+0xE untouched there); 0x3C0 / 20 = 48 = the loop's record count. */
+typedef struct {
+    s16 unk0;
+    s16 unk2;
+    s16 unk4;
+    s16 unk6;
+    s16 unk8;
+    s16 unkA;
+    s16 unkC;
+    s16 unkE;
+    s16 unk10;
+    s16 unk12;
+} Unk800EFC78Record;
+
+/* func_800620B8's layout of the 51268 work area (Unk1F8000B8Union.v800620B8). func_80061FAC, which
+ * func_800620B8 calls before it touches the area, writes and consumes its SVECTOR at +0x00..+0x07.
+ * SetTransMatrix is handed the address 0x14 below unk14, so unk14 is read as a MATRIX's t[]. */
+typedef struct {
+    u8 unk00[0x10];                /* no access here */
+    s16 unk10;                     /* w */
+    s16 unk12;                     /* h */
+    VECTOR unk14;                  /* ApplyRotMatrixLV out */
+    VECTOR unk24;                  /* ApplyRotMatrixLV in */
+    SVECTOR unk34;                 /* RotTransPers in */
+    s32 unk3C;                     /* RotTransPers' p */
+    u8 unk40[4];                   /* no access */
+    u32 unk44;                     /* func_80052C28's depth, the OT index */
+} Unk1F8000B8_800620B8;
+
+/* func_80063084's layout (Unk1F8000B8Union.v80063084). SetTransMatrix is handed the address 0x14
+ * below unk14 (the area's base), so unk14 is read as a MATRIX's t[]. */
+typedef struct {
+    u8 unk00[0x14];                /* no access */
+    VECTOR unk14;                  /* ApplyRotMatrix out */
+    SVECTOR unk24;                 /* ApplyRotMatrix in */
+    SVECTOR unk2C;                 /* RotTransPers in */
+    s32 unk34;                     /* RotTransPers' p */
+    s32 unk38;                     /* fade */
+    s32 unk3C;                     /* func_80052C28's depth, the OT index */
+} Unk1F8000B8_80063084;
+
+/* func_800646E8's layout (Unk1F8000B8Union.v800646E8). SetTransMatrix is handed the address 0x14
+ * below unk18, so unk18 is read as a MATRIX's t[]. */
+typedef struct {
+    u8 unk00[0x10];                /* no access */
+    s16 unk10;                     /* w */
+    s16 unk12;                     /* h */
+    s32 unk14;                     /* frame */
+    VECTOR unk18;                  /* ApplyRotMatrixLV out */
+    VECTOR unk28;                  /* ApplyRotMatrixLV in */
+    SVECTOR unk38;                 /* RotTransPers in */
+    s32 unk40;                     /* RotTransPers' p */
+    POLY_FT4 *unk44;               /* the end of the quads */
+    u32 unk48[16];                 /* per kept quad, its OT index */
+} Unk1F8000B8_800646E8;
+
+/* func_80065800's layout of the 51268 work area (Unk1F8000B8Union.v80065800). Its gte_SetTransMatrix
+ * operand hands the GTE the area's base as a MATRIX, whose t[] is unk14[0]. */
+typedef struct {
+    u8 unk00[0x10];                /* no access */
+    s32 unk10;                     /* gte_stdp out; not read */
+    VECTOR unk14[4];               /* ApplyRotMatrixLV out ([0]); the corner loop's ApplyRotMatrix outs */
+    VECTOR unk54;                  /* ApplyRotMatrixLV in */
+    SVECTOR unk64;                 /* gte_ldv0 / RotMatrix / ApplyRotMatrix in */
+    s16 unk6C;                     /* p_w */
+    u8 unk6E[2];                   /* no access */
+    s16 unk70;                     /* p_h */
+    u8 unk72[2];                   /* no access */
+    MATRIX unk74;                  /* RotMatrix out, SetRotMatrix in */
+    s16 unk94;                     /* added to the texture u */
+    s16 unk96;                     /* added to the texture v */
+} Unk1F8000B8_80065800;
+
+/* The layout func_800678A8 / func_80067D14 / func_80068D88 share (Unk1F8000B8Union.v800678A8): each of
+ * the wrappers func_800676C8 .. func_8006786C calls the three in turn, and values cross the calls
+ * (unk04, unk6C, unk80, the unk8C table; func_800678A8 and func_80067D14 each use unk70 for their own
+ * value). func_800678A8 sets it up, func_80067D14 builds the quads at unk80 and records each one's
+ * depth (its OT slot index) in unk8C, func_80068D88 links them. */
+typedef struct {
+    u16 unk00;                     /* func_800678A8: added to the texture u */
+    u16 unk02;                     /* func_800678A8: added to the texture v */
+    u32 unk04;                     /* func_800678A8 stores 0x895440; func_80067D14 compares against it */
+    u8 unk08[0x1C];                /* no access */
+    s32 unk24[3];                  /* func_80067D14: gte_stlvnl out */
+    u8 unk30[4];                   /* no access */
+    VECTOR unk34;                  /* func_80067D14: gte_ldlvl in */
+    SVECTOR unk44[3];              /* func_80067D14: gte_ldv0 / gte_ldv3 in */
+    VECTOR unk5C;                  /* func_80067D14 */
+    s16 unk6C;                     /* func_800678A8 stores it; func_80067D14's loop bound */
+    s16 unk6E;                     /* func_80067D14 / func_80068D88 loop index */
+    s16 unk70;                     /* func_800678A8: table index; func_80067D14: per entry */
+    u8 unk72;                      /* func_80067D14 colours */
+    u8 unk73;
+    u8 unk74;
+    u8 unk75[3];                   /* no access */
+    s16 unk78;                     /* func_80067D14 */
+    u8 unk7A[2];                   /* no access */
+    POLY_FT4 *unk7C;               /* func_80068D88: the end of the quads */
+    POLY_FT4 *unk80;               /* the quad cursor */
+    Unk800EFC78Record *unk84;      /* func_80067D14 */
+    Unk800F0C10Record *unk88;      /* func_80067D14 */
+    u16 unk8C[0x90];               /* per quad, its depth, the OT slot index (func_80067D14 stores,
+                                      func_80068D88 reads) */
+    s32 unk1AC;                    /* func_80067D14 stores rand() values here; D_800A3724 points at it */
+} Unk1F8000B8_800678A8;
+
+/* Unk1F800000Rec.unkB8, the 51268 work area D_800A34EC points at (0x1F8000B8 to the end of the
+ * scratchpad). Each user lays it out for one call (or, for the func_800678A8 trio, one wrapper call);
+ * raw sizes the union. func_80061FAC's is one SVECTOR. func_8006295C and func_80063E10 still convert
+ * D_800A34EC (their work-area base is staged through a POLY_FT4 * local). */
+typedef union {
+    u8 raw[0x400 - 0xB8];
+    SVECTOR v80061FAC;
+    Unk1F8000B8_800620B8 v800620B8;
+    Unk1F8000B8_80063084 v80063084;
+    Unk1F8000B8_800646E8 v800646E8;
+    Unk1F8000B8_80065800 v80065800;
+    Unk1F8000B8_800678A8 v800678A8;
+} Unk1F8000B8Union;
+
 /* 51268's view of the scratchpad from 0x1F800000 (SPAD51268 in 51268.c). 17AFC's view of the same
  * memory, used at other times, is ScrPad. func_80060E38 points the file's D_800A34xx globals at these
  * members (51268.c); apart from its own two stores to unk00.unk04 / unk08, the code reaches them only
@@ -689,8 +811,8 @@ typedef struct {
  *   seeded values when no earlier record took one of those cases.
  * - unkA0 / unkA4: the initial targets of D_800A34E4 (u8 *) / D_800A34E8 (u32 *), which every
  *   user retargets before use.
- * - unkB8: the work area D_800A34EC points at, laid out differently by its users (later batch);
- *   it runs to the end of the scratchpad.
+ * - unkB8: the work area D_800A34EC points at (Unk1F8000B8Union), laid out differently by its
+ *   users; it runs to the end of the scratchpad.
  * The other members are one global each (D_800A3474 .. D_800A34E0, D_800A3480 / D_800A3484). */
 typedef struct {
     Unk1F800000Unk00 unk00;
@@ -723,7 +845,7 @@ typedef struct {
     s32 unkA8;         /* D_800A3480 */
     s32 unkAC;         /* D_800A3484 */
     TexRec unkB0;
-    u8 unkB8[0x400 - 0xB8];
+    Unk1F8000B8Union unkB8;
 } Unk1F800000Rec;
 
 /* A cell (x, z) of the 32x32 grid of 2000-unit cells that 3AB48's func_80052D00 walks

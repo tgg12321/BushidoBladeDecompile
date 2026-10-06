@@ -1721,7 +1721,6 @@ extern s32 column;
 
 
 
-    extern s32 D_800A3724;
 
 
 
