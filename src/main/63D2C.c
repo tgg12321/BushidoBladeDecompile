@@ -18,13 +18,13 @@ extern const u8 D_800159A0[];
 
 
 
-s32 func_8007352C(s32 env_addr) {
-    Unk8007352CEnv *env = (Unk8007352CEnv *)env_addr;
+s32 func_8007352C(Unk8007352CEnv *env) {
     Unk8009B0E0Record *hdr = env->header;
     SPRT *sp = (SPRT *)env->sprt_out;
     Unk8009B400Record *e;
     s32 clut;
     s16 i;
+    /* FAKE: x1 computed ahead of y1 and read once in the bounds test; at its use: score 2. */
     s32 x0, y0, x1, y1;
 
     clut = GetClut(hdr->cx, hdr->cy);
@@ -66,8 +66,7 @@ s32 func_8007352C(s32 env_addr) {
 
 
 
-s32 func_80073728(s32 env_addr, s32 mode) {
-    Unk8007352CEnv *env = (Unk8007352CEnv *)env_addr;
+s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
     Unk8009B400Record *e = env->table;
     Unk8009B0E0Record *hdr = env->header;
     POLY_FT4 *p;
@@ -321,12 +320,12 @@ skip_init:
         s.header = temp_s2[i];
         s.table = s.header->cells;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C((s32)&s);
+        arg0->unk_04.unk_0C = func_8007352C(&s);
         i++;
     } while (i < 3);
 
     s.header = *temp_s2;
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, 0), 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x7C, arg0->unk_04.unk_14);
     q = arg0->unk_04.unk_04;
     arg0->unk_04.unk_14++;
@@ -444,13 +443,13 @@ void func_80074488(Unk8006EACCRec *arg0) {
             s.header = table[i];
             s.table = s.header->cells;
             s.sprt_out = arg0->unk_04.unk_0C;
-            arg0->unk_04.unk_0C = func_8007352C((s32)&s);
+            arg0->unk_04.unk_0C = func_8007352C(&s);
         }
         i++;
     } while (i < 15);
 
     s.header = table[0];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480((s32)s.header, 0), 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 8, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     rect[2] = 0x108;

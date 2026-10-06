@@ -300,7 +300,16 @@ extern u8 D_8008EBF4[6];
 extern LeafThreshold D_8008EBFC[6];
 extern u8 D_8008EC30[4];
 extern s16 D_8008F12C;
-extern u8 D_8008F13C;
+/* 0x8008F13C: twelve 8-byte rows func_80037110 reads by index (asm/data 0x8008F13C..0x8008F19B):
+ * unk_0, the group-5 file func_80036EA8 resolves; unk_1, cdrom_StartAudio's second argument;
+ * unk_4, an offset added to the file's start sector (-1: none). */
+typedef struct {
+    u8 unk_0;
+    u8 unk_1;
+    u16 unk_2;
+    s32 unk_4;
+} Unk8008F13CRow;
+extern Unk8008F13CRow D_8008F13C[12];
 extern u8 D_8008F19C[];
 extern u8 D_8008F1A8[];
 extern u8 D_8008F204[];
@@ -919,13 +928,13 @@ extern s32 func_8006E068(s32, s32);
 extern s32 func_8006E10C(void);
 extern s32 func_8006E2A8(void);
 extern void func_8006E440(s32 *);
-extern s32 func_8006E480(s32, s32);
+extern s32 func_8006E480(Unk8009B0E0Record *, s32);
 extern s32 func_8006E49C(s32, Unk8006E49CRec *);
 extern s32 func_8006E534(s32, s32, Unk8009BD24Block *, u32);
 extern void func_8006E950(s32, Unk8006E950Head *);
 extern s32 func_8006EACC(s32, s32);
-extern s32 func_8007352C(s32);
-extern s32 func_80073728(s32, s32);
+extern s32 func_8007352C(Unk8007352CEnv *);
+extern s32 func_80073728(Unk8007352CEnv *, s32);
 extern void func_80074220(Unk8006EACCRec *, s32);
 extern void func_80074488(Unk8006EACCRec *);
 extern s32 func_80077820(s32);

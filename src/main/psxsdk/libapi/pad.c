@@ -6,8 +6,8 @@
 
 /* Declarations from the file this module was split from (src/main/64FD8.c, ex text1b_b.c). */
 s32 _Pad1(void);
-extern s32 D_8009BD84;
-extern s32 D_8009BD88;
+extern volatile SioRegs *D_8009BD84; /* SIO port 0, 0x1F801040 (asm/data/7D920.data.s:23915) */
+extern volatile u32 *D_8009BD88; /* I_STAT (I_MASK at [1]), 0x1F801070 (asm/data/7D920.data.s:23921) */
 
 extern s32 D_8009BD80;
 void SetInitPadFlag(s32 a0) {
@@ -98,7 +98,7 @@ s32 _Pad1(void) {
        a scalar counter gives 8 (score 2). SOTN's v_wait counts down element
        0 of a volatile array the same way. */
     volatile s32 i[3]; /* SOTN: src/main/psxsdk/libetc/vsync.c:52 @db41b28 */
-    *(s16 *)((u8 *)D_8009BD84 + 0xA) = 0;
+    D_8009BD84->ctrl = 0;
     i[0] = 10;
     i[0] = i[0] - 1;
     if (i[0] != -1) {
@@ -109,7 +109,7 @@ s32 _Pad1(void) {
     return 0;
 }
 s32 _IsVSync(void) {
-    s32 *p = (s32 *)D_8009BD88;
+    volatile u32 *p = D_8009BD88;
     s32 ret;
     if ((p[1] & 1) == 0) return 0;
     if ((p[0] & 1) != 0) {

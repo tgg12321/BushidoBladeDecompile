@@ -9,18 +9,6 @@
 #include <psxsdk/libapi.h>
 #include <psxsdk/libcomb.h>
 
-/* SIO port registers (0x1F801050, hardware I/O: volatile is type-level). */
-typedef struct {
-    u8 data;
-    u8 unk1[3];
-    u16 stat;
-    u16 unk6;
-    u16 mode;
-    u16 ctrl;
-    u16 misc;
-    u16 baud;
-} SioRegs;
-
 /* One asynchronous transfer request: `sen` (write) and `rec` (read). */
 typedef struct {
     s32 flag;

@@ -539,7 +539,9 @@ s32 func_80043278(s32 a0) {
 extern u16 D_80103658[];
 extern void func_80043454(s16, s16, s16, s16);
 void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
-    u16 arg4_lo = *(u16 *)&arg4;
+    u16 arg4_lo = arg4;
+    /* FAKE: the index (an s32 copy of arg0) and the count table's base in locals: arg0 / the
+       table at the use, score 4 each. */
     s32 idx = arg0;
     u16 *cnt_base = D_80103658;
     u16 *countPtr;
@@ -549,17 +551,18 @@ void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     i = 0;
     if (*countPtr == 0) goto done;
     {
-        s32 **base_addr = D_80103608;
+        s32 **base_addr = D_80103608; /* FAKE: the base table in a local; at the use: score 4 */
         s32 **basePtr = &base_addr[idx];
-        u16 *cntPtr = countPtr; /* load-bearing named intermediate: countPtr's
+        u16 *cntPtr = countPtr; /* FAKE (score 5 read through countPtr): countPtr's
            caller-save home ($a1) must die before the loop's jal; this rebind
            gives the loop reads their own callee-save home ($s1), reproducing
            the target's addu $s1,$a1,$zero copy */
+    /* FAKE: the loop goto-formed; as a do-while: score 21. */
     loop:
-        *(s32 *)0x1F800000 = (*basePtr)[(s16)i];
-        func_80043454((s16)arg1, (s16)arg2, (s16)arg3, (s16)arg4_lo);
+        *(s32 *)0x1F800000 = (*basePtr)[i];
+        func_80043454(arg1, arg2, arg3, arg4_lo);
         i++;
-        if ((s16)i < *cntPtr) goto loop;
+        if (i < *cntPtr) goto loop;
     }
     done:
     ;
@@ -642,19 +645,19 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                         switch (kind) {
                         case 0:
                             gpu_OffsetTexPolyFT3(SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyFT3((u8 *)SCRATCH_PTR + 0x20, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyFT3((POLY_FT3 *)SCRATCH_PTR + 1, arg0, arg1, arg2, arg3);
                             break;
                         case 1:
                             gpu_OffsetTexPolyFT4(SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyFT4((u8 *)SCRATCH_PTR + 0x28, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyFT4((POLY_FT4 *)SCRATCH_PTR + 1, arg0, arg1, arg2, arg3);
                             break;
                         case 2:
                             gpu_OffsetTexPolyGT3(SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyGT3((u8 *)SCRATCH_PTR + 0x28, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyGT3((POLY_GT3 *)SCRATCH_PTR + 1, arg0, arg1, arg2, arg3);
                             break;
                         case 3:
                             gpu_OffsetTexPolyGT4(SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyGT4((u8 *)SCRATCH_PTR + 0x34, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyGT4((POLY_GT4 *)SCRATCH_PTR + 1, arg0, arg1, arg2, arg3);
                             break;
                         }
                         SCRATCH_PTR += D_80095588[type];
@@ -669,27 +672,27 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                             b[7] += arg1;
                             b[9] += arg1;
                             b[11] += arg1;
-                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x18);
+                            SCRATCH_PTR += 12;
                             break;
                         case 1:
                             b[7] += arg1;
                             b[9] += arg1;
                             b[11] += arg1;
                             b[13] += arg1;
-                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x18);
+                            SCRATCH_PTR += 12;
                             break;
                         case 2:
                             b[7] += arg1;
                             b[9] += arg1;
                             b[11] += arg1;
-                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x24);
+                            SCRATCH_PTR += 18;
                             break;
                         case 3:
                             b[7] += arg1;
                             b[9] += arg1;
                             b[11] += arg1;
                             b[13] += arg1;
-                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x2C);
+                            SCRATCH_PTR += 22;
                             break;
                         default:
                             func_80052C10();
@@ -706,14 +709,14 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                             b[1] += arg1;
                             b[5] += arg1;
                             b[9] += arg1;
-                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x14);
+                            SCRATCH_PTR += 10;
                             break;
                         case 1:
                             b[1] += arg1;
                             b[5] += arg1;
                             b[9] += arg1;
                             b[13] += arg1;
-                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x18);
+                            SCRATCH_PTR += 12;
                             break;
                         case 2:
                             /* FAKE: cases 2/3 repeat cases 0/1 (one body per kind, as in
@@ -721,18 +724,18 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                                re-merges the copies (bytes identical to `case 0: case 2:`),
                                but flow.c counts them before global RA: the extra refs and
                                live length seat count/base/kind in s3/s4/s5 as the target
-                               does. */
+                               does. Shared labels: score 109. */
                             b[1] += arg1;
                             b[5] += arg1;
                             b[9] += arg1;
-                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x14);
+                            SCRATCH_PTR += 10;
                             break;
                         case 3:
                             b[1] += arg1;
                             b[5] += arg1;
                             b[9] += arg1;
                             b[13] += arg1;
-                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x18);
+                            SCRATCH_PTR += 12;
                             break;
                         default:
                             func_80052C10();
@@ -952,36 +955,40 @@ void func_80044100(s32 a0, s32 a1) {
     }
 }
 extern void func_800520B8(s32, s32, s32);
+typedef char *va_list;
+#define va_start(ap, last) ((ap) = (va_list)(&(last) + 1))
+#define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
 s32 func_80044170(s32 *a0, ...) {
     s32 *base;
     s32 old_first;
     s32 count;
     s32 *slots;
-    s32 *varptr;
     s32 dest;
     s32 entry;
     s32 size;
+    va_list ap;
 
     base = a0;
     old_first = *base;
-    count = *(s32 *)((s32)&a0 + 4);
+    va_start(ap, a0);
+    count = va_arg(ap, s32);
+    /* FAKE: a0 reused for the slot table (base + 1); its own local: score 38. */
     a0 = base + 1;
     *base = count;
     slots = a0;
     dest = (s32)base + *slots;
     count--;
-    varptr = (s32 *)((s32)&a0 + 8);
     if (count != -1) {
         do {
             s32 *tbl;
             s32 cur_off;
 
-            varptr++;
-            entry = *(varptr - 1);
+            entry = va_arg(ap, s32);
             if (entry >= old_first) {
                 func_80052C10();
             }
             count--;
+            /* FAKE: the slot address as an integer sum; &a0[entry]: score 3. */
             tbl = (s32 *)((entry * 4) + (s32)a0);
             cur_off = *tbl;
             size = *(tbl + 1);
@@ -1177,14 +1184,12 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     s32 v0;
     /* FAKE: keeps reorg.c relax_delay_slots from inverting the two default-path
        j/nop pairs in the stage-id switch (NOTE_INSN_LOOP_BEG sets
-       LABEL_OUTSIDE_LOOP_P, suppressing the invert-jump peephole) */
+       LABEL_OUTSIDE_LOOP_P, suppressing the invert-jump peephole); removed: score 4 */
     do { } while (0);
     D_800A9CF8.unk0 = a1;
-    v0 = *(u16 *)a0;
-    a0++;
+    D_800A9CF8.unk2 = *a0++;
     D_800A9CF8.unk8 = (s32)a0;
     D_800A9CF8.unkC = a2;
-    D_800A9CF8.unk2 = v0;
     v0 = stage_GetId();
     D_800A9CF8.unk4 = v0;
     switch ((s16)v0) {
@@ -1198,10 +1203,7 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
         D_800A9CF8.unk6 = 0xA;
         break;
     }
-    {
-        s32 val = D_800A9CF8.unk6;
-        return a2 + val * 104;
-    }
+    return a2 + D_800A9CF8.unk6 * 104;
 }
 void func_8004473C(void)
 {

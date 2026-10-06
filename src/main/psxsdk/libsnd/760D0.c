@@ -9,17 +9,17 @@
  * voice up to _SsVmMaxVoice and key each one off (func_8008B488 with a
  * one-voice mask, then _SsVmKeyOffNow). */
 void func_800858D0(void) {
-    s32 buf[16];
+    SpuVoiceAttr attr;
     s16 var_s0;
 
-    buf[1] = 0x60093;
+    attr.mask = 0x60093;
     var_s0 = 0;
-    *(s16 *)((u8 *)buf + 0x14) = 0x1000;
-    *(s32 *)((u8 *)buf + 0x1C) = 0x1000;
-    *(u16 *)((u8 *)buf + 0x3A) = 0x80FF;
-    *(s16 *)((u8 *)buf + 0x08) = 0;
-    *(s16 *)((u8 *)buf + 0x0A) = 0;
-    *(s16 *)((u8 *)buf + 0x3C) = 0x4000;
+    attr.pitch = 0x1000;
+    attr.addr = 0x1000;
+    attr.adsr1 = 0x80FF;
+    attr.volume.left = 0;
+    attr.volume.right = 0;
+    attr.adsr2 = 0x4000;
     if (_SsVmMaxVoice != 0) {
         do {
             _svm_voice[var_s0].unk2 = 0x18;
@@ -28,8 +28,8 @@ void func_800858D0(void) {
             _svm_voice[var_s0].unk10 = 0;
             _svm_voice[var_s0].prog = 0;
             _svm_voice[var_s0].tone = 0xFF;
-            buf[0] = 1 << var_s0;
-            func_8008B488(buf);
+            attr.voice = 1 << var_s0;
+            func_8008B488(&attr);
             _svm_cur.voice = var_s0;
             _SsVmKeyOffNow(1);
             var_s0 = var_s0 + 1;

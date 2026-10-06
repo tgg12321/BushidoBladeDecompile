@@ -8,6 +8,30 @@
 #include "common.h"
 #include <psxsdk/kernel.h>
 
+/* PsyQ's directory entry (sys/file.h), what firstfile / nextfile fill (sizeof = 0x28). */
+struct DIRENTRY {
+    char name[20];
+    s32 attr;
+    s32 size;
+    struct DIRENTRY *next;
+    s32 head;
+    char system[4];
+};
+
+/* An SIO port's registers (hardware I/O, volatile at the use: mmio-volatile-type-level): port 0
+ * (controllers / memory cards) at 0x1F801040, D_8009BD84 in pad.c; port 1 (link cable) at
+ * 0x1F801050, libcomb's D_800A3044. */
+typedef struct {
+    u8 data;
+    u8 unk1[3];
+    u16 stat;
+    u16 unk6;
+    u16 mode;
+    u16 ctrl;
+    u16 misc;
+    u16 baud;
+} SioRegs;
+
 /* PsyQ: long SetRCnt(unsigned long, unsigned short, long) -- rcnt_StartCnt1 (368E4) passes the
  * target -1 as a full word (li -1), which a u16 parameter would turn into 0xFFFF. */
 extern s32 SetRCnt(u32, s32, s32);
@@ -37,7 +61,7 @@ extern s32 open(s32 *, s32);    /* PsyQ: long open(char *, unsigned long) */
 extern void read(s32, s32 *, s32); /* PsyQ: long read(long, void *, long) */
 extern void close(s32);         /* PsyQ: long close(long) */
 extern s32 format(s32 *);       /* PsyQ: long format(char *) */
-extern s32 firstfile(s32 *, s32 *); /* PsyQ: struct DIRENTRY *firstfile(char *, struct DIRENTRY *) */
-extern s32 nextfile(s32 *);     /* PsyQ: struct DIRENTRY *nextfile(struct DIRENTRY *) */
+extern struct DIRENTRY *firstfile(s32 *, struct DIRENTRY *); /* PsyQ: struct DIRENTRY *firstfile(char *, struct DIRENTRY *) */
+extern struct DIRENTRY *nextfile(struct DIRENTRY *);
 
 #endif /* PSXSDK_LIBAPI_H */

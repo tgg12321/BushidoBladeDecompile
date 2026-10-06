@@ -127,7 +127,7 @@ extern s32 g_memcard_file_count;
 
 /* Extern function declarations for decompiled functions */
 
-extern s32 g_memcard_file_list;
+extern struct DIRENTRY g_memcard_file_list[];
 
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
@@ -226,44 +226,47 @@ void memcard_AckHwEvents(void) {
     TestEvent(g_memcard_hw_event_new);
 }
 s32 memcard_CountFiles(s32 arg0, s32 arg1) {
-    s32 *var_s0;
+    struct DIRENTRY *var_s0;
     s32 var_s1;
     s32 sp10[8];
 
-    var_s0 = (s32 *)&g_memcard_file_list;
+    var_s0 = g_memcard_file_list;
     sprintf(sp10, g_str_memcard_fmt, arg0, arg1);
     var_s1 = 0;
     if (firstfile(sp10, var_s0) != 0) {
         do {
             var_s1++;
-            var_s0 = (s32 *)(((u8 *)var_s0) + 0x28);
+            var_s0++;
         } while (nextfile(var_s0) != 0);
     }
     g_memcard_file_count = var_s1;
     return var_s1;
 }
 s32 func_80037AA4(void) {
-    s8 *var_v1;
+    struct DIRENTRY *var_v1;
     s32 var_a1;
     s32 var_a2;
+    /* FAKE: reused -- the byte total, then the block count; 0xF - (var_v0 >> sh) returned directly: score 15. */
     s32 var_a0;
+    /* FAKE: reused -- each entry's size in the loop, then the rounded total; its own local for either value: score 2. */
     s32 var_v0;
     s32 sh; /* FAKE: shift-amount constant-holder (SOTN cd.c new_var2 shape) -- survives
                cse past the guard join and raises var_a0's allocation priority so
                global-alloc assigns a0/v1 in target order; reload's constant-equivalence
-               (update_equiv_regs) then substitutes 13 and deletes the li: zero extra bytes. */
+               (update_equiv_regs) then substitutes 13 and deletes the li: zero extra bytes;
+               literal 0xD: score 11. */
 
     sh = 0xD;
     var_a1 = 0;
     var_a0 = 0;
     var_a2 = g_memcard_file_count;
     if (var_a1 < var_a2) {
-        var_v1 = (s8 *)&g_memcard_file_list;
+        var_v1 = g_memcard_file_list;
         do {
-            var_v0 = *(s32 *)(var_v1 + 0x18);
+            var_v0 = var_v1->size;
             var_a1 += 1;
             var_a0 += var_v0;
-            var_v1 += 0x28;
+            var_v1++;
         } while (var_a1 < var_a2);
     }
     var_v0 = var_a0;
@@ -276,7 +279,7 @@ s32 func_80037AA4(void) {
 s32 func_80037B00(u8 *arg0) {
     s32 var_t1;
     s32 var_t2;
-    s8 *var_a3;
+    struct DIRENTRY *var_a3;
     s8 *var_a1;
     s8 *var_a2;
     s8 *var_t0;
@@ -287,12 +290,13 @@ s32 func_80037B00(u8 *arg0) {
     var_t1 = 0;
     if (var_t1 < g_memcard_file_count) {
         var_t3 = g_memcard_file_count;
-        var_a3 = (s8 *)&g_memcard_file_list;
+        var_a3 = g_memcard_file_list;
         while (var_t1 < var_t3) {
             var_t2 = 0;
-            var_a1 = var_a3;
+            var_a1 = var_a3->name;
             var_a2 = (s8 *)arg0;
-            var_t0 = var_a3 + 0x15;
+            /* the bound is 21 bytes: the compare runs one byte past name[20] into attr, as the target does */
+            var_t0 = var_a3->name + 0x15;
             while (1) {
                 var_v1 = (u8)*var_a2;
                 if (var_v1 == 0) {
@@ -318,7 +322,7 @@ s32 func_80037B00(u8 *arg0) {
             var_t2 = 1;
             goto block_5c;
         block_74:
-            var_a3 += 0x28;
+            var_a3++;
         }
     }
     return 0;

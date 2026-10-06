@@ -3889,14 +3889,14 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
         s.ot_idx = ot;
         D_8009B184[0].x = (0x280 - D_8009B2BC[2].w) / 2;
         D_8009B184[1].x = (D_8009B2BC[2].w + 0x280) / 2 - 0xC;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         s.header = &D_8009B0E0[8];
         s.table = D_8009B20C;
         s.x = 0;
         s.y = 0;
         s.sprt_out = cur;
         s.ot_idx = ot;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         for (j = 0; j < 3; j++) {
             if (sel == j + 3) {
                 s.semi = 0;
@@ -3909,7 +3909,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
             s.y = 0;
             s.sprt_out = cur;
             s.ot_idx = ot;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
             for (i = 0; i < 2; i++) {
                 if (((arg1 >> (j + 16)) & 1) == i) {
                     s.semi = 0;
@@ -3922,7 +3922,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
                 s.y = j * 15;
                 s.sprt_out = cur;
                 s.ot_idx = ot;
-                cur = func_8007352C((s32)&s);
+                cur = func_8007352C(&s);
             }
         }
         for (i = 0; i < 2; i++) {
@@ -3957,7 +3957,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
         s.sprt_out = cur;
         s.y = y_base + top;
         s.ot_idx = ot;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         s.header = &D_8009B0E0[3];
         s.has_color = 0;
         s.table = D_8009B194;
@@ -3966,7 +3966,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
         s.semi = 0;
         s.sprt_out = cur;
         s.ot_idx = ot;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         top += 0xE;
         s.header = &D_8009B0E0[2];
         s.table = D_8009B184;
@@ -3977,7 +3977,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
         s.ot_idx = ot;
         D_8009B184[0].x = (0x280 - D_8009B2BC[mode].w) / 2;
         D_8009B184[1].x = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         for (i = 0; i < 2; i++) {
             SetTile(tile);
             if (i != 0) {
@@ -4010,7 +4010,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
         s.y = top;
         s.sprt_out = cur;
         s.ot_idx = ot;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         break;
     }
 
@@ -4027,7 +4027,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
         s.y = y_base + top;
         s.sprt_out = cur;
         s.ot_idx = ot;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
     }
 
     s.has_color = 0;
@@ -4040,14 +4040,14 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     s.ot_idx = ot;
     D_8009B164[0][0].x = (0x280 - D_8009B2BC[mode].w) / 2;
     D_8009B164[0][1].x = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
-    cur = func_8007352C((s32)&s);
+    cur = func_8007352C(&s);
     s.header = &D_8009B0E0[1];
     s.table = D_8009B164[1];
     s.y = (D_8009B2BC[mode].h + 0xF0) / 2;
     s.sprt_out = cur;
     D_8009B164[1][0].x = (0x280 - D_8009B2BC[mode].w) / 2;
     D_8009B164[1][1].x = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
-    func_8007352C((s32)&s);
+    func_8007352C(&s);
 
     for (j = 0; j < 2; j++) {
         x = (0x280 - D_8009B2BC[mode].w) / 2;
@@ -4124,7 +4124,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
     tile->h = D_8009B2BC[mode].h;
     SetSemiTrans(tile, 1);
     AddPrim(g_gpu_ot_ptr + ot * 4, tile);
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B0E0[0], 0), 0);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B0E0[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + ot * 4, mode_off);
     return size;
 }
@@ -4154,7 +4154,7 @@ s32 func_8005D46C(s32 arg0, s32 arg1) {
     s.semi = 0;
     s.ot_idx = 1;
     s.ft4_out = arg0;
-    ret = func_80073728((s32)(&s), 0);
+    ret = func_80073728(&s, 0);
     s.has_color = 0;
     s.header = &D_8009B2C8[idx][1];
     s.table = D_8009B358;
@@ -4165,7 +4165,7 @@ s32 func_8005D46C(s32 arg0, s32 arg1) {
     s.semi = 0;
     s.ot_idx = 1;
     s.ft4_out = ret;
-    return func_80073728((s32)(&s), 0);
+    return func_80073728(&s, 0);
 }
 s32 func_8005D554(s32 arg0, s32 arg1) {
     Unk8007352CEnv s;
@@ -4225,7 +4225,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             tmp1 = ft4;
             s.ft4_out = tmp1;
             s.y = y;
-            ft4 = func_80073728((s32)&s, 0);
+            ft4 = func_80073728(&s, 0);
 
             s.has_color = 0;
             s.scale_y = scale;
@@ -4246,7 +4246,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             tmp2 = ft4;
             s.ft4_out = tmp2;
             s.y = y;
-            ft4 = func_80073728((s32)&s, 0);
+            ft4 = func_80073728(&s, 0);
             i += 1;
         } while (i < ((D_800A326C + 1) * 2));
     }
@@ -4288,7 +4288,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     for (i = 0; i < 3; i++) {
         s.table = &D_8009B3C8[i];
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
     }
 
     s.header = &D_8009B398[1];
@@ -4302,7 +4302,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             }
         }
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
     }
 
     s.header = &D_8009B398[0];
@@ -4360,7 +4360,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 break;
             }
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
         }
     }
 
@@ -4392,7 +4392,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 s.x = j * 21;
             }
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
         }
     }
 
@@ -4426,13 +4426,13 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         s.header = hdr2;
         s.table = cell2;
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         s.header = hdr3;
         s.table = cell3;
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B398[0], 0), 0);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B398[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
     return end_off - arg2;
 }
@@ -4474,7 +4474,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             s.table = &D_8009B458[0][i];
         }
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         if (arg0 < 0) {
             break;
         }
@@ -4509,7 +4509,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                 s.x = i * 20;
             }
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
         }
         if (arg0 < 0) {
             break;
@@ -4539,16 +4539,16 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         s.header = &D_8009B398[2];
         s.table = &D_8009B458[j + 1][0];
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         s.header = &D_8009B398[3];
         s.table = &D_8009B458[j + 1][1];
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         if (arg0 < 0) {
             break;
         }
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B398[0], 0), 0);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B398[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
     return end_off - arg2;
 }
@@ -4626,7 +4626,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         s.x = i * 320;
         s.table = D_8009B554;
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         if (!(D_8009BD24.unk14_15 >> i & 1)) {
             s.header = &D_8009B530;
             s.table = D_8009B56C;
@@ -4635,7 +4635,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             s.table = D_8009B57C;
         }
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
     }
 
     s.semi = 0;
@@ -4656,13 +4656,13 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             s.y += 2;
             s.table = &D_8009B4BC[D_800A3270[i]];
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
         } else {
             s.header = &D_8009B4E4;
             s.x = 0;
             s.table = &D_8009B514;
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
             for (j = 0; j < 2; j++) {
                 s.x = j * 70;
                 /* FAKE: the other player's points read through a selected address;
@@ -4675,7 +4675,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                     s.table = &D_8009B50C;
                 }
                 s.sprt_out = cur;
-                cur = func_8007352C((s32)&s);
+                cur = func_8007352C(&s);
             }
             s.y += 5;
             for (j = 0; j < 2; j++) {
@@ -4688,7 +4688,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                         s.x = (1 - k) * 16 + 0xE2;
                     }
                     s.sprt_out = cur;
-                    cur = func_8007352C((s32)&s);
+                    cur = func_8007352C(&s);
                 }
             }
         }
@@ -4706,7 +4706,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s.y = y + 3;
     s.table = &D_8009B514;
     s.sprt_out = cur;
-    cur = func_8007352C((s32)&s);
+    cur = func_8007352C(&s);
     /* FAKE: one 32-bit store clears the whole pair (target 0x8005EA44
        `sw $zero,0x18($sp)`); the union spelling does not match. Owner
        ruling Q36 (no-new-park-categories.md, one cast store on a
@@ -4731,10 +4731,10 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             }
             s.y = y + (k & 1) * 12;
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
         }
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B524, 0), 0);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B524, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
     /* The second DR_MODE goes at the chunk's end, past the size this function returns (2B344
      * func_8003C560 advances its cursor D_800A38B4 by that size; 6CF8 func_800174F4 ignores
@@ -4777,11 +4777,11 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                 s.y = i * 34 + 3;
             }
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
             if (D_8009BD24.unk00[j][i].chr == 8) {
                 s.table = D_8009ADC0;
                 s.sprt_out = cur;
-                cur = func_8007352C((s32)&s);
+                cur = func_8007352C(&s);
             }
         }
         s.has_color = 0;
@@ -4796,10 +4796,10 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                 s.header = &D_8009B398[j + 2];
                 s.table = D_8009B490[j];
                 s.ft4_out = ft4;
-                ft4 = func_80073728((s32)&s, 0);
+                ft4 = func_80073728(&s, 0);
                 s.table = &D_8009B490[j][1];
                 s.ft4_out = ft4;
-                ft4 = func_80073728((s32)&s, 0);
+                ft4 = func_80073728(&s, 0);
             }
         }
     }
@@ -4821,7 +4821,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         s.table = &D_8009B400[wins[j]];
         s.table->x = s.table->y = 0;
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
     }
 
     SetTile(tile);
@@ -4867,7 +4867,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->h = 1;
     SetSemiTrans(tile, 0);
     AddPrim(g_gpu_ot_ptr + arg2 * 4, tile);
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009ADB4, 0), 0);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009ADB4, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2 * 4, mode_off);
     return end_off - arg1;
 }
@@ -4924,11 +4924,11 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                     s.table++;
                 }
                 s.sprt_out = cur;
-                cur = func_8007352C((s32)&s);
+                cur = func_8007352C(&s);
             }
         }
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B5A0[0], 0), 0);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B5A0[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
     /* The second DR_MODE goes at the chunk's end, past the size this function returns (its
      * caller, 9F9C func_8001CE60, advances its cursor D_800A38B4 by that size). */
@@ -4944,7 +4944,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             s.x = j * 550;
             s.table = &D_8009B5D8[k];
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
         }
     }
 
@@ -4972,11 +4972,11 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             s.header = &D_8009B398[2];
             s.table = &D_8009B5F0[j][0];
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
             s.header = &D_8009B398[3];
             s.table = &D_8009B5F0[j][1];
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
         }
     }
 
@@ -5029,7 +5029,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 s.table->x = 0x113;
             }
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
         }
         s.table = &D_8009B5E8;
         if (D_8009BD24.unk14_12 == 2) {
@@ -5038,9 +5038,9 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             s.x = j * 6 + 0x13B;
         }
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B398[1], 0), 0);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B398[1], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
     return end_off - arg2;
 }
@@ -5081,11 +5081,11 @@ s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
         break;
     }
     s.ft4_out = start;
-    ret = func_80073728((s32)(&s), 0);
+    ret = func_80073728(&s, 0);
     s.header = &D_8009B610[arg0];
     s.table = &D_8009B634;
     s.ft4_out = ret;
-    func_80073728((s32)(&s), 0);
+    func_80073728(&s, 0);
     return end - arg1;
 }
 extern u8 D_800A327C[8];
@@ -5213,7 +5213,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
             s.header = &D_8009B698[i];
             s.y = i << 6;
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
         }
         if (D_800A3278 >= 0xB5) {
             SetDrawArea(area, &r);
@@ -5222,7 +5222,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
         }
         j++;
     } while (j < 2);
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)D_8009B698, 0x20), 0);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(D_8009B698, 0x20), 0);
     AddPrim(g_gpu_ot_ptr + arg1 * 4, mode_off);
     if (off <= 0x140) {
         D_800A3278++;
@@ -5257,7 +5257,7 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
     }
     s.table = D_8009B758;
     s.sprt_out = cur;
-    cur = func_8007352C((s32)&s);
+    cur = func_8007352C(&s);
     s.header = &D_8009B6F0[1];
     d[0] = d[1] = arg0;
     d[1] = d[1] / 10 % 10;
@@ -5270,12 +5270,12 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
             s.x = (((1 - i) << 2) << 3) + 0x54;
         }
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         if (d[1] == 0) {
             break;
         }
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)D_8009B6F0, 0), 0);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(D_8009B6F0, 0), 0);
     AddPrim(g_gpu_ot_ptr + (arg2 * 4), mode_off);
     return end_off - arg1;
 }
@@ -5333,8 +5333,8 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     }
     s.table = &D_800A328C;
     s.sprt_out = (s32)&chunk->unk_00;
-    func_8007352C((s32)(&s));
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)s.header, 0), 0);
+    func_8007352C(&s);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + (arg2 * 4), mode_off);
     return end_off - arg1;
 }
@@ -5382,19 +5382,19 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         case 3:
             s.table = &D_8009B7D0;
             s.ft4_out = ft4;
-            ft4 = func_80073728((s32)&s, 0);
+            ft4 = func_80073728(&s, 0);
             break;
         }
         if (i != 3) {
             s.sprt_out = cur;
-            cur = func_8007352C((s32)&s);
+            cur = func_8007352C(&s);
         }
         i += 1;
     } while (i < 4);
     s.header = &D_8009B7A0;
     s.table = D_8009B820;
     s.sprt_out = cur;
-    cur = func_8007352C((s32)&s);
+    cur = func_8007352C(&s);
     j = 0;
     p1 = D_8009B840;
     p0 = &D_8009B398[2];
@@ -5406,12 +5406,12 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         s.header = p0;
         s.table = p1;
         s.sprt_out = cur;
-        cur = func_8007352C((s32)&s);
+        cur = func_8007352C(&s);
         p1++;
         j += 1;
         p0++;
     } while (j < 2);
-    SetDrawMode(mode_off, 1, 0, func_8006E480((s32)s.header, 0), 0);
+    SetDrawMode(mode_off, 1, 0, func_8006E480(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + (arg1 * 4), mode_off);
     return end_off - arg0;
 }

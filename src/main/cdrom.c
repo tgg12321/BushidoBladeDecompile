@@ -98,14 +98,10 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
     return 1;
 }
 s32 func_80037110(s32 arg0) {
-    u8 *s0 = (u8 *)&D_8008F13C + (arg0 << 3);
-    s32 v0;
-    v0 = func_80036EA8(5, s0[0]);
-    v0 = cdrom_StartAudio(v0, s0[1]);
-    if (v0 != 0) {
-        if (*(s32 *)(s0 + 4) != -1) {
-            v0 = CdPosToInt(&g_cd_file_table[D_80101E58.rec.unk00].loc);
-            D_80101E58.rec.unk14 = v0 + *(s32 *)(s0 + 4);
+    Unk8008F13CRow *s0 = &D_8008F13C[arg0];
+    if (cdrom_StartAudio(func_80036EA8(5, s0->unk_0), s0->unk_1) != 0) {
+        if (s0->unk_4 != -1) {
+            D_80101E58.rec.unk14 = CdPosToInt(&g_cd_file_table[D_80101E58.rec.unk00].loc) + s0->unk_4;
         }
         return 1;
     }

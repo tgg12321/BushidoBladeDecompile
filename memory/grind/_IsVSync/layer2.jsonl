@@ -1,0 +1,1 @@
+{"func": "_IsVSync", "addr": "80078EC0", "verdict": "PASS", "body_hash": "06b5c55f10d8b157", "body_kind": "c", "file": "main/psxsdk/libapi/pad", "reviewer": "cheat-reviewer:rev-fdesc4", "scope": "cheat-cleanup", "date": "2026-10-06T13:32:56Z", "head": "5180b9e9a", "notes": ""}
