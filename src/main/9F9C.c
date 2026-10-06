@@ -1403,7 +1403,7 @@ void func_8001CE60(void) {
     Unk8001CD68Rec buf;
 
     if (D_800A38DC == 1) {
-        D_800A38B4 += func_8005E51C(D_800A3783, D_800A38B4, 1) / 4 * 4;
+        D_800A38B4 += func_8005E51C(D_800A3783, (s32)D_800A38B4, 1) / 4;
     } else if (D_800A38DC == 3) {
         if (D_80101EC8[0].unk_96 == 0 && (D_80101EC8[1].unk_96 == 0 || D_800A38E2 != 100)) {
             D_800A3858++;
@@ -1412,9 +1412,9 @@ void func_8001CE60(void) {
             }
         }
         func_8001CD68(&buf);
-        D_800A38B4 += func_8005D814(&buf, D_800A38E2, D_800A38B4, 1) / 4 * 4;
+        D_800A38B4 += func_8005D814(&buf, D_800A38E2, (s32)D_800A38B4, 1) / 4;
     } else if ((D_800A38DC == 2 && D_800A389A == 1) || D_800A38DC == 4) {
-        D_800A38B4 += func_8005E098(D_800A37D2, D_800A37D3, D_800A38B4, 1) / 4 * 4;
+        D_800A38B4 += func_8005E098(D_800A37D2, D_800A37D3, (s32)D_800A38B4, 1) / 4;
     } else if (D_800A38DC == 5) {
         /* temp holds two values (ordinary-c-judge-decidable Ruling 11, with
          * its per-branch constants clause): the announcement length in
@@ -1440,7 +1440,7 @@ void func_8001CE60(void) {
                 D_800A3834 = 0;
             }
         } else if (D_800A37E1 != 0) {
-            D_800A38B4 += func_8005FA98(2, D_800A38B4, 1) / 4 * 4;
+            D_800A38B4 += func_8005FA98(2, (s32)D_800A38B4, 1) / 4;
             if (++D_800A37E1 == 0x3C) {
                 D_800A37E1 = 0;
                 if (D_800A38B0 != 2) {
@@ -1465,7 +1465,7 @@ void func_8001CE60(void) {
                 }
             }
         } else if (D_800A3920 != 0) {
-            D_800A38B4 += func_8005FA98(1, D_800A38B4, 1) / 4 * 4;
+            D_800A38B4 += func_8005FA98(1, (s32)D_800A38B4, 1) / 4;
             if (++D_800A3920 == 0x1E) {
                 func_8005C650(0xA1, 0x7F, 0x7F);
             }
@@ -1551,7 +1551,7 @@ void func_8001CE60(void) {
             buf.unk_2 = temp / 30;
             buf.unk_3 = temp % 30 * 100 / 30;
         }
-        D_800A38B4 += func_8005F1C8(&buf, D_800A3898[0] | (D_800A38AA[0] << 8) | (D_800A3898[1] << 4) | (D_800A38AA[1] << 12), D_800A38B4, 1) / 4 * 4;
+        D_800A38B4 += func_8005F1C8(&buf, D_800A3898[0] | (D_800A38AA[0] << 8) | (D_800A3898[1] << 4) | (D_800A38AA[1] << 12), (s32)D_800A38B4, 1) / 4;
     }
 }
 extern s8 D_800A30FC;
@@ -2029,16 +2029,10 @@ void func_8001EA04(void) {
 void func_8001EA84(void) {
     PadState sp10;
     Unk8001CD68Rec buf;
-    s32 ret;
-    Unk80101EC8Record *base;
 
     D_800A37B8 += 1;
     D_800A3778 = (s32)camera_GetBoneData();
-    base = &D_80101EC8[0];
-    if (D_800A3748 == 0) {
-        base++;
-    }
-    func_8001BC70(base, D_800A37B8 << 3);
+    func_8001BC70(&D_80101EC8[D_800A3748 == 0], D_800A37B8 << 3);
     func_8001E404();
     func_80039320();
     func_8002006C();
@@ -2053,10 +2047,10 @@ void func_8001EA84(void) {
     func_800335D8();
     if (D_800A38DC == 3) {
         func_8001CD68(&buf);
-        D_800A38B4 = D_800A38B4 + ((func_8005D814(&buf, D_800A38E2, D_800A38B4, 1) / 4) * 4);
+        D_800A38B4 += func_8005D814(&buf, D_800A38E2, (s32)D_800A38B4, 1) / 4;
     }
     if (D_800A3929 == 0) {
-        D_800A38B4 = D_800A38B4 + ((func_8005C8A8(1, D_800A3817, D_800A38B4, 0) / 4) * 4);
+        D_800A38B4 += func_8005C8A8(1, D_800A3817, (s32)D_800A38B4, 0) / 4;
         if ((g_pad_state.pressed & 0x10001000) != 0) {
             func_8005C650(0, 0x7F, 0x7F);
             if (D_800A3817 != D_800A3804) {
@@ -2087,11 +2081,10 @@ void func_8001EA84(void) {
         return;
     }
     if (D_800A3817 == 0) {
-        ret = func_8005FA98(0, D_800A38B4, 1);
-        D_800A38B4 = D_800A38B4 + ((ret / 4) * 4);
+        D_800A38B4 += func_8005FA98(0, (s32)D_800A38B4, 1) / 4;
     }
     D_800A3929 = D_800A3929 + 1;
-    if (((u8)D_800A3929) < 0x3C) return;
+    if (D_800A3929 < 0x3C) return;
     if (D_800A3817 == 0) {
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;

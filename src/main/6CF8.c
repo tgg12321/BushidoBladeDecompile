@@ -328,14 +328,13 @@ void gpu_WaitDrawSync(void) {
 }
 
 void func_80016E60(GpuDb *arg0, s32 arg1) {
-    u8 *ot[2];
+    u32 ot[2];
     GpuDb *env;
     s32 select;
     s32 special;
     s32 limit;
     u32 prim_base;
     s32 idx;
-    u32 padbits;
     GpuDb *ot_base;
 
     select = 0;
@@ -364,16 +363,16 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
 
     while (1) {
         idx = D_800A36AC & 1;
-        D_800A38B4 = prim_base + (idx * 0x9A00);
+        D_800A38B4 = (u32 *)(prim_base + (idx * 0x9A00));
         g_gpu_ot_ptr = (u8 *)&ot[idx];
         env = &g_gpu_db[idx];
 
         ClearOTagR((u32 *)g_gpu_ot_ptr, 1);
         func_80019568();
         if (special != 0) {
-            func_8005C8A8(2, select | (D_800A3788 << 16), D_800A38B4, 0);
+            func_8005C8A8(2, select | (D_800A3788 << 16), (s32)D_800A38B4, 0);
         } else {
-            func_8005C8A8(0, select, D_800A38B4, 0);
+            func_8005C8A8(0, select, (s32)D_800A38B4, 0);
         }
         func_80036940();
         func_8005C6D0();
@@ -393,47 +392,30 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
         DrawOTag((u32 *)g_gpu_ot_ptr);
         D_800A36AC++;
 
-        padbits = g_pad_state.pressed;
-        if (padbits & 0x100010) {
+        if (g_pad_state.pressed & 0x100010) {
             func_8005C650(1, 0x7F, 0x7F);
             select = 0;
             break;
         }
-        if (padbits & 0x400040) {
+        if (g_pad_state.pressed & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             break;
         }
-        if (padbits & 0x10001000) {
+        if (g_pad_state.pressed & 0x10001000) {
             func_8005C650(0, 0x7F, 0x7F);
             select = (select == 0) ? limit - 1 : select - 1;
-        } else if (padbits & 0x40004000) {
+        } else if (g_pad_state.pressed & 0x40004000) {
             func_8005C650(0, 0x7F, 0x7F);
             select = (select == limit - 1) ? 0 : select + 1;
         }
 
         if ((special != 0) && (select >= 3)) {
             if (g_pad_state.pressed & 0x80008000) {
-                u8 shift;
-                s32 mask;
-                s32 bits;
                 func_8005C650(0, 0x7F, 0x7F);
-                shift = select - 3;
-                mask = 1;
-                mask <<= shift;
-                bits = D_800A3788;
-                bits |= mask;
-                D_800A3788 = bits;
+                D_800A3788 |= 1 << (select - 3);
             } else if (g_pad_state.pressed & 0x20002000) {
-                u8 shift;
-                s32 mask;
-                s32 bits;
                 func_8005C650(0, 0x7F, 0x7F);
-                shift = select - 3;
-                mask = 1;
-                mask <<= shift;
-                bits = D_800A3788;
-                bits &= ~mask;
-                D_800A3788 = bits;
+                D_800A3788 &= ~(1 << (select - 3));
             }
         }
     }
@@ -494,7 +476,7 @@ loop:
     ot = env->ot;
     ClearOTagR(ot, 0x1008);
     g_gpu_ot_ptr = (u8 *)ot;
-    D_800A38B4 = tbl[idx];
+    D_800A38B4 = (u32 *)tbl[idx];
     func_80060E04(idx);
     func_8003D2F4();
     func_80019568(skip);
@@ -513,8 +495,7 @@ loop:
     func_8003D330();
 
     do {
-        s32 cnt = GetRCnt(0xF2000001u);
-        if (cnt >= ((D_800A36F1 - 1) << 8) + 0x80) break;
+        if (GetRCnt(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80) break;
         rand();
     } while (1);
 
@@ -530,9 +511,7 @@ loop:
     }
 
     {
-        s32 prim_base = (s32)tbl[idx];
-        s32 adj = D_800A38B4 + 0xFFFECC00u;
-        s32 remaining = prim_base - adj;
+        s32 remaining = tbl[idx] + 0x13400 - (s32)D_800A38B4;
         if (remaining < D_800A30DC) {
             D_800A30DC = remaining;
         }
@@ -861,7 +840,7 @@ u8 D_800A37A0;
 s32 D_800A37C0;
 s16 D_800A3834;
 u8 D_800A389A;
-u32 D_800A38B4;
+u32 *D_800A38B4;
 s32 g_rng_state;
 s16 D_800A38DC;
 u8 D_800A38F8;

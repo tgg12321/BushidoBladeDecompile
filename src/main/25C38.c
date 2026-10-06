@@ -111,8 +111,6 @@ void func_80035480(void) {
 
 void func_8003553C(void) {
     POLY_G4 *g;
-    POLY_G4 *q;
-    u8 *ot;
 
     g = (POLY_G4 *)D_800A38B4;
     SetPolyG4(g);
@@ -124,11 +122,9 @@ void func_8003553C(void) {
     g->r1 = 0; g->g1 = 0; g->b1 = 0x80;
     g->r2 = 0; g->g2 = 0; g->b2 = 0;
     g->r3 = 0; g->g3 = 0; g->b3 = 0;
-    ot = g_gpu_ot_ptr + 0x401C;
-    q = g;
+    AddPrim(g_gpu_ot_ptr + 0x401C, g);
     g += 1;
-    AddPrim(ot, q);
-    D_800A38B4 = (u32)g;
+    D_800A38B4 = (u32 *)g;
 }
 void func_800355E8(void) {
     snd_SerialMixOn();

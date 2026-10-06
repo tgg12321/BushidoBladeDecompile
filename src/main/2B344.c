@@ -528,14 +528,9 @@ void func_8003B870(void) {
     gpu_SetDispMaskOn();
 }
 void func_8003B8E4(void) {
-    s32 tmp;
-    s32 ret;
-
-    tmp = D_800A37B8 + 1;
-    D_800A37B8 = tmp;
-    if (tmp < 3) {
-        ret = func_80060544(D_800A38B4, 1);
-        D_800A38B4 = D_800A38B4 + (ret / 4) * 4;
+    D_800A37B8 = D_800A37B8 + 1;
+    if (D_800A37B8 < 3) {
+        D_800A38B4 += func_80060544((s32)D_800A38B4, 1) / 4;
     }
     if (D_800A37B8 == 3) {
         DrawSync(0);
@@ -930,43 +925,30 @@ void func_8003C040(void) {
     gpu_SetDispMaskOn();
 }
 void func_8003C2C0(void) {
-    s32 ret;
-
     D_800A37B8 = D_800A37B8 + 1;
-    ret = func_8005FC9C(D_800A38B4, 1);
-    D_800A38B4 = D_800A38B4 + ret * 4;
+    D_800A38B4 += func_8005FC9C((s32)D_800A38B4, 1);
     if (func_80054F68() == 0 || (g_pad_state.pressed & 0x400040) != 0) {
         if ((u32)(D_800A38A4 - 6) < 2u && D_800A3781 != 0) {
-            s32 stage = (s16)D_80101EC8[0].unk_0A;
-            s32 newval = 8;
-            if (D_8008D9EC[stage] != 0) {
-                newval = 9;
-            }
-            D_800A38A4 = newval;
+            D_800A38A4 = D_8008D9EC[D_80101EC8[0].unk_0A] != 0 ? 9 : 8;
             D_800A3834 = 0x12;
         } else {
-            u8 a4val = D_800A38A4;
-            if ((u32)(a4val - 4) < 2u) {
+            if ((u32)(D_800A38A4 - 4) < 2u) {
                 D_800A3834 = 0x18;
-            } else if ((u32)(a4val - 6) < 2u) {
+            } else if ((u32)(D_800A38A4 - 6) < 2u) {
                 D_800A3834 = 0x1A;
-            } else if ((u32)(a4val - 8) < 2u) {
+            } else if ((u32)(D_800A38A4 - 8) < 2u) {
                 D_800A3834 = 0x1A;
-            } else if (a4val < 2u) {
+            } else if (D_800A38A4 < 2u) {
                 D_800A3834 = 0xA;
             } else {
                 D_800A3834 = 8;
             }
         }
     }
-    {
-        s16 state = D_800A3834;
-        if (state != 0x13) {
-            func_800372C0();
-            state = D_800A3834;
-            if (state != 0x12) {
-                func_800548DC();
-            }
+    if (D_800A3834 != 0x13) {
+        func_800372C0();
+        if (D_800A3834 != 0x12) {
+            func_800548DC();
         }
     }
 }
@@ -1031,41 +1013,27 @@ void func_8003C42C(void) {
     D_800A3834 = 0x15;
 }
 void func_8003C560(void) {
-    s32 counter;
-    s32 ret;
-    s32 id;
-    u8 a4val;
 
-    counter = D_800A37B8 + 1;
-    D_800A37B8 = counter;
+    D_800A37B8 = D_800A37B8 + 1;
     if (D_800A382D == 2) {
-        if (counter == 0x1E) {
+        if (D_800A37B8 == 0x1E) {
             func_8005C650(0xA4, 0x7F, 0x7F);
         }
     } else {
-        if (counter == 0x1E) {
-            id = 0xA7;
-            if (D_8008D9EC[D_80101EC8[D_800A382D].unk_0A] != 0) {
-                id = 0xA8;
-            }
-            func_8005C650(id, 0x7F, 0x7F);
+        if (D_800A37B8 == 0x1E) {
+            func_8005C650(D_8008D9EC[D_80101EC8[D_800A382D].unk_0A] != 0 ? 0xA8 : 0xA7, 0x7F, 0x7F);
         }
         if (D_800A37B8 == 0x43) {
             func_8005C650(0xA9, 0x7F, 0x7F);
         }
     }
-    ret = func_8005E54C(D_800A3784, D_800A38B4, 1);
-    D_800A38B4 = D_800A38B4 + (ret / 4) * 4;
+    D_800A38B4 += func_8005E54C(D_800A3784, (s32)D_800A38B4, 1) / 4;
     if ((g_pad_state.pressed & 0x400040) != 0 || D_800A37B8 >= 0xF1) {
         if (D_800A382D == 2) {
             D_800A3834 = 0x18;
         } else {
             func_800372C0();
-            a4val = 4;
-            if (D_8008D9EC[D_80101EC8[D_800A382D].unk_0A] != 0) {
-                a4val = 5;
-            }
-            D_800A38A4 = a4val;
+            D_800A38A4 = D_8008D9EC[D_80101EC8[D_800A382D].unk_0A] != 0 ? 5 : 4;
             D_800A3834 = 0x12;
         }
     }
@@ -1132,11 +1100,8 @@ void func_8003C714(void) {
     gpu_SetDispMaskOn();
 }
 void func_8003C8B4(void) {
-    s32 ret;
-
     D_800A37B8 = D_800A37B8 + 1;
-    ret = func_80060768(D_800A38B4, 1, D_800A38E9);
-    D_800A38B4 = D_800A38B4 + (ret / 4) * 4;
+    D_800A38B4 += func_80060768((s32)D_800A38B4, 1, D_800A38E9) / 4;
     if ((g_pad_state.pressed & 0x400040) != 0 || D_800A37B8 >= 0xF1) {
         func_80033FE4();
     }
@@ -1150,23 +1115,19 @@ void func_8003C958(void) {
     gpu_SetDispMaskOn();
 }
 void func_8003C9A4(void) {
-    s32 ret;
-    s32 *a0 = &D_800F6608.unk_00.x;
-    s16 *a1 = &D_800F6608.h10;
-
     func_8003F1E4(0);
-    a0[0] = 0;
+    D_800F6608.unk_00.x = 0;
     D_800F6608.unk_00.y = -0xBB8;
     D_800F6608.unk_00.z = 0;
-    *a1 = 0x20;
+    D_800F6608.h10 = 0x20;
     D_800F6608.h14 = 0;
     D_800F6608.w18 = 0x2710;
     D_800F6608.h12 = (s16)(D_800A36AC << 2);
-    func_80046BF4(a0, a1, 0x2710);
+    func_80046BF4(&D_800F6608.unk_00.x, &D_800F6608.h10, 0x2710);
     func_80046DA8(1);
 
     if (D_800A3929 == 0) {
-        D_800A38B4 = D_800A38B4 + (func_8005C8A8(1, D_800A3817, D_800A38B4, 0) / 4) * 4;
+        D_800A38B4 += func_8005C8A8(1, D_800A3817, (s32)D_800A38B4, 0) / 4;
 
         if ((g_pad_state.pressed & 0x10001000) != 0) {
             func_8005C650(0, 0x7F, 0x7F);
@@ -1192,11 +1153,10 @@ void func_8003C9A4(void) {
     }
 
     if (D_800A3817 == 0) {
-        ret = func_8005FA98(0, D_800A38B4, 1);
-        D_800A38B4 = D_800A38B4 + (ret / 4) * 4;
+        D_800A38B4 += func_8005FA98(0, (s32)D_800A38B4, 1) / 4;
     }
     D_800A3929 = D_800A3929 + 1;
-    if ((u8)D_800A3929 < 0x3C) return;
+    if (D_800A3929 < 0x3C) return;
 
     func_800372C0();
     if (D_800A3817 == 0) {
@@ -1209,7 +1169,7 @@ void func_8003C9A4(void) {
         }
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;
-        D_800A38DF = (u8)func_80022408(&D_80101EC8[D_800A3748].unk_F4.x);
+        D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4.x);
         D_800A3834 = 0;
         return;
     }
@@ -1232,23 +1192,18 @@ void func_8003CCCC(void) {
     gpu_SetDispMaskOn();
 }
 void func_8003CD10(void) {
-    s32 *a0 = &D_800F6608.unk_00.x;
-    s16 *a1 = &D_800F6608.h10;
-    s32 ret;
-
     func_8003F1E4(0);
-    a0[0] = 0;
+    D_800F6608.unk_00.x = 0;
     D_800F6608.unk_00.y = -0xBB8;
     D_800F6608.unk_00.z = 0;
-    *a1 = 0x20;
+    D_800F6608.h10 = 0x20;
     D_800F6608.h14 = 0;
     D_800F6608.w18 = 0x2710;
     D_800F6608.h12 = (s16)(D_800A36AC << 2);
-    func_80046BF4(a0, a1, 0x2710);
+    func_80046BF4(&D_800F6608.unk_00.x, &D_800F6608.h10, 0x2710);
     func_80046DA8(1);
 
-    ret = func_800600C8(D_800A391F, D_800A38B4, 1);
-    D_800A38B4 = D_800A38B4 + ret * 4;
+    D_800A38B4 += func_800600C8(D_800A391F, (s32)D_800A38B4, 1);
     D_800A37B8 = D_800A37B8 + 1;
     if (D_800A37B8 >= 0x97 || (g_pad_state.pressed & 0x400040) != 0) {
         func_800372C0();

@@ -617,7 +617,7 @@ extern s16 D_800A3840;
 extern u8 D_800A384C;
 extern s16 D_800A3854;
 extern u8 *D_800A3894;
-extern u32 D_800A38B4;
+extern u32 *D_800A38B4; /* the draw-chunk builders' word cursor */
 extern s32 D_800A38D0;
 extern u16 D_800A38D6;
 extern s32 D_800A38FC;

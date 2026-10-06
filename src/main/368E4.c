@@ -2147,7 +2147,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             *list = (s32)obj;
             obj++;
         }
-        D_800A38B4 = (u32)obj;
+        D_800A38B4 = (u32 *)obj;
     }
 }
 extern s16 D_80099D3C[];
@@ -2245,7 +2245,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     list = (s32 *)D_800A3820;
     D_800A3820 = (s32)(list + 1);
     *list = (s32)obj;
-    D_800A38B4 = (u32)(obj + 1);
+    D_800A38B4 = (u32 *)(obj + 1);
 }
 s32 func_80049C24(s32 arg0, s32 arg1) {
     s32 count;
