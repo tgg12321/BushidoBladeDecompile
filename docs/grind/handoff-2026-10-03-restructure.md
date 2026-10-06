@@ -88,10 +88,11 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      8fc462a1c..b9a504cd0 (fimg1, w2 b5 / P7b / b7-b12, fsmall + engine f2b56796b, fdecl1, fot1 = g_gpu_ot_ptr
      u32 * reversing P5, fres1 / fres2). Tooling: fdfb27257 (data-as-code needs included-asm evidence),
      97dd7cc7e (close-ledger normpath).
-   - **Owner questions (borderline.md, 2026-10-06):** asm-operand typing (17AFC CD58 / DAD0 / D780, 87A0,
-     51268 67D14, func_800203B4 + tmp/p2/i203); _SpuSetAnyVoice's D_800F7298 volatile; Q96 scope for
-     func_80031B24. Nothing else in Phase 2 is open.
-   - **Next session starts here:** owner answers above, then Phase 3 step 0 — draft (scratch, unreviewed)
+   - **Owner rulings Q115-Q117 (2026-10-06, rules a6939b16f), all implemented:** typed GTE operand expressions
+     (87A0 43a813168; 17AFC CD58 / DAD0 / D780 6151b1808; func_80067D14 / func_800203B4 / func_80027AD8 21a094d90);
+     _SpuSetAnyVoice reads `_spu_RQ[reg - 0xC4]` (D_800F7298 was a phantom base; 643796e7f); Q96 covers
+     func_80031B24 (6151b1808). Phase 2 has no owner-blocked item left; what remains is ruled or debt rows.
+   - **Next session starts here:** Phase 3 step 0 — draft (scratch, unreviewed)
      `tmp/p2/phase3_step0_draft.txt`: rule text N1-N6, a naming-reviewer rubric, wave flow, 20 first-wave
      candidates. Process: never export GIT_DIR / GIT_WORK_TREE in a shell that runs tests (2026-10-06 the
      grinder tests rewrote main's .git/config).
