@@ -38,6 +38,8 @@ typedef struct {
 #define getcode(p) (u8)(((P_TAG *)(p))->code)
 #define getlen(p) (u8)(((P_TAG *)(p))->len)
 #define setaddr(p, _addr) (((P_TAG *)(p))->addr = (u32)(_addr))
+#define getaddr(p) (u32)(((P_TAG *)(p))->addr)
+#define addPrim(ot, p) setaddr(p, getaddr(ot)), setaddr(ot, p)
 
 #define setPolyF3(p) setlen(p, 4), setcode(p, 0x20)
 #define setPolyFT3(p) setlen(p, 7), setcode(p, 0x24)

@@ -507,23 +507,24 @@ extern void func_800422BC(s32, s32, s32, s32);
 extern void func_80042478(s32);
 
 
-extern s32 StageLight[];
+extern s32 StageLight[][6]; /* 0x18-byte rows: four colour words, the angle word, a parameter */
 void func_800421C8(s32 a0) {
-    s32 *p = (s32 *)((u8 *)StageLight + a0 * 24);
-    s32 val;
+    s32 *p = StageLight[a0];
+    s32 yaw;
+    s32 pitch;
     func_800422BC(a0, *p++, 0, 0);
     func_800422BC(a0, *p++, 0, 1);
     func_800422BC(a0, *p++, 1, 0);
     func_800422BC(a0, *p++, 1, 1);
-    val = *p;
-    D_800F62E0[4].light[0].yaw = val & 0xFFF;
-    D_800F62E0[1].light[0].yaw = val & 0xFFF;
-    D_800F62E0[0].light[0].yaw = val & 0xFFF;
-    val = *(s16 *)((u8 *)p + 2);
-    D_800F62E0[4].light[0].pitch = val & 0xFFF;
-    D_800F62E0[1].light[0].pitch = val & 0xFFF;
-    D_800F62E0[0].light[0].pitch = val & 0xFFF;
-    func_80042478(*(s32 *)((u8 *)p + 4));
+    yaw = *p;
+    D_800F62E0[4].light[0].yaw = yaw & 0xFFF;
+    D_800F62E0[1].light[0].yaw = yaw & 0xFFF;
+    D_800F62E0[0].light[0].yaw = yaw & 0xFFF;
+    pitch = *p >> 16;
+    D_800F62E0[4].light[0].pitch = pitch & 0xFFF;
+    D_800F62E0[1].light[0].pitch = pitch & 0xFFF;
+    D_800F62E0[0].light[0].pitch = pitch & 0xFFF;
+    func_80042478(p[1]);
 }
 
 

@@ -296,7 +296,7 @@ extern MATRIX D_800EEDB0;
 extern s32 D_800EF800[];
 extern u8 g_stage_data;
 extern s16 D_800F6654;
-extern u8 g_cam_bone_data;
+extern MATRIX g_cam_bone_data;
 
 
 extern void func_80049E4C(void);
@@ -627,27 +627,11 @@ void func_800470B0(s32 arg0, MATRIX *arg1, MATRIX *arg2, s32 arg3) {
 typedef struct {
     s32 w[8];
 } Block32;
-typedef struct { s16 lo; s16 hi; } CamHalves;
-extern s16 D_800EEDD6;
-extern s16 D_800EEDD8;
 void camera_InitBoneData(void) {
-    /* FAKE: sched fence — without it sched1 hoists the lhu of D_800EEDD6
-       above the block copy (renaming the copy's regs). D_800EEDD6/D_800EEDD8
-       physically live INSIDE g_cam_bone_data (+6/+8), so the dependency is
-       real, but the split extern symbols hide it from GCC's alias analysis;
-       no distinct-symbol spelling can express it. */
-    do { *(MATRIX *)&g_cam_bone_data = D_80101DF0.xf.mat; } while (0);
-    {
-        s16 h0 = D_800EEDD6;
-        s16 h1 = D_800EEDD8;
-        D_800EEDD6 = h0 >> 1;
-        D_800EEDD8 = h1 >> 1;
-        /* struct-view of the two halfwords at D_800EEDD8 (target relocation
-           D_800EEDD8+0x2 proves the object spans 4 bytes); the direct
-           *((&D_800EEDD8)+1) spelling makes cse common the +2 address into a
-           register (la) where target keeps both accesses symbolic */
-        ((CamHalves *)&D_800EEDD8)->hi = ((CamHalves *)&D_800EEDD8)->hi >> 1;
-    }
+    g_cam_bone_data = D_80101DF0.xf.mat;
+    g_cam_bone_data.m[1][0] >>= 1;
+    g_cam_bone_data.m[1][1] >>= 1;
+    g_cam_bone_data.m[1][2] >>= 1;
 }
 
 void *camera_GetBoneData(void) {
@@ -1850,23 +1834,19 @@ void func_80048FFC(s32 arg0) {
         s32 sy = y + yf;
         s32 h1 = period - phase;
         /* FAKE: strip two's height taken as an s16 at the top of the level; rect.h = phase
-         * directly, an s32 copy or a (s16) cast drops the t1 copy. */
+         * directly, an s32 copy or a (s16) cast drops the t1 copy. Ablated (2026-10-06): score 57. */
         s16 h2 = phase;
         rect.x = x + xf;
         rect.y = sy;
         rect.w = w;
         rect.h = h1;
         SetDrawMove(p, &rect, nx, ny + phase);
-        /* FAKE: SDK addPrim (setaddr/getaddr P_TAG views) on OT entry 0xFFF. */
-        /* SOTN: include/psxsdk/libgpu.h:88 @db41b28eee52969244a52cc269c8163d1ed8826a (PS1 use: src/main/psxsdk/libgpu/sys.c:288) */
-        ((OTag *)p)->addr = ((OTag *)&D_800A378C[0xFFF])->addr;
-        ((OTag *)&D_800A378C[0xFFF])->addr = (u32)p;
+        addPrim(&D_800A378C[0xFFF], p);
         p++;
         rect.y = sy + h1;
         rect.h = h2;
         SetDrawMove(p, &rect, nx, ny);
-        ((OTag *)p)->addr = ((OTag *)&D_800A378C[0xFFF])->addr;
-        ((OTag *)&D_800A378C[0xFFF])->addr = (u32)p;
+        addPrim(&D_800A378C[0xFFF], p);
         p++;
         xf >>= 1;
         yf >>= 1;

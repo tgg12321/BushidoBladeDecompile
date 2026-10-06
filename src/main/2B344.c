@@ -1681,33 +1681,24 @@ void func_8003DBE4(s32 arg0, s32 arg1, DR_MOVE (*arg2)[2], s32 arg3, s32 arg4) {
         step = step / arg1;
     }
 
-    i = 0;
     pkt += D_800A36AC & 1;
 
-    if (i < limit) {
-        do {
-            s32 idx = func_80052C28((u32)arg0 >> 2, 2);
-            if (idx < 0x1000) {
-                /* FAKE: SDK addPrim (setaddr/getaddr P_TAG views) on OT entry idx; the explicit
-                 * mask-and-or spelling of the two stores scores 14. */
-                /* SOTN: include/psxsdk/libgpu.h:88 @db41b28eee52969244a52cc269c8163d1ed8826a (PS1 use: src/main/psxsdk/libgpu/sys.c:288) */
-                ((OTag *)pkt)->addr = ((OTag *)&D_800A378C[idx])->addr;
-                ((OTag *)&D_800A378C[idx])->addr = (u32)pkt;
-                pkt += 2;
-                if (i == limit - 1) {
-                    D_800905F8 = idx;
-                }
+    for (i = 0; i < limit; i++) {
+        s32 idx = func_80052C28((u32)arg0 >> 2, 2);
+        if (idx < 0x1000) {
+            addPrim(&D_800A378C[idx], pkt);
+            pkt += 2;
+            if (i == limit - 1) {
+                D_800905F8 = idx;
             }
-            arg0 += step;
-            i++;
-        } while (i < limit);
+        }
+        arg0 += step;
     }
 
     if (arg4 != 0) {
         func_8003DDF8((u32)pkt);
     } else {
-        ((OTag *)pkt)->addr = ((OTag *)&D_800A378C[0xFFB])->addr;
-        ((OTag *)&D_800A378C[0xFFB])->addr = (u32)pkt;
+        addPrim(&D_800A378C[0xFFB], pkt);
     }
 }
 void func_8003DDF8(u32 arg0) {
