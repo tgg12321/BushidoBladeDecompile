@@ -1,1 +1,2 @@
 {"func": "func_80072084", "addr": "80072084", "verdict": "PASS", "body_hash": "33de9f4432001ae8", "body_kind": "c", "file": "main/5ED34", "reviewer": "cheat-reviewer:rev-p3b5", "scope": "cheat-cleanup", "date": "2026-10-05T07:20:32Z", "head": "34a4dd020", "notes": ""}
+{"func": "func_80072084", "addr": "80072084", "verdict": "PASS", "body_hash": "a66738933e128fac", "body_kind": "c", "file": "main/5ED34", "reviewer": "cheat-reviewer:rev-f04", "scope": "cheat-cleanup", "date": "2026-10-06T08:04:02Z", "head": "72802430d", "notes": ""}

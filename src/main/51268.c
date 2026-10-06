@@ -12,8 +12,8 @@
 extern s32 rand(void);
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
-static s32 D_800A3420;
-static s32 D_800A3424;
+static POLY_FT4 *D_800A3420;
+static POLY_FT4 *D_800A3424;
 static s32 D_800A3428[2];  /* not named by any code or data: size from the gap */
 static s32 D_800A3430[2];  /* not named by any code or data: size from the gap */
 static s16 D_800A3438[4];
@@ -56,7 +56,7 @@ static u16 *D_800A34D4;
 static u16 *D_800A34D8;
 static u16 *D_800A34DC;
 static u16 *D_800A34E0;
-static u8 *D_800A34E4;
+static u32 *D_800A34E4;
 static u32 *D_800A34E8;
 static Unk1F8000B8Union *D_800A34EC;
 /* Two s16 slots at 0x800A34F0, indexed as one array. Object model evidence
@@ -230,11 +230,11 @@ s32 func_80060CB8(s32 arg0, s32 arg1)
   func_80060C60();
   srand(rand());
   ret = arg1 + 0x4650;
-  D_800A3420 = arg1;
-  D_800A3424 = ret;
+  D_800A3420 = (POLY_FT4 *)arg1;
+  D_800A3424 = (POLY_FT4 *)ret;
   return ret + 0x4650;
 }
-extern s32 D_800A3720;
+extern POLY_FT4 *D_800A3720;
 void func_80060E04(s32 arg0) {
     D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
     D_800A3720 = D_800A37D4;
@@ -267,7 +267,7 @@ void func_80060E38(s16 *arg0, s32 *arg1) {
     D_800A34D8 = &SPAD51268->unk9A;
     D_800A34DC = &SPAD51268->unk9C;
     D_800A34E0 = &SPAD51268->unk9E;
-    D_800A34E4 = SPAD51268->unkA0;
+    D_800A34E4 = &SPAD51268->unkA0;
     D_800A34E8 = &SPAD51268->unkA4;
     D_800A3480 = &SPAD51268->unkA8;
     D_800A3484 = &SPAD51268->unkAC;
@@ -312,7 +312,7 @@ void func_80061064(s16 *a0, s32 *a1) {
         func_800421A4();
         D_800A32BC = 0;
     }
-    temp_a1 = (s32)-((D_800A37D4 - D_800A3720) * 0x33333333) >> 3;
+    temp_a1 = D_800A37D4 - D_800A3720;
     if (temp_a1 >= 0x1C2) {
         printf(&D_800158E0, temp_a1 - 0x1C2);
     }
@@ -821,8 +821,6 @@ end:
    emit one textured POLY_FT4 billboard and link it into the OT at its depth. */
 void func_800620B8(s16 *arg0, s32 *trans) {
     extern s32 D_800A32B8;
-    extern s32 D_800A37D4;
-    extern s32 D_800A3720;
     extern TexRec D_8009BA00[6];
     extern TexRec D_8009BA30[4];
     extern TexRec D_8009BA50[1];
@@ -863,7 +861,7 @@ void func_800620B8(s16 *arg0, s32 *trans) {
     outer = D_800A3468;
     dst16 = D_800A346C;
     dst16[0] = outer->unk04[0];
-    prim = (POLY_FT4 *)D_800A37D4;
+    prim = D_800A37D4;
     dst16[1] = outer->unk04[1];
     dst16[2] = outer->unk04[2];
     dst32 = D_800A3470;
@@ -989,16 +987,16 @@ void func_800620B8(s16 *arg0, s32 *trans) {
             prim->v3 = *D_800A34A4;
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
-            if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
-                D_800A34E4 = g_gpu_ot_ptr + *z * 4;
+            if (prim - D_800A3720 < 0x1C1) {
+                D_800A34E4 = (u32 *)(g_gpu_ot_ptr + *z * 4);
                 D_800A34E8 = &prim->tag;
-                *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
-                *(u32 *)D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
+                *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
+                *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
                 prim++;
             }
         }
     }
-    D_800A37D4 = (s32)prim;
+    D_800A37D4 = prim;
 }
 s32 func_8006288C(void) {
     extern s32 D_800F1138;
@@ -1036,8 +1034,6 @@ s32 func_8006295C(void) {
     extern TexRec D_8009B968[];
     extern TexRec D_8009B970[];
     extern s16 D_8009BB84[];
-    extern s32 D_800A3720;
-    extern s32 D_800A37D4;
     s32 count;
     MATRIX *cm;
     s32 *interp;
@@ -1070,7 +1066,7 @@ s32 func_8006295C(void) {
     zbuf = (u16 *)((u8 *)prim + 0x16C);
     scale = (s32 *)((u8 *)prim + 0x178);
     shade = (s32 *)((u8 *)prim + 0x188);
-    prim = (POLY_FT4 *)D_800A37D4;
+    prim = D_800A37D4;
     for (i = 0; i < 6; i++) {
         bit = 1 << i;
         if (!(D_800A3460 & bit)) {
@@ -1142,7 +1138,7 @@ s32 func_8006295C(void) {
                 *(s32 *)&prim->x2 = sxy[2];
                 *(s32 *)&prim->x3 = sxy[3];
                 count++;
-                if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
+                if (prim - D_800A3720 < 0x1C1) {
                     prim++;
                 }
             }
@@ -1152,17 +1148,17 @@ s32 func_8006295C(void) {
             D_800A3460 &= ~(1 << i);
         }
     }
-    if (D_800A37D4 != (s32)prim) {
+    if (D_800A37D4 != prim) {
         /* FAKE: `end` keeps the fill position and prim, the quad cursor,
            walks the same POLY_FT4 buffer again from its start to link each
            quad (target: prim s1, the zbuf[k] giv s0, end s2). Linked through
            a fresh cursor local instead, prim loses the tail refs and drops
            to s2, the cursor takes s0 and the giv s1: score 37. */
         end = prim;
-        for (prim = (POLY_FT4 *)D_800A37D4, k = 0; prim < end; prim++, k++) {
+        for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
             AddPrim(g_gpu_ot_ptr + zbuf[k] * 4, prim);
         }
-        D_800A37D4 = (s32)end;
+        D_800A37D4 = end;
         return 1;
     }
     if (D_800A3460 == 0) {
@@ -1224,7 +1220,7 @@ s32 func_80063084(void) {
     s32 level;
 
     base = &D_800A34EC->v80063084;
-    prim = (POLY_FT4 *)D_800A37D4;
+    prim = D_800A37D4;
     tv = &base->unk14;
     sv = &base->unk24;
     v = &base->unk2C;
@@ -1352,11 +1348,11 @@ s32 func_80063084(void) {
                     *(s32 *)&prim->u1 = *D_800A34D8 + *D_800A3490;
                     *(u16 *)&prim->u2 = *D_800A34DC;
                     *(u16 *)&prim->u3 = *D_800A34E0;
-                    D_800A34E4 = g_gpu_ot_ptr + *z * 4;
+                    D_800A34E4 = (u32 *)(g_gpu_ot_ptr + *z * 4);
                     D_800A34E8 = &prim->tag;
-                    *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
-                    *(u32 *)D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
-                    if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
+                    *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
+                    *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
+                    if (prim - D_800A3720 < 0x1C1) {
                         prim++;
                     }
                 }
@@ -1366,7 +1362,7 @@ s32 func_80063084(void) {
         }
         D_800F0BEC[i]++;
     }
-    D_800A37D4 = (s32)prim;
+    D_800A37D4 = prim;
     return D_800A3448 != 0;
 }
 
@@ -1462,8 +1458,6 @@ s32 func_80063E10(s32 lane) {
     extern SVECTOR D_8009BBEC;
     extern SVECTOR D_8009BBF4;
     extern SVECTOR D_8009BBFC;
-    extern s32 D_800A3720;
-    extern s32 D_800A37D4;
     s32 count;
     MATRIX *mats;
     MATRIX *cm;
@@ -1495,7 +1489,7 @@ s32 func_80063E10(s32 lane) {
     }
     func_800644FC(&count, mats, lane);
     D_800A3488 = &D_8009B920[*D_800A3480];
-    prim = (POLY_FT4 *)D_800A37D4;
+    prim = D_800A37D4;
     *D_800A3490 = 0xE;
     *D_800A3494 = (((D_800A3488->clut_x >> 4) & 0x3F) + (D_800A3488->clut_y << 6)) << 16;
     *D_800A3490 = *D_800A3490 << 16;
@@ -1721,7 +1715,7 @@ s32 func_80063E10(s32 lane) {
         *(s32 *)&prim->x1 = sxy[1];
         *(s32 *)&prim->x2 = sxy[2];
         *(s32 *)&prim->x3 = sxy[3];
-        if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
+        if (prim - D_800A3720 < 0x1C1) {
             prim++;
         }
     }
@@ -1731,13 +1725,13 @@ s32 func_80063E10(s32 lane) {
        tail refs and sxy outranks it (sxy s2 / prim s3, swapped vs the
        target). */
     end = prim;
-    for (prim = (POLY_FT4 *)D_800A37D4, k = 0; prim < end; prim++, k++) {
+    for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
         D_800A34E8 = &prim->tag;
-        D_800A34E4 = g_gpu_ot_ptr + zbuf[k] * 4;
-        *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
-        *(u32 *)D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
+        D_800A34E4 = (u32 *)(g_gpu_ot_ptr + zbuf[k] * 4);
+        *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
+        *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
     }
-    D_800A37D4 = (s32)end;
+    D_800A37D4 = end;
     return 1;
 }
 /* func_800644FC -- rotates one matrix per enabled bit: for every i < *count
@@ -1794,8 +1788,6 @@ s32 func_800645B0(void) {
    into the OT at its depth. Returns 1 when any slot is still live, else 0. */
 s32 func_800646E8(void) {
     extern TexRec D_8009B8E8[];
-    extern s32 D_800A3720;
-    extern s32 D_800A37D4;
     Unk1F8000B8_800646E8 *base;
     u32 *zbuf;
     s16 *w;
@@ -1821,7 +1813,7 @@ s32 func_800646E8(void) {
     sv = &base->unk38;
     p = &base->unk40;
     end = &base->unk44;
-    prim = (POLY_FT4 *)D_800A37D4;
+    prim = D_800A37D4;
     /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
     __asm__ volatile(
         "lw     $12, 0(%0)\n"
@@ -1913,7 +1905,7 @@ s32 func_800646E8(void) {
             prim->v3 = *D_800A34A4;
             SetShadeTex(prim, 0);
             SetSemiTrans(prim, 1);
-            if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
+            if (prim - D_800A3720 < 0x1C1) {
                 prim++;
                 zp++;
             }
@@ -1926,13 +1918,13 @@ s32 func_800646E8(void) {
         return 0;
     }
     *end = prim;
-    for (prim = (POLY_FT4 *)D_800A37D4; prim < *end; prim++, zbuf++) {
-        D_800A34E4 = g_gpu_ot_ptr + *zbuf * 4;
+    for (prim = D_800A37D4; prim < *end; prim++, zbuf++) {
+        D_800A34E4 = (u32 *)(g_gpu_ot_ptr + *zbuf * 4);
         D_800A34E8 = &prim->tag;
-        *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*(u32 *)D_800A34E4 & 0xFFFFFF);
-        *(u32 *)D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*(u32 *)D_800A34E4 & 0xFF000000);
+        *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
+        *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
     }
-    D_800A37D4 = (s32)*end;
+    D_800A37D4 = *end;
     return 1;
 }
 extern s32 D_800F10E0;
@@ -2329,7 +2321,6 @@ u8 func_800657B0(void) {
  * only separators/whitespace differ, except that gte_rtps carries the post-DMPSX
  * command word in place of the header's DMPSX placeholder (noted at the island). */
 u8 func_80065800(s32 arg0) {
-    extern s32 D_800A3720;
     extern s16 D_800A3834;
     extern TexRec D_8009B8C8[];
     extern TexRec D_8009B8D0[];
@@ -2367,7 +2358,7 @@ u8 func_80065800(s32 arg0) {
     s32 i;
 
     outer = &D_800A34EC->v80065800;
-    prim = (POLY_FT4 *)D_800A37D4;
+    prim = D_800A37D4;
     p_dp = &outer->unk10;
     p_t = outer->unk14;
     p_in = &outer->unk54;
@@ -2744,7 +2735,7 @@ again:
         }
         if (arg0 < 9) {
             AddPrim(g_gpu_ot_ptr + 4, prim);
-            if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
+            if (prim - D_800A3720 < 0x1C1) {
                 prim++;
             }
             arg0 += 2;
@@ -2753,10 +2744,10 @@ again:
         break;
     }
     AddPrim(g_gpu_ot_ptr + 4, prim);
-    if (prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
+    if (prim - D_800A3720 < 0x1C1) {
         prim++;
     }
-    D_800A37D4 = (s32)prim;
+    D_800A37D4 = prim;
     return 1;
 }
 extern s32 D_800F10D8;
@@ -3031,7 +3022,6 @@ extern TexRec D_8009B8B0[];
 extern TexRec D_8009B998[];
 extern TexRec D_8009B9B8[];
 u8 func_800678A8(s32 arg0, s32 arg1) {
-    extern s32 D_800A37D4;
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *outer = &D_800A34EC->v800678A8;
     /* FAKE: unk00 / unk02 / unk04 / unk6C / unk80 are reached through the plain pointers p0 / p2 /
@@ -3050,7 +3040,7 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
     POLY_FT4 **p80 = &outer->unk80;
 
     D_800A3724 = &outer->unk1AC;
-    *p80 = (POLY_FT4 *)D_800A37D4;
+    *p80 = D_800A37D4;
     *p4 = 0x895440;
     *D_800A3490 = 0x2E;
 
@@ -3391,7 +3381,7 @@ void func_80067D14(s32 arg0, s32 arg1) {
            SOTN: src/dra/8BEF8.c:185 @aa53500
            SOTN: src/st/cat/e_bone_ark.c:436 @aa53500 */
         for (; *p_n >= 0; (*p_n)--) {
-            zbuf[*p_prim - (POLY_FT4 *)D_800A37D4] = *D_800A34D0;
+            zbuf[*p_prim - D_800A37D4] = *D_800A34D0;
             *(s32 *)&(*p_prim)->x0 =
                 D_800A34B8[*p_n] + *D_800A34BC + *D_800A34C4;
             *(s32 *)&(*p_prim)->x1 =
@@ -3411,7 +3401,7 @@ void func_80067D14(s32 arg0, s32 arg1) {
                 *(s32 *)&(*p_prim)->r0 =
                     *p_r + ((*p_r >> 2) << 8) + (*p_b << 16) + 0x2E000000;
             } else if (arg0 < 6) {
-                if (*p_prim - (POLY_FT4 *)D_800A3720 >= 0x1C1) {
+                if (*p_prim - D_800A3720 >= 0x1C1) {
                     continue;
                 }
                 if (D_8009BD24.unk20_0) {
@@ -3425,20 +3415,19 @@ void func_80067D14(s32 arg0, s32 arg1) {
                     break;
                 }
             } else if (arg0 < 8) {
-                if (*p_prim - (POLY_FT4 *)D_800A3720 >= 0x1C1) {
+                if (*p_prim - D_800A3720 >= 0x1C1) {
                     break;
                 }
                 *(s32 *)&(*p_prim)++->r0 = 0x2EFF8080;
                 break;
             }
-            if (*p_prim - (POLY_FT4 *)D_800A3720 < 0x1C1) {
+            if (*p_prim - D_800A3720 < 0x1C1) {
                 (*p_prim)++;
             }
         }
     }
 }
 u8 func_80068D88(s32 arg0, s32 arg1) {
-    extern s32 D_800A37D4;
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *outer = &D_800A34EC->v800678A8;
     s16 *p_idx = &outer->unk6E;
@@ -3451,7 +3440,7 @@ u8 func_80068D88(s32 arg0, s32 arg1) {
     s32 ret;
 
     D_800A3724 = &outer->unk1AC;
-    prev_init = (POLY_FT4 *)D_800A37D4;
+    prev_init = D_800A37D4;
     cur_init = *p_cur;
     count = cur_init - prev_init;
 
@@ -3462,27 +3451,22 @@ u8 func_80068D88(s32 arg0, s32 arg1) {
         *p_idx = 0;
 
         if (*p_cur < *p_end) {
-            s32 *p_a;
             u32 *p_b;
             do {
                 s32 idx_s = *p_idx;
                 u32 entry = zbuf[idx_s];
-                p_a = (s32 *)(g_gpu_ot_ptr + (s32)(entry * 4));
-                D_800A34E4 = (u8 *)p_a;
+                D_800A34E4 = (u32 *)(g_gpu_ot_ptr + (s32)(entry * 4));
                 p_b = &(*p_cur)->tag;
                 D_800A34E8 = p_b;
-                *p_b = (*p_b & 0xFF000000) | (*p_a & 0xFFFFFF);
+                *p_b = (*p_b & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
 
-                {
-                    s32 *p_a2 = (s32 *)D_800A34E4;
-                    *p_a2 = ((u32)D_800A34E8 & 0xFFFFFF) | (*p_a2 & 0xFF000000);
-                }
+                *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
 
                 (*p_cur)++;
                 (*p_idx)++;
             } while (*p_cur < *p_end);
         }
-        D_800A37D4 = (s32)*p_end;
+        D_800A37D4 = *p_end;
     } else {
         ret = 0;
     }
@@ -3519,7 +3503,7 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
     temp_s0 = arg0 + 0x58;
     D_800A3500 = temp_s0;
     snd_StopAll();
-    func_8006E950(2, (s32 *)D_800A3500);
+    func_8006E950(2, (Unk8006E950Head *)D_800A3500);
     D_800A372C = D_800A3500;
     v0_efc = func_8006919C(D_800A3500);
     D_800A3500 = v0_efc;
@@ -6275,8 +6259,8 @@ s32 D_800A32BC = 0;
 TILE * D_800A36DC;
 DR_MODE * D_800A36E0;
 u8 * D_800A36E4;
-s32 D_800A3720;
+POLY_FT4 *D_800A3720;
 s32 *D_800A3724;
 s32 D_800A372C;
-s32 D_800A37D4;
+POLY_FT4 *D_800A37D4;
 s32 D_800A3900;

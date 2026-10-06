@@ -45,7 +45,7 @@ static s32 D_800A35E8;
 static s32 D_800A35EC;  /* not named by any code or data: size from the gap */
 static s32 D_800A35F0;
 static Unk8006E49CRec *D_800A35F4;
-static s32 D_800A35F8;
+static Ctx77D94 *D_800A35F8;
 static s32 D_800A35FC;
 static s32 D_800A3600;
 static s32 D_800A3604;  /* not named by any code or data: size from the gap */
@@ -193,7 +193,7 @@ void func_80074B18(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     }
     p = arg0->unk_04.unk_10;
     for (i = 0; i < SELWORK->f65 + 3; i++) {
-        t = (u8 *)SELWORK->f04[0x3C / 4];
+        t = SELWORK->f04->unk_3C;
         for (j = 0; j < n; j++) {
             SetTile(p);
             p->r0 = t[8];
@@ -229,13 +229,13 @@ void func_80074D2C(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     S_80074D2C s;
     s32 var_s1;
     s32 sp18_val;
-    s32 inner_ptr;
+    s32 *inner_ptr;
 
     var_s1 = 0xC;
     s.sp28 = 0;
     s.sp40 = 0;
-    inner_ptr = *(s32 *)(arg0->unk_00 + 0x1C);
-    sp18_val = *(s32 *)(((arg2 << 16) >> 14) + inner_ptr);
+    inner_ptr = arg0->unk_00.v80076FF8->unk_1C;
+    sp18_val = inner_ptr[(arg2 << 16) >> 16];
     s.sp30 = arg1 * 0xF0;
     s.sp34 = 0;
     s.sp18 = sp18_val;
@@ -289,7 +289,7 @@ void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
     prim++;
     arg0->unk_04.unk_10 = prim;
 
-    records = *(s32 **)(arg0->unk_00 + 0x18);
+    records = arg0->unk_00.v80076FF8->unk_18;
     s.semi = 0;
     s.has_color = 0;
     s.x = arg1 * 0xF0;
@@ -466,7 +466,7 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
     } else {
         s.sp2C = 0xC;
     }
-    tbl = *(s32 **)(arg0->unk_00 + 0x2C);
+    tbl = arg0->unk_00.v80076FF8->unk_2C;
     s.sp18 = tbl[arg1 + 2];
     s.sp30 = arg1 * 240;
     body = s.sp18 + 0xC;
@@ -481,7 +481,7 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
     s.sp20 = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     s.sp40 = 0;
-    tbl = *(s32 **)(arg0->unk_00 + 0x14);
+    tbl = arg0->unk_00.v80076FF8->unk_14;
     i = 0;
     s.sp18 = tbl[0];
     s.sp30 = arg1 * 240 + 0x9D;
@@ -497,7 +497,7 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, zero), 0);
     AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
-    tbl = *(s32 **)(arg0->unk_00 + 0x2C);
+    tbl = arg0->unk_00.v80076FF8->unk_2C;
     do {
         s.sp18 = tbl[i];
         s.sp30 = arg1 * 240;
@@ -568,7 +568,7 @@ void func_80075830(Unk8006EACCRec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s.sp43 = temp_v1;
     s.sp42 = temp_v1;
     s.sp41 = temp_v1;
-    temp_v0 = *(s32 *)(*(s32 *)(arg0->unk_00 + 0x14) + 0x54);
+    temp_v0 = arg0->unk_00.v80076FF8->unk_14[21];
     s.sp18 = temp_v0;
     s.sp1C = temp_v0 + 0xC;
     if (arg1 < 0xA) {
@@ -641,7 +641,7 @@ void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     zero = 0;
     s.sp28 = 0;
     s.sp40 = 0;
-    table = *(s32 **)(arg0->unk_00 + 0x14);
+    table = arg0->unk_00.v80076FF8->unk_14;
     s.sp18 = table[0];
     s.sp30 = arg3 * 240 + 0x88;
     s.sp34 = 0x33;
@@ -720,7 +720,7 @@ void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     s.sp40 = 0;
     for (i = 0; i < SELWORK->f65 + 3; i++) {
-        table = *(s32 **)(arg0->unk_00 + SELWORK->f65 * 4 + 0x20);
+        table = arg0->unk_00.v80076FF8->unk_20[SELWORK->f65];
         s.sp18 = table[i];
         cells = s.sp18 + 0x24;
         if (i == SELWORK->f3C[arg3]) {
@@ -738,7 +738,7 @@ void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     }
 
-    table = *(s32 **)(arg0->unk_00 + 0x14);
+    table = arg0->unk_00.v80076FF8->unk_14;
     s.sp18 = table[1];
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, zero), 0);
     AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0->unk_04.unk_14);
@@ -904,7 +904,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     if (arg3 != 0) {
         ot = 20;
     }
-    table = *(s32 **)(arg0->unk_00 + 0x30);
+    table = arg0->unk_00.v80076FF8->unk_30;
     if (SELWORK->f14.half[arg3] < 4) {
         s.sp18 = table[12];
         s.sp40 = 0;
@@ -923,7 +923,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s.sp40 = 0;
     color = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
     s.sp41 = s.sp42 = s.sp43 = color;
-    table = *(s32 **)(arg0->unk_00 + 0x14);
+    table = arg0->unk_00.v80076FF8->unk_14;
     for (i = 0; i < SELWORK->f65 + 3; i++) {
         s.sp40 = 0;
         s.sp18 = table[arg2[i] + 1];
@@ -940,7 +940,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     }
 
-    table = *(s32 **)(arg0->unk_00 + 0x30);
+    table = arg0->unk_00.v80076FF8->unk_30;
     for (i = 0; i < SELWORK->f3C[arg3] + 1; i++) {
         if (SELWORK->f3C[arg3] != i || SELWORK->f14.half[arg3] >= 4) {
             idx = SELWORK->f7E[arg3][i];
@@ -968,7 +968,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     }
 
-    table = *(s32 **)(arg0->unk_00 + SELWORK->f65 * 4 + 0x20);
+    table = arg0->unk_00.v80076FF8->unk_20[SELWORK->f65];
     for (i = 0; i < SELWORK->f65 + 3; i++) {
         s.sp40 = 0;
         s.sp18 = table[i];
@@ -984,7 +984,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         arg0->unk_04.unk_0C = func_8007352C((s32)&s);
     }
 
-    table = *(s32 **)(arg0->unk_00 + 0x14);
+    table = arg0->unk_00.v80076FF8->unk_14;
     s.sp18 = table[1];
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.sp18, mode), 0);
     AddPrim(g_gpu_ot_ptr + ot * 4, arg0->unk_04.unk_14);
@@ -1166,7 +1166,7 @@ s32 func_800770B8(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     func_8006E950(6, work);
     r = func_80076FF8(work);
     {
-        s32 *list = work;
+        Unk80076FF8Rec *list = work;
         work = (void *)func_8006E49C(r, D_800A35D8);
         D_800A36A0 = work;
         SELWORK->f04 = list;
@@ -1334,7 +1334,7 @@ s32 func_80077724(s32 arg0, s32 arg1) {
     SELWORK->f30 = temp_v1;
     p = func_80077098(temp_v1 & 1);
     SELWORK->f2C = p;
-    s.unk_00 = (s32)SELWORK->f04;
+    s.unk_00.v80076FF8 = SELWORK->f04;
     s.unk_04.unk_00 = p->unk_00;
     s.unk_04.unk_04 = p->unk_04;
     s.unk_04.unk_08 = p->unk_08;
@@ -1922,24 +1922,6 @@ typedef struct {
     u8 col_b;
 } Env77D94;
 
-typedef struct {
-    s16 on, off;
-} Win77D94;
-
-typedef struct {
-    u8 pad00[0x14];
-    s32 table;
-    s32 *hdr18;
-    s32 *hdr1C;
-    s32 *hdr20;
-    s32 *hdr24;
-    s32 *hdr28;
-    Win77D94 *win2C;
-    s16 *in30;
-    s16 *out34;
-    s32 img38[5];
-} Ctx77D94;
-
 void func_80077D94(Unk8006EACCRec *arg0) {
     Env77D94 s;
     Rect77D94 rect;
@@ -1952,21 +1934,22 @@ void func_80077D94(Unk8006EACCRec *arg0) {
        callee-saved $s7 (`addiu s7,zero,0x20` in the prologue branch's
        delay slot, then `addu a1,s7,zero` at all 5 call sites). The inline
        literal re-materializes `li a1,0x20` per call.
-       Same shape as func_80078654's `zero` and func_80070C70's `c60`. */
+       Same shape as func_80078654's `zero` and func_80070C70's `c60`.
+       The literal at every call: score 12. */
     s32 abr;
     s32 *hp;
     s32 i;
-    s32 j;
     s32 x;
     s32 v;
     Win77D94 *w;
+    s32 *img;
 
     s.ot_idx = 2;
     s.y = 0x1E;
     s.semi = 0;
-    in = ((Ctx77D94 *)D_800A35F8)->in30;
-    table = ((Ctx77D94 *)D_800A35F8)->table;
-    out = ((Ctx77D94 *)D_800A35F8)->out34;
+    in = D_800A35F8->in30;
+    table = D_800A35F8->table;
+    out = D_800A35F8->out34;
     abr = 0x20;
     /* FAKE (duplicated-statement-into-arms): both fade arms store their own
        has_color/r/g/b; the compiler cross-jumps the identical tails. The
@@ -1992,7 +1975,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                     D_800A3600 = D_800A3600 + 1;
                 }
             } else if (D_800A35F0 >= in[D_800A3600]) {
-                hp = ((Ctx77D94 *)D_800A35F8)->hdr18;
+                hp = D_800A35F8->hdr18;
                 for (i = 0; i < 5; hp++, i++) {
                     s.header = *hp;
                     s.table = table;
@@ -2012,7 +1995,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 }
                 break;
             }
-            hp = ((Ctx77D94 *)D_800A35F8)->hdr24;
+            hp = D_800A35F8->hdr24;
             for (i = 0, x = 0x156; i < 2; x += 0x80, hp++, i++) {
                 s.header = *hp;
                 s.x = x;
@@ -2031,7 +2014,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
             if (D_800A35F0 < out[2] && D_800A35F0 >= in[2]) {
                 s.has_color = 0;
             }
-            hp = ((Ctx77D94 *)D_800A35F8)->hdr20;
+            hp = D_800A35F8->hdr20;
             for (i = 0, x = 0x2B; i < 2; x += 0x80, hp++, i++) {
                 s.header = *hp;
                 s.x = x;
@@ -2046,14 +2029,14 @@ void func_80077D94(Unk8006EACCRec *arg0) {
         case 3:
             rect = D_800A32FC;
             for (i = 0; i < 5; i++) {
-                /* FAKE: named intermediate for the TIM-pointer slot offset
-                   (0x38 + 4i). Mechanism: loop.c strength-reduces it to
-                   the target's giv ($s1 = 0x38, += 4). Written inline
-                   (`((Ctx77D94 *)D_800A35F8)->img38[i]` or
-                   `D_800A35F8 + i * 4 + 0x38`), fold moves 0x38 into the
-                   load displacement and the giv is not reduced. */
-                j = i * 4 + 0x38;
-                LoadImage((s32)&rect, *(s32 *)(D_800A35F8 + j) + 0x220);
+                /* FAKE: named intermediate for the TIM-pointer slot's address.
+                   Mechanism: loop.c strength-reduces it to the target's giv
+                   ($s1 = 0x38, += 4, added to D_800A35F8). Written inline
+                   (`D_800A35F8->img38[i]`), fold moves 0x38 into the load
+                   displacement (`sll; addu; lw a1,56(v0)`) and the giv is not
+                   reduced (score 9). */
+                img = &D_800A35F8->img38[i];
+                LoadImage((s32)&rect, *img + 0x220);
                 DrawSync(0);
                 rect.x += 0x40;
             }
@@ -2061,7 +2044,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
             break;
         case 4:
             if (D_800A35F0 + 1 < out[D_800A3600] + 60) {
-                hp = ((Ctx77D94 *)D_800A35F8)->hdr1C;
+                hp = D_800A35F8->hdr1C;
                 for (i = 0; i < 5; hp++, i++) {
                     s.header = *hp;
                     s.table = table;
@@ -2080,9 +2063,12 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     s.ot_idx = 1;
     s.y = 0;
     s.x = 0;
-    hp = ((Ctx77D94 *)D_800A35F8)->hdr28;
+    hp = D_800A35F8->hdr28;
     for (i = 0; i < 21; i++) {
-        w = (Win77D94 *)(i * 4 + (s32)((Ctx77D94 *)D_800A35F8)->win2C);
+        /* FAKE: the window address is an integer sum converted to Win77D94 *: as
+           `&D_800A35F8->win2C[i]` win2C comes first in the addu (`addu a0,v0,s0` for
+           the target's `addu a0,s0,v0`): score 1; `w = win2C; w += i`, 2. */
+        w = (Win77D94 *)(i * 4 + (s32)D_800A35F8->win2C);
         if (D_800A35F0 < w->off + 60 && D_800A35F0 >= w->on) {
             /* FAKE (duplicated-statement-into-arms): each arm stores its own
                r/g/b chain; the compiler cross-jumps the identical tails back
@@ -2121,15 +2107,15 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     }
 }
 s32 func_800784E4(s32 arg0) {
-    s32 s0;
+    Ctx77D94 *s0;
     s32 r;
 
     ClearOTagR((u32 *)g_gpu_ot_ptr, 0x1008);
-    s0 = arg0 + 0x58;
+    s0 = (Ctx77D94 *)(arg0 + 0x58);
     D_800A35F4 = (Unk8006E49CRec *)arg0;
     D_800A35F8 = s0;
-    func_8006E950(0x32, s0);
-    r = func_80077D10(s0);
+    func_8006E950(0x32, &s0->unk_00);
+    r = func_80077D10((s32 *)s0);
     func_8006E49C(r, D_800A35F4);
     D_800A35FC = 0;
     D_800A35F0 = 0;
@@ -2158,9 +2144,9 @@ s32 func_8007855C(s32 arg0) {
     }
     func_80077D94(&s);
     {
-        s32 *p_struct = *(s32 **)((s32)D_800A35F8 + 0x34);
+        s16 *out = D_800A35F8->out34;
         s32 new_val = D_800A35F0 + 1;
-        int cond = new_val < *(s16 *)((s32)p_struct + 0xA);
+        int cond = new_val < out[5];
         D_800A35F0 = new_val;
         return cond ? 0 : 1;
     }

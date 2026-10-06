@@ -13,7 +13,7 @@ extern void func_80052C10(void);
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
 static s32 D_800A33F0;
-static s32 D_800A33F4;
+static Work_80053E9C *D_800A33F4;
 static u16 D_800A33F8;
 static s32 D_800A33FC;  /* not named by any code or data: size from the gap */
 static s16 D_800A3400;
@@ -144,7 +144,6 @@ INCLUDE_ASM("asm/funcs", func_80052C4C);
 INCLUDE_ASM("asm/funcs", gte_ReadIR1IR2Sra2);
 extern s32 func_80053694(s32 *, s16 *);
 
-#define W ((Work_80053E9C *)D_800A33F4)
 
 /* Walks the 32x32 grid of 2000-unit cells (origin -32000) along the XZ
  * segment from the start point (+0x8/+0x10) to the end point (+0x18/+0x20),
@@ -158,109 +157,109 @@ s32 func_80052D00(s32 *arg0, s16 *arg1) {
     s32 zdir;
     s32 swapped;
 
-    W->unk60 = W->unk8 + 32000;
-    W->unk64 = W->unk10 + 32000;
-    W->unk68 = W->unk18 + 32000;
-    W->unk0 = 0x7FFFFFFF;
-    W->unk6C = W->unk20 + 32000;
-    W->unk70 = W->unk68 - W->unk60;
-    W->unk88.x = W->unk60 / 2000;
-    W->unk88.z = W->unk64 / 2000;
-    W->unk8C.x = W->unk68 / 2000;
-    W->unk8C.z = W->unk6C / 2000;
-    W->unk74 = W->unk6C - W->unk64;
-    if (W->unk88.x == W->unk8C.x && W->unk88.z == W->unk8C.z) {
-        if (W->unk8 == W->unk18 && W->unkC == W->unk1C && W->unk10 == W->unk20) {
+    D_800A33F4->unk60 = D_800A33F4->unk8.vx + 32000;
+    D_800A33F4->unk64 = D_800A33F4->unk8.vz + 32000;
+    D_800A33F4->unk68 = D_800A33F4->unk18.vx + 32000;
+    D_800A33F4->unk0 = 0x7FFFFFFF;
+    D_800A33F4->unk6C = D_800A33F4->unk18.vz + 32000;
+    D_800A33F4->unk70 = D_800A33F4->unk68 - D_800A33F4->unk60;
+    D_800A33F4->unk88.x = D_800A33F4->unk60 / 2000;
+    D_800A33F4->unk88.z = D_800A33F4->unk64 / 2000;
+    D_800A33F4->unk8C.x = D_800A33F4->unk68 / 2000;
+    D_800A33F4->unk8C.z = D_800A33F4->unk6C / 2000;
+    D_800A33F4->unk74 = D_800A33F4->unk6C - D_800A33F4->unk64;
+    if (D_800A33F4->unk88.x == D_800A33F4->unk8C.x && D_800A33F4->unk88.z == D_800A33F4->unk8C.z) {
+        if (D_800A33F4->unk8.vx == D_800A33F4->unk18.vx && D_800A33F4->unk8.vy == D_800A33F4->unk18.vy && D_800A33F4->unk8.vz == D_800A33F4->unk18.vz) {
             return 0;
         }
-        W->unk5C(W->unk88.x, W->unk88.z);
+        D_800A33F4->unk5C(D_800A33F4->unk88.x, D_800A33F4->unk88.z);
     } else {
-        W->unk80 = W->unk88.x * 2000 + 1000;
-        W->unk84 = W->unk88.z * 2000 + 1000;
-        W->unk60 -= W->unk80;
-        W->unk64 -= W->unk84;
-        W->unk68 -= W->unk80;
-        W->unk6C -= W->unk84;
-        if (W->unk70 < 0) {
+        D_800A33F4->unk80 = D_800A33F4->unk88.x * 2000 + 1000;
+        D_800A33F4->unk84 = D_800A33F4->unk88.z * 2000 + 1000;
+        D_800A33F4->unk60 -= D_800A33F4->unk80;
+        D_800A33F4->unk64 -= D_800A33F4->unk84;
+        D_800A33F4->unk68 -= D_800A33F4->unk80;
+        D_800A33F4->unk6C -= D_800A33F4->unk84;
+        if (D_800A33F4->unk70 < 0) {
             xdir = -1;
-            W->unk70 = -W->unk70;
-            W->unk60 = -W->unk60;
-            W->unk68 = -W->unk68;
+            D_800A33F4->unk70 = -D_800A33F4->unk70;
+            D_800A33F4->unk60 = -D_800A33F4->unk60;
+            D_800A33F4->unk68 = -D_800A33F4->unk68;
         } else {
             xdir = 1;
         }
-        if (W->unk74 < 0) {
+        if (D_800A33F4->unk74 < 0) {
             zdir = -1;
-            W->unk74 = -W->unk74;
-            W->unk64 = -W->unk64;
-            W->unk6C = -W->unk6C;
+            D_800A33F4->unk74 = -D_800A33F4->unk74;
+            D_800A33F4->unk64 = -D_800A33F4->unk64;
+            D_800A33F4->unk6C = -D_800A33F4->unk6C;
         } else {
             zdir = 1;
         }
-        if (W->unk74 > W->unk70) {
+        if (D_800A33F4->unk74 > D_800A33F4->unk70) {
             swapped = 1;
-            W->unk80 = W->unk70;
-            W->unk70 = W->unk74;
-            W->unk74 = W->unk80;
-            W->unk80 = W->unk60;
-            W->unk60 = W->unk64;
-            W->unk64 = W->unk80;
-            W->unk80 = W->unk68;
-            W->unk68 = W->unk6C;
-            W->unk6C = W->unk80;
+            D_800A33F4->unk80 = D_800A33F4->unk70;
+            D_800A33F4->unk70 = D_800A33F4->unk74;
+            D_800A33F4->unk74 = D_800A33F4->unk80;
+            D_800A33F4->unk80 = D_800A33F4->unk60;
+            D_800A33F4->unk60 = D_800A33F4->unk64;
+            D_800A33F4->unk64 = D_800A33F4->unk80;
+            D_800A33F4->unk80 = D_800A33F4->unk68;
+            D_800A33F4->unk68 = D_800A33F4->unk6C;
+            D_800A33F4->unk6C = D_800A33F4->unk80;
         } else {
             swapped = 0;
         }
-        W->unk68 += 1000;
-        W->unk60 += 1000;
-        W->unk64 += 1000;
-        W->unk90 = W->unk68 / 2000 - W->unk60 / 2000 + 1;
-        W->unk7C = (W->unk74 << 12) / W->unk70;
-        W->unk64 -= (W->unk60 * W->unk7C) >> 12;
-        W->unk78 = (W->unk7C * 2000) >> 12;
-        while (--W->unk90 != -1) {
-            if ((W->unk80 = W->unk5C(W->unk88.x, W->unk88.z)) != 0) {
+        D_800A33F4->unk68 += 1000;
+        D_800A33F4->unk60 += 1000;
+        D_800A33F4->unk64 += 1000;
+        D_800A33F4->unk90 = D_800A33F4->unk68 / 2000 - D_800A33F4->unk60 / 2000 + 1;
+        D_800A33F4->unk7C = (D_800A33F4->unk74 << 12) / D_800A33F4->unk70;
+        D_800A33F4->unk64 -= (D_800A33F4->unk60 * D_800A33F4->unk7C) >> 12;
+        D_800A33F4->unk78 = (D_800A33F4->unk7C * 2000) >> 12;
+        while (--D_800A33F4->unk90 != -1) {
+            if ((D_800A33F4->unk80 = D_800A33F4->unk5C(D_800A33F4->unk88.x, D_800A33F4->unk88.z)) != 0) {
                 break;
             }
-            W->unk64 %= 2000;
-            W->unk64 += W->unk78;
-            if (W->unk90 == 0) {
+            D_800A33F4->unk64 %= 2000;
+            D_800A33F4->unk64 += D_800A33F4->unk78;
+            if (D_800A33F4->unk90 == 0) {
                 break;
             }
-            if (W->unk64 > 2000) {
+            if (D_800A33F4->unk64 > 2000) {
                 if (swapped) {
                     if (xdir < 0) {
-                        W->unk88.x--;
+                        D_800A33F4->unk88.x--;
                     } else {
-                        W->unk88.x++;
+                        D_800A33F4->unk88.x++;
                     }
                 } else {
                     if (zdir < 0) {
-                        W->unk88.z--;
+                        D_800A33F4->unk88.z--;
                     } else {
-                        W->unk88.z++;
+                        D_800A33F4->unk88.z++;
                     }
                 }
-                if ((W->unk80 = W->unk5C(W->unk88.x, W->unk88.z)) != 0) {
+                if ((D_800A33F4->unk80 = D_800A33F4->unk5C(D_800A33F4->unk88.x, D_800A33F4->unk88.z)) != 0) {
                     break;
                 }
             }
             if (swapped) {
                 if (zdir < 0) {
-                    W->unk88.z--;
+                    D_800A33F4->unk88.z--;
                 } else {
-                    W->unk88.z++;
+                    D_800A33F4->unk88.z++;
                 }
             } else {
                 if (xdir < 0) {
-                    W->unk88.x--;
+                    D_800A33F4->unk88.x--;
                 } else {
-                    W->unk88.x++;
+                    D_800A33F4->unk88.x++;
                 }
             }
         }
-        if (W->unk80 == 0 && (W->unk88.x != W->unk8C.x || W->unk88.z != W->unk8C.z)) {
-            W->unk5C(W->unk8C.x, W->unk8C.z);
+        if (D_800A33F4->unk80 == 0 && (D_800A33F4->unk88.x != D_800A33F4->unk8C.x || D_800A33F4->unk88.z != D_800A33F4->unk8C.z)) {
+            D_800A33F4->unk5C(D_800A33F4->unk8C.x, D_800A33F4->unk8C.z);
         }
     }
     return func_80053694(arg0, arg1);
@@ -268,96 +267,87 @@ s32 func_80052D00(s32 *arg0, s16 *arg1) {
 extern s32 func_80052D00(s32 *, s16 *);
 extern s32 func_80053754();
 extern s32 func_80053E9C();
-extern u8 D_800EFA00;
-extern u8 D_800EF9F8;
-typedef struct { s32 a, b, c, d; } _S16_53304;
+extern Work_80053E9C D_800EF9F8;
 void func_80053304(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
-    u8 *p;
     s32 a, b, c;
     s32 hi0, hi1, hi2;
-    D_800A33F4 = (s32)&D_800EF9F8;
-    *(_S16_53304 *)&D_800EFA00 = *(_S16_53304 *)arg0;
-    *(_S16_53304 *)((u8 *)D_800A33F4 + 0x18) = *(_S16_53304 *)arg1;
+    D_800A33F4 = &D_800EF9F8;
+    D_800EF9F8.unk8 = *(VECTOR *)arg0;
+    D_800A33F4->unk18 = *(VECTOR *)arg1;
     if (gte_SumSquares3(
-            *(s32 *)((u8 *)D_800A33F4 + 0x18) - *(s32 *)((u8 *)D_800A33F4 + 0x8),
-            *(s32 *)((u8 *)D_800A33F4 + 0x1C) - *(s32 *)((u8 *)D_800A33F4 + 0xC),
-            *(s32 *)((u8 *)D_800A33F4 + 0x20) - *(s32 *)((u8 *)D_800A33F4 + 0x10)) <= 0x9C3F) {
-        p = (u8 *)D_800A33F4;
-        hi0 = *(s32 *)(p + 0x18);
-        a = *(s32 *)(p + 0x8);
-        hi1 = *(s32 *)(p + 0x1C);
-        b = *(s32 *)(p + 0xC);
-        *(s32 *)(p + 0x5C) = (s32)func_80053754;
-        hi2 = *(s32 *)(p + 0x20);
-        *(s32 *)(p + 0x8)  = a - ((hi0 - a) << 1);
-        *(s32 *)(p + 0xC)  = b - ((hi1 - b) << 1);
-        c = *(s32 *)(p + 0x10);
-        *(s32 *)(p + 0x10) = c - ((hi2 - c) << 1);
+            D_800A33F4->unk18.vx - D_800A33F4->unk8.vx,
+            D_800A33F4->unk18.vy - D_800A33F4->unk8.vy,
+            D_800A33F4->unk18.vz - D_800A33F4->unk8.vz) <= 0x9C3F) {
+        hi0 = D_800A33F4->unk18.vx;
+        a = D_800A33F4->unk8.vx;
+        hi1 = D_800A33F4->unk18.vy;
+        b = D_800A33F4->unk8.vy;
+        D_800A33F4->unk5C = func_80053754;
+        hi2 = D_800A33F4->unk18.vz;
+        D_800A33F4->unk8.vx = a - ((hi0 - a) << 1);
+        D_800A33F4->unk8.vy = b - ((hi1 - b) << 1);
+        c = D_800A33F4->unk8.vz;
+        D_800A33F4->unk8.vz = c - ((hi2 - c) << 1);
     } else {
-        *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
+        D_800A33F4->unk5C = func_80053E9C;
     }
     func_80052D00(arg2, arg3);
 }
 
-typedef struct { s32 a, b, c, d; } _S16_5344C;
 s32 func_8005344C(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
-    u8 *p;
     s32 a, b, c;
     s32 hi0, hi1, hi2;
-    D_800A33F4 = (u8 *)arg4;
-    *(_S16_5344C *)((u8 *)D_800A33F4 + 8) = *(_S16_5344C *)arg0;
-    *(_S16_5344C *)((u8 *)D_800A33F4 + 0x18) = *(_S16_5344C *)arg1;
+    D_800A33F4 = (Work_80053E9C *)arg4;
+    D_800A33F4->unk8 = *(VECTOR *)arg0;
+    D_800A33F4->unk18 = *(VECTOR *)arg1;
     if (gte_SumSquares3(
-            *(s32 *)((u8 *)D_800A33F4 + 0x18) - *(s32 *)((u8 *)D_800A33F4 + 0x8),
-            *(s32 *)((u8 *)D_800A33F4 + 0x1C) - *(s32 *)((u8 *)D_800A33F4 + 0xC),
-            *(s32 *)((u8 *)D_800A33F4 + 0x20) - *(s32 *)((u8 *)D_800A33F4 + 0x10)) <= 0x9C3F) {
-        p = (u8 *)D_800A33F4;
-        hi0 = *(s32 *)(p + 0x18);
-        a = *(s32 *)(p + 0x8);
-        hi1 = *(s32 *)(p + 0x1C);
-        b = *(s32 *)(p + 0xC);
-        *(s32 *)(p + 0x5C) = (s32)func_80053754;
-        hi2 = *(s32 *)(p + 0x20);
-        *(s32 *)(p + 0x8)  = a - ((hi0 - a) << 1);
-        *(s32 *)(p + 0xC)  = b - ((hi1 - b) << 1);
-        c = *(s32 *)(p + 0x10);
-        *(s32 *)(p + 0x10) = c - ((hi2 - c) << 1);
+            D_800A33F4->unk18.vx - D_800A33F4->unk8.vx,
+            D_800A33F4->unk18.vy - D_800A33F4->unk8.vy,
+            D_800A33F4->unk18.vz - D_800A33F4->unk8.vz) <= 0x9C3F) {
+        hi0 = D_800A33F4->unk18.vx;
+        a = D_800A33F4->unk8.vx;
+        hi1 = D_800A33F4->unk18.vy;
+        b = D_800A33F4->unk8.vy;
+        D_800A33F4->unk5C = func_80053754;
+        hi2 = D_800A33F4->unk18.vz;
+        D_800A33F4->unk8.vx = a - ((hi0 - a) << 1);
+        D_800A33F4->unk8.vy = b - ((hi1 - b) << 1);
+        c = D_800A33F4->unk8.vz;
+        D_800A33F4->unk8.vz = c - ((hi2 - c) << 1);
     } else {
-        *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
+        D_800A33F4->unk5C = func_80053E9C;
     }
     return func_80052D00(arg2, arg3);
 }
 
-typedef struct { s32 a, b, c, d; } _S16_53584;
 s32 func_80053584(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
-    D_800A33F4 = (s32)&D_800EF9F8;
-    *(_S16_53584 *)&D_800EFA00 = *(_S16_53584 *)arg0;
-    *(_S16_53584 *)((u8 *)D_800A33F4 + 0x18) = *(_S16_53584 *)arg1;
-    *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
+    D_800A33F4 = &D_800EF9F8;
+    D_800EF9F8.unk8 = *(VECTOR *)arg0;
+    D_800A33F4->unk18 = *(VECTOR *)arg1;
+    D_800A33F4->unk5C = func_80053E9C;
     return func_80052D00(arg2, arg3);
 }
-typedef struct { s32 a, b, c, d; } _S16_53614;
 s32 func_80053614(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
-    D_800A33F4 = arg4;
-    *(_S16_53614 *)((u8 *)D_800A33F4 + 8) = *(_S16_53614 *)arg0;
-    *(_S16_53614 *)((u8 *)D_800A33F4 + 0x18) = *(_S16_53614 *)arg1;
-    *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
+    D_800A33F4 = (Work_80053E9C *)arg4;
+    D_800A33F4->unk8 = *(VECTOR *)arg0;
+    D_800A33F4->unk18 = *(VECTOR *)arg1;
+    D_800A33F4->unk5C = func_80053E9C;
     return func_80052D00(arg2, arg3);
 }
 
 s32 func_80053694(s32 *arg0, s16 *arg1) {
-    u8 *p = D_800A33F4;
+    Work_80053E9C *p = D_800A33F4;
     s32 t;
-    if (*(s32 *)(p + 0) != 0x7FFFFFFF) {
-        t = (*(s16 *)(p + 0x48) * 0x7D0) - 0x7D00;
-        arg0[0] = *(s32 *)(p + 0x38) + t;
-        arg0[1] = *(s32 *)(p + 0x3C);
-        t = (*(s16 *)(p + 0x4A) * 0x7D0) - 0x7D00;
-        arg0[2] = *(s32 *)(p + 0x40) + t;
-        arg1[0] = *(s32 *)(p + 0x28) >> 2;
-        arg1[1] = *(s32 *)(p + 0x2C) >> 2;
-        arg1[2] = *(s32 *)(p + 0x30) >> 2;
-        D_800A33F8 = *(u16 *)(p + 4);
+    if (p->unk0 != 0x7FFFFFFF) {
+        t = (p->unk48 * 0x7D0) - 0x7D00;
+        arg0[0] = p->unk38 + t;
+        arg0[1] = p->unk3C;
+        t = (p->unk4A * 0x7D0) - 0x7D00;
+        arg0[2] = p->unk40 + t;
+        arg1[0] = p->unk28 >> 2;
+        arg1[1] = p->unk2C >> 2;
+        arg1[2] = p->unk30 >> 2;
+        D_800A33F8 = p->unk4;
         return 1;
     }
     return 0;
@@ -367,7 +357,7 @@ extern void gte_ReadIR1IR2Sra2(s32 *, s32 *);
 
 s32 func_80053754(s32 arg0, s32 arg1) {
     s32 n;
-    s32 data;
+    s16 *data;
     s32 count;
     s32 x;
     s32 z;
@@ -377,127 +367,127 @@ s32 func_80053754(s32 arg0, s32 arg1) {
     if (arg0 < 0 || arg1 < 0 || arg0 >= 32 || arg1 >= 32) {
         return 0;
     }
-    W->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
-    if (W->unkE0 == 0xFFFF) {
+    D_800A33F4->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
+    if (D_800A33F4->unkE0 == 0xFFFF) {
         return 0;
     }
-    data = D_800A33F0 + W->unkE0;
+    data = (s16 *)(D_800A33F0 + D_800A33F4->unkE0);
     x = arg0 * 2000 - 32000;
     z = arg1 * 2000 - 32000;
-    W->unk4C = W->unk8 - x;
-    W->unk4E = W->unkC;
-    W->unk50 = W->unk10 - z;
-    W->unk54 = W->unk18 - x;
-    W->unk56 = W->unk1C;
-    W->unk58 = W->unk20 - z;
+    D_800A33F4->unk4C = D_800A33F4->unk8.vx - x;
+    D_800A33F4->unk4E = D_800A33F4->unk8.vy;
+    D_800A33F4->unk50 = D_800A33F4->unk8.vz - z;
+    D_800A33F4->unk54 = D_800A33F4->unk18.vx - x;
+    D_800A33F4->unk56 = D_800A33F4->unk18.vy;
+    D_800A33F4->unk58 = D_800A33F4->unk18.vz - z;
 
-    count = *(s16 *)data;
-    data += 2;
+    count = *data;
+    data++;
     while (--count != -1) {
-        W->unkD0 = *(s16 *)data;
-        data += 2;
-        W->unkD4 = *(s16 *)data;
-        data += 2;
-        W->unkD8 = *(s16 *)data;
-        data += 2;
-        W->unkDC = *(u16 *)data;
-        data += 2;
-        W->unkDC = (*(s16 *)data << 16) | W->unkDC;
-        data += 2;
-        W->unkE4 = W->unkD0 * W->unk4C + W->unkD4 * W->unk4E + W->unkD8 * W->unk50 + W->unkDC;
-        W->unkE8 = W->unkD0 * W->unk54 + W->unkD4 * W->unk56 + W->unkD8 * W->unk58 + W->unkDC;
+        D_800A33F4->unkD0 = *data;
+        data++;
+        D_800A33F4->unkD4 = *data;
+        data++;
+        D_800A33F4->unkD8 = *data;
+        data++;
+        D_800A33F4->unkDC = (u16)*data;
+        data++;
+        D_800A33F4->unkDC = (*data << 16) | D_800A33F4->unkDC;
+        data++;
+        D_800A33F4->unkE4 = D_800A33F4->unkD0 * D_800A33F4->unk4C + D_800A33F4->unkD4 * D_800A33F4->unk4E + D_800A33F4->unkD8 * D_800A33F4->unk50 + D_800A33F4->unkDC;
+        D_800A33F4->unkE8 = D_800A33F4->unkD0 * D_800A33F4->unk54 + D_800A33F4->unkD4 * D_800A33F4->unk56 + D_800A33F4->unkD8 * D_800A33F4->unk58 + D_800A33F4->unkDC;
 
-        W->unkE4 = (W->unkE4 < 0 ? -1 : 1) * ((W->unkE4 < 0 ? -W->unkE4 : W->unkE4) >> 10);
-        W->unkE8 = (W->unkE8 < 0 ? -1 : 1) * ((W->unkE8 < 0 ? -W->unkE8 : W->unkE8) >> 10);
+        D_800A33F4->unkE4 = (D_800A33F4->unkE4 < 0 ? -1 : 1) * ((D_800A33F4->unkE4 < 0 ? -D_800A33F4->unkE4 : D_800A33F4->unkE4) >> 10);
+        D_800A33F4->unkE8 = (D_800A33F4->unkE8 < 0 ? -1 : 1) * ((D_800A33F4->unkE8 < 0 ? -D_800A33F4->unkE8 : D_800A33F4->unkE8) >> 10);
 
-        if (W->unkE4 >= 0 && W->unkE8 < 0) {
-            W->unkE0 = W->unkE4 - W->unkE8;
-            W->unkE4 *= 2;
-            W->unkA8 = (W->unk54 - W->unk4C) * W->unkE4 / W->unkE0;
-            W->unkAC = (W->unk56 - W->unk4E) * W->unkE4 / W->unkE0;
-            W->unkB0 = (W->unk58 - W->unk50) * W->unkE4 / W->unkE0;
-            W->unkA8 = (W->unkA8 < 0 ? -1 : 1) * ((W->unkA8 >= 0 ? W->unkA8 + 1 : -W->unkA8 + 1) >> 1);
-            W->unkAC = (W->unkAC < 0 ? -1 : 1) * ((W->unkAC >= 0 ? W->unkAC + 1 : -W->unkAC + 1) >> 1);
-            W->unkB0 = (W->unkB0 < 0 ? -1 : 1) * ((W->unkB0 >= 0 ? W->unkB0 + 1 : -W->unkB0 + 1) >> 1);
-            W->unkA8 += W->unk4C;
-            W->unkAC += W->unk4E;
-            W->unkB0 += W->unk50;
-            W->unkE0 = *(s16 *)data;
-            data += 2;
-            W->unkE4 = *(s16 *)data;
-            data += 2;
-            W->unkE8 = *(s16 *)data;
-            data += 2;
-            W->unk9C = *(s16 *)data;
-            data += 2;
-            W->unkA0 = *(s16 *)data;
-            data += 2;
-            W->unkA4 = *(s16 *)data;
-            data += 2;
-            W->unkC4 = ((W->unkA8 - W->unkE0) * W->unk9C + (W->unkAC - W->unkE4) * W->unkA0 + (W->unkB0 - W->unkE8) * W->unkA4) >> 14;
-            W->unk9C = *(s16 *)data;
-            data += 2;
-            W->unkA0 = *(s16 *)data;
-            data += 2;
-            W->unkA4 = *(s16 *)data;
-            data += 2;
-            W->unkC8 = ((W->unkA8 - W->unkE0) * W->unk9C + (W->unkAC - W->unkE4) * W->unkA0 + (W->unkB0 - W->unkE8) * W->unkA4) >> 14;
-            hdr = *(u16 *)data;
-            data += 2;
+        if (D_800A33F4->unkE4 >= 0 && D_800A33F4->unkE8 < 0) {
+            D_800A33F4->unkE0 = D_800A33F4->unkE4 - D_800A33F4->unkE8;
+            D_800A33F4->unkE4 *= 2;
+            D_800A33F4->unkA8 = (D_800A33F4->unk54 - D_800A33F4->unk4C) * D_800A33F4->unkE4 / D_800A33F4->unkE0;
+            D_800A33F4->unkAC = (D_800A33F4->unk56 - D_800A33F4->unk4E) * D_800A33F4->unkE4 / D_800A33F4->unkE0;
+            D_800A33F4->unkB0 = (D_800A33F4->unk58 - D_800A33F4->unk50) * D_800A33F4->unkE4 / D_800A33F4->unkE0;
+            D_800A33F4->unkA8 = (D_800A33F4->unkA8 < 0 ? -1 : 1) * ((D_800A33F4->unkA8 >= 0 ? D_800A33F4->unkA8 + 1 : -D_800A33F4->unkA8 + 1) >> 1);
+            D_800A33F4->unkAC = (D_800A33F4->unkAC < 0 ? -1 : 1) * ((D_800A33F4->unkAC >= 0 ? D_800A33F4->unkAC + 1 : -D_800A33F4->unkAC + 1) >> 1);
+            D_800A33F4->unkB0 = (D_800A33F4->unkB0 < 0 ? -1 : 1) * ((D_800A33F4->unkB0 >= 0 ? D_800A33F4->unkB0 + 1 : -D_800A33F4->unkB0 + 1) >> 1);
+            D_800A33F4->unkA8 += D_800A33F4->unk4C;
+            D_800A33F4->unkAC += D_800A33F4->unk4E;
+            D_800A33F4->unkB0 += D_800A33F4->unk50;
+            D_800A33F4->unkE0 = *data;
+            data++;
+            D_800A33F4->unkE4 = *data;
+            data++;
+            D_800A33F4->unkE8 = *data;
+            data++;
+            D_800A33F4->unk9C = *data;
+            data++;
+            D_800A33F4->unkA0 = *data;
+            data++;
+            D_800A33F4->unkA4 = *data;
+            data++;
+            D_800A33F4->unkC4 = ((D_800A33F4->unkA8 - D_800A33F4->unkE0) * D_800A33F4->unk9C + (D_800A33F4->unkAC - D_800A33F4->unkE4) * D_800A33F4->unkA0 + (D_800A33F4->unkB0 - D_800A33F4->unkE8) * D_800A33F4->unkA4) >> 14;
+            D_800A33F4->unk9C = *data;
+            data++;
+            D_800A33F4->unkA0 = *data;
+            data++;
+            D_800A33F4->unkA4 = *data;
+            data++;
+            D_800A33F4->unkC8 = ((D_800A33F4->unkA8 - D_800A33F4->unkE0) * D_800A33F4->unk9C + (D_800A33F4->unkAC - D_800A33F4->unkE4) * D_800A33F4->unkA0 + (D_800A33F4->unkB0 - D_800A33F4->unkE8) * D_800A33F4->unkA4) >> 14;
+            hdr = (u16)*data;
+            data++;
             n = hdr;
-            W->unkCC = n >> 8;
+            D_800A33F4->unkCC = n >> 8;
             n &= 0xFF;
-            W->unkB4 = *(s16 *)data;
-            data += 2;
-            y = *(s16 *)data;
-            data += 2;
-            W->unkE0 = 1;
-            W->unkB8 = y;
+            D_800A33F4->unkB4 = *data;
+            data++;
+            y = *data;
+            data++;
+            D_800A33F4->unkE0 = 1;
+            D_800A33F4->unkB8 = y;
             while (--n != -1) {
-                W->unkBC = *(s16 *)data;
-                data += 2;
-                W->unkC0 = *(s16 *)data;
-                data += 2;
-                if ((W->unkC4 - W->unkB4) * (W->unkC0 - W->unkB8)
-                    - (W->unkC8 - W->unkB8) * (W->unkBC - W->unkB4) > 0) {
-                    W->unkE0 = 0;
+                D_800A33F4->unkBC = *data;
+                data++;
+                D_800A33F4->unkC0 = *data;
+                data++;
+                if ((D_800A33F4->unkC4 - D_800A33F4->unkB4) * (D_800A33F4->unkC0 - D_800A33F4->unkB8)
+                    - (D_800A33F4->unkC8 - D_800A33F4->unkB8) * (D_800A33F4->unkBC - D_800A33F4->unkB4) > 0) {
+                    D_800A33F4->unkE0 = 0;
                     break;
                 }
-                W->unkB4 = W->unkBC;
-                W->unkB8 = W->unkC0;
+                D_800A33F4->unkB4 = D_800A33F4->unkBC;
+                D_800A33F4->unkB8 = D_800A33F4->unkC0;
             }
             if (n > 0) {
-                data += n * 4;
+                data += n * 2;
             }
-            if (W->unkE0 != 0) {
-                if ((W->unkE0 = gte_SumSquares3(W->unkA8 - W->unk4C, W->unkAC - W->unk4E, W->unkB0 - W->unk50)) < W->unk0) {
-                    W->unk48 = arg0;
-                    W->unk4A = arg1;
-                    W->unk38 = W->unkA8;
-                    W->unk3C = W->unkAC;
-                    W->unk40 = W->unkB0;
-                    W->unk28 = W->unkD0;
-                    W->unk2C = W->unkD4;
-                    W->unk30 = W->unkD8;
-                    W->unk34 = W->unkDC;
-                    W->unk0 = W->unkE0;
-                    W->unk4 = W->unkCC;
+            if (D_800A33F4->unkE0 != 0) {
+                if ((D_800A33F4->unkE0 = gte_SumSquares3(D_800A33F4->unkA8 - D_800A33F4->unk4C, D_800A33F4->unkAC - D_800A33F4->unk4E, D_800A33F4->unkB0 - D_800A33F4->unk50)) < D_800A33F4->unk0) {
+                    D_800A33F4->unk48 = arg0;
+                    D_800A33F4->unk4A = arg1;
+                    D_800A33F4->unk38 = D_800A33F4->unkA8;
+                    D_800A33F4->unk3C = D_800A33F4->unkAC;
+                    D_800A33F4->unk40 = D_800A33F4->unkB0;
+                    D_800A33F4->unk28 = D_800A33F4->unkD0;
+                    D_800A33F4->unk2C = D_800A33F4->unkD4;
+                    D_800A33F4->unk30 = D_800A33F4->unkD8;
+                    D_800A33F4->unk34 = D_800A33F4->unkDC;
+                    D_800A33F4->unk0 = D_800A33F4->unkE0;
+                    D_800A33F4->unk4 = D_800A33F4->unkCC;
                 }
             }
         } else {
-            data += 18;
-            n = *(s16 *)data;
-            data += 2;
+            data += 9;
+            n = *data;
+            data++;
             n &= 0xFF;
-            data += (n + 1) * 4;
+            data += (n + 1) * 2;
         }
     }
-    return W->unk0 != 0x7FFFFFFF;
+    return D_800A33F4->unk0 != 0x7FFFFFFF;
 }
 
 s32 func_80053E9C(s32 arg0, s32 arg1) {
     s32 n;
-    s32 data;
+    s16 *data;
     s32 count;
     s32 x;
     s32 z;
@@ -507,101 +497,100 @@ s32 func_80053E9C(s32 arg0, s32 arg1) {
     if (arg0 < 0 || arg1 < 0 || arg0 >= 32 || arg1 >= 32) {
         return 0;
     }
-    W->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
-    if (W->unkE0 == 0xFFFF) {
+    D_800A33F4->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
+    if (D_800A33F4->unkE0 == 0xFFFF) {
         return 0;
     }
-    data = D_800A33F0 + W->unkE0;
+    data = (s16 *)(D_800A33F0 + D_800A33F4->unkE0);
     x = arg0 * 2000 - 32000;
     z = arg1 * 2000 - 32000;
-    W->unk4C = W->unk8 - x;
-    W->unk4E = W->unkC;
-    W->unk50 = W->unk10 - z;
-    W->unk54 = W->unk18 - x;
-    W->unk56 = W->unk1C;
-    W->unk58 = W->unk20 - z;
+    D_800A33F4->unk4C = D_800A33F4->unk8.vx - x;
+    D_800A33F4->unk4E = D_800A33F4->unk8.vy;
+    D_800A33F4->unk50 = D_800A33F4->unk8.vz - z;
+    D_800A33F4->unk54 = D_800A33F4->unk18.vx - x;
+    D_800A33F4->unk56 = D_800A33F4->unk18.vy;
+    D_800A33F4->unk58 = D_800A33F4->unk18.vz - z;
 
-    count = *(s16 *)data;
-    data += 2;
+    count = *data;
+    data++;
     while (--count != -1) {
-        W->unkD0 = *(s16 *)data;
-        data += 2;
-        W->unkD4 = *(s16 *)data;
-        data += 2;
-        W->unkD8 = *(s16 *)data;
-        data += 2;
-        W->unkDC = *(u16 *)data;
-        data += 2;
-        W->unkDC = (*(s16 *)data << 16) | W->unkDC;
-        data += 2;
-        W->unkE4 = W->unkD0 * W->unk4C + W->unkD4 * W->unk4E + W->unkD8 * W->unk50 + W->unkDC;
-        W->unkE8 = W->unkD0 * W->unk54 + W->unkD4 * W->unk56 + W->unkD8 * W->unk58 + W->unkDC;
+        D_800A33F4->unkD0 = *data;
+        data++;
+        D_800A33F4->unkD4 = *data;
+        data++;
+        D_800A33F4->unkD8 = *data;
+        data++;
+        D_800A33F4->unkDC = (u16)*data;
+        data++;
+        D_800A33F4->unkDC = (*data << 16) | D_800A33F4->unkDC;
+        data++;
+        D_800A33F4->unkE4 = D_800A33F4->unkD0 * D_800A33F4->unk4C + D_800A33F4->unkD4 * D_800A33F4->unk4E + D_800A33F4->unkD8 * D_800A33F4->unk50 + D_800A33F4->unkDC;
+        D_800A33F4->unkE8 = D_800A33F4->unkD0 * D_800A33F4->unk54 + D_800A33F4->unkD4 * D_800A33F4->unk56 + D_800A33F4->unkD8 * D_800A33F4->unk58 + D_800A33F4->unkDC;
 
-        W->unkE4 = (W->unkE4 < 0 ? -1 : 1) * ((W->unkE4 < 0 ? -W->unkE4 : W->unkE4) >> 14);
-        W->unkE8 = (W->unkE8 < 0 ? -1 : 1) * ((W->unkE8 < 0 ? -W->unkE8 : W->unkE8) >> 14);
+        D_800A33F4->unkE4 = (D_800A33F4->unkE4 < 0 ? -1 : 1) * ((D_800A33F4->unkE4 < 0 ? -D_800A33F4->unkE4 : D_800A33F4->unkE4) >> 14);
+        D_800A33F4->unkE8 = (D_800A33F4->unkE8 < 0 ? -1 : 1) * ((D_800A33F4->unkE8 < 0 ? -D_800A33F4->unkE8 : D_800A33F4->unkE8) >> 14);
 
-        if (W->unkE4 >= 0 && W->unkE8 < 0) {
-            W->unkE0 = W->unkE4 - W->unkE8;
-            W->unkA8 = (W->unk54 - W->unk4C) * W->unkE4 / W->unkE0 + W->unk4C;
-            W->unkAC = (W->unk56 - W->unk4E) * W->unkE4 / W->unkE0 + W->unk4E;
-            W->unkB0 = (W->unk58 - W->unk50) * W->unkE4 / W->unkE0 + W->unk50;
-            func_80052C4C(data, W->unkA8, W->unkAC, W->unkB0);
-            data += 18;
-            hdr = *(u16 *)data;
-            data += 2;
+        if (D_800A33F4->unkE4 >= 0 && D_800A33F4->unkE8 < 0) {
+            D_800A33F4->unkE0 = D_800A33F4->unkE4 - D_800A33F4->unkE8;
+            D_800A33F4->unkA8 = (D_800A33F4->unk54 - D_800A33F4->unk4C) * D_800A33F4->unkE4 / D_800A33F4->unkE0 + D_800A33F4->unk4C;
+            D_800A33F4->unkAC = (D_800A33F4->unk56 - D_800A33F4->unk4E) * D_800A33F4->unkE4 / D_800A33F4->unkE0 + D_800A33F4->unk4E;
+            D_800A33F4->unkB0 = (D_800A33F4->unk58 - D_800A33F4->unk50) * D_800A33F4->unkE4 / D_800A33F4->unkE0 + D_800A33F4->unk50;
+            func_80052C4C((s32)data, D_800A33F4->unkA8, D_800A33F4->unkAC, D_800A33F4->unkB0);
+            data += 9;
+            hdr = (u16)*data;
+            data++;
             n = hdr;
-            W->unkCC = n >> 8;
+            D_800A33F4->unkCC = n >> 8;
             n &= 0xFF;
-            W->unkB4 = *(s16 *)data;
-            data += 2;
-            y = *(s16 *)data;
-            data += 2;
-            W->unkE0 = 1;
-            W->unkB8 = y;
-            gte_ReadIR1IR2Sra2(&W->unkC4, &W->unkC8);
+            D_800A33F4->unkB4 = *data;
+            data++;
+            y = *data;
+            data++;
+            D_800A33F4->unkE0 = 1;
+            D_800A33F4->unkB8 = y;
+            gte_ReadIR1IR2Sra2(&D_800A33F4->unkC4, &D_800A33F4->unkC8);
             while (--n != -1) {
-                W->unkBC = *(s16 *)data;
-                data += 2;
-                W->unkC0 = *(s16 *)data;
-                data += 2;
-                if ((W->unkC4 - W->unkB4) * (W->unkC0 - W->unkB8)
-                    - (W->unkC8 - W->unkB8) * (W->unkBC - W->unkB4) > 0) {
-                    W->unkE0 = 0;
+                D_800A33F4->unkBC = *data;
+                data++;
+                D_800A33F4->unkC0 = *data;
+                data++;
+                if ((D_800A33F4->unkC4 - D_800A33F4->unkB4) * (D_800A33F4->unkC0 - D_800A33F4->unkB8)
+                    - (D_800A33F4->unkC8 - D_800A33F4->unkB8) * (D_800A33F4->unkBC - D_800A33F4->unkB4) > 0) {
+                    D_800A33F4->unkE0 = 0;
                     break;
                 }
-                W->unkB4 = W->unkBC;
-                W->unkB8 = W->unkC0;
+                D_800A33F4->unkB4 = D_800A33F4->unkBC;
+                D_800A33F4->unkB8 = D_800A33F4->unkC0;
             }
             if (n > 0) {
-                data += n * 4;
+                data += n * 2;
             }
-            if (W->unkE0 != 0) {
-                if ((W->unkE0 = gte_SumSquares3(W->unkA8 - W->unk4C, W->unkAC - W->unk4E, W->unkB0 - W->unk50)) < W->unk0) {
-                    W->unk48 = arg0;
-                    W->unk4A = arg1;
-                    W->unk38 = W->unkA8;
-                    W->unk3C = W->unkAC;
-                    W->unk40 = W->unkB0;
-                    W->unk28 = W->unkD0;
-                    W->unk2C = W->unkD4;
-                    W->unk30 = W->unkD8;
-                    W->unk34 = W->unkDC;
-                    W->unk0 = W->unkE0;
-                    W->unk4 = W->unkCC;
+            if (D_800A33F4->unkE0 != 0) {
+                if ((D_800A33F4->unkE0 = gte_SumSquares3(D_800A33F4->unkA8 - D_800A33F4->unk4C, D_800A33F4->unkAC - D_800A33F4->unk4E, D_800A33F4->unkB0 - D_800A33F4->unk50)) < D_800A33F4->unk0) {
+                    D_800A33F4->unk48 = arg0;
+                    D_800A33F4->unk4A = arg1;
+                    D_800A33F4->unk38 = D_800A33F4->unkA8;
+                    D_800A33F4->unk3C = D_800A33F4->unkAC;
+                    D_800A33F4->unk40 = D_800A33F4->unkB0;
+                    D_800A33F4->unk28 = D_800A33F4->unkD0;
+                    D_800A33F4->unk2C = D_800A33F4->unkD4;
+                    D_800A33F4->unk30 = D_800A33F4->unkD8;
+                    D_800A33F4->unk34 = D_800A33F4->unkDC;
+                    D_800A33F4->unk0 = D_800A33F4->unkE0;
+                    D_800A33F4->unk4 = D_800A33F4->unkCC;
                 }
             }
         } else {
-            data += 18;
-            n = *(s16 *)data;
-            data += 2;
+            data += 9;
+            n = *data;
+            data++;
             n &= 0xFF;
-            data += (n + 1) * 4;
+            data += (n + 1) * 2;
         }
     }
-    return W->unk0 != 0x7FFFFFFF;
+    return D_800A33F4->unk0 != 0x7FFFFFFF;
 }
 
-#undef W
 void func_80054410(s32 a0) {
     D_800A33F0 = a0;
 }

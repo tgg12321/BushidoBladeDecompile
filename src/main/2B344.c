@@ -336,7 +336,7 @@ void func_8003B20C(s32 arg0) {
     D_800A37C6 = 1;
     D_800A37A0 = 0;
     D_800A37A4 = 0;
-    D_800A3844 = ((s32 *)&D_800900EC)[arg0];
+    D_800A3844 = D_800900EC[arg0];
     eff_Init();
     func_8003AE5C(D_800A3844);
     func_8003AF40(0);
@@ -442,30 +442,30 @@ void func_8003B5A4(void) {
     chardata = &D_80102778.unk_4[1];
 
     do {
-        s32 ptr = D_800A3844;
+        u8 *ptr = D_800A3844;
         s32 cmd;
         D_800A3844 = ptr + 1;
-        cmd = *(u8 *)ptr;
+        cmd = *ptr;
 
         switch (cmd) {
             case 16: {
-                s32 ret = func_8003B3A4((u8 *)D_800A3844);
+                s32 ret = func_8003B3A4(D_800A3844);
                 D_800A3844 += ret;
                 break;
             }
 
             case 17: {
-                s32 ret = func_8003B484((u8 *)D_800A3844);
+                s32 ret = func_8003B484(D_800A3844);
                 D_800A3844 += ret;
                 break;
             }
 
             case 3: {
-                u8 *p = (u8 *)D_800A3844;
+                u8 *p = D_800A3844;
                 u8 byte0;
-                D_800A3844 = (s32)(p + 1);
+                D_800A3844 = p + 1;
                 byte0 = p[0];
-                D_800A3844 = (s32)(p + 2);
+                D_800A3844 = p + 2;
                 chardata[0] = byte0;
                 chardata[2] = p[1];
                 if ((s8)byte0 == D_800A3915) {
@@ -478,9 +478,9 @@ void func_8003B5A4(void) {
 
             case 1: {
                 u8 byte;
-                u8 *p = (u8 *)D_800A3844;
+                u8 *p = D_800A3844;
                 u8 counter = D_800A37A0;
-                D_800A3844 = (s32)(p + 1);
+                D_800A3844 = p + 1;
                 byte = *p;
                 D_800A37A0 = counter + 1;
                 D_800A36A4 = byte;
@@ -510,7 +510,7 @@ void func_8003B5A4(void) {
                 break;
 
             case 2:
-                D_800A3894 = (u8 *)D_800A3844;
+                D_800A3894 = D_800A3844;
                 D_800A3844 += 0x1D;
                 func_8003B2C8();
                 func_8003AF40(0);
@@ -522,7 +522,7 @@ void func_8003B5A4(void) {
                 break;
 
             case 20:
-                D_800A385C = (u8 *)D_800A3844;
+                D_800A385C = D_800A3844;
                 D_800A3844 += 12;
                 done = 1;
                 func_8003B4DC();
@@ -662,7 +662,6 @@ void func_8003B9D0(void) {
     s32 a0_arg;
     s32 magic;
     s32 v0;
-    u8 *p;
     u8 flags;
 
     magic = 0x80190800;
@@ -674,34 +673,32 @@ void func_8003B9D0(void) {
     gpu_ResetGraphMode1();
     func_80020D38();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
-    if (((u8 *)D_800A3878)[3] & 0x80) {
+    if (D_800A3878[3] & 0x80) {
         func_80020CDC();
         magic = 0x80118800;
     }
     {
-        u8 *q = (u8 *)D_800A3878;
-        u8 qf = q[3];
+        u8 qf = D_800A3878[3];
         if (qf & 0x30) {
             saved_first = D_80101EC8[0].unk_12;
             saved_44c = D_80101EC8[1].unk_12;
             if (qf & 0x10) D_80101EC8[0].unk_12 = 0x32;
-            if (q[3] & 0x20) D_80101EC8[1].unk_12 = 0x32;
+            if (D_800A3878[3] & 0x20) D_80101EC8[1].unk_12 = 0x32;
             func_8003AFFC();
             D_80101EC8[0].unk_12 = saved_first;
             D_80101EC8[1].unk_12 = saved_44c;
         }
     }
-    if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EC8[0].unk_12; else a3_arg = -1;
-    if (((u8 *)D_800A3878)[3] & 0x2) a0_arg = D_80101EC8[1].unk_12; else a0_arg = -1;
-    p = (u8 *)D_800A3878;
-    flags = p[3];
+    if (D_800A3878[3] & 0x1) a3_arg = D_80101EC8[0].unk_12; else a3_arg = -1;
+    if (D_800A3878[3] & 0x2) a0_arg = D_80101EC8[1].unk_12; else a0_arg = -1;
+    flags = D_800A3878[3];
     if (flags & 0x10) a3_arg = 0x32;
     if (flags & 0x20) a0_arg = 0x32;
     D_800A390F = 0;
-    func_80054884(D_800A376C, p[0], 0, a3_arg, a0_arg, -1, -1, magic);
+    func_80054884(D_800A376C, D_800A3878[0], 0, a3_arg, a0_arg, -1, -1, magic);
     func_80041688(0, 0);
     func_80041688(1, 0);
-    if (((u8 *)D_800A3878)[3] & 0x40) func_8004659C(-1);
+    if (D_800A3878[3] & 0x40) func_8004659C(-1);
     if ((s8)D_80102778.unk_4[1] == 0xE || (s8)D_80102778.unk_4[1] == 0x1D) {
         func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
     }
@@ -709,8 +706,8 @@ void func_8003B9D0(void) {
     g_disp_enable = DISP_DISABLED;
     g_disp_fade = 0;
     snd_SerialMixOn();
-    v0 = func_80036EA8(5, ((u8 *)D_800A3878)[1]);
-    cdrom_StartAudio(v0, ((u8 *)D_800A3878)[2]);
+    v0 = func_80036EA8(5, D_800A3878[1]);
+    cdrom_StartAudio(v0, D_800A3878[2]);
     func_80037260();
     D_800A37B8 = 0;
     D_800A3834 = 7;
@@ -1547,42 +1544,40 @@ void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
 }
 
 void func_8003D774(s32 arg0, s32 arg1) {
-    s32 *ptr = (s32 *)((u8 *)&D_800A3D40 + arg1 * 24);
-    ptr[0] = arg0;
-    ptr[1] = 0;
-    ptr[2] = 0;
-    *(s16 *)((u8 *)ptr + 0x16) = 0;
-    *(s16 *)((u8 *)ptr + 0x14) = 0;
-    *(s16 *)((u8 *)ptr + 0x12) = 0;
-    *(s16 *)((u8 *)ptr + 0x10) = 0;
-    *(s16 *)((u8 *)ptr + 0xE) = 0;
-    *(s16 *)((u8 *)ptr + 0xC) = 0;
+    Unk800A3D40Rec *ptr = &D_800A3D40[arg1];
+    ptr->unk0[0] = arg0;
+    ptr->unk0[1] = 0;
+    ptr->unk0[2] = 0;
+    ptr->unkC[5] = 0;
+    ptr->unkC[4] = 0;
+    ptr->unkC[3] = 0;
+    ptr->unkC[2] = 0;
+    ptr->unkC[1] = 0;
+    ptr->unkC[0] = 0;
 }
 extern s32 bitstream_ReadBits(u32 *, s32);
 s16 *func_8003D7B4(s32 arg0) {
     s32 i = 0;
-    u8 *base = (u8 *)&D_800A3D40 + (arg0 * 24);
-    u8 *p;
+    Unk800A3D40Rec *base = &D_800A3D40[arg0];
     do {
         s32 nbits;
         s16 val;
         s32 sign_bit;
         s32 sval;
-        nbits = bitstream_ReadBits((s32 *)base, 4);
+        nbits = bitstream_ReadBits(base->unk0, 4);
         if (nbits == 0) {
             nbits = 16;
         }
-        val = (s16)bitstream_ReadBits((s32 *)base, nbits);
+        val = (s16)bitstream_ReadBits(base->unk0, nbits);
         sval = val;
         sign_bit = nbits - 1;
         if ((sval >> sign_bit) & 1) {
             val = val | (0xFFFF << sign_bit);
         }
-        p = base + i * 2;
-        *(u16 *)(p + 0xC) = (u16)(*(u16 *)(p + 0xC) + val);
+        base->unkC[i] += val;
         i++;
     } while (i < 6);
-    return (s16 *)(base + 0xC);
+    return base->unkC;
 }
 
 /* Bitstream reader.  State through `u32 *s`: s[0]=word pointer, s[1]=current word,
@@ -2739,12 +2734,21 @@ void func_8003F7F4(void) {
     g_game_flag_a = 0;
     g_game_flag_b = 0;
 }
+/* The 16 bytes func_8003FA24 fills at SceneRec +0x04 and func_8003F824 copies into Scene.quads:
+   the record's id (unk0), two zero bytes, the object's matrix (its +0x18), its point table end and
+   the address of the record's inner.objs[3]. */
 typedef struct {
-    /* 0x00 */ s32 v[4];
+    /* 0x00 */ u16 unk0;
+    /* 0x02 */ u8 unk2;
+    /* 0x03 */ u8 unk3;
+    /* 0x04 */ u8 *unk4;
+    /* 0x08 */ u8 *unk8;
+    /* 0x0C */ void *unkC;
 } SceneQuad;
 
 typedef struct {
-    /* 0x00 */ s32 unk0;
+    /* 0x00 */ u16 unk0;
+    /* 0x02 */ u8 unk2[2];
     /* 0x04 */ SceneQuad quad;
     /* 0x14 */ u8 *obj;
     /* 0x18 */ u8 *cur;
@@ -2887,7 +2891,7 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     src = block;
     packet = (s16 *)0x1F800000;
     init.groups = packet;
-    for (n = *(s16 *)src++, count = n; n != 0; n = *(s16 *)src++, count = n) {
+    for (n = (s16)*src++, count = n; n != 0; n = (s16)*src++, count = n) {
         flags = *src++;
         mode = ((s16)flags >> 3) & 3;
         if (((s16)flags >> 3) & 1) {
@@ -2935,17 +2939,17 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
 
     init.matrix = obj + 0x18;
     init.flags = 0xE00;
-    *(s16 *)rec = func_80017D84((u8 *)&init);
+    rec->unk0 = func_80017D84((u8 *)&init);
     *(u8 **)(obj + 0x60) = init.point_end;
     rec->inner.count = 0;
     rec->inner.objs[4] = 0;
     cur = ((u32)cur & 3) ? cur + 2 : cur;
-    *(u16 *)((u8 *)rec + 4) = *(u16 *)rec;
-    *(u8 **)((u8 *)rec + 8) = obj + 0x18;
-    *(u8 **)((u8 *)rec + 0xC) = *(u8 **)(obj + 0x60);
-    *(void **)((u8 *)rec + 0x10) = (u8 *)rec + 0x2C;
-    *((u8 *)rec + 6) = 0;
-    *((u8 *)rec + 7) = 0;
+    rec->quad.unk0 = rec->unk0;
+    rec->quad.unk4 = obj + 0x18;
+    rec->quad.unk8 = *(u8 **)(obj + 0x60);
+    rec->quad.unkC = &rec->inner.objs[3];
+    rec->quad.unk2 = 0;
+    rec->quad.unk3 = 0;
     return cur;
 }
 s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {

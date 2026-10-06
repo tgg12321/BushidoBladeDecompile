@@ -189,11 +189,96 @@ typedef struct {
     DR_OFFSET *unk_1C;
 } Unk800788B0Rec;
 
-/* Draw context filled by 5ED34 func_8006EACC and 64FD8 func_80077724 / func_8007855C: unk_00 the
- * resource root (func_8007855C leaves it unset), then the cursors; unk_24 (pool word +0x20) only
- * func_8006EACC / func_80077724 set. */
+/* The head of the resource files func_8006E950 loads. By g_cd_file_table's sizes, file 2 of
+ * func_80036EA8's group 2 is MOD.BIN, 3 SEL.BIN, 4 / 5 SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN.
+ * Each file starts with a list of file-relative offsets ending in -1, which func_8006E440 turns
+ * into addresses. The first five mean the same in every file: func_8006919C / func_8006EA28 pass
+ * unk_00 and unk_04 to the VAB loader func_8005C2A8 (func_80076FF8 / func_80077D10, for D_SEL /
+ * NAR, make no such call, and those files' unk_00..unk_08 are equal), func_8006E950 loads the
+ * image at unk_08 into VRAM, and func_8006E8CC loads the 640x32 strip at unk_0C or unk_10. The
+ * four per-file relocators (func_8006919C, func_8006EA28, func_80076FF8, func_80077D10) return
+ * unk_04, where the caller's func_8006E49C buffer starts. The words after the head differ per file. */
 typedef struct {
-    s32 unk_00;
+    s32 *unk_00;
+    s32 unk_04;
+    s32 unk_08;
+    s32 unk_0C;
+    s32 unk_10;
+} Unk8006E950Head;
+
+/* SEL.BIN / SEL1.BIN / SEL2.BIN (resource files 3-5), the root 5ED34's func_8006E534 loads at its work
+ * area + 0x58 (D_800A35A8; func_8006EACC hands it to the handlers as Unk8006EACCRec.unk_00). After
+ * the head:
+ * - unk_14: per entry id two TIM pixel addresses, one per column, func_80070F78 loads (LoadImage).
+ * - unk_54..unk_74: the nine lists func_8006EA28 relocates (func_8006920C); s32 * as
+ *   Unk8006919CRec's lists. unk_78 is a further offset no code reads.
+ * - unk_7C: per player a row of VRAM RECTs (64 bytes) func_80070F78 hands LoadImage as the
+ *   destination; unk_80: the bytes func_800720FC reads.
+ * - unk_84: TIM pixel addresses func_8006ECF4 loads per character case. */
+typedef struct {
+    Unk8006E950Head unk_00;
+    s32 unk_14[8][2];
+    s32 *unk_54;
+    s32 *unk_58;
+    s32 *unk_5C;
+    s32 *unk_60;
+    s32 *unk_64;
+    s32 *unk_68;
+    s32 *unk_6C;
+    s32 *unk_70;
+    s32 *unk_74;
+    s32 *unk_78;
+    u8 *unk_7C;
+    u8 *unk_80;
+    s32 unk_84[5];
+} Unk8006EA28Rec;
+
+/* D_SEL.BIN (resource file 6), the root 64FD8's func_800770B8 loads at its work area + 0x58 and
+ * keeps in SelWork.f04 (func_80077724 hands it to the handlers as Unk8006EACCRec.unk_00). After the
+ * head: unk_14..unk_38, the ten lists func_80076FF8 relocates (unk_20 is indexed by the round count
+ * SelWork.f65); unk_3C, the bytes func_80074B18 reads. */
+typedef struct {
+    Unk8006E950Head unk_00;
+    s32 *unk_14;
+    s32 *unk_18;
+    s32 *unk_1C;
+    s32 *unk_20[3];
+    s32 *unk_2C;
+    s32 *unk_30;
+    s32 *unk_34;
+    s32 *unk_38;
+    u8 *unk_3C;
+} Unk80076FF8Rec;
+
+typedef struct {
+    s16 on, off;
+} Win77D94;
+
+/* NAR.BIN (resource file 0x32), the root 64FD8's func_800784E4 loads at its work area + 0x58
+ * (D_800A35F8). After the head: table, hdr18..hdr28 (the five lists func_80077D10 relocates),
+ * win2C, in30 / out34 and the five portrait TIMs img38 func_80077D94 uploads. */
+typedef struct {
+    Unk8006E950Head unk_00;
+    s32 table;
+    s32 *hdr18;
+    s32 *hdr1C;
+    s32 *hdr20;
+    s32 *hdr24;
+    s32 *hdr28;
+    Win77D94 *win2C;
+    s16 *in30;
+    s16 *out34;
+    s32 img38[5];
+} Ctx77D94;
+
+/* Draw context filled by 5ED34 func_8006EACC and 64FD8 func_80077724 / func_8007855C: unk_00 the
+ * resource root (SEL for func_8006EACC's handlers, D_SEL for func_80077724's; func_8007855C leaves it
+ * unset), then the cursors; unk_24 (pool word +0x20) only func_8006EACC / func_80077724 set. */
+typedef struct {
+    union {
+        Unk8006EA28Rec *v8006EA28;
+        Unk80076FF8Rec *v80076FF8;
+    } unk_00;
     Unk800788B0Rec unk_04;
     void *unk_24;
 } Unk8006EACCRec;
@@ -347,7 +432,7 @@ typedef struct {
  * Q57). */
 typedef struct {
     Unk8009BD24Block *f00;
-    s32 *f04;
+    Unk80076FF8Rec *f04;
     s16 f08[2];
     s16 f0C[2];
     union {
@@ -861,7 +946,7 @@ typedef union {
  * - unk50 / unkB0: the initial targets of D_800A3488 / D_800A348C (TexRec). func_800620B8 retargets
  *   them only in its switch cases 0-3 (unk4 & 7), so its reads at 51268.c:958-960 go through these
  *   seeded values when no earlier record took one of those cases.
- * - unkA0 / unkA4: the initial targets of D_800A34E4 (u8 *) / D_800A34E8 (u32 *), which every
+ * - unkA0 / unkA4: the initial targets of D_800A34E4 (u32 *) / D_800A34E8 (u32 *), which every
  *   user retargets before use.
  * - unkB8: the work area D_800A34EC points at (Unk1F8000B8Union), laid out differently by its
  *   users; it runs to the end of the scratchpad.
@@ -892,7 +977,7 @@ typedef struct {
     u16 unk9A;         /* D_800A34D8 */
     u16 unk9C;         /* D_800A34DC */
     u16 unk9E;         /* D_800A34E0 */
-    u8 unkA0[4];
+    u32 unkA0;
     u32 unkA4;
     s32 unkA8;         /* D_800A3480 */
     s32 unkAC;         /* D_800A3484 */
@@ -908,21 +993,15 @@ typedef struct {
 } Cell_80052D00;
 
 /* The 0xEC-byte work area of 3AB48's stage-collision cast (func_80052D00 and its helpers, through
- * D_800A33F4 and the W macro in 3AB48.c). func_8005344C / func_80053614 place it at their last
+ * D_800A33F4). func_8005344C / func_80053614 place it at their last
  * argument; func_80053304 / func_80053584 at D_800EF9F8. 17AFC func_80030D7C / func_800321E8 pass
  * 0x1F8002F0, its place in their scratchpad layout (Unk1F8002B8_8005344C.unk38). */
 typedef struct {
     s32 unk0;
-    s16 unk4;
+    u16 unk4;
     s16 unk6;
-    s32 unk8;
-    s32 unkC;
-    s32 unk10;
-    s32 unk14;
-    s32 unk18;
-    s32 unk1C;
-    s32 unk20;
-    s32 unk24;
+    VECTOR unk8;
+    VECTOR unk18;
     s32 unk28;
     s32 unk2C;
     s32 unk30;
@@ -1745,23 +1824,6 @@ typedef struct {
 
 typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
 
-/* The head of the resource files func_8006E950 loads. By g_cd_file_table's sizes, file 2 of
- * func_80036EA8's group 2 is MOD.BIN, 3 SEL.BIN, 4 / 5 SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN.
- * Each file starts with a list of file-relative offsets ending in -1, which func_8006E440 turns
- * into addresses. The first five mean the same in every file: func_8006919C / func_8006EA28 pass
- * unk_00 and unk_04 to the VAB loader func_8005C2A8 (func_80076FF8 / func_80077D10, for D_SEL /
- * NAR, make no such call, and those files' unk_00..unk_08 are equal), func_8006E950 loads the
- * image at unk_08 into VRAM, and func_8006E8CC loads the 640x32 strip at unk_0C or unk_10. The
- * four per-file relocators (func_8006919C, func_8006EA28, func_80076FF8, func_80077D10) return
- * unk_04, where the caller's func_8006E49C buffer starts. The words after the head differ per file. */
-typedef struct {
-    s32 *unk_00;
-    s32 unk_04;
-    s32 unk_08;
-    s32 unk_0C;
-    s32 unk_10;
-} Unk8006E950Head;
-
 /* The 12-byte records MOD.BIN's unk_44 points at (Unk8006919CRec), drawn by func_8006C21C. */
 typedef struct {
     s16 x, y, w, h;
@@ -1795,6 +1857,28 @@ typedef struct {
     Rec_8006C21C *unk_44;
     Vec2s16 *unk_48;
 } Unk8006919CRec;
+
+/* 0x800A3D40: 24-byte records func_8003D774 starts and func_8003D7B4 advances: the bit stream
+   bitstream_ReadBits reads (unk0, its u32 words) and six s16 values func_8003D7B4 adds the decoded
+   deltas to and returns (3AB48 func_8005490C reads them as an offset and a rotation). */
+typedef struct {
+    u32 unk0[3];
+    s16 unkC[6];
+} Unk800A3D40Rec;
+
+/* 5ED34's work block: the 0x14 bytes func_8006E534 keeps at the start of func_8006E49C's returned
+ * space (D_800A35C4; the arena cursor D_800A356C moves past it), as 51268's Unk800A34FCRec.
+ * - unk_00 / unk_04: one s16 per player each (counted down from 0x1E by the draw handlers).
+ * - unk_08: the frame counter func_8006EACC advances; unk_0C: its buffer counter (bit 0 picks the
+ *   half of the Unk8006E49CRec pair).
+ * - unk_10: the draw offset the handlers hand to SetDrawOffset. */
+typedef struct {
+    s16 unk_00[2];
+    s16 unk_04[2];
+    s32 unk_08;
+    s32 unk_0C;
+    u16 unk_10[2];
+} Unk800A35C4Rec;
 
 /* 51268's work block: the 0x34 bytes func_80068F70 keeps at the start of func_8006E49C's
  * returned space (D_800A34FC; its arena cursor D_800A3500 moves past the block). func_80068F70

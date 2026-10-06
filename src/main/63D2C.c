@@ -380,7 +380,7 @@ skip_init:
     s.sp2C = 0x1F;
     s.sp40 = 0;
     s.sp28 = 0;
-    temp_s2 = *(s32 **)(arg0->unk_00 + 0x38);
+    temp_s2 = arg0->unk_00.v80076FF8->unk_38;
     s.sp30 = 0;
     s.sp34 = 0;
     i = 0;
@@ -461,7 +461,7 @@ void func_80074488(Unk8006EACCRec *arg0) {
          + (1 << (base->f67 + 8))
          + (1 << (base->f66 + 9));
     s.sp2C = 2;
-    table = *(s32 **)(arg0->unk_00 + 0x34);
+    table = arg0->unk_00.v80076FF8->unk_34;
     do {
         s.sp30 = 0;
         s.sp34 = 0;
