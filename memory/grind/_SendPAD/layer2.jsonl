@@ -1,0 +1,1 @@
+{"func": "_SendPAD", "addr": "80079000", "verdict": "PASS", "body_hash": "8c45fb0a8955139c", "body_kind": "asm", "file": "main/psxsdk/libapi/sendpad", "reviewer": "rev-auth-sendpad", "scope": "auth", "date": "2026-10-06T00:57:44Z", "head": "7b2e1706b", "notes": ""}

@@ -65,6 +65,7 @@ PAD_init2      # BIOS B(0x15) trampoline
 SysEnqIntRP      # BIOS C(0x02) trampoline (SysEnqIntRP)
 SysDeqIntRP      # BIOS C(0x03) trampoline (SysDeqIntRP)
 FlushCache      # BIOS A(0x44) trampoline (LIBAPI C68, 0x80078FF0..0x80079000; the 4th word is the module's trailing nop). The routine after it is LIBAPI SENDPAD's _SendPAD (0x80079000), split into its own file by owner ruling Q108; it is not part of this grant.
+_SendPAD      # canonical-body (owner ruling Q112, 2026-10-05; per-function, not a precedent). LIBAPI SENDPAD, 10 words @0x80079000, whole body asm/funcs/_SendPAD.s: lui/lw $t1 <- D_800A362C; addiu $sp,-0x18; sw $ra,0x14($sp); jalr $t1; nop; lw $ra,0x14($sp); addiu $sp,0x18; jr $ra; nop. Sony hand-wrote this module: the PsyQ 4.0 ECOFF LIBAPI.A member sendpad.o names its source `sendpad.s` (r3000.h / asm.h includes, no gcc2_compiled marker), the SN LIBAPI.LIB SENDPAD module has the assembler section order of the library's .s members, and its words equal these apart from relocated fields; the same release's C wrapper SendPAD (send.c) saves $ra at 0x10, GCC's layout (reproduce: memory/grind/_SendPAD/asm_evidence.py). Honest C floors at 4/10 ($v0 / $ra 0x10). scan_hand_coded tier LOW (score 0/8: S3-S5 need at least 40 insns; the other five signals find nothing in these 10); the owner ruling stands in for judge-sole-gate rule 3's scanner gate and Gate 1.
 
 # src/main/psxsdk/libcard/ (ex gpu.c) — A/B-vector card trampolines
 _card_info      # BIOS A(0xAB) trampoline
