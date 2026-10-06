@@ -1285,3 +1285,18 @@ equal BB2's apart from relocated fields; the same release's C one-liner SendPAD 
 insns; the other five signals find nothing in these 10); this per-function ruling replaces that gate (judge-sole-gate
 rule 3 and Endgame-lock Gate 1) for _SendPAD only. Not a precedent and not a new evidence class: other functions still
 take rule 3.
+
+## 2026-10-05 — OWNER RULINGS — Q113-Q114: func_8006C21C passes tw as (RECT *)tw; AddPrim stays out of libgpu.h
+
+Fiftieth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 50; owner-delegated). Closes the two open
+Phase 2 questions from e6a30adb9 (P5) and a47145798 (P8). Q113: func_8006C21C's two `SetDrawMode(..., tw)` calls pass the Q27
+always-zero `s16 tw` as `(RECT *)tw` (lands in its own phase2 commit), a boundary conversion to SetDrawMode's declared RECT * parameter (the session
+ruling in docs/grind/handoff-2026-10-03-restructure.md item 2), like the `(DR_MODE *)arg0[7]` first argument of the
+same calls; tw is 0, PsyQ's NULL tw. Byte-identical; cc1's 2 "makes pointer from integer" warnings become 2 "cast to
+pointer from integer of different size" (s16 -> pointer). Every typed holder spelling differs (70 lines). Q114:
+libgpu.h keeps PsyQ's AddPrim prototype out. 3AB48 reaches libgpu.h through bb2.h -> game.h (this project's umbrella,
+not the original's), and func_80060768's bytes show 3AB48's original declared AddPrim as returning int (PsyQ's void
+prototype costs 192 -> 193 insns; the TU's `extern int AddPrim();`, an int-returning prototype also matches,
+c0c5da22f); either int declaration conflicts in C with a void prototype from libgpu.h, and a per-TU header switch or
+a function-pointer cast would be a workaround. The five
+game TUs' identical local `extern void AddPrim(void *, void *);` (25C38, 51268, 5ED34, 63D2C, 64FD8) stay as debt.

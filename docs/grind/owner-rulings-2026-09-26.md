@@ -1087,3 +1087,21 @@ Correction recorded after the answer (scan_hand_coded --single _SendPAD): score 
 insns); S1/S2/S6/S7/S8 ran and found nothing. The question said the function is too short for any of its tests. The
 conclusion is unchanged.
 Recorded as Q112: per-function canonical-body grant for _SendPAD; not a precedent.
+
+# Owner rulings 2026-10-05 (fiftieth batch, conversation, owner-delegated) — VERBATIM RECORD
+
+Context: the owner asked whether any items were pending their decision. The orchestrator listed the two open Phase 2
+questions (hand-off item 2): (1) func_8006C21C passes its always-zero `s16 tw` as SetDrawMode's RECT *, which gains 2
+cc1 warnings; no typed spelling matches; an explicit `(RECT *)tw` matches but only swaps the warning; (2) 3AB48's
+unprototyped `extern int AddPrim();` (byte evidence) conflicts with PsyQ's `void AddPrim(void *, void *)` prototype,
+so libgpu.h leaves AddPrim out. It offered to investigate both and bring each back with a recommendation.
+Owner, verbatim: "Yes go ahead with y our recommendations"
+Recommendations taken (Q113 changed after review, within the delegation: the first recommendation, keep the implicit
+conversion and call `(RECT *)tw` a no-op cast, contradicted the session's boundary-conversion ruling, under which the
+same calls' first argument is already `(DR_MODE *)arg0[7]`):
+- Q113: func_8006C21C passes `(RECT *)tw`, a boundary conversion to SetDrawMode's declared RECT * parameter;
+  byte-identical; the 2 cc1 warnings change text, not count. Lands as its own phase2 commit after this record.
+- Q114: AddPrim stays out of libgpu.h; the five TUs' identical local PsyQ declarations stay as debt. Adding the
+  prototype would conflict with 3AB48's int-returning declaration (it reaches libgpu.h via bb2.h -> game.h) and need a
+  per-TU header switch or a cast at 3AB48's calls.
+Recorded as Q113 = `(RECT *)tw` (boundary conversion) and Q114 = AddPrim stays out of libgpu.h.
