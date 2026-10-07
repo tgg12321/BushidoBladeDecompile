@@ -46,6 +46,7 @@ These prefixes are what `git log --grep '^<prefix>'` matches on. Keep them recog
 | Prefix | Meaning |
 |---|---|
 | `naming: <topic>` | Symbol rename / alias batch / placeholder refinement. |
+| `format: <scope>` | Whitespace-only C restyle by `tools/format.py` (token-identical; bytes unchanged). `[skip-format] <reason>` in any message bypasses `format_guard`. |
 | `tools: <name>.py` | Adding or updating a tool. |
 | `hooks: <description>` | Hook script additions or updates. |
 | `skills: <change>` | Changes to `.claude/skills/*/SKILL.md`. |

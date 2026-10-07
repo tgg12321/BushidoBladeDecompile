@@ -116,6 +116,8 @@ include the Codex run id in the body. Then:
 `python tools/codex_worker.py commit <item> --message-file tmp/codex/msg_<item>.txt`.
 - It harvests the scratch tree into **the** item commit; re-running it replaces the commit.
 - Its parent is the item's base, and it contains no `tmp/` and no `metrics/events.jsonl`.
+- Changed C files are formatted (`tools/format.py`, token-preserving); when that changes anything,
+  scratch is re-created at the commit.
 - No hooks run yet, because the content is unreviewed; `land` runs them after review.
 - It prints the review key and the reviewers required:
   - `cheat-reviewer` for `src/`, `include/`, `asm/`, rules, grants, symbols, `.ld` files and the

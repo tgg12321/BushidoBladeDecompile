@@ -83,6 +83,10 @@ hand-escaped quotes.
   only with `tools/move_tu.py`. Older docs and ledgers cite pre-restructure names (`src/text1b.c`):
   resolve them through `tools/tu_renames.tsv` (old id -> new id) at tag `pre-restructure-2026-10-03`.
 - Addresses are KSEG0 (`0x80000000`+); `0x1F800000`–`0x1F8003FF` is scratchpad RAM.
+- **C style:** `.clang-format` (SOTN's, `s32 *p`, 80 columns), applied by `python tools/format.py
+  [files]` (clang-format 18.1.8 from `requirements.txt`; inline asm keeps its hand layout). It is
+  token-preserving, so it never changes bytes or layer-2 keys; the commit-msg `format_guard` blocks
+  unformatted staged C.
 - Scratch goes in `tmp/` (gitignored); don't add files at the repo root
   (`tools/check_root_cleanliness.py`).
 - Commit subjects/bodies follow [`docs/COMMIT_CONVENTIONS.md`](docs/COMMIT_CONVENTIONS.md) — the

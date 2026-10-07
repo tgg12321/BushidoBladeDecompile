@@ -42,6 +42,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -705,6 +706,56 @@ def required_kinds(main, rev):
     return sorted(kinds), paths
 
 
+def format_tree(main, item, tree, paths):
+    """`tree` with every changed src/include C file in the repo's C style (tools/format.py,
+    token-preserving: the build and layer-2 keys cannot move). Blob in, blob out: nothing in the
+    scratch tree is read or executed."""
+    spec = importlib.util.spec_from_file_location("bb2_format", main / "tools" / "format.py")
+    fmt = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(fmt)
+    texts, modes = {}, {}
+    for p in paths:
+        if not (p.endswith((".c", ".h")) and p.startswith(("src/", "include/"))):
+            continue
+        entry = git("ls-tree", tree, "--", p, cwd=main)
+        if not entry:
+            continue  # deleted
+        mode = entry.split(" ", 1)[0]
+        if mode not in ("100644", "100755"):
+            refuse(f"{p} is not a regular file in the harvested tree (mode {mode})")
+        raw = subprocess.run(["git", "cat-file", "blob", f"{tree}:{p}"], cwd=str(main), capture_output=True,
+                             check=True, env=clean_env()).stdout
+        try:
+            texts[p] = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            refuse(f"{p} is not UTF-8")
+        modes[p] = mode
+    changed = []
+    results = fmt.format_blobs(texts, env=clean_env())
+    for p in texts:
+        status, new = results.get(p, ("error", "no result returned"))
+        if status == "error":
+            refuse(f"tools/format.py cannot format {p}: {new}")
+        if status == "tokens":
+            refuse(f"tools/format.py would change C tokens in {p}; not committing")
+        if new != texts[p]:
+            sha = subprocess.run(["git", "hash-object", "-w", "--stdin"], cwd=str(main), input=new.encode("utf-8"),
+                                 capture_output=True, check=True, env=clean_env()).stdout.decode().strip()
+            changed.append((modes[p], sha, p))
+    if not changed:
+        return tree
+    idx = main / "tmp" / "codex" / f"format-{item}.idx"
+    idx.unlink(missing_ok=True)
+    env = clean_env(GIT_INDEX_FILE=str(idx))
+    try:
+        git("read-tree", tree, cwd=main, env=env)
+        for mode, sha, p in changed:
+            git("update-index", "--cacheinfo", f"{mode},{sha},{p}", cwd=main, env=env)
+        return git("write-tree", cwd=main, env=env)
+    finally:
+        idx.unlink(missing_ok=True)
+
+
 def cmd_commit(a):
     """Harvest the scratch change into THE item commit (parent = the item's base; replaces any
     previous one). No hooks run here: the content is unreviewed. `land` re-runs the repo hooks on
@@ -722,9 +773,17 @@ def cmd_commit(a):
     if bad:
         refuse("tmp/ files in the change: " + ", ".join(bad))
     verify_trusted(main, trusted, branch)
+    harvested = tree
+    tree = format_tree(main, a.item, tree, paths)
+    if tree != harvested:
+        codex_idle(main, scratch)  # scratch is re-created below; check before the branch moves
     c = git("commit-tree", tree, "-p", base, "-F", str(msg), cwd=main)
     git("update-ref", f"refs/heads/{branch}", c, cwd=main)
     reset_trusted(main, trusted)
+    if tree != harvested:
+        # scratch must hold what the item commit holds (scratch_committed)
+        recreate_scratch(main, a.item, scratch, c)
+        print("codex_worker: C sources formatted (tools/format.py); scratch re-created at the commit")
     print(git("show", "--stat", "--format=%h %s", c, cwd=main))
     kinds, _ = required_kinds(main, c)
     if not kinds:
@@ -1087,6 +1146,12 @@ def cmd_land(a):
                     print("  ! " + p)
                 sys.exit(9)
             print(f"codex_worker: reviews OK ({', '.join(kinds)}) on {tip[:9]}")
+            # The amend below re-stages nothing, so format_guard cannot see this commit's C; check
+            # it here (a hand-resolved rebase conflict is the one way unformatted C gets in).
+            tree0 = git("rev-parse", f"{tip}^{{tree}}", cwd=main)
+            if format_tree(main, a.item, tree0, paths) != tree0:
+                refuse("the commit's C is not formatted (a hand-resolved rebase conflict?): re-run "
+                       "`commit` (it formats), then review the new key")
             # The repo hooks (commit-msg chain, pre-commit) run now, on the REVIEWED content, in the
             # trusted tree: re-commit the same tree and message.
             key0 = diff_key(main, tip)

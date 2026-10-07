@@ -27,7 +27,7 @@ source .venv/bin/activate
 
 echo ""
 echo "=== Installing Python tools ==="
-pip install splat64 spimdisasm
+pip install splat64 spimdisasm clang-format==18.1.8  # clang-format: tools/format.py (pinned)
 
 echo ""
 echo "=== Cloning maspsx ==="

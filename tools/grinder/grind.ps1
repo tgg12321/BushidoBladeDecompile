@@ -1080,8 +1080,24 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # inline_asm_canonical.txt rides along when the PASS-path grant wrote it
         # (owner Ruling C 2026-09-02) so the allowlist line lands in the same
         # byte-verified commit as the body it authorizes.
+        # C style (tools/format.py): token-preserving, so the verified bytes and the
+        # layer-2 key stay as they are; the commit-msg format guard requires it.
+        $fmtPaths = @("src/$stem.c") + @($extraScope | Where-Object { $_ -match '^(src|include)/.*\.[ch]$' })
+        # A format failure must not block the landing: commit unformatted with the
+        # guard's escape hatch and say so (the style can be fixed later; bytes can't move).
+        $fmtOut = (python tools/format.py @fmtPaths 2>&1 | Out-String)
+        $skipFmt = ''
+        if ($LASTEXITCODE -ne 0) {
+            $skipFmt = " [skip-format] tools/format.py failed: $(($fmtOut -replace '\s+', ' ').Trim())"
+            if ($skipFmt.Length -gt 300) { $skipFmt = $skipFmt.Substring(0, 300) }
+            Log "${func}: tools/format.py failed; landing unformatted with [skip-format]: $fmtOut"
+        }
         git -C $Root add -- "src/$stem.c" $extraScope engine/queue.json tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt "memory/grind/$func" inline_asm_canonical.txt 2>$null
-        git -C $Root commit -m "Match: $func — $bucket (grinder, $sessionsTaken sessions)" | Out-Null
+        $headBefore = (git -C $Root rev-parse HEAD).Trim()
+        git -C $Root commit -m "Match: $func — $bucket (grinder, $sessionsTaken sessions)$skipFmt" | Out-Null
+        if ((git -C $Root rev-parse HEAD).Trim() -eq $headBefore) {
+            Circuit-Break "${func}: the Match commit did not land (a commit-msg guard refused it); the staged landing is left in the index for the operator"
+        }
         Add-Decision $func 'final call' 'PASS' $v.justification
         # R5 (modality-effectiveness 2026-08-19): record the CLOSING modality —
         # without it the closer is only inferable from the ladder, and the one

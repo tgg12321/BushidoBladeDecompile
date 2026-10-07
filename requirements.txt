@@ -29,3 +29,7 @@ crunch64
 #   THE critical dep — without this, `dc.sh permute` and `dc.sh attempt`
 #   die 30s into the run on `ModuleNotFoundError: No module named 'toml'`.
 toml
+
+# clang-format: C style (tools/format.py, .clang-format). Pinned: another version
+#   formats differently, and format.py refuses a mismatch.
+clang-format==18.1.8
