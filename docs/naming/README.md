@@ -326,7 +326,7 @@ python3 docs/naming/build_census.py     # rewrites docs/naming/function-names.cs
 ```
 
 Read-only; it writes exactly one file. Inputs: `asm/funcs/*.s`, `src/**/*.c`,
-`named_syms.txt`, `symbol_addrs.txt`, `kengo_matches.csv`, `kengo_name_decisions.csv`,
+`named_syms.txt`, `symbol_addrs.txt`,
 `tools/rename_funcs.py`, `known_psyq_stdlib.txt`, `inline_asm_canonical.txt`,
 `engine/queue.json`, `disc/SLUS_006.63` (string extraction), the `docs/naming/*.csv`
 proposal tables, and `git log -S` for otherwise-unattributed names.
@@ -375,7 +375,6 @@ source.
   `python3 tools/render_naming_docs.py` writes them to `tmp/naming_views/` (untracked since 2026-10-01)
 - `methodology.md` — analyzer design, evidence kinds, scoring, caveats
 - `MISNOMERS.md` — names demonstrated wrong by body analysis
-- `kengo-rename-audit-2026-07-13.md` — rename-map audit
 - `evidence/<func_name>.md` — per-function evidence detail
 
 ## Regenerating the proposal tables

@@ -118,26 +118,6 @@ for s, (sf, i, a, c) in sym_lines.items():
 
 MISFLAG = re.compile(r"MISNAMED|misnamed|likely misnamed|\bwrong\b", re.I)
 
-# ---------------------------------------------------------------- kengo
-kengo = {}
-kp = J("kengo_matches.csv")
-if os.path.exists(kp):
-    with open(kp, newline="", encoding="utf-8", errors="replace") as fh:
-        for row in csv.DictReader(fh):
-            kengo[row["bb2_func"]] = row
-
-kengo_names = set()
-for row in kengo.values():
-    if row.get("kengo_name"):
-        kengo_names.add(row["kengo_name"])
-
-kengo_decisions = {}
-kd = J("kengo_name_decisions.csv")
-if os.path.exists(kd):
-    with open(kd, newline="", encoding="utf-8", errors="replace") as fh:
-        for row in csv.DictReader(fh):
-            kengo_decisions[row["renamed_to"]] = row
-
 # ---------------------------------------------------------------- legacy renamer map
 rename_map = {}
 rename_band = {}    # new_name -> (band_label, evidence_class)
@@ -623,25 +603,9 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
         if not sibling_flag:
             sibling_flag = f"{sf}:{i} [on sibling alias '{s}'] {c[:200]}"
 
-    krow = kengo.get(nm)
+    # Kengo provenance: the cross-match CSVs were deleted 2026-10-07 (owner: a rabbit hole);
+    # names from rename_funcs.py's KENGO bands and PS2-only prefixes are still caught below.
     kengo_derived = False
-    if krow and krow.get("kengo_name"):
-        if base == krow["kengo_name"] or base.startswith(krow["kengo_name"]) or nm == krow["kengo_name"]:
-            kengo_derived = True
-    if base in kengo_names or nm in kengo_names:
-        kengo_derived = True
-    if nm in kengo_decisions or base in kengo_decisions:
-        kengo_derived = True
-    # Disambiguated variants of a Kengo name (foo_2, foo_3, fooB, DispX_A) inherit the
-    # Kengo provenance — the semantic CLAIM is the same one, just re-used at another address.
-    kvariant = ""
-    if not kengo_derived:
-        for cand in {re.sub(r"_\d+$", "", base), re.sub(r"_[A-Z]$", "", base),
-                     re.sub(r"[A-Z]$", "", base)}:
-            if cand and cand != base and cand in kengo_names:
-                kengo_derived = True
-                kvariant = cand
-                break
 
     # --- legacy-renamer provenance band (evidence about WHERE the name came from,
     # so it outranks any prefix-shape heuristic below).
@@ -673,7 +637,7 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
     # means Kengo happened to reuse the same (correct) SDK name.
     if tier == "VERIFIED":
         if kengo_derived:
-            ev.append("NOTE: name also appears in kengo_matches.csv, but in-binary/hardware evidence is dispositive — Kengo reused the same PsyQ SDK name")
+            ev.append("NOTE: name also carries Kengo provenance, but in-binary/hardware evidence is dispositive — Kengo reused the same PsyQ SDK name")
         if flagged:
             ev.append("NOTE: a misname flag exists at this address for a DIFFERENT alias symbol; this glabel's own evidence is dispositive")
             tier = "SUSPECT"
@@ -688,20 +652,7 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
     elif kengo_derived:
         origin = "kengo-derived"
         tier = "SUSPECT"
-        conf = krow.get("confidence", "?") if krow else "?"
-        kn = krow.get("kengo_name", "?") if krow else "?"
-        diff = krow.get("diff", "?") if krow else "?"
-        cs = krow.get("combined_score", "") if krow else ""
-        if kvariant:
-            ev.append(f"disambiguated variant of Kengo name '{kvariant}' (same semantic claim re-used at a second address — the #1 false-positive shape per docs/naming/README.md)")
-        ev.append(f"kengo_matches.csv: kengo_name={kn} confidence={conf} insn_diff={diff} combined_score={cs or '0'}")
-        dec = kengo_decisions.get(nm) or kengo_decisions.get(base)
-        if dec:
-            ev.append(f"kengo_name_decisions.csv: {dec['decision']}/{dec['confidence']} — {dec['reason'][:140]}")
-            if dec["decision"] == "keep":
-                tier = "INFERRED"
-                ev.append("reviewed-keep: downgraded SUSPECT->INFERRED by recorded review")
-        action = "RESET" if tier == "SUSPECT" else "KEEP"
+        action = "RESET"
     elif PS2ONLY.match(nm):
         origin, tier, action = "kengo-derived(ps2-only-prefix)", "SUSPECT", "RESET"
         ev.append("PS2-only symbol family (tsl*/su*/Vu0/Vu1 are Kengo/PS2 engine names); no PS1 basis")

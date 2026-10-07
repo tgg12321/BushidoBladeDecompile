@@ -51,10 +51,7 @@ ALLOWED_BUILD_TXT = {
 }
 
 # Tracked CSVs (data files referenced by tools/docs)
-ALLOWED_CSV = {
-    "kengo_matches.csv",
-    "kengo_name_decisions.csv",
-}
+ALLOWED_CSV: set[str] = set()
 
 # Disc image files (source artifact; kept for re-extraction)
 ALLOWED_DISC = {

@@ -4202,7 +4202,7 @@ void func_80022F34(void) {
     } while (i < 2);
 }
 
-/* Kengo counterpart: tanren_CameraControl. Its scratchpad address holders are
+/* Its scratchpad address holders are
  * a labelled FAKE.
  * The masked state id is spelled as in its
  * copy-paste sibling func_80023E40 (`s32 a0 = arg0->unk_6A; s32 v1 = a0 &

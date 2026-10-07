@@ -77,7 +77,6 @@ If the final line is `OK: bb2 matches!`, you have a byte-identical rebuild.
 |-- disc/                      # Extracted disc filesystem (gitignored; reproduced by extract_iso.py)
 |-- docs/                      # Contributor / maintainer documentation
 |-- include/                   # Headers: game.h (game types), bb2.h (game declarations), psxsdk/lib*.h (Sony), common.h, gte.h
-|-- Kengo/                     # Sister-engine reference: Kengo (PS2) debug symbols, ~2,500 named functions
 |-- memory/                    # TRACKED pipeline state: grind ledgers (memory/grind/<func>/), WIP checkpoints, closer research
 |-- src/main/                  # Game C, one file per translation unit (subsystem or ROM-offset names)
 |-- src/main/psxsdk/<lib>/     # PsyQ library C/asm, one file per Sony module
@@ -125,7 +124,6 @@ Older docs, handoffs, plans and campaign reports were removed 2026-10-01; they r
 - **[decomp-permuter](https://github.com/simonlindholm/decomp-permuter)** (Simon Lindholm) for the C permutation search that finds matching codegen variants.
 - **[maspsx](https://github.com/mkst/maspsx)** (Matt "mkst" Stevenson) for the ASPSX compatibility layer that makes GNU `as` emit PsyQ-equivalent encodings.
 - **[mips-gcc-2.7.2](https://github.com/decompals/mips-gcc-2.7.2)** ([decompals](https://github.com/decompals)) for the rebuilt PsyQ-era GCC cross-compiler.
-- **Kengo Project (PS2)** for the sister-engine debug symbols (~2,482 named functions extracted via [`ccc`](https://github.com/chaoticgd/ccc) / `stdump`) used as a naming reference.
 - **PS1/PS2 Decompilation community** on Discord — methodology, peer review, recipes. [decomp.me](https://decomp.me/) for collaborative matching, [decomp.dev](https://decomp.dev/) for progress tracking, [decomp.wiki](https://decomp.wiki/) for documented techniques.
 - Reference projects whose tooling and conventions influenced this one: [sotn-decomp](https://github.com/Xeeynamo/sotn-decomp), [rood-reverse](https://github.com/ser-pounce/rood-reverse) (Vagrant Story), [ff7-decomp](https://github.com/Xeeynamo/ff7-decomp), [silent-hill-decomp](https://github.com/Vatuu/silent-hill-decomp), [chrono-cross-decomp](https://github.com/jdperos/chrono-cross-decomp), [psy-q-decomp](https://github.com/sozud/psy-q-decomp).
 
