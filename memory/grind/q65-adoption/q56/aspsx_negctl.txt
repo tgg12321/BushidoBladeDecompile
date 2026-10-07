@@ -1,3 +1,0 @@
-(1) text1a_c unsplit: accesses to D_800A3820 and ASPSX's gp decision: [('sw\t$2,D_800A3820', True), ('lw\t$3,D_800A3820', True), ('sw\t$2,D_800A3820', True)]
-(1) code6cac_b_tu2 unsplit: accesses to D_800A3140 and ASPSX's gp decision: [('sw\t$7,D_800A3140', True)]
-(2) all files, definitions removed (extern only): 6337 accesses, ASPSX gp = 0

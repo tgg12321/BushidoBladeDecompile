@@ -802,7 +802,7 @@ The rule text is .claude/rules/reused-local-necessity.md § Owner ruling Q78.
 # Owner exchange 2026-10-01 (thirty-seventh batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
 Context: the regenerated Q65 adoption series failed layer-2 round 1 (steps 08/13/15); laneA fixed the generators
 and raised three questions the per-file gp rule does not decide (borderline.md 2026-10-01 q65-adoption entries;
-ledger 3717bfd7a; probe memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.sh + .out).
+ledger 3717bfd7a; probe 55fee8b52:memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.sh + .out).
 
 ## Q79 — how maspsx aligns `static` storage
 Question, verbatim: "Q65 adoption (gp model), alignment: Sony's own assembler and linker put every 'static' variable on a 4-byte boundary, whatever its size; a probe of the real tools showed this for 20 statics of 1–16 bytes. Our assembler layer (maspsx) lines them up by size instead: 8-byte ones on 8, 2-byte ones on 2. That difference now matters. The reviewer required three 2-element arrays that only fit Sony's way. Sony's way also means 46 small statics we currently define separately are really parts of bigger objects, or just padding. Should maspsx follow Sony's measured rule?"

@@ -1100,7 +1100,7 @@ an (E) name) and a fresh layer-2. Any other dead write in the function is judged
 
 Thirty-seventh batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 37). Q79 "Model Sony fully":
 maspsx places every uninitialized (`.lcomm`) static 4-aligned whatever its size, calibrated by the ASPSX 2.34 + PSYLINK 2.37 probe
-(memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.*) with an engine test; resulting gaps are padding; a gp-reached
+(55fee8b52:memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.*) with an engine test; resulting gaps are padding; a gp-reached
 name inside another static's 4-byte slot becomes part of that object in a byte-identical reconciliation commit with
 layer-2 on each changed body. Q80 "Accept in text1b": D_800A3264 is text1b's K3 global; the owner of its pointer
 table D_8009B0C0 stays an open record. Q81 "Leave as raw data": D_800A3530 / D_800A3534 stay in asm/data, logged; revisit once

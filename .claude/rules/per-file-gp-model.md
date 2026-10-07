@@ -32,7 +32,7 @@ An indexed operand `S($reg)` is never gp. The answer is per FILE, identical for 
    `.lcomm`; (A3, Q68) under maspsx `-G8` only, an initialized object cc1 emits into `.data` with total size
    <= 8 bytes goes to `.sdata` (models cc1psx; cc1 stays unpatched). A `static` initialized object moves only
    with a cc1psx calibration showing it. (A8, Q79) every `.lcomm` static is 4-aligned whatever its size,
-   calibrated by Sony probe `memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.*`; a static's tail to
+   calibrated by Sony probe `55fee8b52:memory/grind/q65-adoption/q56/adopt/lcomm_align_probe.*`; a static's tail to
    the next 4-byte boundary is padding; a gp-reached name in another static's 4-byte slot joins that object
    in a byte-identical commit, layer-2 on each changed body. Landing commit adds an `engine test` case.
 2. **Flags:** `--sdata-syms/--sdata-funcs/--sdata-exclude` removed, maspsx `-G8` added; buildconfig mirrors

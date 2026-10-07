@@ -1,7 +1,0 @@
-Owner ruling Q65, adoption change 1 (a global maspsx fix; per-file-gp-model.md "What the adoption changes" 1):
-an indexed operand `sym($reg)` is never gp-relative. Sony ASPSX 2.34 evidence (dosemu2 probes,
-memory/grind/q65-adoption/q56/aspsx_probe_results.txt): `indexed_after_load_comm` and
-`indexed_after_load_extern` emit `lui $at / addu $at,$at,$reg / sb %%lo(sym)($at)` for a .comm symbol and
-for an extern alike, while the direct access of the same .comm symbol is gp (`direct_after_load_comm`). maspsx's
-_uses_gp now returns False for a base-register operand. Tests: tools/maspsx/tests/test_indexed_gp_nop.py,
-engine test. Byte-neutral at this step: full build SHA1 == oracle, every object compared.
