@@ -1,11 +1,7 @@
 /* PsyQ LIBSND UT_VVOL: SsUtGetDetVVol, SsUtSetDetVVol, SsUtGetVVol and
- * func_80086130 (at SsUtSetVVol's place in the module). .text
- * 0x80085FD8..0x800861BC. Not a verbatim LIBSCAN span: BB2 links an interim
- * LIBSND build, between PsyQ 4.0 and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
- * libscan near tier: the SsUtGetDetVVol sub-function of UT_VVOL (PsyQ 4.1-4.4)
- * places 0/14 at 0x80085FD8, XDEF +0x0 (docs/naming/libscan/near_manifest.csv,
- * CONFIRM; the SsUtSetDetVVol and SsUtGetVVol rows there are near too). */
+ * func_80086130 (at SsUtSetVVol's place). .text 0x80085FD8..0x800861BC. An
+ * interim LIBSND build (between PsyQ 4.0 and 4.1); module start from the
+ * libscan near tier (SsUtGetDetVVol at 0x80085FD8, XDEF +0x0; Q109). */
 #include "common.h"
 #include "libsnd_i.h"
 

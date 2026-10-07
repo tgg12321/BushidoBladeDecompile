@@ -1,19 +1,13 @@
-/* PsyQ LIBSND VM_NOWOF: _SsVmKeyOffNow. .text 0x800871D4..0x800872A4. Not a
- * verbatim LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0
- * and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
- * libscan near tier: VM_NOWOF (PsyQ 4.1) matches 50/52 words at 0x800871D4,
- * unique, and the near-verbatim UT_KEYV names _SsVmKeyOffNow -> EXE jal
- * 0x800871D4 (docs/naming/libscan/near_manifest.csv); VM_NOWOF's only XDEF
- * (+0x0, PsyQ 4.0 LIBSND.LIB). */
+/* PsyQ LIBSND VM_NOWOF: _SsVmKeyOffNow. .text 0x800871D4..0x800872A4. BB2
+ * links an interim LIBSND build (between PsyQ 4.0 and 4.1); VM_NOWOF (4.1)
+ * matches 50/52 words here (module start, owner ruling Q109) and UT_KEYV names
+ * _SsVmKeyOffNow -> jal 0x800871D4 (docs/naming/libscan/near_manifest.csv). */
 #include "common.h"
 #include "libsnd_i.h"
 
-/* Sony LIBSND `_SsVmKeyOffNow` (probable): mark the current voice's pending
-   key-off bit, release the voice slot, and drop the matching key-on bit.
-   Body is psyz vm_nowof.c verbatim (with BB2's _svm_voice record layout).
-   Symbol map: D_801078D8/DA <- _svm_okof1/_svm_okof2; D_800F1B10/12 <-
-   _svm_okon1/_svm_okon2. */
+/* Mark the current voice's pending key-off bit, release the voice slot, and
+   drop the matching key-on bit. Body is psyz vm_nowof.c (BB2's _svm_voice
+   layout). */
 void _SsVmKeyOffNow(s32 mode) {
     s32 bitsUpper;
     s32 bitsLower;

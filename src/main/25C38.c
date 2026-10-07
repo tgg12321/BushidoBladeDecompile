@@ -7,21 +7,12 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-/* ---- merged from code6cac_b2_pre.c (owner ruling Q65: one original file) ----
- */
-/* First half of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup -
- * code6cac_b2 was split into _pre and _post around
- * replay_camera_rob_back_loose2 (extracted to its own .c file), preserving
- * sibling function text addresses). */
+/* Formerly separate files, merged as one original file (Q65). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
 
-/* Extern function declarations */
-
 extern void AddPrim(void *, void *);
-
-/* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 extern u8 D_800A3740;
 
@@ -97,10 +88,7 @@ void func_800355E8(void) {
     func_800371E8(1);
 }
 
-/* ---- merged from replay_camera_rob_back_loose2.c (owner ruling Q65: one
- * original file) ---- */
-/* Sub-TU split out from src/code6cac_b2.c (Phase B §15.1). Same includes
- * + inline externs as code6cac_b2.c so cc1 sees identical declarations. */
+/* Merged section (Q65: one original file). */
 #include "common.h"
 #include "include_asm.h"
 
@@ -196,15 +184,7 @@ void func_80035618(s32 arg0) {
     }
 }
 
-/* ---- merged from code6cac_b2_post.c (owner ruling Q65: one original file)
- * ---- */
-/* Padding NOP macro */
-
-/* Extern function declarations */
-
-/* Continuation of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup
- * - replay_camera_rob_back_loose2 extracted to its own .c file, requiring this
- * file to be split around it to preserve text addresses). */
+/* Merged section (Q65: one original file). */
 extern u8 D_800A31D9;
 extern void func_80035618(s32);
 extern void func_8003553C(void);
@@ -468,11 +448,9 @@ s32 bits_DepositMask3F83F8(s32 a0) {
     return result;
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values
- * from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order. */
 u8 D_800A31D8 = 1;
 u8 D_800A31D9 = 1;
 u8 D_800A31DA = 0;
-/* Q65: tentative definitions (COMMON) of the small data this file reaches
- * gp-relative. */
+/* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 u8 D_800A3740;

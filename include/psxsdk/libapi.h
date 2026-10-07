@@ -21,8 +21,9 @@ struct DIRENTRY {
 };
 
 /* An SIO port's registers (hardware I/O, volatile at the use:
- * mmio-volatile-type-level): port 0 (controllers / memory cards) at 0x1F801040,
- * D_8009BD84 in pad.c; port 1 (link cable) at 0x1F801050, libcomb's D_800A3044.
+ * mmio-volatile-type-level): port 0
+ * (controllers / memory cards) at 0x1F801040, D_8009BD84 in pad.c; port 1 (link
+ * cable) at 0x1F801050, libcomb's D_800A3044.
  */
 typedef struct {
     u8 data;

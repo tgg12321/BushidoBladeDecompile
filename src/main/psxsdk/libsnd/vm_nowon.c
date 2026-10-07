@@ -1,26 +1,16 @@
-/* PsyQ LIBSND VM_NOWON: _SsVmKeyOnNow. .text 0x800872A4..0x80087770. Not a
- * verbatim LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0
- * and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
- * libscan near tier: the near-verbatim UT_KEYV's REL26 at +0x348 names
- * _SsVmKeyOnNow in all six builds -> EXE jal 0x800872A4
- * (docs/naming/libscan/near_manifest.csv). VM_NOWON's only XDEF is
- * _SsVmKeyOnNow (+0x0, PsyQ 4.0 LIBSND.LIB), so the module ends where that
- * function does. */
+/* PsyQ LIBSND VM_NOWON: _SsVmKeyOnNow. .text 0x800872A4..0x80087770. An
+ * interim LIBSND build (between PsyQ 4.0 and 4.1), so not a verbatim LIBSCAN
+ * span; the start (Q109) is UT_KEYV's call to _SsVmKeyOnNow (libscan near
+ * tier), the end that function's, VM_NOWON's only XDEF. */
 #include "common.h"
 #include "libsnd_i.h"
 
-/* Sony LIBSND `_SsVmKeyOnNow` (VM_NOWON): compute the current voice's L/R
-   volume (VAB master x volume x program/tone volume, score channel volume,
-   three pan stages, optional mono fold, square-law curve), queue the SPU
-   register shadow + pitch, and set the key-on/reverb bits. Shape follows the
-   SOTN psxsdk SpuVmKeyOnNow (sotn-decomp src/main/psxsdk/libsnd/vmanager.c)
-   and the ps2sdk libsnd2 vm_nowon.c port; BB2's build squares the volumes
-   only for sequence voices (seq_sep_no != 0x21) and has no unk1b store.
-   Symbol map: D_80102A78 <- _svm_sreg_buf (s16 view); D_800F65E0 <-
-   _svm_sreg_dirty; D_800F4E1C <- _svm_voice[].unk04;
-   D_800F1B14/D_800F2B68 <- _svm_orev1/2; D_800F1B10/12 <- _svm_okon1/2;
-   D_801078D8/DA <- _svm_okof1/2. */
+/* Compute the current voice's L/R volume (VAB master x volume x program volume
+   x tone volume, score channel volume, three pan stages, optional mono fold,
+   square-law curve), queue the SPU register shadow + pitch, and set the
+   key-on/reverb bits. As SOTN's SpuVmKeyOnNow (libsnd/vmanager.c), but this
+   build squares the volumes only for sequence voices (seq_sep_no != 0x21) and
+   has no unk1b store. D_800F1B14/D_800F2B68 are _svm_orev1/2. */
 void _SsVmKeyOnNow(s32 vagCount, u16 pitch) {
     struct SeqStruct *score;
     u16 pos;

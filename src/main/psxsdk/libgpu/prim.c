@@ -5,41 +5,27 @@
 #include <psxsdk/libgpu.h>
 #include "psx.h"
 
-/* .rodata 0x80015D58..0x80015E28: this module's strings (moved from
- * src/text1a_b_post_rodata.c, Q106 D4: every reader is in this file, in link
- * order). */
-
-/* D_80015D58: 1 string(s), 24B @ 0x80015D58 */
+/* This module's strings (here by Q106 D4: every reader is in this file). */
 const char D_80015D58[24] = "tpage: (%d,%d,%d,%d)\n\0\0\0";
 
-/* D_80015D70: 1 string(s), 16B @ 0x80015D70 */
 const char D_80015D70[16] = "clut: (%d,%d)\n\0\0";
 
-/* D_80015D80: 1 string(s), 24B @ 0x80015D80 */
 const char D_80015D80[24] = "clip (%3d,%3d)-(%d,%d)\n\0";
 
-/* D_80015D98: 1 string(s), 16B @ 0x80015D98 */
 const char D_80015D98[16] = "ofs  (%3d,%3d)\n\0";
 
-/* D_80015DA8: 1 string(s), 24B @ 0x80015DA8 */
 const char D_80015DA8[24] = "tw   (%d,%d)-(%d,%d)\n\0\0\0";
 
-/* D_80015DC0: 1 string(s), 12B @ 0x80015DC0 */
 const char D_80015DC0[12] = "dtd   %d\n\0\0\0";
 
-/* D_80015DCC: 1 string(s), 12B @ 0x80015DCC */
 const char D_80015DCC[12] = "dfe   %d\n\0\0\0";
 
-/* D_80015DD8: 1 string(s), 28B @ 0x80015DD8 */
 const char D_80015DD8[28] = "disp   (%3d,%3d)-(%d,%d)\n\0\0\0";
 
-/* D_80015DF4: 1 string(s), 28B @ 0x80015DF4 */
 const char D_80015DF4[28] = "screen (%3d,%3d)-(%d,%d)\n\0\0\0";
 
-/* D_80015E10: 1 string(s), 12B @ 0x80015E10 */
 const char D_80015E10[12] = "isinter %d\n\0";
 
-/* D_80015E1C: 1 string(s), 12B @ 0x80015E1C */
 const char D_80015E1C[12] = "isrgb24 %d\n\0";
 
 u32 GetTPage(s32 a0, s32 a1, s32 a2, s32 a3) {
@@ -137,14 +123,9 @@ void SetDrawTPage(DR_TPAGE *a0, s32 a1, s32 a2, s32 a3) {
         cmd = (GP0_DRAW_MODE | GPU_DRAW_MODE_DITHER);
     }
     if (a1) {
-        /* FAKE: `a3 & MASK` duplicated into both arms
-         * (duplicated-statement-into-arms, owner ruling) instead of the
-         * compound `val = a3 & MASK; if (a1) val |= TEXOFF;`. The single-def
-         * compound form ties val's andi dest into dying $a3 via GCC 2.7.2
-         * local-alloc combine_regs; the two-arm spelling keeps the masked temp
-         * in $v0 so the final IOR reproduces target's cmd=$v1/val=$v0 `or
-         * v0,v1,v0`. Byte-neutral: one andi (delay slot), 11 insns. Ablated
-         * (2026-10-06): score 5. */
+        /* FAKE: `a3 & MASK` duplicated into both arms keeps the masked temp
+         * in $v0 rather than $a3; `val = a3 & MASK; if (a1) val |= TEXOFF;`:
+         * score 5 (duplicated-statement-into-arms) */
         val = (a3 & GPU_DRAW_MODE_MASK) | GPU_DRAW_MODE_TEXOFF;
     } else {
         val = a3 & GPU_DRAW_MODE_MASK;
@@ -185,13 +166,11 @@ void SetDrawLoad(DR_LOAD *p, RECT *rect) {
     }
     setlen(p, size);
     p->code[0] = GP0_COPY_RECT_C2V;
-    /* FAKE: packed RECT word read follows matched Sony-library precedent (as
-       SetDrawMove; psyz prim.c SetDrawLoad reads the same words); (y << 16) |
-       (u16)x scores 12. */
+    /* FAKE: packed RECT word read (as SetDrawMove; psyz prim.c SetDrawLoad
+       reads the same words); (y << 16) | (u16)x scores 12. */
     p->code[1] = *(u32 *)&rect->x;
-    /* FAKE: packed RECT word read follows matched Sony-library precedent (as
-       SetDrawMove; psyz prim.c SetDrawLoad reads the same words); (h << 16) |
-       (u16)w scores 10. */
+    /* FAKE: packed RECT word read (as SetDrawMove; psyz prim.c SetDrawLoad
+       reads the same words); (h << 16) | (u16)w scores 10. */
     p->code[2] = *(u32 *)&rect->w;
     p->p[size - 4] = OT_TERMINATOR;
 }

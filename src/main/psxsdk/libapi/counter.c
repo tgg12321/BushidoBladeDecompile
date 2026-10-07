@@ -4,8 +4,6 @@
 #include "common.h"
 #include <psxsdk/libapi.h>
 
-/* Declarations from the file this module was split from (src/main/64FD8.c, ex
- * text1b_b.c). */
 /* One root counter's registers (psx-spx "Timers": 0x1F801100 + n * 0x10). */
 typedef struct {
     u16 count; /* +0 current value */
@@ -16,9 +14,9 @@ typedef struct {
     u16 padA[3];
 } RCnt;
 
-/* .word 0x1F801070 (I_STAT; [1] = I_MASK), asm/data/7D920.data.s */
+/* holds 0x1F801070 (I_STAT; [1] = I_MASK) */
 extern volatile s32 *D_8009BD68;
-/* .word 0x1F801100 (root counters 0..2), asm/data/7D920.data.s */
+/* holds 0x1F801100 (root counters 0..2) */
 extern volatile RCnt *D_8009BD6C;
 extern s32 D_8009BD70[]; /* each counter's I_MASK bit: 0x10, 0x20, 0x40, 0x01 */
 

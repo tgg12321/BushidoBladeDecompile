@@ -1,10 +1,7 @@
-/* PsyQ LIBSND VM_F: _SsVmFlush. .text 0x800863DC..0x80086818. Not a verbatim
- * LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0 and 4.1,
- * that no archived release holds (memory/closer/libsnd-hunt-report.md). Module
- * start (owner ruling Q109), libscan xref tier: the verbatim SSCALL module's
- * REL26 at +0x44 names _SsVmFlush -> EXE jal 0x800863DC
- * (docs/naming/libscan/near_manifest.csv), VM_F's only .text XDEF (+0x0,
- * PsyQ 4.0 LIBSND.LIB). */
+/* PsyQ LIBSND VM_F: _SsVmFlush. .text 0x800863DC..0x80086818. BB2 links an
+ * interim LIBSND build (between PsyQ 4.0 and 4.1); module start (Q109) from the
+ * verbatim SSCALL module's REL26 naming _SsVmFlush -> jal 0x800863DC
+ * (docs/naming/libscan/near_manifest.csv). */
 #include "common.h"
 #include "libsnd_i.h"
 
@@ -17,10 +14,8 @@ extern void (*D_801027E8)(s32); /* psyz _autopan */
    noise state of voices silent in history slots 0-14, run the auto-volume /
    auto-pan callbacks, flush the dirty shadow registers through SpuSetVoiceAttr
    (func_8008B488), then write key-off / key-on / reverb masks and clear the
-   pending key masks. Shape follows sotn-decomp
-   src/main/psxsdk/libsnd/vmanager.c SpuVmFlush (US main build, matched);
-   BB2's build reads the envelope with SpuGetVoiceEnvelope and writes the SPU
-   through LIBSPU calls where SOTN pokes the registers directly. */
+   pending key masks. Shape follows sotn-decomp libsnd/vmanager.c SpuVmFlush;
+   BB2's build goes through LIBSPU calls where SOTN pokes the registers. */
 void _SsVmFlush(void) {
     s32 i;
     u32 env_mask;

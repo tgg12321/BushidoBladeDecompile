@@ -6,19 +6,11 @@
 #include <psxsdk/libapi.h>
 #include <psxsdk/libetc.h>
 
-/* Declarations from the file this module was split from
- * (src/main/psxsdk/libspu/spu.c, ex main.c). */
-
 extern s32 InterruptCallback(s32, s32);
-static void _SsTrapIntrVSync(void); /* _SsTrapIntrVSync (ssstart.c static) */
-/* _SsSeqCalledTbyT_1per2 (ssstart.c static) */
+static void _SsTrapIntrVSync(void);
 static void _SsSeqCalledTbyT_1per2(void);
 
-/* PsyQ 4.0 LIBSND ssstart: _SsStart (SndSeqTickEnv in libsnd_i.h) —
-   verbatim-linked Sony object; C ref: sotn-decomp
-   src/main/psxsdk/libsnd/ssstart.c (BB2's 4.0 rev uses 0x7F for the case-0
-   sentinel where SOTN's rev uses 0xFF) */
-
+/* BB2's 4.0 rev uses 0x7F for the case-0 sentinel where SOTN's uses 0xFF. */
 void _SsStart(s32 arg0) {
     u16 rcnt_target;
     u32 rcnt_spec;
@@ -95,14 +87,6 @@ void _SsStart(s32 arg0) {
     ExitCriticalSection();
 }
 
-/* PsyQ 4.0 LIBSND ssstart: SsStart / SsStart2 / _SsTrapIntrVSync /
-   _SsSeqCalledTbyT_1per2 + sscall: SsSeqCalledTbyT — verbatim-linked Sony
-   objects; C ref: sotn-decomp
-   src/main/psxsdk/libsnd/{ssstart.c,sscall.c}. Only SsStart (=DispStuff)
-   has a glabel: SsStart2 + the tick trampolines are statics inside the
-   splat extent; SsSeqCalledTbyT is address-referenced only by the
-   SndSeqTickEnv .data initializer (raw .word @0x800A26D4). */
-
 void SsStart(void) { _SsStart(1); }
 
 static void SsStart2(void) { _SsStart(0); }
@@ -114,11 +98,10 @@ static void _SsTrapIntrVSync(void) {
     ((void (*)(void))_snd_seq_tick_env.unk8)();
 }
 
-/* FAKE: the toggle's read goes through an inline accessor; the direct
-   `_snd_seq_tick_env.unk20 == 0` read lets CSE share one base register
-   across the three unk20 accesses (score 12, one insn short).
-   SOTN: src/main/psxsdk/libsnd/ssstart.c:24 @db41b28 (same accessor, same
-   function, ssstart.c:27). */
+/* FAKE: the toggle's read goes through an inline accessor; the direct read
+   lets CSE share one base register across the three unk20 accesses (score
+   12). Same accessor in SOTN:
+   SOTN: src/main/psxsdk/libsnd/ssstart.c:24 @db41b28 */
 static inline s32 get20(void) { return _snd_seq_tick_env.unk20; }
 
 static void _SsSeqCalledTbyT_1per2(void) {

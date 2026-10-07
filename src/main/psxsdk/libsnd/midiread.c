@@ -1,21 +1,14 @@
 /* PsyQ LIBSND MIDIREAD: _SsSeqPlay, _SsSeqGetEof and func_80084CC0
- * (_SsGetSeqData's offset). .text 0x80084974..0x80085064, the whole region
- * between PLAY and MIDITIME. Not a verbatim LIBSCAN span: BB2 links an interim
- * LIBSND build, between PsyQ 4.0 and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
- * libscan xref tier: PLAY, placed at 0x80084948
- * (docs/naming/libscan/ambiguous_resolutions.md), has one REL26, naming
- * _SsSeqPlay, and the EXE word there is jal 0x80084974 (RELOC_CHAIN_ID);
- * PsyQ 4.0 LIBSND.LIB MIDIREAD XDEFs _SsSeqPlay +0x0, _SsSeqGetEof +0x108,
- * _SsGetSeqData +0x34C, the offsets of the three functions here. */
+ * (_SsGetSeqData). .text 0x80084974..0x80085064, the whole region between PLAY
+ * and MIDITIME. BB2 links an interim LIBSND build (between PsyQ 4.0 and 4.1).
+ * Module start (Q109): PLAY's one REL26 is jal _SsSeqPlay (0x80084974), and
+ * MIDIREAD's XDEFs sit at +0x0 / +0x108 / +0x34C, the offsets of the three
+ * functions here. */
 #include "common.h"
 #include "libsnd_i.h"
 
-/* PsyQ LIBSND/MIDIREAD: _SsSeqPlay — census-matched Sony library object.
- * Body: the published psxsdk reference control flow (sotn-decomp
- * src/main/psxsdk/libsnd/seqread.c _SsSeqPlay) over BB2's own SeqStruct
- * layout (libsnd_i.h: SOTN's delta_value / unk70 / unk6E are BB2's
- * delta_value / unk54 / unk52; _SsGetSeqData == func_80084CC0). */
+/* sotn-decomp's seqread.c _SsSeqPlay over BB2's SeqStruct (SOTN's
+ * delta_value / unk70 / unk6E are BB2's delta_value / unk54 / unk52). */
 void _SsSeqPlay(s16 a0, s16 a1) {
     struct SeqStruct *score = &_ss_score[a0][a1];
     s32 var_s0;
@@ -94,22 +87,18 @@ void _SsSeqGetEof(s16 a0, s16 a1) {
 }
 
 s32 func_80084CC0(s16 a0, s16 a1) {
-    /* Each status-byte arm reads its operand bytes through its own block-local
-     * pointer, except `velocity`. It is one function-level local written in
-     * both 0x90 arms (after a status byte, and under running status) and read
-     * only as noteon's 4th argument. That is the reuse SOTN's matched
-     * _SsGetSeqData makes of `var_s3` (declared seqread.c:57, written :66 and
-     * :92, read only as _SsNoteOn's 4th argument at :68 and :94), admitted
-     * by owner ruling Q51 (no-new-park-categories.md). */
+    /* Each status-byte arm reads its operands through its own block-local
+     * pointer, except `velocity`: one function-level local written in both
+     * 0x90 arms and read only as noteon's 4th argument, the reuse SOTN's
+     * _SsGetSeqData makes of var_s3 (Q51, no-new-park-categories). */
     struct SeqStruct *state;
     s32 cmd;
     u8 *ptr;
     u8 b;
     u8 prev;
     /* SOTN: src/main/psxsdk/libsnd/seqread.c:57 @aa53500 */
-    /* FAKE: Q51 reused variable, match-motivated (Q53) -- a separate local per
-       0x90 arm (in either arm alone or in both) changes the register
-       allocation order. */
+    /* FAKE: Q51 reused variable (Q53); a separate local per 0x90 arm changes
+       the register allocation order. */
     u8 velocity;
     s32 ret;
     state = &_ss_score[a0][a1];
@@ -119,11 +108,9 @@ s32 func_80084CC0(s16 a0, s16 a1) {
     ret = 0;
     if ((_ss_score[a0][a1].unk98 & 0x401) == 0x401) {
         if (state->read_pos == state->unk10 + 1) {
-            /* Prototype contradiction, kept as the bytes demand: both
-               _SsSeqGetEof calls in the target load a 3rd argument into $a2
-               (0x80084D68 lbu, 0x8008500C li 0x2F), as SOTN's caller passes the
-               meta byte to _SsGetMetaEvent(s16, s16, u8) (seqread.c:5, :86
-               @aa53500), but BB2's _SsSeqGetEof definition reads only two. */
+            /* Every _SsSeqGetEof call passes a 3rd argument (the target's two
+               calls load $a2; as SOTN's _SsGetMetaEvent(s16, s16, u8) call
+               does), but BB2's _SsSeqGetEof reads only two. */
             ((void (*)(s16, s16, u8))_SsSeqGetEof)(a0, a1, state->unk10[1]);
             return -1;
         }

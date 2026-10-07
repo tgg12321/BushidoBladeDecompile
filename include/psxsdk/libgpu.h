@@ -10,17 +10,7 @@
 
 /* PS1 ordering-table / primitive tag word -- the head word of PsyQ
  * LIBGPU.H's P_TAG (`unsigned addr:24; unsigned len:8;`): next-packet
- * address in the LOW 24 bits, packet word count in the HIGH 8.
- *
- * FIELD ORDER NOTE (updated 2026-08-04, -mel adoption): cc1psx (PsyQ
- * GCC 2.7.2.SN) allocates the FIRST-declared bitfield at the LOW bits,
- * so PsyQ's addr-first declaration puts addr low. Before 2026-08-04 our
- * fork ran with a big-endian target default and allocated HIGH-first,
- * which forced a reversed (len-first) declaration as compensation
- * (probe-verified 2026-06-11). With -mel in CC_FLAGS the fork allocates
- * LOW-first exactly like cc1psx, so the ORIGINAL PsyQ field order is
- * restored below; see
- * pre-slim-2026-10-01:.claude/rules/bitfield-direction-divergence.md. */
+ * address in the LOW 24 bits, packet word count in the HIGH 8. */
 typedef struct {
     u32 addr : 24; /* LOW 24 bits: next-packet address */
     u32 len : 8;   /* HIGH 8 bits: packet word count */

@@ -1,18 +1,14 @@
 /* func_8006E534..func_80073200. .text 0x8006E534 (ROM 0x5ED34). Start boundary:
- * G8. Compiled -G8 (Makefile GP_FILES; per-file -G8 by proof, owner rulings
- * Q10, Q44 and Q54). Their original bytes reach the small globals
- * 0x800A32E8..0x800A35CA (40 addresses, 403 accesses) straight off $gp, which
- * the original compiler emits only at -G8, and no function outside this range
- * gp-accesses any of them. func_8006E8CC, func_8006E950, func_8006EA28 and
- * func_80072F30 have no gp access and compile to identical bytes at -G8 and -G0
- * (Q54). Proof and both-ways listings:
- * pre-slim-2026-10-01:memory/grind/func_80070F78/g8-evidence.md. */
+ * G8. Compiled -G8 (Q10, Q44, Q54): the original bytes reach the small globals
+ * 0x800A32E8..0x800A35CA straight off $gp, which the original compiler emits
+ * only at -G8, and no function outside this range gp-accesses any of them.
+ * func_8006E8CC, func_8006E950, func_8006EA28 and func_80072F30 have no gp
+ * access and compile identically at -G8 and -G0 (Q54). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
 
-/* Declarations from the file this TU was split from (text1b_tu1c.c). */
 extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
 extern void AddPrim(void *, void *);
 
@@ -27,8 +23,8 @@ extern u8 D_800A32E8;
 extern u8 D_800A32E9;
 extern RECT D_800A32EC;
 
-/* Q65: this file's statics (.sbss, allocated per file in link order by
- * PSYLINK), in address order. */
+/* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
+ * address order. */
 static s16 D_800A3540[2];
 static s16 D_800A3544[2];
 static s32 D_800A3548;
@@ -364,13 +360,10 @@ void func_8006ECF4(Unk8006EACCRec *arg0) {
             s.header = s0 + sel;
             goto p1_dispatch;
         }
-        /* FAKE: the default `s.header = s0 + sel;` is written TWICE --
-         * once in the switch default above and once at `default_p0:` -- instead
-         * of sharing one copy behind the label: the shared copy flips jump2's
-         * cross-jump merge direction (same instruction count, different block
-         * layout).  The statement is real on both paths (the target recomputes
-         * p0 for i == 0 at .L8006EF14).  Family:
-         * duplicated-statement-into-arms. One shared copy: score 20. */
+        /* FAKE: the default `s.header = s0 + sel;` is written twice (switch
+         * default and `default_p0:`) instead of shared behind the label,
+         * which flips the cross-jump merge direction; real on both paths.
+         * One shared copy: score 20 (duplicated-statement-into-arms) */
         if (i == 0)
             goto default_p0;
         if (D_800A32E8 != sel || D_800A32E9 != D_800A3554) {
@@ -503,17 +496,10 @@ void func_8006F100(Unk8006EACCRec *arg0) {
             t1 = -t1;
         }
         {
-            /* FAKE: constant-holder local (named-local-fake-exception). The
-             * target adds the screen-centre offset to the (sign-extended)
-             * shake offset BEFORE adding the table origin -- `addiu 0x140`
-             * then `addu tbl,v0`. Spelled with the literal, fold-const.c's
-             * `associate:` (split_tree) reassociates `tbl + (t1 + 0x140)` to
-             * `(tbl + t1) + 0x140` / `tbl + 0x140 + t1` and the order is lost;
-             * a local operand is not TREE_CONSTANT, so the tree keeps the
-             * grouping and cse propagates 0x140 back into the addiu
-             * (byte-neutral: 266 insns either way). Block scope keeps loop.c
-             * from hoisting it into a callee-save. Both literals inline (cx and
-             * cy): score 44. */
+            /* FAKE: constant-holder local: keeps the screen-centre offset added
+             * to the shake offset before the table origin (`addiu 0x140` then
+             * `addu tbl,v0`); a literal gets reassociated. Both literals
+             * inline (cx and cy): score 44 (named-local-fake-exception) */
             s32 cx = 0x140;
 
             s.x = D_8009BC94[i][D_800A3590[i]].x + (t1 + cx) -
@@ -710,10 +696,8 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
     /* the sprite sheet's cell array (8-byte Unk8009B400Record cells), which
        starts just past the sheet's 12-byte Unk8009B0E0Record headers: three on
        ctx[0] (normal, then one highlight per player, +0x24), one on every other
-       sheet (+0xC). SEL.BIN/SEL1.BIN/SEL2.BIN census:
-       pre-slim-2026-10-01:memory/grind/func_8006F97C/evidence.md. FAKE: the
-       holder between the header's cells and s.table; stored directly: score 98.
-     */
+       sheet (+0xC). FAKE: the holder between the header's cells and s.table;
+       stored directly: score 98. */
     Unk8009B400Record *cells;
     s16 i;
     s16 row;
@@ -827,14 +811,10 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
                 s.y = col << 4;
                 s.x = row * 116 + (row >> 1) * 20;
                 s.has_color = 0;
-                /* FAKE: the draw tail is written in both arms
-                 * (duplicated-statement-into- arms). The target shows two tails
-                 * that jump2 cross-jumped: this arm ends `lw v0,84(fp); addiu
-                 * a0,sp,24` BEFORE .L80070014, and the other arm reaches
-                 * .L80070014 by `j` with `addiu a0,sp,24` in the delay slot
-                 * (asm/funcs/func_8006F97C.s:409-410, 444-447). One shared tail
-                 * after the if/else puts the a0 setup after the label (sched
-                 * cannot cross the join): score 29. */
+                /* FAKE: the draw tail is written in both arms, as the two tails
+                 * the target cross-jumped; one shared tail after the if/else
+                 * puts the a0 setup after the label: score 29
+                 * (duplicated-statement-into-arms) */
                 s.header = ctx[21];
                 cells = s.header->cells;
                 s.table = cells;
@@ -861,10 +841,9 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
     rect[0] = 0xC6;
     rect[1] = 0x25;
     rect[3] = 1;
-    /* The original passes its own context base here, unadjusted
-     * (func_8006F97C.s:498-514): func_80069898 reads +0x18 as its TILE cursor
-     * (func_80069898.s:11, 37 / 65 / 91, 94), and in this context +0x18 is the
-     * DR_MODE cursor. */
+    /* The original passes its own context base here, unadjusted:
+     * func_80069898 reads +0x18 as its TILE cursor, and in this context +0x18
+     * is the DR_MODE cursor. */
     func_80069898((s32 *)arg0, rect, 1);
     func_80070188(arg0);
     func_8006ECF4(arg0);
@@ -1071,11 +1050,9 @@ typedef struct IconC70 {
 } IconC70;
 
 void func_80070C70(Unk8006EACCRec *arg0) {
-    /* FAKE: constant-holder local, mechanism: local-alloc/global.c keeps a
-     * live-across-call pseudo in a callee-saved register (the target's
-     * `li s4,96` + one `li a1,0x60` at the first call site (asm:36) plus two
-     * `move a1,s4` at the other two (asm:85,170)); the inline literal
-     * re-materializes `li a1,0x60` at each call site (score 7). */
+    /* FAKE: constant-holder local kept in a callee-saved register across
+     * the calls (the target's `li s4,96`, then `move a1,s4`); the inline
+     * literal re-materializes `li a1,0x60` at each call site: score 7 */
     s32 c60 = 0x60;
     Unk8007352CEnv prim;
     u16 rect[4];
@@ -1093,11 +1070,8 @@ void func_80070C70(Unk8006EACCRec *arg0) {
     prim.scale_y = 0x100;
     prim.has_color = 0;
     ctx = D_800A35A8->unk_64;
-    /* NOT a coercion: the target itself stores zero to both fields twice -
-     * asm/funcs/ func_80070C70.s emits `sw zero,48(sp)` / `sw zero,52(sp)`
-     * before the `lw s2,100(v1)` context fetch AND again after it.  The
-     * original source clears x/y a second time after fetching the context; both
-     * stores are in the matched 194 insns. */
+    /* Not a coercion: the target stores zero to both fields twice, before
+     * and again after the context fetch. */
     prim.y = 0;
     prim.x = 0;
     prim.header = ctx[1];
@@ -1113,10 +1087,9 @@ void func_80070C70(Unk8006EACCRec *arg0) {
     rect[0] = 0xCC;
     rect[1] = 0x25;
     rect[3] = 1;
-    /* The original passes its own context base here, unadjusted
-     * (func_80070C70.s:48-61): func_80069898 reads +0x18 as its TILE cursor
-     * (func_80069898.s:11, 37 / 65 / 91, 94), and in this context +0x18 is the
-     * DR_MODE cursor. */
+    /* The original passes its own context base here, unadjusted:
+     * func_80069898 reads +0x18 as its TILE cursor, and in this context +0x18
+     * is the DR_MODE cursor. */
     func_80069898((s32 *)arg0, rect, 1);
     prim.header = ctx[0];
     t = prim.header[5].cells;
@@ -1162,19 +1135,16 @@ extern u8 D_8009BC38[];
 
 void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
     /* several values of one kind, a sprite-sheet header table:
-     * D_800A35A8->unk_74 (loaded at entry and again in the
-     * selected-slot arm) and D_800A35A8->unk_60 (the table the
-     * last loop draws from). Ruling 11
-     * (ordinary-c-judge-decidable.md), proof in
-     * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md. */
+     * D_800A35A8->unk_74 (loaded at entry and again in the selected-slot arm)
+     * and D_800A35A8->unk_60 (the table the last loop draws from) (Ruling 11,
+     * ordinary-c-judge-decidable). */
     Unk8009B0E0Record **sheets;
     s32 flag;
     /* several values of one kind: the cell table following a sheet
-     * header (s->header->cells in the two loop-2 draws, s->header[2].cells,
-     * after three headers, for the last loop). Ruling 11, proof in
-     * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md.
-     * FAKE: the holder between the header's cells and s->table; stored
-     * directly: score 9. */
+     * header (s->header->cells in the two loop-2 draws, s->header[2].cells
+     * for the last loop) (Ruling 11, proof at tag pre-slim-2026-10-01). FAKE:
+     * the holder between the header's cells and s->table; stored directly:
+     * score 9. */
     Unk8009B400Record *cells;
     s16 i;
     s16 port;
@@ -1204,9 +1174,9 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
     }
     for (i = 0; i < 1 + D_800A35B0 + (port_ofs = D_800A3558); i++) {
         /* several values of one kind: player i's VRAM rect row,
-         * D_800A35A8->unk_7C + i * 8, computed at the top of the
-         * loop and again in the locked-slot arm. Ruling 11, proof in
-         * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md. */
+         * D_800A35A8->unk_7C + i * 8, computed at the top of the loop and
+         * again in the locked-slot arm (Ruling 11, proof at tag
+         * pre-slim-2026-10-01). */
         RECT *vram;
 
         /* FAKE: base and step as two statements, here and in the locked-slot
@@ -1252,17 +1222,11 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                     s32 id;
                     /* FAKE: named intermediate for the address of the image
                      * pointer LoadImage reads (named-intermediate entry,
-                     * no-new-park-categories.md). Under `*(...)` the sum is an
-                     * address and expands with EXPAND_SUM (INDIRECT_REF,
-                     * expr.c:4563), where PLUS_EXPR's both_summands
-                     * (expr.c:5248, "associate it to put the constant outside"
-                     * :5257-5286) moves the constant 0x14 outside (the load
-                     * becomes `lw 0x14(reg)`); assigned to a local it expands
-                     * as a value (not EXPAND_SUM: expr.c:5237-5239 goto binop),
-                     * computing id * 8 + 0x14 first as the target does (`addiu
-                     * $v0,$a0,0x14; addu $v1,$v1,$v0; ...; lw $a1,0($v1)`).
-                     * Same construct at the confirm and locked sites.
-                     * Written inline: score 27. */
+                     * no-new-park-categories): under `*(...)` the sum expands
+                     * as an address and the 0x14 moves into the load offset;
+                     * as a local it computes id * 8 + 0x14 first, as the
+                     * target does. Same at the confirm and locked sites.
+                     * Written inline: score 27 */
                     s32 *tim;
 
                     func_8005C650(1, 0x7F, 0x7F);
@@ -1564,12 +1528,10 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     u8 *menu;
     Unk8009B0E0Record **sheets;
     /* several values of one kind: the cell table following the
-     * header(s) of each sheet drawn (s.header[1].cells for the
-     * two-header sheet, s.header->cells for the others). Ruling 11
-     * (ordinary-c-judge-decidable.md), proof in
-     * pre-slim-2026-10-01:memory/grind/func_800720FC/r11/.
-     * FAKE: the holder between the header's cells and s.table; stored directly:
-     * score 123. */
+     * header(s) of each sheet drawn (s.header[1].cells for the two-header
+     * sheet, s.header->cells for the others) (Ruling 11,
+     * ordinary-c-judge-decidable). FAKE: the holder
+     * between the header's cells and s.table; stored directly: score 123. */
     Unk8009B400Record *cells;
     s32 i;
     s32 j;
@@ -1663,15 +1625,11 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
-    /* FAKE: dead store (overwritten by 0x180 below before any
-     * read) - the shipped code performs it: asm lines 356-358
-     * store 0x100 to both scales and lines 364-367 then store
-     * 0x180/0x120; GCC 2.7.2 has no dead-store elimination for
-     * the stack descriptor, so only a source that stores both
-     * emits both. dead-store-fake-exception.md. Both removed:
-     * score 3. */
+    /* FAKE: dead store (overwritten by 0x180 below before any read); the
+     * shipped code stores 0x100 to both scales, then 0x180/0x120. Both
+     * removed: score 3 (dead-store-fake-exception) */
     s.scale_x = 0x100;
-    /* FAKE: same dead store as above (asm line 358; scored there). */
+    /* FAKE: same dead store as above (scored there). */
     s.scale_y = 0x100;
     s.y = 0;
     s.x = 0;
@@ -1731,10 +1689,9 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     rect2[0] = 0xB7;
     rect2[1] = 0x25;
     rect2[3] = 1;
-    /* The original passes its own context base here, unadjusted
-     * (func_800720FC.s:517-528): func_80069898 reads +0x18 as its TILE cursor
-     * (func_80069898.s:11, 37 / 65 / 91, 94), and in this context +0x18 is the
-     * DR_MODE cursor. */
+    /* The original passes its own context base here, unadjusted:
+     * func_80069898 reads +0x18 as its TILE cursor, and in this context +0x18
+     * is the DR_MODE cursor. */
     func_80069898((s32 *)arg0, rect2, 1);
     s.ot_idx = 0xA;
     for (i = 0; i < 4; i++) {
@@ -1896,7 +1853,6 @@ POLY_G4 *func_80072CD4(s32 arg0, POLY_G4 *arg1) {
     return arg1 + 1;
 }
 
-/* BEGIN func_80072E10 */
 void func_80072E10(Unk8006EACCRec *arg0) {
     POLY_G4 *p;
     func_80073060(arg0);
@@ -1940,8 +1896,6 @@ void func_80072E10(Unk8006EACCRec *arg0) {
     arg0->unk_04.unk_08 = p;
 }
 
-/* END func_80072E10 */
-
 TILE *func_80072F30(s32 a0, TILE *a1) {
     SetTile(a1);
     if (a0 < 4) {
@@ -1976,7 +1930,6 @@ TILE *func_80072FCC(s32 ignored, TILE *a1) {
     return a1 + 1;
 }
 
-/* BEGIN func_80073060 */
 void func_80073060(Unk8006EACCRec *arg0) {
     TILE *p;
     s32 i;
@@ -2020,7 +1973,6 @@ void func_80073060(Unk8006EACCRec *arg0) {
     arg0->unk_04.unk_10 = p;
 }
 
-/* END func_80073060 */
 /* func_80073200 - draws three sprite-sheet layers: in modes D_800A3580 < 4,
  * four cells of ctx[4]'s sheet through func_80073728; then ctx[5]'s sheet and,
  * for D_800A3580 < 2, the ctx[10..13] sheet picked by the frame counter at
@@ -2054,19 +2006,12 @@ void func_80073200(Unk8006EACCRec *arg0) {
         } else {
             s.col_r = 0xA8;
             s.col_g = 0x6E;
-            /* FAKE: `s.col_b = 0x14;` is written in BOTH arms instead of once
-             * at the join.  No extra instruction - jump2's find_cross_jump
-             * re-merges the two identical arm tails, so nothing extra
-             * materializes. mechanism: the FIRST scheduling pass,
-             * schedule_select's `potential_hazard` ready-list swap
-             * (tools/gcc-2.7.2/sched.c:2717): at equal priority a ready store
-             * (MIPS "memory" unit) always displaces a ready address-arith insn.
-             * Keeping the `sb` stores out of the join block lets the first
-             * func_80073728 call's
-             * `&s` argument set land 4th, after `sb v0,0x42(sp); li v0,0x14;
-             * sb v0,0x43(sp)`, as in the target
-             * (asm/funcs/func_80073200.s:59-62); with col_b stored once at the
-             * join it is emitted first: score 2. */
+            /* FAKE: `s.col_b = 0x14;` written in both arms instead of once at
+             * the join (cross-jump re-merges them: no extra insn). Keeping
+             * the sb stores out of the join block lets the first
+             * func_80073728 call's `&s` argument set land after them, as in
+             * the target; stored once at the join it is emitted first:
+             * score 2 */
             s.col_b = 0x14;
         }
         s.ot_idx = 0x14;
@@ -2117,7 +2062,6 @@ void func_80073200(Unk8006EACCRec *arg0) {
     }
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values
- * from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order. */
 u8 D_800A32E8 = 0;
 u8 D_800A32E9 = 0;

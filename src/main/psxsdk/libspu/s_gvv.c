@@ -3,8 +3,7 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-/* the form of psyz's decomp/src/libspu/s_gvv.c (github.com/Xeeynamo/psyz @
- * 973fa3460, PsyQ 4.0) */
+/* Form of psyz decomp/src/libspu/s_gvv.c (Xeeynamo/psyz @ 973fa3460). */
 static inline void assign(u16 val, s16 *out) {
     /* FAKE: 0x8000 held in a u32 so the adjustment is a subu; inline, uval -
      * 0x8000 becomes an addu of the same 0x8000 register (same low 16 bits):

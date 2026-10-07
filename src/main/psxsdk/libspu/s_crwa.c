@@ -4,19 +4,13 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-/* Declarations from the file this module was split from
- * (src/main/psxsdk/libspu/spu.c, ex main.c). */
 extern s32 _spu_zerobuf;
 
-/* PsyQ 4.0 LIBSPU s_crwa: SpuClearReverbWorkArea — verbatim-linked Sony
-   object; C ref: sotn-decomp
-   src/main/psxsdk/libspu/s_crwa.c */
+/* C ref: sotn-decomp src/main/psxsdk/libspu/s_crwa.c */
 s32 SpuClearReverbWorkArea(u32 rev_mode) {
-    /* FAKE: volatile local admitted on SOTN precedent (owner rulings Q50
-       route A, Q53) -- the saved transfer callback is stored to / reloaded
-       from its $sp slot around the WaitEvent loop, as in the target; the
-       plain-local spelling keeps it in a register (score 36). SOTN holds it
-       in a `volatile s32`; typed here as the callback it stores. */
+    /* FAKE: volatile keeps the saved callback in its stack slot across the
+       WaitEvent loop; a plain local stays in a register: score 36 (SOTN
+       precedent, Q50 route A, Q53) */
     /* SOTN: src/main/psxsdk/libspu/s_crwa.c:10 @db41b28 */
     void (* volatile callback)();
     s32 oldTransmode;

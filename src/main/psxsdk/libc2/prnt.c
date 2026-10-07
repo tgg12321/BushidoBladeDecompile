@@ -7,32 +7,16 @@
 #include "include_asm.h"
 #include <psxsdk/libc.h>
 
-/* Declarations from the file this TU was split from (text1b_b.c). */
 #define NULL ((void *)0)
 
-/* D_80015A68: 1 string(s), 20B @ 0x80015A68 */
 const char D_80015A68[20] = "0123456789abcdef\0\0\0\0";
-
-/* D_80015A7C: 1 string(s), 8B @ 0x80015A7C */
 const char D_80015A7C[8] = "(null)\0\0";
-
-/* D_80015A84: 1 string(s), 20B @ 0x80015A84 */
 const char D_80015A84[20] = "0123456789ABCDEF\0\0\0\0";
 
-/* PsyQ 4.0 LIBC2 PRNT: prnt — verbatim-linked Sony object;
- * C ref: 4.3BSD-Tahoe _doprnt, lib/libc/stdio/doprnt.c
- * "@(#)doprnt.c 5.35 (Berkeley) 6/27/88", with the FILE buffering replaced by
- * putchar and the floating-point conversions removed. The version is fixed by
- * ARG(): the target sign-extends %h for o/u/x (lh at all four ARG sites), which
- * is 5.35's va_arg(argp, short); 5.36 (1988-10-24) changed that to
- * (short unsigned)va_arg(argp, int). Transcription diff and provenance:
- * pre-slim-2026-10-01:memory/grind/prnt/evidence.md. BB2's build does not count
- * ordinary characters in the return value. The digit/"(null)" strings are the
- * named arrays above rather than literals: they were written so while this file
- * also held LIBC SPRINTF (a separate object in the original link), because GCC
- * pools identical string literals within one translation unit and would have
- * folded sprintf's two digit strings into these, dropping 40 bytes of .rodata.
- * The switch table is compiler-emitted. */
+/* C ref: 4.3BSD-Tahoe _doprnt, doprnt.c 5.35 (Berkeley) 6/27/88, with FILE
+ * buffering replaced by putchar and floating point removed. 5.35, not 5.36:
+ * the target sign-extends %h for o/u/x (va_arg(argp, short)). BB2's build does
+ * not count ordinary characters in the return value. */
 #define PRNT_LONGINT 0x01
 #define PRNT_LONGDBL 0x02
 #define PRNT_SHORTINT 0x04
@@ -60,14 +44,10 @@ s32 prnt(s32 fd, u8 *fmt0, char *argp) {
     u8 *fmt;
     s32 ch;
     s32 cnt;
-    /* n is the original source's own variable, reused verbatim (owner
-     * Ruling 10):
-     * 4.3BSD-Tahoe doprnt.c 5.35 :64 "register int n; random handy integer",
-     * https://github.com/dspinellis/unix-history-repo/blob/b98826995697c37ced684813f008619460bd7ff8/usr/src/lib/libc/stdio/doprnt.c
-     * Written/read at :148 :150 :152 :155 (precision digits), :167 :169 :171
-     * (width digits), :359 :370 :373 :390 (padding loops), :377 :383 (string
-     * length); its FILE-buffer uses (:92-107, :379-381) are absent with the
-     * FILE code. */
+    /* n is 4.3BSD-Tahoe doprnt.c's own "random handy integer", reused as
+     * there (Ruling 10):
+     * dspinellis/unix-history-repo@b9882699:usr/src/lib/libc/stdio/doprnt.c:64
+     */
     s32 n;
     char *t;
     u32 _ulong;

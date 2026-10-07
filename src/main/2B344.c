@@ -8,13 +8,6 @@
 #include "bb2.h"
 #include "bb2_const.h"
 
-/* Extern function declarations */
-
-/* GP-relative extern data (for decompiled functions) */
-
-/* Extern function declarations for decompiled functions */
-
-/* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 extern u8 D_800A38AC;
 extern s32 D_800A37D8;
 
@@ -281,12 +274,10 @@ s32 func_8003B3A4(u8 *arg0) {
         a1 = 0;
     }
     {
-        /* FAKE: store-only pointer alias — direct symbolic stores expand via
-           the assembler sb macro ($at), so the address never enters RA; the
-           pointer local makes it an RA-visible pseudo materialized into $v1
-           pre-branch, matching target. Direct/ternary/diamond/offset forms
-           measured 6/6/8/6. Sanctioned per owner ruling 2026-07-14
-           (decisions.md), per-instance. */
+        /* FAKE: store-only pointer alias: direct stores expand via the sb macro
+           ($at), so the address never enters RA; the pointer puts it in $v1
+           pre-branch as in the target. Direct/ternary/diamond/offset forms
+           score 6/6/8/6 (owner ruling 2026-07-14, per-instance) */
         u8 *p = &D_80102778.unk_4[1];
         if (a1 != 0) {
             *p = 0xE;
@@ -470,8 +461,7 @@ void func_8003B8E4(void) {
     }
 }
 
-/* Q65: tentative definitions (COMMON) of the small data this file reaches
- * gp-relative. */
+/* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 u16 D_800A37C4;
 s32 D_800A37D8;
 u8 D_800A38AC;
@@ -480,10 +470,7 @@ s32 D_800A38FC;
 s32 D_800A3908;
 u8 D_800A3916;
 
-/* ---- merged from code6cac_c2.c (owner ruling Q65: one original file) ---- */
-
-/* Extern function declarations */
-
+/* Merged section (Q65: one original file). */
 extern DR_TPAGE D_800A3D30[2]; /* one per frame parity (D_800A3218) */
 
 extern Unk800A4750Rec D_800A4750[];
@@ -501,8 +488,6 @@ extern void gte_ReadFarColor(u8 *);
 extern s8 D_8008EA70[][2];
 
 extern void func_8003AFFC(void);
-
-/* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 void func_8003B9D0(void) {
     s32 saved_first;
@@ -940,12 +925,6 @@ void func_8003C560(void) {
  * into the record at func_80077D00(): minutes (/1800), seconds ((/30) % 60),
  * hundredths ((% 30) * 100 / 30) and the record's unk_0 byte at +0x21 + i*4;
  * then three bytes from func_8001CD68 at +0x2D..+0x2F and the stage at +0x30.
- *
- * func_8001CD68 is called on the loop's exit path rather than after the loop:
- * a call inside the loop sets loop.c's loop_has_call, halving the
- * move_movables threshold (loop.c:532, loop.c:1631), so the 0x91A2B3C5 (/1800)
- * magic stays materialised in the loop while 0x88888889 (/30) is hoisted to
- * the preheader, as in the target.
  */
 void func_8003C714(void) {
     Unk8001CD68Rec buf;
@@ -978,11 +957,9 @@ void func_8003C714(void) {
         v = src->unk_0;
         s0->unk21[i].unk3 = v;
         i += 1;
-        /* FAKE: the call is spelled inside the loop on its exit path; the
-         * natural spelling is a counted loop followed by the call (the target
-         * places the jal right after the back-branch,
-         * asm/funcs/func_8003C714.s:77-79). Inside the loop it sets
-         * loop_has_call, which keeps the /1800 magic in the loop. */
+        /* FAKE: the call sits inside the loop on its exit path (natural: after
+         * the loop); loop_has_call then keeps the /1800 magic in the loop
+         * while the /30 one is hoisted, as in the target */
         if (i >= 3) {
             func_8001CD68(&buf);
             break;
@@ -1168,17 +1145,16 @@ extern void func_8003B534(s32);
 extern SVECTOR D_800A312C;
 
 void func_8003CF84(void) {
-    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped
-     * carve-out, owner rulings 2026-08-17 + 2026-08-18): reconstructs the
-     * original frame's 16-byte allocated-but-untouched leading region
-     * (compiled-out >=7-word call). SOTN-master precedent: volatile u32 pad[4];
-     * // FAKE at st/sel/stream.c:80. Ablated (2026-10-06): score 17. */
+    /* FAKE: unwritten leading pad: the original frame's untouched 16-byte
+     * leading region (a compiled-out >=7-word call) (dead-vars-local-array
+     * carve-out, owner rulings 2026-08-17 + 2026-08-18; SOTN precedent
+     * `volatile u32 pad[4]; // FAKE` at st/sel/stream.c:80); without it:
+     * score 17 */
     volatile u32 pre_pad[4];
     s32 vec[3];
-    /* FAKE: unwritten TRAILING pad (owner ruling 2026-08-18, this function
-     * only): the target frame has a second 8-byte allocated-but-untouched
-     * object above vec, which no phantom-slot producer reproduces. Ablated
-     * (2026-10-06): score 8. */
+    /* FAKE: unwritten trailing pad: the target frame's second untouched
+     * 8-byte object above vec (owner ruling 2026-08-18, this function only);
+     * without it: score 8 */
     volatile u32 pad2[2];
     s16 *a;
     s32 *b;
@@ -1225,9 +1201,8 @@ void func_8003CF84(void) {
         func_800548DC();
         if (D_800A38DC == 4 || D_800A38DC == 6) {
             /* FAKE: indexes past D_800A37D2 into D_800A37D3 by player number
-             * (owner Q63, this byte pair only): the target also reaches each
-             * byte through its own symbol, which no single array or struct
-             * gives. Ablated (2026-10-06): score 16. */
+             * (Q63, this byte pair only); no single array or struct gives the
+             * target's per-symbol access: score 16 */
             (&D_800A37D2)[D_800A3748] = (&D_800A37D2)[D_800A3748] + 1;
         }
         func_8001979C(0, D_80102760.unk_10);
@@ -1250,8 +1225,8 @@ void func_8003D2C4(void) { LoadImage(&D_800A3220, &D_80090178); }
 
 extern s32 D_800A3218;
 extern s32 D_800A321C;
-/* Q65: this file's statics (.sbss, allocated per file in link order by
- * PSYLINK), in address order. */
+/* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
+ * address order. */
 static s32 D_800A3358;
 static s32 D_800A335C;
 static s32 D_800A3360;
@@ -1452,11 +1427,10 @@ s16 *func_8003D7B4(s32 arg0) {
     return base->unkC;
 }
 
-/* Bitstream reader: returns the next `n` bits of the BitStream `s`, loading the
-   next word when the current one has fewer than `n` unread bits. `m1 = 1 <<
-   avail; m1 -= 1;` is the user-sanctioned same-variable split-init accumulation
-   family (owner ruling 2026-06-13) -- both statements are live and the pair
-   folds back into one emitted `addiu v0,v0,-1`. */
+/* Bitstream reader: returns the next `n` bits of the BitStream `s`, loading
+   the next word when the current one has fewer than `n` unread bits.
+   `m1 = 1 << avail; m1 -= 1;` folds into one `addiu v0,v0,-1` (split-init
+   accumulation, owner ruling 2026-06-13). */
 s32 bitstream_ReadBits(BitStream *s, s32 n) {
     s32 avail = s->avail;
     u32 r;
@@ -1466,10 +1440,8 @@ s32 bitstream_ReadBits(BitStream *s, s32 n) {
         s32 shift;
         u32 *wp;
         u32 w;
-        /* FAKE: `hi` names the masked high-bit slice of the freshly loaded
-           word; written into the or (`r = (r << n) | ((w >> shift) & m2)`):
-           score 17 -- s and n swap argument registers (move a3,a0 / move a2,a1
-           for the target's move a2,a0 / move a3,a1). */
+        /* FAKE: `hi` names the masked high-bit slice of the loaded word;
+           written into the or: score 17 (s and n swap argument registers) */
         u32 hi;
 
         n -= avail;
@@ -1542,9 +1514,8 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
 
     D_800905F8 = 0xFFFF;
     /* FAKE: the pair read through a pointer local; a direct
-       `D_800906A4[arg0][0]` read is MEM_IN_STRUCT and is scheduled above the
-       D_800905F8 store (the same sched.c:834-839 exemption as below), score 9.
-     */
+       `D_800906A4[arg0][0]` read is scheduled above the D_800905F8 store:
+       score 9 */
     rec = D_800906A4[arg0];
     if (rec[0] != 0) {
         {
@@ -1579,11 +1550,8 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
         ptr = &D_8009060C[arg0];
         {
             /* FAKE: D_800906A4[arg0][1] read as a byte offset off the array
-               base: an element read is MEM_IN_STRUCT, and sched.c
-               true_dependence (tools/gcc-2.7.2/sched.c:834-839) lets a
-               varying in-struct HImode read pass the fixed scalar store to
-               D_80090608 just above, so both reads move ahead of the `sh`
-               (score 8).  The target keeps them after it. */
+               base; element reads are scheduled past the D_80090608 store
+               above, ahead of the `sh`: score 8 */
             s32 idx = arg0 * 4;
             func_8003DBE4(arg1, 0x1F, light_effect_col, *ptr,
                           *(s16 *)((u8 *)D_800906A4 + 2 + idx));
@@ -1654,18 +1622,15 @@ void func_8003DDF8(u32 arg0) {
     ptr[0x3FFC / 4] = arg0;
 }
 
-/* func_8003DE14 - builds count-1 progressively fogged copies of the VRAM
- * rectangle `rect`. The original is first copied one rect height up; each
- * pass then blends every non-zero pixel toward the GTE far colour by
- * (i + 1) / count (the last pass writes the far colour itself) and uploads
- * the result one rect height below the previous one, wrapping to the next
- * column at y 0x200.
+/* Builds count-1 progressively fogged copies of the VRAM rectangle `rect`.
+ * The original is first copied one rect height up; each pass then blends
+ * every non-zero pixel toward the GTE far colour by (i + 1) / count (the last
+ * pass writes the far colour itself) and uploads the result one rect height
+ * below the previous one, wrapping to the next column at y 0x200.
  *
- * FAKE constructs (each labelled at its site): the `gm` named green mask, the
- * inner bound's `+ rect->w - rect->w` detour and the `((s32)dst_buf + j) - j`
- * LoadImage argument. The two detours are combine-foldable chain extenders
- * ([[dead-store-fake-exception]]) with zero emitted bytes.
- */
+ * FAKE constructs (each labelled at its site): the `gm` green mask and the
+ * two combine-foldable chain-extender detours (zero emitted bytes;
+ * dead-store-fake-exception). */
 void func_8003DE14(RECT *rect, s32 count) {
     u16 src_buf[0x200];
     u16 dst_buf[0x200];
@@ -1732,16 +1697,10 @@ void func_8003DE14(RECT *rect, s32 count) {
                             s32 sum;
                             s32 rp;
                             s32 gp;
-                            /* FAKE: `gm` names the green channel's masked
-                             * result so that g_src dies at the mask instead of
-                             * at the store; mechanism: global.c allocno
-                             * priority (prio = nrefs*40000/live_length)
-                             * - naming gm takes green from 18 refs/livelen 18
-                             * to 18/16 and red from 24/21 to 24/22, so
-                             * pri(px)=44444 > pri(red)=43636 and px is
-                             * allocated $a0 with red $a1 and green $v1, the
-                             * target's seat map; without the name red is
-                             * 24/21=45714, outranks px and steals $a0. */
+                            /* FAKE: naming gm makes g_src die at the mask, not
+                             * the store; the allocno priorities then give px
+                             * $a0, red $a1, green $v1 as in the target; without
+                             * it red outranks px and takes $a0 */
                             s32 gm;
                             src++;
                             rp = r_src * complement;
@@ -1765,29 +1724,12 @@ void func_8003DE14(RECT *rect, s32 count) {
                     dst++;
                 loop_check:
                     j++;
-                    /* FAKE: the inner loop's bound is routed through the
-                     * algebraically equivalent detour `+ rect->w - rect->w`,
-                     * which combine folds back to the direct `rect->w *
-                     * rect->h` with ZERO emitted bytes.  Its only surviving
-                     * effect is the extra reg_n_refs that flow.c records BEFORE
-                     * the fold. Mechanism: local-alloc.c:1669-1684
-                     * `qty_compare_1` ranks the two block-local halfword loads
-                     * of the bound by
-                     * floor_log2(n_refs)*n_refs*size/(death-birth).  Both loads
-                     * die at the shared `mult`, so the earlier-born rect->w
-                     * load has the strictly larger denominator: at the natural
-                     * 2 refs each (weighted x3 for loop depth = 6) it scores
-                     * floor_log2(6)*6/4 = 3 against the rect->h load's
-                     * floor_log2(6)*6/2 = 6, is sorted second, and is handed
-                     * $v1 instead of the target's $v0.  The detour's two extra
-                     * reads CSE onto the same pseudo, so flow counts 4 refs
-                     * (weighted 12) and it scores floor_log2(12)*12/4 = 9 > 6,
-                     * sorts first and takes $v0 - the target's map `lh
-                     * $v0,4($s0)` / `lh $v1,6($s0)` / `mult $v0,$v1`.  Same
-                     * family and same mechanism as the `((s32)dst_buf + j) - j`
-                     * extender below
-                     * ([[dead-store-fake-exception]] combine-foldable
-                     * chain-extender clause, owner ruling 2026-07-01). */
+                    /* FAKE: bound routed through `+ rect->w - rect->w`, which
+                     * combine folds away (zero bytes); the extra refs rank the
+                     * rect->w load first in local-alloc so it takes $v0 as in
+                     * the target (`lh $v0,4($s0)` / `lh $v1,6($s0)`); the
+                     * natural bound gives it $v1 (dead-store-fake-exception
+                     * chain extender, owner ruling 2026-07-01) */
                 } while (j < rect->w * rect->h + rect->w - rect->w);
             }
 
@@ -1796,11 +1738,9 @@ void func_8003DE14(RECT *rect, s32 count) {
                 rect->y = saved_y;
                 rect->x += rect->w;
             }
-            /* FAKE: j chain extender on the dst_buf argument; mechanism:
-             * combine.c folds the +j/-j pair away but flow.c's reg_n_refs for j
-             * is counted before it, lifting j's allocno priority (global.c
-             * allocno_compare) above `complement`'s so the $t4/$t5 seat pair
-             * matches; without it j and complement swap registers. */
+            /* FAKE: j chain extender (+j/-j folds away); the extra refs lift j
+             * above `complement` so the $t4/$t5 pair matches; without it they
+             * swap */
             LoadImage(rect, (u32 *)(((s32)dst_buf + j) - j));
             DrawSync(0);
             i++;
@@ -2038,28 +1978,16 @@ extern s32 D_80094840[];
 extern Unk800A6690Rec *D_800A7EF0[];
 extern Unk800A6690Rec **func_8003EB84(s32, s32, Unk800A6690Rec **);
 
-/* func_8003E6D8 - grid pass. D_800A3708's xf.rot is turned into a matrix
- * (func_80042A88) and applied to {0,0,0x1000}; ratan2 of the result, stored
- * to D_800A336C, picks ((a >> 6) & 0x3F) one of 64 tables of 32-bit row
- * masks (ANDed with D_80094840 into the scratchpad when neither D_800A322C
- * nor P1 bit 0 is set). The 31x31 grid window centred on the cell of
- * D_800A3708's work.t ((t + 0x7D00) / 2000) is walked, and each cell whose
- * mask bit is set emits its records, as in func_8003EB84.
- *
- * COMPLETED-INLINE-ASM-CANONICAL: pure-C body plus four PsyQ SDK GTE macro
- * islands (the sequence gte_ApplyMatrix expands to -- gtemac.h: SetRotMatrix,
- * ldv0, rtv0, stlvnl -- with its gte_rtv0 step cited below as the identical
- * word gte_mvmva(1,0,0,3,0)), the same spelling and clobber
- * provenance as func_80019310 (src/code6cac.c) and func_800203B4:
- *   gte_SetRotMatrix(r0) -- inline_c.h:297-310 (clobbers as published + $15)
- *   gte_ldv0(r0)         -- inline_c.h:16-20; publishes no clobbers, "$12" and
- *                           "memory" ADDED (it reads vec[] through $12),
- *                           precedent func_80019310 / func_8002D320
- *   gte_mvmva(1,0,0,3,0) -- inline_c.h:816-817 (body gte_mvmva_core,
- *                           :809-814); its two leading nops ride at the
- *                           tail of the gte_ldv0 island, as in func_80019310
- *   gte_stlvnl(r0)       -- inline_c.h:1111-1117; "memory" is its own clobber
- */
+/* Grid pass: D_800A3708's xf.rot is turned into a matrix and applied to
+ * {0,0,0x1000}; ratan2 of the result (D_800A336C) picks one of 64 tables of
+ * 32-bit row masks. Each set cell of the 31x31 grid window centred on
+ * D_800A3708's cell emits its records, as in func_8003EB84.
+ * GTE: the sequence gte_ApplyMatrix expands to, spelled as in func_80019310
+ * and func_800203B4: gte_SetRotMatrix (clobbers as published + $15);
+ * gte_ldv0 (publishes no clobbers; "$12" and "memory" added: it reads vec[]
+ * through $12); gte_mvmva(1,0,0,3,0), the gte_rtv0 step as its identical
+ * word (gte_mvmva's body gte_mvmva_core has its two leading nops at the end
+ * of the gte_ldv0 island); gte_stlvnl ("memory" is its own clobber). */
 void func_8003E6D8(s32 arg0) {
     s32 mat[8];
     s16 vec[4];
@@ -2107,10 +2035,9 @@ void func_8003E6D8(s32 arg0) {
         "ctc2   $14, $3\n"
         "ctc2   $15, $4\n"
         :: "r"(mat) : "$12", "$13", "$14", "$15");
-    /* PsyQ libgte inline macro gte_ldv0(r0) --- inline_c.h:16-20 (the lwc2
-     * pair). The two nops that follow are NOT gte_ldv0 text: they are the
-     * leading `nop; nop` of gte_mvmva_core (inline_c.h:809-814), carried at
-     * the tail of this island exactly as func_80019310 does. */
+    /* PsyQ libgte inline macro gte_ldv0(r0) --- inline_c.h:16-20. The two
+     * nops after it are not gte_ldv0 text: they are the leading `nop; nop`
+     * of gte_mvmva_core (inline_c.h:809-814), as in func_80019310. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lwc2   $0, 0($12)\n"
@@ -2118,14 +2045,11 @@ void func_8003E6D8(s32 arg0) {
         "nop\n"
         "nop\n"
         :: "r"(vec) : "$12", "memory");
-    /* Sony libgte macro gte_mvmva(sf,mx,v,cv,lm) --- inline_c.h:816-817, whose
-     * body is gte_mvmva_core(r0) at inline_c.h:809-814 (`nop; nop; .word
-     * <literal>`). This instance is gte_mvmva(1,0,0,3,0): sf=1, mx=rotation,
-     * v=V0, cv=none, lm=0. It is spelled as the bare `.word 0x4A486012`, the
-     * final cop2 word: the macro's own literal is a DMPSX placeholder that
-     * Sony's dmpsx post-pass rewrites, and this build has no such pass. The
-     * core's two nops are carried at the tail of the gte_ldv0 island above
-     * (func_80019310's form). */
+    /* gte_mvmva(sf,mx,v,cv,lm) --- inline_c.h:816-817, body gte_mvmva_core
+     * (inline_c.h:809-814); this instance is gte_mvmva(1,0,0,3,0): sf=1,
+     * mx=rotation, v=V0, cv=none, lm=0. Spelled as its final cop2 word (the
+     * core's two nops end the gte_ldv0 island): the macro's literal is a
+     * DMPSX placeholder and this build has no dmpsx pass. */
     __asm__ volatile(".word 0x4A486012");
     /* PsyQ libgte inline macro gte_stlvnl(r0) --- inline_c.h:1111-1117. */
     __asm__ volatile(
@@ -2173,13 +2097,9 @@ void func_8003E6D8(s32 arg0) {
         for (j = 0; j < 0x1F; j++) {
             col = x + j;
             if (col < 0) {
-                /* FAKE: the column shift is written in both arms instead of
-                 * once in the for-increment. jump2 cross-jumps the two copies
-                 * back into the one shift in the loop branch's delay slot
-                 * (bytes unchanged); the second copy lifts bits' reg_n_refs
-                 * 17->23 so global-alloc ranks it above a3 (pri 11500 vs
-                 * 8823), giving the target's bits->$t1 / a3->$t2. Ablated
-                 * (2026-10-06): score 9. */
+                /* FAKE: the column shift written in both arms instead of the
+                 * for-increment (cross-jump re-merges it); the extra refs
+                 * rank bits above a3, giving bits->$t1 / a3->$t2: score 9 */
                 bits <<= 1;
                 continue;
             }
@@ -2412,23 +2332,15 @@ void func_8003EDC0(u16 *p, s32 arg1) {
     D_800A3678[2] = 0;
 }
 
-/* ---- merged from config.c (owner ruling Q65: one original file) ---- */
-/* Rodata owned by config.c per func_8003FA24's reference at
- * asm/funcs/func_8003FA24.s:240-241. Re-attributed from
- * asm/data/101C.rodata_c2_post.s. Named per named_syms.txt alias
- * g_str_multipul_model_80010D8C. Fixed [16] to match the asm/data block's exact
- * byte content (14 chars + null + 1 pad). */
+/* Merged section (Q65: one original file). */
+
+/* Read by func_8003FA24: 14 chars + NUL + 1 pad. */
 const char D_80010D8C[16] = "Multipul Model";
 
-/* Forward declarations */
-
-/* Externs for globals */
 extern void gte_SetMatrixRotTransIR(MATRIX *, SVECTOR *, VECTOR *);
 
-/* Externs for globals */
 extern s32 D_80094A6C[];
 
-/* --- Functions 0x8003F168 - 0x8004019C --- */
 void stage_ExecInitFunc(void) {
     if (g_stage_init_tbl[stage_GetId()].init != 0) {
         g_stage_init_tbl[stage_GetId()].init();
@@ -2800,9 +2712,8 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
         } else {
             while (--count != -1) {
                 /* FAKE: identical arms (gouraud and flat triangle records keep
-                 * the colour at the same offset); jump2 cross-jumping merges
-                 * them, leaving loop.c's hoisted `& 2` test. Ablated
-                 * (2026-10-06): score 99. */
+                 * the colour at the same offset); cross-jumping merges them,
+                 * leaving loop.c's hoisted `& 2` test: score 99 */
                 if (((s16)flags >> 3) & 2) {
                     value = ((u32)src[7] << 16) | src[6];
                 } else {
@@ -2948,10 +2859,9 @@ void func_800400B0(Unk80045878Obj *a0, s32 a1) {
     }
 }
 
-/* FAKE: the variable compare `s2->count > s0` is load-bearing — target's 0x28
- * frame is the combine-leftover of the folded guard (phantom slot sp+20); a
- * literal `> 0` compare yields frame 0x20 + RA swap. Every statement here is
- * live. Do not respell. Ablated (2026-10-06): score 16. */
+/* FAKE: the variable compare `s2->count > s0` gives the target's 0x28
+ * frame (phantom slot sp+20 left by the folded guard); a literal `> 0` gives
+ * frame 0x20 and swaps registers: score 16 */
 void func_800400F8(Unk80045878Obj *a0) {
     Scene *s2;
     s32 s0;
@@ -2984,8 +2894,7 @@ void func_8004019C(Unk80045878Obj *a0, s32 a1) {
     }
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values
- * from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order. */
 s32 D_800A3218 = 0;
 s32 D_800A321C = 1;
 RECT D_800A3220 = {0x3F0, 0x1DC, 0x10, 0x24};
@@ -2993,6 +2902,5 @@ s32 D_800A3228 = -1;
 s32 D_800A322C = 0;
 /* reached gp-relative by func_8003EDC0: size from the blob label */
 s32 D_800A3230 = 0;
-/* Q65: tentative definitions (COMMON) of the small data this file reaches
- * gp-relative. */
+/* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 s32 D_800A3818;

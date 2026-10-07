@@ -1,11 +1,7 @@
-/* PsyQ LIBSND CRES: _SsSndCrescendo. .text 0x800841E0..0x80084500. Not a
- * verbatim LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0
- * and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
- * libscan xref tier: the verbatim SSCALL module's REL26 at +0xF8 names
- * _SsSndCrescendo -> EXE jal 0x800841E0
- * (docs/naming/libscan/near_manifest.csv), CRES's only XDEF (+0x0, PsyQ 4.0
- * LIBSND.LIB). */
+/* PsyQ LIBSND CRES: _SsSndCrescendo. .text 0x800841E0..0x80084500. BB2 links
+ * an interim LIBSND build (between PsyQ 4.0 and 4.1); module start (Q109) from
+ * the verbatim SSCALL module's REL26 naming _SsSndCrescendo -> jal 0x800841E0
+ * (docs/naming/libscan/near_manifest.csv). */
 #include "common.h"
 #include "libsnd_i.h"
 

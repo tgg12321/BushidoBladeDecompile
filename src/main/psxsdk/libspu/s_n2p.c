@@ -4,10 +4,6 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-/* PsyQ LIBSPU S_N2P: _spu_2pitch — a second exported entry point that splat
-   merged into func_8008B488 (docs/naming/libscan/
-   boundary_fixes.md); must stay immediately after its former host so the
-   link order reproduces the original byte layout. */
 /* Pitch interpolation helper: scales `atten` (12.12 fixed) by the 48th-root-
    of-two step 0x103B/0x1000 once per 32 cents (rem >> 5), then linearly
    interpolates the remaining 0..31 cents between the two adjacent steps. */
@@ -29,13 +25,11 @@ inline u32 _spu_2pitch(u32 atten, u32 rem) {
     return (lower + (((upper - lower) >> 5) * frac)) >> 12;
 }
 
-/* _spu_note2pitch: pitch of note/fine relative to the centre note/fine
- * (128 fine steps per semitone, 0x600 per octave): 0x1000 shifted by the
- * whole octaves, then the remaining steps walked through the inlined
- * _spu_2pitch curve; clamped to 0x3FFF. The sole caller is func_8008B488.
- * _spu_2pitch above carries the GNU89 `inline` keyword: GCC 2.7.2 integrates
- * it here (the target's 0x103B curve walk, `upper` spilled to 0x8($sp), the
- * 16-byte frame) and still emits the out-of-line body. */
+/* Pitch of note/fine relative to the centre note/fine (128 fine steps per
+ * semitone, 0x600 per octave): 0x1000 shifted by the whole octaves, then the
+ * remaining steps walked through the inlined _spu_2pitch curve; clamped to
+ * 0x3FFF. (_spu_2pitch is GNU89 `inline`: integrated here, and still emitted
+ * out of line.) */
 u16 _spu_note2pitch(u16 cen_note, u16 cen_fine, u16 note, u16 fine) {
     s32 cen;
     s32 tgt;
@@ -60,13 +54,9 @@ u16 _spu_note2pitch(u16 cen_note, u16 cen_fine, u16 note, u16 fine) {
         }
         atten = 0x1000 >> oct;
     }
-    /* FAKE: the octave attenuation is staged through `diff` (dead from the
-       `diff >= 0` test above onward) -- GCC 2.7.2 sched.c adjust_priority ->
-       birthing_insn_p (reg_n_sets[regno]==1) does not boost a two-set pseudo
-       to LAUNCH_PRIORITY, so the widening `andi` is emitted before the
-       inlinee's `li 0x103B` as in the target; a fresh single-set local or no
-       staging leaves the pair reversed
-       (.claude/rules/staged-value-reused-variable.md). */
+    /* FAKE: staging the attenuation through the dead `diff` puts the
+       widening `andi` before the inlinee's `li 0x103B`; a fresh local or no
+       staging reverses the pair (staged-value-reused-variable) */
     diff = atten;
     pitch = _spu_2pitch(diff, (rem < 0) ? -rem : rem);
     if (pitch >= 0x4000) {

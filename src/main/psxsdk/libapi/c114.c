@@ -7,11 +7,8 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    /* The two data words below are the first 8 bytes of Sony's hand-written
-       LIBAPI C114 object (.text+0x0; _96_remove entry is at .text+0x8 —
-       matches PsyQ 4.0 LIBAPI.LIB C114, zero relocs). They are
-       object data, not compiler output, and belong to this canonical
-       trampoline's module. */
+    /* The first 8 bytes of Sony's hand-written LIBAPI C114 object; the
+       _96_remove entry is at .text+0x8. */
     "    .word 0x15007350\n"
     "    .word 0x0040809C\n"
     "glabel _96_remove\n"

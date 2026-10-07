@@ -7,13 +7,10 @@
 #include <psxsdk/libspu.h>
 #include <psxsdk/libsnd.h>
 
-/* Sony LIBSND `_svm_cur` (vmanager current-voice state; psyz
-   libsnd_private.h `struct struct_svm`), base 0x801027F0. One object: the
-   original binary addresses its fields off a single base (func_800861BC:
-   `addiu $t1, $v1, -2` from &voiceOffset to &voice). Replaces the splat
-   per-word scalars D_801027F1/F6/F7/FC and D_80102806/08/0A/0C/0E
-   (per-word splat symbol -> aggregate merge family, owner ruling).
-   Field names follow psyz; `char` fields are u8 under -funsigned-char. */
+/* LIBSND `_svm_cur` (vmanager current-voice state; psyz libsnd_private.h
+   `struct struct_svm`), base 0x801027F0. One object: _SsVmDoAllocate addresses
+   its fields off a single base. Field names follow psyz; `char` fields are u8
+   under -funsigned-char. */
 struct struct_svm {
     u8 prog_tones;
     u8 vabId;
@@ -45,15 +42,10 @@ struct struct_svm {
 };
 extern struct struct_svm _svm_cur; /* _svm_cur */
 
-/* Sony LIBSND `_svm_voice` (vmanager per-voice state; psyz libsnd_private.h
-   `struct SpuVoice`), base 0x800F4E18, one record per SPU voice (24). BB2's
-   record is 0x36 bytes: psyz's 0x34-byte layout with one extra halfword at
-   +0x0C (unkc), so every psyz field from `note` on sits 2 bytes later. The
-   original binary indexes it as a record table: stride-54 addressing off the
-   one base in _SsVmInit/_SsVmKeyOffNow/SsUtKeyOnV/_SsVmSeqKeyOff and the
-   asm-only _SsVmFlush. Field names follow psyz. Replaces the splat per-word
-   scalars _svm_voice_plus_0x2..0x1D and D_800F4E20..4A (per-word splat
-   symbol -> aggregate merge family, owner ruling). */
+/* LIBSND `_svm_voice` (vmanager per-voice state; psyz libsnd_private.h
+   `struct SpuVoice`), base 0x800F4E18, one 0x36-byte record per SPU voice
+   (24): psyz's 0x34-byte layout with an extra halfword at +0x0C (unkc), so
+   every field from `note` on sits 2 bytes later. Field names follow psyz. */
 struct SpuVoice {
     s16 unk0;      /* 0x00 */
     s16 unk2;      /* 0x02 */
@@ -89,19 +81,12 @@ extern struct SpuVoice _svm_voice[24]; /* _svm_voice */
 
 extern VabHdr *_svm_vh; /* _svm_vh: current VAB header */
 
-/* Sony LIBSND `_ss_score` (per-SEP score table), declared as SOTN declares
-   it: `struct SeqStruct *_ss_score[32]` (sotn-decomp
-   src/main/psxsdk/libsnd/libsnd_i.h:176 @aa53500). Base 0x80106F28, 32
-   words, up to _SsMarkCallback at 0x80106FA8. Each entry points at one
-   SEP's array of per-sequence score blocks: `_ss_score[sep][seq]`.
-   The RECORD LAYOUT is BB2's own, not SOTN's. BB2 links a different LIBSND
-   build (the interim 4.0-lineage build of memory/closer/libsnd-hunt-report.md)
-   whose score block is 0xB0 bytes (SOTN's is 0xAC) and orders its fields
-   differently. Every offset below is the one BB2's code uses. The comment
-   names the SOTN member that does the same job in the same Sony function
-   (SOTN stop.c, seqread.c, next.c, cres.c, tempo.c, vmanager.c @aa53500).
-   Members no BB2 code touches are unkNN pads. Replaces the raw
-   `extern s32 _ss_score` + byte-offset casts. */
+/* LIBSND `_ss_score` (per-SEP score table), declared as SOTN declares it
+   (sotn-decomp src/main/psxsdk/libsnd/libsnd_i.h:176 @aa53500). Base
+   0x80106F28, 32 words; each entry points at one SEP's array of per-sequence
+   score blocks: `_ss_score[sep][seq]`. The block layout is BB2's own (0xB0
+   bytes, SOTN's is 0xAC, fields reordered); each comment names the SOTN member
+   doing the same job. Members no BB2 code touches are unkNN pads. */
 struct SeqStruct {
     u8 *read_pos;     /* 0x00: SOTN read_pos */
     u8 *next_sep_pos; /* 0x04: SOTN next_sep_pos */
@@ -158,18 +143,9 @@ struct SeqStruct {
 };
 extern struct SeqStruct *_ss_score[32]; /* _ss_score */
 
-/* Sony LIBSND `_SsFCALL`, verbatim from the PsyQ 4.0 LIBSND.H: the
-   sequencer's MIDI-event dispatch table. In BB2 it is the object at
-   0x800F3340 (148 bytes; the next object starts at 0x800F33D8). The 4.0
-   SSINIT object defines the 148-byte common `SsFCALL`, and the 4.0 MIDIREAD
-   _SsGetSeqData, which lines up with func_80084CC0 word for word except one
-   hoisted store, reaches it through SsFCALL+0/+4/+8/+0xC/+0x10 relocations
-   (docs/naming/sweep-2026-09-29/held.csv). That sweep holds the NAME at
-   MEDIUM, so the object keeps its splat name D_800F3340. It is one object,
-   not five scalars. func_80084CC0's target code keeps each handler load
-   behind the score-block store before it, and GCC 2.7.2's scheduler only
-   draws that dependence when the handler load is an in-struct access too.
-   Replaces the per-word splat scalars D_800F3340/44/48/4C/50. */
+/* LIBSND `_SsFCALL`, verbatim from PsyQ 4.0 LIBSND.H: the sequencer's
+   MIDI-event dispatch table, the 148-byte object at 0x800F3340 (PsyQ 4.0
+   common `SsFCALL`; the name is only MEDIUM, so the splat name stays). */
 typedef struct {
     void (*noteon)();
     void (*programchange)();
@@ -181,12 +157,10 @@ typedef struct {
 
 extern _SsFCALL D_800F3340; /* SsFCALL */
 
-/* Sony LIBSND `_snd_seq_tick_env` (ssstart.c SndSeqTickEnv), base
-   0x800A26CC: tick mode / tick-mode flag / tick handler / saved interrupt
-   callback / VSync-hooked flag / 1-per-2 flag / interrupt slot / pad, then
-   the 1-per-2 toggle at +0x14 (asm/data/91C98.data.s initializer: 0x3C, 1,
-   SsSeqCalledTbyT, 0, 0, 0, 0x7F, 0, 0). Layout per SOTN
-   src/main/psxsdk/libsnd/libsnd_i.h:284. */
+/* LIBSND `_snd_seq_tick_env` (ssstart.c SndSeqTickEnv), base 0x800A26CC:
+   tick mode / tick-mode flag / tick handler / saved interrupt callback /
+   VSync-hooked flag / 1-per-2 flag / interrupt slot / pad, then the 1-per-2
+   toggle at +0x14. Layout per SOTN src/main/psxsdk/libsnd/libsnd_i.h:284. */
 typedef struct {
     /* 0x00 */ s32 unk0;
     /* 0x04 */ s32 unk4;

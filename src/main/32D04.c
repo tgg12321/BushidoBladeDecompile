@@ -1,15 +1,12 @@
 /* Rotation-matrix and colour math (math_RotMatrixZXY / YXZ / XYZ,
- * math_Rotate2D, math_RgbToHsv,
- * ...) and the primitive texture-offset helpers
- * (gpu_OffsetTexPolyFT3..gpu_OffsetClut). .text 0x80042504 (ROM 0x32D04). Start
- * boundary: G8 (the -G8 run ends). */
+ * math_Rotate2D, math_RgbToHsv, ...) and the primitive texture-offset helpers
+ * (gpu_OffsetTexPolyFT3..gpu_OffsetClut). .text 0x80042504 (ROM 0x32D04).
+ * Start boundary: G8 (the -G8 run ends). */
 #include "common.h"
 #include "bb2.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include "gte.h"
-
-/* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
 void func_80042504(s32 *hsv, s32 *rgb) {
     s32 h = hsv[0];
@@ -264,18 +261,9 @@ void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
     a1->m[1][2] = (negSinAxcosB_12_cosC + sinB_sinC) >> 12;
 }
 
-/* Euler angles (a0[0..2], 12-bit) -> the 3x3 rotation part of *a1, Y-X-Z order.
- *
- * cosA is read through a `u16 rawA` staging local and sign-extended with an
- * explicit (s16) cast, with the `a1->m[1][2] = -sinA;` store placed between the
- * load and the cast: combine will not merge a MEM load into a later user across
- * a store, so the target's lhu + sll 16 + sra 16 shape survives (sched1 then
- * hoists the store back out at no instruction cost).  Both halves matter: the
- * store after the cast, or the same interleave without the u16 local, is inert.
- *
- * `angC = a0[2]` is read after the sinA*sinB statement: it is the last use of
- * `a0`, so its position decides where $a0 dies; reading it here gives angC
- * $v1 and its cos-index temp $v0, as in the target.
+/* Euler angles (a0[0..2], 12-bit) -> the 3x3 rotation part of *a1, Y-X-Z
+ * order. cosA is read through a u16 local and sign-extended with an (s16)
+ * cast, the -sinA store between them, which keeps the lhu + sll + sra shape.
  */
 void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
     s32 angA, angB;
@@ -409,8 +397,7 @@ extern void math_RotMatrixXYZ();
 
 void func_80042E90(void) {
     g_anim_func_table[0] = math_RotMatrixZYX;
-    /* the three below take their angles as u16 * (read unsigned), not SVECTOR *
-     */
+    /* the three below take their angles as u16 *, not SVECTOR * */
     g_anim_func_table[2] = (AnimRotFunc)math_RotMatrixZXY;
     g_anim_func_table[4] = (AnimRotFunc)math_RotMatrixYXZ;
     g_anim_func_table[5] = (AnimRotFunc)math_RotMatrixXYZ;
@@ -760,12 +747,9 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                         case 2:
                             /* FAKE: cases 2/3 repeat cases 0/1 (one body per
                                kind, as in mode 1) instead of sharing their
-                               labels. jump2 cross-jump re-merges the copies
-                               (bytes identical to `case 0: case 2:`), but
-                               flow.c counts them before global RA: the extra
-                               refs and live length seat count/base/kind in
-                               s3/s4/s5 as the target does. Shared labels: score
-                               109. */
+                               labels; cross-jump re-merges the copies, but
+                               their refs seat count/base/kind in s3/s4/s5.
+                               Shared labels: score 109. */
                             b[1] += arg1;
                             b[5] += arg1;
                             b[9] += arg1;
@@ -972,16 +956,9 @@ void func_80044098(s16 a0) {
         if (a4 != -1) {
             do {
                 *v1 -= (s32)a6;
-                /* FAKE: semantically-null cancellation pair `v1++; v1--;`
-                   adjacent to the real `v1++` (F6 cancellation pair,
-                   .claude/rules/no-new-park-categories.md) -- the pair nets
-                   zero and emits no bytes, but flow.c reg_n_refs counts the
-                   extra loop-weighted pointer refs before combine.c re-merges
-                   the chain into the single target addiu (combine.c:52-57 -
-                   reg_n_refs is never adjusted afterwards), so global.c's
-                   allocno priority for the pointer overtakes the counter's
-                   and the pointer lands $v1 / the counter $a0 as target has
-                   them. */
+                /* FAKE: `v1++; v1--;` cancellation pair adds loop-weighted refs
+                   so the pointer gets $v1 and the counter $a0 (F6 cancellation
+                   pair, no-new-park-categories) */
                 v1++;
                 v1--;
                 v1++;
@@ -1023,8 +1000,7 @@ s32 func_80044170(s32 *a0, ...) {
     old_first = *base;
     va_start(ap, a0);
     count = va_arg(ap, s32);
-    /* FAKE: a0 reused for the slot table (base + 1); its own local: score 38.
-     */
+    /* FAKE: a0 reused for the slot table; its own local: score 38 */
     a0 = base + 1;
     *base = count;
     slots = a0;
@@ -1057,12 +1033,8 @@ s32 func_80044170(s32 *a0, ...) {
 }
 
 s32 func_8004428C(s32 *base, s16 *offsets) {
-    /* FAKE: prologue pair order -- single forward-order
-       param alias (pointer-alias-fake-exception);
-       combine merges the
-       single-use param's entry copy into this init at the
-       later insn position, yielding target's s3-pair-first
-       prologue */
+    /* FAKE: param alias gives the target's prologue save order
+       (pointer-alias-fake-exception) */
     s32 *b = base;
     s32 *slots = b + 1;
     s32 count = 0;
@@ -1081,8 +1053,8 @@ s32 func_8004428C(s32 *base, s16 *offsets) {
     }
 
     {
-        /* FAKE: constant-holder, named-local-fake-exception; the literal scores
-         * 2 */
+        /* FAKE: constant-holder (named-local-fake-exception); the literal:
+         * score 2 */
         s32 stop = -2;
         walker = slots;
         do {
@@ -1226,10 +1198,8 @@ void func_80044650(void) { func_80052C10(); }
 
 s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     s32 v0;
-    /* FAKE: keeps reorg.c relax_delay_slots from inverting the two default-path
-       j/nop pairs in the stage-id switch (NOTE_INSN_LOOP_BEG sets
-       LABEL_OUTSIDE_LOOP_P, suppressing the invert-jump peephole); removed:
-       score 4 */
+    /* FAKE: keeps reorg from inverting the stage-id switch's two default-path
+       j/nop pairs; removed: score 4 */
     do {
     } while (0);
     D_800A9CF8.unk0 = a1;

@@ -5,7 +5,6 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-/* Declarations from the file this TU was split from (text1b_tu1c.c). */
 extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
 extern s32 func_80073C78();
@@ -57,8 +56,6 @@ s32 func_8007352C(Unk8007352CEnv *env) {
     }
     return (s32)sp;
 }
-
-/* END func_8007352C */
 
 s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
     Unk8009B400Record *e = env->table;
@@ -460,13 +457,12 @@ void func_80074488(Unk8006EACCRec *arg0) {
     rect[0] = 0xBC;
     rect[1] = 0x25;
     rect[3] = 1;
-    /* The original passes its own context base here, unadjusted
-     * (func_80074488.s:196-217): func_80069898 reads +0x18 as its TILE cursor
-     * (func_80069898.s:11, 37 / 65 / 91, 94), and in this context +0x18 is the
-     * DR_MODE cursor. */
+    /* The original passes its own context base here, unadjusted:
+     * func_80069898 reads +0x18 as its TILE cursor, which in this context is
+     * the DR_MODE cursor. */
     func_80069898((s32 *)arg0, (u16 *)rect, 2);
 }
 
-/* Q65: tentative definitions (COMMON) of the small data this file reaches
- * gp-relative. */
+/* Tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative (Q65). */
 u8 *D_800A36A0;

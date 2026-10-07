@@ -7,7 +7,7 @@
 #include "include_asm.h"
 #include "gte.h"
 
-/* ---- merged from text1a_c2.c (owner ruling Q67: one original file) ---- */
+/* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void func_800477DC(s32);
 extern s32 func_80047EC8(void);
 extern void func_800481E8(s32, s32);
@@ -16,8 +16,8 @@ extern void func_800466C0(s32, s32);
 #define ALIGN4(x) (((u32)(x) >> 2) << 2)
 #define PTR_OFF(base, off) ((s32)((u8 *)(base) + (off)))
 
-/* Q65: this file's statics (.sbss, allocated per file in link order by
- * PSYLINK), in address order. */
+/* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
+ * address order. */
 static s32 D_800A33B0;
 static s32 D_800A33B4;
 static s32 D_800A33B8; /* not named by any code or data: size from the gap */
@@ -120,18 +120,15 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     }
 
     g_stage_variant = 0;
-    /* FAKE: live default init of s1 routed through a delta-rebase detour that
-       combine folds back to s1 = s4 with zero emitted bytes -- flow.c
-       reg_n_refs (+2 on s1's pseudo) lifts its global.c allocno_compare
-       priority above the s2 pointer so allocation order matches target. */
+    /* FAKE: s1 = s4 routed through a delta-rebase detour that combine folds
+       back (zero bytes); the extra refs lift s1's allocation priority above
+       the s2 pointer, as in the target */
     s1 = (s32 *)((s32)s4 - (s32)s0);
     s1 = (s32 *)((s32)s1 + (s32)s0);
     switch (stage_id) {
     case 3: {
-        /* FAKE: fresh once-written/once-read pointer intermediate naming the
-         * address of the stage header's last word -- expand-time
-         * MEM_IN_STRUCT_P (expr.c:4567-4577) -> sched.c anti_dependence
-         * exemption -> sched1 load/store order. */
+        /* FAKE: once-written pointer naming the stage header's last word; it
+         * fixes the sched1 load/store order */
         s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;
         s1 = s2;
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
@@ -252,7 +249,7 @@ void func_8004668C(void) {
     g_stage_variant = 0;
 }
 
-/* ---- merged from text1a_b.c (owner ruling Q67: one original file) ---- */
+/* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void func_80047ED0(s32);
 
 void func_800466C0(s32 a0, s32 a1) {
@@ -284,8 +281,7 @@ typedef struct {
     u16 v[22];
 } Unk800153F0Record;
 
-/* ---- merged from sound.c (owner ruling Q67: one original file) ---- */
-/* Forward declarations for called functions */
+/* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void func_80048F58(s32, s32);
 extern void func_80048FFC(s32);
 extern s32 func_800477E8(void);
@@ -296,7 +292,6 @@ extern void func_8004668C(void);
 
 extern s16 D_800A324A;
 
-/* Externs for globals */
 extern MATRIX D_800EEDB0;
 
 extern s32 D_800EF800[];
@@ -311,8 +306,6 @@ extern s16 D_800F665A;
 extern s16 D_800A3248;
 
 void func_800468DC(s32 a0, s32 a1);
-
-/* --- Functions 0x80046780 - 0x80047EC8 --- */
 
 s32 func_80046780(void) { return D_800A33B0; }
 
@@ -419,9 +412,8 @@ void rcnt_StartCnt1(void) {
 void rcnt_GetCnt1(void) { GetRCnt(0xF2000001); }
 
 void game_Init(void) {
-    /* FAKE: constant-holder locals — set in source order ahead of the fence
-       below so 1 seats in $v0 and 2 in $v1 before the store tail, with $v0
-       freed for reuse by 0x23 mid-tail */
+    /* FAKE: constant-holder locals set in source order ahead of the fence
+       below so 1 seats in $v0 and 2 in $v1 before the store tail */
     s16 one;
     s16 two;
 
@@ -436,9 +428,8 @@ void game_Init(void) {
     func_8003F7F4();
     one = 1;
     two = 2;
-    /* FAKE: sched.c mid-block loop-note fence — keeps the two pre-fence
-       constant sets from being folded into the store tail (measured: without
-       it CSE/sched collapse 1/2/0x23 into a single serialized $v0) */
+    /* FAKE: loop-note fence keeps the two constant sets out of the store
+       tail; without it 1/2/0x23 collapse into one serialized $v0 */
     do {
     } while (0);
     D_800F6654 = one;
@@ -709,9 +700,8 @@ void func_800475A4(void) {
      * the direct spelling scores 6. */
     base = &g_cam_bone_data2;
     {
-        /* FAKE: s16 temporary for the negated pitch: storing -ratan2() straight
-         * into the field sinks its negu 8 slots to just before the sh and
-         * lifts `addiu s2,sp,0x28` 5 slots. Ablated (2026-10-06): score 3. */
+        /* FAKE: s16 temporary for the negated pitch; storing -ratan2() straight
+         * into the field moves its negu and the addiu: score 3 */
         s16 neg = -ratan2(result.vy, computed);
         base->xf.rot.vx = neg;
     }
@@ -781,10 +771,9 @@ s32 func_800477E8(void) {
     do {
         t0 = 0x1200;
         a2 = 0x13;
-        /* FAKE: single-level do-while(0) wrap. Its loop note adds one unit of
-         * loop_depth reference weight to everything in this body, which seats
-         * t1val in $t1 and the 0x2C00 constant in $t2 as target has them
-         * (without it: t1val 3 refs/76 insns loses to t2's 5/150). */
+        /* FAKE: do-while(0) loop depth weights this body's refs, seating
+         * t1val in $t1 and 0x2C00 in $t2 as in the target; without it t1val
+         * (3 refs/76 insns) loses to t2 (5/150) */
         do {
             a1 = 0;
             v1 = 1;
@@ -935,21 +924,18 @@ loop1:
 outer_loop:
     pa1 = pt1;
     do {
-        /* FAKE: loop-note ref weighting lifts a3's allocno priority above
-         * the shared counter i, seating a3 in $a3 and i in $t0. Ablated
-         * (2026-10-06): score 10. */
+        /* FAKE: loop-note ref weighting seats a3 in $a3 and i in $t0;
+         * without it: score 10 */
         a3 = 0;
     } while (0);
     do {
-        /* FAKE: loop-note ref weighting lifts pa2 above the shared counter
-         * i, seating pa2 in $a2 (shared with the loop-1 Judge base). Ablated
-         * (2026-10-06): score 13. */
+        /* FAKE: loop-note ref weighting seats pa2 in $a2 (shared with the
+         * loop-1 Judge base); without it: score 13 */
         pa2 = pt2;
     } while (0);
     do {
-        /* FAKE: loop-note ref weighting keeps pt1 ahead of pt2 in
-         * allocation order (pt1->$t1, pt2->$t2) after the pa2 wrap's
-         * weighted pt2 use lifted pt2. Ablated (2026-10-06): score 8. */
+        /* FAKE: loop-note ref weighting keeps pt1 ($t1) ahead of pt2 ($t2)
+         * in allocation order; without it: score 8 */
         pt3 = pt1 + 0x11;
     } while (0);
 inner_loop:
@@ -966,9 +952,8 @@ inner_loop:
         a3 += 4;
         pa2++;
     } else {
-        /* FAKE: loop tail duplicated into both arms (cross-jump re-merges,
-         * byte-neutral); reg_n_refs lift lands pa2->$a2, a3->$a3. Ablated
-         * (2026-10-06): score 16. */
+        /* FAKE: loop tail duplicated into both arms (cross-jump re-merges it);
+         * seats pa2 in $a2, a3 in $a3; without it: score 16 */
         pa1++;
         a3 += 4;
         pa2++;
@@ -1084,25 +1069,16 @@ s32 func_80047E5C(void) {
 
 s32 func_80047EC8(void) { return 0xD00; }
 
-/* ---- merged from text1b.c (owner ruling Q67: one original file) ---- */
+/* ---- merged section (owner ruling Q67: one original file) ---- */
 extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
-
-/* --- Functions from text1b segment (0x80047ED0 - 0x80079A30) --- */
 
 void func_80047ED0(s32 a0) { D_800A33D0 = (s16 *)((u8 *)D_800A33D0 + a0); }
 
 void func_80047EE8(s32 arg0, s32 arg1) {
-    /* FAKE: unwritten leading frame pad (phantom-frame-slot volatile pad
-     * family)
-     * -- GCC 2.7.2 function.c assign_stack_local reserves the array slot at
-     * RTL-expand from the source DECL and never reclaims frame_offset after
-     * DCE, so a declared-but-untouched local aggregate reproduces target's
-     * allocated-but-unwritten 32-byte vars region (.frame $sp,72 - args
-     * 0x00-0x17, vars 0x18-0x37, regs 0x38-0x47; ZERO sw/lw in 0x18-0x37).
-     * SOTN-master precedent: volatile u32 pad; // !FAKE: at
-     * src/st/sel/2C048.c:564 (docs/reference/sotn-construct-index.md:101);
-     * volatile u32 pad[4]; // FAKE at src/st/sel/stream.c:80
-     * (sotn-construct-index.md:103). */
+    /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
+     * locals region (sp+0x18..0x37) (phantom-frame pad). SOTN precedent:
+     * `volatile u32 pad; // !FAKE:` (src/st/sel/2C048.c:564), `volatile u32
+     * pad[4]; // FAKE` (src/st/sel/stream.c:80). */
     volatile u32 pre_pad[8];
     u32 *p;
     s32 saved;
@@ -1112,10 +1088,9 @@ void func_80047EE8(s32 arg0, s32 arg1) {
     unsigned int new_var2;
     p = (u32 *)arg0;
     saved = (s32)p;
-    /* FAKE: dead store to a PARAM (dead-store-fake-exception family)
-     * -- defeats cse2's canonical-register substitution over the
-     * {arg0, p, saved} equivalence class so the second pointer binds
-     * addu $s0,$s2,$v0 rather than $a0. */
+    /* FAKE: dead store to a param; defeats cse2's substitution over
+     * {arg0, p, saved} so the second pointer binds addu $s0,$s2,$v0, not $a0
+     * (dead-store-fake-exception) */
     arg0 = 0;
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     v_off = *p;
@@ -1149,10 +1124,8 @@ void func_80047EE8(s32 arg0, s32 arg1) {
 }
 
 void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
-    // !FAKE: phantom-frame-slot volatile filler
-    // (.claude/rules/no-new-park-categories.md): target reserves 32 locals
-    // bytes at sp+0x18..sp+0x37 that no instruction touches; mechanism:
-    // GCC 2.7.2 get_frame_size reserves declared locals
+    // !FAKE: phantom-frame-slot pad (no-new-park-categories): target
+    // reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction touches
     volatile u32 pre_pad[8];
     u32 *p;
     s32 base_addr;
@@ -1160,9 +1133,8 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
     s32 new_var;
     base_addr = arg0;
     p = (u32 *)arg0;
-    /* FAKE: defeats cse2 canonical-reg substitution
-       that folds {reg 72 arg0, reg 78 p, reg 79 base_addr}
-       equivalence class at insn 36 */
+    /* FAKE: defeats cse2 folding the {arg0, p, base_addr} equivalence
+       class */
     arg0 = 0;
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
@@ -1197,12 +1169,8 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
 }
 
 void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
-    // !FAKE: phantom-frame-slot volatile filler -- the target reserves 32
-    // locals bytes at sp+0x18..sp+0x37 that no instruction in
-    // asm/funcs/func_800480C0.s reads or writes; GCC 2.7.2
-    // get_frame_size/expand_decl reserves declared locals
-    // (config/mips/mips.c:4443-4475), while any referenced producer costs >=1
-    // store (flow.c:1740-1741 never deletes the last store to a frame object)
+    // !FAKE: phantom-frame-slot pad: target reserves 32 locals bytes at
+    // sp+0x18..sp+0x37 that no instruction touches
     volatile u32 pre_pad[8];
     u32 *p;
     s32 base_addr;
@@ -1210,10 +1178,8 @@ void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
     s32 new_var;
     base_addr = arg0;
     p = (u32 *)arg0;
-    // !FAKE: dead store to a PARAMETER (dead-store family; same construct as
-    // sibling func_80047FBC) -- defeats GCC 2.7.2 cse.c canonical-register
-    // substitution, which otherwise folds the {arg0, p, base_addr} equivalence
-    // class and emits one base copy instead of two
+    // !FAKE: dead store to a parameter (as in func_80047FBC); defeats cse
+    // folding {arg0, p, base_addr}, which emits one base copy instead of two
     arg0 = 0;
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
@@ -1252,22 +1218,13 @@ void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
 }
 
 void func_800481E8(s32 arg0, s32 arg1) {
-    /* Base-copy staging + function-scope precompute (with the `arg0 = 0;`
-     * FAKE below) make GCC stage arg0 through $s0 first ($s0=$a0; $s2=$s0),
-     * as in the target. */
-    /* FAKE: unwritten leading frame pad (phantom-frame-slot volatile pad
-     * family; engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS row)
-     * -- GCC 2.7.2 function.c assign_stack_local reserves the array slot at
-     * RTL-expand from the source DECL and never reclaims frame_offset after
-     * DCE, so a declared-but-untouched local aggregate reproduces target's
-     * allocated-but-unwritten 32-byte vars region (.frame $sp,72 - args
-     * 0x00-0x17 incl the 5th-arg slot sw $v0,0x10($sp); vars 0x18-0x37 with
-     * ZERO sw/lw; regs 0x38-0x47). Identical shape and size to the FAKE pads of
-     * the two siblings in this file (func_80047EE8 / func_80047FBC).
-     * SOTN-master precedent: volatile u32 pad; // !FAKE: at
-     * src/st/sel/2C048.c:564 (docs/reference/sotn-construct-index.md:101);
-     * volatile u32 pad[4]; // FAKE at src/st/sel/stream.c:80
-     * (sotn-construct-index.md:103). */
+    /* Base-copy staging with the `arg0 = 0;` FAKE below makes GCC stage arg0
+     * through $s0 first ($s0=$a0; $s2=$s0), as in the target. */
+    /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
+     * locals region (sp+0x18..0x37), as the FAKE pads of func_80047EE8 /
+     * func_80047FBC (phantom-frame pad). SOTN precedent: `volatile u32 pad;
+     * // !FAKE:` (src/st/sel/2C048.c:564), `volatile u32 pad[4]; // FAKE`
+     * (src/st/sel/stream.c:80). */
     volatile u32 pre_pad[8];
     u32 *p;
     u32 *base;
@@ -1424,13 +1381,8 @@ s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     s32 base, count, entry, a, b, c, d, off;
     off = ((s32 *)arg0)[arg1];
     base = arg0;
-    /* FAKE: operand order chosen to match target (off + base, not base + off);
-     * mechanism: RTL expansion's commutative-operand canonicalization
-     * (expand_binop) keeps two equal-precedence pseudos in source order, and
-     * no later pass (combine/sched) reorders the addu operands — so only the
-     * off-first source spelling emits target's `addu $v1,$v0,$v1` (natural
-     * base+off is 1 insn off; cc1psx also emits base-first from it); the
-     * single-order carve-out in .claude/rules/or-tree-shape-shift.md. */
+    /* FAKE: off + base operand order; base + off emits the addu operands
+     * swapped (1 insn off) (single-order carve-out, or-tree-shape-shift) */
     arg0 = off + base;
     count = *(s32 *)arg0;
     arg0 += 4;
@@ -1495,16 +1447,9 @@ u16 cx, cy;
             spr->clut = 0;
         }
         p = tim + 2;
-        /* !FAKE: cancellation pair (F6 family, exact `i++; i--;` shape).
-         * What: net-zero adjacent same-variable inc/dec of tim, byte-free
-         * (survives cse1/cse2, then flow.c dead-store elimination deletes
-         * both). Mechanism: cse.c fold_rtx PLUS-association (cse.c:5589-5666,
-         * applied uncosted to addresses via find_best_addr, cse.c:2663)
-         * rewrites the pixel-block reads onto tim whenever p's recorded
-         * equivalent (plus tim 8) is valid; the pair bumps reg_tick(tim) so
-         * exp_equiv_p invalidates that equivalence and the reads keep p as
-         * base, matching target's addiu v1,s1,8 + lhu 2(v1)/lw 0(v1)/addiu
-         * v1,v1,4; every join-local p==tim+K chain folds otherwise. */
+        /* !FAKE: cancellation pair (F6): bumping tim stops cse rebasing the
+         * pixel-block reads onto tim, so they keep p as base as in the
+         * target; flow deletes both */
         tim++;
         tim--;
         spr->x = x;
@@ -1663,12 +1608,9 @@ s32 func_80048AD0(s32 arg0) {
     /* FAKE: q = p + 0xA, the target's second cursor (addiu a1,v1,10; stores at
      * -8 / -6 / -9 / 0 from it); through p the cursor goes (score 11) */
     q = p + 0xA;
-    /* FAKE: the record counter reuses `sound` rather than a fresh local.
-       snd_LoadBgm's argument copy gives `sound` a hard-reg $a0 preference;
-       global.c expand_preferences propagates it to the counter, which stops
-       prune_preferences making the counter yield $a0 to `delta`. With a
-       separate counter the pair allocates $a2/$a0 instead of target's
-       $a0/$a2. Ablated (2026-10-06): score 6. */
+    /* FAKE: the record counter reuses `sound`, inheriting its $a0
+       preference from snd_LoadBgm's argument; a separate counter swaps
+       $a0/$a2 with delta: score 6 */
     for (sound = 0; sound < 0x11; sound++) {
         *(s16 *)(q - 8 + sound * 0x68) = sound;
         *(s16 *)(q - 6 + sound * 0x68) = 9;
@@ -1830,7 +1772,7 @@ void func_80048FFC(s32 arg0) {
         s32 h1 = period - phase;
         /* FAKE: strip two's height taken as an s16 at the top of the level;
          * rect.h = phase directly, an s32 copy or a (s16) cast drops the t1
-         * copy. Ablated (2026-10-06): score 57. */
+         * copy: score 57 */
         s16 h2 = phase;
         rect.x = x + xf;
         rect.y = sy;
@@ -1950,11 +1892,9 @@ void func_80049584(s32 arg0) {
     s16 *dst;
     s16 *src;
     s16 *p;
-    /* FAKE: `i` carries both the two loop counters and the computed total,
-       mechanism: global.c allocno allocation — only a pseudo that crosses a
-       CALL is eligible for a call-saved hard reg, so sharing one variable is
-       what puts the loop counter in $s0 (target); with a separate `total` the
-       counter takes a call-clobbered reg and 12 insns diverge. */
+    /* FAKE: `i` carries both loop counters and the computed total: only a
+       pseudo crossing a call gets a call-saved reg, so sharing puts the
+       counter in $s0 as in the target; a separate `total`: 12 insns differ */
     s32 i;
     s32 unchanged;
     s32 rank;
@@ -2029,34 +1969,29 @@ void func_80049710(void) {}
 
 /* Appends one or two 0x68-byte draw nodes at D_800A38B4 for animation entry
  * arg0 and queues each on the D_800A3820 draw list. The first node (type 0)
- * gets its rotation and position either from rot_in / pos (flags == 1:
- * g_anim_func_table[0] turns rot_in into the node's matrix) or from node 19 +
- * (flags & 1) of player flags >> 1's model object: that node's offset (work.t)
- * is scaled by the object's unk_12, the root node's matrix times the node's
- * work matrix becomes the new node's matrix, the scaled offset run through the
- * parent's matrix (plus its translation) gives its position, and the matrix is
- * copied back into the object's node. The second node (type 3, parent = the
- * first) follows unless flags is still 1. */
+ * takes its rotation and position from rot_in / pos (flags == 1) or from node
+ * 19 + (flags & 1) of player flags >> 1's model object, whose offset it scales
+ * in place by the object's unk_12 and into which it copies the new matrix
+ * back; the second (type 3, parent = the first) follows unless flags is still
+ * 1. */
 void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     SVECTOR ofs;
     s32 val58;
     Unk80045878Obj *player;
     Unk80045878Node *obj;
     Unk80045878Node *part;
-    /* FAKE: named intermediate (no-new-park-categories entry 6).  Set before
-     * the call, sched1 moves the andi past func_8004153C but ahead of the copy
-     * of its result (`andi v1,s3,1; move s1,v0`, as in the target); written
-     * inside the part expression or after the call it follows the copy and
-     * takes $v0. Ablated (2026-10-06): score 5. */
+    /* FAKE: named intermediate (no-new-park-categories entry 6) set before
+     * the call so the andi lands ahead of the copy of its result, as in the
+     * target; written in the expression or after the call it takes $v0: score
+     * 5 */
     s32 side;
     if (D_800EF980[arg0] < 0) {
         func_80052C10();
     }
     obj = (Unk80045878Node *)D_800A38B4;
-    /* FAKE: dead store (dead-store-fake-exception).  The 0 is never read: the
-     * flags == 1 path skips the second node.  Flow cannot tell, so the store
-     * stays as the target's `move s5,zero`; without it that instruction is
-     * missing. Ablated (2026-10-06): score 1. */
+    /* FAKE: dead store: the 0 is never read (flags == 1 skips the second
+     * node) but gives the target's `move s5,zero`: score 1
+     * (dead-store-fake-exception) */
     val58 = 0;
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;
@@ -2075,12 +2010,8 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             obj->node.xf.mat.t[1] = pos[1];
             obj->node.xf.mat.t[2] = pos[2];
         } else {
-            /* FAKE: flags is rewritten in place - compound-assigned, read (>>
-             * 1, & 1), compound-assigned again, read (!= 1) - as SOTN reuses a
-             * parameter (Q51).  Copied into a local instead, global.c's allocno
-             * order flips: rot_in's pseudo (priority 3333) outranks the
-             * table-address pseudo (3000) for $s0, against 2962 / 3333 in
-             * place. Ablated (2026-10-06): score 63. */
+            /* FAKE: flags rewritten in place, as SOTN reuses a parameter
+             * (Q51); a local copy flips the $s0 allocation order: score 63 */
             /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
             flags &= 0x7FFF;
             side = flags & 1;
@@ -2117,11 +2048,9 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
         }
         obj++;
         if (flags != 1) {
-            /* FAKE: named intermediate (no-new-park-categories entry 6).  The
-             * table is read before the node's fields are written, as in the
-             * target (lh first); storing D_800EF980[arg0] * 2 + 1 directly at
-             * the +2 store reads it last, and moving that store first
-             * reorders the stores. Ablated (2026-10-06): score 22. */
+            /* FAKE: named intermediate (no-new-park-categories entry 6) reads
+             * the table before the node's fields are written, as in the target;
+             * storing it directly reads it last: score 22 */
             s32 frame = D_800EF980[arg0];
             void **list;
             obj->node.unk0 = 3;
@@ -2149,26 +2078,16 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
 
 extern s16 D_80099D3C[];
 
-/* func_80049A2C: the first declaration,
- * `volatile u32 pre_pad[2];`, is a labelled FAKE (phantom-frame-slot volatile
- * pad family; row
- * ("pre_pad", 2) in engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS). It
- * gives target's frame signature, .frame $sp,48 # vars= 8, regs= 5/0.
- * Target's +8 vars region is reachable from ordinary C only via a
- * combine-orphaned pseudo (reload1.c:2404 alter_reg), and the only
- * fold-capable symbol (D_80099D3C) cannot host it: the fold that creates the
- * orphan shortens the arg1 index chain, flips sched1's hoist, and costs a
- * SIXTH callee-saved register (target saves five). D_800EF980/D_80099CC8 are
- * single-index (CSE merges every respelling), and the function is loopless,
- * so no back-edge carrier exists; hence the FAKE pad. SOTN-master PSX
- * precedent: docs/reference/sotn-construct-index.md L620/L626/L627 (volatile
- * char pad[8] //! FAKE; volatile u32 pad; volatile u32 pad[4]).
- */
+/* func_80049A2C: `volatile u32 pre_pad[2]` is a labelled FAKE (phantom-frame
+ * pad) giving the target's frame signature (.frame $sp,48, vars= 8, regs= 5).
+ * The only fold-capable symbol (D_80099D3C) cannot host the vars region
+ * without costing a sixth callee-saved register, and the function is
+ * loopless, so no back-edge carrier exists; hence the FAKE pad. SOTN
+ * precedent: `volatile char pad[8] //! FAKE`. */
 void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
-    // !FAKE: phantom-frame-slot volatile filler
-    // (.claude/rules/no-new-park-categories.md): target reserves 8 locals bytes
-    // at sp+0x10..sp+0x17 that no instruction touches; mechanism: GCC 2.7.2
-    // get_frame_size reserves declared locals. Ablated (2026-10-06): score 12.
+    // !FAKE: phantom-frame-slot pad (no-new-park-categories): target
+    // reserves 8 locals bytes at sp+0x10..sp+0x17 that no instruction
+    // touches; without it: score 12
     volatile u32 pre_pad[2];
     u8 *new_var6;
     u8 temp_v1;
@@ -2400,9 +2319,7 @@ void func_80049E4C(void) {
     D_800A370C = p2;
 }
 
-/* 0x800153F0: the 22-halfword record func_8004A09C unpacks (it walks it as
-   u16). func_80049F4C copies it whole by assignment: the copy's run-time
-   alignment test in the target bytes is the halfword type's alignment. */
+/* 0x800153F0: the 22-halfword record func_8004A09C unpacks. */
 extern const Unk800153F0Record D_800153F0;
 extern void func_8004A09C(Unk800F62E0Rec *, u16 *);
 
@@ -2483,11 +2400,9 @@ void func_8004A1FC(arg0) Unk800F62E0Rec *arg0;
     } while (i < 3);
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values
- * from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order. */
 s16 D_800A3248 = -1;
 s16 D_800A324A = -1;
 s32 D_800A324C = -1;
-/* Q65: tentative definitions (COMMON) of the small data this file reaches
- * gp-relative. */
+/* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 u32 *g_gpu_ot256_ptr;

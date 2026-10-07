@@ -5,21 +5,14 @@
 #include "common.h"
 #include "libetc_internal.h"
 
-/* .rodata 0x80016394..0x800163C0: trapIntrDMA's bus-error report (moved from
- * src/text1a_b_tail_rodata.c, Q106 D4: every reader is in this file, in link
- * order). */
-
-/* D_80016394: 1 string(s), 28B @ 0x80016394 */
+/* trapIntrDMA's bus-error report (Q106 D4: every reader is in this file). */
 const char D_80016394[28] = "DMA bus error: code=%08x\n\0\0\0";
 
-/* D_800163B0: 1 string(s), 16B @ 0x800163B0 */
 const char D_800163B0[16] = "MADR[%d]=%08x\n\0\0";
 
 extern s32 D_800A2640[8];
-/* PsyQ 4.0 LIBETC intr_dma.c module state (verbatim-linked Sony object;
-   C ref: sotn-decomp src/main/psxsdk/libetc/intr_dma.c).
-   D_800A263C holds 0x1F8010F4 (DMA Interrupt Register) — Sony declares it
-   `static volatile u_long *` (pointer-to-volatile-MMIO, type-level). */
+/* D_800A263C holds 0x1F8010F4 (DMA Interrupt Register); Sony declares it
+   `static volatile u_long *`. */
 extern volatile u32 *D_800A263C;
 extern u32 *D_800A2660;
 
@@ -33,8 +26,6 @@ s32 startIntrDMA(void) {
     return (s32)setIntrDMA;
 }
 
-/* PsyQ 4.0 LIBETC INTR_DMA: trapIntrDMA (static) — verbatim-linked Sony
-   object; C ref: sotn-decomp libetc/intr_dma.c */
 void trapIntrDMA(void) {
     u32 mask;
     s32 i;
@@ -58,8 +49,6 @@ void trapIntrDMA(void) {
     }
 }
 
-/* PsyQ 4.0 LIBETC INTR_DMA: setIntrDMA (static) — verbatim-linked Sony
-   object; C ref: sotn-decomp libetc/intr_dma.c */
 s32 setIntrDMA(s32 a0, s32 a1) {
     s32 prev = D_800A2640[a0];
     if (a1 != prev) {

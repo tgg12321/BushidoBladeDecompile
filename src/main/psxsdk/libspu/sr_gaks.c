@@ -4,11 +4,8 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-/* PsyQ 4.0 LIBSPU sr_gaks: SpuRGetAllKeysStatus — verbatim-linked Sony object
-   (module SR_GAKS spans 0x8008B330..0x8008B488). This
-   entry point is UNREFERENCED in BB2 (dead code pulled in by whole-object
-   linking) — no glabel exists at 0x8008B330, so it shares func_8008AF9C's
-   splat extent. C ref: sotn-decomp src/main/psxsdk/libspu/sr_gaks.c. */
+/* Unreferenced in BB2 (pulled in by whole-object linking).
+   C ref: sotn-decomp src/main/psxsdk/libspu/sr_gaks.c. */
 static s32 SpuRGetAllKeysStatus(s32 min, s32 max, s8 *status) {
     s32 voice;
     u16 volumex;
@@ -49,9 +46,8 @@ static s32 SpuRGetAllKeysStatus(s32 min, s32 max, s8 *status) {
     return 0;
 }
 
-/* PsyQ LIBSPU sr_gaks.c: SpuGetAllKeysStatus — verbatim-linked Sony object;
-   C ref: sotn-decomp src/main/psxsdk/libspu/sr_gaks.c
-   (SpuRGetAllKeysStatus inlined with min=0, max=NUM_SPU_CHANNELS) */
+/* SpuRGetAllKeysStatus inlined with min=0, max=NUM_SPU_CHANNELS (sotn-decomp
+   libspu/sr_gaks.c). */
 void SpuGetAllKeysStatus(u8 *status) {
     s32 limit = 24;
     s32 voice = 0;

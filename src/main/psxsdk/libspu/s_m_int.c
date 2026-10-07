@@ -3,20 +3,10 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-/* Shape note: phase 1's inner scan exits by `goto`, not `break`.
-   stmt.c:expand_end_loop rolls a leading conditional exit to the bottom of the
-   loop only when that exit jumps to the loop's own end_label/alt_end_label
-   (the `last_test_insn` scan). A `break` qualifies, so the loop gets rotated
-   and jump.c:duplicate_loop_exit_test then peels a guard copy (+8 insns). A
-   `goto` to a user label after the loop does not target end_label, so
-   last_test_insn stays 0, no rotation happens, and the emitted loop has the
-   target's shape: test at top, unconditional `j` back-edge, `j++` in its delay
-   slot.
-   Two load-delay hazard nops across .L merge labels come from maspsx's
-   .L-label nop handling, as for siblings SpuFree (s_m_f.c) and _spu_init
-   (spu.c). */
-/* PsyQ 4.0 LIBSPU s_m_int.c: _spu_gcSPU -- verbatim-linked Sony object;
-   C ref: Xeeynamo/psyz decomp/src/libspu/s_m_int.c */
+/* _spu_gcSPU. C ref: Xeeynamo/psyz decomp/src/libspu/s_m_int.c. Phase 1's inner
+   scan exits by `goto`, not `break`: a break gets the loop rotated with a
+   peeled guard copy (+8 insns); the goto keeps test-at-top with `j++` in the
+   back-edge delay slot. */
 void _spu_gcSPU(void) {
     s32 i;
     s32 j;

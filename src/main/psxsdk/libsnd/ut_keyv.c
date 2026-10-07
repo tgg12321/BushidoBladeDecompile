@@ -1,14 +1,13 @@
 /* PsyQ LIBSND UT_KEYV: SsUtKeyOnV and SsUtKeyOffV. .text
- * 0x80085A40..0x80085E4C, the whole region between UT_GVBA and UT_RDEP. Module
- * start (owner ruling Q109), libscan near tier: UT_KEYV of the PsyQ 4.0
- * LIBSND.LIB matches 255/259 words at 0x80085A40, unique (the 4 differing words
- * are the _svm_voice stride edit), XDEFs SsUtKeyOnV +0x0 and SsUtKeyOffV +0x394
- * (docs/naming/libscan/near_manifest.csv). */
+ * 0x80085A40..0x80085E4C, the whole region between UT_GVBA and UT_RDEP (module
+ * start: owner ruling Q109); PsyQ
+ * 4.0's UT_KEYV matches 255/259 words here (libscan near tier; the other 4 are
+ * the _svm_voice stride edit). */
 #include "common.h"
 #include "libsnd_i.h"
 
-/* PsyQ LIBSND UT_KEYV. BB2 keeps the 4.0 routine's source shape but uses the
-   later 54-byte voice-state stride (rather than 4.0's 52-byte layout). */
+/* The 4.0 routine, but with the later 54-byte voice-state stride (4.0's is
+   52). */
 s16 SsUtKeyOnV(s16 voice, s16 vabId, s16 prog, s16 tone, s16 note, s16 fine,
                s16 voll, s16 volr) {
     s32 toneIndex;
@@ -81,11 +80,9 @@ s16 SsUtKeyOnV(s16 voice, s16 vabId, s16 prog, s16 tone, s16 note, s16 fine,
     return voice;
 }
 
-/* PsyQ LIBSND UT_KEYV: SsUtKeyOffV — the module's second exported entry point,
-   which splat merged into SsUtKeyOnV (docs/naming/libscan/
-   near-tier-ruling-2026-09-07.md; XDEF +0x394, follows a real jr $ra); must
-   stay immediately after its former host so the link order reproduces the byte
-   layout. */
+/* SsUtKeyOffV: the module's second exported entry point (XDEF +0x394), which
+   splat merged into SsUtKeyOnV (near-tier ruling 2026-09-07); must stay right
+   after SsUtKeyOnV so the link order reproduces the byte layout. */
 s16 SsUtKeyOffV(s16 voice) {
     if (_snd_ev_flag == 1) {
         return -1;

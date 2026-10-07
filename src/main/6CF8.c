@@ -9,9 +9,6 @@
 #include "bb2_const.h"
 #include "gte.h"
 
-/* Forward declarations for called functions */
-
-/* Externs for globals */
 extern u8 g_file_dma_flag;
 extern s32 g_rng_state;
 extern RECT g_gpu_clear_rect;
@@ -33,15 +30,12 @@ extern RECT D_800A30D4;
 extern s32 D_800A30DC;
 
 extern void __main(void);
-/* Not the bb2.h spelling: the definition (3AB48.c) takes an s16 first
- * parameter, but this call passes it unextended (an s16 prototype adds sll/sra
- * here, measured). */
+/* Not the bb2.h spelling: the definition takes an s16 first parameter, but
+ * this call passes it unextended (an s16 prototype adds sll/sra here). */
 extern s32 func_80060414(s32, s32, s32);
 
-/* func_800164F8 -- spins 10000 times executing `break 1` (0x0001000D). The loop
- * is ordinary C; only the break has no C form, so it is a one-instruction
- * island (spelled as its word: maspsx cannot assemble `break` with a code
- * operand). */
+/* func_800164F8 -- spins 10000 times executing `break 1` (0x0001000D), spelled
+ * as its word: maspsx cannot assemble `break` with a code operand. */
 void func_800164F8(void) {
     s32 i;
 
@@ -118,8 +112,6 @@ void gpu_SetDrawEnvBg(s32 a0, s32 a1, s32 a2, s32 a3) {
     }
 }
 
-/* --- Decompiled functions --- */
-
 u32 file_GetFlag0(void) { return D_80106A50.flags & 1; }
 
 u32 file_GetFlag1(void) { return (D_80106A50.flags >> 1) & 1; }
@@ -128,11 +120,9 @@ u32 file_GetFlag2(void) { return (D_80106A50.flags >> 2) & 1; }
 
 void func_800167EC(void) {
     s32 i;
-    /* FAKE: pointer to the record, admitted on SOTN precedent (owner rulings
-     * Q50, Q53; that function also writes its global directly beside the
-     * pointer) -- cse addresses the header stores off rec's register and loop.c
-     * strength-reduces rec->times[i] into a pointer copied from it, so unk_00
-     * is stored at 0(base) and the loop walks base by 8. */
+    /* FAKE: pointer to the record beside direct global writes (Q50, Q53):
+     * the header stores go off rec's register and the loop walks a pointer
+     * copied from it by 8. */
     FileRecord *rec = &D_80106A50; /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
 
     D_800A3710 = 0;
@@ -333,16 +323,9 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
 
     select = 0;
     special = 0;
-    /* FAKE: pass-through local handle on the parameter (pointer-alias family,
-       .claude/rules/pointer-alias-fake-exception.md exact-scope bullet 3),
-       consumed once at the DrawOTag call site; effect: the prologue's
-       (save,init) group for $s5 emits third instead of first.
-       mechanism: combine.c's i2/i3 merge folds `p1 = a0` into this later copy
-       and leaves it at the LATER position, so sched.c:3256's parameter-copy pin
-       (leading run of hard-register-source SETs) no longer applies, sched1's
-       birthing_insn_p boost (sched.c:2504) emits it after the two init insns,
-       and sched2's INSN_LUID tie-break (sched.c:2462) orders the groups
-       s1,s2,s5. Removing it scores 4. */
+    /* FAKE: pass-through handle on the parameter, used once at DrawOTag;
+       moves the prologue's $s5 save/init group from first to third. Removed:
+       score 4 (pointer-alias-fake-exception) */
     ot_base = arg0;
     if (D_800A38DC == 2) {
         special = D_800A389A < 1;
@@ -373,13 +356,9 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
         func_8005C6D0();
         DrawSync(0);
         VSync(2);
-        /* FAKE: single-level do { } while (0) wrap around the two env
-           publishes (do-while-zero family,
-           .claude/rules/do-while-zero-exception.md); effect: env is seated in
-           $s0 and select in $s1, the target's assignment. mechanism: the wrap's
-           loop notes make flow.c weight env's three in-loop references at
-           loop_depth 3 instead of 2, lifting its global.c allocno_compare
-           priority above select's. Unwrapped, score 21. */
+        /* FAKE: do-while(0) raises env's loop-depth weight above select's,
+           seating env in $s0 and select in $s1; unwrapped: score 21
+           (do-while-zero-exception) */
         do {
             PutDispEnv(&env->disp);
             PutDrawEnv(&env->draw);
@@ -449,9 +428,8 @@ void main(void) {
     /* D_800A390D (frames left to skip presenting) as read this frame; the next
      * frame passes it to func_80019568. */
     s32 skip;
-    /* FAKE: second handle on D_800A3770 - the target keeps &D_800A3770 in $s4
-     * for the whole loop (lui/addiu at 0x80017260); D_800A3770[idx] at both
-     * uses re-forms the address there and scores 14. */
+    /* FAKE: second handle on D_800A3770 keeps its address in $s4 for the
+     * whole loop; D_800A3770[idx] at both uses: score 14 */
     u32 *tbl;
 
     __main();
@@ -549,13 +527,12 @@ call_func:
 void func_800174F4(void) {
     u32 ot[2];
     DRAWENV env;
-    /* temp: holds two values, the case-1/2 fade loop's iteration count and
-     * the case-20 D_800A37A8[] code passed to func_80060414 (owner ruling 11).
-     */
+    /* holds two values: the case-1/2 fade loop's iteration count, then the
+     * case-20 D_800A37A8[] code passed to func_80060414 (owner ruling 11) */
     s32 temp;
     s32 prim;
-    /* temp2: holds two values, the g_disp_enable switch selector and the
-     * case-20 D_800A37A0 limit (owner ruling 11). */
+    /* holds two values: the g_disp_enable switch selector, then the case-20
+     * D_800A37A0 limit (owner ruling 11) */
     s32 temp2;
 
     prim = (s32)D_800F33D8;
@@ -596,10 +573,9 @@ void func_800174F4(void) {
         if (0xF0 / (temp2 + 1) >= ++D_800A37C0) {
             break;
         }
-        /* FAKE: the common `D_800A38F8 = cur + 1` store is written in both
-         * arms (unconditional-common-store duplication, F7) -- target computes
-         * `addiu v0,a2,1` in each arm; a single store hoisted above the `if`
-         * (131 insns) or a hoisted `next` (135) does not reproduce that. */
+        /* FAKE: the common `D_800A38F8 = cur + 1` store written in both arms
+         * (F7), as the target computes it per arm; one hoisted store gives 131
+         * insns, not the target's count. */
         if (cur == temp2) {
             D_800A38F8 = cur + 1;
         } else {
@@ -621,10 +597,8 @@ void func_800174F4(void) {
 
 void obj_ClearAll(void) {
     s32 i;
-    /* FAKE: the table walked by byte offset: the target's one induction
-       variable is the record's offset (`li v0,364` ... `addiu v0,v0,-52`);
-       indexed by record, loop.c keeps the index beside its scaled copy:
-       score 4. */
+    /* FAKE: the table walked by byte offset, the target's one induction
+       variable; indexed by record: score 4 */
     for (i = 7 * sizeof(Func80017A44Output); i >= 0;
          i -= sizeof(Func80017A44Output)) {
         ((Func80017A44Output *)((u8 *)g_file_data_buf + i))->points = 0;
@@ -829,8 +803,7 @@ void sys_StubEmpty2(void) {}
 
 void sys_StubEmpty3(s32 arg0, s32 arg1, s32 arg2) {}
 
-/* Q65: this file's initialized small data (.sdata), in address order; values
- * from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order. */
 s32 D_800A30DC = 0x13400;
 /* not named by any code or data: size from the gap */
 s32 D_800A30E0[2] = {(s32)g_str_build_date, 0x190};

@@ -6,11 +6,8 @@
 
 extern u16 D_800A26E4[];
 
-/* PsyQ LIBSND VM_N2P: note2pitch — a second exported entry point that splat
-   merged into func_80086818 (docs/naming/libscan/
-   boundary_fixes.md); must stay immediately after its former host so the
-   link order reproduces the original byte layout. C ref: psyz
-   decomp/src/libsnd/vm_n2p.c (PsyQ 4.0). */
+/* Kept right after vm_init's _SsVmInit in link order (bb2.ld), reproducing
+ * the original layout. */
 u16 note2pitch(void) {
     s32 octave;
     s32 note;
@@ -44,9 +41,6 @@ u16 note2pitch(void) {
     return pitch;
 }
 
-/* PsyQ 4.0 LIBSND vmanager (VM_N2P): note2pitch2 — verbatim-linked Sony
-   object; C ref: sotn-decomp
-   src/main/psxsdk/libsnd/vmanager.c */
 s32 note2pitch2(u16 arg0, u16 arg1) {
     s16 octave;
     s16 var_a2;

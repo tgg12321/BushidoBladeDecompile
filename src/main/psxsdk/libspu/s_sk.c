@@ -3,10 +3,9 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-/* PsyQ 4.0 LIBSPU s_sk: SpuSetKey — verbatim-linked Sony object;
- * C ref: sotn-decomp src/psxsdk/libspu/s_sk.c shape + PsyQ 4.0
- * S_SK object relocs (_spu_RQ = one u16[4]). Volatile decls are Ruling-4
- * ground-truth-codegen grants (volatile_extern_allowlist.txt:40-44). */
+/* C ref: sotn-decomp src/psxsdk/libspu/s_sk.c; the S_SK relocs make _spu_RQ
+ * one u16[4]. Its volatile declarations are Ruling-4
+ * (legitimate-volatile-interrupt-touched) grants. */
 
 void SpuSetKey(s32 on_off, u32 voice_bit) {
     u16 lo;

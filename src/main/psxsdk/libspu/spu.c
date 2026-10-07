@@ -8,7 +8,6 @@
 #include "libspu_internal.h"
 #include <psxsdk/libapi.h>
 
-/* Declarations from the old main.c's head that this module uses. */
 extern s32 _spu_mem_mode;
 extern s32 _spu_mem_mode_unit;
 extern volatile u32 *D_800A2CEC;
@@ -20,23 +19,18 @@ extern s32 D_800A2D2C;
 extern s32 D_800A2D30;
 extern s32 D_800A2D34;
 /* Sony _spu_madr/_spu_bcr/_spu_chcr: pointers to the SPU DMA (ch4) MMIO
- * registers 0x1F8010C0/C4/C8 (asm/data/7D920.data.s); pointee volatile per
- * mmio-volatile-type-level. */
+ * registers 0x1F8010C0/C4/C8; pointee volatile per mmio-volatile-type-level. */
 extern volatile s32 *D_800A2CE0;
 extern volatile s32 *D_800A2CE4;
 extern volatile s32 *D_800A2CE8;
 
-/* SPU-module debug strings (rodata 0x800163D8..0x80016420), defined before
- * func_80088740 (_spu_init), their first user. bb2.ld links this object's
- * .rodata after sstick.o's jump table and ahead of s_sca.o's (the tables of
- * func_8008AF9C, SpuSetCommonAttr), in link order. */
+/* SPU-module debug strings (rodata 0x800163D8..0x80016420). */
 const char D_800163D8[16] = "SPU:T/O [%s]\n";
 const char D_800163E8[16] = "wait (reset)";
 const char D_800163F8[20] = "wait (wrdy H -> L)";
 const char D_8001640C[20] = "wait (dmaf clear/W)";
 
-/* PsyQ 4.0 LIBSPU spu.c: _spu_init — verbatim-linked Sony object;
-   C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_init) */
+/* C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_init) */
 s32 _spu_init(s32 a0) {
     u32 i;
     s32 channel;
@@ -129,9 +123,8 @@ s32 _spu_init(s32 a0) {
     return 0;
 }
 
-/* PsyQ LIBSPU spu.c: `_spu_FwriteByIO` (static) — verbatim-linked Sony object.
-   C refs: Xeeynamo/psyz decomp/src/libspu/spu.c:111 and
-   sotn-decomp psxsdk/libspu/spu.c (_spu_writeByIO). */
+/* C refs: psyz decomp/src/libspu/spu.c, sotn-decomp psxsdk/libspu/spu.c
+   (_spu_writeByIO). */
 
 void _spu_FwriteByIO(u8 *addr, u32 size) {
     u16 spustat;
@@ -182,19 +175,13 @@ void _spu_FwriteByIO(u8 *addr, u32 size) {
     }
 }
 
-/* PsyQ LIBSPU spu.c: _spu_FiDMA + _spu_Fr_ — two further exported entry
-   points that splat merged into func_800889D4
-   (docs/naming/libscan/boundary_fixes.md); both must stay immediately after
-   their former host, in address order, so the link order reproduces the
-   original byte layout. _spu_FiDMA.s also keeps the address label that marks
-   its entry point, since that address is referenced as data elsewhere.
-   Do NOT spell that label's symbol name in this file: engine/queue.py's
-   not_a_c_function_text() word-searches the raw .c text (comments included)
-   and would misread it as a C function. */
-/* PsyQ LIBSPU spu.c `_spu_FiDMA` (C ref: Xeeynamo/psyz
-   decomp/src/libspu/spu.c:161). SPU DMA-completion interrupt handler: waits for
-   the transfer-mode bits (0x30) in SPUCNT to clear with a bounded spin, then
-   dispatches either the installed transfer callback or the SPU DMA event. */
+/* _spu_FiDMA and _spu_Fr_ (split from the function splat merged them into)
+   must stay right after it, in address order. Do NOT spell the data label of
+   _spu_FiDMA's entry in this file: engine/queue.py word-searches the raw .c
+   text and would misread it as a C function. */
+/* SPU DMA-completion interrupt handler: waits for the transfer-mode bits
+   (0x30) in SPUCNT to clear with a bounded spin, then dispatches either the
+   installed transfer callback or the SPU DMA event (psyz libspu/spu.c). */
 void _spu_FiDMA(void) {
     u32 timeout;
 
@@ -216,10 +203,8 @@ void _spu_FiDMA(void) {
     DeliverEvent(0xF0000009, 0x20);
 }
 
-/* PsyQ 4.0 LIBSPU spu.c: _spu_Fr_ — unreferenced in BB2 (dead code carried
-   by the linked Sony object; SpuRGetAllKeysStatus/S_SCA precedent).
-   C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_r_); this build's
-   WASTE_TIME() is the out-of-line _spu_Fw1ts call. */
+/* Unreferenced in BB2. C ref: sotn-decomp libspu/spu.c (_spu_r_); this
+   build's WASTE_TIME() is the out-of-line _spu_Fw1ts call. */
 void _spu_Fr_(s32 addr, u16 spu_addr, s32 size) {
     _spu_RXX->rxx.trans_addr = spu_addr;
     _spu_Fw1ts();
@@ -232,8 +217,7 @@ void _spu_Fr_(s32 addr, u16 spu_addr, s32 size) {
     *D_800A2CE8 = 0x1000200;
 }
 
-/* PsyQ 4.0 LIBSPU spu.c: _spu_t — verbatim-linked Sony object;
-   C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_t) */
+/* C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_t) */
 typedef char *va_list;
 #define va_start(ap, parmN) ((ap) = (va_list)(&(parmN) + 1))
 #define va_arg(ap, T) ((ap) += sizeof(T), *(T *)((ap) - sizeof(T)))
@@ -402,11 +386,8 @@ void _spu_FsetDelayR(void) {
 
 /* LIBSPU spu.c WASTE_TIME(): the 4.0 rev's out-of-line busy-wait. */
 void _spu_Fw1ts(void) {
-    /* FAKE: volatile locals admitted on SOTN precedent (owner rulings Q50
-       route A, Q53) -- every access to i and v is a $sp-slot round-trip, as
-       in the target; the plain-local spelling keeps both in registers
-       (score 25). SOTN's WASTE_TIME() runs the same counter/accumulator
-       loop on its volatile pair (src/main/psxsdk/libspu/spu.c:7-11). */
+    /* FAKE: volatile locals make every access to i and v a stack round-trip;
+       plain locals stay in registers: score 25 (SOTN WASTE_TIME(); Q50, Q53) */
     volatile s32 i;       /* SOTN: src/main/psxsdk/libspu/spu.c:14 @db41b28 */
     volatile s32 v = 0xD; /* SOTN: src/main/psxsdk/libspu/spu.c:15 @db41b28 */
     for (i = 0; i < 0x3C; i++) {

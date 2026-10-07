@@ -1,12 +1,7 @@
 /* save_vc_ctrl alone. .text 0x800414FC (ROM 0x31CFC). Start boundary: LEGACY (a
- * tooling split inside the -G8 run, no evidence either way). One function per
- * TU, so the -G8 TARGET_FILE_SWITCHING float cannot reorder anything here.
- *
- * save_vc_ctrl is plain C: its 8-byte frame that no instruction touches is
- * cc1's stack slot for the folded `i != -1` loop guard
- * (.claude/rules/phantom-slot-frame-lever.md, producer 1), as in
- * gpu_SetDrawMoveArray (src/main/2B344.c).
- */
+ * tooling split inside the -G8 run, no evidence either way). Its untouched
+ * 8-byte frame is cc1's stack slot for the folded `i != -1` loop guard
+ * (phantom-slot-frame-lever). */
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"

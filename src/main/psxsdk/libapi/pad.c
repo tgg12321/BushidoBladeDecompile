@@ -4,12 +4,10 @@
 #include "common.h"
 #include <psxsdk/libapi.h>
 
-/* Declarations from the file this module was split from (src/main/64FD8.c, ex
- * text1b_b.c). */
 s32 _Pad1(void);
-/* SIO port 0, 0x1F801040 (asm/data/7D920.data.s:23915) */
+/* SIO port 0, 0x1F801040 */
 extern volatile SioRegs *D_8009BD84;
-/* I_STAT (I_MASK at [1]), 0x1F801070 (asm/data/7D920.data.s:23921) */
+/* I_STAT (I_MASK at [1]), 0x1F801070 */
 extern volatile u32 *D_8009BD88;
 
 extern s32 D_8009BD80;
@@ -100,14 +98,12 @@ s32 RemovePatchPad(void) {
     return 1;
 }
 
-/* PsyQ 4.0 LIBAPI PAD: _Pad1 (static) — verbatim-linked Sony object. */
+/* _Pad1 (static) */
 s32 _Pad1(void) {
-    /* FAKE: volatile delay counter, only i[0] used. volatile (owner rulings
-       Q50 route A / Q48 route B, Q53): every access to the counter is a
-       $sp-slot round-trip in the target; a plain local runs the loop in a
-       register (score 15). [3]: frame layout -- the target frame is 16 bytes,
-       a scalar counter gives 8 (score 2). SOTN's v_wait counts down element
-       0 of a volatile array the same way. */
+    /* FAKE: volatile delay counter, only i[0] used: each access is a $sp-slot
+       round-trip (plain local scores 15); [3] is frame layout (16-byte frame;
+       a scalar gives 8, score 2). SOTN's v_wait does the same (Q50 route A /
+       Q48 route B, Q53). */
     volatile s32 i[3]; /* SOTN: src/main/psxsdk/libetc/vsync.c:52 @db41b28 */
     D_8009BD84->ctrl = 0;
     i[0] = 10;
@@ -128,7 +124,7 @@ s32 _IsVSync(void) {
     if ((p[0] & 1) != 0) {
         ret = 1;
     } else {
-        /* FAKE: two-set else arm defeats jump.c store-flag fold
+        /* FAKE: two-set else arm defeats the store-flag fold
          * (dead-store-fake-exception) */
         ret = 1;
         ret = 0;

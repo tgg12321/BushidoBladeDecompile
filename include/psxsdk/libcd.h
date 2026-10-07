@@ -9,16 +9,10 @@
 
 #include "common.h"
 
-/* libcd CdlATV, the attenuator block CdMix takes (CdMix(CdlATV *)): the
- * CD-audio mix currently applied (g_cd_atv, cdrom_SetMix) and the fade target
- * (D_800A36B8, func_80035F78) that func_80036140 steps toward and finally
- * copies over it with one struct assignment (the unaligned lwl/lwr/swl/swr at
- * 80036310). Both were tentative definitions in the CD module's file:
- * ASPSX 2.34 gives such a COMMON symbol gp only at its base, so byte 0 is
- * gp-relative and bytes 1..3 are lui/%lo in all three accessors. Modelled by
- * maspsx for every file from the declarations (owner Q62); the tentative
- * definitions are in the CD module's two -G8 units, src/main/26730.c and
- * src/main/26940.c. */
+/* libcd CdlATV, the attenuator block CdMix takes: the CD-audio mix currently
+ * applied (g_cd_atv, cdrom_SetMix) and the fade target (D_800A36B8) that
+ * func_80036140 steps toward and finally copies over it. Both are COMMON
+ * symbols, gp-relative only at byte 0 (ASPSX 2.34, Q62). */
 typedef struct {
     u8 val0;
     u8 val1;
@@ -39,16 +33,11 @@ typedef struct {
  * bytes). */
 typedef void (*CdlCB)(u8, u8 *);
 
-/* PsyQ 4.0 LIBCD cdread.c module state (BB2 links Sony's CDREAD object
- * verbatim; SOTN's psxsdk cdread.c names the same block D_80032DBC): one
- * volatile block at 0x800A14D0, preceded by CD_ReadCallbackFunc
- * (g_CdReadCallback_func, 0x800A14CC) and followed by the saved result pointer
- * D_800A1504. Evidence it is one object: CdReadSync caches &t1 in $s1 and reads
- * cnt / t2 / sectors at -0x8 / -0x4 / -0x1C off it (0x800827E8), and the
- * la-form member reads in cd_read_retry / CdReadBreak / CdRead / cb_read are
- * cse's related-value addressing of one symbol. All its users are in
- * src/main/psxsdk/libcd/cdread.c (the Q99 admission in
- * .claude/rules/aggregate-merge-family.md names this declaration). */
+/* PsyQ 4.0 LIBCD cdread.c module state (SOTN's cdread.c: D_80032DBC): one
+ * volatile block at 0x800A14D0, between g_CdReadCallback_func and the saved
+ * result pointer D_800A1504. One object: CdReadSync reads cnt / t2 / sectors
+ * off a cached &t1. Users are all in libcd/cdread.c (Q99,
+ * aggregate-merge-family). */
 typedef struct {
     /* 0x00 */ s32 sectors;   /* D_800A14D0 */
     /* 0x04 */ s32 buf;       /* D_800A14D4 */

@@ -1,13 +1,14 @@
 /* 147 game functions. .text 0x80060A68 (ROM 0x51268). Start boundary: PHASE
- * (rodata-align section 9), moved by the per-file gp model. */
+ * (rodata-align section 9), moved by the per-file gp model (Q65). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
 #include "gte.h"
 
-/* func_80060A68 .. func_80060E38 moved here from text1b.c: the file boundary
- * follows the per-file gp evidence (owner ruling Q65). */
+/* func_80060A68 .. func_80060E38 belong here by the per-file gp evidence
+ * (Q65). */
+
 /* Q65: this file's statics (.sbss, allocated per file in link order by
  * PSYLINK), in address order. */
 static POLY_FT4 *D_800A3420;
@@ -59,13 +60,8 @@ static u16 *D_800A34E0;
 static u32 *D_800A34E4;
 static u32 *D_800A34E8;
 static Unk1F8000B8Union *D_800A34EC;
-/* Two s16 slots at 0x800A34F0, indexed as one array. Object model evidence
- * (the original binary): asm/funcs/func_800678A8.s
- * reads the pair through ONE indexed access, `lh %lo(sym)(base + arg0*2)` with
- * the base folded to 0x800A34F0 - 8 for arg0 = 4/5 (callers func_800677B8 /
- * func_800677F4), and asm/funcs/func_80067D14.s forms the same folded base with
- * %hi/%lo. func_80061C00 writes slot 0 or slot 1 with the same value. Replaces
- * the splat per-word scalars D_800A34F0 / D_800A34F2. */
+/* Two s16 slots at 0x800A34F0, indexed as one array (func_800678A8 and
+ * func_80067D14 read the pair through one indexed access). */
 static s16 D_800A34F0[2];
 static s32 D_800A34F4; /* not named by any code or data: size from the gap */
 static s32 D_800A34F8;
@@ -83,24 +79,14 @@ static Unk8009BD24Block *D_800A3524;
 static s16 D_800A3528;
 static s32 D_800A352C;
 
-/* func_80060A68 runs the command in the block D_800A3468 points at
- * (Unk1F800000Unk00, game.h; each caller first points it at D_800F116C). It
- * copies the three words at unk0C and the three halfwords at unk10 into unk20 /
- * unk18 and points D_800A347C / D_800A3478 at those copies. With idx the
- * block's low halfword, it clears D_800F10D0[idx], calls the
- * chractar_use_pset_combo_id_table entry D_8009BA60[idx] + D_800F10D0[idx],
- * stores the result through unk14, and sets D_800A32BC to 0xA when bit 21
- * (0x200000) of the word is set.
- *
- * Codegen note: the repeated `lw ?,0xC($v1)` / `lw ?,0x10($v1)` loads and the
- * block-pointer reloads after the call and after the `sb` come from cse (each
- * store through the pointer, and the call, invalidates its memory table,
- * tools/gcc-2.7.2/cse.c:1703-1719), not from the source.  Member references set
- * MEM_IN_STRUCT_P, which lets sched.c `true_dependence`
- * (tools/gcc-2.7.2/sched.c:826-841) move the second low-halfword read (the
- * D_8009BA60 index) above the scalar store to D_800A347C before it, as the
- * target does; read through `*(u16 *)D_800A3468` it stays below that store and
- * does not match. */
+/* Runs the command in the block D_800A3468 points at (idx = the block's low
+ * halfword, unk00.h): copies the three words at unk0C and the three halfwords
+ * at unk10 into unk20 / unk18, points D_800A347C / D_800A3478 at the copies,
+ * clears D_800F10D0[idx], calls the chractar_use_pset_combo_id_table entry
+ * D_8009BA60[idx] + D_800F10D0[idx], stores the result through unk14, and sets
+ * D_800A32BC to 0xA when bit 21 of unk00.w is set. Member reads (not
+ * *(u16 *)D_800A3468) let the second idx read (the D_8009BA60 index) rise
+ * above the D_800A347C store, as in the target. */
 void func_80060A68(void) {
     extern s32 D_800A32BC;
 
@@ -177,10 +163,8 @@ void func_80060C60(void) {
 }
 
 s32 func_80060CB8(s32 arg0, s32 arg1) {
-    /* FAKE: single forward-order param alias -- prologue pair order
-       (owner ruling, param-local-alias-prologue-pair-flip). Mechanism: cse
-       unifies arg0/new_var, combine sinks the single-use a0 entry copy
-       below a1's, flipping the s2/s1 save+copy pair order to target. */
+    /* FAKE: single forward-order param alias; flips the s2/s1 save+copy pair
+     * order to the target's (param-local-alias-prologue-pair-flip) */
     unsigned int new_var;
     RECT s;
     s32 v;
@@ -266,18 +250,16 @@ void func_80060E38(s16 *arg0, s32 *arg1) {
     SPAD51268->unk00.unk08 = arg1;
 }
 
-/* Declarations from the file this TU was split from (text1b.c). */
 extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
 extern s32 D_800F1180;
-s32 printf(s32 *, s32); /* extern */
+s32 printf(s32 *, s32);
 extern void AddPrim(void *, void *);
 void func_80060A68(void);
 void func_80060B70(void);
 void func_80060C60(void);
 void func_80060E38(s16 *arg0, s32 *arg1);
 
-/* D_800158E0: 24B @ 0x800158E0 — "eff prim over :%d \n" + alignment + empty
- * trailing string */
+/* the message, alignment and an empty trailing string */
 const char D_800158E0[24] = "eff prim over :%d \n";
 
 void func_80061064(s16 *a0, s32 *a1) {
@@ -458,11 +440,9 @@ end:
 extern u8 D_800F115C;
 
 void func_80061658(s32 *arg0, s32 arg1) {
-    /* FAKE: local pointer alias to D_800F116C, mechanism: base-register
-     * allocation / address-materialization caching in local-alloc (the alias
-     * gives GCC one pseudo holding &D_800F116C, kept live in $a0 across the
-     * switch instead of being re-materialized per use); the direct-global
-     * form does not match.  Same alias as the sibling func_80061710. */
+    /* FAKE: local pointer alias to D_800F116C keeps the address live in $a0
+     * across the switch; the direct-global form does not match (as in
+     * func_80061710) */
     Unk1F800000Unk00 *v1 = &D_800F116C;
     s32 *p;
     u8 *q;
@@ -494,11 +474,8 @@ done:
 }
 
 void func_80061710(s32 *arg0, s32 arg1) {
-    /* FAKE: local pointer alias to D_800F116C, mechanism: base-register
-     * allocation / address-materialization caching in local-alloc (the alias
-     * gives GCC one pseudo holding &D_800F116C, kept live in $a0 across the
-     * switch instead of being re-materialized per use); the direct-global
-     * form does not match. */
+    /* FAKE: local pointer alias to D_800F116C keeps the address live in $a0
+     * across the switch; the direct-global form does not match */
     Unk1F800000Unk00 *v1 = &D_800F116C;
     s32 *p;
     u8 *q;
@@ -871,12 +848,9 @@ void func_800620B8(s16 *arg0, s32 *trans) {
     s16 width;
     s16 height;
     /* FAKE: pointer aliases of the four sprite tables
-       (pointer-alias-fake-exception). All four stay live across the loop:
-       strip32 is set at the loop top so loop.c hoists it into the pre-header,
-       after the entry test, where the target sets $fp; the other three lose
-       global allocation, so reload rebuilds each address in $t0 at its use, as
-       the target does. Tables used directly: 47; any one of the three used
-       directly: 3-7. */
+     * (pointer-alias-fake-exception): strip32 is set at the loop top so it is
+     * hoisted where the target sets $fp; the other three are rebuilt in $t0 at
+     * each use. Tables used directly: 47; any one of the three: 3-7. */
     TexRec *strip32; /* FAKE: alias of D_8009BA00 */
     TexRec *alt32;   /* FAKE: alias of D_8009BA50 */
     TexRec *strip16; /* FAKE: alias of D_8009BA30 */
@@ -925,17 +899,11 @@ void func_800620B8(s16 *arg0, s32 *trans) {
             *D_800A34A8 = 0x1C2;
             *D_800A34AC = 0xE1;
         sel_a:
-            /* FAKE: `- strip32 + strip32` round trip (combine-foldable
-               chain-extender): combine folds it back to the direct `frame * 8 +
-               strip32` (same RTL, zero bytes), but flow.c has already counted
-               the two extra uses of strip32 (nrefs 3 -> 7), so global.c ranks
-               it above sv/interp and gives it $fp, as the target has it.
-               Without it: 35. The sum is formed in integers and converted to
-               TexRec *: in pointer arithmetic (`strip32 + n - strip32 +
-               strip32`, `&strip32[n] - strip32 + strip32`) strip32 comes first
-               in the addu (`addu v1,s8,a0` for the target's `addu a0,a0,s8`):
-               4; plain
-               `&strip32[n]`: 38. */
+            /* FAKE: `- strip32 + strip32` round trip: combine folds it away,
+             * but the two extra uses rank strip32 high enough to get $fp;
+             * without it: 35. As pointer arithmetic the addu operands swap: 4;
+             * plain `&strip32[n]`: 38. (combine-foldable chain-extender,
+             * dead-store-fake-exception) */
             D_800A348C = D_800A3488 =
                 (TexRec *)(((u32)D_800A32B8 % 6) * sizeof(*strip32) +
                            (s32)strip32 - (s32)strip32 + (s32)strip32);
@@ -969,11 +937,9 @@ void func_800620B8(s16 *arg0, s32 *trans) {
         v->vy = D_800F1198[i].unk4 / 8 - D_800A3470[1];
         v->vz = D_800F1198[i].unk8 - D_800A3470[2];
         ApplyRotMatrixLV(v, tv);
-        /* FAKE: SetTransMatrix reads only m->t (+0x14): hand it the address
-           0x14 below tv so tv is loaded as the translation (base+0x10/0x12 hold
-           w/h -- there is no whole MATRIX here). Spelled (MATRIX *)base, base
-           stays live across the loop: score 65, 502 insns for 501 (an 88-byte
-           frame for 80; base in $s2 for the target's $s0). */
+        /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the address 0x14
+         * below tv, it loads tv as the translation (there is no whole MATRIX
+         * here). Spelled (MATRIX *)base: score 65. */
         SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
         RotTransPers(sv, D_800A34B8, interp, D_800A34CC);
         /* gte_stsz(r0) --- inline_c.h :1042-1046 */
@@ -1090,9 +1056,8 @@ s32 func_8006295C(void) {
     POLY_FT4 *end;
 
     /* FAKE: the work-area base (D_800A34EC) is staged through `prim` before
-       prim takes its real job as the quad cursor; mechanism: the second write
-       to prim's pseudo keeps combine from folding `mats = base + 0x78` into
-       the loop's giv init (target keeps `move s4,v0`) and puts base in s1. */
+     * prim becomes the quad cursor; keeps `mats = base + 0x78` out of the
+     * loop's giv init (target keeps `move s4,v0`) and puts base in s1. */
     prim = (POLY_FT4 *)D_800A34EC;
     count = 0;
     mats = (MATRIX *)((u8 *)prim + 0x78);
@@ -1187,11 +1152,9 @@ s32 func_8006295C(void) {
         }
     }
     if (D_800A37D4 != prim) {
-        /* FAKE: `end` keeps the fill position and prim, the quad cursor,
-           walks the same POLY_FT4 buffer again from its start to link each
-           quad (target: prim s1, the zbuf[k] giv s0, end s2). Linked through
-           a fresh cursor local instead, prim loses the tail refs and drops
-           to s2, the cursor takes s0 and the giv s1: score 37. */
+        /* FAKE: `end` keeps the fill position and prim walks the same buffer
+         * again to link each quad; with a fresh cursor local the registers
+         * rotate: score 37. */
         end = prim;
         for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
             AddPrim(g_gpu_ot_ptr + zbuf[k], prim);
@@ -1266,9 +1229,7 @@ s32 func_80063084(void) {
     interp = &base->unk34;
     fade = &base->unk38;
     z = &base->unk3C;
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r0) --- PsyQ Run-time Library
-     * Release 4.3 inline_c.h (DMPSX v3) :297-310,
-     * verbatim body, operand and clobbers. */
+    /* gte_SetRotMatrix(r0) --- PsyQ 4.3 inline_c.h :297-310 */
     __asm__ volatile(
         "lw     $12, 0(%0)\n"
         "lw     $13, 4(%0)\n"
@@ -1308,16 +1269,12 @@ s32 func_80063084(void) {
                     sv->vy = D_800F0E38[i].unk4 - D_800A3470[1];
                 }
                 ApplyRotMatrix(sv, tv);
-                /* FAKE: SetTransMatrix reads only m->t (+0x14): hand it the
-                   address 0x14 below tv so tv is loaded as the translation.
-                   Spelled (MATRIX *)base, base stays live across the loops:
-                   score 55, 666 insns for 661 (+20 bytes; a 104-byte frame for
-                   96, base loaded into $s7 for the target's $v0). */
+                /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the
+                 * address 0x14 below tv, it loads tv as the translation.
+                 * Spelled (MATRIX *)base: score 55. */
                 SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
                 RotTransPers(v, D_800A34B8, interp, D_800A34CC);
-                /* PsyQ libgte inline macro gte_stsz(r0) --- PsyQ Run-time
-                 * Library Release 4.3 inline_c.h (DMPSX v3) :1042-1046,
-                 * verbatim body, operand and clobbers. */
+                /* gte_stsz(r0) --- PsyQ 4.3 inline_c.h :1042-1046 */
                 __asm__ volatile(
                     "swc2   $19, 0(%0)\n"
                     :: "r"(D_800A34D0) : "memory");
@@ -1446,11 +1403,8 @@ u8 func_80063AF0(void) {
 extern s32 D_800F10D4;
 
 u8 func_80063B34(void) {
-    /* FAKE: the word is read through an s32 * to it, not as
-     * D_800A3468->unk00.w: a member read is MEM_IN_STRUCT_P, so sched.c
-     * true_dependence lets it rise above the store to D_800F10D4, which then
-     * fills its load delay (score 6, 16 insns; the target reads it after that
-     * store and waits with a nop, 17). */
+    /* FAKE: the word is read through an s32 *: a member read rises above
+     * the D_800F10D4 store and fills its load delay: score 6 */
     s32 *v1 = &D_800A3468->unk00.w;
     D_800F10D4 = 1;
     D_800A345C[1] = (*v1 >> 17) & 3;
@@ -1472,17 +1426,16 @@ u8 func_80063BA4(void) {
 extern SVECTOR D_800F1000[][10];
 
 /* func_80063BD0 -- slot allocator for lane `idx`: D_800A344C[idx] counts live
- * entries, and D_800A3454[idx] is the per-slot in-use bitmask.  While fewer
+ * entries, and D_800A3454[idx] is the per-slot in-use bitmask. While fewer
  * than 10 entries are live, take the lowest free bit, mark it, and fill that
  * slot's SVECTOR (D_800F1000[idx][slot]) and 3-word record
- * (D_800F0EC8[idx][slot], Unk800F0EC8Record in include/game.h) from the source
- * pointers D_800A3478 / D_800A347C.  Once the lane is full, the counter wraps
- * through 10..19 and the slot is overwritten in rotation. */
+ * (D_800F0EC8[idx][slot]) from D_800A3478 / D_800A347C. Once the lane is
+ * full, the counter wraps through 10..19 and slots are overwritten in
+ * rotation. */
 u8 func_80063BD0(s32 idx) {
-    /* FAKE: named intermediate - the D_800A3454[idx] word is read before `1 <<
-       i`, so loop.c hoists its address into the preheader ahead of the constant
-       1 (target: address in $t4, 1 in $t3); read in the test, or after mask:
-       score 6, the two swap */
+    /* FAKE: named intermediate - reading the D_800A3454[idx] word before
+     * `1 << i` hoists its address ahead of the constant 1; read in the test or
+     * after mask: score 6 */
     s32 bits;
     s32 mask;
     s32 i;
@@ -1515,24 +1468,19 @@ u8 func_80063BD0(s32 idx) {
 }
 
 /* Draw lane `lane`'s live slots (up to 10, see func_80063BD0): per slot whose
-   bit is set in D_800A3454[lane], emit one textured POLY_FT4 billboard at the
-   slot's position (relative to *D_800A3470) through the composite of
-   D_800A3474 and the slot's matrix, keep it when its depth is in range, then
-   link every new quad into the OT at its depth. Returns 1.
-   Ordinary C plus GTE islands, each the body of one PsyQ Run-time Library
-   Release 4.3 inline_c.h (DMPSX) macro -- gte_SetRotMatrix :297-310,
-   gte_ldclmv :150-159, gte_rtir :514-517, gte_stclmv :1148-1157,
-   gte_SetTransMatrix :360-369, gte_ldlv0 :101-110, gte_rt :494-497,
-   gte_stlvnl :1111-1117, gte_ldv3 :34-42, gte_rtpt :489-492,
-   gte_stsxy3 :906-912, gte_stsz :1042-1046, gte_ldv0 :16-20,
-   gte_rtps :484-487, gte_stsxy :900-904. Instruction text, "r" operands and
-   clobbers are the header's; only separators/whitespace differ, except that
-   the four command macros carry the post-DMPSX command word in place of the
-   header's DMPSX placeholder (this build has no DMPSX pass). The run from
-   the first gte_SetRotMatrix through gte_stlvnl is the expansion of PsyQ
-   gtemac.h gte_CompMatrix(D_800A3474, &mats[i], cm) (= gte_MulMatrix0 +
-   gte_SetTransMatrix/gte_ldlv0/gte_rt/gte_stlvnl), written out macro by
-   macro. */
+ * bit is set in D_800A3454[lane], emit one textured POLY_FT4 billboard at the
+ * slot's position (relative to *D_800A3470) through the composite of
+ * D_800A3474 and the slot's matrix, keep it when its depth is in range, then
+ * link every new quad into the OT at its depth. Returns 1.
+ * GTE islands, one PsyQ 4.3 inline_c.h macro each: gte_SetRotMatrix,
+ * gte_ldclmv, gte_rtir, gte_stclmv, gte_SetTransMatrix, gte_ldlv0, gte_rt,
+ * gte_stlvnl, gte_ldv3, gte_rtpt, gte_stsxy3, gte_stsz, gte_ldv0, gte_rtps,
+ * gte_stsxy -- the header's text except separators/whitespace and, in the four
+ * command macros, the post-DMPSX command word for the header's DMPSX
+ * placeholder. The run from the first gte_SetRotMatrix through gte_stlvnl is
+ * gtemac.h gte_CompMatrix (= gte_MulMatrix0 +
+ * gte_SetTransMatrix/gte_ldlv0/gte_rt/gte_stlvnl), written out macro by macro.
+ */
 s32 func_80063E10(s32 lane) {
     extern TexRec D_8009B920[];
     extern SVECTOR D_8009BBE4;
@@ -1552,11 +1500,8 @@ s32 func_80063E10(s32 lane) {
     s32 bit;
 
     /* FAKE: the work-area base (D_800A34EC) is staged through `prim` before
-       prim takes its real job as the quad cursor; mechanism: a fresh base
-       local is a single-block pseudo (used 6 times in block 0) that
-       local-alloc seats in v0, while prim's pseudo lives across the calls and
-       global.c seats it in s2, which is where the target holds the base
-       (`lw s2,%gp_rel(D_800A34EC)` ... `lw s2,%gp_rel(D_800A37D4)`). */
+     * prim becomes the quad cursor: prim's pseudo lives across the calls and
+     * gets s2, where the target holds the base (a fresh local gets v0). */
     prim = (POLY_FT4 *)D_800A34EC;
     mats = (MATRIX *)((u8 *)prim + 0x28);
     cm = (MATRIX *)((u8 *)prim + 0x168);
@@ -1587,12 +1532,9 @@ s32 func_80063E10(s32 lane) {
     *D_800A34B0 = ReadGeomScreen();
     for (i = 0; i < count; i++) {
         /* FAKE: the slot's mask is named `bit` inside the test and not read
-           again; mechanism: expand_binop expands the MEM operand's address,
-           then the assignment (li/sllv into bit), then loads, which stretches
-           the D_800A3454[lane] address pseudo's life so loop.c move_movables
-           (threshold * savings * lifetime >= 141 insns) hoists it to the
-           preheader (target spills it to 32(sp)); as a user variable bit also
-           keeps combine from turning the test into srav/andi. */
+         * again; it stretches the D_800A3454[lane] address's life so loop.c
+         * hoists it (target spills it to 32(sp)), and keeps combine from making
+         * the test srav/andi. */
         if (!(D_800A3454[lane] & (bit = 1 << i))) {
             continue;
         }
@@ -1801,11 +1743,8 @@ s32 func_80063E10(s32 lane) {
             prim++;
         }
     }
-    /* FAKE: `end` keeps the fill position and prim, the quad cursor, walks
-       the same POLY_FT4 buffer again from its start to link each quad;
-       mechanism: global.c priority -- with a fresh tail cursor prim loses the
-       tail refs and sxy outranks it (sxy s2 / prim s3, swapped vs the
-       target). */
+    /* FAKE: `end` keeps the fill position and prim walks the same buffer again
+     * to link each quad; with a fresh tail cursor sxy and prim swap s2/s3. */
     end = prim;
     for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
         D_800A34E8 = &prim->tag;
@@ -1825,10 +1764,8 @@ void func_800644FC(s32 *count, MATRIX *m, s32 idx) {
     s32 mask;
 
     for (i = 0; i < *count; i++) {
-        /* FAKE: `mask = 1 << i` in one statement lets loop.c move_movables
-           hoist the constant 1 into a callee-saved register (li s5,1 before
-           the loop, frame 56; score 12); setting mask twice keeps the target's
-           `li v0,1; sllv` inside the loop. */
+        /* FAKE: setting mask twice keeps the target's `li v0,1; sllv` inside
+         * the loop; `mask = 1 << i` hoists the 1 into s5: score 12. */
         mask = 1;
         mask <<= i;
         if (D_800A3454[idx] & mask) {
@@ -1930,11 +1867,8 @@ s32 func_800646E8(void) {
             pos->vz = D_800F0D78[i].z - D_800A3470[2];
             ApplyRotMatrixLV(pos, trans);
             /* FAKE: the MATRIX whose t[] is *trans: SetTransMatrix reads only
-               m->t (base+0x10/0x12/0x14 hold w/h/frame -- there is no whole
-               MATRIX here). Spelled (MATRIX *)((u8 *)base + 4), base stays live
-               across the loop: score 68, 496 insns for 490 (+24 bytes; a
-               112-byte frame for 104, base loaded into $s4 for the target's
-               $v0). */
+             * m->t (there is no whole MATRIX here). Spelled
+             * (MATRIX *)((u8 *)base + 4): score 68. */
             SetTransMatrix((MATRIX *)((u8 *)trans - 0x14));
             RotTransPers(sv, D_800A34B8, p, D_800A34CC);
             /* gte_stsz(r0) --- inline_c.h :1042-1046 */
@@ -2062,10 +1996,8 @@ void func_80064F20(void) {
 extern s32 D_800F10F4;
 
 s32 func_80064F68(void) {
-    /* FAKE: the third word is read through a pointer to it: read as
-     * D_800A347C[2] (an address sum, so MEM_IN_STRUCT_P) it lets sched.c
-     * anti_dependence move the store to D_800F10F4 above that read and the unk4
-     * store (score 7, 19 insns either way). */
+    /* FAKE: the third word is read through a pointer: as D_800A347C[2] the
+     * D_800F10F4 store moves above it and the unk4 store: score 7 */
     s32 *q = &D_800A347C[2];
     /* FAKE: named intermediate - with word 2 read inline, the D_800F10F4 store
        rises above the unk0 / unk4 stores and the word-2 read, and the
@@ -2084,10 +2016,8 @@ s32 func_80064F68(void) {
 extern s32 D_800F10F8;
 
 s32 func_80064FB4(void) {
-    /* FAKE: the third word is read through a pointer to it: read as
-     * D_800A347C[2] (an address sum, so MEM_IN_STRUCT_P) it lets sched.c
-     * anti_dependence move the store to D_800F10F8 above that read and the unk4
-     * store (score 7, 19 insns either way). */
+    /* FAKE: the third word is read through a pointer: as D_800A347C[2] the
+     * D_800F10F8 store moves above it and the unk4 store: score 7 */
     s32 *q = &D_800A347C[2];
     /* FAKE: named intermediate - with word 2 read inline, the D_800F10F8 store
        rises above the unk0 / unk4 stores and the word-2 read, and the
@@ -2106,12 +2036,8 @@ s32 func_80064FB4(void) {
 extern s32 D_800F10FC;
 
 s32 func_80065000(void) {
-    /* FAKE: the word is read through an s32 * to it, not as a member
-     * (D_800A3468->unk00.w, directly or through a block-pointer local): a
-     * member read is MEM_IN_STRUCT_P, so sched.c true_dependence lets it rise
-     * above the store to D_800F10FC, which then fills its load delay (score 9 /
-     * 8, 23 / 22 insns; the target reads it after that store and waits with a
-     * nop, 23). */
+    /* FAKE: the word is read through an s32 *, not as a member: a member read
+     * rises above the D_800F10FC store and fills its load delay: score 9 / 8 */
     s32 *q = &D_800A3468->unk00.w;
     /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
        (`sh`) rises above the unk4 store and the word-2 read (score 4) */
@@ -2450,12 +2376,8 @@ u8 func_800657B0(void) {
  * 2) and links one POLY_FT4 into the OT. Modes 6/7 re-run the body for the
  * paired mode (arg0 + 2, i.e. 8/9) via `goto again`; the re-run is guarded by
  * `arg0 < 9`, so modes 10/11 draw once.
- *
- * Eight GTE islands, each a PsyQ Run-time Library Release 4.3 inline_c.h
- * (DMPSX) macro body - instruction text, "r" operands and clobbers as the
- * header has them; only separators/whitespace differ, except that gte_rtps
- * carries the post-DMPSX command word in place of the header's DMPSX
- * placeholder (noted at the island). */
+ * GTE: eight PsyQ 4.3 inline_c.h macros; gte_rtps carries the post-DMPSX
+ * command word. */
 u8 func_80065800(s32 arg0) {
     extern s16 D_800A3834;
     extern TexRec D_8009B8C8[];
@@ -3015,16 +2937,10 @@ u8 func_800671CC(void) {
 extern SVECTOR D_800F0B78[];
 extern Unk800EFC78Record D_800EFC78[][48];
 
-/* func_80067200 -- ordinary C plus five GTE islands, each the body of one
- * PsyQ Run-time Library Release 4.3 inline_c.h (DMPSX) macro:
- * gte_SetRotMatrix(r0) :297-310 (twice), gte_ldv0(r0) :16-20,
- * gte_rtv0() :499-502, gte_stlvnl(r0) :1111-1117. Instruction text, "r"
- * operand and clobbers are the header's; only separators/whitespace differ,
- * except gte_rtv0's command word: the header carries the DMPSX placeholder
- * `.word 0x0000013f`, which Sony's DMPSX tool rewrote after compilation; this
- * build has no DMPSX pass, so the island carries the post-DMPSX word
- * 0x4A486012 (cop2 MVMVA sf=1 mx=rot v=V0 cv=none lm=0) that the original
- * binary contains at 0x80067630. */
+/* func_80067200 -- GTE: gte_SetRotMatrix (twice), gte_ldv0, gte_rtv0,
+ * gte_stlvnl (PsyQ 4.3 inline_c.h). gte_rtv0 carries the post-DMPSX word
+ * 0x4A486012 (MVMVA sf=1 mx=rot v=V0 cv=none lm=0) for the header's DMPSX
+ * placeholder `.word 0x0000013f`. */
 u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
     SVECTOR v;
     s32 r[6];
@@ -3209,17 +3125,10 @@ extern TexRec D_8009B9B8[];
 u8 func_800678A8(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *outer = &D_800A34EC->v800678A8;
-    /* FAKE: unk00 / unk02 / unk04 / unk6C / unk80 are reached through the plain
-       pointers p0 / p2 / p4 / p6C / p80 (p2 / p6C were locals already): a
-       member store is MEM_IN_STRUCT_P, and sched.c moves scalar accesses across
-       it (abl_d1.py, each pointer spelled as members): p0, in three of the four
-       branches the D_800A34A8 load rises above the unk00 store (score 6); p4,
-       the D_800A3490 load rises above the unk04 store and its load-delay nop
-       goes (2); p80, the D_800A3724 store sinks below the unk80 store (2); p2,
-       the unk02 stores sink below the D_800A34A8 loads, p2's $t0 (outer + 2)
-       goes and $a0 takes a copy of outer (24); p6C, p6C's $t1 (outer + 0x6C)
-       goes, arg0 moves from $a3 to $t0, p2 to $a3, and $a0 takes a copy of
-       outer (38); all five: 49. */
+    /* FAKE: unk00 / unk02 / unk04 / unk6C / unk80 are reached through the
+     * plain pointers p0 / p2 / p4 / p6C / p80: member stores are
+     * MEM_IN_STRUCT_P and let scalar accesses move across them (as members, p0:
+     * 6, p4: 2, p80: 2, p2: 24, p6C: 38; all five: 49). */
     u16 *p0 = &outer->unk00;
     u16 *p2 = &outer->unk02;
     u32 *p4 = &outer->unk04;
@@ -3284,9 +3193,7 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
     *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
     *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r0) --- PsyQ Run-time Library
-     * Release 4.3 inline_c.h (DMPSX v3) :297-310,
-     * verbatim body, operand and clobbers. */
+    /* gte_SetRotMatrix(r0) --- PsyQ 4.3 inline_c.h :297-310 */
     __asm__ volatile(
         "lw     $12, 0(%0)\n"
         "lw     $13, 4(%0)\n"
@@ -3306,9 +3213,7 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
         D_800F0C10[arg1][D_800A3438[arg1]].unk8 = D_800F0C10[arg1][0].unk8;
     }
 
-    /* PsyQ libgte inline macro gte_ReadGeomScreen(r0) --- PsyQ Run-time Library
-     * Release 4.3 inline_c.h (DMPSX v3) :1236-1242,
-     * verbatim body, operand and clobbers. */
+    /* gte_ReadGeomScreen(r0) --- PsyQ 4.3 inline_c.h :1236-1242 */
     __asm__ volatile(
         "cfc2   $12, $26\n"
         "nop\n"
@@ -3328,12 +3233,8 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
  * faded or outside the lane radius, project the three trail vertices, size the
  * sprite by type (arg0), then emit one to three POLY_FT4 quads and link them
  * into the context's OT index table.
- *
- * Eleven GTE islands, each a PsyQ Run-time Library Release 4.3 inline_c.h
- * (DMPSX) macro body - instruction text, "r" operands and clobbers as the
- * header has them; only separators/whitespace differ, except that the three
- * command macros (gte_rtv0, gte_sqr0, gte_rtpt) carry the post-DMPSX command
- * word in place of the header's DMPSX placeholder (noted at each island). */
+ * GTE: eleven PsyQ 4.3 inline_c.h macros; gte_rtv0, gte_sqr0 and gte_rtpt
+ * carry the post-DMPSX command word (noted at each island). */
 void func_80067D14(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *outer = &D_800A34EC->v800678A8;
@@ -3418,10 +3319,9 @@ void func_80067D14(s32 arg0, s32 arg1) {
             "swc2   $26, 4(%0)\n"
             "swc2   $27, 8(%0)\n"
             :: "r"(p_out) : "memory");
-        /* gte_SetTransMatrix(r0) --- inline_c.h :360-369. It reads only the
-           translation (+0x14 on), so it is handed the address 0x14 below the
-           just-rotated vector, the idiom func_800620B8 above uses for
-           SetTransMatrix. */
+        /* gte_SetTransMatrix(r0) --- inline_c.h :360-369; it reads only the
+         * translation, so it is handed the address 0x14 below the rotated
+         * vector. */
         __asm__ volatile(
             "lw     $12, 20(%0)\n"
             "lw     $13, 24(%0)\n"
@@ -3753,14 +3653,9 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
         }
         {
             /* FAKE: one s16 * holder per stored work-block field, set before
-               the D_800A3524 store. The stores through them are plain `*p` (not
-               in-struct), so the D_800A3528 zero store and the D_800A34F8
-               update keep their place; as member stores through an
-               Unk800A34FCRec * holder they sink below the block stores and the
-               D_800A32C0 copy loads (score 28); straight through
-               D_800A34FC, 39. Partial sets: pair holders for unk_28 / unk_0C
-               with unk_10 / unk_12 direct, 8, with field holders for those two,
-               4; only unk_0C as a pair, 2; unk_10 / unk_12 stored direct, 4. */
+             * the D_800A3524 store; plain `*p` stores keep the D_800A3528 and
+             * D_800A34F8 stores in place. Member stores through a holder: score
+             * 28; straight through D_800A34FC: 39. */
             s16 *p_2A;
             s16 *p_28;
             s16 *p_0E;
@@ -3878,11 +3773,8 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     i = 0;
     arg1 <<= 4;
     one = 1;
-    /* FAKE: single-level do{}while(0) wrap around the loop preheader+body seats
-     * sum in $t2 and bitpos in $t1 (target's allocno tie), flipping the RA the
-     * clean loop otherwise inverts. The `one` constant-holder materializes the
-     * shift operand `1` at the preheader (schedules `li $t6,1` early, target's
-     * slot). */
+    /* FAKE: do{}while(0) around the loop seats sum in $t2 and bitpos in $t1;
+     * the `one` constant-holder schedules `li $t6,1` at the preheader. */
     do {
         a3_off = 0;
         bitpos = 0;
@@ -4315,37 +4207,19 @@ void func_80069E18(s32 arg0) {
     *(s32 *)(arg0 + 0x14) = func_8007352C(&s);
 }
 
-/* FAKE: frame layout (oversized live object): the descriptor plus its unwritten
-   tail, so the locals region reaches the target's frame; mechanism at
-   func_80069F80 / func_8006DD94. */
+/* FAKE: frame layout (oversized live object): the descriptor plus an
+ * unwritten tail, so the locals region reaches the target's frame. */
 typedef struct {
     Unk8007352CEnv env;
     s32 tail[4];
 } Env_69F80;
 
 void func_80069F80(s32 *arg0, s32 arg1) {
-    /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address
-       is passed to func_80073728 and func_8007352C (addiu $a0,$sp,0x18 at three
-       sites); tail[0..3] are this call site's UNWRITTEN PADDING tail.
-       They are NOT asserted to be fields of a shared descriptor type: nothing
-       in this function or its callees' asm reads them. mechanism: mips.c
-       compute_frame_size / get_frame_size - frame = ALIGN8(vars) + ALIGN8(args)
-       + ALIGN8(gp_regs).  From the target bytes (asm/funcs/func_80069F80.s):
-       frame 0x70 with five callee-saves
-       ($s0-$s3,$ra at sp+0x58..0x68 => ALIGN8(20) = 0x18) and a 0x18
-       outgoing-args area (the 5-arg SetDrawMode call stores at sp+0x10), so the
-       locals region is 0x70 - 0x18 - 0x18 = 0x40 bytes, while only
-       sp+0x18..0x43 (the 0x2C-byte descriptor) is ever touched.  The
-       fully-written form (a 0x2C descriptor) gives ALIGN8(44)+0x18+0x18 = 0x60
-       != 0x70, so no fully-written locals set can produce the target frame.
-       n.b.! ALIGN8 makes the declared descriptor size recoverable only as a
-       RANGE: 0x39..0x40 bytes all give vars = 0x40; 0x3C is the smallest
-       whole-word (s32-member) size in that range and is the one declared here.
-       Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS
-       carve-out; the LIVE object (`s`, address passed to both descriptor
-       callees) is extended rather than adding a dead pad local, as in
-       func_8006DD94 (this TU) and func_80041BF4 (src/text1a_post.c). The plain
-       descriptor: score 12. */
+    /* FAKE: frame layout - `s` is the live descriptor (its address goes to
+     * func_80073728 / func_8007352C); tail[0..3] is unwritten padding that
+     * brings the locals to the target's 0x70 frame (the 0x2C descriptor alone
+     * gives 0x60; dead-vars-local-array OVERSIZED-LOCALS). The plain
+     * descriptor: score 12. */
     Env_69F80 s;
     Unk8009B0E0Record **ptr;
     s32 x0;
@@ -4417,30 +4291,11 @@ void func_80069F80(s32 *arg0, s32 arg1) {
 }
 
 void func_8006A1A0(s32 *arg0, s32 arg1) {
-    /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address
-       is passed to func_80073728 and func_8007352C (addiu $a0,$sp,0x18 at three
-       sites: 8006A2B8, 8006A30C, 8006A350); the Env_69F80 tail tail[0..3]
-       is this call site's UNWRITTEN PADDING.  Nothing in this function or its
-       callees' asm reads it; it is NOT asserted to be a field of a shared
-       descriptor type.
-       mechanism: mips.c compute_frame_size / get_frame_size -
-       frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  From the target
-       bytes (asm/funcs/func_8006A1A0.s): frame 0x70 with six callee-saves
-       ($s0-$s4,$ra at sp+0x58..0x6C => ALIGN8(24) = 0x18) and a 0x18
-       outgoing-args area (the 5-arg SetDrawMode call stores at sp+0x10), so the
-       locals region is 0x70 - 0x18 - 0x18 = 0x40 bytes, while only
-       sp+0x18..0x43 (the 0x2C-byte descriptor) is ever touched.  The
-       fully-written form (a 0x2C descriptor) gives ALIGN8(44)+0x18+0x18 = 0x60
-       != 0x70 (every frame and save-slot offset shifts by 0x10), so no
-       fully-written locals set can produce the target frame. n.b.! ALIGN8 makes
-       the declared descriptor size recoverable only as a RANGE: 0x39..0x40
-       bytes all give vars = 0x40; 0x3C is the smallest whole-word (s32-member)
-       size in that range and is the one declared (Env_69F80, shared with the
-       sibling func_80069F80 whose frame equation is identical). Family:
-       .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out; the
-       LIVE object is extended rather than adding a dead pad local, as in
-       func_80069F80 and func_8006DD94 (this TU). The plain descriptor:
-       score 14. */
+    /* FAKE: frame layout - `s` is the live descriptor (its address goes to
+     * func_80073728 / func_8007352C); tail[0..3] is unwritten padding that
+     * brings the locals to the target's 0x70 frame (the 0x2C descriptor alone
+     * gives 0x60; dead-vars-local-array OVERSIZED-LOCALS). The plain
+     * descriptor: score 14. */
     Env_69F80 s;
     Unk8009B0E0Record **ptr;
     s32 x0;
@@ -4689,19 +4544,20 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     Unk8007352CEnv s;
     RECT rect;
     s16 ofs[2];
-    /* Ruling 11 (ordinary-c-judge-decidable.md): holds five values, each a
-       sprite-sheet list of the MOD.BIN root: unk_18 (option rows; first sheet,
-       the row loop and row 7), unk_40 (counter frames), unk_24 twice (icon
-       frames at [8 + frame], then FT4 frames at [frame]). */
+    /* Ruling 11 (ordinary-c-judge-decidable): holds five values, each a
+     * sprite-sheet list of the MOD.BIN
+     * root: unk_18 (option rows; first sheet, the row loop and row 7), unk_40
+     * (counter frames), unk_24 twice (icon frames at [8 + frame], then FT4
+     * frames at [frame]). */
     Unk8009B0E0Record **sheets;
     /* Ruling 11: holds two values, each a mask with one bit per option row:
        D_8009BC08 (scanned for the first row drawn) and D_8009BC04 (rows
        switched on). */
     u32 row_mask;
-    /* Ruling 9: the sheet's cell array. Every sheet drawn here is one 12-byte
-       header followed by its 8-byte cells, so the cells always start at
-       +0xC (MOD.BIN census). FAKE: single-use holder of the cell table ahead of
-       the descriptor's table store; stored directly: score 15. */
+    /* Ruling 9: the sheet's cell array; every sheet drawn here has one 12-byte
+     * header, so the cells start at +0xC. FAKE: single-use holder of the cell
+     * table ahead of the descriptor's table store; stored directly: score 15.
+     */
     Unk8009B400Record *cells;
     s32 yofs;
     s32 bit;
@@ -5052,9 +4908,8 @@ void func_8006B120(s32 *arg0) {
     func_80069898(arg0, r, 0x11);
 }
 
-/* func_8006B578 — menu/config input dispatch. The second `switch` makes GCC
- * synthesize a 6-entry jump table into this TU's .rodata; bb2.ld places this
- * TU's .rodata so that table lands at its original address, 0x80015988. */
+/* func_8006B578 — menu/config input dispatch. Its second switch's 6-entry
+ * jump table lands at 0x80015988 in this TU's .rodata. */
 s32 func_8006B578(s32 *arg0, u32 *arg1) {
     u32 v;
     s32 sp10;
@@ -5157,7 +5012,7 @@ tail:
     return var_s2;
 }
 
-/* Keep the original text1b rodata run contiguous around compiler-generated
+/* Keeps the original .rodata run contiguous around the compiler-generated
  * switch tables. */
 const u8 D_800159A0[16] = "warning\n";
 
@@ -5243,7 +5098,6 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
     return var_s0;
 }
 
-/* BEGIN func_8006BB68 */
 void func_8006BB68(s32 *arg0) {
     Unk8007352CEnv s;
     u16 rect[4];
@@ -5299,8 +5153,6 @@ void func_8006BB68(s32 *arg0) {
     func_80069898(arg0, rect, 0x11);
 }
 
-/* END func_8006BB68 */
-/* BEGIN func_8006BD28 */
 extern DR_MODE *D_800A36E0;
 extern u8 *D_800A36E4;
 
@@ -5309,11 +5161,8 @@ void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CEnv *arg2, s32 arg3) {
        MOD.BIN root (D_800A34FC->unk_24) */
     Unk8009B0E0Record **sheets;
     /* FAKE: named intermediate (no-new-park-categories entry 6): the sheet's
-       8-byte cells start at header + 0xC. Spelled inline, fold
-       (tools/gcc-2.7.2/fold-const.c:3685-3737) reassociates header + 0xC + j *
-       8 into header + (j * 8 + 0xC) and loop.c strength-reduces that giv into
-       its own callee-saved register; the target adds 0xC first and recomputes
-       j << 3 each iteration. Inline: score 31. */
+     * 8-byte cells start at header + 0xC; inline, fold reassociates the sum and
+     * loop.c strength-reduces it into its own register. Inline: score 31. */
     Unk8009B400Record *cells;
     s32 i, j, n;
 
@@ -5325,9 +5174,8 @@ void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CEnv *arg2, s32 arg3) {
 
     for (i = 0; i < 2; i++) {
         /* FAKE: operand grouping (or-tree-shape-shift carve-out): with
-           (sheets + i) + arg0 * 2, loop.c hoists arg0 * 8 alone (the target's
-           prologue sll + spill at sp+0x20) and keeps i * 4 + sheets per
-           iteration; sheets[arg0 * 2 + i]: score 33. */
+         * (sheets + i) + arg0 * 2, arg0 * 8 is hoisted alone as in the target;
+         * sheets[arg0 * 2 + i]: score 33. */
         arg2->header = *(sheets + i + arg0 * 2);
         if (arg2->header == (Unk8009B0E0Record *)-1)
             return;
@@ -5356,8 +5204,6 @@ void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CEnv *arg2, s32 arg3) {
     }
 }
 
-/* END func_8006BD28 */
-/* BEGIN func_8006BEC4 */
 extern s32 D_800A3900;
 extern TILE *D_800A36DC;
 extern u8 D_800F11E0[];
@@ -5422,7 +5268,6 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
     D_800A36DC++;
 }
 
-/* END func_8006BEC4 */
 extern s32 func_8006B92C();
 
 s32 func_8006C168(s32 arg0, s32 arg1) {
@@ -5452,43 +5297,26 @@ void func_8006C21C(s32 *arg0) {
     Rec_8006C21C *tile_rec;
     TILE *tile;
     POLY_G4 *poly;
-    /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
-       func_8006E480's second argument at all three call sites. Set once and
-       live across every call, so global.c gives the once-set constant pseudo
-       callee-save $s5 (target: `addu $s5,$zero,$zero`, then `addu
-       $a1,$s5,$zero` at the phase-3 and phase-5 calls; cse folds the phase-1
-       read to 0 inside the entry block); a literal 0 at every call: score 3.
-       Same shape as the siblings func_800753D8 (`zero`) and func_8007636C
-       (`mode`). */
+    /* FAKE: constant-holder (named-local-fake-exception) for the 0 passed as
+     * func_8006E480's second argument; held in $s5 as in the target. A literal
+     * 0 at every call: score 3. */
     s32 mode;
-    /* FAKE: holds several values (Ruling 11, ordinary-c-judge-decidable.md):
-       the phase-2 unlock-bit index, the phase-4 sprite index, the phase-6 tile
-       row, and the phase-8 gauge level read per player. One variable is what
-       the target's allocation requires (global.c: the merged pseudo outranks
-       `j` for $fp); one counter per phase: score 90. */
+    /* FAKE: holds several values (Ruling 11, ordinary-c-judge-decidable): the
+     * phase-2 unlock-bit index,
+     * the phase-4 sprite index, the phase-6 tile row and the phase-8 gauge
+     * level; one counter per phase: score 90. */
     s32 work;
-    /* FAKE: per-branch constant holder (named-local-fake-exception, owner
-       ruling Q27 (B)) -- the bar's far-corner red, 0 on the
-       pulsing bar and 0x80 otherwise, set and read inside each arm. Set in
-       four arms, it is not a loop.c movable, so the else-arm 0x80 is not
-       matched with its twin and hoisted out of the row loop; the target
-       loads `li $v0,0x80` in each else arm. The literals: score 8. */
+    /* FAKE: per-branch constant holder (named-local-fake-exception, Q27 (B)) --
+     * the bar's far-corner red, 0 on the pulsing bar and 0x80 otherwise; set in
+     * each arm, it is not hoisted out of the row loop. The literals: score 8.
+     */
     s32 col;
-    /* FAKE: always-zero narrow locals (named-local-fake-exception, owner
-       ruling Q27 (A)) -- SetDrawMode's dither and texture-window
-       arguments and the descriptor position, read up to the phase-4 head.
-       combine folds the sign extension of each known-zero read after a label
-       and distribute_notes leaves a `(use)` of the dead extension temp; the
-       four never-allocated temps take the target's four untouched frame
-       slots (0x60-0x78, frame 0xC0). A read from phase 5 on keeps the local
-       live across the phase-4 calls (callee-saved reg, +insns), so later
-       sites write a literal 0. `tw` is passed as SetDrawMode's RECT *tw through
-       a `(RECT *)tw` boundary conversion (owner ruling Q113; cc1 reports it as
-       a cast to pointer from an integer of different size): every other pointer
-       or int spelling of it measured (s32 + cast, RECT * local in any
-       placement, initialised or assigned later, a literal 0) differs by 70
-       lines, because the mechanism needs the s16 read. Literals at every read:
-       score 37. */
+    /* FAKE: always-zero narrow locals (named-local-fake-exception, Q27 (A)) --
+     * SetDrawMode's dither and texture-window arguments and the descriptor
+     * position, read up to the phase-4 head; their dead extension temps take
+     * the target's four untouched frame slots (0x60-0x78). `tw` reaches
+     * SetDrawMode's RECT *tw through a
+     * `(RECT *)tw` conversion (Q113). Literals at every read: score 37. */
     s16 dtd;
     s16 xpos;
     s16 ypos;
@@ -5497,12 +5325,10 @@ void func_8006C21C(s32 *arg0) {
     s32 x;
     s32 row;
     s32 pulse;
-    /* the sprite sheet's 8-byte cell array, which starts just past the sheet's
-       12-byte header (Unk8009B0E0Record / Unk8009B400Record, read by
-       func_8007352C); every MOD.BIN sheet these four sites reach has one header
-       (census). Ruling 9: one meaning, header + 0xC at every write. FAKE:
-       single-use holder of the cell table ahead of the descriptor's table
-       store; stored directly: score 12. */
+    /* the sprite sheet's 8-byte cells, just past its 12-byte header. Ruling 9:
+     * one meaning, header + 0xC at every write. FAKE: single-use holder of the
+     * cell table ahead of the descriptor's table store; stored directly:
+     * score 12. */
     Unk8009B400Record *cells;
 
     mode = 0;
@@ -5814,10 +5640,9 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
     return ret;
 }
 
-/* The two per-row sprite counters. The target clears both with one word
- * store (0x8006D018 `sw $zero,0x48($sp)`), so the storage is declared as
- * the counter array plus one word view (owner ruling Q33);
- * every other access goes through count[]. */
+/* The two per-row sprite counters: the target clears both with one word
+ * store, so the storage is the counter array plus one word view (Q33); every
+ * other access goes through count[]. */
 typedef union {
     s16 count[2];
     s32 word;
@@ -5831,12 +5656,11 @@ s32 func_8006CFBC(s32 *arg0) {
     s16 column;
     s16 row;
     s16 result;
-    /* Ruling 11 (ordinary-c-judge-decidable.md): holds three values, each
-     * s.header + 0xC stored to s.table -- for table[column + 8] in the
-     * column loop, for table[12] when a row drew nothing, and for
-     * table[17], [18] or [19] in the last loop. FAKE: single-use holder of the
-     * cell table ahead of the descriptor's table store; stored directly:
-     * score 8. */
+    /* Ruling 11 (ordinary-c-judge-decidable): holds three values, each
+     * s.header + 0xC stored to s.table
+     * (for table[column + 8], table[12] and table[17..19]). FAKE: single-use
+     * holder of the cell table ahead of the descriptor's table store; stored
+     * directly: score 8. */
     Unk8009B400Record *temp;
 
     result = 0;
@@ -6046,25 +5870,9 @@ s32 func_8006D7FC(void) {
 void func_8006D808(
     s32 *arg0, s32 *arg1, Unk8006D808Set *arg2, s32 arg3, s32 arg4) {
     Unk8007352CEnv s;
-    /* FAKE: oversized digit array (dead-vars-local-array.md OVERSIZED-LOCALS
-       carve-out) - only d[0]/d[1] are used; d[2..] is the unwritten tail of a
-       LIVE object.  From the target bytes: frame 0x88; ten callee-saves
-       ($s0-$s7,$fp,$ra at sp+0x60..0x87 => 40 bytes) and a 0x18 outgoing-args
-       area (the 5-arg SetDrawMode stores its 5th arg at sp+0x10), so the locals
-       region is 0x88 - 0x28 - 0x18 = 72 bytes.  The only bytes it ever touches
-       are the 0x2C descriptor (sp+0x18..0x43), d[0..1] (sp+0x48..0x4B) and the
-       reload spill of the hoisted `0 < n` inner-loop guard (sp+0x58);
-       sp+0x4C..0x57 is never read, written or addressed in
-       asm/funcs/func_8006D808.s.  The fully-written form (s16 d[2]) gives
-       vars= 64 => 0x80 != 0x88, so no fully-written locals set gives the
-       target frame.  n.b.! d's slot is 8-aligned (stmt.c:3419 clamps a BLKmode
-       automatic to BIGGEST_ALIGNMENT), so the declared length is recoverable
-       only as a RANGE: s16 d[5]..d[8] (10..16 bytes) are byte-identical;
-       d[4] and below give vars= 64.  d[5] is
-       the smallest member.  The live-object choice follows the family model:
-       the descriptor + a separate 8-aligned s16 array at sp+0x48, as in
-       func_8006D3DC (u16 rect[4]); same carve-out as the caller func_8006DD94.
-       s16 d[2]: score 26. */
+    /* FAKE: oversized digit array (dead-vars-local-array OVERSIZED-LOCALS):
+     * only d[0]/d[1] are used; the unwritten tail brings the locals to the
+     * target's 0x88 frame (s16 d[2] gives 0x80): score 26. */
     s16 d[5];
     s16 i;
     s16 k;
@@ -6168,39 +5976,18 @@ void func_8006D808(
     *arg1 += 0xC;
 }
 
-/* FAKE: frame layout (oversized live object), as Env_69F80; mechanism at
- * func_8006DD94. */
+/* FAKE: frame layout (oversized live object), as Env_69F80. */
 typedef struct {
     Unk8007352CEnv env;
     s32 tail[2];
 } Env_8006DD94;
 
 void func_8006DD94(s32 *arg0) {
-    /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address
-       is passed to func_8007352C every iteration; tail[0..1] are its unwritten
-       tail. mechanism: mips.c compute_frame_size / get_frame_size - frame =
-       ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  From the target bytes:
-       frame 0x78 with seven callee-saves
-       ($s0-$s5,$ra at sp+0x58..0x70 => ALIGN8(28) = 0x20) and a 0x18
-       outgoing-args area (the 5-arg func_8006D808 call stores at sp+0x10), so
-       the locals region is 0x78 - 0x20 - 0x18 = 0x40 = 64 bytes, while the only
-       stores into it are the 0x2C-byte descriptor at sp+0x18..0x43 and the
-       8-byte rect at sp+0x50..0x57 (52 bytes; sp+0x44..0x4F is never read,
-       written or addressed anywhere in asm/funcs/func_8006DD94.s).  The
-       fully-written form (the 0x2C descriptor + u16 rect[4]) gives vars= 56 =>
-       ALIGN8(56)+0x18+0x20 = 0x70 != 0x78, so no fully-written locals set can
-       produce the target frame. n.b.! the rect's slot is 8-aligned (stmt.c:3419
-       clamps a BLKmode automatic to BIGGEST_ALIGNMENT = 64 bits, mips.h:1082),
-       so the declared descriptor size is recoverable only as a RANGE: 0x34 (two
-       tail words) and 0x38 (three) are byte-identical; 0x30 (one tail word)
-       puts the rect back at sp+0x48.  0x34 is chosen as the smallest member of
-       the range. Family: .claude/rules/dead-vars-local-array.md
-       OVERSIZED-LOCALS carve-out; the LIVE object (`s`, whose address is passed
-       to func_8007352C) is extended rather than adding a dead pad.  Extending
-       the OTHER live object instead (u16 rect[8], the shape of func_80041BF4 in
-       src/text1a_post.c) reaches the target frame but leaves the rect base at
-       sp+0x48.  Spill homes cannot land below the rect (function.c:724). The
-       plain descriptor: score 21. */
+    /* FAKE: frame layout - `s` is the live descriptor (its address goes to
+     * func_8007352C); tail[0..1] is unwritten padding that brings the locals to
+     * the target's 0x78 frame with rect at sp+0x50 (an 8-aligned slot,
+     * BIGGEST_ALIGNMENT -- mips.h:1082) (dead-vars-local-array
+     * OVERSIZED-LOCALS). The plain descriptor: score 21. */
     Env_8006DD94 s;
     u16 rect[4];
     s16 i;

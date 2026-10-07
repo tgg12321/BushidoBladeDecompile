@@ -1,14 +1,11 @@
 /* 93 game functions, among them math_SignExt12Div, math_FloorDiv2000,
  * math_RotMatrixZYXAngles and pad_ClearStateBits. .text 0x8001979C (ROM
- * 0x9F9C). Start boundary: PHASE (a jump-table phase change,
- * docs/grind/rodata-align-2026-09-30.md site 1). */
+ * 0x9F9C). Start boundary: PHASE (a jump-table phase change). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
 #include "bb2_const.h"
-
-/* Declarations from the file this TU was split from (code6cac.c). */
 
 extern s32 memcpy(s32 *, s32, s32);
 extern s32 func_80054434(void);
@@ -39,21 +36,18 @@ void func_8001979C(s32 arg0, u32 *arg1) {
     do {
         if (bits_left < 0xC) {
             /* FAKE: nd names the width subtraction so the constant's load site
-             * separates from its use site -- cse.c:7454 re-materialises the
-             * deleted early subu at the copy site. Ablated (2026-10-06):
-             * score 2. */
+             * separates from its use site (cse re-materialisation); without
+             * it: score 2. */
             nd = 0xC - bits_left;
-            /* FAKE: hi carries its own shift amount before the value --
-             * global.c allocno_compare (hi crosses the floor_log2 nrefs bucket
-             * and keeps $v1). Ablated (2026-10-06): score 16. */
+            /* FAKE: hi carries its own shift amount before the value, raising
+             * its allocation priority so it keeps $v1; without: score 16. */
             hi = 0x20 - bits_left;
             hi = cur >> hi;
             cur = *arg1;
             arg1++;
             needed = nd;
-            /* FAKE: new bits_left routed through val -- blocks cse.c:7454's
-             * cheapest-register rewrite via make_regs_eqv's last-use test
-             * (cse.c:856). Ablated (2026-10-06): score 2. */
+            /* FAKE: new bits_left routed through val, blocking cse's
+             * cheapest-register rewrite; without: score 2. */
             val = 0x20 - needed;
             bits_left = val;
             hi = hi << needed;
@@ -72,8 +66,7 @@ void func_8001979C(s32 arg0, u32 *arg1) {
     i = 0;
     do {
         if (bits_left < 2) {
-            /* FAKE: nd - same construct as loop 1 (cse.c re-materialisation).
-             * Ablated (2026-10-06): score 2. */
+            /* FAKE: nd, as in loop 1; without: score 2. */
             nd = 2 - bits_left;
             hi = 0x20 - bits_left;
             hi = cur >> hi;
@@ -95,23 +88,19 @@ void func_8001979C(s32 arg0, u32 *arg1) {
         i++;
     } while (i < 0x3F);
 
-    /* FAKE: named constant holder for the fill value -- global.c find_reg
-     * conflict graph (a separate allocno for -2 is what puts the fill pointer
-     * in $v0). Ablated (2026-10-06): score 2. */
+    /* FAKE: named holder for the fill value; a separate allocno for -2 puts
+     * the fill pointer in $v0; without: score 2. */
     neg2 = -2;
     i = 3;
     do {
         base->slot[i].frame = neg2;
         i--;
     } while (i >= 0);
-    /* FAKE: tail reuse of val ([[named-local-fake-exception]] constant-holder):
-     * this later SET of val blocks cse.c:7454's cheapest-register rewrite
-     * (make_regs_eqv last-use test, cse.c:856) of the in-loop `val = 0x20 -
-     * needed; bits_left = val;`, preserving the subu $v0,$t2,$a0 + move $a3,$v0
-     * copy pair that exists in the target bytes in BOTH loops
-     * (asm/funcs/func_8001979C.s lines 28/58). A direct literal store here
-     * collapses both pairs to subu $a3,$t2,$a0 (75 insns vs the target's 77).
-     * Ablated (2026-10-06): score 4. */
+    /* FAKE: tail reuse of val (named-local-fake-exception constant-holder):
+     * this later set blocks cse's rewrite of the in-loop `val = 0x20 - needed;
+     * bits_left = val;`, keeping the target's subu + move copy pair in both
+     * loops; a direct literal store collapses both pairs (75 insns vs 77):
+     * score 4. */
     val = 0;
     base->ctr = val;
 }
@@ -183,8 +172,8 @@ void func_800198D0(s32 obj, s32 frame, MotionFrame *out, u16 *work) {
     s32 sub;
     s32 key;
     s32 ctr;
-    /* Ruling 11 (ordinary-c-judge-decidable.md): two values, both loop indices
-     * -- the keyframe channel loop's and the post-pass column loop's. */
+    /* Ruling 11 (ordinary-c-judge-decidable): two values, both loop indices --
+     * the keyframe channel loop's and the post-pass column loop's. */
     s32 idx;
     s32 ch;
     /* Ruling 11: two values, both loop indices -- the sub-frame loop's and the
@@ -469,11 +458,9 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
     } else {
         u32 shift_a;
         u32 shift_b;
-        /* Hand-written GTE leading-zero-count block (LZCS in, LZCR out) —
-         * canonical inline asm (owner-authorized). The original is
-         * hand asm: $t4 reused back-to-back for two unrelated values (no
-         * compiler RA does this), 2 unfilled GTE delay nops, splat tags the
-         * cop2 ops "handwritten instruction". */
+        /* Hand-written GTE leading-zero-count block (LZCS in, LZCR out), as in
+         * the original: $t4 reused back-to-back for two values, 2 unfilled
+         * GTE delay nops. */
         __asm__ volatile(
             "addu   $t4, %1, $zero\n"
             "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
@@ -525,23 +512,15 @@ typedef struct {
 } CamScratch;
 
 /* Two-fighter camera for D_800F6608 (arg0/arg1 = the fighters' positions,
- * arg2/arg3 = the fighter records; caller func_8001E878). Resets the h30[][]
- * limits; eases the focus toward the fighters' midpoint (or arg0's position
- * when D_800A3690 is set); turns the fighters' separation into a zoom target
- * (distance through the D_8008D118 byte-LUT square root with the GTE
- * leading-zero count for large inputs, weapon-state adjustments, eased 1/12
- * and clamped) and a hysteresis flag passed to func_8003F1E4; eases unk_10.vy /
- * vz toward the facing yaw and zero roll; then, per fighter, bisects unk_10.vx
- * (rot_x) so the fighter's head stays visible past the camera-collision normal
- * test of func_80053614, keeping a per-fighter step in D_800A30F4[] and a
- * blocked flag in D_800A30F0[]; finally eases unk_10.vx toward the larger of
- * the two results, clamped to 0x80..0x1C0.
- *
- * GTE island: PsyQ gte_Lzc(r1,r2), gtemac.h 4.3 :174-178, written out as the
- * six statements of its inline_o.h 4.3 expansion, character for character
- * against engine/gtemacro.py PINNED: gte_ldlzc(r1) :207-210, gte_nop()
- * :1095-1097 twice, gte_stlzc(r2) :1074-1077 (the header's `($12)` verbatim).
- * No other asm; operand seats chosen by cc1. */
+ * arg2/arg3 = the fighter records; caller func_8001E878). Eases the focus
+ * toward the fighters' midpoint (or arg0's position when D_800A3690 is set);
+ * turns their separation into an eased, clamped zoom target (byte-LUT square
+ * root, GTE leading-zero count for large inputs) and a hysteresis flag for
+ * func_8003F1E4; eases unk_10.vy / vz toward the facing yaw and zero roll;
+ * then per fighter bisects unk_10.vx (rot_x) so the head stays visible past
+ * func_80053614's camera-collision test (step in D_800A30F4[], blocked flag in
+ * D_800A30F0[]), and eases unk_10.vx toward the larger result, clamped to
+ * 0x80..0x1C0. GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
 void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                    Unk80101EC8Record *arg3) {
     s32 lzc_out;
@@ -559,8 +538,8 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
     s32 p;
     /* work holds three values, all unk_10.vx (rot_x) quantities: the
      * per-fighter bisection angle (loop), the target angle max(pitch0, pitch1)
-     * clamped to 0x80..0x1C0, and the final eased step. Ruling 11
-     * (ordinary-c-judge-decidable.md). */
+     * clamped to 0x80..0x1C0, and the final eased step (Ruling 11,
+     * ordinary-c-judge-decidable). */
     s32 work;
     s32 i, j;
 
@@ -602,9 +581,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
     } else {
         s32 lzcr = 0;
         if ((s32)dist_sq >= 0) {
-            /* gte_Lzc(dist_sq, &lzc_out): gtemac.h 4.3 :174-178 =
-             * inline_o.h 4.3 gte_ldlzc :207-210, gte_nop :1095-1097 (x2),
-             * gte_stlzc :1074-1077 */
+            /* gte_Lzc(dist_sq, &lzc_out): gte_ldlzc, gte_nop x2, gte_stlzc */
             __asm__ volatile ("move  $12,%0": :"r"(dist_sq):"$12","$13","$14","$15","memory");
             __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -690,13 +667,10 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                 D_800A30F4[p] = 0x200;
             }
             hi = work + D_800A30F4[p] / 8;
-            /* FAKE: cancellation pair (F6 semantically-null pair,
-             * no-new-park-categories.md) -- global.c allocno_compare priority:
-             * the pair adds references to `hi` (allocno_n_refs 13 -> 21, pri
-             * 11142 -> 23333 against work's 13253), so the bounds are allocated
-             * before `work` and take $s0 and `work` $s1, as in the target;
-             * combine folds the pair to nothing. Ablated (2026-10-06):
-             * score 29. */
+            /* FAKE: cancellation pair (F6, no-new-park-categories): the extra
+             * references to `hi` raise its allocation priority above work's, so
+             * the bounds take $s0 and `work` $s1, as in the target; combine
+             * folds the pair to nothing. Without: score 29. */
             hi++;
             hi--;
             for (i = 0; i < 2; i++) {
@@ -975,8 +949,7 @@ void func_8001B6F4(void) {
     func_8003F1E4(0);
 }
 
-/* Q65: this file's statics (.sbss, allocated per file in link order by
- * PSYLINK), in address order. */
+/* Q65: this file's statics (.sbss), in address order. */
 static u16 D_800A3310;
 
 void func_8001B748(
@@ -1154,7 +1127,7 @@ void func_8001BE20(s32 arg0, PadState *arg1);
 void func_8001BE20(s32 arg0, PadState *arg1) {
     s32 buf[4];
     s32 i;
-    /* One local holds two values (Ruling 11, ordinary-c-judge-decidable.md):
+    /* One local holds two values (Ruling 11, ordinary-c-judge-decidable):
      * (1) arg0 * 16, the bit offset of this player's half of the pad words;
      * (2) 0 or arg0 * 4, the bit offset of this player's colour-config nibble.
      */
@@ -1341,12 +1314,10 @@ void func_8001C624(void) {
     e->unk_104.vy = 0;
     e->unk_104.vz = 0;
     e->unk_24C = e->unk_104;
-    /* FAKE: self-assigning round-trip through `local`, which is address-taken
-     * by the func_80021D10 call above.  The target genuinely contains these
-     * self-copy stores (pre-restructure-2026-10-03:asm/6CAC.s:5101-5119: lw
-     * $v0,0x10($sp) / sw $v0,0x10($sp), lw $v1,0x18($sp) / sw $v1,0x18($sp));
-     * this is the libgte setVector comma-assign idiom, adjusting only the
-     * middle component. */
+    /* FAKE: self-assigning round-trip through `local` (address-taken by the
+     * func_80021D10 call above): the target holds these self-copy stores; the
+     * libgte setVector comma-assign idiom, adjusting only the middle
+     * component. */
     local[0] = local[0], local[1] = local[1] - 0x384, local[2] = local[2];
     e->unk_114[0].vx = 0;
     e->unk_114[0].vy = 0;
@@ -1476,11 +1447,9 @@ void func_8001C8DC(void) {
         u8 *p;
         if ((t = D_80101EC8[0].unk_96) == 0 || D_80101EC8[1].unk_96 == 0) {
             /* FAKE: second handle to D_800A37D2 (pointer-alias-fake-exception,
-             * owner Q63): the target sets the pair's base in its own register
-             * before the index (v0 base, v1 index); the index written without p
-             * computes the index first and loses that seat. Ablated
-             * (2026-10-06): both sites without p (indexing &D_800A37D2): score
-             * 17; each byte by its own symbol: score 27. */
+             * Q63): the target sets the pair's base in its own register before
+             * the index; indexing &D_800A37D2 at both sites: score 17; each
+             * byte by its own symbol: score 27. */
             p = &D_800A37D2;
             /* FAKE: indexes past D_800A37D2 into D_800A37D3 (owner Q63, this
              * byte pair only): the target also reaches each byte by its own
@@ -1538,20 +1507,19 @@ void func_8001CD68(Unk8001CD68Rec *arg0) {
     }
 }
 
-/* P1/P2 round scores and tiebreakers (per-file declarations: owner rulings
- * Q21-Q25, .claude/rules/no-new-park-categories.md aggregate-merge exception).
- * Declared here as [2] arrays because func_8001CE60 indexes them by player
- * (D_800A38B0). src/code6cac_b.c:128 declares the same bytes as single u8s for
- * func_800340A0. The mismatch is kept because no single declaration compiles
- * both files with a counting spelling (Q22/Q23 set-asides excluded). Under
- * scalars, func_8001CE60's player-indexed accesses are not produced
- * (conditional selects compile to separate direct accesses; a pointer pun is
- * refused). Under an aggregate, every measured counting spelling of
- * func_800340A0 misses the shipped code: constant subscripts put element 0
- * behind a base register, and the index-variable and regrouped-condition
- * spellings that avoid that miss its round-result stores or compares
- * (dummy-index and pointer-alias spellings that match are refused/set aside,
- * Q22/Q23). */
+/* P1/P2 round scores and tiebreakers, declared here as [2] arrays because
+ * func_8001CE60 indexes them by player (D_800A38B0); func_800340A0's
+ * declarations in src/main/17AFC.c give the same bytes as single u8s
+ * (per-file declarations: Q21-Q25, no-new-park-categories aggregate-merge
+ * exception). No single declaration compiles both files' accesses with an
+ * admissible spelling. Under scalars, func_8001CE60's player-indexed accesses
+ * are not produced (conditional selects compile to separate direct accesses;
+ * a pointer pun is refused). Under an aggregate, every measured counting
+ * spelling of func_800340A0 (Q22/Q23 set-asides excluded) misses: constant
+ * subscripts put element 0 behind a base register, and the index-variable and
+ * regrouped-condition spellings miss its round-result stores or compares; the
+ * dummy-index and pointer-alias spellings that match are refused/set aside
+ * (Q22/Q23). */
 extern u8 D_800A3898[2];
 extern u8 D_800A38AA[2];
 
@@ -1574,10 +1542,9 @@ void func_8001CE60(void) {
         D_800A38B4 +=
             func_8005E098(D_800A37D2, D_800A37D3, (s32)D_800A38B4, 1) / 4;
     } else if (D_800A38DC == 5) {
-        /* temp holds two values (ordinary-c-judge-decidable Ruling 11, with
-         * its per-branch constants clause): the announcement length in
-         * frames (0x50 after a draw, 0x64 otherwise), then the match clock's
-         * frames left for the on-screen timer. */
+        /* temp holds two values (Ruling 11, ordinary-c-judge-decidable): the
+         * announcement length in frames (0x50 after a draw, 0x64 otherwise),
+         * then the match clock's frames left for the on-screen timer. */
         s32 temp;
 
         if (D_800A381E != 0) {
@@ -1740,12 +1707,10 @@ void func_8001D790(void) {
     if (D_800A36A4 != D_800A390E ||
         D_8008E5A8[(s8)D_80102778.unk_4[0]] != D_800A30FC ||
         D_8008E5A8[(s8)D_80102778.unk_4[1]] != D_800A30FD) {
-        /* FAKE: block-local address cache for D_80102778.unk_4[0]. Every &-free
-         * spelling re-materializes the symbol at both body reads instead of
-         * holding it in a callee-save register across func_8005BA8C. GCC keeps
-         * an address pseudo only for a pointer local dereferenced as a plain
-         * scalar; no expression-level form produces one. Same construct for
-         * this same global in func_8003B2C8/func_8003B328. */
+        /* FAKE: block-local address cache for D_80102778.unk_4[0], held in a
+         * callee-save register across func_8005BA8C; every &-free spelling
+         * re-forms the symbol at both reads. Same construct in
+         * func_8003B2C8/func_8003B328. */
         u8 *p = &D_80102778.unk_4[0];
 
         func_80020D38();
@@ -2061,12 +2026,10 @@ void func_8001DCB0(void) {
 }
 
 void func_8001E404(void) {
-    /* FAKE: frame layout -- unwritten leading pad ([[dead-vars-local-array]]
-     * re-scoped carve-out): reconstructs the original frame's 8-byte
-     * allocated-but-untouched leading region (outgoing-args partition 24 vs
-     * 16); SOTN precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80.
-     * Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. Ablated
-     * (2026-10-06): score 23. */
+    /* FAKE: frame layout: unwritten leading pad for the original frame's 8
+     * untouched bytes (dead-vars-local-array carve-out; SOTN precedent:
+     * volatile u32 pad[4]; // FAKE at st/sel/stream.c:80); without: score 23.
+     */
     volatile u32 pre_pad[2];
     Rec44 local;
     Rec44 *s2;
@@ -2137,12 +2100,10 @@ common_tail:
 }
 
 void func_8001E6E4(s32 arg0) {
-    /* FAKE: frame layout -- unwritten leading pad ([[dead-vars-local-array]]
-     * re-scoped carve-out): reconstructs the original frame's 8-byte
-     * allocated-but-untouched leading region (outgoing-args partition 24 vs
-     * 16); SOTN precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80.
-     * Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. Ablated
-     * (2026-10-06): score 21. */
+    /* FAKE: frame layout: unwritten leading pad for the original frame's 8
+     * untouched bytes (dead-vars-local-array carve-out; SOTN precedent:
+     * volatile u32 pad[4]; // FAKE at st/sel/stream.c:80); without: score 21.
+     */
     volatile u32 pre_pad[2];
     Rec44 local;
     Rec44 *s2;
@@ -2415,42 +2376,33 @@ void func_8001F1C4(Unk80101EC8Record *arg0, Rec1C *arg1, MotionFrame *arg2,
  * a clamped elevation from ratan2(ground distance, height delta) are eased
  * 1/8 of the wrapped difference per call into obj+0x1E6/0x1E8 and applied
  * to both sets via func_8002F770 (otherwise both ease back toward 0; state
- * 0x1F holds elevation at 0x100). The ground distance is the D_8008D118
- * byte-LUT integer sqrt with the GTE leading-zero count for large inputs
- * (the func_8002E838 idiom; one PsyQ gte_Lzc per square root, written as
- * its inline_o.h statements like func_8001A820's). Also sets or
- * eases a twist in obj+0x1EA (states 0x1D/0xE with obj+0x8C != 0, and
- * obj+0xE in 6..7 with obj+0x6A == 2), and adds random jitter to both sets
- * when obj+0x26E is set and obj+0x96 == 0. The x target passed to
- * func_8002F770 is 0 in every state. */
+ * 0x1F holds elevation at 0x100). Also sets or eases a twist in obj+0x1EA
+ * (states 0x1D/0xE with obj+0x8C != 0, or obj+0xE in 6..7 with obj+0x6A ==
+ * 2), and adds random jitter to both sets when obj+0x26E is set and obj+0x96
+ * == 0. The ground distance is the D_8008D118 byte-LUT integer sqrt (the
+ * func_8002E838 idiom), with one gte_Lzc per root. */
 void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
     s32 lzc_out;
     s32 lzc_out2;
     s32 tgt_z;
     /* temp2: two values -- the clamped elevation target that obj+0x1E8 eases
      * toward (0x100 in state 0x1F, 0 outside states 0x15/0x25), then the
-     * clamped twist target that obj+0x1EA eases toward (obj+0xE in 6..7).
-     * Ruling 11, (E)(i) generic name. */
+     * clamped twist target that obj+0x1EA eases toward (Ruling 11). */
     s32 temp2;
-    /* FAKE: constant-holder (named-local-fake-exception.md) -- tgt_x is 0 on
-     * every path; cse works per extended basic block, so the three arm
-     * writes reach both func_8002F770 calls through the join unfolded, and
-     * global.c seats the pseudo, live across the first call, in $s2 as the
-     * target does (`addu $s2,$zero,$zero` in the arms, `addu $a3,$s2,$zero`
-     * before each call). The literal 0, one `= 0` initializer, or one write
-     * after the join / before the calls do not match. */
+    /* FAKE: constant-holder (named-local-fake-exception): tgt_x is 0 on every
+     * path; the three arm writes reach both func_8002F770 calls unfolded and
+     * the pseudo takes $s2 as in the target. The literal 0, one initializer, or
+     * one write after the join do not match. */
     s32 tgt_x;
     /* dx / dz: two values each -- the partner-minus-obj x (z) offset of
      * obj+0x180 (0x188) for the elevation, then of the saved obj+0xF4 (0xFC)
-     * position for the twist. Ruling 11, (E)(ii): every
-     * write is `partner.x - obj.x` (`.z`). */
+     * position for the twist (Ruling 11). */
     s32 dx;
     s32 dz;
     /* temp: six values -- the wrapped obj+0x1E6 easing delta, the wrapped
      * obj+0x1E8 easing delta, the clamped twist stored to obj+0x1EA (states
      * 0x1D/0xE), the wrapped obj+0x1EA easing delta, and the two random
-     * jitters (rng_Next() & 0x3F) - 0x20. Ruling 11 ((D)(2) by any named
-     * pass, owner Q58), (E)(i) generic name. */
+     * jitters (rng_Next() & 0x3F) - 0x20 (Ruling 11; owner Q58). */
     s32 temp;
     s16 t;
 
@@ -2484,10 +2436,8 @@ void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
             } else {
                 s32 lzcr = 0;
                 if (dist_sq >= 0) {
-                    /* gte_Lzc(dist_sq, &lzc_out): gtemac.h 4.3 :174-178 =
-                     * inline_o.h 4.3 gte_ldlzc :207-210, gte_nop :1095-1097
-                     * (x2), gte_stlzc :1074-1077; LZCR slot sp+0x10 in the
-                     * target. */
+                    /* gte_Lzc(dist_sq, &lzc_out): gte_ldlzc, gte_nop x2,
+                     * gte_stlzc; LZCR slot sp+0x10 */
                     __asm__ volatile ("move  $12,%0": :"r"(dist_sq):"$12","$13","$14","$15","memory");
                     __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
                     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -2565,9 +2515,8 @@ void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
         } else {
             s32 lzcr = 0;
             if (dist_sq >= 0) {
-                /* gte_Lzc(dist_sq, &lzc_out2): gtemac.h 4.3 :174-178 =
-                 * inline_o.h 4.3 gte_ldlzc :207-210, gte_nop :1095-1097 (x2),
-                 * gte_stlzc :1074-1077; LZCR slot sp+0x14 in the target. */
+                /* gte_Lzc(dist_sq, &lzc_out2): gte_ldlzc, gte_nop x2,
+                 * gte_stlzc; LZCR slot sp+0x14 */
                 __asm__ volatile ("move  $12,%0": :"r"(dist_sq):"$12","$13","$14","$15","memory");
                 __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -2643,29 +2592,18 @@ s32 func_8001F888(void) {
     }
 }
 
-/* func_8001F938 -- computes the s16 factor at arg0+0x44 from the state kind at
- * arg0+0x6A. Some kinds (and, for kinds 0x2/0x1B/0x28/0x26, an arg0+0x40 value
- * inside the 0xA1..0xA3 bounds or not outside the 0xA2..0xA4 bounds) force
- * 0x1000. Otherwise arg0+0x1C is scaled (Q12) by the table at arg0+0x27E
- * indexed by min(arg0+0x26E + arg0+0x272, 3); the range-checked kinds first
- * also scale by arg0+0x274 (when arg0+0x26C is 0) and by the table at
- * arg0+0x276 indexed by the damage count at arg0+0x270 clamped to 3.
+/* Computes the s16 factor at arg0+0x44 from the state kind at arg0+0x6A.
+ * Some kinds (and, for kinds 0x2/0x1B/0x28/0x26, an arg0+0x40 value inside
+ * the 0xA1..0xA3 bounds or not outside the 0xA2..0xA4 bounds) force 0x1000.
+ * Otherwise arg0+0x1C is scaled (Q12) by the table at arg0+0x27E indexed by
+ * min(arg0+0x26E + arg0+0x272, 3); the range-checked kinds first also scale
+ * by arg0+0x274 (when arg0+0x26C is 0) and by the table at arg0+0x276 indexed
+ * by the damage count at arg0+0x270 clamped to 3.
  *
- * `short dmg` is a plain signed short local: the target's second `lhu` and its
- * `sll 16 ; sra 15` are GCC 2.7.2's own lowering of it (extendhisi2,
- * tools/gcc-2.7.2/config/mips/mips.md:2340), not a second view in the source.
- * The same declaration produces the target's 8-byte phantom stack frame
- * (asm/funcs/func_8001F938.s:11 and :117, an addiu pair with no stack accesses
- * in between): a signed short local assigned on more than one path and
- * afterwards used in a sign-extending context.
- *
- * The kind-split (`kind_full` raw for the `(u32)(kind_full - K) < 2U` range
- * checks, `kind = kind_full & 0xFFFFU` for the `==` set) mirrors the target's
- * `lhu $a1,0x6A ; andi $v1,$a1,0xFFFF`. A `(u16)kind_full` cast (`move` instead
- * of `andi`), a single `u16 kind` local, `kind_full` alone with no mask, or a
- * second
- * `*(u16*)` read into a `u16` local do not reproduce it.
- */
+ * `short dmg` is a plain signed short local: GCC's lowering of it gives the
+ * second `lhu`, the `sll 16 ; sra 15` and the 8-byte stack frame. `kind_full`
+ * / `kind = kind_full & 0xFFFFU` mirror the target's
+ * `lhu $a1,0x6A ; andi $v1,$a1,0xFFFF`. */
 void func_8001F938(Unk80101EC8Record *arg0) {
     u32 kind_full;
     u32 kind;
@@ -2965,15 +2903,11 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
                 a0 = ((a2 + disc) * dist) / dy2 / 32;
 
                 if (a0 < 0) {
-                    /* FAKE: dead dy reused as the arm-2 (a2-disc) temp,
-                     * mechanism: global.c set_preference/expand_preferences —
-                     * disc dies at this subu so its {$v1} pref merges into dy
-                     * and flows down the mult/divmodsi4 pref edges to the /32
-                     * quotient, whose find_reg low-first override then takes
-                     * $v1 (target); dy's own $v0 home matches the subu/mult.
-                     * The natural spelling, a fresh named temp and reusing
-                     * disc all miss (natural 6, fresh temp 6, reusing disc 8).
-                     */
+                    /* FAKE: dead dy reused as the arm-2 (a2-disc) temp: disc's
+                     * register preference flows through dy to the /32
+                     * quotient, which takes $v1 as in the target. The
+                     * natural spelling or a fresh temp: score 6; reusing
+                     * disc: 8. */
                     dy = a2 - disc;
                     a0 = (dy * dist) / dy2 / 32;
                 }
@@ -2991,21 +2925,14 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     }
 }
 
-/* func_800203B4 — COMPLETED-INLINE-ASM-CANONICAL (owner grant, widened cop2
- * materialize-then-copy anchor; see inline_asm_canonical.txt). Starts the
- * rec->unk_350 frame counter, records bone index D_8008D59C[arg1].bone at
- * rec->unk_352, and rotates the vector arg2 by that bone's matrix of
- * game_GetPlayerData(rec->index) into rec->unk_354. Pure-C head + four PsyQ SDK
- * GTE macro islands — gte_SetRotMatrix, gte_ldv0, cop2 MVMVA (.word
- * 0x4A486012), gte_stlvnl — character-identical to the func_8002FDB0-authorized
- * spelling (src/code6cac_b.c, inline_asm_canonical.txt). The 25-insn island
- * surface is minimal (thinner islands do not match) and has no C form
- * (GCC 2.7.2's MIPS backend has zero cop2 mnemonics and no REG_ALLOC_ORDER path
- * to the SDK macros' $12-$15 seats). Load-bearing facts — do not tidy:
- *  - local DECLARATION ORDER (mat, vec, src) is byte-load-bearing;
- *  - STATEMENT ORDER is byte-load-bearing (vec[] stores stay below the
- * func_8002EECC call);
- *  - the gte_stlvnl operand is &rec->unk_354. */
+/* Starts the rec->unk_350 frame counter, records bone index
+ * D_8008D59C[arg1].bone at rec->unk_352, and rotates the vector arg2 by that
+ * bone's matrix of game_GetPlayerData(rec->index) into rec->unk_354.
+ * GTE: gte_SetRotMatrix, gte_ldlv0 (long-vector gte_ldv0), MVMVA (.word
+ * 0x4A486012), gte_stlvnl, by owner grant (widened cop2 materialize-then-copy
+ * anchor), in func_8002FDB0's `move $12, %0` spelling. The local declaration
+ * order (mat, vec, src), the vec[] stores below the func_8002EECC call and the
+ * gte_stlvnl operand &rec->unk_354 are byte-load-bearing. */
 void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
     s32 mat[8];
     s32 vec[3];
@@ -3015,9 +2942,8 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
     rec->unk_352 = D_8008D59C[arg1].bone;
     src = ((MATRIX **)game_GetPlayerData(rec->index))[rec->unk_352];
     func_8002EECC(src, mat);
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
-     * rotation-matrix words at r into cop2 control regs $0..$4.  The SDK
-     * macro body hardcodes $12-$15 and copies the operand into $12. */
+    /* gte_SetRotMatrix(r): the 5 packed rotation-matrix words at r into cop2
+     * control regs $0..$4. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -3034,10 +2960,10 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
     vec[0] = arg2[0];
     vec[1] = arg2[1];
     vec[2] = arg2[2];
-    /* PsyQ libgte inline macro gte_ldv0(r) --- pack VX0/VY0 into one word,
-     * mtc2 to $0, lwc2 VZ0 into $1, then the 2-cycle GTE load delay carried
-     * as explicit nops (maspsx does NOT supply them in the full-build
-     * context: without them the link shifts by 8 bytes). */
+    /* gte_ldlv0(r) (the long-vector gte_ldv0: lhu/lhu/sll/or pack, mtc2,
+     * lwc2) as one joined statement in the `move $12, %0` spelling, clobbers
+     * $12-$14 only, plus the 2-cycle GTE load delay as explicit nops (maspsx
+     * does not supply them here). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -3051,8 +2977,7 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
         :: "r"(vec) : "$12", "$13", "$14");
     /* GTE MVMVA sf=1, mx=rotation, v=V0, cv=none --- cop2 command 0x0486012. */
     __asm__ volatile(".word 0x4A486012");
-    /* PsyQ libgte inline macro gte_stlvnl(r) --- store MAC1/MAC2/MAC3
-     * ($25/$26/$27) to r. */
+    /* gte_stlvnl(r): store MAC1/MAC2/MAC3 ($25/$26/$27) to r. */
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
@@ -3061,15 +2986,14 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
         :: "r"(&rec->unk_354) : "$12");
 }
 
-/* func_800204C0 — rec->unk_350 is a frame counter func_800203B4 starts at 1. On
- * the tick where (counter & 7) == 2, the vector func_800203B4 stored at
- * rec->unk_354 is rotated by matrix rec->unk_352 of game_GetPlayerData(pid)
- * (GTE MVMVA), scaled by (150 - counter) / 150, negated when its y exceeds
- * 0x800, and handed to func_80032854 together with scratchpad point
- * SPAD->unkA8[pid][rec->unk_352]. The counter is cleared on every call that
- * finds it running (the original stores 0 under `>= 150` and then again
- * unconditionally). GTE islands: PsyQ Run-time Library Release 4.3 inline_o.h
- * statements, character for character (engine/gtemacro.py PINNED). */
+/* rec->unk_350 is a frame counter func_800203B4 starts at 1. On the tick
+ * where (counter & 7) == 2, the vector func_800203B4 stored at rec->unk_354
+ * is rotated by matrix rec->unk_352 of game_GetPlayerData(pid) (GTE MVMVA),
+ * scaled by (150 - counter) / 150, negated when its y exceeds 0x800, and
+ * handed to func_80032854 with scratchpad point SPAD->unkA8[pid][rec->unk_352].
+ * The counter is cleared on every call that finds it running (the original
+ * stores 0 under `>= 150` and then again unconditionally). GTE: PsyQ 4.3
+ * inline_o.h statements. */
 void func_800204C0(Unk80101EC8Record *rec) {
     s32 mac[3];
     s16 out[3];
@@ -3095,9 +3019,8 @@ void func_800204C0(Unk80101EC8Record *rec) {
             __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
             /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's
-             * command word is the post-DMPSX word .word 0x4A486012 in place of
-             * the header's DMPSX placeholder .word 0x0000013f (MVMVA sf=1
-             * mx=rot v=V0 cv=none lm=0; per-function grant Q92, ded098133) */
+             * DMPSX placeholder .word 0x0000013f -> post-DMPSX .word 0x4A486012
+             * (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; Q92) */
             __asm__ volatile ("move  $12,%0": :"r"(&rec->unk_354):"$12","$13","$14","$15","memory");
             __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -3149,22 +3072,19 @@ void func_800206B0(s32 arg0, s32 arg1) {
     }
 }
 
-/* func_800207C8 — places character rec->index's points in world space with its
- * bone matrices (game_GetPlayerData()): each of the 22 hit records' offsets
+/* Places character rec->index's points in world space with its bone
+ * matrices (game_GetPlayerData()): each of the 22 hit records' offsets
  * through its bone into bone_out (SPAD->unkA8[ch]); the attachment point set
  * D_8008D86C[unk_0E] (D_8008D774 when unk_12 == 50) through bone 18 into
  * att_out; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19 into
- * extra_out.  A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
- * matrix translation.  Then: bone 11's y axis into rec->unk_1EC, bone_out[0]
+ * extra_out. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
+ * matrix translation. Then: bone 11's y axis into rec->unk_1EC, bone_out[0]
  * into rec->unk_180, the translations of bones 17 and 14 (y raised by (unk_1A *
  * 71) >> 11) into rec->unk_198[], the floor height under each (func_80053614
  * down a probe from y - 100 to y + 2000; the probe's lower end when it finds
  * nothing) into rec->unk_1B0[], and the two bones' headings into unk_1BA /
- * unk_1C2. GTE islands: PsyQ Run-time Library Release 4.3 inline_o.h
- * statements, character for character (engine/gtemacro.py PINNED); each
- * gte_rtv0 carries the post-DMPSX word .word 0x4A486012 in place of the
- * header's DMPSX placeholder .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none
- * lm=0; per-function grant Q93, fed205ca7). */
+ * unk_1C2. GTE: PsyQ 4.3 inline_o.h statements; each gte_rtv0's DMPSX
+ * placeholder .word 0x0000013f is the post-DMPSX .word 0x4A486012 (Q93). */
 void func_800207C8(Unk80101EC8Record *rec, LeafPos *bone_out, LeafPos *att_out,
                    LeafPos *extra_out) {
     /* the func_80053614 probe in scratchpad: from (words 0..2), to (4..6), hit
@@ -3401,14 +3321,14 @@ void func_80020DDC(void) {
 /* Loads the motion sets and models for the two characters about to fight:
  * slot i gets character chr0 / chr1 in costume costume0 / costume1. */
 void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
-    /* FAKE: frame layout -- only loads[0..1] are used; the target frame (0x140)
-     * reserves 0x100 untouched bytes after them (sp+0x14..0x113), N = 129..132
-     * (loads[2] gives the wrong frame) Ablated (2026-10-06): score 20. */
+    /* FAKE: frame layout: only loads[0..1] are used; the target frame (0x140)
+     * reserves 0x100 untouched bytes after them (N = 129..132; loads[2] gives
+     * the wrong frame); without it: score 20. */
     u16 loads[130];
     s32 i;
     /* FAKE: one local for loop 1's character and loop 2's menuDat index;
      * separate locals seat the index in $a1, the target keeps both in $s0
-     * Ablated (2026-10-06): score 3. */
+     * (score 3). */
     s32 j;
 
     if (D_800A3880 == 0) {
@@ -3501,14 +3421,11 @@ void func_80021210(void) {
     }
 }
 
-/*
- * func_80021280: the record's model id (unk_48) -> its slot in D_800A38C4
- * (unk_4A); for ids below 0x2000, the nibble positions of 4 and 5 (unk_88 /
- * unk_8E), copying unk_26C into unk_8A / unk_90 under mode-dependent
- * conditions. The loop-tail duplication below is the construct accepted by an
- * owner ruling on SOTN evidence (docs/grind/sotn-evidence-2026-08-06.md). Every
- * codegen-only local is FAKE-labelled with what its natural spelling breaks.
- */
+/* The record's model id (unk_48) -> its slot in D_800A38C4 (unk_4A); for
+ * ids below 0x2000, the nibble positions of 4 and 5 (unk_88 / unk_8E),
+ * copying unk_26C into unk_8A / unk_90 under mode-dependent conditions. The
+ * loop-tail duplication is accepted by an owner ruling on SOTN evidence; every
+ * codegen-only local is FAKE-labelled with what its natural spelling breaks. */
 void func_80021280(s32 a0) {
     s32 a1 = 0;
     Unk80101EC8Record *a2 = &D_80101EC8[a0];
@@ -3604,13 +3521,9 @@ void func_800213A0(Unk80101EC8Record *arg0) {
     arg0->unk_86 = (s16)((a1 + 1) % D_800A3860[arg0->unk_4A]->f14);
 }
 
-/* Rodata moved from asm/data/800.rodata_post.s (rodata-cleanup project,
- * docs/rodata-cleanup-project.md): the 66-string animation/asset
- * table referenced by func_80023F08. Defined here, ahead of func_80021424, so
- * it follows the 0x94 bytes of switch-jtbl rodata emitted by the functions
- * above (0x80010068..0x800100FC) and precedes func_80021424's own switch table
- * (0x80010414), matching the original rodata order. Bracket-sized [66][12] to
- * match the fixed 12-byte stride per name (8-char content + null + pad). */
+/* The 66-name animation/asset table read by func_80023F08 (12-byte stride:
+ * 8 chars + null + pad). Defined here, between the switch tables of the
+ * functions above and func_80021424's own, as in the original rodata order. */
 const char D_800100FC[66][12] = {
     "WIN     ",    "KARAMI_ED", "RUN_ED  ", "RUN_ST  ", "CHAKUTI ", "APPEAR  ",
     "KAISHAKU_ST", "HAJIKARE",  "SERIEXIT", "SYAGAMI ", "HOM_ED  ", "HOM_AT  ",
@@ -3837,10 +3750,10 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     s32 ofs;
     s32 phase;
     /* the counter of both the probe loop and the start-record search, as SOTN
-     * reuses one counter across consecutive loops (owner Q51): SOTN:
-     * src/dra/menu.c:138 @aa53500 */
+     * reuses one counter across consecutive loops (Q51):
+     * SOTN: src/dra/menu.c:138 @aa53500 */
     s32 i;
-    /* Ruling 11 (ordinary-c-judge-decidable.md): holds three values -- the
+    /* Ruling 11 (ordinary-c-judge-decidable): holds three values -- the
      * ray-walk step (1..40), the floor-climb step (1..40), then the chosen
      * stage start-record index. */
     s32 temp;
@@ -3939,12 +3852,9 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
         *d = dx * dx + dz * dz;
         i++;
         d++;
-        /* FAKE: split increment — two s16-triplets per record (rot + pos);
-         * biv_count=2 stops loop.c reducing the p+6/p+10 address-givs
-         * (single p += 6 always reduces: benefit 4 - add_cost*1 > 0);
-         * combine re-merges the adds to one addiu. The two-increment class
-         * is mechanism-proven as the original spelling; owner-sanctioned
-         * per proven-spelling-class-reconstruction.md. */
+        /* FAKE: split increment (two s16 triplets per record, rot + pos): stops
+         * loop.c reducing the p+6/p+10 address givs; combine re-merges the
+         * adds to one addiu (proven-spelling-class-reconstruction). */
         p += 3;
         p += 3;
     } while (i < 4);
@@ -4115,13 +4025,10 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
             func_80022224(idx, &p->unk_D8.x, &other.x);
         } else {
             /* FAKE: default's two func_80021D10 calls repeated in this arm
-             * (duplicated-statement-into-arms; calls byte-identical, owner
-             * Q47): cross-jump merges the copies (no extra jal). Mechanism:
-             * block layout. With the copy here the dispatch tests mode == 0
-             * first, places case 0's block after the range tests and reaches
-             * case 2/3 through the target's `j` (asm/funcs/func_80022580.s
-             * :250-251); every shared form lays the dispatch out in
-             * another order. */
+             * (duplicated-statement-into-arms, Q47); cross-jump merges the
+             * copies. With the copy, the dispatch tests mode == 0 first and
+             * reaches case 2/3 through the target's `j`; every shared form
+             * lays the dispatch out in another order. */
             func_80021D10(idx, &p->unk_D8.x, slot);
             func_80021D10(idx == 0, &other.x, slot);
         }
@@ -4295,31 +4202,13 @@ void func_80022F34(void) {
     } while (i < 2);
 }
 
-/* func_8002304C (tanren_CameraControl) - pure C; its scratchpad address holders
- * are a labelled FAKE.
- *
- * The target's `andi $v1,$a0,0xffff` at 0x232F4 (rather than a plain copy)
- * comes from spelling the masked state id the way the original author spelled
- * it in the sibling function func_80023E40 later in this file, which
- * reads the identical field with the identical two-line idiom
- *     s32 a0 = arg0->unk_6A;
- *     s32 v1 = a0 & 0xFFFF;
- * and runs the identical comparison cascade (== 8, == 0x22,
- * (u32)(a0 - 0x17) < 2, == 0xA). The two functions are copy-paste siblings in
- * the original source; reconstructing the same idiom here is source fidelity,
- * not coercion. Both operands stay s32: `mode` is the raw widened load that
- * feeds `mode - 0x17`, `m` is the masked state id that feeds the three
- * equality tests.
- *
- * Why the mask survives to bytes (mechanism, read from the RTL dumps):
- * combine sees (insn A) reg74 = zero_extend:SI(mem:HI) and (insn B)
- * reg75 = and:SI(reg74, 65535). It cannot substitute A into B because reg74 is
- * still live afterwards (`mode - 0x17`), so the AND is never brought into a
- * combination where nonzero_bits() could prove it redundant, and the standalone
- * andsi3 insn reaches the assembler as `andi $v1,$a0,0xffff`. Typing either
- * side narrow (u16 mode, or u16 m) lets combine fold the truncate/extend pair
- * into a copy or delete it outright.
- */
+/* Kengo counterpart: tanren_CameraControl. Its scratchpad address holders are
+ * a labelled FAKE.
+ * The masked state id is spelled as in its
+ * copy-paste sibling func_80023E40 (`s32 a0 = arg0->unk_6A; s32 v1 = a0 &
+ * 0xFFFF;`, same comparison cascade), which keeps the target's
+ * `andi $v1,$a0,0xffff`: the raw value stays live for `mode - 0x17`, so
+ * combine never folds the mask. A u16 on either side loses it. */
 void func_8002304C(
     Unk80101EC8Record *obj, VECTOR *pos1, VECTOR *pos2, s32 *arg3) {
     /* FAKE: the scratchpad addresses scratch_c (0x1F8001C0) / scratch_d
@@ -4401,15 +4290,12 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
     }
 
     {
-        /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception). The
-         * row pointer local puts the table address in a register at its own
-         * statement, ahead of the a0_idx * 6 row offset, as the target does.
-         * Written directly (D_8008EB40[a0_idx]), expr.c:5245 expands the array
-         * base under EXPAND_SUM as a bare constant term that is forced to a
-         * register only after the index insns. Direct D_8008EB40[a0_idx],
-         * D_8008EB40[a0_idx][a1_idx] and a flat D_8008EB40 + a0_idx * 3 each
-         * miss; dumps and measurements:
-         * memory/grind/judge-decl-cleanup/eb40-pointer-alias.md */
+        /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception): the
+         * row pointer puts the table address in a register ahead of the
+         * a0_idx * 6 row offset, as the target does; written directly as
+         * D_8008EB40[a0_idx], EXPAND_SUM keeps the base a constant term until
+         * after the index insns. D_8008EB40[a0_idx][a1_idx] and D_8008EB40 +
+         * a0_idx * 3 also miss. */
         s16(*tbl)[3] = D_8008EB40;
         s32 px;
         s16 *row;
@@ -4488,12 +4374,9 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
 
 void func_80023648(Unk80101EC8Record *arg0) {
     u16 kind = arg0->unk_6A;
-    /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception), same
-     * mechanism as func_800233AC: the row pointer local puts the table address
-     * in a register ahead of the a0 * 6 row offset, as the target does (direct
-     * D_8008EB40[a0] lets expr.c:5245 keep the base a constant term until after
-     * the index insns). Dumps and measurements:
-     * memory/grind/judge-decl-cleanup/eb40-pointer-alias.md */
+    /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception), as
+     * in func_800233AC: the table
+     * address is in a register ahead of the a0 * 6 row offset. */
     s16(*tbl)[3];
 
     if (kind == 0x13 || kind == 0x1B || kind == 0x30) {
@@ -4514,12 +4397,9 @@ void func_80023648(Unk80101EC8Record *arg0) {
 
             tbl = D_8008EB40;
             row = tbl[a0];
-            /* FAKE: index-first element address `a1[row]` (identical value to
-             * `row[a1]` - C defines E1[E2] as *(E1+E2), so this is the same
-             * load), mechanism: GCC 2.7.2 RTL expansion emits the operands of
-             * the commutative PLUS in source order, so index-first flips the
-             * addu operand order and the element pointer lands in $a2 as target
-             * does. */
+            /* FAKE: index-first `a1[row]` (the same load as `row[a1]`) flips
+             * the addu operand order, so the element pointer lands in $a2 as in
+             * the target. */
             a2 = a1[row];
 
             if (D_800A38BA != 0 && arg0->unk_06 == 0) {
@@ -4534,14 +4414,10 @@ void func_80023648(Unk80101EC8Record *arg0) {
         }
 
         {
-            /* FAKE: the clamped |arg0->unk_150| is staged through the
-             * existing `a2` (its D_8008EB40 table-entry value is dead here - it
-             * was consumed by the func_8001F860 call above and is never read
-             * again), mechanism: GCC 2.7.2 global.c - a multiply-set pseudo is
-             * ONE allocno spanning all of its live ranges, so global_alloc
-             * seats every staged value in a single hard reg ($a2) exactly as
-             * target does; separate locals form separate allocnos that find_reg
-             * seats in $a2/$a0/$a1. */
+            /* FAKE: the clamped |arg0->unk_150| is staged through the existing
+             * `a2` (its table-entry value is dead here): one multiply-set
+             * pseudo keeps every staged value in $a2, as in the target;
+             * separate locals land in $a2/$a0/$a1. */
             a2 = arg0->unk_150;
             if (a2 < 0) {
                 a2 = -a2;
@@ -4568,10 +4444,7 @@ void func_80023648(Unk80101EC8Record *arg0) {
 
                 tbl_val = D_800A310C[D_8008DA08[arg0->unk_0A]];
                 /* FAKE: the second read of arg0->unk_1A is staged through
-                 * the existing `sub_result` (its 0x14E difference is dead here
-                 * - consumed by the store above and by new_14e), mechanism: GCC
-                 * 2.7.2 global.c multiply-set pseudo / single allocno as above.
-                 */
+                 * the dead `sub_result`, as above. */
                 sub_result = arg0->unk_1A;
                 mult_res = sub_result * tbl_val;
                 limit = (mult_res << 4) >> 12;
@@ -4586,10 +4459,8 @@ void func_80023648(Unk80101EC8Record *arg0) {
                     s32 speed_prod = arg0->unk_14E * arg0->unk_44;
                     s16 sin_val = Judge[(arg0->unk_1C8.vy & 0xFFF)];
 
-                    /* FAKE: the >>12 speed is staged through the existing `a2`
-                     * (its clamped-|0x150| value is dead here - consumed by
-                     * sub_result above), mechanism: GCC 2.7.2 global.c
-                     * multiply-set pseudo / single allocno as above. */
+                    /* FAKE: the >>12 speed is staged through the dead `a2`, as
+                     * above. */
                     a2 = speed_prod >> 12;
 
                     arg0->unk_D8.x += (sin_val * a2) >> 16;
@@ -4710,18 +4581,10 @@ ok_check:
                 arg0->unk_94 = 1;
             }
             arg0->other->unk_286 = 2;
-            /* FAKE: the common tail `0x74 = 0xBC` + its control transfer
-             * duplicated into this arm instead of falling through to the shared
-             * copy below, mechanism: local-alloc block_alloc's hand-rolled
-             * quantity sort (tools/gcc-2.7.2/local-alloc.c:1539-1563). With
-             * only the two quantities of `lw parent` (refs 2, span 4, pri 5000)
-             * and `li 2` (refs 2, span 2, pri 10000) the next_qty==2 path ranks
-             * the constant first and hands it $v0; the duplicated tail puts a
-             * third quantity (the 0xBC load, pri 10000) in the same block, and
-             * the next_qty==3 path's third comparison restores the parent
-             * pointer to qty_order[0], so it takes $v0 and the constant takes
-             * $v1 - the target seating. jump2 cross-jump re-merges the two
-             * copies, so the emitted function is unchanged at 219 instructions.
+            /* FAKE: the common tail `0x74 = 0xBC` and its jump duplicated into
+             * this arm: the extra quantity makes local-alloc rank the parent
+             * pointer first, so it takes $v0 and the constant $v1, as in the
+             * target. Cross-jump re-merges the copies (219 insns either way).
              */
             arg0->unk_74 = arg0->unk_B8.vy;
             goto skip_74;
@@ -4834,7 +4697,7 @@ done:;
  */
 extern s16 D_8008E0BC[27][4];
 /* [D_8008D9EC[unk_0A]][unk_0E]: the move command func_80023F08 hands
- * func_80030A2C (ex cpu_set_move_command_and_dir, RESET sweep 2026-10-03). */
+ * func_80030A2C. */
 extern u8 D_8008D90C[28][8];
 extern void func_800204C0(Unk80101EC8Record *);
 
@@ -4857,12 +4720,11 @@ void func_80023F08(s32 arg0, PadState *pad) {
     u16 keys;
     u16 *ent;
     MoveScript *move;
-    /* FAKE: one local reused for four values (no-new-park-categories.md
-     * entry 1): the unk_14C clamp limit, the unk_1D8 / unk_1C8.vy angle gap
-     * (folded to 0..0x800), the unk_14C turn step and the -1/0/1 stick side.
-     * The target keeps all four in $a1; a local per value, or any partial
-     * split, misses (global.c find_reg gives the split values other
-     * registers). Ablated (2026-10-06): one local per value: score 25. */
+    /* FAKE: one local reused for four values (no-new-park-categories entry
+     * 1): the unk_14C clamp limit, the
+     * unk_1D8 / unk_1C8.vy angle gap (folded to 0..0x800), the unk_14C turn
+     * step and the -1/0/1 stick side. The target keeps all four in $a1; one
+     * local per value: score 25. */
     s32 temp;
     s32 face;
     s32 face90;
@@ -4995,14 +4857,12 @@ void func_80023F08(s32 arg0, PadState *pad) {
     } else if (rec->unk_50->unk_08 >= rec->unk_40) {
         ent = rec->unk_50->unk_0A;
         while ((cmd = ent[0]) != 0) {
-            /* FAKE (owner ruling Q90,
-             * .claude/rules/ordinary-c-judge-decidable.md): the entry's class
-             * mask (one bit per character class unk_0A; bit set = the entry
-             * applies) is a u32 local only for the int->u32 conversion. With an
-             * int mask, fold-const.c:4437 rewrites (mask & (1 << cls)) != 0
-             * into ((mask >> cls) & 1) != 0 (srav / andi); converted, the
-             * rewrite does not apply and the target's li 1 / sllv / and stays
-             * (0x800244E0..E8). Ablated (2026-10-06): an s32 mask: score 3. */
+            /* FAKE (Q90, ordinary-c-judge-decidable): the entry's class mask
+             * (one bit per character class unk_0A; bit set = the entry applies)
+             * is a u32 only for the int->u32 conversion. With an int mask,
+             * fold-const rewrites (mask & (1 << cls)) != 0 into ((mask >> cls)
+             * & 1) != 0 (srav / andi) in place of the target's li 1 / sllv /
+             * and. An s32 mask: score 3. */
             u32 mask;
 
             if (!(cmd & 0x8000) ||
@@ -5162,12 +5022,11 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_1F8.y += 0x898;
     }
     {
-        /* FAKE: named intermediate (no-new-park-categories.md entry 6): unk_6A
-         * is read into `state` before the unk_7A test, as the target loads it
-         * (lhu 0x6A ahead of the beqz at 0x80024C14). Spelled with two direct
-         * reads, the 6A load follows the branch and jump.c thread_jumps sends
-         * the 0x23 test's unk_7A == 0 jump past this test (+2 insns); a u16
-         * `state` also misses. Ablated (2026-10-06): score 3. */
+        /* FAKE: named intermediate (no-new-park-categories entry 6): unk_6A is
+         * read into `state` before the
+         * unk_7A test, as the target loads it; with two direct reads the load
+         * follows the branch and jump threading adds 2 insns (score 3); a u16
+         * `state` also misses. */
         s32 state = rec->unk_6A;
 
         if (rec->unk_7A != 0 && state == 6) {
@@ -5336,11 +5195,11 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_104.vy += 0x15;
     }
     {
-        /* FAKE: named intermediate (no-new-park-categories.md entry 6): with
-         * `state`, cse.c keeps this test's own li 8 / li 0x22 (the target
-         * re-materialises them at 0x80025780 / 0x80025788); with direct
-         * rec->unk_6A reads cse substitutes the previous test's constant
-         * pseudos. Ablated (2026-10-06): score 11. */
+        /* FAKE: named intermediate (no-new-park-categories entry 6): with
+         * `state`, cse keeps this test's own
+         * li 8 / li 0x22 (the target re-materialises them); with direct
+         * rec->unk_6A reads cse reuses the previous test's constants (score
+         * 11). */
         s32 state = rec->unk_6A;
 
         if (state == 8 || state == 0x22) {
@@ -5457,11 +5316,9 @@ void func_80023F08(s32 arg0, PadState *pad) {
         goto set_8c;
     }
     /* FAKE (gotos): the goto-free spelling
-     * (cond ? func_8002798C(rec) != 0 : (A || B)) does not match.  FAKE: the
-     * second range test is written unk_A6 >= unk_40; spelled like the first
-     * (unk_40 <= unk_A6) fold-const factors the two identical tests out of
-     * the ||. Ablated (2026-10-06): the goto-free spelling: score 2; the range
-     * test spelled like the first: score 11. */
+     * (cond ? func_8002798C(rec) != 0 : (A || B)) scores 2. FAKE: the second
+     * range test is written unk_A6 >= unk_40; spelled like the first,
+     * fold-const factors the two identical tests out of the || (score 11). */
     if (((rec->unk_0C == 0x1D || rec->unk_0C == 0xE) &&
          (rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 ||
           rec->unk_6A == 0x26) &&
@@ -5708,8 +5565,7 @@ skip_62:
  */
 const u32 D_80010428[1] = {0x00000000};
 
-/* Q65: this file's initialized small data (.sdata), in address order; values
- * from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order. */
 s32 D_800A30EC = 0;
 u8 D_800A30F0[4] = {0, 0, 0, 0};
 s32 D_800A30F4[2] = {0, 0};

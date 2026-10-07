@@ -1,25 +1,19 @@
 /* LIBSPU code between SR_GAKS and S_N2P: func_8008B488. .text
- * 0x8008B488..0x8008BA94. By link order and size it is probably LIBSPU S_SVA
- * (SpuSetVoiceAttr; memory/closer/libsnd-hunt-report.md, PROBABLE), but no
- * libscan xref or near-tier evidence identifies it, so the region stays one gap
- * file (owner rulings Q106 D3, Q109), named by its ROM offset. */
+ * 0x8008B488..0x8008BA94. By link order and size probably LIBSPU S_SVA
+ * (SpuSetVoiceAttr), but no libscan evidence identifies it, so it stays one gap
+ * file (Q106 D3, Q109). */
 #include "common.h"
 #include "libspu_internal.h"
 
-/* func_8008B488: per-voice SPU attribute setter with the shape of PsyQ
- * LIBSPU's SpuSetVoiceAttr (C ref: sotn-decomp src/main/psxsdk/libspu/s_sva.c
- * and psyz decomp/src/libspu/sr_sv.c). BB2 links an older build: no min/max
- * voice range, a different block order, and the SR mode defaulting to 0x100.
- * The name stays auto (near-tier-ruling-2026-09-07: no verbatim caller pins
- * it). SpuVoiceAttr is PsyQ libspu.h's (include/psxsdk/libspu.h; sizeof =
- * 0x40, the callers' s32[16]). */
+/* Per-voice SPU attribute setter with the shape of PsyQ SpuSetVoiceAttr (SOTN
+ * libspu/s_sva.c, psyz libspu/sr_sv.c), from an older build: no min/max voice
+ * range, a different block order, and the SR mode defaulting to 0x100. The
+ * name stays auto (near-tier ruling 2026-09-07: no verbatim caller pins it). */
 
 void func_8008B488(SpuVoiceAttr *attr) {
-    /* FAKE: volatile locals admitted on SOTN precedent (owner rulings Q50
-       route A, Q53) -- the closing settle loop (v = 1; 2 x v *= 13) runs on
-       $sp slots, as in the target; plain locals score 35. SOTN's
-       _SpuSetVoiceAttr ends with the same loop on the same volatile pair
-       (src/main/psxsdk/libspu/s_sva.c:279-283). */
+    /* FAKE: volatile locals (SOTN precedent, Q50, Q53): the closing settle loop
+       runs on $sp slots as in the target and in SOTN's _SpuSetVoiceAttr;
+       plain locals score 35. */
     volatile s32 i; /* SOTN: src/main/psxsdk/libspu/s_sva.c:14 @db41b28 */
     volatile s32 v; /* SOTN: src/main/psxsdk/libspu/s_sva.c:15 @db41b28 */
     s32 voice;

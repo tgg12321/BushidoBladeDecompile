@@ -1,12 +1,11 @@
 /* LIBSND code between TEMPO and UT_GVBA: func_800858D0. .text
- * 0x800858D0..0x800859F0. By link order and size it is probably LIBSND UT_AKO
- * (SsUtAllKeyOff; memory/closer/libsnd-hunt-report.md, PROBABLE), but no
- * libscan xref or near-tier evidence identifies it, so the region stays one gap
- * file (owner rulings Q106 D3, Q109), named by its ROM offset. */
+ * 0x800858D0..0x800859F0. By link order and size probably LIBSND UT_AKO
+ * (SsUtAllKeyOff), but no libscan evidence identifies it, so it stays a gap
+ * file named by its ROM offset (Q106 D3, Q109). */
 #include "common.h"
 #include "libsnd_i.h"
 
-/* func_800858D0: reset the per-voice state record (_svm_voice) of every
+/* Reset the per-voice state record (_svm_voice) of every
  * voice up to _SsVmMaxVoice and key each one off (func_8008B488 with a
  * one-voice mask, then _SsVmKeyOffNow). */
 void func_800858D0(void) {

@@ -3,8 +3,6 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-/* PsyQ 4.0 LIBSPU s_m_m: SpuMalloc — verbatim-linked Sony object;
-   C ref: sotn-decomp src/main/psxsdk/libspu/s_m_m.c */
 s32 SpuMalloc(s32 size) {
     s32 var_s2;
     s32 var_s3;
@@ -46,11 +44,9 @@ s32 SpuMalloc(s32 size) {
             _spu_memList[var_s2].size - var_s3 >= size) {
             s32 next = var_s2 + 1;
 
-            /* FAKE: volatile re-read of the block's addr word, admitted on
-               SOTN precedent (owner rulings Q50/Q55, Q53): the target reloads
-               the word here; without the cast GCC reuses the register loaded
-               for the 0x40000000 test (score 15). SOTN carries the same cast
-               at the same statement, marked "Why the volatile?".
+            /* FAKE: volatile re-read of the addr word, as the target reloads
+               it; without the cast the 0x40000000 test's register is reused:
+               score 15 (Q50/Q55, Q53; same cast in SOTN).
                SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @db41b28 */
             _spu_memList[next].addr =
                 (*(volatile u32 *)&_spu_memList[var_s2].addr & 0x0FFFFFFF) +

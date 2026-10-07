@@ -1,22 +1,14 @@
 /* PsyQ 4.0 LIBGPU SYS: the GPU system layer (ResetGraph .. memset; $Id:
  * sys.c,v 1.129). .text 0x8007AE7C..0x8007DF10, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
-/* One file across the old gpu.c|display.c cut at 0x8007B244, which was
- * mid-module (Q106 D3). */
+ * (docs/naming/libscan/matches.json), Q106 D3. One file across the old cut at
+ * 0x8007B244, which was mid-module (Q106 D3). */
 #include "common.h"
 #include <psxsdk/libgpu.h>
 #include "psx.h"
 
 /* PsyQ libgpu device table ("gpu" in the SDK's sys.c): a 0x40-byte struct of
- * function pointers, the object at D_8009BE2C, reached through the pointer
- * g_gpu_dev_table (0x8009BE6C).  Member names/offsets are the PsyQ ones; every
- * index used across src/ maps onto them exactly (p[2]=addque2, p[3]=clr,
- * p[5]=cwb, p[6]=cwc, p[7]=drs, p[8]=dws, p[0xB]=otc, p[0xD]=reset,
- * p[0xE]=status, p[0xF]=sync, 0x28/4=getctl, 0x10/4=ctl).
- *
- * SetDispMask, DrawSync, ClearImage(2), LoadImage, StoreImage, DrawOTag and
- * PutDrawEnv call through the members (measured byte-identical), as do the
- * other users. */
+ * function pointers at D_8009BE2C, reached through the pointer g_gpu_dev_table
+ * (0x8009BE6C). Member names/offsets are the PsyQ ones. */
 typedef struct GpuDevTable {
     /* 0x00 */ const char *rcsid;
     /* 0x04 */ void (*addque)();
@@ -38,18 +30,10 @@ typedef struct GpuDevTable {
 
 extern GpuDevTable *g_gpu_dev_table;
 
-/* libgpu SYS state block: one 0x80-byte object at 0x8009BE74 (the one C handle
- * for these bytes). Evidence that it is one object: ResetGraph clears 0x80
- * bytes from its base and then re-fills +0x10 (0x5C) and +0x6C (0x14);
- * SetDispMask, PutDrawEnv and DrawOTagEnv address disp_env / draw_env off the
- * register that holds &debug_level (+0x6A, +0xE), which cse's related-value
- * addressing only does for offsets of ONE symbol. Member names restate the API
- * that owns each field: GetGraphType/_reset (type), SetGraphQueue (queue_mode),
- * SetGraphDebug (debug_level), SetGraphReverse (reverse; get_dx mirrors x when
- * set), ResetGraph's per-type limit tables + the clamps in
- * checkRECT/get_cs/_clr (width/height), DrawSyncCallback (drawsync_cb),
- * GetDrawEnv/PutDrawEnv (draw_env), GetDispEnv/PutDispEnv (disp_env). unk08 is
- * set to 1 by _addque2 and test-and-cleared by _exeque (also the DMA-2 IRQ
+/* libgpu SYS state block: one 0x80-byte object at 0x8009BE74 (ResetGraph
+ * clears 0x80 bytes from its base). Member names follow the API that owns each
+ * field (GetGraphType, SetGraphQueue, SetGraphDebug, SetGraphReverse, ...).
+ * unk08 is set by _addque2 and test-and-cleared by _exeque (also the DMA-2 IRQ
  * callback) before it calls drawsync_cb. */
 typedef struct {
     u8 type;        /* +0x00 */
@@ -58,7 +42,8 @@ typedef struct {
     u8 reverse;     /* +0x03 */
     s16 width;      /* +0x04 */
     s16 height;     /* +0x06 */
-    /* +0x08 volatile: grant in volatile_extern_allowlist.txt */
+    /* +0x08 volatile: test-and-cleared by _exeque, also the DMA-2 IRQ callback
+     * (Q95) */
     volatile s32 unk08;
     u32 drawsync_cb;  /* +0x0C */
     DRAWENV draw_env; /* +0x10 */
@@ -69,15 +54,10 @@ extern GpuCtx g_gpu_ctx;
 
 /* PsyQ libgpu packet queue (sys.c `static volatile struct QueueItem`): 64
  * records of 0x60 bytes {callback, argument pointer, the callback's second
- * argument (a colour, a pixel pointer or 0), 21 data words}. Evidence for the
- * aggregate: the original code of _addque2 and _exeque scales the queue index
- * by 0x60 (x3 then sll 5) and adds it to these addresses, and the copy loop
- * parks &D_8010368C in a base register and stores through base + i*4 +
- * slot*0x60 -- one object addressed by base + offset, not symbol adjacency.
- * Replaces the splat per-word scalars D_80103680 / D_80103684 / D_80103688 /
- * D_8010368C. volatile: Sony's own qualifier on this object (the queue is
- * drained by _exeque from DMA-IRQ context); grant in
- * volatile_extern_allowlist.txt. */
+ * argument (a colour, a pixel pointer or 0), 21 data words}. volatile is
+ * Sony's own qualifier (the queue is drained by _exeque from DMA-IRQ context;
+ * Ruling-4 (legitimate-volatile-interrupt-touched) grant).
+ */
 typedef struct GpuQueueItem {
     /* 0x00 */ s32 (*func)(s32 *, s32);
     /* 0x04 */ s32 *arg;
@@ -88,14 +68,8 @@ typedef struct GpuQueueItem {
 extern volatile GpuQueueItem _que[64];
 
 /* PsyQ libgpu sys.c DR_ENV packet buffer (the `_clr` split-clear / fill
- * packet): one tag word + up to 15 command words at 0x800F1858.  Evidence for
- * the aggregate from the ORIGINAL code of _clr: it materialises &code[8]
- * (0x800F187C) into a base register and stores 0x03FFFFFF through it, and
- * the tag word carries that same address -- one object addressed by base +
- * offset, not thirteen adjacent scalars.  Replaces splat's per-word names
- * D_800F185C..D_800F1888 (retired from the symbol config; this aggregate is
- * the sole handle).  Stock PsyQ DR_ENV is 0x40 bytes;
- * the next object (g_gpu_color_table, 0x800F189C) starts at +0x44. */
+ * packet): one tag word + up to 15 command words at 0x800F1858. The next
+ * object (g_gpu_color_table, 0x800F189C) starts at +0x44. */
 typedef struct GpuDrEnv {
     /* 0x00 */ u32 tag;
     /* 0x04 */ u32 code[15];
@@ -104,96 +78,68 @@ typedef struct GpuDrEnv {
 extern GpuDrEnv D_800F1858;
 #include <psxsdk/libetc.h>
 
-/* .rodata 0x80015E28..0x8001605C: this module's strings (moved from
- * src/text1a_b_post_rodata.c, Q106 D4: every C reader is in this file, in link
- * order; the leading rcsid is referenced only by SYS's device table D_8009BE2C,
- * asm/data/7D920.data.s). */
+/* .rodata 0x80015E28..0x8001605C: this module's strings; every C reader is in
+ * this file (Q106 D4). */
 
-/* D_80015E28: 1 string(s), 52B @ 0x80015E28 (the rcsid; only the device table
- * D_8009BE2C points here) */
+/* the rcsid; only the device table D_8009BE2C points here */
 const char D_80015E28[52] =
     "$Id: sys.c,v 1.129 1996/12/25 03:36:20 noda Exp $\0\0\0";
 
-/* D_80015E5C: 1 string(s), 32B @ 0x80015E5C */
 const char D_80015E5C[32] = "ResetGraph:jtb=%08x,env=%08x\n\0\0\0";
 
-/* D_80015E7C: 1 string(s), 20B @ 0x80015E7C */
 const char D_80015E7C[20] = "ResetGraph(%d)...\n\0\0";
 
-/* D_80015E90: 1 string(s), 24B @ 0x80015E90 */
 const char D_80015E90[24] = "SetGraphReverse(%d)...\n\0";
 
-/* D_80015EA8: 1 string(s), 44B @ 0x80015EA8 */
 const char D_80015EA8[44] = "SetGraphDebug:level:%d,type:%d r"
                             "everse:%d\n\0\0";
 
-/* D_80015ED4: 1 string(s), 20B @ 0x80015ED4 */
 const char D_80015ED4[20] = "SetGrapQue(%d)...\n\0\0";
 
-/* D_80015EE8: 1 string(s), 28B @ 0x80015EE8 */
 const char D_80015EE8[28] = "DrawSyncCallback(%08x)...\n\0\0";
 
-/* g_str_setdispmask: 1 string(s), 20B @ 0x80015F04 */
 const char g_str_setdispmask[20] = "SetDispMask(%d)...\n\0";
 
-/* g_str_drawsync: 1 string(s), 20B @ 0x80015F18 */
 const char g_str_drawsync[20] = "DrawSync(%d)...\n\0\0\0\0";
 
-/* D_80015F2C: 1 string(s), 12B @ 0x80015F2C */
 const char D_80015F2C[12] = "%s:bad RECT\0";
 
-/* D_80015F38: 1 string(s), 20B @ 0x80015F38 */
 const char D_80015F38[20] = "(%d,%d)-(%d,%d)\n\0\0\0\0";
 
-/* D_80015F4C: 1 string(s), 4B @ 0x80015F4C */
 const char D_80015F4C[4] = "%s:\0";
 
-/* g_str_clearimage: 1 string(s), 12B @ 0x80015F50 */
 const char g_str_clearimage[12] = "ClearImage\0\0";
 
-/* g_str_loadimage: 1 string(s), 12B @ 0x80015F5C */
 const char g_str_loadimage[12] = "LoadImage\0\0\0";
 
-/* g_str_storeimage: 1 string(s), 12B @ 0x80015F68 */
 const char g_str_storeimage[12] = "StoreImage\0\0";
 
-/* D_80015F74: 1 string(s), 12B @ 0x80015F74 */
 const char D_80015F74[12] = "MoveImage\0\0\0";
 
-/* g_str_clearotag: 1 string(s), 24B @ 0x80015F80 */
 const char g_str_clearotag[24] = "ClearOTag(%08x,%d)...\n\0\0";
 
-/* D_80015F98: 1 string(s), 24B @ 0x80015F98 */
 const char D_80015F98[24] = "ClearOTagR(%08x,%d)...\n\0";
 
-/* g_str_drawotag: 1 string(s), 20B @ 0x80015FB0 */
 const char g_str_drawotag[20] = "DrawOTag(%08x)...\n\0\0";
 
-/* g_str_putdrawenv: 1 string(s), 24B @ 0x80015FC4 */
 const char g_str_putdrawenv[24] = "PutDrawEnv(%08x)...\n\0\0\0\0";
 
-/* D_80015FDC: 1 string(s), 28B @ 0x80015FDC */
 const char D_80015FDC[28] = "DrawOTagEnv(%08x,&08x)...\n\0\0";
 
-/* D_80015FF8: 1 string(s), 24B @ 0x80015FF8 */
 const char D_80015FF8[24] = "PutDispEnv(%08x)...\n\0\0\0\0";
 
-/* g_str_gpu_timeout: 1 string(s), 52B @ 0x80016010 */
 const char g_str_gpu_timeout[52] =
     "GPU timeout:que=%d,stat=%08x,chc"
     "r=%08x,madr=%08x,\0\0\0";
 
-/* D_80016044: 1 string(s), 24B @ 0x80016044 */
 const char D_80016044[24] = "func=(%08x)(%08x,%08x)\n\0";
 
-/* Forward declarations */
 extern s32 memcpy(s32, void *, s32);
 s32 get_mode(s32, s32, s32);
 s32 get_cs(s16, s16);
 s32 get_ce(s16, s16);
 s32 get_ofs(s32, s32);
 
-/* Externs for globals */
 extern volatile u32 *g_gpu_stat_reg;
 extern volatile u32 *g_gpu_data_reg;
 extern volatile u32 *g_gpu_dma_madr;
@@ -203,14 +149,10 @@ extern u8 ctlbuf[];
 extern s32 g_gpu_vcount;
 extern s32 g_gpu_draw_count;
 
-/* Declarations from the file ResetGraph .. GetGraphDebug were split from
- * (gpu.c). */
 extern s32 D_8009BE2C;
 extern s32 D_8009BEF4[];
 extern s32 D_8009BF08[];
 
-/* PsyQ LIBGPU sys.c v1.129: ResetGraph — verbatim-linked Sony object;
-   C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c */
 u32 ResetGraph(s32 a0) {
     switch (a0 & 7) {
     case 0:
@@ -451,9 +393,6 @@ s32 GetDrawEnv(s32 a0) {
 
 s32 get_dx(DISPENV *env);
 
-/* PsyQ 4.0 LIBGPU SYS: PutDispEnv (verbatim-linked Sony object);
-   C ref: SOTN src/main/psxsdk/libgpu/sys.c:336 @aa53500 (a PsyQ 3.3 build;
-   structure only) */
 DISPENV *PutDispEnv(DISPENV *env) {
     s32 h_start, h_end;
     s32 v_start, v_end;
@@ -468,15 +407,9 @@ DISPENV *PutDispEnv(DISPENV *env) {
             ? ((env->disp.y & 0xFFF) << 12) | (get_dx(env) & 0xFFF) | 0x05000000
             : ((env->disp.y & 0x3FF) << 10) | (env->disp.x & 0x3FF) |
                   0x05000000);
-    /* FAKE: volatile-qualified reads of the saved environment (8 casts, both
-       rect compares). The shipped bytes load every one of these fields as lhu +
-       sll 16 + sra 16 -- the un-folded extend GCC keeps only for a volatile
-       halfword -- while the env-> side of the same compares is a plain lh; the
-       non-volatile spelling folds to lh. Admitted on a cross-function citation
-       (owner ruling Q100): the same use-site `*(volatile T *)&` read of a
-       plain-RAM struct member, matched and self-marked in SOTN ("Why the
-       volatile?"); SOTN's own PutDispEnv (3.3) compares words and has none. The
-       plain reads: score 71. SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @db41b28
+    /* FAKE: volatile reads of the saved environment (8 casts) keep the target's
+       lhu + sll + sra extend; plain reads fold to lh: score 71 (Q100).
+       SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @db41b28
      */
     if (!(*(volatile s16 *)&g_gpu_ctx.disp_env.screen.x == env->screen.x &&
           *(volatile s16 *)&g_gpu_ctx.disp_env.screen.y == env->screen.y &&
@@ -507,9 +440,9 @@ DISPENV *PutDispEnv(DISPENV *env) {
             ((v_end & 0x3FF) << 10) | 0x07000000 | (v_start & 0x3FF));
     }
     /* isinter..pad1 compared as one word: the shipped bytes are a single lw at
-       +0x10 on both sides. SOTN: src/main/psxsdk/libgpu/sys.c:367 @aa53500
-       (the same compare of the saved and new environment, through LOW() =
-       `*(s32 *)&`, SOTN include/common.h:73). */
+       +0x10 on both sides. It is the same compare SOTN spells with its LOW()
+       macro, i.e. the `*(s32 *)&` cast used here.
+       SOTN: src/main/psxsdk/libgpu/sys.c:367 @aa53500 */
     if (*(s32 *)&g_gpu_ctx.disp_env.isinter != *(s32 *)&env->isinter ||
         !(*(volatile s16 *)&g_gpu_ctx.disp_env.disp.x == env->disp.x &&
           *(volatile s16 *)&g_gpu_ctx.disp_env.disp.y == env->disp.y &&
@@ -540,9 +473,8 @@ DISPENV *PutDispEnv(DISPENV *env) {
             }
         }
         /* FAKE: empty then-arm; the direct `if (env->disp.h > ...) mode |=
-           0x24;` and its respellings add 4 insns (score 5). SOTN:
-           src/main/psxsdk/libgpu/sys.c:394 @aa53500 (same statement, same
-           form). */
+           0x24;` adds 4 insns (score 5). SOTN: src/main/psxsdk/libgpu/sys.c:394
+           @aa53500 (same form). */
         if (env->disp.h <= (env->pad0 ? 288 : 256)) {
         } else {
             mode |= 0x24;
@@ -601,14 +533,10 @@ void SetDrawMode(DR_MODE *p, s32 dfe, s32 dtd, s32 tpage, RECT *tw) {
 }
 
 void SetDrawEnv(DR_ENV *out, DRAWENV *r) {
-    /* FAKE: prologue pair order — single forward-order param
-       alias (pointer-alias-fake-exception; owner ruling for the
-       twins SetDrawEnv / SetDrawEnv2). cc1 combine's single-use
-       entry-copy merge relocates arg0's `move s1,a0` past arg1's
-       `move s0,a1`, flipping the prologue save+def pair
-       emit order to match target (s0-pair first). An arg1
-       alias, K&R decl-block reversal or do-while(0) entry wrap
-       leaves the pair order unchanged. Without it: score 4. */
+    /* FAKE: param alias flips the prologue's save/move pair order to the
+       target's (s0 pair first); without it: score 4
+       (pointer-alias-fake-exception; owner ruling for SetDrawEnv /
+       SetDrawEnv2) */
     DR_ENV *o = out;
     u16 buf[4];
     s16 var_v0;
@@ -665,12 +593,9 @@ void SetDrawEnv(DR_ENV *out, DRAWENV *r) {
 }
 
 void SetDrawEnv2(DR_ENV *out, DRAWENV *r) {
-    /* FAKE: prologue pair order — same param alias and
-       mechanism as SetDrawEnv above (owner ruling for the twins):
-       cc1 combine's single-use entry-copy merge relocates arg0's
-       `move s1,a0` past arg1's `move s0,a1`, flipping the
-       prologue save+def pair emit order to match target
-       (s0-pair first). Without it: score 4. */
+    /* FAKE: param alias flips the prologue's save/move pair order, as in
+       SetDrawEnv; without it: score 4
+       (pointer-alias-fake-exception) */
     DR_ENV *o = out;
     u16 buf[4];
     s16 var_v0;
@@ -760,13 +685,8 @@ s32 get_mode(s32 arg0, s32 arg1, s32 arg2) {
     return var_v1 | var_v0;
 }
 
-/* PsyQ libgpu get_cs (verbatim-linked Sony object).
- * Body: the published psxsdk clamp idiom (sotn-decomp
- * src/main/psxsdk/libgpu/sys.c house style) with THIS library build's limits
- * and dispatch — clamping both axes against the halfword globals
- * g_gpu_ctx.width/g_gpu_ctx.height and dispatching on the g_gpu_ctx.type range
- * check. It is NOT SOTN's get_cs verbatim: that build clamps against constants
- * and dispatches on a boolean global (different library build). */
+/* Clamps both axes to g_gpu_ctx.width/height; SOTN's (different build) get_cs
+ * clamps against constants. */
 s32 get_cs(s16 x, s16 y) {
     x = x < 0 ? 0 : (x > g_gpu_ctx.width - 1 ? g_gpu_ctx.width - 1 : x);
     y = y < 0 ? 0 : (y > g_gpu_ctx.height - 1 ? g_gpu_ctx.height - 1 : y);
@@ -777,13 +697,7 @@ s32 get_cs(s16 x, s16 y) {
     }
 }
 
-/* PsyQ libgpu get_ce, the get_cs twin (verbatim-linked Sony object, census
- * 2026-07-09). Same published psxsdk clamp idiom as get_cs above, with
- * the packet constant 0xE4000000; the limits
- * (g_gpu_ctx.width/g_gpu_ctx.height), the dispatch (g_gpu_ctx.type range check)
- * and both arms' masks/shifts were read off THIS function's own target bytes
- * (asm/funcs/get_ce.s), not assumed symmetric. Not SOTN's get_ce verbatim —
- * different library build. */
+/* The get_cs twin, packet 0xE4000000. */
 s32 get_ce(s16 x, s16 y) {
     x = x < 0 ? 0 : (x > g_gpu_ctx.width - 1 ? g_gpu_ctx.width - 1 : x);
     y = y < 0 ? 0 : (y > g_gpu_ctx.height - 1 ? g_gpu_ctx.height - 1 : y);
@@ -900,10 +814,9 @@ s32 _otc(s32 arg0, s32 arg1) {
 void _cwc(u32 a0);
 u32 _param(u32 a0);
 
-/* PsyQ libgpu sys.c `_clr` - the GPU-side body of ClearImage(): clamp the
- * rect to the VRAM page, build either a 12-word unaligned (mono rectangle)
- * or 5-word aligned (VRAM fill) packet in the DR_ENV buffer, and DMA it.
- * Spelling follows psyz decomp/src/libgpu/sys.c:706-741 (PsyQ 4.0). */
+/* _clr - the GPU-side body of ClearImage(): clamp the rect to the VRAM page,
+ * build either a 12-word unaligned (mono rectangle) or 5-word aligned (VRAM
+ * fill) packet in the DR_ENV buffer, and DMA it. */
 s32 _clr(RECT *rect, u32 color) {
     u32 ptr;
 
@@ -946,15 +859,10 @@ s32 _clr(RECT *rect, u32 color) {
     return 0;
 }
 
-/* PsyQ libgpu sys.c `_dws` - "data write short", the GPU-side body of
- * LoadImage(): clamp the destination rect to the VRAM page, push the
- * CPU->VRAM copy command plus the odd (non-multiple-of-16) leading words
- * through GP0, then hand the 16-word-aligned bulk to DMA channel 2.
- * Reconstructed from the two version-correct matching decomps of this same
- * Sony function: sotn-decomp src/main/psxsdk/libgpu/sys.c:608-655 (PSX,
- * GCC 2.7.2) and psyz decomp/src/libgpu/sys.c:745-785 (PsyQ 4.0).  Both ship
- * the same `var_s4` transfer-direction selector and the same `% 16` / `/ 16`
- * split; the spelling here follows them. */
+/* _dws - "data write short", the GPU-side body of LoadImage(): clamp the
+ * destination rect to the VRAM page, push the CPU->VRAM copy command plus the
+ * odd (non-multiple-of-16) leading words through GP0, then hand the
+ * 16-word-aligned bulk to DMA channel 2. */
 s32 _dws(RECT *rect, s32 *data) {
     s32 to_write;
     s32 size;
@@ -1001,12 +909,8 @@ s32 _dws(RECT *rect, s32 *data) {
     return 0;
 }
 
-/* PsyQ libgpu sys.c `_drs` - "data read short", the GPU-side body of
- * StoreImage(): clamp the source rect to the VRAM page, push the VRAM->CPU
- * copy command through GP0, wait for the GPU to be ready to send, read the
- * odd (non-multiple-of-16) leading words through GP0, then hand the
- * 16-word-aligned bulk to DMA channel 2.  Same shape as _dws above; spelling
- * follows psyz decomp/src/libgpu/sys.c:787-833 (PsyQ 4.0). */
+/* _drs - "data read short", the GPU-side body of StoreImage(): as _dws, but
+ * VRAM->CPU after waiting for the GPU to be ready to send. */
 s32 _drs(RECT *rect, s32 *data) {
     s32 to_read;
     s32 size;
@@ -1100,14 +1004,6 @@ extern s32 D_8009BF70;
 extern s32 D_8009BF80;
 extern s32 D_8009BF84;
 
-/* ADDQUE2-BEGIN */
-/* LIBGPU/SYS `_addque2` — reference sotn-decomp
- * src/main/psxsdk/libgpu/sys.c:744 (older library revision: per-store re-index
- * of the volatile queue head, 0x60-byte slots = func / arg / cb_arg / 21 data
- * words). */
-/* GpuQueueItem and `extern volatile GpuQueueItem _que[64];` are declared at the
- * top of this file. */
-
 s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 cb_arg) {
     s32 i;
 
@@ -1149,12 +1045,8 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 cb_arg) {
     return (_qin - _qout) & 0x3F;
 }
 
-/* ADDQUE2-END */
-/* PsyQ 4.0 LIBGPU SYS: _exeque — verbatim-linked Sony object; C ref:
- * sotn-decomp src/main/psxsdk/libgpu/sys.c:797 is an older revision (null-func
- * reset path, CheckCallback tail) and was not adopted. Drains the packet queue;
- * when it is empty and a draw is pending, clears the pending flag and calls the
- * DrawSyncCallback. */
+/* Drains the packet queue; when it is empty and a draw is pending, clears the
+ * pending flag and calls the DrawSyncCallback. */
 s32 _exeque(void) {
     if (*g_gpu_dma_chcr & 0x01000000) {
         return 1;
@@ -1169,9 +1061,8 @@ s32 _exeque(void) {
         _que[_qout].func(_que[_qout].arg, _que[_qout].cb_arg);
         _qlog[0] = (s32)_que[_qout].func;
         D_8009BF6C = _que[_qout].arg;
-        /* FAKE: do-while(0) — its loop notes keep this log store between the
-         * arg log store and the _qout advance; without it sched sinks both log
-         * stores to the loop test. */
+        /* FAKE: do-while(0) keeps this log store between the arg log store
+         * and the _qout advance; without it both sink to the loop test. */
         do {
             D_8009BF70 = _que[_qout].cb_arg;
         } while (0);

@@ -1,18 +1,13 @@
 /* PsyQ LIBSND VM_ALOC2: _SsVmDoAllocate. .text 0x800861BC..0x800863CC (VM_DOFF
- * follows). Not a verbatim LIBSCAN span: BB2 links an interim LIBSND build,
- * between PsyQ 4.0 and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
- * libscan near tier: the near-verbatim UT_KEYV's REL26 at +0x310 names
- * _SsVmDoAllocate in all six builds -> EXE jal 0x800861BC
- * (docs/naming/libscan/near_manifest.csv), VM_ALOC2's only XDEF (+0x0, PsyQ 4.0
- * LIBSND.LIB). */
+ * follows). BB2 links an interim LIBSND build (between PsyQ 4.0 and 4.1); the
+ * module start (owner ruling Q109) is UT_KEYV's REL26 call to _SsVmDoAllocate,
+ * VM_ALOC2's only XDEF (docs/naming/libscan/near_manifest.csv). */
 #include "common.h"
 #include "libsnd_i.h"
 
-/* Sony LIBSND `_SsVmDoAllocate` (psyz vm_aloc2.c analog): set up the
-   allocated voice's SPU shadow registers (start address, ADSR) and mark the
-   voice's dirty bits. BB2 deltas vs psyz: _svm_voice stride 54, ADSR indexed
-   by voiceOffset through the flat s16 shadow view D_80102A78[]. */
+/* _SsVmDoAllocate (psyz vm_aloc2.c): set up the allocated voice's SPU shadow
+   registers (start address, ADSR) and mark the voice's dirty bits. BB2 deltas
+   vs psyz: _svm_voice stride 54, ADSR indexed by voiceOffset. */
 static inline void vmSetStartAddr(u16 addr) {
     _svm_sreg_buf[_svm_cur.voiceOffset + 3] = addr;
     _svm_sreg_dirty[_svm_cur.voice] |= 8;

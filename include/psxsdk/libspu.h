@@ -2,9 +2,8 @@
 #define PSXSDK_LIBSPU_H
 
 /* PsyQ LIBSPU public types and entry points (Sony's libspu.h; SOTN
- * include/psxsdk/libspu.h). Type layouts and prototypes are spelled as BB2's
- * code uses them (the module definitions in src/main/psxsdk/libspu/).
- * Library-internal state: src/main/psxsdk/libspu/libspu_internal.h. */
+ * include/psxsdk/libspu.h), spelled as BB2's code uses them. Library-internal
+ * state: src/main/psxsdk/libspu/libspu_internal.h. */
 
 #include "common.h"
 

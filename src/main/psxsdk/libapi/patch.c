@@ -5,12 +5,10 @@
 #include "include_asm.h"
 
 extern void (*jtbl_800A3624)(void);
-/* func_80078F60 / func_80078F74: 5-insn bare tail-jump trampolines
-   (lui/lw/nop/jr/nop) through the jtbl_800A3620 / jtbl_800A3624 function
-   pointers that the Pad-init wrapper func_80078F88 installs at runtime. GCC
-   2.7.2 has no MIPS sibling-call optimization, so no pure-C `(*fp)()` form
-   emits a frameless `jr $t1` (it always builds a stack frame + jalr + jr $ra).
-   Hand-coded canonical asm (owner-authorized). */
+/* EnablePAD / DisablePAD: bare tail-jump trampolines through the
+   jtbl_800A3620 / jtbl_800A3624 function pointers that _patch_pad installs.
+   Hand-written asm: GCC 2.7.2 has no sibling calls, so C cannot emit the
+   frameless `jr`. */
 INCLUDE_ASM("asm/funcs", EnablePAD);
 INCLUDE_ASM("asm/funcs", DisablePAD);
 INCLUDE_ASM("asm/funcs", _patch_pad);

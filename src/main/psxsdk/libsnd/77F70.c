@@ -1,18 +1,12 @@
-/* LIBSND code between VM_NOWON and VM_VSU: func_80087770, _SsVmGetSeqVol,
- * _SsVmGetSeqLVol, _SsVmGetSeqRVol and _SsVmSeqKeyOff. .text
- * 0x80087770..0x80087E3C. By layout this is LIBSND VM_SEQ (PsyQ 4.0 LIBSND.LIB
- * XDEFs _SsVmSetSeqVol +0x0, _SsVmGetSeqVol +0x538, _SsVmGetSeqLVol +0x59C,
- * _SsVmGetSeqRVol +0x5E4, _SsVmSeqKeyOff +0x62C; here +0x53C, +0x5A0, +0x5E8,
- * +0x630), but its first function func_80087770 is not identified at the
- * libscan xref or near tier, so the region stays one gap file (owner ruling
- * Q109), named by its ROM offset. */
+/* LIBSND code between VM_NOWON and VM_VSU, .text 0x80087770..0x80087E3C. By
+ * layout LIBSND VM_SEQ (_SsVmGetSeqVol .. _SsVmSeqKeyOff sit 4 bytes past the
+ * PsyQ 4.0 XDEF offsets), but func_80087770 is not identified at the libscan
+ * xref or near tier, so it stays one gap file (Q109). */
 #include "common.h"
 #include "libsnd_i.h"
 
-/* func_80087770: Sony LIBSND vmanager _SsVmSetSeqVol. The volume chain
- * follows ps2sdk libsnd2 vm/vm_seq.c _SsVmSetSeqVol (BB2's build has no
- * _snd_vmask / vab-id checks); SOTN's SpuVmSetSeqVol is the same API in a
- * different build that only writes voll/volr * 0x81 per voice.
+/* func_80087770: LIBSND _SsVmSetSeqVol (cf. ps2sdk libsnd2 vm/vm_seq.c; this
+ * build has no _snd_vmask / vab-id checks).
  * Store a sequence's master volume pair (clamped to 0x7F) in its score block,
  * then recompute the shadow volume registers of every voice that sequence
  * owns: a shared base from the VAB master volume and the voice's channel

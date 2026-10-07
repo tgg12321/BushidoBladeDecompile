@@ -1,14 +1,11 @@
 /* PsyQ 4.0 LIBSND SSSTOP (the Jun-06-1997 4.0 build): _SsSndStop, SsSeqStop and
  * SsSepStop. .text 0x80085270..0x80085448, a bit-verbatim module span
- * (memory/closer/libsnd-hunt-report.md "New verbatim result";
- * docs/naming/libscan/ambiguous_resolutions.md), Q106 D3. */
+ * (docs/naming/libscan/ambiguous_resolutions.md), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 
-/* PsyQ 4.0 LIBSND SSSTOP: _SsSndStop — verbatim-linked Sony object
-   (bit-verbatim vs the Jun-06-1997 4.0 build, 118 words);
-   C ref: sotn-decomp src/main/psxsdk/libsnd/stop.c (interim 4.0 build adds
-   the ~0x400 flag clear + NotifyChannel/ResetCounter pair). */
+/* C ref: sotn-decomp src/main/psxsdk/libsnd/stop.c; this build adds the ~0x400
+   flag clear + NotifyChannel/ResetCounter pair. */
 void _SsSndStop(s16 a0, s16 a1) {
     struct SeqStruct *score = &_ss_score[a0][a1];
     s32 i;

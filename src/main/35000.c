@@ -6,7 +6,6 @@
 #include "bb2.h"
 #include "gte.h"
 
-/* Declarations from the file this TU was split from (text1a_c.c). */
 void func_800433E4();
 
 void func_80044800(void) {
@@ -284,8 +283,7 @@ s32 func_80045080(s32 a0) {
     return func_800457DC() - val;
 }
 
-/* Q65: this file's statics (.sbss, allocated per file in link order by
- * PSYLINK), in address order. */
+/* Q65: this file's statics (.sbss), in address order. */
 static s32 D_800A3398;
 static s32 D_800A339C; /* not named by any code or data: size from the gap */
 static s32 D_800A33A0;
@@ -459,11 +457,8 @@ void func_80045600(s32 a0, s32 a1) {
     {
         Unk800EED10Entry *p = D_800EED10;
         do {
-            /* FAKE: the cursor `p` and the tested entry `e` are two names for
-               one walk; mechanism: the target keeps both live (`move a3,a2` at
-               the loop head, `addiu a2,a3,16` in the back-edge slot, `sw
-               ...,8(a3)` after the loop).  One pointer `e` walked by `e++`
-               scores 7. */
+            /* FAKE: cursor `p` and tested entry `e` are two names for one
+               walk, both live as in the target; one pointer `e++`: score 7 */
             e = p;
             if (e->id == a0)
                 goto found;
@@ -475,9 +470,8 @@ found:
     if (i < D_800A33AC) {
         s32 cur = D_800A33A0;
         s32 rest = D_800A33A4;
-        /* FAKE: the parameter a0 (the id, dead here) reused for the entry's new
-           amt; the target computes it into $a0 (`subu a0,a1,v0`).  A fresh
-           local scores 17. */
+        /* FAKE: the dead parameter a0 reused for the new amt, computed into
+           $a0 as in the target; a fresh local: score 17 */
         a0 = a1 - cur;
         cur += a0;
         rest -= a0;
@@ -616,10 +610,9 @@ void func_80045A50(s32 a0) {
     func_800453E0(a0);
 }
 
-/* Not the definition's spelling: snd_VabFakeOpen (3AB48.c) takes an s16 second
- * parameter, but the original's calls here pass it unextended (an s16 prototype
- * sign-extends the argument: sll/sra in func_80045AA4, lh for lw in
- * func_80046048; measured). */
+/* Not the definition's spelling: snd_VabFakeOpen takes an s16 second
+ * parameter, but the calls here pass it unextended (an s16 prototype adds
+ * sll/sra in func_80045AA4, lh for lw in func_80046048). */
 extern s32 snd_VabFakeOpen(s32, s32);
 
 void func_80045AA4(s32 a0, s32 a1) {
@@ -818,7 +811,6 @@ void func_80046048(s32 a0, s32 a1) {
     } while (count != -1);
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values
- * from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order. */
 s32 D_800A3240 = 1;
 s32 D_800A3244 = 0;

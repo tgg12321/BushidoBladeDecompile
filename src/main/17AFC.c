@@ -7,7 +7,6 @@
 #include "gte.h"
 #include "bb2_const.h"
 
-/* Declarations from the file this TU was split from (code6cac_b.c). */
 extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
@@ -47,13 +46,10 @@ void func_80027334(MotionFrame *arg0) {
     arg0->unk_0C[0x23] = 0xBCD;
 }
 
-/* D_800A376A / D_800A376B are one u8 per player (the hit-limb bits); a0 is the
- * player. Every
- * `*(&D_800A376A + a0)` below reaches [1] through [0]'s address. FAKE (owner
- * ruling Q97): declared u8[2]
- * (memory/grind/judge-decl-cleanup/followups/func_8002738C.c12-merge-variant.diff),
- * the cheat-sweep lane reported func_8003B2C8 at 12 and func_8003B328 at 16
- * (scores not banked). */
+/* D_800A376A / D_800A376B are one u8 per player (the hit-limb bits); a0 is
+ * the player, and `*(&D_800A376A + a0)` reaches [1] through [0]'s address.
+ * FAKE (Q97): two u8 scalars; as u8[2], func_8003B2C8 / func_8003B328 were
+ * reported at 12 / 16 (not banked). */
 void func_8002738C(s32 a0, s32 a1) {
     if (D_800A38DC != 0) {
         return;
@@ -147,11 +143,8 @@ void func_800274BC(s32 *arg0, s16 *arg1) {
         log2_val = ((u32)(g_sqrt_table_u8[dist_sq])) >> 3;
     } else {
         s32 sp_tmp;
-        /* Hand-written GTE leading-zero-count block (LZCS in, LZCR out) —
-         * canonical inline asm, owner-authorized. Sibling of
-         * func_8001A67C (code6cac.c); same hand-asm evidence: $t4 reused
-         * back-to-back for two unrelated values, 2 unfilled GTE delay nops,
-         * splat tags the cop2 ops "handwritten instruction". */
+        /* Hand-written GTE leading-zero count (LZCS in, LZCR out), as in
+         * func_8001A67C. */
         __asm__ volatile(
             "addu   $t4, %1, $zero\n"
             "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
@@ -351,10 +344,9 @@ extern u8 D_8008EB74[3][2][2];
 
 s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
                   s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
-    /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec`, kept
-     * because GCC 2.7.2 halves the register priority of an unmodified stack
-     * parameter (local-alloc doubles its live length); Ruling 12. (rec used
-     * directly: score 78) */
+    /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec` (an
+     * unmodified stack parameter gets half the register priority); rec used
+     * directly: score 78 (Ruling 12) */
     Tbl8008E194 *tbl;     /* the record, read field by field */
     Tbl8008E194 *tbl_arg; /* the record, passed on to func_800278C0 */
     s16 *vec;
@@ -370,12 +362,9 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
     s32 same;
     s32 code;
 
-    /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached by the
-     * first's address: handed to func_800203B4 and read here as vec[0..2]
-     * (owner ruling Q96). Declared as s16[3] or {x,y,z}, cse rewrites the dot's
-     * [0] read to this register (score 2;
-     * memory/grind/judge-decl-cleanup/followups/func_80027AD8.vec-investigation.md).
-     */
+    /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached by the
+     * first's address, passed to func_800203B4 and read as vec[0..2] (Q96); as
+     * s16[3] or {x,y,z}: score 2 */
     vec = &D_800A37E8;
     player = ch->index;
     opp = ch->other;
@@ -424,9 +413,9 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
         if (pass == 0) {
             diff = opp->unk_20 - ch->unk_20;
             cat = func_800272FC(diff);
-            /* FAKE: diff's sign bit taken ahead of the same / unk_B4 stores and
-             * the func_80032854 call; read at its use in the table index, ch
-             * and limb swap $s0 / $s1 across the function: score 102 */
+            /* FAKE: diff's sign bit taken before the same / unk_B4 stores and
+             * the call; read at its use, ch and limb swap $s0 / $s1: score 102
+             */
             sign = (u32)diff >> 31;
             same = ch->unk_AF == opp->unk_AF;
             ch->unk_B4 = opp->unk_B4 = same;
@@ -510,9 +499,10 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
             func_80027A58(ch);
             return 1;
         }
-        /* FAKE: duplicate the real count/return tail across switch arms so
-         * flow.c raises tbl's reg_n_refs before jump2 cross-jump merges it.
-         * (cases 0, 1-3 goto the case 4-5 copy: score 31) */
+        /* FAKE: count/return tail duplicated into each arm: the extra copies
+         * raise tbl's reference count (allocation priority) before
+         * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
+         * 4-5 copy: score 31 */
         if (pass == 1 && tbl->unkD == 2) {
             ch->unk_272++;
         }
@@ -532,9 +522,10 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
             func_80027A58(ch);
             return 1;
         }
-        /* FAKE: duplicate the real count/return tail across switch arms so
-         * flow.c raises tbl's reg_n_refs before jump2 cross-jump merges it.
-         * (cases 0, 1-3 goto the case 4-5 copy: score 31) */
+        /* FAKE: count/return tail duplicated into each arm: the extra copies
+         * raise tbl's reference count (allocation priority) before
+         * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
+         * 4-5 copy: score 31 */
         if (pass == 1 && tbl->unkD == 2) {
             ch->unk_272++;
         }
@@ -548,9 +539,10 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
     case 4:
     case 5:
         if (!flag) {
-            /* FAKE: duplicate the real count/return tail across switch arms so
-             * flow.c raises tbl's reg_n_refs before jump2 cross-jump merges it.
-             * (cases 0, 1-3 goto the case 4-5 copy: score 31) */
+            /* FAKE: count/return tail duplicated into each arm: the extra
+             * copies raise tbl's reference count (allocation priority) before
+             * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
+             * 4-5 copy: score 31 */
             if (pass == 1 && tbl->unkD == 2) {
                 ch->unk_272++;
             }
@@ -691,9 +683,8 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                 s16 temp_v0_3 = arg0->unk_288[temp_a1_2];
                 s16 var_v0_2;
                 if (temp_v0_3 == temp_v1_3) {
-                    /* FAKE: do-while(0) loop-note ref weighting, mechanism:
-                     * flow.c REG_N_REFS += loop_depth feeding global.c
-                     * allocno_compare. */
+                    /* FAKE: do-while(0) loop depth weights these refs in
+                     * register allocation (do-while-zero-exception) */
                     do {
                         func_80032854(arg0->index, 1, arg1, (s16 *)0);
                         func_80032854(arg0->index, 0x25, arg1, (s16 *)0);
@@ -710,9 +701,8 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                             goto block_48;
                         sel19:
                             /* FAKE: store duplicated into this arm instead of
-                             * sharing block_48's copy, mechanism: jump2
-                             * cross-jump tail merge (jump.c find_cross_jump)
-                             * chooses which copy survives inline. */
+                             * sharing block_48's copy; cross-jumping picks
+                             * which copy survives */
                             arg0->unk_286 = 0x19;
                             goto block_49;
                         }
@@ -721,10 +711,9 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                         goto block_49;
                     }
                     {
-                        /* FAKE: named intermediate for the selected constant,
-                         * mechanism: cse.c/expand LUID ordering keeps the two
-                         * constants materialised in target's order (written as
-                         * a plain ternary they re-merge in canonical order). */
+                        /* FAKE: named intermediate for the selected constant
+                         * keeps the two constants in the target's order (a
+                         * plain ternary reorders them) */
                         s32 sel = (var_s1 == 0) ? 0xB : 0x19;
                         var_v0_2 = sel;
                     }
@@ -736,8 +725,7 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                         goto set_0xB;
                     }
                     /* FAKE: store duplicated into the `<` arm instead of
-                     * sharing do_store_calls's copy, mechanism: jump2
-                     * cross-jump tail merge (jump.c find_cross_jump). */
+                     * sharing do_store_calls's copy (cross-jump tail merge) */
                     arg0->unk_286 = var_v0_4;
                     goto do_calls;
                 }
@@ -871,29 +859,16 @@ void func_8002872C(void) {
 
 extern s32 D_800A3144[2];
 
-/* Body-overlap push between the two characters (D_80101EC8[0] and
- * [1]). Skipped while either character's unk_6A state is 0x28. Each character
- * gets two points in SPAD->unk78: its joint 1, and the midpoint of its joints
- * 15 and 19 (SPAD->unkA8). Every point of character 0 is tested against every
- * point of character 1 with the per-point radii D_800A3144[0..1]: when the
- * points are closer than the summed radius, the overlap (at most 0x80) pushes
- * the two characters apart along x/z, split by the difference of their unk_20
- * and scaled by the distance, which is the g_sqrt_table_u8 integer square root
- * with the GTE leading-zero count for inputs >= 0x400. After any hit, the
- * unk_6A states (0x13/0x1B/0x30 with unk_14E above 0x9C4, and 0x15) and the
- * facing difference of the unk_1C8.vy angles pick one of: both characters to
- * unk_286 = 0xF (no push), one character to 0x10 or 5 through func_80027A58 /
- * func_80032854, or D_800A38A8 / D_800A3876. The accumulated push is then added
- * to each character's unk_134.vx / .vz.
- *
- * GTE ISLAND (inline-asm-policy.md, owner ruling 2026-09-26, inline_o.h
- * class): one PsyQ gtemac.h 4.3 gte_Lzc(r1,r2) :174-178, written as its
- * inline_o.h 4.3 expansion statement for statement and character for
- * character against engine/gtemacro.py PINNED: gte_ldlzc :207-210, gte_nop
- * :1095-1097 (x2), gte_stlzc :1074-1077. Operand seats are cc1's (the target's
- * `addu $t4,$a0,$zero` is the header's `move $12,%0`, and `addiu $v0,$sp,0x10`
- * is cc1 materializing &lzc_out). Everything else is ordinary C except the
- * three FAKE-annotated locals below (dist, tbl, shift). */
+/* Body-overlap push between the two characters (D_80101EC8[0] and [1]),
+ * skipped while either's unk_6A is 0x28. Each character's two points (joint 1,
+ * and the midpoint of joints 15 and 19) are tested pairwise with the radii
+ * D_800A3144[0..1]; an overlap (at most 0x80) pushes the characters apart along
+ * x/z, scaled by the distance. After a hit, the unk_6A states and the facing
+ * difference pick the reaction (unk_286, D_800A38A8 / D_800A3876). The push is
+ * added to unk_134.vx / .vz.
+ * GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc), inline_o.h class
+ * (inline-asm-policy, owner ruling 2026-09-26). Everything else is ordinary C
+ * except the three FAKE-annotated locals below (dist, tbl, shift). */
 void func_800288C8(void) {
     s32 lzc_out;
     s32 hits;
@@ -909,13 +884,12 @@ void func_800288C8(void) {
     s32 dz;
     s32 reach;
     /* FAKE: two values -- the squared distance, then its square root (clamped
-     * to 1). A separate squared-distance local reorders the copy below and the
-     * r*r test. */
+     * to 1); a separate squared-distance local reorders the copy and the r*r
+     * test */
     s32 dist;
-    /* FAKE: two values -- the copy of the squared distance that is the
-     * gte_Lzc input (its only reader), then the table byte. A fresh copy local
-     * takes $v1 (the target's is $a0). Same shape as func_8002A458's temp2
-     * (Q28). */
+    /* FAKE: two values -- the gte_Lzc input copy of the squared distance,
+     * then the table byte; a fresh copy local takes $v1, not the target's $a0
+     * (Q28) */
     s32 tbl;
     s32 pen;
     s32 bias;
@@ -955,9 +929,8 @@ void func_800288C8(void) {
             if ((u32)dist < 0x400) {
                 dist = (u32)g_sqrt_table_u8[dist] >> 3;
             } else {
-                /* gte_Lzc(tbl, &lzc_out) -- gtemac.h :174-178 = inline_o.h
-                 * gte_ldlzc :207-210, gte_nop :1095-1097 (x2), gte_stlzc
-                 * :1074-1077; LZCR slot sp+0x10 in the target. */
+                /* gte_Lzc(tbl, &lzc_out) -- gtemac.h :174-178: gte_ldlzc,
+                 * gte_nop x2, gte_stlzc */
                 __asm__ volatile ("move  $12,%0": :"r"(tbl):"$12","$13","$14","$15","memory");
                 __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -966,9 +939,8 @@ void func_800288C8(void) {
                 __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
                 {
                     /* FAKE: two values -- the leading-zero count, then the
-                     * table shift. One expression, `shift = 0x16 - (lzc_out
-                     * & ~1)`, puts the loaded and masked count in $a0 (the
-                     * target's are $v1 / $v0). */
+                     * table shift; as one expression `shift = 0x16 - (lzc_out &
+                     * ~1)` the count lands in $a0 (target: $v1 / $v0) */
                     s32 shift;
                     shift = lzc_out;
                     shift = 0x16 - (shift & ~1);
@@ -1085,20 +1057,14 @@ s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3);
 s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2);
 void func_80033550(LeafPos *arg0);
 
-/* `tbl` holds two 2x2 grids of points (entry idx * 4 + row * 2 + col).
- * Builds the x/z bounds and the top y of grid `idx` in the scratchpad record
- * at 0x1F8002B8 (min in unk78, max in unk84), then walks the PosRec list for
- * an unused entry inside those bounds and tests it (at unk100[0]) against the
- * grid's two triangles (points 0,1,2 and 1,2,3) with func_8002E6B0.
- * A hit on a type-2 entry: when `flag` is set and idx is 0, idx becomes 1
- * and the triangle tests restart on grid 1 (the bounds are not rebuilt);
- * otherwise it calls func_80044B30 with the entry's list index and
- * func_8002FC80's result for that triangle, calls func_80033550, marks the
- * entry used and returns 0. A hit on any other type, or both triangles
- * missing while `flag` is set and idx is not 0, stores in unk100[0].y the
- * average of unk78.y (the starting grid's point 0; the scan never updates it)
- * and the top y (unk84.y), and returns 1. Returns 0 when the list runs out.
- * func_8002FC80 reads only vx/vy/vz, so the 12-byte points pass as VECTOR. */
+/* Tests the unused PosRec entries inside grid `idx`'s x/z bounds against the
+ * grid's two triangles (points 0,1,2 and 1,2,3) with func_8002E6B0. `tbl` holds
+ * two 2x2 grids of points (entry idx * 4 + row * 2 + col); the bounds go to the
+ * scratch record at 0x1F8002B8. A type-2 hit restarts on grid 1 when `flag` is
+ * set and idx is 0; otherwise it calls func_80044B30 / func_80033550, marks the
+ * entry used and returns 0. Any other hit, or a miss with `flag` set and idx
+ * not 0, stores the average of unk78.y and the top y in unk100[0].y and returns
+ * 1. Returns 0 when the list runs out. */
 s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     PosRec *rec;
@@ -1201,51 +1167,32 @@ extern s32 func_8002DAD0(Unk1F8002B8Rec *obj);
 extern s32 func_8002DE20(
     Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2);
 
-/* Blade contact test between the two records at D_80101EC8 (stride 0x44C),
- * called by func_8002C61C (its result goes to D_800A3824). Returns -1 unless
- * both records' +0x3C are at least 4.
- *
- * The first 16 points of SPAD->unkA8 are saved and borrowed as `ws`: eight
- * points per record, two 2x2 grids (func_800290B8's `tbl` layout) built from
- * the scratchpad points unk00 / unk48 and the record's +0x210 / +0x234 points.
- *
- * First loop, per record whose +0xE is not 6 or 7 and whose +0x6A is 2, 0x1B,
- * 0x28 or 0x26: fills grid 0 (and grid 1: the +0xE 4/5 shape, or the unk48
- * points when +0x8C is set). If +0x40 is inside +0xA1..+0xA3 and func_800290B8
- * hits grid 0, or +0x8C is set, +0x40 is inside +0xA2..+0xA4 and it hits grid
- * 1, effects 1, 0x26 and 0x2D play at scr->unk100[0], +0x286 becomes 0x19
- * (+0x8C set, first case) or 0xB, and +0xAD is cleared.
- *
- * Then both records' grids are rebuilt (y raised to 100000 when +0x96 is set,
- * +0x92 is 0 or +0xC is 0x1F), count[c] is the record's triangle count (2, or
- * 4 with +0x8C set), and every coordinate is halved. Triangle t of a record is
- * points 2,3,1 (t even) or 0,1,2 (t odd) of grid t >> 1, written as pointers
- * to scr->unk60[] (first triangle) or scr->unk6C[] (second).
- *
- * Each record-0 triangle that func_8002DAD0 accepts is tested against each
- * record-1 triangle (bounding boxes unk78 / unk84 and unk90 / unk9C, then
- * func_8002DE20); the rejected ones are marked in `mask` and tested again with
- * the roles swapped. A hit restores the saved points and returns
- * (record-1 grid << 1) | record-0 grid; otherwise the points are restored and
- * -1 is returned. */
+/* Blade contact test between the two D_80101EC8 records (called by
+ * func_8002C61C; the result goes to D_800A3824). Returns -1 unless both
+ * records' +0x3C are at least 4. Borrows the first 16 SPAD->unkA8 points as
+ * two 2x2 grids per record (func_800290B8's layout). A record whose +0xE is
+ * not 6 or 7, in +0x6A state 2, 0x1B, 0x28 or 0x26, whose grid func_800290B8
+ * hits plays effects 1, 0x26 and 0x2D and sets +0x286 to 0x19 or 0xB; the hit
+ * counts only when +0x40 lies within +0xA1..+0xA3 (+0xA2..+0xA4 for grid 1,
+ * which is tested only with +0x8C set). Then each record-0 triangle
+ * func_8002DAD0 accepts is tested against each record-1 triangle (bounding
+ * boxes, then func_8002DE20), the rejected ones again with the roles swapped. A
+ * hit returns (record-1 grid << 1) | record-0 grid, else -1; the points are
+ * restored. */
 s32 func_80029454(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     LeafPos *ws = SPAD->unkA8[0];
     LeafPos saved[16];
     s32 count[2];
-    /* Loop counters, each used by several loops: i by the two record loops and
-     * the halving loop's outer loop, j by the halving loop's inner loop and
-     * both passes' outer loops, n by both passes' inner loops, k by the save,
-     * bounds and restore loops. */
+    /* i, j, n, k: loop counters, each shared by several loops */
     s32 i;
     s32 j;
     s32 n;
     u32 mask;
     s32 k;
     s32 *p;
-    /* rec holds two values: the record pointer of the first record loop and
-     * the record pointer of the second (each &D_80101EC8[i]). One local,
-     * not two: ordinary-c-judge-decidable.md Ruling 11, (E)(ii) name. */
+    /* rec: the record pointer of the first record loop, then of the
+     * second (Ruling 11, ordinary-c-judge-decidable) */
     Unk80101EC8Record *rec;
 
     if (D_80101EC8[0].unk_3C < 4) {
@@ -1553,42 +1500,22 @@ s32 func_80029454(void) {
     return -1;
 }
 
-/* Sweeps a character's weapon segment against its limb spheres. The scratch
- * record at 0x1F8002B8 (`scr`, the one func_8002E838 / func_8002EA24 /
- * func_8002CA8C use) gets its two segment-end pointers (+0x60 -> scr+0x0,
- * +0x64 -> scr+0xC) and a copy of the tip at +0xC8; d = tip - base. The yaw
- * difference to the partner (partner+0x1D8) is folded into 0..0x800.
- * sqrt(dx^2 + dz^2 - dy^2) (a negative square prints
- * "ILLEGAL GUN MOTION" and returns) gives the pitch at +0xF8 and ratan2(dx,
- * dz) the yaw at +0xFA; unless `quiet`, effect 0xB is played at +0xC8. The
- * unit direction is then q = (d << 12) / |d| (4096 = one unit); the base
- * takes the old tip and the tip is pushed out by q*4. If the yaw
- * difference is under 0x400, func_8002E838 sets up the segment frame and each
- * of the 22 hit records of character `id` (D_800F5F68, 0x14 bytes each; 6..9
- * skipped unless obj+0x26C) is tested against its scratch point
- * SPAD->unkA8[id][i] with the record's +0xC/+0xE limits: a hit sets bit i in
- * *hit, and, when the record's first halfword is nonzero, a second test
- * with its +0x10/+0x12 limits also sets it in *deep.
- * Finally the base is pulled back by q/4 into +0xA8, func_80053614 casts the
- * segment against the stage (hit point +0x100); on a stage hit for which
- * func_80054434() != 7: if *hit is set and the stage point is not nearer the
- * base than obj+0xF4, nothing more happens; otherwise the limb masks are
- * cleared (when *hit was set) and, unless `quiet`, effect 0xA plays at the
- * hit point.
+/* Sweeps a character's weapon segment (base -> tip, in the scratch record at
+ * 0x1F8002B8) against its limb spheres. Takes the segment's pitch and yaw (a
+ * negative square prints "ILLEGAL GUN MOTION" and returns) and unit direction
+ * q, and pushes the tip out by q*4. If the yaw difference to the partner is
+ * under 0x400, each of character `id`'s 22 hit records (D_800F5F68; records
+ * 6..9 only when obj+0x26C is set) is tested: a hit sets bit i in *hit and,
+ * only when the record's first halfword is nonzero, a second (deep) test sets
+ * bit i in *deep. Then func_80053614 casts the segment against the stage; on
+ * a stage hit (func_80054434() != 7), unless *hit is set and the stage point
+ * is no nearer the base than obj+0xF4, the limb masks are cleared (when *hit
+ * was set) and, unless `quiet`, effect 0xA plays at the hit point.
  * D_800A37E8.. receive -q.
- *
- * Both square roots are the D_8008D118 byte-LUT integer sqrt with the GTE
- * leading-zero count for inputs >= 0x400.
- *
- * GTE ISLANDS (inline-asm-policy.md, owner ruling 2026-09-26, inline_o.h
- * class): one PsyQ gtemac.h 4.3 gte_Lzc(r1,r2) :174-178 per square root,
- * written as its inline_o.h 4.3 expansion statement for statement and
- * character for character against engine/gtemacro.py PINNED: gte_ldlzc
- * :207-210, gte_nop :1095-1097 (x2), gte_stlzc :1074-1077. Operand seats are
- * cc1's (the target's `addu $t4,<reg>,$zero` is the header's `move $12,%0`,
- * and `addiu $v0,$sp,0x118/0x11C` is cc1 materializing &sp_tmp / &sp_tmp2).
- * Everything else is ordinary C, except the five Ruling 11 locals (dx, dy,
- * dz, temp, temp2) and the do-while(0), each annotated below. */
+ * GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc) per square root, inline_o.h
+ * class (inline-asm-policy, owner ruling 2026-09-26). Everything else is
+ * ordinary C, except the five Ruling 11 locals (dx, dy, dz, temp, temp2) and
+ * the do-while(0), each annotated below. */
 extern char D_80010478[];
 extern void printf();
 extern void func_8002E838(Unk1F8002B8Rec *scr);
@@ -1603,21 +1530,18 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     s32 work[64];
     s32 sp_tmp;
     s32 sp_tmp2;
-    /* dx/dy/dz: the x/y/z offset of a point from the segment base, three
-     * values each -- the segment itself (tip - base), then the stage hit point
-     * and obj+0xF4 from the base in the end block. Ruling 11, (E)(ii): every
-     * write is `point.c - base.c`. */
+    /* dx/dy/dz: a point's offset from the segment base -- the segment itself,
+     * then the stage hit point and obj+0xF4 (Ruling 11) */
     s32 dx;
     s32 dy;
     s32 dz;
     s32 diff;
-    /* temp: two values -- the squared horizontal length, then the square
-     * root of len_sq (the segment length). Ruling 11, (E)(i) generic name. */
+    /* temp: the squared horizontal length, then the segment length
+     * (Ruling 11) */
     s32 temp;
     s32 hlen;
-    /* temp2: two values -- the copy of `temp` that is the site-1 gte_ldlzc
-     * input (its only reader), then the D_8008D118 table byte. Ruling 11
-     * (C)(3) GTE-macro input copy clause (Q28), (E)(i) generic name. */
+    /* temp2: the site-1 gte_ldlzc input copy of `temp`, then the
+     * D_8008D118 table byte (Ruling 11, Q28) */
     s32 temp2;
     s32 len_sq;
     s32 hit_sq;
@@ -1647,9 +1571,8 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     if ((u32)temp < 0x400) {
         hlen = (u32)g_sqrt_table_u8[temp] >> 3;
     } else {
-        /* gte_Lzc(temp2, &sp_tmp) -- gtemac.h :174-178 = inline_o.h
-         * gte_ldlzc :207-210, gte_nop :1095-1097 (x2), gte_stlzc
-         * :1074-1077; LZCR slot sp+0x118 in the target. */
+        /* gte_Lzc(temp2, &sp_tmp) -- gtemac.h :174-178: gte_ldlzc, gte_nop x2,
+         * gte_stlzc */
         __asm__ volatile ("move  $12,%0": :"r"(temp2):"$12","$13","$14","$15","memory");
         __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -1675,9 +1598,8 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     if ((u32)len_sq < 0x400) {
         temp = (u32)g_sqrt_table_u8[len_sq] >> 3;
     } else {
-        /* gte_Lzc(len_sq, &sp_tmp2) -- gtemac.h :174-178 = inline_o.h
-         * gte_ldlzc :207-210, gte_nop :1095-1097 (x2), gte_stlzc
-         * :1074-1077; LZCR slot sp+0x11C in the target. */
+        /* gte_Lzc(len_sq, &sp_tmp2) -- gtemac.h :174-178: gte_ldlzc, gte_nop
+         * x2, gte_stlzc */
         __asm__ volatile ("move  $12,%0": :"r"(len_sq):"$12","$13","$14","$15","memory");
         __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -1703,10 +1625,9 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     scr->unk60[1]->z += qz * 4;
     if (diff < 0x400) {
         func_8002E838(scr);
-        /* FAKE: do-while(0) (do-while-zero-exception), observed effect: id in
-         * $s7 / obj in $fp, as in the target. Unwrapped, those two swap
-         * ($s7 <-> $fp, 16 instructions differ); rec and scr keep $s4 / $s5
-         * either way. */
+        /* FAKE: do-while(0) puts id in $s7 / obj in $fp as in the target;
+         * unwrapped they swap (16 instructions differ)
+         * (do-while-zero-exception) */
         do {
             rec = D_800F5F68[id];
         } while (0);
@@ -1762,15 +1683,9 @@ extern s32 func_8002CD58(Unk1F8002B8Rec *obj);
 
 void func_8002AB08(s32 mode) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
-    /* FAKE: second handle to D_800A37E8 (pointer-alias-fake-exception). The
-     * target rematerializes the address at each of its three call sites
-     * (lui/addiu straight into $a1/$a3). This local is one pseudo with a
-     * REG_EQUIV to the symbol (local-alloc.c update_equiv_regs) that global.c
-     * leaves unallocated (lowest priority, live across the whole function), so
-     * reload1.c substitutes the symbol at each use; spelled directly, cse keeps
-     * the address in one callee-saved register across the first call. Same
-     * local as func_80027AD8's `vec = &D_800A37E8;` in this file; the three
-     * scalars reached through it as one vector: owner ruling Q96. */
+    /* FAKE: second handle to D_800A37E8, so the address is rematerialized at
+     * each of the three calls as in the target; spelled directly, cse keeps it
+     * in a callee-saved register (pointer-alias-fake-exception; vector: Q96) */
     s16 *vec = &D_800A37E8;
     s32 i;
 
@@ -1784,37 +1699,31 @@ void func_8002AB08(s32 mode) {
         u32 mask_c;
         s32 npass;
         s32 pass;
-        /* alt: two values -- the pass's blade (0: the unk00 / unk_210 points,
-         * 1: the unk48 / unk_234 points; also read by the knockback's velocity
-         * index, the last pass's blade, as the target does at 0x8002B8C0), then
+        /* alt: the pass's blade (0: the unk00 / unk_210 points, 1: the
+         * unk48 / unk_234 points; the knockback reads the last pass's), then
          * whether the nearest hit came from that blade. The 4/5 arm's `alt =
-         * 0;` re-stores the held 0 (target `move $fp,$zero` 0x8002AF18), owner
-         * Q85. Ruling 11 (reused-local-necessity.md). */
+         * 0;` re-stores the held 0 (Q85; Ruling 11, reused-local-necessity) */
         s32 alt;
-        /* temp1 / temp2: two values each -- the indices of the pass's two
-         * points (per-branch constants, Q20), then the squared distance of the
-         * opponent to the blade's first / second point. The unk_8C arm's `temp1
-         * = 0; temp2 = 1;` re-store the held values (target 0x8002AEF0 /
-         * 0x8002AEF4, the stores that arm shares with pass 0), owner Q85.
-         * Ruling 11. */
+        /* temp1 / temp2: the indices of the pass's two points (per-branch
+         * constants, Q20), then the opponent's squared distance to the blade's
+         * first / second point. The unk_8C arm re-stores the held values (Q85,
+         * Ruling 11) */
         s32 temp1;
         s32 temp2;
         s32 nseg;
-        /* idx: two values -- the triangle index of the segment loop, then the
-         * index of the nearest hit, the Q34 plain copy `idx = temp3;` (target
-         * `addu $s5,$s4,$zero` 0x8002B538). Ruling 11. */
+        /* idx: the triangle index of the segment loop, then the nearest
+         * hit's index, the Q34 plain copy `idx = temp3;` (Ruling 11) */
         s32 idx;
-        /* dx / dy / dz: the x / y / z offset between two points, one value per
-         * use -- the segment's length vector, a hit point from the reference
-         * point, the blade's two points from the opponent, the blade direction,
-         * the scaled push (dy: the first two only). Ruling 11. */
+        /* dx / dy / dz: the offset between two points, one value per use --
+         * the segment's length vector, a hit point from the reference point,
+         * the blade's points from the opponent, the blade direction, the scaled
+         * push (dy: the first two only) (Ruling 11) */
         s32 dx;
         s32 dy;
         s32 dz;
         s32 best;
-        /* temp3: two values -- the hit-slot counter of the nearest-hit search,
-         * then whether the nearest hit came from the alternate blade.
-         * Ruling 11. */
+        /* temp3: the hit-slot counter of the nearest-hit search, then
+         * whether the nearest hit came from the alternate blade (Ruling 11) */
         s32 temp3;
         s32 j;
         BoneHitRec *rec;
@@ -1823,9 +1732,9 @@ void func_8002AB08(s32 mode) {
         s32 bit;
         s32 diff;
         s32 ang;
-        /* work: four values -- the segment length squared, a hit's distance
-         * past its radius, the facing difference to the opponent's velocity,
-         * then the push weight. Ruling 11. */
+        /* work: the segment length squared, a hit's distance past its
+         * radius, the facing difference to the opponent's velocity, then the
+         * push weight (Ruling 11) */
         s32 work;
         s32 flag;
         s32 strong;
@@ -1885,10 +1794,9 @@ void func_8002AB08(s32 mode) {
             mask_a |= hit;
         }
         for (pass = 0; pass < npass; pass++) {
-            /* deep_on: func_8002CA8C's third argument (it runs the deep-hit
-             * test only when set): one value, written per arm as per-branch
-             * constants 1 / 1 / 0 (Q20); the unk_8C arm's `deep_on = 1;` is the
-             * 0x8002AEFC store it shares with pass 0, owner Q85. Ruling 11. */
+            /* deep_on: func_8002CA8C's third argument (enables the deep-hit
+             * test), per-branch constants 1 / 1 / 0 (Q20); the unk_8C arm's
+             * store is shared with pass 0 (Q85, Ruling 11) */
             s32 deep_on;
 
             if (pass == 0) {
@@ -2170,12 +2078,10 @@ s32 func_8002BC68(s32 arg0) {
     s32 var_a0;
     u32 temp_a0;
     u32 var_t0;
-    /* FAKE: pointer alias to D_80101EC8[0] / [1]
-     * (pointer-alias-fake-exception). The record pointers hold the table base
-     * in a register (target: lui/addiu t2, addiu t3,t2,0x44C, then lw/sw off
-     * t2/t3). Without them every access is a symbol+offset constant address,
-     * which mips.h:2300 GO_IF_LEGITIMATE_ADDRESS accepts as is, so no base
-     * register exists (the handle-free form costs an instruction). */
+    /* FAKE: pointer alias to D_80101EC8[0] / [1]: holds the table base in a
+     * register as the target does; without it every access is an absolute
+     * symbol+offset address (mips.h:2300 GO_IF_LEGITIMATE_ADDRESS accepts it
+     * as is), one instruction more (pointer-alias-fake-exception) */
     Unk80101EC8Record *t2_base;
     Unk80101EC8Record *t3_base;
 
@@ -2188,13 +2094,9 @@ s32 func_8002BC68(s32 arg0) {
         var_t0 = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
     } else {
         s32 sp_tmp;
-        /* Canonical GTE LZCS island (mtc2/swc2 — no C form). The $13-$15
-         * clobbers are a bytes-forced reconstruction of the original
-         * island's register footprint (reload1.c bad_spill_regs)
-         * -- NOT a register pin: target's
-         * reload-emitted mfhi uses $24, which reload1.c can only pick if
-         * $13-$15 are mentioned in the RTL, and they have zero pseudo
-         * uses in target, so RTL mention is the only route. */
+        /* GTE leading-zero-count island (no C form). The $13-$15 clobbers
+         * reproduce the original's register footprint (not a pin): only with
+         * them does reload pick the target's $24 for the mfhi. */
         __asm__ volatile(
             "addu   $t4, %1, $zero\n"
             "mtc2   $t4, $30\n"
@@ -2240,12 +2142,10 @@ s32 func_8002BEA0(void) {
     s32 var_a0;
     u32 temp_a0;
     u32 var_t0;
-    /* FAKE: pointer alias to D_80101EC8[0] / [1]
-     * (pointer-alias-fake-exception). The record pointers hold the table base
-     * in a register (target: lui/addiu t2, addiu t3,t2,0x44C, then lw/sw off
-     * t2/t3). Without them every access is a symbol+offset constant address,
-     * which mips.h:2300 GO_IF_LEGITIMATE_ADDRESS accepts as is, so no base
-     * register exists (the handle-free form costs an instruction). */
+    /* FAKE: pointer alias to D_80101EC8[0] / [1]: holds the table base in a
+     * register as the target does; without it every access is an absolute
+     * symbol+offset address (mips.h:2300 GO_IF_LEGITIMATE_ADDRESS accepts it
+     * as is), one instruction more (pointer-alias-fake-exception) */
     Unk80101EC8Record *t2_base;
     Unk80101EC8Record *t3_base;
 
@@ -2258,13 +2158,9 @@ s32 func_8002BEA0(void) {
         var_t0 = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
     } else {
         s32 sp_tmp;
-        /* Canonical GTE LZCS island (mtc2/swc2 — no C form). The $13-$15
-         * clobbers are a bytes-forced reconstruction of the original
-         * island's register footprint (reload1.c bad_spill_regs)
-         * -- NOT a register pin: target's
-         * reload-emitted mfhi uses $24, which reload1.c can only pick if
-         * $13-$15 are mentioned in the RTL, and they have zero pseudo
-         * uses in target, so RTL mention is the only route. */
+        /* GTE leading-zero-count island (no C form). The $13-$15 clobbers
+         * reproduce the original's register footprint (not a pin): only with
+         * them does reload pick the target's $24 for the mfhi. */
         __asm__ volatile(
             "addu   $t4, %1, $zero\n"
             "mtc2   $t4, $30\n"
@@ -2356,40 +2252,18 @@ void func_8002C0DC(void) {
     }
 }
 
-/* Accumulates a character's shadow vectors in PSX scratchpad RAM.  Everything
- * this function writes lives in the one record at 0x1F8002B8 that `scr` points
- * at: two vectors, unkA8 and unkB8 (this function does not touch unkB4 /
- * unkC4), and the result, unk13C.
- * unkA8 sums two of the scratchpad points SPAD holds per character (unk48[k]
- * when bit k of D_800A3824 is set, else unk00[k]); unkB8 sums the matching
- * pair func_8002C61C copied into D_80101EC8[k] (unk_234 / unk_210).
- *
- * The first block's accesses come out absolute (`lui $at; sw $x,off($at)`)
- * while the second block's identical spelling comes out as register+
- * displacement (`sw $x,off($scr)`) - what the target does in both places.
- * cse decides that, not the source: find_best_addr
- * (tools/gcc-2.7.2/cse.c:2622) folds a `(plus reg const)` address to an
- * absolute one when that register's constant value is in cse's table, and
- * cse clears the table at the head of every extended-basic-block path it
- * processes (new_basic_block, cse.c:766).  scr and rec1 are set to their
- * constants at the top of the function, and no path reaching the second
- * if/else begins there, so the first block's references fold and the
- * second block's do not.
- *
- * Both if/else blocks are uniform per-arm statement runs.  The stores that
- * appear after each join in the target are jump.c cross-jumping merging the
- * arms' instruction-identical tails, not source-level statements.
- */
+/* Accumulates a character's shadow vectors in the scratchpad record at
+ * 0x1F8002B8 (`scr`): unkA8 sums two of the character's SPAD points (unk48[k]
+ * when bit k of D_800A3824 is set, else unk00[k]); unkB8 sums the matching pair
+ * func_8002C61C copied into D_80101EC8[k] (unk_234 / unk_210); the result goes
+ * to unk13C. */
 void func_8002C22C(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
-    /* FAKE: pointer alias to D_80101EC8[1] (pointer-alias-fake-exception).
-     * The target holds record 1's base in a register from entry (lui/addiu $t1)
-     * and reads its unk_210 / unk_234 words at displacements off it, while
-     * record 0's words are absolute.  Without the pointer every access is a
-     * symbol+offset constant address, which GO_IF_LEGITIMATE_ADDRESS
-     * (tools/gcc-2.7.2/config/mips/mips.h:2286) accepts as is, so no base
-     * register exists (the direct D_80101EC8[1] form costs ten
-     * instructions). */
+    /* FAKE: pointer alias to D_80101EC8[1]: the target holds record 1's base in
+     * a register; without it every access is an absolute address
+     * (GO_IF_LEGITIMATE_ADDRESS, gcc-2.7.2/config/mips/mips.h:2286) and the
+     * direct D_80101EC8[1] form costs ten instructions
+     * (pointer-alias-fake-exception) */
     Unk80101EC8Record *rec1 = &D_80101EC8[1];
 
     scr->unkA8.x = 0;
@@ -2464,15 +2338,11 @@ void func_8002C22C(void) {
  * back); unk_18C is the centroid of SPAD->unkA8[k][1..3] and unk_174 the
  * midpoint of SPAD->unkA8[k][4..5]. */
 void func_8002C61C(void) {
-    /* FAKE: pointer aliases to D_80101EC8[0] / [1]
-     * (pointer-alias-fake-exception).  The target keeps both record bases in
-     * $s1 / $s0 from the prologue (lui/addiu s1, addiu s0,s1,0x44C) and reads
-     * unk_3C / unk_286 / unk_0C / unk_F4 / unk_28C at displacements off them,
-     * while unk_AD, unk_6A and the unk_210 / unk_234 copy loops use the
-     * absolute address.  Without the pointers those five fields' accesses
-     * become absolute lui pairs (GO_IF_LEGITIMATE_ADDRESS, gcc-2.7.2
-     * mips.h:2286) and cse keeps &D_80101EC8[0].unk_6A in $s0 instead (later
-     * also &D_80101EC8[0].unk_286 in $s1): 12 more instructions. */
+    /* FAKE: pointer aliases to D_80101EC8[0] / [1]: the target keeps both
+     * bases in $s1 / $s0 for unk_3C / unk_286 / unk_0C / unk_F4 / unk_28C;
+     * without them those accesses become absolute lui pairs
+     * (GO_IF_LEGITIMATE_ADDRESS, mips.h:2286): 12 more instructions
+     * (pointer-alias-fake-exception) */
     Unk80101EC8Record *s1 = &D_80101EC8[0];
     Unk80101EC8Record *s0 = &D_80101EC8[1];
     s32 i;
@@ -2595,12 +2465,9 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
         }
 
         r = rec->unk_0C;
-        /* FAKE: the AABB reject flag is staged through the existing `hit`
-         * status local (hit = 1 on reject, read once by the `continue` test
-         * below, then overwritten by the callee result), mechanism: global.c
-         * find_reg pass 0 - a separate non-call-crossing flag pseudo takes
-         * the lowest free already-used caller-saved reg ($a1), while the
-         * target seats it in $s0 = the call-crossing `hit` pseudo. */
+        /* FAKE: the AABB reject flag is staged through `hit` (set on
+         * reject, read by the `continue` test, then overwritten by the call); a
+         * separate flag takes $a1 instead of the target's $s0 */
         hit = 0;
         x = SPAD->unkA8[id][i].x;
         if (scr->unk84.x < x - r || x + r < scr->unk78.x) {
@@ -2651,54 +2518,38 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     scr->unkC4 = hitMask;
 }
 
-/* Orients a triangle's local frame. The three vertex pointers obj->unk60[0..2]
- * give edge vectors a = v1 - v0 (obj->unkA8) and b = v2 - v0 (obj->unkB8);
- * the GTE outer product n = a x b lands in obj->unkC8. If every
- * component of n is within +-0x3FFF and |n| (GTE SQR, then the g_sqrt_table_u8
- * byte-LUT integer sqrt with the GTE leading-zero count for large inputs) is
- * below 0x4000, the yaw (obj->unkF8.vy) and pitch (.vx) are taken from a;
- * otherwise n is scaled down by 64 in place and the angles are taken from n.
- * Either way a rotation matrix is built in obj->unkD8 (identity, RotMatrixY by
- * the yaw, RotMatrixX by the pitch), loaded into the GTE, and a and b are
- * rotated in place. Returns 0 on the first path, 1 on the second. Each tail
- * is func_8002E838's sequence (this file), applied to b as well as a.
- *
- * GTE ISLANDS: census member of the 2026-08-17 owner cluster ruling
- * ([[cop2-addressing-preamble-cluster]]). 26 islands, each nothing but PsyQ GTE
- * macro text as spelled in inline_o.h, the "DMPSX version 3" header
- * (github.com/Xeeynamo/croc@f30ff1ee6721a172e270adcecab72b5b8a5e9bb1
- * include/psyq/inline_o.h, sha256 27a4abd6...; composites from gtemac.h,
- * "Run-time Library Release 3.7", same commit): gte_OuterProduct0
- * (gtemac.h:190-196) = gte_ldopv1 (inline_o.h:595) / gte_ldopv2 (:626) /
- * gte_op0 (:1866) / gte_stlvnl (:2422); gte_sqr0 (:1749) + gte_stlvnl;
- * gte_Lzc (gtemac.h:230-236) = gte_ldlzc (:645) / 2x gte_nop (:3068) /
- * gte_stlzc (:2999), three times; gte_SetRotMatrix (:860), gte_ldlv0 (:277),
- * gte_rtv0 (:1353), gte_stlvnl. No island carries GPR text outside its
- * macro: every operand is left to cc1 through %0 (the target's
- * `addu $t4,<reg>,$zero` is the macros' `move $12,%0`, and the
- * `addiu $v0,$sp,N` before each gte_stlzc is cc1 materializing &sp_tmpN).
- * Island boundaries and clobbers follow this file's authorized spellings
- * (operand expressions aside): gte_ldopv1 / gte_ldopv2 / gte_op0 as in
- * func_8002FDB0; gte_stlvnl, gte_SetRotMatrix, gte_ldlv0, gte_rtv0 as in
- * func_8002E838. The ldopv2, ldlv0 and ldlzc islands carry the two nops of
- * the macro that follows (gte_op0 / gte_rtv0 / the gte_Lzc pair of
- * gte_nop), so the op0 and rtv0 islands are just their command words.
- * gte_sqr0 and the gte_ldlzc / gte_stlzc islands have no in-file precedent
- * in this form. Each `.word` carries the real cop2 command (the target's own
- * bytes) in place of the header's DMPSX placeholder: op0 0x0000127f ->
- * 0x4B70000C, sqr0 0x00000f3f -> 0x4AA00428, rtv0 0x0000013f -> 0x4A486012.
- * Everything else is ordinary C; `len` and `temp` each hold two values
- * under Ruling 11 (annotated at their declarations). */
+/* Orients a triangle's local frame. The vertices obj->unk60[0..2] give edge
+ * vectors a = v1 - v0 (unkA8) and b = v2 - v0 (unkB8) and n = a x b (unkC8).
+ * If n's components are within +-0x3FFF and |n| < 0x4000, the yaw (unkF8.vy)
+ * and pitch (.vx) come from a and it returns 0; otherwise n is scaled down by
+ * 64 and the angles come from n (returns 1). A rotation matrix built in unkD8
+ * (RotMatrixY, RotMatrixX) then rotates a and b in place.
+ * GTE islands (owner cop2 cluster grant, cop2-addressing-preamble-cluster,
+ * cluster ruling 2026-08-17): PsyQ inline_o.h / gtemac.h macro text
+ * (Xeeynamo/croc@f30ff1ee): gte_OuterProduct0 (gtemac.h:190-196) =
+ * gte_ldopv1 (inline_o.h:595) / gte_ldopv2 / gte_op0 / gte_stlvnl; gte_sqr0 +
+ * gte_stlvnl; gte_Lzc (gtemac.h:230-236) = gte_ldlzc / 2x gte_nop /
+ * gte_stlzc, three times; gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl.
+ * Operands go through the macros' own `move $12,%0`; cc1 materializes
+ * &sp_tmpN before each gte_stlzc island. Island boundaries and clobbers
+ * follow this file's gte_ldopv1 / gte_ldopv2 / gte_op0 (func_8002FDB0)
+ * and gte_stlvnl / gte_SetRotMatrix / gte_ldlv0 / gte_rtv0 (func_8002E838).
+ * Departures: the gte_ldopv2, gte_ldlv0 and gte_ldlzc islands carry the two
+ * nops of the macro that follows (gte_op0 / gte_rtv0 / the gte_Lzc pair of
+ * gte_nop), so the gte_op0 and gte_rtv0 islands are just their command words;
+ * each `.word` is the real cop2 command for the DMPSX placeholder: op0
+ * 0x0000127f -> 0x4B70000C, sqr0 0x00000f3f -> 0x4AA00428, rtv0 0x0000013f ->
+ * 0x4A486012. gte_sqr0 and the gte_ldlzc / gte_stlzc islands have no
+ * in-file precedent in this form. `len` and `temp` each hold two values
+ * (Ruling 11). */
 s32 func_8002CD58(Unk1F8002B8Rec *obj) {
     s32 sp_tmp;
     s32 sp_tmp2;
     s32 sp_tmp3;
     s32 len_sq;
     s32 xz_sq;
-    /* FAKE: temp holds two values (Ruling 11): n.x*n.x + n.z*n.z of the scaled
-     * n (the squared length fed to the table lookup and the leading-zero count)
-     * and then the square-root table byte. Ablated (2026-10-06): one local per
-     * value: score 6. */
+    /* FAKE: temp holds two values: n.x*n.x + n.z*n.z, then the square-root
+     * table byte; one local per value: score 6 (Ruling 11) */
     s32 temp;
     s32 nxz_len;
 
@@ -2743,10 +2594,9 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
     if ((u32)(obj->unkC8.x + 0x3FFF) < 0x7FFF &&
         (u32)(obj->unkC8.y + 0x3FFF) < 0x7FFF &&
         (u32)(obj->unkC8.z + 0x3FFF) < 0x7FFF) {
-        /* FAKE: len holds two values (Ruling 11): |n|, the square root of
-         * len_sq read by the `< 0x4000` guard, and then |a.xz|, the square root
-         * of xz_sq passed to ratan2 for the pitch. Ablated (2026-10-06): one
-         * local per value: score 3. */
+        /* FAKE: len holds two values: |n| for the `< 0x4000` guard, then
+         * |a.xz| for the pitch's ratan2; one local per value: score 3 (Ruling
+         * 11) */
         s32 len;
         /* gte_sqr0() -- inline_o.h:1749: square IR1-IR3 (still n). */
         __asm__ volatile(
@@ -2767,8 +2617,7 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
             s32 lzcr = 0;
             if (len_sq >= 0) {
                 /* gte_Lzc(len_sq, &sp_tmp) -- gtemac.h:230-236: gte_ldlzc
-                 * (inline_o.h:645) + the two gte_nop (:3068), then gte_stlzc
-                 * (:2999) into the LZCR slot (sp+0x10 in the target). */
+                 * (inline_o.h:645) + 2x gte_nop + gte_stlzc */
                 __asm__ volatile(
                     "move   $12, %0\n"
                     "mtc2   $12, $30\n"
@@ -3012,10 +2861,8 @@ s32 func_8002D320(
             : : "r"(vout) : "$12", "memory");
     }
     {
-        /* x: four values -- unk100[0].x, then x * x + y * y, then r_sq minus
-         * that, then its square root (the sphere's half-chord along z).
-         * Ruling 11. The name stays because x is the LZC island's operand
-         * below. */
+        /* x: unk100[0].x, then x * x + y * y, then r_sq minus that, then its
+         * square root (the sphere's half-chord along z) (Ruling 11) */
         s32 x;
         s32 y;
         s32 sp_var;
@@ -3079,13 +2926,9 @@ s32 func_8002D320(
         if (max_z < z - x)
             return 0;
         if (z + x < min_z) {
-            /* FAKE: dead store -- overwritten by `ret = 0;` on the
-             * next statement, never read.  Mechanism: jump.c's
-             * store-flag if-conversion requires SINGLE-SET 0/1 arms;
-             * the two-set arm keeps target's unfolded diamond (bnez;
-             * move v0,zero delay; addiu v0,1) instead of folding the
-             * pair to `slt` + `xori v0,v0,1`.  Family:
-             * dead-store-fake-exception. */
+            /* FAKE: dead store, overwritten by `ret = 0;`: the two-set arm
+             * keeps the target's branch diamond instead of slt + xori
+             * (dead-store-fake-exception) */
             ret = 1;
             ret = 0;
         } else {
@@ -3095,21 +2938,15 @@ s32 func_8002D320(
     }
 }
 
-/* func_8002D518 - segment/circle test in x/z. Returns 0 when p1 and p2 lie
- * on the same side outside the +-threshold band in x or in z; otherwise solves
- * the quadratic for where the segment p1 -> p2 meets the circle of squared
- * radius r_sq about the origin (terms >> 9; square root by g_sqrt_table_u8,
- * through the canonical GTE LZCS island for discriminants >= 0x400) and
- * returns whether the two Q8 intersection parameters fall in range.
- *
- * Load-bearing: the `ud = disc; lzcr = 0;` order (reversed, the two delay
- * slots swap); `disc` carrying the discriminant, the square root and the <<9
- * result (as the target's $a2 does); `num1` assigned before `denom`; and
- * `result` kept separate from the comparison flag, so the `disc < 0` arm's
- * `result = 0` writes $v0 directly and jumps to the epilogue (a `return 0;`
- * there is cross-jumped into an earlier return-0 site). The `ud` re-store
- * is a FAKE, explained at its site.
- */
+/* Segment/circle test in x/z. Returns 0 when p1 and p2 lie on the same side
+ * outside the +-threshold band in x or in z; otherwise solves the quadratic for
+ * where p1 -> p2 meets the circle of squared radius r_sq about the origin
+ * (terms >> 9; square root by g_sqrt_table_u8, GTE LZCS island for
+ * discriminants >= 0x400) and returns whether both Q8 intersection parameters
+ * are in range. Load-bearing: `ud = disc; lzcr = 0;` in that order, `disc`
+ * holding the discriminant, the square root and the <<9 result, `num1` before
+ * `denom`, and `result` kept apart from the comparison flag. The `ud`
+ * re-store is a FAKE, explained at its site. */
 s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
     s32 x1, z1, x2, z2;
 
@@ -3179,17 +3016,9 @@ dist_calc: {
             ud = disc;
             lzcr = 0;
             if (disc >= 0) {
-                /* FAKE: redundant same-value re-store of the LOCAL `ud`
-                 * (it already holds `disc` on entry to this arm), mechanism:
-                 * cse.c make_regs_eqv - with a SINGLE def cse puts `ud` and
-                 * `disc` into one quantity, rewrites the post-join
-                 * `ud >> shift` read to disc's register and DELETES the copy
-                 * insn outright (no `addu $a0,$a2`). The second def makes the
-                 * pseudo multiply-defined across the join, invalidating that
-                 * equivalence, so both copies survive cse and global_alloc
-                 * lands them in target's $a2/$a0 pair; the redundant store
-                 * itself is dropped before final output (zero emitted
-                 * bytes). */
+                /* FAKE: same-value re-store of `ud` (it already holds disc):
+                 * with a single def cse merges ud into disc and deletes the
+                 * copy the target keeps in $a0; the store emits nothing */
                 ud = disc;
                 __asm__ volatile(
                     "addu   $t4, %1, $zero\n"
@@ -3241,10 +3070,11 @@ s32 func_8002D780(
         obj->unkF8.vx = pos[0] - obj->unk60[0]->x;
         obj->unkF8.vy = pos[1] - obj->unk60[0]->y;
         obj->unkF8.vz = pos[2] - obj->unk60[0]->z;
-        /* gte_ApplyRotMatrix(&obj->unkF8, &obj->unk100[0]) -- gtemac.h 4.3
-         * :354-357 = inline_o.h 4.3 gte_ldv0 :16-20, gte_rtv0 :426-430
-         * (post-DMPSX word 0x4A486012 for the placeholder 0x0000013f),
-         * gte_stlvnl :904-909 */
+        /* gte_ApplyRotMatrix(&obj->unkF8, &obj->unk100[0]) -- gtemac.h 4.3 =
+         * inline_o.h gte_ldv0, gte_rtv0, gte_stlvnl, one statement per header
+         * line incl. its `move $12,%0` (inline_o.h class, inline-asm-policy);
+         * one departure: gte_rtv0's placeholder 0x0000013f is the post-DMPSX
+         * word 0x4A486012 (owner Q61 grant) */
         __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
@@ -3272,12 +3102,10 @@ s32 func_8002D780(
         s32 cz = (z0 + z2) / 3;
         s32 px = obj->unk100[0].x;
         s32 pz = obj->unk100[0].y;
-        /* FAKE: cross_center and cross_point each hold three values, one per
-         * side test (Ruling 11): the 2-D cross product of one edge of the
-         * triangle (0,0), (x0,z0), (x2,z2) with the centroid's offset
-         * (cross_center) and with the query point's offset (cross_point), for
-         * the edge (0,0)-(x0,z0), then (0,0)-(x2,z2), then (x0,z0)-(x2,z2).
-         * Ablated (2026-10-06): a pair per side test: score 36. */
+        /* FAKE: cross_center / cross_point hold one value per side test: the
+         * cross product of a triangle edge with the centroid's / query point's
+         * offset, for the edges (0,0)-(x0,z0), (0,0)-(x2,z2), (x0,z0)-(x2,z2);
+         * a pair per test: score 36 (Ruling 11) */
         s32 cross_center = z0 * cx - x0 * cz;
         s32 cross_point = z0 * px - x0 * pz;
 
@@ -3289,23 +3117,9 @@ s32 func_8002D780(
                  * the subtraction moves (score 2). */
                 s32 ax = cx - x0;
                 s32 dx;
-                /* FAKE: the third edge test's edge difference z2 - z0 is staged
-                 * through the `flag` parameter (its own job, the mode test at
-                 * entry, is finished: nothing reads `flag` after `if (flag ==
-                 * 0)`, and this value is consumed by the two products below and
-                 * never needed again), instead of through a fresh block-local,
-                 * mechanism: local-alloc.c local_alloc admission
-                 * (local-alloc.c:472 REG_BASIC_BLOCK >= 0 && REG_N_DEATHS == 1)
-                 * - a pseudo referenced in two basic blocks (the entry test and
-                 * this block) is left to global.c, so block 7's local-alloc
-                 * quantity table seats dx first in $v1 and global_alloc,
-                 * reaching the parameter's pseudo third in allocno order, seats
-                 * it in $a0, the lowest free register at that turn (the entry
-                 * copy from $a0 is folded away by combine AFTER flow has fixed
-                 * the pseudo's REG_BASIC_BLOCK as global) -- the target's
-                 * seats; a block-local dz ties dx in qty_compare_1 and takes
-                 * $v1 itself. Ablated (2026-10-06): a block-local dz: score 9.
-                 */
+                /* FAKE: the third edge's z2 - z0 is staged through the finished
+                 * `flag` parameter (unread after the mode test); a block-local
+                 * dz takes dx's $v1: score 9 */
                 flag = z2 - z0;
                 dx = x2 - x0;
                 cross_center = (flag * ax) - (dx * (cz - z0));
@@ -3331,22 +3145,13 @@ s32 func_8002D780(
             s32 m = dist;
             s32 lzcr = 0;
             if (dist >= 0) {
-                /* FAKE: same-value re-store of the local `m`, mechanism: cse.c
-                 * invalidate_skipped_block - cse_end_of_basic_block follows the
-                 * `dist < 0` skip over this arm (skip_blocks) and only a SET of
-                 * `m` inside the skipped arm invalidates the m == dist
-                 * equivalence made by the copy above, so the
-                 * `(u32)m >> shift` read below keeps reading the $a0 copy
-                 * instead of being canonicalised to dist ($s1); without it the
-                 * srlv reads $s1. The copy itself is the target's `addu
-                 * $a0,$s1,$zero` at 0x8002D980 (the delay slot of the `dist <
-                 * 0x400` branch), and the sibling func_8002D518 in this file
-                 * ships the same re-store of its `ud` copy. Ablated
-                 * (2026-10-06): without the re-store: score 4. */
+                /* FAKE: same-value re-store of `m`: breaks the m == dist
+                 * equivalence across the skipped arm so the shift below reads
+                 * the $a0 copy, not dist ($s1), as in func_8002D518; without
+                 * it: score 4 */
                 m = dist;
-                /* gte_Lzc(m, &sp_var) -- gtemac.h 4.3 :174-178 = inline_o.h 4.3
-                 * gte_ldlzc :207-210, gte_nop :1095-1097 (x2), gte_stlzc
-                 * :1074-1077 */
+                /* gte_Lzc(m, &sp_var) -- gtemac.h :174-178: gte_ldlzc, gte_nop
+                 * x2, gte_stlzc */
                 __asm__ volatile ("move  $12,%0": :"r"(m):"$12","$13","$14","$15","memory");
                 __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -3383,13 +3188,16 @@ s32 func_8002D780(
     }
 }
 
-/* func_8002DAD0 -- canonical GTE islands and C body.
- * Owner cluster grant: tools/grinder/owner_cluster_grants.txt.
- * The LZC load and store are separate Sony macro statements. GCC supplies
- * the &sp_tmp register and materializes its stack address outside the island.
- * Provenance:
- * pre-slim-2026-10-01:memory/grind/func_8002DAD0/psyq_inline_o_provenance.md.
- */
+/* GTE islands: equivalent expansions of the Sony PsyQ DMPSX inline_o.h
+ * macros gte_ldopv1, gte_ldopv2 + gte_op0, gte_stlvnl, the gtemac.h gte_Lzc
+ * (inline_o.h gte_ldlzc + gte_nop x2 + gte_stlzc), gte_SetRotMatrix,
+ * gte_ldlv0 + gte_rtv0, a macro's statements joined into
+ * one __asm__ (gte_op0 shares gte_ldopv2's; gte_rtv0's two nops ride with
+ * gte_ldlv0 and its command word stands alone); admitted by the owner cop2
+ * cluster grant (cop2-addressing-preamble-cluster, owner-instructed row
+ * 2026-09-25), which covers the joined spellings. The LZC load and store are
+ * separate macro statements: GCC supplies the &sp_tmp register and materializes
+ * its stack address outside the island. */
 s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     MATRIX *mat;
     s32 sp_tmp;
@@ -3404,12 +3212,9 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     obj->unkB8.y = obj->unk60[2]->y - obj->unk60[0]->y;
     obj->unkB8.z = obj->unk60[2]->z - obj->unk60[0]->z;
 
-    /* Sony PsyQ DMPSX macro gte_ldopv1(r1) - inline_o.h:192-200, expanded
-     * equivalent to (`move $12,%0` · `lw $13,($12)` · `lw $14,4($12)` ·
-     * `ctc2 $13,$0` · `lw $15,8($12)` · `ctc2 $14,$2` · `ctc2 $15,$4`).
-     * Loads the OP diagonal (RT11/RT22/RT33) into cop2 control regs
-     * $0/$2/$4 from vecA. Cluster membership:
-     * [[cop2-addressing-preamble-cluster]]. */
+    /* gte_ldopv1(vecA) -- inline_o.h:192-200, equivalent expansion: the OP
+     * diagonal (RT11/RT22/RT33) into cop2 control $0/$2/$4
+     * (cop2-addressing-preamble-cluster). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -3420,14 +3225,11 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
         "ctc2   $15, $4\n"
         :: "r"(&obj->unkA8) : "$12", "$13", "$14", "$15");
 
-    /* Sony PsyQ DMPSX macro gte_ldopv2(r1) - inline_o.h:201-206, expanded
-     * equivalent to (`move $12,%0` · `lwc2 $11,8($12)` · `lwc2 $9,($12)` ·
-     * `lwc2 $10,4($12)`): loads IR1/IR2/IR3 from vecB. The trailing
-     * `nop; nop; .word` is gte_op0() (inline_o.h:711-715 / inline_c.h:784-787),
-     * the GTE OP (outer product) invocation; the SDK headers carry the DMPSX
-     * placeholder word (0x0000127f) where we carry the real cop2 encoding
-     * 0x4B70000C, the same real-encoding convention include/gte.h:82-83 uses
-     * for gte_mvmva and already committed at src/code6cac_b.c:1717-1718. */
+    /* gte_ldopv2(vecB) -- inline_o.h:201-206, equivalent expansion
+     * (`addu $12,%0,$zero` for its `move`): IR1-IR3; then gte_op0()
+     * (inline_o.h:711-715 / inline_c.h:784-787, outer product) with the real
+     * cop2 word 0x4B70000C for the DMPSX placeholder 0x0000127f, as
+     * include/gte.h's gte_mvmva does for MVMVA. */
     __asm__ volatile(
         "addu   $12, %0, $zero\n"
         "lwc2   $11, 8($12)\n"
@@ -3438,10 +3240,8 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
         ".word 0x4B70000C\n"
         :: "r"(&obj->unkB8) : "$12");
 
-    /* Sony PsyQ DMPSX macro gte_stlvnl(r1) - inline_o.h:904-909, expanded
-     * equivalent to (`move $12,%0` · `swc2 $25,($12)` · `swc2 $26,4($12)` ·
-     * `swc2 $27,8($12)`): stores MAC1/MAC2/MAC3 (the unclamped cross
-     * product) to obj->unkC8. */
+    /* gte_stlvnl -- inline_o.h:904-909, equivalent expansion: MAC1-MAC3
+     * (the cross product) to obj->unkC8. */
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
@@ -3458,21 +3258,9 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     obj->unkF8.vy = 0x800 - ratan2(obj->unkC8.x, obj->unkC8.z);
     obj->unkC8.x = obj->unkC8.x >> 6;
     obj->unkC8.y = obj->unkC8.y >> 6;
-    /* FAKE: the scaled Z delta is staged through the function's existing
-     * `dist` local (whose distance value is only assigned by the if/else
-     * below, so `dist` is dead at this point) instead of a fresh
-     * block-local temp, mechanism: GCC 2.7.2 global.c expand_preferences
-     * (tools/gcc-2.7.2/global.c:828) - a single-block fresh temp is
-     * local-alloc'd to a hard reg ($a1), so global.c set_preference
-     * (tools/gcc-2.7.2/global.c:1670) stamps $a1 onto the allocno of the
-     * dying `dz*dz` product, and expand_preferences then merges that
-     * preference onto dist_sq's allocno (the product dies in the insn that
-     * defines dist_sq and the two do not conflict), overriding find_reg's
-     * natural ascending pick of $a0 that the target uses; a variable
-     * referenced in more than one basic block is a GLOBAL allocno
-     * (reg_renumber == -1 during global_conflicts), so no preference is
-     * stamped at all and dist_sq lands in $a0. Ablated (2026-10-06): a
-     * block-local dz: score 6. */
+    /* FAKE: the scaled z delta is staged through `dist` (dead until the
+     * if/else below); a block-local temp moves dist_sq from the target's $a0 to
+     * $a1: score 6 */
     dist = obj->unkC8.z;
     dist >>= 6;
     dist_sq = obj->unkC8.x * obj->unkC8.x + dist * dist;
@@ -3483,14 +3271,11 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     } else {
         s32 lzcr = 0;
         if (dist_sq >= 0) {
-            /* Sony PsyQ macro gte_Lzc(r1,r2) - gtemac.h:174-178, whose
-             * body is gte_ldlzc (inline_o.h:207-211) + 2x gte_nop
-             * (inline_o.h:1095) + gte_stlzc (inline_o.h:1074-1077), each
-             * expanded to equivalent instructions: `move $12,%0` · `mtc2
-             * $12,$30` · `nop` · `nop` · `move $12,%0` · `swc2 $31,($12)`. The
-             * second `move $12,%0` takes &sp_tmp through an r operand. GCC
-             * materialises its stack address before this island. LZCS in, LZCR
-             * out. */
+            /* gte_Lzc(r1,r2) -- gtemac.h:174-178: gte_ldlzc
+             * (inline_o.h:207-211) + 2x gte_nop (inline_o.h:1095) +
+             * gte_stlzc (inline_o.h:1074-1077), each an equivalent
+             * expansion (`addu $t4,%0,$zero` for `move $12,%0`); the store's
+             * operand is &sp_tmp. LZCS in, LZCR out. */
             __asm__ volatile(
                 "addu   $t4, %0, $zero\n"
                 "mtc2   $t4, $30\n"
@@ -3528,10 +3313,9 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     RotMatrixY(obj->unkF8.vy, mat);
     RotMatrixX(obj->unkF8.vx, mat);
 
-    /* Sony PsyQ DMPSX macro gte_SetRotMatrix(r1) - inline_o.h:272-284,
-     * expanded to equivalent instructions (all 11 instructions, including the
-     * $13/$14 re-use order): loads the 5 packed rotation-matrix words at r into
-     * cop2 control regs $0..$4. */
+    /* gte_SetRotMatrix(r1) -- inline_o.h:272-284, expanded to equivalent
+     * instructions (all 11, incl. the $13/$14 re-use order): the 5 packed
+     * rotation-matrix words into cop2 control $0..$4. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -3546,16 +3330,12 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
         "ctc2   $15, $4\n"
         :: "r"(mat) : "$12", "$13", "$14", "$15");
 
-    /* Sony PsyQ DMPSX macro gte_ldlv0(r1) - inline_o.h:95-103, expanded
-     * equivalent to (`move $12,%0` · `lhu $14,4($12)` · `lhu $13,($12)` ·
-     * `sll $14,$14,16` · `or $13,$13,$14` · `mtc2 $13,$0` ·
-     * `lwc2 $1,8($12)`): packs VX0/VY0 into one word and loads VZ0. The
-     * trailing `nop; nop` belongs to the following op-invocation macro
-     * (gte_rtv0()-class, inline_o.h:426-430), not to gte_ldlv0. The
-     * `.word 0x4A486012` is MVMVA sf=1/mx=R/v=V0/cv=none =
-     * gte_mvmva(1,0,0,3,0) under include/gte.h:82-83, already committed at
-     * src/code6cac_b.c:1543. Then gte_stlvnl (inline_o.h:904-909) stores the
-     * rotated vector back: vecA is rotated in place. */
+    /* gte_ldlv0(vecA) -- inline_o.h:95-103, equivalent expansion (the
+     * trailing nop pair is gte_rtv0's, not gte_ldlv0's), then gte_rtv0
+     * (inline_o.h:426-430;
+     * MVMVA `.word 0x4A486012` = gte_mvmva(1,0,0,3,0) under
+     * include/gte.h) and gte_stlvnl (inline_o.h:904-909): vecA rotated
+     * in place. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -3575,9 +3355,9 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
         "swc2   $27, 8($12)\n"
         :: "r"(&obj->unkA8) : "$12", "memory");
 
-    /* Same gte_ldlv0 (inline_o.h:95-103) + gte_rtv0()-class MVMVA
-     * (inline_o.h:426-430, `.word 0x4A486012`) + gte_stlvnl
-     * (inline_o.h:904-909) sequence, this time rotating vecB in place. */
+    /* The same gte_ldlv0 (inline_o.h:95-103) + gte_rtv0 (inline_o.h:426-430)
+     * + gte_stlvnl (inline_o.h:904-909) equivalent expansions, rotating vecB
+     * in place. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -3600,14 +3380,11 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     return 1;
 }
 
-/* func_8002DE20 - ordinary C plus GTE islands,
- * each the separate header statements of a PsyQ Run-time Library Release 4.3
- * macro, character for character (engine/gtemacro.py PINNED): inline_o.h
- * gte_ldv0 :16-20, gte_rtv0 :426-430, gte_stlvnl :904-909, and gtemac.h
- * gte_ApplyRotMatrix :354-357. One deviation: gte_rtv0's DMPSX placeholder
- * `.word 0x0000013f` is carried as the post-DMPSX word 0x4A486012 (no DMPSX
- * pass in this build; owner-granted, tools/grinder/owner_cluster_grants.txt).
- * cross_a / cross_b: Ruling 11 (see their declaration). */
+/* func_8002DE20 GTE islands: PsyQ 4.3 inline_o.h gte_ldv0, gte_rtv0,
+ * gte_stlvnl and gtemac.h gte_ApplyRotMatrix, statement for statement. One
+ * departure: gte_rtv0's DMPSX placeholder 0x0000013f is carried as the
+ * post-DMPSX word 0x4A486012 (owner Q11 grant). cross_a / cross_b: Ruling 11
+ * (see their declaration). */
 extern s32 D_800A314C;
 
 /* Rotates the three points p0/p1/p2 (relative to the origin) by the current GTE
@@ -3631,13 +3408,12 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2) {
     s32 y2;
     s32 cx;
     s32 cy;
-    /* cross_a / cross_b hold one value per same-side test (cross_a twelve,
-     * cross_b eleven): the 2D cross product (edge) x (point - edge start) for
-     * the edge under test, cross_a for the first point of the pair, cross_b
-     * for the second. Ruling 11 (ordinary-c-judge-decidable.md). */
+    /* cross_a / cross_b: one value per same-side test, the 2D cross
+     * product (edge) x (point - edge start) for the pair's first / second point
+     * (Ruling 11, ordinary-c-judge-decidable) */
     s32 cross_a;
     s32 cross_b;
-    /* edge A-B x ((x2,y2) - A): its own value, see ruling11.md */
+    /* edge A-B x ((x2,y2) - A) */
     s32 cross_ab2;
 
     obj->unkF8.vx = p0->x - obj->unk60[0]->x;
@@ -3647,8 +3423,8 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2) {
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_rtv0(): inline_o.h 4.3 :426-430; post-DMPSX word 0x4A486012 for the
-     * header's placeholder `.word 0x0000013f` (no DMPSX pass in this build) */
+    /* gte_rtv0(): inline_o.h 4.3 :426-430; word 0x4A486012 for the
+     * placeholder 0x0000013f */
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
@@ -3664,8 +3440,8 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2) {
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_rtv0(): inline_o.h 4.3 :426-430; post-DMPSX word 0x4A486012 for the
-     * header's placeholder `.word 0x0000013f` (no DMPSX pass in this build) */
+    /* gte_rtv0(): inline_o.h 4.3 :426-430; word 0x4A486012 for the
+     * placeholder 0x0000013f */
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
@@ -3900,9 +3676,8 @@ void func_8002E838(Unk1F8002B8Rec *scr) {
     } else {
         s32 lzcr = 0;
         if (dist_sq >= 0) {
-            /* Hand-written GTE leading-zero-count block (LZCS in, LZCR out) —
-             * canonical inline asm, identical to the user-authorized block in
-             * the matched sibling func_8001A67C (src/code6cac.c). */
+            /* Hand-written GTE leading-zero count (LZCS in, LZCR out), as in
+             * func_8001A67C. */
             __asm__ volatile(
                 "addu   $t4, %1, $zero\n"
                 "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
@@ -3940,9 +3715,8 @@ void func_8002E838(Unk1F8002B8Rec *scr) {
     RotMatrixY(scr->unkF8.vy, mat);
     RotMatrixX(scr->unkF8.vx, mat);
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
-     * rotation-matrix words at r into cop2 control regs $0..$4.  Same island
-     * as the matched func_800203B4 (src/code6cac.c). */
+    /* gte_SetRotMatrix(r): the 5 packed rotation-matrix words into cop2
+     * control $0..$4 (as in func_800203B4). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -3957,8 +3731,9 @@ void func_8002E838(Unk1F8002B8Rec *scr) {
         "ctc2   $15, $4\n"
         :: "r"(mat) : "$12", "$13", "$14", "$15");
     vec = &scr->unkA8;
-    /* PsyQ libgte inline macro gte_ldv0(r) --- pack VX0/VY0 into one word,
-     * mtc2 to $0, lwc2 VZ0 into $1, then the 2-cycle GTE load delay. */
+    /* PsyQ libgte inline macro gte_ldlv0(r) (the long-vector gte_ldv0) ---
+     * pack VX0/VY0 into one word, mtc2 to $0, lwc2 VZ0 into $1, then the
+     * 2-cycle GTE load delay. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -4007,9 +3782,8 @@ s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq) {
 
     {
         s32 y;
-        /* a0_var: two values -- r_sq - (x * x + y * y), then its square root
-         * (the sphere's half-chord along z). Ruling 11. The name stays because
-         * a0_var is the LZC island's operand below. */
+        /* a0_var: r_sq - (x * x + y * y), then its square root (the
+         * sphere's half-chord along z) (Ruling 11) */
         s32 a0_var;
         s32 sp_var;
         s32 min_z;
@@ -4090,8 +3864,8 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     } else {
         s32 lzcr = 0;
         if (dist_sq >= 0) {
-            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210,
-             * gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
+            /* gte_Lzc -- gtemac.h:174-178: gte_ldlzc, gte_nop, gte_nop,
+             * gte_stlzc */
             __asm__ volatile ("move  $12,%0": :"r"(dist_sq):"$12","$13","$14","$15","memory");
             __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -4135,10 +3909,9 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     __asm__ volatile ("ctc2  $13,$2": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
-    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word
-     * is the post-DMPSX word .word 0x4A486012 in place of the header's DMPSX
-     * placeholder .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner
-     * Q61 per-function grant) */
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's
+     * command word is the post-DMPSX 0x4A486012 for the placeholder
+     * 0x0000013f (Q61) */
     __asm__ volatile ("move  $12,%0": :"r"(vec_in):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -4184,10 +3957,9 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     __asm__ volatile ("ctc2  $13,$2": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
-    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word
-     * is the post-DMPSX word .word 0x4A486012 in place of the header's DMPSX
-     * placeholder .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner
-     * Q61 per-function grant) */
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's
+     * command word is the post-DMPSX 0x4A486012 for the placeholder
+     * 0x0000013f (Q61) */
     __asm__ volatile ("move  $12,%0": :"r"(vec):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -4265,17 +4037,14 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     MATRIX *mat;
     Vec3i32 *vec;
     s32 c0, c1, c2;
-    /* work holds two values (Ruling 11): the 3x3 determinant (the divisor of
-     * the six cofactors) and then the square root of i0*i0 + i1*i1 (the ratan2
-     * length). */
+    /* work: the 3x3 determinant (divisor of the six cofactors), then the
+     * square root of i0*i0 + i1*i1 (Ruling 11) */
     s32 work;
     s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* temp holds two values (Ruling 11): i0*i0 + i1*i1 (the squared length fed
-     * to the table lookup and the leading-zero count) and then the square-root
-     * table byte. */
+    /* temp: i0*i0 + i1*i1, then the square-root table byte (Ruling 11) */
     s32 temp;
     s32 sp_tmp;
 
@@ -4302,8 +4071,8 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     } else {
         s32 lzcr = 0;
         if (temp >= 0) {
-            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210,
-             * gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
+            /* gte_Lzc -- gtemac.h:174-178: gte_ldlzc, gte_nop, gte_nop,
+             * gte_stlzc */
             __asm__ volatile ("move  $12,%0": :"r"(temp):"$12","$13","$14","$15","memory");
             __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -4349,10 +4118,9 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     vec->x = r0;
     vec->y = r1;
     vec->z = r2;
-    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word
-     * is the post-DMPSX word .word 0x4A486012 in place of the header's DMPSX
-     * placeholder .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner
-     * Q61 per-function grant) */
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's
+     * command word is the post-DMPSX 0x4A486012 for the placeholder
+     * 0x0000013f (Q61) */
     __asm__ volatile ("move  $12,%0": :"r"(vec):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -4380,17 +4148,14 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     MATRIX *mat;
     Vec3i32 *vec;
     s32 c0, c1, c2;
-    /* work holds two values (Ruling 11): the 3x3 determinant (the divisor of
-     * the six cofactors) and then the square root of i0*i0 + i1*i1 (the ratan2
-     * length). */
+    /* work: the 3x3 determinant (divisor of the six cofactors), then the
+     * square root of i0*i0 + i1*i1 (Ruling 11) */
     s32 work;
     s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* temp holds two values (Ruling 11): i0*i0 + i1*i1 (the squared length fed
-     * to the table lookup and the leading-zero count) and then the square-root
-     * table byte. */
+    /* temp: i0*i0 + i1*i1, then the square-root table byte (Ruling 11) */
     s32 temp;
     s32 sp_tmp;
 
@@ -4431,8 +4196,8 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     } else {
         s32 lzcr = 0;
         if (temp >= 0) {
-            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210,
-             * gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
+            /* gte_Lzc -- gtemac.h:174-178: gte_ldlzc, gte_nop, gte_nop,
+             * gte_stlzc */
             __asm__ volatile ("move  $12,%0": :"r"(temp):"$12","$13","$14","$15","memory");
             __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -4478,10 +4243,9 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     vec->x = r0;
     vec->y = r1;
     vec->z = r2;
-    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word
-     * is the post-DMPSX word .word 0x4A486012 in place of the header's DMPSX
-     * placeholder .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner
-     * Q61 per-function grant) */
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's
+     * command word is the post-DMPSX 0x4A486012 for the placeholder
+     * 0x0000013f (Q61) */
     __asm__ volatile ("move  $12,%0": :"r"(vec):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -4507,9 +4271,8 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
     VECTOR *p;
     s32 ret;
 
-    /* Difference vectors: (a1 - a0) into the scratchpad VECTOR at
-     * SCR[0x60..0x68], (a2 - a0) into the one at SCR[0x70..0x78] — the two
-     * operands the GTE macros below read back (same slots as func_8002FDB0). */
+    /* Difference vectors (a1 - a0) and (a2 - a0) into the scratchpad VECTORs
+     * at SCR[0x60..0x68] / SCR[0x70..0x78], the GTE operands below. */
     ((VECTOR *)0x1F800360)->vx = a1->vx - a0->vx;
     ((VECTOR *)0x1F800360)->vy = a1->vy - a0->vy;
     ((VECTOR *)0x1F800360)->vz = a1->vz - a0->vz;
@@ -4517,9 +4280,8 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
     ((VECTOR *)0x1F800370)->vy = a2->vy - a0->vy;
     ((VECTOR *)0x1F800370)->vz = a2->vz - a0->vz;
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r) — loads the 3 packed
-     * rotation-matrix words at r into cop2 control regs R11R12/R13R21/R22R23.
-     * The SDK macro body hardcodes $12-$15 and copies the operand into $12. */
+    /* gte_ldopv1(r) (the 3-word load, not gte_SetRotMatrix's 5): the packed
+     * words at r into cop2 control R11R12 / R22R23 / R33 ($0 / $2 / $4). */
     __asm__ volatile(
         "move   $12, %0
 "
@@ -4536,8 +4298,8 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
         "ctc2   $15, $4
 "
         :: "r"((VECTOR *)0x1F800360) : "$12", "$13", "$14", "$15");
-    /* PsyQ libgte inline macro gte_ldlvl(r) — load long vector at r into
-     * IR1/IR2/IR3 ($9/$10/$11), IR3 first, then the 2-cycle GTE load delay. */
+    /* gte_ldopv2(r) (not gte_ldlvl, which loads IR1 first): r into IR1-IR3
+     * ($9/$10/$11), IR3 first; then gte_op0's two nops. */
     __asm__ volatile(
         "move   $12, %0
 "
@@ -4552,11 +4314,10 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
         "nop
 "
         :: "r"((VECTOR *)0x1F800370) : "$12");
-    /* GTE OP (outer/cross product of the IR vector with the rotation matrix
-     * diagonal), sf=0 — cop2 command 0x0170000C. */
+    /* GTE OP (cross product of the IR vector with the rotation matrix
+     * diagonal), sf=0: cop2 command 0x0170000C. */
     __asm__ volatile(".word 0x4B70000C");
-    /* PsyQ libgte inline macro gte_stlvnl(r) — store MAC1/MAC2/MAC3
-     * ($25/$26/$27) to r. */
+    /* gte_stlvnl(r): MAC1/MAC2/MAC3 ($25/$26/$27) to r. */
     p = (VECTOR *)0x1F800380;
     __asm__ volatile(
         "move   $12, %0
@@ -4591,10 +4352,9 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
     SPAD->unk2B8.rec.unkB8.y = pt[3].y - pt[1].y;
     SPAD->unk2B8.rec.unkB8.z = pt[3].z - pt[1].z;
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r) — loads the 3 packed
-     * rotation-matrix words at r into cop2 control regs R11R12 / R22R23 / R33
-     * (ctc2 $0 / $2 / $4: the words holding the diagonal).
-     * The SDK macro body hardcodes $12-$15 and copies the operand into $12. */
+    /* gte_ldopv1(r) (the 3-word load, not gte_SetRotMatrix's 5): the packed
+     * words holding the diagonal into cop2 control R11R12 / R22R23 / R33
+     * ($0 / $2 / $4). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -4604,8 +4364,8 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
         "ctc2   $14, $2\n"
         "ctc2   $15, $4\n"
         :: "r"((s32 *)0x1F800360) : "$12", "$13", "$14", "$15");
-    /* PsyQ libgte inline macro gte_ldlvl(r) — load long vector at r into
-     * IR1/IR2/IR3 ($9/$10/$11), IR3 first, then the 2-cycle GTE load delay. */
+    /* gte_ldopv2(r) (not gte_ldlvl, which loads IR1 first): r into IR1-IR3
+     * ($9/$10/$11), IR3 first; then gte_op0's two nops. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lwc2   $11, 8($12)\n"
@@ -4614,11 +4374,10 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
         "nop\n"
         "nop\n"
         :: "r"((s32 *)0x1F800370) : "$12");
-    /* GTE OP (outer/cross product of the IR vector with the rotation matrix
-     * diagonal), sf=0 — cop2 command 0x0170000C. */
+    /* GTE OP (cross product of the IR vector with the rotation matrix
+     * diagonal), sf=0: cop2 command 0x0170000C. */
     __asm__ volatile(".word 0x4B70000C");
-    /* PsyQ libgte inline macro gte_stlvnl(r) — store MAC1/MAC2/MAC3
-     * ($25/$26/$27) to r. */
+    /* gte_stlvnl(r): MAC1/MAC2/MAC3 ($25/$26/$27) to r. */
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
@@ -4629,19 +4388,14 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
     return 0 < SPAD->unk2B8.rec.unkC8.y;
 }
 
-/* func_8002FF20 -- pure-C head + four PsyQ SDK GTE macro islands
- * (gte_SetRotMatrix, gte_ldlv0, gte_rtv0 = cop2 MVMVA .word 0x4A486012,
- * gte_stlvnl), character-identical to the func_800203B4 (src/code6cac.c,
- * inline_asm_canonical.txt:367), func_8002E838 (:373) and func_80031890 (:374)
- * authorized spellings. Each island is the verbatim body of the named Sony PsyQ
- * GTE macro (PsyQ 4.5 inline_c.h) -- cluster condition 3 as clarified by owner
- * Ruling A 2026-09-02 ([[cop2-addressing-preamble-cluster]]). Carrier under the
- * 2026-09-01 widened cop2 materialize-then-copy owner grant (registry row
- * tools/grinder/owner_cluster_grants.txt:29): the three $t4 copy sources here
- * are $v0/$v0/$v0. COMPLETED-INLINE-ASM-CANONICAL (inline_asm_canonical.txt).
- * `vec` is ONE named local used by both the gte_ldv0 and gte_stlvnl operands so
- * cse.c materializes `addiu $v0,$s0,0x2C` once and island 3 reuses $v0.
- */
+/* GTE islands: the PsyQ 4.5 inline_c.h macro bodies gte_SetRotMatrix,
+ * gte_ldlv0, gte_rtv0 (MVMVA `.word 0x4A486012`), gte_stlvnl (owner Ruling A
+ * 2026-09-02, cop2-addressing-preamble-cluster); the three operand islands
+ * (gte_SetRotMatrix, gte_ldlv0, gte_stlvnl) carry the materialize-then-copy
+ * preamble the widened cop2 owner grant of 2026-09-01 covers
+ * (cop2-addressing-preamble-cluster). `vec` is one local for the gte_ldlv0
+ * (long-VECTOR gte_ldv0) and gte_stlvnl operands, so its address is
+ * materialized once. */
 void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     s32 mat_local[8];
     s32 *playerData;
@@ -4676,9 +4430,8 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     arg0->pos.y -= s2_ptr[6];
     arg0->pos.z -= s2_ptr[7];
 
-    /* PsyQ 4.5 inline_c.h macro gte_SetRotMatrix(r0) --- verbatim macro body:
-     * copies the operand into $12, loads the 5 packed rotation-matrix words
-     * through $13-$15 and ctc2's them into cop2 control regs $0..$4. */
+    /* gte_SetRotMatrix(r0) -- PsyQ 4.5 inline_c.h: the 5 packed
+     * rotation-matrix words into cop2 control $0..$4. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -4693,10 +4446,8 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
         "ctc2   $15, $4\n"
         :: "r"(mat_local) : "$12", "$13", "$14", "$15");
     vec = &arg0->pos;
-    /* PsyQ 4.5 inline_c.h:101-110 macro gte_ldlv0(r0) --- verbatim macro body:
-     * lhu/lhu/sll/or packs VX0/VY0 (s32 x,y) into one word, mtc2 to $0, lwc2
-     * VZ0 into $1; the 2-cycle GTE load delay is carried as explicit nops
-     * (maspsx does not supply them in the full-build context). */
+    /* gte_ldlv0(r0) -- PsyQ 4.5 inline_c.h:101-110: VX0/VY0 packed into
+     * one word, VZ0 into $1; the 2-cycle GTE load delay as explicit nops. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -4708,11 +4459,11 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
         "nop\n"
         "nop\n"
         :: "r"(vec) : "$12", "$13", "$14");
-    /* PsyQ 4.5 inline_c.h macro gte_rtv0() --- cop2 MVMVA sf=1, mx=rotation,
-     * v=V0, cv=none: the macro's single `.word 0x4A486012` (cop2 0x0486012). */
+    /* PsyQ 4.5 inline_c.h macro gte_rtv0(): MVMVA sf=1, mx=rotation,
+     * v=V0, cv=none (`.word 0x4A486012`). */
     __asm__ volatile(".word 0x4A486012");
-    /* PsyQ 4.5 inline_c.h macro gte_stlvnl(r0) --- verbatim macro body: copies
-     * the operand into $12 and swc2's MAC1/MAC2/MAC3 ($25/$26/$27) to r0. */
+    /* PsyQ 4.5 inline_c.h macro gte_stlvnl(r0) in the `move $12,%0`
+     * spelling: MAC1/MAC2/MAC3 ($25/$26/$27) to r0. */
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
@@ -4726,22 +4477,15 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     arg0->pos.z >>= 1;
 }
 
-/* func_800300B4 -- pure-C body (GTE rotate+translate of the object's local
- * vector, then dispatch) + four PsyQ SDK GTE macro islands (gte_SetRotMatrix,
- * gte_ldlv0, gte_rtv0 = cop2 MVMVA .word 0x4A486012, gte_stlvnl) in the
- * older-SDK `move $12,%0` materialize-then-copy spelling, character-identical
- * to the func_800203B4 (src/code6cac.c:1860-1872, inline_asm_canonical.txt:367)
- * authorized islands -- only the operand expression differs (&arg0->pos vs
- * vec). Each island is the verbatim body of the named Sony PsyQ GTE macro (PsyQ
- * Run-time Library Release 4.5 inline_c.h): cluster condition 3 as clarified by
- * owner Ruling A 2026-09-02 ([[cop2-addressing-preamble-cluster]]) admits GPR
- * instructions that are the macro's own published text, e.g. `gte_ldlv0`'s
- * `lhu/lhu/sll/or` VX0/VY0 pack (inline_c.h:101-110). Enumerated carrier under
- * the owner cluster grant (registry row
- * tools/grinder/owner_cluster_grants.txt:23); COMPLETED-INLINE-ASM-CANONICAL
- * (inline_asm_canonical.txt). One FAKE: do-while(0) wrap around gte_stlvnl (see
- * the annotation). */
-/* GTE rotate+translate of the object's local vector, then dispatch */
+/* GTE rotate+translate of the object's local vector, then dispatch.
+ * GTE islands: the PsyQ 4.5 inline_c.h macros gte_SetRotMatrix, gte_ldlv0,
+ * gte_rtv0 (MVMVA `.word 0x4A486012`), gte_stlvnl; the three operand islands
+ * use the older-SDK `move $12,%0` materialize-then-copy spelling (owner cop2
+ * cluster grant,
+ * cop2-addressing-preamble-cluster); gte_ldlv0's lhu/lhu/sll/or pack is the
+ * macro's own text (inline_c.h:101-110; owner Ruling A 2026-09-02,
+ * cop2-addressing-preamble-cluster). One
+ * FAKE: the do-while(0) wrap around gte_stlvnl (see its annotation). */
 void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
     s16 dir[4];
@@ -4753,10 +4497,8 @@ void func_800300B4(Obj80106A78 *arg0) {
     playerData = game_GetPlayerData(arg0->owner < 1);
     mat = (MATRIX *)playerData[arg0->unk_09];
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r) (PsyQ 4.5 inline_c.h) -
-     * loads the 5 packed rotation-matrix words at r into cop2 control regs
-     * R11R12..R33. The SDK macro body hardcodes $12-$15 and copies the operand
-     * into $12. */
+    /* PsyQ 4.5 inline_c.h macro gte_SetRotMatrix(r): the 5 packed
+     * rotation-matrix words into cop2 control R11R12..R33. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -4770,12 +4512,9 @@ void func_800300B4(Obj80106A78 *arg0) {
         "ctc2   $14, $3\n"
         "ctc2   $15, $4\n"
         :: "r"(mat) : "$12", "$13", "$14", "$15");
-    /* PsyQ libgte inline macro gte_ldlv0(r) - load the 32-bit VECTOR at r into
-     * V0: pack vx/vy (s32 -> s16 halves) into VXY0 ($0), lwc2 vz into VZ0 ($1).
-     * Body verbatim from PsyQ Run-time Library Release 4.5 inline_c.h:101-110
-     * (lhu/lhu/sll/or/mtc2/lwc2, clobbers $12,$13) in the older-SDK `move
-     * $12,%0` spelling. Then the 2-cycle GTE load delay and gte_rtv0() (MVMVA
-     * sf=1, rotation matrix x V0, no translation). */
+    /* gte_ldlv0(r) -- PsyQ 4.5 inline_c.h:101-110: the VECTOR at r into V0
+     * (vx/vy packed into VXY0, vz into VZ0); then the 2-cycle GTE load delay
+     * and gte_rtv0() (MVMVA sf=1, rotation x V0, no translation). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -4787,15 +4526,13 @@ void func_800300B4(Obj80106A78 *arg0) {
         "nop\n"
         "nop\n"
         :: "r"(&arg0->pos) : "$12", "$13", "$14");
-    /* PsyQ libgte inline macro gte_rtv0() (PsyQ 4.5 inline_c.h) - GTE MVMVA
-     * sf=1, mx=rotation matrix, v=V0, cv=none --- cop2 command 0x0486012. */
+    /* PsyQ 4.5 inline_c.h macro gte_rtv0(): MVMVA sf=1, mx=rotation,
+     * v=V0, cv=none (cop2 command 0x0486012). */
     __asm__ volatile(".word 0x4A486012");
-    /* PsyQ libgte inline macro gte_stlvnl(r) (PsyQ 4.5 inline_c.h) - store
-     * MAC1/MAC2/MAC3
+    /* PsyQ 4.5 inline_c.h macro gte_stlvnl(r): MAC1/MAC2/MAC3
      * ($25/$26/$27) to r. */
-    /* FAKE: do-while(0) wrap around gte_stlvnl, mechanism: flow.c loop-note ref
-     * weighting (loop_depth doubles the &mac def+asm refs so local-alloc seats
-     * it in $s2 ahead of arg0). */
+    /* FAKE: do-while(0) around gte_stlvnl weights &mac's refs so it
+     * takes $s2 ahead of arg0 (do-while-zero-exception) */
     do {
         __asm__ volatile(
             "move   $12, %0\n"
@@ -4916,14 +4653,10 @@ void func_80030524(void) {
 }
 
 Obj80106A78 *func_80030580(Unk80101EC8Record *arg0, s32 arg1) {
-    /* FAKE: unwritten leading pad (phantom-frame-slot volatile pad local
-     * family, owner ruling 2026-08-18; row granted by owner ruling 2026-09-02):
-     * reserves the 16 untouched locals bytes the target frame holds beyond our
-     * single combine-orphan slot (target vars=24, ours 8; zero ($sp) references
-     * in asm/funcs/func_80030580.s). Mechanism: reload alter_reg /
-     * get_frame_size counts the never-accessed volatile object and emits no
-     * instruction. SOTN-master precedent: volatile u32 pad[4]; // FAKE at
-     * st/sel/stream.c:80. */
+    /* FAKE: unwritten pad reserving the 16 untouched local bytes of the
+     * target frame (target vars=24, ours 8 without the pad) (phantom-frame pad,
+     * owner ruling 2026-08-18; row granted by owner ruling 2026-09-02). SOTN
+     * precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. */
     volatile u32 pre_pad[4]; /* !FAKE: without it score 2 */
     Obj80106A78 *obj;
     Tbl8008E194 *tbl;
@@ -5186,14 +4919,13 @@ void func_80030D7C(void) {
     scr = &SPAD->unk2B8.v8005344C;
     obj = D_80106A78;
     for (i = 0; i < 12; i++, obj++) {
-        /* work holds two values: the clamped turn amount (turn block) and the
-         * bounce restitution factor D_8008E194[kind].unkA. One local, not two:
-         * ordinary-c-judge-decidable.md Ruling 11. */
+        /* work: the clamped turn amount (turn block), then the bounce
+         * restitution factor D_8008E194[kind].unkA (Ruling 11,
+         * ordinary-c-judge-decidable) */
         s32 work;
-        /* temp holds two values: the ratan2() heading of the velocity (turn
-         * block) and the func_8005344C() collision result (cleared when
-         * func_80054434() == 7). One local, not two:
-         * ordinary-c-judge-decidable.md Ruling 11. */
+        /* temp: the ratan2() heading of the velocity (turn block), then
+         * the func_8005344C() collision result (cleared when func_80054434() ==
+         * 7) (Ruling 11, ordinary-c-judge-decidable) */
         s32 temp;
 
         if (obj->kind == -1) {
@@ -5407,9 +5139,8 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     RotMatrixY(angle1, mat);
     RotMatrixX(angle2, mat);
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
-     * rotation-matrix words at r into cop2 control regs $0..$4.  Same island
-     * as the matched func_800203B4 (src/code6cac.c) / func_8002E838. */
+    /* gte_SetRotMatrix(r): the 5 packed rotation-matrix words into cop2
+     * control $0..$4 (as in func_800203B4 / func_8002E838). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -5424,8 +5155,9 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
         "ctc2   $15, $4\n"
         :: "r"(mat) : "$12", "$13", "$14", "$15");
     vec = &ent->vel;
-    /* PsyQ libgte inline macro gte_ldv0(r) --- pack VX0/VY0 into one word,
-     * mtc2 to $0, lwc2 VZ0 into $1, then the 2-cycle GTE load delay. */
+    /* PsyQ libgte inline macro gte_ldlv0(r) (the long-vector gte_ldv0) ---
+     * pack VX0/VY0 into one word, mtc2 to $0, lwc2 VZ0 into $1, then the
+     * 2-cycle GTE load delay. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -5530,10 +5262,9 @@ void func_80031B24(void) {
             diff = 0x1000 - diff;
         func_800274BC(
             (s32 *)&obj->vel,
-            /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached by
-             * the first's address and handed to func_800274BC as its s16 vector
-             * (owner rulings Q96 / Q117; the s16[3] and {x,y,z} forms score 2
-             * in func_80027AD8). */
+            /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
+             * by the first's address, passed to func_800274BC (Q96 / Q117; as
+             * s16[3] or {x,y,z}, func_80027AD8 scores 2) */
             &D_800A37E8);
         obj->pos.x -= obj->vel.x / 2;
         obj->pos.y -= obj->vel.y / 2;
@@ -5557,10 +5288,9 @@ void func_80031B24(void) {
         if (kind == 0xF) {
             func_80032854(
                 other ^ 1, 0xE, &SPAD->unkA8[other][j].x,
-                /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached
-                 * by the first's address and handed to func_80032854 as its s16
-                 * vector (owner rulings Q96 / Q117; the s16[3] and {x,y,z}
-                 * forms score 2 in func_80027AD8). */
+                /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
+                 * by the first's address, passed to func_80032854 (Q96 / Q117;
+                 * as s16[3] or {x,y,z}, func_80027AD8 scores 2) */
                 &D_800A37E8);
             obj->kind = -1;
             continue;
@@ -5675,24 +5405,19 @@ loop:
     if (t0->unk_00 == 0)
         goto next;
     {
-        /* FAKE: named intermediate (no-new-park-categories.md,
-         * named-intermediate entry): `v1_v` holds the 0/1 record index so the
-         * index is a variable, not a comparison. Written directly
-         * (&D_80101EC8[cmp]), fold-const.c:3282-3323 turns the multiply by a
-         * comparison operand into a COND_EXPR and the record address becomes a
-         * branch (7 insns short; the target multiplies sltiu by 0x44C). Ablated
-         * (2026-10-06): score 13. */
+        /* FAKE: named intermediate `v1_v` holds the 0/1 record index;
+         * written directly (&D_80101EC8[cmp]) the multiply by a comparison
+         * becomes a branch: score 13 (no-new-park-categories
+         * named-intermediate) */
         s32 v1_v = (*(u8 *)(a3 + 1) == 0);
         ent = &D_80101EC8[v1_v];
     }
     state = (u16)ent->unk_6A;
     if ((state & 0xFFFF) == 4)
         goto next;
-    /* FAKE: single-level do-while(0) wrap (body executes once), mechanism:
-     * the wrap's NOTE_INSN_LOOP notes make flow.c weight in-wrap reg_n_refs
-     * by loop_depth, re-ranking global.c allocno priorities (walker 4390 <
-     * ent 4761 < mult-temp 8000) into the target $a1/$a2/$a3 seating. Ablated
-     * (2026-10-06): score 15. */
+    /* FAKE: do-while(0) loop depth re-ranks register allocation into
+     * the target's $a1/$a2/$a3 seating; without it: score 15
+     * (do-while-zero-exception) */
     do {
         if ((state & 0xFFFF) == 0x14)
             goto next;
@@ -5719,10 +5444,8 @@ loop:
                 s32 clz = 0;
                 s32 sp_tmp;
                 if ((s32)dist_sq >= 0) {
-                    /* Hand-written GTE leading-zero-count block (LZCS in, LZCR
-                     * out) — canonical inline asm, identical to the
-                     * user-authorized block in the matched sibling
-                     * func_800274BC (src/code6cac_b.c:292). */
+                    /* Hand-written GTE leading-zero count (LZCS in, LZCR out),
+                     * as in func_800274BC. */
                     __asm__ volatile(
                         "addu   $t4, %1, $zero\n"
                         "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
@@ -5781,23 +5504,16 @@ void func_800324D0(Unk80101EC8Record *rec) {
     rec->unk_AC = 0xFF;
 
     c = ptr[4];
-    /* FAKE: the header advance `ptr += 5` is spelled as a four-step chain,
-     * mechanism: combine folds the four `addiu` insns back to the single
-     * `addiu $v1,$v1,5` the target carries (zero emitted bytes), and the only
-     * surviving effect is the extra reg_n_refs count flow.c records BEFORE the
-     * fold, which lifts the walker allocno's global.c allocno_compare priority
-     * above the payload carrier's so find_reg seats the walker in $v1. */
+    /* FAKE: `ptr += 5` spelled as a four-step chain: combine folds it
+     * back to one addiu, but the extra refs seat the walker in $v1 */
     ptr++;
     ptr++;
     ptr++;
     ptr += 2;
     while (c != 0) {
         if (c == 0xFF) {
-            /* FAKE: same combine-foldable chain-extender as above, applied
-             * to the 0xFF command's `ptr += 6` advance, mechanism: combine
-             * folds `addiu 1; addiu 5` back to the target's single
-             * `addiu $v1,$v1,6`, contributing reg_n_refs inside the loop
-             * (loop depth 2) without adding a final instruction. */
+            /* FAKE: the same foldable chain for the 0xFF command's
+             * `ptr += 6` */
             ptr++;
             ptr += 5;
         } else if (c < 0x80) {
@@ -5805,13 +5521,9 @@ void func_800324D0(Unk80101EC8Record *rec) {
         } else {
             val = *ptr;
             ptr++;
-            /* FAKE: the loop tail `c = *ptr; ptr++;` is duplicated into the
-             * first five command arms instead of being reached by falling
-             * out of the switch, mechanism: flow.c's reg_n_refs census
-             * counts the duplicated walker references before global.c's
-             * allocno_compare ranks the allocnos, and jump2's cross-jump
-             * pass (after reload) re-merges the identical tails so not one
-             * duplicated instruction materialises. */
+            /* FAKE: the loop tail `c = *ptr; ptr++;` duplicated into the
+             * first five arms; the extra walker refs steer register allocation
+             * and cross-jumping re-merges the tails */
             switch (c - 0x80) {
             case 0:
                 rec->unk_A1[0] = val;
@@ -5866,18 +5578,12 @@ void func_800324D0(Unk80101EC8Record *rec) {
     }
 }
 
-/* func_800325E0 -- 3D positional sound pan/volume: listener-relative delta of
- * *arg1, distance attenuation via the D_8008D118 log table (GTE LZCS/LZCR
- * leading-zero-count island for the >= 0x400 range, same template as the
- * authorized siblings func_800274BC / func_80032314 / func_8002E838 in this
- * file), then a Judge-table (sin/cos) left/right pan scaled by distance,
- * clamped to 0x7F, dispatched to func_8005C650(arg0, L, R).  Enumerated carrier
- * under the owner cop2 cluster grant
- * (tools/grinder/owner_cluster_grants.txt:24;
- * .claude/rules/cop2-addressing-preamble-cluster.md);
- * COMPLETED-INLINE-ASM-CANONICAL.  Everything outside the island is ordinary C
- * with no FAKE constructs.
- */
+/* 3D positional sound pan/volume: listener-relative delta of *arg1,
+ * distance attenuation via the D_8008D118 log table (GTE LZCS/LZCR island for
+ * >= 0x400), then a sin/cos left/right pan scaled by distance, clamped to 0x7F,
+ * sent to func_8005C650(arg0, L, R). The island is an enumerated carrier
+ * under the owner cop2 cluster grant (cop2-addressing-preamble-cluster);
+ * everything outside it is ordinary C with no FAKE constructs. */
 void func_800325E0(s32 arg0, s32 *arg1) {
     s32 sp_tmp;
     s32 dx, dy, dz;
@@ -5900,19 +5606,14 @@ void func_800325E0(s32 arg0, s32 *arg1) {
         if (dist_sq < 0x400U) {
             dist_volume = (u32)(u8)(g_sqrt_table_u8[dist_sq]) >> 3;
         } else {
-            /* PsyQ 4.5 SDK GTE macro body: gte_Lzc(dist_sq, &sp_tmp)
-             * (gtemac.h:174-178) = gte_ldlzc(r0) `mtc2 %0,$30`
-             * (inline_c.h:228-231) + gte_nop() x2 `nop` (inline_c.h:1346-1347)
-             * + gte_stlzc(r0) `swc2 $31,0(%0)` (inline_c.h:1318-1322). The
-             * `addu $t4,%1,$zero` and `addiu $v0,$sp,0x10` / `addu
-             * $t4,$v0,$zero` operand materialisations are the
-             * cop2-addressing-preamble idiom the owner cluster grant covers
-             * (.claude/rules/cop2-addressing-preamble-cluster.md; registry
-             * tools/grinder/owner_cluster_grants.txt:24); nothing outside the
-             * macro body is in the island.  Same spelling as the matched
-             * siblings func_800274BC / func_80032314 / func_8002E838
-             * (inline_asm_canonical.txt).
-             */
+            /* gte_Lzc(dist_sq, &sp_tmp) -- gtemac.h:174-178: gte_ldlzc
+             * (inline_c.h:228-231) + 2x gte_nop (inline_c.h:1346-1347) +
+             * gte_stlzc (inline_c.h:1318-1322). The `addu $t4,%1,$zero` and
+             * `addiu $v0,$sp,0x10` / `addu $t4,$v0,$zero` materialisations
+             * are the cop2 addressing preamble the owner cluster grant
+             * covers (cop2-addressing-preamble-cluster); nothing else outside
+             * the macro body is in the island. Same spelling as
+             * func_800274BC / func_80032314 / func_8002E838. */
             __asm__ volatile(
                 "addu   $t4, %1, $zero\n"
                 "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
@@ -6458,14 +6159,9 @@ loop:
         goto next;
     }
 
-    /* FAKE: do { ... } while (0) -- sanctioned narrow exception per
-       .claude/rules/do-while-zero-exception.md. Emits NOTE_INSN_LOOP_BEG
-       which sets LABEL_OUTSIDE_LOOP_P on `done:`, making reorg.c's
-       mostly_true_jump return -1 instead of 1 for the `bnez done` below,
-       preserving target's branch sense. SOTN master-branch evidence in
-       pre-slim-2026-10-01:memory/project/sotn-do-while-zero-research-2026-06-04.md.
-       This is the ONLY no-semantic-purpose wrapper sanctioned in BB2 source --
-       NOT a precedent for other codegen-coercion constructs. */
+    /* FAKE: do-while(0) puts a loop note on `done:` so reorg keeps the
+     * target's branch sense for the `bnez done` below (do-while-zero-exception)
+     */
     do {
         if ((u32)a1val < 0x80) {
             u8 val = s0[0];

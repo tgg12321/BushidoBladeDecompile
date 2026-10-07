@@ -6,15 +6,10 @@
 #include <psxsdk/libc.h>
 #include <psxsdk/libetc.h>
 
-/* .rodata 0x80016318..0x80016328: v_wait's timeout message (moved from
- * src/text1a_b_tail_rodata.c, Q106 D4: every reader is in this file, in link
- * order). */
-
-/* D_80016318: 1 string(s), 16B @ 0x80016318 */
+/* .rodata 0x80016318..0x80016328: v_wait's timeout message (Q106 D4: every
+ * reader is in this file). */
 const char D_80016318[16] = "VSync: timeout\n\0";
 
-/* Declarations from the file this module was split from
- * (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
 extern volatile s32 Vcount;
 
 extern volatile s32 *g_vsync_gpu_stat_reg;
@@ -71,12 +66,13 @@ s32 VSync(s32 a0) {
     return s1_val;
 }
 
-/* PsyQ 4.0 LIBETC VSYNC: v_wait (static) — verbatim-linked Sony object;
-   C ref: sotn-decomp src/main/psxsdk/libetc/vsync.c.
-   FAKE(partial-use volatile array, Ruling 3): only [0] is
-   referenced — SOTN ships the identical `volatile s32 timeout[2]` shape;
-   original author idiom. */
+/* v_wait (static). FAKE: volatile delay counter, each access a $sp-slot
+   round-trip; plain `s32 timeout[2]` scores 9. Only [0] is referenced: [2] is
+   SOTN's shape (`volatile s32 timeout[1]` also scores 0). Q50 route A, Q53;
+   first unlocked by Ruling 3 of the closer rulings (owner ruling 2026-07-10,
+   retired). */
 void v_wait(s32 a0, s32 a1) {
+    /* SOTN: src/main/psxsdk/libetc/vsync.c:52 @db41b28 */
     volatile s32 timeout[2];
 
     timeout[0] = a1 << 0xF;

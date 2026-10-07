@@ -172,13 +172,10 @@ s32 cdrom_ReadWait(s32 nbytes, s32 buf, s32 mode) {
     return v;
 }
 
-/* Loads a PS-EXE from disc (renamed cdrom_LoadExec 2026-09-07; was
- * special_camera_get_rot_dir - nothing camera-related). Seeks to entry
- * D_8008F12C[6] (=156, MOVOVL.EXE) of g_cd_file_table, reads
- * one 2048-byte sector, copies the struct EXEC at +0x10 into the caller's
- * *dest, then seeks to the following sector and reads dest->t_size bytes to
- * dest->t_addr. The sole caller, sys_Exec, then Exec()s dest. Any failed read
- * restarts the whole sequence from the seek. */
+/* Loads a PS-EXE from disc: seeks to entry D_8008F12C[6] (=156, MOVOVL.EXE)
+ * of g_cd_file_table, reads one sector, copies the struct EXEC at +0x10 into
+ * *dest, then reads dest->t_size bytes from the next sector to dest->t_addr.
+ * Any failed read restarts from the seek. The sole caller is sys_Exec. */
 void cdrom_LoadExec(EXEC *dest) {
     u8 sp_buf[0x800];
     CdlLOC sp_buf2;
@@ -232,13 +229,10 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
 }
 
 void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
-    /* n.b.! needs to be 25-32 bytes (inclusive): target frame 0x48 - callee
-       saves (6 regs @ 0x30-0x44 = 24) - outgoing args (16) = 32-byte locals
-       region, but only sp[0..5] (24 bytes) are ever written (count=6 to the
-       callee) and ALIGN8(24)+16+24 = 0x40 != 0x48 — the original provably
-       declared a larger argv buffer than it fills; s32 [7] and [8] are
-       byte-identical. Oversized-locals carve-out (owner ruling 2026-07-13),
-       see .claude/rules/dead-vars-local-array.md. */
+    /* 25-32 bytes: the target's 0x48 frame implies a larger argv buffer than
+       the 24 bytes ever written (s32 [7] and [8] are byte-identical);
+       oversized-locals carve-out (dead-vars-local-array), owner ruling
+       2026-07-13. */
     s32 sp[8];
     s32 v0;
 

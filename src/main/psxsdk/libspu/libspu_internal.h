@@ -6,12 +6,10 @@
 
 #include <psxsdk/libspu.h>
 
-/* PsyQ LIBSPU's SPU register block (Sony's SPU_RXX and union SpuUnion; the same
- * spelling in SOTN src/main/psxsdk/libspu/libspu_internal.h and psyz
- * decomp/src/libspu/libspu_private.h): one register set per voice, then the
- * common registers; `raw` indexes it by halfword. _spu_RXX points at the
- * hardware block (.word 0x1F801C00, asm/data/91C98.data.s), the SPU MMIO range,
- * so the members are volatile at type level (mmio-volatile-type-level). */
+/* The SPU register block (Sony's SPU_RXX / union SpuUnion, as in SOTN and
+ * psyz): one register set per voice, then the common registers; `raw` indexes
+ * it by halfword. _spu_RXX points at 0x1F801C00 (SPU MMIO), hence volatile
+ * (mmio-volatile-type-level). */
 typedef struct tagSpuVoiceRegister {
     /* 0x00 */ SpuVolume volume;
     /* 0x04 */ u16 pitch;
@@ -105,8 +103,8 @@ typedef struct {
     u32 size;
 } SpuMemRec;
 
-/* Sony _spu_rev_attr — ONE struct (sotn libspu_internal.h:87 struct
-   SpuRevAttr), base 0x800A2888: mode / depth L,R / delay / feedback. */
+/* Sony _spu_rev_attr (0x800A2888; sotn libspu_internal.h:87 struct
+   SpuRevAttr): mode / depth L,R / delay / feedback. */
 typedef struct {
     /* 0x00 */ u32 unk0;
     /* 0x04 */ s32 mode;
@@ -135,16 +133,14 @@ extern SpuRevAttr _spu_rev_attr;
 extern s32 _spu_AllocBlockNum;
 extern s32 _spu_AllocLastNum;
 extern SpuMemRec *_spu_memList;
-/* PsyQ LIBSPU: Sony's own header types the SPU transfer callback as a
-   volatile function pointer; volatile_extern_allowlist.txt grant.
-   SOTN: src/main/psxsdk/libspu/libspu_internal.h:39 @db41b28 (PS1 use:
+/* Sony's own header types the transfer callback as a volatile function
+   pointer (legitimate-volatile-interrupt-touched). SOTN:
+   src/main/psxsdk/libspu/libspu_internal.h:39 @db41b28 (PS1 use:
    src/main/psxsdk/libspu/s_r.c:10) */
 extern void (* volatile _spu_transferCallback)();
-/* Sony _spu_RQ: one object, the pending key-on / key-off queue (PsyQ 4.0 LIBSPU
- * S_SK relocs: addends 0/2/4/6 — key-on pending [0..1], key-off pending
- * [2..3]); _spu_init clears all 10 halfwords (PsyQ 4.0 spu.c). splat had split
- * it into two D_ symbols. _spu_RQ, _spu_RQvoice, _spu_RQmask and _spu_env are
- * volatile under Ruling-4 grants (volatile_extern_allowlist.txt). */
+/* _spu_RQ: the pending key-on [0..1] / key-off [2..3] queue; _spu_init clears
+ * all 10 halfwords. These four are volatile under Ruling-4
+ * (legitimate-volatile-interrupt-touched) grants. */
 extern volatile u16 _spu_RQ[10];
 extern volatile s32 _spu_RQvoice;
 extern volatile s32 _spu_RQmask;

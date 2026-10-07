@@ -2,11 +2,9 @@
 #define GAME_H
 
 /* Game types for the translation units in src/main/ (SLUS_006.63's game code):
- * records, tables and object layouts. bb2.h, which includes this file, holds
- * the declarations moved out of the pre-restructure headers plus the identical
- * multi-TU declarations hoisted in 42f458af0; other externs, some of them
- * shared by several TUs, are still declared locally. Sony's library types come
- * from include/psxsdk/. */
+ * records, tables and object layouts. Most multi-TU declarations live in
+ * bb2.h, which includes this file; some shared externs are still declared
+ * locally. Sony's library types come from include/psxsdk/. */
 
 #include "common.h"
 #include <psxsdk/kernel.h>
@@ -72,30 +70,17 @@ typedef struct {
     s16 ctl[7]; /* +0x124: filled from D_80099C34 by func_80048F58 */
 } MoveChannel;
 
-/* 3-word record table at 0x800F1198, terminated by an all-zero record.
- * Object model evidence: the original binary walks this table with a
- * 12-byte-stride induction register (asm/funcs/func_80062020.s:.L80062038,
- * `addiu $v1, $v1, 0xC`) and addresses the record members through one base
- * register at displacements 0/4/8 (`sw $zero, 0x8($v0)` / `sw $zero,
- * 0x4($v0)`), i.e. record stride and base+offset addressing, not mere symbol
- * adjacency. Replaces the splat per-word scalars D_800F1198 / D_800F119C /
- * D_800F11A0. */
+/* 3-word record table at 0x800F1198, terminated by an all-zero record
+ * (func_80062020 walks it with a 12-byte stride). */
 typedef struct {
     s32 unk0;
     s32 unk4;
     s32 unk8;
 } Unk800F1198Record;
 
-/* 0x800A9CF8 header block (0x18 bytes). Evidence for the aggregate: in the
- * original binary func_8004473C forms &D_800A9D08 in a register and reads
- * D_800A9CF8 / D_800A9CFE as base-0x10 / base-0xA (`lhu 0($a3)` /
- * `lh 6($a3)` with $a3 = $a0 - 0x10) -- one base register reaching three
- * of these addresses by signed displacement, i.e. base+offset addressing
- * of one object, not symbol adjacency. func_80044C70 corroborates by
- * bumping the unk8 / unkC pointer pair together. Replaces the splat
- * per-word scalars
- * D_800A9CF8 / D_800A9CFA / D_800A9CFC / D_800A9CFE / D_800A9D00 /
- * D_800A9D04 / D_800A9D08. */
+/* 0x800A9CF8 header block (0x18 bytes); func_8004473C reaches its fields off
+ * one base register, and func_80044C70 bumps the unk8 / unkC pointers together.
+ */
 typedef struct {
     s16 unk0;
     s16 unk2;
@@ -107,18 +92,10 @@ typedef struct {
     s32 unk14;
 } Unk800A9CF8Header;
 
-/* Per-lane slot record table at 0x800F0EC8: 2 lanes x 10 slots x one
- * 3-word record (12 bytes; lane stride 120). Object model evidence:
- * the original binary addresses all three words through ONE offset register per
- * access site -- asm/funcs/func_80063E10.s computes lane*120 (`sll $a0,$s7,4;
- * subu $a0,$a0,$s7; sll $a0,$a0,3`), adds the slot offset held in $s6, and
- * reads %lo(D_800F0EC8/ECC/ED0)($at) with that same $a0 added to each base; the
- * writer asm/funcs/func_80063BD0.s forms lane*120 + slot*12 the same way and
- * stores the three words at displacements 0/4/8 of that offset. Record stride
- * and base+offset addressing, not symbol adjacency. The slot bitmask
- * D_800A3454[lane] and the sibling SVECTOR table D_800F1000[lane][10] index the
- * same lane/slot pair. Replaces the splat per-word scalars D_800F0EC8 /
- * D_800F0ECC / D_800F0ED0. */
+/* Per-lane slot record table at 0x800F0EC8: 2 lanes x 10 slots x one 3-word
+ * record (12 bytes; lane stride 120). func_80063BD0 writes it, func_80063E10
+ * reads it. The slot bitmask D_800A3454[lane] and the sibling SVECTOR table
+ * D_800F1000[lane][10] index the same lane/slot pair. */
 typedef struct {
     s32 unk0;
     s32 unk4;
@@ -127,16 +104,8 @@ typedef struct {
 
 /* Flare-slot position table at 0x800F0E38: 12 slots x one 3-word {x, y, z}
  * record (12 bytes; 0x800F0E38 + 12 * 12 == 0x800F0EC8, the table above).
- * Object model evidence: the original binary addresses all three words through
- * ONE offset register per access site -- the spawner asm/funcs/func_80062FEC.s
- * forms slot*12
- * (`addu $v1,$a1,$a2; sll $v1,$v1,2` with $a1 = slot*2) and stores
- * %lo(D_800F0E38/E3C/E40)($at) with that same $v1 added to each base; the
- * drawer asm/funcs/func_80063084.s holds slot*12 in $s6 and reads
- * %lo(D_800F0E38/E3C/E40)($at) with $s6 added to each base. The slot bitmask
- * D_800A3448 and the age table D_800F0BEC[slot] index the same slot. Record
- * stride and base+offset addressing, not symbol adjacency. Replaces the splat
- * per-word scalars D_800F0E38 / D_800F0E3C / D_800F0E40. */
+ * func_80062FEC spawns into it, func_80063084 draws from it. The slot bitmask
+ * D_800A3448 and the age table D_800F0BEC[slot] index the same slot. */
 typedef struct {
     s32 unk0;
     s32 unk4;
@@ -144,31 +113,19 @@ typedef struct {
 } Unk800F0E38Record;
 
 /* 0x8009BC0C: the eight option rows of the list menu func_800693CC drives, one
- * {state, mode} byte pair per row (0x8009BC0C..0x8009BC1B). Object model
- * evidence from the original binary: func_800693CC indexes the row as
- * (D_800A34F8 & 0xF) << 1 and reads `lbu %lo(D_8009BC0C)($at)` (state: accept /
- * reject / return value) and `lbu %lo(D_8009BC0D)($at)` (mode: passed to the
- * three render calls, 1/2/3 select the D_800A3524 bit-3 action) through that
- * same index -- stride-2 records. Replaces the splat per-word symbols
- * D_8009BC0C / D_8009BC0D (per-word splat symbol -> aggregate merge family). */
+ * {state, mode} byte pair per row (0x8009BC0C..0x8009BC1B), indexed by
+ * D_800A34F8 & 0xF. state: accept / reject / return value; mode: passed to the
+ * three render calls, 1/2/3 select the D_800A3524 bit-3 action. */
 typedef struct {
     u8 state;
     u8 mode;
 } MenuOption;
 
 /* 0x8009BCF8: 2 pages x 10 two-byte records (0x8009BCF8..0x8009BD1F; D_8009BD20
- * follows), one page per character-select page, 2 rows x 5 columns of cells.
- * Object model evidence from the original binary: func_80075F80 (0x800761B4-
- * 0x800761E4) and func_800759D0 (0x80075BC4-0x80075BF0) address it as
- * page * 20 + cell * 2 -- the cell (row * 5 + col) shifted left 1, the page
- * times 5 shifted left 2, added, then `lbu %lo(D_8009BCF8)($at)` -- two-level
- * array indexing of [page][cell]; func_800759D0's cell loop steps through the
- * records flat from the table base (`lui $s6,%hi(D_8009BCF8); addiu
- * $s6,$s6,%lo(D_8009BCF8)`, a 2-byte step), and func_80076D74 reads byte 1
- * (`lbu %lo(D_8009BCF9)($at)`) through a flat shift-1 index. Data: the unk1
- * column is 0x00..0x09 (page 0) then 0x0C..0x15 (page 1). Replaces the splat
- * per-word scalars D_8009BCF8 / D_8009BCF9 (per-word splat symbol -> aggregate
- * merge family, owner ruling). */
+ * follows), one page per character-select page, 2 rows x 5 columns of cells
+ * (cell = row * 5 + col). func_80075F80 / func_800759D0 index it [page][cell];
+ * func_80076D74 reads unk1 flat. Data: unk1 is 0x00..0x09 (page 0) then
+ * 0x0C..0x15 (page 1). */
 typedef struct {
     u8 unk0;
     u8 unk1;
@@ -228,16 +185,9 @@ typedef struct {
  * position; u / v, its texel offset from the sheet's ubase / vbase; w / h, its
  * size (func_8007352C: x0 = x + env x, u0 = u + ubase, w / h copied). A sheet's
  * cells follow its header(s) (Unk8009B0E0Record.cells). The 0x8009B400 tables
- * hold such cells. Object model evidence from the original binary:
- * asm/funcs/func_8005E098.s and asm/funcs/func_8005D814.s index 0x8009B400 by a
- * digit value through a shift-3 (8-byte-stride) index, and func_8005E098 stores
- * an s16 to offset 0 of the indexed record (`sh $v0,0x0($v1)`); it indexes
- * 0x8009B458 by `sra 13` of an s16 counter (i * 8) and 0x8009B468 / 0x8009B470
- * by counter * 16 -- pairs of 8-byte records. Data: 0x8009B400..0x8009B44F is
- * 10 records (one per digit), 0x8009B458..0x8009B487 is 6 records of the same
- * shape; D_8009B450 and D_8009B488 follow. Replaces the splat per-word scalars
- * D_8009B458 / D_8009B468 / D_8009B470 in C (per-word splat symbol -> aggregate
- * merge family, owner ruling). */
+ * hold such cells: 0x8009B400..0x8009B44F is 10 records, one per digit
+ * (func_8005D814 / func_8005E098 index it by digit), and 0x8009B458..0x8009B487
+ * 6 more (func_8005E098); D_8009B450 and D_8009B488 follow. */
 typedef struct {
     s16 x;
     s16 y;
@@ -254,21 +204,9 @@ typedef struct {
  * table that follows. A resource sheet may carry two or three headers (the
  * plain one, then one highlight per player: func_8006F97C, func_800759D0) ahead
  * of one shared cell table, which then starts at the last header's cells
- * (hdr[2].cells). 0x8009B0E0: table of 9 twelve-byte sprite-sheet headers
- * (0x8009B0E0..0x8009B14B), the record func_8007352C reads through
- * Unk8007352CEnv.header. Object model evidence from the original binary:
- * asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B0F8) in $s0 and
- * reaches record 8 as `addiu $s0,$s0,0x48`; forms %hi/%lo(D_8009B110) in $s1
- * and reaches records 2 and 1 as `addiu $v1,$s1,-0xC` / `addiu $s1,$s1,-0x18`;
- * forms it again in $s2 and reaches records 0 and 1 as -0x30 / -0x24; its tail
- * loop indexes the table by `(j * 3) << 2` added to that base -- base+offset
- * and 12-byte-stride addressing of one object. Replaces the splat per-word
- * labels D_8009B0E0 / D_8009B0F8 / D_8009B110 / D_8009B11C in C (per-word splat
- * symbol -> aggregate merge family, owner ruling); the dlabels stay
- * in asm/data as data labels. D_8009B14C and D_8009B158 are two more headers of
- * the same shape (func_8005C8A8 passes &D_8009B14C as a header and reads its
- * +2 count byte, the splat label D_8009B14E, which this declaration retires).
- */
+ * (hdr[2].cells). 0x8009B0E0 is a table of 9 such headers (0x8009B0E0..
+ * 0x8009B14B) that func_8005C8A8 reaches off one base; D_8009B14C and
+ * D_8009B158 are two more of the same shape. */
 typedef struct {
     u8 tp0;
     u8 tp1;
@@ -562,14 +500,12 @@ typedef struct {
  * back into f48 in sorted order; f6A holds the picked entries func_80076D74
  * reports. f00 is the result record func_80076D74 writes; f04 is the resource
  * table the select draw functions receive as arg0[0] (func_80077724 passes it
- * as the first word of that context). f10 and f14 are per-player s16 pairs that
- * the original code also reads as one word (union word views, owner rulings
- * Q33/Q46): `lw 0x10` at func_800747D8 0x800747F4 and func_80075670
- * 0x80075684, `lw 0x14` at func_80077374 0x800773A4; f1C and f20 likewise,
- * cleared with one `sw $zero` each by func_800770B8 (0x800772C0 / 0x800772BC),
- * their halves read and written by func_80075F80 (`lhu`/`sh` 0x1C / 0x20). The
- * s32 members make the struct 4-aligned, so sizeof is 0x94 (the members end at
- * 0x92; owner ruling Q57). */
+ * as the first word of that context). f10, f14, f1C and f20 are per-player s16
+ * pairs the code also accesses as one word (union word views, Q33/Q46):
+ * func_800747D8 and func_80075670 read f10 whole, func_80077374 reads f14
+ * whole, func_800770B8 clears f1C / f20 whole (func_80075F80 reads and writes
+ * their halves). The s32 members make the struct
+ * 4-aligned: sizeof is 0x94 (members end at 0x92; Q57). */
 typedef struct {
     Unk8009BD24Block *f00;
     Unk80076FF8Rec *f04;
@@ -620,25 +556,15 @@ typedef struct {
 } SelWork;
 
 /* 0x8009BC94: table of {x, y} s16 position records, 6 records (24 bytes) per
- * row. Object model evidence from the original binary: func_8006F100 and
- * func_80071C4C form ONE offset per access (row*24 held in a strength-reduced
- * register plus D_800A3590[row]*4) and read `lh %lo(D_8009BC94)($at)` and `lh
- * %lo(D_8009BC96)($at)` through that same offset -- record stride 4, row stride
- * 24, base+offset addressing. Replaces the splat per-word scalars D_8009BC94 /
- * D_8009BC96 (per-word splat symbol -> aggregate merge family, owner ruling).
- */
+ * row; func_8006F100 and func_80071C4C index it [row][D_800A3590[row]]. */
 typedef struct {
     s16 x;
     s16 y;
 } Unk8009BC94Record;
 
 /* 0x8009B450: two {x, y} screen points (.short 0x01A2,0x0024,0x01F7,0x0037).
- * Object model evidence from the original binary: asm/funcs/func_8005D814.s
- * forms ONE index $s0 = j << 2 and reads both %lo(D_8009B450)($at) and
- * %lo(D_8009B452)($at) through it -- 4-byte records with halfword fields at
- * +0 and +2. func_8005D814 uses x as a TILE's x0 (and w = 0x238 - x) and y as
- * its y0 and the text row. Replaces the splat per-word scalars D_8009B450 /
- * D_8009B452 in C (per-word splat symbol -> aggregate merge family). */
+ * func_8005D814 uses x as a TILE's x0 (and w = 0x238 - x) and y as its y0 and
+ * the text row. */
 typedef struct {
     s16 x;
     s16 y;
@@ -672,14 +598,8 @@ typedef struct {
 } Unk8007352CEnv;
 
 /* 0x8009B2BC: three {w, h} menu-frame sizes, one per mode (0x8009B2BC..
- * 0x8009B2C7; D_8009B2C8 follows, different data). Object model evidence from
- * the original binary: asm/funcs/func_8005C8A8.s forms ONE index `sll
- * $a1,$t0,2` (mode * 4) and reads both %lo(D_8009B2BC)($at) and
- * %lo(D_8009B2BE)($at) through it -- 4-byte records with halfword fields at +0
- * and +2 (the D_8009B450 shape); the mode-2 arm reads record 2's w through the
- * splat label D_8009B2C4. Replaces the splat per-word labels D_8009B2BC /
- * D_8009B2BE / D_8009B2C4 in C (per-word splat symbol -> aggregate merge
- * family). */
+ * 0x8009B2C7; D_8009B2C8 follows, different data), indexed by mode in
+ * func_8005C8A8. */
 typedef struct {
     s16 w;
     s16 h;
@@ -697,24 +617,10 @@ typedef struct {
     s32 unk18[2];
 } Unk800469C4Hdr;
 
-/* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence:
- * the original binary addresses the whole block through ONE base register --
- * asm/funcs/func_80054604.s forms $s1 = %hi/%lo(D_800EFAE8) once in its
- * prologue and reaches offsets
- * 0x00/0x02/0x04/0x08/0x0C/0x10/0x14/0x1C/0x1E/0x20/0x2C/0x44/0x46/0x48/0x4A as
- * displacements off that single register (`lw $v1, 0x2C($s1)`, `sh $s5,
- * 0x44($s1)`,
- * ...), and the per-frame handler func_8005490C addresses the same block the
- * same way. The relocator func_80054FDC bumps the 0x2C..0x40 word group
- * together by one base offset. Base+offset addressing of one object, not
- * symbol adjacency. Replaces the splat per-word scalars D_800EFAE8 /
- * D_800EFB0C / D_800EFB14 / D_800EFB18 / D_800EFB1C / D_800EFB20 / D_800EFB24 /
- * D_800EFB28.
- * The per-player pairs are arrays: asm/funcs/func_8005490C.s walks
- * 0x34/0x38 with one pointer (`lw 0x34($s0)`, `$s0 += 4`, i < 2), 0x34/0x3C
- * with
- * `$s4 += 4` and 0x44/0x48 with `$s2 += 2` in its i < 2 player loop;
- * 0x24/0x26/0x28 are the halfword stores of the negated camera rotation. */
+/* Stage/match control block at 0x800EFAE8 (0x4C bytes): func_80054604 sets it
+ * up, the per-frame handler func_8005490C runs it (walking the per-player
+ * arrays in its player loop), and func_80054FDC relocates the 0x2C..0x40 words.
+ */
 typedef struct {
     /* 0x00 */ s16 unk0; /* phase (func_8005490C: -1 = done, 0 = init) */
     /* 0x02 */ s16 unk2;
@@ -730,11 +636,9 @@ typedef struct {
     /* 0x1E */ s16 unk1E;
     /* 0x20 */ s16 unk20;
     /* 0x22 */ s16 unk22;
-    /* negated camera rotation vx/vy/vz; returned by address from func_8005507C
-     */
+    /* negated camera rotation vx/vy/vz; func_8005507C returns its address */
     /* 0x24 */ s16 unk24[4];
-    /* loaded data base (census g_snd_data_buf_base); relocated by func_80054FDC
-     */
+    /* loaded data base; relocated by func_80054FDC */
     /* 0x2C */ s32 unk2C;
     /* 0x30 */ s32 unk30; /* relocated by func_80054FDC */
     /* per player; relocated by func_80054FDC when nonzero */
@@ -746,23 +650,13 @@ typedef struct {
 } Unk800EFAE8Ctrl;
 
 /* 0x800A3560: two 3-byte records, one per selection slot i (slot i at
- * 0x800A3560 + i * 3; 0x800A3566/7 pad before D_800A3568). Object model
- * evidence from the original binary: func_8006F100 reads bytes +2 and +1
- * through ONE offset register stepped by 3 per slot
- * (asm/funcs/func_8006F100.s:73-75 `lbu %lo(D_800A3562)($at)` and :100-102
- * `lbu %lo(D_800A3561)($at)` with $s3, `addiu $s3,$s3,0x3` at :267);
- * func_80070C70 walks byte +0 the same way ($s2, `addiu $s2,$s2,0x3`,
- * func_80070C70.s:114-116, :166); func_80070188 forms i*3 once and reaches
- * +0, +1 and +2 through it (func_80070188.s:58-76, 386-419); func_8006E534
- * stores byte +1 of both records (func_8006E534.s:96-97, D_800A3561 /
- * D_800A3564). Replaces the splat per-byte symbols D_800A3560..D_800A3565 in C
- * (per-word splat symbol -> aggregate merge family, owner ruling); their
- * undefined_syms_auto.txt rows are retired (no assembled referrer is left).
- * `word`: Q33 union word view (owner ruling), named only at
- * func_8006E534's one word store over bytes 0..3, `sw
- * $v0,%gp_rel(D_800A3560)($gp)` with $v0 = -1 (func_8006E534.s:85, 0x8006E668).
- * Every other access goes through rec[]. Owner rulings Q44/Q54: every consumer
- * is in the -G8 file src/main/5ED34.c. */
+ * 0x800A3560 + i * 3; 0x800A3566/7 pad before D_800A3568). Object-model
+ * evidence: func_8006F100 and func_80070C70 step one offset register by 3 per
+ * slot; func_80070188 reaches +0 / +1 / +2 through i * 3; func_8006E534 stores
+ * byte +1 of both. `word` (Q33 union word view) is
+ * func_8006E534's one word store of -1 over bytes 0..3; every other access goes
+ * through rec[]. Every consumer is in the -G8 file src/main/5ED34.c (Q44/Q54).
+ */
 typedef struct {
     u8 unk0;
     u8 unk1;
@@ -775,12 +669,9 @@ typedef union {
 } Unk800A3560Slots;
 
 /* Record table at 0x800F0C10 (0x90 bytes, ends at D_800F0CA0): 4 rows of 3
- * records of 3 s32 words. Object model evidence (the original binary):
- * asm/funcs/func_800678A8.s addresses it as base + arg1*36 + idx*12 (+0/+4/+8),
- * i.e. a row stride of 36 bytes and a record stride of 12; arg1 ranges 0..3
- * (callers func_800676C8..func_8006786C). func_80067200 and
- * func_80067D14 reach the same words. Replaces the splat per-word scalars
- * D_800F0C10 / D_800F0C14 / D_800F0C18. */
+ * records of 3 s32 words. func_800678A8 indexes it [arg1][idx] (arg1 0..3 from
+ * the callers func_800676C8..func_8006786C); func_80067200 and func_80067D14
+ * use it too. */
 typedef struct {
     /* 0x0 */ s32 unk0;
     /* 0x4 */ s32 unk4;
@@ -796,8 +687,8 @@ typedef struct {
 } StageFuncEntry;
 
 /* menuDat: model id -> BBM file name, ended by a zero id
- * (0x8008DCCC..0x8008DD5B, asm/data/7D920.data.s dlabel menuDat). func_80020E74
- * loads the model of entry n from CD file n + 2. */
+ * (0x8008DCCC..0x8008DD5B). func_80020E74 loads the model of entry n from CD
+ * file n + 2. */
 typedef struct {
     s32 id;
     char *name;
@@ -815,7 +706,7 @@ typedef struct {
  * both readers load them with lhu. */
 typedef struct {
     u8 pad00[3];
-    /* D_801027B0[ch].unk_00 = record + 0x6C + (unk_03 - 1) * 6 (func_80020E74)
+    /* func_80020E74: D_801027B0[ch].unk_00 = record + 0x6C + (unk_03 - 1) * 6
      */
     u8 unk_03;
     /* D_801027B0[ch].unk_04 .. unk_10 = record + unk_04[k] (func_80020E74) */
@@ -851,16 +742,12 @@ typedef struct {
     s32 x, y, z;
 } Vec3i32;
 
-/* 12-byte per-leaf record table (named_syms.txt: g_leaf_position_table,
-   "12-byte stride per leaf, 6 entries = 72-byte position array").  The same
-   s32 x/y/z triple as Vec3i32: func_800207C8 copies a scratchpad point
+/* A leaf position (g_leaf_position_table: 12-byte stride, 6 entries): the same
+   s32 x/y/z triple as Vec3i32; func_800207C8 copies a scratchpad point
    (SPAD->unkA8) into Unk80101EC8Record.unk_180 as one 12-byte object. */
 typedef Vec3i32 LeafPos;
 
-/* SVec4i16 is the remaining local-name copy of the PsyQ SVECTOR layout
- * (include/psxsdk/libgte.h); retyping it as the Sony type is Phase 2 work.
- * func_80022580 copies Unk80101EC8Record's +0xB8 and +0x104 as whole 16-byte
- * VECTORs (pad included) and +0x1C8 as a whole 8-byte SVECTOR. */
+/* The PsyQ SVECTOR layout under a local name. */
 
 typedef struct {
     s16 vx, vy, vz, pad;
@@ -884,13 +771,10 @@ typedef struct Unk80104E88Rec {
 } Unk80104E88Rec; /* sizeof == 0x2C */
 
 /* The 10-entry block table over the 0x45000-byte buffer at D_800A9D10
- * (main/35000.c func_800451D0 .. func_8004574C; D_800A33AC live entries).
- * func_800451D0 clears id in all 10 (offset 0x90 down to 0 in steps of 0x10,
- * asm/funcs/func_800451D0.s); the walkers index base + i*16.  func_80045294(a0,
- * a1) hands func_800520B8 entry a0's unk4, unk4 + a1 and the summed amt of
- * entries a0.., then adds a1 to their unk4 and calls each fn(id, a1).  Replaces
- * the splat per-word scalars D_800EED14 / D_800EED18 / D_800EED1C and
- * D_800EED00 (entry -1, i.e. D_800EED10[j - 1]). */
+ * (func_800451D0 .. func_8004574C; D_800A33AC live entries). func_800451D0
+ * clears id in all 10. func_80045294(a0, a1) hands func_800520B8 entry a0's
+ * unk4, unk4 + a1 and the summed amt of entries a0.., then adds a1 to their
+ * unk4 and calls each fn(id, a1). */
 typedef struct {
     s16 id;
     s16 unk2;
@@ -938,12 +822,10 @@ typedef struct PadState {
     u32 unheld;   /* 0x14 */
 } PadState;       /* sizeof == 0x18 */
 
-/* The 24-entry pending-sound pool (main/3AB48.c): func_8005C650 queues a
- * request (an entry of D_8009AA70) with its volumes in the first free entry;
- * func_8005C6D0 keys each queued note on via SsUtKeyOnV(.., voll, volr) and
- * clears the entry; snd_Init / func_8005B5AC reset all 24.  Every user indexes
- * base + i*8 (asm/funcs/func_8005C650.s, snd_Init.s: 0xC0 / 8 entries).
- * Replaces the splat per-word scalars D_800EFB7C / D_800EFB7D. */
+/* The 24-entry pending-sound pool (3AB48): func_8005C650 queues a request (an
+ * entry of D_8009AA70) with its volumes in the first free entry; func_8005C6D0
+ * keys each queued note on via SsUtKeyOnV(.., voll, volr) and clears the entry;
+ * snd_Init / func_8005B5AC reset all 24. */
 typedef struct {
     u16 *req;
     u8 volr;
@@ -952,8 +834,8 @@ typedef struct {
 
 /* One 8-byte texture record: the CLUT position (PsyQ getClut(x, y) = (y << 6) |
  * ((x >> 4) & 0x3F)) and the texture u/v origin. 51268's D_800A3488 /
- * D_800A348C point at one; the D_8009B890 .. D_8009BA58 tables
- * (asm/data/7D920.data.s) are runs of them. */
+ * D_800A348C point at one; the D_8009B890 .. D_8009BA58 tables are runs of
+ * them. */
 typedef struct {
     u16 clut_x;
     u16 clut_y;
@@ -961,7 +843,7 @@ typedef struct {
     u16 v;
 } TexRec;
 
-/* The 0x2C-byte block D_800A3468 points at (51268.c): Unk1F800000Rec.unk00
+/* The 0x2C-byte block D_800A3468 points at (51268): Unk1F800000Rec.unk00
  * (func_80060E38's seed) or D_800F116C, where func_800611A4 .. func_80061EC0
  * point it before calling func_80060A68. D_800F1198 follows D_800F116C, so that
  * copy ends at +0x2C. Each copy sets one pointer pair:
@@ -999,10 +881,8 @@ typedef struct {
     s32 unk20[3];
 } Unk1F800000Unk00;
 
-/* 20-byte record table at 0x800EFC78 (51268.c): 4 rows (arg1) of 48 records.
- * Object model evidence: asm/funcs/func_80067200.s addresses it as base +
- * arg1*0x3C0 + i*20 with halfword stores at +0..+0xC, +0x10, +0x12 (+0xE
- * untouched there); 0x3C0 / 20 = 48 = the loop's record count. */
+/* 20-byte record table at 0x800EFC78 (51268): 4 rows (arg1) of 48 records,
+ * filled by func_80067200 (which leaves +0xE untouched). */
 typedef struct {
     s16 unk0;
     s16 unk2;
@@ -1138,18 +1018,18 @@ typedef union {
     Unk1F8000B8_800678A8 v800678A8;
 } Unk1F8000B8Union;
 
-/* 51268's view of the scratchpad from 0x1F800000 (SPAD51268 in 51268.c).
+/* 51268's view of the scratchpad from 0x1F800000 (SPAD51268).
  * 17AFC's view of the same memory, used at other times, is ScrPad.
- * func_80060E38 points the file's D_800A34xx globals at these members
- * (51268.c); apart from its own two stores to unk00.unk04 / unk08, the code
- * reaches them only through those globals:
+ * func_80060E38 points 51268's D_800A34xx globals at these members; apart from
+ * its own two stores to unk00.unk04 / unk08, the code reaches them only through
+ * those globals:
  * - unk00: the command block D_800A3468 points at until a function retargets
  * it; D_800A346C / D_800A3470 point at its unk18 / unk20.
  * - unk2C: no access.
  * - unk50 / unkB0: the initial targets of D_800A3488 / D_800A348C (TexRec).
  * func_800620B8 retargets them only in its switch cases 0-3 (unk4 & 7), so its
- * reads at 51268.c:958-960 go through these seeded values when no earlier
- * record took one of those cases.
+ * later reads go through these seeded values when no earlier record took one
+ * of those cases.
  * - unkA0 / unkA4: the initial targets of D_800A34E4 (u32 *) / D_800A34E8 (u32
  * *), which every user retargets before use.
  * - unkB8: the work area D_800A34EC points at (Unk1F8000B8Union), laid out
@@ -1285,32 +1165,25 @@ typedef union {
  * other code puts its own data in these bytes at other times, with its own
  * views. Among others:
  * - 3AB48 func_80053614 / func_8005344C keep their work area (Work_80053E9C,
- * 0xEC bytes) at the address of their last argument (D_800A33F4). 3AB48
- * func_80056CB8 / func_800571C0 and 9F9C func_80021DB0 / func_8002304C /
- * func_800233AC / func_800238C4 / func_80023D28 / func_80023DB8 / func_80023E40
- * pass 0x1F8002B8 (the area spans record +0x00..+0xEB); 9F9C func_800207C8 and
- * 17AFC func_80030D7C / func_800321E8 pass 0x1F8002F0 (+0x38..+0x123, over
- * unk60 up into unk118).
+ * 0xEC bytes) at the address of their last argument (D_800A33F4); callers pass
+ * 0x1F8002B8 (the area spans record +0x00..+0xEB) or 0x1F8002F0 (+0x38..+0x123,
+ * over unk60 up into unk118).
  * - 9F9C func_800207C8 keeps a whole probe record at 0x1F8002B8: from, to, hit,
  * normal, then that work area.
  * - 32D04 func_800430E4 keeps a MATRIX at 0x1F8003A0.
- * - 3AB48 func_8004DA74 fills, and 30 renderers in func_8004C994 ..
- * func_80051ED4 read, an s16 per-vertex table at 0x1F8002B4 + 2 * i (all
- * INCLUDE_ASM), which runs into the record for i >= 2. In 17AFC, func_8002A458
- * / func_8002AB08 / func_8002CA8C / func_80029454 / func_80031B24 take its
- * address (`scr`) and pass it to func_8002E838 / func_8002EA24 / func_8002D320
- * / func_8002D780 / func_8002CD58 / func_8002DAD0 / func_8002DE20 /
- * func_80031890; func_800290B8 / func_8002C22C / func_8002C61C / func_8002EBDC
- * / func_8002F2D0 / func_8002F770 / func_8002FC80 / func_8002FDB0 address it
- * directly (func_80030D7C / func_800321E8 use Unk1F8002B8_8005344C,
- * Unk1F8002B8Union). unk60 / unk6C hold point pointers (func_80029454 reads
- * unk60[0..2]); unkB4 / unkC4 are func_8002CA8C's two hit masks (func_8002AB08
- * reads them; no 17AFC code accesses unkD4 as a member); unkD8 is the matrix
- * the RotMatrix* calls build, and the GTE rotates unkA8 through it;
- * func_8002DE20 rotates three points, relative to the origin *unk60[0], into
- * unk118 and tests them against the triangle (0,0) / unkA8 / unkB8. unk00 is
- * scratch (Unk1F8002B8Unk00): func_8002A458 / func_80031B24 / func_8002AB08 use
- * its points. */
+ * - 3AB48 func_8004DA74 fills, and the renderers func_8004C994 ..
+ * func_80051ED4 read, an s16 per-vertex table at 0x1F8002B4 + 2 * i, which runs
+ * into the record for i >= 2.
+ * In 17AFC, the collision code takes the record's address (`scr`) and passes it
+ * on, or addresses it directly (func_80030D7C / func_800321E8 use
+ * Unk1F8002B8_8005344C instead). unk60 / unk6C hold point pointers
+ * (func_80029454 reads unk60[0..2]); unkB4 / unkC4 are func_8002CA8C's two hit
+ * masks (func_8002AB08 reads them; no 17AFC code accesses unkD4 as a member);
+ * unkD8 is the matrix the RotMatrix* calls build, and the GTE rotates unkA8
+ * through it; func_8002DE20 rotates three points, relative to the origin
+ * *unk60[0], into unk118 and tests them against the triangle (0,0) / unkA8 /
+ * unkB8. unk00 is scratch (Unk1F8002B8Unk00): func_8002A458 / func_80031B24 /
+ * func_8002AB08 use its points. */
 typedef struct {
     Unk1F8002B8Unk00 unk00;
     LeafPos *unk60[3];
@@ -1492,12 +1365,10 @@ typedef struct MoveScript {
     u16 unk_0A[1];
 } MoveScript;
 
-/* Per-character record table (base 0x80101EC8, stride 0x44C, 2 records); the
- * old "practice menu" name was RESET by owner ruling Q103.  Schema:
- * docs/naming/CHAR_STRUCT_SCHEMA.md; base symbol: named_syms.txt (D_80101EC8).
- * Only the fields reached by C so far are named; the rest is reserved padding.
- * func_80022580 initializes record [idx] (every field it writes is declared at
- * its offset). */
+/* Per-character record table (base 0x80101EC8, stride 0x44C, 2 records;
+ * schema: docs/naming/CHAR_STRUCT_SCHEMA.md; the old "practice menu" name was
+ * reset by owner ruling Q103). Only the fields reached by C so far are named;
+ * the rest is reserved padding. func_80022580 initializes record [idx]. */
 typedef struct Unk80101EC8Record {
     /* the other record: [1] for record 0, else [0] (func_80022580) */
     struct Unk80101EC8Record *other;
@@ -1544,7 +1415,7 @@ typedef struct Unk80101EC8Record {
     u16 unk_64;
     u16 unk_66;
     s16 unk_68;
-    /* SEQ state code; CHAR_STRUCT_SCHEMA.md +0x06A */
+    /* SEQ state code */
     u16 unk_6A;
     s16 unk_6C;
     s16 unk_6E;
@@ -1620,8 +1491,7 @@ typedef struct Unk80101EC8Record {
     Vec3i32 unk_174;
     Vec3i32 unk_180;
     Vec3i32 unk_18C;
-    /* func_800207C8: translations of bones 17 / 14, y + ((unk_1A * 71) >> 11)
-     */
+    /* func_800207C8: bone 17 / 14 translations, y + ((unk_1A * 71) >> 11) */
     Vec3i32 unk_198[2];
     /* func_800207C8: floor y under unk_198[i] (func_80053614 probe) */
     s32 unk_1B0[2];
@@ -1777,8 +1647,7 @@ typedef struct {
 /* The twelve 0x64-byte object records at 0x80106A78. func_80030580 spawns one
  * (its kind indexes D_8008E194 / D_8008EB80), func_80030D7C moves them,
  * func_80031B24 tests them against both fighters, func_80030208 hands them to
- * the effect calls; kind == -1 marks a free record. Field widths are the
- * consumers' loads and stores (asm/funcs/func_80030580.s, func_80030D7C.s). */
+ * the effect calls; kind == -1 marks a free record. */
 typedef struct {
     /* 0 at spawn; func_80030D7C adds 1 per step while unk_50 != 0 */
     s16 unk_00;
@@ -1810,9 +1679,8 @@ typedef struct {
 } Obj80106A78; /* sizeof == 0x64 */
 
 /* 2-byte {a,b} threshold pairs. D_8008EA44: indexed by (type - 2), 5 entries
-   (types 2..6); D_8008EBFC: indexed by leaf category, 6 entries. The original
-   binary indexes both at a 2-byte stride and reads both bytes at the same index
-   (asm/funcs/func_800335D8.s). */
+   (types 2..6); D_8008EBFC: indexed by leaf category, 6 entries (both read by
+   func_800335D8). */
 typedef struct {
     u8 a;
     u8 b;
@@ -1826,13 +1694,9 @@ typedef struct {
     s16 unk2;
 } Tbl8008EB54Entry;
 
-/* 0x18-byte per-character status record table (named_syms.txt:
- * g_status_flag_record_table_80099D88). The original binary indexes it by
- * character id with stride 0x18 (id*3<<3) in func_80055138, func_80055948,
- * func_80055B60 and func_80058580: flags halfword at +0, bytes at +3..+8, +0xC,
- * +0xF, +0x14, +0x15. The splat symbols D_80099D8B..D_80099D9D are fields of
- * record 0 (alias rows in undefined_syms_auto.txt, retired with func_80055B60 /
- * func_80058580). */
+/* 0x18-byte per-character status record table at 0x80099D88, indexed by
+ * character id in func_80055138, func_80055948, func_80055B60 and
+ * func_80058580. */
 typedef struct StatusFlagRec {
     u16 flags;
     u8 unk2;
@@ -1849,11 +1713,9 @@ typedef struct StatusFlagRec {
 } StatusFlagRec; /* size 0x18 */
 
 /* Rows of eight 4-byte entries starting at 0x8009A8C8: each 0x20-byte row ends
- * with a zero entry (0x8009A8E4 / 0x8009A904 / 0x8009A924,
- * asm/data/7D920.data.s). Both readers index the column 1-based,
- * [row][D_800A37A0 - 1]: func_80055138 reads unk0/unk1 (GCC folds the -1 into
- * the address, %lo(0x8009A8C4)), func_80058580 the mask halfword
- * (%lo(0x8009A8CA)). */
+ * with a zero entry (0x8009A8E4 / 0x8009A904 / 0x8009A924). Both readers index
+ * the column 1-based, [row][D_800A37A0 - 1]: func_80055138 reads unk0/unk1,
+ * func_80058580 the mask halfword. */
 typedef struct CpuLevelEntry {
     u8 unk0;
     u8 unk1;
@@ -1861,16 +1723,10 @@ typedef struct CpuLevelEntry {
 } CpuLevelEntry;
 
 /* 0x44-byte record shared by the two camera-target objects at 0x800F5328 and
- * 0x800F6608. Field span evidenced by func_8001B294 (initialises
- * +0x00/04/08/10/12/14/ 18/1E/30/32/34/38/3A/3C on the 0x800F6608 object) and
- * func_8001B3C0 (the same treatment of 0x800F5328 at
- * +0x00/04/08/30/32/34/38/3A/3C/40); +0x00..+0x0B is one 12-byte vector:
- * func_8001BC70 / func_8001BCF0 copy it as a struct (three lw, then three sw
- * through one base register); member-by-member copies compile differently.
- * +0x10 is the camera rotation: func_8001A538 builds the matrix from vx / vy /
- * vz and func_80046BF4 takes it with the +0x00 vector; no field access reads or
- * writes its pad (+0x16). Replaces the per-word splat symbols
- * D_800F532C..D_800F5368 / D_800F660C..D_800F6644. */
+ * 0x800F6608 (func_8001B294 / func_8001B3C0 initialise them). +0x00 is one
+ * 12-byte vector, copied whole by func_8001BC70 / func_8001BCF0. +0x10 is the
+ * camera rotation: func_8001A538 builds the matrix from vx / vy / vz and
+ * func_80046BF4 takes it with the +0x00 vector; its pad (+0x16) is unused. */
 typedef struct Rec44 {
     Vec3i32 unk_00;
     s32 wC;
@@ -1883,8 +1739,7 @@ typedef struct Rec44 {
     s32 w24;
     s32 w28;
     s32 w2C;
-    /* two 4 x s16 limit vectors; func_8001A820 passes h30[p] to func_8001A67C
-     */
+    /* two limit vectors; func_8001A820 passes h30[p] to func_8001A67C */
     s16 h30[2][4];
     u8 b40;
     u8 b41;
@@ -1967,20 +1822,14 @@ typedef struct Unk8001CD68Rec {
 /* Two 0x58-byte records set up side by side by func_80049E4C: 0x80101DF0
  * (unk0 = 0x64, unk8 = 5; pointer stored to D_800A3708) and 0x800FF638
  * (unk0 = 0x65, unk8 = 2; pointer stored to D_800A370C). func_800418D0
- * passes a negated stack copy of xf.rot (+0x10..0x14; the record is not
- * written) and &work (+0x38) to g_anim_func_table[unk8], then copies work
- * to xf.mat (+0x18);
- * func_80046BF4 writes work.t (+0x4C/+0x50/+0x54) just before that call.
- * func_800475A4 passes &xf.rot to g_anim_func_table[0] and &xf.mat to
- * ApplyMatrix; func_8003E6D8 forms one base at &xf (0x80101E00) and passes
- * base+0x1C (xf.mat.t). g_cam_bone_data2 (0x800EEDF0) and D_800EF070 are
- * two more records of this layout: camera_InitRotation initialises the
- * first (u8/s8 stores at +0x00/+0x01, s16 stores at +0x02/+0x04/+0x08/+0x0A,
- * unkC = 0 at +0x0C, rot, work.t, then xf.mat = work; it does not write +0x06),
- * func_800477E8 sets up the second (+0x06 as s16) and passes it to
- * func_800417D0, which reads +0x06 as an s16 state.
- * rot is the RotMatrix-style angle SVECTOR the rotation handlers take; mat and
- * work are libgte MATRIXes (MulMatrix0 / ApplyMatrix / MulMatrix2 operands). */
+ * passes a negated stack copy of xf.rot and &work to g_anim_func_table[unk8],
+ * then copies work to xf.mat; func_80046BF4 writes work.t just before that
+ * call. func_800475A4 passes &xf.rot to g_anim_func_table[0] and &xf.mat to
+ * ApplyMatrix. g_cam_bone_data2 (0x800EEDF0) and D_800EF070 are two more
+ * records of this layout: camera_InitRotation initialises the first,
+ * func_800477E8 sets up the second and passes it to func_800417D0, which reads
+ * unk6 as a state. rot is the RotMatrix-style angle SVECTOR the rotation
+ * handlers take; mat and work are libgte MATRIXes. */
 typedef struct {
     SVECTOR rot; /* +0x00 */
     MATRIX mat;  /* +0x08 */
@@ -2006,10 +1855,8 @@ typedef struct Unk80101DF0Record {
  * func_8004A1FC then turns light i's pitch / yaw into the light matrix row i
  * (+0x18 + i*6, zero when off), scaled by +0x5C.  func_80049F4C hands record
  * 0's color matrix and back color to SetColorMatrix / SetBackColor; the light
- * matrix goes to gte_MulMatrix0ClearTrans (asm/funcs/func_8004A940.s:70-72);
- * func_80046F24 / func_800470B0 read its row 0.  Replaces the splat per-field
- * scalars D_800F62E2..D_800F64BA, g_gte_color_matrix_data and
- * g_gte_back_color_r/g/b. */
+ * matrix goes to gte_MulMatrix0ClearTrans (func_8004A940); func_80046F24 /
+ * func_800470B0 read its row 0. */
 typedef struct {
     s16 pitch;
     s16 yaw;
@@ -2053,9 +1900,8 @@ typedef struct {
  * the D_800A9CF8.unk8 key frames and queue it on the D_800A3820 list.
  * unk58 is a word frame counter (lw/sw: -1 idle, 0 started by
  * func_80044B30, -2 done), unk5C the word Y angle func_80044B30 stores,
- * unk60 an s16 fade level (lh/sh in func_80044800); +0x62..0x67 are not
- * accessed. Not the Unk800A6690Rec layout: that table's +0x58 is a byte
- * (lbu/sb in func_8003E6D8 / func_8003EB84). */
+ * unk60 an s16 fade level (func_80044800); +0x62..0x67 are not accessed. Not
+ * the Unk800A6690Rec layout: that table's +0x58 is a byte. */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */
@@ -2156,41 +2002,23 @@ typedef struct {
     s32 unkC;     /* +0x0C */
 } Unk800A4750Rec; /* 0x10 */
 
-/* One entry of the CD file table (sweep-2026-09-24 data_manifest.csv:18-19,
- * CONFIRM: 159/159 entries equal the disc's ISO9660 directory records). */
+/* One entry of the CD file table (all 159 entries equal the disc's ISO9660
+ * directory records). */
 typedef struct {
     CdlLOC loc; /* the file's start position */
     u32 size;   /* the file's length in bytes */
 } CdFileEntry;
 
-/* The replay-camera / CD-read words at 0x80101E60..0x80101EA7: the tail of
- * CD state block D_80101E58 (type CdState below), where the evidence that they
- * are one object with its head is set out.  Member widths follow the original
- * accesses; 0x80101E91..93 is the compiler's alignment padding.  unk3A
- * (0x80101E9A) lies inside the proven span's object (its size is a multiple of
- * 4) and is func_80036140's halfword (sh 80036548, lhu 80036778 / sh 80036788).
- *
- * unk3C..unk44 (0x80101E9C..0x80101EA7) are in the object by compiler
- * necessity (aggregate-merge prong (a), (a1)/(a2)/(a4')): func_80036140 is
- * compiled -G8, and there its read-modify-writes of 0x80101E9C and
- * 0x80101EA4 keep the address in a register (la; lX 0(r); sX 0(r)) only for
- * a variable larger than 8 bytes -- a smaller one is small data, and cse
- * folds any pointer back to the symbol; the original compiler agrees.
- * Separate variables, block- or function-scope pointers, an object ending at
- * 0x80101E9F or 0x80101EA3, and a separate 12-byte record at 0x80101E9C all
- * miss func_80036140's bytes; only this object matches.  unk3E and expected_pos
- * lie inside that span but func_80036140 never touches them: they are typed
- * by their other users' original accesses (owner rulings Q13/Q14): unk3E by
- * game_FrameLoop / cdrom_StartRead (u16, the lhu at 80036F9C); expected_pos
- * by cdrom_ReadyCallback / func_80036940 (s32: no access reveals its
- * signedness, and s32 / u32 build byte-identical).
- * Evidence: pre-slim-2026-10-01:memory/grind/func_80036140/evidence.md.
- *
- * The 8-byte `pair` is also one CdFileEntry by the table it is copied from: the
- * source is an element of g_cd_file_table, copied as a whole CdFileEntry
- * aggregate (cdrom_StartRead, cdrom_StartAudio).  The CdPosToInt/CdIntToPos
- * calls on it evidence only `pair.loc`: CdIntToPos
- * (src/main/psxsdk/libcd/sys.c) writes just its minute / second / sector. */
+/* The replay-camera / CD-read words at 0x80101E60..0x80101EA7: the tail of the
+ * CD state block D_80101E58 (CdState below). Member widths follow the original
+ * accesses; 0x80101E91..93 is alignment padding. unk3C..unk44 belong to the
+ * object because func_80036140 (compiled -G8) keeps the address of its accesses
+ * to unk3C / unk44 in a register only for a variable larger than 8 bytes.
+ * unk3E (u16) and expected_pos (s32; no access reveals its signedness) lie in
+ * that span but func_80036140 never touches them; they are typed by their
+ * other users' accesses (Q13/Q14). `pair` holds a copy of a g_cd_file_table
+ * element (a CdFileEntry), copied whole by cdrom_StartRead /
+ * cdrom_StartAudio. */
 typedef struct {
     s16 unk00;             /* 0x80101E60 */
     s16 unk02;             /* 0x80101E62 */
@@ -2216,32 +2044,11 @@ typedef struct {
     s32 unk44;             /* 0x80101EA4 */
 } ReplayCamRec;
 
-/* The CD module's state block, ONE object of 0x50 bytes at 0x80101E58.  Owner
- * ruling Q43 bounds it to the span proven: 0x80101E58..0x80101E99 by the
- * original binary's addressing, through 0x80101EA7 by func_80036140's compiler
- * necessity (ReplayCamRec above; aggregate-merge prong (a)).  The first span
- * is proven by three links:
- *   - 0x80101E58..0x80101E62 is one object: cdrom_StartAudio forms the
- *     CdlSetfilter parameter (file, chan) at 0x80101E58 as &0x80101E62 - 0xA
- *     (800370AC addiu a1,s0,-0xA; 800370B0 sb v0,-0xA(s0)).  Only those two
- *     bytes are accessed; 0x80101E5A..5B is the compiler's alignment padding
- *     before unk04.  cse relates two constant addresses only when
- *     they are offsets of one symbol.
- *   - 0x80101E6C..0x80101E99 is one object: func_80036940 forms &rec.pair
- *     (0x80101E6C) as &0x80101E8C - 0x20 (80036A74) and as &0x80101E98 - 0x2C
- *     (80036B08).
- *   - 0x80101E60..62 and 0x80101E6C are in one object (aggregate-merge prong
- *     (a), (a1)/(a2)): cdrom_StartAudio reloads rec.unk00 (lh at 8003703C)
- *     only after its CdFileEntry copy into rec.pair (sw at 8003702C/80037034).
- *     sched1 orders the two through true_dependence (sched.c:817) ->
- *     memrefs_conflict_p (sched.c:614): SIZE_FOR_MODE(BLKmode) is 0, so the
- *     aggregate store conflicts with the halfword load only when both
- *     addresses share one base symbol_ref (sched.c:777).  As separate objects
- *     there is no dependence and the load is hoisted above the copy.  One
- *     object matches cdrom_StartAudio under both cc1 and the original cc1psx;
- *     a cut at 0x80101E64, 0x80101E68 or 0x80101E6C misses under both.
- *     Evidence: pre-slim-2026-10-01:memory/grind/cdrom_StartAudio/evidence.md.
- */
+/* The CD module's state block, one 0x50-byte object at 0x80101E58 (span
+ * bounded by owner ruling Q43). cdrom_StartAudio forms the CdlSetfilter
+ * parameter (file, chan) as &rec.unk02 - 0xA and reloads rec.unk00 only after
+ * its CdFileEntry copy into rec.pair (one object for the scheduler);
+ * func_80036940 forms &rec.pair off later members. */
 typedef struct {
     u8 file;          /* 0x80101E58 */
     u8 chan;          /* 0x80101E59 */
@@ -2254,8 +2061,7 @@ typedef struct {
  * pairs kept as one array (unk_4[2 * k + player], [0] = P1, [1] = P2), a
  * fourth per-player pair only other functions touch (unk_A, indexed by player
  * in func_80022F34) and four single bytes. One object: func_80034708 reaches
- * unk_4 and unk_E as offsets from the address of unk_C (layout evidence:
- * pre-slim-2026-10-01:memory/grind/func_80034708/evidence.md). */
+ * unk_4 and unk_E as offsets from the address of unk_C. */
 typedef struct {
     u16 unk_0[2];
     u8 unk_4[6];

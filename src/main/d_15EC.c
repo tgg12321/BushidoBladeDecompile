@@ -1,18 +1,7 @@
 /* Data-only file: .rodata 0x80010DEC (ROM 0x15EC); its owning TU is unproven.
- *
- * Contains two symbols:
- *   D_80010DEC (17568B) — list of 899 game asset file paths (DATA0/DATA1/DATA7
- *                          subdirectory + filename strings, variable length but
- *                          each 4-byte-padded). Indexed via base + computed
- *                          offset from a runtime asset-loading path. The
- *                          symbol has no detectable static caller — it is
- *                          accessed via address arithmetic that static
- *                          analysis cannot resolve.
- *   D_8001528C   (40B)   — "Marionation over flow. No.%%d (-%%dbyte)\n"
- *                          debug message (read by func_80044FA0, 35000.c).
- *
- * Bracket-sized to match the asm/data block's exact byte content. */
-/* D_80010DEC: 17568 bytes @ 0x80010DEC */
+ * D_80010DEC: 899 4-byte-padded asset paths, indexed by computed offset from
+ * the asset loader. D_8001528C: the "Marionation over flow" debug message
+ * (read by func_80044FA0). */
 const char D_80010DEC[17568] =
     "DATA1\\HAND.DAT\0\0DATA7\\MAR22_13.D"
     "AT\0\0DATA7\\MAR22_12.DAT\0\0DATA7\\MA"
@@ -564,6 +553,4 @@ const char D_80010DEC[17568] =
     "DATA0\\M100.DAT\0\0DATA0\\M002.DAT\0\0"
     "DATA0\\M001.DAT\0\0DATA0\\M000.DAT\0\0";
 
-/* D_8001528C: 40 bytes @ 0x8001528C - "Marionation over flow. No.%d
- * (-%dbyte)\n" */
 const char D_8001528C[40] = "Marionation over flow. No.%d (-%dbyte)\n";

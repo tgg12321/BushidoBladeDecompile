@@ -1,12 +1,7 @@
-/* PsyQ LIBSND DECRES: _SsSndDecrescendo. .text 0x80084500..0x800848AC. Not a
- * verbatim LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0
- * and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
- * libscan xref tier: the verbatim SSCALL module's REL26 at +0x120 names
- * _SsSndDecrescendo -> EXE jal 0x80084500
- * (docs/naming/libscan/near_manifest.csv), DECRES's only XDEF (+0x0, PsyQ 4.0
- * LIBSND.LIB). File name: SOTN's (sotn-decomp src/main/psxsdk/libsnd/decre.c).
- */
+/* PsyQ LIBSND DECRES: _SsSndDecrescendo. .text 0x80084500..0x800848AC, from an
+ * interim LIBSND build (between PsyQ 4.0 and 4.1). Module start (Q109): the
+ * verbatim SSCALL module's REL26 names _SsSndDecrescendo, DECRES's only XDEF
+ * (docs/naming/libscan/near_manifest.csv). */
 #include "common.h"
 #include "libsnd_i.h"
 

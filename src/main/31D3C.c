@@ -5,8 +5,6 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-/* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
-
 extern u8 D_80094D40[];
 
 Unk80045878Obj *func_8004153C(s32 a0) { return g_player_ptrs[a0]; }
@@ -61,15 +59,12 @@ s32 func_80041650(s32 a0) {
     return -1;
 }
 
-/* func_80041688 (gnd_init_80041688): sets or clears bit 0 of the flag byte
- * in every bone record of player arg0, then pushes the player's colour
- * (greyscaled when func_800486FC() is set) through func_80041398. */
+/* Sets or clears bit 0 of the flag byte in every bone record of player arg0,
+ * then pushes the player's colour (greyscaled when func_800486FC() is set)
+ * through func_80041398. */
 void func_80041688(s32 arg0, s32 arg1) {
-    /* !FAKE: target frame 0x38 keeps 0x20 leading
-       bytes allocated-but-untouched (only the sp/ra/s0 offset immediates
-       depend on it); phantom-frame-slot family, owner-sanctioned pad row
-       (engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS). Ablated
-       (2026-10-06): score 6. */
+    /* !FAKE: frame layout: the 0x38 frame keeps 0x20 leading bytes
+       untouched (phantom-frame pad); without it: score 6 */
     volatile u32 pre_pad[8];
     Unk80045878Obj *player;
     s32 i;
@@ -91,13 +86,10 @@ void func_80041688(s32 arg0, s32 arg1) {
     i = 1;
 loop1:
     p++;
-    /* FAKE: guard staged through the existing local b (value consumed by
-       the branch below; b's real color-byte assignment follows later and
-       this staged value is dead before it), mechanism: sched.c
-       adjust_priority -> birthing_insn_p reg_n_sets==1 launch-boost gate
-       (second live set of b turns off the FALSE-arm lbu's LAUNCH_PRIORITY
-       so it is picked last = emitted first, matching target [b,r,g]);
-       staged-value-reused-variable. Ablated (2026-10-06): score 2. */
+    /* FAKE: guard staged through the existing local b (dead before b's real
+       colour use); the second set of b changes the scheduler's load order
+       to the target's [b,r,g]; without it: score 2
+       (staged-value-reused-variable) */
     b = p->node.unk2 >= 0;
     if (b) {
         if (arg1)
@@ -184,14 +176,9 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
         if (!(mask_table & bit) || !(a2 & bit)) {
             goto shift;
         }
-        /* FAKE: constant-holder biasing RA (named-local-fake-exception,
-         * SOTN `s16 three = 3;`). A literal `a0 == 1` materializes the 1 as a
-         * compiler-generated pseudo (!REG_USERVAR_P) that loop.c move_movables
-         * hoists to the preheader; reload then rematerializes it in-loop as
-         * $v1. A named local (REG_USERVAR_P) is not movable, stays in-loop, and
-         * global RA assigns $v0 — matching target's in-loop `addiu v0,zero,1`.
-         * The store is live (feeds the compare). A literal if-chain or
-         * switch(a0) does not reproduce it. */
+        /* FAKE: constant holder (SOTN `s16 three = 3;`): a literal 1 is
+         * hoisted out of the loop and rematerialized in $v1; the named local
+         * stays in-loop in $v0 as in the target (named-local-fake-exception) */
         one = 1;
         if (a0 == 0) {
             goto case0;
@@ -238,13 +225,10 @@ void func_80041AC8(Unk80045878Obj *arg0) {
     if (D_80094E08[arg0->unk_08] == 0xFF) {
         return;
     }
-    /* FAKE: id_ptr spelling: target's store->reload order (sh D_800A9A20 BEFORE
-     * lh arg0->unk_08) is only producible when the reload is NOT spelled as
-     * plain pointer-indexing (GCC 2.7.2 MEM_IN_STRUCT_P /s flag + sched.c
-     * escape clause) — the original source provably used a non-indexed
-     * spelling. One representative spelling sanctioned by owner policy; see
-     * .claude/rules/proven-spelling-class-reconstruction.md. Ablated
-     * (2026-10-06): score 2. */
+    /* FAKE: id_ptr spelling: the store to D_800A9A20 stays ahead of the
+     * reload of arg0->unk_08 only when the reload is not plain struct
+     * indexing; without it: score 2
+     * (proven-spelling-class-reconstruction) */
     id_ptr = &arg0->unk_08;
     D_800A9A20 = arg0->unk_08;
     var_s0 = D_80094DF0[D_80094E08[*id_ptr]];
@@ -301,29 +285,14 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2) {
     s16 *tbl;
     s32 idx;
     s32 x;
-    /* FAKE: opaque constant-holder for the trailing `== 1` test, mechanism:
-       local-alloc.c block_alloc / find_free_reg - the bare literal is
-       rematerialized by reload into $v1, while a live pseudo carrying it is
-       allocated $t0 exactly as target does; ordinary-C spellings of the test
-       (subtract-compare-zero, double negation, switch, named call result) do
-       not.  Family: .claude/rules/named-local-fake-exception.md (owner ruling).
-       Ablated (2026-10-06): score 12. */
+    /* FAKE: constant holder for the trailing `== 1` test: a literal is
+       rematerialized in $v1, the live local gets $t0 as in the target;
+       without it: score 12 (named-local-fake-exception) */
     int one;
-    /* FAKE: oversized locals object - rect[0] is the live LoadImage RECT and
-       rect[1] is the unwritten tail, mechanism: mips.c compute_frame_size /
-       get_frame_size - ALIGN8(vars) + ALIGN8(args) + gp_regs.  Frame-math proof
-       from the TARGET BYTES ALONE: target frame is 88 with ten callee-saves
-       ($s0-$s7,$fp,$ra = 40 bytes) and a 24-byte outgoing-args area (the 6-arg
-       func_80048A7C call), so the locals region is 88-40-24 = 24 bytes while
-       the only stores into it are the 8 bytes of the RECT at sp+0x18.  The
-       fully-written form (one RECT) gives frame 80, so no fully-written locals
-       set can produce target's 88.  ALIGN8 plus this frame's fixed 8-byte
-       phantom slot make the declared size recoverable only as a RANGE: 10
-       through 16 bytes are all byte-identical here - two RECTs are chosen.
-       Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out
-       (owner ruling); prong 2 is satisfied by extending the LIVE object -
-       rect's address is passed to LoadImage - rather than adding a dead pad.
-       Ablated (2026-10-06): score 22. */
+    /* FAKE: frame layout: rect[0] is the live LoadImage RECT, rect[1] an
+       unwritten tail for the 88-byte frame (one RECT gives 80; any 10-16
+       byte size matches); without it: score 22 (dead-vars-local-array
+       oversized-locals carve-out) */
     RECT rect[2];
     fp_ptr = func_8004153C(1);
     if (fp_ptr == 0) {
@@ -350,14 +319,9 @@ oloop: {
         xoff = -0x140;
         yoff = 0xF0;
     } else {
-        /* FAKE: single-level do-while(0) wrap on the else-arm offset defs --
-           it lifts xoff's and yoff's weighted reference counts (flow.c weights
-           REG_N_REFS by loop_depth) so global.c's allocno order matches
-           target's and the two offsets land in $s5/$s4.  Arm swap, hoisted
-           defs, a ternary, narrower declaration scopes and plain assignment do
-           not. Family: .claude/rules/do-while-zero-exception.md (owner ruling,
-           sanctioned for any codegen effect incl. register allocation). Ablated
-           (2026-10-06): score 18. */
+        /* FAKE: do-while(0) raises xoff/yoff's loop-depth-weighted reference
+           counts so they land in $s5/$s4; without it: score 18
+           (do-while-zero-exception) */
         do {
             xoff = 0x80;
             yoff = 0;
@@ -492,8 +456,8 @@ void func_80041EB0(s32 a0, s32 a1) {
 }
 
 extern s16 g_anim_select[3];
-/* Q65: this file's statics (.sbss, allocated per file in link order by
- * PSYLINK), in address order. */
+/* This file's statics (.sbss, allocated per file in link order), in address
+ * order (Q65). */
 static s16 g_anim_hit_flags[2];
 static s32 g_anim_hit_data[2];
 
@@ -621,6 +585,5 @@ void func_80042478(s32 a0) {
     SetFarColor(r, g, b);
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values
- * from the original EXE. */
+/* This file's initialized small data (.sdata), in address order (Q65). */
 s16 g_anim_select[3] = {0, 0, 0};

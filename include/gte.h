@@ -1,10 +1,5 @@
-/* gte.h -- PsyQ-style GTE coprocessor macros for GCC 2.7.2.
- *
- * The PSX Geometry Transformation Engine (GTE / COP2) has no C-level
- * representation, so any function that uses it must wrap the cop2 ops in
- * inline asm. This header is the minimum surface area: macros that emit
- * one cop2 op each, leaving all surrounding control flow / arithmetic in
- * real C.
+/* gte.h -- PsyQ-style GTE (COP2) macros for GCC 2.7.2: each emits one cop2
+ * op; surrounding control flow and arithmetic stay in C.
  *
  * Macro families:
  *   gte_LDxx     -- mtc2 register transfer into the GTE
@@ -102,19 +97,14 @@
  * v   -- vector select (0=V0, 1=V1, 2=V2, 3=IR vec).
  * cv  -- translation/color vector (0=TR, 1=BK, 2=FC bugged, 3=none).
  * lm  -- clamp negative results to 0 (0/1).
- * Base opcode 0x4A400012; sf/mx/v/cv/lm pack into the immediate. The
- * assembler computes the constant at assembly time via GAS expressions.
- * Reference: PsyQ libgte gte_MVMVA in inline_n.h (replaces `cop2 IMM`
- * with `.word` form so neither maspsx nor as need GTE-aware decoding). */
+ * Base opcode 0x4A400012; sf/mx/v/cv/lm pack into the immediate (a GAS
+ * expression). PsyQ inline_n.h gte_MVMVA, in `.word` form. */
 #define gte_mvmva(sf, mx, v, cv, lm)                                           \
     __asm__ volatile (".word 0x4A400012 + (" #sf "<<19) + (" #mx "<<17) + (" #v "<<15) + (" #cv "<<13) + (" #lm "<<10)")
 
 /* ---- Generic control-register / data-register transfer -------------- *
- * These wrap the GTE move-to/from coprocessor ops with explicit register
- * indices. The PsyQ SDK uses Sony's named-helper variants
- * (gte_SetRotMatrix, gte_SetTransVector, ...) which decompose into
- * sequences of these. For matching decomp work it's often clearer to
- * emit the raw transfers and let the surrounding C be obvious.        */
+ * GTE move-to/from ops with explicit register indices (the building blocks
+ * of PsyQ's gte_SetRotMatrix, gte_SetTransVector, ...).               */
 /* CPU -> GTE ctrl reg */
 #define gte_ctc2(val, reg) __asm__ volatile ("ctc2 %0, $" #reg :: "r"(val))
 /* CPU -> GTE data reg */

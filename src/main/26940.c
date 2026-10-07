@@ -1,15 +1,9 @@
 /* The CD module's two state-machine steppers, func_80036140 and func_80036940.
- * .text 0x80036140 (ROM 0x26940). Start boundary: G8. Their own translation
- * unit, compiled -G8 (Makefile GP_FILES; owner ruling 2026-09-26, Q10): both
- * read g_cd_result (and func_80036140 g_cd_atv, D_800A36B8, D_800A3840,
- * D_800A3854) straight off $gp, which the original compiler emits only at -G8.
- * g_cd_atv, D_800A36B8 and g_cd_result are declared here as in
- * 26730.c, the way their bytes show the original did: file-scope
- * tentative definitions (no initializer; their original bytes are zero).
- * Sony's assembler gave such a COMMON variable gp at its base only, never at
- * an offset (func_80036140 reads byte 0 of each gp-relative and the others
- * with lui/%lo); maspsx models that for every file (owner ruling Q62,
- * 2026-09-30, global COMMON model), not per function. */
+ * .text 0x80036140 (ROM 0x26940). Start boundary: G8. Compiled -G8 (owner
+ * ruling 2026-09-26, Q10): both read g_cd_result (and func_80036140 the
+ * ATV/fade state) off $gp. Those globals are tentative definitions (COMMON,
+ * zero bytes), as in 26730.c; gp-relative at their base only (owner ruling
+ * Q62, 2026-09-30, global COMMON model). */
 #include "common.h"
 #include "bb2.h"
 
@@ -357,8 +351,8 @@ void func_80036940(void) {
     }
 }
 
-/* Q65: tentative definitions (COMMON) of the small data this file reaches
- * gp-relative. */
+/* Tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative (Q65). */
 CdlATV D_800A36B8;
 CdlATV g_cd_atv;
 u8 g_cd_result[8];

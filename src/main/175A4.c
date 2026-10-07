@@ -1,6 +1,5 @@
 /* One game function, func_80026DA4. .text 0x80026DA4 (ROM 0x175A4). Start
- * boundary: LEGACY (a tooling split, no evidence either way); also the first
- * file of the EXPAND_LB run. */
+ * boundary: LEGACY (a tooling split, no evidence either way). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -8,36 +7,28 @@
 #include "gte.h"
 #include "bb2_const.h"
 
-/* Extern function declarations */
-
-/* P1/P2 round scores and tiebreakers (per-file declarations: owner rulings
- * Q21-Q25, .claude/rules/no-new-park-categories.md aggregate-merge exception).
- * Declared here as single u8s: every counting aggregate spelling of
- * func_800340A0 misses the shipped code (constant subscripts put element 0
- * behind a base register; the index-variable and regrouped-condition spellings
- * that avoid that miss its round-result stores or compares; dummy-index and
- * pointer-alias spellings are refused, Q22/Q23). src/code6cac.c declares the
- * same bytes as D_800A3898[2] / D_800A38AA[2] for func_8001CE60, which indexes
- * them by player and does not produce those accesses from single bytes. The
- * mismatch is kept because no single declaration compiles both files with a
- * counting spelling. Evidence:
- * pre-slim-2026-10-01:memory/grind/func_8001CE60/evidence.md. */
+/* P1/P2 round scores and tiebreakers, declared here as single u8s (per-file
+ * declarations: Q21-Q25, no-new-park-categories aggregate-merge exception):
+ * every counting aggregate spelling of func_800340A0 misses the shipped code
+ * (constant subscripts put element 0 behind a base register; the
+ * index-variable and regrouped-condition spellings miss its round-result
+ * stores or compares); dummy-index and pointer-alias spellings are refused
+ * (Q22/Q23). src/main/9F9C.c declares the same bytes as D_800A3898[2] /
+ * D_800A38AA[2] for func_8001CE60, whose player-indexed accesses single bytes
+ * do not produce; no single declaration compiles both files with a counting
+ * spelling. */
 extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
 extern u8 D_800A38AB;
 
-/* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
-
 /* Updates the two active player records in practice modes. The timed contest
  * chooses a winner, the distance/input checks choose follow-up states, and
  * the tail emits a mode-specific effect at the players' midpoint.
  *
- * FAKE: leave the two void callees undeclared, as in the matched PS1 SOTN
- * caller below. Their unused implicit-int call_value results make v0 have
- * multiple sets, removing sched.c's birthing boost from the timer call and
- * keeping the record-base load after it. Correct void declarations miss 7
- * instructions.
+ * FAKE: leave the two void callees undeclared, as in the matched SOTN callers
+ * below; their implicit-int results keep the record-base load after the timer
+ * call. Correct void declarations miss 7 instructions.
  * SOTN: src/main/psxsdk/libsnd/ssclose.c:8 and
  * src/main/psxsdk/libsnd/vmanager.c:1107
  * @db41b28eee52969244a52cc269c8163d1ed8826a */
@@ -61,9 +52,9 @@ void func_80026DA4(void) {
         idx = D_800A3876;
         if (idx == -1)
             goto tail;
-        /* FAKE: reuse the record pointers for the selected pair, then restore
-         * the fixed pair at the tail join. This keeps the selected pointers
-         * in the call-preserved allocation used by the original.
+        /* FAKE: reuse the record pointers for the selected pair (restored at
+         * the tail join), keeping them in the original's call-preserved
+         * registers.
          * SOTN: src/st/lib/unk_3B53C.c:41-55
          * @db41b28eee52969244a52cc269c8163d1ed8826a */
         record = &D_80101EC8[idx];
@@ -98,7 +89,7 @@ void func_80026DA4(void) {
             }
         }
         /* FAKE: re-materialize the same record base after the drift loop;
-         * GCC cse.c's basic-block boundary retains the original base load.
+         * GCC keeps the original base load across the block boundary.
          * SOTN: src/weapon/w_011.c:343-348
          * @db41b28eee52969244a52cc269c8163d1ed8826a */
         record = D_80101EC8;
@@ -152,7 +143,8 @@ void func_80026DA4(void) {
         }
     }
     /* FAKE: restore record zero at the three-path join after selected-pair
-     * work; preserve the pointer reuse documented above.
+     * work, completing the pointer reuse above (record pointers kept in the
+     * original's call-preserved registers).
      * SOTN: src/st/lib/unk_3B53C.c:41-55
      * @db41b28eee52969244a52cc269c8163d1ed8826a */
     record = D_80101EC8;

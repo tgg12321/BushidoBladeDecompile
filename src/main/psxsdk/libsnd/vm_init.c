@@ -1,14 +1,10 @@
-/* PsyQ LIBSND VM_INIT: _SsVmInit. .text 0x80086818..0x80086B38 (VM_N2P
- * follows). Not a verbatim LIBSCAN span: BB2 links an interim LIBSND build,
- * between PsyQ 4.0 and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
- * libscan xref tier: the verbatim SSINIT module's REL26 at +0x80 names
- * _SsVmInit -> EXE jal 0x80086818 (docs/naming/libscan/near_manifest.csv),
- * VM_INIT's only XDEF (+0x0, PsyQ 4.0 LIBSND.LIB). */
+/* PsyQ LIBSND VM_INIT: _SsVmInit, the voice-manager init. .text
+ * 0x80086818..0x80086B38 (VM_N2P follows). BB2 links an interim LIBSND build
+ * (between 4.0 and 4.1); module start by Q109: SSINIT's REL26 at +0x80 names
+ * _SsVmInit -> jal 0x80086818 (docs/naming/libscan/near_manifest.csv). */
 #include "common.h"
 #include "libsnd_i.h"
 
-/* _SsVmInit - libsnd voice-manager init (SLUS-00663). */
 extern s32 D_800F19D0[2];
 
 void _SsVmInit(s32 a0) {

@@ -8,15 +8,10 @@
 #include "bb2.h"
 #include "bb2_const.h"
 
-/* Extern data declarations */
-
-/* Extern function declarations */
-
 extern s32 g_str_sio_800A3210;
 
 extern s32 D_800A36C0;
 
-/* GP-relative extern data (for decompiled functions) */
 extern s32 D_800A3730;
 extern s16 D_800A379E;
 extern s16 D_800A3814;
@@ -42,12 +37,8 @@ extern s32 g_comb_recv_buf;
 extern s32 g_comb_send_buf;
 extern u8 D_800A37D0;
 
-/* Extern function declarations for decompiled functions */
-
-extern Unk800F34D8Save D_800F34D8; /* = D_800F33D8 + 0x100 (debt row) */
+extern Unk800F34D8Save D_800F34D8; /* = D_800F33D8 + 0x100 */
 extern s32 D_800A31F0;
-
-/* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 s32 memcard_Format(s32 a0, s32 a1) {
     s32 buf[2];
@@ -69,9 +60,8 @@ void func_80037F40(u8 *a0) {
     } while ((u32)i < 0x24);
 
     {
-        /* FAKE: the save-block view in its own local; through a0 (a cast at
-           each use) the copy moves into the checksum loop's delay slot (score
-           2). */
+        /* FAKE: the save-block view in its own local; a cast of a0 at each
+           use moves the copy into the loop's delay slot (score 2) */
         Unk800F34D8Save *base = (Unk800F34D8Save *)a0;
         i = 0;
         do {
@@ -93,11 +83,8 @@ void func_80037F40(u8 *a0) {
 
 s32 func_8003800C(Unk800F34D8Save *arg0) {
     s32 i;
-    /* FAKE: one counter 'j' serves both the per-record checksum loop and the
-       0x16-entry fixup loop (C89 counter reuse), mechanism: global.c
-       allocno_compare -- the merged live range lifts reg_live_length(j) so j's
-       allocno priority falls below sum's and sum takes $a0 (target's seat).
-       Ablated (2026-10-06): score 16. */
+    /* FAKE: one counter j for both loops lengthens its live range so sum,
+       not j, gets $a0; two counters: score 16 */
     s32 j;
 
     i = 0;
@@ -158,12 +145,9 @@ void func_80038148(void) {
 }
 
 extern u8 D_8008F1C0[];
-/* Rodata moved from asm/data/101C.rodata_pre_post.s. func_80038170 (this file)
- * is the sole owner — uses these as &-addressed byte/word lookups. Declared as
- * u32 arrays since the content is word-aligned. D_80010A2C is the 128 bytes
- * func_80038170 copies (0x40 halfwords); the save-file id after it is its own
- * object, D_80010AAC (D_800A31F0 holds its address); the 3 zero bytes after its
- * terminator are rodata padding. */
+/* func_80038170's lookup tables (word-aligned, so u32 arrays). D_80010A2C is
+ * the 128 bytes func_80038170 copies; D_80010AAC is the save-file id
+ * (D_800A31F0 holds its address), then 3 bytes of rodata padding. */
 const u32 D_800109EC[16] = {
     0x77DF7FFF, 0x635E6B9F, 0x56FD5B1E, 0x427C4ABD, 0x2DFB323C, 0x199B21BB,
     0x0D3A115A, 0x8000051A, 0,          0,          0,          0,
@@ -413,13 +397,11 @@ finish:
 
 extern s32 func_8003800C(Unk800F34D8Save *);
 
-/* func_80038658 — CD-load/save state-machine completion handler: dispatches
- * on D_800A31F4 (state 4 = post-read, state 6 = post-write), reaps
- * func_800378A8()'s status, closes the file handle, and posts a result code
- * to D_800A379E. The ret==0 ("still pending") paths route through the shared
- * fail_store end label (the shared-end-label recipe,
- * .claude/rules/shared-end-label.md) so GCC cannot constant-fold the
- * per-state fail codes. */
+/* Load/save state-machine completion handler: dispatches on D_800A31F4
+ * (4 = post-read, 6 = post-write), reaps func_800378A8()'s status, closes the
+ * file and posts a result code to D_800A379E. The still-pending paths share
+ * the fail_store end label (the shared-end-label recipe,
+ * .claude/rules/shared-end-label.md). */
 void func_80038658(void) {
     s32 ret;
     s32 fail;
@@ -566,8 +548,7 @@ s32 func_8003880C(void) {
     return s0;
 }
 
-/* Q65: this file's statics (.sbss, allocated per file in link order by
- * PSYLINK), in address order. */
+/* Q65: this file's statics (.sbss), in address order. */
 static u8 D_800A3318;
 static u8 D_800A331C;
 static u8 D_800A3320;
@@ -1383,9 +1364,9 @@ void func_8003993C(void) {
     Unk80101EC8Record *rob;
     Unk80101BF0Rec *e;
     Unk800F68E0Rec *s;
-    /* Ruling 11 (ordinary-c-judge-decidable.md): `temp` holds two values, the
-     * 0/1 weapon-set selector (flags >> 1) & 1 in the per-player loop and the
-     * replay window of the event loop. */
+    /* temp: the 0/1 weapon-set selector in the per-player loop, then the
+     * replay window of the event loop (Ruling 11, ordinary-c-judge-decidable)
+     */
     s32 temp;
     u8 save40;
     u8 *save58;
@@ -1398,9 +1379,9 @@ void func_8003993C(void) {
         prog = (idx << 12) / D_800A36F8;
     }
     D_800A3778 = (s32)camera_GetBoneData();
-    /* The frame record's address is written out at each argument
-     * (compound-address duplication, no-new-park-categories F3): binding it to
-     * a `rec` local does not match (score 20). */
+    /* The frame record's address is written out at each argument (F3
+     * compound-address duplication, no-new-park-categories); a `rec` local:
+     * score 20. */
     func_8001BAE4(
         &D_800A36EC[idx][D_800A3748],
         D_800A3748 == 0 ? &D_800A36EC[idx][1] : &D_800A36EC[idx][0], prog);
@@ -1410,9 +1391,9 @@ void func_8003993C(void) {
     func_8001E6E4(prog);
 
     for (i = 0; i < 2; i++) {
-        /* Ruling 11 (ordinary-c-judge-decidable.md): `entry` holds two values,
-         * the address of the frame's 4-byte entry in the practice weapon table
-         * (if arm) and in the character's weapon table (else arm). */
+        /* entry: the frame's entry in the practice weapon table (if arm) or
+         * the character's weapon table (else arm) (Ruling 11,
+         * ordinary-c-judge-decidable) */
         u16 *entry;
 
         p = &D_800A36EC[idx][i];
@@ -1487,11 +1468,8 @@ void func_8003993C(void) {
     if (D_800A3782 != 0) {
         temp = 0x77 - D_800A37D0;
     } else {
-        /* FAKE: named intermediate (Ruling 1, once-written). Unnamed,
-         * fold-const.c `associate` (split_tree) rewrites D_800A36F8 -
-         * (D_800A37D0 + 1) as (D_800A36F8 - 1) - D_800A37D0 at tree level; the
-         * target adds 1 to the counter first (addiu; subu); unnamed: score 2.
-         */
+        /* FAKE: named intermediate keeps the counter + 1 computed first
+         * (fold reassociates it unnamed: score 2) (Ruling 1) */
         s32 next = D_800A37D0 + 1;
         temp = D_800A36F8 - next;
     }
@@ -1772,16 +1750,11 @@ extern s32 D_800A36D0;
 
 typedef s32 (*FuncBufType)(void *);
 
-/* func_8003A728: one link-cable exchange. Packs the vsync/state bits, the
- * record's first halfword and the low half of its word at +8 into
- * g_comb_send_buf, appends a 16-bit xor check (with D_800A37C4 in the high
- * half), then sends/receives through comb_Write8 / comb_Read8 (order set by
- * D_800A3916). On success it folds the partner's word back into the record at
- * a0 and clears the D_800A3870 handshake state once both sides report state 2.
- * `hi16 = hi16 | packed;` updates hi16 in place so the or prints `or a0,a0,v0`
- * as in the target. FAKE: the u16 low-half loads in the tail reuse the buf8
- * local (variable reuse for codegen control). Ablated (2026-10-06): score 33.
- */
+/* One link-cable exchange: packs the vsync/state bits and the record's data
+ * into g_comb_send_buf with a 16-bit xor check, sends/receives through
+ * comb_Write8 / comb_Read8 (order set by D_800A3916), and on success folds the
+ * partner's word back into the record at a0. FAKE: the tail's u16 loads
+ * reuse the buf8 local; own locals: score 33. */
 void func_8003A728(PadState *a0) {
     s32 buf8;
     s32 packed;
@@ -1790,11 +1763,8 @@ void func_8003A728(PadState *a0) {
     s32 vsync;
     s32 c0lo;
     s32 t;
-    /* FAKE: constant-holder local; mechanism: the (set (reg) (const_int 0))
-     * survives into sched1's block-1 ready lists and displaces the D_800A369C
-     * store from the slot before the branch, then local-alloc.c
-     * update_equiv_regs deletes it (no insn emitted). Ablated (2026-10-06):
-     * score 3. */
+    /* FAKE: constant-holder displaces the D_800A369C store from the slot
+     * before the branch (emits nothing); the literal: score 3 */
     s32 zero;
 
     if (D_800A320C != 0) {
@@ -1928,8 +1898,7 @@ end:
     VSync(2);
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values
- * from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order. */
 s32 D_800A31F0 = (s32)D_80010AAC;
 s32 D_800A31F4 = 0;
 s32 D_800A31F8 = 0;

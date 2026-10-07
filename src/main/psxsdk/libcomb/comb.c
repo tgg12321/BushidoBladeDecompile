@@ -1,10 +1,7 @@
-/* PsyQ 4.0 LIBCOMB COMB (link-cable SIO driver) — verbatim-linked Sony object.
- * This file is that one object: its .text
- * (0x8008BE04-0x8008D050: AddCOMB .. __nulldev, in Sony's order) and its
- * .rdata (0x8001649C-0x800164F8: the two driver strings, then
- * _comb_control's three switch tables), placed after main.o by bb2.ld.
- * Boundaries and symbol offsets: the COMB module of PsyQ 4.0 LIBCOMB.LIB.
- * No published C reference (psyz decomp/src/libcomb/comb.c is INCLUDE_ASM). */
+/* PsyQ 4.0 LIBCOMB COMB (link-cable SIO driver), the whole object: .text
+ * 0x8008BE04-0x8008D050 (AddCOMB .. __nulldev, in Sony's order) and .rdata
+ * 0x8001649C-0x800164F8 (the two driver strings, then _comb_control's three
+ * switch tables). No published C reference (psyz's comb.c is INCLUDE_ASM). */
 #include "common.h"
 #include <psxsdk/libapi.h>
 #include <psxsdk/libcomb.h>
@@ -304,12 +301,10 @@ s32 _comb_control(u32 cmd, u32 arg, u32 param) {
         break;
     case 4:
         if (arg == 0) {
-            /* FAKE: pointer alias to CombWaitCallback, mechanism: expand_expr
-               keeps a plain static's constant address (gcc expr.c:4222), so
-               the direct form folds both accesses to %lo(CombWaitCallback)
-               (our cc1 and cc1psx alike); through one pointer the address
-               is a single pseudo shared by the load and the store, as in
-               the target. */
+            /* FAKE: pointer alias to CombWaitCallback: the direct form folds
+               both accesses to %lo(CombWaitCallback); through one pointer the
+               address is a single pseudo shared by load and store, as in the
+               target. */
             s32 (**slot)(s32, s32) = &CombWaitCallback;
 
             ret = (s32)*slot;

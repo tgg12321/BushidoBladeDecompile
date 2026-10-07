@@ -1,10 +1,7 @@
-/* PsyQ LIBSND VM_NO1: vmNoiseOn. .text 0x80086CF8..0x800871D4. Not a verbatim
- * LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0 and 4.1,
- * that no archived release holds (memory/closer/libsnd-hunt-report.md). Module
- * start (owner ruling Q109), libscan near tier: the near-verbatim UT_KEYV's
- * REL26 at +0x32C names vmNoiseOn in all six builds -> EXE jal 0x80086CF8
- * (docs/naming/libscan/near_manifest.csv), VM_NO1's only XDEF (+0x0, PsyQ 4.0
- * LIBSND.LIB). */
+/* PsyQ LIBSND VM_NO1: vmNoiseOn. .text 0x80086CF8..0x800871D4. BB2 links an
+ * interim LIBSND build (between PsyQ 4.0 and 4.1); module start (Q109) from the
+ * near-verbatim UT_KEYV's REL26 naming vmNoiseOn -> jal 0x80086CF8
+ * (docs/naming/libscan/near_manifest.csv). */
 #include "common.h"
 #include "libsnd_i.h"
 
@@ -14,12 +11,9 @@
    note, queue the volume shadow registers, claim the voice for noise
    (pitch slot 0xA, noise state 2, every other voice's noise bit cleared),
    and set the key-on / reverb bits before switching the SPU noise voice on.
-   Shape follows sotn-decomp src/main/psxsdk/libsnd/vmanager.c vmNoiseOn
-   (US main build, matched); BB2's build calls SpuSetNoiseClock /
-   SpuSetNoiseVoice where SOTN pokes the SPU registers directly.
-   Symbol map: D_80102A78 <- _svm_sreg_buf (s16 view); D_800F65E0 <-
-   _svm_sreg_dirty; D_800F1B14/D_800F2B68 <- _svm_orev1/2;
-   D_800F1B10/12 <- _svm_okon1/2; D_801078D8/DA <- _svm_okof1/2. */
+   Shape follows sotn-decomp libsnd/vmanager.c vmNoiseOn; BB2's build calls
+   SpuSetNoiseClock / SpuSetNoiseVoice where SOTN pokes the registers.
+   D_800F1B14 / D_800F2B68 are _svm_orev1 / _svm_orev2. */
 void vmNoiseOn(u8 vc) {
     struct SeqStruct *score;
     s16 voice;
@@ -27,10 +21,9 @@ void vmNoiseOn(u8 vc) {
     s16 bitsUpper;
     u32 voll_t, volr_t;
     u32 voll, volr;
-    /* SOTN-verbatim (sotn-decomp src/main/psxsdk/libsnd/vmanager.c
-       vmNoiseOn): temp holds the tone pan, then the program pan, then the
-       voice pan, one per pan stage below. Owner Ruling 8
-       (ordinary-c-judge-decidable.md), vmNoiseOn only. */
+    /* As in SOTN's vmNoiseOn, temp holds the tone pan, then the program pan,
+       then the voice pan, one per pan stage below (Ruling 8,
+       ordinary-c-judge-decidable). */
     u32 temp;
     u32 idx;
 
@@ -75,15 +68,11 @@ void vmNoiseOn(u8 vc) {
         }
     }
 
-    /* FAKE: named-intermediate (no-new-park-categories.md 'Named-intermediate
-       declaration order', once-written per ordinary-c-judge-decidable.md
-       Ruling 1) - idx is the voice index, bound before the SpuSetNoiseClock
-       call so its pseudo is live across that call and global.c seats it in
-       call-saved $s0 as the target does (sched1 still places the zero-extend
-       after the jal: no dependence ties it to the call). Using vc at each use
-       instead puts the index in $a0 and drops $s3 from the frame; idx also at
-       the two _svm_voice[] uses differs too (the target zero-extends vc again
-       there). */
+    /* FAKE: idx, bound before the SpuSetNoiseClock call, is live across it
+       and lands in $s0 as in the target; vc at each use puts the index in $a0
+       and drops $s3 from the frame (no-new-park-categories
+       named-intermediate; once-written per ordinary-c-judge-decidable
+       Ruling 1) */
     idx = vc;
     SpuSetNoiseClock((_svm_cur.note - _svm_cur.tone_center) & 0x3F);
 

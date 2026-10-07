@@ -5,8 +5,6 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-/* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
-
 extern s32 D_800A3234;
 extern u16 D_80094AF4[];
 extern u8 D_80094B48[];
@@ -44,7 +42,7 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
         SetDrawMove(D_800A3378, &buf, u, v);
         pkt = (OTag *)D_800A3378;
         /* FAKE: SDK bitfield view of an OT word retains tag length;
-         * PS1 use: src/main/psxsdk/libgpu/sys.c:288. */
+         * SOTN PS1 use: src/main/psxsdk/libgpu/sys.c:288 */
         /* SOTN: include/psxsdk/libgpu.h:88 @db41b28eee52969244a52cc269c8163d1ed8826a */
         ot = (OTag *)D_800A378C;
         pkt->addr = ot[0x3FFC / 4].addr;
@@ -139,9 +137,8 @@ void func_800404D8(void) {
 extern void func_80040594(Unk80045878Obj *);
 extern void func_800408F8(Unk80045878Obj *);
 extern void func_80040B44(Unk80045878Obj *);
-/* Not the definition's spelling: snd_VabFakeOpen (3AB48.c) takes an s16 second
- * parameter, but the original's call here passes it unextended (an s16
- * prototype adds sll/sra, measured). */
+/* Not the definition's spelling: snd_VabFakeOpen takes an s16 second parameter,
+ * but this call passes it unextended (an s16 prototype adds sll/sra). */
 extern s32 snd_VabFakeOpen(s32, s32);
 
 Unk80045878Obj *func_80040510(s32 a0, s32 a1, s32 a2) {
@@ -223,9 +220,8 @@ after_select:
     }
 
     {
-        /* FAKE: texA / texB computed ahead of the unk_28 store; passed in the
-         * calls, the address arithmetic moves below sw unk_28 and the
-         * s-registers re-seat (score 72). */
+        /* FAKE: texA / texB computed ahead of the unk_28 store; computed in
+         * the calls they move below it and the s-registers re-seat: score 72 */
         s32 *texA = (s32 *)((s32)rmd + (((u32)rmd[1] >> 2) << 2));
         s32 *texB;
         texB = (s32 *)((s32)rmd + (((u32)rmd[4] >> 2) << 2));
@@ -438,11 +434,8 @@ void func_80040CB8(Unk80045878Obj *arg0) {
     s16 id;
     Unk80045878Node *slot = arg0->unk_8B4;
     s32 i = 0;
-    // FAKE (none/kind/one): the three loop-invariant constants must be held in
-    // registers across the loop, as target holds them in $t4/$t3/$t2. The
-    // goto-loop body carries no LICM (its loop region is rejected as phony), so
-    // writing -1/3/1 as literals cannot reproduce them.
-    // Ablated (2026-10-06): score 23.
+    // FAKE (none/kind/one): constant-holders keep -1/3/1 in $t4/$t3/$t2 across
+    // the goto-loop, which gets no LICM; literals: score 23
     s32 none;
     s32 kind;
     s32 one;
@@ -450,32 +443,20 @@ void func_80040CB8(Unk80045878Obj *arg0) {
     s16 *tbl;
     s32 ent;
 
-    // FAKE: wrap emits NOTE_INSN_LOOP_BEG/END around the three constant loads.
-    // Both notes act as cc1 first-pass-scheduler barriers, which keeps the
-    // three single-set constant loads ahead of the link/tbl cursor
-    // initialisers instead of being sunk below them (target's prologue order).
-    // With plain declaration order the scheduler sinks all three.
-    // Ablated (2026-10-06): score 6.
+    // FAKE: do-while(0) keeps the three constant loads ahead of the link/tbl
+    // initialisers; without it the scheduler sinks them: score 6
     do {
         none = -1;
         kind = 3;
         one = 1;
     } while (0);
     link = (s32)&arg0->unk_2C[1];
-    /* FAKE: tbl walks the records' unk_08 members (a cursor at +8, stepped by a
-       record): a record pointer reads unk_08 at 8(a3) off D_80094B96 (score 2),
-       D_80094B96[i].unk_08 scores 21. */
+    /* FAKE: tbl walks the records' unk_08 members, stepped by a record; a
+       record pointer: score 2, D_80094B96[i].unk_08: score 21 */
     tbl = &D_80094B96[0].unk_08;
-    // FAKE: wrap emits loop notes around the body, so flow.c weights every
-    // reference inside it by loop_depth 2. That weighting is what seats the
-    // id copy in $v1 and the 0x90C cursor in $a1 (and the rest on target);
-    // without it the id copy loses its allocno-priority race and the whole
-    // register assignment rotates.
-    // `ent` is initialised INSIDE the region on purpose: that makes the region
-    // start on a non-label insn, so loop.c rejects it as phony and its
-    // strength reduction cannot invent a third induction pointer for the
-    // -0x57..-0x4C displacement cluster (as a real for-loop does).
-    // Ablated (2026-10-06): score 21.
+    // FAKE: do-while(0) raises the loop depth that weights register allocation
+    // (seats id in $v1, the cursor in $a1); ent is set inside so the region is
+    // not a real loop and gets no extra induction pointer; without: score 21
     do {
         ent = (s32)&arg0->unk_8B4[0].unk58;
     loop:
@@ -490,8 +471,7 @@ void func_80040CB8(Unk80045878Obj *arg0) {
             *(s16 *)(ent - 0x4E) = 0;
             {
                 /* FAKE: w reads unk_16 ahead of the slot step and the *ent
-                 * store; read at its store the sw zero moves above it (score
-                 * 2). */
+                 * store; read at its store, sw zero moves above it: score 2 */
                 u16 w = arg0->unk_16;
                 slot++;
                 *(s32 *)ent = 0;

@@ -1,13 +1,8 @@
 /* The CD-mix setters cdrom_SetMix and func_80035F78. .text 0x80035F30 (ROM
- * 0x26730). Start boundary: G8. Their own translation unit, compiled -G8
- * (Makefile GP_FILES): their original bytes write g_cd_atv / D_800A36B8 /
- * D_800A3854 / D_800A3840 straight off $gp, which the original compiler emits
- * only at -G8. g_cd_atv and D_800A36B8 are declared here the way their bytes
- * show the original did: file-scope tentative definitions (no initializer;
- * their original bytes are zero). Sony's assembler gave such a COMMON variable
- * gp at its base only, never at an offset, which the target's stores show;
- * maspsx models that for every file (owner ruling Q62, 2026-09-30, global
- * COMMON model), not per function. */
+ * 0x26730). Start boundary: G8: compiled -G8, as their stores straight off $gp
+ * show. g_cd_atv and D_800A36B8 are file-scope tentative definitions (COMMON),
+ * which Sony's assembler addressed gp-relative at their base only (owner
+ * ruling Q62, 2026-09-30, global COMMON model). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

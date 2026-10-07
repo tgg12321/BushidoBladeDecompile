@@ -1,18 +1,14 @@
 /* Data-only file: .rodata 0x800153F0 (ROM 0x5BF0), linked between 368E4.o (-G8)
- * and 3AB48.o, owner ruling Q94
- * (.claude/rules/compiler-flags-canonical.md): under -G8 cc1 emits every
+ * and 3AB48.o (Q94, compiler-flags-canonical): under -G8 cc1 emits every
  * file-scope data object before the head's jump tables, which the original
- * places first. A multi-file cluster: 23 symbols (12 jtbls + 5 strings + 6 data
- * words). */
+ * places first. */
 #include "common.h"
 
 /* 0x800153F0: the 22-halfword record func_8004A09C unpacks; func_80049F4C
- * (text1b.c) copies it whole. */
+ * copies it whole. */
 typedef struct {
     u16 v[22];
 } Unk800153F0Record;
-
-/* Auto-extracted from asm/data/101C.rodata_text1a_b_pre.s */
 
 /* D_800153F0: 22 halfwords (44B) @ 0x800153F0 */
 const Unk800153F0Record D_800153F0 = {{
@@ -107,6 +103,7 @@ const u32 D_80015820[8] = {
 /* D_80015840: 1 string, 28B @ 0x80015840 */
 const char D_80015840[28] = "Destruction tiny model.\n";
 
-/* NOTE: the cluster continues in src/main/3AB48.c's rodata: func_80058580's
- * three switch tables at 0x8001585C (rodata-object-alignment ruling
- * 2026-09-30), then the sound-bank loader's two strings at 0x800158B4. */
+/* The cluster continues in 3AB48.c's rodata: func_80058580's three switch
+ * tables at 0x8001585C (rodata-object-alignment ruling 2026-09-30), then the
+ * sound-bank loader's two strings at
+ * 0x800158B4. */

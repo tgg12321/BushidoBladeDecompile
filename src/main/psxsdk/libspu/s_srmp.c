@@ -4,12 +4,10 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-/* PsyQ 4.0 LIBSPU s_srmp: SpuSetReverbModeParam — verbatim-linked Sony object;
-   C ref: sotn-decomp src/main/psxsdk/libspu/s_srmp.c.
-   4.0 deltas vs the SOTN revision: the DELAYTIME/FEEDBACK gates are range
-   compares (mode >= ECHO && mode <= DELAY) with no default-arm clears, and
-   the depth/zero split threads off the var_s4 flag. Reverb preset table:
-   D_800A2D94 (= Sony rev_param table, 10 entries x 0x44). */
+/* C ref: sotn-decomp src/main/psxsdk/libspu/s_srmp.c. 4.0 deltas: the
+   DELAYTIME/FEEDBACK gates are range compares (ECHO..DELAY) with no default-arm
+   clears, and the depth/zero split keys off var_s4. Preset table:
+   _spu_rev_param (10 entries x 0x44). */
 extern RevParamEntry _spu_rev_param[]; /* rev_param preset table */
 
 static inline void _memcpy(char *dst, char *src, u32 size) {

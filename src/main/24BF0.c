@@ -8,10 +8,8 @@
 #include "gte.h"
 #include "bb2_const.h"
 
-/* func_800343F0 lives here, not in code6cac_b_tu2.c: the file boundary follows
- * the per-file gp evidence (owner ruling Q65;
- * docs/grind/rodata-align-2026-09-30.md section 7). */
-
+/* func_800343F0 lives in this file because the file boundary follows the
+ * per-file gp evidence (owner ruling Q65). */
 void func_800343F0(void) {
     s8 val_85 = (s8)D_80102778.unk_D;
     s8 val_86 = (s8)D_80102778.unk_E;
@@ -33,7 +31,6 @@ void func_800343F0(void) {
     D_800A37D2 = 0;
 }
 
-/* Declarations from the file this TU was split from (code6cac_b.c). */
 void func_800343F0(void);
 
 INCLUDE_RODATA("asm/rodata", jtbl_8001084C);

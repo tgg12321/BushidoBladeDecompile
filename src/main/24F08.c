@@ -1,12 +1,6 @@
-/* func_80034708 alone. .text 0x80034708 (ROM 0x24F08). Start boundary: G8 (cc1
- * -G8 by proof).
- *
- * Compiled -G8 (Makefile GP_FILES). The
- * original compiler knew the 4-byte cursor array D_800A3174 was small data:
- * the target reads cursor[0] / cursor[1] straight off $gp while the loop walks
- * &cursor[i]. Under -G0 an array element's address stays in a register. The
- * same setting explains this function's strings: the <=8-byte ones sit in
- * .sdata at 0x800A3178.., the 9-byte ones in .rodata at 0x80010834. */
+/* func_80034708 alone. .text 0x80034708 (ROM 0x24F08). Start boundary: G8:
+ * compiled -G8, as the gp-relative reads of the cursor array D_800A3174 show;
+ * so the <=8-byte strings sit in .sdata, the 9-byte ones in .rodata. */
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
@@ -185,6 +179,5 @@ void func_80034708(void) {
     }
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values
- * from the original EXE. */
+/* Q65: this file's initialized small data (.sdata). */
 s16 D_800A3174[2] = {0, 0};

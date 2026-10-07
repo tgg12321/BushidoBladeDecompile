@@ -4,15 +4,10 @@
 #include "common.h"
 #include "libcd_internal.h"
 
-/* .rodata 0x80016074..0x8001607C: CdComstr's and CdIntstr's out-of-range name
- * (moved from src/text1a_b_post_rodata.c, Q106 D4: every reader is in this
- * file, in link order). */
-
-/* g_str_none: 1 string(s), 8B @ 0x80016074 (CdComstr / CdIntstr out-of-range
- * name) */
+/* .rodata 0x80016074..0x8001607C: CdComstr's and CdIntstr's out-of-range
+ * name (Q106 D4: every reader is in this file). */
 const char g_str_none[8] = "none\0\0\0";
 
-/* Forward declarations */
 extern s32 DMACallback(s32, s32);
 
 inline u32 CdStatus(void) { return (u8)CD_status; }
@@ -47,8 +42,6 @@ s32 CdSetDebug(s32 a0) {
     return old;
 }
 
-/* PsyQ 4.0 LIBCD sys: CdComstr — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
 void *CdComstr(u8 com) {
     if (com > 0x1B) {
         return (void *)g_str_none;
@@ -56,8 +49,6 @@ void *CdComstr(u8 com) {
     return (void *)CD_comstr[com];
 }
 
-/* PsyQ 4.0 LIBCD sys: CdIntstr — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
 void *CdIntstr(u8 intr) {
     if (intr > 6) {
         return (void *)g_str_none;
@@ -65,12 +56,8 @@ void *CdIntstr(u8 intr) {
     return (void *)CD_intstr[intr];
 }
 
-/* PsyQ 4.0 LIBCD sys: CdSync — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
 s32 CdSync(s32 mode, u8 *result) { return CD_sync(mode, result); }
 
-/* PsyQ 4.0 LIBCD sys: CdReady — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
 s32 CdReady(s32 mode, u8 *result) { return CD_ready(mode, result); }
 
 CdlCB CdSyncCallback(CdlCB func) {
@@ -103,10 +90,9 @@ s32 CdControl(u8 a0, u8 *a1, u8 *a2) {
     result = 0;
 
 loop:
-    /* FAKE: do-while(0) wrap -- its loop notes weight the references so that
-       count/a1/a2/idx/a0/saved/elem/result seat in s0..s7 (flow.c life
-       analysis, reg_n_refs += loop_depth, feeding global.c allocno_compare);
-       a real-loop restructure does not reproduce that assignment. */
+    /* FAKE: do-while(0) loop-depth weighting seats count/a1/a2/idx/a0/saved/
+       elem/result in s0..s7; a real-loop restructure does not (do-while-zero)
+     */
     do {
         CD_cbsync = 0;
 
@@ -155,9 +141,8 @@ s32 CdControlF(u8 a0, u8 *a1) {
     result = 0;
 
 loop:
-    /* FAKE: do-while(0) wrap -- its loop-note ref weighting seats elem in s5
-       and result in s6 (flow.c life analysis, reg_n_refs += loop_depth,
-       feeding global.c allocno_compare). */
+    /* FAKE: do-while(0) loop-depth weighting seats elem in s5 and result in
+       s6 (do-while-zero) */
     do {
         CD_cbsync = 0;
 
@@ -243,20 +228,15 @@ s32 CdMix(CdlATV *vol) {
     return 1;
 }
 
-/* PsyQ 4.0 LIBCD sys: CdGetSector / CdGetSector2 — verbatim-linked Sony
-   objects; both forward (madr, size) to the CD_ helper. */
 s32 CdGetSector(s32 madr, s32 size) { return CD_getsector(madr, size) == 0; }
 
 s32 CdGetSector2(s32 madr, s32 size) { return CD_getsector2(madr, size) == 0; }
 
-/* PsyQ 4.0 LIBCD sys: CdDataCallback — verbatim-linked Sony object (census
-   2026-07-09); returns the previous callback */
+/* returns the previous callback */
 s32 CdDataCallback(s32 a0) { return DMACallback(3, a0); }
 
 void CdDataSync(s32 a0) { CD_datasync(a0); }
 
-/* PsyQ 4.0 LIBCD sys: CdIntToPos — verbatim-linked Sony object (census
-   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
 CdlLOC *CdIntToPos(s32 i, CdlLOC *p) {
     inline int ENCODE_BCD(n) { return ((n / 10) << 4) + (n % 10); }
 

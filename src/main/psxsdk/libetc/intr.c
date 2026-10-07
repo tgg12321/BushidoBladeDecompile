@@ -6,33 +6,24 @@
 #include "libetc_internal.h"
 #include <psxsdk/libc.h>
 
-/* .rodata 0x80016328..0x80016394: the module's rcsid "$Id: intr.c,v 1.76 ..."
- * (pointed at only by INTR's callbacks table, asm/data/91C98.data.s:1271) and
- * trapIntr's two messages (moved from src/text1a_b_tail_rodata.c, Q106 D4:
- * every C reader is in this file, in link order). */
+/* .rodata 0x80016328..0x80016394: the module's rcsid (pointed at only by INTR's
+ * callbacks table) and trapIntr's two messages; every C reader is in this file
+ * (Q106 D4). */
 
-/* D_80016328: 1 string(s), 52B @ 0x80016328 (the rcsid; only INTR's callbacks
- * table, asm/data/91C98.data.s:1271, points here) */
 const char D_80016328[52] =
     "$Id: intr.c,v 1.76 1997/02/12 12:45:05 makoto Exp $\0";
 
-/* D_8001635C: 1 string(s), 28B @ 0x8001635C */
 const char D_8001635C[28] = "unexpected interrupt(%04x)\n\0";
 
-/* D_80016378: 1 string(s), 28B @ 0x80016378 */
 const char D_80016378[28] = "intr timeout(%04x:%04x)\n\0\0\0\0";
 
-/* Declarations from the old ings2.c (its head and its VSYNC module) that this
- * module uses. */
-/* libetc intr.c i_mask = (u16 *)0x1F801074, I_MASK (MMIO) */
+/* i_mask = (u16 *)0x1F801074, I_MASK (MMIO) */
 extern volatile u16 *i_mask;
 extern s32 *g_sys_irq_vtable;
 
-/* PsyQ 4.0 LIBETC INTR: intr.c v1.76 module state — verbatim-linked Sony
-   object; C ref: sotn-decomp src/main/psxsdk/libetc/
-   intr.c (intrEnv_t). D_800A1578 = intrEnv; D_800A15B4 = intrEnv.buf[1]
-   (JB_SP); i_stat/i_mask/d_pcr (0x800A2604/08/0C) = the module's
-   MMIO pointer statics (0x1F801070/74/F0). */
+/* intr.c module state (SOTN libetc/intr.c intrEnv_t). D_800A1578 = intrEnv;
+ * i_stat/i_mask/d_pcr are the module's MMIO pointer statics
+ * (0x1F801070/74/F0). */
 typedef struct {
     u16 interruptsInitialized;  /* +0x00 = D_800A1578 */
     u16 inInterrupt;            /* +0x02 */
@@ -71,8 +62,7 @@ s32 CheckCallback(void) { return D_800A1578.inInterrupt; }
 u32 GetIntrMask(void) { return *i_mask; }
 
 extern void trapIntr(void);
-/* FAKE: the BIOS call takes no argument; declared with one for startIntr (see
- * there). */
+/* FAKE: the BIOS call takes no argument; declared with one for startIntr. */
 extern void _96_remove(s32 *);
 
 u16 SetIntrMask(u16 arg0) {
@@ -98,19 +88,15 @@ intrEnv_t *startIntr(void) {
     D_800A1578.interruptsInitialized = 1;
     g_sys_irq_vtable[5] = startIntrVSync();
     g_sys_irq_vtable[1] = startIntrDMA();
-    /* FAKE: _96_remove (BIOS A(72h)) takes no argument; passing
-     * g_sys_irq_vtable keeps the table pointer live in $a0 into the call as the
-     * target does; `_96_remove()` scores 3. */
+    /* FAKE: _96_remove (BIOS A(72h)) takes no argument; passing the table
+     * keeps it live in $a0 into the call; `_96_remove()` scores 3. */
     _96_remove(g_sys_irq_vtable);
     ExitCriticalSection();
     return &D_800A1578;
 }
 
-/* PsyQ 4.0 LIBETC INTR: trapIntr + setIntr + stopIntr + restartIntr + memclr
-   — verbatim-linked Sony object intr.c v1.76; C ref:
-   sotn-decomp src/main/psxsdk/libetc/intr.c (v1.73; v1.76 deltas measured).
-   setIntr/stopIntr/restartIntr are statics referenced only through the
-   callbacks vtable raw words at 0x800A25E8/F0/F8 (7D920.data.s). */
+/* setIntr/stopIntr/restartIntr are statics referenced only through the
+ * callbacks vtable words at 0x800A25E8/F0/F8. */
 typedef void (*IntrCallback)(void);
 extern s32 D_800A2610; /* trapMissedCount */
 
