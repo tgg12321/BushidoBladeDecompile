@@ -1721,10 +1721,11 @@ extern u8 D_8009A830[];
 extern s8 D_8009A838[];
 extern u8 D_8009A840[];
 
-/* func_80056FE8 (ang_hosei): angle-correction table lookup. FAKE family:
+/* func_80056FE8: per-record table lookup. FAKE family:
  * duplicated-statement-into-arms
  * (.claude/rules/duplicated-statement-into-arms.md, a SOTN-accepted shape): one
- * real statement, the arm's angle adjustment added into `base`, is written in
+ * real statement, the arm's table term (D_8009A830 / D_8009A838 / D_8009A840)
+ * added into `base`, is written in
  * each dispatch arm. */
 s32 func_80056FE8(Unk80101EC8Record *arg0) {
     Unk80101EC8Record *a2 = arg0->other;
@@ -3892,8 +3893,8 @@ s32 func_8005C2A8(Unk8005C2A8Pack *hdr, s16 vabid, s32 arg2) {
     return 0;
 }
 
-/* saFidLoad tail: the s16 result carrier and single trailing return give the
- * target's CFG (li -1 in its own block, shared sign-extend join); a direct
+/* snd_VabFakeOpen tail: the s16 result carrier and single trailing return give
+ * the target's CFG (li -1 in its own block, shared sign-extend join); a direct
  * return or an s32 carrier does not match
  * (proven-spelling-class-reconstruction). */
 s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {

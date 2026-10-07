@@ -77,7 +77,7 @@ out:
     rgb[2] = b;
 }
 
-/* RGB -> HSV (4.12 fixed point). Inverse of rob_life_ctrl_2 above.
+/* RGB -> HSV (4.12 fixed point). Inverse of func_80042504 above.
  * Outputs a1[] = { hue, sat, val }; val (V) = max(r,g,b) is the third
  * output channel, held separately from the max used for the chroma
  * deltas / max-channel compares. */

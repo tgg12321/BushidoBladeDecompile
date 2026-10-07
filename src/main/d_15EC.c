@@ -1,7 +1,8 @@
 /* Data-only file: .rodata 0x80010DEC (ROM 0x15EC); its owning TU is unproven.
- * D_80010DEC: 899 4-byte-padded asset paths, indexed by computed offset from
- * the asset loader. D_8001528C: the "Marionation over flow" debug message
- * (read by func_80044FA0). */
+ * D_80010DEC: 899 4-byte-padded asset paths, pointed to by the .data pointer
+ * array at 0x800955E0, which no code reads (docs/formats/NDATA.md); 32D04.c and
+ * 35000.c are equal candidates for its owner. D_8001528C: the "Marionation
+ * over flow" debug message (read by func_80044FA0). */
 const char D_80010DEC[17568] =
     "DATA1\\HAND.DAT\0\0DATA7\\MAR22_13.D"
     "AT\0\0DATA7\\MAR22_12.DAT\0\0DATA7\\MA"

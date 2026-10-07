@@ -31,9 +31,9 @@ const u32 jtbl_8001545C[5] = {
 
 /* D_80015470: 4 words (16B) @ 0x80015470 */
 const u32 D_80015470[4] = {
-    0x8004B6E4, 0x8004BCC0, /* saTan2LineDraw */
-    0x80052C10,             /* InitFadePanel */
-    0x80052C10,             /* InitFadePanel */
+    0x8004B6E4, 0x8004BCC0, /* func_8004BCC0 */
+    0x80052C10,             /* func_80052C10 */
+    0x80052C10,             /* func_80052C10 */
 };
 
 /* D_80015480: 8 words (32B) @ 0x80015480 — function-pointer table */

@@ -1615,7 +1615,7 @@ s32 func_80048AD0(s32 arg0) {
      * -8 / -6 / -9 / 0 from it); through p the cursor goes (score 11) */
     q = p + 0xA;
     /* FAKE: the record counter reuses `sound`, inheriting its $a0
-       preference from snd_LoadBgm's argument; a separate counter swaps
+       preference from func_800467B8's argument; a separate counter swaps
        $a0/$a2 with delta: score 6 */
     for (sound = 0; sound < 0x11; sound++) {
         *(s16 *)(q - 8 + sound * 0x68) = sound;

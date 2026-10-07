@@ -1,7 +1,8 @@
 /* 10 game functions, among them bits_ExtractMask3F83F8 and
- * bits_DepositMask3F83F8. .text 0x80035438 (ROM 0x25C38). Start boundary: the
- * end of the EXPAND_LB run; one object by the per-file gp model (Q65 merge
- * group). */
+ * bits_DepositMask3F83F8. .text 0x80035438 (ROM 0x25C38). Start boundary:
+ * LEGACY (no evidence either way; EXPAND_LB_FILES membership changes no bytes,
+ * since every file gets --expand-lb). One object by the per-file gp model (Q65
+ * merge group). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

@@ -69,7 +69,7 @@ extern volatile GpuQueueItem _que[64];
 
 /* PsyQ libgpu sys.c DR_ENV packet buffer (the `_clr` split-clear / fill
  * packet): one tag word + up to 15 command words at 0x800F1858. The next
- * object (g_gpu_color_table, 0x800F189C) starts at +0x44. */
+ * object (ctlbuf, 0x800F189C) starts at +0x44. */
 typedef struct GpuDrEnv {
     /* 0x00 */ u32 tag;
     /* 0x04 */ u32 code[15];

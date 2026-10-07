@@ -1,5 +1,5 @@
-/* save_vc_ctrl alone. .text 0x800414FC (ROM 0x31CFC). Start boundary: LEGACY (a
- * tooling split inside the -G8 run, no evidence either way). Its untouched
+/* func_800414FC alone. .text 0x800414FC (ROM 0x31CFC). Start boundary: LEGACY
+ * (a tooling split inside the -G8 run, no evidence either way). Its untouched
  * 8-byte frame is cc1's stack slot for the folded `i != -1` loop guard
  * (phantom-slot-frame-lever). */
 #include "common.h"
