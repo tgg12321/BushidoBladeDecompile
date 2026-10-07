@@ -51,7 +51,7 @@ evidence instead of a STRONG scan tier when ALL hold:
 3. **Inline and the only asm**: written out in `src/**/*.c` (no `#include`, BB2-local header or
    macro-by-name); everything else is ordinary C passing normal review.
 4. **Bytes and hashes**: sandbox 0, full-build SHA1 == oracle, island hashes in
-   `tools/canonical_asm_regions.json` (an edit voids the grant).
+   `tools/canonical_asm_regions.json` (a token edit voids the grant; layout doesn't).
 5. **Record and review**: `inline_asm_canonical.txt` row tagged
    `gcc-cannot-emit:gte_cop2_sdk_macro` citing this ruling, in its own `auth:` commit before the
    body; a `Pure-C attempts:` block (≥3 entries) on both commits; layer-2 checks the macro text

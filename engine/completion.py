@@ -10,9 +10,12 @@ import hashlib
 import json
 from pathlib import Path
 
-from . import cheats, inlineasm
+from . import cheats, inlineasm, layer2
 
 REGIONS = Path('tools/canonical_asm_regions.json')
+# Schema 2 (owner 2026-10-06): a region hash covers the island's C tokens, so a
+# layout-only change (tools/format.py) keeps the grant. Schema 1 hashed raw text.
+REGIONS_SCHEMA = 2
 
 
 def blocks(text: str, func: str) -> list[tuple[int, int]]:
@@ -34,7 +37,10 @@ def blocks(text: str, func: str) -> list[tuple[int, int]]:
 
 
 def region_hashes(text: str, func: str) -> list[str]:
-    return [hashlib.sha256(text[s:e].encode('utf-8')).hexdigest()
+    """One sha256 per island over its C tokens (layer2.tokens: string literals
+    verbatim, whitespace and comments dropped). Any template, operand,
+    constraint or clobber change moves the hash; re-indenting does not."""
+    return [hashlib.sha256(' '.join(layer2.tokens(text[s:e])).encode('utf-8')).hexdigest()
             for s, e in blocks(text, func)]
 
 
@@ -60,7 +66,7 @@ def source_issues(stem: str, func: str, canonical: bool | None = None) -> list[s
             return ['canonical C body has no assembly island to authorize']
         try:
             grants = json.loads(REGIONS.read_text(encoding='utf-8'))
-            if grants.get('schema') != 1:
+            if grants.get('schema') != REGIONS_SCHEMA:
                 raise KeyError('schema')
             expected = grants['functions'][func]
         except (OSError, ValueError, KeyError, TypeError):

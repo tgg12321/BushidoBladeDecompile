@@ -967,12 +967,15 @@ _DEAD_COND_STORE_ASSIGN_RE = re.compile(
 )
 
 _FAKE_ANNOT_RE = re.compile(r"\bFAKE\b", re.IGNORECASE)
+_FAKE_LEAD_RE = re.compile(r"(?:/\*|//)\s*!?FAKE\b")
 
 
 def _stmt_fake_annotated(body: str, start: int, end: int) -> bool:
     """True when the statement at [start, end) carries the sanctioned
     `/* FAKE: ... */` / `// FAKE` annotation — trailing on the statement's
-    own line, or as a comment on the line immediately above. Sanctioned
+    own line, or as the comment that ends on the line immediately above (one
+    line, a wrapped `/* ... */` block, or a run of `//` lines; tools/format.py
+    wraps long ones, and the label is the same at either width). Sanctioned
     last-resort exceptions (dead-store-fake-exception.md /
     named-local-fake-exception.md / pointer-alias-fake-exception.md,
     owner ruling 2026-07-01) require this annotation; annotated instances
@@ -987,13 +990,43 @@ def _stmt_fake_annotated(body: str, start: int, end: int) -> bool:
     # detector's regex match, so scan the full line, not just past `end`).
     if _FAKE_ANNOT_RE.search(body[line_start:line_end]):
         return True
+    comment = _comment_above(body, start)
+    if comment is None:
+        return False
+    if "\n" not in comment:  # one line: as before, FAKE anywhere in it
+        return bool(_FAKE_ANNOT_RE.search(comment))
+    # a wrapped block / `//` run must BE the label, not mention one
+    return bool(_FAKE_LEAD_RE.match(comment))
+
+
+def _comment_above(body: str, start: int) -> str | None:
+    """The standalone comment ending on the line just above `start`'s line:
+    a `/* ... */` block (its `/*` first on its line) or a run of `//` lines.
+    None when that line is code, blank, or a comment trailing code."""
     nl = body.rfind("\n", 0, start)
     if nl <= 0:
-        return False
+        return None
     prev_start = body.rfind("\n", 0, nl) + 1
-    prev_line = body[prev_start:nl].strip()
-    return (prev_line.startswith("//") or prev_line.startswith("/*")) and \
-        bool(_FAKE_ANNOT_RE.search(prev_line))
+    prev = body[prev_start:nl].strip()
+    if prev.startswith("//"):
+        lines = [prev]
+        while prev_start > 0:
+            s = body.rfind("\n", 0, prev_start - 1) + 1
+            line = body[s:prev_start - 1].strip()
+            if not line.startswith("//"):
+                break
+            lines.insert(0, line)
+            prev_start = s
+        return "\n".join(lines)
+    if not prev.endswith("*/"):
+        return None
+    if prev.startswith("/*"):
+        return prev
+    opener = body.rfind("/*", 0, nl)
+    if opener < 0 or body[body.rfind("\n", 0, opener) + 1:opener].strip():
+        return None  # trailing code, or a `/*` quoted inside the comment: not standalone
+    text = body[opener:nl].rstrip()
+    return text if text.find("*/") == len(text) - 2 else None
 
 
 def find_dead_conditional_stores(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int, str, str]]:

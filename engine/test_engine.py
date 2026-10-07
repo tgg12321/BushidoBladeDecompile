@@ -94,7 +94,7 @@ def test_canonical() -> None:
                 "# grants\n\nlisted # owner evidence\nmixed # region grant\n", encoding="utf-8")
             Path("tools").mkdir()
             Path("tools/canonical_asm_regions.json").write_text(
-                json.dumps({"schema": 1, "functions": {"mixed": {"file": "fake", "sha256": []}}}),
+                json.dumps({"schema": 2, "functions": {"mixed": {"file": "fake", "sha256": []}}}),
                 encoding="utf-8")
             for hits, distance in (([], None), ([], 600), ([(0, "c2", "GTE")], 0)):
                 r = canonical._verdict("listed", hits, 8, distance=distance)
@@ -1905,6 +1905,29 @@ void m(int arg0) {
     hits = volatile_cheats.find_dead_param_assigns(text5, body_lo, body_hi, ["arg0"])
     eq("fake-annot: un-annotated dead param assign still flagged", len(hits), 1)
 
+    # Wrapped forms of the comment above (tools/format.py hoists long ones):
+    # a `/* ... */` block and a `//` run ending on the line above count; a
+    # FAKE comment trailing the previous statement, or one separated by a
+    # blank line, does not.
+    def dead_param(above: str) -> int:
+        t = "void w(int arg0) {\n    do_thing();\n" + above + "    arg0 = 0;\n}\n"
+        return len(volatile_cheats.find_dead_param_assigns(
+            t, t.index("{"), t.rindex("}") + 1, ["arg0"]))
+    eq("fake-annot: wrapped /* FAKE */ block above bypassed",
+       dead_param("    /* FAKE: breaks the a0 value\n     * association */\n"), 0)
+    eq("fake-annot: // FAKE run above bypassed",
+       dead_param("    // FAKE: breaks the a0 value\n    // association\n"), 0)
+    eq("fake-annot: FAKE trailing the previous statement still flagged",
+       dead_param("    x = 1; /* FAKE: about x,\n              * not arg0 */\n"), 1)
+    eq("fake-annot: FAKE block then a blank line still flagged",
+       dead_param("    /* FAKE: breaks the a0 value\n     * association */\n\n"), 1)
+    eq("fake-annot: non-FAKE block above still flagged",
+       dead_param("    /* breaks the a0 value\n     * association */\n"), 1)
+    eq("fake-annot: wrapped block that only mentions FAKE still flagged",
+       dead_param("    /* not a fake store: it breaks\n     * the a0 association */\n"), 1)
+    eq("fake-annot: // run whose label is not first still flagged",
+       dead_param("    // breaks the a0 value\n    // FAKE: association\n"), 1)
+
     # Strip integration: the annotated store survives the cheat-strip.
     stripped, _ = volatile_cheats.strip_volatile_cheats_file(text)
     check("fake-annot: annotated store survives strip",
@@ -2727,10 +2750,24 @@ s32 func_MIX(s32 value) {
                   any("requires canonical" in i for i in issues))
 
             entry = {"file": "fake", "sha256": completion.region_hashes(text, "func_MIX")}
-            grants.write_text(json.dumps({"schema": 1,
+            grants.write_text(json.dumps({"schema": 2,
                                           "functions": {"func_MIX": entry}}))
             eq("region grants: exact reviewed island is accepted",
                completion.source_issues("fake", "func_MIX", canonical=True), [])
+
+            relaid = text.replace('__asm__ volatile ("ctc2 %0,$13" :: "r"(value));',
+                                  '__asm__ volatile("ctc2 %0,$13"\n'
+                                  '                     /* re-laid out */ :: "r"(value));')
+            assert relaid != text
+            inlineasm._read_src_cached = lambda stem: relaid
+            eq("region grants: a layout / comment-only change keeps the grant",
+               completion.source_issues("fake", "func_MIX", canonical=True), [])
+
+            respaced = text.replace('"ctc2 %0,$13"', '"ctc2 %0, $13"')
+            inlineasm._read_src_cached = lambda stem: respaced
+            issues = completion.source_issues("fake", "func_MIX", canonical=True)
+            check("region grants: whitespace inside the template string still invalidates",
+                  any("changed since review" in i for i in issues))
 
             changed = text.replace("$13", "$14")
             inlineasm._read_src_cached = lambda stem: changed
@@ -5508,7 +5545,7 @@ def test_move_tu() -> None:
                                                 "golden_fixtures": [{"name": "f", "file": "src/comb.c"}]},
                                                indent=2) + "\n",
             "tools/cc1_tu_expectation.txt": "# src-digest x\n" + "a" * 40 + "  comb\n" + "b" * 40 + "  gpu\n",
-            "tools/canonical_asm_regions.json": json.dumps({"schema": 1, "functions": {}}, indent=2) + "\n",
+            "tools/canonical_asm_regions.json": json.dumps({"schema": 2, "functions": {}}, indent=2) + "\n",
             "engine/queue.json": json.dumps({"items": [{"func": "f", "file": "comb"}]}, indent=2) + "\n",
             ".claude/rules/r.md": '---\nname: r\npaths: ["src/comb.c", "src/**/*.c"]\n---\nbody src/comb.c\n',
             "tools/other.sh": "case $stem in comb) ;; esac\n",

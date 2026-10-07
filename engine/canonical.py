@@ -246,7 +246,7 @@ def _verdict(func: str, hits: list, total: int, structural: int = 0,
     then the optional pure-C `distance` applies the structural tier."""
     if func in cheats.canonical_asm_funcs():
         grants = json.loads(completion.REGIONS.read_text(encoding="utf-8"))
-        if grants["schema"] != 1:
+        if grants["schema"] != completion.REGIONS_SCHEMA:
             raise ValueError("unsupported canonical assembly-region grant schema")
         mixed = func in grants["functions"]
         reason = ("mixed C/assembly grant in inline_asm_canonical.txt "
