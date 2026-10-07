@@ -1,1 +1,0 @@
-{"func": "func_8001FBE8", "addr": "8001FBE8", "verdict": "PASS", "body_hash": "f8a2010aaf4c01c9", "body_kind": "c", "file": "code6cac_tu2", "reviewer": "rv2-q103-naming-b", "scope": "cheat-cleanup", "date": "2026-10-03T08:58:26Z", "head": "4ac3546c6", "notes": "Q103 naming batch (b): identifier-only renames, oracle-green"}

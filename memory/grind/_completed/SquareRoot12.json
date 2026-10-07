@@ -1,0 +1,12 @@
+{
+ "bucket": "COMPLETED-INLINE-ASM-CANONICAL",
+ "completed_at": "2026-10-03T04:58:07-05:00",
+ "file": "main/psxsdk/libgte/msc09",
+ "func": "SquareRoot12",
+ "headline": "",
+ "mentions": [],
+ "names": [
+  "SquareRoot12"
+ ],
+ "sessions": 0
+}

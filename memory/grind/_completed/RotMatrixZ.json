@@ -1,0 +1,12 @@
+{
+ "bucket": "COMPLETED-INLINE-ASM-CANONICAL",
+ "completed_at": "2026-10-03T04:58:07-05:00",
+ "file": "main/psxsdk/libgte/fgo_06",
+ "func": "RotMatrixZ",
+ "headline": "",
+ "mentions": [],
+ "names": [
+  "RotMatrixZ"
+ ],
+ "sessions": 0
+}

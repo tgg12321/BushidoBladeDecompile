@@ -1,0 +1,12 @@
+{
+ "bucket": "COMPLETED-INLINE-ASM-CANONICAL",
+ "completed_at": "2026-10-03T05:31:05-05:00",
+ "file": "main/psxsdk/libgte/reg12",
+ "func": "SetGeomOffset",
+ "headline": "",
+ "mentions": [],
+ "names": [
+  "SetGeomOffset"
+ ],
+ "sessions": 0
+}

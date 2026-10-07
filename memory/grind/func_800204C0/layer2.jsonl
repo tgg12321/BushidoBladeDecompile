@@ -1,2 +1,0 @@
-{"func": "func_800204C0", "addr": "800204C0", "verdict": "PASS", "body_hash": "a6e043e9dfe739f6", "body_kind": "c", "file": "code6cac_tu2", "reviewer": "rv2-q103-naming-b", "scope": "cheat-cleanup", "date": "2026-10-03T08:58:37Z", "head": "4ac3546c6", "notes": "Q103 naming batch (b): identifier-only renames, oracle-green"}
-{"func": "func_800204C0", "addr": "800204C0", "verdict": "PASS", "body_hash": "bda84b3f9e150f24", "body_kind": "c", "file": "main/9F9C", "reviewer": "p2-rev-ga2", "scope": "cheat-cleanup", "date": "2026-10-04T09:17:23Z", "head": "edb03ae18", "notes": ""}

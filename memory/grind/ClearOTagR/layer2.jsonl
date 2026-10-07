@@ -1,1 +1,0 @@
-{"func": "ClearOTagR", "addr": "8007B844", "verdict": "PASS", "body_hash": "6811900328b0cfd8", "body_kind": "c", "file": "main/psxsdk/libgpu/sys", "reviewer": "cheat-reviewer:rev-w2b4", "scope": "cheat-cleanup", "date": "2026-10-06T13:47:56Z", "head": "a2df2d160", "notes": ""}
