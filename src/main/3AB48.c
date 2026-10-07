@@ -847,7 +847,7 @@ s32 func_8005490C(void) {
     s->unk24[2] = -D_80101DF0.xf.rot.vz;
     func_800420D0();
     func_8004211C();
-    camera_InitBoneData();
+    func_80047210();
     stage_InitCollision();
     func_8004A1FC(&D_800F62E0[0]);
     func_8004A1FC(&D_800F62E0[1]);
@@ -903,7 +903,7 @@ extern s32 func_8005490C(void);
 
 s32 func_80054F68(void) {
     s32 s0;
-    D_800A3820 = D_80102C00;
+    g_draw_queue_cursor = g_draw_queue;
     D_800A38D6 = D_800A38D6 + 1;
     D_800A3808 = g_gpu_ot_ptr;
     D_800A378C = g_gpu_ot_ptr + 4;
@@ -4926,8 +4926,8 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B524, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     /* The second DR_MODE goes at the chunk's end, past the size this function
-     * returns (2B344 func_8003C560 advances its cursor D_800A38B4 by that size;
-     * 6CF8 func_800174F4 ignores it). */
+     * returns (2B344 func_8003C560 advances its cursor g_prim_buf_cursor by
+     * that size; 6CF8 func_800174F4 ignores it). */
     mode_off++;
 
     s.ot_idx = arg2;
@@ -5125,8 +5125,8 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B5A0[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     /* The second DR_MODE goes at the chunk's end, past the size this function
-     * returns (its caller, 9F9C func_8001CE60, advances its cursor D_800A38B4
-     * by that size). */
+     * returns (its caller, 9F9C func_8001CE60, advances its cursor
+     * g_prim_buf_cursor by that size). */
     mode_off++;
 
     s.has_color = 0;

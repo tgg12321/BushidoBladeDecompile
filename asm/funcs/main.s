@@ -49,7 +49,7 @@ glabel main
     /* 7AB4 800172B4 21105400 */  addu       $v0, $v0, $s4
     /* 7AB8 800172B8 0000428C */  lw         $v0, 0x0($v0)
     /* 7ABC 800172BC 800690AF */  sw         $s0, %gp_rel(g_gpu_ot_ptr)($gp)
-    /* 7AC0 800172C0 E80782AF */  sw         $v0, %gp_rel(D_800A38B4)($gp)
+    /* 7AC0 800172C0 E80782AF */  sw         $v0, %gp_rel(g_prim_buf_cursor)($gp)
     /* 7AC4 800172C4 8183010C */  jal        func_80060E04
     /* 7AC8 800172C8 21202002 */   addu      $a0, $s1, $zero
     /* 7ACC 800172CC BDF4000C */  jal        func_8003D2F4
@@ -123,7 +123,7 @@ glabel main
   .L800173D0:
     /* 7BD0 800173D0 00CC8434 */  ori        $a0, $a0, (0xFFFECC00 & 0xFFFF)
     /* 7BD4 800173D4 80101100 */  sll        $v0, $s1, 2
-    /* 7BD8 800173D8 E807838F */  lw         $v1, %gp_rel(D_800A38B4)($gp)
+    /* 7BD8 800173D8 E807838F */  lw         $v1, %gp_rel(g_prim_buf_cursor)($gp)
     /* 7BDC 800173DC 21105400 */  addu       $v0, $v0, $s4
     /* 7BE0 800173E0 21186400 */  addu       $v1, $v1, $a0
     /* 7BE4 800173E4 0000448C */  lw         $a0, 0x0($v0)

@@ -242,7 +242,7 @@ glabel func_8005490C
     /* 454A4 80054CA4 280063A6 */   sh        $v1, 0x28($s3)
     /* 454A8 80054CA8 4708010C */  jal        func_8004211C
     /* 454AC 80054CAC 00000000 */   nop
-    /* 454B0 80054CB0 841C010C */  jal        camera_InitBoneData
+    /* 454B0 80054CB0 841C010C */  jal        func_80047210
     /* 454B4 80054CB4 00000000 */   nop
     /* 454B8 80054CB8 9DFC000C */  jal        stage_InitCollision
     /* 454BC 80054CBC 00000000 */   nop

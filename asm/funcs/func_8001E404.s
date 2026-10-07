@@ -179,7 +179,7 @@ glabel func_8001E404
     /* EE90 8001E690 21282002 */   addu      $a1, $s1, $zero
     /* EE94 8001E694 21200002 */  addu       $a0, $s0, $zero
     /* EE98 8001E698 20005026 */  addiu      $s0, $s2, 0x20
-    /* EE9C 8001E69C 4E69000C */  jal        func_8001A538
+    /* EE9C 8001E69C 4E69000C */  jal        camera_CalcEye
     /* EEA0 8001E6A0 21280002 */   addu      $a1, $s0, $zero
     /* EEA4 8001E6A4 21202002 */  addu       $a0, $s1, $zero
     /* EEA8 8001E6A8 1984010C */  jal        func_80061064

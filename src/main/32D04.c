@@ -1192,7 +1192,7 @@ void func_80044504(u32 *a0) {
     }
     func_8004A4E0();
     func_80046E54(1);
-    D_800A3820 = D_80102C00;
+    g_draw_queue_cursor = g_draw_queue;
 }
 
 void func_80044650(void) { func_80052C10(); }
@@ -1254,5 +1254,5 @@ void func_8004473C(void) {
 Unk80101DF0Record *D_800A3708;
 u32 *D_800A378C;
 s32 D_800A3790;
-void **D_800A3820;
+void **g_draw_queue_cursor;
 s32 D_800A3828;

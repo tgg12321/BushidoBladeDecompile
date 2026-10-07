@@ -451,7 +451,7 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
     SVECTOR rot;
     MATRIX matrix_buf;
 
-    D_800A3820 = D_80102C00;
+    g_draw_queue_cursor = g_draw_queue;
     {
         /* FAKE: count1 holds the count + 1 ahead of the D_800A3808 store; at
          * the D_800A38D6 store the loads reorder (score 16). */
@@ -485,7 +485,7 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
         }
 
         func_800418D0(&D_80101DF0);
-        camera_InitBoneData();
+        func_80047210();
         stage_InitCollision();
 
         D_800A33C0 = a2;
@@ -604,7 +604,7 @@ typedef struct {
     s32 w[8];
 } Block32;
 
-void camera_InitBoneData(void) {
+void func_80047210(void) {
     g_cam_bone_data = D_80101DF0.xf.mat;
     g_cam_bone_data.m[1][0] >>= 1;
     g_cam_bone_data.m[1][1] >>= 1;
@@ -715,8 +715,8 @@ void func_800475A4(void) {
     MulMatrix0(&buf2, &buf1, &base->xf.mat);
 
     {
-        void **temp = D_800A3820;
-        D_800A3820 = temp + 1;
+        void **temp = g_draw_queue_cursor;
+        g_draw_queue_cursor = temp + 1;
         *temp = base;
     }
 }
@@ -967,8 +967,8 @@ inner_loop:
     if (i < 9)
         goto outer_loop;
 
-    temp = D_800A3820;
-    D_800A3820 = temp + 1;
+    temp = g_draw_queue_cursor;
+    g_draw_queue_cursor = temp + 1;
     *temp = &D_800EF070;
 }
 
@@ -1685,8 +1685,8 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     goto test_index;
 copy_index:
     node->node.xf.mat = *player[index];
-    list = D_800A3820;
-    D_800A3820 = list + 1;
+    list = g_draw_queue_cursor;
+    g_draw_queue_cursor = list + 1;
     *list = node;
     node++;
 test_index:
@@ -1697,17 +1697,17 @@ test_index:
     }
     if (arg1 >= 0) {
         node->node.xf.mat = *player[18];
-        list = D_800A3820;
+        list = g_draw_queue_cursor;
         node->node.unk2 = arg1 + 0xF;
-        D_800A3820 = list + 1;
+        g_draw_queue_cursor = list + 1;
         *list = node;
         node++;
     }
     if (arg2 != 0) {
         node->node.xf.mat = *player[19];
-        list = D_800A3820;
+        list = g_draw_queue_cursor;
         node->node.unk2 = 0x15;
-        D_800A3820 = list + 1;
+        g_draw_queue_cursor = list + 1;
         *list = node;
     }
 
@@ -1974,13 +1974,13 @@ end:
 
 void func_80049710(void) {}
 
-/* Appends one or two 0x68-byte draw nodes at D_800A38B4 for animation entry
- * arg0 and queues each on the D_800A3820 draw list. The first node (type 0)
- * takes its rotation and position from rot_in / pos (flags == 1) or from node
- * 19 + (flags & 1) of player flags >> 1's model object, whose offset it scales
- * in place by the object's unk_12 and into which it copies the new matrix
- * back; the second (type 3, parent = the first) follows unless flags is still
- * 1. */
+/* Appends one or two 0x68-byte draw nodes at g_prim_buf_cursor for animation
+ * entry arg0 and queues each on the g_draw_queue_cursor draw list. The first
+ * node (type 0) takes its rotation and position from rot_in / pos (flags == 1)
+ * or from node 19 + (flags & 1) of player flags >> 1's model object, whose
+ * offset it scales in place by the object's unk_12 and into which it copies the
+ * new matrix back; the second (type 3, parent = the first) follows unless flags
+ * is still 1. */
 void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     SVECTOR ofs;
     s32 val58;
@@ -1995,7 +1995,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     if (D_800EF980[arg0] < 0) {
         func_80052C10();
     }
-    obj = (Unk80045878Node *)D_800A38B4;
+    obj = (Unk80045878Node *)g_prim_buf_cursor;
     /* FAKE: dead store: the 0 is never read (flags == 1 skips the second
      * node) but gives the target's `move s5,zero`: score 1
      * (dead-store-fake-exception) */
@@ -2049,8 +2049,8 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             val58 = player->unk_1A84;
         }
         {
-            void **list = D_800A3820;
-            D_800A3820 = list + 1;
+            void **list = g_draw_queue_cursor;
+            g_draw_queue_cursor = list + 1;
             *list = obj;
         }
         obj++;
@@ -2063,23 +2063,23 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             obj->node.unk0 = 3;
             obj->node.unk1 = 0;
             /* FAKE: unk58 stored through a pointer; the member store lets sched
-             * sink it below the D_800A3820 load (score 2). */
+             * sink it below the g_draw_queue_cursor load (score 2). */
             {
                 s32 *p58 = &obj->unk58;
                 *p58 = val58;
             }
-            list = D_800A3820;
+            list = g_draw_queue_cursor;
             obj->node.unkC = &obj[-1].node;
             obj->node.unk6 = 1;
             obj->node.unk8 = 0;
             obj->node.unkA = 0;
             obj->node.unk4 = 6;
             obj->node.unk2 = frame * 2 + 1;
-            D_800A3820 = list + 1;
+            g_draw_queue_cursor = list + 1;
             *list = obj;
             obj++;
         }
-        D_800A38B4 = (u32 *)obj;
+        g_prim_buf_cursor = (u32 *)obj;
     }
 }
 
@@ -2122,7 +2122,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
         func_80052C10();
     }
     player = func_8004153C(arg1 >> 1);
-    obj = (Unk80045878Node *)D_800A38B4;
+    obj = (Unk80045878Node *)g_prim_buf_cursor;
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;
     /* FAKE: a1_val reads *p_anim ahead of each node's stores; read at the unk2
@@ -2149,8 +2149,8 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.unk6 = 0;
     obj->node.xf.rot.vz = new_var2;
     func_800417D0(&obj->node);
-    list = D_800A3820;
-    D_800A3820 = list + 1;
+    list = g_draw_queue_cursor;
+    g_draw_queue_cursor = list + 1;
     *list = obj;
     obj++;
     a1_val = (*p_anim) * 2;
@@ -2163,15 +2163,15 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.unk4 = 6;
     obj->node.unk2 = a1_val + 1;
     /* FAKE: unk58 stored through a pointer; the member store lets sched lift
-       the D_800A3820 reload above the node's stores (score 17). */
+       the g_draw_queue_cursor reload above the node's stores (score 17). */
     {
         s32 *p58 = &obj->unk58;
         *p58 = player->unk_1A84;
     }
-    list = D_800A3820;
-    D_800A3820 = list + 1;
+    list = g_draw_queue_cursor;
+    g_draw_queue_cursor = list + 1;
     *list = obj;
-    D_800A38B4 = (u32 *)(obj + 1);
+    g_prim_buf_cursor = (u32 *)(obj + 1);
 }
 
 s32 func_80049C24(s32 arg0, s32 arg1) {

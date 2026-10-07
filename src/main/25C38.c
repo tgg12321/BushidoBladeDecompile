@@ -56,7 +56,7 @@ void func_80035480(void) {
 void func_8003553C(void) {
     POLY_G4 *g;
 
-    g = (POLY_G4 *)D_800A38B4;
+    g = (POLY_G4 *)g_prim_buf_cursor;
     SetPolyG4(g);
     g->x0 = 0;
     g->y0 = 0;
@@ -80,7 +80,7 @@ void func_8003553C(void) {
     g->b3 = 0;
     AddPrim(g_gpu_ot_ptr + 0x1007, g);
     g += 1;
-    D_800A38B4 = (u32 *)g;
+    g_prim_buf_cursor = (u32 *)g;
 }
 
 void func_800355E8(void) {

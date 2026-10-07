@@ -365,7 +365,7 @@ glabel func_8001A820
     /* B56C 8001AD6C 2120C002 */  addu       $a0, $s6, $zero
     /* B570 8001AD70 4000B18F */  lw         $s1, 0x40($sp)
     /* B574 8001AD74 1800E526 */  addiu      $a1, $s7, %lo(D_1F800018)
-    /* B578 8001AD78 4E69000C */  jal        func_8001A538
+    /* B578 8001AD78 4E69000C */  jal        camera_CalcEye
     /* B57C 8001AD7C 1000D1A6 */   sh        $s1, 0x10($s6)
     /* B580 8001AD80 0A80023C */  lui        $v0, %hi(D_800A30F0)
     /* B584 8001AD84 F0304224 */  addiu      $v0, $v0, %lo(D_800A30F0)
@@ -457,7 +457,7 @@ glabel func_8001A820
     /* B6B8 8001AEB8 21106200 */  addu       $v0, $v1, $v0
     /* B6BC 8001AEBC 43100200 */  sra        $v0, $v0, 1
     /* B6C0 8001AEC0 21100202 */  addu       $v0, $s0, $v0
-    /* B6C4 8001AEC4 4E69000C */  jal        func_8001A538
+    /* B6C4 8001AEC4 4E69000C */  jal        camera_CalcEye
     /* B6C8 8001AEC8 1000C2A6 */   sh        $v0, 0x10($s6)
     /* B6CC 8001AECC 2800E426 */  addiu      $a0, $s7, %lo(D_1F800028)
     /* B6D0 8001AED0 21288002 */  addu       $a1, $s4, $zero
@@ -539,7 +539,7 @@ glabel func_8001A820
     /* B7D8 8001AFD8 21106200 */  addu       $v0, $v1, $v0
     /* B7DC 8001AFDC 43100200 */  sra        $v0, $v0, 1
     /* B7E0 8001AFE0 21100202 */  addu       $v0, $s0, $v0
-    /* B7E4 8001AFE4 4E69000C */  jal        func_8001A538
+    /* B7E4 8001AFE4 4E69000C */  jal        camera_CalcEye
     /* B7E8 8001AFE8 1000C2A6 */   sh        $v0, 0x10($s6)
     /* B7EC 8001AFEC 2800E426 */  addiu      $a0, $s7, %lo(D_1F800028)
     /* B7F0 8001AFF0 21288002 */  addu       $a1, $s4, $zero

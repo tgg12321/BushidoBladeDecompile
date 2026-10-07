@@ -341,16 +341,17 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
 
     while (1) {
         idx = D_800A36AC & 1;
-        D_800A38B4 = (u32 *)(prim_base + (idx * 0x9A00));
+        g_prim_buf_cursor = (u32 *)(prim_base + (idx * 0x9A00));
         g_gpu_ot_ptr = &ot[idx];
         env = &g_gpu_db[idx];
 
         ClearOTagR(g_gpu_ot_ptr, 1);
         func_80019568();
         if (special != 0) {
-            func_8005C8A8(2, select | (D_800A3788 << 16), (s32)D_800A38B4, 0);
+            func_8005C8A8(
+                2, select | (D_800A3788 << 16), (s32)g_prim_buf_cursor, 0);
         } else {
-            func_8005C8A8(0, select, (s32)D_800A38B4, 0);
+            func_8005C8A8(0, select, (s32)g_prim_buf_cursor, 0);
         }
         func_80036940();
         func_8005C6D0();
@@ -451,7 +452,7 @@ loop:
     ot = env->ot;
     ClearOTagR(ot, 0x1008);
     g_gpu_ot_ptr = ot;
-    D_800A38B4 = (u32 *)tbl[idx];
+    g_prim_buf_cursor = (u32 *)tbl[idx];
     func_80060E04(idx);
     func_8003D2F4();
     func_80019568(skip);
@@ -487,7 +488,7 @@ loop:
     }
 
     {
-        s32 remaining = tbl[idx] + 0x13400 - (s32)D_800A38B4;
+        s32 remaining = tbl[idx] + 0x13400 - (s32)g_prim_buf_cursor;
         if (remaining < D_800A30DC) {
             D_800A30DC = remaining;
         }
@@ -830,7 +831,7 @@ u8 D_800A37A0;
 s32 D_800A37C0;
 s16 D_800A3834;
 u8 D_800A389A;
-u32 *D_800A38B4;
+u32 *g_prim_buf_cursor;
 s32 g_rng_state;
 s16 D_800A38DC;
 u8 D_800A38F8;

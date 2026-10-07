@@ -57,7 +57,7 @@ glabel func_8001E6E4
     /* EFBC 8001E7BC 3000A6AF */   sw        $a2, 0x30($sp)
     /* EFC0 8001E7C0 21200002 */  addu       $a0, $s0, $zero
     /* EFC4 8001E7C4 20005026 */  addiu      $s0, $s2, 0x20
-    /* EFC8 8001E7C8 4E69000C */  jal        func_8001A538
+    /* EFC8 8001E7C8 4E69000C */  jal        camera_CalcEye
     /* EFCC 8001E7CC 21280002 */   addu      $a1, $s0, $zero
     /* EFD0 8001E7D0 21202002 */  addu       $a0, $s1, $zero
     /* EFD4 8001E7D4 1984010C */  jal        func_80061064

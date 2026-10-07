@@ -360,7 +360,8 @@ extern u8 D_800A3816;
 extern u8 D_800A3817;
 extern s16 D_800A381C;
 extern u8 D_800A381E;
-extern void **D_800A3820; /* the draw queue cursor (into D_80102C00) */
+/* the draw queue cursor (into g_draw_queue) */
+extern void **g_draw_queue_cursor;
 extern s16 D_800A3824;
 extern u8 D_800A382D;
 extern s16 D_800A382E;
@@ -541,7 +542,7 @@ extern s16 D_800A3840;
 extern u8 D_800A384C;
 extern s16 D_800A3854;
 extern u8 *D_800A3894;
-extern u32 *D_800A38B4; /* the draw-chunk builders' word cursor */
+extern u32 *g_prim_buf_cursor; /* the draw-chunk builders' word cursor */
 extern s32 D_800A38D0;
 extern u16 D_800A38D6;
 extern s32 D_800A38FC;
@@ -566,7 +567,7 @@ extern s16 D_800F6656;
 extern u8 D_801027A0;
 extern u8 D_801027D8;
 /* the draw queue: record pointers (0x80102C00..0x801035FF) */
-extern void *D_80102C00[640];
+extern void *g_draw_queue[640];
 extern s32 chractar_use_pset_combo_id_table[];
 extern Func80017A44Output g_file_data_buf[8];
 extern s32 g_player_char_ids[];
@@ -575,7 +576,7 @@ extern Unk80045878Obj *g_player_ptrs[];
 extern s32 bits_DepositMask3F83F8(s32);
 extern s32 bits_ExtractMask3F83F8(s32);
 extern s16 *camera_CalcAngles(void);
-extern void camera_InitBoneData(void);
+extern void func_80047210(void);
 extern u32 cdrom_GetFileSize(s32);
 extern void cdrom_Init(void);
 extern void cdrom_ReadyCallback(u8, u8 *);

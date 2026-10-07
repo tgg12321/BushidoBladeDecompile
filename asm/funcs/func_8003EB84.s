@@ -114,12 +114,12 @@ glabel func_8003EB84
     /* 2F510 8003ED10 FE004230 */  andi       $v0, $v0, 0xFE
   .L8003ED14:
     /* 2F514 8003ED14 070082A0 */  sb         $v0, 0x7($a0)
-    /* 2F518 8003ED18 0A80033C */  lui        $v1, %hi(D_800A3820)
-    /* 2F51C 8003ED1C 2038638C */  lw         $v1, %lo(D_800A3820)($v1)
+    /* 2F518 8003ED18 0A80033C */  lui        $v1, %hi(g_draw_queue_cursor)
+    /* 2F51C 8003ED1C 2038638C */  lw         $v1, %lo(g_draw_queue_cursor)($v1)
     /* 2F520 8003ED20 00000000 */  nop
     /* 2F524 8003ED24 04006224 */  addiu      $v0, $v1, 0x4
-    /* 2F528 8003ED28 0A80013C */  lui        $at, %hi(D_800A3820)
-    /* 2F52C 8003ED2C 203822AC */  sw         $v0, %lo(D_800A3820)($at)
+    /* 2F528 8003ED28 0A80013C */  lui        $at, %hi(g_draw_queue_cursor)
+    /* 2F52C 8003ED2C 203822AC */  sw         $v0, %lo(g_draw_queue_cursor)($at)
     /* 2F530 8003ED30 5FFB0008 */  j          .L8003ED7C
     /* 2F534 8003ED34 000064AC */   sw        $a0, 0x0($v1)
   .L8003ED38:

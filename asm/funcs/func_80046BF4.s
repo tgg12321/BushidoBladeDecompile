@@ -2,10 +2,10 @@ glabel func_80046BF4
     /* 373F4 80046BF4 90FFBD27 */  addiu      $sp, $sp, -0x70
     /* 373F8 80046BF8 6000B2AF */  sw         $s2, 0x60($sp)
     /* 373FC 80046BFC 21908000 */  addu       $s2, $a0, $zero
-    /* 37400 80046C00 1080023C */  lui        $v0, %hi(D_80102C00)
-    /* 37404 80046C04 002C4224 */  addiu      $v0, $v0, %lo(D_80102C00)
-    /* 37408 80046C08 0A80013C */  lui        $at, %hi(D_800A3820)
-    /* 3740C 80046C0C 203822AC */  sw         $v0, %lo(D_800A3820)($at)
+    /* 37400 80046C00 1080023C */  lui        $v0, %hi(g_draw_queue)
+    /* 37404 80046C04 002C4224 */  addiu      $v0, $v0, %lo(g_draw_queue)
+    /* 37408 80046C08 0A80013C */  lui        $at, %hi(g_draw_queue_cursor)
+    /* 3740C 80046C0C 203822AC */  sw         $v0, %lo(g_draw_queue_cursor)($at)
     /* 37410 80046C10 0A80023C */  lui        $v0, %hi(D_800A38D6)
     /* 37414 80046C14 D6384294 */  lhu        $v0, %lo(D_800A38D6)($v0)
     /* 37418 80046C18 0A80033C */  lui        $v1, %hi(g_gpu_ot_ptr)
@@ -81,7 +81,7 @@ glabel func_80046BF4
     /* 37530 80046D30 441E22AC */  sw         $v0, %lo(D_80101E44)($at)
     /* 37534 80046D34 3406010C */  jal        func_800418D0
     /* 37538 80046D38 F0FF2426 */   addiu     $a0, $s1, -0x10
-    /* 3753C 80046D3C 841C010C */  jal        camera_InitBoneData
+    /* 3753C 80046D3C 841C010C */  jal        func_80047210
     /* 37540 80046D40 00000000 */   nop
     /* 37544 80046D44 9DFC000C */  jal        stage_InitCollision
     /* 37548 80046D48 00000000 */   nop

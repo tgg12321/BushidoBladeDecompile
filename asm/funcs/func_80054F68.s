@@ -1,8 +1,8 @@
 glabel func_80054F68
-    /* 45768 80054F68 1080023C */  lui        $v0, %hi(D_80102C00)
-    /* 4576C 80054F6C 002C4224 */  addiu      $v0, $v0, %lo(D_80102C00)
-    /* 45770 80054F70 0A80013C */  lui        $at, %hi(D_800A3820)
-    /* 45774 80054F74 203822AC */  sw         $v0, %lo(D_800A3820)($at)
+    /* 45768 80054F68 1080023C */  lui        $v0, %hi(g_draw_queue)
+    /* 4576C 80054F6C 002C4224 */  addiu      $v0, $v0, %lo(g_draw_queue)
+    /* 45770 80054F70 0A80013C */  lui        $at, %hi(g_draw_queue_cursor)
+    /* 45774 80054F74 203822AC */  sw         $v0, %lo(g_draw_queue_cursor)($at)
     /* 45778 80054F78 0A80023C */  lui        $v0, %hi(D_800A38D6)
     /* 4577C 80054F7C D6384294 */  lhu        $v0, %lo(D_800A38D6)($v0)
     /* 45780 80054F80 0A80033C */  lui        $v1, %hi(g_gpu_ot_ptr)

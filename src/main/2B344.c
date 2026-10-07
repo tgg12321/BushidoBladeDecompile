@@ -444,7 +444,7 @@ void func_8003B870(void) {
 void func_8003B8E4(void) {
     D_800A37B8 = D_800A37B8 + 1;
     if (D_800A37B8 < 3) {
-        D_800A38B4 += func_80060544((s32)D_800A38B4, 1) / 4;
+        g_prim_buf_cursor += func_80060544((s32)g_prim_buf_cursor, 1) / 4;
     }
     if (D_800A37B8 == 3) {
         DrawSync(0);
@@ -798,7 +798,7 @@ void func_8003C040(void) {
 
 void func_8003C2C0(void) {
     D_800A37B8 = D_800A37B8 + 1;
-    D_800A38B4 += func_8005FC9C((s32)D_800A38B4, 1);
+    g_prim_buf_cursor += func_8005FC9C((s32)g_prim_buf_cursor, 1);
     if (func_80054F68() == 0 || (g_pad_state.pressed & 0x400040) != 0) {
         if ((u32)(D_800A38A4 - 6) < 2u && D_800A3781 != 0) {
             D_800A38A4 = D_8008D9EC[D_80101EC8[0].unk_0A] != 0 ? 9 : 8;
@@ -906,7 +906,8 @@ void func_8003C560(void) {
             func_8005C650(0xA9, 0x7F, 0x7F);
         }
     }
-    D_800A38B4 += func_8005E54C(D_800A3784, (s32)D_800A38B4, 1) / 4;
+    g_prim_buf_cursor +=
+        func_8005E54C(D_800A3784, (s32)g_prim_buf_cursor, 1) / 4;
     if ((g_pad_state.pressed & 0x400040) != 0 || D_800A37B8 >= 0xF1) {
         if (D_800A382D == 2) {
             D_800A3834 = 0x18;
@@ -972,7 +973,8 @@ void func_8003C714(void) {
 
 void func_8003C8B4(void) {
     D_800A37B8 = D_800A37B8 + 1;
-    D_800A38B4 += func_80060768((s32)D_800A38B4, 1, D_800A38E9) / 4;
+    g_prim_buf_cursor +=
+        func_80060768((s32)g_prim_buf_cursor, 1, D_800A38E9) / 4;
     if ((g_pad_state.pressed & 0x400040) != 0 || D_800A37B8 >= 0xF1) {
         func_80033FE4();
     }
@@ -1000,7 +1002,8 @@ void func_8003C9A4(void) {
     func_80046DA8(1);
 
     if (D_800A3929 == 0) {
-        D_800A38B4 += func_8005C8A8(1, D_800A3817, (s32)D_800A38B4, 0) / 4;
+        g_prim_buf_cursor +=
+            func_8005C8A8(1, D_800A3817, (s32)g_prim_buf_cursor, 0) / 4;
 
         if ((g_pad_state.pressed & 0x10001000) != 0) {
             func_8005C650(0, 0x7F, 0x7F);
@@ -1026,7 +1029,7 @@ void func_8003C9A4(void) {
     }
 
     if (D_800A3817 == 0) {
-        D_800A38B4 += func_8005FA98(0, (s32)D_800A38B4, 1) / 4;
+        g_prim_buf_cursor += func_8005FA98(0, (s32)g_prim_buf_cursor, 1) / 4;
     }
     D_800A3929 = D_800A3929 + 1;
     if (D_800A3929 < 0x3C)
@@ -1079,7 +1082,7 @@ void func_8003CD10(void) {
     func_80046BF4(&D_800F6608.unk_00, &D_800F6608.unk_10, 0x2710);
     func_80046DA8(1);
 
-    D_800A38B4 += func_800600C8(D_800A391F, (s32)D_800A38B4, 1);
+    g_prim_buf_cursor += func_800600C8(D_800A391F, (s32)g_prim_buf_cursor, 1);
     D_800A37B8 = D_800A37B8 + 1;
     if (D_800A37B8 >= 0x97 || (g_pad_state.pressed & 0x400040) != 0) {
         func_800372C0();
@@ -2117,8 +2120,8 @@ void func_8003E6D8(s32 arg0) {
                             } else {
                                 e->unk7 &= 0xFE;
                             }
-                            list = D_800A3820;
-                            D_800A3820 = list + 1;
+                            list = g_draw_queue_cursor;
+                            g_draw_queue_cursor = list + 1;
                             *list = e;
                         } else {
                             e2 = &D_800A6690[v1 - D_800A3368];
@@ -2139,9 +2142,9 @@ void func_8003E6D8(s32 arg0) {
     }
     while (out != D_800A7EF0) {
         out--;
-        *D_800A3820 = *out;
-        ((Unk800A6690Rec *)*D_800A3820)->unk58 = 0;
-        D_800A3820++;
+        *g_draw_queue_cursor = *out;
+        ((Unk800A6690Rec *)*g_draw_queue_cursor)->unk58 = 0;
+        g_draw_queue_cursor++;
     }
     if (g_stage_init_tbl[stage_GetId()].unk4 != 0) {
         g_stage_init_tbl[stage_GetId()].unk4();
@@ -2214,8 +2217,8 @@ skip:
                                 } else {
                                     e->unk7 &= 0xFE;
                                 }
-                                list = D_800A3820;
-                                D_800A3820 = list + 1;
+                                list = g_draw_queue_cursor;
+                                g_draw_queue_cursor = list + 1;
                                 *list = e;
                             } else {
                                 e2 = &D_800A6690[v1 - D_800A3368];

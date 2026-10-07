@@ -1,2 +1,0 @@
-{"func": "camera_InitBoneData", "addr": "80047210", "verdict": "PASS", "body_hash": "6c1caa6ed65cae1f", "body_kind": "c", "file": "main/368E4", "reviewer": "p2-rev-b5a", "scope": "cheat-cleanup", "date": "2026-10-04T04:39:34Z", "head": "ab90e62f0", "notes": ""}
-{"func": "camera_InitBoneData", "addr": "80047210", "verdict": "PASS", "body_hash": "6e855cfc424fc095", "body_kind": "c", "file": "main/368E4", "reviewer": "cheat-reviewer:rev-w2b12", "scope": "cheat-cleanup", "date": "2026-10-06T19:54:00Z", "head": "5574f89a1", "notes": ""}

@@ -1,4 +1,4 @@
-glabel func_8001A538
+glabel camera_CalcEye
     /* AD38 8001A538 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* AD3C 8001A53C 3000B0AF */  sw         $s0, 0x30($sp)
     /* AD40 8001A540 21808000 */  addu       $s0, $a0, $zero
@@ -60,4 +60,4 @@ glabel func_8001A538
     /* AE20 8001A620 4000BD27 */  addiu      $sp, $sp, 0x40
     /* AE24 8001A624 0800E003 */  jr         $ra
     /* AE28 8001A628 00000000 */   nop
-endlabel func_8001A538
+endlabel camera_CalcEye

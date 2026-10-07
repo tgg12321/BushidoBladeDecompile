@@ -1,8 +1,8 @@
 glabel func_8003553C
     /* 25D3C 8003553C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 25D40 80035540 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 25D44 80035544 0A80103C */  lui        $s0, %hi(D_800A38B4)
-    /* 25D48 80035548 B438108E */  lw         $s0, %lo(D_800A38B4)($s0)
+    /* 25D44 80035544 0A80103C */  lui        $s0, %hi(g_prim_buf_cursor)
+    /* 25D48 80035548 B438108E */  lw         $s0, %lo(g_prim_buf_cursor)($s0)
     /* 25D4C 8003554C 1400BFAF */  sw         $ra, 0x14($sp)
     /* 25D50 80035550 8CEA010C */  jal        SetPolyG4
     /* 25D54 80035554 21200002 */   addu      $a0, $s0, $zero
@@ -35,8 +35,8 @@ glabel func_8003553C
     /* 25DC0 800355C0 24001026 */  addiu      $s0, $s0, 0x24
     /* 25DC4 800355C4 2DEA010C */  jal        AddPrim
     /* 25DC8 800355C8 1C408424 */   addiu     $a0, $a0, 0x401C
-    /* 25DCC 800355CC 0A80013C */  lui        $at, %hi(D_800A38B4)
-    /* 25DD0 800355D0 B43830AC */  sw         $s0, %lo(D_800A38B4)($at)
+    /* 25DCC 800355CC 0A80013C */  lui        $at, %hi(g_prim_buf_cursor)
+    /* 25DD0 800355D0 B43830AC */  sw         $s0, %lo(g_prim_buf_cursor)($at)
     /* 25DD4 800355D4 1400BF8F */  lw         $ra, 0x14($sp)
     /* 25DD8 800355D8 1000B08F */  lw         $s0, 0x10($sp)
     /* 25DDC 800355DC 1800BD27 */  addiu      $sp, $sp, 0x18

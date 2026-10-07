@@ -413,7 +413,7 @@ s32 math_SignExt12Div(s32 arg0, s32 arg1) {
     return v / arg1;
 }
 
-void func_8001A538(Rec44 *arg0, s32 *arg1) {
+void camera_CalcEye(Rec44 *arg0, s32 *arg1) {
     MATRIX m;
     m.m[0][0] = 0x1000;
     m.m[0][1] = 0;
@@ -494,7 +494,7 @@ typedef VECTOR CamVec;
 
 /* Scratchpad work area (0x1F800000) used by func_8001A820: the target yaw/roll
  * that D_800F6608's unk_10.vy / vz ease toward, the camera focus, the eye
- * position func_8001A538 computes, a fighter's head position, and the hit
+ * position camera_CalcEye computes, a fighter's head position, and the hit
  * position, surface normal and work area func_80053614 is given (its
  * 3rd/4th/5th arguments; its other callers pass a VECTOR hit and an s16[4]
  * normal). */
@@ -644,7 +644,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
 
         work = base_pitch;
         cam->unk_10.vx = work;
-        func_8001A538(cam, &scr->eye.vx);
+        camera_CalcEye(cam, &scr->eye.vx);
         if (p != 0) {
             scr->head = arg3->unk_B8;
         } else {
@@ -679,7 +679,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                     d -= 0x1000;
                 }
                 cam->unk_10.vx = hi + d / 2;
-                func_8001A538(cam, &scr->eye.vx);
+                camera_CalcEye(cam, &scr->eye.vx);
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit,
                                   scr->nrm, (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
@@ -709,7 +709,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                     d -= 0x1000;
                 }
                 cam->unk_10.vx = lo + d / 2;
-                func_8001A538(cam, &scr->eye.vx);
+                camera_CalcEye(cam, &scr->eye.vx);
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit,
                                   scr->nrm, (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
@@ -1529,7 +1529,8 @@ void func_8001CE60(void) {
     Unk8001CD68Rec buf;
 
     if (D_800A38DC == 1) {
-        D_800A38B4 += func_8005E51C(D_800A3783, (s32)D_800A38B4, 1) / 4;
+        g_prim_buf_cursor +=
+            func_8005E51C(D_800A3783, (s32)g_prim_buf_cursor, 1) / 4;
     } else if (D_800A38DC == 3) {
         if (D_80101EC8[0].unk_96 == 0 &&
             (D_80101EC8[1].unk_96 == 0 || D_800A38E2 != 100)) {
@@ -1539,10 +1540,12 @@ void func_8001CE60(void) {
             }
         }
         func_8001CD68(&buf);
-        D_800A38B4 += func_8005D814(&buf, D_800A38E2, (s32)D_800A38B4, 1) / 4;
+        g_prim_buf_cursor +=
+            func_8005D814(&buf, D_800A38E2, (s32)g_prim_buf_cursor, 1) / 4;
     } else if ((D_800A38DC == 2 && D_800A389A == 1) || D_800A38DC == 4) {
-        D_800A38B4 +=
-            func_8005E098(D_800A37D2, D_800A37D3, (s32)D_800A38B4, 1) / 4;
+        g_prim_buf_cursor +=
+            func_8005E098(D_800A37D2, D_800A37D3, (s32)g_prim_buf_cursor, 1) /
+            4;
     } else if (D_800A38DC == 5) {
         /* temp holds two values (Ruling 11, ordinary-c-judge-decidable): the
          * announcement length in frames (0x50 after a draw, 0x64 otherwise),
@@ -1567,7 +1570,8 @@ void func_8001CE60(void) {
                 D_800A3834 = 0;
             }
         } else if (D_800A37E1 != 0) {
-            D_800A38B4 += func_8005FA98(2, (s32)D_800A38B4, 1) / 4;
+            g_prim_buf_cursor +=
+                func_8005FA98(2, (s32)g_prim_buf_cursor, 1) / 4;
             if (++D_800A37E1 == 0x3C) {
                 D_800A37E1 = 0;
                 if (D_800A38B0 != 2) {
@@ -1592,7 +1596,8 @@ void func_8001CE60(void) {
                 }
             }
         } else if (D_800A3920 != 0) {
-            D_800A38B4 += func_8005FA98(1, (s32)D_800A38B4, 1) / 4;
+            g_prim_buf_cursor +=
+                func_8005FA98(1, (s32)g_prim_buf_cursor, 1) / 4;
             if (++D_800A3920 == 0x1E) {
                 func_8005C650(0xA1, 0x7F, 0x7F);
             }
@@ -1686,11 +1691,11 @@ void func_8001CE60(void) {
             buf.unk_2 = temp / 30;
             buf.unk_3 = temp % 30 * 100 / 30;
         }
-        D_800A38B4 +=
+        g_prim_buf_cursor +=
             func_8005F1C8(&buf,
                           D_800A3898[0] | (D_800A38AA[0] << 8) |
                               (D_800A3898[1] << 4) | (D_800A38AA[1] << 12),
-                          (s32)D_800A38B4, 1) /
+                          (s32)g_prim_buf_cursor, 1) /
             4;
     }
 }
@@ -2087,7 +2092,7 @@ common_tail:
 
     func_80046BF4(&local.unk_00, &local.unk_10, local.w18);
     {
-        func_8001A538(&local, &s2->w20);
+        camera_CalcEye(&local, &s2->w20);
         func_80061064(&local.unk_10.vx, &s2->w20);
     }
     func_8003F3D4(s2->h30[0]);
@@ -2120,7 +2125,7 @@ void func_8001E6E4(s32 arg0) {
     func_80046BF4(&local.unk_00, &local.unk_10, local.w18);
 
     {
-        func_8001A538(&local, &s2->w20);
+        camera_CalcEye(&local, &s2->w20);
         func_80061064(&local.unk_10.vx, &s2->w20);
     }
 
@@ -2211,10 +2216,12 @@ void func_8001EA84(void) {
     func_800335D8();
     if (D_800A38DC == 3) {
         func_8001CD68(&buf);
-        D_800A38B4 += func_8005D814(&buf, D_800A38E2, (s32)D_800A38B4, 1) / 4;
+        g_prim_buf_cursor +=
+            func_8005D814(&buf, D_800A38E2, (s32)g_prim_buf_cursor, 1) / 4;
     }
     if (D_800A3929 == 0) {
-        D_800A38B4 += func_8005C8A8(1, D_800A3817, (s32)D_800A38B4, 0) / 4;
+        g_prim_buf_cursor +=
+            func_8005C8A8(1, D_800A3817, (s32)g_prim_buf_cursor, 0) / 4;
         if ((g_pad_state.pressed & 0x10001000) != 0) {
             func_8005C650(0, 0x7F, 0x7F);
             if (D_800A3817 != D_800A3804) {
@@ -2246,7 +2253,7 @@ void func_8001EA84(void) {
         return;
     }
     if (D_800A3817 == 0) {
-        D_800A38B4 += func_8005FA98(0, (s32)D_800A38B4, 1) / 4;
+        g_prim_buf_cursor += func_8005FA98(0, (s32)g_prim_buf_cursor, 1) / 4;
     }
     D_800A3929 = D_800A3929 + 1;
     if (D_800A3929 < 0x3C)

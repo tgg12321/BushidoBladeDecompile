@@ -79,12 +79,12 @@ glabel func_80047A90
     /* 383AC 80047BAC 09000229 */  slti       $v0, $t0, 0x9
     /* 383B0 80047BB0 D8FF4014 */  bnez       $v0, .L80047B14
     /* 383B4 80047BB4 44002925 */   addiu     $t1, $t1, 0x44
-    /* 383B8 80047BB8 0A80023C */  lui        $v0, %hi(D_800A3820)
-    /* 383BC 80047BBC 2038428C */  lw         $v0, %lo(D_800A3820)($v0)
+    /* 383B8 80047BB8 0A80023C */  lui        $v0, %hi(g_draw_queue_cursor)
+    /* 383BC 80047BBC 2038428C */  lw         $v0, %lo(g_draw_queue_cursor)($v0)
     /* 383C0 80047BC0 00000000 */  nop
     /* 383C4 80047BC4 04004324 */  addiu      $v1, $v0, 0x4
-    /* 383C8 80047BC8 0A80013C */  lui        $at, %hi(D_800A3820)
-    /* 383CC 80047BCC 203823AC */  sw         $v1, %lo(D_800A3820)($at)
+    /* 383C8 80047BC8 0A80013C */  lui        $at, %hi(g_draw_queue_cursor)
+    /* 383CC 80047BCC 203823AC */  sw         $v1, %lo(g_draw_queue_cursor)($at)
     /* 383D0 80047BD0 0F80033C */  lui        $v1, %hi(D_800EF070)
     /* 383D4 80047BD4 70F06324 */  addiu      $v1, $v1, %lo(D_800EF070)
     /* 383D8 80047BD8 0800E003 */  jr         $ra

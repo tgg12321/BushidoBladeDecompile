@@ -101,8 +101,8 @@ void func_80044800(void) {
             }
             rec->unk60 = fade;
         }
-        list = D_800A3820;
-        D_800A3820 = list + 1;
+        list = g_draw_queue_cursor;
+        g_draw_queue_cursor = list + 1;
         *list = rec;
     }
 }

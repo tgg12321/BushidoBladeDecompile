@@ -85,12 +85,12 @@ glabel func_800475A4
     /* 37EF0 800476F0 21284002 */  addu       $a1, $s2, $zero
     /* 37EF4 800476F4 37F9010C */  jal        MulMatrix0
     /* 37EF8 800476F8 18002626 */   addiu     $a2, $s1, 0x18
-    /* 37EFC 800476FC 0A80033C */  lui        $v1, %hi(D_800A3820)
-    /* 37F00 80047700 2038638C */  lw         $v1, %lo(D_800A3820)($v1)
+    /* 37EFC 800476FC 0A80033C */  lui        $v1, %hi(g_draw_queue_cursor)
+    /* 37F00 80047700 2038638C */  lw         $v1, %lo(g_draw_queue_cursor)($v1)
     /* 37F04 80047704 00000000 */  nop
     /* 37F08 80047708 04006224 */  addiu      $v0, $v1, 0x4
-    /* 37F0C 8004770C 0A80013C */  lui        $at, %hi(D_800A3820)
-    /* 37F10 80047710 203822AC */  sw         $v0, %lo(D_800A3820)($at)
+    /* 37F0C 8004770C 0A80013C */  lui        $at, %hi(g_draw_queue_cursor)
+    /* 37F10 80047710 203822AC */  sw         $v0, %lo(g_draw_queue_cursor)($at)
     /* 37F14 80047714 000071AC */  sw         $s1, 0x0($v1)
   .L80047718:
     /* 37F18 80047718 8000BF8F */  lw         $ra, 0x80($sp)

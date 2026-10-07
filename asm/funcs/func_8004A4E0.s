@@ -10,10 +10,10 @@ glabel func_8004A4E0
     /* 3AD00 8004A500 1800B2AF */  sw         $s2, 0x18($sp)
     /* 3AD04 8004A504 1400B1AF */  sw         $s1, 0x14($sp)
     /* 3AD08 8004A508 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 3AD0C 8004A50C 0A80023C */  lui        $v0, %hi(D_800A3820)
-    /* 3AD10 8004A510 2038428C */  lw         $v0, %lo(D_800A3820)($v0)
-    /* 3AD14 8004A514 1080173C */  lui        $s7, %hi(D_80102C00)
-    /* 3AD18 8004A518 002CF726 */  addiu      $s7, $s7, %lo(D_80102C00)
+    /* 3AD0C 8004A50C 0A80023C */  lui        $v0, %hi(g_draw_queue_cursor)
+    /* 3AD10 8004A510 2038428C */  lw         $v0, %lo(g_draw_queue_cursor)($v0)
+    /* 3AD14 8004A514 1080173C */  lui        $s7, %hi(g_draw_queue)
+    /* 3AD18 8004A518 002CF726 */  addiu      $s7, $s7, %lo(g_draw_queue)
     /* 3AD1C 8004A51C 2C005710 */  beq        $v0, $s7, .L8004A5D0
     /* 3AD20 8004A520 801F113C */   lui       $s1, (0x1F80001C >> 16)
     /* 3AD24 8004A524 21A80000 */  addu       $s5, $zero, $zero
@@ -64,8 +64,8 @@ glabel func_8004A4E0
     /* 3ADC8 8004A5C8 F0FF0015 */  bnez       $t0, .L8004A58C
     /* 3ADCC 8004A5CC 00000000 */   nop
   jlabel .L8004A5D0
-    /* 3ADD0 8004A5D0 0A80023C */  lui        $v0, %hi(D_800A3820)
-    /* 3ADD4 8004A5D4 2038428C */  lw         $v0, %lo(D_800A3820)($v0)
+    /* 3ADD0 8004A5D0 0A80023C */  lui        $v0, %hi(g_draw_queue_cursor)
+    /* 3ADD4 8004A5D4 2038428C */  lw         $v0, %lo(g_draw_queue_cursor)($v0)
     /* 3ADD8 8004A5D8 00000000 */  nop
     /* 3ADDC 8004A5DC D5FFE216 */  bne        $s7, $v0, .L8004A534
     /* 3ADE0 8004A5E0 00000000 */   nop

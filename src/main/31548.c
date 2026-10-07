@@ -135,7 +135,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     s0 = 1;
     s3->node.unk0 = 0xA;
     /* FAKE: unk58 stored through a pointer; the member store lets sched sink it
-       below the D_800A3820 load (score 5). */
+       below the g_draw_queue_cursor load (score 5). */
     {
         s32 *p58 = &s3->unk58;
         *p58 = (s32)s4->unk_18F4;
@@ -143,17 +143,17 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     {
         void **list;
         Unk80045878Node *a4p;
-        list = D_800A3820;
+        list = g_draw_queue_cursor;
         a4p = &s3[1];
         s3->node.unk2 = 0;
-        D_800A3820 = list + 1;
+        g_draw_queue_cursor = list + 1;
         *list = s3;
 
         do {
             if (a4p->node.unk2 >= 0) {
                 void **list2;
-                list2 = D_800A3820;
-                D_800A3820 = list2 + 1;
+                list2 = g_draw_queue_cursor;
+                g_draw_queue_cursor = list2 + 1;
                 *list2 = a4p;
             }
             s0++;
@@ -171,8 +171,8 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
                 break;
             }
             a2p->node.xf.mat = s5->node.xf.mat;
-            list3 = D_800A3820;
-            D_800A3820 = list3 + 1;
+            list3 = g_draw_queue_cursor;
+            g_draw_queue_cursor = list3 + 1;
             *list3 = a2p;
             a2p++;
         }
@@ -181,8 +181,8 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         if (s4->unk_8B4[0].node.unk2 != -1) {
             do {
                 void **list4;
-                list4 = D_800A3820;
-                D_800A3820 = list4 + 1;
+                list4 = g_draw_queue_cursor;
+                g_draw_queue_cursor = list4 + 1;
                 *list4 = a2p;
                 a2p++;
             } while (a2p->node.unk2 != -1);

@@ -182,12 +182,12 @@ glabel func_80044800
   .L80044AC0:
     /* 352C0 80044AC0 600044A6 */  sh         $a0, 0x60($s2)
   .L80044AC4:
-    /* 352C4 80044AC4 0A80033C */  lui        $v1, %hi(D_800A3820)
-    /* 352C8 80044AC8 2038638C */  lw         $v1, %lo(D_800A3820)($v1)
+    /* 352C4 80044AC4 0A80033C */  lui        $v1, %hi(g_draw_queue_cursor)
+    /* 352C8 80044AC8 2038638C */  lw         $v1, %lo(g_draw_queue_cursor)($v1)
     /* 352CC 80044ACC 00000000 */  nop
     /* 352D0 80044AD0 04006224 */  addiu      $v0, $v1, 0x4
-    /* 352D4 80044AD4 0A80013C */  lui        $at, %hi(D_800A3820)
-    /* 352D8 80044AD8 203822AC */  sw         $v0, %lo(D_800A3820)($at)
+    /* 352D4 80044AD4 0A80013C */  lui        $at, %hi(g_draw_queue_cursor)
+    /* 352D8 80044AD8 203822AC */  sw         $v0, %lo(g_draw_queue_cursor)($at)
     /* 352DC 80044ADC 000072AC */  sw         $s2, 0x0($v1)
   .L80044AE0:
     /* 352E0 80044AE0 68005226 */  addiu      $s2, $s2, 0x68

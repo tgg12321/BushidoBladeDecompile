@@ -276,7 +276,7 @@ empty_stub_80046954          = 0x80046954;  /* literal `jr ra; nop` -- 2 insns t
 /* (b) lack callsite context to distinguish their role.  See */
 /* `docs/naming/MISNOMERS.md` and `tools/rename_funcs.py` for the full delta. */
 math_Distance3D_80017748     = 0x80017748;  /* vec3 sub + >>2 + sum-after-helper + <<2 == magnitude-with-overflow-guard. Exact match with legacy `math_Distance3D`. */
-camera_InitBoneData_80047210 = 0x80047210;  /* memcpy(g_cam_bone_data, D_80101DF0.xf.mat (0x80101E08), 0x20) + halve 3 halfword fields. Legacy `camera_InitBoneData` is an exact-shape match. */
+/* RESET 0x80047210: retired name 'camera_InitBoneData_80047210' — preserved note: memcpy(g_cam_bone_data, D_80101DF0.xf.mat (0x80101E08), 0x20) + halve 3 halfword fields. Legacy `camera_InitBoneData` is an exact-shape match. */
 camera_InitBone2_80047570    = 0x80047570;  /* camera_InitRotation(&g_cam_bone_data2) + g_cam_interp=4. Legacy `camera_InitBone2` matches the body 1:1 (it's the second cam bone bank init). */
 
 /* === Batch 4 data-symbol renames (2026-05-17) === */
@@ -733,11 +733,11 @@ g_replay_camera_target_ptr_b                            = 0x800A370C;  /* ref: g
 g_gpu_ot_ptr                                          = 0x800A374C;  /* ref: tslDrTex1Init2 */  /* data-wave 2026-09-24: was g_dma_buf_base */
 g_tslTm_loaded_flags                                    = 0x800A376A;  /* ref: tslDrTex1Init */
 g_mental_bar_packet_buf                                 = 0x800A37A8;  /* ref: g_mental_bar_packet_count (paired) */
-g_hira_packet_cursor                                    = 0x800A3820;  /* ref: replay_camera_rob_back_win_near */
+g_draw_queue_cursor                                    = 0x800A3820;  /* ref: replay_camera_rob_back_win_near */  /* data-wave 2026-10-07: was g_hira_packet_cursor */
 g_practice_select_cursor                                = 0x800A384C;  /* ref: title_mv_exec */
 g_seq_check_pending                                     = 0x800A385C;  /* ref: title_mv_exec */
 g_voice_dialog_state                                    = 0x800A38AC;  /* ref: func_80019568 */
-g_cpu_move_pattern_cursor                               = 0x800A38B4;  /* ref: g_cpu_attack_idx */
+g_prim_buf_cursor                               = 0x800A38B4;  /* ref: g_cpu_attack_idx */  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor */
 g_title_seq_state                                       = 0x800A38C4;  /* ref: title_mv_exec */
 g_replay_pos_change_count                               = 0x800A38D6;  /* ref: replay_camera_rob_back_win_near */
 g_motion_select_byte                                    = 0x800A391D;  /* ref: ki_attack_ougi */
@@ -1234,7 +1234,7 @@ g_gnd_init_arg_saved                                    = 0x800A36F6;  /* saved 
 /* distance calc and a packed state word. */
 g_char_class_id_table                                   = 0x8008D538;  /* per-character class ID lookup; (&D)[char_id] -> class */
 g_char_lesson_idx_table                                 = 0x8008D55C;  /* per-character lesson index table; (&D)[idx] -> lesson byte */
-g_attacker_pos_ptr                                      = 0x800A36B4;  /* attacker struct pointer; +0x20 = pos.x, +0x24 = pos.y (read for dx/dy in coli check) */
+D_800A36B4                                      = 0x800A36B4;  /* attacker struct pointer; +0x20 = pos.x, +0x24 = pos.y (read for dx/dy in coli check) */  /* data-wave 2026-10-07: was g_attacker_pos_ptr */
 g_practice_state_word                                   = 0x800A3824;  /* practice mode state bitfield (& 1 tested) */
 g_practice_byte_table                                   = 0x801077B0;  /* u8 array indexed in practice flow */
 
@@ -1858,7 +1858,7 @@ g_vab_id_list                                 = 0x8009AD18;  /* u8[3] {7,3,6}: V
 g_player_byte_flags_table                               = 0x8009BC7C;  /* per-player byte flags indexed by D_800A3560.rec[i].unk1; bit & 2 test */
 
 /* === 3D sound data buffer cluster (2026-05-17) -- 6 highs === */
-D_80102C00                                  = 0x80102C00;  /* data-wave 2026-09-29: was g_sound_3d_data_buffer */
+g_draw_queue                                  = 0x80102C00;  /* data-wave 2026-09-29: was g_sound_3d_data_buffer */
 /* RETIRED 0x800A3820 (naming sweep 2026-09-29): alias 'g_sound_3d_cursor' removed - the render-list cursor walked by the GTE renderer, no sound consumer (docs/naming/sweep-2026-09-29/verify/data.csv); g_hira_packet_cursor is untouched (not covered by that verdict) */
 /* 2026-09-23: g_sound_3d_pos_x/y/z_src (3 of the 6) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
 D_800A3808                                 = 0x800A3808;  /* data-wave 2026-09-29: was g_sound_3d_dma_snapshot */
@@ -2607,10 +2607,8 @@ breakpoint_trap_loop_800164F8 = 0x800164F8;
 /* inspection + dominant-caller-prefix context. The src/ usages still */
 /* reference func_<addr>; these aliases enable semantic grep. */
 cpu_exec_match_round_stage_select_80016E60 = 0x80016E60;
-cpu_init_stage_and_camera_setup_8001E404 = 0x8001E404;
 mario_test_init_characters_80021210 = 0x80021210;
 mario_test_move_to_inventory_800218C8 = 0x800218C8;
-cpu_find_closest_hotspot_80022408 = 0x80022408;
 mario_test_initialize_match_80022580 = 0x80022580;
 mario_test_apply_status_updates_80022F34 = 0x80022F34;
 cpu_exec_main_game_loop_frame_8002C61C = 0x8002C61C;
@@ -2970,7 +2968,7 @@ disp_helper_80078628                               = 0x80078628;  /* first-pass 
 /* RENAME 0x8008C464: retired name 'bios_helper_8008C464' — preserved note: first-pass subsystem tag (bios); ->bios_SysEnqIntRP;->bios_SysDeqIntRP;->bios_DeliverEvent */
 mode_helper_8001979C                               = 0x8001979C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_29_StageLeafUpdate'] ->[] */
 mode_helper_800198D0                               = 0x800198D0;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->[] */
-md_game_helper_8001A538                            = 0x8001A538;  /* first-pass tag(clean-anchor); md_game: <-['md_game_restart_init'] ->[] */
+/* RENAME 0x8001A538: retired name 'md_game_helper_8001A538' — preserved note: first-pass tag(clean-anchor); md_game: <-['md_game_restart_init'] ->[] */
 mode_helper_800207C8                               = 0x800207C8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->['single_game_getEnemyCharId'] */
 stub_80030D48                                      = 0x80030D48;  /* structural role; n=2 */
 mk_helper_800325E0                                 = 0x800325E0;  /* first-pass tag(clean-anchor); mk: <-['mk_leaf_newpos'] ->[] */
