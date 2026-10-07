@@ -1,0 +1,19 @@
+{
+  "decision": "PASS",
+  "function": "func_8003032C",
+  "body_hash": "cf97a01449b452a9",
+  "summary": "Clean body: no FAKE labels, inline asm, volatile, dead stores, do-while(0) or raw-offset casts. The s32 locals truthfully hold the sign-extended entries of `extern s16 Judge[0x1000]`, and the element indexing on the declared `s32 *a0` bypasses no header type, because the function has no caller anywhere in the binary. Sandbox 0 (62/62, nothing stripped), and the TU object is section-, relocation- and symbol-identical to the build/ object that links to the oracle SHA1.",
+  "evidence": [
+    {"construct": "src/main/17AFC.c:4603-4626", "test_failed": "none (item 1)", "explanation": "sandbox --disable all: score 0, 62/62, cheat_asm_stripped 0; sandbox 17AFC.o identical (.text/.data/.rodata/.sdata/.bss, relocations, nm) to build/src/main/17AFC.o; build/bb2.exe SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa."},
+    {"construct": "s32 cos_val / s32 sin_val = Judge[...]", "test_failed": "none (items 3, 4)", "explanation": "include/bb2.h:127-129 declares extern s16 Judge[0x1000] (sine table, cos(a) = Judge[(a + 0x400) & 0xFFF]); the target loads each entry with lh; holding a sign-extended s16 in an s32 local is a truthful widening; no second extern or alias."},
+    {"construct": "a0[0x11] / a0[0x12] / a0[0x13] on s32 *a0", "test_failed": "none (item 4)", "explanation": "Word offsets 0x44/0x48/0x4C match the target's lw/sw; no jal 0x0C00C0CB or pointer word 0x8003032C anywhere in src/, include/, asm/ or the disc EXE, so no header-declared object is bypassed."},
+    {"construct": "removed FAKE dead stores, do-while(0) fence and byte-offset casts", "test_failed": "none (item 5)", "explanation": "Zero FAKE constructs remain."},
+    {"construct": "if (v48 < 0) v48 += 3; a0[0x12] = v48 >> 2;", "test_failed": "none (item 3)", "explanation": "Exact signed division by 4 written out; v48 / 4 measured at score 3 (64 vs 62 insns)."},
+    {"construct": "rz = -(((-vx) * sin_val + vz * cos_val) >> 12)", "test_failed": "none (item 3)", "explanation": "Both negations are real arithmetic (negu before the mult and after the sra)."}
+  ],
+  "next_action": "",
+  "hygiene_debt": [
+    "func_8003032C has no caller in the binary, so a0 (VECTOR-shaped words at 0x44/0x48/0x4C) and a1 (SVECTOR-shaped) keep generic s32 * / s16 * types.",
+    "Local v48 is named after its byte offset rather than a semantic role."
+  ]
+}

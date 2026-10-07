@@ -236,29 +236,27 @@ void func_8003B20C(s32 arg0) {
 }
 
 void func_8003B2C8(void) {
-    u8 *p = &D_80102778.unk_4[0];
-    D_800A3836 = *p;
+    D_800A3836 = D_80102778.unk_4[0];
     {
         u8 *base = D_800A3894;
         u8 v1 = D_800A376A;
         u8 v0 = *base;
         D_800A36C8 = v1;
         D_800A376A = 0;
-        *p = v0;
+        D_80102778.unk_4[0] = v0;
     }
     player_SetCharId(0, 0);
 }
 
 void func_8003B328(void) {
-    u8 *p = &D_80102778.unk_4[0];
-    u8 v_277C = *p;
+    u8 v_277C = D_80102778.unk_4[0];
     u8 v_376A = D_800A376A;
     u8 v_3836 = D_800A3836;
     u8 v_36C8 = D_800A36C8;
     D_800A3836 = 0xFF;
     D_800A3915 = v_277C;
     D_800A36F4 = v_376A;
-    *p = v_3836;
+    D_80102778.unk_4[0] = v_3836;
     D_800A376A = v_36C8;
     player_SetCharId(0, v_36C8);
     func_80022568(D_80101EC8);
@@ -957,14 +955,11 @@ void func_8003C714(void) {
         v = src->unk_0;
         s0->unk21[i].unk3 = v;
         i += 1;
-        /* FAKE: the call sits inside the loop on its exit path (natural: after
-         * the loop); loop_has_call then keeps the /1800 magic in the loop
-         * while the /30 one is hoisted, as in the target */
         if (i >= 3) {
-            func_8001CD68(&buf);
             break;
         }
     } while (1);
+    func_8001CD68(&buf);
     s0->unk2D[0] = buf.unk_0;
     s0->unk2D[1] = buf.unk_2;
     s0->unk2D[2] = buf.unk_3;

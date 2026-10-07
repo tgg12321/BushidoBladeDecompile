@@ -4602,8 +4602,8 @@ void func_80030208(void) {
 
 void func_8003032C(s32 *a0, s16 *a1) {
     s32 angle;
-    s16 cos_val;
-    s16 sin_val;
+    s32 cos_val;
+    s32 sin_val;
     s32 vx;
     s32 vz;
     s32 rx;
@@ -4611,24 +4611,18 @@ void func_8003032C(s32 *a0, s16 *a1) {
     s32 v48;
     angle = ratan2(a1[0], a1[2]);
     cos_val = Judge[(angle + 0x400) & 0xFFF];
-    /* FAKE: do-while(0) scheduling fence */
-    do {
-        rx = cos_val * cos_val; /* FAKE: dead store; without it score 6 */
-        vx = *((s32 *)(((u8 *)a0) + 0x44));
-        sin_val = Judge[angle & 0xFFF];
-        /* FAKE: dead store; without it score 19 */
-        rx = ((vx * cos_val) + (vx * sin_val)) >> 12;
-        vz = *((s32 *)(((u8 *)a0) + 0x4C));
-        rx = ((vx * cos_val) + (vz * sin_val)) >> 12;
-        rz = -((((-vx) * sin_val) + (vz * cos_val)) >> 12);
-        v48 = *((s32 *)(((u8 *)a0) + 0x48));
-        *((s32 *)(((u8 *)a0) + 0x44)) = ((rx * cos_val) - (rz * sin_val)) >> 15;
-        *((s32 *)(((u8 *)a0) + 0x4C)) = ((rx * sin_val) + (rz * cos_val)) >> 15;
-        if (v48 < 0) {
-            v48 += 3;
-        }
-    } while (0);
-    *((s32 *)(((u8 *)a0) + 0x48)) = v48 >> 2;
+    sin_val = Judge[angle & 0xFFF];
+    vx = a0[0x11];
+    vz = a0[0x13];
+    rx = ((vx * cos_val) + (vz * sin_val)) >> 12;
+    rz = -((((-vx) * sin_val) + (vz * cos_val)) >> 12);
+    v48 = a0[0x12];
+    a0[0x11] = ((rx * cos_val) - (rz * sin_val)) >> 15;
+    a0[0x13] = ((rx * sin_val) + (rz * cos_val)) >> 15;
+    if (v48 < 0) {
+        v48 += 3;
+    }
+    a0[0x12] = v48 >> 2;
 }
 
 void func_8003043C(void) {

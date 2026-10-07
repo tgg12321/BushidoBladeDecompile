@@ -1,0 +1,1 @@
+{"decision": "PASS", "function": "func_8003C714", "body_hash": "e233f1c6141139d0", "summary": "Removing the FAKE in-loop call is legitimate; the body calls func_8001CD68(&buf) once after the loop as the program does. Sandbox 0 (104/104, 0 stripped), no FAKE labels or wall constructs remain, header comment and types match.", "evidence": [], "next_action": "", "hygiene_debt": []}

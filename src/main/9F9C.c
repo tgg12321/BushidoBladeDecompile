@@ -1709,22 +1709,16 @@ void func_8001D790(void) {
     if (D_800A36A4 != D_800A390E ||
         D_8008E5A8[(s8)D_80102778.unk_4[0]] != D_800A30FC ||
         D_8008E5A8[(s8)D_80102778.unk_4[1]] != D_800A30FD) {
-        /* FAKE: block-local address cache for D_80102778.unk_4[0], held in a
-         * callee-save register across func_8005BA8C; every &-free spelling
-         * re-forms the symbol at both reads. Same construct in
-         * func_8003B2C8/func_8003B328. */
-        u8 *p = &D_80102778.unk_4[0];
-
         func_80020D38();
         game_StageCleanup(D_800A36A4, s2);
         func_8002906C();
         snd_CloseListedVabs();
 
-        s1 = func_8005BA8C(s2, D_800A36A4, D_8008E5A8[(s8)*p],
+        s1 = func_8005BA8C(s2, D_800A36A4, D_8008E5A8[(s8)D_80102778.unk_4[0]],
                            D_8008E5A8[(s8)D_80102778.unk_4[1]]);
 
         D_800A390E = D_800A36A4;
-        D_800A30FC = D_8008E5A8[(s8)*p];
+        D_800A30FC = D_8008E5A8[(s8)D_80102778.unk_4[0]];
         D_800A30FD = D_8008E5A8[(s8)D_80102778.unk_4[1]];
 
         if (s1 >= 0x2519) {
@@ -4401,10 +4395,7 @@ void func_80023648(Unk80101EC8Record *arg0) {
 
             tbl = D_8008EB40;
             row = tbl[a0];
-            /* FAKE: index-first `a1[row]` (the same load as `row[a1]`) flips
-             * the addu operand order, so the element pointer lands in $a2 as in
-             * the target. */
-            a2 = a1[row];
+            a2 = row[a1];
 
             if (D_800A38BA != 0 && arg0->unk_06 == 0) {
                 func_8001F860(arg0, arg0->unk_1C8.vy + a2 / 4);
