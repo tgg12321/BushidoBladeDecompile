@@ -1884,7 +1884,7 @@ typedef void (*AnimRotFunc)(SVECTOR *, MATRIX *);
  * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
  * fills them from a stream and calls g_anim_func_table[unk8] on &xf.rot /
  * &xf.mat (func_800418D0's call); func_8003E6D8 and func_8003EB84 queue each
- * one on the g_draw_queue_cursor list at most once, guarded by unk58. */
+ * one on g_draw_queue at most once, guarded by unk58. */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
     u8 unk58;               /* +0x58 */
@@ -1897,7 +1897,7 @@ typedef struct {
  * game_GetCharData entry of the same index (D_800A9CF8.unk10):
  * func_8004473C initialises the node and copies the paired entry's
  * xf.mat.t into work.t; func_80044B30 / func_80044800 run the node from
- * the D_800A9CF8.unk8 key frames and queue it on the g_draw_queue_cursor list.
+ * the D_800A9CF8.unk8 key frames and queue it on g_draw_queue.
  * unk58 is a word frame counter (lw/sw: -1 idle, 0 started by
  * func_80044B30, -2 done), unk5C the word Y angle func_80044B30 stores,
  * unk60 an s16 fade level (func_80044800); +0x62..0x67 are not accessed. Not
@@ -1991,7 +1991,7 @@ typedef struct Unk80045878Obj {
 
 /* The 16-byte records func_8003EDC0 fills ahead of those (unk8 / unkC = the
  * grid cell's column / row * 2000 - 32000); func_8003E6D8 and func_8003EB84
- * set unk6 and the unk7 bits and queue them on the g_draw_queue_cursor list. */
+ * set unk6 and the unk7 bits and queue them on g_draw_queue. */
 typedef struct {
     s16 unk0;     /* +0x00 */
     s16 unk2;     /* +0x02 */

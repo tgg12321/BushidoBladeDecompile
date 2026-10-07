@@ -1975,7 +1975,7 @@ end:
 void func_80049710(void) {}
 
 /* Appends one or two 0x68-byte draw nodes at g_prim_buf_cursor for animation
- * entry arg0 and queues each on the g_draw_queue_cursor draw list. The first
+ * entry arg0 and queues each on g_draw_queue. The first
  * node (type 0) takes its rotation and position from rot_in / pos (flags == 1)
  * or from node 19 + (flags & 1) of player flags >> 1's model object, whose
  * offset it scales in place by the object's unk_12 and into which it copies the

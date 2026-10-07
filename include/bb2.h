@@ -276,7 +276,8 @@ extern u8 D_800A3690;
 extern s32 g_comb_send_buf_plus_0x4;
 extern s16 D_800A36A4;
 extern s32 D_800A36AC;
-/* the active camera record (func_8001E404 / func_8001E6E4) */
+/* the Rec44 view record func_8001E404 / func_8001E6E4 last placed (read by
+ * func_800325E0 as the listener) */
 extern Rec44 *D_800A36B4;
 extern CdlATV D_800A36B8;
 extern s16 D_800A36C2;

@@ -319,7 +319,7 @@ func_80046E54          = 0x80046E54;  /* writes (a0 ? 1 : 0) to g_game_pause_fla
 func_80046E7C          = 0x80046E7C;  /* lh getter for g_game_pause_flag */
 /* RESET 0x80046E8C: retired name 'game_ResetTimer_80046E8C' — preserved note: writes 0x23 (35 frames) to g_round_timer */
 stage_GetDataPtr_80046F14       = 0x80046F14;  /* returns &D_8009947C (stage-data slot address) */
-camera_GetBoneData_800472B0     = 0x800472B0;  /* returns &g_cam_bone_data (companion to camera_InitBoneData) */
+camera_GetBoneData_800472B0     = 0x800472B0;  /* returns &g_cam_bone_data (companion to func_80047210) */
 game_Stub1_800477BC             = 0x800477BC;  /* literal `jr ra; nop` -- empty hook slot 1 */
 game_Stub2_800477C4             = 0x800477C4;  /* literal `jr ra; nop` -- empty hook slot 2 */
 game_Stub3_800477CC             = 0x800477CC;  /* literal `jr ra; nop` -- empty hook slot 3 */
@@ -733,11 +733,11 @@ g_replay_camera_target_ptr_b                            = 0x800A370C;  /* ref: g
 g_gpu_ot_ptr                                          = 0x800A374C;  /* ref: tslDrTex1Init2 */  /* data-wave 2026-09-24: was g_dma_buf_base */
 g_tslTm_loaded_flags                                    = 0x800A376A;  /* ref: tslDrTex1Init */
 g_mental_bar_packet_buf                                 = 0x800A37A8;  /* ref: g_mental_bar_packet_count (paired) */
-g_draw_queue_cursor                                    = 0x800A3820;  /* ref: replay_camera_rob_back_win_near */  /* data-wave 2026-10-07: was g_hira_packet_cursor */
+g_draw_queue_cursor                                    = 0x800A3820;  /* data-wave 2026-10-07: was g_hira_packet_cursor */
 g_practice_select_cursor                                = 0x800A384C;  /* ref: title_mv_exec */
 g_seq_check_pending                                     = 0x800A385C;  /* ref: title_mv_exec */
 g_voice_dialog_state                                    = 0x800A38AC;  /* ref: func_80019568 */
-g_prim_buf_cursor                               = 0x800A38B4;  /* ref: g_cpu_attack_idx */  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor */
+g_prim_buf_cursor                               = 0x800A38B4;  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor */
 g_title_seq_state                                       = 0x800A38C4;  /* ref: title_mv_exec */
 g_replay_pos_change_count                               = 0x800A38D6;  /* ref: replay_camera_rob_back_win_near */
 g_motion_select_byte                                    = 0x800A391D;  /* ref: ki_attack_ougi */
@@ -1234,7 +1234,7 @@ g_gnd_init_arg_saved                                    = 0x800A36F6;  /* saved 
 /* distance calc and a packed state word. */
 g_char_class_id_table                                   = 0x8008D538;  /* per-character class ID lookup; (&D)[char_id] -> class */
 g_char_lesson_idx_table                                 = 0x8008D55C;  /* per-character lesson index table; (&D)[idx] -> lesson byte */
-D_800A36B4                                      = 0x800A36B4;  /* attacker struct pointer; +0x20 = pos.x, +0x24 = pos.y (read for dx/dy in coli check) */  /* data-wave 2026-10-07: was g_attacker_pos_ptr */
+D_800A36B4                                      = 0x800A36B4;  /* Rec44 view record pointer (func_8001E404 / func_8001E6E4); func_800325E0 reads its +0x20 eye */  /* data-wave 2026-10-07: was g_attacker_pos_ptr */
 g_practice_state_word                                   = 0x800A3824;  /* practice mode state bitfield (& 1 tested) */
 g_practice_byte_table                                   = 0x801077B0;  /* u8 array indexed in practice flow */
 
@@ -1452,11 +1452,11 @@ D_800EEDBE                                         = 0x800EEDBE;  /* data-wave 2
 D_800EEDC0                                         = 0x800EEDC0;  /* data-wave 2026-09-29: was g_cam_matrix_m8 */
 
 /* === Camera bone data init halves (2026-05-17) -- 3 highs === */
-/* From sound.c camera_InitBoneData (line 460): copies 32-byte */
+/* From func_80047210 (368E4.c): copies 32-byte */
 /* g_cam_bone_data from D_80101DF0.xf.mat (0x80101E08), then halves 3 specific s16 fields. */
 /* 2026-09-23: g_cam_bone_data_template (1 of the 3) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
-g_cam_bone_data_h0                                      = 0x800EEDD6;  /* s16 field halved by camera_InitBoneData (h >> 1) */
-g_cam_bone_data_h1                                      = 0x800EEDD8;  /* s16 field halved by camera_InitBoneData; new_var pointer base */
+g_cam_bone_data_h0                                      = 0x800EEDD6;  /* s16 field halved by func_80047210 (h >> 1) */
+g_cam_bone_data_h1                                      = 0x800EEDD8;  /* s16 field halved by func_80047210; new_var pointer base */
 
 /* === 3D sound positioning result pair (2026-05-17) -- 2 highs === */
 /* From sound.c around line 542: a helper computes 3D-sound-positioning */
@@ -1857,9 +1857,9 @@ g_motion_func_dispatch_offset                           = 0x8009BA60;  /* per-id
 g_vab_id_list                                 = 0x8009AD18;  /* u8[3] {7,3,6}: VAB ids for SsVabClose / snd_VabFakeOpen (func_8005BA8C, func_8005BD30, snd_CloseListedVabs) */  /* data-wave 2026-10-03: was g_byte_lookup_table_256 */
 g_player_byte_flags_table                               = 0x8009BC7C;  /* per-player byte flags indexed by D_800A3560.rec[i].unk1; bit & 2 test */
 
-/* === 3D sound data buffer cluster (2026-05-17) -- 6 highs === */
+/* === Draw queue cluster (was the "3D sound data buffer" cluster, 2026-05-17) === */
 g_draw_queue                                  = 0x80102C00;  /* data-wave 2026-09-29: was g_sound_3d_data_buffer */
-/* RETIRED 0x800A3820 (naming sweep 2026-09-29): alias 'g_sound_3d_cursor' removed - the render-list cursor walked by the GTE renderer, no sound consumer (docs/naming/sweep-2026-09-29/verify/data.csv); g_hira_packet_cursor is untouched (not covered by that verdict) */
+/* RETIRED 0x800A3820 (naming sweep 2026-09-29): alias 'g_sound_3d_cursor' removed - the render-list cursor walked by the GTE renderer, no sound consumer (docs/naming/sweep-2026-09-29/verify/data.csv); its g_hira_packet_cursor alias retired by naming wave01 (2026-10-07; now g_draw_queue_cursor) */
 /* 2026-09-23: g_sound_3d_pos_x/y/z_src (3 of the 6) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
 D_800A3808                                 = 0x800A3808;  /* data-wave 2026-09-29: was g_sound_3d_dma_snapshot */
 
@@ -2846,7 +2846,7 @@ game_helper_8003D91C                               = 0x8003D91C;  /* first-pass 
 gpu_helper_8003DE14                                = 0x8003DE14;  /* first-pass subsystem tag (gpu); ->gpu_StoreImage;->gpu_LoadImage;->gpu_DrawSync */
 game_helper_8003E0E0                               = 0x8003E0E0;  /* first-pass subsystem tag (game); <-game_StageCleanup_80046EDC */
 mode_helper_8003E6A0                               = 0x8003E6A0;  /* first-pass subsystem tag (mode); <-mode_handler_01_GameFrameUpdate */
-cpu_helper_8003F3D4                                = 0x8003F3D4;  /* first-pass subsystem tag (cpu); <-cpu_init_stage_and_camera_setup_8001E404 */
+cpu_helper_8003F3D4                                = 0x8003F3D4;  /* first-pass subsystem tag (cpu); <-func_8001E404 */
 game_helper_8003F7F4                               = 0x8003F7F4;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
 /* RESET 0x8003FE40: retired name 'tslprintscreen_helper_8003FE40' — preserved note: first-pass subsystem tag (tslprintscreen); <-tslPrintScreen_helper_8003FA24 */
 player_helper_800400F8                             = 0x800400F8;  /* first-pass subsystem tag (player); <-player_sprite_free_8004016C */
@@ -3245,11 +3245,11 @@ stage_SetCollisionAtPos_8003F420 = 0x8003F420;  /* world (x,z)+0x7D00 /1000 -> g
 saTan4GaugeDraw_8006D338 = 0x8006D338;  /* frame ctr++, get sprite buf, anim-obj setup (func_80069AE4), saTan4GaugeMain, draw_anim_obj (func_8006CFBC), composite draw func_8006CCC8 */
 vc_RelocLoadedBlock_80041430 = 0x80041430;  /* relocate loaded block internal ptrs by base (a1): add base to stored offsets; register sub-ctrls via save_vc_ctrl x3 (0x15,0x14,0x14); func_80040A78 */
 game_StageSetup_80054604 = 0x80054604;  /* stage/match init: bgm (snd_StopBgm/snd_LoadSelection), fill ctrl D_800EFAE8 (player pos s5-fp/stage data), FadeOut, game_SetPlayerCount, disp_CalcFov, tslDmaDrawListDelAll; mirrors game_StageCleanup */
-exec_loc_mat_list_8004A4E0 = 0x8004A4E0;  /* walks display-list D_80102C00 (set by func_80044504), per-node opcode dispatch (jtbl_8001541C), GTE color reg ctc2 setup + calc_loc_mat_fw */
+exec_loc_mat_list_8004A4E0 = 0x8004A4E0;  /* walks g_draw_queue (set by func_80044504), per-node opcode dispatch (jtbl_8001541C), GTE color reg ctc2 setup + calc_loc_mat_fw */
 DispSleepMenuTexAll_8001A484 = 0x8001A484;  /* loops 22x calling DispSleepMenuTex(D_800100A4, coords from tables s0/s1 stride 6) -- batch draw sleep/standby menu textures */
 md_game_ExecMode_800460E4 = 0x800460E4;  /* md_game mode dispatcher: dual jumptable (jtbl_800152B4/80015334) on mode id (s5-3), sets D_80099478, per-mode init+update+draw(func_800481E8)+md_game_check_mode+saSeMain+gpu_DrawSync */
 md_game_FlushDeferred_800464C4 = 0x800464C4;  /* if deferred flag D_8009947A set: get slot-7 obj, mode-switch on D_80099478, md_game_check_mode(7)+saSeMain, clear flag */
-game_StageMain_8005490C = 0x8005490C;  /* per-frame stage handler on ctrl struct D_800EFAE8 (built by game_StageSetup); phase machine on [+0] (-1 ret/0 init), first-frame relocates D_800EFB14 data + stage_InitCollision/camera_InitBoneData/FadeOut */
+game_StageMain_8005490C = 0x8005490C;  /* per-frame stage handler on ctrl struct D_800EFAE8 (built by game_StageSetup); phase machine on [+0] (-1 ret/0 init), first-frame relocates D_800EFB14 data + stage_InitCollision/func_80047210/FadeOut */
 /* Kengo rename map apply-batch 2026-07-13 (docs/naming/kengo-rename-audit-2026-07-13.md):
    registry lines for glabel-applied names from 2971df5e that never got symbol-file
    entries. Names match the existing linker-authoritative glabels (unsuffixed). */
